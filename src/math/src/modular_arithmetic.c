@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // determine if number is prime (slow, simple method)
 // https://en.ikipedia.org/wiki/Primality_test#Pseudocode
@@ -53,9 +52,9 @@ int liquid_is_prime(unsigned int _n)
 //  _n          :   number to factor
 //  _factors    :   pre-allocated array of factors [size: LIQUID_MAX_FACTORS x 1]
 //  _num_factors:   number of factors found, sorted ascending
-void liquid_factor(unsigned int   _n,
-                   unsigned int * _factors,
-                   unsigned int * _num_factors)
+int liquid_factor(unsigned int   _n,
+                  unsigned int * _factors,
+                  unsigned int * _num_factors)
 {
     unsigned int k;
     unsigned int n = _n;
@@ -71,21 +70,20 @@ void liquid_factor(unsigned int   _n,
         }
     } while (n > 1 && num_factors < LIQUID_MAX_FACTORS);
 
-    if (n > 1 && num_factors == LIQUID_MAX_FACTORS) {
-        fprintf(stderr,"error, liquid_factor(), could not factor %u in %u numbers\n", _n, LIQUID_MAX_FACTORS);
-        exit(1);
-    }
+    if (n > 1 && num_factors == LIQUID_MAX_FACTORS)
+        return liquid_error(LIQUID_EICONFIG,"liquid_factor(), could not factor %u in %u numbers", _n, LIQUID_MAX_FACTORS);
 
     *_num_factors = num_factors;
+    return LIQUID_OK;
 }
 
 // compute number's unique prime factors
 //  _n          :   number to factor
 //  _factors    :   pre-allocated array of factors [size: LIQUID_MAX_FACTORS x 1]
 //  _num_factors:   number of unique factors found, sorted ascending
-void liquid_unique_factor(unsigned int   _n,
-                          unsigned int * _factors,
-                          unsigned int * _num_factors)
+int liquid_unique_factor(unsigned int   _n,
+                         unsigned int * _factors,
+                         unsigned int * _num_factors)
 {
     unsigned int k;
     unsigned int n = _n;
@@ -107,12 +105,11 @@ void liquid_unique_factor(unsigned int   _n,
         }
     } while (n > 1 && num_factors < LIQUID_MAX_FACTORS);
 
-    if (n > 1 && num_factors == LIQUID_MAX_FACTORS) {
-        fprintf(stderr,"error, liquid_unqiue_factor(), could not factor %u in %u numbers\n", _n, LIQUID_MAX_FACTORS);
-        exit(1);
-    }
+    if (n > 1 && num_factors == LIQUID_MAX_FACTORS)
+        return liquid_error(LIQUID_EICONFIG,"liquid_unqiue_factor(), could not factor %u in %u numbers", _n, LIQUID_MAX_FACTORS);
 
     *_num_factors = num_factors;
+    return LIQUID_OK;
 }
 
 // compute greatest common divisor between to numbers P and Q
@@ -121,8 +118,8 @@ unsigned int liquid_gcd(unsigned int _P,
 {
     // check base cases
     if (_P == 0 || _Q == 0) {
-        fprintf(stderr,"error: liquid_gcd(%u,%u), input cannot be zero\n", _P, _Q);
-        exit(-1);
+        liquid_error(LIQUID_EICONFIG,"liquid_gcd(%u,%u), input cannot be zero", _P, _Q);
+        return 0;
     } else if (_P == 1 || _Q == 1) {
         return 1;
     } else if (_P == _Q) {

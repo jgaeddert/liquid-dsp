@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,9 +39,7 @@ MODEM() MODEM(_create_apsk)(unsigned int _bits_per_symbol)
     case 7: apskdef = &liquid_apsk128;  break;
     case 8: apskdef = &liquid_apsk256;  break;
     default:
-        fprintf(stderr,"error: modem_create_apsk(), unsupported modulation level (%u)\n",
-                _bits_per_symbol);
-        exit(1);
+        return liquid_error_config("modem_create_apsk(), unsupported modulation level (%u)",_bits_per_symbol);
     }
 
     MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
@@ -92,14 +90,12 @@ MODEM() MODEM(_create_apsk)(unsigned int _bits_per_symbol)
 }
 
 // modulate APSK
-void MODEM(_modulate_apsk)(MODEM()      _q,
-                           unsigned int _sym_in,
-                           TC *         _y)
+int MODEM(_modulate_apsk)(MODEM()      _q,
+                          unsigned int _sym_in,
+                          TC *         _y)
 {
-    if (_sym_in >= _q->M) {
-        fprintf(stderr,"error: modem_modulate_apsk(), input symbol exceeds maximum\n");
-        return;
-    }
+    if (_sym_in >= _q->M)
+        return liquid_error(LIQUID_EIRANGE,"modem_modulate_apsk(), input symbol exceeds maximum");
 
     // map input symbol to constellation symbol
     unsigned int i;
@@ -128,12 +124,13 @@ void MODEM(_modulate_apsk)(MODEM()      _q,
 
     // compute output symbol
     *_y = r * liquid_cexpjf(phi);
+    return LIQUID_OK;
 }
 
 // demodulate APSK
-void MODEM(_demodulate_apsk)(MODEM()        _q,
-                             TC             _x,
-                             unsigned int * _sym_out)
+int MODEM(_demodulate_apsk)(MODEM()        _q,
+                            TC             _x,
+                            unsigned int * _sym_out)
 {
     // compute amplitude
     T r = cabsf(_x);
@@ -186,5 +183,6 @@ void MODEM(_demodulate_apsk)(MODEM()        _q,
     // re-modulate symbol and store state
     MODEM(_modulate)(_q, s_prime, &_q->x_hat);
     _q->r = _x;
+    return LIQUID_OK;
 }
 

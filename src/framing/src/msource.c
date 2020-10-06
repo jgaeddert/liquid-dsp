@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,18 +57,32 @@ struct MSOURCE(_s)
 // internal methods
 //
 
+// find index of qsource object by id within list, return -1 if not found
+int MSOURCE(_find)(MSOURCE() _q, int _id);
+
+// find qsource object by id within list, return NULL if not found
+QSOURCE() MSOURCE(_get_source)(MSOURCE() _q, int _id);
+
 // add source to list
 int MSOURCE(_add_source)(MSOURCE() _q,
                          QSOURCE() _s);
 
 // generate samples internally
-void MSOURCE(_generate)(MSOURCE() _q);
+int MSOURCE(_generate)(MSOURCE() _q);
 
 // create msource object
 MSOURCE() MSOURCE(_create)(unsigned int _M,
                            unsigned int _m,
                            float        _As)
 {
+    // validate input
+    if (_M < 2)
+        return liquid_error_config("msource%s_create(), number of subcarriers must be at least 2",EXTENSION);
+    if (_M % 2)
+        return liquid_error_config("msource%s_create(), number of subcarriers must be even",EXTENSION);
+    if (_m==0)
+        return liquid_error_config("msource%s_create(), number of subcarriers must be even",EXTENSION);
+
     // allocate memory for main object
     MSOURCE() q = (MSOURCE()) malloc( sizeof(struct MSOURCE(_s)) );
 
@@ -101,7 +115,7 @@ MSOURCE() MSOURCE(_create_default)(void)
 }
 
 // destroy msource object, freeing all internal memory
-void MSOURCE(_destroy)(MSOURCE() _q)
+int MSOURCE(_destroy)(MSOURCE() _q)
 {
     // destroy internal objects
     unsigned int i;
@@ -120,23 +134,26 @@ void MSOURCE(_destroy)(MSOURCE() _q)
 
     // free main object
     free(_q);
+    return LIQUID_OK;
 }
 
 // reset msource internal state
-void MSOURCE(_reset)(MSOURCE() _q)
+int MSOURCE(_reset)(MSOURCE() _q)
 {
     // reset all internal objects
     _q->read_index = _q->M/2;
+    return LIQUID_OK;
 }
 
 // print
-void MSOURCE(_print)(MSOURCE() _q)
+int MSOURCE(_print)(MSOURCE() _q)
 {
     printf("msource%s, M=%u, m=%u, As=%.1f dB, %llu samples:\n",
             EXTENSION, _q->M, _q->m, _q->As, _q->num_samples);
     unsigned int i;
     for (i=0; i<_q->num_sources; i++)
         QSOURCE(_print)(_q->sources[i]);
+    return LIQUID_OK;
 }
 
 // add user-defined source
@@ -246,11 +263,8 @@ int MSOURCE(_remove)(MSOURCE() _q,
     }
 
     // check to see if id was found
-    if (!id_found) {
-        fprintf(stderr,"warning: qsource%s_remove(), signal id (%d) not found\n",
-                EXTENSION, _id);
-        return -1;
-    }
+    if (!id_found)
+        return liquid_error(LIQUID_EIRANGE,"msource%s_remove(), signal id (%d) not found",EXTENSION,_id);
 
     // delete source
     QSOURCE(_destroy)(_q->sources[i]);
@@ -262,43 +276,30 @@ int MSOURCE(_remove)(MSOURCE() _q,
     for (; i<_q->num_sources; i++)
         _q->sources[i] = _q->sources[i+1];
 
-    // everything ok
-    return 0;
+    return LIQUID_OK;
 }
 
 // enable/disable signal
 int MSOURCE(_enable)(MSOURCE() _q,
                      int       _id)
 {
-    // validate input
-    if (_id > _q->num_sources) {
-        fprintf(stderr,"warning: qsource%s_enable(), signal id (%d) out of range (%u)\n",
-                EXTENSION, _id, _q->num_sources);
-        return -1;
-    }
+    QSOURCE() source = MSOURCE(_get_source)(_q, _id);
+    if (source == NULL)
+        return liquid_error(LIQUID_EIRANGE,"msource%s_enable(), could not find source with id %u",EXTENSION,_id);
 
     // set source gain
-    QSOURCE(_enable)(_q->sources[_id]);
-
-    // everything ok
-    return 0;
+    return QSOURCE(_enable)(source);
 }
 
 int MSOURCE(_disable)(MSOURCE() _q,
                       int       _id)
 {
-    // validate input
-    if (_id > _q->num_sources) {
-        fprintf(stderr,"warning: qsource%s_disable(), signal id (%d) out of range (%u)\n",
-                EXTENSION, _id, _q->num_sources);
-        return -1;
-    }
+    QSOURCE() source = MSOURCE(_get_source)(_q, _id);
+    if (source == NULL)
+        return liquid_error(LIQUID_EIRANGE,"msource%s_disable(), could not find source with id %u",EXTENSION,_id);
 
     // set source gain
-    QSOURCE(_disable)(_q->sources[_id]);
-
-    // everything ok
-    return 0;
+    return QSOURCE(_disable)(source);
 }
 
 // set signal gain
@@ -309,18 +310,12 @@ int MSOURCE(_set_gain)(MSOURCE() _q,
                        int       _id,
                        float     _gain_dB)
 {
-    // validate input
-    if (_id > _q->num_sources) {
-        fprintf(stderr,"error: qsource%s_set_gain(), signal id (%d) out of range (%u)\n",
-                EXTENSION, _id, _q->num_sources);
-        return -1;
-    }
+    QSOURCE() source = MSOURCE(_get_source)(_q, _id);
+    if (source == NULL)
+        return liquid_error(LIQUID_EIRANGE,"msource%s_set_gain(), could not find source with id %u",EXTENSION,_id);
 
     // set source gain
-    QSOURCE(_set_gain)(_q->sources[_id], _gain_dB);
-
-    // everything ok
-    return 0;
+    return QSOURCE(_set_gain)(source, _gain_dB);
 }
 
 // set signal gain
@@ -331,18 +326,13 @@ int MSOURCE(_get_gain)(MSOURCE() _q,
                        int       _id,
                        float *   _gain_dB)
 {
-    // validate input
-    if (_id > _q->num_sources) {
-        fprintf(stderr,"error: qsource%s_get_gain(), signal id (%d) out of range (%u)\n",
-                EXTENSION, _id, _q->num_sources);
-        return -1;
-    }
+    QSOURCE() source = MSOURCE(_get_source)(_q, _id);
+    if (source == NULL)
+        return liquid_error(LIQUID_EIRANGE,"msource%s_get_gain(), could not find source with id %u",EXTENSION,_id);
 
     // set source gain
-    *_gain_dB = QSOURCE(_get_gain)(_q->sources[_id]);
-
-    // everything ok
-    return 0;
+    *_gain_dB = QSOURCE(_get_gain)(source);
+    return LIQUID_OK;
 }
 
 // Get number of samples generated by the object so far
@@ -359,18 +349,12 @@ int MSOURCE(_set_frequency)(MSOURCE() _q,
                             int       _id,
                             float     _dphi)
 {
-    // validate input
-    if (_id > _q->num_sources) {
-        fprintf(stderr,"error: qsource%s_set_frequency(), signal id (%d) out of range (%u)\n",
-                EXTENSION, _id, _q->num_sources);
-        return -1;
-    
-    }
-    // set source frequency
-    QSOURCE(_set_frequency)(_q->sources[_id], _dphi);
+    QSOURCE() source = MSOURCE(_get_source)(_q, _id);
+    if (source == NULL)
+        return liquid_error(LIQUID_EIRANGE,"msource%s_set_frequency(), could not find source with id %u",EXTENSION,_id);
 
-    // everything ok
-    return 0;
+    // set source frequency
+    return QSOURCE(_set_frequency)(source, _dphi);
 }
 
 // set carrier offset to signal
@@ -381,25 +365,20 @@ int MSOURCE(_get_frequency)(MSOURCE() _q,
                             int       _id,
                             float *   _dphi)
 {
-    // validate input
-    if (_id > _q->num_sources) {
-        fprintf(stderr,"error: qsource%s_get_frequency(), signal id (%d) out of range (%u)\n",
-                EXTENSION, _id, _q->num_sources);
-        return -1;
-    
-    }
-    // set source frequency
-    *_dphi = QSOURCE(_get_frequency)(_q->sources[_id]);
+    QSOURCE() source = MSOURCE(_get_source)(_q, _id);
+    if (source == NULL)
+        return liquid_error(LIQUID_EIRANGE,"msource%s_get_frequency(), could not find source with id %u",EXTENSION,_id);
 
-    // everything ok
-    return 0;
+    // set source frequency
+    *_dphi = QSOURCE(_get_frequency)(source);
+    return LIQUID_OK;
 }
 
 // write block of samples to output buffer
 //  _q      : synchronizer object
 //  _buf    : output buffer [size: _buf_len x 1]
 //  _buf_len: output buffer size
-void MSOURCE(_write_samples)(MSOURCE()    _q,
+int MSOURCE(_write_samples)(MSOURCE()    _q,
                              TO *         _buf,
                              unsigned int _buf_len)
 {
@@ -413,11 +392,33 @@ void MSOURCE(_write_samples)(MSOURCE()    _q,
         // write output sample and update counter
         _buf[i] = _q->buf_time[_q->read_index++];
     }
+    return LIQUID_OK;
 }
 
 //
 // internal msource methods
 //
+
+// find qsource object by id within list, return -1 if not found
+int MSOURCE(_find)(MSOURCE() _q, int _id)
+{
+    unsigned int i;
+    for (i=0; i<_q->num_sources; i++) {
+        if (QSOURCE(_get_id)(_q->sources[i]) == _id)
+            return (int)i;
+    }
+    return -1;
+}
+
+// get source by id
+QSOURCE() MSOURCE(_get_source)(MSOURCE() _q,
+                               int       _id)
+{
+    int index = MSOURCE(_find)(_q, _id);
+    if (index < 0)
+        return liquid_error_config("msource%s_get_source(), could not find source with id %u",EXTENSION,_id);
+    return _q->sources[index];
+}
 
 // add source to list
 int MSOURCE(_add_source)(MSOURCE() _q,
@@ -447,22 +448,8 @@ int MSOURCE(_add_source)(MSOURCE() _q,
     return id;
 }
 
-// get source by id
-QSOURCE() MSOURCE(_get_source)(MSOURCE() _q,
-                               int       _id)
-{
-    unsigned int i;
-    for (i=0; i<_q->num_sources; i++) {
-        if (QSOURCE(_get_id)(_q->sources[i]) == _id) {
-            return _q->sources[i];
-        }
-    }
-
-    return NULL;
-}
-
 // generate samples internally
-void MSOURCE(_generate)(MSOURCE() _q)
+int MSOURCE(_generate)(MSOURCE() _q)
 {
     // clear buffer
     memset(_q->buf_freq, 0, _q->M*sizeof(float complex));
@@ -479,6 +466,6 @@ void MSOURCE(_generate)(MSOURCE() _q)
     _q->read_index = 0;
     _q->num_blocks++;
     _q->num_samples += _q->M / 2;
+    return LIQUID_OK;
 }
-
 

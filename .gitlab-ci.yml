@@ -2,7 +2,7 @@
 image: debian
 stages: [build, test]
 before_script:
-  - apt-get -qq update && apt-get -qq install -y automake autoconf gcc gcovr make
+  - apt-get -qq update && apt-get -qq install -y automake autoconf gcc g++ gcovr make valgrind
 
 # build from scratch
 compile:
@@ -45,6 +45,18 @@ examples:
     - /bin/sh run_examples.sh
   artifacts:
     paths: [run_examples.sh]
+
+# compile and run all example programs with valgrind
+# TODO: ensure no errors
+examples-memcheck:
+  stage: test
+  script:
+    - make -j4 examples
+    - ls examples/*_example | sed -E "s#examples/(.*)#valgrind --tool=memcheck --log-file=examples/\1.log ./examples/\1#g" > run_examples_valgrind.sh
+    - /bin/sh run_examples_valgrind.sh
+    - tail -n +1 examples/*.log > valgrind.log
+  artifacts:
+    paths: [run_examples_valgrind.sh valgrind.log]
 
 # build from scratch
 coverage:

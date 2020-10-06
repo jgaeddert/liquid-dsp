@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,14 +62,10 @@ qpilotsync qpilotsync_create(unsigned int _payload_len,
                              unsigned int _pilot_spacing)
 {
     // validate input
-    if (_payload_len == 0) {
-        fprintf(stderr,"error: qpilotsync_create(), frame length must be at least 1 symbol\n");
-        exit(1);
-    } else if (_pilot_spacing < 2) {
-        fprintf(stderr,"error: qpilotsync_create(), pilot spacing must be at least 2 symbols\n");
-        exit(1);
-    }
-    unsigned int i;
+    if (_payload_len == 0)
+        return liquid_error_config("qpilotsync_create(), frame length must be at least 1 symbol");
+    if (_pilot_spacing < 2)
+        return liquid_error_config("qpilotsync_create(), pilot spacing must be at least 2 symbols");
 
     // allocate memory for main object
     qpilotsync q = (qpilotsync) malloc(sizeof(struct qpilotsync_s));
@@ -82,7 +78,6 @@ qpilotsync qpilotsync_create(unsigned int _payload_len,
     q->num_pilots = qpilot_num_pilots(q->payload_len, q->pilot_spacing);
     q->frame_len  = q->payload_len + q->num_pilots;
 
-
     // allocate memory for pilots
     q->pilots = (float complex*) malloc(q->num_pilots*sizeof(float complex));
 
@@ -90,6 +85,7 @@ qpilotsync qpilotsync_create(unsigned int _payload_len,
     unsigned int m = liquid_nextpow2(q->num_pilots);
 
     // generate pilot sequence
+    unsigned int i;
     msequence seq = msequence_create_default(m);
     for (i=0; i<q->num_pilots; i++) {
         // generate symbol
@@ -127,7 +123,7 @@ qpilotsync qpilotsync_recreate(qpilotsync   _q,
     return qpilotsync_create(_payload_len, _pilot_spacing);
 }
 
-void qpilotsync_destroy(qpilotsync _q)
+int qpilotsync_destroy(qpilotsync _q)
 {
     // free arrays
     free(_q->pilots);
@@ -139,9 +135,10 @@ void qpilotsync_destroy(qpilotsync _q)
     
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
-void qpilotsync_reset(qpilotsync _q)
+int qpilotsync_reset(qpilotsync _q)
 {
     // clear FFT input buffer
     unsigned int i;
@@ -152,9 +149,10 @@ void qpilotsync_reset(qpilotsync _q)
     _q->dphi_hat = 0.0f;
     _q->phi_hat  = 0.0f;
     _q->g_hat    = 1.0f;
+    return LIQUID_OK;
 }
 
-void qpilotsync_print(qpilotsync _q)
+int qpilotsync_print(qpilotsync _q)
 {
     printf("qpilotsync:\n");
     printf("  payload len   :   %u\n", _q->payload_len);
@@ -162,6 +160,7 @@ void qpilotsync_print(qpilotsync _q)
     printf("  num pilots    :   %u\n", _q->num_pilots);
     printf("  frame len     :   %u\n", _q->frame_len);
     printf("  nfft          :   %u\n", _q->nfft);
+    return LIQUID_OK;
 }
 
 // get length of frame in symbols
@@ -173,9 +172,9 @@ unsigned int qpilotsync_get_frame_len(qpilotsync _q)
 // encode packet into modulated frame samples
 // TODO: include method with just symbol indices? would be useful for
 //       non-linear modulation types
-void qpilotsync_execute(qpilotsync      _q,
-                        float complex * _frame,
-                        float complex * _payload)
+int qpilotsync_execute(qpilotsync      _q,
+                       float complex * _frame,
+                       float complex * _payload)
 {
     unsigned int i;
     unsigned int n = 0;
@@ -282,12 +281,11 @@ void qpilotsync_execute(qpilotsync      _q,
     printf(" evm-hat    :   %12.8f\n",  _q->evm_hat);
 #endif
 
-#if DEBUG_QPILOTSYNC
-    printf("n = %u (expected %u)\n", n, _q->payload_len);
-    printf("p = %u (expected %u)\n", p, _q->num_pilots);
-    assert(n == _q->payload_len);
-    assert(p == _q->num_pilots);
-#endif
+    if (n != _q->payload_len)
+        return liquid_error(LIQUID_EINT,"qpilotsync_execute(), unexpected internal payload length");
+    if (p != _q->num_pilots)
+        return liquid_error(LIQUID_EINT,"qpilotsync_execute(), unexpected internal number of pilots");
+    return LIQUID_OK;
 }
 
 // get estimates
@@ -310,5 +308,4 @@ float qpilotsync_get_evm(qpilotsync _q)
 {
     return _q->evm_hat;
 }
-
 

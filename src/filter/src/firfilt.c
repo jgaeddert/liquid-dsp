@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,10 +63,8 @@ FIRFILT() FIRFILT(_create)(TC * _h,
                            unsigned int _n)
 {
     // validate input
-    if (_n == 0) {
-        fprintf(stderr,"error: firfilt_%s_create(), filter length must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_n == 0)
+        return liquid_error_config("firfilt_%s_create(), filter length must be greater than zero", EXTENSION_FULL);
 
     // create filter object and initialize
     FIRFILT() q = (FIRFILT()) malloc(sizeof(struct FIRFILT(_s)));
@@ -112,10 +110,8 @@ FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,
                                   float        _mu)
 {
     // validate input
-    if (_n == 0) {
-        fprintf(stderr,"error: firfilt_%s_create_kaiser(), filter length must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_n == 0)
+        return liquid_error_config("firfilt_%s_create_kaiser(), filter length must be greater than zero", EXTENSION_FULL);
 
     // compute temporary array for holding coefficients
     float hf[_n];
@@ -144,16 +140,12 @@ FIRFILT() FIRFILT(_create_rnyquist)(int          _type,
                                     float        _mu)
 {
     // validate input
-    if (_k < 2) {
-        fprintf(stderr,"error: firfilt_%s_create_rnyquist(), filter samples/symbol must be greater than 1\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr,"error: firfilt_%s_create_rnyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: firfilt_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_k < 2)
+        return liquid_error_config("firfilt_%s_create_rnyquist(), filter samples/symbol must be greater than 1", EXTENSION_FULL);
+    if (_m == 0)
+        return liquid_error_config("firfilt_%s_create_rnyquist(), filter delay must be greater than 0", EXTENSION_FULL);
+    if (_beta < 0.0f || _beta > 1.0f)
+        return liquid_error_config("firfilt_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
 
     // generate square-root Nyquist filter
     unsigned int h_len = 2*_k*_m + 1;
@@ -179,13 +171,10 @@ FIRFILT() FIRFILT(_create_firdespm)(unsigned int _h_len,
                                     float        _As)
 {
     // validate input
-    if (_h_len < 1) {
-        fprintf(stderr,"error: firfilt_%s_create_firdespm(), filter samples/symbol must be greater than 1\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_fc < 0.0f || _fc > 0.5f) {
-        fprintf(stderr,"error: firfilt_%s_create_firdespm(), filter cutoff frequency must be in (0,0.5]\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_h_len < 1)
+        return liquid_error_config("firfilt_%s_create_firdespm(), filter samples/symbol must be greater than 1", EXTENSION_FULL);
+    if (_fc < 0.0f || _fc > 0.5f)
+        return liquid_error_config("firfilt_%s_create_firdespm(), filter cutoff frequency must be in (0,0.5]", EXTENSION_FULL);
 
     // generate square-root Nyquist filter
     float hf[_h_len];
@@ -206,10 +195,8 @@ FIRFILT() FIRFILT(_create_firdespm)(unsigned int _h_len,
 FIRFILT() FIRFILT(_create_rect)(unsigned int _n)
 {
     // validate input
-    if (_n == 0 || _n > 1024) {
-        fprintf(stderr,"error: firfilt_%s_create_rect(), filter length must be in [1,1024]\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_n == 0 || _n > 1024)
+        return liquid_error_config("firfilt_%s_create_rect(), filter length must be in [1,1024]", EXTENSION_FULL);
 
     // create float array coefficients
     float hf[_n];
@@ -231,15 +218,10 @@ FIRFILT() FIRFILT(_create_dc_blocker)(unsigned int _m,
                                       float        _As)
 {
     // validate input
-    if (_m < 1 || _m > 1000) {
-        fprintf(stderr,"error: %s:%u, firfilt_%s_create_dc_blocker(), filter semi-length (%u) must be in [1,1000]\n",
-                __FILE__, __LINE__, EXTENSION_FULL, _m);
-        exit(1);
-    } else if (_As <= 0.0f) {
-        fprintf(stderr,"error: %s:%u, firfilt_%s_create_dc_blocker(), prototype stop-band suppression (%12.4e) must be greater than zero\n",
-                __FILE__, __LINE__, EXTENSION_FULL, _As);
-        exit(1);
-    }
+    if (_m < 1 || _m > 1000)
+        return liquid_error_config("firfilt_%s_create_dc_blocker(), filter semi-length (%u) must be in [1,1000]",EXTENSION_FULL, _m);
+    if (_As <= 0.0f)
+        return liquid_error_config("firfilt_%s_create_dc_blocker(), prototype stop-band suppression (%12.4e) must be greater than zero",EXTENSION_FULL, _As);
 
     // create float array coefficients and design filter
     unsigned int h_len = 2*_m+1;
@@ -262,19 +244,12 @@ FIRFILT() FIRFILT(_create_notch)(unsigned int _m,
                                  float        _f0)
 {
     // validate input
-    if (_m < 1 || _m > 1000) {
-        fprintf(stderr,"error: %s:%u, firfilt_%s_create_notch(), filter semi-length (%u) must be in [1,1000]\n",
-                __FILE__, __LINE__, EXTENSION_FULL, _m);
-        exit(1);
-    } else if (_As <= 0.0f) {
-        fprintf(stderr,"error: %s:%u, firfilt_%s_create_notch(), prototype stop-band suppression (%12.4e) must be greater than zero\n",
-                __FILE__, __LINE__, EXTENSION_FULL, _As);
-        exit(1);
-    } else if (_f0 < -0.5f || _f0 > 0.5f) {
-        fprintf(stderr,"error: %s:%u, firfilt_%s_create_notch(), notch frequency (%e) must be in [-0.5,0.5]\n",
-                __FILE__, __LINE__, EXTENSION_FULL, _f0);
-        exit(1);
-    }
+    if (_m < 1 || _m > 1000)
+        return liquid_error_config("firfilt_%s_create_notch(), filter semi-length (%u) must be in [1,1000]",EXTENSION_FULL, _m);
+    if (_As <= 0.0f)
+        return liquid_error_config("firfilt_%s_create_notch(), prototype stop-band suppression (%12.4e) must be greater than zero",EXTENSION_FULL, _As);
+    if (_f0 < -0.5f || _f0 > 0.5f)
+        return liquid_error_config("firfilt_%s_create_notch(), notch frequency (%e) must be in [-0.5,0.5]",EXTENSION_FULL, _f0);
 
     // create float array coefficients and design filter
     unsigned int i;

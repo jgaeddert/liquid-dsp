@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,8 +39,7 @@ MODEM() MODEM(_create_dpsk)(unsigned int _bits_per_symbol)
     case 7: q->scheme = LIQUID_MODEM_DPSK128; break;
     case 8: q->scheme = LIQUID_MODEM_DPSK256; break;
     default:
-        fprintf(stderr,"error: modem_create_dpsk(), cannot support DPSK with m > 8\n");
-        exit(1);
+        return liquid_error_config("modem_create_dpsk(), cannot support DPSK with m > 8");
     }
 
     MODEM(_init)(q, _bits_per_symbol);
@@ -64,9 +63,9 @@ MODEM() MODEM(_create_dpsk)(unsigned int _bits_per_symbol)
 }
 
 // modulate DPSK
-void MODEM(_modulate_dpsk)(MODEM()      _q,
-                           unsigned int _sym_in,
-                           TC *         _y)
+int MODEM(_modulate_dpsk)(MODEM()      _q,
+                          unsigned int _sym_in,
+                          TC *         _y)
 {
     // 'encode' input symbol (actually gray decoding)
     _sym_in = gray_decode(_sym_in);
@@ -82,12 +81,13 @@ void MODEM(_modulate_dpsk)(MODEM()      _q,
 
     // save symbol state
     _q->r = *_y;
+    return LIQUID_OK;
 }
 
 
-void MODEM(_demodulate_dpsk)(MODEM()        _q,
-                             TC             _x,
-                             unsigned int * _sym_out)
+int MODEM(_demodulate_dpsk)(MODEM()        _q,
+                            TC             _x,
+                            unsigned int * _sym_out)
 {
     // compute angle difference
     T theta = cargf(_x);
@@ -113,5 +113,6 @@ void MODEM(_demodulate_dpsk)(MODEM()        _q,
     // and store state
     _q->x_hat = liquid_cexpjf(theta - demod_phase_error);
     _q->r = _x;
+    return LIQUID_OK;
 }
 

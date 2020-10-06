@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,8 +43,8 @@
 #define FLEXFRAMESYNC_ENABLE_EQ     0
 
 // push samples through detection stage
-void flexframesync_execute_seekpn(flexframesync _q,
-                                  float complex _x);
+int flexframesync_execute_seekpn(flexframesync _q,
+                                 float complex _x);
 
 // step receiver mixer, matched filter, decimator
 //  _q      :   frame synchronizer
@@ -55,19 +55,19 @@ int flexframesync_step(flexframesync   _q,
                        float complex * _y);
 
 // push samples through synchronizer, saving received p/n symbols
-void flexframesync_execute_rxpreamble(flexframesync _q,
-                                      float complex _x);
+int flexframesync_execute_rxpreamble(flexframesync _q,
+                                     float complex _x);
 
 // decode header and reconfigure payload
-void flexframesync_decode_header(flexframesync _q);
+int flexframesync_decode_header(flexframesync _q);
 
 // receive header symbols
-void flexframesync_execute_rxheader(flexframesync _q,
-                                    float complex _x);
+int flexframesync_execute_rxheader(flexframesync _q,
+                                   float complex _x);
 
 // receive payload symbols
-void flexframesync_execute_rxpayload(flexframesync _q,
-                                     float complex _x);
+int flexframesync_execute_rxpayload(flexframesync _q,
+                                    float complex _x);
 
 static flexframegenprops_s flexframesyncprops_header_default = {
    FLEXFRAME_H_CRC,
@@ -243,7 +243,7 @@ flexframesync flexframesync_create(framesync_callback _callback,
 }
 
 // destroy frame synchronizer object, freeing all internal memory
-void flexframesync_destroy(flexframesync _q)
+int flexframesync_destroy(flexframesync _q)
 {
 #if DEBUG_FLEXFRAMESYNC
     // clean up debug objects (if created)
@@ -275,17 +275,18 @@ void flexframesync_destroy(flexframesync _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print frame synchronizer object internals
-void flexframesync_print(flexframesync _q)
+int flexframesync_print(flexframesync _q)
 {
     printf("flexframesync:\n");
-    framedatastats_print(&_q->framedatastats);
+    return framedatastats_print(&_q->framedatastats);
 }
 
 // reset frame synchronizer object
-void flexframesync_reset(flexframesync _q)
+int flexframesync_reset(flexframesync _q)
 {
     // reset binary pre-demod synchronizer
     qdetector_cccf_reset(_q->detector);
@@ -304,6 +305,7 @@ void flexframesync_reset(flexframesync _q)
     
     // reset frame statistics
     _q->framesyncstats.evm = 0.0f;
+    return LIQUID_OK;
 }
 
 int flexframesync_is_frame_open(flexframesync _q)
@@ -311,7 +313,7 @@ int flexframesync_is_frame_open(flexframesync _q)
     return (_q->state == FLEXFRAMESYNC_STATE_DETECTFRAME) ? 0 : 1;
 }
 
-void flexframesync_set_header_len(flexframesync _q,
+int flexframesync_set_header_len(flexframesync _q,
                                   unsigned int  _len)
 {
     _q->header_user_len = _len;
@@ -337,55 +339,51 @@ void flexframesync_set_header_len(flexframesync _q,
     _q->header_pilotsync = qpilotsync_create(_q->header_mod_len, 16);
     _q->header_sym_len   = qpilotsync_get_frame_len(_q->header_pilotsync);
     _q->header_sym       = (float complex*) realloc(_q->header_sym, _q->header_sym_len*sizeof(float complex));
+    return LIQUID_OK;
 }
 
-void flexframesync_decode_header_soft(flexframesync _q,
-                                      int           _soft)
+int flexframesync_decode_header_soft(flexframesync _q,
+                                     int           _soft)
 {
     _q->header_soft = _soft;
+    return LIQUID_OK;
 }
 
-void flexframesync_decode_payload_soft(flexframesync _q,
-                                       int           _soft)
+int flexframesync_decode_payload_soft(flexframesync _q,
+                                      int           _soft)
 {
     _q->payload_soft = _soft;
+    return LIQUID_OK;
 }
 
 int flexframesync_set_header_props(flexframesync          _q,
                                    flexframegenprops_s * _props)
 {
-    if (_props == NULL) {
+    if (_props == NULL)
         _props = &flexframesyncprops_header_default;
-    }
 
     // validate input
-    if (_props->check == LIQUID_CRC_UNKNOWN || _props->check >= LIQUID_CRC_NUM_SCHEMES) {
-        fprintf(stderr, "error: flexframesync_set_header_props(), invalid/unsupported CRC scheme\n");
-        exit(1);
-    } else if (_props->fec0 == LIQUID_FEC_UNKNOWN || _props->fec1 == LIQUID_FEC_UNKNOWN) {
-        fprintf(stderr, "error: flexframesync_set_header_props(), invalid/unsupported FEC scheme\n");
-        exit(1);
-    } else if (_props->mod_scheme == LIQUID_MODEM_UNKNOWN ) {
-        fprintf(stderr, "error: flexframesync_set_header_props(), invalid/unsupported modulation scheme\n");
-        exit(1);
-    }
+    if (_props->check == LIQUID_CRC_UNKNOWN || _props->check >= LIQUID_CRC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"flexframesync_set_header_props(), invalid/unsupported CRC scheme");
+    if (_props->fec0 == LIQUID_FEC_UNKNOWN || _props->fec1 == LIQUID_FEC_UNKNOWN)
+        return liquid_error(LIQUID_EICONFIG,"flexframesync_set_header_props(), invalid/unsupported FEC scheme");
+    if (_props->mod_scheme == LIQUID_MODEM_UNKNOWN )
+        return liquid_error(LIQUID_EICONFIG,"flexframesync_set_header_props(), invalid/unsupported modulation scheme");
 
     // copy properties to internal structure
     memmove(&_q->header_props, _props, sizeof(flexframegenprops_s));
 
     // reconfigure payload buffers (reallocate as necessary)
-    flexframesync_set_header_len(_q, _q->header_user_len);
-
-    return 0;
+    return flexframesync_set_header_len(_q, _q->header_user_len);
 }
 
 // execute frame synchronizer
 //  _q  :   frame synchronizer object
 //  _x  :   input sample array [size: _n x 1]
 //  _n  :   number of input samples
-void flexframesync_execute(flexframesync   _q,
-                           float complex * _x,
-                           unsigned int    _n)
+int flexframesync_execute(flexframesync   _q,
+                          float complex * _x,
+                          unsigned int    _n)
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
@@ -413,10 +411,10 @@ void flexframesync_execute(flexframesync   _q,
             flexframesync_execute_rxpayload(_q, _x[i]);
             break;
         default:
-            fprintf(stderr,"error: flexframesync_exeucte(), unknown/unsupported state\n");
-            exit(1);
+            return liquid_error(LIQUID_EINT,"flexframesync_exeucte(), unknown/unsupported internal state");
         }
     }
+    return LIQUID_OK;
 }
 
 // 
@@ -427,7 +425,7 @@ void flexframesync_execute(flexframesync   _q,
 //  _q      :   frame synchronizer object
 //  _x      :   input sample
 //  _sym    :   demodulated symbol
-void flexframesync_execute_seekpn(flexframesync _q,
+int flexframesync_execute_seekpn(flexframesync _q,
                                   float complex _x)
 {
     // push through pre-demod synchronizer
@@ -435,7 +433,7 @@ void flexframesync_execute_seekpn(flexframesync _q,
 
     // check if frame has been detected
     if (v == NULL)
-        return;
+        return LIQUID_OK;
 
     // get estimates
     _q->tau_hat   = qdetector_cccf_get_tau  (_q->detector);
@@ -477,6 +475,7 @@ void flexframesync_execute_seekpn(flexframesync _q,
 #if DEBUG_FLEXFRAMESYNC
     _q->debug_qdetector_flush = 0;
 #endif
+    return LIQUID_OK;
 }
 
 // step receiver mixer, matched filter, decimator
@@ -527,8 +526,8 @@ int flexframesync_step(flexframesync   _q,
 //  _q     :   frame synchronizer object
 //  _x      :   input sample
 //  _sym    :   demodulated symbol
-void flexframesync_execute_rxpreamble(flexframesync _q,
-                                      float complex _x)
+int flexframesync_execute_rxpreamble(flexframesync _q,
+                                     float complex _x)
 {
     // step synchronizer
     float complex mf_out = 0.0f;
@@ -561,14 +560,15 @@ void flexframesync_execute_rxpreamble(flexframesync _q,
         if (_q->preamble_counter == 64 + delay)
             _q->state = FLEXFRAMESYNC_STATE_RXHEADER;
     }
+    return LIQUID_OK;
 }
 
 // execute synchronizer, receiving header
 //  _q      :   frame synchronizer object
 //  _x      :   input sample
 //  _sym    :   demodulated symbol
-void flexframesync_execute_rxheader(flexframesync _q,
-                                    float complex _x)
+int flexframesync_execute_rxheader(flexframesync _q,
+                                   float complex _x)
 {
     // step synchronizer
     float complex mf_out = 0.0f;
@@ -590,7 +590,7 @@ void flexframesync_execute_rxheader(flexframesync _q,
                 // continue on to decoding payload
                 _q->symbol_counter = 0;
                 _q->state = FLEXFRAMESYNC_STATE_RXPAYLOAD;
-                return;
+                return LIQUID_OK;
             }
 
             // update statistics
@@ -621,14 +621,14 @@ void flexframesync_execute_rxheader(flexframesync _q,
             }
 
             // reset frame synchronizer
-            flexframesync_reset(_q);
-            return;
+            return flexframesync_reset(_q);
         }
     }
+    return LIQUID_OK;
 }
 
 // decode header
-void flexframesync_decode_header(flexframesync _q)
+int flexframesync_decode_header(flexframesync _q)
 {
     // recover data symbols from pilots
     qpilotsync_execute(_q->header_pilotsync, _q->header_sym, _q->header_mod);
@@ -645,7 +645,7 @@ void flexframesync_decode_header(flexframesync _q)
     }
 
     if (!_q->header_valid)
-        return;
+        return LIQUID_OK;
 
     // set fine carrier frequency and phase
     float dphi_hat = qpilotsync_get_dphi(_q->header_pilotsync);
@@ -660,9 +660,8 @@ void flexframesync_decode_header(flexframesync _q)
     // first byte is for expansion/version validation
     unsigned int protocol = _q->header_dec[n+0];
     if (protocol != FLEXFRAME_PROTOCOL) {
-        fprintf(stderr,"warning: flexframesync_decode_header(), invalid framing protocol %u (expected %u)\n", protocol, FLEXFRAME_PROTOCOL);
         _q->header_valid = 0;
-        return;
+        return liquid_error(LIQUID_EICONFIG,"flexframesync_decode_header(), invalid framing protocol %u (expected %u)", protocol, FLEXFRAME_PROTOCOL);
     }
 
     // strip off payload length
@@ -682,21 +681,17 @@ void flexframesync_decode_header(flexframesync _q)
 
     // validate properties
     if (mod_scheme == 0 || mod_scheme >= LIQUID_MODEM_NUM_SCHEMES) {
-        fprintf(stderr,"warning: flexframesync_decode_header(), invalid modulation scheme\n");
         _q->header_valid = 0;
-        return;
+        return liquid_error(LIQUID_EICONFIG,"flexframesync_decode_header(), invalid modulation scheme");
     } else if (check == LIQUID_CRC_UNKNOWN || check >= LIQUID_CRC_NUM_SCHEMES) {
-        fprintf(stderr,"warning: flexframesync_decode_header(), decoded CRC exceeds available\n");
         _q->header_valid = 0;
-        return;
+        return liquid_error(LIQUID_EICONFIG,"flexframesync_decode_header(), decoded CRC exceeds available");
     } else if (fec0 == LIQUID_FEC_UNKNOWN || fec0 >= LIQUID_FEC_NUM_SCHEMES) {
-        fprintf(stderr,"warning: flexframesync_decode_header(), decoded FEC (inner) exceeds available\n");
         _q->header_valid = 0;
-        return;
+        return liquid_error(LIQUID_EICONFIG,"flexframesync_decode_header(), decoded FEC (inner) exceeds available");
     } else if (fec1 == LIQUID_FEC_UNKNOWN || fec1 >= LIQUID_FEC_NUM_SCHEMES) {
-        fprintf(stderr,"warning: flexframesync_decode_header(), decoded FEC (outer) exceeds available\n");
         _q->header_valid = 0;
-        return;
+        return liquid_error(LIQUID_EICONFIG,"flexframesync_decode_header(), decoded FEC (outer) exceeds available");
     }
 
     // re-create payload demodulator for phase-locked loop
@@ -714,9 +709,8 @@ void flexframesync_decode_header(flexframesync _q)
     _q->payload_dec = (unsigned char*) realloc(_q->payload_dec, (_q->payload_dec_len)*sizeof(unsigned char));
 
     if (_q->payload_sym == NULL || _q->payload_dec == NULL) {
-        fprintf(stderr,"error: flexframesync_decode_header(), could not re-allocate payload arrays\n");
         _q->header_valid = 0;
-        return;
+        return liquid_error(LIQUID_EIMEM,"flexframesync_decode_header(), could not re-allocate payload arrays");
     }
 
 #if DEBUG_FLEXFRAMESYNC_PRINT
@@ -735,6 +729,7 @@ void flexframesync_decode_header(flexframesync _q)
         printf(" %.2x", _q->header_dec[i]);
     printf("\n");
 #endif
+    return LIQUID_OK;
 }
 
 
@@ -742,8 +737,8 @@ void flexframesync_decode_header(flexframesync _q)
 //  _q      :   frame synchronizer object
 //  _x      :   input sample
 //  _sym    :   demodulated symbol
-void flexframesync_execute_rxpayload(flexframesync _q,
-                                     float complex _x)
+int flexframesync_execute_rxpayload(flexframesync _q,
+                                    float complex _x)
 {
     // step synchronizer
     float complex mf_out = 0.0f;
@@ -813,16 +808,16 @@ void flexframesync_execute_rxpayload(flexframesync _q,
             }
 
             // reset frame synchronizer
-            flexframesync_reset(_q);
-            return;
+            return flexframesync_reset(_q);
         }
     }
+    return LIQUID_OK;
 }
 
 // reset frame data statistics
-void flexframesync_reset_framedatastats(flexframesync _q)
+int flexframesync_reset_framedatastats(flexframesync _q)
 {
-    framedatastats_reset(&_q->framedatastats);
+    return framedatastats_reset(&_q->framedatastats);
 }
 
 // retrieve frame data statistics
@@ -832,12 +827,12 @@ framedatastats_s flexframesync_get_framedatastats(flexframesync _q)
 }
 
 // enable debugging
-void flexframesync_debug_enable(flexframesync _q)
+int flexframesync_debug_enable(flexframesync _q)
 {
     // create debugging objects if necessary
 #if DEBUG_FLEXFRAMESYNC
     if (_q->debug_objects_created)
-        return;
+        return LIQUID_OK;
 
     // create debugging objects
     _q->debug_x = windowcf_create(DEBUG_BUFFER_LEN);
@@ -845,34 +840,37 @@ void flexframesync_debug_enable(flexframesync _q)
     // set debugging flags
     _q->debug_enabled = 1;
     _q->debug_objects_created = 1;
+    return LIQUID_OK;
 #else
-    fprintf(stderr,"flexframesync_debug_enable(): compile-time debugging disabled\n");
+    return liquid_error(LIQUID_EICONFIG,"flexframesync_debug_enable(): compile-time debugging disabled");
 #endif
 }
 
 // disable debugging
-void flexframesync_debug_disable(flexframesync _q)
+int flexframesync_debug_disable(flexframesync _q)
 {
     // disable debugging
 #if DEBUG_FLEXFRAMESYNC
     _q->debug_enabled = 0;
+    return LIQUID_OK;
 #else
-    fprintf(stderr,"flexframesync_debug_enable(): compile-time debugging disabled\n");
+    return liquid_error(LIQUID_EICONFIG,"flexframesync_debug_enable(): compile-time debugging disabled");
 #endif
 }
 
 // print debugging information
-void flexframesync_debug_print(flexframesync _q,
-                               const char *  _filename)
+int flexframesync_debug_print(flexframesync _q,
+                              const char *  _filename)
 {
 #if DEBUG_FLEXFRAMESYNC
-    if (!_q->debug_objects_created) {
-        fprintf(stderr,"error: flexframesync_debug_print(), debugging objects don't exist; enable debugging first\n");
-        return;
-    }
+    if (!_q->debug_objects_created)
+        return liquid_error(LIQUID_EICONFIG,"flexframesync_debug_print(), debugging objects don't exist; enable debugging first");
+
     unsigned int i;
     float complex * rc;
     FILE* fid = fopen(_filename,"w");
+    if (fid==NULL)
+        return liquid_error(LIQUID_EIO,"flexframesync_debug_print(), could not open '%s' for writing", _filename);
     fprintf(fid,"%% %s: auto-generated file", _filename);
     fprintf(fid,"\n\n");
     fprintf(fid,"clear all;\n");
@@ -941,7 +939,8 @@ void flexframesync_debug_print(flexframesync _q,
 
     printf("flexframesync/debug: results written to %s\n", _filename);
 #else
-    fprintf(stderr,"flexframesync_debug_print(): compile-time debugging disabled\n");
+    return liquid_error(LIQUID_EICONFIG,"flexframesync_debug_print(): compile-time debugging disabled");
 #endif
+    return LIQUID_OK;
 }
 

@@ -39,6 +39,7 @@ AC_LANG(C)
 # Autoheader
 AH_TEMPLATE([LIQUID_FFTOVERRIDE],  [Force internal FFT even if libfftw is available])
 AH_TEMPLATE([LIQUID_SIMDOVERRIDE], [Force overriding of SIMD (use portable C code)])
+AH_TEMPLATE([LIQUID_STRICT_EXIT],  [Enable strict program exit on error])
 
 AC_CONFIG_HEADER(config.h)
 AH_TOP([
@@ -78,6 +79,12 @@ AC_ARG_ENABLE(coverage,
               [AC_MSG_ERROR(Need gcovr with coverage option)],
               [COVERAGE_OPTION="--coverage"])],
     [COVERAGE_OPTION=""]
+)
+
+AC_ARG_ENABLE(strict,
+    AS_HELP_STRING([--enable-strict],[use strict error handling at runtime]),
+    [AC_DEFINE(LIQUID_STRICT_EXIT)],
+    [],
 )
 
 # Check for necessary programs

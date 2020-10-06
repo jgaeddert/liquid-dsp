@@ -86,7 +86,7 @@ framegen64 framegen64_create()
 }
 
 // destroy framegen64 object
-void framegen64_destroy(framegen64 _q)
+int framegen64_destroy(framegen64 _q)
 {
     // destroy internal objects
     qpacketmodem_destroy(_q->enc);
@@ -94,10 +94,11 @@ void framegen64_destroy(framegen64 _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print framegen64 object internals
-void framegen64_print(framegen64 _q)
+int framegen64_print(framegen64 _q)
 {
     float eta = (float) (8*(64 + 8)) / (float) (LIQUID_FRAME64_LEN/2);
     printf("framegen64 [m=%u, beta=%4.2f]:\n", _q->m, _q->beta);
@@ -120,6 +121,7 @@ void framegen64_print(framegen64 _q)
     printf("  summary\n");
     printf("    * total symbols         :   %3u\n", LIQUID_FRAME64_LEN/2);
     printf("    * spectral efficiency   :   %6.4f b/s/Hz\n", eta);
+    return LIQUID_OK;
 }
 
 // execute frame generator (creates a frame)
@@ -127,10 +129,10 @@ void framegen64_print(framegen64 _q)
 //  _header     :   8-byte header data, NULL for random
 //  _payload    :   64-byte payload data, NULL for random
 //  _frame      :   output frame samples [size: LIQUID_FRAME64_LEN x 1]
-void framegen64_execute(framegen64      _q,
-                        unsigned char * _header,
-                        unsigned char * _payload,
-                        float complex * _frame)
+int framegen64_execute(framegen64      _q,
+                       unsigned char * _header,
+                       unsigned char * _payload,
+                       float complex * _frame)
 {
     unsigned int i;
 
@@ -170,6 +172,7 @@ void framegen64_execute(framegen64      _q,
     }
 
     assert(n==LIQUID_FRAME64_LEN);
+    return LIQUID_OK;
 }
 
 

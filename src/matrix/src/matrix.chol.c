@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,9 +34,9 @@
 //  _A      :   input square matrix [size: _n x _n]
 //  _n      :   input matrix dimension
 //  _L      :   output lower-triangular matrix
-void MATRIX(_chol)(T *          _A,
-                   unsigned int _n,
-                   T *          _L)
+int MATRIX(_chol)(T *          _A,
+                  unsigned int _n,
+                  T *          _L)
 {
     // reset L
     unsigned int i;
@@ -54,15 +54,11 @@ void MATRIX(_chol)(T *          _A,
     for (j=0; j<_n; j++) {
         // assert that A_jj is real, positive
         A_jj = matrix_access(_A,_n,_n,j,j);
-        if ( creal(A_jj) < 0.0 ) {
-            fprintf(stderr,"warning: matrix_chol(), matrix is not positive definite (real{A[%u,%u]} = %12.4e < 0)\n",j,j,creal(A_jj));
-            return;
-        }
+        if ( creal(A_jj) < 0.0 )
+            return liquid_error(LIQUID_EICONFIG,"matrix_chol(), matrix is not positive definite (real{A[%u,%u]} = %12.4e < 0)",j,j,creal(A_jj));
 #if T_COMPLEX
-        if ( fabs(cimag(A_jj)) > 0.0 ) {
-            fprintf(stderr,"warning: matrix_chol(), matrix is not positive definite (|imag{A[%u,%u]}| = %12.4e > 0)\n",j,j,fabs(cimag(A_jj)));
-            return;
-        }
+        if ( fabs(cimag(A_jj)) > 0.0 )
+            return liquid_error(LIQUID_EICONFIG,"matrix_chol(), matrix is not positive definite (|imag{A[%u,%u]}| = %12.4e > 0)",j,j,fabs(cimag(A_jj)));
 #endif
 
         // compute L_jj and store it in output matrix
@@ -76,10 +72,9 @@ void MATRIX(_chol)(T *          _A,
 #endif
         }
         // test to ensure A_jj > t0
-        if ( creal(A_jj) < t0 ) {
-            fprintf(stderr,"warning: matrix_chol(), matrix is not positive definite (real{A[%u,%u]} = %12.4e < %12.4e)\n",j,j,creal(A_jj),t0);
-            return;
-        }
+        if ( creal(A_jj) < t0 )
+            return liquid_error(LIQUID_EICONFIG,"matrix_chol(), matrix is not positive definite (real{A[%u,%u]} = %12.4e < %12.4e)",j,j,creal(A_jj),t0);
+
         L_jj = sqrt( A_jj - t0 );
         matrix_access(_L,_n,_n,j,j) = L_jj;
 
@@ -98,5 +93,6 @@ void MATRIX(_chol)(T *          _A,
             matrix_access(_L,_n,_n,i,j) = t1 / L_jj;
         }
     }
+    return LIQUID_OK;
 }
 

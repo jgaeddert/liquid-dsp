@@ -61,8 +61,7 @@ fec fec_conv_punctured_create(fec_scheme _fs)
     case LIQUID_FEC_CONV_V29P67:   fec_conv_init_v29p67(q);    break;
     case LIQUID_FEC_CONV_V29P78:   fec_conv_init_v29p78(q);    break;
     default:
-        fprintf(stderr,"error: fec_conv_punctured_create(), invalid type\n");
-        exit(1);
+        return liquid_error_config("fec_conv_punctured_create(), invalid type");
     }
 
     // convolutional-specific decoding
@@ -73,7 +72,7 @@ fec fec_conv_punctured_create(fec_scheme _fs)
     return q;
 }
 
-void fec_conv_punctured_destroy(fec _q)
+int fec_conv_punctured_destroy(fec _q)
 {
     // delete viterbi decoder
     if (_q->vp != NULL)
@@ -83,12 +82,13 @@ void fec_conv_punctured_destroy(fec _q)
         free(_q->enc_bits);
 
     free(_q);
+    return LIQUID_OK;
 }
 
-void fec_conv_punctured_encode(fec _q,
-                               unsigned int _dec_msg_len,
-                               unsigned char *_msg_dec,
-                               unsigned char *_msg_enc)
+int fec_conv_punctured_encode(fec _q,
+                              unsigned int _dec_msg_len,
+                              unsigned char *_msg_dec,
+                              unsigned char *_msg_enc)
 {
     unsigned int i,j,r; // bookkeeping
     unsigned int sr=0;  // convolutional shift register
@@ -155,13 +155,14 @@ void fec_conv_punctured_encode(fec _q,
 
     //printf("n = %u (expected %u)\n", n, 8*fec_get_enc_msg_length(LIQUID_FEC_CONV(_mode),_dec_msg_len));
     assert(n == 8*fec_get_enc_msg_length(_q->scheme,_dec_msg_len));
+    return LIQUID_OK;
 }
 
 //unsigned int
-void fec_conv_punctured_decode_hard(fec _q,
-                                    unsigned int _dec_msg_len,
-                                    unsigned char *_msg_enc,
-                                    unsigned char *_msg_dec)
+int fec_conv_punctured_decode_hard(fec             _q,
+                                   unsigned int    _dec_msg_len,
+                                   unsigned char * _msg_enc,
+                                   unsigned char * _msg_dec)
 {
     // re-allocate resources if necessary
     fec_conv_punctured_setlength(_q, _dec_msg_len);
@@ -218,13 +219,13 @@ void fec_conv_punctured_decode_hard(fec _q,
         printf("%.2x ", _msg_dec[ii]);
     printf("\n");
 #endif
+    return LIQUID_OK;
 }
 
-//unsigned int
-void fec_conv_punctured_decode_soft(fec _q,
-                                    unsigned int _dec_msg_len,
-                                    unsigned char *_msg_enc,
-                                    unsigned char *_msg_dec)
+int fec_conv_punctured_decode_soft(fec             _q,
+                                   unsigned int    _dec_msg_len,
+                                   unsigned char * _msg_enc,
+                                   unsigned char * _msg_dec)
 {
     // re-allocate resources if necessary
     fec_conv_punctured_setlength(_q, _dec_msg_len);
@@ -271,16 +272,17 @@ void fec_conv_punctured_decode_soft(fec _q,
         printf("%.2x ", _msg_dec[ii]);
     printf("\n");
 #endif
+    return LIQUID_OK;
 }
 
-void fec_conv_punctured_setlength(fec _q, unsigned int _dec_msg_len)
+int fec_conv_punctured_setlength(fec _q, unsigned int _dec_msg_len)
 {
     // re-allocate resources as necessary
     unsigned int num_dec_bytes = _dec_msg_len;
 
     // return if length has not changed
     if (num_dec_bytes == _q->num_dec_bytes)
-        return;
+        return LIQUID_OK;
 
     // reset number of framebits
     _q->num_dec_bytes = num_dec_bytes;
@@ -310,148 +312,162 @@ void fec_conv_punctured_setlength(fec _q, unsigned int _dec_msg_len)
     _q->enc_bits = (unsigned char*) realloc(_q->enc_bits,
                                             num_enc_bits*sizeof(unsigned char));
 
+    return LIQUID_OK;
 }
 
 // 
 // internal
 //
 
-void fec_conv_init_v27p23(fec _q)
+int fec_conv_init_v27p23(fec _q)
 {
     // initialize R, K, polynomial, and viterbi methods
     fec_conv_init_v27(_q);
 
     _q->P = 2;
     _q->puncturing_matrix = fec_conv27p23_matrix;
+    return LIQUID_OK;
 }
 
-void fec_conv_init_v27p34(fec _q)
+int fec_conv_init_v27p34(fec _q)
 {
     // initialize R, K, polynomial, and viterbi methods
     fec_conv_init_v27(_q);
 
     _q->P = 3;
     _q->puncturing_matrix = fec_conv27p34_matrix;
+    return LIQUID_OK;
 }
 
-void fec_conv_init_v27p45(fec _q)
+int fec_conv_init_v27p45(fec _q)
 {
     // initialize R, K, polynomial, and viterbi methods
     fec_conv_init_v27(_q);
 
     _q->P = 4;
     _q->puncturing_matrix = fec_conv27p45_matrix;
+    return LIQUID_OK;
 }
 
-void fec_conv_init_v27p56(fec _q)
+int fec_conv_init_v27p56(fec _q)
 {
     // initialize R, K, polynomial, and viterbi methods
     fec_conv_init_v27(_q);
 
     _q->P = 5;
     _q->puncturing_matrix = fec_conv27p56_matrix;
+    return LIQUID_OK;
 }
 
 
-void fec_conv_init_v27p67(fec _q)
+int fec_conv_init_v27p67(fec _q)
 {
     // initialize R, K, polynomial, and viterbi methods
     fec_conv_init_v27(_q);
 
     _q->P = 6;
     _q->puncturing_matrix = fec_conv27p67_matrix;
+    return LIQUID_OK;
 }
 
-void fec_conv_init_v27p78(fec _q)
+int fec_conv_init_v27p78(fec _q)
 {
     // initialize R, K, polynomial, and viterbi methods
     fec_conv_init_v27(_q);
 
     _q->P = 7;
     _q->puncturing_matrix = fec_conv27p78_matrix;
+    return LIQUID_OK;
 }
 
 
-void fec_conv_init_v29p23(fec _q)
+int fec_conv_init_v29p23(fec _q)
 {
     // initialize R, K, polynomial, and viterbi methods
     fec_conv_init_v29(_q);
 
     _q->P = 2;
     _q->puncturing_matrix = fec_conv29p23_matrix;
+    return LIQUID_OK;
 }
 
-void fec_conv_init_v29p34(fec _q)
+int fec_conv_init_v29p34(fec _q)
 {
     // initialize R, K, polynomial, and viterbi methods
     fec_conv_init_v29(_q);
 
     _q->P = 3;
     _q->puncturing_matrix = fec_conv29p34_matrix;
+    return LIQUID_OK;
 }
 
-void fec_conv_init_v29p45(fec _q)
+int fec_conv_init_v29p45(fec _q)
 {
     // initialize R, K, polynomial, and viterbi methods
     fec_conv_init_v29(_q);
 
     _q->P = 4;
     _q->puncturing_matrix = fec_conv29p45_matrix;
+    return LIQUID_OK;
 }
 
-void fec_conv_init_v29p56(fec _q)
+int fec_conv_init_v29p56(fec _q)
 {
     // initialize R, K, polynomial, and viterbi methods
     fec_conv_init_v29(_q);
 
     _q->P = 5;
     _q->puncturing_matrix = fec_conv29p56_matrix;
+    return LIQUID_OK;
 }
 
-
-void fec_conv_init_v29p67(fec _q)
+int fec_conv_init_v29p67(fec _q)
 {
     // initialize R, K, polynomial, and viterbi methods
     fec_conv_init_v29(_q);
 
     _q->P = 6;
     _q->puncturing_matrix = fec_conv29p67_matrix;
+    return LIQUID_OK;
 }
 
-void fec_conv_init_v29p78(fec _q)
+int fec_conv_init_v29p78(fec _q)
 {
     // initialize R, K, polynomial, and viterbi methods
     fec_conv_init_v29(_q);
 
     _q->P = 7;
     _q->puncturing_matrix = fec_conv29p78_matrix;
+    return LIQUID_OK;
 }
-
 
 #else   // LIBFEC_ENABLED
 
 fec fec_conv_punctured_create(fec_scheme _fs)
 {
-    return NULL;
+    return liquid_error_config("fec_conv_create(), libfec not installed");
 }
 
-void fec_conv_punctured_destroy(fec _q)
+int fec_conv_punctured_destroy(fec _q)
 {
+    return liquid_error(LIQUID_EUMODE,"fec_conv_punctured_destroy(), libfec not installed");
 }
 
-void fec_conv_punctured_encode(fec _q,
-                               unsigned int _dec_msg_len,
-                               unsigned char *_msg_dec,
-                               unsigned char *_msg_enc)
+int fec_conv_punctured_encode(fec             _q,
+                              unsigned int    _dec_msg_len,
+                              unsigned char * _msg_dec,
+                              unsigned char * _msg_enc)
 {
+    return liquid_error(LIQUID_EUMODE,"fec_conv_punctured_encode(), libfec not installed");
 }
 
 //unsigned int
-void fec_conv_punctured_decode(fec _q,
-                               unsigned int _dec_msg_len,
-                               unsigned char *_msg_enc,
-                               unsigned char *_msg_dec)
+int fec_conv_punctured_decode(fec             _q,
+                              unsigned int    _dec_msg_len,
+                              unsigned char * _msg_enc,
+                              unsigned char * _msg_dec)
 {
+    return liquid_error(LIQUID_EUMODE,"fec_conv_punctured_decode(), libfec not installed");
 }
 
 #endif  // LIBFEC_ENABLED

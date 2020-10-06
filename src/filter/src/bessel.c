@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -206,8 +206,8 @@ void fpoly_bessel_roots_orchard_recursion(unsigned int _n,
                                           float * _y_hat)
 {
     if (_n < 2) {
-        fprintf(stderr,"error: fpoly_bessel_roots_orchard_recursion(), n < 2\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"fpoly_bessel_roots_orchard_recursion(), n < 2");
+        return;
     }
 
     // create internal variables (use long double precision to help

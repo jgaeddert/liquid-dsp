@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,11 +35,11 @@ float randgammaf(float _alpha,
 {
     // validate input
     if (_alpha <= 0.0f) {
-        fprintf(stderr,"error: randgammaf(), alpha must be greater than zero\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"randgammaf(), alpha must be greater than zero");
+        return 0.0f;
     } else if (_beta <= 0.0f) {
-        fprintf(stderr,"error: randgammaf(), beta must be greater than zero\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"randgammaf(), beta must be greater than zero");
+        return 0.0f;
     }
 
     unsigned int n = (unsigned int) floorf(_alpha);
@@ -77,11 +77,11 @@ float randgammaf_pdf(float _x,
 {
     // validate input
     if (_alpha <= 0.0f) {
-        fprintf(stderr,"error: randgammaf_pdf(), alpha must be greater than zero\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"randgammaf_pdf(), alpha must be greater than zero");
+        return 0.0f;
     } else if (_beta <= 0.0f) {
-        fprintf(stderr,"error: randgammaf_pdf(), beta must be greater than zero\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"randgammaf_pdf(), beta must be greater than zero");
+        return 0.0f;
     }
 
     if (_x <= 0.0f)
@@ -109,11 +109,11 @@ float randgammaf_cdf(float _x,
 {
     // validate input
     if (_alpha <= 0.0f) {
-        fprintf(stderr,"error: randgammaf_cdf(), alpha must be greater than zero\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"randgammaf_cdf(), alpha must be greater than zero");
+        return 0.0f;
     } else if (_beta <= 0.0f) {
-        fprintf(stderr,"error: randgammaf_cdf(), beta must be greater than zero\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"randgammaf_cdf(), beta must be greater than zero");
+        return 0.0f;
     }
 
     if (_x <= 0.0f)
@@ -132,8 +132,8 @@ float randgammaf_delta(float _delta)
 {
     // validate input
     if ( _delta < 0.0f || _delta >= 1.0f ) {
-        fprintf(stderr,"error: randgammaf_delta(), delta must be in [0,1)\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"randgammaf_delta(), delta must be in [0,1)");
+        return 0.0f;
     }
 
     // initialization

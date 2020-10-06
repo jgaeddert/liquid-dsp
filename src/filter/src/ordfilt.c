@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,13 +67,10 @@ ORDFILT() ORDFILT(_create)(unsigned int _n,
                            unsigned int _k)
 {
     // validate input
-    if (_n == 0) {
-        fprintf(stderr,"error: ordfilt_%s_create(), filter length must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_k >= _n) {
-        fprintf(stderr,"error: ordfilt_%s_create(), filter index must be in [0,n-1]\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_n == 0)
+        return liquid_error_config("ordfilt_%s_create(), filter length must be greater than zero", EXTENSION_FULL);
+    if (_k >= _n)
+        return liquid_error_config("ordfilt_%s_create(), filter index must be in [0,n-1]", EXTENSION_FULL);
 
     // create filter object and initialize
     ORDFILT() q = (ORDFILT()) malloc(sizeof(struct ORDFILT(_s)));

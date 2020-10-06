@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -94,8 +94,8 @@ unsigned int fec_golay2412_encode_symbol(unsigned int _sym_dec)
 {
     // validate input
     if (_sym_dec >= (1<<12)) {
-        fprintf(stderr,"error, fec_golay2412_encode_symbol(), input symbol too large\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"fec_golay2412_encode_symbol(), input symbol too large");
+        return 0;
     }
 
     // compute encoded/transmitted message: v = m*G
@@ -131,8 +131,8 @@ unsigned int fec_golay2412_decode_symbol(unsigned int _sym_enc)
 {
     // validate input
     if (_sym_enc >= (1<<24)) {
-        fprintf(stderr,"error, fec_golay2412_decode_symbol(), input symbol too large\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"fec_golay2412_decode_symbol(), input symbol too large");
+        return 0;
     }
 
     // state variables
@@ -252,9 +252,10 @@ fec fec_golay2412_create(void * _opts)
 }
 
 // destroy Golay(24,12) object
-void fec_golay2412_destroy(fec _q)
+int fec_golay2412_destroy(fec _q)
 {
     free(_q);
+    return LIQUID_OK;
 }
 
 // encode block of data using Golay(24,12) encoder
@@ -263,10 +264,10 @@ void fec_golay2412_destroy(fec _q)
 //  _dec_msg_len    :   decoded message length (number of bytes)
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
 //  _msg_enc        :   encoded message [size: 1 x 2*_dec_msg_len]
-void fec_golay2412_encode(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char *_msg_dec,
-                          unsigned char *_msg_enc)
+int fec_golay2412_encode(fec             _q,
+                         unsigned int    _dec_msg_len,
+                         unsigned char * _msg_dec,
+                         unsigned char * _msg_enc)
 {
     unsigned int i=0;           // decoded byte counter
     unsigned int j=0;           // encoded byte counter
@@ -325,6 +326,7 @@ void fec_golay2412_encode(fec _q,
 
     assert( j == fec_get_enc_msg_length(LIQUID_FEC_GOLAY2412,_dec_msg_len) );
     assert( i == _dec_msg_len);
+    return LIQUID_OK;
 }
 
 // decode block of data using Golay(24,12) decoder
@@ -335,10 +337,10 @@ void fec_golay2412_encode(fec _q,
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
 //
 //unsigned int
-void fec_golay2412_decode(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char *_msg_enc,
-                          unsigned char *_msg_dec)
+int fec_golay2412_decode(fec             _q,
+                         unsigned int    _dec_msg_len,
+                         unsigned char * _msg_enc,
+                         unsigned char * _msg_dec)
 {
     unsigned int i=0;                       // decoded byte counter
     unsigned int j=0;                       // encoded byte counter
@@ -395,7 +397,6 @@ void fec_golay2412_decode(fec _q,
 
     assert( j== fec_get_enc_msg_length(LIQUID_FEC_GOLAY2412,_dec_msg_len) );
     assert( i == _dec_msg_len);
-
-    //return num_errors;
+    return LIQUID_OK;
 }
 

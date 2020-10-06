@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 
 // name-mangling macro
 #define SMATRIX(name)       LIQUID_CONCAT(smatrixb,name)
+#define EXTENSION           "b"
 
 // primitive type
 #define T                   unsigned char
@@ -55,19 +56,18 @@
 //  _q  :   sparse matrix [size: A->M x A->N]
 //  _x  :   input vector  [size:  mx  x  nx ]
 //  _y  :   output vector [size:  my  x  ny ]
-void smatrixb_mulf(smatrixb     _A,
-                   float *      _x,
-                   unsigned int _mx,
-                   unsigned int _nx,
-                   float *      _y,
-                   unsigned int _my,
-                   unsigned int _ny)
+int smatrixb_mulf(smatrixb     _A,
+                  float *      _x,
+                  unsigned int _mx,
+                  unsigned int _nx,
+                  float *      _y,
+                  unsigned int _my,
+                  unsigned int _ny)
 {
     // ensure lengths are valid
-    if (_my != _A->M || _ny != _nx || _A->N != _mx ) {
-        fprintf(stderr,"error: matrix_mul(), invalid dimensions\n");
-        exit(1);
-    }
+    if (_my != _A->M || _ny != _nx || _A->N != _mx )
+        return liquid_error(LIQUID_EIRANGE,"matrix_mul(), invalid dimensions");
+
     unsigned int i;
     unsigned int j;
 
@@ -86,15 +86,16 @@ void smatrixb_mulf(smatrixb     _A,
             }
         }
     }
+    return LIQUID_OK;
 }
 
 // multiply sparse binary matrix by floating-point vector
 //  _q  :   sparse matrix
 //  _x  :   input vector [size: _N x 1]
 //  _y  :   output vector [size: _M x 1]
-void smatrixb_vmulf(smatrixb _q,
-                    float *  _x,
-                    float *  _y)
+int smatrixb_vmulf(smatrixb _q,
+                   float *  _x,
+                   float *  _y)
 {
     unsigned int i;
     unsigned int j;
@@ -108,5 +109,6 @@ void smatrixb_vmulf(smatrixb _q,
         for (j=0; j<_q->num_mlist[i]; j++)
             _y[i] += _x[ _q->mlist[i][j] ];
     }
+    return LIQUID_OK;
 }
 

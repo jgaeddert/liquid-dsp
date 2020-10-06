@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,16 +49,17 @@ MODEM() MODEM(_create_bpsk)()
 }
 
 // modulate BPSK
-void MODEM(_modulate_bpsk)(MODEM()      _q,
-                           unsigned int _sym_in,
-                           TC *         _y)
+int MODEM(_modulate_bpsk)(MODEM()      _q,
+                          unsigned int _sym_in,
+                          TC *         _y)
 {
     // compute output sample directly from input
     *_y = _sym_in ? -1.0f : 1.0f;
+    return LIQUID_OK;
 }
 
 // demodulate BPSK
-void MODEM(_demodulate_bpsk)(MODEM()        _q,
+int MODEM(_demodulate_bpsk)(MODEM()        _q,
                              TC             _x,
                              unsigned int * _sym_out)
 {
@@ -68,13 +69,14 @@ void MODEM(_demodulate_bpsk)(MODEM()        _q,
     // re-modulate symbol and store state
     MODEM(_modulate_bpsk)(_q, *_sym_out, &_q->x_hat);
     _q->r = _x;
+    return LIQUID_OK;
 }
 
 // demodulate BPSK (soft)
-void MODEM(_demodulate_soft_bpsk)(MODEM()         _q,
-                                  TC              _x,
-                                  unsigned int  * _s,
-                                  unsigned char * _soft_bits)
+int MODEM(_demodulate_soft_bpsk)(MODEM()         _q,
+                                 TC              _x,
+                                 unsigned int  * _s,
+                                 unsigned char * _soft_bits)
 {
     // gamma = 1/(2*sigma^2), approximate for constellation size
     T gamma = 4.0f;
@@ -91,5 +93,6 @@ void MODEM(_demodulate_soft_bpsk)(MODEM()         _q,
     MODEM(_modulate_bpsk)(_q, symbol_out, &_q->x_hat);
     _q->r = _x;
     *_s = symbol_out;
+    return LIQUID_OK;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2017 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,7 @@
 
 #define GMSKDEM_USE_EQUALIZER   0
 
-void gmskdem_debug_print(gmskdem _q,
-                         const char * _filename);
+int gmskdem_debug_print(gmskdem _q, const char * _filename);
 
 struct gmskdem_s {
     unsigned int k;         // samples/symbol
@@ -73,16 +72,12 @@ gmskdem gmskdem_create(unsigned int _k,
                        unsigned int _m,
                        float _BT)
 {
-    if (_k < 2) {
-        fprintf(stderr,"error: gmskdem_create(), samples/symbol must be at least 2\n");
-        exit(1);
-    } else if (_m < 1) {
-        fprintf(stderr,"error: gmskdem_create(), symbol delay must be at least 1\n");
-        exit(1);
-    } else if (_BT <= 0.0f || _BT >= 1.0f) {
-        fprintf(stderr,"error: gmskdem_create(), bandwidth/time product must be in (0,1)\n");
-        exit(1);
-    }
+    if (_k < 2)
+        return liquid_error_config("gmskdem_create(), samples/symbol must be at least 2");
+    if (_m < 1)
+        return liquid_error_config("gmskdem_create(), symbol delay must be at least 1");
+    if (_BT <= 0.0f || _BT >= 1.0f)
+        return liquid_error_config("gmskdem_create(), bandwidth/time product must be in (0,1)");
 
     // allocate memory for main object
     gmskdem q = (gmskdem)malloc(sizeof(struct gmskdem_s));
@@ -124,7 +119,7 @@ gmskdem gmskdem_create(unsigned int _k,
     return q;
 }
 
-void gmskdem_destroy(gmskdem _q)
+int gmskdem_destroy(gmskdem _q)
 {
 #if DEBUG_GMSKDEM
     // print to external file
@@ -146,9 +141,10 @@ void gmskdem_destroy(gmskdem _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
-void gmskdem_print(gmskdem _q)
+int gmskdem_print(gmskdem _q)
 {
     printf("gmskdem [k=%u, m=%u, BT=%8.3f]\n", _q->k, _q->m, _q->BT);
 #if GMSKDEM_USE_EQUALIZER
@@ -157,9 +153,10 @@ void gmskdem_print(gmskdem _q)
     unsigned int i;
     for (i=0; i<_q->h_len; i++)
         printf("  hr(%4u) = %12.8f;\n", i+1, _q->h[i]);
+    return LIQUID_OK;
 }
 
-void gmskdem_reset(gmskdem _q)
+int gmskdem_reset(gmskdem _q)
 {
     // reset phase state
     _q->x_prime = 0.0f;
@@ -173,17 +170,16 @@ void gmskdem_reset(gmskdem _q)
 #else
     firfilt_rrrf_reset(_q->filter);
 #endif
+    return LIQUID_OK;
 }
 
 // set equalizer bandwidth
-void gmskdem_set_eq_bw(gmskdem _q,
-                       float _bw)
+int gmskdem_set_eq_bw(gmskdem _q,
+                      float _bw)
 {
     // validate input
-    if (_bw < 0.0f || _bw > 0.5f) {
-        fprintf(stderr,"error: gmskdem_set_eq_bw(), bandwith must be in [0,0.5]\n");
-        exit(1);
-    }
+    if (_bw < 0.0f || _bw > 0.5f)
+        return liquid_error(LIQUID_EICONFIG,"gmskdem_set_eq_bw(), bandwith must be in [0,0.5]");
 
 #if GMSKDEM_USE_EQUALIZER
     // set internal equalizer bandwidth
@@ -191,11 +187,12 @@ void gmskdem_set_eq_bw(gmskdem _q,
 #else
     fprintf(stderr,"warning: gmskdem_set_eq_bw(), equalizer is disabled\n");
 #endif
+    return LIQUID_OK;
 }
 
-void gmskdem_demodulate(gmskdem _q,
-                        float complex * _x,
-                        unsigned int * _s)
+int gmskdem_demodulate(gmskdem         _q,
+                       float complex * _x,
+                       unsigned int *  _s)
 {
     // increment symbol counter
     _q->num_symbols_demod++;
@@ -250,20 +247,20 @@ void gmskdem_demodulate(gmskdem _q,
         eqlms_rrrf_step(_q->eq, d_prime, d_hat);
     }
 #endif
+    return LIQUID_OK;
 }
 
 //
 // output debugging file
 //
-void gmskdem_debug_print(gmskdem _q,
-                         const char * _filename)
+int gmskdem_debug_print(gmskdem      _q,
+                        const char * _filename)
 {
     // open output filen for writing
     FILE * fid = fopen(_filename,"w");
-    if (!fid) {
-        fprintf(stderr,"error: gmskdem_debug_print(), could not open '%s' for writing\n", _filename);
-        exit(1);
-    }
+    if (!fid)
+        return liquid_error(LIQUID_EIO,"gmskdem_debug_print(), could not open '%s' for writing", _filename);
+
     fprintf(fid,"%% %s : auto-generated file\n", _filename);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
@@ -319,4 +316,6 @@ void gmskdem_debug_print(gmskdem _q,
 
     fclose(fid);
     printf("gmskdem: internal debugging written to '%s'\n", _filename);
+    return LIQUID_OK;
 }
+

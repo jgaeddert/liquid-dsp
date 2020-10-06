@@ -57,10 +57,8 @@ IIRHILB() IIRHILB(_create)(liquid_iirdes_filtertype _ftype,
                            float                    _As)
 {
     // validate iirhilb inputs
-    if (_n == 0) {
-        fprintf(stderr,"error: iirhilb_create(), filter order must be greater than zero\n");
-        exit(1);
-    }
+    if (_n == 0)
+        return liquid_error_config("iirhilb_create(), filter order must be greater than zero");
 
     // allocate memory for main object
     IIRHILB() q = (IIRHILB()) malloc(sizeof(struct IIRHILB(_s)));
@@ -83,10 +81,8 @@ IIRHILB() IIRHILB(_create)(liquid_iirdes_filtertype _ftype,
 IIRHILB() IIRHILB(_create_default)(unsigned int _n)
 {
     // validate iirhilb inputs
-    if (_n == 0) {
-        fprintf(stderr,"error: iirhilb_create_default(), filter order must be greater than zero\n");
-        exit(1);
-    }
+    if (_n == 0)
+        return liquid_error_config("iirhilb_create_default(), filter order must be greater than zero");
 
     // allocate memory for main object
     IIRHILB() q = (IIRHILB()) malloc(sizeof(struct IIRHILB(_s)));

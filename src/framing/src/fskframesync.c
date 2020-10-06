@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,12 +39,12 @@
 #define DEBUG_FSKFRAMESYNC_BUFFER_LEN  (2000)
 
 // execute stages
-void fskframesync_execute_detectframe(fskframesync _q, float complex _x);
-void fskframesync_execute_rxheader(   fskframesync _q, float complex _x);
-void fskframesync_execute_rxpayload(  fskframesync _q, float complex _x);
+int fskframesync_execute_detectframe(fskframesync _q, float complex _x);
+int fskframesync_execute_rxheader(   fskframesync _q, float complex _x);
+int fskframesync_execute_rxpayload(  fskframesync _q, float complex _x);
 
 // decode header
-void fskframesync_decode_header(fskframesync _q);
+int fskframesync_decode_header(fskframesync _q);
 
 // fskframesync object structure
 struct fskframesync_s {
@@ -253,7 +253,7 @@ fskframesync fskframesync_create(framesync_callback _callback,
 
 
 // destroy frame synchronizer object, freeing all internal memory
-void fskframesync_destroy(fskframesync _q)
+int fskframesync_destroy(fskframesync _q)
 {
 #if DEBUG_FSKFRAMESYNC
     // destroy debugging objects
@@ -303,10 +303,11 @@ void fskframesync_destroy(fskframesync _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print frame synchronizer object internals
-void fskframesync_print(fskframesync _q)
+int fskframesync_print(fskframesync _q)
 {
     printf("fskframesync:\n");
     printf("  physical properties\n");
@@ -322,10 +323,11 @@ void fskframesync_print(fskframesync _q)
     printf("    fec (inner)     :   %s\n", fec_scheme_str[_q->payload_fec0][1]);
     printf("    fec (outer)     :   %s\n", fec_scheme_str[_q->payload_fec1][1]);
     printf("  total samples     :   %-4u samples\n", 0);
+    return LIQUID_OK;
 }
 
 // reset frame synchronizer object
-void fskframesync_reset(fskframesync _q)
+int fskframesync_reset(fskframesync _q)
 {
     // reset symbol timing recovery state
     firpfb_crcf_reset(_q->pfb);
@@ -346,13 +348,14 @@ void fskframesync_reset(fskframesync _q)
     _q->symbol_counter   = 0;
     _q->timer            = _q->k - 1;
     _q->pfb_index        = 0;
+    return LIQUID_OK;
 }
 
 // execute frame synchronizer
 //  _q      :   frame synchronizer object
 //  _x      :   input sample
-void fskframesync_execute(fskframesync  _q,
-                          float complex _x)
+int fskframesync_execute(fskframesync  _q,
+                         float complex _x)
 {
     // push through synchronizer
 #if DEBUG_FSKFRAMESYNC
@@ -361,42 +364,36 @@ void fskframesync_execute(fskframesync  _q,
 #endif
 
     switch (_q->state) {
-    case STATE_DETECTFRAME:
-        // look for p/n sequence
-        fskframesync_execute_detectframe(_q, _x);
-        break;
-
-    case STATE_RXHEADER:
-        // receive header
-        fskframesync_execute_rxheader(_q, _x);
-        break;
-
-    case STATE_RXPAYLOAD:
-        // receive payload
-        fskframesync_execute_rxpayload(_q, _x);
-        break;
+    case STATE_DETECTFRAME: return fskframesync_execute_detectframe(_q, _x);
+    case STATE_RXHEADER:    return fskframesync_execute_rxheader   (_q, _x);
+    case STATE_RXPAYLOAD:   return fskframesync_execute_rxpayload  (_q, _x);
+    default:;
     }
+    return liquid_error(LIQUID_EINT,"fskframesync_execute(), invalid internal mode");
 }
 
 // execute frame synchronizer on a block of samples
 //  _q      :   frame synchronizer object
 //  _x      :   input sample array [size: _n x 1]
 //  _n      :   number of input samples
-void fskframesync_execute_block(fskframesync    _q,
+int fskframesync_execute_block(fskframesync    _q,
                                 float complex * _x,
                                 unsigned int    _n)
 {
     unsigned int i;
-    for (i=0; i<_n; i++)
-        fskframesync_execute(_q, _x[i]);
+    for (i=0; i<_n; i++) {
+        if (fskframesync_execute(_q, _x[i]))
+            return liquid_error(LIQUID_EINT,"fskframesync_execute_block(), invalid internal mode");
+    }
+    return LIQUID_OK;
 }
 
 // 
 // internal methods
 //
 
-void fskframesync_execute_detectframe(fskframesync  _q,
-                                      float complex _x)
+int fskframesync_execute_detectframe(fskframesync  _q,
+                                     float complex _x)
 {
 #if 0
     // push sample through timing recovery and compute output
@@ -413,7 +410,7 @@ void fskframesync_execute_detectframe(fskframesync  _q,
     // decrement timer and determine if symbol output is ready
     _q->timer--;
     if (_q->timer)
-        return;
+        return LIQUID_OK;
 
     // reset timer
     _q->timer = _q->k;
@@ -487,10 +484,11 @@ void fskframesync_execute_detectframe(fskframesync  _q,
             printf("signal not yet peaked...\n");
         }
     }
+    return LIQUID_OK;
 }
 
-void fskframesync_execute_rxheader(fskframesync  _q,
-                                   float complex _x)
+int fskframesync_execute_rxheader(fskframesync  _q,
+                                  float complex _x)
 {
 #if 0
     // push sample through timing recovery and compute output
@@ -507,7 +505,7 @@ void fskframesync_execute_rxheader(fskframesync  _q,
     // decrement timer and determine if symbol output is ready
     _q->timer--;
     if (_q->timer)
-        return;
+        return LIQUID_OK;
 
     // reset timer
     _q->timer = _q->k;
@@ -545,7 +543,7 @@ void fskframesync_execute_rxheader(fskframesync  _q,
             // continue on to decoding payload
             _q->symbol_counter = 0;
             _q->state = STATE_RXPAYLOAD;
-            return;
+            return LIQUID_OK;
         }
 
         // update statistics
@@ -578,10 +576,11 @@ void fskframesync_execute_rxheader(fskframesync  _q,
         // reset frame synchronizer
         fskframesync_reset(_q);
     }
+    return LIQUID_OK;
 }
 
-void fskframesync_execute_rxpayload(fskframesync  _q,
-                                    float complex _x)
+int fskframesync_execute_rxpayload(fskframesync  _q,
+                                   float complex _x)
 {
 #if 0
     // push sample through timing recovery and compute output
@@ -598,7 +597,7 @@ void fskframesync_execute_rxpayload(fskframesync  _q,
     // decrement timer and determine if symbol output is ready
     _q->timer--;
     if (_q->timer)
-        return;
+        return LIQUID_OK;
 
     // reset timer
     _q->timer = _q->k;
@@ -651,17 +650,18 @@ void fskframesync_execute_rxpayload(fskframesync  _q,
         }
 
         // reset frame synchronizer
-        fskframesync_reset(_q);
-        return;
+        return fskframesync_reset(_q);
     }
+    return LIQUID_OK;
 }
 
 // decode header and re-configure payload decoder
-void fskframesync_decode_header(fskframesync _q)
+int fskframesync_decode_header(fskframesync _q)
 {
+    return LIQUID_OK;
 }
 
-void fskframesync_debug_enable(fskframesync _q)
+int fskframesync_debug_enable(fskframesync _q)
 {
     // create debugging objects if necessary
 #if DEBUG_FSKFRAMESYNC
@@ -672,34 +672,33 @@ void fskframesync_debug_enable(fskframesync _q)
     // set debugging flags
     _q->debug_enabled = 1;
     _q->debug_objects_created = 1;
+    return LIQUID_OK;
 #else
-    fprintf(stderr,"fskframesync_debug_enable(): compile-time debugging disabled\n");
+    return liquid_error(LIQUID_EICONFIG,"fskframesync_debug_enable(), compile-time debugging disabled\n");
 #endif
 }
 
-void fskframesync_debug_disable(fskframesync _q)
+int fskframesync_debug_disable(fskframesync _q)
 {
 #if DEBUG_FSKFRAMESYNC
     _q->debug_enabled = 0;
+    return LIQUID_OK;
 #else
-    fprintf(stderr,"fskframesync_debug_disable(): compile-time debugging disabled\n");
+    return liquid_error(LIQUID_EICONFIG,"fskframesync_debug_disable(), compile-time debugging disabled\n");
 #endif
 }
 
-void fskframesync_debug_export(fskframesync _q,
+int fskframesync_debug_export(fskframesync _q,
                                const char * _filename)
 {
 #if DEBUG_FSKFRAMESYNC
-    if (!_q->debug_objects_created) {
-        fprintf(stderr,"error: fskframe_debug_print(), debugging objects don't exist; enable debugging first\n");
-        return;
-    }
+    if (!_q->debug_objects_created)
+        return liquid_error(LIQUID_EICONFIG,"fskframe_debug_print(), debugging objects don't exist; enable debugging first");
 
     FILE* fid = fopen(_filename,"w");
-    if (!fid) {
-        fprintf(stderr, "error: fskframesync_debug_print(), could not open '%s' for writing\n", _filename);
-        return;
-    }
+    if (fid == NULL)
+        return liquid_error(LIQUID_EIO,"fskframesync_debug_print(), could not open '%s' for writing", _filename);
+
     fprintf(fid,"%% %s: auto-generated file", _filename);
     fprintf(fid,"\n\n");
     fprintf(fid,"clear all;\n");
@@ -723,8 +722,9 @@ void fskframesync_debug_export(fskframesync _q,
 
     fclose(fid);
     printf("fskframesync/debug: results written to '%s'\n", _filename);
+    return LIQUID_OK;
 #else
-    fprintf(stderr,"fskframesync_debug_print(): compile-time debugging disabled\n");
+    return liquid_error(LIQUID_EICONFIG,"fskframesync_debug_print(), compile-time debugging disabled\n");
 #endif
 }
 

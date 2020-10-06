@@ -71,7 +71,7 @@ struct SPGRAM(_s) {
 
 // compute spectral periodogram output (complex values)
 // from current buffer contents
-void SPGRAM(_step)(SPGRAM() _q);
+int SPGRAM(_step)(SPGRAM() _q);
 
 // create spgram object
 //  _nfft       : FFT size
@@ -84,22 +84,16 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
                          unsigned int _delay)
 {
     // validate input
-    if (_nfft < 2) {
-        fprintf(stderr,"error: spgram%s_create(), fft size must be at least 2\n", EXTENSION);
-        return NULL;
-    } else if (_window_len > _nfft) {
-        fprintf(stderr,"error: spgram%s_create(), window size cannot exceed fft size\n", EXTENSION);
-        return NULL;
-    } else if (_window_len == 0) {
-        fprintf(stderr,"error: spgram%s_create(), window size must be greater than zero\n", EXTENSION);
-        return NULL;
-    } else if (_wtype == LIQUID_WINDOW_KBD && _window_len % 2) {
-        fprintf(stderr,"error: spgram%s_create(), KBD window length must be even\n", EXTENSION);
-        return NULL;
-    } else if (_delay == 0) {
-        fprintf(stderr,"error: spgram%s_create(), delay must be greater than 0\n", EXTENSION);
-        return NULL;
-    }
+    if (_nfft < 2)
+        return liquid_error_config("spgram%s_create(), fft size must be at least 2", EXTENSION);
+    if (_window_len > _nfft)
+        return liquid_error_config("spgram%s_create(), window size cannot exceed fft size", EXTENSION);
+    if (_window_len == 0)
+        return liquid_error_config("spgram%s_create(), window size must be greater than zero", EXTENSION);
+    if (_wtype == LIQUID_WINDOW_KBD && _window_len % 2)
+        return liquid_error_config("spgram%s_create(), KBD window length must be even", EXTENSION);
+    if (_delay == 0)
+        return liquid_error_config("spgram%s_create(), delay must be greater than 0", EXTENSION);
 
     // allocate memory for main object
     SPGRAM() q = (SPGRAM()) malloc(sizeof(struct SPGRAM(_s)));
@@ -142,7 +136,7 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
         case LIQUID_WINDOW_RCOSTAPER:       q->w[i] = liquid_rcostaper_window(i,n,n/3); break;
         case LIQUID_WINDOW_KBD:             q->w[i] = liquid_kbd(i,n,zeta); break;
         default:
-            fprintf(stderr,"error: spgram%s_create(), invalid window\n", EXTENSION);
+            liquid_error_config("spgram%s_create(), invalid window", EXTENSION);
             SPGRAM(_destroy)(q);
             return NULL;
         }
@@ -169,19 +163,17 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
 SPGRAM() SPGRAM(_create_default)(unsigned int _nfft)
 {
     // validate input
-    if (_nfft < 2) {
-        fprintf(stderr,"error: spgram%s_create_default(), fft size must be at least 2\n", EXTENSION);
-        return NULL;
-    }
+    if (_nfft < 2)
+        return liquid_error_config("spgram%s_create_default(), fft size must be at least 2", EXTENSION);
 
     return SPGRAM(_create)(_nfft, LIQUID_WINDOW_KAISER, _nfft/2, _nfft/4);
 }
 
 // destroy spgram object
-void SPGRAM(_destroy)(SPGRAM() _q)
+int SPGRAM(_destroy)(SPGRAM() _q)
 {
     if (_q == NULL)
-        return;
+        return liquid_error(LIQUID_EIOBJ,"spgram%s_destroy(), invalid null pointer passed",EXTENSION);
 
     // free allocated memory
     free(_q->buf_time);
@@ -193,11 +185,12 @@ void SPGRAM(_destroy)(SPGRAM() _q)
 
     // free main object
     free(_q);
+    return LIQUID_OK;
 }
 
 // clears the internal state of the spgram object, but not
 // the internal buffer
-void SPGRAM(_clear)(SPGRAM() _q)
+int SPGRAM(_clear)(SPGRAM() _q)
 {
     // clear FFT input
     unsigned int i;
@@ -212,10 +205,11 @@ void SPGRAM(_clear)(SPGRAM() _q)
     // clear PSD accumulation
     for (i=0; i<_q->nfft; i++)
         _q->psd[i] = 0.0f;
+    return LIQUID_OK;
 }
 
 // reset the spgram object to its original state completely
-void SPGRAM(_reset)(SPGRAM() _q)
+int SPGRAM(_reset)(SPGRAM() _q)
 {
     // reset spgram object except for the window buffer
     SPGRAM(_clear)(_q);
@@ -226,13 +220,15 @@ void SPGRAM(_reset)(SPGRAM() _q)
     // reset counters
     _q->num_samples_total    = 0;
     _q->num_transforms_total = 0;
+    return LIQUID_OK;
 }
 
 // prints the spgram object's parameters
-void SPGRAM(_print)(SPGRAM() _q)
+int SPGRAM(_print)(SPGRAM() _q)
 {
     printf("spgram%s: nfft=%u, window=%u, delay=%u\n",
             EXTENSION, _q->nfft, _q->window_len, _q->delay);
+    return LIQUID_OK;
 }
 
 // set forgetting factor
@@ -255,7 +251,7 @@ int SPGRAM(_set_alpha)(SPGRAM() _q,
         _q->alpha = _alpha;
         _q->gamma = 1.0f - _q->alpha;
     }
-    return 0;
+    return LIQUID_OK;
 }
 
 // set center freuqncy
@@ -263,7 +259,7 @@ int SPGRAM(_set_freq)(SPGRAM() _q,
                       float    _freq)
 {
     _q->frequency = _freq;
-    return 0;
+    return LIQUID_OK;
 }
 
 // set sample rate
@@ -271,12 +267,11 @@ int SPGRAM(_set_rate)(SPGRAM() _q,
                       float    _rate)
 {
     // validate input
-    if (_rate <= 0.0f) {
-        fprintf(stderr,"error: spgram%s_set_rate(), sample rate must be greater than zero\n", EXTENSION);
-        return -1;
-    }
+    if (_rate <= 0.0f)
+        return liquid_error(LIQUID_EICONFIG,"spgram%s_set_rate(), sample rate must be greater than zero", EXTENSION);
+
     _q->sample_rate = _rate;
-    return 0;
+    return LIQUID_OK;
 }
 
 // get FFT size
@@ -330,8 +325,8 @@ float SPGRAM(_get_alpha)(SPGRAM() _q)
 // push a single sample into the spgram object
 //  _q      :   spgram object
 //  _x      :   input sample
-void SPGRAM(_push)(SPGRAM() _q,
-                   TI       _x)
+int SPGRAM(_push)(SPGRAM() _q,
+                  TI       _x)
 {
     // push sample into internal window
     WINDOW(_push)(_q->buffer, _x);
@@ -344,20 +339,20 @@ void SPGRAM(_push)(SPGRAM() _q,
     _q->sample_timer--;
 
     if (_q->sample_timer)
-        return;
+        return LIQUID_OK;
 
     // reset timer and step through computation
     _q->sample_timer = _q->delay;
-    SPGRAM(_step)(_q);
+    return SPGRAM(_step)(_q);
 }
 
 // write a block of samples to the spgram object
 //  _q      :   spgram object
 //  _x      :   input buffer [size: _n x 1]
 //  _n      :   input buffer length
-void SPGRAM(_write)(SPGRAM()     _q,
-                    TI *         _x,
-                    unsigned int _n)
+int SPGRAM(_write)(SPGRAM()     _q,
+                   TI *         _x,
+                   unsigned int _n)
 {
 #if 0
     // write a block of samples to the internal window
@@ -368,12 +363,13 @@ void SPGRAM(_write)(SPGRAM()     _q,
     for (i=0; i<_n; i++)
         SPGRAM(_push)(_q, _x[i]);
 #endif
+    return LIQUID_OK;
 }
 
 
 // compute spectral periodogram output from current buffer contents
 //  _q      :   spgram object
-void SPGRAM(_step)(SPGRAM() _q)
+int SPGRAM(_step)(SPGRAM() _q)
 {
     unsigned int i;
 
@@ -399,14 +395,15 @@ void SPGRAM(_step)(SPGRAM() _q)
 
     _q->num_transforms++;
     _q->num_transforms_total++;
+    return LIQUID_OK;
 }
 
 // compute spectral periodogram output (fft-shifted values
 // in dB) from current buffer contents
 //  _q      :   spgram object
 //  _X      :   output spectrum [size: _nfft x 1]
-void SPGRAM(_get_psd)(SPGRAM() _q,
-                      T *      _X)
+int SPGRAM(_get_psd)(SPGRAM() _q,
+                     T *      _X)
 {
     // compute magnitude in dB and run FFT shift
     unsigned int i;
@@ -417,6 +414,7 @@ void SPGRAM(_get_psd)(SPGRAM() _q,
         unsigned int k = (i + nfft_2) % _q->nfft;
         _X[i] = 10*log10f( max(LIQUID_SPGRAM_PSD_MIN,_q->psd[k]) ) + scale;
     }
+    return LIQUID_OK;
 }
 
 // export gnuplot file
@@ -426,11 +424,9 @@ int SPGRAM(_export_gnuplot)(SPGRAM()     _q,
                             const char * _filename)
 {
     FILE * fid = fopen(_filename,"w");
-    if (fid == NULL) {
-        fprintf(stderr,"error: spgram%s_export_gnuplot(), could not open '%s' for writing\n",
-                EXTENSION, _filename);
-        return -1;
-    }
+    if (fid == NULL)
+        return liquid_error(LIQUID_EIO,"spgram%s_export_gnuplot(), could not open '%s' for writing",EXTENSION,_filename);
+
     fprintf(fid,"# %s : auto-generated file\n", _filename);
     fprintf(fid,"reset\n");
     fprintf(fid,"set terminal png size 1200,800 enhanced font 'Verdana,10'\n");
@@ -468,8 +464,7 @@ int SPGRAM(_export_gnuplot)(SPGRAM()     _q,
 
     // close it up
     fclose(fid);
-
-    return 0;
+    return LIQUID_OK;
 }
 
 //
@@ -481,10 +476,10 @@ int SPGRAM(_export_gnuplot)(SPGRAM()     _q,
 //  _x      :   input signal [size: _n x 1]
 //  _n      :   input signal length
 //  _psd    :   output spectrum, [size: _nfft x 1]
-void SPGRAM(_estimate_psd)(unsigned int _nfft,
-                           TI *         _x,
-                           unsigned int _n,
-                           T *          _psd)
+int SPGRAM(_estimate_psd)(unsigned int _nfft,
+                          TI *         _x,
+                          unsigned int _n,
+                          T *          _psd)
 {
     // create object
     SPGRAM() q = SPGRAM(_create_default)(_nfft);
@@ -501,4 +496,5 @@ void SPGRAM(_estimate_psd)(unsigned int _nfft,
 
     // destroy object
     SPGRAM(_destroy)(q);
+    return LIQUID_OK;
 }

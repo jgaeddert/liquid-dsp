@@ -38,14 +38,12 @@ struct QUANTIZER(_s) {
 //  _range      :   maximum absolute input
 //  _num_bits   :   number of bits per sample
 QUANTIZER() QUANTIZER(_create)(liquid_compander_type _ctype,
-                               float _range,
-                               unsigned int _num_bits)
+                               float                 _range,
+                               unsigned int          _num_bits)
 {
     // validate input
-    if (_num_bits == 0) {
-        fprintf(stderr,"error: quantizer_create(), must have at least one bit/sample\n");
-        exit(1);
-    }
+    if (_num_bits == 0)
+        return liquid_error_config("quantizer_create(), must have at least one bit/sample");
 
     // create quantizer object
     QUANTIZER() q = (QUANTIZER()) malloc(sizeof(struct QUANTIZER(_s)));
@@ -58,13 +56,14 @@ QUANTIZER() QUANTIZER(_create)(liquid_compander_type _ctype,
     return q;
 }
 
-void QUANTIZER(_destroy)(QUANTIZER() _q)
+int QUANTIZER(_destroy)(QUANTIZER() _q)
 {
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
-void QUANTIZER(_print)(QUANTIZER() _q)
+int QUANTIZER(_print)(QUANTIZER() _q)
 {
     printf("quantizer:\n");
     printf("  compander :   ");
@@ -77,9 +76,10 @@ void QUANTIZER(_print)(QUANTIZER() _q)
         printf("unknown\n");
     }
     printf("  num bits  :   %u\n", _q->n);
+    return LIQUID_OK;
 }
 
-void QUANTIZER(_execute_adc)(QUANTIZER() _q,
+int QUANTIZER(_execute_adc)(QUANTIZER() _q,
                              T _x,
                              unsigned int * _sample)
 {
@@ -87,9 +87,10 @@ void QUANTIZER(_execute_adc)(QUANTIZER() _q,
 #else
 #endif
     *_sample = 0;
+    return LIQUID_OK;
 }
 
-void QUANTIZER(_execute_dac)(QUANTIZER() _q,
+int QUANTIZER(_execute_dac)(QUANTIZER() _q,
                              unsigned int _sample,
                              T * _x)
 {
@@ -97,6 +98,7 @@ void QUANTIZER(_execute_dac)(QUANTIZER() _q,
 #else
 #endif
     *_x = 0.0;
+    return LIQUID_OK;
 }
 
 

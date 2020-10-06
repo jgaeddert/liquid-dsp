@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,17 +52,17 @@ void liquid_firdes_rkaiser(unsigned int _k,
 {
     // validate input
     if (_k < 2) {
-        fprintf(stderr,"error: liquid_firdes_rkaiser(), k must be at least 2\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser(), k must be at least 2");
+        return;
     } else if (_m < 1) {
-        fprintf(stderr,"error: liquid_firdes_rkaiser(), m must be at least 1\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser(), m must be at least 1");
+        return;
     } else if (_beta <= 0.0f || _beta >= 1.0f) {
-        fprintf(stderr,"error: liquid_firdes_rkaiser(), beta must be in (0,1)\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser(), beta must be in (0,1)");
+        return;
     } else if (_dt < -1.0f || _dt > 1.0f) {
-        fprintf(stderr,"error: liquid_firdes_rkaiser(), dt must be in [-1,1]\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser(), dt must be in [-1,1]");
+        return;
     }
 
     // simply call internal method and ignore output rho value
@@ -87,17 +87,17 @@ void liquid_firdes_arkaiser(unsigned int _k,
 {
     // validate input
     if (_k < 2) {
-        fprintf(stderr,"error: liquid_firdes_arkaiser(), k must be at least 2\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_arkaiser(), k must be at least 2");
+        return;
     } else if (_m < 1) {
-        fprintf(stderr,"error: liquid_firdes_arkaiser(), m must be at least 1\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_arkaiser(), m must be at least 1");
+        return;
     } else if (_beta <= 0.0f || _beta >= 1.0f) {
-        fprintf(stderr,"error: liquid_firdes_arkaiser(), beta must be in (0,1)\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_arkaiser(), beta must be in (0,1)");
+        return;
     } else if (_dt < -1.0f || _dt > 1.0f) {
-        fprintf(stderr,"error: liquid_firdes_arkaiser(), dt must be in [-1,1]\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_arkaiser(), dt must be in [-1,1]");
+        return;
     }
 
 #if 0
@@ -156,12 +156,12 @@ float rkaiser_approximate_rho(unsigned int _m,
                               float _beta)
 {
     if ( _m < 1 ) {
-        fprintf(stderr,"error: rkaiser_approximate_rho(): m must be greater than 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"rkaiser_approximate_rho(): m must be greater than 0");
+        return 0.0f;
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        fprintf(stderr,"error: rkaiser_approximate_rho(): beta must be in [0,1]\n");
-        exit(1);
-    } else;
+        liquid_error(LIQUID_EICONFIG,"rkaiser_approximate_rho(): beta must be in [0,1]");
+        return 0.0f;
+    }
 
     // compute bandwidth adjustment estimate
     float c0=0.0f, c1=0.0f, c2=0.0f;
@@ -224,15 +224,15 @@ void liquid_firdes_rkaiser_bisection(unsigned int _k,
                                      float * _rho)
 {
     if ( _k < 1 ) {
-        fprintf(stderr,"error: liquid_firdes_rkaiser_bisection(): k must be greater than 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_bisection(): k must be greater than 0");
+        return;
     } else if ( _m < 1 ) {
-        fprintf(stderr,"error: liquid_firdes_rkaiser_bisection(): m must be greater than 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_bisection(): m must be greater than 0");
+        return;
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        fprintf(stderr,"error: liquid_firdes_rkaiser_bisection(): beta must be in [0,1]\n");
-        exit(1);
-    } else;
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_bisection(): beta must be in [0,1]");
+        return;
+    }
 
     // algorithm:
     //  1. choose three initial points [x0, x1, x2] where x0 < x1 < x2
@@ -344,15 +344,15 @@ void liquid_firdes_rkaiser_quadratic(unsigned int _k,
                                      float * _rho)
 {
     if ( _k < 1 ) {
-        fprintf(stderr,"error: liquid_firdes_rkaiser_quadratic(): k must be greater than 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_quadratic(): k must be greater than 0");
+        return;
     } else if ( _m < 1 ) {
-        fprintf(stderr,"error: liquid_firdes_rkaiser_quadratic(): m must be greater than 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_quadratic(): m must be greater than 0");
+        return;
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        fprintf(stderr,"error: liquid_firdes_rkaiser_quadratic(): beta must be in [0,1]\n");
-        exit(1);
-    } else;
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_quadratic(): beta must be in [0,1]");
+        return;
+    }
 
     // algorithm:
     //  1. choose initial bounding points [x0,x2] where x0 < x2

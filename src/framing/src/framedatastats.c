@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,22 +35,23 @@
 #include "liquid.internal.h"
 
 // reset framedatastats object
-void framedatastats_reset(framedatastats_s * _stats)
+int framedatastats_reset(framedatastats_s * _stats)
 {
     if (_stats == NULL)
-        return;
+        return LIQUID_OK;
 
     _stats->num_frames_detected = 0;
     _stats->num_headers_valid   = 0;
     _stats->num_payloads_valid  = 0;
     _stats->num_bytes_received  = 0;
+    return LIQUID_OK;
 }
 
 // print framedatastats object
-void framedatastats_print(framedatastats_s * _stats)
+int framedatastats_print(framedatastats_s * _stats)
 {
     if (_stats == NULL)
-        return;
+        return LIQUID_OK;
 
     float percent_headers  = 0.0f;
     float percent_payloads = 0.0f;
@@ -63,5 +64,6 @@ void framedatastats_print(framedatastats_s * _stats)
     printf("  headers valid     : %-6u (%8.4f %%)\n", _stats->num_headers_valid,  percent_headers);
     printf("  payloads valid    : %-6u (%8.4f %%)\n", _stats->num_payloads_valid, percent_payloads);
     printf("  bytes received    : %lu\n", _stats->num_bytes_received);
+    return LIQUID_OK;
 }
 

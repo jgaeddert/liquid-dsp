@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,19 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
-//
-// AUTOTEST: windowf
-//
+void autotest_window_config_errors()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping window config test with strict exit enabled\n");
+    return;
+#else
+    CONTEND_EXPRESSION(windowcf_create(0)==NULL);
+    CONTEND_EXPRESSION(windowf_create (0)==NULL);
+#endif
+}
+
 void autotest_windowf()
 {
     float v[] = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};

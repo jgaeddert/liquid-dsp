@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -88,19 +88,14 @@ ofdmframegen ofdmframegen_create(unsigned int    _M,
                                  unsigned char * _p)
 {
     // validate input
-    if (_M < 2) {
-        fprintf(stderr,"error: ofdmframegen_create(), number of subcarriers must be at least 2\n");
-        exit(1);
-    } else if (_M % 2) {
-        fprintf(stderr,"error: ofdmframegen_create(), number of subcarriers must be even\n");
-        exit(1);
-    } else if (_cp_len > _M) {
-        fprintf(stderr,"error: ofdmframegen_create(), cyclic prefix cannot exceed symbol length\n");
-        exit(1);
-    } else if (_taper_len > _cp_len) {
-        fprintf(stderr,"error: ofdmframegen_create(), taper length cannot exceed cyclic prefix\n");
-        exit(1);
-    }
+    if (_M < 2)
+        return liquid_error_config("ofdmframegen_create(), number of subcarriers must be at least 2");
+    if (_M % 2)
+        return liquid_error_config("ofdmframegen_create(), number of subcarriers must be even");
+    if (_cp_len > _M)
+        return liquid_error_config("ofdmframegen_create(), cyclic prefix cannot exceed symbol length");
+    if (_taper_len > _cp_len)
+        return liquid_error_config("ofdmframegen_create(), taper length cannot exceed cyclic prefix");
 
     ofdmframegen q = (ofdmframegen) malloc(sizeof(struct ofdmframegen_s));
     q->M         = _M;
@@ -118,17 +113,14 @@ ofdmframegen ofdmframegen_create(unsigned int    _M,
     }
 
     // validate and count subcarrier allocation
-    ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
-    if ( (q->M_pilot + q->M_data) == 0) {
-        fprintf(stderr,"error: ofdmframegen_create(), must have at least one enabled subcarrier\n");
-        exit(1);
-    } else if (q->M_data == 0) {
-        fprintf(stderr,"error: ofdmframegen_create(), must have at least one data subcarriers\n");
-        exit(1);
-    } else if (q->M_pilot < 2) {
-        fprintf(stderr,"error: ofdmframegen_create(), must have at least two pilot subcarriers\n");
-        exit(1);
-    }
+    if (ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data))
+        return liquid_error_config("ofdmframegen_create(), invalid subcarrier allocation");
+    if ( (q->M_pilot + q->M_data) == 0)
+        return liquid_error_config("ofdmframegen_create(), must have at least one enabled subcarrier");
+    if (q->M_data == 0)
+        return liquid_error_config("ofdmframegen_create(), must have at least one data subcarriers");
+    if (q->M_pilot < 2)
+        return liquid_error_config("ofdmframegen_create(), must have at least two pilot subcarriers");
 
     unsigned int i;
 
@@ -171,7 +163,7 @@ ofdmframegen ofdmframegen_create(unsigned int    _M,
 }
 
 // free transform object memory
-void ofdmframegen_destroy(ofdmframegen _q)
+int ofdmframegen_destroy(ofdmframegen _q)
 {
     // free subcarrier type array memory
     free(_q->p);
@@ -196,9 +188,10 @@ void ofdmframegen_destroy(ofdmframegen _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
-void ofdmframegen_print(ofdmframegen _q)
+int ofdmframegen_print(ofdmframegen _q)
 {
     printf("ofdmframegen:\n");
     printf("    num subcarriers     :   %-u\n", _q->M);
@@ -208,10 +201,10 @@ void ofdmframegen_print(ofdmframegen _q)
     printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
     printf("    taper len           :   %-u\n", _q->taper_len);
     printf("    ");
-    ofdmframe_print_sctype(_q->p, _q->M);
+    return ofdmframe_print_sctype(_q->p, _q->M);
 }
 
-void ofdmframegen_reset(ofdmframegen _q)
+int ofdmframegen_reset(ofdmframegen _q)
 {
     msequence_reset(_q->ms_pilot);
 
@@ -219,6 +212,7 @@ void ofdmframegen_reset(ofdmframegen _q)
     unsigned int i;
     for (i=0; i<_q->taper_len; i++)
         _q->postfix[i] = 0.0f;
+    return LIQUID_OK;
 }
 
 // write first PLCP short sequence 'symbol' to buffer
@@ -234,8 +228,8 @@ void ofdmframegen_reset(ofdmframegen _q)
 //  |<-        s0[a]       ->|<-        s0[b]       ->|
 //  |        M + cp_len      |        M + cp_len      |
 //
-void ofdmframegen_write_S0a(ofdmframegen    _q,
-                            float complex * _y)
+int ofdmframegen_write_S0a(ofdmframegen    _q,
+                           float complex * _y)
 {
     unsigned int i;
     unsigned int k;
@@ -247,10 +241,11 @@ void ofdmframegen_write_S0a(ofdmframegen    _q,
     // apply tapering window
     for (i=0; i<_q->taper_len; i++)
         _y[i] *= _q->taper[i];
+    return LIQUID_OK;
 }
 
-void ofdmframegen_write_S0b(ofdmframegen _q,
-                            float complex * _y)
+int ofdmframegen_write_S0b(ofdmframegen _q,
+                           float complex * _y)
 {
     unsigned int i;
     unsigned int k;
@@ -261,14 +256,15 @@ void ofdmframegen_write_S0b(ofdmframegen _q,
 
     // copy postfix (first 'taper_len' samples of s0 symbol)
     memmove(_q->postfix, _q->s0, _q->taper_len*sizeof(float complex));
+    return LIQUID_OK;
 }
 
-void ofdmframegen_write_S1(ofdmframegen _q,
+int ofdmframegen_write_S1(ofdmframegen _q,
                            float complex * _y)
 {
     // copy S1 symbol to output, adding cyclic prefix and tapering window
     memmove(_q->x, _q->s1, (_q->M)*sizeof(float complex));
-    ofdmframegen_gensymbol(_q, _y);
+    return ofdmframegen_gensymbol(_q, _y);
 }
 
 
@@ -276,9 +272,9 @@ void ofdmframegen_write_S1(ofdmframegen _q,
 //  _q      :   framing generator object
 //  _x      :   input symbols, [size: _M x 1]
 //  _y      :   output samples, [size: _M x 1]
-void ofdmframegen_writesymbol(ofdmframegen    _q,
-                              float complex * _x,
-                              float complex * _y)
+int ofdmframegen_writesymbol(ofdmframegen    _q,
+                             float complex * _x,
+                             float complex * _y)
 {
     // move frequency data to internal buffer
     unsigned int i;
@@ -307,17 +303,18 @@ void ofdmframegen_writesymbol(ofdmframegen    _q,
     FFT_EXECUTE(_q->ifft);
 
     // copy result to output, adding cyclic prefix and tapering window
-    ofdmframegen_gensymbol(_q, _y);
+    return ofdmframegen_gensymbol(_q, _y);
 }
 
 // write tail to output
-void ofdmframegen_writetail(ofdmframegen    _q,
-                            float complex * _buffer)
+int ofdmframegen_writetail(ofdmframegen    _q,
+                           float complex * _buffer)
 {
     // write tail to output, applying tapering window
     unsigned int i;
     for (i=0; i<_q->taper_len; i++)
         _buffer[i] = _q->postfix[i] * _q->taper[_q->taper_len-i-1];
+    return LIQUID_OK;
 }
 
 // 
@@ -342,8 +339,8 @@ void ofdmframegen_writetail(ofdmframegen    _q,
 //  _q->taper_len   :   tapering window length
 //
 //  _buffer         :   output sample buffer [size: (_q->M + _q->cp_len) x 1]
-void ofdmframegen_gensymbol(ofdmframegen    _q,
-                            float complex * _buffer)
+int ofdmframegen_gensymbol(ofdmframegen    _q,
+                           float complex * _buffer)
 {
     // copy input symbol with cyclic prefix to output symbol
     memmove( &_buffer[0],          &_q->x[_q->M-_q->cp_len], _q->cp_len*sizeof(float complex));
@@ -358,5 +355,6 @@ void ofdmframegen_gensymbol(ofdmframegen    _q,
 
     // copy post-fix to output (first 'taper_len' samples of input symbol)
     memmove(_q->postfix, _q->x, _q->taper_len*sizeof(float complex));
+    return LIQUID_OK;
 }
 

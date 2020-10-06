@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ struct EQLMS(_s) {
 };
 
 // update sum{|x|^2}
-void EQLMS(_update_sumsq)(EQLMS() _q, T _x);
+int EQLMS(_update_sumsq)(EQLMS() _q, T _x);
 
 // create least mean-squares (LMS) equalizer object
 //  _h      :   initial coefficients [size: _h_len x 1], default if NULL
@@ -99,19 +99,14 @@ EQLMS() EQLMS(_create_rnyquist)(int          _type,
                                 float        _dt)
 {
     // validate input
-    if (_k < 2) {
-        fprintf(stderr,"error: eqlms_%s_create_rnyquist(), samples/symbol must be greater than 1\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr,"error: eqlms_%s_create_rnyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: eqlms_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_dt < -1.0f || _dt > 1.0f) {
-        fprintf(stderr,"error: eqlms_%s_create_rnyquist(), filter fractional sample delay must be in [-1,1]\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_k < 2)
+        return liquid_error_config("eqlms_%s_create_rnyquist(), samples/symbol must be greater than 1", EXTENSION_FULL);
+    if (_m == 0)
+        return liquid_error_config("eqlms_%s_create_rnyquist(), filter delay must be greater than 0", EXTENSION_FULL);
+    if (_beta < 0.0f || _beta > 1.0f)
+        return liquid_error_config("eqlms_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
+    if (_dt < -1.0f || _dt > 1.0f)
+        return liquid_error_config("eqlms_%s_create_rnyquist(), filter fractional sample delay must be in [-1,1]", EXTENSION_FULL);
 
     // generate square-root Nyquist filter
     unsigned int h_len = 2*_k*_m + 1;
@@ -136,13 +131,10 @@ EQLMS() EQLMS(_create_lowpass)(unsigned int _h_len,
                                float        _fc)
 {
     // validate input
-    if (_h_len == 0) {
-        fprintf(stderr,"error: eqlms_%s_create_lowpass(), filter length must be greater than 0\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_fc <= 0.0f || _fc > 0.5f) {
-        fprintf(stderr,"error: eqlms_%s_create_rnyquist(), filter cutoff must be in (0,0.5]\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_h_len == 0)
+        return liquid_error_config("eqlms_%s_create_lowpass(), filter length must be greater than 0", EXTENSION_FULL);
+    if (_fc <= 0.0f || _fc > 0.5f)
+        return liquid_error_config("eqlms_%s_create_rnyquist(), filter cutoff must be in (0,0.5]", EXTENSION_FULL);
 
     // generate low-pass filter prototype
     float h[_h_len];
@@ -184,7 +176,7 @@ EQLMS() EQLMS(_recreate)(EQLMS()      _q,
 
 
 // destroy eqlms object
-void EQLMS(_destroy)(EQLMS() _q)
+int EQLMS(_destroy)(EQLMS() _q)
 {
     free(_q->h0);
     free(_q->w0);
@@ -193,10 +185,11 @@ void EQLMS(_destroy)(EQLMS() _q)
     WINDOW(_destroy)(_q->buffer);
     wdelayf_destroy(_q->x2);
     free(_q);
+    return LIQUID_OK;
 }
 
 // reset equalizer
-void EQLMS(_reset)(EQLMS() _q)
+int EQLMS(_reset)(EQLMS() _q)
 {
     // copy default coefficients
     memmove(_q->w0, _q->h0, (_q->h_len)*sizeof(T));
@@ -210,16 +203,18 @@ void EQLMS(_reset)(EQLMS() _q)
 
     // reset squared magnitude sum
     _q->x2_sum = 0;
+    return LIQUID_OK;
 }
 
 // print eqlms object internals
-void EQLMS(_print)(EQLMS() _q)
+int EQLMS(_print)(EQLMS() _q)
 {
     printf("equalizer (LMS):\n");
     printf("    order:      %u\n", _q->h_len);
     unsigned int i;
     for (i=0; i<_q->h_len; i++)
         printf("  h(%3u) = %12.4e + j*%12.4e;\n", i+1, creal(_q->w0[i]), cimag(_q->w0[i]));
+    return LIQUID_OK;
 }
 
 // get learning rate of equalizer
@@ -231,22 +226,21 @@ float EQLMS(_get_bw)(EQLMS() _q)
 // set learning rate of equalizer
 //  _q      :   equalizer object
 //  _mu     :   LMS learning rate (should be near 0), 0 < _mu < 1
-void EQLMS(_set_bw)(EQLMS() _q,
-                    float   _mu)
+int EQLMS(_set_bw)(EQLMS() _q,
+                   float   _mu)
 {
-    if (_mu < 0.0f) {
-        fprintf(stderr,"error: eqlms_%s_set_bw(), learning rate cannot be less than zero\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_mu < 0.0f)
+        liquid_error(LIQUID_EICONFIG,"eqlms_%s_set_bw(), learning rate cannot be less than zero", EXTENSION_FULL);
 
     _q->mu = _mu;
+    return LIQUID_OK;
 }
 
 // push sample into equalizer internal buffer
 //  _q      :   equalizer object
 //  _x      :   received sample
-void EQLMS(_push)(EQLMS() _q,
-                  T _x)
+int EQLMS(_push)(EQLMS() _q,
+                 T _x)
 {
     // push value into buffer
     WINDOW(_push)(_q->buffer, _x);
@@ -256,26 +250,28 @@ void EQLMS(_push)(EQLMS() _q,
 
     // increment count
     _q->count++;
+    return LIQUID_OK;
 }
 
 // push sample into equalizer internal buffer as block
 //  _q      :   equalizer object
 //  _x      :   input sample array
 //  _n      :   input sample array length
-void EQLMS(_push_block)(EQLMS()      _q,
-                        T *          _x,
-                        unsigned int _n)
+int EQLMS(_push_block)(EQLMS()      _q,
+                       T *          _x,
+                       unsigned int _n)
 {
     unsigned int i;
     for (i=0; i<_n; i++)
         EQLMS(_push)(_q, _x[i]);
+    return LIQUID_OK;
 }
 
 // execute internal dot product
 //  _q      :   equalizer object
 //  _y      :   output sample
-void EQLMS(_execute)(EQLMS() _q,
-                     T *     _y)
+int EQLMS(_execute)(EQLMS() _q,
+                    T *     _y)
 {
     T y = 0;    // temporary accumulator
     T * r;      // read buffer
@@ -291,6 +287,7 @@ void EQLMS(_execute)(EQLMS() _q,
 
     // set output
     *_y = y;
+    return LIQUID_OK;
 }
 
 // execute equalizer with block of samples using constant
@@ -301,16 +298,14 @@ void EQLMS(_execute)(EQLMS() _q,
 //  _x      :   input sample array [size: _n x 1]
 //  _n      :   input sample array length
 //  _y      :   output sample array [size: _n x 1]
-void EQLMS(_execute_block)(EQLMS()      _q,
-                           unsigned int _k,
-                           T *          _x,
-                           unsigned int _n,
-                           T *          _y)
+int EQLMS(_execute_block)(EQLMS()      _q,
+                          unsigned int _k,
+                          T *          _x,
+                          unsigned int _n,
+                          T *          _y)
 {
-    if (_k == 0) {
-        fprintf(stderr,"error: eqlms_%s_execute_block(), down-sampling rate 'k' must be greater than 0\n", EXTENSION_FULL);
-        exit(-1);
-    }
+    if (_k == 0)
+        liquid_error(LIQUID_EICONFIG,"eqlms_%s_execute_block(), down-sampling rate 'k' must be greater than 0", EXTENSION_FULL);
 
     unsigned int i;
     T d_hat;
@@ -331,20 +326,21 @@ void EQLMS(_execute_block)(EQLMS()      _q,
             EQLMS(_step_blind)(_q, d_hat);
         }
     }
+    return LIQUID_OK;
 }
 
 // step through one cycle of equalizer training
 //  _q      :   equalizer object
 //  _d      :   desired output
 //  _d_hat  :   filtered output
-void EQLMS(_step)(EQLMS() _q,
-                  T       _d,
-                  T       _d_hat)
+int EQLMS(_step)(EQLMS() _q,
+                 T       _d,
+                 T       _d_hat)
 {
     // check count; only run step when buffer is full
     if (!_q->buf_full) {
         if (_q->count < _q->h_len)
-            return;
+            return LIQUID_OK;
         else
             _q->buf_full = 1;
     }
@@ -378,13 +374,14 @@ void EQLMS(_step)(EQLMS() _q,
 
     // copy old values
     memmove(_q->w0, _q->w1, _q->h_len*sizeof(T));
+    return LIQUID_OK;
 }
 
 // step through one cycle of equalizer training
 //  _q      :   equalizer object
 //  _d_hat  :   filtered output
-void EQLMS(_step_blind)(EQLMS() _q,
-                        T       _d_hat)
+int EQLMS(_step_blind)(EQLMS() _q,
+                       T       _d_hat)
 {
     // update equalizer using constant modulus method
 #if T_COMPLEX
@@ -392,16 +389,17 @@ void EQLMS(_step_blind)(EQLMS() _q,
 #else
     T d = _d_hat > 0 ? 1 : -1;
 #endif
-    EQLMS(_step)(_q, d, _d_hat);
+    return EQLMS(_step)(_q, d, _d_hat);
 }
 
 // retrieve internal filter coefficients
-void EQLMS(_get_weights)(EQLMS() _q, T * _w)
+int EQLMS(_get_weights)(EQLMS() _q, T * _w)
 {
     // copy output weight vector
     unsigned int i;
     for (i=0; i<_q->h_len; i++)
         _w[i] = conj(_q->w0[_q->h_len-i-1]);
+    return LIQUID_OK;
 }
 
 // train equalizer object
@@ -410,16 +408,15 @@ void EQLMS(_get_weights)(EQLMS() _q, T * _w)
 //  _x      :   received sample vector
 //  _d      :   desired output vector
 //  _n      :   vector length
-void EQLMS(_train)(EQLMS()      _q,
-                   T *          _w,
-                   T *          _x,
-                   T *          _d,
-                   unsigned int _n)
+int EQLMS(_train)(EQLMS()      _q,
+                  T *          _w,
+                  T *          _x,
+                  T *          _d,
+                  unsigned int _n)
 {
     unsigned int p=_q->h_len;
-    if (_n < _q->h_len) {
+    if (_n < _q->h_len)
         fprintf(stderr,"warning: eqlms_%s_train(), traning sequence less than filter order\n", EXTENSION_FULL);
-    }
 
     unsigned int i;
 
@@ -443,7 +440,7 @@ void EQLMS(_train)(EQLMS()      _q,
     }
 
     // copy output weight vector
-    EQLMS(_get_weights)(_q, _w);
+    return EQLMS(_get_weights)(_q, _w);
 }
 
 // 
@@ -451,7 +448,7 @@ void EQLMS(_train)(EQLMS()      _q,
 //
 
 // update sum{|x|^2}
-void EQLMS(_update_sumsq)(EQLMS() _q, T _x)
+int EQLMS(_update_sumsq)(EQLMS() _q, T _x)
 {
     // update estimate of signal magnitude squared
     // |x[n-1]|^2 (input sample)
@@ -468,5 +465,6 @@ void EQLMS(_update_sumsq)(EQLMS() _q, T _x)
 
     // update sum( |x|^2 ) of last 'n' input samples
     _q->x2_sum = _q->x2_sum + x2_n - x2_0;
+    return LIQUID_OK;
 }
 

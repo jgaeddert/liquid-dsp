@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,14 +53,14 @@ void liquid_firdes_fnyquist(liquid_firfilt_type _type,
 {
     // validate input
     if ( _k < 1 ) {
-        fprintf(stderr,"error: liquid_firdes_fnyquist(): k must be greater than 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_fnyquist(): k must be greater than 0");
+        return;
     } else if ( _m < 1 ) {
-        fprintf(stderr,"error: liquid_firdes_fnyquist(): m must be greater than 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_fnyquist(): m must be greater than 0");
+        return;
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        fprintf(stderr,"error: liquid_firdes_fnyquist(): beta must be in [0,1]\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_fnyquist(): beta must be in [0,1]");
+        return;
     } else;
 
     unsigned int i;
@@ -84,8 +84,8 @@ void liquid_firdes_fnyquist(liquid_firfilt_type _type,
         liquid_firdes_farcsech_freqresponse(_k, _m, _beta, H_prime);
         break;
     default:
-        fprintf(stderr,"error: liquid_firdes_fnyquist(), unknown/unsupported filter type\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_fnyquist(), unknown/unsupported filter type");
+        return;
     }
 
     // copy result to fft input buffer, computing square root

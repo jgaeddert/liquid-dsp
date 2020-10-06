@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,25 +64,26 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _nfft,
     case LIQUID_FFT_RODFT01:  q->execute = &FFT(_execute_RODFT01);  break;  // DST-III
     case LIQUID_FFT_RODFT11:  q->execute = &FFT(_execute_RODFT11);  break;  // DST-IV
     default:
-        fprintf(stderr,"error: fft_create_plan_r2r_1d(), invalid type, %d\n", q->type);
-        exit(1);
+        return liquid_error_config("fft_create_plan_r2r_1d(), invalid type, %d", q->type);
     }
 
     return q;
 }
 
 // destroy real-to-real transform plan
-void FFT(_destroy_plan_r2r_1d)(FFT(plan) _q)
+int FFT(_destroy_plan_r2r_1d)(FFT(plan) _q)
 {
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print real-to-real transform plan
-void FFT(_print_plan_r2r_1d)(FFT(plan) _q)
+int FFT(_print_plan_r2r_1d)(FFT(plan) _q)
 {
     printf("real-to-real transform...\n");
     // TODO: print actual transform type
+    return LIQUID_OK;
 }
 
 //
@@ -90,7 +91,7 @@ void FFT(_print_plan_r2r_1d)(FFT(plan) _q)
 //
 
 // DCT-I
-void FFT(_execute_REDFT00)(FFT(plan) _q)
+int FFT(_execute_REDFT00)(FFT(plan) _q)
 {
     // ugly, slow method
     unsigned int i,k;
@@ -108,10 +109,11 @@ void FFT(_execute_REDFT00)(FFT(plan) _q)
         // compensate for discrepancy
         _q->yr[i] *= 2.0f;
     }
+    return LIQUID_OK;
 }
 
 // DCT-II (regular 'dct')
-void FFT(_execute_REDFT10)(FFT(plan) _q)
+int FFT(_execute_REDFT10)(FFT(plan) _q)
 {
     // ugly, slow method
     unsigned int i,k;
@@ -127,10 +129,11 @@ void FFT(_execute_REDFT10)(FFT(plan) _q)
         // compensate for discrepancy
         _q->yr[i] *= 2.0f;
     }
+    return LIQUID_OK;
 }
 
 // DCT-III (regular 'idct')
-void FFT(_execute_REDFT01)(FFT(plan) _q)
+int FFT(_execute_REDFT01)(FFT(plan) _q)
 {
     // ugly, slow method
     unsigned int i,k;
@@ -146,10 +149,11 @@ void FFT(_execute_REDFT01)(FFT(plan) _q)
         // compensate for discrepancy
         _q->yr[i] *= 2.0f;
     }
+    return LIQUID_OK;
 }
 
 // DCT-IV
-void FFT(_execute_REDFT11)(FFT(plan) _q)
+int FFT(_execute_REDFT11)(FFT(plan) _q)
 {
     // ugly, slow method
     unsigned int i,k;
@@ -165,6 +169,7 @@ void FFT(_execute_REDFT11)(FFT(plan) _q)
         // compensate for discrepancy
         _q->yr[i] *= 2.0f;
     }
+    return LIQUID_OK;
 }
 
 //
@@ -172,7 +177,7 @@ void FFT(_execute_REDFT11)(FFT(plan) _q)
 //
 
 // DST-I
-void FFT(_execute_RODFT00)(FFT(plan) _q)
+int FFT(_execute_RODFT00)(FFT(plan) _q)
 {
     // ugly, slow method
     unsigned int i,k;
@@ -188,10 +193,11 @@ void FFT(_execute_RODFT00)(FFT(plan) _q)
         // compensate for discrepancy
         _q->yr[i] *= 2.0f;
     }
+    return LIQUID_OK;
 }
 
 // DST-II
-void FFT(_execute_RODFT10)(FFT(plan) _q)
+int FFT(_execute_RODFT10)(FFT(plan) _q)
 {
     // ugly, slow method
     unsigned int i,k;
@@ -207,10 +213,11 @@ void FFT(_execute_RODFT10)(FFT(plan) _q)
         // compensate for discrepancy
         _q->yr[i] *= 2.0f;
     }
+    return LIQUID_OK;
 }
 
 // DST-III
-void FFT(_execute_RODFT01)(FFT(plan) _q)
+int FFT(_execute_RODFT01)(FFT(plan) _q)
 {
     // ugly, slow method
     unsigned int i,k;
@@ -226,10 +233,11 @@ void FFT(_execute_RODFT01)(FFT(plan) _q)
         // compensate for discrepancy
         _q->yr[i] *= 2.0f;
     }
+    return LIQUID_OK;
 }
 
 // DST-IV
-void FFT(_execute_RODFT11)(FFT(plan) _q)
+int FFT(_execute_RODFT11)(FFT(plan) _q)
 {
     // ugly, slow method
     unsigned int i,k;
@@ -245,5 +253,6 @@ void FFT(_execute_RODFT11)(FFT(plan) _q)
         // compensate for discrepancy
         _q->yr[i] *= 2.0f;
     }
+    return LIQUID_OK;
 }
 

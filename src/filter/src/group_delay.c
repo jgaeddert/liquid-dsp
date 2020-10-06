@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,17 +31,17 @@
 //  _h      : filter coefficients array [size: _n x 1]
 //  _n      : filter length
 //  _fc     : frequency at which delay is evaluated (-0.5 < _fc < 0.5)
-float fir_group_delay(float * _h,
+float fir_group_delay(float *      _h,
                       unsigned int _n,
-                      float _fc)
+                      float        _fc)
 {
     // validate input
     if (_n == 0) {
-        fprintf(stderr,"error: fir_group_delay(), length must be greater than zero\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"fir_group_delay(), length must be greater than zero");
+        return 0.0f;
     } else if (_fc < -0.5 || _fc > 0.5) {
-        fprintf(stderr,"error: fir_group_delay(), _fc must be in [-0.5,0.5]\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"fir_group_delay(), _fc must be in [-0.5,0.5]");
+        return 0.0f;
     }
 
     unsigned int i;
@@ -61,22 +61,22 @@ float fir_group_delay(float * _h,
 //  _a      : filter coefficients array (denominator), [size: _na x 1]
 //  _na     : filter length (denominator)
 //  _fc     : frequency at which delay is evaluated (-0.5 < _fc < 0.5)
-float iir_group_delay(float * _b,
+float iir_group_delay(float *      _b,
                       unsigned int _nb,
-                      float * _a,
+                      float *      _a,
                       unsigned int _na,
-                      float _fc)
+                      float        _fc)
 {
     // validate input
     if (_nb == 0) {
-        fprintf(stderr,"error: iir_group_delay(), numerator length must be greater than zero\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"iir_group_delay(), numerator length must be greater than zero");
+        return 0.0f;
     } else if (_na == 0) {
-        fprintf(stderr,"error: iir_group_delay(), denominator length must be greater than zero\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"iir_group_delay(), denominator length must be greater than zero");
+        return 0.0f;
     } else if (_fc < -0.5 || _fc > 0.5) {
-        fprintf(stderr,"error: iir_group_delay(), _fc must be in [-0.5,0.5]\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"iir_group_delay(), _fc must be in [-0.5,0.5]");
+        return 0.0f;
     }
 
     // compute c = conv(b,fliplr(a))

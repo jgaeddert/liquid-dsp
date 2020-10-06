@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,8 +48,8 @@ void liquid_lpc(float * _x,
 {
     // validate input
     if (_p > _n) {
-        fprintf(stderr,"error: liquid_lpc(), prediction filter length cannot exceed input signal length\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_lpc(), prediction filter length cannot exceed input signal length");
+        return;
     }
 
     // compute auto-correlation with lags
@@ -86,9 +86,8 @@ void liquid_levinson(float * _r,
 {
     // check allocation length
     if (_p > LIQUID_LEVINSON_MAXORDER) {
-        fprintf(stderr,"error: liquid_levinson(), filter order (%u) exceeds maximum (%u)\n",
-            _p, LIQUID_LEVINSON_MAXORDER);
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_levinson(), filter order (%u) exceeds maximum (%u)",_p,LIQUID_LEVINSON_MAXORDER);
+        return;
     }
 
     // allocate arrays

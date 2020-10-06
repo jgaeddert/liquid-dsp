@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,13 +67,11 @@ qpilotgen qpilotgen_create(unsigned int _payload_len,
                            unsigned int _pilot_spacing)
 {
     // validate input
-    if (_payload_len == 0) {
-        fprintf(stderr,"error: qpilotgen_create(), frame length must be at least 1 symbol\n");
-        exit(1);
-    } else if (_pilot_spacing < 2) {
-        fprintf(stderr,"error: qpilotgen_create(), pilot spacing must be at least 2 symbols\n");
-        exit(1);
-    }
+    if (_payload_len == 0)
+        return liquid_error_config("qpilotgen_create(), frame length must be at least 1 symbol");
+    if (_pilot_spacing < 2)
+        return liquid_error_config("qpilotgen_create(), pilot spacing must be at least 2 symbols");
+
     unsigned int i;
 
     // allocate memory for main object
@@ -124,26 +122,26 @@ qpilotgen qpilotgen_recreate(qpilotgen    _q,
     return qpilotgen_create(_payload_len, _pilot_spacing);
 }
 
-void qpilotgen_destroy(qpilotgen _q)
+int qpilotgen_destroy(qpilotgen _q)
 {
-    // free arrays
-    free(_q->pilots);
-    
-    // free main object memory
-    free(_q);
+    free(_q->pilots);   // free arrays
+    free(_q);           // free main object memory
+    return LIQUID_OK;
 }
 
-void qpilotgen_reset(qpilotgen _q)
+int qpilotgen_reset(qpilotgen _q)
 {
+    return LIQUID_OK;
 }
 
-void qpilotgen_print(qpilotgen _q)
+int qpilotgen_print(qpilotgen _q)
 {
     printf("qpilotgen:\n");
     printf("  payload len   :   %u\n", _q->payload_len);
     printf("  pilot spacing :   %u\n", _q->pilot_spacing);
     printf("  num pilots    :   %u\n", _q->num_pilots);
     printf("  frame len     :   %u\n", _q->frame_len);
+    return LIQUID_OK;
 }
 
 // get length of frame in symbols
@@ -155,9 +153,9 @@ unsigned int qpilotgen_get_frame_len(qpilotgen _q)
 // encode packet into modulated frame samples
 // TODO: include method with just symbol indices? would be useful for
 //       non-linear modulation types
-void qpilotgen_execute(qpilotgen       _q,
-                       float complex * _payload,
-                       float complex * _frame)
+int qpilotgen_execute(qpilotgen       _q,
+                      float complex * _payload,
+                      float complex * _frame)
 {
     unsigned int i;
     unsigned int n = 0;
@@ -170,7 +168,10 @@ void qpilotgen_execute(qpilotgen       _q,
     }
     //printf("n = %u (expected %u)\n", n, _q->payload_len);
     //printf("p = %u (expected %u)\n", p, _q->num_pilots);
-    assert(n == _q->payload_len);
-    assert(p == _q->num_pilots);
+    if (n != _q->payload_len)
+        return liquid_error(LIQUID_EINT,"qpilotgen_execute(), unexpected internal payload length");
+    if (p != _q->num_pilots)
+        return liquid_error(LIQUID_EINT,"qpilotgen_execute(), unexpected internal number of pilots");
+    return LIQUID_OK;
 }
 

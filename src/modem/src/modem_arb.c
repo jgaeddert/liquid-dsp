@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,16 +25,13 @@
 //
 
 // create arbitrary digital modem object
-MODEM() MODEM(_create_arbitrary)(TC * _table,
-                               unsigned int _M)
+MODEM() MODEM(_create_arbitrary)(float complex * _table,
+                                 unsigned int    _M)
 {
     // strip out bits/symbol
     unsigned int m = liquid_nextpow2(_M);
-    if ( (1<<m) != _M ) {
-        // TODO : eventually support non radix-2 constellation sizes
-        fprintf(stderr,"error: modem_create_arbitrary(), input constellation size must be power of 2\n");
-        exit(1);
-    }
+    if ( (1<<m) != _M )
+        return liquid_error_config("modem_create_arbitrary(), input constellation size must be power of 2");
 
     // create arbitrary modem object, not initialized
     MODEM() q = MODEM(_create_arb)(m);
@@ -65,23 +62,22 @@ MODEM() MODEM(_create_arb)(unsigned int _bits_per_symbol)
 }
 
 // modulate arbitrary modem type
-void MODEM(_modulate_arb)(MODEM()      _q,
-                          unsigned int _sym_in,
-                          TC *         _y)
+int MODEM(_modulate_arb)(MODEM()      _q,
+                         unsigned int _sym_in,
+                         TC *         _y)
 {
-    if (_sym_in >= _q->M) {
-        fprintf(stderr,"error: modulate_arb(), input symbol exceeds maximum\n");
-        exit(1);
-    }
+    if (_sym_in >= _q->M)
+        return liquid_error(LIQUID_EIRANGE,"modulate_arb(), input symbol exceeds maximum");
 
     // map sample directly to output
     *_y = _q->symbol_map[_sym_in]; 
+    return LIQUID_OK;
 }
 
 // demodulate arbitrary modem type
-void MODEM(_demodulate_arb)(MODEM()        _q,
-                            TC             _x,
-                            unsigned int * _sym_out)
+int MODEM(_demodulate_arb)(MODEM()        _q,
+                           TC             _x,
+                           unsigned int * _sym_out)
 {
     //printf("modem_demodulate_arb() invoked with I=%d, Q=%d\n", x);
     
@@ -108,6 +104,7 @@ void MODEM(_demodulate_arb)(MODEM()        _q,
     // re-modulate symbol and store state
     MODEM(_modulate_arb)(_q, *_sym_out, &_q->x_hat);
     _q->r = _x;
+    return LIQUID_OK;
 }
 
 // create a V.29 modem object (4 bits/symbol)
@@ -184,18 +181,15 @@ MODEM() MODEM(_create_arb64vt)()
 //  _mod        :   modem object
 //  _symbol_map :   arbitrary modem symbol map
 //  _len        :   number of symbols in the map
-void MODEM(_arb_init)(MODEM()      _q,
-                      TC *         _symbol_map,
-                      unsigned int _len)
+int MODEM(_arb_init)(MODEM()         _q,
+                     float complex * _symbol_map,
+                     unsigned int    _len)
 {
 #ifdef LIQUID_VALIDATE_INPUT
-    if (_q->scheme != LIQUID_MODEM_ARB) {
-        fprintf(stderr,"error: modem_arb_init(), modem is not of arbitrary type\n");
-        exit(1);
-    } else if (_len != _q->M) {
-        fprintf(stderr,"error: modem_arb_init(), array sizes do not match\n");
-        exit(1);
-    }
+    if (_q->scheme != LIQUID_MODEM_ARB)
+        return liquid_error(LIQUID_EICONFIG,"modem_arb_init(), modem is not of arbitrary type");
+    if (_len != _q->M)
+        return liquid_error(LIQUID_EICONFIG,"modem_arb_init(), array sizes do not match");
 #endif
 
     unsigned int i;
@@ -207,41 +201,33 @@ void MODEM(_arb_init)(MODEM()      _q,
         MODEM(_arb_balance_iq)(_q);
 
     // scale modem to have unity energy
-    MODEM(_arb_scale)(_q);
-
+    return MODEM(_arb_scale)(_q);
 }
 
 // initialize an arbitrary modem object on a file
 //  _mod        :   modem object
 //  _filename   :   name of the data file
-void MODEM(_arb_init_file)(MODEM() _q,
-                           char *  _filename)
+int MODEM(_arb_init_file)(MODEM() _q,
+                          char *  _filename)
 {
     // try to open file
     FILE * fid = fopen(_filename, "r");
-    if (fid == NULL) {
-        fprintf(stderr,"error: modem_arb_init_file(), could not open file\n");
-        exit(1);
-    }
+    if (fid == NULL)
+        return liquid_error(LIQUID_EIO,"modem_arb_init_file(), could not open file");
 
     unsigned int i, results;
     T sym_i, sym_q;
     for (i=0; i<_q->M; i++) {
-        if ( feof(fid) ) {
-            fprintf(stderr,"error: modem_arb_init_file(), premature EOF for '%s'\n", _filename);
-            exit(1);
-        }
+        if ( feof(fid) )
+            return liquid_error(LIQUID_EIO,"modem_arb_init_file(), premature EOF for '%s'", _filename);
 
         results = fscanf(fid, "%f %f\n", &sym_i, &sym_q);
         _q->symbol_map[i] = sym_i + _Complex_I*sym_q;
 
         // ensure proper number of symbols were read
-        if (results < 2) {
-            fprintf(stderr,"error: modem_arb_init_file(), unable to parse line\n");
-            exit(1);
-        }
+        if (results < 2)
+            return liquid_error(LIQUID_EIO,"modem_arb_init_file(), unable to parse line");
     }
-
     fclose(fid);
 
     // balance I/Q channels
@@ -249,11 +235,11 @@ void MODEM(_arb_init_file)(MODEM() _q,
         MODEM(_arb_balance_iq)(_q);
 
     // scale modem to have unity energy
-    MODEM(_arb_scale)(_q);
+    return MODEM(_arb_scale)(_q);
 }
 
 // scale arbitrary modem constellation points
-void MODEM(_arb_scale)(MODEM() _q)
+int MODEM(_arb_scale)(MODEM() _q)
 {
     unsigned int i;
 
@@ -269,10 +255,11 @@ void MODEM(_arb_scale)(MODEM() _q)
     for (i=0; i<_q->M; i++) {
         _q->symbol_map[i] /= e;
     }
+    return LIQUID_OK;
 }
 
 // balance an arbitrary modem's I/Q points
-void MODEM(_arb_balance_iq)(MODEM() _q)
+int MODEM(_arb_balance_iq)(MODEM() _q)
 {
     TC mean=0.0f;
     unsigned int i;
@@ -287,13 +274,14 @@ void MODEM(_arb_balance_iq)(MODEM() _q)
     for (i=0; i<_q->M; i++) {
         _q->symbol_map[i] -= mean;
     }
+    return LIQUID_OK;
 }
 
 // demodulate arbitrary modem type (soft)
-void MODEM(_demodulate_soft_arb)(MODEM()         _q,
-                                 TC              _r,
-                                 unsigned int  * _s,
-                                 unsigned char * _soft_bits)
+int MODEM(_demodulate_soft_arb)(MODEM()         _q,
+                               TC              _r,
+                               unsigned int  * _s,
+                               unsigned char * _soft_bits)
 {
     unsigned int bps = _q->m;
     unsigned int M   = _q->M;
@@ -352,5 +340,6 @@ void MODEM(_demodulate_soft_arb)(MODEM()         _q,
     // re-modulate symbol and store state
     MODEM(_modulate_arb)(_q, *_s, &_q->x_hat);
     _q->r = _r;
+    return LIQUID_OK;
 }
 

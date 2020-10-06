@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,8 @@
 unsigned int golay2412_generate_error_vector(unsigned int _n)
 {
     if (_n > 24) {
-        fprintf(stderr,"error: golay2412_generate_error_vector(), cannot generate more than 24 errors\n");
-        exit(1);
+        liquid_error(LIQUID_EINT,"golay2412_generate_error_vector(), cannot generate more than 24 errors");
+        return 0;
     }
 
     unsigned int i;

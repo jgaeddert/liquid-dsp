@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@
 // Configuration file
 #include "config.h"
 
+#include <stdarg.h>
 #include <complex.h>
 #include "liquid.h"
 
@@ -42,6 +43,19 @@
 #  define LIBFEC_ENABLED 1
 #endif
 
+// report error
+int liquid_error_fl(int _code, const char * _file, int _line, const char * _format, ...);
+
+// report error specifically for invalid object configuration 
+void * liquid_error_config_fl(const char * _file, int _line, const char * _format, ...);
+
+// macro to get file name and line number for source of error
+#define liquid_error(code, format, ...) \
+    liquid_error_fl(code, __FILE__, __LINE__, format, ##__VA_ARGS__);
+
+// macro to get file name and line number for source of error (invalid object)
+#define liquid_error_config(format, ...) \
+    liquid_error_config_fl(__FILE__, __LINE__, format, ##__VA_ARGS__);
 
 //
 // Debugging macros
@@ -145,22 +159,22 @@ struct fec_s {
     int erasures;               // number of erasures
 
     // encode function pointer
-    void (*encode_func)(fec _q,
-                        unsigned int _dec_msg_len,
-                        unsigned char * _msg_dec,
-                        unsigned char * _msg_enc);
+    int (*encode_func)(fec _q,
+                       unsigned int _dec_msg_len,
+                       unsigned char * _msg_dec,
+                       unsigned char * _msg_enc);
 
     // decode function pointer
-    void (*decode_func)(fec _q,
-                        unsigned int _dec_msg_len,
-                        unsigned char * _msg_enc,
-                        unsigned char * _msg_dec);
+    int (*decode_func)(fec _q,
+                       unsigned int _dec_msg_len,
+                       unsigned char * _msg_enc,
+                       unsigned char * _msg_dec);
 
     // decode function pointer (soft decision)
-    void (*decode_soft_func)(fec _q,
-                             unsigned int _dec_msg_len,
-                             unsigned char * _msg_enc,
-                             unsigned char * _msg_dec);
+    int (*decode_soft_func)(fec _q,
+                            unsigned int _dec_msg_len,
+                            unsigned char * _msg_enc,
+                            unsigned char * _msg_dec);
 };
 
 // simple type testing
@@ -172,69 +186,69 @@ int fec_scheme_is_repeat(fec_scheme _scheme);
 
 // Pass
 fec fec_pass_create(void *_opts);
-void fec_pass_destroy(fec _q);
-void fec_pass_print(fec _q);
-void fec_pass_encode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char * _msg_dec,
-                     unsigned char * _msg_enc);
-void fec_pass_decode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char * _msg_enc,
-                     unsigned char * _msg_dec);
+int fec_pass_destroy(fec _q);
+int fec_pass_print(fec _q);
+int fec_pass_encode(fec _q,
+                    unsigned int _dec_msg_len,
+                    unsigned char * _msg_dec,
+                    unsigned char * _msg_enc);
+int fec_pass_decode(fec _q,
+                    unsigned int _dec_msg_len,
+                    unsigned char * _msg_enc,
+                    unsigned char * _msg_dec);
 
 // Repeat (3)
 fec fec_rep3_create(void *_opts);
-void fec_rep3_destroy(fec _q);
-void fec_rep3_print(fec _q);
-void fec_rep3_encode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char * _msg_dec,
-                     unsigned char * _msg_enc);
-void fec_rep3_decode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char * _msg_enc,
-                     unsigned char * _msg_dec);
-void fec_rep3_decode_soft(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char * _msg_enc,
-                          unsigned char * _msg_dec);
+int fec_rep3_destroy(fec _q);
+int fec_rep3_print(fec _q);
+int fec_rep3_encode(fec _q,
+                    unsigned int _dec_msg_len,
+                    unsigned char * _msg_dec,
+                    unsigned char * _msg_enc);
+int fec_rep3_decode(fec _q,
+                    unsigned int _dec_msg_len,
+                    unsigned char * _msg_enc,
+                    unsigned char * _msg_dec);
+int fec_rep3_decode_soft(fec _q,
+                         unsigned int _dec_msg_len,
+                         unsigned char * _msg_enc,
+                         unsigned char * _msg_dec);
 
 // Repeat (5)
 fec fec_rep5_create(void *_opts);
-void fec_rep5_destroy(fec _q);
-void fec_rep5_print(fec _q);
-void fec_rep5_encode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char * _msg_dec,
-                     unsigned char * _msg_enc);
-void fec_rep5_decode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char * _msg_enc,
-                     unsigned char * _msg_dec);
-void fec_rep5_decode_soft(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char * _msg_enc,
-                          unsigned char * _msg_dec);
+int fec_rep5_destroy(fec _q);
+int fec_rep5_print(fec _q);
+int fec_rep5_encode(fec _q,
+                    unsigned int _dec_msg_len,
+                    unsigned char * _msg_dec,
+                    unsigned char * _msg_enc);
+int fec_rep5_decode(fec _q,
+                    unsigned int _dec_msg_len,
+                    unsigned char * _msg_enc,
+                    unsigned char * _msg_dec);
+int fec_rep5_decode_soft(fec _q,
+                         unsigned int _dec_msg_len,
+                         unsigned char * _msg_enc,
+                         unsigned char * _msg_dec);
 
 // Hamming(7,4)
 extern unsigned char hamming74_enc_gentab[16];
 extern unsigned char hamming74_dec_gentab[128];
 fec fec_hamming74_create(void *_opts);
-void fec_hamming74_destroy(fec _q);
-void fec_hamming74_print(fec _q);
-void fec_hamming74_encode(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char * _msg_dec,
-                          unsigned char * _msg_enc);
-void fec_hamming74_decode(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char * _msg_enc,
-                          unsigned char * _msg_dec);
-void fec_hamming74_decode_soft(fec _q,
-                               unsigned int _dec_msg_len,
-                               unsigned char * _msg_enc,
-                               unsigned char * _msg_dec);
+int fec_hamming74_destroy(fec _q);
+int fec_hamming74_print(fec _q);
+int fec_hamming74_encode(fec _q,
+                         unsigned int _dec_msg_len,
+                         unsigned char * _msg_dec,
+                         unsigned char * _msg_enc);
+int fec_hamming74_decode(fec _q,
+                         unsigned int _dec_msg_len,
+                         unsigned char * _msg_enc,
+                         unsigned char * _msg_dec);
+int fec_hamming74_decode_soft(fec _q,
+                              unsigned int _dec_msg_len,
+                              unsigned char * _msg_enc,
+                              unsigned char * _msg_dec);
 // soft decoding of one symbol
 unsigned char fecsoft_hamming74_decode(unsigned char * _soft_bits);
 
@@ -242,20 +256,20 @@ unsigned char fecsoft_hamming74_decode(unsigned char * _soft_bits);
 extern unsigned char hamming84_enc_gentab[16];
 extern unsigned char hamming84_dec_gentab[256];
 fec fec_hamming84_create(void *_opts);
-void fec_hamming84_destroy(fec _q);
-void fec_hamming84_print(fec _q);
-void fec_hamming84_encode(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char * _msg_dec,
-                          unsigned char * _msg_enc);
-void fec_hamming84_decode(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char * _msg_enc,
-                          unsigned char * _msg_dec);
-void fec_hamming84_decode_soft(fec _q,
-                               unsigned int _dec_msg_len,
-                               unsigned char * _msg_enc,
-                               unsigned char * _msg_dec);
+int fec_hamming84_destroy(fec _q);
+int fec_hamming84_print(fec _q);
+int fec_hamming84_encode(fec _q,
+                         unsigned int _dec_msg_len,
+                         unsigned char * _msg_dec,
+                         unsigned char * _msg_enc);
+int fec_hamming84_decode(fec _q,
+                         unsigned int _dec_msg_len,
+                         unsigned char * _msg_enc,
+                         unsigned char * _msg_dec);
+int fec_hamming84_decode_soft(fec _q,
+                              unsigned int _dec_msg_len,
+                              unsigned char * _msg_enc,
+                              unsigned char * _msg_dec);
 // soft decoding of one symbol
 unsigned char fecsoft_hamming84_decode(unsigned char * _soft_bits);
 
@@ -266,20 +280,20 @@ unsigned int fec_hamming128_decode_symbol(unsigned int _sym_enc);
 extern unsigned short int hamming128_enc_gentab[256];   // encoding table
 
 fec fec_hamming128_create(void *_opts);
-void fec_hamming128_destroy(fec _q);
-void fec_hamming128_print(fec _q);
-void fec_hamming128_encode(fec _q,
-                           unsigned int _dec_msg_len,
-                           unsigned char * _msg_dec,
-                           unsigned char * _msg_enc);
-void fec_hamming128_decode(fec _q,
-                           unsigned int _dec_msg_len,
-                           unsigned char * _msg_enc,
-                           unsigned char * _msg_dec);
-void fec_hamming128_decode_soft(fec _q,
-                                unsigned int _dec_msg_len,
-                                unsigned char * _msg_enc,
-                                unsigned char * _msg_dec);
+int fec_hamming128_destroy(fec _q);
+int fec_hamming128_print(fec _q);
+int fec_hamming128_encode(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_dec,
+                          unsigned char * _msg_enc);
+int fec_hamming128_decode(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_enc,
+                          unsigned char * _msg_dec);
+int fec_hamming128_decode_soft(fec _q,
+                               unsigned int _dec_msg_len,
+                               unsigned char * _msg_enc,
+                               unsigned char * _msg_dec);
 // soft decoding of one symbol
 unsigned int fecsoft_hamming128_decode(unsigned char * _soft_bits);
 extern unsigned char fecsoft_hamming128_n3[256][17];
@@ -312,16 +326,16 @@ unsigned int golay2412_matrix_mul(unsigned int   _v,
 int golay2412_parity_search(unsigned int _v);
 
 fec fec_golay2412_create(void *_opts);
-void fec_golay2412_destroy(fec _q);
-void fec_golay2412_print(fec _q);
-void fec_golay2412_encode(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char * _msg_dec,
-                          unsigned char * _msg_enc);
-void fec_golay2412_decode(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char * _msg_enc,
-                          unsigned char * _msg_dec);
+int fec_golay2412_destroy(fec _q);
+int fec_golay2412_print(fec _q);
+int fec_golay2412_encode(fec _q,
+                         unsigned int _dec_msg_len,
+                         unsigned char * _msg_dec,
+                         unsigned char * _msg_enc);
+int fec_golay2412_decode(fec _q,
+                         unsigned int _dec_msg_len,
+                         unsigned char * _msg_enc,
+                         unsigned char * _msg_dec);
 
 // SEC-DED (22,16)
 
@@ -334,8 +348,8 @@ unsigned char fec_secded2216_compute_syndrome(unsigned char * _v);
 // encode symbol
 //  _sym_dec    :   decoded symbol [size: 2 x 1]
 //  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
-void fec_secded2216_encode_symbol(unsigned char * _sym_dec,
-                                  unsigned char * _sym_enc);
+int fec_secded2216_encode_symbol(unsigned char * _sym_dec,
+                                 unsigned char * _sym_enc);
 
 // decode symbol, returning 0/1/2 for zero/one/multiple errors detected
 //  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
@@ -356,16 +370,16 @@ extern unsigned char secded2216_P[12];
 extern unsigned char secded2216_syndrome_w1[22];
 
 fec fec_secded2216_create(void *_opts);
-void fec_secded2216_destroy(fec _q);
-void fec_secded2216_print(fec _q);
-void fec_secded2216_encode(fec _q,
-                           unsigned int _dec_msg_len,
-                           unsigned char * _msg_dec,
-                           unsigned char * _msg_enc);
-void fec_secded2216_decode(fec _q,
-                           unsigned int _dec_msg_len,
-                           unsigned char * _msg_enc,
-                           unsigned char * _msg_dec);
+int fec_secded2216_destroy(fec _q);
+int fec_secded2216_print(fec _q);
+int fec_secded2216_encode(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_dec,
+                          unsigned char * _msg_enc);
+int fec_secded2216_decode(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_enc,
+                          unsigned char * _msg_dec);
 
 // SEC-DED (39,32)
 
@@ -378,8 +392,8 @@ unsigned char fec_secded3932_compute_syndrome(unsigned char * _v);
 // encode symbol
 //  _sym_dec    :   decoded symbol [size: 4 x 1]
 //  _sym_enc    :   encoded symbol [size: 5 x 1], _sym_enc[0] has only 7 bits
-void fec_secded3932_encode_symbol(unsigned char * _sym_dec,
-                                  unsigned char * _sym_enc);
+int fec_secded3932_encode_symbol(unsigned char * _sym_dec,
+                                 unsigned char * _sym_enc);
 
 // estimate error vector, returning 0/1/2 for zero/one/multiple errors detected
 //  _sym_enc    :   encoded symbol [size: 5 x 1], _sym_enc[0] has only 7 bits
@@ -391,7 +405,7 @@ int  fec_secded3932_estimate_ehat(unsigned char * _sym_enc,
 //  _sym_enc    :   encoded symbol [size: 5 x 1], _sym_enc[0] has only 7 bits
 //  _sym_dec    :   decoded symbol [size: 4 x 1]
 int fec_secded3932_decode_symbol(unsigned char * _sym_enc,
-                                 unsigned char * _sym_dec);
+                                unsigned char * _sym_dec);
 
 // parity matrix [7 x 32 bits], [7 x 4 bytes]
 extern unsigned char secded3932_P[28];
@@ -400,16 +414,16 @@ extern unsigned char secded3932_P[28];
 extern unsigned char secded3932_syndrome_w1[39];
 
 fec fec_secded3932_create(void *_opts);
-void fec_secded3932_destroy(fec _q);
-void fec_secded3932_print(fec _q);
-void fec_secded3932_encode(fec _q,
-                           unsigned int _dec_msg_len,
-                           unsigned char * _msg_dec,
-                           unsigned char * _msg_enc);
-void fec_secded3932_decode(fec _q,
-                           unsigned int _dec_msg_len,
-                           unsigned char * _msg_enc,
-                           unsigned char * _msg_dec);
+int fec_secded3932_destroy(fec _q);
+int fec_secded3932_print(fec _q);
+int fec_secded3932_encode(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_dec,
+                          unsigned char * _msg_enc);
+int fec_secded3932_decode(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_enc,
+                          unsigned char * _msg_dec);
 
 // SEC-DED (72,64)
 
@@ -422,8 +436,8 @@ unsigned char fec_secded7264_compute_syndrome(unsigned char * _v);
 // encode symbol
 //  _sym_dec    :   input symbol [size: 8 x 1]
 //  _sym_enc    :   input symbol [size: 9 x 1]
-void fec_secded7264_encode_symbol(unsigned char * _sym_dec,
-                                  unsigned char * _sym_enc);
+int fec_secded7264_encode_symbol(unsigned char * _sym_dec,
+                                 unsigned char * _sym_enc);
 
 // estimate error vector, returning 0/1/2 for zero/one/multiple errors detected
 //  _sym_enc    :   encoded symbol [size: 9 x 1]
@@ -441,16 +455,16 @@ extern unsigned char secded7264_P[64];
 extern unsigned char secded7264_syndrome_w1[72];
 
 fec fec_secded7264_create(void *_opts);
-void fec_secded7264_destroy(fec _q);
-void fec_secded7264_print(fec _q);
-void fec_secded7264_encode(fec _q,
-                           unsigned int _dec_msg_len,
-                           unsigned char * _msg_dec,
-                           unsigned char * _msg_enc);
-void fec_secded7264_decode(fec _q,
-                           unsigned int _dec_msg_len,
-                           unsigned char * _msg_enc,
-                           unsigned char * _msg_dec);
+int fec_secded7264_destroy(fec _q);
+int fec_secded7264_print(fec _q);
+int fec_secded7264_encode(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_dec,
+                          unsigned char * _msg_enc);
+int fec_secded7264_decode(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_enc,
+                          unsigned char * _msg_dec);
 
 
 // Convolutional: r1/2 K=7
@@ -496,65 +510,62 @@ extern int fec_conv29p67_matrix[12];    // [2 x 6]
 extern int fec_conv29p78_matrix[14];    // [2 x 7]
 
 fec fec_conv_create(fec_scheme _fs);
-void fec_conv_destroy(fec _q);
-void fec_conv_print(fec _q);
-void fec_conv_encode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char * _msg_dec,
-                     unsigned char * _msg_enc);
-void fec_conv_decode_hard(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char * _msg_enc,
-                          unsigned char * _msg_dec);
-void fec_conv_decode_soft(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char * _msg_enc,
-                          unsigned char * _msg_dec);
-void fec_conv_decode(fec _q,
-                     unsigned char * _msg_dec);
-void fec_conv_setlength(fec _q,
-                        unsigned int _dec_msg_len);
+int fec_conv_destroy(fec _q);
+int fec_conv_print(fec _q);
+int fec_conv_encode(fec _q,
+                    unsigned int _dec_msg_len,
+                    unsigned char * _msg_dec,
+                    unsigned char * _msg_enc);
+int fec_conv_decode_hard(fec _q,
+                         unsigned int _dec_msg_len,
+                         unsigned char * _msg_enc,
+                         unsigned char * _msg_dec);
+int fec_conv_decode_soft(fec _q,
+                         unsigned int _dec_msg_len,
+                         unsigned char * _msg_enc,
+                         unsigned char * _msg_dec);
+int fec_conv_decode(fec _q, unsigned char * _msg_dec);
+int fec_conv_setlength(fec _q, unsigned int _dec_msg_len);
 
 // internal initialization methods (sets r, K, viterbi methods)
-void fec_conv_init_v27(fec _q);
-void fec_conv_init_v29(fec _q);
-void fec_conv_init_v39(fec _q);
-void fec_conv_init_v615(fec _q);
+int fec_conv_init_v27(fec _q);
+int fec_conv_init_v29(fec _q);
+int fec_conv_init_v39(fec _q);
+int fec_conv_init_v615(fec _q);
 
 // punctured convolutional codes
 fec fec_conv_punctured_create(fec_scheme _fs);
-void fec_conv_punctured_destroy(fec _q);
-void fec_conv_punctured_print(fec _q);
-void fec_conv_punctured_encode(fec _q,
+int fec_conv_punctured_destroy(fec _q);
+int fec_conv_punctured_print(fec _q);
+int fec_conv_punctured_encode(fec _q,
                                unsigned int _dec_msg_len,
                                unsigned char * _msg_dec,
                                unsigned char * _msg_enc);
-void fec_conv_punctured_decode_hard(fec _q,
-                                    unsigned int _dec_msg_len,
-                                    unsigned char * _msg_enc,
-                                    unsigned char * _msg_dec);
-void fec_conv_punctured_decode_soft(fec _q,
-                                    unsigned int _dec_msg_len,
-                                    unsigned char * _msg_enc,
-                                    unsigned char * _msg_dec);
-void fec_conv_punctured_setlength(fec _q,
-                                  unsigned int _dec_msg_len);
+int fec_conv_punctured_decode_hard(fec _q,
+                                   unsigned int _dec_msg_len,
+                                   unsigned char * _msg_enc,
+                                   unsigned char * _msg_dec);
+int fec_conv_punctured_decode_soft(fec _q,
+                                   unsigned int _dec_msg_len,
+                                   unsigned char * _msg_enc,
+                                   unsigned char * _msg_dec);
+int fec_conv_punctured_setlength(fec _q, unsigned int _dec_msg_len);
 
 // internal initialization methods (sets r, K, viterbi methods,
 // and puncturing matrix)
-void fec_conv_init_v27p23(fec _q);
-void fec_conv_init_v27p34(fec _q);
-void fec_conv_init_v27p45(fec _q);
-void fec_conv_init_v27p56(fec _q);
-void fec_conv_init_v27p67(fec _q);
-void fec_conv_init_v27p78(fec _q);
+int fec_conv_init_v27p23(fec _q);
+int fec_conv_init_v27p34(fec _q);
+int fec_conv_init_v27p45(fec _q);
+int fec_conv_init_v27p56(fec _q);
+int fec_conv_init_v27p67(fec _q);
+int fec_conv_init_v27p78(fec _q);
 
-void fec_conv_init_v29p23(fec _q);
-void fec_conv_init_v29p34(fec _q);
-void fec_conv_init_v29p45(fec _q);
-void fec_conv_init_v29p56(fec _q);
-void fec_conv_init_v29p67(fec _q);
-void fec_conv_init_v29p78(fec _q);
+int fec_conv_init_v29p23(fec _q);
+int fec_conv_init_v29p34(fec _q);
+int fec_conv_init_v29p45(fec _q);
+int fec_conv_init_v29p56(fec _q);
+int fec_conv_init_v29p67(fec _q);
+int fec_conv_init_v29p78(fec _q);
 
 // Reed-Solomon
 
@@ -570,18 +581,18 @@ unsigned int fec_rs_get_enc_msg_len(unsigned int _dec_msg_len,
 
 
 fec fec_rs_create(fec_scheme _fs);
-void fec_rs_destroy(fec _q);
-void fec_rs_init_p8(fec _q);
-void fec_rs_setlength(fec _q,
-                      unsigned int _dec_msg_len);
-void fec_rs_encode(fec _q,
-                   unsigned int _dec_msg_len,
-                   unsigned char * _msg_dec,
-                   unsigned char * _msg_enc);
-void fec_rs_decode(fec _q,
-                   unsigned int _dec_msg_len,
-                   unsigned char * _msg_enc,
-                   unsigned char * _msg_dec);
+int fec_rs_destroy(fec _q);
+int fec_rs_init_p8(fec _q);
+int fec_rs_setlength(fec _q,
+                     unsigned int _dec_msg_len);
+int fec_rs_encode(fec _q,
+                  unsigned int _dec_msg_len,
+                  unsigned char * _msg_dec,
+                  unsigned char * _msg_enc);
+int fec_rs_decode(fec _q,
+                  unsigned int _dec_msg_len,
+                  unsigned char * _msg_enc,
+                  unsigned char * _msg_dec);
 
 // phi(x) = -logf( tanhf( x/2 ) )
 float sumproduct_phi(float _x);
@@ -681,8 +692,8 @@ typedef enum {
 #define LIQUID_FFT_DEFINE_INTERNAL_API(FFT,T,TC)                \
                                                                 \
 /* print plan recursively */                                    \
-void FFT(_print_plan_recursive)(FFT(plan)    _q,                \
-                                unsigned int _level);           \
+int FFT(_print_plan_recursive)(FFT(plan)    _q,                 \
+                               unsigned int _level);            \
                                                                 \
 /* type definitions for create/destroy/execute functions */     \
 typedef FFT(plan)(FFT(_create_t)) (unsigned int _nfft,          \
@@ -690,8 +701,8 @@ typedef FFT(plan)(FFT(_create_t)) (unsigned int _nfft,          \
                                    TC *         _y,             \
                                    int          _dir,           \
                                    int          _flags);        \
-typedef void (FFT(_destroy_t))(FFT(plan) _q);                   \
-typedef void (FFT(_execute_t))(FFT(plan) _q);                   \
+typedef int (FFT(_destroy_t))(FFT(plan) _q);                    \
+typedef int (FFT(_execute_t))(FFT(plan) _q);                    \
                                                                 \
 /* FFT create methods */                                        \
 FFT(_create_t) FFT(_create_plan_dft);                           \
@@ -728,22 +739,22 @@ FFT(_execute_t) FFT(_execute_dft_16);                           \
 unsigned int FFT(_estimate_mixed_radix)(unsigned int _nfft);    \
                                                                 \
 /* discrete cosine transform (DCT) prototypes */                \
-void FFT(_execute_REDFT00)(FFT(plan) _q);   /* DCT-I   */       \
-void FFT(_execute_REDFT10)(FFT(plan) _q);   /* DCT-II  */       \
-void FFT(_execute_REDFT01)(FFT(plan) _q);   /* DCT-III */       \
-void FFT(_execute_REDFT11)(FFT(plan) _q);   /* DCT-IV  */       \
+int FFT(_execute_REDFT00)(FFT(plan) _q);    /* DCT-I   */       \
+int FFT(_execute_REDFT10)(FFT(plan) _q);    /* DCT-II  */       \
+int FFT(_execute_REDFT01)(FFT(plan) _q);    /* DCT-III */       \
+int FFT(_execute_REDFT11)(FFT(plan) _q);    /* DCT-IV  */       \
                                                                 \
 /* discrete sine transform (DST) prototypes */                  \
-void FFT(_execute_RODFT00)(FFT(plan) _q);   /* DST-I   */       \
-void FFT(_execute_RODFT10)(FFT(plan) _q);   /* DST-II  */       \
-void FFT(_execute_RODFT01)(FFT(plan) _q);   /* DST-III */       \
-void FFT(_execute_RODFT11)(FFT(plan) _q);   /* DST-IV  */       \
+int FFT(_execute_RODFT00)(FFT(plan) _q);    /* DST-I   */       \
+int FFT(_execute_RODFT10)(FFT(plan) _q);    /* DST-II  */       \
+int FFT(_execute_RODFT01)(FFT(plan) _q);    /* DST-III */       \
+int FFT(_execute_RODFT11)(FFT(plan) _q);    /* DST-IV  */       \
                                                                 \
 /* destroy real-to-real one-dimensional plan */                 \
-void FFT(_destroy_plan_r2r_1d)(FFT(plan) _q);                   \
+int FFT(_destroy_plan_r2r_1d)(FFT(plan) _q);                    \
                                                                 \
 /* print real-to-real one-dimensional plan */                   \
-void FFT(_print_plan_r2r_1d)(FFT(plan) _q);                     \
+int FFT(_print_plan_r2r_1d)(FFT(plan) _q);                      \
 
 // determine best FFT method based on size
 liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft);
@@ -1072,16 +1083,6 @@ void bpacketgen_compute_packet_len(bpacketgen _q);
 void bpacketgen_assemble_pnsequence(bpacketgen _q);
 void bpacketgen_assemble_header(bpacketgen _q);
 
-// synchronizer
-void bpacketsync_assemble_pnsequence(bpacketsync _q);
-void bpacketsync_execute_seekpn(bpacketsync _q, unsigned char _bit);
-void bpacketsync_execute_rxheader(bpacketsync _q, unsigned char _bit);
-void bpacketsync_execute_rxpayload(bpacketsync _q, unsigned char _bit);
-void bpacketsync_decode_header(bpacketsync _q);
-void bpacketsync_decode_payload(bpacketsync _q);
-void bpacketsync_reconfig(bpacketsync _q);
-
-
 // 
 // flexframe
 //
@@ -1156,63 +1157,63 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,                                 \
                            float        _gain);                             \
                                                                             \
 /* Initialize user-defined qsource object                               */  \
-void QSOURCE(_init_user)(QSOURCE() _q,                                      \
-                         void *    _userdata,                               \
-                         void *    _callback);                              \
+int QSOURCE(_init_user)(QSOURCE() _q,                                       \
+                        void *    _userdata,                                \
+                        void *    _callback);                               \
                                                                             \
 /* Initialize qsource tone object                                       */  \
-void QSOURCE(_init_tone)(QSOURCE() _q);                                     \
+int QSOURCE(_init_tone)(QSOURCE() _q);                                      \
                                                                             \
 /* Add chirp to signal generator, returning id of signal                */  \
 /*  _q          : signal source object                                  */  \
 /*  _duration   : duration of chirp [samples]                           */  \
 /*  _negate     : negate frequency direction                            */  \
 /*  _repeat     : repeat signal? or just run once                       */  \
-void QSOURCE(_init_chirp)(QSOURCE() _q,                                     \
-                          float     _duration,                              \
-                          int       _negate,                                \
-                          int       _repeat);                               \
+int QSOURCE(_init_chirp)(QSOURCE() _q,                                      \
+                         float     _duration,                               \
+                         int       _negate,                                 \
+                         int       _repeat);                                \
                                                                             \
 /* Initialize qsource noise object                                      */  \
-void QSOURCE(_init_noise)(QSOURCE() _q);                                    \
+int QSOURCE(_init_noise)(QSOURCE() _q);                                     \
                                                                             \
 /* Initialize qsource linear modem object                               */  \
-void QSOURCE(_init_modem)(QSOURCE()    _q,                                  \
-                          int          _ms,                                 \
-                          unsigned int _m,                                  \
-                          float        _beta);                              \
+int QSOURCE(_init_modem)(QSOURCE()    _q,                                   \
+                         int          _ms,                                  \
+                         unsigned int _m,                                   \
+                         float        _beta);                               \
                                                                             \
 /* Initialize frequency-shift keying modem signal source                */  \
 /*  _q      : signal source object                                      */  \
 /*  _m      : bits per symbol, _bps > 0                                 */  \
 /*  _k      : samples/symbol, _k >= 2^_m                                */  \
-void QSOURCE(_init_fsk)(QSOURCE()    _q,                                    \
-                        unsigned int _m,                                    \
-                        unsigned int _k);                                   \
+int QSOURCE(_init_fsk)(QSOURCE()    _q,                                     \
+                       unsigned int _m,                                     \
+                       unsigned int _k);                                    \
                                                                             \
 /* Initialize qsource GMSK modem object                                 */  \
-void QSOURCE(_init_gmsk)(QSOURCE()    _q,                                   \
-                         unsigned int _m,                                   \
-                         float        _bt);                                 \
+int QSOURCE(_init_gmsk)(QSOURCE()    _q,                                    \
+                        unsigned int _m,                                    \
+                        float        _bt);                                  \
                                                                             \
 /* Destroy qsource object                                               */  \
-void QSOURCE(_destroy)(QSOURCE() _q);                                       \
+int QSOURCE(_destroy)(QSOURCE() _q);                                        \
                                                                             \
 /* Print qsource object                                                 */  \
-void QSOURCE(_print)(QSOURCE() _q);                                         \
+int QSOURCE(_print)(QSOURCE() _q);                                          \
                                                                             \
 /* Reset qsource object                                                 */  \
-void QSOURCE(_reset)(QSOURCE() _q);                                         \
+int QSOURCE(_reset)(QSOURCE() _q);                                          \
                                                                             \
 /* Get/set source id                                                    */  \
-void QSOURCE(_set_id)(QSOURCE() _q, int _id);                               \
-int  QSOURCE(_get_id)(QSOURCE() _q);                                        \
+int QSOURCE(_set_id)(QSOURCE() _q, int _id);                                \
+int QSOURCE(_get_id)(QSOURCE() _q);                                         \
                                                                             \
-void QSOURCE(_enable)(QSOURCE() _q);                                        \
-void QSOURCE(_disable)(QSOURCE() _q);                                       \
+int QSOURCE(_enable)(QSOURCE() _q);                                         \
+int QSOURCE(_disable)(QSOURCE() _q);                                        \
                                                                             \
-void QSOURCE(_set_gain)(QSOURCE() _q,                                       \
-                        float     _gain_dB);                                \
+int QSOURCE(_set_gain)(QSOURCE() _q,                                        \
+                       float     _gain_dB);                                 \
                                                                             \
 float QSOURCE(_get_gain)(QSOURCE() _q);                                     \
                                                                             \
@@ -1221,16 +1222,16 @@ float QSOURCE(_get_gain)(QSOURCE() _q);                                     \
 /*  _gain   : signal gain output [dB]                                   */  \
 uint64_t QSOURCE(_get_num_samples)(QSOURCE() _q);                           \
                                                                             \
-void QSOURCE(_set_frequency)(QSOURCE() _q,                                  \
-                             float     _dphi);                              \
+int QSOURCE(_set_frequency)(QSOURCE() _q,                                   \
+                            float     _dphi);                               \
                                                                             \
 float QSOURCE(_get_frequency)(QSOURCE() _q);                                \
                                                                             \
-void QSOURCE(_generate)(QSOURCE() _q,                                       \
-                        TO *      _v);                                      \
+int QSOURCE(_generate)(QSOURCE() _q,                                        \
+                       TO *      _v);                                       \
                                                                             \
-void QSOURCE(_generate_into)(QSOURCE() _q,                                  \
-                             TO *      _buf);                               \
+int QSOURCE(_generate_into)(QSOURCE() _q,                                   \
+                            TO *      _buf);                                \
     
 LIQUID_QSOURCE_DEFINE_API(LIQUID_QSOURCE_MANGLE_CFLOAT, liquid_float_complex)
 
@@ -1295,20 +1296,6 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(LIQUID_MATRIX_MANGLE_DOUBLE,  double)
 LIQUID_MATRIX_DEFINE_INTERNAL_API(LIQUID_MATRIX_MANGLE_CFLOAT,  liquid_float_complex)
 LIQUID_MATRIX_DEFINE_INTERNAL_API(LIQUID_MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 
-
-// sparse 'alist' matrix type (similar to MacKay, Davey Lafferty convention)
-// large macro
-//   SMATRIX    : name-mangling macro
-//   T          : primitive data type
-#define LIQUID_SMATRIX_DEFINE_INTERNAL_API(SMATRIX,T)           \
-                                                                \
-void SMATRIX(_reset_max_mlist)(SMATRIX() _q);                   \
-void SMATRIX(_reset_max_nlist)(SMATRIX() _q);                   \
-
-LIQUID_SMATRIX_DEFINE_INTERNAL_API(LIQUID_SMATRIX_MANGLE_BOOL,  unsigned char)
-LIQUID_SMATRIX_DEFINE_INTERNAL_API(LIQUID_SMATRIX_MANGLE_FLOAT, float)
-LIQUID_SMATRIX_DEFINE_INTERNAL_API(LIQUID_SMATRIX_MANGLE_INT,   short int)
-
 // search for index placement in list
 unsigned short int smatrix_indexsearch(unsigned short int * _list,
                                        unsigned int         _num_elements,
@@ -1362,10 +1349,10 @@ unsigned short int smatrix_indexsearch(unsigned short int * _list,
 #define LIQUID_MODEM_DEFINE_INTERNAL_API(MODEM,T,TC)            \
                                                                 \
 /* initialize a generic modem object */                         \
-void MODEM(_init)(MODEM() _q, unsigned int _bits_per_symbol);   \
+int MODEM(_init)(MODEM() _q, unsigned int _bits_per_symbol);    \
                                                                 \
 /* initialize symbol map for fast modulation */                 \
-void MODEM(_init_map)(MODEM() _q);                              \
+int MODEM(_init_map)(MODEM() _q);                               \
                                                                 \
 /* generic modem create routines */                             \
 MODEM() MODEM(_create_ask)( unsigned int _bits_per_symbol);     \
@@ -1376,12 +1363,12 @@ MODEM() MODEM(_create_apsk)(unsigned int _bits_per_symbol);     \
 MODEM() MODEM(_create_arb)( unsigned int _bits_per_symbol);     \
                                                                 \
 /* Initialize arbitrary modem constellation */                  \
-void MODEM(_arb_init)(MODEM() _q,                               \
-                      TC * _symbol_map,                         \
-                      unsigned int _len);                       \
+int MODEM(_arb_init)(MODEM()         _q,                        \
+                      float complex * _symbol_map,              \
+                      unsigned int    _len);                    \
                                                                 \
 /* Initialize arb modem constellation from external file */     \
-void MODEM(_arb_init_file)(MODEM() _q, char * _filename);       \
+int MODEM(_arb_init_file)(MODEM() _q, char * _filename);        \
                                                                 \
 /* specific modem create routines */                            \
 MODEM() MODEM(_create_bpsk)(void);                              \
@@ -1398,66 +1385,66 @@ MODEM() MODEM(_create_arb256opt)(void);                         \
 MODEM() MODEM(_create_arb64vt)(void);                           \
                                                                 \
 /* Scale arbitrary modem energy to unity */                     \
-void MODEM(_arb_scale)(MODEM() _q);                             \
+int MODEM(_arb_scale)(MODEM() _q);                              \
                                                                 \
 /* Balance I/Q */                                               \
-void MODEM(_arb_balance_iq)(MODEM() _q);                        \
+int MODEM(_arb_balance_iq)(MODEM() _q);                         \
                                                                 \
 /* modulate using symbol map (look-up table) */                 \
-void MODEM(_modulate_map)(MODEM()      _q,                      \
+int MODEM(_modulate_map)(MODEM()      _q,                       \
                           unsigned int _sym_in,                 \
                           TC *         _y);                     \
                                                                 \
 /* modem modulate routines */                                   \
-void MODEM(_modulate_ask)      ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_qam)      ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_psk)      ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_dpsk)     ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_arb)      ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_apsk)     ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_bpsk)     ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_qpsk)     ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_ook)      ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_sqam32)   ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_sqam128)  ( MODEM(), unsigned int, TC *);  \
+int MODEM(_modulate_ask)      ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_qam)      ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_psk)      ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_dpsk)     ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_arb)      ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_apsk)     ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_bpsk)     ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_qpsk)     ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_ook)      ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_sqam32)   ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_sqam128)  ( MODEM(), unsigned int, TC *);   \
                                                                 \
 /* modem demodulate routines */                                 \
-void MODEM(_demodulate_ask)    ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_qam)    ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_psk)    ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_dpsk)   ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_arb)    ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_apsk)   ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_bpsk)   ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_qpsk)   ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_ook)    ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_sqam32) ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_sqam128)( MODEM(), TC, unsigned int *);  \
+int MODEM(_demodulate_ask)    ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_qam)    ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_psk)    ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_dpsk)   ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_arb)    ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_apsk)   ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_bpsk)   ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_qpsk)   ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_ook)    ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_sqam32) ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_sqam128)( MODEM(), TC, unsigned int *);   \
                                                                 \
 /* modem demodulate (soft) routines */                          \
-void MODEM(_demodulate_soft_bpsk)(MODEM()         _q,           \
-                                  TC              _x,           \
-                                  unsigned int *  _sym_out,     \
-                                  unsigned char * _soft_bits);  \
-void MODEM(_demodulate_soft_qpsk)(MODEM()         _q,           \
-                                  TC              _x,           \
-                                  unsigned int *  _sym_out,     \
-                                  unsigned char * _soft_bits);  \
-void MODEM(_demodulate_soft_arb)( MODEM()         _q,           \
-                                  TC              _x,           \
-                                  unsigned int *  _sym_out,     \
-                                  unsigned char * _soft_bits);  \
+int MODEM(_demodulate_soft_bpsk)(MODEM()         _q,            \
+                                 TC              _x,            \
+                                 unsigned int *  _sym_out,      \
+                                 unsigned char * _soft_bits);   \
+int MODEM(_demodulate_soft_qpsk)(MODEM()         _q,            \
+                                 TC              _x,            \
+                                 unsigned int *  _sym_out,      \
+                                 unsigned char * _soft_bits);   \
+int MODEM(_demodulate_soft_arb)( MODEM()         _q,            \
+                                 TC              _x,            \
+                                 unsigned int *  _sym_out,      \
+                                 unsigned char * _soft_bits);   \
                                                                 \
 /* generate soft demodulation look-up table */                  \
-void MODEM(_demodsoft_gentab)(MODEM()      _q,                  \
+int MODEM(_demodsoft_gentab)(MODEM()      _q,                   \
                               unsigned int _p);                 \
                                                                 \
 /* generic soft demodulation routine using nearest-neighbors */ \
 /* look-up table                                             */ \
-void MODEM(_demodulate_soft_table)(MODEM()         _q,          \
-                                   TC              _x,          \
-                                   unsigned int *  _sym_out,    \
-                                   unsigned char * _soft_bits); \
+int MODEM(_demodulate_soft_table)(MODEM()         _q,           \
+                                  TC              _x,           \
+                                  unsigned int *  _sym_out,     \
+                                  unsigned char * _soft_bits);  \
                                                                 \
 /* Demodulate a linear symbol constellation using dynamic   */  \
 /* threshold calculation                                    */  \
@@ -1466,11 +1453,11 @@ void MODEM(_demodulate_soft_table)(MODEM()         _q,          \
 /*  _alpha  :   scaling factor          */                      \
 /*  _s      :   demodulated symbol      */                      \
 /*  _res    :   residual                */                      \
-void MODEM(_demodulate_linear_array)(T              _v,         \
-                                     unsigned int   _m,         \
-                                     T              _alpha,     \
-                                     unsigned int * _s,         \
-                                     T *            _res);      \
+int MODEM(_demodulate_linear_array)(T              _v,          \
+                                    unsigned int   _m,          \
+                                    T              _alpha,      \
+                                    unsigned int * _s,          \
+                                    T *            _res);       \
                                                                 \
 /* Demodulate a linear symbol constellation using           */  \
 /* refereneced lookup table                                 */  \
@@ -1479,11 +1466,11 @@ void MODEM(_demodulate_linear_array)(T              _v,         \
 /*  _ref    :   array of thresholds     */                      \
 /*  _s      :   demodulated symbol      */                      \
 /*  _res    :   residual                */                      \
-void MODEM(_demodulate_linear_array_ref)(T              _v,     \
-                                         unsigned int   _m,     \
-                                         T *            _ref,   \
-                                         unsigned int * _s,     \
-                                         T *            _res);  \
+int MODEM(_demodulate_linear_array_ref)(T              _v,      \
+                                        unsigned int   _m,      \
+                                        T *            _ref,    \
+                                        unsigned int * _s,      \
+                                        T *            _res);   \
 
 
 
@@ -1542,11 +1529,11 @@ extern const float complex modem_arb256opt[256];
 //  _S0     :   output symbol (freq)
 //  _s0     :   output symbol (time)
 //  _M_S0   :   total number of enabled subcarriers in S0
-void ofdmframe_init_S0(unsigned char * _p,
-                       unsigned int    _M,
-                       float complex * _S0,
-                       float complex * _s0,
-                       unsigned int *  _M_S0);
+int ofdmframe_init_S0(unsigned char * _p,
+                      unsigned int    _M,
+                      float complex * _S0,
+                      float complex * _s0,
+                      unsigned int *  _M_S0);
 
 // generate long sequence symbols
 //  _p      :   subcarrier allocation array
@@ -1554,84 +1541,64 @@ void ofdmframe_init_S0(unsigned char * _p,
 //  _S1     :   output symbol (freq)
 //  _s1     :   output symbol (time)
 //  _M_S1   :   total number of enabled subcarriers in S1
-void ofdmframe_init_S1(unsigned char * _p,
-                       unsigned int    _M,
-                       float complex * _S1,
-                       float complex * _s1,
-                       unsigned int *  _M_S1);
+int ofdmframe_init_S1(unsigned char * _p,
+                      unsigned int    _M,
+                      float complex * _S1,
+                      float complex * _s1,
+                      unsigned int *  _M_S1);
 
 // generate symbol (add cyclic prefix/postfix, overlap)
-void ofdmframegen_gensymbol(ofdmframegen    _q,
-                            float complex * _buffer);
+int ofdmframegen_gensymbol(ofdmframegen    _q,
+                           float complex * _buffer);
 
-void ofdmframesync_cpcorrelate(ofdmframesync _q);
-void ofdmframesync_findrxypeak(ofdmframesync _q);
-void ofdmframesync_rxpayload(ofdmframesync _q);
+int ofdmframesync_cpcorrelate(ofdmframesync _q);
+int ofdmframesync_findrxypeak(ofdmframesync _q);
+int ofdmframesync_rxpayload(ofdmframesync _q);
 
-void ofdmframesync_execute_seekplcp(ofdmframesync _q);
-void ofdmframesync_execute_S0a(ofdmframesync _q);
-void ofdmframesync_execute_S0b(ofdmframesync _q);
-void ofdmframesync_execute_S1( ofdmframesync _q);
-void ofdmframesync_execute_rxsymbols(ofdmframesync _q);
+int ofdmframesync_execute_seekplcp(ofdmframesync _q);
+int ofdmframesync_execute_S0a(ofdmframesync _q);
+int ofdmframesync_execute_S0b(ofdmframesync _q);
+int ofdmframesync_execute_S1( ofdmframesync _q);
+int ofdmframesync_execute_rxsymbols(ofdmframesync _q);
 
-void ofdmframesync_S0_metrics(ofdmframesync _q,
-                              float complex * _G,
-                              float complex * _s_hat);
+int ofdmframesync_S0_metrics(ofdmframesync   _q,
+                             float complex * _G,
+                             float complex * _s_hat);
 
 // estimate short sequence gain
 //  _q      :   ofdmframesync object
 //  _x      :   input array (time)
 //  _G      :   output gain (freq)
-void ofdmframesync_estimate_gain_S0(ofdmframesync   _q,
-                                    float complex * _x,
-                                    float complex * _G);
+int ofdmframesync_estimate_gain_S0(ofdmframesync   _q,
+                                   float complex * _x,
+                                   float complex * _G);
 
 // estimate long sequence gain
 //  _q      :   ofdmframesync object
 //  _x      :   input array (time)
 //  _G      :   output gain (freq)
-void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
-                                    float complex * _x,
-                                    float complex * _G);
+int ofdmframesync_estimate_gain_S1(ofdmframesync _q,
+                                   float complex * _x,
+                                   float complex * _G);
 
 // estimate complex equalizer gain from G0 and G1
 //  _q      :   ofdmframesync object
 //  _ntaps  :   number of time-domain taps for smoothing
-void ofdmframesync_estimate_eqgain(ofdmframesync _q,
-                                   unsigned int _ntaps);
+int ofdmframesync_estimate_eqgain(ofdmframesync _q,
+                                  unsigned int _ntaps);
 
 // estimate complex equalizer gain from G0 and G1 using polynomial fit
 //  _q      :   ofdmframesync object
 //  _order  :   polynomial order
-void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
-                                        unsigned int _order);
+int ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
+                                       unsigned int _order);
 
 // recover symbol, correcting for gain, pilot phase, etc.
-void ofdmframesync_rxsymbol(ofdmframesync _q);
+int ofdmframesync_rxsymbol(ofdmframesync _q);
 
 // 
 // MODULE : nco (numerically-controlled oscillator)
 //
-
-
-// Numerically-controlled oscillator, floating point phase precision
-#define LIQUID_NCO_DEFINE_INTERNAL_API(NCO,T,TC)                \
-                                                                \
-/* constrain phase/frequency to be in [-pi,pi)          */      \
-void NCO(_constrain_phase)(NCO() _q);                           \
-void NCO(_constrain_frequency)(NCO() _q);                       \
-                                                                \
-/* compute trigonometric functions for nco/vco type     */      \
-void NCO(_compute_sincos_nco)(NCO() _q);                        \
-void NCO(_compute_sincos_vco)(NCO() _q);                        \
-                                                                \
-/* reset internal phase-locked loop filter              */      \
-void NCO(_pll_reset)(NCO() _q);                                 \
-
-// Define nco internal APIs
-LIQUID_NCO_DEFINE_INTERNAL_API(LIQUID_NCO_MANGLE_FLOAT,
-                               float,
-                               float complex)
 
 // Numerically-controlled synthesizer (direct digital synthesis)
 #define LIQUID_SYNTH_DEFINE_INTERNAL_API(SYNTH,T,TC)            \
@@ -1704,46 +1671,6 @@ float gradsearch_norm(float *      _v,
                       unsigned int _n);
 
 
-// quasi-Newton search object
-struct qnsearch_s {
-    float* v;           // vector to optimize (externally allocated)
-    unsigned int num_parameters;    // number of parameters to optimize [n]
-
-    float gamma;        // nominal stepsize
-    float delta;        // differential used to compute (estimate) derivative
-    float dgamma;       // decremental gamma parameter
-    float gamma_hat;    // step size (decreases each epoch)
-    float* v_prime;     // temporary vector array
-    float* dv;          // parameter step vector
-
-    float * B;          // approximate Hessian matrix inverse [n x n]
-    float * H;          // Hessian matrix
-
-    float* p;           // search direction
-    float* gradient;    // gradient approximation
-    float* gradient0;   // gradient approximation (previous step)
-
-    // External utility function.
-    utility_function get_utility;
-    float utility;      // current utility
-    void * userdata;    // userdata pointer passed to utility callback
-    int minimize;       // minimize/maximimze utility (search direction)
-};
-
-// compute gradient(x_k)
-void qnsearch_compute_gradient(qnsearch _q);
-
-// compute the norm of the gradient(x_k)
-void qnsearch_normalize_gradient(qnsearch _q);
-
-// compute Hessian (estimate)
-void qnsearch_compute_Hessian(qnsearch _q);
-
-// compute the updated inverse hessian matrix using the Broyden, Fletcher,
-// Goldfarb & Shanno method (BFGS)
-void qnsearch_update_hessian_bfgs(qnsearch _q);
-
-
 // Chromosome structure used in genetic algorithm searches
 struct chromosome_s {
     unsigned int num_traits;            // number of represented traits
@@ -1789,16 +1716,16 @@ struct gasearch_s {
 //
 
 // evaluate fitness of entire population
-void gasearch_evaluate(gasearch _q);
+int gasearch_evaluate(gasearch _q);
 
 // crossover population
-void gasearch_crossover(gasearch _q);
+int gasearch_crossover(gasearch _q);
 
 // mutate population
-void gasearch_mutate(gasearch _q);
+int gasearch_mutate(gasearch _q);
 
 // rank population by fitness
-void gasearch_rank(gasearch _q);
+int gasearch_rank(gasearch _q);
 
 // sort values by index
 //  _v          :   input values [size: _len x 1]

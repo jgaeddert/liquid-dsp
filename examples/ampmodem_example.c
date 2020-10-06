@@ -27,7 +27,7 @@ void usage()
     printf("  -p <phase> : phase offset,              default: 2.8\n");
     printf("  -n <num>   : number of samples,         default: 2400\n");
     printf("  -S <snr>   : SNR [dB],                  default: 30\n");
-    printf("  -t <type>  : AM type (dsb/usb/lsb),     default: dsb\n");
+    printf("  -t <type>  : AM type (dsb/usb/lsb),     default: usb\n");
     printf("  -s         : suppress the carrier,      default: off (carrier enabled)\n");
 }
 

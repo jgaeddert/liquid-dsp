@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,13 +61,10 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
     // find first 'prime' factor of _nfft
     unsigned int i;
     unsigned int Q = FFT(_estimate_mixed_radix)(_nfft);
-    if (Q==0) {
-        fprintf(stderr,"error: fft_create_plan_mixed_radix(), _nfft=%u is prime\n", _nfft);
-        exit(1);
-    } else if ( (_nfft % Q) != 0 ) {
-        fprintf(stderr,"error: fft_create_plan_mixed_radix(), _nfft=%u is not divisible by Q=%u\n", _nfft, Q);
-        exit(1);
-    }
+    if (Q==0)
+        return liquid_error_config("fft_create_plan_mixed_radix(), _nfft=%u is prime", _nfft);
+    if ( (_nfft % Q) != 0 )
+        return liquid_error_config("fft_create_plan_mixed_radix(), _nfft=%u is not divisible by Q=%u", _nfft, Q);
 
     // set mixed-radix data
     unsigned int P = q->nfft / Q;
@@ -108,7 +105,7 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
 }
 
 // destroy FFT plan
-void FFT(_destroy_plan_mixed_radix)(FFT(plan) _q)
+int FFT(_destroy_plan_mixed_radix)(FFT(plan) _q)
 {
     // destroy sub-plans
     FFT(_destroy_plan)(_q->data.mixedradix.fft_P);
@@ -122,10 +119,11 @@ void FFT(_destroy_plan_mixed_radix)(FFT(plan) _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // execute mixed-radix FFT
-void FFT(_execute_mixed_radix)(FFT(plan) _q)
+int FFT(_execute_mixed_radix)(FFT(plan) _q)
 {
     // set internal constants
     unsigned int P = _q->data.mixedradix.P; // first FFT size
@@ -188,6 +186,7 @@ void FFT(_execute_mixed_radix)(FFT(plan) _q)
             printf("  %12.6f %12.6f\n", crealf(_q->y[k*P+i]), cimagf(_q->y[k*P+i]));
 #endif
     }
+    return LIQUID_OK;
 }
 
 // strategize as to best radix to use

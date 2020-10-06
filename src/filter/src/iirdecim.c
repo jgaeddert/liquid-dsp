@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,10 +51,8 @@ IIRDECIM() IIRDECIM(_create)(unsigned int _M,
                              unsigned int _na)
 {
     // validate input
-    if (_M < 2) {
-        fprintf(stderr,"error: iirinterp_%s_create(), interp factor must be greater than 1\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_M < 2)
+        return liquid_error_config("iirinterp_%s_create(), interp factor must be greater than 1", EXTENSION_FULL);
 
     // allocate main object memory and set internal parameters
     IIRDECIM() q = (IIRDECIM()) malloc(sizeof(struct IIRDECIM(_s)));
@@ -97,10 +95,8 @@ IIRDECIM() IIRDECIM(_create_prototype)(unsigned int             _M,
                                        float                    _As)
 {
     // validate input
-    if (_M < 2) {
-        fprintf(stderr,"error: iirinterp_%s_create_prototype(), interp factor must be greater than 1\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_M < 2)
+        return liquid_error_config("iirinterp_%s_create_prototype(), interp factor must be greater than 1", EXTENSION_FULL);
 
     // allocate main object memory and set internal parameters
     IIRDECIM() q = (IIRDECIM()) malloc(sizeof(struct IIRDECIM(_s)));

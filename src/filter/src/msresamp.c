@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -84,10 +84,8 @@ MSRESAMP() MSRESAMP(_create)(float _r,
                              float _As)
 {
     // validate input
-    if (_r <= 0.0f) {
-        fprintf(stderr,"error: msresamp_%s_create(), resampling rate must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_r <= 0.0f)
+        return liquid_error_config("msresamp_%s_create(), resampling rate must be greater than zero", EXTENSION_FULL);
 
     // create object
     MSRESAMP() q = (MSRESAMP()) malloc(sizeof(struct MSRESAMP(_s)));

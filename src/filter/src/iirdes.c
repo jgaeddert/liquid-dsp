@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,8 +64,8 @@ void liquid_cplxpair(float complex * _z,
 {
     // validate input
     if (_tol < 0) {
-        fprintf(stderr,"error: liquid_cplxpair(), tolerance must be positive\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_cplxpair(), tolerance must be positive");
+        return;
     }
 
     // keep track of which elements have been paired
@@ -480,20 +480,20 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
 {
     // validate input
     if (_fc <= 0 || _fc >= 0.5) {
-        fprintf(stderr,"error: liquid_iirdes(), cutoff frequency out of range\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), cutoff frequency out of range");
+        return;
     } else if (_f0 < 0 || _f0 > 0.5) {
-        fprintf(stderr,"error: liquid_iirdes(), center frequency out of range\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), center frequency out of range");
+        return;
     } else if (_Ap <= 0) {
-        fprintf(stderr,"error: liquid_iirdes(), pass-band ripple out of range\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), pass-band ripple out of range");
+        return;
     } else if (_As <= 0) {
-        fprintf(stderr,"error: liquid_iirdes(), stop-band ripple out of range\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), stop-band ripple out of range");
+        return;
     } else if (_n == 0) {
-        fprintf(stderr,"error: liquid_iirdes(), filter order must be > 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), filter order must be > 0");
+        return;
     }
 
     // number of analaog poles/zeros
@@ -552,8 +552,8 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
         bessel_azpkf(_n,za,pa,&ka);
         break;
     default:
-        fprintf(stderr,"error: liquid_iirdes(), unknown filter type\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), unknown filter type");
+        return;
     }
 
 #if LIQUID_IIRDES_DEBUG_PRINT
@@ -672,8 +672,8 @@ int iirdes_isstable(float * _b,
 {
     // validate input
     if (_n < 2) {
-        fprintf(stderr,"error: iirdes_isstable(), filter order too low\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"iirdes_isstable(), filter order too low");
+        return 0;
     }
     unsigned int i;
 

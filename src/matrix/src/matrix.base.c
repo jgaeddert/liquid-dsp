@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,9 +28,9 @@
 #include <stdio.h>
 #include <string.h>
 
-void MATRIX(_print)(T * _X,
-                    unsigned int _R,
-                    unsigned int _C)
+int MATRIX(_print)(T *          _X,
+                   unsigned int _R,
+                   unsigned int _C)
 {
     printf("matrix [%u x %u] : \n", _R, _C);
     unsigned int r,c;
@@ -40,10 +40,11 @@ void MATRIX(_print)(T * _X,
         }
         printf("\n");
     }
+    return LIQUID_OK;
 }
 
 // initialize square matrix to the identity matrix
-void MATRIX(_eye)(T * _x, unsigned int _n)
+int MATRIX(_eye)(T * _x, unsigned int _n)
 {
     unsigned int r,c,k=0;
     for (r=0; r<_n; r++) {
@@ -51,25 +52,28 @@ void MATRIX(_eye)(T * _x, unsigned int _n)
             _x[k++] = r==c ? 1. : 0.;
         }
     }
+    return LIQUID_OK;
 }
 
 // initialize matrix to ones
-void MATRIX(_ones)(T * _x,
+int MATRIX(_ones)(T *          _x,
+                  unsigned int _r,
+                  unsigned int _c)
+{
+    unsigned int k;
+    for (k=0; k<_r*_c; k++)
+        _x[k] = 1.;
+    return LIQUID_OK;
+}
+
+// initialize matrix to zeros
+int MATRIX(_zeros)(T *          _x,
                    unsigned int _r,
                    unsigned int _c)
 {
     unsigned int k;
     for (k=0; k<_r*_c; k++)
-        _x[k] = 1.;
-}
-
-// initialize matrix to zeros
-void MATRIX(_zeros)(T * _x,
-                    unsigned int _r,
-                    unsigned int _c)
-{
-    unsigned int k;
-    for (k=0; k<_r*_c; k++)
         _x[k] = 0.;
+    return LIQUID_OK;
 }
 

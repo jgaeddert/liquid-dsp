@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,10 +72,8 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
                            float        _As)
 {
     // validate firhilb inputs
-    if (_m < 2) {
-        fprintf(stderr,"error: firhilb_create(), filter semi-length (m) must be at least 2\n");
-        exit(1);
-    }
+    if (_m < 2)
+        return liquid_error_config("firhilb_create(), filter semi-length (m) must be at least 2");
 
     // allocate memory for main object
     FIRHILB() q = (FIRHILB()) malloc(sizeof(struct FIRHILB(_s)));

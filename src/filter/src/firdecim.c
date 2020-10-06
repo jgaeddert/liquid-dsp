@@ -50,13 +50,10 @@ FIRDECIM() FIRDECIM(_create)(unsigned int _M,
                              unsigned int _h_len)
 {
     // validate input
-    if (_h_len == 0) {
-        fprintf(stderr,"error: decim_%s_create(), filter length must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_M == 0) {
-        fprintf(stderr,"error: decim_%s_create(), decimation factor must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_h_len == 0)
+        return liquid_error_config("decim_%s_create(), filter length must be greater than zero", EXTENSION_FULL);
+    if (_M == 0)
+        return liquid_error_config("decim_%s_create(), decimation factor must be greater than zero", EXTENSION_FULL);
 
     FIRDECIM() q = (FIRDECIM()) malloc(sizeof(struct FIRDECIM(_s)));
     q->h_len = _h_len;
@@ -94,16 +91,12 @@ FIRDECIM() FIRDECIM(_create_kaiser)(unsigned int _M,
                                     float        _As)
 {
     // validate input
-    if (_M < 2) {
-        fprintf(stderr,"error: decim_%s_create_kaiser(), decim factor must be greater than 1\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr,"error: decim_%s_create_kaiser(), filter delay must be greater than 0\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_As < 0.0f) {
-        fprintf(stderr,"error: decim_%s_create_kaiser(), stop-band attenuation must be positive\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_M < 2)
+        return liquid_error_config("decim_%s_create_kaiser(), decim factor must be greater than 1", EXTENSION_FULL);
+    if (_m == 0)
+        return liquid_error_config("decim_%s_create_kaiser(), filter delay must be greater than 0", EXTENSION_FULL);
+    if (_As < 0.0f)
+        return liquid_error_config("decim_%s_create_kaiser(), stop-band attenuation must be positive", EXTENSION_FULL);
 
     // compute filter coefficients (floating point precision)
     unsigned int h_len = 2*_M*_m + 1;
@@ -134,19 +127,14 @@ FIRDECIM() FIRDECIM(_create_prototype)(int          _type,
                                        float        _dt)
 {
     // validate input
-    if (_M < 2) {
-        fprintf(stderr,"error: decim_%s_create_prototype(), decimation factor must be greater than 1\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr,"error: decim_%s_create_prototype(), filter delay must be greater than 0\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: decim_%s_create_prototype(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_dt < -1.0f || _dt > 1.0f) {
-        fprintf(stderr,"error: decim_%s_create_prototype(), filter fractional sample delay must be in [-1,1]\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_M < 2)
+        return liquid_error_config("decim_%s_create_prototype(), decimation factor must be greater than 1", EXTENSION_FULL);
+    if (_m == 0)
+        return liquid_error_config("decim_%s_create_prototype(), filter delay must be greater than 0", EXTENSION_FULL);
+    if (_beta < 0.0f || _beta > 1.0f)
+        return liquid_error_config("decim_%s_create_prototype(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
+    if (_dt < -1.0f || _dt > 1.0f)
+        return liquid_error_config("decim_%s_create_prototype(), filter fractional sample delay must be in [-1,1]", EXTENSION_FULL);
 
     // generate square-root Nyquist filter
     unsigned int h_len = 2*_M*_m + 1;

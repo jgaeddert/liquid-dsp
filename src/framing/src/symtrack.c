@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,6 +61,11 @@ struct SYMTRACK(_s) {
     EQLMS()         eq;                 // equalizer (LMS)
     unsigned int    eq_len;             // equalizer length
     float           eq_bandwidth;       // equalizer bandwidth
+    enum {
+                    SYMTRACK_EQ_CM,     // equalizer strategy: constant modulus
+                    SYMTRACK_EQ_DD,     // equalizer strategy: decision directed
+                    SYMTRACK_EQ_OFF,    // equalizer strategy: disabled
+    }               eq_strategy;
 
     // nco/phase-locked loop
     NCO()           nco;                // nco (carrier recovery)
@@ -86,19 +91,14 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,
                              int          _ms)
 {
     // validate input
-    if (_k < 2) {
-        fprintf(stderr,"error: symtrack_%s_create(), filter samples/symbol must be at least 2\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr,"error: symtrack_%s_create(), filter delay must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_beta <= 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: symtrack_%s_create(), filter excess bandwidth must be in (0,1]\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_ms == LIQUID_MODEM_UNKNOWN || _ms >= LIQUID_MODEM_NUM_SCHEMES) {
-        fprintf(stderr,"error: symtrack_%s_create(), invalid modulation scheme\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_k < 2)
+        return liquid_error_config("symtrack_%s_create(), filter samples/symbol must be at least 2", EXTENSION_FULL);
+    if (_m == 0)
+        return liquid_error_config("symtrack_%s_create(), filter delay must be greater than zero", EXTENSION_FULL);
+    if (_beta <= 0.0f || _beta > 1.0f)
+        return liquid_error_config("symtrack_%s_create(), filter excess bandwidth must be in (0,1]", EXTENSION_FULL);
+    if (_ms == LIQUID_MODEM_UNKNOWN || _ms >= LIQUID_MODEM_NUM_SCHEMES)
+        return liquid_error_config("symtrack_%s_create(), invalid modulation scheme", EXTENSION_FULL);
 
     // allocate memory for main object
     SYMTRACK() q = (SYMTRACK()) malloc( sizeof(struct SYMTRACK(_s)) );
@@ -123,6 +123,7 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,
     // create equalizer as default low-pass filter with integer symbol delay (2 samples/symbol)
     q->eq_len = 2 * 4 + 1;
     q->eq = EQLMS(_create_lowpass)(q->eq_len,0.45f);
+    q->eq_strategy = SYMTRACK_EQ_CM;
 
     // nco and phase-locked loop
     q->nco = NCO(_create)(LIQUID_VCO);
@@ -150,7 +151,7 @@ SYMTRACK() SYMTRACK(_create_default)()
 
 
 // destroy symtrack object, freeing all internal memory
-void SYMTRACK(_destroy)(SYMTRACK() _q)
+int SYMTRACK(_destroy)(SYMTRACK() _q)
 {
     // destroy objects
     AGC    (_destroy)(_q->agc);
@@ -161,50 +162,66 @@ void SYMTRACK(_destroy)(SYMTRACK() _q)
 
     // free main object
     free(_q);
+    return LIQUID_OK;
 }
 
 // print symtrack object's parameters
-void SYMTRACK(_print)(SYMTRACK() _q)
+int SYMTRACK(_print)(SYMTRACK() _q)
 {
     printf("symtrack_%s:\n", EXTENSION_FULL);
+    printf("  k:%u, m:%u, beta:%.3f, ms:%s\n", _q->k, _q->m, _q->beta,
+            modulation_types[_q->mod_scheme].name);
+    printf("  equalization strategy: ");
+    switch (_q->eq_strategy) {
+    case SYMTRACK_EQ_CM:  printf("constant modulus\n");  break;
+    case SYMTRACK_EQ_DD:  printf("decision directed\n"); break;
+    case SYMTRACK_EQ_OFF: printf("disabled\n");          break;
+    default:
+        printf("?\n");
+        return liquid_error(LIQUID_EINT,"symtrack_%s_print(), invalid equalization strategy");
+    }
+    return LIQUID_OK;
 }
 
 // reset symtrack internal state
-void SYMTRACK(_reset)(SYMTRACK() _q)
+int SYMTRACK(_reset)(SYMTRACK() _q)
 {
     // reset objects
+    AGC    (_reset)(_q->agc);
+    SYMSYNC(_reset)(_q->symsync);
+    EQLMS  (_reset)(_q->eq);
+    NCO    (_reset)(_q->nco);
+    MODEM  (_reset)(_q->demod);
 
     // reset internal counters
     _q->symsync_index = 0;
     _q->num_syms_rx = 0;
+    return LIQUID_OK;
 }
 
 // set symtrack modulation scheme
-void SYMTRACK(_set_modscheme)(SYMTRACK() _q,
-                              int        _ms)
+int SYMTRACK(_set_modscheme)(SYMTRACK() _q,
+                             int        _ms)
 {
     // validate input
-    if (_ms >= LIQUID_MODEM_NUM_SCHEMES) {
-        fprintf(stderr,"error: symtrack_%s_set_modscheme(), invalid/unsupported modulation scheme\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_ms >= LIQUID_MODEM_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"symtrack_%s_set_modscheme(), invalid/unsupported modulation scheme", EXTENSION_FULL);
 
     // set internal modulation scheme
     _q->mod_scheme = _ms == LIQUID_MODEM_UNKNOWN ? LIQUID_MODEM_BPSK : _ms;
 
     // re-create modem
     _q->demod = MODEM(_recreate)(_q->demod, _q->mod_scheme);
+    return LIQUID_OK;
 }
 
 // set symtrack internal bandwidth
-void SYMTRACK(_set_bandwidth)(SYMTRACK() _q,
-                              float      _bw)
+int SYMTRACK(_set_bandwidth)(SYMTRACK() _q,
+                             float      _bw)
 {
     // validate input
-    if (_bw < 0) {
-        fprintf(stderr,"error: symtrack_%s_set_bandwidth(), bandwidth must be in [0,1]\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_bw < 0)
+        return liquid_error(LIQUID_EICONFIG,"symtrack_%s_set_bandwidth(), bandwidth must be in [0,1]", EXTENSION_FULL);
 
     // set bandwidths accordingly
     float agc_bandwidth     = 0.02f  * _bw;
@@ -223,14 +240,37 @@ void SYMTRACK(_set_bandwidth)(SYMTRACK() _q,
     
     // phase-locked loop
     NCO(_pll_set_bandwidth)(_q->nco, pll_bandwidth);
+    return LIQUID_OK;
 }
 
 // adjust internal nco by requested phase
-void SYMTRACK(_adjust_phase)(SYMTRACK() _q,
-                             T          _dphi)
+int SYMTRACK(_adjust_phase)(SYMTRACK() _q,
+                            T          _dphi)
 {
     // adjust internal nco phase
     NCO(_adjust_phase)(_q->nco, _dphi);
+    return LIQUID_OK;
+}
+
+// set equalization strategy to constant modulus (default)
+int SYMTRACK(_set_eq_cm)(SYMTRACK() _q)
+{
+    _q->eq_strategy = SYMTRACK_EQ_CM;
+    return LIQUID_OK;
+}
+
+// set equalization strategy to decision directed
+int SYMTRACK(_set_eq_dd)(SYMTRACK() _q)
+{
+    _q->eq_strategy = SYMTRACK_EQ_DD;
+    return LIQUID_OK;
+}
+
+// disable equalization
+int SYMTRACK(_set_eq_off)(SYMTRACK() _q)
+{
+    _q->eq_strategy = SYMTRACK_EQ_OFF;
+    return LIQUID_OK;
 }
 
 // execute synchronizer on single input sample
@@ -238,10 +278,10 @@ void SYMTRACK(_adjust_phase)(SYMTRACK() _q,
 //  _x      : input data sample
 //  _y      : output data array
 //  _ny     : number of samples written to output buffer
-void SYMTRACK(_execute)(SYMTRACK()     _q,
-                        TI             _x,
-                        TO *           _y,
-                        unsigned int * _ny)
+int SYMTRACK(_execute)(SYMTRACK()     _q,
+                       TI             _x,
+                       TO *           _y,
+                       unsigned int * _ny)
 {
     TO v;   // output sample
     unsigned int i;
@@ -271,7 +311,7 @@ void SYMTRACK(_execute)(SYMTRACK()     _q,
         // increment number of symbols received
         _q->num_syms_rx++;
 
-        // compute equalizer output
+        // compute equalizer filter output; updating coefficients is dependent upon strategy
         TO d_hat;
         EQLMS(_execute)(_q->eq, &d_hat);
 
@@ -280,15 +320,22 @@ void SYMTRACK(_execute)(SYMTRACK()     _q,
         MODEM(_demodulate)(_q->demod, d_hat, &sym_out);
         float phase_error = MODEM(_get_demodulator_phase_error)(_q->demod);
 
-        // update equalizer independent of the signal: estimate error
-        // assuming constant modulus signal
-        // TODO: use decision-directed feedback when modulation scheme is known
-        // TODO: check lock conditions of previous object to determine when to run equalizer
-        if (_q->num_syms_rx > 200)
-            EQLMS(_step)(_q->eq, d_hat/cabsf(d_hat), d_hat);
-
         // update pll
         NCO(_pll_step)(_q->nco, phase_error);
+
+        // update equalizer independent of the signal: estimate error
+        // assuming constant modulus signal
+        // TODO: check lock conditions of previous object to determine when to run equalizer
+        float complex d_prime = 0.0f;
+        if (_q->num_syms_rx > 200 && _q->eq_strategy != SYMTRACK_EQ_OFF) {
+            switch (_q->eq_strategy) {
+            case SYMTRACK_EQ_CM: d_prime = d_hat/cabsf(d_hat); break;
+            case SYMTRACK_EQ_DD: MODEM(_get_demodulator_sample)(_q->demod, &d_prime); break;
+            default:
+                return liquid_error(LIQUID_EINT,"symtrack_%s_execute(), invalid equalizer strategy", EXTENSION_FULL);
+            }
+            EQLMS(_step)(_q->eq, d_prime, d_hat);
+        }
 
         // save result to output
         _y[num_outputs++] = d_hat;
@@ -300,6 +347,7 @@ void SYMTRACK(_execute)(SYMTRACK()     _q,
 
     //
     *_ny = num_outputs;
+    return LIQUID_OK;
 }
 
 // execute synchronizer on input data array
@@ -308,11 +356,11 @@ void SYMTRACK(_execute)(SYMTRACK()     _q,
 //  _nx     : number of input samples
 //  _y      : output data array
 //  _ny     : number of samples written to output buffer
-void SYMTRACK(_execute_block)(SYMTRACK()     _q,
-                              TI *           _x,
-                              unsigned int   _nx,
-                              TO *           _y,
-                              unsigned int * _ny)
+int SYMTRACK(_execute_block)(SYMTRACK()     _q,
+                             TI *           _x,
+                             unsigned int   _nx,
+                             TO *           _y,
+                             unsigned int * _ny)
 {
     //
     unsigned int i;
@@ -328,5 +376,6 @@ void SYMTRACK(_execute_block)(SYMTRACK()     _q,
 
     //
     *_ny = num_written;
+    return LIQUID_OK;
 }
 

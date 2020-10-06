@@ -66,16 +66,12 @@ fskdem fskdem_create(unsigned int _m,
                      float        _bandwidth)
 {
     // validate input
-    if (_m == 0) {
-        fprintf(stderr,"error: fskdem_create(), bits/symbol must be greater than 0\n");
-        exit(1);
-    } else if (_k < 2 || _k > 2048) {
-        fprintf(stderr,"error: fskdem_create(), samples/symbol must be in [2^_m, 2048]\n");
-        exit(1);
-    } else if (_bandwidth <= 0.0f || _bandwidth >= 0.5f) {
-        fprintf(stderr,"error: fskdem_create(), bandwidth must be in (0,0.5)\n");
-        exit(1);
-    }
+    if (_m == 0)
+        return liquid_error_config("fskdem_create(), bits/symbol must be greater than 0");
+    if (_k < 2 || _k > 2048)
+        return liquid_error_config("fskdem_create(), samples/symbol must be in [2^_m, 2048]");
+    if (_bandwidth <= 0.0f || _bandwidth >= 0.5f)
+        return liquid_error_config("fskdem_create(), bandwidth must be in (0,0.5)");
 
     // create main object memory
     fskdem q = (fskdem) malloc(sizeof(struct fskdem_s));
@@ -135,7 +131,7 @@ fskdem fskdem_create(unsigned int _m,
     // check for uniqueness
     for (i=1; i<q->M; i++) {
         if (q->demod_map[i] == q->demod_map[i-1]) {
-            fprintf(stderr,"warning: fskdem_create(), demod map is not unique; consider increasing bandwidth\n");
+            liquid_error(LIQUID_EICONFIG,"fskdem_create(), demod map is not unique; consider increasing bandwidth");
             break;
         }
     }
@@ -153,7 +149,7 @@ fskdem fskdem_create(unsigned int _m,
 }
 
 // destroy fskdem object
-void fskdem_destroy(fskdem _q)
+int fskdem_destroy(fskdem _q)
 {
     // free allocated arrays
     free(_q->demod_map);
@@ -163,19 +159,21 @@ void fskdem_destroy(fskdem _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print fskdem object internals
-void fskdem_print(fskdem _q)
+int fskdem_print(fskdem _q)
 {
     printf("fskdem : frequency-shift keying demodulator\n");
     printf("    bits/symbol     :   %u\n", _q->m);
     printf("    samples/symbol  :   %u\n", _q->k);
     printf("    bandwidth       :   %8.5f\n", _q->bandwidth);
+    return LIQUID_OK;
 }
 
 // reset state
-void fskdem_reset(fskdem _q)
+int fskdem_reset(fskdem _q)
 {
     // reset time and frequency buffers
     unsigned int i;
@@ -186,6 +184,7 @@ void fskdem_reset(fskdem _q)
 
     // clear state variables
     _q->s_demod = 0;
+    return LIQUID_OK;
 }
 
 // demodulate symbol, assuming perfect symbol timing

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -116,14 +116,14 @@ struct MODEM(_s)
     } data;
 
     // modulate function pointer
-    void (*modulate_func)(MODEM() _q,
-                          unsigned int _symbol_in,
-                          TC * _y);
+    int (*modulate_func)(MODEM() _q,
+                         unsigned int _symbol_in,
+                         TC * _y);
 
     // demodulate function pointer
-    void (*demodulate_func)(MODEM() _q,
-                            TC _x,
-                            unsigned int * _symbol_out);
+    int (*demodulate_func)(MODEM() _q,
+                           TC _x,
+                           unsigned int * _symbol_out);
 
     // soft demodulation
     //int demodulate_soft;    // soft demodulation flag
@@ -201,13 +201,11 @@ MODEM() MODEM(_create)(modulation_scheme _scheme)
     
     // arbitrary modem
     case LIQUID_MODEM_ARB:
-        fprintf(stderr,"error: modem_create(), cannot create arbitrary modem (LIQUID_MODEM_ARB) without specifying constellation\n");
-        exit(1);
+        return liquid_error_config("modem_create(), cannot create arbitrary modem (LIQUID_MODEM_ARB) without specifying constellation");
 
     // unknown modulation scheme
     default:
-        fprintf(stderr,"error: modem_create(), unknown/unsupported modulation scheme : %u\n", _scheme);
-        exit(1);
+        return liquid_error_config("modem_create(), unknown/unsupported modulation scheme : %u", _scheme);
     }
 
     // should never get to this point, but adding return statment
@@ -231,7 +229,7 @@ MODEM() MODEM(_recreate)(MODEM() _q,
 }
 
 // destroy a modem object
-void MODEM(_destroy)(MODEM() _q)
+int MODEM(_destroy)(MODEM() _q)
 {
     // free symbol map
     if (_q->symbol_map != NULL)
@@ -252,37 +250,37 @@ void MODEM(_destroy)(MODEM() _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print a modem object
-void MODEM(_print)(MODEM() _q)
+int MODEM(_print)(MODEM() _q)
 {
     printf("linear modem:\n");
     printf("    scheme:         %s\n", modulation_types[_q->scheme].name);
     printf("    bits/symbol:    %u\n", _q->m);
+    return LIQUID_OK;
 }
 
 // reset a modem object (only an issue with dpsk)
-void MODEM(_reset)(MODEM() _q)
+int MODEM(_reset)(MODEM() _q)
 {
     _q->r = 1.0f;         // received sample
     _q->x_hat = _q->r;  // estimated symbol
 
     if ( liquid_modem_is_dpsk(_q->scheme) )
         _q->data.dpsk.phi = 0.0f;  // reset differential PSK phase state
+    return LIQUID_OK;
 }
 
 // initialize a generic modem object
-void MODEM(_init)(MODEM() _q,
-                  unsigned int _bits_per_symbol)
+int MODEM(_init)(MODEM()      _q,
+                 unsigned int _bits_per_symbol)
 {
-    if (_bits_per_symbol < 1 ) {
-        fprintf(stderr,"error: modem_init(), modem must have at least 1 bit/symbol\n");
-        exit(1);
-    } else if (_bits_per_symbol > MAX_MOD_BITS_PER_SYMBOL) {
-        fprintf(stderr,"error: modem_init(), maximum number of bits per symbol exceeded\n");
-        exit(1);
-    }
+    if (_bits_per_symbol < 1 )
+        return liquid_error(LIQUID_EICONFIG,"modem_init(), modem must have at least 1 bit/symbol");
+    if (_bits_per_symbol > MAX_MOD_BITS_PER_SYMBOL)
+        return liquid_error(LIQUID_EICONFIG,"modem_init(), maximum number of bits per symbol exceeded");
 
     // initialize common elements
     _q->symbol_map = NULL;    // symbol map (LIQUID_MODEM_ARB only)
@@ -299,26 +297,24 @@ void MODEM(_init)(MODEM() _q,
     // soft demodulation
     _q->demod_soft_neighbors = NULL;
     _q->demod_soft_p = 0;
+    return LIQUID_OK;
 }
 
 // initialize symbol map for fast modulation
-void MODEM(_init_map)(MODEM() _q)
+int MODEM(_init_map)(MODEM() _q)
 {
     // validate input
-    if (_q->symbol_map == NULL) {
-        fprintf(stderr,"error: modem_init_map(), symbol map array has not been allocated\n");
-        exit(1);
-    } else if (_q->M == 0 || _q->M > (1<<MAX_MOD_BITS_PER_SYMBOL)) {
-        fprintf(stderr,"error: modem_init_map(), constellation size is out of range\n");
-        exit(1);
-    } else if (_q->modulate_func == NULL) {
-        fprintf(stderr,"error: modem_init_map(), modulation function has not been initialized\n");
-        exit(1);
-    }
+    if (_q->symbol_map == NULL)
+        return liquid_error(LIQUID_EICONFIG,"modem_init_map(), symbol map array has not been allocated");
+    if (_q->M == 0 || _q->M > (1<<MAX_MOD_BITS_PER_SYMBOL))
+        return liquid_error(LIQUID_EICONFIG,"modem_init_map(), constellation size is out of range");
+    if (_q->modulate_func == NULL)
+        return liquid_error(LIQUID_EICONFIG,"modem_init_map(), modulation function has not been initialized");
 
     unsigned int i;
     for (i=0; i<_q->M; i++)
         _q->modulate_func(_q, i, &_q->symbol_map[i]);
+    return LIQUID_OK;
 }
 
 // Generate random symbol
@@ -343,15 +339,13 @@ modulation_scheme MODEM(_get_scheme)(MODEM() _q)
 //  _q          :   modem object
 //  _symbol_in  :   input symbol
 //  _y          :   output sample
-void MODEM(_modulate)(MODEM() _q,
-                      unsigned int _symbol_in,
-                      TC * _y)
+int MODEM(_modulate)(MODEM()      _q,
+                     unsigned int _symbol_in,
+                     TC *         _y)
 {
     // validate input
-    if (_symbol_in >= _q->M) {
-        fprintf(stderr,"error: modem_modulate(), input symbol exceeds constellation size\n");
-        exit(1);
-    }
+    if (_symbol_in >= _q->M)
+        return liquid_error(LIQUID_EICONFIG,"modem_modulate(), input symbol exceeds constellation size");
 
     if (_q->modulate_using_map) {
         // modulate simply using map (look-up table)
@@ -360,45 +354,44 @@ void MODEM(_modulate)(MODEM() _q,
         // invoke method specific to scheme (calculate symbol on the fly)
         _q->modulate_func(_q, _symbol_in, _y);
     }
+    return LIQUID_OK;
 }
 
 // modulate using symbol map (look-up table)
-void MODEM(_modulate_map)(MODEM() _q,
-                          unsigned int _symbol_in,
-                          TC * _y)
+int MODEM(_modulate_map)(MODEM()      _q,
+                         unsigned int _symbol_in,
+                         TC *         _y)
 {
-    if (_symbol_in >= _q->M) {
-        fprintf(stderr,"error: modem_modulate_table(), input symbol exceeds maximum\n");
-        exit(1);
-    } else if (_q->symbol_map == NULL) {
-        fprintf(stderr,"error: modem_modulate_table(), symbol table not initialized\n");
-        exit(1);
-    }
+    if (_symbol_in >= _q->M)
+        return liquid_error(LIQUID_EICONFIG,"modem_modulate_table(), input symbol exceeds maximum");
+    if (_q->symbol_map == NULL)
+        return liquid_error(LIQUID_EICONFIG,"modem_modulate_table(), symbol table not initialized");
 
     // map sample directly to output
     *_y = _q->symbol_map[_symbol_in]; 
+    return LIQUID_OK;
 }
 
 // generic demodulation
-void MODEM(_demodulate)(MODEM() _q,
-                        TC x,
-                        unsigned int *symbol_out)
+int MODEM(_demodulate)(MODEM() _q,
+                       TC x,
+                       unsigned int *symbol_out)
 {
     // invoke method specific to scheme (calculate symbol on the fly)
-    _q->demodulate_func(_q, x, symbol_out);
+    return _q->demodulate_func(_q, x, symbol_out);
 }
 
 // generic soft demodulation
-void MODEM(_demodulate_soft)(MODEM() _q,
-                             TC _x,
-                             unsigned int  * _s,
-                             unsigned char * _soft_bits)
+int MODEM(_demodulate_soft)(MODEM() _q,
+                            TC _x,
+                            unsigned int  * _s,
+                            unsigned char * _soft_bits)
 {
     // switch scheme
     switch (_q->scheme) {
-    case LIQUID_MODEM_ARB:  MODEM(_demodulate_soft_arb)( _q,_x,_s,_soft_bits); return;
-    case LIQUID_MODEM_BPSK: MODEM(_demodulate_soft_bpsk)(_q,_x,_s,_soft_bits); return;
-    case LIQUID_MODEM_QPSK: MODEM(_demodulate_soft_qpsk)(_q,_x,_s,_soft_bits); return;
+    case LIQUID_MODEM_ARB:  return MODEM(_demodulate_soft_arb)( _q,_x,_s,_soft_bits);
+    case LIQUID_MODEM_BPSK: return MODEM(_demodulate_soft_bpsk)(_q,_x,_s,_soft_bits);
+    case LIQUID_MODEM_QPSK: return MODEM(_demodulate_soft_qpsk)(_q,_x,_s,_soft_bits);
     default:;
     }
 
@@ -406,9 +399,7 @@ void MODEM(_demodulate_soft)(MODEM() _q,
     if (_q->demod_soft_neighbors != NULL && _q->demod_soft_p != 0) {
         // demodulate using approximate log-likelihood method with
         // look-up table for nearest neighbors
-        MODEM(_demodulate_soft_table)(_q, _x, _s, _soft_bits);
-
-        return;
+        return MODEM(_demodulate_soft_table)(_q, _x, _s, _soft_bits);
     }
 
     // for now demodulate normally and simply copy the
@@ -418,7 +409,7 @@ void MODEM(_demodulate_soft)(MODEM() _q,
     *_s = symbol_out;
 
     // unpack soft bits
-    liquid_unpack_soft_bits(symbol_out, _q->m, _soft_bits);
+    return liquid_unpack_soft_bits(symbol_out, _q->m, _soft_bits);
 }
 
 #if DEBUG_DEMODULATE_SOFT
@@ -437,10 +428,10 @@ void print_bitstring_demod_soft(unsigned int _x,
 //  _r          :   received sample
 //  _s          :   hard demodulator output
 //  _soft_bits  :   soft bit ouput (approximate log-likelihood ratio)
-void MODEM(_demodulate_soft_table)(MODEM() _q,
-                                   TC _r,
-                                   unsigned int * _s,
-                                   unsigned char * _soft_bits)
+int MODEM(_demodulate_soft_table)(MODEM() _q,
+                                  TC _r,
+                                  unsigned int * _s,
+                                  unsigned char * _soft_bits)
 {
     // run hard demodulation; this will store re-modulated sample
     // as internal variable x_hat
@@ -512,15 +503,17 @@ void MODEM(_demodulate_soft_table)(MODEM() _q,
 
     // set hard output symbol
     *_s = s;
+    return LIQUID_OK;
 }
 
 
 
 // get demodulator's estimated transmit sample
-void MODEM(_get_demodulator_sample)(MODEM() _q,
+int MODEM(_get_demodulator_sample)(MODEM() _q,
                                     TC * _x_hat)
 {
     *_x_hat = _q->x_hat;
+    return LIQUID_OK;
 }
 
 // get demodulator phase error
@@ -541,11 +534,11 @@ T MODEM(_get_demodulator_evm)(MODEM() _q)
 //  _alpha  :   scaling factor
 //  _s      :   demodulated symbol
 //  _res    :   residual
-void MODEM(_demodulate_linear_array)(T              _v,
-                                     unsigned int   _m,
-                                     T              _alpha,
-                                     unsigned int * _s,
-                                     T *            _res)
+int MODEM(_demodulate_linear_array)(T              _v,
+                                    unsigned int   _m,
+                                    T              _alpha,
+                                    unsigned int * _s,
+                                    T *            _res)
 {
     unsigned int s=0;
     unsigned int i, k = _m;
@@ -559,6 +552,7 @@ void MODEM(_demodulate_linear_array)(T              _v,
     }
     *_s = s;
     *_res = _v;
+    return LIQUID_OK;
 }
 
 // Demodulate a linear symbol constellation using refereneced lookup table
@@ -567,11 +561,11 @@ void MODEM(_demodulate_linear_array)(T              _v,
 //  _ref    :   array of thresholds
 //  _s      :   demodulated symbol
 //  _res    :   residual
-void MODEM(_demodulate_linear_array_ref)(T              _v,
-                                         unsigned int   _m,
-                                         T *            _ref,
-                                         unsigned int * _s,
-                                         T *            _res)
+int MODEM(_demodulate_linear_array_ref)(T              _v,
+                                        unsigned int   _m,
+                                        T *            _ref,
+                                        unsigned int * _s,
+                                        T *            _res)
 {
     // initialize loop counter
     register unsigned int i;
@@ -599,18 +593,17 @@ void MODEM(_demodulate_linear_array_ref)(T              _v,
 
     // return residual
     *_res = _v;
+    return LIQUID_OK;
 }
 
 
 // generate soft demodulation look-up table
-void MODEM(_demodsoft_gentab)(MODEM()      _q,
-                              unsigned int _p)
+int MODEM(_demodsoft_gentab)(MODEM()      _q,
+                             unsigned int _p)
 {
     // validate input: ensure number of nearest symbols is not too large
-    if (_p > (_q->M-1)) {
-        fprintf(stderr,"error: modem_demodsoft_gentab(), requesting too many neighbors\n");
-        exit(1);
-    }
+    if (_p > (_q->M-1))
+        return liquid_error(LIQUID_EICONFIG,"modem_demodsoft_gentab(), requesting too many neighbors");
     
     // allocate internal memory
     _q->demod_soft_p = _p;
@@ -706,6 +699,7 @@ void MODEM(_demodsoft_gentab)(MODEM()      _q,
         }
     }
 #endif
+    return LIQUID_OK;
 }
 
 

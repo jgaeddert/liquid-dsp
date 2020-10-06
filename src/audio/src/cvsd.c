@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,16 +60,12 @@ cvsd cvsd_create(unsigned int _num_bits,
                  float _zeta,
                  float _alpha)
 {
-    if (_num_bits == 0) {
-        fprintf(stderr, "error: cvsd_create(), _num_bits must be positive\n");
-        exit(1);
-    } else if (_zeta <= 1.0f) {
-        fprintf(stderr, "error: cvsd_create(), zeta must be greater than 1\n");
-        exit(1);
-    } else if (_alpha < 0.0f || _alpha > 1.0f) {
-        fprintf(stderr, "error: cvsd_create(), alpha must be in [0,1]\n");
-        exit(1);
-    }
+    if (_num_bits == 0)
+        return liquid_error_config("cvsd_create(), _num_bits must be positive");
+    if (_zeta <= 1.0f)
+        return liquid_error_config("cvsd_create(), zeta must be greater than 1");
+    if (_alpha < 0.0f || _alpha > 1.0f)
+        return liquid_error_config("cvsd_create(), alpha must be in [0,1]");
 
     cvsd q = (cvsd) malloc(sizeof(struct cvsd_s));
     q->num_bits = _num_bits;

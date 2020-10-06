@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,10 +44,8 @@ struct FREQDEM(_s) {
 FREQDEM() FREQDEM(_create)(float _kf)
 {
     // validate input
-    if (_kf <= 0.0f || _kf > 1.0) {
-        fprintf(stderr,"error: freqdem_create(), modulation factor %12.4e out of range [0,1]\n", _kf);
-        exit(1);
-    }
+    if (_kf <= 0.0f || _kf > 1.0)
+        return liquid_error_config("freqdem_create(), modulation factor %12.4e out of range [0,1]", _kf);
 
     // create main object memory
     FREQDEM() q = (freqdem) malloc(sizeof(struct FREQDEM(_s)));
@@ -66,39 +64,43 @@ FREQDEM() FREQDEM(_create)(float _kf)
 }
 
 // destroy modem object
-void FREQDEM(_destroy)(FREQDEM() _q)
+int FREQDEM(_destroy)(FREQDEM() _q)
 {
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print modulation internals
-void FREQDEM(_print)(FREQDEM() _q)
+int FREQDEM(_print)(FREQDEM() _q)
 {
     printf("freqdem:\n");
     printf("    mod. factor :   %8.4f\n", _q->kf);
+    return LIQUID_OK;
 }
 
 // reset modem object
-void FREQDEM(_reset)(FREQDEM() _q)
+int FREQDEM(_reset)(FREQDEM() _q)
 {
     // clear complex phase term
     _q->r_prime = 0;
+    return LIQUID_OK;
 }
 
 // demodulate sample
 //  _q      :   FM demodulator object
 //  _r      :   received signal
 //  _m      :   output message signal
-void FREQDEM(_demodulate)(FREQDEM() _q,
-                          TC        _r,
-                          T *       _m)
+int FREQDEM(_demodulate)(FREQDEM() _q,
+                         TC        _r,
+                         T *       _m)
 {
     // compute phase difference and normalize by modulation index
     *_m = cargf( conjf(_q->r_prime)*_r ) * _q->ref;
 
     // save previous input sample
     _q->r_prime = _r;
+    return LIQUID_OK;
 }
 
 // demodulate block of samples
@@ -106,14 +108,15 @@ void FREQDEM(_demodulate)(FREQDEM() _q,
 //  _r      :   received signal r(t) [size: _n x 1]
 //  _n      :   number of input, output samples
 //  _m      :   message signal m(t), [size: _n x 1]
-void FREQDEM(_demodulate_block)(FREQDEM()    _q,
-                                TC *         _r,
-                                unsigned int _n,
-                                T *          _m)
+int FREQDEM(_demodulate_block)(FREQDEM()    _q,
+                               TC *         _r,
+                               unsigned int _n,
+                               T *          _m)
 {
     // TODO: implement more efficient method
     unsigned int i;
     for (i=0; i<_n; i++)
         FREQDEM(_demodulate)(_q, _r[i], &_m[i]);
+    return LIQUID_OK;
 }
 

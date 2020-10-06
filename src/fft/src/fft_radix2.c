@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,7 +73,7 @@ FFT(plan) FFT(_create_plan_radix2)(unsigned int _nfft,
 }
 
 // destroy FFT plan
-void FFT(_destroy_plan_radix2)(FFT(plan) _q)
+int FFT(_destroy_plan_radix2)(FFT(plan) _q)
 {
     // free data specific to radix-2 transforms
     free(_q->data.radix2.index_rev);
@@ -81,10 +81,11 @@ void FFT(_destroy_plan_radix2)(FFT(plan) _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // execute radix-2 FFT
-void FFT(_execute_radix2)(FFT(plan) _q)
+int FFT(_execute_radix2)(FFT(plan) _q)
 {
     // swap values
     unsigned int i,j,k;
@@ -133,5 +134,6 @@ void FFT(_execute_radix2)(FFT(plan) _q)
             }
         }
     }
+    return LIQUID_OK;
 }
 

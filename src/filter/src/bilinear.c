@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -125,8 +125,8 @@ void bilinear_nd(float complex * _b,
                  float complex * _ad)
 {
     if (_b_order > _a_order) {
-        fprintf(stderr,"error: bilinear_nd(), numerator order cannot be higher than denominator\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"bilinear_nd(), numerator order cannot be higher than denominator");
+        return;
     }
 
 #if LIQUID_DEBUG_BILINEAR_PRINT

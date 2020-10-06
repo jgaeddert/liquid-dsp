@@ -47,14 +47,16 @@ VERSION		:= @PACKAGE_VERSION@
 BUGREPORT	:= @PACKAGE_BUGREPORT@
 
 # paths
-srcdir		:= @srcdir@
-libdir		:= @libdir@
 prefix		:= @prefix@
 exec_prefix	:= @exec_prefix@
+VPATH		:= @srcdir@
+srcdir		:= @srcdir@
+libdir		:= @libdir@
 include_dirs	:= . include
 
 # programs
 CC		:= @CC@
+CXX		:= g++
 MV		:= mv -f
 RM		:= rm -f
 SED		:= @SED@
@@ -436,6 +438,7 @@ filter_objects :=						\
 # list explicit targets and dependencies here
 filter_includes :=						\
 	src/filter/src/autocorr.c				\
+	src/filter/src/dds.c					\
 	src/filter/src/fftfilt.c				\
 	src/filter/src/firdecim.c				\
 	src/filter/src/firfarrow.c				\
@@ -1224,9 +1227,10 @@ help:
 install: all
 	@echo "installing..."
 	@echo ""
-	mkdir -p $(DESTDIR)$(exec_prefix)$(libdir)
+	mkdir -p $(DESTDIR)$(prefix)/include
 	mkdir -p $(DESTDIR)$(prefix)/include/liquid
-	install -m 644 -p ${ARCHIVE_LIB} ${SHARED_LIB} $(DESTDIR)$(exec_prefix)$(libdir)
+	mkdir -p $(DESTDIR)$(libdir)
+	install -m 644 -p ${ARCHIVE_LIB} ${SHARED_LIB} $(DESTDIR)$(libdir)
 	install -m 644 -p $(addprefix include/,$(headers_install)) $(DESTDIR)$(prefix)/include/liquid
 	@echo ""
 	@echo "---------------------------------------------------------"
@@ -1249,8 +1253,8 @@ install: all
 uninstall:
 	@echo "uninstalling..."
 	$(RM) $(addprefix $(DESTDIR)$(prefix)/include/liquid/, $(headers_install))
-	$(RM) $(DESTDIR)$(exec_prefix)$(libdir)/${ARCHIVE_LIB}
-	$(RM) $(DESTDIR)$(exec_prefix)$(libdir)/${SHARED_LIB}
+	$(RM) $(DESTDIR)$(libdir)/${ARCHIVE_LIB}
+	$(RM) $(DESTDIR)$(libdir)/${SHARED_LIB}
 	@echo "done."
 
 ##
@@ -1326,19 +1330,28 @@ clean-check:
 ## TARGET : doc-check - build and run basic documentation checks
 ##
 
-readme.example.c : README.md
+readme.c.example.c : README.md
 	${SED} -n '22,42p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
-readme.example.o : %.o : %.c ${include_headers}
+readme.c.example.o : %.o : %.c ${include_headers}
 	${CC} ${CPPFLAGS} ${CFLAGS} $< -c -o $@
 
-readme.example : % : %.o ${ARCHIVE_LIB}
+readme.c.example : % : %.o ${ARCHIVE_LIB}
 	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
 
-doc-check : readme.example ; ./readme.example
+readme.cc.example.cc : README.md
+	${SED} -n '151,172p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+
+readme.cc.example.o : %.o : %.cc ${include_headers}
+	${CXX} ${CPPFLAGS} ${CFLAGS} $< -c -o $@
+
+readme.cc.example : % : %.o ${ARCHIVE_LIB}
+	${CXX} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
+
+doc-check : readme.c.example readme.cc.example ; ./readme.c.example && ./readme.cc.example
 
 clean-doc-check:
-	${RM} readme.example*
+	${RM} readme.*.example*
 
 ##
 ## TARGET : coverage  - run coverage test and produce report
@@ -1451,6 +1464,7 @@ example_programs :=						\
 	examples/cpfskmodem_psd_example				\
 	examples/cvsd_example					\
 	examples/detector_cccf_example				\
+	examples/dds_cccf_example				\
 	examples/dsssframesync_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
@@ -1459,6 +1473,7 @@ example_programs :=						\
 	examples/eqlms_cccf_decisiondirected_example		\
 	examples/eqlms_cccf_example				\
 	examples/eqrls_cccf_example				\
+	examples/error_handling_example				\
 	examples/fec_example					\
 	examples/fec_soft_example				\
 	examples/fft_example					\
@@ -1500,6 +1515,8 @@ example_programs :=						\
 	examples/gasearch_knapsack_example			\
 	examples/gmskframesync_example				\
 	examples/gmskmodem_example				\
+	examples/gmsk_eqlms_example				\
+	examples/gmsk_tracking_example				\
 	examples/gradsearch_datafit_example			\
 	examples/gradsearch_example				\
 	examples/interleaver_example				\
@@ -1536,6 +1553,7 @@ example_programs :=						\
 	examples/nco_crcf_tone_example				\
 	examples/nco_example					\
 	examples/nco_pll_example				\
+	examples/nco_pll_real_example				\
 	examples/nco_pll_modem_example				\
 	examples/nyquist_filter_example				\
 	examples/ofdmflexframesync_example			\
@@ -1667,6 +1685,7 @@ sandbox_programs =						\
 	sandbox/gmskmodem_test					\
 	sandbox/gmskmodem_coherent_test				\
 	sandbox/gmskmodem_equalizer_test			\
+	sandbox/gmskmodem_psd_filter_compare_test		\
 	sandbox/householder_test				\
 	sandbox/iirdes_test					\
 	sandbox/iirdes_gradsearch_test				\

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,24 +59,18 @@ RESAMP() RESAMP(_create)(float        _rate,
                          unsigned int _npfb)
 {
     // validate input
-    if (_rate <= 0) {
-        fprintf(stderr,"error: resamp_%s_create(), resampling rate must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr,"error: resamp_%s_create(), filter semi-length must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_fc <= 0.0f || _fc >= 0.5f) {
-        fprintf(stderr,"error: resamp_%s_create(), filter cutoff must be in (0,0.5)\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_As <= 0.0f) {
-        fprintf(stderr,"error: resamp_%s_create(), filter stop-band suppression must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
+    if (_rate <= 0)
+        return liquid_error_config("resamp_%s_create(), resampling rate must be greater than zero", EXTENSION_FULL);
+    if (_m == 0)
+        return liquid_error_config("resamp_%s_create(), filter semi-length must be greater than zero", EXTENSION_FULL);
+    if (_fc <= 0.0f || _fc >= 0.5f)
+        return liquid_error_config("resamp_%s_create(), filter cutoff must be in (0,0.5)", EXTENSION_FULL);
+    if (_As <= 0.0f)
+        return liquid_error_config("resamp_%s_create(), filter stop-band suppression must be greater than zero", EXTENSION_FULL);
 #if 0
-    } else if (_npfb == 0) {
-        fprintf(stderr,"error: resamp_%s_create(), number of filter banks must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
+    if (_npfb == 0)
+        return liquid_error_config("resamp_%s_create(), number of filter banks must be greater than zero", EXTENSION_FULL);
 #endif
-    }
 
     // allocate memory for resampler
     RESAMP() q = (RESAMP()) malloc(sizeof(struct RESAMP(_s)));
@@ -123,10 +117,8 @@ RESAMP() RESAMP(_create)(float        _rate,
 RESAMP() RESAMP(_create_default)(float _rate)
 {
     // validate input
-    if (_rate <= 0) {
-        fprintf(stderr,"error: resamp_%s_create_default(), resampling rate must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_rate <= 0)
+        return liquid_error_config("resamp_%s_create_default(), resampling rate must be greater than zero", EXTENSION_FULL);
 
     // det default parameters
     unsigned int m    = 7;
@@ -178,8 +170,8 @@ void RESAMP(_set_rate)(RESAMP() _q,
                        float    _rate)
 {
     if (_rate <= 0) {
-        fprintf(stderr,"error: resamp_%s_set_rate(), resampling rate must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"resamp_%s_set_rate(), resampling rate must be greater than zero", EXTENSION_FULL);
+        return;
     }
 
     // set internal rate
@@ -200,8 +192,8 @@ void RESAMP(_adjust_rate)(RESAMP() _q,
                           float    _gamma)
 {
     if (_gamma <= 0) {
-        fprintf(stderr,"error: resamp_%s_adjust_rate(), resampling adjustment (%12.4e) must be greater than zero\n", EXTENSION_FULL, _gamma);
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"resamp_%s_adjust_rate(), resampling adjustment (%12.4e) must be greater than zero", EXTENSION_FULL, _gamma);
+        return;
     }
 
     // adjust internal rate
@@ -216,9 +208,8 @@ void RESAMP(_set_timing_phase)(RESAMP() _q,
                                float    _tau)
 {
     if (_tau < -1.0f || _tau > 1.0f) {
-        fprintf(stderr,"error: resamp_%s_set_timing_phase(), timing phase must be in [-1,1], is %f\n.",
-                EXTENSION_FULL, _tau);
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"resamp_%s_set_timing_phase(), timing phase must be in [-1,1], is %f.",EXTENSION_FULL,_tau);
+        return;
     }
 
     // TODO: set internal timing phase (quantized)
@@ -232,9 +223,8 @@ void RESAMP(_adjust_timing_phase)(RESAMP() _q,
                                   float    _delta)
 {
     if (_delta < -1.0f || _delta > 1.0f) {
-        fprintf(stderr,"error: resamp_%s_adjust_timing_phase(), timing phase adjustment must be in [-1,1], is %f\n.",
-                EXTENSION_FULL, _delta);
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"resamp_%s_adjust_timing_phase(), timing phase adjustment must be in [-1,1], is %f.",EXTENSION_FULL,_delta);
+        return;
     }
 
     // TODO: adjust internal timing phase (quantized)

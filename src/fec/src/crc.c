@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -94,10 +94,8 @@ unsigned int crc_get_length(crc_scheme _scheme)
     case LIQUID_CRC_24:        return 3;
     case LIQUID_CRC_32:        return 4;
     default:
-        fprintf(stderr,"error: crc_get_length(), unknown/unsupported scheme: %d\n", _scheme);
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"crc_get_length(), unknown/unsupported scheme: %d", _scheme);
     }
-
     return 0;
 }
 
@@ -111,8 +109,8 @@ unsigned int crc_generate_key(crc_scheme      _scheme,
 {
     switch (_scheme) {
     case LIQUID_CRC_UNKNOWN:
-        fprintf(stderr,"error: crc_generate_key(), cannot generate key with CRC type \"UNKNOWN\"\n");
-        exit(-1);
+        liquid_error(LIQUID_EIMODE,"crc_generate_key(), cannot generate key with CRC unknown type");
+        return 0;
     case LIQUID_CRC_NONE:      return 0;
     case LIQUID_CRC_CHECKSUM:  return checksum_generate_key(_msg, _n);
     case LIQUID_CRC_8:         return crc8_generate_key(_msg, _n);
@@ -120,10 +118,9 @@ unsigned int crc_generate_key(crc_scheme      _scheme,
     case LIQUID_CRC_24:        return crc24_generate_key(_msg, _n);
     case LIQUID_CRC_32:        return crc32_generate_key(_msg, _n);
     default:
-        fprintf(stderr,"error: crc_generate_key(), unknown/unsupported scheme: %d\n", _scheme);
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"crc_generate_key(), unknown/unsupported scheme: %d", _scheme);
+        return 0;
     }
-
     return 0;
 }
 
@@ -131,9 +128,9 @@ unsigned int crc_generate_key(crc_scheme      _scheme,
 //  _scheme     :   error-detection scheme (resulting in 'p' bytes)
 //  _msg        :   input data message, [size: _n+p x 1]
 //  _n          :   input data message size (excluding key at end)
-void crc_append_key(crc_scheme      _scheme,
-                    unsigned char * _msg,
-                    unsigned int    _n)
+int crc_append_key(crc_scheme      _scheme,
+                   unsigned char * _msg,
+                   unsigned int    _n)
 {
     // get key size
     unsigned int len = crc_sizeof_key(_scheme);
@@ -145,6 +142,7 @@ void crc_append_key(crc_scheme      _scheme,
     unsigned int i;
     for (i=0; i<len; i++)
         _msg[_n+i] = (key >> (len - i - 1)*8) & 0xff;
+    return LIQUID_OK;
 }
 
 // validate message using error-detection key
@@ -158,8 +156,8 @@ int crc_validate_message(crc_scheme      _scheme,
                          unsigned int    _key)
 {
     if (_scheme == LIQUID_CRC_UNKNOWN) {
-        fprintf(stderr,"error: crc_validate_message(), cannot validate with CRC type \"UNKNOWN\"\n");
-        exit(-1);
+        liquid_error(LIQUID_EIMODE,"crc_validate_message(), cannot validate with CRC unknown type");
+        return 0;
     } else if (_scheme == LIQUID_CRC_NONE) {
         return 1;
     }
@@ -195,8 +193,8 @@ unsigned int crc_sizeof_key(crc_scheme _scheme)
 {
     switch (_scheme) {
     case LIQUID_CRC_UNKNOWN:
-        fprintf(stderr,"error: crc_sizeof_key(), cannot get size of type 'LIQUID_CRC_UNKNOWN'\n");
-        exit(-1);
+        liquid_error(LIQUID_EICONFIG,"crc_sizeof_key(), cannot get size of type 'LIQUID_CRC_UNKNOWN'");
+        return 0;
     case LIQUID_CRC_NONE:      return 0;
     case LIQUID_CRC_CHECKSUM:  return 1;
     case LIQUID_CRC_8:         return 1;
@@ -204,13 +202,11 @@ unsigned int crc_sizeof_key(crc_scheme _scheme)
     case LIQUID_CRC_24:        return 3;
     case LIQUID_CRC_32:        return 4;
     default:
-        fprintf(stderr,"error: crc_sizeof_key(), unknown/unsupported scheme: %d\n", _scheme);
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"crc_sizeof_key(), unknown/unsupported scheme: %d", _scheme);
+        return 0;
     }
-
     return 0;
 }
-
 
 
 //
@@ -349,15 +345,16 @@ unsigned int crc32_generate_key(unsigned char *_msg,
 }
 
 #if 0
-void crc32_generate_key(unsigned char *_msg,
-                        unsigned int _n,
-                        unsigned char *_key)
+int crc32_generate_key(unsigned char *_msg,
+                       unsigned int _n,
+                       unsigned char *_key)
 {
     unsigned int key32 = crc32_generate_key32(_msg,_n);
     _key[0] = (key32 & 0xFF000000) >> 24;
     _key[1] = (key32 & 0x00FF0000) >> 16;
     _key[2] = (key32 & 0x0000FF00) >> 8;
     _key[3] = (key32 & 0x000000FF);
+    return LIQUID_OK;
 }
 #endif
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2017 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,10 +51,8 @@ struct ASGRAM(_s) {
 ASGRAM() ASGRAM(_create)(unsigned int _nfft)
 {
     // validate input
-    if (_nfft < 2) {
-        fprintf(stderr,"error: asgram%s_create(), fft size must be at least 2\n", EXTENSION);
-        exit(1);
-    }
+    if (_nfft < 2)
+        return liquid_error_config("asgram%s_create(), fft size must be at least 2", EXTENSION);
 
     // create main object
     ASGRAM() q = (ASGRAM()) malloc(sizeof(struct ASGRAM(_s)));
@@ -81,7 +79,7 @@ ASGRAM() ASGRAM(_create)(unsigned int _nfft)
 }
 
 // destroy asgram object
-void ASGRAM(_destroy)(ASGRAM() _q)
+int ASGRAM(_destroy)(ASGRAM() _q)
 {
     // destroy spectral periodogram object
     SPGRAM(_destroy)(_q->periodogram);
@@ -92,26 +90,25 @@ void ASGRAM(_destroy)(ASGRAM() _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // resets the internal state of the asgram object
-void ASGRAM(_reset)(ASGRAM() _q)
+int ASGRAM(_reset)(ASGRAM() _q)
 {
-    SPGRAM(_reset)(_q->periodogram);
+    return SPGRAM(_reset)(_q->periodogram);
 }
 
 // set scale and offset for spectrogram
 //  _q      :   asgram object
 //  _ref    :   signal reference level [dB]
 //  _div    :   signal division [dB]
-void ASGRAM(_set_scale)(ASGRAM() _q,
-                        float    _ref,
-                        float    _div)
+int ASGRAM(_set_scale)(ASGRAM() _q,
+                       float    _ref,
+                       float    _div)
 {
-    if (_div <= 0.0f) {
-        fprintf(stderr,"ASGRAM(_set_scale)(), div must be greater than zero\n");
-        exit(1);
-    }
+    if (_div <= 0.0f)
+        return liquid_error(LIQUID_EICONFIG,"ASGRAM(_set_scale)(), div must be greater than zero");
 
     _q->ref = _ref;
     _q->div = _div;
@@ -119,13 +116,14 @@ void ASGRAM(_set_scale)(ASGRAM() _q,
     unsigned int i;
     for (i=0; i<_q->num_levels; i++)
         _q->levels[i] = _q->ref + i*_q->div;
+    return LIQUID_OK;
 }
 
 // set display characters for output string
 //  _q      :   asgram object
 //  _ascii  :   10-character display, default: " .,-+*&NM#"
-void ASGRAM(_set_display)(ASGRAM()     _q,
-                          const char * _ascii)
+int ASGRAM(_set_display)(ASGRAM()     _q,
+                         const char * _ascii)
 {
     unsigned int i;
     for (i=0; i<10; i++) {
@@ -136,29 +134,30 @@ void ASGRAM(_set_display)(ASGRAM()     _q,
             _q->levelchar[i] = _ascii[i];
         }
     }
+    return LIQUID_OK;
 }
 
 // push a single sample into the asgram object
 //  _q      :   asgram object
 //  _x      :   input buffer [size: _n x 1]
 //  _n      :   input buffer length
-void ASGRAM(_push)(ASGRAM() _q,
-                   TI       _x)
+int ASGRAM(_push)(ASGRAM() _q,
+                  TI       _x)
 {
     // push sample into internal spectral periodogram
-    SPGRAM(_push)(_q->periodogram, _x);
+    return SPGRAM(_push)(_q->periodogram, _x);
 }
 
 // write a block of samples to the asgram object
 //  _q      :   asgram object
 //  _x      :   input buffer [size: _n x 1]
 //  _n      :   input buffer length
-void ASGRAM(_write)(ASGRAM()     _q,
-                    TI *         _x,
-                    unsigned int _n)
+int ASGRAM(_write)(ASGRAM()     _q,
+                   TI *         _x,
+                   unsigned int _n)
 {
     // write samples to internal spectral periodogram
-    SPGRAM(_write)(_q->periodogram, _x, _n);
+    return SPGRAM(_write)(_q->periodogram, _x, _n);
 }
 
 // compute spectral periodogram output from current buffer contents
@@ -166,17 +165,17 @@ void ASGRAM(_write)(ASGRAM()     _q,
 //  _ascii      :   output ASCII string [size: _nfft x 1]
 //  _peakval    :   value at peak (returned value)
 //  _peakfreq   :   frequency at peak (returned value)
-void ASGRAM(_execute)(ASGRAM() _q,
-                      char *   _ascii,
-                      float *  _peakval,
-                      float *  _peakfreq)
+int ASGRAM(_execute)(ASGRAM() _q,
+                     char *   _ascii,
+                     float *  _peakval,
+                     float *  _peakfreq)
 {
     // check number of transforms
     if (SPGRAM(_get_num_transforms)(_q->periodogram)==0) {
         memset(_ascii,' ',_q->nfft);
         *_peakval = 0.0f;
         *_peakfreq = 0.0f;
-        return;
+        return LIQUID_OK;
     }
 
     // execute spectral periodogram
@@ -221,11 +220,12 @@ void ASGRAM(_execute)(ASGRAM() _q,
 
     // append null character to end of string
     //_ascii[i] = '\0';
+    return LIQUID_OK;
 }
 
 // compute spectral periodogram output from current buffer
 // contents and print standard format to stdout
-void ASGRAM(_print)(ASGRAM() _q)
+int ASGRAM(_print)(ASGRAM() _q)
 {
     float maxval;
     float maxfreq;
@@ -237,5 +237,6 @@ void ASGRAM(_print)(ASGRAM() _q)
 
     // print the spectrogram to stdout
     printf(" > %s < pk%5.1f dB [%5.2f]\n", ascii, maxval, maxfreq);
+    return LIQUID_OK;
 }
 

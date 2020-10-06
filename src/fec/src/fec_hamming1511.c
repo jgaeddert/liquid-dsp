@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,8 +56,8 @@ unsigned int fec_hamming1511_encode_symbol(unsigned int _sym_dec)
 {
     // validate input
     if (_sym_dec >= (1<<11)) {
-        fprintf(stderr,"error, fec_hamming_encode(), input symbol too large\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"fec_hamming_encode(), input symbol too large");
+        return 0;
     }
 
     // compute parity bits
@@ -87,8 +87,8 @@ unsigned int fec_hamming1511_decode_symbol(unsigned int _sym_enc)
 {
     // validate input
     if (_sym_enc >= (1<<15)) {
-        fprintf(stderr,"error, fec_hamming_decode(), input symbol too large\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"fec_hamming_decode(), input symbol too large");
+        return 0;
     }
 
     // compute syndrome bits

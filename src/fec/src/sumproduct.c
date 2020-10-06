@@ -55,10 +55,8 @@ int fec_sumproduct(unsigned int    _m,
                    unsigned int    _max_steps)
 {
     // TODO : validate input
-    if (_n == 0 || _m == 0) {
-        fprintf(stderr,"error: fec_sumproduct(), matrix dimensions cannot be zero\n");
-        exit(1);
-    }
+    if (_n == 0 || _m == 0)
+        return liquid_error(LIQUID_EICONFIG,"fec_sumproduct(), matrix dimensions cannot be zero");
 
     // internal variables
     unsigned int num_iterations = 0;

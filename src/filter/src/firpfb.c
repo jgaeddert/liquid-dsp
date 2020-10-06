@@ -48,15 +48,10 @@ FIRPFB() FIRPFB(_create)(unsigned int _M,
                          unsigned int _h_len)
 {
     // validate input
-    if (_M == 0) {
-        fprintf(stderr,"error: firpfb_%s_create(), number of filters must be greater than zero\n",
-                EXTENSION_FULL);
-        exit(1);
-    } else if (_h_len == 0) {
-        fprintf(stderr,"error: firpfb_%s_create(), filter length must be greater than zero\n",
-                EXTENSION_FULL);
-        exit(1);
-    }
+    if (_M == 0)
+        return liquid_error_config("firpfb_%s_create(), number of filters must be greater than zero",EXTENSION_FULL);
+    if (_h_len == 0)
+        return liquid_error_config("firpfb_%s_create(), filter length must be greater than zero",EXTENSION_FULL);
 
     // create main filter object
     FIRPFB() q = (FIRPFB()) malloc(sizeof(struct FIRPFB(_s)));
@@ -115,19 +110,14 @@ FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,
                                 float        _As)
 {
     // validate input
-    if (_M == 0) {
-        fprintf(stderr,"error: firpfb_%s_create_kaiser(), number of filters must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr,"error: firpfb_%s_create_kaiser(), filter delay must be greater than 0\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_fc < 0.0f || _fc > 0.5f) {
-        fprintf(stderr,"error: firpfb_%s_create_kaiser(), filter cut-off frequence must be in (0,0.5)\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_As < 0.0f) {
-        fprintf(stderr,"error: firpfb_%s_create_kaiser(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_M == 0)
+        return liquid_error_config("firpfb_%s_create_kaiser(), number of filters must be greater than zero", EXTENSION_FULL);
+    if (_m == 0)
+        return liquid_error_config("firpfb_%s_create_kaiser(), filter delay must be greater than 0", EXTENSION_FULL);
+    if (_fc < 0.0f || _fc > 0.5f)
+        return liquid_error_config("firpfb_%s_create_kaiser(), filter cut-off frequence must be in (0,0.5)", EXTENSION_FULL);
+    if (_As < 0.0f)
+        return liquid_error_config("firpfb_%s_create_kaiser(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
 
     // design filter using kaiser window
     unsigned int H_len = 2*_M*_m + 1;
@@ -157,19 +147,14 @@ FIRPFB() FIRPFB(_create_rnyquist)(int          _type,
                                   float        _beta)
 {
     // validate input
-    if (_M == 0) {
-        fprintf(stderr,"error: firpfb_%s_create_rnyquist(), number of filters must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_k < 2) {
-        fprintf(stderr,"error: firpfb_%s_create_rnyquist(), filter samples/symbol must be greater than 1\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr,"error: firpfb_%s_create_rnyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: firpfb_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_M == 0)
+        return liquid_error_config("firpfb_%s_create_rnyquist(), number of filters must be greater than zero", EXTENSION_FULL);
+    if (_k < 2)
+        return liquid_error_config("firpfb_%s_create_rnyquist(), filter samples/symbol must be greater than 1", EXTENSION_FULL);
+    if (_m == 0)
+        return liquid_error_config("firpfb_%s_create_rnyquist(), filter delay must be greater than 0", EXTENSION_FULL);
+    if (_beta < 0.0f || _beta > 1.0f)
+        return liquid_error_config("firpfb_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
 
     // generate square-root Nyquist filter
     unsigned int H_len = 2*_M*_k*_m + 1;
@@ -199,19 +184,14 @@ FIRPFB() FIRPFB(_create_drnyquist)(int          _type,
                                    float        _beta)
 {
     // validate input
-    if (_M == 0) {
-        fprintf(stderr,"error: firpfb_%s_create_drnyquist(), number of filters must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_k < 2) {
-        fprintf(stderr,"error: firpfb_%s_create_drnyquist(), filter samples/symbol must be greater than 1\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr,"error: firpfb_%s_create_drnyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: firpfb_%s_create_drnyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_M == 0)
+        return liquid_error_config("firpfb_%s_create_drnyquist(), number of filters must be greater than zero", EXTENSION_FULL);
+    if (_k < 2)
+        return liquid_error_config("firpfb_%s_create_drnyquist(), filter samples/symbol must be greater than 1", EXTENSION_FULL);
+    if (_m == 0)
+        return liquid_error_config("firpfb_%s_create_drnyquist(), filter delay must be greater than 0", EXTENSION_FULL);
+    if (_beta < 0.0f || _beta > 1.0f)
+        return liquid_error_config("firpfb_%s_create_drnyquist(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
 
     // generate square-root Nyquist filter
     unsigned int H_len = 2*_M*_k*_m + 1;
@@ -342,9 +322,8 @@ void FIRPFB(_execute)(FIRPFB()     _q,
 {
     // validate input
     if (_i >= _q->num_filters) {
-        fprintf(stderr,"error: firpfb_execute(), filterbank index (%u) exceeds maximum (%u)\n",
-                _i, _q->num_filters);
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"firpfb_execute(), filterbank index (%u) exceeds maximum (%u)",_i,_q->num_filters);
+        return;
     }
 
     // read buffer

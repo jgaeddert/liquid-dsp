@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,16 +71,10 @@ FFTFILT() FFTFILT(_create)(TC *         _h,
                            unsigned int _n)
 {
     // validate input
-    if (_h_len == 0) {
-        fprintf(stderr,"error: fftfilt_%s_create(), filter length must be greater than zero\n",
-                EXTENSION_FULL);
-        exit(1);
-    } else if (_n < _h_len-1) {
-        fprintf(stderr,"error: fftfilt_%s_create(), block length must be greater than _h_len-1 (%u)\n",
-                EXTENSION_FULL,
-                _h_len-1);
-        exit(1);
-    }
+    if (_h_len == 0)
+        return liquid_error_config("fftfilt_%s_create(), filter length must be greater than zero",EXTENSION_FULL);
+    if (_n < _h_len-1)
+        return liquid_error_config("fftfilt_%s_create(), block length must be greater than _h_len-1 (%u)",EXTENSION_FULL,_h_len-1);
 
     // create filter object and initialize
     FFTFILT() q = (FFTFILT()) malloc(sizeof(struct FFTFILT(_s)));

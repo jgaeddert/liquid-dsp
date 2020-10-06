@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,10 +63,16 @@ struct SMATRIX(_s) {
     unsigned int max_num_nlist;     // maximum of num_nlist
 };
 
+int SMATRIX(_reset_max_mlist)(SMATRIX() _q);
+int SMATRIX(_reset_max_nlist)(SMATRIX() _q);
+
 // create _M x _N matrix, initialized with zeros
 SMATRIX() SMATRIX(_create)(unsigned int _M,
                            unsigned int _N)
 {
+    if (_M==0 || _N==0)
+        return liquid_error_config("smatrix%s_create(), dimensions must be greater than zero",EXTENSION);
+
     // create object and allocate memory
     SMATRIX() q = (SMATRIX()) malloc(sizeof(struct SMATRIX(_s)));
     q->M = _M;
@@ -128,7 +134,7 @@ SMATRIX() SMATRIX(_create_array)(T *          _v,
 }
 
 // destroy object
-void SMATRIX(_destroy)(SMATRIX() _q)
+int SMATRIX(_destroy)(SMATRIX() _q)
 {
     unsigned int i;
     unsigned int j;
@@ -151,10 +157,11 @@ void SMATRIX(_destroy)(SMATRIX() _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print compact form
-void SMATRIX(_print)(SMATRIX() _q)
+int SMATRIX(_print)(SMATRIX() _q)
 {
     printf("dims : %u %u\n", _q->M, _q->N);
     printf("max  : %u %u\n", _q->max_num_mlist, _q->max_num_nlist);
@@ -207,10 +214,11 @@ void SMATRIX(_print)(SMATRIX() _q)
         printf("\n");
     }
 #endif
+    return LIQUID_OK;
 }
 
 // print expanded form
-void SMATRIX(_print_expanded)(SMATRIX() _q)
+int SMATRIX(_print_expanded)(SMATRIX() _q)
 {
     unsigned int i;
     unsigned int j;
@@ -232,19 +240,21 @@ void SMATRIX(_print_expanded)(SMATRIX() _q)
         }
         printf("\n");
     }
+    return LIQUID_OK;
 }
 
 // get matrix dimensions
-void SMATRIX(_size)(SMATRIX()      _q,
-                    unsigned int * _m,
-                    unsigned int * _n)
+int SMATRIX(_size)(SMATRIX()      _q,
+                   unsigned int * _m,
+                   unsigned int * _n)
 {
     *_m = _q->M;
     *_n = _q->N;
+    return LIQUID_OK;
 }
 
 // zero all values, retaining memory allocation
-void SMATRIX(_clear)(SMATRIX() _q)
+int SMATRIX(_clear)(SMATRIX() _q)
 {
     unsigned int i;
     unsigned int j;
@@ -262,10 +272,11 @@ void SMATRIX(_clear)(SMATRIX() _q)
             _q->nvals[j][i] = 0;
         }
     }
+    return LIQUID_OK;
 }
 
 // zero all values, clearing memory
-void SMATRIX(_reset)(SMATRIX() _q)
+int SMATRIX(_reset)(SMATRIX() _q)
 {
     unsigned int i;
     unsigned int j;
@@ -274,6 +285,7 @@ void SMATRIX(_reset)(SMATRIX() _q)
 
     _q->max_num_mlist = 0;
     _q->max_num_nlist = 0;
+    return LIQUID_OK;
 }
 
 // determine if element is set
@@ -283,9 +295,8 @@ int SMATRIX(_isset)(SMATRIX()    _q,
 {
     // validate input
     if (_m >= _q->M || _n >= _q->N) {
-        fprintf(stderr,"error: SMATRIX(_isset)(%u,%u), index exceeds matrix dimension (%u,%u)\n",
-                _m, _n, _q->M, _q->N);
-        exit(1);
+        liquid_error(LIQUID_EIRANGE,"SMATRIX(_isset)(%u,%u), index exceeds matrix dimension (%u,%u)",_m, _n, _q->M, _q->N);
+        return 0;
     }
 
     unsigned int j;
@@ -297,24 +308,20 @@ int SMATRIX(_isset)(SMATRIX()    _q,
 }
 
 // insert element at index
-void SMATRIX(_insert)(SMATRIX()    _q,
-                      unsigned int _m,
-                      unsigned int _n,
-                      T            _v)
+int SMATRIX(_insert)(SMATRIX()    _q,
+                     unsigned int _m,
+                     unsigned int _n,
+                     T            _v)
 {
     // validate input
-    if (_m >= _q->M || _n >= _q->N) {
-        fprintf(stderr,"error: SMATRIX(_insert)(%u,%u), index exceeds matrix dimension (%u,%u)\n",
-                _m, _n, _q->M, _q->N);
-        exit(1);
-    }
+    if (_m >= _q->M || _n >= _q->N)
+        return liquid_error(LIQUID_EIRANGE,"SMATRIX(_insert)(%u,%u), index exceeds matrix dimension (%u,%u)",_m, _n, _q->M, _q->N);
 
     // check to see if element is already set
     if (SMATRIX(_isset)(_q,_m,_n)) {
         // simply set the value and return
         printf("SMATRIX(_insert), value already set...\n");
-        SMATRIX(_set)(_q, _m, _n, _v);
-        return;
+        return SMATRIX(_set)(_q, _m, _n, _v);
     }
 
     // increment list sizes
@@ -350,23 +357,21 @@ void SMATRIX(_insert)(SMATRIX()    _q,
     // update maximum
     if (_q->num_mlist[_m] > _q->max_num_mlist) _q->max_num_mlist = _q->num_mlist[_m];
     if (_q->num_nlist[_n] > _q->max_num_nlist) _q->max_num_nlist = _q->num_nlist[_n];
+    return LIQUID_OK;
 }
 
 // delete element at index
-void SMATRIX(_delete)(SMATRIX()    _q,
-                      unsigned int _m,
-                      unsigned int _n)
+int SMATRIX(_delete)(SMATRIX()    _q,
+                     unsigned int _m,
+                     unsigned int _n)
 {
     // validate input
-    if (_m > _q->M || _n > _q->N) {
-        fprintf(stderr,"error: SMATRIX(_delete)(%u,%u), index exceeds matrix dimension (%u,%u)\n",
-                _m, _n, _q->M, _q->N);
-        exit(1);
-    }
+    if (_m > _q->M || _n > _q->N)
+        return liquid_error(LIQUID_EIRANGE,"SMATRIX(_delete)(%u,%u), index exceeds matrix dimension (%u,%u)",_m, _n, _q->M, _q->N);
 
     // check to see if element is already not set
     if (!SMATRIX(_isset)(_q,_m,_n))
-        return;
+        return LIQUID_OK;
 
     // remove value from mlist (shift left)
     unsigned int i;
@@ -402,26 +407,22 @@ void SMATRIX(_delete)(SMATRIX()    _q,
 
     if (_q->max_num_nlist == _q->num_nlist[_n]+1)
         SMATRIX(_reset_max_nlist)(_q);
+    return LIQUID_OK;
 }
 
 // set element value at index
-void SMATRIX(_set)(SMATRIX()    _q,
-                   unsigned int _m,
-                   unsigned int _n,
-                   T            _v)
+int SMATRIX(_set)(SMATRIX()    _q,
+                  unsigned int _m,
+                  unsigned int _n,
+                  T            _v)
 {
     // validate input
-    if (_m >= _q->M || _n >= _q->N) {
-        fprintf(stderr,"error: SMATRIX(_set)(%u,%u), index exceeds matrix dimension (%u,%u)\n",
-                _m, _n, _q->M, _q->N);
-        exit(1);
-    }
+    if (_m >= _q->M || _n >= _q->N)
+        return liquid_error(LIQUID_EIRANGE,"SMATRIX(_set)(%u,%u), index exceeds matrix dimension (%u,%u)",_m, _n, _q->M, _q->N);
 
     // insert new element if not already allocated
-    if (!SMATRIX(_isset)(_q,_m,_n)) {
-        SMATRIX(_insert)(_q,_m,_n,_v);
-        return;
-    }
+    if (!SMATRIX(_isset)(_q,_m,_n))
+        return SMATRIX(_insert)(_q,_m,_n,_v);
 
     // set value
     unsigned int i;
@@ -435,6 +436,7 @@ void SMATRIX(_set)(SMATRIX()    _q,
         if (_q->nlist[_n][i] == _m)
             _q->nvals[_n][i] = _v;
     }
+    return LIQUID_OK;
 }
 
 
@@ -445,9 +447,8 @@ T SMATRIX(_get)(SMATRIX()    _q,
 {
     // validate input
     if (_m >= _q->M || _n >= _q->N) {
-        fprintf(stderr,"error: SMATRIX(_get)(%u,%u), index exceeds matrix dimension (%u,%u)\n",
-                _m, _n, _q->M, _q->N);
-        exit(1);
+        liquid_error(LIQUID_EIRANGE,"SMATRIX(_get)(%u,%u), index exceeds matrix dimension (%u,%u)",_m, _n, _q->M, _q->N);
+        return 0;
     }
 
     unsigned int j;
@@ -459,7 +460,7 @@ T SMATRIX(_get)(SMATRIX()    _q,
 }
 
 // initialize to identity matrix
-void SMATRIX(_eye)(SMATRIX() _q)
+int SMATRIX(_eye)(SMATRIX() _q)
 {
     // reset all elements
     SMATRIX(_reset)(_q);
@@ -469,18 +470,17 @@ void SMATRIX(_eye)(SMATRIX() _q)
     unsigned int dmin = _q->M < _q->N ? _q->M : _q->N;
     for (i=0; i<dmin; i++)
         SMATRIX(_set)(_q, i, i, 1);
+    return LIQUID_OK;
 }
 
 // multiply two sparse matrices
-void SMATRIX(_mul)(SMATRIX() _a,
-                   SMATRIX() _b,
-                   SMATRIX() _c)
+int SMATRIX(_mul)(SMATRIX() _a,
+                  SMATRIX() _b,
+                  SMATRIX() _c)
 {
     // validate input
-    if (_c->M != _a->M || _c->N != _b->N || _a->N != _b->M) {
-        fprintf(stderr,"error: SMATRIX(_mul)(), invalid dimensions\n");
-        exit(1);
-    }
+    if (_c->M != _a->M || _c->N != _b->N || _a->N != _b->M)
+        return liquid_error(LIQUID_EIRANGE,"SMATRIX(_mul)(), invalid dimensions");
 
     // clear output matrix (retain memory allocation)
     SMATRIX(_clear)(_c);
@@ -541,15 +541,16 @@ void SMATRIX(_mul)(SMATRIX() _a,
             }
         }
     }
+    return LIQUID_OK;
 }
 
 // multiply by vector
 //  _q  :   sparse matrix
 //  _x  :   input vector [size: _N x 1]
 //  _y  :   output vector [size: _M x 1]
-void SMATRIX(_vmul)(SMATRIX() _q,
-                    T *       _x,
-                    T *       _y)
+int SMATRIX(_vmul)(SMATRIX() _q,
+                   T *       _x,
+                   T *       _y)
 {
     unsigned int i;
     unsigned int j;
@@ -574,6 +575,7 @@ void SMATRIX(_vmul)(SMATRIX() _q,
         _y[i] = p;
 #endif
     }
+    return LIQUID_OK;
 }
 
 
@@ -582,7 +584,7 @@ void SMATRIX(_vmul)(SMATRIX() _q,
 //
 
 // find maximum mlist length
-void SMATRIX(_reset_max_mlist)(SMATRIX() _q)
+int SMATRIX(_reset_max_mlist)(SMATRIX() _q)
 {
     unsigned int i;
 
@@ -591,10 +593,11 @@ void SMATRIX(_reset_max_mlist)(SMATRIX() _q)
         if (_q->num_mlist[i] > _q->max_num_mlist)
             _q->max_num_mlist = _q->num_mlist[i];
     }
+    return LIQUID_OK;
 }
 
 // find maximum nlist length
-void SMATRIX(_reset_max_nlist)(SMATRIX() _q)
+int SMATRIX(_reset_max_nlist)(SMATRIX() _q)
 {
     unsigned int j;
 
@@ -603,4 +606,6 @@ void SMATRIX(_reset_max_nlist)(SMATRIX() _q)
         if (_q->num_nlist[j] > _q->max_num_nlist)
             _q->max_num_nlist = _q->num_nlist[j];
     }
+    return LIQUID_OK;
 }
+

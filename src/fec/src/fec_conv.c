@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,8 +52,7 @@ fec fec_conv_create(fec_scheme _fs)
     case LIQUID_FEC_CONV_V39:  fec_conv_init_v39(q);   break;
     case LIQUID_FEC_CONV_V615: fec_conv_init_v615(q);  break;
     default:
-        fprintf(stderr,"error: fec_conv_create(), invalid type\n");
-        exit(1);
+        return liquid_error_config("fec_conv_create(), invalid type");
     }
 
     // convolutional-specific decoding
@@ -64,7 +63,7 @@ fec fec_conv_create(fec_scheme _fs)
     return q;
 }
 
-void fec_conv_destroy(fec _q)
+int fec_conv_destroy(fec _q)
 {
     // delete viterbi decoder
     if (_q->vp != NULL)
@@ -74,12 +73,13 @@ void fec_conv_destroy(fec _q)
         free(_q->enc_bits);
 
     free(_q);
+    return LIQUID_OK;
 }
 
-void fec_conv_encode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char *_msg_dec,
-                     unsigned char *_msg_enc)
+int fec_conv_encode(fec _q,
+                    unsigned int _dec_msg_len,
+                    unsigned char *_msg_dec,
+                    unsigned char *_msg_enc)
 {
     unsigned int i,j,r; // bookkeeping
     unsigned int sr=0;  // convolutional shift register
@@ -129,13 +129,14 @@ void fec_conv_encode(fec _q,
     }
 
     assert(n == 8*fec_get_enc_msg_length(_q->scheme,_dec_msg_len));
+    return LIQUID_OK;
 }
 
 //unsigned int
-void fec_conv_decode_hard(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char *_msg_enc,
-                          unsigned char *_msg_dec)
+int fec_conv_decode_hard(fec _q,
+                         unsigned int _dec_msg_len,
+                         unsigned char *_msg_enc,
+                         unsigned char *_msg_dec)
 {
     // re-allocate resources if necessary
     fec_conv_setlength(_q, _dec_msg_len);
@@ -165,14 +166,14 @@ void fec_conv_decode_hard(fec _q,
         _q->enc_bits[k] = _q->enc_bits[k] ? LIQUID_SOFTBIT_1 : LIQUID_SOFTBIT_0;
 
     // run internal decoder
-    fec_conv_decode(_q, _msg_dec);
+    return fec_conv_decode(_q, _msg_dec);
 }
 
 //unsigned int
-void fec_conv_decode_soft(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char *_msg_enc,
-                          unsigned char *_msg_dec)
+int fec_conv_decode_soft(fec _q,
+                         unsigned int _dec_msg_len,
+                         unsigned char *_msg_enc,
+                         unsigned char *_msg_dec)
 {
     // re-allocate resources if necessary
     fec_conv_setlength(_q, _dec_msg_len);
@@ -183,12 +184,11 @@ void fec_conv_decode_soft(fec _q,
         _q->enc_bits[k] = _msg_enc[k];
 
     // run internal decoder
-    fec_conv_decode(_q, _msg_dec);
+    return fec_conv_decode(_q, _msg_dec);
 }
 
 //unsigned int
-void fec_conv_decode(fec _q,
-                     unsigned char *_msg_dec)
+int fec_conv_decode(fec _q, unsigned char * _msg_dec)
 {
     // run decoder
     _q->init_viterbi(_q->vp,0);
@@ -200,16 +200,17 @@ void fec_conv_decode(fec _q,
         printf("%.2x ", _msg_dec[i]);
     printf("\n");
 #endif
+    return LIQUID_OK;
 }
 
-void fec_conv_setlength(fec _q, unsigned int _dec_msg_len)
+int fec_conv_setlength(fec _q, unsigned int _dec_msg_len)
 {
     // re-allocate resources as necessary
     unsigned int num_dec_bytes = _dec_msg_len;
 
     // return if length has not changed
     if (num_dec_bytes == _q->num_dec_bytes)
-        return;
+        return LIQUID_OK;
 
 #if VERBOSE_FEC_CONV
     printf("(re)creating viterbi decoder, %u frame bytes\n", num_dec_bytes);
@@ -228,13 +229,14 @@ void fec_conv_setlength(fec _q, unsigned int _dec_msg_len)
     _q->vp = _q->create_viterbi(8*_q->num_dec_bytes);
     _q->enc_bits = (unsigned char*) realloc(_q->enc_bits,
                                             _q->num_enc_bytes*8*sizeof(unsigned char));
+    return LIQUID_OK;
 }
 
 // 
 // internal
 //
 
-void fec_conv_init_v27(fec _q)
+int fec_conv_init_v27(fec _q)
 {
     _q->R=2;
     _q->K=7;
@@ -244,9 +246,10 @@ void fec_conv_init_v27(fec _q)
     _q->update_viterbi_blk = update_viterbi27_blk;
     _q->chainback_viterbi = chainback_viterbi27;
     _q->delete_viterbi = delete_viterbi27;
+    return LIQUID_OK;
 }
 
-void fec_conv_init_v29(fec _q)
+int fec_conv_init_v29(fec _q)
 {
     _q->R=2;
     _q->K=9;
@@ -256,9 +259,10 @@ void fec_conv_init_v29(fec _q)
     _q->update_viterbi_blk = update_viterbi29_blk;
     _q->chainback_viterbi = chainback_viterbi29;
     _q->delete_viterbi = delete_viterbi29;
+    return LIQUID_OK;
 }
 
-void fec_conv_init_v39(fec _q)
+int fec_conv_init_v39(fec _q)
 {
     _q->R=3;
     _q->K=9;
@@ -268,9 +272,10 @@ void fec_conv_init_v39(fec _q)
     _q->update_viterbi_blk = update_viterbi39_blk;
     _q->chainback_viterbi = chainback_viterbi39;
     _q->delete_viterbi = delete_viterbi39;
+    return LIQUID_OK;
 }
 
-void fec_conv_init_v615(fec _q)
+int fec_conv_init_v615(fec _q)
 {
     _q->R=6;
     _q->K=15;
@@ -280,6 +285,7 @@ void fec_conv_init_v615(fec _q)
     _q->update_viterbi_blk = update_viterbi615_blk;
     _q->chainback_viterbi = chainback_viterbi615;
     _q->delete_viterbi = delete_viterbi615;
+    return LIQUID_OK;
 }
 
 
@@ -288,11 +294,12 @@ void fec_conv_init_v615(fec _q)
 
 fec fec_conv_create(fec_scheme _fs)
 {
-    return NULL;
+    return liquid_error_config("fec_conv_create(), libfec not installed");
 }
 
-void fec_conv_destroy(fec _q)
+int fec_conv_destroy(fec _q)
 {
+    return liquid_error(LIQUID_EUMODE,"fec_conv_destroy(), libfec not installed");
 }
 
 #endif  // LIBFEC_ENABLED

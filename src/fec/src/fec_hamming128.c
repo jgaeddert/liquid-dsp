@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,8 +66,8 @@ unsigned int fec_hamming128_encode_symbol(unsigned int _sym_dec)
 {
     // validate input
     if (_sym_dec >= (1<<8)) {
-        fprintf(stderr,"error, fec_hamming128_encode(), input symbol too large\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"fec_hamming128_encode(), input symbol too large");
+        return 0;
     }
 
     // compute parity bits
@@ -97,8 +97,8 @@ unsigned int fec_hamming128_decode_symbol(unsigned int _sym_enc)
 {
     // validate input
     if (_sym_enc >= (1<<12)) {
-        fprintf(stderr,"error, fec_hamming128_decode(), input symbol too large\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"fec_hamming128_decode(), input symbol too large");
+        return 0;
     }
 
     // compute syndrome bits
@@ -158,9 +158,10 @@ fec fec_hamming128_create(void * _opts)
 }
 
 // destroy Hamming(12,8) object
-void fec_hamming128_destroy(fec _q)
+int fec_hamming128_destroy(fec _q)
 {
     free(_q);
+    return LIQUID_OK;
 }
 
 // encode block of data using Hamming(12,8) encoder
@@ -169,10 +170,10 @@ void fec_hamming128_destroy(fec _q)
 //  _dec_msg_len    :   decoded message length (number of bytes)
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
 //  _msg_enc        :   encoded message [size: 1 x 2*_dec_msg_len]
-void fec_hamming128_encode(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char *_msg_dec,
-                          unsigned char *_msg_enc)
+int fec_hamming128_encode(fec             _q,
+                          unsigned int    _dec_msg_len,
+                          unsigned char * _msg_dec,
+                          unsigned char * _msg_enc)
 {
     unsigned int i, j=0;    // input/output symbol counters
     unsigned char s0, s1;   // input 8-bit symbols
@@ -224,6 +225,7 @@ void fec_hamming128_encode(fec _q,
     }
 
     assert(j== fec_get_enc_msg_length(LIQUID_FEC_HAMMING128,_dec_msg_len));
+    return LIQUID_OK;
 }
 
 // decode block of data using Hamming(12,8) decoder
@@ -234,10 +236,10 @@ void fec_hamming128_encode(fec _q,
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
 //
 //unsigned int
-void fec_hamming128_decode(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char *_msg_enc,
-                          unsigned char *_msg_dec)
+int fec_hamming128_decode(fec             _q,
+                          unsigned int    _dec_msg_len,
+                          unsigned char * _msg_enc,
+                          unsigned char * _msg_dec)
 {
     unsigned int i=0,j=0;
     unsigned int r = _dec_msg_len % 2;
@@ -278,8 +280,7 @@ void fec_hamming128_decode(fec _q,
     }
 
     assert(j== fec_get_enc_msg_length(LIQUID_FEC_HAMMING128,_dec_msg_len));
-
-    //return num_errors;
+    return LIQUID_OK;
 }
 
 
@@ -291,10 +292,10 @@ void fec_hamming128_decode(fec _q,
 //  _msg_dec        :   decoded message [size: _dec_msg_len x 1]
 //
 //unsigned int
-void fec_hamming128_decode_soft(fec _q,
-                                unsigned int _dec_msg_len,
-                                unsigned char *_msg_enc,
-                                unsigned char *_msg_dec)
+int fec_hamming128_decode_soft(fec             _q,
+                               unsigned int    _dec_msg_len,
+                               unsigned char * _msg_enc,
+                               unsigned char * _msg_dec)
 {
     unsigned int i;
     unsigned int k=0;       // array bit index
@@ -324,7 +325,7 @@ void fec_hamming128_decode_soft(fec _q,
     }
     k += r*4;   // for assert method
     assert(k == 8*enc_msg_len);
-    //return num_errors;
+    return LIQUID_OK;
 }
 
 // 

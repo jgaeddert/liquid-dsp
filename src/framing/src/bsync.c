@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -77,10 +77,9 @@ BSYNC() BSYNC(_create_msequence)(unsigned int _g,
                                  unsigned int _k)
 {
     // validate input
-    if (_k == 0) {
-        fprintf(stderr,"bsync_xxxt_create_msequence(), samples/symbol must be greater than zero\n");
-        exit(1);
-    }
+    if (_k == 0)
+        return liquid_error_config("bsync_xxxt_create_msequence(), samples/symbol must be greater than zero");
+
     unsigned int m = liquid_msb_index(_g) - 1;
 
     // create/initialize msequence

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,18 +49,19 @@ MODEM() MODEM(_create_ook)()
 }
 
 // modulate symbol using on/off keying
-void MODEM(_modulate_ook)(MODEM()         _q,
-                          unsigned int    _sym_in,
-                          float complex * _y)
+int MODEM(_modulate_ook)(MODEM()         _q,
+                         unsigned int    _sym_in,
+                         float complex * _y)
 {
     // compute output sample directly from input
     *_y = _sym_in ? 0.0f : M_SQRT2;
+    return LIQUID_OK;
 }
 
 // demodulate OOK
-void MODEM(_demodulate_ook)(MODEM()        _q,
-                            float complex  _x,
-                            unsigned int * _sym_out)
+int MODEM(_demodulate_ook)(MODEM()        _q,
+                           float complex  _x,
+                           unsigned int * _sym_out)
 {
     // slice directly to output symbol
     *_sym_out = (crealf(_x) > M_SQRT1_2 ) ? 0 : 1;
@@ -68,5 +69,6 @@ void MODEM(_demodulate_ook)(MODEM()        _q,
     // re-modulate symbol and store state
     MODEM(_modulate_ook)(_q, *_sym_out, &_q->x_hat);
     _q->r = _x;
+    return LIQUID_OK;
 }
 

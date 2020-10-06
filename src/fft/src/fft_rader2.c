@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,10 +44,10 @@
 //  _dir    :   fft direction: {LIQUID_FFT_FORWARD, LIQUID_FFT_BACKWARD}
 //  _method :   fft method
 FFT(plan) FFT(_create_plan_rader2)(unsigned int _nfft,
-                                         TC *         _x,
-                                         TC *         _y,
-                                         int          _dir,
-                                         int          _flags)
+                                   TC *         _x,
+                                   TC *         _y,
+                                   int          _dir,
+                                   int          _flags)
 {
     // allocate plan and initialize all internal arrays to NULL
     FFT(plan) q = (FFT(plan)) malloc(sizeof(struct FFT(plan_s)));
@@ -163,7 +163,7 @@ FFT(plan) FFT(_create_plan_rader2)(unsigned int _nfft,
 }
 
 // destroy FFT plan
-void FFT(_destroy_plan_rader2)(FFT(plan) _q)
+int FFT(_destroy_plan_rader2)(FFT(plan) _q)
 {
     // free data specific to Rader's algorithm
     free(_q->data.rader2.seq);      // sequence
@@ -177,10 +177,11 @@ void FFT(_destroy_plan_rader2)(FFT(plan) _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // execute Rader's algorithm
-void FFT(_execute_rader2)(FFT(plan) _q)
+int FFT(_execute_rader2)(FFT(plan) _q)
 {
     unsigned int i;
 
@@ -225,5 +226,6 @@ void FFT(_execute_rader2)(FFT(plan) _q)
 
         _q->y[k] = xp[i] / (T)(nfft_prime) + _q->x[0];
     }
+    return LIQUID_OK;
 }
 

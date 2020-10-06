@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,10 +47,8 @@ struct FREQMOD(_s) {
 FREQMOD() FREQMOD(_create)(float _kf)
 {
     // validate input
-    if (_kf <= 0.0f || _kf > 1.0) {
-        fprintf(stderr,"error: freqmod_create(), modulation factor %12.4e out of range [0,1]\n", _kf);
-        exit(1);
-    }
+    if (_kf <= 0.0f || _kf > 1.0)
+        return liquid_error_config("freqmod_create(), modulation factor %12.4e out of range [0,1]", _kf);
 
     // create main object memory
     FREQMOD() q = (freqmod) malloc(sizeof(struct FREQMOD(_s)));
@@ -75,37 +73,40 @@ FREQMOD() FREQMOD(_create)(float _kf)
 }
 
 // destroy modem object
-void FREQMOD(_destroy)(FREQMOD() _q)
+int FREQMOD(_destroy)(FREQMOD() _q)
 {
     // free table
     free(_q->sincos_table);
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print modulation internals
-void FREQMOD(_print)(FREQMOD() _q)
+int FREQMOD(_print)(FREQMOD() _q)
 {
     printf("freqmod:\n");
     printf("    mod. factor         :   %8.4f\n", _q->kf);
     printf("    sincos table len    :   %u\n",    _q->sincos_table_len);
+    return LIQUID_OK;
 }
 
 // reset modem object
-void FREQMOD(_reset)(FREQMOD() _q)
+int FREQMOD(_reset)(FREQMOD() _q)
 {
     // reset phase accumulation
     _q->sincos_table_phase = 0;
+    return LIQUID_OK;
 }
 
 // modulate sample
 //  _q      :   frequency modulator object
 //  _m      :   message signal m(t)
 //  _s      :   complex baseband signal s(t)
-void FREQMOD(_modulate)(FREQMOD()   _q,
-                        T           _m,
-                        TC *        _s)
+int FREQMOD(_modulate)(FREQMOD()   _q,
+                       T           _m,
+                       TC *        _s)
 {
     // accumulate phase; this wraps around a 16-bit boundary and ensures
     // that negative numbers are mapped to positive numbers
@@ -119,6 +120,7 @@ void FREQMOD(_modulate)(FREQMOD()   _q,
 
     // return table value at index
     *_s = _q->sincos_table[index];
+    return LIQUID_OK;
 }
 
 // modulate block of samples
@@ -126,14 +128,15 @@ void FREQMOD(_modulate)(FREQMOD()   _q,
 //  _m      :   message signal m(t), [size: _n x 1]
 //  _n      :   number of input, output samples
 //  _s      :   complex baseband signal s(t) [size: _n x 1]
-void FREQMOD(_modulate_block)(FREQMOD()    _q,
-                              T *          _m,
-                              unsigned int _n,
-                              TC *         _s)
+int FREQMOD(_modulate_block)(FREQMOD()    _q,
+                             T *          _m,
+                             unsigned int _n,
+                             TC *         _s)
 {
     // TODO: implement more efficient method
     unsigned int i;
     for (i=0; i<_n; i++)
         FREQMOD(_modulate)(_q, _m[i], &_s[i]);
+    return LIQUID_OK;
 }
 

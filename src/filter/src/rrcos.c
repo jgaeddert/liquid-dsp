@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "liquid.internal.h"
 
 // Design root-Nyquist raised-cosine filter
 //  _k      : samples/symbol
@@ -41,15 +42,15 @@ void liquid_firdes_rrcos(unsigned int _k,
                          float * _h)
 {
     if ( _k < 1 ) {
-        fprintf(stderr,"error: liquid_firdes_rrcos(): k must be greater than 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rrcos(): k must be greater than 0");
+        return;
     } else if ( _m < 1 ) {
-        fprintf(stderr,"error: liquid_firdes_rrcos(): m must be greater than 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rrcos(): m must be greater than 0");
+        return;
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        fprintf(stderr,"error: liquid_firdes_rrcos(): beta must be in [0,1]\n");
-        exit(1);
-    } else;
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rrcos(): beta must be in [0,1]");
+        return;
+    }
 
     unsigned int n;
     float z, t1, t2, t3, t4, T=1.0f;

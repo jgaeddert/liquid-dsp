@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,19 +72,14 @@ FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,
                                float        _As)
 {
     // validate input
-    if (_h_len < 2) {
-        fprintf(stderr,"error: firfarrow_%s_create(), filter length must be > 2\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_p < 1) {
-        fprintf(stderr,"error: firfarrow_%s_create(), polynomial order must be at least 1\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_fc < 0.0f || _fc > 0.5f) {
-        fprintf(stderr,"error: firfarrow_%s_create(), filter cutoff must be in [0,0.5]\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_As < 0.0f) {
-        fprintf(stderr,"error: firfarrow_%s_create(), filter stop-band attenuation must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_h_len < 2)
+        return liquid_error_config("firfarrow_%s_create(), filter length must be > 2", EXTENSION_FULL);
+    if (_p < 1)
+        return liquid_error_config("firfarrow_%s_create(), polynomial order must be at least 1", EXTENSION_FULL);
+    if (_fc < 0.0f || _fc > 0.5f)
+        return liquid_error_config("firfarrow_%s_create(), filter cutoff must be in [0,0.5]", EXTENSION_FULL);
+    if (_As < 0.0f)
+        return liquid_error_config("firfarrow_%s_create(), filter stop-band attenuation must be greater than zero", EXTENSION_FULL);
 
     // create main object
     FIRFARROW() q = (FIRFARROW()) malloc(sizeof(struct FIRFARROW(_s)));

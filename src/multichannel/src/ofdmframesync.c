@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2017 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -134,7 +134,7 @@ struct ofdmframesync_s {
 // create OFDM framing synchronizer object
 //  _M          :   number of subcarriers, >10 typical
 //  _cp_len     :   cyclic prefix length
-//  _taper_len  :   taper length (OFDM symbol overlap)
+//  _taper_len  :   taper length (OFDM symbol overlap), TODO: remove? not used in this object
 //  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
 //  _callback   :   user-defined callback function
 //  _userdata   :   user-defined data pointer
@@ -148,15 +148,13 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
     ofdmframesync q = (ofdmframesync) malloc(sizeof(struct ofdmframesync_s));
 
     // validate input
-    if (_M < 8) {
-        fprintf(stderr,"warning: ofdmframesync_create(), less than 8 subcarriers\n");
-    } else if (_M % 2) {
-        fprintf(stderr,"error: ofdmframesync_create(), number of subcarriers must be even\n");
-        exit(1);
-    } else if (_cp_len > _M) {
-        fprintf(stderr,"error: ofdmframesync_create(), cyclic prefix length cannot exceed number of subcarriers\n");
-        exit(1);
-    }
+    if (_M < 8)
+        return liquid_error_config("ofdmframesync_create(), less than 8 subcarriers");
+    if (_M % 2)
+        return liquid_error_config("ofdmframesync_create(), number of subcarriers must be even");
+    if (_cp_len > _M)
+        return liquid_error_config("ofdmframesync_create(), cyclic prefix length cannot exceed number of subcarriers");
+
     q->M = _M;
     q->cp_len = _cp_len;
 
@@ -172,17 +170,14 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
     }
 
     // validate and count subcarrier allocation
-    ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
-    if ( (q->M_pilot + q->M_data) == 0) {
-        fprintf(stderr,"error: ofdmframesync_create(), must have at least one enabled subcarrier\n");
-        exit(1);
-    } else if (q->M_data == 0) {
-        fprintf(stderr,"error: ofdmframesync_create(), must have at least one data subcarriers\n");
-        exit(1);
-    } else if (q->M_pilot < 2) {
-        fprintf(stderr,"error: ofdmframesync_create(), must have at least two pilot subcarriers\n");
-        exit(1);
-    }
+    if (ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data))
+        return liquid_error_config("ofdmframesync_create(), invalid subcarrier allocation");
+    if ( (q->M_pilot + q->M_data) == 0)
+        return liquid_error_config("ofdmframesync_create(), must have at least one enabled subcarrier");
+    if (q->M_data == 0)
+        return liquid_error_config("ofdmframesync_create(), must have at least one data subcarriers");
+    if (q->M_pilot < 2)
+        return liquid_error_config("ofdmframesync_create(), must have at least two pilot subcarriers");
 
     // create transform object
     q->X = (float complex*) malloc((q->M)*sizeof(float complex));
@@ -270,7 +265,7 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
     return q;
 }
 
-void ofdmframesync_destroy(ofdmframesync _q)
+int ofdmframesync_destroy(ofdmframesync _q)
 {
 #if DEBUG_OFDMFRAMESYNC
     // destroy debugging objects
@@ -312,17 +307,19 @@ void ofdmframesync_destroy(ofdmframesync _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
-void ofdmframesync_print(ofdmframesync _q)
+int ofdmframesync_print(ofdmframesync _q)
 {
     printf("ofdmframesync:\n");
     printf("    num subcarriers     :   %-u\n", _q->M);
     printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
     //printf("    taper len           :   %-u\n", _q->taper_len);
+    return LIQUID_OK;
 }
 
-void ofdmframesync_reset(ofdmframesync _q)
+int ofdmframesync_reset(ofdmframesync _q)
 {
 #if 0
     // reset gain parameters
@@ -349,6 +346,7 @@ void ofdmframesync_reset(ofdmframesync _q)
 
     // reset state
     _q->state = OFDMFRAMESYNC_STATE_SEEKPLCP;
+    return LIQUID_OK;
 }
 
 int ofdmframesync_is_frame_open(ofdmframesync _q)
@@ -356,9 +354,9 @@ int ofdmframesync_is_frame_open(ofdmframesync _q)
     return (_q->state == OFDMFRAMESYNC_STATE_SEEKPLCP) ? 0 : 1;
 }
 
-void ofdmframesync_execute(ofdmframesync _q,
-                           float complex * _x,
-                           unsigned int _n)
+int ofdmframesync_execute(ofdmframesync   _q,
+                          float complex * _x,
+                          unsigned int    _n)
 {
     unsigned int i;
     float complex x;
@@ -401,6 +399,7 @@ void ofdmframesync_execute(ofdmframesync _q,
         }
 
     } // for (i=0; i<_n; i++)
+    return LIQUID_OK;
 } // ofdmframesync_execute()
 
 // get receiver RSSI
@@ -416,9 +415,10 @@ float ofdmframesync_get_cfo(ofdmframesync _q)
 }
 
 // set receiver carrier frequency offset estimate
-void ofdmframesync_set_cfo(ofdmframesync _q, float _cfo)
+int ofdmframesync_set_cfo(ofdmframesync _q, float _cfo)
 {
     nco_crcf_set_frequency(_q->nco_rx, _cfo);
+    return LIQUID_OK;
 }
 
 //
@@ -426,12 +426,12 @@ void ofdmframesync_set_cfo(ofdmframesync _q, float _cfo)
 //
 
 // frame detection
-void ofdmframesync_execute_seekplcp(ofdmframesync _q)
+int ofdmframesync_execute_seekplcp(ofdmframesync _q)
 {
     _q->timer++;
 
     if (_q->timer < _q->M)
-        return;
+        return LIQUID_OK;
 
     // reset timer
     _q->timer = 0;
@@ -455,7 +455,7 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
          _q->squelch_enabled)
     {
         printf("squelch\n");
-        return;
+        return LIQUID_OK;
     }
 #endif
 
@@ -494,21 +494,18 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
         printf("    dt      :   %12d\n", dt);
         printf("    timer   :   %12u\n", _q->timer);
 #endif
-        //printf("exiting prematurely\n");
-        //ofdmframesync_destroy(_q);
-        //exit(1);
     }
-
+    return LIQUID_OK;
 }
 
 // frame detection
-void ofdmframesync_execute_S0a(ofdmframesync _q)
+int ofdmframesync_execute_S0a(ofdmframesync _q)
 {
     //printf("t : %u\n", _q->timer);
     _q->timer++;
 
     if (_q->timer < _q->M2)
-        return;
+        return LIQUID_OK;
 
     // reset timer
     _q->timer = 0;
@@ -547,16 +544,17 @@ void ofdmframesync_execute_S0a(ofdmframesync _q)
     }
 #endif
     _q->state = OFDMFRAMESYNC_STATE_PLCPSHORT1;
+    return LIQUID_OK;
 }
 
 // frame detection
-void ofdmframesync_execute_S0b(ofdmframesync _q)
+int ofdmframesync_execute_S0b(ofdmframesync _q)
 {
     //printf("t = %u\n", _q->timer);
     _q->timer++;
 
     if (_q->timer < _q->M2)
-        return;
+        return LIQUID_OK;
 
     // reset timer
     _q->timer = _q->M + _q->cp_len - _q->backoff;
@@ -628,14 +626,15 @@ void ofdmframesync_execute_S0b(ofdmframesync _q)
     nco_crcf_set_frequency(_q->nco_rx, nu_hat);
 
     _q->state = OFDMFRAMESYNC_STATE_PLCPLONG;
+    return LIQUID_OK;
 }
 
-void ofdmframesync_execute_S1(ofdmframesync _q)
+int ofdmframesync_execute_S1(ofdmframesync _q)
 {
     _q->timer--;
 
     if (_q->timer > 0)
-        return;
+        return LIQUID_OK;
 
     // increment number of symbols observed
     _q->num_symbols++;
@@ -701,13 +700,7 @@ void ofdmframesync_execute_S1(ofdmframesync _q)
         for (i=0; i<_q->M; i++)
             _q->R[i] = _q->B[i] / _q->G[i];
 #endif
-
-        return;
-#if 0
-        printf("exiting prematurely\n");
-        ofdmframesync_destroy(_q);
-        exit(1);
-#endif
+        return LIQUID_OK;
     }
 
     // check if we are stuck searching for the S1 symbol
@@ -720,9 +713,10 @@ void ofdmframesync_execute_S1(ofdmframesync _q)
 
     // 'reset' timer (wait another half symbol)
     _q->timer = _q->M2;
+    return LIQUID_OK;
 }
 
-void ofdmframesync_execute_rxsymbols(ofdmframesync _q)
+int ofdmframesync_execute_rxsymbols(ofdmframesync _q)
 {
     // wait for timeout
     _q->timer--;
@@ -758,13 +752,13 @@ void ofdmframesync_execute_rxsymbols(ofdmframesync _q)
         // reset timer
         _q->timer = _q->M + _q->cp_len;
     }
-
+    return LIQUID_OK;
 }
 
 // compute S0 metrics
-void ofdmframesync_S0_metrics(ofdmframesync _q,
-                              float complex * _G,
-                              float complex * _s_hat)
+int ofdmframesync_S0_metrics(ofdmframesync _q,
+                             float complex * _G,
+                             float complex * _s_hat)
 {
     // timing, carrier offset correction
     unsigned int i;
@@ -780,15 +774,16 @@ void ofdmframesync_S0_metrics(ofdmframesync _q,
 
     // set output values
     *_s_hat = s_hat;
+    return LIQUID_OK;
 }
 
 // estimate short sequence gain
 //  _q      :   ofdmframesync object
 //  _x      :   input array (time), [size: M x 1]
 //  _G      :   output gain (freq)
-void ofdmframesync_estimate_gain_S0(ofdmframesync   _q,
-                                    float complex * _x,
-                                    float complex * _G)
+int ofdmframesync_estimate_gain_S0(ofdmframesync   _q,
+                                   float complex * _x,
+                                   float complex * _G)
 {
     // move input array into fft input buffer
     memmove(_q->x, _x, (_q->M)*sizeof(float complex));
@@ -813,15 +808,16 @@ void ofdmframesync_estimate_gain_S0(ofdmframesync   _q,
         // normalize gain
         _G[i] *= gain;
     }
+    return LIQUID_OK;
 }
 
 // estimate long sequence gain
 //  _q      :   ofdmframesync object
 //  _x      :   input array (time), [size: M x 1]
 //  _G      :   output gain (freq)
-void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
-                                    float complex * _x,
-                                    float complex * _G)
+int ofdmframesync_estimate_gain_S1(ofdmframesync _q,
+                                   float complex * _x,
+                                   float complex * _G)
 {
     // move input array into fft input buffer
     memmove(_q->x, _x, (_q->M)*sizeof(float complex));
@@ -845,13 +841,14 @@ void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
         // normalize gain
         _G[i] *= gain;
     }   
+    return LIQUID_OK;
 }
 
 // estimate complex equalizer gain from G0 and G1
 //  _q      :   ofdmframesync object
 //  _ntaps  :   number of time-domain taps for smoothing
-void ofdmframesync_estimate_eqgain(ofdmframesync _q,
-                                   unsigned int _ntaps)
+int ofdmframesync_estimate_eqgain(ofdmframesync _q,
+                                  unsigned int  _ntaps)
 {
 #if DEBUG_OFDMFRAMESYNC
     if (_q->debug_enabled) {
@@ -861,10 +858,8 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
 #endif
 
     // validate input
-    if (_ntaps == 0 || _ntaps > _q->M) {
-        fprintf(stderr, "error: ofdmframesync_estimate_eqgain(), ntaps must be in [1,M]\n");
-        exit(1);
-    }
+    if (_ntaps == 0 || _ntaps > _q->M)
+        return liquid_error(LIQUID_EICONFIG,"ofdmframesync_estimate_eqgain(), ntaps must be in [1,M]");
 
     unsigned int i;
 
@@ -902,18 +897,19 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
 
         // eliminate divide-by-zero issues
         if (cabsf(w0) < 1e-4f) {
-            fprintf(stderr,"error: ofdmframesync_estimate_eqgain(), weighting factor is zero\n");
+            fprintf(stderr,"warning: ofdmframesync_estimate_eqgain(), weighting factor is zero\n");
             w0 = 1.0f;
         }
         _q->G[i] = G_hat / w0;
     }
+    return LIQUID_OK;
 }
 
 // estimate complex equalizer gain from G0 and G1 using polynomial fit
 //  _q      :   ofdmframesync object
 //  _order  :   polynomial order
-void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
-                                        unsigned int _order)
+int ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
+                                       unsigned int _order)
 {
 #if DEBUG_OFDMFRAMESYNC
     if (_q->debug_enabled) {
@@ -941,10 +937,8 @@ void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
         k = (i + _q->M2) % _q->M;
 
         if (_q->p[k] != OFDMFRAME_SCTYPE_NULL) {
-            if (n == N) {
-                fprintf(stderr, "error: ofdmframesync_estimate_eqgain_poly(), pilot subcarrier mismatch\n");
-                exit(1);
-            }
+            if (n == N)
+                return liquid_error(LIQUID_EINT,"ofdmframesync_estimate_eqgain_poly(), pilot subcarrier mismatch");
             // store resulting...
             x_freq[n] = (k > _q->M2) ? (float)k - (float)(_q->M) : (float)k;
             x_freq[n] = x_freq[n] / (float)(_q->M);
@@ -956,10 +950,8 @@ void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
         }
     }
 
-    if (n != N) {
-        fprintf(stderr, "error: ofdmframesync_estimate_eqgain_poly(), pilot subcarrier mismatch\n");
-        exit(1);
-    }
+    if (n != N)
+        return liquid_error(LIQUID_EINT,"ofdmframesync_estimate_eqgain_poly(), pilot subcarrier mismatch");
 
     // try to unwrap phase
     for (i=1; i<N; i++) {
@@ -994,10 +986,11 @@ void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
     for (i=0; i<=_order; i++)
         printf("p_arg(%3u) = %12.8f;\n", i+1, p_arg[i]);
 #endif
+    return LIQUID_OK;
 }
 
 // recover symbol, correcting for gain, pilot phase, etc.
-void ofdmframesync_rxsymbol(ofdmframesync _q)
+int ofdmframesync_rxsymbol(ofdmframesync _q)
 {
     // apply gain
     unsigned int i;
@@ -1018,10 +1011,9 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
         k = (i + _q->M2) % _q->M;
 
         if (_q->p[k]==OFDMFRAME_SCTYPE_PILOT) {
-            if (n == _q->M_pilot) {
-                fprintf(stderr,"warning: ofdmframesync_rxsymbol(), pilot subcarrier mismatch\n");
-                return;
-            }
+            if (n == _q->M_pilot)
+                return liquid_error(LIQUID_EINT,"ofdmframesync_estimate_eqgain_poly(), pilot subcarrier mismatch");
+
             pilot = (msequence_advance(_q->ms_pilot) ? 1.0f : -1.0f);
 #if 0
             printf("pilot[%3u] = %12.4e + j*%12.4e (expected %12.4e + j*%12.4e)\n",
@@ -1039,10 +1031,8 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
         }
     }
 
-    if (n != _q->M_pilot) {
-        fprintf(stderr,"warning: ofdmframesync_rxsymbol(), pilot subcarrier mismatch\n");
-        return;
-    }
+    if (n != _q->M_pilot)
+        return liquid_error(LIQUID_EINT,"ofdmframesync_estimate_eqgain_poly(), pilot subcarrier mismatch");
 
     // try to unwrap phase
     for (i=1; i<_q->M_pilot; i++) {
@@ -1110,15 +1100,16 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
         printf("x_phase(%3u) = %12.8f; y_phase(%3u) = %12.8f;\n", i+1, x_phase[i], i+1, y_phase[i]);
     printf("poly : p0=%12.8f, p1=%12.8f\n", p_phase[0], p_phase[1]);
 #endif
+    return LIQUID_OK;
 }
 
 // enable debugging
-void ofdmframesync_debug_enable(ofdmframesync _q)
+int ofdmframesync_debug_enable(ofdmframesync _q)
 {
     // create debugging objects if necessary
 #if DEBUG_OFDMFRAMESYNC
     if (_q->debug_objects_created)
-        return;
+        return LIQUID_OK;
 
     _q->debug_x         = windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     _q->debug_rssi      = windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
@@ -1133,35 +1124,34 @@ void ofdmframesync_debug_enable(ofdmframesync _q)
 
     _q->debug_enabled   = 1;
     _q->debug_objects_created = 1;
+    return LIQUID_OK;
 #else
     fprintf(stderr,"ofdmframesync_debug_enable(): compile-time debugging disabled\n");
 #endif
 }
 
-void ofdmframesync_debug_disable(ofdmframesync _q)
+int ofdmframesync_debug_disable(ofdmframesync _q)
 {
     // disable debugging
 #if DEBUG_OFDMFRAMESYNC
     _q->debug_enabled = 0;
+    return LIQUID_OK;
 #else
     fprintf(stderr,"ofdmframesync_debug_disable(): compile-time debugging disabled\n");
 #endif
 }
 
-void ofdmframesync_debug_print(ofdmframesync _q,
-                               const char * _filename)
+int ofdmframesync_debug_print(ofdmframesync _q,
+                              const char * _filename)
 {
 #if DEBUG_OFDMFRAMESYNC
-    if (!_q->debug_objects_created) {
-        fprintf(stderr,"error: ofdmframe_debug_print(), debugging objects don't exist; enable debugging first\n");
-        return;
-    }
+    if (!_q->debug_objects_created)
+        return liquid_error(LIQUID_EICONFIG,"ofdmframe_debug_print(), debugging objects don't exist; enable debugging first");
 
     FILE * fid = fopen(_filename,"w");
-    if (!fid) {
-        fprintf(stderr,"error: ofdmframe_debug_print(), could not open '%s' for writing\n", _filename);
-        return;
-    }
+    if (fid==NULL)
+        return liquid_error(LIQUID_EIO,"ofdmframe_debug_print(), could not open '%s' for writing", _filename);
+
     fprintf(fid,"%% %s : auto-generated file\n", DEBUG_OFDMFRAMESYNC_FILENAME);
     fprintf(fid,"close all;\n");
     fprintf(fid,"clear all;\n");
@@ -1307,6 +1297,7 @@ void ofdmframesync_debug_print(ofdmframesync _q,
 
     fclose(fid);
     printf("ofdmframesync/debug: results written to '%s'\n", _filename);
+    return LIQUID_OK;
 #else
     fprintf(stderr,"ofdmframesync_debug_print(): compile-time debugging disabled\n");
 #endif

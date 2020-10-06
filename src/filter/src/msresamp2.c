@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -87,15 +87,12 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
                                float        _As)
 {
     // validate input
-    if (_num_stages > 16) {
-        fprintf(stderr,"error: msresamp2_%s_create(), number of stages should not exceed 16\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_num_stages > 16)
+        return liquid_error_config("msresamp2_%s_create(), number of stages should not exceed 16", EXTENSION_FULL);
 
     // ensure cut-off frequency is valid
     if ( _fc <= 0.0f || _fc >= 0.5f ) {
-        fprintf(stderr,"error: msresamp2_%s_create(), cut-off frequency must be in (0,0.5)\n", EXTENSION_FULL);
-        exit(1);
+        return liquid_error_config("msresamp2_%s_create(), cut-off frequency must be in (0,0.5)", EXTENSION_FULL);
     } else if ( _fc > 0.499f ) {
         fprintf(stderr,"warning: msresamp2_%s_create(), cut-off frequency greater than 0.499\n", EXTENSION_FULL);
         fprintf(stderr,"    >> truncating to 0.499\n");

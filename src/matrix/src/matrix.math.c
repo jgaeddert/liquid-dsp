@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,15 +34,16 @@
 //  _Z      :   output matrix [size: _R x _C]
 //  _R      :   number of rows
 //  _C      :   number of columns
-void MATRIX(_add)(T * _X,
-                  T * _Y,
-                  T * _Z,
-                  unsigned int _R,
-                  unsigned int _C)
+int MATRIX(_add)(T *          _X,
+                 T *          _Y,
+                 T *          _Z,
+                 unsigned int _R,
+                 unsigned int _C)
 {
     unsigned int i;
     for (i=0; i<(_R*_C); i++)
         _Z[i] = _X[i] + _Y[i];
+    return LIQUID_OK;
 }
 
 // subtract elements of two matrices
@@ -51,15 +52,16 @@ void MATRIX(_add)(T * _X,
 //  _Z      :   output matrix [size: _R x _C]
 //  _R      :   number of rows
 //  _C      :   number of columns
-void MATRIX(_sub)(T * _X,
-                  T * _Y,
-                  T * _Z,
-                  unsigned int _R,
-                  unsigned int _C)
+int MATRIX(_sub)(T *          _X,
+                 T *          _Y,
+                 T *          _Z,
+                 unsigned int _R,
+                 unsigned int _C)
 {
     unsigned int i;
     for (i=0; i<(_R*_C); i++)
         _Z[i] = _X[i] - _Y[i];
+    return LIQUID_OK;
 }
 
 // point-wise multiplication
@@ -68,15 +70,16 @@ void MATRIX(_sub)(T * _X,
 //  _Z      :   output matrix [size: _R x _C]
 //  _R      :   number of rows
 //  _C      :   number of columns
-void MATRIX(_pmul)(T * _X,
-                   T * _Y,
-                   T * _Z,
-                   unsigned int _R,
-                   unsigned int _C)
+int MATRIX(_pmul)(T *          _X,
+                  T *          _Y,
+                  T *          _Z,
+                  unsigned int _R,
+                  unsigned int _C)
 {
     unsigned int i;
     for (i=0; i<(_R*_C); i++)
         _Z[i] = _X[i] * _Y[i];
+    return LIQUID_OK;
 }
 
 // point-wise division
@@ -85,28 +88,27 @@ void MATRIX(_pmul)(T * _X,
 //  _Z      :   output matrix [size: _R x _C]
 //  _R      :   number of rows
 //  _C      :   number of columns
-void MATRIX(_pdiv)(T * _X,
-                   T * _Y,
-                   T * _Z,
-                   unsigned int _R,
-                   unsigned int _C)
+int MATRIX(_pdiv)(T *          _X,
+                  T *          _Y,
+                  T *          _Z,
+                  unsigned int _R,
+                  unsigned int _C)
 {
     unsigned int i;
     for (i=0; i<(_R*_C); i++)
         _Z[i] = _X[i] / _Y[i];
+    return LIQUID_OK;
 }
 
 
 // multiply two matrices together
-void MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
-                  T * _Y, unsigned int _YR, unsigned int _YC,
-                  T * _Z, unsigned int _ZR, unsigned int _ZC)
+int MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
+                 T * _Y, unsigned int _YR, unsigned int _YC,
+                 T * _Z, unsigned int _ZR, unsigned int _ZC)
 {
     // ensure lengths are valid
-    if (_ZR != _XR || _ZC != _YC || _XC != _YR ) {
-        fprintf(stderr,"error: matrix_mul(), invalid dimensions\n");
-        exit(1);
-    }
+    if (_ZR != _XR || _ZC != _YC || _XC != _YR )
+        return liquid_error(LIQUID_EIRANGE,"matrix_mul(), invalid dimensions");
 
     unsigned int r, c, i;
     for (r=0; r<_ZR; r++) {
@@ -125,19 +127,18 @@ void MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
 #endif
         }
     }
+    return LIQUID_OK;
 }
 
 // augment matrices x and y:
 //  z = [x | y]
-void MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,
-                  T * _y, unsigned int _ry, unsigned int _cy,
-                  T * _z, unsigned int _rz, unsigned int _cz)
+int MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,
+                 T * _y, unsigned int _ry, unsigned int _cy,
+                 T * _z, unsigned int _rz, unsigned int _cz)
 {
     // ensure lengths are valid
-    if (_rz != _rx || _rz != _ry || _rx != _ry || _cz != _cx + _cy) {
-        fprintf(stderr,"error: matrix_aug(), invalid dimensions\n");
-        exit(1);
-    }
+    if (_rz != _rx || _rz != _ry || _rx != _ry || _cz != _cx + _cy)
+        return liquid_error(LIQUID_EIRANGE,"matrix_aug(), invalid dimensions");
 
     // TODO: improve speed with memmove
     unsigned int r, c, n;
@@ -148,13 +149,14 @@ void MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,
         for (c=0; c<_cy; c++)
             matrix_access(_z,_rz,_cz,r,n++) = matrix_access(_y,_ry,_cy,r,c);
     }
+    return LIQUID_OK;
 }
 
 // solve set of linear equations
-void MATRIX(_div)(T * _X,
-                  T * _Y,
-                  T * _Z,
-                  unsigned int _n)
+int MATRIX(_div)(T *          _X,
+                 T *          _Y,
+                 T *          _Z,
+                 unsigned int _n)
 {
     // compute inv(_Y)
     T Y_inv[_n*_n];
@@ -162,34 +164,33 @@ void MATRIX(_div)(T * _X,
     MATRIX(_inv)(Y_inv,_n,_n);
 
     // _Z = _X * inv(_Y)
+    return
     MATRIX(_mul)(_X,    _n, _n,
                  Y_inv, _n, _n,
                  _Z,    _n, _n);
 }
 
 // matrix determinant (2 x 2)
-T MATRIX(_det2x2)(T * _X,
+T MATRIX(_det2x2)(T *          _X,
                   unsigned int _r,
                   unsigned int _c)
 {
     // validate input
-    if (_r != 2 || _c != 2) {
-        fprintf(stderr,"error: matrix_det2x2(), invalid dimensions\n");
-        exit(1);
-    }
+    if (_r != 2 || _c != 2)
+        return liquid_error(LIQUID_EIRANGE,"matrix_det2x2(), invalid dimensions");
+
     return _X[0]*_X[3] - _X[1]*_X[2];
 }
 
 // matrix determinant (n x n)
-T MATRIX(_det)(T * _X,
+T MATRIX(_det)(T *          _X,
                unsigned int _r,
                unsigned int _c)
 {
     // validate input
-    if (_r != _c) {
-        fprintf(stderr,"error: matrix_det(), matrix must be square\n");
-        exit(1);
-    }
+    if (_r != _c)
+        return liquid_error(LIQUID_EIRANGE,"matrix_det(), matrix must be square");
+
     unsigned int n = _r;
     if (n==2) return MATRIX(_det2x2)(_X,2,2);
 
@@ -209,9 +210,9 @@ T MATRIX(_det)(T * _X,
 }
 
 // compute matrix transpose
-void MATRIX(_trans)(T * _X,
-                    unsigned int _XR,
-                    unsigned int _XC)
+int MATRIX(_trans)(T *          _X,
+                   unsigned int _XR,
+                   unsigned int _XC)
 {
     // compute Hermitian transpose
     MATRIX(_hermitian)(_X,_XR,_XC);
@@ -220,12 +221,13 @@ void MATRIX(_trans)(T * _X,
     unsigned int i;
     for (i=0; i<_XR*_XC; i++)
         _X[i] = conj(_X[i]);
+    return LIQUID_OK;
 }
 
 // compute matrix Hermitian transpose
-void MATRIX(_hermitian)(T * _X,
-                        unsigned int _XR,
-                        unsigned int _XC)
+int MATRIX(_hermitian)(T *          _X,
+                       unsigned int _XR,
+                       unsigned int _XC)
 {
     T y[_XR*_XC];
     memmove(y,_X,_XR*_XC*sizeof(T));
@@ -236,13 +238,14 @@ void MATRIX(_hermitian)(T * _X,
             matrix_access(_X,_XC,_XR,c,r) = matrix_access(y,_XR,_XC,r,c);
         }
     }
+    return LIQUID_OK;
 }
 
 // compute x*x' on m x n matrix, result: m x m
-void MATRIX(_mul_transpose)(T * _x,
-                            unsigned int _m,
-                            unsigned int _n,
-                            T * _xxT)
+int MATRIX(_mul_transpose)(T *          _x,
+                           unsigned int _m,
+                           unsigned int _n,
+                           T *          _xxT)
 {
     unsigned int r;
     unsigned int c;
@@ -268,14 +271,15 @@ void MATRIX(_mul_transpose)(T * _x,
             matrix_access(_xxT,_m,_m,r,c) = sum;
         }
     }
+    return LIQUID_OK;
 }
 
 
 // compute x'*x on m x n matrix, result: n x n
-void MATRIX(_transpose_mul)(T * _x,
-                            unsigned int _m,
-                            unsigned int _n,
-                            T * _xTx)
+int MATRIX(_transpose_mul)(T *          _x,
+                           unsigned int _m,
+                           unsigned int _n,
+                           T *          _xTx)
 {
     unsigned int r;
     unsigned int c;
@@ -301,14 +305,15 @@ void MATRIX(_transpose_mul)(T * _x,
             matrix_access(_xTx,_n,_n,r,c) = sum;
         }
     }
+    return LIQUID_OK;
 }
 
 
 // compute x*x.' on m x n matrix, result: m x m
-void MATRIX(_mul_hermitian)(T * _x,
-                            unsigned int _m,
-                            unsigned int _n,
-                            T * _xxH)
+int MATRIX(_mul_hermitian)(T *          _x,
+                           unsigned int _m,
+                           unsigned int _n,
+                           T *          _xxH)
 {
     unsigned int r;
     unsigned int c;
@@ -333,14 +338,15 @@ void MATRIX(_mul_hermitian)(T * _x,
             matrix_access(_xxH,_m,_m,r,c) = sum;
         }
     }
+    return LIQUID_OK;
 }
 
 
 // compute x.'*x on m x n matrix, result: n x n
-void MATRIX(_hermitian_mul)(T * _x,
-                            unsigned int _m,
-                            unsigned int _n,
-                            T * _xHx)
+int MATRIX(_hermitian_mul)(T *          _x,
+                           unsigned int _m,
+                           unsigned int _n,
+                           T *          _xHx)
 {
     unsigned int r;
     unsigned int c;
@@ -365,5 +371,6 @@ void MATRIX(_hermitian_mul)(T * _x,
             matrix_access(_xHx,_n,_n,r,c) = sum;
         }
     }
+    return LIQUID_OK;
 }
 

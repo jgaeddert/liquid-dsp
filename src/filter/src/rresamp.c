@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,16 +57,12 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,
                            TC *         _h)
 {
     // validate input
-    if (_P == 0) {
-        fprintf(stderr,"error: rresamp_%s_create(), interpolation rate must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_Q == 0) {
-        fprintf(stderr,"error: rresamp_%s_create(), decimation rate must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr,"error: rresamp_%s_create(), filter semi-length must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_P == 0)
+        return liquid_error_config("rresamp_%s_create(), interpolation rate must be greater than zero", EXTENSION_FULL);
+    if (_Q == 0)
+        return liquid_error_config("rresamp_%s_create(), decimation rate must be greater than zero", EXTENSION_FULL);
+    if (_m == 0)
+        return liquid_error_config("rresamp_%s_create(), filter semi-length must be greater than zero", EXTENSION_FULL);
 
     // allocate memory for resampler
     RRESAMP() q = (RRESAMP()) malloc(sizeof(struct RRESAMP(_s)));
@@ -171,13 +167,10 @@ RRESAMP() RRESAMP(_create_default)(unsigned int _P,
                                    unsigned int _Q)
 {
     // validate input
-    if (_P == 0) {
-        fprintf(stderr,"error: rresamp_%s_create(), interpolation rate must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_Q == 0) {
-        fprintf(stderr,"error: rresamp_%s_create(), decimation rate must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_P == 0)
+        return liquid_error_config("rresamp_%s_create(), interpolation rate must be greater than zero", EXTENSION_FULL);
+    if (_Q == 0)
+        return liquid_error_config("rresamp_%s_create(), decimation rate must be greater than zero", EXTENSION_FULL);
 
     // det default parameters
     unsigned int m  = 12;

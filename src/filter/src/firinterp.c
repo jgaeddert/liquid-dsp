@@ -45,13 +45,10 @@ FIRINTERP() FIRINTERP(_create)(unsigned int _M,
                                unsigned int _h_len)
 {
     // validate input
-    if (_M < 2) {
-        fprintf(stderr,"error: firinterp_%s_create(), interp factor must be greater than 1\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_h_len < _M) {
-        fprintf(stderr,"error: firinterp_%s_create(), filter length cannot be less than interp factor\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_M < 2)
+        return liquid_error_config("firinterp_%s_create(), interp factor must be greater than 1", EXTENSION_FULL);
+    if (_h_len < _M)
+        return liquid_error_config("firinterp_%s_create(), filter length cannot be less than interp factor", EXTENSION_FULL);
 
     // allocate main object memory and set internal parameters
     FIRINTERP() q = (FIRINTERP()) malloc(sizeof(struct FIRINTERP(_s)));
@@ -88,16 +85,12 @@ FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,
                                       float        _As)
 {
     // validate input
-    if (_M < 2) {
-        fprintf(stderr,"error: firinterp_%s_create_kaiser(), interp factor must be greater than 1\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr,"error: firinterp_%s_create_kaiser(), filter delay must be greater than 0\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_As < 0.0f) {
-        fprintf(stderr,"error: firinterp_%s_create_kaiser(), stop-band attenuation must be positive\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_M < 2)
+        return liquid_error_config("firinterp_%s_create_kaiser(), interp factor must be greater than 1", EXTENSION_FULL);
+    if (_m == 0)
+        return liquid_error_config("firinterp_%s_create_kaiser(), filter delay must be greater than 0", EXTENSION_FULL);
+    if (_As < 0.0f)
+        return liquid_error_config("firinterp_%s_create_kaiser(), stop-band attenuation must be positive", EXTENSION_FULL);
 
     // compute filter coefficients (floating point precision)
     unsigned int h_len = 2*_M*_m + 1;
@@ -128,19 +121,14 @@ FIRINTERP() FIRINTERP(_create_prototype)(int          _type,
                                          float        _dt)
 {
     // validate input
-    if (_k < 2) {
-        fprintf(stderr,"error: firinterp_%s_create_prototype(), interp factor must be greater than 1\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr,"error: firinterp_%s_create_prototype(), filter delay must be greater than 0\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: firinterp_%s_create_prototype(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_dt < -1.0f || _dt > 1.0f) {
-        fprintf(stderr,"error: firinterp_%s_create_prototype(), filter fractional sample delay must be in [-1,1]\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_k < 2)
+        return liquid_error_config("firinterp_%s_create_prototype(), interp factor must be greater than 1", EXTENSION_FULL);
+    if (_m == 0)
+        return liquid_error_config("firinterp_%s_create_prototype(), filter delay must be greater than 0", EXTENSION_FULL);
+    if (_beta < 0.0f || _beta > 1.0f)
+        return liquid_error_config("firinterp_%s_create_prototype(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
+    if (_dt < -1.0f || _dt > 1.0f)
+        return liquid_error_config("firinterp_%s_create_prototype(), filter fractional sample delay must be in [-1,1]", EXTENSION_FULL);
 
     // generate Nyquist filter
     unsigned int h_len = 2*_k*_m + 1;
@@ -162,10 +150,8 @@ FIRINTERP() FIRINTERP(_create_prototype)(int          _type,
 FIRINTERP() FIRINTERP(_create_linear)(unsigned int _M)
 {
     // validate input
-    if (_M < 1) {
-        fprintf(stderr,"error: firinterp_%s_create_linear(), interp factor must be greater than 1\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_M < 1)
+        return liquid_error_config("firinterp_%s_create_linear(), interp factor must be greater than 1", EXTENSION_FULL);
 
     // generate coefficients
     unsigned int i;
@@ -184,13 +170,10 @@ FIRINTERP() FIRINTERP(_create_window)(unsigned int _M,
                                       unsigned int _m)
 {
     // validate input
-    if (_M < 1) {
-        fprintf(stderr,"error: firinterp_%s_create_spline(), interp factor must be greater than 1\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m < 1) {
-        fprintf(stderr,"error: firinterp_%s_create_spline(), interp factor must be greater than 1\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_M < 1)
+        return liquid_error_config("firinterp_%s_create_spline(), interp factor must be greater than 1", EXTENSION_FULL);
+    if (_m < 1)
+        return liquid_error_config("firinterp_%s_create_spline(), interp factor must be greater than 1", EXTENSION_FULL);
 
     // generate coefficients
     unsigned int i;

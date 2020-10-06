@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,16 +69,12 @@ FIRPFBCH2() FIRPFBCH2(_create)(int          _type,
                                TC *         _h)
 {
     // validate input
-    if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER) {
-        fprintf(stderr,"error: firpfbch2_%s_create(), invalid type %d\n", EXTENSION_FULL, _type);
-        exit(1);
-    } else if (_M < 2 || _M % 2) {
-        fprintf(stderr,"error: firpfbch2_%s_create(), number of channels must be greater than 2 and even\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m < 1) {
-        fprintf(stderr,"error: firpfbch2_%s_create(), filter semi-length must be at least 1\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
+        return liquid_error_config("firpfbch2_%s_create(), invalid type %d", EXTENSION_FULL, _type);
+    if (_M < 2 || _M % 2)
+        return liquid_error_config("firpfbch2_%s_create(), number of channels must be greater than 2 and even", EXTENSION_FULL);
+    if (_m < 1)
+        return liquid_error_config("firpfbch2_%s_create(), filter semi-length must be at least 1", EXTENSION_FULL);
 
     // create object
     FIRPFBCH2() q = (FIRPFBCH2()) malloc(sizeof(struct FIRPFBCH2(_s)));
@@ -138,16 +134,12 @@ FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,
                                       float        _As)
 {
     // validate input
-    if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER) {
-        fprintf(stderr,"error: firpfbch2_%s_create_kaiser(), invalid type %d\n", EXTENSION_FULL, _type);
-        exit(1);
-    } else if (_M < 2 || _M % 2) {
-        fprintf(stderr,"error: firpfbch2_%s_create_kaiser(), number of channels must be greater than 2 and even\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m < 1) {
-        fprintf(stderr,"error: firpfbch2_%s_create_kaiser(), filter semi-length must be at least 1\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
+        return liquid_error_config("firpfbch2_%s_create_kaiser(), invalid type %d", EXTENSION_FULL, _type);
+    if (_M < 2 || _M % 2)
+        return liquid_error_config("firpfbch2_%s_create_kaiser(), number of channels must be greater than 2 and even", EXTENSION_FULL);
+    if (_m < 1)
+        return liquid_error_config("firpfbch2_%s_create_kaiser(), filter semi-length must be at least 1", EXTENSION_FULL);
 
     // design prototype filter
     unsigned int h_len = 2*_M*_m+1;
@@ -183,7 +175,7 @@ FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,
 }
 
 // destroy firpfbch2 object, freeing internal memory
-void FIRPFBCH2(_destroy)(FIRPFBCH2() _q)
+int FIRPFBCH2(_destroy)(FIRPFBCH2() _q)
 {
     unsigned int i;
 
@@ -207,10 +199,11 @@ void FIRPFBCH2(_destroy)(FIRPFBCH2() _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // reset firpfbch2 object internals
-void FIRPFBCH2(_reset)(FIRPFBCH2() _q)
+int FIRPFBCH2(_reset)(FIRPFBCH2() _q)
 {
     unsigned int i;
 
@@ -222,10 +215,11 @@ void FIRPFBCH2(_reset)(FIRPFBCH2() _q)
 
     // reset filter/buffer alignment flag
     _q->flag = 0;
+    return LIQUID_OK;
 }
 
 // print firpfbch2 object internals
-void FIRPFBCH2(_print)(FIRPFBCH2() _q)
+int FIRPFBCH2(_print)(FIRPFBCH2() _q)
 {
     printf("firpfbch2_%s:\n", EXTENSION_FULL);
     printf("    channels    :   %u\n", _q->M);
@@ -236,14 +230,15 @@ void FIRPFBCH2(_print)(FIRPFBCH2() _q)
     unsigned int i;
     for (i=0; i<_q->M; i++)
         DOTPROD(_print)(_q->dp[i]);
+    return LIQUID_OK;
 }
 
 // execute filterbank channelizer (analyzer)
 //  _x      :   channelizer input,  [size: M/2 x 1]
 //  _y      :   channelizer output, [size: M   x 1]
-void FIRPFBCH2(_execute_analyzer)(FIRPFBCH2() _q,
-                                  TI *        _x,
-                                  TO *        _y)
+int FIRPFBCH2(_execute_analyzer)(FIRPFBCH2() _q,
+                                 TI *        _x,
+                                 TO *        _y)
 {
     unsigned int i;
 
@@ -279,14 +274,15 @@ void FIRPFBCH2(_execute_analyzer)(FIRPFBCH2() _q,
 
     // update flag
     _q->flag = 1 - _q->flag;
+    return LIQUID_OK;
 }
 
 // execute filterbank channelizer (synthesizer)
 //  _x      :   channelizer input,  [size: M   x 1]
 //  _y      :   channelizer output, [size: M/2 x 1]
-void FIRPFBCH2(_execute_synthesizer)(FIRPFBCH2() _q,
-                                     TI *        _x,
-                                     TO *        _y)
+int FIRPFBCH2(_execute_synthesizer)(FIRPFBCH2() _q,
+                                    TI *        _x,
+                                    TO *        _y)
 {
     unsigned int i;
 
@@ -332,6 +328,7 @@ void FIRPFBCH2(_execute_synthesizer)(FIRPFBCH2() _q,
         _y[i] = y0 + y1;
     }
     _q->flag = 1 - _q->flag;
+    return LIQUID_OK;
 }
 
 // execute filterbank channelizer
@@ -339,20 +336,17 @@ void FIRPFBCH2(_execute_synthesizer)(FIRPFBCH2() _q,
 // LIQUID_SYNTHESIZER:  input: M,   output: M/2
 //  _x      :   channelizer input
 //  _y      :   channelizer output
-void FIRPFBCH2(_execute)(FIRPFBCH2() _q,
-                         TI *        _x,
-                         TO *        _y)
+int FIRPFBCH2(_execute)(FIRPFBCH2() _q,
+                        TI *        _x,
+                        TO *        _y)
 {
     switch (_q->type) {
     case LIQUID_ANALYZER:
-        FIRPFBCH2(_execute_analyzer)(_q, _x, _y);
-        return;
+        return FIRPFBCH2(_execute_analyzer)(_q, _x, _y);
     case LIQUID_SYNTHESIZER:
-        FIRPFBCH2(_execute_synthesizer)(_q, _x, _y);
-        return;
-    default:
-        fprintf(stderr,"error: firpfbch2_%s_execute(), invalid type\n", EXTENSION_FULL);
-        exit(1);
+        return FIRPFBCH2(_execute_synthesizer)(_q, _x, _y);
+    default:;
     }
+    return liquid_error(LIQUID_EINT,"firpfbch2_%s_execute(), invalid internal type", EXTENSION_FULL);
 }
 

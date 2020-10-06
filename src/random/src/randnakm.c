@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,11 +35,11 @@ float randnakmf(float _m,
 {
     // validate input
     if (_m < 0.5f) {
-        fprintf(stderr,"error: randnakmf(), m cannot be less than 0.5\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"randnakmf(), m cannot be less than 0.5");
+        return 0.0f;
     } else if (_omega <= 0.0f) {
-        fprintf(stderr,"error: randnakmf(), omega must be greater than zero\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"randnakmf(), omega must be greater than zero");
+        return 0.0f;
     }
 
     // generate Gamma random variable
@@ -65,11 +65,11 @@ float randnakmf_pdf(float _x,
 {
     // validate input
     if (_m < 0.5f) {
-        fprintf(stderr,"error: randnakmf_pdf(), m cannot be less than 0.5\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"randnakmf_pdf(), m cannot be less than 0.5");
+        return 0.0f;
     } else if (_omega <= 0.0f) {
-        fprintf(stderr,"error: randnakmf_pdf(), omega must be greater than zero\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"randnakmf_pdf(), omega must be greater than zero");
+        return 0.0f;
     }
 
     if (_x <= 0.0f)
@@ -95,11 +95,11 @@ float randnakmf_cdf(float _x,
 {
     // validate input
     if (_m < 0.5f) {
-        fprintf(stderr,"error: randnakmf_cdf(), m cannot be less than 0.5\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"randnakmf_cdf(), m cannot be less than 0.5");
+        return 0.0f;
     } else if (_omega <= 0.0f) {
-        fprintf(stderr,"error: randnakmf_cdf(), omega must be greater than zero\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"randnakmf_cdf(), omega must be greater than zero");
+        return 0.0f;
     }
 
     if (_x <= 0.0f)
@@ -109,5 +109,4 @@ float randnakmf_cdf(float _x,
     float t1 = liquid_lngammaf(_m);
     return expf( t0 - t1 );
 }
-
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,17 +42,15 @@
 //  _b      :   equality [size: _n x 1]
 //  _x      :   solution estimate [size: _n x 1]
 //  _opts   :   options (ignored for now)
-void MATRIX(_cgsolve)(T *          _A,
-                      unsigned int _n,
-                      T *          _b,
-                      T *          _x,
-                      void *       _opts)
+int MATRIX(_cgsolve)(T *          _A,
+                     unsigned int _n,
+                     T *          _b,
+                     T *          _x,
+                     void *       _opts)
 {
     // validate input
-    if (_n == 0) {
-        fprintf(stderr,"error: matrix_cgsolve(), system dimension cannot be zero\n");
-        exit(1);
-    }
+    if (_n == 0)
+        return liquid_error(LIQUID_EICONFIG,"matrix_cgsolve(), system dimension cannot be zero");
 
     // options
     unsigned int max_iterations = 4*_n; // maximum number of iterations
@@ -180,4 +178,5 @@ void MATRIX(_cgsolve)(T *          _A,
         // increment counter
         i++;
     }
+    return LIQUID_OK;
 }

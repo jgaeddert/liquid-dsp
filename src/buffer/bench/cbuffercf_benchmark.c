@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.internal.h"
 
 #define CBUFFERCF_BENCH_API(N, W, R)        \
 (   struct rusage *     _start,             \
@@ -32,24 +32,20 @@
 { cbuffercf_bench(_start, _finish, _num_iterations, N, W, R); }
 
 // Helper function to keep code base small
-void cbuffercf_bench(struct rusage *     _start,
-                     struct rusage *     _finish,
-                     unsigned long int * _num_iterations,
-                     unsigned int        _n,
-                     unsigned int        _write_size,
-                     unsigned int        _read_size)
+int cbuffercf_bench(struct rusage *     _start,
+                    struct rusage *     _finish,
+                    unsigned long int * _num_iterations,
+                    unsigned int        _n,
+                    unsigned int        _write_size,
+                    unsigned int        _read_size)
 {
     // validate input
-    if (_n < 2) {
-        fprintf(stderr,"error: cbuffercf_bench(), number of elements must be at least 2\n");
-        exit(1);
-    } else if (_write_size > _n-1) {
-        fprintf(stderr,"error: cbuffercf_bench(), write size must be in (0,n)\n");
-        exit(1);
-    } else if (_read_size > _n-1) {
-        fprintf(stderr,"error: cbuffercf_bench(), read size must be in (0,n)\n");
-        exit(1);
-    }
+    if (_n < 2)
+        return liquid_error(LIQUID_EICONFIG,"cbuffercf_bench(), number of elements must be at least 2");
+    if (_write_size > _n-1)
+        return liquid_error(LIQUID_EICONFIG,"cbuffercf_bench(), write size must be in (0,n)");
+    if (_read_size > _n-1)
+        return liquid_error(LIQUID_EICONFIG,"cbuffercf_bench(), read size must be in (0,n)");
 
     // normalize number of iterations
     *_num_iterations *= _n;
@@ -96,6 +92,7 @@ void cbuffercf_bench(struct rusage *     _start,
 
     // clean up allocated memory
     cbuffercf_destroy(q);
+    return LIQUID_OK;
 }
 
 // 

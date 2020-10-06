@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,19 +66,14 @@ SYMSTREAM() SYMSTREAM(_create_linear)(int          _ftype,
                                       int          _ms)
 {
     // validate input
-    if (_k < 2) {
-        fprintf(stderr,"error: symstream%s_create(), samples/symbol must be at least 2\n", EXTENSION);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr,"error: symstream%s_create(), filter delay must be greater than zero\n", EXTENSION);
-        exit(1);
-    } else if (_beta <= 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: symstream%s_create(), filter excess bandwidth must be in (0,1]\n", EXTENSION);
-        exit(1);
-    } else if (_ms == LIQUID_MODEM_UNKNOWN || _ms >= LIQUID_MODEM_NUM_SCHEMES) {
-        fprintf(stderr,"error: symstream%s_create(), invalid modulation scheme\n", EXTENSION);
-        exit(1);
-    }
+    if (_k < 2)
+        return liquid_error_config("symstream%s_create(), samples/symbol must be at least 2", EXTENSION);
+    if (_m == 0)
+        return liquid_error_config("symstream%s_create(), filter delay must be greater than zero", EXTENSION);
+    if (_beta <= 0.0f || _beta > 1.0f)
+        return liquid_error_config("symstream%s_create(), filter excess bandwidth must be in (0,1]", EXTENSION);
+    if (_ms == LIQUID_MODEM_UNKNOWN || _ms >= LIQUID_MODEM_NUM_SCHEMES)
+        return liquid_error_config("symstream%s_create(), invalid modulation scheme", EXTENSION);
 
     // allocate memory for main object
     SYMSTREAM() q = (SYMSTREAM()) malloc( sizeof(struct SYMSTREAM(_s)) );
@@ -106,7 +101,7 @@ SYMSTREAM() SYMSTREAM(_create_linear)(int          _ftype,
 }
 
 // destroy symstream object, freeing all internal memory
-void SYMSTREAM(_destroy)(SYMSTREAM() _q)
+int SYMSTREAM(_destroy)(SYMSTREAM() _q)
 {
     // destroy objects
     MODEM    (_destroy)(_q->mod);
@@ -116,29 +111,33 @@ void SYMSTREAM(_destroy)(SYMSTREAM() _q)
 
     // free main object
     free(_q);
+    return LIQUID_OK;
 }
 
 // print symstream object's parameters
-void SYMSTREAM(_print)(SYMSTREAM() _q)
+int SYMSTREAM(_print)(SYMSTREAM() _q)
 {
     printf("symstream_%s:\n", EXTENSION);
+    return LIQUID_OK;
 }
 
 // reset symstream internal state
-void SYMSTREAM(_reset)(SYMSTREAM() _q)
+int SYMSTREAM(_reset)(SYMSTREAM() _q)
 {
     // reset objects and counter
     MODEM(_reset)(_q->mod);
     FIRINTERP(_reset)(_q->interp);
     _q->buf_index = 0;
+    return LIQUID_OK;
 }
 
 // Set internal linear modulation scheme, leaving the filter parameters
 // (interpolator) unmodified
-void SYMSTREAM(_set_scheme)(SYMSTREAM() _q,
+int SYMSTREAM(_set_scheme)(SYMSTREAM() _q,
                             int         _ms)
 {
     _q->mod = MODEM(_recreate)(_q->mod, _ms);
+    return LIQUID_OK;
 }
 
 // Get internal linear modulation scheme
@@ -148,10 +147,11 @@ int SYMSTREAM(_get_scheme)(SYMSTREAM() _q)
 }
 
 // Set internal linear gain (before interpolation)
-void SYMSTREAM(_set_gain)(SYMSTREAM() _q,
+int SYMSTREAM(_set_gain)(SYMSTREAM() _q,
                           float       _gain)
 {
     _q->gain = _gain;
+    return LIQUID_OK;
 }
 
 // Get internal linear gain (before interpolation)
@@ -161,7 +161,7 @@ float SYMSTREAM(_get_gain)(SYMSTREAM() _q)
 }
 
 // fill buffer with samples
-void SYMSTREAM(_fill_buffer)(SYMSTREAM() _q)
+int SYMSTREAM(_fill_buffer)(SYMSTREAM() _q)
 {
     // generate random symbol
     unsigned int sym = MODEM(_gen_rand_sym)(_q->mod);
@@ -175,21 +175,24 @@ void SYMSTREAM(_fill_buffer)(SYMSTREAM() _q)
 
     // interpolate
     FIRINTERP(_execute)(_q->interp, v, _q->buf);
+    return LIQUID_OK;
 }
 
 // write block of samples to output buffer
 //  _q      : synchronizer object
 //  _buf    : output buffer [size: _buf_len x 1]
 //  _buf_len: output buffer size
-void SYMSTREAM(_write_samples)(SYMSTREAM()  _q,
-                               TO *         _buf,
-                               unsigned int _buf_len)
+int SYMSTREAM(_write_samples)(SYMSTREAM()  _q,
+                              TO *         _buf,
+                              unsigned int _buf_len)
 {
     unsigned int i;
     for (i=0; i<_buf_len; i++) {
         // check to see if buffer needs samples
-        if (_q->buf_index==0)
-            SYMSTREAM(_fill_buffer)(_q);
+        if (_q->buf_index==0) {
+            if (SYMSTREAM(_fill_buffer)(_q))
+                return liquid_error(LIQUID_EINT,"symstream%s_write_samples(), could not fill internal buffer\n", EXTENSION);
+        }
 
         // write output sample from internal buffer
         _buf[i] = _q->buf[_q->buf_index];
@@ -197,5 +200,6 @@ void SYMSTREAM(_write_samples)(SYMSTREAM()  _q,
         // increment internal index
         _q->buf_index = (_q->buf_index + 1) % _q->k;
     }
+    return LIQUID_OK;
 }
 
