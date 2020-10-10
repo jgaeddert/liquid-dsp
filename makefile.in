@@ -1495,6 +1495,7 @@ example_programs :=						\
 	examples/firhilb_interp_example				\
 	examples/firpfb_rrrf_example				\
 	examples/firpfbch2_crcf_example				\
+	examples/firpfbch2_crcf_reconstruct_example		\
 	examples/firpfbchr_crcf_example				\
 	examples/firinterp_crcf_example				\
 	examples/firinterp_firdecim_crcf_example		\
