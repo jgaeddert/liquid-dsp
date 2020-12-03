@@ -1644,6 +1644,13 @@ int SPGRAM(_write)(SPGRAM()     _q,                                         \
                    TI *         _x,                                         \
                    unsigned int _n);                                        \
                                                                             \
+/* Compute spectral periodogram output (fft-shifted values, linear)     */  \
+/* from current buffer contents                                         */  \
+/*  _q  : spgram object                                                 */  \
+/*  _X  : output spectrum (linear), [size: _nfft x 1]                   */  \
+int SPGRAM(_get_psd_mag)(SPGRAM() _q,                                       \
+                         T *      _X);                                      \
+                                                                            \
 /* Compute spectral periodogram output (fft-shifted values in dB) from  */  \
 /* current buffer contents                                              */  \
 /*  _q  : spgram object                                                 */  \

@@ -398,6 +398,25 @@ int SPGRAM(_step)(SPGRAM() _q)
     return LIQUID_OK;
 }
 
+// compute spectral periodogram output (fft-shifted values, linear)
+// from current buffer contents
+//  _q      :   spgram object
+//  _X      :   output spectrum [size: _nfft x 1]
+int SPGRAM(_get_psd_mag)(SPGRAM() _q,
+                         T *      _X)
+{
+    // compute magnitude (linear) and run FFT shift
+    unsigned int i;
+    unsigned int nfft_2 = _q->nfft / 2;
+    T scale = _q->accumulate ? 1.0f / max(1,_q->num_transforms) : 0.0f;
+    // TODO: adjust scale if infinite integration
+    for (i=0; i<_q->nfft; i++) {
+        unsigned int k = (i + nfft_2) % _q->nfft;
+        _X[i] = max(LIQUID_SPGRAM_PSD_MIN,_q->psd[k]) * scale;
+    }
+    return LIQUID_OK;
+}
+
 // compute spectral periodogram output (fft-shifted values
 // in dB) from current buffer contents
 //  _q      :   spgram object
@@ -405,15 +424,15 @@ int SPGRAM(_step)(SPGRAM() _q)
 int SPGRAM(_get_psd)(SPGRAM() _q,
                      T *      _X)
 {
-    // compute magnitude in dB and run FFT shift
+    // compute magnitude, linear
+    int rc = SPGRAM(_get_psd_mag)(_q, _X);
+    if (rc != LIQUID_OK)
+        return rc;
+
+    // convert to dB
     unsigned int i;
-    unsigned int nfft_2 = _q->nfft / 2;
-    T scale = _q->accumulate ? -10*log10f(max(1,_q->num_transforms)) : 0.0f;
-    // TODO: adjust scale if infinite integration
-    for (i=0; i<_q->nfft; i++) {
-        unsigned int k = (i + nfft_2) % _q->nfft;
-        _X[i] = 10*log10f( max(LIQUID_SPGRAM_PSD_MIN,_q->psd[k]) ) + scale;
-    }
+    for (i=0; i<_q->nfft; i++)
+        _X[i] = 10*log10f(_X[i]);
     return LIQUID_OK;
 }
 
