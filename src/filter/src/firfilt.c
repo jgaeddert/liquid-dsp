@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,8 @@
 //  DOTPROD()       dotprod macro
 //  PRINTVAL()      print macro
 
-#define LIQUID_FIRFILT_USE_WINDOW   (0)
+// NOTE: using the window is about 27% slower, but fixes a valgrind issue
+#define LIQUID_FIRFILT_USE_WINDOW   (1)
 
 // firfilt object structure
 struct FIRFILT(_s) {
@@ -300,6 +301,7 @@ FIRFILT() FIRFILT(_recreate)(FIRFILT() _q,
         // initialize array for buffering
         _q->w_len   = 1<<liquid_msb_index(_q->h_len);   // effectively 2^{floor(log2(len))+1}
         _q->w_mask  = _q->w_len - 1;
+        // FIXME: valgrind is complaining about an uninitialized variable in the following malloc line
         _q->w       = (TI *) malloc((_q->w_len + _q->h_len + 1)*sizeof(TI));
         _q->w_index = 0;
 #endif
