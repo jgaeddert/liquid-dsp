@@ -37,11 +37,7 @@ static int callback(unsigned char *  _header,
     //printf("callback invoked, payload valid: %s\n", _payload_valid ? "yes" : "no");
     int * frame_recovered = (int*) _userdata;
 
-    if (_header_valid && _payload_valid)
-        *frame_recovered = 1;
-    else
-        *frame_recovered = 0;
-    
+    *frame_recovered = _header_valid && _payload_valid;
     return 0;
 }
 
@@ -51,18 +47,10 @@ static int callback(unsigned char *  _header,
 void autotest_framesync64()
 {
     unsigned int i;
-
-    framegen64 fg = framegen64_create();
-
-    // frame data
-    unsigned char header[8] = {0, 1, 2, 3, 4, 5, 6, 7};
-    unsigned char payload[64];
-    // initialize payload
-    for (i=0; i<64; i++)
-        payload[i] = rand() & 0xff;
-    
-    // create framesync64 object
     int frame_recovered = 0;
+
+    // create objects
+    framegen64 fg = framegen64_create();
     framesync64 fs = framesync64_create(callback,(void*)&frame_recovered);
     
     if (liquid_autotest_verbose) {
@@ -71,19 +59,25 @@ void autotest_framesync64()
     }
 
     // generate the frame
-    unsigned int frame_len = LIQUID_FRAME64_LEN;
-    float complex frame[frame_len];
-    framegen64_execute(fg, header, payload, frame);
+    float complex frame[LIQUID_FRAME64_LEN];
+    framegen64_execute(fg, NULL, NULL, frame);
 
     // add some noise
-    for (i=0; i<frame_len; i++)
+    for (i=0; i<LIQUID_FRAME64_LEN; i++)
         frame[i] += 0.01f*(randnf() + _Complex_I*randnf()) * M_SQRT1_2;
 
-    // try to find the frame
-    framesync64_execute(fs, frame, frame_len);
+    // try to receive the frame
+    framesync64_execute(fs, frame, LIQUID_FRAME64_LEN);
 
     // check to see that frame was recovered
     CONTEND_EQUALITY( frame_recovered, 1 );
+
+    // parse statistics
+    framedatastats_s stats = framesync64_get_framedatastats(fs);
+    CONTEND_EQUALITY(stats.num_frames_detected, 1);
+    CONTEND_EQUALITY(stats.num_headers_valid,   1);
+    CONTEND_EQUALITY(stats.num_payloads_valid,  1);
+    CONTEND_EQUALITY(stats.num_bytes_received, 64);
 
     // destroy objects
     framegen64_destroy(fg);
