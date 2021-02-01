@@ -56,7 +56,7 @@ examples-memcheck:
     - /bin/sh run_examples_valgrind.sh
     - tail -n +1 examples/*.log > valgrind.log
   artifacts:
-    paths: [run_examples_valgrind.sh valgrind.log]
+    paths: [run_examples_valgrind.sh, valgrind.log]
 
 # build from scratch
 coverage:
