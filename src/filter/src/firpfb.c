@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -310,6 +310,14 @@ void FIRPFB(_push)(FIRPFB() _q, TI _x)
 {
     // push value into window buffer
     WINDOW(_push)(_q->w, _x);
+}
+
+// Write a block of samples into object's internal buffer
+void FIRPFB(_write)(FIRPFB()     _q,
+                    TI *         _x,
+                    unsigned int _n)
+{
+    WINDOW(_write)(_q->w, _x, _n);
 }
 
 // execute the filter on internal buffer and coefficients

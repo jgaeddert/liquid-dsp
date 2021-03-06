@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -3228,7 +3228,14 @@ void FIRPFB(_reset)(FIRPFB() _q);                                           \
 /*  _q      : filter object                                             */  \
 /*  _x      : single input sample                                       */  \
 void FIRPFB(_push)(FIRPFB() _q,                                             \
-                    TI      _x);                                            \
+                   TI       _x);                                            \
+                                                                            \
+/* Write a block of samples into object's internal buffer               */  \
+/*  _q      : filter object                                             */  \
+/*  _x      : single input sample                                       */  \
+void FIRPFB(_write)(FIRPFB()     _q,                                        \
+                    TI *         _x,                                        \
+                    unsigned int _n);                                       \
                                                                             \
 /* Execute vector dot product on the filter's internal buffer and       */  \
 /* coefficients using the coefficients from sub-filter at index _i      */  \
