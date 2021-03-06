@@ -3929,6 +3929,14 @@ unsigned int RRESAMP(_get_block_len)(RRESAMP() _q);                         \
 /* Get rate of resampler, \(r = P/Q\)                                   */  \
 float RRESAMP(_get_rate)(RRESAMP() _q);                                     \
                                                                             \
+/* Write \(Q\) input samples (after removing greatest common divisor)   */  \
+/* into buffer, but do not compute output. This effectively updates the */  \
+/* internal state of the resampler.                                     */  \
+/*  _q      : resamp object                                             */  \
+/*  _buf    : input sample array, [size: Q x 1]                         */  \
+void RRESAMP(_write)(RRESAMP() _q,                                          \
+                     TI *      _buf);                                       \
+                                                                            \
 /* Execute rational-rate resampler on a block of input samples and      */  \
 /* store the resulting samples in the output array.                     */  \
 /* Note that the size of the input and output buffers correspond to the */  \
