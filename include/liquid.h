@@ -3955,6 +3955,16 @@ void RRESAMP(_write)(RRESAMP() _q,                                          \
 void RRESAMP(_execute)(RRESAMP()       _q,                                  \
                         TI *           _x,                                  \
                         TO *           _y);                                 \
+                                                                            \
+/* Execute on a block of samples                                        */  \
+/*  _q  : resamp object                                                 */  \
+/*  _x  : input sample array, [size: Q*n x 1]                           */  \
+/*  _n  : block size                                                    */  \
+/*  _y  : output sample array [size: P*n x 1]                           */  \
+void RRESAMP(_execute_block)(RRESAMP()      _q,                             \
+                             TI *           _x,                             \
+                             unsigned int   _n,                             \
+                             TO *           _y);                            \
 
 LIQUID_RRESAMP_DEFINE_API(LIQUID_RRESAMP_MANGLE_RRRF,
                           float,

@@ -297,6 +297,24 @@ void RRESAMP(_execute)(RRESAMP() _q,
     }
 }
 
+// Execute on a block of samples
+//  _q  : resamp object
+//  _x  : input sample array, [size: Q*n x 1]
+//  _n  : block size
+//  _y  : output sample array [size: P*n x 1]
+void RRESAMP(_execute_block)(RRESAMP()      _q,
+                             TI *           _x,
+                             unsigned int   _n,
+                             TO *           _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        RRESAMP(_execute)(_q, _x, _y);
+        _x += _q->Q;
+        _y += _q->P;
+    }
+}
+
 // internal
 void RRESAMP(_execute_primitive)(RRESAMP() _q,
                                  TI *      _x,
