@@ -298,8 +298,10 @@ int dsssframesync_execute_seekpn(dsssframesync _q, float complex _x)
     float complex * v = qdetector_cccf_execute(_q->detector, _x);
 
     // check if frame has been detected
+    printf("seeking pn...\n");
     if (v == NULL)
         return LIQUID_OK;
+    printf("FRAME DETECTED\n");
 
     // get estimates
     _q->tau_hat   = qdetector_cccf_get_tau(_q->detector);
@@ -397,7 +399,7 @@ int dsssframesync_execute_rxheader(dsssframesync _q, float complex _x)
     _q->header_spread[_q->symbol_counter % synth_crcf_get_length(_q->header_synth)] = mf_out;
     ++_q->symbol_counter;
 
-    if (_q->symbol_counter % synth_crcf_get_length(_q->header_synth) != 0) {
+    if (_q->symbol_counter % synth_crcf_get_length(_q->header_synth))
         return LIQUID_OK;
 
     int header_complete = dsssframesync_decode_header(_q);
@@ -405,7 +407,7 @@ int dsssframesync_execute_rxheader(dsssframesync _q, float complex _x)
     if (!header_complete)
         return LIQUID_OK;
 
-    if (_q->header_valid)
+    if (_q->header_valid) {
         _q->symbol_counter = 0;
         _q->state = DSSSFRAMESYNC_STATE_RXPAYLOAD;
         return LIQUID_OK;

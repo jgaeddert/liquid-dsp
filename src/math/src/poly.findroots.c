@@ -361,7 +361,10 @@ int POLY(_findroots_bairstow_recursion)(T *          _p,
     // set output pairs
     *_u = u;
     *_v = v;
-    return liquid_error(LIQUID_EINT,"poly%s_findroots_bairstow_recursion(), failed to converge", EXTENSION);
+    if (rc)
+        return liquid_error(LIQUID_EINT,"poly%s_findroots_bairstow_recursion(), failed to converge", EXTENSION);
+
+    return LIQUID_OK;
 }
 
 // run multiple iterations of Bairstow's method with different starting

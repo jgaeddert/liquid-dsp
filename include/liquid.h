@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1644,6 +1644,13 @@ int SPGRAM(_write)(SPGRAM()     _q,                                         \
                    TI *         _x,                                         \
                    unsigned int _n);                                        \
                                                                             \
+/* Compute spectral periodogram output (fft-shifted values, linear)     */  \
+/* from current buffer contents                                         */  \
+/*  _q  : spgram object                                                 */  \
+/*  _X  : output spectrum (linear), [size: _nfft x 1]                   */  \
+int SPGRAM(_get_psd_mag)(SPGRAM() _q,                                       \
+                         T *      _X);                                      \
+                                                                            \
 /* Compute spectral periodogram output (fft-shifted values in dB) from  */  \
 /* current buffer contents                                              */  \
 /*  _q  : spgram object                                                 */  \
@@ -3221,7 +3228,14 @@ void FIRPFB(_reset)(FIRPFB() _q);                                           \
 /*  _q      : filter object                                             */  \
 /*  _x      : single input sample                                       */  \
 void FIRPFB(_push)(FIRPFB() _q,                                             \
-                    TI      _x);                                            \
+                   TI       _x);                                            \
+                                                                            \
+/* Write a block of samples into object's internal buffer               */  \
+/*  _q      : filter object                                             */  \
+/*  _x      : single input sample                                       */  \
+void FIRPFB(_write)(FIRPFB()     _q,                                        \
+                    TI *         _x,                                        \
+                    unsigned int _n);                                       \
                                                                             \
 /* Execute vector dot product on the filter's internal buffer and       */  \
 /* coefficients using the coefficients from sub-filter at index _i      */  \
@@ -3915,6 +3929,14 @@ unsigned int RRESAMP(_get_block_len)(RRESAMP() _q);                         \
 /* Get rate of resampler, \(r = P/Q\)                                   */  \
 float RRESAMP(_get_rate)(RRESAMP() _q);                                     \
                                                                             \
+/* Write \(Q\) input samples (after removing greatest common divisor)   */  \
+/* into buffer, but do not compute output. This effectively updates the */  \
+/* internal state of the resampler.                                     */  \
+/*  _q      : resamp object                                             */  \
+/*  _buf    : input sample array, [size: Q x 1]                         */  \
+void RRESAMP(_write)(RRESAMP() _q,                                          \
+                     TI *      _buf);                                       \
+                                                                            \
 /* Execute rational-rate resampler on a block of input samples and      */  \
 /* store the resulting samples in the output array.                     */  \
 /* Note that the size of the input and output buffers correspond to the */  \
@@ -3933,6 +3955,16 @@ float RRESAMP(_get_rate)(RRESAMP() _q);                                     \
 void RRESAMP(_execute)(RRESAMP()       _q,                                  \
                         TI *           _x,                                  \
                         TO *           _y);                                 \
+                                                                            \
+/* Execute on a block of samples                                        */  \
+/*  _q  : resamp object                                                 */  \
+/*  _x  : input sample array, [size: Q*n x 1]                           */  \
+/*  _n  : block size                                                    */  \
+/*  _y  : output sample array [size: P*n x 1]                           */  \
+void RRESAMP(_execute_block)(RRESAMP()      _q,                             \
+                             TI *           _x,                             \
+                             unsigned int   _n,                             \
+                             TO *           _y);                            \
 
 LIQUID_RRESAMP_DEFINE_API(LIQUID_RRESAMP_MANGLE_RRRF,
                           float,

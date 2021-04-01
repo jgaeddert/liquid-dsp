@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
     int verbose = 1;
     int autoscale = 1;
     int cpu_clock_detect = 1;
-    char filename[256];
+    char filename[256] = "benchmark.json";
     char search_string[128];
 
     // get input options

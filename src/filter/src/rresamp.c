@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -265,6 +265,17 @@ unsigned int RRESAMP(_get_decim)(RRESAMP() _q)
     return _q->Q;
 }
 
+// Write \(Q\) input samples (after removing greatest common divisor)
+// into buffer, but do not compute output. This effectively updates the
+// internal state of the resampler.
+//  _q      : resamp object
+//  _buf    : input sample array, [size: Q x 1]
+void RRESAMP(_write)(RRESAMP() _q,
+                     TI *      _buf)
+{
+    FIRPFB(_write)(_q->pfb, _buf, _q->Q);
+}
+
 // Execute rational-rate resampler on a block of input samples and
 // store the resulting samples in the output array.
 //  _q  : resamp object
@@ -281,6 +292,24 @@ void RRESAMP(_execute)(RRESAMP() _q,
         RRESAMP(_execute_primitive)(_q, _x, _y);
 
         // update input pointers accordingly
+        _x += _q->Q;
+        _y += _q->P;
+    }
+}
+
+// Execute on a block of samples
+//  _q  : resamp object
+//  _x  : input sample array, [size: Q*n x 1]
+//  _n  : block size
+//  _y  : output sample array [size: P*n x 1]
+void RRESAMP(_execute_block)(RRESAMP()      _q,
+                             TI *           _x,
+                             unsigned int   _n,
+                             TO *           _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        RRESAMP(_execute)(_q, _x, _y);
         _x += _q->Q;
         _y += _q->P;
     }

@@ -122,7 +122,7 @@ int main(int argc, char*argv[])
         fprintf(fid,"Y(%3u) = %12.4e;\n", i+1, Y[i]);
     }
     fprintf(fid,"\n\n");
-    fprintf(fid,"%% plot time-domain result\n");
+    fprintf(fid,"%% plot frequency-domain result\n");
     fprintf(fid,"fx=[0:(nfft-1)]/nfft-0.5;\n");
     fprintf(fid,"fy=fx*r;\n");
     fprintf(fid,"figure('Color','white','position',[500 500 800 600]);\n");

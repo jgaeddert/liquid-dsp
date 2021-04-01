@@ -41,7 +41,7 @@ AH_TEMPLATE([LIQUID_FFTOVERRIDE],  [Force internal FFT even if libfftw is availa
 AH_TEMPLATE([LIQUID_SIMDOVERRIDE], [Force overriding of SIMD (use portable C code)])
 AH_TEMPLATE([LIQUID_STRICT_EXIT],  [Enable strict program exit on error])
 
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 AH_TOP([
 #ifndef __LIQUID_CONFIG_H__
 #define __LIQUID_CONFIG_H__

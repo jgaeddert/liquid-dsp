@@ -500,6 +500,7 @@ filter_autotests :=						\
 	src/filter/tests/lpc_autotest.c				\
 	src/filter/tests/msresamp_crcf_autotest.c		\
 	src/filter/tests/rresamp_crcf_autotest.c		\
+	src/filter/tests/rresamp_crcf_partition_autotest.c	\
 	src/filter/tests/resamp_crcf_autotest.c			\
 	src/filter/tests/resamp2_crcf_autotest.c		\
 	src/filter/tests/symsync_crcf_autotest.c		\
@@ -1495,6 +1496,7 @@ example_programs :=						\
 	examples/firhilb_interp_example				\
 	examples/firpfb_rrrf_example				\
 	examples/firpfbch2_crcf_example				\
+	examples/firpfbch2_crcf_reconstruct_example		\
 	examples/firpfbchr_crcf_example				\
 	examples/firinterp_crcf_example				\
 	examples/firinterp_firdecim_crcf_example		\
@@ -1575,6 +1577,7 @@ example_programs :=						\
 	examples/random_histogram_example			\
 	examples/repack_bytes_example				\
 	examples/rresamp_crcf_example				\
+	examples/rresamp_crcf_partition_example			\
 	examples/rresamp_crcf_rnyquist_example			\
 	examples/rresamp_rrrf_example				\
 	examples/resamp_crcf_example				\
