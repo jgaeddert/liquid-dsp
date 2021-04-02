@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-sys.path.append('.')
+sys.path.extend(['.','..'])
 import numpy as np
 import liquid as dsp
 import matplotlib.pyplot as plt
