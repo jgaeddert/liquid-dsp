@@ -4,6 +4,7 @@
 #include "firinterp.hh"
 #include "fg64.hh"
 #include "fs64.hh"
+#include "spwaterfall.hh"
 
 void print_object(py::object o)
 {
@@ -50,5 +51,6 @@ PYBIND11_MODULE(liquid, m) {
     liquid::init_firfilt    (m);
     liquid::init_fg64       (m);
     liquid::init_fs64       (m);
+    liquid::init_spwaterfall(m);
 }
 
