@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -290,6 +290,12 @@ unsigned int SPGRAM(_get_window_len)(SPGRAM() _q)
 unsigned int SPGRAM(_get_delay)(SPGRAM() _q)
 {
     return _q->delay;
+}
+
+// Get window type used for spectral estimation
+int SPGRAM(_get_wtype)(SPGRAM() _q)
+{
+    return _q->wtype;
 }
 
 // get number of samples processed since reset

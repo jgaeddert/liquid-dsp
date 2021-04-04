@@ -1616,6 +1616,9 @@ unsigned int SPGRAM(_get_window_len)(SPGRAM() _q);                          \
 /* Get delay between transforms                                         */  \
 unsigned int SPGRAM(_get_delay)(SPGRAM() _q);                               \
                                                                             \
+/* Get window type used for spectral estimation                         */  \
+int SPGRAM(_get_wtype)(SPGRAM() _q);                                        \
+                                                                            \
 /* Get number of samples processed since reset                          */  \
 unsigned long long int SPGRAM(_get_num_samples)(SPGRAM() _q);               \
                                                                             \
