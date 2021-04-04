@@ -30,6 +30,7 @@ while psd.get_num_samples_total() < num_samples:
         psd.execute(add_noise(frame))
 
 # get spectrum plot and display
+print(psd)
 Sxx,t,f = psd.get_psd()
 print(Sxx.shape,t.shape,f.shape)
 

@@ -14,16 +14,16 @@ namespace liquid {
 class spwaterfall
 {
   public:
-    spwaterfall(unsigned int _nfft,
-                unsigned int _time,
-                unsigned int _window_len,
-                unsigned int _delay,
-                std::string  _wtype)
+    spwaterfall(unsigned int _nfft=800,
+                unsigned int _time=800,
+                unsigned int _wlen=600,
+                unsigned int _delay=40,
+                std::string  _wtype="hamming")
         {
             liquid_window_type wtype = liquid_getopt_str2window(_wtype.c_str());
             if (wtype == LIQUID_WINDOW_UNKNOWN)
                 throw std::runtime_error("invalid/unknown window type: " + _wtype);
-            q = spwaterfallcf_create(_nfft, wtype, _window_len, _delay, _time);
+            q = spwaterfallcf_create(_nfft, wtype, _wlen, _delay, _time);
         }
 
     spwaterfall(unsigned int _nfft,
@@ -54,12 +54,8 @@ class spwaterfall
   public:
     void py_execute(py::array_t<std::complex<float>> & _buf)
     {
-        // get buffer info
+        // get buffer info and verify dimensions
         py::buffer_info info = _buf.request();
-
-        // verify input size and dimensions
-        if (info.itemsize != sizeof(std::complex<float>))
-            throw std::runtime_error("invalid input numpy size, use dtype=np.csingle");
         if (info.ndim != 1)
             throw std::runtime_error("invalid number of input dimensions, must be 1-D array");
 
@@ -86,7 +82,7 @@ class spwaterfall
         for (auto i=0U; i<ntime; i++)
             _time[i] = (float)i / (float)ntime * (float)nsamp;
 
-        // 
+        // return tuple with spectrum matrix and time/freq arrays
         return py::make_tuple(Sxx,time,freq);
     }
 
