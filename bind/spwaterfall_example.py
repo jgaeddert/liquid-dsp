@@ -31,6 +31,7 @@ while psd.num_samples_total < num_samples:
 
 # get spectrum plot and display
 print(psd)
+print(psd.nfft, psd.time, psd.window_len, psd.delay, psd.wtype)
 Sxx,t,f = psd.get_psd()
 print(Sxx.shape,t.shape,f.shape)
 
