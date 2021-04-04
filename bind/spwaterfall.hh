@@ -36,10 +36,10 @@ class spwaterfall
 
     void reset() { spwaterfallcf_reset(q); }
 
-    uint64_t      get_num_samples_total() { return spwaterfallcf_get_num_samples_total(q); }
-    unsigned int  get_num_freq() { return spwaterfallcf_get_num_freq(q); }
-    unsigned int  get_num_time() { return spwaterfallcf_get_num_time(q); }
-    const float * get_psd()      { return spwaterfallcf_get_psd     (q); }
+    uint64_t      get_num_samples_total() const { return spwaterfallcf_get_num_samples_total(q); }
+    unsigned int  get_num_freq() const { return spwaterfallcf_get_num_freq(q); }
+    unsigned int  get_num_time() const { return spwaterfallcf_get_num_time(q); }
+    const float * get_psd()      const { return spwaterfallcf_get_psd     (q); }
 
     void execute(std::complex<float> _v)
         { spwaterfallcf_push(q, _v); }
@@ -100,6 +100,12 @@ void init_spwaterfall(py::module &m)
              py::arg("wlen")=600,
              py::arg("delay")=400,
              py::arg("wtype")="hamming")
+        .def("__repr__", [](const spwaterfall &q) {
+                return std::string("<spwaterfall") +
+                    ", nfft=" + std::to_string(q.get_num_freq()) +
+                    ", time=" + std::to_string(q.get_num_time()) +
+                    ">";
+            })
         .def("reset",   &spwaterfall::reset,      "reset waterfall object")
         .def("execute", &spwaterfall::py_execute, "execute on a block of samples")
         .def("get_num_samples_total",
