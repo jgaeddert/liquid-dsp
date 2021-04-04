@@ -34,6 +34,6 @@ Sxx,t,f = psd.get_psd()
 print(Sxx.shape,t.shape,f.shape)
 
 fix,ax = plt.subplots(1,figsize=(8,8))
-ax.pcolormesh(f,t,Sxx.T)
+ax.pcolormesh(f,t,Sxx.T,shading='auto')
 plt.show()
 
