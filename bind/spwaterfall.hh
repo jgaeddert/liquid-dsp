@@ -131,9 +131,9 @@ void init_spwaterfall(py::module &m)
             })
         .def("reset",   &spwaterfall::reset,      "reset waterfall object")
         .def("execute", &spwaterfall::py_execute, "execute on a block of samples")
-        .def("get_num_samples_total",
-             &spwaterfall::get_num_samples_total,
-             "get total number of samples generated")
+        .def_property_readonly("num_samples_total",
+            [](const spwaterfall &q) { return q.get_num_samples_total(); },
+            "get total number of samples processed")
         .def("get_psd",
              &spwaterfall::py_get_psd,
              "get power spectral density")

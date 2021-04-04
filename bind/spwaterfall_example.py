@@ -17,7 +17,7 @@ n  = fg.get_frame_length()
 # generate random signals in noise
 psd   = dsp.spwaterfall(nfft=600,time=800,wlen=400,delay=1)
 frame = np.zeros((n,), dtype=np.csingle)
-while psd.get_num_samples_total() < num_samples:
+while psd.num_samples_total < num_samples:
     header  = np.random.randint(256, size= 8)
     payload = np.random.randint(256, size=64)
     fg.execute(header, payload, frame)
