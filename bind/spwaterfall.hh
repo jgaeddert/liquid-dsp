@@ -36,10 +36,30 @@ class spwaterfall
 
     void reset() { spwaterfallcf_reset(q); }
 
-    uint64_t      get_num_samples_total() const { return spwaterfallcf_get_num_samples_total(q); }
-    unsigned int  get_num_freq() const { return spwaterfallcf_get_num_freq(q); }
-    unsigned int  get_num_time() const { return spwaterfallcf_get_num_time(q); }
-    const float * get_psd()      const { return spwaterfallcf_get_psd     (q); }
+    uint64_t get_num_samples_total() const {
+        return spwaterfallcf_get_num_samples_total(q); }
+
+    unsigned int get_num_freq() const {
+        return spwaterfallcf_get_num_freq(q); }
+
+    unsigned int get_num_time() const {
+        return spwaterfallcf_get_num_time(q); }
+
+    unsigned int get_window_len() const {
+        return spwaterfallcf_get_window_len(q); }
+
+    unsigned int get_delay() const {
+        return spwaterfallcf_get_delay(q); }
+
+    std::string get_wtype() const {
+        int wtype = spwaterfallcf_get_wtype(q);
+        if (wtype >= LIQUID_WINDOW_NUM_FUNCTIONS)
+            throw std::runtime_error("invalid internal window type: " + std::to_string(wtype));
+        return std::string( liquid_window_str[wtype][0] );
+    }
+
+    const float * get_psd() const {
+        return spwaterfallcf_get_psd(q); }
 
     void execute(std::complex<float> _v)
         { spwaterfallcf_push(q, _v); }
@@ -104,6 +124,9 @@ void init_spwaterfall(py::module &m)
                 return std::string("<spwaterfall") +
                     ", nfft=" + std::to_string(q.get_num_freq()) +
                     ", time=" + std::to_string(q.get_num_time()) +
+                    ", wlen=" + std::to_string(q.get_window_len()) +
+                    ", delay="+ std::to_string(q.get_delay()) +
+                    ", " + q.get_wtype() +
                     ">";
             })
         .def("reset",   &spwaterfall::reset,      "reset waterfall object")
