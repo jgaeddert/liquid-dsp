@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -189,6 +189,24 @@ unsigned int SPWATERFALL(_get_num_freq)(SPWATERFALL() _q)
 unsigned int SPWATERFALL(_get_num_time)(SPWATERFALL() _q)
 {
     return _q->index_time;
+}
+
+// Get window length used in spectral estimation
+unsigned int SPWATERFALL(_get_window_len)(SPWATERFALL() _q)
+{
+    return SPGRAM(_get_window_len)(_q->periodogram);
+}
+
+// Get delay between transforms used in spectral estimation
+unsigned int SPWATERFALL(_get_delay)(SPWATERFALL() _q)
+{
+    return SPGRAM(_get_delay)(_q->periodogram);
+}
+
+// Get window type used in spectral estimation
+int SPWATERFALL(_get_wtype)(SPWATERFALL() _q)
+{
+    return SPGRAM(_get_wtype)(_q->periodogram);
 }
 
 // Get power spectral density (PSD), size: nfft x time
