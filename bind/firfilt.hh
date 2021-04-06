@@ -30,6 +30,9 @@ class firfilt
     // reset object
     void reset() { firfilt_crcf_reset(q); }
 
+    void  set_scale(float _scale) { firfilt_crcf_set_scale(q,_scale); }
+    float get_scale() const { float s; firfilt_crcf_get_scale(q,&s); return s; }
+
     // push one sample
     void push(std::complex<float> _x) { firfilt_crcf_push(q,_x); }
 
@@ -141,11 +144,13 @@ void init_firfilt(py::module &m)
         .def("__repr__", [](const firfilt &q) {
                 return std::string("<liquid.firfilt") +
                     ", n=" + std::to_string(q.get_length()) +
+                    ", scale=" + std::to_string(q.get_scale()) +
                     ">";
             })
         .def("reset",      &firfilt::reset,      "reset object's internal state")
         .def("execute",    &firfilt::py_execute, "execute on a block of samples")
         .def("get_length", &firfilt::get_length, "get length of filter")
+        .def_property("scale", &firfilt::get_scale, &firfilt::set_scale)
         ;
 }
 #endif
