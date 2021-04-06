@@ -66,12 +66,7 @@ class firfilt
     // python-specific constructor with keyword arguments
     firfilt(std::string ftype, py::kwargs o) {
         auto lupdate = [](py::dict o, py::dict d) {auto r(d);for (auto p: o){r[p.first]=p.second;} return r;};
-        int  prototype = liquid_getopt_str2firfilt(ftype.c_str());
-        if (prototype != LIQUID_FIRFILT_UNKNOWN) {
-            auto v = lupdate(o, py::dict("k"_a=2, "m"_a=5, "beta"_a=0.2f, "mu"_a=0.0f));
-            q = firfilt_crcf_create_rnyquist(prototype,
-                py::int_(v["k"]), py::int_(v["m"]), py::float_(v["beta"]), py::float_(v["mu"]));
-        } else if (ftype == "lowpass") {
+        if (ftype == "lowpass") {
             auto v = lupdate(o, py::dict("n"_a=21, "fc"_a=0.25f, "As"_a=60.0f, "mu"_a=0.0f));
             q = firfilt_crcf_create_kaiser(
                 py::int_(v["n"]), py::float_(v["fc"]), py::float_(v["As"]), py::float_(v["mu"]));
@@ -85,7 +80,14 @@ class firfilt
             q = firfilt_crcf_create_notch(
                 py::int_(v["m" ]), py::float_(v["As"]), py::float_(v["f0"]));
         } else {
-            throw std::runtime_error("invalid/unsupported filter type: " + ftype);
+            int prototype = liquid_getopt_str2firfilt(ftype.c_str());
+            if (prototype != LIQUID_FIRFILT_UNKNOWN) {
+                auto v = lupdate(o, py::dict("k"_a=2, "m"_a=5, "beta"_a=0.2f, "mu"_a=0.0f));
+                q = firfilt_crcf_create_rnyquist(prototype,
+                    py::int_(v["k"]), py::int_(v["m"]), py::float_(v["beta"]), py::float_(v["mu"]));
+            } else {
+                throw std::runtime_error("invalid/unsupported filter type: " + ftype);
+            }
         }
     }
 
