@@ -13,13 +13,13 @@ import matplotlib.pyplot as plt
 #filt = dsp.firfilt(h)
 
 # design prototype filter
-filt = dsp.firfilt("lowpass", n=151, fc=0.07)
+filt = dsp.firfilt("lowpass", n=151, fc=0.07, scale=0.14)
 #filt = dsp.firfilt("firdespm", n=151, fc=0.07)
 #filt = dsp.firfilt("rkaiser", k=8, m=12, beta=0.25)
 #filt = dsp.firfilt("rect", n=5)
 #filt = dsp.firfilt("dcblock", m=20, As=40)
 #filt = dsp.firfilt("notch", m=20, As=40, f0=0.1)
-filt.scale = 2*0.07
+#filt.scale = 2*0.07
 print(filt)
 
 # compute impulse response

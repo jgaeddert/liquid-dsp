@@ -92,6 +92,8 @@ class firfilt
                 throw std::runtime_error("invalid/unsupported filter type: " + ftype);
             }
         }
+        if (o["scale"])
+            set_scale(py::float_(o["scale"]));
     }
 
     // external coefficients using numpy array
