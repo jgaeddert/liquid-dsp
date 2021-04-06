@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 num_samples = 20e3
 
 def add_noise(v,nstd=0.1):
-    return v + nstd*np.random.randn(2*len(v)).astype(np.single).view(np.csingle)*0.7071067811865476
+    return v + nstd*np.random.randn(2*len(v)).astype(np.single).view(np.csingle)*0.70711
 
 # generate frame generator
 fg = dsp.fg64()
@@ -31,9 +31,8 @@ while psd.num_samples_total < num_samples:
 
 # get spectrum plot and display
 print(psd)
-print(psd.nfft, psd.time, psd.window_len, psd.delay, psd.wtype)
 Sxx,t,f = psd.get_psd()
-print(Sxx.shape,t.shape,f.shape)
+print('Sxx:',Sxx.shape,'t:',t.shape,'f:',f.shape)
 
 fix,ax = plt.subplots(1,figsize=(8,8))
 ax.pcolormesh(f,t,Sxx.T,shading='auto')
