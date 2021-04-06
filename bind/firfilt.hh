@@ -68,13 +68,19 @@ class firfilt
   public:
     // python-specific constructor with keyword arguments
     firfilt(std::string ftype, py::kwargs o) {
-        auto lupdate = [](py::dict o, py::dict d) {auto r(d);for (auto p: o){r[p.first]=p.second;} return r;};
+        // validate keys ('o' cannot contain any keys not in 'd')
+        auto lvalid = [](py::dict o, py::dict d)
+            { for (auto p: o) { if (!d.contains(p.first)) throw std::runtime_error("invalid key: "+p.first.cast<std::string>()); } };
+        // validate and update (note that 'lvalid' is captured here)
+        auto lupdate = [lvalid](py::dict o, py::dict d)
+            { lvalid(o,d); auto r(d);for (auto p: o){r[p.first]=p.second;} return r;};
+        // check types
         if (ftype == "lowpass") {
-            auto v = lupdate(o, py::dict("n"_a=21, "fc"_a=0.25f, "As"_a=60.0f, "mu"_a=0.0f));
+            auto v = lupdate(o, py::dict("n"_a=21, "fc"_a=0.25f, "As"_a=60.0f, "mu"_a=0.0f, "scale"_a=1.0f));
             q = firfilt_crcf_create_kaiser(
                 py::int_(v["n"]), py::float_(v["fc"]), py::float_(v["As"]), py::float_(v["mu"]));
         } else if (ftype == "firdespm") {
-            auto v = lupdate(o, py::dict("n"_a=21, "fc"_a=0.25f, "As"_a=60.0f));
+            auto v = lupdate(o, py::dict("n"_a=21, "fc"_a=0.25f, "As"_a=60.0f, "scale"_a=1.0f));
             q = firfilt_crcf_create_firdespm(py::int_(v["n"]), py::float_(v["fc"]), py::float_(v["As"]));
         } else if (ftype == "rect") {
             q = firfilt_crcf_create_rect(o.contains("n") ? int(py::int_(o["n"])) : 5);
@@ -92,7 +98,7 @@ class firfilt
                 throw std::runtime_error("invalid/unsupported filter type: " + ftype);
             }
         }
-        if (o["scale"])
+        if (o.contains("scale"))
             set_scale(py::float_(o["scale"]));
     }
 
