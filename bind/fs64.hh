@@ -148,7 +148,13 @@ void init_fs64(py::module &m)
         .def(py::init<py_framesync_callback,py::object>(),
              py::arg("callback"), // TODO: make default callback
              py::arg("context") = py::none())
-        .def("display", &fs64::display,    "print object properties to stdout")
+        .def("__repr__", [](const fs64 &q) {
+                return std::string("<liquid.fs64") +
+                    ", header="  + std::to_string( 8) +
+                    ", payload=" + std::to_string(64) +
+                    ", samples=" + std::to_string(LIQUID_FRAME64_LEN) +
+                    ">";
+            })
         .def("reset",   &fs64::reset,      "reset frame synchronizer object")
         .def("reset_framedatastats", &fs64::reset_framedatastats, "reset frame statistics data")
         .def("get_framedatastats", &fs64::py_get_framedatastats, "get frame statistics data")

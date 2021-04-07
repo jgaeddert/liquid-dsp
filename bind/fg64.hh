@@ -89,7 +89,13 @@ void init_fg64(py::module &m)
 {
     py::class_<fg64>(m, "fg64")
         .def(py::init<>())
-        .def("display", &fg64::display,    "print object properties to stdout")
+        .def("__repr__", [](const fg64 &q) {
+                return std::string("<liquid.fg64") +
+                    ", header="  + std::to_string( 8) +
+                    ", payload=" + std::to_string(64) +
+                    ", samples=" + std::to_string(LIQUID_FRAME64_LEN) +
+                    ">";
+            })
         .def("get_frame_length", &fg64::get_frame_length,    "get length of output frame (samples)")
         .def("execute", &fg64::py_execute, "generate a frame given header and payload")
         .def("execute", &fg64::py_execute_random, "generate a frame with random header and payload")
