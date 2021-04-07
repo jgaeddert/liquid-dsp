@@ -2,10 +2,6 @@
 #ifndef __FS64_HH__
 #define __FS64_HH__
 
-/* TODO
- *  - simplify wrapper declaration (use function definition type)
- */
-
 #include <complex>
 #include <iostream>
 #include <string>
@@ -16,6 +12,7 @@
 namespace liquid {
 
 #ifdef PYTHONLIB
+// callback wrapper to bind user-defined callback to python
 int py_callback_wrapper(
         unsigned char *  _header,
         int              _header_valid,
@@ -24,12 +21,12 @@ int py_callback_wrapper(
         int              _payload_valid,
         framesyncstats_s _stats,
         void *           _userdata);
-typedef std::function<py::object(py::object,py::array_t<uint8_t>,py::array_t<uint8_t>,py::dict)> py_framesync_callback;
-//typedef std::function<int(py::dict)> py_framesync_callback;
-py_framesync_callback py_fs64_default_callback = [](py::object,
-                                                    py::array_t<uint8_t>,
-                                                    py::array_t<uint8_t>,
-                                                    py::dict) { return py::none(); };
+
+// function definition for pythonic callback
+typedef std::function<py::object(py::object,
+                                 py::array_t<uint8_t>,
+                                 py::array_t<uint8_t>,
+                                 py::dict)> py_framesync_callback;
 #endif
 
 // suppress "declared with greater visibility than the type of its field" warnings
@@ -53,7 +50,7 @@ class fs64
 
     void reset_framedatastats() { framesync64_reset_framedatastats(q); }
 
-    framedatastats_s get_framedatastats()
+    framedatastats_s get_framedatastats() const
         { return framesync64_get_framedatastats(q); }
 
   private:
@@ -95,7 +92,7 @@ class fs64
         execute((std::complex<float>*) info.ptr, info.shape[0]);
     }
 
-    py::tuple py_get_framedatastats()
+    py::tuple py_get_framedatastats() const
     {
         framedatastats_s v = framesync64_get_framedatastats(q);
         return py::make_tuple(v.num_frames_detected,
@@ -147,6 +144,11 @@ int py_callback_wrapper(
     return 0;
 }
 
+// default callback function
+py_framesync_callback py_fs64_default_callback = [](py::object,
+                                                    py::array_t<uint8_t>,
+                                                    py::array_t<uint8_t>,
+                                                    py::dict) { return py::none(); };
 void init_fs64(py::module &m)
 {
     py::class_<fs64>(m, "fs64")
@@ -160,10 +162,18 @@ void init_fs64(py::module &m)
                     ", samples=" + std::to_string(LIQUID_FRAME64_LEN) +
                     ">";
             })
-        .def("reset",   &fs64::reset,      "reset frame synchronizer object")
-        .def("reset_framedatastats", &fs64::reset_framedatastats, "reset frame statistics data")
-        .def("get_framedatastats", &fs64::py_get_framedatastats, "get frame statistics data")
-        .def("execute", &fs64::py_execute, "execute on a block of samples")
+        .def("reset",
+             &fs64::reset,
+             "reset frame synchronizer object")
+        .def("reset_framedatastats",
+             &fs64::reset_framedatastats,
+             "reset frame statistics data")
+        .def_property_readonly("framedatastats",
+            [](const fs64 &q) { return q.py_get_framedatastats(); },
+            "get frame data statistics")
+        .def("execute",
+             &fs64::py_execute,
+             "execute on a block of samples")
         ;
 }
 #endif

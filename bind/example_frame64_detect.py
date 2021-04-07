@@ -23,7 +23,7 @@ class performance:
             frame += np.random.randn(2*n).astype(np.single).view(np.csingle)*nstd * np.sqrt(0.5)
             self.fs.execute(frame)
 
-        return self.fs.get_framedatastats()
+        return self.fs.framedatastats
 
 # sweep performance over snr
 sim         = performance()
