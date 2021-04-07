@@ -9,30 +9,26 @@ import matplotlib.pyplot as plt
 class performance:
     def __init__(self):
         self.fg = dsp.fg64()
-        #self.fs = dsp.fs64(self.callback)
-        self.fs = dsp.fs64(lambda c,h,p,s: None)
+        self.fs = dsp.fs64()
 
     def run(self, snr, num_trials):
         n     = self.fg.get_frame_length()
         frame = np.zeros((n,), dtype=np.csingle)
-        nstd  = 10.0**(-snr/20) * np.sqrt(2.0)
+        nstd  = 10.0**(-snr/20)
         self.fs.reset()
         self.fs.reset_framedatastats()
         for i in range(num_trials):
             # generate frame with random header, payload
             self.fg.execute(frame)
-            frame += np.random.randn(2*n).astype(np.single).view(np.csingle)*nstd
+            frame += np.random.randn(2*n).astype(np.single).view(np.csingle)*nstd * np.sqrt(0.5)
             self.fs.execute(frame)
 
         return self.fs.get_framedatastats()
 
-    #def callback(self,context,header,payload,stats):
-    #    pass
-
 # sweep performance over snr
 sim         = performance()
-num_trials  = 1000
-snr         = np.linspace(-3,12,16)
+num_trials  = 1200
+snr         = np.linspace(-9,6,16)
 num_detects = np.zeros(len(snr))
 num_valid   = np.zeros(len(snr))
 for i,s in enumerate(snr):
