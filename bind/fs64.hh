@@ -9,6 +9,7 @@
 #include <complex>
 #include <iostream>
 #include <string>
+#include <functional>
 #include "liquid.h"
 #include "liquid.python.hh"
 
@@ -25,6 +26,10 @@ int py_callback_wrapper(
         void *           _userdata);
 typedef std::function<py::object(py::object,py::array_t<uint8_t>,py::array_t<uint8_t>,py::dict)> py_framesync_callback;
 //typedef std::function<int(py::dict)> py_framesync_callback;
+py_framesync_callback py_fs64_default_callback = [](py::object,
+                                                    py::array_t<uint8_t>,
+                                                    py::array_t<uint8_t>,
+                                                    py::dict) { return py::none(); };
 #endif
 
 // suppress "declared with greater visibility than the type of its field" warnings
@@ -146,7 +151,7 @@ void init_fs64(py::module &m)
 {
     py::class_<fs64>(m, "fs64")
         .def(py::init<py_framesync_callback,py::object>(),
-             py::arg("callback"), // TODO: make default callback
+             py::arg("callback") = py_fs64_default_callback,
              py::arg("context") = py::none())
         .def("__repr__", [](const fs64 &q) {
                 return std::string("<liquid.fs64") +
