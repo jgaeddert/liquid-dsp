@@ -115,7 +115,8 @@ class firfilt
         q = firfilt_crcf_create((float*)info.ptr, info.shape[0]);
     }
 
-    void py_execute(py::array_t<std::complex<float>> & _buf)
+    // execute filter on buffer in place
+    void py_execute_in_place(py::array_t<std::complex<float>> & _buf)
     {
         // get buffer info
         py::buffer_info info = _buf.request();
@@ -140,6 +141,37 @@ class firfilt
             firfilt_crcf_execute(q, ptr+i*stride );
         }
     }
+
+    // execute like above but run out of place
+    py::array_t<std::complex<float>> py_execute_out_of_place(py::array_t<std::complex<float>> & _buf)
+    {
+        // get buffer info
+        py::buffer_info info = _buf.request();
+
+        // verify input size and dimensions
+        if (info.ndim != 1)
+            throw std::runtime_error("invalid number of input dimensions, must be 1-D array");
+
+        // comptue sample size, number of samples in buffer, and stride between samples
+        size_t       s           = sizeof(std::complex<float>);
+        unsigned int num_samples = info.shape[0];
+        unsigned int stride      = info.strides[0]/s;
+
+        // convert buffer to pointer
+        std::complex<float> * x = (std::complex<float>*) info.ptr;
+
+        // create output array for storing result
+        //py::array_t<std::complex<float>> y({num_samples,},{sizeof(std::complex<float>),},s);
+        py::array_t<std::complex<float>> buf_out(num_samples);
+        std::complex<float> * y = (std::complex<float>*) buf_out.request().ptr;
+
+        // run filter (out of place)
+        for (auto i=0U; i<num_samples; i++) {
+            firfilt_crcf_push   (q, x[i*stride]);
+            firfilt_crcf_execute(q, y+i);
+        }
+        return buf_out;
+    }
 #endif
 };
 
@@ -155,8 +187,15 @@ void init_firfilt(py::module &m)
                     ", scale=" + std::to_string(q.get_scale()) +
                     ">";
             })
-        .def("reset",      &firfilt::reset,      "reset object's internal state")
-        .def("execute",    &firfilt::py_execute, "execute on a block of samples")
+        .def("reset",
+             &firfilt::reset,
+             "reset object's internal state")
+        .def("execute_in_place",
+             &firfilt::py_execute_in_place,
+             "execute on a block of samples in place")
+        .def("execute",
+             &firfilt::py_execute_out_of_place,
+             "execute on a block of samples out of place")
         .def("get_length", &firfilt::get_length, "get length of filter")
         .def_property("scale", &firfilt::get_scale, &firfilt::set_scale)
         ;
