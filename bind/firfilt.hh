@@ -136,9 +136,13 @@ class firfilt
         std::complex<float> * ptr = (std::complex<float>*) info.ptr;
 
         // run filter (in place)
-        for (auto i=0U; i<num_samples; i++) {
-            firfilt_crcf_push   (q, ptr[i*stride]);
-            firfilt_crcf_execute(q, ptr+i*stride );
+        if (stride==1) {
+            firfilt_crcf_execute_block(q, ptr, num_samples, ptr);
+        } else {
+            for (auto i=0U; i<num_samples; i++) {
+                firfilt_crcf_push   (q, ptr[i*stride]);
+                firfilt_crcf_execute(q, ptr+i*stride );
+            }
         }
     }
 
@@ -166,9 +170,13 @@ class firfilt
         std::complex<float> * y = (std::complex<float>*) buf_out.request().ptr;
 
         // run filter (out of place)
-        for (auto i=0U; i<num_samples; i++) {
-            firfilt_crcf_push   (q, x[i*stride]);
-            firfilt_crcf_execute(q, y+i);
+        if (stride==1) {
+            firfilt_crcf_execute_block(q, x, num_samples, y);
+        } else {
+            for (auto i=0U; i<num_samples; i++) {
+                firfilt_crcf_push   (q, x[i*stride]);
+                firfilt_crcf_execute(q, y+i);
+            }
         }
         return buf_out;
     }

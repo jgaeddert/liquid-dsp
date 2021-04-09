@@ -26,7 +26,7 @@ print(filt)
 n = filt.get_length()
 buf = np.zeros((n,), dtype=np.csingle)
 buf[0] = 1.
-filt.execute(buf)
+filt.execute_in_place(buf)
 
 # compute filter response in dB
 nfft = 2400
