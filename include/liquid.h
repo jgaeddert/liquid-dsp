@@ -2681,6 +2681,12 @@ void FIRFILT(_execute_block)(FIRFILT()    _q,                               \
 /* Get length of filter object (number of internal coefficients)        */  \
 unsigned int FIRFILT(_get_length)(FIRFILT() _q);                            \
                                                                             \
+/* Get pointer to coefficients array                                    */  \
+/*  _q      : filter object                                             */  \
+/*  _h      : pointer to output coefficients array [size: _n x 1]       */  \
+int FIRFILT(_get_coefficients)(FIRFILT() _q,                                \
+                               TC *      _h);                               \
+                                                                            \
 /* Compute complex frequency response of filter object                  */  \
 /*  _q      : filter object                                             */  \
 /*  _fc     : normalized frequency for evaluation                       */  \
