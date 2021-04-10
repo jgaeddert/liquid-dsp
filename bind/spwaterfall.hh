@@ -132,22 +132,22 @@ void init_spwaterfall(py::module &m)
         .def("reset",   &spwaterfall::reset,      "reset waterfall object")
         .def("execute", &spwaterfall::py_execute, "execute on a block of samples")
         .def_property_readonly("num_samples_total",
-            [](const spwaterfall &q) { return q.get_num_samples_total(); },
+            &spwaterfall::get_num_samples_total,
             "get total number of samples processed")
         .def_property_readonly("nfft",
-            [](const spwaterfall &q) { return q.get_num_freq(); },
+            &spwaterfall::get_num_freq,
             "get number of frequency bins")
         .def_property_readonly("time",
-            [](const spwaterfall &q) { return q.get_num_time(); },
+            &spwaterfall::get_num_time,
             "get number of time bins")
         .def_property_readonly("window_len",
-            [](const spwaterfall &q) { return q.get_window_len(); },
+            &spwaterfall::get_window_len,
             "get window length")
         .def_property_readonly("delay",
-            [](const spwaterfall &q) { return q.get_delay(); },
+            &spwaterfall::get_delay,
             "get sample delay between transforms")
         .def_property_readonly("wtype",
-            [](const spwaterfall &q) { return q.get_wtype(); },
+            &spwaterfall::get_wtype,
             "get window type used for spectral estimation")
         .def("get_psd",
              &spwaterfall::py_get_psd,
