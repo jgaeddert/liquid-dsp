@@ -470,6 +470,19 @@ unsigned int FIRFILT(_get_length)(FIRFILT() _q)
     return _q->h_len;
 }
 
+// Get coefficients (impulse response)
+int FIRFILT(_get_coefficients)(FIRFILT() _q,
+                               TC *      _h)
+{
+    // internal coefficients are stored in reverse order; reverse here
+    // to get impulse response
+    unsigned int i;
+    for (i=0; i<_q->h_len; i++)
+        _h[i] = _q->h[_q->h_len - i - 1];
+
+    return LIQUID_OK;
+}
+
 // compute complex frequency response
 //  _q      :   filter object
 //  _fc     :   frequency
