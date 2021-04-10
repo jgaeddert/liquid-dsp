@@ -13,8 +13,19 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+namespace liquid {
+
 void print_object(py::object o);
+
+// validate keys ('dst' cannot contain any keys not in 'src')
+bool validate_dict(py::dict dst, py::dict src);
+
+// validate and update
+py::dict update_dict(py::dict dst, py::dict src);
+
+} // namespace liquid
 
 #endif // __LIQUID_PYTHON_HH__
 
 #endif // PYTHONLIB
+

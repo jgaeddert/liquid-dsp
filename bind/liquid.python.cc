@@ -6,6 +6,8 @@
 #include "fs64.hh"
 #include "spwaterfall.hh"
 
+namespace liquid {
+
 void print_object(py::object o)
 {
     if (py::isinstance<py::dict>(o)) {
@@ -42,6 +44,27 @@ void print_object(py::object o)
     }
 }
 
+// validate keys ('dst' cannot contain any keys not in 'src')
+bool validate_dict(py::dict dst, py::dict src)
+{
+    for (auto p: dst) {
+        if (!src.contains(p.first))
+            throw std::runtime_error("invalid key: "+p.first.cast<std::string>());
+    }
+    return true;
+}
+
+// validate and update
+py::dict update_dict(py::dict dst, py::dict src)
+{
+    validate_dict(dst,src);
+
+    auto r(src);
+    for (auto p: dst)
+        r[p.first]=p.second;
+    return r;
+}
+
 PYBIND11_MODULE(liquid, m) {
     m.doc() = "software-defined radio signal processing library";
     m.def("print_object", &print_object, "a function to recursively print a python object");
@@ -53,4 +76,6 @@ PYBIND11_MODULE(liquid, m) {
     liquid::init_fs64       (m);
     liquid::init_spwaterfall(m);
 }
+
+} // namespace liquid
 
