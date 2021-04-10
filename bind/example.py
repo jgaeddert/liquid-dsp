@@ -23,7 +23,7 @@ filt = dsp.firfilt("lowpass", n=151, fc=0.07, scale=0.14)
 print(filt)
 
 # compute impulse response
-n = filt.get_length()
+n = filt.length
 buf = np.zeros((n,), dtype=np.csingle)
 buf[0] = 1.
 filt.execute_in_place(buf)

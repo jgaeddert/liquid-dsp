@@ -198,7 +198,7 @@ void init_firfilt(py::module &m)
         .def("execute",
              &firfilt::py_execute_out_of_place,
              "execute on a block of samples out of place")
-        .def("get_length", &firfilt::get_length, "get length of filter")
+        .def_property_readonly("length", &firfilt::get_length, "get length of filter")
         .def_property("scale", &firfilt::get_scale, &firfilt::set_scale)
         ;
 }
