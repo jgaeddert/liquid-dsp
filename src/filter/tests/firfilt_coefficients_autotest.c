@@ -38,6 +38,9 @@ void autotest_firfilt_cccf_coefficients_test()
     // design filter from external coefficients
     firfilt_cccf q = firfilt_cccf_create(h0, h_len);
 
+    // set scale: note that this is not used when computing coefficients
+    firfilt_cccf_set_scale(q, -0.4f + _Complex_I*0.7f);
+
     // get coefficients from filter object
     firfilt_cccf_get_coefficients(q, h1);
 
