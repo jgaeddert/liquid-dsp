@@ -109,6 +109,15 @@ class firfilt
         q = firfilt_crcf_create((float*)info.ptr, info.shape[0]);
     }
 
+    // get coefficients as array
+    py::array_t<float> get_coefficients() const
+    {
+        // create output array for storing result
+        py::array_t<float> h( firfilt_crcf_get_length(q) );
+        firfilt_crcf_get_coefficients(q, (float*)h.request().ptr);
+        return h;
+    }
+
     // execute filter on buffer in place
     void py_execute_in_place(py::array_t<std::complex<float>> & _buf)
     {
@@ -199,6 +208,7 @@ void init_firfilt(py::module &m)
              &firfilt::py_execute_out_of_place,
              "execute on a block of samples out of place")
         .def_property_readonly("length", &firfilt::get_length, "get length of filter")
+        .def_property_readonly("coefficients", &firfilt::get_coefficients, "get coefficients from filter")
         .def_property("scale", &firfilt::get_scale, &firfilt::set_scale)
         ;
 }
