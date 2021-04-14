@@ -1194,7 +1194,13 @@ SHARED_LIB	= @SH_LIB@
 # darwin
 #
 libliquid.ar: $(objects)
+ifeq ($(which ${LIBTOOL}), "/usr/bin/libtool")
+	# if it is the Apple libtool
 	${LIBTOOL} -static -o $@ $^
+else
+	# if it is the GNU libtool (built from source)
+	libtool --mode=link $(CC) -static -install_name $@ -o $@ $^ $(LDFLAGS) $(LIBS)
+endif
 
 # gcc -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a 
 libliquid.dylib: $(objects)
