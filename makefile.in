@@ -1224,6 +1224,7 @@ bind_headers :=					\
 	bind/firinterp.hh			\
 	bind/fg64.hh				\
 	bind/fs64.hh				\
+	bind/msresamp.hh			\
 	bind/spwaterfall.hh			\
 
 # the "-undefined dynamic_lookup" is needed on macOS
