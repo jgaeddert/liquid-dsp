@@ -1202,9 +1202,9 @@ else
 	libtool --mode=link $(CC) -static -install_name $@ -o $@ $^ $(LDFLAGS) $(LIBS)
 endif
 
-# gcc -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a 
+# clang -dylib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a
 libliquid.dylib: $(objects)
-	$(CC) -dynamiclib ${COVERAGE_FLAGS} -install_name $@ -o $@ $^ $(LDFLAGS) $(LIBS)
+	$(CC) -dylib  ${COVERAGE_FLAGS} -install_name $@ -o $@ $^ $(LDFLAGS) $(LIBS)
 
 #
 # linux, et al
