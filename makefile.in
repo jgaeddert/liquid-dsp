@@ -68,6 +68,7 @@ RANLIB		:= @RANLIB@
 # flags
 INCLUDE_CFLAGS	= $(addprefix -I,$(include_dirs))
 COVERAGE_FLAGS  = @COVERAGE_OPTION@ # dynamic library linker needs separate flag
+LIBTOOL_FLAGS   = @LIBTOOL_FLAGS@ # libtool flags differs between macOS and GNU
 CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_MSG_OPTION@ @ARCH_OPTION@ ${COVERAGE_FLAGS}
 CPPFLAGS	= @CPPFLAGS@ $(INCLUDE_CFLAGS)
 CFLAGS		= $(CONFIG_CFLAGS) -Wall -fPIC
@@ -1194,13 +1195,7 @@ SHARED_LIB	= @SH_LIB@
 # darwin
 #
 libliquid.ar: $(objects)
-ifeq ($(which ${LIBTOOL}), "/usr/bin/libtool")
-	# if it is the Apple libtool
-	${LIBTOOL} -static -o $@ $^
-else
-	# if it is the GNU libtool (built from source)
-	libtool --mode=link $(CC) -static -install_name $@ -o $@ $^ $(LDFLAGS) $(LIBS)
-endif
+	${LIBTOOL} ${LIBTOOL_FLAGS}
 
 # clang -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a
 libliquid.dylib: $(objects)
