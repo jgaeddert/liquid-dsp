@@ -12,7 +12,7 @@ a compatible C++14 compiler.
 Once these dependencies are installed, you can build the liquid-dsp python
 library with
 
-    make -f bind/makefile
+    make python
 
 From python3 simply use `import liquid as dsp`.
 
