@@ -19,7 +19,7 @@ class performance:
         self.fs.reset_framedatastats()
         for i in range(num_trials):
             # generate frame with random header, payload
-            self.fg.execute(frame)
+            self.fg.execute(frame=frame)
             frame += np.random.randn(2*n).astype(np.single).view(np.csingle)*nstd * np.sqrt(0.5)
             self.fs.execute(frame)
 

@@ -75,23 +75,6 @@ class fg64
         // pass to top-level execute method
         execute(header_ptr, payload_ptr, (std::complex<float>*) info.ptr);
     }
-
-    // execute with random header/payload
-    void py_execute_random(py::array_t<std::complex<float>> & _buf)
-    {
-        // get output info and validate size/shape
-        py::buffer_info info = _buf.request();
-        if (info.itemsize != sizeof(std::complex<float>))
-            throw std::runtime_error("invalid input numpy size, use dtype=np.csingle");
-        if (info.ndim != 1)
-            throw std::runtime_error("invalid number of input dimensions, must be 1-D array");
-        if (info.shape[0] != get_frame_length())
-            throw std::runtime_error("invalid frame length; expected " + std::to_string(get_frame_length()));
-
-        // pass to top-level execute method
-        execute(NULL, NULL, (std::complex<float>*) info.ptr);
-    }
-
 #endif
 };
 
@@ -112,7 +95,6 @@ void init_fg64(py::module &m)
                 py::arg("header")=py::none(),
                 py::arg("payload")=py::none(),
                 py::arg("frame"))
-        .def("execute", &fg64::py_execute_random, "generate a frame with random header and payload")
         ;
 }
 #endif
