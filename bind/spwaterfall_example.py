@@ -33,5 +33,7 @@ print('Sxx:',Sxx.shape,'t:',t.shape,'f:',f.shape)
 
 fix,ax = plt.subplots(1,figsize=(8,8))
 ax.pcolormesh(f,t,Sxx.T,shading='auto')
+ax.set_xlabel('Normalized Frequency [f/Fs]')
+ax.set_ylabel('Time [samples]')
 plt.show()
 
