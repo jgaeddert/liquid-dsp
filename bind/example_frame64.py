@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 
 # generate a frame
 fg      = dsp.fg64()
-header  = np.random.randint(256, size= 8)
-payload = np.random.randint(256, size=64)
+header  = np.random.randint(256, size= 8, dtype=np.uint8)
+payload = np.random.randint(256, size=64, dtype=np.uint8)
 frame   = np.zeros((fg.frame_len,), dtype=np.csingle)
 fg.execute(header, payload, frame)
 

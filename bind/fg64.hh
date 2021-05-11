@@ -45,6 +45,8 @@ class fg64
             if (header.shape[0] != 8)
                 throw std::runtime_error("invalid header length; expected 8");
             header_ptr = (unsigned char*) header.ptr;
+        } else if (!py::isinstance<py::none>(_header)) {
+            throw std::runtime_error("invalid header type");
         }
 
         // get output info and validate size/shape
@@ -57,6 +59,8 @@ class fg64
             if (payload.shape[0] != 64)
                 throw std::runtime_error("invalid payload length; expected 64");
             payload_ptr = (unsigned char*) payload.ptr;
+        } else if (!py::isinstance<py::none>(_payload)) {
+            throw std::runtime_error("invalid payload type");
         }
 
         // get output info and validate size/shape
