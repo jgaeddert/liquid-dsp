@@ -13,13 +13,12 @@ class performance:
 
     def run(self, snr, num_trials):
         n     = self.fg.frame_len
-        frame = np.zeros((n,), dtype=np.csingle)
         nstd  = 10.0**(-snr/20)
         self.fs.reset()
         self.fs.reset_framedatastats()
         for i in range(num_trials):
             # generate frame with random header, payload
-            self.fg.execute(frame=frame)
+            frame = self.fg.execute()
             frame += np.random.randn(2*n).astype(np.single).view(np.csingle)*nstd * np.sqrt(0.5)
             self.fs.execute(frame)
 

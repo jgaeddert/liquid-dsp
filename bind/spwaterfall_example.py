@@ -12,18 +12,16 @@ def noise(n,nstd=0.1):
 
 # generate frame generator
 fg = dsp.fg64()
-n  = fg.get_frame_length()
+n  = fg.frame_len
 
 # generate random signals in noise
 psd   = dsp.spwaterfall(nfft=600,time=800,wlen=400,delay=1)
-frame = np.zeros((n,), dtype=np.csingle)
 while psd.num_samples_total < num_samples:
     # run some noise through
     psd.execute(noise(n))
 
     # generate frame with random payload
-    fg.execute(frame)
-    psd.execute(frame + noise(n))
+    psd.execute(fg.execute() + noise(n))
 
     # run some noise through
     psd.execute(noise(n))

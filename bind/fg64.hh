@@ -28,18 +28,19 @@ class fg64
 
 #ifdef PYTHONLIB
   public:
-    void py_execute(py::object & _header,
-                    py::object & _payload,
-                    py::array_t<std::complex<float>> & _buf)
+    py::array_t<std::complex<float>> py_execute(py::object & _header,
+                                                py::object & _payload)
     {
+        // initialize pointers for header and payload
         unsigned char * header_ptr(NULL);
         unsigned char * payload_ptr(NULL);
 
+        // determine header
         if (py::isinstance<py::array_t<uint8_t>>(_header)) {
             // get output info and validate size/shape
             py::buffer_info header = py::cast<py::array_t<uint8_t>>(_header).request();
-            if (header.itemsize != sizeof(uint8_t))
-                throw std::runtime_error("invalid header input numpy size, use dtype=np.uint8");
+            //if (header.itemsize != sizeof(uint8_t))
+            //    throw std::runtime_error("invalid header input numpy size, use dtype=np.uint8");
             if (header.ndim != 1)
                 throw std::runtime_error("invalid header number of input dimensions, must be 1-D array");
             if (header.shape[0] != 8)
@@ -49,11 +50,11 @@ class fg64
             throw std::runtime_error("invalid header type");
         }
 
-        // get output info and validate size/shape
+        // determine payload
         if (py::isinstance<py::array_t<uint8_t>>(_payload)) {
             py::buffer_info payload = py::cast<py::array_t<uint8_t>>(_payload).request();
-            if (payload.itemsize != sizeof(uint8_t))
-                throw std::runtime_error("invalid payload input numpy size, use dtype=np.uint8");
+            //if (payload.itemsize != sizeof(uint8_t))
+            //    throw std::runtime_error("invalid payload input numpy size, use dtype=np.uint8");
             if (payload.ndim != 1)
                 throw std::runtime_error("invalid payload number of input dimensions, must be 1-D array");
             if (payload.shape[0] != 64)
@@ -63,17 +64,12 @@ class fg64
             throw std::runtime_error("invalid payload type");
         }
 
-        // get output info and validate size/shape
-        py::buffer_info info = _buf.request();
-        if (info.itemsize != sizeof(std::complex<float>))
-            throw std::runtime_error("invalid input numpy size, use dtype=np.csingle");
-        if (info.ndim != 1)
-            throw std::runtime_error("invalid number of input dimensions, must be 1-D array");
-        if (info.shape[0] != get_frame_length())
-            throw std::runtime_error("invalid frame length; expected " + std::to_string(get_frame_length()));
+        // allocate output buffer
+        py::array_t<std::complex<float>> buf(get_frame_length());
 
         // pass to top-level execute method
-        execute(header_ptr, payload_ptr, (std::complex<float>*) info.ptr);
+        execute(header_ptr, payload_ptr, (std::complex<float>*) buf.request().ptr);
+        return buf;
     }
 #endif
 };
@@ -90,11 +86,14 @@ void init_fg64(py::module &m)
                     ", samples=" + std::to_string(LIQUID_FRAME64_LEN) +
                     ">";
             })
-        .def_property_readonly("frame_len", &fg64::get_frame_length, "get length of output frame (samples)")
-        .def("execute", &fg64::py_execute, "generate a frame given header and payload",
+        .def_property_readonly("frame_len",
+                &fg64::get_frame_length,
+                "get length of output frame (samples)")
+        .def("execute",
+                &fg64::py_execute,
+                "generate a frame given header and payload",
                 py::arg("header")=py::none(),
-                py::arg("payload")=py::none(),
-                py::arg("frame"))
+                py::arg("payload")=py::none())
         ;
 }
 #endif
