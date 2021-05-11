@@ -7,10 +7,9 @@ import matplotlib.pyplot as plt
 
 # generate a frame
 fg      = dsp.fg64()
-n       = fg.get_frame_length()
 header  = np.random.randint(256, size= 8)
 payload = np.random.randint(256, size=64)
-frame   = np.zeros(( n,), dtype=np.csingle)
+frame   = np.zeros((fg.frame_len,), dtype=np.csingle)
 fg.execute(header, payload, frame)
 
 def callback(context,header,payload,stats):
@@ -28,7 +27,7 @@ psd = 20*np.log10(np.abs(np.fft.fftshift(np.fft.fft(frame, nfft))))
 
 # plot frame and its spectrum
 fig, ax = plt.subplots(2,figsize=(8,8))
-t = np.arange(n)
+t = np.arange(fg.frame_len)
 ax[0].plot(t, np.real(frame), t, np.imag(frame))
 ax[0].set_xlabel('Delay [samples]')
 ax[0].set_ylabel('Frame Samples')

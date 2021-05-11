@@ -12,7 +12,7 @@ class performance:
         self.fs = dsp.fs64()
 
     def run(self, snr, num_trials):
-        n     = self.fg.get_frame_length()
+        n     = self.fg.frame_len
         frame = np.zeros((n,), dtype=np.csingle)
         nstd  = 10.0**(-snr/20)
         self.fs.reset()

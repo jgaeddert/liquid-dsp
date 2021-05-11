@@ -21,7 +21,7 @@ class fg64
                  std::complex<float> * _frame)
     { framegen64_execute(q, _header, _payload, _frame); }
 
-    unsigned int get_frame_length() { return LIQUID_FRAME64_LEN; }
+    unsigned int get_frame_length() const { return LIQUID_FRAME64_LEN; }
 
   private:
     framegen64 q;
@@ -96,7 +96,7 @@ void init_fg64(py::module &m)
                     ", samples=" + std::to_string(LIQUID_FRAME64_LEN) +
                     ">";
             })
-        .def("get_frame_length", &fg64::get_frame_length,    "get length of output frame (samples)")
+        .def_property_readonly("frame_len", &fg64::get_frame_length, "get length of output frame (samples)")
         .def("execute", &fg64::py_execute, "generate a frame given header and payload")
         .def("execute", &fg64::py_execute_random, "generate a frame with random header and payload")
         ;
