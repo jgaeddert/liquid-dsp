@@ -14,10 +14,7 @@ interp = dsp.firinterp(M, m, As)
 # generate random symbols and interpolate
 modmap  = np.array((1+1j,1-1j,-1+1j,-1-1j))
 symbols = np.random.choice(modmap,num_symbols).astype(np.csingle)
-#samples = interp.execute(symbols)
-samples = np.zeros((M*num_symbols),dtype=np.csingle)
-interp.execute(symbols, samples)
-print(samples)
+samples = interp.execute(symbols)
 
 # plot results
 t0 = np.arange(num_symbols)

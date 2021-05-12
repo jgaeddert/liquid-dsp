@@ -96,36 +96,31 @@ class firinterp
     }
 #endif
 
-    void py_execute(py::array & _buf_0,
-                    py::array & _buf_1)
+    py::array_t<std::complex<float>> py_execute(py::array_t<std::complex<float>> & _buf)
     {
         // get buffer info
-        py::buffer_info info_0 = _buf_0.request();
-        py::buffer_info info_1 = _buf_1.request();
+        py::buffer_info info = _buf.request();
 
         // verify input size and dimensions
-        if (info_0.itemsize != sizeof(std::complex<float>))
+        if (info.itemsize != sizeof(std::complex<float>))
             throw std::runtime_error("invalid input numpy size, use dtype=np.csingle");
-        if (info_1.itemsize != sizeof(std::complex<float>))
-            throw std::runtime_error("invalid output numpy size, use dtype=np.csingle");
-        if (info_0.ndim != 1)
+        if (info.ndim != 1)
             throw std::runtime_error("invalid number of input dimensions, must be 1-D array");
-        if (info_1.ndim != 1)
-            throw std::runtime_error("invalid number of output dimensions, must be 1-D array");
 
         // comptue sample size, number of samples in buffer, and stride between samples
         size_t       ss = sizeof(std::complex<float>);
-        unsigned int n0 = info_0.shape[0];
-        unsigned int n1 = info_1.shape[0];
-        if (info_0.strides[0]/ss != 1)
+        unsigned int n0 = info.shape[0];
+        if (info.strides[0]/ss != 1)
             throw std::runtime_error("invalid input stride, must be 1");
-        if (info_1.strides[0]/ss != 1)
-            throw std::runtime_error("invalid output stride, must be 1");
-        if (n1 != n0*firinterp_crcf_get_interp_rate(q))
-            throw std::runtime_error("invalid number of output samples, must be M*num_input");
+
+        // allocate output buffer
+        unsigned int num_output = n0*firinterp_crcf_get_interp_rate(q);
+        py::array_t<std::complex<float>> buf_out(num_output);
 
         // execute on data samples
-        execute((std::complex<float>*) info_0.ptr, n0, (std::complex<float>*) info_1.ptr);
+        execute((std::complex<float>*) info.ptr, n0,
+                (std::complex<float>*) buf_out.request().ptr);
+        return buf_out;
     }
 #endif
 };
