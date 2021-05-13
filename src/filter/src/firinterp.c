@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -212,6 +212,12 @@ void FIRINTERP(_reset)(FIRINTERP() _q)
 unsigned int FIRINTERP(_get_interp_rate)(FIRINTERP() _q)
 {
     return _q->M;
+}
+
+// Get sub-filter length (length of each poly-phase filter)
+unsigned int FIRINTERP(_get_sub_len)(FIRINTERP() _q)
+{
+    return _q->h_sub_len;
 }
 
 // Set output scaling for interpolator
