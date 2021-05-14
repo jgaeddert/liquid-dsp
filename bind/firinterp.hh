@@ -34,11 +34,15 @@ class firinterp
     // print
     void display() { firinterp_crcf_print(q); }
 
-    // set scale
+    // output scale
     void set_scale(float _scale) { firinterp_crcf_set_scale(q, _scale); }
+    float get_scale() const { float s; firinterp_crcf_get_scale(q, &s); return s; }
 
-    // get scale
-    float get_scale() { float s; firinterp_crcf_get_scale(q, &s); return s; }
+    // get interpolation rate
+    unsigned int get_interp_rate() const { return firinterp_crcf_get_interp_rate(q); }
+
+    // get sub-filter length
+    unsigned int get_sub_len() const { return firinterp_crcf_get_sub_len(q); }
 
     // execute on a single sample
     void execute(std::complex<float> _v, std::complex<float> * _buf)
@@ -132,9 +136,16 @@ void init_firinterp(py::module &m)
         //.def(py::init<std::string, py::kwargs>())
         .def(py::init<unsigned int, unsigned int, float>(),
              py::arg("M"), py::arg("m")=12, py::arg("As")=60.)
+        .def("__repr__", [](const firinterp & q) {
+                return std::string("<liquid.interp") +
+                    ", M=" + std::to_string(q.get_interp_rate()) +
+                    ", sub-len=" + std::to_string(q.get_sub_len()) +
+                    ">";
+            })
         .def("reset",      &firinterp::reset,      "reset object's internal state")
         .def("display",    &firinterp::display,    "print object properties to stdout")
         .def("execute",    &firinterp::py_execute, "execute on a block of samples")
+        //.def_property("scale", &firinterp::get_scale, &firfilt::set_scale)
         ;
 }
 #endif

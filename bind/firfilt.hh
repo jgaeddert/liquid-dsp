@@ -30,6 +30,7 @@ class firfilt
     // reset object
     void reset() { firfilt_crcf_reset(q); }
 
+    // output scale
     void  set_scale(float _scale) { firfilt_crcf_set_scale(q,_scale); }
     float get_scale() const { float s; firfilt_crcf_get_scale(q,&s); return s; }
 

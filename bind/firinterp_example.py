@@ -10,6 +10,7 @@ M, m, As, num_symbols = 4, 6, 60., 40
 
 # design from prototype
 interp = dsp.firinterp(M, m, As)
+print(interp)
 
 # generate random symbols and interpolate
 modmap  = np.array((1+1j,1-1j,-1+1j,-1-1j))
