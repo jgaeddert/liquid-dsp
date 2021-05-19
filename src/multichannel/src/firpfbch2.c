@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -255,14 +255,11 @@ int FIRPFBCH2(_execute_analyzer)(FIRPFBCH2() _q,
     unsigned int offset = _q->flag ? _q->M2 : 0;
     TI * r;      // buffer read pointer
     for (i=0; i<_q->M; i++) {
-        // compute buffer index
-        unsigned int buffer_index  = (offset+i)%(_q->M);
-
         // read buffer at index
-        WINDOW(_read)(_q->w0[buffer_index], &r);
+        WINDOW(_read)(_q->w0[i], &r);
 
         // run dot product storing result in IFFT input buffer
-        DOTPROD(_execute)(_q->dp[i], r, &_q->X[buffer_index]);
+        DOTPROD(_execute)(_q->dp[(offset+i)%_q->M], r, &_q->X[i]);
     }
 
     // execute IFFT, store result in buffer 'x'
