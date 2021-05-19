@@ -208,3 +208,12 @@ void testbench_firinterp_crcf_nyquist(int          _ftype,
 void autotest_firinterp_crcf_rnyquist_0() 
     { testbench_firinterp_crcf_nyquist(LIQUID_FIRFILT_KAISER, 2, 9,0.3f); }
 
+void autotest_firinterp_crcf_rnyquist_1() 
+    { testbench_firinterp_crcf_nyquist(LIQUID_FIRFILT_KAISER, 3, 9,0.3f); }
+
+void autotest_firinterp_crcf_rnyquist_2() 
+    { testbench_firinterp_crcf_nyquist(LIQUID_FIRFILT_KAISER, 7, 9,0.3f); }
+
+void autotest_firinterp_crcf_rnyquist_3() 
+    { testbench_firinterp_crcf_nyquist(LIQUID_FIRFILT_RCOS,   2, 9,0.3f); }
+
