@@ -9,7 +9,7 @@ compile:
   stage: build
   script:
     - ./bootstrap.sh
-    - ./configure
+    - ./configure --enable-strict
     - make -j4
   artifacts: # save output objects for test stages
     paths: [makefile, configure, config.h, libliquid*, src/*/src/*.o]
