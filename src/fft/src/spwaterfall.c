@@ -258,9 +258,10 @@ int SPWATERFALL(_set_commands)(SPWATERFALL() _q,
 
     // sanity check
     unsigned int n = strlen(_commands);
-    if (n > 1<<14)
+    if (n > 1<<14) {
         SPWATERFALL(_set_commands)(_q, "# error: input string size limit exceeded");
         return liquid_error(LIQUID_EICONFIG,"spwaterfall%s_set_commands(), input string size exceeds reasonable limits",EXTENSION);
+    }
 
     // reallocate memory, copy input, and return
     _q->commands = (char*) realloc(_q->commands, n+1);
