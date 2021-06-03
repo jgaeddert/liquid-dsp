@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2020 Joseph Gaeddert
+# Copyright (c) 2007 - 2021 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -1684,6 +1684,7 @@ sandbox_programs =						\
 	sandbox/firpfbch_analysis_alignment_test		\
 	sandbox/firpfbch2_analysis_equivalence_test		\
 	sandbox/firpfbch2_test					\
+	sandbox/firpfbch2_flatness_test				\
 	sandbox/firpfbch_analysis_equivalence_test		\
 	sandbox/firpfbch_synthesis_equivalence_test		\
 	sandbox/gmskmodem_test					\
