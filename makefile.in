@@ -692,13 +692,13 @@ math_objects :=							\
 	src/math/src/math.complex.o				\
 	src/math/src/math.trig.o				\
 	src/math/src/modular_arithmetic.o			\
+	src/math/src/poly.findroots.o				\
 	src/math/src/windows.o					\
 
 
 poly_includes :=						\
 	src/math/src/poly.common.c				\
 	src/math/src/poly.expand.c				\
-	src/math/src/poly.findroots.c				\
 	src/math/src/poly.lagrange.c				\
 
 src/math/src/poly.o               : %.o : %.c $(include_headers) $(poly_includes)

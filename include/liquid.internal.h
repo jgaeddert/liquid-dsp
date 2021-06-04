@@ -1196,6 +1196,49 @@ float liquid_cargf_approx(float complex _z);
 // complex rotation vector: cexpf(_Complex_I*THETA)
 #define liquid_cexpjf(THETA) (cosf(THETA) + _Complex_I*sinf(THETA))
 
+// internal polynomial root-finding methods
+
+// finds the complex roots of the polynomial using the Durand-Kerner method
+//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _k      :   polynomials length (poly order = _k - 1)
+//  _roots  :   resulting complex roots [size: _k-1 x 1]
+int liquid_poly_findroots_durandkerner(double *         _p,
+                                       unsigned int     _k,
+                                       double complex * _roots);
+
+// finds the complex roots of the polynomial using Bairstow's method
+//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _k      :   polynomials length (poly order = _k - 1)
+//  _roots  :   resulting complex roots [size: _k-1 x 1]
+int liquid_poly_findroots_bairstow(double *         _p,
+                                   unsigned int     _k,
+                                   double complex * _roots);
+
+// iterate over Bairstow's method, finding quadratic factor x^2 + u*x + v
+//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _k      :   polynomials length (poly order = _k - 1)
+//  _p1     :   reduced polynomial (output) [size: _k-2 x 1]
+//  _u      :   input: initial estimate for u; output: resulting u
+//  _v      :   input: initial estimate for v; output: resulting v
+int liquid_poly_findroots_bairstow_recursion(double *     _p,
+                                             unsigned int _k,
+                                             double *     _p1,
+                                             double *     _u,
+                                             double *     _v);
+
+// run multiple iterations of Bairstow's method with different starting
+// conditions looking for convergence
+int liquid_poly_findroots_bairstow_persistent(double * _p,
+                                         unsigned int  _k,
+                                         double *      _p1,
+                                         double *      _u,
+                                         double *      _v);
+
+// compare roots for sorting
+int liquid_poly_sort_roots_compare(const void * _a,
+                                   const void * _b);
+
+
 
 //
 // MODULE : matrix

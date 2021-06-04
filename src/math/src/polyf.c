@@ -41,6 +41,38 @@
 
 #include "poly.common.c"
 #include "poly.expand.c"
-#include "poly.findroots.c"
 #include "poly.lagrange.c"
+
+// finds the complex roots of the polynomial
+//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _k      :   polynomials length (poly order = _k - 1)
+//  _roots  :   resulting complex roots [size: _k-1 x 1]
+int polyf_findroots(float *         _p,
+                    unsigned int    _k,
+                    float complex * _roots)
+{
+    unsigned int i;
+
+    // copy to temporary double-precision array
+    double * p = (double*) malloc(_k * sizeof(double));
+    for (i=0; i<_k; i++)
+        p[i] = (double)_p[i];
+
+    // find roots of polynomial using Bairstow's method (more
+    // accurate and reliable than Durand-Kerner)
+    double complex * roots = (double complex*)malloc((_k-1)*sizeof(double complex));
+    int rc = liquid_poly_findroots_bairstow(p,_k,roots);
+
+    // sort roots for consistent ordering
+    qsort(roots, _k-1, sizeof(double complex), &liquid_poly_sort_roots_compare);
+
+    // copy back to original
+    for (i=0; i<_k-1; i++)
+        _roots[i] = (float complex)roots[i];
+
+    // free memory and return
+    free(p);
+    free(roots);
+    return rc;
+}
 
