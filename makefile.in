@@ -1780,7 +1780,7 @@ clean-modules:
 	$(RM) src/*/src/*.o src/*/bench/*.o src/*/tests/*.o
 	$(RM) src/libliquid.o
 
-clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox
+clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox clean-doc-check
 	$(RM) ${ARCHIVE_LIB} ${SHARED_LIB} $(extra_clean)
 
 ##
