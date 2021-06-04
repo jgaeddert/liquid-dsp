@@ -71,6 +71,7 @@ COVERAGE_FLAGS  = @COVERAGE_OPTION@ # dynamic library linker needs separate flag
 CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_MSG_OPTION@ @ARCH_OPTION@ ${COVERAGE_FLAGS}
 CPPFLAGS	= @CPPFLAGS@ $(INCLUDE_CFLAGS)
 CFLAGS		= $(CONFIG_CFLAGS) -Wall -fPIC
+CXXFLAGS	= $(CONFIG_CFLAGS) -Wall -fPIC -Wno-return-type-c-linkage
 LDFLAGS		= @LDFLAGS@
 LIBS		= @LIBS@
 PATHSEP		= /
@@ -1345,10 +1346,10 @@ readme.cc.example.cc : README.md
 	${SED} -n '151,172p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
 readme.cc.example.o : %.o : %.cc ${include_headers}
-	${CXX} ${CPPFLAGS} ${CFLAGS} $< -c -o $@
+	${CXX} ${CPPFLAGS} ${CXXFLAGS} $< -c -o $@
 
 readme.cc.example : % : %.o ${ARCHIVE_LIB}
-	${CXX} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
+	${CXX} ${CXXFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
 
 doc-check : readme.c.example readme.cc.example ; ./readme.c.example && ./readme.cc.example
 
