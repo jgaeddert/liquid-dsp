@@ -1387,18 +1387,18 @@ readme.c.example : % : %.o ${ARCHIVE_LIB}
 	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
 
 # C++ link example
-readme.cc.example.cc : README.md
+readme.link.example.cc : README.md
 	${SED} -n '151,172p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
-readme.cc.example.o : %.o : %.cc ${include_headers}
+readme.link.example.o : %.o : %.cc ${include_headers}
 	${CXX} ${CPPFLAGS} ${CXXFLAGS} -c -o $@ $<
 
-readme.cc.example : % : %.o ${ARCHIVE_LIB}
+readme.link.example : % : %.o ${ARCHIVE_LIB}
 	${CXX} ${CXXFLAGS} ${LDFLAGS} -o $@ ${LIBS} $^
 
 # C++ bind example
 readme.bind.example.cc : README.md
-	${SED} -n '186,203p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+	${SED} -n '186,203p' $< | ${SED} "s/<liquid\/liquid.hh>/\"liquid.hh\"/g" > $@
 
 readme.bind.example.o : %.o : %.cc ${include_headers} bind/firinterp.hh
 	${CXX} ${CPPFLAGS} ${CXXFLAGS} -I ./bind -c -o $@ $<
@@ -1406,8 +1406,8 @@ readme.bind.example.o : %.o : %.cc ${include_headers} bind/firinterp.hh
 readme.bind.example : % : %.o ${ARCHIVE_LIB}
 	${CXX} ${CXXFLAGS} ${LDFLAGS} -o $@ ${LIBS} $^
 
-doc-check : readme.c.example readme.cc.example readme.bind.example
-	./readme.c.example && ./readme.cc.example && ./readme.bind.example
+doc-check : readme.c.example readme.link.example readme.bind.example
+	./readme.c.example && ./readme.link.example && ./readme.bind.example
 
 clean-doc-check:
 	${RM} readme.*.example*
