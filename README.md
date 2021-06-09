@@ -228,13 +228,10 @@ in python3 as:
 import liquid as dsp, numpy as np
 
 # create the interpolator
-interp = dsp.firinterp("kaiser", M=4, m=12, As=60.)
-
-# create pre-allocated buffer
-buf = np.zeros(shape=(4,), dtype=np.csingle)
+interp = dsp.firinterp(M=4, m=12, As=60.)
 
 # run on a single sample
-interp.execute(1.0, buf)
+buf = interp.execute(np.array((1+1j,)))
 ```
 
 ## Available Modules ##

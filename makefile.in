@@ -1406,11 +1406,15 @@ readme.bind.example.o : %.o : %.cc ${include_headers} bind/firinterp.hh
 readme.bind.example : % : %.o ${ARCHIVE_LIB}
 	${CXX} ${CXXFLAGS} ${LDFLAGS} -o $@ ${LIBS} $^
 
-doc-check : readme.c.example readme.link.example readme.bind.example
-	./readme.c.example && ./readme.link.example && ./readme.bind.example
+# Python bind example
+readme.bind.py : README.md
+	${SED} -n '227,234p' $< > $@
+
+doc-check : readme.c.example readme.link.example readme.bind.example ${pythonlib}
+	./readme.c.example && ./readme.link.example && ./readme.bind.example && python3 readme.bind.py
 
 clean-doc-check:
-	${RM} readme.*.example*
+	${RM} readme.*.example* readme.bind.py
 
 ##
 ## TARGET : coverage  - run coverage test and produce report
