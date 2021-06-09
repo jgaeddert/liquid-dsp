@@ -3,8 +3,7 @@ image: debian
 stages: [build, test]
 before_script:
   - apt-get -qq update
-  - apt-get -qq install -y automake autoconf gcc g++ gcovr make valgrind
-  - apt-get -qq install python3-pip pybind11-dev
+  - apt-get -qq install -y automake autoconf gcc g++ gcovr make valgrind python3-pip pybind11-dev
   - python3 -m pip install pybind11 numpy matplotlib
 
 # build from scratch
