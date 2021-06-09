@@ -184,14 +184,14 @@ The original C example can be re-written in C++ as follows:
 
 ```c++
 // get in, manipulate data, get out
-#include <liquid/firinterp.h>
+#include "firinterp.hh"
 int main() {
     unsigned int M  = 4;     // interpolation factor
     unsigned int m  = 12;    // filter delay [symbols]
     float        As = 60.0f; // filter stop-band attenuation [dB]
 
     // instantiate interpolator object from prototype
-    liquid::firinterp_crcf interp(M,m,As);
+    liquid::firinterp interp(M,m,As);
     std::complex<float> x = 1.0f;  // input sample
     std::complex<float> y[M];      // interpolated output buffer
 

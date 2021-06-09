@@ -1376,25 +1376,38 @@ clean-check:
 ## TARGET : doc-check - build and run basic documentation checks
 ##
 
+# C example
 readme.c.example.c : README.md
 	${SED} -n '22,42p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
 readme.c.example.o : %.o : %.c ${include_headers}
-	${CC} ${CPPFLAGS} ${CFLAGS} $< -c -o $@
+	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
 
 readme.c.example : % : %.o ${ARCHIVE_LIB}
 	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
 
+# C++ link example
 readme.cc.example.cc : README.md
 	${SED} -n '151,172p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
 readme.cc.example.o : %.o : %.cc ${include_headers}
-	${CXX} ${CPPFLAGS} ${CXXFLAGS} $< -c -o $@
+	${CXX} ${CPPFLAGS} ${CXXFLAGS} -c -o $@ $<
 
 readme.cc.example : % : %.o ${ARCHIVE_LIB}
-	${CXX} ${CXXFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
+	${CXX} ${CXXFLAGS} ${LDFLAGS} -o $@ ${LIBS} $^
 
-doc-check : readme.c.example readme.cc.example ; ./readme.c.example && ./readme.cc.example
+# C++ bind example
+readme.bind.example.cc : README.md
+	${SED} -n '186,203p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+
+readme.bind.example.o : %.o : %.cc ${include_headers} bind/firinterp.hh
+	${CXX} ${CPPFLAGS} ${CXXFLAGS} -I ./bind -c -o $@ $<
+
+readme.bind.example : % : %.o ${ARCHIVE_LIB}
+	${CXX} ${CXXFLAGS} ${LDFLAGS} -o $@ ${LIBS} $^
+
+doc-check : readme.c.example readme.cc.example readme.bind.example
+	./readme.c.example && ./readme.cc.example && ./readme.bind.example
 
 clean-doc-check:
 	${RM} readme.*.example*
