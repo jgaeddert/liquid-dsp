@@ -208,11 +208,11 @@ int main() {
 Building python bindings depends on
 [pybind11](https://pybind11.readthedocs.io/en/stable/),
 the `python3` development libraries, and
-a compatible C++14 compiler.
-On MacOS (note that `matplotlib` is optional and just needed for plotting)
-
-    brew install pybind11
-    sudo -H python3 -m pip install pybind11 numpy # matplotlib
+a compatible C++14 compiler (e.g.
+`brew install pybind11` on macOS or
+`sudo apt-get install pybind11-dev` on Debian variants).
+Then install the python dependencies with
+`sudo -H python3 -m pip install pybind11 numpy matplotlib`.
 
 Once these dependencies are installed, you can build the liquid-dsp python
 library with
