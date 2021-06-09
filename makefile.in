@@ -1410,7 +1410,7 @@ readme.bind.example : % : %.o ${ARCHIVE_LIB}
 readme.bind.py : README.md
 	${SED} -n '227,234p' $< > $@
 
-doc-check : readme.c.example readme.link.example readme.bind.example ${pythonlib}
+doc-check : readme.c.example readme.link.example readme.bind.example readme.bind.py ${pythonlib}
 	./readme.c.example && ./readme.link.example && ./readme.bind.example && python3 readme.bind.py
 
 clean-doc-check:
