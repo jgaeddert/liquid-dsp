@@ -825,86 +825,6 @@ LIQUID_FIRFARROW_DEFINE_INTERNAL_API(LIQUID_FIRFARROW_MANGLE_CRCF,
                                      liquid_float_complex)
 
 
-
-// 
-// iirfiltsos : infinite impulse respone filter (second-order sections)
-//
-#define LIQUID_IIRFILTSOS_MANGLE_RRRF(name)  LIQUID_CONCAT(iirfiltsos_rrrf,name)
-#define LIQUID_IIRFILTSOS_MANGLE_CRCF(name)  LIQUID_CONCAT(iirfiltsos_crcf,name)
-#define LIQUID_IIRFILTSOS_MANGLE_CCCF(name)  LIQUID_CONCAT(iirfiltsos_cccf,name)
-
-#define LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS,TO,TC,TI)  \
-typedef struct IIRFILTSOS(_s) * IIRFILTSOS();                   \
-                                                                \
-/* create 2nd-order infinite impulse reponse filter         */  \
-/*  _b      : feed-forward coefficients [size: _3 x 1]      */  \
-/*  _a      : feed-back coefficients    [size: _3 x 1]      */  \
-IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                       \
-                                 TC * _a);                      \
-                                                                \
-/* explicitly set 2nd-order IIR filter coefficients         */  \
-/*  _q      : iirfiltsos object                             */  \
-/*  _b      : feed-forward coefficients [size: _3 x 1]      */  \
-/*  _a      : feed-back coefficients    [size: _3 x 1]      */  \
-void IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,             \
-                                   TC *         _b,             \
-                                   TC *         _a);            \
-                                                                \
-/* destroy iirfiltsos object, freeing all internal memory   */  \
-void IIRFILTSOS(_destroy)(IIRFILTSOS() _q);                     \
-                                                                \
-/* print iirfiltsos object properties to stdout             */  \
-void IIRFILTSOS(_print)(IIRFILTSOS() _q);                       \
-                                                                \
-/* clear/reset iirfiltsos object internals                  */  \
-void IIRFILTSOS(_reset)(IIRFILTSOS() _q);                       \
-                                                                \
-/* compute filter output                                    */  \
-/*  _q      : iirfiltsos object                             */  \
-/*  _x      : input sample                                  */  \
-/*  _y      : output sample pointer                         */  \
-void IIRFILTSOS(_execute)(IIRFILTSOS() _q,                      \
-                          TI           _x,                      \
-                          TO *         _y);                     \
-                                                                \
-/* compute filter output, direct-form I method              */  \
-/*  _q      : iirfiltsos object                             */  \
-/*  _x      : input sample                                  */  \
-/*  _y      : output sample pointer                         */  \
-void IIRFILTSOS(_execute_df1)(IIRFILTSOS() _q,                  \
-                              TI           _x,                  \
-                              TO *         _y);                 \
-                                                                \
-/* compute filter output, direct-form II method             */  \
-/*  _q      : iirfiltsos object                             */  \
-/*  _x      : input sample                                  */  \
-/*  _y      : output sample pointer                         */  \
-void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,                  \
-                              TI           _x,                  \
-                              TO *         _y);                 \
-                                                                \
-/* compute and return group delay of filter object          */  \
-/*  _q      : filter object                                 */  \
-/*  _fc     : frequency to evaluate                         */  \
-float IIRFILTSOS(_groupdelay)(IIRFILTSOS() _q,                  \
-                              float        _fc);                \
-
-LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(LIQUID_IIRFILTSOS_MANGLE_RRRF,
-                                      float,
-                                      float,
-                                      float)
-
-LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(LIQUID_IIRFILTSOS_MANGLE_CRCF,
-                                      liquid_float_complex,
-                                      float,
-                                      liquid_float_complex)
-
-LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(LIQUID_IIRFILTSOS_MANGLE_CCCF,
-                                      liquid_float_complex,
-                                      liquid_float_complex,
-                                      liquid_float_complex)
-
-
 // firdes : finite impulse response filter design
 
 // Find approximate bandwidth adjustment factor rho based on
@@ -1275,6 +1195,49 @@ float liquid_cargf_approx(float complex _z);
 
 // complex rotation vector: cexpf(_Complex_I*THETA)
 #define liquid_cexpjf(THETA) (cosf(THETA) + _Complex_I*sinf(THETA))
+
+// internal polynomial root-finding methods
+
+// finds the complex roots of the polynomial using the Durand-Kerner method
+//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _k      :   polynomials length (poly order = _k - 1)
+//  _roots  :   resulting complex roots [size: _k-1 x 1]
+int liquid_poly_findroots_durandkerner(double *         _p,
+                                       unsigned int     _k,
+                                       double complex * _roots);
+
+// finds the complex roots of the polynomial using Bairstow's method
+//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _k      :   polynomials length (poly order = _k - 1)
+//  _roots  :   resulting complex roots [size: _k-1 x 1]
+int liquid_poly_findroots_bairstow(double *         _p,
+                                   unsigned int     _k,
+                                   double complex * _roots);
+
+// iterate over Bairstow's method, finding quadratic factor x^2 + u*x + v
+//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _k      :   polynomials length (poly order = _k - 1)
+//  _p1     :   reduced polynomial (output) [size: _k-2 x 1]
+//  _u      :   input: initial estimate for u; output: resulting u
+//  _v      :   input: initial estimate for v; output: resulting v
+int liquid_poly_findroots_bairstow_recursion(double *     _p,
+                                             unsigned int _k,
+                                             double *     _p1,
+                                             double *     _u,
+                                             double *     _v);
+
+// run multiple iterations of Bairstow's method with different starting
+// conditions looking for convergence
+int liquid_poly_findroots_bairstow_persistent(double * _p,
+                                         unsigned int  _k,
+                                         double *      _p1,
+                                         double *      _u,
+                                         double *      _v);
+
+// compare roots for sorting
+int liquid_poly_sort_roots_compare(const void * _a,
+                                   const void * _b);
+
 
 
 //

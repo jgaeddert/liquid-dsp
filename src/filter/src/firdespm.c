@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -732,8 +732,9 @@ int firdespm_iext_search(firdespm _q)
         // machine precision, interpolation can be imprecise
 
         _q->num_exchanges = 0;
-        return liquid_error(LIQUID_EINT,"firdespm_iext_search(), too few extrema found (expected %u, found %u); returning prematurely",
-                _q->r+1, num_found);
+        return 0;
+        //return liquid_error(LIQUID_EINT,"firdespm_iext_search(), too few extrema found (expected %u, found %u); returning prematurely",
+        //_q->r+1, num_found);
     }
 
     assert(num_found <= nmax);

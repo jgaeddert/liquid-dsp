@@ -9,7 +9,7 @@ compile:
   stage: build
   script:
     - ./bootstrap.sh
-    - ./configure
+    - ./configure --enable-strict
     - make -j4
   artifacts: # save output objects for test stages
     paths: [makefile, configure, config.h, libliquid*, src/*/src/*.o]
@@ -48,16 +48,16 @@ examples:
 
 # compile and run all example programs with valgrind
 # TODO: ensure no errors
-examples-memcheck:
-  stage: test
-  script:
-    - make -j4 examples
-    # setting --track-origins=yes gives more detail but takes longer than gitlab allows
-    - ls examples/*_example | sed -E "s#examples/(.*)#valgrind --tool=memcheck --log-file=examples/\1.log ./examples/\1#g" > run_examples_valgrind.sh
-    - /bin/sh run_examples_valgrind.sh
-    - tail -n +1 examples/*.log > valgrind.log
-  artifacts:
-    paths: [run_examples_valgrind.sh, valgrind.log]
+#examples-memcheck:
+#  stage: test
+#  script:
+#    - make -j4 examples
+#    # setting --track-origins=yes gives more detail but takes longer than gitlab allows
+#    - ls examples/*_example | sed -E "s#examples/(.*)#valgrind --tool=memcheck --log-file=examples/\1.log ./examples/\1#g" > run_examples_valgrind.sh
+#    - /bin/sh run_examples_valgrind.sh
+#    - tail -n +1 examples/*.log > valgrind.log
+#  artifacts:
+#    paths: [run_examples_valgrind.sh, valgrind.log]
 
 # build from scratch
 coverage:

@@ -343,6 +343,9 @@ void execute_autotest(autotest_t * _test,
     unsigned long int autotest_num_warnings_init = liquid_autotest_num_warnings;
 
     // execute test
+    if (_verbose) {
+        printf("%s:\n", _test->name);
+    }
     _test->api();
 
     _test->num_passed = liquid_autotest_num_passed - autotest_num_passed_init;

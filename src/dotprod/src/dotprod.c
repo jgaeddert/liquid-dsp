@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -148,9 +148,11 @@ void DOTPROD(_print)(DOTPROD() _q)
     printf("dotprod [portable, %u coefficients]:\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++) {
-        printf("  %4u: %12.8f + j*%12.8f\n", i,
-                                             crealf(_q->h[i]),
-                                             cimagf(_q->h[i]));
+#if TC_COMPLEX==0
+        printf("  %4u: %12.8f\n", i, _q->h[i]);
+#else
+        printf("  %4u: %12.8f + j*%12.8f\n", i, crealf(_q->h[i]), cimagf(_q->h[i]));
+#endif
     }
 }
 

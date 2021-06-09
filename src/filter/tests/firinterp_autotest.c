@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -163,4 +163,57 @@ void autotest_firinterp_crcf_generic()
     // destroy interpolator object
     firinterp_crcf_destroy(q);
 }
+
+// test Nyquist filter
+void testbench_firinterp_crcf_nyquist(int          _ftype,
+                                      unsigned int _M,
+                                      unsigned int _m,
+                                      float        _beta)
+{
+    float tol = 1e-6;
+    // create interpolator object
+    firinterp_crcf q = firinterp_crcf_create_prototype(_ftype, _M, _m, _beta, 0);
+
+    // create input buffer of symbols to interpolate
+    unsigned int num_symbols = _m+16;   //
+    float complex x[num_symbols];       // input symbols
+    float complex y[_M];                // output interp buffer
+    unsigned int i;
+    for (i=0; i<num_symbols; i++)
+        x[i] = cexpf(_Complex_I*0.7f*(float)i);
+
+    for (i=0; i<num_symbols; i++) {
+        // interpolate and store into output buffer
+        firinterp_crcf_execute(q, x[i], y);
+
+        // for a Nyquist filter, output should match input at
+        // proper sampling time (compensating for delay)
+        if (i >= _m) {
+            CONTEND_DELTA( crealf(x[i-_m]), crealf(y[0]), tol);
+            CONTEND_DELTA( cimagf(x[i-_m]), cimagf(y[0]), tol);
+
+            if (liquid_autotest_verbose) {
+                printf("%3u: x=%8.4f + j%8.4f, y=%8.4f + j%8.4f;\n", i+1,
+                        crealf(x[i-_m]), cimagf(x[i-_m]),
+                        crealf(y[   0]), cimagf(y[   0]));
+            }
+        }
+    }
+
+    // destroy interpolator object
+    firinterp_crcf_destroy(q);
+}
+
+// add specific tests
+void autotest_firinterp_crcf_rnyquist_0() 
+    { testbench_firinterp_crcf_nyquist(LIQUID_FIRFILT_KAISER, 2, 9,0.3f); }
+
+void autotest_firinterp_crcf_rnyquist_1() 
+    { testbench_firinterp_crcf_nyquist(LIQUID_FIRFILT_KAISER, 3, 9,0.3f); }
+
+void autotest_firinterp_crcf_rnyquist_2() 
+    { testbench_firinterp_crcf_nyquist(LIQUID_FIRFILT_KAISER, 7, 9,0.3f); }
+
+void autotest_firinterp_crcf_rnyquist_3() 
+    { testbench_firinterp_crcf_nyquist(LIQUID_FIRFILT_RCOS,   2, 9,0.3f); }
 

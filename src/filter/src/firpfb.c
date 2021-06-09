@@ -274,14 +274,10 @@ void FIRPFB(_destroy)(FIRPFB() _q)
 void FIRPFB(_print)(FIRPFB() _q)
 {
     printf("fir polyphase filterbank [%u] :\n", _q->num_filters);
-    unsigned int i,n;
-
+    unsigned int i;
     for (i=0; i<_q->num_filters; i++) {
         printf("  bank %3u: ",i);
-        for (n=0; n<_q->h_len; n++) {
-            //printf("%6.4f+j%6.4f ", crealf(_q->dp[i]->h[n]), cimagf(_q->dp[i]->h[n]));
-        }
-        printf("\n");
+        DOTPROD(_print)(_q->dp[i]);
     }
 }
 
