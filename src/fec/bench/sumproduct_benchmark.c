@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/resource.h>
+#include <math.h>
 
 #include "liquid.internal.h"
 
@@ -49,8 +50,9 @@ void sumproduct_bench(struct rusage *     _start,
                       unsigned int        _m)
 {
     // normalize number of iterations
-    // M cycles/trial ~ 2^{ -11.5920 + 2.503*log2(_m) }
-    *_num_iterations /= 4*_m*_m;
+    // seconds/trial ~ exp{ -16.90 + 2.8815*log(_m) }
+    float scale = expf(-17.42f + 2.9971*logf(_m));
+    *_num_iterations *= 1e-7 / scale;
     if (*_num_iterations < 1)
         *_num_iterations = 1;
 
