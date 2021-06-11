@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
 #include <sys/resource.h>
 
 // null benchmark
@@ -39,6 +40,7 @@ void benchmark_null(struct rusage *_start,
         x &= 0xff;
         x ^= 0xff;
     }
+    *_num_iterations += (x & 0x1234) ? 0 : 1;
     getrusage(RUSAGE_SELF, _finish);
 }
 
