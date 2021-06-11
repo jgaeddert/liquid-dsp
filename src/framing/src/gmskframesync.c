@@ -82,8 +82,9 @@ struct gmskframesync_s {
     float BT;                       // filter bandwidth-time product
     framesync_callback callback;    // user-defined callback function
     void * userdata;                // user-defined data structure
-    framesyncstats_s framestats;    // frame statistic object
-    
+    framesyncstats_s framesyncstats;// frame statistic object
+    framedatastats_s framedatastats;// frame statistic object (packet statistics)
+
     //
     float complex x_prime;          // received sample state
     float fi_hat;                   // instantaneous frequency estimate
@@ -249,6 +250,9 @@ gmskframesync gmskframesync_create(framesync_callback _callback,
     // reset synchronizer
     gmskframesync_reset(q);
 
+    // reset global data counters
+    gmskframesync_reset_framedatastats(q);
+
     // return synchronizer object
     return q;
 }
@@ -301,7 +305,7 @@ int gmskframesync_destroy(gmskframesync _q)
 int gmskframesync_print(gmskframesync _q)
 {
     printf("gmskframesync:\n");
-    return LIQUID_OK;
+    return framedatastats_print(&_q->framedatastats);
 }
 
 int gmskframesync_set_header_len(gmskframesync _q,
@@ -404,6 +408,18 @@ int gmskframesync_execute(gmskframesync   _q,
 
     }
     return LIQUID_OK;
+}
+
+// reset frame data statistics
+int gmskframesync_reset_framedatastats(gmskframesync _q)
+{
+    return framedatastats_reset(&_q->framedatastats);
+}
+
+// retrieve frame data statistics
+framedatastats_s gmskframesync_get_framedatastats(gmskframesync _q)
+{
+    return _q->framedatastats;
 }
 
 // 
@@ -656,17 +672,18 @@ int gmskframesync_execute_rxheader(gmskframesync _q,
             gmskframesync_decode_header(_q);
 
             // invoke callback if header is invalid
+            _q->framedatastats.num_frames_detected++;
             if (!_q->header_valid && _q->callback != NULL) {
-                // set framestats internals
-                _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
-                _q->framestats.evm           = 0.0f;
-                _q->framestats.framesyms     = NULL;
-                _q->framestats.num_framesyms = 0;
-                _q->framestats.mod_scheme    = LIQUID_MODEM_UNKNOWN;
-                _q->framestats.mod_bps       = 1;
-                _q->framestats.check         = LIQUID_CRC_UNKNOWN;
-                _q->framestats.fec0          = LIQUID_FEC_UNKNOWN;
-                _q->framestats.fec1          = LIQUID_FEC_UNKNOWN;
+                // set framesyncstats internals
+                _q->framesyncstats.rssi          = 20*log10f(_q->gamma_hat);
+                _q->framesyncstats.evm           = 0.0f;
+                _q->framesyncstats.framesyms     = NULL;
+                _q->framesyncstats.num_framesyms = 0;
+                _q->framesyncstats.mod_scheme    = LIQUID_MODEM_UNKNOWN;
+                _q->framesyncstats.mod_bps       = 1;
+                _q->framesyncstats.check         = LIQUID_CRC_UNKNOWN;
+                _q->framesyncstats.fec0          = LIQUID_FEC_UNKNOWN;
+                _q->framesyncstats.fec1          = LIQUID_FEC_UNKNOWN;
 
                 // invoke callback method
                 _q->callback(_q->header_dec,
@@ -674,7 +691,7 @@ int gmskframesync_execute_rxheader(gmskframesync _q,
                              NULL,
                              0,
                              0,
-                             _q->framestats,
+                             _q->framesyncstats,
                              _q->userdata);
 
                 gmskframesync_reset(_q);
@@ -727,18 +744,23 @@ int gmskframesync_execute_rxpayload(gmskframesync _q,
                                                   _q->payload_enc,
                                                   _q->payload_dec);
 
+            // update statistics
+            _q->framedatastats.num_headers_valid++;
+            _q->framedatastats.num_payloads_valid += _q->payload_valid;
+            _q->framedatastats.num_bytes_received += _q->payload_dec_len;
+
             // invoke callback
             if (_q->callback != NULL) {
-                // set framestats internals
-                _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
-                _q->framestats.evm           = 0.0f;
-                _q->framestats.framesyms     = NULL;
-                _q->framestats.num_framesyms = 0;
-                _q->framestats.mod_scheme    = LIQUID_MODEM_UNKNOWN;
-                _q->framestats.mod_bps       = 1;
-                _q->framestats.check         = _q->check;
-                _q->framestats.fec0          = _q->fec0;
-                _q->framestats.fec1          = _q->fec1;
+                // set framesyncstats internals
+                _q->framesyncstats.rssi          = 20*log10f(_q->gamma_hat);
+                _q->framesyncstats.evm           = 0.0f;
+                _q->framesyncstats.framesyms     = NULL;
+                _q->framesyncstats.num_framesyms = 0;
+                _q->framesyncstats.mod_scheme    = LIQUID_MODEM_UNKNOWN;
+                _q->framesyncstats.mod_bps       = 1;
+                _q->framesyncstats.check         = _q->check;
+                _q->framesyncstats.fec0          = _q->fec0;
+                _q->framesyncstats.fec1          = _q->fec1;
 
                 // invoke callback method
                 _q->callback(_q->header_dec,
@@ -746,7 +768,7 @@ int gmskframesync_execute_rxpayload(gmskframesync _q,
                              _q->payload_dec,
                              _q->payload_dec_len,
                              _q->payload_valid,
-                             _q->framestats,
+                             _q->framesyncstats,
                              _q->userdata);
             }
 

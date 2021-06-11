@@ -5269,6 +5269,10 @@ int gmskframesync_is_frame_open(gmskframesync _q);
 int gmskframesync_execute(gmskframesync _q,
                           liquid_float_complex * _x,
                           unsigned int _n);
+// frame data statistics
+int              gmskframesync_reset_framedatastats(gmskframesync _q);
+framedatastats_s gmskframesync_get_framedatastats  (gmskframesync _q);
+
 
 // debugging
 int gmskframesync_debug_enable(gmskframesync _q);

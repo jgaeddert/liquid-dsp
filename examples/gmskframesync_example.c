@@ -1,8 +1,4 @@
-//
-// gmskframesync_example.c
-//
 // Example demonstrating the GMSK flexible frame synchronizer.
-//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -160,10 +156,11 @@ int main(int argc, char*argv[])
     if (debug_enabled)
         gmskframesync_debug_print(fs, "gmskframesync_debug.m");
 
+    gmskframesync_print(fs);
+
     // destroy objects
     gmskframegen_destroy(fg);
     gmskframesync_destroy(fs);
-
 
     // 
     // export output
