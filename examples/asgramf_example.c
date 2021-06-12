@@ -1,12 +1,8 @@
-//
-// asgramf_example.c
-//
 // ASCII spectrogram example for real-valued input. This example demonstrates
 // the functionality of the ASCII spectrogram for real-valued input siganls.
 // A cosine signal with time-varying frequency is generated and the resulting
 // spectral periodogram is printed to the screen. Because the time signal has
 // no complex component, its spectrum is symmetric.
-//
 
 #include <unistd.h> // usleep
 #include <stdio.h>
@@ -18,7 +14,7 @@ int main() {
     // options
     unsigned int nfft        =   64;    // transform size
     unsigned int num_frames  =  200;    // total number of frames
-    unsigned int msdelay     =   50;    // delay between transforms [ms]
+    unsigned int msdelay     =   25;    // delay between transforms [ms]
     float        noise_floor = -40.0f;  // noise floor
 
     // initialize objects
