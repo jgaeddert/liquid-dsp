@@ -353,7 +353,7 @@ void estimate_cpu_clock(void)
 void set_num_trials_from_cpu_speed(void)
 {
     unsigned long int min_trials = 256;
-    num_base_trials = (unsigned long int) ( cpu_clock / 10e3 );
+    num_base_trials = (unsigned long int) ( cpu_clock / 20e3 );
     num_base_trials = (num_base_trials < min_trials) ? min_trials : num_base_trials;
 
     printf("  setting number of base trials to %ld\n", num_base_trials);
