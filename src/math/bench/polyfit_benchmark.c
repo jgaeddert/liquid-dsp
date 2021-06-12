@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ void polyf_fit_bench(struct rusage *_start,
 {
     // normalize number of iterations
     // time ~ 0.2953 + 0.03381 * _N
-    *_num_iterations /= 0.2953 + 0.03381 * _N;
+    *_num_iterations /= 0.2953 + 0.03381 * _N * 40;
     if (*_num_iterations < 1) *_num_iterations = 1;
 
     float p[_Q+1];
