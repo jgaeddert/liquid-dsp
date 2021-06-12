@@ -36,15 +36,16 @@ doc-check:
   script:
     - make doc-check
 
-# compile and run all example programs
+# compile and run all example programs, timing how long each takes to run
 examples:
   stage: test
   script:
     - make -j4 examples
-    - ls examples/*_example | sed "s#examples#./examples#g" > run_examples.sh
+    - echo '' > time.txt
+    - ls examples/*_example | sed -E "s#(.*)#echo '\1' >> time.txt; { time ./\1; } 2>> time.txt#g" > run_examples.sh
     - /bin/sh run_examples.sh
   artifacts:
-    paths: [run_examples.sh]
+    paths: [run_examples.sh, time.txt]
 
 # compile and run all example programs with valgrind
 # TODO: ensure no errors
