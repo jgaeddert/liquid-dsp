@@ -357,6 +357,7 @@ fft_autotests :=						\
 	src/fft/tests/fft_r2r_autotest.c			\
 	src/fft/tests/fft_shift_autotest.c			\
 	src/fft/tests/spgram_autotest.c				\
+	src/fft/tests/spwaterfall_autotest.c			\
 
 # additional autotest objects
 autotest_extra_obj +=						\
