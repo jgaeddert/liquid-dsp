@@ -328,10 +328,10 @@ int gmskframegen_write(gmskframegen   _q,
                       float complex * _buf,
                       unsigned int    _buf_len)
 {
-    unsigned int i;
-    for (i=0; i<_buf_len; i++)
-        gmskframegen_write_samples(_q, _buf+i);
-    return _q->frame_complete;
+    unsigned int i, frame_complete = 0;
+    for (i=0; i<_buf_len; i+=_q->k)
+        frame_complete = gmskframegen_write_samples(_q, _buf+i);
+    return frame_complete;
 }
 
 
