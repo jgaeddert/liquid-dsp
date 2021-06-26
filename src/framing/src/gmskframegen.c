@@ -343,7 +343,11 @@ int gmskframegen_encode_header(gmskframegen          _q,
                                const unsigned char * _header)
 {
     // first 'n' bytes user data
-    memmove(_q->header_dec, _header, _q->header_user_len);
+    if (_header == NULL)
+        memset(_q->header_dec, 0, _q->header_user_len);
+    else
+        memmove(_q->header_dec, _header, _q->header_user_len);
+
     unsigned int n = _q->header_user_len;
 
     // first byte is for expansion/version validation
