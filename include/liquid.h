@@ -5224,7 +5224,12 @@ int fskframesync_debug_export (fskframesync _q, const char * _filename);
 typedef struct gmskframegen_s * gmskframegen;
 
 // create GMSK frame generator
-gmskframegen gmskframegen_create();
+//  _k      :   samples/symbol
+//  _m      :   filter delay (symbols)
+//  _BT     :   excess bandwidth factor
+gmskframegen gmskframegen_create(unsigned int _k,
+                                 unsigned int _m,
+                                 float        _BT);
 int gmskframegen_destroy       (gmskframegen _q);
 int gmskframegen_is_assembled  (gmskframegen _q);
 int gmskframegen_print         (gmskframegen _q);
@@ -5257,9 +5262,15 @@ int gmskframegen_write(gmskframegen          _q,
 typedef struct gmskframesync_s * gmskframesync;
 
 // create GMSK frame synchronizer
+//  _k          :   samples/symbol
+//  _m          :   filter delay (symbols)
+//  _BT         :   excess bandwidth factor
 //  _callback   :   callback function
 //  _userdata   :   user data pointer passed to callback function
-gmskframesync gmskframesync_create(framesync_callback _callback,
+gmskframesync gmskframesync_create(unsigned int       _k,
+                                   unsigned int       _m,
+                                   float              _BT,
+                                   framesync_callback _callback,
                                    void *             _userdata);
 int gmskframesync_destroy(gmskframesync _q);
 int gmskframesync_print(gmskframesync _q);
