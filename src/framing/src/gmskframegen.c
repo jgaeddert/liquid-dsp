@@ -89,14 +89,19 @@ struct gmskframegen_s {
 };
 
 // create gmskframegen object
-gmskframegen gmskframegen_create()
+//  _k      :   samples/symbol
+//  _m      :   filter delay (symbols)
+//  _BT     :   excess bandwidth factor
+gmskframegen gmskframegen_create(unsigned int _k,
+                                 unsigned int _m,
+                                 float        _BT)
 {
     gmskframegen q = (gmskframegen) malloc(sizeof(struct gmskframegen_s));
 
     // set internal properties
-    q->k  = 2;      // samples/symbol
-    q->m  = 3;      // filter delay (symbols)
-    q->BT = 0.5f;   // filter bandwidth-time product
+    q->k  = _k;     // samples/symbol
+    q->m  = _m;     // filter delay (symbols)
+    q->BT = _BT;    // filter bandwidth-time product
 
     // internal/derived values
     q->preamble_len = 63;       // number of preamble symbols

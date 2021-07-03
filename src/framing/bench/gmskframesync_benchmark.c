@@ -37,6 +37,9 @@ void benchmark_gmskframesync(struct rusage *     _start,
     unsigned long int i;
 
     // options
+    unsigned int k = 2;                 // samples/symbol
+    unsigned int m = 3;                 // filter delay (symbols)
+    float BT = 0.5f;                    // filter bandwidth-time product
     unsigned int payload_len = 8;       // length of payload (bytes)
     crc_scheme check = LIQUID_CRC_32;   // data validity check
     fec_scheme fec0  = LIQUID_FEC_NONE; // inner forward error correction
@@ -47,7 +50,7 @@ void benchmark_gmskframesync(struct rusage *     _start,
     float nstd  = powf(10.0f, -SNRdB/20.0f);
 
     // create gmskframegen object
-    gmskframegen fg = gmskframegen_create();
+    gmskframegen fg = gmskframegen_create(k, m, BT);
 
     // frame data
     unsigned char header[14];
@@ -59,7 +62,7 @@ void benchmark_gmskframesync(struct rusage *     _start,
         payload[i] = rand() & 0xff;
 
     // create gmskframesync object
-    gmskframesync fs = gmskframesync_create(NULL,NULL);
+    gmskframesync fs = gmskframesync_create(k, m, BT, NULL, NULL);
 
     // generate the frame
     gmskframegen_assemble(fg, header, payload, payload_len, check, fec0, fec1);
@@ -101,7 +104,7 @@ void benchmark_gmskframesync_noise(struct rusage *     _start,
     unsigned long int i;
 
     // create frame synchronizer
-    gmskframesync fs = gmskframesync_create(NULL, NULL);
+    gmskframesync fs = gmskframesync_create(2, 3, 0.5f, NULL, NULL);
 
     // allocate memory for noise buffer and initialize
     unsigned int num_samples = 1024;
