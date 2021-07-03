@@ -463,7 +463,7 @@ int gmskframesync_update_symsync(gmskframesync _q,
         sample_available = 1;
 
         // reset timer
-        _q->pfb_timer = 2;  // k samples/symbol
+        _q->pfb_timer = _q->k;  // k samples/symbol
 
         firpfb_rrrf_execute(_q->mf,  _q->pfb_index, &mf_out);
         firpfb_rrrf_execute(_q->dmf, _q->pfb_index, &dmf_out);
