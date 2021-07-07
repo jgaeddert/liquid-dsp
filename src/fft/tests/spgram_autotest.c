@@ -213,7 +213,7 @@ void autotest_spgramcf_counters()
     spgramcf_destroy(q);
 }
 
-void autotest_spgramcf_config_errors()
+void autotest_spgramcf_invalid_config()
 {
 #if LIQUID_STRICT_EXIT
     AUTOTEST_WARN("skipping spgram config test with strict exit enabled\n");
@@ -233,6 +233,13 @@ void autotest_spgramcf_config_errors()
     // check that object returns NULL for invalid configurations (default)
     CONTEND_ISNULL(spgramcf_create_default(0)); // nfft too small
     CONTEND_ISNULL(spgramcf_create_default(1)); // nfft too small
+
+    // create proper object but test invalid internal configurations
+    spgramcf q = spgramcf_create_default(540);
+
+    CONTEND_INEQUALITY(LIQUID_OK, spgramcf_set_rate(q, -10e6))
+
+    spgramcf_destroy(q);
 }
 
 void autotest_spgramcf_standalone()
@@ -312,5 +319,25 @@ void autotest_spgramcf_null()
     unsigned int i;
     for (i=0; i<nfft; i++)
         CONTEND_EQUALITY(psd[i], psd_val);
+}
+
+// test file export
+void autotest_spgram_gnuplot()
+{
+    // create default object
+    spgramcf q = spgramcf_create_default(540);
+    unsigned int i;
+    for (i=0; i<20000; i++)
+        spgramcf_push(q, randnf() + _Complex_I*randnf());
+
+    // export once before setting values
+    CONTEND_EQUALITY(LIQUID_OK,spgramcf_export_gnuplot(q,"autotest_spgram"))
+
+    // set values and export again
+    CONTEND_EQUALITY(LIQUID_OK,spgramcf_set_freq(q, 100e6))
+    CONTEND_EQUALITY(LIQUID_OK,spgramcf_set_rate(q,  20e6))
+    CONTEND_EQUALITY(LIQUID_OK,spgramcf_export_gnuplot(q,"autotest_spgram"))
+
+    spgramcf_destroy(q);
 }
 
