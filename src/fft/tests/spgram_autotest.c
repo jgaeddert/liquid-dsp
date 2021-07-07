@@ -218,22 +218,21 @@ void autotest_spgramcf_config_errors()
 #if LIQUID_STRICT_EXIT
     AUTOTEST_WARN("skipping spgram config test with strict exit enabled\n");
     return;
-#else
+#endif
     // check that object returns NULL for invalid configurations
     fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-    CONTEND_EQUALITY(spgramcf_create(  0, LIQUID_WINDOW_HAMMING,       200, 200)==NULL,1); // nfft too small
-    CONTEND_EQUALITY(spgramcf_create(  1, LIQUID_WINDOW_HAMMING,       200, 200)==NULL,1); // nfft too small
-    CONTEND_EQUALITY(spgramcf_create(  2, LIQUID_WINDOW_HAMMING,       200, 200)==NULL,1); // window length too large
-    CONTEND_EQUALITY(spgramcf_create(400, LIQUID_WINDOW_HAMMING,         0, 200)==NULL,1); // window length too small
-    CONTEND_EQUALITY(spgramcf_create(400, LIQUID_WINDOW_UNKNOWN,       200, 200)==NULL,1); // invalid window type
-    CONTEND_EQUALITY(spgramcf_create(400, LIQUID_WINDOW_NUM_FUNCTIONS, 200, 200)==NULL,1); // invalid window type
-    CONTEND_EQUALITY(spgramcf_create(400, LIQUID_WINDOW_KBD,           201, 200)==NULL,1); // KBD must be even
-    CONTEND_EQUALITY(spgramcf_create(400, LIQUID_WINDOW_HAMMING,       200,   0)==NULL,1); // delay too small
+    CONTEND_ISNULL(spgramcf_create(  0, LIQUID_WINDOW_HAMMING,       200, 200)); // nfft too small
+    CONTEND_ISNULL(spgramcf_create(  1, LIQUID_WINDOW_HAMMING,       200, 200)); // nfft too small
+    CONTEND_ISNULL(spgramcf_create(  2, LIQUID_WINDOW_HAMMING,       200, 200)); // window length too large
+    CONTEND_ISNULL(spgramcf_create(400, LIQUID_WINDOW_HAMMING,         0, 200)); // window length too small
+    CONTEND_ISNULL(spgramcf_create(400, LIQUID_WINDOW_UNKNOWN,       200, 200)); // invalid window type
+    CONTEND_ISNULL(spgramcf_create(400, LIQUID_WINDOW_NUM_FUNCTIONS, 200, 200)); // invalid window type
+    CONTEND_ISNULL(spgramcf_create(400, LIQUID_WINDOW_KBD,           201, 200)); // KBD must be even
+    CONTEND_ISNULL(spgramcf_create(400, LIQUID_WINDOW_HAMMING,       200,   0)); // delay too small
 
     // check that object returns NULL for invalid configurations (default)
-    CONTEND_EQUALITY(spgramcf_create_default(0)==NULL,1); // nfft too small
-    CONTEND_EQUALITY(spgramcf_create_default(1)==NULL,1); // nfft too small
-#endif
+    CONTEND_ISNULL(spgramcf_create_default(0)); // nfft too small
+    CONTEND_ISNULL(spgramcf_create_default(1)); // nfft too small
 }
 
 void autotest_spgramcf_standalone()
