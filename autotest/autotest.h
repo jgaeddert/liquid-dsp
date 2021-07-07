@@ -160,7 +160,7 @@ void liquid_autotest_print_array(unsigned char * _x,
 {                                                                   \
     if ((X)>=(Y))                                                   \
     {                                                               \
-        liquid_autotest_failed_expr(F,L,EX,X,">",EY,Y);             \
+        liquid_autotest_failed_expr(F,L,EX,X,"<",EY,Y);             \
     } else {                                                        \
         liquid_autotest_passed();                                   \
     }                                                               \
