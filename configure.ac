@@ -257,7 +257,7 @@ darwin*)
     AC_PROG_AR
 
     AR_LIB=libliquid.a
-    SH_LIB=libliquid.so
+    SH_LIB=libliquid.so.1.3
     REBIND=ldconfig
     ;;
 esac
