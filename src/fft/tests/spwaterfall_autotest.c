@@ -27,6 +27,33 @@
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
+void autotest_spwaterfall_invalid_config()
+{
+#ifdef LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("spwaterfall test not run with strict mode enabled");
+    return;
+#endif
+    AUTOTEST_WARN("testing spwaterfall invalid configurations; ignore printed errors");
+    // default configurations
+    unsigned int nfft  = 1200;
+    int          wtype = LIQUID_WINDOW_HAMMING;
+    unsigned int wlen  =  800;
+    unsigned int delay =  200;
+    unsigned int time  =  960;
+
+    // test invalid configurations, normal construction
+    CONTEND_ISNULL(spwaterfallcf_create(   1, wtype,   wlen, delay, time))
+    CONTEND_ISNULL(spwaterfallcf_create(nfft, wtype,      0, delay, time))
+    CONTEND_ISNULL(spwaterfallcf_create(nfft, wtype, nfft+1, delay, time))
+    CONTEND_ISNULL(spwaterfallcf_create(nfft, LIQUID_WINDOW_KBD, 801, delay, time))
+    CONTEND_ISNULL(spwaterfallcf_create(nfft, wtype,   wlen,     0, time))
+    CONTEND_ISNULL(spwaterfallcf_create(nfft, wtype,   wlen, delay,    0))
+
+    // test invalid configurations, default construction
+    CONTEND_ISNULL(spwaterfallcf_create_default(   0, time))
+    CONTEND_ISNULL(spwaterfallcf_create_default(nfft,    0))
+}
+
 int testbench_spwaterfallcf_compare(const void * _v0, const void * _v1)
     { return *(float*)_v0 > *(float*)_v1 ? 1 : -1; }
 
