@@ -115,7 +115,12 @@ void autotest_spwaterfallcf_noise_1200() { testbench_spwaterfallcf_noise(1200, 3
 void autotest_spwaterfall_operation()
 {
     // create default object
-    spwaterfallcf q = spwaterfallcf_create_default(1200, 800);
+    spwaterfallcf q = spwaterfallcf_create(1200, LIQUID_WINDOW_HAMMING, 800, 10, 960);
+    spwaterfallcf_print(q);
+    CONTEND_EQUALITY(spwaterfallcf_get_num_freq(q), 1200);
+    CONTEND_EQUALITY(spwaterfallcf_get_num_time(q),    0);
+    CONTEND_EQUALITY(spwaterfallcf_get_delay(q),      10);
+    CONTEND_EQUALITY(spwaterfallcf_get_wtype(q), LIQUID_WINDOW_HAMMING);
 
     // push individual samples
     spwaterfallcf_push(q, randnf() + _Complex_I*randnf());
@@ -134,6 +139,24 @@ void autotest_spwaterfall_operation()
         buf[i] = randnf() + _Complex_I*randnf();
     spwaterfallcf_write(q, buf, 12);
     CONTEND_EQUALITY(spwaterfallcf_get_num_samples_total(q), 12);
+
+    spwaterfallcf_destroy(q);
+}
+
+// test file export
+void autotest_spwaterfall_gnuplot()
+{
+    // create default object
+    spwaterfallcf q = spwaterfallcf_create_default(540, 320);
+    unsigned int i;
+    for (i=0; i<800000; i++)
+        spwaterfallcf_push(q, randnf() + _Complex_I*randnf());
+
+    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_freq(q, 100e6))
+    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_rate(q,  20e6))
+    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_dims(q, 640, 480))
+    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_commands(q,"set title 'waterfall'"))
+    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_export(q,"autotest_waterfall"))
 
     spwaterfallcf_destroy(q);
 }
