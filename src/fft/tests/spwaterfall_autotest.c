@@ -52,6 +52,14 @@ void autotest_spwaterfall_invalid_config()
     // test invalid configurations, default construction
     CONTEND_ISNULL(spwaterfallcf_create_default(   0, time))
     CONTEND_ISNULL(spwaterfallcf_create_default(nfft,    0))
+
+    // create proper object but test invalid internal configurations
+    spwaterfallcf q = spwaterfallcf_create_default(540, 320);
+
+    CONTEND_INEQUALITY(LIQUID_OK, spwaterfallcf_set_rate(q, -10e6))
+    CONTEND_INEQUALITY(LIQUID_OK, spwaterfallcf_set_commands(q, NULL))
+
+    spwaterfallcf_destroy(q);
 }
 
 int testbench_spwaterfallcf_compare(const void * _v0, const void * _v1)
@@ -119,6 +127,7 @@ void autotest_spwaterfall_operation()
     spwaterfallcf_print(q);
     CONTEND_EQUALITY(spwaterfallcf_get_num_freq(q), 1200);
     CONTEND_EQUALITY(spwaterfallcf_get_num_time(q),    0);
+    CONTEND_EQUALITY(spwaterfallcf_get_window_len(q),800);
     CONTEND_EQUALITY(spwaterfallcf_get_delay(q),      10);
     CONTEND_EQUALITY(spwaterfallcf_get_wtype(q), LIQUID_WINDOW_HAMMING);
 
