@@ -111,3 +111,29 @@ void autotest_spwaterfallcf_noise_440()  { testbench_spwaterfallcf_noise( 440, 3
 void autotest_spwaterfallcf_noise_1024() { testbench_spwaterfallcf_noise( 680, 320, 10, 640, -80.0); }
 void autotest_spwaterfallcf_noise_1200() { testbench_spwaterfallcf_noise(1200, 320, 10, 800, -80.0); }
 
+// test normal operation
+void autotest_spwaterfall_operation()
+{
+    // create default object
+    spwaterfallcf q = spwaterfallcf_create_default(1200, 800);
+
+    // push individual samples
+    spwaterfallcf_push(q, randnf() + _Complex_I*randnf());
+    spwaterfallcf_push(q, randnf() + _Complex_I*randnf());
+
+    CONTEND_EQUALITY(spwaterfallcf_get_num_samples_total(q), 2);
+    spwaterfallcf_clear(q);
+    CONTEND_EQUALITY(spwaterfallcf_get_num_samples_total(q), 2);
+    spwaterfallcf_reset(q);
+    CONTEND_EQUALITY(spwaterfallcf_get_num_samples_total(q), 0);
+
+    // write a block of samples
+    float complex buf[12];
+    unsigned int i;
+    for (i=0; i<12; i++)
+        buf[i] = randnf() + _Complex_I*randnf();
+    spwaterfallcf_write(q, buf, 12);
+    CONTEND_EQUALITY(spwaterfallcf_get_num_samples_total(q), 12);
+
+    spwaterfallcf_destroy(q);
+}
