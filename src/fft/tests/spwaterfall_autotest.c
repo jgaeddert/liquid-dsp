@@ -57,7 +57,6 @@ void autotest_spwaterfall_invalid_config()
     spwaterfallcf q = spwaterfallcf_create_default(540, 320);
 
     CONTEND_INEQUALITY(LIQUID_OK, spwaterfallcf_set_rate(q, -10e6))
-    CONTEND_INEQUALITY(LIQUID_OK, spwaterfallcf_set_commands(q, NULL))
 
     spwaterfallcf_destroy(q);
 }
@@ -164,6 +163,7 @@ void autotest_spwaterfall_gnuplot()
     CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_freq(q, 100e6))
     CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_rate(q,  20e6))
     CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_dims(q, 640, 480))
+    CONTEND_EQUALITY(LIQUID_OK, spwaterfallcf_set_commands(q,NULL))
     CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_commands(q,"set title 'waterfall'"))
     CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_export(q,"autotest_waterfall"))
 
