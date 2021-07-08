@@ -70,7 +70,7 @@ void bessel_azpkf(unsigned int _n,
                   float complex * _ka)
 {
     // compute poles (roots to Bessel polynomial)
-    fpoly_bessel_roots(_n+1,_pa);
+    fpoly_bessel_roots(_n,_pa);
 
     // analog Bessel filter prototype has no zeros
 
