@@ -103,7 +103,7 @@ unsigned int fec_hamming3126_encode_symbol(unsigned int _sym_dec)
 unsigned int fec_hamming3126_decode_symbol(unsigned int _sym_enc)
 {
     // validate input
-    if (_sym_enc >= (1<<31)) {
+    if (_sym_enc >= (1u<<31)) {
         liquid_error(LIQUID_EICONFIG,"fec_hamming_decode(), input symbol too large");
         return 0;
     }

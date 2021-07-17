@@ -114,11 +114,12 @@ int POLY(_fit_lagrange_barycentric)(T *         _x,
             else        _w[j] *= (_x[j] - _x[k]);
         }
 
+        if (_w[j] == 0.0f) _w[j] += 1.0e-9f;
         _w[j] = 1. / _w[j];
     }
 
-    // normalize by _w[0]
-    T w0 = _w[0];
+    // normalize by _w[0], add minuscule margin to avoid divide-by-zero warning
+    T w0 = _w[0] + 1.0e-9f;
     for (j=0; j<_n; j++)
         _w[j] /= w0;
     return LIQUID_OK;
