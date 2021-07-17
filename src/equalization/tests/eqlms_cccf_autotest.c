@@ -115,6 +115,7 @@ void autotest_eqlms_cccf_blind()
 
     // clean up objects
     firfilt_cccf_destroy(fchannel);
+    firinterp_crcf_destroy(interp);
     eqlms_cccf_destroy(eq);
     msequence_destroy(ms);
 }
@@ -206,6 +207,7 @@ void autotest_eqlms_cccf_decisiondirected()
 
     // clean up objects
     firfilt_cccf_destroy(fchannel);
+    firinterp_crcf_destroy(interp);
     eqlms_cccf_destroy(eq);
     msequence_destroy(ms);
 }
