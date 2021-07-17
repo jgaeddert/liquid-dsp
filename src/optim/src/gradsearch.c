@@ -328,7 +328,9 @@ float gradsearch_linesearch(utility_function _utility,
 float gradsearch_norm(float *      _v,
                       unsigned int _n)
 {
-    float vnorm = 0.0f;
+    // start with a small value still big enough
+    // to avoid warning in gradstep function
+    float vnorm = 1.0e-7f;
 
     unsigned int i;
     for (i=0; i<_n; i++)

@@ -171,7 +171,7 @@ int bsequence_push(bsequence    _bs,
 int bsequence_circshift(bsequence _bs)
 {
     // extract most-significant (left-most) bit
-    unsigned int msb_mask = 1 << (_bs->num_bits_msb-1);
+    unsigned int msb_mask = 1u << (_bs->num_bits_msb-1);
     unsigned int b = (_bs->s[0] & msb_mask) >> (_bs->num_bits_msb-1);
 
     // push bit into sequence

@@ -25,6 +25,7 @@
 // loop (pll) implementation
 //
 
+#include <limits.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -377,7 +378,8 @@ uint32_t NCO(_constrain)(float _theta)
     if (fpart < 0.) fpart += 1.;
 
     // map to range of precision needed
-    return (uint32_t)(fpart * 0xffffffff);
+    long retVal = (long)(fpart * 0xffffffff);
+    return retVal >= UINT_MAX ? UINT_MAX : retVal;
 }
 
 // compute index for sine look-up table
