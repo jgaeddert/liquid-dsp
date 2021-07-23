@@ -312,7 +312,7 @@ void FIRFARROW(_genpoly)(FIRFARROW() _q)
     float x, mu, h0, h1;
     float mu_vect[_q->Q+1];
     float hp_vect[_q->Q+1];
-    float p[_q->Q];
+    float p[_q->Q+1];
     float beta = kaiser_beta_As(_q->As);
     for (i=0; i<_q->h_len; i++) {
 #if FIRFARROW_DEBUG
