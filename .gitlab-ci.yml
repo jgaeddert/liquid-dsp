@@ -12,7 +12,7 @@ compile:
     - ./configure --enable-strict
     - make -j4
   artifacts: # save output objects for test stages
-    paths: [makefile, configure, config.h]
+    paths: [makefile, configure, config.h, config.h.in]
 
 # run all test programs
 check:
