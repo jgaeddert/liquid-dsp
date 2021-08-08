@@ -706,8 +706,9 @@ int firdespm_iext_search(firdespm _q)
         if ( ((_q->E[i]>=0.0) && (_q->E[i-1]<=_q->E[i]) && (_q->E[i+1]<=_q->E[i]) ) ||
              ((_q->E[i]< 0.0) && (_q->E[i-1]>=_q->E[i]) && (_q->E[i+1]>=_q->E[i]) ) )
         {
-            assert(num_found < nmax);
-            found_iext[num_found++] = i;
+            //assert(num_found < nmax);
+            if (num_found < nmax)
+                found_iext[num_found++] = i;
 #if LIQUID_FIRDESPM_DEBUG_PRINT
             printf("num_found : %4u [%4u / %4u]\n", num_found, i, _q->grid_size);
 #endif
@@ -720,8 +721,9 @@ int firdespm_iext_search(firdespm _q)
         found_iext[num_found++] = _q->grid_size-1;
 #else
     // force f=0.5 into candidate set
-    assert(num_found < nmax);
-    found_iext[num_found++] = _q->grid_size-1;
+    //assert(num_found < nmax);
+    if (num_found < nmax)
+        found_iext[num_found++] = _q->grid_size-1;
     //printf("num_found : %4u [%4u / %4u]\n", num_found, _q->grid_size-1, _q->grid_size);
 #endif
     //printf("r+1 = %4u, num_found = %4u\n", _q->r+1, num_found);
