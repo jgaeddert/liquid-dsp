@@ -206,6 +206,9 @@ void FIRFARROW(_set_delay)(FIRFARROW() _q,
 
         //printf("  h[%3u] = %12.8f\n", i, _q->h[i]);
     }
+
+    // Update delay in filter object
+    _q->mu = _mu;
 }
 
 // execute firfarrow internal dot product
