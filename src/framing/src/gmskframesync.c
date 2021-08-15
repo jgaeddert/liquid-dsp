@@ -156,17 +156,23 @@ struct gmskframesync_s {
 };
 
 // create GMSK frame synchronizer
+//  _k          :   samples/symbol
+//  _m          :   filter delay (symbols)
+//  _BT         :   excess bandwidth factor
 //  _callback   :   callback function
 //  _userdata   :   user data pointer passed to callback function
-gmskframesync gmskframesync_create(framesync_callback _callback,
+gmskframesync gmskframesync_create(unsigned int       _k,
+                                   unsigned int       _m,
+                                   float              _BT,
+                                   framesync_callback _callback,
                                    void *             _userdata)
 {
     gmskframesync q = (gmskframesync) malloc(sizeof(struct gmskframesync_s));
     q->callback = _callback;
     q->userdata = _userdata;
-    q->k        = 2;        // samples/symbol
-    q->m        = 3;        // filter delay (symbols)
-    q->BT       = 0.5f;     // filter bandwidth-time product
+    q->k        = _k;        // samples/symbol
+    q->m        = _m;        // filter delay (symbols)
+    q->BT       = _BT;      // filter bandwidth-time product
 
 #if GMSKFRAMESYNC_PREFILTER
     // create default low-pass Butterworth filter
@@ -457,7 +463,7 @@ int gmskframesync_update_symsync(gmskframesync _q,
         sample_available = 1;
 
         // reset timer
-        _q->pfb_timer = 2;  // k samples/symbol
+        _q->pfb_timer = _q->k;  // k samples/symbol
 
         firpfb_rrrf_execute(_q->mf,  _q->pfb_index, &mf_out);
         firpfb_rrrf_execute(_q->dmf, _q->pfb_index, &dmf_out);
