@@ -152,6 +152,7 @@ void DDS(_destroy)(DDS() _q)
 {
     // free filter parameter arrays
     free(_q->h_len);
+    free(_q->As);
     free(_q->fc);
     free(_q->ft);
 

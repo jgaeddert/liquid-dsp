@@ -91,6 +91,7 @@ int framegen64_destroy(framegen64 _q)
     // destroy internal objects
     qpacketmodem_destroy(_q->enc);
     qpilotgen_destroy(_q->pilotgen);
+    firinterp_crcf_destroy(_q->interp);
 
     // free main object memory
     free(_q);

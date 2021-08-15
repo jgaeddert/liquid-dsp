@@ -122,8 +122,8 @@ int BPRESYNC(_destroy)(BPRESYNC() _q)
     unsigned int i;
 
     // free received symbol buffers
-    free(_q->rx_i);
-    free(_q->rx_q);
+    bsequence_destroy(_q->rx_i);
+    bsequence_destroy(_q->rx_q);
 
     // free internal syncrhonizer objects
     for (i=0; i<_q->m; i++) {
