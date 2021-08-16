@@ -1227,6 +1227,9 @@ bind_headers :=					\
 	bind/msresamp.hh			\
 	bind/spwaterfall.hh			\
 
+bind_examples_cc :=				\
+	bind/main				\
+
 # the "-undefined dynamic_lookup" is needed on macOS
 # https://pybind11.readthedocs.io/en/stable/compiling.html#building-manually
 PYBIND11_INCLUDES := $(shell python3 -m pybind11 --includes) -I./include -I./bind/
@@ -1235,11 +1238,12 @@ PYBIND11_FLAGS    := @CXX_FLAGS_PYBIND@
 PYBIND11_LIBS     := $(shell python3-config --libs)
 PYBIND11_LDFLAGS  := $(shell python3-config --ldflags)
 
-bind/main.o : %.o : %.cc ${bind_headers}
-	g++ ${CXXFLAGS} -c -o bind/main.o bind/main.cc
+bind_examples_obj = $(patsubst %,%.o,$(bind_examples_cc))
+${bind_examples_obj} : %.o : %.cc ${bind_headers}
+	g++ ${CXXFLAGS} -I. -I./bind -I./include -c $< -o $@
 
-bind/main : % : %.o 
-	g++ ${CXXFLAGS} ${PYBIND11_FLAGS} -o bind/main $^ ${LIBS}
+${bind_examples_cc} : % : %.o ${ARCHIVE_LIB}
+	g++ ${CXXFLAGS} ${LDFLAGS} ${PYBIND11_FLAGS} -o $@ $^ ${LIBS}
 
 # python
 bind/liquid.python.o : %.o : %.cc %.hh ${bind_headers}
@@ -1254,7 +1258,7 @@ ${pythonlib} : bind/liquid.python.o $(objects)
 python: ${pythonlib}
 
 clean-python:
-	rm -f bind/*.o bind/main
+	rm -f bind/*.o ${bind_examples_cc}
 	rm -f ${pythonlib}
 
 ##
