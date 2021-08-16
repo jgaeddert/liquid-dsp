@@ -1246,6 +1246,8 @@ ${bind_examples_obj} : %.o : %.cc ${bind_headers}
 ${bind_examples_cc} : % : %.o ${ARCHIVE_LIB}
 	g++ ${CXXFLAGS} ${LDFLAGS} ${PYBIND11_FLAGS} -o $@ $^ ${LIBS}
 
+examples-bind: ${bind_examples_cc}
+
 # python
 bind/liquid.python.o : %.o : %.cc %.hh ${bind_headers}
 	g++ ${CXXFLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
