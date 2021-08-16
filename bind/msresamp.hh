@@ -5,12 +5,12 @@
 #include <complex>
 #include <iostream>
 #include <string>
-#include "liquid.h"
+#include "liquid.hh"
 #include "liquid.python.hh"
 
 namespace liquid {
 
-class msresamp
+class msresamp : public obj
 {
   public:
     // external coefficients
@@ -22,6 +22,12 @@ class msresamp
 
     // reset object
     void reset() { msresamp_crcf_reset(q); }
+
+    // representation
+    std::string repr() const { return std::string("<liquid.msresamp") +
+                    ", rate=" + std::to_string(get_rate()) +
+                    ", delay=" + std::to_string(get_delay()) +
+                    ">";}
 
     // get sample delay
     float get_delay() const { return msresamp_crcf_get_delay(q); }
@@ -87,12 +93,7 @@ void init_msresamp(py::module &m)
         .def(py::init<float, float>(),
              py::arg("rate")=1.0f,
              py::arg("As")=60.)
-        .def("__repr__", [](const msresamp & q) {
-                return std::string("<liquid.msresamp") +
-                    ", rate=" + std::to_string(q.get_rate()) +
-                    ", delay=" + std::to_string(q.get_delay()) +
-                    ">";
-            })
+        .def("__repr__", &msresamp::repr)
         .def("reset", &msresamp::reset,      "reset object's internal state")
         .def_property_readonly("delay", &msresamp::get_delay, "get delay in samples")
         .def_property_readonly("rate",  &msresamp::get_rate,  "get resampling rate")

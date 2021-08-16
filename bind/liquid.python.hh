@@ -9,7 +9,7 @@
 #include <pybind11/functional.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
-#include "liquid.h"
+#include "liquid.hh"
 namespace py = pybind11;
 using namespace pybind11::literals;
 

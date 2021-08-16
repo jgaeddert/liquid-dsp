@@ -5,16 +5,18 @@
 #include <complex>
 #include <iostream>
 #include <string>
-#include "liquid.h"
+#include "liquid.hh"
 #include "liquid.python.hh"
 
 namespace liquid {
 
-class fg64
+class fg64 : public obj
 {
   public:
     fg64()   { q = framegen64_create();  }
     ~fg64()  { framegen64_destroy(q);    }
+    void reset() { }
+    std::string repr() const { return std::string("<liquid.fg64>"); }
     void display() { framegen64_print(q); }
     void execute(unsigned char * _header,
                  unsigned char * _payload,

@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 #include <functional>
-#include "liquid.h"
+#include "liquid.hh"
 #include "liquid.python.hh"
 
 namespace liquid {
@@ -15,7 +15,7 @@ namespace liquid {
 // see: https://stackoverflow.com/questions/2828738/c-warning-declared-with-greater-visibility-than-the-type-of-its-field#3170163
 // see: https://gcc.gnu.org/wiki/Visibility
 #pragma GCC visibility push(hidden)
-class fs64
+class fs64 : public obj
 {
   public:
     fs64(framesync_callback _callback, void * _userdata)
@@ -26,6 +26,13 @@ class fs64
     void display() { framesync64_print(q); }
 
     void reset() { framesync64_reset(q); }
+
+    // representation
+    std::string repr() const { return std::string("<liquid.fs64") +
+                    ", header="  + std::to_string( 8) +
+                    ", payload=" + std::to_string(64) +
+                    ", samples=" + std::to_string(LIQUID_FRAME64_LEN) +
+                    ">";}
 
     void execute(std::complex<float> * _buf, unsigned int _buf_len)
         { framesync64_execute(q, _buf, _buf_len); }
@@ -137,13 +144,7 @@ void init_fs64(py::module &m)
         .def(py::init<py_framesync_callback,py::object>(),
              py::arg("callback") = py_fs64_default_callback,
              py::arg("context") = py::none())
-        .def("__repr__", [](const fs64 &q) {
-                return std::string("<liquid.fs64") +
-                    ", header="  + std::to_string( 8) +
-                    ", payload=" + std::to_string(64) +
-                    ", samples=" + std::to_string(LIQUID_FRAME64_LEN) +
-                    ">";
-            })
+        .def("__repr__", &fs64::repr)
         .def("reset",
              &fs64::reset,
              "reset frame synchronizer object")

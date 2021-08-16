@@ -5,13 +5,13 @@
 #include <complex>
 #include <iostream>
 #include <string>
-#include "liquid.h"
+#include "liquid.hh"
 #include "liquid.python.hh"
 
 namespace liquid {
 
 #pragma GCC visibility push(hidden)
-class spwaterfall
+class spwaterfall : public obj
 {
   public:
     spwaterfall(unsigned int _nfft=800,
@@ -35,6 +35,15 @@ class spwaterfall
     void display() { spwaterfallcf_print(q); }
 
     void reset() { spwaterfallcf_reset(q); }
+
+    // representation
+    std::string repr() const { return std::string("<liquid.spwaterfall") +
+                    ", nfft=" + std::to_string(get_num_freq()) +
+                    ", time=" + std::to_string(get_num_time()) +
+                    ", wlen=" + std::to_string(get_window_len()) +
+                    ", delay="+ std::to_string(get_delay()) +
+                    ", " + get_wtype() +
+                    ">";}
 
     uint64_t get_num_samples_total() const {
         return spwaterfallcf_get_num_samples_total(q); }
@@ -120,15 +129,7 @@ void init_spwaterfall(py::module &m)
              py::arg("wlen")=600,
              py::arg("delay")=400,
              py::arg("wtype")="hamming")
-        .def("__repr__", [](const spwaterfall &q) {
-                return std::string("<spwaterfall") +
-                    ", nfft=" + std::to_string(q.get_num_freq()) +
-                    ", time=" + std::to_string(q.get_num_time()) +
-                    ", wlen=" + std::to_string(q.get_window_len()) +
-                    ", delay="+ std::to_string(q.get_delay()) +
-                    ", " + q.get_wtype() +
-                    ">";
-            })
+        .def("__repr__",&spwaterfall::repr)
         .def("reset",   &spwaterfall::reset,      "reset waterfall object")
         .def("execute", &spwaterfall::py_execute, "execute on a block of samples")
         .def_property_readonly("num_samples_total",

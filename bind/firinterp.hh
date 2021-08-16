@@ -5,12 +5,12 @@
 #include <complex>
 #include <iostream>
 #include <string>
-#include "liquid.h"
+#include "liquid.hh"
 #include "liquid.python.hh"
 
 namespace liquid {
 
-class firinterp
+class firinterp : public obj
 {
   public:
     // external coefficients
@@ -30,6 +30,12 @@ class firinterp
 
     // reset object
     void reset() { firinterp_crcf_reset(q); }
+
+    // representation
+    std::string repr() const { return std::string("<liquid.interp") +
+                    ", M=" + std::to_string(get_interp_rate()) +
+                    ", sub-len=" + std::to_string(get_sub_len()) +
+                    ">"; }
 
     // print
     void display() { firinterp_crcf_print(q); }
@@ -136,12 +142,7 @@ void init_firinterp(py::module &m)
         //.def(py::init<std::string, py::kwargs>())
         .def(py::init<unsigned int, unsigned int, float>(),
              py::arg("M"), py::arg("m")=12, py::arg("As")=60.)
-        .def("__repr__", [](const firinterp & q) {
-                return std::string("<liquid.interp") +
-                    ", M=" + std::to_string(q.get_interp_rate()) +
-                    ", sub-len=" + std::to_string(q.get_sub_len()) +
-                    ">";
-            })
+        .def("__repr__", &firinterp::repr)
         .def("reset",      &firinterp::reset,      "reset object's internal state")
         .def("display",    &firinterp::display,    "print object properties to stdout")
         .def("execute",    &firinterp::py_execute, "execute on a block of samples")

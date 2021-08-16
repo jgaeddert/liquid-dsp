@@ -1220,6 +1220,7 @@ all: ${ARCHIVE_LIB} ${SHARED_LIB}
 ##
 
 bind_headers :=					\
+	bind/liquid.hh				\
 	bind/firfilt.hh				\
 	bind/firinterp.hh			\
 	bind/fg64.hh				\
@@ -1230,6 +1231,7 @@ bind_headers :=					\
 bind_examples_cc :=				\
 	bind/main				\
 	bind/frame64_example			\
+	bind/objects_example			\
 
 # the "-undefined dynamic_lookup" is needed on macOS
 # https://pybind11.readthedocs.io/en/stable/compiling.html#building-manually
@@ -1249,7 +1251,7 @@ ${bind_examples_cc} : % : %.o ${ARCHIVE_LIB}
 examples-bind: ${bind_examples_cc}
 
 # python
-bind/liquid.python.o : %.o : %.cc %.hh ${bind_headers}
+bind/liquid.python.o : %.o : %.cc %.hh ${bind_headers} bind/liquid.python.hh
 	g++ ${CXXFLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
 
 pythonlib := liquid${PYBIND11_SUFFIX}

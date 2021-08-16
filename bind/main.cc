@@ -1,4 +1,4 @@
-
+// most basic example for using liquid-dsp C++ bindings
 #include <stdio.h>
 #include "firfilt.hh"
 
@@ -12,5 +12,6 @@ int main()
         std::complex<float> y = filter.step(x);
         printf("%12.8f %12.8f\n", y.real(), y.imag());
     }
+    std::cout << filter << std::endl;
     return 0;
 }

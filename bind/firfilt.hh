@@ -5,12 +5,12 @@
 #include <complex>
 #include <iostream>
 #include <string>
-#include "liquid.h"
+#include "liquid.hh"
 #include "liquid.python.hh"
 
 namespace liquid {
 
-class firfilt
+class firfilt : public obj
 {
   public:
     // external coefficients
@@ -29,6 +29,9 @@ class firfilt
 
     // reset object
     void reset() { firfilt_crcf_reset(q); }
+
+    // representation
+    std::string repr() const { return std::string("<liquid.filter>"); }
 
     // output scale
     void  set_scale(float _scale) { firfilt_crcf_set_scale(q,_scale); }
