@@ -11,24 +11,6 @@
 
 namespace liquid {
 
-#ifdef PYTHONLIB
-// callback wrapper to bind user-defined callback to python
-int py_callback_wrapper(
-        unsigned char *  _header,
-        int              _header_valid,
-        unsigned char *  _payload,
-        unsigned int     _payload_len,
-        int              _payload_valid,
-        framesyncstats_s _stats,
-        void *           _userdata);
-
-// function definition for pythonic callback
-typedef std::function<py::object(py::object,
-                                 py::array_t<uint8_t>,
-                                 py::array_t<uint8_t>,
-                                 py::dict)> py_framesync_callback;
-#endif
-
 // suppress "declared with greater visibility than the type of its field" warnings
 // see: https://stackoverflow.com/questions/2828738/c-warning-declared-with-greater-visibility-than-the-type-of-its-field#3170163
 // see: https://gcc.gnu.org/wiki/Visibility
