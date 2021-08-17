@@ -7,17 +7,20 @@
 
 namespace liquid {
 
-class obj {
+class object {
   public:
-    obj() {};
-    virtual ~obj() {};
+    object() {};
+    virtual ~object() {};
     virtual void reset()=0;
-    virtual std::string repr() const { return std::string("<liquid.obj>"); };
+    virtual std::string repr() const
+        { return std::string("<liquid.object>"); }
+  protected:
+    std::string type;
 };
 
-static std::ostream& operator<<(std::ostream& _os, const obj& _obj)
+static std::ostream& operator<<(std::ostream& _os, const object& _object)
 {
-    _os << _obj.repr();
+    _os << _object.repr();
     return _os;
 }
 

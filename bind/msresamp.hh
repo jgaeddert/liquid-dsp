@@ -10,7 +10,7 @@
 
 namespace liquid {
 
-class msresamp : public obj
+class msresamp : public object
 {
   public:
     // external coefficients

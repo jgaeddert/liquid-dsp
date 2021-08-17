@@ -15,7 +15,7 @@ namespace liquid {
 // see: https://stackoverflow.com/questions/2828738/c-warning-declared-with-greater-visibility-than-the-type-of-its-field#3170163
 // see: https://gcc.gnu.org/wiki/Visibility
 #pragma GCC visibility push(hidden)
-class fs64 : public obj
+class fs64 : public object
 {
   public:
     fs64(framesync_callback _callback, void * _userdata)

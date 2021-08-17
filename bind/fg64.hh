@@ -10,7 +10,7 @@
 
 namespace liquid {
 
-class fg64 : public obj
+class fg64 : public object
 {
   public:
     fg64()   { q = framegen64_create();  }

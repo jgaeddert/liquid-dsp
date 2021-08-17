@@ -10,7 +10,7 @@
 
 namespace liquid {
 
-class firfilt : public obj
+class firfilt : public object
 {
   public:
     // external coefficients

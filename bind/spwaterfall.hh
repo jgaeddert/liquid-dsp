@@ -11,7 +11,7 @@
 namespace liquid {
 
 #pragma GCC visibility push(hidden)
-class spwaterfall : public obj
+class spwaterfall : public object
 {
   public:
     spwaterfall(unsigned int _nfft=800,

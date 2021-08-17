@@ -10,7 +10,7 @@
 
 namespace liquid {
 
-class firinterp : public obj
+class firinterp : public object
 {
   public:
     // external coefficients
