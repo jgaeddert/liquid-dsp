@@ -41,6 +41,16 @@ class fs64 : public object
     unsigned int get_payload_length() const { return 64; }
     unsigned int get_frame_length()   const { return LIQUID_FRAME64_LEN; }
 
+    // specific frame data statistics
+    unsigned int get_num_frames_detected() const
+        { return get_framedatastats().num_frames_detected; }
+    unsigned int get_num_headers_valid() const
+        { return get_framedatastats().num_headers_valid; }
+    unsigned int get_num_payloads_valid() const
+        { return get_framedatastats().num_payloads_valid; }
+    unsigned int get_num_bytes_received() const
+        { return get_framedatastats().num_bytes_received; }
+
     void reset_framedatastats() { framesync64_reset_framedatastats(q); }
 
     framedatastats_s get_framedatastats() const
@@ -167,6 +177,18 @@ void init_fs64(py::module &m)
         .def_property_readonly("frame_len",
             &fs64::get_frame_length,
             "get length of output frame (samples)")
+        .def_property_readonly("num_frames_detected",
+            &fs64::get_num_frames_detected,
+            "get number of frames currently detected")
+        .def_property_readonly("num_headers_valid",
+            &fs64::get_num_headers_valid,
+            "get number of headers currently valid")
+        .def_property_readonly("num_payloads_valid",
+            &fs64::get_num_payloads_valid,
+            "get number of payloads currently valid")
+        .def_property_readonly("num_bytes_received",
+            &fs64::get_num_bytes_received,
+            "get number of bytes currently received")
         .def("execute",
              &fs64::py_execute,
              "execute on a block of samples")
