@@ -197,8 +197,12 @@ class firfilt : public object
 void init_firfilt(py::module &m)
 {
     py::class_<firfilt>(m, "firfilt")
-        .def(py::init<py::array_t<float>>(),py::arg("h"))
-        .def(py::init<std::string, py::kwargs>())
+        .def(py::init<py::array_t<float>>(),
+            py::arg("h"),
+            "create filter from coefficients")
+        .def(py::init<std::string,
+            py::kwargs>(),
+            "create filter from prototype")
         .def("__repr__", &firfilt::repr)
         .def("reset",
              &firfilt::reset,

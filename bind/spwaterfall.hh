@@ -128,7 +128,8 @@ void init_spwaterfall(py::module &m)
              py::arg("time")=800,
              py::arg("wlen")=600,
              py::arg("delay")=400,
-             py::arg("wtype")="hamming")
+             py::arg("wtype")="hamming",
+             "create spectral waterfall object from base parameter set")
         .def("__repr__",&spwaterfall::repr)
         .def("reset",   &spwaterfall::reset,      "reset waterfall object")
         .def("execute", &spwaterfall::py_execute, "execute on a block of samples")

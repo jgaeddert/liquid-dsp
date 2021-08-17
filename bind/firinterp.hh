@@ -141,7 +141,8 @@ void init_firinterp(py::module &m)
     py::class_<firinterp>(m, "firinterp")
         //.def(py::init<std::string, py::kwargs>())
         .def(py::init<unsigned int, unsigned int, float>(),
-             py::arg("M"), py::arg("m")=12, py::arg("As")=60.)
+             py::arg("M"), py::arg("m")=12, py::arg("As")=60.,
+             "create default interpolator given rate")
         .def("__repr__", &firinterp::repr)
         .def("reset",      &firinterp::reset,      "reset object's internal state")
         .def("display",    &firinterp::display,    "print object properties to stdout")

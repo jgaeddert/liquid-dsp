@@ -92,7 +92,8 @@ void init_msresamp(py::module &m)
         //.def(py::init<std::string, py::kwargs>())
         .def(py::init<float, float>(),
              py::arg("rate")=1.0f,
-             py::arg("As")=60.)
+             py::arg("As")=60.,
+             "create resampler given rate and stop-band suppression (dB)")
         .def("__repr__", &msresamp::repr)
         .def("reset", &msresamp::reset,      "reset object's internal state")
         .def_property_readonly("delay", &msresamp::get_delay, "get delay in samples")

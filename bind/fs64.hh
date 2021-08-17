@@ -157,7 +157,8 @@ void init_fs64(py::module &m)
     py::class_<fs64>(m, "fs64")
         .def(py::init<py_framesync_callback,py::object>(),
              py::arg("callback") = py_fs64_default_callback,
-             py::arg("context") = py::none())
+             py::arg("context") = py::none(),
+             "create synchronizer given callback function and context")
         .def("__repr__", &fs64::repr)
         .def("reset",
              &fs64::reset,
