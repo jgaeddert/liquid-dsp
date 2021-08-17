@@ -29,13 +29,17 @@ class fs64 : public object
 
     // representation
     std::string repr() const { return std::string("<liquid.fs64") +
-                    ", header="  + std::to_string( 8) +
-                    ", payload=" + std::to_string(64) +
-                    ", samples=" + std::to_string(LIQUID_FRAME64_LEN) +
+                    ", header="  + std::to_string(get_header_length()) +
+                    ", payload=" + std::to_string(get_payload_length()) +
+                    ", samples=" + std::to_string(get_frame_length()) +
                     ">";}
 
     void execute(std::complex<float> * _buf, unsigned int _buf_len)
         { framesync64_execute(q, _buf, _buf_len); }
+
+    unsigned int get_header_length()  const { return 8; }
+    unsigned int get_payload_length() const { return 64; }
+    unsigned int get_frame_length()   const { return LIQUID_FRAME64_LEN; }
 
     void reset_framedatastats() { framesync64_reset_framedatastats(q); }
 
@@ -154,6 +158,15 @@ void init_fs64(py::module &m)
         .def_property_readonly("framedatastats",
             [](const fs64 &q) { return q.py_get_framedatastats(); },
             "get frame data statistics")
+        .def_property_readonly("header_len",
+            &fs64::get_header_length,
+            "get length of header (bytes)")
+        .def_property_readonly("payload_len",
+            &fs64::get_payload_length,
+            "get length of payload (bytes)")
+        .def_property_readonly("frame_len",
+            &fs64::get_frame_length,
+            "get length of output frame (samples)")
         .def("execute",
              &fs64::py_execute,
              "execute on a block of samples")
