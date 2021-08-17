@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 
 # generate a frame
 fg      = dsp.fg64()
-header  = np.random.randint(256, size= 8, dtype=np.uint8)
-payload = np.random.randint(256, size=64, dtype=np.uint8)
-frame = fg.execute(header, payload)
+header  = np.random.randint(256, size=fg.header_len,  dtype=np.uint8)
+payload = np.random.randint(256, size=fg.payload_len, dtype=np.uint8)
+frame   = fg.execute(header, payload)
 
 def callback(context,header,payload,stats):
     print('frame detected!')
