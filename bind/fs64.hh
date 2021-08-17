@@ -166,7 +166,7 @@ void init_fs64(py::module &m)
              &fs64::reset_framedatastats,
              "reset frame statistics data")
         .def_property_readonly("framedatastats",
-            [](const fs64 &q) { return q.py_get_framedatastats(); },
+            &fs64::py_get_framedatastats,
             "get frame data statistics")
         .def_property_readonly("header_len",
             &fs64::get_header_length,
