@@ -31,7 +31,10 @@ class firfilt : public object
     void reset() { firfilt_crcf_reset(q); }
 
     // representation
-    std::string repr() const { return std::string("<liquid.filter>"); }
+    std::string repr() const { return std::string("<liquid.firfilt") +
+                    ", n=" + std::to_string(get_length()) +
+                    ", scale=" + std::to_string(get_scale()) +
+                    ">"; }
 
     // output scale
     void  set_scale(float _scale) { firfilt_crcf_set_scale(q,_scale); }
@@ -196,12 +199,7 @@ void init_firfilt(py::module &m)
     py::class_<firfilt>(m, "firfilt")
         .def(py::init<py::array_t<float>>(),py::arg("h"))
         .def(py::init<std::string, py::kwargs>())
-        .def("__repr__", [](const firfilt &q) {
-                return std::string("<liquid.firfilt") +
-                    ", n=" + std::to_string(q.get_length()) +
-                    ", scale=" + std::to_string(q.get_scale()) +
-                    ">";
-            })
+        .def("__repr__", &firfilt::repr)
         .def("reset",
              &firfilt::reset,
              "reset object's internal state")
@@ -211,9 +209,15 @@ void init_firfilt(py::module &m)
         .def("execute",
              &firfilt::py_execute_out_of_place,
              "execute on a block of samples out of place")
-        .def_property_readonly("length", &firfilt::get_length, "get length of filter")
-        .def_property_readonly("coefficients", &firfilt::get_coefficients, "get coefficients from filter")
-        .def_property("scale", &firfilt::get_scale, &firfilt::set_scale)
+        .def_property_readonly("length",
+            &firfilt::get_length,
+            "get length of filter")
+        .def_property_readonly("coefficients",
+            &firfilt::get_coefficients,
+            "get coefficients from filter")
+        .def_property("scale",
+            &firfilt::get_scale,
+            &firfilt::set_scale)
         ;
 }
 #endif
