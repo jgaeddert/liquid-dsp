@@ -2,6 +2,7 @@
 
 #include "firfilt.hh"
 #include "firinterp.hh"
+#include "firpfbch2.hh"
 #include "fg64.hh"
 #include "fs64.hh"
 #include "msresamp.hh"
@@ -71,8 +72,9 @@ PYBIND11_MODULE(liquid, m) {
     m.def("print_object", &print_object, "a function to recursively print a python object");
 
     // initialize objects
-    liquid::init_firinterp  (m);
     liquid::init_firfilt    (m);
+    liquid::init_firpfbch2  (m);
+    liquid::init_firinterp  (m);
     liquid::init_fg64       (m);
     liquid::init_fs64       (m);
     liquid::init_msresamp   (m);

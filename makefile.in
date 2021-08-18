@@ -1226,6 +1226,7 @@ bind_headers :=					\
 	bind/liquid.hh				\
 	bind/firfilt.hh				\
 	bind/firinterp.hh			\
+	bind/firpfbch2.hh			\
 	bind/fg64.hh				\
 	bind/fs64.hh				\
 	bind/msresamp.hh			\
