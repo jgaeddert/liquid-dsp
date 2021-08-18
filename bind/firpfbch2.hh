@@ -13,7 +13,7 @@ namespace liquid {
 class firpfbch2 : public object
 {
   public:
-    // external coefficients
+    // Kaiser prototype
     firpfbch2(int _type, unsigned int _M, unsigned int _m=4, float _As=60.0f)
         { q = firpfbch2_crcf_create_kaiser(_type, _M, _m, _As); }
 
@@ -38,7 +38,7 @@ class firpfbch2 : public object
     void execute(std::complex<float> * _x, std::complex<float> * _y)
         { firpfbch2_crcf_execute(q, _x, _y); }
 
-  private:
+  protected:
     firpfbch2_crcf q;
 
 #ifdef PYTHONLIB
@@ -79,22 +79,56 @@ class firpfbch2 : public object
 #endif
 };
 
-#ifdef PYTHONLIB
-void init_firpfbch2(py::module &m)
+// specific analysis channelizer
+class firpfbch2a : public firpfbch2
 {
-    py::class_<firpfbch2>(m, "firpfbch2")
-        .def(py::init<int, unsigned int, unsigned int, float>(),
-             py::arg("analysis"),
+  public:
+    // Kaiser prototype
+    firpfbch2a(unsigned int _M, unsigned int _m=4, float _As=60.0f) :
+        firpfbch2(LIQUID_ANALYZER, _M, _m, _As) {}
+};
+
+// specific synthesis channelizer
+class firpfbch2s : public firpfbch2
+{
+  public:
+    // Kaiser prototype
+    firpfbch2s(unsigned int _M, unsigned int _m=4, float _As=60.0f) :
+        firpfbch2(LIQUID_SYNTHESIZER, _M, _m, _As) {}
+};
+
+#ifdef PYTHONLIB
+void init_firpfbch2a(py::module &m)
+{
+    py::class_<firpfbch2a>(m, "firpfbch2a")
+        .def(py::init<unsigned int, unsigned int, float>(),
              py::arg("M"),
              py::arg("m")=1.0f,
              py::arg("As")=60.,
-             "create channelizer (analysis or synthesis) given number of channels")
-        .def("__repr__", &firpfbch2::repr)
-        .def("reset", &firpfbch2::reset,      "reset object's internal state")
-        .def_property_readonly("type", &firpfbch2::get_type, "get delay in samples")
-        .def_property_readonly("M",    &firpfbch2::get_M,    "get resampling rate")
-        .def_property_readonly("m",    &firpfbch2::get_m,    "get resampling rate")
-        .def("execute", &firpfbch2::py_execute, "execute on a block of samples")
+             "create analysis channelizer given number of channels")
+        .def("__repr__", &firpfbch2a::repr)
+        .def("reset", &firpfbch2a::reset,      "reset object's internal state")
+        .def_property_readonly("type", &firpfbch2a::get_type, "get delay in samples")
+        .def_property_readonly("M",    &firpfbch2a::get_M,    "get resampling rate")
+        .def_property_readonly("m",    &firpfbch2a::get_m,    "get resampling rate")
+        .def("execute", &firpfbch2a::py_execute, "execute on a block of samples")
+        ;
+}
+
+void init_firpfbch2s(py::module &m)
+{
+    py::class_<firpfbch2s>(m, "firpfbch2s")
+        .def(py::init<unsigned int, unsigned int, float>(),
+             py::arg("M"),
+             py::arg("m")=1.0f,
+             py::arg("As")=60.,
+             "create synthesis channelizer given number of channels")
+        .def("__repr__", &firpfbch2s::repr)
+        .def("reset", &firpfbch2s::reset,      "reset object's internal state")
+        .def_property_readonly("type", &firpfbch2s::get_type, "get delay in samples")
+        .def_property_readonly("M",    &firpfbch2s::get_M,    "get resampling rate")
+        .def_property_readonly("m",    &firpfbch2s::get_m,    "get resampling rate")
+        .def("execute", &firpfbch2s::py_execute, "execute on a block of samples")
         ;
 }
 #endif

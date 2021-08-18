@@ -21,8 +21,8 @@ buf_1 = np.zeros((num_samples,), dtype=np.csingle)
 buf_0[:n] = np.hamming(n) * np.exp(-0.2j*np.arange(n) + 0.2j/n*np.arange(n)**2)
 
 # create channelizers
-qa = dsp.firpfbch2(0, M, m, As)
-qs = dsp.firpfbch2(1, M, m, As)
+qa = dsp.firpfbch2a(M, m, As) # analysis
+qs = dsp.firpfbch2s(M, m, As) # synthesis
 psd = np.zeros((M,),dtype=np.single)
 
 for i in range(num_symbols):
