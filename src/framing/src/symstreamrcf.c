@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,40 +20,26 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
-#include "liquid.h"
-
-// 
-// AUTOTEST: Kaiser-Bessel derived window
 //
-void liquid_kbd_window_test(unsigned int _n,
-                            float _beta)
-{
-    unsigned int i;
-    float tol = 1e-3f;
+// API: floating-point
+//
 
-    // compute window
-    float w[_n];
-    liquid_kbd_window(_n,_beta,w);
+#include "liquid.internal.h"
 
-    // square window
-    float w2[_n];
-    for (i=0; i<_n; i++)
-        w2[i] = w[i]*w[i];
+// naming extensions (useful for print statements)
+#define EXTENSION           "cf"
 
-    // ensure w[i]^2 + w[i+M]^2 == 1
-    unsigned int M = _n/2;
-    for (i=0; i<M; i++)
-        CONTEND_DELTA(w2[i]+w2[(i+M)%_n], 1.0f, tol);
+#define TO                  float complex   // output type
+#define T                   float           // primitive type
 
-    // ensure sum(w[i]^2) == _n/2
-    float sum=0.0f;
-    for (i=0; i<_n; i++)
-        sum += w2[i];
-    CONTEND_DELTA(sum, 0.5f*_n, tol);
-}
+#define TO_COMPLEX          1
+#define T_COMPLEX           0
 
-void autotest_kbd_n16() { liquid_kbd_window_test(16, 10.0f); }
-void autotest_kbd_n32() { liquid_kbd_window_test(32, 20.0f); }
-void autotest_kbd_n48() { liquid_kbd_window_test(48, 12.0f); }
+// object references
+#define MSRESAMP(name)      LIQUID_CONCAT(msresamp_crcf,name)
+#define SYMSTREAM(name)     LIQUID_CONCAT(symstreamcf,  name)
+#define SYMSTREAMR(name)    LIQUID_CONCAT(symstreamrcf, name)
+
+// source files
+#include "symstreamr.c"
 

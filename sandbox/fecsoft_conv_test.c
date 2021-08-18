@@ -236,28 +236,28 @@ int main(int argc, char *argv[]) {
 // libfec is not installed; need to define internal methods used in this
 // program, even though they don't do anything
 //
-void fec_conv_encode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char * _msg_dec,
-                     unsigned char * _msg_enc)
+int fec_conv_encode(fec _q,
+                    unsigned int _dec_msg_len,
+                    unsigned char * _msg_dec,
+                    unsigned char * _msg_enc)
 {
-    printf("fec_conv_encode(): libfec not installed; this sandbox program won't run\n");
+    return liquid_error(LIQUID_EUMODE,"fec_conv_encode(): libfec not installed; this sandbox program won't run");
 }
 
-void fec_conv_decode_soft(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char * _msg_enc,
-                          unsigned char * _msg_dec)
+int fec_conv_decode_soft(fec _q,
+                         unsigned int _dec_msg_len,
+                         unsigned char * _msg_enc,
+                         unsigned char * _msg_dec)
 {
-    printf("fec_conv_decode_soft(): libfec not installed; this sandbox program won't run\n");
+    return liquid_error(LIQUID_EUMODE,"fec_conv_decode_soft(): libfec not installed; this sandbox program won't run");
 }
 
-void fec_conv_punctured_decode_soft(fec _q,
-                                    unsigned int _dec_msg_len,
-                                    unsigned char * _msg_enc,
-                                    unsigned char * _msg_dec)
+int fec_conv_punctured_decode_soft(fec _q,
+                                   unsigned int _dec_msg_len,
+                                   unsigned char * _msg_enc,
+                                   unsigned char * _msg_dec)
 {
-    printf("fec_conv_punctured_decode_soft(): libfec not installed; this sandbox program won't run\n");
+    return liquid_error(LIQUID_EUMODE,"fec_conv_punctured_decode_soft(): libfec not installed; this sandbox program won't run");
 }
 #endif
 

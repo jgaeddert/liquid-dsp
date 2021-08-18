@@ -89,14 +89,19 @@ struct gmskframegen_s {
 };
 
 // create gmskframegen object
-gmskframegen gmskframegen_create()
+//  _k      :   samples/symbol
+//  _m      :   filter delay (symbols)
+//  _BT     :   excess bandwidth factor
+gmskframegen gmskframegen_create(unsigned int _k,
+                                 unsigned int _m,
+                                 float        _BT)
 {
     gmskframegen q = (gmskframegen) malloc(sizeof(struct gmskframegen_s));
 
     // set internal properties
-    q->k  = 2;      // samples/symbol
-    q->m  = 3;      // filter delay (symbols)
-    q->BT = 0.5f;   // filter bandwidth-time product
+    q->k  = _k;     // samples/symbol
+    q->m  = _m;     // filter delay (symbols)
+    q->BT = _BT;    // filter bandwidth-time product
 
     // internal/derived values
     q->preamble_len = 63;       // number of preamble symbols
@@ -328,10 +333,10 @@ int gmskframegen_write(gmskframegen   _q,
                       float complex * _buf,
                       unsigned int    _buf_len)
 {
-    unsigned int i;
-    for (i=0; i<_buf_len; i++)
-        gmskframegen_write_samples(_q, _buf+i);
-    return _q->frame_complete;
+    unsigned int i, frame_complete = 0;
+    for (i=0; i<_buf_len; i+=_q->k)
+        frame_complete = gmskframegen_write_samples(_q, _buf+i);
+    return frame_complete;
 }
 
 
@@ -343,7 +348,11 @@ int gmskframegen_encode_header(gmskframegen          _q,
                                const unsigned char * _header)
 {
     // first 'n' bytes user data
-    memmove(_q->header_dec, _header, _q->header_user_len);
+    if (_header == NULL)
+        memset(_q->header_dec, 0, _q->header_user_len);
+    else
+        memmove(_q->header_dec, _header, _q->header_user_len);
+
     unsigned int n = _q->header_user_len;
 
     // first byte is for expansion/version validation

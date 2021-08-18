@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,40 +27,6 @@
 #include <assert.h>
 #include "liquid.h"
 
-typedef struct {
-    unsigned char * header;
-    unsigned char * payload;
-    unsigned int num_frames_tx;
-    unsigned int num_frames_detected;
-    unsigned int num_headers_valid;
-    unsigned int num_payloads_valid;
-} framedata;
-
-static int callback(unsigned char *  _header,
-                    int              _header_valid,
-                    unsigned char *  _payload,
-                    unsigned int     _payload_len,
-                    int              _payload_valid,
-                    framesyncstats_s _stats,
-                    void *           _userdata)
-{
-    //printf("callback invoked\n");
-    framedata * fd = (framedata*) _userdata;
-
-    // increment number of frames detected
-    fd->num_frames_detected++;
-
-    // check if header is valid
-    if (_header_valid)
-        fd->num_headers_valid++;
-
-    // check if payload is valid
-    if (_payload_valid)
-        fd->num_payloads_valid++;
-
-    return 0;
-}
-
 // benchmark regular frame synchronizer with short frames; effectively
 // test acquisition complexity
 void benchmark_gmskframesync(struct rusage *     _start,
@@ -71,6 +37,9 @@ void benchmark_gmskframesync(struct rusage *     _start,
     unsigned long int i;
 
     // options
+    unsigned int k = 2;                 // samples/symbol
+    unsigned int m = 3;                 // filter delay (symbols)
+    float BT = 0.5f;                    // filter bandwidth-time product
     unsigned int payload_len = 8;       // length of payload (bytes)
     crc_scheme check = LIQUID_CRC_32;   // data validity check
     fec_scheme fec0  = LIQUID_FEC_NONE; // inner forward error correction
@@ -81,7 +50,7 @@ void benchmark_gmskframesync(struct rusage *     _start,
     float nstd  = powf(10.0f, -SNRdB/20.0f);
 
     // create gmskframegen object
-    gmskframegen fg = gmskframegen_create();
+    gmskframegen fg = gmskframegen_create(k, m, BT);
 
     // frame data
     unsigned char header[14];
@@ -91,15 +60,12 @@ void benchmark_gmskframesync(struct rusage *     _start,
         header[i] = i;
     for (i=0; i<payload_len; i++)
         payload[i] = rand() & 0xff;
-    framedata fd = {header, payload, 0, 0, 0, 0};
 
     // create gmskframesync object
-    gmskframesync fs = gmskframesync_create(callback,(void*)&fd);
-    //gmskframesync_print(fs);
+    gmskframesync fs = gmskframesync_create(k, m, BT, NULL, NULL);
 
     // generate the frame
     gmskframegen_assemble(fg, header, payload, payload_len, check, fec0, fec1);
-    gmskframegen_print(fg);
     unsigned int frame_len = gmskframegen_getframelen(fg);
     float complex frame[frame_len];
     int frame_complete = 0;
@@ -121,14 +87,7 @@ void benchmark_gmskframesync(struct rusage *     _start,
         gmskframesync_execute(fs, frame, frame_len);
     }
     getrusage(RUSAGE_SELF, _finish);
-
-    // print results
-    fd.num_frames_tx = *_num_iterations;
-    printf("  frames detected/header/payload/transmitted:   %6u / %6u / %6u / %6u\n",
-            fd.num_frames_detected,
-            fd.num_headers_valid,
-            fd.num_payloads_valid,
-            fd.num_frames_tx);
+    //gmskframesync_print(fs);
 
     // destroy objects
     gmskframegen_destroy(fg);
@@ -141,33 +100,26 @@ void benchmark_gmskframesync_noise(struct rusage *     _start,
                                    struct rusage *     _finish,
                                    unsigned long int * _num_iterations)
 {
-    *_num_iterations /= 400;
+    *_num_iterations /= 2000;
     unsigned long int i;
 
-    // options
-    float SNRdB = 20.0f;                // SNR
-
-    // derived values
-    float nstd  = powf(10.0f, -SNRdB/20.0f);
-
     // create frame synchronizer
-    gmskframesync fs = gmskframesync_create(NULL, NULL);
+    gmskframesync fs = gmskframesync_create(2, 3, 0.5f, NULL, NULL);
 
     // allocate memory for noise buffer and initialize
     unsigned int num_samples = 1024;
     float complex y[num_samples];
     for (i=0; i<num_samples; i++)
-        y[i] = nstd*(randnf() + randnf()*_Complex_I)*M_SQRT1_2;
+        y[i] = 0.01f*(randnf() + randnf()*_Complex_I)*M_SQRT1_2;
 
-    // 
     // start trials
-    //
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
         // push samples through synchronizer
         gmskframesync_execute(fs, y, num_samples);
     }
     getrusage(RUSAGE_SELF, _finish);
+    //gmskframesync_print(fs);
 
     // scale result by number of samples in buffer
     *_num_iterations *= num_samples;

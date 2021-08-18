@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,10 @@ void firpfbchr_crcf_execute_bench(struct rusage *     _start,
                                   unsigned int        _P,
                                   unsigned int        _m)
 {
+    // scale trials appropriately
+    *_num_iterations = *_num_iterations * 4 / _M;
+    if (*_num_iterations < 1) *_num_iterations = 1;
+
     // initialize channelizer
     float As         = 60.0f;
     firpfbchr_crcf q = firpfbchr_crcf_create_kaiser(_M,_P,_m,As);

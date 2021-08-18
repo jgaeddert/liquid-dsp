@@ -358,6 +358,7 @@ fft_autotests :=						\
 	src/fft/tests/fft_r2r_autotest.c			\
 	src/fft/tests/fft_shift_autotest.c			\
 	src/fft/tests/spgram_autotest.c				\
+	src/fft/tests/spwaterfall_autotest.c			\
 
 # additional autotest objects
 autotest_extra_obj +=						\
@@ -622,6 +623,7 @@ framing_objects :=						\
 	src/framing/src/ofdmflexframesync.o			\
 	src/framing/src/presync_cccf.o				\
 	src/framing/src/symstreamcf.o				\
+	src/framing/src/symstreamrcf.o				\
 	src/framing/src/symtrack_cccf.o				\
 	src/framing/src/qdetector_cccf.o			\
 	src/framing/src/qpacketmodem.o				\
@@ -652,6 +654,7 @@ src/framing/src/ofdmflexframesync.o : %.o : %.c $(include_headers)
 src/framing/src/presync_cccf.o      : %.o : %.c $(include_headers) src/framing/src/presync.c
 src/framing/src/qpacketmodem.o      : %.o : %.c $(include_headers)
 src/framing/src/symstreamcf.o       : %.o : %.c $(include_headers) src/framing/src/symstream.c
+src/framing/src/symstreamrcf.o      : %.o : %.c $(include_headers) src/framing/src/symstreamr.c
 src/framing/src/symtrack_cccf.o     : %.o : %.c $(include_headers) src/framing/src/symtrack.c
 
 
@@ -718,7 +721,7 @@ src/math/src/windows.o            : %.o : %.c $(include_headers)
 
 math_autotests :=						\
 	src/math/tests/gcd_autotest.c				\
-	src/math/tests/kbd_autotest.c				\
+	src/math/tests/window_autotest.c			\
 	src/math/tests/math_autotest.c				\
 	src/math/tests/math_bessel_autotest.c			\
 	src/math/tests/math_gamma_autotest.c			\
@@ -1669,6 +1672,7 @@ example_programs :=						\
 	examples/symsync_crcf_full_example			\
 	examples/symsync_crcf_kaiser_example			\
 	examples/symstreamcf_example				\
+	examples/symstreamrcf_example				\
 	examples/symtrack_cccf_example				\
 	examples/wdelayf_example				\
 	examples/windowf_example				\

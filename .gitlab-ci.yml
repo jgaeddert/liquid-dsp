@@ -3,7 +3,8 @@ image: debian
 stages: [build, test]
 before_script:
   - apt-get -qq update
-  - apt-get -qq install -y automake autoconf gcc g++ gcovr make valgrind python3-pip pybind11-dev
+  - apt-get -qq install -y automake autoconf gcc g++ gcovr make valgrind time
+  - apt-get -qq install python3-pip pybind11-dev
   - python3 -m pip install pybind11 numpy matplotlib
 
 # build from scratch
@@ -14,12 +15,13 @@ compile:
     - ./configure --enable-strict
     - make -j4
   artifacts: # save output objects for test stages
-    paths: [makefile, configure, config.h, libliquid*, src/*/src/*.o]
+    paths: [makefile, configure, config.h, config.h.in]
 
 # run all test programs
 check:
   stage: test
   script:
+    - ./configure
     - make -j4 check
   artifacts:
     paths: [autotest.json]
@@ -38,15 +40,16 @@ doc-check:
   script:
     - make doc-check
 
-# compile and run all example programs
+# compile and run all example programs, timing how long each takes to run
 examples:
   stage: test
   script:
     - make -j4 examples
-    - ls examples/*_example | sed "s#examples#./examples#g" > run_examples.sh
+    - echo '' > time.txt
+    - ls examples/*_example | sed -E "s#(.*)#echo '\1' >> time.txt; { time -p ./\1 ; } 2>> time.txt#g" > run_examples.sh
     - /bin/sh run_examples.sh
   artifacts:
-    paths: [run_examples.sh]
+    paths: [run_examples.sh, time.txt]
 
 # compile and run all example programs with valgrind
 # TODO: ensure no errors

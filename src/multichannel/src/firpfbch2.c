@@ -222,6 +222,7 @@ int FIRPFBCH2(_reset)(FIRPFBCH2() _q)
 int FIRPFBCH2(_print)(FIRPFBCH2() _q)
 {
     printf("firpfbch2_%s:\n", EXTENSION_FULL);
+    printf("    type        :   %s\n", _q->type==LIQUID_ANALYZER ? "analysis" : "synthesis");
     printf("    channels    :   %u\n", _q->M);
     printf("    h_len       :   %u\n", _q->h_len);
     printf("    semi-length :   %u\n", _q->m);
@@ -231,6 +232,24 @@ int FIRPFBCH2(_print)(FIRPFBCH2() _q)
     for (i=0; i<_q->M; i++)
         DOTPROD(_print)(_q->dp[i]);
     return LIQUID_OK;
+}
+
+// get type, either LIQUID_ANALYZER or LIQUID_SYNTHESIZER
+int FIRPFBCH2(_get_type)(FIRPFBCH2() _q)
+{
+    return _q->type;
+}
+
+// get number of channels, M
+unsigned int FIRPFBCH2(_get_M)(FIRPFBCH2() _q)
+{
+    return _q->M;
+}
+
+// get prototype filter sem-length, m
+unsigned int FIRPFBCH2(_get_m)(FIRPFBCH2() _q)
+{
+    return _q->m;
 }
 
 // execute filterbank channelizer (analyzer)

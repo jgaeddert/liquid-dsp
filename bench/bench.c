@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -85,7 +85,7 @@ double calculate_execution_time(struct rusage, struct rusage);
 
 unsigned long int num_base_trials = 1<<12;
 float cpu_clock = 1.0f; // cpu clock speed (Hz)
-float runtime=0.100f;   // minimum run time (s)
+float runtime=0.050f;   // minimum run time (s)
 
 FILE * fid; // output file id
 void output_benchmark_to_file(FILE * _fid, benchmark_t * _benchmark);
@@ -353,7 +353,7 @@ void estimate_cpu_clock(void)
 void set_num_trials_from_cpu_speed(void)
 {
     unsigned long int min_trials = 256;
-    num_base_trials = (unsigned long int) ( cpu_clock / 10e3 );
+    num_base_trials = (unsigned long int) ( cpu_clock / 20e3 );
     num_base_trials = (num_base_trials < min_trials) ? min_trials : num_base_trials;
 
     printf("  setting number of base trials to %ld\n", num_base_trials);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,38 +37,13 @@ void modem_modulate_bench(struct rusage *_start,
                           unsigned long int *_num_iterations,
                           modulation_scheme _ms)
 {
-    // normalize number of iterations
-    switch (_ms) {
-    case LIQUID_MODEM_UNKNOWN:
-        liquid_error(LIQUID_EINT,"modem_modulate_bench(), unknown modem scheme");
-        return;
-    case LIQUID_MODEM_BPSK:     *_num_iterations *= 64;     break;
-    case LIQUID_MODEM_QPSK:     *_num_iterations *= 64;     break;
-    case LIQUID_MODEM_OOK:      *_num_iterations *= 64;     break;
-    case LIQUID_MODEM_SQAM32:   *_num_iterations *= 16;     break;
-    case LIQUID_MODEM_SQAM128:  *_num_iterations *= 16;     break;
-    case LIQUID_MODEM_V29:      *_num_iterations *= 100;    break;
-    case LIQUID_MODEM_ARB16OPT: *_num_iterations *= 100;    break;
-    case LIQUID_MODEM_ARB32OPT: *_num_iterations *= 100;    break;
-    case LIQUID_MODEM_ARB64OPT: *_num_iterations *= 100;    break;
-    case LIQUID_MODEM_ARB128OPT: *_num_iterations *= 100;   break;
-    case LIQUID_MODEM_ARB256OPT: *_num_iterations *= 100;   break;
-    case LIQUID_MODEM_ARB64VT:  *_num_iterations *= 100;    break;
-    default:;
-        *_num_iterations *= 32;
-    }
-
-    if (*_num_iterations < 1) *_num_iterations = 1;
-
-
     // initialize modulator
     modem mod = modem_create(_ms);
 
+    unsigned long int i;
     float complex x;
     unsigned int symbol_in = 0;
     
-    unsigned long int i;
-
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,32 +38,28 @@ void modem_demodulate_bench(struct rusage *_start,
                             unsigned long int *_num_iterations,
                             modulation_scheme _ms)
 {
-    // normalize number of iterations
-    switch (_ms) {
-    case LIQUID_MODEM_UNKNOWN:
-        liquid_error(LIQUID_EINT,"modem_demodulate_bench(), unknown modem scheme");
-        return;
-    case LIQUID_MODEM_BPSK:     *_num_iterations *= 2;      break;
-    case LIQUID_MODEM_QPSK:     *_num_iterations *= 2;      break;
-    case LIQUID_MODEM_OOK:      *_num_iterations *= 2;      break;
-    case LIQUID_MODEM_SQAM32:   *_num_iterations /= 10;     break;
-    case LIQUID_MODEM_SQAM128:  *_num_iterations /= 20;     break;
-    case LIQUID_MODEM_V29:      *_num_iterations /= 16;     break;
-    case LIQUID_MODEM_ARB16OPT: *_num_iterations /= 8;      break;
-    case LIQUID_MODEM_ARB32OPT: *_num_iterations /= 16;     break;
-    case LIQUID_MODEM_ARB64OPT: *_num_iterations /= 32;     break;
-    case LIQUID_MODEM_ARB128OPT: *_num_iterations /= 64;    break;
-    case LIQUID_MODEM_ARB256OPT: *_num_iterations /= 128;   break;
-    case LIQUID_MODEM_ARB64VT:  *_num_iterations /= 64;     break;
-    default:;
-        *_num_iterations /= 8;
-    }
-
-    if (*_num_iterations < 1) *_num_iterations = 1;
-
-
     // initialize modulator
     modem demod = modem_create(_ms);
+
+    // normalize number of iterations
+    unsigned int bps = modem_get_bps(demod);
+    switch (_ms) {
+    case LIQUID_MODEM_UNKNOWN:
+        liquid_error(LIQUID_EINT,"modem_modulate_bench(), unknown modem scheme");
+        return;
+    case LIQUID_MODEM_ARB16OPT:
+    case LIQUID_MODEM_ARB32OPT:
+    case LIQUID_MODEM_ARB64OPT:
+    case LIQUID_MODEM_ARB128OPT:
+    case LIQUID_MODEM_ARB256OPT:
+    case LIQUID_MODEM_ARB64VT:
+    case LIQUID_MODEM_ARB:
+        *_num_iterations /= 2*(1<<bps);
+        break;
+    default:
+        *_num_iterations /= bps;
+    }
+    if (*_num_iterations < 1) *_num_iterations = 1;
 
     unsigned long int i;
 

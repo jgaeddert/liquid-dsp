@@ -5224,7 +5224,12 @@ int fskframesync_debug_export (fskframesync _q, const char * _filename);
 typedef struct gmskframegen_s * gmskframegen;
 
 // create GMSK frame generator
-gmskframegen gmskframegen_create();
+//  _k      :   samples/symbol
+//  _m      :   filter delay (symbols)
+//  _BT     :   excess bandwidth factor
+gmskframegen gmskframegen_create(unsigned int _k,
+                                 unsigned int _m,
+                                 float        _BT);
 int gmskframegen_destroy       (gmskframegen _q);
 int gmskframegen_is_assembled  (gmskframegen _q);
 int gmskframegen_print         (gmskframegen _q);
@@ -5257,9 +5262,15 @@ int gmskframegen_write(gmskframegen          _q,
 typedef struct gmskframesync_s * gmskframesync;
 
 // create GMSK frame synchronizer
+//  _k          :   samples/symbol
+//  _m          :   filter delay (symbols)
+//  _BT         :   excess bandwidth factor
 //  _callback   :   callback function
 //  _userdata   :   user data pointer passed to callback function
-gmskframesync gmskframesync_create(framesync_callback _callback,
+gmskframesync gmskframesync_create(unsigned int       _k,
+                                   unsigned int       _m,
+                                   float              _BT,
+                                   framesync_callback _callback,
                                    void *             _userdata);
 int gmskframesync_destroy(gmskframesync _q);
 int gmskframesync_print(gmskframesync _q);
@@ -5269,6 +5280,10 @@ int gmskframesync_is_frame_open(gmskframesync _q);
 int gmskframesync_execute(gmskframesync _q,
                           liquid_float_complex * _x,
                           unsigned int _n);
+// frame data statistics
+int              gmskframesync_reset_framedatastats(gmskframesync _q);
+framedatastats_s gmskframesync_get_framedatastats  (gmskframesync _q);
+
 
 // debugging
 int gmskframesync_debug_enable(gmskframesync _q);
@@ -5779,6 +5794,68 @@ int SYMSTREAM(_write_samples)(SYMSTREAM()  _q,                              \
                               unsigned int _buf_len);                       \
 
 LIQUID_SYMSTREAM_DEFINE_API(LIQUID_SYMSTREAM_MANGLE_CFLOAT, liquid_float_complex)
+
+//
+// symbol streaming, as with symstream but arbitrary output rate
+//
+#define LIQUID_SYMSTREAMR_MANGLE_CFLOAT(name) LIQUID_CONCAT(symstreamrcf,name)
+
+#define LIQUID_SYMSTREAMR_DEFINE_API(SYMSTREAMR,TO)                         \
+                                                                            \
+/* Symbol streaming generator object                                    */  \
+typedef struct SYMSTREAMR(_s) * SYMSTREAMR();                               \
+                                                                            \
+/* Create symstream object with default parameters.                     */  \
+/* This is equivalent to invoking the create_linear() method            */  \
+/* with _ftype=LIQUID_FIRFILT_ARKAISER, _k=2, _m=7, _beta=0.3, and      */  \
+/* with _ms=LIQUID_MODEM_QPSK                                           */  \
+SYMSTREAMR() SYMSTREAMR(_create)(void);                                     \
+                                                                            \
+/* Create symstream object with linear modulation                       */  \
+/*  _ftype  : filter type (e.g. LIQUID_FIRFILT_RRC)                     */  \
+/*  _bw     : relative signal bandwidth, 0.001 <= _bw <= 1.0            */  \
+/*  _m      : filter delay (symbols), _m > 0                            */  \
+/*  _beta   : filter excess bandwidth, 0 < _beta <= 1                   */  \
+/*  _ms     : modulation scheme, e.g. LIQUID_MODEM_QPSK                 */  \
+SYMSTREAMR() SYMSTREAMR(_create_linear)(int          _ftype,                \
+                                        float        _bw,                   \
+                                        unsigned int _m,                    \
+                                        float        _beta,                 \
+                                        int          _ms);                  \
+                                                                            \
+/* Destroy symstream object, freeing all internal memory                */  \
+int SYMSTREAMR(_destroy)(SYMSTREAMR() _q);                                  \
+                                                                            \
+/* Print symstream object's parameters                                  */  \
+int SYMSTREAMR(_print)(SYMSTREAMR() _q);                                    \
+                                                                            \
+/* Reset symstream internal state                                       */  \
+int SYMSTREAMR(_reset)(SYMSTREAMR() _q);                                    \
+                                                                            \
+/* Set internal linear modulation scheme, leaving the filter parameters */  \
+/* (interpolator) unmodified                                            */  \
+int SYMSTREAMR(_set_scheme)(SYMSTREAMR() _q,                                \
+                           int         _ms);                                \
+                                                                            \
+/* Get internal linear modulation scheme                                */  \
+int SYMSTREAMR(_get_scheme)(SYMSTREAMR() _q);                               \
+                                                                            \
+/* Set internal linear gain (before interpolation)                      */  \
+int SYMSTREAMR(_set_gain)(SYMSTREAMR() _q,                                  \
+                         float       _gain);                                \
+                                                                            \
+/* Get internal linear gain (before interpolation)                      */  \
+float SYMSTREAMR(_get_gain)(SYMSTREAMR() _q);                               \
+                                                                            \
+/* Write block of samples to output buffer                              */  \
+/*  _q      : synchronizer object                                       */  \
+/*  _buf    : output buffer [size: _buf_len x 1]                        */  \
+/*  _buf_len: output buffer size                                        */  \
+int SYMSTREAMR(_write_samples)(SYMSTREAMR()  _q,                            \
+                              TO *         _buf,                            \
+                              unsigned int _buf_len);                       \
+
+LIQUID_SYMSTREAMR_DEFINE_API(LIQUID_SYMSTREAMR_MANGLE_CFLOAT, liquid_float_complex)
 
 
 
@@ -7714,6 +7791,15 @@ int FIRPFBCH2(_reset)(FIRPFBCH2() _q);                          \
                                                                 \
 /* print firpfbch2 object internals                         */  \
 int FIRPFBCH2(_print)(FIRPFBCH2() _q);                          \
+                                                                \
+/* get type, either LIQUID_ANALYZER or LIQUID_SYNTHESIZER   */  \
+int FIRPFBCH2(_get_type)(FIRPFBCH2() _q);                       \
+                                                                \
+/* get number of channels, M                                */  \
+unsigned int FIRPFBCH2(_get_M)(FIRPFBCH2() _q);                 \
+                                                                \
+/* get prototype filter sem-length, m                       */  \
+unsigned int FIRPFBCH2(_get_m)(FIRPFBCH2() _q);                 \
                                                                 \
 /* execute filterbank channelizer                           */  \
 /* LIQUID_ANALYZER:     input: M/2, output: M               */  \

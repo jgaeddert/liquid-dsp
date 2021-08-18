@@ -160,7 +160,7 @@ void liquid_autotest_print_array(unsigned char * _x,
 {                                                                   \
     if ((X)>=(Y))                                                   \
     {                                                               \
-        liquid_autotest_failed_expr(F,L,EX,X,">",EY,Y);             \
+        liquid_autotest_failed_expr(F,L,EX,X,"<",EY,Y);             \
     } else {                                                        \
         liquid_autotest_passed();                                   \
     }                                                               \
@@ -197,6 +197,19 @@ void liquid_autotest_print_array(unsigned char * _x,
 }
 #define CONTEND_EXPRESSION_FL(F,L,X)      TEST_EXPRESSION(F,L,#X,(X))
 #define CONTEND_EXPRESSION(X)             CONTEND_EXPRESSION_FL(__FILE__,__LINE__,X)
+
+// CONTEND_ISNULL
+#define TEST_ISNULL(F,L,EX,X)                                       \
+{                                                                   \
+    if ((void*)(X)!=(NULL))                                         \
+    {                                                               \
+        liquid_autotest_failed_expr(F,L,EX,(long)X,"==","NULL",1);  \
+    } else {                                                        \
+         liquid_autotest_passed();                                  \
+    }                                                               \
+}
+#define CONTEND_ISNULL_FL(F,L,X)          TEST_ISNULL(F,L,#X,(X))
+#define CONTEND_ISNULL(X)                 CONTEND_ISNULL_FL(__FILE__,__LINE__,X)
 
 // CONTEND_SAME_DATA
 #define TEST_SAME_DATA(F,L,EX,X,EY,Y,EN,N)                                      \

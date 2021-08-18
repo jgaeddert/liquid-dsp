@@ -21,7 +21,7 @@ int main(int argc, char*argv[])
     // create frame generator, synchronizer objects
     framegen64  fg = framegen64_create();
     framesync64 fs = framesync64_create(NULL,NULL);
-    unsigned int num_trials = 500;
+    unsigned int num_trials = 100;
 
     // create buffer for the frame samples
     float complex frame[LIQUID_FRAME64_LEN];

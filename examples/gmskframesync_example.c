@@ -1,8 +1,4 @@
-//
-// gmskframesync_example.c
-//
 // Example demonstrating the GMSK flexible frame synchronizer.
-//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,6 +44,9 @@ int main(int argc, char*argv[])
 {
     srand(time(NULL));
 
+    unsigned int k = 2;             // samples/symbol
+    unsigned int m = 3;             // filter delay (symbols)
+    float BT = 0.5f;                // filter bandwidth-time product
     unsigned int payload_len = 40;  // length of payload (bytes)
     crc_scheme check = LIQUID_CRC_32;
     fec_scheme fec0  = LIQUID_FEC_HAMMING128;
@@ -99,9 +98,6 @@ int main(int argc, char*argv[])
 
     unsigned int i;
 
-    // fixed values
-    unsigned int k = 2;
-
     // derived values
     float nstd  = powf(10.0f, noise_floor/20.0f);
     float gamma = powf(10.0f, (SNRdB + noise_floor)/20.0f);
@@ -114,10 +110,10 @@ int main(int argc, char*argv[])
     struct framedata_s fd = {payload, payload_len};
 
     // create frame generator
-    gmskframegen fg = gmskframegen_create();
+    gmskframegen fg = gmskframegen_create(k, m, BT);
 
     // create frame synchronizer
-    gmskframesync fs = gmskframesync_create(callback, (void*)&fd);
+    gmskframesync fs = gmskframesync_create(k, m, BT, callback, (void*)&fd);
     if (debug_enabled)
         gmskframesync_debug_enable(fs);
 
@@ -160,10 +156,11 @@ int main(int argc, char*argv[])
     if (debug_enabled)
         gmskframesync_debug_print(fs, "gmskframesync_debug.m");
 
+    gmskframesync_print(fs);
+
     // destroy objects
     gmskframegen_destroy(fg);
     gmskframesync_destroy(fs);
-
 
     // 
     // export output
