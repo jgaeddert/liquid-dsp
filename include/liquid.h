@@ -7792,6 +7792,15 @@ int FIRPFBCH2(_reset)(FIRPFBCH2() _q);                          \
 /* print firpfbch2 object internals                         */  \
 int FIRPFBCH2(_print)(FIRPFBCH2() _q);                          \
                                                                 \
+/* get type, either LIQUID_ANALYZER or LIQUID_SYNTHESIZER   */  \
+int FIRPFBCH2(_get_type)(FIRPFBCH2() _q);                       \
+                                                                \
+/* get number of channels, M                                */  \
+unsigned int FIRPFBCH2(_get_M)(FIRPFBCH2() _q);                 \
+                                                                \
+/* get prototype filter sem-length, m                       */  \
+unsigned int FIRPFBCH2(_get_m)(FIRPFBCH2() _q);                 \
+                                                                \
 /* execute filterbank channelizer                           */  \
 /* LIQUID_ANALYZER:     input: M/2, output: M               */  \
 /* LIQUID_SYNTHESIZER:  input: M,   output: M/2             */  \
