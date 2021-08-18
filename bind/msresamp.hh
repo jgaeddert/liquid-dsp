@@ -88,7 +88,8 @@ class msresamp : public object
 #ifdef PYTHONLIB
 void init_msresamp(py::module &m)
 {
-    py::class_<msresamp>(m, "msresamp")
+    py::class_<msresamp>(m, "msresamp",
+        "Multi-stage arbitrary rate resampler")
         //.def(py::init<std::string, py::kwargs>())
         .def(py::init<float, float>(),
              py::arg("rate")=1.0f,

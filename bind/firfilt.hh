@@ -196,7 +196,8 @@ class firfilt : public object
 #ifdef PYTHONLIB
 void init_firfilt(py::module &m)
 {
-    py::class_<firfilt>(m, "firfilt")
+    py::class_<firfilt>(m, "firfilt",
+        "Finite impulse response filter")
         .def(py::init<py::array_t<float>>(),
             py::arg("h"),
             "create filter from coefficients")

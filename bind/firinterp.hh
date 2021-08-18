@@ -138,7 +138,8 @@ class firinterp : public object
 #ifdef PYTHONLIB
 void init_firinterp(py::module &m)
 {
-    py::class_<firinterp>(m, "firinterp")
+    py::class_<firinterp>(m, "firinterp",
+        "Finite impulse response interpolator")
         //.def(py::init<std::string, py::kwargs>())
         .def(py::init<unsigned int, unsigned int, float>(),
              py::arg("M"), py::arg("m")=12, py::arg("As")=60.,

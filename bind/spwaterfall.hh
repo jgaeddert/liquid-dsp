@@ -122,7 +122,8 @@ class spwaterfall : public object
 #ifdef PYTHONLIB
 void init_spwaterfall(py::module &m)
 {
-    py::class_<spwaterfall>(m, "spwaterfall")
+    py::class_<spwaterfall>(m, "spwaterfall",
+        "Spectral periodogram-based waterfall generator")
         .def(py::init<unsigned int,unsigned int,unsigned int,unsigned int,std::string>(),
              py::arg("nfft")=800,
              py::arg("time")=800,

@@ -85,7 +85,7 @@ class fg64 : public object
 #ifdef PYTHONLIB
 void init_fg64(py::module &m)
 {
-    py::class_<fg64>(m, "fg64")
+    py::class_<fg64>(m, "fg64", "Frame generator with 64-byte payload")
         .def(py::init<>())
         .def("__repr__", &fg64::repr)
         .def_property_readonly("header_len",
