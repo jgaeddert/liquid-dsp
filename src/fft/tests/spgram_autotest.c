@@ -66,7 +66,7 @@ void testbench_spgramcf_noise(unsigned int _nfft,
 }
 
 // test different transform sizes, default parameters
-void autotest_spgramcf_noise_400()  { testbench_spgramcf_noise( 440, 0, 0, 0, -80.0); }
+void autotest_spgramcf_noise_440()  { testbench_spgramcf_noise( 440, 0, 0, 0, -80.0); }
 void autotest_spgramcf_noise_1024() { testbench_spgramcf_noise(1024, 0, 0, 0, -80.0); }
 void autotest_spgramcf_noise_1200() { testbench_spgramcf_noise(1200, 0, 0, 0, -80.0); }
 void autotest_spgramcf_noise_8400() { testbench_spgramcf_noise(8400, 0, 0, 0, -80.0); }
