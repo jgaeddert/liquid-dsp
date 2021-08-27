@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,8 @@
 #include "liquid.internal.h"
 
 void testbench_spgramcf_noise(unsigned int _nfft,
+                              unsigned int _wlen,
+                              unsigned int _delay,
                               int          _wtype,
                               float        _noise_floor)
 {
@@ -37,8 +39,11 @@ void testbench_spgramcf_noise(unsigned int _nfft,
         printf("  spgramcf test  (noise): nfft=%6u, wtype=%24s, noise floor=%6.1f\n", _nfft, liquid_window_str[_wtype][1], _noise_floor);
 
     // create spectral periodogram
-    spgramcf q = _wtype == LIQUID_WINDOW_UNKNOWN ? spgramcf_create_default(_nfft) :
-                 spgramcf_create(_nfft, _wtype, _nfft/2, _nfft/4);
+    spgramcf q = NULL;
+    if (_wlen==0 || _delay==0 || _wtype==LIQUID_WINDOW_UNKNOWN)
+        q = spgramcf_create_default(_nfft);
+    else
+        q = spgramcf_create(_nfft, _wtype, _wlen, _delay);
 
     unsigned int i;
     for (i=0; i<num_samples; i++)
@@ -60,22 +65,22 @@ void testbench_spgramcf_noise(unsigned int _nfft,
     spgramcf_destroy(q);
 }
 
-// test different transform sizes
-void autotest_spgramcf_noise_400()  { testbench_spgramcf_noise( 440, 0, -80.0); }
-void autotest_spgramcf_noise_1024() { testbench_spgramcf_noise(1024, 0, -80.0); }
-void autotest_spgramcf_noise_1200() { testbench_spgramcf_noise(1200, 0, -80.0); }
-void autotest_spgramcf_noise_8400() { testbench_spgramcf_noise(8400, 0, -80.0); }
+// test different transform sizes, default parameters
+void autotest_spgramcf_noise_400()  { testbench_spgramcf_noise( 440, 0, 0, 0, -80.0); }
+void autotest_spgramcf_noise_1024() { testbench_spgramcf_noise(1024, 0, 0, 0, -80.0); }
+void autotest_spgramcf_noise_1200() { testbench_spgramcf_noise(1200, 0, 0, 0, -80.0); }
+void autotest_spgramcf_noise_8400() { testbench_spgramcf_noise(8400, 0, 0, 0, -80.0); }
 
 // test different window types
-void autotest_spgramcf_noise_hamming        () { testbench_spgramcf_noise(800, LIQUID_WINDOW_HAMMING,        -80.0); }
-void autotest_spgramcf_noise_hann           () { testbench_spgramcf_noise(800, LIQUID_WINDOW_HANN,           -80.0); }
-void autotest_spgramcf_noise_blackmanharris () { testbench_spgramcf_noise(800, LIQUID_WINDOW_BLACKMANHARRIS, -80.0); }
-void autotest_spgramcf_noise_blackmanharris7() { testbench_spgramcf_noise(800, LIQUID_WINDOW_BLACKMANHARRIS7,-80.0); }
-void autotest_spgramcf_noise_kaiser         () { testbench_spgramcf_noise(800, LIQUID_WINDOW_KAISER,         -80.0); }
-void autotest_spgramcf_noise_flattop        () { testbench_spgramcf_noise(800, LIQUID_WINDOW_FLATTOP,        -80.0); }
-void autotest_spgramcf_noise_triangular     () { testbench_spgramcf_noise(800, LIQUID_WINDOW_TRIANGULAR,     -80.0); }
-void autotest_spgramcf_noise_rcostaper      () { testbench_spgramcf_noise(800, LIQUID_WINDOW_RCOSTAPER,      -80.0); }
-void autotest_spgramcf_noise_kbd            () { testbench_spgramcf_noise(800, LIQUID_WINDOW_KBD,            -80.0); }
+void autotest_spgramcf_noise_hamming        () { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_HAMMING,        -80.0); }
+void autotest_spgramcf_noise_hann           () { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_HANN,           -80.0); }
+void autotest_spgramcf_noise_blackmanharris () { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_BLACKMANHARRIS, -80.0); }
+void autotest_spgramcf_noise_blackmanharris7() { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_BLACKMANHARRIS7,-80.0); }
+void autotest_spgramcf_noise_kaiser         () { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_KAISER,         -80.0); }
+void autotest_spgramcf_noise_flattop        () { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_FLATTOP,        -80.0); }
+void autotest_spgramcf_noise_triangular     () { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_TRIANGULAR,     -80.0); }
+void autotest_spgramcf_noise_rcostaper      () { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_RCOSTAPER,      -80.0); }
+void autotest_spgramcf_noise_kbd            () { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_KBD,            -80.0); }
 
 void testbench_spgramcf_signal(unsigned int _nfft, int _wtype, float _fc, float _SNRdB)
 {
