@@ -69,7 +69,12 @@ void testbench_spgramcf_noise(unsigned int _nfft,
 void autotest_spgramcf_noise_440()  { testbench_spgramcf_noise( 440, 0, 0, 0, -80.0); }
 void autotest_spgramcf_noise_1024() { testbench_spgramcf_noise(1024, 0, 0, 0, -80.0); }
 void autotest_spgramcf_noise_1200() { testbench_spgramcf_noise(1200, 0, 0, 0, -80.0); }
-void autotest_spgramcf_noise_8400() { testbench_spgramcf_noise(8400, 0, 0, 0, -80.0); }
+
+// test different transform sizes, specific parameters
+void autotest_spgramcf_noise_custom_0() { testbench_spgramcf_noise(400, 400, 100, LIQUID_WINDOW_HAMMING, -80.0); }
+void autotest_spgramcf_noise_custom_1() { testbench_spgramcf_noise(512, 200, 120, LIQUID_WINDOW_HAMMING, -80.0); }
+void autotest_spgramcf_noise_custom_2() { testbench_spgramcf_noise(640, 100,  10, LIQUID_WINDOW_HAMMING, -80.0); }
+void autotest_spgramcf_noise_custom_3() { testbench_spgramcf_noise(960,  83,  17, LIQUID_WINDOW_HAMMING, -80.0); }
 
 // test different window types
 void autotest_spgramcf_noise_hamming        () { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_HAMMING,        -80.0); }

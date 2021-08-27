@@ -142,11 +142,11 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
         }
     }
 
-    // scale by window magnitude, FFT size
+    // scale by window magnitude
     float g = 0.0f;
     for (i=0; i<q->window_len; i++)
         g += q->w[i] * q->w[i];
-    g = M_SQRT2 / ( sqrtf(g / q->window_len) * sqrtf((float)(q->nfft)) );
+    g = 1.0f / sqrtf(g);
 
     // scale window and copy
     for (i=0; i<q->window_len; i++)
