@@ -6,6 +6,7 @@
 #include "fg64.hh"
 #include "fs64.hh"
 #include "msresamp.hh"
+#include "spgram.hh"
 #include "spwaterfall.hh"
 
 namespace liquid {
@@ -79,6 +80,7 @@ PYBIND11_MODULE(liquid, m) {
     liquid::init_fg64       (m);
     liquid::init_fs64       (m);
     liquid::init_msresamp   (m);
+    liquid::init_spgram     (m);
     liquid::init_spwaterfall(m);
 }
 
