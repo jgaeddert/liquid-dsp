@@ -6,6 +6,8 @@
 #include "fg64.hh"
 #include "fs64.hh"
 #include "msresamp.hh"
+#include "ofdmflexframetx.hh"
+#include "ofdmflexframerx.hh"
 #include "spgram.hh"
 #include "spwaterfall.hh"
 
@@ -56,6 +58,8 @@ PYBIND11_MODULE(liquid, m) {
     liquid::init_fg64       (m);
     liquid::init_fs64       (m);
     liquid::init_msresamp   (m);
+    liquid::init_ofdmflexframetx(m);
+    liquid::init_ofdmflexframerx(m);
     liquid::init_spgram     (m);
     liquid::init_spwaterfall(m);
 }
