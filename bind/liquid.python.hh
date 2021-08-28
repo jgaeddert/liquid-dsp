@@ -21,6 +21,10 @@ bool validate_dict(py::dict dst, py::dict src);
 // validate and update
 py::dict update_dict(py::dict dst, py::dict src);
 
+py::dict framesyncstats_to_dict(framesyncstats_s _stats,
+                                bool             _header_valid=true,
+                                bool             _payload_valid=true);
+
 // callback wrapper to bind user-defined callback to python
 int py_callback_wrapper(
         unsigned char *  _header,

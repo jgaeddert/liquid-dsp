@@ -32,6 +32,18 @@ py::dict update_dict(py::dict dst, py::dict src)
     return r;
 }
 
+py::dict framesyncstats_to_dict(framesyncstats_s _stats,
+                                bool             _header_valid,
+                                bool             _payload_valid)
+{
+    std::complex<float> * s = (std::complex<float>*) _stats.framesyms;
+    py::array_t<std::complex<float>> syms({_stats.num_framesyms,},{sizeof(std::complex<float>),},s);
+    return py::dict(
+        "header"_a = _header_valid, "payload"_a = _payload_valid, "evm"_a = _stats.evm,
+        "rssi"_a = _stats.rssi,  "cfo"_a = _stats.cfo,
+        "syms"_a = syms);
+}
+
 PYBIND11_MODULE(liquid, m) {
     m.doc() = "software-defined radio signal processing library";
 
