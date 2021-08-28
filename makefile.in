@@ -441,6 +441,7 @@ filter_objects :=						\
 filter_includes :=						\
 	src/filter/src/autocorr.c				\
 	src/filter/src/dds.c					\
+	src/filter/src/fdelay.c					\
 	src/filter/src/fftfilt.c				\
 	src/filter/src/firdecim.c				\
 	src/filter/src/firfarrow.c				\

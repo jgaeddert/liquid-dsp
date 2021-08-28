@@ -32,6 +32,7 @@
 
 // 
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_crcf,name)
+#define FDELAY(name)        LIQUID_CONCAT(fdelay_crcf,name)
 #define FFTFILT(name)       LIQUID_CONCAT(fftfilt_crcf,name)
 #define FIRDECIM(name)      LIQUID_CONCAT(firdecim_crcf,name)
 #define FIRFARROW(name)     LIQUID_CONCAT(firfarrow_crcf,name)
@@ -68,6 +69,7 @@
 
 // source files
 //#include "autocorr.c"
+#include "fdelay.c"
 #include "fftfilt.c"
 #include "firdecim.c"
 #include "firfarrow.c"
