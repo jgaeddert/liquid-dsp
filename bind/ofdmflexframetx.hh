@@ -36,8 +36,7 @@ class ofdmflexframetx : public object
         { ofdmflexframegen_assemble(q, _header, _payload, _payload_len); }
 
     // write samples to buffer
-    void generate(std::complex<float> * _buf,
-                  unsigned int          _buf_len)
+    void generate(std::complex<float> * _buf, unsigned int _buf_len)
         { ofdmflexframegen_write(q, _buf, _buf_len); }
 
     bool is_assembled() const { return ofdmflexframegen_is_assembled(q); }
@@ -51,38 +50,35 @@ class ofdmflexframetx : public object
                      py::object & _payload)
     {
         // initialize pointers for header and payload
-        unsigned char * header_ptr(NULL);
+        unsigned char * header_ptr (NULL);
         unsigned char * payload_ptr(NULL);
 
         // determine header
         if (py::isinstance<py::array_t<uint8_t>>(_header)) {
             // get output info and validate size/shape
             py::buffer_info header = py::cast<py::array_t<uint8_t>>(_header).request();
-            //if (header.itemsize != sizeof(uint8_t))
-            //    throw std::runtime_error("invalid header input numpy size, use dtype=np.uint8");
             if (header.ndim != 1)
                 throw std::runtime_error("invalid header number of input dimensions, must be 1-D array");
             if (header.shape[0] != 8)
                 throw std::runtime_error("invalid header length; expected 8");
             header_ptr = (unsigned char*) header.ptr;
         } else if (!py::isinstance<py::none>(_header)) {
-            throw std::runtime_error("invalid header type");
+            throw std::runtime_error("invalid header type; expected None or dtype=np.uint8");
         }
 
         // determine payload
-        unsigned int payload_len = 64;
+        unsigned int payload_len = 64; // default if type is None
         if (py::isinstance<py::array_t<uint8_t>>(_payload)) {
             py::buffer_info payload = py::cast<py::array_t<uint8_t>>(_payload).request();
-            //if (payload.itemsize != sizeof(uint8_t))
-            //    throw std::runtime_error("invalid payload input numpy size, use dtype=np.uint8");
             if (payload.ndim != 1)
                 throw std::runtime_error("invalid payload number of input dimensions, must be 1-D array");
             payload_len = payload.shape[0];
             payload_ptr = (unsigned char*) payload.ptr;
         } else if (!py::isinstance<py::none>(_payload)) {
-            throw std::runtime_error("invalid payload type");
+            throw std::runtime_error("invalid payload type; expected None or dtype=np.uint8");
         }
 
+        // assemble frame
         assemble(header_ptr, payload_ptr, payload_len);
     }
 
