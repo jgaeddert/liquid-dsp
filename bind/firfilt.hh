@@ -222,7 +222,8 @@ void init_firfilt(py::module &m)
             "get coefficients from filter")
         .def_property("scale",
             &firfilt::get_scale,
-            &firfilt::set_scale)
+            &firfilt::set_scale,
+            "get/set filter output scaling property")
         ;
 }
 #endif
