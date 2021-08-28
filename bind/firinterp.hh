@@ -146,9 +146,17 @@ void init_firinterp(py::module &m)
              "create default interpolator given rate")
         .def("__repr__", &firinterp::repr)
         .def("reset",      &firinterp::reset,      "reset object's internal state")
-        .def("display",    &firinterp::display,    "print object properties to stdout")
         .def("execute",    &firinterp::py_execute, "execute on a block of samples")
-        //.def_property("scale", &firinterp::get_scale, &firfilt::set_scale)
+        .def_property_readonly("rate",
+            &firinterp::get_interp_rate,
+            "get interpolation rate")
+        .def_property_readonly("semilength",
+            &firinterp::get_sub_len,
+            "get interpolator semi-rate")
+        .def_property("scale",
+            &firinterp::get_scale,
+            &firinterp::set_scale,
+            "get/set filter output scaling property")
         ;
 }
 #endif
