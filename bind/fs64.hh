@@ -135,16 +135,11 @@ int py_callback_wrapper(
     return 0;
 }
 
-// default callback function
-py_framesync_callback py_fs64_default_callback = [](py::object,
-                                                    py::array_t<uint8_t>,
-                                                    py::array_t<uint8_t>,
-                                                    py::dict) { return py::none(); };
 void init_fs64(py::module &m)
 {
     py::class_<fs64>(m, "fs64", "Frame synchronizer with 64-byte payload")
         .def(py::init<py_framesync_callback,py::object>(),
-             py::arg("callback") = py_fs64_default_callback,
+             py::arg("callback") = py_framesync_callback_default,
              py::arg("context") = py::none(),
              "create synchronizer given callback function and context")
         .def("__repr__", &fs64::repr)

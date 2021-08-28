@@ -40,6 +40,15 @@ typedef std::function<py::object(py::object,
                                  py::array_t<uint8_t>,
                                  py::array_t<uint8_t>,
                                  py::dict)> py_framesync_callback;
+
+// default callback function
+static py_framesync_callback py_framesync_callback_default =
+    [](py::object,
+       py::array_t<uint8_t>,
+       py::array_t<uint8_t>,
+       py::dict)
+    { return py::none(); };
+
 } // namespace liquid
 
 #endif // __LIQUID_PYTHON_HH__
