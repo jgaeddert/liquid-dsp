@@ -17,6 +17,14 @@ compile:
   artifacts: # save output objects for test stages
     paths: [makefile, configure, config.h, config.h.in]
 
+# build from scratch
+python:
+  stage: build
+  script:
+    - ./bootstrap.sh
+    - ./configure
+    - make -j4 python
+
 # run all test programs
 check:
   stage: test
