@@ -11,6 +11,18 @@
 
 namespace liquid {
 
+#ifdef PYTHONLIB
+// forward declaration of callback wrapper
+int py_callback_wrapper_fs64(
+        unsigned char *  _header,
+        int              _header_valid,
+        unsigned char *  _payload,
+        unsigned int     _payload_len,
+        int              _payload_valid,
+        framesyncstats_s _stats,
+        void *           _userdata);
+#endif
+
 // suppress "declared with greater visibility than the type of its field" warnings
 // see: https://stackoverflow.com/questions/2828738/c-warning-declared-with-greater-visibility-than-the-type-of-its-field#3170163
 // see: https://gcc.gnu.org/wiki/Visibility
@@ -62,7 +74,7 @@ class fs64 : public object
 #ifdef PYTHONLIB
   private:
     py_framesync_callback py_callback;
-    friend int py_callback_wrapper(
+    friend int py_callback_wrapper_fs64(
             unsigned char *  _header,
             int              _header_valid,
             unsigned char *  _payload,
@@ -75,7 +87,7 @@ class fs64 : public object
     fs64(py_framesync_callback _callback,
          py::object            _context)
     {
-        q = framesync64_create(py_callback_wrapper, this);
+        q = framesync64_create(py_callback_wrapper_fs64, this);
         py_callback = _callback;
         context     = _context;
     }
@@ -108,7 +120,7 @@ class fs64 : public object
 #pragma GCC visibility pop
 
 #ifdef PYTHONLIB
-int py_callback_wrapper(
+int py_callback_wrapper_fs64(
         unsigned char *  _header,
         int              _header_valid,
         unsigned char *  _payload,
