@@ -10,8 +10,8 @@ int main() {
     unsigned int nmax       = 200;  // maximum delay
     unsigned int m          =  12;  // filter semi-length
     unsigned int npfb       =  10;  // fractional delay resolution
-    unsigned int num_samples= 400;  // number of samples to run
-    float        delay      = 7.7;  // requested delay
+    unsigned int num_samples= 240;  // number of samples to run
+    float        delay      =27.8;  // requested delay
 
     // design filter from prototype and scale to bandwidth
     fdelay_rrrf q = fdelay_rrrf_create(nmax, m, npfb);
@@ -31,26 +31,17 @@ int main() {
         fdelay_rrrf_execute(q, &y[i]);
     }
 
-    // measure delay
-    int   imax;
-    float ymax=0;
-    for (i=0; i<num_samples; i++) {
-        if (i==0 || fabsf(y[i]) > ymax) {
-            imax = i;
-            ymax = fabsf(y[i]);
-        }
-    }
-    // TODO: interpolate
-    // assert imax > 0 && imax < nmax-1
-    float yneg=y[imax-1], y0=y[imax], ypos=y[imax+1];
-    float a     =  0.5f*(ypos + yneg) - y0;
-    float b     =  0.5f*(ypos - yneg);
-    float c     =  y0;
-    float tau   = -b / (2.0f*a); //-0.5f*(ypos - yneg) / (ypos + yneg - 2*y0);
-    printf("imax=%d, ymax=%f, delay=%f\n", imax-m, ymax, imax-m+tau);
-
     // destroy filter object
     fdelay_rrrf_destroy(q);
+
+    // estimate delay; assumes input is impulse and uses phase at
+    // single point of frequency estimate evaluation
+    float fc = 0.1f / (float)num_samples; // sufficiently small
+    float complex v = 0.0f;
+    for (i=0; i<num_samples; i++)
+        v += y[i] * cexpf(_Complex_I*2*M_PI*fc*i);
+    float delay_est = cargf(v) / (2*M_PI*fc) - (float)m;
+    printf("fdelay = %g (%g)\n", delay_est, delay);
 
     // plot results to output file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
@@ -64,8 +55,6 @@ int main() {
         fprintf(fid,"y(%4u) = %12.4e;\n", i+1, y[i]);
     }
     fprintf(fid,"t=0:(n-1);\n");
-    fprintf(fid,"imax=%u; a=%f; b=%f; c=%f; tau=%f;\n",imax,a,b,c,tau);
-    fprintf(fid,"dt=[-1.2:0.01:1.2]; yp=polyval([a,b,c],dt);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
     fprintf(fid,"  plot(t,x,'-x','Color',[0 0.3 0.5],'LineWidth',1);\n");
@@ -75,12 +64,10 @@ int main() {
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(2,1,2);\n");
     fprintf(fid,"  plot(t-m,y,'-x','Color',[0 0.3 0.5],'LineWidth',1,...\n");
-    fprintf(fid,"       dt+imax-m,yp,'-r',...\n");
-    fprintf(fid,"       tau+imax-m,polyval([a,b,c],tau),'or',...\n");
-    fprintf(fid,"       [delay delay],[-0.2 1.2],'-r');\n");
+    fprintf(fid,"       [delay delay],[-0.1 1.1],'-r');\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('output');\n");
-    fprintf(fid,"  xlim([-3 3]+delay);\n");
+    fprintf(fid,"  xlim([-3 3]+delay); ylim([-0.2 1.2]);\n");
     fprintf(fid,"  grid on;\n");
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
