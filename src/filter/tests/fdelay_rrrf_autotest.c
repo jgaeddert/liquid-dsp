@@ -24,9 +24,7 @@
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
-// 
-// AUTOTEST : test half-band filterbank (analyzer)
-//
+// test setting filter delay
 void testbench_fdelay_rrrf(unsigned int _nmax,
                            unsigned int _m,
                            unsigned int _npfb,
@@ -86,4 +84,34 @@ void autotest_fdelay_rrrf_6()  { testbench_fdelay_rrrf(200, 12, 64,  17.00f  ); 
 void autotest_fdelay_rrrf_7()  { testbench_fdelay_rrrf(200, 12, 64,  17.01f  ); }
 void autotest_fdelay_rrrf_8()  { testbench_fdelay_rrrf(200, 12, 64, 199.9f   ); }
 void autotest_fdelay_rrrf_9()  { testbench_fdelay_rrrf(200, 12, 64, 200.0f   ); }
+
+void autotest_fdelay_rrrf_invalid_config()
+{
+#ifdef LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("delay_rrrf test not run with strict mode enabled");
+    return;
+#endif
+    AUTOTEST_WARN("testing delay_rrrf invalid configurations; ignore printed errors");
+    // default configurations
+    unsigned int nmax  = 200;
+    unsigned int m     =  12;
+    unsigned int npfb  =  64;
+
+    // test invalid configurations, normal construction
+    CONTEND_ISNULL(fdelay_rrrf_create(   0, m, npfb))
+    CONTEND_ISNULL(fdelay_rrrf_create(nmax, 0, npfb))
+    CONTEND_ISNULL(fdelay_rrrf_create(nmax, m,    0))
+
+    // test invalid configurations, default construction
+    CONTEND_ISNULL(fdelay_rrrf_create_default(   0))
+
+    // create proper object but test invalid internal configurations
+    fdelay_rrrf q = fdelay_rrrf_create_default(nmax);
+
+    CONTEND_INEQUALITY(LIQUID_OK, fdelay_rrrf_set_delay   (q, -1))
+    CONTEND_INEQUALITY(LIQUID_OK, fdelay_rrrf_set_delay   (q, nmax+1))
+    CONTEND_INEQUALITY(LIQUID_OK, fdelay_rrrf_adjust_delay(q, -1))
+
+    fdelay_rrrf_destroy(q);
+}
 
