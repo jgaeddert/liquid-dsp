@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 struct FDELAY(_s) {
     unsigned int    nmax;       // maximum delay allowed
@@ -61,8 +62,9 @@ FDELAY() FDELAY(_create)(unsigned int _nmax,
     q->m    = _m;
     q->npfb = _npfb;
 
-    // create window (internal buffer)
-    q->w = WINDOW(_create)(q->nmax);
+    // create window (internal buffer); provision 1 extra sample to account
+    // for additional delay
+    q->w = WINDOW(_create)(q->nmax + 1);
 
     // create polyphase filter-bank
     q->pfb = FIRPFB(_create_default)(q->npfb, q->m);
@@ -93,10 +95,18 @@ int FDELAY(_destroy)(FDELAY() _q)
 int FDELAY(_reset)(FDELAY() _q)
 {
     _q->delay = 0.0f;
-    _q->w_index = 0;
+    _q->w_index = _q->nmax-1;
     _q->f_index = 0;
     WINDOW(_reset)(_q->w);
     FIRPFB(_reset)(_q->pfb);
+    return LIQUID_OK;
+}
+
+// Print delay object internals
+int FDELAY(_print)(FDELAY() _q)
+{
+    printf("<fdelay, nmax=%u, m=%u, npfb=%u, delay=%.6f>\n",
+            _q->nmax, _q->m, _q->npfb, _q->delay);
     return LIQUID_OK;
 }
 
@@ -106,14 +116,45 @@ float FDELAY(_get_delay)(FDELAY() _q)
     return _q->delay;
 }
 
-int FDELAY(_set_delay)(FDELAY() _q, float _delay)
+int FDELAY(_set_delay)(FDELAY() _q,
+                       float    _delay)
 {
+    if (_delay < 0) {
+        return liquid_error(LIQUID_EIVAL,"fdelay_%s_set_delay(), delay (%g) cannot be negative",
+                EXTENSION_FULL, _delay);
+    } else if (_delay > _q->nmax) {
+        return liquid_error(LIQUID_EIVAL,"fdelay_%s_set_delay(), delay (%g) cannot exceed maximum (%u)",
+                EXTENSION_FULL, _delay, _q->nmax);
+    }
+
+    // compute offset from delay and integer/fractional components
+    float offset   = (float)(_q->nmax) - _delay;
+    int   intpart  = (int) floorf(offset);
+    float fracpart = offset - (float)intpart;
+
+    // set indices appropriately
+    _q->w_index = intpart;
+    _q->f_index = (unsigned int)roundf(_q->npfb * fracpart);
+    while (_q->f_index >= _q->npfb) {
+        _q->w_index++;
+        _q->f_index -= _q->npfb;
+    }
+    // ensure valid range; clip if needed. Note that w_index can be equal
+    // to nmax because the window was provisioned for nmax+1
+    if (_q->w_index > _q->nmax)
+        return liquid_error(LIQUID_EINT,"fdelay_%s_set_delay(), logic error: window index exceeds maximum", EXTENSION_FULL);
+#if 0
+    // debug
+    printf("delay:%f -> offset:%f -> %d + %f -> %d + (%u/%u)\n",
+           _delay, offset, intpart, fracpart, _q->w_index, _q->f_index, _q->npfb);
+#endif
+    _q->delay = _delay;
     return LIQUID_OK;
 }
 
 int FDELAY(_adjust_delay)(FDELAY() _q, float _delta)
 {
-    return LIQUID_OK;
+    return FDELAY(_set_delay)(_q, _q->delay + _delta);
 }
 
 unsigned int FDELAY(_get_nmax)(FDELAY() _q)

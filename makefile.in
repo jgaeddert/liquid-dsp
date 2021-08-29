@@ -1483,6 +1483,7 @@ example_programs :=						\
 	examples/error_handling_example				\
 	examples/fec_example					\
 	examples/fec_soft_example				\
+	examples/fdelay_rrrf_example				\
 	examples/fft_example					\
 	examples/fftfilt_crcf_example				\
 	examples/firdecim_crcf_example				\

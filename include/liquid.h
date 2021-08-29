@@ -2749,6 +2749,9 @@ int FDELAY(_destroy)(FDELAY() _q);                                          \
 /* Reset delay object internals                                         */  \
 int FDELAY(_reset)(FDELAY() _q);                                            \
                                                                             \
+/* Print delay object internals                                         */  \
+int FDELAY(_print)(FDELAY() _q);                                            \
+                                                                            \
 /* Get current delay (accounting for _m?)                               */  \
 float FDELAY(_get_delay)(FDELAY() _q);                                      \
 int   FDELAY(_set_delay)(FDELAY() _q, float _delay);                        \
