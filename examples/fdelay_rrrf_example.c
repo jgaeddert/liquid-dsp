@@ -13,7 +13,7 @@ int main() {
     unsigned int num_samples= 240;  // number of samples to run
     float        delay      =27.8;  // requested delay
 
-    // design filter from prototype and scale to bandwidth
+    // create delay object and set delay
     fdelay_rrrf q = fdelay_rrrf_create(nmax, m, npfb);
     fdelay_rrrf_set_delay(q, delay);
     fdelay_rrrf_print(q);

@@ -35,9 +35,12 @@ void testbench_fdelay_rrrf(unsigned int _nmax,
     float tol = 0.01f;
     unsigned int num_samples = _nmax + 2*_m;  // number of samples to run
 
-    // design filter from prototype and scale to bandwidth
+    // create delay object and split delay between set and adjust methods
     fdelay_rrrf q = fdelay_rrrf_create(_nmax, _m, _npfb);
-    fdelay_rrrf_set_delay(q, _delay);
+    fdelay_rrrf_set_delay   (q, _delay*0.7f);
+    fdelay_rrrf_adjust_delay(q, _delay*0.3f);
+
+    // ensure delay is set properly
     CONTEND_DELTA(fdelay_rrrf_get_delay(q), _delay, 1e-6f);
 
     // generate impulse and propagate through object
