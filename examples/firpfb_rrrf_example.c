@@ -35,7 +35,7 @@ int main(int argc, char*argv[]) {
     // output to file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
-    fprintf(fid,"clear all;\nclose all;\n\n");
+    fprintf(fid,"clear all; close all;\n\n");
     fprintf(fid,"M = %u; m = %u; num_samples = %u\n", M, m, num_samples);
     fprintf(fid,"x = zeros(1,  num_samples);\n");
     fprintf(fid,"y = zeros(1,M*num_samples);\n");
@@ -46,8 +46,9 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(ty,y,'-k',tx,x,'ob','MarkerSize',2);\n");
     fprintf(fid,"grid on;\n");
-    fprintf(fid,"xlabel('normalized frequency');\n");
-    fprintf(fid,"ylabel('PSD [dB]');\n");
+    fprintf(fid,"xlabel('Input Sample Index');\n");
+    fprintf(fid,"ylabel('Signal');\n");
+    fprintf(fid,"legend('Output','Input');\n");
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
     return 0;
