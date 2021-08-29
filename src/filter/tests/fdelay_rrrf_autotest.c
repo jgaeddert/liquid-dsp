@@ -38,6 +38,7 @@ void testbench_fdelay_rrrf(unsigned int _nmax,
     // design filter from prototype and scale to bandwidth
     fdelay_rrrf q = fdelay_rrrf_create(_nmax, _m, _npfb);
     fdelay_rrrf_set_delay(q, _delay);
+    CONTEND_DELTA(fdelay_rrrf_get_delay(q), _delay, 1e-6f);
 
     // generate impulse and propagate through object
     float x[num_samples];
