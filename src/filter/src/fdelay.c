@@ -167,6 +167,11 @@ unsigned int FDELAY(_get_m)(FDELAY() _q)
     return _q->m;
 }
 
+unsigned int FDELAY(_get_npfb)(FDELAY() _q)
+{
+    return _q->npfb;
+}
+
 // Push sample into filter object's internal buffer
 //  _q      : filter object
 //  _x      : single input sample

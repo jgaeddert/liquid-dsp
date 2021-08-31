@@ -2759,6 +2759,7 @@ int   FDELAY(_adjust_delay)(FDELAY() _q, float _delta);                     \
                                                                             \
 unsigned int FDELAY(_get_nmax)(FDELAY() _q);                                \
 unsigned int FDELAY(_get_m)   (FDELAY() _q);                                \
+unsigned int FDELAY(_get_npfb)(FDELAY() _q);                                \
                                                                             \
 /* Push sample into filter object's internal buffer                     */  \
 /*  _q      : filter object                                             */  \

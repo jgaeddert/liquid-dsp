@@ -38,8 +38,11 @@ void testbench_fdelay_rrrf(unsigned int _nmax,
     fdelay_rrrf_set_delay   (q, _delay*0.7f);
     fdelay_rrrf_adjust_delay(q, _delay*0.3f);
 
-    // ensure delay is set properly
-    CONTEND_DELTA(fdelay_rrrf_get_delay(q), _delay, 1e-6f);
+    // ensure object is configured properly
+    CONTEND_EQUALITY(fdelay_rrrf_get_nmax (q), _nmax);
+    CONTEND_EQUALITY(fdelay_rrrf_get_m    (q), _m);
+    CONTEND_EQUALITY(fdelay_rrrf_get_npfb (q), _npfb);
+    CONTEND_DELTA   (fdelay_rrrf_get_delay(q), _delay, 1e-6f);
 
     // generate impulse and propagate through object
     float x[num_samples];
