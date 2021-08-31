@@ -2716,6 +2716,93 @@ LIQUID_FIRFILT_DEFINE_API(LIQUID_FIRFILT_MANGLE_CCCF,
                           liquid_float_complex,
                           liquid_float_complex)
 
+// fdelay : arbitrary delay
+#define LIQUID_FDELAY_MANGLE_RRRF(name) LIQUID_CONCAT(fdelay_rrrf,name)
+#define LIQUID_FDELAY_MANGLE_CRCF(name) LIQUID_CONCAT(fdelay_crcf,name)
+
+// Macro:
+//   FDELAY    : name-mangling macro
+//   TO         : output data type
+//   TC         : coefficients data type
+//   TI         : input data type
+#define LIQUID_FDELAY_DEFINE_API(FDELAY,TO,TC,TI)                           \
+                                                                            \
+/* Finite impulse response (FIR) filter                                 */  \
+typedef struct FDELAY(_s) * FDELAY();                                       \
+                                                                            \
+/* Create a delay object with a maximum offset and filter specification */  \
+/*  _nmax   : maximum integer sample offset                             */  \
+/*  _m      : polyphase filter-bank semi-length, _m > 0                 */  \
+/*  _npfb   : number of filters in polyphase filter-bank, _npfb > 0     */  \
+FDELAY() FDELAY(_create)(unsigned int _nmax,                                \
+                         unsigned int _m,                                   \
+                         unsigned int _npfb);                               \
+                                                                            \
+/* Create a delay object with a maximum offset and default filter       */  \
+/* parameters (_m = 8, _npfb = 64)                                      */  \
+/*  _nmax   : maximum integer sample offset                             */  \
+FDELAY() FDELAY(_create_default)(unsigned int _nmax);                       \
+                                                                            \
+/* Destroy delay object and free all internal memory                    */  \
+int FDELAY(_destroy)(FDELAY() _q);                                          \
+                                                                            \
+/* Reset delay object internals                                         */  \
+int FDELAY(_reset)(FDELAY() _q);                                            \
+                                                                            \
+/* Print delay object internals                                         */  \
+int FDELAY(_print)(FDELAY() _q);                                            \
+                                                                            \
+/* Get current delay (accounting for _m?)                               */  \
+float FDELAY(_get_delay)(FDELAY() _q);                                      \
+int   FDELAY(_set_delay)(FDELAY() _q, float _delay);                        \
+int   FDELAY(_adjust_delay)(FDELAY() _q, float _delta);                     \
+                                                                            \
+unsigned int FDELAY(_get_nmax)(FDELAY() _q);                                \
+unsigned int FDELAY(_get_m)   (FDELAY() _q);                                \
+unsigned int FDELAY(_get_npfb)(FDELAY() _q);                                \
+                                                                            \
+/* Push sample into filter object's internal buffer                     */  \
+/*  _q      : filter object                                             */  \
+/*  _x      : single input sample                                       */  \
+int FDELAY(_push)(FDELAY() _q,                                              \
+                  TI       _x);                                             \
+                                                                            \
+/* Write a block of samplex into filter object's internal buffer        */  \
+/*  _q      : filter object                                             */  \
+/*  _x      : buffer of input samples, [size: _n x 1]                   */  \
+/*  _n      : number of input samples                                   */  \
+int FDELAY(_write)(FDELAY()     _q,                                         \
+                   TI *         _x,                                         \
+                   unsigned int _n);                                        \
+                                                                            \
+/* Execute vector dot product on the filter's internal buffer and       */  \
+/* coefficients                                                         */  \
+/*  _q      : filter object                                             */  \
+/*  _y      : pointer to single output sample                           */  \
+int FDELAY(_execute)(FDELAY() _q,                                           \
+                     TO *     _y);                                          \
+                                                                            \
+/* Execute the filter on a block of input samples; in-place operation   */  \
+/* is permitted (_x and _y may point to the same place in memory)       */  \
+/*  _q      : filter object                                             */  \
+/*  _x      : pointer to input array, [size: _n x 1]                    */  \
+/*  _n      : number of input, output samples                           */  \
+/*  _y      : pointer to output array, [size: _n x 1]                   */  \
+int FDELAY(_execute_block)(FDELAY()     _q,                                 \
+                           TI *         _x,                                 \
+                           unsigned int _n,                                 \
+                           TO *         _y);                                \
+
+LIQUID_FDELAY_DEFINE_API(LIQUID_FDELAY_MANGLE_RRRF,
+                          float,
+                          float,
+                          float)
+
+LIQUID_FDELAY_DEFINE_API(LIQUID_FDELAY_MANGLE_CRCF,
+                          liquid_float_complex,
+                          float,
+                          liquid_float_complex)
+
 //
 // FIR Hilbert transform
 //  2:1 real-to-complex decimator
