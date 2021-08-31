@@ -1226,6 +1226,7 @@ all: ${ARCHIVE_LIB} ${SHARED_LIB}
 
 bind_headers :=					\
 	bind/liquid.hh				\
+	bind/fdelay.hh				\
 	bind/firfilt.hh				\
 	bind/firinterp.hh			\
 	bind/firpfbch2.hh			\

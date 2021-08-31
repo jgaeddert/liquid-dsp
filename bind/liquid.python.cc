@@ -1,5 +1,6 @@
 #include "liquid.python.hh"
 
+#include "fdelay.hh"
 #include "firfilt.hh"
 #include "firinterp.hh"
 #include "firpfbch2.hh"
@@ -51,6 +52,7 @@ PYBIND11_MODULE(liquid, m) {
     m.doc() = "software-defined radio signal processing library";
 
     // initialize objects
+    liquid::init_fdelay     (m);
     liquid::init_firfilt    (m);
     liquid::init_firpfbch2a (m);
     liquid::init_firpfbch2s (m);
