@@ -189,6 +189,23 @@ int FDELAY(_push)(FDELAY() _q,
     return LIQUID_OK;
 }
 
+// Write block of samplex into filter object's internal buffer
+//  _q      : filter object
+//  _x      : buffer of input samples, [size: _n x 1]
+//  _n      : number of input samples
+int FDELAY(_write)(FDELAY()     _q,
+                   TI *         _x,
+                   unsigned int _n)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        if ( FDELAY(_push)(_q, _x[i]) != LIQUID_OK) {
+            return liquid_error(LIQUID_EINT,"fdelay_%s_write(), could not write sample", EXTENSION_FULL);
+        }
+    }
+    return LIQUID_OK;
+}
+
 // Execute vector dot product on the filter's internal buffer and
 // coefficients
 //  _q      : filter object

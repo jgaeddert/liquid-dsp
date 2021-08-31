@@ -2767,6 +2767,14 @@ unsigned int FDELAY(_get_npfb)(FDELAY() _q);                                \
 int FDELAY(_push)(FDELAY() _q,                                              \
                   TI       _x);                                             \
                                                                             \
+/* Write a block of samplex into filter object's internal buffer        */  \
+/*  _q      : filter object                                             */  \
+/*  _x      : buffer of input samples, [size: _n x 1]                   */  \
+/*  _n      : number of input samples                                   */  \
+int FDELAY(_write)(FDELAY()     _q,                                         \
+                   TI *         _x,                                         \
+                   unsigned int _n);                                        \
+                                                                            \
 /* Execute vector dot product on the filter's internal buffer and       */  \
 /* coefficients                                                         */  \
 /*  _q      : filter object                                             */  \
