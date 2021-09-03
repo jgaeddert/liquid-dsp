@@ -85,7 +85,7 @@ class spgram : public object
         execute((std::complex<float>*) info.ptr, info.shape[0]);
     }
 
-    py::tuple py_get_psd()
+    py::tuple py_get_psd(float _fs, float _fc)
     {
         unsigned int nfreq = get_num_freq();
 
@@ -96,7 +96,7 @@ class spgram : public object
         // poulate frequency array
         float * _freq = (float*) freq.request().ptr;
         for (auto i=0U; i<nfreq; i++)
-            _freq[i] = (float)i / (float)nfreq - 0.5f;
+            _freq[i] = ((float)i/(float)nfreq - 0.5f)*_fs + _fc;
 
         // populate spectrum
         get_psd( (float*)Sxx.request().ptr );
@@ -140,7 +140,9 @@ void init_spgram(py::module &m)
             "get window type used for spectral estimation")
         .def("get_psd",
              &spgram::py_get_psd,
-             "get power spectral density")
+             py::arg("fs")=1.0f,
+             py::arg("fc")=0.0f,
+             "get power spectral density, frequency array,  scaling for sample rate & center frequency")
         ;
 }
 #endif

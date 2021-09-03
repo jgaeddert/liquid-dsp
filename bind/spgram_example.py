@@ -12,7 +12,7 @@ num_samples = 240e3
 
 psd = dsp.spgram(nfft=600,wlen=400,delay=10)
 
-filt = dsp.firfilt("lowpass", n=151, fc=0.07, scale=0.14)
+filt = dsp.firfilt("lowpass", n=151, fc=0.10, scale=0.14)
 
 buf_len = 2400
 while psd.num_samples_total < num_samples:
@@ -23,14 +23,15 @@ while psd.num_samples_total < num_samples:
 
 # get spectrum plot and display
 print(psd)
-Sxx,f = psd.get_psd()
+Sxx,f = psd.get_psd(fs=20e6, fc=460e6)
 print('Sxx:',Sxx.shape,'f:',f.shape)
 
 fix,ax = plt.subplots(1,figsize=(8,8))
-ax.plot(f,Sxx)
-ax.set_xlabel('Normalized Frequency [f/Fs]')
+ax.plot(f*1e-6,Sxx)
+ax.set_xlabel('Frequency [MHz]')
 ax.set_ylabel('Time [samples]')
 ax.grid(True, zorder=5)
-ax.set(xlim=(-0.5,0.5), ylim=(-65,-30))
+ax.set(xlim=(450,470), ylim=(-65,-30))
+ax.set_xticks(np.linspace(450,470,11))
 plt.show()
 
