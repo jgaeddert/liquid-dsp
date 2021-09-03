@@ -92,7 +92,7 @@ class spwaterfall : public object
         execute((std::complex<float>*) info.ptr, info.shape[0]);
     }
 
-    py::tuple py_get_psd()
+    py::tuple py_get_psd(float _fs, float _fc)
     {
         unsigned int nfreq = get_num_freq();
         unsigned int ntime = get_num_time();
@@ -107,9 +107,9 @@ class spwaterfall : public object
         float * _freq = (float*) freq.request().ptr;
         float * _time = (float*) time.request().ptr;
         for (auto i=0U; i<nfreq; i++)
-            _freq[i] = (float)i / (float)nfreq - 0.5f;
+            _freq[i] = ((float)i/(float)nfreq - 0.5f)*_fs + _fc;
         for (auto i=0U; i<ntime; i++)
-            _time[i] = (float)i / (float)ntime * (float)nsamp;
+            _time[i] = (float)i/(float)ntime * (float)nsamp / _fs;
 
         // return tuple with spectrum matrix and time/freq arrays
         return py::make_tuple(Sxx,time,freq);
@@ -154,6 +154,8 @@ void init_spwaterfall(py::module &m)
             "get window type used for spectral estimation")
         .def("get_psd",
              &spwaterfall::py_get_psd,
+             py::arg("fs")=1.0f,
+             py::arg("fc")=0.0f,
              "get power spectral density")
         ;
 }
