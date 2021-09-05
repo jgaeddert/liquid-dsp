@@ -42,6 +42,8 @@
 //  DOTPROD()       dotprod macro
 //  PRINTVAL()      print macro
 
+int FIRFARROW(_genpoly)(FIRFARROW() _q);
+
 struct FIRFARROW(_s) {
     TC * h;             // filter coefficients
     unsigned int h_len; // filter length
@@ -116,7 +118,7 @@ FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,
 }
 
 // destroy firfarrow object, freeing all internal memory
-void FIRFARROW(_destroy)(FIRFARROW() _q)
+int FIRFARROW(_destroy)(FIRFARROW() _q)
 {
 #if FIRFARROW_USE_DOTPROD
     WINDOW(_destroy)(_q->w);
@@ -128,10 +130,11 @@ void FIRFARROW(_destroy)(FIRFARROW() _q)
 
     // free main object
     free(_q);
+    return LIQUID_OK;
 }
 
 // print firfarrow object's internal properties
-void FIRFARROW(_print)(FIRFARROW() _q)
+int FIRFARROW(_print)(FIRFARROW() _q)
 {
     printf("firfarrow [len : %u, poly-order : %u]\n", _q->h_len, _q->Q);
     printf("polynomial coefficients:\n");
@@ -152,45 +155,48 @@ void FIRFARROW(_print)(FIRFARROW() _q)
         PRINTVAL_TC(_q->h[n-i-1],%12.8f);
         printf(";\n");
     }
+    return LIQUID_OK;
 }
 
 // reset firfarrow object's internal state
-void FIRFARROW(_reset)(FIRFARROW() _q)
+int FIRFARROW(_reset)(FIRFARROW() _q)
 {
 #if FIRFARROW_USE_DOTPROD
-    WINDOW(_reset)(_q->w);
+    return WINDOW(_reset)(_q->w);
 #else
     unsigned int i;
     for (i=0; i<_q->h_len; i++)
         _q->v[i] = 0;
     _q->v_index = 0;
+    return LIQUID_OK;
 #endif
 }
 
 // push sample into firfarrow object
 //  _q      :   firfarrow object
 //  _x      :   input sample
-void FIRFARROW(_push)(FIRFARROW() _q,
-                      TI _x)
+int FIRFARROW(_push)(FIRFARROW() _q,
+                     TI _x)
 {
 #if FIRFARROW_USE_DOTPROD
-    WINDOW(_push)(_q->w, _x);
+    return WINDOW(_push)(_q->w, _x);
 #else
     _q->v[ _q->v_index ] = _x;
     (_q->v_index)++;
     _q->v_index = (_q->v_index) % (_q->h_len);
+    return LIQUID_OK;
 #endif
 }
 
 // set fractional delay of firfarrow object
 //  _q      : firfarrow object
 //  _mu     : fractional sample delay
-void FIRFARROW(_set_delay)(FIRFARROW() _q,
-                           float       _mu)
+int FIRFARROW(_set_delay)(FIRFARROW() _q,
+                          float       _mu)
 {
     // validate input
     if (_mu < -1.0f || _mu > 1.0f) {
-        fprintf(stderr,"warning: firfarrow_%s_set_delay(), delay must be in [-1,1]\n", EXTENSION_FULL);
+        return liquid_error(LIQUID_EIVAL,"firfarrow_%s_create(), delay must be in [-1,1]\n", EXTENSION_FULL);
     }
 
     unsigned int i, n=0;
@@ -206,13 +212,14 @@ void FIRFARROW(_set_delay)(FIRFARROW() _q,
 
         //printf("  h[%3u] = %12.8f\n", i, _q->h[i]);
     }
+    return LIQUID_OK;
 }
 
 // execute firfarrow internal dot product
 //  _q      : firfarrow object
 //  _y      : output sample pointer
-void FIRFARROW(_execute)(FIRFARROW() _q,
-                         TO *        _y)
+int FIRFARROW(_execute)(FIRFARROW() _q,
+                        TO *        _y)
 {
 #if FIRFARROW_USE_DOTPROD
     TI *r;
@@ -225,6 +232,7 @@ void FIRFARROW(_execute)(FIRFARROW() _q,
         y += _q->v[ (i+_q->v_index)%(_q->h_len) ] * _q->h[i];
     *_y = y;
 #endif
+    return LIQUID_OK;
 }
 
 // compute firfarrow filter on block of samples; the input
@@ -233,10 +241,10 @@ void FIRFARROW(_execute)(FIRFARROW() _q,
 //  _x      : input array [size: _n x 1]
 //  _n      : input, output array size
 //  _y      : output array [size: _n x 1]
-void FIRFARROW(_execute_block)(FIRFARROW()  _q,
-                               TI *         _x,
-                               unsigned int _n,
-                               TO *         _y)
+int FIRFARROW(_execute_block)(FIRFARROW()  _q,
+                              TI *         _x,
+                              unsigned int _n,
+                              TO *         _y)
 {
     unsigned int i;
 
@@ -247,6 +255,7 @@ void FIRFARROW(_execute_block)(FIRFARROW()  _q,
         // compute output
         FIRFARROW(_execute)(_q, &_y[i]);
     }
+    return LIQUID_OK;
 }
 
 // get length of firfarrow object (number of filter taps)
@@ -258,19 +267,20 @@ unsigned int FIRFARROW(_get_length)(FIRFARROW() _q)
 // get coefficients of firfarrow object
 //  _q      : firfarrow object
 //  _h      : output coefficients pointer
-void FIRFARROW(_get_coefficients)(FIRFARROW() _q,
-                                  TC *        _h)
+int FIRFARROW(_get_coefficients)(FIRFARROW() _q,
+                                 TC *        _h)
 {
     memmove(_h, _q->h, (_q->h_len)*sizeof(TC));
+    return LIQUID_OK;
 }
 
 // compute complex frequency response
 //  _q      : filter object
 //  _fc     : frequency
 //  _H      : output frequency response
-void FIRFARROW(_freqresponse)(FIRFARROW() _q,
-                              float _fc,
-                              float complex * _H)
+int FIRFARROW(_freqresponse)(FIRFARROW() _q,
+                             float _fc,
+                             float complex * _H)
 {
     unsigned int i;
     float complex H = 0.0f;
@@ -280,6 +290,7 @@ void FIRFARROW(_freqresponse)(FIRFARROW() _q,
 
     // set return value
     *_H = H;
+    return LIQUID_OK;
 }
 
 // compute group delay [samples]
@@ -305,7 +316,7 @@ float FIRFARROW(_groupdelay)(FIRFARROW() _q,
 //
 
 // generate polynomials to represent filter coefficients
-void FIRFARROW(_genpoly)(FIRFARROW() _q)
+int FIRFARROW(_genpoly)(FIRFARROW() _q)
 {
     // TODO : shy away from 'float' and use 'TC' types
     unsigned int i, j, n=0;
@@ -364,5 +375,6 @@ void FIRFARROW(_genpoly)(FIRFARROW() _q)
         _q->gamma += _q->h[i];
     _q->gamma = 1.0f / (_q->gamma);   // invert result
 
+    return LIQUID_OK;
 }
 

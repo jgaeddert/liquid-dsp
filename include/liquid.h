@@ -795,15 +795,32 @@ void DOTPROD(_run4)( TC *         _v,                                       \
 DOTPROD() DOTPROD(_create)(TC *         _v,                                 \
                            unsigned int _n);                                \
                                                                             \
+/* Create vector dot product object with time-reversed coefficients     */  \
+/*  _v      : time-reversed coefficients array [size: _n x 1]           */  \
+/*  _n      : dotprod length, _n > 0                                    */  \
+DOTPROD() DOTPROD(_create_rev)(TC *         _v,                             \
+                               unsigned int _n);                            \
+                                                                            \
 /* Re-create dot product object of potentially a different length with  */  \
 /* different coefficients. If the length of the dot product object does */  \
-/* not change, not memory reallocation is invoked.                      */  \
+/* not change, no memory reallocation is invoked.                       */  \
 /*  _q      : old dotprod object                                        */  \
 /*  _v      : coefficients array [size: _n x 1]                         */  \
 /*  _n      : dotprod length, _n > 0                                    */  \
 DOTPROD() DOTPROD(_recreate)(DOTPROD()    _q,                               \
                              TC *         _v,                               \
                              unsigned int _n);                              \
+                                                                            \
+/* Re-create dot product object of potentially a different length with  */  \
+/* different coefficients. If the length of the dot product object does */  \
+/* not change, no memory reallocation is invoked. Filter coefficients   */  \
+/* are stored in reverse order.                                         */  \
+/*  _q      : old dotprod object                                        */  \
+/*  _v      : time-reversed coefficients array [size: _n x 1]           */  \
+/*  _n      : dotprod length, _n > 0                                    */  \
+DOTPROD() DOTPROD(_recreate_rev)(DOTPROD()    _q,                           \
+                                 TC *         _v,                           \
+                                 unsigned int _n);                          \
                                                                             \
 /* Destroy dotprod object, freeing all internal memory                  */  \
 void DOTPROD(_destroy)(DOTPROD() _q);                                       \
@@ -2682,10 +2699,13 @@ void FIRFILT(_execute_block)(FIRFILT()    _q,                               \
 unsigned int FIRFILT(_get_length)(FIRFILT() _q);                            \
                                                                             \
 /* Get pointer to coefficients array                                    */  \
+const TC * FIRFILT(_get_coefficients)(FIRFILT() _q);                        \
+                                                                            \
+/* Copy internal coefficients to external buffer                        */  \
 /*  _q      : filter object                                             */  \
 /*  _h      : pointer to output coefficients array [size: _n x 1]       */  \
-int FIRFILT(_get_coefficients)(FIRFILT() _q,                                \
-                               TC *      _h);                               \
+int FIRFILT(_copy_coefficients)(FIRFILT() _q,                               \
+                                TC *      _h);                              \
                                                                             \
 /* Compute complex frequency response of filter object                  */  \
 /*  _q      : filter object                                             */  \
@@ -4595,31 +4615,31 @@ FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,                         \
                                float        _As);                           \
                                                                             \
 /* Destroy firfarrow object, freeing all internal memory                */  \
-void FIRFARROW(_destroy)(FIRFARROW() _q);                                   \
+int FIRFARROW(_destroy)(FIRFARROW() _q);                                    \
                                                                             \
 /* Print firfarrow object's internal properties                         */  \
-void FIRFARROW(_print)(FIRFARROW() _q);                                     \
+int FIRFARROW(_print)(FIRFARROW() _q);                                      \
                                                                             \
 /* Reset firfarrow object's internal state                              */  \
-void FIRFARROW(_reset)(FIRFARROW() _q);                                     \
+int FIRFARROW(_reset)(FIRFARROW() _q);                                      \
                                                                             \
 /* Push sample into firfarrow object                                    */  \
 /*  _q      : firfarrow object                                          */  \
 /*  _x      : input sample                                              */  \
-void FIRFARROW(_push)(FIRFARROW() _q,                                       \
-                      TI          _x);                                      \
+int FIRFARROW(_push)(FIRFARROW() _q,                                        \
+                     TI          _x);                                       \
                                                                             \
 /* Set fractional delay of firfarrow object                             */  \
 /*  _q      : firfarrow object                                          */  \
 /*  _mu     : fractional sample delay, -1 <= _mu <= 1                   */  \
-void FIRFARROW(_set_delay)(FIRFARROW() _q,                                  \
-                           float       _mu);                                \
+int FIRFARROW(_set_delay)(FIRFARROW() _q,                                   \
+                          float       _mu);                                 \
                                                                             \
 /* Execute firfarrow internal dot product                               */  \
 /*  _q      : firfarrow object                                          */  \
 /*  _y      : output sample pointer                                     */  \
-void FIRFARROW(_execute)(FIRFARROW() _q,                                    \
-                         TO *        _y);                                   \
+int FIRFARROW(_execute)(FIRFARROW() _q,                                     \
+                        TO *        _y);                                    \
                                                                             \
 /* Execute firfarrow filter on block of samples.                        */  \
 /* In-place operation is permitted (the input and output arrays may     */  \
@@ -4628,10 +4648,10 @@ void FIRFARROW(_execute)(FIRFARROW() _q,                                    \
 /*  _x      : input array, [size: _n x 1]                               */  \
 /*  _n      : input, output array size                                  */  \
 /*  _y      : output array, [size: _n x 1]                              */  \
-void FIRFARROW(_execute_block)(FIRFARROW()  _q,                             \
-                               TI *         _x,                             \
-                               unsigned int _n,                             \
-                               TO *         _y);                            \
+int FIRFARROW(_execute_block)(FIRFARROW()  _q,                              \
+                              TI *         _x,                              \
+                              unsigned int _n,                              \
+                              TO *         _y);                             \
                                                                             \
 /* Get length of firfarrow object (number of filter taps)               */  \
 unsigned int FIRFARROW(_get_length)(FIRFARROW() _q);                        \
@@ -4639,16 +4659,16 @@ unsigned int FIRFARROW(_get_length)(FIRFARROW() _q);                        \
 /* Get coefficients of firfarrow object                                 */  \
 /*  _q      : firfarrow object                                          */  \
 /*  _h      : output coefficients pointer, [size: _h_len x 1]           */  \
-void FIRFARROW(_get_coefficients)(FIRFARROW() _q,                           \
-                                  float *     _h);                          \
+int FIRFARROW(_get_coefficients)(FIRFARROW() _q,                            \
+                                 float *     _h);                           \
                                                                             \
 /* Compute complex frequency response                                   */  \
 /*  _q      : filter object                                             */  \
 /*  _fc     : frequency                                                 */  \
 /*  _H      : output frequency response                                 */  \
-void FIRFARROW(_freqresponse)(FIRFARROW()            _q,                    \
-                              float                  _fc,                   \
-                              liquid_float_complex * _H);                   \
+int FIRFARROW(_freqresponse)(FIRFARROW()            _q,                     \
+                             float                  _fc,                    \
+                             liquid_float_complex * _H);                    \
                                                                             \
 /* Compute group delay [samples]                                        */  \
 /*  _q      :   filter object                                           */  \

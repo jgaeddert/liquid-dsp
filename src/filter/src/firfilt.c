@@ -83,13 +83,11 @@ FIRFILT() FIRFILT(_create)(TC * _h,
     q->w_index = 0;
 #endif
 
-    // load filter in reverse order
-    unsigned int i;
-    for (i=_n; i>0; i--)
-        q->h[i-1] = _h[_n-i];
+    // move coefficients
+    memmove(q->h, _h, (q->h_len)*sizeof(TC));
 
-    // create dot product object
-    q->dp = DOTPROD(_create)(q->h, q->h_len);
+    // create dot product object with coefficients in reverse order
+    q->dp = DOTPROD(_create_rev)(q->h, q->h_len);
 
     // set default scaling
     q->scale = 1;
@@ -470,16 +468,18 @@ unsigned int FIRFILT(_get_length)(FIRFILT() _q)
     return _q->h_len;
 }
 
-// Get coefficients (impulse response)
-int FIRFILT(_get_coefficients)(FIRFILT() _q,
-                               TC *      _h)
+// Get pointer to coefficients array
+const TC * FIRFILT(_get_coefficients)(FIRFILT() _q)
 {
-    // internal coefficients are stored in reverse order; reverse here
-    // to get impulse response
-    unsigned int i;
-    for (i=0; i<_q->h_len; i++)
-        _h[i] = _q->h[_q->h_len - i - 1];
+    return (const TC *) _q->h;
+}
 
+// Copy internal coefficients to external buffer
+int FIRFILT(_copy_coefficients)(FIRFILT() _q,
+                                TC *      _h)
+{
+    // internal coefficients are stored in normal order
+    memmove(_h, _q->h, (_q->h_len)*sizeof(TC));
     return LIQUID_OK;
 }
 
@@ -512,13 +512,12 @@ void FIRFILT(_freqresponse)(FIRFILT()       _q,
 float FIRFILT(_groupdelay)(FIRFILT() _q,
                            float     _fc)
 {
-    // copy coefficients to be in correct order
+    // copy coefficients
     float h[_q->h_len];
     unsigned int i;
-    unsigned int n = _q->h_len;
-    for (i=0; i<n; i++)
-        h[i] = crealf(_q->h[n-i-1]);
+    for (i=0; i<_q->h_len; i++)
+        h[i] = crealf(_q->h[i]);
 
-    return fir_group_delay(h, n, _fc);
+    return fir_group_delay(h, _q->h_len, _fc);
 }
 

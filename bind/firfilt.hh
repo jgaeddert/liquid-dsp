@@ -119,10 +119,10 @@ class firfilt : public object
     // get coefficients as array
     py::array_t<float> get_coefficients() const
     {
-        // create output array for storing result
-        py::array_t<float> h( firfilt_crcf_get_length(q) );
-        firfilt_crcf_get_coefficients(q, (float*)h.request().ptr);
-        return h;
+        return py::array_t<float>(
+                {firfilt_crcf_get_length(q)},
+                {sizeof(float)},
+                firfilt_crcf_get_coefficients(q));
     }
 
     // execute filter on buffer in place
