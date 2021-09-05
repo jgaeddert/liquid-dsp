@@ -4595,31 +4595,31 @@ FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,                         \
                                float        _As);                           \
                                                                             \
 /* Destroy firfarrow object, freeing all internal memory                */  \
-void FIRFARROW(_destroy)(FIRFARROW() _q);                                   \
+int FIRFARROW(_destroy)(FIRFARROW() _q);                                    \
                                                                             \
 /* Print firfarrow object's internal properties                         */  \
-void FIRFARROW(_print)(FIRFARROW() _q);                                     \
+int FIRFARROW(_print)(FIRFARROW() _q);                                      \
                                                                             \
 /* Reset firfarrow object's internal state                              */  \
-void FIRFARROW(_reset)(FIRFARROW() _q);                                     \
+int FIRFARROW(_reset)(FIRFARROW() _q);                                      \
                                                                             \
 /* Push sample into firfarrow object                                    */  \
 /*  _q      : firfarrow object                                          */  \
 /*  _x      : input sample                                              */  \
-void FIRFARROW(_push)(FIRFARROW() _q,                                       \
-                      TI          _x);                                      \
+int FIRFARROW(_push)(FIRFARROW() _q,                                        \
+                     TI          _x);                                       \
                                                                             \
 /* Set fractional delay of firfarrow object                             */  \
 /*  _q      : firfarrow object                                          */  \
 /*  _mu     : fractional sample delay, -1 <= _mu <= 1                   */  \
-void FIRFARROW(_set_delay)(FIRFARROW() _q,                                  \
-                           float       _mu);                                \
+int FIRFARROW(_set_delay)(FIRFARROW() _q,                                   \
+                          float       _mu);                                 \
                                                                             \
 /* Execute firfarrow internal dot product                               */  \
 /*  _q      : firfarrow object                                          */  \
 /*  _y      : output sample pointer                                     */  \
-void FIRFARROW(_execute)(FIRFARROW() _q,                                    \
-                         TO *        _y);                                   \
+int FIRFARROW(_execute)(FIRFARROW() _q,                                     \
+                        TO *        _y);                                    \
                                                                             \
 /* Execute firfarrow filter on block of samples.                        */  \
 /* In-place operation is permitted (the input and output arrays may     */  \
@@ -4628,10 +4628,10 @@ void FIRFARROW(_execute)(FIRFARROW() _q,                                    \
 /*  _x      : input array, [size: _n x 1]                               */  \
 /*  _n      : input, output array size                                  */  \
 /*  _y      : output array, [size: _n x 1]                              */  \
-void FIRFARROW(_execute_block)(FIRFARROW()  _q,                             \
-                               TI *         _x,                             \
-                               unsigned int _n,                             \
-                               TO *         _y);                            \
+int FIRFARROW(_execute_block)(FIRFARROW()  _q,                              \
+                              TI *         _x,                              \
+                              unsigned int _n,                              \
+                              TO *         _y);                             \
                                                                             \
 /* Get length of firfarrow object (number of filter taps)               */  \
 unsigned int FIRFARROW(_get_length)(FIRFARROW() _q);                        \
@@ -4639,16 +4639,16 @@ unsigned int FIRFARROW(_get_length)(FIRFARROW() _q);                        \
 /* Get coefficients of firfarrow object                                 */  \
 /*  _q      : firfarrow object                                          */  \
 /*  _h      : output coefficients pointer, [size: _h_len x 1]           */  \
-void FIRFARROW(_get_coefficients)(FIRFARROW() _q,                           \
-                                  float *     _h);                          \
+int FIRFARROW(_get_coefficients)(FIRFARROW() _q,                            \
+                                 float *     _h);                           \
                                                                             \
 /* Compute complex frequency response                                   */  \
 /*  _q      : filter object                                             */  \
 /*  _fc     : frequency                                                 */  \
 /*  _H      : output frequency response                                 */  \
-void FIRFARROW(_freqresponse)(FIRFARROW()            _q,                    \
-                              float                  _fc,                   \
-                              liquid_float_complex * _H);                   \
+int FIRFARROW(_freqresponse)(FIRFARROW()            _q,                     \
+                             float                  _fc,                    \
+                             liquid_float_complex * _H);                    \
                                                                             \
 /* Compute group delay [samples]                                        */  \
 /*  _q      :   filter object                                           */  \
