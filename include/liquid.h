@@ -795,15 +795,32 @@ void DOTPROD(_run4)( TC *         _v,                                       \
 DOTPROD() DOTPROD(_create)(TC *         _v,                                 \
                            unsigned int _n);                                \
                                                                             \
+/* Create vector dot product object with time-reversed coefficients     */  \
+/*  _v      : time-reversed coefficients array [size: _n x 1]           */  \
+/*  _n      : dotprod length, _n > 0                                    */  \
+DOTPROD() DOTPROD(_create_rev)(TC *         _v,                             \
+                               unsigned int _n);                            \
+                                                                            \
 /* Re-create dot product object of potentially a different length with  */  \
 /* different coefficients. If the length of the dot product object does */  \
-/* not change, not memory reallocation is invoked.                      */  \
+/* not change, no memory reallocation is invoked.                       */  \
 /*  _q      : old dotprod object                                        */  \
 /*  _v      : coefficients array [size: _n x 1]                         */  \
 /*  _n      : dotprod length, _n > 0                                    */  \
 DOTPROD() DOTPROD(_recreate)(DOTPROD()    _q,                               \
                              TC *         _v,                               \
                              unsigned int _n);                              \
+                                                                            \
+/* Re-create dot product object of potentially a different length with  */  \
+/* different coefficients. If the length of the dot product object does */  \
+/* not change, no memory reallocation is invoked. Filter coefficients   */  \
+/* are stored in reverse order.                                         */  \
+/*  _q      : old dotprod object                                        */  \
+/*  _v      : time-reversed coefficients array [size: _n x 1]           */  \
+/*  _n      : dotprod length, _n > 0                                    */  \
+DOTPROD() DOTPROD(_recreate_rev)(DOTPROD()    _q,                           \
+                                 TC *         _v,                           \
+                                 unsigned int _n);                          \
                                                                             \
 /* Destroy dotprod object, freeing all internal memory                  */  \
 void DOTPROD(_destroy)(DOTPROD() _q);                                       \

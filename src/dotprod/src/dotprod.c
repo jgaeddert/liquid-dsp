@@ -92,7 +92,7 @@ void DOTPROD(_run4)(TC *         _h,
 // structured dot product
 //
 
-// create structured dot product object
+// create vector dot product object
 //  _h      :   coefficients array [size: 1 x _n]
 //  _n      :   dot product length
 DOTPROD() DOTPROD(_create)(TC *         _h,
@@ -106,6 +106,27 @@ DOTPROD() DOTPROD(_create)(TC *         _h,
 
     // move coefficients
     memmove(q->h, _h, (q->n)*sizeof(TC));
+
+    // return object
+    return q;
+}
+
+// create vector dot product object with time-reversed coefficients
+//  _h      :   coefficients array [size: 1 x _n]
+//  _n      :   dot product length
+DOTPROD() DOTPROD(_create_rev)(TC *         _h,
+                               unsigned int _n)
+{
+    DOTPROD() q = (DOTPROD()) malloc(sizeof(struct DOTPROD(_s)));
+    q->n = _n;
+
+    // allocate memory for coefficients
+    q->h = (TC*) malloc((q->n)*sizeof(TC));
+
+    // copy coefficients in time-reversed order
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        q->h[i] = _h[_n-i-1];
 
     // return object
     return q;
@@ -130,6 +151,32 @@ DOTPROD() DOTPROD(_recreate)(DOTPROD()    _q,
 
     // move new coefficients
     memmove(_q->h, _h, (_q->n)*sizeof(TC));
+
+    // return re-structured object
+    return _q;
+}
+
+// re-create dot product object with coefficients in reverse order
+//  _q      :   old dot dot product object
+//  _h      :   time-reversed new coefficients [size: 1 x _n]
+//  _n      :   new dot product size
+DOTPROD() DOTPROD(_recreate_rev)(DOTPROD()    _q,
+                                 TC *         _h,
+                                 unsigned int _n)
+{
+    // check to see if length has changed
+    if (_q->n != _n) {
+        // set new length
+        _q->n = _n;
+
+        // re-allocate memory
+        _q->h = (TC*) realloc(_q->h, (_q->n)*sizeof(TC));
+    }
+
+    // copy coefficients in time-reversed order
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        _q->h[i] = _h[_n-i-1];
 
     // return re-structured object
     return _q;
