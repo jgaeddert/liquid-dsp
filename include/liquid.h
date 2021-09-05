@@ -7333,6 +7333,12 @@ int MODEM(_reset)(MODEM() _q);                                              \
 /* Generate random symbol for modulation                                */  \
 unsigned int MODEM(_gen_rand_sym)(MODEM() _q);                              \
                                                                             \
+/* Modulate random symbol, return symbol index                          */  \
+/*  _q  : modem object                                                  */  \
+/*  _y  : output complex sample                                         */  \
+unsigned int MODEM(_modulate_rand_sym)(MODEM() _q,                          \
+                                       TC *    _y);                         \
+                                                                            \
 /* Get number of bits per symbol (bps) of modem object                  */  \
 unsigned int MODEM(_get_bps)(MODEM() _q);                                   \
                                                                             \

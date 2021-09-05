@@ -163,12 +163,9 @@ float SYMSTREAM(_get_gain)(SYMSTREAM() _q)
 // fill buffer with samples
 int SYMSTREAM(_fill_buffer)(SYMSTREAM() _q)
 {
-    // generate random symbol
-    unsigned int sym = MODEM(_gen_rand_sym)(_q->mod);
-
-    // modulate
+    // generate and modulate random symbol
     TO v;
-    MODEM(_modulate)(_q->mod, sym, &v);
+    MODEM(_modulate_rand_sym)(_q->mod, &v);
 
     // apply gain
     v *= _q->gain;

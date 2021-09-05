@@ -323,6 +323,15 @@ unsigned int MODEM(_gen_rand_sym)(MODEM() _q)
     return rand() % (_q->M);
 }
 
+// Modulate random symbol, return symbol index
+unsigned int MODEM(_modulate_rand_sym)(MODEM() _q,
+                                       TC *    _y)
+{
+    unsigned int s = MODEM(_gen_rand_sym)(_q);
+    MODEM(_modulate)(_q, s, _y);
+    return s;
+}
+
 // Get modem depth (bits/symbol)
 unsigned int MODEM(_get_bps)(MODEM() _q)
 {
