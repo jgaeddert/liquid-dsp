@@ -468,9 +468,15 @@ unsigned int FIRFILT(_get_length)(FIRFILT() _q)
     return _q->h_len;
 }
 
-// Get coefficients (impulse response)
-int FIRFILT(_get_coefficients)(FIRFILT() _q,
-                               TC *      _h)
+// Get pointer to coefficients array
+const TC * FIRFILT(_get_coefficients)(FIRFILT() _q)
+{
+    return (const TC *) _q->h;
+}
+
+// Copy internal coefficients to external buffer
+int FIRFILT(_copy_coefficients)(FIRFILT() _q,
+                                TC *      _h)
 {
     // internal coefficients are stored in normal order
     memmove(_h, _q->h, (_q->h_len)*sizeof(TC));

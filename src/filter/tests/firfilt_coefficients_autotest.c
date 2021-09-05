@@ -41,13 +41,19 @@ void autotest_firfilt_cccf_coefficients_test()
     // set scale: note that this is not used when computing coefficients
     firfilt_cccf_set_scale(q, -0.4f + _Complex_I*0.7f);
 
-    // get coefficients from filter object
-    firfilt_cccf_get_coefficients(q, h1);
+    // copy coefficients from filter object
+    firfilt_cccf_copy_coefficients(q, h1);
+
+    // copy coefficients from filter object
+    const float complex * h2 = firfilt_cccf_get_coefficients(q);
 
     // ensure values are equal; no need for tolerance as values should be exact
     for (i=0; i<h_len; i++) {
         CONTEND_EQUALITY(crealf(h0[i]), crealf(h1[i]));
         CONTEND_EQUALITY(cimagf(h0[i]), cimagf(h1[i]));
+
+        CONTEND_EQUALITY(crealf(h0[i]), crealf(h2[i]));
+        CONTEND_EQUALITY(cimagf(h0[i]), cimagf(h2[i]));
     }
 
     // destroy filter object and free memory

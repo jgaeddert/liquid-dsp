@@ -2699,10 +2699,13 @@ void FIRFILT(_execute_block)(FIRFILT()    _q,                               \
 unsigned int FIRFILT(_get_length)(FIRFILT() _q);                            \
                                                                             \
 /* Get pointer to coefficients array                                    */  \
+const TC * FIRFILT(_get_coefficients)(FIRFILT() _q);                        \
+                                                                            \
+/* Copy internal coefficients to external buffer                        */  \
 /*  _q      : filter object                                             */  \
 /*  _h      : pointer to output coefficients array [size: _n x 1]       */  \
-int FIRFILT(_get_coefficients)(FIRFILT() _q,                                \
-                               TC *      _h);                               \
+int FIRFILT(_copy_coefficients)(FIRFILT() _q,                               \
+                                TC *      _h);                              \
                                                                             \
 /* Compute complex frequency response of filter object                  */  \
 /*  _q      : filter object                                             */  \
