@@ -214,6 +214,29 @@ unsigned int DDS(_get_num_stages)(DDS() _q)
     return _q->num_stages;
 }
 
+// Get delay (samples) when running as interpolator
+unsigned int DDS(_get_delay_interp)(DDS() _q)
+{
+    unsigned int i, delay=0;
+    for (i=0; i<_q->num_stages; i++) {
+        delay *= 2;
+        delay += 2*_q->h_len[i];
+    }
+    return delay;
+}
+
+// Get delay (samples) when running as decimator
+float DDS(_get_delay_decim)(DDS() _q)
+{
+    float delay = 0.0f;
+    unsigned int i;
+    for (i=0; i<_q->num_stages; i++) {
+        delay *= 0.5f;
+        delay += _q->h_len[_q->num_stages-i-1] - 0.5f;
+    }
+    return delay;
+}
+
 // execute decimator
 //  _q      :   dds object
 //  _x      :   input sample array [size: 2^num_stages x 1]

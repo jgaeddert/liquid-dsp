@@ -4483,6 +4483,12 @@ int DDS(_reset)(DDS() _q);                                                  \
 /* Get number of half-band states in DDS object                         */  \
 unsigned int DDS(_get_num_stages)(DDS() _q);                                \
                                                                             \
+/* Get delay (samples) when running as interpolator                     */  \
+unsigned int DDS(_get_delay_interp)(DDS() _q);                              \
+                                                                            \
+/* Get delay (samples) when running as decimator                        */  \
+float        DDS(_get_delay_decim)(DDS() _q);                               \
+                                                                            \
 /* Run DDS object as decimator                                          */  \
 /*  _q      : synthesizer object                                        */  \
 /*  _x      : input data array, [size: (1<<_num_stages) x 1]            */  \
