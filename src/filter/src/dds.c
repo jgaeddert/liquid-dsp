@@ -213,12 +213,12 @@ int DDS(_decim_execute)(DDS() _q,
     // copy input data
     memmove(_q->buffer0, _x, (_q->rate)*sizeof(T));
 
-    unsigned int k=_q->rate;    // number of inputs for this stage
-    unsigned int s;     // stage counter
-    unsigned int i;     // input counter
-    unsigned int g;     // halfband resampler stage index (reversed)
-    T * b0 = NULL;      // input buffer pointer
-    T * b1 = NULL;      // output buffer pointer
+    unsigned int k=_q->rate;// number of inputs for this stage
+    unsigned int s;         // stage counter
+    unsigned int i;         // input counter
+    unsigned int g;         // halfband resampler stage index (reversed)
+    T * b0 = NULL;          // input buffer pointer
+    T * b1 = _q->buffer0;   // output buffer pointer
 
     // iterate through each stage
     for (s=0; s<_q->num_stages; s++) {
@@ -259,11 +259,11 @@ int DDS(_interp_execute)(DDS() _q,
     NCO(_mix_up)(_q->ncox, _x, &_x);
     NCO(_step)(_q->ncox);
 
-    unsigned int s;     // stage counter
-    unsigned int i;     // input counter
-    unsigned int k=1;   // number of inputs for this stage
-    T * b0 = NULL;      // input buffer pointer
-    T * b1 = NULL;      // output buffer pointer
+    unsigned int s;         // stage counter
+    unsigned int i;         // input counter
+    unsigned int k=1;       // number of inputs for this stage
+    T * b0 = NULL;          // input buffer pointer
+    T * b1 = _q->buffer0;   // output buffer pointer
 
     // set initial buffer value
     _q->buffer0[0] = _x;
