@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -101,23 +101,23 @@ struct dotprod_rrrf_s {
 dotprod_rrrf dotprod_rrrf_create(float *      _h,
                                  unsigned int _n)
 {
-    dotprod_rrrf dp = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
-    dp->n = _n;
+    dotprod_rrrf q = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
+    q->n = _n;
 
     // create 4 copies of the input coefficients (one for each
     // data alignment).  For example: _h[4] = {1,2,3,4,5,6}
-    //  dp->h[0] = {1,2,3,4,5,6}
-    //  dp->h[1] = {. 1,2,3,4,5,6}
-    //  dp->h[2] = {. . 1,2,3,4,5,6}
-    //  dp->h[3] = {. . . 1,2,3,4,5,6}
+    //  q->h[0] = {1,2,3,4,5,6}
+    //  q->h[1] = {. 1,2,3,4,5,6}
+    //  q->h[2] = {. . 1,2,3,4,5,6}
+    //  q->h[3] = {. . . 1,2,3,4,5,6}
     unsigned int i,j;
     for (i=0; i<4; i++) {
-        dp->h[i] = calloc(1+(dp->n+i-1)/4,sizeof(vector float));
-        for (j=0; j<dp->n; j++)
-            dp->h[i][j+i] = _h[j];
+        q->h[i] = calloc(1+(q->n+i-1)/4,sizeof(vector float));
+        for (j=0; j<q->n; j++)
+            q->h[i][j+i] = _h[j];
     }
 
-    return dp;
+    return q;
 }
 
 // re-create the structured dotprod object
