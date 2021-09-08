@@ -108,9 +108,8 @@ DDS() DDS(_create)(unsigned int _num_stages,
         if ((q->h_len[i] % 2) == 0) q->h_len[i]++;
 
         // ensure h_len[i] is of form 4*m+1
-        unsigned int m = (q->h_len[i]-1)/4;
-        if (m < 1) m = 1;
-        q->h_len[i] = 4*m+1;
+        while ((q->h_len[i]-1)%4)
+            q->h_len[i]++;
 
         // update carrier, bandwidth parameters
         fc *= 0.5f;
