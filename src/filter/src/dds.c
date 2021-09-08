@@ -71,8 +71,14 @@ DDS() DDS(_create)(unsigned int _num_stages,
                    float        _As)
 {
     // error checking
+    if (_num_stages > 20)
+        return liquid_error_config("dds_%s_create(), number of stages %u exceeds reasonable maximum (20)", EXTENSION_FULL, _num_stages);
     if (_fc > 0.5f || _fc < -0.5f)
-        return liquid_error_config("dds_xxxf_create(), frequency %12.4e is out of range [-0.5,0.5]", _fc);
+        return liquid_error_config("dds_%s_create(), frequency %12.4e is out of range [-0.5,0.5]", EXTENSION_FULL, _fc);
+    if (_bw <= 0.0f || _bw >= 1.0f)
+        return liquid_error_config("dds_%s_create(), bandwidth %12.4e is out of range (0,1)", EXTENSION_FULL, _bw);
+    if (_As < 0.0f)
+        return liquid_error_config("dds_%s_create(), stop-band suppresion %12.4e must be greater than zero", EXTENSION_FULL, _As);
 
     // create object
     DDS() q = (DDS()) malloc(sizeof(struct DDS(_s)));
