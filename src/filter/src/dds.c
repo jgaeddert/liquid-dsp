@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,12 +30,6 @@
 #include <math.h>
 
 #include "liquid.internal.h"
-
-// defined:
-//  DDS()           name-mangling macro
-//  T               coefficients type
-//  RESAMP2()       halfband resampler
-//  PRINTVAL()      print macro
 
 struct DDS(_s) {
     // user-defined parameters
@@ -72,9 +66,9 @@ struct DDS(_s) {
 //  _bw             :   input signal bandwidth
 //  _As             :   stop-band attenuation
 DDS() DDS(_create)(unsigned int _num_stages,
-                   float _fc,
-                   float _bw,
-                   float _As)
+                   float        _fc,
+                   float        _bw,
+                   float        _As)
 {
     // error checking
     if (_fc > 0.5f || _fc < -0.5f)
@@ -148,7 +142,7 @@ DDS() DDS(_create)(unsigned int _num_stages,
 }
 
 // destroy dds object, freeing all internally-allocated memory
-void DDS(_destroy)(DDS() _q)
+int DDS(_destroy)(DDS() _q)
 {
     // free filter parameter arrays
     free(_q->h_len);
@@ -171,10 +165,11 @@ void DDS(_destroy)(DDS() _q)
 
     // destroy DDS object
     free(_q);
+    return LIQUID_OK;
 }
 
 // print dds object internals
-void DDS(_print)(DDS() _q)
+int DDS(_print)(DDS() _q)
 {
     printf("direct digital synthesizer (dds), rate : %u\n", _q->rate);
     printf("      fc    : %8.5f\n", _q->fc0);
@@ -192,10 +187,11 @@ void DDS(_print)(DDS() _q)
         //RESAMP2(_print)(_q->halfband_resamp[i]);
     }
     printf("    complexity : %12.4f\n",0.0f);
+    return LIQUID_OK;
 }
 
 // reset dds object internals, reset filters and nco phase
-void DDS(_reset)(DDS() _q)
+int DDS(_reset)(DDS() _q)
 {
     // reset internal filter state variables
     unsigned int i;
@@ -204,15 +200,16 @@ void DDS(_reset)(DDS() _q)
     }
 
     NCO(_set_phase)(_q->ncox,0.0f);
+    return LIQUID_OK;
 }
 
 // execute decimator
 //  _q      :   dds object
 //  _x      :   input sample array [size: 2^num_stages x 1]
 //  _y      :   output sample
-void DDS(_decim_execute)(DDS() _q,
-                         T * _x,
-                         T * _y)
+int DDS(_decim_execute)(DDS() _q,
+                        T *   _x,
+                        T *   _y)
 {
     // copy input data
     memmove(_q->buffer0, _x, (_q->rate)*sizeof(T));
@@ -248,15 +245,16 @@ void DDS(_decim_execute)(DDS() _q,
 
     // set output, normalizing by scaling factor
     *_y = y * _q->zeta;
+    return LIQUID_OK;
 }
 
 // execute interpolator
 //  _q      :   dds object
 //  _x      :   input sample
 //  _y      :   output sample array [size: 2^num_stages x 1]
-void DDS(_interp_execute)(DDS() _q,
-                          T _x,
-                          T * _y)
+int DDS(_interp_execute)(DDS() _q,
+                         T     _x,
+                         T *   _y)
 {
     // increment NCO
     NCO(_mix_up)(_q->ncox, _x, &_x);
@@ -288,5 +286,6 @@ void DDS(_interp_execute)(DDS() _q,
 
     // copy output data
     memmove(_y, b1, (_q->rate)*sizeof(T));
+    return LIQUID_OK;
 }
 
