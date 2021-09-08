@@ -98,8 +98,9 @@ struct dotprod_rrrf_s {
 };
 
 // create the structured dotprod object
-dotprod_rrrf dotprod_rrrf_create(float *      _h,
-                                 unsigned int _n)
+dotprod_rrrf dotprod_rrrf_create_opt(float *      _h,
+                                     unsigned int _n,
+                                     int          _rev)
 {
     dotprod_rrrf q = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
     q->n = _n;
@@ -114,10 +115,22 @@ dotprod_rrrf dotprod_rrrf_create(float *      _h,
     for (i=0; i<4; i++) {
         q->h[i] = calloc(1+(q->n+i-1)/4,sizeof(vector float));
         for (j=0; j<q->n; j++)
-            q->h[i][j+i] = _h[j];
+            e->h[i][j+i] = _h[_rev ? q->n-j-1 : j];
     }
 
     return q;
+}
+
+dotprod_rrrf dotprod_rrrf_create(float *      _h,
+                                 unsigned int _n)
+{
+    return dotprod_rrrf_create_opt(_h,_n,0);
+}
+
+dotprod_rrrf dotprod_rrrf_create_rev(float *      _h,
+                                     unsigned int _n)
+{
+    return dotprod_rrrf_create_opt(_h,_n,1);
 }
 
 // re-create the structured dotprod object
@@ -128,6 +141,16 @@ dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _q,
     // completely destroy and re-create dotprod object
     dotprod_rrrf_destroy(_q);
     return dotprod_rrrf_create(_h,_n);
+}
+
+// re-create the structured dotprod object
+dotprod_rrrf dotprod_rrrf_recreate_rev(dotprod_rrrf _q,
+                                       float *      _h,
+                                       unsigned int _n)
+{
+    // completely destroy and re-create dotprod object
+    dotprod_rrrf_destroy(_q);
+    return dotprod_rrrf_create_rev(_h,_n);
 }
 
 // destroy the structured dotprod object
