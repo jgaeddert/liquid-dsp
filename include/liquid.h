@@ -4480,6 +4480,9 @@ int DDS(_print)(DDS() _q);                                                  \
 /* Reset synthesizer object internals                                   */  \
 int DDS(_reset)(DDS() _q);                                                  \
                                                                             \
+/* Get number of half-band states in DDS object                         */  \
+unsigned int DDS(_get_num_stages)(DDS() _q);                                \
+                                                                            \
 /* Run DDS object as decimator                                          */  \
 /*  _q      : synthesizer object                                        */  \
 /*  _x      : input data array, [size: (1<<_num_stages) x 1]            */  \

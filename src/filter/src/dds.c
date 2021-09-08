@@ -208,6 +208,12 @@ int DDS(_reset)(DDS() _q)
     return LIQUID_OK;
 }
 
+// Get number of half-band states in DDS object
+unsigned int DDS(_get_num_stages)(DDS() _q)
+{
+    return _q->num_stages;
+}
+
 // execute decimator
 //  _q      :   dds object
 //  _x      :   input sample array [size: 2^num_stages x 1]
