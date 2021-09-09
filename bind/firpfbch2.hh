@@ -59,8 +59,8 @@ class firpfbch2 : public object
             throw std::runtime_error("invalid number of input dimensions, must be 1-D array");
 
         // comptue sample size, number of samples in buffer, and stride between samples
-        size_t       ss = sizeof(std::complex<float>);
-        if (info.shape[0] != num_input) {
+        size_t ss = sizeof(std::complex<float>);
+        if ((unsigned int)info.shape[0] != num_input) {
             throw std::runtime_error("invalid input shape " + std::to_string(info.shape[0]) +
                                      ", expected " + std::to_string(num_input));
         } else if (info.strides[0]/ss != 1) {
