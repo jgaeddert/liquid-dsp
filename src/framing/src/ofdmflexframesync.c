@@ -517,6 +517,12 @@ int ofdmflexframesync_rxheader(ofdmflexframesync _q,
                     _q->framesyncstats.fec0          = LIQUID_FEC_UNKNOWN;
                     _q->framesyncstats.fec1          = LIQUID_FEC_UNKNOWN;
 
+                    // ignore callback if set to NULL
+                    if (_q->callback == NULL) {
+                        ofdmflexframesync_reset(_q);
+                        break;
+                    }
+
                     // invoke callback method
                     _q->callback(_q->header,
                                  _q->header_valid,
