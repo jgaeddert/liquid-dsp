@@ -378,7 +378,7 @@ uint32_t NCO(_constrain)(float _theta)
     if (fpart < 0.) fpart += 1.;
 
     // map to range of precision needed
-    long retVal = (long)(fpart * 0xffffffff);
+    uint32_t retVal = (uint32_t)(fpart * 0xffffffff);
     return retVal >= UINT_MAX ? UINT_MAX : retVal;
 }
 
