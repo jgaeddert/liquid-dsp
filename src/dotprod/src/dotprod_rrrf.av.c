@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -98,26 +98,39 @@ struct dotprod_rrrf_s {
 };
 
 // create the structured dotprod object
-dotprod_rrrf dotprod_rrrf_create(float *      _h,
-                                 unsigned int _n)
+dotprod_rrrf dotprod_rrrf_create_opt(float *      _h,
+                                     unsigned int _n,
+                                     int          _rev)
 {
-    dotprod_rrrf dp = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
-    dp->n = _n;
+    dotprod_rrrf q = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
+    q->n = _n;
 
     // create 4 copies of the input coefficients (one for each
     // data alignment).  For example: _h[4] = {1,2,3,4,5,6}
-    //  dp->h[0] = {1,2,3,4,5,6}
-    //  dp->h[1] = {. 1,2,3,4,5,6}
-    //  dp->h[2] = {. . 1,2,3,4,5,6}
-    //  dp->h[3] = {. . . 1,2,3,4,5,6}
+    //  q->h[0] = {1,2,3,4,5,6}
+    //  q->h[1] = {. 1,2,3,4,5,6}
+    //  q->h[2] = {. . 1,2,3,4,5,6}
+    //  q->h[3] = {. . . 1,2,3,4,5,6}
     unsigned int i,j;
     for (i=0; i<4; i++) {
-        dp->h[i] = calloc(1+(dp->n+i-1)/4,sizeof(vector float));
-        for (j=0; j<dp->n; j++)
-            dp->h[i][j+i] = _h[j];
+        q->h[i] = calloc(1+(q->n+i-1)/4,sizeof(vector float));
+        for (j=0; j<q->n; j++)
+            e->h[i][j+i] = _h[_rev ? q->n-j-1 : j];
     }
 
-    return dp;
+    return q;
+}
+
+dotprod_rrrf dotprod_rrrf_create(float *      _h,
+                                 unsigned int _n)
+{
+    return dotprod_rrrf_create_opt(_h,_n,0);
+}
+
+dotprod_rrrf dotprod_rrrf_create_rev(float *      _h,
+                                     unsigned int _n)
+{
+    return dotprod_rrrf_create_opt(_h,_n,1);
 }
 
 // re-create the structured dotprod object
@@ -128,6 +141,16 @@ dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _q,
     // completely destroy and re-create dotprod object
     dotprod_rrrf_destroy(_q);
     return dotprod_rrrf_create(_h,_n);
+}
+
+// re-create the structured dotprod object
+dotprod_rrrf dotprod_rrrf_recreate_rev(dotprod_rrrf _q,
+                                       float *      _h,
+                                       unsigned int _n)
+{
+    // completely destroy and re-create dotprod object
+    dotprod_rrrf_destroy(_q);
+    return dotprod_rrrf_create_rev(_h,_n);
 }
 
 // destroy the structured dotprod object

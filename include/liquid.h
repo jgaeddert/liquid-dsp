@@ -4458,30 +4458,52 @@ LIQUID_MSRESAMP_DEFINE_API(LIQUID_MSRESAMP_MANGLE_CCCF,
 
 #define DDS_MANGLE_CCCF(name)  LIQUID_CONCAT(dds_cccf,name)
 
-#define LIQUID_DDS_DEFINE_API(DDS,TO,TC,TI)                     \
-typedef struct DDS(_s) * DDS();                                 \
-                                                                \
-/* create digital synthesizer object                        */  \
-DDS() DDS(_create)(unsigned int _num_stages,                    \
-                   float _fc,                                   \
-                   float _bw,                                   \
-                   float _As);                                  \
-                                                                \
-/* destroy digital synthesizer object                       */  \
-void DDS(_destroy)(DDS() _q);                                   \
-                                                                \
-/* print synthesizer object internals to stdout             */  \
-void DDS(_print)(DDS() _q);                                     \
-                                                                \
-/* reset synthesizer object internals                       */  \
-void DDS(_reset)(DDS() _q);                                     \
-                                                                \
-void DDS(_decim_execute)(DDS() _q,                              \
-                         TI * _x,                               \
-                         TO * _y);                              \
-void DDS(_interp_execute)(DDS() _q,                             \
-                          TI _x,                                \
-                          TO * _y);                             \
+#define LIQUID_DDS_DEFINE_API(DDS,TO,TC,TI)                                 \
+typedef struct DDS(_s) * DDS();                                             \
+                                                                            \
+/* Create digital synthesizer object                                    */  \
+/*  _num_stages : number of half-band stages, _num_stages > 0           */  \
+/*  _fc         : signal relative center frequency, _fc in [-0.5,0.5]   */  \
+/*  _bw         : signal relative bandwidth, _bw in (0,1)               */  \
+/*  _As         : filter stop-band attenuation (dB), _As > 0            */  \
+DDS() DDS(_create)(unsigned int _num_stages,                                \
+                   float        _fc,                                        \
+                   float        _bw,                                        \
+                   float        _As);                                       \
+                                                                            \
+/* Destroy digital synthesizer object                                   */  \
+int DDS(_destroy)(DDS() _q);                                                \
+                                                                            \
+/* Print synthesizer object internals                                   */  \
+int DDS(_print)(DDS() _q);                                                  \
+                                                                            \
+/* Reset synthesizer object internals                                   */  \
+int DDS(_reset)(DDS() _q);                                                  \
+                                                                            \
+/* Get number of half-band states in DDS object                         */  \
+unsigned int DDS(_get_num_stages)(DDS() _q);                                \
+                                                                            \
+/* Get delay (samples) when running as interpolator                     */  \
+unsigned int DDS(_get_delay_interp)(DDS() _q);                              \
+                                                                            \
+/* Get delay (samples) when running as decimator                        */  \
+float        DDS(_get_delay_decim)(DDS() _q);                               \
+                                                                            \
+/* Run DDS object as decimator                                          */  \
+/*  _q      : synthesizer object                                        */  \
+/*  _x      : input data array, [size: (1<<_num_stages) x 1]            */  \
+/*  _y      : output sample                                             */  \
+int DDS(_decim_execute)(DDS() _q,                                           \
+                        TI *  _x,                                           \
+                        TO *  _y);                                          \
+                                                                            \
+/* Run DDS object as interpolator                                       */  \
+/*  _q      : synthesizer object                                        */  \
+/*  _x      : input sample                                              */  \
+/*  _y      : output data array, [size: (1<<_num_stages) x 1]           */  \
+int DDS(_interp_execute)(DDS() _q,                                          \
+                          TI _x,                                            \
+                          TO * _y);                                         \
 
 LIQUID_DDS_DEFINE_API(DDS_MANGLE_CCCF,
                       liquid_float_complex,

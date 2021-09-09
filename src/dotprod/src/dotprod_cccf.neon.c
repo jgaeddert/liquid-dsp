@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -95,8 +95,9 @@ struct dotprod_cccf_s {
     float * hq;         // quadrature
 };
 
-dotprod_cccf dotprod_cccf_create(float complex * _h,
-                                 unsigned int    _n)
+dotprod_cccf dotprod_cccf_create_opt(float complex * _h,
+                                     unsigned int    _n,
+                                     int             _rev)
 {
     dotprod_cccf q = (dotprod_cccf)malloc(sizeof(struct dotprod_cccf_s));
     q->n = _n;
@@ -110,15 +111,28 @@ dotprod_cccf dotprod_cccf_create(float complex * _h,
     //  hq = { cimagf(_h[0]), cimagf(_h[0]), ... cimagf(_h[n-1]), cimagf(_h[n-1])}
     unsigned int i;
     for (i=0; i<q->n; i++) {
-        q->hi[2*i+0] = crealf(_h[i]);
-        q->hi[2*i+1] = crealf(_h[i]);
+        unsigned int k = _rev ? q->n-i-1 : i;
+        q->hi[2*i+0] = crealf(_h[k]);
+        q->hi[2*i+1] = crealf(_h[k]);
 
-        q->hq[2*i+0] = cimagf(_h[i]);
-        q->hq[2*i+1] = cimagf(_h[i]);
+        q->hq[2*i+0] = cimagf(_h[k]);
+        q->hq[2*i+1] = cimagf(_h[k]);
     }
 
     // return object
     return q;
+}
+
+dotprod_cccf dotprod_cccf_create(float complex * _h,
+                                 unsigned int    _n)
+{
+    return dotprod_cccf_create_opt(_h,_n,0);
+}
+
+dotprod_cccf dotprod_cccf_create_rev(float complex * _h,
+                                     unsigned int    _n)
+{
+    return dotprod_cccf_create_opt(_h,_n,1);
 }
 
 // re-create the structured dotprod object
@@ -131,6 +145,15 @@ dotprod_cccf dotprod_cccf_recreate(dotprod_cccf    _q,
     return dotprod_cccf_create(_h,_n);
 }
 
+// re-create the structured dotprod object, reversing coefficients
+dotprod_cccf dotprod_cccf_recreate_rev(dotprod_cccf    _q,
+                                       float complex * _h,
+                                       unsigned int    _n)
+{
+    // completely destroy and re-create dotprod object
+    dotprod_cccf_destroy(_q);
+    return dotprod_cccf_create_rev(_h,_n);
+}
 
 void dotprod_cccf_destroy(dotprod_cccf _q)
 {

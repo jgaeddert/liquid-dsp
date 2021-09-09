@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -99,8 +99,9 @@ struct dotprod_crcf_s {
     float * h;          // coefficients array
 };
 
-dotprod_crcf dotprod_crcf_create(float *      _h,
-                                 unsigned int _n)
+dotprod_crcf dotprod_crcf_create_opt(float *      _h,
+                                     unsigned int _n,
+                                     int          _rev)
 {
     dotprod_crcf q = (dotprod_crcf)malloc(sizeof(struct dotprod_crcf_s));
     q->n = _n;
@@ -112,12 +113,25 @@ dotprod_crcf dotprod_crcf_create(float *      _h,
     //  h = { _h[0], _h[0], _h[1], _h[1], ... _h[n-1], _h[n-1]}
     unsigned int i;
     for (i=0; i<q->n; i++) {
-        q->h[2*i+0] = _h[i];
-        q->h[2*i+1] = _h[i];
+        unsigned int k = _rev ? q->n-i-1 : i;
+        q->h[2*i+0] = _h[k];
+        q->h[2*i+1] = _h[k];
     }
 
     // return object
     return q;
+}
+
+dotprod_crcf dotprod_crcf_create(float *      _h,
+                                 unsigned int _n)
+{
+    return dotprod_crcf_create_opt(_h,_n,0);
+}
+
+dotprod_crcf dotprod_crcf_create_rev(float *      _h,
+                                     unsigned int _n)
+{
+    return dotprod_crcf_create_opt(_h,_n,1);
 }
 
 // re-create the structured dotprod object
@@ -128,6 +142,16 @@ dotprod_crcf dotprod_crcf_recreate(dotprod_crcf _q,
     // completely destroy and re-create dotprod object
     dotprod_crcf_destroy(_q);
     return dotprod_crcf_create(_h,_n);
+}
+
+// re-create the structured dotprod object, reversing coefficients
+dotprod_crcf dotprod_crcf_recreate_rev(dotprod_crcf _q,
+                                       float *      _h,
+                                       unsigned int _n)
+{
+    // completely destroy and re-create dotprod object
+    dotprod_crcf_destroy(_q);
+    return dotprod_crcf_create_rev(_h,_n);
 }
 
 

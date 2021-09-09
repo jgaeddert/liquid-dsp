@@ -1,6 +1,3 @@
-//
-// dds_cccf_example.c
-//
 // Direct digital synthesizer example.  This example demonstrates
 // the interface to the direct digital synthesizer.  A baseband
 // pulse is generated and then efficiently up-converted
@@ -11,8 +8,6 @@
 //           decim_crcf_example.c
 //           resamp2_crcf_example.c
 //           nco_example.c
-//
-
 #include <stdio.h>
 #include <complex.h>
 #include <math.h>
@@ -87,7 +82,7 @@ int main() {
     fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y/r,nfft))));\n");
     fprintf(fid,"Z = 20*log10(abs(fftshift(fft(z,  nfft))));\n");
     fprintf(fid,"plot(f,X,f,Y,f,Z);\n");
-    fprintf(fid,"legend('original','up-converted','down-converted',1);\n");
+    fprintf(fid,"legend('original','up-converted','down-converted');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([-0.5 0.5 -120 20]);\n");
 
@@ -97,14 +92,17 @@ int main() {
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(3,1,1);\n");
     fprintf(fid,"  plot(t0,real(x),'-s','MarkerSize',3,t0,imag(x),'-s','MarkerSize',3);\n");
-    fprintf(fid,"  legend('I','Q',0);\n");
+    fprintf(fid,"  legend('I','Q');\n");
     fprintf(fid,"  axis([0 n -0.55 0.55]);\n");
+    fprintf(fid,"  ylabel('original');\n");
     fprintf(fid,"subplot(3,1,2);\n");
     fprintf(fid,"  plot(t1,real(y),t1,imag(y));\n");
     fprintf(fid,"  axis([0 n*r -0.55 0.55]);\n");
+    fprintf(fid,"  ylabel('up-converted');\n");
     fprintf(fid,"subplot(3,1,3);\n");
     fprintf(fid,"  plot(t0,real(z),'-s','MarkerSize',3,t0,imag(z),'-s','MarkerSize',3);\n");
     fprintf(fid,"  axis([0 n -0.55 0.55]);\n");
+    fprintf(fid,"  ylabel('down-converted');\n");
 
     fclose(fid);
     printf("results written to %s\n",OUTPUT_FILENAME);
