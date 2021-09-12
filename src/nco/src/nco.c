@@ -227,7 +227,7 @@ int NCO(_pll_set_bandwidth)(NCO() _q,
         return liquid_error(LIQUID_EIRANGE,"nco_pll_set_bandwidth(), bandwidth must be positive");
 
     _q->alpha = _bw;                // frequency proportion
-    _q->beta  = sqrtf(_q->alpha);   // phase proportion
+    _q->beta  = SQRT(_q->alpha);    // phase proportion
     return LIQUID_OK;
 }
 
@@ -280,7 +280,7 @@ int NCO(_mix_down)(NCO() _q,
     NCO(_cexpf)(_q, &v);
 
     // rotate input (negative direction)
-    *_y = _x * conj(v);
+    *_y = _x * CONJ(v);
     return LIQUID_OK;
 }
 

@@ -33,6 +33,8 @@
 
 #define SIN         sinf
 #define COS         cosf
+#define CONJ        conjf
+#define SQRT        sqrtf
 #define LIQUID_PI   (3.14159265358979323846264338327950288f)
 
 #include "nco.c"
