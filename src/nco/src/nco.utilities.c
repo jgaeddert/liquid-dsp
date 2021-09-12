@@ -46,11 +46,10 @@ void liquid_unwrap_phase(float * _theta,
 }
 
 // unwrap phase of array (advanced)
+// TODO: verify this method
 void liquid_unwrap_phase2(float * _theta,
                           unsigned int _n)
 {
-    fprintf(stderr,"warning: liquid_unwrap_phase2() has not yet been tested!\n");
-
     unsigned int i;
 
     // make an initial estimate of phase difference
