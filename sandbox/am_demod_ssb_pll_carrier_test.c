@@ -72,7 +72,7 @@ int main(int argc, char*argv[])
         nco_crcf_mix_down(mixer, y[i], &v);
 
         // compute phase error
-        float phase_error = carg(v);
+        float phase_error = cargf(v);
 
         // adjust nco, pll objects
         nco_crcf_pll_step(mixer, phase_error);

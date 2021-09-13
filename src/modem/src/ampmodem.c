@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -298,7 +298,7 @@ int ampmodem_demod_dsb_pll_carrier(ampmodem      _q,
     nco_crcf_mix_down(_q->mixer, x1, &v1);
 
     // compute phase error
-    float phase_error = carg(v0);
+    float phase_error = cargf(v0);
 
     // adjust nco, pll objects
     nco_crcf_pll_step(_q->mixer, phase_error);
