@@ -1235,6 +1235,7 @@ bind_headers :=					\
 	bind/msresamp.hh			\
 	bind/ofdmflexframetx.hh			\
 	bind/ofdmflexframerx.hh			\
+	bind/rresamp.hh				\
 	bind/spgram.hh				\
 	bind/spwaterfall.hh			\
 
