@@ -40,6 +40,12 @@ class firfilt : public object
     void  set_scale(float _scale) { firfilt_crcf_set_scale(q,_scale); }
     float get_scale() const { float s; firfilt_crcf_get_scale(q,&s); return s; }
 
+    // Get length of filter object (number of internal coefficients)
+    unsigned int get_length() const { return firfilt_crcf_get_length(q); }
+
+    // Get pointer to coefficients array
+    const float * get_coefficients() const { return firfilt_crcf_get_coefficients(q); }
+
     // push one sample
     void push(std::complex<float> _x) { firfilt_crcf_push(q,_x); }
 
@@ -60,9 +66,6 @@ class firfilt : public object
                  unsigned int          _n,
                  std::complex<float> * _y)
     { firfilt_crcf_execute_block(q, _x, _n, _y); }
-
-    // get length of filter
-    unsigned int get_length() const { return firfilt_crcf_get_length(q); }
 
     // [c++ exclusive] push/execute one sample at a time
     std::complex<float> step(std::complex<float> _x)
@@ -117,12 +120,12 @@ class firfilt : public object
     }
 
     // get coefficients as array
-    py::array_t<float> get_coefficients() const
+    py::array_t<float> py_get_coefficients() const
     {
         return py::array_t<float>(
                 {firfilt_crcf_get_length(q)},
                 {sizeof(float)},
-                firfilt_crcf_get_coefficients(q));
+                get_coefficients());
     }
 
     // execute filter on buffer in place
@@ -218,7 +221,7 @@ void init_firfilt(py::module &m)
             &firfilt::get_length,
             "get length of filter")
         .def_property_readonly("coefficients",
-            &firfilt::get_coefficients,
+            &firfilt::py_get_coefficients,
             "get coefficients from filter")
         .def_property("scale",
             &firfilt::get_scale,
