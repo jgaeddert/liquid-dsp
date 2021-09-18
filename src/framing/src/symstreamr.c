@@ -154,7 +154,7 @@ float SYMSTREAMR(_get_delay)(SYMSTREAMR() _q)
     float p = SYMSTREAM(_get_delay)(_q->symstream);
     float d = MSRESAMP (_get_delay)(_q->resamp   );
     float r = MSRESAMP (_get_rate) (_q->resamp   );
-    return (p*0.5 +d)*r;
+    return (p + d)*r;
 }
 
 // fill buffer with samples

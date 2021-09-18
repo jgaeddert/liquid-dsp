@@ -163,7 +163,7 @@ float SYMSTREAM(_get_gain)(SYMSTREAM() _q)
 // Get delay in samples
 unsigned int SYMSTREAM(_get_delay)(SYMSTREAM() _q)
 {
-    return 4*_q->m;
+    return _q->k*_q->m;
 }
 
 // fill buffer with samples
