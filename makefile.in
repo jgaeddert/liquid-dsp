@@ -669,6 +669,7 @@ framing_autotests :=						\
 	src/framing/tests/qdetector_cccf_autotest.c		\
 	src/framing/tests/qpacketmodem_autotest.c		\
 	src/framing/tests/qpilotsync_autotest.c			\
+	src/framing/tests/symstreamcf_autotest.c		\
 
 
 framing_benchmarks :=						\
