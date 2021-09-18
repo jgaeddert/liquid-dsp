@@ -30,6 +30,14 @@ int main()
     // destroy objects
     symstreamcf_destroy(gen);
 
+    // measure approximate delay; index of first sample with abs > 1
+    unsigned int i;
+    for (i=0; i<2*buf_len; i++) {
+        if (cabsf(buf[i]) > 1.0f)
+            break;
+    }
+    printf("expected delay: %u, approximate delay: %u\n", delay, i);
+
     // export output file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
@@ -37,10 +45,8 @@ int main()
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"n = %u; delay = %u;\n", buf_len, delay);
     fprintf(fid,"t = [0:(2*n-1)] - delay;\n");
-    unsigned int i;
     for (i=0; i<2*buf_len; i++)
         fprintf(fid,"v(%6u) = %12.4e + %12.4ej;\n", i+1, crealf(buf[i]), cimagf(buf[i]));
-
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(t, real(v), t, imag(v));\n");
     fprintf(fid,"xlabel('Sample Index');\n");
