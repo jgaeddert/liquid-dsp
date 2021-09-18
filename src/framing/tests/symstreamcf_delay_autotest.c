@@ -35,7 +35,7 @@ void testbench_symstreamcf_delay(unsigned int _k,
     int          ms     = LIQUID_MODEM_QPSK;
     symstreamcf  gen    = symstreamcf_create_linear(ftype,_k,_m,beta,ms);
     unsigned int delay  = symstreamcf_get_delay(gen);
-    float        tol    = 2.0f; // error tolerance (fairly wide due to random signal)
+    float        tol    = 2.0f + _k; // error tolerance (fairly wide due to random signal)
 
     unsigned int i;
     for (i=0; i<1000 + delay; i++) {
@@ -48,7 +48,7 @@ void testbench_symstreamcf_delay(unsigned int _k,
             break;
     }
     if (liquid_autotest_verbose)
-        printf("expected delay: %u, approximate delay: %u\n", delay, i);
+        printf("expected delay: %u, approximate delay: %u, tol: %.0f\n", delay, i, tol);
 
     // verify delay is relatively close to expected
     CONTEND_DELTA((float)delay, (float)i, tol);
