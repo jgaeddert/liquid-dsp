@@ -26,25 +26,24 @@ void usage()
 {
     printf("%s [options]\n", __FILE__);
     printf("  h     :   print help\n");
-    printf("  n     :   number of output samples,     default: 64\n");
     printf("  m     :   filter semi-length,           default: 5\n");
     printf("  s     :   filter stop-band attenuation, default: 60 dB\n");
+    printf("  w     :   pulse bandwidth,              default: 0.4\n");
 }
 
 int main(int argc, char*argv[])
 {
-    unsigned int m=5;               // filter semi-length
-    float fc=0.037f;                // input tone frequency
-    unsigned int num_samples = 64;  // number of output samples
-    float As=60.0f;                 // stop-band attenuation [dB]
+    unsigned int m  =    12; // filter semi-length
+    float        As = 60.0f; // stop-band attenuation [dB]
+    float        bw =  0.1f; // pulse bandwidth
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hn:m:s:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hm:s:w:")) != EOF) {
         switch (dopt) {
-        case 'h':   usage();                    return 0;
-        case 'n':   num_samples = atoi(optarg); break;
-        case 'm':   m           = atoi(optarg); break;
-        case 's':   As          = atof(optarg); break;
+        case 'h': usage();           return 0;
+        case 'm': m  = atoi(optarg); break;
+        case 's': As = atof(optarg); break;
+        case 'w': bw = atof(optarg); break;
         default:
             exit(1);
         }
@@ -52,21 +51,16 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // allocate arrays
+    unsigned int w_len = 43; // pulse length
+    unsigned int num_samples = w_len + 2*m;
     float complex x[2*num_samples]; // input array
     float complex y[  num_samples]; // output array
 
     // generate input
-    unsigned int w_len = 2*num_samples - 4*m;   // window length
-    float beta = 8.0f;                          // kaiser window factor
-    float w_sum = 0.0f;                         // gain due to window
-    for (i=0; i<2*num_samples; i++) {
-        // compute windowing function and keep track of gain
-        float w = (i < w_len ? liquid_kaiser(i,w_len,beta) : 0.0f);
-        w_sum += w;
-
-        // compute windowed complex sinusoid
-        x[i] = w * cexpf(_Complex_I*2*M_PI*fc*i);
-    }
+    float w[w_len];
+    liquid_firdes_kaiser(w_len,bw,60.0f,0.0f,w);
+    for (i=0; i<2*num_samples; i++)
+        x[i] = i < w_len ? w[i] : 0.0f;
 
     // create/print the half-band resampler
     resamp2_crcf q = resamp2_crcf_create(m,0,As);
@@ -94,7 +88,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"h_len=%u;\n", 4*m+1);
     fprintf(fid,"num_samples=%u;\n", num_samples);
     fprintf(fid,"delay      =%u;\n", delay);
-    fprintf(fid,"w_sum      =%12.8f;\n", w_sum);
+    fprintf(fid,"bw         =%12.8f;\n", bw);
         
     for (i=0; i<num_samples; i++) {
         // save results to output file
@@ -106,8 +100,8 @@ int main(int argc, char*argv[])
     // plot time series
     fprintf(fid,"tx =  0:(2*num_samples-1);\n");
     fprintf(fid,"ty = [0:(  num_samples-1)]*2 - delay;\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1);\n");
+    fprintf(fid,"figure('position',[100 100 720 720]);\n");
+    fprintf(fid,"subplot(4,1,1);\n");
     fprintf(fid,"  plot(tx,real(x),'-s','Color',[0.5 0.5 0.5],'MarkerSize',1,...\n");
     fprintf(fid,"       ty,real(y),'-s','Color',[0.5 0.0 0.0],'MarkerSize',1);\n");
     fprintf(fid,"  legend('original','decimated','location','northeast');");
@@ -115,7 +109,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('Normalized Time [t/T_s]');\n");
     fprintf(fid,"  ylabel('real');\n");
-    fprintf(fid,"subplot(2,1,2);\n");
+    fprintf(fid,"subplot(4,1,2);\n");
     fprintf(fid,"  plot(tx,imag(x),'-s','Color',[0.5 0.5 0.5],'MarkerSize',1,...\n");
     fprintf(fid,"       ty,imag(y),'-s','Color',[0.0 0.5 0.0],'MarkerSize',1);\n");
     fprintf(fid,"  legend('original','decimated','location','northeast');");
@@ -123,14 +117,13 @@ int main(int argc, char*argv[])
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('Normalized Time [t/T_s]');\n");
     fprintf(fid,"  ylabel('imag');\n");
-
     // plot spectrum
     fprintf(fid,"nfft=512;\n");
-    fprintf(fid,"g = 1/w_sum;\n");
+    fprintf(fid,"g = 2*bw;\n");
     fprintf(fid,"X=20*log10(abs(fftshift(fft(  x*g,nfft))));\n");
     fprintf(fid,"Y=20*log10(abs(fftshift(fft(2*y*g,nfft))));\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
-    fprintf(fid,"figure;\n");
+    fprintf(fid,"subplot(4,1,3:4);\n");
     fprintf(fid,"plot(f,  X,'LineWidth',1,  'Color',[0.5 0.5 0.5],...\n");
     fprintf(fid,"     f/2,Y,'LineWidth',1.5,'Color',[0.1 0.3 0.5]);\n");
     fprintf(fid,"grid on;\n");
