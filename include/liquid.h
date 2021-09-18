@@ -5914,6 +5914,9 @@ int SYMSTREAM(_set_gain)(SYMSTREAM() _q,                                    \
 /* Get internal linear gain (before interpolation)                      */  \
 float SYMSTREAM(_get_gain)(SYMSTREAM() _q);                                 \
                                                                             \
+/* Get delay in samples                                                 */  \
+unsigned int SYMSTREAM(_get_delay)(SYMSTREAM() _q);                         \
+                                                                            \
 /* Write block of samples to output buffer                              */  \
 /*  _q      : synchronizer object                                       */  \
 /*  _buf    : output buffer [size: _buf_len x 1]                        */  \
@@ -5975,6 +5978,9 @@ int SYMSTREAMR(_set_gain)(SYMSTREAMR() _q,                                  \
                                                                             \
 /* Get internal linear gain (before interpolation)                      */  \
 float SYMSTREAMR(_get_gain)(SYMSTREAMR() _q);                               \
+                                                                            \
+/* Get delay in samples                                                 */  \
+float SYMSTREAMR(_get_delay)(SYMSTREAMR() _q);                              \
                                                                             \
 /* Write block of samples to output buffer                              */  \
 /*  _q      : synchronizer object                                       */  \

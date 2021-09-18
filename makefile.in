@@ -1605,7 +1605,9 @@ example_programs :=						\
 	examples/symsync_crcf_example				\
 	examples/symsync_crcf_full_example			\
 	examples/symsync_crcf_kaiser_example			\
+	examples/symstreamcf_delay_example			\
 	examples/symstreamcf_example				\
+	examples/symstreamrcf_delay_example			\
 	examples/symstreamrcf_example				\
 	examples/symtrack_cccf_example				\
 	examples/wdelayf_example				\
