@@ -231,7 +231,7 @@ import liquid as dsp, numpy as np
 interp = dsp.firinterp(M=4, m=12, As=60.)
 
 # run on a single sample
-buf = interp.execute(np.array((1+1j,)))
+buf = interp.execute(1+1j,)
 ```
 
 ## Available Modules ##

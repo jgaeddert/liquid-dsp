@@ -106,9 +106,37 @@ class firinterp : public object
     }
 #endif
 
-    py::array_t<std::complex<float>> py_execute(py::array_t<std::complex<float>> & _buf)
+    /// run on single value
+    py::array_t<std::complex<float>> py_execute_one(std::complex<float> _v)
     {
+        // allocate output buffer and execute on data sample
+        py::array_t<std::complex<float>> buf_out(get_interp_rate());
+        execute(_v, (std::complex<float>*) buf_out.request().ptr);
+        return buf_out;
+    }
+
+    /// run on array of values
+    py::array_t<std::complex<float>> py_execute(py::object & _v)
+    {
+        // TODO: clean up type inference here
+        if ( py::isinstance< py::array_t<std::complex<float>> >(_v) ) {
+            // pass
+        } else if ( py::isinstance< py::array_t<std::complex<double>> >(_v) ) {
+            // try type-casting to array of std::complex<float>
+            py::detail::type_caster<py::array_t<std::complex<float>>> tc;
+            if (tc.load(_v,true))
+                return py_execute(*tc);
+            throw std::runtime_error("invalid/unknown input type");
+        } else {
+            // try type-casting to std::complex<float>
+            py::detail::type_caster<std::complex<float>> tc;
+            if (tc.load(_v,true))
+                return py_execute_one(*tc);
+            throw std::runtime_error("invalid/unknown input type");
+        }
+
         // get buffer info
+        py::array_t<std::complex<float>> _buf = py::cast<py::array_t<std::complex<float>>>(_v);
         py::buffer_info info = _buf.request();
 
         // verify input size and dimensions
