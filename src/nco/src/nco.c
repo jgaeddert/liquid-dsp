@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,7 +74,7 @@ NCO() NCO(_create)(liquid_ncotype _type)
     // initialize sine table
     unsigned int i;
     for (i=0; i<1024; i++)
-        q->sintab[i] = SIN(2.0f*M_PI*(float)(i)/1024.0f);
+        q->sintab[i] = SIN(2.0f*LIQUID_PI*(float)(i)/1024.0f);
 
     // set default pll bandwidth
     NCO(_pll_set_bandwidth)(q, NCO_PLL_BANDWIDTH_DEFAULT);
@@ -161,14 +161,14 @@ int NCO(_step)(NCO() _q)
 // get phase [radians]
 T NCO(_get_phase)(NCO() _q)
 {
-    return 2.0f*M_PI*(float)_q->theta / (float)(1LLU<<32);
+    return 2.0f*LIQUID_PI*(float)_q->theta / (float)(1LLU<<32);
 }
 
 // get frequency [radians/sample]
 T NCO(_get_frequency)(NCO() _q)
 {
-    float d_theta = 2.0f*M_PI*(float)_q->d_theta / (float)(1LLU<<32);
-    return d_theta > M_PI ? d_theta - 2*M_PI : d_theta;
+    float d_theta = 2.0f*LIQUID_PI*(float)_q->d_theta / (float)(1LLU<<32);
+    return d_theta > LIQUID_PI ? d_theta - 2*LIQUID_PI : d_theta;
 }
 
 // compute sine, cosine internally
@@ -227,7 +227,7 @@ int NCO(_pll_set_bandwidth)(NCO() _q,
         return liquid_error(LIQUID_EIRANGE,"nco_pll_set_bandwidth(), bandwidth must be positive");
 
     _q->alpha = _bw;                // frequency proportion
-    _q->beta  = sqrtf(_q->alpha);   // phase proportion
+    _q->beta  = SQRT(_q->alpha);    // phase proportion
     return LIQUID_OK;
 }
 
@@ -280,7 +280,7 @@ int NCO(_mix_down)(NCO() _q,
     NCO(_cexpf)(_q, &v);
 
     // rotate input (negative direction)
-    *_y = _x * conj(v);
+    *_y = _x * CONJ(v);
     return LIQUID_OK;
 }
 

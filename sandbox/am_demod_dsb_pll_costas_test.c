@@ -61,7 +61,7 @@ int main(int argc, char*argv[])
         nco_crcf_mix_down(mixer, y[i], &v);
 
         // compute phase error
-        float phase_error = crealf(v)*cimagf(v);//carg(v);
+        float phase_error = crealf(v)*cimagf(v);//cargf(v);
         p[i] = phase_error;
 
         // adjust nco, pll objects

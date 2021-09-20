@@ -148,6 +148,15 @@ float SYMSTREAMR(_get_gain)(SYMSTREAMR() _q)
     return SYMSTREAM(_get_gain)(_q->symstream);
 }
 
+// Get delay in samples
+float SYMSTREAMR(_get_delay)(SYMSTREAMR() _q)
+{
+    float p = SYMSTREAM(_get_delay)(_q->symstream);
+    float d = MSRESAMP (_get_delay)(_q->resamp   );
+    float r = MSRESAMP (_get_rate) (_q->resamp   );
+    return (p + d)*r;
+}
+
 // fill buffer with samples
 int SYMSTREAMR(_fill_buffer)(SYMSTREAMR() _q)
 {

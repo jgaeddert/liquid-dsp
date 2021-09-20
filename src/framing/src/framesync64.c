@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -579,6 +579,20 @@ int framesync64_debug_print(framesync64  _q,
     return liquid_error(LIQUID_EICONFIG,"framesync64_debug_print(): compile-time debugging disabled\n");
 #endif
 }
+
+// get detection threshold
+float framesync64_get_threshold(framesync64 _q)
+{
+    return qdetector_cccf_get_threshold(_q->detector);
+}
+
+// set detection threshold
+int framesync64_set_threshold(framesync64 _q,
+                              float       _threshold)
+{
+    return qdetector_cccf_set_threshold(_q->detector, _threshold);
+}
+
 
 // reset frame data statistics
 int framesync64_reset_framedatastats(framesync64 _q)

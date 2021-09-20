@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -331,6 +331,12 @@ void * qdetector_cccf_execute(qdetector_cccf _q,
 
     // frame not yet ready
     return NULL;
+}
+
+// get detection threshold
+float qdetector_cccf_get_threshold(qdetector_cccf _q)
+{
+    return _q->threshold;
 }
 
 // set detection threshold (should be between 0 and 1, good starting point is 0.5)

@@ -5068,6 +5068,10 @@ int framesync64_debug_enable(framesync64 _q);
 int framesync64_debug_disable(framesync64 _q);
 int framesync64_debug_print(framesync64 _q, const char * _filename);
 
+// get/set detection threshold
+float framesync64_get_threshold(framesync64 _q);
+int   framesync64_set_threshold(framesync64 _q, float _threshold);
+
 // frame data statistics
 int              framesync64_reset_framedatastats(framesync64 _q);
 framedatastats_s framesync64_get_framedatastats  (framesync64 _q);
@@ -5805,6 +5809,9 @@ int qdetector_cccf_reset  (qdetector_cccf _q);
 void * qdetector_cccf_execute(qdetector_cccf       _q,
                               liquid_float_complex _x);
 
+// get detection threshold
+float qdetector_cccf_get_threshold(qdetector_cccf _q);
+
 // set detection threshold (should be between 0 and 1, good starting point is 0.5)
 int qdetector_cccf_set_threshold(qdetector_cccf _q,
                                  float          _threshold);
@@ -5914,6 +5921,9 @@ int SYMSTREAM(_set_gain)(SYMSTREAM() _q,                                    \
 /* Get internal linear gain (before interpolation)                      */  \
 float SYMSTREAM(_get_gain)(SYMSTREAM() _q);                                 \
                                                                             \
+/* Get delay in samples                                                 */  \
+unsigned int SYMSTREAM(_get_delay)(SYMSTREAM() _q);                         \
+                                                                            \
 /* Write block of samples to output buffer                              */  \
 /*  _q      : synchronizer object                                       */  \
 /*  _buf    : output buffer [size: _buf_len x 1]                        */  \
@@ -5975,6 +5985,9 @@ int SYMSTREAMR(_set_gain)(SYMSTREAMR() _q,                                  \
                                                                             \
 /* Get internal linear gain (before interpolation)                      */  \
 float SYMSTREAMR(_get_gain)(SYMSTREAMR() _q);                               \
+                                                                            \
+/* Get delay in samples                                                 */  \
+float SYMSTREAMR(_get_delay)(SYMSTREAMR() _q);                              \
                                                                             \
 /* Write block of samples to output buffer                              */  \
 /*  _q      : synchronizer object                                       */  \
