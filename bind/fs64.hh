@@ -53,6 +53,10 @@ class fs64 : public object
     unsigned int get_payload_length() const { return 64; }
     unsigned int get_frame_length()   const { return LIQUID_FRAME64_LEN; }
 
+    // get/set detection threshold
+    void  set_threshold(float _threshold) { framesync64_set_threshold(q,_threshold); }
+    float get_threshold() const           { return framesync64_get_threshold(q);     }
+
     // specific frame data statistics
     unsigned int get_num_frames_detected() const
         { return get_framedatastats().num_frames_detected; }
@@ -188,6 +192,10 @@ void init_fs64(py::module &m)
         .def("execute",
              &fs64::py_execute,
              "execute on a block of samples")
+        .def_property("threshold",
+            &fs64::get_threshold,
+            &fs64::set_threshold,
+            "get/set detection threshold")
         ;
 }
 #endif
