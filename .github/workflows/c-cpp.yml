@@ -7,9 +7,14 @@ on:
     branches: [ master, github-ci ]
 
 jobs:
-  build:
+  standard:
+    strategy:
+      fail-fast: false
+      matrix:
+        runs-on: [ubuntu-latest, macos-latest]
 
-    runs-on: ubuntu-latest
+    name: "💦 ${{ matrix.runs-on }}"
+    runs-on: ${{ matrix.runs-on }}
 
     steps:
     - uses: actions/checkout@v2
