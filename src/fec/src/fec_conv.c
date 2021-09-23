@@ -100,7 +100,7 @@ int fec_conv_encode(fec _q,
 
             // compute parity bits for each polynomial
             for (r=0; r<_q->R; r++) {
-                byte_out = (byte_out<<1) | parity(sr & _q->poly[r]);
+                byte_out = (byte_out<<1) | ((_q->poly[r] < 0) ^ parity(sr & abs(_q->poly[r])));
                 _msg_enc[n/8] = byte_out;
                 n++;
             }
