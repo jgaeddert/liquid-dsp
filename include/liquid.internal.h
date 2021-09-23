@@ -129,7 +129,7 @@ struct fec_s {
 
     // viterbi decoder function pointers
     void*(*create_viterbi)(int);
-    //void (*set_viterbi_polynomial)(int*);
+    void (*set_viterbi_polynomial)(int*);
     int  (*init_viterbi)(void*,int);
     int  (*update_viterbi_blk)(void*,unsigned char*,int);
     int  (*chainback_viterbi)(void*,unsigned char*,unsigned int,unsigned int);
