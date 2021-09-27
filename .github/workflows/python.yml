@@ -25,7 +25,7 @@ jobs:
 
     - name: Setup pybind-dev (macOS)
       if: runner.os == 'macOS'
-      run: brew install pybind11-dev
+      run: brew install pybind11
 
     - name: Setup python dependencies (pip)
       run: sudo -H python3 -m pip install pybind11 numpy matplotlib
