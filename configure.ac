@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2019 Joseph Gaeddert
+# Copyright (c) 2007 - 2021 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -239,6 +239,8 @@ MLIBS_VECTOR="src/vector/src/vectorf_add.port.o   \
               src/vector/src/vectorcf_mul.port.o  \
               src/vector/src/vectorcf_trig.port.o"
 
+# TODO: include specific c++ checks for pybind, python libraries, etc.
+
 case $target_os in
 darwin*)
     AN_MAKEVAR([LIBTOOL], [AC_PROG_LIBTOOL])
@@ -249,6 +251,7 @@ darwin*)
     AR_LIB=libliquid.ar
     SH_LIB=libliquid.dylib
     REBIND=""
+    CXX_FLAGS_PYBIND="-undefined dynamic_lookup"
     ;;
 *)
     AN_MAKEVAR([AR], [AC_PROG_AR])
@@ -259,6 +262,7 @@ darwin*)
     AR_LIB=libliquid.a
     SH_LIB=libliquid.so
     REBIND=ldconfig
+    CXX_FLAGS_PYBIND=""
     ;;
 esac
 
@@ -272,6 +276,7 @@ AC_SUBST(MLIBS_VECTOR)              #
 AC_SUBST(AR_LIB)                    # archive library
 AC_SUBST(SH_LIB)                    # output shared library target
 AC_SUBST(REBIND)                    # rebinding tool (e.g. ldconfig)
+AC_SUBST(CXX_FLAGS_PYBIND)          # custom flags for pybind
 AC_SUBST(ARCH_OPTION)               # compiler architecture option
 
 AC_SUBST(DEBUG_MSG_OPTION)          # debug messages option (.e.g -DDEBUG)

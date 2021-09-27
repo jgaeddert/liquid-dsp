@@ -140,7 +140,7 @@ following command:
 
     make bench
 
-### C++
+### Linking the C Library to C++ Programs
 
 Compiling and linking to C++ programs is straightforward.
 Just include `<complex>` before `<liquid/liquid.h>` and use 
@@ -170,6 +170,68 @@ int main() {
     firinterp_crcf_destroy(interp);
     return 0;
 }
+```
+
+### C++ Bindings ###
+
+While C is (mostly) a subset of C++, sometimes having a class structure
+is more convenient than using C-style structs. These bindings do two things:
+
+  1. Wrap the C-style functionality into a set of header-only C++ class libraries
+  1. Bind these C++ classes into python3
+
+The original C example can be re-written in C++ as follows:
+
+```c++
+// get in, manipulate data, get out
+#include "firinterp.hh"
+int main() {
+    unsigned int M  = 4;     // interpolation factor
+    unsigned int m  = 12;    // filter delay [symbols]
+    float        As = 60.0f; // filter stop-band attenuation [dB]
+
+    // instantiate interpolator object from prototype
+    liquid::firinterp interp(M,m,As);
+    std::complex<float> x = 1.0f;  // input sample
+    std::complex<float> y[M];      // interpolated output buffer
+
+    // repeat on input sample data as needed
+    {
+        interp.execute(x, y);
+    }
+    return 0;
+}
+```
+
+### Python Bindings ###
+
+Building python bindings depends on
+[pybind11](https://pybind11.readthedocs.io/en/stable/),
+the `python3` development libraries, and
+a compatible C++14 compiler (e.g.
+`brew install pybind11` on macOS or
+`sudo apt-get install pybind11-dev` on Debian variants).
+Then install the python dependencies with
+`sudo -H python3 -m pip install pybind11 numpy matplotlib`.
+
+Once these dependencies are installed, you can build the liquid-dsp python
+library with
+
+    make python
+
+From python3 simply use `import liquid as dsp`.
+Our interpolation example used throughout this document can be written
+in python3 as:
+
+```python
+# get in, manipulate data, get out
+import liquid as dsp, numpy as np
+
+# create the interpolator
+interp = dsp.firinterp(M=4, m=12, As=60.)
+
+# run on a single sample
+buf = interp.execute(1+1j,)
 ```
 
 ## Available Modules ##

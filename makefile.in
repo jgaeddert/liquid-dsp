@@ -23,6 +23,7 @@
 #
 # Targets:
 #    all            : dynamic shared-library object (e.g. libliquid.so)
+#    python         : build python library
 #    install        : install the dynamic shared library object and headers
 #    uninstall      : uninstall the library and header file(s)
 #    clean          : clean all targets (bench, check, examples, etc)
@@ -71,7 +72,7 @@ COVERAGE_FLAGS  = @COVERAGE_OPTION@ # dynamic library linker needs separate flag
 CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_MSG_OPTION@ @ARCH_OPTION@ ${COVERAGE_FLAGS}
 CPPFLAGS	= @CPPFLAGS@ $(INCLUDE_CFLAGS)
 CFLAGS		= $(CONFIG_CFLAGS) -Wall -fPIC
-CXXFLAGS	= $(CONFIG_CFLAGS) -Wall -fPIC -Wno-return-type-c-linkage
+CXXFLAGS	= $(CFLAGS) -std=c++14 -Wno-return-type-c-linkage
 LDFLAGS		= @LDFLAGS@
 LIBS		= @LIBS@
 PATHSEP		= /
@@ -1222,6 +1223,63 @@ libliquid.so: libliquid.a
 all: ${ARCHIVE_LIB} ${SHARED_LIB}
 
 ##
+## TARGET : python    - build python library
+##
+
+bind_headers :=					\
+	bind/liquid.hh				\
+	bind/fdelay.hh				\
+	bind/firfilt.hh				\
+	bind/firinterp.hh			\
+	bind/firpfbch2.hh			\
+	bind/fg64.hh				\
+	bind/fs64.hh				\
+	bind/msresamp.hh			\
+	bind/ofdmflexframetx.hh			\
+	bind/ofdmflexframerx.hh			\
+	bind/rresamp.hh				\
+	bind/spgram.hh				\
+	bind/spwaterfall.hh			\
+
+bind_examples_cc :=				\
+	bind/main				\
+	bind/frame64_example			\
+	bind/objects_example			\
+
+# the "-undefined dynamic_lookup" is needed on macOS
+# https://pybind11.readthedocs.io/en/stable/compiling.html#building-manually
+PYBIND11_INCLUDES := $(shell python3 -m pybind11 --includes) -I./include -I./bind/
+PYBIND11_SUFFIX   := $(shell python3-config --extension-suffix)
+PYBIND11_FLAGS    := @CXX_FLAGS_PYBIND@
+PYBIND11_LIBS     := $(shell python3-config --libs)
+PYBIND11_LDFLAGS  := $(shell python3-config --ldflags)
+
+bind_examples_obj = $(patsubst %,%.o,$(bind_examples_cc))
+${bind_examples_obj} : %.o : %.cc ${bind_headers}
+	g++ ${CXXFLAGS} -I. -I./bind -I./include -c $< -o $@
+
+${bind_examples_cc} : % : %.o ${ARCHIVE_LIB}
+	g++ ${CXXFLAGS} ${LDFLAGS} ${PYBIND11_FLAGS} -o $@ $^ ${LIBS}
+
+examples-bind: ${bind_examples_cc}
+
+# python
+bind/liquid.python.o : %.o : %.cc %.hh ${bind_headers} bind/liquid.python.hh
+	g++ ${CXXFLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
+
+pythonlib := liquid${PYBIND11_SUFFIX}
+
+# g++ ${CXXFLAGS} `python3 -m pybind11 --includes` -D PYTHONLIB bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lliquid `python3-config --ldflags`
+${pythonlib} : bind/liquid.python.o $(objects)
+	g++ ${CXXFLAGS} ${PYBIND11_FLAGS} -shared -fPIC -o $@ $^ ${LIBS} ${PYBIND11_LDFLAGS} ${PYBIND11_LIBS}
+
+python: ${pythonlib}
+
+clean-python:
+	rm -f bind/*.o ${bind_examples_cc}
+	rm -f ${pythonlib}
+
+##
 ## TARGET : help      - print list of targets
 ##
 
@@ -1340,28 +1398,45 @@ clean-check:
 ## TARGET : doc-check - build and run basic documentation checks
 ##
 
+# C example
 readme.c.example.c : README.md
 	${SED} -n '22,42p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
 readme.c.example.o : %.o : %.c ${include_headers}
-	${CC} ${CPPFLAGS} ${CFLAGS} $< -c -o $@
+	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
 
 readme.c.example : % : %.o ${ARCHIVE_LIB}
 	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
 
-readme.cc.example.cc : README.md
+# C++ link example
+readme.link.example.cc : README.md
 	${SED} -n '151,172p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
-readme.cc.example.o : %.o : %.cc ${include_headers}
-	${CXX} ${CPPFLAGS} ${CXXFLAGS} $< -c -o $@
+readme.link.example.o : %.o : %.cc ${include_headers}
+	${CXX} ${CPPFLAGS} ${CXXFLAGS} -c -o $@ $<
 
-readme.cc.example : % : %.o ${ARCHIVE_LIB}
-	${CXX} ${CXXFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
+readme.link.example : % : %.o ${ARCHIVE_LIB}
+	${CXX} ${CXXFLAGS} ${LDFLAGS} -o $@ ${LIBS} $^
 
-doc-check : readme.c.example readme.cc.example ; ./readme.c.example && ./readme.cc.example
+# C++ bind example
+readme.bind.example.cc : README.md
+	${SED} -n '186,203p' $< | ${SED} "s/<liquid\/liquid.hh>/\"liquid.hh\"/g" > $@
+
+readme.bind.example.o : %.o : %.cc ${include_headers} bind/firinterp.hh
+	${CXX} ${CPPFLAGS} ${CXXFLAGS} -I ./bind -c -o $@ $<
+
+readme.bind.example : % : %.o ${ARCHIVE_LIB}
+	${CXX} ${CXXFLAGS} ${LDFLAGS} -o $@ ${LIBS} $^
+
+# Python bind example
+readme.bind.py : README.md
+	${SED} -n '227,234p' $< > $@
+
+doc-check : readme.c.example readme.link.example readme.bind.example readme.bind.py ${pythonlib}
+	./readme.c.example && ./readme.link.example && ./readme.bind.example && python3 readme.bind.py
 
 clean-doc-check:
-	${RM} readme.*.example*
+	${RM} readme.*.example* readme.bind.py
 
 ##
 ## TARGET : coverage  - run coverage test and produce report
@@ -1791,7 +1866,7 @@ clean-modules:
 	$(RM) src/*/src/*.o src/*/bench/*.o src/*/tests/*.o
 	$(RM) src/libliquid.o
 
-clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox clean-doc-check
+clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox clean-doc-check clean-python
 	$(RM) ${ARCHIVE_LIB} ${SHARED_LIB} $(extra_clean)
 
 ##

@@ -5068,6 +5068,10 @@ int framesync64_debug_enable(framesync64 _q);
 int framesync64_debug_disable(framesync64 _q);
 int framesync64_debug_print(framesync64 _q, const char * _filename);
 
+// get/set detection threshold
+float framesync64_get_threshold(framesync64 _q);
+int   framesync64_set_threshold(framesync64 _q, float _threshold);
+
 // frame data statistics
 int              framesync64_reset_framedatastats(framesync64 _q);
 framedatastats_s framesync64_get_framedatastats  (framesync64 _q);
@@ -5804,6 +5808,9 @@ int qdetector_cccf_reset  (qdetector_cccf _q);
 // run detector, looking for sequence; return pointer to aligned, buffered samples
 void * qdetector_cccf_execute(qdetector_cccf       _q,
                               liquid_float_complex _x);
+
+// get detection threshold
+float qdetector_cccf_get_threshold(qdetector_cccf _q);
 
 // set detection threshold (should be between 0 and 1, good starting point is 0.5)
 int qdetector_cccf_set_threshold(qdetector_cccf _q,
@@ -7360,6 +7367,12 @@ int MODEM(_reset)(MODEM() _q);                                              \
                                                                             \
 /* Generate random symbol for modulation                                */  \
 unsigned int MODEM(_gen_rand_sym)(MODEM() _q);                              \
+                                                                            \
+/* Modulate random symbol, return symbol index                          */  \
+/*  _q  : modem object                                                  */  \
+/*  _y  : output complex sample                                         */  \
+unsigned int MODEM(_modulate_rand_sym)(MODEM() _q,                          \
+                                       TC *    _y);                         \
                                                                             \
 /* Get number of bits per symbol (bps) of modem object                  */  \
 unsigned int MODEM(_get_bps)(MODEM() _q);                                   \
