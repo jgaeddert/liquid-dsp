@@ -12,18 +12,18 @@ jobs:
       fail-fast: false
       matrix:
         runs-on: [ubuntu-latest, macos-latest]
-        python: [3.8, 3.9]
+        #python: [3.8, 3.9]
 
-    name: "💦  ${{ matrix.runs-on }} • 🐍 ${{ matrix.python }}"
+    name: "💦  ${{ matrix.runs-on }}" # • 🐍 ${{ matrix.python }}
     runs-on: ${{ matrix.runs-on }}
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: Setup Python ${{ matrix.python }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python }}
+    #- name: Setup Python ${{ matrix.python }}
+    #  uses: actions/setup-python@v2
+    #  with:
+    #    python-version: ${{ matrix.python }}
 
     - name: Setup pybind-dev (Linux)
       if: runner.os == 'Linux'
@@ -34,7 +34,7 @@ jobs:
       run: brew install pybind11
 
     - name: Setup python dependencies (pip)
-      run: sudo -H python -m pip install pybind11 numpy matplotlib
+      run: sudo -H python3 -m pip install pybind11 numpy matplotlib
 
     - name: bootstrap
       run: ./bootstrap.sh
