@@ -12,12 +12,18 @@ jobs:
       fail-fast: false
       matrix:
         runs-on: [ubuntu-latest, macos-latest]
+        python: [3.8, 3.9]
 
-    name: "💦 ${{ matrix.runs-on }}"
+    name: "💦  ${{ matrix.runs-on }} • 🐍 ${{ matrix.python }}"
     runs-on: ${{ matrix.runs-on }}
 
     steps:
     - uses: actions/checkout@v2
+
+    - name: Setup Python ${{ matrix.python }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python }}
 
     - name: Setup pybind-dev (Linux)
       if: runner.os == 'Linux'
