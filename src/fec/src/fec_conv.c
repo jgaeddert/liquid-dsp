@@ -100,7 +100,7 @@ int fec_conv_encode(fec _q,
 
             // compute parity bits for each polynomial
             for (r=0; r<_q->R; r++) {
-                byte_out = (byte_out<<1) | parity(sr & _q->poly[r]);
+                byte_out = (byte_out<<1) | ((_q->poly[r] < 0) ^ parity(sr & abs(_q->poly[r])));
                 _msg_enc[n/8] = byte_out;
                 n++;
             }
@@ -227,6 +227,7 @@ int fec_conv_setlength(fec _q, unsigned int _dec_msg_len)
 
     // re-create / re-allocate memory buffers
     _q->vp = _q->create_viterbi(8*_q->num_dec_bytes);
+    _q->set_viterbi_polynomial(_q->poly);
     _q->enc_bits = (unsigned char*) realloc(_q->enc_bits,
                                             _q->num_enc_bytes*8*sizeof(unsigned char));
     return LIQUID_OK;
@@ -242,6 +243,7 @@ int fec_conv_init_v27(fec _q)
     _q->K=7;
     _q->poly = fec_conv27_poly;
     _q->create_viterbi = create_viterbi27;
+    _q->set_viterbi_polynomial = set_viterbi27_polynomial;
     _q->init_viterbi = init_viterbi27;
     _q->update_viterbi_blk = update_viterbi27_blk;
     _q->chainback_viterbi = chainback_viterbi27;
@@ -255,6 +257,7 @@ int fec_conv_init_v29(fec _q)
     _q->K=9;
     _q->poly = fec_conv29_poly;
     _q->create_viterbi = create_viterbi29;
+    _q->set_viterbi_polynomial = set_viterbi29_polynomial;
     _q->init_viterbi = init_viterbi29;
     _q->update_viterbi_blk = update_viterbi29_blk;
     _q->chainback_viterbi = chainback_viterbi29;
@@ -268,6 +271,7 @@ int fec_conv_init_v39(fec _q)
     _q->K=9;
     _q->poly = fec_conv39_poly;
     _q->create_viterbi = create_viterbi39;
+    _q->set_viterbi_polynomial = set_viterbi39_polynomial;
     _q->init_viterbi = init_viterbi39;
     _q->update_viterbi_blk = update_viterbi39_blk;
     _q->chainback_viterbi = chainback_viterbi39;
@@ -281,6 +285,7 @@ int fec_conv_init_v615(fec _q)
     _q->K=15;
     _q->poly = fec_conv615_poly;
     _q->create_viterbi = create_viterbi615;
+    _q->set_viterbi_polynomial = set_viterbi615_polynomial;
     _q->init_viterbi = init_viterbi615;
     _q->update_viterbi_blk = update_viterbi615_blk;
     _q->chainback_viterbi = chainback_viterbi615;
