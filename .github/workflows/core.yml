@@ -18,11 +18,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
+    - name: Setup libfec
+      run: https://github.com/jgaeddert/libfec.git && ./configure && make && sudo make install
+
     - name: bootstrap
       run: ./bootstrap.sh
+
     - name: configure
       run: ./configure
+
     - name: make
       run: make -j 2
+
     - name: make check
       run: make -j 2 check
