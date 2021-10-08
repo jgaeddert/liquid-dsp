@@ -5,7 +5,7 @@ liquid-dsp
 Software-Defined Radio Digital Signal Processing Library -
 [https://liquidsdr.org](https://liquidsdr.org)
 
-[![Build Status](https://travis-ci.org/jgaeddert/liquid-dsp.svg?branch=master)](https://travis-ci.org/jgaeddert/liquid-dsp)
+[![Core CI](https://github.com/jgaeddert/liquid-dsp/actions/workflows/core.yml/badge.svg)](https://github.com/jgaeddert/liquid-dsp/actions/workflows/core.yml)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://choosealicense.com/licenses/mit/)
 [![Packaging status](https://repology.org/badge/tiny-repos/liquid-dsp.svg)](https://repology.org/project/liquid-dsp/versions)
 
