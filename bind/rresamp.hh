@@ -13,7 +13,7 @@ namespace liquid {
 class rresamp : public object
 {
   public:
-    // external coefficients
+    // create from prototype
     rresamp(unsigned int _P, unsigned int _Q,
             unsigned int _m=12, float _bw=0.5f, float _As=60.0f)
         { q = rresamp_crcf_create_kaiser(_P, _Q, _m, _bw, _As); set_scale(1); }
