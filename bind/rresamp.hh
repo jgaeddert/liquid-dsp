@@ -71,7 +71,7 @@ class rresamp : public object
         unsigned int num_inputs = info.shape[0];
         unsigned int P = get_P();
         unsigned int Q = get_Q();
-        if (num_inputs % P) {
+        if (num_inputs % Q) {
             throw std::runtime_error("input size (" + std::to_string(num_inputs) + 
                     ") must be divisible by P (" + std::to_string(Q) + ")");
         }

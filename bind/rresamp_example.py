@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 
 # options
 P, Q, m = 3, 5, 20
-num_blocks = 30
+num_blocks = 17
 
 # generate pulse
-num_samples = num_blocks * P
+num_samples = num_blocks * Q
 t = np.arange(2*m+1) - m
 x = np.zeros((num_samples,), dtype=np.csingle)
 x[:2*m+1] = np.sinc(0.2*t) * np.hamming(2*m+1)
@@ -24,7 +24,7 @@ y = resamp.execute(x)
 
 # compute spectral responses
 nfft = 2400
-X = 20*np.log10(np.abs(np.fft.fftshift(np.fft.fft(x,   nfft))))
+X = 20*np.log10(np.abs(np.fft.fftshift(np.fft.fft(x,             nfft))))
 Y = 20*np.log10(np.abs(np.fft.fftshift(np.fft.fft(y/resamp.rate, nfft))))
 
 # compute time and frequency arrays
