@@ -1,0 +1,46 @@
+name: Python CI
+
+on:
+  push:
+    branches: [ master, github-ci ]
+  pull_request:
+    branches: [ master, github-ci ]
+
+jobs:
+  standard:
+    strategy:
+      fail-fast: false
+      matrix:
+        runs-on: [ubuntu-latest, macos-latest]
+        #python: [3.8, 3.9]
+
+    name: "💦  ${{ matrix.runs-on }}" # • 🐍 ${{ matrix.python }}
+    runs-on: ${{ matrix.runs-on }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    #- name: Setup Python ${{ matrix.python }}
+    #  uses: actions/setup-python@v2
+    #  with:
+    #    python-version: ${{ matrix.python }}
+
+    - name: Setup pybind-dev (Linux)
+      if: runner.os == 'Linux'
+      run: sudo apt-get install pybind11-dev
+
+    - name: Setup pybind-dev (macOS)
+      if: runner.os == 'macOS'
+      run: brew install pybind11
+
+    - name: Setup python dependencies (pip)
+      run: sudo -H python3 -m pip install pybind11 numpy matplotlib
+
+    - name: bootstrap
+      run: ./bootstrap.sh
+
+    - name: configure
+      run: ./configure
+
+    - name: make python
+      run: make -j 2 python

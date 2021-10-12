@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,6 +53,7 @@ struct RESAMP2(_s) {
     // input buffers
     WINDOW() w0;            // input buffer (even samples)
     WINDOW() w1;            // input buffer (odd samples)
+    TC scale;               // output scaling factor
 
     // halfband filter operation
     unsigned int toggle;
@@ -116,6 +117,7 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
     q->w1 = WINDOW(_create)(2*(q->m));
 
     RESAMP2(_reset)(q);
+    RESAMP2(_set_scale)(q, 1);
 
     return q;
 }
@@ -218,6 +220,21 @@ unsigned int RESAMP2(_get_delay)(RESAMP2() _q)
     return 2*_q->m - 1;
 }
 
+// set output scaling for filter
+int RESAMP2(_set_scale)(RESAMP2() _q,
+                        TC        _scale)
+{
+    _q->scale = _scale;
+    return LIQUID_OK;
+}
+
+// get output scaling for filter
+void RESAMP2(_get_scale)(RESAMP2() _q,
+                         TC *      _scale)
+{
+    *_scale = _q->scale;
+}
+
 // execute resamp2 as half-band filter
 //  _q      :   resamp2 object
 //  _x      :   input sample
@@ -257,9 +274,9 @@ void RESAMP2(_filter_execute)(RESAMP2() _q,
     // toggle flag
     _q->toggle = 1 - _q->toggle;
 
-    // set return values, normalizing gain
-    *_y0 = 0.5f*(yi + yq);  // lower band
-    *_y1 = 0.5f*(yi - yq);  // upper band
+    // set return values, normalizing gain, applying scaling factor
+    *_y0 = 0.5f*(yi + yq)*_q->scale;    // lower band
+    *_y1 = 0.5f*(yi - yq)*_q->scale;    // upper band
 }
 
 // execute analysis half-band filterbank
@@ -283,9 +300,9 @@ void RESAMP2(_analyzer_execute)(RESAMP2() _q,
     WINDOW(_push)(_q->w0, 0.5*_x[1]);
     WINDOW(_index)(_q->w0, _q->m-1, &y0);
 
-    // set return value
-    _y[0] = y1 + y0;
-    _y[1] = y1 - y0;
+    // set return value, applying scaling factor
+    _y[0] = (y1 + y0) * _q->scale;
+    _y[1] = (y1 - y0) * _q->scale;
 }
 
 // execute synthesis half-band filterbank
@@ -308,6 +325,10 @@ void RESAMP2(_synthesizer_execute)(RESAMP2() _q,
     WINDOW(_push)(_q->w1, x1);
     WINDOW(_read)(_q->w1, &r);
     DOTPROD(_execute)(_q->dp, r, &_y[1]);
+
+    // apply scaling factor
+    _y[0] *= _q->scale;
+    _y[1] *= _q->scale;
 }
 
 
@@ -332,8 +353,8 @@ void RESAMP2(_decim_execute)(RESAMP2() _q,
     WINDOW(_push)(_q->w0, _x[1]);
     WINDOW(_index)(_q->w0, _q->m-1, &y0);
 
-    // set return value
-    *_y = y0 + y1;
+    // set return value, applying scaling factor
+    *_y = (y0 + y1) * _q->scale;
 }
 
 // execute half-band interpolation
@@ -354,5 +375,9 @@ void RESAMP2(_interp_execute)(RESAMP2() _q,
     WINDOW(_push)(_q->w1, _x);
     WINDOW(_read)(_q->w1, &r);
     DOTPROD(_execute)(_q->dp, r, &_y[1]);
+
+    // apply scaling factor
+    _y[0] *= _q->scale;
+    _y[1] *= _q->scale;
 }
 
