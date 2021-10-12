@@ -19,8 +19,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Setup libfec
-      run: https://github.com/jgaeddert/libfec.git && ./configure && make && sudo make install
+    #- name: Setup libfec
+    #  run: git clone https://github.com/jgaeddert/libfec.git && cd libfec && ./configure && make && sudo make install
 
     - name: bootstrap
       run: ./bootstrap.sh
@@ -30,6 +30,9 @@ jobs:
 
     - name: make
       run: make -j 2
+
+    - name: make doc-check
+      run: make doc-check
 
     - name: make check
       run: make -j 2 check

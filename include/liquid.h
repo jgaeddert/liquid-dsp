@@ -3953,6 +3953,18 @@ void RESAMP2(_reset)(RESAMP2() _q);                                         \
 /* Get resampler filter delay (semi-length m)                           */  \
 unsigned int RESAMP2(_get_delay)(RESAMP2() _q);                             \
                                                                             \
+/* Set output scaling for resampler                                     */  \
+/*  _q      : resampler object                                          */  \
+/*  _scale  : scaling factor to apply to each output sample             */  \
+int RESAMP2(_set_scale)(RESAMP2() _q,                                       \
+                        TC        _scale);                                  \
+                                                                            \
+/* Get output scaling for resampler                                     */  \
+/*  _q      : resampler object                                          */  \
+/*  _scale  : scaling factor applied to each output sample              */  \
+void RESAMP2(_get_scale)(RESAMP2() _q,                                      \
+                         TC *      _scale);                                 \
+                                                                            \
 /* Execute resampler as half-band filter for a single input sample      */  \
 /* \(x\) where \(y_0\) is the output of the effective low-pass filter,  */  \
 /* and \(y_1\) is the output of the effective high-pass filter.         */  \
