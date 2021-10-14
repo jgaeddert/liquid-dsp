@@ -1283,6 +1283,11 @@ ${pythonlib} : bind/liquid.python.o $(objects)
 
 python: ${pythonlib}
 
+# check c++ bindings; compile and run example programs
+# TODO: make this more structured
+check-bind: ${pythonlib} ${bind_examples_cc} bind/link_test
+	$(patsubst %,./% &&, $(bind_examples_cc)) ./bind/link_test && echo "\npass"
+
 clean-bind:
 	rm -f bind/*.o bind/link_test ${bind_examples_cc}
 	rm -f ${pythonlib}
