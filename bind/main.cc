@@ -6,7 +6,7 @@ namespace dsp = liquid;
 
 int main()
 {
-    dsp::firfilt filter;
+    dsp::firfilt filter(13U, 0.25f);
     for (auto i=0U; i<filter.get_length(); i++) {
         std::complex<float> x(i==0 ? 1.0 : 0.0, 0.0);
         std::complex<float> y = filter.step(x);

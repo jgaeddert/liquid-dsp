@@ -18,7 +18,7 @@ class object {
     std::string type;
 };
 
-std::ostream& operator<<(std::ostream& _os, const object& _object)
+inline std::ostream& operator<<(std::ostream& _os, const object& _object)
 {
     _os << _object.repr();
     return _os;

@@ -1263,6 +1263,14 @@ ${bind_examples_cc} : % : %.o ${ARCHIVE_LIB}
 
 examples-bind: ${bind_examples_cc}
 
+# test compiling separate object files and linking together
+bind/link_test_obj.o : %.o : %.cc ${bind_headers}
+	g++ ${CXXFLAGS} -I. -I./bind -I./include -c $< -o $@
+bind/link_test_main.o : %.o : %.cc ${bind_headers}
+	g++ ${CXXFLAGS} -I. -I./bind -I./include -c $< -o $@
+bind/link_test : % : %_obj.o %_main.o ${ARCHIVE_LIB}
+	g++ ${CXXFLAGS} ${LDFLAGS} ${PYBIND11_FLAGS} -o $@ $^ ${LIBS}
+
 # python
 bind/liquid.python.o : %.o : %.cc %.hh ${bind_headers} bind/liquid.python.hh
 	g++ ${CXXFLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
@@ -1275,8 +1283,8 @@ ${pythonlib} : bind/liquid.python.o $(objects)
 
 python: ${pythonlib}
 
-clean-python:
-	rm -f bind/*.o ${bind_examples_cc}
+clean-bind:
+	rm -f bind/*.o bind/link_test ${bind_examples_cc}
 	rm -f ${pythonlib}
 
 ##
@@ -1866,7 +1874,7 @@ clean-modules:
 	$(RM) src/*/src/*.o src/*/bench/*.o src/*/tests/*.o
 	$(RM) src/libliquid.o
 
-clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox clean-doc-check clean-python
+clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox clean-doc-check clean-bind
 	$(RM) ${ARCHIVE_LIB} ${SHARED_LIB} $(extra_clean)
 
 ##
