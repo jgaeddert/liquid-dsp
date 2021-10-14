@@ -1,10 +1,13 @@
 name: Core C CI
 
 on:
-  push:
-    branches: [ master, github-ci ]
+  workflow_dispatch:
   pull_request:
-    branches: [ master, github-ci ]
+  push:
+    branches:
+      - master
+      - bind-dev
+      - v*
 
 jobs:
   standard:
