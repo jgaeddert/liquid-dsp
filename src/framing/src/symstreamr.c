@@ -106,7 +106,14 @@ int SYMSTREAMR(_destroy)(SYMSTREAMR() _q)
 // print symstream object's parameters
 int SYMSTREAMR(_print)(SYMSTREAMR() _q)
 {
-    printf("symstreamr%s:\n", EXTENSION);
+    printf("<symstreamr%s, ftype:%s, bw:%.6f, m:%u, beta:%.3f, ms:%s, gain:%.6f>\n",
+            EXTENSION,
+            liquid_firfilt_type_str[SYMSTREAMR(_get_ftype)(_q)][0],
+            SYMSTREAMR(_get_bw)  (_q),
+            SYMSTREAMR(_get_m)   (_q),
+            SYMSTREAMR(_get_beta)(_q),
+            modulation_types[SYMSTREAMR(_get_scheme)(_q)].name,
+            SYMSTREAMR(_get_gain)(_q));
     return LIQUID_OK;
 }
 
@@ -119,6 +126,30 @@ int SYMSTREAMR(_reset)(SYMSTREAMR() _q)
     _q->buf_size  = 0;
     _q->buf_index = 0;
     return LIQUID_OK;
+}
+
+// Get internal filter type
+int SYMSTREAMR(_get_ftype)(SYMSTREAMR() _q)
+{
+    return SYMSTREAM(_get_ftype)(_q->symstream);
+}
+
+// Get internal signal bandwidth (symbol rate)
+float SYMSTREAMR(_get_bw)(SYMSTREAMR() _q)
+{
+    return 1.0f / (MSRESAMP(_get_rate)(_q->resamp) * (float)SYMSTREAM(_get_k)(_q->symstream));
+}
+
+// Get internal filter semi-length
+unsigned int SYMSTREAMR(_get_m)(SYMSTREAMR() _q)
+{
+    return SYMSTREAM(_get_m)(_q->symstream);
+}
+
+// Get internal filter excess bandwidth factor
+float SYMSTREAMR(_get_beta)(SYMSTREAMR() _q)
+{
+    return SYMSTREAM(_get_beta)(_q->symstream);
 }
 
 // Set internal linear modulation scheme, leaving the filter parameters
