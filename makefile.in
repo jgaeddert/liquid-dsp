@@ -1240,6 +1240,7 @@ bind_headers :=					\
 	bind/rresamp.hh				\
 	bind/spgram.hh				\
 	bind/spwaterfall.hh			\
+	bind/symstreamr.hh			\
 
 bind_examples_cc :=				\
 	bind/main				\

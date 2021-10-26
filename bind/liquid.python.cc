@@ -12,6 +12,7 @@
 #include "rresamp.hh"
 #include "spgram.hh"
 #include "spwaterfall.hh"
+#include "symstreamr.hh"
 
 namespace liquid {
 
@@ -66,6 +67,7 @@ PYBIND11_MODULE(liquid, m) {
     liquid::init_rresamp    (m);
     liquid::init_spgram     (m);
     liquid::init_spwaterfall(m);
+    liquid::init_symstreamr (m);
 }
 
 } // namespace liquid
