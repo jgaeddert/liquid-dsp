@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -129,6 +129,30 @@ int SYMSTREAM(_reset)(SYMSTREAM() _q)
     FIRINTERP(_reset)(_q->interp);
     _q->buf_index = 0;
     return LIQUID_OK;
+}
+
+// Get internal filter type
+int SYMSTREAM(_get_ftype)(SYMSTREAM() _q)
+{
+    return _q->filter_type;
+}
+
+// Get internal signal bandwidth (symbol rate)
+float SYMSTREAM(_get_k)(SYMSTREAM() _q)
+{
+    return _q->k;
+}
+
+// Get internal filter semi-length
+unsigned int SYMSTREAM(_get_m)(SYMSTREAM() _q)
+{
+    return _q->m;
+}
+
+// Get internal filter excess bandwidth factor
+float SYMSTREAM(_get_beta)(SYMSTREAM() _q)
+{
+    return _q->beta;
 }
 
 // Set internal linear modulation scheme, leaving the filter parameters
