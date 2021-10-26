@@ -28,12 +28,23 @@ class symstreamr : public object
 
     // string representation
     // TODO: print values appropriately
-    std::string repr() const
-        { return std::string("<liquid.symstreamr>"); }
+    std::string repr() const { return std::string("<liquid.symstreamr") +
+                    ", ftype=" + liquid_firfilt_type_str[symstreamrcf_get_ftype(q)][0] +
+                    ", bw=" + std::to_string(get_bw()) +
+                    ", ms=" + modulation_types[symstreamrcf_get_scheme(q)].name +
+                    ", beta=" + std::to_string(get_beta()) +
+                    ", gain=" + std::to_string(get_gain()) +
+                    ">"; }
 
     // output scale
     void  set_gain(float _gain) { symstreamrcf_set_gain(q,_gain); }
     float get_gain() const { return symstreamrcf_get_gain(q); }
+
+    int          get_ftype() const { return symstreamrcf_get_ftype(q); }
+    float        get_bw()    const { return symstreamrcf_get_bw   (q); }
+    unsigned int get_m()     const { return symstreamrcf_get_m    (q); }
+    float        get_beta()  const { return symstreamrcf_get_beta (q); }
+    float        get_delay() const { return symstreamrcf_get_delay(q); }
 
     // write samples to buffer
     void generate(std::complex<float> * _buf, unsigned int _buf_len)
@@ -78,6 +89,8 @@ class symstreamr : public object
         generate((std::complex<float>*) buf.request().ptr, _n);
         return buf;
     }
+
+    //py::str get_ftype() const { return symstreamrcf_get_ftype(q); }
 #endif
 };
 
@@ -101,6 +114,21 @@ void init_symstreamr(py::module &m)
             &symstreamr::get_gain,
             &symstreamr::set_gain,
             "get/set output gain property")
+        .def_property_readonly("ftype",
+            &symstreamr::get_ftype,
+            "get filter type")
+        .def_property_readonly("bw",
+            &symstreamr::get_bw,
+            "get bandwidth")
+        .def_property_readonly("m",
+            &symstreamr::get_m,
+            "get filter semi-length")
+        .def_property_readonly("beta",
+            &symstreamr::get_beta,
+            "get filter excess bandwidth factor")
+        .def_property_readonly("delay",
+            &symstreamr::get_delay,
+            "get delay in samples")
         ;
 }
 #endif
