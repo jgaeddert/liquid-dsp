@@ -48,6 +48,9 @@ jobs:
     - name: make python
       run: make -j 2 python
 
+    - name: make check-python
+      run: make check-python
+
     - name: make check-bind
       run: make -j 2 check-bind
 

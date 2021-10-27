@@ -1284,6 +1284,10 @@ ${pythonlib} : bind/liquid.python.o $(objects)
 
 python: ${pythonlib}
 
+# rough python test; needs proper testing harness, dependency on .py files
+check-python: ${pythonlib}
+	./bind/check_python.sh
+
 # check c++ bindings; compile and run example programs
 # TODO: make this more structured
 check-bind: ${pythonlib} ${bind_examples_cc} bind/link_test
