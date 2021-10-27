@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-import sys
+'''demonstrate spectral periodogram estimation object'''
+import argparse, sys
 sys.path.extend(['.','..'])
-import numpy as np
-import liquid as dsp
-import matplotlib.pyplot as plt
+import liquid as dsp, numpy as np, matplotlib.pyplot as plt
+p = argparse.ArgumentParser(description=__doc__)
+p.add_argument('-nodisplay', action='store_true', help='disable display')
+args = p.parse_args()
 
 def noise(n,nstd=0.1):
     return nstd*np.random.randn(2*n).astype(np.single).view(np.csingle)*0.70711
@@ -33,5 +35,6 @@ ax.set_ylabel('Time [samples]')
 ax.grid(True, zorder=5)
 ax.set(xlim=(450,470), ylim=(-65,-30))
 ax.set_xticks(np.linspace(450,470,11))
-plt.show()
+if not args.nodisplay:
+    plt.show()
 

@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-import sys
+'''demonstrate symbol streaming generator'''
+import argparse, sys
 sys.path.extend(['.','..'])
-import numpy as np
-import liquid as dsp
-import matplotlib.pyplot as plt
+import liquid as dsp, numpy as np, matplotlib.pyplot as plt
+
+p = argparse.ArgumentParser(description=__doc__)
+p.add_argument('-nodisplay', action='store_true', help='disable display')
+args = p.parse_args()
 
 num_samples = 4e6
 
@@ -28,5 +31,6 @@ ax.set_ylabel('Time [samples]')
 ax.grid(True, zorder=5)
 ax.set(xlim=(-0.5,0.5))
 ax.set_xticks(np.linspace(-0.5,0.5,11))
-plt.show()
+if not args.nodisplay:
+    plt.show()
 

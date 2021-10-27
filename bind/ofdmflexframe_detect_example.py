@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-'''test framesync64 detection using class with callback function'''
-import sys
-sys.path.append('.')
-import numpy as np
-import liquid as dsp
-import matplotlib.pyplot as plt
+'''test ofdmflexframe detection using class with callback function'''
+import argparse, sys
+sys.path.extend(['.','..'])
+import liquid as dsp, numpy as np, matplotlib.pyplot as plt
+p = argparse.ArgumentParser(description=__doc__)
+p.add_argument('-nodisplay', action='store_true', help='disable display')
+args = p.parse_args()
 
 class performance:
     def __init__(self,M=1024,cp=16,taper=12):
@@ -43,4 +44,5 @@ ax.set_xlabel('SNR [dB]')
 ax.set_ylabel('Probability of Error')
 ax.legend(('Detection','Valid Payload'))
 ax.grid(True, zorder=5)
-plt.show()
+if not args.nodisplay:
+    plt.show()

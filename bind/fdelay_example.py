@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-import sys
+'''demonstrate fractional sample delay object'''
+import argparse, sys
 sys.path.extend(['.','..'])
-import numpy as np
-import liquid as dsp
-import matplotlib.pyplot as plt
+import liquid as dsp, numpy as np, matplotlib.pyplot as plt
+
+p = argparse.ArgumentParser(description=__doc__)
+p.add_argument('-nodisplay', action='store_true', help='disable display')
+args = p.parse_args()
 
 # create delay object
 fdelay = dsp.fdelay(nmax=400)
@@ -30,5 +33,6 @@ ax2.set_ylabel('Output')
 ax2.legend(('Output','Target Delay'))
 ax2.set(xlim=(fdelay.delay-6, fdelay.delay+6),ylim=(-0.2,1.1))
 ax2.grid(True, zorder=5)
-plt.show()
+if not args.nodisplay:
+    plt.show()
 
