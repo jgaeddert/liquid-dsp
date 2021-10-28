@@ -1871,7 +1871,7 @@ programs: all xautotest benchmark examples sandbox
 ##
 ## TARGET : world     - build absolutely everything
 ##
-world : all check bench examples sandbox
+world : all check bench python examples sandbox
 
 ##
 ## TARGET : clean     - clean build (objects, dependencies, libraries, etc.)
