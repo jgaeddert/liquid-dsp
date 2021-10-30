@@ -76,6 +76,17 @@ class modem : public object
 
 #ifdef PYTHONLIB
   public:
+    // external constellation
+    modem(py::array_t<std::complex<float>> _const) {
+        // get buffer info and verify parameters
+        py::buffer_info info = _const.request();
+        if (info.ndim != 1)
+            throw std::runtime_error("invalid number of input dimensions, must be 1-D array");
+
+        // create object
+        q = modemcf_create_arbitrary((std::complex<float>*) info.ptr, info.shape[0]);
+    }
+
 #endif
 };
 
@@ -86,6 +97,8 @@ void init_modem(py::module &m)
         "Linear modulation and demodulation")
         .def(py::init<std::string>(),
             "create modem from type string")
+        .def(py::init<py::array_t<std::complex<float>>>(),
+            "create modem from external constellation points")
 #if 0
         .def(py::init<int>(),
             "create modem from standard index")

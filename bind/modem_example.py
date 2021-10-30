@@ -9,9 +9,11 @@ args = p.parse_args()
 
 # set up options and create modem
 modscheme   = "qpsk"
-SNRdB       = 12.0
+SNRdB       = 30.0
 num_symbols = 9600
-modem       = dsp.modem(modscheme)
+#modem       = dsp.modem(modscheme)
+constellation = np.exp((2j+0.15)*np.pi*np.arange(32)/24)
+modem = dsp.modem(constellation)
 M           = 1 << modem.bits_per_symbol
 print(modem)
 
