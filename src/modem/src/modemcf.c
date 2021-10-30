@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,14 @@
  * THE SOFTWARE.
  */
 
-//
-// modemf.c : linear modem API, floating-point (single precision)
-//
+// linear modem API, floating-point (single precision)
 
 #include <math.h>
 #include <stdint.h>
 #include "liquid.internal.h"
 
 // Macro definitions
-#define MODEM(name)         LIQUID_CONCAT(modem,name)
+#define MODEM(name)         LIQUID_CONCAT(modemcf,name)
 #define FREQMOD(name)       LIQUID_CONCAT(freqmod,name)
 #define FREQDEM(name)       LIQUID_CONCAT(freqdem,name)
 
@@ -38,6 +36,9 @@
 
 #define PRINTVAL_T(X,F)     PRINTVAL_FLOAT(X,F)
 #define PRINTVAL_TC(X,F)    PRINTVAL_CFLOAT(X,F)
+
+// naming extension (useful for print statements)
+#define EXTENSION           "cf"
 
 // common source must come first (object definition)
 #include "modem_common.c"

@@ -7361,7 +7361,7 @@ int liquid_unpack_soft_bits(unsigned int _sym_in,
 // Linear modem
 //
 
-#define LIQUID_MODEM_MANGLE_FLOAT(name) LIQUID_CONCAT(modem,name)
+#define LIQUID_MODEM_MANGLE_FLOAT(name) LIQUID_CONCAT(modemcf,name)
 
 // Macro    :   MODEM
 //  MODEM   :   name-mangling macro

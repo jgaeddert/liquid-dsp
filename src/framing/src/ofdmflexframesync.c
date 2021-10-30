@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -81,7 +81,7 @@ struct ofdmflexframesync_s {
 
     // header
     int header_soft;                    // perform soft demod of header
-    modem mod_header;                   // header modulator
+    modemcf mod_header;                 // header modulator
     packetizer p_header;                // header packetizer
     unsigned char * header;             // header data (uncoded)
     unsigned char * header_enc;         // header data (encoded)
@@ -105,7 +105,7 @@ struct ofdmflexframesync_s {
     // payload
     int payload_soft;                   // perform soft demod of payload
     packetizer p_payload;               // payload packetizer
-    modem mod_payload;                  // payload demodulator
+    modemcf mod_payload;                // payload demodulator
     unsigned char * payload_enc;        // payload data (encoded bytes)
     unsigned char * payload_dec;        // payload data (decoded bytes)
     unsigned int payload_enc_len;       // length of encoded payload
@@ -201,7 +201,7 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
     q->fec1         = LIQUID_FEC_NONE;
 
     // create payload objects (initally QPSK, etc but overridden by received properties)
-    q->mod_payload = modem_create(q->ms_payload);
+    q->mod_payload = modemcf_create(q->ms_payload);
     q->payload_soft = 0;
     q->p_payload   = packetizer_create(q->payload_len, q->check, q->fec0, q->fec1);
     q->payload_enc_len = packetizer_get_enc_msg_len(q->p_payload);
@@ -223,9 +223,9 @@ int ofdmflexframesync_destroy(ofdmflexframesync _q)
     // destroy internal objects
     ofdmframesync_destroy(_q->fs);
     packetizer_destroy(_q->p_header);
-    modem_destroy(_q->mod_header);
+    modemcf_destroy(_q->mod_header);
     packetizer_destroy(_q->p_payload);
-    modem_destroy(_q->mod_payload);
+    modemcf_destroy(_q->mod_payload);
 
     // free internal buffers/arrays
     free(_q->p);
@@ -281,9 +281,9 @@ int ofdmflexframesync_set_header_len(ofdmflexframesync _q,
     _q->header_mod = realloc(_q->header_mod, _q->header_sym_len*sizeof(unsigned char));
     // create header objects
     if (_q->mod_header) {
-        modem_destroy(_q->mod_header);
+        modemcf_destroy(_q->mod_header);
     }
-    _q->mod_header = modem_create(_q->header_props.mod_scheme);
+    _q->mod_header = modemcf_create(_q->header_props.mod_scheme);
     return LIQUID_OK;
 }
 
@@ -479,16 +479,16 @@ int ofdmflexframesync_rxheader(ofdmflexframesync _q,
             unsigned int sym;
             if (_q->header_soft) {
                 unsigned int bps = modulation_types[_q->header_props.mod_scheme].bps;
-                modem_demodulate_soft(_q->mod_header, _X[i], &sym, &_q->header_mod[bps*_q->header_symbol_index]);
+                modemcf_demodulate_soft(_q->mod_header, _X[i], &sym, &_q->header_mod[bps*_q->header_symbol_index]);
             } else {
-                modem_demodulate(_q->mod_header, _X[i], &sym);
+                modemcf_demodulate(_q->mod_header, _X[i], &sym);
                 _q->header_mod[_q->header_symbol_index] = sym;
             }
             _q->header_symbol_index++;
             //printf("  extracting symbol %3u / %3u (x = %8.5f + j%8.5f)\n", _q->header_symbol_index, _q->header_sym_len, crealf(_X[i]), cimagf(_X[i]));
 
             // get demodulator error vector magnitude
-            float evm = modem_get_demodulator_evm(_q->mod_header);
+            float evm = modemcf_get_demodulator_evm(_q->mod_header);
             _q->evm_hat += evm*evm;
 
             // header extracted
@@ -641,7 +641,7 @@ int ofdmflexframesync_decode_header(ofdmflexframesync _q)
         _q->bps_payload = modulation_types[mod_scheme].bps;
 
         // recreate modem (destroy/create)
-        _q->mod_payload = modem_recreate(_q->mod_payload, _q->ms_payload);
+        _q->mod_payload = modemcf_recreate(_q->mod_payload, _q->ms_payload);
     }
 
     // set new packetizer properties
@@ -703,9 +703,9 @@ int ofdmflexframesync_rxpayload(ofdmflexframesync _q,
             _q->payload_syms[_q->payload_symbol_index] = _X[i];
 
             if (_q->payload_soft) {
-                modem_demodulate_soft(_q->mod_payload, _X[i], &sym, &_q->payload_enc[_q->bps_payload*_q->payload_symbol_index]);
+                modemcf_demodulate_soft(_q->mod_payload, _X[i], &sym, &_q->payload_enc[_q->bps_payload*_q->payload_symbol_index]);
             } else {
-                modem_demodulate(_q->mod_payload, _X[i], &sym);
+                modemcf_demodulate(_q->mod_payload, _X[i], &sym);
 
                 // pack decoded symbol into array
                 liquid_pack_array(_q->payload_enc,
