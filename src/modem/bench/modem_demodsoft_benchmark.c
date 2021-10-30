@@ -30,22 +30,22 @@
 (   struct rusage *_start,              \
     struct rusage *_finish,             \
     unsigned long int *_num_iterations) \
-{ modem_demodulate_soft_bench(_start, _finish, _num_iterations, MS); }
+{ modemcf_demodulate_soft_bench(_start, _finish, _num_iterations, MS); }
 
 // Helper function to keep code base small
-void modem_demodulate_soft_bench(struct rusage *_start,
-                                 struct rusage *_finish,
-                                 unsigned long int *_num_iterations,
-                                 modulation_scheme _ms)
+void modemcf_demodulate_soft_bench(struct rusage *_start,
+                                   struct rusage *_finish,
+                                   unsigned long int *_num_iterations,
+                                   modulation_scheme _ms)
 {
     // initialize modulator
-    modem demod = modem_create(_ms);
+    modemcf demod = modemcf_create(_ms);
 
     // normalize number of iterations
-    unsigned int bps = modem_get_bps(demod);
+    unsigned int bps = modemcf_get_bps(demod);
     switch (_ms) {
     case LIQUID_MODEM_UNKNOWN:
-        liquid_error(LIQUID_EINT,"modem_modulate_bench(), unknown modem scheme");
+        liquid_error(LIQUID_EINT,"modemcf_modulate_bench(), unknown modem scheme");
         return;
     case LIQUID_MODEM_ARB16OPT:
     case LIQUID_MODEM_ARB32OPT:
@@ -73,31 +73,31 @@ void modem_demodulate_soft_bench(struct rusage *_start,
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        modem_demodulate_soft(demod, x[ 0], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[ 1], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[ 2], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[ 3], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[ 4], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[ 5], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[ 6], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[ 7], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[ 8], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[ 9], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[10], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[11], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[12], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[13], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[14], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[15], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[16], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[17], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[18], &symbol_out, soft_bits);
-        modem_demodulate_soft(demod, x[19], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[ 0], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[ 1], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[ 2], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[ 3], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[ 4], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[ 5], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[ 6], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[ 7], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[ 8], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[ 9], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[10], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[11], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[12], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[13], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[14], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[15], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[16], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[17], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[18], &symbol_out, soft_bits);
+        modemcf_demodulate_soft(demod, x[19], &symbol_out, soft_bits);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 20;
 
-    modem_destroy(demod);
+    modemcf_destroy(demod);
 }
 
 // specific modems

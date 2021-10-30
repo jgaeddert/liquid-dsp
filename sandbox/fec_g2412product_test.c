@@ -1,25 +1,3 @@
-/*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-
 //
 // Golay(24,12) product code test
 //
@@ -134,15 +112,15 @@ int main(int argc, char*argv[])
     // modulate, add noise, demodulate soft
     float SNRdB = -4.0f;
     float nstd  = powf(10.0f, -SNRdB/20.0f);
-    modem mod = modem_create(LIQUID_MODEM_BPSK);
+    modemcf mod = modemcf_create(LIQUID_MODEM_BPSK);
     for (i=0; i<576; i++) {
         float complex v;
         unsigned int  s;
-        modem_modulate(mod, msg_enc[i], &v);
+        modemcf_modulate(mod, msg_enc[i], &v);
         v += nstd*(randnf() + randnf()*_Complex_I) * M_SQRT1_2;
-        modem_demodulate_soft(mod, v, &s, &msg_rec[i]);
+        modemcf_demodulate_soft(mod, v, &s, &msg_rec[i]);
     }
-    modem_destroy(mod);
+    modemcf_destroy(mod);
 #endif
 
     // decode message

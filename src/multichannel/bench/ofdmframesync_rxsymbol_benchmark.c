@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ void ofdmframesync_rxsymbol_bench(struct rusage *_start,
     ofdmframegen fg = ofdmframegen_create(M, cp_len, taper_len, NULL);
     //ofdmframegen_print(fg);
 
-    modem mod = modem_create(ms);
+    modemcf mod = modemcf_create(ms);
 
     ofdmframesync fs = ofdmframesync_create(M,cp_len,taper_len,NULL,NULL,NULL);
 
@@ -74,8 +74,8 @@ void ofdmframesync_rxsymbol_bench(struct rusage *_start,
     // modulate data symbols (use same symbol, ignore pilot phase)
     unsigned int s;
     for (i=0; i<M; i++) {
-        s = modem_gen_rand_sym(mod);
-        modem_modulate(mod,s,&X[i]);
+        s = modemcf_gen_rand_sym(mod);
+        modemcf_modulate(mod,s,&X[i]);
     }
 
     ofdmframegen_writesymbol(fg, X, x);
@@ -102,7 +102,7 @@ void ofdmframesync_rxsymbol_bench(struct rusage *_start,
     // destroy objects
     ofdmframegen_destroy(fg);
     ofdmframesync_destroy(fs);
-    modem_destroy(mod);
+    modemcf_destroy(mod);
 }
 
 //

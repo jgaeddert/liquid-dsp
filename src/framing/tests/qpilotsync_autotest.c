@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,16 +66,16 @@ void qpilotsync_test(modulation_scheme _ms,
     unsigned char payload_sym_rx[_payload_len]; // received payload symbols
 
     // create modem objects for payload
-    modem mod = modem_create(_ms);
-    modem dem = modem_create(_ms);
+    modemcf mod = modemcf_create(_ms);
+    modemcf dem = modemcf_create(_ms);
 
     // assemble payload symbols
     for (i=0; i<_payload_len; i++) {
         // generate random symbol
-        payload_sym_tx[i] = modem_gen_rand_sym(mod);
+        payload_sym_tx[i] = modemcf_gen_rand_sym(mod);
 
         // modulate
-        modem_modulate(mod, payload_sym_tx[i], &payload_tx[i]);
+        modemcf_modulate(mod, payload_sym_tx[i], &payload_tx[i]);
     }
 
     // assemble frame
@@ -99,7 +99,7 @@ void qpilotsync_test(modulation_scheme _ms,
     // demodulate
     for (i=0; i<_payload_len; i++) {
         unsigned int sym_demod;
-        modem_demodulate(dem, payload_rx[i], &sym_demod);
+        modemcf_demodulate(dem, payload_rx[i], &sym_demod);
         payload_sym_rx[i] = (unsigned char)sym_demod;
     }
 
@@ -115,7 +115,7 @@ void qpilotsync_test(modulation_scheme _ms,
 
     if (liquid_autotest_verbose) {
         qpilotgen_print(pg);
-        printf("  received bit errors : %u / %u\n", bit_errors, _payload_len * modem_get_bps(mod));
+        printf("  received bit errors : %u / %u\n", bit_errors, _payload_len * modemcf_get_bps(mod));
         printf("  dphi (carrier freq.): %12.8ff (expected %12.8f, error=%12.8f)\n", dphi_hat, _dphi, _dphi-dphi_hat);
         printf("  phi  (carrier phase): %12.8ff (expected %12.8f, error=%12.8f)\n",  phi_hat,  _phi, _phi-phi_hat);
         printf("  gamma (channel gain): %12.8ff (expected %12.8f, error=%12.8f)\n", gamma_hat, _gamma, _gamma-gamma_hat);
@@ -130,8 +130,8 @@ void qpilotsync_test(modulation_scheme _ms,
     // destroy allocated objects
     qpilotgen_destroy(pg);
     qpilotsync_destroy(ps);
-    modem_destroy(mod);
-    modem_destroy(dem);
+    modemcf_destroy(mod);
+    modemcf_destroy(dem);
 
 #if DEBUG_QPILOTSYNC_AUTOTEST
     // write symbols to output file for plotting

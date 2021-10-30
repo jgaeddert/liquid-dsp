@@ -1,9 +1,4 @@
-// 
-// recursive_qpsk_test.c
-//
 // Run recursive QPSK modulation/demodulation test.
-//
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -59,7 +54,7 @@ int main(int argc, char*argv[])
     }
 
     // create arbitrary modem
-    modem mod = modem_create_arbitrary(map, 16);
+    modemcf mod = modemcf_create_arbitrary(map, 16);
 
     // open file for writing
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
@@ -80,7 +75,7 @@ int main(int argc, char*argv[])
     // print constellation
     fprintf(fid,"map = zeros(1,16);\n");
     for (i=0; i<16; i++) {
-        modem_modulate(mod, i, &s);
+        modemcf_modulate(mod, i, &s);
         fprintf(fid,"map(%2u) = %12.4e + %12.4ei;\n", i+1, crealf(s), cimagf(s));
     }
 
@@ -102,13 +97,13 @@ int main(int argc, char*argv[])
             sym_tx = (sym_tx_0 << 2) | sym_tx_1;
 
             // modulate
-            modem_modulate(mod, sym_tx, &s);
+            modemcf_modulate(mod, sym_tx, &s);
             
             // add noise
             s += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 
             // demodulate
-            modem_demodulate(mod, s, &sym_rx);
+            modemcf_demodulate(mod, s, &sym_rx);
 
             // recover streams
             sym_rx_0 = (sym_rx >> 2) & 0x3;
@@ -142,7 +137,7 @@ int main(int argc, char*argv[])
     printf("results written to '%s'\n", OUTPUT_FILENAME);
 
     // destroy modem object
-    modem_destroy(mod);
+    modemcf_destroy(mod);
 
     printf("done.\n");
     return 0;

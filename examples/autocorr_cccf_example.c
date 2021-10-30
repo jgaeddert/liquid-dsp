@@ -1,6 +1,3 @@
-//
-// autocorr_cccf_example.c
-//
 // This example demonstrates the autocorr (auto-correlation) object
 // functionality.  A random time-domain sequence is generated which
 // exhibits time-domain repetitions (auto-correlation properties),
@@ -9,7 +6,6 @@
 // The command-line arguments allow the user to experiment with the
 // sequence length, number of sequence repetitions, and properties of
 // the auto-correlator, as well as signal-to-noise ratio.
-//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -74,10 +70,10 @@ int main(int argc, char*argv[]) {
     unsigned int i;
 
     // generate random training sequence using QPSK symbols
-    modem mod = modem_create(LIQUID_MODEM_QPSK);
+    modemcf mod = modemcf_create(LIQUID_MODEM_QPSK);
     for (i=0; i<sequence_len; i++)
-        modem_modulate(mod, rand()%4, &sequence[i]);
-    modem_destroy(mod);
+        modemcf_modulate(mod, rand()%4, &sequence[i]);
+    modemcf_destroy(mod);
 
     // write training sequence 'n' times, followed by zeros
     unsigned int t=0;

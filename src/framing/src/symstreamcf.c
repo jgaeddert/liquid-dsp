@@ -37,7 +37,7 @@
 
 // object references
 #define SYMSTREAM(name)     LIQUID_CONCAT(symstreamcf,name)
-#define MODEM(name)         LIQUID_CONCAT(modem,name)
+#define MODEM(name)         LIQUID_CONCAT(modemcf,name)
 #define FIRINTERP(name)     LIQUID_CONCAT(firinterp_crcf,name)
 
 // source files

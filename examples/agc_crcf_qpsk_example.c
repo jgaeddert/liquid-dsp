@@ -1,11 +1,7 @@
-//
-// agc_crcf_qpsk_example.c
-//
 // Automatic gain control test for data signals with fluctuating signal
 // levels.  QPSK modulation introduces periodic random zero-crossings
 // which gives instantaneous amplitude levels near zero.  This example
 // tests the response of the AGC to these types of signals.
-//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,7 +36,7 @@ int main(int argc, char*argv[])
     float rssi[num_samples];
 
     // create objects
-    modem mod = modem_create(LIQUID_MODEM_QPSK);
+    modemcf mod = modemcf_create(LIQUID_MODEM_QPSK);
     firinterp_crcf interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_RRC,k,m,beta,dt);
     agc_crcf p = agc_crcf_create();
     agc_crcf_set_bandwidth(p, bt);
@@ -54,8 +50,8 @@ int main(int argc, char*argv[])
     float complex s;
     for (i=0; i<num_symbols; i++) {
         // generate random symbol
-        sym = modem_gen_rand_sym(mod);
-        modem_modulate(mod, sym, &s);
+        sym = modemcf_gen_rand_sym(mod);
+        modemcf_modulate(mod, sym, &s);
         s *= gamma;
 
         firinterp_crcf_execute(interp, s, &x[i*k]);
@@ -73,7 +69,7 @@ int main(int argc, char*argv[])
     }
 
     // destroy objects
-    modem_destroy(mod);
+    modemcf_destroy(mod);
     agc_crcf_destroy(p);
     firinterp_crcf_destroy(interp);
 

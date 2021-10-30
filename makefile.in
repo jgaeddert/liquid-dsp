@@ -824,7 +824,7 @@ modem_objects :=						\
 	src/modem/src/fskmod.o					\
 	src/modem/src/gmskdem.o					\
 	src/modem/src/gmskmod.o					\
-	src/modem/src/modemf.o					\
+	src/modem/src/modemcf.o					\
 	src/modem/src/modem_utilities.o				\
 	src/modem/src/modem_apsk_const.o			\
 	src/modem/src/modem_arb_const.o				\
@@ -848,7 +848,7 @@ modem_includes :=						\
 	
 #src/modem/src/modem_demod_soft_const.c
 
-src/modem/src/modemf.o           : %.o : %.c $(include_headers) $(modem_includes)
+src/modem/src/modemcf.o          : %.o : %.c $(include_headers) $(modem_includes)
 src/modem/src/gmskmod.o          : %.o : %.c $(include_headers)
 src/modem/src/gmskdem.o          : %.o : %.c $(include_headers)
 src/modem/src/ampmodem.o         : %.o : %.c $(include_headers)

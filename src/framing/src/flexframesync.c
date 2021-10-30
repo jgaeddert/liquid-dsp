@@ -125,7 +125,7 @@ struct flexframesync_s {
 
     // payload
     int             payload_soft;       // payload performs soft demod
-    modem           payload_demod;      // payload demod (for phase recovery only)
+    modemcf         payload_demod;      // payload demod (for phase recovery only)
     float complex * payload_sym;        // payload symbols (received)
     unsigned int    payload_sym_len;    // payload symbols (length)
     qpacketmodem    payload_decoder;    // payload demodulator/decoder
@@ -207,7 +207,7 @@ flexframesync flexframesync_create(framesync_callback _callback,
     flexframesync_set_header_props(q, NULL);
 
     // payload demodulator for phase recovery
-    q->payload_demod = modem_create(LIQUID_MODEM_QPSK);
+    q->payload_demod = modemcf_create(LIQUID_MODEM_QPSK);
 
     // create payload demodulator/decoder object
     q->payload_dec_len = 64;
@@ -263,7 +263,7 @@ int flexframesync_destroy(flexframesync _q)
     // destroy synchronization objects
     qpilotsync_destroy    (_q->header_pilotsync); // header demodulator/decoder
     qpacketmodem_destroy  (_q->header_decoder);   // header demodulator/decoder
-    modem_destroy         (_q->payload_demod);    // payload demodulator (for PLL)
+    modemcf_destroy         (_q->payload_demod);    // payload demodulator (for PLL)
     qpacketmodem_destroy  (_q->payload_decoder);  // payload demodulator/decoder
     qdetector_cccf_destroy(_q->detector);         // frame detector
     firpfb_crcf_destroy   (_q->mf);               // matched filter
@@ -695,7 +695,7 @@ int flexframesync_decode_header(flexframesync _q)
     }
 
     // re-create payload demodulator for phase-locked loop
-    _q->payload_demod = modem_recreate(_q->payload_demod, mod_scheme);
+    _q->payload_demod = modemcf_recreate(_q->payload_demod, mod_scheme);
 
     // reconfigure payload demodulator/decoder
     qpacketmodem_configure(_q->payload_decoder,
@@ -751,9 +751,9 @@ int flexframesync_execute_rxpayload(flexframesync _q,
         nco_crcf_mix_down(_q->pll, mf_out, &mf_out);
         // track phase, accumulate error-vector magnitude
         unsigned int sym;
-        modem_demodulate(_q->payload_demod, mf_out, &sym);
-        float phase_error = modem_get_demodulator_phase_error(_q->payload_demod);
-        float evm         = modem_get_demodulator_evm        (_q->payload_demod);
+        modemcf_demodulate(_q->payload_demod, mf_out, &sym);
+        float phase_error = modemcf_get_demodulator_phase_error(_q->payload_demod);
+        float evm         = modemcf_get_demodulator_evm        (_q->payload_demod);
         nco_crcf_pll_step(_q->pll, phase_error);
         nco_crcf_step(_q->pll);
         _q->framesyncstats.evm += evm*evm;

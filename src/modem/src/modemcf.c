@@ -27,7 +27,7 @@
 #include "liquid.internal.h"
 
 // Macro definitions
-#define MODEM(name)         LIQUID_CONCAT(modem,name)
+#define MODEM(name)         LIQUID_CONCAT(modemcf,name)
 #define FREQMOD(name)       LIQUID_CONCAT(freqmod,name)
 #define FREQDEM(name)       LIQUID_CONCAT(freqdem,name)
 
@@ -38,7 +38,7 @@
 #define PRINTVAL_TC(X,F)    PRINTVAL_CFLOAT(X,F)
 
 // naming extension (useful for print statements)
-#define EXTENSION           ""
+#define EXTENSION           "cf"
 
 // common source must come first (object definition)
 #include "modem_common.c"

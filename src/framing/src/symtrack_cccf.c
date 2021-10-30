@@ -44,7 +44,7 @@
 #define SYMSYNC(name)       LIQUID_CONCAT(symsync_crcf,name)
 #define EQLMS(name)         LIQUID_CONCAT(eqlms_cccf,name)
 #define NCO(name)           LIQUID_CONCAT(nco_crcf,name)
-#define MODEM(name)         LIQUID_CONCAT(modem,name)
+#define MODEM(name)         LIQUID_CONCAT(modemcf,name)
 
 #define TO_COMPLEX          1
 #define TC_COMPLEX          1
