@@ -1234,6 +1234,7 @@ bind_headers :=					\
 	bind/firpfbch2.hh			\
 	bind/fg64.hh				\
 	bind/fs64.hh				\
+	bind/modem.hh				\
 	bind/msresamp.hh			\
 	bind/ofdmflexframetx.hh			\
 	bind/ofdmflexframerx.hh			\

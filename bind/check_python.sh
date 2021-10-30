@@ -8,6 +8,7 @@
 ./bind/frame64_detect_example.py -nodisplay && \
 ./bind/frame64_example.py -nodisplay && \
 ./bind/msresamp_example.py -nodisplay && \
+./bind/modem_example.py -nodisplay && \
 ./bind/ofdmflexframe_detect_example.py -nodisplay && \
 ./bind/ofdmflexframe_example.py -nodisplay && \
 ./bind/rresamp_example.py -nodisplay && \

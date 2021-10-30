@@ -6,6 +6,7 @@
 #include "firinterp.hh"
 #include "firpfbch2.hh"
 #include "fs64.hh"
+#include "modem.hh"
 #include "msresamp.hh"
 #include "ofdmflexframetx.hh"
 #include "ofdmflexframerx.hh"
@@ -61,6 +62,7 @@ PYBIND11_MODULE(liquid, m) {
     liquid::init_firinterp  (m);
     liquid::init_fg64       (m);
     liquid::init_fs64       (m);
+    liquid::init_modem      (m);
     liquid::init_msresamp   (m);
     liquid::init_ofdmflexframetx(m);
     liquid::init_ofdmflexframerx(m);
