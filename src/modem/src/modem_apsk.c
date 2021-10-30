@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,8 @@ MODEM() MODEM(_create_apsk)(unsigned int _bits_per_symbol)
     case 7: apskdef = &liquid_apsk128;  break;
     case 8: apskdef = &liquid_apsk256;  break;
     default:
-        return liquid_error_config("modem_create_apsk(), unsupported modulation level (%u)",_bits_per_symbol);
+        return liquid_error_config("modem%s_create_apsk(), unsupported modulation level (%u)",
+                EXTENSION, _bits_per_symbol);
     }
 
     MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
@@ -95,7 +96,7 @@ int MODEM(_modulate_apsk)(MODEM()      _q,
                           TC *         _y)
 {
     if (_sym_in >= _q->M)
-        return liquid_error(LIQUID_EIRANGE,"modem_modulate_apsk(), input symbol exceeds maximum");
+        return liquid_error(LIQUID_EIRANGE,"modem%s_modulate_apsk(), input symbol exceeds maximum", EXTENSION);
 
     // map input symbol to constellation symbol
     unsigned int i;

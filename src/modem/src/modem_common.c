@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// modem_common.c : common utilities specific to precision
-//
+// common utilities specific to precision
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -201,11 +199,11 @@ MODEM() MODEM(_create)(modulation_scheme _scheme)
     
     // arbitrary modem
     case LIQUID_MODEM_ARB:
-        return liquid_error_config("modem_create(), cannot create arbitrary modem (LIQUID_MODEM_ARB) without specifying constellation");
+        return liquid_error_config("modem%s_create(), cannot create arbitrary modem (LIQUID_MODEM_ARB) without specifying constellation", EXTENSION);
 
     // unknown modulation scheme
     default:
-        return liquid_error_config("modem_create(), unknown/unsupported modulation scheme : %u", _scheme);
+        return liquid_error_config("modem%s_create(), unknown/unsupported modulation scheme : %u",EXTENSION,_scheme);
     }
 
     // should never get to this point, but adding return statment
@@ -278,9 +276,9 @@ int MODEM(_init)(MODEM()      _q,
                  unsigned int _bits_per_symbol)
 {
     if (_bits_per_symbol < 1 )
-        return liquid_error(LIQUID_EICONFIG,"modem_init(), modem must have at least 1 bit/symbol");
+        return liquid_error(LIQUID_EICONFIG,"modem%s_init(), modem must have at least 1 bit/symbol",EXTENSION);
     if (_bits_per_symbol > MAX_MOD_BITS_PER_SYMBOL)
-        return liquid_error(LIQUID_EICONFIG,"modem_init(), maximum number of bits per symbol exceeded");
+        return liquid_error(LIQUID_EICONFIG,"modem%s_init(), maximum number of bits per symbol exceeded",EXTENSION);
 
     // initialize common elements
     _q->symbol_map = NULL;    // symbol map (LIQUID_MODEM_ARB only)
@@ -305,11 +303,11 @@ int MODEM(_init_map)(MODEM() _q)
 {
     // validate input
     if (_q->symbol_map == NULL)
-        return liquid_error(LIQUID_EICONFIG,"modem_init_map(), symbol map array has not been allocated");
+        return liquid_error(LIQUID_EICONFIG,"modem%s_init_map(), symbol map array has not been allocated",EXTENSION);
     if (_q->M == 0 || _q->M > (1<<MAX_MOD_BITS_PER_SYMBOL))
-        return liquid_error(LIQUID_EICONFIG,"modem_init_map(), constellation size is out of range");
+        return liquid_error(LIQUID_EICONFIG,"modem%s_init_map(), constellation size is out of range",EXTENSION);
     if (_q->modulate_func == NULL)
-        return liquid_error(LIQUID_EICONFIG,"modem_init_map(), modulation function has not been initialized");
+        return liquid_error(LIQUID_EICONFIG,"modem%s_init_map(), modulation function has not been initialized",EXTENSION);
 
     unsigned int i;
     for (i=0; i<_q->M; i++)
@@ -345,7 +343,7 @@ int MODEM(_modulate)(MODEM()      _q,
 {
     // validate input
     if (_symbol_in >= _q->M)
-        return liquid_error(LIQUID_EICONFIG,"modem_modulate(), input symbol exceeds constellation size");
+        return liquid_error(LIQUID_EICONFIG,"modem%s_modulate(), input symbol exceeds constellation size", EXTENSION);
 
     if (_q->modulate_using_map) {
         // modulate simply using map (look-up table)
@@ -363,9 +361,9 @@ int MODEM(_modulate_map)(MODEM()      _q,
                          TC *         _y)
 {
     if (_symbol_in >= _q->M)
-        return liquid_error(LIQUID_EICONFIG,"modem_modulate_table(), input symbol exceeds maximum");
+        return liquid_error(LIQUID_EICONFIG,"modem%s_modulate_table(), input symbol exceeds maximum", EXTENSION);
     if (_q->symbol_map == NULL)
-        return liquid_error(LIQUID_EICONFIG,"modem_modulate_table(), symbol table not initialized");
+        return liquid_error(LIQUID_EICONFIG,"modem%s_modulate_table(), symbol table not initialized", EXTENSION);
 
     // map sample directly to output
     *_y = _q->symbol_map[_symbol_in]; 
@@ -603,7 +601,7 @@ int MODEM(_demodsoft_gentab)(MODEM()      _q,
 {
     // validate input: ensure number of nearest symbols is not too large
     if (_p > (_q->M-1))
-        return liquid_error(LIQUID_EICONFIG,"modem_demodsoft_gentab(), requesting too many neighbors");
+        return liquid_error(LIQUID_EICONFIG,"modem%s_demodsoft_gentab(), requesting too many neighbors", EXTENSION);
     
     // allocate internal memory
     _q->demod_soft_p = _p;
@@ -618,7 +616,7 @@ int MODEM(_demodsoft_gentab)(MODEM()      _q,
     unsigned int M = _q->M;  // constellation size
     TC c[M];         // constellation
     for (i=0; i<M; i++)
-        modem_modulate(_q, i, &c[i]);
+        MODEM(_modulate)(_q, i, &c[i]);
 
     // 
     // find nearest symbols (see algorithm in sandbox/modem_demodulate_soft_gentab.c)
