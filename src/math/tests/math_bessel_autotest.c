@@ -31,6 +31,7 @@ void autotest_lnbesselif()
     float tol = 1e-5f;
 
     // test lnbesselif(nu,z) with various values for nu and z
+    CONTEND_DELTA( liquid_lnbesselif( 0.0f, 0.0f),    0.0,                tol );
     CONTEND_DELTA( liquid_lnbesselif( 0.0f, 0.1f),    0.00249843923387607,tol );
     CONTEND_DELTA( liquid_lnbesselif( 0.1f, 7.1f),    5.21933724549090,   tol );
     CONTEND_DELTA( liquid_lnbesselif( 0.3f, 2.1f),    0.853008130814754,  tol );

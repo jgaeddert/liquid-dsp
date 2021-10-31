@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ MODEM() MODEM(_create_psk)(unsigned int _bits_per_symbol)
     case 7: q->scheme = LIQUID_MODEM_PSK128; break;
     case 8: q->scheme = LIQUID_MODEM_PSK256; break;
     default:
-        return liquid_error_config("modem_create_psk(), cannot support PSK with m > 8");
+        return liquid_error_config("modem%s_create_psk(), cannot support PSK with m > 8",EXTENSION);
     }
 
     // initialize basic modem structure

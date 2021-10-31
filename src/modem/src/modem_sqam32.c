@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,7 @@ int MODEM(_modulate_sqam32)(MODEM()      _q,
     case 3: *_y = -p;        break;
     default:
         // should never get to this point
-        return liquid_error(LIQUID_EINT,"modem_modulate_sqam32(), logic error");
+        return liquid_error(LIQUID_EINT,"modem%s_modulate_sqam32(), logic error",EXTENSION);
     }
     return LIQUID_OK;
 }
@@ -90,7 +90,7 @@ int MODEM(_demodulate_sqam32)(MODEM()        _q,
     case 3: x_prime = -_x;          break;
     default:
         // should never get to this point
-        return liquid_error(LIQUID_EINT,"modem_demodulate_sqam32(), logic error");
+        return liquid_error(LIQUID_EINT,"modem%s_demodulate_sqam32(), logic error",EXTENSION);
     }
     //printf(" x = %12.8f +j*%12.8f, quad = %1u, r = %12.8f + j*%12.8f\n",
     //        crealf(_x), cimagf(_x), quad, crealf(r), cimagf(r));

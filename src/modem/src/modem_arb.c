@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ MODEM() MODEM(_create_arbitrary)(float complex * _table,
     // strip out bits/symbol
     unsigned int m = liquid_nextpow2(_M);
     if ( (1<<m) != _M )
-        return liquid_error_config("modem_create_arbitrary(), input constellation size must be power of 2");
+        return liquid_error_config("modem%s_create_arbitrary(), input constellation size must be power of 2", EXTENSION);
 
     // create arbitrary modem object, not initialized
     MODEM() q = MODEM(_create_arb)(m);
@@ -79,8 +79,6 @@ int MODEM(_demodulate_arb)(MODEM()        _q,
                            TC             _x,
                            unsigned int * _sym_out)
 {
-    //printf("modem_demodulate_arb() invoked with I=%d, Q=%d\n", x);
-    
     // search for symbol nearest to received sample
     unsigned int i;
     unsigned int s=0;
@@ -187,9 +185,9 @@ int MODEM(_arb_init)(MODEM()         _q,
 {
 #ifdef LIQUID_VALIDATE_INPUT
     if (_q->scheme != LIQUID_MODEM_ARB)
-        return liquid_error(LIQUID_EICONFIG,"modem_arb_init(), modem is not of arbitrary type");
+        return liquid_error(LIQUID_EICONFIG,"modem%s_arb_init(), modem is not of arbitrary type", EXTENSION);
     if (_len != _q->M)
-        return liquid_error(LIQUID_EICONFIG,"modem_arb_init(), array sizes do not match");
+        return liquid_error(LIQUID_EICONFIG,"modem%s_arb_init(), array sizes do not match", EXTENSION);
 #endif
 
     unsigned int i;
@@ -213,20 +211,21 @@ int MODEM(_arb_init_file)(MODEM() _q,
     // try to open file
     FILE * fid = fopen(_filename, "r");
     if (fid == NULL)
-        return liquid_error(LIQUID_EIO,"modem_arb_init_file(), could not open file");
+        return liquid_error(LIQUID_EIO,"modem%s_arb_init_file(), could not open file", EXTENSION);
 
     unsigned int i, results;
     T sym_i, sym_q;
     for (i=0; i<_q->M; i++) {
         if ( feof(fid) )
-            return liquid_error(LIQUID_EIO,"modem_arb_init_file(), premature EOF for '%s'", _filename);
+            return liquid_error(LIQUID_EIO,"modem%s_arb_init_file(), premature EOF for '%s'",
+                    EXTENSION,_filename);
 
         results = fscanf(fid, "%f %f\n", &sym_i, &sym_q);
         _q->symbol_map[i] = sym_i + _Complex_I*sym_q;
 
         // ensure proper number of symbols were read
         if (results < 2)
-            return liquid_error(LIQUID_EIO,"modem_arb_init_file(), unable to parse line");
+            return liquid_error(LIQUID_EIO,"modem%s_arb_init_file(), unable to parse line", EXTENSION);
     }
     fclose(fid);
 

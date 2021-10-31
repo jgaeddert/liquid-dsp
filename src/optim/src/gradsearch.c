@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -328,19 +328,16 @@ float gradsearch_linesearch(utility_function _utility,
 float gradsearch_norm(float *      _v,
                       unsigned int _n)
 {
-    // start with a small value still big enough
-    // to avoid warning in gradstep function
-    float vnorm = 1.0e-7f;
+    // compute l2-norm
+    float vnorm = liquid_vectorf_norm(_v, _n);
 
+    // scale values (avoiding division by zero)
+    float scale = vnorm == 0.0f ? 0.0f : 1.0f / vnorm;
     unsigned int i;
     for (i=0; i<_n; i++)
-        vnorm += _v[i]*_v[i];
+        _v[i] *= scale;
 
-    vnorm = sqrtf(vnorm);
-
-    for (i=0; i<_n; i++)
-        _v[i] /= vnorm;
-
+    // return normalization
     return vnorm;
 }
 

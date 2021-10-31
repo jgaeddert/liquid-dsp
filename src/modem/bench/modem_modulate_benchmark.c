@@ -29,16 +29,16 @@
 (   struct rusage *_start,              \
     struct rusage *_finish,             \
     unsigned long int *_num_iterations) \
-{ modem_modulate_bench(_start, _finish, _num_iterations, MS); }
+{ modemcf_modulate_bench(_start, _finish, _num_iterations, MS); }
 
 // Helper function to keep code base small
-void modem_modulate_bench(struct rusage *_start,
-                          struct rusage *_finish,
-                          unsigned long int *_num_iterations,
-                          modulation_scheme _ms)
+void modemcf_modulate_bench(struct rusage *_start,
+                            struct rusage *_finish,
+                            unsigned long int *_num_iterations,
+                            modulation_scheme _ms)
 {
     // initialize modulator
-    modem mod = modem_create(_ms);
+    modemcf mod = modemcf_create(_ms);
 
     unsigned long int i;
     float complex x;
@@ -47,15 +47,15 @@ void modem_modulate_bench(struct rusage *_start,
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        modem_modulate(mod, symbol_in, &x);
-        modem_modulate(mod, symbol_in, &x);
-        modem_modulate(mod, symbol_in, &x);
-        modem_modulate(mod, symbol_in, &x);
+        modemcf_modulate(mod, symbol_in, &x);
+        modemcf_modulate(mod, symbol_in, &x);
+        modemcf_modulate(mod, symbol_in, &x);
+        modemcf_modulate(mod, symbol_in, &x);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 
-    modem_destroy(mod);
+    modemcf_destroy(mod);
 }
 
 // specific modems

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@ MODEM() MODEM(_create_ask)(unsigned int _bits_per_symbol)
         // calculate alpha dynamically
         q->data.ask.alpha = expf(-0.70735 + 0.63653*q->m);
 #else
-        return liquid_error_config("modem_create_ask(), cannot support ASK with m > 8");
+        return liquid_error_config("modem%s_create_ask(), cannot support ASK with m > 8", EXTENSION);
 #endif
     }
 

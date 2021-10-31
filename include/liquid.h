@@ -5923,6 +5923,18 @@ int SYMSTREAM(_reset)(SYMSTREAM() _q);                                      \
 int SYMSTREAM(_set_scheme)(SYMSTREAM() _q,                                  \
                            int         _ms);                                \
                                                                             \
+/* Get internal filter type                                             */  \
+int SYMSTREAM(_get_ftype)(SYMSTREAM() _q);                                  \
+                                                                            \
+/* Get internal samples per symbol                                      */  \
+float SYMSTREAM(_get_k)(SYMSTREAM() _q);                                    \
+                                                                            \
+/* Get internal filter semi-length                                      */  \
+unsigned int SYMSTREAM(_get_m)(SYMSTREAM() _q);                             \
+                                                                            \
+/* Get internal filter excess bandwidth factor                          */  \
+float SYMSTREAM(_get_beta)(SYMSTREAM() _q);                                 \
+                                                                            \
 /* Get internal linear modulation scheme                                */  \
 int SYMSTREAM(_get_scheme)(SYMSTREAM() _q);                                 \
                                                                             \
@@ -5982,6 +5994,18 @@ int SYMSTREAMR(_print)(SYMSTREAMR() _q);                                    \
                                                                             \
 /* Reset symstream internal state                                       */  \
 int SYMSTREAMR(_reset)(SYMSTREAMR() _q);                                    \
+                                                                            \
+/* Get internal filter type                                             */  \
+int SYMSTREAMR(_get_ftype)(SYMSTREAMR() _q);                                \
+                                                                            \
+/* Get internal signal bandwidth (symbol rate)                          */  \
+float SYMSTREAMR(_get_bw)(SYMSTREAMR() _q);                                 \
+                                                                            \
+/* Get internal filter semi-length                                      */  \
+unsigned int SYMSTREAMR(_get_m)(SYMSTREAMR() _q);                           \
+                                                                            \
+/* Get internal filter excess bandwidth factor                          */  \
+float SYMSTREAMR(_get_beta)(SYMSTREAMR() _q);                               \
                                                                             \
 /* Set internal linear modulation scheme, leaving the filter parameters */  \
 /* (interpolator) unmodified                                            */  \
@@ -7337,7 +7361,7 @@ int liquid_unpack_soft_bits(unsigned int _sym_in,
 // Linear modem
 //
 
-#define LIQUID_MODEM_MANGLE_FLOAT(name) LIQUID_CONCAT(modem,name)
+#define LIQUID_MODEM_MANGLE_FLOAT(name) LIQUID_CONCAT(modemcf,name)
 
 // Macro    :   MODEM
 //  MODEM   :   name-mangling macro

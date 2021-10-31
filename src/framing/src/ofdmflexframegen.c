@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -104,7 +104,7 @@ struct ofdmflexframegen_s {
     unsigned int num_symbols_payload;   // number of payload OFDM symbols
 
     // header
-    modem mod_header;             // header modulator
+    modemcf mod_header;           // header modulator
     packetizer p_header;          // header packetizer
     unsigned char * header;       // header data (uncoded)
     unsigned char * header_enc;   // header data (encoded)
@@ -117,7 +117,7 @@ struct ofdmflexframegen_s {
     // payload
     packetizer p_payload;               // payload packetizer
     unsigned int payload_dec_len;       // payload length (num un-encoded bytes)
-    modem mod_payload;                  // payload modulator
+    modemcf mod_payload;                // payload modulator
     unsigned char * payload_enc;        // payload data (encoded bytes)
     unsigned char * payload_mod;        // payload data (modulated symbols)
     unsigned int payload_enc_len;       // length of encoded payload
@@ -211,7 +211,7 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int              _M,
     q->payload_mod = (unsigned char*) malloc(q->payload_mod_len*sizeof(unsigned char));
 
     // create payload modem (initially QPSK, overridden by properties)
-    q->mod_payload = modem_create(LIQUID_MODEM_QPSK);
+    q->mod_payload = modemcf_create(LIQUID_MODEM_QPSK);
 
     // initialize properties
     ofdmflexframegen_setprops(q, _fgprops);
@@ -228,9 +228,9 @@ int ofdmflexframegen_destroy(ofdmflexframegen _q)
     // destroy internal objects
     ofdmframegen_destroy(_q->fg);       // OFDM frame generator
     packetizer_destroy(_q->p_header);   // header packetizer
-    modem_destroy(_q->mod_header);      // header modulator
+    modemcf_destroy(_q->mod_header);      // header modulator
     packetizer_destroy(_q->p_payload);  // payload packetizer
-    modem_destroy(_q->mod_payload);     // payload modulator
+    modemcf_destroy(_q->mod_payload);     // payload modulator
 
     // free buffers/arrays
     free(_q->payload_enc);              // encoded payload bytes
@@ -361,9 +361,9 @@ int ofdmflexframegen_set_header_len(ofdmflexframegen _q,
     _q->header_mod = realloc(_q->header_mod, _q->header_sym_len*sizeof(unsigned char));
     // create header objects
     if (_q->mod_header) {
-        modem_destroy(_q->mod_header);
+        modemcf_destroy(_q->mod_header);
     }
-    _q->mod_header = modem_create(_q->header_props.mod_scheme);
+    _q->mod_header = modemcf_create(_q->header_props.mod_scheme);
 
     // compute number of header symbols
     div_t d = div(_q->header_sym_len, _q->M_data);
@@ -510,7 +510,7 @@ int ofdmflexframegen_reconfigure(ofdmflexframegen _q)
 
     // re-create modem
     // TODO : only do this if necessary
-    _q->mod_payload = modem_recreate(_q->mod_payload, _q->props.mod_scheme);
+    _q->mod_payload = modemcf_recreate(_q->mod_payload, _q->props.mod_scheme);
 
     // re-allocate memory for payload modem symbols
     unsigned int bps = modulation_types[_q->props.mod_scheme].bps;
@@ -668,13 +668,13 @@ int ofdmflexframegen_gen_header(ofdmflexframegen _q)
             // load...
             if (_q->header_symbol_index < _q->header_sym_len) {
                 // modulate header symbol onto data subcarrier
-                modem_modulate(_q->mod_header, _q->header_mod[_q->header_symbol_index++], &_q->X[i]);
+                modemcf_modulate(_q->mod_header, _q->header_mod[_q->header_symbol_index++], &_q->X[i]);
                 //printf("  writing symbol %3u / %3u (x = %8.5f + j%8.5f)\n", _q->header_symbol_index, OFDMFLEXFRAME_H_SYM, crealf(_q->X[i]), cimagf(_q->X[i]));
             } else {
                 //printf("  random header symbol\n");
                 // load random symbol
-                unsigned int sym = modem_gen_rand_sym(_q->mod_header);
-                modem_modulate(_q->mod_header, sym, &_q->X[i]);
+                unsigned int sym = modemcf_gen_rand_sym(_q->mod_header);
+                modemcf_modulate(_q->mod_header, sym, &_q->X[i]);
             }
         } else {
             // ignore subcarrier (ofdmframegen handles nulls and pilots)
@@ -712,12 +712,12 @@ int ofdmflexframegen_gen_payload(ofdmflexframegen _q)
             // load...
             if (_q->payload_symbol_index < _q->payload_mod_len) {
                 // modulate payload symbol onto data subcarrier
-                modem_modulate(_q->mod_payload, _q->payload_mod[_q->payload_symbol_index++], &_q->X[i]);
+                modemcf_modulate(_q->mod_payload, _q->payload_mod[_q->payload_symbol_index++], &_q->X[i]);
             } else {
                 //printf("  random payload symbol\n");
                 // load random symbol
-                unsigned int sym = modem_gen_rand_sym(_q->mod_payload);
-                modem_modulate(_q->mod_payload, sym, &_q->X[i]);
+                unsigned int sym = modemcf_gen_rand_sym(_q->mod_payload);
+                modemcf_modulate(_q->mod_payload, sym, &_q->X[i]);
             }
         } else {
             // ignore subcarrier (ofdmframegen handles nulls and pilots)

@@ -1,15 +1,7 @@
-//
-// nco_pll_modem_example.c
-//
 // This example demonstrates how the nco/pll object (numerically-controlled
 // oscillator with phase-locked loop) can be used for carrier frequency
 // recovery in digital modems.  The modem type, SNR, and other parameters are
 // specified via the command-line interface.
-//
-// SEE ALSO: nco_example.c
-//           nco_pll_example.c
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -77,10 +69,10 @@ int main(int argc, char*argv[]) {
     nco_crcf nco_tx = nco_crcf_create(LIQUID_VCO);
     nco_crcf nco_rx = nco_crcf_create(LIQUID_VCO);
 
-    modem mod   = modem_create(ms);
-    modem demod = modem_create(ms);
+    modemcf mod   = modemcf_create(ms);
+    modemcf demod = modemcf_create(ms);
 
-    unsigned int bps = modem_get_bps(mod);
+    unsigned int bps = modemcf_get_bps(mod);
 
     // initialize objects
     nco_crcf_set_phase(nco_tx, phase_offset);
@@ -104,7 +96,7 @@ int main(int argc, char*argv[]) {
         sym_in = rand() % M;
 
         // modulate
-        modem_modulate(mod, sym_in, &x);
+        modemcf_modulate(mod, sym_in, &x);
 
         // channel
         //r = nco_crcf_cexpf(nco_tx);
@@ -119,12 +111,12 @@ int main(int argc, char*argv[]) {
         nco_crcf_mix_down(nco_rx, r, &v);
 
         // demodulate
-        modem_demodulate(demod, v, &sym_out);
+        modemcf_demodulate(demod, v, &sym_out);
         num_errors += count_bit_errors(sym_in, sym_out);
 
         // error estimation
         //phase_error = cargf(r*conjf(v));
-        phase_error = modem_get_demodulator_phase_error(demod);
+        phase_error = modemcf_get_demodulator_phase_error(demod);
 
         // perfect error estimation
         //phase_error = nco_tx->theta - nco_rx->theta;
@@ -175,8 +167,8 @@ int main(int argc, char*argv[]) {
     nco_crcf_destroy(nco_tx);
     nco_crcf_destroy(nco_rx);
 
-    modem_destroy(mod);
-    modem_destroy(demod);
+    modemcf_destroy(mod);
+    modemcf_destroy(demod);
 
     printf("bit errors: %u / %u\n", num_errors, bps*n);
     printf("done.\n");

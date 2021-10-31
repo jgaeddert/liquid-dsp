@@ -1,9 +1,4 @@
-//
-// sandbox/ofdmframe_papr_test.c
-//
 // Test OFDM frame's peak-to-average power ratio (PAPR).
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -69,7 +64,7 @@ int main(int argc, char*argv[])
     ofdmframegen fg = ofdmframegen_create(M, cp_len, taper_len, p);
     ofdmframegen_print(fg);
 
-    modem mod = modem_create(ms);
+    modemcf mod = modemcf_create(ms);
 
     float complex X[M];             // channelized symbols
     float complex buffer[frame_len];// output time series
@@ -93,8 +88,8 @@ int main(int argc, char*argv[])
     for (i=0; i<num_symbols; i++) {
         // data symbol
         for (j=0; j<M; j++) {
-            s = modem_gen_rand_sym(mod);
-            modem_modulate(mod,s,&X[j]);
+            s = modemcf_gen_rand_sym(mod);
+            modemcf_modulate(mod,s,&X[j]);
         }
         // generate symbol
         ofdmframegen_writesymbol(fg, X, buffer);
@@ -128,7 +123,7 @@ int main(int argc, char*argv[])
 
     // destroy objects
     ofdmframegen_destroy(fg);
-    modem_destroy(mod);
+    modemcf_destroy(mod);
 
     // print results to screen
     // find max(hist)

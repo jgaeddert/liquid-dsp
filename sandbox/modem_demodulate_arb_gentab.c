@@ -1,6 +1,3 @@
-// 
-// modem_demodulate_arb_gentab.c
-//
 // Generate fast demodulation tables for arbitrary modems; use existing
 // modulation scheme with fast decoding (e.g. 16-QAM) and associate
 // these constellation points with the arbitrary constellation points.
@@ -9,7 +6,6 @@
 // over only the set of nearby points. This script computes the look-up
 // table for these nearby points and stores them as an array of
 // indices.
-//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -33,7 +29,7 @@ void usage()
 }
 
 // search for nearest constellation points to reference points
-void modem_arbref_search(float complex * _c,
+void modemcf_arbref_search(float complex * _c,
                          unsigned int _M,
                          float complex * _cref,
                          unsigned int _p,
@@ -41,14 +37,14 @@ void modem_arbref_search(float complex * _c,
                          unsigned int _s);
 
 // search for nearest constellation points to single reference point
-void modem_arbref_search_point(float complex * _c,
+void modemcf_arbref_search_point(float complex * _c,
                                unsigned int _M,
                                float complex _cref,
                                unsigned char * _index,
                                unsigned int _s);
 
 // find unassigned constellation points
-unsigned int modem_arbref_search_unassigned(unsigned char * _index,
+unsigned int modemcf_arbref_search_unassigned(unsigned char * _index,
                                             unsigned int _M,
                                             unsigned int _p,
                                             unsigned int _s,
@@ -92,24 +88,24 @@ int main(int argc, char*argv[])
     unsigned int j;
 
     // initialize reference points
-    modem qref = modem_create(mref);
-    unsigned int kref = modem_get_bps(qref);
+    modemcf qref = modemcf_create(mref);
+    unsigned int kref = modemcf_get_bps(qref);
     unsigned int p = 1 << kref;
     float complex cref[p];
     for (i=0; i<p; i++) {
-        modem_modulate(qref, i, &cref[i]);
+        modemcf_modulate(qref, i, &cref[i]);
         cref[i] *= alpha;
     }
-    modem_destroy(qref);
+    modemcf_destroy(qref);
 
     // generate the constellation
-    modem q = modem_create(ms);
-    unsigned int bps = modem_get_bps(q);
+    modemcf q = modemcf_create(ms);
+    unsigned int bps = modemcf_get_bps(q);
     unsigned int M = 1 << bps;
     float complex constellation[M];
     for (i=0; i<M; i++)
-        modem_modulate(q, i, &constellation[i]);
-    modem_destroy(q);
+        modemcf_modulate(q, i, &constellation[i]);
+    modemcf_destroy(q);
 
     // perform search
     unsigned char * link = NULL;
@@ -126,16 +122,16 @@ int main(int argc, char*argv[])
         link = (unsigned char*) realloc(link, p*s);
 
         // search for nearest constellation points to reference points
-        modem_arbref_search(constellation, M, cref, p, link, s);
+        modemcf_arbref_search(constellation, M, cref, p, link, s);
 
         // find unassigned constellation points
-        num_unassigned = modem_arbref_search_unassigned(link,M,p,s,unassigned);
+        num_unassigned = modemcf_arbref_search_unassigned(link,M,p,s,unassigned);
         printf("%3u : number of unassigned points: %3u / %3u\n", s, num_unassigned, M);
     } while (num_unassigned > 0);
 
     // print table
     printf("\n");
-    printf("unsigned char modem_demodulate_gentab[%u][%u] = {\n", p, s);
+    printf("unsigned char modemcf_demodulate_gentab[%u][%u] = {\n", p, s);
     for (i=0; i<p; i++) {
         printf("    {");
         for (j=0; j<s; j++) {
@@ -213,7 +209,7 @@ int main(int argc, char*argv[])
 //  _p      :   reference points size
 //  _index  :   indices of nearest constellation points [size: _p x _s]
 //  _s      :   number of nearest constellation points
-void modem_arbref_search(float complex * _c,
+void modemcf_arbref_search(float complex * _c,
                          unsigned int _M,
                          float complex * _cref,
                          unsigned int _p,
@@ -222,21 +218,21 @@ void modem_arbref_search(float complex * _c,
 {
     // validate input
     if (_M < 2) {
-        fprintf(stderr,"error: modem_arbref_search(), input constellation size too small\n");
+        fprintf(stderr,"error: modemcf_arbref_search(), input constellation size too small\n");
         exit(1);
     } else if (_s > _M) {
-        fprintf(stderr,"error: modem_arbref_search(), index size exceeds constellation size\n");
+        fprintf(stderr,"error: modemcf_arbref_search(), index size exceeds constellation size\n");
         exit(1);
     }
 
     //
     unsigned int i;
     for (i=0; i<_p; i++)
-        modem_arbref_search_point(_c, _M, _cref[i], &_index[_s*i], _s);
+        modemcf_arbref_search_point(_c, _M, _cref[i], &_index[_s*i], _s);
 }
 
 // search for nearest constellation points to single reference point
-void modem_arbref_search_point(float complex * _c,
+void modemcf_arbref_search_point(float complex * _c,
                                unsigned int _M,
                                float complex _cref,
                                unsigned char * _index,
@@ -285,7 +281,7 @@ void modem_arbref_search_point(float complex * _c,
 }
 
 // find unassigned constellation points
-unsigned int modem_arbref_search_unassigned(unsigned char * _index,
+unsigned int modemcf_arbref_search_unassigned(unsigned char * _index,
                                             unsigned int _M,
                                             unsigned int _p,
                                             unsigned int _s,

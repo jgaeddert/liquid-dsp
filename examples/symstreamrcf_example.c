@@ -24,6 +24,7 @@ int main()
     // create stream generator
     symstreamrcf gen = symstreamrcf_create_linear(ftype,bw,m,beta,ms);
     symstreamrcf_set_gain(gen, sqrtf(bw));
+    symstreamrcf_print(gen);
 
     // create buffer for storing output
     unsigned int buf_len = 1024;
