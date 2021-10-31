@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-import sys
-sys.path.append('.')
-import numpy as np
-import liquid as dsp
-import matplotlib.pyplot as plt
+'''demonstrate finite impulse response interpolator object'''
+import argparse, sys
+sys.path.extend(['.','..'])
+import liquid as dsp, numpy as np, matplotlib.pyplot as plt
+
+p = argparse.ArgumentParser(description=__doc__)
+p.add_argument('-nodisplay', action='store_true', help='disable display')
+args = p.parse_args()
 
 # options
 M, m, As, num_symbols = 4, 6, 60., 40
@@ -29,5 +32,6 @@ for ax,func,label in ((axi,np.real,'Real'),(axq,np.imag,'Imag')):
     ax.set_xlabel('Time [samples]')
     ax.set_ylabel(label)
     ax.grid(True, zorder=5)
-plt.show()
+if not args.nodisplay:
+    plt.show()
 

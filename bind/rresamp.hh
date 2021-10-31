@@ -13,10 +13,10 @@ namespace liquid {
 class rresamp : public object
 {
   public:
-    // external coefficients
-    rresamp(unsigned int _P, unsigned int _Q,
-            unsigned int _m=12, float _bw=0.5f, float _As=60.0f)
-        { q = rresamp_crcf_create_kaiser(_P, _Q, _m, _bw, _As); set_scale(1); }
+    // create rational rate resampler with output rate P/Q, relative to input
+    rresamp(unsigned int _P, unsigned int _Q, unsigned int _m=12,
+            float _bw=0.5f, float _As=60.0f, float _scale=1.0f)
+        { q = rresamp_crcf_create_kaiser(_P, _Q, _m, _bw, _As); set_scale(_scale); }
 
     // destructor
     ~rresamp() { rresamp_crcf_destroy(q); }
@@ -26,9 +26,9 @@ class rresamp : public object
 
     // representation
     std::string repr() const { return std::string("<liquid.rresamp") +
-                    ", P=" +  std::to_string(get_P()) +
-                    ", Q=" +  std::to_string(get_Q()) +
-                    ", rate=" +  std::to_string(get_rate()) +
+                    ", P="     + std::to_string(get_P()) +
+                    ", Q="     + std::to_string(get_Q()) +
+                    ", rate="  + std::to_string(get_rate()) +
                     ", delay=" + std::to_string(get_delay()) +
                     ", scale=" + std::to_string(get_scale()) +
                     ">";}
@@ -71,7 +71,7 @@ class rresamp : public object
         unsigned int num_inputs = info.shape[0];
         unsigned int P = get_P();
         unsigned int Q = get_Q();
-        if (num_inputs % P) {
+        if (num_inputs % Q) {
             throw std::runtime_error("input size (" + std::to_string(num_inputs) + 
                     ") must be divisible by P (" + std::to_string(Q) + ")");
         }
@@ -95,12 +95,13 @@ void init_rresamp(py::module &m)
     py::class_<rresamp>(m, "rresamp",
         "Multi-stage arbitrary rate resampler")
         //.def(py::init<std::string, py::kwargs>())
-        .def(py::init<unsigned int, unsigned int, unsigned int, float, float>(),
+        .def(py::init<unsigned int, unsigned int, unsigned int, float, float, float>(),
              py::arg("P"),
              py::arg("Q"),
              py::arg("m")=12,
              py::arg("bw")=0.5f,
              py::arg("As")=60.,
+             py::arg("scale")=1.,
              "create resampler at output rate Q/P")
         .def("__repr__", &rresamp::repr)
         .def("reset", &rresamp::reset, "reset object's internal state")

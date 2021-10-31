@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-import sys, time
-sys.path.append('.')
-import numpy as np
-import liquid as dsp
+'''benchmark firpfbch2 object'''
+import argparse, sys, time
+sys.path.extend(['.','..'])
+import liquid as dsp, numpy as np, matplotlib.pyplot as plt
+p = argparse.ArgumentParser(description=__doc__)
+p.add_argument('-nodisplay', action='store_true', help='disable display')
+args = p.parse_args()
 
 def benchmark_firpfbch2(M,runtime=1.0):
     # design prototype filter

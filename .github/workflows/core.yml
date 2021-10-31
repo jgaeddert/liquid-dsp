@@ -25,6 +25,17 @@ jobs:
     #- name: Setup libfec
     #  run: git clone https://github.com/jgaeddert/libfec.git && cd libfec && ./configure && make && sudo make install
 
+    - name: Setup pybind-dev (Linux)
+      if: runner.os == 'Linux'
+      run: sudo apt-get install pybind11-dev
+
+    - name: Setup pybind-dev (macOS)
+      if: runner.os == 'macOS'
+      run: brew install pybind11
+
+    - name: Setup python dependencies (pip)
+      run: sudo -H python3 -m pip install pybind11 numpy matplotlib
+
     - name: bootstrap
       run: ./bootstrap.sh
 

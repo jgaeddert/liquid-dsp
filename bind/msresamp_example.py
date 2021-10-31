@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-import sys
+'''demonstrate multi-stage arbitrary rate resampler'''
+import argparse, sys
 sys.path.extend(['.','..'])
-import numpy as np
-import liquid as dsp
-import matplotlib.pyplot as plt
+import liquid as dsp, numpy as np, matplotlib.pyplot as plt
+p = argparse.ArgumentParser(description=__doc__)
+p.add_argument('-nodisplay', action='store_true', help='disable display')
+args = p.parse_args()
 
 # generate pulse
 m = 40      # filter semi-length
@@ -42,5 +44,6 @@ ax2.set_xlabel('Normalized Frequency [f/F_s]')
 ax2.set_ylabel('Power Spectral Density [dB]')
 ax2.set(xlim=(-0.5,0.5))
 ax2.grid(True, zorder=5)
-plt.show()
+if not args.nodisplay:
+    plt.show()
 

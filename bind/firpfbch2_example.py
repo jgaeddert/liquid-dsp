@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 '''demonstrate (almost) perfect reconstruction channelizers'''
-import sys
-sys.path.append('.')
-import numpy as np
-import liquid as dsp
-import matplotlib.pyplot as plt
+import argparse, sys
+sys.path.extend(['.','..'])
+import liquid as dsp, numpy as np, matplotlib.pyplot as plt
+p = argparse.ArgumentParser(description=__doc__)
+p.add_argument('-nodisplay', action='store_true', help='disable display')
+args = p.parse_args()
 
 # options
 M, m, As, num_symbols = 120, 2, 60., 20
@@ -46,5 +47,6 @@ ax2.set_ylabel('PSD [dB]')
 ax2.set(xlim=(-0.5,0.5))
 for ax in (ax0,ax1,ax2):
     ax.grid(True, zorder=5)
-plt.show()
+if not args.nodisplay:
+    plt.show()
 

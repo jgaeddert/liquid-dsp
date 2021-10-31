@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-import sys
+'''demonstrate spectral periodogram waterfall estimation object'''
+import argparse, sys
 sys.path.extend(['.','..'])
-import numpy as np
-import liquid as dsp
-import matplotlib.pyplot as plt
+import liquid as dsp, numpy as np, matplotlib.pyplot as plt
+p = argparse.ArgumentParser(description=__doc__)
+p.add_argument('-nodisplay', action='store_true', help='disable display')
+args = p.parse_args()
 
 num_samples = 20e3
 
@@ -35,5 +37,6 @@ fix,ax = plt.subplots(1,figsize=(8,8))
 ax.pcolormesh(f*1e-6,t*1e3,Sxx.T,shading='auto')
 ax.set_xlabel('Frequency [MHz]')
 ax.set_ylabel('Time [ms]')
-plt.show()
+if not args.nodisplay:
+    plt.show()
 

@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
-import sys
+'''demonstrate rational rate resampler'''
+import argparse, sys
 sys.path.extend(['.','..'])
-import numpy as np
-import liquid as dsp
-import matplotlib.pyplot as plt
+import liquid as dsp, numpy as np, matplotlib.pyplot as plt
+p = argparse.ArgumentParser(description=__doc__)
+p.add_argument('-nodisplay', action='store_true', help='disable display')
+args = p.parse_args()
 
 # options
 P, Q, m = 3, 5, 20
-num_blocks = 30
+num_blocks = 17
 
 # generate pulse
-num_samples = num_blocks * P
+num_samples = num_blocks * Q
 t = np.arange(2*m+1) - m
 x = np.zeros((num_samples,), dtype=np.csingle)
 x[:2*m+1] = np.sinc(0.2*t) * np.hamming(2*m+1)
@@ -24,7 +26,7 @@ y = resamp.execute(x)
 
 # compute spectral responses
 nfft = 2400
-X = 20*np.log10(np.abs(np.fft.fftshift(np.fft.fft(x,   nfft))))
+X = 20*np.log10(np.abs(np.fft.fftshift(np.fft.fft(x,             nfft))))
 Y = 20*np.log10(np.abs(np.fft.fftshift(np.fft.fft(y/resamp.rate, nfft))))
 
 # compute time and frequency arrays
@@ -45,5 +47,6 @@ ax2.set_xlabel('Normalized Frequency [f/F_s]')
 ax2.set_ylabel('Power Spectral Density [dB]')
 ax2.set(xlim=(-0.5,0.5))
 ax2.grid(True, zorder=5)
-plt.show()
+if not args.nodisplay:
+    plt.show()
 

@@ -1234,12 +1234,14 @@ bind_headers :=					\
 	bind/firpfbch2.hh			\
 	bind/fg64.hh				\
 	bind/fs64.hh				\
+	bind/modem.hh				\
 	bind/msresamp.hh			\
 	bind/ofdmflexframetx.hh			\
 	bind/ofdmflexframerx.hh			\
 	bind/rresamp.hh				\
 	bind/spgram.hh				\
 	bind/spwaterfall.hh			\
+	bind/symstreamr.hh			\
 
 bind_examples_cc :=				\
 	bind/main				\
@@ -1263,6 +1265,14 @@ ${bind_examples_cc} : % : %.o ${ARCHIVE_LIB}
 
 examples-bind: ${bind_examples_cc}
 
+# test compiling separate object files and linking together
+bind/link_test_obj.o : %.o : %.cc ${bind_headers}
+	g++ ${CXXFLAGS} -I. -I./bind -I./include -c $< -o $@
+bind/link_test_main.o : %.o : %.cc ${bind_headers}
+	g++ ${CXXFLAGS} -I. -I./bind -I./include -c $< -o $@
+bind/link_test : % : %_obj.o %_main.o ${ARCHIVE_LIB}
+	g++ ${CXXFLAGS} ${LDFLAGS} ${PYBIND11_FLAGS} -o $@ $^ ${LIBS}
+
 # python
 bind/liquid.python.o : %.o : %.cc %.hh ${bind_headers} bind/liquid.python.hh
 	g++ ${CXXFLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
@@ -1275,8 +1285,17 @@ ${pythonlib} : bind/liquid.python.o $(objects)
 
 python: ${pythonlib}
 
-clean-python:
-	rm -f bind/*.o ${bind_examples_cc}
+# rough python test; needs proper testing harness, dependency on .py files
+check-python: ${pythonlib}
+	./bind/check_python.sh
+
+# check c++ bindings; compile and run example programs
+# TODO: make this more structured
+check-bind: ${pythonlib} ${bind_examples_cc} bind/link_test
+	$(patsubst %,./% &&, $(bind_examples_cc)) ./bind/link_test && echo "\npass"
+
+clean-bind:
+	rm -f bind/*.o bind/link_test ${bind_examples_cc}
 	rm -f ${pythonlib}
 
 ##
@@ -1400,7 +1419,7 @@ clean-check:
 
 # C example
 readme.c.example.c : README.md
-	${SED} -n '22,42p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+	${SED} -n '23,43p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
 readme.c.example.o : %.o : %.c ${include_headers}
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
@@ -1410,7 +1429,7 @@ readme.c.example : % : %.o ${ARCHIVE_LIB}
 
 # C++ link example
 readme.link.example.cc : README.md
-	${SED} -n '151,172p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+	${SED} -n '152,173p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
 readme.link.example.o : %.o : %.cc ${include_headers}
 	${CXX} ${CPPFLAGS} ${CXXFLAGS} -c -o $@ $<
@@ -1420,7 +1439,7 @@ readme.link.example : % : %.o ${ARCHIVE_LIB}
 
 # C++ bind example
 readme.bind.example.cc : README.md
-	${SED} -n '186,203p' $< | ${SED} "s/<liquid\/liquid.hh>/\"liquid.hh\"/g" > $@
+	${SED} -n '187,204p' $< | ${SED} "s/<liquid\/liquid.hh>/\"liquid.hh\"/g" > $@
 
 readme.bind.example.o : %.o : %.cc ${include_headers} bind/firinterp.hh
 	${CXX} ${CPPFLAGS} ${CXXFLAGS} -I ./bind -c -o $@ $<
@@ -1430,7 +1449,7 @@ readme.bind.example : % : %.o ${ARCHIVE_LIB}
 
 # Python bind example
 readme.bind.py : README.md
-	${SED} -n '227,234p' $< > $@
+	${SED} -n '228,235p' $< > $@
 
 doc-check : readme.c.example readme.link.example readme.bind.example readme.bind.py ${pythonlib}
 	./readme.c.example && ./readme.link.example && ./readme.bind.example && python3 readme.bind.py
@@ -1853,7 +1872,7 @@ programs: all xautotest benchmark examples sandbox
 ##
 ## TARGET : world     - build absolutely everything
 ##
-world : all check bench examples sandbox
+world : all check bench python examples sandbox
 
 ##
 ## TARGET : clean     - clean build (objects, dependencies, libraries, etc.)
@@ -1866,7 +1885,7 @@ clean-modules:
 	$(RM) src/*/src/*.o src/*/bench/*.o src/*/tests/*.o
 	$(RM) src/libliquid.o
 
-clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox clean-doc-check clean-python
+clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox clean-doc-check clean-bind
 	$(RM) ${ARCHIVE_LIB} ${SHARED_LIB} $(extra_clean)
 
 ##
