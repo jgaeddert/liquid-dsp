@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -174,7 +174,7 @@ void liquid_autotest_print_array(unsigned char * _x,
 // as well as complex numbers
 #define TEST_DELTA(F,L,EX,X,EY,Y,ED,D)                                          \
 {                                                                               \
-    if (LIQUID_AUTOTEST_VMAG((X)-(Y)) > (D))                                    \
+    if (LIQUID_AUTOTEST_VMAG((X)-(Y)) > (D) || isnan((X)) || isnan((Y)))        \
     {                                                                           \
         liquid_autotest_failed_expr(F,L,"abs(" #X "-" #Y ")",                   \
             LIQUID_AUTOTEST_VMAG((X)-(Y)),"<",ED,D);                            \
