@@ -114,25 +114,9 @@ float liquid_besselif(float _nu,
 }
 
 // I_0(z) : Modified bessel function of the first kind (order zero)
-#define NUM_BESSELI0_ITERATIONS 32
 float liquid_besseli0f(float _z)
 {
-    // TODO : use better low-signal approximation
-    if (_z == 0.0f)
-        return 1.0f;
-
-    unsigned int k;
-    float t, y=0.0f;
-    for (k=0; k<NUM_BESSELI0_ITERATIONS; k++) {
-#if 0
-        t = powf(_z/2, (float)k) / tgamma((float)k+1);
-        y += t*t;
-#else
-        t = k * logf(0.5f*_z) - liquid_lngammaf((float)k + 1.0f);
-        y += expf(2*t);
-#endif
-    }
-    return y;
+    return liquid_besselif(0,_z);
 }
 
 // J_v(z) : Bessel function of the first kind
