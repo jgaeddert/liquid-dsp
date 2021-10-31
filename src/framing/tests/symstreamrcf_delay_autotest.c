@@ -25,7 +25,12 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// autotest helper functions
+// autotest helper function: measure delay assuming impulse
+// - set gain to 1 for a single sample
+// - set gain to 0 for remaining samples
+//   -> this generates one symbol for the modulation scheme
+// - take fft of resulting pulse
+// - observe phase slope across pass-band
 void testbench_symstreamrcf_delay(float        _bw,
                                   unsigned int _m)
 {
@@ -35,26 +40,40 @@ void testbench_symstreamrcf_delay(float        _bw,
     int          ms     = LIQUID_MODEM_QPSK;
     symstreamrcf gen    = symstreamrcf_create_linear(ftype,_bw,_m,beta,ms);
     float        delay  = symstreamrcf_get_delay(gen);
-    float        tol    = 2.0f + 1.0f/_bw; // error tolerance (fairly wide due to random signal)
+    float        tol    = 0.05; // error tolerance
 
-    unsigned int i;
-    for (i=0; i<1000 + (unsigned int)(delay); i++) {
-        // generate a single sample
-        float complex sample;
-        symstreamrcf_write_samples(gen, &sample, 1);
+    // compute buffer length based on delay
+    unsigned int  nfft = 2*(120 + (unsigned int)(delay/sqrtf(_bw)));
+    float complex buf_time[nfft];
+    float complex buf_freq[nfft];
 
-        // check to see if value exceeds 1
-        if (cabsf(sample) > 1.0f)
-            break;
-    }
-    if (liquid_autotest_verbose)
-        printf("expected delay: %.3f, approximate delay: %u, tol: %.3f\n", delay, i, tol);
-
-    // verify delay is relatively close to expected
-    CONTEND_DELTA((float)delay, (float)i, tol);
+    // write samples to buffer
+    symstreamrcf_write_samples(gen, buf_time, 1);
+    symstreamrcf_set_gain(gen, 0.0f);
+    symstreamrcf_write_samples(gen, buf_time+1, nfft-1);
 
     // destroy objects
     symstreamrcf_destroy(gen);
+
+    // take forward transform
+    fft_run(nfft, buf_time, buf_freq, LIQUID_FFT_FORWARD, 0);
+
+    // measure phase slope across pass-band
+    unsigned int m = 0.4 * _bw * nfft; // use 0.4 to account for filter roll-off
+    float complex p = 0.0f;
+    int i;
+    for (i=-(int)m; i<(int)m; i++)
+        p += buf_freq[(nfft+i)%nfft] * conjf(buf_freq[(nfft+i+1)%nfft]);
+    float delay_meas = cargf(p) * nfft / (2*M_PI);
+
+    // print results
+    if (liquid_autotest_verbose) {
+        printf("expected delay: %.6f, measured: %.6f, error: %.6f (tol= %.3f)\n",
+                delay, delay_meas, delay-delay_meas,tol);
+    }
+
+    // verify delay is relatively close to expected
+    CONTEND_DELTA(delay, delay_meas, tol);
 }
 
 void autotest_symstreamrcf_delay_00() { testbench_symstreamrcf_delay(0.500f, 4); }
@@ -78,5 +97,4 @@ void autotest_symstreamrcf_delay_16() { testbench_symstreamrcf_delay(0.200f,12);
 void autotest_symstreamrcf_delay_17() { testbench_symstreamrcf_delay(0.100f,12); }
 void autotest_symstreamrcf_delay_18() { testbench_symstreamrcf_delay(0.050f,12); }
 void autotest_symstreamrcf_delay_19() { testbench_symstreamrcf_delay(0.025f,12); }
-
 
