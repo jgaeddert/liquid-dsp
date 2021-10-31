@@ -54,7 +54,7 @@ float liquid_lnbesselif(float _nu,
         return 0.5f*logf(2.0f/(M_PI*_z)) + logf(sinhf(_z));
     }
 
-    // low signal approximation to avoid log(0)
+    // low signal approximation
     if (_z < 1e-3f*sqrtf(_nu + 1.0f)) {
         return -liquid_lngammaf(_nu + 1.0f) + _nu*logf(0.5f*_z);
     }
@@ -105,11 +105,11 @@ float liquid_besselif(float _nu,
     }
 
     // low signal approximation
-    if (_z < 0.02*sqrtf(_nu + 1.0f)) {
+    if (_z < 1e-3f*sqrtf(_nu + 1.0f)) {
         return powf(0.5f*_z,_nu) / liquid_gammaf(_nu + 1.0f);
     }
 
-    //
+    // derive from logarithmic expansion
     return expf( liquid_lnbesselif(_nu, _z) );
 }
 
@@ -125,6 +125,16 @@ float liquid_besseljf(float _nu,
                       float _z)
 {
     // TODO : validate input
+
+    // special case: check for zeros; besselj_nu(0) = (nu = 0 ? 1 : 0)
+    if (_z == 0) {
+        return _nu == 0.0f ? 1.0f : 0.0f;
+    }
+
+    // low signal approximation
+    if (_z < 1e-3f*sqrtf(_nu + 1.0f)) {
+        return powf(0.5f*_z,_nu) / liquid_gammaf(_nu + 1.0f);
+    }
 
     float J = 0.0f;
 
