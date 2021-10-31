@@ -329,14 +329,11 @@ float gradsearch_norm(float *      _v,
                       unsigned int _n)
 {
     // compute l2-norm
-    float vnorm = 0.0f;
-    unsigned int i;
-    for (i=0; i<_n; i++)
-        vnorm += _v[i]*_v[i];
-    vnorm = sqrtf(vnorm);
+    float vnorm = liquid_vectorf_norm(_v, _n);
 
     // scale values (avoiding division by zero)
     float scale = vnorm == 0.0f ? 0.0f : 1.0f / vnorm;
+    unsigned int i;
     for (i=0; i<_n; i++)
         _v[i] *= scale;
 
