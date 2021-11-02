@@ -14,7 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runs-on: [ubuntu-latest, macos-latest]
+        runs-on: ubuntu-latest
+        #macos-latest
 
     name: "💦 ${{ matrix.runs-on }}"
     runs-on: ${{ matrix.runs-on }}
@@ -22,13 +23,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Setup pybind-dev (Linux)
+    - name: Setup gcovr (Linux)
       if: runner.os == 'Linux'
       run: sudo apt-get install gcovr
 
-    - name: Setup pybind-dev (macOS)
-      if: runner.os == 'macOS'
-      run: brew install gcovr
+    #- name: Setup gcovr (macOS)
+    #  if: runner.os == 'macOS'
+    #  run: brew install gcovr
 
     #- name: Setup libfec
     #  run: git clone https://github.com/jgaeddert/libfec.git && cd libfec && ./configure && make && sudo make install
