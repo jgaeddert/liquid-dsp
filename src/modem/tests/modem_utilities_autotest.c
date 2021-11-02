@@ -149,5 +149,12 @@ void autotest_modemcf_types()
     CONTEND_EQUALITY(liquid_modem_is_specific(LIQUID_MODEM_ARB256OPT), 1);
     CONTEND_EQUALITY(liquid_modem_is_specific(LIQUID_MODEM_ARB64VT),   1);
 #endif
+
+    // test some negative cases
+    CONTEND_EQUALITY(liquid_modem_is_psk (LIQUID_MODEM_QPSK), 0);
+    CONTEND_EQUALITY(liquid_modem_is_dpsk(LIQUID_MODEM_QPSK), 0);
+    CONTEND_EQUALITY(liquid_modem_is_ask (LIQUID_MODEM_QPSK), 0);
+    CONTEND_EQUALITY(liquid_modem_is_qam (LIQUID_MODEM_QPSK), 0);
+    CONTEND_EQUALITY(liquid_modem_is_apsk(LIQUID_MODEM_QPSK), 0);
 }
 
