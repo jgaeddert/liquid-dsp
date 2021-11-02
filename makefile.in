@@ -867,6 +867,7 @@ modem_autotests :=						\
 	src/modem/tests/modem_autotest.c			\
 	src/modem/tests/modem_demodsoft_autotest.c		\
 	src/modem/tests/modem_demodstats_autotest.c		\
+	src/modem/tests/modem_utilities_autotest.c		\
 
 
 modem_benchmarks :=						\
@@ -1419,7 +1420,7 @@ clean-check:
 
 # C example
 readme.c.example.c : README.md
-	${SED} -n '23,43p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+	${SED} -n '24,44p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
 readme.c.example.o : %.o : %.c ${include_headers}
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
@@ -1429,7 +1430,7 @@ readme.c.example : % : %.o ${ARCHIVE_LIB}
 
 # C++ link example
 readme.link.example.cc : README.md
-	${SED} -n '152,173p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+	${SED} -n '153,174p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
 readme.link.example.o : %.o : %.cc ${include_headers}
 	${CXX} ${CPPFLAGS} ${CXXFLAGS} -c -o $@ $<
@@ -1439,7 +1440,7 @@ readme.link.example : % : %.o ${ARCHIVE_LIB}
 
 # C++ bind example
 readme.bind.example.cc : README.md
-	${SED} -n '187,204p' $< | ${SED} "s/<liquid\/liquid.hh>/\"liquid.hh\"/g" > $@
+	${SED} -n '188,205p' $< | ${SED} "s/<liquid\/liquid.hh>/\"liquid.hh\"/g" > $@
 
 readme.bind.example.o : %.o : %.cc ${include_headers} bind/firinterp.hh
 	${CXX} ${CPPFLAGS} ${CXXFLAGS} -I ./bind -c -o $@ $<
@@ -1449,7 +1450,7 @@ readme.bind.example : % : %.o ${ARCHIVE_LIB}
 
 # Python bind example
 readme.bind.py : README.md
-	${SED} -n '228,235p' $< > $@
+	${SED} -n '229,236p' $< > $@
 
 doc-check : readme.c.example readme.link.example readme.bind.example readme.bind.py ${pythonlib}
 	./readme.c.example && ./readme.link.example && ./readme.bind.example && python3 readme.bind.py

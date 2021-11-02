@@ -1,0 +1,51 @@
+name: Code Coverage CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - master
+      - bind-dev
+      - github-ci
+      - v*
+
+jobs:
+  standard:
+    strategy:
+      fail-fast: false
+      matrix:
+        runs-on: [ubuntu-latest]
+        #macos-latest
+
+    name: "💦 ${{ matrix.runs-on }}"
+    runs-on: ${{ matrix.runs-on }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup gcovr (Linux)
+      if: runner.os == 'Linux'
+      run: sudo apt-get install gcovr
+
+    #- name: Setup gcovr (macOS)
+    #  if: runner.os == 'macOS'
+    #  run: brew install gcovr
+
+    #- name: Setup libfec
+    #  run: git clone https://github.com/jgaeddert/libfec.git && cd libfec && ./configure && make && sudo make install
+
+    - name: bootstrap
+      run: ./bootstrap.sh
+
+    - name: configure
+      run: ./configure --enable-coverage
+
+    - name: make
+      run: make -j 2
+
+    - name: make coverage
+      run: make -j 2 coverage
+
+    - name: upload report
+      run: bash <(curl -s https://codecov.io/bash)
