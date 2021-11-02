@@ -866,6 +866,7 @@ modem_autotests :=						\
 	src/modem/tests/modem_autotest.c			\
 	src/modem/tests/modem_demodsoft_autotest.c		\
 	src/modem/tests/modem_demodstats_autotest.c		\
+	src/modem/tests/modem_utilities_autotest.c		\
 
 
 modem_benchmarks :=						\
