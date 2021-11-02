@@ -6,6 +6,7 @@ Software-Defined Radio Digital Signal Processing Library -
 [https://liquidsdr.org](https://liquidsdr.org)
 
 [![Core CI](https://github.com/jgaeddert/liquid-dsp/actions/workflows/core.yml/badge.svg)](https://github.com/jgaeddert/liquid-dsp/actions/workflows/core.yml)
+[![codecov](https://codecov.io/gh/jgaeddert/liquid-dsp/branch/master/graph/badge.svg?token=ht8VIhp302)](https://codecov.io/gh/jgaeddert/liquid-dsp)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://choosealicense.com/licenses/mit/)
 [![Packaging status](https://repology.org/badge/tiny-repos/liquid-dsp.svg)](https://repology.org/project/liquid-dsp/versions)
 

@@ -1342,7 +1342,7 @@ clean-check:
 ##
 
 readme.c.example.c : README.md
-	${SED} -n '22,42p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+	${SED} -n '23,43p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
 readme.c.example.o : %.o : %.c ${include_headers}
 	${CC} ${CPPFLAGS} ${CFLAGS} $< -c -o $@
@@ -1351,7 +1351,7 @@ readme.c.example : % : %.o ${ARCHIVE_LIB}
 	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
 
 readme.cc.example.cc : README.md
-	${SED} -n '151,172p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+	${SED} -n '152,173p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
 readme.cc.example.o : %.o : %.cc ${include_headers}
 	${CXX} ${CPPFLAGS} ${CXXFLAGS} $< -c -o $@
