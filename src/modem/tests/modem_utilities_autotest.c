@@ -23,6 +23,12 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
+// test printing schemes
+void autotest_modemcf_print_schemes()
+{
+    CONTEND_EQUALITY(liquid_print_modulation_schemes(), LIQUID_OK);
+}
+
 // test parsing string to modulation scheme
 void autotest_modemcf_str2mod()
 {
