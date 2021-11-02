@@ -7,6 +7,7 @@ on:
     branches:
       - master
       - bind-dev
+      - github-ci
       - v*
 
 jobs:
@@ -14,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runs-on: ubuntu-latest
+        runs-on: [ubuntu-latest]
         #macos-latest
 
     name: "💦 ${{ matrix.runs-on }}"
