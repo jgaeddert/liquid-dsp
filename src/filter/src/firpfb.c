@@ -29,7 +29,6 @@
 #include <stdlib.h>
 
 struct FIRPFB(_s) {
-    TC * h;                     // filter coefficients array
     unsigned int h_len;         // total number of filter coefficients
     unsigned int h_sub_len;     // sub-sampled filter length
     unsigned int num_filters;   // number of filters
