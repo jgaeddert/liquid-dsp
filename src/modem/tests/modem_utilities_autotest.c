@@ -83,3 +83,71 @@ void autotest_modemcf_str2mod()
     CONTEND_EQUALITY(liquid_getopt_str2mod("arb64vt"  ), LIQUID_MODEM_ARB64VT);
 }
 
+// test basic types
+void autotest_modemcf_types()
+{
+    // Phase-shift keying (PSK)
+    CONTEND_EQUALITY(liquid_modem_is_psk(LIQUID_MODEM_PSK2),     1);
+    CONTEND_EQUALITY(liquid_modem_is_psk(LIQUID_MODEM_PSK4),     1);
+    CONTEND_EQUALITY(liquid_modem_is_psk(LIQUID_MODEM_PSK8),     1);
+    CONTEND_EQUALITY(liquid_modem_is_psk(LIQUID_MODEM_PSK16),    1);
+    CONTEND_EQUALITY(liquid_modem_is_psk(LIQUID_MODEM_PSK32),    1);
+    CONTEND_EQUALITY(liquid_modem_is_psk(LIQUID_MODEM_PSK64),    1);
+    CONTEND_EQUALITY(liquid_modem_is_psk(LIQUID_MODEM_PSK128),   1);
+    CONTEND_EQUALITY(liquid_modem_is_psk(LIQUID_MODEM_PSK256),   1);
+
+    // Differential phase-shift keying (DPSK)
+    CONTEND_EQUALITY(liquid_modem_is_dpsk(LIQUID_MODEM_DPSK2),    1);
+    CONTEND_EQUALITY(liquid_modem_is_dpsk(LIQUID_MODEM_DPSK4),    1);
+    CONTEND_EQUALITY(liquid_modem_is_dpsk(LIQUID_MODEM_DPSK8),    1);
+    CONTEND_EQUALITY(liquid_modem_is_dpsk(LIQUID_MODEM_DPSK16),   1);
+    CONTEND_EQUALITY(liquid_modem_is_dpsk(LIQUID_MODEM_DPSK32),   1);
+    CONTEND_EQUALITY(liquid_modem_is_dpsk(LIQUID_MODEM_DPSK64),   1);
+    CONTEND_EQUALITY(liquid_modem_is_dpsk(LIQUID_MODEM_DPSK128),  1);
+    CONTEND_EQUALITY(liquid_modem_is_dpsk(LIQUID_MODEM_DPSK256),  1);
+
+    // amplitude-shift keying (ASK)
+    CONTEND_EQUALITY(liquid_modem_is_ask(LIQUID_MODEM_ASK2),     1);
+    CONTEND_EQUALITY(liquid_modem_is_ask(LIQUID_MODEM_ASK4),     1);
+    CONTEND_EQUALITY(liquid_modem_is_ask(LIQUID_MODEM_ASK8),     1);
+    CONTEND_EQUALITY(liquid_modem_is_ask(LIQUID_MODEM_ASK16),    1);
+    CONTEND_EQUALITY(liquid_modem_is_ask(LIQUID_MODEM_ASK32),    1);
+    CONTEND_EQUALITY(liquid_modem_is_ask(LIQUID_MODEM_ASK64),    1);
+    CONTEND_EQUALITY(liquid_modem_is_ask(LIQUID_MODEM_ASK128),   1);
+    CONTEND_EQUALITY(liquid_modem_is_ask(LIQUID_MODEM_ASK256),   1);
+
+    // rectangular quadrature amplitude-shift keying (QAM)
+    CONTEND_EQUALITY(liquid_modem_is_qam(LIQUID_MODEM_QAM4),     1);
+    CONTEND_EQUALITY(liquid_modem_is_qam(LIQUID_MODEM_QAM8),     1);
+    CONTEND_EQUALITY(liquid_modem_is_qam(LIQUID_MODEM_QAM16),    1);
+    CONTEND_EQUALITY(liquid_modem_is_qam(LIQUID_MODEM_QAM32),    1);
+    CONTEND_EQUALITY(liquid_modem_is_qam(LIQUID_MODEM_QAM64),    1);
+    CONTEND_EQUALITY(liquid_modem_is_qam(LIQUID_MODEM_QAM128),   1);
+    CONTEND_EQUALITY(liquid_modem_is_qam(LIQUID_MODEM_QAM256),   1);
+
+    // amplitude phase-shift keying (APSK)
+    CONTEND_EQUALITY(liquid_modem_is_apsk(LIQUID_MODEM_APSK4),    1);
+    CONTEND_EQUALITY(liquid_modem_is_apsk(LIQUID_MODEM_APSK8),    1);
+    CONTEND_EQUALITY(liquid_modem_is_apsk(LIQUID_MODEM_APSK16),   1);
+    CONTEND_EQUALITY(liquid_modem_is_apsk(LIQUID_MODEM_APSK32),   1);
+    CONTEND_EQUALITY(liquid_modem_is_apsk(LIQUID_MODEM_APSK64),   1);
+    CONTEND_EQUALITY(liquid_modem_is_apsk(LIQUID_MODEM_APSK128),  1);
+    CONTEND_EQUALITY(liquid_modem_is_apsk(LIQUID_MODEM_APSK256),  1);
+
+#if 0
+    // specific modems
+    CONTEND_EQUALITY(liquid_modem_is_specific(LIQUID_MODEM_BPSK),      1);
+    CONTEND_EQUALITY(liquid_modem_is_specific(LIQUID_MODEM_QPSK),      1);
+    CONTEND_EQUALITY(liquid_modem_is_specific(LIQUID_MODEM_OOK),       1);
+    CONTEND_EQUALITY(liquid_modem_is_specific(LIQUID_MODEM_SQAM32),    1);
+    CONTEND_EQUALITY(liquid_modem_is_specific(LIQUID_MODEM_SQAM128),   1);
+    CONTEND_EQUALITY(liquid_modem_is_specific(LIQUID_MODEM_V29),       1);
+    CONTEND_EQUALITY(liquid_modem_is_specific(LIQUID_MODEM_ARB16OPT),  1);
+    CONTEND_EQUALITY(liquid_modem_is_specific(LIQUID_MODEM_ARB32OPT),  1);
+    CONTEND_EQUALITY(liquid_modem_is_specific(LIQUID_MODEM_ARB64OPT),  1);
+    CONTEND_EQUALITY(liquid_modem_is_specific(LIQUID_MODEM_ARB128OPT), 1);
+    CONTEND_EQUALITY(liquid_modem_is_specific(LIQUID_MODEM_ARB256OPT), 1);
+    CONTEND_EQUALITY(liquid_modem_is_specific(LIQUID_MODEM_ARB64VT),   1);
+#endif
+}
+
