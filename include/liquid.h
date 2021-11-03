@@ -5388,8 +5388,6 @@ int gmskframegen_assemble      (gmskframegen          _q,
                                 fec_scheme            _fec0,
                                 fec_scheme            _fec1);
 unsigned int gmskframegen_getframelen(gmskframegen _q);
-int gmskframegen_write_samples(gmskframegen _q,
-                               liquid_float_complex * _y);
 
 // write samples of assembled frame
 //  _q              :   frame generator object

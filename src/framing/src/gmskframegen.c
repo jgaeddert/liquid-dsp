@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// gmskframegen.c
-//
+// gmsk frame generator
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -37,11 +35,12 @@
 
 // gmskframegen
 int gmskframegen_encode_header( gmskframegen _q, const unsigned char * _header);
+int gmskframegen_write_zeros   (gmskframegen _q, float complex * _y);
 int gmskframegen_write_preamble(gmskframegen _q, float complex * _y);
 int gmskframegen_write_header(  gmskframegen _q, float complex * _y);
 int gmskframegen_write_payload( gmskframegen _q, float complex * _y);
 int gmskframegen_write_tail(    gmskframegen _q, float complex * _y);
-
+int gmskframegen_gen_symbol(    gmskframegen _q);
 
 // gmskframe object structure
 struct gmskframegen_s {
@@ -78,6 +77,7 @@ struct gmskframegen_s {
 
     // framing state
     enum {
+        STATE_UNASSEMBLED,      // frame not assembled
         STATE_PREAMBLE,         // preamble
         STATE_HEADER,           // header
         STATE_PAYLOAD,          // payload (frame)
@@ -86,6 +86,10 @@ struct gmskframegen_s {
     int frame_assembled;        // frame assembled flag
     int frame_complete;         // frame completed flag
     unsigned int symbol_counter;//
+
+    // output sample buffer (one symbol's worth of data)
+    complex float * buf_sym;    // size: k x 1
+    unsigned int    buf_idx;    // output sample buffer index
 };
 
 // create gmskframegen object
@@ -138,7 +142,11 @@ gmskframegen gmskframegen_create(unsigned int _k,
     // allocate memory for encoded packet
     q->payload_enc = (unsigned char*) malloc(q->enc_msg_len*sizeof(unsigned char));
 
-    // return object
+    // allocate memory for symbols
+    q->buf_sym = (float complex*)malloc(q->k*sizeof(float complex));
+
+    // reset object and return
+    gmskframegen_reset(q);
     return q;
 }
 
@@ -172,11 +180,12 @@ int gmskframegen_reset(gmskframegen _q)
     gmskmod_reset(_q->mod);
 
     // reset states
-    _q->state = STATE_PREAMBLE;
+    _q->state = STATE_UNASSEMBLED;
     msequence_reset(_q->ms_preamble);
     _q->frame_assembled = 0;
     _q->frame_complete  = 0;
     _q->symbol_counter  = 0;
+    _q->buf_idx         = _q->k; // indicate buffer is empty
     return LIQUID_OK;
 }
 
@@ -280,6 +289,7 @@ int gmskframegen_assemble(gmskframegen          _q,
 
     // encode payload
     packetizer_encode(_q->p_payload, _payload, _q->payload_enc);
+    _q->state = STATE_PREAMBLE;
     return LIQUID_OK;
 }
 
@@ -300,29 +310,28 @@ unsigned int gmskframegen_getframelen(gmskframegen _q)
     return num_frame_symbols*_q->k; // k samples/symbol
 }
 
-// write sample to output buffer
-int gmskframegen_write_samples(gmskframegen _q,
-                               float complex * _y)
+// generate a symbol's worth of samples to internal buffer
+int gmskframegen_gen_symbol(gmskframegen _q)
 {
+    _q->buf_idx = 0;
+
     switch (_q->state) {
-    case STATE_PREAMBLE: gmskframegen_write_preamble(_q, _y); break;
-    case STATE_HEADER:   gmskframegen_write_header  (_q, _y); break;
-    case STATE_PAYLOAD:  gmskframegen_write_payload (_q, _y); break;
-    case STATE_TAIL:     gmskframegen_write_tail    (_q, _y); break;
+    case STATE_UNASSEMBLED: gmskframegen_write_zeros   (_q, _q->buf_sym); break;
+    case STATE_PREAMBLE:    gmskframegen_write_preamble(_q, _q->buf_sym); break;
+    case STATE_HEADER:      gmskframegen_write_header  (_q, _q->buf_sym); break;
+    case STATE_PAYLOAD:     gmskframegen_write_payload (_q, _q->buf_sym); break;
+    case STATE_TAIL:        gmskframegen_write_tail    (_q, _q->buf_sym); break;
     default:
-        liquid_error(LIQUID_EINT,"error: gmskframegen_writesymbol(), invalid internal state");
-        return 1;
+        return liquid_error(LIQUID_EINT,"error: gmskframegen_writesymbol(), invalid internal state");
     }
 
-    if (_q->frame_complete) {
-        // reset framing object
-#if DEBUG_GMSKFRAMEGEN
-        printf(" ...resetting...\n");
-#endif
+    /*
+    // reset framing object
+    if (_q->frame_complete)
         gmskframegen_reset(_q);
-        return 1;
-    }
-    return 0;
+    */
+
+    return LIQUID_OK;
 }
 
 // write samples of assembled frame
@@ -333,10 +342,16 @@ int gmskframegen_write(gmskframegen   _q,
                       float complex * _buf,
                       unsigned int    _buf_len)
 {
-    unsigned int i, frame_complete = 0;
-    for (i=0; i<_buf_len; i+=_q->k)
-        frame_complete = gmskframegen_write_samples(_q, _buf+i);
-    return frame_complete;
+    unsigned int i;
+    for (i=0; i<_buf_len; i++) {
+        // fill buffer if needed
+        if (_q->buf_idx == _q->k)
+            gmskframegen_gen_symbol(_q);
+
+        // save output sample
+        _buf[i] = _q->buf_sym[_q->buf_idx++];
+    }
+    return _q->frame_complete;
 }
 
 
@@ -382,6 +397,13 @@ int gmskframegen_encode_header(gmskframegen          _q,
         printf(" %.2X", _q->header_enc[i]);
     printf("\n");
 #endif
+    return LIQUID_OK;
+}
+
+int gmskframegen_write_zeros(gmskframegen    _q,
+                             float complex * _y)
+{
+    memset(_y, 0x0, _q->k*sizeof(float complex));
     return LIQUID_OK;
 }
 

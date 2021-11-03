@@ -135,7 +135,7 @@ int main(int argc, char*argv[])
         x[n] = 0.0f;
     int frame_complete = 0;
     while (!frame_complete) {
-        frame_complete = gmskframegen_write_samples(fg, &x[n]);
+        frame_complete = gmskframegen_write(fg, &x[n], k);
         n += k;
     }
     for ( ; n<num_samples; n++)

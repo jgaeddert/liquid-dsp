@@ -83,7 +83,7 @@ void autotest_gmskframesync()
         // try to receive the frame
         gmskframesync_execute(fs, buf, buf_len);
         */
-        frame_complete = gmskframegen_write_samples(fg, buf2);
+        frame_complete = gmskframegen_write(fg, buf2, k);
         gmskframesync_execute(fs, buf2, k);
     }
 

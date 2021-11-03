@@ -72,7 +72,7 @@ void benchmark_gmskframesync(struct rusage *     _start,
     unsigned int n=0;
     while (!frame_complete) {
         assert(n < frame_len);
-        frame_complete = gmskframegen_write_samples(fg, &frame[n]);
+        frame_complete = gmskframegen_write(fg, &frame[n], k);
         n += 2;
     }
     // add some noise
