@@ -47,7 +47,7 @@ static int gmskframesync_autotest_callback(
 }
 
 // test simple recovery of GMSK frame
-void autotest_gmskframesync()
+void autotest_gmskframesync_process()
 {
     // initialization and options
     unsigned int k      = 2;        // samples per symbol
@@ -91,6 +91,7 @@ void autotest_gmskframesync()
         frame_complete = gmskframegen_write(fg, buf, buf_len);
         gmskframesync_execute(fs, buf, buf_len);
     }
+    CONTEND_EQUALITY( gmskframesync_is_frame_open(fs), 0 );
 
     // check to see that frame was recovered
     CONTEND_EQUALITY( secret, 0x01234567 );
