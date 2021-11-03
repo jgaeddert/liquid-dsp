@@ -33,11 +33,11 @@
 
 // gmskframegen
 int gmskframegen_encode_header( gmskframegen _q, const unsigned char * _header);
-int gmskframegen_write_zeros   (gmskframegen _q, float complex * _y);
-int gmskframegen_write_preamble(gmskframegen _q, float complex * _y);
-int gmskframegen_write_header(  gmskframegen _q, float complex * _y);
-int gmskframegen_write_payload( gmskframegen _q, float complex * _y);
-int gmskframegen_write_tail(    gmskframegen _q, float complex * _y);
+int gmskframegen_write_zeros   (gmskframegen _q);
+int gmskframegen_write_preamble(gmskframegen _q);
+int gmskframegen_write_header(  gmskframegen _q);
+int gmskframegen_write_payload( gmskframegen _q);
+int gmskframegen_write_tail(    gmskframegen _q);
 int gmskframegen_gen_symbol(    gmskframegen _q);
 
 // gmskframe object structure
@@ -328,11 +328,11 @@ int gmskframegen_gen_symbol(gmskframegen _q)
     _q->buf_idx = 0;
 
     switch (_q->state) {
-    case STATE_UNASSEMBLED: gmskframegen_write_zeros   (_q, _q->buf_sym); break;
-    case STATE_PREAMBLE:    gmskframegen_write_preamble(_q, _q->buf_sym); break;
-    case STATE_HEADER:      gmskframegen_write_header  (_q, _q->buf_sym); break;
-    case STATE_PAYLOAD:     gmskframegen_write_payload (_q, _q->buf_sym); break;
-    case STATE_TAIL:        gmskframegen_write_tail    (_q, _q->buf_sym); break;
+    case STATE_UNASSEMBLED: gmskframegen_write_zeros   (_q); break;
+    case STATE_PREAMBLE:    gmskframegen_write_preamble(_q); break;
+    case STATE_HEADER:      gmskframegen_write_header  (_q); break;
+    case STATE_PAYLOAD:     gmskframegen_write_payload (_q); break;
+    case STATE_TAIL:        gmskframegen_write_tail    (_q); break;
     default:
         return liquid_error(LIQUID_EINT,"error: gmskframegen_writesymbol(), invalid internal state");
     }
@@ -412,24 +412,22 @@ int gmskframegen_encode_header(gmskframegen          _q,
     return LIQUID_OK;
 }
 
-int gmskframegen_write_zeros(gmskframegen    _q,
-                             float complex * _y)
+int gmskframegen_write_zeros(gmskframegen _q)
 {
-    memset(_y, 0x0, _q->k*sizeof(float complex));
+    memset(_q->buf_sym, 0x0, _q->k*sizeof(float complex));
     return LIQUID_OK;
 }
 
-int gmskframegen_write_preamble(gmskframegen    _q,
-                                float complex * _y)
+int gmskframegen_write_preamble(gmskframegen _q)
 {
     unsigned char bit = msequence_advance(_q->ms_preamble);
-    gmskmod_modulate(_q->mod, bit, _y);
+    gmskmod_modulate(_q->mod, bit, _q->buf_sym);
 
     // apply ramping window to first 'm' symbols
     if (_q->symbol_counter < _q->m) {
         unsigned int i;
         for (i=0; i<_q->k; i++)
-            _y[i] *= liquid_hamming(_q->symbol_counter*_q->k + i, 2*_q->m*_q->k);
+            _q->buf_sym[i] *= liquid_hamming(_q->symbol_counter*_q->k + i, 2*_q->m*_q->k);
     }
 
     _q->symbol_counter++;
@@ -442,8 +440,7 @@ int gmskframegen_write_preamble(gmskframegen    _q,
     return LIQUID_OK;
 }
 
-int gmskframegen_write_header(gmskframegen    _q,
-                              float complex * _y)
+int gmskframegen_write_header(gmskframegen _q)
 {
     div_t d = div(_q->symbol_counter, 8);
     unsigned int byte_index = d.quot;
@@ -451,7 +448,7 @@ int gmskframegen_write_header(gmskframegen    _q,
     unsigned char byte = _q->header_enc[byte_index];
     unsigned char bit  = (byte >> (8-bit_index-1)) & 0x01;
 
-    gmskmod_modulate(_q->mod, bit, _y);
+    gmskmod_modulate(_q->mod, bit, _q->buf_sym);
 
     _q->symbol_counter++;
     
@@ -462,8 +459,7 @@ int gmskframegen_write_header(gmskframegen    _q,
     return LIQUID_OK;
 }
 
-int gmskframegen_write_payload(gmskframegen    _q,
-                               float complex * _y)
+int gmskframegen_write_payload(gmskframegen _q)
 {
     div_t d = div(_q->symbol_counter, 8);
     unsigned int byte_index = d.quot;
@@ -471,7 +467,7 @@ int gmskframegen_write_payload(gmskframegen    _q,
     unsigned char byte = _q->payload_enc[byte_index];
     unsigned char bit  = (byte >> (8-bit_index-1)) & 0x01;
 
-    gmskmod_modulate(_q->mod, bit, _y);
+    gmskmod_modulate(_q->mod, bit, _q->buf_sym);
 
     _q->symbol_counter++;
     
@@ -482,17 +478,16 @@ int gmskframegen_write_payload(gmskframegen    _q,
     return LIQUID_OK;
 }
 
-int gmskframegen_write_tail(gmskframegen    _q,
-                            float complex * _y)
+int gmskframegen_write_tail(gmskframegen _q)
 {
     unsigned char bit = rand() % 2;
-    gmskmod_modulate(_q->mod, bit, _y);
+    gmskmod_modulate(_q->mod, bit, _q->buf_sym);
 
     // apply ramping window to last 'm' symbols
     if (_q->symbol_counter >= _q->m) {
         unsigned int i;
         for (i=0; i<_q->k; i++)
-            _y[i] *= liquid_hamming(_q->m*_q->k + (_q->symbol_counter-_q->m)*_q->k + i, 2*_q->m*_q->k);
+            _q->buf_sym[i] *= liquid_hamming(_q->m*_q->k + (_q->symbol_counter-_q->m)*_q->k + i, 2*_q->m*_q->k);
     }
 
     _q->symbol_counter++;
