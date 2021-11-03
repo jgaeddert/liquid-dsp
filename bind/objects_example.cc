@@ -14,6 +14,7 @@
 #include "spgram.hh"
 #include "spwaterfall.hh"
 #include "symstreamr.hh"
+#include "symtrack.hh"
 
 namespace dsp = liquid;
 
@@ -60,6 +61,9 @@ int main()
 
     dsp::symstreamr stream;
     std::cout << stream << std::endl;
+
+    dsp::symtrack track;
+    std::cout << track << std::endl;
 
     return 0;
 }

@@ -15,5 +15,6 @@
 ./bind/spgram_example.py -nodisplay && \
 ./bind/spwaterfall_example.py -nodisplay && \
 ./bind/symstreamr_example.py -nodisplay && \
+./bind/symtrack_example.py -nodisplay && \
 echo " python tests pass" || exit 1
 

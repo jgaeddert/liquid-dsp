@@ -1245,6 +1245,7 @@ bind_headers :=					\
 	bind/spgram.hh				\
 	bind/spwaterfall.hh			\
 	bind/symstreamr.hh			\
+	bind/symtrack.hh			\
 
 bind_examples_cc :=				\
 	bind/main				\

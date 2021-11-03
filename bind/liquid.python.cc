@@ -14,6 +14,7 @@
 #include "spgram.hh"
 #include "spwaterfall.hh"
 #include "symstreamr.hh"
+#include "symtrack.hh"
 
 namespace liquid {
 
@@ -70,6 +71,7 @@ PYBIND11_MODULE(liquid, m) {
     liquid::init_spgram     (m);
     liquid::init_spwaterfall(m);
     liquid::init_symstreamr (m);
+    liquid::init_symtrack   (m);
 }
 
 } // namespace liquid
