@@ -13,6 +13,7 @@
 #include "rresamp.hh"
 #include "spgram.hh"
 #include "spwaterfall.hh"
+#include "symstreamr.hh"
 
 namespace dsp = liquid;
 
@@ -56,6 +57,9 @@ int main()
 
     dsp::spwaterfall water;
     std::cout << water << std::endl;
+
+    dsp::symstreamr stream;
+    std::cout << stream << std::endl;
 
     return 0;
 }
