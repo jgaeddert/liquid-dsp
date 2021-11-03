@@ -35,8 +35,14 @@ static int gmskframesync_autotest_callback(
     framesyncstats_s _stats,
     void *           _userdata)
 {
+    // check data
     unsigned int * secret = (unsigned int*) _userdata;
-    *secret = 0x01234567;
+    unsigned int i, num_errors = 0;
+    for (i=0; i<8; i++)
+        num_errors += _header[i] != i;
+    for (i=0; i<_payload_len; i++) 
+        num_errors += _payload[i] != (i & 0xff);
+    *secret = num_errors == 0 ? 0x01234567 : 0;
     return 0;
 }
 
@@ -53,12 +59,8 @@ void autotest_gmskframesync()
     fec_scheme   fec1   = LIQUID_FEC_NONE;
     unsigned int secret = 0;        //
 
-    // create and assemble frame generator
+    // create objects
     gmskframegen fg = gmskframegen_create(k,m,bt);
-    //gmskframegen_assemble_default(fg, msg_len);
-    CONTEND_EQUALITY(gmskframegen_is_assembled(fg), 0);
-    gmskframegen_assemble(fg, NULL, NULL, msg_len, crc, fec0, fec1);
-    CONTEND_EQUALITY(gmskframegen_is_assembled(fg), 1);
 
     // create frame synchronizer
     gmskframesync fs = gmskframesync_create(k,m,bt,
@@ -68,6 +70,16 @@ void autotest_gmskframesync()
         gmskframegen_print(fg);
         gmskframesync_print(fs);
     }
+
+    // assemble frame with specific data
+    CONTEND_EQUALITY(gmskframegen_is_assembled(fg), 0);
+    unsigned int i;
+    unsigned char header[8];
+    unsigned char msg   [msg_len];
+    for (i=0; i<8; i++)       header[i] = i;
+    for (i=0; i<msg_len; i++) msg[i]    = i & 0xff;
+    gmskframegen_assemble(fg, header, msg, msg_len, crc, fec0, fec1);
+    CONTEND_EQUALITY(gmskframegen_is_assembled(fg), 1);
 
     // allocate buffer (irregular size to test write method)
     unsigned int  buf_len = 53;
