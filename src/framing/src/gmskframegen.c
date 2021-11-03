@@ -143,9 +143,6 @@ gmskframegen gmskframegen_create(unsigned int _k,
     // allocate memory for symbols
     q->buf_sym = (float complex*)malloc(q->k*sizeof(float complex));
 
-    // free symbol buffer
-    free(q->buf_sym);
-
     // reset object and return
     gmskframegen_reset(q);
     return q;
@@ -168,6 +165,9 @@ int gmskframegen_destroy(gmskframegen _q)
     // destroy/free payload objects/arrays
     free(_q->payload_enc);
     packetizer_destroy(_q->p_payload);
+
+    // free symbol buffer
+    free(_q->buf_sym);
 
     // free main object memory
     free(_q);
