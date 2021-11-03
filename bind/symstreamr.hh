@@ -100,11 +100,6 @@ void init_symstreamr(py::module &m)
     py::class_<symstreamr>(m, "symstreamr", "Symbol streaming generator")
         .def(py::init<py::kwargs>(),
             "create symbol streaming object from keyword arguments")
-        .def(py::init<unsigned int,unsigned int,unsigned int>(),
-            py::arg("M"),
-            py::arg("cp"),
-            py::arg("taper"),
-            "create object")
         .def("__repr__", &symstreamr::repr)
         .def("generate",
             &symstreamr::py_generate,
