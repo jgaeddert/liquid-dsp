@@ -5387,9 +5387,10 @@ int gmskframegen_assemble      (gmskframegen          _q,
                                 crc_scheme            _check,
                                 fec_scheme            _fec0,
                                 fec_scheme            _fec1);
+// assemble default frame with a particular size payload
+int gmskframegen_assemble_default(gmskframegen _q,
+                                  unsigned int _payload_len);
 unsigned int gmskframegen_getframelen(gmskframegen _q);
-int gmskframegen_write_samples(gmskframegen _q,
-                               liquid_float_complex * _y);
 
 // write samples of assembled frame
 //  _q              :   frame generator object
@@ -5428,12 +5429,6 @@ int gmskframesync_execute(gmskframesync _q,
 // frame data statistics
 int              gmskframesync_reset_framedatastats(gmskframesync _q);
 framedatastats_s gmskframesync_get_framedatastats  (gmskframesync _q);
-
-
-// debugging
-int gmskframesync_debug_enable(gmskframesync _q);
-int gmskframesync_debug_disable(gmskframesync _q);
-int gmskframesync_debug_print(gmskframesync _q, const char * _filename);
 
 
 //

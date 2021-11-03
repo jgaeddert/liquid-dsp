@@ -41,53 +41,31 @@ void benchmark_gmskframesync(struct rusage *     _start,
     unsigned int m = 3;                 // filter delay (symbols)
     float BT = 0.5f;                    // filter bandwidth-time product
     unsigned int payload_len = 8;       // length of payload (bytes)
-    crc_scheme check = LIQUID_CRC_32;   // data validity check
-    fec_scheme fec0  = LIQUID_FEC_NONE; // inner forward error correction
-    fec_scheme fec1  = LIQUID_FEC_NONE; // outer forward error correction
     float SNRdB = 30.0f;                // SNR
 
     // derived values
     float nstd  = powf(10.0f, -SNRdB/20.0f);
 
-    // create gmskframegen object
+    // create gmskframegen object and assemble the frame
     gmskframegen fg = gmskframegen_create(k, m, BT);
-
-    // frame data
-    unsigned char header[14];
-    unsigned char payload[payload_len];
-    // initialize header, payload
-    for (i=0; i<14; i++)
-        header[i] = i;
-    for (i=0; i<payload_len; i++)
-        payload[i] = rand() & 0xff;
-
-    // create gmskframesync object
-    gmskframesync fs = gmskframesync_create(k, m, BT, NULL, NULL);
-
-    // generate the frame
-    gmskframegen_assemble(fg, header, payload, payload_len, check, fec0, fec1);
+    gmskframegen_assemble(fg, NULL, NULL, payload_len,
+            LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE);
     unsigned int frame_len = gmskframegen_getframelen(fg);
     float complex frame[frame_len];
-    int frame_complete = 0;
-    unsigned int n=0;
-    while (!frame_complete) {
-        assert(n < frame_len);
-        frame_complete = gmskframegen_write_samples(fg, &frame[n]);
-        n += 2;
-    }
+    gmskframegen_write(fg, frame, frame_len);
     // add some noise
     for (i=0; i<frame_len; i++)
         frame[i] += nstd*(randnf() + _Complex_I*randnf());
 
-    // 
+    // create gmskframesync object
+    gmskframesync fs = gmskframesync_create(k, m, BT, NULL, NULL);
+
     // start trials
-    //
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
         gmskframesync_execute(fs, frame, frame_len);
     }
     getrusage(RUSAGE_SELF, _finish);
-    //gmskframesync_print(fs);
 
     // destroy objects
     gmskframegen_destroy(fg);

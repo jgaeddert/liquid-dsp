@@ -33,11 +33,6 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_GMSKFRAMESYNC             1
-#define DEBUG_GMSKFRAMESYNC_PRINT       0
-#define DEBUG_GMSKFRAMESYNC_FILENAME    "gmskframesync_debug.m"
-#define DEBUG_GMSKFRAMESYNC_BUFFER_LEN  (2000)
-
 // enable pre-demodulation filter (remove out-of-band noise)
 #define GMSKFRAMESYNC_PREFILTER         1
 
@@ -144,15 +139,6 @@ struct gmskframesync_s {
     unsigned int preamble_counter;  // counter: num of p/n syms received
     unsigned int header_counter;    // counter: num of header syms received
     unsigned int payload_counter;   // counter: num of payload syms received
-    // debugging structures
-#if DEBUG_GMSKFRAMESYNC
-    int debug_enabled;              // debugging enabled?
-    int debug_objects_created;      // debugging objects created?
-    windowcf debug_x;               // received samples buffer
-    windowf  debug_fi;              // instantaneous frequency
-    windowf  debug_mf;              // matched filter output
-    windowf  debug_framesyms;       // GMSK output symbols
-#endif
 };
 
 // create GMSK frame synchronizer
@@ -243,16 +229,6 @@ gmskframesync gmskframesync_create(unsigned int       _k,
     q->payload_dec = (unsigned char*) malloc(q->payload_dec_len*sizeof(unsigned char));
     q->payload_enc = (unsigned char*) malloc(q->payload_enc_len*sizeof(unsigned char));
 
-#if DEBUG_GMSKFRAMESYNC
-    // debugging structures
-    q->debug_enabled         = 0;
-    q->debug_objects_created = 0;
-    q->debug_x               = NULL;
-    q->debug_fi              = NULL;
-    q->debug_mf              = NULL;
-    q->debug_framesyms       = NULL;
-#endif
-
     // reset synchronizer
     gmskframesync_reset(q);
 
@@ -267,16 +243,6 @@ gmskframesync gmskframesync_create(unsigned int       _k,
 // destroy frame synchronizer object, freeing all internal memory
 int gmskframesync_destroy(gmskframesync _q)
 {
-#if DEBUG_GMSKFRAMESYNC
-    // destroy debugging objects
-    if (_q->debug_objects_created) {
-        windowcf_destroy(_q->debug_x);
-        windowf_destroy(_q->debug_fi);
-        windowf_destroy(_q->debug_mf);
-        windowf_destroy( _q->debug_framesyms);
-    }
-#endif
-
     // destroy synchronizer objects
 #if GMSKFRAMESYNC_PREFILTER
     iirfilt_crcf_destroy(_q->prefilter);// pre-demodulator filter
@@ -405,11 +371,6 @@ int gmskframesync_execute(gmskframesync   _q,
         xf = _x[i];
 #endif
 
-#if DEBUG_GMSKFRAMESYNC
-        if (_q->debug_enabled)
-            windowcf_push(_q->debug_x, xf);
-#endif
-
         gmskframesync_execute_sample(_q, xf);
 
     }
@@ -447,15 +408,6 @@ int gmskframesync_update_symsync(gmskframesync _q,
     //
     float mf_out  = 0.0f;    // matched-filter output
     float dmf_out = 0.0f;    // derivatived matched-filter output
-#if DEBUG_GMSKFRAMESYNC
-    if (_q->debug_enabled) {
-        windowf_push(_q->debug_fi, _q->fi_hat);
-        firpfb_rrrf_execute(_q->mf,  _q->pfb_index, &mf_out);
-        windowf_push(_q->debug_mf, mf_out);
-    }
-#endif
-
-
     int sample_available = 0;
 
     // compute output if timeout
@@ -801,10 +753,6 @@ int gmskframesync_decode_header(gmskframesync _q)
     // run packet decoder
     _q->header_valid = packetizer_decode(_q->p_header, _q->header_enc, _q->header_dec);
 
-#if DEBUG_GMSKFRAMESYNC_PRINT
-    printf("****** header extracted [%s]\n", _q->header_valid ? "valid" : "INVALID!");
-#endif
-
     if (!_q->header_valid)
         return LIQUID_OK;
 
@@ -846,14 +794,6 @@ int gmskframesync_decode_header(gmskframesync _q)
     }
 
     // print results
-#if DEBUG_GMSKFRAMESYNC_PRINT
-    printf("    properties:\n");
-    printf("      * fec (inner)     :   %s\n", fec_scheme_str[fec0][1]);
-    printf("      * fec (outer)     :   %s\n", fec_scheme_str[fec1][1]);
-    printf("      * CRC scheme      :   %s\n", crc_scheme_str[check][1]);
-    printf("      * payload length  :   %u bytes\n", payload_dec_len);
-#endif
-
     // configure payload receiver
     if (_q->header_valid) {
         // set new packetizer properties
@@ -871,9 +811,6 @@ int gmskframesync_decode_header(gmskframesync _q)
 
         // re-compute payload encoded message length
         _q->payload_enc_len = packetizer_get_enc_msg_len(_q->p_payload);
-#if DEBUG_GMSKFRAMESYNC_PRINT
-        printf("      * payload encoded :   %u bytes\n", _q->payload_enc_len);
-#endif
 
         // re-allocate buffers accordingly
         _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->payload_enc_len*sizeof(unsigned char));
@@ -884,111 +821,3 @@ int gmskframesync_decode_header(gmskframesync _q)
 }
 
 
-int gmskframesync_debug_enable(gmskframesync _q)
-{
-    // create debugging objects if necessary
-#if DEBUG_GMSKFRAMESYNC
-    if (!_q->debug_objects_created) {
-        _q->debug_x  = windowcf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
-        _q->debug_fi = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
-        _q->debug_mf = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
-        _q->debug_framesyms  = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
-    }
-    
-    // set debugging flags
-    _q->debug_enabled = 1;
-    _q->debug_objects_created = 1;
-    return LIQUID_OK;
-#else
-    return liquid_error(LIQUID_EICONFIG,"gmskframesync_debug_enable(), compile-time debugging disabled");
-#endif
-}
-
-int gmskframesync_debug_disable(gmskframesync _q)
-{
-#if DEBUG_GMSKFRAMESYNC
-    _q->debug_enabled = 0;
-    return LIQUID_OK;
-#else
-    return liquid_error(LIQUID_EICONFIG,"gmskframesync_debug_disable(), compile-time debugging disabled");
-#endif
-}
-
-int gmskframesync_debug_print(gmskframesync _q,
-                              const char *  _filename)
-{
-#if DEBUG_GMSKFRAMESYNC
-    if (!_q->debug_objects_created)
-        return liquid_error(LIQUID_EICONFIG,"gmskframe_debug_print(), debugging objects don't exist; enable debugging first");
-
-    FILE* fid = fopen(_filename,"w");
-    if (fid == NULL)
-        return liquid_error(LIQUID_EICONFIG,"gmskframesync_debug_print(), could not open '%s' for writing\n", _filename);
-
-    fprintf(fid,"%% %s: auto-generated file", _filename);
-    fprintf(fid,"\n\n");
-    fprintf(fid,"clear all;\n");
-    fprintf(fid,"close all;\n\n");
-
-    fprintf(fid,"num_samples = %u;\n", DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
-    fprintf(fid,"t = 0:(num_samples-1);\n");
-    unsigned int i;
-    float complex * rc;
-
-    // write x
-    fprintf(fid,"x = zeros(1,num_samples);\n");
-    windowcf_read(_q->debug_x, &rc);
-    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(1:length(x),real(x), 1:length(x),imag(x));\n");
-    fprintf(fid,"ylabel('received signal, x');\n");
-    fprintf(fid,"\n\n");
-
-    // write instantaneous frequency
-    float * r;
-    fprintf(fid,"fi = zeros(1,num_samples);\n");
-    windowf_read(_q->debug_fi, &r);
-    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"fi(%4u) = %12.4e;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(1:length(fi),fi);\n");
-    fprintf(fid,"ylabel('Inst. Freq.');\n");
-    fprintf(fid,"\n\n");
-
-    // write matched filter output
-    fprintf(fid,"mf = zeros(1,num_samples);\n");
-    windowf_read(_q->debug_mf, &r);
-    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"mf(%4u) = %12.4e;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(1:length(mf),mf);\n");
-    fprintf(fid,"ylabel('MF output');\n");
-    fprintf(fid,"\n\n");
-
-#if 0
-    // write framesyms
-    fprintf(fid,"framesyms = zeros(1,num_samples);\n");
-    windowf_read(_q->debug_framesyms, &r);
-    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"framesyms(%4u) = %12.4e;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,framesyms,'x')\n");
-    fprintf(fid,"xlabel('time (symbol index)');\n");
-    fprintf(fid,"ylabel('GMSK demodulator output');\n");
-    fprintf(fid,"grid on;\n");
-    fprintf(fid,"\n\n");
-#endif
-
-    fclose(fid);
-    printf("gmskframesync/debug: results written to '%s'\n", _filename);
-    return LIQUID_OK;
-#else
-    return liquid_error(LIQUID_EICONFIG,"gmskframesync_debug_print(), compile-time debugging disabled");
-#endif
-
-}
