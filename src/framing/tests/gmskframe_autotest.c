@@ -26,22 +26,21 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-static int callback(unsigned char *  _header,
-                    int              _header_valid,
-                    unsigned char *  _payload,
-                    unsigned int     _payload_len,
-                    int              _payload_valid,
-                    framesyncstats_s _stats,
-                    void *           _userdata)
+static int gmskframesync_autotest_callback(
+    unsigned char *  _header,
+    int              _header_valid,
+    unsigned char *  _payload,
+    unsigned int     _payload_len,
+    int              _payload_valid,
+    framesyncstats_s _stats,
+    void *           _userdata)
 {
-    //printf("callback invoked, payload valid: %s\n", _payload_valid ? "yes" : "no");
     unsigned int * secret = (unsigned int*) _userdata;
-
     *secret = 0x01234567;
     return 0;
 }
 
-// test simple recovery of GMSK frame in noise
+// test simple recovery of GMSK frame
 void autotest_gmskframesync()
 {
     // initialization and options
@@ -59,32 +58,24 @@ void autotest_gmskframesync()
     gmskframegen_assemble(fg, NULL, NULL, msg_len, crc, fec0, fec1);
 
     // create frame synchronizer
-    gmskframesync fs = gmskframesync_create(k,m,bt,callback,(void*)&secret);
+    gmskframesync fs = gmskframesync_create(k,m,bt,
+            gmskframesync_autotest_callback,(void*)&secret);
 
     if (liquid_autotest_verbose) {
         gmskframegen_print(fg);
         gmskframesync_print(fs);
     }
 
-    // allocate buffer
-    unsigned int  buf_len = 200;
+    // allocate buffer (irregular size to test write method)
+    unsigned int  buf_len = 53;
     float complex buf[buf_len];
 
     // generate the frame in blocks
     unsigned int i;
     int frame_complete = 0;
-    float complex buf2[k];
     while (!frame_complete) {
-        /*
         frame_complete = gmskframegen_write(fg, buf, buf_len);
-        for (i=0; i<buf_len; i++)
-            buf[i] += 0.01f*(randnf() + _Complex_I*randnf()) * M_SQRT1_2;
-
-        // try to receive the frame
         gmskframesync_execute(fs, buf, buf_len);
-        */
-        frame_complete = gmskframegen_write(fg, buf2, k);
-        gmskframesync_execute(fs, buf2, k);
     }
 
     // check to see that frame was recovered
