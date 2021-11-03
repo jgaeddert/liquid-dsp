@@ -258,6 +258,9 @@ int gmskframegen_assemble(gmskframegen          _q,
                           fec_scheme            _fec0,
                           fec_scheme            _fec1)
 {
+    // reset frame generator state
+    gmskframegen_reset(_q);
+
     // re-create frame generator if properties don't match
     if (_q->dec_msg_len != _payload_len ||
         _q->check       != _check       ||
@@ -291,6 +294,14 @@ int gmskframegen_assemble(gmskframegen          _q,
     packetizer_encode(_q->p_payload, _payload, _q->payload_enc);
     _q->state = STATE_PREAMBLE;
     return LIQUID_OK;
+}
+
+// assemble default frame with a particular size payload
+int gmskframegen_assemble_default(gmskframegen _q,
+                                  unsigned int _payload_len)
+{
+    return gmskframegen_assemble(_q, NULL, NULL, _payload_len,
+            LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_GOLAY2412);
 }
 
 // get frame length (number of samples)

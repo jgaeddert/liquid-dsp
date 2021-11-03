@@ -55,6 +55,7 @@ void autotest_gmskframesync()
 
     // create and assemble frame generator
     gmskframegen fg = gmskframegen_create(k,m,bt);
+    //gmskframegen_assemble_default(fg, msg_len);
     gmskframegen_assemble(fg, NULL, NULL, msg_len, crc, fec0, fec1);
 
     // create frame synchronizer
@@ -71,7 +72,6 @@ void autotest_gmskframesync()
     float complex buf[buf_len];
 
     // generate the frame in blocks
-    unsigned int i;
     int frame_complete = 0;
     while (!frame_complete) {
         frame_complete = gmskframegen_write(fg, buf, buf_len);
@@ -93,3 +93,47 @@ void autotest_gmskframesync()
     gmskframesync_destroy(fs);
 }
 
+// test receiving multiple frames
+void autotest_gmskframesync_multiple()
+{
+    // initialization and options
+    unsigned int k          =  2;   // samples per symbol
+    unsigned int m          = 12;   // filter semi-length
+    float        bt         = 0.3f; // bandwidth-time factor
+    unsigned int msg_len    = 40;   // message length [bytes]
+    unsigned int num_frames = 80;   // number of frames to generate
+
+    // create objects
+    gmskframegen fg = gmskframegen_create(k,m,bt);
+    gmskframesync fs = gmskframesync_create(k,m,bt,NULL,NULL);
+
+    // allocate buffer for processing
+    unsigned int  buf_len = 200;
+    float complex buf[buf_len];
+
+    // generate multiple frames
+    unsigned int n;
+    for (n=0; n<num_frames; n++) {
+        // generate the frame in blocks
+        gmskframegen_assemble_default(fg, msg_len);
+        int frame_complete = 0;
+        while (!frame_complete) {
+            frame_complete = gmskframegen_write(fg, buf, buf_len);
+            gmskframesync_execute(fs, buf, buf_len);
+        }
+    }
+
+    // parse statistics
+    framedatastats_s stats = gmskframesync_get_framedatastats(fs);
+    if (liquid_autotest_verbose)
+        gmskframesync_print(fs);
+
+    CONTEND_EQUALITY(stats.num_frames_detected, num_frames);
+    CONTEND_EQUALITY(stats.num_headers_valid,   num_frames);
+    CONTEND_EQUALITY(stats.num_payloads_valid,  num_frames);
+    CONTEND_EQUALITY(stats.num_bytes_received,  num_frames * msg_len);
+
+    // destroy objects
+    gmskframegen_destroy(fg);
+    gmskframesync_destroy(fs);
+}

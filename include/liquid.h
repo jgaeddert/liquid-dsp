@@ -5387,6 +5387,9 @@ int gmskframegen_assemble      (gmskframegen          _q,
                                 crc_scheme            _check,
                                 fec_scheme            _fec0,
                                 fec_scheme            _fec1);
+// assemble default frame with a particular size payload
+int gmskframegen_assemble_default(gmskframegen _q,
+                                  unsigned int _payload_len);
 unsigned int gmskframegen_getframelen(gmskframegen _q);
 
 // write samples of assembled frame
