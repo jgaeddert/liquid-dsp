@@ -5431,12 +5431,6 @@ int              gmskframesync_reset_framedatastats(gmskframesync _q);
 framedatastats_s gmskframesync_get_framedatastats  (gmskframesync _q);
 
 
-// debugging
-int gmskframesync_debug_enable(gmskframesync _q);
-int gmskframesync_debug_disable(gmskframesync _q);
-int gmskframesync_debug_print(gmskframesync _q, const char * _filename);
-
-
 //
 // DSSS frame generator
 //
