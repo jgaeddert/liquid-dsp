@@ -151,3 +151,50 @@ void autotest_gmskframesync_multiple()
     gmskframegen_destroy(fg);
     gmskframesync_destroy(fs);
 }
+
+// test different configurations
+void testbench_gmskframesync(unsigned int _k, unsigned int _m, float _bt)
+{
+    // create objects
+    gmskframegen  fg = gmskframegen_create (_k,_m,_bt);
+    gmskframesync fs = gmskframesync_create(_k,_m,_bt,NULL,NULL);
+
+    // generate the frame in blocks
+    gmskframegen_assemble_default(fg, 80);
+    unsigned int  buf_len = 200;
+    float complex buf[buf_len];
+    int frame_complete = 0;
+    while (!frame_complete) {
+        frame_complete = gmskframegen_write(fg, buf, buf_len);
+        gmskframesync_execute(fs, buf, buf_len);
+    }
+
+    // parse statistics
+    if (liquid_autotest_verbose)
+        gmskframesync_print(fs);
+    framedatastats_s stats = gmskframesync_get_framedatastats(fs);
+    CONTEND_EQUALITY(stats.num_frames_detected, 1);
+    CONTEND_EQUALITY(stats.num_headers_valid,   1);
+    CONTEND_EQUALITY(stats.num_payloads_valid,  1);
+    CONTEND_EQUALITY(stats.num_bytes_received,  80);
+
+    // destroy objects
+    gmskframegen_destroy(fg);
+    gmskframesync_destroy(fs);
+}
+
+// test specific configurations
+void autotest_gmskframesync_k02_m05_bt20() { testbench_gmskframesync( 2, 5, 0.20f); }
+void autotest_gmskframesync_k02_m05_bt30() { testbench_gmskframesync( 2, 5, 0.30f); }
+void autotest_gmskframesync_k02_m05_bt40() { testbench_gmskframesync( 2, 5, 0.40f); }
+
+// double samples per symbol
+void autotest_gmskframesync_k04_m05_bt20() { testbench_gmskframesync( 4, 5, 0.20f); }
+void autotest_gmskframesync_k04_m05_bt30() { testbench_gmskframesync( 4, 5, 0.30f); }
+void autotest_gmskframesync_k04_m05_bt40() { testbench_gmskframesync( 4, 5, 0.40f); }
+
+// test odd configurations
+void autotest_gmskframesync_k03_m07_bt20() { testbench_gmskframesync( 3, 7, 0.20f); }
+void autotest_gmskframesync_k08_m20_bt15() { testbench_gmskframesync( 8,20, 0.15f); }
+void autotest_gmskframesync_k15_m02_bt40() { testbench_gmskframesync(15, 2, 0.40f); }
+
