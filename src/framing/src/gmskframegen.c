@@ -31,8 +31,6 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_GMSKFRAMEGEN    0
-
 // gmskframegen
 int gmskframegen_encode_header( gmskframegen _q, const unsigned char * _header);
 int gmskframegen_write_zeros   (gmskframegen _q, float complex * _y);
