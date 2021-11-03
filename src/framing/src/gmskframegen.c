@@ -145,6 +145,9 @@ gmskframegen gmskframegen_create(unsigned int _k,
     // allocate memory for symbols
     q->buf_sym = (float complex*)malloc(q->k*sizeof(float complex));
 
+    // free symbol buffer
+    free(q->buf_sym);
+
     // reset object and return
     gmskframegen_reset(q);
     return q;
