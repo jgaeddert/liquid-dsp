@@ -499,6 +499,7 @@ int gmskframegen_write_tail(gmskframegen    _q,
     if (_q->symbol_counter == _q->tail_len) {
         _q->symbol_counter = 0;
         _q->frame_complete = 1;
+        _q->state = STATE_UNASSEMBLED;
     }
     return LIQUID_OK;
 }
