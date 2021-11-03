@@ -56,7 +56,9 @@ void autotest_gmskframesync()
     // create and assemble frame generator
     gmskframegen fg = gmskframegen_create(k,m,bt);
     //gmskframegen_assemble_default(fg, msg_len);
+    CONTEND_EQUALITY(gmskframegen_is_assembled(fg), 0);
     gmskframegen_assemble(fg, NULL, NULL, msg_len, crc, fec0, fec1);
+    CONTEND_EQUALITY(gmskframegen_is_assembled(fg), 1);
 
     // create frame synchronizer
     gmskframesync fs = gmskframesync_create(k,m,bt,
