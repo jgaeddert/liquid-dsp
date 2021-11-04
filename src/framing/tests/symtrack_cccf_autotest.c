@@ -30,7 +30,7 @@ void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int 
 {
     int          ftype       = LIQUID_FIRFILT_ARKAISER;
     unsigned int num_symbols = 4000;    // number of data symbols
-    unsigned int hc_len      =   4;     // channel filter length
+    //unsigned int hc_len      =   4;     // channel filter length
     float        noise_floor = -30.0f;  // noise floor [dB]
     float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]
     float        bandwidth   =  0.10f;  // loop filter bandwidth
@@ -104,5 +104,6 @@ void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int 
     CONTEND_LESS_THAN(evm, -20.0f);
 }
 
-void autotest_symtrack_cccf_00() { testbench_symtrack_cccf( 2, 7,0.20f,LIQUID_MODEM_QPSK); }
+void autotest_symtrack_cccf_00() { testbench_symtrack_cccf( 2, 7,0.20f,LIQUID_MODEM_BPSK); }
+void autotest_symtrack_cccf_01() { testbench_symtrack_cccf( 2, 7,0.20f,LIQUID_MODEM_QPSK); }
 
