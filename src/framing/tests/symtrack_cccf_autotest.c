@@ -120,6 +120,7 @@ void autotest_symtrack_cccf_config()
     //CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_UNKNOWN, 2, 12, 0.25f, LIQUID_MODEM_QPSK));
     CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   1, 12, 0.25f, LIQUID_MODEM_QPSK));
     CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   2,  0, 0.25f, LIQUID_MODEM_QPSK));
+    CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   2, 12, 2.00f, LIQUID_MODEM_QPSK));
     CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   2, 12, 0.25f, LIQUID_MODEM_UNKNOWN));
     CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   2, 12, 0.25f, LIQUID_MODEM_NUM_SCHEMES));
 
