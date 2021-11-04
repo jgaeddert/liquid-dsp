@@ -107,3 +107,35 @@ void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int 
 void autotest_symtrack_cccf_00() { testbench_symtrack_cccf( 2, 7,0.20f,LIQUID_MODEM_BPSK); }
 void autotest_symtrack_cccf_01() { testbench_symtrack_cccf( 2, 7,0.20f,LIQUID_MODEM_QPSK); }
 
+// configuration tests
+void autotest_symtrack_cccf_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping symtrack_cccf config test with strict exit enabled\n");
+    return;
+#endif
+    // check that object returns NULL for invalid configurations
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+
+    //CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_UNKNOWN, 2, 12, 0.25f, LIQUID_MODEM_QPSK));
+    CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   1, 12, 0.25f, LIQUID_MODEM_QPSK));
+    CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   2,  0, 0.25f, LIQUID_MODEM_QPSK));
+    CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   2, 12, 0.25f, LIQUID_MODEM_UNKNOWN));
+    CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   2, 12, 0.25f, LIQUID_MODEM_NUM_SCHEMES));
+
+    // create proper object but test invalid internal configurations
+    symtrack_cccf q = symtrack_cccf_create_default();
+
+    //CONTEND_INEQUALITY(LIQUID_OK, symtrack_cccf_set_modscheme(q, LIQUID_MODEM_UNKNOWN))
+    CONTEND_INEQUALITY(LIQUID_OK, symtrack_cccf_set_modscheme(q, LIQUID_MODEM_NUM_SCHEMES))
+    CONTEND_INEQUALITY(LIQUID_OK, symtrack_cccf_set_bandwidth(q, -1.0f))
+
+    // test valid configurations
+    CONTEND_EQUALITY(LIQUID_OK, symtrack_cccf_adjust_phase(q, 0.1f) );
+    CONTEND_EQUALITY(LIQUID_OK, symtrack_cccf_set_eq_cm   (q      ) );
+    CONTEND_EQUALITY(LIQUID_OK, symtrack_cccf_set_eq_dd   (q      ) );
+    CONTEND_EQUALITY(LIQUID_OK, symtrack_cccf_set_eq_off  (q      ) );
+
+    // destroy object
+    symtrack_cccf_destroy(q);
+}
