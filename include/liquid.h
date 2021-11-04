@@ -6253,11 +6253,29 @@ int SYMTRACK(_print)(SYMTRACK() _q);                                        \
 /* Reset symtrack internal state                                        */  \
 int SYMTRACK(_reset)(SYMTRACK() _q);                                        \
                                                                             \
+/* Get symtrack filter type                                             */  \
+int SYMTRACK(_get_ftype)(SYMTRACK() _q);                                    \
+                                                                            \
+/* Get symtrack samples per symbol                                      */  \
+unsigned int SYMTRACK(_get_k)(SYMTRACK() _q);                               \
+                                                                            \
+/* Get symtrack filter semi-length [symbols]                            */  \
+unsigned int SYMTRACK(_get_m)(SYMTRACK() _q);                               \
+                                                                            \
+/* Get symtrack filter excess bandwidth factor                          */  \
+float SYMTRACK(_get_beta)(SYMTRACK() _q);                                   \
+                                                                            \
+/* Get symtrack modulation scheme                                       */  \
+int SYMTRACK(_get_modscheme)(SYMTRACK() _q);                                \
+                                                                            \
 /* Set symtrack modulation scheme                                       */  \
 /*  _q      : symtrack object                                           */  \
 /*  _ms     : modulation scheme, _ms(LIQUID_MODEM_BPSK)                 */  \
 int SYMTRACK(_set_modscheme)(SYMTRACK() _q,                                 \
                              int        _ms);                               \
+                                                                            \
+/* Get symtrack internal bandwidth                                      */  \
+float SYMTRACK(_get_bandwidth)(SYMTRACK() _q);                              \
                                                                             \
 /* Set symtrack internal bandwidth                                      */  \
 /*  _q      : symtrack object                                           */  \

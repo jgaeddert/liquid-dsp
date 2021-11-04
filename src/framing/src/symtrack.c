@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,7 @@ struct SYMTRACK(_s) {
     unsigned int    m;                  // filter semi-length
     float           beta;               // filter excess bandwidth
     int             mod_scheme;         // demodulator
+    float           bw;                 // tracking bandwidth
 
     // automatic gain control
     AGC()           agc;                // agc object
@@ -199,6 +200,36 @@ int SYMTRACK(_reset)(SYMTRACK() _q)
     return LIQUID_OK;
 }
 
+// get symtrack filter type
+int SYMTRACK(_get_ftype)(SYMTRACK() _q)
+{
+    return _q->filter_type;
+}
+
+// get symtrack samples per symbol
+unsigned int SYMTRACK(_get_k)(SYMTRACK() _q)
+{
+    return _q->k;
+}
+
+// get symtrack filter semi-length [symbols]
+unsigned int SYMTRACK(_get_m)(SYMTRACK() _q)
+{
+    return _q->m;
+}
+
+// get symtrack filter excess bandwidth factor
+float SYMTRACK(_get_beta)(SYMTRACK() _q)
+{
+    return _q->beta;
+}
+
+// get symtrack modulation scheme
+int SYMTRACK(_get_modscheme)(SYMTRACK() _q)
+{
+    return _q->mod_scheme;
+}
+
 // set symtrack modulation scheme
 int SYMTRACK(_set_modscheme)(SYMTRACK() _q,
                              int        _ms)
@@ -223,11 +254,13 @@ int SYMTRACK(_set_bandwidth)(SYMTRACK() _q,
     if (_bw < 0)
         return liquid_error(LIQUID_EICONFIG,"symtrack_%s_set_bandwidth(), bandwidth must be in [0,1]", EXTENSION_FULL);
 
+    _q->bw = _bw;
+
     // set bandwidths accordingly
-    float agc_bandwidth     = 0.02f  * _bw;
-    float symsync_bandwidth = 0.001f * _bw;
-    float eq_bandwidth      = 0.02f  * _bw;
-    float pll_bandwidth     = 0.001f * _bw;
+    float agc_bandwidth     = 0.02f  * _q->bw;
+    float symsync_bandwidth = 0.001f * _q->bw;
+    float eq_bandwidth      = 0.02f  * _q->bw;
+    float pll_bandwidth     = 0.001f * _q->bw;
 
     // automatic gain control
     AGC(_set_bandwidth)(_q->agc, agc_bandwidth);
@@ -241,6 +274,12 @@ int SYMTRACK(_set_bandwidth)(SYMTRACK() _q,
     // phase-locked loop
     NCO(_pll_set_bandwidth)(_q->nco, pll_bandwidth);
     return LIQUID_OK;
+}
+
+// get symtrack internal bandwidth
+float SYMTRACK(_get_bandwidth)(SYMTRACK() _q)
+{
+    return _q->bw;
 }
 
 // adjust internal nco by requested phase

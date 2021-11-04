@@ -107,8 +107,8 @@ void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int 
 void autotest_symtrack_cccf_00() { testbench_symtrack_cccf( 2, 7,0.20f,LIQUID_MODEM_BPSK); }
 void autotest_symtrack_cccf_01() { testbench_symtrack_cccf( 2, 7,0.20f,LIQUID_MODEM_QPSK); }
 
-// configuration tests
-void autotest_symtrack_cccf_config()
+// invalid configuration tests
+void autotest_symtrack_cccf_config_invalid()
 {
 #if LIQUID_STRICT_EXIT
     AUTOTEST_WARN("skipping symtrack_cccf config test with strict exit enabled\n");
@@ -131,11 +131,37 @@ void autotest_symtrack_cccf_config()
     CONTEND_INEQUALITY(LIQUID_OK, symtrack_cccf_set_modscheme(q, LIQUID_MODEM_NUM_SCHEMES))
     CONTEND_INEQUALITY(LIQUID_OK, symtrack_cccf_set_bandwidth(q, -1.0f))
 
+    // destroy object
+    symtrack_cccf_destroy(q);
+}
+
+// configuration tests
+void autotest_symtrack_cccf_config_valid()
+{
+    // create proper object and test configuration methods
+    symtrack_cccf q =
+        symtrack_cccf_create(LIQUID_FIRFILT_ARKAISER, 4, 12, 0.25f, LIQUID_MODEM_QAM64);
+
     // test valid configurations
     CONTEND_EQUALITY(LIQUID_OK, symtrack_cccf_adjust_phase(q, 0.1f) );
     CONTEND_EQUALITY(LIQUID_OK, symtrack_cccf_set_eq_cm   (q      ) );
     CONTEND_EQUALITY(LIQUID_OK, symtrack_cccf_set_eq_dd   (q      ) );
     CONTEND_EQUALITY(LIQUID_OK, symtrack_cccf_set_eq_off  (q      ) );
+
+    // test access methods
+    CONTEND_EQUALITY(symtrack_cccf_get_k(q),    4);
+    CONTEND_EQUALITY(symtrack_cccf_get_m(q),    12);
+    CONTEND_EQUALITY(symtrack_cccf_get_beta(q), 0.25f);
+    CONTEND_EQUALITY(symtrack_cccf_get_ftype(q), LIQUID_FIRFILT_ARKAISER);
+    CONTEND_EQUALITY(symtrack_cccf_get_modscheme(q), LIQUID_MODEM_QAM64);
+
+    // test setting bandwidth
+    CONTEND_EQUALITY(symtrack_cccf_set_bandwidth(q,  0.1f), LIQUID_OK);
+    CONTEND_EQUALITY(symtrack_cccf_get_bandwidth(q), 0.1f);
+
+    // test setting modulation scheme
+    CONTEND_EQUALITY(symtrack_cccf_set_modscheme(q, LIQUID_MODEM_APSK16), LIQUID_OK);
+    CONTEND_EQUALITY(symtrack_cccf_get_modscheme(q), LIQUID_MODEM_APSK16);
 
     // destroy object
     symtrack_cccf_destroy(q);
