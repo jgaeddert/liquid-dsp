@@ -23,9 +23,7 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// 
 // Test DC gain control
-//
 void autotest_agc_crcf_dc_gain_control()
 {
     // set paramaters
@@ -52,9 +50,7 @@ void autotest_agc_crcf_dc_gain_control()
     agc_crcf_destroy(q);
 }
 
-// 
 // Test AC gain control
-//
 void autotest_agc_crcf_ac_gain_control()
 {
     // set paramaters
@@ -85,11 +81,7 @@ void autotest_agc_crcf_ac_gain_control()
     agc_crcf_destroy(q);
 }
 
-
-
-// 
 // Test RSSI on sinusoidal input
-//
 void autotest_agc_crcf_rssi_sinusoid()
 {
     // set paramaters
@@ -127,10 +119,7 @@ void autotest_agc_crcf_rssi_sinusoid()
     agc_crcf_destroy(q);
 }
 
-
-// 
 // Test RSSI on noise input
-//
 void autotest_agc_crcf_rssi_noise()
 {
     // set paramaters
@@ -168,9 +157,7 @@ void autotest_agc_crcf_rssi_noise()
     agc_crcf_destroy(q);
 }
 
-// 
 // Test squelch functionality
-//
 void autotest_agc_crcf_squelch()
 {
     // create agc object, set loop bandwidth, and initialize parameters
@@ -223,6 +210,40 @@ void autotest_agc_crcf_squelch()
     agc_crcf_destroy(q);
 }
 
+// test lock state control
+void autotest_agc_crcf_lock()
+{
+    // set paramaters
+    float gamma = 0.1f;     // nominal signal level
+    float tol   = 0.01f;    // error tolerance
+
+    // create AGC object and initialize buffers for block processing
+    agc_crcf q = agc_crcf_create();
+    agc_crcf_set_bandwidth(q, 0.1);
+    float complex buf_0[4] = {gamma, gamma, gamma, gamma,};
+    float complex buf_1[4];
+    unsigned int i;
+
+    // lock AGC and show it is not tracking
+    CONTEND_DELTA( agc_crcf_get_rssi(q), 0, tol );  // base signal level is 0 dB
+    CONTEND_FALSE( agc_crcf_is_locked(q) );         // not locked
+    agc_crcf_lock(q);
+    CONTEND_TRUE( agc_crcf_is_locked(q) );          // locked
+    for (i=0; i<256; i++)
+        agc_crcf_execute_block(q, buf_0, 4, buf_1);
+    CONTEND_DELTA( agc_crcf_get_rssi(q), 0, tol );  // signal level has not changed
+
+    // unlock AGC and show it is tracking
+    agc_crcf_unlock(q);
+    CONTEND_FALSE( agc_crcf_is_locked(q) );         // unlocked
+    for (i=0; i<256; i++)
+        agc_crcf_execute_block(q, buf_0, 4, buf_1);
+    // agc tracks to signal level
+    CONTEND_DELTA( agc_crcf_get_rssi(q), 20*log10f(gamma), tol );
+
+    // destroy AGC object
+    agc_crcf_destroy(q);
+}
 
 // configuration
 void autotest_agc_crcf_invalid_config()

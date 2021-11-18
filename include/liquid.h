@@ -225,6 +225,9 @@ int AGC(_lock)(AGC() _q);                                                   \
 /* Unlock agc object, and allow amplitude correction to resume.         */  \
 int AGC(_unlock)(AGC() _q);                                                 \
                                                                             \
+/* Get lock state of agc object                                         */  \
+int AGC(_is_locked)(AGC() _q);                                              \
+                                                                            \
 /* Set loop filter bandwidth: attack/release time.                      */  \
 /*  _q      : automatic gain control object                             */  \
 /*  _bt     : bandwidth-time constant, _bt > 0                          */  \

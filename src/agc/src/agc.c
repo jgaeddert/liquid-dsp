@@ -201,6 +201,12 @@ int AGC(_unlock)(AGC() _q)
     return LIQUID_OK;
 }
 
+// get lock state of agc object
+int AGC(_is_locked)(AGC() _q)
+{
+    return _q->is_locked;
+}
+
 // get agc loop bandwidth
 float AGC(_get_bandwidth)(AGC() _q)
 {
