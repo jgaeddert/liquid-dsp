@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -224,4 +224,33 @@ void autotest_agc_crcf_squelch()
 }
 
 
+// configuration
+void autotest_agc_crcf_invalid_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping agc config test with strict exit enabled\n");
+    return;
+#endif
+    // create main object and check invalid configurations
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+    agc_crcf q = agc_crcf_create();
+
+    // invalid bandwidths
+    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_bandwidth(q, -1))
+    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_bandwidth(q,  2))
+
+    // invalid gains
+    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_gain(q,  0))
+    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_gain(q, -1))
+
+    // invalid signal levels
+    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_signal_level(q,  0))
+    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_signal_level(q, -1))
+
+    // initialize gain on input array, but array has length 0
+    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_init(q, NULL, 0))
+
+    // destroy object
+    agc_crcf_destroy(q);
+}
 
