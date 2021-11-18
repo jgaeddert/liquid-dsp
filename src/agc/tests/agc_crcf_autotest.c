@@ -65,6 +65,7 @@ void autotest_agc_crcf_scale()
     agc_crcf q = agc_crcf_create();
     agc_crcf_set_bandwidth(q, 0.1f);
     agc_crcf_set_scale    (q, scale);
+    CONTEND_EQUALITY(agc_crcf_get_scale(q), scale);
 
     unsigned int i;
     float complex x = 0.1f; // input sample
@@ -305,6 +306,10 @@ void autotest_agc_crcf_invalid_config()
     // invalid signal levels
     CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_signal_level(q,  0))
     CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_signal_level(q, -1))
+
+    // invalid scale values
+    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_scale(q,  0))
+    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_scale(q, -1))
 
     // initialize gain on input array, but array has length 0
     CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_init(q, NULL, 0))
