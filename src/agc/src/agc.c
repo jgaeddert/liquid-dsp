@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -153,8 +153,7 @@ int AGC(_execute)(AGC() _q,
         _q->g *= expf( -0.5f*_q->alpha*logf(_q->y2_prime) );
 
     // clamp to 120 dB gain
-    if (_q->g > 1e6f)
-        _q->g = 1e6f;
+    _q->g = (_q->g > 1e6f) ? 1e6f : _q->g;
 
     // udpate squelch mode appropriately
     AGC(_squelch_update_mode)(_q);
@@ -176,14 +175,12 @@ int AGC(_execute_block)(AGC()        _q,
                         TC *         _y)
 {
     unsigned int i;
+    int rc = LIQUID_OK;
     for (i=0; i<_n; i++) {
-        int rc = AGC(_execute)(_q, _x[i], &_y[i]);
-
-        if (rc != LIQUID_OK)
-            return rc;
+        rc |= AGC(_execute)(_q, _x[i], &_y[i]);
     }
 
-    return LIQUID_OK;
+    return rc;
 }
 
 // lock agc
@@ -271,8 +268,7 @@ int AGC(_set_rssi)(AGC() _q,
     _q->g = powf(10.0f, -_rssi/20.0f);
 
     // ensure resulting gain is not arbitrarily low
-    if (_q->g < 1e-16f)
-        _q->g = 1e-16f;
+    _q->g = (_q->g < 1e-16f) ? 1e-16f : _q->g;
 
     // reset internal output signal level
     _q->y2_prime = 1.0f;
