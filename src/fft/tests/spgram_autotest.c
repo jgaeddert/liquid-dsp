@@ -233,7 +233,6 @@ void autotest_spgramcf_invalid_config()
     fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
 #endif
     // check that object returns NULL for invalid configurations
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
     CONTEND_ISNULL(spgramcf_create(  0, LIQUID_WINDOW_HAMMING,       200, 200)); // nfft too small
     CONTEND_ISNULL(spgramcf_create(  1, LIQUID_WINDOW_HAMMING,       200, 200)); // nfft too small
     CONTEND_ISNULL(spgramcf_create(  2, LIQUID_WINDOW_HAMMING,       200, 200)); // window length too large
