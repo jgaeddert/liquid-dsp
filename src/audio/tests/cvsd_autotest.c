@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,5 +59,23 @@ void autotest_cvsd_rmse_sine() {
     // destroy cvsd codecs
     cvsd_destroy(cvsd_encoder);
     cvsd_destroy(cvsd_decoder);
+}
+
+// configuration
+void autotest_cvsd_invalid_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping cvsd config test with strict exit enabled");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // test invalid configuration to create()
+    CONTEND_ISNULL(cvsd_create(0, 2.0f, 0.5f)); // too few bits
+    CONTEND_ISNULL(cvsd_create(2, 1.0f, 0.5f)); // zeta too small
+    CONTEND_ISNULL(cvsd_create(2, 0.5f, 0.5f)); // zeta too small
+    CONTEND_ISNULL(cvsd_create(2, 2.0f,-1.0f)); // alpha too small
+    CONTEND_ISNULL(cvsd_create(2, 2.0f, 2.0f)); // alpha too large
 }
 
