@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,8 +57,8 @@ struct cvsd_s {
 //  _alpha      :   pre-/post-emphasis filter coefficient (0.9 recommended)
 // NOTE: _alpha must be in [0,1]
 cvsd cvsd_create(unsigned int _num_bits,
-                 float _zeta,
-                 float _alpha)
+                 float        _zeta,
+                 float        _alpha)
 {
     if (_num_bits == 0)
         return liquid_error_config("cvsd_create(), _num_bits must be positive");
@@ -96,7 +96,7 @@ cvsd cvsd_create(unsigned int _num_bits,
 }
 
 // destroy cvsd object
-void cvsd_destroy(cvsd _q)
+int cvsd_destroy(cvsd _q)
 {
 #if CVSD_ENABLE_SIGNAL_CONDITIONING
     // destroy filters
@@ -106,10 +106,11 @@ void cvsd_destroy(cvsd _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print cvsd object parameters
-void cvsd_print(cvsd _q)
+int cvsd_print(cvsd _q)
 {
     printf("cvsd codec:\n");
     printf("    num bits: %u\n", _q->num_bits);
@@ -117,6 +118,7 @@ void cvsd_print(cvsd _q)
 #if CVSD_ENABLE_SIGNAL_CONDITIONING
     printf("    alpha   : %8.4f\n", _q->alpha);
 #endif
+    return LIQUID_OK;
 }
 
 // encode single sample
@@ -197,9 +199,9 @@ float cvsd_decode(cvsd _q,
 }
 
 // encode 8 samples
-void cvsd_encode8(cvsd _q,
-                  float * _audio,
-                  unsigned char * _data)
+int cvsd_encode8(cvsd _q,
+                 float * _audio,
+                 unsigned char * _data)
 {
     unsigned char data=0x00;
     unsigned int i;
@@ -210,12 +212,13 @@ void cvsd_encode8(cvsd _q,
 
     // set return value
     *_data = data;
+    return LIQUID_OK;
 }
 
 // decode 8 samples
-void cvsd_decode8(cvsd _q,
-                  unsigned char _data,
-                  float * _audio)
+int cvsd_decode8(cvsd _q,
+                 unsigned char _data,
+                 float * _audio)
 {
     unsigned char bit;
     unsigned int i;
@@ -223,5 +226,6 @@ void cvsd_decode8(cvsd _q,
         bit = (_data >> (8-i-1)) & 0x01;
         _audio[i] = cvsd_decode(_q, bit);
     }
+    return LIQUID_OK;
 }
 

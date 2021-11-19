@@ -344,18 +344,18 @@ cvsd cvsd_create(unsigned int _num_bits,
                  float _alpha);
 
 // destroy cvsd object
-void cvsd_destroy(cvsd _q);
+int cvsd_destroy(cvsd _q);
 
 // print cvsd object parameters
-void cvsd_print(cvsd _q);
+int cvsd_print(cvsd _q);
 
 // encode/decode single sample
 unsigned char   cvsd_encode(cvsd _q, float _audio_sample);
 float           cvsd_decode(cvsd _q, unsigned char _bit);
 
 // encode/decode 8 samples at a time
-void cvsd_encode8(cvsd _q, float * _audio, unsigned char * _data);
-void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
+int cvsd_encode8(cvsd _q, float * _audio, unsigned char * _data);
+int cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 
 
 //
