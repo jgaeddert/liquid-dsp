@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // autotest helper functions
 void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int _ms)
@@ -114,9 +114,9 @@ void autotest_symtrack_cccf_config_invalid()
     AUTOTEST_WARN("skipping symtrack_cccf config test with strict exit enabled\n");
     return;
 #endif
-    // check that object returns NULL for invalid configurations
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
     fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-
+#endif
     //CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_UNKNOWN, 2, 12, 0.25f, LIQUID_MODEM_QPSK));
     CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   1, 12, 0.25f, LIQUID_MODEM_QPSK));
     CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   2,  0, 0.25f, LIQUID_MODEM_QPSK));

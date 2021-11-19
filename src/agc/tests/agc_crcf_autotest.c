@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // Test DC gain control
 void autotest_agc_crcf_dc_gain_control()
@@ -288,11 +288,13 @@ void autotest_agc_crcf_lock()
 void autotest_agc_crcf_invalid_config()
 {
 #if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping agc config test with strict exit enabled\n");
+    AUTOTEST_WARN("skipping agc config test with strict exit enabled");
     return;
 #endif
-    // create main object and check invalid configurations
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
     fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // create main object and check invalid configurations
     agc_crcf q = agc_crcf_create();
 
     // invalid bandwidths

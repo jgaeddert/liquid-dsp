@@ -229,6 +229,9 @@ void autotest_spgramcf_invalid_config()
     AUTOTEST_WARN("skipping spgram config test with strict exit enabled\n");
     return;
 #endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
     // check that object returns NULL for invalid configurations
     fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
     CONTEND_ISNULL(spgramcf_create(  0, LIQUID_WINDOW_HAMMING,       200, 200)); // nfft too small
