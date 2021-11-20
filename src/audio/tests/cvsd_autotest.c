@@ -23,10 +23,9 @@
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
-//
-// AUTOTEST: check RMSE for CVSD
-//
-void autotest_cvsd_rmse_sine() {
+// check RMS error
+void autotest_cvsd_rmse_sine()
+{
     unsigned int n=256;
     unsigned int nbits=3;
     float zeta=1.5f;
@@ -35,6 +34,7 @@ void autotest_cvsd_rmse_sine() {
     // create cvsd codecs
     cvsd cvsd_encoder = cvsd_create(nbits,zeta,alpha);
     cvsd cvsd_decoder = cvsd_create(nbits,zeta,alpha);
+    CONTEND_EQUALITY(cvsd_print(cvsd_encoder), LIQUID_OK);
 
     float phi=0.0f;
     float dphi=0.1f;
@@ -52,6 +52,49 @@ void autotest_cvsd_rmse_sine() {
     }   
 
     rmse = 10*log10f(rmse/n);
+    if (liquid_autotest_verbose)
+        printf("cvsd rmse : %8.2f dB\n", rmse);
+    CONTEND_LESS_THAN(rmse, -20.0f);
+
+    // destroy cvsd codecs
+    cvsd_destroy(cvsd_encoder);
+    cvsd_destroy(cvsd_decoder);
+}
+
+// check RMS error running in blocks of 8 samples
+void autotest_cvsd_rmse_sine8()
+{
+    unsigned int n=256;
+    unsigned int nbits=3;
+    float zeta=1.5f;
+    float alpha=0.90f;
+
+    // create cvsd codecs
+    cvsd cvsd_encoder = cvsd_create(nbits,zeta,alpha);
+    cvsd cvsd_decoder = cvsd_create(nbits,zeta,alpha);
+    CONTEND_EQUALITY(cvsd_print(cvsd_encoder), LIQUID_OK);
+
+    float phi=0.0f, dphi=0.1f;
+    float buf_0[8], buf_1[8];
+    unsigned int i, j;
+    unsigned char byte;
+    float rmse=0.0f;
+    for (i=0; i<n; i++) {
+        // generate tone
+        for (j=0; j<8; j++) {
+            buf_0[j] = 0.5f*sinf(phi);
+            phi += dphi;
+        }
+        // encode/decode
+        cvsd_encode8(cvsd_encoder, buf_0, &byte); 
+        cvsd_decode8(cvsd_decoder, byte, buf_1); 
+
+        // accumulate RMS error
+        for (j=0; j<8; j++)
+            rmse += (buf_0[j]-buf_1[j])*(buf_0[j]-buf_1[j]);
+    }   
+
+    rmse = 10*log10f(rmse/(n*8));
     if (liquid_autotest_verbose)
         printf("cvsd rmse : %8.2f dB\n", rmse);
     CONTEND_LESS_THAN(rmse, -20.0f);
