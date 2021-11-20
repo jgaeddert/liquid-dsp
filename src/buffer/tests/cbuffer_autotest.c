@@ -305,8 +305,6 @@ void autotest_cbufferf_config()
 
     // create new circular buffer
     cbufferf q = cbufferf_create_max(max_size, max_read);
-    CONTEND_EQUALITY(cbufferf_print(q),       LIQUID_OK);
-    CONTEND_EQUALITY(cbufferf_debug_print(q), LIQUID_OK);
 
     // ensure test was successful
     CONTEND_EQUALITY(cbufferf_max_size(q), max_size);
@@ -315,6 +313,10 @@ void autotest_cbufferf_config()
     // fill buffer with zeros
     while (cbufferf_space_available(q))
         CONTEND_EQUALITY(cbufferf_push(q,0), LIQUID_OK);
+
+    // ensure no errors with printing
+    CONTEND_EQUALITY(cbufferf_print(q),       LIQUID_OK);
+    CONTEND_EQUALITY(cbufferf_debug_print(q), LIQUID_OK);
 
     // buffer full; cannot write more
     CONTEND_INEQUALITY(cbufferf_push(q,0), LIQUID_OK);
