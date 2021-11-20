@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -291,4 +291,38 @@ void autotest_cbufferf_flow()
     cbufferf_destroy(q);
 }
 
+// test invalid configurations, etc.
+void autotest_cbufferf_config()
+{
+    // options
+    unsigned int max_size = 48; // maximum number of elements in buffer
+    unsigned int max_read = 17; // maximum number of elements to read
+    float        value;
+
+    // create new circular buffer
+    cbufferf q = cbufferf_create_max(max_size, max_read);
+    CONTEND_EQUALITY(cbufferf_print(q),       LIQUID_OK);
+    CONTEND_EQUALITY(cbufferf_debug_print(q), LIQUID_OK);
+
+    // ensure test was successful
+    CONTEND_EQUALITY(cbufferf_max_size(q), max_size);
+    CONTEND_EQUALITY(cbufferf_max_read(q), max_read);
+
+    // fill buffer with zeros
+    while (cbufferf_space_available(q))
+        CONTEND_EQUALITY(cbufferf_push(q,0), LIQUID_OK);
+
+    // buffer full; cannot write more
+    CONTEND_INEQUALITY(cbufferf_push(q,0), LIQUID_OK);
+
+    // reset
+    cbufferf_reset(q);
+
+    // buffer empty; cannot pop element or release any values
+    CONTEND_INEQUALITY(cbufferf_pop    (q,&value), LIQUID_OK);
+    CONTEND_INEQUALITY(cbufferf_release(q,1),      LIQUID_OK);
+
+    // destroy object
+    cbufferf_destroy(q);
+}
 

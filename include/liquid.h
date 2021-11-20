@@ -388,16 +388,16 @@ CBUFFER() CBUFFER(_create_max)(unsigned int _max_size,                      \
                                unsigned int _max_read);                     \
                                                                             \
 /* Destroy cbuffer object, freeing all internal memory                  */  \
-void CBUFFER(_destroy)(CBUFFER() _q);                                       \
+int CBUFFER(_destroy)(CBUFFER() _q);                                        \
                                                                             \
 /* Print cbuffer object properties to stdout                            */  \
-void CBUFFER(_print)(CBUFFER() _q);                                         \
+int CBUFFER(_print)(CBUFFER() _q);                                          \
                                                                             \
 /* Print cbuffer object properties and internal state                   */  \
-void CBUFFER(_debug_print)(CBUFFER() _q);                                   \
+int CBUFFER(_debug_print)(CBUFFER() _q);                                    \
                                                                             \
 /* Clear internal buffer                                                */  \
-void CBUFFER(_reset)(CBUFFER() _q);                                         \
+int CBUFFER(_reset)(CBUFFER() _q);                                          \
                                                                             \
 /* Get the number of elements currently in the buffer                   */  \
 unsigned int CBUFFER(_size)(CBUFFER() _q);                                  \
@@ -417,23 +417,23 @@ int CBUFFER(_is_full)(CBUFFER() _q);                                        \
 /* Write a single sample into the buffer                                */  \
 /*  _q  : circular buffer object                                        */  \
 /*  _v  : input sample                                                  */  \
-void CBUFFER(_push)(CBUFFER() _q,                                           \
-                    T         _v);                                          \
+int CBUFFER(_push)(CBUFFER() _q,                                            \
+                   T         _v);                                           \
                                                                             \
 /* Write a block of samples to the buffer                               */  \
 /*  _q  : circular buffer object                                        */  \
 /*  _v  : array of samples to write to buffer                           */  \
 /*  _n  : number of samples to write                                    */  \
-void CBUFFER(_write)(CBUFFER()    _q,                                       \
-                     T *          _v,                                       \
-                     unsigned int _n);                                      \
+int CBUFFER(_write)(CBUFFER()    _q,                                        \
+                    T *          _v,                                        \
+                    unsigned int _n);                                       \
                                                                             \
 /* Remove and return a single element from the buffer by setting the    */  \
 /* value of the output sample pointed to by _v                          */  \
 /*  _q  : circular buffer object                                        */  \
 /*  _v  : pointer to sample output                                      */  \
-void CBUFFER(_pop)(CBUFFER() _q,                                            \
-                   T *       _v);                                           \
+int CBUFFER(_pop)(CBUFFER() _q,                                             \
+                  T *       _v);                                            \
                                                                             \
 /* Read buffer contents by returning a pointer to the linearized array; */  \
 /* note that the returned pointer is only valid until another operation */  \
@@ -442,16 +442,16 @@ void CBUFFER(_pop)(CBUFFER() _q,                                            \
 /*  _num_requested  : number of elements requested                      */  \
 /*  _v              : output pointer                                    */  \
 /*  _num_read       : number of elements referenced by _v               */  \
-void CBUFFER(_read)(CBUFFER()      _q,                                      \
-                    unsigned int   _num_requested,                          \
-                    T **           _v,                                      \
-                    unsigned int * _num_read);                              \
+int CBUFFER(_read)(CBUFFER()      _q,                                       \
+                   unsigned int   _num_requested,                           \
+                   T **           _v,                                       \
+                   unsigned int * _num_read);                               \
                                                                             \
 /* Release _n samples from the buffer                                   */  \
 /*  _q : circular buffer object                                         */  \
 /*  _n : number of elements to release                                  */  \
-void CBUFFER(_release)(CBUFFER()    _q,                                     \
-                       unsigned int _n);                                    \
+int CBUFFER(_release)(CBUFFER()    _q,                                      \
+                      unsigned int _n);                                     \
 
 // Define buffer APIs
 LIQUID_CBUFFER_DEFINE_API(LIQUID_CBUFFER_MANGLE_FLOAT,  float)
