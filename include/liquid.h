@@ -411,6 +411,9 @@ unsigned int CBUFFER(_max_read)(CBUFFER() _q);                              \
 /* Get the number of available slots (max_size - size)                  */  \
 unsigned int CBUFFER(_space_available)(CBUFFER() _q);                       \
                                                                             \
+/* Return flag indicating if the buffer is empty or not                 */  \
+int CBUFFER(_is_empty)(CBUFFER() _q);                                       \
+                                                                            \
 /* Return flag indicating if the buffer is full or not                  */  \
 int CBUFFER(_is_full)(CBUFFER() _q);                                        \
                                                                             \

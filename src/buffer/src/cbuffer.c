@@ -191,6 +191,12 @@ unsigned int CBUFFER(_space_available)(CBUFFER() _q)
     return _q->max_size - _q->num_elements;
 }
 
+// is buffer empty?
+int CBUFFER(_is_empty)(CBUFFER() _q)
+{
+    return _q->num_elements == 0;
+}
+
 // is buffer full?
 int CBUFFER(_is_full)(CBUFFER() _q)
 {

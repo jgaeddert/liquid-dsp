@@ -46,10 +46,12 @@ void autotest_cbufferf()
     // create new circular buffer with 10 elements
     cbufferf q = cbufferf_create(10);
     // cbuffer: { <empty> }
+    CONTEND_TRUE( cbufferf_is_empty(q) );
 
     // part 1: write 4 elements to the buffer
     cbufferf_write(q, v, 4);
     // cbuffer: {1 2 3 4}
+    CONTEND_FALSE( cbufferf_is_empty(q) );
 
     // part 2: try to read 4 elements
     num_requested = 4;
@@ -93,10 +95,10 @@ void autotest_cbufferf()
     CONTEND_SAME_DATA(r,test4,9*sizeof(float));
 
     // part 7: add one more element; buffer should be full
-    CONTEND_EXPRESSION( cbufferf_is_full(q)==0 );
+    CONTEND_FALSE( cbufferf_is_full(q) );
     cbufferf_push(q, 1);
     // cbuffer: {3 4 5 6 7 8 1 2 3 1}
-    CONTEND_EXPRESSION( cbufferf_is_full(q)==1 );
+    CONTEND_TRUE( cbufferf_is_full(q) );
 
     // memory leaks are evil
     cbufferf_destroy(q);
@@ -153,10 +155,12 @@ void autotest_cbuffercf()
     // create new circular buffer with 10 elements
     cbuffercf q = cbuffercf_create(10);
     // cbuffer: { <empty> }
+    CONTEND_TRUE( cbuffercf_is_empty(q) );
 
     // part 1: write 4 elements to the buffer
     cbuffercf_write(q, v, 4);
     // cbuffer: {1 2 3 4}
+    CONTEND_FALSE( cbuffercf_is_empty(q) );
 
     // part 2: try to read 4 elements
     num_requested = 4;
@@ -201,10 +205,10 @@ void autotest_cbuffercf()
     CONTEND_SAME_DATA(r,test4,9*sizeof(float complex));
 
     // part 7: add one more element; buffer should be full
-    CONTEND_EXPRESSION( cbuffercf_is_full(q)==0 );
+    CONTEND_FALSE( cbuffercf_is_full(q) );
     cbuffercf_push(q, 1.0 - 1.0 * _Complex_I);
     // cbuffer: {3 4 5 6 7 8 1 2 3 1}
-    CONTEND_EXPRESSION( cbuffercf_is_full(q)==1 );
+    CONTEND_TRUE( cbuffercf_is_full(q) );
 
     // memory leaks are evil
     cbuffercf_destroy(q);
