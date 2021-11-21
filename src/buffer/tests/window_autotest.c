@@ -98,6 +98,7 @@ void autotest_windowf()
     windowf_index(w, 7, &x);    CONTEND_EQUALITY(x, 3);
     windowf_index(w, 8, &x);    CONTEND_EQUALITY(x, 3);
     windowf_index(w, 9, &x);    CONTEND_EQUALITY(x, 3);
+    CONTEND_INEQUALITY( windowf_index(w,999, &x), LIQUID_OK); // out of range
 
     // push 4 more elements
     // 7 6 3 3 3 3 5 5 5 5
