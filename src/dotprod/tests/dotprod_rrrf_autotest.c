@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -347,18 +347,32 @@ void runtest_dotprod_rrrf(unsigned int _n)
         y_test += h[i] * x[i];
 
     // create and run dot product object
-    float y;
+    float y_struct;
     dotprod_rrrf dp;
     dp = dotprod_rrrf_create(h,_n);
-    dotprod_rrrf_execute(dp, x, &y);
+    dotprod_rrrf_execute(dp, x, &y_struct);
     dotprod_rrrf_destroy(dp);
 
-    // print results
-    if (liquid_autotest_verbose)
-        printf("  dotprod-rrrf-%-4u : %12.8f (expected %12.8f)\n", _n, y, y_test);
+    // run unstructured
+    float y_run, y_run4;
+    dotprod_rrrf_run (h,x,_n,&y_run );
+    dotprod_rrrf_run4(h,x,_n,&y_run4);
 
-    // validate result
-    CONTEND_DELTA(y, y_test, tol);
+    // print results
+    if (liquid_autotest_verbose) {
+        printf("  dotprod-rrrf-%-4u(struct) : %12.8f (expected %12.8f)\n", _n, y_struct, y_test);
+        printf("  dotprod-rrrf-%-4u(run   ) : %12.8f (expected %12.8f)\n", _n, y_run,    y_test);
+        printf("  dotprod-rrrf-%-4u(run4  ) : %12.8f (expected %12.8f)\n", _n, y_run4,   y_test);
+    }
+
+    // validate result (structured object)
+    CONTEND_DELTA(y_struct, y_test, tol);
+
+    // validate result (unstructured, run)
+    CONTEND_DELTA(y_run, y_test, tol);
+
+    // validate result (unstructured, run4)
+    CONTEND_DELTA(y_run4, y_test, tol);
 }
 
 // compare structured object to ordinal computation
