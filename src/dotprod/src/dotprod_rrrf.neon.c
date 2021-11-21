@@ -37,10 +37,10 @@
 #define DEBUG_DOTPROD_RRRF_NEON   0
 
 // basic dot product (ordinal calculation) using neon extensions
-void dotprod_rrrf_run(float *      _h,
-                      float *      _x,
-                      unsigned int _n,
-                      float *      _y)
+int dotprod_rrrf_run(float *      _h,
+                     float *      _x,
+                     unsigned int _n,
+                     float *      _y)
 {
     float32x4_t v;   // input vector
     float32x4_t h;   // coefficients vector
@@ -80,13 +80,14 @@ void dotprod_rrrf_run(float *      _h,
 
     // set return value
     *_y = total;
+    return LIQUID_OK;
 }
 
 // basic dot product (ordinal calculation) with loop unrolled, neon extensions
-void dotprod_rrrf_run4(float *      _h,
-                       float *      _x,
-                       unsigned int _n,
-                       float *      _y)
+int dotprod_rrrf_run4(float *      _h,
+                      float *      _x,
+                      unsigned int _n,
+                      float *      _y)
 {
     float32x4_t v0, v1, v2, v3;
     float32x4_t h0, h1, h2, h3;
@@ -149,6 +150,7 @@ void dotprod_rrrf_run4(float *      _h,
 
     // set return value
     *_y = total;
+    return LIQUID_OK;
 }
 
 
@@ -214,34 +216,32 @@ dotprod_rrrf dotprod_rrrf_recreate_rev(dotprod_rrrf _q,
 }
 
 // destroy dotprod object, freeing internal memory
-void dotprod_rrrf_destroy(dotprod_rrrf _q)
+int dotprod_rrrf_destroy(dotprod_rrrf _q)
 {
-    // free coefficients
     free(_q->h);
-
-    // free main object
     free(_q);
+    return LIQUID_OK;
 }
 
 // print dotprod internal state
-void dotprod_rrrf_print(dotprod_rrrf _q)
+int dotprod_rrrf_print(dotprod_rrrf _q)
 {
     printf("dotprod_rrrf [arm-neon, %u coefficients]\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("%3u : %12.9f\n", i, _q->h[i]);
+    return LIQUID_OK;
 }
 
 // execute dot product on input vector
-void dotprod_rrrf_execute(dotprod_rrrf _q,
-                          float *      _x,
-                          float *      _y)
+int dotprod_rrrf_execute(dotprod_rrrf _q,
+                         float *      _x,
+                         float *      _y)
 {
     // switch based on size
     if (_q->n < 16) {
-        dotprod_rrrf_run(_q->h, _x, _q->n, _y);
-    } else {
-        dotprod_rrrf_run4(_q->h, _x, _q->n, _y);
+        return dotprod_rrrf_run(_q->h, _x, _q->n, _y);
     }
+    return dotprod_rrrf_run4(_q->h, _x, _q->n, _y);
 }
 

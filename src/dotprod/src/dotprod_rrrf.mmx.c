@@ -53,31 +53,32 @@
 #define DEBUG_DOTPROD_RRRF_MMX   0
 
 // internal methods
-void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
+int dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
+                             float *      _x,
+                             float *      _y);
+int dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
                               float *      _x,
                               float *      _y);
-void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
-                               float *      _x,
-                               float *      _y);
 
 // basic dot product (ordinal calculation)
-void dotprod_rrrf_run(float *      _h,
-                      float *      _x,
-                      unsigned int _n,
-                      float *      _y)
+int dotprod_rrrf_run(float *      _h,
+                     float *      _x,
+                     unsigned int _n,
+                     float *      _y)
 {
     float r=0;
     unsigned int i;
     for (i=0; i<_n; i++)
         r += _h[i] * _x[i];
     *_y = r;
+    return LIQUID_OK;
 }
 
 // basic dot product (ordinal calculation) with loop unrolled
-void dotprod_rrrf_run4(float *      _h,
-                       float *      _x,
-                       unsigned int _n,
-                       float *      _y)
+int dotprod_rrrf_run4(float *      _h,
+                      float *      _x,
+                      unsigned int _n,
+                      float *      _y)
 {
     float r=0;
 
@@ -98,6 +99,7 @@ void dotprod_rrrf_run4(float *      _h,
         r += _h[i] * _x[i];
 
     *_y = r;
+    return LIQUID_OK;
 }
 
 
@@ -162,37 +164,38 @@ dotprod_rrrf dotprod_rrrf_recreate_rev(dotprod_rrrf _q,
 }
 
 
-void dotprod_rrrf_destroy(dotprod_rrrf _q)
+int dotprod_rrrf_destroy(dotprod_rrrf _q)
 {
     _mm_free(_q->h);
     free(_q);
+    return LIQUID_OK;
 }
 
-void dotprod_rrrf_print(dotprod_rrrf _q)
+int dotprod_rrrf_print(dotprod_rrrf _q)
 {
     printf("dotprod_rrrf [mmx, %u coefficients]\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("%3u : %12.9f\n", i, _q->h[i]);
+    return LIQUID_OK;
 }
 
 // 
-void dotprod_rrrf_execute(dotprod_rrrf _q,
+int dotprod_rrrf_execute(dotprod_rrrf _q,
                           float *      _x,
                           float *      _y)
 {
     // switch based on size
     if (_q->n < 16) {
-        dotprod_rrrf_execute_mmx(_q, _x, _y);
-    } else {
-        dotprod_rrrf_execute_mmx4(_q, _x, _y);
+        return dotprod_rrrf_execute_mmx(_q, _x, _y);
     }
+    return dotprod_rrrf_execute_mmx4(_q, _x, _y);
 }
 
 // use MMX/SSE extensions
-void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
-                              float *      _x,
-                              float *      _y)
+int dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
+                             float *      _x,
+                             float *      _y)
 {
     // first cut: ...
     __m128 v;   // input vector
@@ -243,12 +246,13 @@ void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
 
     // set return value
     *_y = total;
+    return LIQUID_OK;
 }
 
 // use MMX/SSE extensions, unrolled loop
-void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
-                               float *      _x,
-                               float *      _y)
+int dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
+                              float *      _x,
+                              float *      _y)
 {
     // first cut: ...
     __m128 v0, v1, v2, v3;
@@ -322,5 +326,6 @@ void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
 
     // set return value
     *_y = total;
+    return LIQUID_OK;
 }
 

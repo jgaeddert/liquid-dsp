@@ -778,10 +778,10 @@ typedef struct DOTPROD(_s) * DOTPROD();                                     \
 /*  _x      : input array [size: _n x 1]                                */  \
 /*  _n      : dotprod length, _n > 0                                    */  \
 /*  _y      : output sample pointer                                     */  \
-void DOTPROD(_run)( TC *         _v,                                        \
-                    TI *         _x,                                        \
-                    unsigned int _n,                                        \
-                    TO *         _y);                                       \
+int DOTPROD(_run)( TC *         _v,                                         \
+                   TI *         _x,                                         \
+                   unsigned int _n,                                         \
+                   TO *         _y);                                        \
                                                                             \
 /* This provides the same unoptimized operation as the 'run()' method   */  \
 /* above, but with the loop unrolled by a factor of 4. It is marginally */  \
@@ -790,10 +790,10 @@ void DOTPROD(_run)( TC *         _v,                                        \
 /*  _x      : input array [size: _n x 1]                                */  \
 /*  _n      : dotprod length, _n > 0                                    */  \
 /*  _y      : output sample pointer                                     */  \
-void DOTPROD(_run4)( TC *         _v,                                       \
-                     TI *         _x,                                       \
-                     unsigned int _n,                                       \
-                     TO *         _y);                                      \
+int DOTPROD(_run4)(TC *         _v,                                         \
+                   TI *         _x,                                         \
+                   unsigned int _n,                                         \
+                   TO *         _y);                                        \
                                                                             \
 /* Create vector dot product object                                     */  \
 /*  _v      : coefficients array [size: _n x 1]                         */  \
@@ -829,18 +829,18 @@ DOTPROD() DOTPROD(_recreate_rev)(DOTPROD()    _q,                           \
                                  unsigned int _n);                          \
                                                                             \
 /* Destroy dotprod object, freeing all internal memory                  */  \
-void DOTPROD(_destroy)(DOTPROD() _q);                                       \
+int DOTPROD(_destroy)(DOTPROD() _q);                                        \
                                                                             \
 /* Print dotprod object internals to standard output                    */  \
-void DOTPROD(_print)(DOTPROD() _q);                                         \
+int DOTPROD(_print)(DOTPROD() _q);                                          \
                                                                             \
 /* Execute dot product on an input array                                */  \
 /*  _q      : dotprod object                                            */  \
 /*  _x      : input array [size: _n x 1]                                */  \
 /*  _y      : output sample pointer                                     */  \
-void DOTPROD(_execute)(DOTPROD() _q,                                        \
-                       TI *      _x,                                        \
-                       TO *      _y);                                       \
+int DOTPROD(_execute)(DOTPROD() _q,                                         \
+                      TI *      _x,                                         \
+                      TO *      _y);                                        \
 
 LIQUID_DOTPROD_DEFINE_API(LIQUID_DOTPROD_MANGLE_RRRF,
                           float,

@@ -52,32 +52,33 @@
 #define DEBUG_DOTPROD_CCCF_MMX   0
 
 // forward declaration of internal methods
-void dotprod_cccf_execute_mmx(dotprod_cccf    _q,
+int dotprod_cccf_execute_mmx(dotprod_cccf    _q,
+                             float complex * _x,
+                             float complex * _y);
+
+int dotprod_cccf_execute_mmx4(dotprod_cccf    _q,
                               float complex * _x,
                               float complex * _y);
 
-void dotprod_cccf_execute_mmx4(dotprod_cccf    _q,
-                               float complex * _x,
-                               float complex * _y);
-
 // basic dot product (ordinal calculation)
-void dotprod_cccf_run(float complex * _h,
-                      float complex * _x,
-                      unsigned int    _n,
-                      float complex * _y)
+int dotprod_cccf_run(float complex * _h,
+                     float complex * _x,
+                     unsigned int    _n,
+                     float complex * _y)
 {
     float complex r = 0;
     unsigned int i;
     for (i=0; i<_n; i++)
         r += _h[i] * _x[i];
     *_y = r;
+    return LIQUID_OK;
 }
 
 // basic dot product (ordinal calculation) with loop unrolled
-void dotprod_cccf_run4(float complex * _h,
-                       float complex * _x,
-                       unsigned int    _n,
-                       float complex * _y)
+int dotprod_cccf_run4(float complex * _h,
+                      float complex * _x,
+                      unsigned int    _n,
+                      float complex * _y)
 {
     float complex r = 0;
 
@@ -98,6 +99,7 @@ void dotprod_cccf_run4(float complex * _h,
         r += _h[i] * _x[i];
 
     *_y = r;
+    return LIQUID_OK;
 }
 
 
@@ -171,35 +173,36 @@ dotprod_cccf dotprod_cccf_recreate_rev(dotprod_cccf    _q,
     return dotprod_cccf_create_rev(_h,_n);
 }
 
-void dotprod_cccf_destroy(dotprod_cccf _q)
+int dotprod_cccf_destroy(dotprod_cccf _q)
 {
     _mm_free(_q->hi);
     _mm_free(_q->hq);
     free(_q);
+    return LIQUID_OK;
 }
 
-void dotprod_cccf_print(dotprod_cccf _q)
+int dotprod_cccf_print(dotprod_cccf _q)
 {
     printf("dotprod_cccf [mmx, %u coefficients]\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("  %3u : %12.9f +j%12.9f\n", i, _q->hi[i], _q->hq[i]);
+    return LIQUID_OK;
 }
 
 // execute structured dot product
 //  _q      :   dotprod object
 //  _x      :   input array
 //  _y      :   output sample
-void dotprod_cccf_execute(dotprod_cccf    _q,
-                          float complex * _x,
-                          float complex * _y)
+int dotprod_cccf_execute(dotprod_cccf    _q,
+                         float complex * _x,
+                         float complex * _y)
 {
     // switch based on size
     if (_q->n < 32) {
-        dotprod_cccf_execute_mmx(_q, _x, _y);
-    } else {
-        dotprod_cccf_execute_mmx4(_q, _x, _y);
+        return dotprod_cccf_execute_mmx(_q, _x, _y);
     }
+    return dotprod_cccf_execute_mmx4(_q, _x, _y);
 }
 
 // use MMX/SSE extensions
@@ -222,9 +225,9 @@ void dotprod_cccf_execute(dotprod_cccf    _q,
 //           x[1].real * h[1].imag,
 //           x[1].imag * h[1].imag };
 //
-void dotprod_cccf_execute_mmx(dotprod_cccf    _q,
-                              float complex * _x,
-                              float complex * _y)
+int dotprod_cccf_execute_mmx(dotprod_cccf    _q,
+                             float complex * _x,
+                             float complex * _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;
@@ -312,12 +315,13 @@ void dotprod_cccf_execute_mmx(dotprod_cccf    _q,
 
     // set return value
     *_y = total;
+    return LIQUID_OK;
 }
 
 // use MMX/SSE extensions
-void dotprod_cccf_execute_mmx4(dotprod_cccf    _q,
-                               float complex * _x,
-                               float complex * _y)
+int dotprod_cccf_execute_mmx4(dotprod_cccf    _q,
+                              float complex * _x,
+                              float complex * _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;
@@ -401,5 +405,6 @@ void dotprod_cccf_execute_mmx4(dotprod_cccf    _q,
 
     // set return value
     *_y = total;
+    return LIQUID_OK;
 }
 

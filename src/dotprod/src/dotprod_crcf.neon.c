@@ -37,18 +37,18 @@
 #define DEBUG_DOTPROD_CRCF_NEON   0
 
 // forward declaration of internal methods
-void dotprod_crcf_execute_neon(dotprod_crcf    _q,
+int dotprod_crcf_execute_neon(dotprod_crcf    _q,
+                              float complex * _x,
+                              float complex * _y);
+int dotprod_crcf_execute_neon4(dotprod_crcf    _q,
                                float complex * _x,
                                float complex * _y);
-void dotprod_crcf_execute_neon4(dotprod_crcf    _q,
-                                float complex * _x,
-                                float complex * _y);
 
 // basic dot product (ordinal calculation) using neon extensions
-void dotprod_crcf_run(float *         _h,
-                      float complex * _x,
-                      unsigned int    _n,
-                      float complex * _y)
+int dotprod_crcf_run(float *         _h,
+                     float complex * _x,
+                     unsigned int    _n,
+                     float complex * _y)
 {
     // initialize accumulator
     float complex r=0;
@@ -59,14 +59,15 @@ void dotprod_crcf_run(float *         _h,
 
     // return result
     *_y = r;
+    return LIQUID_OK;
 }
 
 
 // basic dot product (ordinal calculation) with loop unrolled
-void dotprod_crcf_run4(float *         _h,
-                       float complex * _x,
-                       unsigned int    _n,
-                       float complex * _y)
+int dotprod_crcf_run4(float *         _h,
+                      float complex * _x,
+                      unsigned int    _n,
+                      float complex * _y)
 {
     float complex r = 0;
 
@@ -87,6 +88,7 @@ void dotprod_crcf_run4(float *         _h,
         r += _h[i] * _x[i];
 
     *_y = r;
+    return LIQUID_OK;
 }
 
 
@@ -155,16 +157,14 @@ dotprod_crcf dotprod_crcf_recreate_rev(dotprod_crcf _q,
 }
 
 
-void dotprod_crcf_destroy(dotprod_crcf _q)
+int dotprod_crcf_destroy(dotprod_crcf _q)
 {
-    // free coefficients array
     free(_q->h);
-
-    // free main memory
     free(_q);
+    return LIQUID_OK;
 }
 
-void dotprod_crcf_print(dotprod_crcf _q)
+int dotprod_crcf_print(dotprod_crcf _q)
 {
     // print coefficients to screen, skipping odd entries (due
     // to repeated coefficients)
@@ -172,25 +172,25 @@ void dotprod_crcf_print(dotprod_crcf _q)
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("  %3u : %12.9f\n", i, _q->h[2*i]);
+    return LIQUID_OK;
 }
 
 // 
-void dotprod_crcf_execute(dotprod_crcf    _q,
-                          float complex * _x,
-                          float complex * _y)
+int dotprod_crcf_execute(dotprod_crcf    _q,
+                         float complex * _x,
+                         float complex * _y)
 {
     // switch based on size
     if (_q->n < 32) {
-        dotprod_crcf_execute_neon(_q, _x, _y);
-    } else {
-        dotprod_crcf_execute_neon4(_q, _x, _y);
+        return dotprod_crcf_execute_neon(_q, _x, _y);
     }
+    return dotprod_crcf_execute_neon4(_q, _x, _y);
 }
 
 // use ARM Neon extensions
-void dotprod_crcf_execute_neon(dotprod_crcf    _q,
-                               float complex * _x,
-                               float complex * _y)
+int dotprod_crcf_execute_neon(dotprod_crcf    _q,
+                              float complex * _x,
+                              float complex * _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;
@@ -242,12 +242,13 @@ void dotprod_crcf_execute_neon(dotprod_crcf    _q,
 
     // set return value
     *_y = w[0] + _Complex_I*w[1];
+    return LIQUID_OK;
 }
 
 // use ARM Neon extensions
-void dotprod_crcf_execute_neon4(dotprod_crcf    _q,
-                                float complex * _x,
-                                float complex * _y)
+int dotprod_crcf_execute_neon4(dotprod_crcf    _q,
+                               float complex * _x,
+                               float complex * _y)
 {
 #if 1
     // type cast input as floating point array
@@ -323,5 +324,6 @@ void dotprod_crcf_execute_neon4(dotprod_crcf    _q,
 #else
     dotprod_crcf_execute_neon(_q, _x, _y);
 #endif
+    return LIQUID_OK;
 }
 

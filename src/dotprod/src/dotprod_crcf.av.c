@@ -38,16 +38,17 @@
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void dotprod_crcf_run(float *         _h,
-                      float complex * _x,
-                      unsigned int    _n,
-                      float complex * _y)
+int dotprod_crcf_run(float *         _h,
+                     float complex * _x,
+                     unsigned int    _n,
+                     float complex * _y)
 {
     float complex r=0;
     unsigned int i;
     for (i=0; i<_n; i++)
         r += _h[i] * _x[i];
     *_y = r;
+    return LIQUID_OK;
 }
 
 // basic dot product, unrolling loop
@@ -55,10 +56,10 @@ void dotprod_crcf_run(float *         _h,
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void dotprod_crcf_run4(float *         _h,
-                       float complex * _x,
-                       unsigned int    _n,
-                       float complex * _y)
+int dotprod_crcf_run4(float *         _h,
+                      float complex * _x,
+                      unsigned int    _n,
+                      float complex * _y)
 {
     float complex r=0;
 
@@ -79,6 +80,7 @@ void dotprod_crcf_run4(float *         _h,
         r += _h[i] * _x[i];
 
     *_y = r;
+    return LIQUID_OK;
 }
 
 
@@ -159,7 +161,7 @@ dotprod_crcf dotprod_crcf_recreate_rev(dotprod_crcf _q,
 }
 
 // destroy the structured dotprod object
-void dotprod_crcf_destroy(dotprod_crcf _q)
+int dotprod_crcf_destroy(dotprod_crcf _q)
 {
     // clean up coefficients arrays
     unsigned int i;
@@ -168,21 +170,23 @@ void dotprod_crcf_destroy(dotprod_crcf _q)
 
     // free allocated object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print the dotprod object
-void dotprod_crcf_print(dotprod_crcf _q)
+int dotprod_crcf_print(dotprod_crcf _q)
 {
     printf("dotprod_crcf [altivec, %u coefficients]:\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("  %3u : %12.9f\n", i, _q->h[0][2*i]);
+    return LIQUID_OK;
 }
 
 // exectue vectorized structured inner dot product
-void dotprod_crcf_execute(dotprod_crcf    _q,
-                          float complex * _x,
-                          float complex * _r)
+int dotprod_crcf_execute(dotprod_crcf    _q,
+                         float complex * _x,
+                         float complex * _r)
 {
     int al; // input data alignment
 
@@ -228,5 +232,6 @@ void dotprod_crcf_execute(dotprod_crcf    _q,
     // sum the resulting array
     //*_r = s.w[0] + s.w[1] + s.w[2] + s.w[3];
     *_r = (s.w[0] + s.w[2]) + (s.w[1] + s.w[3]) * _Complex_I;
+    return LIQUID_OK;
 }
 
