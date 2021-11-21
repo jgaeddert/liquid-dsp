@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -84,17 +84,18 @@ WDELAY() WDELAY(_recreate)(WDELAY()     _q,
 }
 
 // destroy delay buffer object, freeing internal memory
-void WDELAY(_destroy)(WDELAY() _q)
+int WDELAY(_destroy)(WDELAY() _q)
 {
     // free internal array buffer
     free(_q->v);
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print delay buffer object's state to stdout
-void WDELAY(_print)(WDELAY() _q)
+int WDELAY(_print)(WDELAY() _q)
 {
     printf("wdelay [%u elements] :\n", _q->delay+1);
     unsigned int i, j;
@@ -104,30 +105,33 @@ void WDELAY(_print)(WDELAY() _q)
         BUFFER_PRINT_VALUE(_q->v[j]);
         printf("\n");
     }
+    return LIQUID_OK;
 }
 
 // clear/reset state of object
-void WDELAY(_reset)(WDELAY() _q)
+int WDELAY(_reset)(WDELAY() _q)
 {
     _q->read_index = 0;
     memset(_q->v, 0, (_q->delay+1)*sizeof(T));
+    return LIQUID_OK;
 }
 
 // read delayed sample from delay buffer object
 //  _q  :   delay buffer object
 //  _v  :   value of delayed element
-void WDELAY(_read)(WDELAY() _q,
-                   T *      _v)
+int WDELAY(_read)(WDELAY() _q,
+                  T *      _v)
 {
     // return value at end of buffer
     *_v = _q->v[_q->read_index];
+    return LIQUID_OK;
 }
 
 // push new sample into delay buffer object
 //  _q  :   delay buffer object
 //  _v  :   new value to be added to buffer
-void WDELAY(_push)(WDELAY() _q,
-                   T        _v)
+int WDELAY(_push)(WDELAY() _q,
+                  T        _v)
 {
     // append value to end of buffer
     _q->v[_q->read_index] = _v;
@@ -137,5 +141,6 @@ void WDELAY(_push)(WDELAY() _q,
 
     // wrap around pointer
     _q->read_index %= (_q->delay+1);
+    return LIQUID_OK;
 }
 

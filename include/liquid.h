@@ -577,26 +577,26 @@ WDELAY() WDELAY(_recreate)(WDELAY()     _q,                                 \
                            unsigned int _delay);                            \
                                                                             \
 /* Destroy delay buffer object, freeing internal memory                 */  \
-void WDELAY(_destroy)(WDELAY() _q);                                         \
+int WDELAY(_destroy)(WDELAY() _q);                                          \
                                                                             \
 /* Print delay buffer object's state to stdout                          */  \
-void WDELAY(_print)(WDELAY() _q);                                           \
+int WDELAY(_print)(WDELAY() _q);                                            \
                                                                             \
 /* Clear/reset state of object                                          */  \
-void WDELAY(_reset)(WDELAY() _q);                                           \
+int WDELAY(_reset)(WDELAY() _q);                                            \
                                                                             \
 /* Read delayed sample at the head of the buffer and store it to the    */  \
 /* output pointer                                                       */  \
 /*  _q  :   delay buffer object                                         */  \
 /*  _v  :   value of delayed element                                    */  \
-void WDELAY(_read)(WDELAY() _q,                                             \
-                   T *      _v);                                            \
+int WDELAY(_read)(WDELAY() _q,                                              \
+                  T *      _v);                                             \
                                                                             \
 /* Push new sample into delay buffer object                             */  \
 /*  _q  :   delay buffer object                                         */  \
 /*  _v  :   new value to be added to buffer                             */  \
-void WDELAY(_push)(WDELAY() _q,                                             \
-                   T        _v);                                            \
+int WDELAY(_push)(WDELAY() _q,                                              \
+                  T        _v);                                             \
 
 // Define wdelay APIs
 LIQUID_WDELAY_DEFINE_API(LIQUID_WDELAY_MANGLE_FLOAT,  float)
