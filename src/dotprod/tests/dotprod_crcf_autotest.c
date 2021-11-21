@@ -71,6 +71,12 @@ void autotest_dotprod_crcf_rand01()
     CONTEND_DELTA( crealf(y), crealf(test_rev), tol);
     CONTEND_DELTA( cimagf(y), cimagf(test_rev), tol);
 
+    // create original again
+    q = dotprod_crcf_recreate(q,h,16);
+    dotprod_crcf_execute(q,x,&y);
+    CONTEND_DELTA( crealf(y), crealf(test), tol);
+    CONTEND_DELTA( cimagf(y), cimagf(test), tol);
+
     // clean it up
     dotprod_crcf_destroy(q);
 }

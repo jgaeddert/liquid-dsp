@@ -263,6 +263,11 @@ void autotest_dotprod_rrrf_rand02()
     dotprod_rrrf_execute(q,x,&y);
     CONTEND_DELTA(y,test_rev,tol);
 
+    // create original again
+    q = dotprod_rrrf_recreate(q,h,16);
+    dotprod_rrrf_execute(q,x,&y);
+    CONTEND_DELTA(y,test,tol);
+
     // clean it up
     dotprod_rrrf_destroy(q);
 }
