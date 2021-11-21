@@ -245,12 +245,26 @@ void autotest_dotprod_rrrf_rand02()
     -0.144000, -1.435200, -0.893420,  1.657800
     };
 
-    float test = -8.17832326680587;
+    float test     = -8.17832326680587;
+    float test_rev =  4.56839328512000;
     float tol = 1e-3f;
     float y;
 
     dotprod_rrrf_run(h,x,16,&y);
     CONTEND_DELTA(y,test,tol);
+
+    // create object
+    dotprod_rrrf q = dotprod_rrrf_create(h,16);
+    dotprod_rrrf_execute(q,x,&y);
+    CONTEND_DELTA(y,test,tol);
+
+    // test running in reverse
+    q = dotprod_rrrf_recreate_rev(q,h,16);
+    dotprod_rrrf_execute(q,x,&y);
+    CONTEND_DELTA(y,test_rev,tol);
+
+    // clean it up
+    dotprod_rrrf_destroy(q);
 }
 
 // 

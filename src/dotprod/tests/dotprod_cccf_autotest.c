@@ -55,7 +55,8 @@ void autotest_dotprod_cccf_rand16()
     };
 
     float complex y;
-    float complex test = -0.604285042605890 - 12.390925785344704 * _Complex_I;
+    float complex test     = -0.604285042605890 - 12.390925785344704 * _Complex_I;
+    float complex test_rev =  3.412365881765360 + 6.1885320363931480 * _Complex_I;
 
     float tol = 1e-3f;
 
@@ -72,6 +73,14 @@ void autotest_dotprod_cccf_rand16()
     dotprod_cccf_execute(q,x,&y);
     CONTEND_DELTA( crealf(y), crealf(test), tol);
     CONTEND_DELTA( cimagf(y), cimagf(test), tol);
+
+    // test running in reverse
+    q = dotprod_cccf_recreate_rev(q,h,16);
+    dotprod_cccf_execute(q,x,&y);
+    CONTEND_DELTA( crealf(y), crealf(test_rev), tol);
+    CONTEND_DELTA( cimagf(y), cimagf(test_rev), tol);
+
+    // clean it up
     dotprod_cccf_destroy(q);
 }
 

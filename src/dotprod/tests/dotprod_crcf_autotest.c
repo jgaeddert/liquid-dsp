@@ -47,7 +47,8 @@ void autotest_dotprod_crcf_rand01()
     };
 
     float complex y;
-    float complex test = -3.35346556487224 + 11.78023318618137*_Complex_I;
+    float complex test     = -3.35346556487224 + 11.78023318618137*_Complex_I;
+    float complex test_rev =  3.655541203500000 + 4.26531912591000*_Complex_I;
     float tol = 1e-3f;
 
     dotprod_crcf_run(h,x,16,&y);
@@ -63,10 +64,16 @@ void autotest_dotprod_crcf_rand01()
     dotprod_crcf_execute(q,x,&y);
     CONTEND_DELTA( crealf(y), crealf(test), tol);
     CONTEND_DELTA( cimagf(y), cimagf(test), tol);
+
+    // test running in reverse
+    q = dotprod_crcf_recreate_rev(q,h,16);
+    dotprod_crcf_execute(q,x,&y);
+    CONTEND_DELTA( crealf(y), crealf(test_rev), tol);
+    CONTEND_DELTA( cimagf(y), cimagf(test_rev), tol);
+
+    // clean it up
     dotprod_crcf_destroy(q);
 }
-
-
 
 // 
 // AUTOTEST: dot product with floating-point data
