@@ -282,13 +282,18 @@ float SYMTRACK(_get_bandwidth)(SYMTRACK() _q)
     return _q->bw;
 }
 
+// adjust internal nco by requested frequency
+int SYMTRACK(_adjust_frequency)(SYMTRACK() _q,
+                                T          _dphi)
+{
+    return NCO(_adjust_frequency)(_q->nco, _dphi);
+}
+
 // adjust internal nco by requested phase
 int SYMTRACK(_adjust_phase)(SYMTRACK() _q,
-                            T          _dphi)
+                            T          _phi)
 {
-    // adjust internal nco phase
-    NCO(_adjust_phase)(_q->nco, _dphi);
-    return LIQUID_OK;
+    return NCO(_adjust_phase)(_q->nco, _phi);
 }
 
 // set equalization strategy to constant modulus (default)

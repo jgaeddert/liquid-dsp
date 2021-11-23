@@ -6289,11 +6289,17 @@ float SYMTRACK(_get_bandwidth)(SYMTRACK() _q);                              \
 int SYMTRACK(_set_bandwidth)(SYMTRACK() _q,                                 \
                              float _bw);                                    \
                                                                             \
-/* Adjust internal NCO by requested phase                               */  \
+/* Adjust internal NCO by requested frequency                           */  \
 /*  _q      : symtrack object                                           */  \
 /*  _dphi   : NCO phase adjustment [radians]                            */  \
+int SYMTRACK(_adjust_frequency)(SYMTRACK() _q,                              \
+                                T          _dphi);                          \
+                                                                            \
+/* Adjust internal NCO by requested phase                               */  \
+/*  _q      : symtrack object                                           */  \
+/*  _phi    : NCO phase adjustment [radians]                            */  \
 int SYMTRACK(_adjust_phase)(SYMTRACK() _q,                                  \
-                            T          _dphi);                              \
+                            T          _phi);                               \
                                                                             \
 /* Set symtrack equalization strategy to constant modulus (default)     */  \
 int SYMTRACK(_set_eq_cm)(SYMTRACK() _q);                                    \
