@@ -388,8 +388,8 @@ void execute_benchmark(benchmark_t* _benchmark, int _verbose)
     } while (1);
 
     _benchmark->num_trials = num_trials;
-    _benchmark->rate = (float)(_benchmark->num_trials) / _benchmark->extime;
-    _benchmark->cycles_per_trial = cpu_clock / (_benchmark->rate);
+    _benchmark->rate = _benchmark->extime==0 ? 0 : (float)(_benchmark->num_trials) / _benchmark->extime;
+    _benchmark->cycles_per_trial = _benchmark->extime==0 ? 0 : cpu_clock / (_benchmark->rate);
 
     if (_verbose)
         print_benchmark_results(_benchmark);
