@@ -42,6 +42,9 @@ class symtrack : public object
     //int get_mod_scheme()  const  { return symtrack_cccf_get_mod_scheme(q); }
     //void set_mod_scheme(int _ms) { symtrack_cccf_set_mod_scheme(q, _ms);   }
 
+    void adjust_nco_phase(float _phi) { symtrack_cccf_adjust_phase(q, _phi); }
+    void adjust_nco_frequency(float _dphi) { symtrack_cccf_adjust_frequency(q, _dphi); }
+
     // run on single sample
     void execute(std::complex<float> _x, std::complex<float> * _y, unsigned int * _nw)
         { symtrack_cccf_execute(q, _x, _y, _nw); }
@@ -127,6 +130,14 @@ void init_symtrack(py::module &m)
             &symtrack::py_execute,
             "run syncrhonization on a block of samples",
             py::arg("n")=256)
+        .def("adjust_nco_phase",
+            &symtrack::adjust_nco_phase,
+            "adjust internal NCO phase (radians)",
+            py::arg("phi")=0)
+        .def("adjust_nco_frequency",
+            &symtrack::adjust_nco_frequency,
+            "adjust internal NCO frequency (radians/sample)",
+            py::arg("dphi")=0)
         /*
         .def_property("mod_scheme",
             &symtrack::get_mod_scheme,
