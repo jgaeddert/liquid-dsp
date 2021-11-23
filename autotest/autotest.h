@@ -74,6 +74,18 @@ void liquid_autotest_failed_expr(const char * _file,
                                  const char * _exprR,
                                  double _valueR);
 
+// fail test, given true/false value
+//  _file       :   filename (string)
+//  _line       :   line number of test
+//  _exprL      :   left side of expression (string)
+//  _valueL     :   left side of expression (value)
+//  _qualifier  :   expression qualifier
+void liquid_autotest_failed_bool(const char * _file,
+                                 unsigned int _line,
+                                 const char * _exprL,
+                                 double       _valueL,
+                                 int          _qualifier);
+
 // fail test with message
 //  _file       :   filename (string)
 //  _line       :   line number of test
@@ -118,6 +130,32 @@ void liquid_autotest_print_array(unsigned char * _x,
 
 // Compute isnan on (possibly) complex number
 #define LIQUID_AUTOTEST_ISNAN(V) (isnan(crealf(V)) || isnan(cimagf(V)))
+
+// CONTEND_TRUE
+#define TEST_TRUE(F,L,EX,X)                                         \
+{                                                                   \
+    if (!(X))                                                       \
+    {                                                               \
+        liquid_autotest_failed_bool(F,L,EX,X,1);                    \
+    } else {                                                        \
+         liquid_autotest_passed();                                  \
+    }                                                               \
+}
+#define CONTEND_TRUE_FL(F,L,X) TEST_TRUE(F,L,#X,(X))
+#define CONTEND_TRUE(X)        CONTEND_TRUE_FL(__FILE__,__LINE__,X)
+
+// CONTEND_FALSE
+#define TEST_FALSE(F,L,EX,X)                                        \
+{                                                                   \
+    if ((X))                                                        \
+    {                                                               \
+        liquid_autotest_failed_bool(F,L,EX,X,0);                    \
+    } else {                                                        \
+         liquid_autotest_passed();                                  \
+    }                                                               \
+}
+#define CONTEND_FALSE_FL(F,L,X) TEST_FALSE(F,L,#X,(X))
+#define CONTEND_FALSE(X)        CONTEND_FALSE_FL(__FILE__,__LINE__,X)
 
 // CONTEND_EQUALITY
 #define TEST_EQUALITY(F,L,EX,X,EY,Y)                                \

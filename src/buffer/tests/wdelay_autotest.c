@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -80,6 +80,8 @@ void autotest_wdelayf()
     }
     // wdelay: 1 1 1 2 3 4
     CONTEND_SAME_DATA(y2, y2_test, 10*sizeof(float));
+
+    CONTEND_EQUALITY(wdelayf_print(w), LIQUID_OK);
 
     // destroy object
     wdelayf_destroy(w);

@@ -38,16 +38,17 @@
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void dotprod_rrrf_run(float *      _h,
-                      float *      _x,
-                      unsigned int _n,
-                      float *      _y)
+int dotprod_rrrf_run(float *      _h,
+                     float *      _x,
+                     unsigned int _n,
+                     float *      _y)
 {
     float r=0;
     unsigned int i;
     for (i=0; i<_n; i++)
         r += _h[i] * _x[i];
     *_y = r;
+    return LIQUID_OK;
 }
 
 // basic dot product, unrolling loop
@@ -55,10 +56,10 @@ void dotprod_rrrf_run(float *      _h,
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void dotprod_rrrf_run4(float *      _h,
-                       float *      _x,
-                       unsigned int _n,
-                       float *      _y)
+int dotprod_rrrf_run4(float *      _h,
+                      float *      _x,
+                      unsigned int _n,
+                      float *      _y)
 {
     float r=0;
 
@@ -79,6 +80,7 @@ void dotprod_rrrf_run4(float *      _h,
         r += _h[i] * _x[i];
 
     *_y = r;
+    return LIQUID_OK;
 }
 
 
@@ -154,7 +156,7 @@ dotprod_rrrf dotprod_rrrf_recreate_rev(dotprod_rrrf _q,
 }
 
 // destroy the structured dotprod object
-void dotprod_rrrf_destroy(dotprod_rrrf _q)
+int dotprod_rrrf_destroy(dotprod_rrrf _q)
 {
     // clean up coefficients arrays
     unsigned int i;
@@ -163,21 +165,23 @@ void dotprod_rrrf_destroy(dotprod_rrrf _q)
 
     // free allocated object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print the dotprod object
-void dotprod_rrrf_print(dotprod_rrrf _q)
+int dotprod_rrrf_print(dotprod_rrrf _q)
 {
     printf("dotprod_rrrf [altivec, %u coefficients]:\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("  %3u : %12.9f\n", i, _q->h[0][i]);
+    return LIQUID_OK;
 }
 
 // exectue vectorized structured inner dot product
-void dotprod_rrrf_execute(dotprod_rrrf _q,
-                          float *      _x,
-                          float *      _r)
+int dotprod_rrrf_execute(dotprod_rrrf _q,
+                         float *      _x,
+                         float *      _r)
 {
     int al; // input data alignment
 
@@ -221,5 +225,6 @@ void dotprod_rrrf_execute(dotprod_rrrf _q,
 
     // sum the resulting array
     *_r = s.w[0] + s.w[1] + s.w[2] + s.w[3];
+    return LIQUID_OK;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,10 +46,12 @@ void autotest_cbufferf()
     // create new circular buffer with 10 elements
     cbufferf q = cbufferf_create(10);
     // cbuffer: { <empty> }
+    CONTEND_TRUE( cbufferf_is_empty(q) );
 
     // part 1: write 4 elements to the buffer
     cbufferf_write(q, v, 4);
     // cbuffer: {1 2 3 4}
+    CONTEND_FALSE( cbufferf_is_empty(q) );
 
     // part 2: try to read 4 elements
     num_requested = 4;
@@ -93,10 +95,10 @@ void autotest_cbufferf()
     CONTEND_SAME_DATA(r,test4,9*sizeof(float));
 
     // part 7: add one more element; buffer should be full
-    CONTEND_EXPRESSION( cbufferf_is_full(q)==0 );
+    CONTEND_FALSE( cbufferf_is_full(q) );
     cbufferf_push(q, 1);
     // cbuffer: {3 4 5 6 7 8 1 2 3 1}
-    CONTEND_EXPRESSION( cbufferf_is_full(q)==1 );
+    CONTEND_TRUE( cbufferf_is_full(q) );
 
     // memory leaks are evil
     cbufferf_destroy(q);
@@ -153,10 +155,12 @@ void autotest_cbuffercf()
     // create new circular buffer with 10 elements
     cbuffercf q = cbuffercf_create(10);
     // cbuffer: { <empty> }
+    CONTEND_TRUE( cbuffercf_is_empty(q) );
 
     // part 1: write 4 elements to the buffer
     cbuffercf_write(q, v, 4);
     // cbuffer: {1 2 3 4}
+    CONTEND_FALSE( cbuffercf_is_empty(q) );
 
     // part 2: try to read 4 elements
     num_requested = 4;
@@ -201,10 +205,10 @@ void autotest_cbuffercf()
     CONTEND_SAME_DATA(r,test4,9*sizeof(float complex));
 
     // part 7: add one more element; buffer should be full
-    CONTEND_EXPRESSION( cbuffercf_is_full(q)==0 );
+    CONTEND_FALSE( cbuffercf_is_full(q) );
     cbuffercf_push(q, 1.0 - 1.0 * _Complex_I);
     // cbuffer: {3 4 5 6 7 8 1 2 3 1}
-    CONTEND_EXPRESSION( cbuffercf_is_full(q)==1 );
+    CONTEND_TRUE( cbuffercf_is_full(q) );
 
     // memory leaks are evil
     cbuffercf_destroy(q);
@@ -291,4 +295,40 @@ void autotest_cbufferf_flow()
     cbufferf_destroy(q);
 }
 
+// test invalid configurations, etc.
+void autotest_cbufferf_config()
+{
+    // options
+    unsigned int max_size = 48; // maximum number of elements in buffer
+    unsigned int max_read = 17; // maximum number of elements to read
+    float        value;
+
+    // create new circular buffer
+    cbufferf q = cbufferf_create_max(max_size, max_read);
+
+    // ensure test was successful
+    CONTEND_EQUALITY(cbufferf_max_size(q), max_size);
+    CONTEND_EQUALITY(cbufferf_max_read(q), max_read);
+
+    // fill buffer with zeros
+    while (cbufferf_space_available(q))
+        CONTEND_EQUALITY(cbufferf_push(q,0), LIQUID_OK);
+
+    // ensure no errors with printing
+    CONTEND_EQUALITY(cbufferf_print(q),       LIQUID_OK);
+    CONTEND_EQUALITY(cbufferf_debug_print(q), LIQUID_OK);
+
+    // buffer full; cannot write more
+    CONTEND_INEQUALITY(cbufferf_push(q,0), LIQUID_OK);
+
+    // reset
+    cbufferf_reset(q);
+
+    // buffer empty; cannot pop element or release any values
+    CONTEND_INEQUALITY(cbufferf_pop    (q,&value), LIQUID_OK);
+    CONTEND_INEQUALITY(cbufferf_release(q,1),      LIQUID_OK);
+
+    // destroy object
+    cbufferf_destroy(q);
+}
 

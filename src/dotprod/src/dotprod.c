@@ -39,10 +39,10 @@ struct DOTPROD(_s) {
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void DOTPROD(_run)(TC *         _h,
-                   TI *         _x,
-                   unsigned int _n,
-                   TO *         _y)
+int DOTPROD(_run)(TC *         _h,
+                  TI *         _x,
+                  unsigned int _n,
+                  TO *         _y)
 {
     // initialize accumulator
     TO r=0;
@@ -53,6 +53,7 @@ void DOTPROD(_run)(TC *         _h,
 
     // return result
     *_y = r;
+    return LIQUID_OK;
 }
 
 // basic dotproduct, unrolling loop
@@ -60,10 +61,10 @@ void DOTPROD(_run)(TC *         _h,
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void DOTPROD(_run4)(TC *         _h,
-                    TI *         _x,
-                    unsigned int _n,
-                    TO *         _y)
+int DOTPROD(_run4)(TC *         _h,
+                   TI *         _x,
+                   unsigned int _n,
+                   TO *         _y)
 {
     // initialize accumulator
     TO r=0;
@@ -86,6 +87,7 @@ void DOTPROD(_run4)(TC *         _h,
 
     // return result
     *_y = r;
+    return LIQUID_OK;
 }
 
 //
@@ -183,14 +185,15 @@ DOTPROD() DOTPROD(_recreate_rev)(DOTPROD()    _q,
 }
 
 // destroy dot product object
-void DOTPROD(_destroy)(DOTPROD() _q)
+int DOTPROD(_destroy)(DOTPROD() _q)
 {
     free(_q->h);    // free coefficients memory
     free(_q);       // free main object memory
+    return LIQUID_OK;
 }
 
 // print dot product object
-void DOTPROD(_print)(DOTPROD() _q)
+int DOTPROD(_print)(DOTPROD() _q)
 {
     printf("dotprod [portable, %u coefficients]:\n", _q->n);
     unsigned int i;
@@ -201,17 +204,19 @@ void DOTPROD(_print)(DOTPROD() _q)
         printf("  %4u: %12.8f + j*%12.8f\n", i, crealf(_q->h[i]), cimagf(_q->h[i]));
 #endif
     }
+    return LIQUID_OK;
 }
 
 // execute structured dot product
 //  _q      :   dot product object
 //  _x      :   input array [size: 1 x _n]
 //  _y      :   output dot product
-void DOTPROD(_execute)(DOTPROD() _q,
-                       TI *      _x,
-                       TO *      _y)
+int DOTPROD(_execute)(DOTPROD() _q,
+                      TI *      _x,
+                      TO *      _y)
 {
     // run basic dot product with unrolled loops
     DOTPROD(_run4)(_q->h, _x, _q->n, _y);
+    return LIQUID_OK;
 }
 

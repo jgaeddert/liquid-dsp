@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -81,6 +81,25 @@ void liquid_autotest_failed_expr(const char * _file,
     if (liquid_autotest_verbose) {
         printf("  TEST FAILED: %s line %u : expected %s (%0.2E) %s %s (%0.2E)\n",
                 _file, _line, _exprL, _valueL, _qualifier, _exprR, _valueR);
+    }
+    liquid_autotest_failed();
+}
+
+// fail test, given true/false value
+//  _file       :   filename (string)
+//  _line       :   line number of test
+//  _exprL      :   left side of expression (string)
+//  _valueL     :   left side of expression (value)
+//  _qualifier  :   expression qualifier
+void liquid_autotest_failed_bool(const char * _file,
+                                 unsigned int _line,
+                                 const char * _exprL,
+                                 double       _valueL,
+                                 int          _qualifier)
+{
+    if (liquid_autotest_verbose) {
+        printf("  TEST FAILED: %s line %u : expected \"%s\" (%g) is %s\n",
+                _file, _line, _exprL, _valueL, _qualifier ? "true" : "false");
     }
     liquid_autotest_failed();
 }

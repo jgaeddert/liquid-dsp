@@ -39,6 +39,7 @@ AC_LANG(C)
 # Autoheader
 AH_TEMPLATE([LIQUID_FFTOVERRIDE],  [Force internal FFT even if libfftw is available])
 AH_TEMPLATE([LIQUID_SIMDOVERRIDE], [Force overriding of SIMD (use portable C code)])
+AH_TEMPLATE([LIQUID_SUPPRESS_ERROR_OUTPUT],[Suppress printing errors to stderr])
 AH_TEMPLATE([LIQUID_STRICT_EXIT],  [Enable strict program exit on error])
 
 AC_CONFIG_HEADERS([config.h])
@@ -79,6 +80,12 @@ AC_ARG_ENABLE(coverage,
               [AC_MSG_ERROR(Need gcovr with coverage option)],
               [COVERAGE_OPTION="--coverage"])],
     [COVERAGE_OPTION=""]
+)
+
+AC_ARG_ENABLE(suppress-errors,
+    AS_HELP_STRING([--enable-suppress-errors],[suppress printing errors to stderr]),
+    [AC_DEFINE(LIQUID_SUPPRESS_ERROR_OUTPUT)],
+    [],
 )
 
 AC_ARG_ENABLE(strict,
@@ -206,7 +213,7 @@ else
                        src/dotprod/src/dotprod_rrrf.o \
                        src/dotprod/src/sumsq.o"
         ARCH_OPTION="-ffast-math";;
-    armv7*|armv8*)
+    arm|armv7*|armv8*)
         # assume neon instructions are available
         # TODO: check for Neon availability
 
@@ -215,9 +222,15 @@ else
                        src/dotprod/src/dotprod_crcf.neon.o \
                        src/dotprod/src/dotprod_rrrf.neon.o \
                        src/dotprod/src/sumsq.o"
-        # TODO: check these flags
-        #ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
-        ARCH_OPTION="-ffast-math -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4";;
+        case $target_os in
+        darwin*)
+            # M1 mac, ARM architecture : use neon extensions
+            ARCH_OPTION="-ffast-math";;
+        *)
+            # TODO: check these flags
+            #ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
+            ARCH_OPTION="-ffast-math -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4";;
+        esac;;
     *)
         # unknown architecture : use portable C version
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \

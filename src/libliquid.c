@@ -45,6 +45,7 @@ int liquid_error_fl(int          _code,
                     const char * _format,
                     ...)
 {
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
     va_list argptr;
     va_start(argptr, _format);
     fprintf(stderr,"error [%d]: %s\n", _code, liquid_error_info(_code));
@@ -52,6 +53,7 @@ int liquid_error_fl(int          _code,
     vfprintf(stderr, _format, argptr);
     fprintf(stderr,"\n");
     va_end(argptr);
+#endif
 #if LIQUID_STRICT_EXIT
     exit(_code);
 #endif
@@ -65,6 +67,7 @@ void * liquid_error_config_fl(const char * _file,
                               ...)
 {
     int code = LIQUID_EICONFIG;
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
     va_list argptr;
     va_start(argptr, _format);
     fprintf(stderr,"error [%d]: %s\n", code, liquid_error_info(code));
@@ -72,6 +75,7 @@ void * liquid_error_config_fl(const char * _file,
     vfprintf(stderr, _format, argptr);
     fprintf(stderr,"\n");
     va_end(argptr);
+#endif
 #if LIQUID_STRICT_EXIT
     exit(code);
 #endif

@@ -80,6 +80,7 @@ coverage:
     - ./bootstrap.sh
     - ./configure --enable-coverage
     - make -j4 coverage
+    - bash <(curl -s https://codecov.io/bash)
   coverage: '/lines: \d+\.\d+%/'
   artifacts:
     paths: [coverage.out]

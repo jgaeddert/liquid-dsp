@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 #include "liquid.internal.h"
 
 // linearize buffer (if necessary)
-void CBUFFER(_linearize)(CBUFFER() _q);
+int CBUFFER(_linearize)(CBUFFER() _q);
 
 // cbuffer object
 struct CBUFFER(_s) {
@@ -94,17 +94,15 @@ CBUFFER() CBUFFER(_create_max)(unsigned int _max_size,
 }
 
 // destroy cbuffer object, freeing all internal memory
-void CBUFFER(_destroy)(CBUFFER() _q)
+int CBUFFER(_destroy)(CBUFFER() _q)
 {
-    // free internal memory
     free(_q->v);
-
-    // free main object
     free(_q);
+    return LIQUID_OK;
 }
 
 // print cbuffer object properties
-void CBUFFER(_print)(CBUFFER() _q)
+int CBUFFER(_print)(CBUFFER() _q)
 {
     printf("cbuffer%s [max size: %u, max read: %u, elements: %u]\n",
             EXTENSION,
@@ -118,10 +116,11 @@ void CBUFFER(_print)(CBUFFER() _q)
         BUFFER_PRINT_LINE(_q,(_q->read_index+i)%(_q->max_size))
         printf("\n");
     }
+    return LIQUID_OK;
 }
 
 // print cbuffer object properties and internal state
-void CBUFFER(_debug_print)(CBUFFER() _q)
+int CBUFFER(_debug_print)(CBUFFER() _q)
 {
     printf("cbuffer%s [max size: %u, max read: %u, elements: %u]\n",
             EXTENSION,
@@ -155,14 +154,16 @@ void CBUFFER(_debug_print)(CBUFFER() _q)
         BUFFER_PRINT_LINE(_q,i)
         printf("\n");
     }
+    return LIQUID_OK;
 }
 
 // clear internal buffer
-void CBUFFER(_reset)(CBUFFER() _q)
+int CBUFFER(_reset)(CBUFFER() _q)
 {
     _q->read_index   = 0;
     _q->write_index  = 0;
     _q->num_elements = 0;
+    return LIQUID_OK;
 }
 
 // get the number of elements currently in the buffer
@@ -190,6 +191,12 @@ unsigned int CBUFFER(_space_available)(CBUFFER() _q)
     return _q->max_size - _q->num_elements;
 }
 
+// is buffer empty?
+int CBUFFER(_is_empty)(CBUFFER() _q)
+{
+    return _q->num_elements == 0;
+}
+
 // is buffer full?
 int CBUFFER(_is_full)(CBUFFER() _q)
 {
@@ -199,14 +206,12 @@ int CBUFFER(_is_full)(CBUFFER() _q)
 // write a single sample into the buffer
 //  _q  : circular buffer object
 //  _v  : input sample
-void CBUFFER(_push)(CBUFFER() _q,
-                    T         _v)
+int CBUFFER(_push)(CBUFFER() _q,
+                   T         _v)
 {
     // ensure buffer isn't already full
     if (_q->num_elements == _q->max_size) {
-        fprintf(stderr,"warning: cbuffer%s_push(), no space available\n",
-                EXTENSION);
-        return;
+        return liquid_error(LIQUID_EIRANGE,"cbuffer%s_push(), no space available", EXTENSION);
     }
 
     // add sample at write index
@@ -217,20 +222,20 @@ void CBUFFER(_push)(CBUFFER() _q,
 
     // increment number of elements
     _q->num_elements++;
+    return LIQUID_OK;
 }
 
 // write samples to the buffer
 //  _q  : circular buffer object
 //  _v  : output array
 //  _n  : number of samples to write
-void CBUFFER(_write)(CBUFFER()    _q,
-                     T *          _v,
-                     unsigned int _n)
+int CBUFFER(_write)(CBUFFER()    _q,
+                    T *          _v,
+                    unsigned int _n)
 {
     // ensure number of samples to write doesn't exceed space available
     if (_n > (_q->max_size - _q->num_elements)) {
-        printf("warning: cbuffer%s_write(), cannot write more elements than are available\n", EXTENSION);
-        return;
+        return liquid_error(LIQUID_EIRANGE,"cbuffer%s_write(), cannot write more elements than are available", EXTENSION);
     }
 
     _q->num_elements += _n;
@@ -247,19 +252,18 @@ void CBUFFER(_write)(CBUFFER()    _q,
         memmove(_q->v + _q->write_index, _v, _n*sizeof(T));
         _q->write_index += _n;
     }
+    return LIQUID_OK;
 }
 
 // remove and return a single element from the buffer
 //  _q  : circular buffer object
 //  _v  : pointer to sample output
-void CBUFFER(_pop)(CBUFFER()    _q,
-                   T *          _v)
+int CBUFFER(_pop)(CBUFFER() _q,
+                  T *       _v)
 {
     // ensure there is at least one element
     if (_q->num_elements == 0) {
-        fprintf(stderr,"warning: cbuffer%s_pop(), no elements available\n",
-                EXTENSION);
-        return;
+        return liquid_error(LIQUID_EIRANGE,"cbuffer%s_pop(), no elements available",EXTENSION);
     }
 
     // set return value
@@ -271,6 +275,7 @@ void CBUFFER(_pop)(CBUFFER()    _q,
 
     // decrement number of elements in the buffer
     _q->num_elements--;
+    return LIQUID_OK;
 }
 
 // read buffer contents
@@ -278,10 +283,10 @@ void CBUFFER(_pop)(CBUFFER()    _q,
 //  _num_requested  : number of elements requested
 //  _v              : output pointer
 //  _nr             : number of elements referenced by _v
-void CBUFFER(_read)(CBUFFER()      _q,
-                    unsigned int   _num_requested,
-                    T **           _v,
-                    unsigned int * _num_read)
+int CBUFFER(_read)(CBUFFER()      _q,
+                   unsigned int   _num_requested,
+                   T **           _v,
+                   unsigned int * _num_read)
 {
     // adjust number requested depending upon availability
     if (_num_requested > _q->num_elements)
@@ -298,20 +303,21 @@ void CBUFFER(_read)(CBUFFER()      _q,
     // set output pointer appropriately
     *_v        = _q->v + _q->read_index;
     *_num_read = _num_requested;
+    return LIQUID_OK;
 }
 
 // release _n samples in the buffer
-void CBUFFER(_release)(CBUFFER()    _q,
-                       unsigned int _n)
+int CBUFFER(_release)(CBUFFER()    _q,
+                      unsigned int _n)
 {
     // advance read_index by _n making sure not to step on write_index
     if (_n > _q->num_elements) {
-        printf("error: cbuffer%s_release(), cannot release more elements in buffer than exist\n", EXTENSION);
-        return;
+        return liquid_error(LIQUID_EIRANGE,"cbuffer%s_release(), cannot release more elements in buffer than exist",EXTENSION);
     }
 
     _q->read_index = (_q->read_index + _n) % _q->max_size;
     _q->num_elements -= _n;
+    return LIQUID_OK;
 }
 
 
@@ -320,7 +326,7 @@ void CBUFFER(_release)(CBUFFER()    _q,
 //
 
 // internal linearization
-void CBUFFER(_linearize)(CBUFFER() _q)
+int CBUFFER(_linearize)(CBUFFER() _q)
 {
 #if 0
     // check to see if anything needs to be done
@@ -333,5 +339,6 @@ void CBUFFER(_linearize)(CBUFFER() _q)
 
     // move maximum amount
     memmove(_q->v + _q->max_size, _q->v, (_q->max_read-1)*sizeof(T));
+    return LIQUID_OK;
 }
 
