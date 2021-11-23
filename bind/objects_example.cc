@@ -7,7 +7,9 @@
 #include "firinterp.hh"
 #include "firpfbch2.hh"
 #include "fs64.hh"
+#include "modem.hh"
 #include "msresamp.hh"
+#include "nco.hh"
 #include "ofdmflexframetx.hh"
 #include "ofdmflexframerx.hh"
 #include "rresamp.hh"
@@ -41,8 +43,14 @@ int main()
     dsp::firpfbch2s chs(20);
     std::cout << chs << std::endl;
 
+    dsp::modem modem(LIQUID_MODEM_QPSK);
+    std::cout << modem << std::endl;
+
     dsp::msresamp resamp(0.123456789f);
     std::cout << resamp << std::endl;
+
+    dsp::nco mixer;
+    std::cout << mixer << std::endl;
 
     dsp::ofdmflexframetx tx(1200);
     std::cout << tx << std::endl;

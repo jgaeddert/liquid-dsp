@@ -1239,6 +1239,7 @@ bind_headers :=					\
 	bind/fs64.hh				\
 	bind/modem.hh				\
 	bind/msresamp.hh			\
+	bind/nco.hh				\
 	bind/ofdmflexframetx.hh			\
 	bind/ofdmflexframerx.hh			\
 	bind/rresamp.hh				\

@@ -8,6 +8,7 @@
 #include "fs64.hh"
 #include "modem.hh"
 #include "msresamp.hh"
+#include "nco.hh"
 #include "ofdmflexframetx.hh"
 #include "ofdmflexframerx.hh"
 #include "rresamp.hh"
@@ -65,6 +66,7 @@ PYBIND11_MODULE(liquid, m) {
     liquid::init_fs64       (m);
     liquid::init_modem      (m);
     liquid::init_msresamp   (m);
+    liquid::init_nco        (m);
     liquid::init_ofdmflexframetx(m);
     liquid::init_ofdmflexframerx(m);
     liquid::init_rresamp    (m);
