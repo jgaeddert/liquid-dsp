@@ -70,10 +70,10 @@ EQLMS() EQLMS(_create)(T *          _h,
 
     // copy coefficients (if not NULL)
     if (_h == NULL) {
-        // initial coefficients with delta at first index
+        // initial coefficients with 1 at center
         unsigned int i;
         for (i=0; i<q->h_len; i++)
-            q->h0[i] = (i==0) ? 1.0 : 0.0;
+            q->h0[i] = (i==q->h_len/2) ? 1.0 : 0.0;
     } else {
         // copy user-defined initial coefficients
         memmove(q->h0, _h, (q->h_len)*sizeof(T));

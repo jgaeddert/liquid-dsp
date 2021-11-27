@@ -43,7 +43,7 @@ void testbench_eqlms(unsigned int k, unsigned int m, float beta, int init,
     firfilt_cccf fchannel = firfilt_cccf_create(h,5);
 
     // prototype low-pass filter
-    float complex hp[2*k*p+1]; // prototype low-pass filter
+    float complex hp[2*k*p+1];
     for (i=0; i<2*k*p+1; i++)
         hp[i] = sincf( (float)i/(float)k - p) * liquid_hamming(i,2*k*p+1) / k;
 
@@ -52,17 +52,16 @@ void testbench_eqlms(unsigned int k, unsigned int m, float beta, int init,
     switch (init) {
     case 0: eq = eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_ARKAISER,k,p,beta,0); break;
     case 1: eq = eqlms_cccf_create_lowpass (2*k*p+1, 1.0f/(float)k); break;
-    case 2: eq = eqlms_cccf_create         (hp, 2*k*p+1); break; //external coefficients
+    case 2: eq = eqlms_cccf_create         (hp, 2*k*p+1); break; // external coefficients
+    case 3: eq = eqlms_cccf_create         (NULL, 2*k*p+1); break; // NULL puts 1 at center
     default:;
     }
     eqlms_cccf_set_bw(eq, mu);
 
-    // arrays
-    float complex buf[k];            // sample buffer
-    float complex sym_in, sym_out;   // modulated/recovered symbols
-
     // run equalization
-    wdelaycf buf_sym = wdelaycf_create(m+p);
+    float complex buf[k];                   // sample buffer
+    float complex sym_in, sym_out;          // modulated/recovered symbols
+    wdelaycf buf_sym = wdelaycf_create(m+p);// symbol buffer to account for filter delays
     float rmse = 0.0f; // root mean-squared error
     for (i=0; i<2*num_symbols; i++) {
         // generate modulated input symbol
@@ -134,12 +133,13 @@ void autotest_eqlms_02() { testbench_eqlms(2,7, 0.3,   0,7,0.7,400,     2,LIQUID
 void autotest_eqlms_03() { testbench_eqlms(2,7, 0.3,   0,7,0.7,400,     0,LIQUID_MODEM_QAM16); }
 void autotest_eqlms_04() { testbench_eqlms(2,7, 0.3,   1,7,0.7,400,     0,LIQUID_MODEM_QAM16); }
 void autotest_eqlms_05() { testbench_eqlms(2,7, 0.3,   2,7,0.7,400,     0,LIQUID_MODEM_QAM16); }
+void autotest_eqlms_06() { testbench_eqlms(2,7, 0.3,   3,7,0.6,400,     0,LIQUID_MODEM_QAM16); }
 
 // test different configurations:          k,m,beta,init,p, mu,  n,update,mod scheme
-//void xautotest_eqlms_06() { testbench_eqlms(4,7, 0.3,   0,7,0.7,400,     0,LIQUID_MODEM_QPSK); }
 void autotest_eqlms_07() { testbench_eqlms(2,9, 0.3,   0,7,0.7,400,     0,LIQUID_MODEM_QPSK); }
 void autotest_eqlms_08() { testbench_eqlms(2,7, 0.2,   0,7,0.7,400,     0,LIQUID_MODEM_QPSK); }
 void autotest_eqlms_09() { testbench_eqlms(2,7, 0.3,   0,2,0.7,400,     0,LIQUID_MODEM_QPSK); }
 void autotest_eqlms_10() { testbench_eqlms(2,7, 0.3,   0,7,0.7,400,     0,LIQUID_MODEM_ARB64VT); }
 void autotest_eqlms_11() { testbench_eqlms(2,7, 0.3,   0,7,0.1,400,     0,LIQUID_MODEM_QPSK); }
+//void xautotest_eqlms_12() { testbench_eqlms(4,7, 0.3,   0,7,0.7,400,     0,LIQUID_MODEM_QPSK); }
 
