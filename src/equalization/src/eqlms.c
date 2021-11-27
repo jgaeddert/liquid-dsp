@@ -150,31 +150,6 @@ EQLMS() EQLMS(_create_lowpass)(unsigned int _h_len,
     return EQLMS(_create)(hc, _h_len);
 }
 
-// re-create least mean-squares (LMS) equalizer object
-//  _q      :   old equalizer object
-//  _h      :   initial coefficients [size: _p x 1], default if NULL
-//  _p      :   equalizer length (number of taps)
-EQLMS() EQLMS(_recreate)(EQLMS()      _q,
-                         T *          _h,
-                         unsigned int _p)
-{
-    if (_q->h_len == _p) {
-        // length hasn't changed; copy default coefficients
-        // and return object
-        unsigned int i;
-        for (i=0; i<_q->h_len; i++)
-            _q->h0[i] = _h[i];
-        return _q;
-    }
-
-    // completely destroy old equalizer object
-    EQLMS(_destroy)(_q);
-
-    // create new one and return
-    return EQLMS(_create)(_h,_p);
-}
-
-
 // destroy eqlms object
 int EQLMS(_destroy)(EQLMS() _q)
 {
@@ -230,7 +205,7 @@ int EQLMS(_set_bw)(EQLMS() _q,
                    float   _mu)
 {
     if (_mu < 0.0f)
-        liquid_error(LIQUID_EICONFIG,"eqlms_%s_set_bw(), learning rate cannot be less than zero", EXTENSION_FULL);
+        return liquid_error(LIQUID_EICONFIG,"eqlms_%s_set_bw(), learning rate cannot be less than zero", EXTENSION_FULL);
 
     _q->mu = _mu;
     return LIQUID_OK;
@@ -301,7 +276,7 @@ int EQLMS(_decim_execute)(EQLMS()      _q,
                           unsigned int _k)
 {
     if (_k == 0)
-        liquid_error(LIQUID_EICONFIG,"eqlms_%s_decim_execute(), down-sampling rate 'k' must be greater than 0", EXTENSION_FULL);
+        return liquid_error(LIQUID_EICONFIG,"eqlms_%s_decim_execute(), down-sampling rate 'k' must be greater than 0", EXTENSION_FULL);
 
     unsigned int i;
     for (i=0; i<_k; i++) {
@@ -330,7 +305,7 @@ int EQLMS(_execute_block)(EQLMS()      _q,
                           T *          _y)
 {
     if (_k == 0)
-        liquid_error(LIQUID_EICONFIG,"eqlms_%s_execute_block(), down-sampling rate 'k' must be greater than 0", EXTENSION_FULL);
+        return liquid_error(LIQUID_EICONFIG,"eqlms_%s_execute_block(), down-sampling rate 'k' must be greater than 0", EXTENSION_FULL);
 
     unsigned int i;
     T d_hat;

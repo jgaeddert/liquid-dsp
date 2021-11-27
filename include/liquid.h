@@ -913,14 +913,6 @@ EQLMS() EQLMS(_create_rnyquist)(int          _type,                         \
 EQLMS() EQLMS(_create_lowpass)(unsigned int _n,                             \
                                float        _fc);                           \
                                                                             \
-/* Re-create EQ initialized with external coefficients                  */  \
-/*  _q      :   equalizer object                                        */  \
-/*  _h :   filter coefficients (NULL for {1,0,0...}), [size: _n x 1]    */  \
-/*  _h_len  :   filter length                                           */  \
-EQLMS() EQLMS(_recreate)(EQLMS()      _q,                                   \
-                         T *          _h,                                   \
-                         unsigned int _h_len);                              \
-                                                                            \
 /* Destroy equalizer object, freeing all internal memory                */  \
 int EQLMS(_destroy)(EQLMS() _q);                                            \
                                                                             \

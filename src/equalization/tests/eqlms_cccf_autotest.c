@@ -53,8 +53,7 @@ void testbench_eqlms(unsigned int k, unsigned int m, float beta, int init,
     case 0: eq = eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_ARKAISER,k,p,beta,0); break;
     case 1: eq = eqlms_cccf_create_lowpass (2*k*p+1, 1.0f/(float)k); break;
     case 2: eq = eqlms_cccf_create         (hp, 2*k*p+1); break; // external coefficients
-    case 3: eq = eqlms_cccf_create         (NULL, 2*k*p+1); break; // NULL puts 1 at center
-    default:;
+    default:eq = eqlms_cccf_create         (NULL, 2*k*p+1); break; // NULL puts 1 at center
     }
     eqlms_cccf_set_bw(eq, mu);
 
@@ -90,7 +89,7 @@ void testbench_eqlms(unsigned int k, unsigned int m, float beta, int init,
             unsigned int  index;
             switch (update) {
             case 0: eqlms_cccf_step(eq, sym_in, sym_out); break; // perfect knowledge
-            case 1: eqlms_cccf_step(eq, sym_out/cabsf(sym_out), sym_out); break; // CM
+            case 1: eqlms_cccf_step_blind(eq, sym_out);   break; // CM
             case 2:
                 // decision-directed
                 modemcf_demodulate(mod, sym_out, &index);
@@ -142,4 +141,46 @@ void autotest_eqlms_09() { testbench_eqlms(2,7, 0.3,   0,2,0.7,400,     0,LIQUID
 void autotest_eqlms_10() { testbench_eqlms(2,7, 0.3,   0,7,0.7,400,     0,LIQUID_MODEM_ARB64VT); }
 void autotest_eqlms_11() { testbench_eqlms(2,7, 0.3,   0,7,0.1,400,     0,LIQUID_MODEM_QPSK); }
 //void xautotest_eqlms_12() { testbench_eqlms(4,7, 0.3,   0,7,0.7,400,     0,LIQUID_MODEM_QPSK); }
+
+void autotest_eqlms_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping eqlms config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check that object returns NULL for invalid configurations
+    CONTEND_ISNULL(eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_ARKAISER, 0, 12, 0.3f, 0.0f));
+    CONTEND_ISNULL(eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_ARKAISER, 2,  0, 0.3f, 0.0f));
+    CONTEND_ISNULL(eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_ARKAISER, 2, 12, 2.0f, 0.0f));
+    CONTEND_ISNULL(eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_ARKAISER, 2, 12, 0.3f,-2.0f));
+
+    CONTEND_ISNULL(eqlms_cccf_create_lowpass( 0, 0.1f));
+    CONTEND_ISNULL(eqlms_cccf_create_lowpass(13,-0.1f));
+
+    // create proper object and test other interfaces
+    unsigned int i, k=2, m=3, h_len = 2*k*m+1;
+    eqlms_cccf q = eqlms_cccf_create(NULL, h_len);
+    CONTEND_EQUALITY(LIQUID_OK, eqlms_cccf_print(q));
+
+    // test getting/setting bandwidth
+    float mu = 0.1f;
+    eqlms_cccf_set_bw(q, mu);
+    CONTEND_EQUALITY(eqlms_cccf_get_bw(q), mu);
+    CONTEND_INEQUALITY(LIQUID_OK, eqlms_cccf_set_bw(q, -1));
+
+    // other configurations
+    CONTEND_INEQUALITY(LIQUID_OK, eqlms_cccf_decim_execute(q, NULL, NULL, 0));
+
+    // test getting weights
+    float complex h[h_len];
+    eqlms_cccf_get_weights(q, h);
+    for (i=0; i<h_len; i++)
+        CONTEND_EQUALITY(h[i], i==k*m ? 1 : 0);
+
+    // clean it up
+    eqlms_cccf_destroy(q);
+}
 
