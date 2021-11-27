@@ -959,6 +959,16 @@ int EQLMS(_push_block)(EQLMS()      _q,                                     \
 int EQLMS(_execute)(EQLMS() _q,                                             \
                     T *     _y);                                            \
                                                                             \
+/* Execute equalizer as decimator                                       */  \
+/*  _q      :   equalizer object                                        */  \
+/*  _x      :   input sample array [size: _k x 1]                       */  \
+/*  _y      :   output sample                                           */  \
+/*  _k      :   down-sampling rate                                      */  \
+int EQLMS(_decim_execute)(EQLMS()      _q,                                  \
+                          T *          _x,                                  \
+                          T *          _y,                                  \
+                          unsigned int _k);                                 \
+                                                                            \
 /* Execute equalizer with block of samples using constant               */  \
 /* modulus algorithm, operating on a decimation rate of _k              */  \
 /* samples.                                                             */  \

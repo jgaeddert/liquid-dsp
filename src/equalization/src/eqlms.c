@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -287,6 +287,31 @@ int EQLMS(_execute)(EQLMS() _q,
 
     // set output
     *_y = y;
+    return LIQUID_OK;
+}
+
+// execute equalizer ase decimator
+//  _q      :   equalizer object
+//  _x      :   input sample array [size: _k x 1]
+//  _y      :   output sample
+//  _k      :   down-sampling rate
+int EQLMS(_decim_execute)(EQLMS()      _q,
+                          T *          _x,
+                          T *          _y,
+                          unsigned int _k)
+{
+    if (_k == 0)
+        liquid_error(LIQUID_EICONFIG,"eqlms_%s_decim_execute(), down-sampling rate 'k' must be greater than 0", EXTENSION_FULL);
+
+    unsigned int i;
+    for (i=0; i<_k; i++) {
+        // push input sample
+        EQLMS(_push)(_q, _x[i]);
+
+        // compute output sample
+        if (i==0)
+            EQLMS(_execute)(_q, _y);
+    }
     return LIQUID_OK;
 }
 

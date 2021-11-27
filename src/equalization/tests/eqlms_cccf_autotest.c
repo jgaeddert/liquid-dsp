@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,17 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// AUTOTEST: static channel filter, blind equalization on QPSK symbols
-void testbench_eqlms_cccf(unsigned int k, unsigned int m, float beta, unsigned int p,
-                          float mu, unsigned int num_symbols, int ms)
+// static channel filter, run equalization with various update strategies on modulated data
+void testbench_eqlms(unsigned int k, unsigned int m, float beta, int init,
+                     unsigned int p, float mu, unsigned int num_symbols,
+                     int update, int ms)
 {
-    float          tol    = 2e-2f;    // error tolerance
-    modemcf        mod    = modemcf_create(LIQUID_MODEM_QPSK);
+    unsigned int   i;
+    float          tol    = 0.025f; // error tolerance
+    modemcf        mod    = modemcf_create(ms);
     firinterp_crcf interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER,k,m,beta,0);
 
-    // create equalizer
-    eqlms_cccf eq = eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_ARKAISER,k,p,beta,0);
-    eqlms_cccf_set_bw(eq, mu);
-
-    // create channel filter
+    // create fixed channel filter
     float complex h[5] = {
          1.00f +  0.00f*_Complex_I,
          0.00f + -0.01f*_Complex_I,
@@ -44,68 +42,104 @@ void testbench_eqlms_cccf(unsigned int k, unsigned int m, float beta, unsigned i
         -0.09f + -0.04f*_Complex_I };
     firfilt_cccf fchannel = firfilt_cccf_create(h,5);
 
+    // prototype low-pass filter
+    float complex hp[2*k*p+1]; // prototype low-pass filter
+    for (i=0; i<2*k*p+1; i++)
+        hp[i] = sincf( (float)i/(float)k - p) * liquid_hamming(i,2*k*p+1) / k;
+
+    // create and initialize equalizer
+    eqlms_cccf eq;
+    switch (init) {
+    case 0: eq = eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_ARKAISER,k,p,beta,0); break;
+    case 1: eq = eqlms_cccf_create_lowpass (2*k*p+1, 1.0f/(float)k); break;
+    case 2: eq = eqlms_cccf_create         (hp, 2*k*p+1); break; //external coefficients
+    default:;
+    }
+    eqlms_cccf_set_bw(eq, mu);
+
     // arrays
-    float complex buf[k];               // filter buffer
-    float complex sym_in [num_symbols]; // input symbols
-    float complex sym_out[num_symbols]; // equalized symbols
+    float complex buf[k];            // sample buffer
+    float complex sym_in, sym_out;   // modulated/recovered symbols
 
     // run equalization
-    unsigned int i;
-    unsigned int j;
-    for (i=0; i<num_symbols; i++) {
-        // generate input symbol
+    wdelaycf buf_sym = wdelaycf_create(m+p);
+    float rmse = 0.0f; // root mean-squared error
+    for (i=0; i<2*num_symbols; i++) {
+        // generate modulated input symbol
         unsigned int sym = modemcf_gen_rand_sym(mod);
-        modemcf_modulate(mod, sym, sym_in+i);
+        modemcf_modulate(mod, sym, &sym_in);
+        wdelaycf_push(buf_sym, sym_in);
 
         // interpolate
-        firinterp_crcf_execute(interp, sym_in[i], buf);
+        firinterp_crcf_execute(interp, sym_in, buf);
 
         // apply channel filter (in place)
         firfilt_cccf_execute_block(fchannel, buf, k, buf);
 
-        // apply equalizer as filter
-        for (j=0; j<k; j++) {
-            eqlms_cccf_push(eq, buf[j]);
+        // run through equalizing filter as decimator
+        eqlms_cccf_decim_execute(eq, buf, &sym_out, k);
 
-            // decimate by k
-            if ( (j%k) != 0 ) continue;
+        // skip first m+p symbols
+        if (i < m + p) continue;
 
-            // update equalization (blind operation)
-            eqlms_cccf_execute(eq, &sym_out[i]);
-            if (i > m + p)
-                eqlms_cccf_step(eq, sym_out[i]/cabsf(sym_out[i]), sym_out[i]);
+        // read input symbol, delayed by m+p symbols
+        wdelaycf_read(buf_sym, &sym_in);
+
+        // update equalizer weights
+        if (i < num_symbols) {
+            float complex d_hat;
+            unsigned int  index;
+            switch (update) {
+            case 0: eqlms_cccf_step(eq, sym_in, sym_out); break; // perfect knowledge
+            case 1: eqlms_cccf_step(eq, sym_out/cabsf(sym_out), sym_out); break; // CM
+            case 2:
+                // decision-directed
+                modemcf_demodulate(mod, sym_out, &index);
+                modemcf_get_demodulator_sample(mod, &d_hat);
+                eqlms_cccf_step(eq, d_hat, sym_out);
+                break;
+            default:;
+            }
+            continue;
         }
-    }
 
-    // compare input, output
-    unsigned int settling_delay = 285;
-    for (i=m+p; i<num_symbols; i++) {
-        // compensate for delay
-        j = i-m-p;
-
-        // absolute error
-        float error = cabsf(sym_in[j]-sym_out[i]);
-
+        // observe error
+        float error = cabsf(sym_in-sym_out);
+        rmse += error * error;
         if (liquid_autotest_verbose) {
-            printf("x[%3u] = {%12.8f,%12.8f}, y[%3u] = {%12.8f,%12.8f}, error=%12.8f %s\n",
-                    j, crealf(sym_in [j]), cimagf(sym_in [j]),
-                    i, crealf(sym_out[i]), cimagf(sym_out[i]),
+            printf("%3u : x = {%12.8f,%12.8f}, y = {%12.8f,%12.8f}, error=%12.8f %s\n",
+                    i, crealf(sym_in ), cimagf(sym_in ), crealf(sym_out), cimagf(sym_out),
                     error, error > tol ? "*" : "");
-            if (i == settling_delay + m + p)
-                printf("--- start of test ---\n");
         }
-
-        // check error
-        if (i > settling_delay + m + p)
-            CONTEND_DELTA(error, 0.0f, tol);
+        //CONTEND_DELTA(error, 0.0f, tol);
     }
+    rmse = 10*log10f( rmse/num_symbols );
+    printf("rmse : %.3f dB\n", rmse);
+    CONTEND_LESS_THAN(rmse, -20.0f);
 
     // clean up objects
+    wdelaycf_destroy(buf_sym);
     firfilt_cccf_destroy(fchannel);
     firinterp_crcf_destroy(interp);
     eqlms_cccf_destroy(eq);
     modemcf_destroy(mod);
 }
 
-void autotest_eqlms_cccf_00() { testbench_eqlms_cccf(2, 7, 0.3, 7, 0.7, 400, LIQUID_MODEM_QPSK); }
+// test different update strategies:       k,m,beta,init,p, mu,  n,update,mod scheme
+void autotest_eqlms_00() { testbench_eqlms(2,7, 0.3,   0,7,0.7,400,     0,LIQUID_MODEM_QPSK); }
+void autotest_eqlms_01() { testbench_eqlms(2,7, 0.3,   0,7,0.7,400,     1,LIQUID_MODEM_QPSK); }
+void autotest_eqlms_02() { testbench_eqlms(2,7, 0.3,   0,7,0.7,400,     2,LIQUID_MODEM_QPSK); }
+
+// test different initializaiton methods:  k,m,beta,init,p, mu,  n,update,mod scheme
+void autotest_eqlms_03() { testbench_eqlms(2,7, 0.3,   0,7,0.7,400,     0,LIQUID_MODEM_QAM16); }
+void autotest_eqlms_04() { testbench_eqlms(2,7, 0.3,   1,7,0.7,400,     0,LIQUID_MODEM_QAM16); }
+void autotest_eqlms_05() { testbench_eqlms(2,7, 0.3,   2,7,0.7,400,     0,LIQUID_MODEM_QAM16); }
+
+// test different configurations:          k,m,beta,init,p, mu,  n,update,mod scheme
+//void xautotest_eqlms_06() { testbench_eqlms(4,7, 0.3,   0,7,0.7,400,     0,LIQUID_MODEM_QPSK); }
+void autotest_eqlms_07() { testbench_eqlms(2,9, 0.3,   0,7,0.7,400,     0,LIQUID_MODEM_QPSK); }
+void autotest_eqlms_08() { testbench_eqlms(2,7, 0.2,   0,7,0.7,400,     0,LIQUID_MODEM_QPSK); }
+void autotest_eqlms_09() { testbench_eqlms(2,7, 0.3,   0,2,0.7,400,     0,LIQUID_MODEM_QPSK); }
+void autotest_eqlms_10() { testbench_eqlms(2,7, 0.3,   0,7,0.7,400,     0,LIQUID_MODEM_ARB64VT); }
+void autotest_eqlms_11() { testbench_eqlms(2,7, 0.3,   0,7,0.1,400,     0,LIQUID_MODEM_QPSK); }
 
