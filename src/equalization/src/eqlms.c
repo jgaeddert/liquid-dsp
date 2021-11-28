@@ -302,16 +302,12 @@ int EQLMS(_decim_execute)(EQLMS()      _q,
     if (_k == 0)
         return liquid_error(LIQUID_EICONFIG,"eqlms_%s_decim_execute(), down-sampling rate 'k' must be greater than 0", EXTENSION_FULL);
 
-    unsigned int i;
-    for (i=0; i<_k; i++) {
-        // push input sample
-        EQLMS(_push)(_q, _x[i]);
+    // push input sample and compute output
+    EQLMS(_push)(_q, _x[0]);
+    EQLMS(_execute)(_q, _y);
 
-        // compute output sample
-        if (i==0)
-            EQLMS(_execute)(_q, _y);
-    }
-    return LIQUID_OK;
+    // push remaining samples
+    return EQLMS(_push_block)(_q, _x+1, _k-1);
 }
 
 // execute equalizer with block of samples using constant
