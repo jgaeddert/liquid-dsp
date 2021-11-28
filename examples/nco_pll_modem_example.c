@@ -61,8 +61,9 @@ int main(int argc, char*argv[]) {
 
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid, "%% %s : auto-generated file\n", OUTPUT_FILENAME);
-    fprintf(fid, "clear all;\n");
-    fprintf(fid, "phi=zeros(1,%u);\n",n);
+    fprintf(fid, "clear all; close all;\n");
+    fprintf(fid, "phase_error=zeros(1,%u);\n",n);
+    fprintf(fid, "freq_error =zeros(1,%u);\n",n);
     fprintf(fid, "r=zeros(1,%u);\n",n);
 
     // objects
@@ -122,7 +123,8 @@ int main(int argc, char*argv[]) {
         //phase_error = nco_tx->theta - nco_rx->theta;
 
         // print every line in a format that octave can read
-        fprintf(fid, "phi(%u) = %10.6E;\n", i+1, phase_error);
+        fprintf(fid, "phase_error(%u) = %10.6E;\n", i+1, phase_error); // measured phase error
+        fprintf(fid, "freq_error(%u)  = %10.6E;\n", i+1, nco_crcf_get_frequency(nco_tx)-nco_crcf_get_frequency(nco_rx));
         fprintf(fid, "r(%u) = %10.6E + j*%10.6E;\n",
                 i+1, crealf(v), cimagf(v));
 
@@ -146,10 +148,18 @@ int main(int argc, char*argv[]) {
     }
 
     fprintf(fid, "figure;\n");
-    fprintf(fid, "plot(1:length(phi),phi,'LineWidth',2,'Color',[0 0.25 0.5]);\n");
-    fprintf(fid, "xlabel('Symbol Index');\n");
-    fprintf(fid, "ylabel('Phase Error [radians]');\n");
-    fprintf(fid, "grid on;\n");
+    fprintf(fid, "n = length(phase_error);\n");
+    fprintf(fid, "t = 0:(n-1);\n");
+    fprintf(fid, "subplot(2,1,1);\n");
+    fprintf(fid, "  plot(t,phase_error,'LineWidth',2,'Color',[0 0.25 0.5]);\n");
+    fprintf(fid, "  xlabel('Symbol Index');\n");
+    fprintf(fid, "  ylabel('Phase Error [radians]');\n");
+    fprintf(fid, "  grid on;\n");
+    fprintf(fid, "subplot(2,1,2);\n");
+    fprintf(fid, "  plot(t,freq_error,'LineWidth',2,'Color',[0 0.25 0.5]);\n");
+    fprintf(fid, "  xlabel('Symbol Index');\n");
+    fprintf(fid, "  ylabel('Frequency Error [radians/sample]');\n");
+    fprintf(fid, "  grid on;\n");
 
     fprintf(fid, "t0 = round(0.25*length(r));\n");
     fprintf(fid, "figure;\n");
@@ -159,7 +169,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid, "axis('square');\n");
     fprintf(fid, "xlabel('In-Phase');\n");
     fprintf(fid, "ylabel('Quadrature');\n");
-    fprintf(fid, "legend(['first 25%%'],['last 75%%'],1);\n");
+    fprintf(fid, "legend(['first 25%%'],['last 75%%']);\n");
     fclose(fid);
 
     printf("results written to %s.\n",OUTPUT_FILENAME);
