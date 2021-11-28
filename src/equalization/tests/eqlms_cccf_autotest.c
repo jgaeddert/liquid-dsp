@@ -167,7 +167,8 @@ void autotest_eqlms_config()
     eqlms_cccf q = eqlms_cccf_create(NULL, h_len);
     CONTEND_EQUALITY(LIQUID_OK, eqlms_cccf_print(q));
 
-    // test getting/setting bandwidth
+    // test getting/setting properties
+    CONTEND_EQUALITY(eqlms_cccf_get_length(q), h_len);
     float mu = 0.1f;
     eqlms_cccf_set_bw(q, mu);
     CONTEND_EQUALITY(eqlms_cccf_get_bw(q), mu);
