@@ -155,7 +155,7 @@ int main(int argc, char*argv[])
     eqlms_cccf_set_bw(eq, mu);
 
     // get initialized weights
-    eqlms_cccf_get_weights(eq, hp);
+    eqlms_cccf_copy_coefficients(eq, hp);
 
     // filtered error vector magnitude (emperical RMS error)
     float evm_hat = 0.03f;
@@ -190,7 +190,7 @@ int main(int argc, char*argv[])
     }
 
     // get equalizer weights
-    eqlms_cccf_get_weights(eq, hp);
+    eqlms_cccf_copy_coefficients(eq, hp);
 
     // destroy objects
     eqlms_cccf_destroy(eq);

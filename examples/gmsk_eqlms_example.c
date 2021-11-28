@@ -63,7 +63,7 @@ int main(int argc, char*argv[]) {
     // get equalizer weights
     unsigned int hp_len = 2*k*p+1;   // equalizer filter length
     float complex hp[hp_len];           // equalizer filter coefficients
-    eqlms_cccf_get_weights(eq, hp);
+    eqlms_cccf_copy_coefficients(eq, hp);
     fprintf(fid,"hp = zeros(1,%u);\n", hp_len);
     for (i=0; i<hp_len; i++)
         fprintf(fid,"hp(%3u) = %12.4e + %12.4ej;\n", i+1, crealf(hp[i]), cimagf(hp[i]));

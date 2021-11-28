@@ -913,14 +913,6 @@ EQLMS() EQLMS(_create_rnyquist)(int          _type,                         \
 EQLMS() EQLMS(_create_lowpass)(unsigned int _n,                             \
                                float        _fc);                           \
                                                                             \
-/* Re-create EQ initialized with external coefficients                  */  \
-/*  _q      :   equalizer object                                        */  \
-/*  _h :   filter coefficients (NULL for {1,0,0...}), [size: _n x 1]    */  \
-/*  _h_len  :   filter length                                           */  \
-EQLMS() EQLMS(_recreate)(EQLMS()      _q,                                   \
-                         T *          _h,                                   \
-                         unsigned int _h_len);                              \
-                                                                            \
 /* Destroy equalizer object, freeing all internal memory                */  \
 int EQLMS(_destroy)(EQLMS() _q);                                            \
                                                                             \
@@ -938,6 +930,18 @@ float EQLMS(_get_bw)(EQLMS() _q);                                           \
 /*  _lambda :   learning rate, _lambda > 0                              */  \
 int EQLMS(_set_bw)(EQLMS() _q,                                              \
                    float   _lambda);                                        \
+                                                                            \
+/* Get length of equalizer object (number of internal coefficients)     */  \
+unsigned int EQLMS(_get_length)(EQLMS() _q);                                \
+                                                                            \
+/* Get pointer to coefficients array                                    */  \
+const T * EQLMS(_get_coefficients)(EQLMS() _q);                             \
+                                                                            \
+/* Copy internal coefficients to external buffer                        */  \
+/*  _q      : filter object                                             */  \
+/*  _w      : pointer to output coefficients array [size: _n x 1]       */  \
+int EQLMS(_copy_coefficients)(EQLMS() _q,                                   \
+                              T *     _w);                                  \
                                                                             \
 /* Push sample into equalizer internal buffer                           */  \
 /*  _q      :   equalizer object                                        */  \
@@ -958,6 +962,16 @@ int EQLMS(_push_block)(EQLMS()      _q,                                     \
 /*  _y      :   output sample                                           */  \
 int EQLMS(_execute)(EQLMS() _q,                                             \
                     T *     _y);                                            \
+                                                                            \
+/* Execute equalizer as decimator                                       */  \
+/*  _q      :   equalizer object                                        */  \
+/*  _x      :   input sample array [size: _k x 1]                       */  \
+/*  _y      :   output sample                                           */  \
+/*  _k      :   down-sampling rate                                      */  \
+int EQLMS(_decim_execute)(EQLMS()      _q,                                  \
+                          T *          _x,                                  \
+                          T *          _y,                                  \
+                          unsigned int _k);                                 \
                                                                             \
 /* Execute equalizer with block of samples using constant               */  \
 /* modulus algorithm, operating on a decimation rate of _k              */  \
@@ -986,12 +1000,6 @@ int EQLMS(_step)(EQLMS() _q,                                                \
 /*  _d_hat  :   actual output                                           */  \
 int EQLMS(_step_blind)(EQLMS() _q,                                          \
                        T       _d_hat);                                     \
-                                                                            \
-/* Get equalizer's internal coefficients                                */  \
-/*  _q      :   equalizer object                                        */  \
-/*  _w      :   weights, [size: _p x 1]                                 */  \
-int EQLMS(_get_weights)(EQLMS() _q,                                         \
-                        T *     _w);                                        \
                                                                             \
 /* Train equalizer object on group of samples                           */  \
 /*  _q      :   equalizer object                                        */  \
@@ -7268,7 +7276,7 @@ int smatrixb_vmulf(smatrixb _q,
 #define MAX_MOD_BITS_PER_SYMBOL 8
 
 // Modulation schemes available
-#define LIQUID_MODEM_NUM_SCHEMES      (52)
+#define LIQUID_MODEM_NUM_SCHEMES      (53)
 
 typedef enum {
     LIQUID_MODEM_UNKNOWN=0, // Unknown modulation scheme
@@ -7316,6 +7324,7 @@ typedef enum {
     LIQUID_MODEM_ARB128OPT, // optimal 128-QAM
     LIQUID_MODEM_ARB256OPT, // optimal 256-QAM
     LIQUID_MODEM_ARB64VT,   // Virginia Tech logo
+    LIQUID_MODEM_PI4DQPSK,  // pi/4 differential QPSK
 
     // arbitrary modem type
     LIQUID_MODEM_ARB        // arbitrary QAM

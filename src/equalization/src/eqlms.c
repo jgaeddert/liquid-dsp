@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,14 +69,15 @@ EQLMS() EQLMS(_create)(T *          _h,
     q->x2     = wdelayf_create(q->h_len);
 
     // copy coefficients (if not NULL)
+    unsigned int i;
     if (_h == NULL) {
-        // initial coefficients with delta at first index
-        unsigned int i;
+        // initial coefficients with 1 at center
         for (i=0; i<q->h_len; i++)
-            q->h0[i] = (i==0) ? 1.0 : 0.0;
+            q->h0[i] = (i==q->h_len/2) ? 1.0 : 0.0;
     } else {
         // copy user-defined initial coefficients
-        memmove(q->h0, _h, (q->h_len)*sizeof(T));
+        for (i=0; i<q->h_len; i++)
+            q->h0[i] = conj(_h[q->h_len-i-1]);
     }
 
     // reset equalizer object
@@ -140,40 +141,15 @@ EQLMS() EQLMS(_create_lowpass)(unsigned int _h_len,
     float h[_h_len];
     liquid_firdes_kaiser(_h_len, _fc, 40.0f, 0.0f, h);
 
-    // copy coefficients to type-specific array (e.g. float complex)
+    // copy coefficients to type-specific array (e.g. float complex), scaling by bandwidth
     unsigned int i;
     T hc[_h_len];
     for (i=0; i<_h_len; i++)
-        hc[i] = h[i];
+        hc[i] = h[i] * 2 * _fc;
 
     // return equalizer object
     return EQLMS(_create)(hc, _h_len);
 }
-
-// re-create least mean-squares (LMS) equalizer object
-//  _q      :   old equalizer object
-//  _h      :   initial coefficients [size: _p x 1], default if NULL
-//  _p      :   equalizer length (number of taps)
-EQLMS() EQLMS(_recreate)(EQLMS()      _q,
-                         T *          _h,
-                         unsigned int _p)
-{
-    if (_q->h_len == _p) {
-        // length hasn't changed; copy default coefficients
-        // and return object
-        unsigned int i;
-        for (i=0; i<_q->h_len; i++)
-            _q->h0[i] = _h[i];
-        return _q;
-    }
-
-    // completely destroy old equalizer object
-    EQLMS(_destroy)(_q);
-
-    // create new one and return
-    return EQLMS(_create)(_h,_p);
-}
-
 
 // destroy eqlms object
 int EQLMS(_destroy)(EQLMS() _q)
@@ -209,11 +185,12 @@ int EQLMS(_reset)(EQLMS() _q)
 // print eqlms object internals
 int EQLMS(_print)(EQLMS() _q)
 {
-    printf("equalizer (LMS):\n");
-    printf("    order:      %u\n", _q->h_len);
-    unsigned int i;
-    for (i=0; i<_q->h_len; i++)
-        printf("  h(%3u) = %12.4e + j*%12.4e;\n", i+1, creal(_q->w0[i]), cimag(_q->w0[i]));
+    printf("<eqlms_%s, n=%u, mu=%.3f>\n", EXTENSION_FULL, _q->h_len, _q->mu);
+    unsigned int i, j;
+    for (i=0; i<_q->h_len; i++) {
+        j = _q->h_len - i - 1;
+        printf("  w[%3u] = %12.4e + j*%12.4e;\n", i, creal(_q->w0[j]), cimag(_q->w0[j]));
+    }
     return LIQUID_OK;
 }
 
@@ -230,9 +207,31 @@ int EQLMS(_set_bw)(EQLMS() _q,
                    float   _mu)
 {
     if (_mu < 0.0f)
-        liquid_error(LIQUID_EICONFIG,"eqlms_%s_set_bw(), learning rate cannot be less than zero", EXTENSION_FULL);
+        return liquid_error(LIQUID_EICONFIG,"eqlms_%s_set_bw(), learning rate cannot be less than zero", EXTENSION_FULL);
 
     _q->mu = _mu;
+    return LIQUID_OK;
+}
+
+// Get length of equalizer object (number of internal coefficients)
+unsigned int EQLMS(_get_length)(EQLMS() _q)
+{
+    return _q->h_len;
+}
+
+// Get pointer to coefficients array
+const T * EQLMS(_get_coefficients)(EQLMS() _q)
+{
+    return (const T*)(_q->w0);
+}
+
+// Copy internal coefficients to external buffer
+int EQLMS(_copy_coefficients)(EQLMS() _q, T * _w)
+{
+    // copy output weight vector
+    unsigned int i;
+    for (i=0; i<_q->h_len; i++)
+        _w[i] = conj(_q->w0[_q->h_len-i-1]);
     return LIQUID_OK;
 }
 
@@ -290,6 +289,27 @@ int EQLMS(_execute)(EQLMS() _q,
     return LIQUID_OK;
 }
 
+// execute equalizer ase decimator
+//  _q      :   equalizer object
+//  _x      :   input sample array [size: _k x 1]
+//  _y      :   output sample
+//  _k      :   down-sampling rate
+int EQLMS(_decim_execute)(EQLMS()      _q,
+                          T *          _x,
+                          T *          _y,
+                          unsigned int _k)
+{
+    if (_k == 0)
+        return liquid_error(LIQUID_EICONFIG,"eqlms_%s_decim_execute(), down-sampling rate 'k' must be greater than 0", EXTENSION_FULL);
+
+    // push input sample and compute output
+    EQLMS(_push)(_q, _x[0]);
+    EQLMS(_execute)(_q, _y);
+
+    // push remaining samples
+    return EQLMS(_push_block)(_q, _x+1, _k-1);
+}
+
 // execute equalizer with block of samples using constant
 // modulus algorithm, operating on a decimation rate of _k
 // samples.
@@ -305,7 +325,7 @@ int EQLMS(_execute_block)(EQLMS()      _q,
                           T *          _y)
 {
     if (_k == 0)
-        liquid_error(LIQUID_EICONFIG,"eqlms_%s_execute_block(), down-sampling rate 'k' must be greater than 0", EXTENSION_FULL);
+        return liquid_error(LIQUID_EICONFIG,"eqlms_%s_execute_block(), down-sampling rate 'k' must be greater than 0", EXTENSION_FULL);
 
     unsigned int i;
     T d_hat;
@@ -390,57 +410,6 @@ int EQLMS(_step_blind)(EQLMS() _q,
     T d = _d_hat > 0 ? 1 : -1;
 #endif
     return EQLMS(_step)(_q, d, _d_hat);
-}
-
-// retrieve internal filter coefficients
-int EQLMS(_get_weights)(EQLMS() _q, T * _w)
-{
-    // copy output weight vector
-    unsigned int i;
-    for (i=0; i<_q->h_len; i++)
-        _w[i] = conj(_q->w0[_q->h_len-i-1]);
-    return LIQUID_OK;
-}
-
-// train equalizer object
-//  _q      :   equalizer object
-//  _w      :   initial weights / output weights
-//  _x      :   received sample vector
-//  _d      :   desired output vector
-//  _n      :   vector length
-int EQLMS(_train)(EQLMS()      _q,
-                  T *          _w,
-                  T *          _x,
-                  T *          _d,
-                  unsigned int _n)
-{
-    unsigned int p=_q->h_len;
-    if (_n < _q->h_len)
-        fprintf(stderr,"warning: eqlms_%s_train(), traning sequence less than filter order\n", EXTENSION_FULL);
-
-    unsigned int i;
-
-    // reset equalizer state
-    EQLMS(_reset)(_q);
-
-    // copy initial weights into buffer
-    for (i=0; i<p; i++)
-        _q->w0[i] = _w[p - i - 1];
-
-    T d_hat;
-    for (i=0; i<_n; i++) {
-        // push sample into internal buffer
-        EQLMS(_push)(_q, _x[i]);
-
-        // execute vector dot product
-        EQLMS(_execute)(_q, &d_hat);
-
-        // step through training cycle
-        EQLMS(_step)(_q, _d[i], d_hat);
-    }
-
-    // copy output weight vector
-    return EQLMS(_get_weights)(_q, _w);
 }
 
 // 

@@ -1,162 +1,91 @@
-// 
-// eqlms_cccf_example.c
-//
-// Tests least mean-squares (LMS) equalizer (EQ) on a QPSK
-// signal at the symbol level.
-//
-
+// Demonstrates least mean-squares (LMS) equalizer (EQ) on a QPSK signal
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>
+#include <math.h>
 #include "liquid.h"
-
 #define OUTPUT_FILENAME "eqlms_cccf_example.m"
 
 int main() {
-    // options
-    unsigned int n=512;     // number of symbols to observe
-    unsigned int ntrain=256;// number of training symbols
-    unsigned int h_len=6;   // channel filter length
-    unsigned int p=12;      // equalizer order
+    unsigned int i, h_len=5, w_len=11, num_symbols=400;
+    float mu = 0.7f;
 
-    // bookkeeping variables
-    float complex d[n];     // data sequence
-    float complex y[n];     // received data sequence (filtered by channel)
-    float complex d_hat[n]; // recovered data sequence
-    float complex h[h_len]; // channel filter coefficients
-    float complex w[p];     // equalizer filter coefficients
-    unsigned int i;
+    // modem
+    modemcf mod = modemcf_create(LIQUID_MODEM_QPSK);
 
-    // create equalizer (default initial coefficients)
-    eqlms_cccf eq = eqlms_cccf_create(NULL,p);
-
-    // create channel filter (random delay taps)
+    // create channel filter (random coefficients)
+    float complex h[h_len];
     h[0] = 1.0f;
     for (i=1; i<h_len; i++)
         h[i] = (randnf() + randnf()*_Complex_I) * 0.1f;
-    firfilt_cccf f = firfilt_cccf_create(h,h_len);
+    firfilt_cccf fchannel = firfilt_cccf_create(h,h_len);
 
-    // generate random data signal
-    for (i=0; i<n; i++)
-        d[i] = (rand() % 2 ? 1.0f : -1.0f) +
-               (rand() % 2 ? 1.0f : -1.0f)*_Complex_I;
+    // create equalizer (default initial coefficients)
+    float complex w[w_len];
+    for (i=0; i<w_len; i++) w[i] = i==0 ? 1 : 0;
+    eqlms_cccf eq = eqlms_cccf_create(w,w_len);
+    eqlms_cccf_set_bw(eq, mu);
 
-    // filter data signal through channel
-    for (i=0; i<n; i++) {
-        firfilt_cccf_push(f,d[i]);
-        firfilt_cccf_execute(f,&y[i]);
+    // run equalization
+    float complex sym_in, sym_channel, sym_out;  // modulated/recovered symbols
+    float rmse = 0.0f;
+    for (i=0; i<2*num_symbols; i++) {
+        // generate modulated input symbol
+        unsigned int sym = modemcf_gen_rand_sym(mod);
+        modemcf_modulate(mod, sym, &sym_in);
+
+        // apply channel filter (in place)
+        firfilt_cccf_push(fchannel, sym_in);
+        firfilt_cccf_execute(fchannel, &sym_channel);
+
+        // skip first w_len symbols
+        if (i < w_len) continue;
+
+        // update equalizer weights
+        eqlms_cccf_push      (eq, sym_channel); // input symbol
+        eqlms_cccf_execute   (eq, &sym_out);    // dot product
+        //eqlms_cccf_step(eq, sym_in, sym_out);     // ideal update
+        eqlms_cccf_step_blind(eq, sym_out);     // blind update
+
+        // accumulate RMS error
+        if (i < num_symbols) continue;
+        float e = cabsf(sym_out - sym_in);
+        rmse += e*e;
     }
-
-    // run equalizer
-    for (i=0; i<p; i++)
-        w[i] = 0;
-    eqlms_cccf_train(eq, w, y, d, ntrain);
-
-    // create filter from equalizer output
-    firfilt_cccf feq = firfilt_cccf_create(w,p);
-
-    // run equalizer filter
-    for (i=0; i<n; i++) {
-        firfilt_cccf_push(feq,y[i]);
-        firfilt_cccf_execute(feq,&d_hat[i]);
-    }
-
-    //
-    // print results
-    //
-    printf("channel:\n");
-    for (i=0; i<h_len; i++)
-        printf("  h(%3u) = %12.8f + j*%12.8f\n", i, crealf(h[i]), cimagf(h[i]));
-
-    printf("equalizer:\n");
-    for (i=0; i<p; i++)
-        printf("  w(%3u) = %12.8f + j*%12.8f\n", i, crealf(w[i]), cimagf(w[i]));
-
-    // compute MSE
-    float complex e;
-    float mse=0.0f;
-    for (i=0; i<n; i++) {
-        // compute mse
-        e = d[i] - d_hat[i];
-        mse += crealf(e*conj(e));
-    }
-    mse /= n;
-    printf("mse: %12.8f\n", mse);
+    eqlms_cccf_print(eq);
+    rmse = 10*log10f( rmse / (float)num_symbols);
+    printf("RMSE: %.3f dB\n", rmse);
+    eqlms_cccf_copy_coefficients(eq,w);
 
     // clean up objects
-    firfilt_cccf_destroy(f);
+    firfilt_cccf_destroy(fchannel);
     eqlms_cccf_destroy(eq);
-    firfilt_cccf_destroy(feq);
+    modemcf_destroy(mod);
 
-
-    // 
     // export data to file
-    //
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
-
-    fprintf(fid,"clear all;\n");
-    fprintf(fid,"close all;\n");
-    fprintf(fid,"n=%u;\n",n);
-    fprintf(fid,"ntrain=%u;\n",ntrain);
-    fprintf(fid,"p=%u;\n",p);
-    fprintf(fid,"h_len=%u;\n",h_len);
-
+    fprintf(fid,"clear all; close all;\n");
+    fprintf(fid,"h_len=%u; w_len=%u;\n", h_len, w_len);
+    // save channel coefficients
     for (i=0; i<h_len; i++)
-        fprintf(fid,"  h(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(h[i]), cimagf(h[i]));
-
-    for (i=0; i<p; i++)
-        fprintf(fid,"  w(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(w[i]), cimagf(w[i]));
-
-    for (i=0; i<n; i++) {
-        fprintf(fid,"  d(%3u)     = %12.4e + j*%12.4e;\n", i+1, crealf(d[i]),     cimagf(d[i]));
-        fprintf(fid,"  y(%3u)     = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]),     cimagf(y[i]));
-        fprintf(fid,"  d_hat(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(d_hat[i]), cimagf(d_hat[i]));
-    }
-
+        fprintf(fid,"h(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(h[i]), cimagf(h[i]));
+    // save equalizer coefficients
+    for (i=0; i<w_len; i++)
+        fprintf(fid,"w(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(w[i]), cimagf(w[i]));
     // plot results
     fprintf(fid,"\n\n");
-
-    fprintf(fid,"nfft=512;\n");
+    fprintf(fid,"nfft=1200;\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"H=20*log10(abs(fftshift(fft(h,nfft))));\n");
     fprintf(fid,"W=20*log10(abs(fftshift(fft(w,nfft))));\n");
-
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(f,H,'-r',f,W,'-b', f,H+W,'-k','LineWidth',2);\n");
     fprintf(fid,"xlabel('Normalied Frequency');\n");
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
     fprintf(fid,"axis([-0.5 0.5 -10 10]);\n");
-    fprintf(fid,"legend('channel','equalizer','composite',0);\n");
-
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"hold on;\n");
-    fprintf(fid,"stem(0:(h_len-1),real(h),'-r');\n");
-    fprintf(fid,"stem(0:(p-1),    real(w),'-b');\n");
-    fprintf(fid,"hold off;\n");
-    fprintf(fid,"ylabel('Real Coefficients');\n");
-    fprintf(fid,"legend('channel','equalizer',0);\n");
-    fprintf(fid,"axis([-0.25 max(h_len,p)-0.75 -0.5 1.5]);\n");
-    fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"hold on;\n");
-    fprintf(fid,"stem(0:(h_len-1),imag(h),'-r');\n");
-    fprintf(fid,"stem(0:(p-1),    imag(w),'-b');\n");
-    fprintf(fid,"hold off;\n");
-    fprintf(fid,"ylabel('Imag Coefficients');\n");
-    fprintf(fid,"legend('channel','equalizer',0);\n");
-    fprintf(fid,"axis([-0.25 max(h_len,p)-0.75 -0.5 1.5]);\n");
-
-
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(y,'xr',d_hat,'xb');\n");
-    fprintf(fid,"axis('square');\n");
-    fprintf(fid,"xlabel('in-phase');\n");
-    fprintf(fid,"ylabel('quadrature');\n");
-    fprintf(fid,"legend('received','equalized',1');\n");
-
+    fprintf(fid,"legend('channel','equalizer','composite');\n");
     fclose(fid);
     printf("results written to %s.\n",OUTPUT_FILENAME);
-
     return 0;
 }

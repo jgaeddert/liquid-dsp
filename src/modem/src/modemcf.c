@@ -54,6 +54,7 @@
 #include "modem_bpsk.c"
 #include "modem_qpsk.c"
 #include "modem_ook.c"
+#include "modem_pi4dqpsk.c"
 #include "modem_sqam32.c"
 #include "modem_sqam128.c"
 
