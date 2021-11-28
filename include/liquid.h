@@ -7276,7 +7276,7 @@ int smatrixb_vmulf(smatrixb _q,
 #define MAX_MOD_BITS_PER_SYMBOL 8
 
 // Modulation schemes available
-#define LIQUID_MODEM_NUM_SCHEMES      (52)
+#define LIQUID_MODEM_NUM_SCHEMES      (53)
 
 typedef enum {
     LIQUID_MODEM_UNKNOWN=0, // Unknown modulation scheme
@@ -7324,6 +7324,7 @@ typedef enum {
     LIQUID_MODEM_ARB128OPT, // optimal 128-QAM
     LIQUID_MODEM_ARB256OPT, // optimal 256-QAM
     LIQUID_MODEM_ARB64VT,   // Virginia Tech logo
+    LIQUID_MODEM_PI4DQPSK,  // pi/4 differential QPSK
 
     // arbitrary modem type
     LIQUID_MODEM_ARB        // arbitrary QAM

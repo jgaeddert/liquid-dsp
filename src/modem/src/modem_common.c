@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -111,6 +111,11 @@ struct MODEM(_s)
         struct {
             TC * map;           // 32-sample sub-map (first quadrant)
         } sqam128;
+
+        // pi/4 differential QPSK
+        struct {
+            T theta;    // phase state
+        } pi4dqpsk;
     } data;
 
     // modulate function pointer
@@ -196,6 +201,7 @@ MODEM() MODEM(_create)(modulation_scheme _scheme)
     case LIQUID_MODEM_ARB128OPT: return MODEM(_create_arb128opt)();
     case LIQUID_MODEM_ARB256OPT: return MODEM(_create_arb256opt)();
     case LIQUID_MODEM_ARB64VT:   return MODEM(_create_arb64vt)();
+    case LIQUID_MODEM_PI4DQPSK:  return MODEM(_create_pi4dqpsk)();
     
     // arbitrary modem
     case LIQUID_MODEM_ARB:
@@ -266,8 +272,11 @@ int MODEM(_reset)(MODEM() _q)
     _q->r = 1.0f;         // received sample
     _q->x_hat = _q->r;  // estimated symbol
 
-    if ( liquid_modem_is_dpsk(_q->scheme) )
+    if ( liquid_modem_is_dpsk(_q->scheme) ) {
         _q->data.dpsk.phi = 0.0f;  // reset differential PSK phase state
+    } else if ( _q->scheme == LIQUID_MODEM_PI4DQPSK ) {
+        _q->data.pi4dqpsk.theta = 0; // reset phase state
+    }
     return LIQUID_OK;
 }
 
@@ -390,6 +399,7 @@ int MODEM(_demodulate_soft)(MODEM() _q,
     case LIQUID_MODEM_ARB:  return MODEM(_demodulate_soft_arb)( _q,_x,_s,_soft_bits);
     case LIQUID_MODEM_BPSK: return MODEM(_demodulate_soft_bpsk)(_q,_x,_s,_soft_bits);
     case LIQUID_MODEM_QPSK: return MODEM(_demodulate_soft_qpsk)(_q,_x,_s,_soft_bits);
+    case LIQUID_MODEM_PI4DQPSK: return MODEM(_demodulate_soft_pi4dqpsk)(_q,_x,_s,_soft_bits);
     default:;
     }
 

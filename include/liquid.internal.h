@@ -1331,6 +1331,7 @@ MODEM() MODEM(_create_arb64opt)(void);                          \
 MODEM() MODEM(_create_arb128opt)(void);                         \
 MODEM() MODEM(_create_arb256opt)(void);                         \
 MODEM() MODEM(_create_arb64vt)(void);                           \
+MODEM() MODEM(_create_pi4dqpsk)(void);                          \
                                                                 \
 /* Scale arbitrary modem energy to unity */                     \
 int MODEM(_arb_scale)(MODEM() _q);                              \
@@ -1355,6 +1356,7 @@ int MODEM(_modulate_qpsk)     ( MODEM(), unsigned int, TC *);   \
 int MODEM(_modulate_ook)      ( MODEM(), unsigned int, TC *);   \
 int MODEM(_modulate_sqam32)   ( MODEM(), unsigned int, TC *);   \
 int MODEM(_modulate_sqam128)  ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_pi4dqpsk) ( MODEM(), unsigned int, TC *);   \
                                                                 \
 /* modem demodulate routines */                                 \
 int MODEM(_demodulate_ask)    ( MODEM(), TC, unsigned int *);   \
@@ -1368,6 +1370,7 @@ int MODEM(_demodulate_qpsk)   ( MODEM(), TC, unsigned int *);   \
 int MODEM(_demodulate_ook)    ( MODEM(), TC, unsigned int *);   \
 int MODEM(_demodulate_sqam32) ( MODEM(), TC, unsigned int *);   \
 int MODEM(_demodulate_sqam128)( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_pi4dqpsk)(MODEM(), TC, unsigned int *);   \
                                                                 \
 /* modem demodulate (soft) routines */                          \
 int MODEM(_demodulate_soft_bpsk)(MODEM()         _q,            \
@@ -1378,6 +1381,10 @@ int MODEM(_demodulate_soft_qpsk)(MODEM()         _q,            \
                                  TC              _x,            \
                                  unsigned int *  _sym_out,      \
                                  unsigned char * _soft_bits);   \
+int MODEM(_demodulate_soft_pi4dqpsk)(MODEM()         _q,        \
+                                     TC              _x,        \
+                                     unsigned int *  _sym_out,  \
+                                     unsigned char* _soft_bits);\
 int MODEM(_demodulate_soft_arb)( MODEM()         _q,            \
                                  TC              _x,            \
                                  unsigned int *  _sym_out,      \
