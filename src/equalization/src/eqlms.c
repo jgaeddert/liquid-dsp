@@ -69,14 +69,15 @@ EQLMS() EQLMS(_create)(T *          _h,
     q->x2     = wdelayf_create(q->h_len);
 
     // copy coefficients (if not NULL)
+    unsigned int i;
     if (_h == NULL) {
         // initial coefficients with 1 at center
-        unsigned int i;
         for (i=0; i<q->h_len; i++)
             q->h0[i] = (i==q->h_len/2) ? 1.0 : 0.0;
     } else {
         // copy user-defined initial coefficients
-        memmove(q->h0, _h, (q->h_len)*sizeof(T));
+        for (i=0; i<q->h_len; i++)
+            q->h0[i] = conj(_h[q->h_len-i-1]);
     }
 
     // reset equalizer object
@@ -184,11 +185,12 @@ int EQLMS(_reset)(EQLMS() _q)
 // print eqlms object internals
 int EQLMS(_print)(EQLMS() _q)
 {
-    printf("equalizer (LMS):\n");
-    printf("    order:      %u\n", _q->h_len);
-    unsigned int i;
-    for (i=0; i<_q->h_len; i++)
-        printf("  h(%3u) = %12.4e + j*%12.4e;\n", i+1, creal(_q->w0[i]), cimag(_q->w0[i]));
+    printf("<eqlms_%s, n=%u, mu=%.3f>\n", EXTENSION_FULL, _q->h_len, _q->mu);
+    unsigned int i, j;
+    for (i=0; i<_q->h_len; i++) {
+        j = _q->h_len - i - 1;
+        printf("  w[%3u] = %12.4e + j*%12.4e;\n", i, creal(_q->w0[j]), cimag(_q->w0[j]));
+    }
     return LIQUID_OK;
 }
 
