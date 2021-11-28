@@ -412,47 +412,6 @@ int EQLMS(_step_blind)(EQLMS() _q,
     return EQLMS(_step)(_q, d, _d_hat);
 }
 
-// train equalizer object
-//  _q      :   equalizer object
-//  _w      :   initial weights / output weights
-//  _x      :   received sample vector
-//  _d      :   desired output vector
-//  _n      :   vector length
-int EQLMS(_train)(EQLMS()      _q,
-                  T *          _w,
-                  T *          _x,
-                  T *          _d,
-                  unsigned int _n)
-{
-    unsigned int p=_q->h_len;
-    if (_n < _q->h_len)
-        fprintf(stderr,"warning: eqlms_%s_train(), traning sequence less than filter order\n", EXTENSION_FULL);
-
-    unsigned int i;
-
-    // reset equalizer state
-    EQLMS(_reset)(_q);
-
-    // copy initial weights into buffer
-    for (i=0; i<p; i++)
-        _q->w0[i] = _w[p - i - 1];
-
-    T d_hat;
-    for (i=0; i<_n; i++) {
-        // push sample into internal buffer
-        EQLMS(_push)(_q, _x[i]);
-
-        // execute vector dot product
-        EQLMS(_execute)(_q, &d_hat);
-
-        // step through training cycle
-        EQLMS(_step)(_q, _d[i], d_hat);
-    }
-
-    // copy output weight vector
-    return EQLMS(_copy_coefficients)(_q, _w);
-}
-
 // 
 // internal methods
 //
