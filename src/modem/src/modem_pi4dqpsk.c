@@ -70,7 +70,7 @@ int MODEM(_modulate_pi4dqpsk)(MODEM()      _q,
     if (_q->data.pi4dqpsk.theta < -M_PI) _q->data.pi4dqpsk.theta += 2*M_PI;
 
     // compute output symbol and return
-    *_y = cexpf(_Complex_I*_q->data.pi4dqpsk.theta);
+    *_y = liquid_cexpjf(_q->data.pi4dqpsk.theta);
     return LIQUID_OK;
 }
 
@@ -94,11 +94,18 @@ int MODEM(_demodulate_pi4dqpsk)(MODEM()        _q,
     else                           *_sym_out = 2;
 
     // re-modulate symbol and store state
-    //MODEM(_modulate_pi4dqpsk)(_q, *_sym_out, &_q->x_hat);
-    _q->x_hat = 1; // TODO: re-modulate appropriately
+    T d_theta_ideal = 0.0f;
+    switch (*_sym_out) {
+    case 0: d_theta_ideal = +1*0.25*M_PI; break;
+    case 1: d_theta_ideal = +3*0.25*M_PI; break;
+    case 2: d_theta_ideal = -1*0.25*M_PI; break;
+    case 3: d_theta_ideal = -3*0.25*M_PI; break;
+    default:;
+    }
+    _q->x_hat = liquid_cexpjf(_q->data.pi4dqpsk.theta + d_theta_ideal);
     _q->r = _x;
-
     _q->data.pi4dqpsk.theta = theta;
+
     return LIQUID_OK;
 }
 
