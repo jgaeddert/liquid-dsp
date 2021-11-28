@@ -141,11 +141,11 @@ EQLMS() EQLMS(_create_lowpass)(unsigned int _h_len,
     float h[_h_len];
     liquid_firdes_kaiser(_h_len, _fc, 40.0f, 0.0f, h);
 
-    // copy coefficients to type-specific array (e.g. float complex)
+    // copy coefficients to type-specific array (e.g. float complex), scaling by bandwidth
     unsigned int i;
     T hc[_h_len];
     for (i=0; i<_h_len; i++)
-        hc[i] = h[i];
+        hc[i] = h[i] * 2 * _fc;
 
     // return equalizer object
     return EQLMS(_create)(hc, _h_len);
