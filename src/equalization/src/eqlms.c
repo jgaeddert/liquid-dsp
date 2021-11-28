@@ -211,6 +211,28 @@ int EQLMS(_set_bw)(EQLMS() _q,
     return LIQUID_OK;
 }
 
+// Get length of equalizer object (number of internal coefficients)
+unsigned int EQLMS(_get_length)(EQLMS() _q)
+{
+    return _q->h_len;
+}
+
+// Get pointer to coefficients array
+const T * EQLMS(_get_coefficients)(EQLMS() _q)
+{
+    return (const T*)(_q->w0);
+}
+
+// Copy internal coefficients to external buffer
+int EQLMS(_copy_coefficients)(EQLMS() _q, T * _w)
+{
+    // copy output weight vector
+    unsigned int i;
+    for (i=0; i<_q->h_len; i++)
+        _w[i] = conj(_q->w0[_q->h_len-i-1]);
+    return LIQUID_OK;
+}
+
 // push sample into equalizer internal buffer
 //  _q      :   equalizer object
 //  _x      :   received sample
@@ -392,16 +414,6 @@ int EQLMS(_step_blind)(EQLMS() _q,
     return EQLMS(_step)(_q, d, _d_hat);
 }
 
-// retrieve internal filter coefficients
-int EQLMS(_get_weights)(EQLMS() _q, T * _w)
-{
-    // copy output weight vector
-    unsigned int i;
-    for (i=0; i<_q->h_len; i++)
-        _w[i] = conj(_q->w0[_q->h_len-i-1]);
-    return LIQUID_OK;
-}
-
 // train equalizer object
 //  _q      :   equalizer object
 //  _w      :   initial weights / output weights
@@ -440,7 +452,7 @@ int EQLMS(_train)(EQLMS()      _q,
     }
 
     // copy output weight vector
-    return EQLMS(_get_weights)(_q, _w);
+    return EQLMS(_copy_coefficients)(_q, _w);
 }
 
 // 

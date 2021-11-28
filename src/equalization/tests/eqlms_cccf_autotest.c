@@ -176,9 +176,12 @@ void autotest_eqlms_config()
 
     // test getting weights
     float complex h[h_len];
-    eqlms_cccf_get_weights(q, h);
+    eqlms_cccf_copy_coefficients(q, h);
     for (i=0; i<h_len; i++)
         CONTEND_EQUALITY(h[i], i==k*m ? 1 : 0);
+    const float complex * w = eqlms_cccf_get_coefficients(q);
+    for (i=0; i<h_len; i++)
+        CONTEND_EQUALITY(w[i], i==k*m ? 1 : 0);
 
     // clean it up
     eqlms_cccf_destroy(q);

@@ -223,7 +223,7 @@ int main(int argc, char*argv[]) {
     }
 
     // get equalizer weights
-    eqlms_cccf_get_weights(eq, hp);
+    eqlms_cccf_copy_coefficients(eq, hp);
 
     // destroy equalizer object
     eqlms_cccf_destroy(eq);

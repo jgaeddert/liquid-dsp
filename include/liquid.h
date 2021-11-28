@@ -931,6 +931,18 @@ float EQLMS(_get_bw)(EQLMS() _q);                                           \
 int EQLMS(_set_bw)(EQLMS() _q,                                              \
                    float   _lambda);                                        \
                                                                             \
+/* Get length of equalizer object (number of internal coefficients)     */  \
+unsigned int EQLMS(_get_length)(EQLMS() _q);                                \
+                                                                            \
+/* Get pointer to coefficients array                                    */  \
+const T * EQLMS(_get_coefficients)(EQLMS() _q);                             \
+                                                                            \
+/* Copy internal coefficients to external buffer                        */  \
+/*  _q      : filter object                                             */  \
+/*  _w      : pointer to output coefficients array [size: _n x 1]       */  \
+int EQLMS(_copy_coefficients)(EQLMS() _q,                                   \
+                              T *     _w);                                  \
+                                                                            \
 /* Push sample into equalizer internal buffer                           */  \
 /*  _q      :   equalizer object                                        */  \
 /*  _x      :   input sample                                            */  \
@@ -988,12 +1000,6 @@ int EQLMS(_step)(EQLMS() _q,                                                \
 /*  _d_hat  :   actual output                                           */  \
 int EQLMS(_step_blind)(EQLMS() _q,                                          \
                        T       _d_hat);                                     \
-                                                                            \
-/* Get equalizer's internal coefficients                                */  \
-/*  _q      :   equalizer object                                        */  \
-/*  _w      :   weights, [size: _p x 1]                                 */  \
-int EQLMS(_get_weights)(EQLMS() _q,                                         \
-                        T *     _w);                                        \
                                                                             \
 /* Train equalizer object on group of samples                           */  \
 /*  _q      :   equalizer object                                        */  \
