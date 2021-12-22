@@ -7497,6 +7497,23 @@ float MODEM(_get_demodulator_evm)(MODEM() _q);                              \
 // define modem APIs
 LIQUID_MODEM_DEFINE_API(LIQUID_MODEM_MANGLE_FLOAT,float,liquid_float_complex)
 
+// macros to (temporarily) support backwards compatibility with API changes
+#define modem                               modemcf
+#define modem_create                        modemcf_create
+#define modem_create_arbitrary              modemcf_create_arbitrary
+#define modem_recreate                      modemcf_recreate
+#define modem_destroy                       modemcf_destroy
+#define modem_print                         modemcf_print
+#define modem_reset                         modemcf_reset
+#define modem_gen_rand_sym                  modemcf_gen_rand_sym
+#define modem_get_bps                       modemcf_get_bps
+#define modem_get_scheme                    modemcf_get_scheme
+#define modem_modulate                      modemcf_modulate
+#define modem_demodulate                    modemcf_demodulate
+#define modem_demodulate_soft               modemcf_demodulate_soft
+#define modem_get_demodulator_sample        modemcf_get_demodulator_sample
+#define modem_get_demodulator_phase_error   modemcf_get_demodulator_phase_error
+#define modem_get_demodulator_evm           modemcf_get_demodulator_evm
 
 //
 // continuous-phase modulation
