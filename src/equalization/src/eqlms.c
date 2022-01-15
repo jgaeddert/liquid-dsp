@@ -159,9 +159,20 @@ EQLMS() EQLMS(_recreate)(EQLMS()      _q,
                          T *          _h,
                          unsigned int _h_len)
 {
-    // TODO: only destroy when length differs
-    EQLMS(_destroy)(_q);
-    return EQLMS(_create)(_h,_h_len);
+    // only destroy when length differs
+    if (_q->h_len != _h_len) {
+        EQLMS(_destroy)(_q);
+        return EQLMS(_create)(_h,_h_len);
+    }
+
+    // filter is same length; copy user-defined initial coefficients
+    unsigned int i;
+    for (i=0; i<_q->h_len; i++)
+        _q->h0[i] = conj(_h[_q->h_len-i-1]);
+
+    // reset equalizer object and return
+    EQLMS(_reset)(_q);
+    return _q;
 }
 
 // destroy eqlms object
