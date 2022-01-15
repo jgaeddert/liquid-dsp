@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -912,6 +912,14 @@ EQLMS() EQLMS(_create_rnyquist)(int          _type,                         \
 /*  _fc     : filter cut-off normalized to sample rate, 0 < _fc <= 0.5  */  \
 EQLMS() EQLMS(_create_lowpass)(unsigned int _n,                             \
                                float        _fc);                           \
+                                                                            \
+/* Recreate LMS EQ initialized with external coefficients               */  \
+/*  _q : old equalization object                                        */  \
+/*  _h : filter coefficients; set to NULL for {1,0,0...},[size: _n x 1] */  \
+/*  _n : filter length                                                  */  \
+EQLMS() EQLMS(_recreate)(EQLMS()      _q,                                   \
+                         T *          _h,                                   \
+                         unsigned int _n);                                  \
                                                                             \
 /* Destroy equalizer object, freeing all internal memory                */  \
 int EQLMS(_destroy)(EQLMS() _q);                                            \

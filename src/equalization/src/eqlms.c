@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -149,6 +149,19 @@ EQLMS() EQLMS(_create_lowpass)(unsigned int _h_len,
 
     // return equalizer object
     return EQLMS(_create)(hc, _h_len);
+}
+
+// create least mean-squares (LMS) equalizer object
+//  _q      :   old equalization object
+//  _h      :   initial coefficients [size: _h_len x 1], default if NULL
+//  _p      :   equalizer length (number of taps)
+EQLMS() EQLMS(_recreate)(EQLMS()      _q,
+                         T *          _h,
+                         unsigned int _h_len)
+{
+    // TODO: only destroy when length differs
+    EQLMS(_destroy)(_q);
+    return EQLMS(_create)(_h,_h_len);
 }
 
 // destroy eqlms object
