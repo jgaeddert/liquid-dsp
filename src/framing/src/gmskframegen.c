@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -366,6 +366,17 @@ int gmskframegen_write(gmskframegen   _q,
     return _q->frame_complete;
 }
 
+// DEPRECATED: write samples of assembled frame
+//  _q              :   frame generator object
+//  _buf            :   output buffer [size: _buf_len x 1]
+//  _buf_len        :   output buffer length
+int gmskframegen_write_samples(gmskframegen    _q,
+                               float complex * _buf,
+                               unsigned int    _buf_len)
+{
+    fprintf(stderr,"deprecation warning: gmskframegen_write_samples() is old and will be removed in a future version\n");
+    return gmskframegen_write(_q, _buf, _buf_len);
+}
 
 // 
 // internal methods
