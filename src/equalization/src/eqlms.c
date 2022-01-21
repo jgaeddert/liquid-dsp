@@ -249,6 +249,16 @@ const T * EQLMS(_get_coefficients)(EQLMS() _q)
     return (const T*)(_q->w0);
 }
 
+// DEPRECATED: Get equalizer's internal coefficients
+void EQLMS(_get_weights)(EQLMS() _q, T * _w)
+{
+    fprintf(stderr,"deprecation warning: eqlms_%s_get_weights()...\n", EXTENSION_FULL);
+    // copy output weight vector
+    unsigned int i;
+    for (i=0; i<_q->h_len; i++)
+        _w[i] = conj(_q->w0[_q->h_len-i-1]);
+}
+
 // Copy internal coefficients to external buffer
 int EQLMS(_copy_coefficients)(EQLMS() _q, T * _w)
 {

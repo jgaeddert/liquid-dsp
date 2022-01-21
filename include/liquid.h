@@ -951,6 +951,12 @@ const T * EQLMS(_get_coefficients)(EQLMS() _q);                             \
 int EQLMS(_copy_coefficients)(EQLMS() _q,                                   \
                               T *     _w);                                  \
                                                                             \
+/* DEPRECATED: Get equalizer's internal coefficients                    */  \
+/*  _q      : filter object                                             */  \
+/*  _w      : pointer to output coefficients array [size: _n x 1]       */  \
+void EQLMS(_get_weights)(EQLMS() _q,                                        \
+                         T *     _w);                                       \
+                                                                            \
 /* Push sample into equalizer internal buffer                           */  \
 /*  _q      :   equalizer object                                        */  \
 /*  _x      :   input sample                                            */  \
@@ -1020,6 +1026,7 @@ int EQLMS(_train)(EQLMS()      _q,                                          \
                   T *          _x,                                          \
                   T *          _d,                                          \
                   unsigned int _n);                                         \
+                                                                            \
 
 LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_RRRF, float)
 LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_CCCF, liquid_float_complex)
