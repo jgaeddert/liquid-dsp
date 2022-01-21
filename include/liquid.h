@@ -1015,7 +1015,7 @@ int EQLMS(_step)(EQLMS() _q,                                                \
 int EQLMS(_step_blind)(EQLMS() _q,                                          \
                        T       _d_hat);                                     \
                                                                             \
-/* Train equalizer object on group of samples                           */  \
+/* DEPRECATED: Train equalizer object on group of samples               */  \
 /*  _q      :   equalizer object                                        */  \
 /*  _w      :   input/output weights,  [size: _p x 1]                   */  \
 /*  _x      :   received sample vector,[size: _n x 1]                   */  \
