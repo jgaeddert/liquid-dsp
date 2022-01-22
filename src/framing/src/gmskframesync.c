@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -387,6 +387,25 @@ int gmskframesync_reset_framedatastats(gmskframesync _q)
 framedatastats_s gmskframesync_get_framedatastats(gmskframesync _q)
 {
     return _q->framedatastats;
+}
+
+int gmskframesync_debug_enable(gmskframesync _q)
+{
+    fprintf(stderr,"deprecation warning: gmskframesync_debug_enable() is old and will be removed in a future version\n");
+    return LIQUID_OK;
+}
+
+int gmskframesync_debug_disable(gmskframesync _q)
+{
+    fprintf(stderr,"deprecation warning: gmskframesync_debug_disable() is old and will be removed in a future version\n");
+    return LIQUID_OK;
+}
+
+int gmskframesync_debug_print(gmskframesync _q,
+                              const char *  _filename)
+{
+    fprintf(stderr,"deprecation warning: gmskframesync_debug_print() is old and will be removed in a future version\n");
+    return LIQUID_OK;
 }
 
 // 

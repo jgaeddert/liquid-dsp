@@ -5467,6 +5467,11 @@ int gmskframesync_execute(gmskframesync _q,
 int              gmskframesync_reset_framedatastats(gmskframesync _q);
 framedatastats_s gmskframesync_get_framedatastats  (gmskframesync _q);
 
+// DEPRECATED: debug methods
+int gmskframesync_debug_enable(gmskframesync _q);
+int gmskframesync_debug_disable(gmskframesync _q);
+int gmskframesync_debug_print(gmskframesync _q, const char * _filename);
+
 
 //
 // DSSS frame generator
