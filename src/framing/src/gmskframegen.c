@@ -94,9 +94,9 @@ struct gmskframegen_s {
 //  _k      :   samples/symbol
 //  _m      :   filter delay (symbols)
 //  _BT     :   excess bandwidth factor
-gmskframegen gmskframegen_create(unsigned int _k,
-                                 unsigned int _m,
-                                 float        _BT)
+gmskframegen gmskframegen_create_set(unsigned int _k,
+                                     unsigned int _m,
+                                     float        _BT)
 {
     gmskframegen q = (gmskframegen) malloc(sizeof(struct gmskframegen_s));
 
@@ -146,6 +146,12 @@ gmskframegen gmskframegen_create(unsigned int _k,
     // reset object and return
     gmskframegen_reset(q);
     return q;
+}
+
+// create default GMSK frame generator (k=2, m=3, BT=0.5)
+gmskframegen gmskframegen_create()
+{
+    return gmskframegen_create_set(2, 3, 0.5f);
 }
 
 // destroy gmskframegen object

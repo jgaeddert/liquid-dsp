@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ void benchmark_gmskframesync(struct rusage *     _start,
     float nstd  = powf(10.0f, -SNRdB/20.0f);
 
     // create gmskframegen object and assemble the frame
-    gmskframegen fg = gmskframegen_create(k, m, BT);
+    gmskframegen fg = gmskframegen_create_set(k, m, BT);
     gmskframegen_assemble(fg, NULL, NULL, payload_len,
             LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE);
     unsigned int frame_len = gmskframegen_getframelen(fg);
@@ -58,7 +58,7 @@ void benchmark_gmskframesync(struct rusage *     _start,
         frame[i] += nstd*(randnf() + _Complex_I*randnf());
 
     // create gmskframesync object
-    gmskframesync fs = gmskframesync_create(k, m, BT, NULL, NULL);
+    gmskframesync fs = gmskframesync_create_set(k, m, BT, NULL, NULL);
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
@@ -82,7 +82,7 @@ void benchmark_gmskframesync_noise(struct rusage *     _start,
     unsigned long int i;
 
     // create frame synchronizer
-    gmskframesync fs = gmskframesync_create(2, 3, 0.5f, NULL, NULL);
+    gmskframesync fs = gmskframesync_create_set(2, 3, 0.5f, NULL, NULL);
 
     // allocate memory for noise buffer and initialize
     unsigned int num_samples = 1024;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,20 +50,17 @@ static int gmskframesync_autotest_callback(
 void autotest_gmskframesync_process()
 {
     // initialization and options
-    unsigned int k      = 2;        // samples per symbol
-    unsigned int m      = 12;       // filter semi-length
-    float        bt     = 0.3f;     // bandwidth-time factor
     unsigned int msg_len= 40;       // message length [bytes]
     crc_scheme   crc    = LIQUID_CRC_32;
     fec_scheme   fec0   = LIQUID_FEC_NONE;
     fec_scheme   fec1   = LIQUID_FEC_NONE;
-    unsigned int secret = 0;        //
+    unsigned int secret = 0;        // placeholder for secret return value
 
     // create objects
-    gmskframegen fg = gmskframegen_create(k,m,bt);
+    gmskframegen fg = gmskframegen_create();
 
     // create frame synchronizer
-    gmskframesync fs = gmskframesync_create(k,m,bt,
+    gmskframesync fs = gmskframesync_create(
             gmskframesync_autotest_callback,(void*)&secret);
 
     if (liquid_autotest_verbose) {
@@ -119,8 +116,8 @@ void autotest_gmskframesync_multiple()
     unsigned int num_frames = 80;   // number of frames to generate
 
     // create objects
-    gmskframegen fg = gmskframegen_create(k,m,bt);
-    gmskframesync fs = gmskframesync_create(k,m,bt,NULL,NULL);
+    gmskframegen fg = gmskframegen_create_set(k,m,bt);
+    gmskframesync fs = gmskframesync_create_set(k,m,bt,NULL,NULL);
 
     // allocate buffer for processing
     unsigned int  buf_len = 200;
@@ -157,8 +154,8 @@ void autotest_gmskframesync_multiple()
 void testbench_gmskframesync(unsigned int _k, unsigned int _m, float _bt)
 {
     // create objects
-    gmskframegen  fg = gmskframegen_create (_k,_m,_bt);
-    gmskframesync fs = gmskframesync_create(_k,_m,_bt,NULL,NULL);
+    gmskframegen  fg = gmskframegen_create_set (_k,_m,_bt);
+    gmskframesync fs = gmskframesync_create_set(_k,_m,_bt,NULL,NULL);
 
     // generate the frame in blocks
     gmskframegen_assemble_default(fg, 80);

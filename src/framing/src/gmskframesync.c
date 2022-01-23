@@ -147,11 +147,11 @@ struct gmskframesync_s {
 //  _BT         :   excess bandwidth factor
 //  _callback   :   callback function
 //  _userdata   :   user data pointer passed to callback function
-gmskframesync gmskframesync_create(unsigned int       _k,
-                                   unsigned int       _m,
-                                   float              _BT,
-                                   framesync_callback _callback,
-                                   void *             _userdata)
+gmskframesync gmskframesync_create_set(unsigned int       _k,
+                                       unsigned int       _m,
+                                       float              _BT,
+                                       framesync_callback _callback,
+                                       void *             _userdata)
 {
     gmskframesync q = (gmskframesync) malloc(sizeof(struct gmskframesync_s));
     q->callback = _callback;
@@ -239,6 +239,14 @@ gmskframesync gmskframesync_create(unsigned int       _k,
     return q;
 }
 
+// create GMSK frame synchronizer with default parameters (k=2, m=3, bt=0.5)
+//  _callback   :   callback function
+//  _userdata   :   user data pointer passed to callback function
+gmskframesync gmskframesync_create(framesync_callback _callback,
+                                   void *             _userdata)
+{
+    return gmskframesync_create_set(2, 3, 0.5f, _callback, _userdata);
+}
 
 // destroy frame synchronizer object, freeing all internal memory
 int gmskframesync_destroy(gmskframesync _q)
