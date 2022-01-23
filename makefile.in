@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2021 Joseph Gaeddert
+# Copyright (c) 2007 - 2022 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -1470,7 +1470,6 @@ example_programs :=						\
 	examples/cbufferf_example				\
 	examples/cgsolve_example				\
 	examples/channel_cccf_example				\
-	examples/chromosome_example				\
 	examples/compand_example				\
 	examples/compand_cf_example				\
 	examples/complementary_codes_example			\
@@ -1655,6 +1654,7 @@ sandbox_programs =						\
 	sandbox/am_demod_dsb_pll_costas_test			\
 	sandbox/am_demod_ssb_pll_carrier_test			\
 	sandbox/bpresync_test					\
+	sandbox/chromosome_test					\
 	sandbox/cpmodem_test					\
 	sandbox/count_ones_gentab				\
 	sandbox/crc_gentab					\
