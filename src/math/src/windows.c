@@ -391,7 +391,7 @@ float flattop(unsigned int _i,unsigned int _wlen)
 float triangular(unsigned int _i,unsigned int _wlen,unsigned int _L)
     { return liquid_triangular(_i,_wlen,_L); }
 
-float rcostaper_window(unsigned int _i,unsigned int _wlen,unsigned int _t)
+float liquid_rcostaper_windowf(unsigned int _i,unsigned int _wlen,unsigned int _t)
     { return liquid_rcostaper_window(_i,_wlen,_t); }
 
 float kbd(unsigned int _i,unsigned int _wlen,float _beta)

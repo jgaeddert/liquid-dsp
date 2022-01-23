@@ -6565,7 +6565,7 @@ float blackmanharris(unsigned int _i,unsigned int _wlen);
 float blackmanharris7(unsigned int _i,unsigned int _wlen);
 float flattop(unsigned int _i,unsigned int _wlen);
 float triangular(unsigned int _i,unsigned int _wlen,unsigned int _L);
-float rcostaper_window(unsigned int _i,unsigned int _wlen,unsigned int _t);
+float liquid_rcostaper_windowf(unsigned int _i,unsigned int _wlen,unsigned int _t);
 float kbd(unsigned int _i,unsigned int _wlen,float _beta);
 int   kbd_window(unsigned int _wlen,float _beta,float * _w);
 
