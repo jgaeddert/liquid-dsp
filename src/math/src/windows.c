@@ -370,7 +370,7 @@ float liquid_rcostaper_window(unsigned int _i,
 
 // shim to support legacy APIs (backwards compatible with 1.3.2)
 
-float kaiser(unsigned int _i,unsigned int _wlen, float _beta)
+float kaiser(unsigned int _i,unsigned int _wlen, float _beta, float _dt)
     { return liquid_kaiser(_i,_wlen,_beta); }
 
 float hamming(unsigned int _i,unsigned int _wlen)

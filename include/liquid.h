@@ -6563,7 +6563,7 @@ int liquid_kbd_window(unsigned int _wlen,
                       float *      _w);
 
 // shim to support legacy APIs (backwards compatible with 1.3.2)
-float kaiser(unsigned int _i,unsigned int _wlen, float _beta);
+float kaiser(unsigned int _i,unsigned int _wlen, float _beta, float _dt);
 float hamming(unsigned int _i,unsigned int _wlen);
 float hann(unsigned int _i,unsigned int _wlen);
 float blackmanharris(unsigned int _i,unsigned int _wlen);
