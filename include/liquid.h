@@ -148,6 +148,15 @@ const char *        liquid_error_info(liquid_error_code _code);
 LIQUID_DEFINE_COMPLEX(float,  liquid_float_complex);
 LIQUID_DEFINE_COMPLEX(double, liquid_double_complex);
 
+// external compile-time deprecation warnings with messages
+#ifdef __GNUC__
+#   define DEPRECATED(MSG,X) X __attribute__((deprecated (MSG)))
+#elif defined(_MSC_VER)
+#   define DEPRECATED(MSG,X) __declspec(deprecated) X
+#else
+#   define DEPRECATED(MSG,X) X
+#endif
+
 //
 // MODULE : agc (automatic gain control)
 //
@@ -951,11 +960,13 @@ const T * EQLMS(_get_coefficients)(EQLMS() _q);                             \
 int EQLMS(_copy_coefficients)(EQLMS() _q,                                   \
                               T *     _w);                                  \
                                                                             \
-/* DEPRECATED: Get equalizer's internal coefficients                    */  \
+/* Get equalizer's internal coefficients                                */  \
 /*  _q      : filter object                                             */  \
 /*  _w      : pointer to output coefficients array [size: _n x 1]       */  \
+DEPRECATED("use eqlms_xxxt_copy_coefficients(...) instead",                 \
 void EQLMS(_get_weights)(EQLMS() _q,                                        \
-                         T *     _w);                                       \
+                         T *     _w)                                        \
+);                                                                          \
                                                                             \
 /* Push sample into equalizer internal buffer                           */  \
 /*  _q      :   equalizer object                                        */  \
@@ -1015,18 +1026,19 @@ int EQLMS(_step)(EQLMS() _q,                                                \
 int EQLMS(_step_blind)(EQLMS() _q,                                          \
                        T       _d_hat);                                     \
                                                                             \
-/* DEPRECATED: Train equalizer object on group of samples               */  \
+/* Train equalizer object on group of samples                           */  \
 /*  _q      :   equalizer object                                        */  \
 /*  _w      :   input/output weights,  [size: _p x 1]                   */  \
 /*  _x      :   received sample vector,[size: _n x 1]                   */  \
 /*  _d      :   desired output vector, [size: _n x 1]                   */  \
 /*  _n      :   input, output vector length                             */  \
+DEPRECATED("method provides complexity with little benefit",                \
 int EQLMS(_train)(EQLMS()      _q,                                          \
                   T *          _w,                                          \
                   T *          _x,                                          \
                   T *          _d,                                          \
-                  unsigned int _n);                                         \
-                                                                            \
+                  unsigned int _n)                                          \
+);                                                                          \
 
 LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_RRRF, float)
 LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_CCCF, liquid_float_complex)
@@ -5431,11 +5443,13 @@ int gmskframegen_write(gmskframegen           _q,
                        liquid_float_complex * _buf,
                        unsigned int           _buf_len);
 
-// DEPRECATED: write samples of assembled frame
+// write samples of assembled frame
 //  _q          : frame generator object
 //  _buf        : output buffer [size: k x 1]
+DEPRECATED("use gmskframegen_write(...) instead",
 int gmskframegen_write_samples(gmskframegen           _q,
-                               liquid_float_complex * _buf);
+                               liquid_float_complex * _buf)
+);
 
 
 //
@@ -5472,10 +5486,13 @@ int gmskframesync_execute(gmskframesync _q,
 int              gmskframesync_reset_framedatastats(gmskframesync _q);
 framedatastats_s gmskframesync_get_framedatastats  (gmskframesync _q);
 
-// DEPRECATED: debug methods
-int gmskframesync_debug_enable(gmskframesync _q);
-int gmskframesync_debug_disable(gmskframesync _q);
-int gmskframesync_debug_print(gmskframesync _q, const char * _filename);
+// debug methods
+DEPRECATED("debug methods add complexity and provide little value",
+  int gmskframesync_debug_enable(gmskframesync _q) );
+DEPRECATED("debug methods add complexity and provide little value",
+  int gmskframesync_debug_disable(gmskframesync _q) );
+DEPRECATED("debug methods add complexity and provide little value",
+  int gmskframesync_debug_print(gmskframesync _q, const char * _filename) );
 
 
 //

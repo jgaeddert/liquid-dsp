@@ -252,7 +252,6 @@ const T * EQLMS(_get_coefficients)(EQLMS() _q)
 // DEPRECATED: Get equalizer's internal coefficients
 void EQLMS(_get_weights)(EQLMS() _q, T * _w)
 {
-    fprintf(stderr,"deprecation warning: eqlms_%s_get_weights() is old and will be removed in a future version\n", EXTENSION_FULL);
     // copy output weight vector
     unsigned int i;
     for (i=0; i<_q->h_len; i++)
@@ -458,7 +457,6 @@ int EQLMS(_train)(EQLMS()      _q,
                   T *          _d,
                   unsigned int _n)
 {
-    fprintf(stderr,"deprecation warning: eqlms_%s_train() is old and will be removed in a future version\n", EXTENSION_FULL);
     unsigned int p=_q->h_len;
     if (_n < _q->h_len) {
         fprintf(stderr,"warning: eqlms_%s_train(), traning sequence less than filter order\n", EXTENSION_FULL);

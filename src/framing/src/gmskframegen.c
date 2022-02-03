@@ -378,7 +378,6 @@ int gmskframegen_write(gmskframegen   _q,
 int gmskframegen_write_samples(gmskframegen    _q,
                                float complex * _buf)
 {
-    fprintf(stderr,"deprecation warning: gmskframegen_write_samples() is old and will be removed in a future version\n");
     return gmskframegen_write(_q, _buf, _q->k);
 }
 
