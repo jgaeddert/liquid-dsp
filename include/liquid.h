@@ -148,13 +148,13 @@ const char *        liquid_error_info(liquid_error_code _code);
 LIQUID_DEFINE_COMPLEX(float,  liquid_float_complex);
 LIQUID_DEFINE_COMPLEX(double, liquid_double_complex);
 
-// external compile-time deprecation warnings
+// external compile-time deprecation warnings with messages
 #ifdef __GNUC__
-#   define DEPRECATED(X) X __attribute__((deprecated))
+#   define DEPRECATED(MSG,X) X __attribute__((deprecated (MSG)))
 #elif defined(_MSC_VER)
-#   define DEPRECATED(X) __declspec(deprecated) X
+#   define DEPRECATED(MSG,X) __declspec(deprecated) X
 #else
-#   define DEPRECATED(X) X
+#   define DEPRECATED(MSG,X) X
 #endif
 
 //
@@ -963,7 +963,7 @@ int EQLMS(_copy_coefficients)(EQLMS() _q,                                   \
 /* Get equalizer's internal coefficients                                */  \
 /*  _q      : filter object                                             */  \
 /*  _w      : pointer to output coefficients array [size: _n x 1]       */  \
-DEPRECATED(                                                                 \
+DEPRECATED("use eqlms_xxxt_copy_coefficients(...) instead",                 \
 void EQLMS(_get_weights)(EQLMS() _q,                                        \
                          T *     _w)                                        \
 );                                                                          \
@@ -1032,7 +1032,7 @@ int EQLMS(_step_blind)(EQLMS() _q,                                          \
 /*  _x      :   received sample vector,[size: _n x 1]                   */  \
 /*  _d      :   desired output vector, [size: _n x 1]                   */  \
 /*  _n      :   input, output vector length                             */  \
-DEPRECATED(                                                                 \
+DEPRECATED("method provides complexity with little benefit",                \
 int EQLMS(_train)(EQLMS()      _q,                                          \
                   T *          _w,                                          \
                   T *          _x,                                          \
@@ -5446,7 +5446,7 @@ int gmskframegen_write(gmskframegen           _q,
 // write samples of assembled frame
 //  _q          : frame generator object
 //  _buf        : output buffer [size: k x 1]
-DEPRECATED(
+DEPRECATED("use gmskframegen_write(...) instead",
 int gmskframegen_write_samples(gmskframegen           _q,
                                liquid_float_complex * _buf)
 );
@@ -5487,9 +5487,12 @@ int              gmskframesync_reset_framedatastats(gmskframesync _q);
 framedatastats_s gmskframesync_get_framedatastats  (gmskframesync _q);
 
 // debug methods
-DEPRECATED( int gmskframesync_debug_enable(gmskframesync _q) );
-DEPRECATED( int gmskframesync_debug_disable(gmskframesync _q) );
-DEPRECATED( int gmskframesync_debug_print(gmskframesync _q, const char * _filename) );
+DEPRECATED("debug methods add complexity and provide little value",
+  int gmskframesync_debug_enable(gmskframesync _q) );
+DEPRECATED("debug methods add complexity and provide little value",
+  int gmskframesync_debug_disable(gmskframesync _q) );
+DEPRECATED("debug methods add complexity and provide little value",
+  int gmskframesync_debug_print(gmskframesync _q, const char * _filename) );
 
 
 //
