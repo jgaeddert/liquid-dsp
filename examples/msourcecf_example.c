@@ -67,7 +67,7 @@ int main()
 
         // push resulting sample through periodogram
         spgramcf_write(periodogram, buf, buf_len);
-        
+
         // accumulated samples
         total_samples += buf_len;
     }

@@ -1519,6 +1519,7 @@ example_programs :=						\
 	examples/firinterp_rrrf_window_example			\
 	examples/firpfbch_crcf_example				\
 	examples/firpfbch_crcf_analysis_example			\
+	examples/firpfbch_crcf_msource_example			\
 	examples/firpfbch_crcf_synthesis_example		\
 	examples/flexframesync_example				\
 	examples/flexframesync_reconfig_example			\
