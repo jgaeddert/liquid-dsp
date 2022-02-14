@@ -10,7 +10,6 @@ int main() {
     // options
     unsigned int M          =  5;     // number of channels
     unsigned int m          = 12;     // filter delay
-    float        As         = 60;     // stop-band attenuation
     unsigned int num_samples= 512000; // number of samples to generate
     unsigned int nfft       = 1200;   // FFT size for analysis
 
@@ -20,7 +19,8 @@ int main() {
     float complex buf_1[M]; // channelized output
 
     // create filterbank channelizer object using external filter coefficients
-    firpfbch_crcf q = firpfbch_crcf_create_kaiser(LIQUID_ANALYZER, M, m, As);
+    firpfbch_crcf q = firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER, M, m, 0.5f,
+            LIQUID_FIRFILT_ARKAISER);
 
     // create multi-signal source generator
     msourcecf gen = msourcecf_create_default();
