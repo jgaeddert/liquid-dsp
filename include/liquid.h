@@ -2142,8 +2142,19 @@ int firdespm_print(firdespm _q);
 // execute filter design, storing result in _h
 int firdespm_execute(firdespm _q, float * _h);
 
+// Design FIR filter using generic window/taper method
+//  _wtype  : window type, e.g. LIQUID_WINDOW_HAMMING
+//  _n      : filter length, _n > 0
+//  _fc     : cutoff frequency, 0 < _fc < 0.5
+//  _arg    : window-specific argument, if required
+//  _h      : output coefficient buffer, [size: _n x 1]
+int liquid_firdes_windowf(int          _wtype,
+                          unsigned int _n,
+                          float        _fc,
+                          float        _arg,
+                          float *      _h);
 
-// Design FIR using kaiser window
+// Design FIR using Kaiser window
 //  _n      : filter length, _n > 0
 //  _fc     : cutoff frequency, 0 < _fc < 0.5
 //  _As     : stop-band attenuation [dB], _As > 0

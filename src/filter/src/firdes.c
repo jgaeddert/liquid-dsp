@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -259,6 +259,43 @@ float kaiser_beta_As(float _As)
     return beta;
 }
 
+// Design FIR filter using generic window/taper method
+//  _wtype  : window type, e.g. LIQUID_WINDOW_HAMMING
+//  _n      : filter length, _n > 0
+//  _fc     : cutoff frequency, 0 < _fc < 0.5
+//  _arg    : window-specific argument, if required
+//  _h      : output coefficient buffer, [size: _n x 1]
+int liquid_firdes_windowf(int          _wtype,
+                          unsigned int _n,
+                          float        _fc,
+                          float        _arg,
+                          float *      _h)
+{
+    // validate inputs
+    if (_fc < 0.0f || _fc > 0.5f) {
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_window(), cutoff frequency (%12.4e) out of range (0, 0.5)", _fc);
+    } else if (_n == 0) {
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_window(), filter length must be greater than zero");
+    }
+
+    float t, h1, h2; 
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        // time vector
+        t = (float)i - (float)(_n-1)/2.0f;
+
+        // sinc prototype
+        h1 = sincf(2.0f*_fc*t);
+
+        // window
+        h2 = liquid_windowf(_wtype,i,_n,_arg);
+
+        // composite
+        _h[i] = h1*h2;
+    }
+    return LIQUID_OK;
+}
+
 // Design FIR using kaiser window
 //  _n      : filter length, _n > 0
 //  _fc     : cutoff frequency, 0 < _fc < 0.5
@@ -286,6 +323,7 @@ void liquid_firdes_kaiser(unsigned int _n,
     // choose kaiser beta parameter (approximate)
     float beta = kaiser_beta_As(_As);
 
+    // TODO: invoke liquid_firdes_windowf()
     float t, h1, h2; 
     unsigned int i;
     for (i=0; i<_n; i++) {
