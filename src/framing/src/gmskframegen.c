@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -94,9 +94,9 @@ struct gmskframegen_s {
 //  _k      :   samples/symbol
 //  _m      :   filter delay (symbols)
 //  _BT     :   excess bandwidth factor
-gmskframegen gmskframegen_create(unsigned int _k,
-                                 unsigned int _m,
-                                 float        _BT)
+gmskframegen gmskframegen_create_set(unsigned int _k,
+                                     unsigned int _m,
+                                     float        _BT)
 {
     gmskframegen q = (gmskframegen) malloc(sizeof(struct gmskframegen_s));
 
@@ -146,6 +146,12 @@ gmskframegen gmskframegen_create(unsigned int _k,
     // reset object and return
     gmskframegen_reset(q);
     return q;
+}
+
+// create default GMSK frame generator (k=2, m=3, BT=0.5)
+gmskframegen gmskframegen_create()
+{
+    return gmskframegen_create_set(2, 3, 0.5f);
 }
 
 // destroy gmskframegen object
@@ -366,6 +372,14 @@ int gmskframegen_write(gmskframegen   _q,
     return _q->frame_complete;
 }
 
+// DEPRECATED: write samples of assembled frame
+//  _q      :   frame generator object
+//  _buf    :   output buffer [size: _buf_len x 1]
+int gmskframegen_write_samples(gmskframegen    _q,
+                               float complex * _buf)
+{
+    return gmskframegen_write(_q, _buf, _q->k);
+}
 
 // 
 // internal methods

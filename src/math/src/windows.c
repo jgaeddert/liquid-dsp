@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -367,4 +367,36 @@ float liquid_rcostaper_window(unsigned int _i,
     // return ramp or flat component
     return (_i < _t) ? 0.5f - 0.5f*cosf(M_PI*((float)_i + 0.5f) / (float)_t) : 1.0f;
 }
+
+// shim to support legacy APIs (backwards compatible with 1.3.2)
+
+float kaiser(unsigned int _i,unsigned int _wlen, float _beta, float _dt)
+    { return liquid_kaiser(_i,_wlen,_beta); }
+
+float hamming(unsigned int _i,unsigned int _wlen)
+    { return liquid_hamming(_i,_wlen); }
+
+float hann(unsigned int _i,unsigned int _wlen)
+    { return liquid_hann(_i,_wlen); }
+
+float blackmanharris(unsigned int _i,unsigned int _wlen)
+    { return liquid_blackmanharris(_i,_wlen); }
+
+float blackmanharris7(unsigned int _i,unsigned int _wlen)
+    { return liquid_blackmanharris7(_i,_wlen); }
+
+float flattop(unsigned int _i,unsigned int _wlen)
+    { return liquid_flattop(_i,_wlen); }
+
+float triangular(unsigned int _i,unsigned int _wlen,unsigned int _L)
+    { return liquid_triangular(_i,_wlen,_L); }
+
+float liquid_rcostaper_windowf(unsigned int _i,unsigned int _wlen,unsigned int _t)
+    { return liquid_rcostaper_window(_i,_wlen,_t); }
+
+float kbd(unsigned int _i,unsigned int _wlen,float _beta)
+    { return liquid_kbd(_i,_wlen,_beta); }
+
+int kbd_window(unsigned int _wlen,float _beta,float * _w)
+    { return liquid_kbd_window(_wlen,_beta,_w); }
 

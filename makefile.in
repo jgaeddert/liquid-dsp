@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2021 Joseph Gaeddert
+# Copyright (c) 2007 - 2022 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -71,7 +71,7 @@ INCLUDE_CFLAGS	= $(addprefix -I,$(include_dirs))
 COVERAGE_FLAGS  = @COVERAGE_OPTION@ # dynamic library linker needs separate flag
 CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_MSG_OPTION@ @ARCH_OPTION@ ${COVERAGE_FLAGS}
 CPPFLAGS	= @CPPFLAGS@ $(INCLUDE_CFLAGS)
-CFLAGS		= $(CONFIG_CFLAGS) -Wall -fPIC
+CFLAGS		= $(CONFIG_CFLAGS) -Wall -fPIC -Wno-deprecated
 CXXFLAGS	= $(CFLAGS) -std=c++14 -Wno-return-type-c-linkage
 LDFLAGS		= @LDFLAGS@
 LIBS		= @LIBS@
@@ -827,6 +827,7 @@ modem_objects :=						\
 	src/modem/src/fskmod.o					\
 	src/modem/src/gmskdem.o					\
 	src/modem/src/gmskmod.o					\
+	src/modem/src/modem.shim.o				\
 	src/modem/src/modemcf.o					\
 	src/modem/src/modem_utilities.o				\
 	src/modem/src/modem_apsk_const.o			\
@@ -853,6 +854,7 @@ modem_includes :=						\
 #src/modem/src/modem_demod_soft_const.c
 
 src/modem/src/modemcf.o          : %.o : %.c $(include_headers) $(modem_includes)
+src/modem/src/modem.shim.o       : %.o : %.c $(include_headers)
 src/modem/src/gmskmod.o          : %.o : %.c $(include_headers)
 src/modem/src/gmskdem.o          : %.o : %.c $(include_headers)
 src/modem/src/ampmodem.o         : %.o : %.c $(include_headers)
@@ -1564,7 +1566,6 @@ example_programs :=						\
 	examples/cbufferf_example				\
 	examples/cgsolve_example				\
 	examples/channel_cccf_example				\
-	examples/chromosome_example				\
 	examples/compand_example				\
 	examples/compand_cf_example				\
 	examples/complementary_codes_example			\
@@ -1749,6 +1750,7 @@ sandbox_programs =						\
 	sandbox/am_demod_dsb_pll_costas_test			\
 	sandbox/am_demod_ssb_pll_carrier_test			\
 	sandbox/bpresync_test					\
+	sandbox/chromosome_test					\
 	sandbox/cpmodem_test					\
 	sandbox/count_ones_gentab				\
 	sandbox/crc_gentab					\
@@ -1879,7 +1881,7 @@ programs: all xautotest benchmark examples sandbox
 ##
 ## TARGET : world     - build absolutely everything
 ##
-world : all check bench python examples sandbox
+world : all check bench doc-check examples python sandbox
 
 ##
 ## TARGET : clean     - clean build (objects, dependencies, libraries, etc.)

@@ -52,6 +52,7 @@ int main() {
     }
 
     // explort to gnuplot
+    spgramcf_set_rate      (q,200e6);
     spgramcf_export_gnuplot(q,"spgramcf_example.gnu");
 
     // compute power spectral density output
@@ -63,9 +64,7 @@ int main() {
     firhilbf_destroy(ht);
     spgramcf_destroy(q);
 
-    // 
     // export output file
-    //
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\n");

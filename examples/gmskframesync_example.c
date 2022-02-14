@@ -36,11 +36,11 @@ int main(int argc, char*argv[])
     memset(payload, 0x00, payload_len);
 
     // create frame generator and assemble
-    gmskframegen fg = gmskframegen_create(k, m, BT);
+    gmskframegen fg = gmskframegen_create_set(k, m, BT);
     gmskframegen_assemble(fg, header, payload, payload_len, check, fec0, fec1);
 
     // create frame synchronizer
-    gmskframesync fs = gmskframesync_create(k, m, BT, callback, NULL);
+    gmskframesync fs = gmskframesync_create_set(k, m, BT, callback, NULL);
 
     // allocate buffer for storing entire frame
     unsigned int num_samples = gmskframegen_getframelen(fg) + 800;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,8 +49,8 @@ extern "C" {
 // LIQUID_VERSION = "X.Y.Z"
 // LIQUID_VERSION_NUMBER = (X*1000000 + Y*1000 + Z)
 //
-#define LIQUID_VERSION          "1.3.2"
-#define LIQUID_VERSION_NUMBER   1003002
+#define LIQUID_VERSION          "1.4.0"
+#define LIQUID_VERSION_NUMBER   1004000
 
 //
 // Run-time library version numbers
@@ -147,6 +147,15 @@ const char *        liquid_error_info(liquid_error_code _code);
 
 LIQUID_DEFINE_COMPLEX(float,  liquid_float_complex);
 LIQUID_DEFINE_COMPLEX(double, liquid_double_complex);
+
+// external compile-time deprecation warnings with messages
+#ifdef __GNUC__
+#   define DEPRECATED(MSG,X) X __attribute__((deprecated (MSG)))
+#elif defined(_MSC_VER)
+#   define DEPRECATED(MSG,X) __declspec(deprecated) X
+#else
+#   define DEPRECATED(MSG,X) X
+#endif
 
 //
 // MODULE : agc (automatic gain control)
@@ -913,6 +922,14 @@ EQLMS() EQLMS(_create_rnyquist)(int          _type,                         \
 EQLMS() EQLMS(_create_lowpass)(unsigned int _n,                             \
                                float        _fc);                           \
                                                                             \
+/* Recreate LMS EQ initialized with external coefficients               */  \
+/*  _q : old equalization object                                        */  \
+/*  _h : filter coefficients; set to NULL for {1,0,0...},[size: _n x 1] */  \
+/*  _n : filter length                                                  */  \
+EQLMS() EQLMS(_recreate)(EQLMS()      _q,                                   \
+                         T *          _h,                                   \
+                         unsigned int _n);                                  \
+                                                                            \
 /* Destroy equalizer object, freeing all internal memory                */  \
 int EQLMS(_destroy)(EQLMS() _q);                                            \
                                                                             \
@@ -942,6 +959,14 @@ const T * EQLMS(_get_coefficients)(EQLMS() _q);                             \
 /*  _w      : pointer to output coefficients array [size: _n x 1]       */  \
 int EQLMS(_copy_coefficients)(EQLMS() _q,                                   \
                               T *     _w);                                  \
+                                                                            \
+/* Get equalizer's internal coefficients                                */  \
+/*  _q      : filter object                                             */  \
+/*  _w      : pointer to output coefficients array [size: _n x 1]       */  \
+DEPRECATED("use eqlms_xxxt_copy_coefficients(...) instead",                 \
+void EQLMS(_get_weights)(EQLMS() _q,                                        \
+                         T *     _w)                                        \
+);                                                                          \
                                                                             \
 /* Push sample into equalizer internal buffer                           */  \
 /*  _q      :   equalizer object                                        */  \
@@ -1007,11 +1032,13 @@ int EQLMS(_step_blind)(EQLMS() _q,                                          \
 /*  _x      :   received sample vector,[size: _n x 1]                   */  \
 /*  _d      :   desired output vector, [size: _n x 1]                   */  \
 /*  _n      :   input, output vector length                             */  \
+DEPRECATED("method provides complexity with little benefit",                \
 int EQLMS(_train)(EQLMS()      _q,                                          \
                   T *          _w,                                          \
                   T *          _x,                                          \
                   T *          _d,                                          \
-                  unsigned int _n);                                         \
+                  unsigned int _n)                                          \
+);                                                                          \
 
 LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_RRRF, float)
 LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_CCCF, liquid_float_complex)
@@ -5382,13 +5409,15 @@ int fskframesync_debug_export (fskframesync _q, const char * _filename);
 
 typedef struct gmskframegen_s * gmskframegen;
 
-// create GMSK frame generator
+// create GMSK frame generator with specific parameters
 //  _k      :   samples/symbol
 //  _m      :   filter delay (symbols)
 //  _BT     :   excess bandwidth factor
-gmskframegen gmskframegen_create(unsigned int _k,
-                                 unsigned int _m,
-                                 float        _BT);
+gmskframegen gmskframegen_create_set(unsigned int _k,
+                                     unsigned int _m,
+                                     float        _BT);
+// create default GMSK frame generator (k=2, m=3, BT=0.5)
+gmskframegen gmskframegen_create();
 int gmskframegen_destroy       (gmskframegen _q);
 int gmskframegen_is_assembled  (gmskframegen _q);
 int gmskframegen_print         (gmskframegen _q);
@@ -5407,12 +5436,20 @@ int gmskframegen_assemble_default(gmskframegen _q,
 unsigned int gmskframegen_getframelen(gmskframegen _q);
 
 // write samples of assembled frame
-//  _q              :   frame generator object
-//  _buf            :   output buffer [size: _buf_len x 1]
-//  _buf_len        :   output buffer length
-int gmskframegen_write(gmskframegen          _q,
-                      liquid_float_complex * _buf,
-                      unsigned int           _buf_len);
+//  _q          :   frame generator object
+//  _buf        :   output buffer [size: _buf_len x 1]
+//  _buf_len    :   output buffer length
+int gmskframegen_write(gmskframegen           _q,
+                       liquid_float_complex * _buf,
+                       unsigned int           _buf_len);
+
+// write samples of assembled frame
+//  _q          : frame generator object
+//  _buf        : output buffer [size: k x 1]
+DEPRECATED("use gmskframegen_write(...) instead",
+int gmskframegen_write_samples(gmskframegen           _q,
+                               liquid_float_complex * _buf)
+);
 
 
 //
@@ -5427,10 +5464,15 @@ typedef struct gmskframesync_s * gmskframesync;
 //  _BT         :   excess bandwidth factor
 //  _callback   :   callback function
 //  _userdata   :   user data pointer passed to callback function
-gmskframesync gmskframesync_create(unsigned int       _k,
-                                   unsigned int       _m,
-                                   float              _BT,
-                                   framesync_callback _callback,
+gmskframesync gmskframesync_create_set(unsigned int       _k,
+                                       unsigned int       _m,
+                                       float              _BT,
+                                       framesync_callback _callback,
+                                       void *             _userdata);
+// create GMSK frame synchronizer with default parameters (k=2, m=3, BT=0.5)
+//  _callback   :   callback function
+//  _userdata   :   user data pointer passed to callback function
+gmskframesync gmskframesync_create(framesync_callback _callback,
                                    void *             _userdata);
 int gmskframesync_destroy(gmskframesync _q);
 int gmskframesync_print(gmskframesync _q);
@@ -5443,6 +5485,14 @@ int gmskframesync_execute(gmskframesync _q,
 // frame data statistics
 int              gmskframesync_reset_framedatastats(gmskframesync _q);
 framedatastats_s gmskframesync_get_framedatastats  (gmskframesync _q);
+
+// debug methods
+DEPRECATED("debug methods add complexity and provide little value",
+  int gmskframesync_debug_enable(gmskframesync _q) );
+DEPRECATED("debug methods add complexity and provide little value",
+  int gmskframesync_debug_disable(gmskframesync _q) );
+DEPRECATED("debug methods add complexity and provide little value",
+  int gmskframesync_debug_print(gmskframesync _q, const char * _filename) );
 
 
 //
@@ -6529,6 +6579,18 @@ int liquid_kbd_window(unsigned int _wlen,
                       float        _beta,
                       float *      _w);
 
+// shim to support legacy APIs (backwards compatible with 1.3.2)
+float kaiser(unsigned int _i,unsigned int _wlen, float _beta, float _dt);
+float hamming(unsigned int _i,unsigned int _wlen);
+float hann(unsigned int _i,unsigned int _wlen);
+float blackmanharris(unsigned int _i,unsigned int _wlen);
+float blackmanharris7(unsigned int _i,unsigned int _wlen);
+float flattop(unsigned int _i,unsigned int _wlen);
+float triangular(unsigned int _i,unsigned int _wlen,unsigned int _L);
+float liquid_rcostaper_windowf(unsigned int _i,unsigned int _wlen,unsigned int _t);
+float kbd(unsigned int _i,unsigned int _wlen,float _beta);
+int   kbd_window(unsigned int _wlen,float _beta,float * _w);
+
 
 // polynomials
 
@@ -7396,6 +7458,12 @@ int liquid_unpack_soft_bits(unsigned int _sym_in,
 //
 
 #define LIQUID_MODEM_MANGLE_FLOAT(name) LIQUID_CONCAT(modemcf,name)
+// temporary shim to support backwards compatibility between "modemcf" and "modem"
+#define LIQUID_MODEM_MANGLE_FLOAT_SHIM(name) LIQUID_CONCAT(modem,name)
+
+// FIXME: need to point both modem and modemcf pointers to same struct (shim)
+typedef struct modemcf_s * modemcf;
+typedef struct modemcf_s * modem;
 
 // Macro    :   MODEM
 //  MODEM   :   name-mangling macro
@@ -7404,7 +7472,8 @@ int liquid_unpack_soft_bits(unsigned int _sym_in,
 #define LIQUID_MODEM_DEFINE_API(MODEM,T,TC)                                 \
                                                                             \
 /* Linear modulator/demodulator (modem) object                          */  \
-typedef struct MODEM(_s) * MODEM();                                         \
+/* FIXME: need to point both modem and modemcf pointers to same struct  */  \
+/*typedef struct MODEM(_s) * MODEM();                                   */  \
                                                                             \
 /* Create digital modem object with a particular scheme                 */  \
 /*  _scheme : linear modulation scheme (e.g. LIQUID_MODEM_QPSK)         */  \
@@ -7502,7 +7571,7 @@ float MODEM(_get_demodulator_evm)(MODEM() _q);                              \
 
 // define modem APIs
 LIQUID_MODEM_DEFINE_API(LIQUID_MODEM_MANGLE_FLOAT,float,liquid_float_complex)
-
+LIQUID_MODEM_DEFINE_API(LIQUID_MODEM_MANGLE_FLOAT_SHIM,float,liquid_float_complex)
 
 //
 // continuous-phase modulation

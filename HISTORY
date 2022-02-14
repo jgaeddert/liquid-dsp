@@ -1,6 +1,62 @@
 
 ## Latest improvements ##
 
+## Improvements for v1.4.0 ##
+
+  * autotest
+    - automated code coverage testing (72%)
+  * build
+    - incorporated error handling in most methods with integer-based return value
+  * agc
+    - added interface to check if AGC is locked or not
+  * buffer
+    - cbuffer: added method to check if buffer is empty
+  * dotprod
+    - included methods to create/recreate object in reverse order
+  * equalization
+    - eqlms: added convenience methods for copying coefficients and running as
+      a decimator
+  * fft
+    - spgram: adding convenience methods for getting/setting properties
+    - spwaterfall: adding convenience methods for getting/setting properties
+  * filter
+    - new direct digital synthesis (DDS) family of objects which allows
+      cascaded half-band interpolation/decimation with arbitrary frequency
+      translation
+    - new fractional delay (fdelay) family of objects which allow for
+      adjustable large fractional delays
+    - firdecim: adding convenience method to get decimation rate
+    - firfilt: adding convenience methods to get/copy coefficients as well as
+      create object using firdespm algorithm
+    - firinterp: adding convenience methods for new ways to create object as
+      well as getting object properties
+    - firpfb: adding convenience methods to create default object, write
+      samples
+    - resamp2: adding methods to get/set output scale
+    - rresamp: adding methods to operate with block execution
+  * framing
+    - new arbitrary rate symstreamr object (derived from symstream family)
+    - framesync64: adding methods for getting/resetting frame data statistics
+      as well as getting/setting detection threshold
+    - gmskframegen/gmskframesync: extending methods to support easier
+      operation, getting/resetting frame data statistics, more control over
+      parameters in create methods
+    - ofdmflexframesync: adding methods to get/reset frame data statistics
+    - qdetector: adding method to get threshold
+    - qpilotsync: adding method to get error vector magnitude
+    - symstream: adding convenience methods for getting properties
+    - symtrack: adding convenience methods for getting/setting properties
+  * math
+    - adding `liquid_` prefix to winodowing functions while supporting backwards
+      compatibility with older methods
+    - adding `liquid_` prefix to internal polynomial functions, using
+      common double-precision method for finding polynomial roots
+  * multichannel
+    - firpfbch2: adding convenience methods to get object properties
+  * modem
+    - modem: adding type extension for more consistency: `modem` -> `modemcf`,
+      supporting backwards compatibility with API shim
+
 ## Improvements for v1.3.2 ##
 
   * autotest

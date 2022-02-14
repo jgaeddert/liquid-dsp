@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -471,7 +471,10 @@ int SPGRAM(_export_gnuplot)(SPGRAM()     _q,
     } else {
         char unit = ' ';
         float g   = 1.0f;
-        liquid_get_scale(_q->frequency, &unit, &g);
+        float f0 = fabsf( _q->frequency - _q->sample_rate/2.0f );
+        float f1 = fabsf( _q->frequency + _q->sample_rate/2.0f );
+        float fmax = f0 > f1 ? f0 : f1;
+        liquid_get_scale(fmax, &unit, &g);
         fprintf(fid,"set xlabel 'Frequency [%cHz]'\n", unit);
         fprintf(fid,"set xrange [%f:%f]\n", g*(_q->frequency-0.5*_q->sample_rate), g*(_q->frequency+0.5*_q->sample_rate));
         fprintf(fid,"plot '-' u ($1*%f+%f):2 w %s lt 1 lw 2 lc rgb '#004080'\n",

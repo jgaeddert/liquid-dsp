@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -147,11 +147,11 @@ struct gmskframesync_s {
 //  _BT         :   excess bandwidth factor
 //  _callback   :   callback function
 //  _userdata   :   user data pointer passed to callback function
-gmskframesync gmskframesync_create(unsigned int       _k,
-                                   unsigned int       _m,
-                                   float              _BT,
-                                   framesync_callback _callback,
-                                   void *             _userdata)
+gmskframesync gmskframesync_create_set(unsigned int       _k,
+                                       unsigned int       _m,
+                                       float              _BT,
+                                       framesync_callback _callback,
+                                       void *             _userdata)
 {
     gmskframesync q = (gmskframesync) malloc(sizeof(struct gmskframesync_s));
     q->callback = _callback;
@@ -239,6 +239,14 @@ gmskframesync gmskframesync_create(unsigned int       _k,
     return q;
 }
 
+// create GMSK frame synchronizer with default parameters (k=2, m=3, bt=0.5)
+//  _callback   :   callback function
+//  _userdata   :   user data pointer passed to callback function
+gmskframesync gmskframesync_create(framesync_callback _callback,
+                                   void *             _userdata)
+{
+    return gmskframesync_create_set(2, 3, 0.5f, _callback, _userdata);
+}
 
 // destroy frame synchronizer object, freeing all internal memory
 int gmskframesync_destroy(gmskframesync _q)
@@ -387,6 +395,25 @@ int gmskframesync_reset_framedatastats(gmskframesync _q)
 framedatastats_s gmskframesync_get_framedatastats(gmskframesync _q)
 {
     return _q->framedatastats;
+}
+
+// DEPRECATED
+int gmskframesync_debug_enable(gmskframesync _q)
+{
+    return LIQUID_OK;
+}
+
+// DEPRECATED
+int gmskframesync_debug_disable(gmskframesync _q)
+{
+    return LIQUID_OK;
+}
+
+// DEPRECATED
+int gmskframesync_debug_print(gmskframesync _q,
+                              const char *  _filename)
+{
+    return LIQUID_OK;
 }
 
 // 

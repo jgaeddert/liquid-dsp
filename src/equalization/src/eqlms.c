@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -151,6 +151,30 @@ EQLMS() EQLMS(_create_lowpass)(unsigned int _h_len,
     return EQLMS(_create)(hc, _h_len);
 }
 
+// create least mean-squares (LMS) equalizer object
+//  _q      :   old equalization object
+//  _h      :   initial coefficients [size: _h_len x 1], default if NULL
+//  _p      :   equalizer length (number of taps)
+EQLMS() EQLMS(_recreate)(EQLMS()      _q,
+                         T *          _h,
+                         unsigned int _h_len)
+{
+    // only destroy when length differs
+    if (_q->h_len != _h_len) {
+        EQLMS(_destroy)(_q);
+        return EQLMS(_create)(_h,_h_len);
+    }
+
+    // filter is same length; copy user-defined initial coefficients
+    unsigned int i;
+    for (i=0; i<_q->h_len; i++)
+        _q->h0[i] = conj(_h[_q->h_len-i-1]);
+
+    // reset equalizer object and return
+    EQLMS(_reset)(_q);
+    return _q;
+}
+
 // destroy eqlms object
 int EQLMS(_destroy)(EQLMS() _q)
 {
@@ -223,6 +247,15 @@ unsigned int EQLMS(_get_length)(EQLMS() _q)
 const T * EQLMS(_get_coefficients)(EQLMS() _q)
 {
     return (const T*)(_q->w0);
+}
+
+// DEPRECATED: Get equalizer's internal coefficients
+void EQLMS(_get_weights)(EQLMS() _q, T * _w)
+{
+    // copy output weight vector
+    unsigned int i;
+    for (i=0; i<_q->h_len; i++)
+        _w[i] = conj(_q->w0[_q->h_len-i-1]);
 }
 
 // Copy internal coefficients to external buffer
@@ -410,6 +443,49 @@ int EQLMS(_step_blind)(EQLMS() _q,
     T d = _d_hat > 0 ? 1 : -1;
 #endif
     return EQLMS(_step)(_q, d, _d_hat);
+}
+
+// DEPRECATED: train equalizer object on group of samples
+//  _q      :   equalizer object
+//  _w      :   initial weights / output weights
+//  _x      :   received sample vector
+//  _d      :   desired output vector
+//  _n      :   vector length
+int EQLMS(_train)(EQLMS()      _q,
+                  T *          _w,
+                  T *          _x,
+                  T *          _d,
+                  unsigned int _n)
+{
+    unsigned int p=_q->h_len;
+    if (_n < _q->h_len) {
+        fprintf(stderr,"warning: eqlms_%s_train(), traning sequence less than filter order\n", EXTENSION_FULL);
+    }
+
+    unsigned int i;
+
+    // reset equalizer state
+    EQLMS(_reset)(_q);
+
+    // copy initial weights into buffer
+    for (i=0; i<p; i++)
+        _q->w0[i] = _w[p - i - 1];
+
+    T d_hat;
+    for (i=0; i<_n; i++) {
+        // push sample into internal buffer
+        EQLMS(_push)(_q, _x[i]);
+
+        // execute vector dot product
+        EQLMS(_execute)(_q, &d_hat);
+
+        // step through training cycle
+        EQLMS(_step)(_q, _d[i], d_hat);
+    }
+
+    // copy output weight vector
+    EQLMS(_get_weights)(_q, _w);
+    return LIQUID_OK;
 }
 
 // 
