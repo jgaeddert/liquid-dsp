@@ -7,6 +7,9 @@
 
 #define OUTPUT_FILENAME "rhamming_test.m"
 
+float bisect_search(int _wtype, unsigned int _k, unsigned int _m, float _arg, float * _h);
+float bisect_eval  (int _wtype, unsigned int _k, unsigned int _m, float _arg, float * _h, float _gamma);
+
 int main() {
     // options
     unsigned int k     =  2;
@@ -18,25 +21,10 @@ int main() {
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
 
-    // design filter
-    float gamma = 1.0f;
-    float gamma_opt = gamma;
-    float isi_opt = 1e12f;
-    while (gamma < 1.15f) {
-        liquid_firdes_windowf(wtype,h_len,gamma*0.5f/(float)k,arg,h);
+    float gamma_opt = bisect_search(wtype, k, m, arg, h);
 
-        // compute filter ISI
-        float isi_rms, isi_max;
-        liquid_filter_isi(h,k,m,&isi_rms,&isi_max);
-        printf("gamma: %8.6f, isi:%8.4f dB\n", gamma, 20*log10(isi_rms));
-        if (isi_rms < isi_opt) {
-            isi_opt = isi_rms;
-            gamma_opt = gamma;
-        }
-        gamma += 0.001f;
-    }
     // re-design with optimum and save to file
-    printf("optimum RMS ISI of %.2f dB with gamma=%.6f\n", 20*log10(isi_opt), gamma_opt);
+    //printf("optimum RMS ISI of %.2f dB with gamma=%.6f\n", 20*log10(isi_opt), gamma_opt);
     liquid_firdes_windowf(wtype,h_len,gamma_opt*0.5f/(float)k,arg,h);
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"clear all; close all;\n");
@@ -55,5 +43,54 @@ int main() {
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
     return 0;
+}
+
+float bisect_search(int _wtype, unsigned int _k, unsigned int _m, float _arg, float * _h)
+{
+    // design filter
+    float g0 = 1.00f; float u0 = bisect_eval(_wtype,_k,_m,_arg,_h,g0);
+    float g1 = 1.05f; float u1 = bisect_eval(_wtype,_k,_m,_arg,_h,g1);
+    float g2 = 1.10f; float u2 = bisect_eval(_wtype,_k,_m,_arg,_h,g2);
+
+    // assume u1 < {u0,u2}
+    // { g0, ga, g1, gb, g2 }
+    unsigned int num_steps = 10;
+    unsigned int i = 0;
+    for (i=0; i<num_steps; i++) {
+        float ga = sqrtf(g0*g1); float ua = bisect_eval(_wtype,_k,_m,_arg,_h,ga);
+        float gb = sqrtf(g1*g2); float ub = bisect_eval(_wtype,_k,_m,_arg,_h,gb);
+        printf("g:{%8.6f, %8.6f, %8.6f, %8.6f, %8.6f}, isi:{%4.2f, %4.2f, %4.2f, %4.2f, %4.2f}\n",
+                g0, ga, g1, gb, g2,
+                u0, ua, u1, ub, u2);
+
+        // find minimum of {ua, u1, ub}
+        // ga: { (g0  ga  g1) gb  g2 }
+        // g1: {  g0 (ga  g1  gb) g2 }
+        // gb: {  g0  ga (g1  gb  g2)}
+        if (ua < u1 && ua < ub) {
+            g2 = g1; u2 = u1;
+            g1 = ga; u1 = ua;
+        } else if (u1 < ua && u1 < ub) {
+            g0 = ga; u0 = ua;
+            g2 = gb; u2 = ub;
+        } else {
+            g0 = g1; u0 = u1;
+            g1 = gb; u1 = ub;
+        }
+    }
+
+    return g1;
+}
+
+
+float bisect_eval  (int _wtype, unsigned int _k, unsigned int _m, float _arg, float * _h, float _gamma)
+{
+    // design filter
+    liquid_firdes_windowf(_wtype,2*_k*_m+1,_gamma*0.5f/(float)_k,_arg,_h);
+
+    // compute filter ISI
+    float isi_rms, isi_max;
+    liquid_filter_isi(_h,_k,_m,&isi_rms,&isi_max);
+    return 20*log10(isi_rms);
 }
 
