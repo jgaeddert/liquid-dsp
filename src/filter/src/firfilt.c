@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -316,7 +316,7 @@ FIRFILT() FIRFILT(_recreate)(FIRFILT() _q,
 }
 
 // destroy firfilt object
-void FIRFILT(_destroy)(FIRFILT() _q)
+int FIRFILT(_destroy)(FIRFILT() _q)
 {
 #if LIQUID_FIRFILT_USE_WINDOW
     WINDOW(_destroy)(_q->w);
@@ -326,23 +326,25 @@ void FIRFILT(_destroy)(FIRFILT() _q)
     DOTPROD(_destroy)(_q->dp);
     free(_q->h);
     free(_q);
+    return LIQUID_OK;
 }
 
 // reset internal state of filter object
-void FIRFILT(_reset)(FIRFILT() _q)
+int FIRFILT(_reset)(FIRFILT() _q)
 {
 #if LIQUID_FIRFILT_USE_WINDOW
-    WINDOW(_reset)(_q->w);
+    return WINDOW(_reset)(_q->w);
 #else
     unsigned int i;
     for (i=0; i<_q->w_len; i++)
         _q->w[i] = 0.0;
     _q->w_index = 0;
+    return LIQUID_OK;
 #endif
 }
 
 // print filter object internals (taps, buffer)
-void FIRFILT(_print)(FIRFILT() _q)
+int FIRFILT(_print)(FIRFILT() _q)
 {
     printf("firfilt_%s:\n", EXTENSION_FULL);
     unsigned int i;
@@ -361,30 +363,33 @@ void FIRFILT(_print)(FIRFILT() _q)
 #if LIQUID_FIRFILT_USE_WINDOW
     WINDOW(_print)(_q->w);
 #endif
+    return LIQUID_OK;
 }
 
 // set output scaling for filter
-void FIRFILT(_set_scale)(FIRFILT() _q,
-                         TC        _scale)
+int FIRFILT(_set_scale)(FIRFILT() _q,
+                        TC        _scale)
 {
     _q->scale = _scale;
+    return LIQUID_OK;
 }
 
 // get output scaling for filter
-void FIRFILT(_get_scale)(FIRFILT() _q,
-                         TC *      _scale)
+int FIRFILT(_get_scale)(FIRFILT() _q,
+                        TC *      _scale)
 {
     *_scale = _q->scale;
+    return LIQUID_OK;
 }
 
 // push sample into filter object's internal buffer
 //  _q      :   filter object
 //  _x      :   input sample
-void FIRFILT(_push)(FIRFILT() _q,
-                    TI        _x)
+int FIRFILT(_push)(FIRFILT() _q,
+                   TI        _x)
 {
 #if LIQUID_FIRFILT_USE_WINDOW
-    WINDOW(_push)(_q->w, _x);
+    return WINDOW(_push)(_q->w, _x);
 #else
     // increment index
     _q->w_index++;
@@ -398,6 +403,7 @@ void FIRFILT(_push)(FIRFILT() _q,
 
     // append value to end of buffer
     _q->w[_q->w_index + _q->h_len - 1] = _x;
+    return LIQUID_OK;
 #endif
 }
 
@@ -405,17 +411,21 @@ void FIRFILT(_push)(FIRFILT() _q,
 //  _q      : filter object
 //  _x      : buffer of input samples, [size: _n x 1]
 //  _n      : number of input samples
-void FIRFILT(_write)(FIRFILT()    _q,
-                     TI *         _x,
-                     unsigned int _n)
+int FIRFILT(_write)(FIRFILT()    _q,
+                    TI *         _x,
+                    unsigned int _n)
 {
 #if LIQUID_FIRFILT_USE_WINDOW
-    WINDOW(_write)(_q->w, _x, _n);
+    return WINDOW(_write)(_q->w, _x, _n);
 #else
     // TODO: be smarter about this
     unsigned int i;
-    for (i=0; i<_n; i++)
-        FIRFILT(_push)(_q, _x[i]);
+    for (i=0; i<_n; i++) {
+        int rc = FIRFILT(_push)(_q, _x[i]);
+        if (rc != LIQUID_OK)
+            return rc;
+    }
+    return LIQUID_OK;
 #endif
 }
 
@@ -423,8 +433,8 @@ void FIRFILT(_write)(FIRFILT()    _q,
 // filter coefficients and internal buffer)
 //  _q      :   filter object
 //  _y      :   output sample pointer
-void FIRFILT(_execute)(FIRFILT() _q,
-                       TO *      _y)
+int FIRFILT(_execute)(FIRFILT() _q,
+                      TO *      _y)
 {
     // read buffer (retrieve pointer to aligned memory array)
 #if LIQUID_FIRFILT_USE_WINDOW
@@ -439,6 +449,7 @@ void FIRFILT(_execute)(FIRFILT() _q,
 
     // apply scaling factor
     *_y *= _q->scale;
+    return LIQUID_OK;
 }
 
 // execute the filter on a block of input samples; the
@@ -447,10 +458,10 @@ void FIRFILT(_execute)(FIRFILT() _q,
 //  _x      : pointer to input array [size: _n x 1]
 //  _n      : number of input, output samples
 //  _y      : pointer to output array [size: _n x 1]
-void FIRFILT(_execute_block)(FIRFILT()    _q,
-                             TI *         _x,
-                             unsigned int _n,
-                             TO *         _y)
+int FIRFILT(_execute_block)(FIRFILT()    _q,
+                            TI *         _x,
+                            unsigned int _n,
+                            TO *         _y)
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
@@ -460,6 +471,7 @@ void FIRFILT(_execute_block)(FIRFILT()    _q,
         // compute output sample
         FIRFILT(_execute)(_q, &_y[i]);
     }
+    return LIQUID_OK;
 }
 
 // get filter length
@@ -487,9 +499,9 @@ int FIRFILT(_copy_coefficients)(FIRFILT() _q,
 //  _q      :   filter object
 //  _fc     :   frequency
 //  _H      :   output frequency response
-void FIRFILT(_freqresponse)(FIRFILT()       _q,
-                            float           _fc,
-                            float complex * _H)
+int FIRFILT(_freqresponse)(FIRFILT()       _q,
+                           float           _fc,
+                           float complex * _H)
 {
     unsigned int i;
     float complex H = 0.0f;
@@ -503,8 +515,8 @@ void FIRFILT(_freqresponse)(FIRFILT()       _q,
 
     // set return value
     *_H = H;
+    return LIQUID_OK;
 }
-
 
 // compute group delay in samples
 //  _q      :   filter object
