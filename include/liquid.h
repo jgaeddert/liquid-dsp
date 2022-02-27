@@ -4326,6 +4326,13 @@ void RESAMP(_set_timing_phase)(RESAMP() _q,                                 \
 void RESAMP(_adjust_timing_phase)(RESAMP() _q,                              \
                                   float    _delta);                         \
                                                                             \
+/* Get the number of output samples given current state and input       */  \
+/* buffer size.                                                         */  \
+/*  _q      : resampling object                                         */  \
+/*  _n      : number of input samples                                   */  \
+unsigned int RESAMP(_get_num_output)(RESAMP()     _q,                       \
+                                     unsigned int _num_input);              \
+                                                                            \
 /* Execute arbitrary resampler on a single input sample and store the   */  \
 /* resulting samples in the output array. The number of output samples  */  \
 /* is depenent upon the resampling rate but will be at most             */  \

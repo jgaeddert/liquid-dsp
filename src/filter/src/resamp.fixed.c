@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -172,12 +172,16 @@ void RESAMP(_set_rate)(RESAMP() _q,
     if (_rate <= 0) {
         liquid_error(LIQUID_EICONFIG,"resamp_%s_set_rate(), resampling rate must be greater than zero", EXTENSION_FULL);
         return;
+    } else if (_rate < 0.004f || _rate > 250.0f) {
+        liquid_error(LIQUID_EICONFIG,"resamp_%s_set_rate(), resampling rate must be in [0.004,250]", EXTENSION_FULL);
+        return;
     }
 
     // set internal rate
     _q->r = _rate;
 
     // set output stride
+    // TODO: ensure step is reasonable size
     _q->step = (uint32_t)round((1<<24)/_q->r);
 }
 
@@ -229,6 +233,23 @@ void RESAMP(_adjust_timing_phase)(RESAMP() _q,
 
     // TODO: adjust internal timing phase (quantized)
     //_q->tau += _delta;
+}
+
+// Get the number of output samples given current state and input buffer size.
+unsigned int RESAMP(_get_num_output)(RESAMP()     _q,
+                                     unsigned int _num_input)
+{
+    // count the number of rollovers
+    uint32_t phase = _q->phase;
+    unsigned int i, num_output=0;
+    for (i=0; i<_num_input; i++) {
+        while (phase <= 0x00ffffff) {
+            num_output++;
+            phase += _q->step;
+        }
+        phase -= (1<<24);
+    }
+    return num_output;
 }
 
 // run arbitrary resampler

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
 #include "liquid.h"
 
 // 
-// AUTOTEST : test arbitrary resampler
+// AUTOTEST : test arbitrary resampler by observing spectral content
 //
 void autotest_resamp_crcf()
 {
@@ -165,3 +165,58 @@ void autotest_resamp_crcf()
     printf("results written to %s\n",filename);
 #endif
 }
+
+// test arbitrary resampler output length calculation
+void testbench_resamp_crcf_num_output(float _rate, unsigned int _npfb)
+{
+    if (liquid_autotest_verbose)
+        printf("testing resamp_crcf_get_num_output() with r=%g, npfb=%u\n", _rate, _npfb);
+
+    // create object
+    float fc = 0.4f;
+    float As = 60.0f;
+    unsigned int m = 20;
+    resamp_crcf q = resamp_crcf_create(_rate, m, fc, As, _npfb);
+
+    // sizes to test in sequence
+    unsigned int sizes[10] = {1, 2, 3, 20, 7, 64, 4, 4, 4, 27};
+
+    // allocate buffers (over-provision output to help avoid segmentation faults on error)
+    unsigned int max_input = 64;
+    unsigned int max_output = 16 + (unsigned int)(4.0f * max_input * _rate);
+    printf("max_input : %u, max_output : %u\n", max_input, max_output);
+    float complex buf_0[max_input];
+    float complex buf_1[max_output];
+    unsigned int i;
+    for (i=0; i<max_input; i++)
+        buf_0[i] = 0.0f;
+
+    // run numerous blocks
+    unsigned int b;
+    for (b=0; b<8; b++) {
+        for (i=0; i<10; i++) {
+            unsigned int num_input  = sizes[i];
+            unsigned int num_output = resamp_crcf_get_num_output(q, num_input);
+            unsigned int num_written;
+            resamp_crcf_execute_block(q, buf_0, num_input, buf_1, &num_written);
+            if (liquid_autotest_verbose) {
+                printf(" b[%2u][%2u], num_input:%5u, num_output:%5u, num_written:%5u\n",
+                        b, i, num_input, num_output, num_written);
+            }
+            CONTEND_EQUALITY(num_output, num_written)
+        }
+    }
+
+    // destroy object
+    resamp_crcf_destroy(q);
+}
+
+void autotest_resamp_crcf_num_output_0(){ testbench_resamp_crcf_num_output(1.00f,     64); }
+void autotest_resamp_crcf_num_output_1(){ testbench_resamp_crcf_num_output(1.00f,    256); }
+void autotest_resamp_crcf_num_output_2(){ testbench_resamp_crcf_num_output(0.50f,    256); }
+void autotest_resamp_crcf_num_output_3(){ testbench_resamp_crcf_num_output(sqrtf( 2),256); }
+void autotest_resamp_crcf_num_output_4(){ testbench_resamp_crcf_num_output(sqrtf(17), 16); }
+void autotest_resamp_crcf_num_output_5(){ testbench_resamp_crcf_num_output(1.0f/M_PI, 64); }
+void autotest_resamp_crcf_num_output_6(){ testbench_resamp_crcf_num_output(expf(5.0f),64); }
+void autotest_resamp_crcf_num_output_7(){ testbench_resamp_crcf_num_output(expf(-5.f),64); }
+

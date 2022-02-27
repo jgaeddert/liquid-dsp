@@ -263,6 +263,14 @@ void RESAMP(_adjust_timing_phase)(RESAMP() _q,
     _q->tau += _delta;
 }
 
+// Get the number of output samples given current state and input buffer size.
+unsigned int RESAMP(_get_num_output)(RESAMP()     _q,
+                                     unsigned int _num_input)
+{
+    fprintf(stderr,"warning: resamp_%s_get_num_output(), function not implemented\n",EXTENSION_FULL);
+    return 0;
+}
+
 // run arbitrary resampler
 //  _q          :   resampling object
 //  _x          :   single input sample
