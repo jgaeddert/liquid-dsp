@@ -2555,33 +2555,33 @@ AUTOCORR() AUTOCORR(_create)(unsigned int _window_size,                     \
                              unsigned int _delay);                          \
                                                                             \
 /* Destroy auto-correlator object, freeing internal memory              */  \
-void AUTOCORR(_destroy)(AUTOCORR() _q);                                     \
+int AUTOCORR(_destroy)(AUTOCORR() _q);                                      \
                                                                             \
 /* Reset auto-correlator object's internals                             */  \
-void AUTOCORR(_reset)(AUTOCORR() _q);                                       \
+int AUTOCORR(_reset)(AUTOCORR() _q);                                        \
                                                                             \
 /* Print auto-correlator parameters to stdout                           */  \
-void AUTOCORR(_print)(AUTOCORR() _q);                                       \
+int AUTOCORR(_print)(AUTOCORR() _q);                                        \
                                                                             \
 /* Push sample into auto-correlator object                              */  \
 /*  _q      : auto-correlator object                                    */  \
 /*  _x      : single input sample                                       */  \
-void AUTOCORR(_push)(AUTOCORR() _q,                                         \
-                     TI         _x);                                        \
+int AUTOCORR(_push)(AUTOCORR() _q,                                          \
+                    TI         _x);                                         \
                                                                             \
 /* Write block of samples to auto-correlator object                     */  \
 /*  _q      :   auto-correlation object                                 */  \
 /*  _x      :   input array [size: _n x 1]                              */  \
 /*  _n      :   number of input samples                                 */  \
-void AUTOCORR(_write)(AUTOCORR()   _q,                                      \
-                      TI *         _x,                                      \
-                      unsigned int _n);                                     \
+int AUTOCORR(_write)(AUTOCORR()   _q,                                       \
+                     TI *         _x,                                       \
+                     unsigned int _n);                                      \
                                                                             \
 /* Compute single auto-correlation output                               */  \
 /*  _q      : auto-correlator object                                    */  \
 /*  _rxx    : auto-correlated output                                    */  \
-void AUTOCORR(_execute)(AUTOCORR() _q,                                      \
-                        TO *       _rxx);                                   \
+int AUTOCORR(_execute)(AUTOCORR() _q,                                       \
+                       TO *       _rxx);                                    \
                                                                             \
 /* Compute auto-correlation on block of samples; the input and output   */  \
 /* arrays may have the same pointer                                     */  \
@@ -2589,10 +2589,10 @@ void AUTOCORR(_execute)(AUTOCORR() _q,                                      \
 /*  _x      :   input array [size: _n x 1]                              */  \
 /*  _n      :   number of input, output samples                         */  \
 /*  _rxx    :   input array [size: _n x 1]                              */  \
-void AUTOCORR(_execute_block)(AUTOCORR()   _q,                              \
-                              TI *         _x,                              \
-                              unsigned int _n,                              \
-                              TO *         _rxx);                           \
+int AUTOCORR(_execute_block)(AUTOCORR()   _q,                               \
+                             TI *         _x,                               \
+                             unsigned int _n,                               \
+                             TO *         _rxx);                            \
                                                                             \
 /* return sum of squares of buffered samples                            */  \
 float AUTOCORR(_get_energy)(AUTOCORR() _q);                                 \

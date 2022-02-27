@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,7 +78,7 @@ AUTOCORR() AUTOCORR(_create)(unsigned int _window_size,
 }
 
 // destroy auto-correlator object, freeing internal memory
-void AUTOCORR(_destroy)(AUTOCORR() _q)
+int AUTOCORR(_destroy)(AUTOCORR() _q)
 {
     // destroy internal window objects
     WINDOW(_destroy)(_q->w);
@@ -89,10 +89,11 @@ void AUTOCORR(_destroy)(AUTOCORR() _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // reset auto-correlator object's internals
-void AUTOCORR(_reset)(AUTOCORR() _q)
+int AUTOCORR(_reset)(AUTOCORR() _q)
 {
     // clear/reset internal window buffers
     WINDOW(_reset)(_q->w);
@@ -104,16 +105,18 @@ void AUTOCORR(_reset)(AUTOCORR() _q)
     for (i=0; i<_q->window_size; i++)
         _q->we2[i] = 0.0;
     _q->ie2 = 0;    // reset read index to zero
+    return LIQUID_OK;
 }
 
 // print auto-correlator parameters to stdout
-void AUTOCORR(_print)(AUTOCORR() _q)
+int AUTOCORR(_print)(AUTOCORR() _q)
 {
     printf("autocorr [%u window, %u delay]\n", _q->window_size, _q->delay);
+    return LIQUID_OK;
 }
 
 // push sample into auto-correlator object
-void AUTOCORR(_push)(AUTOCORR() _q, TI _x)
+int AUTOCORR(_push)(AUTOCORR() _q, TI _x)
 {
     // push input sample into buffers
     WINDOW(_push)(_q->w,      _x);          // non-delayed buffer
@@ -125,23 +128,25 @@ void AUTOCORR(_push)(AUTOCORR() _q, TI _x)
     _q->e2_sum += e2;
     _q->we2[ _q->ie2 ] = e2;
     _q->ie2 = (_q->ie2+1) % _q->window_size;
+    return LIQUID_OK;
 }
 
 // Write block of samples into auto-correlator object
 //  _q      :   auto-correlation object
 //  _x      :   input array [size: _n x 1]
 //  _n      :   number of input samples
-void AUTOCORR(_write)(AUTOCORR()   _q,
-                      TI *         _x,
-                      unsigned int _n)
+int AUTOCORR(_write)(AUTOCORR()   _q,
+                     TI *         _x,
+                     unsigned int _n)
 {
     unsigned int i;
     for (i=0; i<_n; i++)
         AUTOCORR(_push)(_q, _x[i]);
+    return LIQUID_OK;
 }
 
 // compute auto-correlation output
-void AUTOCORR(_execute)(AUTOCORR() _q, TO *_rxx)
+int AUTOCORR(_execute)(AUTOCORR() _q, TO *_rxx)
 {
     // provide pointers for reading buffer
     TI * rw;        // input buffer read pointer
@@ -153,7 +158,7 @@ void AUTOCORR(_execute)(AUTOCORR() _q, TO *_rxx)
 
     // execute vector dot product on arrays, saving result to
     // user-supplied output pointer
-    DOTPROD(_run4)(rw, rwdelay, _q->window_size, _rxx);
+    return DOTPROD(_run4)(rw, rwdelay, _q->window_size, _rxx);
 }
 
 // compute auto-correlation on block of samples; the input
@@ -162,10 +167,10 @@ void AUTOCORR(_execute)(AUTOCORR() _q, TO *_rxx)
 //  _x      :   input array [size: _n x 1]
 //  _n      :   number of input, output samples
 //  _rxx    :   input array [size: _n x 1]
-void AUTOCORR(_execute_block)(AUTOCORR()   _q,
-                              TI *         _x,
-                              unsigned int _n,
-                              TO *         _rxx)
+int AUTOCORR(_execute_block)(AUTOCORR()   _q,
+                             TI *         _x,
+                             unsigned int _n,
+                             TO *         _rxx)
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
@@ -175,6 +180,7 @@ void AUTOCORR(_execute_block)(AUTOCORR()   _q,
         // compute output
         AUTOCORR(_execute)(_q, &_rxx[i]);
     }
+    return LIQUID_OK;
 }
 
 // return sum of squares of buffered samples
