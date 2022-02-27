@@ -4328,8 +4328,8 @@ int RESAMP(_adjust_timing_phase)(RESAMP() _q,                               \
                                                                             \
 /* Get the number of output samples given current state and input       */  \
 /* buffer size.                                                         */  \
-/*  _q      : resampling object                                         */  \
-/*  _n      : number of input samples                                   */  \
+/*  _q          : resampling object                                     */  \
+/*  _num_input  : number of input samples                               */  \
 unsigned int RESAMP(_get_num_output)(RESAMP()     _q,                       \
                                      unsigned int _num_input);              \
                                                                             \
@@ -4491,6 +4491,13 @@ float MSRESAMP(_get_delay)(MSRESAMP() _q);                                  \
                                                                             \
 /* get overall resampling rate                                          */  \
 float MSRESAMP(_get_rate)(MSRESAMP() _q);                                   \
+                                                                            \
+/* Get the number of output samples given current state and input       */  \
+/* buffer size.                                                         */  \
+/*  _q          : resampling object                                     */  \
+/*  _num_input  : number of input samples                               */  \
+unsigned int MSRESAMP(_get_num_output)(MSRESAMP()   _q,                     \
+                                       unsigned int _num_input);            \
                                                                             \
 /* Execute multi-stage resampler on one or more input samples.          */  \
 /* The number of output samples is dependent upon the resampling rate   */  \

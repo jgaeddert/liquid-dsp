@@ -256,6 +256,26 @@ float MSRESAMP(_get_rate)(MSRESAMP() _q)
     return _q->rate;
 }
 
+// Get the number of output samples given current state and input buffer size.
+unsigned int MSRESAMP(_get_num_output)(MSRESAMP()   _q,
+                                       unsigned int _num_input)
+{
+    if (_q->type == LIQUID_RESAMP_INTERP) {
+        // compute number of arbitrary resampler outputs
+        unsigned int n = RESAMP(_get_num_output)(_q->arbitrary_resamp,_num_input);
+
+        // scale by half-band interpolation stage
+        return n * (1 << _q->num_halfband_stages);
+    } else {
+        // compute number of outputs from half-band decimation stage
+        // NOTE: this compensates for the number of samples already bufferes
+        unsigned int n = (_q->buffer_index+_num_input) >> _q->num_halfband_stages;
+
+        return RESAMP(_get_num_output)(_q->arbitrary_resamp,n);
+    }
+    return 0; // should never occur
+}
+
 // execute multi-stage resampler
 //  _q      :   msresamp object
 //  _x      :   input sample array
