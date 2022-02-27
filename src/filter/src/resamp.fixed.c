@@ -131,30 +131,32 @@ RESAMP() RESAMP(_create_default)(float _rate)
 }
 
 // free arbitrary resampler object
-void RESAMP(_destroy)(RESAMP() _q)
+int RESAMP(_destroy)(RESAMP() _q)
 {
     // free polyphase filterbank
     FIRPFB(_destroy)(_q->pfb);
 
     // free main object memory
     free(_q);
+
+    return LIQUID_OK;
 }
 
 // print resampler object
-void RESAMP(_print)(RESAMP() _q)
+int RESAMP(_print)(RESAMP() _q)
 {
     printf("resampler [rate: %f]\n", _q->r);
-    FIRPFB(_print)(_q->pfb);
+    return FIRPFB(_print)(_q->pfb);
 }
 
 // reset resampler object
-void RESAMP(_reset)(RESAMP() _q)
+int RESAMP(_reset)(RESAMP() _q)
 {
-    // clear filterbank
-    FIRPFB(_reset)(_q->pfb);
-
     // reset state
     _q->phase = 0;
+
+    // clear filterbank
+    return FIRPFB(_reset)(_q->pfb);
 }
 
 // get resampler filter delay (semi-length m)
@@ -166,15 +168,13 @@ unsigned int RESAMP(_get_delay)(RESAMP() _q)
 // set rate of arbitrary resampler
 //  _q      : resampling object
 //  _rate   : new sampling rate, _rate > 0
-void RESAMP(_set_rate)(RESAMP() _q,
-                       float    _rate)
+int RESAMP(_set_rate)(RESAMP() _q,
+                      float    _rate)
 {
     if (_rate <= 0) {
-        liquid_error(LIQUID_EICONFIG,"resamp_%s_set_rate(), resampling rate must be greater than zero", EXTENSION_FULL);
-        return;
+        return liquid_error(LIQUID_EICONFIG,"resamp_%s_set_rate(), resampling rate must be greater than zero", EXTENSION_FULL);
     } else if (_rate < 0.004f || _rate > 250.0f) {
-        liquid_error(LIQUID_EICONFIG,"resamp_%s_set_rate(), resampling rate must be in [0.004,250]", EXTENSION_FULL);
-        return;
+        return liquid_error(LIQUID_EICONFIG,"resamp_%s_set_rate(), resampling rate must be in [0.004,250]", EXTENSION_FULL);
     }
 
     // set internal rate
@@ -183,6 +183,8 @@ void RESAMP(_set_rate)(RESAMP() _q,
     // set output stride
     // TODO: ensure step is reasonable size
     _q->step = (uint32_t)round((1<<24)/_q->r);
+
+    return LIQUID_OK;
 }
 
 // get rate of arbitrary resampler
@@ -192,47 +194,46 @@ float RESAMP(_get_rate)(RESAMP() _q)
 }
 
 // adjust resampling rate
-void RESAMP(_adjust_rate)(RESAMP() _q,
-                          float    _gamma)
+int RESAMP(_adjust_rate)(RESAMP() _q,
+                         float    _gamma)
 {
-    if (_gamma <= 0) {
-        liquid_error(LIQUID_EICONFIG,"resamp_%s_adjust_rate(), resampling adjustment (%12.4e) must be greater than zero", EXTENSION_FULL, _gamma);
-        return;
-    }
+    if (_gamma <= 0)
+        return liquid_error(LIQUID_EICONFIG,"resamp_%s_adjust_rate(), resampling adjustment (%12.4e) must be greater than zero", EXTENSION_FULL, _gamma);
 
     // adjust internal rate
-    RESAMP(_set_rate)(_q, _q->r * _gamma);
+    return RESAMP(_set_rate)(_q, _q->r * _gamma);
 }
 
 
 // set resampling timing phase
 //  _q      : resampling object
 //  _tau    : sample timing
-void RESAMP(_set_timing_phase)(RESAMP() _q,
-                               float    _tau)
+int RESAMP(_set_timing_phase)(RESAMP() _q,
+                              float    _tau)
 {
     if (_tau < -1.0f || _tau > 1.0f) {
-        liquid_error(LIQUID_EICONFIG,"resamp_%s_set_timing_phase(), timing phase must be in [-1,1], is %f.",EXTENSION_FULL,_tau);
-        return;
+        return liquid_error(LIQUID_EICONFIG,"resamp_%s_set_timing_phase(), timing phase must be in [-1,1], is %f.",EXTENSION_FULL,_tau);
     }
 
     // TODO: set internal timing phase (quantized)
     //_q->tau = _tau;
+
+    return LIQUID_OK;
 }
 
 // adjust resampling timing phase
 //  _q      : resampling object
 //  _delta  : sample timing adjustment
-void RESAMP(_adjust_timing_phase)(RESAMP() _q,
-                                  float    _delta)
+int RESAMP(_adjust_timing_phase)(RESAMP() _q,
+                                 float    _delta)
 {
     if (_delta < -1.0f || _delta > 1.0f) {
-        liquid_error(LIQUID_EICONFIG,"resamp_%s_adjust_timing_phase(), timing phase adjustment must be in [-1,1], is %f.",EXTENSION_FULL,_delta);
-        return;
+        return liquid_error(LIQUID_EICONFIG,"resamp_%s_adjust_timing_phase(), timing phase adjustment must be in [-1,1], is %f.",EXTENSION_FULL,_delta);
     }
 
     // TODO: adjust internal timing phase (quantized)
     //_q->tau += _delta;
+    return LIQUID_OK;
 }
 
 // Get the number of output samples given current state and input buffer size.
@@ -257,10 +258,10 @@ unsigned int RESAMP(_get_num_output)(RESAMP()     _q,
 //  _x          :   single input sample
 //  _y          :   output array
 //  _num_written:   number of samples written to output
-void RESAMP(_execute)(RESAMP()       _q,
-                      TI             _x,
-                      TO *           _y,
-                      unsigned int * _num_written)
+int RESAMP(_execute)(RESAMP()       _q,
+                     TI             _x,
+                     TO *           _y,
+                     unsigned int * _num_written)
 {
     // push input
     FIRPFB(_push)(_q->pfb, _x);
@@ -279,6 +280,7 @@ void RESAMP(_execute)(RESAMP()       _q,
 
     // error checking for now
     *_num_written = n;
+    return LIQUID_OK;
 }
 
 // execute arbitrary resampler on a block of samples
@@ -287,11 +289,11 @@ void RESAMP(_execute)(RESAMP()       _q,
 //  _nx             :   input buffer
 //  _y              :   output sample array (pointer)
 //  _ny             :   number of samples written to _y
-void RESAMP(_execute_block)(RESAMP()       _q,
-                            TI *           _x,
-                            unsigned int   _nx,
-                            TO *           _y,
-                            unsigned int * _ny)
+int RESAMP(_execute_block)(RESAMP()       _q,
+                           TI *           _x,
+                           unsigned int   _nx,
+                           TO *           _y,
+                           unsigned int * _ny)
 {
     // initialize number of output samples to zero
     unsigned int ny = 0;
@@ -311,5 +313,6 @@ void RESAMP(_execute_block)(RESAMP()       _q,
 
     // set return value for number of output samples written
     *_ny = ny;
+    return LIQUID_OK;
 }
 

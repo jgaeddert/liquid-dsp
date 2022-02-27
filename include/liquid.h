@@ -4288,13 +4288,13 @@ RESAMP() RESAMP(_create)(float        _rate,                                \
 RESAMP() RESAMP(_create_default)(float _rate);                              \
                                                                             \
 /* Destroy arbitrary resampler object, freeing all internal memory      */  \
-void RESAMP(_destroy)(RESAMP() _q);                                         \
+int RESAMP(_destroy)(RESAMP() _q);                                          \
                                                                             \
 /* Print resamp object internals to stdout                              */  \
-void RESAMP(_print)(RESAMP() _q);                                           \
+int RESAMP(_print)(RESAMP() _q);                                            \
                                                                             \
 /* Reset resamp object internals                                        */  \
-void RESAMP(_reset)(RESAMP() _q);                                           \
+int RESAMP(_reset)(RESAMP() _q);                                            \
                                                                             \
 /* Get resampler delay (filter semi-length \(m\))                       */  \
 unsigned int RESAMP(_get_delay)(RESAMP() _q);                               \
@@ -4302,8 +4302,8 @@ unsigned int RESAMP(_get_delay)(RESAMP() _q);                               \
 /* Set rate of arbitrary resampler                                      */  \
 /*  _q      : resampling object                                         */  \
 /*  _rate   : new sampling rate, _rate > 0                              */  \
-void RESAMP(_set_rate)(RESAMP() _q,                                         \
-                       float    _rate);                                     \
+int RESAMP(_set_rate)(RESAMP() _q,                                          \
+                      float    _rate);                                      \
                                                                             \
 /* Get rate of arbitrary resampler                                      */  \
 float RESAMP(_get_rate)(RESAMP() _q);                                       \
@@ -4311,20 +4311,20 @@ float RESAMP(_get_rate)(RESAMP() _q);                                       \
 /* adjust rate of arbitrary resampler                                   */  \
 /*  _q      : resampling object                                         */  \
 /*  _gamma  : rate adjustment factor: rate <- rate * gamma, _gamma > 0  */  \
-void RESAMP(_adjust_rate)(RESAMP() _q,                                      \
-                          float    _gamma);                                 \
+int RESAMP(_adjust_rate)(RESAMP() _q,                                       \
+                         float    _gamma);                                  \
                                                                             \
 /* Set resampling timing phase                                          */  \
 /*  _q      : resampling object                                         */  \
 /*  _tau    : sample timing phase, -1 <= _tau <= 1                      */  \
-void RESAMP(_set_timing_phase)(RESAMP() _q,                                 \
+int RESAMP(_set_timing_phase)(RESAMP() _q,                                  \
                                float    _tau);                              \
                                                                             \
 /* Adjust resampling timing phase                                       */  \
 /*  _q      : resampling object                                         */  \
 /*  _delta  : sample timing adjustment, -1 <= _delta <= 1               */  \
-void RESAMP(_adjust_timing_phase)(RESAMP() _q,                              \
-                                  float    _delta);                         \
+int RESAMP(_adjust_timing_phase)(RESAMP() _q,                               \
+                                 float    _delta);                          \
                                                                             \
 /* Get the number of output samples given current state and input       */  \
 /* buffer size.                                                         */  \
@@ -4341,10 +4341,10 @@ unsigned int RESAMP(_get_num_output)(RESAMP()     _q,                       \
 /*  _x              : single input sample                               */  \
 /*  _y              : output sample array (pointer)                     */  \
 /*  _num_written    : number of samples written to _y                   */  \
-void RESAMP(_execute)(RESAMP()       _q,                                    \
-                      TI             _x,                                    \
-                      TO *           _y,                                    \
-                      unsigned int * _num_written);                         \
+int RESAMP(_execute)(RESAMP()       _q,                                     \
+                     TI             _x,                                     \
+                     TO *           _y,                                     \
+                     unsigned int * _num_written);                          \
                                                                             \
 /* Execute arbitrary resampler on a block of input samples and store    */  \
 /* the resulting samples in the output array. The number of output      */  \
@@ -4355,11 +4355,11 @@ void RESAMP(_execute)(RESAMP()       _q,                                    \
 /*  _nx             : input buffer                                      */  \
 /*  _y              : output sample array (pointer)                     */  \
 /*  _ny             : number of samples written to _y                   */  \
-void RESAMP(_execute_block)(RESAMP()       _q,                              \
-                            TI *           _x,                              \
-                            unsigned int   _nx,                             \
-                            TO *           _y,                              \
-                            unsigned int * _ny);                            \
+int RESAMP(_execute_block)(RESAMP()       _q,                               \
+                           TI *           _x,                               \
+                           unsigned int   _nx,                              \
+                           TO *           _y,                               \
+                           unsigned int * _ny);                             \
 
 LIQUID_RESAMP_DEFINE_API(LIQUID_RESAMP_MANGLE_RRRF,
                          float,
