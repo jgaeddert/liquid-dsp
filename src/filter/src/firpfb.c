@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -259,7 +259,7 @@ FIRPFB() FIRPFB(_recreate)(FIRPFB()     _q,
 }
 
 // destroy firpfb object, freeing all internal memory
-void FIRPFB(_destroy)(FIRPFB() _q)
+int FIRPFB(_destroy)(FIRPFB() _q)
 {
     unsigned int i;
     for (i=0; i<_q->num_filters; i++)
@@ -267,10 +267,11 @@ void FIRPFB(_destroy)(FIRPFB() _q)
     free(_q->dp);
     WINDOW(_destroy)(_q->w);
     free(_q);
+    return LIQUID_OK;
 }
 
 // print firpfb object's parameters
-void FIRPFB(_print)(FIRPFB() _q)
+int FIRPFB(_print)(FIRPFB() _q)
 {
     printf("fir polyphase filterbank [%u] :\n", _q->num_filters);
     unsigned int i;
@@ -278,55 +279,57 @@ void FIRPFB(_print)(FIRPFB() _q)
         printf("  bank %3u: ",i);
         DOTPROD(_print)(_q->dp[i]);
     }
+    return LIQUID_OK;
 }
 
 // clear/reset firpfb object internal state
-void FIRPFB(_reset)(FIRPFB() _q)
+int FIRPFB(_reset)(FIRPFB() _q)
 {
-    WINDOW(_reset)(_q->w);
+    return WINDOW(_reset)(_q->w);
 }
 
 // set output scaling for filter
-void FIRPFB(_set_scale)(FIRPFB() _q,
+int FIRPFB(_set_scale)(FIRPFB() _q,
                          TC      _scale)
 {
     _q->scale = _scale;
+    return LIQUID_OK;
 }
 
 // get output scaling for filter
-void FIRPFB(_get_scale)(FIRPFB() _q,
+int FIRPFB(_get_scale)(FIRPFB() _q,
                          TC *    _scale)
 {
     *_scale = _q->scale;
+    return LIQUID_OK;
 }
 
 // push sample into firpfb internal buffer
-void FIRPFB(_push)(FIRPFB() _q, TI _x)
+int FIRPFB(_push)(FIRPFB() _q, TI _x)
 {
     // push value into window buffer
-    WINDOW(_push)(_q->w, _x);
+    return WINDOW(_push)(_q->w, _x);
 }
 
 // Write a block of samples into object's internal buffer
-void FIRPFB(_write)(FIRPFB()     _q,
+int FIRPFB(_write)(FIRPFB()     _q,
                     TI *         _x,
                     unsigned int _n)
 {
-    WINDOW(_write)(_q->w, _x, _n);
+    return WINDOW(_write)(_q->w, _x, _n);
 }
 
 // execute the filter on internal buffer and coefficients
 //  _q      : firpfb object
 //  _i      : index of filter to use
 //  _y      : pointer to output sample
-void FIRPFB(_execute)(FIRPFB()     _q,
-                      unsigned int _i,
-                      TO *         _y)
+int FIRPFB(_execute)(FIRPFB()     _q,
+                     unsigned int _i,
+                     TO *         _y)
 {
     // validate input
     if (_i >= _q->num_filters) {
-        liquid_error(LIQUID_EICONFIG,"firpfb_execute(), filterbank index (%u) exceeds maximum (%u)",_i,_q->num_filters);
-        return;
+        return liquid_error(LIQUID_EICONFIG,"firpfb_execute(), filterbank index (%u) exceeds maximum (%u)",_i,_q->num_filters);
     }
 
     // read buffer
@@ -338,6 +341,7 @@ void FIRPFB(_execute)(FIRPFB()     _q,
 
     // apply scaling factor
     *_y *= _q->scale;
+    return LIQUID_OK;
 }
 
 // execute the filter on a block of input samples; the
@@ -347,11 +351,11 @@ void FIRPFB(_execute)(FIRPFB()     _q,
 //  _x      : pointer to input array [size: _n x 1]
 //  _n      : number of input, output samples
 //  _y      : pointer to output array [size: _n x 1]
-void FIRPFB(_execute_block)(FIRPFB()     _q,
-                            unsigned int _i,
-                            TI *         _x,
-                            unsigned int _n,
-                            TO *         _y)
+int FIRPFB(_execute_block)(FIRPFB()     _q,
+                           unsigned int _i,
+                           TI *         _x,
+                           unsigned int _n,
+                           TO *         _y)
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
@@ -361,5 +365,6 @@ void FIRPFB(_execute_block)(FIRPFB()     _q,
         // compute output at appropriate index
         FIRPFB(_execute)(_q, _i, &_y[i]);
     }
+    return LIQUID_OK;
 }
 
