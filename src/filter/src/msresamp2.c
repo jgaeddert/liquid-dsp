@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,17 +62,17 @@ struct MSRESAMP2(_s) {
 //  _q      : msresamp object
 //  _x      : input sample
 //  _y      : output sample array  [size:2^_num_stages x 1]
-void MSRESAMP2(_interp_execute)(MSRESAMP2() _q,
-                                TI          _x,
-                                TO *        _y);
+int MSRESAMP2(_interp_execute)(MSRESAMP2() _q,
+                               TI          _x,
+                               TO *        _y);
 
 // execute multi-stage resampler as decimator
 //  _q      : msresamp object
 //  _x      : input sample array  [size: 2^_num_stages x 1]
 //  _y      : output sample pointer
-void MSRESAMP2(_decim_execute)(MSRESAMP2() _q,
-                               TI *        _x,
-                               TO *        _y);
+int MSRESAMP2(_decim_execute)(MSRESAMP2() _q,
+                              TI *        _x,
+                              TO *        _y);
 
 // create multi-stage half-band resampler
 //  _type       : resampler type (e.g. LIQUID_RESAMP_DECIM)
@@ -168,7 +168,7 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
 }
 
 // destroy msresamp2 object, freeing all internally-allocated memory
-void MSRESAMP2(_destroy)(MSRESAMP2() _q)
+int MSRESAMP2(_destroy)(MSRESAMP2() _q)
 {
     // free buffers
     free(_q->buffer0);
@@ -190,10 +190,11 @@ void MSRESAMP2(_destroy)(MSRESAMP2() _q)
 
     // destroy main object
     free(_q);
+    return LIQUID_OK;
 }
 
 // print msresamp2 object internals
-void MSRESAMP2(_print)(MSRESAMP2() _q)
+int MSRESAMP2(_print)(MSRESAMP2() _q)
 {
     printf("multi-stage half-band resampler:\n");
     printf("    type                    : %s\n", _q->type == LIQUID_RESAMP_DECIM ? "decimator" : "interpolator");
@@ -213,10 +214,11 @@ void MSRESAMP2(_print)(MSRESAMP2() _q)
         printf("    stage[%2u]  {m=%3u, As=%6.2f dB, fc=%6.3f, f0=%6.3f}\n",
                     i, _q->m_stage[g], _q->As_stage[g], _q->fc_stage[g], _q->f0_stage[g]);
     }
+    return LIQUID_OK;
 }
 
 // reset msresamp2 object internals, clear filters and nco phase
-void MSRESAMP2(_reset)(MSRESAMP2() _q)
+int MSRESAMP2(_reset)(MSRESAMP2() _q)
 {
     // reset half-band resampler objects
     unsigned int i;
@@ -227,6 +229,7 @@ void MSRESAMP2(_reset)(MSRESAMP2() _q)
     _q->buffer_index = 0;
     
     // NOTE: not necessary to clear internal buffers
+    return LIQUID_OK;
 }
 
 // Get multi-stage half-band resampling rate
@@ -282,22 +285,23 @@ float MSRESAMP2(_get_delay)(MSRESAMP2() _q)
 //  _q      : msresamp object                               
 //  _x      : input sample                                  
 //  _y      : output sample array  [size:2^_num_stages x 1] 
-void MSRESAMP2(_execute)(MSRESAMP2() _q,
-                         TI *        _x,
-                         TO *        _y)
+int MSRESAMP2(_execute)(MSRESAMP2() _q,
+                        TI *        _x,
+                        TO *        _y)
 {
     // switch resampling method based on type
     if (_q->num_stages == 0) {
         // pass through
         _y[0] = _x[0];
-        return;
+        return LIQUID_OK;
     } else if (_q->type == LIQUID_RESAMP_INTERP) {
         // execute multi-stage resampler as interpolator
-        MSRESAMP2(_interp_execute)(_q, _x[0], _y);
+        return MSRESAMP2(_interp_execute)(_q, _x[0], _y);
     } else {
         // execute multi-stage resampler as decimator
-        MSRESAMP2(_decim_execute)(_q, _x, _y);
+        return MSRESAMP2(_decim_execute)(_q, _x, _y);
     }
+    return liquid_error(LIQUID_EINT,"msresamp2_%s_execute(), invalid internal mode",EXTENSION_FULL);
 }
 
 //
@@ -308,9 +312,9 @@ void MSRESAMP2(_execute)(MSRESAMP2() _q,
 //  _q      : msresamp object                               
 //  _x      : input sample                                  
 //  _y      : output sample array  [size:2^_num_stages x 1] 
-void MSRESAMP2(_interp_execute)(MSRESAMP2() _q,
-                                TI          _x,
-                                TO *        _y)
+int MSRESAMP2(_interp_execute)(MSRESAMP2() _q,
+                               TI          _x,
+                               TO *        _y)
 {
     // buffer pointers (initialize BOTH to _q->buffer0);
     T * b0 = _q->buffer0;   // input buffer pointer
@@ -338,15 +342,16 @@ void MSRESAMP2(_interp_execute)(MSRESAMP2() _q,
         b0 = (s % 2) == 0 ? _q->buffer1 : _q->buffer0;
         b1 = (s % 2) == 0 ? _q->buffer0 : _q->buffer1;
     }
+    return LIQUID_OK;
 }
 
 // execute multi-stage resampler as decimator               
 //  _q      : msresamp object                               
 //  _x      : input sample array  [size: 2^_num_stages x 1] 
 //  _y      : output sample pointer                         
-void MSRESAMP2(_decim_execute)(MSRESAMP2() _q,
-                               TI *        _x,
-                               TO *        _y)
+int MSRESAMP2(_decim_execute)(MSRESAMP2() _q,
+                              TI *        _x,
+                              TO *        _y)
 {
     // buffer pointers (initialize BOTH to _q->buffer0);
     T * b0 = _x;            // input buffer pointer
@@ -371,5 +376,6 @@ void MSRESAMP2(_decim_execute)(MSRESAMP2() _q,
 
     // set single output sample and scale appropriately
     *_y = b0[0] * _q->zeta;
+    return LIQUID_OK;
 }
 

@@ -4411,13 +4411,13 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,                          \
                                float        _As);                           \
                                                                             \
 /* Destroy multi-stage half-band resampler, freeing all internal memory */  \
-void MSRESAMP2(_destroy)(MSRESAMP2() _q);                                   \
+int MSRESAMP2(_destroy)(MSRESAMP2() _q);                                    \
                                                                             \
 /* Print msresamp object internals to stdout                            */  \
-void MSRESAMP2(_print)(MSRESAMP2() _q);                                     \
+int MSRESAMP2(_print)(MSRESAMP2() _q);                                      \
                                                                             \
 /* Reset msresamp object internal state                                 */  \
-void MSRESAMP2(_reset)(MSRESAMP2() _q);                                     \
+int MSRESAMP2(_reset)(MSRESAMP2() _q);                                      \
                                                                             \
 /* Get multi-stage half-band resampling rate                            */  \
 float MSRESAMP2(_get_rate)(MSRESAMP2() _q);                                 \
@@ -4437,9 +4437,9 @@ float MSRESAMP2(_get_delay)(MSRESAMP2() _q);                                \
 /*  _q      : msresamp object                                           */  \
 /*  _x      : input sample array                                        */  \
 /*  _y      : output sample array                                       */  \
-void MSRESAMP2(_execute)(MSRESAMP2() _q,                                    \
-                         TI *        _x,                                    \
-                         TO *        _y);                                   \
+int MSRESAMP2(_execute)(MSRESAMP2() _q,                                     \
+                        TI *        _x,                                     \
+                        TO *        _y);                                    \
 
 LIQUID_MSRESAMP2_DEFINE_API(LIQUID_MSRESAMP2_MANGLE_RRRF,
                             float,
