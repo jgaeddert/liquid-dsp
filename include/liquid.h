@@ -4478,13 +4478,13 @@ MSRESAMP() MSRESAMP(_create)(float _r,                                      \
                              float _As);                                    \
                                                                             \
 /* Destroy multi-stage arbitrary resampler                              */  \
-void MSRESAMP(_destroy)(MSRESAMP() _q);                                     \
+int MSRESAMP(_destroy)(MSRESAMP() _q);                                      \
                                                                             \
 /* Print msresamp object internals to stdout                            */  \
-void MSRESAMP(_print)(MSRESAMP() _q);                                       \
+int MSRESAMP(_print)(MSRESAMP() _q);                                        \
                                                                             \
 /* Reset msresamp object internal state                                 */  \
-void MSRESAMP(_reset)(MSRESAMP() _q);                                       \
+int MSRESAMP(_reset)(MSRESAMP() _q);                                        \
                                                                             \
 /* Get filter delay (output samples)                                    */  \
 float MSRESAMP(_get_delay)(MSRESAMP() _q);                                  \
@@ -4502,11 +4502,11 @@ float MSRESAMP(_get_rate)(MSRESAMP() _q);                                   \
 /*  _nx : input sample array size                                       */  \
 /*  _y  : pointer to output array for storing result                    */  \
 /*  _ny : number of samples written to _y                               */  \
-void MSRESAMP(_execute)(MSRESAMP()     _q,                                  \
-                        TI *           _x,                                  \
-                        unsigned int   _nx,                                 \
-                        TO *           _y,                                  \
-                        unsigned int * _ny);                                \
+int MSRESAMP(_execute)(MSRESAMP()     _q,                                   \
+                       TI *           _x,                                   \
+                       unsigned int   _nx,                                  \
+                       TO *           _y,                                   \
+                       unsigned int * _ny);                                 \
 
 LIQUID_MSRESAMP_DEFINE_API(LIQUID_MSRESAMP_MANGLE_RRRF,
                            float,

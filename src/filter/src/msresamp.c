@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,18 +38,18 @@
 //
 
 // execute multi-stage interpolation
-void MSRESAMP(_interp_execute)(MSRESAMP()    _q,
-                              TI *           _x,
-                              unsigned int   _nx,
-                              TO *           _y,
-                              unsigned int * _num_written);
+int MSRESAMP(_interp_execute)(MSRESAMP()    _q,
+                             TI *           _x,
+                             unsigned int   _nx,
+                             TO *           _y,
+                             unsigned int * _num_written);
 
 // execute multi-stage decimation
-void MSRESAMP(_decim_execute)(MSRESAMP()     _q,
-                              TI *           _x,
-                              unsigned int   _nx,
-                              TO *           _y,
-                              unsigned int * _num_written);
+int MSRESAMP(_decim_execute)(MSRESAMP()     _q,
+                             TI *           _x,
+                             unsigned int   _nx,
+                             TO *           _y,
+                             unsigned int * _num_written);
 
 
 struct MSRESAMP(_s) {
@@ -145,7 +145,7 @@ MSRESAMP() MSRESAMP(_create)(float _r,
 }
 
 // destroy msresamp object, freeing all internally-allocated memory
-void MSRESAMP(_destroy)(MSRESAMP() _q)
+int MSRESAMP(_destroy)(MSRESAMP() _q)
 {
     // free buffer
     free(_q->buffer);
@@ -158,10 +158,11 @@ void MSRESAMP(_destroy)(MSRESAMP() _q)
 
     // destroy main object
     free(_q);
+    return LIQUID_OK;
 }
 
 // print msresamp object internals
-void MSRESAMP(_print)(MSRESAMP() _q)
+int MSRESAMP(_print)(MSRESAMP() _q)
 {
     printf("multi-stage resampler\n");
     printf("    composite rate      : %12.10f\n", _q->rate);
@@ -203,10 +204,11 @@ void MSRESAMP(_print)(MSRESAMP() _q)
         printf("    [%2u, r=%11.7f] : arbitrary, r=%12.8f\n", stage, r, rate);
         stage++;
     }
+    return LIQUID_OK;
 }
 
 // reset msresamp object internals, clear filters and nco phase
-void MSRESAMP(_reset)(MSRESAMP() _q)
+int MSRESAMP(_reset)(MSRESAMP() _q)
 {
     // reset multi-stage half-band resampler object
     MSRESAMP2(_reset)(_q->halfband_resamp);
@@ -218,6 +220,7 @@ void MSRESAMP(_reset)(MSRESAMP() _q)
     _q->buffer_index = 0;
 
     // TODO: clear internal buffers?
+    return LIQUID_OK;
 }
 
 // get filter delay (output samples)
@@ -258,21 +261,20 @@ float MSRESAMP(_get_rate)(MSRESAMP() _q)
 //  _x      :   input sample array
 //  _y      :   output sample array
 //  _ny     :   number of samples written to _y
-void MSRESAMP(_execute)(MSRESAMP()     _q,
-                        TI *           _x,
-                        unsigned int   _nx,
-                        TO *           _y,
-                        unsigned int * _ny)
+int MSRESAMP(_execute)(MSRESAMP()     _q,
+                       TI *           _x,
+                       unsigned int   _nx,
+                       TO *           _y,
+                       unsigned int * _ny)
 {
     switch(_q->type) {
     case LIQUID_RESAMP_INTERP:
-        MSRESAMP(_interp_execute)(_q, _x, _nx, _y, _ny);
-        break;
+        return MSRESAMP(_interp_execute)(_q, _x, _nx, _y, _ny);
     case LIQUID_RESAMP_DECIM:
-        MSRESAMP(_decim_execute)(_q, _x, _nx, _y, _ny);
-        break;
+        return MSRESAMP(_decim_execute)(_q, _x, _nx, _y, _ny);
     default:;
     }
+    return liquid_error(LIQUID_EINT,"msresamp_%s_execute(), unknown/unsupported internal state",EXTENSION_FULL);
 }
 
 // 
@@ -284,11 +286,11 @@ void MSRESAMP(_execute)(MSRESAMP()     _q,
 //  _x      :   input sample array
 //  _y      :   output sample array
 //  _nw     :   number of samples written to _y
-void MSRESAMP(_interp_execute)(MSRESAMP()     _q,
-                               TI *           _x,
-                               unsigned int   _nx,
-                               TO *           _y,
-                               unsigned int * _ny)
+int MSRESAMP(_interp_execute)(MSRESAMP()     _q,
+                              TI *           _x,
+                              unsigned int   _nx,
+                              TO *           _y,
+                              unsigned int * _ny)
 {
     unsigned int i;
     unsigned int nw;
@@ -312,6 +314,7 @@ void MSRESAMP(_interp_execute)(MSRESAMP()     _q,
 
     // set return value for number of samples written
     *_ny = ny;
+    return LIQUID_OK;
 }
 
 // execute multi-stage resampler as decimator
@@ -319,11 +322,11 @@ void MSRESAMP(_interp_execute)(MSRESAMP()     _q,
 //  _x      :   input sample array
 //  _y      :   output sample array
 //  _nw     :   number of samples written to _y
-void MSRESAMP(_decim_execute)(MSRESAMP()     _q,
-                              TI *           _x,
-                              unsigned int   _nx,
-                              TO *           _y,
-                              unsigned int * _ny)
+int MSRESAMP(_decim_execute)(MSRESAMP()     _q,
+                             TI *           _x,
+                             unsigned int   _nx,
+                             TO *           _y,
+                             unsigned int * _ny)
 {
     unsigned int i;
     unsigned int M = 1 << _q->num_halfband_stages;
@@ -355,5 +358,6 @@ void MSRESAMP(_decim_execute)(MSRESAMP()     _q,
 
     // set return value for number of samples written
     *_ny = ny;
+    return LIQUID_OK;
 }
 
