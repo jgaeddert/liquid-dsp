@@ -2904,39 +2904,39 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,                                 \
                                                                             \
 /* Destroy finite impulse response Hilbert transform, freeing all       */  \
 /* internally-allocted memory and objects.                              */  \
-void FIRHILB(_destroy)(FIRHILB() _q);                                       \
+int FIRHILB(_destroy)(FIRHILB() _q);                                        \
                                                                             \
 /* Print firhilb object internals to stdout                             */  \
-void FIRHILB(_print)(FIRHILB() _q);                                         \
+int FIRHILB(_print)(FIRHILB() _q);                                          \
                                                                             \
 /* Reset firhilb object internal state                                  */  \
-void FIRHILB(_reset)(FIRHILB() _q);                                         \
+int FIRHILB(_reset)(FIRHILB() _q);                                          \
                                                                             \
 /* Execute Hilbert transform (real to complex)                          */  \
 /*  _q      :   Hilbert transform object                                */  \
 /*  _x      :   real-valued input sample                                */  \
 /*  _y      :   complex-valued output sample                            */  \
-void FIRHILB(_r2c_execute)(FIRHILB() _q,                                    \
-                           T         _x,                                    \
-                           TC *      _y);                                   \
+int FIRHILB(_r2c_execute)(FIRHILB() _q,                                     \
+                          T         _x,                                     \
+                          TC *      _y);                                    \
                                                                             \
 /* Execute Hilbert transform (complex to real)                          */  \
 /*  _q      :   Hilbert transform object                                */  \
 /*  _x      :   complex-valued input sample                             */  \
 /*  _y0     :   real-valued output sample, lower side-band retained     */  \
 /*  _y1     :   real-valued output sample, upper side-band retained     */  \
-void FIRHILB(_c2r_execute)(FIRHILB() _q,                                    \
-                           TC        _x,                                    \
-                           T *       _y0,                                   \
-                           T *       _y1);                                  \
+int FIRHILB(_c2r_execute)(FIRHILB() _q,                                     \
+                          TC        _x,                                     \
+                          T *       _y0,                                    \
+                          T *       _y1);                                   \
                                                                             \
 /* Execute Hilbert transform decimator (real to complex)                */  \
 /*  _q      :   Hilbert transform object                                */  \
 /*  _x      :   real-valued input array, [size: 2 x 1]                  */  \
 /*  _y      :   complex-valued output sample                            */  \
-void FIRHILB(_decim_execute)(FIRHILB() _q,                                  \
-                             T *       _x,                                  \
-                             TC *      _y);                                 \
+int FIRHILB(_decim_execute)(FIRHILB() _q,                                   \
+                            T *       _x,                                   \
+                            TC *      _y);                                  \
                                                                             \
 /* Execute Hilbert transform decimator (real to complex) on a block of  */  \
 /* samples                                                              */  \
@@ -2944,18 +2944,18 @@ void FIRHILB(_decim_execute)(FIRHILB() _q,                                  \
 /*  _x      :   real-valued input array, [size: 2*_n x 1]               */  \
 /*  _n      :   number of output samples                                */  \
 /*  _y      :   complex-valued output array, [size: _n x 1]             */  \
-void FIRHILB(_decim_execute_block)(FIRHILB()    _q,                         \
-                                   T *          _x,                         \
-                                   unsigned int _n,                         \
-                                   TC *         _y);                        \
+int FIRHILB(_decim_execute_block)(FIRHILB()    _q,                          \
+                                  T *          _x,                          \
+                                  unsigned int _n,                          \
+                                  TC *         _y);                         \
                                                                             \
 /* Execute Hilbert transform interpolator (real to complex)             */  \
 /*  _q      :   Hilbert transform object                                */  \
 /*  _x      :   complex-valued input sample                             */  \
 /*  _y      :   real-valued output array, [size: 2 x 1]                 */  \
-void FIRHILB(_interp_execute)(FIRHILB() _q,                                 \
-                              TC        _x,                                 \
-                              T *       _y);                                \
+int FIRHILB(_interp_execute)(FIRHILB() _q,                                  \
+                             TC        _x,                                  \
+                             T *       _y);                                 \
                                                                             \
 /* Execute Hilbert transform interpolator (complex to real) on a block  */  \
 /* of samples                                                           */  \
@@ -2963,10 +2963,10 @@ void FIRHILB(_interp_execute)(FIRHILB() _q,                                 \
 /*  _x      :   complex-valued input array, [size: _n x 1]              */  \
 /*  _n      :   number of *input* samples                               */  \
 /*  _y      :   real-valued output array, [size: 2*_n x 1]              */  \
-void FIRHILB(_interp_execute_block)(FIRHILB()    _q,                        \
-                                    TC *         _x,                        \
-                                    unsigned int _n,                        \
-                                    T *          _y);                       \
+int FIRHILB(_interp_execute_block)(FIRHILB()    _q,                         \
+                                   TC *         _x,                         \
+                                   unsigned int _n,                         \
+                                   T *          _y);                        \
 
 LIQUID_FIRHILB_DEFINE_API(LIQUID_FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 //LIQUID_FIRHILB_DEFINE_API(LIQUID_FIRHILB_MANGLE_DOUBLE, double, liquid_double_complex)

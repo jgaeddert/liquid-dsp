@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -120,7 +120,7 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
 }
 
 // destroy firhilb object
-void FIRHILB(_destroy)(FIRHILB() _q)
+int FIRHILB(_destroy)(FIRHILB() _q)
 {
     // destroy window buffers
     WINDOW(_destroy)(_q->w0);
@@ -138,10 +138,11 @@ void FIRHILB(_destroy)(FIRHILB() _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print firhilb object internals
-void FIRHILB(_print)(FIRHILB() _q)
+int FIRHILB(_print)(FIRHILB() _q)
 {
     printf("fir hilbert transform: [%u]\n", _q->h_len);
     unsigned int i;
@@ -156,10 +157,11 @@ void FIRHILB(_print)(FIRHILB() _q)
     for (i=0; i<_q->hq_len; i++) {
         printf("  hq(%4u) = %8.4f;\n", i+1, _q->hq[i]);
     }
+    return LIQUID_OK;
 }
 
 // reset firhilb object internal state
-void FIRHILB(_reset)(FIRHILB() _q)
+int FIRHILB(_reset)(FIRHILB() _q)
 {
     // clear window buffers
     WINDOW(_reset)(_q->w0);
@@ -169,15 +171,16 @@ void FIRHILB(_reset)(FIRHILB() _q)
 
     // reset toggle flag
     _q->toggle = 0;
+    return LIQUID_OK;
 }
 
 // execute Hilbert transform (real to complex)
 //  _q      :   firhilb object
 //  _x      :   real-valued input sample
 //  _y      :   complex-valued output sample
-void FIRHILB(_r2c_execute)(FIRHILB()   _q,
-                           T           _x,
-                           T complex * _y)
+int FIRHILB(_r2c_execute)(FIRHILB()   _q,
+                          T           _x,
+                          T complex * _y)
 {
     T * r;  // buffer read pointer
     T yi;   // in-phase component
@@ -214,6 +217,7 @@ void FIRHILB(_r2c_execute)(FIRHILB()   _q,
 
     // set return value
     *_y = yi + _Complex_I * yq;
+    return LIQUID_OK;
 }
 
 // execute Hilbert transform (complex to real)
@@ -221,10 +225,10 @@ void FIRHILB(_r2c_execute)(FIRHILB()   _q,
 //  _x      :   complex-valued input sample
 //  _y0     :   real-valued output sample, lower side-band retained
 //  _y1     :   real-valued output sample, upper side-band retained
-void FIRHILB(_c2r_execute)(FIRHILB() _q,
-                           T complex _x,
-                           T *       _y0,
-                           T *       _y1)
+int FIRHILB(_c2r_execute)(FIRHILB() _q,
+                          T complex _x,
+                          T *       _y0,
+                          T *       _y1)
 {
     T * r;  // buffer read pointer
     T yi;   //
@@ -260,15 +264,16 @@ void FIRHILB(_c2r_execute)(FIRHILB() _q,
     // set return value
     *_y0 = yi + yq; // lower side-band
     *_y1 = yi - yq; // upper side-band
+    return LIQUID_OK;
 }
 
 // execute Hilbert transform decimator (real to complex)
 //  _q      :   firhilb object
 //  _x      :   real-valued input array [size: 2 x 1]
 //  _y      :   complex-valued output sample
-void FIRHILB(_decim_execute)(FIRHILB()   _q,
-                             T *         _x,
-                             T complex * _y)
+int FIRHILB(_decim_execute)(FIRHILB()   _q,
+                            T *         _x,
+                            T complex * _y)
 {
     T * r;  // buffer read pointer
     T yi;   // in-phase component
@@ -289,6 +294,7 @@ void FIRHILB(_decim_execute)(FIRHILB()   _q,
 
     // toggle flag
     _q->toggle = 1 - _q->toggle;
+    return LIQUID_OK;
 }
 
 // execute Hilbert transform decimator (real to complex) on
@@ -297,24 +303,26 @@ void FIRHILB(_decim_execute)(FIRHILB()   _q,
 //  _x      :   real-valued input array [size: 2*_n x 1]
 //  _n      :   number of *output* samples
 //  _y      :   complex-valued output array [size: _n x 1]
-void FIRHILB(_decim_execute_block)(FIRHILB()    _q,
-                                   T *          _x,
-                                   unsigned int _n,
-                                   T complex *  _y)
+int FIRHILB(_decim_execute_block)(FIRHILB()    _q,
+                                  T *          _x,
+                                  unsigned int _n,
+                                  T complex *  _y)
 {
     unsigned int i;
-
-    for (i=0; i<_n; i++)
+    for (i=0; i<_n; i++) {
         FIRHILB(_decim_execute)(_q, &_x[2*i], &_y[i]);
+    }
+
+    return LIQUID_OK;
 }
 
 // execute Hilbert transform interpolator (complex to real)
 //  _q      :   firhilb object
 //  _y      :   complex-valued input sample
 //  _x      :   real-valued output array [size: 2 x 1]
-void FIRHILB(_interp_execute)(FIRHILB() _q,
-                              T complex _x,
-                              T *       _y)
+int FIRHILB(_interp_execute)(FIRHILB() _q,
+                             T complex _x,
+                             T *       _y)
 {
     T * r;  // buffer read pointer
 
@@ -333,6 +341,7 @@ void FIRHILB(_interp_execute)(FIRHILB() _q,
 
     // toggle flag
     _q->toggle = 1 - _q->toggle;
+    return LIQUID_OK;
 }
 
 // execute Hilbert transform interpolator (complex to real)
@@ -341,13 +350,15 @@ void FIRHILB(_interp_execute)(FIRHILB() _q,
 //  _x      :   complex-valued input array [size: _n x 1]
 //  _n      :   number of *input* samples
 //  _y      :   real-valued output array [size: 2*_n x 1]
-void FIRHILB(_interp_execute_block)(FIRHILB()    _q,
-                                    T complex *  _x,
-                                    unsigned int _n,
-                                    T *          _y)
+int FIRHILB(_interp_execute_block)(FIRHILB()    _q,
+                                   T complex *  _x,
+                                   unsigned int _n,
+                                   T *          _y)
 {
     unsigned int i;
-
-    for (i=0; i<_n; i++)
+    for (i=0; i<_n; i++) {
         FIRHILB(_interp_execute)(_q, _x[i], &_y[2*i]);
+    }
+
+    return LIQUID_OK;
 }
