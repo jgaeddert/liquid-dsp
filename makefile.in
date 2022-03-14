@@ -1298,7 +1298,7 @@ clean-autoscript :
 # DSP libraries.
 
 .PHONY: autotest
-autotest_prog	= xautotest
+autotest_prog = xautotest
 
 # run the autotest generator script to create autotest_include.h
 autotest_include.h : scripts/autoscript $(autotest_sources) $(include_headers)
@@ -1315,17 +1315,21 @@ $(autotest_obj) : %.o : %.c $(include_headers)
 # additional autotest objects
 $(autotest_extra_obj) : %.o : %.c $(include_headers)
 
+# supporting objects
+autotest_lib := autotest/autotest.o
+autotest_headers = $(patsubst $.o,%.h,$(autotest_lib))
+
 # compile the autotest internal library functions without linking
-autotest/autotestlib.o : autotest/autotestlib.c autotest/autotest.h
+$(autotest_lib) : %.o : %.c $(autotest_headers)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -c -o $@
 
 # compile the autotest program without linking
-$(autotest_prog).o : autotest/autotest.c autotest/autotest.h autotest_include.h
+$(autotest_prog).o : autotest/xautotest.c autotest/autotest.h autotest_include.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -c -o $@
 
 # link the autotest program with the objects
 # NOTE: linked libraries must come _after_ the target program
-$(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) autotest/autotestlib.o ${ARCHIVE_LIB}
+$(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) $(autotest_lib) ${ARCHIVE_LIB}
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
 
 # run the autotest program
@@ -1338,9 +1342,9 @@ test: check
 # clean the generated files
 clean-check:
 	$(RM) autotest_include.h $(autotest_prog).o $(autotest_prog)
-	$(RM) autotest/autotestlib.o
 	$(RM) $(autotest_obj)
 	$(RM) $(autotest_extra_obj)
+	$(RM) $(autotest_lib)
 	$(RM) autotest.json
 
 ##
