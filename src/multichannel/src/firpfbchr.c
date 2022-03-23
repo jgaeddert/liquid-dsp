@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,8 +67,8 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _M,
                                TC *         _h)
 {
     // validate input
-    if (_M < 2 || _M % 2)
-        return liquid_error_config("firpfbchr_%s_create(), number of channels must be greater than 2 and even", EXTENSION_FULL);
+    if (_M < 2)
+        return liquid_error_config("firpfbchr_%s_create(), number of channels must be at least 2", EXTENSION_FULL);
     if (_m < 1)
         return liquid_error_config("firpfbchr_%s_create(), filter semi-length must be at least 1", EXTENSION_FULL);
 
