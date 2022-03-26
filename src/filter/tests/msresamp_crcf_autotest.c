@@ -24,11 +24,11 @@
 #include "liquid.h"
 
 // test multi-stage arbitrary resampler
-void autotest_msresamp_crcf()
+//   r  : resampling rate (output/input)
+//   As : resampling filter stop-band attenuation [dB]
+void testbench_msresamp_crcf(float r, float As)
 {
     // options
-    float r=0.127115323f;       // resampling rate (output/input)
-    float As=60.0f;             // resampling filter stop-band attenuation [dB]
     unsigned int n=800000;      // number of output samples to analyze
     float bw = 0.2f; // target output bandwidth
     unsigned int nfft = 800;
@@ -72,6 +72,11 @@ void autotest_msresamp_crcf()
     symstreamrcf_destroy(gen);
     msresamp_crcf_destroy(resamp);
 }
+
+void autotest_msresamp_crcf_01() { testbench_msresamp_crcf(0.127115323f, 60.0f); }
+void autotest_msresamp_crcf_02() { testbench_msresamp_crcf(0.373737373f, 60.0f); }
+void autotest_msresamp_crcf_03() { testbench_msresamp_crcf(0.676543210f, 60.0f); }
+//void xautotest_msresamp_crcf_04() { testbench_msresamp_crcf(0.127115323f,80.0f); }
 
 // test arbitrary resampler output length calculation
 void testbench_msresamp_crcf_num_output(float _rate)
