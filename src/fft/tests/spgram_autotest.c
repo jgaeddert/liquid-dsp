@@ -126,13 +126,13 @@ void testbench_spgramcf_signal(unsigned int _nfft, int _wtype, float _fc, float 
     spgramcf_get_psd(q, psd);
     float sn  = 10*log10f(powf(10,(_SNRdB+n0)/10.0f) + powf(10.0f,n0/10.0f));// signal + noise
     float bw  = 1.0f / (float)k;
-    autotest_psd_s regions[3] = {
+    autotest_psd_s regions[] = {
         {.fmin=-0.5f,       .fmax=_fc-0.6f*bw, .pmin=n0-tol, .pmax=n0+tol, .test_lo=1, .test_hi=1},
         {.fmin=_fc-0.4f*bw, .fmax=_fc+0.4f*bw, .pmin=sn-tol, .pmax=sn+tol, .test_lo=1, .test_hi=1},
         {.fmin=_fc+0.6f*bw, .fmax=+0.5f,       .pmin=n0-tol, .pmax=n0+tol, .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(psd, _nfft, regions, 3,
-            liquid_autotest_verbose ? "autotest_spgramcf_regions.m" : NULL);
+        liquid_autotest_verbose ? "autotest_spgramcf_signal.m" : NULL);
 
     // destroy objects
     spgramcf_destroy(q);
