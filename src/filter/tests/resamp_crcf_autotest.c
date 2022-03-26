@@ -23,148 +23,62 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// 
-// AUTOTEST : test arbitrary resampler by observing spectral content
-//
-void autotest_resamp_crcf()
+// test single-stage arbitrary resampler
+//   r  : resampling rate (output/input)
+//   As : resampling filter stop-band attenuation [dB]
+void testbench_resamp_crcf(float r, float As)
 {
     // options
-    unsigned int m = 13;        // filter semi-length (filter delay)
-    float r=1.27115323f;        // resampling rate (output/input)
-    float bw=0.45f;             // resampling filter bandwidth
-    float As=60.0f;             // resampling filter stop-band attenuation [dB]
-    unsigned int npfb=64;       // number of filters in bank (timing resolution)
-    unsigned int n=400;         // number of input samples
-    float fx=0.254230646f;      // complex input sinusoid frequency (0.2*r)
+    unsigned int n=800000;      // number of output samples to analyze
+    float bw = 0.2f; // target output bandwidth
+    unsigned int nfft = 800;
+    float tol = 0.5f;
+    unsigned int m = 15, npfb = 256;
+    float fc = 0.45f;
 
-    unsigned int i;
+    // create and configure objects
+    spgramcf     q   = spgramcf_create(nfft, LIQUID_WINDOW_HANN, nfft/2, nfft/4);
+    symstreamrcf gen = symstreamrcf_create_linear(LIQUID_FIRFILT_KAISER,r*bw,25,0.2f,LIQUID_MODEM_QPSK);
+    symstreamrcf_set_gain(gen, sqrtf(bw));
+    resamp_crcf resamp = resamp_crcf_create(r,m,fc,As,npfb);
 
-    // number of input samples (zero-padded)
-    unsigned int nx = n + m;
+    // generate samples and push through spgram object
+    unsigned int  buf_len = 256;
+    float complex buf_0[buf_len]; // input buffer
+    float complex buf_1[buf_len]; // output buffer
+    while (spgramcf_get_num_samples_total(q) < n) {
+        // generate block of samples
+        symstreamrcf_write_samples(gen, buf_0, buf_len);
 
-    // output buffer with extra padding for good measure
-    unsigned int y_len = (unsigned int) ceilf(1.1 * nx * r) + 4;
+        // resample
+        unsigned int nw = 0;
+        resamp_crcf_execute_block(resamp, buf_0, buf_len, buf_1, &nw);
 
-    // arrays
-    float complex x[nx];
-    float complex y[y_len];
-
-    // create resampler
-    resamp_crcf q = resamp_crcf_create(r,m,bw,As,npfb);
-
-    // generate input signal
-    float wsum = 0.0f;
-    for (i=0; i<nx; i++) {
-        // compute window
-        float w = i < n ? liquid_kaiser(i, n, 10.0f) : 0.0f;
-
-        // apply window to complex sinusoid
-        x[i] = cexpf(_Complex_I*2*M_PI*fx*i) * w;
-
-        // accumulate window
-        wsum += w;
+        // run samples through the spgram object
+        spgramcf_write(q, buf_1, nw);
     }
 
-    // resample
-    unsigned int ny=0;
-    unsigned int nw;
-    for (i=0; i<nx; i++) {
-        // execute resampler, storing in output buffer
-        resamp_crcf_execute(q, x[i], &y[ny], &nw);
+    // verify result
+    float psd[nfft];
+    spgramcf_get_psd(q, psd);
+    autotest_psd_s regions[] = {
+        {.fmin=-0.5f,    .fmax=-0.6f*bw, .pmin=0,     .pmax=-As+tol, .test_lo=0, .test_hi=1},
+        {.fmin=-0.4f*bw, .fmax=+0.4f*bw, .pmin=0-tol, .pmax= 0 +tol, .test_lo=1, .test_hi=1},
+        {.fmin=+0.6f*bw, .fmax=+0.5f,    .pmin=0,     .pmax=-As+tol, .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
+        liquid_autotest_verbose ? "autotest_resamp_crcf.m" : NULL);
 
-        // increment output size
-        ny += nw;
-    }
-
-    // clean up allocated objects
-    resamp_crcf_destroy(q);
-
-    // 
-    // analyze resulting signal
-    //
-
-    // check that the actual resampling rate is close to the target
-    float r_actual = (float)ny / (float)nx;
-    float fy = fx / r;      // expected output frequency
-
-    // run FFT and ensure that carrier has moved and that image
-    // frequencies and distortion have been adequately suppressed
-    unsigned int nfft = 1 << liquid_nextpow2(ny);
-    float complex yfft[nfft];   // fft input
-    float complex Yfft[nfft];   // fft output
-    for (i=0; i<nfft; i++)
-        yfft[i] = i < ny ? y[i] : 0.0f;
-    fft_run(nfft, yfft, Yfft, LIQUID_FFT_FORWARD, 0);
-    fft_shift(Yfft, nfft);  // run FFT shift
-
-    // find peak frequency
-    float Ypeak = 0.0f;
-    float fpeak = 0.0f;
-    float max_sidelobe = -1e9f;     // maximum side-lobe [dB]
-    float main_lobe_width = 0.07f;  // TODO: figure this out from Kaiser's equations
-    for (i=0; i<nfft; i++) {
-        // normalized output frequency
-        float f = (float)i/(float)nfft - 0.5f;
-
-        // scale FFT output appropriately
-        Yfft[i] /= (r * wsum);
-        float Ymag = 20*log10f( cabsf(Yfft[i]) );
-
-        // find frequency location of maximum magnitude
-        if (Ymag > Ypeak || i==0) {
-            Ypeak = Ymag;
-            fpeak = f;
-        }
-
-        // find peak side-lobe value, ignoring frequencies
-        // within a certain range of signal frequency
-        if ( fabsf(f-fy) > main_lobe_width )
-            max_sidelobe = Ymag > max_sidelobe ? Ymag : max_sidelobe;
-    }
-
-    if (liquid_autotest_verbose) {
-        // print results
-        printf("  desired resampling rate   :   %12.8f\n", r);
-        printf("  measured resampling rate  :   %12.8f    (%u/%u)\n", r_actual, ny, nx);
-        printf("  peak spectrum             :   %12.8f dB (expected 0.0 dB)\n", Ypeak);
-        printf("  peak frequency            :   %12.8f    (expected %-12.8f)\n", fpeak, fy);
-        printf("  max sidelobe              :   %12.8f dB (expected at least %.2f dB)\n", max_sidelobe, -As);
-    }
-    CONTEND_DELTA(     r_actual, r,    0.01f ); // check actual output sample rate
-    CONTEND_DELTA(     Ypeak,    0.0f, 0.25f ); // peak should be about 0 dB
-    CONTEND_DELTA(     fpeak,    fy,   0.01f ); // peak frequency should be nearly 0.2
-    CONTEND_LESS_THAN( max_sidelobe, -As );     // maximum side-lobe should be sufficiently low
-
-#if 0
-    // export results for debugging
-    char filename[] = "resamp_crcf_autotest.m";
-    FILE*fid = fopen(filename,"w");
-    fprintf(fid,"%% %s: auto-generated file\n",filename);
-    fprintf(fid,"clear all;\n");
-    fprintf(fid,"close all;\n");
-    fprintf(fid,"r    = %12.8f;\n", r);
-    fprintf(fid,"nx   = %u;\n", nx);
-    fprintf(fid,"ny   = %u;\n", ny);
-    fprintf(fid,"nfft = %u;\n", nfft);
-
-    fprintf(fid,"Y = zeros(1,nfft);\n");
-    for (i=0; i<nfft; i++)
-        fprintf(fid,"Y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(Yfft[i]), cimagf(Yfft[i]));
-
-    fprintf(fid,"\n\n");
-    fprintf(fid,"%% plot frequency-domain result\n");
-    fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(f,20*log10(abs(Y)),'Color',[0.25 0.5 0.0],'LineWidth',2);\n");
-    fprintf(fid,"grid on;\n");
-    fprintf(fid,"xlabel('normalized frequency');\n");
-    fprintf(fid,"ylabel('PSD [dB]');\n");
-    fprintf(fid,"axis([-0.5 0.5 -120 20]);\n");
-
-    fclose(fid);
-    printf("results written to %s\n",filename);
-#endif
+    // destroy objects
+    spgramcf_destroy(q);
+    symstreamrcf_destroy(gen);
+    resamp_crcf_destroy(resamp);
 }
+
+void autotest_resamp_crcf_01() { testbench_resamp_crcf(0.127115323f, 60.0f); }
+void autotest_resamp_crcf_02() { testbench_resamp_crcf(0.373737373f, 60.0f); }
+void autotest_resamp_crcf_03() { testbench_resamp_crcf(0.676543210f, 60.0f); }
+//void xautotest_resamp_crcf_04() { testbench_resamp_crcf(0.127115323f,80.0f); }
 
 // test arbitrary resampler output length calculation
 void testbench_resamp_crcf_num_output(float _rate, unsigned int _npfb)
