@@ -1309,7 +1309,7 @@ autotest_include.h : scripts/autoscript $(autotest_sources) $(include_headers)
 #       header' so we need to explicity tell it to compile as a c source file with
 #       the '-x c' flag
 autotest_obj = $(patsubst %.c,%.o,$(autotest_sources))
-$(autotest_obj) : %.o : %.c $(include_headers)
+$(autotest_obj) : %.o : %.c $(include_headers) autotest/autotest.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -c -o $@
 
 # additional autotest objects
