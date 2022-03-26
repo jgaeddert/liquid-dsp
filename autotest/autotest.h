@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <inttypes.h>
+#include "liquid.h"
 
 // total number of checks invoked
 extern unsigned long int liquid_autotest_num_checks;
@@ -283,6 +284,22 @@ void liquid_autotest_print_array(unsigned char * _x,
 // AUTOTEST FAIL
 #define AUTOTEST_FAIL_FL(F,L,MSG)      liquid_autotest_failed_msg(F,L,MSG)
 #define AUTOTEST_FAIL(MSG)             AUTOTEST_FAIL_FL(__FILE__,__LINE__,MSG)
+
+// supporting methods
+typedef struct {
+    float fmin, fmax;
+    float pmin, pmax;
+} autotest_psd_s;
+
+// validate spectral content
+int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
+//int liquid_autotest_validate_spectrum2(spgramcf _periodogram, autotest_psd_s * _regions);
+
+//int liquid_autotest_validate_spectrum3(firfilt_crcf _filter, autotest_psd_s * _regions);
+
+//int liquid_autotest_validate_spectrum4(iirfilt_crcf _filter, autotest_psd_s * _regions);
 
 #endif // __LIQUID_AUTOTEST_H__
 
