@@ -89,19 +89,20 @@ void autotest_spgramcf_noise_kbd            () { testbench_spgramcf_noise(800, 0
 
 void testbench_spgramcf_signal(unsigned int _nfft, int _wtype, float _fc, float _SNRdB)
 {
-    unsigned int k = 4, m = 20;
+    float bw = 0.25f; // signal bandwidth (relative)
+    unsigned int m = 25;
     float beta = 0.2f, n0 = -80.0f, tol = 0.5f;
     if (liquid_autotest_verbose)
         printf("  spgramcf test (signal): nfft=%6u, wtype=%24s, fc=%6.2f Fs, snr=%6.1f dB\n", _nfft, liquid_window_str[_wtype][1], _fc, _SNRdB);
 
     // create objects
-    spgramcf     q     =  spgramcf_create(_nfft, _wtype, _nfft/2, _nfft/4);
-    symstreamcf  gen   = symstreamcf_create_linear(LIQUID_FIRFILT_KAISER,k,m,beta,LIQUID_MODEM_QPSK);
+    spgramcf     q     = spgramcf_create(_nfft, _wtype, _nfft/2, _nfft/4);
+    symstreamrcf gen   = symstreamrcf_create_linear(LIQUID_FIRFILT_KAISER,bw,m,beta,LIQUID_MODEM_QPSK);
     nco_crcf     mixer = nco_crcf_create(LIQUID_VCO);
 
     // set parameters
     float nstd = powf(10.0f,n0/20.0f); // noise std. dev.
-    symstreamcf_set_gain(gen, powf(10.0f, (n0 + _SNRdB - 10*log10f(k))/20.0f));
+    symstreamrcf_set_gain(gen, powf(10.0f, (n0 + _SNRdB + 10*log10f(bw))/20.0f));
     nco_crcf_set_frequency(mixer, 2*M_PI*_fc);
 
     // generate samples and push through spgram object
@@ -109,7 +110,7 @@ void testbench_spgramcf_signal(unsigned int _nfft, int _wtype, float _fc, float 
     float complex buf[buf_len];
     while (num_samples < 2000*_nfft) {
         // generate block of samples
-        symstreamcf_write_samples(gen, buf, buf_len);
+        symstreamrcf_write_samples(gen, buf, buf_len);
 
         // mix to desired frequency and add noise
         nco_crcf_mix_block_up(mixer, buf, buf, buf_len);
@@ -125,7 +126,6 @@ void testbench_spgramcf_signal(unsigned int _nfft, int _wtype, float _fc, float 
     float psd[_nfft];
     spgramcf_get_psd(q, psd);
     float sn  = 10*log10f(powf(10,(_SNRdB+n0)/10.0f) + powf(10.0f,n0/10.0f));// signal + noise
-    float bw  = 1.0f / (float)k;
     autotest_psd_s regions[] = {
         {.fmin=-0.5f,       .fmax=_fc-0.6f*bw, .pmin=n0-tol, .pmax=n0+tol, .test_lo=1, .test_hi=1},
         {.fmin=_fc-0.4f*bw, .fmax=_fc+0.4f*bw, .pmin=sn-tol, .pmax=sn+tol, .test_lo=1, .test_hi=1},
@@ -136,7 +136,7 @@ void testbench_spgramcf_signal(unsigned int _nfft, int _wtype, float _fc, float 
 
     // destroy objects
     spgramcf_destroy(q);
-    symstreamcf_destroy(gen);
+    symstreamrcf_destroy(gen);
     nco_crcf_destroy(mixer);
 }
 
