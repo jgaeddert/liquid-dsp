@@ -35,7 +35,7 @@ void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
                                     float        _As)   // stop-band suppression
 {
     float        tol  = 1e-3f;  // error tolerance [dB], yes, that's dB
-    unsigned int nfft = 200;    // number of points to evaluate
+    unsigned int nfft = 800;    // number of points to evaluate
 
     // design filter from prototype
     iirfilt_crcf q = iirfilt_crcf_create_prototype(
@@ -44,9 +44,9 @@ void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
     if (liquid_autotest_verbose)
         iirfilt_crcf_print(q);
 
-    //            fc fr  fs
-    //             | |   |
-    // |**************  . . . . . . . . H0
+    //            fc     fs
+    //             |     |
+    // |************. . . . . . . . . . H0
     // |/\/\/\/\/\/\  *
     // |************\  *. . . . . . . . H1
     // |           * \  *
@@ -55,38 +55,27 @@ void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
     // |           *    \ /^\ /^\ /^\ /
     // |           *     |   |   |   |
     // 0           fc    fs
-    float gamma = 0.1, fr = _fc + gamma*(_fs - _fc);
     float H0 = 0.0f, H1 = -_Ap, H2 = -_As;
 
     // compute response and compare to expected or mask
     unsigned int i;
+    float H[nfft]; // filter response
     for (i=0; i<nfft; i++) {
-        float f = 0.5f * (float)i / (float)nfft;
+        float f = (float)i / (float)nfft - 0.5f;
         float complex h;
         iirfilt_crcf_freqresponse(q, f, &h);
-        float H = 10.*log10f(crealf(h*conjf(h)));
-
-        // determine what portion of the band this is
-        if (f < _fc) {
-            float mask_hi = H0 + tol;
-            float mask_lo = H1 - tol;
-            if (liquid_autotest_verbose)
-                printf("%6u, f=%6.3f (pass       band): %12.6f < %12.6f < %12.6f\n", i, f, mask_lo, H, mask_hi);
-            CONTEND_GREATER_THAN(H, mask_lo);
-            CONTEND_LESS_THAN   (H, mask_hi);
-        } else if (f < _fs) {
-            float mask_hi = (f < fr) ? H0 : H2 + (H2 - H0) / (_fs - fr) * (f - _fs);
-            if (liquid_autotest_verbose)
-                printf("%6u, f=%6.3f (transition band):                %12.6f < %12.6f\n", i, f, H, mask_hi);
-            CONTEND_LESS_THAN(H, mask_hi);
-        } else {
-            float mask_hi = H2 + tol;
-            if (liquid_autotest_verbose)
-                printf("%6u, f=%6.3f (stop       band):                %12.6f < %12.6f\n", i, f, H, mask_hi);
-            CONTEND_LESS_THAN(H, mask_hi);
-        }
+        H[i] = 10.*log10f(crealf(h*conjf(h)));
     }
-    iirfilt_crcf_destroy(q);    // destroy filter object
+    // verify result
+    autotest_psd_s regions[] = {
+      {.fmin=0.0f, .fmax=_fc,   .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
+      {.fmin=_fs,  .fmax=+0.5f, .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_spectrum(H, nfft, regions, 2,
+        liquid_autotest_verbose ? "autotest_iirdes_ellip_lowpass.m" : NULL);
+
+    // destroy filter object
+    iirfilt_crcf_destroy(q);
 }
 
 // test different filter designs
