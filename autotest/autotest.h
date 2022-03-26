@@ -289,6 +289,7 @@ void liquid_autotest_print_array(unsigned char * _x,
 typedef struct {
     float fmin, fmax;
     float pmin, pmax;
+    int   test_lo, test_hi;
 } autotest_psd_s;
 
 // validate spectral content

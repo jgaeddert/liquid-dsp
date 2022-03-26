@@ -193,21 +193,25 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int _num_regions, const char * _debug_filename)
 {
     unsigned int i, j;
-    for (i=0; i<_num_regions; i++)
-    {
+    for (i=0; i<_num_regions; i++) {
         autotest_psd_s r = _regions[i];
-        //r.num_checks = 0;
-        //r.num_fail   = 0;
+        if (liquid_autotest_verbose) {
+            printf(" region[%2u]: f=(%6.3f,%6.3f), (", i, r.fmin, r.fmax);
+            if (r.test_lo) { printf("%7.2f,", r.pmin); } else { printf("   *   ,"); }
+            if (r.test_hi) { printf("%7.2f)", r.pmax); } else { printf("   *   )"); }
+            printf("\n");
+        }
         for (j=0; j<_nfft; j++) {
-            // compute frequency value
+            // compute frequency value and check region
             float f = (float)j / (float)_nfft - 0.5f;
-
             if (f < r.fmin || f > r.fmax)
                 continue;
 
-            CONTEND_LESS_THAN   (_psd[j], r.pmax);
-            CONTEND_GREATER_THAN(_psd[j], r.pmin);
-            //r.num_checks++;
+            // test lower bound
+            if (r.test_lo) CONTEND_GREATER_THAN(_psd[j], r.pmin);
+
+            // test upper bound
+            if (r.test_hi) CONTEND_LESS_THAN(_psd[j], r.pmax);
         }
     }
 
@@ -223,8 +227,10 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
         fprintf(fid,"figure; xlabel('f/F_s'); ylabel('PSD [dB]'); hold on;\n");
         // add target regions
         for (i=0; i<_num_regions; i++) {
-            fprintf(fid,"  plot([%f,%f],[%f,%f],'Color',[0 0.5 0]);\n",_regions[i].fmin,_regions[i].fmax,_regions[i].pmax,_regions[i].pmax);
-            fprintf(fid,"  plot([%f,%f],[%f,%f],'Color',[0.5 0 0]);\n",_regions[i].fmin,_regions[i].fmax,_regions[i].pmin,_regions[i].pmin);
+            if (_regions[i].test_lo)
+                fprintf(fid,"  plot([%f,%f],[%f,%f],'Color',[0.5 0 0]);\n",_regions[i].fmin,_regions[i].fmax,_regions[i].pmin,_regions[i].pmin);
+            if (_regions[i].test_hi)
+                fprintf(fid,"  plot([%f,%f],[%f,%f],'Color',[0 0.5 0]);\n",_regions[i].fmin,_regions[i].fmax,_regions[i].pmax,_regions[i].pmax);
         }
         // plot spectrum
         fprintf(fid,"  plot(f,psd,'LineWidth',2,'Color',[0 0.3 0.5]);\n");

@@ -358,7 +358,7 @@ void autotest_spgramcf_regions()
     // options
     float bw = 0.235f;
     unsigned int nfft = 1200;
-    float noise_floor = -60.0f;
+    float n0 = -60.0f;          // noise floor [dB]
     float SNRdB = 10.0f;
 
     // create objects
@@ -366,8 +366,8 @@ void autotest_spgramcf_regions()
     symstreamrcf gen = symstreamrcf_create_linear(LIQUID_FIRFILT_KAISER,bw,12,0.2f,LIQUID_MODEM_QPSK);
 
     // set parameters
-    float nstd = powf(10.0f,noise_floor/20.0f); // noise std. dev.
-    symstreamrcf_set_gain(gen, powf(10.0f, (noise_floor + SNRdB + 10*log10f(bw))/20.0f));
+    float nstd = powf(10.0f,n0/20.0f); // noise std. dev.
+    symstreamrcf_set_gain(gen, powf(10.0f, (n0 + SNRdB + 10*log10f(bw))/20.0f));
 
     // generate samples and push through spgram object
     unsigned int i, buf_len = 256;
@@ -389,11 +389,11 @@ void autotest_spgramcf_regions()
     spgramcf_get_psd(q, psd);
 
     float tol = 0.4f; // error tolerance for spectral estimate [dB]
-    float psd_target = 10*log10f(powf(10,(SNRdB+noise_floor)/10.0f) + powf(10.0f,noise_floor/10.0f));
+    float sn  = 10*log10f(powf(10,(SNRdB+n0)/10.0f) + powf(10.0f,n0/10.0f));// signal + noise
     autotest_psd_s regions[3] = {
-        {.fmin=-0.5f,    .fmax=-0.6f*bw, .pmin=noise_floor-tol, .pmax=noise_floor+tol},
-        {.fmin=-0.4f*bw, .fmax=+0.4f*bw, .pmin=psd_target -tol, .pmax=psd_target +tol},
-        {.fmin=+0.6f*bw, .fmax=+0.5f,    .pmin=noise_floor-tol, .pmax=noise_floor+tol},
+        {.fmin=-0.5f,    .fmax=-0.6f*bw, .pmin=n0-tol, .pmax=n0+tol, .test_lo=1, .test_hi=1},
+        {.fmin=-0.4f*bw, .fmax=+0.4f*bw, .pmin=sn-tol, .pmax=sn+tol, .test_lo=1, .test_hi=1},
+        {.fmin=+0.6f*bw, .fmax=+0.5f,    .pmin=n0-tol, .pmax=n0+tol, .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(psd, nfft, regions, 3, "autotest_spgramcf_regions.m");
 
