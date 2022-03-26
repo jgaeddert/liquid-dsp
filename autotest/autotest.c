@@ -192,25 +192,24 @@ void liquid_autotest_print_array(unsigned char * _x,
 int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int _num_regions, const char * _debug_filename)
 {
-    unsigned int i;
-#if 0
-    //for (i=0; i<_num_regions; i++)...
-    // determine appropriate indices
-    unsigned int i0 = ((unsigned int)roundf((_fc+0.5f)*_nfft)) % _nfft;
-    unsigned int ns = (unsigned int)roundf(_nfft*(1.0f-beta)/(float)k); // numer of samples to observe
-    float psd_target = 10*log10f(powf(10.0f,noise_floor/10.0f) + powf(10.0f,(noise_floor+_SNRdB)/10.0f));
-    //printf("i0=%u, ns=%u (nfft=%u), target=%.3f dB\n", i0, ns, _nfft, psd_target);
+    unsigned int i, j;
+    for (i=0; i<_num_regions; i++)
+    {
+        autotest_psd_s r = _regions[i];
+        //r.num_checks = 0;
+        //r.num_fail   = 0;
+        for (j=0; j<_nfft; j++) {
+            // compute frequency value
+            float f = (float)j / (float)_nfft - 0.5f;
 
-    // verify result
-    float psd[_nfft];
-    spgramcf_get_psd(q, psd);
-    // debug
-    const char filename[] = "testbench_spgramcf_signal.m";
-    for (i=0; i<ns; i++) {
-        unsigned int index = (i0 + i + _nfft - ns/2) % _nfft;
-        CONTEND_DELTA(psd[index], psd_target, tol)
+            if (f < r.fmin || f > r.fmax)
+                continue;
+
+            CONTEND_LESS_THAN   (_psd[j], r.pmax);
+            CONTEND_GREATER_THAN(_psd[j], r.pmin);
+            //r.num_checks++;
+        }
     }
-#endif
 
     // export debug file if requested
     if (_debug_filename != NULL) {
@@ -224,8 +223,8 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
         fprintf(fid,"figure; xlabel('f/F_s'); ylabel('PSD [dB]'); hold on;\n");
         // add target regions
         for (i=0; i<_num_regions; i++) {
+            fprintf(fid,"  plot([%f,%f],[%f,%f],'Color',[0 0.5 0]);\n",_regions[i].fmin,_regions[i].fmax,_regions[i].pmax,_regions[i].pmax);
             fprintf(fid,"  plot([%f,%f],[%f,%f],'Color',[0.5 0 0]);\n",_regions[i].fmin,_regions[i].fmax,_regions[i].pmin,_regions[i].pmin);
-            fprintf(fid,"  plot([%f,%f],[%f,%f],'Color',[0.5 0 0]);\n",_regions[i].fmin,_regions[i].fmax,_regions[i].pmax,_regions[i].pmax);
         }
         // plot spectrum
         fprintf(fid,"  plot(f,psd,'LineWidth',2,'Color',[0 0.3 0.5]);\n");
