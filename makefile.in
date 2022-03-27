@@ -1309,18 +1309,7 @@ autotest_include.h : scripts/autoscript $(autotest_sources) $(include_headers)
 #       header' so we need to explicity tell it to compile as a c source file with
 #       the '-x c' flag
 autotest_obj = $(patsubst %.c,%.o,$(autotest_sources))
-$(autotest_obj) : %.o : %.c $(include_headers) autotest/autotest.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) $< -c -o $@
-
-# additional autotest objects
-$(autotest_extra_obj) : %.o : %.c $(include_headers)
-
-# supporting objects
-autotest_lib := autotest/autotest.o
-autotest_headers = $(patsubst $.o,%.h,$(autotest_lib))
-
-# compile the autotest internal library functions without linking
-$(autotest_lib) : %.o : %.c $(autotest_headers)
+$(autotest_obj) $(autotest_extra_obj) autotest/autotest.o : %.o : %.c $(include_headers) autotest/autotest.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -c -o $@
 
 # compile the autotest program without linking
@@ -1329,7 +1318,7 @@ $(autotest_prog).o : autotest/xautotest.c autotest/autotest.h autotest_include.h
 
 # link the autotest program with the objects
 # NOTE: linked libraries must come _after_ the target program
-$(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) $(autotest_lib) ${ARCHIVE_LIB}
+$(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) autotest/autotest.o ${ARCHIVE_LIB}
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
 
 # run the autotest program
@@ -1344,7 +1333,7 @@ clean-check:
 	$(RM) autotest_include.h $(autotest_prog).o $(autotest_prog)
 	$(RM) $(autotest_obj)
 	$(RM) $(autotest_extra_obj)
-	$(RM) $(autotest_lib)
+	$(RM) autotest/autotest.o
 	$(RM) autotest.json
 
 ##
