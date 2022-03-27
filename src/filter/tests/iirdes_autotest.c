@@ -384,3 +384,38 @@ void autotest_iirdes_ellip_bandstop() {
     iirfilt_crcf_destroy(q);
 }
 
+// check Bessel filter design
+// TODO: check group delay
+void autotest_iirdes_bessel() {
+    unsigned int n  =    9;   // filter order
+    float        fc =  0.1;   // filter cut-off
+    unsigned int nfft = 960;  // number of points to evaluate
+
+    // design filter from prototype
+    iirfilt_crcf q = iirfilt_crcf_create_prototype(LIQUID_IIRDES_BESSEL,
+        LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,n,fc,0,1,60);
+    if (liquid_autotest_verbose)
+        iirfilt_crcf_print(q);
+
+    // compute response and compare to expected or mask
+    unsigned int i;
+    float H[nfft]; // filter response
+    for (i=0; i<nfft; i++) {
+        float f = (float)i / (float)nfft - 0.5f;
+        float complex h;
+        iirfilt_crcf_freqresponse(q, f, &h);
+        H[i] = 10.*log10f(crealf(h*conjf(h)));
+    }
+    // verify result
+    autotest_psd_s regions[] = {
+      {.fmin=-0.500, .fmax=-0.305,.pmin= 0, .pmax=-60,   .test_lo=0, .test_hi=1},
+      {.fmin=-0.095, .fmax=+0.095,.pmin=-3, .pmax=  0.1, .test_lo=1, .test_hi=1},
+      {.fmin=+0.305, .fmax=+0.500,.pmin= 0, .pmax=-60,   .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_spectrum(H, nfft, regions, 3,
+        liquid_autotest_verbose ? "autotest_iirdes_bessel.m" : NULL);
+
+    // destroy filter object
+    iirfilt_crcf_destroy(q);
+}
+
