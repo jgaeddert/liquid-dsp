@@ -122,12 +122,11 @@ void autotest_iirdes_ellip_lowpass_2(){ testbench_iirdes_ellip_lowpass( 5,0.20f,
 void autotest_iirdes_ellip_lowpass_3(){ testbench_iirdes_ellip_lowpass( 5,0.20f,0.40f,0.1f, 60.0f); }
 void autotest_iirdes_ellip_lowpass_4(){ testbench_iirdes_ellip_lowpass(15,0.35f,0.37f,0.1f,120.0f); }
 
-// check low-pass chebyshev filter design
+// check low-pass chebyshev filter design (type 1)
 void testbench_iirdes_cheby1_lowpass(unsigned int _n,  // filter order
                                      float        _fc, // filter cut-off
                                      float        _fs, // empirical stop-band frequency at 60 dB
                                      float        _Ap) // pass-band ripple
-
 {
     float        tol  = 1e-3f;  // error tolerance [dB], yes, that's dB
     unsigned int nfft = 800;    // number of points to evaluate
@@ -169,4 +168,53 @@ void autotest_iirdes_cheby1_lowpass_1(){ testbench_iirdes_cheby1_lowpass( 5,0.05
 void autotest_iirdes_cheby1_lowpass_2(){ testbench_iirdes_cheby1_lowpass( 5,0.20f,0.36f,1.0f); }
 void autotest_iirdes_cheby1_lowpass_3(){ testbench_iirdes_cheby1_lowpass( 5,0.20f,0.40f,0.1f); }
 void autotest_iirdes_cheby1_lowpass_4(){ testbench_iirdes_cheby1_lowpass(15,0.35f,0.38f,0.1f); }
+
+// check low-pass chebyshev filter design (type 1)
+void testbench_iirdes_cheby2_lowpass(unsigned int _n,  // filter order
+                                     float        _fp, // empirical pass-band frequency at 3 dB
+                                     float        _fc, // filter cut-off
+                                     float        _As) // stop-band suppression
+{
+    float        tol  = 1e-3f;  // error tolerance [dB], yes, that's dB
+    unsigned int nfft = 800;    // number of points to evaluate
+
+    // design filter from prototype
+    iirfilt_crcf q = iirfilt_crcf_create_prototype(
+        LIQUID_IIRDES_CHEBY2, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
+        _n,_fc,0.0f,0.1,_As);
+    if (liquid_autotest_verbose)
+        iirfilt_crcf_print(q);
+
+    // compute regions for testing
+    float H0 = 0.0f, H1 = -3, H2 = -_As;
+
+    // compute response and compare to expected or mask
+    unsigned int i;
+    float H[nfft]; // filter response
+    for (i=0; i<nfft; i++) {
+        float f = (float)i / (float)nfft - 0.5f;
+        float complex h;
+        iirfilt_crcf_freqresponse(q, f, &h);
+        H[i] = 10.*log10f(crealf(h*conjf(h)));
+    }
+    // verify result
+    autotest_psd_s regions[] = {
+      {.fmin=0.0f, .fmax=_fp,   .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
+      {.fmin=_fc,  .fmax=+0.5f, .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_spectrum(H, nfft, regions, 2,
+        liquid_autotest_verbose ? "autotest_iirdes_cheby2_lowpass.m" : NULL);
+
+    // destroy filter object
+    iirfilt_crcf_destroy(q);
+}
+
+// test different filter designs
+void autotest_iirdes_cheby2_lowpass_0(){ testbench_iirdes_cheby2_lowpass( 5,0.08f,0.20f, 60.0f); }
+void autotest_iirdes_cheby2_lowpass_1(){ testbench_iirdes_cheby2_lowpass( 5,0.02f,0.05f, 60.0f); }
+// NOTE: stability problems in the pass band below 70 dB stop-band cut-off
+void autotest_iirdes_cheby2_lowpass_2(){ testbench_iirdes_cheby2_lowpass( 5,0.07f,0.20f, /*100.0f*/ 70.0f); }
+void autotest_iirdes_cheby2_lowpass_3(){ testbench_iirdes_cheby2_lowpass( 5,0.09f,0.20f, 60.0f); }
+// NOTE: stability problems in the pass band below 70 dB stop-band cut-off
+void autotest_iirdes_cheby2_lowpass_4(){ testbench_iirdes_cheby2_lowpass(15,0.30f,0.35f,/*120.0f*/ 70.0f); }
 
