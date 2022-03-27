@@ -343,3 +343,44 @@ void autotest_iirdes_ellip_bandpass() {
     iirfilt_crcf_destroy(q);
 }
 
+// check elliptical filter design with band-stop transformation
+void autotest_iirdes_ellip_bandstop() {
+    unsigned int n  =    9;   // filter order
+    float        fc =  0.3;   // filter cut-off
+    float        f0 =  0.35;  // filter center frequency
+    float        Ap =  0.1;   // pass-band ripple
+    float        As = 60.0;   // stop-band suppression
+
+    float        tol  = 1e-3f;  // error tolerance [dB], yes, that's dB
+    unsigned int nfft = 2400;   // number of points to evaluate
+
+    // design filter from prototype
+    iirfilt_crcf q = iirfilt_crcf_create_prototype(LIQUID_IIRDES_ELLIP,
+        LIQUID_IIRDES_BANDSTOP, LIQUID_IIRDES_SOS,n,fc,f0,Ap,As);
+    if (liquid_autotest_verbose)
+        iirfilt_crcf_print(q);
+
+    // compute response and compare to expected or mask
+    unsigned int i;
+    float H[nfft]; // filter response
+    for (i=0; i<nfft; i++) {
+        float f = (float)i / (float)nfft - 0.5f;
+        float complex h;
+        iirfilt_crcf_freqresponse(q, f, &h);
+        H[i] = 10.*log10f(crealf(h*conjf(h)));
+    }
+    // verify result
+    autotest_psd_s regions[] = {
+      {.fmin=-0.5,   .fmax=-0.391,.pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
+      {.fmin=-0.387, .fmax=-0.306,.pmin=0,       .pmax=-As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=-0.298, .fmax=+0.298,.pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
+      {.fmin=+0.306, .fmax=+0.387,.pmin=0,       .pmax=-As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=+0.391, .fmax=+0.5,  .pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
+    };
+    liquid_autotest_validate_spectrum(H, nfft, regions, 5,
+        liquid_autotest_verbose ? "autotest_iirdes_ellip_bandstop.m" : NULL);
+
+    // destroy filter object
+    iirfilt_crcf_destroy(q);
+}
+
