@@ -264,3 +264,41 @@ void autotest_iirdes_butter_lowpass_2(){ testbench_iirdes_butter_lowpass( 5,0.20
 void autotest_iirdes_butter_lowpass_3(){ testbench_iirdes_butter_lowpass( 5,0.20f,0.40f); }
 void autotest_iirdes_butter_lowpass_4(){ testbench_iirdes_butter_lowpass(15,0.35f,0.41f); }
 
+// check elliptical filter design with high-pass transformation
+void autotest_iirdes_ellip_highpass() {
+    unsigned int n  =    9;   // filter order
+    float        fc =  0.2;   // filter cut-off
+    float        Ap =  0.1;   // pass-band ripple
+    float        As = 60.0;   // stop-band suppression
+
+    float        tol  = 1e-3f;  // error tolerance [dB], yes, that's dB
+    unsigned int nfft = 800;    // number of points to evaluate
+
+    // design filter from prototype
+    iirfilt_crcf q = iirfilt_crcf_create_prototype(LIQUID_IIRDES_ELLIP,
+        LIQUID_IIRDES_HIGHPASS, LIQUID_IIRDES_SOS,n,fc,0.0f,Ap,As);
+    if (liquid_autotest_verbose)
+        iirfilt_crcf_print(q);
+
+    // compute response and compare to expected or mask
+    unsigned int i;
+    float H[nfft]; // filter response
+    for (i=0; i<nfft; i++) {
+        float f = (float)i / (float)nfft - 0.5f;
+        float complex h;
+        iirfilt_crcf_freqresponse(q, f, &h);
+        H[i] = 10.*log10f(crealf(h*conjf(h)));
+    }
+    // verify result
+    autotest_psd_s regions[] = {
+      {.fmin=-0.5,   .fmax=-fc,   .pmin=-Ap-tol, .pmax=   +tol, .test_lo=1, .test_hi=1},
+      {.fmin=-0.184, .fmax=0.184, .pmin=0,       .pmax=-As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=fc,     .fmax=0.5,   .pmin=-Ap-tol, .pmax=   +tol, .test_lo=1, .test_hi=1},
+    };
+    liquid_autotest_validate_spectrum(H, nfft, regions, 3,
+        liquid_autotest_verbose ? "autotest_iirdes_ellip_highpass.m" : NULL);
+
+    // destroy filter object
+    iirfilt_crcf_destroy(q);
+}
+
