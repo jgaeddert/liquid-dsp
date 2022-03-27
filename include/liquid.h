@@ -3275,6 +3275,12 @@ void IIRFILT(_freqresponse)(IIRFILT()              _q,                      \
                             float                  _fc,                     \
                             liquid_float_complex * _H);                     \
                                                                             \
+/* Compute power spectral density response of filter object in dB       */  \
+/*  _q      : filter object                                             */  \
+/*  _fc     : normalized frequency for evaluation                       */  \
+float IIRFILT(_get_psd)(IIRFILT() _q,                                       \
+                        float     _fc);                                     \
+                                                                            \
 /* Compute and return group delay of filter object                      */  \
 /*  _q      : filter object                                             */  \
 /*  _fc     : frequency to evaluate                                     */  \

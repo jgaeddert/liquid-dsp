@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -637,6 +637,14 @@ void IIRFILT(_freqresponse)(IIRFILT()       _q,
 
     // set return value
     *_H = H;
+}
+
+// Compute power spectral density response of filter object in dB
+float IIRFILT(_get_psd)(IIRFILT() _q, float _fc)
+{
+    float complex H;
+    IIRFILT(_freqresponse)(_q, _fc, &H);
+    return 10*log10f( crealf(H * conjf(H)) );
 }
 
 // compute group delay in samples

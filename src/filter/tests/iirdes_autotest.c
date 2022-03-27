@@ -97,12 +97,9 @@ void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
     // compute response and compare to expected or mask
     unsigned int i;
     float H[nfft]; // filter response
-    for (i=0; i<nfft; i++) {
-        float f = (float)i / (float)nfft - 0.5f;
-        float complex h;
-        iirfilt_crcf_freqresponse(q, f, &h);
-        H[i] = 10.*log10f(crealf(h*conjf(h)));
-    }
+    for (i=0; i<nfft; i++)
+        H[i] = iirfilt_crcf_get_psd(q, (float)i/(float)nfft-0.5f);
+
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=0.0f, .fmax=_fc,   .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
@@ -144,12 +141,9 @@ void testbench_iirdes_cheby1_lowpass(unsigned int _n,  // filter order
     // compute response and compare to expected or mask
     unsigned int i;
     float H[nfft]; // filter response
-    for (i=0; i<nfft; i++) {
-        float f = (float)i / (float)nfft - 0.5f;
-        float complex h;
-        iirfilt_crcf_freqresponse(q, f, &h);
-        H[i] = 10.*log10f(crealf(h*conjf(h)));
-    }
+    for (i=0; i<nfft; i++)
+        H[i] = iirfilt_crcf_get_psd(q, (float)i/(float)nfft-0.5f);
+
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=0.0f, .fmax=_fc,   .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
@@ -191,12 +185,9 @@ void testbench_iirdes_cheby2_lowpass(unsigned int _n,  // filter order
     // compute response and compare to expected or mask
     unsigned int i;
     float H[nfft]; // filter response
-    for (i=0; i<nfft; i++) {
-        float f = (float)i / (float)nfft - 0.5f;
-        float complex h;
-        iirfilt_crcf_freqresponse(q, f, &h);
-        H[i] = 10.*log10f(crealf(h*conjf(h)));
-    }
+    for (i=0; i<nfft; i++)
+        H[i] = iirfilt_crcf_get_psd(q, (float)i/(float)nfft-0.5f);
+
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=0.0f, .fmax=_fp,   .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
@@ -239,12 +230,9 @@ void testbench_iirdes_butter_lowpass(unsigned int _n,  // filter order
     // compute response and compare to expected or mask
     unsigned int i;
     float H[nfft]; // filter response
-    for (i=0; i<nfft; i++) {
-        float f = (float)i / (float)nfft - 0.5f;
-        float complex h;
-        iirfilt_crcf_freqresponse(q, f, &h);
-        H[i] = 10.*log10f(crealf(h*conjf(h)));
-    }
+    for (i=0; i<nfft; i++)
+        H[i] = iirfilt_crcf_get_psd(q, (float)i/(float)nfft-0.5f);
+
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=0.0f, .fmax=0.98*_fc, .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
@@ -283,12 +271,9 @@ void autotest_iirdes_ellip_highpass() {
     // compute response and compare to expected or mask
     unsigned int i;
     float H[nfft]; // filter response
-    for (i=0; i<nfft; i++) {
-        float f = (float)i / (float)nfft - 0.5f;
-        float complex h;
-        iirfilt_crcf_freqresponse(q, f, &h);
-        H[i] = 10.*log10f(crealf(h*conjf(h)));
-    }
+    for (i=0; i<nfft; i++)
+        H[i] = iirfilt_crcf_get_psd(q, (float)i/(float)nfft-0.5f);
+
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=-0.5,   .fmax=-fc,   .pmin=-Ap-tol, .pmax=   +tol, .test_lo=1, .test_hi=1},
@@ -322,12 +307,9 @@ void autotest_iirdes_ellip_bandpass() {
     // compute response and compare to expected or mask
     unsigned int i;
     float H[nfft]; // filter response
-    for (i=0; i<nfft; i++) {
-        float f = (float)i / (float)nfft - 0.5f;
-        float complex h;
-        iirfilt_crcf_freqresponse(q, f, &h);
-        H[i] = 10.*log10f(crealf(h*conjf(h)));
-    }
+    for (i=0; i<nfft; i++)
+        H[i] = iirfilt_crcf_get_psd(q, (float)i/(float)nfft-0.5f);
+
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=-0.5,   .fmax=-0.396,.pmin=0,       .pmax=-As+tol, .test_lo=0, .test_hi=1},
@@ -363,12 +345,9 @@ void autotest_iirdes_ellip_bandstop() {
     // compute response and compare to expected or mask
     unsigned int i;
     float H[nfft]; // filter response
-    for (i=0; i<nfft; i++) {
-        float f = (float)i / (float)nfft - 0.5f;
-        float complex h;
-        iirfilt_crcf_freqresponse(q, f, &h);
-        H[i] = 10.*log10f(crealf(h*conjf(h)));
-    }
+    for (i=0; i<nfft; i++)
+        H[i] = iirfilt_crcf_get_psd(q, (float)i/(float)nfft-0.5f);
+
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=-0.5,   .fmax=-0.391,.pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
@@ -400,12 +379,9 @@ void autotest_iirdes_bessel() {
     // compute response and compare to expected or mask
     unsigned int i;
     float H[nfft]; // filter response
-    for (i=0; i<nfft; i++) {
-        float f = (float)i / (float)nfft - 0.5f;
-        float complex h;
-        iirfilt_crcf_freqresponse(q, f, &h);
-        H[i] = 10.*log10f(crealf(h*conjf(h)));
-    }
+    for (i=0; i<nfft; i++)
+        H[i] = iirfilt_crcf_get_psd(q, (float)i/(float)nfft-0.5f);
+
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=-0.500, .fmax=-0.305,.pmin= 0, .pmax=-60,   .test_lo=0, .test_hi=1},
