@@ -193,6 +193,9 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int _num_regions, const char * _debug_filename)
 {
     unsigned int i, j;
+    int fail[_nfft];
+    for (j=0; j<_nfft; j++)
+        fail[j] = 0;
     for (i=0; i<_num_regions; i++) {
         autotest_psd_s r = _regions[i];
         if (liquid_autotest_verbose) {
@@ -208,10 +211,21 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
                 continue;
 
             // test lower bound
-            if (r.test_lo) CONTEND_GREATER_THAN(_psd[j], r.pmin);
+            if (r.test_lo && _psd[j] < r.pmin) {
+                //AUTOTEST_FAIL("region[%3u], %8.2f exceed minimum (%8.2f)", i, _psd[j], r.pmin);
+                AUTOTEST_FAIL("minimum value exceeded");
+                fail[j] = 1;
+            } else {
+                AUTOTEST_PASS();
+            }
 
             // test upper bound
-            if (r.test_hi) CONTEND_LESS_THAN(_psd[j], r.pmax);
+            if (r.test_hi && _psd[j] > r.pmax) {
+                AUTOTEST_FAIL("maximum value exceeded");
+                fail[j] = 1;
+            } else {
+                AUTOTEST_PASS();
+            }
         }
     }
 
@@ -223,6 +237,9 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
             return -1;
         }
         fprintf(fid,"clear all; close all; nfft=%u; f=[0:(nfft-1)]/nfft-0.5; psd=zeros(1,nfft);\n", _nfft);
+        fprintf(fid,"idx = [");
+        for (i=0; i<_nfft; i++) { if (fail[i]) fprintf(fid,"%d,",i+1); }
+        fprintf(fid,"];\n");
         for (i=0; i<_nfft; i++) { fprintf(fid,"psd(%6u) = %8.2f;\n", i+1, _psd[i]); }
         fprintf(fid,"figure; xlabel('f/F_s'); ylabel('PSD [dB]'); hold on;\n");
         // add target regions
@@ -234,6 +251,7 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
         }
         // plot spectrum
         fprintf(fid,"  plot(f,psd,'LineWidth',2,'Color',[0 0.3 0.5]);\n");
+        fprintf(fid,"  plot(f(idx),psd(idx),'xr');\n"); // identifying errors
         fprintf(fid,"hold off; grid on; xlim([-0.5 0.5]);\n");
         fclose(fid);
         printf("debug file written to %s\n", _debug_filename);
