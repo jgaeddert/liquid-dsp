@@ -3464,47 +3464,47 @@ FIRPFB() FIRPFB(_recreate)(FIRPFB()     _q,                                 \
                                                                             \
 /* Destroy firpfb object, freeing all internal memory and destroying    */  \
 /* all internal objects                                                 */  \
-int FIRPFB(_destroy)(FIRPFB() _q);                                         \
+int FIRPFB(_destroy)(FIRPFB() _q);                                          \
                                                                             \
 /* Print firpfb object's parameters to stdout                           */  \
-int FIRPFB(_print)(FIRPFB() _q);                                           \
+int FIRPFB(_print)(FIRPFB() _q);                                            \
                                                                             \
 /* Set output scaling for filter                                        */  \
 /*  _q      : filter object                                             */  \
 /*  _scale  : scaling factor to apply to each output sample             */  \
-int FIRPFB(_set_scale)(FIRPFB() _q,                                        \
+int FIRPFB(_set_scale)(FIRPFB() _q,                                         \
                         TC       _scale);                                   \
                                                                             \
 /* Get output scaling for filter                                        */  \
 /*  _q      : filter object                                             */  \
 /*  _scale  : scaling factor applied to each output sample              */  \
-int FIRPFB(_get_scale)(FIRPFB() _q,                                        \
-                        TC *     _scale);                                   \
+int FIRPFB(_get_scale)(FIRPFB() _q,                                         \
+                       TC *     _scale);                                    \
                                                                             \
 /* Reset firpfb object's internal buffer                                */  \
-int FIRPFB(_reset)(FIRPFB() _q);                                           \
+int FIRPFB(_reset)(FIRPFB() _q);                                            \
                                                                             \
 /* Push sample into filter object's internal buffer                     */  \
 /*  _q      : filter object                                             */  \
 /*  _x      : single input sample                                       */  \
-int FIRPFB(_push)(FIRPFB() _q,                                             \
-                   TI       _x);                                            \
+int FIRPFB(_push)(FIRPFB() _q,                                              \
+                  TI       _x);                                             \
                                                                             \
 /* Write a block of samples into object's internal buffer               */  \
 /*  _q      : filter object                                             */  \
 /*  _x      : single input sample                                       */  \
-int FIRPFB(_write)(FIRPFB()     _q,                                        \
-                    TI *         _x,                                        \
-                    unsigned int _n);                                       \
+int FIRPFB(_write)(FIRPFB()     _q,                                         \
+                   TI *         _x,                                         \
+                   unsigned int _n);                                        \
                                                                             \
 /* Execute vector dot product on the filter's internal buffer and       */  \
 /* coefficients using the coefficients from sub-filter at index _i      */  \
 /*  _q      : firpfb object                                             */  \
 /*  _i      : index of filter to use                                    */  \
 /*  _y      : pointer to output sample                                  */  \
-int FIRPFB(_execute)(FIRPFB()     _q,                                      \
-                      unsigned int _i,                                      \
-                      TO *         _y);                                     \
+int FIRPFB(_execute)(FIRPFB()     _q,                                       \
+                     unsigned int _i,                                       \
+                     TO *         _y);                                      \
                                                                             \
 /* Execute the filter on a block of input samples, all using index _i.  */  \
 /* In-place operation is permitted (_x and _y may point to the same     */  \
@@ -3514,11 +3514,11 @@ int FIRPFB(_execute)(FIRPFB()     _q,                                      \
 /*  _x      : pointer to input array [size: _n x 1]                     */  \
 /*  _n      : number of input, output samples                           */  \
 /*  _y      : pointer to output array [size: _n x 1]                    */  \
-int FIRPFB(_execute_block)(FIRPFB()     _q,                                \
-                            unsigned int _i,                                \
-                            TI *         _x,                                \
-                            unsigned int _n,                                \
-                            TO *         _y);                               \
+int FIRPFB(_execute_block)(FIRPFB()     _q,                                 \
+                           unsigned int _i,                                 \
+                           TI *         _x,                                 \
+                           unsigned int _n,                                 \
+                           TO *         _y);                                \
 
 LIQUID_FIRPFB_DEFINE_API(LIQUID_FIRPFB_MANGLE_RRRF,
                          float,
