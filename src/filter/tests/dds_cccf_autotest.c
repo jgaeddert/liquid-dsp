@@ -28,13 +28,14 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
                         float        _fc,           // filter cut-off
                         float        _As)           // stop-band suppression
 {
-    float        tol  = 1e-3f;  // error tolerance [dB], yes, that's dB
-    unsigned int m     = 40;
+    float        tol  = 1;  // error tolerance [dB], yes, that's dB
+    float        bw = 0.1f; // original pulse bandwidth
+    unsigned int m    = 40; // pulse semi-length
     unsigned int r=1<<_num_stages;   // resampling rate (output/input)
-    float bw = 0.1f;
 
     // create resampler
     dds_cccf q = dds_cccf_create(_num_stages,_fc,bw,_As);
+    dds_cccf_set_scale(q, 1.0f/r);
     if (liquid_autotest_verbose)
         dds_cccf_print(q);
 
@@ -43,11 +44,10 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
     unsigned int h_len = 2*r*m+1; // pulse length
     unsigned int num_samples = h_len + delay_interp + (unsigned int) delay_decim + 8;
 
+    unsigned int i;
     float complex buf_0[num_samples  ]; // input
     float complex buf_1[num_samples*r]; // interpolated
     float complex buf_2[num_samples  ]; // decimated
-
-    unsigned int i;
 
     // generate the baseband signal (filter pulse)
     float h[h_len];
@@ -57,45 +57,44 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
         buf_0[i] = i < h_len ? 2*w*h[i] : 0.0f;
 
     // run interpolation (up-conversion) stage
-    for (i=0; i<num_samples; i++) {
+    for (i=0; i<num_samples; i++)
         dds_cccf_interp_execute(q, buf_0[i], &buf_1[r*i]);
-    }
 
     // clear DDS object
     dds_cccf_reset(q);
+    dds_cccf_set_scale(q, r);
 
     // run decimation (down-conversion) stage
-    for (i=0; i<num_samples; i++) {
+    for (i=0; i<num_samples; i++)
         dds_cccf_decim_execute(q, &buf_1[r*i], &buf_2[i]);
-    }
 
-#if 0
-    // output results
-    for (i=0; i<num_samples; i++)
-        fprintf(fid,"x(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
-
-    for (i=0; i<r*num_samples; i++)
-        fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
-
-    for (i=0; i<num_samples; i++)
-        fprintf(fid,"z(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(z[i]), cimagf(z[i]));
-#endif
-    unsigned int nfft = 1 << liquid_nextpow2(num_samples);
-    printf("nfft: %u\n", nfft);
-
-    // verify results
-    autotest_psd_s regions[] = {
+    // verify input spectrum
+    autotest_psd_s regions_orig[] = {
       {.fmin=-0.5,    .fmax=-0.6*bw, .pmin= 0, .pmax=-_As+tol, .test_lo=0, .test_hi=1},
       {.fmin=-0.3*bw, .fmax=+0.3*bw, .pmin=-3, .pmax=+1,       .test_lo=1, .test_hi=1},
       {.fmin=+0.6*bw, .fmax=+0.5,    .pmin= 0, .pmax=-_As+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_signal(buf_0, num_samples, regions, 3,
-        liquid_autotest_verbose ? "autotest_dds_cccf_init.m" : NULL);
+    liquid_autotest_validate_psd_signal(buf_0, num_samples, regions_orig, 3,
+        liquid_autotest_verbose ? "autotest_dds_cccf_orig.m" : NULL);
+
+    // verify interpolated spectrum
+    float f1 = _fc-0.6*bw/r, f2 = _fc-0.3*bw/r, f3 = _fc+0.3*bw/r, f4 = _fc+0.6*bw/r;
+    autotest_psd_s regions_interp[] = {
+      {.fmin=-0.5, .fmax=f1,   .pmin= 0, .pmax=-_As+tol, .test_lo=0, .test_hi=1},
+      {.fmin= f2,  .fmax=f3,   .pmin=-3, .pmax=+1,       .test_lo=1, .test_hi=1},
+      {.fmin= f4,  .fmax=+0.5, .pmin= 0, .pmax=-_As+tol, .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_signal(buf_1, r*num_samples, regions_interp, 3,
+        liquid_autotest_verbose ? "autotest_dds_cccf_interp.m" : NULL);
+
+    // verify decimated spectrum (using same regions as original)
+    liquid_autotest_validate_psd_signal(buf_2, num_samples, regions_orig, 3,
+        liquid_autotest_verbose ? "autotest_dds_cccf_decim.m" : NULL);
 
     // destroy filter object
     dds_cccf_destroy(q);
 }
 
-// test different filter designs
-void autotest_dds_cccf_0(){ testbench_dds_cccf( 1, 0.0f, 60.0f); }
+// test different configurations
+void autotest_dds_cccf_0(){ testbench_dds_cccf( 1, +0.0f, 60.0f); }
 
