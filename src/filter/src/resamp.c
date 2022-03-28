@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -190,6 +190,20 @@ void RESAMP(_reset)(RESAMP() _q)
 unsigned int RESAMP(_get_delay)(RESAMP() _q)
 {
     return _q->m;
+}
+
+// Set output scaling for resampler
+int RESAMP(_set_scale)(RESAMP() _q,
+                       TC       _scale)
+{
+    return FIRPFB(_set_scale)(_q->f, _scale);
+}
+
+// Get output scaling for resampler
+int RESAMP(_get_scale)(RESAMP() _q,
+                       TC *    _scale)
+{
+    return FIRPFB(_get_scale)(_q->f, _scale);
 }
 
 // set rate of arbitrary resampler

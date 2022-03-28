@@ -4011,7 +4011,7 @@ void RESAMP2(_reset)(RESAMP2() _q);                                         \
 /* Get resampler filter delay (semi-length m)                           */  \
 unsigned int RESAMP2(_get_delay)(RESAMP2() _q);                             \
                                                                             \
-/* Set output scaling for resampler                                     */  \
+/* Get output scaling for resampler                                     */  \
 /*  _q      : resampler object                                          */  \
 /*  _scale  : scaling factor to apply to each output sample             */  \
 int RESAMP2(_set_scale)(RESAMP2() _q,                                       \
@@ -4304,6 +4304,18 @@ int RESAMP(_reset)(RESAMP() _q);                                            \
                                                                             \
 /* Get resampler delay (filter semi-length \(m\))                       */  \
 unsigned int RESAMP(_get_delay)(RESAMP() _q);                               \
+                                                                            \
+/* Set output scaling for resampler                                     */  \
+/*  _q      : resampler object                                          */  \
+/*  _scale  : scaling factor to apply to each output sample             */  \
+int RESAMP(_set_scale)(RESAMP() _q,                                         \
+                       TC       _scale);                                    \
+                                                                            \
+/* Get output scaling for resampler                                     */  \
+/*  _q      : resampler object                                          */  \
+/*  _scale  : scaling factor to apply to each output sample             */  \
+int RESAMP(_get_scale)(RESAMP() _q,                                         \
+                       TC *    _scale);                                     \
                                                                             \
 /* Set rate of arbitrary resampler                                      */  \
 /*  _q      : resampling object                                         */  \
