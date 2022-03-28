@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,6 +58,7 @@ struct DDS(_s) {
 
     // down-converter scaling factor
     float zeta;
+    TC    scale;
 };
 
 // create dds object
@@ -136,7 +137,8 @@ DDS() DDS(_create)(unsigned int _num_stages,
     }
 
     // set down-converter scaling factor
-    q->zeta = 1.0f / ((float)(q->rate));
+    q->zeta  = 1.0f / ((float)(q->rate));
+    q->scale = 1.0f;
 
     // create NCO and set frequency
     q->ncox = NCO(_create)(LIQUID_VCO);
@@ -205,6 +207,26 @@ int DDS(_reset)(DDS() _q)
     }
 
     NCO(_set_phase)(_q->ncox,0.0f);
+    return LIQUID_OK;
+}
+
+// Set output scaling for filter
+//  _q      : synthesizer object
+//  _scale  : scaling factor to apply to each output sample
+int DDS(_set_scale)(DDS() _q,
+                    TC    _scale)
+{
+    _q->scale = _scale;
+    return LIQUID_OK;
+}
+
+// Get output scaling for filter
+//  _q      : synthesizer object
+//  _scale  : scaling factor to apply to each output sample
+int DDS(_get_scale)(DDS() _q,
+                    TC *  _scale)
+{
+    *_scale = _q->scale;
     return LIQUID_OK;
 }
 
@@ -278,7 +300,7 @@ int DDS(_decim_execute)(DDS() _q,
     NCO(_step)(_q->ncox);
 
     // set output, normalizing by scaling factor
-    *_y = y * _q->zeta;
+    *_y = y * _q->zeta * _q->scale;
     return LIQUID_OK;
 }
 
@@ -291,6 +313,7 @@ int DDS(_interp_execute)(DDS() _q,
                          T *   _y)
 {
     // increment NCO
+    _x *= _q->scale;
     NCO(_mix_up)(_q->ncox, _x, &_x);
     NCO(_step)(_q->ncox);
 

@@ -4576,6 +4576,18 @@ int DDS(_print)(DDS() _q);                                                  \
 /* Reset synthesizer object internals                                   */  \
 int DDS(_reset)(DDS() _q);                                                  \
                                                                             \
+/* Set output scaling for synthesizer                                   */  \
+/*  _q      : synthesizer object                                        */  \
+/*  _scale  : scaling factor to apply to each output sample             */  \
+int DDS(_set_scale)(DDS() _q,                                               \
+                    TC    _scale);                                          \
+                                                                            \
+/* Get output scaling for synthesizer                                   */  \
+/*  _q      : synthesizer object                                        */  \
+/*  _scale  : scaling factor to apply to each output sample             */  \
+int DDS(_get_scale)(DDS() _q,                                               \
+                    TC *  _scale);                                          \
+                                                                            \
 /* Get number of half-band states in DDS object                         */  \
 unsigned int DDS(_get_num_stages)(DDS() _q);                                \
                                                                             \
