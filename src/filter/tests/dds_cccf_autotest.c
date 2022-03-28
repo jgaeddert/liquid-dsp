@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdlib.h>
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
@@ -45,9 +46,9 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
     unsigned int num_samples = h_len + delay_interp + (unsigned int) delay_decim + 8;
 
     unsigned int i;
-    float complex buf_0[num_samples  ]; // input
-    float complex buf_1[num_samples*r]; // interpolated
-    float complex buf_2[num_samples  ]; // decimated
+    float complex * buf_0 = (float complex*) malloc(num_samples  *sizeof(float complex)); // input
+    float complex * buf_1 = (float complex*) malloc(num_samples*r*sizeof(float complex)); // interpolated
+    float complex * buf_2 = (float complex*) malloc(num_samples  *sizeof(float complex)); // decimated
 
     // generate the baseband signal (filter pulse)
     float h[h_len];
@@ -91,10 +92,21 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
     liquid_autotest_validate_psd_signal(buf_2, num_samples, regions_orig, 3,
         liquid_autotest_verbose ? "autotest_dds_cccf_decim.m" : NULL);
 
-    // destroy filter object
+    // destroy filter object and free memory
     dds_cccf_destroy(q);
+    free(buf_0);
+    free(buf_1);
+    free(buf_2);
 }
 
 // test different configurations
 void autotest_dds_cccf_0(){ testbench_dds_cccf( 1, +0.0f, 60.0f); }
+void autotest_dds_cccf_1(){ testbench_dds_cccf( 2, +0.0f, 60.0f); }
+void autotest_dds_cccf_2(){ testbench_dds_cccf( 3, +0.0f, 60.0f); }
+void autotest_dds_cccf_3(){ testbench_dds_cccf( 4, +0.0f, 60.0f); }
+
+// FIXME: adjust filter lengths appropriately
+//void xautotest_dds_cccf_4(){ testbench_dds_cccf( 2, +0.1f,      60.0f); }
+//void xautotest_dds_cccf_5(){ testbench_dds_cccf( 2, -0.213823f, 60.0f); }
+//void xautotest_dds_cccf_6(){ testbench_dds_cccf( 2, -0.318234f, 80.0f); }
 
