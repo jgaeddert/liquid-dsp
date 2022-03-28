@@ -265,9 +265,14 @@ int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_
 {
     // compute signal's power spectral density
     unsigned int nfft = 4 << liquid_nextpow2(_buf_len < 8 ? 8 : _buf_len);
-    float complex buf_time[nfft];
-    float complex buf_freq[nfft];
-    float         buf_psd [nfft];
+    printf("NFFT: %u\n", nfft);
+    float complex * buf_time = (float complex*) malloc(nfft*sizeof(float complex));
+    float complex * buf_freq = (float complex*) malloc(nfft*sizeof(float complex));
+    float         * buf_psd  = (float *       ) malloc(nfft*sizeof(float        ));
+    if (buf_time == NULL || buf_freq == NULL || buf_psd == NULL) {
+        AUTOTEST_FAIL("could not allocate appropriate memory for validating psd");
+        return -1;
+    }
     unsigned int i;
     for (i=0; i<nfft; i++)
         buf_time[i] = i < _buf_len ? _buf[i] : 0;
@@ -280,6 +285,9 @@ int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_
             _regions, num_regions, debug_filename);
 
     //
+    free(buf_time);
+    free(buf_freq);
+    free(buf_psd);
     return rc;
 }
 
