@@ -259,6 +259,31 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
     return 0;
 }
 
+// validate spectral content of a signal
+int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_len,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
+{
+    // compute signal's power spectral density
+    unsigned int nfft = 4 << liquid_nextpow2(_buf_len < 8 ? 8 : _buf_len);
+    float complex buf_time[nfft];
+    float complex buf_freq[nfft];
+    float         buf_psd [nfft];
+    unsigned int i;
+    for (i=0; i<nfft; i++)
+        buf_time[i] = i < _buf_len ? _buf[i] : 0;
+    fft_run(nfft, buf_time, buf_freq, LIQUID_FFT_FORWARD, 0);
+    for (i=0; i<nfft; i++)
+        buf_psd[i] = 20*log10( cabsf( buf_freq[(i+nfft/2)%nfft] ) );
+
+    // run test
+    int rc = liquid_autotest_validate_spectrum(buf_psd, nfft,
+            _regions, num_regions, debug_filename);
+
+    //
+    return rc;
+}
+
+
 /*
 int liquid_autotest_validate_spectrum2(spgramcf _periodogram, autotest_psd_s * _regions)
 {
