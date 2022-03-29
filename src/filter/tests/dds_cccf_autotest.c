@@ -29,7 +29,7 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
                         float        _fc,           // filter cut-off
                         float        _As)           // stop-band suppression
 {
-    float        tol  = 1;  // error tolerance [dB], yes, that's dB
+    float        tol  = 1;  // error tolerance [dB]
     float        bw = 0.1f; // original pulse bandwidth
     unsigned int m    = 40; // pulse semi-length
     unsigned int r=1<<_num_stages;   // resampling rate (output/input)
