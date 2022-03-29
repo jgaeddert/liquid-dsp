@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -113,5 +113,23 @@ void autotest_firhilbf_interp()
 
     // clean up filter object
     firhilbf_destroy(ht);
+}
+
+void autotest_firhilbf_invalid_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping firhilbf config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check that object returns NULL for invalid configurations
+    CONTEND_ISNULL(firhilbf_create( 0, 60.0f)); // m too small
+    CONTEND_ISNULL(firhilbf_create( 1, 60.0f)); // m too small
+
+    // create proper object but test invalid internal configurations
+    //firhilbf q = firhilbf_create(12,60.0f);
+    //firhilbf_destroy(q);
 }
 
