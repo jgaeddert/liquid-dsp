@@ -265,7 +265,6 @@ int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_
 {
     // compute signal's power spectral density
     unsigned int nfft = 4 << liquid_nextpow2(_buf_len < 8 ? 8 : _buf_len);
-    printf("NFFT: %u\n", nfft);
     float complex * buf_time = (float complex*) malloc(nfft*sizeof(float complex));
     float complex * buf_freq = (float complex*) malloc(nfft*sizeof(float complex));
     float         * buf_psd  = (float *       ) malloc(nfft*sizeof(float        ));
