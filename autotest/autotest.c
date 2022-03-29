@@ -259,7 +259,7 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
     return 0;
 }
 
-// validate spectral content of a signal
+// validate spectral content of a signal (complex)
 int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_len,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
@@ -269,7 +269,7 @@ int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_
     float complex * buf_freq = (float complex*) malloc(nfft*sizeof(float complex));
     float         * buf_psd  = (float *       ) malloc(nfft*sizeof(float        ));
     if (buf_time == NULL || buf_freq == NULL || buf_psd == NULL) {
-        AUTOTEST_FAIL("could not allocate appropriate memory for validating psd");
+        AUTOTEST_FAIL("liquid_autotest_validate_psd_signal(), could not allocate appropriate memory for validating psd");
         return -1;
     }
     unsigned int i;
@@ -283,10 +283,33 @@ int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_
     int rc = liquid_autotest_validate_spectrum(buf_psd, nfft,
             _regions, num_regions, debug_filename);
 
-    //
+    // free memory and return
     free(buf_time);
     free(buf_freq);
     free(buf_psd);
+    return rc;
+}
+
+// validate spectral content of a signal (real)
+int liquid_autotest_validate_psd_signalf(float * _buf, unsigned int _buf_len,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
+{
+    // copy to temporary complex array
+    float complex * buf_cplx = (float complex*) malloc(_buf_len*sizeof(float complex));
+    if (buf_cplx == NULL) {
+        AUTOTEST_FAIL("liquid_autotest_validate_psd_signalf(), could not allocate appropriate memory for validating psd");
+        return -1;
+    }
+    unsigned int i;
+    for (i=0; i<_buf_len; i++)
+        buf_cplx[i] = _buf[i];
+
+    // run test
+    int rc = liquid_autotest_validate_psd_signal(buf_cplx, _buf_len,
+            _regions, num_regions, debug_filename);
+
+    // free memory and return
+    free(buf_cplx);
     return rc;
 }
 

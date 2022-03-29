@@ -296,8 +296,12 @@ typedef struct {
 int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
 
-// validate spectral content of a signal
+// validate spectral content of a signal (complex)
 int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_len,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
+// validate spectral content of a signal (real)
+int liquid_autotest_validate_psd_signalf(float * _buf, unsigned int _buf_len,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
 
 //int liquid_autotest_validate_spectrum2(spgramcf _periodogram, autotest_psd_s * _regions);
