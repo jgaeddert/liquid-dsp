@@ -122,7 +122,7 @@ void autotest_firhilbf_psd()
     float        bw = 0.4f; // pulse bandwidth
     float        As = 60.0f;// transform stop-band suppression
     unsigned int p    = 40; // pulse semi-length
-    unsigned int m    = 40; // Transform delay
+    unsigned int m    = 25; // Transform delay
 
     // create transform
     firhilbf q = firhilbf_create(m,As);
@@ -161,17 +161,16 @@ void autotest_firhilbf_psd()
     liquid_autotest_validate_psd_signal(buf_0, num_samples, regions_orig, 3,
         liquid_autotest_verbose ? "autotest_firhilbf_orig.m" : NULL);
 
-#if 0
     // verify interpolated spectrum
-    float f1 = _fc-0.6*bw/r, f2 = _fc-0.3*bw/r, f3 = _fc+0.3*bw/r, f4 = _fc+0.6*bw/r;
     autotest_psd_s regions_interp[] = {
-      {.fmin=-0.5, .fmax=f1,   .pmin= 0, .pmax=-_As+tol, .test_lo=0, .test_hi=1},
-      {.fmin= f2,  .fmax=f3,   .pmin=-1, .pmax=+1,       .test_lo=1, .test_hi=1},
-      {.fmin= f4,  .fmax=+0.5, .pmin= 0, .pmax=-_As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=-0.5,          .fmax=-0.25-0.25*bw, .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=-0.25-0.15*bw, .fmax=-0.25+0.15*bw, .pmin=-1, .pmax=+1,      .test_lo=1, .test_hi=1},
+      {.fmin=-0.25+0.25*bw, .fmax=+0.25-0.25*bw, .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
+      {.fmin= 0.25-0.15*bw, .fmax= 0.25+0.15*bw, .pmin=-1, .pmax=+1,      .test_lo=1, .test_hi=1},
+      {.fmin= 0.25+0.25*bw, .fmax= 0.5,          .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_signal(buf_1, r*num_samples, regions_interp, 3,
+    liquid_autotest_validate_psd_signalf(buf_1, 2*num_samples, regions_interp, 5,
         liquid_autotest_verbose ? "autotest_firhilbf_interp.m" : NULL);
-#endif
 
     // verify decimated spectrum (using same regions as original)
     liquid_autotest_validate_psd_signal(buf_2, num_samples, regions_orig, 3,
