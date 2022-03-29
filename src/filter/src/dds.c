@@ -46,7 +46,7 @@ struct DDS(_s) {
     float * fc;                 // filter center frequency
     float * ft;                 // filter transition bandwidth
     float * As;                 // filter stop-band attenuation [dB] array
-    unsigned int * h_len;       // filter length
+    unsigned int * m;           // filter semi-length
 
     // internal buffers
     unsigned int buffer_len;
@@ -93,7 +93,7 @@ DDS() DDS(_create)(unsigned int _num_stages,
     q->fc    = (float*) malloc((q->num_stages)*sizeof(float));
     q->ft    = (float*) malloc((q->num_stages)*sizeof(float));
     q->As    = (float*) malloc((q->num_stages)*sizeof(float));
-    q->h_len = (unsigned int*) malloc((q->num_stages)*sizeof(unsigned int));
+    q->m     = (unsigned int*) malloc((q->num_stages)*sizeof(unsigned int));
     unsigned int i;
     float fc, bw;
     fc = 0.5*(1<<q->num_stages)*q->fc0; // filter center frequency
@@ -110,13 +110,8 @@ DDS() DDS(_create)(unsigned int _num_stages,
         q->As[i] = q->As0;
 
         // compute (estimate) required filter length
-        //q->h_len[i] = i==0 ? 37 : q->h_len[i-1]*0.7;
-        q->h_len[i] = estimate_req_filter_len(q->ft[i], q->As[i]);
-        if ((q->h_len[i] % 2) == 0) q->h_len[i]++;
-
-        // ensure h_len[i] is of form 4*m+1
-        while ((q->h_len[i]-1)%4)
-            q->h_len[i]++;
+        //q->m[i] = i==0 ? 37 : q->h_m[i-1]*0.7;
+        q->m[i] = estimate_req_filter_len(q->ft[i], q->As[i]);
 
         // update carrier, bandwidth parameters
         fc *= 0.5f;
@@ -131,7 +126,7 @@ DDS() DDS(_create)(unsigned int _num_stages,
     // allocate memory for resampler pointers and create objects
     q->halfband_resamp = (RESAMP2()*) malloc((q->num_stages)*sizeof(RESAMP()*));
     for (i=0; i<q->num_stages; i++) {
-        q->halfband_resamp[i] = RESAMP2(_create)(q->h_len[i],
+        q->halfband_resamp[i] = RESAMP2(_create)(q->m[i],
                                                  q->fc[i],
                                                  q->As[i]);
     }
@@ -152,7 +147,7 @@ DDS() DDS(_create)(unsigned int _num_stages,
 int DDS(_destroy)(DDS() _q)
 {
     // free filter parameter arrays
-    free(_q->h_len);
+    free(_q->m);
     free(_q->As);
     free(_q->fc);
     free(_q->ft);
@@ -186,11 +181,11 @@ int DDS(_print)(DDS() _q)
     printf("    halfband stages (low rate -> high rate) :\n");
     unsigned int i;
     for (i=0; i<_q->num_stages; i++) {
-        printf("      [%3u] : fc = %8.5f, ft = %8.5f, %3u taps\n",
+        printf("      [%3u] : fc = %8.5f, ft = %8.5f, m = %3u\n",
                     i,
                     _q->fc[i],
                     _q->ft[i],
-                    _q->h_len[i]);
+                    _q->m[i]);
         //RESAMP2(_print)(_q->halfband_resamp[i]);
     }
     printf("    complexity : %12.4f\n",0.0f);
@@ -242,7 +237,7 @@ unsigned int DDS(_get_delay_interp)(DDS() _q)
     unsigned int i, delay=0;
     for (i=0; i<_q->num_stages; i++) {
         delay *= 2;
-        delay += 2*_q->h_len[i];
+        delay += 2*_q->m[i];
     }
     return delay;
 }
@@ -254,7 +249,7 @@ float DDS(_get_delay_decim)(DDS() _q)
     unsigned int i;
     for (i=0; i<_q->num_stages; i++) {
         delay *= 0.5f;
-        delay += _q->h_len[_q->num_stages-i-1] - 0.5f;
+        delay += _q->m[_q->num_stages-i-1] - 0.5f;
     }
     return delay;
 }
