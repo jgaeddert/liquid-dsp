@@ -72,7 +72,7 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
     // verify input spectrum
     autotest_psd_s regions_orig[] = {
       {.fmin=-0.5,    .fmax=-0.6*bw, .pmin= 0, .pmax=-_As+tol, .test_lo=0, .test_hi=1},
-      {.fmin=-0.3*bw, .fmax=+0.3*bw, .pmin=-3, .pmax=+1,       .test_lo=1, .test_hi=1},
+      {.fmin=-0.3*bw, .fmax=+0.3*bw, .pmin=-1, .pmax=+1,       .test_lo=1, .test_hi=1},
       {.fmin=+0.6*bw, .fmax=+0.5,    .pmin= 0, .pmax=-_As+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signal(buf_0, num_samples, regions_orig, 3,
@@ -82,7 +82,7 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
     float f1 = _fc-0.6*bw/r, f2 = _fc-0.3*bw/r, f3 = _fc+0.3*bw/r, f4 = _fc+0.6*bw/r;
     autotest_psd_s regions_interp[] = {
       {.fmin=-0.5, .fmax=f1,   .pmin= 0, .pmax=-_As+tol, .test_lo=0, .test_hi=1},
-      {.fmin= f2,  .fmax=f3,   .pmin=-3, .pmax=+1,       .test_lo=1, .test_hi=1},
+      {.fmin= f2,  .fmax=f3,   .pmin=-1, .pmax=+1,       .test_lo=1, .test_hi=1},
       {.fmin= f4,  .fmax=+0.5, .pmin= 0, .pmax=-_As+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signal(buf_1, r*num_samples, regions_interp, 3,
@@ -103,7 +103,6 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
 void autotest_dds_cccf_0(){ testbench_dds_cccf( 1, +0.0f, 60.0f); }
 void autotest_dds_cccf_1(){ testbench_dds_cccf( 2, +0.0f, 60.0f); }
 void autotest_dds_cccf_2(){ testbench_dds_cccf( 3, +0.0f, 60.0f); }
-void autotest_dds_cccf_3(){ testbench_dds_cccf( 4, +0.0f, 60.0f); }
 
 // FIXME: adjust filter lengths appropriately
 //void xautotest_dds_cccf_4(){ testbench_dds_cccf( 2, +0.1f,      60.0f); }
