@@ -3022,6 +3022,16 @@ void IIRHILB(_r2c_execute)(IIRHILB() _q,                                    \
                            T         _x,                                    \
                            TC *      _y);                                   \
                                                                             \
+/* Execute Hilbert transform (real to complex) on a block of samples    */  \
+/*  _q      : Hilbert transform object                                  */  \
+/*  _x      : real-valued input sample array, [size: _n x 1]            */  \
+/*  _n      : number of input,output samples                            */  \
+/*  _y      : complex-valued output sample array, [size: _n x 1]        */  \
+int IIRHILB(_r2c_execute_block)(IIRHILB()    _q,                            \
+                                T *          _x,                            \
+                                unsigned int _n,                            \
+                                TC *         _y);                           \
+                                                                            \
 /* Execute Hilbert transform (complex to real)                          */  \
 /*  _q      : Hilbert transform object                                  */  \
 /*  _x      : complex-valued input sample                               */  \
@@ -3029,6 +3039,16 @@ void IIRHILB(_r2c_execute)(IIRHILB() _q,                                    \
 void IIRHILB(_c2r_execute)(IIRHILB() _q,                                    \
                            TC        _x,                                    \
                            T *       _y);                                   \
+                                                                            \
+/* Execute Hilbert transform (complex to real) on a block of samples    */  \
+/*  _q      : Hilbert transform object                                  */  \
+/*  _x      : complex-valued input sample array, [size: _n x 1]         */  \
+/*  _n      : number of input,output samples                            */  \
+/*  _y      : real-valued output sample array, [size: _n x 1]           */  \
+int IIRHILB(_c2r_execute_block)(IIRHILB()    _q,                            \
+                                TC *         _x,                            \
+                                unsigned int _n,                            \
+                                T *          _y);                           \
                                                                             \
 /* Execute Hilbert transform decimator (real to complex)                */  \
 /*  _q      : Hilbert transform object                                  */  \

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,13 +30,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-
-// defined:
-//  IIRHILB()       name-mangling macro
-//  T               coefficients type
-//  WINDOW()        window macro
-//  DOTPROD()       dotprod macro
-//  PRINTVAL()      print macro
 
 struct IIRHILB(_s) {
     // filter objects
@@ -170,6 +163,18 @@ void IIRHILB(_r2c_execute)(IIRHILB()   _q,
     _q->state = (_q->state + 1) & 0x3;
 }
 
+// Execute Hilbert transform (real to complex) on a block of samples
+int IIRHILB(_r2c_execute_block)(IIRHILB()    _q,
+                                T *          _x,
+                                unsigned int _n,
+                                T complex *  _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        IIRHILB(_r2c_execute)(_q, _x[i], _y+i);
+    return LIQUID_OK;
+}
+
 // execute Hilbert transform (complex to real)
 //  _q      :   iirhilb object
 //  _y      :   complex-valued input sample
@@ -207,6 +212,17 @@ void IIRHILB(_c2r_execute)(IIRHILB() _q,
 
     // cycle through state
     _q->state = (_q->state + 1) & 0x3;
+}
+// Execute Hilbert transform (complex to real) on a block of samples
+int IIRHILB(_c2r_execute_block)(IIRHILB()    _q,
+                                T complex *  _x,
+                                unsigned int _n,
+                                T *          _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        IIRHILB(_c2r_execute)(_q, _x[i], _y+i);
+    return LIQUID_OK;
 }
 
 // execute Hilbert transform decimator (real to complex)
