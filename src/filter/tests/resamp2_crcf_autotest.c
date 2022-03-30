@@ -214,3 +214,42 @@ void autotest_resamp2_crcf_filter_1(){ testbench_resamp2_crcf_filter( 7, 60.0f);
 void autotest_resamp2_crcf_filter_2(){ testbench_resamp2_crcf_filter(12, 60.0f); }
 void autotest_resamp2_crcf_filter_3(){ testbench_resamp2_crcf_filter(15, 80.0f); }
 
+void autotest_resamp2_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping resamp2 config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check that object returns NULL for invalid configurations
+    CONTEND_ISNULL(resamp2_crcf_create( 0,  0.0f, 60.0f)); // m out of range
+    CONTEND_ISNULL(resamp2_crcf_create( 1,  0.0f, 60.0f)); // m out of range
+    CONTEND_ISNULL(resamp2_crcf_create( 2,  0.7f, 60.0f)); // f0 out of range
+    CONTEND_ISNULL(resamp2_crcf_create( 2, -0.7f, 60.0f)); // f0 out of range
+    CONTEND_ISNULL(resamp2_crcf_create( 2,  0.0f, -1.0f)); // As out of range
+
+    // create proper object and test configurations
+    resamp2_crcf q = resamp2_crcf_create( 4, 0.0f, 60.0f);
+    CONTEND_EQUALITY(resamp2_crcf_get_delay(q), 2*4-1);
+    resamp2_crcf_print(q);
+
+    // redesign filter with new length
+    q = resamp2_crcf_recreate(q, 8, 0.0f, 60.0f);
+    CONTEND_EQUALITY(resamp2_crcf_get_delay(q), 2*8-1);
+
+    // redesign filter with same length, but new stop-band suppression
+    q = resamp2_crcf_recreate(q, 8, 0.0f, 80.0f);
+    CONTEND_EQUALITY(resamp2_crcf_get_delay(q), 2*8-1);
+
+    // test setting/getting properties
+    resamp2_crcf_set_scale(q, 7.22f);
+    float scale = 0.0f;
+    resamp2_crcf_get_scale(q, &scale);
+    CONTEND_EQUALITY(scale, 7.22f);
+
+    // destroy object
+    resamp2_crcf_destroy(q);
+}
+
