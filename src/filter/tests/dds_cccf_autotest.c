@@ -109,3 +109,34 @@ void autotest_dds_cccf_2(){ testbench_dds_cccf( 3, +0.0f, 60.0f); }
 //void xautotest_dds_cccf_5(){ testbench_dds_cccf( 2, -0.213823f, 60.0f); }
 //void xautotest_dds_cccf_6(){ testbench_dds_cccf( 2, -0.318234f, 80.0f); }
 
+void autotest_dds_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping dds config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check that object returns NULL for invalid configurations
+    CONTEND_ISNULL(dds_cccf_create( 50,  0.0f,  0.1f, 60.0f)); // num stages out of range
+    CONTEND_ISNULL(dds_cccf_create(  2,  0.7f,  0.1f, 60.0f)); // fc out of range
+    CONTEND_ISNULL(dds_cccf_create(  2, -0.7f,  0.1f, 60.0f)); // fc out of range
+    CONTEND_ISNULL(dds_cccf_create(  2,  0.2f,  1.4f, 60.0f)); // bw out of range
+    CONTEND_ISNULL(dds_cccf_create(  2,  0.2f, -1.4f, 60.0f)); // bw out of range
+    CONTEND_ISNULL(dds_cccf_create(  2,  0.2f,  0.1f, -1.0f)); // As out of range
+
+    // create proper object and test configurations
+    dds_cccf q = dds_cccf_create( 2, 0.0f, 0.2f, 60.0f);
+    dds_cccf_print(q);
+
+    // test setting/getting properties
+    dds_cccf_set_scale(q, 2.0f - _Complex_I*3.0f);
+    float complex scale = 0.0f;
+    dds_cccf_get_scale(q, &scale);
+    CONTEND_EQUALITY(scale, 2.0f - _Complex_I*3.0f);
+
+    // destroy object
+    dds_cccf_destroy(q);
+}
+
