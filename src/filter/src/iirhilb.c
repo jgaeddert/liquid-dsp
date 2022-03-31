@@ -77,23 +77,10 @@ IIRHILB() IIRHILB(_create_default)(unsigned int _n)
     if (_n == 0)
         return liquid_error_config("iirhilb_create_default(), filter order must be greater than zero");
 
-    // allocate memory for main object
-    IIRHILB() q = (IIRHILB()) malloc(sizeof(struct IIRHILB(_s)));
-
-    // design filters
     int     ftype  = LIQUID_IIRDES_BUTTER;  // filter design type
-    int     btype  = LIQUID_IIRDES_LOWPASS; // filter band type
-    int     format = LIQUID_IIRDES_SOS;     // filter coefficients format
-    float   fc     =   0.25f;               // cutoff frequency [normalized]
-    float   f0     =   0.0f;                // center frequency [normalized]
     float   Ap     =   0.1f;                // pass-band ripple [dB]
     float   As     =   60.0f;               // stop-band attenuation [dB]
-    q->filt_0 = IIRFILT(_create_prototype)(ftype,btype,format,_n,fc,f0,Ap,As);
-    q->filt_1 = IIRFILT(_create_prototype)(ftype,btype,format,_n,fc,f0,Ap,As);
-
-    // reset internal state and return object
-    IIRHILB(_reset)(q);
-    return q;
+    return IIRHILB(_create)(ftype,_n,Ap,As);
 }
 
 // destroy iirhilb object
