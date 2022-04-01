@@ -23,8 +23,8 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// test end-to-end power specral density
-void autotest_iirhilbf_psd()
+// test end-to-end power specral density on interp/decim methods
+void autotest_iirhilbf_interp_decim()
 {
     float        tol  = 1;  // error tolerance [dB]
     float        bw = 0.4f; // pulse bandwidth
@@ -84,6 +84,81 @@ void autotest_iirhilbf_psd()
     // verify decimated spectrum (using same regions as original)
     liquid_autotest_validate_psd_signal(buf_2, num_samples, regions_orig, 3,
         liquid_autotest_verbose ? "autotest_iirhilbf_decim.m" : NULL);
+
+    // destroy filter object and free memory
+    iirhilbf_destroy(q);
+}
+
+// test end-to-end power specral density on filter methods
+void xautotest_iirhilbf_filter()
+{
+    float        tol  = 1;  // error tolerance [dB]
+    float        bw = 0.2f; // pulse bandwidth
+    float        f0 = 0.3f; // pulse center frequency
+    float        ft =-0.3f; // frequency of tone in lower half of band
+    float        As = 60.0f;// transform stop-band suppression
+    unsigned int p    = 45; // pulse semi-length
+    unsigned int m    =  5; // Transform order
+
+    // create transform
+    //iirhilbf q = iirhilbf_create(ftype,n,Ap,As);
+    iirhilbf q = iirhilbf_create_default(m);
+    iirhilbf_print(q);
+
+    unsigned int h_len       = 2*p+1; // pulse length
+    unsigned int num_samples = h_len + 2*m + 8;
+
+    unsigned int i;
+    float complex buf_0[num_samples];
+    float         buf_1[num_samples];
+    float complex buf_2[num_samples];
+
+    // generate the baseband signal (filter pulse)
+    float h[h_len];
+    float w = 0.36f * bw; // pulse bandwidth
+    liquid_firdes_kaiser(h_len,w,80.0f,0.0f,h);
+    for (i=0; i<num_samples; i++)
+        buf_0[i] = i < h_len ? 2*w*h[i]*cexpf(_Complex_I*2*M_PI*f0*i) : 0.0f;
+    for (i=0; i<num_samples; i++)
+        buf_0[i] += i < h_len ? 1e-3f*liquid_kaiser(i,num_samples,10)*cexpf(_Complex_I*2*M_PI*ft*i) : 0.0f;
+
+    // run interpolation
+    iirhilbf_c2r_execute_block(q, buf_0, num_samples, buf_1);
+    // scale output
+    for (i=0; i<num_samples; i++)
+        buf_1[i] *= 2;
+
+    // clear object
+    iirhilbf_reset(q);
+
+    // run decimation
+    iirhilbf_r2c_execute_block(q, buf_1, num_samples, buf_2);
+
+    // verify input spectrum
+    autotest_psd_s regions_orig[] = {
+      {.fmin=-0.5,       .fmax= ft-0.03,   .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
+      {.fmin= ft-0.01,   .fmax= ft+0.01,   .pmin=-40,.pmax= 0,      .test_lo=1, .test_hi=0},
+      {.fmin= ft+0.03,   .fmax= f0-0.5*bw, .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
+      {.fmin= f0-0.3*bw, .fmax= f0+0.3*bw, .pmin=-1, .pmax=+1,      .test_lo=1, .test_hi=1},
+      {.fmin=+f0+0.5*bw, .fmax=+0.5,       .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_signal(buf_0, num_samples, regions_orig, 5,
+        liquid_autotest_verbose ? "autotest_iirhilbf_filter_orig.m" : NULL);
+
+    // verify interpolated spectrum
+    autotest_psd_s regions_interp[] = {
+      {.fmin=-0.5,       .fmax=-f0-0.5*bw, .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=-f0-0.3*bw, .fmax=-f0+0.3*bw, .pmin=-1, .pmax=+1,      .test_lo=1, .test_hi=1},
+      {.fmin=-f0+0.5*bw, .fmax=+f0-0.5*bw, .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
+      {.fmin= f0-0.3*bw, .fmax= f0+0.3*bw, .pmin=-1, .pmax=+1,      .test_lo=1, .test_hi=1},
+      {.fmin=+f0+0.5*bw, .fmax=+0.5,       .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_signalf(buf_1, num_samples, regions_interp, 5,
+        liquid_autotest_verbose ? "autotest_iirhilbf_filter_c2r.m" : NULL);
+
+    // verify decimated spectrum (using same regions as original)
+    liquid_autotest_validate_psd_signal(buf_2, num_samples, regions_orig, 3,
+        liquid_autotest_verbose ? "autotest_iirhilbf_filter_r2c.m" : NULL);
 
     // destroy filter object and free memory
     iirhilbf_destroy(q);
