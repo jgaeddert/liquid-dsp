@@ -2171,10 +2171,10 @@ int liquid_firdes_kaiser(unsigned int _n,
 //  _f0     : filter notch frequency (normalized), -0.5 <= _fc <= 0.5
 //  _As     : stop-band attenuation [dB], _As > 0
 //  _h      : output coefficient buffer, [size: 2*_m+1 x 1]
-void liquid_firdes_notch(unsigned int _m,
-                         float        _f0,
-                         float        _As,
-                         float *      _h);
+int liquid_firdes_notch(unsigned int _m,
+                        float        _f0,
+                        float        _As,
+                        float *      _h);
 
 // Design FIR doppler filter
 //  _n      : filter length

@@ -344,22 +344,18 @@ int liquid_firdes_kaiser(unsigned int _n,
 //  _f0     : filter notch frequency (normalized), -0.5 <= _fc <= 0.5
 //  _As     : stop-band attenuation [dB], _As > 0
 //  _h      : output coefficient buffer, [size: 2*_m+1 x 1]
-void liquid_firdes_notch(unsigned int _m,
-                         float        _f0,
-                         float        _As,
-                         float *      _h)
+int liquid_firdes_notch(unsigned int _m,
+                        float        _f0,
+                        float        _As,
+                        float *      _h)
 {
     // validate inputs
-    if (_m < 1 || _m > 1000) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_notch(), _m (%12u) out of range [1,1000]", _m);
-        return;
-    } else if (_f0 < -0.5f || _f0 > 0.5f) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_notch(), notch frequency (%12.4e) must be in [-0.5,0.5]", _f0);
-        return;
-    } else if (_As <= 0.0f) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_notch(), stop-band suppression (%12.4e) must be greater than zero", _As);
-        return;
-    }
+    if (_m < 1 || _m > 1000)
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_notch(), _m (%12u) out of range [1,1000]", _m);
+    if (_f0 < -0.5f || _f0 > 0.5f)
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_notch(), notch frequency (%12.4e) must be in [-0.5,0.5]", _f0);
+    if (_As <= 0.0f)
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_notch(), stop-band suppression (%12.4e) must be greater than zero", _As);
 
     // choose kaiser beta parameter (approximate)
     float beta = kaiser_beta_As(_As);
@@ -386,8 +382,9 @@ void liquid_firdes_notch(unsigned int _m,
     for (i=0; i<h_len; i++)
         _h[i] /= scale;
 
-    // add impulse
+    // add impulse and return
     _h[_m] += 1.0f;
+    return LIQUID_OK;
 }
 
 // Design (root-)Nyquist filter from prototype

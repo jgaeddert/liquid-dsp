@@ -226,15 +226,18 @@ void autotest_liquid_firdes_config()
     CONTEND_EQUALITY( estimate_req_filter_len_Herrmann( 0.2f, -1.0f), 0 ); // invalid stop-band suppression
     CONTEND_EQUALITY( estimate_req_filter_len_Herrmann( 0.2f,  0.0f), 0 ); // invalid stop-band suppression
 
-    unsigned int h_len = 21;
+    unsigned int m     =  4;
+    unsigned int h_len = 2*m+1;
     float        h[h_len];
     int          wtype = LIQUID_WINDOW_HAMMING;
-    CONTEND_EQUALITY(liquid_firdes_windowf(wtype,     0, 0.2f, 0, h), LIQUID_EICONFIG); // invalid length
-    CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len,-0.1f, 0, h), LIQUID_EICONFIG); // invalid length
-    CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len, 0.0f, 0, h), LIQUID_EICONFIG); // invalid length
-    CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len, 0.5f, 0, h), LIQUID_EICONFIG); // invalid length
-    CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len, 0.6f, 0, h), LIQUID_EICONFIG); // invalid length
+    CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len, 0.2f, 0, h), LIQUID_OK      );
+    CONTEND_EQUALITY(liquid_firdes_windowf(wtype,     0, 0.2f, 0, h), LIQUID_EICONFIG);
+    CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len,-0.1f, 0, h), LIQUID_EICONFIG);
+    CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len, 0.0f, 0, h), LIQUID_EICONFIG);
+    CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len, 0.5f, 0, h), LIQUID_EICONFIG);
+    CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len, 0.6f, 0, h), LIQUID_EICONFIG);
 
+    CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.2f, 60.0f, 0.0f, h), LIQUID_OK      );
     CONTEND_EQUALITY(liquid_firdes_kaiser(    0, 0.2f, 60.0f, 0.0f, h), LIQUID_EICONFIG);
     CONTEND_EQUALITY(liquid_firdes_kaiser(h_len,-0.1f, 60.0f, 0.0f, h), LIQUID_EICONFIG);
     CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.0f, 60.0f, 0.0f, h), LIQUID_EICONFIG);
@@ -242,5 +245,11 @@ void autotest_liquid_firdes_config()
     CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.6f, 60.0f, 0.0f, h), LIQUID_EICONFIG);
     CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.2f, 60.0f,-0.7f, h), LIQUID_EICONFIG);
     CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.2f, 60.0f, 0.7f, h), LIQUID_EICONFIG);
+
+    CONTEND_EQUALITY(liquid_firdes_notch(m, 0.2f, 60.0f, h), LIQUID_OK);
+    CONTEND_EQUALITY(liquid_firdes_notch(0, 0.2f, 60.0f, h), LIQUID_EICONFIG);
+    CONTEND_EQUALITY(liquid_firdes_notch(m,-0.7f, 60.0f, h), LIQUID_EICONFIG);
+    CONTEND_EQUALITY(liquid_firdes_notch(m, 0.7f, 60.0f, h), LIQUID_EICONFIG);
+    CONTEND_EQUALITY(liquid_firdes_notch(m, 0.2f, -8.0f, h), LIQUID_EICONFIG);
 }
 
