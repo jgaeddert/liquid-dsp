@@ -253,5 +253,11 @@ void autotest_liquid_firdes_config()
     CONTEND_EQUALITY(liquid_firdes_notch(m, 0.2f, -8.0f, h), LIQUID_EICONFIG);
 
     CONTEND_EQUALITY(liquid_firdes_prototype(LIQUID_FIRFILT_UNKNOWN,2,2,0.3f,0.0f,h),LIQUID_EICONFIG);
+
+    // test energy calculation configuration; design proper filter
+    liquid_firdes_windowf(wtype, h_len, 0.2f, 0, h);
+    CONTEND_EQUALITY(liquid_filter_energy(h,h_len,-0.1f,1200), 0.0f);
+    CONTEND_EQUALITY(liquid_filter_energy(h,h_len, 0.7f,1200), 0.0f);
+    CONTEND_EQUALITY(liquid_filter_energy(h,h_len, 0.3f,   0), 0.0f);
 }
 
