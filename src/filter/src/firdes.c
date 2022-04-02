@@ -272,7 +272,7 @@ int liquid_firdes_windowf(int          _wtype,
                           float *      _h)
 {
     // validate inputs
-    if (_fc < 0.0f || _fc > 0.5f) {
+    if (_fc <= 0.0f || _fc >= 0.5f) {
         return liquid_error(LIQUID_EICONFIG,"liquid_firdes_window(), cutoff frequency (%12.4e) out of range (0, 0.5)", _fc);
     } else if (_n == 0) {
         return liquid_error(LIQUID_EICONFIG,"liquid_firdes_window(), filter length must be greater than zero");

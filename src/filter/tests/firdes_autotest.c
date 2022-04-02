@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 void autotest_liquid_firdes_rcos() {
 
@@ -196,5 +196,42 @@ void autotest_liquid_getopt_str2firfilt()
     CONTEND_EQUALITY( liquid_getopt_str2firfilt("rfexp"     ), LIQUID_FIRFILT_RFEXP     );
     CONTEND_EQUALITY( liquid_getopt_str2firfilt("rfsech"    ), LIQUID_FIRFILT_RFSECH    );
     CONTEND_EQUALITY( liquid_getopt_str2firfilt("rfarcsech" ), LIQUID_FIRFILT_RFARCSECH );
+}
+
+void autotest_liquid_firdes_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping firdes config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check that estimate methods return zero for invalid configs
+    CONTEND_EQUALITY( estimate_req_filter_len(-0.1f, 60.0f), 0 ); // invalid transition band
+    CONTEND_EQUALITY( estimate_req_filter_len( 0.0f, 60.0f), 0 ); // invalid transition band
+    CONTEND_EQUALITY( estimate_req_filter_len( 0.6f, 60.0f), 0 ); // invalid transition band
+    CONTEND_EQUALITY( estimate_req_filter_len( 0.2f, -1.0f), 0 ); // invalid stop-band suppression
+    CONTEND_EQUALITY( estimate_req_filter_len( 0.2f,  0.0f), 0 ); // invalid stop-band suppression
+
+    CONTEND_EQUALITY( estimate_req_filter_len_Kaiser(-0.1f, 60.0f), 0 ); // invalid transition band
+    CONTEND_EQUALITY( estimate_req_filter_len_Kaiser( 0.0f, 60.0f), 0 ); // invalid transition band
+    CONTEND_EQUALITY( estimate_req_filter_len_Kaiser( 0.6f, 60.0f), 0 ); // invalid transition band
+    CONTEND_EQUALITY( estimate_req_filter_len_Kaiser( 0.2f, -1.0f), 0 ); // invalid stop-band suppression
+    CONTEND_EQUALITY( estimate_req_filter_len_Kaiser( 0.2f,  0.0f), 0 ); // invalid stop-band suppression
+
+    CONTEND_EQUALITY( estimate_req_filter_len_Herrmann(-0.1f, 60.0f), 0 ); // invalid transition band
+    CONTEND_EQUALITY( estimate_req_filter_len_Herrmann( 0.0f, 60.0f), 0 ); // invalid transition band
+    CONTEND_EQUALITY( estimate_req_filter_len_Herrmann( 0.6f, 60.0f), 0 ); // invalid transition band
+    CONTEND_EQUALITY( estimate_req_filter_len_Herrmann( 0.2f, -1.0f), 0 ); // invalid stop-band suppression
+    CONTEND_EQUALITY( estimate_req_filter_len_Herrmann( 0.2f,  0.0f), 0 ); // invalid stop-band suppression
+
+    unsigned int h_len = 21;
+    float        h[h_len];
+    int          wtype = LIQUID_WINDOW_HAMMING;
+    CONTEND_EQUALITY(liquid_firdes_windowf(wtype,     0, 0.2f, 0, h), LIQUID_EICONFIG); // invalid length
+    CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len,-0.1f, 0, h), LIQUID_EICONFIG); // invalid length
+    CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len, 0.0f, 0, h), LIQUID_EICONFIG); // invalid length
+    CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len, 0.6f, 0, h), LIQUID_EICONFIG); // invalid length
 }
 
