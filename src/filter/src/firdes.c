@@ -388,7 +388,7 @@ int liquid_firdes_notch(unsigned int _m,
 }
 
 // Design (root-)Nyquist filter from prototype
-//  _type   : filter type (e.g. LIQUID_FIRFILT_RRRC)
+//  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _k      : samples/symbol
 //  _m      : symbol delay
 //  _beta   : excess bandwidth factor, _beta in [0,1]
