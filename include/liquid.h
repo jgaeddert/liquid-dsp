@@ -2160,11 +2160,11 @@ int liquid_firdes_windowf(int          _wtype,
 //  _As     : stop-band attenuation [dB], _As > 0
 //  _mu     : fractional sample offset, -0.5 < _mu < 0.5
 //  _h      : output coefficient buffer, [size: _n x 1]
-void liquid_firdes_kaiser(unsigned int _n,
-                          float _fc,
-                          float _As,
-                          float _mu,
-                          float *_h);
+int liquid_firdes_kaiser(unsigned int _n,
+                         float _fc,
+                         float _As,
+                         float _mu,
+                         float *_h);
 
 // Design finite impulse response notch filter
 //  _m      : filter semi-length, m in [1,1000]

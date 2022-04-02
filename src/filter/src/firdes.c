@@ -302,23 +302,19 @@ int liquid_firdes_windowf(int          _wtype,
 //  _As     : stop-band attenuation [dB], _As > 0
 //  _mu     : fractional sample offset, -0.5 < _mu < 0.5
 //  _h      : output coefficient buffer, [size: _n x 1]
-void liquid_firdes_kaiser(unsigned int _n,
-                          float _fc,
-                          float _As,
-                          float _mu,
-                          float *_h)
+int liquid_firdes_kaiser(unsigned int _n,
+                         float _fc,
+                         float _As,
+                         float _mu,
+                         float *_h)
 {
     // validate inputs
-    if (_mu < -0.5f || _mu > 0.5f) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_kaiser(), _mu (%12.4e) out of range [-0.5,0.5]", _mu);
-        return;
-    } else if (_fc < 0.0f || _fc > 0.5f) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_kaiser(), cutoff frequency (%12.4e) out of range (0, 0.5)", _fc);
-        return;
-    } else if (_n == 0) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_kaiser(), filter length must be greater than zero");
-        return;
-    }
+    if (_mu < -0.5f || _mu > 0.5f)
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_kaiser(), _mu (%12.4e) out of range [-0.5,0.5]", _mu);
+    if (_fc <= 0.0f || _fc >= 0.5f)
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_kaiser(), cutoff frequency (%12.4e) out of range (0, 0.5)", _fc);
+    if (_n == 0)
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_kaiser(), filter length must be greater than zero");
 
     // choose kaiser beta parameter (approximate)
     float beta = kaiser_beta_As(_As);
@@ -340,6 +336,7 @@ void liquid_firdes_kaiser(unsigned int _n,
         // composite
         _h[i] = h1*h2;
     }
+    return LIQUID_OK;
 }
 
 // Design finite impulse response notch filter
