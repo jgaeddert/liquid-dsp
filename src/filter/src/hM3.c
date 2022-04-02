@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,22 +46,18 @@
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
-void liquid_firdes_hM3(unsigned int _k,
-                       unsigned int _m,
-                       float _beta,
-                       float _dt,
-                       float * _h)
+int liquid_firdes_hM3(unsigned int _k,
+                      unsigned int _m,
+                      float _beta,
+                      float _dt,
+                      float * _h)
 {
-    if ( _k < 2 ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_hM3(): k must be greater than 1");
-        return;
-    } else if ( _m < 1 ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_hM3(): m must be greater than 0");
-        return;
-    } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_hM3(): beta must be in [0,1]");
-        return;
-    }
+    if ( _k < 2 )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_hM3(): k must be greater than 1");
+    if ( _m < 1 )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_hM3(): m must be greater than 0");
+    if ( (_beta < 0.0f) || (_beta > 1.0f) )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_hM3(): beta must be in [0,1]");
 
     unsigned int n=2*_k*_m+1;       // filter length
 
@@ -121,7 +117,9 @@ void liquid_firdes_hM3(unsigned int _k,
     // normalize
     float e2 = 0.0f;
     unsigned int i;
-    for (i=0; i<n; i++) e2 += _h[i]*_h[i];
-    for (i=0; i<n; i++) _h[i] *= sqrtf(_k/e2);
+    for (i=0; i<n; i++) { e2 += _h[i]*_h[i];     }
+    for (i=0; i<n; i++) { _h[i] *= sqrtf(_k/e2); }
+    
+    return LIQUID_OK;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,31 +44,26 @@
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
-void liquid_firdes_rkaiser(unsigned int _k,
-                           unsigned int _m,
-                           float _beta,
-                           float _dt,
-                           float * _h)
+int liquid_firdes_rkaiser(unsigned int _k,
+                          unsigned int _m,
+                          float _beta,
+                          float _dt,
+                          float * _h)
 {
     // validate input
-    if (_k < 2) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser(), k must be at least 2");
-        return;
-    } else if (_m < 1) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser(), m must be at least 1");
-        return;
-    } else if (_beta <= 0.0f || _beta >= 1.0f) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser(), beta must be in (0,1)");
-        return;
-    } else if (_dt < -1.0f || _dt > 1.0f) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser(), dt must be in [-1,1]");
-        return;
-    }
+    if (_k < 2)
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser(), k must be at least 2");
+    if (_m < 1)
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser(), m must be at least 1");
+    if (_beta <= 0.0f || _beta >= 1.0f)
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser(), beta must be in (0,1)");
+    if (_dt < -1.0f || _dt > 1.0f)
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser(), dt must be in [-1,1]");
 
     // simply call internal method and ignore output rho value
     float rho;
     //liquid_firdes_rkaiser_bisection(_k,_m,_beta,_dt,_h,&rho);
-    liquid_firdes_rkaiser_quadratic(_k,_m,_beta,_dt,_h,&rho);
+    return liquid_firdes_rkaiser_quadratic(_k,_m,_beta,_dt,_h,&rho);
 }
 
 // Design frequency-shifted root-Nyquist filter based on
@@ -79,26 +74,21 @@ void liquid_firdes_rkaiser(unsigned int _k,
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
-void liquid_firdes_arkaiser(unsigned int _k,
-                            unsigned int _m,
-                            float _beta,
-                            float _dt,
-                            float * _h)
+int liquid_firdes_arkaiser(unsigned int _k,
+                           unsigned int _m,
+                           float _beta,
+                           float _dt,
+                           float * _h)
 {
     // validate input
-    if (_k < 2) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_arkaiser(), k must be at least 2");
-        return;
-    } else if (_m < 1) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_arkaiser(), m must be at least 1");
-        return;
-    } else if (_beta <= 0.0f || _beta >= 1.0f) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_arkaiser(), beta must be in (0,1)");
-        return;
-    } else if (_dt < -1.0f || _dt > 1.0f) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_arkaiser(), dt must be in [-1,1]");
-        return;
-    }
+    if (_k < 2)
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_arkaiser(), k must be at least 2");
+    if (_m < 1)
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_arkaiser(), m must be at least 1");
+    if (_beta <= 0.0f || _beta >= 1.0f)
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_arkaiser(), beta must be in (0,1)");
+    if (_dt < -1.0f || _dt > 1.0f)
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_arkaiser(), dt must be in [-1,1]");
 
 #if 0
     // compute bandwidth adjustment estimate
@@ -145,6 +135,8 @@ void liquid_firdes_arkaiser(unsigned int _k,
     unsigned int i;
     for (i=0; i<n; i++) e2 += _h[i]*_h[i];
     for (i=0; i<n; i++) _h[i] *= sqrtf(_k/e2);
+
+    return LIQUID_OK;
 }
 
 // Find approximate bandwidth adjustment factor rho based on
@@ -216,23 +208,19 @@ float rkaiser_approximate_rho(unsigned int _m,
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-void liquid_firdes_rkaiser_bisection(unsigned int _k,
-                                     unsigned int _m,
-                                     float _beta,
-                                     float _dt,
-                                     float * _h,
-                                     float * _rho)
+int liquid_firdes_rkaiser_bisection(unsigned int _k,
+                                    unsigned int _m,
+                                    float _beta,
+                                    float _dt,
+                                    float * _h,
+                                    float * _rho)
 {
-    if ( _k < 1 ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_bisection(): k must be greater than 0");
-        return;
-    } else if ( _m < 1 ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_bisection(): m must be greater than 0");
-        return;
-    } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_bisection(): beta must be in [0,1]");
-        return;
-    }
+    if ( _k < 1 )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_bisection(): k must be greater than 0");
+    if ( _m < 1 )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_bisection(): m must be greater than 0");
+    if ( (_beta < 0.0f) || (_beta > 1.0f) )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_bisection(): beta must be in [0,1]");
 
     // algorithm:
     //  1. choose three initial points [x0, x1, x2] where x0 < x1 < x2
@@ -325,6 +313,7 @@ void liquid_firdes_rkaiser_bisection(unsigned int _k,
 
     // save trasition bandwidth adjustment
     *_rho = x_hat;
+    return LIQUID_OK;
 }
 
 // Design frequency-shifted root-Nyquist filter based on
@@ -336,23 +325,19 @@ void liquid_firdes_rkaiser_bisection(unsigned int _k,
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-void liquid_firdes_rkaiser_quadratic(unsigned int _k,
-                                     unsigned int _m,
-                                     float _beta,
-                                     float _dt,
-                                     float * _h,
-                                     float * _rho)
+int liquid_firdes_rkaiser_quadratic(unsigned int _k,
+                                    unsigned int _m,
+                                    float _beta,
+                                    float _dt,
+                                    float * _h,
+                                    float * _rho)
 {
-    if ( _k < 1 ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_quadratic(): k must be greater than 0");
-        return;
-    } else if ( _m < 1 ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_quadratic(): m must be greater than 0");
-        return;
-    } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_quadratic(): beta must be in [0,1]");
-        return;
-    }
+    if ( _k < 1 )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_quadratic(): k must be greater than 0");
+    if ( _m < 1 )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_quadratic(): m must be greater than 0");
+    if ( (_beta < 0.0f) || (_beta > 1.0f) )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_quadratic(): beta must be in [0,1]");
 
     // algorithm:
     //  1. choose initial bounding points [x0,x2] where x0 < x2
@@ -469,6 +454,7 @@ void liquid_firdes_rkaiser_quadratic(unsigned int _k,
 
     // save trasition bandwidth adjustment
     *_rho = rho_opt;
+    return LIQUID_OK;
 }
 
 // compute filter coefficients and determine resulting ISI
@@ -512,5 +498,4 @@ float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
     // return RMS of ISI
     return isi_rms;
 }
-
 

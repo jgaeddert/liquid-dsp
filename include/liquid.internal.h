@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -829,12 +829,12 @@ float rkaiser_approximate_rho(unsigned int _m,
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-void liquid_firdes_rkaiser_bisection(unsigned int _k,
-                                     unsigned int _m,
-                                     float _beta,
-                                     float _dt,
-                                     float * _h,
-                                     float * _rho);
+int liquid_firdes_rkaiser_bisection(unsigned int _k,
+                                    unsigned int _m,
+                                    float _beta,
+                                    float _dt,
+                                    float * _h,
+                                    float * _rho);
 
 // Design frequency-shifted root-Nyquist filter based on
 // the Kaiser-windowed sinc using the quadratic method.
@@ -845,12 +845,12 @@ void liquid_firdes_rkaiser_bisection(unsigned int _k,
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-void liquid_firdes_rkaiser_quadratic(unsigned int _k,
-                                     unsigned int _m,
-                                     float _beta,
-                                     float _dt,
-                                     float * _h,
-                                     float * _rho);
+int liquid_firdes_rkaiser_quadratic(unsigned int _k,
+                                    unsigned int _m,
+                                    float _beta,
+                                    float _dt,
+                                    float * _h,
+                                    float * _rho);
 
 // compute filter coefficients and determine resulting ISI
 //  
@@ -868,31 +868,31 @@ float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
                                          float * _h);
 
 // Design flipped Nyquist/root-Nyquist filters
-void liquid_firdes_fnyquist(liquid_firfilt_type _type,
-                            int                 _root,
-                            unsigned int        _k,
-                            unsigned int        _m,
-                            float               _beta,
-                            float               _dt,
-                            float *             _h);
+int liquid_firdes_fnyquist(liquid_firfilt_type _type,
+                           int                 _root,
+                           unsigned int        _k,
+                           unsigned int        _m,
+                           float               _beta,
+                           float               _dt,
+                           float *             _h);
 
 // flipped exponential frequency response
-void liquid_firdes_fexp_freqresponse(unsigned int _k,
+int liquid_firdes_fexp_freqresponse(unsigned int _k,
+                                    unsigned int _m,
+                                    float        _beta,
+                                    float *      _H);
+
+// flipped hyperbolic secant frequency response
+int liquid_firdes_fsech_freqresponse(unsigned int _k,
                                      unsigned int _m,
                                      float        _beta,
                                      float *      _H);
 
 // flipped hyperbolic secant frequency response
-void liquid_firdes_fsech_freqresponse(unsigned int _k,
-                                      unsigned int _m,
-                                      float        _beta,
-                                      float *      _H);
-
-// flipped hyperbolic secant frequency response
-void liquid_firdes_farcsech_freqresponse(unsigned int _k,
-                                         unsigned int _m,
-                                         float        _beta,
-                                         float *      _H);
+int liquid_firdes_farcsech_freqresponse(unsigned int _k,
+                                        unsigned int _m,
+                                        float        _beta,
+                                        float *      _H);
 
 // iirdes : infinite impulse response filter design
 
