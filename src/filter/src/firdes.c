@@ -394,12 +394,12 @@ int liquid_firdes_notch(unsigned int _m,
 //  _beta   : excess bandwidth factor, _beta in [0,1]
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_prototype(liquid_firfilt_type _type,
-                             unsigned int        _k,
-                             unsigned int        _m,
-                             float               _beta,
-                             float               _dt,
-                             float *             _h)
+int liquid_firdes_prototype(liquid_firfilt_type _type,
+                            unsigned int        _k,
+                            unsigned int        _m,
+                            float               _beta,
+                            float               _dt,
+                            float *             _h)
 {
     // compute filter parameters
     unsigned int h_len = 2*_k*_m + 1;   // length
@@ -471,8 +471,9 @@ void liquid_firdes_prototype(liquid_firfilt_type _type,
         liquid_firdes_rfarcsech(_k, _m, _beta, _dt, _h);
         break;
     default:
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_prototype(), invalid root-Nyquist filter type '%d'", _type);
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_prototype(), invalid root-Nyquist filter type '%d'", _type);
     }
+    return LIQUID_OK;
 }
 
 

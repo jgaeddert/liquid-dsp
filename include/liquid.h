@@ -2006,12 +2006,12 @@ typedef enum {
 //  _beta   : excess bandwidth factor, _beta in [0,1)
 //  _dt     : fractional sample delay, _dt in [-1,1]
 //  _h      : output coefficient buffer (length: 2*_k*_m+1)
-void liquid_firdes_prototype(liquid_firfilt_type _type,
-                             unsigned int        _k,
-                             unsigned int        _m,
-                             float               _beta,
-                             float               _dt,
-                             float *             _h);
+int liquid_firdes_prototype(liquid_firfilt_type _type,
+                            unsigned int        _k,
+                            unsigned int        _m,
+                            float               _beta,
+                            float               _dt,
+                            float *             _h);
 
 // pretty names for filter design types
 extern const char * liquid_firfilt_type_str[LIQUID_FIRFILT_NUM_TYPES][2];
