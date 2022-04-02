@@ -272,7 +272,7 @@ int liquid_firdes_windowf(int          _wtype,
                           float *      _h)
 {
     // validate inputs
-    if (_fc <= 0.0f || _fc >= 0.5f) {
+    if (_fc <= 0.0f || _fc > 0.5f) {
         return liquid_error(LIQUID_EICONFIG,"liquid_firdes_window(), cutoff frequency (%12.4e) out of range (0, 0.5)", _fc);
     } else if (_n == 0) {
         return liquid_error(LIQUID_EICONFIG,"liquid_firdes_window(), filter length must be greater than zero");
@@ -311,7 +311,7 @@ int liquid_firdes_kaiser(unsigned int _n,
     // validate inputs
     if (_mu < -0.5f || _mu > 0.5f)
         return liquid_error(LIQUID_EICONFIG,"liquid_firdes_kaiser(), _mu (%12.4e) out of range [-0.5,0.5]", _mu);
-    if (_fc <= 0.0f || _fc >= 0.5f)
+    if (_fc <= 0.0f || _fc > 0.5f)
         return liquid_error(LIQUID_EICONFIG,"liquid_firdes_kaiser(), cutoff frequency (%12.4e) out of range (0, 0.5)", _fc);
     if (_n == 0)
         return liquid_error(LIQUID_EICONFIG,"liquid_firdes_kaiser(), filter length must be greater than zero");

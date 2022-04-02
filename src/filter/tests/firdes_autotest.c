@@ -234,14 +234,12 @@ void autotest_liquid_firdes_config()
     CONTEND_EQUALITY(liquid_firdes_windowf(wtype,     0, 0.2f, 0, h), LIQUID_EICONFIG);
     CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len,-0.1f, 0, h), LIQUID_EICONFIG);
     CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len, 0.0f, 0, h), LIQUID_EICONFIG);
-    CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len, 0.5f, 0, h), LIQUID_EICONFIG);
     CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len, 0.6f, 0, h), LIQUID_EICONFIG);
 
     CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.2f, 60.0f, 0.0f, h), LIQUID_OK      );
     CONTEND_EQUALITY(liquid_firdes_kaiser(    0, 0.2f, 60.0f, 0.0f, h), LIQUID_EICONFIG);
     CONTEND_EQUALITY(liquid_firdes_kaiser(h_len,-0.1f, 60.0f, 0.0f, h), LIQUID_EICONFIG);
     CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.0f, 60.0f, 0.0f, h), LIQUID_EICONFIG);
-    CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.5f, 60.0f, 0.0f, h), LIQUID_EICONFIG);
     CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.6f, 60.0f, 0.0f, h), LIQUID_EICONFIG);
     CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.2f, 60.0f,-0.7f, h), LIQUID_EICONFIG);
     CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.2f, 60.0f, 0.7f, h), LIQUID_EICONFIG);
