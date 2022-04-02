@@ -418,58 +418,26 @@ int liquid_firdes_prototype(liquid_firfilt_type _type,
                                         LIQUID_FIRDESPM_FLATWEIGHT};
 
     switch (_type) {
-    
     // Nyquist filter prototypes
-
-    case LIQUID_FIRFILT_KAISER:
-        liquid_firdes_kaiser(h_len, fc, As, _dt, _h);
-        break;
+    case LIQUID_FIRFILT_KAISER:     return liquid_firdes_kaiser   (h_len, fc, As, _dt, _h);
     case LIQUID_FIRFILT_PM:
         // WARNING: input timing offset is ignored here
-        firdespm_run(h_len, 3, bands, des, weights, wtype, LIQUID_FIRDESPM_BANDPASS, _h);
-        break;
-    case LIQUID_FIRFILT_RCOS:
-        liquid_firdes_rcos(_k, _m, _beta, _dt, _h);
-        break;
-    case LIQUID_FIRFILT_FEXP:
-        liquid_firdes_fexp(_k, _m, _beta, _dt, _h);
-        break;
-    case LIQUID_FIRFILT_FSECH:
-        liquid_firdes_fsech(_k, _m, _beta, _dt, _h);
-        break;
-    case LIQUID_FIRFILT_FARCSECH:
-        liquid_firdes_farcsech(_k, _m, _beta, _dt, _h);
-        break;
+        return firdespm_run(h_len, 3, bands, des, weights, wtype, LIQUID_FIRDESPM_BANDPASS, _h);
+    case LIQUID_FIRFILT_RCOS:       return liquid_firdes_rcos     (_k, _m, _beta, _dt, _h);
+    case LIQUID_FIRFILT_FEXP:       return liquid_firdes_fexp     (_k, _m, _beta, _dt, _h);
+    case LIQUID_FIRFILT_FSECH:      return liquid_firdes_fsech    (_k, _m, _beta, _dt, _h);
+    case LIQUID_FIRFILT_FARCSECH:   return liquid_firdes_farcsech (_k, _m, _beta, _dt, _h);
 
     // root-Nyquist filter prototypes
-
-    case LIQUID_FIRFILT_ARKAISER:
-        liquid_firdes_arkaiser(_k, _m, _beta, _dt, _h);
-        break;
-    case LIQUID_FIRFILT_RKAISER:
-        liquid_firdes_rkaiser(_k, _m, _beta, _dt, _h);
-        break;
-    case LIQUID_FIRFILT_RRC:
-        liquid_firdes_rrcos(_k, _m, _beta, _dt, _h);
-        break;
-    case LIQUID_FIRFILT_hM3:
-        liquid_firdes_hM3(_k, _m, _beta, _dt, _h);
-        break;
-    case LIQUID_FIRFILT_GMSKTX:
-        liquid_firdes_gmsktx(_k, _m, _beta, _dt, _h);
-        break;
-    case LIQUID_FIRFILT_GMSKRX:
-        liquid_firdes_gmskrx(_k, _m, _beta, _dt, _h);
-        break;
-    case LIQUID_FIRFILT_RFEXP:
-        liquid_firdes_rfexp(_k, _m, _beta, _dt, _h);
-        break;
-    case LIQUID_FIRFILT_RFSECH:
-        liquid_firdes_rfsech(_k, _m, _beta, _dt, _h);
-        break;
-    case LIQUID_FIRFILT_RFARCSECH:
-        liquid_firdes_rfarcsech(_k, _m, _beta, _dt, _h);
-        break;
+    case LIQUID_FIRFILT_ARKAISER:   return liquid_firdes_arkaiser (_k, _m, _beta, _dt, _h);
+    case LIQUID_FIRFILT_RKAISER:    return liquid_firdes_rkaiser  (_k, _m, _beta, _dt, _h);
+    case LIQUID_FIRFILT_RRC:        return liquid_firdes_rrcos    (_k, _m, _beta, _dt, _h);
+    case LIQUID_FIRFILT_hM3:        return liquid_firdes_hM3      (_k, _m, _beta, _dt, _h);
+    case LIQUID_FIRFILT_GMSKTX:     return liquid_firdes_gmsktx   (_k, _m, _beta, _dt, _h);
+    case LIQUID_FIRFILT_GMSKRX:     return liquid_firdes_gmskrx   (_k, _m, _beta, _dt, _h);
+    case LIQUID_FIRFILT_RFEXP:      return liquid_firdes_rfexp    (_k, _m, _beta, _dt, _h);
+    case LIQUID_FIRFILT_RFSECH:     return liquid_firdes_rfsech   (_k, _m, _beta, _dt, _h);
+    case LIQUID_FIRFILT_RFARCSECH:  return liquid_firdes_rfarcsech(_k, _m, _beta, _dt, _h);
     default:
         return liquid_error(LIQUID_EICONFIG,"liquid_firdes_prototype(), invalid root-Nyquist filter type '%d'", _type);
     }
