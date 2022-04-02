@@ -90,15 +90,15 @@ void autotest_iirhilbf_interp_decim()
 }
 
 // test end-to-end power specral density on filter methods
-void xautotest_iirhilbf_filter()
+void autotest_iirhilbf_filter()
 {
     float        tol  = 1;  // error tolerance [dB]
     float        bw = 0.2f; // pulse bandwidth
     float        f0 = 0.3f; // pulse center frequency
     float        ft =-0.3f; // frequency of tone in lower half of band
     float        As = 60.0f;// transform stop-band suppression
-    unsigned int p    = 45; // pulse semi-length
-    unsigned int m    =  5; // Transform order
+    unsigned int p    = 50; // pulse semi-length
+    unsigned int m    =  7; // Transform order
 
     // create transform
     //iirhilbf q = iirhilbf_create(ftype,n,Ap,As);
@@ -133,6 +133,9 @@ void xautotest_iirhilbf_filter()
 
     // run decimation
     iirhilbf_r2c_execute_block(q, buf_1, num_samples, buf_2);
+    // scale output
+    for (i=0; i<num_samples; i++)
+        buf_2[i] *= 0.5f;
 
     // verify input spectrum
     autotest_psd_s regions_orig[] = {
@@ -146,18 +149,23 @@ void xautotest_iirhilbf_filter()
         liquid_autotest_verbose ? "autotest_iirhilbf_filter_orig.m" : NULL);
 
     // verify interpolated spectrum
-    autotest_psd_s regions_interp[] = {
+    autotest_psd_s regions_c2r[] = {
       {.fmin=-0.5,       .fmax=-f0-0.5*bw, .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
       {.fmin=-f0-0.3*bw, .fmax=-f0+0.3*bw, .pmin=-1, .pmax=+1,      .test_lo=1, .test_hi=1},
       {.fmin=-f0+0.5*bw, .fmax=+f0-0.5*bw, .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
       {.fmin= f0-0.3*bw, .fmax= f0+0.3*bw, .pmin=-1, .pmax=+1,      .test_lo=1, .test_hi=1},
       {.fmin=+f0+0.5*bw, .fmax=+0.5,       .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_signalf(buf_1, num_samples, regions_interp, 5,
+    liquid_autotest_validate_psd_signalf(buf_1, num_samples, regions_c2r, 5,
         liquid_autotest_verbose ? "autotest_iirhilbf_filter_c2r.m" : NULL);
 
     // verify decimated spectrum (using same regions as original)
-    liquid_autotest_validate_psd_signal(buf_2, num_samples, regions_orig, 3,
+    autotest_psd_s regions_r2c[] = {
+      {.fmin=-0.5,       .fmax= f0-0.5*bw, .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
+      {.fmin= f0-0.3*bw, .fmax= f0+0.3*bw, .pmin=-1, .pmax=+1,      .test_lo=1, .test_hi=1},
+      {.fmin=+f0+0.5*bw, .fmax=+0.5,       .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_signal(buf_2, num_samples, regions_r2c, 3,
         liquid_autotest_verbose ? "autotest_iirhilbf_filter_r2c.m" : NULL);
 
     // destroy filter object and free memory
