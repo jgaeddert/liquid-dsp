@@ -182,7 +182,8 @@ void autotest_iirhilbf_invalid_config()
     fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
 #endif
     // check that object returns NULL for invalid configurations
-    CONTEND_ISNULL(iirhilbf_create( LIQUID_IIRDES_BUTTER, 0, 0.1f, 60.0f)); // order out of range
+    CONTEND_ISNULL(iirhilbf_create(LIQUID_IIRDES_BUTTER, 0, 0.1f, 60.0f)); // order out of range
+    CONTEND_ISNULL(iirhilbf_create_default(0)); // order out of range
 
     // create proper object and test configuration methods
     iirhilbf q = iirhilbf_create(LIQUID_IIRDES_BUTTER,5,0.1f,60.0f);
