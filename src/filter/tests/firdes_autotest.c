@@ -259,5 +259,7 @@ void autotest_liquid_firdes_config()
     CONTEND_EQUALITY(liquid_filter_energy(h,h_len,-0.1f,1200), 0.0f);
     CONTEND_EQUALITY(liquid_filter_energy(h,h_len, 0.7f,1200), 0.0f);
     CONTEND_EQUALITY(liquid_filter_energy(h,h_len, 0.3f,   0), 0.0f);
+
+    CONTEND_EQUALITY( liquid_getopt_str2firfilt("unknown-filter-type" ), LIQUID_FIRFILT_UNKNOWN);
 }
 
