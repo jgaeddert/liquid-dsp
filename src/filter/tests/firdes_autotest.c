@@ -263,3 +263,33 @@ void autotest_liquid_firdes_config()
     CONTEND_EQUALITY( liquid_getopt_str2firfilt("unknown-filter-type" ), LIQUID_FIRFILT_UNKNOWN);
 }
 
+void testbench_firdes_prototype(liquid_firfilt_type _type,
+                                unsigned int _k,
+                                unsigned int _m,
+                                float        _beta,
+                                float        _As)
+{
+    // design filter
+    unsigned int h_len = 2*_k*_m+1;
+    float        h[h_len];
+    liquid_firdes_prototype(_type, _k, _m, _beta, 0.0f, h);
+
+    // scale by samples per symbol
+    liquid_vectorf_mulscalar(h, h_len, 1.0f/(float)_k, h);
+
+    // verify interpolated spectrum
+    float bw = 1.0f / (float)_k;
+    float f0 = 0.45*bw*(1-_beta);
+    float f1 = 0.55*bw*(1+_beta);
+    autotest_psd_s regions[] = {
+      {.fmin=-0.5,.fmax=-f1, .pmin= 0, .pmax=-_As, .test_lo=0, .test_hi=1},
+      {.fmin=-f0, .fmax= f0, .pmin=-1, .pmax=+1,   .test_lo=1, .test_hi=1},
+      {.fmin= f1, .fmax=+0.5,.pmin= 0, .pmax=-_As, .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_signalf(h, h_len, regions, 3,
+        liquid_autotest_verbose ? "autotest_firdes_prototype.m" : NULL);
+}
+
+void autotest_firdes_prototype_rcos (){ testbench_firdes_prototype(LIQUID_FIRFILT_RCOS, 4, 12, 0.3f, 60.0f); }
+void autotest_firdes_prototype_rrcos(){ testbench_firdes_prototype(LIQUID_FIRFILT_RRC,  4, 12, 0.3f, 45.0f); }
+
