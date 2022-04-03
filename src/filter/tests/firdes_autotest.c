@@ -320,7 +320,20 @@ void testbench_firdes_prototype(const char * _type,
         liquid_autotest_verbose ? filename : NULL);
 }
 
-void autotest_firdes_prototype_kaiser  (){ testbench_firdes_prototype("kaiser", 4, 12, 0.3f, 60.0f); }
-void autotest_firdes_prototype_rcos    (){ testbench_firdes_prototype("rcos",   4, 12, 0.3f, 60.0f); }
-void autotest_firdes_prototype_rrcos   (){ testbench_firdes_prototype("rrcos",  4, 12, 0.3f, 45.0f); }
+void autotest_firdes_prototype_kaiser   (){ testbench_firdes_prototype("kaiser",   4, 12, 0.3f, 60.0f); }
+void autotest_firdes_prototype_pm       (){ testbench_firdes_prototype("pm",       4, 12, 0.3f, 80.0f); }
+void autotest_firdes_prototype_rcos     (){ testbench_firdes_prototype("rcos",     4, 12, 0.3f, 60.0f); }
+void autotest_firdes_prototype_fexp     (){ testbench_firdes_prototype("fexp",     4, 12, 0.3f, 40.0f); }
+void autotest_firdes_prototype_fsech    (){ testbench_firdes_prototype("fsech",    4, 12, 0.3f, 60.0f); }
+void autotest_firdes_prototype_farcsech (){ testbench_firdes_prototype("farcsech", 4, 12, 0.3f, 40.0f); }
+void autotest_firdes_prototype_arkaiser (){ testbench_firdes_prototype("arkaiser", 4, 12, 0.3f, 90.0f); }
+void autotest_firdes_prototype_rkaiser  (){ testbench_firdes_prototype("rkaiser",  4, 12, 0.3f, 90.0f); }
+void autotest_firdes_prototype_rrcos    (){ testbench_firdes_prototype("rrcos",    4, 12, 0.3f, 45.0f); }
+void autotest_firdes_prototype_hm3      (){ testbench_firdes_prototype("hm3",      4, 12, 0.3f,100.0f); }
+void autotest_firdes_prototype_rfexp    (){ testbench_firdes_prototype("rfexp",    4, 12, 0.3f, 30.0f); }
+void autotest_firdes_prototype_rfsech   (){ testbench_firdes_prototype("rfsech",   4, 12, 0.3f, 40.0f); }
+void autotest_firdes_prototype_rfarcsech(){ testbench_firdes_prototype("rfarcsech",4, 12, 0.3f, 30.0f); }
+// ignore gmsk filters as these weren't designed for flat pass-band responses
+void xautotest_firdes_prototype_gmsktx   (){ testbench_firdes_prototype("gmsktx",   4, 12, 0.3f, 60.0f); }
+void xautotest_firdes_prototype_gmskrx   (){ testbench_firdes_prototype("gmskrx",   4, 12, 0.3f, 60.0f); }
 
