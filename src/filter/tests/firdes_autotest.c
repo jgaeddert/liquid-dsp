@@ -261,6 +261,31 @@ void autotest_liquid_firdes_config()
     CONTEND_EQUALITY( liquid_getopt_str2firfilt("unknown-filter-type" ), LIQUID_FIRFILT_UNKNOWN);
 }
 
+void autotest_liquid_firdes_estimate()
+{
+    float tol = 0.05f; // dB
+
+    // Kaiser's method
+    CONTEND_DELTA( estimate_req_filter_len_Kaiser( 0.05f, 60.0f), 73.00140381, tol);
+    CONTEND_DELTA( estimate_req_filter_len_Kaiser( 0.10f, 60.0f), 36.50070190, tol);
+    CONTEND_DELTA( estimate_req_filter_len_Kaiser( 0.20f, 60.0f), 18.25035095, tol);
+    CONTEND_DELTA( estimate_req_filter_len_Kaiser( 0.30f, 60.0f), 12.16689968, tol);
+    CONTEND_DELTA( estimate_req_filter_len_Kaiser( 0.40f, 60.0f),  9.12517548, tol);
+    CONTEND_DELTA( estimate_req_filter_len_Kaiser( 0.05f, 80.0f),101.05189514, tol);
+    CONTEND_DELTA( estimate_req_filter_len_Kaiser( 0.05f,100.0f),129.10238647, tol);
+    CONTEND_DELTA( estimate_req_filter_len_Kaiser( 0.05f,120.0f),157.15287781, tol);
+
+    // Herrmann's method
+    CONTEND_DELTA( estimate_req_filter_len_Herrmann( 0.05f, 60.0f), 75.51549530, tol);
+    CONTEND_DELTA( estimate_req_filter_len_Herrmann( 0.10f, 60.0f), 37.43184662, tol);
+    CONTEND_DELTA( estimate_req_filter_len_Herrmann( 0.20f, 60.0f), 17.56412315, tol);
+    CONTEND_DELTA( estimate_req_filter_len_Herrmann( 0.30f, 60.0f), 10.20741558, tol);
+    CONTEND_DELTA( estimate_req_filter_len_Herrmann( 0.40f, 60.0f),  5.97846174, tol);
+    CONTEND_DELTA( estimate_req_filter_len_Herrmann( 0.05f, 80.0f),102.72290039, tol);
+    CONTEND_DELTA( estimate_req_filter_len_Herrmann( 0.05f,100.0f),129.88548279, tol);
+    CONTEND_DELTA( estimate_req_filter_len_Herrmann( 0.05f,120.0f),157.15287781, tol);
+}
+
 void testbench_firdes_prototype(liquid_firfilt_type _type,
                                 unsigned int _k,
                                 unsigned int _m,
