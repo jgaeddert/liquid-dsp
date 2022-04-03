@@ -3824,13 +3824,13 @@ FIRDECIM() FIRDECIM(_create_prototype)(int          _type,                  \
                                        float        _dt);                   \
                                                                             \
 /* Destroy decimator object, freeing all internal memory                */  \
-void FIRDECIM(_destroy)(FIRDECIM() _q);                                     \
+int FIRDECIM(_destroy)(FIRDECIM() _q);                                      \
                                                                             \
 /* Print decimator object propreties to stdout                          */  \
-void FIRDECIM(_print)(FIRDECIM() _q);                                       \
+int FIRDECIM(_print)(FIRDECIM() _q);                                        \
                                                                             \
 /* Reset decimator object internal state                                */  \
-void FIRDECIM(_reset)(FIRDECIM() _q);                                       \
+int FIRDECIM(_reset)(FIRDECIM() _q);                                        \
                                                                             \
 /* Get decimation rate                                                  */  \
 unsigned int FIRDECIM(_get_decim_rate)(FIRDECIM() _q);                      \
@@ -3838,32 +3838,32 @@ unsigned int FIRDECIM(_get_decim_rate)(FIRDECIM() _q);                      \
 /* Set output scaling for decimator                                     */  \
 /*  _q      : decimator object                                          */  \
 /*  _scale  : scaling factor to apply to each output sample             */  \
-void FIRDECIM(_set_scale)(FIRDECIM() _q,                                    \
-                          TC         _scale);                               \
+int FIRDECIM(_set_scale)(FIRDECIM() _q,                                     \
+                         TC         _scale);                                \
                                                                             \
 /* Get output scaling for decimator                                     */  \
 /*  _q      : decimator object                                          */  \
 /*  _scale  : scaling factor to apply to each output sample             */  \
-void FIRDECIM(_get_scale)(FIRDECIM() _q,                                    \
-                          TC *       _scale);                               \
+int FIRDECIM(_get_scale)(FIRDECIM() _q,                                     \
+                         TC *       _scale);                                \
                                                                             \
 /* Execute decimator on _M input samples                                */  \
 /*  _q      : decimator object                                          */  \
 /*  _x      : input samples, [size: _M x 1]                             */  \
 /*  _y      : output sample pointer                                     */  \
-void FIRDECIM(_execute)(FIRDECIM() _q,                                      \
-                        TI *       _x,                                      \
-                        TO *       _y);                                     \
+int FIRDECIM(_execute)(FIRDECIM() _q,                                       \
+                       TI *       _x,                                       \
+                       TO *       _y);                                      \
                                                                             \
 /* Execute decimator on block of _n*_M input samples                    */  \
 /*  _q      : decimator object                                          */  \
 /*  _x      : input array, [size: _n*_M x 1]                            */  \
 /*  _n      : number of _output_ samples                                */  \
 /*  _y      : output array, [_size: _n x 1]                             */  \
-void FIRDECIM(_execute_block)(FIRDECIM()   _q,                              \
-                              TI *         _x,                              \
-                              unsigned int _n,                              \
-                              TO *         _y);                             \
+int FIRDECIM(_execute_block)(FIRDECIM()   _q,                               \
+                             TI *         _x,                               \
+                             unsigned int _n,                               \
+                             TO *         _y);                              \
 
 LIQUID_FIRDECIM_DEFINE_API(LIQUID_FIRDECIM_MANGLE_RRRF,
                            float,

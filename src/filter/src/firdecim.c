@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// firdecim.c
-//
 // finite impulse response decimator object definitions
-//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -139,7 +135,8 @@ FIRDECIM() FIRDECIM(_create_prototype)(int          _type,
     // generate square-root Nyquist filter
     unsigned int h_len = 2*_M*_m + 1;
     float h[h_len];
-    liquid_firdes_prototype(_type,_M,_m,_beta,_dt,h);
+    if (liquid_firdes_prototype(_type,_M,_m,_beta,_dt,h) != LIQUID_OK)
+        return liquid_error_config("decim_%s_create_prototype(), could not design internal filter", EXTENSION_FULL);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;
@@ -152,16 +149,17 @@ FIRDECIM() FIRDECIM(_create_prototype)(int          _type,
 }
 
 // destroy decimator object
-void FIRDECIM(_destroy)(FIRDECIM() _q)
+int FIRDECIM(_destroy)(FIRDECIM() _q)
 {
     WINDOW(_destroy)(_q->w);
     DOTPROD(_destroy)(_q->dp);
     free(_q->h);
     free(_q);
+    return LIQUID_OK;
 }
 
 // print decimator object internals
-void FIRDECIM(_print)(FIRDECIM() _q)
+int FIRDECIM(_print)(FIRDECIM() _q)
 {
     printf("FIRDECIM() [%u] :\n", _q->M);
     printf("  window:\n");
@@ -170,12 +168,13 @@ void FIRDECIM(_print)(FIRDECIM() _q)
     printf("  scale = ");
     PRINTVAL_TC(_q->scale,%12.8f);
     printf("\n");
+    return LIQUID_OK;
 }
 
 // reset decimator object
-void FIRDECIM(_reset)(FIRDECIM() _q)
+int FIRDECIM(_reset)(FIRDECIM() _q)
 {
-    WINDOW(_reset)(_q->w);
+    return WINDOW(_reset)(_q->w);
 }
 
 // Get decimation rate
@@ -187,28 +186,30 @@ unsigned int FIRDECIM(_get_decim_rate)(FIRDECIM() _q)
 // Set output scaling for decimator
 //  _q      : decimator object
 //  _scale  : scaling factor to apply to each output sample
-void FIRDECIM(_set_scale)(FIRDECIM() _q,
+int FIRDECIM(_set_scale)(FIRDECIM() _q,
                           TC         _scale)
 {
     _q->scale = _scale;
+    return LIQUID_OK;
 }
 
 // Get output scaling for decimator
 //  _q      : decimator object
 //  _scale  : scaling factor to apply to each output sample
-void FIRDECIM(_get_scale)(FIRDECIM() _q,
-                          TC *       _scale)
+int FIRDECIM(_get_scale)(FIRDECIM() _q,
+                         TC *       _scale)
 {
     *_scale = _q->scale;
+    return LIQUID_OK;
 }
 
 // execute decimator
 //  _q      :   decimator object
 //  _x      :   input sample array [size: _M x 1]
 //  _y      :   output sample pointer
-void FIRDECIM(_execute)(FIRDECIM() _q,
-                        TI *       _x,
-                        TO *       _y)
+int FIRDECIM(_execute)(FIRDECIM() _q,
+                       TI *       _x,
+                       TO *       _y)
 {
     TI * r; // read pointer
     unsigned int i;
@@ -226,6 +227,7 @@ void FIRDECIM(_execute)(FIRDECIM() _q,
             *_y *= _q->scale;
         }
     }
+    return LIQUID_OK;
 }
 
 // execute decimator on block of _n*_M input samples
@@ -233,15 +235,16 @@ void FIRDECIM(_execute)(FIRDECIM() _q,
 //  _x      : input array [size: _n*_M x 1]
 //  _n      : number of _output_ samples
 //  _y      : output array [_size: _n x 1]
-void FIRDECIM(_execute_block)(FIRDECIM()   _q,
-                              TI *         _x,
-                              unsigned int _n,
-                              TO *         _y)
+int FIRDECIM(_execute_block)(FIRDECIM()   _q,
+                             TI *         _x,
+                             unsigned int _n,
+                             TO *         _y)
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
         // execute _M input samples computing just one output each time
         FIRDECIM(_execute)(_q, &_x[i*_q->M], &_y[i]);
     }
+    return LIQUID_OK;
 }
 

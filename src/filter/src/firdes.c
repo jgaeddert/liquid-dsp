@@ -439,7 +439,7 @@ int liquid_firdes_prototype(liquid_firfilt_type _type,
     case LIQUID_FIRFILT_RFSECH:     return liquid_firdes_rfsech   (_k, _m, _beta, _dt, _h);
     case LIQUID_FIRFILT_RFARCSECH:  return liquid_firdes_rfarcsech(_k, _m, _beta, _dt, _h);
     default:
-        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_prototype(), invalid root-Nyquist filter type '%d'", _type);
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_prototype(), filter type '%d'", _type);
     }
     return LIQUID_OK;
 }
