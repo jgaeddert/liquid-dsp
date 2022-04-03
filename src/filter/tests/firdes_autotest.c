@@ -286,7 +286,7 @@ void autotest_liquid_firdes_estimate()
     CONTEND_DELTA( estimate_req_filter_len_Herrmann( 0.05f,120.0f),157.15287781, tol);
 }
 
-void testbench_firdes_prototype(liquid_firfilt_type _type,
+void testbench_firdes_prototype(const char * _type,
                                 unsigned int _k,
                                 unsigned int _m,
                                 float        _beta,
@@ -295,7 +295,12 @@ void testbench_firdes_prototype(liquid_firfilt_type _type,
     // design filter
     unsigned int h_len = 2*_k*_m+1;
     float        h[h_len];
-    liquid_firdes_prototype(_type, _k, _m, _beta, 0.0f, h);
+    liquid_firfilt_type type = liquid_getopt_str2firfilt(_type);
+    if (type == LIQUID_FIRFILT_UNKNOWN) {
+        AUTOTEST_FAIL("invalid configuration");
+        return;
+    }
+    liquid_firdes_prototype(type, _k, _m, _beta, 0.0f, h);
 
     // scale by samples per symbol
     liquid_vectorf_mulscalar(h, h_len, 1.0f/(float)_k, h);
@@ -309,10 +314,13 @@ void testbench_firdes_prototype(liquid_firfilt_type _type,
       {.fmin=-f0, .fmax= f0, .pmin=-1, .pmax=+1,   .test_lo=1, .test_hi=1},
       {.fmin= f1, .fmax=+0.5,.pmin= 0, .pmax=-_As, .test_lo=0, .test_hi=1},
     };
+    char filename[256];
+    sprintf(filename,"autotest_firdes_prototype_%s.m", _type);
     liquid_autotest_validate_psd_signalf(h, h_len, regions, 3,
-        liquid_autotest_verbose ? "autotest_firdes_prototype.m" : NULL);
+        liquid_autotest_verbose ? filename : NULL);
 }
 
-void autotest_firdes_prototype_rcos (){ testbench_firdes_prototype(LIQUID_FIRFILT_RCOS, 4, 12, 0.3f, 60.0f); }
-void autotest_firdes_prototype_rrcos(){ testbench_firdes_prototype(LIQUID_FIRFILT_RRC,  4, 12, 0.3f, 45.0f); }
+void autotest_firdes_prototype_kaiser  (){ testbench_firdes_prototype("kaiser", 4, 12, 0.3f, 60.0f); }
+void autotest_firdes_prototype_rcos    (){ testbench_firdes_prototype("rcos",   4, 12, 0.3f, 60.0f); }
+void autotest_firdes_prototype_rrcos   (){ testbench_firdes_prototype("rrcos",  4, 12, 0.3f, 45.0f); }
 
