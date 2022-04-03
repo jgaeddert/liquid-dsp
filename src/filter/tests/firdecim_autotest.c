@@ -70,13 +70,15 @@ void autotest_firdecim_block()
 {
     unsigned int M =  4;
     unsigned int m = 12;
+    float        beta = 0.3f;
 
     unsigned int num_blocks = 10 + m;
     float complex buf_0[M*num_blocks]; // input
     float complex buf_1[  num_blocks]; // output (regular)
     float complex buf_2[  num_blocks]; // output (block)
 
-    firdecim_crcf decim = firdecim_crcf_create_kaiser(M, m, 60.0f);
+    firdecim_crcf decim = firdecim_crcf_create_prototype(
+            LIQUID_FIRFILT_ARKAISER, M, m, beta, 0);
 
     // create random-ish input (does not really matter what the input is
     // so long as the outputs match, but systematic for repeatability)
