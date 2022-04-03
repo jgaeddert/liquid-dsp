@@ -65,3 +65,37 @@ void autotest_firdecim_config()
     firdecim_crcf_destroy(decim);
 }
 
+// assert that block execution matches regular execute
+void autotest_firdecim_block()
+{
+    unsigned int M =  4;
+    unsigned int m = 12;
+
+    unsigned int num_blocks = 10 + m;
+    float complex buf_0[M*num_blocks]; // input
+    float complex buf_1[  num_blocks]; // output (regular)
+    float complex buf_2[  num_blocks]; // output (block)
+
+    firdecim_crcf decim = firdecim_crcf_create_kaiser(M, m, 60.0f);
+
+    // create random-ish input (does not really matter what the input is
+    // so long as the outputs match, but systematic for repeatability)
+    unsigned int i;
+    for (i=0; i<M*num_blocks; i++)
+        buf_0[i] = cexpf(_Complex_I*(0.2f*i + 1e-5f*i*i + 0.1*cosf(i)));
+
+    // regular execute
+    firdecim_crcf_reset(decim);
+    for (i=0; i<num_blocks; i++)
+        firdecim_crcf_execute(decim, buf_0+i*M, buf_1+i);
+
+    // block execute
+    firdecim_crcf_reset(decim);
+    firdecim_crcf_execute_block(decim, buf_0, num_blocks, buf_2);
+
+    // check results
+    CONTEND_SAME_DATA(buf_1, buf_2, num_blocks);
+
+    firdecim_crcf_destroy(decim);
+}
+
