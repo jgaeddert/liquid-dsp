@@ -120,3 +120,37 @@ void autotest_fdelay_rrrf_config()
     fdelay_rrrf_destroy(q);
 }
 
+// compare push vs write methods
+void autotest_fdelay_rrrf_push_write()
+{
+    // create two identical objects
+    fdelay_rrrf q0 = fdelay_rrrf_create_default(200);
+    fdelay_rrrf q1 = fdelay_rrrf_create_default(200);
+
+    // set identical delays
+    fdelay_rrrf_set_delay(q0, 7.2280f);
+    fdelay_rrrf_set_delay(q1, 7.2280f);
+
+    // generate pseudo-random inputs, and compare outputs
+    float buf[8] = {-1,3,5,-3,5,1,-3,-4};
+    unsigned int trial, i;
+    for (trial=0; trial<20; trial++) {
+        unsigned int n = trial % 8;
+
+        // push/write samples
+        for (i=0; i<n; i++)
+            fdelay_rrrf_push(q0, buf[i]);
+        fdelay_rrrf_write(q1, buf, n);
+
+        // compute outputs and compare
+        float v0, v1;
+        fdelay_rrrf_execute(q0, &v0);
+        fdelay_rrrf_execute(q1, &v1);
+        CONTEND_EQUALITY(v0, v1);
+    }
+
+    // destroy objects
+    fdelay_rrrf_destroy(q0);
+    fdelay_rrrf_destroy(q1);
+}
+
