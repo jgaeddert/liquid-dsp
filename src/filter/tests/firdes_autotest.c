@@ -337,3 +337,25 @@ void autotest_firdes_prototype_rfarcsech(){ testbench_firdes_prototype("rfarcsec
 void xautotest_firdes_prototype_gmsktx   (){ testbench_firdes_prototype("gmsktx",   4, 12, 0.3f, 60.0f); }
 void xautotest_firdes_prototype_gmskrx   (){ testbench_firdes_prototype("gmskrx",   4, 12, 0.3f, 60.0f); }
 
+void autotest_firdes_doppler()
+{
+    // design filter
+    float        fd     = 0.2f;  // Normalized Doppler frequency
+    float        K      = 10.0f; // Rice fading factor
+    float        theta  = 0.0f;  // LoS component angle of arrival
+    unsigned int h_len  = 161;   // filter length
+    float        h[h_len];
+    liquid_firdes_doppler(h_len,fd,K,theta,h);
+
+    // verify resulting spectrum
+    autotest_psd_s regions[] = {
+      {.fmin=-0.5,   .fmax=-0.25,  .pmin= 0, .pmax= 0, .test_lo=0, .test_hi=1},
+      {.fmin=-0.205, .fmax=-0.195, .pmin=30, .pmax=40, .test_lo=1, .test_hi=1},
+      {.fmin=-0.14,  .fmax=+0.14,  .pmin= 6, .pmax=12, .test_lo=1, .test_hi=1},
+      {.fmin=+0.195, .fmax=+0.205, .pmin=30, .pmax=40, .test_lo=1, .test_hi=1},
+      {.fmin= 0.25,  .fmax=+0.5,   .pmin= 0, .pmax= 0, .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_signalf(h, h_len, regions, 5,
+        liquid_autotest_verbose ? "autotest_firdes_doppler.m" : NULL);
+}
+
