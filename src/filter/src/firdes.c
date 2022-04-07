@@ -451,12 +451,13 @@ int liquid_firdes_prototype(liquid_firfilt_type _type,
 //  _K      : Rice fading factor (K >= 0)
 //  _theta  : LoS component angle of arrival
 //  _h      : output coefficient buffer
-void liquid_firdes_doppler(unsigned int _n,
-                           float        _fd,
-                           float        _K,
-                           float        _theta,
-                           float *      _h)
+int liquid_firdes_doppler(unsigned int _n,
+                          float        _fd,
+                          float        _K,
+                          float        _theta,
+                          float *      _h)
 {
+    // TODO: add error checking
     float t, J, r, w;
     float beta = 4; // kaiser window parameter
     unsigned int i;
@@ -478,6 +479,7 @@ void liquid_firdes_doppler(unsigned int _n,
 
         //printf("t=%f, J=%f, r=%f, w=%f\n", t, J, r, w);
     }
+    return LIQUID_OK;
 }
 
 

@@ -2182,11 +2182,11 @@ int liquid_firdes_notch(unsigned int _m,
 //  _K      : Rice fading factor (K >= 0)
 //  _theta  : LoS component angle of arrival
 //  _h      : output coefficient buffer
-void liquid_firdes_doppler(unsigned int _n,
-                           float        _fd,
-                           float        _K,
-                           float        _theta,
-                           float *      _h);
+int liquid_firdes_doppler(unsigned int _n,
+                          float        _fd,
+                          float        _K,
+                          float        _theta,
+                          float *      _h);
 
 
 // Design Nyquist raised-cosine filter
