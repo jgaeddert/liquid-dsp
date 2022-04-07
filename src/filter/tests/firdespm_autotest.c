@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -143,5 +143,25 @@ void autotest_firdespm_bandpass_n32()
     unsigned int i;
     for (i=0; i<n; i++)
         CONTEND_DELTA( h[i], h0[i], tol );
+}
+
+void autotest_firdespm_lowpass()
+{
+    // design filter
+    unsigned int n  = 51;
+    float        fc = 0.2f;
+    float        As = 60.0f;
+    float        mu = 0.0f;
+    float        h[n];
+    firdespm_lowpass(n,fc,As,mu,h);
+
+    // verify resulting spectrum
+    autotest_psd_s regions[] = {
+      {.fmin=-0.5,   .fmax=-0.25,  .pmin= 0,    .pmax=-60,   .test_lo=0, .test_hi=1},
+      {.fmin=-0.15,  .fmax=+0.15,  .pmin=-0.02, .pmax=+0.02, .test_lo=1, .test_hi=1},
+      {.fmin= 0.25,  .fmax=+0.5,   .pmin= 0,    .pmax=-60,   .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_signalf(h, n, regions, 3,
+        liquid_autotest_verbose ? "autotest_firdespm_lowpass.m" : NULL);
 }
 
