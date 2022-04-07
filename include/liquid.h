@@ -3119,21 +3119,21 @@ FFTFILT() FFTFILT(_create)(TC *         _h,                                 \
                            unsigned int _n);                                \
                                                                             \
 /* Destroy filter object and free all internal memory                   */  \
-void FFTFILT(_destroy)(FFTFILT() _q);                                       \
+int FFTFILT(_destroy)(FFTFILT() _q);                                        \
                                                                             \
 /* Reset filter object's internal buffer                                */  \
-void FFTFILT(_reset)(FFTFILT() _q);                                         \
+int FFTFILT(_reset)(FFTFILT() _q);                                          \
                                                                             \
 /* Print filter object information to stdout                            */  \
-void FFTFILT(_print)(FFTFILT() _q);                                         \
+int FFTFILT(_print)(FFTFILT() _q);                                          \
                                                                             \
 /* Set output scaling for filter                                        */  \
-void FFTFILT(_set_scale)(FFTFILT() _q,                                      \
-                         TC        _scale);                                 \
+int FFTFILT(_set_scale)(FFTFILT() _q,                                       \
+                        TC        _scale);                                  \
                                                                             \
 /* Get output scaling for filter                                        */  \
-void FFTFILT(_get_scale)(FFTFILT() _q,                                      \
-                         TC *      _scale);                                 \
+int FFTFILT(_get_scale)(FFTFILT() _q,                                       \
+                        TC *      _scale);                                  \
                                                                             \
 /* Execute the filter on internal buffer and coefficients given a block */  \
 /* of input samples; in-place operation is permitted (_x and _y may     */  \
@@ -3141,9 +3141,9 @@ void FFTFILT(_get_scale)(FFTFILT() _q,                                      \
 /*  _q      : filter object                                             */  \
 /*  _x      : pointer to input data array,  [size: _n x 1]              */  \
 /*  _y      : pointer to output data array, [size: _n x 1]              */  \
-void FFTFILT(_execute)(FFTFILT() _q,                                        \
-                       TI *      _x,                                        \
-                       TO *      _y);                                       \
+int FFTFILT(_execute)(FFTFILT() _q,                                         \
+                      TI *      _x,                                         \
+                      TO *      _y);                                        \
                                                                             \
 /* Get length of filter object's internal coefficients                  */  \
 unsigned int FFTFILT(_get_length)(FFTFILT() _q);                            \

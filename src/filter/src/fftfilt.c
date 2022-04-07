@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -123,7 +123,7 @@ FFTFILT() FFTFILT(_create)(TC *         _h,
 }
 
 // destroy object, freeing all internally-allocated memory
-void FFTFILT(_destroy)(FFTFILT() _q)
+int FFTFILT(_destroy)(FFTFILT() _q)
 {
     // free internal arrays
     free(_q->h);                // filter coefficients
@@ -143,19 +143,22 @@ void FFTFILT(_destroy)(FFTFILT() _q)
 
     // free main object
     free(_q);
+    return LIQUID_OK;
 }
 
 // reset internal state of filter object
-void FFTFILT(_reset)(FFTFILT() _q)
+int FFTFILT(_reset)(FFTFILT() _q)
 {
     // reset overlap window
     unsigned int i;
-    for (i=0; i<_q->n; i++)
+    for (i=0; i<_q->n; i++) {
         _q->w[i] = 0;
+    }
+    return LIQUID_OK;
 }
 
 // print filter object internals (taps, buffer)
-void FFTFILT(_print)(FFTFILT() _q)
+int FFTFILT(_print)(FFTFILT() _q)
 {
     printf("fftfilt_%s: [h_len=%u, n=%u]\n", EXTENSION_FULL, _q->h_len, _q->n);
     unsigned int i;
@@ -170,31 +173,34 @@ void FFTFILT(_print)(FFTFILT() _q)
     printf("  scale = ");
     PRINTVAL_TC(_q->scale,%12.8f);
     printf("\n");
+    return LIQUID_OK;
 }
 
 // set output scaling for filter
-void FFTFILT(_set_scale)(FFTFILT() _q,
+int FFTFILT(_set_scale)(FFTFILT() _q,
                          TC        _scale)
 {
     // set scale, normalized by fft size
     _q->scale = _scale / (float)(2*_q->n);
+    return LIQUID_OK;
 }
 
 // get output scaling for filter
-void FFTFILT(_get_scale)(FFTFILT() _q,
+int FFTFILT(_get_scale)(FFTFILT() _q,
                          TC *      _scale)
 {
     // get scale, normalized by fft size
     *_scale = _q->scale * (float)(2*_q->n);
+    return LIQUID_OK;
 }
 
 // execute the filter on internal buffer and coefficients
 //  _q      : filter object
 //  _x      : pointer to input data array  [size: _n x 1]
 //  _y      : pointer to output data array [size: _n x 1]
-void FFTFILT(_execute)(FFTFILT() _q,
-                       TI *      _x,
-                       TO *      _y)
+int FFTFILT(_execute)(FFTFILT() _q,
+                      TI *      _x,
+                      TO *      _y)
 {
     unsigned int i;
 
@@ -259,6 +265,7 @@ void FFTFILT(_execute)(FFTFILT() _q,
 
     // copy buffer
     memmove(_q->w, &_q->time_buf[_q->n], _q->n*sizeof(float complex));
+    return LIQUID_OK;
 }
 
 // return length of filter object's internal coefficients

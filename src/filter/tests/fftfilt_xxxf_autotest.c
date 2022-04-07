@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -114,6 +114,33 @@ void autotest_fftfilt_cccf_data_h23x256()
     fftfilt_cccf_test(fftfilt_cccf_data_h23x256_h, 23,
                       fftfilt_cccf_data_h23x256_x, 256,
                       fftfilt_cccf_data_h23x256_y, 256);
+}
+
+void autotest_fftfilt_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping fftfilt config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check that object returns NULL for invalid configurations
+    float h[9] = {0,1,2,3,4,5,6,7,8,};
+    CONTEND_ISNULL(fftfilt_crcf_create(h,0,64)); // filter length too small
+    CONTEND_ISNULL(fftfilt_crcf_create(h,9, 7)); // block length too small
+
+    // create proper object and test configurations
+    fftfilt_crcf filt = fftfilt_crcf_create(h, 9, 64);
+
+    CONTEND_EQUALITY(LIQUID_OK, fftfilt_crcf_print(filt));
+    CONTEND_EQUALITY(LIQUID_OK, fftfilt_crcf_set_scale(filt, 3.0f));
+    float scale = 0.0f;
+    CONTEND_EQUALITY(LIQUID_OK, fftfilt_crcf_get_scale(filt, &scale));
+    CONTEND_EQUALITY(scale, 3.0f);
+    CONTEND_EQUALITY(9, fftfilt_crcf_get_length(filt));
+
+    fftfilt_crcf_destroy(filt);
 }
 
 
