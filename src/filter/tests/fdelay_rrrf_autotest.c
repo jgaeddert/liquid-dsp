@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,14 +48,12 @@ void testbench_fdelay_rrrf(unsigned int _nmax,
     float x[num_samples];
     float y[num_samples];
     unsigned int i;
-    for (i=0; i<num_samples; i++) {
-        // generate input
+    // generate input
+    for (i=0; i<num_samples; i++)
         x[i] = i==0 ? 1.0f : 0.0f;
 
-        // run filter
-        fdelay_rrrf_push(q, x[i]);
-        fdelay_rrrf_execute(q, &y[i]);
-    }
+    // run filter
+    fdelay_rrrf_execute_block(q, x, num_samples, y);
 
     // destroy filter object
     fdelay_rrrf_destroy(q);
@@ -88,7 +86,7 @@ void autotest_fdelay_rrrf_7()  { testbench_fdelay_rrrf(200, 12, 64,  17.01f  ); 
 void autotest_fdelay_rrrf_8()  { testbench_fdelay_rrrf(200, 12, 64, 199.9f   ); }
 void autotest_fdelay_rrrf_9()  { testbench_fdelay_rrrf(200, 12, 64, 200.0f   ); }
 
-void autotest_fdelay_rrrf_invalid_config()
+void autotest_fdelay_rrrf_config()
 {
 #ifdef LIQUID_STRICT_EXIT
     AUTOTEST_WARN("delay_rrrf test not run with strict mode enabled");
@@ -115,6 +113,10 @@ void autotest_fdelay_rrrf_invalid_config()
     CONTEND_INEQUALITY(LIQUID_OK, fdelay_rrrf_set_delay   (q, nmax+1))
     CONTEND_INEQUALITY(LIQUID_OK, fdelay_rrrf_adjust_delay(q, -1))
 
+    // test valid configurations, methods
+    CONTEND_EQUALITY(LIQUID_OK, fdelay_rrrf_print(q))
+
+    // destroy object
     fdelay_rrrf_destroy(q);
 }
 
