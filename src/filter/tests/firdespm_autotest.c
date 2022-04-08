@@ -201,11 +201,15 @@ void autotest_firdespm_config()
     float bands_0[4] = { 0.0, 0.3, 0.2, 0.5}; // overlapping bands
     float bands_1[4] = {-0.1, 0.0, 0.3, 0.6}; // bands out of range
 
-    // try to create object with non-decreasing bands
+    // try to create regular object with invalid configuration
+    CONTEND_ISNULL( firdespm_create( 0, 2, bands,   des, w, wtype, LIQUID_FIRDESPM_BANDPASS) )
+    CONTEND_ISNULL( firdespm_create(51, 0, bands,   des, w, wtype, LIQUID_FIRDESPM_BANDPASS) )
     CONTEND_ISNULL( firdespm_create(51, 2, bands_0, des, w, wtype, LIQUID_FIRDESPM_BANDPASS) )
     CONTEND_ISNULL( firdespm_create(51, 2, bands_1, des, w, wtype, LIQUID_FIRDESPM_BANDPASS) )
 
-    // try to create object with non-decreasing bands
+    // try to create callback object with invalid configuration
+    CONTEND_ISNULL( firdespm_create_callback( 0, 2, bands,   LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
+    CONTEND_ISNULL( firdespm_create_callback(51, 0, bands,   LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
     CONTEND_ISNULL( firdespm_create_callback(51, 2, bands_0, LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
     CONTEND_ISNULL( firdespm_create_callback(51, 2, bands_1, LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
 }

@@ -322,8 +322,12 @@ firdespm firdespm_create_callback(unsigned int          _h_len,
                                   firdespm_callback     _callback,
                                   void *                _userdata)
 {
-    if (_num_bands == 0)
-        return liquid_error_config("firdespm_create(), number of bands must be > 0");
+    // basic validation
+    if (_h_len==0)
+        return liquid_error_config("firdespm_create_callback(), filter length cannot be 0");
+    if (_num_bands==0)
+        return liquid_error_config("firdespm_create_callback(), number of bands cannot be 0");
+
 
     // validate input
     unsigned int i;
@@ -337,6 +341,7 @@ firdespm firdespm_create_callback(unsigned int          _h_len,
 
     if (!bands_valid)
         return liquid_error_config("firdespm_create(), invalid bands");
+
     // create object
     firdespm q = (firdespm) malloc(sizeof(struct firdespm_s));
 
