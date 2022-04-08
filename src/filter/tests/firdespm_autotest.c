@@ -188,14 +188,6 @@ void autotest_firdespm_config()
     // try to create object with 0 bands
     CONTEND_ISNULL( firdespm_create(71, 0, NULL, NULL, NULL, NULL, LIQUID_FIRDESPM_BANDPASS) )
 
-    // try to create callback object with non-decreasing bands
-    float bands_0[4] = {/*pass-band*/ 0, 0.3, /*stop-band*/ 0.2, 0.5};
-    CONTEND_ISNULL( firdespm_create_callback(71, 2, bands_0, LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
-
-    // try to create callback object with bands out of range
-    float bands_1[4] = {-0.1, 0.0, 0.3, 0.6};
-    CONTEND_ISNULL( firdespm_create_callback(71, 2, bands_1, LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
-
     // create valid object
     float bands[4] = {0.0, 0.2, 0.3, 0.5};  // regions
     float   des[2] = {1.0,      0.0};       // desired values
@@ -204,5 +196,17 @@ void autotest_firdespm_config()
     firdespm q = firdespm_create(51, 2, bands, des, w, wtype, LIQUID_FIRDESPM_BANDPASS);
     CONTEND_EQUALITY(   LIQUID_OK, firdespm_print(q) )
     firdespm_destroy(q);
+
+    // invalid bands
+    float bands_0[4] = { 0.0, 0.3, 0.2, 0.5}; // overlapping bands
+    float bands_1[4] = {-0.1, 0.0, 0.3, 0.6}; // bands out of range
+
+    // try to create object with non-decreasing bands
+    CONTEND_ISNULL( firdespm_create(51, 2, bands_0, des, w, wtype, LIQUID_FIRDESPM_BANDPASS) )
+    CONTEND_ISNULL( firdespm_create(51, 2, bands_1, des, w, wtype, LIQUID_FIRDESPM_BANDPASS) )
+
+    // try to create object with non-decreasing bands
+    CONTEND_ISNULL( firdespm_create_callback(51, 2, bands_0, LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
+    CONTEND_ISNULL( firdespm_create_callback(51, 2, bands_1, LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
 }
 
