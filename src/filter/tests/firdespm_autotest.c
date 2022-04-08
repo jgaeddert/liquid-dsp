@@ -165,6 +165,48 @@ void autotest_firdespm_lowpass()
         liquid_autotest_verbose ? "autotest_firdespm_lowpass.m" : NULL);
 }
 
+// user-defined callback function defining response and weights
+int callback_firdespm_autotest(double   _frequency,
+                               void   * _userdata,
+                               double * _desired,
+                               double * _weight)
+{
+    *_desired = _frequency < 0.39 ? exp(20*fabs(_frequency)) : 0;
+    *_weight  = _frequency < 0.39 ? exp(-10*_frequency) : 1;
+    return 0;
+}
+
+void autotest_firdespm_callback()
+{
+    // filter design parameters
+    unsigned int h_len = 81;    // inverse sinc filter length
+    liquid_firdespm_btype btype = LIQUID_FIRDESPM_BANDPASS;
+    unsigned int num_bands = 2;
+    float        bands[4]  = {0.0, 0.35, 0.4, 0.5};
+
+    // design filter
+    float h[h_len];
+    firdespm q = firdespm_create_callback(h_len,num_bands,bands,btype,
+            callback_firdespm_autotest,NULL);
+    firdespm_execute(q,h);
+    firdespm_destroy(q);
+
+    // verify resulting spectrum
+    autotest_psd_s regions[] = {
+      {.fmin=-0.50,  .fmax=-0.40,  .pmin= 0, .pmax=-20, .test_lo=0, .test_hi=1},
+      {.fmin=-0.36,  .fmax=-0.30,  .pmin=52, .pmax= 62, .test_lo=1, .test_hi=1},
+      {.fmin=-0.30,  .fmax=-0.20,  .pmin=34, .pmax= 53, .test_lo=1, .test_hi=1},
+      {.fmin=-0.20,  .fmax=-0.10,  .pmin=15, .pmax= 36, .test_lo=1, .test_hi=1},
+      {.fmin=-0.10,  .fmax=+0.10,  .pmin= 0, .pmax= 19, .test_lo=1, .test_hi=1},
+      {.fmin= 0.10,  .fmax= 0.20,  .pmin=15, .pmax= 36, .test_lo=1, .test_hi=1},
+      {.fmin= 0.20,  .fmax= 0.30,  .pmin=34, .pmax= 53, .test_lo=1, .test_hi=1},
+      {.fmin= 0.30,  .fmax= 0.36,  .pmin=52, .pmax= 62, .test_lo=1, .test_hi=1},
+      {.fmin= 0.40,  .fmax= 0.50,  .pmin= 0, .pmax=-20, .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_signalf(h, h_len, regions, 9,
+        liquid_autotest_verbose ? "autotest_firdespm_callback.m" : NULL);
+}
+
 void autotest_firdespm_config()
 {
 #if LIQUID_STRICT_EXIT
