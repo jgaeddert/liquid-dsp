@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -225,7 +225,7 @@ firdespm firdespm_create(unsigned int            _h_len,
     unsigned int i;
     int bands_valid = 1;
     int weights_valid = 1;
-    // ensure bands are withing [0,0.5]
+    // ensure bands are within [0,0.5]
     for (i=0; i<2*_num_bands; i++)
         bands_valid &= _bands[i] >= 0.0 && _bands[i] <= 0.5;
     // ensure bands are non-decreasing
@@ -324,9 +324,11 @@ firdespm firdespm_create_callback(unsigned int          _h_len,
                                   firdespm_callback     _callback,
                                   void *                _userdata)
 {
-    unsigned int i;
+    if (_num_bands == 0)
+        return liquid_error_config("firdespm_create(), number of bands must be > 0");
 
     // validate input
+    unsigned int i;
     int bands_valid = 1;
     // ensure bands are withing [0,0.5]
     for (i=0; i<2*_num_bands; i++)
@@ -337,9 +339,6 @@ firdespm firdespm_create_callback(unsigned int          _h_len,
 
     if (!bands_valid)
         return liquid_error_config("firdespm_create(), invalid bands");
-    if (_num_bands == 0)
-        return liquid_error_config("firdespm_create(), number of bands must be > 0");
-
     // create object
     firdespm q = (firdespm) malloc(sizeof(struct firdespm_s));
 

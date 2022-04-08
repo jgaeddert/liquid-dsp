@@ -165,3 +165,44 @@ void autotest_firdespm_lowpass()
         liquid_autotest_verbose ? "autotest_firdespm_lowpass.m" : NULL);
 }
 
+void autotest_firdespm_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping firdespm config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    float h[51];
+    CONTEND_EQUALITY(   LIQUID_OK, firdespm_lowpass(51, 0.2, 60, 0.0, h) ) // ok
+    CONTEND_INEQUALITY( LIQUID_OK, firdespm_lowpass( 0, 0.2, 60, 0.0, h) )
+    CONTEND_INEQUALITY( LIQUID_OK, firdespm_lowpass(51, 0.2, 60,-1.0, h) )
+    CONTEND_INEQUALITY( LIQUID_OK, firdespm_lowpass(51, 0.2, 60, 1.0, h) )
+    CONTEND_INEQUALITY( LIQUID_OK, firdespm_lowpass(51, 0.8, 60, 0.0, h) )
+    CONTEND_INEQUALITY( LIQUID_OK, firdespm_lowpass(51,-0.2, 60, 0.0, h) )
+
+    // try to create object with filter length 0
+    CONTEND_ISNULL( firdespm_create( 0, 3, NULL, NULL, NULL, NULL, LIQUID_FIRDESPM_BANDPASS) )
+
+    // try to create object with 0 bands
+    CONTEND_ISNULL( firdespm_create(71, 0, NULL, NULL, NULL, NULL, LIQUID_FIRDESPM_BANDPASS) )
+
+    // try to create callback object with non-decreasing bands
+    float bands_0[4] = {/*pass-band*/ 0, 0.3, /*stop-band*/ 0.2, 0.5};
+    CONTEND_ISNULL( firdespm_create_callback(71, 2, bands_0, LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
+
+    // try to create callback object with bands out of range
+    float bands_1[4] = {-0.1, 0.0, 0.3, 0.6};
+    CONTEND_ISNULL( firdespm_create_callback(71, 2, bands_1, LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
+
+    // create valid object
+    float bands[4] = {0.0, 0.2, 0.3, 0.5};  // regions
+    float   des[2] = {1.0,      0.0};       // desired values
+    float     w[2] = {1.0,      1.0};       // weights
+    liquid_firdespm_wtype wtype[2] = {LIQUID_FIRDESPM_FLATWEIGHT, LIQUID_FIRDESPM_FLATWEIGHT};
+    firdespm q = firdespm_create(51, 2, bands, des, w, wtype, LIQUID_FIRDESPM_BANDPASS);
+    CONTEND_EQUALITY(   LIQUID_OK, firdespm_print(q) )
+    firdespm_destroy(q);
+}
+
