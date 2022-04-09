@@ -39,15 +39,15 @@ struct FIRPFB(_s) {
 };
 
 // create firpfb from external coefficients
-//  _M      : number of filters in the bank
-//  _h      : coefficients [size: _M*_h_len x 1]
-//  _h_len  : filter delay (symbols)
-FIRPFB() FIRPFB(_create)(unsigned int _M,
+//  _num_filters : number of filters in the bank
+//  _h           : coefficients [size: _num_filters*_h_len x 1]
+//  _h_len       : filter delay (symbols)
+FIRPFB() FIRPFB(_create)(unsigned int _num_filters,
                          TC *         _h,
                          unsigned int _h_len)
 {
     // validate input
-    if (_M == 0)
+    if (_num_filters == 0)
         return liquid_error_config("firpfb_%s_create(), number of filters must be greater than zero",EXTENSION_FULL);
     if (_h_len == 0)
         return liquid_error_config("firpfb_%s_create(), filter length must be greater than zero",EXTENSION_FULL);
@@ -56,7 +56,7 @@ FIRPFB() FIRPFB(_create)(unsigned int _M,
     FIRPFB() q = (FIRPFB()) malloc(sizeof(struct FIRPFB(_s)));
 
     // set user-defined parameters
-    q->num_filters = _M;
+    q->num_filters = _num_filters;
     q->h_len       = _h_len;
 
     // each filter is realized as a dotprod object
@@ -92,24 +92,24 @@ FIRPFB() FIRPFB(_create)(unsigned int _M,
 }
 
 // create default firpfb
-FIRPFB() FIRPFB(_create_default)(unsigned int _M,
+FIRPFB() FIRPFB(_create_default)(unsigned int _num_filters,
                                  unsigned int _m)
 {
-    return FIRPFB(_create_kaiser)(_M, _m, 0.5f, 60.0f);
+    return FIRPFB(_create_kaiser)(_num_filters, _m, 0.5f, 60.0f);
 }
 
 // create firpfb using kaiser window
-//  _M      : number of filters in the bank
-//  _m      : filter semi-length [samples]
-//  _fc     : filter cut-off frequency 0 < _fc < 0.5
-//  _as     : filter stop-band suppression [dB]
-FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,
+//  _num_filters : number of filters in the bank
+//  _m           : filter semi-length [samples]
+//  _fc          : filter cut-off frequency 0 < _fc < 0.5
+//  _as          : filter stop-band suppression [dB]
+FIRPFB() FIRPFB(_create_kaiser)(unsigned int _num_filters,
                                 unsigned int _m,
                                 float        _fc,
                                 float        _as)
 {
     // validate input
-    if (_M == 0)
+    if (_num_filters == 0)
         return liquid_error_config("firpfb_%s_create_kaiser(), number of filters must be greater than zero", EXTENSION_FULL);
     if (_m == 0)
         return liquid_error_config("firpfb_%s_create_kaiser(), filter delay must be greater than 0", EXTENSION_FULL);
@@ -119,9 +119,9 @@ FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,
         return liquid_error_config("firpfb_%s_create_kaiser(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
 
     // design filter using kaiser window
-    unsigned int H_len = 2*_M*_m + 1;
+    unsigned int H_len = 2*_num_filters*_m + 1;
     float Hf[H_len];
-    liquid_firdes_kaiser(H_len, _fc/(float)_M, _as, 0.0f, Hf);
+    liquid_firdes_kaiser(H_len, _fc/(float)_num_filters, _as, 0.0f, Hf);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;
@@ -130,23 +130,23 @@ FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,
         Hc[i] = Hf[i];
 
     // return filterbank object
-    return FIRPFB(_create)(_M, Hc, H_len);
+    return FIRPFB(_create)(_num_filters, Hc, H_len);
 }
 
 // create square-root Nyquist filterbank
-//  _type   :   filter type (e.g. LIQUID_FIRFILT_RRC)
-//  _M      :   number of filters in the bank
-//  _k      :   samples/symbol _k > 1
-//  _m      :   filter delay (symbols), _m > 0
-//  _beta   :   excess bandwidth factor, 0 < _beta < 1
+//  _type        :   filter type (e.g. LIQUID_FIRFILT_RRC)
+//  _num_filters :   number of filters in the bank
+//  _k           :   samples/symbol _k > 1
+//  _m           :   filter delay (symbols), _m > 0
+//  _beta        :   excess bandwidth factor, 0 < _beta < 1
 FIRPFB() FIRPFB(_create_rnyquist)(int          _type,
-                                  unsigned int _M,
+                                  unsigned int _num_filters,
                                   unsigned int _k,
                                   unsigned int _m,
                                   float        _beta)
 {
     // validate input
-    if (_M == 0)
+    if (_num_filters == 0)
         return liquid_error_config("firpfb_%s_create_rnyquist(), number of filters must be greater than zero", EXTENSION_FULL);
     if (_k < 2)
         return liquid_error_config("firpfb_%s_create_rnyquist(), filter samples/symbol must be greater than 1", EXTENSION_FULL);
@@ -156,9 +156,9 @@ FIRPFB() FIRPFB(_create_rnyquist)(int          _type,
         return liquid_error_config("firpfb_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
 
     // generate square-root Nyquist filter
-    unsigned int H_len = 2*_M*_k*_m + 1;
+    unsigned int H_len = 2*_num_filters*_k*_m + 1;
     float Hf[H_len];
-    liquid_firdes_prototype(_type,_M*_k,_m,_beta,0,Hf);
+    liquid_firdes_prototype(_type,_num_filters*_k,_m,_beta,0,Hf);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;
@@ -167,23 +167,23 @@ FIRPFB() FIRPFB(_create_rnyquist)(int          _type,
         Hc[i] = Hf[i];
 
     // return filterbank object
-    return FIRPFB(_create)(_M, Hc, H_len);
+    return FIRPFB(_create)(_num_filters, Hc, H_len);
 }
 
 // create firpfb derivative square-root Nyquist filterbank
-//  _type   :   filter type (e.g. LIQUID_FIRFILT_RRC)
-//  _M      :   number of filters in the bank
-//  _k      :   samples/symbol _k > 1
-//  _m      :   filter delay (symbols), _m > 0
-//  _beta   :   excess bandwidth factor, 0 < _beta < 1
+//  _type        :   filter type (e.g. LIQUID_FIRFILT_RRC)
+//  _num_filters :   number of filters in the bank
+//  _k           :   samples/symbol _k > 1
+//  _m           :   filter delay (symbols), _m > 0
+//  _beta        :   excess bandwidth factor, 0 < _beta < 1
 FIRPFB() FIRPFB(_create_drnyquist)(int          _type,
-                                   unsigned int _M,
+                                   unsigned int _num_filters,
                                    unsigned int _k,
                                    unsigned int _m,
                                    float        _beta)
 {
     // validate input
-    if (_M == 0)
+    if (_num_filters == 0)
         return liquid_error_config("firpfb_%s_create_drnyquist(), number of filters must be greater than zero", EXTENSION_FULL);
     if (_k < 2)
         return liquid_error_config("firpfb_%s_create_drnyquist(), filter samples/symbol must be greater than 1", EXTENSION_FULL);
@@ -193,9 +193,9 @@ FIRPFB() FIRPFB(_create_drnyquist)(int          _type,
         return liquid_error_config("firpfb_%s_create_drnyquist(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
 
     // generate square-root Nyquist filter
-    unsigned int H_len = 2*_M*_k*_m + 1;
+    unsigned int H_len = 2*_num_filters*_k*_m + 1;
     float Hf[H_len];
-    liquid_firdes_prototype(_type,_M*_k,_m,_beta,0,Hf);
+    liquid_firdes_prototype(_type,_num_filters*_k,_m,_beta,0,Hf);
     
     // compute derivative filter
     float dHf[H_len];
@@ -222,25 +222,25 @@ FIRPFB() FIRPFB(_create_drnyquist)(int          _type,
         Hc[i] = dHf[i] * 0.06f / HdH_max;
 
     // return filterbank object
-    return FIRPFB(_create)(_M, Hc, H_len);
+    return FIRPFB(_create)(_num_filters, Hc, H_len);
 }
 
 
 // re-create filterbank object
-//  _q      : original firpfb object
-//  _M      : number of filters in the bank
-//  _h      : coefficients [size: _M x _h_len]
-//  _h_len  : length of each filter
+//  _q           : original firpfb object
+//  _num_filters :   number of filters in the bank
+//  _h           : coefficients [size: _num_filters x _h_len]
+//  _h_len       : length of each filter
 FIRPFB() FIRPFB(_recreate)(FIRPFB()     _q,
-                           unsigned int _M,
+                           unsigned int _num_filters,
                            TC *         _h,
                            unsigned int _h_len)
 {
     // check to see if filter length has changed
-    if (_h_len != _q->h_len || _M != _q->num_filters) {
+    if (_h_len != _q->h_len || _num_filters != _q->num_filters) {
         // filter length has changed: recreate entire filter
         FIRPFB(_destroy)(_q);
-        _q = FIRPFB(_create)(_M,_h,_h_len);
+        _q = FIRPFB(_create)(_num_filters,_h,_h_len);
         return _q;
     }
 

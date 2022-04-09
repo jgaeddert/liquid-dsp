@@ -3416,12 +3416,14 @@ LIQUID_IIRFILTSOS_DEFINE_API(LIQUID_IIRFILTSOS_MANGLE_CCCF,
 /* Finite impulse response (FIR) polyphase filter bank (PFB)            */  \
 typedef struct FIRPFB(_s) * FIRPFB();                                       \
                                                                             \
-/* Create firpfb object with _M sub-filter each of length _h_len/_M     */  \
+/* Create firpfb object with _num_filters sub-filter each with          */  \
+/* _h_len/_num_filters coefficients                                     */  \
 /* from an external array of coefficients                               */  \
-/*  _M      : number of filters in the bank, _M > 1                     */  \
-/*  _h      : coefficients, [size: _h_len x 1]                          */  \
-/*  _h_len  : filter length (multiple of _M), _h_len >= _M              */  \
-FIRPFB() FIRPFB(_create)(unsigned int _M,                                   \
+/*  _num_filters    : number of filters in the bank, _num_filters > 1   */  \
+/*  _h              : coefficients, [size: _h_len x 1]                  */  \
+/*  _h_len          : filter length (multiple of _num_filters),         */  \
+/*                    _h_len >= _num_filters                            */  \
+FIRPFB() FIRPFB(_create)(unsigned int _num_filters,                         \
                          TC *         _h,                                   \
                          unsigned int _h_len);                              \
                                                                             \
@@ -3430,42 +3432,42 @@ FIRPFB() FIRPFB(_create)(unsigned int _M,                                   \
 /* attenuation. This is equivalent to:                                  */  \
 /*   FIRPFB(_create_kaiser)(_M, _m, 0.5, 60.0)                          */  \
 /* which creates a Nyquist filter at the appropriate cut-off frequency. */  \
-/*  _M      : number of filters in the bank, _M > 0                     */  \
-/*  _m      : filter semi-length [samples], _m > 0                      */  \
-FIRPFB() FIRPFB(_create_default)(unsigned int _M,                           \
+/*  _num_filters    : number of filters in the bank, _num_filters > 1   */  \
+/*  _m              : filter semi-length [samples], _m > 0              */  \
+FIRPFB() FIRPFB(_create_default)(unsigned int _num_filters,                 \
                                  unsigned int _m);                          \
                                                                             \
 /* Create firpfb object using Kaiser-Bessel windowed sinc filter design */  \
 /* method                                                               */  \
-/*  _M      : number of filters in the bank, _M > 0                     */  \
-/*  _m      : filter semi-length [samples], _m > 0                      */  \
-/*  _fc     : filter normalized cut-off frequency, 0 < _fc < 0.5        */  \
-/*  _as     : filter stop-band suppression [dB], _as > 0                */  \
-FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,                            \
+/*  _num_filters : number of filters in the bank, _num_filters > 1      */  \
+/*  _m           : filter semi-length [samples], _m > 0                 */  \
+/*  _fc          : filter normalized cut-off frequency, 0 < _fc < 0.5   */  \
+/*  _as          : filter stop-band suppression [dB], _as > 0           */  \
+FIRPFB() FIRPFB(_create_kaiser)(unsigned int _num_filters,                  \
                                 unsigned int _m,                            \
                                 float        _fc,                           \
                                 float        _as);                          \
                                                                             \
 /* Create firpfb from square-root Nyquist prototype                     */  \
-/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)                     */  \
-/*  _M      : number of filters in the bank, _M > 0                     */  \
-/*  _k      : nominal samples/symbol, _k > 1                            */  \
-/*  _m      : filter delay [symbols], _m > 0                            */  \
-/*  _beta   : rolloff factor, 0 < _beta <= 1                            */  \
+/*  _type        : filter type (e.g. LIQUID_FIRFILT_RRC)                */  \
+/*  _num_filters : number of filters in the bank, _num_filters > 1      */  \
+/*  _k           : nominal samples/symbol, _k > 1                       */  \
+/*  _m           : filter delay [symbols], _m > 0                       */  \
+/*  _beta        : rolloff factor, 0 < _beta <= 1                       */  \
 FIRPFB() FIRPFB(_create_rnyquist)(int          _type,                       \
-                                  unsigned int _M,                          \
+                                  unsigned int _num_filters,                \
                                   unsigned int _k,                          \
                                   unsigned int _m,                          \
                                   float        _beta);                      \
                                                                             \
 /* Create from square-root derivative Nyquist prototype                 */  \
-/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)                     */  \
-/*  _M      : number of filters in the bank, _M > 0                     */  \
-/*  _k      : nominal samples/symbol, _k > 1                            */  \
-/*  _m      : filter delay [symbols], _m > 0                            */  \
-/*  _beta   : rolloff factor, 0 < _beta <= 1                            */  \
+/*  _type        : filter type (e.g. LIQUID_FIRFILT_RRC)                */  \
+/*  _num_filters : number of filters in the bank, _num_filters > 1      */  \
+/*  _k           : nominal samples/symbol, _k > 1                       */  \
+/*  _m           : filter delay [symbols], _m > 0                       */  \
+/*  _beta        : rolloff factor, 0 < _beta <= 1                       */  \
 FIRPFB() FIRPFB(_create_drnyquist)(int          _type,                      \
-                                   unsigned int _M,                         \
+                                   unsigned int _num_filters,               \
                                    unsigned int _k,                         \
                                    unsigned int _m,                         \
                                    float        _beta);                     \
@@ -3473,12 +3475,13 @@ FIRPFB() FIRPFB(_create_drnyquist)(int          _type,                      \
 /* Re-create firpfb object of potentially a different length with       */  \
 /* different coefficients. If the length of the filter does not change, */  \
 /* not memory reallocation is invoked.                                  */  \
-/*  _q      : original firpfb object                                    */  \
-/*  _M      : number of filters in the bank, _M > 1                     */  \
-/*  _h      : coefficients, [size: _h_len x 1]                          */  \
-/*  _h_len  : filter length (multiple of _M), _h_len >= _M              */  \
+/*  _q           : original firpfb object                               */  \
+/*  _num_filters : number of filters in the bank, _num_filters > 1      */  \
+/*  _h           : coefficients, [size: _h_len x 1]                     */  \
+/*  _h_len       : filter length (multiple of _num_filters),            */  \
+/*                 _h_len >= _num_filters                               */  \
 FIRPFB() FIRPFB(_recreate)(FIRPFB()     _q,                                 \
-                           unsigned int _M,                                 \
+                           unsigned int _num_filters,                       \
                            TC *         _h,                                 \
                            unsigned int _h_len);                            \
                                                                             \
