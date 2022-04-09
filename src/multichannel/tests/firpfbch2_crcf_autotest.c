@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 // Helper function to keep code base small
 void firpfbch2_crcf_runtest(unsigned int _M,
                             unsigned int _m,
-                            float        _As)
+                            float        _as)
 {
     float tol = 1e-3f;
     unsigned int i;
@@ -51,8 +51,8 @@ void firpfbch2_crcf_runtest(unsigned int _M,
     }
 
     // create filterbank objects from prototype
-    firpfbch2_crcf qa = firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER,    _M, _m, _As);
-    firpfbch2_crcf qs = firpfbch2_crcf_create_kaiser(LIQUID_SYNTHESIZER, _M, _m, _As);
+    firpfbch2_crcf qa = firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER,    _M, _m, _as);
+    firpfbch2_crcf qs = firpfbch2_crcf_create_kaiser(LIQUID_SYNTHESIZER, _M, _m, _as);
 
     // run channelizer
     float complex Y[_M];
@@ -88,7 +88,7 @@ void firpfbch2_crcf_runtest(unsigned int _M,
 
     rmse = sqrtf(rmse / (float)num_samples);
     if (liquid_autotest_verbose)
-        printf("firpfbch2:  M=%3u, m=%2u, As=%8.2f dB, rmse=%12.4e\n", _M, _m, _As, rmse);
+        printf("firpfbch2:  M=%3u, m=%2u, as=%8.2f dB, rmse=%12.4e\n", _M, _m, _as, rmse);
 }
 
 // analysis

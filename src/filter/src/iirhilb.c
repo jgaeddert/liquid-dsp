@@ -43,11 +43,11 @@ struct IIRHILB(_s) {
 //  _ftype  : filter type (e.g. LIQUID_IIRDES_BUTTER)
 //  _n      : filter order, _n > 0
 //  _Ap     : pass-band ripple [dB], _Ap > 0
-//  _As     : stop-band ripple [dB], _Ap > 0
+//  _as     : stop-band ripple [dB], _Ap > 0
 IIRHILB() IIRHILB(_create)(liquid_iirdes_filtertype _ftype,
                            unsigned int             _n,
                            float                    _Ap,
-                           float                    _As)
+                           float                    _as)
 {
     // validate iirhilb inputs
     if (_n == 0)
@@ -61,8 +61,8 @@ IIRHILB() IIRHILB(_create)(liquid_iirdes_filtertype _ftype,
     int     format = LIQUID_IIRDES_SOS;     // filter coefficients format
     float   fc     =   0.25f;               // cutoff frequency [normalized]
     float   f0     =   0.0f;                // center frequency [normalized]
-    q->filt_0 = IIRFILT(_create_prototype)(_ftype,btype,format,_n,fc,f0,_Ap,_As);
-    q->filt_1 = IIRFILT(_create_prototype)(_ftype,btype,format,_n,fc,f0,_Ap,_As);
+    q->filt_0 = IIRFILT(_create_prototype)(_ftype,btype,format,_n,fc,f0,_Ap,_as);
+    q->filt_1 = IIRFILT(_create_prototype)(_ftype,btype,format,_n,fc,f0,_Ap,_as);
 
     // reset internal state and return object
     IIRHILB(_reset)(q);
@@ -79,8 +79,8 @@ IIRHILB() IIRHILB(_create_default)(unsigned int _n)
 
     int     ftype  = LIQUID_IIRDES_BUTTER;  // filter design type
     float   Ap     =   0.1f;                // pass-band ripple [dB]
-    float   As     =   60.0f;               // stop-band attenuation [dB]
-    return IIRHILB(_create)(ftype,_n,Ap,As);
+    float   as     =   60.0f;               // stop-band attenuation [dB]
+    return IIRHILB(_create)(ftype,_n,Ap,as);
 }
 
 // destroy iirhilb object

@@ -120,11 +120,11 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _M,
 //  _M      : number of output channels in chanelizer
 //  _P      : output decimation factor (output rate is 1/P the input)
 //  _m      : prototype filter semi-length, length=2*M*m
-//  _As     : filter stop-band attenuation [dB]
+//  _as     : filter stop-band attenuation [dB]
 FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _M,
                                       unsigned int _P,
                                       unsigned int _m,
-                                      float        _As)
+                                      float        _as)
 {
     // validate input
     if (_M < 2 || _M % 2)
@@ -140,7 +140,7 @@ FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _M,
     float fc = 0.5f/(float)_P;
 
     // compute filter coefficients (floating point precision)
-    liquid_firdes_kaiser(h_len, fc, _As, 0.0f, hf);
+    liquid_firdes_kaiser(h_len, fc, _as, 0.0f, hf);
 
     // normalize to unit average and scale by number of channels
     float hf_sum = 0.0f;

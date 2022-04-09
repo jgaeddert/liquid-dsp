@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,24 +79,24 @@ FIRINTERP() FIRINTERP(_create)(unsigned int _M,
 // create interpolator from Kaiser prototype
 //  _M      :   interpolation factor
 //  _m      :   symbol delay
-//  _As     :   stop-band attenuation [dB]
+//  _as     :   stop-band attenuation [dB]
 FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,
                                       unsigned int _m,
-                                      float        _As)
+                                      float        _as)
 {
     // validate input
     if (_M < 2)
         return liquid_error_config("firinterp_%s_create_kaiser(), interp factor must be greater than 1", EXTENSION_FULL);
     if (_m == 0)
         return liquid_error_config("firinterp_%s_create_kaiser(), filter delay must be greater than 0", EXTENSION_FULL);
-    if (_As < 0.0f)
+    if (_as < 0.0f)
         return liquid_error_config("firinterp_%s_create_kaiser(), stop-band attenuation must be positive", EXTENSION_FULL);
 
     // compute filter coefficients (floating point precision)
     unsigned int h_len = 2*_M*_m + 1;
     float hf[h_len];
     float fc = 0.5f / (float) (_M);
-    liquid_firdes_kaiser(h_len, fc, _As, 0.0f, hf);
+    liquid_firdes_kaiser(h_len, fc, _as, 0.0f, hf);
 
     // copy coefficients to type-specific array (e.g. float complex)
     TC hc[h_len];

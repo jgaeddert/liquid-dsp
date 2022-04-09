@@ -102,11 +102,11 @@ FIRPFB() FIRPFB(_create_default)(unsigned int _M,
 //  _M      : number of filters in the bank
 //  _m      : filter semi-length [samples]
 //  _fc     : filter cut-off frequency 0 < _fc < 0.5
-//  _As     : filter stop-band suppression [dB]
+//  _as     : filter stop-band suppression [dB]
 FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,
                                 unsigned int _m,
                                 float        _fc,
-                                float        _As)
+                                float        _as)
 {
     // validate input
     if (_M == 0)
@@ -115,13 +115,13 @@ FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,
         return liquid_error_config("firpfb_%s_create_kaiser(), filter delay must be greater than 0", EXTENSION_FULL);
     if (_fc < 0.0f || _fc > 0.5f)
         return liquid_error_config("firpfb_%s_create_kaiser(), filter cut-off frequence must be in (0,0.5)", EXTENSION_FULL);
-    if (_As < 0.0f)
+    if (_as < 0.0f)
         return liquid_error_config("firpfb_%s_create_kaiser(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
 
     // design filter using kaiser window
     unsigned int H_len = 2*_M*_m + 1;
     float Hf[H_len];
-    liquid_firdes_kaiser(H_len, _fc/(float)_M, _As, 0.0f, Hf);
+    liquid_firdes_kaiser(H_len, _fc/(float)_M, _as, 0.0f, Hf);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;

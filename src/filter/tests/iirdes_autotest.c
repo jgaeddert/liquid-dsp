@@ -41,7 +41,7 @@ void autotest_iirdes_butter_2()
                   0.25f,    // fc, normalized cut-off frequency
                   0.0f,     // f0,center frequency (ignored for low-pass filter)
                   1.0f,     // Ap, pass-band ripple (ignored for Butterworth)
-                  40.0f,    // As, stop-band attenuation (ignored for Butterworth)
+                  40.0f,    // as, stop-band attenuation (ignored for Butterworth)
                   b, a);    // output coefficients
 
     // initialize pre-determined coefficient array
@@ -79,7 +79,7 @@ void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
                                     float        _fc,   // filter cut-off
                                     float        _fs,   // empirical stop-band frequency
                                     float        _Ap,   // pass-band ripple
-                                    float        _As)   // stop-band suppression
+                                    float        _as)   // stop-band suppression
 {
     float        tol  = 1e-3f;  // error tolerance [dB], yes, that's dB
     unsigned int nfft = 800;    // number of points to evaluate
@@ -87,12 +87,12 @@ void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
     // design filter from prototype
     iirfilt_crcf q = iirfilt_crcf_create_prototype(
         LIQUID_IIRDES_ELLIP, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
-        _n,_fc,0.0f,_Ap,_As);
+        _n,_fc,0.0f,_Ap,_as);
     if (liquid_autotest_verbose)
         iirfilt_crcf_print(q);
 
     // compute regions for testing
-    float H0 = 0.0f, H1 = -_Ap, H2 = -_As;
+    float H0 = 0.0f, H1 = -_Ap, H2 = -_as;
 
     // compute response and compare to expected or mask
     unsigned int i;
@@ -167,7 +167,7 @@ void autotest_iirdes_cheby1_lowpass_4(){ testbench_iirdes_cheby1_lowpass(15,0.35
 void testbench_iirdes_cheby2_lowpass(unsigned int _n,  // filter order
                                      float        _fp, // empirical pass-band frequency at 3 dB
                                      float        _fc, // filter cut-off
-                                     float        _As) // stop-band suppression
+                                     float        _as) // stop-band suppression
 {
     float        tol  = 1e-3f;  // error tolerance [dB], yes, that's dB
     unsigned int nfft = 800;    // number of points to evaluate
@@ -175,12 +175,12 @@ void testbench_iirdes_cheby2_lowpass(unsigned int _n,  // filter order
     // design filter from prototype
     iirfilt_crcf q = iirfilt_crcf_create_prototype(
         LIQUID_IIRDES_CHEBY2, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
-        _n,_fc,0.0f,0.1,_As);
+        _n,_fc,0.0f,0.1,_as);
     if (liquid_autotest_verbose)
         iirfilt_crcf_print(q);
 
     // compute regions for testing
-    float H0 = 0.0f, H1 = -3, H2 = -_As;
+    float H0 = 0.0f, H1 = -3, H2 = -_as;
 
     // compute response and compare to expected or mask
     unsigned int i;
@@ -257,14 +257,14 @@ void autotest_iirdes_ellip_highpass() {
     unsigned int n  =    9;   // filter order
     float        fc =  0.2;   // filter cut-off
     float        Ap =  0.1;   // pass-band ripple
-    float        As = 60.0;   // stop-band suppression
+    float        as = 60.0;   // stop-band suppression
 
     float        tol  = 1e-3f;  // error tolerance [dB], yes, that's dB
     unsigned int nfft = 800;    // number of points to evaluate
 
     // design filter from prototype
     iirfilt_crcf q = iirfilt_crcf_create_prototype(LIQUID_IIRDES_ELLIP,
-        LIQUID_IIRDES_HIGHPASS, LIQUID_IIRDES_SOS,n,fc,0.0f,Ap,As);
+        LIQUID_IIRDES_HIGHPASS, LIQUID_IIRDES_SOS,n,fc,0.0f,Ap,as);
     if (liquid_autotest_verbose)
         iirfilt_crcf_print(q);
 
@@ -277,7 +277,7 @@ void autotest_iirdes_ellip_highpass() {
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=-0.5,   .fmax=-fc,   .pmin=-Ap-tol, .pmax=   +tol, .test_lo=1, .test_hi=1},
-      {.fmin=-0.184, .fmax=0.184, .pmin=0,       .pmax=-As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=-0.184, .fmax=0.184, .pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
       {.fmin=fc,     .fmax=0.5,   .pmin=-Ap-tol, .pmax=   +tol, .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(H, nfft, regions, 3,
@@ -293,14 +293,14 @@ void autotest_iirdes_ellip_bandpass() {
     float        fc =  0.3;   // filter cut-off
     float        f0 =  0.35;  // filter center frequency
     float        Ap =  0.1;   // pass-band ripple
-    float        As = 60.0;   // stop-band suppression
+    float        as = 60.0;   // stop-band suppression
 
     float        tol  = 1e-3f;  // error tolerance [dB], yes, that's dB
     unsigned int nfft = 2400;   // number of points to evaluate
 
     // design filter from prototype
     iirfilt_crcf q = iirfilt_crcf_create_prototype(LIQUID_IIRDES_ELLIP,
-        LIQUID_IIRDES_BANDPASS, LIQUID_IIRDES_SOS,n,fc,f0,Ap,As);
+        LIQUID_IIRDES_BANDPASS, LIQUID_IIRDES_SOS,n,fc,f0,Ap,as);
     if (liquid_autotest_verbose)
         iirfilt_crcf_print(q);
 
@@ -312,11 +312,11 @@ void autotest_iirdes_ellip_bandpass() {
 
     // verify result
     autotest_psd_s regions[] = {
-      {.fmin=-0.5,   .fmax=-0.396,.pmin=0,       .pmax=-As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=-0.5,   .fmax=-0.396,.pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
       {.fmin=-0.388, .fmax=-0.301,.pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
-      {.fmin=-0.293, .fmax=+0.293,.pmin=0,       .pmax=-As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=-0.293, .fmax=+0.293,.pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
       {.fmin=+0.301, .fmax=+0.388,.pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
-      {.fmin=+0.396, .fmax=+0.5,  .pmin=0,       .pmax=-As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=+0.396, .fmax=+0.5,  .pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(H, nfft, regions, 5,
         liquid_autotest_verbose ? "autotest_iirdes_ellip_bandpass.m" : NULL);
@@ -331,14 +331,14 @@ void autotest_iirdes_ellip_bandstop() {
     float        fc =  0.3;   // filter cut-off
     float        f0 =  0.35;  // filter center frequency
     float        Ap =  0.1;   // pass-band ripple
-    float        As = 60.0;   // stop-band suppression
+    float        as = 60.0;   // stop-band suppression
 
     float        tol  = 1e-3f;  // error tolerance [dB], yes, that's dB
     unsigned int nfft = 2400;   // number of points to evaluate
 
     // design filter from prototype
     iirfilt_crcf q = iirfilt_crcf_create_prototype(LIQUID_IIRDES_ELLIP,
-        LIQUID_IIRDES_BANDSTOP, LIQUID_IIRDES_SOS,n,fc,f0,Ap,As);
+        LIQUID_IIRDES_BANDSTOP, LIQUID_IIRDES_SOS,n,fc,f0,Ap,as);
     if (liquid_autotest_verbose)
         iirfilt_crcf_print(q);
 
@@ -351,9 +351,9 @@ void autotest_iirdes_ellip_bandstop() {
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=-0.5,   .fmax=-0.391,.pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
-      {.fmin=-0.387, .fmax=-0.306,.pmin=0,       .pmax=-As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=-0.387, .fmax=-0.306,.pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
       {.fmin=-0.298, .fmax=+0.298,.pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
-      {.fmin=+0.306, .fmax=+0.387,.pmin=0,       .pmax=-As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=+0.306, .fmax=+0.387,.pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
       {.fmin=+0.391, .fmax=+0.5,  .pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(H, nfft, regions, 5,

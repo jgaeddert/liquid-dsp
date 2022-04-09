@@ -121,12 +121,12 @@ void autotest_liquid_firdes_dcblock()
 {
     // options
     unsigned int m   = 20;      // filter semi-length
-    float        As  = 60.0f;   // stop-band suppression/pass-band ripple
+    float        as  = 60.0f;   // stop-band suppression/pass-band ripple
 
     // Create filter
     unsigned int h_len = 2*m+1;
     float h[h_len];
-    liquid_firdes_notch(m,0,As,h);
+    liquid_firdes_notch(m,0,as,h);
 
     // compute filter response and evaluate at several frequencies
     unsigned int  nfft = 1200;
@@ -138,7 +138,7 @@ void autotest_liquid_firdes_dcblock()
     fft_run(nfft, buf_time, buf_freq, LIQUID_FFT_FORWARD, 0);
 
     // evaluate at several points
-    float tol = 2*powf(10.0f, -As/20.0f); // generous
+    float tol = 2*powf(10.0f, -as/20.0f); // generous
     CONTEND_DELTA(cabsf(buf_freq[       0]), 0.0f, tol);   // notch at DC
     CONTEND_DELTA(cabsf(buf_freq[  nfft/4]), 1.0f, tol);   // pass at  Fs/4
     CONTEND_DELTA(cabsf(buf_freq[2*nfft/4]), 1.0f, tol);   // pass at  Fs/2
@@ -149,13 +149,13 @@ void autotest_liquid_firdes_notch()
 {
     // options
     unsigned int m   = 20;      // filter semi-length
-    float        As  = 60.0f;   // stop-band suppression/pass-band ripple
+    float        as  = 60.0f;   // stop-band suppression/pass-band ripple
     float        f0  = 0.2f;    // notch frequency (must be greater than zero here)
 
     // Create filter
     unsigned int h_len = 2*m+1;
     float h[h_len];
-    liquid_firdes_notch(m,f0,As,h);
+    liquid_firdes_notch(m,f0,as,h);
 
     // compute filter response and evaluate at several frequencies
     unsigned int  nfft = 1200;
@@ -171,7 +171,7 @@ void autotest_liquid_firdes_notch()
     unsigned int i1 = nfft - i0;                     // negative
 
     // evaluate at several points
-    float tol = 2*powf(10.0f, -As/20.0f); // generous
+    float tol = 2*powf(10.0f, -as/20.0f); // generous
     CONTEND_DELTA(cabsf(buf_freq[    i0]), 0.0f, tol);   // notch at +f0
     CONTEND_DELTA(cabsf(buf_freq[    i1]), 0.0f, tol);   // notch at -f0
     CONTEND_DELTA(cabsf(buf_freq[     0]), 1.0f, tol);   // pass at  0
@@ -290,7 +290,7 @@ void testbench_firdes_prototype(const char * _type,
                                 unsigned int _k,
                                 unsigned int _m,
                                 float        _beta,
-                                float        _As)
+                                float        _as)
 {
     // design filter
     unsigned int h_len = 2*_k*_m+1;
@@ -310,9 +310,9 @@ void testbench_firdes_prototype(const char * _type,
     float f0 = 0.45*bw*(1-_beta);
     float f1 = 0.55*bw*(1+_beta);
     autotest_psd_s regions[] = {
-      {.fmin=-0.5,.fmax=-f1, .pmin= 0, .pmax=-_As, .test_lo=0, .test_hi=1},
+      {.fmin=-0.5,.fmax=-f1, .pmin= 0, .pmax=-_as, .test_lo=0, .test_hi=1},
       {.fmin=-f0, .fmax= f0, .pmin=-1, .pmax=+1,   .test_lo=1, .test_hi=1},
-      {.fmin= f1, .fmax=+0.5,.pmin= 0, .pmax=-_As, .test_lo=0, .test_hi=1},
+      {.fmin= f1, .fmax=+0.5,.pmin= 0, .pmax=-_as, .test_lo=0, .test_hi=1},
     };
     char filename[256];
     sprintf(filename,"autotest_firdes_prototype_%s.m", _type);

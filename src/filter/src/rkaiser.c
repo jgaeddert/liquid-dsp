@@ -116,19 +116,19 @@ int liquid_firdes_arkaiser(unsigned int _k,
     unsigned int n=2*_k*_m+1;                       // filter length
     float kf = (float)_k;                           // samples/symbol (float)
     float del = _beta*rho_hat / kf;                 // transition bandwidth
-    float As = estimate_req_filter_As(del, n);      // stop-band suppression
+    float as = estimate_req_filter_As(del, n);      // stop-band suppression
     float fc  = 0.5f*(1 + _beta*(1.0f-rho_hat))/kf; // filter cutoff
     
 #if DEBUG_RKAISER
     printf("rho-hat : %12.8f (compare to %12.8f)\n", rho_hat, rkaiser_approximate_rho(_m,_beta));
     printf("fc      : %12.8f\n", fc);
     printf("delta-f : %12.8f\n", del);
-    printf("As      : %12.8f dB\n", As);
-    printf("alpha   : %12.8f\n", kaiser_beta_As(As));
+    printf("as      : %12.8f dB\n", as);
+    printf("alpha   : %12.8f\n", kaiser_beta_As(as));
 #endif
 
     // compute filter coefficients
-    liquid_firdes_kaiser(n,fc,As,_dt,_h);
+    liquid_firdes_kaiser(n,fc,as,_dt,_h);
 
     // normalize coefficients
     float e2 = 0.0f;
@@ -482,7 +482,7 @@ float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
     unsigned int n=2*_k*_m+1;                   // filter length
     float kf = (float)_k;                       // samples/symbol (float)
     float del = _beta*_rho / kf;                // transition bandwidth
-    float As = estimate_req_filter_As(del, n);  // stop-band suppression
+    float as = estimate_req_filter_As(del, n);  // stop-band suppression
     float fc = 0.5f*(1 + _beta*(1.0f-_rho))/kf; // filter cutoff
 
     // evaluate performance (ISI)
@@ -490,7 +490,7 @@ float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
     float isi_rms;
 
     // compute filter
-    liquid_firdes_kaiser(n,fc,As,_dt,_h);
+    liquid_firdes_kaiser(n,fc,as,_dt,_h);
 
     // compute filter ISI
     liquid_filter_isi(_h,_k,_m,&isi_rms,&isi_max);

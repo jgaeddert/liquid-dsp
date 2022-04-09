@@ -798,16 +798,16 @@ LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_comp
 // esimate required filter length given transition bandwidth and
 // stop-band attenuation (algorithm from [Vaidyanathan:1993])
 //  _df     :   transition bandwidth (0 < _df < 0.5)
-//  _As     :   stop-band attenuation [dB] (As > 0)
+//  _as     :   stop-band attenuation [dB] (_as > 0)
 float estimate_req_filter_len_Kaiser(float _df,
-                                     float _As);
+                                     float _as);
 
 // esimate required filter length given transition bandwidth and
 // stop-band attenuation (algorithm from [Herrmann:1973])
 //  _df     :   transition bandwidth (0 < _df < 0.5)
-//  _As     :   stop-band attenuation [dB] (As > 0)
+//  _as     :   stop-band attenuation [dB] (_as > 0)
 float estimate_req_filter_len_Herrmann(float _df,
-                                       float _As);
+                                       float _as);
 
 
 // firdes : finite impulse response filter design
@@ -1056,7 +1056,7 @@ typedef struct QSOURCE(_s) * QSOURCE();                                     \
 /* Create default qsource object, type uninitialized                    */  \
 QSOURCE() QSOURCE(_create)(unsigned int _M,                                 \
                            unsigned int _m,                                 \
-                           float        _As,                                \
+                           float        _as,                                \
                            float        _fc,                                \
                            float        _bw,                                \
                            float        _gain);                             \

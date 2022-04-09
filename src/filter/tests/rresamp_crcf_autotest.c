@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ void test_harness_rresamp_crcf(unsigned int _P,
                                unsigned int _Q,
                                unsigned int _m,
                                float        _bw,
-                               float        _As)
+                               float        _as)
 {
     // options
     unsigned int n=800000;  // number of output samples to analyze
@@ -41,7 +41,7 @@ void test_harness_rresamp_crcf(unsigned int _P,
     float tol = 0.5f;
 
     // create resampler with rate P/Q
-    rresamp_crcf resamp = rresamp_crcf_create_kaiser(_P, _Q, _m, _bw, _As);
+    rresamp_crcf resamp = rresamp_crcf_create_kaiser(_P, _Q, _m, _bw, _as);
     float r = rresamp_crcf_get_rate(resamp);
 
     // create and configure objects
@@ -67,9 +67,9 @@ void test_harness_rresamp_crcf(unsigned int _P,
     float psd[nfft];
     spgramcf_get_psd(q, psd);
     autotest_psd_s regions[] = {
-        {.fmin=-0.5f,    .fmax=-0.6f*bw, .pmin=0,     .pmax=-_As+tol, .test_lo=0, .test_hi=1},
+        {.fmin=-0.5f,    .fmax=-0.6f*bw, .pmin=0,     .pmax=-_as+tol, .test_lo=0, .test_hi=1},
         {.fmin=-0.4f*bw, .fmax=+0.4f*bw, .pmin=0-tol, .pmax=  0 +tol, .test_lo=1, .test_hi=1},
-        {.fmin=+0.6f*bw, .fmax=+0.5f,    .pmin=0,     .pmax=-_As+tol, .test_lo=0, .test_hi=1},
+        {.fmin=+0.6f*bw, .fmax=+0.5f,    .pmin=0,     .pmax=-_as+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
         liquid_autotest_verbose ? "autotest_rresamp_crcf.m" : NULL);

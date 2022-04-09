@@ -10,14 +10,14 @@
 // initialize DC blocker filter
 float firfilt_dcblocker_init(unsigned int _m,
                              float        _fc,
-                             float        _As,
+                             float        _as,
                              float *      _h);
 
 int main()
 {
     // options
     unsigned int m       = 80;                          // filter semi-length
-    float        As      = 40.0f;                       // filter prototype suppression
+    float        as      = 40.0f;                       // filter prototype suppression
     const char *filename = "firfilt_dcblocker_test.m";  // output filename
 
     // derived values
@@ -25,11 +25,11 @@ int main()
     float        h[h_len];      // filter coefficients buffer
 
     // initialize starting conditions
-    float p  = 0.1f / fabsf(m * As); // initial spacing
+    float p  = 0.1f / fabsf(m * as); // initial spacing
     float g0 = 0, g1 = p, g2 = 2*p;
-    float u0 = firfilt_dcblocker_init(m, 0.5f-g0, As, h);
-    float u1 = firfilt_dcblocker_init(m, 0.5f-g1, As, h);
-    float u2 = firfilt_dcblocker_init(m, 0.5f-g2, As, h);
+    float u0 = firfilt_dcblocker_init(m, 0.5f-g0, as, h);
+    float u1 = firfilt_dcblocker_init(m, 0.5f-g1, as, h);
+    float u2 = firfilt_dcblocker_init(m, 0.5f-g2, as, h);
     // assert u0 > u1 > u2
 
     // open an initialize output file
@@ -37,7 +37,7 @@ int main()
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"m = %u;\n", m);
-    fprintf(fid,"As= %.3f;\n", As);
+    fprintf(fid,"as= %.3f;\n", as);
     fprintf(fid,"g=[]; u=[];\n");
     fprintf(fid,"g(end+1)=%12.4e; u(end+1)=%12.3f;\n", g0, u0);
     fprintf(fid,"g(end+1)=%12.4e; u(end+1)=%12.3f;\n", g1, u1);
@@ -47,7 +47,7 @@ int main()
     float g_prime = 3*p;
     while (g_prime < 0.25f) {
         // design filter
-        float u_prime = firfilt_dcblocker_init(m, 0.5f-g_prime, As, h);
+        float u_prime = firfilt_dcblocker_init(m, 0.5f-g_prime, as, h);
         fprintf(fid,"g(end+1)=%12.4e; u(end+1)=%12.3f;\n", g_prime, u_prime);
         printf("  gamma : %12.4e, dc : %12.3f dB\n", g_prime, u_prime);
 
@@ -71,8 +71,8 @@ int main()
         // assert u0 > u1 > u2
         float gm = 0.5f*(g0 + g1);
         float gp = 0.5f*(g1 + g2);
-        float um = firfilt_dcblocker_init(m, 0.5f-gm, As, h);
-        float up = firfilt_dcblocker_init(m, 0.5f-gp, As, h);
+        float um = firfilt_dcblocker_init(m, 0.5f-gm, as, h);
+        float up = firfilt_dcblocker_init(m, 0.5f-gp, as, h);
         fprintf(fid,"g(end+1)=%12.4e; u(end+1)=%12.3f;\n", gm, um);
         fprintf(fid,"g(end+1)=%12.4e; u(end+1)=%12.3f;\n", gp, up);
 
@@ -94,7 +94,7 @@ int main()
     }
 
     // re-design optimum filter and copy coefficients to type-specific array
-    firfilt_dcblocker_init(m, 0.5-g1, As, h);
+    firfilt_dcblocker_init(m, 0.5-g1, as, h);
 
     // save filter coefficients
     for (i=0; i<h_len; i++)
@@ -128,12 +128,12 @@ int main()
 // initialize DC blocker filter
 float firfilt_dcblocker_init(unsigned int _m,
                              float        _fc,
-                             float        _As,
+                             float        _as,
                              float *      _h)
 {
     // design filter
     unsigned int h_len = 2*_m+1;
-    liquid_firdes_kaiser(h_len, _fc, _As, 0.0f, _h);
+    liquid_firdes_kaiser(h_len, _fc, _as, 0.0f, _h);
 
     // mix by Fs/2 and evaluate DC term
     float dc = 0.0f;
