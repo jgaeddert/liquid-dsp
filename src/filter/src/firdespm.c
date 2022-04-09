@@ -63,10 +63,12 @@
 int firdespm_output_debug_file(firdespm _q);
 #endif
 
+#if 0
 // initialize internal memory and arrays
 int firdespm_init_memory(firdespm     _q,
                          unsigned int _h_len,
                          unsigned int _num_bands);
+#endif
 
 // initialize the frequency grid on the disjoint bounded set
 int firdespm_init_grid(firdespm _q);
@@ -499,6 +501,7 @@ int firdespm_execute(firdespm _q, float * _h)
 // internal methods
 //
 
+#if 0
 // initialize internal memory and arrays
 int firdespm_init_memory(firdespm     _q,
                          unsigned int _h_len,
@@ -506,6 +509,7 @@ int firdespm_init_memory(firdespm     _q,
 {
     return LIQUID_OK;
 }
+#endif
 
 // initialize the frequency grid on the disjoint bounded set
 int firdespm_init_grid(firdespm _q)
