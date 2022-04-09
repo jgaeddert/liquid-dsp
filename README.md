@@ -173,6 +173,17 @@ int main() {
 }
 ```
 
+### PlatformIO ###
+
+Mac:
+
+    brew install platformio
+
+Linux:
+
+    sudo -H python3 -m pip install -U platformio
+
+
 ## Available Modules ##
 
   * _agc_: automatic gain control, received signal strength
