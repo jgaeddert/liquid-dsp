@@ -304,11 +304,9 @@ int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_
 int liquid_autotest_validate_psd_signalf(float * _buf, unsigned int _buf_len,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
 
-//int liquid_autotest_validate_spectrum2(spgramcf _periodogram, autotest_psd_s * _regions);
-
-//int liquid_autotest_validate_spectrum3(firfilt_crcf _filter, autotest_psd_s * _regions);
-
-//int liquid_autotest_validate_spectrum4(iirfilt_crcf _filter, autotest_psd_s * _regions);
+// validate spectral content of a filter
+int liquid_autotest_validate_psd_firfilt_crcf(firfilt_crcf _q, unsigned int _nfft,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
 
 #endif // __LIQUID_AUTOTEST_H__
 

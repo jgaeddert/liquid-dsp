@@ -313,21 +313,12 @@ int liquid_autotest_validate_psd_signalf(float * _buf, unsigned int _buf_len,
     return rc;
 }
 
-
-/*
-int liquid_autotest_validate_spectrum2(spgramcf _periodogram, autotest_psd_s * _regions)
+// validate spectral content of a filter
+int liquid_autotest_validate_psd_firfilt_crcf(firfilt_crcf _q, unsigned int _nfft,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
-    return 0;
+    return liquid_autotest_validate_psd_signalf(
+            (float*) firfilt_crcf_get_coefficients(_q), firfilt_crcf_get_length(_q),
+            _regions, num_regions, debug_filename);
 }
-
-int liquid_autotest_validate_spectrum3(firfilt_crcf _filter, autotest_psd_s * _regions)
-{
-    return 0;
-}
-
-int liquid_autotest_validate_spectrum4(iirfilt_crcf _filter, autotest_psd_s * _regions)
-{
-    return 0;
-}
-*/
 
