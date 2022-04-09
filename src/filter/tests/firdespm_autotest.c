@@ -239,15 +239,17 @@ void autotest_firdespm_config()
     CONTEND_EQUALITY(   LIQUID_OK, firdespm_print(q) )
     firdespm_destroy(q);
 
-    // invalid bands
+    // invalid bands & weights
     float bands_0[4] = { 0.0, 0.3, 0.2, 0.5}; // overlapping bands
     float bands_1[4] = {-0.1, 0.0, 0.3, 0.6}; // bands out of range
+    float w_0    [2] = { 1.0,-1.0};           // weights out of range
 
     // try to create regular object with invalid configuration
-    CONTEND_ISNULL( firdespm_create( 0, 2, bands,   des, w, wtype, LIQUID_FIRDESPM_BANDPASS) )
-    CONTEND_ISNULL( firdespm_create(51, 0, bands,   des, w, wtype, LIQUID_FIRDESPM_BANDPASS) )
-    CONTEND_ISNULL( firdespm_create(51, 2, bands_0, des, w, wtype, LIQUID_FIRDESPM_BANDPASS) )
-    CONTEND_ISNULL( firdespm_create(51, 2, bands_1, des, w, wtype, LIQUID_FIRDESPM_BANDPASS) )
+    CONTEND_ISNULL( firdespm_create( 0, 2, bands,   des, w  , wtype, LIQUID_FIRDESPM_BANDPASS) )
+    CONTEND_ISNULL( firdespm_create(51, 0, bands,   des, w  , wtype, LIQUID_FIRDESPM_BANDPASS) )
+    CONTEND_ISNULL( firdespm_create(51, 2, bands_0, des, w  , wtype, LIQUID_FIRDESPM_BANDPASS) )
+    CONTEND_ISNULL( firdespm_create(51, 2, bands_1, des, w  , wtype, LIQUID_FIRDESPM_BANDPASS) )
+    CONTEND_ISNULL( firdespm_create(51, 2, bands,   des, w_0, wtype, LIQUID_FIRDESPM_BANDPASS) )
 
     // try to create callback object with invalid configuration
     CONTEND_ISNULL( firdespm_create_callback( 0, 2, bands,   LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
