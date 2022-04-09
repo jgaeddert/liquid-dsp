@@ -907,10 +907,10 @@ int firdespm_compute_taps(firdespm _q, float * _h)
         }
     } else if (_q->btype != LIQUID_FIRDESPM_BANDPASS && _q->s==1) {
         // odd filter length, odd symmetry
-        fprintf(stderr,"warning: firdespm_compute_taps(), filter configuration not yet supported\n");
+        return liquid_error(LIQUID_EINT,"firdespm_compute_taps(), filter configuration not yet supported");
     } else if (_q->btype != LIQUID_FIRDESPM_BANDPASS && _q->s==0) {
         // even filter length, odd symmetry
-        fprintf(stderr,"warning: firdespm_compute_taps(), filter configuration not yet supported\n");
+        return liquid_error(LIQUID_EINT,"firdespm_compute_taps(), filter configuration not yet supported");
     }
 #if LIQUID_FIRDESPM_DEBUG_PRINT
     printf("\n");

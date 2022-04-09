@@ -258,3 +258,51 @@ void autotest_firdespm_config()
     CONTEND_ISNULL( firdespm_create_callback(51, 2, bands_1, LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
 }
 
+void autotest_firdespm_differentiator()
+{
+    AUTOTEST_WARN("firdespm_differentiator(), unsupported configuration");
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping firdespm differentiator test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // create valid object
+    unsigned int n = 51;
+    float bands[4] = {0.0, 0.2, 0.3, 0.5};  // regions
+    float   des[2] = {1.0,      0.0};       // desired values
+    float     w[2] = {1.0,      1.0};       // weights
+    float     h[n];
+    liquid_firdespm_wtype wtype[2] = {LIQUID_FIRDESPM_FLATWEIGHT, LIQUID_FIRDESPM_FLATWEIGHT};
+    liquid_firdespm_btype btype = LIQUID_FIRDESPM_DIFFERENTIATOR;
+    firdespm q = firdespm_create(n, 2, bands, des, w, wtype, btype);
+    // error: unsupported configuration
+    CONTEND_EQUALITY( LIQUID_EINT, firdespm_execute(q,h) )
+    firdespm_destroy(q);
+}
+
+void autotest_firdespm_hilbert()
+{
+    AUTOTEST_WARN("firdespm_hilbert(), unsupported configuration");
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping firdespm hilbert test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // create valid object
+    unsigned int n = 51;
+    float bands[4] = {0.0, 0.2, 0.3, 0.5};  // regions
+    float   des[2] = {1.0,      0.0};       // desired values
+    float     w[2] = {1.0,      1.0};       // weights
+    float     h[n];
+    liquid_firdespm_wtype wtype[2] = {LIQUID_FIRDESPM_FLATWEIGHT, LIQUID_FIRDESPM_FLATWEIGHT};
+    liquid_firdespm_btype btype = LIQUID_FIRDESPM_HILBERT;
+    firdespm q = firdespm_create(n, 2, bands, des, w, wtype, btype);
+    // error: unsupported configuration
+    CONTEND_EQUALITY( LIQUID_EINT, firdespm_execute(q,h) )
+    firdespm_destroy(q);
+}
+
