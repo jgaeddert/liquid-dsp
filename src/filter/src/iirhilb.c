@@ -42,11 +42,11 @@ struct IIRHILB(_s) {
 // create iirhilb object
 //  _ftype  : filter type (e.g. LIQUID_IIRDES_BUTTER)
 //  _n      : filter order, _n > 0
-//  _Ap     : pass-band ripple [dB], _Ap > 0
-//  _as     : stop-band ripple [dB], _Ap > 0
+//  _ap     : pass-band ripple [dB], _ap > 0
+//  _as     : stop-band ripple [dB], _as > 0
 IIRHILB() IIRHILB(_create)(liquid_iirdes_filtertype _ftype,
                            unsigned int             _n,
-                           float                    _Ap,
+                           float                    _ap,
                            float                    _as)
 {
     // validate iirhilb inputs
@@ -61,8 +61,8 @@ IIRHILB() IIRHILB(_create)(liquid_iirdes_filtertype _ftype,
     int     format = LIQUID_IIRDES_SOS;     // filter coefficients format
     float   fc     =   0.25f;               // cutoff frequency [normalized]
     float   f0     =   0.0f;                // center frequency [normalized]
-    q->filt_0 = IIRFILT(_create_prototype)(_ftype,btype,format,_n,fc,f0,_Ap,_as);
-    q->filt_1 = IIRFILT(_create_prototype)(_ftype,btype,format,_n,fc,f0,_Ap,_as);
+    q->filt_0 = IIRFILT(_create_prototype)(_ftype,btype,format,_n,fc,f0,_ap,_as);
+    q->filt_1 = IIRFILT(_create_prototype)(_ftype,btype,format,_n,fc,f0,_ap,_as);
 
     // reset internal state and return object
     IIRHILB(_reset)(q);

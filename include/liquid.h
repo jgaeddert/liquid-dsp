@@ -2338,7 +2338,7 @@ typedef enum {
 //  _n          :   filter order
 //  _fc         :   low-pass prototype cut-off frequency
 //  _f0         :   center frequency (band-pass, band-stop)
-//  _Ap         :   pass-band ripple in dB
+//  _ap         :   pass-band ripple in dB
 //  _as         :   stop-band ripple in dB
 //  _B          :   numerator
 //  _A          :   denominator
@@ -2348,7 +2348,7 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
                    unsigned int _n,
                    float _fc,
                    float _f0,
-                   float _Ap,
+                   float _ap,
                    float _as,
                    float * _B,
                    float * _A);
@@ -2993,11 +2993,11 @@ typedef struct IIRHILB(_s) * IIRHILB();                                     \
 /* desired pass- and stop-band attenuation.                             */  \
 /*  _ftype  : filter type (e.g. LIQUID_IIRDES_BUTTER)                   */  \
 /*  _n      : filter order, _n > 0                                      */  \
-/*  _Ap     : pass-band ripple [dB], _Ap > 0                            */  \
-/*  _as     : stop-band ripple [dB], _Ap > 0                            */  \
+/*  _ap     : pass-band ripple [dB], _ap > 0                            */  \
+/*  _as     : stop-band ripple [dB], _as > 0                            */  \
 IIRHILB() IIRHILB(_create)(liquid_iirdes_filtertype _ftype,                 \
                            unsigned int             _n,                     \
-                           float                    _Ap,                    \
+                           float                    _ap,                    \
                            float                    _as);                   \
                                                                             \
 /* Create a default iirhilb object with a particular filter order.      */  \
@@ -3215,7 +3215,7 @@ IIRFILT() IIRFILT(_create_sos)(TC *         _B,                             \
 /*  _order  : filter order, _order > 0                                  */  \
 /*  _fc     : low-pass prototype cut-off frequency, 0 <= _fc <= 0.5     */  \
 /*  _f0     : center frequency (band-pass, band-stop), 0 <= _f0 <= 0.5  */  \
-/*  _Ap     : pass-band ripple in dB, _Ap > 0                           */  \
+/*  _ap     : pass-band ripple in dB, _ap > 0                           */  \
 /*  _as     : stop-band ripple in dB, _as > 0                           */  \
 IIRFILT() IIRFILT(_create_prototype)(                                       \
             liquid_iirdes_filtertype _ftype,                                \
@@ -3224,7 +3224,7 @@ IIRFILT() IIRFILT(_create_prototype)(                                       \
             unsigned int             _order,                                \
             float                    _fc,                                   \
             float                    _f0,                                   \
-            float                    _Ap,                                   \
+            float                    _ap,                                   \
             float                    _as);                                  \
                                                                             \
 /* Create simplified low-pass Butterworth IIR filter                    */  \
@@ -3718,7 +3718,7 @@ IIRINTERP() IIRINTERP(_create_default)(unsigned int _M,                     \
 /*  _order  : filter order, _order > 0                                  */  \
 /*  _fc     : low-pass prototype cut-off frequency, 0 <= _fc <= 0.5     */  \
 /*  _f0     : center frequency (band-pass, band-stop), 0 <= _f0 <= 0.5  */  \
-/*  _Ap     : pass-band ripple in dB, _Ap > 0                           */  \
+/*  _ap     : pass-band ripple in dB, _ap > 0                           */  \
 /*  _as     : stop-band ripple in dB, _as > 0                           */  \
 IIRINTERP() IIRINTERP(_create_prototype)(                                   \
             unsigned int             _M,                                    \
@@ -3728,7 +3728,7 @@ IIRINTERP() IIRINTERP(_create_prototype)(                                   \
             unsigned int             _order,                                \
             float                    _fc,                                   \
             float                    _f0,                                   \
-            float                    _Ap,                                   \
+            float                    _ap,                                   \
             float                    _as);                                  \
                                                                             \
 /* Destroy interpolator object and free internal memory                 */  \
@@ -3925,7 +3925,7 @@ IIRDECIM() IIRDECIM(_create_default)(unsigned int _M,                       \
 /*  _order  : filter order, _order > 0                                  */  \
 /*  _fc     : low-pass prototype cut-off frequency, 0 <= _fc <= 0.5     */  \
 /*  _f0     : center frequency (band-pass, band-stop), 0 <= _f0 <= 0.5  */  \
-/*  _Ap     : pass-band ripple in dB, _Ap > 0                           */  \
+/*  _ap     : pass-band ripple in dB, _ap > 0                           */  \
 /*  _as     : stop-band ripple in dB, _as > 0                           */  \
 IIRDECIM() IIRDECIM(_create_prototype)(                                     \
                 unsigned int             _M,                                \
@@ -3935,7 +3935,7 @@ IIRDECIM() IIRDECIM(_create_prototype)(                                     \
                 unsigned int             _order,                            \
                 float                    _fc,                               \
                 float                    _f0,                               \
-                float                    _Ap,                               \
+                float                    _ap,                               \
                 float                    _as);                              \
                                                                             \
 /* Destroy decimator object and free internal memory                    */  \

@@ -78,7 +78,7 @@ void autotest_iirdes_butter_2()
 void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
                                     float        _fc,   // filter cut-off
                                     float        _fs,   // empirical stop-band frequency
-                                    float        _Ap,   // pass-band ripple
+                                    float        _ap,   // pass-band ripple
                                     float        _as)   // stop-band suppression
 {
     float        tol  = 1e-3f;  // error tolerance [dB], yes, that's dB
@@ -87,12 +87,12 @@ void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
     // design filter from prototype
     iirfilt_crcf q = iirfilt_crcf_create_prototype(
         LIQUID_IIRDES_ELLIP, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
-        _n,_fc,0.0f,_Ap,_as);
+        _n,_fc,0.0f,_ap,_as);
     if (liquid_autotest_verbose)
         iirfilt_crcf_print(q);
 
     // compute regions for testing
-    float H0 = 0.0f, H1 = -_Ap, H2 = -_as;
+    float H0 = 0.0f, H1 = -_ap, H2 = -_as;
 
     // compute response and compare to expected or mask
     unsigned int i;
@@ -123,7 +123,7 @@ void autotest_iirdes_ellip_lowpass_4(){ testbench_iirdes_ellip_lowpass(15,0.35f,
 void testbench_iirdes_cheby1_lowpass(unsigned int _n,  // filter order
                                      float        _fc, // filter cut-off
                                      float        _fs, // empirical stop-band frequency at 60 dB
-                                     float        _Ap) // pass-band ripple
+                                     float        _ap) // pass-band ripple
 {
     float        tol  = 1e-3f;  // error tolerance [dB], yes, that's dB
     unsigned int nfft = 800;    // number of points to evaluate
@@ -131,12 +131,12 @@ void testbench_iirdes_cheby1_lowpass(unsigned int _n,  // filter order
     // design filter from prototype
     iirfilt_crcf q = iirfilt_crcf_create_prototype(
         LIQUID_IIRDES_CHEBY1, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
-        _n,_fc,0.0f,_Ap,60.0f);
+        _n,_fc,0.0f,_ap,60.0f);
     if (liquid_autotest_verbose)
         iirfilt_crcf_print(q);
 
     // compute regions for testing
-    float H0 = 0.0f, H1 = -_Ap, H2 = -60;
+    float H0 = 0.0f, H1 = -_ap, H2 = -60;
 
     // compute response and compare to expected or mask
     unsigned int i;

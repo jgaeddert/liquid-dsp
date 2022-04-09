@@ -202,7 +202,7 @@ IIRFILT() IIRFILT(_create_sos)(TC *         _B,
 //  _order      :   filter order
 //  _fc         :   low-pass prototype cut-off frequency
 //  _f0         :   center frequency (band-pass, band-stop)
-//  _Ap         :   pass-band ripple in dB
+//  _ap         :   pass-band ripple in dB
 //  _as         :   stop-band ripple in dB
 IIRFILT() IIRFILT(_create_prototype)(liquid_iirdes_filtertype _ftype,
                                      liquid_iirdes_bandtype   _btype,
@@ -210,7 +210,7 @@ IIRFILT() IIRFILT(_create_prototype)(liquid_iirdes_filtertype _ftype,
                                      unsigned int _order,
                                      float _fc,
                                      float _f0,
-                                     float _Ap,
+                                     float _ap,
                                      float _as)
 {
     // derived values : compute filter length
@@ -232,7 +232,7 @@ IIRFILT() IIRFILT(_create_prototype)(liquid_iirdes_filtertype _ftype,
     float A[h_len];
 
     // design filter (compute coefficients)
-    liquid_iirdes(_ftype, _btype, _format, _order, _fc, _f0, _Ap, _as, B, A);
+    liquid_iirdes(_ftype, _btype, _format, _order, _fc, _f0, _ap, _as, B, A);
 
     // move coefficients to type-specific arrays (e.g. float complex)
     TC Bc[h_len];

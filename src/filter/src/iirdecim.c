@@ -91,7 +91,7 @@ IIRDECIM() IIRDECIM(_create_prototype)(unsigned int             _M,
                                        unsigned int             _order,
                                        float                    _fc,
                                        float                    _f0,
-                                       float                    _Ap,
+                                       float                    _ap,
                                        float                    _as)
 {
     // validate input
@@ -103,7 +103,7 @@ IIRDECIM() IIRDECIM(_create_prototype)(unsigned int             _M,
     q->M = _M;
 
     // create filter
-    q->iirfilt = IIRFILT(_create_prototype)(_ftype, _btype, _format, _order, _fc, _f0, _Ap, _as);
+    q->iirfilt = IIRFILT(_create_prototype)(_ftype, _btype, _format, _order, _fc, _f0, _ap, _as);
 
     // return interpolator object
     return q;

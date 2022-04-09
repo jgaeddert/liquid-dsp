@@ -463,7 +463,7 @@ void iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
 //  _n          :   filter order
 //  _fc         :   low-pass prototype cut-off frequency
 //  _f0         :   center frequency (band-pass, band-stop)
-//  _Ap         :   pass-band ripple in dB
+//  _ap         :   pass-band ripple in dB
 //  _as         :   stop-band ripple in dB
 //  _B          :   numerator
 //  _A          :   denominator
@@ -473,7 +473,7 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
                    unsigned int _n,
                    float _fc,
                    float _f0,
-                   float _Ap,
+                   float _ap,
                    float _as,
                    float * _B,
                    float * _A)
@@ -485,7 +485,7 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
     } else if (_f0 < 0 || _f0 > 0.5) {
         liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), center frequency out of range");
         return;
-    } else if (_Ap <= 0) {
+    } else if (_ap <= 0) {
         liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), pass-band ripple out of range");
         return;
     } else if (_as <= 0) {
@@ -524,7 +524,7 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
     case LIQUID_IIRDES_CHEBY1:
         // Cheby-I filter design : no zeros, _n poles, pass-band ripple
         nza = 0;
-        epsilon = sqrtf( powf(10.0f, _Ap / 10.0f) - 1.0f );
+        epsilon = sqrtf( powf(10.0f, _ap / 10.0f) - 1.0f );
         k0 = r ? 1.0f : 1.0f / sqrt(1.0f + epsilon*epsilon);
         cheby1_azpkf(_n,epsilon,za,pa,&ka);
         break;
@@ -538,7 +538,7 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
     case LIQUID_IIRDES_ELLIP:
         // elliptic filter design : _n-r zeros, _n poles, pass/stop-band ripple
         nza = 2*L;
-        Gp = powf(10.0f, -_Ap / 20.0f);     // pass-band gain
+        Gp = powf(10.0f, -_ap / 20.0f);     // pass-band gain
         Gs = powf(10.0f, -_as / 20.0f);     // stop-band gain
         ep = sqrtf(1.0f/(Gp*Gp) - 1.0f);    // pass-band epsilon
         es = sqrtf(1.0f/(Gs*Gs) - 1.0f);    // stop-band epsilon
