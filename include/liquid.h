@@ -641,11 +641,11 @@ int CHANNEL(_print)(CHANNEL() _q);                                          \
                                                                             \
 /* Include additive white Gausss noise impairment                       */  \
 /*  _q          : channel object                                        */  \
-/*  _N0dB       : noise floor power spectral density [dB]               */  \
-/*  _SNRdB      : signal-to-noise ratio [dB]                            */  \
+/*  _noise_floor: noise floor power spectral density [dB]               */  \
+/*  _snr        : signal-to-noise ratio [dB]                            */  \
 int CHANNEL(_add_awgn)(CHANNEL() _q,                                        \
-                       float     _N0dB,                                     \
-                       float     _SNRdB);                                   \
+                       float     _noise_floor,                              \
+                       float     _snr);                                     \
                                                                             \
 /* Include carrier offset impairment                                    */  \
 /*  _q          : channel object                                        */  \
