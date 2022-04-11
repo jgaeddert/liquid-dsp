@@ -138,18 +138,11 @@ FIRFILT() FIRFILT(_create_rnyquist)(int          _type,
                                     float        _beta,
                                     float        _mu)
 {
-    // validate input
-    if (_k < 2)
-        return liquid_error_config("firfilt_%s_create_rnyquist(), filter samples/symbol must be greater than 1", EXTENSION_FULL);
-    if (_m == 0)
-        return liquid_error_config("firfilt_%s_create_rnyquist(), filter delay must be greater than 0", EXTENSION_FULL);
-    if (_beta < 0.0f || _beta > 1.0f)
-        return liquid_error_config("firfilt_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
-
     // generate square-root Nyquist filter
     unsigned int h_len = 2*_k*_m + 1;
     float hf[h_len];
-    liquid_firdes_prototype(_type,_k,_m,_beta,_mu,hf);
+    if (liquid_firdes_prototype(_type,_k,_m,_beta,_mu,hf) != LIQUID_OK)
+        return liquid_error_config("firfilt_%s_create_rnyquist(), invalid configuration", EXTENSION_FULL);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;

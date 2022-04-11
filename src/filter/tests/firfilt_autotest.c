@@ -41,3 +41,15 @@ void autotest_firfilt_crcf_kaiser()
     firfilt_crcf_destroy(q);
 }
 
+void autotest_firfilt_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping firfilt config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    CONTEND_ISNULL(firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_UNKNOWN, 0, 0, 0, 4));
+}
+
