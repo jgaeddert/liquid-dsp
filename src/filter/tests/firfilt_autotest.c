@@ -50,6 +50,14 @@ void autotest_firfilt_config()
 #if !LIQUID_SUPPRESS_ERROR_OUTPUT
     fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
 #endif
+    // no need to check every combination
+    CONTEND_ISNULL(firfilt_crcf_create_kaiser(0, 0, 0, 0));
     CONTEND_ISNULL(firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_UNKNOWN, 0, 0, 0, 4));
+    CONTEND_ISNULL(firfilt_crcf_create_firdespm(0, 0, 0));
+    CONTEND_ISNULL(firfilt_crcf_create_dc_blocker(0, 0));
+    CONTEND_ISNULL(firfilt_crcf_create_notch(0, 0, 0));
+    CONTEND_ISNULL(firfilt_cccf_create_notch(0, 0, 0));
+
+    // TODO: print, set scale, get scale
 }
 
