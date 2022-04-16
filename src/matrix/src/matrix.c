@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,13 +39,14 @@
 #define MATRIX_PRINT_ELEMENT(X,R,C,r,c) \
     printf("%12.8f", matrix_access(X,R,C,r,c));
 
-#include "matrix.base.c"
-#include "matrix.cgsolve.c"
-#include "matrix.chol.c"
-#include "matrix.gramschmidt.c"
-#include "matrix.inv.c"
-#include "matrix.linsolve.c"
-#include "matrix.ludecomp.c"
-#include "matrix.qrdecomp.c"
-#include "matrix.math.c"
+// prototypes
+#include "matrix.base.proto.c"
+#include "matrix.cgsolve.proto.c"
+#include "matrix.chol.proto.c"
+#include "matrix.gramschmidt.proto.c"
+#include "matrix.inv.proto.c"
+#include "matrix.linsolve.proto.c"
+#include "matrix.ludecomp.proto.c"
+#include "matrix.qrdecomp.proto.c"
+#include "matrix.math.proto.c"
 

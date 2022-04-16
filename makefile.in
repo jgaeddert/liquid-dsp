@@ -756,24 +756,24 @@ matrix_objects :=						\
 	src/matrix/src/smatrixi.o				\
 
 
-matrix_includes :=						\
-	src/matrix/src/matrix.base.c				\
-	src/matrix/src/matrix.cgsolve.c				\
-	src/matrix/src/matrix.chol.c				\
-	src/matrix/src/matrix.gramschmidt.c			\
-	src/matrix/src/matrix.inv.c				\
-	src/matrix/src/matrix.linsolve.c			\
-	src/matrix/src/matrix.ludecomp.c			\
-	src/matrix/src/matrix.qrdecomp.c			\
-	src/matrix/src/matrix.math.c				\
+matrix_prototypes :=						\
+	src/matrix/src/matrix.base.proto.c			\
+	src/matrix/src/matrix.cgsolve.proto.c			\
+	src/matrix/src/matrix.chol.proto.c			\
+	src/matrix/src/matrix.gramschmidt.proto.c		\
+	src/matrix/src/matrix.inv.proto.c			\
+	src/matrix/src/matrix.linsolve.proto.c			\
+	src/matrix/src/matrix.ludecomp.proto.c			\
+	src/matrix/src/matrix.qrdecomp.proto.c			\
+	src/matrix/src/matrix.math.proto.c			\
 
-src/matrix/src/matrix.o   : %.o : %.c $(include_headers) $(matrix_includes)
-src/matrix/src/matrixc.o  : %.o : %.c $(include_headers) $(matrix_includes)
-src/matrix/src/matrixf.o  : %.o : %.c $(include_headers) $(matrix_includes)
-src/matrix/src/matrixcf.o : %.o : %.c $(include_headers) $(matrix_includes)
-src/matrix/src/smatrixb.o : %.o : %.c $(include_headers) src/matrix/src/smatrix.c
-src/matrix/src/smatrixf.o : %.o : %.c $(include_headers) src/matrix/src/smatrix.c
-src/matrix/src/smatrixi.o : %.o : %.c $(include_headers) src/matrix/src/smatrix.c
+src/matrix/src/matrix.o   : %.o : %.c $(include_headers) $(matrix_prototypes)
+src/matrix/src/matrixc.o  : %.o : %.c $(include_headers) $(matrix_prototypes)
+src/matrix/src/matrixf.o  : %.o : %.c $(include_headers) $(matrix_prototypes)
+src/matrix/src/matrixcf.o : %.o : %.c $(include_headers) $(matrix_prototypes)
+src/matrix/src/smatrixb.o : %.o : %.c $(include_headers) src/matrix/src/smatrix.proto.c
+src/matrix/src/smatrixf.o : %.o : %.c $(include_headers) src/matrix/src/smatrix.proto.c
+src/matrix/src/smatrixi.o : %.o : %.c $(include_headers) src/matrix/src/smatrix.proto.c
 
 
 # matrix autotest scripts
