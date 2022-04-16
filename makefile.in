@@ -439,29 +439,29 @@ filter_objects :=						\
 
 
 # list explicit targets and dependencies here
-filter_includes :=						\
-	src/filter/src/autocorr.c				\
-	src/filter/src/dds.c					\
-	src/filter/src/fdelay.c					\
-	src/filter/src/fftfilt.c				\
-	src/filter/src/firdecim.c				\
-	src/filter/src/firfarrow.c				\
-	src/filter/src/firfilt.c				\
-	src/filter/src/firhilb.c				\
-	src/filter/src/firinterp.c				\
-	src/filter/src/firpfb.c					\
-	src/filter/src/iirdecim.c				\
-	src/filter/src/iirfilt.c				\
-	src/filter/src/iirfiltsos.c				\
-	src/filter/src/iirhilb.c				\
-	src/filter/src/iirinterp.c				\
-	src/filter/src/msresamp.c				\
-	src/filter/src/msresamp2.c				\
-	src/filter/src/ordfilt.c				\
-	src/filter/src/rresamp.c				\
-	src/filter/src/resamp.fixed.c				\
-	src/filter/src/resamp2.c				\
-	src/filter/src/symsync.c				\
+filter_prototypes :=						\
+	src/filter/src/autocorr.proto.c				\
+	src/filter/src/dds.proto.c				\
+	src/filter/src/fdelay.proto.c				\
+	src/filter/src/fftfilt.proto.c				\
+	src/filter/src/firdecim.proto.c				\
+	src/filter/src/firfarrow.proto.c			\
+	src/filter/src/firfilt.proto.c				\
+	src/filter/src/firhilb.proto.c				\
+	src/filter/src/firinterp.proto.c			\
+	src/filter/src/firpfb.proto.c				\
+	src/filter/src/iirdecim.proto.c				\
+	src/filter/src/iirfilt.proto.c				\
+	src/filter/src/iirfiltsos.proto.c			\
+	src/filter/src/iirhilb.proto.c				\
+	src/filter/src/iirinterp.proto.c			\
+	src/filter/src/msresamp.proto.c				\
+	src/filter/src/msresamp2.proto.c			\
+	src/filter/src/ordfilt.proto.c				\
+	src/filter/src/rresamp.proto.c				\
+	src/filter/src/resamp.fixed.proto.c			\
+	src/filter/src/resamp2.proto.c				\
+	src/filter/src/symsync.proto.c				\
 
 src/filter/src/bessel.o      : %.o : %.c $(include_headers)
 src/filter/src/bessel.o      : %.o : %.c $(include_headers)
@@ -469,9 +469,9 @@ src/filter/src/butter.o      : %.o : %.c $(include_headers)
 src/filter/src/cheby1.o      : %.o : %.c $(include_headers)
 src/filter/src/cheby2.o      : %.o : %.c $(include_headers)
 src/filter/src/ellip.o       : %.o : %.c $(include_headers)
-src/filter/src/filter_rrrf.o : %.o : %.c $(include_headers) $(filter_includes)
-src/filter/src/filter_crcf.o : %.o : %.c $(include_headers) $(filter_includes)
-src/filter/src/filter_cccf.o : %.o : %.c $(include_headers) $(filter_includes)
+src/filter/src/filter_rrrf.o : %.o : %.c $(include_headers) $(filter_prototypes)
+src/filter/src/filter_crcf.o : %.o : %.c $(include_headers) $(filter_prototypes)
+src/filter/src/filter_cccf.o : %.o : %.c $(include_headers) $(filter_prototypes)
 src/filter/src/firdes.o      : %.o : %.c $(include_headers)
 src/filter/src/firdespm.o    : %.o : %.c $(include_headers)
 src/filter/src/group_delay.o : %.o : %.c $(include_headers)
