@@ -146,22 +146,19 @@ buffer_objects :=						\
 	src/buffer/src/bufferf.o				\
 	src/buffer/src/buffercf.o				\
 
-buffer_includes :=						\
-	src/buffer/src/cbuffer.c				\
-	src/buffer/src/wdelay.c					\
-	src/buffer/src/window.c					\
+buffer_prototypes :=						\
+	src/buffer/src/cbuffer.proto.c				\
+	src/buffer/src/wdelay.proto.c				\
+	src/buffer/src/window.proto.c				\
 
-src/buffer/src/bufferf.o : %.o : %.c $(include_headers) $(buffer_includes)
-
-src/buffer/src/buffercf.o : %.o : %.c $(include_headers) $(buffer_includes)
+src/buffer/src/bufferf.o  : %.o : %.c $(include_headers) $(buffer_prototypes)
+src/buffer/src/buffercf.o : %.o : %.c $(include_headers) $(buffer_prototypes)
 
 
 buffer_autotests :=						\
 	src/buffer/tests/cbuffer_autotest.c			\
 	src/buffer/tests/wdelay_autotest.c			\
 	src/buffer/tests/window_autotest.c			\
-	
-#	src/buffer/tests/sbuffer_autotest.c
 
 buffer_benchmarks :=						\
 	src/buffer/bench/cbuffercf_benchmark.c			\
