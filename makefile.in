@@ -172,11 +172,11 @@ buffer_benchmarks :=						\
 channel_objects :=						\
 	src/channel/src/channel_cccf.o				\
 
-channel_includes :=						\
-	src/channel/src/channel.c				\
-	src/channel/src/tvmpch.c				\
+channel_prototypes :=						\
+	src/channel/src/channel.proto.c				\
+	src/channel/src/tvmpch.proto.c				\
 
-src/channel/src/channel_cccf.o : %.o : %.c $(include_headers) $(channel_includes)
+src/channel/src/channel_cccf.o : %.o : %.c $(include_headers) $(channel_prototypes)
 
 channel_autotests :=						\
 	
