@@ -899,13 +899,13 @@ multichannel_objects :=						\
 $(multichannel_objects) : %.o : %.c $(include_headers)
 
 # list explicit targets and dependencies here
-multichannel_includes :=					\
-	src/multichannel/src/firpfbch.c				\
-	src/multichannel/src/firpfbch2.c			\
-	src/multichannel/src/firpfbchr.c			\
+multichannel_prototypes :=					\
+	src/multichannel/src/firpfbch.proto.c			\
+	src/multichannel/src/firpfbch2.proto.c			\
+	src/multichannel/src/firpfbchr.proto.c			\
 
-src/multichannel/src/firpfbch_crcf.o : %.o : %.c $(include_headers) $(multichannel_includes)
-src/multichannel/src/firpfbch_cccf.o : %.o : %.c $(include_headers) $(multichannel_includes)
+src/multichannel/src/firpfbch_crcf.o : %.o : %.c $(include_headers) $(multichannel_prototypes)
+src/multichannel/src/firpfbch_cccf.o : %.o : %.c $(include_headers) $(multichannel_prototypes)
 
 # autotests
 multichannel_autotests :=					\
