@@ -837,26 +837,26 @@ modem_objects :=						\
 	src/modem/src/modem_arb_const.o				\
 
 # explicit targets and dependencies
-modem_includes :=						\
-	src/modem/src/freqdem.c					\
-	src/modem/src/freqmod.c					\
-	src/modem/src/modem_common.c				\
-	src/modem/src/modem_psk.c				\
-	src/modem/src/modem_dpsk.c				\
-	src/modem/src/modem_ask.c				\
-	src/modem/src/modem_qam.c				\
-	src/modem/src/modem_apsk.c				\
-	src/modem/src/modem_bpsk.c				\
-	src/modem/src/modem_qpsk.c				\
-	src/modem/src/modem_ook.c				\
-	src/modem/src/modem_pi4dqpsk.c				\
-	src/modem/src/modem_sqam32.c				\
-	src/modem/src/modem_sqam128.c				\
-	src/modem/src/modem_arb.c				\
+modem_prototypes :=						\
+	src/modem/src/freqdem.proto.c				\
+	src/modem/src/freqmod.proto.c				\
+	src/modem/src/modem_common.proto.c			\
+	src/modem/src/modem_psk.proto.c				\
+	src/modem/src/modem_dpsk.proto.c			\
+	src/modem/src/modem_ask.proto.c				\
+	src/modem/src/modem_qam.proto.c				\
+	src/modem/src/modem_apsk.proto.c			\
+	src/modem/src/modem_bpsk.proto.c			\
+	src/modem/src/modem_qpsk.proto.c			\
+	src/modem/src/modem_ook.proto.c				\
+	src/modem/src/modem_pi4dqpsk.proto.c			\
+	src/modem/src/modem_sqam32.proto.c			\
+	src/modem/src/modem_sqam128.proto.c			\
+	src/modem/src/modem_arb.proto.c				\
 	
 #src/modem/src/modem_demod_soft_const.c
 
-src/modem/src/modemcf.o          : %.o : %.c $(include_headers) $(modem_includes)
+src/modem/src/modemcf.o          : %.o : %.c $(include_headers) $(modem_prototypes)
 src/modem/src/modem.shim.o       : %.o : %.c $(include_headers)
 src/modem/src/gmskmod.o          : %.o : %.c $(include_headers)
 src/modem/src/gmskdem.o          : %.o : %.c $(include_headers)
