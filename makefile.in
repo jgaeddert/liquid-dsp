@@ -327,23 +327,23 @@ fft_objects :=							\
 	src/fft/src/fft_utilities.o				\
 
 # explicit targets and dependencies
-fft_includes :=							\
-	src/fft/src/fft_common.c				\
-	src/fft/src/fft_dft.c					\
-	src/fft/src/fft_radix2.c				\
-	src/fft/src/fft_mixed_radix.c				\
-	src/fft/src/fft_rader.c					\
-	src/fft/src/fft_rader2.c				\
-	src/fft/src/fft_r2r_1d.c				\
+fft_prototypes :=						\
+	src/fft/src/fft_common.proto.c				\
+	src/fft/src/fft_dft.proto.c				\
+	src/fft/src/fft_radix2.proto.c				\
+	src/fft/src/fft_mixed_radix.proto.c			\
+	src/fft/src/fft_rader.proto.c				\
+	src/fft/src/fft_rader2.proto.c				\
+	src/fft/src/fft_r2r_1d.proto.c				\
 
-src/fft/src/fftf.o          : %.o : %.c $(include_headers) $(fft_includes)
+src/fft/src/fftf.o          : %.o : %.c $(include_headers) $(fft_prototypes)
 src/fft/src/asgram.o        : %.o : %.c $(include_headers)
 src/fft/src/dct.o           : %.o : %.c $(include_headers)
 src/fft/src/fftf.o          : %.o : %.c $(include_headers)
 src/fft/src/fft_utilities.o : %.o : %.c $(include_headers)
 src/fft/src/mdct.o          : %.o : %.c $(include_headers)
-src/fft/src/spgramcf.o      : %.o : %.c $(include_headers) src/fft/src/asgram.c src/fft/src/spgram.c src/fft/src/spwaterfall.c
-src/fft/src/spgramf.o       : %.o : %.c $(include_headers) src/fft/src/asgram.c src/fft/src/spgram.c src/fft/src/spwaterfall.c
+src/fft/src/spgramcf.o      : %.o : %.c $(include_headers) src/fft/src/asgram.proto.c src/fft/src/spgram.proto.c src/fft/src/spwaterfall.proto.c
+src/fft/src/spgramf.o       : %.o : %.c $(include_headers) src/fft/src/asgram.proto.c src/fft/src/spgram.proto.c src/fft/src/spwaterfall.proto.c
 
 # fft autotest scripts
 fft_autotests :=						\
