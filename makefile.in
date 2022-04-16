@@ -707,15 +707,15 @@ math_objects :=							\
 	src/math/src/windows.o					\
 
 
-poly_includes :=						\
-	src/math/src/poly.common.c				\
-	src/math/src/poly.expand.c				\
-	src/math/src/poly.lagrange.c				\
+poly_prototypes :=						\
+	src/math/src/poly.common.proto.c			\
+	src/math/src/poly.expand.proto.c			\
+	src/math/src/poly.lagrange.proto.c			\
 
-src/math/src/poly.o               : %.o : %.c $(include_headers) $(poly_includes)
-src/math/src/polyc.o              : %.o : %.c $(include_headers) $(poly_includes)
-src/math/src/polyf.o              : %.o : %.c $(include_headers) $(poly_includes)
-src/math/src/polycf.o             : %.o : %.c $(include_headers) $(poly_includes)
+src/math/src/poly.o               : %.o : %.c $(include_headers) $(poly_prototypes)
+src/math/src/polyc.o              : %.o : %.c $(include_headers) $(poly_prototypes)
+src/math/src/polyf.o              : %.o : %.c $(include_headers) $(poly_prototypes)
+src/math/src/polycf.o             : %.o : %.c $(include_headers) $(poly_prototypes)
 src/math/src/math.o               : %.o : %.c $(include_headers)
 src/math/src/math.bessel.o        : %.o : %.c $(include_headers)
 src/math/src/math.gamma.o         : %.o : %.c $(include_headers)
