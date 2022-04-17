@@ -2403,6 +2403,34 @@ void bilinear_zpkf(liquid_float_complex * _za,
                    liquid_float_complex * _pd,
                    liquid_float_complex * _kd);
 
+// compute bilinear z-transform using polynomial expansion in numerator and
+// denominator
+//
+//          b[0] + b[1]*s + ... + b[nb]*s^(nb-1)
+// H(s) =   ------------------------------------
+//          a[0] + a[1]*s + ... + a[na]*s^(na-1)
+//
+// computes H(z) = H( s -> _m*(z-1)/(z+1) ) and expands as
+//
+//          bd[0] + bd[1]*z^-1 + ... + bd[nb]*z^-n
+// H(z) =   --------------------------------------
+//          ad[0] + ad[1]*z^-1 + ... + ad[nb]*z^-m
+//
+//  _b          : numerator array, [size: _b_order+1]
+//  _b_order    : polynomial order of _b
+//  _a          : denominator array, [size: _a_order+1]
+//  _a_order    : polynomial order of _a
+//  _m          : bilateral warping factor
+//  _bd         : output digital filter numerator, [size: _b_order+1]
+//  _ad         : output digital filter numerator, [size: _a_order+1]
+void bilinear_nd(float complex * _b,
+                 unsigned int _b_order,
+                 float complex * _a,
+                 unsigned int _a_order,
+                 float _m,
+                 float complex * _bd,
+                 float complex * _ad);
+
 // digital z/p/k low-pass to high-pass
 //  _zd     :   digital zeros (low-pass prototype), [length: _n]
 //  _pd     :   digital poles (low-pass prototype), [length: _n]
