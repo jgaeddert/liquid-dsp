@@ -196,9 +196,9 @@ channel_benchmarks :=						\
 dotprod_objects :=						\
 	@MLIBS_DOTPROD@						\
 
-src/dotprod/src/dotprod_cccf.o : %.o : %.c $(include_headers) src/dotprod/src/dotprod.c
-src/dotprod/src/dotprod_crcf.o : %.o : %.c $(include_headers) src/dotprod/src/dotprod.c
-src/dotprod/src/dotprod_rrrf.o : %.o : %.c $(include_headers) src/dotprod/src/dotprod.c
+src/dotprod/src/dotprod_cccf.o : %.o : %.c $(include_headers) src/dotprod/src/dotprod.proto.c
+src/dotprod/src/dotprod_crcf.o : %.o : %.c $(include_headers) src/dotprod/src/dotprod.proto.c
+src/dotprod/src/dotprod_rrrf.o : %.o : %.c $(include_headers) src/dotprod/src/dotprod.proto.c
 src/dotprod/src/sumsq.o : %.o : %.c $(include_headers)
 
 # specific machine architectures
