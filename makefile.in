@@ -936,12 +936,13 @@ multichannel_benchmarks :=					\
 nco_objects :=							\
 	src/nco/src/nco_crcf.o					\
 	src/nco/src/nco.utilities.o				\
-	src/nco/src/synth_crcf.o				\
 
+nco_prototypes :=						\
+	src/nco/src/nco.proto.c					\
+	src/nco/src/synth.proto.c				\
 
-src/nco/src/nco_crcf.o      : %.o : %.c $(include_headers) src/nco/src/nco.c
+src/nco/src/nco_crcf.o      : %.o : %.c $(include_headers) $(nco_prototypes)
 src/nco/src/nco.utilities.o : %.o : %.c $(include_headers)
-src/nco/src/synth_crcf.o	: %.o : %.c $(include_headers) src/nco/src/synth.c
 
 
 # autotests
