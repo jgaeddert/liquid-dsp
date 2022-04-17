@@ -146,6 +146,7 @@ buffer_objects :=						\
 	src/buffer/src/bufferf.o				\
 	src/buffer/src/buffercf.o				\
 
+# src/buffer/src/buffer.proto.c
 buffer_prototypes :=						\
 	src/buffer/src/cbuffer.proto.c				\
 	src/buffer/src/wdelay.proto.c				\
