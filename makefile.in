@@ -1103,14 +1103,14 @@ vector_objects :=						\
 	@MLIBS_VECTOR@						\
 
 # portable builds
-src/vector/src/vectorf_add.port.o   : %.o : %.c $(include_headers) src/vector/src/vector_add.c
-src/vector/src/vectorf_norm.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_norm.c
-src/vector/src/vectorf_mul.port.o   : %.o : %.c $(include_headers) src/vector/src/vector_mul.c
-src/vector/src/vectorf_trig.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_trig.c
-src/vector/src/vectorcf_add.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_add.c
-src/vector/src/vectorcf_norm.port.o : %.o : %.c $(include_headers) src/vector/src/vector_norm.c
-src/vector/src/vectorcf_mul.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_mul.c
-src/vector/src/vectorcf_trig.port.o : %.o : %.c $(include_headers) src/vector/src/vector_trig.c
+src/vector/src/vectorf_add.port.o   : %.o : %.c $(include_headers) src/vector/src/vector_add.proto.c
+src/vector/src/vectorf_norm.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_norm.proto.c
+src/vector/src/vectorf_mul.port.o   : %.o : %.c $(include_headers) src/vector/src/vector_mul.proto.c
+src/vector/src/vectorf_trig.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_trig.proto.c
+src/vector/src/vectorcf_add.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_add.proto.c
+src/vector/src/vectorcf_norm.port.o : %.o : %.c $(include_headers) src/vector/src/vector_norm.proto.c
+src/vector/src/vectorcf_mul.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_mul.proto.c
+src/vector/src/vectorcf_trig.port.o : %.o : %.c $(include_headers) src/vector/src/vector_trig.proto.c
 
 # builds for specific architectures
 # ...
