@@ -2423,13 +2423,13 @@ void bilinear_zpkf(liquid_float_complex * _za,
 //  _m          : bilateral warping factor
 //  _bd         : output digital filter numerator, [size: _b_order+1]
 //  _ad         : output digital filter numerator, [size: _a_order+1]
-void bilinear_nd(float complex * _b,
+void bilinear_nd(liquid_float_complex * _b,
                  unsigned int _b_order,
-                 float complex * _a,
+                 liquid_float_complex * _a,
                  unsigned int _a_order,
                  float _m,
-                 float complex * _bd,
-                 float complex * _ad);
+                 liquid_float_complex * _bd,
+                 liquid_float_complex * _ad);
 
 // digital z/p/k low-pass to high-pass
 //  _zd     :   digital zeros (low-pass prototype), [length: _n]
