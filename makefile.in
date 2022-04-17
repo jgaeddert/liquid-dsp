@@ -108,9 +108,12 @@ agc_objects =							\
 	src/agc/src/agc_crcf.o					\
 	src/agc/src/agc_rrrf.o					\
 
+agc_prototypes :=						\
+	src/agc/src/agc.proto.c					\
+
 # explicit targets and dependencies
-src/agc/src/agc_crcf.o : %.o : %.c src/agc/src/agc.c $(include_headers)
-src/agc/src/agc_rrrf.o : %.o : %.c src/agc/src/agc.c $(include_headers)
+src/agc/src/agc_crcf.o : %.o : %.c $(include_headers) $(agc_prototypes)
+src/agc/src/agc_rrrf.o : %.o : %.c $(include_headers) $(agc_prototypes)
 
 # autotests
 agc_autotests :=						\
