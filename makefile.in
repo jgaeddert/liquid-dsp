@@ -997,10 +997,12 @@ quantization_objects :=						\
 	src/quantization/src/quantizerf.o			\
 	src/quantization/src/quantizer.inline.o			\
 
+quantization_prototypes :=					\
+	src/quantization/src/quantizer.proto.c			\
 
 src/quantization/src/compand.o          : %.o : %.c $(include_headers)
-src/quantization/src/quantizercf.o      : %.o : %.c $(include_headers) src/quantization/src/quantizer.c
-src/quantization/src/quantizerf.o       : %.o : %.c $(include_headers) src/quantization/src/quantizer.c
+src/quantization/src/quantizercf.o      : %.o : %.c $(include_headers) $(quantization_prototypes)
+src/quantization/src/quantizerf.o       : %.o : %.c $(include_headers) $(quantization_prototypes)
 src/quantization/src/quantizer.inline.o : %.o : %.c $(include_headers)
 
 
