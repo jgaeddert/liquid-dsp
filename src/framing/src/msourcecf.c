@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@
 #define NCO(name)           LIQUID_CONCAT(nco_crcf,name)
 #define SYMSTREAM(name)     LIQUID_CONCAT(symstreamcf,name)
 
-// source files
-#include "msource.c"
-#include "qsource.c"
+// prototypes
+#include "msource.proto.c"
+#include "qsource.proto.c"
 

@@ -644,10 +644,10 @@ framing_objects :=						\
 
 src/framing/src/bpacketgen.o        : %.o : %.c $(include_headers)
 src/framing/src/bpacketsync.o       : %.o : %.c $(include_headers)
-src/framing/src/bpresync_cccf.o     : %.o : %.c $(include_headers) src/framing/src/bpresync.c
-src/framing/src/bsync_rrrf.o        : %.o : %.c $(include_headers) src/framing/src/bsync.c
-src/framing/src/bsync_crcf.o        : %.o : %.c $(include_headers) src/framing/src/bsync.c
-src/framing/src/bsync_cccf.o        : %.o : %.c $(include_headers) src/framing/src/bsync.c
+src/framing/src/bpresync_cccf.o     : %.o : %.c $(include_headers) src/framing/src/bpresync.proto.c
+src/framing/src/bsync_rrrf.o        : %.o : %.c $(include_headers) src/framing/src/bsync.proto.c
+src/framing/src/bsync_crcf.o        : %.o : %.c $(include_headers) src/framing/src/bsync.proto.c
+src/framing/src/bsync_cccf.o        : %.o : %.c $(include_headers) src/framing/src/bsync.proto.c
 src/framing/src/detector_cccf.o     : %.o : %.c $(include_headers)
 src/framing/src/dsssframegen.o      : %.o : %.c $(include_headers)
 src/framing/src/dsssframesync.o     : %.o : %.c $(include_headers)
@@ -657,14 +657,14 @@ src/framing/src/framegen64.o        : %.o : %.c $(include_headers)
 src/framing/src/framesync64.o       : %.o : %.c $(include_headers)
 src/framing/src/flexframegen.o      : %.o : %.c $(include_headers)
 src/framing/src/flexframesync.o     : %.o : %.c $(include_headers)
-src/framing/src/msourcecf.o         : %.o : %.c $(include_headers) src/framing/src/msource.c src/framing/src/qsource.c
+src/framing/src/msourcecf.o         : %.o : %.c $(include_headers) src/framing/src/msource.proto.c src/framing/src/qsource.proto.c
 src/framing/src/ofdmflexframegen.o  : %.o : %.c $(include_headers)
 src/framing/src/ofdmflexframesync.o : %.o : %.c $(include_headers)
-src/framing/src/presync_cccf.o      : %.o : %.c $(include_headers) src/framing/src/presync.c
+src/framing/src/presync_cccf.o      : %.o : %.c $(include_headers) src/framing/src/presync.proto.c
 src/framing/src/qpacketmodem.o      : %.o : %.c $(include_headers)
-src/framing/src/symstreamcf.o       : %.o : %.c $(include_headers) src/framing/src/symstream.c
-src/framing/src/symstreamrcf.o      : %.o : %.c $(include_headers) src/framing/src/symstreamr.c
-src/framing/src/symtrack_cccf.o     : %.o : %.c $(include_headers) src/framing/src/symtrack.c
+src/framing/src/symstreamcf.o       : %.o : %.c $(include_headers) src/framing/src/symstream.proto.c
+src/framing/src/symstreamrcf.o      : %.o : %.c $(include_headers) src/framing/src/symstreamr.proto.c
+src/framing/src/symtrack_cccf.o     : %.o : %.c $(include_headers) src/framing/src/symtrack.proto.c
 
 
 framing_autotests :=						\
