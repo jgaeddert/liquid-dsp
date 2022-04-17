@@ -242,8 +242,11 @@ equalization_objects :=						\
 	src/equalization/src/equalizer_cccf.o			\
 	src/equalization/src/equalizer_rrrf.o			\
 
+equalization_prototypes :=					\
+	src/equalization/src/eqlms.proto.c			\
+	src/equalization/src/eqrls.proto.c			\
 
-$(equalization_objects) : %.o : %.c $(include_headers) src/equalization/src/eqlms.c src/equalization/src/eqrls.c
+$(equalization_objects) : %.o : %.c $(include_headers) $(equalization_prototypes)
 
 
 # autotests
