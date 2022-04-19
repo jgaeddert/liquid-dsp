@@ -275,6 +275,106 @@ void bilinear_zpkf(float complex * _za,
 #endif
 }
 
+// compute bilinear z-transform using polynomial expansion in numerator and
+// denominator
+//
+//          b[0] + b[1]*s + ... + b[nb]*s^(nb-1)
+// H(s) =   ------------------------------------
+//          a[0] + a[1]*s + ... + a[na]*s^(na-1)
+//
+// computes H(z) = H( s -> _m*(z-1)/(z+1) ) and expands as
+//
+//          bd[0] + bd[1]*z^-1 + ... + bd[nb]*z^-n
+// H(z) =   --------------------------------------
+//          ad[0] + ad[1]*z^-1 + ... + ad[nb]*z^-m
+//
+//  _b          : numerator array, [size: _b_order+1]
+//  _b_order    : polynomial order of _b
+//  _a          : denominator array, [size: _a_order+1]
+//  _a_order    : polynomial order of _a
+//  _m          : bilateral warping factor
+//  _bd         : output digital filter numerator, [size: _b_order+1]
+//  _ad         : output digital filter numerator, [size: _a_order+1]
+void bilinear_nd(float complex * _b,
+                 unsigned int _b_order,
+                 float complex * _a,
+                 unsigned int _a_order,
+                 float _m,
+                 float complex * _bd,
+                 float complex * _ad)
+{
+    if (_b_order > _a_order) {
+        liquid_error(LIQUID_EICONFIG,"bilinear_nd(), numerator order cannot be higher than denominator");
+        return;
+    }
+
+#if LIQUID_IIRDES_DEBUG_PRINT
+    printf("***********************************\n");
+    printf("bilinear(nd), numerator order   : %u\n", _b_order);
+    printf("bilinear(nd), denominator order : %u\n", _a_order);
+#endif
+
+    // ...
+    unsigned int nb = _b_order+1;   // input numerator polynomial array length
+    unsigned int na = _a_order+1;   // input denominator polynomial array length
+
+    unsigned int i, j;
+
+    // clear output arrays (both are length na = _a_order+1)
+    for (i=0; i<na; i++) _bd[i] = 0.;
+    for (i=0; i<na; i++) _ad[i] = 0.;
+
+    // temporary polynomial: (1 + 1/z)^(k) * (1 - 1/z)^(n-k)
+    float poly_1pz[na];
+
+    float mk=1.0f;
+
+    // multiply denominator by ((1-1/z)/(1+1/z))^na and expand
+    for (i=0; i<na; i++) {
+        // expand the polynomial (1+x)^i * (1-x)^(_a_order-i)
+        polyf_expandbinomial_pm(_a_order,
+                                _a_order-i,
+                                poly_1pz);
+
+#if LIQUID_IIRDES_DEBUG_PRINT
+        printf("  %-4u : a=%12.4e + j*%12.4e, mk=%12.8f\n", i, crealf(_a[i]), cimagf(_a[i]), mk);
+        for (j=0; j<na; j++)
+            printf("    poly_1pz[%3u] = %6f : %12.4f + j*%12.4f\n", j, poly_1pz[j], crealf(_a[i]*mk*poly_1pz[j]),
+                                                                                    cimagf(_a[i]*mk*poly_1pz[j]));
+#endif
+
+        // accumulate polynomial coefficients
+        for (j=0; j<na; j++)
+            _ad[j] += _a[i]*mk*poly_1pz[j];
+
+        // update multiplier
+        mk *= _m;
+    }
+
+    // multiply numerator by ((1-1/z)/(1+1/z))^na and expand
+    mk = 1.0f;
+    for (i=0; i<nb; i++) {
+        // expand the polynomial (1+x)^i * (1-x)^(_a_order-i)
+        polyf_expandbinomial_pm(_a_order,
+                                _a_order-i,
+                                poly_1pz);
+
+        // accumulate polynomial coefficients
+        for (j=0; j<na; j++)
+            _bd[j] += _b[i]*mk*poly_1pz[j];
+
+        // update multiplier
+        mk *= _m;
+    }
+
+    // normalize by a[0]
+    float complex a0_inv = 1.0f / _ad[0];
+    for (i=0; i<na; i++) {
+        _bd[i] *= a0_inv;
+        _ad[i] *= a0_inv;
+    }
+}
+
 // convert discrete z/p/k form to transfer function form
 //  _zd     :   digital zeros (length: _n)
 //  _pd     :   digital poles (length: _n)
