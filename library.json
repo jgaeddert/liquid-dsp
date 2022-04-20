@@ -26,6 +26,7 @@
   "license": "MIT",
   "build":
   {
+    "extraScript": "scripts/generate_headers.py",
     "flags":
     [
         "-I.",
