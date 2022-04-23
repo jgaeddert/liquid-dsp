@@ -57,6 +57,17 @@ void autotest_firfilt_config()
     CONTEND_ISNULL(firfilt_crcf_create_notch(0, 0, 0));
     CONTEND_ISNULL(firfilt_cccf_create_notch(0, 0, 0));
 
-    // TODO: print, set scale, get scale
+    // create proper object and test configurations
+    firfilt_crcf q = firfilt_crcf_create_kaiser(11, 0.2f, 60.0f, 0.0f);
+
+    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_print(q))
+
+    float scale = 7.0f;
+    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_set_scale(q, 3.0f))
+    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_get_scale(q, &scale))
+    CONTEND_EQUALITY(scale, 3.0f)
+    CONTEND_EQUALITY(firfilt_crcf_get_length(q), 11)
+
+    firfilt_crcf_destroy(q);
 }
 
