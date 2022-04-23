@@ -40,6 +40,23 @@ void autotest_firfilt_crcf_kaiser()
     firfilt_crcf_destroy(q);
 }
 
+void autotest_firfilt_crcf_firdespm()
+{
+    // design filter
+    firfilt_crcf q = firfilt_crcf_create_firdespm(51, 0.2f, 60.0f);
+    firfilt_crcf_set_scale(q, 0.4f);
+
+    // verify resulting spectrum
+    autotest_psd_s regions[] = {
+      {.fmin=-0.5,   .fmax=-0.25,  .pmin= 0,   .pmax=-60,  .test_lo=0, .test_hi=1},
+      {.fmin=-0.15,  .fmax=+0.15,  .pmin=-0.1, .pmax=+0.1, .test_lo=1, .test_hi=1},
+      {.fmin= 0.25,  .fmax=+0.5,   .pmin= 0,   .pmax=-60,  .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_firfilt_crcf(q, 1200, regions, 3,
+        liquid_autotest_verbose ? "autotest_firfilt_crcf_firdespm.m" : NULL);
+    firfilt_crcf_destroy(q);
+}
+
 void autotest_firfilt_config()
 {
 #if LIQUID_STRICT_EXIT
