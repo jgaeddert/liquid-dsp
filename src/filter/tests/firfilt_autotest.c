@@ -89,3 +89,40 @@ void autotest_firfilt_config()
     firfilt_crcf_destroy(q);
 }
 
+void autotest_firfilt_recreate()
+{
+    // create random-ish coefficients
+    unsigned int i, n = 21;
+    float h0[n], h1[n];
+    for (i=0; i<n; i++)
+        h0[i] = cosf(0.3*i) + sinf(sqrtf(2.0f)*i);
+
+    firfilt_crcf q = firfilt_crcf_create(h0, n);
+
+    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_print(q))
+    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_set_scale(q, 3.0f))
+
+    // copy coefficients to separate array
+    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_copy_coefficients(q, h1))
+
+    // scale coefficients by a constant
+    for (i=0; i<n; i++)
+        h1[i] *= 7.1f;
+
+    // recreate with new coefficients array
+    q = firfilt_crcf_recreate(q, h1, n);
+
+    // assert the scale has not changed
+    float scale;
+    firfilt_crcf_get_scale(q, &scale);
+    CONTEND_EQUALITY(scale, 3.0f)
+
+    // assert the coefficients are original scaled by 7.1
+    // NOTE: need to account for time-reversal here
+    const float * h = firfilt_crcf_get_coefficients(q);
+    for (i=0; i<n; i++)
+        CONTEND_EQUALITY(h[n-i-1], h0[i]*7.1f);
+
+    firfilt_crcf_destroy(q);
+}
+
