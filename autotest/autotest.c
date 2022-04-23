@@ -317,8 +317,12 @@ int liquid_autotest_validate_psd_signalf(float * _buf, unsigned int _buf_len,
 int liquid_autotest_validate_psd_firfilt_crcf(firfilt_crcf _q, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
-    return liquid_autotest_validate_psd_signalf(
-            (float*) firfilt_crcf_get_coefficients(_q), firfilt_crcf_get_length(_q),
-            _regions, num_regions, debug_filename);
+    unsigned int n = firfilt_crcf_get_length(_q);
+    float h[n];
+    firfilt_crcf_copy_coefficients(_q, h);
+    float scale;
+    firfilt_crcf_get_scale(_q, &scale);
+    liquid_vectorf_mulscalar(h, n, scale, h);
+    return liquid_autotest_validate_psd_signalf(h,n,_regions,num_regions,debug_filename);
 }
 
