@@ -2340,8 +2340,8 @@ typedef enum {
 //  _f0         :   center frequency (band-pass, band-stop)
 //  _ap         :   pass-band ripple in dB
 //  _as         :   stop-band ripple in dB
-//  _B          :   numerator
-//  _A          :   denominator
+//  _b          :   numerator
+//  _a          :   denominator
 void liquid_iirdes(liquid_iirdes_filtertype _ftype,
                    liquid_iirdes_bandtype   _btype,
                    liquid_iirdes_format     _format,
@@ -2350,8 +2350,8 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
                    float _f0,
                    float _ap,
                    float _as,
-                   float * _B,
-                   float * _A);
+                   float * _b,
+                   float * _a);
 
 // compute analog zeros, poles, gain for specific filter types
 void butter_azpkf(unsigned int _n,
@@ -2476,15 +2476,15 @@ void iirdes_dzpk2tff(liquid_float_complex * _zd,
 //  _pd     :   digital poles [length: _n]
 //  _n      :   filter order
 //  _kd     :   digital gain
-//  _B      :   output numerator [size: 3 x L+r]
-//  _A      :   output denominator [size: 3 x L+r]
+//  _b      :   output numerator [size: 3 x L+r]
+//  _a      :   output denominator [size: 3 x L+r]
 //  where r = _n%2, L = (_n-r)/2
 void iirdes_dzpk2sosf(liquid_float_complex * _zd,
                       liquid_float_complex * _pd,
                       unsigned int _n,
                       liquid_float_complex _kd,
-                      float * _B,
-                      float * _A);
+                      float * _b,
+                      float * _a);
 
 // additional IIR filter design templates
 
@@ -3229,11 +3229,11 @@ IIRFILT() IIRFILT(_create)(TC *         _b,                                 \
                                                                             \
 /* Create IIR filter using 2nd-order secitons from external             */  \
 /* coefficients.                                                        */  \
-/*  _B      : feed-forward coefficients [size: _nsos x 3]               */  \
-/*  _A      : feed-back coefficients    [size: _nsos x 3]               */  \
+/*  _b      : feed-forward coefficients [size: _nsos x 3]               */  \
+/*  _a      : feed-back coefficients    [size: _nsos x 3]               */  \
 /*  _nsos   : number of second-order sections (sos), _nsos > 0          */  \
-IIRFILT() IIRFILT(_create_sos)(TC *         _B,                             \
-                               TC *         _A,                             \
+IIRFILT() IIRFILT(_create_sos)(TC *         _b,                             \
+                               TC *         _a,                             \
                                unsigned int _nsos);                         \
                                                                             \
 /* Create IIR filter from design template                               */  \

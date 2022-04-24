@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -411,8 +411,8 @@ void iirdes_dzpk2tff(float complex * _zd,
 //  _n      :   number of poles, zeros
 //  _kd     :   gain
 //
-//  _B      :   output numerator matrix (size (L+r) x 3)
-//  _A      :   output denominator matrix (size (L+r) x 3)
+//  _b      :   output numerator matrix (size (L+r) x 3)
+//  _a      :   output denominator matrix (size (L+r) x 3)
 //
 //  L is the number of sections in the cascade:
 //      r = _n % 2
@@ -421,8 +421,8 @@ void iirdes_dzpk2sosf(float complex * _zd,
                       float complex * _pd,
                       unsigned int _n,
                       float complex _kd,
-                      float * _B,
-                      float * _A)
+                      float * _b,
+                      float * _a)
 {
     int i;
     float tol=1e-6f; // tolerance for conjuate pair computation
@@ -468,14 +468,14 @@ void iirdes_dzpk2sosf(float complex * _zd,
         z1 = -zp[2*i+1];
 
         // expand complex pole pairs
-        _A[3*i+0] = 1.0;
-        _A[3*i+1] = crealf(p0+p1);
-        _A[3*i+2] = crealf(p0*p1);
+        _a[3*i+0] = 1.0;
+        _a[3*i+1] = crealf(p0+p1);
+        _a[3*i+2] = crealf(p0*p1);
 
         // expand complex zero pairs
-        _B[3*i+0] = 1.0;
-        _B[3*i+1] = crealf(z0+z1);
-        _B[3*i+2] = crealf(z0*z1);
+        _b[3*i+0] = 1.0;
+        _b[3*i+1] = crealf(z0+z1);
+        _b[3*i+2] = crealf(z0*z1);
     }
 
     // add remaining zero/pole pair if order is odd
@@ -484,13 +484,13 @@ void iirdes_dzpk2sosf(float complex * _zd,
         p0 = -pp[_n-1];
         z0 = -zp[_n-1];
         
-        _A[3*i+0] = 1.0;
-        _A[3*i+1] = p0;
-        _A[3*i+2] = 0.0;
+        _a[3*i+0] = 1.0;
+        _a[3*i+1] = p0;
+        _a[3*i+2] = 0.0;
 
-        _B[3*i+0] = 1.0;
-        _B[3*i+1] = z0;
-        _B[3*i+2] = 0.0;
+        _b[3*i+0] = 1.0;
+        _b[3*i+1] = z0;
+        _b[3*i+2] = 0.0;
     }
 
     // distribute gain equally amongst all feed-forward
@@ -499,9 +499,9 @@ void iirdes_dzpk2sosf(float complex * _zd,
 
     // adjust gain of first element
     for (i=0; i<L+r; i++) {
-        _B[3*i+0] *= k;
-        _B[3*i+1] *= k;
-        _B[3*i+2] *= k;
+        _b[3*i+0] *= k;
+        _b[3*i+1] *= k;
+        _b[3*i+2] *= k;
     }
 }
 
@@ -565,8 +565,8 @@ void iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
 //  _f0         :   center frequency (band-pass, band-stop)
 //  _ap         :   pass-band ripple in dB
 //  _as         :   stop-band ripple in dB
-//  _B          :   numerator
-//  _A          :   denominator
+//  _b          :   numerator
+//  _a          :   denominator
 void liquid_iirdes(liquid_iirdes_filtertype _ftype,
                    liquid_iirdes_bandtype   _btype,
                    liquid_iirdes_format     _format,
@@ -575,8 +575,8 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
                    float _f0,
                    float _ap,
                    float _as,
-                   float * _B,
-                   float * _A)
+                   float * _b,
+                   float * _a)
 {
     // validate input
     if (_fc <= 0 || _fc >= 0.5) {
@@ -734,12 +734,12 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
         // convert complex digital poles/zeros/gain into transfer
         // function : H(z) = B(z) / A(z)
         // where length(B,A) = low/high-pass ? _n + 1 : 2*_n + 1
-        iirdes_dzpk2tff(zd,pd,_n,kd,_B,_A);
+        iirdes_dzpk2tff(zd,pd,_n,kd,_b,_a);
 
 #if LIQUID_IIRDES_DEBUG_PRINT
         // print coefficients
-        for (i=0; i<=_n; i++) printf("b[%3u] = %12.8f;\n", i, _B[i]);
-        for (i=0; i<=_n; i++) printf("a[%3u] = %12.8f;\n", i, _A[i]);
+        for (i=0; i<=_n; i++) printf("b[%3u] = %12.8f;\n", i, _b[i]);
+        for (i=0; i<=_n; i++) printf("a[%3u] = %12.8f;\n", i, _a[i]);
 #endif
     } else {
         // convert complex digital poles/zeros/gain into second-
@@ -747,16 +747,16 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
         // H(z) = prod { (b0 + b1*z^-1 + b2*z^-2) / (a0 + a1*z^-1 + a2*z^-2) }
         // where size(B,A) = low|high-pass  : [3]x[L+r]
         //                   band-pass|stop : [3]x[2*L]
-        iirdes_dzpk2sosf(zd,pd,_n,kd,_B,_A);
+        iirdes_dzpk2sosf(zd,pd,_n,kd,_b,_a);
 
 #if LIQUID_IIRDES_DEBUG_PRINT
         // print coefficients
         printf("B [%u x 3] :\n", L+r);
         for (i=0; i<L+r; i++)
-            printf("  %12.8f %12.8f %12.8f\n", _B[3*i+0], _B[3*i+1], _B[3*i+2]);
+            printf("  %12.8f %12.8f %12.8f\n", _b[3*i+0], _b[3*i+1], _b[3*i+2]);
         printf("A [%u x 3] :\n", L+r);
         for (i=0; i<L+r; i++)
-            printf("  %12.8f %12.8f %12.8f\n", _A[3*i+0], _A[3*i+1], _A[3*i+2]);
+            printf("  %12.8f %12.8f %12.8f\n", _a[3*i+0], _a[3*i+1], _a[3*i+2]);
 #endif
 
     }
