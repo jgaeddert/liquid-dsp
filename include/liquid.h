@@ -7228,9 +7228,9 @@ int MATRIX(_cgsolve)(T *          _A,                                       \
 int MATRIX(_ludecomp_crout)(T *          _x,                                \
                             unsigned int _rx,                               \
                             unsigned int _cx,                               \
-                            T *          _L,                                \
-                            T *          _U,                                \
-                            T *          _P);                               \
+                            T *          _l,                                \
+                            T *          _u,                                \
+                            T *          _p);                               \
                                                                             \
 /* Perform L/U/P decomposition, Doolittle's method                      */  \
 /*  _x      : input/output matrix, [size: _rx x _cx]                    */  \
@@ -7242,9 +7242,9 @@ int MATRIX(_ludecomp_crout)(T *          _x,                                \
 int MATRIX(_ludecomp_doolittle)(T *          _x,                            \
                                 unsigned int _rx,                           \
                                 unsigned int _cx,                           \
-                                T *          _L,                            \
-                                T *          _U,                            \
-                                T *          _P);                           \
+                                T *          _l,                            \
+                                T *          _u,                            \
+                                T *          _p);                           \
                                                                             \
 /* Perform orthnormalization using the Gram-Schmidt algorithm           */  \
 /*  _A      : input matrix, [size: _r x _c]                             */  \
