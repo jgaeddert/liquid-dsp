@@ -57,6 +57,23 @@ void autotest_firfilt_crcf_firdespm()
     firfilt_crcf_destroy(q);
 }
 
+void autotest_firfilt_crcf_rect()
+{
+    // design filter
+    firfilt_crcf q = firfilt_crcf_create_rect(4);
+    firfilt_crcf_set_scale(q, 0.25f);
+
+    // verify resulting spectrum
+    autotest_psd_s regions[] = {
+      {.fmin=-0.5,   .fmax=-0.20,  .pmin= 0, .pmax=-10, .test_lo=0, .test_hi=1},
+      {.fmin=-0.12,  .fmax=+0.12,  .pmin=-5, .pmax= +1, .test_lo=1, .test_hi=1},
+      {.fmin= 0.20,  .fmax=+0.5,   .pmin= 0, .pmax=-10, .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_firfilt_crcf(q, 301, regions, 3,
+        liquid_autotest_verbose ? "autotest_firfilt_crcf_rect.m" : NULL);
+    firfilt_crcf_destroy(q);
+}
+
 void autotest_firfilt_config()
 {
 #if LIQUID_STRICT_EXIT
@@ -71,6 +88,7 @@ void autotest_firfilt_config()
     CONTEND_ISNULL(firfilt_crcf_create_kaiser(0, 0, 0, 0));
     CONTEND_ISNULL(firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_UNKNOWN, 0, 0, 0, 4));
     CONTEND_ISNULL(firfilt_crcf_create_firdespm(0, 0, 0));
+    CONTEND_ISNULL(firfilt_crcf_create_rect(0));
     CONTEND_ISNULL(firfilt_crcf_create_dc_blocker(0, 0));
     CONTEND_ISNULL(firfilt_crcf_create_notch(0, 0, 0));
     CONTEND_ISNULL(firfilt_cccf_create_notch(0, 0, 0));
