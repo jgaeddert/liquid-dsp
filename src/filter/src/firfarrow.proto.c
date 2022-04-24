@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ struct FIRFARROW(_s) {
     TC * h;             // filter coefficients
     unsigned int h_len; // filter length
     float fc;           // filter cutoff
-    float As;           // stop-band attenuation [dB]
+    float as;           // stop-band attenuation [dB]
     unsigned int Q;     // polynomial order
 
     float mu;           // fractional sample delay
@@ -67,11 +67,11 @@ struct FIRFARROW(_s) {
 //  _h_len      : filter length
 //  _p          : polynomial order
 //  _fc         : filter cutoff frequency
-//  _As         : stopband attenuation [dB]
+//  _as         : stopband attenuation [dB]
 FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,
                                unsigned int _p,
                                float        _fc,
-                               float        _As)
+                               float        _as)
 {
     // validate input
     if (_h_len < 2)
@@ -80,7 +80,7 @@ FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,
         return liquid_error_config("firfarrow_%s_create(), polynomial order must be at least 1", EXTENSION_FULL);
     if (_fc < 0.0f || _fc > 0.5f)
         return liquid_error_config("firfarrow_%s_create(), filter cutoff must be in [0,0.5]", EXTENSION_FULL);
-    if (_As < 0.0f)
+    if (_as < 0.0f)
         return liquid_error_config("firfarrow_%s_create(), filter stop-band attenuation must be greater than zero", EXTENSION_FULL);
 
     // create main object
@@ -89,7 +89,7 @@ FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,
     // set internal properties
     q->h_len = _h_len;  // filter length
     q->Q     = _p;      // polynomial order
-    q->As    = _As;     // filter stop-band attenuation
+    q->as    = _as;     // filter stop-band attenuation
     q->fc    = _fc;     // filter cutoff frequency
 
     // allocate memory for filter coefficients
@@ -324,7 +324,7 @@ int FIRFARROW(_genpoly)(FIRFARROW() _q)
     float mu_vect[_q->Q+1];
     float hp_vect[_q->Q+1];
     float p[_q->Q+1];
-    float beta = kaiser_beta_As(_q->As);
+    float beta = kaiser_beta_As(_q->as);
     for (i=0; i<_q->h_len; i++) {
 #if FIRFARROW_DEBUG
         printf("i : %3u / %3u\n", i, _q->h_len);

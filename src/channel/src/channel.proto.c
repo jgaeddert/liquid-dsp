@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,8 @@ struct CHANNEL(_s) {
     int             enabled_awgn;       // AWGN enabled?
     T               gamma;              // channel gain
     T               nstd;               // noise standard deviation
-    float           noise_floor_dB;     // noise floor
-    float           SNRdB;              // signal-to-noise ratio [dB]
+    float           noise_floor;        // noise floor density [dB]
+    float           snr;                // signal-to-noise ratio [dB]
 
     // carrier offset
     int             enabled_carrier;    // carrier offset enabled?
@@ -99,7 +99,7 @@ int CHANNEL(_destroy)(CHANNEL() _q)
 int CHANNEL(_print)(CHANNEL() _q)
 {
     printf("channel\n");
-    if (_q->enabled_awgn)       printf("  AWGN:      SNR=%.3f dB, gamma=%.3f, std=%.6f\n", _q->SNRdB, _q->gamma, _q->nstd);
+    if (_q->enabled_awgn)       printf("  AWGN:      SNR=%.3f dB, gamma=%.3f, std=%.6f\n", _q->snr, _q->gamma, _q->nstd);
     if (_q->enabled_carrier)    printf("  carrier:   dphi=%.3f, phi=%.3f\n", _q->dphi, _q->phi);
     if (_q->enabled_multipath)  printf("  multipath: h_len=%u\n", _q->h_len);
     if (_q->enabled_shadowing)  printf("  shadowing: std=%.3fdB, fd=%.3f\n", _q->shadowing_std, _q->shadowing_fd);
@@ -107,23 +107,23 @@ int CHANNEL(_print)(CHANNEL() _q)
 }
 
 // apply additive white Gausss noise impairment
-//  _q              : channel object
-//  _noise_floor_dB : noise floor power spectral density
-//  _SNR_dB         : signal-to-noise ratio [dB]
+//  _q           : channel object
+//  _noise_floor : noise floor power spectral density
+//  _snr         : signal-to-noise ratio [dB]
 int CHANNEL(_add_awgn)(CHANNEL() _q,
-                       float     _noise_floor_dB,
-                       float     _SNRdB)
+                       float     _noise_floor,
+                       float     _snr)
 {
     // enable module
     _q->enabled_awgn = 1;
 
     //
-    _q->noise_floor_dB = _noise_floor_dB;
-    _q->SNRdB          = _SNRdB;
+    _q->noise_floor = _noise_floor;
+    _q->snr         = _snr;
 
     // set values appropriately
-    _q->nstd  = powf(10.0f, _noise_floor_dB/20.0f);
-    _q->gamma = powf(10.0f, (_q->SNRdB+_q->noise_floor_dB)/20.0f);
+    _q->nstd  = powf(10.0f, _noise_floor/20.0f);
+    _q->gamma = powf(10.0f, (_q->snr+_q->noise_floor)/20.0f);
     return LIQUID_OK;
 }
 

@@ -45,7 +45,7 @@ void RESAMP(_update_timing_state)(RESAMP() _q);
 struct RESAMP(_s) {
     // filter design parameters
     unsigned int m;     // filter semi-length, h_len = 2*m + 1
-    float As;           // filter stop-band attenuation
+    float as;           // filter stop-band attenuation
     float fc;           // filter cutoff frequency
 
     // resampling properties/states
@@ -74,12 +74,12 @@ struct RESAMP(_s) {
 //  _rate   :   resampling rate
 //  _m      :   prototype filter semi-length
 //  _fc     :   prototype filter cutoff frequency, fc in (0, 0.5)
-//  _As     :   prototype filter stop-band attenuation [dB] (e.g. 60)
+//  _as     :   prototype filter stop-band attenuation [dB] (e.g. 60)
 //  _npfb   :   number of filters in polyphase filterbank
 RESAMP() RESAMP(_create)(float        _rate,
                          unsigned int _m,
                          float        _fc,
-                         float        _As,
+                         float        _as,
                          unsigned int _npfb)
 {
     // validate input
@@ -89,7 +89,7 @@ RESAMP() RESAMP(_create)(float        _rate,
         return liquid_error_config("resamp_%s_create(), filter semi-length must be greater than zero", EXTENSION_FULL);
     if (_fc <= 0.0f || _fc >= 0.5f)
         return liquid_error_config("resamp_%s_create(), filter cutoff must be in (0,0.5)", EXTENSION_FULL);
-    if (_As <= 0.0f)
+    if (_as <= 0.0f)
         return liquid_error_config("resamp_%s_create(), filter stop-band suppression must be greater than zero", EXTENSION_FULL);
     if (_npfb == 0)
         return liquid_error_config("resamp_%s_create(), number of filter banks must be greater than zero", EXTENSION_FULL);
@@ -104,14 +104,14 @@ RESAMP() RESAMP(_create)(float        _rate,
     // set properties
     q->m    = _m;       // prototype filter semi-length
     q->fc   = _fc;      // prototype filter cutoff frequency
-    q->As   = _As;      // prototype filter stop-band attenuation
+    q->as   = _as;      // prototype filter stop-band attenuation
     q->npfb = _npfb;    // number of filters in bank
 
     // design filter
     unsigned int n = 2*q->m*q->npfb+1;
     float hf[n];
     TC h[n];
-    liquid_firdes_kaiser(n,q->fc/((float)(q->npfb)),q->As,0.0f,hf);
+    liquid_firdes_kaiser(n,q->fc/((float)(q->npfb)),q->as,0.0f,hf);
 
     // normalize filter coefficients by DC gain
     unsigned int i;
@@ -134,7 +134,7 @@ RESAMP() RESAMP(_create)(float        _rate,
 // resampling rate and default parameters
 //  m (filter semi-length) = 7
 //  fc (filter cutoff frequency) = 0.25
-//  As (filter stop-band attenuation) = 60 dB
+//  as (filter stop-band attenuation) = 60 dB
 //  npfb (number of filters in the bank) = 64
 RESAMP() RESAMP(_create_default)(float _rate)
 {
@@ -145,11 +145,11 @@ RESAMP() RESAMP(_create_default)(float _rate)
     // det default parameters
     unsigned int m    = 7;
     float        fc   = 0.5f*_rate > 0.49f ? 0.49f : 0.5f*_rate;
-    float        As   = 60.0f;
+    float        as   = 60.0f;
     unsigned int npfb = 64;
 
     // create and return resamp object
-    return RESAMP(_create)(_rate, m, fc, As, npfb);
+    return RESAMP(_create)(_rate, m, fc, as, npfb);
 }
 
 // free arbitrary resampler object

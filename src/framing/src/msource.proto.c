@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@ struct MSOURCE(_s)
     // channelizer description
     unsigned int    M;              // channelizer size
     unsigned int    m;              // channelizer filter semi-length
-    float           As;             // channelizer filter stop-band suppression (dB)
+    float           as;             // channelizer filter stop-band suppression (dB)
     firpfbch2_crcf  ch;             // analysis channelizer object
 
     // buffers
@@ -73,7 +73,7 @@ int MSOURCE(_generate)(MSOURCE() _q);
 // create msource object
 MSOURCE() MSOURCE(_create)(unsigned int _M,
                            unsigned int _m,
-                           float        _As)
+                           float        _as)
 {
     // validate input
     if (_M < 2)
@@ -92,10 +92,10 @@ MSOURCE() MSOURCE(_create)(unsigned int _M,
     q->id_counter  = 0;
     q->M           = _M;
     q->m           = _m;
-    q->As          = _As;
+    q->as          = _as;
     q->num_samples = 0;
 
-    q->ch = firpfbch2_crcf_create_kaiser(LIQUID_SYNTHESIZER, q->M, q->m, q->As);
+    q->ch = firpfbch2_crcf_create_kaiser(LIQUID_SYNTHESIZER, q->M, q->m, q->as);
 
     q->buf_freq = (float complex*) malloc(q->M   * sizeof(float complex)); 
     q->buf_time = (float complex*) malloc(q->M/2 * sizeof(float complex)); 
@@ -148,8 +148,8 @@ int MSOURCE(_reset)(MSOURCE() _q)
 // print
 int MSOURCE(_print)(MSOURCE() _q)
 {
-    printf("msource%s, M=%u, m=%u, As=%.1f dB, %llu samples:\n",
-            EXTENSION, _q->M, _q->m, _q->As, _q->num_samples);
+    printf("msource%s, M=%u, m=%u, as=%.1f dB, %llu samples:\n",
+            EXTENSION, _q->M, _q->m, _q->as, _q->num_samples);
     unsigned int i;
     for (i=0; i<_q->num_sources; i++)
         QSOURCE(_print)(_q->sources[i]);
@@ -164,7 +164,7 @@ int MSOURCE(_add_user)(MSOURCE()          _q,
                        void *             _userdata,
                        MSOURCE(_callback) _callback)
 {
-    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->As, _fc, _bw, _gain);
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->as, _fc, _bw, _gain);
     QSOURCE(_init_user)(s, _userdata, (void*)_callback);
     return MSOURCE(_add_source)(_q, s);
 }
@@ -175,7 +175,7 @@ int MSOURCE(_add_tone)(MSOURCE() _q,
                        float     _bw,
                        float     _gain)
 {
-    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->As, _fc, _bw, _gain);
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->as, _fc, _bw, _gain);
     QSOURCE(_init_tone)(s);
     return MSOURCE(_add_source)(_q, s);
 }
@@ -189,7 +189,7 @@ int MSOURCE(_add_chirp)(MSOURCE() _q,
                         int       _negate,
                         int       _single)
 {
-    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->As, _fc, _bw, _gain);
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->as, _fc, _bw, _gain);
     QSOURCE(_init_chirp)(s, _duration, _negate, _single);
     return MSOURCE(_add_source)(_q, s);
 }
@@ -200,7 +200,7 @@ int MSOURCE(_add_noise)(MSOURCE() _q,
                         float     _bw,
                         float     _gain)
 {
-    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->As, _fc, _bw, _gain);
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->as, _fc, _bw, _gain);
     QSOURCE(_init_noise)(s);
     return MSOURCE(_add_source)(_q, s);
 }
@@ -215,7 +215,7 @@ int MSOURCE(_add_modem)(MSOURCE()    _q,
                         float        _beta)
 {
     // create object with double the bandwidth to account for 2 samples/symbol
-    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->As, _fc, 2*_bw, _gain);
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->as, _fc, 2*_bw, _gain);
     QSOURCE(_init_modem)(s, _ms, _m, _beta);
     return MSOURCE(_add_source)(_q, s);
 }
@@ -229,7 +229,7 @@ int MSOURCE(_add_fsk)(MSOURCE()    _q,
                       unsigned int _k)
 {
     // create object with double the bandwidth to account for 2 samples/symbol
-    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->As, _fc, 2*_bw, _gain);
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->as, _fc, 2*_bw, _gain);
     QSOURCE(_init_fsk)(s, _m, _k);
     return MSOURCE(_add_source)(_q, s);
 }
@@ -243,7 +243,7 @@ int MSOURCE(_add_gmsk)(MSOURCE()    _q,
                        float        _bt)
 {
     // create object with double the bandwidth to account for 2 samples/symbol
-    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->As, _fc, 2*_bw, _gain);
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->as, _fc, 2*_bw, _gain);
     QSOURCE(_init_gmsk)(s, _m, _bt);
     return MSOURCE(_add_source)(_q, s);
 }

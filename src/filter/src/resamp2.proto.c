@@ -43,7 +43,7 @@ struct RESAMP2(_s) {
     unsigned int m;         // primitive filter length
     unsigned int h_len;     // actual filter length: h_len = 4*m+1
     float f0;               // center frequency [-1.0 <= f0 <= 1.0]
-    float As;               // stop-band attenuation [dB]
+    float as;               // stop-band attenuation [dB]
 
     // filter component
     TC * h1;                // filter branch coefficients
@@ -62,23 +62,23 @@ struct RESAMP2(_s) {
 // create a resamp2 object
 //  _m      :   filter semi-length (effective length: 4*_m+1)
 //  _f0     :   center frequency of half-band filter
-//  _As     :   stop-band attenuation [dB], _As > 0
+//  _as     :   stop-band attenuation [dB], _as > 0
 RESAMP2() RESAMP2(_create)(unsigned int _m,
                            float        _f0,
-                           float        _As)
+                           float        _as)
 {
     // validate input
     if (_m < 2)
         return liquid_error_config("resamp2_%s_create(), filter semi-length must be at least 2", EXTENSION_FULL);
     if (_f0 < -0.5f || _f0 > 0.5f)
         return liquid_error_config("resamp2_%s_create(), f0 (%12.4e) must be in [-0.5,0.5]", EXTENSION_FULL, _f0);
-    if (_As < 0.0f)
-        return liquid_error_config("resamp2_%s_create(), As (%12.4e) must be greater than zero", EXTENSION_FULL, _As);
+    if (_as < 0.0f)
+        return liquid_error_config("resamp2_%s_create(), as (%12.4e) must be greater than zero", EXTENSION_FULL, _as);
 
     RESAMP2() q = (RESAMP2()) malloc(sizeof(struct RESAMP2(_s)));
     q->m  = _m;
     q->f0 = _f0;
-    q->As = _As;
+    q->as = _as;
 
     // change filter length as necessary
     q->h_len = 4*(q->m) + 1;
@@ -91,7 +91,7 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
     unsigned int i;
     float t, h1, h2;
     TC h3;
-    float beta = kaiser_beta_As(q->As);
+    float beta = kaiser_beta_As(q->as);
     for (i=0; i<q->h_len; i++) {
         t = (float)i - (float)(q->h_len-1)/2.0f;
         h1 = sincf(t/2.0f);
@@ -126,24 +126,24 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
 //  _q          :   original resamp2 object
 //  _m          :   filter semi-length (effective length: 4*_m+1)
 //  _f0         :   center frequency of half-band filter
-//  _As         :   stop-band attenuation [dB], _As > 0
+//  _as         :   stop-band attenuation [dB], _as > 0
 RESAMP2() RESAMP2(_recreate)(RESAMP2()    _q,
                              unsigned int _m,
                              float        _f0,
-                             float        _As)
+                             float        _as)
 {
     // only re-design filter if necessary
     if (_m != _q->m) {
         // destroy resampler and re-create from scratch
         RESAMP2(_destroy)(_q);
-        _q = RESAMP2(_create)(_m, _f0, _As);
+        _q = RESAMP2(_create)(_m, _f0, _as);
 
     } else {
         // re-design filter prototype
         unsigned int i;
         float t, h1, h2;
         TC h3;
-        float beta = kaiser_beta_As(_q->As);
+        float beta = kaiser_beta_As(_q->as);
         for (i=0; i<_q->h_len; i++) {
             t = (float)i - (float)(_q->h_len-1)/2.0f;
             h1 = sincf(t/2.0f);

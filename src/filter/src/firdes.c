@@ -72,25 +72,25 @@ const char * liquid_firfilt_type_str[LIQUID_FIRFILT_NUM_TYPES][2] = {
 // esimate required filter length given transition bandwidth and
 // stop-band attenuation
 //  _df     :   transition bandwidth (0 < _df < 0.5)
-//  _As     :   stopband suppression level [dB] (_As > 0)
+//  _as     :   stopband suppression level [dB] (_as > 0)
 unsigned int estimate_req_filter_len(float _df,
-                                     float _As)
+                                     float _as)
 {
     if (_df > 0.5f || _df <= 0.0f) {
         liquid_error(LIQUID_EICONFIG,"estimate_req_filter_len(), invalid bandwidth : %f", _df);
         return 0;
-    } else if (_As <= 0.0f) {
-        liquid_error(LIQUID_EICONFIG,"estimate_req_filter_len(), invalid stopband level : %f", _As);
+    } else if (_as <= 0.0f) {
+        liquid_error(LIQUID_EICONFIG,"estimate_req_filter_len(), invalid stopband level : %f", _as);
         return 0;
     }
 
     // compute filter length estimate
 #if ESTIMATE_REQ_FILTER_LEN_METHOD == ESTIMATE_REQ_FILTER_LEN_METHOD_KAISER
     // use Kaiser's estimate
-    unsigned int h_len = (unsigned int) estimate_req_filter_len_Kaiser(_df,_As);
+    unsigned int h_len = (unsigned int) estimate_req_filter_len_Kaiser(_df,_as);
 #elif ESTIMATE_REQ_FILTER_LEN_METHOD == ESTIMATE_REQ_FILTER_LEN_METHOD_HERRMANN
     // use Herrmann's estimate
-    unsigned int h_len = (unsigned int) estimate_req_filter_len_Herrmann(_df,_As);
+    unsigned int h_len = (unsigned int) estimate_req_filter_len_Herrmann(_df,_as);
 #else
 #   error "invalid required filter length estimation method"
 #endif
@@ -105,10 +105,10 @@ float estimate_req_filter_As(float        _df,
                              unsigned int _N)
 {
     // run search for stop-band attenuation which gives these results
-    float As0   = 0.01f;    // lower bound
-    float As1   = 200.0f;   // upper bound
+    float as0   = 0.01f;    // lower bound
+    float as1   = 200.0f;   // upper bound
 
-    float As_hat = 0.0f;    // stop-band attenuation estimate
+    float as_hat = 0.0f;    // stop-band attenuation estimate
     float N_hat = 0.0f;     // filter length estimate
 
     // perform simple bisection search
@@ -116,32 +116,32 @@ float estimate_req_filter_As(float        _df,
     unsigned int i;
     for (i=0; i<num_iterations; i++) {
         // bisect limits
-        As_hat = 0.5f*(As1 + As0);
+        as_hat = 0.5f*(as1 + as0);
 #if ESTIMATE_REQ_FILTER_LEN_METHOD == ESTIMATE_REQ_FILTER_LEN_METHOD_KAISER
-        N_hat = estimate_req_filter_len_Kaiser(_df, As_hat);
+        N_hat = estimate_req_filter_len_Kaiser(_df, as_hat);
 #elif ESTIMATE_REQ_FILTER_LEN_METHOD == ESTIMATE_REQ_FILTER_LEN_METHOD_HERRMANN
-        N_hat = estimate_req_filter_len_Herrmann(_df, As_hat);
+        N_hat = estimate_req_filter_len_Herrmann(_df, as_hat);
 #else
 #       error "invalid required filter length estimation method"
 #endif
 
-        //printf("range[%8.2f, %8.2f] As-hat=%8.2fdB, N=%8.2f (target: %3u taps)\n",
-        //        As0, As1, As_hat, N_hat, _N);
+        //printf("range[%8.2f, %8.2f] as-hat=%8.2fdB, N=%8.2f (target: %3u taps)\n",
+        //        as0, as1, as_hat, N_hat, _N);
 
         // update limits
         if (N_hat < (float)_N) {
-            As0 = As_hat;
+            as0 = as_hat;
         } else {
-            As1 = As_hat;
+            as1 = as_hat;
         }
     }
-    return As_hat;
+    return as_hat;
 }
 
 // estimate filter transition bandwidth given
-//  _As     :   stop-band attenuation [dB], _As > 0
+//  _as     :   stop-band attenuation [dB], _as > 0
 //  _N      :   filter length
-float estimate_req_filter_df(float        _As,
+float estimate_req_filter_df(float        _as,
                              unsigned int _N)
 {
     // run search for stop-band attenuation which gives these results
@@ -158,9 +158,9 @@ float estimate_req_filter_df(float        _As,
         // bisect limits
         df_hat = 0.5f*(df1 + df0);
 #if ESTIMATE_REQ_FILTER_LEN_METHOD == ESTIMATE_REQ_FILTER_LEN_METHOD_KAISER
-        N_hat = estimate_req_filter_len_Kaiser(df_hat, _As);
+        N_hat = estimate_req_filter_len_Kaiser(df_hat, _as);
 #elif ESTIMATE_REQ_FILTER_LEN_METHOD == ESTIMATE_REQ_FILTER_LEN_METHOD_HERRMANN
-        N_hat = estimate_req_filter_len_Herrmann(df_hat, _As);
+        N_hat = estimate_req_filter_len_Herrmann(df_hat, _as);
 #else
 #       error "invalid required filter length estimation method"
 #endif
@@ -183,47 +183,47 @@ float estimate_req_filter_df(float        _As,
 // esimate required filter length given transition bandwidth and
 // stop-band attenuation (algorithm from [Vaidyanathan:1993])
 //  _df     :   transition bandwidth (0 < _df < 0.5)
-//  _As     :   stop-band attenuation [dB] (As > 0)
+//  _as     :   stop-band attenuation [dB] (as > 0)
 float estimate_req_filter_len_Kaiser(float _df,
-                                     float _As)
+                                     float _as)
 {
     if (_df > 0.5f || _df <= 0.0f) {
         liquid_error(LIQUID_EICONFIG,"estimate_req_filter_len_Kaiser(), invalid bandwidth : %f", _df);
         return 0.0f;
-    } else if (_As <= 0.0f) {
-        liquid_error(LIQUID_EICONFIG,"estimate_req_filter_len(), invalid stopband level : %f", _As);
+    } else if (_as <= 0.0f) {
+        liquid_error(LIQUID_EICONFIG,"estimate_req_filter_len(), invalid stopband level : %f", _as);
         return 0.0f;
     }
 
     // compute filter length estimate
-    return (_As - 7.95f)/(14.26f*_df);
+    return (_as - 7.95f)/(14.26f*_df);
 }
 
 
 // esimate required filter length given transition bandwidth and
 // stop-band attenuation (algorithm from [Herrmann:1973])
 //  _df     :   transition bandwidth (0 < _df < 0.5)
-//  _As     :   stop-band attenuation [dB] (As > 0)
+//  _as     :   stop-band attenuation [dB] (as > 0)
 float estimate_req_filter_len_Herrmann(float _df,
-                                       float _As)
+                                       float _as)
 {
     if (_df > 0.5f || _df <= 0.0f) {
         liquid_error(LIQUID_EICONFIG,"estimate_req_filter_len_Herrmann(), invalid bandwidth : %f", _df);
         return 0.0f;
-    } else if (_As <= 0.0f) {
-        liquid_error(LIQUID_EICONFIG,"estimate_req_filter_len(), invalid stopband level : %f", _As);
+    } else if (_as <= 0.0f) {
+        liquid_error(LIQUID_EICONFIG,"estimate_req_filter_len(), invalid stopband level : %f", _as);
         return 0.0f;
     }
 
     // Gaeddert's revisions:
-    if (_As > 105.0f)
-        return estimate_req_filter_len_Kaiser(_df,_As);
+    if (_as > 105.0f)
+        return estimate_req_filter_len_Kaiser(_df,_as);
 
-    _As += 7.4f;
+    _as += 7.4f;
 
     // compute delta_1, delta_2
     float d1, d2;
-    d1 = d2 = powf(10.0, -_As/20.0);
+    d1 = d2 = powf(10.0, -_as/20.0);
 
     // compute log of delta_1, delta_2
     float t1 = log10f(d1);
@@ -243,16 +243,16 @@ float estimate_req_filter_len_Herrmann(float _df,
 }
 
 // returns the Kaiser window beta factor give the filter's target
-// stop-band attenuation (As) [Vaidyanathan:1993]
-//  _As     :   target filter's stop-band attenuation [dB], _As > 0
-float kaiser_beta_As(float _As)
+// stop-band attenuation (as) [Vaidyanathan:1993]
+//  _as     :   target filter's stop-band attenuation [dB], _as > 0
+float kaiser_beta_As(float _as)
 {
-    _As = fabsf(_As);
+    _as = fabsf(_as);
     float beta;
-    if (_As > 50.0f)
-        beta = 0.1102f*(_As - 8.7f);
-    else if (_As > 21.0f)
-        beta = 0.5842*powf(_As - 21, 0.4f) + 0.07886f*(_As - 21);
+    if (_as > 50.0f)
+        beta = 0.1102f*(_as - 8.7f);
+    else if (_as > 21.0f)
+        beta = 0.5842*powf(_as - 21, 0.4f) + 0.07886f*(_as - 21);
     else
         beta = 0.0f;
 
@@ -299,12 +299,12 @@ int liquid_firdes_windowf(int          _wtype,
 // Design FIR using kaiser window
 //  _n      : filter length, _n > 0
 //  _fc     : cutoff frequency, 0 < _fc < 0.5
-//  _As     : stop-band attenuation [dB], _As > 0
+//  _as     : stop-band attenuation [dB], _as > 0
 //  _mu     : fractional sample offset, -0.5 < _mu < 0.5
 //  _h      : output coefficient buffer, [size: _n x 1]
 int liquid_firdes_kaiser(unsigned int _n,
                          float _fc,
-                         float _As,
+                         float _as,
                          float _mu,
                          float *_h)
 {
@@ -317,7 +317,7 @@ int liquid_firdes_kaiser(unsigned int _n,
         return liquid_error(LIQUID_EICONFIG,"liquid_firdes_kaiser(), filter length must be greater than zero");
 
     // choose kaiser beta parameter (approximate)
-    float beta = kaiser_beta_As(_As);
+    float beta = kaiser_beta_As(_as);
 
     // TODO: invoke liquid_firdes_windowf()
     float t, h1, h2; 
@@ -342,11 +342,11 @@ int liquid_firdes_kaiser(unsigned int _n,
 // Design finite impulse response notch filter
 //  _m      : filter semi-length, m in [1,1000]
 //  _f0     : filter notch frequency (normalized), -0.5 <= _fc <= 0.5
-//  _As     : stop-band attenuation [dB], _As > 0
+//  _as     : stop-band attenuation [dB], _as > 0
 //  _h      : output coefficient buffer, [size: 2*_m+1 x 1]
 int liquid_firdes_notch(unsigned int _m,
                         float        _f0,
-                        float        _As,
+                        float        _as,
                         float *      _h)
 {
     // validate inputs
@@ -354,11 +354,11 @@ int liquid_firdes_notch(unsigned int _m,
         return liquid_error(LIQUID_EICONFIG,"liquid_firdes_notch(), _m (%12u) out of range [1,1000]", _m);
     if (_f0 < -0.5f || _f0 > 0.5f)
         return liquid_error(LIQUID_EICONFIG,"liquid_firdes_notch(), notch frequency (%12.4e) must be in [-0.5,0.5]", _f0);
-    if (_As <= 0.0f)
-        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_notch(), stop-band suppression (%12.4e) must be greater than zero", _As);
+    if (_as <= 0.0f)
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_notch(), stop-band suppression (%12.4e) must be greater than zero", _as);
 
     // choose kaiser beta parameter (approximate)
-    float beta = kaiser_beta_As(_As);
+    float beta = kaiser_beta_As(_as);
 
     // design filter
     unsigned int h_len = 2*_m+1;
@@ -405,7 +405,7 @@ int liquid_firdes_prototype(liquid_firfilt_type _type,
     unsigned int h_len = 2*_k*_m + 1;   // length
     float fc = 0.5f / (float)_k;        // cut-off frequency
     float df = _beta / (float)_k;       // transition bandwidth
-    float As = estimate_req_filter_As(df,h_len);   // stop-band attenuation
+    float as = estimate_req_filter_As(df,h_len);   // stop-band attenuation
 
     // Parks-McClellan algorithm parameters
     float bands[6] = {  0.0f,       fc-0.5f*df,
@@ -419,7 +419,7 @@ int liquid_firdes_prototype(liquid_firfilt_type _type,
 
     switch (_type) {
     // Nyquist filter prototypes
-    case LIQUID_FIRFILT_KAISER:     return liquid_firdes_kaiser   (h_len, fc, As, _dt, _h);
+    case LIQUID_FIRFILT_KAISER:     return liquid_firdes_kaiser   (h_len, fc, as, _dt, _h);
     case LIQUID_FIRFILT_PM:
         // WARNING: input timing offset is ignored here
         return firdespm_run(h_len, 3, bands, des, weights, wtype, LIQUID_FIRDESPM_BANDPASS, _h);

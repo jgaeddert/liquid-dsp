@@ -42,7 +42,7 @@ struct FIRHILB(_s) {
     T * h;                  // filter coefficients
     T complex * hc;         // filter coefficients (complex)
     unsigned int h_len;     // length of filter
-    float As;               // filter stop-band attenuation [dB]
+    float as;               // filter stop-band attenuation [dB]
 
     unsigned int m;         // filter semi-length, h_len = 4*m+1
 
@@ -67,9 +67,9 @@ struct FIRHILB(_s) {
 
 // create firhilb object
 //  _m      :   filter semi-length (delay: 2*m+1)
-//  _As     :   stop-band attenuation [dB]
+//  _as     :   stop-band attenuation [dB]
 FIRHILB() FIRHILB(_create)(unsigned int _m,
-                           float        _As)
+                           float        _as)
 {
     // validate firhilb inputs
     if (_m < 2)
@@ -78,7 +78,7 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
     // allocate memory for main object
     FIRHILB() q = (FIRHILB()) malloc(sizeof(struct FIRHILB(_s)));
     q->m  = _m;         // filter semi-length
-    q->As = fabsf(_As); // stop-band attenuation
+    q->as = fabsf(_as); // stop-band attenuation
 
     // set filter length and allocate memory for coefficients
     q->h_len = 4*(q->m) + 1;
@@ -90,7 +90,7 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
     q->hq     = (T *) malloc((q->hq_len)*sizeof(T));
 
     // compute filter coefficients for half-band filter
-    liquid_firdes_kaiser(q->h_len, 0.25f, q->As, 0.0f, q->h);
+    liquid_firdes_kaiser(q->h_len, 0.25f, q->as, 0.0f, q->h);
 
     // alternate sign of non-zero elements
     unsigned int i;

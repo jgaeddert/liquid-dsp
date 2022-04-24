@@ -641,11 +641,11 @@ int CHANNEL(_print)(CHANNEL() _q);                                          \
                                                                             \
 /* Include additive white Gausss noise impairment                       */  \
 /*  _q          : channel object                                        */  \
-/*  _N0dB       : noise floor power spectral density [dB]               */  \
-/*  _SNRdB      : signal-to-noise ratio [dB]                            */  \
+/*  _noise_floor: noise floor power spectral density [dB]               */  \
+/*  _snr        : signal-to-noise ratio [dB]                            */  \
 int CHANNEL(_add_awgn)(CHANNEL() _q,                                        \
-                       float     _N0dB,                                     \
-                       float     _SNRdB);                                   \
+                       float     _noise_floor,                              \
+                       float     _snr);                                     \
                                                                             \
 /* Include carrier offset impairment                                    */  \
 /*  _q          : channel object                                        */  \
@@ -2021,9 +2021,9 @@ int liquid_getopt_str2firfilt(const char * _str);
 
 // estimate required filter length given
 //  _df     :   transition bandwidth (0 < _b < 0.5)
-//  _As     :   stop-band attenuation [dB], _As > 0
+//  _as     :   stop-band attenuation [dB], _as > 0
 unsigned int estimate_req_filter_len(float _df,
-                                     float _As);
+                                     float _as);
 
 // estimate filter stop-band attenuation given
 //  _df     :   transition bandwidth (0 < _b < 0.5)
@@ -2032,16 +2032,16 @@ float estimate_req_filter_As(float        _df,
                              unsigned int _N);
 
 // estimate filter transition bandwidth given
-//  _As     :   stop-band attenuation [dB], _As > 0
+//  _as     :   stop-band attenuation [dB], _as > 0
 //  _N      :   filter length
-float estimate_req_filter_df(float        _As,
+float estimate_req_filter_df(float        _as,
                              unsigned int _N);
 
 
 // returns the Kaiser window beta factor give the filter's target
 // stop-band attenuation (As) [Vaidyanathan:1993]
-//  _As     :   target filter's stop-band attenuation [dB], _As > 0
-float kaiser_beta_As(float _As);
+//  _as     :   target filter's stop-band attenuation [dB], _as > 0
+float kaiser_beta_As(float _as);
 
 
 // Design FIR filter using Parks-McClellan algorithm
@@ -2081,12 +2081,12 @@ int firdespm_run(unsigned int            _h_len,
 // run filter design for basic low-pass filter
 //  _n      : filter length, _n > 0
 //  _fc     : cutoff frequency, 0 < _fc < 0.5
-//  _As     : stop-band attenuation [dB], _As > 0
+//  _as     : stop-band attenuation [dB], _as > 0
 //  _mu     : fractional sample offset, -0.5 < _mu < 0.5 [ignored]
 //  _h      : output coefficient buffer, [size: _n x 1]
 int firdespm_lowpass(unsigned int _n,
                       float        _fc,
-                      float        _As,
+                      float        _as,
                       float        _mu,
                       float *      _h);
 
@@ -2157,23 +2157,23 @@ int liquid_firdes_windowf(int          _wtype,
 // Design FIR using Kaiser window
 //  _n      : filter length, _n > 0
 //  _fc     : cutoff frequency, 0 < _fc < 0.5
-//  _As     : stop-band attenuation [dB], _As > 0
+//  _as     : stop-band attenuation [dB], _as > 0
 //  _mu     : fractional sample offset, -0.5 < _mu < 0.5
 //  _h      : output coefficient buffer, [size: _n x 1]
 int liquid_firdes_kaiser(unsigned int _n,
                          float _fc,
-                         float _As,
+                         float _as,
                          float _mu,
                          float *_h);
 
 // Design finite impulse response notch filter
 //  _m      : filter semi-length, m in [1,1000]
 //  _f0     : filter notch frequency (normalized), -0.5 <= _fc <= 0.5
-//  _As     : stop-band attenuation [dB], _As > 0
+//  _as     : stop-band attenuation [dB], _as > 0
 //  _h      : output coefficient buffer, [size: 2*_m+1 x 1]
 int liquid_firdes_notch(unsigned int _m,
                         float        _f0,
-                        float        _As,
+                        float        _as,
                         float *      _h);
 
 // Design FIR doppler filter
@@ -2338,8 +2338,8 @@ typedef enum {
 //  _n          :   filter order
 //  _fc         :   low-pass prototype cut-off frequency
 //  _f0         :   center frequency (band-pass, band-stop)
-//  _Ap         :   pass-band ripple in dB
-//  _As         :   stop-band ripple in dB
+//  _ap         :   pass-band ripple in dB
+//  _as         :   stop-band ripple in dB
 //  _B          :   numerator
 //  _A          :   denominator
 void liquid_iirdes(liquid_iirdes_filtertype _ftype,
@@ -2348,8 +2348,8 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
                    unsigned int _n,
                    float _fc,
                    float _f0,
-                   float _Ap,
-                   float _As,
+                   float _ap,
+                   float _as,
                    float * _B,
                    float * _A);
 
@@ -2664,11 +2664,11 @@ FIRFILT() FIRFILT(_create)(TC *         _h,                                 \
 /* Create object using Kaiser-Bessel windowed sinc method               */  \
 /*  _n      : filter length, _n > 0                                     */  \
 /*  _fc     : filter normalized cut-off frequency, 0 < _fc < 0.5        */  \
-/*  _As     : filter stop-band attenuation [dB], _As > 0                */  \
+/*  _as     : filter stop-band attenuation [dB], _as > 0                */  \
 /*  _mu     : fractional sample offset, -0.5 < _mu < 0.5                */  \
 FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,                          \
                                   float        _fc,                         \
-                                  float        _As,                         \
+                                  float        _as,                         \
                                   float        _mu);                        \
                                                                             \
 /* Create object from square-root Nyquist prototype.                    */  \
@@ -2688,10 +2688,10 @@ FIRFILT() FIRFILT(_create_rnyquist)(int          _type,                     \
 /* Create object from Parks-McClellan algorithm prototype               */  \
 /*  _h_len  : filter length, _h_len > 0                                 */  \
 /*  _fc     : cutoff frequency, 0 < _fc < 0.5                           */  \
-/*  _As     : stop-band attenuation [dB], _As > 0                       */  \
+/*  _as     : stop-band attenuation [dB], _as > 0                       */  \
 FIRFILT() FIRFILT(_create_firdespm)(unsigned int _h_len,                    \
                                     float        _fc,                       \
-                                    float        _As);                      \
+                                    float        _as);                      \
                                                                             \
 /* Create rectangular filter prototype; that is                         */  \
 /* \( \vec{h} = \{ 1, 1, 1, \ldots 1 \} \)                              */  \
@@ -2700,16 +2700,16 @@ FIRFILT() FIRFILT(_create_rect)(unsigned int _n);                           \
                                                                             \
 /* Create DC blocking filter from prototype                             */  \
 /*  _m  : prototype filter semi-length such that filter length is 2*m+1 */  \
-/*  _As : prototype filter stop-band attenuation [dB], _As > 0          */  \
+/*  _as : prototype filter stop-band attenuation [dB], _as > 0          */  \
 FIRFILT() FIRFILT(_create_dc_blocker)(unsigned int _m,                      \
-                                      float        _As);                    \
+                                      float        _as);                    \
                                                                             \
 /* Create notch filter from prototype                                   */  \
 /*  _m  : prototype filter semi-length such that filter length is 2*m+1 */  \
-/*  _As : prototype filter stop-band attenuation [dB], _As > 0          */  \
+/*  _as : prototype filter stop-band attenuation [dB], _as > 0          */  \
 /*  _f0 : center frequency for notch, _fc in [-0.5, 0.5]                */  \
 FIRFILT() FIRFILT(_create_notch)(unsigned int _m,                           \
-                                 float        _As,                          \
+                                 float        _as,                          \
                                  float        _f0);                         \
                                                                             \
 /* Re-create filter object of potentially a different length with       */  \
@@ -2926,9 +2926,9 @@ typedef struct FIRHILB(_s) * FIRHILB();                                     \
 /* a Kaiser-Bessel window to a sinc function to guarantee zeros at all  */  \
 /* off-center odd indexed samples.                                      */  \
 /*  _m      : filter semi-length, delay is \( 2 m + 1 \)                */  \
-/*  _As     : filter stop-band attenuation [dB]                         */  \
+/*  _as     : filter stop-band attenuation [dB]                         */  \
 FIRHILB() FIRHILB(_create)(unsigned int _m,                                 \
-                           float        _As);                               \
+                           float        _as);                               \
                                                                             \
 /* Destroy finite impulse response Hilbert transform, freeing all       */  \
 /* internally-allocted memory and objects.                              */  \
@@ -3021,12 +3021,12 @@ typedef struct IIRHILB(_s) * IIRHILB();                                     \
 /* desired pass- and stop-band attenuation.                             */  \
 /*  _ftype  : filter type (e.g. LIQUID_IIRDES_BUTTER)                   */  \
 /*  _n      : filter order, _n > 0                                      */  \
-/*  _Ap     : pass-band ripple [dB], _Ap > 0                            */  \
-/*  _As     : stop-band ripple [dB], _Ap > 0                            */  \
+/*  _ap     : pass-band ripple [dB], _ap > 0                            */  \
+/*  _as     : stop-band ripple [dB], _as > 0                            */  \
 IIRHILB() IIRHILB(_create)(liquid_iirdes_filtertype _ftype,                 \
                            unsigned int             _n,                     \
-                           float                    _Ap,                    \
-                           float                    _As);                   \
+                           float                    _ap,                    \
+                           float                    _as);                   \
                                                                             \
 /* Create a default iirhilb object with a particular filter order.      */  \
 /*  _n      : filter order, _n > 0                                      */  \
@@ -3243,8 +3243,8 @@ IIRFILT() IIRFILT(_create_sos)(TC *         _B,                             \
 /*  _order  : filter order, _order > 0                                  */  \
 /*  _fc     : low-pass prototype cut-off frequency, 0 <= _fc <= 0.5     */  \
 /*  _f0     : center frequency (band-pass, band-stop), 0 <= _f0 <= 0.5  */  \
-/*  _Ap     : pass-band ripple in dB, _Ap > 0                           */  \
-/*  _As     : stop-band ripple in dB, _As > 0                           */  \
+/*  _ap     : pass-band ripple in dB, _ap > 0                           */  \
+/*  _as     : stop-band ripple in dB, _as > 0                           */  \
 IIRFILT() IIRFILT(_create_prototype)(                                       \
             liquid_iirdes_filtertype _ftype,                                \
             liquid_iirdes_bandtype   _btype,                                \
@@ -3252,8 +3252,8 @@ IIRFILT() IIRFILT(_create_prototype)(                                       \
             unsigned int             _order,                                \
             float                    _fc,                                   \
             float                    _f0,                                   \
-            float                    _Ap,                                   \
-            float                    _As);                                  \
+            float                    _ap,                                   \
+            float                    _as);                                  \
                                                                             \
 /* Create simplified low-pass Butterworth IIR filter                    */  \
 /*  _order  : filter order, _order > 0                                  */  \
@@ -3444,12 +3444,14 @@ LIQUID_IIRFILTSOS_DEFINE_API(LIQUID_IIRFILTSOS_MANGLE_CCCF,
 /* Finite impulse response (FIR) polyphase filter bank (PFB)            */  \
 typedef struct FIRPFB(_s) * FIRPFB();                                       \
                                                                             \
-/* Create firpfb object with _M sub-filter each of length _h_len/_M     */  \
+/* Create firpfb object with _num_filters sub-filter each with          */  \
+/* _h_len/_num_filters coefficients                                     */  \
 /* from an external array of coefficients                               */  \
-/*  _M      : number of filters in the bank, _M > 1                     */  \
-/*  _h      : coefficients, [size: _h_len x 1]                          */  \
-/*  _h_len  : filter length (multiple of _M), _h_len >= _M              */  \
-FIRPFB() FIRPFB(_create)(unsigned int _M,                                   \
+/*  _num_filters    : number of filters in the bank, _num_filters > 1   */  \
+/*  _h              : coefficients, [size: _h_len x 1]                  */  \
+/*  _h_len          : filter length (multiple of _num_filters),         */  \
+/*                    _h_len >= _num_filters                            */  \
+FIRPFB() FIRPFB(_create)(unsigned int _num_filters,                         \
                          TC *         _h,                                   \
                          unsigned int _h_len);                              \
                                                                             \
@@ -3458,42 +3460,42 @@ FIRPFB() FIRPFB(_create)(unsigned int _M,                                   \
 /* attenuation. This is equivalent to:                                  */  \
 /*   FIRPFB(_create_kaiser)(_M, _m, 0.5, 60.0)                          */  \
 /* which creates a Nyquist filter at the appropriate cut-off frequency. */  \
-/*  _M      : number of filters in the bank, _M > 0                     */  \
-/*  _m      : filter semi-length [samples], _m > 0                      */  \
-FIRPFB() FIRPFB(_create_default)(unsigned int _M,                           \
+/*  _num_filters    : number of filters in the bank, _num_filters > 1   */  \
+/*  _m              : filter semi-length [samples], _m > 0              */  \
+FIRPFB() FIRPFB(_create_default)(unsigned int _num_filters,                 \
                                  unsigned int _m);                          \
                                                                             \
 /* Create firpfb object using Kaiser-Bessel windowed sinc filter design */  \
 /* method                                                               */  \
-/*  _M      : number of filters in the bank, _M > 0                     */  \
-/*  _m      : filter semi-length [samples], _m > 0                      */  \
-/*  _fc     : filter normalized cut-off frequency, 0 < _fc < 0.5        */  \
-/*  _As     : filter stop-band suppression [dB], _As > 0                */  \
-FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,                            \
+/*  _num_filters : number of filters in the bank, _num_filters > 1      */  \
+/*  _m           : filter semi-length [samples], _m > 0                 */  \
+/*  _fc          : filter normalized cut-off frequency, 0 < _fc < 0.5   */  \
+/*  _as          : filter stop-band suppression [dB], _as > 0           */  \
+FIRPFB() FIRPFB(_create_kaiser)(unsigned int _num_filters,                  \
                                 unsigned int _m,                            \
                                 float        _fc,                           \
-                                float        _As);                          \
+                                float        _as);                          \
                                                                             \
 /* Create firpfb from square-root Nyquist prototype                     */  \
-/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)                     */  \
-/*  _M      : number of filters in the bank, _M > 0                     */  \
-/*  _k      : nominal samples/symbol, _k > 1                            */  \
-/*  _m      : filter delay [symbols], _m > 0                            */  \
-/*  _beta   : rolloff factor, 0 < _beta <= 1                            */  \
+/*  _type        : filter type (e.g. LIQUID_FIRFILT_RRC)                */  \
+/*  _num_filters : number of filters in the bank, _num_filters > 1      */  \
+/*  _k           : nominal samples/symbol, _k > 1                       */  \
+/*  _m           : filter delay [symbols], _m > 0                       */  \
+/*  _beta        : rolloff factor, 0 < _beta <= 1                       */  \
 FIRPFB() FIRPFB(_create_rnyquist)(int          _type,                       \
-                                  unsigned int _M,                          \
+                                  unsigned int _num_filters,                \
                                   unsigned int _k,                          \
                                   unsigned int _m,                          \
                                   float        _beta);                      \
                                                                             \
 /* Create from square-root derivative Nyquist prototype                 */  \
-/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)                     */  \
-/*  _M      : number of filters in the bank, _M > 0                     */  \
-/*  _k      : nominal samples/symbol, _k > 1                            */  \
-/*  _m      : filter delay [symbols], _m > 0                            */  \
-/*  _beta   : rolloff factor, 0 < _beta <= 1                            */  \
+/*  _type        : filter type (e.g. LIQUID_FIRFILT_RRC)                */  \
+/*  _num_filters : number of filters in the bank, _num_filters > 1      */  \
+/*  _k           : nominal samples/symbol, _k > 1                       */  \
+/*  _m           : filter delay [symbols], _m > 0                       */  \
+/*  _beta        : rolloff factor, 0 < _beta <= 1                       */  \
 FIRPFB() FIRPFB(_create_drnyquist)(int          _type,                      \
-                                   unsigned int _M,                         \
+                                   unsigned int _num_filters,               \
                                    unsigned int _k,                         \
                                    unsigned int _m,                         \
                                    float        _beta);                     \
@@ -3501,12 +3503,13 @@ FIRPFB() FIRPFB(_create_drnyquist)(int          _type,                      \
 /* Re-create firpfb object of potentially a different length with       */  \
 /* different coefficients. If the length of the filter does not change, */  \
 /* not memory reallocation is invoked.                                  */  \
-/*  _q      : original firpfb object                                    */  \
-/*  _M      : number of filters in the bank, _M > 1                     */  \
-/*  _h      : coefficients, [size: _h_len x 1]                          */  \
-/*  _h_len  : filter length (multiple of _M), _h_len >= _M              */  \
+/*  _q           : original firpfb object                               */  \
+/*  _num_filters : number of filters in the bank, _num_filters > 1      */  \
+/*  _h           : coefficients, [size: _h_len x 1]                     */  \
+/*  _h_len       : filter length (multiple of _num_filters),            */  \
+/*                 _h_len >= _num_filters                               */  \
 FIRPFB() FIRPFB(_recreate)(FIRPFB()     _q,                                 \
-                           unsigned int _M,                                 \
+                           unsigned int _num_filters,                       \
                            TC *         _h,                                 \
                            unsigned int _h_len);                            \
                                                                             \
@@ -3614,10 +3617,10 @@ FIRINTERP() FIRINTERP(_create)(unsigned int _M,                             \
 /* windowed-sinc function)                                              */  \
 /*  _M      : interpolation factor, _M >= 2                             */  \
 /*  _m      : filter delay [symbols], _m >= 1                           */  \
-/*  _As     : stop-band attenuation [dB], _As >= 0                      */  \
+/*  _as     : stop-band attenuation [dB], _as >= 0                      */  \
 FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,                      \
                                       unsigned int _m,                      \
-                                      float        _As);                    \
+                                      float        _as);                    \
                                                                             \
 /* Create interpolator object from filter prototype                     */  \
 /*  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)                    */  \
@@ -3746,8 +3749,8 @@ IIRINTERP() IIRINTERP(_create_default)(unsigned int _M,                     \
 /*  _order  : filter order, _order > 0                                  */  \
 /*  _fc     : low-pass prototype cut-off frequency, 0 <= _fc <= 0.5     */  \
 /*  _f0     : center frequency (band-pass, band-stop), 0 <= _f0 <= 0.5  */  \
-/*  _Ap     : pass-band ripple in dB, _Ap > 0                           */  \
-/*  _As     : stop-band ripple in dB, _As > 0                           */  \
+/*  _ap     : pass-band ripple in dB, _ap > 0                           */  \
+/*  _as     : stop-band ripple in dB, _as > 0                           */  \
 IIRINTERP() IIRINTERP(_create_prototype)(                                   \
             unsigned int             _M,                                    \
             liquid_iirdes_filtertype _ftype,                                \
@@ -3756,8 +3759,8 @@ IIRINTERP() IIRINTERP(_create_prototype)(                                   \
             unsigned int             _order,                                \
             float                    _fc,                                   \
             float                    _f0,                                   \
-            float                    _Ap,                                   \
-            float                    _As);                                  \
+            float                    _ap,                                   \
+            float                    _as);                                  \
                                                                             \
 /* Destroy interpolator object and free internal memory                 */  \
 void IIRINTERP(_destroy)(IIRINTERP() _q);                                   \
@@ -3834,10 +3837,10 @@ FIRDECIM() FIRDECIM(_create)(unsigned int _M,                               \
 /* windowed-sinc function)                                              */  \
 /*  _M      : decimation factor, _M >= 2                                */  \
 /*  _m      : filter delay [symbols], _m >= 1                           */  \
-/*  _As     : stop-band attenuation [dB], _As >= 0                      */  \
+/*  _as     : stop-band attenuation [dB], _as >= 0                      */  \
 FIRDECIM() FIRDECIM(_create_kaiser)(unsigned int _M,                        \
                                     unsigned int _m,                        \
-                                    float        _As);                      \
+                                    float        _as);                      \
                                                                             \
 /* Create decimator object from filter prototype                        */  \
 /*  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)                    */  \
@@ -3953,8 +3956,8 @@ IIRDECIM() IIRDECIM(_create_default)(unsigned int _M,                       \
 /*  _order  : filter order, _order > 0                                  */  \
 /*  _fc     : low-pass prototype cut-off frequency, 0 <= _fc <= 0.5     */  \
 /*  _f0     : center frequency (band-pass, band-stop), 0 <= _f0 <= 0.5  */  \
-/*  _Ap     : pass-band ripple in dB, _Ap > 0                           */  \
-/*  _As     : stop-band ripple in dB, _As > 0                           */  \
+/*  _ap     : pass-band ripple in dB, _ap > 0                           */  \
+/*  _as     : stop-band ripple in dB, _as > 0                           */  \
 IIRDECIM() IIRDECIM(_create_prototype)(                                     \
                 unsigned int             _M,                                \
                 liquid_iirdes_filtertype _ftype,                            \
@@ -3963,8 +3966,8 @@ IIRDECIM() IIRDECIM(_create_prototype)(                                     \
                 unsigned int             _order,                            \
                 float                    _fc,                               \
                 float                    _f0,                               \
-                float                    _Ap,                               \
-                float                    _As);                              \
+                float                    _ap,                               \
+                float                    _as);                              \
                                                                             \
 /* Destroy decimator object and free internal memory                    */  \
 void IIRDECIM(_destroy)(IIRDECIM() _q);                                     \
@@ -4032,20 +4035,20 @@ typedef struct RESAMP2(_s) * RESAMP2();                                     \
 /* Create half-band resampler from design prototype.                    */  \
 /*  _m  : filter semi-length (h_len = 4*m+1), _m >= 2                   */  \
 /*  _f0 : filter center frequency, -0.5 <= _f0 <= 0.5                   */  \
-/*  _As : stop-band attenuation [dB], _As > 0                           */  \
+/*  _as : stop-band attenuation [dB], _as > 0                           */  \
 RESAMP2() RESAMP2(_create)(unsigned int _m,                                 \
                            float        _f0,                                \
-                           float        _As);                               \
+                           float        _as);                               \
                                                                             \
 /* Re-create half-band resampler with new properties                    */  \
 /*  _q  : original half-band resampler object                           */  \
 /*  _m  : filter semi-length (h_len = 4*m+1), _m >= 2                   */  \
 /*  _f0 : filter center frequency, -0.5 <= _f0 <= 0.5                   */  \
-/*  _As : stop-band attenuation [dB], _As > 0                           */  \
+/*  _as : stop-band attenuation [dB], _as > 0                           */  \
 RESAMP2() RESAMP2(_recreate)(RESAMP2()    _q,                               \
                              unsigned int _m,                               \
                              float        _f0,                              \
-                             float        _As);                             \
+                             float        _as);                             \
                                                                             \
 /* Destroy resampler, freeing all internally-allocated memory           */  \
 void RESAMP2(_destroy)(RESAMP2() _q);                                       \
@@ -4173,12 +4176,12 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,                                 \
 /*  _Q      : decimation factor,                        Q > 0           */  \
 /*  _m      : filter semi-length (delay),               0 < _m          */  \
 /*  _bw     : filter bandwidth relative to sample rate, 0 < _bw <= 0.5  */  \
-/*  _As     : filter stop-band attenuation [dB],        0 < _As         */  \
+/*  _as     : filter stop-band attenuation [dB],        0 < _as         */  \
 RRESAMP() RRESAMP(_create_kaiser)(unsigned int _P,                          \
                                   unsigned int _Q,                          \
                                   unsigned int _m,                          \
                                   float        _bw,                         \
-                                  float        _As);                        \
+                                  float        _as);                        \
                                                                             \
 /* Create rational-rate resampler object from filter prototype to       */  \
 /* resample at an exact rate P/Q.                                       */  \
@@ -4199,7 +4202,7 @@ RRESAMP() RRESAMP(_create_prototype)(int          _type,                    \
 /* The default parameters are                                           */  \
 /*  m    = 12    (filter semi-length),                                  */  \
 /*  bw   = 0.5   (filter bandwidth), and                                */  \
-/*  As   = 60 dB (filter stop-band attenuation)                         */  \
+/*  as   = 60 dB (filter stop-band attenuation)                         */  \
 /*  _P      : interpolation factor, P > 0                               */  \
 /*  _Q      : decimation factor,    Q > 0                               */  \
 RRESAMP() RRESAMP(_create_default)(unsigned int _P,                         \
@@ -4321,12 +4324,12 @@ typedef struct RESAMP(_s) * RESAMP();                                       \
 /*  _rate   : arbitrary resampling rate,         0 < _rate              */  \
 /*  _m      : filter semi-length (delay),        0 < _m                 */  \
 /*  _fc     : filter cutoff frequency,           0 < _fc < 0.5          */  \
-/*  _As     : filter stop-band attenuation [dB], 0 < _As                */  \
+/*  _as     : filter stop-band attenuation [dB], 0 < _as                */  \
 /*  _npfb   : number of filters in the bank,     0 < _npfb              */  \
 RESAMP() RESAMP(_create)(float        _rate,                                \
                          unsigned int _m,                                   \
                          float        _fc,                                  \
-                         float        _As,                                  \
+                         float        _as,                                  \
                          unsigned int _npfb);                               \
                                                                             \
 /* Create arbitrary resampler object with a specified input resampling  */  \
@@ -4336,7 +4339,7 @@ RESAMP() RESAMP(_create)(float        _rate,                                \
 /* The default parameters are                                           */  \
 /*  m    = 7                    (filter semi-length),                   */  \
 /*  fc   = min(0.49,_rate/2)    (filter cutoff frequency),              */  \
-/*  As   = 60 dB                (filter stop-band attenuation), and     */  \
+/*  as   = 60 dB                (filter stop-band attenuation), and     */  \
 /*  npfb = 64                   (number of filters in the bank).        */  \
 /*  _rate   : arbitrary resampling rate,         0 < _rate              */  \
 RESAMP() RESAMP(_create_default)(float _rate);                              \
@@ -4469,12 +4472,12 @@ typedef struct MSRESAMP2(_s) * MSRESAMP2();                                 \
 /*  _num_stages : number of resampling stages, _num_stages <= 16        */  \
 /*  _fc         : filter cut-off frequency, 0 < _fc < 0.5               */  \
 /*  _f0         : filter center frequency (set to zero)                 */  \
-/*  _As         : stop-band attenuation [dB], _As > 0                   */  \
+/*  _as         : stop-band attenuation [dB], _as > 0                   */  \
 MSRESAMP2() MSRESAMP2(_create)(int          _type,                          \
                                unsigned int _num_stages,                    \
                                float        _fc,                            \
                                float        _f0,                            \
-                               float        _As);                           \
+                               float        _as);                           \
                                                                             \
 /* Destroy multi-stage half-band resampler, freeing all internal memory */  \
 int MSRESAMP2(_destroy)(MSRESAMP2() _q);                                    \
@@ -4539,9 +4542,9 @@ typedef struct MSRESAMP(_s) * MSRESAMP();                                   \
                                                                             \
 /* Create multi-stage arbitrary resampler                               */  \
 /*  _r      :   resampling rate (output/input), _r > 0                  */  \
-/*  _As     :   stop-band attenuation [dB], _As > 0                     */  \
+/*  _as     :   stop-band attenuation [dB], _as > 0                     */  \
 MSRESAMP() MSRESAMP(_create)(float _r,                                      \
-                             float _As);                                    \
+                             float _as);                                    \
                                                                             \
 /* Destroy multi-stage arbitrary resampler                              */  \
 int MSRESAMP(_destroy)(MSRESAMP() _q);                                      \
@@ -4609,11 +4612,11 @@ typedef struct DDS(_s) * DDS();                                             \
 /*  _num_stages : number of half-band stages, _num_stages > 0           */  \
 /*  _fc         : signal relative center frequency, _fc in [-0.5,0.5]   */  \
 /*  _bw         : signal relative bandwidth, _bw in (0,1)               */  \
-/*  _As         : filter stop-band attenuation (dB), _As > 0            */  \
+/*  _as         : filter stop-band attenuation (dB), _as > 0            */  \
 DDS() DDS(_create)(unsigned int _num_stages,                                \
                    float        _fc,                                        \
                    float        _bw,                                        \
-                   float        _As);                                       \
+                   float        _as);                                       \
                                                                             \
 /* Destroy digital synthesizer object                                   */  \
 int DDS(_destroy)(DDS() _q);                                                \
@@ -4786,11 +4789,11 @@ typedef struct FIRFARROW(_s) * FIRFARROW();                                 \
 /*  _h_len      : filter length, _h_len >= 2                            */  \
 /*  _p          : polynomial order, _p >= 1                             */  \
 /*  _fc         : filter cutoff frequency, 0 <= _fc <= 0.5              */  \
-/*  _As         : stopband attenuation [dB], _As > 0                    */  \
+/*  _as         : stopband attenuation [dB], _as > 0                    */  \
 FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,                         \
                                unsigned int _p,                             \
                                float        _fc,                            \
-                               float        _As);                           \
+                               float        _as);                           \
                                                                             \
 /* Destroy firfarrow object, freeing all internal memory                */  \
 int FIRFARROW(_destroy)(FIRFARROW() _q);                                    \
@@ -6213,13 +6216,13 @@ typedef struct MSOURCE(_s) * MSOURCE();                                     \
 /* Create msource object by specifying channelizer parameters           */  \
 /*  _M  :   number of channels in analysis channelizer object           */  \
 /*  _m  :   prototype channelizer filter semi-length                    */  \
-/*  _As :   prototype channelizer filter stop-band suppression (dB)     */  \
+/*  _as :   prototype channelizer filter stop-band suppression (dB)     */  \
 MSOURCE() MSOURCE(_create)(unsigned int _M,                                 \
                            unsigned int _m,                                 \
-                           float        _As);                               \
+                           float        _as);                               \
                                                                             \
 /* Create default msource object with default parameters:               */  \
-/* M = 1200, m = 4, As = 60                                             */  \
+/* M = 1200, m = 4, as = 60                                             */  \
 MSOURCE() MSOURCE(_create_default)(void);                                   \
                                                                             \
 /* Destroy msource object                                               */  \
@@ -8076,11 +8079,11 @@ FIRPFBCH() FIRPFBCH(_create)(int          _type,                \
 /*  _type   : type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)   */  \
 /*  _M      : number of channels                            */  \
 /*  _m      : filter delay (symbols)                        */  \
-/*  _As     : stop-band attentuation [dB]                   */  \
+/*  _as     : stop-band attentuation [dB]                   */  \
 FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,         \
                                     unsigned int _M,            \
                                     unsigned int _m,            \
-                                    float        _As);          \
+                                    float        _as);          \
                                                                 \
 /* create FIR polyphase filterbank channelizer object with  */  \
 /* prototype root-Nyquist filter                            */  \
@@ -8161,11 +8164,11 @@ FIRPFBCH2() FIRPFBCH2(_create)(int          _type,              \
 /*  _type   : channelizer type (e.g. LIQUID_ANALYZER)       */  \
 /*  _M      : number of channels (must be even)             */  \
 /*  _m      : prototype filter semi-length, length=2*M*m+1  */  \
-/*  _As     : filter stop-band attenuation [dB]             */  \
+/*  _as     : filter stop-band attenuation [dB]             */  \
 FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,       \
                                       unsigned int _M,          \
                                       unsigned int _m,          \
-                                      float        _As);        \
+                                      float        _as);        \
                                                                 \
 /* destroy firpfbch2 object, freeing internal memory        */  \
 int FIRPFBCH2(_destroy)(FIRPFBCH2() _q);                        \
@@ -8226,11 +8229,11 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _M,                             \
 /*  _M      : number of output channels in chanelizer                   */  \
 /*  _P      : output decimation factor (output rate is 1/P the input)   */  \
 /*  _m      : prototype filter semi-length, length=2*M*m                */  \
-/*  _As     : filter stop-band attenuation [dB]                         */  \
+/*  _as     : filter stop-band attenuation [dB]                         */  \
 FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _M,                      \
                                       unsigned int _P,                      \
                                       unsigned int _m,                      \
-                                      float        _As);                    \
+                                      float        _as);                    \
                                                                             \
 /* destroy firpfbchr object, freeing internal memory                    */  \
 int FIRPFBCHR(_destroy)(FIRPFBCHR() _q);                                    \

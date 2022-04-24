@@ -101,17 +101,17 @@ FIRFILT() FIRFILT(_create)(TC * _h,
 // create filter using Kaiser-Bessel windowed sinc method
 //  _n      : filter length, _n > 0
 //  _fc     : cutoff frequency, 0 < _fc < 0.5
-//  _As     : stop-band attenuation [dB], _As > 0
+//  _as     : stop-band attenuation [dB], _as > 0
 //  _mu     : fractional sample offset, -0.5 < _mu < 0.5
 FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,
                                   float        _fc,
-                                  float        _As,
+                                  float        _as,
                                   float        _mu)
 {
 
     // compute temporary array for holding coefficients
     float hf[_n];
-    if (liquid_firdes_kaiser(_n, _fc, _As, _mu, hf) != LIQUID_OK)
+    if (liquid_firdes_kaiser(_n, _fc, _as, _mu, hf) != LIQUID_OK)
         return liquid_error_config("firfilt_%s_create_kaiser(), invalid config", EXTENSION_FULL);
 
     // copy coefficients to type-specific array
@@ -155,14 +155,14 @@ FIRFILT() FIRFILT(_create_rnyquist)(int          _type,
 // Create object from Parks-McClellan algorithm prototype
 //  _h_len  : filter length, _h_len > 0
 //  _fc     : cutoff frequency, 0 < _fc < 0.5
-//  _As     : stop-band attenuation [dB], _As > 0
+//  _as     : stop-band attenuation [dB], _as > 0
 FIRFILT() FIRFILT(_create_firdespm)(unsigned int _h_len,
                                     float        _fc,
-                                    float        _As)
+                                    float        _as)
 {
     // generate square-root Nyquist filter
     float hf[_h_len];
-    if (firdespm_lowpass(_h_len,_fc,_As,0,hf) != LIQUID_OK)
+    if (firdespm_lowpass(_h_len,_fc,_as,0,hf) != LIQUID_OK)
         return liquid_error_config("firfilt_%s_create_firdespm(), invalid config", EXTENSION_FULL);
 
     // copy coefficients to type-specific array (e.g. float complex)
@@ -200,12 +200,12 @@ FIRFILT() FIRFILT(_create_rect)(unsigned int _n)
 
 // create DC blocking filter
 FIRFILT() FIRFILT(_create_dc_blocker)(unsigned int _m,
-                                      float        _As)
+                                      float        _as)
 {
     // create float array coefficients and design filter
     unsigned int h_len = 2*_m+1;
     float        hf[h_len];
-    if (liquid_firdes_notch(_m, 0, _As, hf) != LIQUID_OK)
+    if (liquid_firdes_notch(_m, 0, _as, hf) != LIQUID_OK)
         return liquid_error_config("firfilt_%s_create_dc_blocker(), invalid config",EXTENSION_FULL);
 
     // copy coefficients to type-specific array
@@ -220,7 +220,7 @@ FIRFILT() FIRFILT(_create_dc_blocker)(unsigned int _m,
 
 // create notch filter
 FIRFILT() FIRFILT(_create_notch)(unsigned int _m,
-                                 float        _As,
+                                 float        _as,
                                  float        _f0)
 {
     // create float array coefficients and design filter
@@ -230,7 +230,7 @@ FIRFILT() FIRFILT(_create_notch)(unsigned int _m,
     TC           h [h_len];         // output filter with type-specific coefficients
 #if TC_COMPLEX
     // design notch filter as DC blocker, then mix to appropriate frequency
-    if (liquid_firdes_notch(_m, 0, _As, hf) != LIQUID_OK)
+    if (liquid_firdes_notch(_m, 0, _as, hf) != LIQUID_OK)
         return liquid_error_config("firfilt_%s_create_notch(), invalid config",EXTENSION_FULL);
     for (i=0; i<h_len; i++) {
         float phi = 2.0f * M_PI * _f0 * ((float)i - (float)_m);
@@ -238,7 +238,7 @@ FIRFILT() FIRFILT(_create_notch)(unsigned int _m,
     }
 #else
     // design notch filter for real-valued coefficients directly
-    if (liquid_firdes_notch(_m, _f0, _As, hf) != LIQUID_OK)
+    if (liquid_firdes_notch(_m, _f0, _as, hf) != LIQUID_OK)
         return liquid_error_config("firfilt_%s_create_notch(), invalid config",EXTENSION_FULL);
     for (i=0; i<h_len; i++)
         h[i] = hf[i];

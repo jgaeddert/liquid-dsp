@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@ struct QSOURCE(_s)
     unsigned int    M;          // number of channels in parent object's synthesis channelizer
     unsigned int    P;          // number of channels in this object's analysis channelizer
     unsigned int    m;          // channelizer filter semi-length
-    float           As;         // channelizer filter stop-band suppression (dB)
+    float           as;         // channelizer filter stop-band suppression (dB)
     float           fc;         // signal normalized center frequency
     float           bw;         // signal normalized bandwidth
     unsigned int    index;      // base index
@@ -82,7 +82,7 @@ struct QSOURCE(_s)
 
 QSOURCE() QSOURCE(_create)(unsigned int _M,
                            unsigned int _m,
-                           float        _As,
+                           float        _as,
                            float        _fc,
                            float        _bw,
                            float        _gain)
@@ -111,11 +111,11 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,
     q->P = max(2, q->P);
     // allow P to exceed M for cases where wider bandwidth is needed (e.g. modem)
     q->m = _m;
-    q->As= _As;
+    q->as= _as;
 
     // create resampler to correct for rate offset
     float rate = _bw == 0 ? 1.0f : _bw * (float)(q->M) / (float)(q->P);
-    q->resamp = resamp_crcf_create(rate, 12, 0.45f, q->As, 64);
+    q->resamp = resamp_crcf_create(rate, 12, 0.45f, q->as, 64);
 
     // create mixer for frequency offset correction
     q->index = (unsigned int)roundf((_fc < 0.0f ? _fc + 1.0f : _fc) * q->M) % q->M;
@@ -138,7 +138,7 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,
     q->buf_freq = (float complex*) malloc(q->P       * sizeof(float complex));
 
     // create channelizer
-    q->ch = firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER, q->P, q->m, q->As);
+    q->ch = firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER, q->P, q->m, q->as);
 
     // channelizer gain correction
     q->gain_ch = sqrtf((float)(q->P)/(float)(q->M));
@@ -289,8 +289,8 @@ int QSOURCE(_print)(QSOURCE() _q)
     default:
         return liquid_error(LIQUID_EINT,"qsource%s_print(), invalid internal state",EXTENSION);
     }
-    printf(" : fc=%6.3f, bw=%5.3f, P=%4u, m=%2u, As=%5.1f dB, gain=%5.1f dB %c\n",
-            _q->fc, bw, _q->P, _q->m, _q->As, QSOURCE(_get_gain)(_q), _q->enabled ? '*' : ' ');
+    printf(" : fc=%6.3f, bw=%5.3f, P=%4u, m=%2u, as=%5.1f dB, gain=%5.1f dB %c\n",
+            _q->fc, bw, _q->P, _q->m, _q->as, QSOURCE(_get_gain)(_q), _q->enabled ? '*' : ' ');
     return LIQUID_OK;
 }
 

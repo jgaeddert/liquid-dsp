@@ -36,7 +36,7 @@ struct DDS(_s) {
     unsigned int num_stages;    // number of halfband stages
     float fc0;                  // high-rate center frequency (-0.5,0.5)
     float bw0;                  // low-rate bandwidth (range?)
-    float As0;                  // filter stop-band attenuation [dB]
+    float as0;                  // filter stop-band attenuation [dB]
 
     // derived values
     unsigned int rate;          // re-sampling rate (2^num_stages)
@@ -45,7 +45,7 @@ struct DDS(_s) {
     RESAMP2() * halfband_resamp;
     float * fc;                 // filter center frequency
     float * ft;                 // filter transition bandwidth
-    float * As;                 // filter stop-band attenuation [dB] array
+    float * as;                 // filter stop-band attenuation [dB] array
     unsigned int * m;           // filter semi-length
 
     // internal buffers
@@ -65,11 +65,11 @@ struct DDS(_s) {
 //  _num_stages     :   number of halfband stages
 //  _fc             :   input carrier
 //  _bw             :   input signal bandwidth
-//  _As             :   stop-band attenuation
+//  _as             :   stop-band attenuation
 DDS() DDS(_create)(unsigned int _num_stages,
                    float        _fc,
                    float        _bw,
-                   float        _As)
+                   float        _as)
 {
     // error checking
     if (_num_stages > 20)
@@ -78,8 +78,8 @@ DDS() DDS(_create)(unsigned int _num_stages,
         return liquid_error_config("dds_%s_create(), frequency %12.4e is out of range [-0.5,0.5]", EXTENSION_FULL, _fc);
     if (_bw <= 0.0f || _bw >= 1.0f)
         return liquid_error_config("dds_%s_create(), bandwidth %12.4e is out of range (0,1)", EXTENSION_FULL, _bw);
-    if (_As < 0.0f)
-        return liquid_error_config("dds_%s_create(), stop-band suppresion %12.4e must be greater than zero", EXTENSION_FULL, _As);
+    if (_as < 0.0f)
+        return liquid_error_config("dds_%s_create(), stop-band suppresion %12.4e must be greater than zero", EXTENSION_FULL, _as);
 
     // create object
     DDS() q = (DDS()) malloc(sizeof(struct DDS(_s)));
@@ -87,12 +87,12 @@ DDS() DDS(_create)(unsigned int _num_stages,
     q->rate = 1<<(q->num_stages);
     q->fc0 = _fc;
     q->bw0 = _bw;
-    q->As0 = _As;
+    q->as0 = _as;
 
     // allocate memory for filter properties
     q->fc    = (float*) malloc((q->num_stages)*sizeof(float));
     q->ft    = (float*) malloc((q->num_stages)*sizeof(float));
-    q->As    = (float*) malloc((q->num_stages)*sizeof(float));
+    q->as    = (float*) malloc((q->num_stages)*sizeof(float));
     q->m     = (unsigned int*) malloc((q->num_stages)*sizeof(unsigned int));
     unsigned int i;
     float fc, bw;
@@ -107,11 +107,11 @@ DDS() DDS(_create)(unsigned int _num_stages,
         // compute transition bandwidth
         q->ft[i] = 0.5f*(1.0f - bw);
         if (q->ft[i] > 0.45) q->ft[i] = 0.45f; // set maximum bandwidth
-        q->As[i] = q->As0;
+        q->as[i] = q->as0;
 
         // compute (estimate) required filter length
         //q->m[i] = i==0 ? 37 : q->h_m[i-1]*0.7;
-        q->m[i] = estimate_req_filter_len(q->ft[i], q->As[i]);
+        q->m[i] = estimate_req_filter_len(q->ft[i], q->as[i]);
 
         // update carrier, bandwidth parameters
         fc *= 0.5f;
@@ -128,7 +128,7 @@ DDS() DDS(_create)(unsigned int _num_stages,
     for (i=0; i<q->num_stages; i++) {
         q->halfband_resamp[i] = RESAMP2(_create)(q->m[i],
                                                  q->fc[i],
-                                                 q->As[i]);
+                                                 q->as[i]);
     }
 
     // set down-converter scaling factor
@@ -148,7 +148,7 @@ int DDS(_destroy)(DDS() _q)
 {
     // free filter parameter arrays
     free(_q->m);
-    free(_q->As);
+    free(_q->as);
     free(_q->fc);
     free(_q->ft);
 
@@ -177,7 +177,7 @@ int DDS(_print)(DDS() _q)
     printf("      fc    : %8.5f\n", _q->fc0);
     printf("      bw    : %8.5f\n", _q->bw0);
     printf("      nco/f : %8.4f\n", nco_crcf_get_frequency(_q->ncox) / (2.0f*M_PI));
-    printf("      As    : %8.2f [dB]\n", _q->As0);
+    printf("      as    : %8.2f [dB]\n", _q->as0);
     printf("    halfband stages (low rate -> high rate) :\n");
     unsigned int i;
     for (i=0; i<_q->num_stages; i++) {

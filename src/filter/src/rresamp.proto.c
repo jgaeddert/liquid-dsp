@@ -86,12 +86,12 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,
 //  _Q      : decimation factor,                        Q > 0
 //  _m      : filter semi-length (delay),               0 < _m
 //  _bw     : filter bandwidth relative to sample rate, 0 < _bw= < 0.5
-//  _As     : filter stop-band attenuation [dB],        0 < _As
+//  _as     : filter stop-band attenuation [dB],        0 < _as
 RRESAMP() RRESAMP(_create_kaiser)(unsigned int _P,
                                   unsigned int _Q,
                                   unsigned int _m,
                                   float        _bw,
-                                  float        _As)
+                                  float        _as)
 {
     // scale interpolation and decimation factors by their greatest common divisor
     unsigned int gcd = liquid_gcd(_P, _Q);
@@ -102,7 +102,7 @@ RRESAMP() RRESAMP(_create_kaiser)(unsigned int _P,
     unsigned int h_len = 2*_P*_m + 1;
     float * hf = (float*) malloc(h_len*sizeof(float));
     TC    * h  = (TC*)    malloc(h_len*sizeof(TC)   );
-    liquid_firdes_kaiser(h_len, _bw/(float)_P, _As, 0.0f, hf);
+    liquid_firdes_kaiser(h_len, _bw/(float)_P, _as, 0.0f, hf);
 
     // convert to type-specific coefficients
     unsigned int i;
@@ -162,7 +162,7 @@ RRESAMP() RRESAMP(_create_prototype)(int          _type,
 // create rational-rate resampler object with a specified input
 // resampling rate and default parameters
 //  m (filter semi-length) = 12
-//  As (filter stop-band attenuation) = 60 dB
+//  as (filter stop-band attenuation) = 60 dB
 RRESAMP() RRESAMP(_create_default)(unsigned int _P,
                                    unsigned int _Q)
 {
@@ -175,10 +175,10 @@ RRESAMP() RRESAMP(_create_default)(unsigned int _P,
     // det default parameters
     unsigned int m  = 12;
     float        bw = 0.5f;
-    float        As = 60.0f;
+    float        as = 60.0f;
 
     // create and return resamp object
-    return RRESAMP(_create_kaiser)(_P, _Q, m, bw, As);
+    return RRESAMP(_create_kaiser)(_P, _Q, m, bw, as);
 }
 
 // free resampler object

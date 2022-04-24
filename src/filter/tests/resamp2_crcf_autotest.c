@@ -28,7 +28,7 @@ void autotest_resamp2_analysis()
 {
     unsigned int m=5;       // filter semi-length (actual length: 4*m+1)
     unsigned int n=37;      // number of input samples
-    float As=60.0f;         // stop-band attenuation [dB]
+    float as=60.0f;         // stop-band attenuation [dB]
     float f0 =  0.0739f;    // low frequency signal
     float f1 = -0.1387f;    // high frequency signal (+pi)
     float tol = 1e-3f;      // error tolerance
@@ -46,7 +46,7 @@ void autotest_resamp2_analysis()
 
     // create/print the half-band resampler, with a specified
     // stopband attenuation level
-    resamp2_crcf q = resamp2_crcf_create(m,0,As);
+    resamp2_crcf q = resamp2_crcf_create(m,0,as);
 
     // run half-band decimation
     float complex y_hat[2];
@@ -100,7 +100,7 @@ void autotest_resamp2_synthesis()
 {
     unsigned int m=5;       // filter semi-length (actual length: 4*m+1)
     unsigned int n=37;      // number of input samples
-    float As=60.0f;         // stop-band attenuation [dB]
+    float as=60.0f;         // stop-band attenuation [dB]
     float f0 =  0.0739f;    // low frequency signal
     float f1 = -0.1387f;    // high frequency signal (+pi)
     float tol = 3e-3f;      // error tolerance
@@ -120,7 +120,7 @@ void autotest_resamp2_synthesis()
 
     // create/print the half-band resampler, with a specified
     // stopband attenuation level
-    resamp2_crcf q = resamp2_crcf_create(m,0,As);
+    resamp2_crcf q = resamp2_crcf_create(m,0,as);
 
     // run synthesis
     float complex x_hat[2];
@@ -167,13 +167,13 @@ void autotest_resamp2_synthesis()
 }
 
 // test half-band resampler filter response
-void testbench_resamp2_crcf_filter(unsigned int _m, float _As)
+void testbench_resamp2_crcf_filter(unsigned int _m, float _as)
 {
     // error tolerance [dB]
     float tol = 0.5f;
 
     // create the half-band resampler
-    resamp2_crcf q = resamp2_crcf_create(_m,0,_As);
+    resamp2_crcf q = resamp2_crcf_create(_m,0,_as);
 
     // get impulse response
     unsigned int h_len = 4*_m+1;
@@ -187,13 +187,13 @@ void testbench_resamp2_crcf_filter(unsigned int _m, float _As)
     resamp2_crcf_destroy(q);
 
     // compute expected transition band (extend slightly for relaxed constraints)
-    float ft = estimate_req_filter_df(_As, h_len) * 1.1;
+    float ft = estimate_req_filter_df(_as, h_len) * 1.1;
 
     // verify low-pass frequency response
     autotest_psd_s regions_h0[] = {
-      {.fmin=-0.5,       .fmax=-0.25-ft/2, .pmin= 0, .pmax=-_As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=-0.5,       .fmax=-0.25-ft/2, .pmin= 0, .pmax=-_as+tol, .test_lo=0, .test_hi=1},
       {.fmin=-0.25+ft/2, .fmax=+0.25-ft/2, .pmin=-1, .pmax=+1,       .test_lo=1, .test_hi=1},
-      {.fmin=+0.25+ft/2, .fmax=+0.5,       .pmin= 0, .pmax=-_As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=+0.25+ft/2, .fmax=+0.5,       .pmin= 0, .pmax=-_as+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signal(h_0, h_len, regions_h0, 3,
         liquid_autotest_verbose ? "autotest_resamp2_crcf_filter_h0.m" : NULL);
@@ -201,7 +201,7 @@ void testbench_resamp2_crcf_filter(unsigned int _m, float _As)
     // verify high-pass frequency response
     autotest_psd_s regions_h1[] = {
       {.fmin=-0.5,       .fmax=-0.25-ft/2, .pmin=-1, .pmax=+1,       .test_lo=1, .test_hi=1},
-      {.fmin=-0.25+ft/2, .fmax=+0.25-ft/2, .pmin= 0, .pmax=-_As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=-0.25+ft/2, .fmax=+0.25-ft/2, .pmin= 0, .pmax=-_as+tol, .test_lo=0, .test_hi=1},
       {.fmin=+0.25+ft/2, .fmax=+0.5,       .pmin=-1, .pmax=+1,       .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_psd_signal(h_1, h_len, regions_h1, 3,
@@ -228,7 +228,7 @@ void autotest_resamp2_config()
     CONTEND_ISNULL(resamp2_crcf_create( 1,  0.0f, 60.0f)); // m out of range
     CONTEND_ISNULL(resamp2_crcf_create( 2,  0.7f, 60.0f)); // f0 out of range
     CONTEND_ISNULL(resamp2_crcf_create( 2, -0.7f, 60.0f)); // f0 out of range
-    CONTEND_ISNULL(resamp2_crcf_create( 2,  0.0f, -1.0f)); // As out of range
+    CONTEND_ISNULL(resamp2_crcf_create( 2,  0.0f, -1.0f)); // as out of range
 
     // create proper object and test configurations
     resamp2_crcf q = resamp2_crcf_create( 4, 0.0f, 60.0f);

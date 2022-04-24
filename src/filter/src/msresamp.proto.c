@@ -55,7 +55,7 @@ int MSRESAMP(_decim_execute)(MSRESAMP()     _q,
 struct MSRESAMP(_s) {
     // user-defined parameters
     float rate;                         // re-sampling rate
-    float As;                           // filter stop-band attenuation [dB]
+    float as;                           // filter stop-band attenuation [dB]
 
     // type: interpolator or decimator
     int type;                           // run half-band resamplers as interp or decim
@@ -79,9 +79,9 @@ struct MSRESAMP(_s) {
 //  TODO: add signal bandwidth parameter?
 //  TODO: add center frequency parameter; facilitates DDS object synthesis
 //  _r              :   resampling rate [output/input]
-//  _As             :   stop-band attenuation
+//  _as             :   stop-band attenuation
 MSRESAMP() MSRESAMP(_create)(float _r,
-                             float _As)
+                             float _as)
 {
     // validate input
     if (_r <= 0.0f)
@@ -92,7 +92,7 @@ MSRESAMP() MSRESAMP(_create)(float _r,
 
     // set internal properties
     q->rate = _r;       // composite rate
-    q->As   = _As;      // stop-band suppression
+    q->as   = _as;      // stop-band suppression
 
     // decimation or interpolation?
     q->type = (q->rate > 1.0f) ? LIQUID_RESAMP_INTERP : LIQUID_RESAMP_DECIM;
@@ -127,14 +127,14 @@ MSRESAMP() MSRESAMP(_create)(float _r,
     // TODO: compute appropriate cut-off frequency
     q->halfband_resamp = MSRESAMP2(_create)(q->type,
                                             q->num_halfband_stages,
-                                            0.4f, 0.0f, q->As);
+                                            0.4f, 0.0f, q->as);
 
     // create arbitrary resampler object
     // TODO: compute appropriate parameters
     q->arbitrary_resamp = RESAMP(_create)(q->rate_arbitrary,
                                           7,
                                           min(0.515f*q->rate_arbitrary,0.49f),
-                                          q->As,
+                                          q->as,
                                           64);
 
     // reset object
