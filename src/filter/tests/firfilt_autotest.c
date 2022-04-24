@@ -126,3 +126,33 @@ void autotest_firfilt_recreate()
     firfilt_crcf_destroy(q);
 }
 
+// compare push vs write methods
+void autotest_firfilt_push_write()
+{
+    // create two identical objects
+    firfilt_rrrf q0 = firfilt_rrrf_create_kaiser(51, 0.2f, 60.0f, 0.0f);
+    firfilt_rrrf q1 = firfilt_rrrf_create_kaiser(51, 0.2f, 60.0f, 0.0f);
+
+    // generate pseudo-random inputs, and compare outputs
+    float buf[8] = {-1,3,5,-3,5,1,-3,-4};
+    unsigned int trial, i;
+    for (trial=0; trial<20; trial++) {
+        unsigned int n = trial % 8;
+
+        // push/write samples
+        for (i=0; i<n; i++)
+            firfilt_rrrf_push(q0, buf[i]);
+        firfilt_rrrf_write(q1, buf, n);
+
+        // compute outputs and compare
+        float v0, v1;
+        firfilt_rrrf_execute(q0, &v0);
+        firfilt_rrrf_execute(q1, &v1);
+        CONTEND_EQUALITY(v0, v1);
+    }
+
+    // destroy objects
+    firfilt_rrrf_destroy(q0);
+    firfilt_rrrf_destroy(q1);
+}
+
