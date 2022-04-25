@@ -2027,15 +2027,15 @@ unsigned int estimate_req_filter_len(float _df,
 
 // estimate filter stop-band attenuation given
 //  _df     :   transition bandwidth (0 < _b < 0.5)
-//  _N      :   filter length
+//  _n      :   filter length
 float estimate_req_filter_As(float        _df,
-                             unsigned int _N);
+                             unsigned int _n);
 
 // estimate filter transition bandwidth given
 //  _as     :   stop-band attenuation [dB], _as > 0
-//  _N      :   filter length
+//  _n      :   filter length
 float estimate_req_filter_df(float        _as,
-                             unsigned int _N);
+                             unsigned int _n);
 
 
 // returns the Kaiser window beta factor give the filter's target

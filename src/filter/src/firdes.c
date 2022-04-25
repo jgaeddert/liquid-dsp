@@ -100,9 +100,9 @@ unsigned int estimate_req_filter_len(float _df,
 
 // estimate filter stop-band attenuation given
 //  _df     :   transition bandwidth (0 < _b < 0.5)
-//  _N      :   filter length
+//  _n      :   filter length
 float estimate_req_filter_As(float        _df,
-                             unsigned int _N)
+                             unsigned int _n)
 {
     // run search for stop-band attenuation which gives these results
     float as0   = 0.01f;    // lower bound
@@ -126,10 +126,10 @@ float estimate_req_filter_As(float        _df,
 #endif
 
         //printf("range[%8.2f, %8.2f] as-hat=%8.2fdB, N=%8.2f (target: %3u taps)\n",
-        //        as0, as1, as_hat, N_hat, _N);
+        //        as0, as1, as_hat, N_hat, _n);
 
         // update limits
-        if (N_hat < (float)_N) {
+        if (N_hat < (float)_n) {
             as0 = as_hat;
         } else {
             as1 = as_hat;
@@ -140,9 +140,9 @@ float estimate_req_filter_As(float        _df,
 
 // estimate filter transition bandwidth given
 //  _as     :   stop-band attenuation [dB], _as > 0
-//  _N      :   filter length
+//  _n      :   filter length
 float estimate_req_filter_df(float        _as,
-                             unsigned int _N)
+                             unsigned int _n)
 {
     // run search for stop-band attenuation which gives these results
     float df0   = 1e-3f;    // lower bound
@@ -166,10 +166,10 @@ float estimate_req_filter_df(float        _as,
 #endif
 
         //printf("range[%8.5f, %8.5f] df-hat=%8.5fdB, N=%8.2f (target: %3u taps)\n",
-        //        df0, df1, df_hat, N_hat, _N);
+        //        df0, df1, df_hat, N_hat, _n);
 
         // update limits
-        if (N_hat < (float)_N) {
+        if (N_hat < (float)_n) {
             df1 = df_hat;
         } else {
             df0 = df_hat;
