@@ -7307,11 +7307,11 @@ LIQUID_MATRIX_DEFINE_API(LIQUID_MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 /* Sparse matrix object (similar to MacKay, Davey, Lafferty convention) */  \
 typedef struct SMATRIX(_s) * SMATRIX();                                     \
                                                                             \
-/* Create _M x _N sparse matrix, initialized with zeros                 */  \
-SMATRIX() SMATRIX(_create)(unsigned int _M,                                 \
-                           unsigned int _N);                                \
+/* Create _m x _n sparse matrix, initialized with zeros                 */  \
+SMATRIX() SMATRIX(_create)(unsigned int _m,                                 \
+                           unsigned int _n);                                \
                                                                             \
-/* Create _M x _N sparse matrix, initialized on array                   */  \
+/* Create _m x _n sparse matrix, initialized on array                   */  \
 /*  _x  : input matrix, [size: _m x _n]                                 */  \
 /*  _m  : number of rows in input matrix                                */  \
 /*  _n  : number of columns in input matrix                             */  \
