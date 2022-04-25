@@ -127,8 +127,8 @@ FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _M,
                                       float        _as)
 {
     // validate input
-    if (_M < 2 || _M % 2)
-        return liquid_error_config("firpfbchr_%s_create_kaiser(), number of channels must be greater than 2 and even", EXTENSION_FULL);
+    if (_M < 2)
+        return liquid_error_config("firpfbchr_%s_create_kaiser(), number of channels must be greater than 2", EXTENSION_FULL);
     if (_m < 1)
         return liquid_error_config("firpfbchr_%s_create_kaiser(), filter semi-length must be at least 1", EXTENSION_FULL);
 
