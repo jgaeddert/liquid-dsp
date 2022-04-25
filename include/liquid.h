@@ -1707,17 +1707,17 @@ int SPGRAM(_write)(SPGRAM()     _q,                                         \
                                                                             \
 /* Compute spectral periodogram output (fft-shifted values, linear)     */  \
 /* from current buffer contents                                         */  \
-/*  _q  : spgram object                                                 */  \
-/*  _X  : output spectrum (linear), [size: _nfft x 1]                   */  \
+/*  _q   : spgram object                                                */  \
+/*  _psd : output spectrum (linear), [size: _nfft x 1]                  */  \
 int SPGRAM(_get_psd_mag)(SPGRAM() _q,                                       \
-                         T *      _X);                                      \
+                         T *      _psd);                                    \
                                                                             \
 /* Compute spectral periodogram output (fft-shifted values in dB) from  */  \
 /* current buffer contents                                              */  \
-/*  _q  : spgram object                                                 */  \
-/*  _X  : output spectrum (dB), [size: _nfft x 1]                       */  \
+/*  _q   : spgram object                                                */  \
+/*  _psd : output spectrum (dB), [size: _nfft x 1]                      */  \
 int SPGRAM(_get_psd)(SPGRAM() _q,                                           \
-                     T *      _X);                                          \
+                     T *      _psd);                                        \
                                                                             \
 /* Export stand-alone gnuplot file for plotting output spectrum,        */  \
 /* returning 0 on sucess, anything other than 0 for failure             */  \
