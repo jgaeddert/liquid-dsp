@@ -4154,59 +4154,59 @@ LIQUID_RESAMP2_DEFINE_API(LIQUID_RESAMP2_MANGLE_CCCF,
 typedef struct RRESAMP(_s) * RRESAMP();                                     \
                                                                             \
 /* Create rational-rate resampler object from external coeffcients to   */  \
-/* resample at an exact rate P/Q.                                       */  \
+/* resample at an exact rate \(P/Q\) = interp/decim.                    */  \
 /* Note that to preserve the input filter coefficients, the greatest    */  \
-/* common divisor (gcd) is not removed internally from _P and _Q when   */  \
-/* this method is called.                                               */  \
-/*  _P      : interpolation factor,                     P > 0           */  \
-/*  _Q      : decimation factor,                        Q > 0           */  \
+/* common divisor (gcd) is not removed internally from interp and decim */  \
+/* when this method is called.                                          */  \
+/*  _interp : interpolation factor,               _interp > 0           */  \
+/*  _decim  : decimation factor,                   _decim > 0           */  \
 /*  _m      : filter semi-length (delay),               0 < _m          */  \
-/*  _h      : filter coefficients, [size: 2*_P*_m x 1]                  */  \
-RRESAMP() RRESAMP(_create)(unsigned int _P,                                 \
-                           unsigned int _Q,                                 \
+/*  _h      : filter coefficients, [size: 2*_interp*_m x 1]             */  \
+RRESAMP() RRESAMP(_create)(unsigned int _interp,                            \
+                           unsigned int _decim,                             \
                            unsigned int _m,                                 \
                            TC *         _h);                                \
                                                                             \
 /* Create rational-rate resampler object from filter prototype to       */  \
-/* resample at an exact rate P/Q.                                       */  \
+/* resample at an exact rate \(P/Q\) = interp/decim.                    */  \
 /* Note that because the filter coefficients are computed internally    */  \
-/* here, the greatest common divisor (gcd) from _P and _Q is internally */  \
-/* removed to improve speed.                                            */  \
-/*  _P      : interpolation factor,                     P > 0           */  \
-/*  _Q      : decimation factor,                        Q > 0           */  \
+/* here, the greatest common divisor (gcd) from _interp and _decim is   */  \
+/* internally removed to improve speed.                                 */  \
+/*  _interp : interpolation factor,               _interp > 0           */  \
+/*  _decim  : decimation factor,                   _decim > 0           */  \
 /*  _m      : filter semi-length (delay),               0 < _m          */  \
 /*  _bw     : filter bandwidth relative to sample rate, 0 < _bw <= 0.5  */  \
 /*  _as     : filter stop-band attenuation [dB],        0 < _as         */  \
-RRESAMP() RRESAMP(_create_kaiser)(unsigned int _P,                          \
-                                  unsigned int _Q,                          \
+RRESAMP() RRESAMP(_create_kaiser)(unsigned int _interp,                     \
+                                  unsigned int _decim,                      \
                                   unsigned int _m,                          \
                                   float        _bw,                         \
                                   float        _as);                        \
                                                                             \
 /* Create rational-rate resampler object from filter prototype to       */  \
-/* resample at an exact rate P/Q.                                       */  \
+/* resample at an exact rate \(P/Q\) = interp/decim.                    */  \
 /* Note that because the filter coefficients are computed internally    */  \
-/* here, the greatest common divisor (gcd) from _P and _Q is internally */  \
-/* removed to improve speed.                                            */  \
+/* here, the greatest common divisor (gcd) from _interp and _decim is   */  \
+/* internally removed to improve speed.                                 */  \
 RRESAMP() RRESAMP(_create_prototype)(int          _type,                    \
-                                     unsigned int _P,                       \
-                                     unsigned int _Q,                       \
+                                     unsigned int _interp,                  \
+                                     unsigned int _decim,                   \
                                      unsigned int _m,                       \
                                      float        _beta);                   \
                                                                             \
 /* Create rational resampler object with a specified resampling rate of */  \
-/* exactly P/Q with default parameters. This is a simplified method to  */  \
-/* provide a basic resampler with a baseline set of parameters,         */  \
-/* abstracting away some of the complexities with the filterbank        */  \
-/* design.                                                              */  \
+/* exactly interp/decim with default parameters. This is a simplified   */  \
+/* method to provide a basic resampler with a baseline set of           */  \
+/* parameters abstracting away some of the complexities with the        */  \
+/* filterbank design.                                                   */  \
 /* The default parameters are                                           */  \
 /*  m    = 12    (filter semi-length),                                  */  \
 /*  bw   = 0.5   (filter bandwidth), and                                */  \
 /*  as   = 60 dB (filter stop-band attenuation)                         */  \
-/*  _P      : interpolation factor, P > 0                               */  \
-/*  _Q      : decimation factor,    Q > 0                               */  \
-RRESAMP() RRESAMP(_create_default)(unsigned int _P,                         \
-                                   unsigned int _Q);                        \
+/*  _interp : interpolation factor, _interp > 0                         */  \
+/*  _decim  : decimation factor,    _decim > 0                          */  \
+RRESAMP() RRESAMP(_create_default)(unsigned int _interp,                    \
+                                   unsigned int _decim);                    \
                                                                             \
 /* Destroy resampler object, freeing all internal memory                */  \
 void RRESAMP(_destroy)(RRESAMP() _q);                                       \
@@ -4232,8 +4232,8 @@ void RRESAMP(_get_scale)(RRESAMP() _q,                                      \
 /* Get resampler delay (filter semi-length \(m\))                       */  \
 unsigned int RRESAMP(_get_delay)(RRESAMP() _q);                             \
                                                                             \
-/* Get original interpolation factor \(P\) when object was created      */  \
-/* before removing greatest common divisor                              */  \
+/* Get original interpolation factor when object was created, before    */  \
+/* removing greatest common divisor                                     */  \
 unsigned int RRESAMP(_get_P)(RRESAMP() _q);                                 \
                                                                             \
 /* Get internal interpolation factor of resampler, \(P\), after         */  \
@@ -4248,45 +4248,48 @@ unsigned int RRESAMP(_get_Q)(RRESAMP() _q);                                 \
 /* greatest common divisor                                              */  \
 unsigned int RRESAMP(_get_decim)(RRESAMP() _q);                             \
                                                                             \
-/* Get block length (e.g. greatest common divisor) between original P   */  \
-/* and Q values                                                         */  \
+/* Get block length (e.g. greatest common divisor) between original     */  \
+/* interpolation rate \(P\) and decimation rate \(Q\) values            */  \
 unsigned int RRESAMP(_get_block_len)(RRESAMP() _q);                         \
                                                                             \
-/* Get rate of resampler, \(r = P/Q\)                                   */  \
+/* Get rate of resampler, \(r = P/Q\) = interp/decim                    */  \
 float RRESAMP(_get_rate)(RRESAMP() _q);                                     \
                                                                             \
 /* Write \(Q\) input samples (after removing greatest common divisor)   */  \
 /* into buffer, but do not compute output. This effectively updates the */  \
 /* internal state of the resampler.                                     */  \
 /*  _q      : resamp object                                             */  \
-/*  _buf    : input sample array, [size: Q x 1]                         */  \
+/*  _buf    : input sample array, [size: decim x 1]                     */  \
 void RRESAMP(_write)(RRESAMP() _q,                                          \
                      TI *      _buf);                                       \
                                                                             \
 /* Execute rational-rate resampler on a block of input samples and      */  \
 /* store the resulting samples in the output array.                     */  \
 /* Note that the size of the input and output buffers correspond to the */  \
-/* values of P and Q passed when the object was created, even if they   */  \
-/* share a common divisor. Internally the rational resampler reduces P  */  \
-/* and Q by their greatest commmon denominator to reduce processing;    */  \
-/* however sometimes it is convenienct to create the object based on    */  \
-/* expected output/input block sizes. This expectation is preserved. So */  \
-/* if an object is created with P=80 and Q=72, the object will          */  \
-/* internally set P=10 and Q=9 (with a g.c.d of 8); however when        */  \
+/* values of the interpolation and decimation rates (\(P\) and \(Q\),   */  \
+/* respectively) passed when the object was created, even if they       */  \
+/* share a common divisor.                                              */  \
+/* Internally the rational resampler reduces \(P\) and \(Q\)            */  \
+/* by their greatest commmon denominator to reduce processing;          */  \
+/* however sometimes it is convenient to create the object based on     */  \
+/* expected output/input block sizes. This expectation is preserved.    */  \
+/* So if an object is created with an interpolation rate \(P=80\)       */  \
+/* and a decimation rate \(Q=72\), the object will internally set       */  \
+/* \(P=10\) and \(Q=9\) (with a g.c.d of 8); however when               */  \
 /* "execute" is called the resampler will still expect an input buffer  */  \
 /* of 72 and an output buffer of 80.                                    */  \
 /*  _q  : resamp object                                                 */  \
-/*  _x  : input sample array, [size: Q x 1]                             */  \
-/*  _y  : output sample array [size: P x 1]                             */  \
+/*  _x  : input sample array, [size: decim x 1]                         */  \
+/*  _y  : output sample array [size: interp x 1]                        */  \
 void RRESAMP(_execute)(RRESAMP()       _q,                                  \
                         TI *           _x,                                  \
                         TO *           _y);                                 \
                                                                             \
 /* Execute on a block of samples                                        */  \
 /*  _q  : resamp object                                                 */  \
-/*  _x  : input sample array, [size: Q*n x 1]                           */  \
+/*  _x  : input sample array, [size: decim*n x 1]                       */  \
 /*  _n  : block size                                                    */  \
-/*  _y  : output sample array [size: P*n x 1]                           */  \
+/*  _y  : output sample array [size: interp*n x 1]                      */  \
 void RRESAMP(_execute_block)(RRESAMP()      _q,                             \
                              TI *           _x,                             \
                              unsigned int   _n,                             \
