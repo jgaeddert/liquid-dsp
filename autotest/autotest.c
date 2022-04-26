@@ -317,8 +317,14 @@ int liquid_autotest_validate_psd_signalf(float * _buf, unsigned int _buf_len,
 int liquid_autotest_validate_psd_firfilt_crcf(firfilt_crcf _q, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
-    return liquid_autotest_validate_psd_signalf(
-            (float*) firfilt_crcf_get_coefficients(_q), firfilt_crcf_get_length(_q),
-            _regions, num_regions, debug_filename);
+    float psd[_nfft];
+    unsigned int i;
+    for (i=0; i<_nfft; i++) {
+        float f = (float)(i)/(float)(_nfft) - 0.5f;
+        float complex H;
+        firfilt_crcf_freqresponse(_q, f, &H);
+        psd[i] = 20*log10f(cabsf(H));
+    }
+    return liquid_autotest_validate_spectrum(psd,_nfft,_regions,num_regions,debug_filename);
 }
 

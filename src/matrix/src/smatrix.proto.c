@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,17 +66,17 @@ struct SMATRIX(_s) {
 int SMATRIX(_reset_max_mlist)(SMATRIX() _q);
 int SMATRIX(_reset_max_nlist)(SMATRIX() _q);
 
-// create _M x _N matrix, initialized with zeros
-SMATRIX() SMATRIX(_create)(unsigned int _M,
-                           unsigned int _N)
+// create _m x _n matrix, initialized with zeros
+SMATRIX() SMATRIX(_create)(unsigned int _m,
+                           unsigned int _n)
 {
-    if (_M==0 || _N==0)
+    if (_m==0 || _n==0)
         return liquid_error_config("smatrix%s_create(), dimensions must be greater than zero",EXTENSION);
 
     // create object and allocate memory
     SMATRIX() q = (SMATRIX()) malloc(sizeof(struct SMATRIX(_s)));
-    q->M = _M;
-    q->N = _N;
+    q->M = _m;
+    q->N = _n;
 
     unsigned int i;
     unsigned int j;
@@ -111,7 +111,7 @@ SMATRIX() SMATRIX(_create)(unsigned int _M,
     return q;
 }
 
-// create _M x _N matrix, initialized on array
+// create _m x _n matrix, initialized on array
 SMATRIX() SMATRIX(_create_array)(T *          _v,
                                  unsigned int _m,
                                  unsigned int _n)
@@ -546,8 +546,8 @@ int SMATRIX(_mul)(SMATRIX() _a,
 
 // multiply by vector
 //  _q  :   sparse matrix
-//  _x  :   input vector [size: _N x 1]
-//  _y  :   output vector [size: _M x 1]
+//  _x  :   input vector [size: _n x 1]
+//  _y  :   output vector [size: _m x 1]
 int SMATRIX(_vmul)(SMATRIX() _q,
                    T *       _x,
                    T *       _y)

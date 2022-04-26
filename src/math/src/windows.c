@@ -324,22 +324,22 @@ float liquid_flattop(unsigned int _i,
 // Triangular window
 float liquid_triangular(unsigned int _i,
                         unsigned int _wlen,
-                        unsigned int _L)
+                        unsigned int _n)
 {
     // validate input
     if (_i > _wlen) {
         liquid_error(LIQUID_EICONFIG,"liquid_triangular(), sample index must not exceed window length");
         return 0.0f;
-    } else if (_L != _wlen-1 && _L != _wlen && _L != _wlen+1) {
+    } else if (_n != _wlen-1 && _n != _wlen && _n != _wlen+1) {
         liquid_error(LIQUID_EICONFIG,"liquid_triangular(), sub-length must be in _wlen+{-1,0,1}");
         return 0.0f;
-    } else if (_L == 0) {
+    } else if (_n == 0) {
         liquid_error(LIQUID_EICONFIG,"liquid_triangular(), sub-length must be greater than zero");
         return 0.0f;
     }
 
 	float v0 = (float)_i - (float)((_wlen-1)/2.0f);
-	float v1 = ((float)_L)/2.0f;
+	float v1 = ((float)_n)/2.0f;
 	return 1.0 - fabsf(v0 / v1);
 }
 
@@ -388,8 +388,8 @@ float blackmanharris7(unsigned int _i,unsigned int _wlen)
 float flattop(unsigned int _i,unsigned int _wlen)
     { return liquid_flattop(_i,_wlen); }
 
-float triangular(unsigned int _i,unsigned int _wlen,unsigned int _L)
-    { return liquid_triangular(_i,_wlen,_L); }
+float triangular(unsigned int _i,unsigned int _wlen,unsigned int _n)
+    { return liquid_triangular(_i,_wlen,_n); }
 
 float liquid_rcostaper_windowf(unsigned int _i,unsigned int _wlen,unsigned int _t)
     { return liquid_rcostaper_window(_i,_wlen,_t); }

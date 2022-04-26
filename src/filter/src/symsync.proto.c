@@ -262,8 +262,8 @@ SYMSYNC() SYMSYNC(_create_kaiser)(unsigned int _k,
     // frequency of input signal
     // TODO: use _beta to compute more accurate cut-off frequency
     float fc = 0.75f;   // filter cut-off frequency (nominal)
-    float As = 40.0f;   // filter stop-band attenuation
-    liquid_firdes_kaiser(H_len, fc / (float)(_k*_M), As, 0.0f, Hf);
+    float as = 40.0f;   // filter stop-band attenuation
+    liquid_firdes_kaiser(H_len, fc / (float)(_k*_M), as, 0.0f, Hf);
 
     // copy coefficients to type-specific array, adjusting to relative
     // filter gain

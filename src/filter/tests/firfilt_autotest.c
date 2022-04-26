@@ -27,17 +27,50 @@ void autotest_firfilt_crcf_kaiser()
 {
     // design filter
     firfilt_crcf q = firfilt_crcf_create_kaiser(51, 0.2f, 60.0f, 0.0f);
-    //firfilt_crcf_set_scale(q, 0.2f);
+    firfilt_crcf_set_scale(q, 0.4f);
 
     // verify resulting spectrum
     autotest_psd_s regions[] = {
-      {.fmin=-0.5,   .fmax=-0.25,  .pmin= 0,  .pmax=-50, .test_lo=0, .test_hi=1},
-      {.fmin=-0.15,  .fmax=+0.15,  .pmin=7.8, .pmax=8.2, .test_lo=1, .test_hi=1},
-      {.fmin= 0.25,  .fmax=+0.5,   .pmin= 0,  .pmax=-50, .test_lo=0, .test_hi=1},
+      {.fmin=-0.5,   .fmax=-0.25,  .pmin= 0,   .pmax=-60,  .test_lo=0, .test_hi=1},
+      {.fmin=-0.15,  .fmax=+0.15,  .pmin=-0.1, .pmax=+0.1, .test_lo=1, .test_hi=1},
+      {.fmin= 0.25,  .fmax=+0.5,   .pmin= 0,   .pmax=-60,  .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_firfilt_crcf(q, 1200, regions, 3,
         liquid_autotest_verbose ? "autotest_firfilt_crcf_kaiser.m" : NULL);
+    firfilt_crcf_destroy(q);
+}
 
+void autotest_firfilt_crcf_firdespm()
+{
+    // design filter
+    firfilt_crcf q = firfilt_crcf_create_firdespm(51, 0.2f, 60.0f);
+    firfilt_crcf_set_scale(q, 0.4f);
+
+    // verify resulting spectrum
+    autotest_psd_s regions[] = {
+      {.fmin=-0.5,   .fmax=-0.25,  .pmin= 0,   .pmax=-60,  .test_lo=0, .test_hi=1},
+      {.fmin=-0.15,  .fmax=+0.15,  .pmin=-0.1, .pmax=+0.1, .test_lo=1, .test_hi=1},
+      {.fmin= 0.25,  .fmax=+0.5,   .pmin= 0,   .pmax=-60,  .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_firfilt_crcf(q, 1200, regions, 3,
+        liquid_autotest_verbose ? "autotest_firfilt_crcf_firdespm.m" : NULL);
+    firfilt_crcf_destroy(q);
+}
+
+void autotest_firfilt_crcf_rect()
+{
+    // design filter
+    firfilt_crcf q = firfilt_crcf_create_rect(4);
+    firfilt_crcf_set_scale(q, 0.25f);
+
+    // verify resulting spectrum
+    autotest_psd_s regions[] = {
+      {.fmin=-0.5,   .fmax=-0.20,  .pmin= 0, .pmax=-10, .test_lo=0, .test_hi=1},
+      {.fmin=-0.12,  .fmax=+0.12,  .pmin=-5, .pmax= +1, .test_lo=1, .test_hi=1},
+      {.fmin= 0.20,  .fmax=+0.5,   .pmin= 0, .pmax=-10, .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_firfilt_crcf(q, 301, regions, 3,
+        liquid_autotest_verbose ? "autotest_firfilt_crcf_rect.m" : NULL);
     firfilt_crcf_destroy(q);
 }
 
@@ -51,13 +84,94 @@ void autotest_firfilt_config()
     fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
 #endif
     // no need to check every combination
+    CONTEND_ISNULL(firfilt_crcf_create(NULL, 0));
     CONTEND_ISNULL(firfilt_crcf_create_kaiser(0, 0, 0, 0));
     CONTEND_ISNULL(firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_UNKNOWN, 0, 0, 0, 4));
     CONTEND_ISNULL(firfilt_crcf_create_firdespm(0, 0, 0));
+    CONTEND_ISNULL(firfilt_crcf_create_rect(0));
     CONTEND_ISNULL(firfilt_crcf_create_dc_blocker(0, 0));
     CONTEND_ISNULL(firfilt_crcf_create_notch(0, 0, 0));
     CONTEND_ISNULL(firfilt_cccf_create_notch(0, 0, 0));
 
-    // TODO: print, set scale, get scale
+    // create proper object and test configurations
+    firfilt_crcf q = firfilt_crcf_create_kaiser(11, 0.2f, 60.0f, 0.0f);
+
+    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_print(q))
+
+    float scale = 7.0f;
+    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_set_scale(q, 3.0f))
+    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_get_scale(q, &scale))
+    CONTEND_EQUALITY(scale, 3.0f)
+    CONTEND_EQUALITY(firfilt_crcf_get_length(q), 11)
+
+    firfilt_crcf_destroy(q);
+}
+
+// TODO: test recreate where new filter length does not match original
+void autotest_firfilt_recreate()
+{
+    // create random-ish coefficients
+    unsigned int i, n = 21;
+    float h0[n], h1[n];
+    for (i=0; i<n; i++)
+        h0[i] = cosf(0.3*i) + sinf(sqrtf(2.0f)*i);
+
+    firfilt_crcf q = firfilt_crcf_create(h0, n);
+
+    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_print(q))
+    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_set_scale(q, 3.0f))
+
+    // copy coefficients to separate array
+    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_copy_coefficients(q, h1))
+
+    // scale coefficients by a constant
+    for (i=0; i<n; i++)
+        h1[i] *= 7.1f;
+
+    // recreate with new coefficients array
+    q = firfilt_crcf_recreate(q, h1, n);
+
+    // assert the scale has not changed
+    float scale;
+    firfilt_crcf_get_scale(q, &scale);
+    CONTEND_EQUALITY(scale, 3.0f)
+
+    // assert the coefficients are original scaled by 7.1
+    // NOTE: need to account for time-reversal here
+    const float * h = firfilt_crcf_get_coefficients(q);
+    for (i=0; i<n; i++)
+        CONTEND_EQUALITY(h[n-i-1], h0[i]*7.1f);
+
+    firfilt_crcf_destroy(q);
+}
+
+// compare push vs write methods
+void autotest_firfilt_push_write()
+{
+    // create two identical objects
+    firfilt_rrrf q0 = firfilt_rrrf_create_kaiser(51, 0.2f, 60.0f, 0.0f);
+    firfilt_rrrf q1 = firfilt_rrrf_create_kaiser(51, 0.2f, 60.0f, 0.0f);
+
+    // generate pseudo-random inputs, and compare outputs
+    float buf[8] = {-1,3,5,-3,5,1,-3,-4};
+    unsigned int trial, i;
+    for (trial=0; trial<20; trial++) {
+        unsigned int n = trial % 8;
+
+        // push/write samples
+        for (i=0; i<n; i++)
+            firfilt_rrrf_push(q0, buf[i]);
+        firfilt_rrrf_write(q1, buf, n);
+
+        // compute outputs and compare
+        float v0, v1;
+        firfilt_rrrf_execute(q0, &v0);
+        firfilt_rrrf_execute(q1, &v1);
+        CONTEND_EQUALITY(v0, v1);
+    }
+
+    // destroy objects
+    firfilt_rrrf_destroy(q0);
+    firfilt_rrrf_destroy(q1);
 }
 

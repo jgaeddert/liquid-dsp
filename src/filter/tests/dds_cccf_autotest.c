@@ -27,7 +27,7 @@
 // check direct digital synthesis, both interpolator and decimator
 void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stages
                         float        _fc,           // filter cut-off
-                        float        _As)           // stop-band suppression
+                        float        _as)           // stop-band suppression
 {
     float        tol  = 1;  // error tolerance [dB]
     float        bw = 0.1f; // original pulse bandwidth
@@ -35,7 +35,7 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
     unsigned int r=1<<_num_stages;   // resampling rate (output/input)
 
     // create resampler
-    dds_cccf q = dds_cccf_create(_num_stages,_fc,bw,_As);
+    dds_cccf q = dds_cccf_create(_num_stages,_fc,bw,_as);
     dds_cccf_set_scale(q, 1.0f/r);
     if (liquid_autotest_verbose)
         dds_cccf_print(q);
@@ -53,7 +53,7 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
     // generate the baseband signal (filter pulse)
     float h[h_len];
     float w = 0.36f * bw; // pulse bandwidth
-    liquid_firdes_kaiser(h_len,w,_As,0.0f,h);
+    liquid_firdes_kaiser(h_len,w,_as,0.0f,h);
     for (i=0; i<num_samples; i++)
         buf_0[i] = i < h_len ? 2*w*h[i] : 0.0f;
 
@@ -71,9 +71,9 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
 
     // verify input spectrum
     autotest_psd_s regions_orig[] = {
-      {.fmin=-0.5,    .fmax=-0.6*bw, .pmin= 0, .pmax=-_As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=-0.5,    .fmax=-0.6*bw, .pmin= 0, .pmax=-_as+tol, .test_lo=0, .test_hi=1},
       {.fmin=-0.3*bw, .fmax=+0.3*bw, .pmin=-1, .pmax=+1,       .test_lo=1, .test_hi=1},
-      {.fmin=+0.6*bw, .fmax=+0.5,    .pmin= 0, .pmax=-_As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=+0.6*bw, .fmax=+0.5,    .pmin= 0, .pmax=-_as+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signal(buf_0, num_samples, regions_orig, 3,
         liquid_autotest_verbose ? "autotest_dds_cccf_orig.m" : NULL);
@@ -81,9 +81,9 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
     // verify interpolated spectrum
     float f1 = _fc-0.6*bw/r, f2 = _fc-0.3*bw/r, f3 = _fc+0.3*bw/r, f4 = _fc+0.6*bw/r;
     autotest_psd_s regions_interp[] = {
-      {.fmin=-0.5, .fmax=f1,   .pmin= 0, .pmax=-_As+tol, .test_lo=0, .test_hi=1},
+      {.fmin=-0.5, .fmax=f1,   .pmin= 0, .pmax=-_as+tol, .test_lo=0, .test_hi=1},
       {.fmin= f2,  .fmax=f3,   .pmin=-1, .pmax=+1,       .test_lo=1, .test_hi=1},
-      {.fmin= f4,  .fmax=+0.5, .pmin= 0, .pmax=-_As+tol, .test_lo=0, .test_hi=1},
+      {.fmin= f4,  .fmax=+0.5, .pmin= 0, .pmax=-_as+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signal(buf_1, r*num_samples, regions_interp, 3,
         liquid_autotest_verbose ? "autotest_dds_cccf_interp.m" : NULL);
@@ -124,7 +124,7 @@ void autotest_dds_config()
     CONTEND_ISNULL(dds_cccf_create(  2, -0.7f,  0.1f, 60.0f)); // fc out of range
     CONTEND_ISNULL(dds_cccf_create(  2,  0.2f,  1.4f, 60.0f)); // bw out of range
     CONTEND_ISNULL(dds_cccf_create(  2,  0.2f, -1.4f, 60.0f)); // bw out of range
-    CONTEND_ISNULL(dds_cccf_create(  2,  0.2f,  0.1f, -1.0f)); // As out of range
+    CONTEND_ISNULL(dds_cccf_create(  2,  0.2f,  0.1f, -1.0f)); // as out of range
 
     // create proper object and test configurations
     dds_cccf q = dds_cccf_create( 2, 0.0f, 0.2f, 60.0f);

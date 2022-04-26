@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,20 +31,17 @@
 
 // Q/R decomposition using the Gram-Schmidt algorithm
 int MATRIX(_qrdecomp_gramschmidt)(T *          _x,
-                                  unsigned int _rx,
-                                  unsigned int _cx,
-                                  T *          _Q,
-                                  T *          _R)
+                                  unsigned int _m,
+                                  unsigned int _n,
+                                  T *          _q,
+                                  T *          _r)
 {
     // validate input
-    if (_rx != _cx)
+    if (_m != _n)
         return liquid_error(LIQUID_EIRANGE,"matrix_qrdecomp_gramschmidt(), input matrix not square");
 
-    unsigned int n = _rx;
-
-    unsigned int i;
-    unsigned int j;
-    unsigned int k;
+    unsigned int n = _m;
+    unsigned int i,j,k;
 
     // generate and initialize matrices
     T e[n*n];   // normalized...
@@ -87,7 +84,7 @@ int MATRIX(_qrdecomp_gramschmidt)(T *          _x,
     }
 
     // move Q
-    memmove(_Q, e, n*n*sizeof(T));
+    memmove(_q, e, n*n*sizeof(T));
 
     // compute R
     // j : row
@@ -95,15 +92,15 @@ int MATRIX(_qrdecomp_gramschmidt)(T *          _x,
     for (j=0; j<n; j++) {
         for (k=0; k<n; k++) {
             if (k < j) {
-                matrix_access(_R,n,n,j,k) = 0.0f;
+                matrix_access(_r,n,n,j,k) = 0.0f;
             } else {
                 // compute dot product between and Q(:,j) and _x(:,k)
                 T g = 0;
                 for (i=0; i<n; i++) {
-                    T prod = conj( matrix_access(_Q,n,n,i,j) ) * matrix_access(_x,n,n,i,k);
+                    T prod = conj( matrix_access(_q,n,n,i,j) ) * matrix_access(_x,n,n,i,k);
                     g += prod;
                 }
-                matrix_access(_R,n,n,j,k) = g;
+                matrix_access(_r,n,n,j,k) = g;
             }
         }
     }

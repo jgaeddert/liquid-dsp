@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -127,11 +127,11 @@ FIRPFBCH2() FIRPFBCH2(_create)(int          _type,
 //  _type   :   channelizer type (e.g. LIQUID_ANALYZER)
 //  _M      :   number of channels (must be even)
 //  _m      :   prototype filter semi-lenth, length=2*M*m+1
-//  _As     :   filter stop-band attenuation [dB]
+//  _as     :   filter stop-band attenuation [dB]
 FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,
                                       unsigned int _M,
                                       unsigned int _m,
-                                      float        _As)
+                                      float        _as)
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
@@ -150,7 +150,7 @@ FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,
     float fc = (_type == LIQUID_ANALYZER) ? 1.0f/(float)_M : 0.5f/(float)_M;
 
     // compute filter coefficients (floating point precision)
-    liquid_firdes_kaiser(h_len, fc, _As, 0.0f, hf);
+    liquid_firdes_kaiser(h_len, fc, _as, 0.0f, hf);
 
     // normalize to unit average and scale by number of channels
     float hf_sum = 0.0f;

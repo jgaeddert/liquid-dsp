@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,8 @@
 
 struct RRESAMP(_s) {
     // filter design parameters
-    unsigned int    P;          // interpolation factor
-    unsigned int    Q;          // decimation factor
+    unsigned int    P;          // interpolation factor (primitive)
+    unsigned int    Q;          // decimation factor (primitive)
     unsigned int    m;          // filter semi-length, h_len = 2*m + 1
     unsigned int    block_len;  // number of blocks to run in execute()
 
@@ -47,19 +47,19 @@ void RRESAMP(_execute_primitive)(RRESAMP() _q,
                                  TO *      _y);
 
 // Create rational-rate resampler object from external coefficients
-//  _P      : interpolation factor,                     P > 0
-//  _Q      : decimation factor,                        Q > 0
-//  _m      : filter semi-length (delay),               0 < _m
-//  _h      : filter coefficients, [size: 2*_P*_m x 1], 0 < _bw= < 0.5
-RRESAMP() RRESAMP(_create)(unsigned int _P,
-                           unsigned int _Q,
+//  _interp : interpolation factor
+//  _decim  : decimation factor
+//  _m      : filter semi-length (delay)
+//  _h      : filter coefficients, [size: 2*_interp*_m x 1]
+RRESAMP() RRESAMP(_create)(unsigned int _interp,
+                           unsigned int _decim,
                            unsigned int _m,
                            TC *         _h)
 {
     // validate input
-    if (_P == 0)
+    if (_interp == 0)
         return liquid_error_config("rresamp_%s_create(), interpolation rate must be greater than zero", EXTENSION_FULL);
-    if (_Q == 0)
+    if (_decim == 0)
         return liquid_error_config("rresamp_%s_create(), decimation rate must be greater than zero", EXTENSION_FULL);
     if (_m == 0)
         return liquid_error_config("rresamp_%s_create(), filter semi-length must be greater than zero", EXTENSION_FULL);
@@ -68,8 +68,8 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,
     RRESAMP() q = (RRESAMP()) malloc(sizeof(struct RRESAMP(_s)));
 
     // set properties
-    q->P         = _P;
-    q->Q         = _Q;
+    q->P         = _interp;
+    q->Q         = _decim;
     q->m         = _m;
     q->block_len =  1;
 
@@ -82,27 +82,27 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,
 }
 
 // Create rational-rate resampler object from filter prototype
-//  _P      : interpolation factor,                     P > 0
-//  _Q      : decimation factor,                        Q > 0
-//  _m      : filter semi-length (delay),               0 < _m
-//  _bw     : filter bandwidth relative to sample rate, 0 < _bw= < 0.5
-//  _As     : filter stop-band attenuation [dB],        0 < _As
-RRESAMP() RRESAMP(_create_kaiser)(unsigned int _P,
-                                  unsigned int _Q,
+//  _interp : interpolation factor
+//  _decim  : decimation factor
+//  _m      : filter semi-length (delay)
+//  _bw     : filter bandwidth relative to sample rate
+//  _as     : filter stop-band attenuation [dB]
+RRESAMP() RRESAMP(_create_kaiser)(unsigned int _interp,
+                                  unsigned int _decim,
                                   unsigned int _m,
                                   float        _bw,
-                                  float        _As)
+                                  float        _as)
 {
     // scale interpolation and decimation factors by their greatest common divisor
-    unsigned int gcd = liquid_gcd(_P, _Q);
-    _P /= gcd;
-    _Q /= gcd;
+    unsigned int gcd = liquid_gcd(_interp, _decim);
+    _interp /= gcd;
+    _decim  /= gcd;
 
     // design filter
-    unsigned int h_len = 2*_P*_m + 1;
+    unsigned int h_len = 2*_interp*_m + 1;
     float * hf = (float*) malloc(h_len*sizeof(float));
     TC    * h  = (TC*)    malloc(h_len*sizeof(TC)   );
-    liquid_firdes_kaiser(h_len, _bw/(float)_P, _As, 0.0f, hf);
+    liquid_firdes_kaiser(h_len, _bw/(float)_interp, _as, 0.0f, hf);
 
     // convert to type-specific coefficients
     unsigned int i;
@@ -110,7 +110,7 @@ RRESAMP() RRESAMP(_create_kaiser)(unsigned int _P,
         h[i] = (TC) hf[i];
 
     // create object and set parameters
-    RRESAMP() q = RRESAMP(_create)(_P, _Q, _m, h);
+    RRESAMP() q = RRESAMP(_create)(_interp, _decim, _m, h);
     RRESAMP(_set_scale)(q, 2.0f*_bw*sqrtf((float)(q->Q)/(float)(q->P)));
     q->block_len = gcd;
 
@@ -120,22 +120,22 @@ RRESAMP() RRESAMP(_create_kaiser)(unsigned int _P,
     return q;
 }
 
-// create rational-rate resampler object...
+// create rational-rate resampler object from prototype
 RRESAMP() RRESAMP(_create_prototype)(int          _type,
-                                     unsigned int _P,
-                                     unsigned int _Q,
+                                     unsigned int _interp,
+                                     unsigned int _decim,
                                      unsigned int _m,
                                      float        _beta)
 {
     // scale interpolation and decimation factors by their greatest common divisor
-    unsigned int gcd = liquid_gcd(_P, _Q);
-    _P /= gcd;
-    _Q /= gcd;
+    unsigned int gcd = liquid_gcd(_interp, _decim);
+    _interp /= gcd;
+    _decim  /= gcd;
 
     // design filter
-    int          decim = _P < _Q;           // interpolator? or decimator
-    unsigned int k     = decim ? _Q : _P;   // prototype samples per symbol
-    unsigned int h_len = 2*k*_m + 1;        // filter length
+    int          decim = _interp < _decim;          // interpolator? or decimator
+    unsigned int k     = decim ? _decim : _interp;  // prototype samples per symbol
+    unsigned int h_len = 2*k*_m + 1;                // filter length
     float * hf = (float*) malloc(h_len*sizeof(float));
     TC    * h  = (TC*)    malloc(h_len*sizeof(TC)   );
     liquid_firdes_prototype(_type, k, _m, _beta, 0, hf);
@@ -146,7 +146,7 @@ RRESAMP() RRESAMP(_create_prototype)(int          _type,
         h[i] = (TC) hf[i];
 
     // create object
-    RRESAMP() q = RRESAMP(_create)(_P, _Q, _m, h);
+    RRESAMP() q = RRESAMP(_create)(_interp, _decim, _m, h);
     q->block_len = gcd;
 
     // adjust gain for decimator
@@ -162,23 +162,17 @@ RRESAMP() RRESAMP(_create_prototype)(int          _type,
 // create rational-rate resampler object with a specified input
 // resampling rate and default parameters
 //  m (filter semi-length) = 12
-//  As (filter stop-band attenuation) = 60 dB
-RRESAMP() RRESAMP(_create_default)(unsigned int _P,
-                                   unsigned int _Q)
+//  as (filter stop-band attenuation) = 60 dB
+RRESAMP() RRESAMP(_create_default)(unsigned int _interp,
+                                   unsigned int _decim)
 {
-    // validate input
-    if (_P == 0)
-        return liquid_error_config("rresamp_%s_create(), interpolation rate must be greater than zero", EXTENSION_FULL);
-    if (_Q == 0)
-        return liquid_error_config("rresamp_%s_create(), decimation rate must be greater than zero", EXTENSION_FULL);
-
     // det default parameters
     unsigned int m  = 12;
     float        bw = 0.5f;
-    float        As = 60.0f;
+    float        as = 60.0f;
 
     // create and return resamp object
-    return RRESAMP(_create_kaiser)(_P, _Q, m, bw, As);
+    return RRESAMP(_create_kaiser)(_interp, _decim, m, bw, as);
 }
 
 // free resampler object

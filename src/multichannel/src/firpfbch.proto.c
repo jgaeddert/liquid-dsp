@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -142,11 +142,11 @@ FIRPFBCH() FIRPFBCH(_create)(int          _type,
 //  _type   : channelizer type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)
 //  _M      : number of channels
 //  _m      : filter delay (symbols)
-//  _As     : stop-band attentuation [dB]
+//  _as     : stop-band attentuation [dB]
 FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,
                                     unsigned int _M,
                                     unsigned int _m,
-                                    float        _As)
+                                    float        _as)
 {
     // validate input
     if (_M == 0)
@@ -154,13 +154,13 @@ FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,
     if (_m == 0)
         return liquid_error_config("firpfbch_%s_create_kaiser(), invalid filter size (must be greater than 0)", EXTENSION_FULL);
     
-    _As = fabsf(_As);
+    _as = fabsf(_as);
 
     // design filter
     unsigned int h_len = 2*_M*_m + 1;
     float h[h_len];
     float fc = 0.5f / (float)_M; // TODO : check this value
-    liquid_firdes_kaiser(h_len, fc, _As, 0.0f, h);
+    liquid_firdes_kaiser(h_len, fc, _as, 0.0f, h);
 
     // copy coefficients to type-specfic array
     TC hc[h_len];

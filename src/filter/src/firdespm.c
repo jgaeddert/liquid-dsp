@@ -164,12 +164,12 @@ int firdespm_run(unsigned int            _h_len,
 // run filter design for basic low-pass filter
 //  _n      : filter length, _n > 0
 //  _fc     : cutoff frequency, 0 < _fc < 0.5
-//  _As     : stop-band attenuation [dB], _As > 0
+//  _as     : stop-band attenuation [dB], _as > 0
 //  _mu     : fractional sample offset, -0.5 < _mu < 0.5 [ignored]
 //  _h      : output coefficient buffer, [size: _n x 1]
 int firdespm_lowpass(unsigned int _n,
                      float        _fc,
-                     float        _As,
+                     float        _as,
                      float        _mu,
                      float *      _h)
 {
@@ -182,7 +182,7 @@ int firdespm_lowpass(unsigned int _n,
         return liquid_error(LIQUID_EICONFIG,"firdespm_lowpass(), filter length must be greater than zero");
 
     // estimate transition band
-    float ft = estimate_req_filter_df(_As, _n);
+    float ft = estimate_req_filter_df(_as, _n);
 
     // derived values
     float fp = _fc - 0.5*ft;     // pass-band cutoff frequency
