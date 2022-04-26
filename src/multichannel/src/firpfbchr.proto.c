@@ -57,17 +57,17 @@ struct FIRPFBCHR(_s) {
 
 // create rational rate resampling channelizer (firpfbchr) object by
 // specifying filter coefficients directly
-//  _M      : number of output channels in chanelizer
-//  _P      : output decimation factor (output rate is 1/P the input)
+//  _chans  : number of output channels in chanelizer
+//  _decim  : output decimation factor (output rate is 1/P the input)
 //  _m      : prototype filter semi-length, length=2*M*m
 //  _h      : prototype filter coefficient array, [size: 2*M*m x 1]
-FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _M,
-                               unsigned int _P,
+FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _chans,
+                               unsigned int _decim,
                                unsigned int _m,
                                TC *         _h)
 {
     // validate input
-    if (_M < 2)
+    if (_chans < 2)
         return liquid_error_config("firpfbchr_%s_create(), number of channels must be at least 2", EXTENSION_FULL);
     if (_m < 1)
         return liquid_error_config("firpfbchr_%s_create(), filter semi-length must be at least 1", EXTENSION_FULL);
@@ -76,8 +76,8 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _M,
     FIRPFBCHR() q = (FIRPFBCHR()) malloc(sizeof(struct FIRPFBCHR(_s)));
 
     // set input parameters
-    q->M  = _M;     // number of channels
-    q->P  = _P;     //
+    q->M  = _chans; // number of channels
+    q->P  = _decim; //
     q->m  = _m;     // prototype filter semi-length
 
     // compute derived values
@@ -117,27 +117,27 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _M,
 
 // create rational rate resampling channelizer (firpfbchr) object by
 // specifying filter design parameters for Kaiser prototype
-//  _M      : number of output channels in chanelizer
-//  _P      : output decimation factor (output rate is 1/P the input)
+//  _chans  : number of output channels in chanelizer
+//  _decim  : output decimation factor (output rate is 1/P the input)
 //  _m      : prototype filter semi-length, length=2*M*m
 //  _as     : filter stop-band attenuation [dB]
-FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _M,
-                                      unsigned int _P,
+FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _chans,
+                                      unsigned int _decim,
                                       unsigned int _m,
                                       float        _as)
 {
     // validate input
-    if (_M < 2 || _M % 2)
-        return liquid_error_config("firpfbchr_%s_create_kaiser(), number of channels must be greater than 2 and even", EXTENSION_FULL);
+    if (_chans < 2)
+        return liquid_error_config("firpfbchr_%s_create_kaiser(), number of channels must be greater than 2", EXTENSION_FULL);
     if (_m < 1)
         return liquid_error_config("firpfbchr_%s_create_kaiser(), filter semi-length must be at least 1", EXTENSION_FULL);
 
     // design prototype filter
-    unsigned int h_len = 2*_M*_m+1;
+    unsigned int h_len = 2*_chans*_m+1;
     float * hf = (float*)malloc(h_len*sizeof(float));
 
     // filter cut-off frequency
-    float fc = 0.5f/(float)_P;
+    float fc = 0.5f/(float)_decim;
 
     // compute filter coefficients (floating point precision)
     liquid_firdes_kaiser(h_len, fc, _as, 0.0f, hf);
@@ -146,7 +146,7 @@ FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _M,
     float hf_sum = 0.0f;
     unsigned int i;
     for (i=0; i<h_len; i++) hf_sum += hf[i];
-    for (i=0; i<h_len; i++) hf[i] = hf[i] * sqrtf(_P) * (float)_M / hf_sum;
+    for (i=0; i<h_len; i++) hf[i] = hf[i] * sqrtf(_decim) * (float)_chans / hf_sum;
 
     // convert to type-specific array
     TC * h = (TC*) malloc(h_len * sizeof(TC));
@@ -154,7 +154,7 @@ FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _M,
         h[i] = (TC) hf[i];
 
     // create filterbank channelizer object
-    FIRPFBCHR() q = FIRPFBCHR(_create)(_M, _P, _m, h);
+    FIRPFBCHR() q = FIRPFBCHR(_create)(_chans, _decim, _m, h);
 
     // free prototype filter coefficients
     free(hf);
@@ -214,14 +214,26 @@ int FIRPFBCHR(_print)(FIRPFBCHR() _q)
     return LIQUID_OK;
 }
 
-// get number of output channels to channelizer
+// DEPRECATED: get number of output channels to channelizer
 unsigned int FIRPFBCHR(_get_M)(FIRPFBCHR() _q)
+{
+    return FIRPFBCHR(_get_num_channels)(_q);
+}
+
+// get number of output channels to channelizer
+unsigned int FIRPFBCHR(_get_num_channels)(FIRPFBCHR() _q)
 {
     return _q->M;
 }
 
-// get decimation rate
+// DEPRECATED: get decimation rate
 unsigned int FIRPFBCHR(_get_P)(FIRPFBCHR() _q)
+{
+    return FIRPFBCHR(_get_decim_rate)(_q);
+}
+
+// get decimation rate
+unsigned int FIRPFBCHR(_get_decim_rate)(FIRPFBCHR() _q)
 {
     return _q->P;
 }
@@ -234,11 +246,11 @@ unsigned int FIRPFBCHR(_get_m)(FIRPFBCHR() _q)
 
 // push samples into filter bank
 //  _q      : channelizer object
-//  _x      : channelizer input, [size: P x 1]
+//  _x      : channelizer input, [size: decim x 1]
 int FIRPFBCHR(_push)(FIRPFBCHR() _q,
                      TI *        _x)
 {
-    // load buffers in blocks of _P in the reverse direction
+    // load buffers in blocks of P in the reverse direction
     unsigned int i;
     for (i=0; i<_q->P; i++) {
         // push sample into buffer at filter index
