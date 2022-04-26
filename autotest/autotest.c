@@ -313,7 +313,7 @@ int liquid_autotest_validate_psd_signalf(float * _buf, unsigned int _buf_len,
     return rc;
 }
 
-// validate spectral content of a filter
+// validate spectral content of a filter (real coefficients)
 int liquid_autotest_validate_psd_firfilt_crcf(firfilt_crcf _q, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
@@ -323,6 +323,21 @@ int liquid_autotest_validate_psd_firfilt_crcf(firfilt_crcf _q, unsigned int _nff
         float f = (float)(i)/(float)(_nfft) - 0.5f;
         float complex H;
         firfilt_crcf_freqresponse(_q, f, &H);
+        psd[i] = 20*log10f(cabsf(H));
+    }
+    return liquid_autotest_validate_spectrum(psd,_nfft,_regions,num_regions,debug_filename);
+}
+
+// validate spectral content of a filter (complex coefficients)
+int liquid_autotest_validate_psd_firfilt_cccf(firfilt_cccf _q, unsigned int _nfft,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
+{
+    float psd[_nfft];
+    unsigned int i;
+    for (i=0; i<_nfft; i++) {
+        float f = (float)(i)/(float)(_nfft) - 0.5f;
+        float complex H;
+        firfilt_cccf_freqresponse(_q, f, &H);
         psd[i] = 20*log10f(cabsf(H));
     }
     return liquid_autotest_validate_spectrum(psd,_nfft,_regions,num_regions,debug_filename);

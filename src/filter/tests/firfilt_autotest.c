@@ -90,6 +90,20 @@ void autotest_firfilt_crcf_notch()
     firfilt_crcf_destroy(q);
 }
 
+void autotest_firfilt_cccf_notch()
+{
+    // design filter and verify resulting spectrum
+    firfilt_cccf q = firfilt_cccf_create_notch(20, 60.0f, 0.125f);
+    autotest_psd_s regions[] = {
+      {.fmin=-0.5,   .fmax=+0.06,  .pmin=-0.1, .pmax=+0.1, .test_lo=1, .test_hi=1},
+      {.fmin=+0.124, .fmax=+0.126, .pmin=   0, .pmax= -50, .test_lo=0, .test_hi=1},
+      {.fmin= 0.20,  .fmax=+0.5,   .pmin=-0.1, .pmax=+0.1, .test_lo=1, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_firfilt_cccf(q, 1200, regions, 3,
+        liquid_autotest_verbose ? "autotest_firfilt_cccf_notch.m" : NULL);
+    firfilt_cccf_destroy(q);
+}
+
 void autotest_firfilt_config()
 {
 #if LIQUID_STRICT_EXIT
