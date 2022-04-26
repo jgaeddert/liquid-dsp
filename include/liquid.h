@@ -6659,10 +6659,10 @@ float liquid_flattop(unsigned int _i,
 // Triangular window
 //  _i      :   window index, _i in [0,_wlen-1]
 //  _wlen   :   full window length
-// _L		:	triangle length, _L in {_wlen-1, _wlen, _wlen+1}
+// _n		:	triangle length, _n in {_wlen-1, _wlen, _wlen+1}
 float liquid_triangular(unsigned int _i,
                         unsigned int _wlen,
-                        unsigned int _L);
+                        unsigned int _n);
 
 // raised-cosine tapering window
 //  _i      :   window index
@@ -6695,7 +6695,7 @@ float hann(unsigned int _i,unsigned int _wlen);
 float blackmanharris(unsigned int _i,unsigned int _wlen);
 float blackmanharris7(unsigned int _i,unsigned int _wlen);
 float flattop(unsigned int _i,unsigned int _wlen);
-float triangular(unsigned int _i,unsigned int _wlen,unsigned int _L);
+float triangular(unsigned int _i,unsigned int _wlen,unsigned int _n);
 float liquid_rcostaper_windowf(unsigned int _i,unsigned int _wlen,unsigned int _t);
 float kbd(unsigned int _i,unsigned int _wlen,float _beta);
 int   kbd_window(unsigned int _wlen,float _beta,float * _w);
@@ -7225,9 +7225,9 @@ int MATRIX(_cgsolve)(T *          _A,                                       \
 /*  _x      : input/output matrix, [size: _rx x _cx]                    */  \
 /*  _rx     : rows of _x                                                */  \
 /*  _cx     : columns of _x                                             */  \
-/*  _L      : first row to swap                                         */  \
-/*  _U      : first row to swap                                         */  \
-/*  _P      : first row to swap                                         */  \
+/*  _l      : first row to swap                                         */  \
+/*  _u      : first row to swap                                         */  \
+/*  _p      : first row to swap                                         */  \
 int MATRIX(_ludecomp_crout)(T *          _x,                                \
                             unsigned int _rx,                               \
                             unsigned int _cx,                               \
@@ -7239,9 +7239,9 @@ int MATRIX(_ludecomp_crout)(T *          _x,                                \
 /*  _x      : input/output matrix, [size: _rx x _cx]                    */  \
 /*  _rx     : rows of _x                                                */  \
 /*  _cx     : columns of _x                                             */  \
-/*  _L      : first row to swap                                         */  \
-/*  _U      : first row to swap                                         */  \
-/*  _P      : first row to swap                                         */  \
+/*  _l      : first row to swap                                         */  \
+/*  _u      : first row to swap                                         */  \
+/*  _p      : first row to swap                                         */  \
 int MATRIX(_ludecomp_doolittle)(T *          _x,                            \
                                 unsigned int _rx,                           \
                                 unsigned int _cx,                           \
