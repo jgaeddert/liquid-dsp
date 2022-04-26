@@ -7277,12 +7277,12 @@ int MATRIX(_qrdecomp_gramschmidt)(T *          _a,                          \
                                                                             \
 /* Compute Cholesky decomposition of a symmetric/Hermitian              */  \
 /* positive-definite matrix as \( \vec{A} = \vec{L}\vec{L}^T \)         */  \
-/*  _A      : input square matrix, [size: _n x _n]                      */  \
+/*  _a      : input square matrix, [size: _n x _n]                      */  \
 /*  _n      : input matrix dimension                                    */  \
-/*  _L      : output lower-triangular matrix                            */  \
-int MATRIX(_chol)(T *          _A,                                          \
+/*  _l      : output lower-triangular matrix                            */  \
+int MATRIX(_chol)(T *          _a,                                          \
                   unsigned int _n,                                          \
-                  T *          _L);                                         \
+                  T *          _l);                                         \
 
 #define matrix_access(X,R,C,r,c) ((X)[(r)*(C)+(c)])
 
