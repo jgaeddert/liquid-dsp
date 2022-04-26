@@ -7264,16 +7264,16 @@ int MATRIX(_gramschmidt)(T *          _A,                                   \
 /* and \( \vec{Q}^T \vec{Q} = \vec{I}_n \)                              */  \
 /* and \(\vec{R\}\) is a diagonal \(m \times m\) matrix                 */  \
 /* NOTE: all matrices are square                                        */  \
-/*  _A      : input matrix, [size: _m x _m]                             */  \
+/*  _a      : input matrix, [size: _m x _m]                             */  \
 /*  _m      : rows                                                      */  \
 /*  _n      : columns (same as cols)                                    */  \
-/*  _Q      : output matrix, [size: _m x _m]                            */  \
-/*  _R      : output matrix, [size: _m x _m]                            */  \
-int MATRIX(_qrdecomp_gramschmidt)(T *          _A,                          \
+/*  _q      : output matrix, [size: _m x _m]                            */  \
+/*  _r      : output matrix, [size: _m x _m]                            */  \
+int MATRIX(_qrdecomp_gramschmidt)(T *          _a,                          \
                                   unsigned int _m,                          \
                                   unsigned int _n,                          \
-                                  T *          _Q,                          \
-                                  T *          _R);                         \
+                                  T *          _q,                          \
+                                  T *          _r);                         \
                                                                             \
 /* Compute Cholesky decomposition of a symmetric/Hermitian              */  \
 /* positive-definite matrix as \( \vec{A} = \vec{L}\vec{L}^T \)         */  \
