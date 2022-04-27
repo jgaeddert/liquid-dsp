@@ -172,6 +172,19 @@ void autotest_firfilt_recreate()
     for (i=0; i<n; i++)
         CONTEND_EQUALITY(h[n-i-1], h0[i]*7.1f);
 
+    // re-create with longer coefficients array and test impulse response
+    float h2[2*n+1]; // new random-ish coefficients
+    for (i=0; i<2*n+1; i++)
+        h2[i] = cosf(0.2*i+1) + sinf(logf(2.0f)*i);
+    q = firfilt_crcf_recreate(q, h2, 2*n+1);
+    for (i=0; i<2*n+1; i++) {
+        firfilt_crcf_push(q, i==0 ? 1 : 0);
+        float complex v;
+        firfilt_crcf_execute(q, &v);
+        // output is same as input, subject to scaling factor
+        CONTEND_EQUALITY(v, h2[i]*scale);
+    }
+
     firfilt_crcf_destroy(q);
 }
 
