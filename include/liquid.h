@@ -3604,44 +3604,44 @@ typedef struct FIRINTERP(_s) * FIRINTERP();                                 \
 /* interpolator creates a polyphase filter bank to efficiently realize  */  \
 /* resampling of the input signal.                                      */  \
 /* If the input filter length is not a multiple of the interpolation    */  \
-/* factor, the object internally pads the coefficients with zeros to    */  \
-/* compensate.                                                          */  \
-/*  _M      : interpolation factor, _M >= 2                             */  \
+/* factor \(M\), the object internally pads the coefficients with zeros */  \
+/* to compensate.                                                       */  \
+/*  _interp : interpolation factor \(M\), _interp >= 2                  */  \
 /*  _h      : filter coefficients, [size: _h_len x 1]                   */  \
-/*  _h_len  : filter length, _h_len >= _M                               */  \
-FIRINTERP() FIRINTERP(_create)(unsigned int _M,                             \
+/*  _h_len  : filter length, _h_len >= _interp                          */  \
+FIRINTERP() FIRINTERP(_create)(unsigned int _interp,                        \
                                TC *         _h,                             \
                                unsigned int _h_len);                        \
                                                                             \
 /* Create interpolator from filter prototype prototype (Kaiser-Bessel   */  \
 /* windowed-sinc function)                                              */  \
-/*  _M      : interpolation factor, _M >= 2                             */  \
+/*  _interp : interpolation factor \(M\), _interp >= 2                  */  \
 /*  _m      : filter delay [symbols], _m >= 1                           */  \
 /*  _as     : stop-band attenuation [dB], _as >= 0                      */  \
-FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,                      \
+FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _interp,                 \
                                       unsigned int _m,                      \
                                       float        _as);                    \
                                                                             \
 /* Create interpolator object from filter prototype                     */  \
 /*  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)                    */  \
-/*  _M      : interpolation factor,    _M > 1                           */  \
+/*  _interp : interpolation factor \(M\), _interp >= 2                  */  \
 /*  _m      : filter delay (symbols),  _m > 0                           */  \
 /*  _beta   : excess bandwidth factor, 0 <= _beta <= 1                  */  \
 /*  _dt     : fractional sample delay, -1 <= _dt <= 1                   */  \
 FIRINTERP() FIRINTERP(_create_prototype)(int          _type,                \
-                                         unsigned int _M,                   \
+                                         unsigned int _interp,              \
                                          unsigned int _m,                   \
                                          float        _beta,                \
                                          float        _dt);                 \
                                                                             \
 /* Create linear interpolator object                                    */  \
-/*  _M      : interpolation factor,    _M > 1                           */  \
-FIRINTERP() FIRINTERP(_create_linear)(unsigned int _M);                     \
+/*  _interp : interpolation factor \(M\), _interp >= 2                  */  \
+FIRINTERP() FIRINTERP(_create_linear)(unsigned int _interp);                \
                                                                             \
 /* Create window interpolator object                                    */  \
-/*  _M      : interpolation factor, _M > 1                              */  \
+/*  _interp : interpolation factor \(M\), _interp >= 2                  */  \
 /*  _m      : filter semi-length, _m > 0                                */  \
-FIRINTERP() FIRINTERP(_create_window)(unsigned int _M,                      \
+FIRINTERP() FIRINTERP(_create_window)(unsigned int _interp,                 \
                                       unsigned int _m);                     \
                                                                             \
 /* Destroy firinterp object, freeing all internal memory                */  \
@@ -3675,16 +3675,17 @@ void FIRINTERP(_get_scale)(FIRINTERP() _q,                                  \
 /* samples (\(M\) is the interpolation factor)                          */  \
 /*  _q      : firinterp object                                          */  \
 /*  _x      : input sample                                              */  \
-/*  _y      : output sample array, [size: _M x 1]                       */  \
+/*  _y      : output sample array, [size: M x 1]                        */  \
 void FIRINTERP(_execute)(FIRINTERP() _q,                                    \
                          TI          _x,                                    \
                          TO *        _y);                                   \
                                                                             \
-/* Execute interpolation on block of input samples                      */  \
+/* Execute interpolation on block of input samples, increasing the      */  \
+/* sample rate of the input by the interpolation factor \(M\).          */  \
 /*  _q      : firinterp object                                          */  \
 /*  _x      : input array, [size: _n x 1]                               */  \
 /*  _n      : size of input array                                       */  \
-/*  _y      : output sample array, [size: _M*_n x 1]                    */  \
+/*  _y      : output sample array, [size: M*_n x 1]                     */  \
 void FIRINTERP(_execute_block)(FIRINTERP()  _q,                             \
                                TI *         _x,                             \
                                unsigned int _n,                             \

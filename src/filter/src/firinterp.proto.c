@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// Interpolator
-//
+// finite impulse response (FIR) interpolator
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,22 +35,22 @@ struct FIRINTERP(_s) {
 };
 
 // create interpolator
-//  _M      :   interpolation factor
+//  _interp :   interpolation factor
 //  _h      :   filter coefficients array [size: _h_len x 1]
 //  _h_len  :   filter length
-FIRINTERP() FIRINTERP(_create)(unsigned int _M,
+FIRINTERP() FIRINTERP(_create)(unsigned int _interp,
                                TC *         _h,
                                unsigned int _h_len)
 {
     // validate input
-    if (_M < 2)
+    if (_interp < 2)
         return liquid_error_config("firinterp_%s_create(), interp factor must be greater than 1", EXTENSION_FULL);
-    if (_h_len < _M)
+    if (_h_len < _interp)
         return liquid_error_config("firinterp_%s_create(), filter length cannot be less than interp factor", EXTENSION_FULL);
 
     // allocate main object memory and set internal parameters
     FIRINTERP() q = (FIRINTERP()) malloc(sizeof(struct FIRINTERP(_s)));
-    q->M = _M;
+    q->M = _interp;
     q->h_len = _h_len;
 
     // compute sub-filter length
@@ -77,15 +75,15 @@ FIRINTERP() FIRINTERP(_create)(unsigned int _M,
 }
 
 // create interpolator from Kaiser prototype
-//  _M      :   interpolation factor
+//  _interp :   interpolation factor
 //  _m      :   symbol delay
 //  _as     :   stop-band attenuation [dB]
-FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,
+FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _interp,
                                       unsigned int _m,
                                       float        _as)
 {
     // validate input
-    if (_M < 2)
+    if (_interp < 2)
         return liquid_error_config("firinterp_%s_create_kaiser(), interp factor must be greater than 1", EXTENSION_FULL);
     if (_m == 0)
         return liquid_error_config("firinterp_%s_create_kaiser(), filter delay must be greater than 0", EXTENSION_FULL);
@@ -93,9 +91,9 @@ FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,
         return liquid_error_config("firinterp_%s_create_kaiser(), stop-band attenuation must be positive", EXTENSION_FULL);
 
     // compute filter coefficients (floating point precision)
-    unsigned int h_len = 2*_M*_m + 1;
+    unsigned int h_len = 2*_interp*_m + 1;
     float hf[h_len];
-    float fc = 0.5f / (float) (_M);
+    float fc = 0.5f / (float) (_interp);
     liquid_firdes_kaiser(h_len, fc, _as, 0.0f, hf);
 
     // copy coefficients to type-specific array (e.g. float complex)
@@ -105,23 +103,23 @@ FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,
         hc[i] = hf[i];
     
     // return interpolator object
-    return FIRINTERP(_create)(_M, hc, h_len-1);
+    return FIRINTERP(_create)(_interp, hc, h_len-1);
 }
 
 // create prototype (root-)Nyquist interpolator
 //  _type   :   filter type (e.g. LIQUID_NYQUIST_RCOS)
-//  _k      :   samples/symbol,          _k > 1
+//  _interp :   samples/symbol,          _interp > 1
 //  _m      :   filter delay (symbols),  _m > 0
 //  _beta   :   excess bandwidth factor, _beta < 1
 //  _dt     :   fractional sample delay, _dt in (-1, 1)
 FIRINTERP() FIRINTERP(_create_prototype)(int          _type,
-                                         unsigned int _k,
+                                         unsigned int _interp,
                                          unsigned int _m,
                                          float        _beta,
                                          float        _dt)
 {
     // validate input
-    if (_k < 2)
+    if (_interp < 2)
         return liquid_error_config("firinterp_%s_create_prototype(), interp factor must be greater than 1", EXTENSION_FULL);
     if (_m == 0)
         return liquid_error_config("firinterp_%s_create_prototype(), filter delay must be greater than 0", EXTENSION_FULL);
@@ -131,9 +129,9 @@ FIRINTERP() FIRINTERP(_create_prototype)(int          _type,
         return liquid_error_config("firinterp_%s_create_prototype(), filter fractional sample delay must be in [-1,1]", EXTENSION_FULL);
 
     // generate Nyquist filter
-    unsigned int h_len = 2*_k*_m + 1;
+    unsigned int h_len = 2*_interp*_m + 1;
     float h[h_len];
-    liquid_firdes_prototype(_type,_k,_m,_beta,_dt,h);
+    liquid_firdes_prototype(_type,_interp,_m,_beta,_dt,h);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;
@@ -142,47 +140,47 @@ FIRINTERP() FIRINTERP(_create_prototype)(int          _type,
         hc[i] = h[i];
 
     // return interpolator object
-    return FIRINTERP(_create)(_k, hc, h_len);
+    return FIRINTERP(_create)(_interp, hc, h_len);
 }
 
 // create linear interpolator object
-//  _M      :   interpolation factor, _M > 1
-FIRINTERP() FIRINTERP(_create_linear)(unsigned int _M)
+//  _interp :   interpolation factor, _interp > 1
+FIRINTERP() FIRINTERP(_create_linear)(unsigned int _interp)
 {
     // validate input
-    if (_M < 1)
+    if (_interp < 1)
         return liquid_error_config("firinterp_%s_create_linear(), interp factor must be greater than 1", EXTENSION_FULL);
 
     // generate coefficients
     unsigned int i;
-    TC hc[2*_M];
-    for (i=0; i<_M; i++) hc[   i] = (float)i / (float)_M;
-    for (i=0; i<_M; i++) hc[_M+i] = 1.0f - (float)i / (float)_M;
+    TC hc[2*_interp];
+    for (i=0; i<_interp; i++) hc[        i] = (float)i / (float)_interp;
+    for (i=0; i<_interp; i++) hc[_interp+i] = 1.0f - (float)i / (float)_interp;
 
     // return interpolator object
-    return FIRINTERP(_create)(_M, hc, 2*_M);
+    return FIRINTERP(_create)(_interp, hc, 2*_interp);
 }
 
 // create window interpolator object
-//  _M      :   interpolation factor, _M > 1
+//  _interp :   interpolation factor, _interp > 1
 //  _m      :   filter semi-length, _m > 0
-FIRINTERP() FIRINTERP(_create_window)(unsigned int _M,
+FIRINTERP() FIRINTERP(_create_window)(unsigned int _interp,
                                       unsigned int _m)
 {
     // validate input
-    if (_M < 1)
+    if (_interp < 1)
         return liquid_error_config("firinterp_%s_create_spline(), interp factor must be greater than 1", EXTENSION_FULL);
     if (_m < 1)
         return liquid_error_config("firinterp_%s_create_spline(), interp factor must be greater than 1", EXTENSION_FULL);
 
     // generate coefficients
     unsigned int i;
-    TC hc[2*_m*_M];
-    for (i=0; i<2*_m*_M; i++)
-        hc[i] = powf(sinf(M_PI*(float)i/(float)(2*_m*_M)), 2.0f);
+    TC hc[2*_m*_interp];
+    for (i=0; i<2*_m*_interp; i++)
+        hc[i] = powf(sinf(M_PI*(float)i/(float)(2*_m*_interp)), 2.0f);
 
     // return interpolator object
-    return FIRINTERP(_create)(_M, hc, 2*_m*_M);
+    return FIRINTERP(_create)(_interp, hc, 2*_m*_interp);
 }
 
 // destroy interpolator object
@@ -197,7 +195,7 @@ void FIRINTERP(_destroy)(FIRINTERP() _q)
 void FIRINTERP(_print)(FIRINTERP() _q)
 {
     printf("interp():\n");
-    printf("    M       :   %u\n", _q->M);
+    printf("    interp  :   %u\n", _q->M);
     printf("    h_len   :   %u\n", _q->h_len);
     FIRPFB(_print)(_q->filterbank);
 }
@@ -241,7 +239,7 @@ void FIRINTERP(_get_scale)(FIRINTERP() _q,
 // execute interpolator
 //  _q      : interpolator object
 //  _x      : input sample
-//  _y      : output array [size: 1 x _M]
+//  _y      : output array [size: 1 x M]
 void FIRINTERP(_execute)(FIRINTERP() _q,
                          TI          _x,
                          TO *        _y)
@@ -259,7 +257,7 @@ void FIRINTERP(_execute)(FIRINTERP() _q,
 //  _q      : firinterp object
 //  _x      : input array [size: _n x 1]
 //  _n      : size of input array
-//  _y      : output sample array [size: _M*_n x 1]
+//  _y      : output sample array [size: M*_n x 1]
 void FIRINTERP(_execute_block)(FIRINTERP()  _q,
                                TI *         _x,
                                unsigned int _n,
@@ -267,7 +265,7 @@ void FIRINTERP(_execute_block)(FIRINTERP()  _q,
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
-        // execute one input at a time with an output stride _M
+        // execute one input at a time with an output stride M
         FIRINTERP(_execute)(_q, _x[i], &_y[i*_q->M]);
     }
 }
