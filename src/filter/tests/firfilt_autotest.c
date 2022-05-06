@@ -74,6 +74,36 @@ void autotest_firfilt_crcf_rect()
     firfilt_crcf_destroy(q);
 }
 
+void autotest_firfilt_crcf_notch()
+{
+    // design filter and verify resulting spectrum
+    firfilt_crcf q = firfilt_crcf_create_notch(20, 60.0f, 0.125f);
+    autotest_psd_s regions[] = {
+      {.fmin=-0.5,   .fmax=-0.20,  .pmin=-0.1, .pmax=+0.1, .test_lo=1, .test_hi=1},
+      {.fmin=-0.126, .fmax=-0.124, .pmin=   0, .pmax= -50, .test_lo=0, .test_hi=1},
+      {.fmin=-0.06,  .fmax=+0.06,  .pmin=-0.1, .pmax=+0.1, .test_lo=1, .test_hi=1},
+      {.fmin=+0.124, .fmax=+0.126, .pmin=   0, .pmax= -50, .test_lo=0, .test_hi=1},
+      {.fmin= 0.20,  .fmax=+0.5,   .pmin=-0.1, .pmax=+0.1, .test_lo=1, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_firfilt_crcf(q, 1200, regions, 5,
+        liquid_autotest_verbose ? "autotest_firfilt_crcf_notch.m" : NULL);
+    firfilt_crcf_destroy(q);
+}
+
+void autotest_firfilt_cccf_notch()
+{
+    // design filter and verify resulting spectrum
+    firfilt_cccf q = firfilt_cccf_create_notch(20, 60.0f, 0.125f);
+    autotest_psd_s regions[] = {
+      {.fmin=-0.5,   .fmax=+0.06,  .pmin=-0.1, .pmax=+0.1, .test_lo=1, .test_hi=1},
+      {.fmin=+0.124, .fmax=+0.126, .pmin=   0, .pmax= -50, .test_lo=0, .test_hi=1},
+      {.fmin= 0.20,  .fmax=+0.5,   .pmin=-0.1, .pmax=+0.1, .test_lo=1, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_firfilt_cccf(q, 1200, regions, 3,
+        liquid_autotest_verbose ? "autotest_firfilt_cccf_notch.m" : NULL);
+    firfilt_cccf_destroy(q);
+}
+
 void autotest_firfilt_config()
 {
 #if LIQUID_STRICT_EXIT
@@ -141,6 +171,19 @@ void autotest_firfilt_recreate()
     const float * h = firfilt_crcf_get_coefficients(q);
     for (i=0; i<n; i++)
         CONTEND_EQUALITY(h[n-i-1], h0[i]*7.1f);
+
+    // re-create with longer coefficients array and test impulse response
+    float h2[2*n+1]; // new random-ish coefficients
+    for (i=0; i<2*n+1; i++)
+        h2[i] = cosf(0.2*i+1) + sinf(logf(2.0f)*i);
+    q = firfilt_crcf_recreate(q, h2, 2*n+1);
+    for (i=0; i<2*n+1; i++) {
+        firfilt_crcf_push(q, i==0 ? 1 : 0);
+        float complex v;
+        firfilt_crcf_execute(q, &v);
+        // output is same as input, subject to scaling factor
+        CONTEND_EQUALITY(v, h2[i]*scale);
+    }
 
     firfilt_crcf_destroy(q);
 }

@@ -483,7 +483,7 @@ int FIRFILT(_freqresponse)(FIRFILT()       _q,
 
     // compute dot product between coefficients and exp{ 2 pi fc {0..n-1} }
     for (i=0; i<_q->h_len; i++)
-        H += _q->h[i] * cexpf(_Complex_I*2*M_PI*_fc*i);
+        H += _q->h[i] * cexpf(-_Complex_I*2*M_PI*_fc*i);
 
     // apply scaling
     H *= _q->scale;
