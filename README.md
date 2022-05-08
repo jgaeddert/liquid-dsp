@@ -173,6 +173,19 @@ int main() {
 }
 ```
 
+### PlatformIO ###
+
+Install [platformio](https://platformio.org)
+(`brew install platformio` on macOS,
+`sudo -H python3 -m pip install -U platformio` on Linux).
+Add `liquid-dsp` to your `platform.io` list of dependencies:
+
+```ini
+[env:native]
+platform = native
+lib_deps = https://github.com/jgaeddert/liquid-dsp.git
+```
+
 ## Available Modules ##
 
   * _agc_: automatic gain control, received signal strength
