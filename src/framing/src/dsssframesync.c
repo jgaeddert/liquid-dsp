@@ -104,8 +104,13 @@ struct dsssframesync_s {
     enum state          state;
 };
 
-dsssframesync dsssframesync_create(framesync_callback _callback, void * _userdata)
+dsssframesync dsssframesync_create_set(unsigned int _n,
+                                       framesync_callback _callback,
+                                       void * _userdata)
 {
+    if ((_n < 2) || (_n > 64))
+        return liquid_error_config("dsssframesync_create_set(), spreading factor must be between 2 and 64");
+
     dsssframesync q = (dsssframesync)calloc(1, sizeof(struct dsssframesync_s));
     q->callback     = _callback;
     q->userdata     = _userdata;
@@ -124,14 +129,14 @@ dsssframesync dsssframesync_create(framesync_callback _callback, void * _userdat
     }
     msequence_destroy(ms);
 
-    float complex * pn = (float complex *)calloc(64, sizeof(float complex));
+    float complex * pn = (float complex *)calloc(_n, sizeof(float complex));
     ms                        = msequence_create(7, 0x00cb, 0x53);
-    for (i = 0; i < 64; i++) {
+    for (i = 0; i < _n; i++) {
         pn[i] = (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2);
         pn[i] += (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2) * _Complex_I;
     }
-    q->header_synth  = synth_crcf_create(pn, 64);
-    q->payload_synth = synth_crcf_create(pn, 64);
+    q->header_synth  = synth_crcf_create(pn, _n);
+    q->payload_synth = synth_crcf_create(pn, _n);
     synth_crcf_pll_set_bandwidth(q->header_synth, 1e-4f);
     synth_crcf_pll_set_bandwidth(q->payload_synth, 1e-4f);
     free(pn);
@@ -153,7 +158,7 @@ dsssframesync dsssframesync_create(framesync_callback _callback, void * _userdat
     dsssframesync_set_header_props(q, NULL);
 
     q->payload_decoder    = qpacketmodem_create();
-    q->payload_spread_len = 64;
+    q->payload_spread_len = _n;
     q->payload_spread
         = (float complex *)malloc(q->payload_spread_len * sizeof(float complex));
 
@@ -161,6 +166,11 @@ dsssframesync dsssframesync_create(framesync_callback _callback, void * _userdat
     dsssframesync_reset(q);
 
     return q;
+}
+
+dsssframesync dsssframesync_create(framesync_callback _callback, void * _userdata)
+{
+    return dsssframesync_create_set(64, _callback, _userdata);
 }
 
 int dsssframesync_destroy(dsssframesync _q)
