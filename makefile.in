@@ -502,6 +502,7 @@ filter_autotests :=						\
 	src/filter/tests/firfilt_coefficients_autotest.c	\
 	src/filter/tests/firfilt_rnyquist_autotest.c		\
 	src/filter/tests/firfilt_xxxf_autotest.c		\
+	src/filter/tests/firfilt_copy_autotest.c		\
 	src/filter/tests/firhilb_autotest.c			\
 	src/filter/tests/firinterp_autotest.c			\
 	src/filter/tests/firpfb_autotest.c			\
