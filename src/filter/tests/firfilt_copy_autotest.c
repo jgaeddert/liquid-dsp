@@ -46,14 +46,10 @@ void autotest_firfilt_crcf_copy()
 
     // continue running through both filters
     for (i=0; i<n; i++) {
-        x = randnf() + _Complex_I*randnf();
-
         // run filters in parallel
-        firfilt_crcf_push   (filt_orig, x);
-        firfilt_crcf_execute(filt_orig, &y_orig);
-
-        firfilt_crcf_push   (filt_copy, x);
-        firfilt_crcf_execute(filt_copy, &y_copy);
+        x = randnf() + _Complex_I*randnf();
+        firfilt_crcf_execute_one(filt_orig, x, &y_orig);
+        firfilt_crcf_execute_one(filt_copy, x, &y_copy);
 
         if (liquid_autotest_verbose) {
             float error = cabsf( y_orig - y_copy );

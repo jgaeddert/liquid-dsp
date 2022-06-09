@@ -15,12 +15,9 @@ int main() {
     unsigned int i;
     float complex x, y_orig, y_copy;
     for (i=0; i<n; i++) {
-        x = randnf() + _Complex_I*randnf();
-
         // run filter
-        firfilt_crcf_push   (filt_orig, x);
-        firfilt_crcf_execute(filt_orig, &y_orig);
-
+        x = randnf() + _Complex_I*randnf();
+        firfilt_crcf_execute_one(filt_orig, x, &y_orig);
         printf(" [%3u] orig: %12.8f + j%12.8f\n", i, crealf(y_orig), cimagf(y_orig));
     }
 
@@ -29,14 +26,10 @@ int main() {
 
     // continue running through both filters
     for (i=0; i<n; i++) {
-        x = randnf() + _Complex_I*randnf();
-
         // run filters
-        firfilt_crcf_push   (filt_orig, x);
-        firfilt_crcf_execute(filt_orig, &y_orig);
-
-        firfilt_crcf_push   (filt_copy, x);
-        firfilt_crcf_execute(filt_copy, &y_copy);
+        x = randnf() + _Complex_I*randnf();
+        firfilt_crcf_execute_one(filt_orig, x, &y_orig);
+        firfilt_crcf_execute_one(filt_copy, x, &y_copy);
 
         float error = cabsf( y_orig - y_copy );
         printf(" [%3u] orig: %12.8f + j%12.8f, copy: %12.8f + j%12.8f, error: %8g\n", i+n,
