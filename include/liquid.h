@@ -3653,13 +3653,13 @@ FIRINTERP() FIRINTERP(_create_window)(unsigned int _interp,                 \
                                       unsigned int _m);                     \
                                                                             \
 /* Destroy firinterp object, freeing all internal memory                */  \
-void FIRINTERP(_destroy)(FIRINTERP() _q);                                   \
+int FIRINTERP(_destroy)(FIRINTERP() _q);                                    \
                                                                             \
 /* Print firinterp object's internal properties to stdout               */  \
-void FIRINTERP(_print)(FIRINTERP() _q);                                     \
+int FIRINTERP(_print)(FIRINTERP() _q);                                      \
                                                                             \
 /* Reset internal state                                                 */  \
-void FIRINTERP(_reset)(FIRINTERP() _q);                                     \
+int FIRINTERP(_reset)(FIRINTERP() _q);                                      \
                                                                             \
 /* Get interpolation rate                                               */  \
 unsigned int FIRINTERP(_get_interp_rate)(FIRINTERP() _q);                   \
@@ -3670,23 +3670,23 @@ unsigned int FIRINTERP(_get_sub_len)(FIRINTERP() _q);                       \
 /* Set output scaling for interpolator                                  */  \
 /*  _q      : interpolator object                                       */  \
 /*  _scale  : scaling factor to apply to each output sample             */  \
-void FIRINTERP(_set_scale)(FIRINTERP() _q,                                  \
-                           TC          _scale);                             \
+int FIRINTERP(_set_scale)(FIRINTERP() _q,                                   \
+                          TC          _scale);                              \
                                                                             \
 /* Get output scaling for interpolator                                  */  \
 /*  _q      : interpolator object                                       */  \
 /*  _scale  : scaling factor to apply to each output sample             */  \
-void FIRINTERP(_get_scale)(FIRINTERP() _q,                                  \
-                           TC *        _scale);                             \
+int FIRINTERP(_get_scale)(FIRINTERP() _q,                                   \
+                          TC *        _scale);                              \
                                                                             \
 /* Execute interpolation on single input sample and write \(M\) output  */  \
 /* samples (\(M\) is the interpolation factor)                          */  \
 /*  _q      : firinterp object                                          */  \
 /*  _x      : input sample                                              */  \
 /*  _y      : output sample array, [size: M x 1]                        */  \
-void FIRINTERP(_execute)(FIRINTERP() _q,                                    \
-                         TI          _x,                                    \
-                         TO *        _y);                                   \
+int FIRINTERP(_execute)(FIRINTERP() _q,                                     \
+                        TI          _x,                                     \
+                        TO *        _y);                                    \
                                                                             \
 /* Execute interpolation on block of input samples, increasing the      */  \
 /* sample rate of the input by the interpolation factor \(M\).          */  \
@@ -3694,10 +3694,10 @@ void FIRINTERP(_execute)(FIRINTERP() _q,                                    \
 /*  _x      : input array, [size: _n x 1]                               */  \
 /*  _n      : size of input array                                       */  \
 /*  _y      : output sample array, [size: M*_n x 1]                     */  \
-void FIRINTERP(_execute_block)(FIRINTERP()  _q,                             \
-                               TI *         _x,                             \
-                               unsigned int _n,                             \
-                               TO *         _y);                            \
+int FIRINTERP(_execute_block)(FIRINTERP()  _q,                              \
+                              TI *         _x,                              \
+                              unsigned int _n,                              \
+                              TO *         _y);                             \
 
 LIQUID_FIRINTERP_DEFINE_API(LIQUID_FIRINTERP_MANGLE_RRRF,
                             float,
