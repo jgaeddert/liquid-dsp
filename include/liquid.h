@@ -2773,6 +2773,14 @@ int FIRFILT(_write)(FIRFILT()    _q,                                        \
 int FIRFILT(_execute)(FIRFILT() _q,                                         \
                       TO *      _y);                                        \
                                                                             \
+/* Execute filter on one sample, equivalent to push() and execute()     */  \
+/*  _q      : filter object                                             */  \
+/*  _x      : single input sample                                       */  \
+/*  _y      : pointer to single output sample                           */  \
+int FIRFILT(_execute_one)(FIRFILT() _q,                                     \
+                          TI        _x,                                     \
+                          TO *      _y);                                    \
+                                                                            \
 /* Execute the filter on a block of input samples; in-place operation   */  \
 /* is permitted (_x and _y may point to the same place in memory)       */  \
 /*  _q      : filter object                                             */  \
