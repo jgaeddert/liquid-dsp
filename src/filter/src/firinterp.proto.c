@@ -183,6 +183,26 @@ FIRINTERP() FIRINTERP(_create_window)(unsigned int _interp,
     return FIRINTERP(_create)(_interp, hc, 2*_m*_interp);
 }
 
+// copy object
+FIRINTERP() FIRINTERP(_copy)(FIRINTERP() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("firinterp_%s_create(), object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object
+    FIRINTERP() q_copy = (FIRINTERP()) malloc(sizeof(struct FIRINTERP(_s)));
+
+    // copy base parameters
+    q_copy->h_len     = q_orig->h_len;
+    q_copy->h_sub_len = q_orig->h_sub_len;
+    q_copy->M         = q_orig->M;
+    q_copy->h         = (TC *) malloc((q_orig->h_len)*sizeof(TC));
+    memmove(q_copy->h, q_orig->h, (q_orig->h_len)*sizeof(TC));
+    q_copy->filterbank= FIRPFB(_copy)(q_orig->filterbank);
+    return q_copy;
+}
+
 // destroy interpolator object
 void FIRINTERP(_destroy)(FIRINTERP() _q)
 {

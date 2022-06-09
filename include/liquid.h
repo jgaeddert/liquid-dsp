@@ -3664,6 +3664,9 @@ FIRINTERP() FIRINTERP(_create_linear)(unsigned int _interp);                \
 FIRINTERP() FIRINTERP(_create_window)(unsigned int _interp,                 \
                                       unsigned int _m);                     \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+FIRINTERP() FIRINTERP(_copy)(FIRINTERP() _q);                               \
+                                                                            \
 /* Destroy firinterp object, freeing all internal memory                */  \
 void FIRINTERP(_destroy)(FIRINTERP() _q);                                   \
                                                                             \
