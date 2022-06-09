@@ -148,6 +148,27 @@ FIRDECIM() FIRDECIM(_create_prototype)(int          _type,
     return FIRDECIM(_create)(_M, hc, h_len);
 }
 
+// copy object
+FIRDECIM() FIRDECIM(_copy)(FIRDECIM() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("firfilt_%s_create(), object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object and copy base parameters
+    FIRDECIM() q_copy = (FIRDECIM()) malloc(sizeof(struct FIRDECIM(_s)));
+    q_copy->h_len = q_orig->h_len;
+    q_copy->M     = q_orig->M;
+    q_copy->h     = (TC *) malloc((q_orig->h_len)*sizeof(TC));
+    memmove(q_copy->h, q_orig->h, (q_orig->h_len)*sizeof(TC));
+
+    // copy window, dotprod,m and scale
+    q_copy->w     = WINDOW(_copy)(q_orig->w);
+    q_copy->dp    = DOTPROD(_copy)(q_orig->dp);
+    q_copy->scale = q_orig->scale;
+    return q_copy;
+}
+
 // destroy decimator object
 int FIRDECIM(_destroy)(FIRDECIM() _q)
 {

@@ -3878,6 +3878,9 @@ FIRDECIM() FIRDECIM(_create_prototype)(int          _type,                  \
                                        float        _beta,                  \
                                        float        _dt);                   \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+FIRDECIM() FIRDECIM(_copy)(FIRDECIM() _q);                                  \
+                                                                            \
 /* Destroy decimator object, freeing all internal memory                */  \
 int FIRDECIM(_destroy)(FIRDECIM() _q);                                      \
                                                                             \
