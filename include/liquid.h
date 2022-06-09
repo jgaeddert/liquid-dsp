@@ -497,6 +497,9 @@ WINDOW() WINDOW(_create)(unsigned int _n);                                  \
 /*  _n      : new window length                                         */  \
 WINDOW() WINDOW(_recreate)(WINDOW() _q, unsigned int _n);                   \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+WINDOW() WINDOW(_copy)(WINDOW() _q);                                        \
+                                                                            \
 /* Destroy window object, freeing all internally memory                 */  \
 int WINDOW(_destroy)(WINDOW() _q);                                          \
                                                                             \
@@ -836,6 +839,9 @@ DOTPROD() DOTPROD(_recreate)(DOTPROD()    _q,                               \
 DOTPROD() DOTPROD(_recreate_rev)(DOTPROD()    _q,                           \
                                  TC *         _v,                           \
                                  unsigned int _n);                          \
+                                                                            \
+/* Copy object including all internal objects and state                 */  \
+DOTPROD() DOTPROD(_copy)(DOTPROD() _q);                                     \
                                                                             \
 /* Destroy dotprod object, freeing all internal memory                  */  \
 int DOTPROD(_destroy)(DOTPROD() _q);                                        \
@@ -2721,6 +2727,9 @@ FIRFILT() FIRFILT(_create_notch)(unsigned int _m,                           \
 FIRFILT() FIRFILT(_recreate)(FIRFILT()    _q,                               \
                              TC *         _h,                               \
                              unsigned int _n);                              \
+                                                                            \
+/* Copy object including all internal objects and state                 */  \
+FIRFILT() FIRFILT(_copy)(FIRFILT() _q);                                     \
                                                                             \
 /* Destroy filter object and free all internal memory                   */  \
 int FIRFILT(_destroy)(FIRFILT() _q);                                        \

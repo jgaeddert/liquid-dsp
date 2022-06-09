@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 
 //
-// Windows, defined by macro
+// circular window buffer
 //
 
 #include "liquid.internal.h"
@@ -105,6 +105,32 @@ WINDOW() WINDOW(_recreate)(WINDOW() _q, unsigned int _n)
     WINDOW(_destroy)(_q);
 
     return w;
+}
+
+// copy object
+WINDOW() WINDOW(_copy)(WINDOW() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("error: window%s_copy(), window object cannot be NULL", EXTENSION);
+
+    // create initial object
+    WINDOW() q_copy = (WINDOW()) malloc(sizeof(struct WINDOW(_s)));
+
+    // copy internal parameters
+    q_copy->len           = q_orig->len;
+    q_copy->m             = q_orig->m;
+    q_copy->n             = q_orig->n;
+    q_copy->mask          = q_orig->mask;
+    q_copy->num_allocated = q_orig->num_allocated;
+    q_copy->read_index    = q_orig->read_index;
+
+    // allocte and copy full memory array
+    q_copy->v = (T*) malloc((q_copy->num_allocated)*sizeof(T));
+    memmove(q_copy->v, q_orig->v, q_copy->num_allocated*sizeof(T));
+
+    // return new object
+    return q_copy;
 }
 
 // destroy window object, freeing all internally memory

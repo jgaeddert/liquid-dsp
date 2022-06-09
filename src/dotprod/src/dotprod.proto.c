@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -182,6 +182,25 @@ DOTPROD() DOTPROD(_recreate_rev)(DOTPROD()    _q,
 
     // return re-structured object
     return _q;
+}
+
+// copy object
+DOTPROD() DOTPROD(_copy)(DOTPROD() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("error: dotprod_%s_copy(), window object cannot be NULL", "xxxt");
+
+    // create new base object and copy parameters
+    DOTPROD() q_copy = (DOTPROD()) malloc(sizeof(struct DOTPROD(_s)));
+    q_copy->n = q_orig->n;
+
+    // allocate memory and copy coefficients
+    q_copy->h = (TC*) malloc((q_copy->n)*sizeof(TC));
+    memmove(q_copy->h, q_orig->h, (q_copy->n)*sizeof(TC));
+
+    // return new object
+    return q_copy;
 }
 
 // destroy dot product object

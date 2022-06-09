@@ -290,6 +290,36 @@ FIRFILT() FIRFILT(_recreate)(FIRFILT() _q,
     return _q;
 }
 
+// copy object
+FIRFILT() FIRFILT(_copy)(FIRFILT() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("firfilt_%s_create(), filter object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object and copy base parameters
+    FIRFILT() q_copy = (FIRFILT()) malloc(sizeof(struct FIRFILT(_s)));
+    q_copy->h_len = q_orig->h_len;
+    q_copy->h     = (TC *) malloc((q_orig->h_len)*sizeof(TC));
+    memmove(q_copy->h, q_orig->h, (q_orig->h_len)*sizeof(TC));
+
+#if LIQUID_FIRFILT_USE_WINDOW
+    // copy window
+    q_copy->w = WINDOW(_copy)(q_orig->w);
+#else
+    // initialize array for buffering
+    q_copy->w_len   = q_orig->w_len;
+    q_copy->w_mask  = q_orig->w_mask;
+    q_copy->w       = q_orig->w;
+    q_copy->w_index = q_orig->w_index;
+#endif
+
+    // copy dot product object and scale
+    q_copy->dp    = DOTPROD(_copy)(q_orig->dp);
+    q_copy->scale = q_orig->scale;
+    return q_copy;
+}
+
 // destroy firfilt object
 int FIRFILT(_destroy)(FIRFILT() _q)
 {
