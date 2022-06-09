@@ -427,6 +427,15 @@ int FIRFILT(_execute)(FIRFILT() _q,
     return LIQUID_OK;
 }
 
+// run on single sample
+int FIRFILT(_execute_one)(FIRFILT() _q,
+                          TI        _x,
+                          TO *      _y)
+{
+    FIRFILT(_push)(_q, _x);
+    return FIRFILT(_execute)(_q, _y);
+}
+
 // execute the filter on a block of input samples; the
 // input and output buffers may be the same
 //  _q      : filter object
