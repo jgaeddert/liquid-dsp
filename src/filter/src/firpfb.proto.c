@@ -21,7 +21,7 @@
  */
 
 //
-// FIR Polyphase filter bank
+// finite impulse response (FIR) polyphase filter bank (PFB)
 //
 
 #include <stdio.h>
@@ -256,6 +256,30 @@ FIRPFB() FIRPFB(_recreate)(FIRPFB()     _q,
         _q->dp[i] = DOTPROD(_recreate)(_q->dp[i],h_sub,_q->h_sub_len);
     }
     return _q;
+}
+
+// copy object
+FIRPFB() FIRPFB(_copy)(FIRPFB() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("firpfb_%s_create(), object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object and copy base parameters
+    FIRPFB() q_copy     = (FIRPFB()) malloc(sizeof(struct FIRPFB(_s)));
+    q_copy->h_len       = q_orig->h_len;
+    q_copy->h_sub_len   = q_orig->h_sub_len;
+    q_copy->num_filters = q_orig->num_filters;
+    q_copy->w           = WINDOW(_copy)(q_orig->w);
+
+    // copy array of dotproduct objects
+    q_copy->dp = (DOTPROD()*) malloc((q_copy->num_filters)*sizeof(DOTPROD()));
+    unsigned int i;
+    for (i=0; i<q_copy->num_filters; i++)
+        q_copy->dp[i] = DOTPROD(_copy)(q_orig->dp[i]);
+
+    q_copy->scale = q_orig->scale;
+    return q_copy;
 }
 
 // destroy firpfb object, freeing all internal memory

@@ -3530,6 +3530,9 @@ FIRPFB() FIRPFB(_recreate)(FIRPFB()     _q,                                 \
                            TC *         _h,                                 \
                            unsigned int _h_len);                            \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+FIRPFB() FIRPFB(_copy)(FIRPFB() _q);                                        \
+                                                                            \
 /* Destroy firpfb object, freeing all internal memory and destroying    */  \
 /* all internal objects                                                 */  \
 int FIRPFB(_destroy)(FIRPFB() _q);                                          \
