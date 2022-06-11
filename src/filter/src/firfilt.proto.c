@@ -295,7 +295,7 @@ FIRFILT() FIRFILT(_copy)(FIRFILT() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("firfilt_%s_create(), filter object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config("firfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
 
     // create filter object and copy base parameters
     FIRFILT() q_copy = (FIRFILT()) malloc(sizeof(struct FIRFILT(_s)));
