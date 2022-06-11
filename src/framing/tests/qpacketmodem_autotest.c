@@ -182,8 +182,8 @@ void autotest_qpacketmodem_copy()
     }
 
     // decode frame symbols and compare outputs
-    int crc_pass_0 = qpacketmodem_decode_syms(q0, frame_syms_0, payload_rx_0);
-    int crc_pass_1 = qpacketmodem_decode_syms(q1, frame_syms_1, payload_rx_1);
+    int crc_pass_0 = qpacketmodem_decode(q0, frame_syms_0, payload_rx_0);
+    int crc_pass_1 = qpacketmodem_decode(q1, frame_syms_1, payload_rx_1);
 
     // check to see that frame was recovered
     CONTEND_SAME_DATA( payload_rx_0, payload_rx_1, payload_len );
