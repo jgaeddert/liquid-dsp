@@ -199,6 +199,22 @@ packetizer packetizer_recreate(packetizer _p,
 }
 
 // destroy packetizer object
+packetizer packetizer_copy(packetizer q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("packetizer_copy(), object cannot be NULL");
+
+    // strip parameters and create new object from them
+    // TODO: handle case where plan_len != 2
+    unsigned int n    = q_orig->msg_len;
+    int          crc  = q_orig->check;
+    int          fec0 = q_orig->plan[0].fs;
+    int          fec1 = q_orig->plan[1].fs;
+    return packetizer_create(n, crc, fec0, fec1);
+}
+
+// destroy packetizer object
 void packetizer_destroy(packetizer _p)
 {
     if (!_p) {

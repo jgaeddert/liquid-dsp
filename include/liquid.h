@@ -1374,6 +1374,9 @@ packetizer packetizer_recreate(packetizer _p,
                                int _fec0,
                                int _fec1);
 
+// Copy object including all internal objects and state
+packetizer packetizer_copy(packetizer _p);
+
 // destroy packetizer object
 void packetizer_destroy(packetizer _p);
 
