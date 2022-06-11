@@ -5167,6 +5167,9 @@ qpilotgen qpilotgen_recreate(qpilotgen    _q,
                              unsigned int _payload_len,
                              unsigned int _pilot_spacing);
 
+// Copy object including all internal objects and state
+qpilotgen qpilotgen_copy(qpilotgen _q);
+
 int qpilotgen_destroy(qpilotgen _q);
 int qpilotgen_reset(  qpilotgen _q);
 int qpilotgen_print(  qpilotgen _q);
@@ -5190,6 +5193,9 @@ qpilotsync qpilotsync_create(unsigned int _payload_len,
 qpilotsync qpilotsync_recreate(qpilotsync   _q,
                                unsigned int _payload_len,
                                unsigned int _pilot_spacing);
+
+// Copy object including all internal objects and state
+qpilotsync qpilotsync_copy(qpilotsync _q);
 
 int qpilotsync_destroy(qpilotsync _q);
 int qpilotsync_reset(  qpilotsync _q);
