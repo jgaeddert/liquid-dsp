@@ -204,26 +204,27 @@ FIRINTERP() FIRINTERP(_copy)(FIRINTERP() q_orig)
 }
 
 // destroy interpolator object
-void FIRINTERP(_destroy)(FIRINTERP() _q)
+int FIRINTERP(_destroy)(FIRINTERP() _q)
 {
     FIRPFB(_destroy)(_q->filterbank);
     free(_q->h);
     free(_q);
+    return LIQUID_OK;
 }
 
 // print interpolator state
-void FIRINTERP(_print)(FIRINTERP() _q)
+int FIRINTERP(_print)(FIRINTERP() _q)
 {
     printf("interp():\n");
     printf("    interp  :   %u\n", _q->M);
     printf("    h_len   :   %u\n", _q->h_len);
-    FIRPFB(_print)(_q->filterbank);
+    return FIRPFB(_print)(_q->filterbank);
 }
 
 // clear internal state
-void FIRINTERP(_reset)(FIRINTERP() _q)
+int FIRINTERP(_reset)(FIRINTERP() _q)
 {
-    FIRPFB(_reset)(_q->filterbank);
+    return FIRPFB(_reset)(_q->filterbank);
 }
 
 // Get interpolation rate
@@ -241,28 +242,28 @@ unsigned int FIRINTERP(_get_sub_len)(FIRINTERP() _q)
 // Set output scaling for interpolator
 //  _q      : interpolator object
 //  _scale  : scaling factor to apply to each output sample
-void FIRINTERP(_set_scale)(FIRINTERP() _q,
-                           TC          _scale)
+int FIRINTERP(_set_scale)(FIRINTERP() _q,
+                          TC          _scale)
 {
-    FIRPFB(_set_scale)(_q->filterbank, _scale);
+    return FIRPFB(_set_scale)(_q->filterbank, _scale);
 }
 
 // Get output scaling for interpolator
 //  _q      : interpolator object
 //  _scale  : scaling factor to apply to each output sample
-void FIRINTERP(_get_scale)(FIRINTERP() _q,
-                           TC *        _scale)
+int FIRINTERP(_get_scale)(FIRINTERP() _q,
+                          TC *        _scale)
 {
-    FIRPFB(_get_scale)(_q->filterbank, _scale);
+    return FIRPFB(_get_scale)(_q->filterbank, _scale);
 }
 
 // execute interpolator
 //  _q      : interpolator object
 //  _x      : input sample
 //  _y      : output array [size: 1 x M]
-void FIRINTERP(_execute)(FIRINTERP() _q,
-                         TI          _x,
-                         TO *        _y)
+int FIRINTERP(_execute)(FIRINTERP() _q,
+                        TI          _x,
+                        TO *        _y)
 {
     // push sample into filterbank
     FIRPFB(_push)(_q->filterbank,  _x);
@@ -271,6 +272,8 @@ void FIRINTERP(_execute)(FIRINTERP() _q,
     unsigned int i;
     for (i=0; i<_q->M; i++)
         FIRPFB(_execute)(_q->filterbank, i, &_y[i]);
+
+    return LIQUID_OK;
 }
 
 // execute interpolation on block of input samples
@@ -278,15 +281,16 @@ void FIRINTERP(_execute)(FIRINTERP() _q,
 //  _x      : input array [size: _n x 1]
 //  _n      : size of input array
 //  _y      : output sample array [size: M*_n x 1]
-void FIRINTERP(_execute_block)(FIRINTERP()  _q,
-                               TI *         _x,
-                               unsigned int _n,
-                               TO *         _y)
+int FIRINTERP(_execute_block)(FIRINTERP()  _q,
+                              TI *         _x,
+                              unsigned int _n,
+                              TO *         _y)
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
         // execute one input at a time with an output stride M
         FIRINTERP(_execute)(_q, _x[i], &_y[i*_q->M]);
     }
+    return LIQUID_OK;
 }
 
