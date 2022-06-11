@@ -5058,6 +5058,7 @@ typedef struct qpacketmodem_s * qpacketmodem;
 
 // create packet encoder
 qpacketmodem qpacketmodem_create ();
+qpacketmodem qpacketmodem_copy   (qpacketmodem _q);
 int          qpacketmodem_destroy(qpacketmodem _q);
 int          qpacketmodem_reset  (qpacketmodem _q);
 int          qpacketmodem_print  (qpacketmodem _q);
