@@ -264,31 +264,30 @@ int dsssframesync_set_header_props(dsssframesync _q, dsssframegenprops_s * _prop
     return dsssframesync_set_header_len(_q, _q->header_user_len);
 }
 
-int dsssframesync_execute_sample(dsssframesync _q, float complex _x)
-{
-    switch (_q->state) {
-    case DSSSFRAMESYNC_STATE_DETECTFRAME:
-        // detect frame (look for p/n sequence)
-        return dsssframesync_execute_seekpn(_q, _x);
-    case DSSSFRAMESYNC_STATE_RXPREAMBLE:
-        // receive p/n sequence symbols
-        return dsssframesync_execute_rxpreamble(_q, _x);
-    case DSSSFRAMESYNC_STATE_RXHEADER:
-        // receive header symbols
-        return dsssframesync_execute_rxheader(_q, _x);
-    case DSSSFRAMESYNC_STATE_RXPAYLOAD:
-        // receive payload symbols
-        return dsssframesync_execute_rxpayload(_q, _x);
-    default:
-        return liquid_error(LIQUID_EINT,"dsssframesync_execute(), invalid internal state");
-    }
-}
-
 int dsssframesync_execute(dsssframesync _q, float complex * _x, unsigned int _n)
 {
     unsigned int i;
     for (i = 0; i < _n; i++) {
-        dsssframesync_execute_sample(_q, _x[i]);
+        switch (_q->state) {
+        case DSSSFRAMESYNC_STATE_DETECTFRAME:
+            // detect frame (look for p/n sequence)
+            dsssframesync_execute_seekpn(_q, _x[i]);
+            break;
+        case DSSSFRAMESYNC_STATE_RXPREAMBLE:
+            // receive p/n sequence symbols
+            dsssframesync_execute_rxpreamble(_q, _x[i]);
+            break;
+        case DSSSFRAMESYNC_STATE_RXHEADER:
+            // receive header symbols
+            dsssframesync_execute_rxheader(_q, _x[i]);
+            break;
+        case DSSSFRAMESYNC_STATE_RXPAYLOAD:
+            // receive payload symbols
+            dsssframesync_execute_rxpayload(_q, _x[i]);
+            break;
+        default:
+            return liquid_error(LIQUID_EINT,"dsssframesync_execute(), invalid internal state");
+        }
     }
     return LIQUID_OK;
 }
