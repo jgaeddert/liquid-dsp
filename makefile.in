@@ -1298,6 +1298,12 @@ bind/link_test_main.o : %.o : %.cc ${bind_headers}
 bind/link_test : % : %_obj.o %_main.o ${ARCHIVE_LIB}
 	g++ ${CXXFLAGS} ${LDFLAGS} ${PYBIND11_FLAGS} -o $@ $^ ${LIBS}
 
+# test copy constructor
+bind/copy_test.o : %.o : %.cc ${bind_headers}
+	g++ ${CXXFLAGS} -I. -I./bind -I./include -c $< -o $@
+bind/copy_test : % : %.o ${ARCHIVE_LIB}
+	g++ ${CXXFLAGS} ${LDFLAGS} ${PYBIND11_FLAGS} -o $@ $^ ${LIBS}
+
 # python
 bind/liquid.python.o : %.o : %.cc %.hh ${bind_headers} bind/liquid.python.hh
 	g++ ${CXXFLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
@@ -1316,11 +1322,11 @@ check-python: ${pythonlib}
 
 # check c++ bindings; compile and run example programs
 # TODO: make this more structured
-check-bind: ${pythonlib} ${bind_examples_cc} bind/link_test
-	$(patsubst %,./% &&, $(bind_examples_cc)) ./bind/link_test && echo "\npass"
+check-bind: ${pythonlib} ${bind_examples_cc} bind/link_test bind/copy_test
+	$(patsubst %,./% &&, $(bind_examples_cc)) ./bind/link_test && ./bind/copy_test && echo "\npass"
 
 clean-bind:
-	rm -f bind/*.o bind/link_test ${bind_examples_cc}
+	rm -f bind/*.o bind/link_test bind/copy_test ${bind_examples_cc}
 	rm -f ${pythonlib}
 
 ##
