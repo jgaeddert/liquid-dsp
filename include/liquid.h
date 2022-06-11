@@ -1427,6 +1427,9 @@ typedef struct interleaver_s * interleaver;
 //   _n     : number of bytes
 interleaver interleaver_create(unsigned int _n);
 
+// Copy object including all internal objects and state
+interleaver linterleaver_copy(interleaver _q);
+
 // destroy interleaver object
 void interleaver_destroy(interleaver _q);
 
