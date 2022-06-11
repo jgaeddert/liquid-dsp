@@ -1283,6 +1283,9 @@ fec fec_recreate(fec _q,
                  fec_scheme _scheme,
                  void *_opts);
 
+// Copy object including all internal objects and state
+fec fec_copy(fec _q);
+
 // destroy fec object
 int fec_destroy(fec _q);
 
