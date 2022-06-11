@@ -47,7 +47,6 @@ static int callback_dsssframe(
 //
 void autotest_dsssframesync()
 {
-    unsigned int i;
     unsigned int _payload_len = 400;
 
     // create dsssframegen object
@@ -77,15 +76,17 @@ void autotest_dsssframesync()
     }
 
     // get frame data statistics
-    framedatastats_s stats = dsssframesync_get_framedatastats(fs);
     if (liquid_autotest_verbose)
         dsssframesync_print(fs);
 
     // check to see that frame was recovered
-    //CONTEND_EQUALITY( stats.num_frames_detected, 1 );
-    //CONTEND_EQUALITY( stats.num_headers_valid,   1 );
-    //CONTEND_EQUALITY( stats.num_payloads_valid,  1 );
-    //CONTEND_EQUALITY( stats.num_bytes_received,  _payload_len );
+#if 0
+    framedatastats_s stats = dsssframesync_get_framedatastats(fs);
+    CONTEND_EQUALITY( stats.num_frames_detected, 1 );
+    CONTEND_EQUALITY( stats.num_headers_valid,   1 );
+    CONTEND_EQUALITY( stats.num_payloads_valid,  1 );
+    CONTEND_EQUALITY( stats.num_bytes_received,  _payload_len );
+#endif
     CONTEND_EQUALITY( success, 1 );
 
     // destroy objects
