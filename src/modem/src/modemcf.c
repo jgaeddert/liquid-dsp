@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,26 +41,27 @@
 #define EXTENSION           "cf"
 
 // common source must come first (object definition)
-#include "modem_common.c"
+#include "modem_common.proto.c"
 
 // generic modem specifications
-#include "modem_psk.c"
-#include "modem_dpsk.c"
-#include "modem_ask.c"
-#include "modem_qam.c"
-#include "modem_apsk.c"
+#include "modem_psk.proto.c"
+#include "modem_dpsk.proto.c"
+#include "modem_ask.proto.c"
+#include "modem_qam.proto.c"
+#include "modem_apsk.proto.c"
 
 // specific modems
-#include "modem_bpsk.c"
-#include "modem_qpsk.c"
-#include "modem_ook.c"
-#include "modem_pi4dqpsk.c"
-#include "modem_sqam32.c"
-#include "modem_sqam128.c"
+#include "modem_bpsk.proto.c"
+#include "modem_qpsk.proto.c"
+#include "modem_ook.proto.c"
+#include "modem_pi4dqpsk.proto.c"
+#include "modem_sqam32.proto.c"
+#include "modem_sqam128.proto.c"
 
 // arbitary modems
-#include "modem_arb.c"
+#include "modem_arb.proto.c"
 
 // analog modems
-#include "freqmod.c"
-#include "freqdem.c"
+#include "freqmod.proto.c"
+#include "freqdem.proto.c"
+

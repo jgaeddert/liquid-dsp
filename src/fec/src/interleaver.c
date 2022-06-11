@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -91,6 +91,16 @@ interleaver interleaver_create(unsigned int _n)
     while (q->n >= (q->M*q->N)) q->N++;  // ensures M*N >= n
 
     return q;
+}
+
+// copy interleaver object
+interleaver interleaver_copy(interleaver q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("interleaver_copy(), object cannot be NULL");
+
+    return interleaver_create(q_orig->n);
 }
 
 // destroy interleaver object

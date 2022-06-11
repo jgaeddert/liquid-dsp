@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,31 @@
 #include <string.h>
 
 #include "liquid.internal.h"
+
+// fec/interleaver plan
+struct fecintlv_plan {
+    unsigned int dec_msg_len;   // decoded message length
+    unsigned int enc_msg_len;   // encoded message length
+    fec_scheme   fs;            // error-correction scheme
+    fec          f;             // error-correction object
+    interleaver  q;             // interleaver object
+};
+
+// packetizer object
+struct packetizer_s {
+    unsigned int    msg_len;    // original message length [bytes]
+    unsigned int    packet_len; // output packet length [bytes]
+    crc_scheme      check;      // check scheme
+    unsigned int    crc_length; // check object
+
+    struct fecintlv_plan* plan; // array of fec/interleaver plans
+    unsigned int plan_len;      // number of steps in plan
+
+    // buffers (ping-pong)
+    unsigned int    buffer_len; // length of each buffer
+    unsigned char * buffer_0;
+    unsigned char * buffer_1;
+};
 
 // reallocate memory for buffers
 void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
@@ -171,6 +196,22 @@ packetizer packetizer_recreate(packetizer _p,
     // TODO : rather than completely destroying object, only change values that are necessary
     packetizer_destroy(_p);
     return packetizer_create(_n,_crc,_fec0,_fec1);
+}
+
+// destroy packetizer object
+packetizer packetizer_copy(packetizer q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("packetizer_copy(), object cannot be NULL");
+
+    // strip parameters and create new object from them
+    // TODO: handle case where plan_len != 2
+    unsigned int n    = q_orig->msg_len;
+    int          crc  = q_orig->check;
+    int          fec0 = q_orig->plan[0].fs;
+    int          fec1 = q_orig->plan[1].fs;
+    return packetizer_create(n, crc, fec0, fec1);
 }
 
 // destroy packetizer object

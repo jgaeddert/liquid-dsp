@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,9 +39,10 @@
 #define T_ABS(X)        fabsf(X)
 #define TC_ABS(X)       cabsf(X)
 
-#include "poly.common.c"
-#include "poly.expand.c"
-#include "poly.lagrange.c"
+// prototypes
+#include "poly.common.proto.c"
+#include "poly.expand.proto.c"
+#include "poly.lagrange.proto.c"
 
 // finds the complex roots of the polynomial
 //  _p      :   polynomial array, ascending powers [size: _k x 1]

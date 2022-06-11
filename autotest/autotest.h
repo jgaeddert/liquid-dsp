@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <inttypes.h>
+#include "liquid.h"
 
 // total number of checks invoked
 extern unsigned long int liquid_autotest_num_checks;
@@ -283,6 +284,33 @@ void liquid_autotest_print_array(unsigned char * _x,
 // AUTOTEST FAIL
 #define AUTOTEST_FAIL_FL(F,L,MSG)      liquid_autotest_failed_msg(F,L,MSG)
 #define AUTOTEST_FAIL(MSG)             AUTOTEST_FAIL_FL(__FILE__,__LINE__,MSG)
+
+// supporting methods
+typedef struct {
+    float fmin, fmax;
+    float pmin, pmax;
+    int   test_lo, test_hi;
+} autotest_psd_s;
+
+// validate spectral content
+int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
+// validate spectral content of a signal (complex)
+int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_len,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
+// validate spectral content of a signal (real)
+int liquid_autotest_validate_psd_signalf(float * _buf, unsigned int _buf_len,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
+// validate spectral content of a filter (real coefficients)
+int liquid_autotest_validate_psd_firfilt_crcf(firfilt_crcf _q, unsigned int _nfft,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
+// validate spectral content of a filter (complex coefficients)
+int liquid_autotest_validate_psd_firfilt_cccf(firfilt_cccf _q, unsigned int _nfft,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
 
 #endif // __LIQUID_AUTOTEST_H__
 

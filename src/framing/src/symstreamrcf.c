@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,6 @@
 #define SYMSTREAM(name)     LIQUID_CONCAT(symstreamcf,  name)
 #define SYMSTREAMR(name)    LIQUID_CONCAT(symstreamrcf, name)
 
-// source files
-#include "symstreamr.c"
+// prototypes
+#include "symstreamr.proto.c"
 

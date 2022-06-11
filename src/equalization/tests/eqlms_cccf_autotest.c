@@ -126,21 +126,21 @@ void testbench_eqlms(unsigned int k, unsigned int m, float beta, int init,
 }
 
 // test different update strategies:       k,m,beta,init,p, mu,  n,update,mod scheme
-void autotest_eqlms_00() { testbench_eqlms(2,7, 0.3,   0,7,0.7,800,     0,LIQUID_MODEM_QPSK); }
-void autotest_eqlms_01() { testbench_eqlms(2,7, 0.3,   0,7,0.7,800,     1,LIQUID_MODEM_QPSK); }
-void autotest_eqlms_02() { testbench_eqlms(2,7, 0.3,   0,7,0.7,800,     2,LIQUID_MODEM_QPSK); }
+void autotest_eqlms_00() { testbench_eqlms(2,7, 0.3,   0,7,0.3,800,     0,LIQUID_MODEM_QPSK); }
+void autotest_eqlms_01() { testbench_eqlms(2,7, 0.3,   0,7,0.3,800,     1,LIQUID_MODEM_QPSK); }
+void autotest_eqlms_02() { testbench_eqlms(2,7, 0.3,   0,7,0.3,800,     2,LIQUID_MODEM_QPSK); }
 
 // test different initializaiton methods:  k,m,beta,init,p, mu,  n,update,mod scheme
-void autotest_eqlms_03() { testbench_eqlms(2,7, 0.3,   0,7,0.7,800,     0,LIQUID_MODEM_QAM16); }
-void autotest_eqlms_04() { testbench_eqlms(2,7, 0.3,   1,7,0.7,800,     0,LIQUID_MODEM_QAM16); }
-void autotest_eqlms_05() { testbench_eqlms(2,7, 0.3,   2,7,0.7,800,     0,LIQUID_MODEM_QAM16); }
-void autotest_eqlms_06() { testbench_eqlms(2,7, 0.3,   3,7,0.6,800,     0,LIQUID_MODEM_QAM16); }
+void autotest_eqlms_03() { testbench_eqlms(2,7, 0.3,   0,7,0.3,800,     0,LIQUID_MODEM_QAM16); }
+void autotest_eqlms_04() { testbench_eqlms(2,7, 0.3,   1,7,0.3,800,     0,LIQUID_MODEM_QAM16); }
+void autotest_eqlms_05() { testbench_eqlms(2,7, 0.3,   2,7,0.3,800,     0,LIQUID_MODEM_QAM16); }
+void autotest_eqlms_06() { testbench_eqlms(2,7, 0.3,   3,6,0.3,800,     0,LIQUID_MODEM_QAM16); }
 
 // test different configurations:          k,m,beta,init,p, mu,  n,update,mod scheme
-void autotest_eqlms_07() { testbench_eqlms(2,9, 0.3,   0,7,0.7,800,     0,LIQUID_MODEM_QPSK); }
-void autotest_eqlms_08() { testbench_eqlms(2,7, 0.2,   0,7,0.7,800,     0,LIQUID_MODEM_QPSK); }
-void autotest_eqlms_09() { testbench_eqlms(2,7, 0.3,   0,3,0.7,800,     0,LIQUID_MODEM_QPSK); }
-void autotest_eqlms_10() { testbench_eqlms(2,7, 0.3,   0,7,0.7,800,     0,LIQUID_MODEM_ARB64VT); }
+void autotest_eqlms_07() { testbench_eqlms(2,9, 0.3,   0,7,0.3,800,     0,LIQUID_MODEM_QPSK); }
+void autotest_eqlms_08() { testbench_eqlms(2,7, 0.2,   0,9,0.3,800,     0,LIQUID_MODEM_QPSK); }
+void autotest_eqlms_09() { testbench_eqlms(2,7, 0.3,   0,3,0.3,800,     0,LIQUID_MODEM_QPSK); }
+void autotest_eqlms_10() { testbench_eqlms(2,7, 0.3,   0,7,0.5,800,     0,LIQUID_MODEM_ARB64VT); }
 void autotest_eqlms_11() { testbench_eqlms(2,7, 0.3,   0,7,0.1,800,     0,LIQUID_MODEM_QPSK); }
 //void xautotest_eqlms_12() { testbench_eqlms(4,7, 0.3,   0,7,0.7,800,     0,LIQUID_MODEM_QPSK); }
 

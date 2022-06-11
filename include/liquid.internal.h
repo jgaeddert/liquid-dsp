@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -638,37 +638,7 @@ int fec_sumproduct_step(unsigned int    _m,
 // packetizer
 //
 
-// fec/interleaver plan
-struct fecintlv_plan {
-    unsigned int dec_msg_len;
-    unsigned int enc_msg_len;
-
-    // fec codec
-    fec_scheme fs;
-    fec f;
-
-    // interleaver
-    interleaver q;
-};
-
 #define PACKETIZER_VERSION (1)
-
-// packetizer object
-struct packetizer_s {
-    unsigned int msg_len;
-    unsigned int packet_len;
-
-    crc_scheme check;
-    unsigned int crc_length;
-
-    struct fecintlv_plan * plan;
-    unsigned int plan_len;
-
-    // buffers (ping-pong)
-    unsigned int buffer_len;
-    unsigned char * buffer_0;
-    unsigned char * buffer_1;
-};
 
 
 //
@@ -798,16 +768,16 @@ LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_comp
 // esimate required filter length given transition bandwidth and
 // stop-band attenuation (algorithm from [Vaidyanathan:1993])
 //  _df     :   transition bandwidth (0 < _df < 0.5)
-//  _As     :   stop-band attenuation [dB] (As > 0)
+//  _as     :   stop-band attenuation [dB] (_as > 0)
 float estimate_req_filter_len_Kaiser(float _df,
-                                     float _As);
+                                     float _as);
 
 // esimate required filter length given transition bandwidth and
 // stop-band attenuation (algorithm from [Herrmann:1973])
 //  _df     :   transition bandwidth (0 < _df < 0.5)
-//  _As     :   stop-band attenuation [dB] (As > 0)
+//  _as     :   stop-band attenuation [dB] (_as > 0)
 float estimate_req_filter_len_Herrmann(float _df,
-                                       float _As);
+                                       float _as);
 
 
 // firdes : finite impulse response filter design
@@ -829,12 +799,12 @@ float rkaiser_approximate_rho(unsigned int _m,
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-void liquid_firdes_rkaiser_bisection(unsigned int _k,
-                                     unsigned int _m,
-                                     float _beta,
-                                     float _dt,
-                                     float * _h,
-                                     float * _rho);
+int liquid_firdes_rkaiser_bisection(unsigned int _k,
+                                    unsigned int _m,
+                                    float _beta,
+                                    float _dt,
+                                    float * _h,
+                                    float * _rho);
 
 // Design frequency-shifted root-Nyquist filter based on
 // the Kaiser-windowed sinc using the quadratic method.
@@ -845,12 +815,12 @@ void liquid_firdes_rkaiser_bisection(unsigned int _k,
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-void liquid_firdes_rkaiser_quadratic(unsigned int _k,
-                                     unsigned int _m,
-                                     float _beta,
-                                     float _dt,
-                                     float * _h,
-                                     float * _rho);
+int liquid_firdes_rkaiser_quadratic(unsigned int _k,
+                                    unsigned int _m,
+                                    float _beta,
+                                    float _dt,
+                                    float * _h,
+                                    float * _rho);
 
 // compute filter coefficients and determine resulting ISI
 //  
@@ -868,31 +838,31 @@ float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
                                          float * _h);
 
 // Design flipped Nyquist/root-Nyquist filters
-void liquid_firdes_fnyquist(liquid_firfilt_type _type,
-                            int                 _root,
-                            unsigned int        _k,
-                            unsigned int        _m,
-                            float               _beta,
-                            float               _dt,
-                            float *             _h);
+int liquid_firdes_fnyquist(liquid_firfilt_type _type,
+                           int                 _root,
+                           unsigned int        _k,
+                           unsigned int        _m,
+                           float               _beta,
+                           float               _dt,
+                           float *             _h);
 
 // flipped exponential frequency response
-void liquid_firdes_fexp_freqresponse(unsigned int _k,
+int liquid_firdes_fexp_freqresponse(unsigned int _k,
+                                    unsigned int _m,
+                                    float        _beta,
+                                    float *      _H);
+
+// flipped hyperbolic secant frequency response
+int liquid_firdes_fsech_freqresponse(unsigned int _k,
                                      unsigned int _m,
                                      float        _beta,
                                      float *      _H);
 
 // flipped hyperbolic secant frequency response
-void liquid_firdes_fsech_freqresponse(unsigned int _k,
-                                      unsigned int _m,
-                                      float        _beta,
-                                      float *      _H);
-
-// flipped hyperbolic secant frequency response
-void liquid_firdes_farcsech_freqresponse(unsigned int _k,
-                                         unsigned int _m,
-                                         float        _beta,
-                                         float *      _H);
+int liquid_firdes_farcsech_freqresponse(unsigned int _k,
+                                        unsigned int _m,
+                                        float        _beta,
+                                        float *      _H);
 
 // iirdes : infinite impulse response filter design
 
@@ -1056,7 +1026,7 @@ typedef struct QSOURCE(_s) * QSOURCE();                                     \
 /* Create default qsource object, type uninitialized                    */  \
 QSOURCE() QSOURCE(_create)(unsigned int _M,                                 \
                            unsigned int _m,                                 \
-                           float        _As,                                \
+                           float        _as,                                \
                            float        _fc,                                \
                            float        _bw,                                \
                            float        _gain);                             \

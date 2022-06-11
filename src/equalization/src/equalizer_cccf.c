@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,5 +42,7 @@
 
 #define PRINTVAL(V)     printf("%5.2f+j%5.2f ", crealf(V), cimagf(V));
 
-#include "eqlms.c"
-#include "eqrls.c"
+// prototypes
+#include "eqlms.proto.c"
+#include "eqrls.proto.c"
+

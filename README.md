@@ -234,6 +234,18 @@ interp = dsp.firinterp(M=4, m=12, As=60.)
 
 # run on a single sample
 buf = interp.execute(1+1j,)
+
+### PlatformIO ###
+
+Install [platformio](https://platformio.org)
+(`brew install platformio` on macOS,
+`sudo -H python3 -m pip install -U platformio` on Linux).
+Add `liquid-dsp` to your `platform.io` list of dependencies:
+
+```ini
+[env:native]
+platform = native
+lib_deps = https://github.com/jgaeddert/liquid-dsp.git
 ```
 
 ## Available Modules ##

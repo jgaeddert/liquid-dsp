@@ -140,3 +140,57 @@ void autotest_qpacketmodem_unmod_qam64()  { qpacketmodem_unmodulated(400,LIQUID_
 void autotest_qpacketmodem_unmod_sqam128(){ qpacketmodem_unmodulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM128); }
 void autotest_qpacketmodem_unmod_qam256() { qpacketmodem_unmodulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM256);  }
 
+// test copy operation
+void autotest_qpacketmodem_copy()
+{
+    // derived values
+    unsigned int i;
+    unsigned int payload_len = 400;
+    crc_scheme   check       = LIQUID_CRC_24;
+    fec_scheme   fec0        = LIQUID_FEC_SECDED7264;
+    fec_scheme   fec1        = LIQUID_FEC_HAMMING128;
+    int          ms          = LIQUID_MODEM_PI4DQPSK;
+
+    // create and configure packet encoder/decoder object
+    qpacketmodem q0 = qpacketmodem_create();
+    qpacketmodem_configure(q0, payload_len, check, fec0, fec1, ms);
+
+    // initialize buffers
+    unsigned int frame_len = qpacketmodem_get_frame_len(q0);
+    unsigned char payload_tx  [payload_len];
+    float complex frame_syms_0[frame_len];
+    float complex frame_syms_1[frame_len];
+    unsigned char payload_rx_0[payload_len];
+    unsigned char payload_rx_1[payload_len];
+
+    // initialize payload
+    for (i=0; i<payload_len; i++)
+        payload_tx[i] = rand() & 0xff;
+
+    // encode frame symbols
+    qpacketmodem_encode(q0, payload_tx, frame_syms_0);
+
+    // copy object, encode, and compare outputs
+    qpacketmodem q1 = qpacketmodem_copy(q0);
+    qpacketmodem_encode(q1, payload_tx, frame_syms_1);
+    CONTEND_SAME_DATA( frame_syms_0, frame_syms_1, frame_len );
+
+    // initialize received vector (can be random; just testing for equality with objects)
+    for (i=0; i<payload_len; i++) {
+        frame_syms_0[i] = randnf() + _Complex_I*randnf();
+        frame_syms_1[i] =  frame_syms_0[i];
+    }
+
+    // decode frame symbols and compare outputs
+    int crc_pass_0 = qpacketmodem_decode_syms(q0, frame_syms_0, payload_rx_0);
+    int crc_pass_1 = qpacketmodem_decode_syms(q1, frame_syms_1, payload_rx_1);
+
+    // check to see that frame was recovered
+    CONTEND_SAME_DATA( payload_rx_0, payload_rx_1, payload_len );
+    CONTEND_EQUALITY( crc_pass_0, crc_pass_1 );
+
+    // destroy objects
+    qpacketmodem_destroy(q0);
+    qpacketmodem_destroy(q1);
+}
+

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -121,6 +121,17 @@ qpilotsync qpilotsync_recreate(qpilotsync   _q,
 
     // create new object
     return qpilotsync_create(_payload_len, _pilot_spacing);
+}
+
+// Copy object including all internal objects and state
+qpilotsync qpilotsync_copy(qpilotsync q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("qpilotsync_copy(), object cannot be NULL");
+
+    // create new object from parameters
+    return qpilotsync_create(q_orig->payload_len, q_orig->pilot_spacing);
 }
 
 int qpilotsync_destroy(qpilotsync _q)

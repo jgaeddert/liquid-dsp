@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ qpacketmodem qpacketmodem_create()
     // create payload modem (initially QPSK, overridden by properties)
     q->mod_payload = modemcf_create(LIQUID_MODEM_QPSK);
     q->bits_per_symbol = 2;
-    
+
     // initial memory allocation for payload
     q->payload_dec_len = 1;
     q->p = packetizer_create(q->payload_dec_len,
@@ -68,7 +68,7 @@ qpacketmodem qpacketmodem_create()
 
     // number of bytes in encoded payload
     q->payload_enc_len = packetizer_get_enc_msg_len(q->p);
-    
+
     // number of bits in encoded payload
     q->payload_bit_len = 8*q->payload_enc_len;
 
@@ -88,6 +88,29 @@ qpacketmodem qpacketmodem_create()
     // return pointer to main object
     return q;
 }
+
+// copy object
+qpacketmodem qpacketmodem_copy(qpacketmodem q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("qpacketmodem_copy(), object cannot be NULL");
+
+    // create new object
+    qpacketmodem q_copy = qpacketmodem_create();
+
+    // configure identically as original
+    unsigned int payload_len = q_orig->payload_dec_len;
+    crc_scheme   check       = packetizer_get_crc (q_orig->p);
+    fec_scheme   fec0        = packetizer_get_fec0(q_orig->p);
+    fec_scheme   fec1        = packetizer_get_fec1(q_orig->p);
+    int          ms          = modemcf_get_scheme (q_orig->mod_payload);
+    qpacketmodem_configure(q_copy, payload_len, check, fec0, fec1, ms);
+
+    // return new object
+    return q_copy;
+}
+
 
 // destroy object, freeing all internal arrays
 int qpacketmodem_destroy(qpacketmodem _q)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -564,6 +564,17 @@ fec fec_recreate(fec _q,
 
     // scheme hasn't changed; just return original object
     return _q;
+}
+
+// copy object
+fec fec_copy(fec q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("fec_copy(), object cannot be NULL");
+
+    // TODO: ensure state is retained
+    return fec_create(q_orig->scheme, NULL);
 }
 
 // destroy fec object
