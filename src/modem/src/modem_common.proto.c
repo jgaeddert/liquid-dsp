@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -230,6 +230,48 @@ MODEM() MODEM(_recreate)(MODEM() _q,
 
     // return object
     return _q;
+}
+
+// copy object
+MODEM() MODEM(_copy)(MODEM() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("modem%s_copy(), object cannot be NULL", EXTENSION);
+
+    printf("modemcf_copy: %u: %s\n", q_orig->scheme, "");
+    if (q_orig->scheme == LIQUID_MODEM_ARB) {
+        // directly copy map to avoid resacling
+        MODEM() q_copy = MODEM(_create_arb)(q_orig->m);
+        memmove(q_copy->symbol_map, q_orig->symbol_map, q_copy->M*sizeof(TC));
+        return q_copy;
+    }
+
+    // create new object
+    MODEM() q_copy = MODEM(_create)(q_orig->scheme);
+
+    // copy state for specific types
+    switch (q_copy->scheme) {
+    // Differential phase-shift keying (DPSK)
+    case LIQUID_MODEM_DPSK2:
+    case LIQUID_MODEM_DPSK4:
+    case LIQUID_MODEM_DPSK8:
+    case LIQUID_MODEM_DPSK16:
+    case LIQUID_MODEM_DPSK32:
+    case LIQUID_MODEM_DPSK64:
+    case LIQUID_MODEM_DPSK128:
+    case LIQUID_MODEM_DPSK256:
+        q_copy->data.dpsk.d_phi = q_orig->data.dpsk.d_phi;
+        q_copy->data.dpsk.phi   = q_orig->data.dpsk.phi;
+        q_copy->data.dpsk.alpha = q_orig->data.dpsk.alpha;
+        break;
+    case LIQUID_MODEM_PI4DQPSK:
+        q_copy->data.pi4dqpsk.theta = q_orig->data.pi4dqpsk.theta;
+        break;
+    default:;
+    }
+
+    return q_copy;
 }
 
 // destroy a modem object

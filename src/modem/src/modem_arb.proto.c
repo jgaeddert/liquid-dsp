@@ -39,6 +39,12 @@ MODEM() MODEM(_create_arbitrary)(float complex * _table,
     // initialize object from table
     MODEM(_arb_init)(q, _table, _M);
 
+    // print table
+    printf("modem arb[%u]\n", q->M);
+    unsigned int i;
+    for (i=0; i<q->M; i++)
+        printf("  %3u: %12.8f %12.8f\n", i, crealf(q->symbol_map[i]), cimagf(q->symbol_map[i]));
+
     // return object
     return q;
 }

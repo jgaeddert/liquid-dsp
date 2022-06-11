@@ -7629,6 +7629,9 @@ MODEM() MODEM(_create_arbitrary)(liquid_float_complex * _table,             \
 MODEM() MODEM(_recreate)(MODEM()           _q,                              \
                          modulation_scheme _scheme);                        \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+MODEM() MODEM(_copy)(MODEM() _q);                                           \
+                                                                            \
 /* Destroy modem object, freeing all allocated memory                   */  \
 int MODEM(_destroy)(MODEM() _q);                                            \
                                                                             \
