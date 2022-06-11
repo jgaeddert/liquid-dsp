@@ -569,6 +569,10 @@ fec fec_recreate(fec _q,
 // copy object
 fec fec_copy(fec q_orig)
 {
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("fec_copy(), object cannot be NULL");
+
     // TODO: ensure state is retained
     return fec_create(q_orig->scheme, NULL);
 }
