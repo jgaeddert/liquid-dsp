@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -147,6 +147,26 @@ dotprod_crcf dotprod_crcf_recreate_rev(dotprod_crcf _q,
     // completely destroy and re-create dotprod object
     dotprod_crcf_destroy(_q);
     return dotprod_crcf_create_rev(_h,_n);
+}
+
+dotprod_crcf dotprod_crcf_copy(dotprod_crcf q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("dotprod_crcf_copy().mmx, object cannot be NULL");
+
+    dotprod_crcf q_copy = (dotprod_crcf)malloc(sizeof(struct dotprod_crcf_s));
+    q_copy->n = q_orig->n;
+
+    // allocate memory for coefficients, 16-byte aligned (repeated)
+    q_copy->h = (float*) _mm_malloc( 2*q_copy->n*sizeof(float), 16 );
+
+    // copy coefficients array (repeated)
+    //  h = { _h[0], _h[0], _h[1], _h[1], ... _h[n-1], _h[n-1]}
+    memmove(q_copy->h, q_orig->h, 2*q_orig->n*sizeof(float));
+
+    // return object
+    return q_copy;
 }
 
 
