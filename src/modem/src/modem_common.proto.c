@@ -239,7 +239,7 @@ MODEM() MODEM(_copy)(MODEM() q_orig)
     if (q_orig == NULL)
         return liquid_error_config("modem%s_copy(), object cannot be NULL", EXTENSION);
 
-    printf("modemcf_copy: %u: %s\n", q_orig->scheme, "");
+    // handle special case for arbitrary modem types
     if (q_orig->scheme == LIQUID_MODEM_ARB) {
         // directly copy map to avoid resacling
         MODEM() q_copy = MODEM(_create_arb)(q_orig->m);
