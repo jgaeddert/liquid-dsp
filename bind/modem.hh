@@ -37,7 +37,7 @@ class modem : public object
         { q = modemcf_create_arbitrary(_table.data(), _table.size()); }
 
     // copy constructor
-    modem(modem &m) { q = modemcf_copy(m.q); }
+    modem(const modem &m) { q = modemcf_copy(m.q); }
 
     // destructor
     ~modem() { modemcf_destroy(q); }
