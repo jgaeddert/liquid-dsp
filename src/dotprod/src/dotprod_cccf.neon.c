@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -155,6 +155,29 @@ dotprod_cccf dotprod_cccf_recreate_rev(dotprod_cccf    _q,
     // completely destroy and re-create dotprod object
     dotprod_cccf_destroy(_q);
     return dotprod_cccf_create_rev(_h,_n);
+}
+
+dotprod_cccf dotprod_cccf_copy(dotprod_cccf q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("dotprod_cccf_copy().neon, object cannot be NULL");
+
+    dotprod_cccf q_copy = (dotprod_cccf)malloc(sizeof(struct dotprod_cccf_s));
+    q_copy->n = q_orig->n;
+
+    // allocate memory for coefficients (repeated)
+    q_copy->hi = (float*) malloc( 2*q_copy->n*sizeof(float) );
+    q_copy->hq = (float*) malloc( 2*q_copy->n*sizeof(float) );
+
+    // copy coefficients array (repeated)
+    //  hi = { crealf(_h[0]), crealf(_h[0]), ... crealf(_h[n-1]), crealf(_h[n-1])}
+    //  hq = { cimagf(_h[0]), cimagf(_h[0]), ... cimagf(_h[n-1]), cimagf(_h[n-1])}
+    memmove(q_copy->hi, q_orig->hi, 2*q_orig->n*sizeof(float));
+    memmove(q_copy->hq, q_orig->hq, 2*q_orig->n*sizeof(float));
+
+    // return object
+    return q_copy;
 }
 
 int dotprod_cccf_destroy(dotprod_cccf _q)

@@ -182,7 +182,6 @@ dotprod_rrrf dotprod_rrrf_copy(dotprod_rrrf q_orig)
     return q_copy;
 }
 
-
 int dotprod_rrrf_destroy(dotprod_rrrf _q)
 {
     _mm_free(_q->h);

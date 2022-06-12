@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -213,6 +213,25 @@ dotprod_rrrf dotprod_rrrf_recreate_rev(dotprod_rrrf _q,
     // completely destroy and re-create dotprod object
     dotprod_rrrf_destroy(_q);
     return dotprod_rrrf_create_rev(_h,_n);
+}
+
+dotprod_rrrf dotprod_rrrf_copy(dotprod_rrrf q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("dotprod_rrrf_copy().neon, object cannot be NULL");
+
+    dotprod_rrrf q_copy = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
+    q_copy->n = q_orig->n;
+
+    // allocate memory for coefficients
+    q_copy->h = (float*) malloc( q_copy->n*sizeof(float) );
+
+    // copy coefficients array
+    memmove(q_copy->h, q_orig->h, q_orig->n*sizeof(float));
+
+    // return object
+    return q_copy;
 }
 
 // destroy dotprod object, freeing internal memory
