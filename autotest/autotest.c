@@ -240,7 +240,7 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
         fprintf(fid,"idx = [");
         for (i=0; i<_nfft; i++) { if (fail[i]) fprintf(fid,"%d,",i+1); }
         fprintf(fid,"];\n");
-        for (i=0; i<_nfft; i++) { fprintf(fid,"psd(%6u) = %8.2f;\n", i+1, _psd[i]); }
+        for (i=0; i<_nfft; i++) { fprintf(fid,"psd(%6u) = %12.6f;\n", i+1, _psd[i]); }
         fprintf(fid,"figure; xlabel('f/F_s'); ylabel('PSD [dB]'); hold on;\n");
         // add target regions
         for (i=0; i<_num_regions; i++) {
