@@ -10,7 +10,15 @@ namespace liquid {
 class object {
   public:
     object() {};
-    //object(object &);
+
+    /*! copy constructor throws exception as way to enforce run-time implementation
+     *  in derived classes. Note that ideally this would be a compile-time error for
+     *  all derived classes, but because this class is virtual we cannot make this
+     *  method pure or virtual.
+     */
+    object(object &)
+        { throw std::runtime_error("copy constructor not implemented for this class"); }
+
     virtual ~object() {};
     virtual void reset()=0;
     virtual std::string repr() const
