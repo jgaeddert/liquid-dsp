@@ -18,7 +18,7 @@ int main()
     std::cout << "creating array of modem objects:" << std::endl;
     std::vector<dsp::modem> modems;
     for (auto i=0; i<10; i++)
-        modems.emplace_back(LIQUID_MODEM_QPSK);
+        modems.emplace_back(LIQUID_MODEM_UNKNOWN + i + 1);
     for (auto m: modems)
         std::cout << m << std::endl;
 

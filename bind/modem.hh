@@ -21,6 +21,10 @@ class modem : public object
         q = modemcf_create(_scheme);
     }
 
+    // create modem from integer modulation scheme index
+    modem(int          _scheme) : modem((modulation_scheme)_scheme) {};
+    modem(unsigned int _scheme) : modem((modulation_scheme)_scheme) {};
+
     // create standard modulation scheme from string
     modem(std::string _scheme)
     { 
