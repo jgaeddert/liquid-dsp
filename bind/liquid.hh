@@ -10,6 +10,7 @@ namespace liquid {
 class object {
   public:
     object() {};
+    //object(object &);
     virtual ~object() {};
     virtual void reset()=0;
     virtual std::string repr() const
