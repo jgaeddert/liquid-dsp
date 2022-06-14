@@ -5227,6 +5227,9 @@ typedef struct framegen64_s * framegen64;
 // create frame generator
 framegen64 framegen64_create();
 
+// copy object
+framegen64 framegen64_copy(framegen64 _q);
+
 // destroy frame generator
 int framegen64_destroy(framegen64 _q);
 
