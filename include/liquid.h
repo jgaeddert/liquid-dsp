@@ -6027,6 +6027,9 @@ qdetector_cccf qdetector_cccf_create_cpfsk(unsigned char * _sequence,
                                            float           _beta,
                                            int             _type);
 
+// Copy object including all internal objects and state
+qdetector_cccf qdetector_cccf_copy(qdetector_cccf _q);
+
 int qdetector_cccf_destroy(qdetector_cccf _q);
 int qdetector_cccf_print  (qdetector_cccf _q);
 int qdetector_cccf_reset  (qdetector_cccf _q);
