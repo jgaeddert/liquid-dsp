@@ -8482,6 +8482,9 @@ typedef struct NCO(_s) * NCO();                                             \
 /*  _type   : oscillator type, _type in {LIQUID_NCO, LIQUID_VCO}        */  \
 NCO() NCO(_create)(liquid_ncotype _type);                                   \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+NCO() NCO(_copy)(NCO() _q);                                                 \
+                                                                            \
 /* Destroy nco object, freeing all internally allocated memory          */  \
 int NCO(_destroy)(NCO() _q);                                                \
                                                                             \
