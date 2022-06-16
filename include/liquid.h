@@ -5266,6 +5266,10 @@ int framesync64_print(framesync64 _q);
 // reset frame synchronizer internal state
 int framesync64_reset(framesync64 _q);
 
+// set the callback and userdata fields
+int framesync64_set_callback(framesync64 _q, framesync_callback _callback);
+int framesync64_set_userdata(framesync64 _q, void *             _userdata);
+
 // push samples through frame synchronizer
 //  _q      :   frame synchronizer object
 //  _x      :   input samples [size: _n x 1]

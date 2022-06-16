@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// framesync64.c
-//
-// basic frame synchronizer
-//
+// basic frame synchronizer with 8 bytes header and 64 bytes payload
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -265,6 +261,22 @@ int framesync64_reset(framesync64 _q)
     
     // reset frame statistics
     _q->framesyncstats.evm = 0.0f;
+    return LIQUID_OK;
+}
+
+// set the callback function
+int framesync64_set_callback(framesync64        _q,
+                             framesync_callback _callback)
+{
+    _q->callback = _callback;
+    return LIQUID_OK;
+}
+
+// set the user-defined data field (context)
+int framesync64_set_userdata(framesync64 _q,
+                             void *      _userdata)
+{
+    _q->userdata = _userdata;
     return LIQUID_OK;
 }
 
