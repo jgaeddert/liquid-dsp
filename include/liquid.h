@@ -5254,6 +5254,9 @@ typedef struct framesync64_s * framesync64;
 framesync64 framesync64_create(framesync_callback _callback,
                                void *             _userdata);
 
+// copy object
+framesync64 framesync64_copy(framesync64 _q);
+
 // destroy frame synchronizer
 int framesync64_destroy(framesync64 _q);
 
