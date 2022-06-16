@@ -82,3 +82,60 @@ void autotest_framesync64()
     framesync64_destroy(fs);
 }
 
+// test copying from one object to another
+void autotest_framesync64_copy()
+{
+    unsigned int i;
+    int frames_recovered_0 = 0;
+    int frames_recovered_1 = 0;
+
+    // create objects
+    framegen64  fg  = framegen64_create();
+    framesync64 fs0 = framesync64_create(callback,(void*)&frames_recovered_0);
+
+    // feed random samples into synchronizer
+    float complex buf[LIQUID_FRAME64_LEN];
+    for (i=0; i<LIQUID_FRAME64_LEN; i++)
+        buf[i] = 0.01f*(randnf() + _Complex_I*randnf()) * M_SQRT1_2;
+    framesync64_execute(fs0, buf, LIQUID_FRAME64_LEN);
+
+    // generate the frame
+    framegen64_execute(fg, NULL, NULL, buf);
+
+    // add some noise
+    for (i=0; i<LIQUID_FRAME64_LEN; i++)
+        buf[i] += 0.01f*(randnf() + _Complex_I*randnf()) * M_SQRT1_2;
+
+    // copy object, but set different context
+    framesync64 fs1 = framesync64_copy(fs0);
+    framesync64_set_userdata(fs1, (void*)&frames_recovered_1);
+
+    // try to receive the frame with each receiver
+    for (i=0; i<LIQUID_FRAME64_LEN; i++) {
+        // step one sample through at a time
+        framesync64_execute(fs0, buf+i, 1);
+        framesync64_execute(fs1, buf+i, 1);
+
+        // ensure that the frames are recovered at exactly the same time
+        CONTEND_EQUALITY( frames_recovered_0, frames_recovered_1 );
+    }
+
+    // check that frame was actually recovered by each object
+    CONTEND_EQUALITY( frames_recovered_0, 1 );
+    CONTEND_EQUALITY( frames_recovered_1, 1 );
+
+    // parse statistics
+    framedatastats_s stats_0 = framesync64_get_framedatastats(fs0);
+    framedatastats_s stats_1 = framesync64_get_framedatastats(fs1);
+
+    CONTEND_EQUALITY(stats_0.num_frames_detected, stats_1.num_frames_detected);
+    CONTEND_EQUALITY(stats_0.num_headers_valid  , stats_1.num_headers_valid  );
+    CONTEND_EQUALITY(stats_0.num_payloads_valid , stats_1.num_payloads_valid );
+    CONTEND_EQUALITY(stats_0.num_bytes_received , stats_1.num_bytes_received );
+
+    // destroy objects
+    framegen64_destroy(fg);
+    framesync64_destroy(fs0);
+    framesync64_destroy(fs1);
+}
+
