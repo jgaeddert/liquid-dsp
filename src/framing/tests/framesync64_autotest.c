@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,24 +35,22 @@ static int callback(unsigned char *  _header,
                     void *           _userdata)
 {
     //printf("callback invoked, payload valid: %s\n", _payload_valid ? "yes" : "no");
-    int * frame_recovered = (int*) _userdata;
+    int * frames_recovered = (int*) _userdata;
 
-    *frame_recovered = _header_valid && _payload_valid;
+    *frames_recovered += _header_valid && _payload_valid ? 1 : 0;
     return 0;
 }
 
-// 
 // AUTOTEST : test simple recovery of frame in noise
-//
 void autotest_framesync64()
 {
     unsigned int i;
-    int frame_recovered = 0;
+    int frames_recovered = 0;
 
     // create objects
     framegen64 fg = framegen64_create();
-    framesync64 fs = framesync64_create(callback,(void*)&frame_recovered);
-    
+    framesync64 fs = framesync64_create(callback,(void*)&frames_recovered);
+
     if (liquid_autotest_verbose) {
         framesync64_print(fs);
         framegen64_print(fg);
@@ -69,8 +67,8 @@ void autotest_framesync64()
     // try to receive the frame
     framesync64_execute(fs, frame, LIQUID_FRAME64_LEN);
 
-    // check to see that frame was recovered
-    CONTEND_EQUALITY( frame_recovered, 1 );
+    // check to see that exactly one frame was recovered
+    CONTEND_EQUALITY( frames_recovered, 1 );
 
     // parse statistics
     framedatastats_s stats = framesync64_get_framedatastats(fs);
