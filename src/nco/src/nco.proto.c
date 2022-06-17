@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 #define NCO_PLL_BANDWIDTH_DEFAULT   (0.1)
@@ -82,6 +83,19 @@ NCO() NCO(_create)(liquid_ncotype _type)
     // reset object and return
     NCO(_reset)(q);
     return q;
+}
+
+// copy object
+NCO() NCO(_copy)(NCO() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("nco_%s_copy(), object cannot be NULL", EXTENSION);
+
+    // allocate new object, copy all memory, return
+    NCO() q_copy = (NCO()) malloc(sizeof(struct NCO(_s)));
+    memmove(q_copy, q_orig, sizeof(struct NCO(_s)));
+    return q_copy;
 }
 
 // destroy nco object

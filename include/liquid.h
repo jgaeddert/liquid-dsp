@@ -5227,6 +5227,9 @@ typedef struct framegen64_s * framegen64;
 // create frame generator
 framegen64 framegen64_create();
 
+// copy object
+framegen64 framegen64_copy(framegen64 _q);
+
 // destroy frame generator
 int framegen64_destroy(framegen64 _q);
 
@@ -5251,6 +5254,9 @@ typedef struct framesync64_s * framesync64;
 framesync64 framesync64_create(framesync_callback _callback,
                                void *             _userdata);
 
+// copy object
+framesync64 framesync64_copy(framesync64 _q);
+
 // destroy frame synchronizer
 int framesync64_destroy(framesync64 _q);
 
@@ -5259,6 +5265,10 @@ int framesync64_print(framesync64 _q);
 
 // reset frame synchronizer internal state
 int framesync64_reset(framesync64 _q);
+
+// set the callback and userdata fields
+int framesync64_set_callback(framesync64 _q, framesync_callback _callback);
+int framesync64_set_userdata(framesync64 _q, void *             _userdata);
 
 // push samples through frame synchronizer
 //  _q      :   frame synchronizer object
@@ -6023,6 +6033,9 @@ qdetector_cccf qdetector_cccf_create_cpfsk(unsigned char * _sequence,
                                            unsigned int    _m,
                                            float           _beta,
                                            int             _type);
+
+// Copy object including all internal objects and state
+qdetector_cccf qdetector_cccf_copy(qdetector_cccf _q);
 
 int qdetector_cccf_destroy(qdetector_cccf _q);
 int qdetector_cccf_print  (qdetector_cccf _q);
@@ -8484,6 +8497,9 @@ typedef struct NCO(_s) * NCO();                                             \
 /* Create nco object with either fixed-point or floating-point phase    */  \
 /*  _type   : oscillator type, _type in {LIQUID_NCO, LIQUID_VCO}        */  \
 NCO() NCO(_create)(liquid_ncotype _type);                                   \
+                                                                            \
+/* Copy object including all internal objects and state                 */  \
+NCO() NCO(_copy)(NCO() _q);                                                 \
                                                                             \
 /* Destroy nco object, freeing all internally allocated memory          */  \
 int NCO(_destroy)(NCO() _q);                                                \

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// framesync64.c
-//
-// basic frame synchronizer
-//
+// basic frame synchronizer with 8 bytes header and 64 bytes payload
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -187,6 +183,33 @@ framesync64 framesync64_create(framesync_callback _callback,
     return q;
 }
 
+// copy object
+framesync64 framesync64_copy(framesync64 q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("framesync64_copy(), object cannot be NULL");
+
+    // allocate memory for new object
+    framesync64 q_copy = (framesync64) malloc(sizeof(struct framesync64_s));
+
+    // copy entire memory space over and overwrite values as needed
+    memmove(q_copy, q_orig, sizeof(struct framesync64_s));
+
+    // set callback and userdata fields
+    q_copy->callback = q_orig->callback;
+    q_copy->userdata = q_orig->userdata;
+
+    // copy objects
+    q_copy->detector = qdetector_cccf_copy(q_orig->detector);
+    q_orig->mixer    = nco_crcf_copy      (q_orig->mixer);
+    q_orig->mf       = firpfb_crcf_copy   (q_orig->mf);
+    q_orig->dec      = qpacketmodem_copy  (q_orig->dec);
+    q_orig->pilotsync= qpilotsync_copy    (q_orig->pilotsync);
+
+    return q_copy;
+}
+
 // destroy frame synchronizer object, freeing all internal memory
 int framesync64_destroy(framesync64 _q)
 {
@@ -238,6 +261,22 @@ int framesync64_reset(framesync64 _q)
     
     // reset frame statistics
     _q->framesyncstats.evm = 0.0f;
+    return LIQUID_OK;
+}
+
+// set the callback function
+int framesync64_set_callback(framesync64        _q,
+                             framesync_callback _callback)
+{
+    _q->callback = _callback;
+    return LIQUID_OK;
+}
+
+// set the user-defined data field (context)
+int framesync64_set_userdata(framesync64 _q,
+                             void *      _userdata)
+{
+    _q->userdata = _userdata;
     return LIQUID_OK;
 }
 

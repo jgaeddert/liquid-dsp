@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -268,6 +268,38 @@ qdetector_cccf qdetector_cccf_create_cpfsk(unsigned char * _sequence,
 
     // return object
     return q;
+}
+
+// copy object
+qdetector_cccf qdetector_cccf_copy(qdetector_cccf q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("qdetector_%s_copy(), object cannot be NULL", "cccf");
+
+    // create new object from internal sequence
+    qdetector_cccf q_copy = qdetector_cccf_create(q_orig->s, q_orig->s_len);
+
+    // copy buffer contents
+    memmove(q_copy->buf_time_0, q_orig->buf_time_0, q_orig->nfft*sizeof(float complex));
+    memmove(q_copy->buf_freq_0, q_orig->buf_freq_0, q_orig->nfft*sizeof(float complex));
+    memmove(q_copy->buf_time_1, q_orig->buf_time_1, q_orig->nfft*sizeof(float complex));
+    memmove(q_copy->buf_freq_1, q_orig->buf_freq_1, q_orig->nfft*sizeof(float complex));
+
+    // copy internal state
+    q_copy->counter         = q_orig->counter;
+    q_copy->threshold       = q_orig->threshold;
+    q_copy->range           = q_orig->range;
+    q_copy->num_transforms  = q_orig->num_transforms;
+    // buffer power magnitude
+    q_copy->x2_sum_0        = q_orig->x2_sum_0;
+    q_copy->x2_sum_1        = q_orig->x2_sum_1;
+    // state variables
+    q_copy->state           = q_orig->state;
+    q_copy->frame_detected  = q_orig->frame_detected;
+
+    // return new object
+    return q_copy;
 }
 
 int qdetector_cccf_destroy(qdetector_cccf _q)
