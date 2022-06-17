@@ -24,6 +24,9 @@ class firfilt : public object
     firfilt(int _ftype, unsigned int _k, unsigned int _m=7, float _beta=0.25f, float _mu=0.0f)
         {  q = firfilt_crcf_create_rnyquist(_ftype, _k, _m, _beta, _mu); }
 
+    // copy constructor
+    firfilt(const firfilt &m) { q = firfilt_crcf_copy(m.q); }
+
     // destructor
     ~firfilt() { firfilt_crcf_destroy(q); }
 
