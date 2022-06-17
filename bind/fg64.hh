@@ -13,8 +13,15 @@ namespace liquid {
 class fg64 : public object
 {
   public:
-    fg64()   { q = framegen64_create();  }
-    ~fg64()  { framegen64_destroy(q);    }
+    // default constructor
+    fg64() { q = framegen64_create();  }
+
+    // copy constructor
+    fg64(const fg64 &m) { q = framegen64_copy(m.q); }
+
+    // destructor
+    ~fg64() { framegen64_destroy(q); }
+
     void reset() { }
     std::string repr() const { return std::string("<liquid.fg64") +
                     ", header="  + std::to_string(get_header_length()) +

@@ -30,9 +30,14 @@ int py_callback_wrapper_fs64(
 class fs64 : public object
 {
   public:
-    fs64(framesync_callback _callback, void * _userdata)
+    // default constructor
+    fs64(framesync_callback _callback=NULL, void * _userdata=NULL)
         { q = framesync64_create(_callback, _userdata); }
 
+    // copy constructor
+    fs64(const fs64 &m) { q = framesync64_copy(m.q); }
+
+    // destructor
     ~fs64() { framesync64_destroy(q); }
 
     void display() { framesync64_print(q); }
@@ -48,6 +53,12 @@ class fs64 : public object
 
     void execute(std::complex<float> * _buf, unsigned int _buf_len)
         { framesync64_execute(q, _buf, _buf_len); }
+
+    void set_callback(framesync_callback _callback=NULL)
+        { framesync64_set_callback(q, _callback); }
+
+    void set_userdata(void * _userdata=NULL)
+        { framesync64_set_userdata(q, _userdata); }
 
     unsigned int get_header_length()  const { return 8; }
     unsigned int get_payload_length() const { return 64; }
