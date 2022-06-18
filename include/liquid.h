@@ -4389,6 +4389,9 @@ RESAMP() RESAMP(_create)(float        _rate,                                \
 /*  _rate   : arbitrary resampling rate,         0 < _rate              */  \
 RESAMP() RESAMP(_create_default)(float _rate);                              \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+RESAMP() RESAMP(_copy)(RESAMP() _q);                                        \
+                                                                            \
 /* Destroy arbitrary resampler object, freeing all internal memory      */  \
 int RESAMP(_destroy)(RESAMP() _q);                                          \
                                                                             \
