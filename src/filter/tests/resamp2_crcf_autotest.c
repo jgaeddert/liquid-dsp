@@ -253,3 +253,35 @@ void autotest_resamp2_config()
     resamp2_crcf_destroy(q);
 }
 
+// test copy method
+void autotest_resamp2_copy()
+{
+    // create original half-band resampler
+    resamp2_crcf qa = resamp2_crcf_create(12,0,60.0f);
+
+    // run random samples through filter
+    float complex v, ya0, ya1, yb0, yb1;
+    unsigned int i, num_samples = 80;
+    for (i=0; i<num_samples; i++) {
+        v = randnf() + _Complex_I*randnf();
+        resamp2_crcf_filter_execute(qa, v, &ya0, &ya1);
+    }
+
+    // copy object
+    resamp2_crcf qb = resamp2_crcf_copy(qa);
+
+    // run random samples through both filters and compare
+    for (i=0; i<num_samples; i++) {
+        v = randnf() + _Complex_I*randnf();
+        resamp2_crcf_filter_execute(qa, v, &ya0, &ya1);
+        resamp2_crcf_filter_execute(qb, v, &yb0, &yb1);
+
+        CONTEND_EQUALITY(ya0, yb0);
+        CONTEND_EQUALITY(ya1, yb1);
+    }
+
+    // clean up allocated objects
+    resamp2_crcf_destroy(qa);
+    resamp2_crcf_destroy(qb);
+}
+

@@ -4092,6 +4092,9 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2()    _q,                               \
                              float        _f0,                              \
                              float        _as);                             \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+RESAMP2() RESAMP2(_copy)(RESAMP2() _q);                                     \
+                                                                            \
 /* Destroy resampler, freeing all internally-allocated memory           */  \
 void RESAMP2(_destroy)(RESAMP2() _q);                                       \
                                                                             \
