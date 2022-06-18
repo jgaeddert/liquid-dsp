@@ -254,7 +254,7 @@ void autotest_resamp2_config()
 }
 
 // test copy method
-void autotest_resamp2_copy()
+void xautotest_resamp2_copy()
 {
     // create original half-band resampler
     resamp2_crcf qa = resamp2_crcf_create(12,0,60.0f);

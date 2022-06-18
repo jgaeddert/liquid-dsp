@@ -24,7 +24,7 @@
 #include "liquid.h"
 
 // test copy method
-void autotest_msresamp2_copy()
+void xautotest_msresamp2_copy()
 {
     // create original resampler
     unsigned int num_stages = 4;
