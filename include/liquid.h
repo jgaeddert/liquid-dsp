@@ -1887,6 +1887,9 @@ SPWATERFALL() SPWATERFALL(_create)(unsigned int _nfft,                      \
 SPWATERFALL() SPWATERFALL(_create_default)(unsigned int _nfft,              \
                                            unsigned int _time);             \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+SPWATERFALL() SPWATERFALL(_copy)(SPWATERFALL() _q);                         \
+                                                                            \
 /* Destroy spwaterfall object, freeing all internally-allocated memory  */  \
 int SPWATERFALL(_destroy)(SPWATERFALL() _q);                                \
                                                                             \

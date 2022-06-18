@@ -151,6 +151,49 @@ void autotest_spwaterfall_operation()
     spwaterfallcf_destroy(q);
 }
 
+void autotest_spwaterfall_copy()
+{
+    unsigned int nfft =  240;   // transform size
+    unsigned int time =  192;   // time size
+    float        nstd =  0.1f;  // noise standard deviation
+
+    // create object with irregular values
+    spwaterfallcf q0 = spwaterfallcf_create(nfft, LIQUID_WINDOW_KAISER, 217, 137, time);
+
+    unsigned int i;
+    unsigned int num_samples = 17 * nfft * time;
+    for (i=0; i<num_samples; i++) {
+        float complex v = 0.1f + nstd * (randnf() + _Complex_I*randnf());
+        spwaterfallcf_push(q0, v);
+    }
+
+    // copy object and push same samples through both
+    spwaterfallcf q1 = spwaterfallcf_copy(q0);
+    for (i=0; i<num_samples; i++) {
+        float complex v = 0.1f + nstd * (randnf() + _Complex_I*randnf());
+        spwaterfallcf_push(q0, v);
+        spwaterfallcf_push(q1, v);
+    }
+
+    // check parameters
+    CONTEND_EQUALITY(spwaterfallcf_get_num_freq         (q0),spwaterfallcf_get_num_freq         (q1));
+    CONTEND_EQUALITY(spwaterfallcf_get_num_time         (q0),spwaterfallcf_get_num_time         (q1));
+    CONTEND_EQUALITY(spwaterfallcf_get_window_len       (q0),spwaterfallcf_get_window_len       (q1));
+    CONTEND_EQUALITY(spwaterfallcf_get_delay            (q0),spwaterfallcf_get_delay            (q1));
+    CONTEND_EQUALITY(spwaterfallcf_get_wtype            (q0),spwaterfallcf_get_wtype            (q1));
+    CONTEND_EQUALITY(spwaterfallcf_get_num_samples_total(q0),spwaterfallcf_get_num_samples_total(q1));
+
+    // compute power spectral density output
+    const float * psd_0 = spwaterfallcf_get_psd(q0);
+    const float * psd_1 = spwaterfallcf_get_psd(q1);
+    unsigned int nt = spwaterfallcf_get_num_time(q0);
+    CONTEND_SAME_DATA(psd_0, psd_1, nfft*nt*sizeof(float));
+
+    // destroy objects and free memory
+    spwaterfallcf_destroy(q0);
+    spwaterfallcf_destroy(q1);
+}
+
 // test file export
 void autotest_spwaterfall_gnuplot()
 {
