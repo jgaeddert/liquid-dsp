@@ -184,7 +184,7 @@ RESAMP2() RESAMP2(_copy)(RESAMP2() q_orig)
 
     // copy filter coefficients
     memmove(q_copy->h,  q_orig->h,  (q_copy->h_len )*sizeof(TC));
-    memmove(q_copy->h1, q_orig->h1, (q_copy->h_len )*sizeof(TC));
+    memmove(q_copy->h1, q_orig->h1, (q_copy->h1_len)*sizeof(TC));
 
     // copy dot product and window objects
     q_copy->dp = DOTPROD(_copy)(q_orig->dp);
