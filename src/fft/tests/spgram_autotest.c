@@ -303,6 +303,53 @@ void autotest_spgramcf_short()
     free(buf);
 }
 
+// check copy method
+void autotest_spgramcf_copy()
+{
+    unsigned int nfft        = 1200;    // transform size
+    unsigned int num_samples = 9600;    // number of samples to generate
+    float        nstd        =  0.1f;   // noise standard deviation
+
+    // create object with some odd properties
+    spgramcf q0 = spgramcf_create(nfft, LIQUID_WINDOW_KAISER, 960, 373);
+
+    // generate a bunch of random noise samples
+    unsigned int i;
+    for (i=0; i<num_samples; i++) {
+        float complex v = 0.1f + nstd * (randnf() + _Complex_I*randnf());
+        spgramcf_push(q0, v);
+    }
+
+    // copy object and push same samples through both
+    spgramcf q1 = spgramcf_copy(q0);
+    for (i=0; i<num_samples; i++) {
+        float complex v = 0.1f + nstd * (randnf() + _Complex_I*randnf());
+        spgramcf_push(q0, v);
+        spgramcf_push(q1, v);
+    }
+
+    // get spectrum and compare outputs
+    float psd_0[nfft];
+    float psd_1[nfft];
+    spgramcf_get_psd(q0, psd_0);
+    spgramcf_get_psd(q1, psd_1);
+    CONTEND_SAME_DATA(psd_0, psd_1, nfft*sizeof(float));
+
+    // check parameters
+    CONTEND_EQUALITY(spgramcf_get_nfft                (q0),spgramcf_get_nfft                (q1));
+    CONTEND_EQUALITY(spgramcf_get_window_len          (q0),spgramcf_get_window_len          (q1));
+    CONTEND_EQUALITY(spgramcf_get_delay               (q0),spgramcf_get_delay               (q1));
+    CONTEND_EQUALITY(spgramcf_get_wtype               (q0),spgramcf_get_wtype               (q1));
+    CONTEND_EQUALITY(spgramcf_get_num_samples         (q0),spgramcf_get_num_samples         (q1));
+    CONTEND_EQUALITY(spgramcf_get_num_samples_total   (q0),spgramcf_get_num_samples_total   (q1));
+    CONTEND_EQUALITY(spgramcf_get_num_transforms      (q0),spgramcf_get_num_transforms      (q1));
+    CONTEND_EQUALITY(spgramcf_get_num_transforms_total(q0),spgramcf_get_num_transforms_total(q1));
+
+    // destroy objects
+    spgramcf_destroy(q0);
+    spgramcf_destroy(q1);
+}
+
 // check spectral periodogram behavior on null input (zero samples)
 void autotest_spgramcf_null()
 {

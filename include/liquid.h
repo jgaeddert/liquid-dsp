@@ -1631,6 +1631,9 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,                                \
 /*  _nfft       : FFT size, _nfft >= 2                                  */  \
 SPGRAM() SPGRAM(_create_default)(unsigned int _nfft);                       \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+SPGRAM() SPGRAM(_copy)(SPGRAM() _q);                                        \
+                                                                            \
 /* Destroy spgram object, freeing all internally-allocated memory       */  \
 int SPGRAM(_destroy)(SPGRAM() _q);                                          \
                                                                             \

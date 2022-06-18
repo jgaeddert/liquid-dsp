@@ -169,6 +169,44 @@ SPGRAM() SPGRAM(_create_default)(unsigned int _nfft)
     return SPGRAM(_create)(_nfft, LIQUID_WINDOW_KAISER, _nfft/2, _nfft/4);
 }
 
+// copy object
+SPGRAM() SPGRAM(_copy)(SPGRAM() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("spgram%s_copy(), object cannot be NULL", EXTENSION);
+
+    // allocate memory for main object
+    SPGRAM() q_copy = (SPGRAM()) malloc(sizeof(struct SPGRAM(_s)));
+
+    // copy all internal memory
+    memmove(q_copy, q_orig, sizeof(struct SPGRAM(_s)));
+
+    // copy buffer and its contents
+    q_copy->buffer = WINDOW(_copy)(q_orig->buffer);
+
+    // create FFT arrays, object
+    q_copy->buf_time = (TC*) malloc((q_copy->nfft)*sizeof(TC));
+    q_copy->buf_freq = (TC*) malloc((q_copy->nfft)*sizeof(TC));
+    q_copy->psd      = (T *) malloc((q_copy->nfft)*sizeof(T ));
+    q_copy->fft      = FFT_CREATE_PLAN(q_copy->nfft, q_copy->buf_time, q_copy->buf_freq, FFT_DIR_FORWARD, FFT_METHOD);
+
+    // reset the time buffer
+    unsigned int i;
+    for (i=0; i<q_copy->nfft; i++)
+        q_copy->buf_time[i] = 0.0f;
+
+    // copy accumulated PSD buffer
+    memmove(q_copy->psd, q_orig->psd, q_copy->nfft*sizeof(T));
+
+    // copy tapering window
+    q_copy->w = (T*) malloc((q_copy->window_len)*sizeof(T));
+    memmove(q_copy->w, q_orig->w, q_copy->window_len*sizeof(T));
+
+    // return copied object
+    return q_copy;
+}
+
 // destroy spgram object
 int SPGRAM(_destroy)(SPGRAM() _q)
 {
