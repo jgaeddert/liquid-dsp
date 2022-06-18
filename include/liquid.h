@@ -4530,6 +4530,9 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,                          \
                                float        _f0,                            \
                                float        _as);                           \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+MSRESAMP2() MSRESAMP2(_copy)(MSRESAMP2() _q);                               \
+                                                                            \
 /* Destroy multi-stage half-band resampler, freeing all internal memory */  \
 int MSRESAMP2(_destroy)(MSRESAMP2() _q);                                    \
                                                                             \

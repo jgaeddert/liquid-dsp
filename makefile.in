@@ -516,6 +516,7 @@ filter_autotests :=						\
 	src/filter/tests/iirhilb_autotest.c			\
 	src/filter/tests/lpc_autotest.c				\
 	src/filter/tests/msresamp_crcf_autotest.c		\
+	src/filter/tests/msresamp2_crcf_autotest.c		\
 	src/filter/tests/rresamp_crcf_autotest.c		\
 	src/filter/tests/rresamp_crcf_partition_autotest.c	\
 	src/filter/tests/resamp_crcf_autotest.c			\

@@ -167,6 +167,43 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
     return q;
 }
 
+// copy object
+MSRESAMP2() MSRESAMP2(_copy)(MSRESAMP2() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("msresamp2_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create object, copy internal memory, overwrite with specific values
+    MSRESAMP2() q_copy = (MSRESAMP2()) malloc(sizeof(struct MSRESAMP2(_s)));
+    memmove(q_copy, q_orig, sizeof(struct MSRESAMP2(_s)));
+
+    // allocate memory for buffers
+    q_copy->buffer0 = (T*) malloc( q_copy->M * sizeof(T) );
+    q_copy->buffer1 = (T*) malloc( q_copy->M * sizeof(T) );
+
+    // allocate arrays for half-band resampler parameters
+    q_copy->fc_stage = (float*)        malloc(q_copy->num_stages*sizeof(float)       );
+    q_copy->f0_stage = (float*)        malloc(q_copy->num_stages*sizeof(float)       );
+    q_copy->as_stage = (float*)        malloc(q_copy->num_stages*sizeof(float)       );
+    q_copy->m_stage  = (unsigned int*) malloc(q_copy->num_stages*sizeof(unsigned int));
+
+    // copy values
+    memmove(q_copy->fc_stage, q_orig->fc_stage, q_copy->num_stages*sizeof(float)       );
+    memmove(q_copy->f0_stage, q_orig->f0_stage, q_copy->num_stages*sizeof(float)       );
+    memmove(q_copy->as_stage, q_orig->as_stage, q_copy->num_stages*sizeof(float)       );
+    memmove(q_copy->m_stage , q_orig->m_stage , q_copy->num_stages*sizeof(unsigned int));
+
+    // create array of half-band resamplers and copy objects
+    q_copy->resamp2 = (RESAMP2()*) malloc(q_copy->num_stages*sizeof(RESAMP2()));
+    unsigned int i=0;
+    for (i=0; i<q_copy->num_stages; i++)
+        q_copy->resamp2[i] = RESAMP2(_copy)(q_orig->resamp2[i]);
+
+    // return object
+    return q_copy;
+}
+
 // destroy msresamp2 object, freeing all internally-allocated memory
 int MSRESAMP2(_destroy)(MSRESAMP2() _q)
 {
