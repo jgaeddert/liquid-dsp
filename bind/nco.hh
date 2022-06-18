@@ -19,6 +19,9 @@ class nco : public object
         set_frequency(_dphi);
         }
 
+    // copy constructor
+    nco(const nco &m) { q = nco_crcf_copy(m.q); }
+
     ~nco() { nco_crcf_destroy(q); }
 
     // reset object internals

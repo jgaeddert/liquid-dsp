@@ -25,6 +25,9 @@ class firinterp : public object
     firinterp(int _ftype, unsigned int _M, unsigned int _m=7, float _beta=0.25f, float _mu=0.0f)
         {  q = firinterp_crcf_create_prototype(_ftype, _M, _m, _beta, _mu); }
 
+    // copy constructor
+    firinterp(const firinterp &m) { q = firinterp_crcf_copy(m.q); }
+
     // destructor
     ~firinterp() { firinterp_crcf_destroy(q); }
 
