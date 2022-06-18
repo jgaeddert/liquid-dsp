@@ -134,3 +134,43 @@ void autotest_resamp_crcf_num_output_5(){ testbench_resamp_crcf_num_output(1.0f/
 void autotest_resamp_crcf_num_output_6(){ testbench_resamp_crcf_num_output(expf(5.0f),64); }
 void autotest_resamp_crcf_num_output_7(){ testbench_resamp_crcf_num_output(expf(-5.f),64); }
 
+// test copy method
+void autotest_resamp_crcf_copy()
+{
+    // create object with irregular parameters
+    float rate = 0.71239213987520f;
+    resamp_crcf q0 = resamp_crcf_create(rate, 17, 0.37f, 60.0f, 64);
+
+    // run samples through filter
+    unsigned int i, nw0, nw1, num_samples = 80;
+    float complex y0, y1;
+    for (i=0; i<num_samples; i++) {
+        float complex v = randnf() + _Complex_I*randnf();
+        resamp_crcf_execute(q0, v, &y0, &nw0);
+    }
+
+    // copy object
+    resamp_crcf q1 = resamp_crcf_copy(q0);
+
+    // run samples through both filters and check equality
+    for (i=0; i<num_samples; i++) {
+        float complex v = randnf() + _Complex_I*randnf();
+        resamp_crcf_execute(q0, v, &y0, &nw0);
+        resamp_crcf_execute(q1, v, &y1, &nw1);
+
+        // check that either 0 or 1 samples were written
+        CONTEND_LESS_THAN(nw0, 2);
+        CONTEND_LESS_THAN(nw1, 2);
+
+        // check that the same number of samples were written
+        CONTEND_EQUALITY(nw0, nw1);
+
+        // check output sample values
+        if (nw0==1 && nw1==1)
+            CONTEND_EQUALITY(y0, y1);
+    }
+
+    // destroy objects
+    resamp_crcf_destroy(q0);
+    resamp_crcf_destroy(q1);
+}

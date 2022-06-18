@@ -130,6 +130,24 @@ RESAMP() RESAMP(_create_default)(float _rate)
     return RESAMP(_create)(_rate, m, fc, as, npfb);
 }
 
+// copy object
+RESAMP() RESAMP(_copy)(RESAMP() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("resamp_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create object, copy internal memory, overwrite with specific values
+    RESAMP() q_copy = (RESAMP()) malloc(sizeof(struct RESAMP(_s)));
+    memmove(q_copy, q_orig, sizeof(struct RESAMP(_s)));
+
+    // copy filter bank
+    q_copy->pfb = FIRPFB(_copy)(q_orig->pfb);
+
+    // return object
+    return q_copy;
+}
+
 // free arbitrary resampler object
 int RESAMP(_destroy)(RESAMP() _q)
 {
