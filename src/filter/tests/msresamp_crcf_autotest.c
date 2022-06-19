@@ -135,11 +135,11 @@ void autotest_msresamp_crcf_num_output_7(){ testbench_msresamp_crcf_num_output(e
 void autotest_msresamp_crcf_copy()
 {
     // create initial object
-    float rate = 0.71239213987520f;
+    float rate = 0.071239213987520f;
     msresamp_crcf q0 = msresamp_crcf_create(rate, 60.0f);
 
     // run samples through filter
-    unsigned int i, nw_0, nw_1, buf_len = 240;
+    unsigned int i, nw_0, nw_1, buf_len = 640;
     float complex buf  [buf_len]; // input buffer
     float complex buf_0[buf_len];
     float complex buf_1[buf_len];
