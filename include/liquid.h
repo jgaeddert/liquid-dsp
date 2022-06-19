@@ -3397,6 +3397,9 @@ typedef struct IIRFILTSOS(_s) * IIRFILTSOS();                               \
 IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                                   \
                                  TC * _a);                                  \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+IIRFILTSOS() IIRFILTSOS(_copy)(IIRFILTSOS() _q);                            \
+                                                                            \
 /* explicitly set 2nd-order IIR filter coefficients                     */  \
 /*  _q      : iirfiltsos object                                         */  \
 /*  _b      : feed-forward coefficients [size: _3 x 1]                  */  \

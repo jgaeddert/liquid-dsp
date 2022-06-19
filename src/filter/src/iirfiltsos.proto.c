@@ -99,6 +99,27 @@ int IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,
     return LIQUID_OK;
 }
 
+// copy object
+IIRFILTSOS() IIRFILTSOS(_copy)(IIRFILTSOS() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("iirfiltsos_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create object, copy internal memory, overwrite with specific values
+    IIRFILTSOS() q_copy = (IIRFILTSOS()) malloc(sizeof(struct IIRFILTSOS(_s)));
+    memmove(q_copy, q_orig, sizeof(struct IIRFILTSOS(_s)));
+
+#if LIQUID_IIRFILTSOS_USE_DOTPROD
+    // copy objects
+    q_copy->dpa = DOTPROD(_copy)(q_orig->dpa);
+    q_copy->dpb = DOTPROD(_copy)(q_orig->dpb);
+#endif
+
+    // return object
+    return q_copy;
+}
+
 // destroy iirfiltsos object, freeing all internal memory
 int IIRFILTSOS(_destroy)(IIRFILTSOS() _q)
 {
