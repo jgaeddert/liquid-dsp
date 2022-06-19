@@ -3313,6 +3313,9 @@ IIRFILT() IIRFILT(_create_pll)(float _w,                                    \
                                float _zeta,                                 \
                                float _K);                                   \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+IIRFILT() IIRFILT(_copy)(IIRFILT() _q);                                     \
+                                                                            \
 /* Destroy iirfilt object, freeing all internal memory                  */  \
 int IIRFILT(_destroy)(IIRFILT() _q);                                        \
                                                                             \

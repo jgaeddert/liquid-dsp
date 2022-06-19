@@ -421,6 +421,53 @@ IIRFILT() IIRFILT(_create_pll)(float _w,
     return IIRFILT(_create_sos)(b,a,1);
 }
 
+// copy object
+IIRFILT() IIRFILT(_copy)(IIRFILT() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("iirfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create object, copy internal memory, overwrite with specific values
+    IIRFILT() q_copy = (IIRFILT()) malloc(sizeof(struct IIRFILT(_s)));
+    memmove(q_copy, q_orig, sizeof(struct IIRFILT(_s)));
+
+    if (q_orig->type == IIRFILT_TYPE_NORM) {
+        // allocate memory for numerator, denominator, buffer
+        q_copy->a = (TC *) malloc((q_copy->na)*sizeof(TC));
+        q_copy->b = (TC *) malloc((q_copy->nb)*sizeof(TC));
+        q_copy->v = (TI *) malloc((q_copy->n )*sizeof(TI));
+
+        // copy coefficients
+        memmove(q_copy->a, q_orig->a, (q_copy->na)*sizeof(TC));
+        memmove(q_copy->b, q_orig->b, (q_copy->nb)*sizeof(TC));
+        memmove(q_copy->v, q_orig->v, (q_copy->n )*sizeof(TI));
+
+#if LIQUID_IIRFILT_USE_DOTPROD
+        // copy objects
+        q_copy->dpa = DOTPROD(_copy)(q_orig->dpa);
+        q_copy->dpb = DOTPROD(_copy)(q_orig->dpb);
+#endif
+    } else if (q_orig->type == IIRFILT_TYPE_SOS) {
+        // create coefficients array and copy over
+        q_copy->b = (TC *) malloc(3*(q_copy->nsos)*sizeof(TC));
+        q_copy->a = (TC *) malloc(3*(q_copy->nsos)*sizeof(TC));
+        memmove(q_copy->b, q_orig->b, 3*(q_copy->nsos)*sizeof(TC));
+        memmove(q_copy->a, q_orig->a, 3*(q_copy->nsos)*sizeof(TC));
+
+        // copy internal second-order sections
+        q_copy->qsos = (IIRFILTSOS()*) malloc( (q_copy->nsos)*sizeof(IIRFILTSOS()) );
+        unsigned int i;
+        for (i=0; i<q_copy->nsos; i++)
+            q_copy->qsos[i] = IIRFILTSOS(_copy)(q_orig->qsos[i]);
+    } else {
+        return liquid_error_config("iirfilt_%s_copy(), invalid internal type", EXTENSION_FULL);
+    }
+
+    // return object
+    return q_copy;
+}
+
 // destroy iirfilt object
 int IIRFILT(_destroy)(IIRFILT() _q)
 {

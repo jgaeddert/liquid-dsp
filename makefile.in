@@ -512,6 +512,7 @@ filter_autotests :=						\
 	src/filter/tests/iirdes_autotest.c			\
 	src/filter/tests/iirdes_support_autotest.c		\
 	src/filter/tests/iirfilt_xxxf_autotest.c		\
+	src/filter/tests/iirfilt_copy_autotest.c		\
 	src/filter/tests/iirfiltsos_autotest.c			\
 	src/filter/tests/iirhilb_autotest.c			\
 	src/filter/tests/lpc_autotest.c				\
