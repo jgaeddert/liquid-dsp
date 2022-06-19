@@ -3314,21 +3314,21 @@ IIRFILT() IIRFILT(_create_pll)(float _w,                                    \
                                float _K);                                   \
                                                                             \
 /* Destroy iirfilt object, freeing all internal memory                  */  \
-void IIRFILT(_destroy)(IIRFILT() _q);                                       \
+int IIRFILT(_destroy)(IIRFILT() _q);                                        \
                                                                             \
 /* Print iirfilt object properties to stdout                            */  \
-void IIRFILT(_print)(IIRFILT() _q);                                         \
+int IIRFILT(_print)(IIRFILT() _q);                                          \
                                                                             \
 /* Reset iirfilt object internals                                       */  \
-void IIRFILT(_reset)(IIRFILT() _q);                                         \
+int IIRFILT(_reset)(IIRFILT() _q);                                          \
                                                                             \
 /* Compute filter output given a signle input sample                    */  \
 /*  _q      : iirfilt object                                            */  \
 /*  _x      : input sample                                              */  \
 /*  _y      : output sample pointer                                     */  \
-void IIRFILT(_execute)(IIRFILT() _q,                                        \
-                       TI        _x,                                        \
-                       TO *      _y);                                       \
+int IIRFILT(_execute)(IIRFILT() _q,                                         \
+                      TI        _x,                                         \
+                      TO *      _y);                                        \
                                                                             \
 /* Execute the filter on a block of input samples;                      */  \
 /* in-place operation is permitted (the input and output buffers may be */  \
@@ -3337,10 +3337,10 @@ void IIRFILT(_execute)(IIRFILT() _q,                                        \
 /*  _x      : pointer to input array, [size: _n x 1]                    */  \
 /*  _n      : number of input, output samples, _n > 0                   */  \
 /*  _y      : pointer to output array, [size: _n x 1]                   */  \
-void IIRFILT(_execute_block)(IIRFILT()    _q,                               \
-                             TI *         _x,                               \
-                             unsigned int _n,                               \
-                             TO *         _y);                              \
+int IIRFILT(_execute_block)(IIRFILT()    _q,                                \
+                            TI *         _x,                                \
+                            unsigned int _n,                                \
+                            TO *         _y);                               \
                                                                             \
 /* Return number of coefficients for iirfilt object (maximum between    */  \
 /* the feed-forward and feed-back coefficients). Note that the filter   */  \
@@ -3351,9 +3351,9 @@ unsigned int IIRFILT(_get_length)(IIRFILT() _q);                            \
 /*  _q      : filter object                                             */  \
 /*  _fc     : normalized frequency for evaluation                       */  \
 /*  _H      : pointer to output complex frequency response              */  \
-void IIRFILT(_freqresponse)(IIRFILT()              _q,                      \
-                            float                  _fc,                     \
-                            liquid_float_complex * _H);                     \
+int IIRFILT(_freqresponse)(IIRFILT()              _q,                       \
+                           float                  _fc,                      \
+                           liquid_float_complex * _H);                      \
                                                                             \
 /* Compute power spectral density response of filter object in dB       */  \
 /*  _q      : filter object                                             */  \

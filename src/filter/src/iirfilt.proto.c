@@ -422,7 +422,7 @@ IIRFILT() IIRFILT(_create_pll)(float _w,
 }
 
 // destroy iirfilt object
-void IIRFILT(_destroy)(IIRFILT() _q)
+int IIRFILT(_destroy)(IIRFILT() _q)
 {
 #if LIQUID_IIRFILT_USE_DOTPROD
     if (_q->dpa != NULL) DOTPROD(_destroy)(_q->dpa);
@@ -443,10 +443,11 @@ void IIRFILT(_destroy)(IIRFILT() _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print iirfilt object internals
-void IIRFILT(_print)(IIRFILT() _q)
+int IIRFILT(_print)(IIRFILT() _q)
 {
     printf("iir filter [%s]:\n", _q->type == IIRFILT_TYPE_NORM ? "normal" : "sos");
     unsigned int i;
@@ -473,10 +474,11 @@ void IIRFILT(_print)(IIRFILT() _q)
         printf("\n");
 #endif
     }
+    return LIQUID_OK;
 }
 
 // clear/reset iirfilt object internals
-void IIRFILT(_reset)(IIRFILT() _q)
+int IIRFILT(_reset)(IIRFILT() _q)
 {
     unsigned int i;
 
@@ -490,6 +492,7 @@ void IIRFILT(_reset)(IIRFILT() _q)
         for (i=0; i<_q->n; i++)
             _q->v[i] = 0;
     }
+    return LIQUID_OK;
 }
 
 // execute normal iir filter using traditional numerator/denominator
@@ -497,9 +500,9 @@ void IIRFILT(_reset)(IIRFILT() _q)
 //  _q      :   iirfilt object
 //  _x      :   input sample
 //  _y      :   output sample
-void IIRFILT(_execute_norm)(IIRFILT() _q,
-                            TI _x,
-                            TO *_y)
+int IIRFILT(_execute_norm)(IIRFILT() _q,
+                           TI        _x,
+                           TO *      _y)
 {
     unsigned int i;
 
@@ -531,15 +534,16 @@ void IIRFILT(_execute_norm)(IIRFILT() _q,
     // set return value
     *_y = y0;
 #endif
+    return LIQUID_OK;
 }
 
 // execute iir filter using second-order sections form
 //  _q      :   iirfilt object
 //  _x      :   input sample
 //  _y      :   output sample
-void IIRFILT(_execute_sos)(IIRFILT() _q,
-                           TI        _x,
-                           TO *      _y)
+int IIRFILT(_execute_sos)(IIRFILT() _q,
+                          TI        _x,
+                          TO *      _y)
 {
     TI t0 = _x;     // intermediate input
     TO t1 = 0.;     // intermediate output
@@ -552,20 +556,23 @@ void IIRFILT(_execute_sos)(IIRFILT() _q,
         t0 = t1;
     }
     *_y = t1;
+    return LIQUID_OK;
 }
 
 // execute iir filter, switching to type-specific function
 //  _q      :   iirfilt object
 //  _x      :   input sample
 //  _y      :   output sample
-void IIRFILT(_execute)(IIRFILT() _q,
-                       TI        _x,
-                       TO *      _y)
+int IIRFILT(_execute)(IIRFILT() _q,
+                      TI        _x,
+                      TO *      _y)
 {
-    if (_q->type == IIRFILT_TYPE_NORM)
-        IIRFILT(_execute_norm)(_q,_x,_y);
-    else
-        IIRFILT(_execute_sos)(_q,_x,_y);
+    if (_q->type == IIRFILT_TYPE_NORM) {
+        return IIRFILT(_execute_norm)(_q,_x,_y);
+    } else {
+        return IIRFILT(_execute_sos)(_q,_x,_y);
+    }
+    return liquid_error(LIQUID_EINT,"iirfilt_%s_execute(), invalid internal type", EXTENSION_FULL);
 }
 
 // execute the filter on a block of input samples; the
@@ -574,15 +581,17 @@ void IIRFILT(_execute)(IIRFILT() _q,
 //  _x      : pointer to input array [size: _n x 1]
 //  _n      : number of input, output samples
 //  _y      : pointer to output array [size: _n x 1]
-void IIRFILT(_execute_block)(IIRFILT()    _q,
-                             TI *         _x,
-                             unsigned int _n,
-                             TO *         _y)
+int IIRFILT(_execute_block)(IIRFILT()    _q,
+                            TI *         _x,
+                            unsigned int _n,
+                            TO *         _y)
 {
     unsigned int i;
-    for (i=0; i<_n; i++)
+    for (i=0; i<_n; i++) {
         // compute output sample
         IIRFILT(_execute)(_q, _x[i], &_y[i]);
+    }
+    return LIQUID_OK;
 }
 
 
@@ -596,9 +605,9 @@ unsigned int IIRFILT(_get_length)(IIRFILT() _q)
 //  _q      :   filter object
 //  _fc     :   frequency
 //  _H      :   output frequency response
-void IIRFILT(_freqresponse)(IIRFILT()       _q,
-                            float           _fc,
-                            float complex * _H)
+int IIRFILT(_freqresponse)(IIRFILT()       _q,
+                          float           _fc,
+                          float complex * _H)
 {
     unsigned int i;
     float complex H = 0.0f;
@@ -637,6 +646,7 @@ void IIRFILT(_freqresponse)(IIRFILT()       _q,
 
     // set return value
     *_H = H;
+    return LIQUID_OK;
 }
 
 // Compute power spectral density response of filter object in dB
