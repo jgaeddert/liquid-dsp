@@ -174,3 +174,4 @@ void autotest_resamp_crcf_copy()
     resamp_crcf_destroy(q0);
     resamp_crcf_destroy(q1);
 }
+

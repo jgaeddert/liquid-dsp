@@ -131,3 +131,40 @@ void autotest_msresamp_crcf_num_output_5(){ testbench_msresamp_crcf_num_output(1
 void autotest_msresamp_crcf_num_output_6(){ testbench_msresamp_crcf_num_output(expf(8.0f)); }
 void autotest_msresamp_crcf_num_output_7(){ testbench_msresamp_crcf_num_output(expf(-8.f)); }
 
+// test copy method
+void autotest_msresamp_crcf_copy()
+{
+    // create initial object
+    float rate = 0.71239213987520f;
+    msresamp_crcf q0 = msresamp_crcf_create(rate, 60.0f);
+
+    // run samples through filter
+    unsigned int i, nw_0, nw_1, buf_len = 240;
+    float complex buf  [buf_len]; // input buffer
+    float complex buf_0[buf_len];
+    float complex buf_1[buf_len];
+    for (i=0; i<buf_len; i++)
+        buf[i] = randnf() + _Complex_I*randnf();
+    msresamp_crcf_execute(q0, buf, buf_len, buf_0, &nw_0);
+
+    // copy object
+    msresamp_crcf q1 = msresamp_crcf_copy(q0);
+
+    // run samples through both filters and check equality
+    for (i=0; i<buf_len; i++)
+        buf[i] = randnf() + _Complex_I*randnf();
+
+    msresamp_crcf_execute(q0, buf, buf_len, buf_0, &nw_0);
+    msresamp_crcf_execute(q1, buf, buf_len, buf_1, &nw_1);
+
+    // check that the same number of samples were written
+    CONTEND_EQUALITY(nw_0, nw_1);
+
+    // check output sample values
+    CONTEND_SAME_DATA(buf_0, buf_1, nw_0*sizeof(float complex));
+
+    // destroy objects
+    msresamp_crcf_destroy(q0);
+    msresamp_crcf_destroy(q1);
+}
+

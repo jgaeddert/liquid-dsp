@@ -144,6 +144,29 @@ MSRESAMP() MSRESAMP(_create)(float _r,
     return q;
 }
 
+// copy object
+MSRESAMP() MSRESAMP(_copy)(MSRESAMP() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("msresamp_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create object, copy internal memory, overwrite with specific values
+    MSRESAMP() q_copy = (MSRESAMP()) malloc(sizeof(struct MSRESAMP(_s)));
+    memmove(q_copy, q_orig, sizeof(struct MSRESAMP(_s)));
+
+    // copy internal objects
+    q_copy->halfband_resamp  = MSRESAMP2(_copy)(q_orig->halfband_resamp);
+    q_copy->arbitrary_resamp = RESAMP(_copy)(q_orig->arbitrary_resamp);
+
+    // create and copy buffer
+    q_copy->buffer = (T*) malloc( q_copy->buffer_len*sizeof(T) );
+    memmove(q_copy->buffer, q_orig->buffer, q_copy->buffer_len*sizeof(T) );
+
+    // return object
+    return q_copy;
+}
+
 // destroy msresamp object, freeing all internally-allocated memory
 int MSRESAMP(_destroy)(MSRESAMP() _q)
 {

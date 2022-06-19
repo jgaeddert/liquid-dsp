@@ -4600,6 +4600,9 @@ typedef struct MSRESAMP(_s) * MSRESAMP();                                   \
 MSRESAMP() MSRESAMP(_create)(float _r,                                      \
                              float _as);                                    \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+MSRESAMP() MSRESAMP(_copy)(MSRESAMP() _q);                                  \
+                                                                            \
 /* Destroy multi-stage arbitrary resampler                              */  \
 int MSRESAMP(_destroy)(MSRESAMP() _q);                                      \
                                                                             \
