@@ -4959,34 +4959,34 @@ ORDFILT() ORDFILT(_create)(unsigned int _n,                                 \
 ORDFILT() ORDFILT(_create_medfilt)(unsigned int _m);                        \
                                                                             \
 /* Destroy filter object and free all internal memory                   */  \
-void ORDFILT(_destroy)(ORDFILT() _q);                                       \
+int ORDFILT(_destroy)(ORDFILT() _q);                                        \
                                                                             \
 /* Reset filter object's internal buffer                                */  \
-void ORDFILT(_reset)(ORDFILT() _q);                                         \
+int ORDFILT(_reset)(ORDFILT() _q);                                          \
                                                                             \
 /* Print filter object information to stdout                            */  \
-void ORDFILT(_print)(ORDFILT() _q);                                         \
+int ORDFILT(_print)(ORDFILT() _q);                                          \
                                                                             \
 /* Push sample into filter object's internal buffer                     */  \
 /*  _q      : filter object                                             */  \
 /*  _x      : single input sample                                       */  \
-void ORDFILT(_push)(ORDFILT() _q,                                           \
-                    TI        _x);                                          \
+int ORDFILT(_push)(ORDFILT() _q,                                            \
+                   TI        _x);                                           \
                                                                             \
 /* Write block of samples into object's internal buffer                 */  \
 /*  _q      : filter object                                             */  \
 /*  _x      : array of input samples, [size: _n x 1]                    */  \
 /*  _n      : number of input elements                                  */  \
-void ORDFILT(_write)(ORDFILT()    _q,                                       \
-                     TI *         _x,                                       \
-                     unsigned int _n);                                      \
+int ORDFILT(_write)(ORDFILT()    _q,                                        \
+                    TI *         _x,                                        \
+                    unsigned int _n);                                       \
                                                                             \
 /* Execute vector dot product on the filter's internal buffer and       */  \
 /* coefficients                                                         */  \
 /*  _q      : filter object                                             */  \
 /*  _y      : pointer to single output sample                           */  \
-void ORDFILT(_execute)(ORDFILT() _q,                                        \
-                       TO *      _y);                                       \
+int ORDFILT(_execute)(ORDFILT() _q,                                         \
+                      TO *      _y);                                        \
                                                                             \
 /* Execute the filter on a block of input samples; in-place operation   */  \
 /* is permitted (_x and _y may point to the same place in memory)       */  \
@@ -4994,10 +4994,10 @@ void ORDFILT(_execute)(ORDFILT() _q,                                        \
 /*  _x      : pointer to input array, [size: _n x 1]                    */  \
 /*  _n      : number of input, output samples                           */  \
 /*  _y      : pointer to output array, [size: _n x 1]                   */  \
-void ORDFILT(_execute_block)(ORDFILT()    _q,                               \
-                             TI *         _x,                               \
-                             unsigned int _n,                               \
-                             TO *         _y);                              \
+int ORDFILT(_execute_block)(ORDFILT()    _q,                                \
+                            TI *         _x,                                \
+                            unsigned int _n,                                \
+                            TO *         _y);                               \
 
 LIQUID_ORDFILT_DEFINE_API(LIQUID_ORDFILT_MANGLE_RRRF,
                           float,
