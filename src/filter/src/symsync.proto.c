@@ -276,6 +276,37 @@ SYMSYNC() SYMSYNC(_create_kaiser)(unsigned int _k,
     return SYMSYNC(_create)(_k, _M, H, H_len);
 }
 
+// copy object
+SYMSYNC() SYMSYNC(_copy)(SYMSYNC() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("symsync_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create object, copy internal memory, overwrite with specific values
+    SYMSYNC() q_copy = (SYMSYNC()) malloc(sizeof(struct SYMSYNC(_s)));
+    memmove(q_copy, q_orig, sizeof(struct SYMSYNC(_s)));
+
+    // copy phased-locked loop
+    q_copy->pll = iirfiltsos_rrrf_copy(q_orig->pll);
+
+    // copy filter banks
+    q_copy->mf  = FIRPFB(_copy)(q_orig->mf);
+    q_copy->dmf = FIRPFB(_copy)(q_orig->dmf);
+
+#if DEBUG_SYMSYNC
+    // copy debugging windows
+    q_copy->debug_rate  = windowf_copy(q_orig->debug_rate);
+    q_copy->debug_del   = windowf_copy(q_orig->debug_del);
+    q_copy->debug_tau   = windowf_copy(q_orig->debug_tau);
+    q_copy->debug_bsoft = windowf_copy(q_orig->debug_bsoft);
+    q_copy->debug_b     = windowf_copy(q_orig->debug_b);
+    q_copy->debug_q_hat = windowf_copy(q_orig->debug_q_hat);
+#endif
+    // return object
+    return q_copy;
+}
+
 // destroy symsync object, freeing all internal memory
 int SYMSYNC(_destroy)(SYMSYNC() _q)
 {

@@ -522,6 +522,7 @@ filter_autotests :=						\
 	src/filter/tests/rresamp_crcf_partition_autotest.c	\
 	src/filter/tests/resamp_crcf_autotest.c			\
 	src/filter/tests/resamp2_crcf_autotest.c		\
+	src/filter/tests/symsync_copy_autotest.c		\
 	src/filter/tests/symsync_crcf_autotest.c		\
 	src/filter/tests/symsync_rrrf_autotest.c		\
 

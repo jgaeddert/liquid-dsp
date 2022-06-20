@@ -4777,6 +4777,9 @@ SYMSYNC() SYMSYNC(_create_kaiser)(unsigned int _k,                          \
                                   float        _beta,                       \
                                   unsigned int _M);                         \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+SYMSYNC() SYMSYNC(_copy)(SYMSYNC() _q);                                     \
+                                                                            \
 /* Destroy symsync object, freeing all internal memory                  */  \
 int SYMSYNC(_destroy)(SYMSYNC() _q);                                        \
                                                                             \
