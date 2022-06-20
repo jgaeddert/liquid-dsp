@@ -4778,31 +4778,31 @@ SYMSYNC() SYMSYNC(_create_kaiser)(unsigned int _k,                          \
                                   unsigned int _M);                         \
                                                                             \
 /* Destroy symsync object, freeing all internal memory                  */  \
-void SYMSYNC(_destroy)(SYMSYNC() _q);                                       \
+int SYMSYNC(_destroy)(SYMSYNC() _q);                                        \
                                                                             \
 /* Print symsync object's parameters to stdout                          */  \
-void SYMSYNC(_print)(SYMSYNC() _q);                                         \
+int SYMSYNC(_print)(SYMSYNC() _q);                                          \
                                                                             \
 /* Reset symsync internal state                                         */  \
-void SYMSYNC(_reset)(SYMSYNC() _q);                                         \
+int SYMSYNC(_reset)(SYMSYNC() _q);                                          \
                                                                             \
 /* Lock the symbol synchronizer's loop control                          */  \
-void SYMSYNC(_lock)(SYMSYNC() _q);                                          \
+int SYMSYNC(_lock)(SYMSYNC() _q);                                           \
                                                                             \
 /* Unlock the symbol synchronizer's loop control                        */  \
-void SYMSYNC(_unlock)(SYMSYNC() _q);                                        \
+int SYMSYNC(_unlock)(SYMSYNC() _q);                                         \
                                                                             \
 /* Set synchronizer output rate (samples/symbol)                        */  \
 /*  _q      : synchronizer object                                       */  \
 /*  _k_out  : output samples/symbol, _k_out > 0                         */  \
-void SYMSYNC(_set_output_rate)(SYMSYNC()    _q,                             \
-                               unsigned int _k_out);                        \
+int SYMSYNC(_set_output_rate)(SYMSYNC()    _q,                              \
+                              unsigned int _k_out);                         \
                                                                             \
 /* Set loop-filter bandwidth                                            */  \
 /*  _q      : synchronizer object                                       */  \
 /*  _bt     : loop bandwidth, 0 <= _bt <= 1                             */  \
-void SYMSYNC(_set_lf_bw)(SYMSYNC() _q,                                      \
-                         float     _bt);                                    \
+int SYMSYNC(_set_lf_bw)(SYMSYNC() _q,                                       \
+                        float     _bt);                                     \
                                                                             \
 /* Return instantaneous fractional timing offset estimate               */  \
 float SYMSYNC(_get_tau)(SYMSYNC() _q);                                      \
@@ -4813,11 +4813,11 @@ float SYMSYNC(_get_tau)(SYMSYNC() _q);                                      \
 /*  _nx     : number of input samples                                   */  \
 /*  _y      : output data array                                         */  \
 /*  _ny     : number of samples written to output buffer                */  \
-void SYMSYNC(_execute)(SYMSYNC()      _q,                                   \
-                       TI *           _x,                                   \
-                       unsigned int   _nx,                                  \
-                       TO *           _y,                                   \
-                       unsigned int * _ny);                                 \
+int SYMSYNC(_execute)(SYMSYNC()      _q,                                    \
+                      TI *           _x,                                    \
+                      unsigned int   _nx,                                   \
+                      TO *           _y,                                    \
+                      unsigned int * _ny);                                  \
 
 LIQUID_SYMSYNC_DEFINE_API(LIQUID_SYMSYNC_MANGLE_RRRF,
                           float,

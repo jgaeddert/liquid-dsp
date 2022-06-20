@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,24 +53,24 @@
 //  _x      : input sample
 //  _y      : output sample array pointer
 //  _ny     : number of output samples written
-void SYMSYNC(_step)(SYMSYNC()      _q,
-                    TI             _x,
-                    TO *           _y,
-                    unsigned int * _ny);
+int SYMSYNC(_step)(SYMSYNC()      _q,
+                   TI             _x,
+                   TO *           _y,
+                   unsigned int * _ny);
 
 // advance synchronizer's internal loop filter
 //  _q      : synchronizer object
 //  _mf     : matched-filter output
 //  _dmf    : derivative matched-filter output
-void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
-                                     TO        _mf,
-                                     TO        _dmf);
+int SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
+                                    TO        _mf,
+                                    TO        _dmf);
 
 // print results to output debugging file
 //  _q          : synchronizer object
 //  _filename   : output filename
-void SYMSYNC(_output_debug_file)(SYMSYNC()    _q,
-                                 const char * _filename);
+int SYMSYNC(_output_debug_file)(SYMSYNC()    _q,
+                                const char * _filename);
 
 // internal structure
 struct SYMSYNC(_s) {
@@ -277,7 +277,7 @@ SYMSYNC() SYMSYNC(_create_kaiser)(unsigned int _k,
 }
 
 // destroy symsync object, freeing all internal memory
-void SYMSYNC(_destroy)(SYMSYNC() _q)
+int SYMSYNC(_destroy)(SYMSYNC() _q)
 {
 #if DEBUG_SYMSYNC
     // output debugging file
@@ -301,17 +301,18 @@ void SYMSYNC(_destroy)(SYMSYNC() _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print symsync object's parameters
-void SYMSYNC(_print)(SYMSYNC() _q)
+int SYMSYNC(_print)(SYMSYNC() _q)
 {
     printf("symsync_%s [rate: %f]\n", EXTENSION_FULL, _q->rate);
-    FIRPFB(_print)(_q->mf);
+    return FIRPFB(_print)(_q->mf);
 }
 
 // reset symsync internal state
-void SYMSYNC(_reset)(SYMSYNC() _q)
+int SYMSYNC(_reset)(SYMSYNC() _q)
 {
     // reset polyphase filterbank
     FIRPFB(_reset)(_q->mf);
@@ -328,51 +329,50 @@ void SYMSYNC(_reset)(SYMSYNC() _q)
     _q->decim_counter = 0;      // decimated output counter
 
     // reset timing phase-locked loop filter
-    iirfiltsos_rrrf_reset(_q->pll);
+    return iirfiltsos_rrrf_reset(_q->pll);
 }
 
 // lock synchronizer object
-void SYMSYNC(_lock)(SYMSYNC() _q)
+int SYMSYNC(_lock)(SYMSYNC() _q)
 {
     _q->is_locked = 1;
+    return LIQUID_OK;
 }
 
 // unlock synchronizer object
-void SYMSYNC(_unlock)(SYMSYNC() _q)
+int SYMSYNC(_unlock)(SYMSYNC() _q)
 {
     _q->is_locked = 0;
+    return LIQUID_OK;
 }
 
 // set synchronizer output rate (samples/symbol)
 //  _q      :   synchronizer object
 //  _k_out  :   output samples/symbol
-void SYMSYNC(_set_output_rate)(SYMSYNC()    _q,
-                               unsigned int _k_out)
+int SYMSYNC(_set_output_rate)(SYMSYNC()    _q,
+                              unsigned int _k_out)
 {
     // validate input
-    if (_k_out == 0) {
-        liquid_error(LIQUID_EICONFIG,"symsync_%s_output_rate(), output rate must be greater than 0", EXTENSION_FULL);
-        return;
-    }
+    if (_k_out == 0)
+        return liquid_error(LIQUID_EICONFIG,"symsync_%s_output_rate(), output rate must be greater than 0", EXTENSION_FULL);
 
     // set output rate
     _q->k_out = _k_out;
 
     _q->rate = (float)_q->k / (float)_q->k_out;
     _q->del  = _q->rate;
+    return LIQUID_OK;
 }
 
 // set synchronizer loop filter bandwidth
 //  _q      :   synchronizer object
 //  _bt     :   loop bandwidth
-void SYMSYNC(_set_lf_bw)(SYMSYNC() _q,
-                         float     _bt)
+int SYMSYNC(_set_lf_bw)(SYMSYNC() _q,
+                        float     _bt)
 {
     // validate input
-    if (_bt < 0.0f || _bt > 1.0f) {
-        liquid_error(LIQUID_EICONFIG,"symsync_%s_set_lf_bt(), bandwidth must be in [0,1]", EXTENSION_FULL);
-        return;
-    }
+    if (_bt < 0.0f || _bt > 1.0f)
+        return liquid_error(LIQUID_EICONFIG,"symsync_%s_set_lf_bt(), bandwidth must be in [0,1]", EXTENSION_FULL);
 
     // compute filter coefficients from bandwidth
     float alpha = 1.000f - _bt;
@@ -393,6 +393,7 @@ void SYMSYNC(_set_lf_bw)(SYMSYNC() _q,
 
     // update rate adjustment factor
     _q->rate_adjustment = 0.5*_bt;
+    return LIQUID_OK;
 }
 
 // return instantaneous fractional timing offset estimate
@@ -407,11 +408,11 @@ float SYMSYNC(_get_tau)(SYMSYNC() _q)
 //  _nx     : number of input samples
 //  _y      : output data array
 //  _ny     : number of samples written to output buffer
-void SYMSYNC(_execute)(SYMSYNC()      _q,
-                       TI *           _x,
-                       unsigned int   _nx,
-                       TO *           _y,
-                       unsigned int * _ny)
+int SYMSYNC(_execute)(SYMSYNC()      _q,
+                      TI *           _x,
+                      unsigned int   _nx,
+                      TO *           _y,
+                      unsigned int * _ny)
 {
     unsigned int i, ny=0, k=0;
     for (i=0; i<_nx; i++) {
@@ -420,6 +421,7 @@ void SYMSYNC(_execute)(SYMSYNC()      _q,
         //printf("%u\n",k);
     }
     *_ny = ny;
+    return LIQUID_OK;
 }
 
 //
@@ -431,10 +433,10 @@ void SYMSYNC(_execute)(SYMSYNC()      _q,
 //  _x      : input sample
 //  _y      : output sample array pointer
 //  _ny     : number of output samples written
-void SYMSYNC(_step)(SYMSYNC()      _q,
-                    TI             _x,
-                    TO *           _y,
-                    unsigned int * _ny)
+int SYMSYNC(_step)(SYMSYNC()      _q,
+                   TI             _x,
+                   TO *           _y,
+                   unsigned int * _ny)
 {
     // push sample into MF and dMF filterbanks
     FIRPFB(_push)(_q->mf,  _x);
@@ -503,15 +505,16 @@ void SYMSYNC(_step)(SYMSYNC()      _q,
 
     // set output number of samples written
     *_ny = n;
+    return LIQUID_OK;
 }
 
 // advance synchronizer's internal loop filter
 //  _q      : synchronizer object
 //  _mf     : matched-filter output
 //  _dmf    : derivative matched-filter output
-void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
-                                     TO        _mf,
-                                     TO        _dmf)
+int SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
+                                    TO        _mf,
+                                    TO        _dmf)
 {
     //  1. compute timing error signal, clipping large levels
 #if 0
@@ -535,19 +538,18 @@ void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
 #if DEBUG_SYMSYNC_PRINT
     printf("q : %12.8f, rate : %12.8f, del : %12.8f, q_hat : %12.8f\n", _q->q, _q->rate, _q->del, _q->q_hat);
 #endif
+    return LIQUID_OK;
 }
 
 // print results to output debugging file
 //  _q          : synchronizer object
 //  _filename   : output filename
-void SYMSYNC(_output_debug_file)(SYMSYNC()    _q,
-                                 const char * _filename)
+int SYMSYNC(_output_debug_file)(SYMSYNC()    _q,
+                                const char * _filename)
 {
     FILE * fid = fopen(_filename, "w");
-    if (!fid) {
-        liquid_error(LIQUID_EICONFIG,"symsync_%s_output_debug_file(), could not open '%s' for writing", EXTENSION_FULL, _filename);
-        return;
-    }
+    if (!fid)
+        return liquid_error(LIQUID_EICONFIG,"symsync_%s_output_debug_file(), could not open '%s' for writing", EXTENSION_FULL, _filename);
     fprintf(fid,"%% %s, auto-generated file\n\n", DEBUG_SYMSYNC_FILENAME);
     fprintf(fid,"\n");
     fprintf(fid,"clear all;\n");
@@ -681,4 +683,6 @@ void SYMSYNC(_output_debug_file)(SYMSYNC()    _q,
 
     fclose(fid);
     printf("symsync: internal results written to '%s'\n", _filename);
+    return LIQUID_OK;
 }
+
