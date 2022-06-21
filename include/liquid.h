@@ -1378,10 +1378,10 @@ packetizer packetizer_recreate(packetizer _p,
 packetizer packetizer_copy(packetizer _p);
 
 // destroy packetizer object
-void packetizer_destroy(packetizer _p);
+int packetizer_destroy(packetizer _p);
 
 // print packetizer object internals
-void packetizer_print(packetizer _p);
+int packetizer_print(packetizer _p);
 
 // access methods
 unsigned int packetizer_get_dec_msg_len(packetizer _p);
@@ -1396,7 +1396,7 @@ fec_scheme   packetizer_get_fec1       (packetizer _p);
 //  _p      :   packetizer object
 //  _msg    :   input message (uncoded bytes)
 //  _pkt    :   encoded output message
-void packetizer_encode(packetizer            _p,
+int packetizer_encode(packetizer            _p,
                        const unsigned char * _msg,
                        unsigned char *       _pkt);
 
@@ -1406,9 +1406,9 @@ void packetizer_encode(packetizer            _p,
 //  _p      :   packetizer object
 //  _pkt    :   input message (coded bytes)
 //  _msg    :   decoded output message
-int  packetizer_decode(packetizer            _p,
-                       const unsigned char * _pkt,
-                       unsigned char *       _msg);
+int packetizer_decode(packetizer            _p,
+                      const unsigned char * _pkt,
+                      unsigned char *       _msg);
 
 // Execute the packetizer to decode an input message, return validity
 // check of resulting data
