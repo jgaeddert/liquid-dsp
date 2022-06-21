@@ -619,21 +619,24 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
         // Butterworth filter design : no zeros, _n poles
         nza = 0;
         k0 = 1.0f;
-        butter_azpkf(_n,za,pa,&ka);
+        if (butter_azpkf(_n,za,pa,&ka) != LIQUID_OK)
+            return liquid_error(LIQUID_EINT,"liquid_iirdes(), could not design analog filter (butterworth)");
         break;
     case LIQUID_IIRDES_CHEBY1:
         // Cheby-I filter design : no zeros, _n poles, pass-band ripple
         nza = 0;
         epsilon = sqrtf( powf(10.0f, _ap / 10.0f) - 1.0f );
         k0 = r ? 1.0f : 1.0f / sqrt(1.0f + epsilon*epsilon);
-        cheby1_azpkf(_n,epsilon,za,pa,&ka);
+        if (cheby1_azpkf(_n,epsilon,za,pa,&ka) != LIQUID_OK)
+            return liquid_error(LIQUID_EINT,"liquid_iirdes(), could not design analog filter (cheby1)");
         break;
     case LIQUID_IIRDES_CHEBY2:
         // Cheby-II filter design : _n-r zeros, _n poles, stop-band ripple
         nza = 2*L;
         epsilon = powf(10.0f, -_as/20.0f);
         k0 = 1.0f;
-        cheby2_azpkf(_n,epsilon,za,pa,&ka);
+        if (cheby2_azpkf(_n,epsilon,za,pa,&ka) != LIQUID_OK)
+            return liquid_error(LIQUID_EINT,"liquid_iirdes(), could not design analog filter (cheby2)");
         break;
     case LIQUID_IIRDES_ELLIP:
         // elliptic filter design : _n-r zeros, _n poles, pass/stop-band ripple
@@ -643,13 +646,15 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
         ep = sqrtf(1.0f/(Gp*Gp) - 1.0f);    // pass-band epsilon
         es = sqrtf(1.0f/(Gs*Gs) - 1.0f);    // stop-band epsilon
         k0 = r ? 1.0f : 1.0f / sqrt(1.0f + ep*ep);
-        ellip_azpkf(_n,ep,es,za,pa,&ka);
+        if (ellip_azpkf(_n,ep,es,za,pa,&ka) != LIQUID_OK)
+            return liquid_error(LIQUID_EINT,"liquid_iirdes(), could not design analog filter (elliptical)");
         break;
     case LIQUID_IIRDES_BESSEL:
         // Bessel filter design : no zeros, _n poles
         nza = 0;
         k0 = 1.0f;
-        bessel_azpkf(_n,za,pa,&ka);
+        if (bessel_azpkf(_n,za,pa,&ka) != LIQUID_OK)
+            return liquid_error(LIQUID_EINT,"liquid_iirdes(), could not design analog filter (bessel)");
         break;
     default:
         return liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), unknown filter type");
@@ -675,10 +680,8 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
     float complex kd;
     float m = iirdes_freqprewarp(_btype,_fc,_f0);
     //printf("m : %12.8f\n", m);
-    bilinear_zpkf(za,    nza,
-                  pa,    npa,
-                  k0,    m,
-                  zd, pd, &kd);
+    if (bilinear_zpkf(za, nza, pa, npa, k0, m, zd, pd, &kd) != LIQUID_OK)
+        return liquid_error(LIQUID_EINT,"liquid_iirdes(), could not perform bilinear z-transform");
 
 #if LIQUID_IIRDES_DEBUG_PRINT
     printf("zeros (digital, low-pass prototype):\n");
@@ -697,7 +700,8 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
     {
         // run transform, place resulting zeros, poles
         // back in same original arrays
-        iirdes_dzpk_lp2hp(zd, pd, _n, zd, pd);
+        if (iirdes_dzpk_lp2hp(zd, pd, _n, zd, pd) != LIQUID_OK)
+            return liquid_error(LIQUID_EINT,"liquid_iirdes(), could not perform high-pass transformation");
     }
 
     // transform zeros, poles in band-pass, band-stop cases
@@ -733,7 +737,8 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
         // convert complex digital poles/zeros/gain into transfer
         // function : H(z) = B(z) / A(z)
         // where length(B,A) = low/high-pass ? _n + 1 : 2*_n + 1
-        iirdes_dzpk2tff(zd,pd,_n,kd,_b,_a);
+        if (iirdes_dzpk2tff(zd,pd,_n,kd,_b,_a) != LIQUID_OK)
+            return liquid_error(LIQUID_EINT,"liquid_iirdes(), could not perform transfer function expansion");
 
 #if LIQUID_IIRDES_DEBUG_PRINT
         // print coefficients
@@ -746,7 +751,8 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
         // H(z) = prod { (b0 + b1*z^-1 + b2*z^-2) / (a0 + a1*z^-1 + a2*z^-2) }
         // where size(B,A) = low|high-pass  : [3]x[L+r]
         //                   band-pass|stop : [3]x[2*L]
-        iirdes_dzpk2sosf(zd,pd,_n,kd,_b,_a);
+        if (iirdes_dzpk2sosf(zd,pd,_n,kd,_b,_a) != LIQUID_OK)
+            return liquid_error(LIQUID_EINT,"liquid_iirdes(), could not perform second-order sections expansion");
 
 #if LIQUID_IIRDES_DEBUG_PRINT
         // print coefficients
