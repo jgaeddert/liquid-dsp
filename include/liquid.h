@@ -1434,48 +1434,48 @@ interleaver interleaver_create(unsigned int _n);
 interleaver linterleaver_copy(interleaver _q);
 
 // destroy interleaver object
-void interleaver_destroy(interleaver _q);
+int interleaver_destroy(interleaver _q);
 
 // print interleaver object internals
-void interleaver_print(interleaver _q);
+int interleaver_print(interleaver _q);
 
 // set depth (number of internal iterations)
 //  _q      :   interleaver object
 //  _depth  :   depth
-void interleaver_set_depth(interleaver _q,
-                           unsigned int _depth);
+int interleaver_set_depth(interleaver  _q,
+                          unsigned int _depth);
 
 // execute forward interleaver (encoder)
 //  _q          :   interleaver object
 //  _msg_dec    :   decoded (un-interleaved) message
 //  _msg_enc    :   encoded (interleaved) message
-void interleaver_encode(interleaver _q,
-                        unsigned char * _msg_dec,
-                        unsigned char * _msg_enc);
+int interleaver_encode(interleaver     _q,
+                       unsigned char * _msg_dec,
+                       unsigned char * _msg_enc);
 
 // execute forward interleaver (encoder) on soft bits
 //  _q          :   interleaver object
 //  _msg_dec    :   decoded (un-interleaved) message
 //  _msg_enc    :   encoded (interleaved) message
-void interleaver_encode_soft(interleaver _q,
-                             unsigned char * _msg_dec,
-                             unsigned char * _msg_enc);
+int interleaver_encode_soft(interleaver     _q,
+                            unsigned char * _msg_dec,
+                            unsigned char * _msg_enc);
 
 // execute reverse interleaver (decoder)
 //  _q          :   interleaver object
 //  _msg_enc    :   encoded (interleaved) message
 //  _msg_dec    :   decoded (un-interleaved) message
-void interleaver_decode(interleaver _q,
-                        unsigned char * _msg_enc,
-                        unsigned char * _msg_dec);
+int interleaver_decode(interleaver     _q,
+                       unsigned char * _msg_enc,
+                       unsigned char * _msg_dec);
 
 // execute reverse interleaver (decoder) on soft bits
 //  _q          :   interleaver object
 //  _msg_enc    :   encoded (interleaved) message
 //  _msg_dec    :   decoded (un-interleaved) message
-void interleaver_decode_soft(interleaver _q,
-                             unsigned char * _msg_enc,
-                             unsigned char * _msg_dec);
+int interleaver_decode_soft(interleaver     _q,
+                            unsigned char * _msg_enc,
+                            unsigned char * _msg_dec);
 
 
 
