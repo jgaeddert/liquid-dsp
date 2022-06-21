@@ -884,10 +884,10 @@ int liquid_firdes_farcsech_freqresponse(unsigned int _k,
 //  _n      :   number of elements in _z
 //  _tol    :   tolerance for finding complex pairs
 //  _p      :   resulting pairs, pure real values of _z at end
-void liquid_cplxpair(float complex * _z,
-                     unsigned int _n,
-                     float _tol,
-                     float complex * _p);
+int liquid_cplxpair(float complex * _z,
+                    unsigned int    _n,
+                    float           _tol,
+                    float complex * _p);
 
 // post-process cleanup used with liquid_cplxpair
 //
@@ -901,22 +901,22 @@ void liquid_cplxpair(float complex * _z,
 //  _p          :   pre-processed complex array [size: _n x 1]
 //  _n          :   array length
 //  _num_pairs  :   number of complex conjugate pairs
-void liquid_cplxpair_cleanup(float complex * _p,
-                             unsigned int _n,
-                             unsigned int _num_pairs);
+int liquid_cplxpair_cleanup(float complex * _p,
+                            unsigned int    _n,
+                            unsigned int    _num_pairs);
 
 // Jacobian elliptic functions (src/filter/src/ellip.c)
 
 // Landen transformation (_n iterations)
-void landenf(float _k,
-             unsigned int _n,
-             float * _v);
+int landenf(float _k,
+            unsigned int _n,
+            float * _v);
 
 // compute elliptic integral K(k) for _n recursions
-void ellipkf(float _k,
-             unsigned int _n,
-             float * _K,
-             float * _Kp);
+int ellipkf(float _k,
+            unsigned int _n,
+            float * _K,
+            float * _Kp);
 
 // elliptic degree
 float ellipdegf(float _N,

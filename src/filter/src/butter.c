@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,10 +41,10 @@
 //  _za     :   output analog zeros [length:  0]
 //  _pa     :   output analog poles [length: _n]
 //  _ka     :   output analog gain
-void butter_azpkf(unsigned int _n,
-                  liquid_float_complex * _za,
-                  liquid_float_complex * _pa,
-                  liquid_float_complex * _ka)
+int butter_azpkf(unsigned int           _n,
+                 liquid_float_complex * _za,
+                 liquid_float_complex * _pa,
+                 liquid_float_complex * _ka)
 {
     unsigned int r = _n%2;
     unsigned int L = (_n - r)/2;
@@ -59,8 +59,10 @@ void butter_azpkf(unsigned int _n,
 
     if (r) _pa[k++] = -1.0f;
 
-    assert(k==_n);
+    if (k != _n)
+        return liquid_error(LIQUID_EINT,"butter_azpkf(), internal error: filter order mismatch");
 
     *_ka = 1.0;
+    return LIQUID_OK;
 }
 

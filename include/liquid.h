@@ -2363,42 +2363,42 @@ typedef enum {
 //  _as         :   stop-band ripple in dB
 //  _b          :   numerator
 //  _a          :   denominator
-void liquid_iirdes(liquid_iirdes_filtertype _ftype,
-                   liquid_iirdes_bandtype   _btype,
-                   liquid_iirdes_format     _format,
-                   unsigned int _n,
-                   float _fc,
-                   float _f0,
-                   float _ap,
-                   float _as,
-                   float * _b,
-                   float * _a);
+int liquid_iirdes(liquid_iirdes_filtertype _ftype,
+                  liquid_iirdes_bandtype   _btype,
+                  liquid_iirdes_format     _format,
+                  unsigned int             _n,
+                  float                    _fc,
+                  float                    _f0,
+                  float                    _ap,
+                  float                    _as,
+                  float *                  _b,
+                  float *                  _a);
 
 // compute analog zeros, poles, gain for specific filter types
-void butter_azpkf(unsigned int _n,
-                  liquid_float_complex * _za,
-                  liquid_float_complex * _pa,
-                  liquid_float_complex * _ka);
-void cheby1_azpkf(unsigned int _n,
-                  float _ep,
-                  liquid_float_complex * _z,
-                  liquid_float_complex * _p,
-                  liquid_float_complex * _k);
-void cheby2_azpkf(unsigned int _n,
-                  float _es,
-                  liquid_float_complex * _z,
-                  liquid_float_complex * _p,
-                  liquid_float_complex * _k);
-void ellip_azpkf(unsigned int _n,
-                 float _ep,
-                 float _es,
+int butter_azpkf(unsigned int           _n,
+                 liquid_float_complex * _za,
+                 liquid_float_complex * _pa,
+                 liquid_float_complex * _ka);
+int cheby1_azpkf(unsigned int           _n,
+                 float                  _ep,
                  liquid_float_complex * _z,
                  liquid_float_complex * _p,
                  liquid_float_complex * _k);
-void bessel_azpkf(unsigned int _n,
-                  liquid_float_complex * _z,
-                  liquid_float_complex * _p,
-                  liquid_float_complex * _k);
+int cheby2_azpkf(unsigned int           _n,
+                 float                  _es,
+                 liquid_float_complex * _z,
+                 liquid_float_complex * _p,
+                 liquid_float_complex * _k);
+int ellip_azpkf(unsigned int            _n,
+                float                   _ep,
+                float                   _es,
+                liquid_float_complex *  _z,
+                liquid_float_complex *  _p,
+                liquid_float_complex *  _k);
+int bessel_azpkf(unsigned int           _n,
+                 liquid_float_complex * _z,
+                 liquid_float_complex * _p,
+                 liquid_float_complex * _k);
 
 // compute frequency pre-warping factor
 float iirdes_freqprewarp(liquid_iirdes_bandtype _btype,
@@ -2414,15 +2414,15 @@ float iirdes_freqprewarp(liquid_iirdes_bandtype _btype,
 //  _zd     :   output digital zeros [length: _npa]
 //  _pd     :   output digital poles [length: _npa]
 //  _kd     :   output digital gain (should actually be real-valued)
-void bilinear_zpkf(liquid_float_complex * _za,
-                   unsigned int _nza,
-                   liquid_float_complex * _pa,
-                   unsigned int _npa,
-                   liquid_float_complex _ka,
-                   float _m,
-                   liquid_float_complex * _zd,
-                   liquid_float_complex * _pd,
-                   liquid_float_complex * _kd);
+int bilinear_zpkf(liquid_float_complex * _za,
+                  unsigned int           _nza,
+                  liquid_float_complex * _pa,
+                  unsigned int           _npa,
+                  liquid_float_complex   _ka,
+                  float                  _m,
+                  liquid_float_complex * _zd,
+                  liquid_float_complex * _pd,
+                  liquid_float_complex * _kd);
 
 // compute bilinear z-transform using polynomial expansion in numerator and
 // denominator
@@ -2444,13 +2444,13 @@ void bilinear_zpkf(liquid_float_complex * _za,
 //  _m          : bilateral warping factor
 //  _bd         : output digital filter numerator, [size: _b_order+1]
 //  _ad         : output digital filter numerator, [size: _a_order+1]
-void bilinear_nd(liquid_float_complex * _b,
-                 unsigned int _b_order,
-                 liquid_float_complex * _a,
-                 unsigned int _a_order,
-                 float _m,
-                 liquid_float_complex * _bd,
-                 liquid_float_complex * _ad);
+int bilinear_nd(liquid_float_complex * _b,
+                unsigned int           _b_order,
+                liquid_float_complex * _a,
+                unsigned int           _a_order,
+                float                  _m,
+                liquid_float_complex * _bd,
+                liquid_float_complex * _ad);
 
 // digital z/p/k low-pass to high-pass
 //  _zd     :   digital zeros (low-pass prototype), [length: _n]
@@ -2458,11 +2458,11 @@ void bilinear_nd(liquid_float_complex * _b,
 //  _n      :   low-pass filter order
 //  _zdt    :   output digital zeros transformed [length: _n]
 //  _pdt    :   output digital poles transformed [length: _n]
-void iirdes_dzpk_lp2hp(liquid_float_complex * _zd,
-                       liquid_float_complex * _pd,
-                       unsigned int _n,
-                       liquid_float_complex * _zdt,
-                       liquid_float_complex * _pdt);
+int iirdes_dzpk_lp2hp(liquid_float_complex * _zd,
+                      liquid_float_complex * _pd,
+                      unsigned int _n,
+                      liquid_float_complex * _zdt,
+                      liquid_float_complex * _pdt);
 
 // digital z/p/k low-pass to band-pass
 //  _zd     :   digital zeros (low-pass prototype), [length: _n]
@@ -2471,12 +2471,12 @@ void iirdes_dzpk_lp2hp(liquid_float_complex * _zd,
 //  _f0     :   center frequency
 //  _zdt    :   output digital zeros transformed [length: 2*_n]
 //  _pdt    :   output digital poles transformed [length: 2*_n]
-void iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
-                       liquid_float_complex * _pd,
-                       unsigned int _n,
-                       float _f0,
-                       liquid_float_complex * _zdt,
-                       liquid_float_complex * _pdt);
+int iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
+                      liquid_float_complex * _pd,
+                      unsigned int           _n,
+                      float                  _f0,
+                      liquid_float_complex * _zdt,
+                      liquid_float_complex * _pdt);
 
 // convert discrete z/p/k form to transfer function
 //  _zd     :   digital zeros [length: _n]
@@ -2485,12 +2485,12 @@ void iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
 //  _kd     :   digital gain
 //  _b      :   output numerator [length: _n+1]
 //  _a      :   output denominator [length: _n+1]
-void iirdes_dzpk2tff(liquid_float_complex * _zd,
-                     liquid_float_complex * _pd,
-                     unsigned int _n,
-                     liquid_float_complex _kd,
-                     float * _b,
-                     float * _a);
+int iirdes_dzpk2tff(liquid_float_complex * _zd,
+                    liquid_float_complex * _pd,
+                    unsigned int           _n,
+                    liquid_float_complex   _kd,
+                    float *                _b,
+                    float *                _a);
 
 // convert discrete z/p/k form to second-order sections
 //  _zd     :   digital zeros [length: _n]
@@ -2500,12 +2500,12 @@ void iirdes_dzpk2tff(liquid_float_complex * _zd,
 //  _b      :   output numerator [size: 3 x L+r]
 //  _a      :   output denominator [size: 3 x L+r]
 //  where r = _n%2, L = (_n-r)/2
-void iirdes_dzpk2sosf(liquid_float_complex * _zd,
-                      liquid_float_complex * _pd,
-                      unsigned int _n,
-                      liquid_float_complex _kd,
-                      float * _b,
-                      float * _a);
+int iirdes_dzpk2sosf(liquid_float_complex * _zd,
+                     liquid_float_complex * _pd,
+                     unsigned int           _n,
+                     liquid_float_complex   _kd,
+                     float *                _b,
+                     float *                _a);
 
 // additional IIR filter design templates
 

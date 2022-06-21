@@ -33,7 +33,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -57,16 +56,14 @@
 //  _n      :   number of elements in _z
 //  _tol    :   tolerance for finding complex pairs
 //  _p      :   resulting pairs, pure real values of _z at end
-void liquid_cplxpair(float complex * _z,
-                     unsigned int _n,
-                     float _tol,
-                     float complex * _p)
+int liquid_cplxpair(float complex * _z,
+                    unsigned int    _n,
+                    float           _tol,
+                    float complex * _p)
 {
     // validate input
-    if (_tol < 0) {
-        liquid_error(LIQUID_EICONFIG,"liquid_cplxpair(), tolerance must be positive");
-        return;
-    }
+    if (_tol < 0)
+        return liquid_error(LIQUID_EICONFIG,"liquid_cplxpair(), tolerance must be positive");
 
     // keep track of which elements have been paired
     unsigned char paired[_n];
@@ -99,7 +96,8 @@ void liquid_cplxpair(float complex * _z,
             }
         }
     }
-    assert(k <= _n);
+    if (k > _n)
+        return liquid_error(LIQUID_EINT,"liquid_cplxpair(), invalid derived order");
 
     // sort through remaining unpaired values and ensure
     // they are purely real
@@ -122,7 +120,7 @@ void liquid_cplxpair(float complex * _z,
     //    increasing real component
     //  * pure-real elements are ordered by increasing
     //    value
-    liquid_cplxpair_cleanup(_p, _n, num_pairs);
+    return liquid_cplxpair_cleanup(_p, _n, num_pairs);
 }
 
 // post-process cleanup used with liquid_cplxpair
@@ -137,9 +135,9 @@ void liquid_cplxpair(float complex * _z,
 //  _p          :   pre-processed complex array [size: _n x 1]
 //  _n          :   array length
 //  _num_pairs  :   number of complex conjugate pairs
-void liquid_cplxpair_cleanup(float complex * _p,
-                             unsigned int _n,
-                             unsigned int _num_pairs)
+int liquid_cplxpair_cleanup(float complex * _p,
+                            unsigned int    _n,
+                            unsigned int    _num_pairs)
 {
     unsigned int i;
     unsigned int j;
@@ -180,7 +178,7 @@ void liquid_cplxpair_cleanup(float complex * _p,
             }
         }
     }
-
+    return LIQUID_OK;
 }
 
 
@@ -229,15 +227,15 @@ float iirdes_freqprewarp(liquid_iirdes_bandtype _btype,
 // The filter order is characterized by the number of analog
 // poles.  The analog filter may have up to _npa zeros.
 // The number of digital zeros and poles is equal to _npa.
-void bilinear_zpkf(float complex * _za,
-                   unsigned int _nza,
-                   float complex * _pa,
-                   unsigned int _npa,
-                   float complex _ka,
-                   float _m,
-                   float complex * _zd,
-                   float complex * _pd,
-                   float complex * _kd)
+int bilinear_zpkf(float complex * _za,
+                  unsigned int    _nza,
+                  float complex * _pa,
+                  unsigned int    _npa,
+                  float complex   _ka,
+                  float           _m,
+                  float complex * _zd,
+                  float complex * _pd,
+                  float complex * _kd)
 {
     unsigned int i;
 
@@ -273,6 +271,7 @@ void bilinear_zpkf(float complex * _za,
     printf("zpk_a2df() gain (discrete):\n");
     printf("  kd      = %12.8f + j*%12.8f\n", crealf(G), cimagf(G));
 #endif
+    return LIQUID_OK;
 }
 
 // compute bilinear z-transform using polynomial expansion in numerator and
@@ -295,18 +294,16 @@ void bilinear_zpkf(float complex * _za,
 //  _m          : bilateral warping factor
 //  _bd         : output digital filter numerator, [size: _b_order+1]
 //  _ad         : output digital filter numerator, [size: _a_order+1]
-void bilinear_nd(float complex * _b,
-                 unsigned int _b_order,
-                 float complex * _a,
-                 unsigned int _a_order,
-                 float _m,
-                 float complex * _bd,
-                 float complex * _ad)
+int bilinear_nd(float complex * _b,
+                unsigned int    _b_order,
+                float complex * _a,
+                unsigned int    _a_order,
+                float           _m,
+                float complex * _bd,
+                float complex * _ad)
 {
-    if (_b_order > _a_order) {
-        liquid_error(LIQUID_EICONFIG,"bilinear_nd(), numerator order cannot be higher than denominator");
-        return;
-    }
+    if (_b_order > _a_order)
+        return liquid_error(LIQUID_EICONFIG,"bilinear_nd(), numerator order cannot be higher than denominator");
 
 #if LIQUID_IIRDES_DEBUG_PRINT
     printf("***********************************\n");
@@ -373,6 +370,7 @@ void bilinear_nd(float complex * _b,
         _bd[i] *= a0_inv;
         _ad[i] *= a0_inv;
     }
+    return LIQUID_OK;
 }
 
 // convert discrete z/p/k form to transfer function form
@@ -382,25 +380,29 @@ void bilinear_nd(float complex * _b,
 //  _k      :   digital gain
 //  _b      :   output numerator (length: _n+1)
 //  _a      :   output denominator (length: _n+1)
-void iirdes_dzpk2tff(float complex * _zd,
-                     float complex * _pd,
-                     unsigned int _n,
-                     float complex _k,
-                     float * _b,
-                     float * _a)
+int iirdes_dzpk2tff(float complex * _zd,
+                    float complex * _pd,
+                    unsigned int    _n,
+                    float complex   _k,
+                    float *         _b,
+                    float *         _a)
 {
     unsigned int i;
     float complex q[_n+1];
 
     // expand poles
-    polycf_expandroots(_pd,_n,q);
+    if (polycf_expandroots(_pd,_n,q) != LIQUID_OK)
+        return liquid_error(LIQUID_EINT,"iirdes_dzpk2tff(), could not expand roots (poles)");
     for (i=0; i<=_n; i++)
         _a[i] = crealf(q[_n-i]);
 
     // expand zeros
-    polycf_expandroots(_zd, _n, q);
+    if (polycf_expandroots(_zd, _n, q) != LIQUID_OK)
+        return liquid_error(LIQUID_EINT,"iirdes_dzpk2tff(), could not expand roots (zeros)");
     for (i=0; i<=_n; i++)
         _b[i] = crealf(q[_n-i]*_k);
+
+    return LIQUID_OK;
 }
 
 // converts discrete-time zero/pole/gain (zpk) recursive (iir)
@@ -417,23 +419,25 @@ void iirdes_dzpk2tff(float complex * _zd,
 //  L is the number of sections in the cascade:
 //      r = _n % 2
 //      L = (_n - r) / 2;
-void iirdes_dzpk2sosf(float complex * _zd,
-                      float complex * _pd,
-                      unsigned int _n,
-                      float complex _kd,
-                      float * _b,
-                      float * _a)
+int iirdes_dzpk2sosf(float complex * _zd,
+                     float complex * _pd,
+                     unsigned int    _n,
+                     float complex   _kd,
+                     float *         _b,
+                     float *         _a)
 {
     int i;
     float tol=1e-6f; // tolerance for conjuate pair computation
 
     // find/group complex conjugate pairs (poles)
     float complex zp[_n];
-    liquid_cplxpair(_zd,_n,tol,zp);
+    if (liquid_cplxpair(_zd,_n,tol,zp) != LIQUID_OK)
+        return liquid_error(LIQUID_EINT,"iirdes_dzpk2sosf(), could not associate complex pairs (zeros)");
 
     // find/group complex conjugate pairs (zeros)
     float complex pp[_n];
-    liquid_cplxpair(_pd,_n,tol,pp);
+    if (liquid_cplxpair(_pd,_n,tol,pp) != LIQUID_OK)
+        return liquid_error(LIQUID_EINT,"iirdes_dzpk2sosf(), could not associate complex pairs (poles)");
 
     // TODO : group pole pairs with zero pairs
 
@@ -503,6 +507,7 @@ void iirdes_dzpk2sosf(float complex * _zd,
         _b[3*i+1] *= k;
         _b[3*i+2] *= k;
     }
+    return LIQUID_OK;
 }
 
 // digital z/p/k low-pass to high-pass transformation
@@ -511,17 +516,18 @@ void iirdes_dzpk2sosf(float complex * _zd,
 //  _n      :   low-pass filter order
 //  _zdt    :   digital zeros transformed [length: _n]
 //  _pdt    :   digital poles transformed [length: _n]
-void iirdes_dzpk_lp2hp(liquid_float_complex * _zd,
-                       liquid_float_complex * _pd,
-                       unsigned int _n,
-                       liquid_float_complex * _zdt,
-                       liquid_float_complex * _pdt)
+int iirdes_dzpk_lp2hp(liquid_float_complex * _zd,
+                      liquid_float_complex * _pd,
+                      unsigned int           _n,
+                      liquid_float_complex * _zdt,
+                      liquid_float_complex * _pdt)
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
         _zdt[i] = -_zd[i];
         _pdt[i] = -_pd[i];
     }
+    return LIQUID_OK;
 }
 
 
@@ -532,14 +538,13 @@ void iirdes_dzpk_lp2hp(liquid_float_complex * _zd,
 //  _f0     :   center frequency
 //  _zdt    :   digital zeros transformed [length: 2*_n]
 //  _pdt    :   digital poles transformed [length: 2*_n]
-void iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
-                       liquid_float_complex * _pd,
-                       unsigned int _n,
-                       float _f0,
-                       liquid_float_complex * _zdt,
-                       liquid_float_complex * _pdt)
+int iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
+                      liquid_float_complex * _pd,
+                      unsigned int           _n,
+                      float                  _f0,
+                      liquid_float_complex * _zdt,
+                      liquid_float_complex * _pdt)
 {
-    // 
     float c0 = cosf(2*M_PI*_f0);
 
     // transform zeros, poles using quadratic formula
@@ -554,6 +559,7 @@ void iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
         _pdt[2*i+0] = 0.5f*(c0*t0 + csqrtf(c0*c0*t0*t0 - 4*_pd[i]));
         _pdt[2*i+1] = 0.5f*(c0*t0 - csqrtf(c0*c0*t0*t0 - 4*_pd[i]));
     }
+    return LIQUID_OK;
 }
 
 // IIR filter design template
@@ -567,34 +573,28 @@ void iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
 //  _as         :   stop-band ripple in dB
 //  _b          :   numerator
 //  _a          :   denominator
-void liquid_iirdes(liquid_iirdes_filtertype _ftype,
-                   liquid_iirdes_bandtype   _btype,
-                   liquid_iirdes_format     _format,
-                   unsigned int _n,
-                   float _fc,
-                   float _f0,
-                   float _ap,
-                   float _as,
-                   float * _b,
-                   float * _a)
+int liquid_iirdes(liquid_iirdes_filtertype _ftype,
+                  liquid_iirdes_bandtype   _btype,
+                  liquid_iirdes_format     _format,
+                  unsigned int             _n,
+                  float                    _fc,
+                  float                    _f0,
+                  float                    _ap,
+                  float                    _as,
+                  float *                  _b,
+                  float *                  _a)
 {
     // validate input
-    if (_fc <= 0 || _fc >= 0.5) {
-        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), cutoff frequency out of range");
-        return;
-    } else if (_f0 < 0 || _f0 > 0.5) {
-        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), center frequency out of range");
-        return;
-    } else if (_ap <= 0) {
-        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), pass-band ripple out of range");
-        return;
-    } else if (_as <= 0) {
-        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), stop-band ripple out of range");
-        return;
-    } else if (_n == 0) {
-        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), filter order must be > 0");
-        return;
-    }
+    if (_fc <= 0 || _fc >= 0.5)
+        return liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), cutoff frequency out of range");
+    if (_f0 < 0 || _f0 > 0.5)
+        return liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), center frequency out of range");
+    if (_ap <= 0)
+        return liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), pass-band ripple out of range");
+    if (_as <= 0)
+        return liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), stop-band ripple out of range");
+    if (_n == 0)
+        return liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), filter order must be > 0");
 
     // number of analaog poles/zeros
     unsigned int npa = _n;
@@ -652,8 +652,7 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
         bessel_azpkf(_n,za,pa,&ka);
         break;
     default:
-        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), unknown filter type");
-        return;
+        return liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), unknown filter type");
     }
 
 #if LIQUID_IIRDES_DEBUG_PRINT
@@ -758,8 +757,8 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
         for (i=0; i<L+r; i++)
             printf("  %12.8f %12.8f %12.8f\n", _a[3*i+0], _a[3*i+1], _a[3*i+2]);
 #endif
-
     }
+    return LIQUID_OK;
 }
 
 // checks stability of iir filter
