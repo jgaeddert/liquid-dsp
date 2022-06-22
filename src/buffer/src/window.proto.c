@@ -114,16 +114,9 @@ WINDOW() WINDOW(_copy)(WINDOW() q_orig)
     if (q_orig == NULL)
         return liquid_error_config("error: window%s_copy(), window object cannot be NULL", EXTENSION);
 
-    // create initial object
+    // create object, copy memory, create new elements as needed
     WINDOW() q_copy = (WINDOW()) malloc(sizeof(struct WINDOW(_s)));
-
-    // copy internal parameters
-    q_copy->len           = q_orig->len;
-    q_copy->m             = q_orig->m;
-    q_copy->n             = q_orig->n;
-    q_copy->mask          = q_orig->mask;
-    q_copy->num_allocated = q_orig->num_allocated;
-    q_copy->read_index    = q_orig->read_index;
+    memmove(q_copy, q_orig, sizeof(struct WINDOW(_s)));
 
     // allocte and copy full memory array
     q_copy->v = (T*) malloc((q_copy->num_allocated)*sizeof(T));
