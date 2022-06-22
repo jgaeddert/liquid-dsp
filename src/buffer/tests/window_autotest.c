@@ -148,7 +148,39 @@ void autotest_windowf()
     }
 
     windowf_destroy(w);
+}
 
-    printf("done.\n");
+void autotest_window_copy()
+{
+    // create window
+    unsigned int wlen = 20;
+    windowcf q0 = windowcf_create(wlen);
+
+    // write some values
+    unsigned int i;
+    for (i=0; i<wlen; i++) {
+        float complex v = randnf() + _Complex_I*randnf();
+        windowcf_push(q0, v);
+    }
+
+    // copy object
+    windowcf q1 = windowcf_copy(q0);
+
+    // write a few more values
+    for (i=0; i<wlen/2; i++) {
+        float complex v = randnf() + _Complex_I*randnf();
+        windowcf_push(q0, v);
+        windowcf_push(q1, v);
+    }
+
+    // read buffers and compare
+    float complex * r0, * r1;
+    windowcf_read(q0, &r0);
+    windowcf_read(q1, &r1);
+    CONTEND_SAME_DATA(r0, r1, wlen*sizeof(float complex));
+
+    // destroy objects
+    windowcf_destroy(q0);
+    windowcf_destroy(q1);
 }
 
