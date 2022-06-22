@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -318,5 +318,38 @@ void autotest_agc_crcf_invalid_config()
 
     // destroy object
     agc_crcf_destroy(q);
+}
+
+// copy test
+void autotest_agc_crcf_copy()
+{
+    // create base object and initialize
+    agc_crcf q0 = agc_crcf_create();
+    agc_crcf_set_bandwidth(q0, 0.01234f);
+
+    // start running input through AGC
+    unsigned int n = 32;
+    unsigned int i;
+    float complex x, y0, y1;
+    for (i=0; i<n; i++) {
+        x = randnf() + _Complex_I*randnf();
+        agc_crcf_execute(q0, x, &y0);
+    }
+
+    // copy AGC
+    agc_crcf q1 = agc_crcf_copy(q0);
+
+    // continue running through both AGCs
+    for (i=0; i<n; i++) {
+        // run AGCs in parallel
+        x = randnf() + _Complex_I*randnf();
+        agc_crcf_execute(q0, x, &y0);
+        agc_crcf_execute(q1, x, &y1);
+        CONTEND_EQUALITY(y0, y1);
+    }
+
+    // destroy AGC objects
+    agc_crcf_destroy(q0);
+    agc_crcf_destroy(q1);
 }
 

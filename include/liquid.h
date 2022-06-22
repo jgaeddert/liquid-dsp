@@ -189,6 +189,9 @@ typedef struct AGC(_s) * AGC();                                             \
 /* Create automatic gain control object.                                */  \
 AGC() AGC(_create)(void);                                                   \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+AGC() AGC(_copy)(AGC() _q);                                                 \
+                                                                            \
 /* Destroy object, freeing all internally-allocated memory.             */  \
 int AGC(_destroy)(AGC() _q);                                                \
                                                                             \
