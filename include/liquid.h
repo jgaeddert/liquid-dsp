@@ -587,6 +587,9 @@ typedef struct WDELAY(_s) * WDELAY();                                       \
 /*  _delay  :   number of samples of delay in the wdelay object         */  \
 WDELAY() WDELAY(_create)(unsigned int _delay);                              \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+WDELAY() WDELAY(_copy)(WDELAY() _q);                                        \
+                                                                            \
 /* Re-create delay buffer object, adjusting the delay size, preserving  */  \
 /* the internal state of the object                                     */  \
 /*  _q      :   old delay buffer object                                 */  \
