@@ -399,6 +399,9 @@ CBUFFER() CBUFFER(_create)(unsigned int _max_size);                         \
 CBUFFER() CBUFFER(_create_max)(unsigned int _max_size,                      \
                                unsigned int _max_read);                     \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+CBUFFER() CBUFFER(_copy)(CBUFFER() _q);                                     \
+                                                                            \
 /* Destroy cbuffer object, freeing all internal memory                  */  \
 int CBUFFER(_destroy)(CBUFFER() _q);                                        \
                                                                             \
