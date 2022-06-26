@@ -184,6 +184,7 @@ src/channel/src/channel_cccf.o : %.o : %.c $(include_headers) $(channel_prototyp
 
 channel_autotests :=						\
 	src/channel/tests/channel_copy_autotest.c		\
+	src/channel/tests/tvmpch_copy_autotest.c		\
 	
 #src/channel/tests/channel_cccf_autotest.c
 

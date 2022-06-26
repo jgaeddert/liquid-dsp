@@ -737,6 +737,9 @@ TVMPCH() TVMPCH(_create)(unsigned int _n,                                   \
                          float        _std,                                 \
                          float        _tau);                                \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+TVMPCH() TVMPCH(_copy)(TVMPCH() _q);                                        \
+                                                                            \
 /* Destroy channel object, freeing all internal memory                  */  \
 int TVMPCH(_destroy)(TVMPCH() _q);                                          \
                                                                             \

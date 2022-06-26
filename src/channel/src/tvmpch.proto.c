@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -80,6 +80,27 @@ TVMPCH() TVMPCH(_create)(unsigned int _n,
 
     //
     return q;
+}
+
+// copy object
+TVMPCH() TVMPCH(_copy)(TVMPCH() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("tvmpch_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object and copy base parameters
+    TVMPCH() q_copy = (TVMPCH()) malloc(sizeof(struct TVMPCH(_s)));
+    memmove(q_copy, q_orig, sizeof(struct TVMPCH(_s)));
+
+    // copy channel filter coefficients
+    q_copy->h = (TC*) malloc(q_copy->h_len*sizeof(TC));
+    memmove(q_copy->h, q_orig->h, q_copy->h_len*sizeof(TC));
+
+    // copying window object
+    q_copy->w = WINDOW(_copy)(q_orig->w);
+
+    return q_copy;
 }
 
 // destroy tvmpch object
