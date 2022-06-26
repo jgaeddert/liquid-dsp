@@ -91,9 +91,15 @@ CHANNEL() CHANNEL(_copy)(CHANNEL() q_orig)
     CHANNEL() q_copy = (CHANNEL()) malloc(sizeof(struct CHANNEL(_s)));
     memmove(q_copy, q_orig, sizeof(struct CHANNEL(_s)));
 
-    // copy internal objects
-    q_copy->nco            = NCO(_copy)    (q_orig->nco);
+    // copy nco
+    q_copy->nco = NCO(_copy)(q_orig->nco);
+
+    // copy channel filter
+    q_copy->h = (TC*) malloc(q_copy->h_len*sizeof(TC));
+    memmove(q_copy->h, q_orig->h, q_copy->h_len*sizeof(TC));
     q_copy->channel_filter = FIRFILT(_copy)(q_orig->channel_filter);
+
+    // copying shadowing filter
     if (q_orig->shadowing_filter != NULL)
         q_copy->shadowing_filter = IIRFILT(_copy)(q_orig->shadowing_filter);
 

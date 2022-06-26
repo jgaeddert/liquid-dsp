@@ -183,6 +183,7 @@ channel_prototypes :=						\
 src/channel/src/channel_cccf.o : %.o : %.c $(include_headers) $(channel_prototypes)
 
 channel_autotests :=						\
+	src/channel/tests/channel_copy_autotest.c		\
 	
 #src/channel/tests/channel_cccf_autotest.c
 
