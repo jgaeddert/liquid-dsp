@@ -755,6 +755,14 @@ int TVMPCH(_push)(TVMPCH() _q,                                              \
 int TVMPCH(_execute)(TVMPCH() _q,                                           \
                      TO *     _y);                                          \
                                                                             \
+/* Execute filter on one sample, equivalent to push() and execute()     */  \
+/*  _q      : channel object                                            */  \
+/*  _x      : single input sample                                       */  \
+/*  _y      : pointer to single output sample                           */  \
+int TVMPCH(_execute_one)(TVMPCH() _q,                                       \
+                         TI       _x,                                       \
+                         TO *     _y);                                      \
+                                                                            \
 /* Apply channel impairments on a block of samples                      */  \
 /*  _q      : channel object                                            */  \
 /*  _x      : input array, [size: _n x 1]                               */  \

@@ -144,6 +144,15 @@ int TVMPCH(_execute)(TVMPCH() _q,
     return LIQUID_OK;
 }
 
+// run on single sample
+int TVMPCH(_execute_one)(TVMPCH() _q,
+                         TI       _x,
+                         TO *     _y)
+{
+    TVMPCH(_push)(_q, _x);
+    return TVMPCH(_execute)(_q, _y);
+}
+
 // execute the filter on a block of input samples; the
 // input and output buffers may be the same
 //  _q      : filter object
