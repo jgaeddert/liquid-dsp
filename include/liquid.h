@@ -645,6 +645,9 @@ typedef struct CHANNEL(_s) * CHANNEL();                                     \
 /* Create channel object with default parameters                        */  \
 CHANNEL() CHANNEL(_create)(void);                                           \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+CHANNEL() CHANNEL(_copy)(CHANNEL() _q);                                     \
+                                                                            \
 /* Destroy channel object, freeing all internal memory                  */  \
 int CHANNEL(_destroy)(CHANNEL() _q);                                        \
                                                                             \
