@@ -1102,6 +1102,9 @@ EQRLS() EQRLS(_recreate)(EQRLS()      _q,                                   \
                          T *          _h,                                   \
                          unsigned int _n);                                  \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+EQRLS() EQRLS(_copy)(EQRLS() _q);                                           \
+                                                                            \
 /* Destroy equalizer object, freeing all internal memory                */  \
 int EQRLS(_destroy)(EQRLS() _q);                                            \
                                                                             \

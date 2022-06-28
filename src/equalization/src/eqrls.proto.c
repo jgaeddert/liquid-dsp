@@ -126,6 +126,46 @@ EQRLS() EQRLS(_recreate)(EQRLS()      _q,
     return EQRLS(_create)(_h,_p);
 }
 
+// copy object
+EQRLS() EQRLS(_copy)(EQRLS() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("firfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object and copy base parameters
+    EQRLS() q_copy = (EQRLS()) malloc(sizeof(struct EQRLS(_s)));
+    memmove(q_copy, q_orig, sizeof(struct EQRLS(_s)));
+
+    // allocate memory for matrices
+    unsigned int p = q_copy->p; // filter order (for convenience)
+    q_copy->h0    = (T*) malloc(p  *sizeof(T));
+    q_copy->w0    = (T*) malloc(p  *sizeof(T));
+    q_copy->w1    = (T*) malloc(p  *sizeof(T));
+    q_copy->P0    = (T*) malloc(p*p*sizeof(T));
+    q_copy->P1    = (T*) malloc(p*p*sizeof(T));
+    q_copy->g     = (T*) malloc(p  *sizeof(T));
+    q_copy->xP0   = (T*) malloc(p  *sizeof(T));
+    q_copy->gxl   = (T*) malloc(p*p*sizeof(T));
+    q_copy->gxlP0 = (T*) malloc(p*p*sizeof(T));
+
+    // copy from original
+    memmove(q_copy->h0   , q_orig->h0   , p  *sizeof(T));
+    memmove(q_copy->w0   , q_orig->w0   , p  *sizeof(T));
+    memmove(q_copy->w1   , q_orig->w1   , p  *sizeof(T));
+    memmove(q_copy->P0   , q_orig->P0   , p*p*sizeof(T));
+    memmove(q_copy->P1   , q_orig->P1   , p*p*sizeof(T));
+    memmove(q_copy->g    , q_orig->g    , p  *sizeof(T));
+    memmove(q_copy->xP0  , q_orig->xP0  , p  *sizeof(T));
+    memmove(q_copy->gxl  , q_orig->gxl  , p*p*sizeof(T));
+    memmove(q_copy->gxlP0, q_orig->gxlP0, p*p*sizeof(T));
+
+    // copy window and buffer objects
+    q_copy->buffer = WINDOW(_copy)(q_orig->buffer);
+
+    return q_copy;
+}
+
 // destroy eqrls object
 int EQRLS(_destroy)(EQRLS() _q)
 {

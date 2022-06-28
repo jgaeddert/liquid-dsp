@@ -87,3 +87,52 @@ void autotest_eqrls_rrrf_01()
     eqrls_rrrf_destroy(eq);
 }
 
+void autotest_eqrls_rrrf_copy()
+{
+    // create initial object
+    unsigned int i;
+    float h[9];
+    for (i=0; i<9; i++)
+        h[i] = randnf();
+    eqrls_rrrf q0 = eqrls_rrrf_create(h, 9);
+    eqrls_rrrf_set_bw(q0, 0.1f);
+    eqrls_rrrf_print(q0);
+
+    // run random samples through object
+    float x, v, y0, y1;
+    for (i=0; i<120; i++) {
+        x = randnf();
+        eqrls_rrrf_push(q0, x);
+    }
+
+    // copy object
+    eqrls_rrrf q1 = eqrls_rrrf_copy(q0);
+
+    // run random samples through both objects
+    for (i=0; i<120; i++) {
+        // push random sample in
+        x = randnf();
+        eqrls_rrrf_push(q0, x);
+        eqrls_rrrf_push(q1, x);
+
+        // compute output
+        eqrls_rrrf_execute(q0, &y0);
+        eqrls_rrrf_execute(q1, &y1);
+        CONTEND_EQUALITY(y0, y1);
+
+        // step equalization algorithm
+        v = randnf();
+        eqrls_rrrf_step(q0, v, y0);
+        eqrls_rrrf_step(q1, v, y1);
+    }
+
+    // get and compare coefficients
+    //CONTEND_SAME_DATA(eqrls_rrrf_get_coefficients(q0),
+    //                  eqrls_rrrf_get_coefficients(q1),
+    //                  21 * sizeof(float));
+
+    // destroy filter objects
+    eqrls_rrrf_destroy(q0);
+    eqrls_rrrf_destroy(q1);
+}
+
