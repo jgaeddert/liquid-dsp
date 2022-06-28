@@ -959,6 +959,9 @@ EQLMS() EQLMS(_recreate)(EQLMS()      _q,                                   \
                          T *          _h,                                   \
                          unsigned int _n);                                  \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+EQLMS() EQLMS(_copy)(EQLMS() _q);                                           \
+                                                                            \
 /* Destroy equalizer object, freeing all internal memory                */  \
 int EQLMS(_destroy)(EQLMS() _q);                                            \
                                                                             \
