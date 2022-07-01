@@ -358,6 +358,7 @@ src/fft/src/spgramf.o       : %.o : %.c $(include_headers) src/fft/src/asgram.pr
 
 # fft autotest scripts
 fft_autotests :=						\
+	src/fft/tests/asgram_autotest.c				\
 	src/fft/tests/fft_small_autotest.c			\
 	src/fft/tests/fft_radix2_autotest.c			\
 	src/fft/tests/fft_composite_autotest.c			\

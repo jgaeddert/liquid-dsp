@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,6 +76,32 @@ ASGRAM() ASGRAM(_create)(unsigned int _nfft)
     ASGRAM(_set_scale)(q, 0.0f, 10.0f);
 
     return q;
+}
+
+// copy object
+ASGRAM() ASGRAM(_copy)(ASGRAM() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("spgram%s_copy(), object cannot be NULL", EXTENSION);
+
+    // allocate memory for main object
+    ASGRAM() q_copy = (ASGRAM()) malloc(sizeof(struct ASGRAM(_s)));
+
+    // copy all internal memory
+    memmove(q_copy, q_orig, sizeof(struct ASGRAM(_s)));
+
+    // create periodogram object
+    q_copy->periodogram = SPGRAM(_copy)(q_orig->periodogram);
+
+    // allocate and copy memory arrays
+    q_copy->X   = (TC *   ) malloc((q_copy->nfftp)*sizeof(TC)   );
+    q_copy->psd = (float *) malloc((q_copy->nfftp)*sizeof(float));
+    memmove(q_copy->X,   q_orig->X,   q_copy->nfftp*sizeof(TC));
+    memmove(q_copy->psd, q_orig->psd, q_copy->nfftp*sizeof(float));
+
+    // return copied object
+    return q_copy;
 }
 
 // destroy asgram object

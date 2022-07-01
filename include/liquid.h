@@ -1816,6 +1816,9 @@ typedef struct ASGRAM(_s) * ASGRAM();                                       \
 /*  _nfft   : size of FFT taken for each transform (character width)    */  \
 ASGRAM() ASGRAM(_create)(unsigned int _nfft);                               \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+ASGRAM() ASGRAM(_copy)(ASGRAM() _q);                                        \
+                                                                            \
 /* Destroy asgram object, freeing all internally-allocated memory       */  \
 int ASGRAM(_destroy)(ASGRAM() _q);                                          \
                                                                             \
