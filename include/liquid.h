@@ -9297,6 +9297,12 @@ int msequence_set_state(msequence    _ms,
 // MODULE : utility
 //
 
+// allocate memory and copy from original location
+//  _orig   : pointer to original memory array
+//  _num    : number of original elements
+//  _size   : size of each element
+void * liquid_malloc_copy(void * _orig, unsigned int _num, unsigned int _size);
+
 // pack binary array with symbol(s)
 //  _src        :   source array [size: _n x 1]
 //  _n          :   input source array length

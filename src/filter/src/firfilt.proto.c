@@ -302,16 +302,14 @@ FIRFILT() FIRFILT(_copy)(FIRFILT() q_orig)
     memmove(q_copy, q_orig, sizeof(struct FIRFILT(_s)));
 
     // copy filter coefficients
-    q_copy->h     = (TC *) malloc((q_orig->h_len)*sizeof(TC));
-    memmove(q_copy->h, q_orig->h, (q_orig->h_len)*sizeof(TC));
+    q_copy->h = (TC *) liquid_malloc_copy(q_orig->h, q_orig->h_len, sizeof(TC));
 
 #if LIQUID_FIRFILT_USE_WINDOW
     // copy window
     q_copy->w = WINDOW(_copy)(q_orig->w);
 #else
     // initialize array for buffering
-    q_copy->w     = (TI *) malloc((q_orig->w_len)*sizeof(TI));
-    memmove(q_copy->w, q_orig->w, (q_orig->w_len)*sizeof(TI));
+    q_copy->w = (TI *) liquid_malloc_copy(q_orig->w, q_orig->w_len, sizeof(TI));
 #endif
 
     // copy dot product object and return

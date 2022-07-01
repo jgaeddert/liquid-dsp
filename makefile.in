@@ -1089,6 +1089,7 @@ sequence_benchmarks :=						\
 utility_objects :=						\
 	src/utility/src/bshift_array.o				\
 	src/utility/src/byte_utilities.o			\
+	src/utility/src/memory.o				\
 	src/utility/src/msb_index.o				\
 	src/utility/src/pack_bytes.o				\
 	src/utility/src/shift_array.o				\

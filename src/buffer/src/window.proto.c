@@ -119,8 +119,7 @@ WINDOW() WINDOW(_copy)(WINDOW() q_orig)
     memmove(q_copy, q_orig, sizeof(struct WINDOW(_s)));
 
     // allocte and copy full memory array
-    q_copy->v = (T*) malloc((q_copy->num_allocated)*sizeof(T));
-    memmove(q_copy->v, q_orig->v, q_copy->num_allocated*sizeof(T));
+    q_copy->v = (T*) liquid_malloc_copy(q_copy->v, q_copy->num_allocated, sizeof(T));
 
     // return new object
     return q_copy;
