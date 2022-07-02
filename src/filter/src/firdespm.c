@@ -400,6 +400,38 @@ firdespm firdespm_create_callback(unsigned int          _h_len,
     return q;
 }
 
+// copy object
+firdespm firdespm_copy(firdespm q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("firdespm_copy(), object cannot be NULL");
+
+    // create filter object and copy base parameters
+    firdespm q_copy = (firdespm) malloc(sizeof(struct firdespm_s));
+    memmove(q_copy, q_orig, sizeof(struct firdespm_s));
+
+    // copy memory for filter description parameters
+    q_copy->bands   = (double*)liquid_malloc_copy(q_orig->bands, 2*q_orig->num_bands, sizeof(double));
+    q_copy->des     = (double*)liquid_malloc_copy(q_orig->des,     q_orig->num_bands, sizeof(double));
+    q_copy->weights = (double*)liquid_malloc_copy(q_orig->weights, q_orig->num_bands, sizeof(double));
+    q_copy->wtype   = (liquid_firdespm_wtype*) liquid_malloc_copy(q_orig->wtype, q_orig->num_bands, sizeof(liquid_firdespm_wtype));
+
+    // copy the grid
+    q_copy->F = (double*) liquid_malloc_copy(q_copy->F, q_orig->grid_size, sizeof(double));
+    q_copy->D = (double*) liquid_malloc_copy(q_copy->D, q_orig->grid_size, sizeof(double));
+    q_copy->W = (double*) liquid_malloc_copy(q_copy->W, q_orig->grid_size, sizeof(double));
+    q_copy->E = (double*) liquid_malloc_copy(q_copy->E, q_orig->grid_size, sizeof(double));
+
+    // copy memory for extremal frequency set, interpolating polynomial
+    q_copy->iext  = (unsigned int*) liquid_malloc_copy(q_copy->iext, q_orig->r+1,sizeof(unsigned int));
+    q_copy->x     = (double*)       liquid_malloc_copy(q_copy->x,    q_orig->r+1,sizeof(double));
+    q_copy->alpha = (double*)       liquid_malloc_copy(q_copy->alpha,q_orig->r+1,sizeof(double));
+    q_copy->c     = (double*)       liquid_malloc_copy(q_copy->c,    q_orig->r+1,sizeof(double));
+
+    return q_copy;
+}
+
 // destroy firdespm object
 int firdespm_destroy(firdespm _q)
 {

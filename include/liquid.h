@@ -2186,6 +2186,9 @@ firdespm firdespm_create_callback(unsigned int          _h_len,
                                   firdespm_callback     _callback,
                                   void *                _userdata);
 
+// Copy object including all internal objects and state
+firdespm firdespm_copy(firdespm _q);
+
 // destroy firdespm object
 int firdespm_destroy(firdespm _q);
 

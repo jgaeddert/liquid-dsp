@@ -207,6 +207,29 @@ void autotest_firdespm_callback()
         liquid_autotest_verbose ? "autotest_firdespm_callback.m" : NULL);
 }
 
+void autotest_firdespm_copy()
+{
+    // create valid object
+    float bands[4] = {0.0, 0.2, 0.3, 0.5};  // regions
+    float   des[2] = {1.0,      0.0};       // desired values
+    float     w[2] = {1.0,      1.0};       // weights
+    liquid_firdespm_wtype wtype[2] = {LIQUID_FIRDESPM_FLATWEIGHT, LIQUID_FIRDESPM_FLATWEIGHT};
+    firdespm q0 = firdespm_create(51, 2, bands, des, w, wtype, LIQUID_FIRDESPM_BANDPASS);
+
+    // copy object
+    firdespm q1 = firdespm_copy(q0);
+
+    // execute both
+    float h0[51], h1[51];
+    firdespm_execute(q0, h0);
+    firdespm_execute(q1, h1);
+    CONTEND_SAME_DATA(h0, h1, 51*sizeof(float));
+
+    // destroy objects
+    firdespm_destroy(q0);
+    firdespm_destroy(q1);
+}
+
 void autotest_firdespm_config()
 {
 #if LIQUID_STRICT_EXIT
