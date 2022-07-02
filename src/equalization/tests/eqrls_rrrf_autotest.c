@@ -95,7 +95,6 @@ void autotest_eqrls_rrrf_copy()
     for (i=0; i<9; i++)
         h[i] = randnf();
     eqrls_rrrf q0 = eqrls_rrrf_create(h, 9);
-    eqrls_rrrf_set_bw(q0, 0.1f);
     eqrls_rrrf_print(q0);
 
     // run random samples through object
