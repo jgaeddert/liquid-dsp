@@ -88,7 +88,7 @@ EQRLS() EQRLS(_create)(T *          _h,
         // initial coefficients with delta at first index
         unsigned int i;
         for (i=0; i<q->p; i++)
-            q->h0[i] = (i==0) ? 1.0 : 0.0;
+            q->h0[i] = (i==q->p-1) ? 1.0 : 0.0;
     } else {
         // copy user-defined initial coefficients
         memmove(q->h0, _h, (q->p)*sizeof(T));
@@ -194,6 +194,14 @@ int EQRLS(_print)(EQRLS() _q)
 {
     printf("equalizer (RLS):\n");
     printf("    order:      %u\n", _q->p);
+    unsigned int i;
+    for (i=0; i<_q->p; i++) {
+#if T_COMPLEX
+        printf("  %3u: w = %12.8f + j%12.8f\n", i, crealf(_q->w1[_q->p-i-1]), cimagf(_q->w1[_q->p-i-1]));
+#else
+        printf("  %3u: w = %12.8f\n", i, _q->w1[_q->p-i-1]);
+#endif
+    }
 
 #ifdef DEBUG
     unsigned int r,c,p=_q->p;
