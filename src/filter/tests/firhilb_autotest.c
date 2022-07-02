@@ -198,3 +198,69 @@ void autotest_firhilbf_invalid_config()
     //firhilbf_destroy(q);
 }
 
+void autotest_firhilbf_copy_interp()
+{
+    firhilbf q0 = firhilbf_create(12,120.0f);
+
+    // run interpolator on random data
+    unsigned int i;
+    float y0[2], y1[2];
+    for (i=0; i<80; i++) {
+        float complex x = randnf() + _Complex_I*randnf();
+        firhilbf_interp_execute(q0, x, y0);
+    }
+
+    // copy object
+    firhilbf q1 = firhilbf_copy(q0);
+
+    for (i=0; i<80; i++) {
+        float complex x = randnf() + _Complex_I*randnf();
+        firhilbf_interp_execute(q0, x, y0);
+        firhilbf_interp_execute(q1, x, y1);
+        if (liquid_autotest_verbose) {
+            printf("%3u : %12.8f +j%12.8f > {%12.8f, %12.8f}, {%12.8f, %12.8f}\n",
+                    i, crealf(x), cimagf(x), y0[0], y0[1], y1[0], y1[1]);
+        }
+        CONTEND_EQUALITY(y0[0], y1[0]);
+        CONTEND_EQUALITY(y0[1], y1[1]);
+    }
+
+    // destroy objects
+    firhilbf_destroy(q0);
+    firhilbf_destroy(q1);
+}
+
+void autotest_firhilbf_copy_decim()
+{
+    firhilbf q0 = firhilbf_create(12,120.0f);
+
+    // run interpolator on random data
+    unsigned int i;
+    float x[2];
+    float complex y0, y1;
+    for (i=0; i<80; i++) {
+        x[0] = randnf();
+        x[1] = randnf();
+        firhilbf_decim_execute(q0, x, &y0);
+    }
+
+    // copy object
+    firhilbf q1 = firhilbf_copy(q0);
+
+    for (i=0; i<80; i++) {
+        x[0] = randnf();
+        x[1] = randnf();
+        firhilbf_decim_execute(q0, x, &y0);
+        firhilbf_decim_execute(q1, x, &y1);
+        if (liquid_autotest_verbose) {
+            printf("%3u : {%12.8f %12.8f} > %12.8f +j%12.8f, %12.8f +j%12.8f\n",
+                    i, x[0], x[1], crealf(y0), cimagf(y0), crealf(y1), cimagf(y1));
+        }
+        CONTEND_EQUALITY(y0, y1);
+    }
+
+    // destroy objects
+    firhilbf_destroy(q0);
+    firhilbf_destroy(q1);
+}
+

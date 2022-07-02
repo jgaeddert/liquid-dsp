@@ -2997,6 +2997,9 @@ typedef struct FIRHILB(_s) * FIRHILB();                                     \
 FIRHILB() FIRHILB(_create)(unsigned int _m,                                 \
                            float        _as);                               \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+FIRHILB() FIRHILB(_copy)(FIRHILB() _q);                                     \
+                                                                            \
 /* Destroy finite impulse response Hilbert transform, freeing all       */  \
 /* internally-allocted memory and objects.                              */  \
 int FIRHILB(_destroy)(FIRHILB() _q);                                        \
