@@ -38,7 +38,7 @@
 
 // fftfilt object structure
 struct FFTFILT(_s) {
-    TC * h;             // filter coefficients array [size; h_len x 1]
+    TC *         h;     // filter coefficients array [size; h_len x 1]
     unsigned int h_len; // filter length
     unsigned int n;     // input/output block size
 
@@ -120,6 +120,37 @@ FFTFILT() FFTFILT(_create)(TC *         _h,
 
     // return object
     return q;
+}
+
+// copy object
+FFTFILT() FFTFILT(_copy)(FFTFILT() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("firfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object and copy base parameters
+    FFTFILT() q_copy = (FFTFILT()) malloc(sizeof(struct FFTFILT(_s)));
+    memmove(q_copy, q_orig, sizeof(struct FFTFILT(_s)));
+
+    // copy filter coefficients
+    q_copy->h = (TC *) liquid_malloc_copy(q_orig->h, q_orig->h_len, sizeof(TC));
+
+    // copy buffers
+    q_copy->time_buf = (float complex*) liquid_malloc_copy(q_orig->time_buf, 2*q_orig->n, sizeof(float complex));
+    q_copy->freq_buf = (float complex*) liquid_malloc_copy(q_orig->freq_buf, 2*q_orig->n, sizeof(float complex));
+    q_copy->H        = (float complex*) liquid_malloc_copy(q_orig->H,        2*q_orig->n, sizeof(float complex));
+    q_copy->w        = (float complex*) liquid_malloc_copy(q_orig->w,          q_orig->n, sizeof(float complex));
+
+    // create internal FFT objects and return
+#ifdef LIQUID_FFTOVERRIDE
+    q_copy->fft  = fft_create_plan(2*q_copy->n, q_copy->time_buf, q_copy->freq_buf, LIQUID_FFT_FORWARD,  0);
+    q_copy->ifft = fft_create_plan(2*q_copy->n, q_copy->freq_buf, q_copy->time_buf, LIQUID_FFT_BACKWARD, 0);
+#else
+    q_copy->fft  = FFT_CREATE_PLAN(2*q_copy->n, q_copy->time_buf, q_copy->freq_buf, FFT_DIR_FORWARD,  FFT_METHOD);
+    q_copy->ifft = FFT_CREATE_PLAN(2*q_copy->n, q_copy->freq_buf, q_copy->time_buf, FFT_DIR_BACKWARD, FFT_METHOD);
+#endif
+    return q_copy;
 }
 
 // destroy object, freeing all internally-allocated memory

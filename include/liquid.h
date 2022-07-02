@@ -3219,6 +3219,9 @@ FFTFILT() FFTFILT(_create)(TC *         _h,                                 \
                            unsigned int _h_len,                             \
                            unsigned int _n);                                \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+FFTFILT() FFTFILT(_copy)(FFTFILT() _q);                                     \
+                                                                            \
 /* Destroy filter object and free all internal memory                   */  \
 int FFTFILT(_destroy)(FFTFILT() _q);                                        \
                                                                             \
