@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,9 +35,7 @@ const float eqrls_rrrf_autotest_data_sequence[64] = {
     -1.0,  1.0,  1.0, -1.0,  1.0, -1.0,  1.0, -1.0
 };
 
-// 
 // AUTOTEST: channel filter: delta with zero delay
-//
 void autotest_eqrls_rrrf_01()
 {
     float tol=1e-2f;        // error tolerance
@@ -95,24 +93,34 @@ void autotest_eqrls_rrrf_copy()
     for (i=0; i<9; i++)
         h[i] = randnf();
     eqrls_rrrf q0 = eqrls_rrrf_create(h, 9);
-    eqrls_rrrf_print(q0);
 
-    // run random samples through object
-    float x, v, y0, y1;
-    for (i=0; i<120; i++) {
-        x = randnf();
-        eqrls_rrrf_push(q0, x);
+    // create channel filter
+    float hc[7] = {1.0f,-0.08f, 0.32f, 0.01f,-0.06f, 0.07f,-0.03f,};
+    firfilt_rrrf fc = firfilt_rrrf_create(hc,7);
+
+    // run training samples through object
+    float v, y0, y1, nstd = 0.001f;
+    float * d = (float*)eqrls_rrrf_autotest_data_sequence;
+    for (i=0; i<64; i++) {
+        firfilt_rrrf_execute_one(fc, d[i], &v);
+        v += nstd*randnf();
+        eqrls_rrrf_push   (q0, v);
+        eqrls_rrrf_execute(q0, &y0);
+        eqrls_rrrf_step   (q0, d[i], y0);
     }
 
     // copy object
     eqrls_rrrf q1 = eqrls_rrrf_copy(q0);
 
-    // run random samples through both objects
-    for (i=0; i<120; i++) {
-        // push random sample in
-        x = randnf();
-        eqrls_rrrf_push(q0, x);
-        eqrls_rrrf_push(q1, x);
+    // run training samples through object
+    for (i=0; i<64; i++) {
+        // filtered sample in noise
+        firfilt_rrrf_execute_one(fc, d[i], &v);
+        v += nstd*randnf();
+
+        // push sample through filter
+        eqrls_rrrf_push(q0, v);
+        eqrls_rrrf_push(q1, v);
 
         // compute output
         eqrls_rrrf_execute(q0, &y0);
@@ -120,9 +128,12 @@ void autotest_eqrls_rrrf_copy()
         CONTEND_EQUALITY(y0, y1);
 
         // step equalization algorithm
-        v = randnf();
-        eqrls_rrrf_step(q0, v, y0);
-        eqrls_rrrf_step(q1, v, y1);
+        eqrls_rrrf_step(q0, d[i], y0);
+        eqrls_rrrf_step(q1, d[i], y1);
+    }
+    if (liquid_autotest_verbose) {
+        printf("orig "); eqrls_rrrf_print(q0);
+        printf("copy "); eqrls_rrrf_print(q1);
     }
 
     // get and compare coefficients
