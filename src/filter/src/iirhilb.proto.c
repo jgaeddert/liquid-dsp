@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// iirhilb.c
-//
 // infinite impulse response (IIR) Hilbert transform
-//
 
 #include <stdio.h>
 #include <string.h>
@@ -81,6 +77,23 @@ IIRHILB() IIRHILB(_create_default)(unsigned int _n)
     float   Ap     =   0.1f;                // pass-band ripple [dB]
     float   as     =   60.0f;               // stop-band attenuation [dB]
     return IIRHILB(_create)(ftype,_n,Ap,as);
+}
+
+IIRHILB() IIRHILB(_copy)(IIRHILB() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("iirhilb%s_copy(), object cannot be NULL", EXTENSION_SHORT);
+
+    // create filter object and copy base parameters
+    IIRHILB() q_copy = (IIRHILB()) malloc(sizeof(struct IIRHILB(_s)));
+    memmove(q_copy, q_orig, sizeof(struct IIRHILB(_s)));
+
+    // copy objects and return
+    q_copy->filt_0 = IIRFILT(_copy)(q_orig->filt_0);
+    q_copy->filt_1 = IIRFILT(_copy)(q_orig->filt_1);
+
+    return q_copy;
 }
 
 // destroy iirhilb object

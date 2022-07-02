@@ -3098,6 +3098,9 @@ IIRHILB() IIRHILB(_create)(liquid_iirdes_filtertype _ftype,                 \
                            float                    _ap,                    \
                            float                    _as);                   \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+IIRHILB() IIRHILB(_copy)(IIRHILB() _q);                                     \
+                                                                            \
 /* Create a default iirhilb object with a particular filter order.      */  \
 /*  _n      : filter order, _n > 0                                      */  \
 IIRHILB() IIRHILB(_create_default)(unsigned int _n);                        \

@@ -191,3 +191,70 @@ void autotest_iirhilbf_invalid_config()
     iirhilbf_destroy(q);
 }
 
+void autotest_iirhilbf_copy_interp()
+{
+    // create base object
+    iirhilbf q0 = iirhilbf_create(LIQUID_IIRDES_ELLIP,7,0.1f,80.0f);
+
+    // run interpolator on random data
+    unsigned int i;
+    float y0[2], y1[2];
+    for (i=0; i<80; i++) {
+        float complex x = randnf() + _Complex_I*randnf();
+        iirhilbf_interp_execute(q0, x, y0);
+    }
+
+    // copy object
+    iirhilbf q1 = iirhilbf_copy(q0);
+
+    for (i=0; i<80; i++) {
+        float complex x = randnf() + _Complex_I*randnf();
+        iirhilbf_interp_execute(q0, x, y0);
+        iirhilbf_interp_execute(q1, x, y1);
+        if (liquid_autotest_verbose) {
+            printf("%3u : %12.8f +j%12.8f > {%12.8f, %12.8f}, {%12.8f, %12.8f}\n",
+                    i, crealf(x), cimagf(x), y0[0], y0[1], y1[0], y1[1]);
+        }
+        CONTEND_EQUALITY(y0[0], y1[0]);
+        CONTEND_EQUALITY(y0[1], y1[1]);
+    }
+
+    // destroy objects
+    iirhilbf_destroy(q0);
+    iirhilbf_destroy(q1);
+}
+
+void autotest_iirhilbf_copy_decim()
+{
+    // create base object
+    iirhilbf q0 = iirhilbf_create(LIQUID_IIRDES_ELLIP,7,0.1f,80.0f);
+
+    // run interpolator on random data
+    unsigned int i;
+    float x[2];
+    float complex y0, y1;
+    for (i=0; i<80; i++) {
+        x[0] = randnf();
+        x[1] = randnf();
+        iirhilbf_decim_execute(q0, x, &y0);
+    }
+
+    // copy object and run samples through each in parallel
+    iirhilbf q1 = iirhilbf_copy(q0);
+    for (i=0; i<80; i++) {
+        x[0] = randnf();
+        x[1] = randnf();
+        iirhilbf_decim_execute(q0, x, &y0);
+        iirhilbf_decim_execute(q1, x, &y1);
+        if (liquid_autotest_verbose) {
+            printf("%3u : {%12.8f %12.8f} > %12.8f +j%12.8f, %12.8f +j%12.8f\n",
+                    i, x[0], x[1], crealf(y0), cimagf(y0), crealf(y1), cimagf(y1));
+        }
+        CONTEND_EQUALITY(y0, y1);
+    }
+
+    // destroy filter objects
+    iirhilbf_destroy(q0);
+    iirhilbf_destroy(q1);
+}
+
