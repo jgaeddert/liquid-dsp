@@ -4309,6 +4309,9 @@ RRESAMP() RRESAMP(_create_prototype)(int          _type,                    \
 RRESAMP() RRESAMP(_create_default)(unsigned int _interp,                    \
                                    unsigned int _decim);                    \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+RRESAMP() RRESAMP(_copy)(RRESAMP() _q);                                     \
+                                                                            \
 /* Destroy resampler object, freeing all internal memory                */  \
 void RRESAMP(_destroy)(RRESAMP() _q);                                       \
                                                                             \
