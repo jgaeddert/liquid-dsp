@@ -190,15 +190,12 @@ FIRINTERP() FIRINTERP(_copy)(FIRINTERP() q_orig)
     if (q_orig == NULL)
         return liquid_error_config("firinterp_%s_create(), object cannot be NULL", EXTENSION_FULL);
 
-    // create filter object
+    // create filter object and copy internal memory
     FIRINTERP() q_copy = (FIRINTERP()) malloc(sizeof(struct FIRINTERP(_s)));
+    memmove(q_copy, q_orig, sizeof(struct FIRINTERP(_s)));
 
-    // copy base parameters
-    q_copy->h_len     = q_orig->h_len;
-    q_copy->h_sub_len = q_orig->h_sub_len;
-    q_copy->M         = q_orig->M;
-    q_copy->h         = (TC *) malloc((q_orig->h_len)*sizeof(TC));
-    memmove(q_copy->h, q_orig->h, (q_orig->h_len)*sizeof(TC));
+    // copy objects and allocated memory
+    q_copy->h = (TC *)liquid_malloc_copy(q_orig->h, q_orig->h_len, sizeof(TC));
     q_copy->filterbank= FIRPFB(_copy)(q_orig->filterbank);
     return q_copy;
 }
