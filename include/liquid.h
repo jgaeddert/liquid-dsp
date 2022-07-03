@@ -5017,6 +5017,9 @@ ORDFILT() ORDFILT(_create)(unsigned int _n,                                 \
 /*  _m      : buffer semi-length                                        */  \
 ORDFILT() ORDFILT(_create_medfilt)(unsigned int _m);                        \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+ORDFILT() ORDFILT(_copy)(ORDFILT() _q);                                     \
+                                                                            \
 /* Destroy filter object and free all internal memory                   */  \
 int ORDFILT(_destroy)(ORDFILT() _q);                                        \
                                                                             \

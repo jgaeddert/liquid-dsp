@@ -96,6 +96,30 @@ ORDFILT() ORDFILT(_create_medfilt)(unsigned int _m)
     return ORDFILT(_create)(2*_m+1, _m);
 }
 
+// copy object
+ORDFILT() ORDFILT(_copy)(ORDFILT() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("ordfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object and copy base parameters
+    ORDFILT() q_copy = (ORDFILT()) malloc(sizeof(struct ORDFILT(_s)));
+    memmove(q_copy, q_orig, sizeof(struct ORDFILT(_s)));
+
+#if LIQUID_ORDFILT_USE_WINDOW
+    // copy window
+    q_copy->buf = WINDOW(_copy)(q_orig->buf);
+    q_copy->buf_sorted = (TI*) liquid_malloc_copy(q_orig->buf_sorted, q_orig->n, sizeof(TI));
+#else
+    // copy buffers
+    q_copy->buf_      = (TI*)       liquid_malloc_copy(q_orig->buf,       q_orig->n, sizeof(TI));
+    q_copy->buf_index = (uint16_t*) liquid_malloc_copy(q_orig->buf_index, q_orig->n, sizeof(uint16_t));
+#endif
+
+    return q_copy;
+}
+
 // destroy ordfilt object
 int ORDFILT(_destroy)(ORDFILT() _q)
 {
