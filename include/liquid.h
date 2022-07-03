@@ -4734,6 +4734,9 @@ DDS() DDS(_create)(unsigned int _num_stages,                                \
                    float        _bw,                                        \
                    float        _as);                                       \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+DDS() DDS(_copy)(DDS() _q);                                                 \
+                                                                            \
 /* Destroy digital synthesizer object                                   */  \
 int DDS(_destroy)(DDS() _q);                                                \
                                                                             \

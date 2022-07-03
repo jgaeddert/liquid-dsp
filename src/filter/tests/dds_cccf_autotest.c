@@ -140,3 +140,50 @@ void autotest_dds_config()
     dds_cccf_destroy(q);
 }
 
+// copy object
+void autotest_dds_copy()
+{
+    unsigned int num_stages = 3;    // number of half-band stages
+    unsigned int r=1<<num_stages;   // resampling rate (input/output)
+
+    // create resampler
+    dds_cccf q0 = dds_cccf_create(num_stages,0.1234f,0.4321f,60.0f);
+    dds_cccf_set_scale(q0, 0.72280f);
+
+    // create generator with default parameters
+    symstreamrcf gen = symstreamrcf_create();
+
+    // generate samples and push through resampler
+    float complex buf[r]; // input buffer
+    float complex y0, y1; // output samples
+    unsigned int i;
+    for (i=0; i<10; i++) {
+        // generate block of samples
+        symstreamrcf_write_samples(gen, buf, r);
+
+        // resample
+        dds_cccf_decim_execute(q0, buf, &y0);
+    }
+
+    // copy object
+    dds_cccf q1 = dds_cccf_copy(q0);
+
+    // run samples through both resamplers in parallel
+    for (i=0; i<60; i++) {
+        // generate block of samples
+        symstreamrcf_write_samples(gen, buf, r);
+
+        // resample
+        dds_cccf_decim_execute(q0, buf, &y0);
+        dds_cccf_decim_execute(q1, buf, &y1);
+
+        // compare output
+        CONTEND_EQUALITY(y0, y1);
+    }
+
+    // destroy objects
+    dds_cccf_destroy(q0);
+    dds_cccf_destroy(q1);
+    symstreamrcf_destroy(gen);
+}
+
