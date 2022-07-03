@@ -5040,8 +5040,7 @@ int ORDFILT(_write)(ORDFILT()    _q,                                        \
                     TI *         _x,                                        \
                     unsigned int _n);                                       \
                                                                             \
-/* Execute vector dot product on the filter's internal buffer and       */  \
-/* coefficients                                                         */  \
+/* Execute on the filter's internal buffer                              */  \
 /*  _q      : filter object                                             */  \
 /*  _y      : pointer to single output sample                           */  \
 int ORDFILT(_execute)(ORDFILT() _q,                                         \

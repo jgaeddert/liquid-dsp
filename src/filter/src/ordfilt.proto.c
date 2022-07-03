@@ -153,8 +153,7 @@ int ORDFILT(_write)(ORDFILT()    _q,
     return LIQUID_OK;
 }
 
-// compute output sample (dot product between internal
-// filter coefficients and internal buffer)
+// Execute on the filter's internal buffer
 //  _q      :   filter object
 //  _y      :   output sample pointer
 int ORDFILT(_execute)(ORDFILT() _q,
