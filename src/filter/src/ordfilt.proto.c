@@ -177,6 +177,18 @@ int ORDFILT(_execute)(ORDFILT() _q,
     return LIQUID_OK;
 }
 
+// Execute filter on one sample, equivalent to push() and execute()
+//  _q      : filter object
+//  _x      : single input sample
+//  _y      : pointer to single output sample
+int ORDFILT(_execute_one)(ORDFILT() _q,
+                          TI        _x,
+                          TO *      _y)
+{
+    ORDFILT(_push)(_q, _x);
+    return ORDFILT(_execute)(_q, _y);
+}
+
 // execute the filter on a block of input samples; the
 // input and output buffers may be the same
 //  _q      : filter object
