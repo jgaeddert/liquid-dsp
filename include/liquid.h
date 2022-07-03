@@ -3851,6 +3851,9 @@ IIRINTERP() IIRINTERP(_create_prototype)(                                   \
             float                    _ap,                                   \
             float                    _as);                                  \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+IIRINTERP() IIRINTERP(_copy)(IIRINTERP() _q);                               \
+                                                                            \
 /* Destroy interpolator object and free internal memory                 */  \
 void IIRINTERP(_destroy)(IIRINTERP() _q);                                   \
                                                                             \

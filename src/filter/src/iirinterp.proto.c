@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -105,6 +105,22 @@ IIRINTERP() IIRINTERP(_create_prototype)(unsigned int _M,
 
     // return interpolator object
     return q;
+}
+
+// copy object
+IIRINTERP() IIRINTERP(_copy)(IIRINTERP() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("iirinterp_%s_create(), object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object and copy internal memory
+    IIRINTERP() q_copy = (IIRINTERP()) malloc(sizeof(struct IIRINTERP(_s)));
+    memmove(q_copy, q_orig, sizeof(struct IIRINTERP(_s)));
+
+    // copy internal object and return
+    q_copy->iirfilt = IIRFILT(_copy)(q_orig->iirfilt);
+    return q_copy;
 }
 
 // destroy interpolator object
