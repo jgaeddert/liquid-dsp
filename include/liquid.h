@@ -4064,6 +4064,9 @@ IIRDECIM() IIRDECIM(_create_prototype)(                                     \
                 float                    _ap,                               \
                 float                    _as);                              \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+IIRDECIM() IIRDECIM(_copy)(IIRDECIM() _q);                                  \
+                                                                            \
 /* Destroy decimator object and free internal memory                    */  \
 void IIRDECIM(_destroy)(IIRDECIM() _q);                                     \
                                                                             \

@@ -512,6 +512,7 @@ filter_autotests :=						\
 	src/filter/tests/firinterp_autotest.c			\
 	src/filter/tests/firpfb_autotest.c			\
 	src/filter/tests/groupdelay_autotest.c			\
+	src/filter/tests/iirdecim_autotest.c			\
 	src/filter/tests/iirdes_autotest.c			\
 	src/filter/tests/iirdes_support_autotest.c		\
 	src/filter/tests/iirfilt_xxxf_autotest.c		\
