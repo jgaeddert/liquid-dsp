@@ -3526,13 +3526,13 @@ LIQUID_IIRFILTSOS_DEFINE_API(LIQUID_IIRFILTSOS_MANGLE_CCCF,
 /* Finite impulse response (FIR) polyphase filter bank (PFB)            */  \
 typedef struct FIRPFB(_s) * FIRPFB();                                       \
                                                                             \
-/* Create firpfb object with _num_filters sub-filter each with          */  \
-/* _h_len/_num_filters coefficients                                     */  \
+/* Create firpfb object with _num_filters sub-filters each having       */  \
+/* exactly _h_len/_num_filters coefficients                             */  \
 /* from an external array of coefficients                               */  \
 /*  _num_filters    : number of filters in the bank, _num_filters > 1   */  \
 /*  _h              : coefficients, [size: _h_len x 1]                  */  \
-/*  _h_len          : filter length (multiple of _num_filters),         */  \
-/*                    _h_len >= _num_filters                            */  \
+/*  _h_len          : complete filter length (where _h_len is a         */  \
+/*                    multiple of _num_filters), _h_len >= _num_filters */  \
 FIRPFB() FIRPFB(_create)(unsigned int _num_filters,                         \
                          TC *         _h,                                   \
                          unsigned int _h_len);                              \
@@ -3588,8 +3588,8 @@ FIRPFB() FIRPFB(_create_drnyquist)(int          _type,                      \
 /*  _q           : original firpfb object                               */  \
 /*  _num_filters : number of filters in the bank, _num_filters > 1      */  \
 /*  _h           : coefficients, [size: _h_len x 1]                     */  \
-/*  _h_len       : filter length (multiple of _num_filters),            */  \
-/*                 _h_len >= _num_filters                               */  \
+/*  _h_len          : complete filter length (where _h_len is a         */  \
+/*                    multiple of _num_filters), _h_len >= _num_filters */  \
 FIRPFB() FIRPFB(_recreate)(FIRPFB()     _q,                                 \
                            unsigned int _num_filters,                       \
                            TC *         _h,                                 \
