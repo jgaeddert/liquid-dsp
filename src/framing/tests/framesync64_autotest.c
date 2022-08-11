@@ -159,7 +159,11 @@ void autotest_framesync64_config()
 
     CONTEND_EQUALITY(LIQUID_OK, framesync64_print(q))
     CONTEND_EQUALITY(LIQUID_OK, framesync64_set_callback(q,callback_framesync64_autotest))
-    CONTEND_EQUALITY(LIQUID_OK, framesync64_set_userdata(q,NULL));
+    CONTEND_EQUALITY(LIQUID_OK, framesync64_set_userdata(q,NULL))
+
+    CONTEND_EQUALITY(LIQUID_OK, framesync64_set_threshold(q,0.654321f))
+    CONTEND_EQUALITY(0.654321f, framesync64_get_threshold(q))
+
 
     framesync64_destroy(q);
 }
