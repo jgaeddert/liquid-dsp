@@ -26,13 +26,14 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-static int callback(unsigned char *  _header,
-                    int              _header_valid,
-                    unsigned char *  _payload,
-                    unsigned int     _payload_len,
-                    int              _payload_valid,
-                    framesyncstats_s _stats,
-                    void *           _userdata)
+static int callback_framesync64_autotest(
+    unsigned char *  _header,
+    int              _header_valid,
+    unsigned char *  _payload,
+    unsigned int     _payload_len,
+    int              _payload_valid,
+    framesyncstats_s _stats,
+    void *           _userdata)
 {
     //printf("callback invoked, payload valid: %s\n", _payload_valid ? "yes" : "no");
     int * frames_recovered = (int*) _userdata;
@@ -49,7 +50,8 @@ void autotest_framesync64()
 
     // create objects
     framegen64 fg = framegen64_create();
-    framesync64 fs = framesync64_create(callback,(void*)&frames_recovered);
+    framesync64 fs = framesync64_create(callback_framesync64_autotest,
+            (void*)&frames_recovered);
 
     if (liquid_autotest_verbose) {
         framesync64_print(fs);
@@ -91,7 +93,8 @@ void autotest_framesync64_copy()
 
     // create objects
     framegen64  fg  = framegen64_create();
-    framesync64 fs0 = framesync64_create(callback,(void*)&frames_recovered_0);
+    framesync64 fs0 = framesync64_create(callback_framesync64_autotest,
+            (void*)&frames_recovered_0);
 
     // feed random samples into synchronizer
     float complex buf[LIQUID_FRAME64_LEN];
@@ -137,5 +140,27 @@ void autotest_framesync64_copy()
     framegen64_destroy(fg);
     framesync64_destroy(fs0);
     framesync64_destroy(fs1);
+}
+
+void autotest_framesync64_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping framesync64 config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check invalid function calls
+    CONTEND_ISNULL(framesync64_copy(NULL));
+
+    // create proper object and test configurations
+    framesync64 q = framesync64_create(NULL, NULL);
+
+    CONTEND_EQUALITY(LIQUID_OK, framesync64_print(q))
+    CONTEND_EQUALITY(LIQUID_OK, framesync64_set_callback(q,callback_framesync64_autotest))
+    CONTEND_EQUALITY(LIQUID_OK, framesync64_set_userdata(q,NULL));
+
+    framesync64_destroy(q);
 }
 
