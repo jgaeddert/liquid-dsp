@@ -69,7 +69,7 @@ const char * liquid_firfilt_type_str[LIQUID_FIRFILT_NUM_TYPES][2] = {
     {"rfarcsech","root flipped arc-hyperbolic secant"},
 };
 
-// esimate required filter length given transition bandwidth and
+// estimate required filter length given transition bandwidth and
 // stop-band attenuation
 //  _df     :   transition bandwidth (0 < _df < 0.5)
 //  _as     :   stopband suppression level [dB] (_as > 0)
@@ -180,7 +180,7 @@ float estimate_req_filter_df(float        _as,
 }
 
 
-// esimate required filter length given transition bandwidth and
+// estimate required filter length given transition bandwidth and
 // stop-band attenuation (algorithm from [Vaidyanathan:1993])
 //  _df     :   transition bandwidth (0 < _df < 0.5)
 //  _as     :   stop-band attenuation [dB] (as > 0)
@@ -200,7 +200,7 @@ float estimate_req_filter_len_Kaiser(float _df,
 }
 
 
-// esimate required filter length given transition bandwidth and
+// estimate required filter length given transition bandwidth and
 // stop-band attenuation (algorithm from [Herrmann:1973])
 //  _df     :   transition bandwidth (0 < _df < 0.5)
 //  _as     :   stop-band attenuation [dB] (as > 0)

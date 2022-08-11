@@ -130,7 +130,7 @@ void autotest_eqlms_00() { testbench_eqlms(2,7, 0.3,   0,7,0.3,800,     0,LIQUID
 void autotest_eqlms_01() { testbench_eqlms(2,7, 0.3,   0,7,0.3,800,     1,LIQUID_MODEM_QPSK); }
 void autotest_eqlms_02() { testbench_eqlms(2,7, 0.3,   0,7,0.3,800,     2,LIQUID_MODEM_QPSK); }
 
-// test different initializaiton methods:  k,m,beta,init,p, mu,  n,update,mod scheme
+// test different initialization methods:  k,m,beta,init,p, mu,  n,update,mod scheme
 void autotest_eqlms_03() { testbench_eqlms(2,7, 0.3,   0,7,0.3,800,     0,LIQUID_MODEM_QAM16); }
 void autotest_eqlms_04() { testbench_eqlms(2,7, 0.3,   1,7,0.3,800,     0,LIQUID_MODEM_QAM16); }
 void autotest_eqlms_05() { testbench_eqlms(2,7, 0.3,   2,7,0.3,800,     0,LIQUID_MODEM_QAM16); }

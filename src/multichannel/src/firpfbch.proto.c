@@ -142,7 +142,7 @@ FIRPFBCH() FIRPFBCH(_create)(int          _type,
 //  _type   : channelizer type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)
 //  _M      : number of channels
 //  _m      : filter delay (symbols)
-//  _as     : stop-band attentuation [dB]
+//  _as     : stop-band attenuation [dB]
 FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,
                                     unsigned int _M,
                                     unsigned int _m,

@@ -169,7 +169,7 @@ int AGC(_execute)(AGC() _q,
     // clamp to 120 dB gain
     _q->g = (_q->g > 1e6f) ? 1e6f : _q->g;
 
-    // udpate squelch mode appropriately
+    // update squelch mode appropriately
     AGC(_squelch_update_mode)(_q);
 
     // apply output scale

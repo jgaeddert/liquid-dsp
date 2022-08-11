@@ -48,7 +48,7 @@ liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
         // use radix-2 algorithm
         return LIQUID_FFT_METHOD_RADIX2;
 #else
-        // acutally, prefer Cooley-Tukey algorithm
+        // actually, prefer Cooley-Tukey algorithm
         return LIQUID_FFT_METHOD_MIXED_RADIX;
 #endif
 

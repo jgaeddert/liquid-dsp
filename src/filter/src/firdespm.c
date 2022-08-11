@@ -334,7 +334,7 @@ firdespm firdespm_create_callback(unsigned int          _h_len,
     // validate input
     unsigned int i;
     int bands_valid = 1;
-    // ensure bands are withing [0,0.5]
+    // ensure bands are within [0,0.5]
     for (i=0; i<2*_num_bands; i++)
         bands_valid &= _bands[i] >= 0.0 && _bands[i] <= 0.5;
     // ensure bands are non-decreasing

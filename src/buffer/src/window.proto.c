@@ -60,7 +60,7 @@ WINDOW() WINDOW(_create)(unsigned int _n)
     // number of elements to allocate to memory
     q->num_allocated = q->n + q->len - 1;
 
-    // allocte memory
+    // allocate memory
     q->v = (T*) malloc((q->num_allocated)*sizeof(T));
     q->read_index = 0;
 
@@ -118,7 +118,7 @@ WINDOW() WINDOW(_copy)(WINDOW() q_orig)
     WINDOW() q_copy = (WINDOW()) malloc(sizeof(struct WINDOW(_s)));
     memmove(q_copy, q_orig, sizeof(struct WINDOW(_s)));
 
-    // allocte and copy full memory array
+    // allocate and copy full memory array
     q_copy->v = (T*) liquid_malloc_copy(q_copy->v, q_copy->num_allocated, sizeof(T));
 
     // return new object

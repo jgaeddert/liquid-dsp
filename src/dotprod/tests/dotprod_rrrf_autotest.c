@@ -178,7 +178,7 @@ void autotest_dotprod_rrrf_struct_align()
     // create dotprod object
     dotprod_rrrf dp = dotprod_rrrf_create(h,16);
 
-    // test data mis-alignment conditions
+    // test data misalignment conditions
     float x_buffer[20];
     float * x_hat;
     unsigned int i;
@@ -343,7 +343,7 @@ void autotest_dotprod_rrrf_struct_lengths()
 }
 
 // 
-// AUTOTEST: compare structured result to oridinal computation
+// AUTOTEST: compare structured result to ordinal computation
 //
 
 // helper function (compare structured object to ordinal computation)

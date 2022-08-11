@@ -111,7 +111,7 @@ unsigned int packetizer_compute_dec_msg_len(unsigned int _k,
 
 // create packetizer object
 //
-//  _n      :   number of uncoded intput bytes
+//  _n      :   number of uncoded input bytes
 //  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
@@ -167,7 +167,7 @@ packetizer packetizer_create(unsigned int _n,
 // re-create packetizer object
 //
 //  _p      :   initialz packetizer object
-//  _n      :   number of uncoded intput bytes
+//  _n      :   number of uncoded input bytes
 //  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code

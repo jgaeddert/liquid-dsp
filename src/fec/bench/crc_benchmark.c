@@ -51,7 +51,7 @@ void crc_bench(struct rusage *_start,
     unsigned char msg[_n];
     unsigned int key = 0;
 
-    // initialze message
+    // initialize message
     for (i=0; i<_n; i++)
         msg[i] = rand() & 0xff;
 

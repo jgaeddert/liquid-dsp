@@ -291,7 +291,7 @@ unsigned int MSRESAMP(_get_num_output)(MSRESAMP()   _q,
         return n * (1 << _q->num_halfband_stages);
     } else {
         // compute number of outputs from half-band decimation stage
-        // NOTE: this compensates for the number of samples already bufferes
+        // NOTE: this compensates for the number of samples already buffers
         unsigned int n = (_q->buffer_index+_num_input) >> _q->num_halfband_stages;
 
         return RESAMP(_get_num_output)(_q->arbitrary_resamp,n);

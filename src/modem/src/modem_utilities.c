@@ -35,7 +35,7 @@ const struct modulation_type_s modulation_types[LIQUID_MODEM_NUM_SCHEMES] = {
     // name       fullname        scheme          bps
 
     // unknown
-    {"unknown",   "unkown",       LIQUID_MODEM_UNKNOWN, 0},
+    {"unknown",   "unknown",       LIQUID_MODEM_UNKNOWN, 0},
 
     // phase-shift keying
     {"psk2",      "phase-shift keying (2)",   LIQUID_MODEM_PSK2,  1},

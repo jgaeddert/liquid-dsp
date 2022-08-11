@@ -421,7 +421,7 @@ int SPWATERFALL(_export_bin)(SPWATERFALL() _q,
     }
     
     // write output spectral estimate
-    // TODO: force converstion from type 'T' to type 'float'
+    // TODO: force conversion from type 'T' to type 'float'
     uint64_t total_samples = SPGRAM(_get_num_samples_total)(_q->periodogram);
     for (i=0; i<_q->index_time; i++) {
         float n = (float)i / (float)(_q->index_time) * (float)total_samples;

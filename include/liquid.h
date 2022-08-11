@@ -284,7 +284,7 @@ float AGC(_get_gain)(AGC() _q);                                             \
 int AGC(_set_gain)(AGC() _q,                                                \
                    float _gain);                                            \
                                                                             \
-/* Get the ouput scaling applied to each sample (linear).               */  \
+/* Get the output scaling applied to each sample (linear).               */  \
 float AGC(_get_scale)(AGC() _q);                                            \
                                                                             \
 /* Set the agc object's output scaling (linear). Note that this does    */  \
@@ -1769,7 +1769,7 @@ int SPGRAM(_get_psd)(SPGRAM() _q,                                           \
                      T *      _psd);                                        \
                                                                             \
 /* Export stand-alone gnuplot file for plotting output spectrum,        */  \
-/* returning 0 on sucess, anything other than 0 for failure             */  \
+/* returning 0 on success, anything other than 0 for failure             */  \
 /*  _q        : spgram object                                           */  \
 /*  _filename : input buffer, [size: _n x 1]                            */  \
 int SPGRAM(_export_gnuplot)(SPGRAM()     _q,                                \
@@ -3336,7 +3336,7 @@ IIRFILT() IIRFILT(_create)(TC *         _b,                                 \
                            TC *         _a,                                 \
                            unsigned int _na);                               \
                                                                             \
-/* Create IIR filter using 2nd-order secitons from external             */  \
+/* Create IIR filter using 2nd-order sections from external             */  \
 /* coefficients.                                                        */  \
 /*  _b      : feed-forward coefficients, [size: _nsos x 3]              */  \
 /*  _a      : feed-back coefficients,    [size: _nsos x 3]              */  \
@@ -3402,7 +3402,7 @@ int IIRFILT(_print)(IIRFILT() _q);                                          \
 /* Reset iirfilt object internals                                       */  \
 int IIRFILT(_reset)(IIRFILT() _q);                                          \
                                                                             \
-/* Compute filter output given a signle input sample                    */  \
+/* Compute filter output given a single input sample                    */  \
 /*  _q      : iirfilt object                                            */  \
 /*  _x      : input sample                                              */  \
 /*  _y      : output sample pointer                                     */  \
@@ -3462,7 +3462,7 @@ LIQUID_IIRFILT_DEFINE_API(LIQUID_IIRFILT_MANGLE_CCCF,
                           liquid_float_complex)
 
 //
-// iirfiltsos : infinite impulse respone filter (second-order sections)
+// iirfiltsos : infinite impulse response filter (second-order sections)
 //
 #define LIQUID_IIRFILTSOS_MANGLE_RRRF(name)  LIQUID_CONCAT(iirfiltsos_rrrf,name)
 #define LIQUID_IIRFILTSOS_MANGLE_CRCF(name)  LIQUID_CONCAT(iirfiltsos_crcf,name)
@@ -3470,13 +3470,13 @@ LIQUID_IIRFILT_DEFINE_API(LIQUID_IIRFILT_MANGLE_CCCF,
 
 #define LIQUID_IIRFILTSOS_DEFINE_API(IIRFILTSOS,TO,TC,TI)                   \
                                                                             \
-/* Infinite impulse respone filter primitive using second-order         */  \
+/* Infinite impulse response filter primitive using second-order        */  \
 /* sections                                                             */  \
 typedef struct IIRFILTSOS(_s) * IIRFILTSOS();                               \
                                                                             \
-/* create 2nd-order infinite impulse reponse filter                     */  \
-/*  _b      : feed-forward coefficients, [size: 3 x 1]                  */  \
-/*  _a      : feed-back coefficients, [size: 3 x 1]                     */  \
+/* create 2nd-order infinite impulse response filter                     */  \
+/*  _b      : feed-forward coefficients [size: _3 x 1]                  */  \
+/*  _a      : feed-back coefficients    [size: _3 x 1]                  */  \
 IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                                   \
                                  TC * _a);                                  \
                                                                             \
@@ -3988,7 +3988,7 @@ FIRDECIM() FIRDECIM(_copy)(FIRDECIM() _q);                                  \
 /* Destroy decimator object, freeing all internal memory                */  \
 int FIRDECIM(_destroy)(FIRDECIM() _q);                                      \
                                                                             \
-/* Print decimator object propreties to stdout                          */  \
+/* Print decimator object properties to stdout                          */  \
 int FIRDECIM(_print)(FIRDECIM() _q);                                        \
                                                                             \
 /* Reset decimator object internal state                                */  \
@@ -4299,7 +4299,7 @@ LIQUID_RESAMP2_DEFINE_API(LIQUID_RESAMP2_MANGLE_CCCF,
 /* Rational rate resampler, implemented as a polyphase filterbank       */  \
 typedef struct RRESAMP(_s) * RRESAMP();                                     \
                                                                             \
-/* Create rational-rate resampler object from external coeffcients to   */  \
+/* Create rational-rate resampler object from external coefficients to   */  \
 /* resample at an exact rate \(P/Q\) = interp/decim.                    */  \
 /* Note that to preserve the input filter coefficients, the greatest    */  \
 /* common divisor (gcd) is not removed internally from interp and decim */  \
@@ -4419,7 +4419,7 @@ void RRESAMP(_write)(RRESAMP() _q,                                          \
 /* respectively) passed when the object was created, even if they       */  \
 /* share a common divisor.                                              */  \
 /* Internally the rational resampler reduces \(P\) and \(Q\)            */  \
-/* by their greatest commmon denominator to reduce processing;          */  \
+/* by their greatest common denominator to reduce processing;          */  \
 /* however sometimes it is convenient to create the object based on     */  \
 /* expected output/input block sizes. This expectation is preserved.    */  \
 /* So if an object is created with an interpolation rate \(P=80\)       */  \
@@ -4559,7 +4559,7 @@ unsigned int RESAMP(_get_num_output)(RESAMP()     _q,                       \
                                                                             \
 /* Execute arbitrary resampler on a single input sample and store the   */  \
 /* resulting samples in the output array. The number of output samples  */  \
-/* is depenent upon the resampling rate but will be at most             */  \
+/* is dependent upon the resampling rate but will be at most             */  \
 /* \( \lceil{ r \rceil} \) samples.                                     */  \
 /*  _q              : resamp object                                     */  \
 /*  _x              : single input sample                               */  \
@@ -4572,7 +4572,7 @@ int RESAMP(_execute)(RESAMP()       _q,                                     \
                                                                             \
 /* Execute arbitrary resampler on a block of input samples and store    */  \
 /* the resulting samples in the output array. The number of output      */  \
-/* samples is depenent upon the resampling rate and the number of input */  \
+/* samples is dependent upon the resampling rate and the number of input */  \
 /* samples but will be at most \( \lceil{ r n_x \rceil} \) samples.     */  \
 /*  _q              : resamp object                                     */  \
 /*  _x              : input buffer, [size: _nx x 1]                     */  \
@@ -7876,7 +7876,7 @@ int MODEM(_modulate)(MODEM()      _q,                                       \
 /* This is performed efficiently by taking advantage of symmetry on     */  \
 /* most modulation types.                                               */  \
 /* For example, square and rectangular quadrature amplitude modulation  */  \
-/* with gray coding can use a bisection search indepdently on its       */  \
+/* with gray coding can use a bisection search independently on its       */  \
 /* in-phase and quadrature channels.                                    */  \
 /* Arbitrary modulation schemes are relatively slow, however, for large */  \
 /* modulation types as the demodulator must compute the distance        */  \
@@ -8336,7 +8336,7 @@ FIRPFBCH() FIRPFBCH(_create)(int          _type,                            \
 /*  _type   : type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)               */  \
 /*  _M      : number of channels                                        */  \
 /*  _m      : filter delay (symbols)                                    */  \
-/*  _As     : stop-band attentuation [dB]                               */  \
+/*  _As     : stop-band attenuation [dB]                               */  \
 FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,                     \
                                     unsigned int _M,                        \
                                     unsigned int _m,                        \
@@ -9393,7 +9393,7 @@ unsigned int bsequence_index(bsequence _bs, unsigned int _i);
 
 // Complementary codes
 
-// intialize two sequences to complementary codes.  sequences must
+// initialize two sequences to complementary codes.  sequences must
 // be of length at least 8 and a power of 2 (e.g. 8, 16, 32, 64,...)
 //  _a      :   sequence 'a' (bsequence object)
 //  _b      :   sequence 'b' (bsequence object)
@@ -9563,16 +9563,16 @@ int liquid_rbshift(unsigned char * _src,
                    unsigned int _n,
                    unsigned int _b);
 
-// circularly shift array to the left _b bits
-//  _src        :   source address, [size: _n x 1]
+// circular shift array to the left _b bits
+//  _src        :   source address [size: _n x 1]
 //  _n          :   input data array size
 //  _b          :   number of bits to shift
 int liquid_lbcircshift(unsigned char * _src,
                        unsigned int _n,
                        unsigned int _b);
 
-// circularly shift array to the right _b bits
-//  _src        :   source address, [size: _n x 1]
+// circular shift array to the right _b bits
+//  _src        :   source address [size: _n x 1]
 //  _n          :   input data array size
 //  _b          :   number of bits to shift
 int liquid_rbcircshift(unsigned char * _src,

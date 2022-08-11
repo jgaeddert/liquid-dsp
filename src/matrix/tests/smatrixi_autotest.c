@@ -67,7 +67,7 @@ void autotest_smatrixi_vmul()
 // test sparse integer matrix multiplication
 void autotest_smatrixi_mul()
 {
-    // intialize matrices
+    // initialize matrices
     smatrixi a = smatrixi_create(4, 5);
     smatrixi b = smatrixi_create(5, 3);
     smatrixi c = smatrixi_create(4, 3);

@@ -596,7 +596,7 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
     if (_n == 0)
         return liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), filter order must be > 0");
 
-    // number of analaog poles/zeros
+    // number of analog poles/zeros
     unsigned int npa = _n;
     unsigned int nza;
 
@@ -713,7 +713,7 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
         float complex zd1[2*_n];
         float complex pd1[2*_n];
 
-        // run zeros, poles low-pass -> band-pass trasform
+        // run zeros, poles low-pass -> band-pass transform
         iirdes_dzpk_lp2bp(zd, pd,   // low-pass prototype zeros, poles
                           _n,       // filter order
                           _f0,      // center frequency
@@ -723,7 +723,7 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
         memmove(zd, zd1, 2*_n*sizeof(float complex));
         memmove(pd, pd1, 2*_n*sizeof(float complex));
 
-        // update paramters; filter order doubles which changes the
+        // update parameters; filter order doubles which changes the
         // number of second-order sections and forces there to never
         // be any remainder (r=0 always).
         _n =  2*_n;     // _n is now even

@@ -1,7 +1,7 @@
 //
 // modular_arithmetic_example.c
 //
-// This example demonstates some modular arithmetic functions.
+// This example demonstrates some modular arithmetic functions.
 //
 
 #include <stdio.h>

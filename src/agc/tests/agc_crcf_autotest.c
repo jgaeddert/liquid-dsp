@@ -26,7 +26,7 @@
 // Test DC gain control
 void autotest_agc_crcf_dc_gain_control()
 {
-    // set paramaters
+    // set parameters
     float gamma = 0.1f;     // nominal signal level
     float bt    = 0.1f;     // bandwidth-time product
     float tol   = 0.001f;   // error tolerance
@@ -57,7 +57,7 @@ void autotest_agc_crcf_dc_gain_control()
 // test gain control on DC input with separate scale
 void autotest_agc_crcf_scale()
 {
-    // set paramaters
+    // set parameters
     float scale = 4.0f;     // output scale (independent of AGC loop)
     float tol   = 0.001f;   // error tolerance
 
@@ -84,7 +84,7 @@ void autotest_agc_crcf_scale()
 // Test AC gain control
 void autotest_agc_crcf_ac_gain_control()
 {
-    // set paramaters
+    // set parameters
     float gamma = 0.1f;             // nominal signal level
     float bt    = 0.1f;             // bandwidth-time product
     float tol   = 0.001f;           // error tolerance
@@ -115,7 +115,7 @@ void autotest_agc_crcf_ac_gain_control()
 // Test RSSI on sinusoidal input
 void autotest_agc_crcf_rssi_sinusoid()
 {
-    // set paramaters
+    // set parameters
     float gamma = 0.3f;         // nominal signal level
     float bt    = 0.05f;        // agc bandwidth
     float tol   = 0.001f;       // error tolerance
@@ -153,7 +153,7 @@ void autotest_agc_crcf_rssi_sinusoid()
 // Test RSSI on noise input
 void autotest_agc_crcf_rssi_noise()
 {
-    // set paramaters
+    // set parameters
     float gamma = -30.0f;   // nominal signal level [dB]
     float bt    =  2e-3f;   // agc bandwidth
     float tol   =  1.0f;    // error tolerance [dB]
@@ -248,7 +248,7 @@ void autotest_agc_crcf_squelch()
 // test lock state control
 void autotest_agc_crcf_lock()
 {
-    // set paramaters
+    // set parameters
     float gamma = 0.1f;     // nominal signal level
     float tol   = 0.01f;    // error tolerance
 

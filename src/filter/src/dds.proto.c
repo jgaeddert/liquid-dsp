@@ -77,7 +77,7 @@ DDS() DDS(_create)(unsigned int _num_stages,
     if (_bw <= 0.0f || _bw >= 1.0f)
         return liquid_error_config("dds_%s_create(), bandwidth %12.4e is out of range (0,1)", EXTENSION_FULL, _bw);
     if (_as < 0.0f)
-        return liquid_error_config("dds_%s_create(), stop-band suppresion %12.4e must be greater than zero", EXTENSION_FULL, _as);
+        return liquid_error_config("dds_%s_create(), stop-band suppression %12.4e must be greater than zero", EXTENSION_FULL, _as);
 
     // create object
     DDS() q = (DDS()) malloc(sizeof(struct DDS(_s)));

@@ -44,7 +44,7 @@ struct bpacketgen_s {
     fec_scheme fec1;                // payload fec (outer)
     
     // derived values
-    unsigned int enc_msg_len;       // encoded mesage length
+    unsigned int enc_msg_len;       // encoded message length
     unsigned int header_len;        // header length (12 bytes encoded)
     unsigned int packet_len;        // total packet length
 

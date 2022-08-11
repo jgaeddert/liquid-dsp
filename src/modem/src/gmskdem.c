@@ -206,7 +206,7 @@ int gmskdem_set_eq_bw(gmskdem _q,
 {
     // validate input
     if (_bw < 0.0f || _bw > 0.5f)
-        return liquid_error(LIQUID_EICONFIG,"gmskdem_set_eq_bw(), bandwith must be in [0,0.5]");
+        return liquid_error(LIQUID_EICONFIG,"gmskdem_set_eq_bw(), bandwidth must be in [0,0.5]");
 
 #if GMSKDEM_USE_EQUALIZER
     // set internal equalizer bandwidth

@@ -223,7 +223,7 @@ unsigned int fec_golay2412_decode_symbol(unsigned int _sym_enc)
     // step 8: compute estimated transmitted message: v_hat = r + e_hat
     v_hat = _sym_enc ^ e_hat;
 #if DEBUG_FEC_GOLAY2412
-    printf("r (recevied vector):            "); liquid_print_bitstring(_sym_enc,24); printf("\n");
+    printf("r (received vector):            "); liquid_print_bitstring(_sym_enc,24); printf("\n");
     printf("e-hat (estimated error vector): "); liquid_print_bitstring(e_hat,24);    printf("\n");
     printf("v-hat (estimated tx vector):    "); liquid_print_bitstring(v_hat,24);    printf("\n");
 #endif

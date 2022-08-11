@@ -1,4 +1,4 @@
-// This example demonstates the digital modulator/demodulator
+// This example demonstrates the digital modulator/demodulator
 // (modem) object.  Data symbols are modulated into complex
 // samples which are then demodulated without noise or phase
 // offsets.  The user may select the modulation scheme via

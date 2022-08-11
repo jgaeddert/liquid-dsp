@@ -85,7 +85,7 @@ void qpilotsync_test(modulation_scheme _ms,
         frame_rx[i] *= _gamma;
     }
 
-    // recieve frame
+    // receive frame
     qpilotsync_execute(ps, frame_rx, payload_rx);
 
     // demodulate

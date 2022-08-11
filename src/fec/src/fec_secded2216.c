@@ -306,7 +306,7 @@ int fec_secded2216_decode(fec             _q,
 
     // if input length isn't divisible by 2, decode last several bytes
     if (r) {
-        // one 22-bit symbol (encoded), with last byte artifically
+        // one 22-bit symbol (encoded), with last byte artificially
         // set to '00000000'
         unsigned char v[3] = {_msg_enc[j+0], _msg_enc[j+1], 0x00};
 

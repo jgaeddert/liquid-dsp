@@ -266,7 +266,7 @@ int SMATRIX(_clear)(SMATRIX() _q)
         }
     }
 
-    // clear colum entries
+    // clear column entries
     for (j=0; j<_q->N; j++) {
         for (i=0; i<_q->num_nlist[j]; i++) {
             _q->nvals[j][i] = 0;

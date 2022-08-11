@@ -134,7 +134,7 @@ int main(int argc, char*argv[]) {
 #endif
     }
 
-    // multipy by twiddle factors
+    // multiply by twiddle factors
     // NOTE: this can be combined with previous step
     printf("multiplying twiddles...\n");
     for (i=0; i<q; i++) {

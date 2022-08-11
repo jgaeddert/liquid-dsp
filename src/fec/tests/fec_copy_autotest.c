@@ -65,7 +65,7 @@ void fec_test_copy(fec_scheme _fs)
     unsigned char msg_dec_0[n_dec]; // decoded message (orig)
     unsigned char msg_dec_1[n_dec]; // decoded message (copy)
 
-    // initialze random message bits
+    // initialize random message bits
     unsigned int i;
     for (i=0; i<n_dec; i++)
         msg_org[i] = rand() & 0xff;

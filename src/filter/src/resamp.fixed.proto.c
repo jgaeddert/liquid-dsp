@@ -21,7 +21,7 @@
  */
 
 //
-// Arbitrary resampler (fixed-point phase verions)
+// Arbitrary resampler (fixed-point phase versions)
 //
 
 #include <stdio.h>

@@ -49,7 +49,7 @@ int main() {
             x[j] = randnf() * cexpf(_Complex_I*randf()*2*M_PI);
 
         // 
-        // analyzer 0 : run individual sample exection
+        // analyzer 0 : run individual sample execution
         //
 
         // push samples into channelizer 1

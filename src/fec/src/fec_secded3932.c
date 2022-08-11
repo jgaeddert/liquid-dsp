@@ -340,7 +340,7 @@ int fec_secded3932_decode(fec             _q,
         // decode symbol
         fec_secded3932_decode_symbol(v, m_hat);
 
-        // copy non-zero bytes to output (ignore zeros artifically
+        // copy non-zero bytes to output (ignore zeros artificially
         // inserted at receiver)
         for (n=0; n<r; n++)
             _msg_dec[i+n] = m_hat[n];

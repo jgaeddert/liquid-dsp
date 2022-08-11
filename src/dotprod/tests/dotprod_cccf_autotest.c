@@ -24,7 +24,7 @@
 #include "liquid.internal.h"
 
 // 
-// AUTOTEST: compare structured result to oridinal computation
+// AUTOTEST: compare structured result to ordinal computation
 //
 
 // 

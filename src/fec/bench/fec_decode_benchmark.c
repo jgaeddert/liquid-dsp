@@ -118,7 +118,7 @@ void fec_decode_bench(
     unsigned char msg_enc[n_enc];   // decoded message
     unsigned char msg_dec[_n];      // decoded message
 
-    // initialze message
+    // initialize message
     unsigned long int i;
     for (i=0; i<_n; i++)
         msg[i] = rand() & 0xff;
