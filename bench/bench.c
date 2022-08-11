@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 #include <getopt.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 #include <sys/resource.h>
 
 // define benchmark function pointer
@@ -272,8 +273,13 @@ int main(int argc, char *argv[])
     }
 
     // print header
+    time_t now;
+    time(&now);
+    char timestamp[80];
+    strftime(timestamp,80,"%c",localtime(&now));
     fprintf(fid,"{\n");
     fprintf(fid,"  \"build-info\" : {},\n");
+    fprintf(fid,"  \"timestamp\" : \"%s\",\n", timestamp);
     fprintf(fid,"  \"command-line\" : \"");
     for (i=0; i<(unsigned int)argc; i++)
         fprintf(fid," %s", argv[i]);
