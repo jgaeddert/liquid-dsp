@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -291,8 +291,13 @@ int main(int argc, char *argv[])
     }
 
     // print header
+    time_t now;
+    time(&now);
+    char timestamp[80];
+    strftime(timestamp,80,"%c",localtime(&now));
     fprintf(fid,"{\n");
     fprintf(fid,"  \"build-info\" : {},\n");
+    fprintf(fid,"  \"timestamp\" : \"%s\",\n", timestamp);
     fprintf(fid,"  \"pass\" : %s,\n", liquid_autotest_num_failed==0 ? "true" : "false");
     fprintf(fid,"  \"num_failed\" : %lu,\n", liquid_autotest_num_failed);
     fprintf(fid,"  \"num_checks\" : %lu,\n", liquid_autotest_num_checks);
