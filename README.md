@@ -87,7 +87,7 @@ Seriously, I won't be offended.
 ### Run all test scripts ###
 
 Source code validation is a critical step in any software library,
-particulary for verifying the portability of code to different
+particularly for verifying the portability of code to different
 processors and platforms. Packaged with liquid-dsp are a number of
 automatic test scripts to validate the correctness of the source code.
 The test scripts are located under each module's `tests/` directory and

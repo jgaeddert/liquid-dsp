@@ -337,7 +337,7 @@ int QSOURCE(_print)(QSOURCE() _q)
 }
 
 // reset object internals
-// NOTE: placeholder for future funcitonality
+// NOTE: placeholder for future functionality
 int QSOURCE(_reset)(QSOURCE() _q)
 {
     return LIQUID_OK;

@@ -104,7 +104,7 @@ CBUFFER() CBUFFER(_copy)(CBUFFER() q_orig)
     CBUFFER() q_copy = (CBUFFER()) malloc(sizeof(struct CBUFFER(_s)));
     memmove(q_copy, q_orig, sizeof(struct CBUFFER(_s)));
 
-    // allocte and copy full memory array
+    // allocate and copy full memory array
     q_copy->v = (T*) malloc((q_copy->num_allocated)*sizeof(T));
     memmove(q_copy->v, q_orig->v, q_copy->num_allocated*sizeof(T));
 

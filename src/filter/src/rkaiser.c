@@ -140,7 +140,7 @@ int liquid_firdes_arkaiser(unsigned int _k,
 }
 
 // Find approximate bandwidth adjustment factor rho based on
-// filter delay and desired excess bandwdith factor.
+// filter delay and desired excess bandwidth factor.
 //
 //  _m      :   filter delay (symbols)
 //  _beta   :   filter excess bandwidth factor (0,1)

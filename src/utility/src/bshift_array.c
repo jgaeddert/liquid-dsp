@@ -71,7 +71,7 @@ int liquid_rbshift(unsigned char * _src,
 }
 
  
-// circularly shift array to the left _b bits
+// circular shift array to the left _b bits
 //  _src        :   source address [size: _n x 1]
 //  _n          :   input data array size
 //  _b          :   number of bits to shift
@@ -114,7 +114,7 @@ int liquid_lbcircshift(unsigned char * _src,
 }
 
  
-// circularly shift array to the right _b bits
+// circular shift array to the right _b bits
 //  _src        :   source address [size: _n x 1]
 //  _n          :   input data array size
 //  _b          :   number of bits to shift

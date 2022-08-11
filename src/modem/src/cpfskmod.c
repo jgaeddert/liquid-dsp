@@ -123,7 +123,7 @@ cpfskmod cpfskmod_create(unsigned int _bps,
         q->symbol_delay = 1;
         break;
     case LIQUID_CPFSK_RCOS_PARTIAL:
-        // TODO: adjust reponse based on 'm'
+        // TODO: adjust response based on 'm'
         q->ht_len = 3*q->k;
         q->symbol_delay = 2;
         break;

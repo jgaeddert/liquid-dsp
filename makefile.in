@@ -1268,7 +1268,7 @@ all: ${ARCHIVE_LIB} ${SHARED_LIB}
 ## TARGET : help      - print list of targets
 ##
 
-# look for all occurences of '## TARGET : ' and print rest of line to screen
+# look for all occurrences of '## TARGET : ' and print rest of line to screen
 help:
 	@echo "Targets for liquid-dsp makefile:"
 	@$(GREP) -E "^## TARGET : " [Mm]akefile | $(SED) 's/## TARGET : /  /'
@@ -1342,7 +1342,7 @@ autotest_include.h : scripts/autoscript $(autotest_sources) $(include_headers)
 
 # autotest objects
 # NOTE: by default, gcc compiles any file with a '.h' extension as a 'pre-compiled
-#       header' so we need to explicity tell it to compile as a c source file with
+#       header' so we need to explicitly tell it to compile as a c source file with
 #       the '-x c' flag
 autotest_obj = $(patsubst %.c,%.o,$(autotest_sources))
 $(autotest_obj) $(autotest_extra_obj) autotest/autotest.o : %.o : %.c $(include_headers) autotest/autotest.h
@@ -1440,7 +1440,7 @@ benchmark_include.h : scripts/autoscript $(benchmark_sources) $(include_headers)
 
 # benchmark objects
 # NOTE: by default, gcc compiles any file with a '.h' extension as a 'pre-compiled
-#       header' so we need to explicity tell it to compile as a c source file with
+#       header' so we need to explicitly tell it to compile as a c source file with
 #       the '-x c' flag
 benchmark_obj = $(patsubst %.c,%.o,$(benchmark_sources))
 $(benchmark_obj) : %.o : %.c $(include_headers)

@@ -45,7 +45,7 @@ WDELAY() WDELAY(_create)(unsigned int _delay)
     // set internal values
     q->delay = _delay;
 
-    // allocte memory
+    // allocate memory
     q->v = (T*) malloc((q->delay+1)*sizeof(T));
     q->read_index = 0;
 
@@ -94,7 +94,7 @@ WDELAY() WDELAY(_copy)(WDELAY() q_orig)
     WDELAY() q_copy = (WDELAY()) malloc(sizeof(struct WDELAY(_s)));
     memmove(q_copy, q_orig, sizeof(struct WDELAY(_s)));
 
-    // allocte and copy full memory array
+    // allocate and copy full memory array
     q_copy->v = (T*) malloc((q_copy->delay+1)*sizeof(T));
     memmove(q_copy->v, q_orig->v, (q_copy->delay+1)*sizeof(T));
 

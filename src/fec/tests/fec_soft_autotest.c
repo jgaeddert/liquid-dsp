@@ -65,7 +65,7 @@ void fec_test_soft_codec(fec_scheme _fs,
     unsigned char msg_soft[8*n_enc];    // encoded message (soft bits)
     unsigned char msg_dec[_n];          // decoded message
 
-    // initialze message
+    // initialize message
     unsigned int i;
     for (i=0; i<_n; i++) {
         msg[i] = rand() & 0xff;

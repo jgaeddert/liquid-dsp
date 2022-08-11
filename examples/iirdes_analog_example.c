@@ -1,7 +1,7 @@
 //
 // iirdes_analog_example.c
 //
-// Tests infinite impulse reponse (IIR) analog filter design.
+// Tests infinite impulse response (IIR) analog filter design.
 // While this example seems purely academic as IIR filters
 // used in liquid are all digital, it is important to realize
 // that they are all derived from their analog counterparts.
@@ -100,7 +100,7 @@ int main(int argc, char*argv[]) {
         exit(1);
     }
 
-    // number of analaog poles/zeros
+    // number of analog poles/zeros
     unsigned int npa = order;
     unsigned int nza = 0;
 

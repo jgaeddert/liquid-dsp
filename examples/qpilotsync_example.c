@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
         frame_rx[i] *= gain;
     }
 
-    // recieve frame
+    // receive frame
     qpilotsync_execute(ps, frame_rx, payload_rx);
 
     // demodulate

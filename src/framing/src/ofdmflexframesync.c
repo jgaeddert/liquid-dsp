@@ -200,7 +200,7 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
     q->fec0         = LIQUID_FEC_NONE;
     q->fec1         = LIQUID_FEC_NONE;
 
-    // create payload objects (initally QPSK, etc but overridden by received properties)
+    // create payload objects (initially QPSK, etc but overridden by received properties)
     q->mod_payload = modemcf_create(q->ms_payload);
     q->payload_soft = 0;
     q->p_payload   = packetizer_create(q->payload_len, q->check, q->fec0, q->fec1);

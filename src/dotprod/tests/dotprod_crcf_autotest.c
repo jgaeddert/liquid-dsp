@@ -129,7 +129,7 @@ void autotest_dotprod_crcf_rand02()
 }
 
 // 
-// AUTOTEST: compare structured result to oridinal computation
+// AUTOTEST: compare structured result to ordinal computation
 //
 
 // helper function (compare structured object to ordinal computation)

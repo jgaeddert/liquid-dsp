@@ -49,7 +49,7 @@ struct RESAMP(_s) {
     float fc;           // filter cutoff frequency
 
     // resampling properties/states
-    float rate;         // resampling rate (ouput/input)
+    float rate;         // resampling rate (output/input)
     float del;          // fractional delay step
 
     // floating-point phase

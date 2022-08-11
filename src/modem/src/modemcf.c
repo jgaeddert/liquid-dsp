@@ -58,7 +58,7 @@
 #include "modem_sqam32.proto.c"
 #include "modem_sqam128.proto.c"
 
-// arbitary modems
+// arbitrary modems
 #include "modem_arb.proto.c"
 
 // analog modems

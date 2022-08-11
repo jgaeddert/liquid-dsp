@@ -765,14 +765,14 @@ LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_comp
 // MODULE : filter
 //
 
-// esimate required filter length given transition bandwidth and
+// estimate required filter length given transition bandwidth and
 // stop-band attenuation (algorithm from [Vaidyanathan:1993])
 //  _df     :   transition bandwidth (0 < _df < 0.5)
 //  _as     :   stop-band attenuation [dB] (_as > 0)
 float estimate_req_filter_len_Kaiser(float _df,
                                      float _as);
 
-// esimate required filter length given transition bandwidth and
+// estimate required filter length given transition bandwidth and
 // stop-band attenuation (algorithm from [Herrmann:1973])
 //  _df     :   transition bandwidth (0 < _df < 0.5)
 //  _as     :   stop-band attenuation [dB] (_as > 0)
@@ -783,7 +783,7 @@ float estimate_req_filter_len_Herrmann(float _df,
 // firdes : finite impulse response filter design
 
 // Find approximate bandwidth adjustment factor rho based on
-// filter delay and desired excess bandwdith factor.
+// filter delay and desired excess bandwidth factor.
 //
 //  _m      :   filter delay (symbols)
 //  _beta   :   filter excess bandwidth factor (0,1)
@@ -1391,7 +1391,7 @@ int MODEM(_demodulate_linear_array)(T              _v,          \
                                     T *            _res);       \
                                                                 \
 /* Demodulate a linear symbol constellation using           */  \
-/* refereneced lookup table                                 */  \
+/* referenced lookup table                                 */  \
 /*  _v      :   input value             */                      \
 /*  _m      :   bits per symbol         */                      \
 /*  _ref    :   array of thresholds     */                      \

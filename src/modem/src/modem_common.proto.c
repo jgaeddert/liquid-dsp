@@ -212,7 +212,7 @@ MODEM() MODEM(_create)(modulation_scheme _scheme)
         return liquid_error_config("modem%s_create(), unknown/unsupported modulation scheme : %u",EXTENSION,_scheme);
     }
 
-    // should never get to this point, but adding return statment
+    // should never get to this point, but adding return statement
     // to keep compiler happy
     return NULL;
 }
@@ -477,7 +477,7 @@ void print_bitstring_demod_soft(unsigned int _x,
 //  _q          :   demodulator object
 //  _r          :   received sample
 //  _s          :   hard demodulator output
-//  _soft_bits  :   soft bit ouput (approximate log-likelihood ratio)
+//  _soft_bits  :   soft bit output (approximate log-likelihood ratio)
 int MODEM(_demodulate_soft_table)(MODEM() _q,
                                   TC _r,
                                   unsigned int * _s,
@@ -605,7 +605,7 @@ int MODEM(_demodulate_linear_array)(T              _v,
     return LIQUID_OK;
 }
 
-// Demodulate a linear symbol constellation using refereneced lookup table
+// Demodulate a linear symbol constellation using referenced lookup table
 //  _v      :   input value
 //  _m      :   bits per symbol
 //  _ref    :   array of thresholds

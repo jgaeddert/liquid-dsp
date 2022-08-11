@@ -107,7 +107,7 @@
     - adding new spwaterfall family of objects for generating waterfall plot
       and automatically down-size as input sample size grows
   * sequence
-    - fixed issue with order of operations causing inconsitent behavior across
+    - fixed issue with order of operations causing inconsistent behavior across
       different platforms
 
 ## Major improvements for v1.3.0 ##

@@ -291,7 +291,7 @@ void qdetector_cccf_runtest_gmsk(unsigned int _sequence_len)
         AUTOTEST_FAIL("frame not detected");
     else {
         // check signal level estimate
-        // TODO: check discrepency with short sequences
+        // TODO: check discrepancy with short sequences
         //CONTEND_DELTA( gamma_hat, gamma, 0.05f );
 
         // check timing offset estimate

@@ -1,7 +1,7 @@
 // 
 // fskmodem_test.c
 //
-// This example demostrates the M-ary frequency-shift keying
+// This example demonstrates the M-ary frequency-shift keying
 // (MFSK) modem in liquid. A message signal is modulated and the
 // resulting signal is recovered using a demodulator object.
 //
@@ -83,7 +83,7 @@ int main(int argc, char*argv[])
         fprintf(stderr,"errors: %s, modulation size (M=%u) exceeds maximum (1024)\n", __FILE__, M);
         exit(1);
     } else if (bandwidth <= 0.0f || bandwidth >= 0.5f) {
-        fprintf(stderr,"errors: %s, bandwidht must be in (0,0.5)\n", __FILE__);
+        fprintf(stderr,"errors: %s, bandwidth must be in (0,0.5)\n", __FILE__);
         exit(1);
     }
 

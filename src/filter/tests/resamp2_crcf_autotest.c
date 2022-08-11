@@ -177,7 +177,7 @@ void testbench_resamp2_crcf_filter(unsigned int _m, float _as)
 
     // get impulse response
     unsigned int h_len = 4*_m+1;
-    float complex h_0[h_len];   // low-frequency reponse
+    float complex h_0[h_len];   // low-frequency response
     float complex h_1[h_len];   // high-frequency response
     unsigned int i;
     for (i=0; i<h_len; i++)

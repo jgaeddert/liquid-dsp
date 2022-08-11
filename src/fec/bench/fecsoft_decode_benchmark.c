@@ -121,7 +121,7 @@ void fecsoft_decode_bench(
     unsigned char msg_soft[8*n_enc];// encoded message (soft bits)
     unsigned char msg_dec[_n];      // decoded message
 
-    // initialze message
+    // initialize message
     unsigned long int i;
     for (i=0; i<_n; i++)
         msg[i] = rand() & 0xff;

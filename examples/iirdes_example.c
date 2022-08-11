@@ -1,7 +1,7 @@
 // 
 // iirdes_example.c
 //
-// Tests infinite impulse reponse (IIR) digital filter design.
+// Tests infinite impulse response (IIR) digital filter design.
 // SEE ALSO: iirdes_analog_example.c
 //           iir_filter_crcf_example.c
 //

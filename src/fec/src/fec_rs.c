@@ -92,7 +92,7 @@ int fec_rs_encode(fec             _q,
 {
     // validate input
     if (_dec_msg_len == 0)
-        return liquid_error(LIQUID_EICONFIG,"fec_rs_encode(), input lenght must be > 0");
+        return liquid_error(LIQUID_EICONFIG,"fec_rs_encode(), input length must be > 0");
 
     // re-allocate resources if necessary
     fec_rs_setlength(_q, _dec_msg_len);
@@ -138,7 +138,7 @@ int fec_rs_decode(fec             _q,
 {
     // validate input
     if (_dec_msg_len == 0)
-        return liquid_error(LIQUID_EICONFIG,"fec_rs_encode(), input lenght must be > 0");
+        return liquid_error(LIQUID_EICONFIG,"fec_rs_encode(), input length must be > 0");
 
     // re-allocate resources if necessary
     fec_rs_setlength(_q, _dec_msg_len);
@@ -185,7 +185,7 @@ int fec_rs_decode(fec             _q,
 
 // Set dec_msg_len, re-allocating resources as necessary.  Effectively, it
 // divides the input message into several blocks and allows the decoder to
-// pad each block appropraitely.
+// pad each block appropriately.
 //
 // For example : if we are using the 8-bit code,
 //      nroots  = 32
