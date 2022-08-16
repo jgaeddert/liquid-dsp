@@ -3439,7 +3439,7 @@ LIQUID_IIRFILT_DEFINE_API(LIQUID_IIRFILT_MANGLE_CCCF,
 typedef struct IIRFILTSOS(_s) * IIRFILTSOS();                               \
                                                                             \
 /* create 2nd-order infinite impulse reponse filter                     */  \
-/*  _b      : feed-forward coefficients [size: _3 x 1]                  */  \
+/*  _b      : feed-forward coefficients, [size: 3 x 1]                  */  \
 /*  _a      : feed-back coefficients    [size: _3 x 1]                  */  \
 IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                                   \
                                  TC * _a);                                  \
@@ -4722,6 +4722,8 @@ LIQUID_MSRESAMP_DEFINE_API(LIQUID_MSRESAMP_MANGLE_CCCF,
 #define DDS_MANGLE_CCCF(name)  LIQUID_CONCAT(dds_cccf,name)
 
 #define LIQUID_DDS_DEFINE_API(DDS,TO,TC,TI)                                 \
+                                                                            \
+/* Direct digital (up/down) synthesizer object                          */  \
 typedef struct DDS(_s) * DDS();                                             \
                                                                             \
 /* Create digital synthesizer object                                    */  \
@@ -8104,39 +8106,41 @@ LIQUID_FREQMOD_DEFINE_API(LIQUID_FREQMOD_MANGLE_FLOAT,float,liquid_float_complex
 //  FREQDEM :   name-mangling macro
 //  T       :   primitive data type
 //  TC      :   primitive data type (complex)
-#define LIQUID_FREQDEM_DEFINE_API(FREQDEM,T,TC)                 \
-typedef struct FREQDEM(_s) * FREQDEM();                         \
-                                                                \
-/* create freqdem object (frequency modulator)              */  \
-/*  _kf      :   modulation factor                          */  \
-FREQDEM() FREQDEM(_create)(float _kf);                          \
-                                                                \
-/* destroy freqdem object                                   */  \
-int FREQDEM(_destroy)(FREQDEM() _q);                            \
-                                                                \
-/* print freqdem object internals                           */  \
-int FREQDEM(_print)(FREQDEM() _q);                              \
-                                                                \
-/* reset state                                              */  \
-int FREQDEM(_reset)(FREQDEM() _q);                              \
-                                                                \
-/* demodulate sample                                        */  \
-/*  _q      :   frequency modulator object                  */  \
-/*  _r      :   received signal r(t)                        */  \
-/*  _m      :   output message signal m(t)                  */  \
-int FREQDEM(_demodulate)(FREQDEM() _q,                          \
-                         TC        _r,                          \
-                         T *       _m);                         \
-                                                                \
-/* demodulate block of samples                              */  \
-/*  _q      :   frequency demodulator object                */  \
-/*  _r      :   received signal r(t) [size: _n x 1]         */  \
-/*  _n      :   number of input, output samples             */  \
-/*  _m      :   message signal m(t), [size: _n x 1]         */  \
-int FREQDEM(_demodulate_block)(FREQDEM()    _q,                 \
-                               TC *         _r,                 \
-                               unsigned int _n,                 \
-                               T *          _m);                \
+#define LIQUID_FREQDEM_DEFINE_API(FREQDEM,T,TC)                             \
+                                                                            \
+/* Analog frequency demodulator                                         */  \
+typedef struct FREQDEM(_s) * FREQDEM();                                     \
+                                                                            \
+/* Create freqdem object (frequency modulator)                          */  \
+/*  _kf      :   modulation factor                                      */  \
+FREQDEM() FREQDEM(_create)(float _kf);                                      \
+                                                                            \
+/* Destroy freqdem object                                               */  \
+int FREQDEM(_destroy)(FREQDEM() _q);                                        \
+                                                                            \
+/* Print freqdem object internals                                       */  \
+int FREQDEM(_print)(FREQDEM() _q);                                          \
+                                                                            \
+/* Reset state                                                          */  \
+int FREQDEM(_reset)(FREQDEM() _q);                                          \
+                                                                            \
+/* Demodulate sample                                                    */  \
+/*  _q      :   frequency modulator object                              */  \
+/*  _r      :   received signal r(t)                                    */  \
+/*  _m      :   output message signal m(t)                              */  \
+int FREQDEM(_demodulate)(FREQDEM() _q,                                      \
+                         TC        _r,                                      \
+                         T *       _m);                                     \
+                                                                            \
+/* Demodulate block of samples                                          */  \
+/*  _q      :   frequency demodulator object                            */  \
+/*  _r      :   received signal r(t) [size: _n x 1]                     */  \
+/*  _n      :   number of input, output samples                         */  \
+/*  _m      :   message signal m(t), [size: _n x 1]                     */  \
+int FREQDEM(_demodulate_block)(FREQDEM()    _q,                             \
+                               TC *         _r,                             \
+                               unsigned int _n,                             \
+                               T *          _m);                            \
 
 // define freqdem APIs
 LIQUID_FREQDEM_DEFINE_API(LIQUID_FREQDEM_MANGLE_FLOAT,float,liquid_float_complex)
@@ -8217,68 +8221,70 @@ int ampmodem_demodulate_block(ampmodem               _q,
 //   TO         : output data type
 //   TC         : coefficients data type
 //   TI         : input data type
-#define LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH,TO,TC,TI)           \
-typedef struct FIRPFBCH(_s) * FIRPFBCH();                       \
-                                                                \
-/* create finite impulse response polyphase filter-bank     */  \
-/* channelizer object from external coefficients            */  \
-/*  _type   : channelizer type, e.g. LIQUID_ANALYZER        */  \
-/*  _M      : number of channels                            */  \
-/*  _p      : number of coefficients for each channel       */  \
-/*  _h      : coefficients [size: _M*_p x 1]                */  \
-FIRPFBCH() FIRPFBCH(_create)(int          _type,                \
-                             unsigned int _M,                   \
-                             unsigned int _p,                   \
-                             TC *         _h);                  \
-                                                                \
-/* create FIR polyphase filterbank channelizer object with  */  \
-/* prototype filter based on windowed Kaiser design         */  \
-/*  _type   : type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)   */  \
-/*  _M      : number of channels                            */  \
-/*  _m      : filter delay (symbols)                        */  \
-/*  _as     : stop-band attentuation [dB]                   */  \
-FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,         \
-                                    unsigned int _M,            \
-                                    unsigned int _m,            \
-                                    float        _as);          \
-                                                                \
-/* create FIR polyphase filterbank channelizer object with  */  \
-/* prototype root-Nyquist filter                            */  \
-/*  _type   : type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)   */  \
-/*  _M      : number of channels                            */  \
-/*  _m      : filter delay (symbols)                        */  \
-/*  _beta   : filter excess bandwidth factor, in [0,1]      */  \
-/*  _ftype  : filter prototype (rrcos, rkaiser, etc.)       */  \
-FIRPFBCH() FIRPFBCH(_create_rnyquist)(int          _type,       \
-                                      unsigned int _M,          \
-                                      unsigned int _m,          \
-                                      float        _beta,       \
-                                      int          _ftype);     \
-                                                                \
-/* destroy firpfbch object                                  */  \
-int FIRPFBCH(_destroy)(FIRPFBCH() _q);                          \
-                                                                \
-/* clear/reset firpfbch internal state                      */  \
-int FIRPFBCH(_reset)(FIRPFBCH() _q);                            \
-                                                                \
-/* print firpfbch internal parameters to stdout             */  \
-int FIRPFBCH(_print)(FIRPFBCH() _q);                            \
-                                                                \
-/* execute filterbank as synthesizer on block of samples    */  \
-/*  _q      : filterbank channelizer object                 */  \
-/*  _x      : channelized input, [size: num_channels x 1]   */  \
-/*  _y      : output time series, [size: num_channels x 1]  */  \
-int FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,               \
-                                   TI *       _x,               \
-                                   TO *       _y);              \
-                                                                \
-/* execute filterbank as analyzer on block of samples       */  \
-/*  _q      : filterbank channelizer object                 */  \
-/*  _x      : input time series, [size: num_channels x 1]   */  \
-/*  _y      : channelized output, [size: num_channels x 1]  */  \
-int FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,                  \
-                                TI *       _x,                  \
-                                TO *       _y);                 \
+#define LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH,TO,TC,TI)                       \
+                                                                            \
+/* Finite impulse response polyphase filterbank channelizer             */  \
+typedef struct FIRPFBCH(_s) * FIRPFBCH();                                   \
+                                                                            \
+/* Create finite impulse response polyphase filter-bank                 */  \
+/* channelizer object from external coefficients                        */  \
+/*  _type   : channelizer type, e.g. LIQUID_ANALYZER                    */  \
+/*  _M      : number of channels                                        */  \
+/*  _p      : number of coefficients for each channel                   */  \
+/*  _h      : coefficients, [size: _M*_p x 1]                           */  \
+FIRPFBCH() FIRPFBCH(_create)(int          _type,                            \
+                             unsigned int _M,                               \
+                             unsigned int _p,                               \
+                             TC *         _h);                              \
+                                                                            \
+/* Create FIR polyphase filterbank channelizer object with              */  \
+/* prototype filter based on windowed Kaiser design                     */  \
+/*  _type   : type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)               */  \
+/*  _M      : number of channels                                        */  \
+/*  _m      : filter delay (symbols)                                    */  \
+/*  _As     : stop-band attentuation [dB]                               */  \
+FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,                     \
+                                    unsigned int _M,                        \
+                                    unsigned int _m,                        \
+                                    float        _As);                      \
+                                                                            \
+/* Create FIR polyphase filterbank channelizer object with              */  \
+/* prototype root-Nyquist filter                                        */  \
+/*  _type   : type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)               */  \
+/*  _M      : number of channels                                        */  \
+/*  _m      : filter delay (symbols)                                    */  \
+/*  _beta   : filter excess bandwidth factor, in [0,1]                  */  \
+/*  _ftype  : filter prototype (rrcos, rkaiser, etc.)                   */  \
+FIRPFBCH() FIRPFBCH(_create_rnyquist)(int          _type,                   \
+                                      unsigned int _M,                      \
+                                      unsigned int _m,                      \
+                                      float        _beta,                   \
+                                      int          _ftype);                 \
+                                                                            \
+/* Destroy firpfbch object                                              */  \
+int FIRPFBCH(_destroy)(FIRPFBCH() _q);                                      \
+                                                                            \
+/* Clear/reset firpfbch internal state                                  */  \
+int FIRPFBCH(_reset)(FIRPFBCH() _q);                                        \
+                                                                            \
+/* Print firpfbch internal parameters to stdout                         */  \
+int FIRPFBCH(_print)(FIRPFBCH() _q);                                        \
+                                                                            \
+/* Execute filterbank as synthesizer on block of samples                */  \
+/*  _q      : filterbank channelizer object                             */  \
+/*  _x      : channelized input, [size: num_channels x 1]               */  \
+/*  _y      : output time series, [size: num_channels x 1]              */  \
+int FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,                           \
+                                   TI *       _x,                           \
+                                   TO *       _y);                          \
+                                                                            \
+/* Execute filterbank as analyzer on block of samples                   */  \
+/*  _q      : filterbank channelizer object                             */  \
+/*  _x      : input time series, [size: num_channels x 1]               */  \
+/*  _y      : channelized output, [size: num_channels x 1]              */  \
+int FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,                              \
+                                TI *       _x,                              \
+                                TO *       _y);                             \
 
 
 LIQUID_FIRPFBCH_DEFINE_API(LIQUID_FIRPFBCH_MANGLE_CRCF,
@@ -8304,55 +8310,59 @@ LIQUID_FIRPFBCH_DEFINE_API(LIQUID_FIRPFBCH_MANGLE_CCCF,
 //   TO         : output data type
 //   TC         : coefficients data type
 //   TI         : input data type
-#define LIQUID_FIRPFBCH2_DEFINE_API(FIRPFBCH2,TO,TC,TI)         \
-typedef struct FIRPFBCH2(_s) * FIRPFBCH2();                     \
-                                                                \
-/* create firpfbch2 object                                  */  \
-/*  _type   : channelizer type (e.g. LIQUID_ANALYZER)       */  \
-/*  _M      : number of channels (must be even)             */  \
-/*  _m      : prototype filter semi-length, length=2*M*m    */  \
-/*  _h      : prototype filter coefficient array            */  \
-FIRPFBCH2() FIRPFBCH2(_create)(int          _type,              \
-                               unsigned int _M,                 \
-                               unsigned int _m,                 \
-                               TC *         _h);                \
-                                                                \
-/* create firpfbch2 object using Kaiser window prototype    */  \
-/*  _type   : channelizer type (e.g. LIQUID_ANALYZER)       */  \
-/*  _M      : number of channels (must be even)             */  \
-/*  _m      : prototype filter semi-length, length=2*M*m+1  */  \
-/*  _as     : filter stop-band attenuation [dB]             */  \
-FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,       \
-                                      unsigned int _M,          \
-                                      unsigned int _m,          \
-                                      float        _as);        \
-                                                                \
-/* destroy firpfbch2 object, freeing internal memory        */  \
-int FIRPFBCH2(_destroy)(FIRPFBCH2() _q);                        \
-                                                                \
-/* reset firpfbch2 object internals                         */  \
-int FIRPFBCH2(_reset)(FIRPFBCH2() _q);                          \
-                                                                \
-/* print firpfbch2 object internals                         */  \
-int FIRPFBCH2(_print)(FIRPFBCH2() _q);                          \
-                                                                \
-/* get type, either LIQUID_ANALYZER or LIQUID_SYNTHESIZER   */  \
-int FIRPFBCH2(_get_type)(FIRPFBCH2() _q);                       \
-                                                                \
-/* get number of channels, M                                */  \
-unsigned int FIRPFBCH2(_get_M)(FIRPFBCH2() _q);                 \
-                                                                \
-/* get prototype filter sem-length, m                       */  \
-unsigned int FIRPFBCH2(_get_m)(FIRPFBCH2() _q);                 \
-                                                                \
-/* execute filterbank channelizer                           */  \
-/* LIQUID_ANALYZER:     input: M/2, output: M               */  \
-/* LIQUID_SYNTHESIZER:  input: M,   output: M/2             */  \
-/*  _x      :   channelizer input                           */  \
-/*  _y      :   channelizer output                          */  \
-int FIRPFBCH2(_execute)(FIRPFBCH2() _q,                         \
-                        TI *        _x,                         \
-                        TO *        _y);                        \
+#define LIQUID_FIRPFBCH2_DEFINE_API(FIRPFBCH2,TO,TC,TI)                     \
+                                                                            \
+/* Finite impulse response polyphase filterbank channelizer             */  \
+/* with output rate oversampled by a factor of 2                        */  \
+typedef struct FIRPFBCH2(_s) * FIRPFBCH2();                                 \
+                                                                            \
+/* Create firpfbch2 object with prototype filter from external          */  \
+/* coefficients                                                         */  \
+/*  _type   : channelizer type (e.g. LIQUID_ANALYZER)                   */  \
+/*  _M      : number of channels (must be even)                         */  \
+/*  _m      : prototype filter semi-length, length=2*M*m                */  \
+/*  _h      : prototype filter coefficient array                        */  \
+FIRPFBCH2() FIRPFBCH2(_create)(int          _type,                          \
+                               unsigned int _M,                             \
+                               unsigned int _m,                             \
+                               TC *         _h);                            \
+                                                                            \
+/* Create firpfbch2 object using Kaiser window prototype                */  \
+/*  _type   : channelizer type (e.g. LIQUID_ANALYZER)                   */  \
+/*  _M      : number of channels (must be even)                         */  \
+/*  _m      : prototype filter semi-length, length=2*M*m+1              */  \
+/*  _As     : filter stop-band attenuation [dB]                         */  \
+FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,                   \
+                                      unsigned int _M,                      \
+                                      unsigned int _m,                      \
+                                      float        _As);                    \
+                                                                            \
+/* Destroy firpfbch2 object, freeing internal memory                    */  \
+int FIRPFBCH2(_destroy)(FIRPFBCH2() _q);                                    \
+                                                                            \
+/* Reset firpfbch2 object internals                                     */  \
+int FIRPFBCH2(_reset)(FIRPFBCH2() _q);                                      \
+                                                                            \
+/* Print firpfbch2 object internals                                     */  \
+int FIRPFBCH2(_print)(FIRPFBCH2() _q);                                      \
+                                                                            \
+/* Get type, either LIQUID_ANALYZER or LIQUID_SYNTHESIZER               */  \
+int FIRPFBCH2(_get_type)(FIRPFBCH2() _q);                                   \
+                                                                            \
+/* Get number of channels, M                                            */  \
+unsigned int FIRPFBCH2(_get_M)(FIRPFBCH2() _q);                             \
+                                                                            \
+/* Get prototype filter sem-length, m                                   */  \
+unsigned int FIRPFBCH2(_get_m)(FIRPFBCH2() _q);                             \
+                                                                            \
+/* Execute filterbank channelizer                                       */  \
+/* LIQUID_ANALYZER:     input: M/2, output: M                           */  \
+/* LIQUID_SYNTHESIZER:  input: M,   output: M/2                         */  \
+/*  _x      :   channelizer input                                       */  \
+/*  _y      :   channelizer output                                      */  \
+int FIRPFBCH2(_execute)(FIRPFBCH2() _q,                                     \
+                        TI *        _x,                                     \
+                        TO *        _y);                                    \
 
 
 LIQUID_FIRPFBCH2_DEFINE_API(LIQUID_FIRPFBCH2_MANGLE_CRCF,
@@ -8368,6 +8378,9 @@ LIQUID_FIRPFBCH2_DEFINE_API(LIQUID_FIRPFBCH2_MANGLE_CRCF,
 #define LIQUID_FIRPFBCHR_MANGLE_CRCF(name) LIQUID_CONCAT(firpfbchr_crcf,name)
 
 #define LIQUID_FIRPFBCHR_DEFINE_API(FIRPFBCHR,TO,TC,TI)                     \
+                                                                            \
+/* Finite impulse response polyphase filterbank channelizer             */  \
+/* with output rational output rate \( P / M \)                         */  \
 typedef struct FIRPFBCHR(_s) * FIRPFBCHR();                                 \
                                                                             \
 /* create rational rate resampling channelizer (firpfbchr) object by    */  \
@@ -8727,64 +8740,67 @@ void liquid_unwrap_phase2(float * _theta, unsigned int _n);
 //   SYNTH  : name-mangling macro
 //   T      : primitive data type
 //   TC     : input/output data type
-#define LIQUID_SYNTH_DEFINE_API(SYNTH,T,TC)                     \
-typedef struct SYNTH(_s) * SYNTH();                             \
-                                                                \
-SYNTH() SYNTH(_create)(const TC *_table, unsigned int _length); \
-void SYNTH(_destroy)(SYNTH() _q);                               \
-                                                                \
-void SYNTH(_reset)(SYNTH() _q);                                 \
-                                                                \
-/* get/set/adjust internal frequency/phase              */      \
-T    SYNTH(_get_frequency)(   SYNTH() _q);                      \
-void SYNTH(_set_frequency)(   SYNTH() _q, T _f);                \
-void SYNTH(_adjust_frequency)(SYNTH() _q, T _df);               \
-T    SYNTH(_get_phase)(       SYNTH() _q);                      \
-void SYNTH(_set_phase)(       SYNTH() _q, T _phi);              \
-void SYNTH(_adjust_phase)(    SYNTH() _q, T _dphi);             \
-                                                                \
-unsigned int SYNTH(_get_length)(SYNTH() _q);                    \
-TC SYNTH(_get_current)(SYNTH() _q);                             \
-TC SYNTH(_get_half_previous)(SYNTH() _q);                       \
-TC SYNTH(_get_half_next)(SYNTH() _q);                           \
-                                                                \
-void SYNTH(_step)(SYNTH() _q);                                  \
-                                                                \
-/* pll : phase-locked loop                              */      \
-void SYNTH(_pll_set_bandwidth)(SYNTH() _q, T _bandwidth);       \
-void SYNTH(_pll_step)(SYNTH() _q, T _dphi);                     \
-                                                                \
-/* Rotate input sample up by SYNTH angle (no stepping)    */    \
-void SYNTH(_mix_up)(SYNTH() _q, TC _x, TC *_y);                 \
-                                                                \
-/* Rotate input sample down by SYNTH angle (no stepping)  */    \
-void SYNTH(_mix_down)(SYNTH() _q, TC _x, TC *_y);               \
-                                                                \
-/* Rotate input vector up by SYNTH angle (stepping)       */    \
-void SYNTH(_mix_block_up)(SYNTH() _q,                           \
-                          TC *_x,                               \
-                          TC *_y,                               \
-                          unsigned int _n);                     \
-                                                                \
-/* Rotate input vector down by SYNTH angle (stepping)     */    \
-void SYNTH(_mix_block_down)(SYNTH() _q,                         \
-                            TC *_x,                             \
-                            TC *_y,                             \
-                            unsigned int _n);                   \
-                                                                \
-void SYNTH(_spread)(SYNTH() _q,                                 \
-                    TC _x,                                      \
-                    TC *_y);                                    \
-                                                                \
-void SYNTH(_despread)(SYNTH() _q,                               \
-                      TC *_x,                                   \
-                      TC *_y);                                  \
-                                                                \
-void SYNTH(_despread_triple)(SYNTH() _q,                        \
-                             TC *_x,                            \
-                             TC *_early,                        \
-                             TC *_punctual,                     \
-                             TC *_late);                        \
+#define LIQUID_SYNTH_DEFINE_API(SYNTH,T,TC)                                 \
+                                                                            \
+/* Numerically-controlled synthesizer (direct digital synthesis)        */  \
+/* with internal phase-locked loop (pll) implementation                 */  \
+typedef struct SYNTH(_s) * SYNTH();                                         \
+                                                                            \
+SYNTH() SYNTH(_create)(const TC *_table, unsigned int _length);             \
+void SYNTH(_destroy)(SYNTH() _q);                                           \
+                                                                            \
+void SYNTH(_reset)(SYNTH() _q);                                             \
+                                                                            \
+/* get/set/adjust internal frequency/phase              */                  \
+T    SYNTH(_get_frequency)(   SYNTH() _q);                                  \
+void SYNTH(_set_frequency)(   SYNTH() _q, T _f);                            \
+void SYNTH(_adjust_frequency)(SYNTH() _q, T _df);                           \
+T    SYNTH(_get_phase)(       SYNTH() _q);                                  \
+void SYNTH(_set_phase)(       SYNTH() _q, T _phi);                          \
+void SYNTH(_adjust_phase)(    SYNTH() _q, T _dphi);                         \
+                                                                            \
+unsigned int SYNTH(_get_length)(SYNTH() _q);                                \
+TC SYNTH(_get_current)(SYNTH() _q);                                         \
+TC SYNTH(_get_half_previous)(SYNTH() _q);                                   \
+TC SYNTH(_get_half_next)(SYNTH() _q);                                       \
+                                                                            \
+void SYNTH(_step)(SYNTH() _q);                                              \
+                                                                            \
+/* pll : phase-locked loop                              */                  \
+void SYNTH(_pll_set_bandwidth)(SYNTH() _q, T _bandwidth);                   \
+void SYNTH(_pll_step)(SYNTH() _q, T _dphi);                                 \
+                                                                            \
+/* Rotate input sample up by SYNTH angle (no stepping)    */                \
+void SYNTH(_mix_up)(SYNTH() _q, TC _x, TC *_y);                             \
+                                                                            \
+/* Rotate input sample down by SYNTH angle (no stepping)  */                \
+void SYNTH(_mix_down)(SYNTH() _q, TC _x, TC *_y);                           \
+                                                                            \
+/* Rotate input vector up by SYNTH angle (stepping)       */                \
+void SYNTH(_mix_block_up)(SYNTH() _q,                                       \
+                          TC *_x,                                           \
+                          TC *_y,                                           \
+                          unsigned int _N);                                 \
+                                                                            \
+/* Rotate input vector down by SYNTH angle (stepping)     */                \
+void SYNTH(_mix_block_down)(SYNTH() _q,                                     \
+                            TC *_x,                                         \
+                            TC *_y,                                         \
+                            unsigned int _N);                               \
+                                                                            \
+void SYNTH(_spread)(SYNTH() _q,                                             \
+                    TC _x,                                                  \
+                    TC *_y);                                                \
+                                                                            \
+void SYNTH(_despread)(SYNTH() _q,                                           \
+                      TC *_x,                                               \
+                      TC *_y);                                              \
+                                                                            \
+void SYNTH(_despread_triple)(SYNTH() _q,                                    \
+                             TC *_x,                                        \
+                             TC *_early,                                    \
+                             TC *_punctual,                                 \
+                             TC *_late);                                    \
 
 // Define synth APIs
 LIQUID_SYNTH_DEFINE_API(SYNTH_MANGLE_FLOAT, float, liquid_float_complex)
