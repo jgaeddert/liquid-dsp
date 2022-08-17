@@ -3436,6 +3436,9 @@ LIQUID_IIRFILT_DEFINE_API(LIQUID_IIRFILT_MANGLE_CCCF,
 #define LIQUID_IIRFILTSOS_MANGLE_CCCF(name)  LIQUID_CONCAT(iirfiltsos_cccf,name)
 
 #define LIQUID_IIRFILTSOS_DEFINE_API(IIRFILTSOS,TO,TC,TI)                   \
+                                                                            \
+/* Infinite impulse respone filter primitive using second-order         */  \
+/* sections                                                             */  \
 typedef struct IIRFILTSOS(_s) * IIRFILTSOS();                               \
                                                                             \
 /* create 2nd-order infinite impulse reponse filter                     */  \
