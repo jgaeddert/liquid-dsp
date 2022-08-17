@@ -489,7 +489,9 @@ LIQUID_CBUFFER_DEFINE_API(LIQUID_CBUFFER_MANGLE_CFLOAT, liquid_float_complex)
 /* Sliding window first-in/first-out buffer with a fixed size           */  \
 typedef struct WINDOW(_s) * WINDOW();                                       \
                                                                             \
-/* Create window buffer object of a fixed length                        */  \
+/* Create window buffer object of a fixed length. Samples may be pushed */  \
+/* into the buffer which retains the most recent \(n\) samples.         */  \
+/*  _n      : length of the window buffer [samples]                     */  \
 WINDOW() WINDOW(_create)(unsigned int _n);                                  \
                                                                             \
 /* Recreate window buffer object with new length.                       */  \
@@ -500,7 +502,7 @@ WINDOW() WINDOW(_create)(unsigned int _n);                                  \
 /* values are truncated. If the size of the new window is smaller than  */  \
 /* the old one, the oldest values are truncated.                        */  \
 /*  _q      : old window object                                         */  \
-/*  _n      : new window length                                         */  \
+/*  _n      : new window length [samples]                               */  \
 WINDOW() WINDOW(_recreate)(WINDOW() _q, unsigned int _n);                   \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
