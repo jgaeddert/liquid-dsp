@@ -90,7 +90,7 @@ class rresamp : public object
 };
 
 #ifdef PYTHONLIB
-void init_rresamp(py::module &m)
+static void init_rresamp(py::module &m)
 {
     py::class_<rresamp>(m, "rresamp",
         "Multi-stage arbitrary rate resampler")

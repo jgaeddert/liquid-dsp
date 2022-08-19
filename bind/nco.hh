@@ -103,7 +103,7 @@ class nco : public object
 };
 
 #ifdef PYTHONLIB
-void init_nco(py::module &m)
+static void init_nco(py::module &m)
 {
     py::class_<nco>(m, "nco", "numerically-controlled oscillator")
         .def(py::init<float,float>(),

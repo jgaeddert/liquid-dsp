@@ -95,7 +95,7 @@ class ofdmflexframetx : public object
 };
 
 #ifdef PYTHONLIB
-void init_ofdmflexframetx(py::module &m)
+static void init_ofdmflexframetx(py::module &m)
 {
     py::class_<ofdmflexframetx>(m, "ofdmflexframetx")
         .def(py::init<unsigned int,unsigned int,unsigned int>(),

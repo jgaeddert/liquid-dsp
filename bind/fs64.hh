@@ -162,7 +162,7 @@ int py_callback_wrapper_fs64(
     return 0;
 }
 
-void init_fs64(py::module &m)
+static void init_fs64(py::module &m)
 {
     py::class_<fs64>(m, "fs64", "Frame synchronizer with 64-byte payload")
         .def(py::init<py_framesync_callback,py::object>(),

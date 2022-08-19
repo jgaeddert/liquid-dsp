@@ -98,7 +98,7 @@ class firpfbch2s : public firpfbch2
 };
 
 #ifdef PYTHONLIB
-void init_firpfbch2a(py::module &m)
+static void init_firpfbch2a(py::module &m)
 {
     py::class_<firpfbch2a>(m, "firpfbch2a",
         "Finite impulse response polyphase filterbank analysis channelizer, oversampled by 2")
@@ -116,7 +116,7 @@ void init_firpfbch2a(py::module &m)
         ;
 }
 
-void init_firpfbch2s(py::module &m)
+static void init_firpfbch2s(py::module &m)
 {
     py::class_<firpfbch2s>(m, "firpfbch2s",
         "Finite impulse response polyphase filterbank synthesis channelizer, oversampled by 2")

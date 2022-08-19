@@ -95,7 +95,7 @@ class symstreamr : public object
 };
 
 #ifdef PYTHONLIB
-void init_symstreamr(py::module &m)
+static void init_symstreamr(py::module &m)
 {
     py::class_<symstreamr>(m, "symstreamr", "Symbol streaming generator")
         .def(py::init<py::kwargs>(),

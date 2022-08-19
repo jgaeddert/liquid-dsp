@@ -86,7 +86,7 @@ class msresamp : public object
 };
 
 #ifdef PYTHONLIB
-void init_msresamp(py::module &m)
+static void init_msresamp(py::module &m)
 {
     py::class_<msresamp>(m, "msresamp",
         "Multi-stage arbitrary rate resampler")

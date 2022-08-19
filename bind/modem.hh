@@ -98,7 +98,7 @@ class modem : public object
 };
 
 #ifdef PYTHONLIB
-void init_modem(py::module &m)
+static void init_modem(py::module &m)
 {
     py::class_<modem>(m, "modem",
         "Linear modulation and demodulation")

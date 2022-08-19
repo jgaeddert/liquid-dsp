@@ -200,7 +200,7 @@ class firfilt : public object
 };
 
 #ifdef PYTHONLIB
-void init_firfilt(py::module &m)
+static void init_firfilt(py::module &m)
 {
     py::class_<firfilt>(m, "firfilt",
         "Finite impulse response filter")

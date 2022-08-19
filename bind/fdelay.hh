@@ -138,7 +138,7 @@ class fdelay : public object
 };
 
 #ifdef PYTHONLIB
-void init_fdelay(py::module &m)
+static void init_fdelay(py::module &m)
 {
     py::class_<fdelay>(m, "fdelay",
         "Fractional delay")

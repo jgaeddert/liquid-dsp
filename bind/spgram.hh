@@ -110,7 +110,7 @@ class spgram : public object
 #pragma GCC visibility pop
 
 #ifdef PYTHONLIB
-void init_spgram(py::module &m)
+static void init_spgram(py::module &m)
 {
     py::class_<spgram>(m, "spgram",
         "Spectral periodogram-based waterfall generator")

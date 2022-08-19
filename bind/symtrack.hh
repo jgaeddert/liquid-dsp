@@ -120,7 +120,7 @@ class symtrack : public object
 };
 
 #ifdef PYTHONLIB
-void init_symtrack(py::module &m)
+static void init_symtrack(py::module &m)
 {
     py::class_<symtrack>(m, "symtrack", "Symbol stream tracking")
         .def(py::init<py::kwargs>(),

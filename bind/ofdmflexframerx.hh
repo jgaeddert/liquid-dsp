@@ -152,7 +152,7 @@ int py_callback_wrapper_ofdmflexframerx(
     return 0;
 }
 
-void init_ofdmflexframerx(py::module &m)
+static void init_ofdmflexframerx(py::module &m)
 {
     py::class_<ofdmflexframerx>(m, "ofdmflexframerx", "Frame synchronizer with 64-byte payload")
         .def(py::init<unsigned int,unsigned int,unsigned int,py_framesync_callback,py::object>(),

@@ -167,7 +167,7 @@ class firinterp : public object
 };
 
 #ifdef PYTHONLIB
-void init_firinterp(py::module &m)
+static void init_firinterp(py::module &m)
 {
     py::class_<firinterp>(m, "firinterp",
         "Finite impulse response interpolator")

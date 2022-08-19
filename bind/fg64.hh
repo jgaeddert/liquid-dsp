@@ -90,7 +90,7 @@ class fg64 : public object
 };
 
 #ifdef PYTHONLIB
-void init_fg64(py::module &m)
+static void init_fg64(py::module &m)
 {
     py::class_<fg64>(m, "fg64", "Frame generator with 64-byte payload")
         .def(py::init<>())

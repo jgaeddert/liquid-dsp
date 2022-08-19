@@ -120,7 +120,7 @@ class spwaterfall : public object
 #pragma GCC visibility pop
 
 #ifdef PYTHONLIB
-void init_spwaterfall(py::module &m)
+static void init_spwaterfall(py::module &m)
 {
     py::class_<spwaterfall>(m, "spwaterfall",
         "Spectral periodogram-based waterfall generator")
