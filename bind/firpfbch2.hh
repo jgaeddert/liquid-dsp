@@ -41,7 +41,7 @@ class firpfbch2 : public object
   protected:
     firpfbch2_crcf q;
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
   public:
     py::array_t<std::complex<float>> py_execute(py::array_t<std::complex<float>> & _buf)
     {
@@ -97,7 +97,7 @@ class firpfbch2s : public firpfbch2
         firpfbch2(LIQUID_SYNTHESIZER, _M, _m, _As) {}
 };
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
 static void init_firpfbch2a(py::module &m)
 {
     py::class_<firpfbch2a>(m, "firpfbch2a",

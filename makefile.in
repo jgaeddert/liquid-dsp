@@ -1308,11 +1308,11 @@ bind/copy_test : % : %.o ${ARCHIVE_LIB}
 
 # python
 bind/liquid.python.o : %.o : %.cc %.hh ${bind_headers} bind/liquid.python.hh
-	g++ ${CXXFLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
+	g++ ${CXXFLAGS} -D LIQUID_PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
 
 pythonlib := liquid${PYBIND11_SUFFIX}
 
-# g++ ${CXXFLAGS} `python3 -m pybind11 --includes` -D PYTHONLIB bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lliquid `python3-config --ldflags`
+# g++ ${CXXFLAGS} `python3 -m pybind11 --includes` -D LIQUID_PYTHONLIB bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lliquid `python3-config --ldflags`
 ${pythonlib} : bind/liquid.python.o $(objects)
 	g++ ${CXXFLAGS} ${PYBIND11_FLAGS} -shared -fPIC -o $@ $^ ${LIBS} ${PYBIND11_LDFLAGS} ${PYBIND11_LIBS}
 

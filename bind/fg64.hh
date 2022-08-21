@@ -41,7 +41,7 @@ class fg64 : public object
   private:
     framegen64 q;
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
   public:
     py::array_t<std::complex<float>> py_execute(py::object & _header,
                                                 py::object & _payload)
@@ -89,7 +89,7 @@ class fg64 : public object
 #endif
 };
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
 static void init_fg64(py::module &m)
 {
     py::class_<fg64>(m, "fg64", "Frame generator with 64-byte payload")

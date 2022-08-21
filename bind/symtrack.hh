@@ -57,7 +57,7 @@ class symtrack : public object
   private:
     symtrack_cccf q;
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
   public:
     // python-specific constructor with keyword arguments
     symtrack(py::kwargs o) {
@@ -119,7 +119,7 @@ class symtrack : public object
 #endif
 };
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
 static void init_symtrack(py::module &m)
 {
     py::class_<symtrack>(m, "symtrack", "Symbol stream tracking")

@@ -52,7 +52,7 @@ class nco : public object
   private:
     nco_crcf q;
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
   public:
     py::buffer_info py_validate_array(py::array_t<std::complex<float>> & _buf)
     {
@@ -102,7 +102,7 @@ class nco : public object
 #endif
 };
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
 static void init_nco(py::module &m)
 {
     py::class_<nco>(m, "nco", "numerically-controlled oscillator")

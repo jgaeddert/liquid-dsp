@@ -11,7 +11,7 @@
 
 namespace liquid {
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
 // forward declaration of callback wrapper
 int py_callback_wrapper_fs64(
         unsigned char *  _header,
@@ -86,7 +86,7 @@ class fs64 : public object
   private:
     framesync64 q;
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
   private:
     py_framesync_callback py_callback;
     friend int py_callback_wrapper_fs64(
@@ -134,7 +134,7 @@ class fs64 : public object
 };
 #pragma GCC visibility pop
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
 int py_callback_wrapper_fs64(
         unsigned char *  _header,
         int              _header_valid,

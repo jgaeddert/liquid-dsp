@@ -77,7 +77,7 @@ class firfilt : public object
   private:
     firfilt_crcf q;
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
   public:
     // python-specific constructor with keyword arguments
     firfilt(std::string ftype, py::kwargs o) {
@@ -199,7 +199,7 @@ class firfilt : public object
 #endif
 };
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
 static void init_firfilt(py::module &m)
 {
     py::class_<firfilt>(m, "firfilt",

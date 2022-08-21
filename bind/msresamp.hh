@@ -50,7 +50,7 @@ class msresamp : public object
   private:
     msresamp_crcf q;
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
   public:
     py::array_t<std::complex<float>> py_execute(py::array_t<std::complex<float>> & _buf)
     {
@@ -85,7 +85,7 @@ class msresamp : public object
 #endif
 };
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
 static void init_msresamp(py::module &m)
 {
     py::class_<msresamp>(m, "msresamp",

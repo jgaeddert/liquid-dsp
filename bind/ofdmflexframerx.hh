@@ -11,7 +11,7 @@
 
 namespace liquid {
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
 // forward declaration of callback wrapper
 int py_callback_wrapper_ofdmflexframerx(
         unsigned char *  _header,
@@ -72,7 +72,7 @@ class ofdmflexframerx : public object
   private:
     ofdmflexframesync q;
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
   private:
     py_framesync_callback py_callback;
     friend int py_callback_wrapper_ofdmflexframerx(
@@ -124,7 +124,7 @@ class ofdmflexframerx : public object
 };
 #pragma GCC visibility pop
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
 int py_callback_wrapper_ofdmflexframerx(
         unsigned char *  _header,
         int              _header_valid,

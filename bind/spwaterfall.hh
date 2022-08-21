@@ -79,7 +79,7 @@ class spwaterfall : public object
   private:
     spwaterfallcf q;
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
   public:
     void py_execute(py::array_t<std::complex<float>> & _buf)
     {
@@ -119,7 +119,7 @@ class spwaterfall : public object
 };
 #pragma GCC visibility pop
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
 static void init_spwaterfall(py::module &m)
 {
     py::class_<spwaterfall>(m, "spwaterfall",

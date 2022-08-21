@@ -1,7 +1,7 @@
 #ifndef __LIQUID_PYTHON_HH__
 #define __LIQUID_PYTHON_HH__
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
 
 #include <complex>
 #include <pybind11/pybind11.h>
@@ -43,5 +43,5 @@ static py_framesync_callback py_framesync_callback_default =
 
 #endif // __LIQUID_PYTHON_HH__
 
-#endif // PYTHONLIB
+#endif // LIQUID_PYTHONLIB
 

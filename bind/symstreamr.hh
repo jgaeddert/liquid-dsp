@@ -53,7 +53,7 @@ class symstreamr : public object
   private:
     symstreamrcf q;
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
   public:
     // python-specific constructor with keyword arguments
     symstreamr(py::kwargs o) {
@@ -94,7 +94,7 @@ class symstreamr : public object
 #endif
 };
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
 static void init_symstreamr(py::module &m)
 {
     py::class_<symstreamr>(m, "symstreamr", "Symbol streaming generator")

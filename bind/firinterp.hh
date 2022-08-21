@@ -66,7 +66,7 @@ class firinterp : public object
   private:
     firinterp_crcf q;
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
   public:
 #if 0
     // python-specific constructor with keyword arguments
@@ -166,7 +166,7 @@ class firinterp : public object
 #endif
 };
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
 static void init_firinterp(py::module &m)
 {
     py::class_<firinterp>(m, "firinterp",

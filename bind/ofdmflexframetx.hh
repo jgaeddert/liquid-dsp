@@ -44,7 +44,7 @@ class ofdmflexframetx : public object
   private:
     ofdmflexframegen q;
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
   public:
     void py_assemble(py::object & _header,
                      py::object & _payload)
@@ -94,7 +94,7 @@ class ofdmflexframetx : public object
 #endif
 };
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
 static void init_ofdmflexframetx(py::module &m)
 {
     py::class_<ofdmflexframetx>(m, "ofdmflexframetx")

@@ -81,7 +81,7 @@ class modem : public object
   private:
     modemcf q;
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
   public:
     // external constellation
     modem(py::array_t<std::complex<float>> _const) {
@@ -97,7 +97,7 @@ class modem : public object
 #endif
 };
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
 static void init_modem(py::module &m)
 {
     py::class_<modem>(m, "modem",

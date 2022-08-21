@@ -67,7 +67,7 @@ class fdelay : public object
   private:
     fdelay_crcf q;
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
   public:
     // execute filter on buffer in place
     void py_execute_in_place(py::array_t<std::complex<float>> & _buf)
@@ -137,7 +137,7 @@ class fdelay : public object
 #endif
 };
 
-#ifdef PYTHONLIB
+#ifdef LIQUID_PYTHONLIB
 static void init_fdelay(py::module &m)
 {
     py::class_<fdelay>(m, "fdelay",

@@ -27,14 +27,14 @@ bind/main : % : %.o
 
 # python
 bind/liquid.python.o : %.o : %.cc %.hh ${bind_headers}
-	g++ ${PYBIND11_FLAGS} ${CXXFLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
+	g++ ${PYBIND11_FLAGS} ${CXXFLAGS} -D LIQUID_PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
 
 pythonlib := liquid${PYBIND11_SUFFIX}
 
 ${pythonlib} : bind/liquid.python.o
 	g++ ${CXXFLAGS}  -shared -fPIC -o $@ $^ ${LIBS} ${PYBIND11_LDFLAGS} ${PYBIND11_LIBS}
 #${pythonlib} :
-#	g++ ${CXXFLAGS} `python3 -m pybind11 --includes` -D PYTHONLIB bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lliquid `python3-config --ldflags`
+#	g++ ${CXXFLAGS} `python3 -m pybind11 --includes` -D LIQUID_PYTHONLIB bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lliquid `python3-config --ldflags`
 
 test: ${pythonlib}
 	./bind/example.py
