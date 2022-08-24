@@ -44,8 +44,8 @@ struct FREQDEM(_s) {
 FREQDEM() FREQDEM(_create)(float _kf)
 {
     // validate input
-    if (_kf <= 0.0f || _kf > 1.0)
-        return liquid_error_config("freqdem_create(), modulation factor %12.4e out of range [0,1]", _kf);
+    if (_kf <= 0.0f)
+        return liquid_error_config("freqdem%s_create(), modulation factor %12.4e must be greater than 0", EXTENSION, _kf);
 
     // create main object memory
     FREQDEM() q = (freqdem) malloc(sizeof(struct FREQDEM(_s)));
