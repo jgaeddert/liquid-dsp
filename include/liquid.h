@@ -2361,6 +2361,28 @@ float liquid_filter_energy(float *      _h,
                            float        _fc,
                            unsigned int _nfft);
 
+// Get static frequency response from filter coefficients at particular
+// frequency with real-valued coefficients
+//  _h      : coefficients, [size: _h_len x 1]
+//  _h_len  : length of coefficients array
+//  _fc     : center frequency for analysis, -0.5 <= _fc <= 0.5
+//  _H      : pointer to output value
+int liquid_freqrespf(float *                _h,
+                     unsigned int           _h_len,
+                     float                  _fc,
+                     liquid_float_complex * _H);
+
+// Get static frequency response from filter coefficients at particular
+// frequency with complex coefficients
+//  _h      : coefficients, [size: _h_len x 1]
+//  _h_len  : length of coefficients array
+//  _fc     : center frequency for analysis, -0.5 <= _fc <= 0.5
+//  _H      : pointer to output value
+int liquid_freqrespcf(liquid_float_complex * _h,
+                      unsigned int           _h_len,
+                      float                  _fc,
+                      liquid_float_complex * _H);
+
 
 //
 // IIR filter design
