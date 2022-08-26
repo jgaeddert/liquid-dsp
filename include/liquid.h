@@ -4000,6 +4000,15 @@ int FIRDECIM(_set_scale)(FIRDECIM() _q,                                     \
 int FIRDECIM(_get_scale)(FIRDECIM() _q,                                     \
                          TC *       _scale);                                \
                                                                             \
+/* Compute complex frequency response \(H\) of decimator on prototype   */  \
+/* filter coefficients at a specific frequency \(f_c\)                  */  \
+/*  _q      : decimator object                                          */  \
+/*  _fc     : normalized frequency for evaluation                       */  \
+/*  _H      : pointer to output complex frequency response              */  \
+int FIRDECIM(_freqresp)(FIRDECIM()             _q,                          \
+                        float                  _fc,                         \
+                        liquid_float_complex * _H);                         \
+                                                                            \
 /* Execute decimator on _M input samples                                */  \
 /*  _q      : decimator object                                          */  \
 /*  _x      : input samples, [size: _M x 1]                             */  \
