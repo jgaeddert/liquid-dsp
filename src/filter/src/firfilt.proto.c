@@ -514,19 +514,17 @@ int FIRFILT(_freqresponse)(FIRFILT()       _q,
                            float           _fc,
                            float complex * _H)
 {
-    unsigned int i;
-    float complex H = 0.0f;
-
-    // compute dot product between coefficients and exp{ 2 pi fc {0..n-1} }
-    for (i=0; i<_q->h_len; i++)
-        H += _q->h[i] * cexpf(-_Complex_I*2*M_PI*_fc*i);
+#if TC_COMPLEX==0
+    int rc = liquid_freqrespf(_q->h, _q->h_len, _fc, _H);
+#elif TC_COMPLEX==1
+    int rc = liquid_freqrespcf(_q->h, _q->h_len, _fc, _H);
+#else
+#   error("invalid complex type for coefficients")
+#endif
 
     // apply scaling
-    H *= _q->scale;
-
-    // set return value
-    *_H = H;
-    return LIQUID_OK;
+    *_H *= _q->scale;
+    return rc;
 }
 
 // compute group delay in samples
