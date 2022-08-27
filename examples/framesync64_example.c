@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 #include "liquid.h"
 #define OUTPUT_FILENAME  "framesync64_example.m"
 
@@ -25,7 +26,7 @@ static int callback(unsigned char *  _header,
 {
     printf("*** callback invoked ***\n");
     framesyncstats_print(&_stats);
-    return 1;
+    return 0;
 }
 
 int main(int argc, char*argv[])

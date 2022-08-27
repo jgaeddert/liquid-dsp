@@ -5421,6 +5421,12 @@ DEPRECATED("binary debugging file exported on non-zero return value",
 int framesync64_debug_print(framesync64 _q, const char * _filename);
 )
 
+// set prefix for exporting debugging files, default: "framesync64"
+//  _q      : frame sync object
+//  _prefix : string with valid file path
+int framesync64_set_prefix(framesync64  _q,
+                           const char * _prefix);
+
 // get/set detection threshold
 float framesync64_get_threshold(framesync64 _q);
 int   framesync64_set_threshold(framesync64 _q, float _threshold);

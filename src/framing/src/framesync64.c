@@ -53,8 +53,13 @@ int framesync64_execute_rxpreamble(framesync64   _q,
 int framesync64_execute_rxpayload(framesync64   _q,
                                   float complex _x);
 
-// export debugging samples to file
-int framesync64_debug_export(framesync64 _q, const char * _filename);
+// export debugging based on return value
+//  0   : do not write file
+//  >0  : write specific number (hex)
+//  -1  : number of packets detected
+//  -2  : id using first 4 bytes of header
+//  -3  : write with random extension
+int framesync64_debug_export(framesync64 _q, int _code);
 
 // framesync64 object structure
 struct framesync64_s {
@@ -105,6 +110,8 @@ struct framesync64_s {
     unsigned int payload_counter;   // counter: num of payload syms received
 
     windowcf buf_debug;             // debug: raw input samples
+    char *   prefix;                // debug: filename prefix
+    char *   filename;              // debug: filename buffer
 };
 
 // create framesync64 object
@@ -165,7 +172,11 @@ framesync64 framesync64_create(framesync_callback _callback,
     // reset global data counters
     framesync64_reset_framedatastats(q);
 
-    q->buf_debug = windowcf_create(LIQUID_FRAME64_LEN);
+    // set debugging fields
+    q->buf_debug= windowcf_create(LIQUID_FRAME64_LEN);
+    q->prefix   = NULL;
+    q->filename = NULL;
+    framesync64_set_prefix(q, "framesync64");
 
     // reset state and return
     framesync64_reset(q);
@@ -196,6 +207,12 @@ framesync64 framesync64_copy(framesync64 q_orig)
     q_copy->dec      = qpacketmodem_copy  (q_orig->dec);
     q_copy->pilotsync= qpilotsync_copy    (q_orig->pilotsync);
     q_copy->buf_debug= windowcf_copy      (q_orig->buf_debug);
+
+    // set prefix value
+    q_copy->prefix   = NULL;
+    q_copy->filename = NULL;
+    framesync64_set_prefix(q_copy, q_orig->prefix);
+
     return q_copy;
 }
 
@@ -490,9 +507,7 @@ int framesync64_execute_rxpayload(framesync64   _q,
                              _q->userdata);
 
                 // export debugging based on return value
-                if (rc) {
-                    framesync64_debug_export(_q, "framesync64_12345678.dat");
-                }
+                framesync64_debug_export(_q, rc);
             }
 
             // reset frame synchronizer
@@ -534,6 +549,28 @@ int framesync64_set_threshold(framesync64 _q,
     return qdetector_cccf_set_threshold(_q->detector, _threshold);
 }
 
+// set prefix for exporting debugging files, default: "framesync64"
+//  _q      : frame sync object
+//  _prefix : string with valid file path
+int framesync64_set_prefix(framesync64  _q,
+                           const char * _prefix)
+{
+    // skip if input is NULL pointer
+    if (_prefix == NULL)
+        return LIQUID_OK;
+
+    // sanity check
+    unsigned int n = strlen(_prefix);
+    if (n > 1<<14)
+        return liquid_error(LIQUID_EICONFIG,"framesync64_set_prefix(), input string size exceeds reasonable limits");
+
+    // reallocate memory, copy input, and return
+    _q->prefix   = (char*) realloc(_q->prefix,   n+ 1);
+    _q->filename = (char*) realloc(_q->filename, n+15);
+    memmove(_q->prefix, _prefix, n);
+    _q->prefix[n] = '\0';
+    return LIQUID_OK;
+}
 
 // reset frame data statistics
 int framesync64_reset_framedatastats(framesync64 _q)
@@ -548,14 +585,41 @@ framedatastats_s framesync64_get_framedatastats(framesync64 _q)
 }
 
 // export debugging samples to file
-int framesync64_debug_export(framesync64  _q,
-                             const char * _filename)
+int framesync64_debug_export(framesync64 _q,
+                             int         _code)
 {
-    FILE* fid = fopen(_filename,"wb");
-    if (fid == NULL)
-        return liquid_error(LIQUID_EIO,"framesync64_debug_export(), could not open %s for writing", _filename);
+    // determine what to do based on callback return code
+    if (_code == 0) {
+        // do not export file
+        return LIQUID_OK;
+    } else if (_code > 0) {
+        // user-defined value
+        sprintf(_q->filename,"%s_u%.8x.dat", _q->prefix, _code);
+    } else if (_code == -1) {
+        // based on number of packets detected
+        sprintf(_q->filename,"%s_n%.8x.dat", _q->prefix,
+                _q->framedatastats.num_frames_detected);
+    } else if (_code == -2) {
+        // decoded header (first 4 bytes)
+        sprintf(_q->filename,"%s_h", _q->prefix);
+        char * p = _q->filename + strlen(_q->prefix) + 2;
+        for (unsigned int i=0; i<4; i++) {
+            sprintf(p,"%.2x", _q->payload_dec[i]);
+            p += 2;
+        }
+        sprintf(p,".dat");
+    } else if (_code == -3) {
+        // random extension
+        sprintf(_q->filename,"%s_r%.8x.dat", _q->prefix, rand() & 0xffffffff);
+    } else {
+        return liquid_error(LIQUID_EICONFIG,"framesync64_debug_export(), invalid return code %d", _code);
+    }
 
-    // TODO: write header?
+    FILE * fid = fopen(_q->filename,"wb");
+    if (fid == NULL)
+        return liquid_error(LIQUID_EIO,"framesync64_debug_export(), could not open %s for writing", _q->filename);
+
+    // TODO: write file header?
 
     // write debug buffer
     float complex * rc;
@@ -577,8 +641,10 @@ int framesync64_debug_export(framesync64  _q,
     fwrite(_q->payload_sym, sizeof(float complex), 600, fid);
     fwrite(_q->payload_dec, sizeof(unsigned char),  72, fid);
 
+    // TODO: write data header and payload
+
     fclose(fid);
-    printf("framesync64_debug_export(), results written to %s\n", _filename);
+    printf("framesync64_debug_export(), results written to %s\n", _q->filename);
     return LIQUID_OK;
 }
 
