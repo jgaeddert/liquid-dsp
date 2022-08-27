@@ -122,6 +122,7 @@ void autotest_firfilt_config()
     CONTEND_ISNULL(firfilt_crcf_create_dc_blocker(0, 0));
     CONTEND_ISNULL(firfilt_crcf_create_notch(0, 0, 0));
     CONTEND_ISNULL(firfilt_cccf_create_notch(0, 0, 0));
+    CONTEND_ISNULL(firfilt_crcf_copy(NULL));
 
     // create proper object and test configurations
     firfilt_crcf q = firfilt_crcf_create_kaiser(11, 0.2f, 60.0f, 0.0f);
