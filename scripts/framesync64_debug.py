@@ -54,6 +54,7 @@ def framesync64_plot(filename,export=None):
         plt.show()
     else:
         fig.savefig(os.path.splitext(filename)[0]+'.png',bbox_inches='tight')
+    plt.close()
 
 if __name__ == '__main__':
     sys.exit(main())
