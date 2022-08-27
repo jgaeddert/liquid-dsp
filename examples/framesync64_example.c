@@ -25,7 +25,7 @@ static int callback(unsigned char *  _header,
 {
     printf("*** callback invoked ***\n");
     framesyncstats_print(&_stats);
-    return 0;
+    return 1;
 }
 
 int main(int argc, char*argv[])
