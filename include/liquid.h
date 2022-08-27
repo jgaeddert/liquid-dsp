@@ -5409,10 +5409,17 @@ int framesync64_execute(framesync64            _q,
                         liquid_float_complex * _x,
                         unsigned int           _n);
 
-// enable/disable debugging
+DEPRECATED("debugging enabled by default; return non-zero value to export file",
 int framesync64_debug_enable(framesync64 _q);
+)
+
+DEPRECATED("debugging enabled by default; return non-zero value to export file",
 int framesync64_debug_disable(framesync64 _q);
+)
+
+DEPRECATED("binary debugging file exported on non-zero return value",
 int framesync64_debug_print(framesync64 _q, const char * _filename);
+)
 
 // get/set detection threshold
 float framesync64_get_threshold(framesync64 _q);

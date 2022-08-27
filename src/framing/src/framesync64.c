@@ -31,10 +31,6 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_FRAMESYNC64           1
-#define DEBUG_FRAMESYNC64_PRINT     0
-#define DEBUG_BUFFER_LEN            (1600)
-
 #define FRAMESYNC64_ENABLE_EQ       0
 
 // push samples through detection stage
@@ -108,9 +104,7 @@ struct framesync64_s {
     unsigned int preamble_counter;  // counter: num of p/n syms received
     unsigned int payload_counter;   // counter: num of payload syms received
 
-#if DEBUG_FRAMESYNC64
     windowcf buf_debug;             // debug: raw input samples
-#endif
 };
 
 // create framesync64 object
@@ -171,9 +165,7 @@ framesync64 framesync64_create(framesync_callback _callback,
     // reset global data counters
     framesync64_reset_framedatastats(q);
 
-#if DEBUG_FRAMESYNC64
     q->buf_debug = windowcf_create(LIQUID_FRAME64_LEN);
-#endif
 
     // reset state and return
     framesync64_reset(q);
@@ -210,10 +202,6 @@ framesync64 framesync64_copy(framesync64 q_orig)
 // destroy frame synchronizer object, freeing all internal memory
 int framesync64_destroy(framesync64 _q)
 {
-#if DEBUG_FRAMESYNC64
-    windowcf_destroy(_q->buf_debug);
-#endif
-
     // destroy synchronization objects
     qdetector_cccf_destroy(_q->detector);   // frame detector
     firpfb_crcf_destroy   (_q->mf);         // matched filter
@@ -223,6 +211,7 @@ int framesync64_destroy(framesync64 _q)
 #if FRAMESYNC64_ENABLE_EQ
     eqlms_cccf_destroy    (_q->equalizer);  // LMS equalizer
 #endif
+    windowcf_destroy(_q->buf_debug);
 
     // free main object memory
     free(_q);
@@ -284,9 +273,9 @@ int framesync64_execute(framesync64     _q,
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
-#if DEBUG_FRAMESYNC64
+        // push sample into debug buffer
         windowcf_push(_q->buf_debug, _x[i]);
-#endif
+
         switch (_q->state) {
         case FRAMESYNC64_STATE_DETECTFRAME:
             // detect frame (look for p/n sequence)
@@ -328,11 +317,8 @@ int framesync64_execute_seekpn(framesync64   _q,
         _q->gamma_hat = qdetector_cccf_get_gamma(_q->detector);
         _q->dphi_hat  = qdetector_cccf_get_dphi (_q->detector);
         _q->phi_hat   = qdetector_cccf_get_phi  (_q->detector);
-
-#if DEBUG_FRAMESYNC64_PRINT
-        printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
-                _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
-#endif
+        //printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
+        //        _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
 
         // set appropriate filterbank index
         if (_q->tau_hat > 0) {
@@ -565,7 +551,6 @@ framedatastats_s framesync64_get_framedatastats(framesync64 _q)
 int framesync64_debug_export(framesync64  _q,
                              const char * _filename)
 {
-#if DEBUG_FRAMESYNC64
     FILE* fid = fopen(_filename,"wb");
     if (fid == NULL)
         return liquid_error(LIQUID_EIO,"framesync64_debug_export(), could not open %s for writing", _filename);
@@ -595,8 +580,5 @@ int framesync64_debug_export(framesync64  _q,
     fclose(fid);
     printf("framesync64_debug_export(), results written to %s\n", _filename);
     return LIQUID_OK;
-#else
-    return liquid_error(LIQUID_EICONFIG,"framesync64_debug_export(), compile-time debugging disabled");
-#endif
 }
 
