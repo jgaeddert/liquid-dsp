@@ -191,11 +191,11 @@ framesync64 framesync64_copy(framesync64 q_orig)
 
     // copy objects
     q_copy->detector = qdetector_cccf_copy(q_orig->detector);
-    q_orig->mixer    = nco_crcf_copy      (q_orig->mixer);
-    q_orig->mf       = firpfb_crcf_copy   (q_orig->mf);
-    q_orig->dec      = qpacketmodem_copy  (q_orig->dec);
-    q_orig->pilotsync= qpilotsync_copy    (q_orig->pilotsync);
-
+    q_copy->mixer    = nco_crcf_copy      (q_orig->mixer);
+    q_copy->mf       = firpfb_crcf_copy   (q_orig->mf);
+    q_copy->dec      = qpacketmodem_copy  (q_orig->dec);
+    q_copy->pilotsync= qpilotsync_copy    (q_orig->pilotsync);
+    q_copy->buf_debug= windowcf_copy      (q_orig->buf_debug);
     return q_copy;
 }
 
