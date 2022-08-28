@@ -641,8 +641,6 @@ int framesync64_debug_export(framesync64 _q,
     fwrite(_q->payload_sym, sizeof(float complex), 600, fid);
     fwrite(_q->payload_dec, sizeof(unsigned char),  72, fid);
 
-    // TODO: write data header and payload
-
     fclose(fid);
     printf("framesync64_debug_export(), results written to %s\n", _q->filename);
     return LIQUID_OK;

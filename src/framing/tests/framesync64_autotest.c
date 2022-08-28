@@ -168,3 +168,71 @@ void autotest_framesync64_config()
     framesync64_destroy(q);
 }
 
+static int callback_framesync64_autotest_debug(
+    unsigned char *  _header,
+    int              _header_valid,
+    unsigned char *  _payload,
+    unsigned int     _payload_len,
+    int              _payload_valid,
+    framesyncstats_s _stats,
+    void *           _userdata)
+{
+    // return custom id for filename
+    return 0x00abcdef;
+}
+
+// test debug interface to write file
+void autotest_framesync64_debug()
+{
+    // create objects
+    framegen64  fg = framegen64_create();
+    framesync64 fs = framesync64_create(callback_framesync64_autotest_debug,NULL);
+
+    // set prefix for filename
+    framesync64_set_prefix(fs,"autotest_framesync64");
+
+    // generate the frame
+    float complex frame[LIQUID_FRAME64_LEN];
+    unsigned char header [ 8] = {80,81,82,83,84,85,86,87};
+    unsigned char payload[64];
+    unsigned int i;
+    for (i=0; i<64; i++)
+        payload[i] = rand() & 0xff;
+    framegen64_execute(fg, header, payload, frame);
+
+    // add some noise
+    for (i=0; i<LIQUID_FRAME64_LEN; i++)
+        frame[i] += 0.01f*(randnf() + _Complex_I*randnf()) * M_SQRT1_2;
+
+    // try to receive the frame
+    framesync64_execute(fs, frame, LIQUID_FRAME64_LEN);
+
+    // parse statistics
+    framedatastats_s stats = framesync64_get_framedatastats(fs);
+    CONTEND_EQUALITY(stats.num_frames_detected, 1);
+    CONTEND_EQUALITY(stats.num_headers_valid,   1);
+    CONTEND_EQUALITY(stats.num_payloads_valid,  1);
+    CONTEND_EQUALITY(stats.num_bytes_received, 64);
+
+    // destroy objects
+    framegen64_destroy(fg);
+    framesync64_destroy(fs);
+
+    // load file...
+    FILE * fid = fopen("autotest_framesync64_u00abcdef.dat","rb");
+    if (fid == NULL) {
+        AUTOTEST_FAIL("could not open autotest_framesync64_u00abcdef.dat for reading");
+        return;
+    }
+    // skip in file
+    fseek(fid, LIQUID_FRAME64_LEN*sizeof(float complex) +
+               5*sizeof(float) +
+               (630 + 600)*sizeof(float complex),
+          SEEK_SET);
+    unsigned char payload_dec[72];
+    fread(payload_dec, sizeof(unsigned char), 72, fid);
+    CONTEND_SAME_DATA(payload_dec,   header,   8);
+    CONTEND_SAME_DATA(payload_dec+8, payload, 64);
+    fclose(fid);
+}
+
