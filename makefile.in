@@ -1363,6 +1363,7 @@ clean-check:
 	$(RM) $(autotest_extra_obj)
 	$(RM) autotest/autotest.o
 	$(RM) autotest.json
+	$(RM) autotest/logs/*.m autotest/logs/*.dat
 
 ##
 ## TARGET : doc-check - build and run basic documentation checks
@@ -1833,7 +1834,7 @@ clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench cle
 
 distclean: clean
 	@echo "cleaning distribution..."
-	$(RM) octave-core *.m
+	$(RM) octave-core *_example.m
 	$(RM) configure config.h config.h.in config.h.in~ config.log config.status
 	$(RM) -r autom4te.cache
 	$(RM) aclocal.m4

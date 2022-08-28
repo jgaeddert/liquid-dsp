@@ -189,7 +189,7 @@ void autotest_framesync64_debug()
     framesync64 fs = framesync64_create(callback_framesync64_autotest_debug,NULL);
 
     // set prefix for filename
-    framesync64_set_prefix(fs,"autotest_framesync64");
+    framesync64_set_prefix(fs,"autotest/logs/framesync64");
 
     // generate the frame
     float complex frame[LIQUID_FRAME64_LEN];
@@ -219,9 +219,9 @@ void autotest_framesync64_debug()
     framesync64_destroy(fs);
 
     // load file...
-    FILE * fid = fopen("autotest_framesync64_u00abcdef.dat","rb");
+    FILE * fid = fopen("autotest/logs/framesync64_u00abcdef.dat","rb");
     if (fid == NULL) {
-        AUTOTEST_FAIL("could not open autotest_framesync64_u00abcdef.dat for reading");
+        AUTOTEST_FAIL("could not open autotest/logs/framesync64_u00abcdef.dat for reading");
         return;
     }
     // skip in file
