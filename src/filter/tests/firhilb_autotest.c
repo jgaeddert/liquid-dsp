@@ -159,7 +159,7 @@ void autotest_firhilbf_psd()
       {.fmin=+0.5*bw, .fmax=+0.5,    .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signal(buf_0, num_samples, regions_orig, 3,
-        liquid_autotest_verbose ? "autotest_firhilbf_orig.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/firhilbf_orig.m" : NULL);
 
     // verify interpolated spectrum
     autotest_psd_s regions_interp[] = {
@@ -170,11 +170,11 @@ void autotest_firhilbf_psd()
       {.fmin= 0.25+0.25*bw, .fmax= 0.5,          .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signalf(buf_1, 2*num_samples, regions_interp, 5,
-        liquid_autotest_verbose ? "autotest_firhilbf_interp.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/firhilbf_interp.m" : NULL);
 
     // verify decimated spectrum (using same regions as original)
     liquid_autotest_validate_psd_signal(buf_2, num_samples, regions_orig, 3,
-        liquid_autotest_verbose ? "autotest_firhilbf_decim.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/firhilbf_decim.m" : NULL);
 
     // destroy filter object and free memory
     firhilbf_destroy(q);

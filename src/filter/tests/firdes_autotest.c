@@ -315,7 +315,7 @@ void testbench_firdes_prototype(const char * _type,
       {.fmin= f1, .fmax=+0.5,.pmin= 0, .pmax=-_as, .test_lo=0, .test_hi=1},
     };
     char filename[256];
-    sprintf(filename,"autotest_firdes_prototype_%s.m", _type);
+    sprintf(filename,"autotest/logs/firdes_prototype_%s.m", _type);
     liquid_autotest_validate_psd_signalf(h, h_len, regions, 3,
         liquid_autotest_verbose ? filename : NULL);
 }
@@ -356,7 +356,7 @@ void autotest_firdes_doppler()
       {.fmin= 0.25,  .fmax=+0.5,   .pmin= 0, .pmax= 0, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signalf(h, h_len, regions, 5,
-        liquid_autotest_verbose ? "autotest_firdes_doppler.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/firdes_doppler.m" : NULL);
 }
 
 // check frequency response (real-valued coefficients)

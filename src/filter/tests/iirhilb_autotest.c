@@ -68,7 +68,7 @@ void autotest_iirhilbf_interp_decim()
       {.fmin=+0.5*bw, .fmax=+0.5,    .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signal(buf_0, num_samples, regions_orig, 3,
-        liquid_autotest_verbose ? "autotest_iirhilbf_orig.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/iirhilbf_orig.m" : NULL);
 
     // verify interpolated spectrum
     autotest_psd_s regions_interp[] = {
@@ -79,11 +79,11 @@ void autotest_iirhilbf_interp_decim()
       {.fmin= 0.25+0.25*bw, .fmax= 0.5,          .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signalf(buf_1, 2*num_samples, regions_interp, 5,
-        liquid_autotest_verbose ? "autotest_iirhilbf_interp.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/iirhilbf_interp.m" : NULL);
 
     // verify decimated spectrum (using same regions as original)
     liquid_autotest_validate_psd_signal(buf_2, num_samples, regions_orig, 3,
-        liquid_autotest_verbose ? "autotest_iirhilbf_decim.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/iirhilbf_decim.m" : NULL);
 
     // destroy filter object and free memory
     iirhilbf_destroy(q);
@@ -146,7 +146,7 @@ void autotest_iirhilbf_filter()
       {.fmin=+f0+0.5*bw, .fmax=+0.5,       .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signal(buf_0, num_samples, regions_orig, 5,
-        liquid_autotest_verbose ? "autotest_iirhilbf_filter_orig.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/iirhilbf_filter_orig.m" : NULL);
 
     // verify interpolated spectrum
     autotest_psd_s regions_c2r[] = {
@@ -157,7 +157,7 @@ void autotest_iirhilbf_filter()
       {.fmin=+f0+0.5*bw, .fmax=+0.5,       .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signalf(buf_1, num_samples, regions_c2r, 5,
-        liquid_autotest_verbose ? "autotest_iirhilbf_filter_c2r.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/iirhilbf_filter_c2r.m" : NULL);
 
     // verify decimated spectrum (using same regions as original)
     autotest_psd_s regions_r2c[] = {
@@ -166,7 +166,7 @@ void autotest_iirhilbf_filter()
       {.fmin=+f0+0.5*bw, .fmax=+0.5,       .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signal(buf_2, num_samples, regions_r2c, 3,
-        liquid_autotest_verbose ? "autotest_iirhilbf_filter_r2c.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/iirhilbf_filter_r2c.m" : NULL);
 
     // destroy filter object and free memory
     iirhilbf_destroy(q);

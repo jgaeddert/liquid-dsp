@@ -76,7 +76,7 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
       {.fmin=+0.6*bw, .fmax=+0.5,    .pmin= 0, .pmax=-_as+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signal(buf_0, num_samples, regions_orig, 3,
-        liquid_autotest_verbose ? "autotest_dds_cccf_orig.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/dds_cccf_orig.m" : NULL);
 
     // verify interpolated spectrum
     float f1 = _fc-0.6*bw/r, f2 = _fc-0.3*bw/r, f3 = _fc+0.3*bw/r, f4 = _fc+0.6*bw/r;
@@ -86,11 +86,11 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
       {.fmin= f4,  .fmax=+0.5, .pmin= 0, .pmax=-_as+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signal(buf_1, r*num_samples, regions_interp, 3,
-        liquid_autotest_verbose ? "autotest_dds_cccf_interp.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/dds_cccf_interp.m" : NULL);
 
     // verify decimated spectrum (using same regions as original)
     liquid_autotest_validate_psd_signal(buf_2, num_samples, regions_orig, 3,
-        liquid_autotest_verbose ? "autotest_dds_cccf_decim.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/dds_cccf_decim.m" : NULL);
 
     // destroy filter object and free memory
     dds_cccf_destroy(q);

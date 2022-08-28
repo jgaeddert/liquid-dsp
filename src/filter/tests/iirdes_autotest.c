@@ -106,7 +106,7 @@ void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
       {.fmin=_fs,  .fmax=+0.5f, .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(H, nfft, regions, 2,
-        liquid_autotest_verbose ? "autotest_iirdes_ellip_lowpass.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/iirdes_ellip_lowpass.m" : NULL);
 
     // destroy filter object
     iirfilt_crcf_destroy(q);
@@ -150,7 +150,7 @@ void testbench_iirdes_cheby1_lowpass(unsigned int _n,  // filter order
       {.fmin=_fs,  .fmax=+0.5f, .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(H, nfft, regions, 2,
-        liquid_autotest_verbose ? "autotest_iirdes_cheby1_lowpass.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/iirdes_cheby1_lowpass.m" : NULL);
 
     // destroy filter object
     iirfilt_crcf_destroy(q);
@@ -194,7 +194,7 @@ void testbench_iirdes_cheby2_lowpass(unsigned int _n,  // filter order
       {.fmin=_fc,  .fmax=+0.5f, .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(H, nfft, regions, 2,
-        liquid_autotest_verbose ? "autotest_iirdes_cheby2_lowpass.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/iirdes_cheby2_lowpass.m" : NULL);
 
     // destroy filter object
     iirfilt_crcf_destroy(q);
@@ -239,7 +239,7 @@ void testbench_iirdes_butter_lowpass(unsigned int _n,  // filter order
       {.fmin=_fs,  .fmax=+0.5f,    .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(H, nfft, regions, 2,
-        liquid_autotest_verbose ? "autotest_iirdes_butter_lowpass.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/iirdes_butter_lowpass.m" : NULL);
 
     // destroy filter object
     iirfilt_crcf_destroy(q);
@@ -281,7 +281,7 @@ void autotest_iirdes_ellip_highpass() {
       {.fmin=fc,     .fmax=0.5,   .pmin=-Ap-tol, .pmax=   +tol, .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(H, nfft, regions, 3,
-        liquid_autotest_verbose ? "autotest_iirdes_ellip_highpass.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/iirdes_ellip_highpass.m" : NULL);
 
     // destroy filter object
     iirfilt_crcf_destroy(q);
@@ -319,7 +319,7 @@ void autotest_iirdes_ellip_bandpass() {
       {.fmin=+0.396, .fmax=+0.5,  .pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(H, nfft, regions, 5,
-        liquid_autotest_verbose ? "autotest_iirdes_ellip_bandpass.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/iirdes_ellip_bandpass.m" : NULL);
 
     // destroy filter object
     iirfilt_crcf_destroy(q);
@@ -357,7 +357,7 @@ void autotest_iirdes_ellip_bandstop() {
       {.fmin=+0.391, .fmax=+0.5,  .pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(H, nfft, regions, 5,
-        liquid_autotest_verbose ? "autotest_iirdes_ellip_bandstop.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/iirdes_ellip_bandstop.m" : NULL);
 
     // destroy filter object
     iirfilt_crcf_destroy(q);
@@ -389,7 +389,7 @@ void autotest_iirdes_bessel() {
       {.fmin=+0.305, .fmax=+0.500,.pmin= 0, .pmax=-60,   .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(H, nfft, regions, 3,
-        liquid_autotest_verbose ? "autotest_iirdes_bessel.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/iirdes_bessel.m" : NULL);
 
     // destroy filter object
     iirfilt_crcf_destroy(q);

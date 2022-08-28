@@ -204,7 +204,7 @@ void autotest_spwaterfall_gnuplot()
         spwaterfallcf_push(q, randnf() + _Complex_I*randnf());
 
     // export once before setting values
-    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_export(q,"autotest_spwaterfall"))
+    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_export(q,"autotest/logs/spwaterfall"))
 
     // set values and export again
     CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_freq(q, 100e6))
@@ -212,7 +212,7 @@ void autotest_spwaterfall_gnuplot()
     CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_dims(q, 640, 480))
     CONTEND_EQUALITY(LIQUID_OK, spwaterfallcf_set_commands(q,NULL))
     CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_commands(q,"set title 'waterfall'"))
-    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_export(q,"autotest_spwaterfall"))
+    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_export(q,"autotest/logs/spwaterfall"))
 
     spwaterfallcf_destroy(q);
 }

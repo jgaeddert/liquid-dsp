@@ -70,7 +70,7 @@ void autotest_resamp2_analysis()
 
 #if 0
     // debugging
-    const char filename[] = "autotest_resamp2_analysis_test.m";
+    const char filename[] = "autotest/logs/resamp2_analysis_test.m";
     FILE * fid = fopen(filename, "w");
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
@@ -141,7 +141,7 @@ void autotest_resamp2_synthesis()
 
 #if 0
     // debugging
-    const char filename[] = "autotest_resamp2_synthesis_test.m";
+    const char filename[] = "autotest/logs/resamp2_synthesis_test.m";
     FILE * fid = fopen(filename, "w");
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
@@ -196,7 +196,7 @@ void testbench_resamp2_crcf_filter(unsigned int _m, float _as)
       {.fmin=+0.25+ft/2, .fmax=+0.5,       .pmin= 0, .pmax=-_as+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signal(h_0, h_len, regions_h0, 3,
-        liquid_autotest_verbose ? "autotest_resamp2_crcf_filter_h0.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/resamp2_crcf_filter_h0.m" : NULL);
 
     // verify high-pass frequency response
     autotest_psd_s regions_h1[] = {
@@ -205,7 +205,7 @@ void testbench_resamp2_crcf_filter(unsigned int _m, float _as)
       {.fmin=+0.25+ft/2, .fmax=+0.5,       .pmin=-1, .pmax=+1,       .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_psd_signal(h_1, h_len, regions_h1, 3,
-        liquid_autotest_verbose ? "autotest_resamp2_crcf_filter_h1.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/resamp2_crcf_filter_h1.m" : NULL);
 }
 
 // test different configurations

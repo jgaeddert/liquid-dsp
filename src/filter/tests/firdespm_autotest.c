@@ -162,7 +162,7 @@ void autotest_firdespm_lowpass()
       {.fmin= 0.25,  .fmax=+0.5,   .pmin= 0,    .pmax=-60,   .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signalf(h, n, regions, 3,
-        liquid_autotest_verbose ? "autotest_firdespm_lowpass.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/firdespm_lowpass.m" : NULL);
 }
 
 // user-defined callback function defining response and weights
@@ -204,7 +204,7 @@ void autotest_firdespm_callback()
       {.fmin= 0.40,  .fmax= 0.50,  .pmin= 0, .pmax=-20, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signalf(h, h_len, regions, 9,
-        liquid_autotest_verbose ? "autotest_firdespm_callback.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/firdespm_callback.m" : NULL);
 }
 
 void autotest_firdespm_copy()

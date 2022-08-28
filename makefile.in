@@ -1364,6 +1364,7 @@ clean-check:
 	$(RM) autotest/autotest.o
 	$(RM) autotest.json
 	$(RM) autotest/logs/*.m autotest/logs/*.dat
+	$(RM) autotest/logs/*.bin autotest/logs/*.gnu autotest/logs/*.png
 
 ##
 ## TARGET : doc-check - build and run basic documentation checks

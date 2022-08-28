@@ -132,7 +132,7 @@ void testbench_spgramcf_signal(unsigned int _nfft, int _wtype, float _fc, float 
         {.fmin=_fc+0.6f*bw, .fmax=+0.5f,       .pmin=n0-tol, .pmax=n0+tol, .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(psd, _nfft, regions, 3,
-        liquid_autotest_verbose ? "autotest_spgramcf_signal.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/spgramcf_signal.m" : NULL);
 
     // destroy objects
     spgramcf_destroy(q);
@@ -374,12 +374,12 @@ void autotest_spgram_gnuplot()
         spgramcf_push(q, randnf() + _Complex_I*randnf());
 
     // export once before setting values
-    CONTEND_EQUALITY(LIQUID_OK,spgramcf_export_gnuplot(q,"autotest_spgram"))
+    CONTEND_EQUALITY(LIQUID_OK,spgramcf_export_gnuplot(q,"autotest/logs/spgram.gnu"))
 
     // set values and export again
     CONTEND_EQUALITY(LIQUID_OK,spgramcf_set_freq(q, 100e6))
     CONTEND_EQUALITY(LIQUID_OK,spgramcf_set_rate(q,  20e6))
-    CONTEND_EQUALITY(LIQUID_OK,spgramcf_export_gnuplot(q,"autotest_spgram"))
+    CONTEND_EQUALITY(LIQUID_OK,spgramcf_export_gnuplot(q,"autotest/logs/spgram.gnu"))
 
     spgramcf_destroy(q);
 }

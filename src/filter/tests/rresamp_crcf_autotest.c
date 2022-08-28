@@ -72,7 +72,7 @@ void test_harness_rresamp_crcf(unsigned int _P,
         {.fmin=+0.6f*bw, .fmax=+0.5f,    .pmin=0,     .pmax=-_as+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
-        liquid_autotest_verbose ? "autotest_rresamp_crcf.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/rresamp_crcf.m" : NULL);
 
     // destroy objects
     rresamp_crcf_destroy(resamp);
