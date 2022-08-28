@@ -109,9 +109,10 @@ struct framesync64_s {
     unsigned int preamble_counter;  // counter: num of p/n syms received
     unsigned int payload_counter;   // counter: num of payload syms received
 
-    windowcf buf_debug;             // debug: raw input samples
-    char *   prefix;                // debug: filename prefix
-    char *   filename;              // debug: filename buffer
+    windowcf     buf_debug;             // debug: raw input samples
+    char *       prefix;                // debug: filename prefix
+    char *       filename;              // debug: filename buffer
+    unsigned int num_files_exported;    // debug: number of files exported
 };
 
 // create framesync64 object
@@ -176,6 +177,7 @@ framesync64 framesync64_create(framesync_callback _callback,
     q->buf_debug= windowcf_create(LIQUID_FRAME64_LEN);
     q->prefix   = NULL;
     q->filename = NULL;
+    q->num_files_exported = 0;
     framesync64_set_prefix(q, "framesync64");
 
     // reset state and return
@@ -261,6 +263,7 @@ int framesync64_reset(framesync64 _q)
     
     // reset frame statistics
     _q->framesyncstats.evm = 0.0f;
+
     return LIQUID_OK;
 }
 
@@ -572,6 +575,24 @@ int framesync64_set_prefix(framesync64  _q,
     return LIQUID_OK;
 }
 
+// get prefix for exporting debugging files
+const char * framesync64_get_prefix(framesync64  _q)
+{
+    return (const char*) _q->prefix;
+}
+
+// get number of files exported
+unsigned int framesync64_get_num_files_exported(framesync64  _q)
+{
+    return _q->num_files_exported;
+}
+
+// get name of last debugging file written
+const char * framesync64_get_filename(framesync64  _q)
+{
+    return _q->num_files_exported == 0 ? NULL : (const char*) _q->filename;
+}
+
 // reset frame data statistics
 int framesync64_reset_framedatastats(framesync64 _q)
 {
@@ -642,7 +663,9 @@ int framesync64_debug_export(framesync64 _q,
     fwrite(_q->payload_dec, sizeof(unsigned char),  72, fid);
 
     fclose(fid);
-    printf("framesync64_debug_export(), results written to %s\n", _q->filename);
+    _q->num_files_exported++;
+    printf("framesync64_debug_export(), results written to %s (%u total)\n",
+        _q->filename, _q->num_files_exported);
     return LIQUID_OK;
 }
 

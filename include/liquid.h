@@ -5427,6 +5427,15 @@ int framesync64_debug_print(framesync64 _q, const char * _filename);
 int framesync64_set_prefix(framesync64  _q,
                            const char * _prefix);
 
+// get prefix for exporting debugging files
+const char * framesync64_get_prefix(framesync64  _q);
+
+// get number of files exported
+unsigned int framesync64_get_num_files_exported(framesync64  _q);
+
+// get name of last file written
+const char * framesync64_get_filename(framesync64  _q);
+
 // get/set detection threshold
 float framesync64_get_threshold(framesync64 _q);
 int   framesync64_set_threshold(framesync64 _q, float _threshold);

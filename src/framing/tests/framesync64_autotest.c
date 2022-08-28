@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include "autotest/autotest.h"
 #include "liquid.h"
@@ -177,19 +178,21 @@ static int callback_framesync64_autotest_debug(
     framesyncstats_s _stats,
     void *           _userdata)
 {
-    // return custom id for filename
-    return 0x00abcdef;
+    // return custom code based on user context
+    return *((int*)_userdata);
 }
 
 // test debug interface to write file
-void autotest_framesync64_debug()
+void testbench_framesync64_debug(int _code)
 {
     // create objects
     framegen64  fg = framegen64_create();
-    framesync64 fs = framesync64_create(callback_framesync64_autotest_debug,NULL);
+    framesync64 fs = framesync64_create(callback_framesync64_autotest_debug,(void*)(&_code));
 
     // set prefix for filename
-    framesync64_set_prefix(fs,"autotest/logs/framesync64");
+    const char prefix[] = "autotest/logs/framesync64";
+    framesync64_set_prefix(fs,prefix);
+    CONTEND_SAME_DATA(framesync64_get_prefix(fs), prefix, strlen(prefix));
 
     // generate the frame
     float complex frame[LIQUID_FRAME64_LEN];
@@ -214,17 +217,33 @@ void autotest_framesync64_debug()
     CONTEND_EQUALITY(stats.num_payloads_valid,  1);
     CONTEND_EQUALITY(stats.num_bytes_received, 64);
 
+    // get filename from the last file written
+    const char * filename = framesync64_get_filename(fs);
+    printf("filename: %s\n", filename);
+
     // destroy objects
     framegen64_destroy(fg);
     framesync64_destroy(fs);
 
-    // load file...
-    FILE * fid = fopen("autotest/logs/framesync64_u00abcdef.dat","rb");
-    if (fid == NULL) {
-        AUTOTEST_FAIL("could not open autotest/logs/framesync64_u00abcdef.dat for reading");
+    // check if output file should exist
+    if (filename == NULL) {
+        if (_code==0) {
+            AUTOTEST_PASS();
+        } else {
+            AUTOTEST_FAIL("no output file written when one was expected");
+        }
         return;
     }
-    // skip in file
+
+    // load file
+    FILE * fid = fopen(filename,"rb");
+    if (fid == NULL) {
+        AUTOTEST_FAIL("could not open file for reading");
+        return;
+    }
+
+    // skip to location in file that includes payload and check that
+    // both the header and payload match
     fseek(fid, LIQUID_FRAME64_LEN*sizeof(float complex) +
                5*sizeof(float) +
                (630 + 600)*sizeof(float complex),
@@ -235,4 +254,11 @@ void autotest_framesync64_debug()
     CONTEND_SAME_DATA(payload_dec+8, payload, 64);
     fclose(fid);
 }
+
+// test exporting debugging files with different return codes
+void autotest_framesync64_debug_none() { testbench_framesync64_debug( 0); }
+void autotest_framesync64_debug_user() { testbench_framesync64_debug( 1); }
+void autotest_framesync64_debug_ndet() { testbench_framesync64_debug(-1); }
+void autotest_framesync64_debug_head() { testbench_framesync64_debug(-2); }
+void autotest_framesync64_debug_rand() { testbench_framesync64_debug(-3); }
 
