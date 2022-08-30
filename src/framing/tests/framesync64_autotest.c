@@ -86,6 +86,21 @@ void autotest_framesync64()
 }
 
 // test copying from one object to another
+void autotest_framegen64_copy()
+{
+    framegen64 q_orig = framegen64_create();
+    framegen64 q_copy = framegen64_copy(q_orig);
+
+    if (q_copy == NULL) {
+        AUTOTEST_FAIL("could not copy framegen64 object");
+    } else {
+        AUTOTEST_PASS();
+        framegen64_destroy(q_copy);
+    }
+    framegen64_destroy(q_orig);
+}
+
+// test copying from one object to another
 void autotest_framesync64_copy()
 {
     unsigned int i;
@@ -154,6 +169,7 @@ void autotest_framesync64_config()
 #endif
     // check invalid function calls
     CONTEND_ISNULL(framesync64_copy(NULL));
+    CONTEND_ISNULL(framegen64_copy (NULL));
 
     // create proper object and test configurations
     framesync64 q = framesync64_create(NULL, NULL);
