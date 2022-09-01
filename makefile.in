@@ -688,6 +688,7 @@ framing_autotests :=						\
 	src/framing/tests/flexframesync_autotest.c		\
 	src/framing/tests/framesync64_autotest.c		\
 	src/framing/tests/gmskframe_autotest.c			\
+	src/framing/tests/msource_autotest.c			\
 	src/framing/tests/ofdmflexframe_autotest.c		\
 	src/framing/tests/qdetector_cccf_autotest.c		\
 	src/framing/tests/qdetector_cccf_copy_autotest.c	\
