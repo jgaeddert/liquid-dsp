@@ -99,6 +99,52 @@ void autotest_msource_tone()
         liquid_autotest_verbose ? "autotest/logs/msource_tone_autotest.m" : NULL);
 }
 
+// test tone source
+void autotest_msource_chirp()
+{
+    // spectral periodogram options
+    unsigned int nfft        =   2400;  // spectral periodogram FFT size
+    unsigned int num_samples = 192000;  // number of samples
+
+    // create spectral periodogram
+    spgramcf periodogram = spgramcf_create_default(nfft);
+
+    // create multi-signal source generator and add signal(s)
+    msourcecf gen = msourcecf_create_default();
+    // add signals     (gen,  fc,   bw,    gain
+    msourcecf_add_noise(gen,  0.0f, 1.00f, -40); // wide-band noise
+    msourcecf_add_chirp(gen,  0.0f, 0.60f,  20, num_samples*0.9, 0, 1);
+
+    // generate samples
+    unsigned int buf_len = 1024;
+    float complex buf[buf_len];
+    while (msourcecf_get_num_samples(gen) < num_samples) {
+        // write samples to buffer
+        msourcecf_write_samples(gen, buf, buf_len);
+
+        // push resulting sample through periodogram
+        spgramcf_write(periodogram, buf, buf_len);
+    }
+
+    // compute power spectral density output
+    float psd[nfft];
+    spgramcf_get_psd(periodogram, psd);
+
+    // destroy objects
+    msourcecf_destroy(gen);
+    spgramcf_destroy(periodogram);
+
+    // verify interpolated spectrum
+    autotest_psd_s regions[] = {
+      // noise floor between signals
+      {.fmin=-0.500,.fmax=-0.305, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
+      {.fmin=-0.295,.fmax= 0.295, .pmin= 15.0, .pmax= 22.0, .test_lo=1, .test_hi=1},
+      {.fmin= 0.305,.fmax= 0.500, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
+    };
+    liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
+        liquid_autotest_verbose ? "autotest/logs/msource_chirp_autotest.m" : NULL);
+}
+
 // test signals in aggregate
 void autotest_msource_aggregate()
 {
