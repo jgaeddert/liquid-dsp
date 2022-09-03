@@ -37,8 +37,70 @@ int callback_msource_autotest(void *          _userdata,
     return 0;
 }
 
-//
-void autotest_msoure_psd()
+// test tone source
+void autotest_msource_tone()
+{
+    // spectral periodogram options
+    unsigned int nfft        =   2400;  // spectral periodogram FFT size
+    unsigned int num_samples = 192000;  // number of samples
+
+    // create spectral periodogram
+    spgramcf periodogram = spgramcf_create_default(nfft);
+
+    // create multi-signal source generator and add signal(s)
+    msourcecf gen = msourcecf_create_default();
+    // add signals     (gen,  fc,   bw,    gain
+    msourcecf_add_noise(gen,  0.0f, 1.00f, -40);    // wide-band noise
+    msourcecf_add_tone (gen, -0.4f, 0.00f,  20);    // tone
+    msourcecf_add_tone (gen, -0.3f, 0.00f,  10);    // tone
+    msourcecf_add_tone (gen, -0.2f, 0.00f,   0);    // tone
+    msourcecf_add_tone (gen, -0.1f, 0.00f, -10);    // tone
+    msourcecf_add_tone (gen,  0.0f, 0.00f, -20);    // tone
+    msourcecf_add_tone (gen,  0.1f, 0.00f, -30);    // tone
+
+    // generate samples
+    unsigned int buf_len = 1024;
+    float complex buf[buf_len];
+    while (msourcecf_get_num_samples(gen) < num_samples) {
+        // write samples to buffer
+        msourcecf_write_samples(gen, buf, buf_len);
+
+        // push resulting sample through periodogram
+        spgramcf_write(periodogram, buf, buf_len);
+    }
+
+    // compute power spectral density output
+    float psd[nfft];
+    spgramcf_get_psd(periodogram, psd);
+
+    // destroy objects
+    msourcecf_destroy(gen);
+    spgramcf_destroy(periodogram);
+
+    // verify interpolated spectrum
+    autotest_psd_s regions[] = {
+      // noise floor between signals
+      {.fmin=-0.500,.fmax=-0.405, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
+      {.fmin=-0.395,.fmax=-0.305, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
+      {.fmin=-0.295,.fmax=-0.205, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
+      {.fmin=-0.195,.fmax=-0.105, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
+      {.fmin=-0.095,.fmax=-0.005, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
+      {.fmin= 0.005,.fmax= 0.095, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
+      {.fmin= 0.105,.fmax= 0.500, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
+      // tone
+      {.fmin=-0.401,.fmax=-0.399, .pmin= 10.0, .pmax= 22.0, .test_lo=1, .test_hi=1},
+      {.fmin=-0.301,.fmax=-0.299, .pmin=  0.0, .pmax= 12.0, .test_lo=1, .test_hi=1},
+      {.fmin=-0.201,.fmax=-0.199, .pmin=-10.0, .pmax=  2.0, .test_lo=1, .test_hi=1},
+      {.fmin=-0.101,.fmax=-0.099, .pmin=-20.0, .pmax= -8.0, .test_lo=1, .test_hi=1},
+      {.fmin=-0.001,.fmax= 0.001, .pmin=-30.0, .pmax=-18.0, .test_lo=1, .test_hi=1},
+      {.fmin= 0.099,.fmax= 0.101, .pmin=-40.0, .pmax=-28.0, .test_lo=1, .test_hi=1},
+    };
+    liquid_autotest_validate_spectrum(psd, nfft, regions, 13,
+        liquid_autotest_verbose ? "autotest/logs/msource_tone_autotest.m" : NULL);
+}
+
+// test signals in aggregate
+void autotest_msource_aggregate()
 {
     // msource parameters
     int          ms     = LIQUID_MODEM_QPSK;    // linear modulation scheme
@@ -133,7 +195,7 @@ void autotest_msoure_psd()
 
 
 //
-void autotest_msoure_config()
+void autotest_msource_config()
 {
 #if LIQUID_STRICT_EXIT
     AUTOTEST_WARN("skipping msource config test with strict exit enabled\n");

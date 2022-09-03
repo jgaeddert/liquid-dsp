@@ -204,6 +204,10 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
             if (r.test_hi) { printf("%7.2f)", r.pmax); } else { printf("   *   )"); }
             printf("\n");
         }
+        if (r.fmin < -0.5 || r.fmax > 0.5 || r.fmin > r.fmax) {
+            AUTOTEST_FAIL("invalid frequency range");
+            return -1;
+        }
         for (j=0; j<_nfft; j++) {
             // compute frequency value and check region
             float f = (float)j / (float)_nfft - 0.5f;
