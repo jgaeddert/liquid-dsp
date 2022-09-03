@@ -81,7 +81,7 @@ MSOURCE() MSOURCE(_create)(unsigned int _M,
     if (_M % 2)
         return liquid_error_config("msource%s_create(), number of subcarriers must be even",EXTENSION);
     if (_m==0)
-        return liquid_error_config("msource%s_create(), number of subcarriers must be even",EXTENSION);
+        return liquid_error_config("msource%s_create(), filter semi-length must be greater than zero",EXTENSION);
 
     // allocate memory for main object
     MSOURCE() q = (MSOURCE()) malloc( sizeof(struct MSOURCE(_s)) );

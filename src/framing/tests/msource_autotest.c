@@ -24,9 +24,9 @@
 #include "liquid.internal.h"
 
 // user-defined callback; generate tones
-int callback_msourcecf_autotest(void *          _userdata,
-                                float complex * _v,
-                                unsigned int    _n)
+int callback_msource_autotest(void *          _userdata,
+                              float complex * _v,
+                              unsigned int    _n)
 {
     unsigned int * counter = (unsigned int*)_userdata;
     unsigned int i;
@@ -37,12 +37,8 @@ int callback_msourcecf_autotest(void *          _userdata,
     return 0;
 }
 
-//void testbench_firdes_prototype(const char * _type,
-//                                unsigned int _k,
-//                                unsigned int _m,
-//                                float        _beta,
-//                                float        _as)
-void autotest_msourecf_psd()
+//
+void autotest_msoure_psd()
 {
     // msource parameters
     int          ms     = LIQUID_MODEM_QPSK;    // linear modulation scheme
@@ -70,7 +66,7 @@ void autotest_msourecf_psd()
     msourcecf_add_modem(gen,  0.2f, 0.10f,   0, ms, m, beta);  // modulated data (linear)
     msourcecf_add_gmsk (gen, -0.2f, 0.05f,   0, m, bt);        // modulated data (GMSK)
     unsigned int counter = 0;
-    msourcecf_add_user (gen,  0.4f, 0.15f, -10, (void*)&counter, callback_msourcecf_autotest); // tones
+    msourcecf_add_user (gen,  0.4f, 0.15f, -10, (void*)&counter, callback_msource_autotest); // tones
 
     // print source generator object
     msourcecf_print(gen);
@@ -135,4 +131,39 @@ void autotest_msourecf_psd()
         liquid_autotest_verbose ? filename : NULL);
 }
 
+
+//
+void autotest_msoure_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping msource config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // no need to check every combination
+    CONTEND_ISNULL(msourcecf_create( 0, 12, 60));   // too few subcarriers
+    CONTEND_ISNULL(msourcecf_create(17, 12, 60));   // odd-numbered subcarriers
+    CONTEND_ISNULL(msourcecf_create(64,  0, 60));   // filter semi-length too small
+    //CONTEND_ISNULL(msourcecf_copy(NULL));
+
+    // create proper object and test configurations
+    msourcecf q = msourcecf_create(64, 12, 60);
+
+    CONTEND_EQUALITY(LIQUID_OK, msourcecf_print(q));
+
+    // try to configure signals with invalid IDs
+    float rv;
+    CONTEND_INEQUALITY(LIQUID_OK, msourcecf_remove       (q, 12345));
+    CONTEND_INEQUALITY(LIQUID_OK, msourcecf_enable       (q, 12345));
+    CONTEND_INEQUALITY(LIQUID_OK, msourcecf_disable      (q, 12345));
+    CONTEND_INEQUALITY(LIQUID_OK, msourcecf_set_gain     (q, 12345, 0.0f));
+    CONTEND_INEQUALITY(LIQUID_OK, msourcecf_get_gain     (q, 12345, &rv));
+    CONTEND_INEQUALITY(LIQUID_OK, msourcecf_set_frequency(q, 12345, 0.0f));
+    CONTEND_INEQUALITY(LIQUID_OK, msourcecf_get_frequency(q, 12345, &rv));
+
+    // destroy object
+    msourcecf_destroy(q);
+}
 
