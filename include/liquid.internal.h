@@ -1102,6 +1102,9 @@ int QSOURCE(_set_frequency)(QSOURCE() _q,                                   \
                                                                             \
 float QSOURCE(_get_frequency)(QSOURCE() _q);                                \
                                                                             \
+/* get center frequency of signal applied by channelizer alignment */       \
+float QSOURCE(_get_frequency_index)(QSOURCE() _q);                          \
+                                                                            \
 int QSOURCE(_generate)(QSOURCE() _q,                                        \
                        TO *      _v);                                       \
                                                                             \

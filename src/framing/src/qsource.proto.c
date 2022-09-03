@@ -118,18 +118,8 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,
     q->resamp = resamp_crcf_create(rate, 12, 0.45f, q->as, 64);
 
     // create mixer for frequency offset correction
-    q->index = (unsigned int)roundf((_fc < 0.0f ? _fc + 1.0f : _fc) * q->M) % q->M;
     q->mixer = NCO(_create)(LIQUID_VCO);
-    // compute frequency applied by channelizer alignment
-    float fc_index = (float)(q->index) / (float)(q->M) + (q->index < q->M/2 ? 0 : -1);
-    // compute residual frequency needed by mixer
-    float fc_mixer = _fc - fc_index;
-    // apply mixer frequency (in radians), scaled by resampling ratio
-    NCO(_set_frequency)(q->mixer, 2*M_PI*fc_mixer * (float)(q->M) / (float)(q->P));
-#if 0
-    printf("fc : %12.8f (index: %4u, P:%4u, M:%4u), actual : %12.8f = %12.8f + %12.8f, e : %12.8f\n",
-            _fc, q->index, q->P, q->M, fc_index+fc_mixer, fc_index, fc_mixer, _fc-(fc_index+fc_mixer));
-#endif
+    QSOURCE(_set_frequency)(q, _fc);
 
     // create buffers
     q->buf_len  = 64;
@@ -350,18 +340,47 @@ uint64_t QSOURCE(_get_num_samples)(QSOURCE() _q)
     return _q->num_samples;
 }
 
-// set mixer frequency
+// set signal center frequency by adjusting index and NCO frequency
 int QSOURCE(_set_frequency)(QSOURCE() _q,
-                            float     _dphi)
+                            float     _fc)
 {
-    NCO(_set_frequency)(_q->mixer, _dphi);
+    // set channelizer index appropriately
+    _q->index = (unsigned int)roundf((_fc < 0.0f ? _fc + 1.0f : _fc) * _q->M) % _q->M;
+
+    // compute frequency applied by channelizer alignment
+    float fc_index = QSOURCE(_get_frequency_index)(_q);
+
+    // compute residual frequency needed by mixer
+    float fc_mixer = _fc - fc_index;
+
+    // apply mixer frequency (in radians), scaled by resampling ratio
+    NCO(_set_frequency)(_q->mixer, 2*M_PI*fc_mixer * (float)(_q->M) / (float)(_q->P));
+
+#if 0
+    // debug print
+    printf("fc : %12.8f (index: %4u, P:%4u, M:%4u), actual : %12.8f = %12.8f + %12.8f, e : %12.8f\n",
+            _fc, _q->index, _q->P, _q->M, fc_index+fc_mixer, fc_index, fc_mixer, _fc-(fc_index+fc_mixer));
+#endif
     return LIQUID_OK;
 }
 
 // get mixer frequency
 float QSOURCE(_get_frequency)(QSOURCE() _q)
 {
-    return NCO(_get_frequency)(_q->mixer);
+    // get frequency of signal due to channelizer alignment
+    float fc_index = QSOURCE(_get_frequency_index)(_q);
+
+    // get frequency from NCO
+    float fc_mixer = NCO(_get_frequency)(_q->mixer) * (float)(_q->P) / (2*M_PI*(float)(_q->M));
+
+    // true center frequency is the combination of the two offsets
+    return fc_index + fc_mixer;
+}
+
+// get center frequency of signal applied by channelizer alignment
+float QSOURCE(_get_frequency_index)(QSOURCE() _q)
+{
+    return (float)(_q->index) / (float)(_q->M) + (_q->index < _q->M/2 ? 0 : -1);
 }
 
 // generate a single sample

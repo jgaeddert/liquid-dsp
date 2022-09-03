@@ -77,7 +77,7 @@ void autotest_msource_tone()
     msourcecf_destroy(gen);
     spgramcf_destroy(periodogram);
 
-    // verify interpolated spectrum
+    // verify spectrum
     autotest_psd_s regions[] = {
       // noise floor between signals
       {.fmin=-0.500,.fmax=-0.405, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
@@ -99,7 +99,7 @@ void autotest_msource_tone()
         liquid_autotest_verbose ? "autotest/logs/msource_tone_autotest.m" : NULL);
 }
 
-// test tone source
+// test chirp source
 void autotest_msource_chirp()
 {
     // spectral periodogram options
@@ -134,7 +134,7 @@ void autotest_msource_chirp()
     msourcecf_destroy(gen);
     spgramcf_destroy(periodogram);
 
-    // verify interpolated spectrum
+    // verify spectrum
     autotest_psd_s regions[] = {
       // noise floor between signals
       {.fmin=-0.500,.fmax=-0.305, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
@@ -200,7 +200,7 @@ void autotest_msource_aggregate()
     msourcecf_destroy(gen);
     spgramcf_destroy(periodogram);
 
-    // verify interpolated spectrum
+    // verify spectrum
     autotest_psd_s regions[] = {
       // noise floor between signals
       {.fmin=-0.500,.fmax=-0.410, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
@@ -239,7 +239,6 @@ void autotest_msource_aggregate()
         liquid_autotest_verbose ? filename : NULL);
 }
 
-
 //
 void autotest_msource_config()
 {
@@ -259,8 +258,6 @@ void autotest_msource_config()
     // create proper object and test configurations
     msourcecf q = msourcecf_create(64, 12, 60);
 
-    CONTEND_EQUALITY(LIQUID_OK, msourcecf_print(q));
-
     // try to configure signals with invalid IDs
     float rv;
     CONTEND_INEQUALITY(LIQUID_OK, msourcecf_remove       (q, 12345));
@@ -271,7 +268,110 @@ void autotest_msource_config()
     CONTEND_INEQUALITY(LIQUID_OK, msourcecf_set_frequency(q, 12345, 0.0f));
     CONTEND_INEQUALITY(LIQUID_OK, msourcecf_get_frequency(q, 12345, &rv));
 
+    // add signals and check setting values appropriately
+    int id_tone = msourcecf_add_tone (q, -0.123456f, 0.00f, 20);
+    int id_gmsk = msourcecf_add_gmsk (q,  0.220780f, 0.05f,  0, 4, 0.3f);
+
+    CONTEND_EQUALITY(LIQUID_OK, msourcecf_print(q));
+
+    // remove tone
+    CONTEND_EQUALITY  (LIQUID_OK, msourcecf_remove  (q, id_tone));
+    CONTEND_INEQUALITY(LIQUID_OK, msourcecf_set_gain(q, id_tone, 10.0f));
+
+    // disable GMSK signal
+    CONTEND_EQUALITY(LIQUID_OK, msourcecf_disable(q, id_gmsk));
+
+    // assert buffer is zeros (only GMSK signal present and it's disabled)
+    unsigned int buf_len = 1024;
+    float complex buf[buf_len];
+    msourcecf_write_samples(q, buf, buf_len);
+    CONTEND_EQUALITY(0.0f, liquid_sumsqcf(buf, buf_len));
+
+    // enable GMSK signal
+    CONTEND_EQUALITY(LIQUID_OK, msourcecf_enable(q, id_gmsk));
+    msourcecf_write_samples(q, buf, buf_len);
+    CONTEND_GREATER_THAN(liquid_sumsqcf(buf, buf_len), 0.0f);
+
     // destroy object
     msourcecf_destroy(q);
+}
+
+// test accessor methods
+void autotest_msource_accessor()
+{
+    // create object and add signals:(q,  fc,        bw,    gain
+    msourcecf q = msourcecf_create(240, 12, 60);
+    int id_tone = msourcecf_add_tone (q, -0.123456f, 0.00f, 20);
+    int id_noise= msourcecf_add_noise(q,  0.220780f, 0.10f,  0);
+    float rv;
+
+    // check center frequency of tone
+    msourcecf_get_frequency(q, id_tone, &rv);
+    CONTEND_EQUALITY(rv, -0.123456f);
+
+    // check center frequency of noise signal
+    msourcecf_get_frequency(q, id_noise, &rv);
+    CONTEND_EQUALITY(rv,  0.220780f);
+
+    // check gain of tone
+    msourcecf_get_gain(q, id_tone, &rv);
+    CONTEND_EQUALITY(rv, 20.0f);
+
+    // check gain of noise signal
+    msourcecf_get_gain(q, id_noise, &rv);
+    CONTEND_EQUALITY(rv,  0.0f);
+
+    // remove tone
+    msourcecf_remove(q, id_tone);
+
+    // disable noise signal
+    msourcecf_disable(q, id_noise);
+
+    // set frequency of noise signal
+    msourcecf_set_frequency(q, id_noise, 0.33333f);
+    msourcecf_get_frequency(q, id_noise, &rv);
+    CONTEND_EQUALITY(rv, 0.33333f);
+
+    // set gain of noise signal
+    msourcecf_set_gain(q, id_noise, 30.0f);
+    msourcecf_get_gain(q, id_noise, &rv);
+    CONTEND_EQUALITY(rv, 30.0f);
+
+    // assert buffer is zeros
+    unsigned int buf_len = 1024;
+    float complex buf[buf_len];
+    msourcecf_write_samples(q, buf, buf_len);
+    CONTEND_EQUALITY(0.0f, liquid_sumsqcf(buf, buf_len));
+
+    // enable noise signal and check power spectral density
+    msourcecf_enable(q, id_noise);
+    //msourcecf_write_samples(q, buf, buf_len);
+    // create spectral periodogram
+    unsigned int nfft =  2400;  // spectral periodogram FFT size
+    spgramcf periodogram = spgramcf_create_default(nfft);
+    while (msourcecf_get_num_samples(q) < 192000) {
+        // write samples to buffer
+        msourcecf_write_samples(q, buf, buf_len);
+
+        // push resulting sample through periodogram
+        spgramcf_write(periodogram, buf, buf_len);
+    }
+    // compute power spectral density output
+    float psd[nfft];
+    spgramcf_get_psd(periodogram, psd);
+
+    // destroy objects
+    msourcecf_destroy(q);
+    spgramcf_destroy(periodogram);
+
+    // verify spectrum
+    autotest_psd_s regions[] = {
+      // noise floor between signals
+      {.fmin=-0.500,.fmax= 0.275, .pmin=-80.0, .pmax=-40.0, .test_lo=0, .test_hi=1},
+      {.fmin= 0.285,.fmax= 0.375, .pmin= 28.0, .pmax= 32.0, .test_lo=1, .test_hi=1},
+      {.fmin= 0.385,.fmax= 0.500, .pmin=-80.0, .pmax=-40.0, .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
+        liquid_autotest_verbose ? "autotest/logs/msource_accessor_autotest.m" : NULL);
 }
 
