@@ -90,8 +90,12 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,
     // validate input
     if (_M < 2 || (_M % 2))
         return liquid_error_config("qsource%s_create(), invalid channelizer size (%u); must be even and greater than 1",EXTENSION,_M);
+    if (_m == 0)
+        return liquid_error_config("qsource%s_create(), invalid channelizer filter semi-length (%u); must be greater than 0",EXTENSION,_m);
     if (_fc < -0.5f || _fc > 0.5f)
         return liquid_error_config("qsource%s_create(), invalid frequency offset (%f); must be in [-0.5,0.5]",EXTENSION,_fc);
+    if (_bw < 0.0f || _bw > 1.0f)
+        return liquid_error_config("qsource%s_create(), invalid bandwidth (%f); must be in [0,1]",EXTENSION,_fc);
 
     // allocate memory for main object
     QSOURCE() q = (QSOURCE()) malloc( sizeof(struct QSOURCE(_s)) );
