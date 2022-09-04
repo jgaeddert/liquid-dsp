@@ -24,9 +24,9 @@
 #include "liquid.internal.h"
 
 // user-defined callback; generate tones
-int callback_msource_autotest(void *          _userdata,
-                              float complex * _v,
-                              unsigned int    _n)
+int callback_msourcecf_autotest(void *          _userdata,
+                                float complex * _v,
+                                unsigned int    _n)
 {
     unsigned int * counter = (unsigned int*)_userdata;
     unsigned int i;
@@ -38,7 +38,7 @@ int callback_msource_autotest(void *          _userdata,
 }
 
 // test tone source
-void autotest_msource_tone()
+void autotest_msourcecf_tone()
 {
     // spectral periodogram options
     unsigned int nfft        =   2400;  // spectral periodogram FFT size
@@ -96,11 +96,11 @@ void autotest_msource_tone()
       {.fmin= 0.099,.fmax= 0.101, .pmin=-40.0, .pmax=-28.0, .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(psd, nfft, regions, 13,
-        liquid_autotest_verbose ? "autotest/logs/msource_tone_autotest.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/msourcecf_tone_autotest.m" : NULL);
 }
 
 // test chirp source
-void autotest_msource_chirp()
+void autotest_msourcecf_chirp()
 {
     // spectral periodogram options
     unsigned int nfft        =   2400;  // spectral periodogram FFT size
@@ -142,11 +142,11 @@ void autotest_msource_chirp()
       {.fmin= 0.305,.fmax= 0.500, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/msource_chirp_autotest.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/msourcecf_chirp_autotest.m" : NULL);
 }
 
 // test signals in aggregate
-void autotest_msource_aggregate()
+void autotest_msourcecf_aggregate()
 {
     // msource parameters
     int          ms     = LIQUID_MODEM_QPSK;    // linear modulation scheme
@@ -168,13 +168,14 @@ void autotest_msource_aggregate()
     msourcecf gen = msourcecf_create_default();
 
     // add signals     (gen,  fc,   bw,    gain, {options})
-    msourcecf_add_noise(gen,  0.0f, 1.00f, -40);               // wide-band noise
-    msourcecf_add_noise(gen,  0.0f, 0.20f,   0);               // narrow-band noise
-    msourcecf_add_tone (gen, -0.4f, 0.00f,  20);               // tone
-    msourcecf_add_modem(gen,  0.2f, 0.10f,   0, ms, m, beta);  // modulated data (linear)
-    msourcecf_add_gmsk (gen, -0.2f, 0.05f,   0, m, bt);        // modulated data (GMSK)
+    msourcecf_add_noise(gen,  0.00f, 1.00f, -40);               // wide-band noise
+    msourcecf_add_tone (gen, -0.45f, 0.00f,  20);               // tone
+    msourcecf_add_fsk  (gen, -0.33f, 0.05f, -10, 3, 16);        // FSK
+    msourcecf_add_gmsk (gen, -0.20f, 0.05f,   0, m, bt);        // modulated data (GMSK)
+    msourcecf_add_noise(gen,  0.00f, 0.20f,   0);               // narrow-band noise
+    msourcecf_add_modem(gen,  0.20f, 0.10f,   0, ms, m, beta);  // modulated data (linear)
     unsigned int counter = 0;
-    msourcecf_add_user (gen,  0.4f, 0.15f, -10, (void*)&counter, callback_msource_autotest); // tones
+    msourcecf_add_user (gen,  0.40f, 0.15f, -10, (void*)&counter, callback_msourcecf_autotest); // tones
 
     // print source generator object
     msourcecf_print(gen);
@@ -203,8 +204,9 @@ void autotest_msource_aggregate()
     // verify spectrum
     autotest_psd_s regions[] = {
       // noise floor between signals
-      {.fmin=-0.500,.fmax=-0.410, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
-      {.fmin=-0.390,.fmax=-0.260, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
+      {.fmin=-0.500,.fmax=-0.455, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
+      {.fmin=-0.445,.fmax=-0.385, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
+      {.fmin=-0.275,.fmax=-0.260, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
       {.fmin=-0.140,.fmax=-0.110, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
       {.fmin=+0.110,.fmax=+0.130, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
       {.fmin=+0.270,.fmax=+0.320, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
@@ -219,7 +221,8 @@ void autotest_msource_aggregate()
       // end
       {.fmin=+0.461,.fmax=+0.500, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
       // signals
-      {.fmin=-0.401,.fmax=-0.399, .pmin=+10.0, .pmax=+22.0, .test_lo=1, .test_hi=1},
+      {.fmin=-0.451,.fmax=-0.449, .pmin=+10.0, .pmax=+22.0, .test_lo=1, .test_hi=1},
+      {.fmin=-0.355,.fmax=-0.305, .pmin=-15.0, .pmax= +0.0, .test_lo=1, .test_hi=1},
       {.fmin=-0.220,.fmax=-0.180, .pmin=-18.0, .pmax= +6.5, .test_lo=1, .test_hi=1},
       {.fmin=-0.095,.fmax=+0.095, .pmin= -5.0, .pmax= +2.0, .test_lo=1, .test_hi=1},
       {.fmin= 0.160,.fmax=+0.240, .pmin= -5.0, .pmax= +2.0, .test_lo=1, .test_hi=1},
@@ -234,13 +237,13 @@ void autotest_msource_aggregate()
       {.fmin= 0.4555,.fmax=+0.4565, .pmin=-20.0, .pmax= +0.0, .test_lo=1, .test_hi=1},
     };
     char filename[256];
-    sprintf(filename,"autotest/logs/msource_autotest.m");
-    liquid_autotest_validate_spectrum(psd, nfft, regions, 5+7+1+4+8,
+    sprintf(filename,"autotest/logs/msourcecf_aggregate_autotest.m");
+    liquid_autotest_validate_spectrum(psd, nfft, regions, 6+7+1+5+8,
         liquid_autotest_verbose ? filename : NULL);
 }
 
 //
-void autotest_msource_config()
+void autotest_msourcecf_config()
 {
 #if LIQUID_STRICT_EXIT
     AUTOTEST_WARN("skipping msource config test with strict exit enabled\n");
@@ -297,7 +300,7 @@ void autotest_msource_config()
 }
 
 // test accessor methods
-void autotest_msource_accessor()
+void autotest_msourcecf_accessor()
 {
     // create object and add signals:(q,  fc,        bw,    gain
     msourcecf q = msourcecf_create(240, 12, 60);
@@ -372,6 +375,6 @@ void autotest_msource_accessor()
       {.fmin= 0.385,.fmax= 0.500, .pmin=-80.0, .pmax=-40.0, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/msource_accessor_autotest.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/msourcecf_accessor_autotest.m" : NULL);
 }
 
