@@ -172,13 +172,14 @@ void autotest_msourcecf_aggregate()
     msourcecf_add_tone (gen, -0.45f, 0.00f,  20);               // tone
     msourcecf_add_fsk  (gen, -0.33f, 0.05f, -10, 3, 16);        // FSK
     msourcecf_add_gmsk (gen, -0.20f, 0.05f,   0, m, bt);        // modulated data (GMSK)
-    msourcecf_add_noise(gen,  0.00f, 0.20f,   0);               // narrow-band noise
+    msourcecf_add_noise(gen, -0.05f, 0.10f,   0);               // narrow-band noise
+    msourcecf_add_chirp(gen,  0.07f, 0.07f,  20, 8000, 0, 0);   // chirp
     msourcecf_add_modem(gen,  0.20f, 0.10f,   0, ms, m, beta);  // modulated data (linear)
     unsigned int counter = 0;
     msourcecf_add_user (gen,  0.40f, 0.15f, -10, (void*)&counter, callback_msourcecf_autotest); // tones
 
     // print source generator object
-    msourcecf_print(gen);
+    CONTEND_EQUALITY(LIQUID_OK, msourcecf_print(gen));
 
     unsigned int total_samples = 0;
     while (total_samples < num_samples) {
@@ -208,6 +209,7 @@ void autotest_msourcecf_aggregate()
       {.fmin=-0.445,.fmax=-0.385, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
       {.fmin=-0.275,.fmax=-0.260, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
       {.fmin=-0.140,.fmax=-0.110, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
+      {.fmin=+0.005,.fmax=+0.030, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
       {.fmin=+0.110,.fmax=+0.130, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
       {.fmin=+0.270,.fmax=+0.320, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
       // space between tones
@@ -224,7 +226,8 @@ void autotest_msourcecf_aggregate()
       {.fmin=-0.451,.fmax=-0.449, .pmin=+10.0, .pmax=+22.0, .test_lo=1, .test_hi=1},
       {.fmin=-0.355,.fmax=-0.305, .pmin=-15.0, .pmax= +0.0, .test_lo=1, .test_hi=1},
       {.fmin=-0.220,.fmax=-0.180, .pmin=-18.0, .pmax= +6.5, .test_lo=1, .test_hi=1},
-      {.fmin=-0.095,.fmax=+0.095, .pmin= -5.0, .pmax= +2.0, .test_lo=1, .test_hi=1},
+      {.fmin=-0.095,.fmax=-0.005, .pmin= -5.0, .pmax= +2.0, .test_lo=1, .test_hi=1},
+      {.fmin= 0.037,.fmax=+0.102, .pmin= 18.0, .pmax=+22.0, .test_lo=1, .test_hi=1},
       {.fmin= 0.160,.fmax=+0.240, .pmin= -5.0, .pmax= +2.0, .test_lo=1, .test_hi=1},
       // tones
       {.fmin= 0.3245,.fmax=+0.3255, .pmin=-20.0, .pmax= +0.0, .test_lo=1, .test_hi=1},
@@ -238,7 +241,7 @@ void autotest_msourcecf_aggregate()
     };
     char filename[256];
     sprintf(filename,"autotest/logs/msourcecf_aggregate_autotest.m");
-    liquid_autotest_validate_spectrum(psd, nfft, regions, 6+7+1+5+8,
+    liquid_autotest_validate_spectrum(psd, nfft, regions, 7+7+1+6+8,
         liquid_autotest_verbose ? filename : NULL);
 }
 
