@@ -34,7 +34,7 @@
 
 // firpfbch2 object structure definition
 struct FIRPFBCH2(_s) {
-    int type;           // synthesis/analysis
+    int          type;  // synthesis/analysis
     unsigned int M;     // number of channels
     unsigned int M2;    // number of channels/2
     unsigned int m;     // filter semi-length
@@ -172,6 +172,40 @@ FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,
 
     // return object
     return q;
+}
+
+// copy object
+FIRPFBCH2() FIRPFBCH2(_copy)(FIRPFBCH2() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("firfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create object and copy base parameters
+    FIRPFBCH2() q_copy = (FIRPFBCH2()) malloc(sizeof(struct FIRPFBCH2(_s)));
+    memmove(q_copy, q_orig, sizeof(struct FIRPFBCH2(_s)));
+
+    // generate and copy bank of sub-samped filters
+    unsigned int i;
+    q_copy->dp = (DOTPROD()*) malloc((q_copy->M)*sizeof(DOTPROD()));
+    for (i=0; i<q_copy->M; i++)
+        q_copy->dp[i] = DOTPROD(_copy)(q_orig->dp[i]);
+
+    // create FFT plan (inverse transform)
+    // TODO : use fftw_malloc if HAVE_FFTW3_H
+    q_copy->X = (T*) malloc((q_copy->M)*sizeof(T));   // IFFT input
+    q_copy->x = (T*) malloc((q_copy->M)*sizeof(T));   // IFFT output
+    q_copy->ifft = FFT_CREATE_PLAN(q_copy->M, q_copy->X, q_copy->x, FFT_DIR_BACKWARD, FFT_METHOD);
+
+    // create and copy buffer objects
+    q_copy->w0 = (WINDOW()*) malloc((q_copy->M)*sizeof(WINDOW()));
+    q_copy->w1 = (WINDOW()*) malloc((q_copy->M)*sizeof(WINDOW()));
+    for (i=0; i<q_copy->M; i++) {
+        q_copy->w0[i] = WINDOW(_copy)(q_orig->w0[i]);
+        q_copy->w1[i] = WINDOW(_copy)(q_orig->w1[i]);
+    }
+
+    return q_copy;
 }
 
 // destroy firpfbch2 object, freeing internal memory

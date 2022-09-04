@@ -8395,6 +8395,9 @@ FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,                   \
                                       unsigned int _m,                      \
                                       float        _As);                    \
                                                                             \
+/* Copy object recursively including all internal objects and state     */  \
+FIRPFBCH2() FIRPFBCH2(_copy)(FIRPFBCH2() _q);                               \
+                                                                            \
 /* Destroy firpfbch2 object, freeing internal memory                    */  \
 int FIRPFBCH2(_destroy)(FIRPFBCH2() _q);                                    \
                                                                             \
