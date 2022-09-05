@@ -40,6 +40,6 @@ void autotest_qsourcecf_config()
     CONTEND_ISNULL(qsourcecf_create(64, 12, 60,-0.6f, 0.2f, 10.0f)); // center frequency out of range
     CONTEND_ISNULL(qsourcecf_create(64, 12, 60, 0.0f,-0.1f, 10.0f)); // bandwidth out of range
     CONTEND_ISNULL(qsourcecf_create(64, 12, 60, 0.0f, 1.1f, 10.0f)); // bandwidth out of range
-    //CONTEND_ISNULL(qsourcecf_copy(NULL));
+    CONTEND_ISNULL(qsourcecf_copy(NULL));
 }
 

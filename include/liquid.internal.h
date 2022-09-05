@@ -1031,6 +1031,9 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,                                 \
                            float        _bw,                                \
                            float        _gain);                             \
                                                                             \
+/* Copy object recursively, including all internal objects and state    */  \
+QSOURCE() QSOURCE(_copy)(QSOURCE() _q);                                     \
+                                                                            \
 /* Initialize user-defined qsource object                               */  \
 int QSOURCE(_init_user)(QSOURCE() _q,                                       \
                         void *    _userdata,                                \

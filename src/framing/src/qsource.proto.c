@@ -142,6 +142,54 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,
     return q;
 }
 
+// copy object
+QSOURCE() QSOURCE(_copy)(QSOURCE() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("qsource%s_copy(), object cannot be NULL", EXTENSION);
+
+    // create filter object and copy base parameters
+    QSOURCE() q_copy = (QSOURCE()) malloc(sizeof(struct QSOURCE(_s)));
+    memmove(q_copy, q_orig, sizeof(struct QSOURCE(_s)));
+
+    // copy main objects
+    q_copy->resamp   = resamp_crcf_copy(q_orig->resamp);
+    q_copy->mixer    = nco_crcf_copy   (q_orig->mixer);
+    q_copy->buf      = (float complex*) liquid_malloc_copy(q_orig->buf,      q_orig->buf_len, sizeof(float complex));
+    q_copy->buf_time = (float complex*) liquid_malloc_copy(q_orig->buf_time, q_orig->P/2,     sizeof(float complex));
+    q_copy->buf_freq = (float complex*) liquid_malloc_copy(q_orig->buf_freq, q_orig->P,       sizeof(float complex));
+    q_copy->ch       = firpfbch2_crcf_copy(q_orig->ch);
+
+    // copy type-specific values
+    // free internal type-specific objects
+    switch (q_copy->type) {
+    case QSOURCE_UNKNOWN:   break;
+    case QSOURCE_USER:      break;
+    case QSOURCE_TONE:      break;
+    case QSOURCE_CHIRP:
+        q_copy->source.chirp.nco = NCO(_copy)(q_orig->source.chirp.nco);
+        break;
+    case QSOURCE_NOISE:     break;
+    case QSOURCE_MODEM:
+        q_copy->source.linmod.symstream = SYMSTREAM(_copy)(q_orig->source.linmod.symstream);
+        break;
+    case QSOURCE_FSK:
+        q_copy->source.fsk.mod = fskmod_copy(q_orig->source.fsk.mod);
+        q_copy->source.fsk.buf = (float complex*)liquid_malloc_copy(
+            q_orig->source.fsk.buf, q_orig->source.fsk.len, sizeof(float complex));
+        break;
+    case QSOURCE_GMSK:
+        q_copy->source.gmsk.mod = gmskmod_copy(q_orig->source.gmsk.mod);
+        break;
+    default:
+        return liquid_error_config("qsource%s_copy(), invalid internal state",EXTENSION);
+    }
+
+    return q_copy;
+}
+
+
 int QSOURCE(_destroy)(QSOURCE() _q)
 {
     // free internal type-specific objects
