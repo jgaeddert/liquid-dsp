@@ -8055,6 +8055,9 @@ fskmod fskmod_create(unsigned int _m,
                      unsigned int _k,
                      float        _bandwidth);
 
+// Copy object recursively including all internal objects and state
+fskmod fskmod_copy(fskmod _q);
+
 // destroy fskmod object
 int fskmod_destroy(fskmod _q);
 
@@ -8084,6 +8087,9 @@ typedef struct fskdem_s * fskdem;
 fskdem fskdem_create(unsigned int _m,
                      unsigned int _k,
                      float        _bandwidth);
+
+// Copy object recursively including all internal objects and state
+fskdem fskdem_copy(fskdem _q);
 
 // destroy fskdem object
 int fskdem_destroy(fskdem _q);

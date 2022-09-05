@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,3 +83,87 @@ void autotest_fskmodem_misc_M256()  { fskmodem_test_mod_demod( 8,  500, 0.372145
 void autotest_fskmodem_misc_M512()  { fskmodem_test_mod_demod( 9, 1000, 0.3721451); }
 void autotest_fskmodem_misc_M1024() { fskmodem_test_mod_demod(10, 2000, 0.3721451); }
 
+// test modulator copy
+void autotest_fskmod_copy()
+{
+    // options
+    unsigned int m  = 3;        // bits per symbol
+    unsigned int k  = 200;      // samples per symbol
+    float        bw = 0.2345f;  // occupied bandwidth
+
+    // create modulator/demodulator pair
+    fskmod mod_orig = fskmod_create(m,k,bw);
+
+    unsigned int num_symbols = 96;
+    float complex buf_orig[k];
+    float complex buf_copy[k];
+    msequence ms = msequence_create_default(7);
+
+    // run original object
+    unsigned int i;
+    for (i=0; i<num_symbols; i++) {
+        // generate random symbol and modulate
+        unsigned char s = msequence_generate_symbol(ms, m);
+        fskmod_modulate(mod_orig, s, buf_orig);
+    }
+
+    // copy object
+    fskmod mod_copy = fskmod_copy(mod_orig);
+
+    // run through both objects and compare
+    for (i=0; i<num_symbols; i++) {
+        // generate random symbol and modulate
+        unsigned char s = msequence_generate_symbol(ms, m);
+        fskmod_modulate(mod_orig, s, buf_orig);
+        fskmod_modulate(mod_copy, s, buf_copy);
+        // check result
+        CONTEND_SAME_DATA(buf_orig, buf_copy, k*sizeof(float complex));
+    }
+
+    // clean it up
+    msequence_destroy(ms);
+    fskmod_destroy(mod_orig);
+    fskmod_destroy(mod_copy);
+}
+
+// test demodulator copy
+void autotest_fskdem_copy()
+{
+    // options
+    unsigned int m  = 3;        // bits per symbol
+    unsigned int k  = 200;      // samples per symbol
+    float        bw = 0.2345f;  // occupied bandwidth
+
+    // create modulator/demodulator pair
+    fskdem dem_orig = fskdem_create(m, k, bw);
+
+    unsigned int num_symbols = 96;
+    float complex buf[k];
+
+    // run original object
+    unsigned int i, j;
+    for (i=0; i<num_symbols; i++) {
+        // generate random signal and demodulate
+        for (j=0; j<k; j++)
+            buf[j] = randnf() + _Complex_I*randnf();
+        fskdem_demodulate(dem_orig, buf);
+    }
+
+    // copy object
+    fskdem dem_copy = fskdem_copy(dem_orig);
+
+    // run through both objects and compare
+    for (i=0; i<num_symbols; i++) {
+        // generate random signal and demodulate
+        for (j=0; j<k; j++)
+            buf[j] = randnf() + _Complex_I*randnf();
+        unsigned int sym_orig = fskdem_demodulate(dem_orig, buf);
+        unsigned int sym_copy = fskdem_demodulate(dem_copy, buf);
+        // check result
+        CONTEND_EQUALITY(sym_orig, sym_copy);
+    }
+
+    // clean it up
+    fskdem_destroy(dem_orig);
+    fskdem_destroy(dem_copy);
+}

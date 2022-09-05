@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,14 @@
  * THE SOFTWARE.
  */
 
-//
 // M-ary frequency-shift keying modulator
-//
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 
 #include "liquid.internal.h"
-
-// 
-// internal methods
-//
 
 // fskmod
 struct fskmod_s {
@@ -81,6 +76,24 @@ fskmod fskmod_create(unsigned int _m,
 
     // return main object
     return q;
+}
+
+// copy object
+fskmod fskmod_copy(fskmod q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("fskmod_copy(), object cannot be NULL");
+
+    // create object and copy base parameters
+    fskmod q_copy = (fskmod) malloc(sizeof(struct fskmod_s));
+    memmove(q_copy, q_orig, sizeof(struct fskmod_s));
+
+    // copy oscillator object
+    q_copy->oscillator = nco_crcf_copy(q_orig->oscillator);
+
+    // return new object
+    return q_copy;
 }
 
 // destroy fskmod object
