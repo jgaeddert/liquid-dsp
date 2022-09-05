@@ -7904,6 +7904,8 @@ typedef struct gmskmod_s * gmskmod;
 gmskmod gmskmod_create(unsigned int _k,
                        unsigned int _m,
                        float        _BT);
+// Copy object recursively including all internal objects and state
+gmskmod gmskmod_copy(gmskmod _q);
 int gmskmod_destroy(gmskmod _q);
 int gmskmod_print(gmskmod _q);
 int gmskmod_reset(gmskmod _q);
@@ -7922,6 +7924,8 @@ typedef struct gmskdem_s * gmskdem;
 gmskdem gmskdem_create(unsigned int _k,
                        unsigned int _m,
                        float        _BT);
+// Copy object recursively including all internal objects and state
+gmskdem gmskdem_copy(gmskdem _q);
 int gmskdem_destroy(gmskdem _q);
 int gmskdem_print(gmskdem _q);
 int gmskdem_reset(gmskdem _q);

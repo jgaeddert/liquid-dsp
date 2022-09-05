@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,23 +20,22 @@
  * THE SOFTWARE.
  */
 
-//
-// gmskmod.c : Gauss minimum-shift keying modem
-//
+// Gauss minimum-shift keying modem
 
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "liquid.internal.h"
 
 struct gmskmod_s {
     unsigned int k;         // samples/symbol
     unsigned int m;         // symbol delay
-    float BT;               // bandwidth/time product
+    float        BT;        // bandwidth/time product
     unsigned int h_len;     // filter length
-    float * h;              // pulse shaping filter
+    float *      h;         // pulse shaping filter
 
     // interpolator
     firinterp_rrrf interp_tx;
@@ -51,7 +50,7 @@ struct gmskmod_s {
 //  _BT     :   excess bandwidth factor
 gmskmod gmskmod_create(unsigned int _k,
                        unsigned int _m,
-                       float _BT)
+                       float        _BT)
 {
     if (_k < 2)
         return liquid_error_config("gmskmod_create(), samples/symbol must be at least 2");
@@ -85,6 +84,27 @@ gmskmod gmskmod_create(unsigned int _k,
 
     // return modem object
     return q;
+}
+
+// copy object
+gmskmod gmskmod_copy(gmskmod q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("gmskmod_copy(), object cannot be NULL");
+
+    // create object and copy base parameters
+    gmskmod q_copy = (gmskmod) malloc(sizeof(struct gmskmod_s));
+    memmove(q_copy, q_orig, sizeof(struct gmskmod_s));
+
+    // copy filter coefficients
+    q_copy->h = (float *) liquid_malloc_copy(q_orig->h, q_orig->h_len, sizeof(float));
+
+    // copy interpolator object
+    q_copy->interp_tx = firinterp_rrrf_copy(q_orig->interp_tx);
+
+    // return new object
+    return q_copy;
 }
 
 int gmskmod_destroy(gmskmod _q)
