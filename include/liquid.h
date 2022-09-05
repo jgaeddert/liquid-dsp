@@ -6436,6 +6436,9 @@ MSOURCE() MSOURCE(_create)(unsigned int _M,                                 \
                            unsigned int _m,                                 \
                            float        _as);                               \
                                                                             \
+/* Copy object recursively, including all internal objects and state    */  \
+MSOURCE() MSOURCE(_copy)(MSOURCE() _q);                                     \
+                                                                            \
 /* Create default msource object with default parameters:               */  \
 /* M = 1200, m = 4, as = 60                                             */  \
 MSOURCE() MSOURCE(_create_default)(void);                                   \

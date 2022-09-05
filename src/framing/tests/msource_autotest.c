@@ -381,3 +381,90 @@ void autotest_msourcecf_accessor()
         liquid_autotest_verbose ? "autotest/logs/msourcecf_accessor_autotest.m" : NULL);
 }
 
+// test copying object and ensure output spectrum aligns
+void autotest_msourcecf_copy()
+{
+    // msource parameters
+    int          ms     = LIQUID_MODEM_QPSK;    // linear modulation scheme
+    unsigned int m      =    12;                // modulation filter semi-length
+    float        beta   = 0.30f;                // modulation filter excess bandwidth factor
+    float        bt     = 0.35f;                // GMSK filter bandwidth-time factor
+
+    // spectral periodogram options
+    unsigned int nfft        =   1200;  // spectral periodogram FFT size
+    unsigned int num_samples = 720000;  // number of samples
+
+    // create spectral periodogram
+    spgramcf periodogram_orig = spgramcf_create_default(nfft);
+    spgramcf periodogram_copy = spgramcf_create_default(nfft);
+
+    unsigned int buf_len = 1024;
+    float complex buf_orig[buf_len];
+    float complex buf_copy[buf_len];
+
+    // create multi-signal source generator
+    msourcecf gen_orig = msourcecf_create_default();
+
+    // add signals     (gen,  fc,   bw,    gain, {options})
+    msourcecf_add_noise(gen_orig,  0.00f, 1.00f, -40);               // wide-band noise
+    msourcecf_add_tone (gen_orig, -0.45f, 0.00f,  20);               // tone
+    msourcecf_add_fsk  (gen_orig, -0.33f, 0.05f, -10, 3, 16);        // FSK
+    msourcecf_add_gmsk (gen_orig, -0.20f, 0.05f,   0, m, bt);        // modulated data (GMSK)
+    msourcecf_add_noise(gen_orig, -0.05f, 0.10f,   0);               // narrow-band noise
+    msourcecf_add_chirp(gen_orig,  0.07f, 0.07f,  20, 8000, 0, 0);   // chirp
+    msourcecf_add_modem(gen_orig,  0.20f, 0.10f,   0, ms, m, beta);  // modulated data (linear)
+    //unsigned int counter = 0;
+    //msourcecf_add_user (gen_orig,  0.40f, 0.15f, -10, (void*)&counter, callback_msourcecf_autotest); // tones
+
+    // copy object
+    msourcecf gen_copy = msourcecf_copy(gen_orig);
+
+    unsigned int total_samples = 0;
+    while (total_samples < num_samples) {
+        // write samples to buffer
+        msourcecf_write_samples(gen_orig, buf_orig, buf_len);
+        msourcecf_write_samples(gen_copy, buf_copy, buf_len);
+
+        // push resulting sample through periodogram
+        spgramcf_write(periodogram_orig, buf_orig, buf_len);
+        spgramcf_write(periodogram_copy, buf_copy, buf_len);
+
+        // accumulated samples
+        total_samples += buf_len;
+    }
+    printf("total samples: %u\n", total_samples);
+
+    // compute power spectral density output
+    float psd_orig[nfft];
+    float psd_copy[nfft];
+    spgramcf_get_psd(periodogram_orig, psd_orig);
+    spgramcf_get_psd(periodogram_copy, psd_copy);
+
+    // destroy objects
+    msourcecf_destroy(gen_orig);
+    msourcecf_destroy(gen_copy);
+    spgramcf_destroy(periodogram_orig);
+    spgramcf_destroy(periodogram_copy);
+
+    // verify spectrum output
+    // TODO: ideally output would be identical streams; however PRNGs are different
+    //       so we can currently only check their statistical outputs
+    unsigned int i;
+    char filename[] = "autotest/logs/msourcecf_copy.m";
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"clear all; close all;\n");
+    fprintf(fid,"nfft=%u; psd_orig=zeros(1,nfft); psd_copy=zeros(1,nfft);\n", nfft);
+    for (i=0; i<nfft; i++) {
+        CONTEND_DELTA(psd_orig[i], psd_copy[i], 1.0f);
+        fprintf(fid," psd_orig(%3u)=%12.4e; psd_copy(%3u)=%12.4e;\n",
+                i+1, psd_orig[i], i+1, psd_copy[i]);
+    }
+    fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
+    fprintf(fid,"subplot(2,1,1), plot(f,psd_copy,f,psd_orig); legend('orig','copy'); grid on;\n");
+    fprintf(fid,"  axis([-0.5 0.5 -50 30]); xlabel('Normalized Frequency [f/F_s]'); ylabel('PSD [dB]');\n");
+    fprintf(fid,"subplot(2,1,2), plot(f,psd_copy - psd_orig); grid on;\n");
+    fprintf(fid,"  axis([-0.5 0.5 -1  1 ]); xlabel('Normalized Frequency [f/F_s]'); ylabel('Error [dB]');\n");
+    fclose(fid);
+    printf("results written to %s\n", filename);
+}
+

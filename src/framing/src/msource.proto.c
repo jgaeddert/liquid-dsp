@@ -114,6 +114,33 @@ MSOURCE() MSOURCE(_create_default)(void)
     return MSOURCE(_create)(1200, 4, 60);
 }
 
+// copy object
+MSOURCE() MSOURCE(_copy)(MSOURCE() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("msource%s_copy(), object cannot be NULL", EXTENSION);
+
+    // create filter object and copy base parameters
+    MSOURCE() q_copy = (MSOURCE()) malloc(sizeof(struct MSOURCE(_s)));
+    memmove(q_copy, q_orig, sizeof(struct MSOURCE(_s)));
+
+    // copy signal sources
+    q_copy->sources = (QSOURCE()*) malloc(q_orig->num_sources*sizeof(QSOURCE()));
+    unsigned int i;
+    for (i=0; i<q_orig->num_sources; i++)
+        q_copy->sources[i] = QSOURCE(_copy)(q_orig->sources[i]);
+
+    // copy synthesis channelizer
+    q_copy->ch = firpfbch2_crcf_copy(q_orig->ch);
+
+    // copy buffers
+    q_copy->buf_freq = (float complex *) liquid_malloc_copy(q_orig->buf_freq, q_orig->M,   sizeof(float complex));
+    q_copy->buf_time = (float complex *) liquid_malloc_copy(q_orig->buf_time, q_orig->M/2, sizeof(float complex));
+
+    return q_copy;
+}
+
 // destroy msource object, freeing all internal memory
 int MSOURCE(_destroy)(MSOURCE() _q)
 {
