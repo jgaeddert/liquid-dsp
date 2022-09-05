@@ -98,3 +98,46 @@ void autotest_gmskmodem_k4_m3_b020() { gmskmodem_test_mod_demod( 4, 3, 0.20f); }
 void autotest_gmskmodem_k4_m3_b033() { gmskmodem_test_mod_demod( 4, 3, 0.25f); }
 void autotest_gmskmodem_k4_m3_b050() { gmskmodem_test_mod_demod( 4, 3, 0.25f); }
 
+// test modulator copy
+void autotest_gmskmod_copy()
+{
+    // options
+    unsigned int k  = 5;
+    unsigned int m  = 3;
+    float        bt = 0.2345f;
+
+    // create modulator/demodulator pair
+    gmskmod mod_orig = gmskmod_create(k, m, bt);
+
+    unsigned int num_symbols = 16;
+    float complex buf_orig[k];
+    float complex buf_copy[k];
+    msequence ms = msequence_create_default(7);
+
+    // run original object
+    unsigned int i;
+    for (i=0; i<num_symbols; i++) {
+        // generate random symbol and modulate
+        unsigned char s = msequence_generate_symbol(ms, 1);
+        gmskmod_modulate(mod_orig, s, buf_orig);
+    }
+
+    // copy object
+    gmskmod mod_copy = gmskmod_copy(mod_orig);
+
+    // run through both objects and compare
+    for (i=0; i<num_symbols; i++) {
+        // generate random symbol and modulate
+        unsigned char s = msequence_generate_symbol(ms, 1);
+        gmskmod_modulate(mod_orig, s, buf_orig);
+        gmskmod_modulate(mod_copy, s, buf_copy);
+        // check result
+        CONTEND_SAME_DATA(buf_orig, buf_copy, k*sizeof(float complex));
+    }
+
+    // clean it up
+    msequence_destroy(ms);
+    gmskmod_destroy(mod_orig);
+    gmskmod_destroy(mod_copy);
+}
+
