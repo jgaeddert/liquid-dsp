@@ -6286,6 +6286,9 @@ SYMSTREAM() SYMSTREAM(_create_linear)(int          _ftype,                  \
                                       float        _beta,                   \
                                       int          _ms);                    \
                                                                             \
+/* Copy object recursively including all internal objects and state     */  \
+SYMSTREAM() SYMSTREAM(_copy)(SYMSTREAM() _q);                               \
+                                                                            \
 /* Destroy symstream object, freeing all internal memory                */  \
 int SYMSTREAM(_destroy)(SYMSTREAM() _q);                                    \
                                                                             \

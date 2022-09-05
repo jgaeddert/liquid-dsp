@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -98,6 +98,27 @@ SYMSTREAM() SYMSTREAM(_create_linear)(int          _ftype,
     // reset and return main object
     SYMSTREAM(_reset)(q);
     return q;
+}
+
+// copy object
+SYMSTREAM() SYMSTREAM(_copy)(SYMSTREAM() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("symstream%s_copy(), object cannot be NULL", EXTENSION);
+
+    // create object and copy base parameters
+    SYMSTREAM() q_copy = (SYMSTREAM()) malloc(sizeof(struct SYMSTREAM(_s)));
+    memmove(q_copy, q_orig, sizeof(struct SYMSTREAM(_s)));
+
+    // copy internal objects
+    q_copy->mod    = MODEM    (_copy)(q_orig->mod   );
+    q_copy->interp = FIRINTERP(_copy)(q_orig->interp);
+
+    // copy output buffer state
+    q_copy->buf = (TO *) liquid_malloc_copy(q_orig->buf, q_orig->k, sizeof(TO));
+
+    return q_copy;
 }
 
 // destroy symstream object, freeing all internal memory
