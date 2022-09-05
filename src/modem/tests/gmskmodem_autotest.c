@@ -141,3 +141,47 @@ void autotest_gmskmod_copy()
     gmskmod_destroy(mod_copy);
 }
 
+// test demodulator copy
+void autotest_gmskdem_copy()
+{
+    // options
+    unsigned int k  = 5;
+    unsigned int m  = 3;
+    float        bt = 0.2345f;
+
+    // create modulator/demodulator pair
+    gmskdem dem_orig = gmskdem_create(k, m, bt);
+
+    unsigned int num_symbols = 16;
+    float complex buf[k];
+    unsigned int  sym_orig;
+    unsigned int  sym_copy;
+
+    // run original object
+    unsigned int i, j;
+    for (i=0; i<num_symbols; i++) {
+        // generate random signal and demodulate
+        for (j=0; j<k; j++)
+            buf[j] = randnf() + _Complex_I*randnf();
+        gmskdem_demodulate(dem_orig, buf, &sym_orig);
+    }
+
+    // copy object
+    gmskdem dem_copy = gmskdem_copy(dem_orig);
+
+    // run through both objects and compare
+    for (i=0; i<num_symbols; i++) {
+        // generate random signal and demodulate
+        for (j=0; j<k; j++)
+            buf[j] = randnf() + _Complex_I*randnf();
+        gmskdem_demodulate(dem_orig, buf, &sym_orig);
+        gmskdem_demodulate(dem_copy, buf, &sym_copy);
+        // check result
+        CONTEND_EQUALITY(sym_orig, sym_copy);
+    }
+
+    // clean it up
+    gmskdem_destroy(dem_orig);
+    gmskdem_destroy(dem_copy);
+}
+
