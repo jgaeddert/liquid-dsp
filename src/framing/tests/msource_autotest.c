@@ -259,7 +259,7 @@ void autotest_msourcecf_config()
     CONTEND_ISNULL(msourcecf_create( 0, 12, 60));   // too few subcarriers
     CONTEND_ISNULL(msourcecf_create(17, 12, 60));   // odd-numbered subcarriers
     CONTEND_ISNULL(msourcecf_create(64,  0, 60));   // filter semi-length too small
-    //CONTEND_ISNULL(msourcecf_copy(NULL));
+    CONTEND_ISNULL(msourcecf_copy(NULL));
 
     // create proper object and test configurations
     msourcecf q = msourcecf_create(64, 12, 60);
