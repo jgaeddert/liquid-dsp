@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// Symbol streaming generator
-//
+// Symbol streaming generator with arbitrary sample rate
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,6 +32,7 @@ struct SYMSTREAMR(_s) {
     SYMSTREAM()     symstream;      // half-band interpolator
     MSRESAMP()      resamp;         // arbitrary rate resampler
     TO *            buf;            // resampled output buffer
+    unsigned int    buf_len;        // resampled output buffer: num allocated
     unsigned int    buf_size;       // resampled output buffer: num elements
     unsigned int    buf_index;      // resampled output buffer: sample index
 };
@@ -81,12 +80,33 @@ SYMSTREAMR() SYMSTREAMR(_create_linear)(int          _ftype,
 
     // sample buffer
     // NOTE: buffer size must be at least 2^nextpow2( 0.5/bw )
-    unsigned int buf_len = 1 << liquid_nextpow2((unsigned int)ceilf(0.5f/_bw));
-    q->buf = (TO*) malloc(buf_len*sizeof(TO));
+    q->buf_len = 1 << liquid_nextpow2((unsigned int)ceilf(0.5f/_bw));
+    q->buf = (TO*) malloc(q->buf_len*sizeof(TO));
 
     // reset and return main object
     SYMSTREAMR(_reset)(q);
     return q;
+}
+
+// copy object
+SYMSTREAMR() SYMSTREAMR(_copy)(SYMSTREAMR() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("symstreamr%s_copy(), object cannot be NULL", EXTENSION);
+
+    // create filter object and copy base parameters
+    SYMSTREAMR() q_copy = (SYMSTREAMR()) malloc(sizeof(struct SYMSTREAMR(_s)));
+    memmove(q_copy, q_orig, sizeof(struct SYMSTREAMR(_s)));
+
+    // copy internal objects
+    q_copy->symstream = SYMSTREAM(_copy)(q_orig->symstream);
+    q_copy->resamp    = MSRESAMP (_copy)(q_orig->resamp   );
+
+    // copy internal buffer
+    q_copy->buf = (TO *) liquid_malloc_copy(q_orig->buf, q_orig->buf_len, sizeof(TO));
+
+    return q_copy;
 }
 
 // destroy symstream object, freeing all internal memory
