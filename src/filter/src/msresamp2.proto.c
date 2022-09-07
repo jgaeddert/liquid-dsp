@@ -134,6 +134,7 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
     // determine half-band resampler parameters
     float fc = q->fc;   // cut-off frequency
     float f0 = q->f0;   // center frequency
+    float as = q->as+5; // small margin
     for (i=0; i<q->num_stages; i++) {
         // compute parameters based on filter requirements;
         fc = (i==1) ? (0.5-fc)/2.0f : 0.5f*fc;  // cut-off frequency
@@ -141,14 +142,14 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
         float ft = 2*(0.25f - fc);              // two-sided transition bandwidth
 
         // estimate required filter length
-        unsigned int h_len = estimate_req_filter_len(ft, q->as);
+        unsigned int h_len = estimate_req_filter_len(ft, as);
         unsigned int m = ceilf( (float)(h_len-1) / 4.0f );
 
         //printf(" >>> fc: %8.6f, ft: %8.6f, h_len : %u (m=%u)\n", fc, ft, h_len, m);
         q->fc_stage[i] = fc;            // filter pass-band
         q->f0_stage[i] = f0;            // filter center frequency
-        q->as_stage[i] = q->as;         // filter stop-band attenuation
-        q->m_stage[i]  = m < 3 ? 3 : m; // minimum 3
+        q->as_stage[i] = as;            // filter stop-band attenuation
+        q->m_stage[i]  = m < 3 ? 3 : m; // minimum
     }
 
     // create half-band resampler objects
