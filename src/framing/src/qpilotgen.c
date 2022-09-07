@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// qpilotgen.c
-//
 // pilot injection
-//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -103,7 +99,8 @@ qpilotgen qpilotgen_create(unsigned int _payload_len,
     }
     msequence_destroy(seq);
 
-    // return pointer to main object
+    // reset and return pointer to main object
+    qpilotgen_reset(q);
     return q;
 }
 
