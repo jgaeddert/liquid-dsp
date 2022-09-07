@@ -128,6 +128,8 @@ const char *        liquid_error_info(liquid_error_code _code);
 #define LIQUID_CONCAT(prefix, name) prefix ## name
 #define LIQUID_VALIDATE_INPUT
 
+#define SIZEOF_INT 4
+
 /*
  * Compile-time complex data type definitions
  *

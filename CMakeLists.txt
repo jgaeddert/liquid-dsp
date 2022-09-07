@@ -1,9 +1,10 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14)
 
-file(GLOB SOURCES "*.c" "*/src/*.c")
+file(GLOB SOURCES "src/*.c" "src/*/src/*.c")
 
 if(IDF_VERSION_MAJOR GREATER_EQUAL 4)
-
+    
+    list(FILTER SOURCES EXCLUDE REGEX "(mmx|neon|av|sse4|proto).c$")
     idf_component_register( SRCS ${SOURCES}
                             INCLUDE_DIRS "include")
 

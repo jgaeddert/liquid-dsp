@@ -275,7 +275,7 @@ int SPGRAM(_set_alpha)(SPGRAM() _q,
 {
     // validate input
     if (_alpha != -1 && (_alpha < 0.0f || _alpha > 1.0f)) {
-        fprintf(stderr,"warning: spgram%s_set_alpha(), alpha must be in {-1,[0,1]}\n", EXTENSION);
+        //fprintf(stderr,"warning: spgram%s_set_alpha(), alpha must be in {-1,[0,1]}\n", EXTENSION);
         return -1;
     }
 

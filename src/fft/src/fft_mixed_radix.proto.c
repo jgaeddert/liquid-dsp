@@ -199,7 +199,7 @@ unsigned int FFT(_estimate_mixed_radix)(unsigned int _nfft)
 
     // check if _nfft is prime
     if (num_factors < 2) {
-        fprintf(stderr,"warning: fft_estimate_mixed_radix(), %u is prime\n", _nfft);
+        //fprintf(stderr,"warning: fft_estimate_mixed_radix(), %u is prime\n", _nfft);
         return 0;
     }
 
