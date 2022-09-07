@@ -697,6 +697,7 @@ framing_autotests :=						\
 	src/framing/tests/qsource_autotest.c			\
 	src/framing/tests/symstreamcf_autotest.c		\
 	src/framing/tests/symstreamcf_delay_autotest.c		\
+	src/framing/tests/symstreamrcf_autotest.c		\
 	src/framing/tests/symstreamrcf_delay_autotest.c		\
 	src/framing/tests/symtrack_cccf_autotest.c		\
 
