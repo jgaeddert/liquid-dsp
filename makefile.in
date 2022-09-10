@@ -1730,6 +1730,7 @@ sandbox_programs =						\
 	sandbox/firdes_gmskrx_test				\
 	sandbox/firdes_group_delay_test				\
 	sandbox/firdes_length_test				\
+	sandbox/firdespm_halfband_test				\
 	sandbox/firfarrow_rrrf_test				\
 	sandbox/firfilt_dcblocker_test				\
 	sandbox/firpfbch_analysis_alignment_test		\
