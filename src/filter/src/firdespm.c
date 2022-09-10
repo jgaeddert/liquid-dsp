@@ -1021,7 +1021,15 @@ int liquid_firdespm_halfband_ft(unsigned int _m,
         LIQUID_FIRDESPM_FLATWEIGHT, LIQUID_FIRDESPM_FLATWEIGHT,};
 
     // design filter
-    // TODO: ensure values at odd indices are 0
-    return firdespm_run(h_len,num_bands,bands,des,weights,wtype,btype,_h);
+    firdespm_run(h_len,num_bands,bands,des,weights,wtype,btype,_h);
+#if 0
+    // ensure values at odd indices are 0 (excepting center value)
+    unsigned int i;
+    for (i=0; i<_m; i++) {
+        _h[        2*i] = 0;
+        _h[h_len-2*i-1] = 0;
+    }
+#endif
+    return LIQUID_OK;
 }
 
