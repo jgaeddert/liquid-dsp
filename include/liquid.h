@@ -2200,6 +2200,15 @@ int firdespm_print(firdespm _q);
 // execute filter design, storing result in _h
 int firdespm_execute(firdespm _q, float * _h);
 
+// Design halfband filter using Parks-McClellan algorithm given the
+// filter length and desired transition band
+//  _m      : filter semi-length, _m > 0
+//  _ft     : filter transition band (relative), 0 < _ft < 0.5
+//  _h      : output coefficient buffer, [size: 4 _m + 1 x 1]
+int liquid_firdespm_halfband_ft(unsigned int _m,
+                                float        _ft,
+                                float *      _h);
+
 // Design FIR filter using generic window/taper method
 //  _wtype  : window type, e.g. LIQUID_WINDOW_HAMMING
 //  _n      : filter length, _n > 0
