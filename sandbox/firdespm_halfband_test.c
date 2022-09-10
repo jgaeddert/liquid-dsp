@@ -17,6 +17,37 @@ float firdespm_halfband_utility(unsigned int _m,
     return 10*log10f( u / (float)_m );
 }
 
+// ideally stop-band is zero
+float firdespm_halfband_utility_as(unsigned int _m,
+                                   float        _ft,
+                                   float *      _h)
+{
+    unsigned int nfft = 1200;
+    while (nfft < 54*_m)
+        nfft <<= 1;
+
+    float complex buf_time[nfft];
+    float complex buf_freq[nfft];
+    unsigned int i;
+    unsigned int h_len = 4*_m+1;
+    for (i=0; i<nfft; i++)
+        buf_time[i] = i < 4*_m+1 ? _h[i] : 0.0f;
+    for (i=0; i<_m; i++) {
+        buf_time[2*i] = 0.0f;
+        buf_time[h_len - 2*i - 1] = 0.0f;
+    }
+    fft_run(nfft, buf_time, buf_freq, LIQUID_FFT_FORWARD, 0);
+    unsigned int n = (unsigned int)(nfft * (0.25f - 0.5f*_ft));
+    float u = 0.0f;
+    // look for peak value in stop-band
+    for (i=0; i<n; i++) {
+        float u_test = cabsf(buf_freq[nfft/2 - i]);
+        u += u_test * u_test;
+    }
+    //printf(" nfft=%u, i0=%u, u=%12.4e\n", nfft, i0, u);
+    return 10*log10f(u / (float)(n));
+}
+
 float firdespm_halfband(unsigned int _m,
                         float *      _h,
                         float        _ft,
@@ -33,21 +64,24 @@ float firdespm_halfband(unsigned int _m,
     liquid_firdespm_wtype wtype[2] = { // best with {flat, flat}
         LIQUID_FIRDESPM_FLATWEIGHT, LIQUID_FIRDESPM_FLATWEIGHT,};
     firdespm_run(h_len,num_bands,bands,des,weights,wtype,btype,_h);
-    return firdespm_halfband_utility(_m, _h);
+    //return firdespm_halfband_utility(_m, _h);
+    return firdespm_halfband_utility_as(_m, _ft, _h);
 }
+
+// "m":4, {.ft=0.40, gamma=0.99925101, -123.42}
 
 int main(int argc, char*argv[])
 {
-    unsigned int m = 25;        // filter semi-length
-    float        ft = 0.05f;    // transition bandwidth
+    unsigned int m = 4;        // filter semi-length
+    float        ft = 0.40f;    // transition bandwidth
     unsigned int h_len = 4*m+1;
 
     // adjust lower edge in design until utility is minimized
     float h[h_len];
     float g_opt = 0.0f;
     float u_opt = 0.0f;
-    float gamma = 1.1f;
-    while (gamma > 0.8f) {
+    float gamma = 1.0f;
+    while (gamma > 0.99f) {
         float u = firdespm_halfband(m, h, ft, gamma);
         printf("gamma=%12.8f, u = %12.6f", gamma, u);
         if (u < u_opt) {
@@ -58,7 +92,7 @@ int main(int argc, char*argv[])
             printf("\n");
             break;
         }
-        gamma *= 0.9999f;
+        gamma *= 0.999999f;
     }
     //g_opt = 0.92329967f - 3.2e-3f;
     float u = firdespm_halfband(m, h, ft, g_opt);
