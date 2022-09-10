@@ -268,7 +268,7 @@ int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
     // compute signal's power spectral density
-    unsigned int nfft = 4 << liquid_nextpow2(_buf_len < 8 ? 8 : _buf_len);
+    unsigned int nfft = 4 << liquid_nextpow2(_buf_len < 64 ? 64 : _buf_len);
     float complex * buf_time = (float complex*) malloc(nfft*sizeof(float complex));
     float complex * buf_freq = (float complex*) malloc(nfft*sizeof(float complex));
     float         * buf_psd  = (float *       ) malloc(nfft*sizeof(float        ));
