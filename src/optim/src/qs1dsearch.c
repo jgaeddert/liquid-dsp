@@ -39,9 +39,6 @@ struct qs1dsearch_s {
     unsigned int      num_steps; // number of steps evaluated
 };
 
-// internal methods
-int qs1dsearch_linesearch(qs1dsearch _q);
-
 // create quasi-newton method search object
 qs1dsearch qs1dsearch_create(liquid_utility_1d _utility,
                              void *            _context,
@@ -226,15 +223,5 @@ float qs1dsearch_get_opt_v(qs1dsearch _q)
 float qs1dsearch_get_opt_u(qs1dsearch _q)
 {
     return _q->u0;
-}
-
-//
-// internal
-//
-
-// perform line search to get initial bounds
-int qs1dsearch_linesearch(qs1dsearch _q)
-{
-    return LIQUID_OK;
 }
 
