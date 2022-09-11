@@ -1003,6 +1003,7 @@ int firdespm_output_debug_file(firdespm _q)
 }
 #endif
 
+#if 0
 // design halfband filter using Parks-McClellan algorithm given the
 // filter length and desired transition band
 int liquid_firdespm_halfband_ft(unsigned int _m,
@@ -1032,4 +1033,5 @@ int liquid_firdespm_halfband_ft(unsigned int _m,
 #endif
     return LIQUID_OK;
 }
+#endif
 

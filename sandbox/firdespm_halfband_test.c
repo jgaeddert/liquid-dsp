@@ -23,7 +23,7 @@ float firdespm_halfband_utility_as(unsigned int _m,
                                    float *      _h)
 {
     unsigned int nfft = 1200;
-    while (nfft < 54*_m)
+    while (nfft < 20*_m)
         nfft <<= 1;
 
     float complex buf_time[nfft];
@@ -42,9 +42,9 @@ float firdespm_halfband_utility_as(unsigned int _m,
     // look for peak value in stop-band
     for (i=0; i<n; i++) {
         float u_test = cabsf(buf_freq[nfft/2 - i]);
+        //printf(" %3u : %12.8f : %12.3f\n", i, (float)(nfft/2-i) / (float)(nfft), 20*log10f(u_test));
         u += u_test * u_test;
     }
-    //printf(" nfft=%u, i0=%u, u=%12.4e\n", nfft, i0, u);
     return 10*log10f(u / (float)(n));
 }
 
@@ -127,7 +127,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  ylabel('PSD [dB]');\n");
     fprintf(fid,"  legend('firdespm','zeroed even values');\n");
     fprintf(fid,"  title('Filter design (firdespm)');\n");
-    fprintf(fid,"  axis([-0.5 0.5 -120 5]);\n");
+    fprintf(fid,"  axis([-0.5 0.5 -180 5]);\n");
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);

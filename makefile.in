@@ -435,6 +435,7 @@ filter_objects :=						\
 	src/filter/src/filter_cccf.o				\
 	src/filter/src/firdes.o					\
 	src/filter/src/firdespm.o				\
+	src/filter/src/firdespm_halfband.o			\
 	src/filter/src/fnyquist.o				\
 	src/filter/src/gmsk.o					\
 	src/filter/src/group_delay.o				\
@@ -1535,6 +1536,7 @@ example_programs :=						\
 	examples/firdes_doppler_example				\
 	examples/firdes_kaiser_example				\
 	examples/firdespm_callback_example			\
+	examples/firdespm_halfband_example			\
 	examples/firdespm_example				\
 	examples/firdespm_lowpass_example			\
 	examples/firhilb_example				\
