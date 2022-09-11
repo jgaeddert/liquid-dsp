@@ -997,6 +997,7 @@ optim_objects :=						\
 	src/optim/src/gradsearch.o				\
 	src/optim/src/optim.common.o				\
 	src/optim/src/qnsearch.o				\
+	src/optim/src/qs1dsearch.o				\
 	src/optim/src/utilities.o				\
 
 $(optim_objects) : %.o : %.c $(include_headers)
@@ -1621,6 +1622,7 @@ example_programs :=						\
 	examples/qpacketmodem_example				\
 	examples/qpilotsync_example				\
 	examples/qnsearch_example				\
+	examples/qs1dsearch_example				\
 	examples/quantize_example				\
 	examples/random_histogram_example			\
 	examples/repack_bytes_example				\

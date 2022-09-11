@@ -8913,6 +8913,10 @@ typedef float (*utility_function)(void *       _userdata,
                                   float *      _v,
                                   unsigned int _n);
 
+// One-dimensional utility function pointer definition
+typedef float (*liquid_utility_1d)(float  _v,
+                                   void * _userdata);
+
 // n-dimensional Rosenbrock utility function (minimum at _v = {1,1,1...}
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector, [size: _n x 1]
@@ -8981,6 +8985,33 @@ float gradsearch_execute(gradsearch   _q,
                          unsigned int _max_iterations,
                          float        _target_utility);
 
+
+// Quadsection search in one dimension...
+//  
+//    
+//    * yn
+//                                * yp
+//           *
+//                  * y0  
+//                         *
+//    +------+------+------+------+-->
+//   [xn            x0            xp]
+typedef struct qs1dsearch_s * qs1dsearch;
+qs1dsearch qs1dsearch_create(liquid_utility_1d _u,
+                             void *            _userdata,
+                             int               _direction);
+
+int          qs1dsearch_destroy      (qs1dsearch _q);
+qs1dsearch   qs1dsearch_copy         (qs1dsearch _q);
+int          qs1dsearch_print        (qs1dsearch _q);
+int          qs1dsearch_reset        (qs1dsearch _q);
+int          qs1dsearch_init         (qs1dsearch _q, float _v0);
+int          qs1dsearch_init_bounds  (qs1dsearch _q, float _vn, float _vp);
+int          qs1dsearch_step         (qs1dsearch _q);
+int          qs1dsearch_execute      (qs1dsearch _q);
+unsigned int qs1dsearch_get_num_steps(qs1dsearch _q);
+float        qs1dsearch_get_opt_v    (qs1dsearch _q);
+float        qs1dsearch_get_opt_u    (qs1dsearch _q);
 
 // quasi-Newton search
 typedef struct qnsearch_s * qnsearch;
