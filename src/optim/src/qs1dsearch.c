@@ -28,11 +28,9 @@
 
 // quasi-Newton search object
 struct qs1dsearch_s {
-    float vn, va, v0, vb, vp;
-    float un, ua, u0, ub, up;
-
-    // values initialized?
-    int init;
+    float vn, va, v0, vb, vp;   // values
+    float un, ua, u0, ub, up;   // utilities
+    int init;                   // values initialized?
 
     // External utility function.
     liquid_utility_1d utility;   //
@@ -49,6 +47,10 @@ qs1dsearch qs1dsearch_create(liquid_utility_1d _utility,
                              void *            _context,
                              int               _direction)
 {
+    // validate input
+    if (_utility == NULL)
+        return liquid_error_config("qs1dsearch_create(), utility callback cannot be NULL");
+
     qs1dsearch q = (qs1dsearch) malloc( sizeof(struct qs1dsearch_s) );
     q->utility   = _utility;
     q->context   = _context;
@@ -71,7 +73,9 @@ int qs1dsearch_destroy(qs1dsearch _q)
 
 int qs1dsearch_print(qs1dsearch _q)
 {
-    printf("<liquid.qs1dsearch>\n");
+    printf("<liquid.qs1dsearch{%12g,%12g,%12g}{%12g,%12g,%12g}>\n",
+        //_q->num_steps,
+        _q->vn, _q->v0, _q->vp, _q->un, _q->u0, _q->up);
     return LIQUID_OK;
 }
 
@@ -86,7 +90,7 @@ int qs1dsearch_init(qs1dsearch _q,
                     float      _v)
 {
     // find appropriate search direction
-    float step = 1e-12f;
+    float step = 1e-16f;
     float vx = _v;
     float vy = _v + step;
     float ux = _q->utility(vx, _q->context);
@@ -104,11 +108,13 @@ int qs1dsearch_init(qs1dsearch _q,
     unsigned int i;
     float v_test = vy + step;
     float u_test = _q->utility(v_test, _q->context);
-    for (i=0; i<100; i++) {
+    for (i=0; i<180; i++) {
         v_test = vy + step;
         u_test = _q->utility(v_test, _q->context);
+#if 0
         printf(" %2u(%12.4e) : [%11.4e,%11.4e,%11.4e] : {%11.4e,%11.4e,%11.4e}\n",
                 i, step, vx, vy, v_test, ux, uy, u_test);
+#endif
         if ( (_q->direction == LIQUID_OPTIM_MINIMIZE && u_test > uy) ||
              (_q->direction == LIQUID_OPTIM_MAXIMIZE && u_test < uy) )
         {
@@ -158,6 +164,9 @@ int qs1dsearch_init_bounds(qs1dsearch _q,
 
 int qs1dsearch_step(qs1dsearch _q)
 {
+    if (!_q->init)
+        return liquid_error(LIQUID_ENOINIT,"qs1dsearch_step(), object has not be properly initialized");
+
     // TODO: allow option for geometric mean?
     // compute new candidate points
     _q->va = 0.5f*(_q->vn + _q->v0);
@@ -167,10 +176,12 @@ int qs1dsearch_step(qs1dsearch _q)
     _q->ua = _q->utility(_q->va, _q->context);
     _q->ub = _q->utility(_q->vb, _q->context);
 
+#if 0
     printf(" %3u [%7.3f,%7.3f,%7.3f,%7.3f,%7.3f] : {%7.3f,%7.3f,%7.3f,%7.3f,%7.3f}\n",
         _q->num_steps,
         _q->vn, _q->va, _q->v0, _q->vb, _q->vp,
         _q->un, _q->ua, _q->u0, _q->ub, _q->up);
+#endif
 
     // [ (vn)  va  (v0)  vb  (vp) ]
     // optimum should be va, v0, or vb
