@@ -107,7 +107,7 @@ int qs1dsearch_init(qs1dsearch _q,
     for (i=0; i<100; i++) {
         v_test = vy + step;
         u_test = _q->utility(v_test, _q->context);
-        printf(" %2u (step=%12.4e) : [%10.6f,%10.6f,%10.6f] : {%10.6f,%10.6f,%10.6f}\n",
+        printf(" %2u(%12.4e) : [%11.4e,%11.4e,%11.4e] : {%11.4e,%11.4e,%11.4e}\n",
                 i, step, vx, vy, v_test, ux, uy, u_test);
         if ( (_q->direction == LIQUID_OPTIM_MINIMIZE && u_test > uy) ||
              (_q->direction == LIQUID_OPTIM_MAXIMIZE && u_test < uy) )
@@ -116,12 +116,12 @@ int qs1dsearch_init(qs1dsearch _q,
             break;
         }
 
-        // haven't hit max yet
+        // haven't hit extreme yet
         vx = vy;
         ux = uy;
         vy = v_test;
         uy = u_test;
-        step *= 2.0f;
+        step *= 1.5f;
     }
 
     // set bounds
@@ -174,12 +174,16 @@ int qs1dsearch_step(qs1dsearch _q)
 
     // [ (vn)  va  (v0)  vb  (vp) ]
     // optimum should be va, v0, or vb
-    // TODO: check direction
-    if (_q->ua < _q->u0 && _q->ua < _q->ub) {
+    if ((_q->direction == LIQUID_OPTIM_MINIMIZE && _q->ua < _q->u0 && _q->ua < _q->ub) ||
+        (_q->direction == LIQUID_OPTIM_MAXIMIZE && _q->ua > _q->u0 && _q->ua > _q->ub))
+    {
         // va is optimum
         _q->vp = _q->v0; _q->up = _q->u0;
         _q->v0 = _q->va; _q->u0 = _q->ua;
-    } else if (_q->u0 < _q->ua && _q->u0 < _q->ub) {
+    } else
+    if ((_q->direction == LIQUID_OPTIM_MINIMIZE && _q->u0 < _q->ua && _q->u0 < _q->ub) ||
+        (_q->direction == LIQUID_OPTIM_MAXIMIZE && _q->u0 > _q->ua && _q->u0 > _q->ub))
+    {
         // v0 is optimum
         _q->vn = _q->va; _q->un = _q->ua;
         _q->vp = _q->vb; _q->up = _q->ub;

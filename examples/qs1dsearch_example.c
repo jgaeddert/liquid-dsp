@@ -9,7 +9,7 @@ float utility(float _v, void * _context)
 {
     float v_opt = *(float*)(_context);
     float v = _v - v_opt;
-    return tanhf(v)*tanhf(v);
+    return 1-tanhf(v)*tanhf(v);
 }
 //  { return _v*_v; }
 //  { return tanhf(_v)*tanhf(_v) + 0.001*_v*_v; }
@@ -18,10 +18,10 @@ int main()
 {
     // create qs1dsearch object
     float v_opt  = 3.0f;
-    qs1dsearch q = qs1dsearch_create(utility, &v_opt, LIQUID_OPTIM_MINIMIZE);
+    qs1dsearch q = qs1dsearch_create(utility, &v_opt, LIQUID_OPTIM_MAXIMIZE);
 
     //qs1dsearch_init_bounds(q, -20, 10);
-    qs1dsearch_init(q, -20);
+    qs1dsearch_init(q, -50);
 
     unsigned int i;
     for (i=0; i<20; i++) {
