@@ -38,19 +38,17 @@ float qs1dsearch_utility_min(float _v, void * _context)
 
 float qs1dsearch_utility_max(float _v, void * _context)
 {
-    return 1.0f - qs1dsearch_utility_min(_v, _context);
+    return -qs1dsearch_utility_min(_v, _context);
 }
 
-//
+// test initialization on single value
 void testbench_qs1dsearch(liquid_utility_1d _utility,
                           float             _v_opt,
                           float             _v_init,
                           int               _direction)
 {
-    // create qs1dsearch object
+    // create qs1dsearch object and initialize
     qs1dsearch q = qs1dsearch_create(_utility, &_v_opt, _direction);
-
-    //qs1dsearch_init_bounds(q, -20, 10);
     qs1dsearch_init(q, _v_init);
 
     // run search
@@ -78,4 +76,41 @@ void testbench_qs1dsearch(liquid_utility_1d _utility,
 
 void autotest_qs1dsearch_01() { testbench_qs1dsearch(qs1dsearch_utility_min, 0, -20, LIQUID_OPTIM_MINIMIZE); }
 void autotest_qs1dsearch_02() { testbench_qs1dsearch(qs1dsearch_utility_max, 0, -20, LIQUID_OPTIM_MAXIMIZE); }
+
+// test initialization on bounds
+void testbench_qs1dsearch_bounds(liquid_utility_1d _utility,
+                                 float             _v_opt,
+                                 float             _v_lo,
+                                 float             _v_hi,
+                                 int               _direction)
+{
+    // create qs1dsearch object and initialize
+    qs1dsearch q = qs1dsearch_create(_utility, &_v_opt, _direction);
+    qs1dsearch_init_bounds(q, _v_lo, _v_hi);
+
+    // run search
+    unsigned int i;
+    for (i=0; i<32; i++) {
+        qs1dsearch_step(q);
+        if (liquid_autotest_verbose)
+            qs1dsearch_print(q);
+    }
+
+    // check result
+    CONTEND_DELTA( qs1dsearch_get_opt_v(q), _v_opt,                    1e-3f );
+    CONTEND_DELTA( qs1dsearch_get_opt_u(q), _utility(_v_opt, &_v_opt), 1e-3f );
+
+    // print results
+    if (liquid_autotest_verbose) {
+        printf("%3u : u(%12.8f) = %12.4e, v_opt=%12.4e (error=%12.4e)\n",
+            i, qs1dsearch_get_opt_v(q), qs1dsearch_get_opt_u(q),
+            _v_opt, _v_opt - qs1dsearch_get_opt_v(q));
+    }
+
+    // clean it upt
+    qs1dsearch_destroy(q);
+}
+
+void autotest_qs1dsearch_03() { testbench_qs1dsearch_bounds(qs1dsearch_utility_min, 0, -20, 10, LIQUID_OPTIM_MINIMIZE); }
+void autotest_qs1dsearch_04() { testbench_qs1dsearch_bounds(qs1dsearch_utility_max, 0, -20, 10, LIQUID_OPTIM_MAXIMIZE); }
 
