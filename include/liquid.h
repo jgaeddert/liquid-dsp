@@ -284,7 +284,7 @@ float AGC(_get_gain)(AGC() _q);                                             \
 int AGC(_set_gain)(AGC() _q,                                                \
                    float _gain);                                            \
                                                                             \
-/* Get the output scaling applied to each sample (linear).               */  \
+/* Get the output scaling applied to each sample (linear).              */  \
 float AGC(_get_scale)(AGC() _q);                                            \
                                                                             \
 /* Set the agc object's output scaling (linear). Note that this does    */  \
@@ -1769,7 +1769,7 @@ int SPGRAM(_get_psd)(SPGRAM() _q,                                           \
                      T *      _psd);                                        \
                                                                             \
 /* Export stand-alone gnuplot file for plotting output spectrum,        */  \
-/* returning 0 on success, anything other than 0 for failure             */  \
+/* returning 0 on success, anything other than 0 for failure            */  \
 /*  _q        : spgram object                                           */  \
 /*  _filename : input buffer, [size: _n x 1]                            */  \
 int SPGRAM(_export_gnuplot)(SPGRAM()     _q,                                \
@@ -3474,7 +3474,7 @@ LIQUID_IIRFILT_DEFINE_API(LIQUID_IIRFILT_MANGLE_CCCF,
 /* sections                                                             */  \
 typedef struct IIRFILTSOS(_s) * IIRFILTSOS();                               \
                                                                             \
-/* create 2nd-order infinite impulse response filter                     */  \
+/* create 2nd-order infinite impulse response filter                    */  \
 /*  _b      : feed-forward coefficients [size: _3 x 1]                  */  \
 /*  _a      : feed-back coefficients    [size: _3 x 1]                  */  \
 IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                                   \
@@ -4299,7 +4299,7 @@ LIQUID_RESAMP2_DEFINE_API(LIQUID_RESAMP2_MANGLE_CCCF,
 /* Rational rate resampler, implemented as a polyphase filterbank       */  \
 typedef struct RRESAMP(_s) * RRESAMP();                                     \
                                                                             \
-/* Create rational-rate resampler object from external coefficients to   */  \
+/* Create rational-rate resampler object from external coefficients to  */  \
 /* resample at an exact rate \(P/Q\) = interp/decim.                    */  \
 /* Note that to preserve the input filter coefficients, the greatest    */  \
 /* common divisor (gcd) is not removed internally from interp and decim */  \
@@ -4419,7 +4419,7 @@ void RRESAMP(_write)(RRESAMP() _q,                                          \
 /* respectively) passed when the object was created, even if they       */  \
 /* share a common divisor.                                              */  \
 /* Internally the rational resampler reduces \(P\) and \(Q\)            */  \
-/* by their greatest common denominator to reduce processing;          */  \
+/* by their greatest common denominator to reduce processing;           */  \
 /* however sometimes it is convenient to create the object based on     */  \
 /* expected output/input block sizes. This expectation is preserved.    */  \
 /* So if an object is created with an interpolation rate \(P=80\)       */  \
@@ -4559,7 +4559,7 @@ unsigned int RESAMP(_get_num_output)(RESAMP()     _q,                       \
                                                                             \
 /* Execute arbitrary resampler on a single input sample and store the   */  \
 /* resulting samples in the output array. The number of output samples  */  \
-/* is dependent upon the resampling rate but will be at most             */  \
+/* is dependent upon the resampling rate but will be at most            */  \
 /* \( \lceil{ r \rceil} \) samples.                                     */  \
 /*  _q              : resamp object                                     */  \
 /*  _x              : single input sample                               */  \
@@ -7876,7 +7876,7 @@ int MODEM(_modulate)(MODEM()      _q,                                       \
 /* This is performed efficiently by taking advantage of symmetry on     */  \
 /* most modulation types.                                               */  \
 /* For example, square and rectangular quadrature amplitude modulation  */  \
-/* with gray coding can use a bisection search independently on its       */  \
+/* with gray coding can use a bisection search independently on its     */  \
 /* in-phase and quadrature channels.                                    */  \
 /* Arbitrary modulation schemes are relatively slow, however, for large */  \
 /* modulation types as the demodulator must compute the distance        */  \
