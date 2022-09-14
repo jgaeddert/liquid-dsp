@@ -1391,7 +1391,7 @@ int MODEM(_demodulate_linear_array)(T              _v,          \
                                     T *            _res);       \
                                                                 \
 /* Demodulate a linear symbol constellation using           */  \
-/* referenced lookup table                                 */  \
+/* referenced lookup table                                  */  \
 /*  _v      :   input value             */                      \
 /*  _m      :   bits per symbol         */                      \
 /*  _ref    :   array of thresholds     */                      \
