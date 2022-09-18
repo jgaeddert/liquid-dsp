@@ -40,7 +40,7 @@
 // end of the array.
 //  _n      :   filter order
 //  _ep     :   epsilon, related to stop-band ripple
-//  _za     :   output analog zeros [length: floor(_n/2)]
+//  _za     :   output analog zeros [length: 2*floor(_n/2)]
 //  _pa     :   output analog poles [length: _n]
 //  _ka     :   output analog gain
 int cheby2_azpkf(unsigned int           _n,
