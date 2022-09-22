@@ -71,7 +71,6 @@ int qs1dsearch_destroy(qs1dsearch _q)
 int qs1dsearch_print(qs1dsearch _q)
 {
     printf("<liquid.qs1dsearch{%12g,%12g,%12g}{%12g,%12g,%12g}>\n",
-        //_q->num_steps,
         _q->vn, _q->v0, _q->vp, _q->un, _q->u0, _q->up);
     return LIQUID_OK;
 }
@@ -82,61 +81,82 @@ int qs1dsearch_reset(qs1dsearch _q)
     return LIQUID_OK;
 }
 
-// perform line search
+// perform initial search
 int qs1dsearch_init(qs1dsearch _q,
                     float      _v)
 {
-    // find appropriate search direction
+    // specify initial step size
     float step = 1e-16f;
-    float vx = _v;
-    float vy = _v + step;
-    float ux = _q->utility(vx, _q->context);
-    float uy = _q->utility(vy, _q->context);
-    if ( (_q->direction == LIQUID_OPTIM_MINIMIZE && uy > ux) ||
-         (_q->direction == LIQUID_OPTIM_MAXIMIZE && ux < uy) )
+
+    // try positive direction
+    if ( qs1dsearch_init_direction(_q, _v, step)==LIQUID_OK )
+        return LIQUID_OK;
+
+    // try negative direction
+    if ( qs1dsearch_init_direction(_q, _v, -step)==LIQUID_OK )
+        return LIQUID_OK;
+
+    // check edge case where _v is exactly the optimum
+    _q->vn = _v - step; _q->un =_q->utility(_q->vn, _q->context);
+    _q->v0 = _v;        _q->u0 =_q->utility(_q->v0, _q->context);
+    _q->vp = _v + step; _q->up =_q->utility(_q->vp, _q->context);
+    if ( (_q->direction == LIQUID_OPTIM_MINIMIZE && (_q->u0 < _q->un && _q->u0 < _q->up)) ||
+         (_q->direction == LIQUID_OPTIM_MAXIMIZE && (_q->u0 > _q->un && _q->u0 > _q->up)) )
     {
-        // swap search direction
-        step = -step;
-        float v_tmp = vx; vx = vy; vy = v_tmp;
-        float u_tmp = ux; ux = uy; uy = u_tmp;
+        _q->init = 1;
+        return LIQUID_OK;
     }
 
-    // continue stepping until metric degrades
+    // TODO: be more persistent?
+    return LIQUID_EIVAL;// FIXME: return proper error here, e.g. LIQUID_ENOCONV
+}
+
+// perform initial search along a particular direction
+int qs1dsearch_init_direction(qs1dsearch _q,
+                              float      _v_init,
+                              float      _step)
+{
+    //printf("# qs1dsearch_init_direction(_q, v_init:%12.8f, step:%12.4e);\n", _v_init, _step);
+    // start over and search in proper direction
+    float vn = _v_init;              float un = 0.0f;
+    float v0 = _v_init;              float u0 = _q->utility(v0, _q->context);
+    float vp = _v_init + _step*0.5f; float up = _q->utility(vp, _q->context);
     unsigned int i;
-    float v_test = vy + step;
-    float u_test = _q->utility(v_test, _q->context);
     for (i=0; i<180; i++) {
-        v_test = vy + step;
-        u_test = _q->utility(v_test, _q->context);
-#if 0
-        printf(" %2u(%12.4e) : [%11.4e,%11.4e,%11.4e] : {%11.4e,%11.4e,%11.4e}\n",
-                i, step, vx, vy, v_test, ux, uy, u_test);
-#endif
-        if ( (_q->direction == LIQUID_OPTIM_MINIMIZE && u_test > uy) ||
-             (_q->direction == LIQUID_OPTIM_MAXIMIZE && u_test < uy) )
+        // move values down
+        vn = v0; v0 = vp;
+        un = u0; u0 = up;
+        //
+        vp = v0 + _step;
+        up = _q->utility(vp, _q->context);
+        //printf("%3u %12.4e:{%12.8f,%12.8f,%12.8f},{%12.8f,%12.8f,%12.8f}\n",i, _step, vn, v0, vp, un, u0, up);
+        //printf("%3u %12.4e:{%12.4e,%12.4e,%12.4e},{%12.4e,%12.4e,%12.4e}\n",i, _step, vn, v0, vp, un, u0, up);
+        if ( (_q->direction == LIQUID_OPTIM_MINIMIZE && (u0 < un && u0 < up)) ||
+             (_q->direction == LIQUID_OPTIM_MAXIMIZE && (u0 > un && u0 > up)) )
         {
-            // skipped over optimum
+            // skipped over optimum; set internal bounds and return
+            int swap = (_step < 0);
+            _q->vn = swap ? vp : vn;
+            _q->v0 = v0;
+            _q->vp = swap ? vn : vp;
+
+            _q->un = swap ? up : un;
+            _q->u0 = u0;
+            _q->up = swap ? un : up;
+            _q->init = 1;
+            return LIQUID_OK;
+        } else
+        if ( (_q->direction == LIQUID_OPTIM_MINIMIZE && (u0 >= un && up > u0)) ||
+             (_q->direction == LIQUID_OPTIM_MAXIMIZE && (u0 <= un && up < u0)) )
+        {
+            // clearly moving in wrong direction: exit early
             break;
         }
-
-        // haven't hit extreme yet
-        vx = vy;
-        ux = uy;
-        vy = v_test;
-        uy = u_test;
-        step *= 1.5f;
+        _step *= 1.5; // increase step size
     }
 
-    // set bounds
-    _q->vn = vx;
-    _q->v0 = vy;
-    _q->vp = v_test;
-
-    _q->un = ux;
-    _q->u0 = uy;
-    _q->up = u_test;
-    _q->init = 1;
-    return LIQUID_OK;
+    // did not converge; return non-zero value
+    return LIQUID_EIVAL;// FIXME: return proper error here, e.g. LIQUID_ENOCONV
 }
 
 int qs1dsearch_init_bounds(qs1dsearch _q,

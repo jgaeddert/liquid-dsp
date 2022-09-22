@@ -9001,17 +9001,18 @@ qs1dsearch qs1dsearch_create(liquid_utility_1d _u,
                              void *            _userdata,
                              int               _direction);
 
-int          qs1dsearch_destroy      (qs1dsearch _q);
-qs1dsearch   qs1dsearch_copy         (qs1dsearch _q);
-int          qs1dsearch_print        (qs1dsearch _q);
-int          qs1dsearch_reset        (qs1dsearch _q);
-int          qs1dsearch_init         (qs1dsearch _q, float _v0);
-int          qs1dsearch_init_bounds  (qs1dsearch _q, float _vn, float _vp);
-int          qs1dsearch_step         (qs1dsearch _q);
-int          qs1dsearch_execute      (qs1dsearch _q);
-unsigned int qs1dsearch_get_num_steps(qs1dsearch _q);
-float        qs1dsearch_get_opt_v    (qs1dsearch _q);
-float        qs1dsearch_get_opt_u    (qs1dsearch _q);
+int          qs1dsearch_destroy       (qs1dsearch _q);
+qs1dsearch   qs1dsearch_copy          (qs1dsearch _q);
+int          qs1dsearch_print         (qs1dsearch _q);
+int          qs1dsearch_reset         (qs1dsearch _q);
+int          qs1dsearch_init          (qs1dsearch _q, float _v0);
+int          qs1dsearch_init_direction(qs1dsearch _q, float _v_init, float _step);
+int          qs1dsearch_init_bounds   (qs1dsearch _q, float _vn, float _vp);
+int          qs1dsearch_step          (qs1dsearch _q);
+int          qs1dsearch_execute       (qs1dsearch _q);
+unsigned int qs1dsearch_get_num_steps (qs1dsearch _q);
+float        qs1dsearch_get_opt_v     (qs1dsearch _q);
+float        qs1dsearch_get_opt_u     (qs1dsearch _q);
 
 // quasi-Newton search
 typedef struct qnsearch_s * qnsearch;

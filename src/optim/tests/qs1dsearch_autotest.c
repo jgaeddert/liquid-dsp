@@ -29,27 +29,28 @@
 #include <math.h>
 #include <getopt.h>
 
-float qs1dsearch_utility_min(float _v, void * _context)
+float qs1dsearch_umin(float _v, void * _context)
 {
     float v_opt = *(float*)(_context);
     float v = _v - v_opt;
     return tanhf(v)*tanhf(v);
 }
 
-float qs1dsearch_utility_max(float _v, void * _context)
-{
-    return -qs1dsearch_utility_min(_v, _context);
-}
+float qs1dsearch_umax(float _v, void * _context)
+    { return -qs1dsearch_umin(_v, _context); }
 
 // test initialization on single value
-void testbench_qs1dsearch(liquid_utility_1d _utility,
-                          float             _v_opt,
-                          float             _v_init,
-                          int               _direction)
+void test_qs1dsearch(liquid_utility_1d _utility,
+                     float             _v_opt,
+                     float             _v_lo,
+                     float             _v_hi,
+                     int               _bounds,
+                     int               _direction)
 {
     // create qs1dsearch object and initialize
     qs1dsearch q = qs1dsearch_create(_utility, &_v_opt, _direction);
-    qs1dsearch_init(q, _v_init);
+    if (_bounds) qs1dsearch_init_bounds(q, _v_lo, _v_hi);
+    else         qs1dsearch_init       (q, _v_lo);
 
     // run search
     unsigned int i;
@@ -74,43 +75,33 @@ void testbench_qs1dsearch(liquid_utility_1d _utility,
     qs1dsearch_destroy(q);
 }
 
-void autotest_qs1dsearch_01() { testbench_qs1dsearch(qs1dsearch_utility_min, 0, -20, LIQUID_OPTIM_MINIMIZE); }
-void autotest_qs1dsearch_02() { testbench_qs1dsearch(qs1dsearch_utility_max, 0, -20, LIQUID_OPTIM_MAXIMIZE); }
+// unbounded:                                      (utility,        opt, lo, hi, bound, dir)
+void autotest_qs1dsearch_min_01() { test_qs1dsearch(qs1dsearch_umin, 0, -40,  0, 0, LIQUID_OPTIM_MINIMIZE); }
+void autotest_qs1dsearch_min_02() { test_qs1dsearch(qs1dsearch_umin, 0, -20,  0, 0, LIQUID_OPTIM_MINIMIZE); }
+void autotest_qs1dsearch_min_03() { test_qs1dsearch(qs1dsearch_umin, 0,  -4,  0, 0, LIQUID_OPTIM_MINIMIZE); }
+void autotest_qs1dsearch_min_05() { test_qs1dsearch(qs1dsearch_umin, 0,   0,  0, 0, LIQUID_OPTIM_MINIMIZE); }
+void autotest_qs1dsearch_min_06() { test_qs1dsearch(qs1dsearch_umin, 0,   4,  0, 0, LIQUID_OPTIM_MINIMIZE); }
+void autotest_qs1dsearch_min_07() { test_qs1dsearch(qs1dsearch_umin, 0,  20,  0, 0, LIQUID_OPTIM_MINIMIZE); }
+void autotest_qs1dsearch_min_08() { test_qs1dsearch(qs1dsearch_umin, 0,  40,  0, 0, LIQUID_OPTIM_MINIMIZE); }
+// bounded:                                        (utility,        opt, lo, hi, bound, dir)
+void autotest_qs1dsearch_min_10() { test_qs1dsearch(qs1dsearch_umin, 0, -30, 15, 1, LIQUID_OPTIM_MINIMIZE); }
+void autotest_qs1dsearch_min_11() { test_qs1dsearch(qs1dsearch_umin, 0, -20, 15, 1, LIQUID_OPTIM_MINIMIZE); }
+void autotest_qs1dsearch_min_12() { test_qs1dsearch(qs1dsearch_umin, 0, -10, 15, 1, LIQUID_OPTIM_MINIMIZE); }
+void autotest_qs1dsearch_min_13() { test_qs1dsearch(qs1dsearch_umin, 0, -.1, 15, 1, LIQUID_OPTIM_MINIMIZE); }
 
-// test initialization on bounds
-void testbench_qs1dsearch_bounds(liquid_utility_1d _utility,
-                                 float             _v_opt,
-                                 float             _v_lo,
-                                 float             _v_hi,
-                                 int               _direction)
-{
-    // create qs1dsearch object and initialize
-    qs1dsearch q = qs1dsearch_create(_utility, &_v_opt, _direction);
-    qs1dsearch_init_bounds(q, _v_lo, _v_hi);
+// repeat to maximize
 
-    // run search
-    unsigned int i;
-    for (i=0; i<32; i++) {
-        qs1dsearch_step(q);
-        if (liquid_autotest_verbose)
-            qs1dsearch_print(q);
-    }
-
-    // check result
-    CONTEND_DELTA( qs1dsearch_get_opt_v(q), _v_opt,                    1e-3f );
-    CONTEND_DELTA( qs1dsearch_get_opt_u(q), _utility(_v_opt, &_v_opt), 1e-3f );
-
-    // print results
-    if (liquid_autotest_verbose) {
-        printf("%3u : u(%12.8f) = %12.4e, v_opt=%12.4e (error=%12.4e)\n",
-            i, qs1dsearch_get_opt_v(q), qs1dsearch_get_opt_u(q),
-            _v_opt, _v_opt - qs1dsearch_get_opt_v(q));
-    }
-
-    // clean it upt
-    qs1dsearch_destroy(q);
-}
-
-void autotest_qs1dsearch_03() { testbench_qs1dsearch_bounds(qs1dsearch_utility_min, 0, -20, 10, LIQUID_OPTIM_MINIMIZE); }
-void autotest_qs1dsearch_04() { testbench_qs1dsearch_bounds(qs1dsearch_utility_max, 0, -20, 10, LIQUID_OPTIM_MAXIMIZE); }
+// unbounded:                                      (utility,        opt, lo, hi, bound, dir)
+void autotest_qs1dsearch_max_01() { test_qs1dsearch(qs1dsearch_umax, 0, -40,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
+void autotest_qs1dsearch_max_02() { test_qs1dsearch(qs1dsearch_umax, 0, -20,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
+void autotest_qs1dsearch_max_03() { test_qs1dsearch(qs1dsearch_umax, 0,  -4,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
+void autotest_qs1dsearch_max_05() { test_qs1dsearch(qs1dsearch_umax, 0,   0,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
+void autotest_qs1dsearch_max_06() { test_qs1dsearch(qs1dsearch_umax, 0,   4,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
+void autotest_qs1dsearch_max_07() { test_qs1dsearch(qs1dsearch_umax, 0,  20,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
+void autotest_qs1dsearch_max_08() { test_qs1dsearch(qs1dsearch_umax, 0,  40,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
+// bounded:              max                       (utility,    max opt, lo, hi, bound, dir)
+void autotest_qs1dsearch_max_10() { test_qs1dsearch(qs1dsearch_umax, 0, -30, 15, 1, LIQUID_OPTIM_MAXIMIZE); }
+void autotest_qs1dsearch_max_11() { test_qs1dsearch(qs1dsearch_umax, 0, -20, 15, 1, LIQUID_OPTIM_MAXIMIZE); }
+void autotest_qs1dsearch_max_12() { test_qs1dsearch(qs1dsearch_umax, 0, -10, 15, 1, LIQUID_OPTIM_MAXIMIZE); }
+void autotest_qs1dsearch_max_13() { test_qs1dsearch(qs1dsearch_umax, 0, -.1, 15, 1, LIQUID_OPTIM_MAXIMIZE); }
 
