@@ -2209,6 +2209,15 @@ int liquid_firdespm_halfband_ft(unsigned int _m,
                                 float        _ft,
                                 float *      _h);
 
+// Design halfband filter using Parks-McClellan algorithm given the
+// filter length and desired stop-band suppression
+//  _m      : filter semi-length, _m > 0
+//  _as     : filter stop-band suppression [dB], _as > 0
+//  _h      : output coefficient buffer, [size: 4 _m + 1 x 1]
+int liquid_firdespm_halfband_as(unsigned int _m,
+                                float        _as,
+                                float *      _h);
+
 // Design FIR filter using generic window/taper method
 //  _wtype  : window type, e.g. LIQUID_WINDOW_HAMMING
 //  _n      : filter length, _n > 0

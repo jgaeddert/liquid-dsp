@@ -133,3 +133,13 @@ int liquid_firdespm_halfband_ft(unsigned int _m, float _ft, float * _h)
     return LIQUID_OK;
 }
 
+// perform search to find optimal coefficients given stop-band suppression
+int liquid_firdespm_halfband_as(unsigned int _m, float _as, float * _h)
+{
+    // estimate transition band given other parameters
+    float ft = estimate_req_filter_df(_as, 4*_m+1);
+
+    // return filter design
+    return liquid_firdespm_halfband_ft(_m, ft, _h);
+}
+
