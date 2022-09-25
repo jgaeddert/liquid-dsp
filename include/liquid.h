@@ -3484,8 +3484,8 @@ LIQUID_IIRFILT_DEFINE_API(LIQUID_IIRFILT_MANGLE_CCCF,
 typedef struct IIRFILTSOS(_s) * IIRFILTSOS();                               \
                                                                             \
 /* create 2nd-order infinite impulse response filter                    */  \
-/*  _b      : feed-forward coefficients [size: _3 x 1]                  */  \
-/*  _a      : feed-back coefficients    [size: _3 x 1]                  */  \
+/*  _b      : feed-forward coefficients, [size: _3 x 1]                 */  \
+/*  _a      : feed-back coefficients,    [size: _3 x 1]                 */  \
 IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                                   \
                                  TC * _a);                                  \
                                                                             \
@@ -9574,7 +9574,7 @@ int liquid_rbshift(unsigned char * _src,
                    unsigned int _b);
 
 // circular shift array to the left _b bits
-//  _src        :   source address [size: _n x 1]
+//  _src        :   source address, [size: _n x 1]
 //  _n          :   input data array size
 //  _b          :   number of bits to shift
 int liquid_lbcircshift(unsigned char * _src,
@@ -9582,7 +9582,7 @@ int liquid_lbcircshift(unsigned char * _src,
                        unsigned int _b);
 
 // circular shift array to the right _b bits
-//  _src        :   source address [size: _n x 1]
+//  _src        :   source address, [size: _n x 1]
 //  _n          :   input data array size
 //  _b          :   number of bits to shift
 int liquid_rbcircshift(unsigned char * _src,

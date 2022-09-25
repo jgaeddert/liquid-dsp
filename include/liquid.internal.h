@@ -153,9 +153,9 @@ struct fec_s {
     unsigned int enc_block_len; // number of encoded bytes per block: 
     unsigned int res_block_len; // residual bytes in last block
     unsigned int pad;           // padding for each block
-    unsigned char * tblock;     // decoder input sequence [size: 1 x n]
-    int * errlocs;              // error locations [size: 1 x n]
-    int * derrlocs;             // decoded error locations [size: 1 x n]
+    unsigned char * tblock;     // decoder input sequence, [size: 1 x n]
+    int * errlocs;              // error locations, [size: 1 x n]
+    int * derrlocs;             // decoded error locations, [size: 1 x n]
     int erasures;               // number of erasures
 
     // encode function pointer
@@ -346,20 +346,20 @@ unsigned char fec_secded2216_compute_parity(unsigned char * _m);
 unsigned char fec_secded2216_compute_syndrome(unsigned char * _v);
 
 // encode symbol
-//  _sym_dec    :   decoded symbol [size: 2 x 1]
-//  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
+//  _sym_dec    :   decoded symbol, [size: 2 x 1]
+//  _sym_enc    :   encoded symbol, [size: 3 x 1], _sym_enc[0] has only 6 bits
 int fec_secded2216_encode_symbol(unsigned char * _sym_dec,
                                  unsigned char * _sym_enc);
 
 // decode symbol, returning 0/1/2 for zero/one/multiple errors detected
-//  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
-//  _sym_dec    :   decoded symbol [size: 2 x 1]
+//  _sym_enc    :   encoded symbol, [size: 3 x 1], _sym_enc[0] has only 6 bits
+//  _sym_dec    :   decoded symbol, [size: 2 x 1]
 int  fec_secded2216_decode_symbol(unsigned char * _sym_enc,
                                   unsigned char * _sym_dec);
 
 // estimate error vector, returning 0/1/2 for zero/one/multiple errors detected
-//  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
-//  _e_hat      :   estimated error vector [size: 3 x 1]
+//  _sym_enc    :   encoded symbol, [size: 3 x 1], _sym_enc[0] has only 6 bits
+//  _e_hat      :   estimated error vector, [size: 3 x 1]
 int  fec_secded2216_estimate_ehat(unsigned char * _sym_enc,
                                   unsigned char * _e_hat);
 
@@ -390,20 +390,20 @@ unsigned char fec_secded3932_compute_parity(unsigned char * _m);
 unsigned char fec_secded3932_compute_syndrome(unsigned char * _v);
 
 // encode symbol
-//  _sym_dec    :   decoded symbol [size: 4 x 1]
-//  _sym_enc    :   encoded symbol [size: 5 x 1], _sym_enc[0] has only 7 bits
+//  _sym_dec    :   decoded symbol, [size: 4 x 1]
+//  _sym_enc    :   encoded symbol, [size: 5 x 1], _sym_enc[0] has only 7 bits
 int fec_secded3932_encode_symbol(unsigned char * _sym_dec,
                                  unsigned char * _sym_enc);
 
 // estimate error vector, returning 0/1/2 for zero/one/multiple errors detected
-//  _sym_enc    :   encoded symbol [size: 5 x 1], _sym_enc[0] has only 7 bits
-//  _e_hat      :   estimated error vector [size: 5 x 1]
+//  _sym_enc    :   encoded symbol, [size: 5 x 1], _sym_enc[0] has only 7 bits
+//  _e_hat      :   estimated error vector, [size: 5 x 1]
 int  fec_secded3932_estimate_ehat(unsigned char * _sym_enc,
                                   unsigned char * _e_hat);
 
 // decode symbol, returning 0/1/2 for zero/one/multiple errors detected
-//  _sym_enc    :   encoded symbol [size: 5 x 1], _sym_enc[0] has only 7 bits
-//  _sym_dec    :   decoded symbol [size: 4 x 1]
+//  _sym_enc    :   encoded symbol (_sym_enc[0] has only 7 bits), [size: 5 x 1]
+//  _sym_dec    :   decoded symbol, [size: 4 x 1]
 int fec_secded3932_decode_symbol(unsigned char * _sym_enc,
                                 unsigned char * _sym_dec);
 
@@ -434,20 +434,20 @@ unsigned char fec_secded7264_compute_parity(unsigned char * _v);
 unsigned char fec_secded7264_compute_syndrome(unsigned char * _v);
 
 // encode symbol
-//  _sym_dec    :   input symbol [size: 8 x 1]
-//  _sym_enc    :   input symbol [size: 9 x 1]
+//  _sym_dec    :   input symbol, [size: 8 x 1]
+//  _sym_enc    :   input symbol, [size: 9 x 1]
 int fec_secded7264_encode_symbol(unsigned char * _sym_dec,
                                  unsigned char * _sym_enc);
 
 // estimate error vector, returning 0/1/2 for zero/one/multiple errors detected
-//  _sym_enc    :   encoded symbol [size: 9 x 1]
-//  _e_hat      :   estimated error vector [size: 9 x 1]
+//  _sym_enc    :   encoded symbol, [size: 9 x 1]
+//  _e_hat      :   estimated error vector, [size: 9 x 1]
 int fec_secded7264_estimate_ehat(unsigned char * _sym_enc,
                                  unsigned char * _e_hat);
 
 // decode symbol, returning 0/1/2 for zero/one/multiple errors detected
-//  _sym_enc    :   input symbol [size: 8 x 1]
-//  _sym_dec    :   input symbol [size: 9 x 1]
+//  _sym_enc    :   input symbol, [size: 8 x 1]
+//  _sym_dec    :   input symbol, [size: 9 x 1]
 int fec_secded7264_decode_symbol(unsigned char * _sym_enc,
                                  unsigned char * _sym_dec);
 
@@ -601,9 +601,9 @@ float sumproduct_phi(float _x);
 // returns 1 if parity checks, 0 otherwise
 //  _m          :   rows
 //  _n          :   cols
-//  _H          :   sparse binary parity check matrix [size: _m x _n]
+//  _H          :   sparse binary parity check matrix, [size: _m x _n]
 //  _LLR        :   received signal (soft bits, LLR) [size: _n x 1]
-//  _c_hat      :   estimated transmitted signal [size: _n x 1]
+//  _c_hat      :   estimated transmitted signal, [size: _n x 1]
 //  _max_steps  :   maximum number of steps before bailing
 int fec_sumproduct(unsigned int    _m,
                    unsigned int    _n,
@@ -615,15 +615,15 @@ int fec_sumproduct(unsigned int    _m,
 // sum-product algorithm, returns 1 if parity checks, 0 otherwise
 //  _m      :   rows
 //  _n      :   cols
-//  _H      :   sparse binary parity check matrix [size: _m x _n]
-//  _c_hat  :   estimated transmitted signal [size: _n x 1]
+//  _H      :   sparse binary parity check matrix, [size: _m x _n]
+//  _c_hat  :   estimated transmitted signal, [size: _n x 1]
 //
 // internal state arrays
 //  _Lq     :   [size: _m x _n]
 //  _Lr     :   [size: _m x _n]
 //  _Lc     :   [size: _n x 1]
 //  _LQ     :   [size: _n x 1]
-//  _parity :   _H * _c_hat [size: _m x 1]
+//  _parity :   _H * _c_hat, [size: _m x 1]
 int fec_sumproduct_step(unsigned int    _m,
                         unsigned int    _n,
                         smatrixb        _H,
@@ -797,7 +797,7 @@ float rkaiser_approximate_rho(unsigned int _m,
 //  _m      :   filter delay (symbols)
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
-//  _h      :   resulting filter [size: 2*_k*_m+1]
+//  _h      :   resulting filter, [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
 int liquid_firdes_rkaiser_bisection(unsigned int _k,
                                     unsigned int _m,
@@ -813,7 +813,7 @@ int liquid_firdes_rkaiser_bisection(unsigned int _k,
 //  _m      :   filter delay (symbols)
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
-//  _h      :   resulting filter [size: 2*_k*_m+1]
+//  _h      :   resulting filter, [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
 int liquid_firdes_rkaiser_quadratic(unsigned int _k,
                                     unsigned int _m,
@@ -829,7 +829,7 @@ int liquid_firdes_rkaiser_quadratic(unsigned int _k,
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-//  _h      :   filter buffer [size: 2*_k*_m+1]
+//  _h      :   filter buffer, [size: 2*_k*_m+1]
 float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
                                          unsigned int _m,
                                          float _beta,
@@ -898,7 +898,7 @@ int liquid_cplxpair(float complex * _z,
 //  * pairs are ordered by increasing real component
 //  * pure-real elements are ordered by increasing value
 //
-//  _p          :   pre-processed complex array [size: _n x 1]
+//  _p          :   pre-processed complex array, [size: _n x 1]
 //  _n          :   array length
 //  _num_pairs  :   number of complex conjugate pairs
 int liquid_cplxpair_cleanup(float complex * _p,
@@ -1160,23 +1160,23 @@ float liquid_cargf_approx(float complex _z);
 // internal polynomial root-finding methods
 
 // finds the complex roots of the polynomial using the Durand-Kerner method
-//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _p      :   polynomial array, ascending powers, [size: _k x 1]
 //  _k      :   polynomials length (poly order = _k - 1)
-//  _roots  :   resulting complex roots [size: _k-1 x 1]
+//  _roots  :   resulting complex roots, [size: _k-1 x 1]
 int liquid_poly_findroots_durandkerner(double *         _p,
                                        unsigned int     _k,
                                        double complex * _roots);
 
 // finds the complex roots of the polynomial using Bairstow's method
-//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _p      :   polynomial array, ascending powers, [size: _k x 1]
 //  _k      :   polynomials length (poly order = _k - 1)
-//  _roots  :   resulting complex roots [size: _k-1 x 1]
+//  _roots  :   resulting complex roots, [size: _k-1 x 1]
 int liquid_poly_findroots_bairstow(double *         _p,
                                    unsigned int     _k,
                                    double complex * _roots);
 
 // iterate over Bairstow's method, finding quadratic factor x^2 + u*x + v
-//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _p      :   polynomial array, ascending powers, [size: _k x 1]
 //  _k      :   polynomials length (poly order = _k - 1)
 //  _p1     :   reduced polynomial (output) [size: _k-2 x 1]
 //  _u      :   input: initial estimate for u; output: resulting u
@@ -1659,7 +1659,7 @@ int gasearch_mutate(gasearch _q);
 int gasearch_rank(gasearch _q);
 
 // sort values by index
-//  _v          :   input values [size: _len x 1]
+//  _v          :   input values, [size: _len x 1]
 //  _rank       :   output rank array (indices) [size: _len x 1]
 //  _len        :   length of input array
 //  _descending :   descending/ascending
