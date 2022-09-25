@@ -216,6 +216,8 @@ void autotest_resamp2_crcf_filter_0(){ testbench_resamp2_crcf_filter( 4, 60.0f);
 void autotest_resamp2_crcf_filter_1(){ testbench_resamp2_crcf_filter( 7, 60.0f); }
 void autotest_resamp2_crcf_filter_2(){ testbench_resamp2_crcf_filter(12, 60.0f); }
 void autotest_resamp2_crcf_filter_3(){ testbench_resamp2_crcf_filter(15, 80.0f); }
+void autotest_resamp2_crcf_filter_4(){ testbench_resamp2_crcf_filter(15,100.0f); }
+void autotest_resamp2_crcf_filter_5(){ testbench_resamp2_crcf_filter(15,120.0f); }
 
 void autotest_resamp2_config()
 {

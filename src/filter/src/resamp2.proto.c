@@ -89,19 +89,15 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
 
     // design filter prototype
     unsigned int i;
-    float t, h1, h2;
-    TC h3;
-    float beta = kaiser_beta_As(q->as);
+    float hf[q->h_len];
+    liquid_firdespm_halfband_as(q->m, q->as, hf);
     for (i=0; i<q->h_len; i++) {
-        t = (float)i - (float)(q->h_len-1)/2.0f;
-        h1 = sincf(t/2.0f);
-        h2 = liquid_kaiser(i,q->h_len,beta);
+        float t = (float)i - (float)(q->h_len-1)/2.0f;
 #if TC_COMPLEX == 1
-        h3 = cosf(2.0f*M_PI*t*q->f0) + _Complex_I*sinf(2.0f*M_PI*t*q->f0);
+        q->h[i] = 2 * hf[i] * ( cosf(2.0f*M_PI*t*q->f0) + _Complex_I*sinf(2.0f*M_PI*t*q->f0) );
 #else
-        h3 = cosf(2.0f*M_PI*t*q->f0);
+        q->h[i] = 2 * hf[i] * cosf(2.0f*M_PI*t*q->f0);
 #endif
-        q->h[i] = h1*h2*h3;
     }
 
     // resample, alternate sign, [reverse direction]
