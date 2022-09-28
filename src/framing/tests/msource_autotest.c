@@ -384,6 +384,9 @@ void autotest_msourcecf_accessor()
 // test copying object and ensure output spectrum aligns
 void autotest_msourcecf_copy()
 {
+    // test options
+    float        tol    = 1.5f;                 // error tolerance
+
     // msource parameters
     int          ms     = LIQUID_MODEM_QPSK;    // linear modulation scheme
     unsigned int m      =    12;                // modulation filter semi-length
@@ -455,7 +458,7 @@ void autotest_msourcecf_copy()
     fprintf(fid,"clear all; close all;\n");
     fprintf(fid,"nfft=%u; psd_orig=zeros(1,nfft); psd_copy=zeros(1,nfft);\n", nfft);
     for (i=0; i<nfft; i++) {
-        CONTEND_DELTA(psd_orig[i], psd_copy[i], 1.0f);
+        CONTEND_DELTA(psd_orig[i], psd_copy[i], tol);
         fprintf(fid," psd_orig(%3u)=%12.4e; psd_copy(%3u)=%12.4e;\n",
                 i+1, psd_orig[i], i+1, psd_copy[i]);
     }
