@@ -200,7 +200,7 @@ int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
         h = _mm_load_ps(&_q->h[i]);
 
         // compute dot product
-        s = _mm_dp_ps(v, h, 0xffffffff);
+        s = _mm_dp_ps(v, h, 0xff);
         
         // parallel addition
         sum = _mm_add_ps( sum, s );
@@ -251,10 +251,10 @@ int dotprod_rrrf_execute_sse4u(dotprod_rrrf _q,
         h3 = _mm_load_ps(&_q->h[4*i+12]);
 
         // compute dot products
-        s0 = _mm_dp_ps(v0, h0, 0xffffffff);
-        s1 = _mm_dp_ps(v1, h1, 0xffffffff);
-        s2 = _mm_dp_ps(v2, h2, 0xffffffff);
-        s3 = _mm_dp_ps(v3, h3, 0xffffffff);
+        s0 = _mm_dp_ps(v0, h0, 0xff);
+        s1 = _mm_dp_ps(v1, h1, 0xff);
+        s2 = _mm_dp_ps(v2, h2, 0xff);
+        s3 = _mm_dp_ps(v3, h3, 0xff);
         
         // parallel addition
         // FIXME: these additions are by far the limiting factor
