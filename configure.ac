@@ -172,7 +172,14 @@ else
         #   AVX     :   immintrin.h
         AX_EXT
 
-        if [ test "$ax_cv_have_sse41_ext" = yes && test "$ac_cv_header_smmintrin_h" = yes ]; then
+        if [ test "$ax_cv_have_avx_ext" = yes && test "$ac_cv_header_immintrin_h" = yes ]; then
+            # AVX extensions
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
+                           src/dotprod/src/dotprod_crcf.mmx.o \
+                           src/dotprod/src/dotprod_rrrf.sse4.o \
+                           src/dotprod/src/sumsq.avx.o"
+            ARCH_OPTION='-mavx'
+        elif [ test "$ax_cv_have_sse41_ext" = yes && test "$ac_cv_header_smmintrin_h" = yes ]; then
             # SSE4.1/2 extensions
             MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                            src/dotprod/src/dotprod_crcf.mmx.o \
