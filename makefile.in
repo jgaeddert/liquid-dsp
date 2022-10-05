@@ -220,6 +220,9 @@ src/dotprod/src/sumsq.mmx.o : %.o : %.c $(include_headers)
 # SSE4.1/2
 src/dotprod/src/dotprod_rrrf.sse4.o : %.o : %.c $(include_headers)
 
+# AVX
+src/dotprod/src/sumsq.avx.o : %.o : %.c $(include_headers)
+
 # ARM Neon
 src/dotprod/src/dotprod_rrrf.neon.o : %.o : %.c $(include_headers)
 src/dotprod/src/dotprod_crcf.neon.o : %.o : %.c $(include_headers)
