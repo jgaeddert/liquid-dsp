@@ -1,6 +1,17 @@
 
 ## Latest improvements ##
 
+## Improvements for v1.5.0 ##
+
+  * autotest
+    - increased coverage testing (81% across entire project)
+  * build
+    - added support for PlatformIO (https://platformio.org) for embeedded
+      development
+    - incorporated recursive copy() methods to objects to facilitate c++ copy
+      constructors for bindings
+    - improved support for error codes
+
 ## Improvements for v1.4.0 ##
 
   * autotest
