@@ -6702,7 +6702,7 @@ int SYMTRACK(_set_bandwidth)(SYMTRACK() _q,                                 \
                                                                             \
 /* Adjust internal NCO by requested frequency                           */  \
 /*  _q      : symtrack object                                           */  \
-/*  _dphi   : NCO phase adjustment [radians]                            */  \
+/*  _dphi   : NCO frequency adjustment [radians/sample]                 */  \
 int SYMTRACK(_adjust_frequency)(SYMTRACK() _q,                              \
                                 T          _dphi);                          \
                                                                             \
