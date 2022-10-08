@@ -66,8 +66,10 @@ void testbench_resamp_crcf(float r, float As)
         {.fmin=-0.4f*bw, .fmax=+0.4f*bw, .pmin=0-tol, .pmax= 0 +tol, .test_lo=1, .test_hi=1},
         {.fmin=+0.6f*bw, .fmax=+0.5f,    .pmin=0,     .pmax=-As+tol, .test_lo=0, .test_hi=1},
     };
+    char filename[256];
+    sprintf(filename,"autotest/logs/resamp_crcf_r%.3u_a%.2u_autotest.m", (int)(r*1000), (int)(As));
     liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/resamp_crcf.m" : NULL);
+        liquid_autotest_verbose ? filename : NULL);
 
     // destroy objects
     spgramcf_destroy(q);
