@@ -36,7 +36,7 @@ int main(int argc, char*argv[]) {
         case 't': ft = atof(optarg);        break;
         case 'a': as_min = atof(optarg);    break;
         case 'A': as_max = atof(optarg);    break;
-        case 'n': num_Aa = atoi(optarg);    break;
+        case 'n': num_as = atoi(optarg);    break;
         default:
             exit(1);
         }

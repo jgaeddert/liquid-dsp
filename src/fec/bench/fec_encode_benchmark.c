@@ -114,7 +114,7 @@ void fec_encode_bench(
     unsigned char msg[_n];          // original message
     unsigned char msg_enc[n_enc];   // encoded message
 
-    // initialze message
+    // initialize message
     unsigned long int i;
     for (i=0; i<_n; i++) {
         msg[i] = rand() & 0xff;

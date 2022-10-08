@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 
 #include "liquid.internal.h"
@@ -85,6 +86,19 @@ AGC() AGC(_create)(void)
 
     // return object
     return _q;
+}
+
+// copy object
+AGC() AGC(_copy)(AGC() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("agc_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object and copy memory
+    AGC() q_copy = (AGC()) malloc(sizeof(struct AGC(_s)));
+    memmove(q_copy, q_orig, sizeof(struct AGC(_s)));
+    return q_copy;
 }
 
 // destroy agc object, freeing all internally-allocated memory
@@ -155,7 +169,7 @@ int AGC(_execute)(AGC() _q,
     // clamp to 120 dB gain
     _q->g = (_q->g > 1e6f) ? 1e6f : _q->g;
 
-    // udpate squelch mode appropriately
+    // update squelch mode appropriately
     AGC(_squelch_update_mode)(_q);
 
     // apply output scale

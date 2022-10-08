@@ -526,7 +526,7 @@ void spc2216_pack(unsigned char * _m,
                   unsigned char * _pc,
                   unsigned char * _v)
 {
-    // copy input message to begining of encoded vector
+    // copy input message to beginning of encoded vector
     memmove(_v, _m, 32*sizeof(unsigned char));
 
     // pack row parities
@@ -554,7 +554,7 @@ void spc2216_unpack(unsigned char * _v,
                     unsigned char * _pc,
                     unsigned char * _m)
 {
-    // copy input message to begining of encoded vector
+    // copy input message to beginning of encoded vector
     memmove(_m, _v, 32*sizeof(unsigned char));
 
     // unpack row parities

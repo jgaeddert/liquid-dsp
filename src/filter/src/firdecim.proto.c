@@ -224,6 +224,28 @@ int FIRDECIM(_get_scale)(FIRDECIM() _q,
     return LIQUID_OK;
 }
 
+// Compute complex frequency response \(H\) of decimator on prototype
+// filter coefficients at a specific frequency \(f_c\)
+//  _q      : decimator object
+//  _fc     : normalized frequency for evaluation
+//  _H      : pointer to output complex frequency response
+int FIRDECIM(_freqresp)(FIRDECIM()             _q,
+                        float                  _fc,
+                        liquid_float_complex * _H)
+{
+#if TC_COMPLEX==0
+    int rc = liquid_freqrespf(_q->h, _q->h_len, _fc, _H);
+#elif TC_COMPLEX==1
+    int rc = liquid_freqrespcf(_q->h, _q->h_len, _fc, _H);
+#else
+#   error("invalid complex type for coefficients")
+#endif
+
+    // apply scaling
+    *_H *= _q->scale;
+    return rc;
+}
+
 // execute decimator
 //  _q      :   decimator object
 //  _x      :   input sample array [size: _M x 1]

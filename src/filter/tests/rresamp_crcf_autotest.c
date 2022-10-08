@@ -72,7 +72,7 @@ void test_harness_rresamp_crcf(unsigned int _P,
         {.fmin=+0.6f*bw, .fmax=+0.5f,    .pmin=0,     .pmax=-_as+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
-        liquid_autotest_verbose ? "autotest_rresamp_crcf.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/rresamp_crcf.m" : NULL);
 
     // destroy objects
     rresamp_crcf_destroy(resamp);
@@ -87,4 +87,49 @@ void autotest_rresamp_crcf_P3_Q5() { test_harness_rresamp_crcf( 3, 5, 15, 0.4f, 
 void autotest_rresamp_crcf_P6_Q5() { test_harness_rresamp_crcf( 6, 5, 15, 0.4f, 60.0f); }
 void autotest_rresamp_crcf_P8_Q5() { test_harness_rresamp_crcf( 8, 5, 15, 0.4f, 60.0f); }
 void autotest_rresamp_crcf_P9_Q5() { test_harness_rresamp_crcf( 9, 5, 15, 0.4f, 60.0f); }
+
+// test copy method
+void autotest_rresamp_copy()
+{
+    // create resampler with rate P/Q
+    unsigned int i, P = 17, Q = 23, m = 12;
+    rresamp_crcf q0 = rresamp_crcf_create_kaiser(P, Q, m, 0.4f, 60.0f);
+    rresamp_crcf_set_scale(q0, 0.12345f);
+
+    // create generator with default parameters
+    symstreamrcf gen = symstreamrcf_create();
+
+    // generate samples and push through resampler
+    float complex buf  [Q]; // input buffer
+    float complex buf_0[P]; // output buffer (orig)
+    float complex buf_1[P]; // output buffer (copy)
+    for (i=0; i<10; i++) {
+        // generate block of samples
+        symstreamrcf_write_samples(gen, buf, Q);
+
+        // resample
+        rresamp_crcf_execute(q0, buf_0, buf_1);
+    }
+
+    // copy object
+    rresamp_crcf q1 = rresamp_crcf_copy(q0);
+
+    // run samples through both resamplers in parallel
+    for (i=0; i<60; i++) {
+        // generate block of samples
+        symstreamrcf_write_samples(gen, buf, Q);
+
+        // resample
+        rresamp_crcf_execute(q0, buf, buf_0);
+        rresamp_crcf_execute(q1, buf, buf_1);
+
+        // compare output
+        CONTEND_SAME_DATA(buf_0, buf_1, P*sizeof(float complex));
+    }
+
+    // destroy objects
+    rresamp_crcf_destroy(q0);
+    rresamp_crcf_destroy(q1);
+    symstreamrcf_destroy(gen);
+}
 

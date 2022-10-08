@@ -20,23 +20,12 @@
  * THE SOFTWARE.
  */
 
-//
-// firhilb.c
-//
 // finite impulse response (FIR) Hilbert transform
-//
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-
-// defined:
-//  FIRHILB()       name-mangling macro
-//  T               coefficients type
-//  WINDOW()        window macro
-//  DOTPROD()       dotprod macro
-//  PRINTVAL()      print macro
 
 struct FIRHILB(_s) {
     T * h;                  // filter coefficients
@@ -106,8 +95,8 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
         q->hq[j++] = q->h[q->h_len - i - 1];
 
     // create windows for upper and lower polyphase filter branches
-    q->w1 = WINDOW(_create)(2*(q->m));
     q->w0 = WINDOW(_create)(2*(q->m));
+    q->w1 = WINDOW(_create)(2*(q->m));
     q->w2 = WINDOW(_create)(2*(q->m));
     q->w3 = WINDOW(_create)(2*(q->m));
 
@@ -117,6 +106,30 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
     // reset internal state and return object
     FIRHILB(_reset)(q);
     return q;
+}
+
+FIRHILB() FIRHILB(_copy)(FIRHILB() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("firhilb%s_copy(), object cannot be NULL", EXTENSION_SHORT);
+
+    // create filter object and copy base parameters
+    FIRHILB() q_copy = (FIRHILB()) malloc(sizeof(struct FIRHILB(_s)));
+    memmove(q_copy, q_orig, sizeof(struct FIRHILB(_s)));
+
+    // copy filter coefficients
+    q_copy->h  = (T *)        liquid_malloc_copy(q_orig->h,  q_orig->h_len,  sizeof(T));
+    q_copy->hc = (T complex*) liquid_malloc_copy(q_orig->hc, q_orig->h_len,  sizeof(T complex));
+    q_copy->hq = (T *)        liquid_malloc_copy(q_orig->hq, q_orig->hq_len, sizeof(T));
+
+    // copy objects and return
+    q_copy->w0  = WINDOW (_copy)(q_orig->w0 );
+    q_copy->w1  = WINDOW (_copy)(q_orig->w1 );
+    q_copy->w2  = WINDOW (_copy)(q_orig->w2 );
+    q_copy->w3  = WINDOW (_copy)(q_orig->w3 );
+    q_copy->dpq = DOTPROD(_copy)(q_orig->dpq);
+    return q_copy;
 }
 
 // destroy firhilb object

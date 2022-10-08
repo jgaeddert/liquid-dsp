@@ -113,7 +113,7 @@ int liquid_firdes_gmskrx(unsigned int _k,
 
     // arrays
     float ht[h_len];         // transmit filter coefficients
-    float hr[h_len];         // recieve filter coefficients
+    float hr[h_len];         // receive filter coefficients
 
     // design transmit filter
     liquid_firdes_gmsktx(k,m,BT,0.0f,ht);
@@ -156,7 +156,7 @@ int liquid_firdes_gmskrx(unsigned int _k,
     fft_run(h_len, g_prime, G_prime, LIQUID_FFT_FORWARD, 0);
     fft_run(h_len, h_tx,    H_tx,    LIQUID_FFT_FORWARD, 0);
 
-    // find minimum of reponses
+    // find minimum of responses
     float H_tx_min = 0.0f;
     float H_prime_min = 0.0f;
     float G_prime_min = 0.0f;
@@ -168,7 +168,7 @@ int liquid_firdes_gmskrx(unsigned int _k,
 
     // compute 'prototype' response, removing minima, and add correction factor
     for (i=0; i<h_len; i++) {
-        // compute response necessary to yeild prototype response (not exact, but close)
+        // compute response necessary to yield prototype response (not exact, but close)
         H_hat[i] = crealf(H_prime[i] - H_prime_min + delta) / crealf(H_tx[i] - H_tx_min + delta);
 
         // include additional term to add stop-band suppression

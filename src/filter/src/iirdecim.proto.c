@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -107,6 +107,22 @@ IIRDECIM() IIRDECIM(_create_prototype)(unsigned int             _M,
 
     // return interpolator object
     return q;
+}
+
+// copy object
+IIRDECIM() IIRDECIM(_copy)(IIRDECIM() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("iirdecim%s_create(), object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object and copy internal memory
+    IIRDECIM() q_copy = (IIRDECIM()) malloc(sizeof(struct IIRDECIM(_s)));
+    memmove(q_copy, q_orig, sizeof(struct IIRDECIM(_s)));
+
+    // copy internal object and return
+    q_copy->iirfilt = IIRFILT(_copy)(q_orig->iirfilt);
+    return q_copy;
 }
 
 // destroy interpolator object

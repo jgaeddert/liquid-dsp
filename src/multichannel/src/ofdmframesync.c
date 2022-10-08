@@ -442,7 +442,7 @@ int ofdmframesync_execute_seekplcp(ofdmframesync _q)
 
     // estimate gain
     unsigned int i;
-    // start with a reasonbly small number to avoid divide-by-zero warning
+    // start with a reasonably small number to avoid divide-by-zero warning
     float g = 1.0e-9f;
     for (i=_q->cp_len; i<_q->M + _q->cp_len; i++) {
         // compute |rc[i]|^2 efficiently

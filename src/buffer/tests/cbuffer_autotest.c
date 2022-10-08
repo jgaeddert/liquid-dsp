@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -330,5 +330,50 @@ void autotest_cbufferf_config()
 
     // destroy object
     cbufferf_destroy(q);
+}
+
+// test copy
+void autotest_cbuffer_copy()
+{
+    // create base object
+    unsigned int wlen = 20;
+    cbuffercf q0 = cbuffercf_create(wlen);
+
+    // write some values
+    unsigned int i;
+    for (i=0; i<wlen; i++) {
+        float complex v = randnf() + _Complex_I*randnf();
+        cbuffercf_push(q0, v);
+    }
+    cbuffercf_release(q0, 13);
+
+    // copy object
+    cbuffercf q1 = cbuffercf_copy(q0);
+
+    // write a few more values
+    for (i=0; i<12; i++) {
+        float complex v = randnf() + _Complex_I*randnf();
+        cbuffercf_push(q0, v);
+        cbuffercf_push(q1, v);
+    }
+    cbuffercf_release(q0, 4);
+    cbuffercf_release(q1, 4);
+
+    // check object values
+    CONTEND_EQUALITY(cbuffercf_space_available(q0),cbuffercf_space_available(q1));
+
+    // read buffers and compare
+    unsigned int n = cbuffercf_space_available(q0), nr0, nr1;
+    float complex * r0, * r1;
+    cbuffercf_read(q0, n, &r0, &nr0);
+    cbuffercf_read(q1, n, &r1, &nr1);
+    // check that number of elements read is the same
+    CONTEND_EQUALITY(nr0, nr1);
+    // check that values are the same
+    CONTEND_SAME_DATA(r0, r1, nr0*sizeof(float complex));
+
+    // destroy objects
+    cbuffercf_destroy(q0);
+    cbuffercf_destroy(q1);
 }
 

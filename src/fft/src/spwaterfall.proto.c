@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -130,6 +130,33 @@ SPWATERFALL() SPWATERFALL(_create_default)(unsigned int _nfft,
         return liquid_error_config("spwaterfall%s_create_default(), fft size must be at least 2", EXTENSION);
 
     return SPWATERFALL(_create)(_nfft, LIQUID_WINDOW_KAISER, _nfft/2, _nfft/4, _time);
+}
+
+SPWATERFALL() SPWATERFALL(_copy)(SPWATERFALL() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("spwaterfall%s_copy(), object cannot be NULL", EXTENSION);
+
+    // allocate memory for main object
+    SPWATERFALL() q_copy = (SPWATERFALL()) malloc(sizeof(struct SPWATERFALL(_s)));
+
+    // copy all memory and overwrite specific values
+    memmove(q_copy, q_orig, sizeof(struct SPWATERFALL(_s)));
+
+    // copy spectral periodogram object and internal state
+    q_copy->periodogram = SPGRAM(_copy)(q_orig->periodogram);
+
+    // create new buffer and copy values
+    q_copy->psd = (T*) malloc( 2 * q_copy->nfft * q_copy->time * sizeof(T));
+    memmove(q_copy->psd, q_orig->psd, 2 * q_copy->nfft * q_copy->time * sizeof(T));
+
+    // set commands value
+    q_copy->commands = NULL;
+    SPWATERFALL(_set_commands)(q_copy, q_orig->commands);
+
+    // return object
+    return q_copy;
 }
 
 // destroy spwaterfall object
@@ -394,7 +421,7 @@ int SPWATERFALL(_export_bin)(SPWATERFALL() _q,
     }
     
     // write output spectral estimate
-    // TODO: force converstion from type 'T' to type 'float'
+    // TODO: force conversion from type 'T' to type 'float'
     uint64_t total_samples = SPGRAM(_get_num_samples_total)(_q->periodogram);
     for (i=0; i<_q->index_time; i++) {
         float n = (float)i / (float)(_q->index_time) * (float)total_samples;

@@ -90,7 +90,7 @@ int main(int argc, char*argv[]) {
     // initialize arrays
     unsigned char msg_org[n];   // original message
     unsigned char msg_enc[k];   // encoded message
-    unsigned char msg_rec[k];   // recieved message
+    unsigned char msg_rec[k];   // received message
     unsigned char msg_dec[n];   // decoded message
     int crc_pass;
 

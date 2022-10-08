@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -96,8 +96,32 @@ ORDFILT() ORDFILT(_create_medfilt)(unsigned int _m)
     return ORDFILT(_create)(2*_m+1, _m);
 }
 
+// copy object
+ORDFILT() ORDFILT(_copy)(ORDFILT() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("ordfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object and copy base parameters
+    ORDFILT() q_copy = (ORDFILT()) malloc(sizeof(struct ORDFILT(_s)));
+    memmove(q_copy, q_orig, sizeof(struct ORDFILT(_s)));
+
+#if LIQUID_ORDFILT_USE_WINDOW
+    // copy window
+    q_copy->buf = WINDOW(_copy)(q_orig->buf);
+    q_copy->buf_sorted = (TI*) liquid_malloc_copy(q_orig->buf_sorted, q_orig->n, sizeof(TI));
+#else
+    // copy buffers
+    q_copy->buf_      = (TI*)       liquid_malloc_copy(q_orig->buf,       q_orig->n, sizeof(TI));
+    q_copy->buf_index = (uint16_t*) liquid_malloc_copy(q_orig->buf_index, q_orig->n, sizeof(uint16_t));
+#endif
+
+    return q_copy;
+}
+
 // destroy ordfilt object
-void ORDFILT(_destroy)(ORDFILT() _q)
+int ORDFILT(_destroy)(ORDFILT() _q)
 {
 #if LIQUID_ORDFILT_USE_WINDOW
     WINDOW(_destroy)(_q->buf);
@@ -105,55 +129,59 @@ void ORDFILT(_destroy)(ORDFILT() _q)
 #else
 #endif
     free(_q);
+    return LIQUID_OK;
 }
 
 // reset internal state of filter object
-void ORDFILT(_reset)(ORDFILT() _q)
+int ORDFILT(_reset)(ORDFILT() _q)
 {
 #if LIQUID_ORDFILT_USE_WINDOW
-    WINDOW(_reset)(_q->buf);
+    return WINDOW(_reset)(_q->buf);
 #else
 #endif
+    return LIQUID_OK;
 }
 
 // print filter object internals (taps, buffer)
-void ORDFILT(_print)(ORDFILT() _q)
+int ORDFILT(_print)(ORDFILT() _q)
 {
     printf("ordfilt_%s:\n", EXTENSION_FULL);
+    return LIQUID_OK;
 }
 
 // push sample into filter object's internal buffer
 //  _q      :   filter object
 //  _x      :   input sample
-void ORDFILT(_push)(ORDFILT() _q,
-                    TI        _x)
+int ORDFILT(_push)(ORDFILT() _q,
+                   TI        _x)
 {
 #if LIQUID_ORDFILT_USE_WINDOW
-    WINDOW(_push)(_q->buf, _x);
+    return WINDOW(_push)(_q->buf, _x);
 #else
 #endif
+    return LIQUID_OK;
 }
 
 // Write block of samples into object's internal buffer
 //  _q      : filter object
 //  _x      : array of input samples, [size: _n x 1]
 //  _n      : number of input elements
-void ORDFILT(_write)(ORDFILT()    _q,
-                     TI *         _x,
-                     unsigned int _n)
+int ORDFILT(_write)(ORDFILT()    _q,
+                    TI *         _x,
+                    unsigned int _n)
 {
 #if LIQUID_ORDFILT_USE_WINDOW
-    WINDOW(_write)(_q->buf, _x, _n);
+    return WINDOW(_write)(_q->buf, _x, _n);
 #else
 #endif
+    return LIQUID_OK;
 }
 
-// compute output sample (dot product between internal
-// filter coefficients and internal buffer)
+// Execute on the filter's internal buffer
 //  _q      :   filter object
 //  _y      :   output sample pointer
-void ORDFILT(_execute)(ORDFILT() _q,
-                       TO *      _y)
+int ORDFILT(_execute)(ORDFILT() _q,
+                      TO *      _y)
 {
 #if LIQUID_ORDFILT_USE_WINDOW
     // read buffer (retrieve pointer to aligned memory array)
@@ -170,6 +198,19 @@ void ORDFILT(_execute)(ORDFILT() _q,
     *_y = _q->buf_sorted[_q->k];
 #else
 #endif
+    return LIQUID_OK;
+}
+
+// Execute filter on one sample, equivalent to push() and execute()
+//  _q      : filter object
+//  _x      : single input sample
+//  _y      : pointer to single output sample
+int ORDFILT(_execute_one)(ORDFILT() _q,
+                          TI        _x,
+                          TO *      _y)
+{
+    ORDFILT(_push)(_q, _x);
+    return ORDFILT(_execute)(_q, _y);
 }
 
 // execute the filter on a block of input samples; the
@@ -178,10 +219,10 @@ void ORDFILT(_execute)(ORDFILT() _q,
 //  _x      : pointer to input array [size: _n x 1]
 //  _n      : number of input, output samples
 //  _y      : pointer to output array [size: _n x 1]
-void ORDFILT(_execute_block)(ORDFILT()    _q,
-                             TI *         _x,
-                             unsigned int _n,
-                             TO *         _y)
+int ORDFILT(_execute_block)(ORDFILT()    _q,
+                            TI *         _x,
+                            unsigned int _n,
+                            TO *         _y)
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
@@ -191,5 +232,6 @@ void ORDFILT(_execute_block)(ORDFILT()    _q,
         // compute output sample
         ORDFILT(_execute)(_q, &_y[i]);
     }
+    return LIQUID_OK;
 }
 

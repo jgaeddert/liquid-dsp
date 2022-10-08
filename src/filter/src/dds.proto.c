@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
 // direct digital synthesizer (up/down-converter)
-//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -33,32 +31,32 @@
 
 struct DDS(_s) {
     // user-defined parameters
-    unsigned int num_stages;    // number of halfband stages
-    float fc0;                  // high-rate center frequency (-0.5,0.5)
-    float bw0;                  // low-rate bandwidth (range?)
-    float as0;                  // filter stop-band attenuation [dB]
+    unsigned int    num_stages;         // number of halfband stages
+    float           fc0;                // high-rate center frequency (-0.5,0.5)
+    float           bw0;                // low-rate bandwidth (range?)
+    float           as0;                // filter stop-band attenuation [dB]
 
     // derived values
-    unsigned int rate;          // re-sampling rate (2^num_stages)
+    unsigned int    rate;               // re-sampling rate (2^num_stages)
 
     // halfband decimation/interpolation stages
-    RESAMP2() * halfband_resamp;
-    float * fc;                 // filter center frequency
-    float * ft;                 // filter transition bandwidth
-    float * as;                 // filter stop-band attenuation [dB] array
-    unsigned int * m;           // filter semi-length
+    RESAMP2() *     halfband_resamp;    // array of half-band resamplers
+    float *         fc;                 // filter center frequency
+    float *         ft;                 // filter transition bandwidth
+    float *         as;                 // filter stop-band attenuation [dB] array
+    unsigned int *  m;                  // filter semi-length
 
     // internal buffers
-    unsigned int buffer_len;
-    T * buffer0;
-    T * buffer1;
+    unsigned int    buffer_len;
+    T *             buffer0;
+    T *             buffer1;
 
     // low-rate mixing stage
-    NCO() ncox;
+    NCO()           ncox;
 
     // down-converter scaling factor
-    float zeta;
-    TC    scale;
+    float           zeta;
+    TC              scale;
 };
 
 // create dds object
@@ -79,7 +77,7 @@ DDS() DDS(_create)(unsigned int _num_stages,
     if (_bw <= 0.0f || _bw >= 1.0f)
         return liquid_error_config("dds_%s_create(), bandwidth %12.4e is out of range (0,1)", EXTENSION_FULL, _bw);
     if (_as < 0.0f)
-        return liquid_error_config("dds_%s_create(), stop-band suppresion %12.4e must be greater than zero", EXTENSION_FULL, _as);
+        return liquid_error_config("dds_%s_create(), stop-band suppression %12.4e must be greater than zero", EXTENSION_FULL, _as);
 
     // create object
     DDS() q = (DDS()) malloc(sizeof(struct DDS(_s)));
@@ -141,6 +139,40 @@ DDS() DDS(_create)(unsigned int _num_stages,
     NCO(_set_frequency)(q->ncox, 2*M_PI*(q->rate)*(q->fc0));
 
     return q;
+}
+
+// copy object
+DDS() DDS(_copy)(DDS() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("dds_%s_create(), object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object and copy internal memory
+    DDS() q_copy = (DDS()) malloc(sizeof(struct DDS(_s)));
+    memmove(q_copy, q_orig, sizeof(struct DDS(_s)));
+
+    // copy array of half-band resamplers
+    q_copy->halfband_resamp = (RESAMP2()*) malloc((q_copy->num_stages)*sizeof(RESAMP()*));
+    unsigned int i;
+    for (i=0; i<q_copy->num_stages; i++)
+        q_copy->halfband_resamp[i] = RESAMP2(_copy)(q_orig->halfband_resamp[i]);
+
+    // copy arrays of parameters
+    q_copy->fc = (float *      ) liquid_malloc_copy(q_orig->fc, q_copy->num_stages, sizeof(float       ));
+    q_copy->ft = (float *      ) liquid_malloc_copy(q_orig->ft, q_copy->num_stages, sizeof(float       ));
+    q_copy->as = (float *      ) liquid_malloc_copy(q_orig->as, q_copy->num_stages, sizeof(float       ));
+    q_copy->m  = (unsigned int*) liquid_malloc_copy(q_orig->m,  q_copy->num_stages, sizeof(unsigned int));
+
+    // copy buffers
+    q_copy->buffer0 = (T*) liquid_malloc_copy(q_orig->buffer0, q_orig->buffer_len, sizeof(T));
+    q_copy->buffer1 = (T*) liquid_malloc_copy(q_orig->buffer1, q_orig->buffer_len, sizeof(T));
+
+    // copy mixer
+    q_copy->ncox = NCO(_copy)(q_orig->ncox);
+
+    // return new object
+    return q_copy;
 }
 
 // destroy dds object, freeing all internally-allocated memory

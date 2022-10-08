@@ -69,7 +69,7 @@ const char * liquid_firfilt_type_str[LIQUID_FIRFILT_NUM_TYPES][2] = {
     {"rfarcsech","root flipped arc-hyperbolic secant"},
 };
 
-// esimate required filter length given transition bandwidth and
+// estimate required filter length given transition bandwidth and
 // stop-band attenuation
 //  _df     :   transition bandwidth (0 < _df < 0.5)
 //  _as     :   stopband suppression level [dB] (_as > 0)
@@ -180,7 +180,7 @@ float estimate_req_filter_df(float        _as,
 }
 
 
-// esimate required filter length given transition bandwidth and
+// estimate required filter length given transition bandwidth and
 // stop-band attenuation (algorithm from [Vaidyanathan:1993])
 //  _df     :   transition bandwidth (0 < _df < 0.5)
 //  _as     :   stop-band attenuation [dB] (as > 0)
@@ -200,7 +200,7 @@ float estimate_req_filter_len_Kaiser(float _df,
 }
 
 
-// esimate required filter length given transition bandwidth and
+// estimate required filter length given transition bandwidth and
 // stop-band attenuation (algorithm from [Herrmann:1973])
 //  _df     :   transition bandwidth (0 < _df < 0.5)
 //  _as     :   stop-band attenuation [dB] (as > 0)
@@ -664,6 +664,50 @@ float liquid_filter_energy(float *      _h,
 
     // return energy ratio
     return e_stopband / e_total;
+}
+
+// Get static frequency response from filter coefficients at particular
+// frequency with real-valued coefficients
+//  _h      : coefficients, [size: _h_len x 1]
+//  _h_len  : length of coefficients array
+//  _fc     : center frequency for analysis, -0.5 <= _fc <= 0.5
+//  _H      : pointer to output value
+int liquid_freqrespf(float *         _h,
+                     unsigned int    _h_len,
+                     float           _fc,
+                     float complex * _H)
+{
+    // compute dot product between coefficients and exp{ 2 pi fc {0..n-1} }
+    float complex H = 0.0f;
+    unsigned int i;
+    for (i=0; i<_h_len; i++)
+        H += _h[i] * cexpf(-_Complex_I*2*M_PI*_fc*i);
+
+    // set return value
+    *_H = H;
+    return LIQUID_OK;
+}
+
+// Get static frequency response from filter coefficients at particular
+// frequency with complex coefficients
+//  _h      : coefficients, [size: _h_len x 1]
+//  _h_len  : length of coefficients array
+//  _fc     : center frequency for analysis, -0.5 <= _fc <= 0.5
+//  _H      : pointer to output value
+int liquid_freqrespcf(float complex * _h,
+                      unsigned int    _h_len,
+                      float           _fc,
+                      float complex * _H)
+{
+    // compute dot product between coefficients and exp{ 2 pi fc {0..n-1} }
+    float complex H = 0.0f;
+    unsigned int i;
+    for (i=0; i<_h_len; i++)
+        H += _h[i] * cexpf(-_Complex_I*2*M_PI*_fc*i);
+
+    // set return value
+    *_H = H;
+    return LIQUID_OK;
 }
 
 // returns filter type based on input string

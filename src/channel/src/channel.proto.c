@@ -80,6 +80,32 @@ CHANNEL() CHANNEL(_create)(void)
     return q;
 }
 
+// copy object
+CHANNEL() CHANNEL(_copy)(CHANNEL() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("channel_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object and copy base parameters
+    CHANNEL() q_copy = (CHANNEL()) malloc(sizeof(struct CHANNEL(_s)));
+    memmove(q_copy, q_orig, sizeof(struct CHANNEL(_s)));
+
+    // copy nco
+    q_copy->nco = NCO(_copy)(q_orig->nco);
+
+    // copy channel filter
+    q_copy->h = (TC*) malloc(q_copy->h_len*sizeof(TC));
+    memmove(q_copy->h, q_orig->h, q_copy->h_len*sizeof(TC));
+    q_copy->channel_filter = FIRFILT(_copy)(q_orig->channel_filter);
+
+    // copying shadowing filter
+    if (q_orig->shadowing_filter != NULL)
+        q_copy->shadowing_filter = IIRFILT(_copy)(q_orig->shadowing_filter);
+
+    return q_copy;
+}
+
 // destroy channel object
 int CHANNEL(_destroy)(CHANNEL() _q)
 {

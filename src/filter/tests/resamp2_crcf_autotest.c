@@ -70,7 +70,7 @@ void autotest_resamp2_analysis()
 
 #if 0
     // debugging
-    const char filename[] = "autotest_resamp2_analysis_test.m";
+    const char filename[] = "autotest/logs/resamp2_analysis_test.m";
     FILE * fid = fopen(filename, "w");
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
@@ -141,7 +141,7 @@ void autotest_resamp2_synthesis()
 
 #if 0
     // debugging
-    const char filename[] = "autotest_resamp2_synthesis_test.m";
+    const char filename[] = "autotest/logs/resamp2_synthesis_test.m";
     FILE * fid = fopen(filename, "w");
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
@@ -177,7 +177,7 @@ void testbench_resamp2_crcf_filter(unsigned int _m, float _as)
 
     // get impulse response
     unsigned int h_len = 4*_m+1;
-    float complex h_0[h_len];   // low-frequency reponse
+    float complex h_0[h_len];   // low-frequency response
     float complex h_1[h_len];   // high-frequency response
     unsigned int i;
     for (i=0; i<h_len; i++)
@@ -195,8 +195,10 @@ void testbench_resamp2_crcf_filter(unsigned int _m, float _as)
       {.fmin=-0.25+ft/2, .fmax=+0.25-ft/2, .pmin=-1, .pmax=+1,       .test_lo=1, .test_hi=1},
       {.fmin=+0.25+ft/2, .fmax=+0.5,       .pmin= 0, .pmax=-_as+tol, .test_lo=0, .test_hi=1},
     };
+    char filename[256];
+    sprintf(filename,"autotest/logs/resamp2_crcf_filter_lo_m%u_as%.0f.m", _m, _as);
     liquid_autotest_validate_psd_signal(h_0, h_len, regions_h0, 3,
-        liquid_autotest_verbose ? "autotest_resamp2_crcf_filter_h0.m" : NULL);
+        liquid_autotest_verbose ? filename : NULL);
 
     // verify high-pass frequency response
     autotest_psd_s regions_h1[] = {
@@ -204,8 +206,9 @@ void testbench_resamp2_crcf_filter(unsigned int _m, float _as)
       {.fmin=-0.25+ft/2, .fmax=+0.25-ft/2, .pmin= 0, .pmax=-_as+tol, .test_lo=0, .test_hi=1},
       {.fmin=+0.25+ft/2, .fmax=+0.5,       .pmin=-1, .pmax=+1,       .test_lo=1, .test_hi=1},
     };
+    sprintf(filename,"autotest/logs/resamp2_crcf_filter_hi_m%u_as%.0f.m", _m, _as);
     liquid_autotest_validate_psd_signal(h_1, h_len, regions_h1, 3,
-        liquid_autotest_verbose ? "autotest_resamp2_crcf_filter_h1.m" : NULL);
+        liquid_autotest_verbose ? filename : NULL);
 }
 
 // test different configurations
@@ -213,6 +216,8 @@ void autotest_resamp2_crcf_filter_0(){ testbench_resamp2_crcf_filter( 4, 60.0f);
 void autotest_resamp2_crcf_filter_1(){ testbench_resamp2_crcf_filter( 7, 60.0f); }
 void autotest_resamp2_crcf_filter_2(){ testbench_resamp2_crcf_filter(12, 60.0f); }
 void autotest_resamp2_crcf_filter_3(){ testbench_resamp2_crcf_filter(15, 80.0f); }
+void autotest_resamp2_crcf_filter_4(){ testbench_resamp2_crcf_filter(15,100.0f); }
+void autotest_resamp2_crcf_filter_5(){ testbench_resamp2_crcf_filter(15,120.0f); }
 
 void autotest_resamp2_config()
 {
@@ -251,5 +256,37 @@ void autotest_resamp2_config()
 
     // destroy object
     resamp2_crcf_destroy(q);
+}
+
+// test copy method
+void autotest_resamp2_copy()
+{
+    // create original half-band resampler
+    resamp2_crcf qa = resamp2_crcf_create(12,0,60.0f);
+
+    // run random samples through filter
+    float complex v, ya0, ya1, yb0, yb1;
+    unsigned int i, num_samples = 80;
+    for (i=0; i<num_samples; i++) {
+        v = randnf() + _Complex_I*randnf();
+        resamp2_crcf_filter_execute(qa, v, &ya0, &ya1);
+    }
+
+    // copy object
+    resamp2_crcf qb = resamp2_crcf_copy(qa);
+
+    // run random samples through both filters and compare
+    for (i=0; i<num_samples; i++) {
+        v = randnf() + _Complex_I*randnf();
+        resamp2_crcf_filter_execute(qa, v, &ya0, &ya1);
+        resamp2_crcf_filter_execute(qb, v, &yb0, &yb1);
+
+        CONTEND_EQUALITY(ya0, yb0);
+        CONTEND_EQUALITY(ya1, yb1);
+    }
+
+    // clean up allocated objects
+    resamp2_crcf_destroy(qa);
+    resamp2_crcf_destroy(qb);
 }
 

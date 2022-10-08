@@ -113,7 +113,7 @@ int main(int argc, char*argv[]) {
     // initialize arrays
     unsigned char msg_org[n];   // original message
     unsigned char msg_enc[k];   // encoded message
-    unsigned char msg_rec[k+1]; // recieved message
+    unsigned char msg_rec[k+1]; // received message
     unsigned char msg_dec[n];   // decoded message
 
     // create packet synchronizer

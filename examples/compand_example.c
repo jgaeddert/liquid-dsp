@@ -4,7 +4,7 @@
 // This example demonstrates the interface to the compand function
 // (compression, expansion).  The compander is typically used with the
 // quantizer to increase the dynamic range of the converter, particularly for
-// low-level signals.  The transfer function is computed (emperically) and
+// low-level signals.  The transfer function is computed (empirically) and
 // printed to the screen.
 //
 

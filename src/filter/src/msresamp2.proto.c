@@ -134,6 +134,7 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
     // determine half-band resampler parameters
     float fc = q->fc;   // cut-off frequency
     float f0 = q->f0;   // center frequency
+    float as = q->as+5; // small margin
     for (i=0; i<q->num_stages; i++) {
         // compute parameters based on filter requirements;
         fc = (i==1) ? (0.5-fc)/2.0f : 0.5f*fc;  // cut-off frequency
@@ -141,14 +142,14 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
         float ft = 2*(0.25f - fc);              // two-sided transition bandwidth
 
         // estimate required filter length
-        unsigned int h_len = estimate_req_filter_len(ft, q->as);
+        unsigned int h_len = estimate_req_filter_len(ft, as);
         unsigned int m = ceilf( (float)(h_len-1) / 4.0f );
 
         //printf(" >>> fc: %8.6f, ft: %8.6f, h_len : %u (m=%u)\n", fc, ft, h_len, m);
         q->fc_stage[i] = fc;            // filter pass-band
         q->f0_stage[i] = f0;            // filter center frequency
-        q->as_stage[i] = q->as;         // filter stop-band attenuation
-        q->m_stage[i]  = m < 3 ? 3 : m; // minimum 3
+        q->as_stage[i] = as;            // filter stop-band attenuation
+        q->m_stage[i]  = m < 3 ? 3 : m; // minimum
     }
 
     // create half-band resampler objects
@@ -165,6 +166,43 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
 
     // return main object
     return q;
+}
+
+// copy object
+MSRESAMP2() MSRESAMP2(_copy)(MSRESAMP2() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("msresamp2_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create object, copy internal memory, overwrite with specific values
+    MSRESAMP2() q_copy = (MSRESAMP2()) malloc(sizeof(struct MSRESAMP2(_s)));
+    memmove(q_copy, q_orig, sizeof(struct MSRESAMP2(_s)));
+
+    // allocate memory for buffers
+    q_copy->buffer0 = (T*) malloc( q_copy->M * sizeof(T) );
+    q_copy->buffer1 = (T*) malloc( q_copy->M * sizeof(T) );
+
+    // allocate arrays for half-band resampler parameters
+    q_copy->fc_stage = (float*)        malloc(q_copy->num_stages*sizeof(float)       );
+    q_copy->f0_stage = (float*)        malloc(q_copy->num_stages*sizeof(float)       );
+    q_copy->as_stage = (float*)        malloc(q_copy->num_stages*sizeof(float)       );
+    q_copy->m_stage  = (unsigned int*) malloc(q_copy->num_stages*sizeof(unsigned int));
+
+    // copy values
+    memmove(q_copy->fc_stage, q_orig->fc_stage, q_copy->num_stages*sizeof(float)       );
+    memmove(q_copy->f0_stage, q_orig->f0_stage, q_copy->num_stages*sizeof(float)       );
+    memmove(q_copy->as_stage, q_orig->as_stage, q_copy->num_stages*sizeof(float)       );
+    memmove(q_copy->m_stage , q_orig->m_stage , q_copy->num_stages*sizeof(unsigned int));
+
+    // create array of half-band resamplers and copy objects
+    q_copy->resamp2 = (RESAMP2()*) malloc(q_copy->num_stages*sizeof(RESAMP2()));
+    unsigned int i=0;
+    for (i=0; i<q_copy->num_stages; i++)
+        q_copy->resamp2[i] = RESAMP2(_copy)(q_orig->resamp2[i]);
+
+    // return object
+    return q_copy;
 }
 
 // destroy msresamp2 object, freeing all internally-allocated memory

@@ -175,6 +175,32 @@ EQLMS() EQLMS(_recreate)(EQLMS()      _q,
     return _q;
 }
 
+// copy object
+EQLMS() EQLMS(_copy)(EQLMS() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("firfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object and copy base parameters
+    EQLMS() q_copy = (EQLMS()) malloc(sizeof(struct EQLMS(_s)));
+    memmove(q_copy, q_orig, sizeof(struct EQLMS(_s)));
+
+    // create and copy buffers
+    q_copy->h0 = (T*) malloc((q_copy->h_len)*sizeof(T));
+    q_copy->w0 = (T*) malloc((q_copy->h_len)*sizeof(T));
+    q_copy->w1 = (T*) malloc((q_copy->h_len)*sizeof(T));
+    memmove(q_copy->h0, q_orig->h0, q_copy->h_len*sizeof(T));
+    memmove(q_copy->w0, q_orig->w0, q_copy->h_len*sizeof(T));
+    memmove(q_copy->w1, q_orig->w1, q_copy->h_len*sizeof(T));
+
+    // copy window and buffer objects
+    q_copy->buffer = WINDOW(_copy)(q_orig->buffer);
+    q_copy->x2     = wdelayf_copy (q_orig->x2);
+
+    return q_copy;
+}
+
 // destroy eqlms object
 int EQLMS(_destroy)(EQLMS() _q)
 {

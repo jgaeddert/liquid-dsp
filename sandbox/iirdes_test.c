@@ -1,6 +1,6 @@
 // iirdes_example.c
 //
-// Tests infinite impulse reponse (IIR) filter design.
+// Tests infinite impulse response (IIR) filter design.
 //
 
 #include <stdlib.h>
@@ -129,7 +129,7 @@ int main(int argc, char*argv[]) {
     }
 
 
-    // number of analaog poles/zeros
+    // number of analog poles/zeros
     unsigned int npa = n;
     unsigned int nza;
 
@@ -259,7 +259,7 @@ int main(int argc, char*argv[]) {
         float complex zd1[2*n];
         float complex pd1[2*n];
 
-        // run zeros, poles trasform
+        // run zeros, poles transform
         iirdes_dzpk_lp2bp(zd, pd,   // low-pass prototype zeros, poles
                           n,        // filter order
                           f0,       // center frequency
@@ -269,7 +269,7 @@ int main(int argc, char*argv[]) {
         memmove(zd, zd1, 2*n*sizeof(float complex));
         memmove(pd, pd1, 2*n*sizeof(float complex));
 
-        // update paramteres : n -> 2*n
+        // update parameters : n -> 2*n
         r = 0;
         L = n;
         n = 2*n;

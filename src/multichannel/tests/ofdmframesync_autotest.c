@@ -56,7 +56,7 @@ int ofdmframesync_autotest_callback(float complex * _X,
 
 // Helper function to keep code base small
 //  _num_subcarriers    :   number of subcarriers
-//  _cp_len             :   cyclic prefix lenght
+//  _cp_len             :   cyclic prefix length
 //  _taper_len          :   taper length
 void ofdmframesync_acquire_test(unsigned int _num_subcarriers,
                                 unsigned int _cp_len,
@@ -64,7 +64,7 @@ void ofdmframesync_acquire_test(unsigned int _num_subcarriers,
 {
     // options
     unsigned int M         = _num_subcarriers;  // number of subcarriers
-    unsigned int cp_len    = _cp_len;           // cyclic prefix lenght
+    unsigned int cp_len    = _cp_len;           // cyclic prefix length
     unsigned int taper_len = _taper_len;        // taper length
     float tol              = 1e-2f;             // error tolerance
 

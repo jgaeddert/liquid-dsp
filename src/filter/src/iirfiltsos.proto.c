@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2017 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,9 +63,8 @@ IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,
     // set the internal coefficients
     IIRFILTSOS(_set_coefficients)(q, _b, _a);
 
-    // clear filter state
+    // clear filter state and return object
     IIRFILTSOS(_reset)(q);
-
     return q;
 }
 
@@ -76,9 +75,9 @@ IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,
 //  _q      : iirfiltsos object
 //  _b      : feed-forward coefficients [size: _3 x 1]
 //  _a      : feed-back coefficients    [size: _3 x 1]
-void IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,
-                                   TC *         _b,
-                                   TC *         _a)
+int IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,
+                                  TC *         _b,
+                                  TC *         _a)
 {
     // retain a0 coefficient for normalization
     TC a0 = _a[0];
@@ -97,20 +96,43 @@ void IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,
     _q->dpa = DOTPROD(_create)(_q->a+1, 2);
     _q->dpb = DOTPROD(_create)(_q->b,   3);
 #endif
+    return LIQUID_OK;
+}
+
+// copy object
+IIRFILTSOS() IIRFILTSOS(_copy)(IIRFILTSOS() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("iirfiltsos_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create object, copy internal memory, overwrite with specific values
+    IIRFILTSOS() q_copy = (IIRFILTSOS()) malloc(sizeof(struct IIRFILTSOS(_s)));
+    memmove(q_copy, q_orig, sizeof(struct IIRFILTSOS(_s)));
+
+#if LIQUID_IIRFILTSOS_USE_DOTPROD
+    // copy objects
+    q_copy->dpa = DOTPROD(_copy)(q_orig->dpa);
+    q_copy->dpb = DOTPROD(_copy)(q_orig->dpb);
+#endif
+
+    // return object
+    return q_copy;
 }
 
 // destroy iirfiltsos object, freeing all internal memory
-void IIRFILTSOS(_destroy)(IIRFILTSOS() _q)
+int IIRFILTSOS(_destroy)(IIRFILTSOS() _q)
 {
 #if LIQUID_IIRFILTSOS_USE_DOTPROD
     DOTPROD(_destroy)(_q->dpa);
     DOTPROD(_destroy)(_q->dpb);
 #endif
     free(_q);
+    return LIQUID_OK;
 }
 
 // print iirfiltsos object properties to stdout
-void IIRFILTSOS(_print)(IIRFILTSOS() _q)
+int IIRFILTSOS(_print)(IIRFILTSOS() _q)
 {
     printf("iir filter | sos:\n");
 
@@ -123,10 +145,11 @@ void IIRFILTSOS(_print)(IIRFILTSOS() _q)
     PRINTVAL_TC(_q->a[0],%12.8f); printf(",");
     PRINTVAL_TC(_q->a[1],%12.8f); printf(",");
     PRINTVAL_TC(_q->a[2],%12.8f); printf("\n");
+    return LIQUID_OK;
 }
 
 // clear/reset iirfiltsos object internals
-void IIRFILTSOS(_reset)(IIRFILTSOS() _q)
+int IIRFILTSOS(_reset)(IIRFILTSOS() _q)
 {
     // set to zero
     _q->v[0] = 0;
@@ -140,19 +163,19 @@ void IIRFILTSOS(_reset)(IIRFILTSOS() _q)
     _q->y[0] = 0;
     _q->y[1] = 0;
     _q->y[2] = 0;
-
+    return LIQUID_OK;
 }
 
 // compute filter output
 //  _q      : iirfiltsos object
 //  _x      : input sample
 //  _y      : output sample pointer
-void IIRFILTSOS(_execute)(IIRFILTSOS() _q,
-                          TI           _x,
-                          TO *         _y)
+int IIRFILTSOS(_execute)(IIRFILTSOS() _q,
+                         TI           _x,
+                         TO *         _y)
 {
     // execute type-specific code
-    IIRFILTSOS(_execute_df2)(_q,_x,_y);
+    return IIRFILTSOS(_execute_df2)(_q,_x,_y);
 }
 
 
@@ -160,9 +183,9 @@ void IIRFILTSOS(_execute)(IIRFILTSOS() _q,
 //  _q      : iirfiltsos object
 //  _x      : input sample
 //  _y      : output sample pointer
-void IIRFILTSOS(_execute_df1)(IIRFILTSOS() _q,
-                              TI           _x,
-                              TO *         _y)
+int IIRFILTSOS(_execute_df1)(IIRFILTSOS() _q,
+                             TI           _x,
+                             TO *         _y)
 {
     // advance buffer x
     _q->x[2] = _q->x[1];
@@ -197,15 +220,16 @@ void IIRFILTSOS(_execute_df1)(IIRFILTSOS() _q,
 
     // set output
     *_y = _q->y[0];
+    return LIQUID_OK;
 }
 
 // compute filter output, direct form II method
 //  _q      : iirfiltsos object
 //  _x      : input sample
 //  _y      : output sample pointer
-void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,
-                              TI           _x,
-                              TO *         _y)
+int IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,
+                             TI           _x,
+                             TO *         _y)
 {
     // advance buffer
     _q->v[2] = _q->v[1];
@@ -232,6 +256,7 @@ void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,
           _q->b[1]*_q->v[1] +
           _q->b[2]*_q->v[2];
 #endif
+    return LIQUID_OK;
 }
 
 // compute group delay in samples

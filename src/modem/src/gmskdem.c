@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +20,13 @@
  * THE SOFTWARE.
  */
 
-//
-// gmskdem.c : Gauss minimum-shift keying modem
-//
+// Gauss minimum-shift keying modem
 
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "liquid.internal.h"
 
@@ -42,9 +41,9 @@ int gmskdem_debug_print(gmskdem _q, const char * _filename);
 struct gmskdem_s {
     unsigned int k;         // samples/symbol
     unsigned int m;         // symbol delay
-    float BT;               // bandwidth/time product
+    float        BT;        // bandwidth/time product
     unsigned int h_len;     // filter length
-    float * h;              // pulse shaping filter
+    float *      h;         // pulse shaping filter
 
     // filter object
 #if GMSKDEM_USE_EQUALIZER
@@ -70,7 +69,7 @@ struct gmskdem_s {
 //  _BT     :   excess bandwidth factor
 gmskdem gmskdem_create(unsigned int _k,
                        unsigned int _m,
-                       float _BT)
+                       float        _BT)
 {
     if (_k < 2)
         return liquid_error_config("gmskdem_create(), samples/symbol must be at least 2");
@@ -117,6 +116,34 @@ gmskdem gmskdem_create(unsigned int _k,
 
     // return modem object
     return q;
+}
+
+// copy object
+gmskdem gmskdem_copy(gmskdem q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("gmskdem_copy(), object cannot be NULL");
+
+    // create object and copy base parameters
+    gmskdem q_copy = (gmskdem) malloc(sizeof(struct gmskdem_s));
+    memmove(q_copy, q_orig, sizeof(struct gmskdem_s));
+
+    // copy filter coefficients
+    q_copy->h = (float *) liquid_malloc_copy(q_orig->h, q_orig->h_len, sizeof(float));
+
+#if GMSKDEM_USE_EQUALIZER
+    q_copy->eq = eqlms_rrrf_copy(q_orig->eq);
+#else
+    // copy interpolator object
+    q_copy->filter = firfilt_rrrf_copy(q_orig->filter);
+#endif
+
+#if DEBUG_GMSKDEM
+    q_copy->debug_mfout = windowf_copy(q_orig->debug_mfout);
+#endif
+    // return new object
+    return q_copy;
 }
 
 int gmskdem_destroy(gmskdem _q)
@@ -179,7 +206,7 @@ int gmskdem_set_eq_bw(gmskdem _q,
 {
     // validate input
     if (_bw < 0.0f || _bw > 0.5f)
-        return liquid_error(LIQUID_EICONFIG,"gmskdem_set_eq_bw(), bandwith must be in [0,0.5]");
+        return liquid_error(LIQUID_EICONFIG,"gmskdem_set_eq_bw(), bandwidth must be in [0,0.5]");
 
 #if GMSKDEM_USE_EQUALIZER
     // set internal equalizer bandwidth

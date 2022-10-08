@@ -89,7 +89,7 @@ int main(int argc, char*argv[]) {
 
     // arrays
     float ht[h_len];         // transmit filter coefficients
-    float hr[h_len];         // recieve filter coefficients
+    float hr[h_len];         // receive filter coefficients
 
     //
     // start of filter design procedure

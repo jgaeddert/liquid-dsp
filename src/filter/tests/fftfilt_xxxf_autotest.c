@@ -143,4 +143,44 @@ void autotest_fftfilt_config()
     fftfilt_crcf_destroy(filt);
 }
 
+void autotest_fftfilt_copy()
+{
+    // generate random filter coefficients
+    unsigned int i, j, h_len = 31;
+    float h[h_len];
+    for (i=0; i<h_len; i++)
+        h[i] = randnf();
+
+    // determine appropriate block size
+    // NOTE: this number can be anything at least _h_len-1
+    unsigned int n = 96;
+
+    // create object
+    fftfilt_crcf q0 = fftfilt_crcf_create(h, h_len, n);
+
+    // compute output in blocks of size 'n'
+    float complex buf[n], buf_0[n], buf_1[n];
+    for (i=0; i<10; i++) {
+        for (j=0; j<n; j++)
+            buf[j] = randnf() + _Complex_I*randnf();
+        fftfilt_crcf_execute(q0, buf, buf_0);
+    }
+
+    // copy object
+    fftfilt_crcf q1 = fftfilt_crcf_copy(q0);
+
+    // run filters in parallel and compare results
+    for (i=0; i<10; i++) {
+        for (j=0; j<n; j++)
+            buf[j] = randnf() + _Complex_I*randnf();
+        fftfilt_crcf_execute(q0, buf, buf_0);
+        fftfilt_crcf_execute(q1, buf, buf_1);
+
+        CONTEND_SAME_DATA( buf_0, buf_1, n*sizeof(float complex));
+    }
+    
+    // destroy objects
+    fftfilt_crcf_destroy(q0);
+    fftfilt_crcf_destroy(q1);
+}
 

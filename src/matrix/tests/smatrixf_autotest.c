@@ -70,7 +70,7 @@ void autotest_smatrixf_mul()
 {
     float tol = 1e-6f;
 
-    // intialize matrices
+    // initialize matrices
     smatrixf a = smatrixf_create(4, 5);
     smatrixf b = smatrixf_create(5, 3);
     smatrixf c = smatrixf_create(4, 3);

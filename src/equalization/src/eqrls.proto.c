@@ -88,7 +88,7 @@ EQRLS() EQRLS(_create)(T *          _h,
         // initial coefficients with delta at first index
         unsigned int i;
         for (i=0; i<q->p; i++)
-            q->h0[i] = (i==0) ? 1.0 : 0.0;
+            q->h0[i] = (i==q->p-1) ? 1.0 : 0.0;
     } else {
         // copy user-defined initial coefficients
         memmove(q->h0, _h, (q->p)*sizeof(T));
@@ -126,6 +126,35 @@ EQRLS() EQRLS(_recreate)(EQRLS()      _q,
     return EQRLS(_create)(_h,_p);
 }
 
+// copy object
+EQRLS() EQRLS(_copy)(EQRLS() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("firfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object and copy base parameters
+    EQRLS() q_copy = (EQRLS()) malloc(sizeof(struct EQRLS(_s)));
+    memmove(q_copy, q_orig, sizeof(struct EQRLS(_s)));
+
+    // allocate and copy memory from original
+    unsigned int p = q_copy->p; // filter order (for convenience)
+    q_copy->h0    = (T*) liquid_malloc_copy(q_orig->h0,   p,   sizeof(T));
+    q_copy->w0    = (T*) liquid_malloc_copy(q_orig->w0,   p,   sizeof(T));
+    q_copy->w1    = (T*) liquid_malloc_copy(q_orig->w1,   p,   sizeof(T));
+    q_copy->P0    = (T*) liquid_malloc_copy(q_orig->P0,   p*p, sizeof(T));
+    q_copy->P1    = (T*) liquid_malloc_copy(q_orig->P1,   p*p, sizeof(T));
+    q_copy->g     = (T*) liquid_malloc_copy(q_orig->g,    p,   sizeof(T));
+    q_copy->xP0   = (T*) liquid_malloc_copy(q_orig->xP0,  p,   sizeof(T));
+    q_copy->gxl   = (T*) liquid_malloc_copy(q_orig->gxl,  p*p, sizeof(T));
+    q_copy->gxlP0 = (T*) liquid_malloc_copy(q_orig->gxlP0,p*p, sizeof(T));
+
+    // copy window and buffer objects
+    q_copy->buffer = WINDOW(_copy)(q_orig->buffer);
+
+    return q_copy;
+}
+
 // destroy eqrls object
 int EQRLS(_destroy)(EQRLS() _q)
 {
@@ -154,6 +183,14 @@ int EQRLS(_print)(EQRLS() _q)
 {
     printf("equalizer (RLS):\n");
     printf("    order:      %u\n", _q->p);
+    unsigned int i;
+    for (i=0; i<_q->p; i++) {
+#if T_COMPLEX
+        printf("  %3u: w = %12.8f + j%12.8f\n", i, crealf(_q->w1[_q->p-i-1]), cimagf(_q->w1[_q->p-i-1]));
+#else
+        printf("  %3u: w = %12.8f\n", i, _q->w1[_q->p-i-1]);
+#endif
+    }
 
 #ifdef DEBUG
     unsigned int r,c,p=_q->p;

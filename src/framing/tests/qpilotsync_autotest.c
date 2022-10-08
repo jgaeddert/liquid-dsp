@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,18 +26,9 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-#define DEBUG_QPILOTSYNC_AUTOTEST 0
+#define DEBUG_QPILOTSYNC_AUTOTEST 1
 
-// 
-// AUTOTEST : test simple recovery of frame in noise
-//
-//  _ms             :   modulation scheme (e.g. LIQUID_MODEM_QPSK)
-//  _payload_len    :   payload length [symbols]
-//  _pilot_spacing  :   spacing between pilot symbols
-//  _dphi           :   carrier frequency offset
-//  _phi            :   carrier phase offset
-//  _gamma          :   channel gain
-//  _SNRdB          :   signal-to-noise ratio [dB]
+// test simple recovery of frame in noise
 void qpilotsync_test(modulation_scheme _ms,
                      unsigned int      _payload_len,
                      unsigned int      _pilot_spacing,
@@ -56,6 +47,7 @@ void qpilotsync_test(modulation_scheme _ms,
 
     // get frame length
     unsigned int frame_len = qpilotgen_get_frame_len(pg);
+    CONTEND_EQUALITY(frame_len, qpilotsync_get_frame_len(ps));
 
     // allocate arrays
     unsigned char payload_sym_tx[_payload_len]; // transmitted payload symbols
@@ -93,7 +85,7 @@ void qpilotsync_test(modulation_scheme _ms,
         frame_rx[i] *= _gamma;
     }
 
-    // recieve frame
+    // receive frame
     qpilotsync_execute(ps, frame_rx, payload_rx);
 
     // demodulate
@@ -136,7 +128,7 @@ void qpilotsync_test(modulation_scheme _ms,
 #if DEBUG_QPILOTSYNC_AUTOTEST
     // write symbols to output file for plotting
     char filename[256];
-    sprintf(filename,"qpilotsync_autotest_%u_%u_debug.m", _payload_len, _pilot_spacing);
+    sprintf(filename,"autotest/logs/qpilotsync_autotest_%u_%u_debug.m", _payload_len, _pilot_spacing);
     FILE * fid = fopen(filename,"w");
     if (!fid) {
         fprintf(stderr,"error: could not open '%s' for writing\n", filename);
@@ -181,4 +173,48 @@ void autotest_qpilotsync_200_20() { qpilotsync_test(LIQUID_MODEM_QPSK, 200, 20, 
 void autotest_qpilotsync_300_24() { qpilotsync_test(LIQUID_MODEM_QPSK, 300, 24, 0.07f, 1.2f, 0.7f, 40.0f); }
 void autotest_qpilotsync_400_28() { qpilotsync_test(LIQUID_MODEM_QPSK, 400, 28, 0.07f, 1.2f, 0.7f, 40.0f); }
 void autotest_qpilotsync_500_32() { qpilotsync_test(LIQUID_MODEM_QPSK, 500, 32, 0.07f, 1.2f, 0.7f, 40.0f); }
+
+void autotest_qpilotgen_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping qpilotgen config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check invalid function calls
+    CONTEND_ISNULL(qpilotgen_create(  0, 100));    // invalid payload length
+    CONTEND_ISNULL(qpilotgen_create(512,   0));    // invalid pilot spacing
+    CONTEND_ISNULL(qpilotgen_copy(NULL));
+
+    // create proper object and test configurations
+    qpilotgen q = qpilotgen_create(512, 16);
+
+    CONTEND_EQUALITY(LIQUID_OK, qpilotgen_print(q))
+
+    qpilotgen_destroy(q);
+}
+
+void autotest_qpilotsync_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping qpilotsync config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check invalid function calls
+    CONTEND_ISNULL(qpilotsync_create(  0, 100));    // invalid payload length
+    CONTEND_ISNULL(qpilotsync_create(512,   0));    // invalid pilot spacing
+    CONTEND_ISNULL(qpilotsync_copy(NULL));
+
+    // create proper object and test configurations
+    qpilotsync q = qpilotsync_create(512, 16);
+
+    CONTEND_EQUALITY(LIQUID_OK, qpilotsync_print(q))
+
+    qpilotsync_destroy(q);
+}
 

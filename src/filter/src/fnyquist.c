@@ -109,7 +109,7 @@ int liquid_firdes_fexp(unsigned int _k,
                        float _dt,
                        float * _h)
 {
-    // compute resonse using generic function
+    // compute response using generic function
     return liquid_firdes_fnyquist(LIQUID_FIRFILT_FEXP, 0, _k, _m, _beta, _dt, _h);
 }
 
@@ -125,7 +125,7 @@ int liquid_firdes_rfexp(unsigned int _k,
                         float _dt,
                         float * _h)
 {
-    // compute resonse using generic function
+    // compute response using generic function
     return liquid_firdes_fnyquist(LIQUID_FIRFILT_FEXP, 1, _k, _m, _beta, _dt, _h);
 }
 
@@ -186,7 +186,7 @@ int liquid_firdes_fsech(unsigned int _k,
                         float _dt,
                         float * _h)
 {
-    // compute resonse using generic function
+    // compute response using generic function
     return liquid_firdes_fnyquist(LIQUID_FIRFILT_FSECH, 0, _k, _m, _beta, _dt, _h);
 }
 
@@ -202,7 +202,7 @@ int liquid_firdes_rfsech(unsigned int _k,
                          float _dt,
                          float * _h)
 {
-    // compute resonse using generic function
+    // compute response using generic function
     return liquid_firdes_fnyquist(LIQUID_FIRFILT_FSECH, 1, _k, _m, _beta, _dt, _h);
 }
 
@@ -263,7 +263,7 @@ int liquid_firdes_farcsech(unsigned int _k,
                            float _dt,
                            float * _h)
 {
-    // compute resonse using generic function
+    // compute response using generic function
     return liquid_firdes_fnyquist(LIQUID_FIRFILT_FARCSECH, 0, _k, _m, _beta, _dt, _h);
 }
 
@@ -279,7 +279,7 @@ int liquid_firdes_rfarcsech(unsigned int _k,
                             float _dt,
                             float * _h)
 {
-    // compute resonse using generic function
+    // compute response using generic function
     return liquid_firdes_fnyquist(LIQUID_FIRFILT_FARCSECH, 1, _k, _m, _beta, _dt, _h);
 }
 

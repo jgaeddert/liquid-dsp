@@ -35,9 +35,7 @@ struct RRESAMP(_s) {
     unsigned int    Q;          // decimation factor (primitive)
     unsigned int    m;          // filter semi-length, h_len = 2*m + 1
     unsigned int    block_len;  // number of blocks to run in execute()
-
-    // polyphase filterbank properties/object
-    FIRPFB()        pfb;    // filterbank object (interpolator), Q filters in bank
+    FIRPFB()        pfb;        // filterbank object (interpolator), Q filters in bank
 };
 
 // internal: execute rational-rate resampler on a primitive-length block of
@@ -173,6 +171,22 @@ RRESAMP() RRESAMP(_create_default)(unsigned int _interp,
 
     // create and return resamp object
     return RRESAMP(_create_kaiser)(_interp, _decim, m, bw, as);
+}
+
+// copy object
+RRESAMP() RRESAMP(_copy)(RRESAMP() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("rresamp_%s_create(), object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object and copy internal memory
+    RRESAMP() q_copy = (RRESAMP()) malloc(sizeof(struct RRESAMP(_s)));
+    memmove(q_copy, q_orig, sizeof(struct RRESAMP(_s)));
+
+    // copy internal object and return
+    q_copy->pfb = FIRPFB(_copy)(q_orig->pfb);
+    return q_copy;
 }
 
 // free resampler object

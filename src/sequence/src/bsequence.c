@@ -71,7 +71,7 @@ bsequence bsequence_create(unsigned int _num_bits)
         bs->bit_mask_msb |=  1;
     }
 
-    // initialze array with zeros
+    // initialize array with zeros
     bs->s = (unsigned int*) malloc( bs->s_len * sizeof(unsigned int) );
     bsequence_reset(bs);
 
@@ -284,7 +284,7 @@ unsigned int bsequence_index(bsequence _bs,
     return (_bs->s[k] >> d.rem ) & 1;
 }
 
-// intialize two sequences to complementary codes.  sequences must
+// initialize two sequences to complementary codes.  sequences must
 // be of length at least 8 and a power of 2 (e.g. 8, 16, 32, 64,...)
 int bsequence_create_ccodes(bsequence _qa, bsequence _qb)
 {

@@ -97,3 +97,46 @@ void autotest_firpfbch2_crcf_n16()   { firpfbch2_crcf_runtest(  16, 5, 60.0f); }
 void autotest_firpfbch2_crcf_n32()   { firpfbch2_crcf_runtest(  32, 5, 60.0f); }
 void autotest_firpfbch2_crcf_n64()   { firpfbch2_crcf_runtest(  64, 5, 60.0f); }
 
+
+void autotest_firpfbch2_crcf_copy()
+{
+    // create channelizer
+    unsigned int M  = 72;
+    unsigned int m  = 12;
+    float        as = 80.0f;
+    firpfbch2_crcf q_orig = firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER, M, m, as);
+
+    float complex buf_0     [M/2];
+    float complex buf_1_orig[M  ];
+    float complex buf_1_copy[M  ];
+
+    // start running input through filter
+    unsigned int num_blocks = 32;
+    unsigned int i, j;
+    for (i=0; i<num_blocks; i++) {
+        for (j=0; j<M/2; j++)
+            buf_0[j] = randnf() + _Complex_I*randnf();
+
+        firpfbch2_crcf_execute(q_orig, buf_0, buf_1_orig);
+    }
+
+    // copy object
+    firpfbch2_crcf q_copy = firpfbch2_crcf_copy(q_orig);
+
+    // continue running through both objects
+    for (i=0; i<num_blocks; i++) {
+        for (j=0; j<M/2; j++)
+            buf_0[j] = randnf() + _Complex_I*randnf();
+
+        // run filters in parallel
+        firpfbch2_crcf_execute(q_orig, buf_0, buf_1_orig);
+        firpfbch2_crcf_execute(q_copy, buf_0, buf_1_copy);
+
+        CONTEND_SAME_DATA(buf_1_orig, buf_1_copy, M*sizeof(float complex));
+    }
+
+    // destroy filter objects
+    firpfbch2_crcf_destroy(q_orig);
+    firpfbch2_crcf_destroy(q_copy);
+}
+

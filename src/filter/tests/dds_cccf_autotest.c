@@ -76,7 +76,7 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
       {.fmin=+0.6*bw, .fmax=+0.5,    .pmin= 0, .pmax=-_as+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signal(buf_0, num_samples, regions_orig, 3,
-        liquid_autotest_verbose ? "autotest_dds_cccf_orig.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/dds_cccf_orig.m" : NULL);
 
     // verify interpolated spectrum
     float f1 = _fc-0.6*bw/r, f2 = _fc-0.3*bw/r, f3 = _fc+0.3*bw/r, f4 = _fc+0.6*bw/r;
@@ -86,11 +86,11 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
       {.fmin= f4,  .fmax=+0.5, .pmin= 0, .pmax=-_as+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signal(buf_1, r*num_samples, regions_interp, 3,
-        liquid_autotest_verbose ? "autotest_dds_cccf_interp.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/dds_cccf_interp.m" : NULL);
 
     // verify decimated spectrum (using same regions as original)
     liquid_autotest_validate_psd_signal(buf_2, num_samples, regions_orig, 3,
-        liquid_autotest_verbose ? "autotest_dds_cccf_decim.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/dds_cccf_decim.m" : NULL);
 
     // destroy filter object and free memory
     dds_cccf_destroy(q);
@@ -138,5 +138,52 @@ void autotest_dds_config()
 
     // destroy object
     dds_cccf_destroy(q);
+}
+
+// copy object
+void autotest_dds_copy()
+{
+    unsigned int num_stages = 3;    // number of half-band stages
+    unsigned int r=1<<num_stages;   // resampling rate (input/output)
+
+    // create resampler
+    dds_cccf q0 = dds_cccf_create(num_stages,0.1234f,0.4321f,60.0f);
+    dds_cccf_set_scale(q0, 0.72280f);
+
+    // create generator with default parameters
+    symstreamrcf gen = symstreamrcf_create();
+
+    // generate samples and push through resampler
+    float complex buf[r]; // input buffer
+    float complex y0, y1; // output samples
+    unsigned int i;
+    for (i=0; i<10; i++) {
+        // generate block of samples
+        symstreamrcf_write_samples(gen, buf, r);
+
+        // resample
+        dds_cccf_decim_execute(q0, buf, &y0);
+    }
+
+    // copy object
+    dds_cccf q1 = dds_cccf_copy(q0);
+
+    // run samples through both resamplers in parallel
+    for (i=0; i<60; i++) {
+        // generate block of samples
+        symstreamrcf_write_samples(gen, buf, r);
+
+        // resample
+        dds_cccf_decim_execute(q0, buf, &y0);
+        dds_cccf_decim_execute(q1, buf, &y1);
+
+        // compare output
+        CONTEND_EQUALITY(y0, y1);
+    }
+
+    // destroy objects
+    dds_cccf_destroy(q0);
+    dds_cccf_destroy(q1);
+    symstreamrcf_destroy(gen);
 }
 

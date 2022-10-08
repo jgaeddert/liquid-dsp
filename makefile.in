@@ -184,6 +184,8 @@ channel_prototypes :=						\
 src/channel/src/channel_cccf.o : %.o : %.c $(include_headers) $(channel_prototypes)
 
 channel_autotests :=						\
+	src/channel/tests/channel_copy_autotest.c		\
+	src/channel/tests/tvmpch_copy_autotest.c		\
 	
 #src/channel/tests/channel_cccf_autotest.c
 
@@ -357,6 +359,7 @@ src/fft/src/spgramf.o       : %.o : %.c $(include_headers) src/fft/src/asgram.pr
 
 # fft autotest scripts
 fft_autotests :=						\
+	src/fft/tests/asgram_autotest.c				\
 	src/fft/tests/fft_small_autotest.c			\
 	src/fft/tests/fft_radix2_autotest.c			\
 	src/fft/tests/fft_composite_autotest.c			\
@@ -433,6 +436,7 @@ filter_objects :=						\
 	src/filter/src/filter_cccf.o				\
 	src/filter/src/firdes.o					\
 	src/filter/src/firdespm.o				\
+	src/filter/src/firdespm_halfband.o			\
 	src/filter/src/fnyquist.o				\
 	src/filter/src/gmsk.o					\
 	src/filter/src/group_delay.o				\
@@ -510,17 +514,23 @@ filter_autotests :=						\
 	src/filter/tests/firinterp_autotest.c			\
 	src/filter/tests/firpfb_autotest.c			\
 	src/filter/tests/groupdelay_autotest.c			\
+	src/filter/tests/iirdecim_autotest.c			\
 	src/filter/tests/iirdes_autotest.c			\
 	src/filter/tests/iirdes_support_autotest.c		\
 	src/filter/tests/iirfilt_xxxf_autotest.c		\
-	src/filter/tests/iirfiltsos_rrrf_autotest.c		\
+	src/filter/tests/iirfilt_copy_autotest.c		\
+	src/filter/tests/iirfiltsos_autotest.c			\
 	src/filter/tests/iirhilb_autotest.c			\
+	src/filter/tests/iirinterp_autotest.c			\
 	src/filter/tests/lpc_autotest.c				\
 	src/filter/tests/msresamp_crcf_autotest.c		\
+	src/filter/tests/msresamp2_crcf_autotest.c		\
+	src/filter/tests/ordfilt_autotest.c			\
 	src/filter/tests/rresamp_crcf_autotest.c		\
 	src/filter/tests/rresamp_crcf_partition_autotest.c	\
 	src/filter/tests/resamp_crcf_autotest.c			\
 	src/filter/tests/resamp2_crcf_autotest.c		\
+	src/filter/tests/symsync_copy_autotest.c		\
 	src/filter/tests/symsync_crcf_autotest.c		\
 	src/filter/tests/symsync_rrrf_autotest.c		\
 
@@ -680,12 +690,16 @@ framing_autotests :=						\
 	src/framing/tests/flexframesync_autotest.c		\
 	src/framing/tests/framesync64_autotest.c		\
 	src/framing/tests/gmskframe_autotest.c			\
+	src/framing/tests/msource_autotest.c			\
 	src/framing/tests/ofdmflexframe_autotest.c		\
 	src/framing/tests/qdetector_cccf_autotest.c		\
 	src/framing/tests/qdetector_cccf_copy_autotest.c	\
 	src/framing/tests/qpacketmodem_autotest.c		\
 	src/framing/tests/qpilotsync_autotest.c			\
+	src/framing/tests/qsource_autotest.c			\
+	src/framing/tests/symstreamcf_autotest.c		\
 	src/framing/tests/symstreamcf_delay_autotest.c		\
+	src/framing/tests/symstreamrcf_autotest.c		\
 	src/framing/tests/symstreamrcf_delay_autotest.c		\
 	src/framing/tests/symtrack_cccf_autotest.c		\
 
@@ -883,6 +897,7 @@ modem_autotests :=						\
 	src/modem/tests/cpfskmodem_autotest.c			\
 	src/modem/tests/freqmodem_autotest.c			\
 	src/modem/tests/fskmodem_autotest.c			\
+	src/modem/tests/gmskmodem_autotest.c			\
 	src/modem/tests/modem_autotest.c			\
 	src/modem/tests/modem_copy_autotest.c			\
 	src/modem/tests/modem_demodsoft_autotest.c		\
@@ -984,6 +999,7 @@ optim_objects :=						\
 	src/optim/src/gradsearch.o				\
 	src/optim/src/optim.common.o				\
 	src/optim/src/qnsearch.o				\
+	src/optim/src/qs1dsearch.o				\
 	src/optim/src/utilities.o				\
 
 $(optim_objects) : %.o : %.c $(include_headers)
@@ -991,6 +1007,7 @@ $(optim_objects) : %.o : %.c $(include_headers)
 # autotests
 optim_autotests :=						\
 	src/optim/tests/gradsearch_autotest.c			\
+	src/optim/tests/qs1dsearch_autotest.c			\
 
 # benchmarks
 optim_benchmarks :=
@@ -1084,6 +1101,7 @@ sequence_benchmarks :=						\
 utility_objects :=						\
 	src/utility/src/bshift_array.o				\
 	src/utility/src/byte_utilities.o			\
+	src/utility/src/memory.o				\
 	src/utility/src/msb_index.o				\
 	src/utility/src/pack_bytes.o				\
 	src/utility/src/shift_array.o				\
@@ -1335,7 +1353,7 @@ clean-bind:
 ## TARGET : help      - print list of targets
 ##
 
-# look for all occurences of '## TARGET : ' and print rest of line to screen
+# look for all occurrences of '## TARGET : ' and print rest of line to screen
 help:
 	@echo "Targets for liquid-dsp makefile:"
 	@$(GREP) -E "^## TARGET : " [Mm]akefile | $(SED) 's/## TARGET : /  /'
@@ -1409,7 +1427,7 @@ autotest_include.h : scripts/autoscript $(autotest_sources) $(include_headers)
 
 # autotest objects
 # NOTE: by default, gcc compiles any file with a '.h' extension as a 'pre-compiled
-#       header' so we need to explicity tell it to compile as a c source file with
+#       header' so we need to explicitly tell it to compile as a c source file with
 #       the '-x c' flag
 autotest_obj = $(patsubst %.c,%.o,$(autotest_sources))
 $(autotest_obj) $(autotest_extra_obj) autotest/autotest.o : %.o : %.c $(include_headers) autotest/autotest.h
@@ -1438,6 +1456,8 @@ clean-check:
 	$(RM) $(autotest_extra_obj)
 	$(RM) autotest/autotest.o
 	$(RM) autotest.json
+	$(RM) autotest/logs/*.m autotest/logs/*.dat
+	$(RM) autotest/logs/*.bin autotest/logs/*.gnu autotest/logs/*.png
 
 ##
 ## TARGET : doc-check - build and run basic documentation checks
@@ -1522,7 +1542,7 @@ benchmark_include.h : scripts/autoscript $(benchmark_sources) $(include_headers)
 
 # benchmark objects
 # NOTE: by default, gcc compiles any file with a '.h' extension as a 'pre-compiled
-#       header' so we need to explicity tell it to compile as a c source file with
+#       header' so we need to explicitly tell it to compile as a c source file with
 #       the '-x c' flag
 benchmark_obj = $(patsubst %.c,%.o,$(benchmark_sources))
 $(benchmark_obj) : %.o : %.c $(include_headers)
@@ -1619,6 +1639,7 @@ example_programs :=						\
 	examples/firdes_doppler_example				\
 	examples/firdes_kaiser_example				\
 	examples/firdespm_callback_example			\
+	examples/firdespm_halfband_example			\
 	examples/firdespm_example				\
 	examples/firdespm_lowpass_example			\
 	examples/firhilb_example				\
@@ -1706,6 +1727,7 @@ example_programs :=						\
 	examples/qpacketmodem_example				\
 	examples/qpilotsync_example				\
 	examples/qnsearch_example				\
+	examples/qs1dsearch_example				\
 	examples/quantize_example				\
 	examples/random_histogram_example			\
 	examples/repack_bytes_example				\
@@ -1815,6 +1837,7 @@ sandbox_programs =						\
 	sandbox/firdes_gmskrx_test				\
 	sandbox/firdes_group_delay_test				\
 	sandbox/firdes_length_test				\
+	sandbox/firdespm_halfband_test				\
 	sandbox/firfarrow_rrrf_test				\
 	sandbox/firfilt_dcblocker_test				\
 	sandbox/firpfbch_analysis_alignment_test		\
@@ -1925,7 +1948,7 @@ clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench cle
 
 distclean: clean
 	@echo "cleaning distribution..."
-	$(RM) octave-core *.m
+	$(RM) octave-core *_example.m
 	$(RM) configure config.h config.h.in config.h.in~ config.log config.status
 	$(RM) -r autom4te.cache
 	$(RM) aclocal.m4

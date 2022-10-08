@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,20 +34,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <assert.h>
 #include "liquid.internal.h"
 
 #define LIQUID_DEBUG_BESSEL_PRINT   0
 
 // forward declarations
 
-void fpoly_bessel(unsigned int _n, float * _p);
+int fpoly_bessel(unsigned int _n, float * _p);
 
-void fpoly_bessel_roots(unsigned int _n, float complex * _roots);
+int fpoly_bessel_roots(unsigned int _n, float complex * _roots);
 
-void fpoly_bessel_roots_orchard(unsigned int _n, float complex * _roots);
+int fpoly_bessel_roots_orchard(unsigned int _n, float complex * _roots);
 
-void fpoly_bessel_roots_orchard_recursion(unsigned int _n,
+int fpoly_bessel_roots_orchard_recursion(unsigned int _n,
                                           float _x,
                                           float _y,
                                           float * _x_hat,
@@ -64,13 +63,14 @@ void fpoly_bessel_roots_orchard_recursion(unsigned int _n,
 //  _z      :   output analog zeros [length:  0]
 //  _p      :   output analog poles [length: _n]
 //  _k      :   output analog gain
-void bessel_azpkf(unsigned int _n,
-                  float complex * _za,
-                  float complex * _pa,
-                  float complex * _ka)
+int bessel_azpkf(unsigned int    _n,
+                 float complex * _za,
+                 float complex * _pa,
+                 float complex * _ka)
 {
     // compute poles (roots to Bessel polynomial)
-    fpoly_bessel_roots(_n+1,_pa);
+    if (fpoly_bessel_roots(_n+1,_pa) != LIQUID_OK)
+        return liquid_error(LIQUID_EICONFIG,"bessel_azpkf(), invalid configuration");
 
     // analog Bessel filter prototype has no zeros
 
@@ -87,9 +87,11 @@ void bessel_azpkf(unsigned int _n,
     *_ka = 1.0f;
     for (i=0; i<_n; i++)
         *_ka *= _pa[i];
+
+    return LIQUID_OK;
 }
 
-void fpoly_bessel(unsigned int _n, float * _p)
+int fpoly_bessel(unsigned int _n, float * _p)
 {
     unsigned int k;
     unsigned int N = _n-1;
@@ -119,12 +121,13 @@ void fpoly_bessel(unsigned int _n, float * _p)
         printf("    t3 : %12.4e\n", t3);
 #endif
     }
+    return LIQUID_OK;
 }
 
-void fpoly_bessel_roots(unsigned int _n,
-                        float complex * _roots)
+int fpoly_bessel_roots(unsigned int    _n,
+                       float complex * _roots)
 {
-    fpoly_bessel_roots_orchard(_n, _roots);
+    return fpoly_bessel_roots_orchard(_n, _roots);
 }
 
 // Estimate the roots of the _n^th-order Bessel polynomial using
@@ -132,8 +135,8 @@ void fpoly_bessel_roots(unsigned int _n,
 // L_{k} are extrapolated from those in L_{k-2} and L_{k-1}.
 // The resulting root is near enough the true root such that
 // Orchard's recursion will find it.
-void fpoly_bessel_roots_orchard(unsigned int _n,
-                                float complex * _roots)
+int fpoly_bessel_roots_orchard(unsigned int    _n,
+                               float complex * _roots)
 {
     // initialize arrays
     float complex r0[_n];       // roots of L_{k-2}
@@ -196,19 +199,19 @@ void fpoly_bessel_roots_orchard(unsigned int _n,
     // if order is odd, copy single real root last
     if (p)
         _roots[_n-1] = r_hat[0];
+
+    return LIQUID_OK;
 }
 
 // from [Orchard:1965]
-void fpoly_bessel_roots_orchard_recursion(unsigned int _n,
-                                          float _x,
-                                          float _y,
-                                          float * _x_hat,
-                                          float * _y_hat)
+int fpoly_bessel_roots_orchard_recursion(unsigned int _n,
+                                         float        _x,
+                                         float        _y,
+                                         float *      _x_hat,
+                                         float *      _y_hat)
 {
-    if (_n < 2) {
-        liquid_error(LIQUID_EICONFIG,"fpoly_bessel_roots_orchard_recursion(), n < 2");
-        return;
-    }
+    if (_n < 2)
+        return liquid_error(LIQUID_EICONFIG,"fpoly_bessel_roots_orchard_recursion(), n < 2");
 
     // create internal variables (use long double precision to help
     // algorithm converge, particularly for large _n)
@@ -259,5 +262,6 @@ void fpoly_bessel_roots_orchard_recursion(unsigned int _n,
 
     *_x_hat = x;
     *_y_hat = y;
+    return LIQUID_OK;
 }
 

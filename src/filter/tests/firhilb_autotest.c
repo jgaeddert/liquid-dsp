@@ -159,7 +159,7 @@ void autotest_firhilbf_psd()
       {.fmin=+0.5*bw, .fmax=+0.5,    .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signal(buf_0, num_samples, regions_orig, 3,
-        liquid_autotest_verbose ? "autotest_firhilbf_orig.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/firhilbf_orig.m" : NULL);
 
     // verify interpolated spectrum
     autotest_psd_s regions_interp[] = {
@@ -170,11 +170,11 @@ void autotest_firhilbf_psd()
       {.fmin= 0.25+0.25*bw, .fmax= 0.5,          .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signalf(buf_1, 2*num_samples, regions_interp, 5,
-        liquid_autotest_verbose ? "autotest_firhilbf_interp.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/firhilbf_interp.m" : NULL);
 
     // verify decimated spectrum (using same regions as original)
     liquid_autotest_validate_psd_signal(buf_2, num_samples, regions_orig, 3,
-        liquid_autotest_verbose ? "autotest_firhilbf_decim.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/firhilbf_decim.m" : NULL);
 
     // destroy filter object and free memory
     firhilbf_destroy(q);
@@ -196,5 +196,71 @@ void autotest_firhilbf_invalid_config()
     // create proper object but test invalid internal configurations
     //firhilbf q = firhilbf_create(12,60.0f);
     //firhilbf_destroy(q);
+}
+
+void autotest_firhilbf_copy_interp()
+{
+    firhilbf q0 = firhilbf_create(12,120.0f);
+
+    // run interpolator on random data
+    unsigned int i;
+    float y0[2], y1[2];
+    for (i=0; i<80; i++) {
+        float complex x = randnf() + _Complex_I*randnf();
+        firhilbf_interp_execute(q0, x, y0);
+    }
+
+    // copy object
+    firhilbf q1 = firhilbf_copy(q0);
+
+    for (i=0; i<80; i++) {
+        float complex x = randnf() + _Complex_I*randnf();
+        firhilbf_interp_execute(q0, x, y0);
+        firhilbf_interp_execute(q1, x, y1);
+        if (liquid_autotest_verbose) {
+            printf("%3u : %12.8f +j%12.8f > {%12.8f, %12.8f}, {%12.8f, %12.8f}\n",
+                    i, crealf(x), cimagf(x), y0[0], y0[1], y1[0], y1[1]);
+        }
+        CONTEND_EQUALITY(y0[0], y1[0]);
+        CONTEND_EQUALITY(y0[1], y1[1]);
+    }
+
+    // destroy objects
+    firhilbf_destroy(q0);
+    firhilbf_destroy(q1);
+}
+
+void autotest_firhilbf_copy_decim()
+{
+    firhilbf q0 = firhilbf_create(12,120.0f);
+
+    // run interpolator on random data
+    unsigned int i;
+    float x[2];
+    float complex y0, y1;
+    for (i=0; i<80; i++) {
+        x[0] = randnf();
+        x[1] = randnf();
+        firhilbf_decim_execute(q0, x, &y0);
+    }
+
+    // copy object
+    firhilbf q1 = firhilbf_copy(q0);
+
+    for (i=0; i<80; i++) {
+        x[0] = randnf();
+        x[1] = randnf();
+        firhilbf_decim_execute(q0, x, &y0);
+        firhilbf_decim_execute(q1, x, &y1);
+        if (liquid_autotest_verbose) {
+            printf("%3u : {%12.8f %12.8f} > %12.8f +j%12.8f, %12.8f +j%12.8f\n",
+                    i, x[0], x[1], crealf(y0), cimagf(y0), crealf(y1), cimagf(y1));
+        }
+        CONTEND_EQUALITY(y0, y1);
+    }
+
+    // destroy objects
+    firhilbf_destroy(q0);
+    firhilbf_destroy(q1);
 }
 

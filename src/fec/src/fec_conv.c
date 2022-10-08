@@ -145,7 +145,7 @@ int fec_conv_decode_hard(fec _q,
     unsigned int num_written;
     liquid_unpack_bytes(_msg_enc,               // encoded message (bytes)
                         _q->num_enc_bytes,      // encoded message length (#bytes)
-                        _q->enc_bits,           // encoded messsage (bits)
+                        _q->enc_bits,           // encoded message (bits)
                         _q->num_enc_bytes*8,    // encoded message length (#bits)
                         &num_written);
 

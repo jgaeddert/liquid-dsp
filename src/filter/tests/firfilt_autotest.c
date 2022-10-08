@@ -36,7 +36,7 @@ void autotest_firfilt_crcf_kaiser()
       {.fmin= 0.25,  .fmax=+0.5,   .pmin= 0,   .pmax=-60,  .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_firfilt_crcf(q, 1200, regions, 3,
-        liquid_autotest_verbose ? "autotest_firfilt_crcf_kaiser.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/firfilt_crcf_kaiser.m" : NULL);
     firfilt_crcf_destroy(q);
 }
 
@@ -53,7 +53,7 @@ void autotest_firfilt_crcf_firdespm()
       {.fmin= 0.25,  .fmax=+0.5,   .pmin= 0,   .pmax=-60,  .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_firfilt_crcf(q, 1200, regions, 3,
-        liquid_autotest_verbose ? "autotest_firfilt_crcf_firdespm.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/firfilt_crcf_firdespm.m" : NULL);
     firfilt_crcf_destroy(q);
 }
 
@@ -70,7 +70,7 @@ void autotest_firfilt_crcf_rect()
       {.fmin= 0.20,  .fmax=+0.5,   .pmin= 0, .pmax=-10, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_firfilt_crcf(q, 301, regions, 3,
-        liquid_autotest_verbose ? "autotest_firfilt_crcf_rect.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/firfilt_crcf_rect.m" : NULL);
     firfilt_crcf_destroy(q);
 }
 
@@ -86,7 +86,7 @@ void autotest_firfilt_crcf_notch()
       {.fmin= 0.20,  .fmax=+0.5,   .pmin=-0.1, .pmax=+0.1, .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_psd_firfilt_crcf(q, 1200, regions, 5,
-        liquid_autotest_verbose ? "autotest_firfilt_crcf_notch.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/firfilt_crcf_notch.m" : NULL);
     firfilt_crcf_destroy(q);
 }
 
@@ -100,7 +100,7 @@ void autotest_firfilt_cccf_notch()
       {.fmin= 0.20,  .fmax=+0.5,   .pmin=-0.1, .pmax=+0.1, .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_psd_firfilt_cccf(q, 1200, regions, 3,
-        liquid_autotest_verbose ? "autotest_firfilt_cccf_notch.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/firfilt_cccf_notch.m" : NULL);
     firfilt_cccf_destroy(q);
 }
 
@@ -122,6 +122,7 @@ void autotest_firfilt_config()
     CONTEND_ISNULL(firfilt_crcf_create_dc_blocker(0, 0));
     CONTEND_ISNULL(firfilt_crcf_create_notch(0, 0, 0));
     CONTEND_ISNULL(firfilt_cccf_create_notch(0, 0, 0));
+    CONTEND_ISNULL(firfilt_crcf_copy(NULL));
 
     // create proper object and test configurations
     firfilt_crcf q = firfilt_crcf_create_kaiser(11, 0.2f, 60.0f, 0.0f);

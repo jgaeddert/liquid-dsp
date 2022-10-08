@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -117,5 +117,40 @@ void autotest_iirfiltsos_step_n2()
     }
 
     iirfiltsos_rrrf_destroy(f);
+}
+
+void autotest_iirfiltsos_copy()
+{
+    // initialize filter with 2nd-order low-pass butterworth filter
+    float a[3] = {1.0000000000000000f, -0.942809041582063f, 0.3333333333333333f};
+    float b[3] = {0.0976310729378175f,  0.195262145875635f, 0.0976310729378175f};
+
+    // create base object
+    iirfiltsos_crcf q0 = iirfiltsos_crcf_create(b,a);
+
+    // start running input through filter
+    unsigned int i, num_samples = 80;
+    float complex y0, y1;
+    for (i=0; i<num_samples; i++) {
+        float complex v = randnf() + _Complex_I*randnf();
+        iirfiltsos_crcf_execute(q0, v, &y0);
+    }
+
+    // copy filter
+    iirfiltsos_crcf q1 = iirfiltsos_crcf_copy(q0);
+
+    // continue running through both filters
+    for (i=0; i<num_samples; i++) {
+        float complex v = randnf() + _Complex_I*randnf();
+        iirfiltsos_crcf_execute(q0, v, &y0);
+        iirfiltsos_crcf_execute(q1, v, &y1);
+
+        // compare result
+        CONTEND_EQUALITY(y0, y1);
+    }
+
+    // destroy filter objects
+    iirfiltsos_crcf_destroy(q0);
+    iirfiltsos_crcf_destroy(q1);
 }
 

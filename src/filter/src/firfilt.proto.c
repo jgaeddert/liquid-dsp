@@ -299,24 +299,21 @@ FIRFILT() FIRFILT(_copy)(FIRFILT() q_orig)
 
     // create filter object and copy base parameters
     FIRFILT() q_copy = (FIRFILT()) malloc(sizeof(struct FIRFILT(_s)));
-    q_copy->h_len = q_orig->h_len;
-    q_copy->h     = (TC *) malloc((q_orig->h_len)*sizeof(TC));
-    memmove(q_copy->h, q_orig->h, (q_orig->h_len)*sizeof(TC));
+    memmove(q_copy, q_orig, sizeof(struct FIRFILT(_s)));
+
+    // copy filter coefficients
+    q_copy->h = (TC *) liquid_malloc_copy(q_orig->h, q_orig->h_len, sizeof(TC));
 
 #if LIQUID_FIRFILT_USE_WINDOW
     // copy window
     q_copy->w = WINDOW(_copy)(q_orig->w);
 #else
     // initialize array for buffering
-    q_copy->w_len   = q_orig->w_len;
-    q_copy->w_mask  = q_orig->w_mask;
-    q_copy->w       = q_orig->w;
-    q_copy->w_index = q_orig->w_index;
+    q_copy->w = (TI *) liquid_malloc_copy(q_orig->w, q_orig->w_len, sizeof(TI));
 #endif
 
-    // copy dot product object and scale
+    // copy dot product object and return
     q_copy->dp    = DOTPROD(_copy)(q_orig->dp);
-    q_copy->scale = q_orig->scale;
     return q_copy;
 }
 
@@ -517,19 +514,17 @@ int FIRFILT(_freqresponse)(FIRFILT()       _q,
                            float           _fc,
                            float complex * _H)
 {
-    unsigned int i;
-    float complex H = 0.0f;
-
-    // compute dot product between coefficients and exp{ 2 pi fc {0..n-1} }
-    for (i=0; i<_q->h_len; i++)
-        H += _q->h[i] * cexpf(-_Complex_I*2*M_PI*_fc*i);
+#if TC_COMPLEX==0
+    int rc = liquid_freqrespf(_q->h, _q->h_len, _fc, _H);
+#elif TC_COMPLEX==1
+    int rc = liquid_freqrespcf(_q->h, _q->h_len, _fc, _H);
+#else
+#   error("invalid complex type for coefficients")
+#endif
 
     // apply scaling
-    H *= _q->scale;
-
-    // set return value
-    *_H = H;
-    return LIQUID_OK;
+    *_H *= _q->scale;
+    return rc;
 }
 
 // compute group delay in samples

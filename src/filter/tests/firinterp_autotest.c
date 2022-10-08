@@ -217,3 +217,35 @@ void autotest_firinterp_crcf_rnyquist_2()
 void autotest_firinterp_crcf_rnyquist_3() 
     { testbench_firinterp_crcf_nyquist(LIQUID_FIRFILT_RCOS,   2, 9,0.3f); }
 
+// test copy method
+void autotest_firinterp_copy()
+{
+    // create base object
+    firinterp_crcf q0 = firinterp_crcf_create_kaiser(3, 7, 60.0f);
+    firinterp_crcf_set_scale(q0, 0.12345f);
+
+    // run samples through filter
+    unsigned int i;
+    float complex buf_0[3], buf_1[3];
+    for (i=0; i<20; i++) {
+        float complex v = randnf() + _Complex_I*randnf();
+        firinterp_crcf_execute(q0, v, buf_0);
+    }
+
+    // copy object
+    firinterp_crcf q1 = firinterp_crcf_copy(q0);
+
+    // run samples through both filters in parallel
+    for (i=0; i<60; i++) {
+        float complex v = randnf() + _Complex_I*randnf();
+        firinterp_crcf_execute(q0, v, buf_0);
+        firinterp_crcf_execute(q1, v, buf_1);
+
+        CONTEND_SAME_DATA( buf_0, buf_1, 3*sizeof(float complex) );
+    }
+
+    // destroy objects
+    firinterp_crcf_destroy(q0);
+    firinterp_crcf_destroy(q1);
+}
+

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
 // M-ary frequency-shift keying demodulator
-//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -33,16 +31,12 @@
 
 #define DEBUG_FSKDEM 0
 
-// 
-// internal methods
-//
-
 // fskdem
 struct fskdem_s {
     // common
-    unsigned int m;             // bits per symbol
-    unsigned int k;             // samples per symbol
-    float        bandwidth;     // filter bandwidth parameter
+    unsigned int    m;          // bits per symbol
+    unsigned int    k;          // samples per symbol
+    float           bandwidth;  // filter bandwidth parameter
 
     // derived values
     unsigned int    M;          // constellation size
@@ -146,6 +140,29 @@ fskdem fskdem_create(unsigned int _m,
 
     // return main object
     return q;
+}
+
+// copy object
+fskdem fskdem_copy(fskdem q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("fskdem_copy(), object cannot be NULL");
+
+    // create object and copy base parameters
+    fskdem q_copy = (fskdem) malloc(sizeof(struct fskdem_s));
+    memmove(q_copy, q_orig, sizeof(struct fskdem_s));
+
+    // allocate memory for transform
+    q_copy->buf_time = (float complex*) liquid_malloc_copy(q_orig->buf_time, q_copy->K, sizeof(float complex));
+    q_copy->buf_freq = (float complex*) liquid_malloc_copy(q_orig->buf_freq, q_copy->K, sizeof(float complex));
+    q_copy->fft = FFT_CREATE_PLAN(q_copy->K, q_copy->buf_time, q_copy->buf_freq, FFT_DIR_FORWARD, 0);
+
+    // copy demodulation map
+    q_copy->demod_map = (unsigned int*)liquid_malloc_copy(q_orig->demod_map, q_copy->M, sizeof(float complex));
+
+    // return new object
+    return q_copy;
 }
 
 // destroy fskdem object

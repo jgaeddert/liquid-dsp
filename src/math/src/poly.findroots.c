@@ -52,7 +52,7 @@ int liquid_poly_findroots_durandkerner(double *         _p,
     double r0[num_roots];
     double r1[num_roots];
 
-    // find intial magnitude
+    // find initial magnitude
     float g     = 0.0f;
     float gmax  = 0.0f;
     for (i=0; i<_k; i++) {

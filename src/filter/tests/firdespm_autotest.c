@@ -162,7 +162,7 @@ void autotest_firdespm_lowpass()
       {.fmin= 0.25,  .fmax=+0.5,   .pmin= 0,    .pmax=-60,   .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signalf(h, n, regions, 3,
-        liquid_autotest_verbose ? "autotest_firdespm_lowpass.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/firdespm_lowpass.m" : NULL);
 }
 
 // user-defined callback function defining response and weights
@@ -204,7 +204,64 @@ void autotest_firdespm_callback()
       {.fmin= 0.40,  .fmax= 0.50,  .pmin= 0, .pmax=-20, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signalf(h, h_len, regions, 9,
-        liquid_autotest_verbose ? "autotest_firdespm_callback.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/firdespm_callback.m" : NULL);
+}
+
+// test halfband filter design by specifying filter semi-length and transition bandwidth
+void testbench_firdespm_halfband_ft(unsigned int _m,
+                                    float        _ft)
+{
+    unsigned int h_len = 4*_m + 1;
+    float h[h_len];
+    liquid_firdespm_halfband_ft(_m, _ft, h);
+
+    // estimate stop band suppression
+    float As = estimate_req_filter_As(_ft, h_len);
+
+    // verify resulting spectrum
+    float f0 = 0.25f - 0.5f*_ft;
+    float f1 = 0.25f + 0.5f*_ft;
+    autotest_psd_s regions[] = {
+      {.fmin=-0.5, .fmax= -f1, .pmin= 0,   .pmax=-As,  .test_lo=0, .test_hi=1},
+      {.fmin=-f0,  .fmax=  f0, .pmin=-0.1, .pmax= 0.1, .test_lo=1, .test_hi=1},
+      {.fmin= f1,  .fmax= 0.5, .pmin= 0,   .pmax=-As,  .test_lo=0, .test_hi=1},
+    };
+    char filename[256];
+    sprintf(filename,"autotest/logs/firdespm_halfband_m%u_ft%.3u.m", _m, (int)(_ft*1000));
+    liquid_autotest_validate_psd_signalf(h, h_len, regions, 3,
+        liquid_autotest_verbose ? filename : NULL);
+}
+
+void autotest_firdespm_halfband_m2_ft400()  { testbench_firdespm_halfband_ft( 3, 0.400f); }
+void autotest_firdespm_halfband_m4_ft400()  { testbench_firdespm_halfband_ft( 4, 0.400f); }
+void autotest_firdespm_halfband_m4_ft200()  { testbench_firdespm_halfband_ft( 4, 0.200f); }
+void autotest_firdespm_halfband_m10_ft200() { testbench_firdespm_halfband_ft(10, 0.200f); }
+void autotest_firdespm_halfband_m12_ft100() { testbench_firdespm_halfband_ft(12, 0.100f); }
+void autotest_firdespm_halfband_m20_ft050() { testbench_firdespm_halfband_ft(20, 0.050f); }
+void autotest_firdespm_halfband_m40_ft050() { testbench_firdespm_halfband_ft(40, 0.050f); }
+void autotest_firdespm_halfband_m80_ft010() { testbench_firdespm_halfband_ft(80, 0.010f); }
+
+void autotest_firdespm_copy()
+{
+    // create valid object
+    float bands[4] = {0.0, 0.2, 0.3, 0.5};  // regions
+    float   des[2] = {1.0,      0.0};       // desired values
+    float     w[2] = {1.0,      1.0};       // weights
+    liquid_firdespm_wtype wtype[2] = {LIQUID_FIRDESPM_FLATWEIGHT, LIQUID_FIRDESPM_FLATWEIGHT};
+    firdespm q0 = firdespm_create(51, 2, bands, des, w, wtype, LIQUID_FIRDESPM_BANDPASS);
+
+    // copy object
+    firdespm q1 = firdespm_copy(q0);
+
+    // execute both
+    float h0[51], h1[51];
+    firdespm_execute(q0, h0);
+    firdespm_execute(q1, h1);
+    CONTEND_SAME_DATA(h0, h1, 51*sizeof(float));
+
+    // destroy objects
+    firdespm_destroy(q0);
+    firdespm_destroy(q1);
 }
 
 void autotest_firdespm_config()

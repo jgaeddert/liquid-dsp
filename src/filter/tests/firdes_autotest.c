@@ -315,7 +315,7 @@ void testbench_firdes_prototype(const char * _type,
       {.fmin= f1, .fmax=+0.5,.pmin= 0, .pmax=-_as, .test_lo=0, .test_hi=1},
     };
     char filename[256];
-    sprintf(filename,"autotest_firdes_prototype_%s.m", _type);
+    sprintf(filename,"autotest/logs/firdes_prototype_%s.m", _type);
     liquid_autotest_validate_psd_signalf(h, h_len, regions, 3,
         liquid_autotest_verbose ? filename : NULL);
 }
@@ -356,6 +356,63 @@ void autotest_firdes_doppler()
       {.fmin= 0.25,  .fmax=+0.5,   .pmin= 0, .pmax= 0, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_signalf(h, h_len, regions, 5,
-        liquid_autotest_verbose ? "autotest_firdes_doppler.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/firdes_doppler.m" : NULL);
+}
+
+// check frequency response (real-valued coefficients)
+void autotest_liquid_freqrespf()
+{
+    // design filter
+    unsigned int h_len = 41;
+    float h[h_len];
+    liquid_firdes_kaiser(h_len, 0.27f, 80.0f, 0.3f, h);
+
+    // compute frequency response with FFT
+    unsigned int i, nfft = 400;
+    float complex buf_time[nfft], buf_freq[nfft];
+    for (i=0; i<nfft; i++)
+        buf_time[i] = i < h_len ? h[i] : 0.0f;
+    fft_run(nfft, buf_time, buf_freq, LIQUID_FFT_FORWARD, 0);
+
+    // compare to manual calculation
+    float tol = 1e-5f;
+    for (i=0; i<nfft; i++) {
+        float fc = (float)i/(float)nfft + (i >= nfft/2 ? -1.0f : 0.0f);
+        float complex H;
+        liquid_freqrespf(h, h_len, fc, &H);
+
+        CONTEND_DELTA(crealf(buf_freq[i]), crealf(H), tol);
+        CONTEND_DELTA(cimagf(buf_freq[i]), cimagf(H), tol);
+    }
+}
+
+// check frequency response (complex-valued coefficients)
+void autotest_liquid_freqrespcf()
+{
+    // design filter and apply complex phasor
+    unsigned int i, h_len = 41;
+    float hf[h_len];
+    liquid_firdes_kaiser(h_len, 0.27f, 80.0f, 0.3f, hf);
+    float complex h[h_len];
+    for (i=0; i<h_len; i++)
+        h[i] = hf[i] * cexpf(_Complex_I*0.1f*(float)(i*i));
+
+    // compute frequency response with FFT
+    unsigned int  nfft = 400;
+    float complex buf_time[nfft], buf_freq[nfft];
+    for (i=0; i<nfft; i++)
+        buf_time[i] = i < h_len ? h[i] : 0.0f;
+    fft_run(nfft, buf_time, buf_freq, LIQUID_FFT_FORWARD, 0);
+
+    // compare to manual calculation
+    float tol = 1e-5f;
+    for (i=0; i<nfft; i++) {
+        float fc = (float)i/(float)nfft + (i >= nfft/2 ? -1.0f : 0.0f);
+        float complex H;
+        liquid_freqrespcf(h, h_len, fc, &H);
+
+        CONTEND_DELTA(crealf(buf_freq[i]), crealf(H), tol);
+        CONTEND_DELTA(cimagf(buf_freq[i]), cimagf(H), tol);
+    }
 }
 

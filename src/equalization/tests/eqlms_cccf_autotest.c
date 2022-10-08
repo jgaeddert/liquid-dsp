@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -130,7 +130,7 @@ void autotest_eqlms_00() { testbench_eqlms(2,7, 0.3,   0,7,0.3,800,     0,LIQUID
 void autotest_eqlms_01() { testbench_eqlms(2,7, 0.3,   0,7,0.3,800,     1,LIQUID_MODEM_QPSK); }
 void autotest_eqlms_02() { testbench_eqlms(2,7, 0.3,   0,7,0.3,800,     2,LIQUID_MODEM_QPSK); }
 
-// test different initializaiton methods:  k,m,beta,init,p, mu,  n,update,mod scheme
+// test different initialization methods:  k,m,beta,init,p, mu,  n,update,mod scheme
 void autotest_eqlms_03() { testbench_eqlms(2,7, 0.3,   0,7,0.3,800,     0,LIQUID_MODEM_QAM16); }
 void autotest_eqlms_04() { testbench_eqlms(2,7, 0.3,   1,7,0.3,800,     0,LIQUID_MODEM_QAM16); }
 void autotest_eqlms_05() { testbench_eqlms(2,7, 0.3,   2,7,0.3,800,     0,LIQUID_MODEM_QAM16); }
@@ -190,3 +190,48 @@ void autotest_eqlms_config()
     eqlms_cccf_destroy(q);
 }
 
+void autotest_eqlms_cccf_copy()
+{
+    // create initial object
+    eqlms_cccf q0 = eqlms_cccf_create_lowpass(21, 0.12345f);
+    eqlms_cccf_set_bw(q0, 0.1f);
+    eqlms_cccf_print(q0);
+
+    // run random samples through object
+    unsigned int i;
+    float complex x, v, y0, y1;
+    for (i=0; i<120; i++) {
+        x = randnf() + _Complex_I*randnf();
+        eqlms_cccf_push(q0, x);
+    }
+
+    // copy object
+    eqlms_cccf q1 = eqlms_cccf_copy(q0);
+
+    // run random samples through both objects
+    for (i=0; i<120; i++) {
+        // push random sample in
+        x = randnf() + _Complex_I*randnf();
+        eqlms_cccf_push(q0, x);
+        eqlms_cccf_push(q1, x);
+
+        // compute output
+        eqlms_cccf_execute(q0, &y0);
+        eqlms_cccf_execute(q1, &y1);
+        CONTEND_EQUALITY(y0, y1);
+
+        // step equalization algorithm
+        v = randnf() + _Complex_I*randnf();
+        eqlms_cccf_step(q0, v, y0);
+        eqlms_cccf_step(q1, v, y1);
+    }
+
+    // get and compare coefficients
+    CONTEND_SAME_DATA(eqlms_cccf_get_coefficients(q0),
+                      eqlms_cccf_get_coefficients(q1),
+                      21 * sizeof(float complex));
+
+    // destroy filter objects
+    eqlms_cccf_destroy(q0);
+    eqlms_cccf_destroy(q1);
+}

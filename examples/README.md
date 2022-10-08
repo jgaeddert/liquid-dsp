@@ -70,7 +70,7 @@ This directory contains all the examples for interfacing the liquid modules.
     This example demonstrates the interface to the compand function
     (compression, expansion).  The compander is typically used with the
     quantizer to increase the dynamic range of the converter, particularly for
-    low-level signals.  The transfer function is computed (emperically) and
+    low-level signals.  The transfer function is computed (empirically) and
     printed to the screen.
 
  * `complementary_codes_example.c`:
@@ -326,7 +326,7 @@ This directory contains all the examples for interfacing the liquid modules.
  * `freqmodem_example.c`:
 
  * `fskmodem_example.c`:
-    This example demostrates the M-ary frequency-shift keying
+    This example demonstrates the M-ary frequency-shift keying
     (MFSK) modem in liquid. A message signal is modulated and the
     resulting signal is recovered using a demodulator object.
 
@@ -343,7 +343,7 @@ This directory contains all the examples for interfacing the liquid modules.
     mean-squared error sense.
 
  * `iirdes_analog_example.c`:
-    Tests infinite impulse reponse (IIR) analog filter design. While this
+    Tests infinite impulse response (IIR) analog filter design. While this
     example seems purely academic as IIR filters used in liquid are all
     digital, it is important to realize that they are all derived from their
     analog counterparts. This example serves to check the response of the
@@ -354,7 +354,7 @@ This directory contains all the examples for interfacing the liquid modules.
               `iirfilt_crcf_example.c`
 
  * `iirdes_example.c`:
-    Tests infinite impulse reponse (IIR) digital filter design.
+    Tests infinite impulse response (IIR) digital filter design.
 
     SEE ALSO: `iirdes_analog_example.c`
               `iirfilt_crcf_example.c`
@@ -420,7 +420,7 @@ This directory contains all the examples for interfacing the liquid modules.
     SEE ALSO: `modem_example.c`
 
  * `modem_example.c`:
-    This example demonstates the digital modulator/demodulator (modem) object.
+    This example demonstrates the digital modulator/demodulator (modem) object.
     Data symbols are modulated into complex samples which are then demodulated
     without noise or phase offsets.  The user may select the modulation scheme
     via the command-line interface.
@@ -428,11 +428,11 @@ This directory contains all the examples for interfacing the liquid modules.
     SEE ALSO: `modem_arb_example.c`
 
  * `modem_soft_example.c`:
-    This example demonstates soft demodulation of linear
+    This example demonstrates soft demodulation of linear
     modulation schemes.
 
  * `modular_arithmetic_example.c`:
-    This example demonstates some modular arithmetic functions.
+    This example demonstrates some modular arithmetic functions.
 
  * `msequence_example.c`:
     This example demonstrates the auto-correlation properties of a

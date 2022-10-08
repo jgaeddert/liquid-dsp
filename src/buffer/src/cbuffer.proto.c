@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -91,6 +91,25 @@ CBUFFER() CBUFFER(_create_max)(unsigned int _max_size,
 
     // return main object
     return q;
+}
+
+// copy object
+CBUFFER() CBUFFER(_copy)(CBUFFER() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("error: cbuffer%s_copy(), window object cannot be NULL", EXTENSION);
+
+    // create initial object
+    CBUFFER() q_copy = (CBUFFER()) malloc(sizeof(struct CBUFFER(_s)));
+    memmove(q_copy, q_orig, sizeof(struct CBUFFER(_s)));
+
+    // allocate and copy full memory array
+    q_copy->v = (T*) malloc((q_copy->num_allocated)*sizeof(T));
+    memmove(q_copy->v, q_orig->v, q_copy->num_allocated*sizeof(T));
+
+    // return new object
+    return q_copy;
 }
 
 // destroy cbuffer object, freeing all internal memory

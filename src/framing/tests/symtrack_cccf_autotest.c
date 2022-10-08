@@ -29,7 +29,7 @@
 void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int _ms)
 {
     int          ftype       = LIQUID_FIRFILT_ARKAISER;
-    unsigned int num_symbols = 4000;    // number of data symbols
+    unsigned int num_symbols = 6000;    // number of data symbols
     //unsigned int hc_len      =   4;     // channel filter length
     float        noise_floor = -30.0f;  // noise floor [dB]
     float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]

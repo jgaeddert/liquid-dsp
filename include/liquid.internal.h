@@ -153,9 +153,9 @@ struct fec_s {
     unsigned int enc_block_len; // number of encoded bytes per block: 
     unsigned int res_block_len; // residual bytes in last block
     unsigned int pad;           // padding for each block
-    unsigned char * tblock;     // decoder input sequence [size: 1 x n]
-    int * errlocs;              // error locations [size: 1 x n]
-    int * derrlocs;             // decoded error locations [size: 1 x n]
+    unsigned char * tblock;     // decoder input sequence, [size: 1 x n]
+    int * errlocs;              // error locations, [size: 1 x n]
+    int * derrlocs;             // decoded error locations, [size: 1 x n]
     int erasures;               // number of erasures
 
     // encode function pointer
@@ -346,20 +346,20 @@ unsigned char fec_secded2216_compute_parity(unsigned char * _m);
 unsigned char fec_secded2216_compute_syndrome(unsigned char * _v);
 
 // encode symbol
-//  _sym_dec    :   decoded symbol [size: 2 x 1]
-//  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
+//  _sym_dec    :   decoded symbol, [size: 2 x 1]
+//  _sym_enc    :   encoded symbol, [size: 3 x 1], _sym_enc[0] has only 6 bits
 int fec_secded2216_encode_symbol(unsigned char * _sym_dec,
                                  unsigned char * _sym_enc);
 
 // decode symbol, returning 0/1/2 for zero/one/multiple errors detected
-//  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
-//  _sym_dec    :   decoded symbol [size: 2 x 1]
+//  _sym_enc    :   encoded symbol, [size: 3 x 1], _sym_enc[0] has only 6 bits
+//  _sym_dec    :   decoded symbol, [size: 2 x 1]
 int  fec_secded2216_decode_symbol(unsigned char * _sym_enc,
                                   unsigned char * _sym_dec);
 
 // estimate error vector, returning 0/1/2 for zero/one/multiple errors detected
-//  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
-//  _e_hat      :   estimated error vector [size: 3 x 1]
+//  _sym_enc    :   encoded symbol, [size: 3 x 1], _sym_enc[0] has only 6 bits
+//  _e_hat      :   estimated error vector, [size: 3 x 1]
 int  fec_secded2216_estimate_ehat(unsigned char * _sym_enc,
                                   unsigned char * _e_hat);
 
@@ -390,20 +390,20 @@ unsigned char fec_secded3932_compute_parity(unsigned char * _m);
 unsigned char fec_secded3932_compute_syndrome(unsigned char * _v);
 
 // encode symbol
-//  _sym_dec    :   decoded symbol [size: 4 x 1]
-//  _sym_enc    :   encoded symbol [size: 5 x 1], _sym_enc[0] has only 7 bits
+//  _sym_dec    :   decoded symbol, [size: 4 x 1]
+//  _sym_enc    :   encoded symbol, [size: 5 x 1], _sym_enc[0] has only 7 bits
 int fec_secded3932_encode_symbol(unsigned char * _sym_dec,
                                  unsigned char * _sym_enc);
 
 // estimate error vector, returning 0/1/2 for zero/one/multiple errors detected
-//  _sym_enc    :   encoded symbol [size: 5 x 1], _sym_enc[0] has only 7 bits
-//  _e_hat      :   estimated error vector [size: 5 x 1]
+//  _sym_enc    :   encoded symbol, [size: 5 x 1], _sym_enc[0] has only 7 bits
+//  _e_hat      :   estimated error vector, [size: 5 x 1]
 int  fec_secded3932_estimate_ehat(unsigned char * _sym_enc,
                                   unsigned char * _e_hat);
 
 // decode symbol, returning 0/1/2 for zero/one/multiple errors detected
-//  _sym_enc    :   encoded symbol [size: 5 x 1], _sym_enc[0] has only 7 bits
-//  _sym_dec    :   decoded symbol [size: 4 x 1]
+//  _sym_enc    :   encoded symbol (_sym_enc[0] has only 7 bits), [size: 5 x 1]
+//  _sym_dec    :   decoded symbol, [size: 4 x 1]
 int fec_secded3932_decode_symbol(unsigned char * _sym_enc,
                                 unsigned char * _sym_dec);
 
@@ -434,20 +434,20 @@ unsigned char fec_secded7264_compute_parity(unsigned char * _v);
 unsigned char fec_secded7264_compute_syndrome(unsigned char * _v);
 
 // encode symbol
-//  _sym_dec    :   input symbol [size: 8 x 1]
-//  _sym_enc    :   input symbol [size: 9 x 1]
+//  _sym_dec    :   input symbol, [size: 8 x 1]
+//  _sym_enc    :   input symbol, [size: 9 x 1]
 int fec_secded7264_encode_symbol(unsigned char * _sym_dec,
                                  unsigned char * _sym_enc);
 
 // estimate error vector, returning 0/1/2 for zero/one/multiple errors detected
-//  _sym_enc    :   encoded symbol [size: 9 x 1]
-//  _e_hat      :   estimated error vector [size: 9 x 1]
+//  _sym_enc    :   encoded symbol, [size: 9 x 1]
+//  _e_hat      :   estimated error vector, [size: 9 x 1]
 int fec_secded7264_estimate_ehat(unsigned char * _sym_enc,
                                  unsigned char * _e_hat);
 
 // decode symbol, returning 0/1/2 for zero/one/multiple errors detected
-//  _sym_enc    :   input symbol [size: 8 x 1]
-//  _sym_dec    :   input symbol [size: 9 x 1]
+//  _sym_enc    :   input symbol, [size: 8 x 1]
+//  _sym_dec    :   input symbol, [size: 9 x 1]
 int fec_secded7264_decode_symbol(unsigned char * _sym_enc,
                                  unsigned char * _sym_dec);
 
@@ -601,9 +601,9 @@ float sumproduct_phi(float _x);
 // returns 1 if parity checks, 0 otherwise
 //  _m          :   rows
 //  _n          :   cols
-//  _H          :   sparse binary parity check matrix [size: _m x _n]
+//  _H          :   sparse binary parity check matrix, [size: _m x _n]
 //  _LLR        :   received signal (soft bits, LLR) [size: _n x 1]
-//  _c_hat      :   estimated transmitted signal [size: _n x 1]
+//  _c_hat      :   estimated transmitted signal, [size: _n x 1]
 //  _max_steps  :   maximum number of steps before bailing
 int fec_sumproduct(unsigned int    _m,
                    unsigned int    _n,
@@ -615,15 +615,15 @@ int fec_sumproduct(unsigned int    _m,
 // sum-product algorithm, returns 1 if parity checks, 0 otherwise
 //  _m      :   rows
 //  _n      :   cols
-//  _H      :   sparse binary parity check matrix [size: _m x _n]
-//  _c_hat  :   estimated transmitted signal [size: _n x 1]
+//  _H      :   sparse binary parity check matrix, [size: _m x _n]
+//  _c_hat  :   estimated transmitted signal, [size: _n x 1]
 //
 // internal state arrays
 //  _Lq     :   [size: _m x _n]
 //  _Lr     :   [size: _m x _n]
 //  _Lc     :   [size: _n x 1]
 //  _LQ     :   [size: _n x 1]
-//  _parity :   _H * _c_hat [size: _m x 1]
+//  _parity :   _H * _c_hat, [size: _m x 1]
 int fec_sumproduct_step(unsigned int    _m,
                         unsigned int    _n,
                         smatrixb        _H,
@@ -765,14 +765,14 @@ LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_comp
 // MODULE : filter
 //
 
-// esimate required filter length given transition bandwidth and
+// estimate required filter length given transition bandwidth and
 // stop-band attenuation (algorithm from [Vaidyanathan:1993])
 //  _df     :   transition bandwidth (0 < _df < 0.5)
 //  _as     :   stop-band attenuation [dB] (_as > 0)
 float estimate_req_filter_len_Kaiser(float _df,
                                      float _as);
 
-// esimate required filter length given transition bandwidth and
+// estimate required filter length given transition bandwidth and
 // stop-band attenuation (algorithm from [Herrmann:1973])
 //  _df     :   transition bandwidth (0 < _df < 0.5)
 //  _as     :   stop-band attenuation [dB] (_as > 0)
@@ -783,7 +783,7 @@ float estimate_req_filter_len_Herrmann(float _df,
 // firdes : finite impulse response filter design
 
 // Find approximate bandwidth adjustment factor rho based on
-// filter delay and desired excess bandwdith factor.
+// filter delay and desired excess bandwidth factor.
 //
 //  _m      :   filter delay (symbols)
 //  _beta   :   filter excess bandwidth factor (0,1)
@@ -797,7 +797,7 @@ float rkaiser_approximate_rho(unsigned int _m,
 //  _m      :   filter delay (symbols)
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
-//  _h      :   resulting filter [size: 2*_k*_m+1]
+//  _h      :   resulting filter, [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
 int liquid_firdes_rkaiser_bisection(unsigned int _k,
                                     unsigned int _m,
@@ -813,7 +813,7 @@ int liquid_firdes_rkaiser_bisection(unsigned int _k,
 //  _m      :   filter delay (symbols)
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
-//  _h      :   resulting filter [size: 2*_k*_m+1]
+//  _h      :   resulting filter, [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
 int liquid_firdes_rkaiser_quadratic(unsigned int _k,
                                     unsigned int _m,
@@ -829,7 +829,7 @@ int liquid_firdes_rkaiser_quadratic(unsigned int _k,
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-//  _h      :   filter buffer [size: 2*_k*_m+1]
+//  _h      :   filter buffer, [size: 2*_k*_m+1]
 float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
                                          unsigned int _m,
                                          float _beta,
@@ -884,10 +884,10 @@ int liquid_firdes_farcsech_freqresponse(unsigned int _k,
 //  _n      :   number of elements in _z
 //  _tol    :   tolerance for finding complex pairs
 //  _p      :   resulting pairs, pure real values of _z at end
-void liquid_cplxpair(float complex * _z,
-                     unsigned int _n,
-                     float _tol,
-                     float complex * _p);
+int liquid_cplxpair(float complex * _z,
+                    unsigned int    _n,
+                    float           _tol,
+                    float complex * _p);
 
 // post-process cleanup used with liquid_cplxpair
 //
@@ -898,25 +898,25 @@ void liquid_cplxpair(float complex * _z,
 //  * pairs are ordered by increasing real component
 //  * pure-real elements are ordered by increasing value
 //
-//  _p          :   pre-processed complex array [size: _n x 1]
+//  _p          :   pre-processed complex array, [size: _n x 1]
 //  _n          :   array length
 //  _num_pairs  :   number of complex conjugate pairs
-void liquid_cplxpair_cleanup(float complex * _p,
-                             unsigned int _n,
-                             unsigned int _num_pairs);
+int liquid_cplxpair_cleanup(float complex * _p,
+                            unsigned int    _n,
+                            unsigned int    _num_pairs);
 
 // Jacobian elliptic functions (src/filter/src/ellip.c)
 
 // Landen transformation (_n iterations)
-void landenf(float _k,
-             unsigned int _n,
-             float * _v);
+int landenf(float _k,
+            unsigned int _n,
+            float * _v);
 
 // compute elliptic integral K(k) for _n recursions
-void ellipkf(float _k,
-             unsigned int _n,
-             float * _K,
-             float * _Kp);
+int ellipkf(float _k,
+            unsigned int _n,
+            float * _K,
+            float * _Kp);
 
 // elliptic degree
 float ellipdegf(float _N,
@@ -1031,6 +1031,9 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,                                 \
                            float        _bw,                                \
                            float        _gain);                             \
                                                                             \
+/* Copy object recursively, including all internal objects and state    */  \
+QSOURCE() QSOURCE(_copy)(QSOURCE() _q);                                     \
+                                                                            \
 /* Initialize user-defined qsource object                               */  \
 int QSOURCE(_init_user)(QSOURCE() _q,                                       \
                         void *    _userdata,                                \
@@ -1087,20 +1090,23 @@ int QSOURCE(_get_id)(QSOURCE() _q);                                         \
 int QSOURCE(_enable)(QSOURCE() _q);                                         \
 int QSOURCE(_disable)(QSOURCE() _q);                                        \
                                                                             \
-int QSOURCE(_set_gain)(QSOURCE() _q,                                        \
-                       float     _gain_dB);                                 \
-                                                                            \
-float QSOURCE(_get_gain)(QSOURCE() _q);                                     \
-                                                                            \
 /* Get number of samples generated by the object so far                 */  \
 /*  _q      : msource object                                            */  \
 /*  _gain   : signal gain output [dB]                                   */  \
 uint64_t QSOURCE(_get_num_samples)(QSOURCE() _q);                           \
                                                                             \
+int QSOURCE(_set_gain)(QSOURCE() _q,                                        \
+                       float     _gain_dB);                                 \
+                                                                            \
+float QSOURCE(_get_gain)(QSOURCE() _q);                                     \
+                                                                            \
 int QSOURCE(_set_frequency)(QSOURCE() _q,                                   \
                             float     _dphi);                               \
                                                                             \
 float QSOURCE(_get_frequency)(QSOURCE() _q);                                \
+                                                                            \
+/* get center frequency of signal applied by channelizer alignment */       \
+float QSOURCE(_get_frequency_index)(QSOURCE() _q);                          \
                                                                             \
 int QSOURCE(_generate)(QSOURCE() _q,                                        \
                        TO *      _v);                                       \
@@ -1154,23 +1160,23 @@ float liquid_cargf_approx(float complex _z);
 // internal polynomial root-finding methods
 
 // finds the complex roots of the polynomial using the Durand-Kerner method
-//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _p      :   polynomial array, ascending powers, [size: _k x 1]
 //  _k      :   polynomials length (poly order = _k - 1)
-//  _roots  :   resulting complex roots [size: _k-1 x 1]
+//  _roots  :   resulting complex roots, [size: _k-1 x 1]
 int liquid_poly_findroots_durandkerner(double *         _p,
                                        unsigned int     _k,
                                        double complex * _roots);
 
 // finds the complex roots of the polynomial using Bairstow's method
-//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _p      :   polynomial array, ascending powers, [size: _k x 1]
 //  _k      :   polynomials length (poly order = _k - 1)
-//  _roots  :   resulting complex roots [size: _k-1 x 1]
+//  _roots  :   resulting complex roots, [size: _k-1 x 1]
 int liquid_poly_findroots_bairstow(double *         _p,
                                    unsigned int     _k,
                                    double complex * _roots);
 
 // iterate over Bairstow's method, finding quadratic factor x^2 + u*x + v
-//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _p      :   polynomial array, ascending powers, [size: _k x 1]
 //  _k      :   polynomials length (poly order = _k - 1)
 //  _p1     :   reduced polynomial (output) [size: _k-2 x 1]
 //  _u      :   input: initial estimate for u; output: resulting u
@@ -1385,7 +1391,7 @@ int MODEM(_demodulate_linear_array)(T              _v,          \
                                     T *            _res);       \
                                                                 \
 /* Demodulate a linear symbol constellation using           */  \
-/* refereneced lookup table                                 */  \
+/* referenced lookup table                                  */  \
 /*  _v      :   input value             */                      \
 /*  _m      :   bits per symbol         */                      \
 /*  _ref    :   array of thresholds     */                      \
@@ -1653,7 +1659,7 @@ int gasearch_mutate(gasearch _q);
 int gasearch_rank(gasearch _q);
 
 // sort values by index
-//  _v          :   input values [size: _len x 1]
+//  _v          :   input values, [size: _len x 1]
 //  _rank       :   output rank array (indices) [size: _len x 1]
 //  _len        :   length of input array
 //  _descending :   descending/ascending

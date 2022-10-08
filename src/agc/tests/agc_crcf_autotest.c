@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 // Test DC gain control
 void autotest_agc_crcf_dc_gain_control()
 {
-    // set paramaters
+    // set parameters
     float gamma = 0.1f;     // nominal signal level
     float bt    = 0.1f;     // bandwidth-time product
     float tol   = 0.001f;   // error tolerance
@@ -57,7 +57,7 @@ void autotest_agc_crcf_dc_gain_control()
 // test gain control on DC input with separate scale
 void autotest_agc_crcf_scale()
 {
-    // set paramaters
+    // set parameters
     float scale = 4.0f;     // output scale (independent of AGC loop)
     float tol   = 0.001f;   // error tolerance
 
@@ -84,7 +84,7 @@ void autotest_agc_crcf_scale()
 // Test AC gain control
 void autotest_agc_crcf_ac_gain_control()
 {
-    // set paramaters
+    // set parameters
     float gamma = 0.1f;             // nominal signal level
     float bt    = 0.1f;             // bandwidth-time product
     float tol   = 0.001f;           // error tolerance
@@ -115,7 +115,7 @@ void autotest_agc_crcf_ac_gain_control()
 // Test RSSI on sinusoidal input
 void autotest_agc_crcf_rssi_sinusoid()
 {
-    // set paramaters
+    // set parameters
     float gamma = 0.3f;         // nominal signal level
     float bt    = 0.05f;        // agc bandwidth
     float tol   = 0.001f;       // error tolerance
@@ -153,7 +153,7 @@ void autotest_agc_crcf_rssi_sinusoid()
 // Test RSSI on noise input
 void autotest_agc_crcf_rssi_noise()
 {
-    // set paramaters
+    // set parameters
     float gamma = -30.0f;   // nominal signal level [dB]
     float bt    =  2e-3f;   // agc bandwidth
     float tol   =  1.0f;    // error tolerance [dB]
@@ -248,7 +248,7 @@ void autotest_agc_crcf_squelch()
 // test lock state control
 void autotest_agc_crcf_lock()
 {
-    // set paramaters
+    // set parameters
     float gamma = 0.1f;     // nominal signal level
     float tol   = 0.01f;    // error tolerance
 
@@ -318,5 +318,38 @@ void autotest_agc_crcf_invalid_config()
 
     // destroy object
     agc_crcf_destroy(q);
+}
+
+// copy test
+void autotest_agc_crcf_copy()
+{
+    // create base object and initialize
+    agc_crcf q0 = agc_crcf_create();
+    agc_crcf_set_bandwidth(q0, 0.01234f);
+
+    // start running input through AGC
+    unsigned int n = 32;
+    unsigned int i;
+    float complex x, y0, y1;
+    for (i=0; i<n; i++) {
+        x = randnf() + _Complex_I*randnf();
+        agc_crcf_execute(q0, x, &y0);
+    }
+
+    // copy AGC
+    agc_crcf q1 = agc_crcf_copy(q0);
+
+    // continue running through both AGCs
+    for (i=0; i<n; i++) {
+        // run AGCs in parallel
+        x = randnf() + _Complex_I*randnf();
+        agc_crcf_execute(q0, x, &y0);
+        agc_crcf_execute(q1, x, &y1);
+        CONTEND_EQUALITY(y0, y1);
+    }
+
+    // destroy AGC objects
+    agc_crcf_destroy(q0);
+    agc_crcf_destroy(q1);
 }
 

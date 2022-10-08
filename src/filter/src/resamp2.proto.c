@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,24 +39,24 @@
 //  PRINTVAL()      print macro
 
 struct RESAMP2(_s) {
-    TC * h;                 // filter prototype
-    unsigned int m;         // primitive filter length
-    unsigned int h_len;     // actual filter length: h_len = 4*m+1
-    float f0;               // center frequency [-1.0 <= f0 <= 1.0]
-    float as;               // stop-band attenuation [dB]
+    TC *            h;      // filter prototype
+    unsigned int    m;      // primitive filter length
+    unsigned int    h_len;  // actual filter length: h_len = 4*m+1
+    float           f0;     // center frequency [-1.0 <= f0 <= 1.0]
+    float           as;     // stop-band attenuation [dB]
 
     // filter component
-    TC * h1;                // filter branch coefficients
-    DOTPROD() dp;           // inner dot product object
-    unsigned int h1_len;    // filter length (2*m)
+    TC *            h1;     // filter branch coefficients
+    DOTPROD()       dp;     // inner dot product object
+    unsigned int    h1_len; // filter length (2*m)
 
     // input buffers
-    WINDOW() w0;            // input buffer (even samples)
-    WINDOW() w1;            // input buffer (odd samples)
-    TC scale;               // output scaling factor
+    WINDOW()        w0;     // input buffer (even samples)
+    WINDOW()        w1;     // input buffer (odd samples)
+    TC              scale;  // output scaling factor
 
     // halfband filter operation
-    unsigned int toggle;
+    unsigned int    toggle;
 };
 
 // create a resamp2 object
@@ -89,19 +89,15 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
 
     // design filter prototype
     unsigned int i;
-    float t, h1, h2;
-    TC h3;
-    float beta = kaiser_beta_As(q->as);
+    float hf[q->h_len];
+    liquid_firdespm_halfband_as(q->m, q->as, hf);
     for (i=0; i<q->h_len; i++) {
-        t = (float)i - (float)(q->h_len-1)/2.0f;
-        h1 = sincf(t/2.0f);
-        h2 = liquid_kaiser(i,q->h_len,beta);
+        float t = (float)i - (float)(q->h_len-1)/2.0f;
 #if TC_COMPLEX == 1
-        h3 = cosf(2.0f*M_PI*t*q->f0) + _Complex_I*sinf(2.0f*M_PI*t*q->f0);
+        q->h[i] = 2 * hf[i] * ( cosf(2.0f*M_PI*t*q->f0) + _Complex_I*sinf(2.0f*M_PI*t*q->f0) );
 #else
-        h3 = cosf(2.0f*M_PI*t*q->f0);
+        q->h[i] = 2 * hf[i] * cosf(2.0f*M_PI*t*q->f0);
 #endif
-        q->h[i] = h1*h2*h3;
     }
 
     // resample, alternate sign, [reverse direction]
@@ -165,6 +161,34 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2()    _q,
         _q->dp = DOTPROD(_recreate)(_q->dp, _q->h1, 2*_q->m);
     }
     return _q;
+}
+
+// copy object
+RESAMP2() RESAMP2(_copy)(RESAMP2() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("resamp2_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create object, copy internal memory, overwrite with specific values
+    RESAMP2() q_copy = (RESAMP2()) malloc(sizeof(struct RESAMP2(_s)));
+    memmove(q_copy, q_orig, sizeof(struct RESAMP2(_s)));
+
+    // allocate memory for filter coefficients
+    q_copy->h  = (TC *) malloc((q_copy->h_len )*sizeof(TC));
+    q_copy->h1 = (TC *) malloc((q_copy->h1_len)*sizeof(TC));
+
+    // copy filter coefficients
+    memmove(q_copy->h,  q_orig->h,  (q_copy->h_len )*sizeof(TC));
+    memmove(q_copy->h1, q_orig->h1, (q_copy->h1_len)*sizeof(TC));
+
+    // copy dot product and window objects
+    q_copy->dp = DOTPROD(_copy)(q_orig->dp);
+    q_copy->w0 = WINDOW (_copy)(q_orig->w0);
+    q_copy->w1 = WINDOW (_copy)(q_orig->w1);
+
+    // return object
+    return q_copy;
 }
 
 // destroy a resamp2 object, clearing up all allocated memory
