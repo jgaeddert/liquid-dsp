@@ -40,7 +40,7 @@
 #define DEBUG_RESAMP_PRINT              0
 
 // internal: update timing
-void RESAMP(_update_timing_state)(RESAMP() _q);
+int RESAMP(_update_timing_state)(RESAMP() _q);
 
 struct RESAMP(_s) {
     // filter design parameters
@@ -161,7 +161,7 @@ RESAMP() RESAMP(_copy)(RESAMP() q_orig)
 
     // create object, copy internal memory, overwrite with specific values
     RESAMP() q_copy = (RESAMP()) malloc(sizeof(struct RESAMP(_s)));
-    memmove(q_copy, q_orig, (q_orig)*sizeof(TC));
+    memmove(q_copy, q_orig, sizeof(struct RESAMP(_s)));
 
     // copy filter bank
     q_copy->f = FIRPFB(_copy)(q_orig->f);
@@ -171,24 +171,26 @@ RESAMP() RESAMP(_copy)(RESAMP() q_orig)
 }
 
 // free arbitrary resampler object
-void RESAMP(_destroy)(RESAMP() _q)
+int RESAMP(_destroy)(RESAMP() _q)
 {
     // free polyphase filterbank
     FIRPFB(_destroy)(_q->f);
 
     // free main object memory
     free(_q);
+
+    return LIQUID_OK;
 }
 
 // print resampler object
-void RESAMP(_print)(RESAMP() _q)
+int RESAMP(_print)(RESAMP() _q)
 {
     printf("resampler [rate: %f]\n", _q->rate);
-    FIRPFB(_print)(_q->f);
+    return FIRPFB(_print)(_q->f);
 }
 
 // reset resampler object
-void RESAMP(_reset)(RESAMP() _q)
+int RESAMP(_reset)(RESAMP() _q)
 {
     // clear filterbank
     FIRPFB(_reset)(_q->f);
@@ -199,9 +201,9 @@ void RESAMP(_reset)(RESAMP() _q)
     _q->bf    = 0.0f;           // soft-valued filterbank index
     _q->b     = 0;              // base filterbank index
     _q->mu    = 0.0f;           // fractional filterbank interpolation value
-
     _q->y0    = 0;              // filterbank output at index b
     _q->y1    = 0;              // filterbank output at index b+1
+    return LIQUID_OK;
 }
 
 // get resampler filter delay (semi-length m)
@@ -227,19 +229,18 @@ int RESAMP(_get_scale)(RESAMP() _q,
 // set rate of arbitrary resampler
 //  _q      : resampling object
 //  _rate   : new sampling rate, _rate > 0
-void RESAMP(_set_rate)(RESAMP() _q,
-                       float    _rate)
+int RESAMP(_set_rate)(RESAMP() _q,
+                      float    _rate)
 {
-    if (_rate <= 0) {
-        liquid_error(LIQUID_EICONFIG,"resamp_%s_set_rate(), resampling rate must be greater than zero", EXTENSION_FULL);
-        return;
-    }
+    if (_rate <= 0)
+        return liquid_error(LIQUID_EICONFIG,"resamp_%s_set_rate(), resampling rate must be greater than zero", EXTENSION_FULL);
 
     // set internal rate
     _q->rate = _rate;
 
     // set output stride
     _q->del = 1.0f / _q->rate;
+    return LIQUID_OK;
 }
 
 // get rate of arbitrary resampler
@@ -249,50 +250,47 @@ float RESAMP(_get_rate)(RESAMP() _q)
 }
 
 // adjust resampling rate
-void RESAMP(_adjust_rate)(RESAMP() _q,
-                          float    _gamma)
+int RESAMP(_adjust_rate)(RESAMP() _q,
+                         float    _gamma)
 {
-    if (_gamma <= 0) {
-        liquid_error(LIQUID_EICONFIG,"resamp_%s_adjust_rate(), resampling adjustment (%12.4e) must be greater than zero", EXTENSION_FULL, _gamma);
-        return;
-    }
+    if (_gamma <= 0)
+        return liquid_error(LIQUID_EICONFIG,"resamp_%s_adjust_rate(), resampling adjustment (%12.4e) must be greater than zero", EXTENSION_FULL, _gamma);
 
     // adjust internal rate
     _q->rate *= _gamma;
 
     // set output stride
     _q->del = 1.0f / _q->rate;
+    return LIQUID_OK;
 }
 
 
 // set resampling timing phase
 //  _q      : resampling object
 //  _tau    : sample timing
-void RESAMP(_set_timing_phase)(RESAMP() _q,
-                               float    _tau)
+int RESAMP(_set_timing_phase)(RESAMP() _q,
+                              float    _tau)
 {
-    if (_tau < -1.0f || _tau > 1.0f) {
-        liquid_error(LIQUID_EICONFIG,"resamp_%s_set_timing_phase(), timing phase must be in [-1,1], is %f.",EXTENSION_FULL,_tau);
-        return;
-    }
+    if (_tau < -1.0f || _tau > 1.0f)
+        return liquid_error(LIQUID_EICONFIG,"resamp_%s_set_timing_phase(), timing phase must be in [-1,1], is %f.",EXTENSION_FULL,_tau);
 
     // set internal timing phase
     _q->tau = _tau;
+    return LIQUID_OK;
 }
 
 // adjust resampling timing phase
 //  _q      : resampling object
 //  _delta  : sample timing adjustment
-void RESAMP(_adjust_timing_phase)(RESAMP() _q,
-                                  float    _delta)
+int RESAMP(_adjust_timing_phase)(RESAMP() _q,
+                                 float    _delta)
 {
-    if (_delta < -1.0f || _delta > 1.0f) {
-        liquid_error(LIQUID_EICONFIG,"resamp_%s_adjust_timing_phase(), timing phase adjustment must be in [-1,1], is %f.",EXTENSION_FULL,_delta);
-        return;
-    }
+    if (_delta < -1.0f || _delta > 1.0f)
+        return liquid_error(LIQUID_EICONFIG,"resamp_%s_adjust_timing_phase(), timing phase adjustment must be in [-1,1], is %f.",EXTENSION_FULL,_delta);
 
     // adjust internal timing phase
     _q->tau += _delta;
+    return LIQUID_OK;
 }
 
 // Get the number of output samples given current state and input buffer size.
@@ -308,10 +306,10 @@ unsigned int RESAMP(_get_num_output)(RESAMP()     _q,
 //  _x          :   single input sample
 //  _y          :   output array
 //  _num_written:   number of samples written to output
-void RESAMP(_execute)(RESAMP()       _q,
-                      TI             _x,
-                      TO *           _y,
-                      unsigned int * _num_written)
+int RESAMP(_execute)(RESAMP()       _q,
+                     TI             _x,
+                     TO *           _y,
+                     unsigned int * _num_written)
 {
     // push input sample into filterbank
     FIRPFB(_push)(_q->f, _x);
@@ -362,7 +360,7 @@ void RESAMP(_execute)(RESAMP()       _q,
             }
             break;
         default:
-            liquid_error(LIQUID_EICONFIG,"resamp_%s_execute(), invalid/unknown state", EXTENSION_FULL);
+            return liquid_error(LIQUID_EICONFIG,"resamp_%s_execute(), invalid/unknown state", EXTENSION_FULL);
         }
     }
 
@@ -373,6 +371,7 @@ void RESAMP(_execute)(RESAMP()       _q,
 
     // specify number of samples written
     *_num_written = n;
+    return LIQUID_OK;
 }
 
 // execute arbitrary resampler on a block of samples
@@ -381,11 +380,11 @@ void RESAMP(_execute)(RESAMP()       _q,
 //  _nx             :   input buffer
 //  _y              :   output sample array (pointer)
 //  _ny             :   number of samples written to _y
-void RESAMP(_execute_block)(RESAMP()       _q,
-                            TI *           _x,
-                            unsigned int   _nx,
-                            TO *           _y,
-                            unsigned int * _ny)
+int RESAMP(_execute_block)(RESAMP()       _q,
+                           TI *           _x,
+                           unsigned int   _nx,
+                           TO *           _y,
+                           unsigned int * _ny)
 {
     // initialize number of output samples to zero
     unsigned int ny = 0;
@@ -405,6 +404,7 @@ void RESAMP(_execute_block)(RESAMP()       _q,
 
     // set return value for number of output samples written
     *_ny = ny;
+    return LIQUID_OK;
 }
 
 
@@ -414,7 +414,7 @@ void RESAMP(_execute_block)(RESAMP()       _q,
 
 // update timing state; increment output timing stride and
 // quantize filterbank indices
-void RESAMP(_update_timing_state)(RESAMP() _q)
+int RESAMP(_update_timing_state)(RESAMP() _q)
 {
     // update high-resolution timing phase
     _q->tau += _q->del;
@@ -425,5 +425,6 @@ void RESAMP(_update_timing_state)(RESAMP() _q)
     // split into integer filterbank index and fractional interpolation
     _q->b   = (int)floorf(_q->bf);      // base index
     _q->mu  = _q->bf - (float)(_q->b);  // fractional index
+    return LIQUID_OK;
 }
 
