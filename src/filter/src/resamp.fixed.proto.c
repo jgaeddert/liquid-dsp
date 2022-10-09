@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
 // Arbitrary resampler (fixed-point phase versions)
-//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,8 +66,9 @@ RESAMP() RESAMP(_create)(float        _rate,
     if (_as <= 0.0f)
         return liquid_error_config("resamp_%s_create(), filter stop-band suppression must be greater than zero", EXTENSION_FULL);
 #if 0
-    if (_npfb == 0)
-        return liquid_error_config("resamp_%s_create(), number of filter banks must be greater than zero", EXTENSION_FULL);
+    // TODO: throw warning here
+    if (_npfb != 256)
+        return liquid_error_config("resamp_%s_create(), number of filter banks must be 256", EXTENSION_FULL);
 #endif
 
     // allocate memory for resampler
@@ -163,8 +162,9 @@ int RESAMP(_destroy)(RESAMP() _q)
 // print resampler object
 int RESAMP(_print)(RESAMP() _q)
 {
-    printf("resampler [rate: %f]\n", _q->r);
-    return FIRPFB(_print)(_q->pfb);
+    printf("<liquid.resamp_%s, rate=%g, m=%u, as=%.3f, fc=%g, npfb=%u>\n",
+        EXTENSION_FULL, _q->r, _q->m, _q->as, _q->fc, _q->npfb);
+    return LIQUID_OK;
 }
 
 // reset resampler object
@@ -229,6 +229,7 @@ int RESAMP(_adjust_rate)(RESAMP() _q,
 int RESAMP(_set_timing_phase)(RESAMP() _q,
                               float    _tau)
 {
+    return liquid_error(LIQUID_EICONFIG,"resamp_%s_set_timing_phase(), method not implemented",EXTENSION_FULL);
     if (_tau < -1.0f || _tau > 1.0f) {
         return liquid_error(LIQUID_EICONFIG,"resamp_%s_set_timing_phase(), timing phase must be in [-1,1], is %f.",EXTENSION_FULL,_tau);
     }
@@ -245,6 +246,7 @@ int RESAMP(_set_timing_phase)(RESAMP() _q,
 int RESAMP(_adjust_timing_phase)(RESAMP() _q,
                                  float    _delta)
 {
+    return liquid_error(LIQUID_EICONFIG,"resamp_%s_adjust_timing_phase(), method not implemented",EXTENSION_FULL);
     if (_delta < -1.0f || _delta > 1.0f) {
         return liquid_error(LIQUID_EICONFIG,"resamp_%s_adjust_timing_phase(), timing phase adjustment must be in [-1,1], is %f.",EXTENSION_FULL,_delta);
     }
