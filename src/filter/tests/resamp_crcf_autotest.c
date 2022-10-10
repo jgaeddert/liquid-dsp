@@ -31,8 +31,8 @@ void testbench_resamp_crcf(float r, float As)
     // options
     float        bw   = 0.25f;  // target output signal bandwidth
     float        tol  = 0.5f;   // output PSD error tolerance [dB]
-    unsigned int m    = 15;     // resampler semi-length
-    unsigned int npfb = 256;    // number of filters in bank
+    unsigned int m    = 20;     // resampler semi-length
+    unsigned int npfb = 1024;   // number of filters in bank
     float        fc   = 0.45f;  // resampler cut-off frequency
 
     // create resampler
@@ -79,7 +79,7 @@ void autotest_resamp_crcf_03() { testbench_resamp_crcf(0.676543210f, 60.0f); }
 
 void autotest_resamp_crcf_04() { testbench_resamp_crcf(0.127115323f, 80.0f); }
 void autotest_resamp_crcf_05() { testbench_resamp_crcf(0.373737373f, 80.0f); }
-//void xautotest_resamp_crcf_06() { testbench_resamp_crcf(0.676543210f, 80.0f); }
+void autotest_resamp_crcf_06() { testbench_resamp_crcf(0.676543210f, 80.0f); }
 
 // test arbitrary resampler output length calculation
 void testbench_resamp_crcf_num_output(float _rate, unsigned int _npfb)
