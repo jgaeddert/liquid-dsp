@@ -40,6 +40,7 @@ struct RESAMP(_s) {
     float           r;      // resampling rate
     uint32_t        step;   // step size (quantized resampling rate)
     uint32_t        phase;  // sampling phase
+    unsigned int    bits_index;
     unsigned int    npfb;   // 256
     FIRPFB()        pfb;    // filter bank
 };
@@ -65,11 +66,11 @@ RESAMP() RESAMP(_create)(float        _rate,
         return liquid_error_config("resamp_%s_create(), filter cutoff must be in (0,0.5)", EXTENSION_FULL);
     if (_as <= 0.0f)
         return liquid_error_config("resamp_%s_create(), filter stop-band suppression must be greater than zero", EXTENSION_FULL);
-#if 0
-    // TODO: throw warning here
-    if (_npfb != 256)
-        return liquid_error_config("resamp_%s_create(), number of filter banks must be 256", EXTENSION_FULL);
-#endif
+
+    // check number of bits representing filter bank resolution
+    unsigned int bits = liquid_nextpow2(_npfb);
+    if (bits < 1 || bits > 16)
+        return liquid_error_config("resamp_%s_create(), number of filter banks must be in (2^0,2^16)", EXTENSION_FULL);
 
     // allocate memory for resampler
     RESAMP() q = (RESAMP()) malloc(sizeof(struct RESAMP(_s)));
@@ -79,10 +80,11 @@ RESAMP() RESAMP(_create)(float        _rate,
     RESAMP(_set_rate)(q, _rate);
 
     // set properties
-    q->m    = _m;       // prototype filter semi-length
-    q->fc   = _fc;      // prototype filter cutoff frequency
-    q->as   = _as;      // prototype filter stop-band attenuation
-    q->npfb = 256;      // number of filters in bank (fixed 8-bit value)
+    q->m    = _m;               // prototype filter semi-length
+    q->fc   = _fc;              // prototype filter cutoff frequency
+    q->as   = _as;              // prototype filter stop-band attenuation
+    q->bits_index = bits;       // number of bits representing filters in bank
+    q->npfb = 1<<q->bits_index; // number of filters in bank
 
     // design filter
     unsigned int n = 2*q->m*q->npfb+1;
@@ -290,7 +292,7 @@ int RESAMP(_execute)(RESAMP()       _q,
     unsigned int n=0;
     while (_q->phase <= 0x00ffffff) {
         //unsigned int index = (_q->phase + 0x00008000) >> 16;
-        unsigned int index = _q->phase >> 16; // round down
+        unsigned int index = _q->phase >> (24 - _q->bits_index); // round down
         FIRPFB(_execute)(_q->pfb, index, &_y[n++]);
         _q->phase += _q->step;
     }
