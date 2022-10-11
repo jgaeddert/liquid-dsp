@@ -26,13 +26,13 @@
 // test single-stage arbitrary resampler
 //   r  : resampling rate (output/input)
 //   As : resampling filter stop-band attenuation [dB]
-void testbench_resamp_crcf(float r, float As)
+void testbench_resamp_crcf(float r, float As, int _id)
 {
     // options
     float        bw   = 0.25f;  // target output signal bandwidth
     float        tol  = 0.5f;   // output PSD error tolerance [dB]
     unsigned int m    = 20;     // resampler semi-length
-    unsigned int npfb = 1024;   // number of filters in bank
+    unsigned int npfb = 2048;   // number of filters in bank
     float        fc   = 0.45f;  // resampler cut-off frequency
 
     // create resampler
@@ -65,7 +65,7 @@ void testbench_resamp_crcf(float r, float As)
         {.fmin=+0.6f*bw, .fmax=+0.5f,    .pmin=0,     .pmax=-As+tol, .test_lo=0, .test_hi=1},
     };
     char filename[256];
-    sprintf(filename,"autotest/logs/resamp_crcf_r%.3u_a%.2u_autotest.m", (int)(r*1000), (int)(As));
+    sprintf(filename,"autotest/logs/resamp_crcf_%.2d.m", _id);
     liquid_autotest_validate_psd_signal(buf_1, nw, regions, 3,
         liquid_autotest_verbose ? filename : NULL);
 
@@ -73,13 +73,18 @@ void testbench_resamp_crcf(float r, float As)
     resamp_crcf_destroy(resamp);
 }
 
-void autotest_resamp_crcf_01() { testbench_resamp_crcf(0.127115323f, 60.0f); }
-void autotest_resamp_crcf_02() { testbench_resamp_crcf(0.373737373f, 60.0f); }
-void autotest_resamp_crcf_03() { testbench_resamp_crcf(0.676543210f, 60.0f); }
+void autotest_resamp_crcf_00() { testbench_resamp_crcf(0.127115323f, 60.0f,  0); }
+void autotest_resamp_crcf_01() { testbench_resamp_crcf(0.373737373f, 60.0f,  1); }
+void autotest_resamp_crcf_02() { testbench_resamp_crcf(0.676543210f, 60.0f,  2); }
+void autotest_resamp_crcf_03() { testbench_resamp_crcf(0.973621947f, 60.0f,  3); }
+//void xautotest_resamp_crcf_04() { testbench_resamp_crcf(1.023832447f, 60.0f,  4); }
+//void xautotest_resamp_crcf_05() { testbench_resamp_crcf(2.182634827f, 60.0f,  5); }
+//void xautotest_resamp_crcf_06() { testbench_resamp_crcf(8.123980823f, 60.0f,  6); }
 
-void autotest_resamp_crcf_04() { testbench_resamp_crcf(0.127115323f, 80.0f); }
-void autotest_resamp_crcf_05() { testbench_resamp_crcf(0.373737373f, 80.0f); }
-void autotest_resamp_crcf_06() { testbench_resamp_crcf(0.676543210f, 80.0f); }
+void autotest_resamp_crcf_10() { testbench_resamp_crcf(0.127115323f, 80.0f, 10); }
+void autotest_resamp_crcf_11() { testbench_resamp_crcf(0.373737373f, 80.0f, 11); }
+void autotest_resamp_crcf_12() { testbench_resamp_crcf(0.676543210f, 80.0f, 12); }
+void autotest_resamp_crcf_13() { testbench_resamp_crcf(0.973621947f, 80.0f, 13); }
 
 // test arbitrary resampler output length calculation
 void testbench_resamp_crcf_num_output(float _rate, unsigned int _npfb)
