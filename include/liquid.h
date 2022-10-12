@@ -5889,6 +5889,52 @@ int dsssframesync_debug_print         (dsssframesync _q, const char * _filename)
 framedatastats_s dsssframesync_get_framedatastats  (dsssframesync _q);
 
 //
+// Direct sequence/spread spectrum framing with fixed 64-byte payload
+//
+// DS/SS frame generator object type
+typedef struct dsssframe64gen_s * dsssframe64gen;
+
+// create dsssframe64gen object
+dsssframe64gen dsssframe64gen_create();
+
+// destroy dsssframe64gen object
+int dsssframe64gen_destroy(dsssframe64gen _q);
+
+// print dsssframe64gen object internals
+int dsssframe64gen_print(dsssframe64gen _q);
+
+int dsssframe64gen_print(dsssframe64gen _q);
+
+// reset dsssframe64gen object internals
+//int dsssframe64gen_reset(dsssframe64gen _q);
+
+// is frame assembled?
+//int dsssframe64gen_is_assembled(dsssframe64gen _q);
+
+// get length of assembled frame (samples)
+unsigned int dsssframe64gen_get_frame_len(dsssframe64gen _q);
+
+// assemble a frame from an array of data
+//  _q              :   frame generator object
+//  _props          :   frame properties
+//  _payload        :   payload data [size: _payload_len x 1]
+//  _payload_len    :   payload data length
+int dsssframe64gen_assemble(dsssframe64gen        _q,
+                            const unsigned char * _header,
+                            const unsigned char * _payload);
+
+int dsssframe64gen_write(dsssframe64gen        _q,
+                        liquid_float_complex * _buf,
+                        unsigned int           _buf_len);
+
+// is frame generation complete?
+int dsssframe64gen_complete(dsssframe64gen _q);
+
+// get full frame length [samples]
+unsigned int dsssframe64gen_get_frame_len(dsssframe64gen _q);
+
+
+//
 // OFDM flexframe generator
 //
 

@@ -629,6 +629,7 @@ framing_objects :=						\
 	src/framing/src/bsync_crcf.o				\
 	src/framing/src/bsync_cccf.o				\
 	src/framing/src/detector_cccf.o				\
+	src/framing/src/dsssframe64gen.o			\
 	src/framing/src/dsssframegen.o				\
 	src/framing/src/dsssframesync.o				\
 	src/framing/src/framedatastats.o			\
@@ -663,6 +664,7 @@ src/framing/src/bsync_rrrf.o        : %.o : %.c $(include_headers) src/framing/s
 src/framing/src/bsync_crcf.o        : %.o : %.c $(include_headers) src/framing/src/bsync.proto.c
 src/framing/src/bsync_cccf.o        : %.o : %.c $(include_headers) src/framing/src/bsync.proto.c
 src/framing/src/detector_cccf.o     : %.o : %.c $(include_headers)
+src/framing/src/dsssframe64gen.o    : %.o : %.c $(include_headers)
 src/framing/src/dsssframegen.o      : %.o : %.c $(include_headers)
 src/framing/src/dsssframesync.o     : %.o : %.c $(include_headers)
 src/framing/src/framedatastats.o    : %.o : %.c $(include_headers)
@@ -1512,6 +1514,7 @@ example_programs :=						\
 	examples/cvsd_example					\
 	examples/detector_cccf_example				\
 	examples/dds_cccf_example				\
+	examples/dsssframe64sync_example			\
 	examples/dsssframesync_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
