@@ -51,8 +51,8 @@ struct dsssframe64gen_s {
 dsssframe64gen dsssframe64gen_create()
 {
     dsssframe64gen q = (dsssframe64gen) malloc(sizeof(struct dsssframe64gen_s));
-    q->m    = 7;
-    q->beta = 0.3f;
+    q->m    = 15;
+    q->beta = 0.20f;
 
     unsigned int i;
 
