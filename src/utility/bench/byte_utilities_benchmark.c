@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,7 @@ void benchmark_count_ones(struct rusage     * _start,
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4*buf_len;
+    *_num_iterations += c & 1; // trivial use of variable
 
     // clean allocated memory
     free(buf);

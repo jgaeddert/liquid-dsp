@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2017 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,6 +75,9 @@ void qdetector_cccf_bench(struct rusage *     _start,
         detected ^= qdetector_cccf_execute(q, x[4]) != NULL;
         detected ^= qdetector_cccf_execute(q, x[5]) != NULL;
         detected ^= qdetector_cccf_execute(q, x[6]) != NULL;
+
+        // randomize input
+        x[0] += detected > 2 ? -1e-3f : 1e-3f;
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 7;
