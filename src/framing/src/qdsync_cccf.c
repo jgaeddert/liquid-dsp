@@ -33,37 +33,94 @@
 
 #include "liquid.internal.h"
 
+// push samples through detection stage
+int qdsync_cccf_execute_detect(qdsync_cccf   _q,
+                               float complex _x);
+
+// step receiver mixer, matched filter, decimator
+//  _q      :   frame synchronizer
+//  _x      :   input sample
+int qdsync_cccf_step(qdsync_cccf   _q,
+                     float complex _x);
+
+// append sample to output buffer
+int qdsync_cccf_buf_append(qdsync_cccf   _q,
+                           float complex _x);
+
 // main object definition
 struct qdsync_cccf_s {
+    unsigned int    seq_len;    // preamble sequence length
+    int             ftype;      //
+    unsigned int    k;          //
+    unsigned int    m;          //
+    float           beta;       //
+
     qdsync_callback callback;   //
     void *          context;    //
     qdetector_cccf  detector;   // detector
+
     // status variables
     enum {
         QDSYNC_STATE_DETECT=0,  // detect frame
-        QDSYNC_STATE_SYNC,      // synchronize samples
-    }            state;
-    // resampler
-    // nco
+        QDSYNC_STATE_SYNC,      // 
+    }               state;      // frame synchronization state
+    unsigned int symbol_counter;// counter: total number of symbols received including preamble sequence
+
+    // estimated offsets
+    float           tau_hat;    //
+    float           gamma_hat;  //
+    float           dphi_hat;   //
+    float           phi_hat;    //
+
+    nco_crcf            mixer;  // coarse carrier frequency recovery
+
+    // timing recovery objects, states
+    firpfb_crcf         mf;         // matched filter decimator
+    unsigned int        npfb;       // number of filters in symsync
+    int                 mf_counter; // matched filter output timer
+    unsigned int        pfb_index;  // filterbank index
+
+    // symbol buffer
+    unsigned int        buf_out_len;// output buffer length
+    float complex *     buf_out;    // output buffer
+    unsigned int        buf_out_counter; // output counter
 };
 
 // create detector with generic sequence
-//  _s      :   sample sequence
-//  _s_len  :   length of sample sequence
-qdsync_cccf qdsync_cccf_create(float complex * _s,
-                               unsigned int    _s_len,
-                               qdsync_callback _callback,
-                               void *          _context)
+qdsync_cccf qdsync_cccf_create_linear(liquid_float_complex * _seq,
+                                      unsigned int           _seq_len,
+                                      int                    _ftype,
+                                      unsigned int           _k,
+                                      unsigned int           _m,
+                                      float                  _beta,
+                                      qdsync_callback        _callback,
+                                      void *                 _context)
 {
     // validate input
-    if (_s_len == 0)
+    if (_seq_len == 0)
         return liquid_error_config("qdsync_cccf_create(), sequence length cannot be zero");
-    
+
     // allocate memory for main object and set internal properties
     qdsync_cccf q = (qdsync_cccf) malloc(sizeof(struct qdsync_cccf_s));
+    q->seq_len = _seq_len;
+    q->ftype   = _ftype;
+    q->k       = _k;
+    q->m       = _m;
+    q->beta    = _beta;
 
     // create detector
-    q->detector = qdetector_cccf_create(_s, _s_len);
+    q->detector = qdetector_cccf_create_linear(_seq, _seq_len, _ftype, _k, _m, _beta);
+
+    // create down-coverters for carrier phase tracking
+    q->mixer = nco_crcf_create(LIQUID_NCO);
+
+    // create symbol timing recovery filters
+    q->npfb = 256;   // number of filters in the bank
+    q->mf   = firpfb_crcf_create_rnyquist(q->ftype, q->npfb, q->k, q->m, q->beta);
+
+    // allocate buffer for storing output samples
+    q->buf_out_len = 64; // TODO: make user-defined?
+    q->buf_out     = (float complex*) malloc(q->buf_out_len*sizeof(float complex));
 
     // set callback and context values
     qdsync_cccf_set_callback(q, _callback);
@@ -77,6 +134,7 @@ qdsync_cccf qdsync_cccf_create(float complex * _s,
 // copy object
 qdsync_cccf qdsync_cccf_copy(qdsync_cccf q_orig)
 {
+#if 0
     // validate input
     if (q_orig == NULL)
         return liquid_error_config("qdetector_%s_copy(), object cannot be NULL", "cccf");
@@ -90,12 +148,20 @@ qdsync_cccf qdsync_cccf_copy(qdsync_cccf q_orig)
 
     // return new object
     return q_copy;
+#else
+    return liquid_error_config("qdsync_cccf_copy(), method not yet implemented");
+#endif
 }
 
 int qdsync_cccf_destroy(qdsync_cccf _q)
 {
     // destroy internal objects
     qdetector_cccf_destroy(_q->detector);
+    nco_crcf_destroy(_q->mixer);
+    firpfb_crcf_destroy(_q->mf);
+
+    // free output buffer
+    free(_q->buf_out);
 
     // free main object memory
     free(_q);
@@ -110,7 +176,11 @@ int qdsync_cccf_print(qdsync_cccf _q)
 
 int qdsync_cccf_reset(qdsync_cccf _q)
 {
+    qdetector_cccf_reset(_q->detector);
     _q->state = QDSYNC_STATE_DETECT;
+    _q->symbol_counter = 0;
+    _q->buf_out_counter = 0;
+    firpfb_crcf_reset(_q->mf);
     return LIQUID_OK;
 }
 
@@ -118,26 +188,19 @@ int qdsync_cccf_execute(qdsync_cccf            _q,
                         liquid_float_complex * _buf,
                         unsigned int           _buf_len)
 {
-    // TODO: switch based on state
     unsigned int i;
-    void * p = NULL;
     for (i=0; i<_buf_len; i++) {
         switch (_q->state) {
         case QDSYNC_STATE_DETECT:
-            p = qdetector_cccf_execute(_q->detector, _buf[i]);
-            if (p != NULL) {
-                if (_q->callback != NULL)
-                    _q->callback(NULL, 0, _q->context);
-                _q->state = QDSYNC_STATE_SYNC;
-            }
+            // detect frame (look for p/n sequence)
+            qdsync_cccf_execute_detect(_q, _buf[i]);
             break;
         case QDSYNC_STATE_SYNC:
-            if (_q->callback != NULL) {
-                _q->callback(_buf, _buf_len, _q->context);
-                return LIQUID_OK;
-            }
+            // receive preamble sequence symbols
+            qdsync_cccf_step(_q, _buf[i]);
             break;
-        default:;
+        default:
+            return liquid_error(LIQUID_EINT,"qdsync_cccf_exeucte(), unknown/unsupported state");
         }
     }
     return LIQUID_OK;
@@ -167,6 +230,117 @@ int qdsync_cccf_set_callback(qdsync_cccf _q, qdsync_callback _callback)
 int qdsync_cccf_set_context (qdsync_cccf _q, void * _context)
 {
     _q->context = _context;
+    return LIQUID_OK;
+}
+
+//
+// internal methods
+//
+
+// execute synchronizer, seeking preamble sequence
+//  _q     :   frame synchronizer object
+//  _x      :   input sample
+//  _sym    :   demodulated symbol
+int qdsync_cccf_execute_detect(qdsync_cccf   _q,
+                               float complex _x)
+{
+    // push through pre-demod synchronizer
+    float complex * v = qdetector_cccf_execute(_q->detector, _x);
+
+    // check if frame has been detected
+    if (v != NULL) {
+        // get estimates
+        _q->tau_hat   = qdetector_cccf_get_tau  (_q->detector);
+        _q->gamma_hat = qdetector_cccf_get_gamma(_q->detector);
+        _q->dphi_hat  = qdetector_cccf_get_dphi (_q->detector);
+        _q->phi_hat   = qdetector_cccf_get_phi  (_q->detector);
+        //printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
+        //        _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
+
+        // set appropriate filterbank index
+        if (_q->tau_hat > 0) {
+            _q->pfb_index = (unsigned int)(      _q->tau_hat  * _q->npfb) % _q->npfb;
+            _q->mf_counter = 0;
+        } else {
+            _q->pfb_index = (unsigned int)((1.0f+_q->tau_hat) * _q->npfb) % _q->npfb;
+            _q->mf_counter = 1;
+        }
+
+        // output filter scale
+        firpfb_crcf_set_scale(_q->mf, 0.5f / _q->gamma_hat);
+
+        // set frequency/phase of mixer
+        nco_crcf_set_frequency(_q->mixer, _q->dphi_hat);
+        nco_crcf_set_phase    (_q->mixer, _q->phi_hat );
+
+        // update state
+        _q->state = QDSYNC_STATE_SYNC;
+
+        // run buffered samples through synchronizer
+        unsigned int buf_len = qdetector_cccf_get_buf_len(_q->detector);
+        qdsync_cccf_execute(_q, v, buf_len);
+    }
+    return LIQUID_OK;
+}
+
+// step receiver mixer, matched filter, decimator
+//  _q      :   frame synchronizer
+//  _x      :   input sample
+//  _y      :   output symbol
+int qdsync_cccf_step(qdsync_cccf   _q,
+                     float complex _x)
+{
+    // mix sample down
+    float complex v;
+    nco_crcf_mix_down(_q->mixer, _x, &v);
+    nco_crcf_step    (_q->mixer);
+
+    // push sample into filterbank
+    firpfb_crcf_push   (_q->mf, v);
+    firpfb_crcf_execute(_q->mf, _q->pfb_index, &v);
+
+    // increment counter to determine if sample is available
+    _q->mf_counter++;
+    int sample_available = (_q->mf_counter >= 1) ? 1 : 0;
+
+    // set output sample if available
+    if (sample_available) {
+        // decrement counter by k=2 samples/symbol
+        _q->mf_counter -= 2;
+
+        // append to output
+        qdsync_cccf_buf_append(_q, v);
+    }
+
+    // return flag
+    return LIQUID_OK;
+}
+
+// append sample to output buffer
+int qdsync_cccf_buf_append(qdsync_cccf   _q,
+                           float complex _x)
+{
+    // account for filter delay
+    _q->symbol_counter++;
+    if (_q->symbol_counter <= 2*_q->m)
+        return LIQUID_OK;
+
+    // append sample to end of buffer
+    _q->buf_out[_q->buf_out_counter] = _x;
+    _q->buf_out_counter++;
+
+    // check if buffer is full
+    if (_q->buf_out_counter == _q->buf_out_len) {
+        // reset counter
+        _q->buf_out_counter = 0;
+
+        // invoke callback
+        if (_q->callback != NULL) {
+            int rc = _q->callback(_q->buf_out, _q->buf_out_len, _q->context);
+            if (rc)
+                return qdsync_cccf_reset(_q);
+        }
+    }
     return LIQUID_OK;
 }
 

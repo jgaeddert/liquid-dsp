@@ -6277,10 +6277,14 @@ typedef int (*qdsync_callback)(liquid_float_complex * _buf,
 // create detector with generic sequence
 //  _s      :   sample sequence
 //  _s_len  :   length of sample sequence
-qdsync_cccf qdsync_cccf_create(liquid_float_complex * _s,
-                               unsigned int           _s_len,
-                               qdsync_callback        _callback,
-                               void *                 _context);
+qdsync_cccf qdsync_cccf_create_linear(liquid_float_complex * _s,
+                                      unsigned int           _s_len,
+                                      int                    _ftype,
+                                      unsigned int           _k,
+                                      unsigned int           _m,
+                                      float                  _beta,
+                                      qdsync_callback        _callback,
+                                      void *                 _context);
 
 // Copy object recursively including all internal objects and state
 qdsync_cccf qdsync_cccf_copy(qdsync_cccf _q);
