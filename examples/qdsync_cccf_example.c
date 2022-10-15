@@ -16,7 +16,13 @@
 int callback(float complex * _buf,
              unsigned int    _buf_len,
              void *          _context)
-{ printf("callback got %u samples\n", _buf_len); return 0; }
+{
+    printf("callback got %u samples\n", _buf_len);
+    unsigned int i;
+    for (i=0; i<_buf_len; i++)
+        fprintf((FILE*)_context, "y(end+1) = %12.8f + %12.8fj;\n", crealf(_buf[i]), cimagf(_buf[i]));
+    return 0;
+}
 
 int main(int argc, char*argv[])
 {
@@ -26,7 +32,7 @@ int main(int argc, char*argv[])
     unsigned int m            =    7;   // filter delay [symbols]
     float        beta         = 0.3f;   // excess bandwidth factor
     int          ftype        = LIQUID_FIRFILT_ARKAISER;
-    float        nstd         = 0.1f;
+    float        nstd         = 0.01f;
 
     unsigned int i;
 
@@ -41,13 +47,18 @@ int main(int argc, char*argv[])
     }
     firinterp_crcf_destroy(interp);
 
+    // open file for storing results
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    fprintf(fid,"clear all; close all; y=[];\n");
+
     // create sync object
-    qdsync_cccf q = qdsync_cccf_create(seq, seq_len, callback, NULL);
+    qdsync_cccf q = qdsync_cccf_create(seq, seq_len, callback, fid);
     qdsync_cccf_print(q);
 
     //
     float complex buf[seq_len];
-    for (i=0; i<200; i++) {
+    for (i=0; i<20; i++) {
         if (i==10) memmove(buf, seq, seq_len*sizeof(float complex));
         else       memset (buf, 0x00, seq_len*sizeof(float complex));
 
@@ -59,17 +70,9 @@ int main(int argc, char*argv[])
         // run through synchronizer
         qdsync_cccf_execute(q, buf, seq_len);
     }
-
     qdsync_cccf_destroy(q);
 
     // export results
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
-    fprintf(fid,"clear all\n");
-    fprintf(fid,"close all\n");
-    //fprintf(fid,"sequence_len= %u;\n", sequence_len);
-    //fprintf(fid,"num_samples = %u;\n", num_samples);
-
     fprintf(fid,"s = [];\n");
     for (i=0; i<seq_len; i++)
         fprintf(fid,"s(%4u) = %12.8f + j*%12.8f;\n", i+1, crealf(seq[i]), cimagf(seq[i]));
