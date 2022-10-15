@@ -6260,6 +6260,52 @@ float        qdetector_cccf_get_gamma   (qdetector_cccf _q); // channel gain
 float        qdetector_cccf_get_dphi    (qdetector_cccf _q); // carrier frequency offset estimate
 float        qdetector_cccf_get_phi     (qdetector_cccf _q); // carrier phase offset estimate
 
+// Frame detector and synchronizer; uses a novel correlation method to
+// detect a synchronization pattern, estimate carrier frequency and
+// phase offsets as well as timing phase, then correct for these
+// impairments in a simple interface suitable for custom frame recovery.
+typedef struct qdsync_cccf_s * qdsync_cccf;
+
+// synchronization callback, return 0:continue, 1:reset
+typedef int (*qdsync_callback)(liquid_float_complex * _buf,
+                               unsigned int           _buf_len,
+                               void *                 _context);
+// metadata struct:
+//  - sample count since object was created
+//  - sample count since beginning of frame
+
+// create detector with generic sequence
+//  _s      :   sample sequence
+//  _s_len  :   length of sample sequence
+qdsync_cccf qdsync_cccf_create(liquid_float_complex * _s,
+                               unsigned int           _s_len,
+                               qdsync_callback        _callback,
+                               void *                 _context);
+
+// Copy object recursively including all internal objects and state
+qdsync_cccf qdsync_cccf_copy(qdsync_cccf _q);
+
+int qdsync_cccf_destroy(qdsync_cccf _q);
+int qdsync_cccf_reset  (qdsync_cccf _q);
+int qdsync_cccf_print  (qdsync_cccf _q);
+
+// get detection threshold
+float qdsync_cccf_get_threshold(qdsync_cccf _q);
+
+// set detection threshold
+int qdsync_cccf_set_threshold(qdsync_cccf _q, float _threshold);
+
+// set callback method
+int qdsync_cccf_set_callback(qdsync_cccf _q, qdsync_callback _callback);
+
+// set context value
+int qdsync_cccf_set_context (qdsync_cccf _q, void * _context);
+
+// execute block of samples
+int qdsync_cccf_execute(qdsync_cccf            _q,
+                        liquid_float_complex * _buf,
+                        unsigned int           _buf_len);
+
 //
 // Pre-demodulation detector
 //
