@@ -38,7 +38,13 @@ struct qdsync_cccf_s {
     qdsync_callback callback;   //
     void *          context;    //
     qdetector_cccf  detector;   // detector
+    // status variables
+    enum {
+        QDSYNC_STATE_DETECT=0,  // detect frame
+        QDSYNC_STATE_SYNC,      // synchronize samples
+    }            state;
     // resampler
+    // nco
 };
 
 // create detector with generic sequence
@@ -104,6 +110,7 @@ int qdsync_cccf_print(qdsync_cccf _q)
 
 int qdsync_cccf_reset(qdsync_cccf _q)
 {
+    _q->state = QDSYNC_STATE_DETECT;
     return LIQUID_OK;
 }
 
@@ -113,10 +120,25 @@ int qdsync_cccf_execute(qdsync_cccf            _q,
 {
     // TODO: switch based on state
     unsigned int i;
+    void * p = NULL;
     for (i=0; i<_buf_len; i++) {
-        void * p = qdetector_cccf_execute(_q->detector, _buf[i]);
-        if (p != NULL)
-            _q->callback(NULL, 0, _q->context);
+        switch (_q->state) {
+        case QDSYNC_STATE_DETECT:
+            p = qdetector_cccf_execute(_q->detector, _buf[i]);
+            if (p != NULL) {
+                if (_q->callback != NULL)
+                    _q->callback(NULL, 0, _q->context);
+                _q->state = QDSYNC_STATE_SYNC;
+            }
+            break;
+        case QDSYNC_STATE_SYNC:
+            if (_q->callback != NULL) {
+                _q->callback(_buf, _buf_len, _q->context);
+                return LIQUID_OK;
+            }
+            break;
+        default:;
+        }
     }
     return LIQUID_OK;
 }
