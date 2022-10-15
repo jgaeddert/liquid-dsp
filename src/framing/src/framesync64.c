@@ -155,7 +155,7 @@ framesync64 framesync64_create(framesync_callback _callback,
 
     // create down-coverters for carrier phase tracking
     q->mixer = nco_crcf_create(LIQUID_NCO);
-    
+
     // create payload demodulator/decoder object
     int check      = LIQUID_CRC_24;
     int fec0       = LIQUID_FEC_NONE;
