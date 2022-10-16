@@ -6354,6 +6354,10 @@ float qdsync_cccf_get_threshold(qdsync_cccf _q);
 // set detection threshold
 int qdsync_cccf_set_threshold(qdsync_cccf _q, float _threshold);
 
+// set carrier offset search range
+int qdsync_cccf_set_range(qdsync_cccf _q,
+                          float       _dphi_max);
+
 // set callback method
 int qdsync_cccf_set_callback(qdsync_cccf _q, qdsync_callback _callback);
 
