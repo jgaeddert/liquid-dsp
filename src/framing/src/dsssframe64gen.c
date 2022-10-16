@@ -36,7 +36,7 @@ struct dsssframe64gen_s {
     qpacketmodem    enc;                // packet encoder/modulator
     qpilotgen       pilotgen;           // pilot symbol generator
     msequence       ms;                 // spreading sequence generator
-    float complex   pn_sequence[1024];  // 1024-symbol p/n sequence
+    float complex   preamble_pn[1024];  // 1024-symbol p/n sequence
     unsigned char   payload_dec[ 150];  // 600 = 150 bytes * 8 bits/bytes / 2 bits/symbol
     float complex   payload_sym[ 600];  // modulated payload symbols
     float complex   payload_tx [ 630];  // modulated payload symbols with pilots
@@ -59,8 +59,8 @@ dsssframe64gen dsssframe64gen_create()
     // generate p/n sequence
     q->ms = msequence_create(11, 0x0805, 1);
     for (i=0; i<1024; i++) {
-        q->pn_sequence[i]  = (msequence_advance(q->ms) ? M_SQRT1_2 : -M_SQRT1_2);
-        q->pn_sequence[i] += (msequence_advance(q->ms) ? M_SQRT1_2 : -M_SQRT1_2)*_Complex_I;
+        q->preamble_pn[i]  = (msequence_advance(q->ms) ? M_SQRT1_2 : -M_SQRT1_2);
+        q->preamble_pn[i] += (msequence_advance(q->ms) ? M_SQRT1_2 : -M_SQRT1_2)*_Complex_I;
     }
 
     // create payload encoder/modulator object
@@ -159,7 +159,7 @@ int dsssframe64gen_write(dsssframe64gen  _q,
 
     // p/n sequence
     for (i=0; i<1024; i++) {
-        firinterp_crcf_execute(_q->interp, _q->pn_sequence[i], &_buf[n]);
+        firinterp_crcf_execute(_q->interp, _q->preamble_pn[i], &_buf[n]);
         n+=2;
     }
 

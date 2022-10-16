@@ -10,6 +10,20 @@
 
 #include "liquid.h"
 
+// static callback function
+static int callback(unsigned char *  _header,
+                    int              _header_valid,
+                    unsigned char *  _payload,
+                    unsigned int     _payload_len,
+                    int              _payload_valid,
+                    framesyncstats_s _stats,
+                    void *           _userdata)
+{
+    printf("*** callback invoked (%s)***\n", _payload_valid ? "pass" : "FAIL");
+    framesyncstats_print(&_stats);
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     // options
@@ -30,8 +44,13 @@ int main(int argc, char *argv[])
     dsssframe64gen_assemble(fg, NULL, NULL);
     dsssframe64gen_write(fg, buf_tx, buf_len);
 
-    // channel
+    // TODO: apply channel
     memmove(buf_rx, buf_tx, buf_len*sizeof(float complex));
+
+    // run through sync
+    dsssframe64sync fs = dsssframe64sync_create(callback, NULL);
+    dsssframe64sync_execute(fs, buf_rx, buf_len);
+    dsssframe64sync_destroy(fs);
 
     // push resulting sample through periodogram
     spgramcf_write(periodogram, buf_tx, buf_len);
