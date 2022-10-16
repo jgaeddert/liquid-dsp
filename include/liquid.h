@@ -5960,6 +5960,10 @@ float dsssframe64sync_get_threshold(dsssframe64sync _q);
 int dsssframe64sync_set_threshold(dsssframe64sync _q,
                                   float           _threshold);
 
+// set carrier offset search range
+int dsssframe64sync_set_range(dsssframe64sync _q,
+                              float           _dphi_max);
+
 // reset frame data statistics
 int dsssframe64sync_reset_framedatastats(dsssframe64sync _q);
 

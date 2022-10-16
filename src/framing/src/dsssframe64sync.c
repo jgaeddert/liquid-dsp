@@ -108,7 +108,8 @@ dsssframe64sync dsssframe64sync_create(framesync_callback _callback,
     unsigned int k = 2;    // samples/symbol
     q->detector = qdsync_cccf_create_linear(q->preamble_pn, 1024, LIQUID_FIRFILT_ARKAISER, k, q->m, q->beta,
         dsssframe64sync_callback_internal, (void*)q);
-    qdsync_cccf_set_threshold(q->detector, 0.100f);
+    qdsync_cccf_set_threshold(q->detector, 0.100f); // detection threshold
+    qdsync_cccf_set_range    (q->detector, 0.006f); // frequency offset search range [radians/sample]
 
     // create payload demodulator/decoder object
     int check      = LIQUID_CRC_24;
@@ -245,6 +246,13 @@ int dsssframe64sync_set_threshold(dsssframe64sync _q,
                                   float           _threshold)
 {
     return qdsync_cccf_set_threshold(_q->detector, _threshold);
+}
+
+// set carrier offset search range
+int dsssframe64sync_set_range(dsssframe64sync _q,
+                              float           _dphi_max)
+{
+    return qdsync_cccf_set_range(_q->detector, _dphi_max);
 }
 
 // reset frame data statistics
