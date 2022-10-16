@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -96,6 +96,9 @@ void benchmark_cvsd_decode(struct rusage *_start,
         x += cvsd_decode(decoder, b[5]);
         x += cvsd_decode(decoder, b[6]);
         x += cvsd_decode(decoder, b[7]);
+
+        // randomize input
+        b[0] ^= (x > 0);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 8;

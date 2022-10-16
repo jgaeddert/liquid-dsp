@@ -48,6 +48,8 @@ void bsequence_correlate_bench(struct rusage *_start,
         rxy -= bsequence_correlate(bs1, bs2);
         rxy += bsequence_correlate(bs1, bs2);
         rxy -= bsequence_correlate(bs1, bs2);
+
+        bsequence_push(rxy > 0 ? bs1 : bs2, 1);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;

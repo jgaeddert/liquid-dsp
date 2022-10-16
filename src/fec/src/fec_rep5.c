@@ -88,7 +88,8 @@ int fec_rep5_decode(fec             _q,
                     unsigned char * _msg_dec)
 {
     unsigned char s0, s1, s2, s3, s4;
-    unsigned int i, num_errors=0;
+    unsigned int i;
+    //unsigned int num_errors=0;
     for (i=0; i<_dec_msg_len; i++) {
         s0 = _msg_enc[i                 ];
         s1 = _msg_enc[i +   _dec_msg_len];
@@ -109,7 +110,7 @@ int fec_rep5_decode(fec             _q,
                         (s2 & s3 & s4);
     
         //num_errors += (s0 ^ s1) | (s0 ^ s2) | (s1 ^ s2) ? 1 : 0;
-        num_errors += 0;
+        //num_errors += 0;
     }
     return LIQUID_OK;
 }
