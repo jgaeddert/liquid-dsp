@@ -219,6 +219,13 @@ int qdsync_cccf_set_threshold(qdsync_cccf _q,
     return qdetector_cccf_set_threshold(_q->detector, _threshold);
 }
 
+// set carrier offset search range
+int qdsync_cccf_set_range(qdsync_cccf _q,
+                          float       _dphi_max)
+{
+    return qdetector_cccf_set_range(_q->detector, _dphi_max);
+}
+
 // set callback method
 int qdsync_cccf_set_callback(qdsync_cccf _q, qdsync_callback _callback)
 {
