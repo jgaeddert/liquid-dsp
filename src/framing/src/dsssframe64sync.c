@@ -108,7 +108,7 @@ dsssframe64sync dsssframe64sync_create(framesync_callback _callback,
     unsigned int k = 2;    // samples/symbol
     q->detector = qdsync_cccf_create_linear(q->preamble_pn, 1024, LIQUID_FIRFILT_ARKAISER, k, q->m, q->beta,
         dsssframe64sync_callback_internal, (void*)q);
-    qdsync_cccf_set_threshold(q->detector, 0.5f);
+    qdsync_cccf_set_threshold(q->detector, 0.100f);
 
     // create payload demodulator/decoder object
     int check      = LIQUID_CRC_24;
@@ -201,6 +201,11 @@ int dsssframe64sync_reset(dsssframe64sync _q)
     return LIQUID_OK;
 }
 
+int dsssframe64sync_is_frame_open(dsssframe64sync _q)
+{
+    return _q->preamble_counter > 0;
+}
+
 // set the callback function
 int dsssframe64sync_set_callback(dsssframe64sync    _q,
                                  framesync_callback _callback)
@@ -218,37 +223,15 @@ int dsssframe64sync_set_context(dsssframe64sync _q,
 }
 
 // execute frame synchronizer
-//  _q     :   frame synchronizer object
-//  _x      :   input sample array [size: _n x 1]
-//  _n      :   number of input samples
+//  _q       : frame synchronizer object
+//  _buf     : input sample array, shape: (_buf_len,)
+//  _buf_len : number of input samples
 int dsssframe64sync_execute(dsssframe64sync _q,
                             float complex * _buf,
                             unsigned int    _buf_len)
 {
-#if 0
-    unsigned int i;
-    for (i=0; i<_n; i++) {
-        switch (_q->state) {
-        case dsssframe64sync_STATE_DETECTFRAME:
-            // detect frame (look for p/n sequence)
-            dsssframe64sync_execute_seekpn(_q, _x[i]);
-            break;
-        case dsssframe64sync_STATE_RXPREAMBLE:
-            // receive p/n sequence symbols
-            dsssframe64sync_execute_rxpreamble(_q, _x[i]);
-            break;
-        case dsssframe64sync_STATE_RXPAYLOAD:
-            // receive payload symbols
-            dsssframe64sync_execute_rxpayload(_q, _x[i]);
-            break;
-        default:
-            return liquid_error(LIQUID_EINT,"dsssframe64sync_exeucte(), unknown/unsupported state");
-        }
-    }
-#else
-    qdsync_cccf_execute(_q->detector, _buf, _buf_len);
-#endif
-    return LIQUID_OK;
+    // run detector/synchronizer, invoking internal callback as needed
+    return qdsync_cccf_execute(_q->detector, _buf, _buf_len);
 }
 
 // get detection threshold
@@ -259,7 +242,7 @@ float dsssframe64sync_get_threshold(dsssframe64sync _q)
 
 // set detection threshold
 int dsssframe64sync_set_threshold(dsssframe64sync _q,
-                              float       _threshold)
+                                  float           _threshold)
 {
     return qdsync_cccf_set_threshold(_q->detector, _threshold);
 }
@@ -300,6 +283,7 @@ int dsssframe64sync_step(dsssframe64sync _q,
             _q->payload_rx[_q->payload_counter] = _q->sym_despread / 256.0f;
             _q->payload_counter++;
             _q->chip_counter = 0;
+            _q->sym_despread = 0;
             if (_q->payload_counter == 630) {
                 dsssframe64sync_decode(_q);
                 return 1; // reset
@@ -313,14 +297,22 @@ int dsssframe64sync_step(dsssframe64sync _q,
 // internal decode received frame, update statistics, invoke callback
 int dsssframe64sync_decode(dsssframe64sync _q)
 {
-    printf("dsssframe64sync: frame received!\n");
-
     // recover data symbols from pilots
     qpilotsync_execute(_q->pilotsync, _q->payload_rx, _q->payload_sym);
     
     // decode payload
     int crc_pass = qpacketmodem_decode(_q->dec, _q->payload_sym, _q->payload_dec);
-    
+#if 0
+    // debug: export symbols to file
+    unsigned int i;
+    FILE * fid = fopen("dsssframe64sync_debug.m","w");
+    fprintf(fid,"clear all; close all; r=zeros(1,630); s=zeros(1,600);\n");
+    for (i=0; i<630; i++)
+        fprintf(fid,"r(%3u)=%12.4e + %12.4ej;\n", i+1, crealf(_q->payload_rx[i]), cimagf(_q->payload_rx[i]));
+    for (i=0; i<600; i++)
+        fprintf(fid,"s(%3u)=%12.4e + %12.4ej;\n", i+1, crealf(_q->payload_sym[i]), cimagf(_q->payload_sym[i]));
+    fclose(fid);
+#endif
     // update statistics
     _q->framedatastats.num_frames_detected++;
     _q->framedatastats.num_headers_valid  += crc_pass;

@@ -17,17 +17,27 @@ static int callback(unsigned char *  _header,
                     unsigned int     _payload_len,
                     int              _payload_valid,
                     framesyncstats_s _stats,
-                    void *           _userdata)
+                    void *           _context)
 {
     printf("*** callback invoked (%s)***\n", _payload_valid ? "pass" : "FAIL");
     framesyncstats_print(&_stats);
+
+    // save recovered symbols to file
+    unsigned int i;
+    FILE * fid = (FILE*)_context;
+    for (i=0; i<_stats.num_framesyms; i++) {
+        fprintf(fid,"s(%3u) = %12.8f + %12.8fj;\n", i+1,
+            crealf(_stats.framesyms[i]), cimagf(_stats.framesyms[i]));
+    }
     return 0;
 }
 
 int main(int argc, char *argv[])
 {
     // options
-    unsigned int nfft=2400;
+    unsigned int nfft  = 2400;
+    float        SNRdB =   -15.0f;
+    const char * filename = "dsssframe64sync_example.m";
 
     // create dsssframe64gen object
     dsssframe64gen fg = dsssframe64gen_create();
@@ -37,48 +47,50 @@ int main(int argc, char *argv[])
     float complex buf_tx[buf_len];  // transmit buffer
     float complex buf_rx[buf_len];  // receive buffer (channel output)
 
-    // create spectral periodogram for displaying spectrum
-    spgramcf periodogram = spgramcf_create_default(nfft);
+    // export results to file
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
+    fprintf(fid,"clear all; close all;\n");
+    fprintf(fid,"s=[];\n");
 
     // generate in one step (for now)
     dsssframe64gen_assemble(fg, NULL, NULL);
     dsssframe64gen_write(fg, buf_tx, buf_len);
 
-    // TODO: apply channel
-    memmove(buf_rx, buf_tx, buf_len*sizeof(float complex));
+    // apply channel (AWGN)
+    float nstd = powf(10.0f,-SNRdB/20.0f);
+    unsigned int i;
+    for (i=0; i<buf_len; i++)
+        buf_rx[i] = buf_tx[i]*M_SQRT1_2 + nstd*(randnf() + _Complex_I*randnf())/M_SQRT2;
 
     // run through sync
-    dsssframe64sync fs = dsssframe64sync_create(callback, NULL);
+    dsssframe64sync fs = dsssframe64sync_create(callback, (void*)fid);
     dsssframe64sync_execute(fs, buf_rx, buf_len);
     dsssframe64sync_destroy(fs);
 
     // push resulting sample through periodogram
-    spgramcf_write(periodogram, buf_tx, buf_len);
+    spgramcf periodogram = spgramcf_create_default(nfft);
+    spgramcf_write(periodogram, buf_rx, buf_len);
     float psd[nfft];
     spgramcf_get_psd(periodogram, psd);
+    spgramcf_destroy(periodogram);
 
-    // export results
-    const char * filename = "dsssframe64sync_example.m";
-    FILE * fid = fopen(filename,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", filename);
-    fprintf(fid,"clear all; close all;\n");
-    unsigned int i;
-#if 0
-    fprintf(fid,"n=%u; y=zeros(1,n);\n", buf_len);
-    for (i=0; i<buf_len; i++)
-        fprintf(fid,"y(%7u) = %12.8f + %12.8fj;\n", i+1, crealf(buf_tx[i]), cimagf(buf_tx[i]));
-#endif
+    // plot results
     fprintf(fid,"nfft=%u; Y=zeros(1,nfft);\n", nfft);
     for (i=0; i<nfft; i++)
         fprintf(fid,"Y(%4u) = %12.8f;\n", i+1, psd[i]);
-    fprintf(fid,"figure; f=[0:(nfft-1)]/nfft-0.5; plot(f,Y); xlim([-0.5 0.5]); grid on;\n");
-    fprintf(fid,"xlabel('Normalized Frequency [f/Fs]'); ylabel('PSD [dB]');\n");
+    fprintf(fid,"figure('position',[100 100 1200 400]);\n");
+    fprintf(fid,"subplot(1,5,1:3);\n");
+    fprintf(fid,"  f=[0:(nfft-1)]/nfft-0.5; plot(f,Y); xlim([-0.5 0.5]); grid on;\n");
+    fprintf(fid,"  xlabel('Normalized Frequency [f/Fs]'); ylabel('PSD [dB]');\n");
+    fprintf(fid,"subplot(1,5,4:5);\n");
+    fprintf(fid,"  plot(real(s),imag(s),'.','MarkerSize',6); grid on; axis([-1 1 -1 1]*1.5)\n");
+    fprintf(fid,"  axis('square'); xlabel('I'); ylabel('Q');\n");
     fclose(fid);
     printf("results written to %s\n", filename);
 
     // destroy allocated objects
     dsssframe64gen_destroy(fg);
-    spgramcf_destroy(periodogram);
     return 0;
 }
 

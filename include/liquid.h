@@ -5943,8 +5943,28 @@ int dsssframe64sync_destroy             (dsssframe64sync _q);
 int dsssframe64sync_print               (dsssframe64sync _q);
 int dsssframe64sync_reset               (dsssframe64sync _q);
 int dsssframe64sync_is_frame_open       (dsssframe64sync _q);
+int dsssframe64sync_set_callback(dsssframe64sync    _q,
+                                 framesync_callback _callback);
+int dsssframe64sync_set_context(dsssframe64sync _q,
+                                void *          _context);
+// execute frame synchronizer
+//  _q       : frame synchronizer object
+//  _buf     : input sample array, shape: (_buf_len,)
+//  _buf_len : number of input samples
+int dsssframe64sync_execute(dsssframe64sync _q, liquid_float_complex * _buf, unsigned int _buf_len);
+
+// get detection threshold
+float dsssframe64sync_get_threshold(dsssframe64sync _q);
+
+// set detection threshold
+int dsssframe64sync_set_threshold(dsssframe64sync _q,
+                                  float           _threshold);
+
+// reset frame data statistics
 int dsssframe64sync_reset_framedatastats(dsssframe64sync _q);
-int dsssframe64sync_execute             (dsssframe64sync _q, liquid_float_complex * _x, unsigned int _n);
+
+// retrieve frame data statistics
+framedatastats_s dsssframe64sync_get_framedatastats(dsssframe64sync _q);
 
 //
 // OFDM flexframe generator
