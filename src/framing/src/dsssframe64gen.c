@@ -141,6 +141,7 @@ int dsssframe64gen_assemble(dsssframe64gen        _q,
 
     // reset objects
     firinterp_crcf_reset(_q->interp);
+    msequence_reset(_q->ms);
 
     // frame_assembled = 1
     return LIQUID_OK;

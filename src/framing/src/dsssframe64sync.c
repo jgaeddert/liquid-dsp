@@ -186,8 +186,9 @@ int dsssframe64sync_print(dsssframe64sync _q)
 // reset frame synchronizer object
 int dsssframe64sync_reset(dsssframe64sync _q)
 {
-    // reset binary pre-demod synchronizer
+    // reset detector/synchronizer
     qdsync_cccf_reset(_q->detector);
+    msequence_reset(_q->ms);
 
     // reset state
     _q->state           = dsssframe64sync_STATE_DETECTFRAME;
