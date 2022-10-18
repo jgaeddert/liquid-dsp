@@ -20,7 +20,8 @@
  * THE SOFTWARE.
  */
 
-// basic frame synchronizer with 8 bytes header and 64 bytes payload
+// basic direct sequence/spread spectrum frame synchronizer with 8 bytes header
+// and 64 bytes payload
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -50,34 +51,29 @@ struct dsssframe64sync_s {
     // callback
     framesync_callback  callback;   // user-defined callback function
     void *              context;    // user-defined data structure
-    unsigned int    m;                  // filter delay (symbols)
-    float           beta;               // filter excess bandwidth factor
+    unsigned int        m;          // filter delay (symbols)
+    float               beta;       // filter excess bandwidth factor
 
-    framesyncstats_s    framesyncstats; // frame statistic object (synchronizer)
-    framedatastats_s    framedatastats; // frame statistic object (packet statistics)
+    framesyncstats_s framesyncstats;// frame statistic object (synchronizer)
+    framedatastats_s framedatastats;// frame statistic object (packet statistics)
 
     // preamble
-    float complex preamble_pn[1024];  // known 1024-symbol p/n sequence
-    float complex preamble_rx[1024];  // received p/n symbols
+    float complex preamble_pn[1024];// known 1024-symbol p/n sequence
+    float complex preamble_rx[1024];// received p/n symbols
 
     // payload decoder
     float complex payload_rx [630]; // received payload symbols with pilots
     float complex payload_sym[600]; // received payload symbols
     unsigned char payload_dec[ 72]; // decoded payload bytes
 
-    qdsync_cccf     detector;       // frame detector
-    msequence       ms;                 // spreading sequence generator
+    qdsync_cccf   detector;         // frame detector
+    msequence     ms;               // spreading sequence generator
     float complex sym_despread;     // despread symbol
 
     qpacketmodem  dec;              // packet demodulator/decoder
     qpilotsync    pilotsync;        // pilot extraction, carrier recovery
 
     // status variables
-    enum {
-        dsssframe64sync_STATE_DETECTFRAME=0,    // detect frame (seek p/n sequence)
-        dsssframe64sync_STATE_RXPREAMBLE,       // receive p/n sequence
-        dsssframe64sync_STATE_RXPAYLOAD,        // receive payload data
-    }            state;
     unsigned int preamble_counter;  // counter: num of p/n syms received
     unsigned int chip_counter;      // counter: num of payload chips received for a single symbol
     unsigned int payload_counter;   // counter: num of payload syms received
@@ -166,7 +162,7 @@ dsssframe64sync dsssframe64sync_copy(dsssframe64sync q_orig)
 int dsssframe64sync_destroy(dsssframe64sync _q)
 {
     // destroy synchronization objects
-    msequence_destroy   (_q->ms);           //
+    msequence_destroy   (_q->ms);           // pseudo-random sequence generator
     qdsync_cccf_destroy (_q->detector);     // frame detector
     qpacketmodem_destroy(_q->dec);          // payload demodulator
     qpilotsync_destroy  (_q->pilotsync);    // pilot synchronizer
@@ -191,7 +187,6 @@ int dsssframe64sync_reset(dsssframe64sync _q)
     msequence_reset(_q->ms);
 
     // reset state
-    _q->state           = dsssframe64sync_STATE_DETECTFRAME;
     _q->preamble_counter= 0;
     _q->chip_counter    = 0;
     _q->payload_counter = 0;

@@ -19,7 +19,7 @@ static int callback(unsigned char *  _header,
                     framesyncstats_s _stats,
                     void *           _context)
 {
-    printf("*** callback invoked (%s)***\n", _payload_valid ? "pass" : "FAIL");
+    printf("*** callback invoked (%s) ***\n", _payload_valid ? "pass" : "FAIL");
     framesyncstats_print(&_stats);
 
     // save recovered symbols to file
