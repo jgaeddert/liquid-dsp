@@ -1518,6 +1518,7 @@ example_programs :=						\
 	examples/cvsd_example					\
 	examples/detector_cccf_example				\
 	examples/dds_cccf_example				\
+	examples/dsssframe64sync_performance_example		\
 	examples/dsssframe64sync_example			\
 	examples/dsssframesync_example				\
 	examples/dotprod_rrrf_example				\
