@@ -62,7 +62,7 @@ struct dsssframe64sync_s {
     float complex preamble_rx[1024];// received p/n symbols
 
     // payload decoder
-    float complex payload_rx [630]; // received payload symbols with pilots
+    float complex payload_rx [650]; // received payload symbols with pilots
     float complex payload_sym[600]; // received payload symbols
     unsigned char payload_dec[ 72]; // decoded payload bytes
 
@@ -118,8 +118,8 @@ dsssframe64sync dsssframe64sync_create(framesync_callback _callback,
     assert( qpacketmodem_get_frame_len(q->dec)==600 );
 
     // create pilot synchronizer
-    q->pilotsync   = qpilotsync_create(600, 21);
-    assert( qpilotsync_get_frame_len(q->pilotsync)==630);
+    q->pilotsync   = qpilotsync_create(600, 13);
+    assert( qpilotsync_get_frame_len(q->pilotsync)==650);
 
     // reset global data counters
     dsssframe64sync_reset_framedatastats(q);
@@ -288,7 +288,7 @@ int dsssframe64sync_step(dsssframe64sync _q,
             _q->payload_counter++;
             _q->chip_counter = 0;
             _q->sym_despread = 0;
-            if (_q->payload_counter == 630) {
+            if (_q->payload_counter == 650) {
                 dsssframe64sync_decode(_q);
                 return 1; // reset
             }
@@ -310,8 +310,8 @@ int dsssframe64sync_decode(dsssframe64sync _q)
     // debug: export symbols to file
     unsigned int i;
     FILE * fid = fopen("dsssframe64sync_debug.m","w");
-    fprintf(fid,"clear all; close all; r=zeros(1,630); s=zeros(1,600);\n");
-    for (i=0; i<630; i++)
+    fprintf(fid,"clear all; close all; r=zeros(1,650); s=zeros(1,600);\n");
+    for (i=0; i<650; i++)
         fprintf(fid,"r(%3u)=%12.4e + %12.4ej;\n", i+1, crealf(_q->payload_rx[i]), cimagf(_q->payload_rx[i]));
     for (i=0; i<600; i++)
         fprintf(fid,"s(%3u)=%12.4e + %12.4ej;\n", i+1, crealf(_q->payload_sym[i]), cimagf(_q->payload_sym[i]));

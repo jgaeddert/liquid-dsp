@@ -39,7 +39,7 @@ struct dsssframe64gen_s {
     float complex   preamble_pn[1024];  // 1024-symbol p/n sequence
     unsigned char   payload_dec[ 150];  // 600 = 150 bytes * 8 bits/bytes / 2 bits/symbol
     float complex   payload_sym[ 600];  // modulated payload symbols
-    float complex   payload_tx [ 630];  // modulated payload symbols with pilots
+    float complex   payload_tx [ 650];  // modulated payload symbols with pilots
     unsigned int    m;                  // filter delay (symbols)
     float           beta;               // filter excess bandwidth factor
     firinterp_crcf  interp;             // pulse-shaping filter/interpolator
@@ -74,8 +74,8 @@ dsssframe64gen dsssframe64gen_create()
     assert( qpacketmodem_get_frame_len(q->enc)==600 );
 
     // create pilot generator
-    q->pilotgen = qpilotgen_create(600, 21);
-    assert( qpilotgen_get_frame_len(q->pilotgen)==630 );
+    q->pilotgen = qpilotgen_create(600, 13);
+    assert( qpilotgen_get_frame_len(q->pilotgen)==650 );
 
     // create pulse-shaping filter (k=2)
     q->interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER,2,q->m,q->beta,0);
@@ -164,7 +164,7 @@ int dsssframe64gen_write(dsssframe64gen  _q,
     }
 
     // frame payload
-    for (i=0; i<630; i++) {
+    for (i=0; i<650; i++) {
         float complex sym = _q->payload_tx[i]; // strip out raw payload symbol
         for (j=0; j<256; j++) {
             // generate pseudo-random symbol
@@ -194,6 +194,6 @@ int dsssframe64gen_complete(dsssframe64gen _q)
 // get full frame length [samples]
 unsigned int dsssframe64gen_get_frame_len(dsssframe64gen _q)
 {
-    return 2*(1024 + 630*256 + 2*_q->m);
+    return 2*(1024 + 650*256 + 2*_q->m);
 }
 
