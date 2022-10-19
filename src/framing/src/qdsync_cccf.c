@@ -186,28 +186,6 @@ int qdsync_cccf_reset(qdsync_cccf _q)
     return LIQUID_OK;
 }
 
-int qdsync_cccf_execute(qdsync_cccf            _q,
-                        liquid_float_complex * _buf,
-                        unsigned int           _buf_len)
-{
-    unsigned int i;
-    for (i=0; i<_buf_len; i++) {
-        switch (_q->state) {
-        case QDSYNC_STATE_DETECT:
-            // detect frame (look for p/n sequence)
-            qdsync_cccf_execute_detect(_q, _buf[i]);
-            break;
-        case QDSYNC_STATE_SYNC:
-            // receive preamble sequence symbols
-            qdsync_cccf_step(_q, _buf[i]);
-            break;
-        default:
-            return liquid_error(LIQUID_EINT,"qdsync_cccf_exeucte(), unknown/unsupported state");
-        }
-    }
-    return LIQUID_OK;
-}
-
 // get detection threshold
 float qdsync_cccf_get_threshold(qdsync_cccf _q)
 {
@@ -240,6 +218,33 @@ int qdsync_cccf_set_context (qdsync_cccf _q, void * _context)
 {
     _q->context = _context;
     return LIQUID_OK;
+}
+
+int qdsync_cccf_execute(qdsync_cccf            _q,
+                        liquid_float_complex * _buf,
+                        unsigned int           _buf_len)
+{
+    unsigned int i;
+    for (i=0; i<_buf_len; i++) {
+        switch (_q->state) {
+        case QDSYNC_STATE_DETECT:
+            // detect frame (look for p/n sequence)
+            qdsync_cccf_execute_detect(_q, _buf[i]);
+            break;
+        case QDSYNC_STATE_SYNC:
+            // receive preamble sequence symbols
+            qdsync_cccf_step(_q, _buf[i]);
+            break;
+        default:
+            return liquid_error(LIQUID_EINT,"qdsync_cccf_exeucte(), unknown/unsupported state");
+        }
+    }
+    return LIQUID_OK;
+}
+
+int qdsync_cccf_is_open(qdsync_cccf _q)
+{
+    return _q->state == QDSYNC_STATE_DETECT ? 0 : 1;
 }
 
 //
