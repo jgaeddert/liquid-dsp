@@ -41,6 +41,8 @@ void usage()
     printf("Execute autotest scripts for liquid-dsp library.\n");
     printf("  -h            display this help and exit\n");
     printf("  -t <id>       run specific test\n");
+    printf("  -H <id>       hammer on a specific test\n");
+    printf("  -c <count>    number of time to run hammer test\n");
     printf("  -p <id>       run specific package\n");
     printf("  -r            run all tests, random order\n");
     printf("  -R <seed>     specify random seed value\n");
@@ -125,7 +127,8 @@ int main(int argc, char *argv[])
           RUN_ALL_RANDOM,       // run all tests (random order)
           RUN_SINGLE_TEST,      // run just a single test
           RUN_SINGLE_PACKAGE,   // run just a single package
-          RUN_SEARCH
+          RUN_SEARCH,           // run search
+          HAMMER_SINGLE_TEST,   // run just a single test, but repeatedly and with incrementing seeds
     } mode = RUN_ALL;
 
     // set defaults
@@ -134,6 +137,7 @@ int main(int argc, char *argv[])
     int          verbose            = 1;
     int          stop_on_fail       = 0;
     unsigned int rseed              = time(NULL);
+    unsigned int hammer_count       = 100;
     char         search_string[128] = "";
     char         filename[256]      = "";
 
@@ -141,7 +145,7 @@ int main(int argc, char *argv[])
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"ht:p:rR:Llxs:vqo:")) != EOF){
+    while((d = getopt(argc,argv,"ht:H:c:p:rR:Llxs:vqo:")) != EOF){
         switch (d) {
         case 'h':
             usage();
@@ -149,6 +153,13 @@ int main(int argc, char *argv[])
         case 't':
             autotest_id = atoi(optarg);
             mode = RUN_SINGLE_TEST;
+            break;
+        case 'H':
+            autotest_id = atoi(optarg);
+            mode = HAMMER_SINGLE_TEST;
+            break;
+        case 'c':
+            hammer_count = atoi(optarg);
             break;
         case 'p':
             package_id = atoi(optarg);
@@ -269,6 +280,20 @@ int main(int argc, char *argv[])
                 print_package_results( &packages[i] );
         }
         break;
+    case HAMMER_SINGLE_TEST:
+        for (i=0; i<hammer_count; i++) {
+            srand(rseed+i);
+            printf("trial %u/%u, rseed=%u\n", i+1, hammer_count, rseed+i);
+            execute_autotest( &scripts[autotest_id], verbose );
+            if (stop_on_fail && liquid_autotest_num_failed > 0)
+                break;
+        }
+        if (verbose)
+            print_autotest_results( &scripts[autotest_id] );
+        break;
+    default:
+        fprintf(stderr,"unknown run mode\n");
+        return -1;
     }
 
     if (liquid_autotest_verbose)
@@ -313,6 +338,7 @@ int main(int argc, char *argv[])
     case RUN_SINGLE_TEST:    fprintf(fid,"\"RUN_SINGLE_TEST\",\n");    break;
     case RUN_SINGLE_PACKAGE: fprintf(fid,"\"RUN_SINGLE_PACKAGE\",\n"); break;
     case RUN_SEARCH:         fprintf(fid,"\"RUN_SEARCH\",\n");         break;
+    case HAMMER_SINGLE_TEST: fprintf(fid,"\"HAMMER_SINGLE_TEST\",\n"); break;
     default:                 fprintf(fid,"\"(unknown)\",\n");
     }
     fprintf(fid,"  \"rseed\" : %u,\n", rseed);
