@@ -247,6 +247,36 @@ int qdsync_cccf_is_open(qdsync_cccf _q)
     return _q->state == QDSYNC_STATE_DETECT ? 0 : 1;
 }
 
+// correlator output
+float qdsync_cccf_get_rxy(qdsync_cccf _q)
+{
+    return qdetector_cccf_get_rxy(_q->detector);
+}
+
+// fractional timing offset estimate
+float qdsync_cccf_get_tau(qdsync_cccf _q)
+{
+    return qdetector_cccf_get_tau(_q->detector);
+}
+
+// channel gain
+float qdsync_cccf_get_gamma(qdsync_cccf _q)
+{
+    return qdetector_cccf_get_gamma(_q->detector);
+}
+
+// carrier frequency offset estimate
+float qdsync_cccf_get_dphi(qdsync_cccf _q)
+{
+    return qdetector_cccf_get_dphi(_q->detector);
+}
+
+// carrier phase offset estimate
+float qdsync_cccf_get_phi(qdsync_cccf _q)
+{
+    return qdetector_cccf_get_phi(_q->detector);
+}
+
 //
 // internal methods
 //
