@@ -66,12 +66,6 @@ struct qdsync_cccf_s {
     }               state;      // frame synchronization state
     unsigned int symbol_counter;// counter: total number of symbols received including preamble sequence
 
-    // estimated offsets
-    float           tau_hat;    //
-    float           gamma_hat;  //
-    float           dphi_hat;   //
-    float           phi_hat;    //
-
     nco_crcf            mixer;  // coarse carrier frequency recovery
 
     // timing recovery objects, states
@@ -294,28 +288,28 @@ int qdsync_cccf_execute_detect(qdsync_cccf   _q,
     // check if frame has been detected
     if (v != NULL) {
         // get estimates
-        _q->tau_hat   = qdetector_cccf_get_tau  (_q->detector);
-        _q->gamma_hat = qdetector_cccf_get_gamma(_q->detector);
-        _q->dphi_hat  = qdetector_cccf_get_dphi (_q->detector);
-        _q->phi_hat   = qdetector_cccf_get_phi  (_q->detector);
-        //printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
-        //        _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
+        float tau_hat   = qdetector_cccf_get_tau  (_q->detector);
+        float gamma_hat = qdetector_cccf_get_gamma(_q->detector);
+        float dphi_hat  = qdetector_cccf_get_dphi (_q->detector);
+        float phi_hat   = qdetector_cccf_get_phi  (_q->detector);
+        //printf("*** qdsync frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
+        //        tau_hat, dphi_hat, 20*log10f(gamma_hat));
 
         // set appropriate filterbank index
-        if (_q->tau_hat > 0) {
-            _q->pfb_index = (unsigned int)(      _q->tau_hat  * _q->npfb) % _q->npfb;
+        if (tau_hat > 0) {
+            _q->pfb_index = (unsigned int)(      tau_hat  * _q->npfb) % _q->npfb;
             _q->mf_counter = 0;
         } else {
-            _q->pfb_index = (unsigned int)((1.0f+_q->tau_hat) * _q->npfb) % _q->npfb;
+            _q->pfb_index = (unsigned int)((1.0f+tau_hat) * _q->npfb) % _q->npfb;
             _q->mf_counter = 1;
         }
 
         // output filter scale
-        firpfb_crcf_set_scale(_q->mf, 0.5f / _q->gamma_hat);
+        firpfb_crcf_set_scale(_q->mf, 0.5f / gamma_hat);
 
         // set frequency/phase of mixer
-        nco_crcf_set_frequency(_q->mixer, _q->dphi_hat);
-        nco_crcf_set_phase    (_q->mixer, _q->phi_hat );
+        nco_crcf_set_frequency(_q->mixer, dphi_hat);
+        nco_crcf_set_phase    (_q->mixer, phi_hat );
 
         // update state
         _q->state = QDSYNC_STATE_SYNC;
