@@ -326,10 +326,14 @@ int dsssframe64sync_decode(dsssframe64sync _q)
     // invoke callback
     int rc = 0;
     if (_q->callback != NULL) {
+        // offset estimates
+        float dphi_hat = qdsync_cccf_get_dphi(_q->detector) +
+            qpilotsync_get_dphi(_q->pilotsync) / 256.0f;
+
         // set framesyncstats internals
         _q->framesyncstats.evm           = qpilotsync_get_evm(_q->pilotsync);
         _q->framesyncstats.rssi          = 0; //20*log10f(qdsync_cccf_get_gamma(_q->detector));
-        _q->framesyncstats.cfo           = 0; //qdsync_cccf_get_frequency(_q->detector);
+        _q->framesyncstats.cfo           = dphi_hat;
         _q->framesyncstats.framesyms     = _q->payload_sym;
         _q->framesyncstats.num_framesyms = 600;
         _q->framesyncstats.mod_scheme    = LIQUID_MODEM_QPSK;
