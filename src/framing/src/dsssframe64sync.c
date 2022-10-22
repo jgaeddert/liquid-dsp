@@ -332,7 +332,7 @@ int dsssframe64sync_decode(dsssframe64sync _q)
 
         // set framesyncstats internals
         _q->framesyncstats.evm           = qpilotsync_get_evm(_q->pilotsync);
-        _q->framesyncstats.rssi          = 0; //20*log10f(qdsync_cccf_get_gamma(_q->detector));
+        _q->framesyncstats.rssi          = 20*log10f(qdsync_cccf_get_gamma(_q->detector));
         _q->framesyncstats.cfo           = dphi_hat;
         _q->framesyncstats.framesyms     = _q->payload_sym;
         _q->framesyncstats.num_framesyms = 600;
