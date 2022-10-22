@@ -97,4 +97,9 @@ void benchmark_qdetector_cccf_32   QDETECTOR_CCCF_BENCHMARK_API(32);
 void benchmark_qdetector_cccf_64   QDETECTOR_CCCF_BENCHMARK_API(64);
 void benchmark_qdetector_cccf_128  QDETECTOR_CCCF_BENCHMARK_API(128);
 void benchmark_qdetector_cccf_256  QDETECTOR_CCCF_BENCHMARK_API(256);
+void benchmark_qdetector_cccf_512  QDETECTOR_CCCF_BENCHMARK_API(512);
+void benchmark_qdetector_cccf_1024 QDETECTOR_CCCF_BENCHMARK_API(1024);
+void benchmark_qdetector_cccf_2048 QDETECTOR_CCCF_BENCHMARK_API(2048);
+void benchmark_qdetector_cccf_4096 QDETECTOR_CCCF_BENCHMARK_API(4096);
+void benchmark_qdetector_cccf_8192 QDETECTOR_CCCF_BENCHMARK_API(8192);
 

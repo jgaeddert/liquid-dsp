@@ -6373,6 +6373,16 @@ int qdsync_cccf_execute(qdsync_cccf            _q,
                         liquid_float_complex * _buf,
                         unsigned int           _buf_len);
 
+// is synchronizer actively running?
+int qdsync_cccf_is_open(qdsync_cccf _q);
+
+// get detection metrics and offsets
+float qdsync_cccf_get_rxy  (qdsync_cccf _q); // correlator output
+float qdsync_cccf_get_tau  (qdsync_cccf _q); // fractional timing offset estimate
+float qdsync_cccf_get_gamma(qdsync_cccf _q); // channel gain
+float qdsync_cccf_get_dphi (qdsync_cccf _q); // carrier frequency offset estimate
+float qdsync_cccf_get_phi  (qdsync_cccf _q); // carrier phase offset estimate
+
 //
 // Pre-demodulation detector
 //
