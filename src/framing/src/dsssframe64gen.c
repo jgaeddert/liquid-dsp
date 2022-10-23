@@ -32,6 +32,9 @@
 
 #include "liquid.internal.h"
 
+// write samples to buffer
+int dsssframe64gen_write(dsssframe64gen _q, float complex * _buf);
+
 struct dsssframe64gen_s {
     qpacketmodem    enc;                // packet encoder/modulator
     qpilotgen       pilotgen;           // pilot symbol generator
@@ -43,8 +46,6 @@ struct dsssframe64gen_s {
     unsigned int    m;                  // filter delay (symbols)
     float           beta;               // filter excess bandwidth factor
     firinterp_crcf  interp;             // pulse-shaping filter/interpolator
-    float complex   buf_output[2];      // output sample buffer
-    // TODO: counters, etc.
 };
 
 // create dsssframe64gen object
@@ -116,14 +117,21 @@ int dsssframe64gen_print(dsssframe64gen _q)
     return LIQUID_OK;
 }
 
-// assmeble frame
+// get full frame length [samples]
+unsigned int dsssframe64gen_get_frame_len(dsssframe64gen _q)
+{
+    return 2*(1024 + 650*256 + 2*_q->m);
+}
+
+// generate a frame
 //  _q          :   frame generator object
 //  _header     :   8-byte header data, NULL for random
 //  _payload    :   64-byte payload data, NULL for random
-//  _frame      :   output frame samples [size: LIQUID_FRAME64_LEN x 1]
-int dsssframe64gen_assemble(dsssframe64gen        _q,
-                            const unsigned char * _header,
-                            const unsigned char * _payload)
+//  _frame      :   output frame samples, [size: dsssframegen64gen_get_frame_len() x 1]
+int dsssframe64gen_execute(dsssframe64gen        _q,
+                           const unsigned char * _header,
+                           const unsigned char * _payload,
+                           float complex *       _buf)
 {
     unsigned int i;
 
@@ -143,17 +151,15 @@ int dsssframe64gen_assemble(dsssframe64gen        _q,
     firinterp_crcf_reset(_q->interp);
     msequence_reset(_q->ms);
 
-    // frame_assembled = 1
-    return LIQUID_OK;
+    // write frame to buffer
+    return dsssframe64gen_write(_q, _buf);
 }
 
 // write samples to buffer
-//  _q          : frame generator object
-//  _buf        : output frame samples, shape: (_buf_len,)
-//  _buf_len    : output frame buffer size
+//  _q      : frame generator object
+//  _buf    : output frame samples (full frame)
 int dsssframe64gen_write(dsssframe64gen  _q,
-                         float complex * _buf,
-                         unsigned int    _buf_len)
+                         float complex * _buf)
 {
     unsigned int i, j, n=0;
 
@@ -183,17 +189,5 @@ int dsssframe64gen_write(dsssframe64gen  _q,
 
     assert(n==dsssframe64gen_get_frame_len(_q));
     return LIQUID_OK;
-}
-
-// is frame generation complete?
-int dsssframe64gen_complete(dsssframe64gen _q)
-{
-    return 1;
-}
-
-// get full frame length [samples]
-unsigned int dsssframe64gen_get_frame_len(dsssframe64gen _q)
-{
-    return 2*(1024 + 650*256 + 2*_q->m);
 }
 

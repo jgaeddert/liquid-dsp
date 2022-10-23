@@ -5904,36 +5904,21 @@ int dsssframe64gen_destroy(dsssframe64gen _q);
 // print dsssframe64gen object internals
 int dsssframe64gen_print(dsssframe64gen _q);
 
-int dsssframe64gen_print(dsssframe64gen _q);
-
-// reset dsssframe64gen object internals
-//int dsssframe64gen_reset(dsssframe64gen _q);
-
-// is frame assembled?
-//int dsssframe64gen_is_assembled(dsssframe64gen _q);
-
 // get length of assembled frame (samples)
 unsigned int dsssframe64gen_get_frame_len(dsssframe64gen _q);
 
-// assemble a frame from an array of data
-//  _q              :   frame generator object
-//  _props          :   frame properties
-//  _payload        :   payload data [size: _payload_len x 1]
-//  _payload_len    :   payload data length
-int dsssframe64gen_assemble(dsssframe64gen        _q,
-                            const unsigned char * _header,
-                            const unsigned char * _payload);
-
-int dsssframe64gen_write(dsssframe64gen        _q,
-                        liquid_float_complex * _buf,
-                        unsigned int           _buf_len);
-
-// is frame generation complete?
-int dsssframe64gen_complete(dsssframe64gen _q);
+// generate a frame
+//  _q          :   frame generator object
+//  _header     :   8-byte header data, NULL for random
+//  _payload    :   64-byte payload data, NULL for random
+//  _frame      :   output frame samples, [size: dsssframegen64gen_get_frame_len() x 1]
+int dsssframe64gen_execute(dsssframe64gen         _q,
+                           const unsigned char *  _header,
+                           const unsigned char *  _payload,
+                           liquid_float_complex * _buf);
 
 // get full frame length [samples]
 unsigned int dsssframe64gen_get_frame_len(dsssframe64gen _q);
-
 
 // frame synchronizer object type
 typedef struct dsssframe64sync_s * dsssframe64sync;

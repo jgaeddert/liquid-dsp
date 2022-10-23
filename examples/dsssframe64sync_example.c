@@ -54,8 +54,7 @@ int main(int argc, char *argv[])
     fprintf(fid,"s=[];\n");
 
     // generate in one step (for now)
-    dsssframe64gen_assemble(fg, NULL, NULL);
-    dsssframe64gen_write(fg, buf_tx, buf_len);
+    dsssframe64gen_execute(fg, NULL, NULL, buf_tx);
 
     // apply channel (AWGN)
     float nstd = powf(10.0f,-SNRdB/20.0f);

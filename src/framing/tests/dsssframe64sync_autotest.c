@@ -58,8 +58,7 @@ void autotest_dsssframe64sync()
     // generate the frame
     unsigned int frame_len = dsssframe64gen_get_frame_len(fg);
     float complex frame[frame_len];
-    dsssframe64gen_assemble(fg, NULL, NULL);
-    dsssframe64gen_write   (fg, frame, frame_len);
+    dsssframe64gen_execute(fg, NULL, NULL, frame);
 
     // add some noise
     for (i=0; i<frame_len; i++)

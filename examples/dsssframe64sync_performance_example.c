@@ -45,8 +45,7 @@ int main(int argc, char*argv[])
                 dsssframe64sync_reset(fs);
 
                 // generate the frame with random header and payload
-                dsssframe64gen_assemble(fg, NULL, NULL);
-                dsssframe64gen_write   (fg, frame, frame_len);
+                dsssframe64gen_execute(fg, NULL, NULL, frame);
 
                 // add channel effects
                 frame64_add_noise(frame, frame_len, SNRdB);
