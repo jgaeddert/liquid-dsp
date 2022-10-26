@@ -50,34 +50,34 @@ int qdsync_cccf_buf_append(qdsync_cccf   _q,
 // main object definition
 struct qdsync_cccf_s {
     unsigned int    seq_len;    // preamble sequence length
-    int             ftype;      //
-    unsigned int    k;          //
-    unsigned int    m;          //
-    float           beta;       //
+    int             ftype;      // filter type
+    unsigned int    k;          // samples per symbol
+    unsigned int    m;          // filter semi-length
+    float           beta;       // excess bandwidth factor
 
-    qdsync_callback callback;   //
-    void *          context;    //
+    qdsync_callback callback;   // user-defined callback function
+    void *          context;    // user-defined context object
     qdetector_cccf  detector;   // detector
 
     // status variables
     enum {
         QDSYNC_STATE_DETECT=0,  // detect frame
-        QDSYNC_STATE_SYNC,      // 
+        QDSYNC_STATE_SYNC,      // apply carrier offset correction and matched filter
     }               state;      // frame synchronization state
     unsigned int symbol_counter;// counter: total number of symbols received including preamble sequence
 
-    nco_crcf            mixer;  // coarse carrier frequency recovery
+    nco_crcf        mixer;      // coarse carrier frequency recovery
 
     // timing recovery objects, states
-    firpfb_crcf         mf;         // matched filter decimator
-    unsigned int        npfb;       // number of filters in symsync
-    int                 mf_counter; // matched filter output timer
-    unsigned int        pfb_index;  // filterbank index
+    firpfb_crcf     mf;         // matched filter/decimator
+    unsigned int    npfb;       // number of filters in symsync
+    int             mf_counter; // matched filter output timer
+    unsigned int    pfb_index;  // filterbank index
 
     // symbol buffer
-    unsigned int        buf_out_len;// output buffer length
-    float complex *     buf_out;    // output buffer
-    unsigned int        buf_out_counter; // output counter
+    unsigned int    buf_out_len;// output buffer length
+    float complex * buf_out;    // output buffer
+    unsigned int    buf_out_counter; // output counter
 };
 
 // create detector with generic sequence
