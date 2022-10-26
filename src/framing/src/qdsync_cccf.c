@@ -93,8 +93,6 @@ qdsync_cccf qdsync_cccf_create_linear(liquid_float_complex * _seq,
     // validate input
     if (_seq_len == 0)
         return liquid_error_config("qdsync_cccf_create(), sequence length cannot be zero");
-    //if (_k != 2)
-    //    return liquid_error_config("qdsync_cccf_create(), samples per symbol fixed at 2 (temporarily)");
 
     // allocate memory for main object and set internal properties
     qdsync_cccf q = (qdsync_cccf) malloc(sizeof(struct qdsync_cccf_s));
