@@ -212,6 +212,41 @@ int qdsync_cccf_set_context (qdsync_cccf _q, void * _context)
     return LIQUID_OK;
 }
 
+// Set callback buffer size (the number of symbol provided to the callback
+// whenever it is invoked).
+int qdsync_cccf_set_buf_len (qdsync_cccf _q, unsigned int _buf_len)
+{
+    if (_buf_len == 0)
+        return liquid_error(LIQUID_EICONFIG,"qdsync_cccf_set_buf_len(), buffer length must be greater than 0");
+
+    // check current state
+    if (_q->buf_out_counter < _buf_len) {
+        // buffer might not be empty, but we aren't resizing within this space;
+        // ok to resize so long as old samples are copied
+        _q->buf_out_len = _buf_len;
+        _q->buf_out = (float complex*)realloc(_q->buf_out, _q->buf_out_len*sizeof(float complex));
+    } else {
+        // we are shrinking the buffer below the number of samples it currently
+        // holds; invoke the callback as many times as needed to reduce its size
+        unsigned int index = 0;
+        while (_q->buf_out_counter >= _buf_len) {
+            if (_q->callback != NULL)
+                _q->callback(_q->buf_out + index, _buf_len, _q->context);
+
+            // adjust counters
+            index += _buf_len;
+            _q->buf_out_counter -= _buf_len;
+        }
+        // now perform the reallocation, but we cannot use 'realloc' here because
+        // we are not copying values at the front of the buffer
+        float complex * buf_new = (float complex*)malloc(_buf_len * sizeof(float complex));
+        memmove(buf_new, _q->buf_out + index, _q->buf_out_counter*sizeof(float complex));
+        free(_q->buf_out);
+        _q->buf_out = buf_new;
+    }
+    return LIQUID_OK;
+}
+
 int qdsync_cccf_execute(qdsync_cccf            _q,
                         liquid_float_complex * _buf,
                         unsigned int           _buf_len)
