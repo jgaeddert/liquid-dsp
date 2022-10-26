@@ -6309,6 +6309,10 @@ int qdsync_cccf_set_callback(qdsync_cccf _q, qdsync_callback _callback);
 // set context value
 int qdsync_cccf_set_context (qdsync_cccf _q, void * _context);
 
+// Set callback buffer size (the number of symbol provided to the callback
+// whenever it is invoked).
+int qdsync_cccf_set_buf_len (qdsync_cccf _q, unsigned int _buf_len);
+
 // execute block of samples
 int qdsync_cccf_execute(qdsync_cccf            _q,
                         liquid_float_complex * _buf,
