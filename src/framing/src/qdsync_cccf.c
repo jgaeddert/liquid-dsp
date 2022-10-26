@@ -93,8 +93,8 @@ qdsync_cccf qdsync_cccf_create_linear(liquid_float_complex * _seq,
     // validate input
     if (_seq_len == 0)
         return liquid_error_config("qdsync_cccf_create(), sequence length cannot be zero");
-    if (_k != 2)
-        return liquid_error_config("qdsync_cccf_create(), samples per symbol fixed at 2 (temporarily)");
+    //if (_k != 2)
+    //    return liquid_error_config("qdsync_cccf_create(), samples per symbol fixed at 2 (temporarily)");
 
     // allocate memory for main object and set internal properties
     qdsync_cccf q = (qdsync_cccf) malloc(sizeof(struct qdsync_cccf_s));
@@ -292,20 +292,21 @@ int qdsync_cccf_execute_detect(qdsync_cccf   _q,
         float gamma_hat = qdetector_cccf_get_gamma(_q->detector);
         float dphi_hat  = qdetector_cccf_get_dphi (_q->detector);
         float phi_hat   = qdetector_cccf_get_phi  (_q->detector);
-        //printf("*** qdsync frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
-        //        tau_hat, dphi_hat, 20*log10f(gamma_hat));
 
         // set appropriate filterbank index
-        if (tau_hat > 0) {
-            _q->pfb_index = (unsigned int)(      tau_hat  * _q->npfb) % _q->npfb;
-            _q->mf_counter = 0;
-        } else {
-            _q->pfb_index = (unsigned int)((1.0f+tau_hat) * _q->npfb) % _q->npfb;
-            _q->mf_counter = 1;
+        _q->mf_counter = _q->k - 2;
+        _q->pfb_index =  0;
+        int index = (int)(tau_hat * _q->npfb);
+        if (index < 0) {
+            _q->mf_counter++;
+            index += _q->npfb;
         }
+        _q->pfb_index = index;
+        //printf("* qdsync detected! tau:%6.3f, dphi:%12.4e, phi:%6.3f, gamma:%6.2f dB, mf:%u, pfb idx:%u\n",
+        //        tau_hat, dphi_hat, phi_hat, 20*log10f(gamma_hat), _q->mf_counter, _q->pfb_index);
 
         // output filter scale
-        firpfb_crcf_set_scale(_q->mf, 0.5f / gamma_hat);
+        firpfb_crcf_set_scale(_q->mf, 1.0f / (_q->k * gamma_hat));
 
         // set frequency/phase of mixer
         nco_crcf_set_frequency(_q->mixer, dphi_hat);
@@ -339,12 +340,12 @@ int qdsync_cccf_step(qdsync_cccf   _q,
 
     // increment counter to determine if sample is available
     _q->mf_counter++;
-    int sample_available = (_q->mf_counter >= 1) ? 1 : 0;
+    int sample_available = (_q->mf_counter >= _q->k-1) ? 1 : 0;
 
     // set output sample if available
     if (sample_available) {
         // decrement counter by k=2 samples/symbol
-        _q->mf_counter -= 2;
+        _q->mf_counter -= _q->k;
 
         // append to output
         qdsync_cccf_buf_append(_q, v);

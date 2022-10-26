@@ -38,6 +38,7 @@ int autotest_qdsync_callback(float complex * _buf,
                              unsigned int    _buf_len,
                              void *          _context)
 {
+    printf("qdsync callback got %u samples\n", _buf_len);
     // save samples to buffer as appropriate
     autotest_qdsync_s * q = (autotest_qdsync_s *) _context;
     unsigned int i;
@@ -76,8 +77,8 @@ void autotest_qdsync()
     }
 
     // payload symbols
-    float complex payload_tx[payload_len];
-    float complex payload_rx[payload_len];
+    float complex payload_tx[payload_len];  // transmitted
+    float complex payload_rx[payload_len];  // received with initial correction
     for (i=0; i<payload_len ; i++) {
         payload_tx[i] = (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 +
                         (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 * _Complex_I;
@@ -87,13 +88,18 @@ void autotest_qdsync()
     autotest_qdsync_s obj = {.seq_len=seq_len, .buf=payload_rx, .buf_len=payload_len, .count=0};
     qdsync_cccf q = qdsync_cccf_create_linear(seq, seq_len, ftype, k, m, beta,
             autotest_qdsync_callback, (void*)&obj);
+    qdsync_cccf_set_range(q, 0.001f);
 
     // create interpolator
     firinterp_crcf interp = firinterp_crcf_create_prototype(ftype,k,m,beta,0);
 
+    // create delay object
+    fdelay_crcf delay = fdelay_crcf_create_default(100);
+    fdelay_crcf_set_delay(delay, 10*k - 0.4);
+
     // run signal through sync object
     float complex buf[k];
-    for (i=0; i<10*seq_len; i++) {
+    for (i=0; i<4*seq_len + payload_len + 2*m + 50; i++) {
         // produce symbol (preamble sequence, payload, or zero)
         float complex s = 0;
         if (i < seq_len) {
@@ -105,6 +111,9 @@ void autotest_qdsync()
         // interpolate symbol
         firinterp_crcf_execute(interp, s, buf);
 
+        // apply delay in place
+        fdelay_crcf_execute_block(delay, buf, k, buf);
+
         // add noise
         unsigned int j;
         for (j=0; j<k; j++)
@@ -113,20 +122,27 @@ void autotest_qdsync()
         // run through synchronizer
         qdsync_cccf_execute(q, buf, k);
     }
-    qdsync_cccf_destroy(q);
-    firinterp_crcf_destroy(interp);
+    float dphi_hat = qdsync_cccf_get_dphi(q);
+    float phi_hat  = qdsync_cccf_get_phi(q);
 
-    // compare buffers
+    // compute error in terms of offset from unity; might be residual carrier phase/gain
     // TODO: perform residual carrier/phase error correction?
     float rmse = 0.0f;
     for (i=0; i<payload_len; i++) {
-        float complex e = payload_rx[i] - payload_tx[i];
-        rmse += crealf(e*conjf(e));
+        float e = cabsf(payload_rx[i]) - 1.0f;
+        rmse += e*e;
     }
     rmse = 10*log10f( rmse / (float)payload_len );
     if (liquid_autotest_verbose)
-        printf("qdsync payload rmse: %12.3f dB\n", rmse);
-    CONTEND_LESS_THAN( rmse, -20.0f )
+        printf("qdsync: dphi: %12.4e, phi: %12.8f, rmse: %12.3f\n", dphi_hat, phi_hat, rmse);
+    CONTEND_LESS_THAN( rmse,           -20.0f )
+    CONTEND_LESS_THAN( fabsf(dphi_hat), 4e-3f )
+    CONTEND_LESS_THAN( fabsf( phi_hat), 0.4f  )
+
+    // clean up objects
+    qdsync_cccf_destroy(q);
+    firinterp_crcf_destroy(interp);
+    fdelay_crcf_destroy(delay);
 #if 0
     FILE * fid = fopen("qdsync_cccf_autotest.m","w");
     fprintf(fid,"clear all; close all;\n");
@@ -135,6 +151,8 @@ void autotest_qdsync()
             i+1, crealf(payload_tx[i]), cimagf(payload_tx[i]),
             i+1, crealf(payload_rx[i]), cimagf(payload_rx[i]));
     }
+    fprintf(fid,"plot(r,'.','MarkerSize',6); grid on; axis square;\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.5); xlabel('I'); ylabel('Q');\n");
     fclose(fid);
 #endif
 }
