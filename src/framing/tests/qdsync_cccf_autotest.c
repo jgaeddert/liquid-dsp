@@ -60,8 +60,8 @@ int autotest_qdsync_callback(float complex * _buf,
 void autotest_qdsync()
 {
     // options
-    unsigned int seq_len      =   80;   // number of sync symbols
-    unsigned int payload_len  =  200;   // number of payload symbols
+    unsigned int seq_len      =  240;   // number of sync symbols
+    unsigned int payload_len  =  800;   // number of payload symbols
     unsigned int k            =    2;   // samples/symbol
     unsigned int m            =    7;   // filter delay [symbols]
     float        beta         = 0.3f;   // excess bandwidth factor
@@ -135,8 +135,8 @@ void autotest_qdsync()
     rmse = 10*log10f( rmse / (float)payload_len );
     if (liquid_autotest_verbose)
         printf("qdsync: dphi: %12.4e, phi: %12.8f, rmse: %12.3f\n", dphi_hat, phi_hat, rmse);
-    CONTEND_LESS_THAN( rmse,           -20.0f )
-    CONTEND_LESS_THAN( fabsf(dphi_hat), 4e-3f )
+    CONTEND_LESS_THAN( rmse,           -30.0f )
+    CONTEND_LESS_THAN( fabsf(dphi_hat), 1e-3f )
     CONTEND_LESS_THAN( fabsf( phi_hat), 0.4f  )
 
     // clean up objects
