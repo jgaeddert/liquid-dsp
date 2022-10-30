@@ -37,9 +37,7 @@ static int callback_framesync64_autotest(
     void *           _userdata)
 {
     //printf("callback invoked, payload valid: %s\n", _payload_valid ? "yes" : "no");
-    int * frames_recovered = (int*) _userdata;
-
-    *frames_recovered += _header_valid && _payload_valid ? 1 : 0;
+    *((int*)(_userdata)) += _header_valid && _payload_valid ? 1 : 0;
     return 0;
 }
 
@@ -53,11 +51,6 @@ void autotest_framesync64()
     framegen64 fg = framegen64_create();
     framesync64 fs = framesync64_create(callback_framesync64_autotest,
             (void*)&frames_recovered);
-
-    if (liquid_autotest_verbose) {
-        framesync64_print(fs);
-        framegen64_print(fg);
-    }
 
     // generate the frame
     float complex frame[LIQUID_FRAME64_LEN];
