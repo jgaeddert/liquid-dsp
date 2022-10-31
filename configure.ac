@@ -259,6 +259,14 @@ darwin*)
     AC_DEFUN([AC_PROG_LIBTOOL], [AC_CHECK_TOOL(LIBTOOL, libtool, :)])
     AC_PROG_LIBTOOL
 
+    if test $(which ${LIBTOOL}) = /usr/bin/libtool; then
+      # if it is the Apple libtool
+      LIBTOOL_FLAGS='-static -o $@ $^'
+    else
+      # if it is the GNU libtool (built from source)
+      LIBTOOL_FLAGS='--mode=link $(CC) -static -install_name $@ -o $@ $^ $(LDFLAGS) $(LIBS)'
+    fi
+
     AR_LIB=libliquid.ar
     SH_LIB=libliquid.dylib
     REBIND=""
@@ -290,6 +298,7 @@ AC_SUBST(ARCH_OPTION)               # compiler architecture option
 AC_SUBST(DEBUG_MSG_OPTION)          # debug messages option (.e.g -DDEBUG)
 AC_SUBST(COVERAGE_OPTION)           # source code coverage option (e.g. -fprofile-arcs -ftest-coverage)
 AC_SUBST(CLIB)                      # C library linkage (e.g. '-lc')
+AC_SUBST(LIBTOOL_FLAGS)             # libtool flags
 
 AC_CONFIG_FILES([makefile])
 AC_OUTPUT

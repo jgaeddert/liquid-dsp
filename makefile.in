@@ -68,6 +68,7 @@ RANLIB		:= @RANLIB@
 # flags
 INCLUDE_CFLAGS	= $(addprefix -I,$(include_dirs))
 COVERAGE_FLAGS  = @COVERAGE_OPTION@ # dynamic library linker needs separate flag
+LIBTOOL_FLAGS   = @LIBTOOL_FLAGS@ # libtool flags differs between macOS and GNU
 CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_MSG_OPTION@ @ARCH_OPTION@ ${COVERAGE_FLAGS}
 CPPFLAGS	= @CPPFLAGS@ $(INCLUDE_CFLAGS)
 CFLAGS		= $(CONFIG_CFLAGS) -Wall -fPIC -Wno-deprecated -Wno-deprecated-declarations
@@ -1245,9 +1246,9 @@ SHARED_LIB	= @SH_LIB@
 # darwin
 #
 libliquid.ar: $(objects)
-	${LIBTOOL} -static -o $@ $^
+	${LIBTOOL} ${LIBTOOL_FLAGS}
 
-# gcc -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a 
+# clang -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a
 libliquid.dylib: $(objects)
 	$(CC) -dynamiclib ${COVERAGE_FLAGS} -install_name $@ -o $@ $^ $(LDFLAGS) $(LIBS)
 
