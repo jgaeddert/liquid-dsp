@@ -317,7 +317,7 @@ void autotest_framesync64_estimation()
 
     // add offsets
     float rssi  = -43.0f;
-    float SNRdB =  20.0f;
+    float SNRdB =  25.0f;
     float dphi  =   1e-2f;
     framesync64_channel(frame, rssi, SNRdB, dphi);
 
@@ -329,7 +329,7 @@ void autotest_framesync64_estimation()
 
     // check results (relatively high tolerance)
     CONTEND_DELTA( stats.rssi, rssi,  1.0f );
-    CONTEND_DELTA( -stats.evm, SNRdB, 4.0f ); // need to assess why this is so high
+    CONTEND_DELTA( -stats.evm, SNRdB, 3.0f ); // error biased negative
     CONTEND_DELTA( stats.cfo,  dphi,  4e-3f);
 
     // destroy objects
@@ -337,10 +337,9 @@ void autotest_framesync64_estimation()
     framesync64_destroy(fs);
 
 #if 0
-    FILE * fid = fopen("framesync64_errors.txt", "a");
-    fprintf(fid,"  %12.8f %12.8f %12.4e\n",
-        (stats.rssi -rssi), (-stats.evm -SNRdB), (stats.cfo  -dphi));
-    fclose(fid);
+    FILE * fp = fopen("framesync64_errors.txt", "a");
+    fprintf(fp,"%12.8f %12.8f %12.4e\n",(stats.rssi-rssi),(-stats.evm-SNRdB),(stats.cfo-dphi));
+    fclose(fp);
 #endif
 
 #if 0
