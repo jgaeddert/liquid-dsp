@@ -116,6 +116,8 @@ void autotest_qpacketmodem_evm()
     // decode frame and get EVM estimate
     qpacketmodem_decode_soft(q, frame, payload_rx);
     float evm = qpacketmodem_get_demodulator_evm(q);
+    if (liquid_autotest_verbose)
+        printf("  EVM: %.3f dB, SNR: %.3f dB\n", evm, SNRdB);
 
     // destroy object
     qpacketmodem_destroy(q);
