@@ -260,7 +260,7 @@ darwin*)
     AC_PROG_LIBTOOL
 
     AR_LIB=libliquid.ar
-    SH_LIB=libliquid.dylib
+    SH_LIB=libliquid.${PACKAGE_VERSION}.dylib
     REBIND=""
     ;;
 *)
@@ -270,7 +270,7 @@ darwin*)
     AC_PROG_AR
 
     AR_LIB=libliquid.a
-    SH_LIB=libliquid.so
+    SH_LIB=libliquid.so.${PACKAGE_VERSION::-2}
     REBIND=ldconfig
     ;;
 esac
