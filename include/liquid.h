@@ -4568,7 +4568,7 @@ unsigned int RESAMP(_get_num_output)(RESAMP()     _q,                       \
                                                                             \
 /* Execute arbitrary resampler on a single input sample and store the   */  \
 /* resulting samples in the output array. The number of output samples  */  \
-/* is dependent upon the resampling rate but will be at most            */  \
+/* depends upon the resampling rate but will be at most                 */  \
 /* \( \lceil{ r \rceil} \) samples.                                     */  \
 /*  _q              : resamp object                                     */  \
 /*  _x              : single input sample                               */  \
@@ -4581,7 +4581,7 @@ int RESAMP(_execute)(RESAMP()       _q,                                     \
                                                                             \
 /* Execute arbitrary resampler on a block of input samples and store    */  \
 /* the resulting samples in the output array. The number of output      */  \
-/* samples is dependent upon the resampling rate and the number of input */  \
+/* samples depends upon the resampling rate and the number of input     */  \
 /* samples but will be at most \( \lceil{ r n_x \rceil} \) samples.     */  \
 /*  _q              : resamp object                                     */  \
 /*  _x              : input buffer, [size: _nx x 1]                     */  \
@@ -4739,8 +4739,8 @@ unsigned int MSRESAMP(_get_num_output)(MSRESAMP()   _q,                     \
                                        unsigned int _num_input);            \
                                                                             \
 /* Execute multi-stage resampler on one or more input samples.          */  \
-/* The number of output samples is dependent upon the resampling rate   */  \
-/* and the number of input samples. In general it is good practice to   */  \
+/* The number of output samples depends upon the resampling rate and    */  \
+/* the number of input samples. In general it is good practice to       */  \
 /* allocate at least \( \lceil{ 1 + 2 r n_x \rceil} \) samples in the   */  \
 /* output array to avoid overflows.                                     */  \
 /*  _q  : msresamp object                                               */  \
@@ -6903,7 +6903,7 @@ float liquid_flattop(unsigned int _i,
 // Triangular window
 //  _i      :   window index, _i in [0,_wlen-1]
 //  _wlen   :   full window length
-// _n		:	triangle length, _n in {_wlen-1, _wlen, _wlen+1}
+//  _n      :   triangle length, _n in {_wlen-1, _wlen, _wlen+1}
 float liquid_triangular(unsigned int _i,
                         unsigned int _wlen,
                         unsigned int _n);
@@ -8345,7 +8345,7 @@ FIRPFBCH() FIRPFBCH(_create)(int          _type,                            \
 /*  _type   : type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)               */  \
 /*  _M      : number of channels                                        */  \
 /*  _m      : filter delay (symbols)                                    */  \
-/*  _As     : stop-band attenuation [dB]                               */  \
+/*  _As     : stop-band attenuation [dB]                                */  \
 FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,                     \
                                     unsigned int _M,                        \
                                     unsigned int _m,                        \

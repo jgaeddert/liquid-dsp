@@ -1113,7 +1113,7 @@ int QSOURCE(_generate)(QSOURCE() _q,                                        \
                                                                             \
 int QSOURCE(_generate_into)(QSOURCE() _q,                                   \
                             TO *      _buf);                                \
-    
+
 LIQUID_QSOURCE_DEFINE_API(LIQUID_QSOURCE_MANGLE_CFLOAT, liquid_float_complex)
 
 //
