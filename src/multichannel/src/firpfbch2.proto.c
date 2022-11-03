@@ -32,6 +32,8 @@
 #include <string.h>
 #include <math.h>
 
+#include "liquid.internal.h"
+
 // firpfbch2 object structure definition
 struct FIRPFBCH2(_s) {
     int          type;  // synthesis/analysis
@@ -105,9 +107,8 @@ FIRPFBCH2() FIRPFBCH2(_create)(int          _type,
     }
 
     // create FFT plan (inverse transform)
-    // TODO : use fftw_malloc if HAVE_FFTW3_H
-    q->X = (T*) malloc((q->M)*sizeof(T));   // IFFT input
-    q->x = (T*) malloc((q->M)*sizeof(T));   // IFFT output
+    q->X = (T*) FFT_MALLOC((q->M)*sizeof(T));   // IFFT input
+    q->x = (T*) FFT_MALLOC((q->M)*sizeof(T));   // IFFT output
     q->ifft = FFT_CREATE_PLAN(q->M, q->X, q->x, FFT_DIR_BACKWARD, FFT_METHOD);
 
     // create buffer objects
@@ -192,9 +193,8 @@ FIRPFBCH2() FIRPFBCH2(_copy)(FIRPFBCH2() q_orig)
         q_copy->dp[i] = DOTPROD(_copy)(q_orig->dp[i]);
 
     // create FFT plan (inverse transform)
-    // TODO : use fftw_malloc if HAVE_FFTW3_H
-    q_copy->X = (T*) malloc((q_copy->M)*sizeof(T));   // IFFT input
-    q_copy->x = (T*) malloc((q_copy->M)*sizeof(T));   // IFFT output
+    q_copy->X = (T*) FFT_MALLOC((q_copy->M)*sizeof(T));   // IFFT input
+    q_copy->x = (T*) FFT_MALLOC((q_copy->M)*sizeof(T));   // IFFT output
     q_copy->ifft = FFT_CREATE_PLAN(q_copy->M, q_copy->X, q_copy->x, FFT_DIR_BACKWARD, FFT_METHOD);
 
     // create and copy buffer objects
@@ -220,8 +220,8 @@ int FIRPFBCH2(_destroy)(FIRPFBCH2() _q)
 
     // free transform object and arrays
     FFT_DESTROY_PLAN(_q->ifft);
-    free(_q->X);
-    free(_q->x);
+    FFT_FREE(_q->X);
+    FFT_FREE(_q->x);
     
     // free window objects (buffers)
     for (i=0; i<_q->M; i++) {

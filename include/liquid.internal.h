@@ -749,6 +749,8 @@ LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_comp
 #   define FFT_DIR_FORWARD      FFTW_FORWARD
 #   define FFT_DIR_BACKWARD     FFTW_BACKWARD
 #   define FFT_METHOD           FFTW_ESTIMATE
+#   define FFT_MALLOC           fftwf_malloc
+#   define FFT_FREE             fftwf_free
 #else
 #   define FFT_PLAN             fftplan
 #   define FFT_CREATE_PLAN      fft_create_plan
@@ -757,6 +759,8 @@ LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_comp
 #   define FFT_DIR_FORWARD      LIQUID_FFT_FORWARD
 #   define FFT_DIR_BACKWARD     LIQUID_FFT_BACKWARD
 #   define FFT_METHOD           0
+#   define FFT_MALLOC           malloc
+#   define FFT_FREE             free
 #endif
 
 

@@ -180,8 +180,8 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
         return liquid_error_config("ofdmframesync_create(), must have at least two pilot subcarriers");
 
     // create transform object
-    q->X = (float complex*) malloc((q->M)*sizeof(float complex));
-    q->x = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->X = (float complex*) FFT_MALLOC((q->M)*sizeof(float complex));
+    q->x = (float complex*) FFT_MALLOC((q->M)*sizeof(float complex));
     q->fft = FFT_CREATE_PLAN(q->M, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
  
     // create input buffer the length of the transform
@@ -284,8 +284,8 @@ int ofdmframesync_destroy(ofdmframesync _q)
 
     // free transform object
     windowcf_destroy(_q->input_buffer);
-    free(_q->X);
-    free(_q->x);
+    FFT_FREE(_q->X);
+    FFT_FREE(_q->x);
     FFT_DESTROY_PLAN(_q->fft);
 
     // clean up PLCP arrays

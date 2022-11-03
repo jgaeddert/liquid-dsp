@@ -129,8 +129,8 @@ FFT(plan) FFT(_create_plan_rader2)(unsigned int _nfft,
     // assert(nfft_prime > 2*nfft-4)
 
     // allocate memory for sub-transforms
-    q->data.rader2.x_prime = (TC*)malloc((q->data.rader2.nfft_prime)*sizeof(TC));
-    q->data.rader2.X_prime = (TC*)malloc((q->data.rader2.nfft_prime)*sizeof(TC));
+    q->data.rader2.x_prime = (TC*) FFT_MALLOC((q->data.rader2.nfft_prime)*sizeof(TC));
+    q->data.rader2.X_prime = (TC*) FFT_MALLOC((q->data.rader2.nfft_prime)*sizeof(TC));
 
     // create sub-FFT of size nfft-1
     q->data.rader2.fft = FFT(_create_plan)(q->data.rader2.nfft_prime,
@@ -166,11 +166,11 @@ FFT(plan) FFT(_create_plan_rader2)(unsigned int _nfft,
 int FFT(_destroy_plan_rader2)(FFT(plan) _q)
 {
     // free data specific to Rader's algorithm
-    free(_q->data.rader2.seq);      // sequence
-    free(_q->data.rader2.R);        // pre-computed transform of exp(j*2*pi*seq)
+    free(_q->data.rader2.seq);          // sequence
+    free(_q->data.rader2.R);            // pre-computed transform of exp(j*2*pi*seq)
 
-    free(_q->data.rader2.x_prime);   // sub-transform input array
-    free(_q->data.rader2.X_prime);   // sub-transform output array
+    FFT_FREE(_q->data.rader2.x_prime);  // sub-transform input array
+    FFT_FREE(_q->data.rader2.X_prime);  // sub-transform output array
 
     FFT(_destroy_plan)(_q->data.rader2.fft);
     FFT(_destroy_plan)(_q->data.rader2.ifft);
