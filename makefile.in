@@ -45,6 +45,8 @@
 NAME		:= @PACKAGE_NAME@
 VERSION		:= @PACKAGE_VERSION@
 BUGREPORT	:= @PACKAGE_BUGREPORT@
+AR_LIB		:= @AR_LIB@
+SH_LIB		:= @SH_LIB@
 
 # paths
 prefix		:= @prefix@
@@ -1237,28 +1239,28 @@ benchmark_sources :=						\
 ##
 .PHONY: all
 
-# Shared library
-ARCHIVE_LIB	= @AR_LIB@
-SHARED_LIB	= @SH_LIB@
+# Shared library targets
+ARCHIVE_LIB	= libliquid.${VERSION}.${AR_LIB}
+SHARED_LIB	= libliquid.${VERSION}.${SH_LIB}
 
 #
 # darwin
 #
-libliquid.ar: $(objects)
+libliquid.${VERSION}.ar: $(objects)
 	${LIBTOOL} -static -o $@ $^
 
 # gcc -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a 
-libliquid.dylib: $(objects)
+libliquid.${VERSION}.dylib: $(objects)
 	$(CC) -dynamiclib ${COVERAGE_FLAGS} -install_name $@ -o $@ $^ $(LDFLAGS) $(LIBS)
 
 #
 # linux, et al
 #
-libliquid.a: $(objects)
+libliquid.${VERSION}.a: $(objects)
 	${AR} r $@ $^
 	${RANLIB} $@
 
-libliquid.so: libliquid.a
+libliquid.${VERSION}.so: libliquid.${VERSION}.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive $(LIBS)
 
 # static archive and library objects
@@ -1285,6 +1287,7 @@ install: all
 	mkdir -p $(DESTDIR)$(libdir)
 	install -m 644 -p ${ARCHIVE_LIB} ${SHARED_LIB} $(DESTDIR)$(libdir)
 	install -m 644 -p $(addprefix include/,$(headers_install)) $(DESTDIR)$(prefix)/include/liquid
+	ln -s -f $(DESTDIR)$(libdir)/libliquid.${VERSION}.${SH_LIB} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
 	@echo ""
 	@echo "---------------------------------------------------------"
 	@echo "  liquid-dsp was successfully installed.     "
@@ -1308,6 +1311,7 @@ uninstall:
 	$(RM) $(addprefix $(DESTDIR)$(prefix)/include/liquid/, $(headers_install))
 	$(RM) $(DESTDIR)$(libdir)/${ARCHIVE_LIB}
 	$(RM) $(DESTDIR)$(libdir)/${SHARED_LIB}
+	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
 	@echo "done."
 
 ##
@@ -1815,6 +1819,20 @@ $(sandbox_programs): % : %.o ${ARCHIVE_LIB}
 clean-sandbox:
 	$(RM) sandbox/*.o
 	$(RM) $(sandbox_programs)
+
+##
+## TARGET : check-link- test linking to installed library
+##
+
+# run program, ensuring proper error code
+check-link: scripts/liquid_linker_test ; ./$<
+
+# use subset of compiler flags so we don't try to build or link against
+# local files
+scripts/liquid_linker_test : % : %.c
+	$(CC) -Wall -O2 ${LIBS} -lliquid -o $@ $<
+
+extra_clean += scripts/liquid_linker_test
 
 ##
 ## TARGET : programs  - build all programs, but don't run anything
