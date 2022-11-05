@@ -29,12 +29,19 @@ def framesync64_plot(filename,export=None):
     # compute filter response in dB
     nfft = 2400
     f = np.arange(nfft)/nfft-0.5
-    psd = 20*np.log10(np.abs(np.fft.fftshift(np.fft.fft(buf, nfft))))
+    psd = np.abs(np.fft.fftshift(np.fft.fft(buf, nfft)))**2
+    m   = int(0.01*nfft)
+    w   = np.hamming(2*m+1)
+    h   = np.concatenate((w[m:], np.zeros(nfft-2*m-1), w[:m])) / (sum(w) * nfft)
+    H   = np.fft.fft(h)
+    psd = 10*np.log10( np.real(np.fft.ifft(H * np.fft.fft(psd))) )
+    #psd = 20*np.log10(np.abs(np.fft.fftshift(np.fft.fft(buf, nfft))))
 
     # plot impulse and spectral responses
-    fig, _ax = plt.subplots(2,2,figsize=(8,8))
+    fig, _ax = plt.subplots(2,2,figsize=(12,12))
     ax = _ax.flatten()
     t = np.arange(len(buf))
+    qpsk = np.exp(0.5j*np.pi*(np.arange(4)+0.5)) # payload constellation
     ax[0].plot(t,np.real(buf), t,np.imag(buf))
     ax[0].set_title('Raw I/Q Samples')
     ax[1].plot(f,psd)
@@ -46,6 +53,9 @@ def framesync64_plot(filename,export=None):
     ax[3].set_title('Synchronized Payload Syms')
     for _ax in ax[2:]:
         _ax.set(xlim=(-1.3,1.3), ylim=(-1.3,1.3))
+        _ax.plot(np.real(qpsk),np.imag(qpsk),'rx')
+        _ax.set_xlabel('Real')
+        _ax.set_ylabel('Imag')
     for _ax in ax:
         _ax.grid(True)
     fig.suptitle('frame64, tau:%.6f, dphi:%.6f, phi:%.6f, rssi:%.3f dB, evm:%.3f' % \

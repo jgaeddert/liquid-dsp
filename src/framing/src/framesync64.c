@@ -143,7 +143,7 @@ framesync64 framesync64_create(framesync_callback _callback,
     qdetector_cccf_set_threshold(q->detector, 0.5f);
 
     // create symbol timing recovery filters
-    q->npfb = 32;   // number of filters in the bank
+    q->npfb = 64;  // number of filters in the bank
     q->mf   = firpfb_crcf_create_rnyquist(LIQUID_FIRFILT_ARKAISER, q->npfb,k,q->m,q->beta);
 
 #if FRAMESYNC64_ENABLE_EQ
@@ -337,8 +337,6 @@ int framesync64_execute_seekpn(framesync64   _q,
         _q->gamma_hat = qdetector_cccf_get_gamma(_q->detector);
         _q->dphi_hat  = qdetector_cccf_get_dphi (_q->detector);
         _q->phi_hat   = qdetector_cccf_get_phi  (_q->detector);
-        //printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
-        //        _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
 
         // set appropriate filterbank index
         if (_q->tau_hat > 0) {
@@ -348,6 +346,8 @@ int framesync64_execute_seekpn(framesync64   _q,
             _q->pfb_index = (unsigned int)((1.0f+_q->tau_hat) * _q->npfb) % _q->npfb;
             _q->mf_counter = 1;
         }
+        //printf("***** frame detected! tau-hat:%8.4f(%u/%u), dphi-hat:%8.4f, gamma:%8.2f dB\n",
+        //        _q->tau_hat, _q->pfb_index, _q->npfb, _q->dphi_hat, 20*log10f(_q->gamma_hat));
         
         // output filter scale
         firpfb_crcf_set_scale(_q->mf, 0.5f / _q->gamma_hat);
@@ -488,7 +488,7 @@ int framesync64_execute_rxpayload(framesync64   _q,
             // invoke callback
             if (_q->callback != NULL) {
                 // set framesyncstats internals
-                _q->framesyncstats.evm           = qpilotsync_get_evm(_q->pilotsync);
+                _q->framesyncstats.evm           = qpacketmodem_get_demodulator_evm(_q->dec); //qpilotsync_get_evm(_q->pilotsync);
                 _q->framesyncstats.rssi          = 20*log10f(_q->gamma_hat);
                 _q->framesyncstats.cfo           = nco_crcf_get_frequency(_q->mixer);
                 _q->framesyncstats.framesyms     = _q->payload_sym;

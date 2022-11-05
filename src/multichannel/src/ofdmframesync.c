@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -601,12 +601,12 @@ int ofdmframesync_execute_S0b(ofdmframesync _q)
     }
 #endif
 
-    float complex g_hat = 0.0f;
     unsigned int i;
+#if 0
+    float complex g_hat = 0.0f;
     for (i=0; i<_q->M; i++)
         g_hat += _q->G0b[i] * conjf(_q->G0a[i]);
 
-#if 0
     // compute carrier frequency offset estimate using freq. domain method
     float nu_hat = 2.0f * cargf(g_hat) / (float)(_q->M);
 #else

@@ -59,7 +59,7 @@ void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int 
         symtrack_cccf_print(symtrack);
 
     unsigned int total_samples = 0;
-    unsigned int total_symbols = 0;
+    //unsigned int total_symbols = 0;
     unsigned int num_symbols_evm = 0;
     float        evm = 0.0f;
     modemcf demod = modemcf_create(_ms); // for checking output EVM
@@ -75,7 +75,7 @@ void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int 
         // run resulting stream through synchronizer
         unsigned int num_symbols_sync;
         symtrack_cccf_execute_block(symtrack, buf_0, buf_len, buf_1, &num_symbols_sync);
-        total_symbols += num_symbols_sync;
+        //total_symbols += num_symbols_sync;
         total_samples += buf_len;
 
         // check output EVM

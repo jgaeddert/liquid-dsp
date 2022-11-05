@@ -83,6 +83,54 @@ void autotest_qpacketmodem_qam64()  { qpacketmodem_modulated(400,LIQUID_CRC_32,L
 void autotest_qpacketmodem_sqam128(){ qpacketmodem_modulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM128); }
 void autotest_qpacketmodem_qam256() { qpacketmodem_modulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM256);  }
 
+// test error vector magnitude estimation
+void autotest_qpacketmodem_evm()
+{
+    unsigned int payload_len = 800;
+    int          check       = LIQUID_CRC_32;
+    int          fec0        = LIQUID_FEC_NONE;
+    int          fec1        = LIQUID_FEC_NONE;
+    int          ms          = LIQUID_MODEM_QPSK;
+    float        SNRdB       = 25.0f;
+
+    // create and configure packet encoder/decoder object
+    qpacketmodem q = qpacketmodem_create();
+    qpacketmodem_configure(q, payload_len, check, fec0, fec1, ms);
+
+    // initialize payload
+    unsigned char payload_rx[payload_len];
+
+    // get frame length and allocate memory for frame samples
+    unsigned int frame_len = qpacketmodem_get_frame_len(q);
+    float complex frame[frame_len];
+
+    // encode frame (random bits)
+    qpacketmodem_encode(q, NULL, frame);
+
+    // add noise
+    float nstd  = powf(10.0f, -SNRdB/20.0f);
+    unsigned int i;
+    for (i=0; i<frame_len; i++)
+        frame[i] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+
+    // decode frame and get EVM estimate
+    qpacketmodem_decode_soft(q, frame, payload_rx);
+    float evm = qpacketmodem_get_demodulator_evm(q);
+    if (liquid_autotest_verbose)
+        printf("  EVM: %.3f dB, SNR: %.3f dB\n", evm, SNRdB);
+
+    // destroy object
+    qpacketmodem_destroy(q);
+
+    // check EVM estimate; don't bother to check to see that frame was recovered
+    CONTEND_DELTA( -evm, SNRdB, 0.5f );
+#if 0
+    FILE * fid = fopen("qpacketmodem_evm.txt","a");
+    fprintf(fid,"%12.4e\n", SNRdB+evm);
+    fclose(fid);
+#endif
+}
+
 // 
 // AUTOTEST : test un-modulated frame symbols (hard-decision demod)
 //

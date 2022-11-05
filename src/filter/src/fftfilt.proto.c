@@ -21,20 +21,12 @@
  */
 
 //
-// fftfilt : finite impulse response (FIR) filter using fast Fourier
-//           transforms (FFTs)
+// finite impulse response (FIR) filter using fast Fourier transforms (FFTs)
 //
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-// defined:
-//  FFTFILT()       name-mangling macro
-//  T               coefficients type
-//  WINDOW()        window macro
-//  DOTPROD()       dotprod macro
-//  PRINTVAL()      print macro
 
 // fftfilt object structure
 struct FFTFILT(_s) {
@@ -51,14 +43,8 @@ struct FFTFILT(_s) {
     float complex * w;          // overlap array [size: n x 1]
 
     // FFT objects
-#ifdef LIQUID_FFTOVERRIDE
-    fftplan fft;        // FFT object (forward)
-    fftplan ifft;       // FFT object (inverse)
-#else
     FFT_PLAN fft;       // FFT object (forward)
     FFT_PLAN ifft;      // FFT object (inverse)
-#endif
-
     TC scale;           // output scaling factor
 };
 
@@ -92,24 +78,15 @@ FFTFILT() FFTFILT(_create)(TC *         _h,
     q->w        = (float complex *) malloc((  q->n)* sizeof(float complex)); // delay buffer
 
     // create internal FFT objects
-#ifdef LIQUID_FFTOVERRIDE
-    q->fft  = fft_create_plan(2*q->n, q->time_buf, q->freq_buf, LIQUID_FFT_FORWARD,  0);
-    q->ifft = fft_create_plan(2*q->n, q->freq_buf, q->time_buf, LIQUID_FFT_BACKWARD, 0);
-#else
     q->fft  = FFT_CREATE_PLAN(2*q->n, q->time_buf, q->freq_buf, FFT_DIR_FORWARD,  FFT_METHOD);
     q->ifft = FFT_CREATE_PLAN(2*q->n, q->freq_buf, q->time_buf, FFT_DIR_BACKWARD, FFT_METHOD);
-#endif
 
     // compute FFT of filter coefficients and copy to internal H array
     unsigned int i;
     for (i=0; i<2*q->n; i++)
         q->time_buf[i] = (i < q->h_len) ? q->h[i] : 0;
     // time_buf > {FFT} > freq_buf
-#ifdef LIQUID_FFTOVERRIDE
-    fft_execute(q->fft);
-#else
     FFT_EXECUTE(q->fft);
-#endif
     memmove(q->H, q->freq_buf, 2*q->n*sizeof(float complex));
 
     // set default scaling
@@ -143,13 +120,8 @@ FFTFILT() FFTFILT(_copy)(FFTFILT() q_orig)
     q_copy->w        = (float complex*) liquid_malloc_copy(q_orig->w,          q_orig->n, sizeof(float complex));
 
     // create internal FFT objects and return
-#ifdef LIQUID_FFTOVERRIDE
-    q_copy->fft  = fft_create_plan(2*q_copy->n, q_copy->time_buf, q_copy->freq_buf, LIQUID_FFT_FORWARD,  0);
-    q_copy->ifft = fft_create_plan(2*q_copy->n, q_copy->freq_buf, q_copy->time_buf, LIQUID_FFT_BACKWARD, 0);
-#else
     q_copy->fft  = FFT_CREATE_PLAN(2*q_copy->n, q_copy->time_buf, q_copy->freq_buf, FFT_DIR_FORWARD,  FFT_METHOD);
     q_copy->ifft = FFT_CREATE_PLAN(2*q_copy->n, q_copy->freq_buf, q_copy->time_buf, FFT_DIR_BACKWARD, FFT_METHOD);
-#endif
     return q_copy;
 }
 
@@ -164,13 +136,8 @@ int FFTFILT(_destroy)(FFTFILT() _q)
     free(_q->w);                // output window buffer
 
     // destroy FFT objects
-#ifdef LIQUID_FFTOVERRIDE
-    fft_destroy_plan(_q->fft);       // forward transform
-    fft_destroy_plan(_q->ifft);      // reverse transform
-#else
     FFT_DESTROY_PLAN(_q->fft);  // forward transform
     FFT_DESTROY_PLAN(_q->ifft); // reverse transform
-#endif
 
     // free main object
     free(_q);
@@ -255,11 +222,7 @@ int FFTFILT(_execute)(FFTFILT() _q,
 #endif
 
     // run forward transform
-#ifdef LIQUID_FFTOVERRIDE
-    fft_execute(_q->fft);
-#else
     FFT_EXECUTE(_q->fft);
-#endif
 
     // compute inner product between FFT{ _x } and FFT{ H }
 #if 1
@@ -277,11 +240,7 @@ int FFTFILT(_execute)(FFTFILT() _q,
 #endif
 
     // compute inverse transform
-#ifdef LIQUID_FFTOVERRIDE
-    fft_execute(_q->ifft);
-#else
     FFT_EXECUTE(_q->ifft);
-#endif
 
     // copy output summed with buffer and scaled
 #if TI_COMPLEX

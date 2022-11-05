@@ -261,8 +261,8 @@ darwin*)
     AC_DEFUN([AC_PROG_LIBTOOL], [AC_CHECK_TOOL(LIBTOOL, libtool, :)])
     AC_PROG_LIBTOOL
 
-    AR_LIB=libliquid.ar
-    SH_LIB=libliquid.dylib
+    AR_LIB=ar	    # archive extension
+    SH_LIB=dylib    # shared library extension
     REBIND=""
     CXX_FLAGS_PYBIND="-undefined dynamic_lookup"
     ;;
@@ -272,8 +272,8 @@ darwin*)
     AC_DEFUN([AC_PROG_AR], [AC_CHECK_TOOL(AR, ar, :)])
     AC_PROG_AR
 
-    AR_LIB=libliquid.a
-    SH_LIB=libliquid.so
+    AR_LIB=a	    # archive extension
+    SH_LIB=so	    # shared library extension
     REBIND=ldconfig
     CXX_FLAGS_PYBIND=""
     ;;

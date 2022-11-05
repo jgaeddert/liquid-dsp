@@ -31,6 +31,8 @@ extern "C" {
 
 // common headers
 #include <inttypes.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 //
 // Make sure the version and version number macros weren't defined by
@@ -64,6 +66,8 @@ int liquid_libversion_number(void);
   if (LIQUID_VERSION_NUMBER != liquid_libversion_number()) {                \
     fprintf(stderr,"%s:%u: ", __FILE__,__LINE__);                           \
     fprintf(stderr,"error: invalid liquid runtime library\n");              \
+    fprintf(stderr,"  header version  : %d\n", LIQUID_VERSION_NUMBER);      \
+    fprintf(stderr,"  library version : %d\n", liquid_libversion_number()); \
     exit(1);                                                                \
   }                                                                         \
 

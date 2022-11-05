@@ -29,56 +29,57 @@
 void testbench_resamp_crcf(float r, float As)
 {
     // options
-    unsigned int n=800000;      // number of output samples to analyze
-    float bw = 0.2f; // target output bandwidth
-    unsigned int nfft = 800;
-    float tol = 0.5f;
-    unsigned int m = 15, npfb = 256;
-    float fc = 0.45f;
+    float        bw   = 0.25f;  // target output signal bandwidth
+    float        tol  = 0.5f;   // output PSD error tolerance [dB]
+    unsigned int m    = 15;     // resampler semi-length
+    unsigned int npfb = 256;    // number of filters in bank
+    float        fc   = 0.45f;  // resampler cut-off frequency
 
-    // create and configure objects
-    spgramcf     q   = spgramcf_create(nfft, LIQUID_WINDOW_HANN, nfft/2, nfft/4);
-    symstreamrcf gen = symstreamrcf_create_linear(LIQUID_FIRFILT_KAISER,r*bw,25,0.2f,LIQUID_MODEM_QPSK);
-    symstreamrcf_set_gain(gen, sqrtf(bw));
+    // create resampler
     resamp_crcf resamp = resamp_crcf_create(r,m,fc,As,npfb);
 
-    // generate samples and push through spgram object
-    unsigned int  buf_len = 256;
-    float complex buf_0[buf_len]; // input buffer
-    float complex buf_1[buf_len]; // output buffer
-    while (spgramcf_get_num_samples_total(q) < n) {
-        // generate block of samples
-        symstreamrcf_write_samples(gen, buf_0, buf_len);
+    // generate pulse with sharp transition and very narrow side-lobes
+    unsigned int p = (unsigned int) (40.0f / r);
+    unsigned int pulse_len = 4*p + 1;
+    //printf("pulse len: 4*%u+1 = %u, r=%f, bw=%f\n", p, pulse_len, r, bw);
+    float        pulse[pulse_len];
+    liquid_firdes_kaiser(pulse_len, 0.5*r*bw, 120, 0, pulse);
 
-        // resample
-        unsigned int nw = 0;
-        resamp_crcf_execute_block(resamp, buf_0, buf_len, buf_1, &nw);
+    // allocate buffers and copy input
+    unsigned int  num_input  = pulse_len + 2*m + 1;
+    unsigned int  num_output = resamp_crcf_get_num_output(resamp, num_input);
+    float complex buf_0[num_input];  // input buffer
+    float complex buf_1[num_output]; // output buffer
+    unsigned int i;
+    for (i=0; i<num_input; i++)
+        buf_0[i] = i < pulse_len ? pulse[i]*bw : 0;
 
-        // run samples through the spgram object
-        spgramcf_write(q, buf_1, nw);
-    }
+    // resample
+    unsigned int nw = 0;
+    resamp_crcf_execute_block(resamp, buf_0, num_input, buf_1, &nw);
 
     // verify result
-    float psd[nfft];
-    spgramcf_get_psd(q, psd);
     autotest_psd_s regions[] = {
         {.fmin=-0.5f,    .fmax=-0.6f*bw, .pmin=0,     .pmax=-As+tol, .test_lo=0, .test_hi=1},
         {.fmin=-0.4f*bw, .fmax=+0.4f*bw, .pmin=0-tol, .pmax= 0 +tol, .test_lo=1, .test_hi=1},
         {.fmin=+0.6f*bw, .fmax=+0.5f,    .pmin=0,     .pmax=-As+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/resamp_crcf.m" : NULL);
+    char filename[256];
+    sprintf(filename,"autotest/logs/resamp_crcf_r%.3u_a%.2u_autotest.m", (int)(r*1000), (int)(As));
+    liquid_autotest_validate_psd_signal(buf_1, nw, regions, 3,
+        liquid_autotest_verbose ? filename : NULL);
 
     // destroy objects
-    spgramcf_destroy(q);
-    symstreamrcf_destroy(gen);
     resamp_crcf_destroy(resamp);
 }
 
 void autotest_resamp_crcf_01() { testbench_resamp_crcf(0.127115323f, 60.0f); }
 void autotest_resamp_crcf_02() { testbench_resamp_crcf(0.373737373f, 60.0f); }
 void autotest_resamp_crcf_03() { testbench_resamp_crcf(0.676543210f, 60.0f); }
-//void xautotest_resamp_crcf_04() { testbench_resamp_crcf(0.127115323f,80.0f); }
+
+void autotest_resamp_crcf_04() { testbench_resamp_crcf(0.127115323f, 80.0f); }
+void autotest_resamp_crcf_05() { testbench_resamp_crcf(0.373737373f, 80.0f); }
+//void xautotest_resamp_crcf_06() { testbench_resamp_crcf(0.676543210f, 80.0f); }
 
 // test arbitrary resampler output length calculation
 void testbench_resamp_crcf_num_output(float _rate, unsigned int _npfb)
