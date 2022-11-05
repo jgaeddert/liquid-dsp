@@ -14,6 +14,7 @@ install:
     - make -j4
     - make install
     - ldconfig
+    - gcc -m64 -Xlinker --verbose 2>/dev/null | grep SEARCH
     - make check-link
   artifacts: # save output objects for test stages
     paths: [makefile, configure, config.h, config.h.in]
