@@ -1831,10 +1831,13 @@ check-link: scripts/liquid_linker_test ; ./$<
 
 # use subset of compiler flags so we don't try to build or link against
 # local files
-scripts/liquid_linker_test : % : %.c
-	$(CC) -Wall -O2 -L/usr/local/lib ${LIBS} -lliquid -o $@ $<
+scripts/liquid_linker_test.o : %.o : %.c
+	$(CC) -c -Wall -O2 -o $@ $<
 
-extra_clean += scripts/liquid_linker_test
+scripts/liquid_linker_test : % : %.o
+	$(CC) -Wall -O2 -o $@ $< -L/usr/local/lib ${LIBS} -lliquid
+
+extra_clean += scripts/liquid_linker_test.o scripts/liquid_linker_test
 
 ##
 ## TARGET : programs  - build all programs, but don't run anything
