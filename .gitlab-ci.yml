@@ -2,7 +2,8 @@
 image: debian
 stages: [build, test]
 before_script:
-  - apt-get -qq update && apt-get -qq install -y automake autoconf gcc g++ gcovr make valgrind time curl
+  - apt-get -qq update
+  - apt-get -qq install -y --no-install-recommends automake autoconf gcc g++ gcovr make valgrind time curl
 
 # build and install from scratch
 install:
