@@ -1282,12 +1282,12 @@ help:
 install: all
 	@echo "installing..."
 	@echo ""
-	mkdir -p $(DESTDIR)$(prefix)/include
 	mkdir -p $(DESTDIR)$(prefix)/include/liquid
 	mkdir -p $(DESTDIR)$(libdir)
 	install -m 644 -p ${ARCHIVE_LIB} ${SHARED_LIB} $(DESTDIR)$(libdir)
-	install -m 644 -p $(addprefix include/,$(headers_install)) $(DESTDIR)$(prefix)/include/liquid
-	ln -s -f $(DESTDIR)$(libdir)/libliquid.${VERSION}.${SH_LIB} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
+	install -m 644 -p include/liquid.h $(DESTDIR)$(prefix)/include/liquid/liquid.${VERSION}.h
+	ln -sf $(DESTDIR)$(libdir)/libliquid.${VERSION}.${SH_LIB} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
+	ln -sf $(DESTDIR)$(prefix)/include/liquid/liquid.${VERSION}.h $(DESTDIR)$(prefix)/include/liquid/liquid.h
 	@echo ""
 	@echo "---------------------------------------------------------"
 	@echo "  liquid-dsp was successfully installed.     "
@@ -1306,9 +1306,11 @@ install: all
 ## TARGET : uninstall - uninstalls the libraries and header files in the host system
 ##
 
+#$(RM) $(addprefix $(DESTDIR)$(prefix)/include/liquid/, $(headers_install))
 uninstall:
 	@echo "uninstalling..."
-	$(RM) $(addprefix $(DESTDIR)$(prefix)/include/liquid/, $(headers_install))
+	$(RM) $(DESTDIR)$(prefix)/include/liquid/liquid.${VERSION}.h
+	$(RM) $(DESTDIR)$(prefix)/include/liquid/liquid.h
 	$(RM) $(DESTDIR)$(libdir)/${ARCHIVE_LIB}
 	$(RM) $(DESTDIR)$(libdir)/${SHARED_LIB}
 	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
