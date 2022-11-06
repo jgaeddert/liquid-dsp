@@ -1286,8 +1286,8 @@ install: all
 	mkdir -p $(DESTDIR)$(libdir)
 	install -m 644 -p ${ARCHIVE_LIB} ${SHARED_LIB} $(DESTDIR)$(libdir)
 	install -m 644 -p include/liquid.h $(DESTDIR)$(prefix)/include/liquid/liquid.${VERSION}.h
-	ln -sf $(DESTDIR)$(libdir)/libliquid.${VERSION}.${SH_LIB} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
-	ln -sf $(DESTDIR)$(prefix)/include/liquid/liquid.${VERSION}.h $(DESTDIR)$(prefix)/include/liquid/liquid.h
+	ln -sf libliquid.${VERSION}.${SH_LIB} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
+	ln -sf liquid.${VERSION}.h $(DESTDIR)$(prefix)/include/liquid/liquid.h
 	@echo ""
 	@echo "---------------------------------------------------------"
 	@echo "  liquid-dsp was successfully installed.     "
