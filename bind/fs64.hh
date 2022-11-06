@@ -44,6 +44,9 @@ class fs64 : public object
 
     void reset() { framesync64_reset(q); }
 
+    // object type
+    std::string type() const { return "fs64"; }
+
     // representation
     std::string repr() const { return std::string("<liquid.fs64") +
                     ", header="  + std::to_string(get_header_length()) +

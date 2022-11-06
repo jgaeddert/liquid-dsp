@@ -33,6 +33,9 @@ class firfilt : public object
     // reset object
     void reset() { firfilt_crcf_reset(q); }
 
+    // object type
+    std::string type() const { return "firfilt"; }
+
     // representation
     std::string repr() const { return std::string("<liquid.firfilt") +
                     ", n=" + std::to_string(get_length()) +

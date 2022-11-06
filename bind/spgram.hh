@@ -34,6 +34,9 @@ class spgram : public object
 
     void reset() { spgramcf_reset(q); }
 
+    // object type
+    std::string type() const { return "spgram"; }
+
     // representation
     std::string repr() const { return std::string("<liquid.spgram") +
                     ", nfft=" + std::to_string(get_num_freq()) +

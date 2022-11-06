@@ -24,6 +24,9 @@ class rresamp : public object
     // reset object
     void reset() { rresamp_crcf_reset(q); }
 
+    // object type
+    std::string type() const { return "rresamp"; }
+
     // representation
     std::string repr() const { return std::string("<liquid.rresamp") +
                     ", P="     + std::to_string(get_P()) +

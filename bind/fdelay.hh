@@ -23,6 +23,9 @@ class fdelay : public object
     // reset object
     void reset() { fdelay_crcf_reset(q); }
 
+    // object type
+    std::string type() const { return "fdelay"; }
+
     // representation
     std::string repr() const { return std::string("<liquid.fdelay") +
                     ", nmax="  + std::to_string(nmax     ()) +

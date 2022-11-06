@@ -23,6 +23,9 @@ class firpfbch2 : public object
     // reset object
     void reset() { firpfbch2_crcf_reset(q); }
 
+    // object type
+    std::string type() const { return "firpfbch2"; }
+
     // representation
     std::string repr() const { return std::string("<liquid.firpfbch2") +
                     ", type=" + (get_type()==LIQUID_ANALYZER?"analysis":"synthesis")+

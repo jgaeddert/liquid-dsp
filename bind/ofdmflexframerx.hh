@@ -44,6 +44,9 @@ class ofdmflexframerx : public object
 
     void reset() { ofdmflexframesync_reset(q); }
 
+    // object type
+    std::string type() const { return "ofdmflexframerx"; }
+
     // representation
     std::string repr() const { return std::string("<liquid.ofdmflexframerx>"); }
 

@@ -27,6 +27,9 @@ class nco : public object
     // reset object internals
     void reset() { nco_crcf_reset(q); }
 
+    // object type
+    std::string type() const { return "nco"; }
+
     // string representation
     std::string repr() const { return std::string("<liquid.nco") +
                     ", phi=" +  std::to_string(get_phase()) +

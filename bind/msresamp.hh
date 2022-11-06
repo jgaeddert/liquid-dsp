@@ -23,6 +23,9 @@ class msresamp : public object
     // reset object
     void reset() { msresamp_crcf_reset(q); }
 
+    // object type
+    std::string type() const { return "msresamp"; }
+
     // representation
     std::string repr() const { return std::string("<liquid.msresamp") +
                     ", rate=" + std::to_string(get_rate()) +

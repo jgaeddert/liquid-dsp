@@ -23,6 +23,10 @@ class fg64 : public object
     ~fg64() { framegen64_destroy(q); }
 
     void reset() { }
+
+    // object type
+    std::string type() const { return "fg64"; }
+
     std::string repr() const { return std::string("<liquid.fg64") +
                     ", header="  + std::to_string(get_header_length()) +
                     ", payload=" + std::to_string(get_payload_length()) +

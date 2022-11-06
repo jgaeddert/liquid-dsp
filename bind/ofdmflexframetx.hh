@@ -24,6 +24,10 @@ class ofdmflexframetx : public object
 
     // reset object internals
     void reset() { ofdmflexframegen_reset(q); }
+
+    // object type
+    std::string type() const { return "ofdmflexframetx"; }
+
     void display() const{ ofdmflexframegen_print(q); }
 
     std::string repr() const

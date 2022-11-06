@@ -21,10 +21,10 @@ class object {
 
     virtual ~object() {};
     virtual void reset()=0;
+    virtual std::string type() const =0;
     virtual std::string repr() const
         { return std::string("<liquid.object>"); }
   protected:
-    std::string type;
 };
 
 inline std::ostream& operator<<(std::ostream& _os, const object& _object)

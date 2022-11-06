@@ -25,6 +25,9 @@ class symtrack : public object
     // reset object internals
     void reset() { symtrack_cccf_reset(q); }
 
+    // object type
+    std::string type() const { return "symtrack"; }
+
     // string representation
     // TODO: set values appropriately
     std::string repr() const { return std::string("<liquid.symtrack") +

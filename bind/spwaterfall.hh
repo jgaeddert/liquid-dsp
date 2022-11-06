@@ -36,6 +36,9 @@ class spwaterfall : public object
 
     void reset() { spwaterfallcf_reset(q); }
 
+    // object type
+    std::string type() const { return "spwaterfall"; }
+
     // representation
     std::string repr() const { return std::string("<liquid.spwaterfall") +
                     ", nfft=" + std::to_string(get_num_freq()) +

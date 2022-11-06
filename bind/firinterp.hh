@@ -34,6 +34,9 @@ class firinterp : public object
     // reset object
     void reset() { firinterp_crcf_reset(q); }
 
+    // object type
+    std::string type() const { return "firinterp"; }
+
     // representation
     std::string repr() const { return std::string("<liquid.interp") +
                     ", M=" + std::to_string(get_interp_rate()) +

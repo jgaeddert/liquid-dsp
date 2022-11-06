@@ -49,6 +49,9 @@ class modem : public object
     // reset object
     void reset() { modemcf_reset(q); }
 
+    // object type
+    std::string type() const { return "modem"; }
+
     // get modulation scheme as a string
     std::string get_scheme() const
         { return std::string(modulation_types[modemcf_get_scheme(q)].name); }

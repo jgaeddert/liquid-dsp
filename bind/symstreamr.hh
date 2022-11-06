@@ -26,6 +26,9 @@ class symstreamr : public object
     // reset object internals
     void reset() { symstreamrcf_reset(q); }
 
+    // object type
+    std::string type() const { return "symstreamr"; }
+
     // string representation
     // TODO: print values appropriately
     std::string repr() const { return std::string("<liquid.symstreamr") +
