@@ -42,9 +42,9 @@ int main(int argc, char*argv[])
     }
 
     // allocate memory arrays
-    float complex * x = (float complex*) malloc(nfft*sizeof(float complex));
-    float complex * y = (float complex*) malloc(nfft*sizeof(float complex));
-    float complex * z = (float complex*) malloc(nfft*sizeof(float complex));
+    float complex * x = (float complex*) fft_malloc(nfft*sizeof(float complex));
+    float complex * y = (float complex*) fft_malloc(nfft*sizeof(float complex));
+    float complex * z = (float complex*) fft_malloc(nfft*sizeof(float complex));
 
     // initialize input
     unsigned int i;
@@ -94,9 +94,9 @@ int main(int argc, char*argv[])
     printf("rmse = %12.4e\n", rmse);
 
     // free allocated memory
-    free(x);
-    free(y);
-    free(z);
+    fft_free(x);
+    fft_free(y);
+    fft_free(z);
 
     printf("done.\n");
     return 0;

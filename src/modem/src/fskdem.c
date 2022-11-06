@@ -131,8 +131,8 @@ fskdem fskdem_create(unsigned int _m,
     }
 
     // allocate memory for transform
-    q->buf_time = (float complex*) malloc(q->K * sizeof(float complex));
-    q->buf_freq = (float complex*) malloc(q->K * sizeof(float complex));
+    q->buf_time = (float complex*) FFT_MALLOC(q->K * sizeof(float complex));
+    q->buf_freq = (float complex*) FFT_MALLOC(q->K * sizeof(float complex));
     q->fft = FFT_CREATE_PLAN(q->K, q->buf_time, q->buf_freq, FFT_DIR_FORWARD, 0);
 
     // reset modem object
@@ -154,9 +154,13 @@ fskdem fskdem_copy(fskdem q_orig)
     memmove(q_copy, q_orig, sizeof(struct fskdem_s));
 
     // allocate memory for transform
-    q_copy->buf_time = (float complex*) liquid_malloc_copy(q_orig->buf_time, q_copy->K, sizeof(float complex));
-    q_copy->buf_freq = (float complex*) liquid_malloc_copy(q_orig->buf_freq, q_copy->K, sizeof(float complex));
+    q_copy->buf_time = (float complex*) FFT_MALLOC(q_copy->K * sizeof(float complex));
+    q_copy->buf_freq = (float complex*) FFT_MALLOC(q_copy->K * sizeof(float complex));
     q_copy->fft = FFT_CREATE_PLAN(q_copy->K, q_copy->buf_time, q_copy->buf_freq, FFT_DIR_FORWARD, 0);
+
+    // copy internal time and frequency buffers
+    memmove(q_copy->buf_time, q_orig->buf_time, q_copy->K * sizeof(float complex));
+    memmove(q_copy->buf_freq, q_orig->buf_freq, q_copy->K * sizeof(float complex));
 
     // copy demodulation map
     q_copy->demod_map = (unsigned int*)liquid_malloc_copy(q_orig->demod_map, q_copy->M, sizeof(float complex));
@@ -170,8 +174,8 @@ int fskdem_destroy(fskdem _q)
 {
     // free allocated arrays
     free(_q->demod_map);
-    free(_q->buf_time);
-    free(_q->buf_freq);
+    FFT_FREE(_q->buf_time);
+    FFT_FREE(_q->buf_freq);
     FFT_DESTROY_PLAN(_q->fft);
 
     // free main object memory

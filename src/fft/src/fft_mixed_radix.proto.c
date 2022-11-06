@@ -73,8 +73,8 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
 
     // allocate memory for buffers
     unsigned int t_len = Q > P ? Q : P;
-    q->data.mixedradix.t0 = (TC *) malloc(t_len * sizeof(TC));
-    q->data.mixedradix.t1 = (TC *) malloc(t_len * sizeof(TC));
+    q->data.mixedradix.t0 = (TC *) FFT_MALLOC(t_len * sizeof(TC));
+    q->data.mixedradix.t1 = (TC *) FFT_MALLOC(t_len * sizeof(TC));
 
     // allocate memory for input buffers
     q->data.mixedradix.x = (TC *) malloc(q->nfft * sizeof(TC));
@@ -112,8 +112,8 @@ int FFT(_destroy_plan_mixed_radix)(FFT(plan) _q)
     FFT(_destroy_plan)(_q->data.mixedradix.fft_Q);
 
     // free data specific to mixed-radix transforms
-    free(_q->data.mixedradix.t0);
-    free(_q->data.mixedradix.t1);
+    FFT_FREE(_q->data.mixedradix.t0);
+    FFT_FREE(_q->data.mixedradix.t1);
     free(_q->data.mixedradix.x);
     free(_q->data.mixedradix.twiddle);
 

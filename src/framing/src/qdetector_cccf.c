@@ -98,10 +98,10 @@ qdetector_cccf qdetector_cccf_create(float complex * _s,
 
     // prepare transforms
     q->nfft       = 1 << liquid_nextpow2( (unsigned int)( 2 * q->s_len ) ); // NOTE: must be even
-    q->buf_time_0 = (float complex*) malloc(q->nfft * sizeof(float complex));
-    q->buf_freq_0 = (float complex*) malloc(q->nfft * sizeof(float complex));
-    q->buf_freq_1 = (float complex*) malloc(q->nfft * sizeof(float complex));
-    q->buf_time_1 = (float complex*) malloc(q->nfft * sizeof(float complex));
+    q->buf_time_0 = (float complex*) FFT_MALLOC(q->nfft * sizeof(float complex));
+    q->buf_freq_0 = (float complex*) FFT_MALLOC(q->nfft * sizeof(float complex));
+    q->buf_freq_1 = (float complex*) FFT_MALLOC(q->nfft * sizeof(float complex));
+    q->buf_time_1 = (float complex*) FFT_MALLOC(q->nfft * sizeof(float complex));
 
     q->fft  = FFT_CREATE_PLAN(q->nfft, q->buf_time_0, q->buf_freq_0, FFT_DIR_FORWARD,  0);
     q->ifft = FFT_CREATE_PLAN(q->nfft, q->buf_freq_1, q->buf_time_1, FFT_DIR_BACKWARD, 0);
@@ -303,12 +303,12 @@ qdetector_cccf qdetector_cccf_copy(qdetector_cccf q_orig)
 int qdetector_cccf_destroy(qdetector_cccf _q)
 {
     // free allocated arrays
-    free(_q->s         );
-    free(_q->S         );
-    free(_q->buf_time_0);
-    free(_q->buf_freq_0);
-    free(_q->buf_freq_1);
-    free(_q->buf_time_1);
+    free(_q->s);
+    free(_q->S);
+    FFT_FREE(_q->buf_time_0);
+    FFT_FREE(_q->buf_freq_0);
+    FFT_FREE(_q->buf_freq_1);
+    FFT_FREE(_q->buf_time_1);
 
     // destroy objects
     FFT_DESTROY_PLAN(_q->fft);
