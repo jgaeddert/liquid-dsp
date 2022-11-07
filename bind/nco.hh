@@ -44,6 +44,18 @@ class nco : public object
     void  set_frequency    (float _dphi ) { nco_crcf_set_frequency       (q, _dphi ); }
     void  adjust_frequency (float _dphi ) { nco_crcf_adjust_frequency    (q, _dphi ); }
 
+    // get phasors
+    float               sin () const { return nco_crcf_sin(q); }
+    float               cos () const { return nco_crcf_cos(q); }
+    std::complex<float> cexp() const { std::complex<float> v; nco_crcf_cexpf(q,&v); return v; }
+
+    // step internal phase
+    void step() { nco_crcf_step(q); }
+
+    // phase-locked loop
+    void pll_set_bandwidth(float _bw) { nco_crcf_pll_set_bandwidth(q, _bw); }
+    void pll_step(float _dphi) { nco_crcf_pll_step(q, _dphi); }
+
     // mix a block of samples up
     void mix_block_up(std::complex<float> * _x, std::complex<float> * _y, unsigned int _n)
         { nco_crcf_mix_block_up(q, _x, _y, _n); }
