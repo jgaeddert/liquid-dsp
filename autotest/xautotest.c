@@ -70,6 +70,7 @@ typedef struct {
     float percent_passed;           // percent of checks that passed
     int executed;                   // was the test executed?
     int pass;                       // did the test pass? (i.e. no failures)
+    double extime;                  // execution time (seconds)
 } autotest_t;
 
 // define package_t
@@ -106,6 +107,9 @@ void execute_package_search(package_t * _p, char * _str, int _verbose);
 
 // print all autotest results
 void print_autotest_results(autotest_t * _test);
+
+// calculate execution time (delta between two values)
+double calculate_execution_time(struct rusage _tic, struct rusage _toc);
 
 // print the results of a particular package
 void print_package_results(package_t * _p);
@@ -345,11 +349,12 @@ int main(int argc, char *argv[])
     fprintf(fid,"  \"stop-on-fail\" : %s,\n", stop_on_fail ? "true" : "false");
     fprintf(fid,"  \"tests\" : [\n");
     for (i=0; i<NUM_AUTOSCRIPTS; i++) {
-        fprintf(fid,"    {\"id\":%3u, \"pass\":%s, \"num_checks\":%4lu, \"num_passed\":%4lu, \"name\":\"%s\"}%s\n",
+        fprintf(fid,"    {\"id\":%3u, \"pass\":%s \"num_checks\":%4lu, \"num_passed\":%4lu, \"extime\":%12.4e, \"name\":\"%s\"}%s\n",
                 scripts[i].id,
-                scripts[i].num_failed == 0 ? "true" : "false",
+                scripts[i].num_failed == 0 ? "true, " : "false,",
                 scripts[i].num_checks,
                 scripts[i].num_passed,
+                scripts[i].extime,
                 scripts[i].name,
                 i==NUM_AUTOSCRIPTS-1 ? "" : ",");
     }
@@ -377,7 +382,11 @@ void execute_autotest(autotest_t * _test,
     if (_verbose) {
         printf("%s:\n", _test->name);
     }
+    // start test and run timer
+    struct rusage tic, toc;
+    getrusage(RUSAGE_SELF, &tic);
     _test->api();
+    getrusage(RUSAGE_SELF, &toc);
 
     _test->num_passed = liquid_autotest_num_passed - autotest_num_passed_init;
     _test->num_failed = liquid_autotest_num_failed - autotest_num_failed_init;
@@ -390,6 +399,7 @@ void execute_autotest(autotest_t * _test,
         _test->percent_passed = 0.0f;
 
     _test->executed = 1;
+    _test->extime = calculate_execution_time(tic, toc);
 
     //if (_verbose)
     //    print_autotest_results(_test);
@@ -435,17 +445,25 @@ void execute_package_search(package_t * _p, char * _str, int _verbose)
     }
 }
 
+double calculate_execution_time(struct rusage _tic, struct rusage _toc)
+{
+    return _toc.ru_utime.tv_sec - _tic.ru_utime.tv_sec
+        + 1e-6*(_toc.ru_utime.tv_usec - _tic.ru_utime.tv_usec)
+        + _toc.ru_stime.tv_sec - _tic.ru_stime.tv_sec
+        + 1e-6*(_toc.ru_stime.tv_usec - _tic.ru_stime.tv_usec);
+}
+
 // print results of a particular test
 void print_autotest_results(autotest_t * _test)
 {
-    if (!_test->executed)
-        printf("    %3u :   IGNORED ", _test->id);
-    else if (_test->pass)
-        printf("    %3u :   PASS    ", _test->id);
-    else
-        printf("    %3u : <<FAIL>>  ", _test->id);
+    printf("  %4u", _test->id);
+    if (!_test->executed) {
+        printf("[     -     ] IGNORED  ");
+    } else {
+        printf("[%8.2f ms] %8s ", _test->extime*1e3f, _test->pass ? "  PASS  " : "<<FAIL>>");
+    }
 
-    printf("passed %4lu / %4lu checks (%5.1f%%) : %s\n",
+    printf("passed %4lu/%4lu checks (%5.1f%%) %s\n",
             _test->num_passed,
             _test->num_checks,
             _test->percent_passed,
