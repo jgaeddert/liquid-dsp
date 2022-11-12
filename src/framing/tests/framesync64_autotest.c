@@ -258,7 +258,7 @@ void testbench_framesync64_debug(int _code)
                (630 + 600)*sizeof(float complex),
           SEEK_SET);
     unsigned char payload_dec[72];
-    fread(payload_dec, sizeof(unsigned char), 72, fid);
+    CONTEND_EQUALITY( fread(payload_dec, sizeof(unsigned char), 72, fid), 72 )
     CONTEND_SAME_DATA(payload_dec,   header,   8);
     CONTEND_SAME_DATA(payload_dec+8, payload, 64);
     fclose(fid);
