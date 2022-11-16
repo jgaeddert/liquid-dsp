@@ -33,23 +33,23 @@
 // include proper SIMD extensions for x86 platforms
 // NOTE: these pre-processor macros are defined in config.h
 
-#if HAVE_MMX && HAVE_MMINTRIN_H
+#if HAVE_MMX
 #include <mmintrin.h>   // MMX
 #endif
 
-#if HAVE_SSE && HAVE_XMMINTRIN_H
+#if HAVE_SSE
 #include <xmmintrin.h>  // SSE
 #endif
 
-#if HAVE_SSE2 && HAVE_EMMINTRIN_H
+#if HAVE_SSE2
 #include <emmintrin.h>  // SSE2
 #endif
 
-#if HAVE_SSE3 && HAVE_PMMINTRIN_H
+#if HAVE_SSE3
 #include <pmmintrin.h>  // SSE3
 #endif
 
-#if HAVE_AVX && HAVE_IMMINTRIN_H
+#if HAVE_AVX
 #include <immintrin.h>  // AVX
 #endif
 
