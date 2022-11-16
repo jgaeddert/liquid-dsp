@@ -104,8 +104,9 @@ struct dotprod_rrrf_s {
     float * h;          // coefficients array
 };
 
-dotprod_rrrf dotprod_rrrf_create(float *      _h,
-                                 unsigned int _n)
+dotprod_rrrf dotprod_rrrf_create_opt(float *      _h,
+                                     unsigned int _n,
+                                     int          _rev)
 {
     dotprod_rrrf q = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
     q->n = _n;
@@ -114,10 +115,24 @@ dotprod_rrrf dotprod_rrrf_create(float *      _h,
     q->h = (float*) _mm_malloc( q->n*sizeof(float), 16);
 
     // set coefficients
-    memmove(q->h, _h, _n*sizeof(float));
+    unsigned int i;
+    for (i=0; i<q->n; i++)
+        q->h[i] = _h[_rev ? q->n-i-1 : i];
 
     // return object
     return q;
+}
+
+dotprod_rrrf dotprod_rrrf_create(float *      _h,
+                                 unsigned int _n)
+{
+    return dotprod_rrrf_create_opt(_h, _n, 0);
+}
+
+dotprod_rrrf dotprod_rrrf_create_rev(float *      _h,
+                                     unsigned int _n)
+{
+    return dotprod_rrrf_create_opt(_h, _n, 1);
 }
 
 // re-create the structured dotprod object
@@ -128,6 +143,16 @@ dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _q,
     // completely destroy and re-create dotprod object
     dotprod_rrrf_destroy(_q);
     return dotprod_rrrf_create(_h,_n);
+}
+
+// re-create the structured dotprod object, coefficients reversed
+dotprod_rrrf dotprod_rrrf_recreate_rev(dotprod_rrrf _q,
+                                       float *      _h,
+                                       unsigned int _n)
+{
+    // completely destroy and re-create dotprod object
+    dotprod_rrrf_destroy(_q);
+    return dotprod_rrrf_create_rev(_h,_n);
 }
 
 dotprod_rrrf dotprod_rrrf_copy(dotprod_rrrf q_orig)
@@ -200,7 +225,7 @@ int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
         h = _mm_load_ps(&_q->h[i]);
 
         // compute dot product
-        s = _mm_dp_ps(v, h, 0xffffffff);
+        s = _mm_dp_ps(v, h, 0xff);
         
         // parallel addition
         sum = _mm_add_ps( sum, s );
@@ -251,10 +276,10 @@ int dotprod_rrrf_execute_sse4u(dotprod_rrrf _q,
         h3 = _mm_load_ps(&_q->h[4*i+12]);
 
         // compute dot products
-        s0 = _mm_dp_ps(v0, h0, 0xffffffff);
-        s1 = _mm_dp_ps(v1, h1, 0xffffffff);
-        s2 = _mm_dp_ps(v2, h2, 0xffffffff);
-        s3 = _mm_dp_ps(v3, h3, 0xffffffff);
+        s0 = _mm_dp_ps(v0, h0, 0xff);
+        s1 = _mm_dp_ps(v1, h1, 0xff);
+        s2 = _mm_dp_ps(v2, h2, 0xff);
+        s3 = _mm_dp_ps(v3, h3, 0xff);
         
         // parallel addition
         // FIXME: these additions are by far the limiting factor

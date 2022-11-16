@@ -176,7 +176,7 @@ else
             # SSE4.1/2 extensions
             MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                            src/dotprod/src/dotprod_crcf.mmx.o \
-                           src/dotprod/src/dotprod_rrrf.mmx.o \
+                           src/dotprod/src/dotprod_rrrf.sse4.o \
                            src/dotprod/src/sumsq.mmx.o"
             ARCH_OPTION='-msse4.1'
         elif [ test "$ax_cv_have_sse3_ext" = yes && test "$ac_cv_header_pmmintrin_h" = yes ]; then
