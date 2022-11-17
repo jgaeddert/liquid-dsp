@@ -174,16 +174,16 @@ else
 
         if [ test "$ax_cv_have_avx2_ext" = yes ]; then
             # AVX2 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
-                           src/dotprod/src/dotprod_crcf.mmx.o \
-                           src/dotprod/src/dotprod_rrrf.sse4.o \
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx.o \
+                           src/dotprod/src/dotprod_crcf.avx.o \
+                           src/dotprod/src/dotprod_rrrf.avx.o \
                            src/dotprod/src/sumsq.avx.o"
             ARCH_OPTION='-mavx2'
         elif [ test "$ax_cv_have_avx_ext" = yes ]; then
             # AVX extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
-                           src/dotprod/src/dotprod_crcf.mmx.o \
-                           src/dotprod/src/dotprod_rrrf.sse4.o \
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx.o \
+                           src/dotprod/src/dotprod_crcf.avx.o \
+                           src/dotprod/src/dotprod_rrrf.avx.o \
                            src/dotprod/src/sumsq.avx.o"
             ARCH_OPTION='-mavx'
         elif [ test "$ax_cv_have_sse41_ext" = yes ]; then
