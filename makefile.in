@@ -1472,10 +1472,6 @@ $(bench_prog): $(bench_prog).o $(benchmark_obj) $(benchmark_extra_obj) ${ARCHIVE
 bench: $(bench_prog)
 	./$(bench_prog) -o benchmark.json
 
-# benchmark compare script
-scripts/benchmark_compare : % : %.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $< $(LIBS)
-
 # fftbench program
 bench/fftbench.o : %.o : %.c
 	$(CC) $(BENCH_CPPFLAGS) $(BENCH_CFLAGS) $< -c -o $@
@@ -1486,7 +1482,6 @@ bench/fftbench : % : %.o ${ARCHIVE_LIB}
 # clean up the generated files
 clean-bench:
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
-	$(RM) scripts/benchmark_compare
 	$(RM) $(benchmark_obj)
 	$(RM) $(benchmark_extra_obj)
 	$(RM) bench/fftbench.o
