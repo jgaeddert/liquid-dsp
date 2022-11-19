@@ -27,7 +27,7 @@ int py_callback_wrapper_ofdmflexframerx(
 // see: https://stackoverflow.com/questions/2828738/c-warning-declared-with-greater-visibility-than-the-type-of-its-field#3170163
 // see: https://gcc.gnu.org/wiki/Visibility
 #pragma GCC visibility push(hidden)
-class ofdmflexframerx : public object
+class ofdmflexframerx : public framesync
 {
   public:
     ofdmflexframerx(unsigned int _M,
@@ -52,6 +52,12 @@ class ofdmflexframerx : public object
 
     void execute(std::complex<float> * _buf, unsigned int _buf_len)
         { ofdmflexframesync_execute(q, _buf, _buf_len); }
+
+    void set_callback(framesync_callback _callback=NULL)
+        { ofdmflexframesync_set_callback(q, _callback); }
+
+    void set_userdata(void * _userdata=NULL)
+        { ofdmflexframesync_set_userdata(q, _userdata); }
 
     //unsigned int get_header_length()  const { return 8; }
     //unsigned int get_payload_length() const { return 64; }
