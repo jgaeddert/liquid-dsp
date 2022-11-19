@@ -221,6 +221,9 @@ src/dotprod/src/sumsq.mmx.o : %.o : %.c $(include_headers)
 # SSE4.1/2
 src/dotprod/src/dotprod_rrrf.sse4.o : %.o : %.c $(include_headers)
 
+# AVX
+src/dotprod/src/sumsq.avx.o : %.o : %.c $(include_headers)
+
 # ARM Neon
 src/dotprod/src/dotprod_rrrf.neon.o : %.o : %.c $(include_headers)
 src/dotprod/src/dotprod_crcf.neon.o : %.o : %.c $(include_headers)
@@ -1241,27 +1244,27 @@ benchmark_sources :=						\
 .PHONY: all
 
 # Shared library targets
-ARCHIVE_LIB	= libliquid.${VERSION}.${AR_LIB}
-SHARED_LIB	= libliquid.${VERSION}.${SH_LIB}
+ARCHIVE_LIB	= libliquid.${AR_LIB}
+SHARED_LIB	= libliquid.${SH_LIB}
 
 #
 # darwin
 #
-libliquid.${VERSION}.ar: $(objects)
+libliquid.ar : $(objects)
 	${LIBTOOL} -static -o $@ $^
 
 # gcc -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a 
-libliquid.${VERSION}.dylib: $(objects)
+libliquid.dylib : $(objects)
 	$(CC) -dynamiclib ${COVERAGE_FLAGS} -install_name $@ -o $@ $^ $(LDFLAGS) $(LIBS)
 
 #
 # linux, et al
 #
-libliquid.${VERSION}.a: $(objects)
+libliquid.a : $(objects)
 	${AR} r $@ $^
 	${RANLIB} $@
 
-libliquid.${VERSION}.so: libliquid.${VERSION}.a
+libliquid.so : libliquid.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive $(LIBS)
 
 # static archive and library objects
@@ -1369,10 +1372,11 @@ install: all
 	@echo ""
 	mkdir -p $(DESTDIR)$(prefix)/include/liquid
 	mkdir -p $(DESTDIR)$(libdir)
-	install -m 644 -p ${ARCHIVE_LIB} ${SHARED_LIB} $(DESTDIR)$(libdir)
-	install -m 644 -p include/liquid.h $(DESTDIR)$(prefix)/include/liquid/liquid.${VERSION}.h
-	ln -sf $(DESTDIR)$(libdir)/libliquid.${VERSION}.${SH_LIB} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
-	ln -sf $(DESTDIR)$(prefix)/include/liquid/liquid.${VERSION}.h $(DESTDIR)$(prefix)/include/liquid/liquid.h
+	install -m 644 -p libliquid.${AR_LIB} $(DESTDIR)$(libdir)/libliquid.${AR_LIB}.${VERSION}
+	install -m 644 -p libliquid.${SH_LIB} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${VERSION}
+	install -m 644 -p include/liquid.h $(DESTDIR)$(prefix)/include/liquid/liquid.h
+	ln -sf libliquid.${SH_LIB}.${VERSION} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
+	ln -sf libliquid.${SH_LIB}.${VERSION} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.1
 	@echo ""
 	@echo "---------------------------------------------------------"
 	@echo "  liquid-dsp was successfully installed.     "
@@ -1394,10 +1398,10 @@ install: all
 #$(RM) $(addprefix $(DESTDIR)$(prefix)/include/liquid/, $(headers_install))
 uninstall:
 	@echo "uninstalling..."
-	$(RM) $(DESTDIR)$(prefix)/include/liquid/liquid.${VERSION}.h
 	$(RM) $(DESTDIR)$(prefix)/include/liquid/liquid.h
-	$(RM) $(DESTDIR)$(libdir)/${ARCHIVE_LIB}
-	$(RM) $(DESTDIR)$(libdir)/${SHARED_LIB}
+	$(RM) $(DESTDIR)$(libdir)/libliquid.${AR_LIB}.${VERSION}
+	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${VERSION}
+	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.1
 	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
 	@echo "done."
 

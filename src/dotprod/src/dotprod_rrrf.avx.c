@@ -21,7 +21,7 @@
  */
 
 // 
-// Floating-point dot product (SSE4.1/2)
+// Floating-point dot product (AVX)
 //
 
 #include <stdio.h>
@@ -34,21 +34,15 @@
 // include proper SIMD extensions for x86 platforms
 // NOTE: these pre-processor macros are defined in config.h
 
-#if 0
-#include <mmintrin.h>   // MMX
-#include <xmmintrin.h>  // SSE
-#include <emmintrin.h>  // SSE2
-#include <pmmintrin.h>  // SSE3
-#endif
-#include <smmintrin.h>  // SSE4.1/2
+#include <immintrin.h>  // AVX
 
-#define DEBUG_DOTPROD_RRRF_SSE4     0
+#define DEBUG_DOTPROD_RRRF_AVX     0
 
 // internal methods
-int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
+int dotprod_rrrf_execute_avx(dotprod_rrrf _q,
                               float *      _x,
                               float *      _y);
-int dotprod_rrrf_execute_sse4u(dotprod_rrrf _q,
+int dotprod_rrrf_execute_avxu(dotprod_rrrf _q,
                                float *      _x,
                                float *      _y);
 
@@ -96,7 +90,7 @@ int dotprod_rrrf_run4(float *      _h,
 
 
 //
-// structured MMX dot product
+// structured AVX dot product
 //
 
 struct dotprod_rrrf_s {
@@ -111,8 +105,8 @@ dotprod_rrrf dotprod_rrrf_create_opt(float *      _h,
     dotprod_rrrf q = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
     q->n = _n;
 
-    // allocate memory for coefficients, 16-byte aligned
-    q->h = (float*) _mm_malloc( q->n*sizeof(float), 16);
+    // allocate memory for coefficients, 32-byte aligned
+    q->h = (float*) _mm_malloc( q->n*sizeof(float), 32);
 
     // set coefficients
     unsigned int i;
@@ -159,13 +153,13 @@ dotprod_rrrf dotprod_rrrf_copy(dotprod_rrrf q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("dotprod_rrrf_copy().sse4, object cannot be NULL");
+        return liquid_error_config("dotprod_rrrf_copy().avx, object cannot be NULL");
 
     dotprod_rrrf q_copy = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
     q_copy->n = q_orig->n;
 
-    // allocate memory for coefficients, 16-byte aligned
-    q_copy->h = (float*) _mm_malloc( q_copy->n*sizeof(float), 16 );
+    // allocate memory for coefficients, 32-byte aligned
+    q_copy->h = (float*) _mm_malloc( q_copy->n*sizeof(float), 32 );
 
     // copy coefficients array
     memmove(q_copy->h, q_orig->h, q_orig->n*sizeof(float));
@@ -183,7 +177,7 @@ int dotprod_rrrf_destroy(dotprod_rrrf _q)
 
 int dotprod_rrrf_print(dotprod_rrrf _q)
 {
-    printf("dotprod_rrrf [sse4.1/4.2, %u coefficients]\n", _q->n);
+    printf("dotprod_rrrf [avx, %u coefficients]\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("%3u : %12.9f\n", i, _q->h[i]);
@@ -196,47 +190,47 @@ int dotprod_rrrf_execute(dotprod_rrrf _q,
                           float *      _y)
 {
     // switch based on size
-    if (_q->n < 16) {
-        return dotprod_rrrf_execute_sse4(_q, _x, _y);
+    if (_q->n < 32) {
+        return dotprod_rrrf_execute_avx(_q, _x, _y);
     }
-    return dotprod_rrrf_execute_sse4u(_q, _x, _y);
+    return dotprod_rrrf_execute_avxu(_q, _x, _y);
 }
 
-// use MMX/SSE extensions
-int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
+// use AVX extensions
+int dotprod_rrrf_execute_avx(dotprod_rrrf _q,
                               float *      _x,
                               float *      _y)
 {
-    __m128 v;   // input vector
-    __m128 h;   // coefficients vector
-    __m128 s;   // dot product
-    __m128 sum = _mm_setzero_ps(); // load zeros into sum register
+    __m256 v;   // input vector
+    __m256 h;   // coefficients vector
+    __m256 s;   // dot product
+    __m256 sum = _mm256_setzero_ps(); // load zeros into sum register
 
-    // t = 4*(floor(_n/4))
-    unsigned int t = (_q->n >> 2) << 2;
+    // t = 8*(floor(_n/8))
+    unsigned int t = (_q->n >> 3) << 3;
 
     //
     unsigned int i;
-    for (i=0; i<t; i+=4) {
+    for (i=0; i<t; i+=8) {
         // load inputs into register (unaligned)
-        v = _mm_loadu_ps(&_x[i]);
+        v = _mm256_loadu_ps(&_x[i]);
 
         // load coefficients into register (aligned)
-        h = _mm_load_ps(&_q->h[i]);
+        h = _mm256_load_ps(&_q->h[i]);
 
         // compute dot product
-        s = _mm_dp_ps(v, h, 0xff);
+        s = _mm256_dp_ps(v, h, 0xff);
         
         // parallel addition
-        sum = _mm_add_ps( sum, s );
+        sum = _mm256_add_ps( sum, s );
     }
 
     // aligned output array
-    float w[4] __attribute__((aligned(16)));
+    float w[8] __attribute__((aligned(32)));
 
     // unload packed array
-    _mm_store_ps(w, sum);
-    float total = w[0];
+    _mm256_store_ps(w, sum);
+    float total = w[0] + w[4];
 
     // cleanup
     for (; i<_q->n; i++)
@@ -247,54 +241,54 @@ int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
     return LIQUID_OK;
 }
 
-// use MMX/SSE extensions (unrolled)
-int dotprod_rrrf_execute_sse4u(dotprod_rrrf _q,
+// use AVX extensions (unrolled)
+int dotprod_rrrf_execute_avxu(dotprod_rrrf _q,
                                float *      _x,
                                float *      _y)
 {
-    __m128 v0, v1, v2, v3;
-    __m128 h0, h1, h2, h3;
-    __m128 s0, s1, s2, s3;
-    __m128 sum = _mm_setzero_ps(); // load zeros into sum register
+    __m256 v0, v1, v2, v3;
+    __m256 h0, h1, h2, h3;
+    __m256 s0, s1, s2, s3;
+    __m256 sum = _mm256_setzero_ps(); // load zeros into sum register
 
-    // t = 4*(floor(_n/16))
-    unsigned int r = (_q->n >> 4) << 2;
+    // t = 8*(floor(_n/32))
+    unsigned int r = (_q->n >> 5) << 3;
 
     //
     unsigned int i;
-    for (i=0; i<r; i+=4) {
+    for (i=0; i<r; i+=8) {
         // load inputs into register (unaligned)
-        v0 = _mm_loadu_ps(&_x[4*i+ 0]);
-        v1 = _mm_loadu_ps(&_x[4*i+ 4]);
-        v2 = _mm_loadu_ps(&_x[4*i+ 8]);
-        v3 = _mm_loadu_ps(&_x[4*i+12]);
+        v0 = _mm256_loadu_ps(&_x[4*i+ 0]);
+        v1 = _mm256_loadu_ps(&_x[4*i+ 8]);
+        v2 = _mm256_loadu_ps(&_x[4*i+16]);
+        v3 = _mm256_loadu_ps(&_x[4*i+24]);
 
         // load coefficients into register (aligned)
-        h0 = _mm_load_ps(&_q->h[4*i+ 0]);
-        h1 = _mm_load_ps(&_q->h[4*i+ 4]);
-        h2 = _mm_load_ps(&_q->h[4*i+ 8]);
-        h3 = _mm_load_ps(&_q->h[4*i+12]);
+        h0 = _mm256_load_ps(&_q->h[4*i+ 0]);
+        h1 = _mm256_load_ps(&_q->h[4*i+ 8]);
+        h2 = _mm256_load_ps(&_q->h[4*i+16]);
+        h3 = _mm256_load_ps(&_q->h[4*i+24]);
 
         // compute dot products
-        s0 = _mm_dp_ps(v0, h0, 0xff);
-        s1 = _mm_dp_ps(v1, h1, 0xff);
-        s2 = _mm_dp_ps(v2, h2, 0xff);
-        s3 = _mm_dp_ps(v3, h3, 0xff);
+        s0 = _mm256_dp_ps(v0, h0, 0xff);
+        s1 = _mm256_dp_ps(v1, h1, 0xff);
+        s2 = _mm256_dp_ps(v2, h2, 0xff);
+        s3 = _mm256_dp_ps(v3, h3, 0xff);
         
         // parallel addition
         // FIXME: these additions are by far the limiting factor
-        sum = _mm_add_ps( sum, s0 );
-        sum = _mm_add_ps( sum, s1 );
-        sum = _mm_add_ps( sum, s2 );
-        sum = _mm_add_ps( sum, s3 );
+        sum = _mm256_add_ps( sum, s0 );
+        sum = _mm256_add_ps( sum, s1 );
+        sum = _mm256_add_ps( sum, s2 );
+        sum = _mm256_add_ps( sum, s3 );
     }
 
     // aligned output array
-    float w[4] __attribute__((aligned(16)));
+    float w[8] __attribute__((aligned(32)));
 
     // unload packed array
-    _mm_store_ps(w, sum);
-    float total = w[0];
+    _mm256_store_ps(w, sum);
+    float total = w[0] + w[4];
 
     // cleanup
     for (i=4*r; i<_q->n; i++)

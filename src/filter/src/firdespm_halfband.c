@@ -101,8 +101,8 @@ int liquid_firdespm_halfband_ft(unsigned int _m, float _ft, float * _h)
     q.nfft = 1200;
     while (q.nfft < 20*q.m)
         q.nfft <<= 1;
-    q.buf_time = (float complex*)malloc(q.nfft*sizeof(float complex));
-    q.buf_freq = (float complex*)malloc(q.nfft*sizeof(float complex));
+    q.buf_time = (float complex*) fft_malloc(q.nfft*sizeof(float complex));
+    q.buf_freq = (float complex*) fft_malloc(q.nfft*sizeof(float complex));
     q.fft      = fft_create_plan(q.nfft, q.buf_time, q.buf_freq, LIQUID_FFT_FORWARD, 0);
 
     // compute indices of stop-band analysis
@@ -126,8 +126,8 @@ int liquid_firdespm_halfband_ft(unsigned int _m, float _ft, float * _h)
     // destroy objects
     free(q.h);
     fft_destroy_plan(q.fft);
-    free(q.buf_time);
-    free(q.buf_freq);
+    fft_free(q.buf_time);
+    fft_free(q.buf_freq);
 
     //
     return LIQUID_OK;

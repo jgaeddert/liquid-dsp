@@ -95,8 +95,8 @@ qpilotsync qpilotsync_create(unsigned int _payload_len,
 
     // compute fft size and create transform objects
     q->nfft = 1 << liquid_nextpow2(q->num_pilots + (q->num_pilots>>1));
-    q->buf_time = (float complex*) malloc(q->nfft*sizeof(float complex));
-    q->buf_freq = (float complex*) malloc(q->nfft*sizeof(float complex));
+    q->buf_time = (float complex*) FFT_MALLOC(q->nfft*sizeof(float complex));
+    q->buf_freq = (float complex*) FFT_MALLOC(q->nfft*sizeof(float complex));
     q->fft      = FFT_CREATE_PLAN(q->nfft, q->buf_time, q->buf_freq, FFT_DIR_FORWARD, 0);
 
     // reset and return pointer to main object
@@ -134,8 +134,8 @@ int qpilotsync_destroy(qpilotsync _q)
 {
     // free arrays
     free(_q->pilots);
-    free(_q->buf_time);
-    free(_q->buf_freq);
+    FFT_FREE(_q->buf_time);
+    FFT_FREE(_q->buf_freq);
 
     // destroy objects
     FFT_DESTROY_PLAN(_q->fft);

@@ -1,5 +1,6 @@
 # ignore all object files
 *.a
+*.ar
 *.d
 *.dylib
 *.dSYM

@@ -32,6 +32,8 @@
 #include <string.h>
 #include <math.h>
 
+#include "liquid.internal.h"
+
 // firpfbchr object structure definition
 struct FIRPFBCHR(_s) {
     unsigned int M;     // number of channels
@@ -100,9 +102,8 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _chans,
     }
 
     // create FFT plan (inverse transform)
-    // TODO : use fftw_malloc if HAVE_FFTW3_H
-    q->X = (T*) malloc((q->M)*sizeof(T));   // IFFT input
-    q->x = (T*) malloc((q->M)*sizeof(T));   // IFFT output
+    q->X = (T*) FFT_MALLOC((q->M)*sizeof(T));   // IFFT input
+    q->x = (T*) FFT_MALLOC((q->M)*sizeof(T));   // IFFT output
     q->ifft = FFT_CREATE_PLAN(q->M, q->X, q->x, FFT_DIR_BACKWARD, FFT_METHOD);
 
     // create buffer objects
@@ -176,8 +177,8 @@ int FIRPFBCHR(_destroy)(FIRPFBCHR() _q)
 
     // free transform object and arrays
     FFT_DESTROY_PLAN(_q->ifft);
-    free(_q->X);
-    free(_q->x);
+    FFT_FREE(_q->X);
+    FFT_FREE(_q->x);
     
     // free window objects (buffers)
     for (i=0; i<_q->M; i++)

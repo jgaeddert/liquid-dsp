@@ -49,6 +49,10 @@
 #include <pmmintrin.h>  // SSE3
 #endif
 
+#if HAVE_AVX
+#include <immintrin.h>  // AVX
+#endif
+
 // sum squares, basic loop
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
@@ -56,43 +60,37 @@ float liquid_sumsqf(float *      _v,
                     unsigned int _n)
 {
     // first cut: ...
-    __m128 v;   // input vector
-    __m128 s;   // dot product
-    __m128 sum = _mm_setzero_ps(); // load zeros into sum register
+    __m256 v;   // input vector
+    __m256 s;   // dot product
+    __m256 sum = _mm256_setzero_ps(); // load zeros into sum register
 
-    // t = 4*(floor(_n/4))
-    unsigned int t = (_n >> 2) << 2;
+    // t = 8*(floor(_n/8))
+    unsigned int t = (_n >> 3) << 3;
 
     //
     unsigned int i;
-    for (i=0; i<t; i+=4) {
+    for (i=0; i<t; i+=8) {
         // load inputs into register (unaligned)
-        v = _mm_loadu_ps(&_v[i]);
+        v = _mm256_loadu_ps(&_v[i]);
 
         // compute multiplication
-        s = _mm_mul_ps(v, v);
+        s = _mm256_mul_ps(v, v);
        
         // parallel addition
-        sum = _mm_add_ps( sum, s );
+        sum = _mm256_add_ps( sum, s );
     }
 
     // aligned output array
-    float w[4] __attribute__((aligned(16)));
+    float total;
 
-#if HAVE_SSE3
     // fold down into single value
-    __m128 z = _mm_setzero_ps();
-    sum = _mm_hadd_ps(sum, z);
-    sum = _mm_hadd_ps(sum, z);
-   
+    __m256 z = _mm256_setzero_ps();
+    sum = _mm256_hadd_ps(sum, z);
+    sum = _mm256_hadd_ps(sum, z);
+    __m128 ssum = _mm_add_ps(_mm256_extractf128_ps(sum, 0), _mm256_extractf128_ps(sum, 1));
+
     // unload single (lower value)
-    _mm_store_ss(w, sum);
-    float total = w[0];
-#else
-    // unload packed array
-    _mm_store_ps(w, sum);
-    float total = w[0] + w[1] + w[2] + w[3];
-#endif
+    _mm_store_ss(&total, ssum);
 
     // cleanup
     for (; i<_n; i++)

@@ -21,7 +21,9 @@ int main(int argc, char*argv[])
     // create frame generator, synchronizer objects
     framegen64  fg = framegen64_create();
     framesync64 fs = framesync64_create(NULL,NULL);
-    unsigned int num_trials = 100;
+    unsigned int min_errors =   50;
+    unsigned int min_trials =  500;
+    unsigned int max_trials = 5000;
 
     // create buffer for the frame samples
     float complex frame[LIQUID_FRAME64_LEN];
@@ -31,20 +33,32 @@ int main(int argc, char*argv[])
     fprintf(fid,"clear all; close all;\n");
     fprintf(fid,"SNR=[]; pdetect=[]; pvalid=[];\n");
     printf("# %8s %6s %6s %6s\n", "SNR", "detect", "valid", "trials");
-    while (SNRdB < 6.0f) {
+    while (SNRdB < 10.0f) {
         framesync64_reset_framedatastats(fs);
-        unsigned int i;
-        for (i=0; i<num_trials; i++) {
-            // generate the frame with random header and payload
-            framegen64_execute(fg, NULL, NULL, frame);
+        unsigned int num_trials = 0, num_errors = 0;
+        while (1) {
+            unsigned int i;
+            for (i=0; i<min_trials; i++) {
+                // reset frame synchronizer
+                framesync64_reset(fs);
 
-            // add channel effects
-            frame64_add_noise(frame, SNRdB);
+                // generate the frame with random header and payload
+                framegen64_execute(fg, NULL, NULL, frame);
 
-            // synchronize/receive the frame
-            framesync64_execute(fs, frame, LIQUID_FRAME64_LEN);
+                // add channel effects
+                frame64_add_noise(frame, SNRdB);
+
+                // synchronize/receive the frame
+                framesync64_execute(fs, frame, LIQUID_FRAME64_LEN);
+            }
+            num_trials += min_trials;
+            num_errors = num_trials - framesync64_get_framedatastats(fs).num_payloads_valid;
+            if (num_errors >= min_errors)
+                break;
+            if (num_trials >= max_trials)
+                break;
         }
-        // print statistics
+        // print results
         framedatastats_s stats = framesync64_get_framedatastats(fs);
         printf("  %8.3f %6u %6u %6u\n",
             SNRdB,stats.num_frames_detected,stats.num_payloads_valid,num_trials);
@@ -52,13 +66,19 @@ int main(int argc, char*argv[])
                 SNRdB,
                 (float)stats.num_frames_detected / (float)num_trials,
                 (float)stats.num_payloads_valid  / (float)num_trials);
+        if (num_errors < min_errors)
+            break;
         SNRdB += 0.5f;
     }
-    fprintf(fid,"semilogy(SNR, 1-pdetect+eps, 'LineWidth', 2, SNR, 1-pvalid+eps, 'LineWidth', 2);\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"hold on;\n");
+    fprintf(fid,"  semilogy(SNR, 1-pdetect+eps,'-o', 'LineWidth',2, 'MarkerSize',2);\n");
+    fprintf(fid,"  semilogy(SNR, 1-pvalid +eps,'-o', 'LineWidth',2, 'MarkerSize',2);\n");
+    fprintf(fid,"hold off;\n");
     fprintf(fid,"xlabel('SNR [dB]');\n");
     fprintf(fid,"ylabel('Prob. of Error');\n");
     fprintf(fid,"legend('detect','decoding','location','northeast');\n");
-    fprintf(fid,"axis([SNR(1) SNR(end) 1e-3 1]);\n");
+    fprintf(fid,"axis([-6 10 1e-3 1]);\n");
     fprintf(fid,"grid on;\n");
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);

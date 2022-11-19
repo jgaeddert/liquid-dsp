@@ -1554,6 +1554,20 @@ typedef enum {
 /* Fast Fourier Transform (FFT) and inverse (plan) object               */  \
 typedef struct FFT(plan_s) * FFT(plan);                                     \
                                                                             \
+/* Allocate a one-dimensional array similar to the ordinary malloc. The */  \
+/* implementation may internally align the allocated memory to support  */  \
+/* some optimizations. Use the result as the input or output array      */  \
+/* argument to one of the fft_create* methods. As with the ordinary     */  \
+/* malloc, the result must be typecast to the proper type. Memory       */  \
+/* allocated by this function must be deallocated by fft_free and not   */  \
+/* by the ordinary free.                                                */  \
+/*  _n      :   array size                                              */  \
+void * FFT(_malloc)(unsigned int _n);                                       \
+                                                                            \
+/* Free the one-dimensional array allocated by fft_malloc.              */  \
+/*  _x      :   pointer to array                                        */  \
+void FFT(_free)(void * _x);                                                 \
+                                                                            \
 /* Create regular complex one-dimensional transform                     */  \
 /*  _n      :   transform size                                          */  \
 /*  _x      :   pointer to input array,  [size: _n x 1]                 */  \
@@ -6005,6 +6019,11 @@ int ofdmflexframesync_set_header_props(ofdmflexframesync _q,
                                        ofdmflexframegenprops_s * _props);
 
 int ofdmflexframesync_reset(ofdmflexframesync _q);
+
+// set the callback and userdata fields
+int ofdmflexframesync_set_callback(ofdmflexframesync _q, framesync_callback _callback);
+int ofdmflexframesync_set_userdata(ofdmflexframesync _q, void *             _userdata);
+
 int  ofdmflexframesync_is_frame_open(ofdmflexframesync _q);
 int ofdmflexframesync_execute(ofdmflexframesync _q,
                               liquid_float_complex * _x,

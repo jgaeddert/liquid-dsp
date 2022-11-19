@@ -120,9 +120,8 @@ FIRPFBCH() FIRPFBCH(_create)(int          _type,
     }
 
     // allocate memory for buffers
-    // TODO : use fftw_malloc if HAVE_FFTW3_H
-    q->x = (T*) malloc((q->num_channels)*sizeof(T));
-    q->X = (T*) malloc((q->num_channels)*sizeof(T));
+    q->x = (T*) FFT_MALLOC((q->num_channels)*sizeof(T));
+    q->X = (T*) FFT_MALLOC((q->num_channels)*sizeof(T));
 
     // create fft plan
     if (q->type == LIQUID_ANALYZER)
@@ -260,8 +259,8 @@ int FIRPFBCH(_destroy)(FIRPFBCH() _q)
 
     // free additional arrays
     free(_q->h);
-    free(_q->x);
-    free(_q->X);
+    FFT_FREE(_q->x);
+    FFT_FREE(_q->X);
 
     // free main object memory
     free(_q);
