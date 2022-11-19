@@ -39,9 +39,8 @@
         "-<.git/>",
         "-<*/src/*.proto.c>",
         "-<*/src/*.av.c>",
-        "-<*/src/*.mmx.c>",
         "-<*/src/*.neon.c>",
-        "-<*/src/*.sse4.c>",
+        "-<*/src/*.sse.c>",
         "-<*/src/*.avx.c>",
         "-<*/src/*.x86.s>"
     ]
