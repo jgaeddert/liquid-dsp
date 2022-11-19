@@ -6019,6 +6019,11 @@ int ofdmflexframesync_set_header_props(ofdmflexframesync _q,
                                        ofdmflexframegenprops_s * _props);
 
 int ofdmflexframesync_reset(ofdmflexframesync _q);
+
+// set the callback and userdata fields
+int ofdmflexframesync_set_callback(ofdmflexframesync _q, framesync_callback _callback);
+int ofdmflexframesync_set_userdata(ofdmflexframesync _q, void *             _userdata);
+
 int  ofdmflexframesync_is_frame_open(ofdmflexframesync _q);
 int ofdmflexframesync_execute(ofdmflexframesync _q,
                               liquid_float_complex * _x,
