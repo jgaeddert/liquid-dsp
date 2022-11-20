@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,14 @@
 
 int main()
 {
-    // test liquid string version
+    // test liquid version number
+    printf("checking installed liquid version numbers...\n");
+    printf("  header  : %d\n", LIQUID_VERSION_NUMBER);
+    printf("  library : %d\n", liquid_libversion_number());
     LIQUID_VALIDATE_LIBVERSION;
 
     // create object, print and return
+    printf("creating test object...\n");
     resamp_crcf q = resamp_crcf_create(0.12345f, 12, 0.25f, 60.0f, 256);
     resamp_crcf_print(q);
     resamp_crcf_destroy(q);
