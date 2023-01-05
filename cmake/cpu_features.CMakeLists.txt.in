@@ -1,0 +1,14 @@
+cmake_minimum_required(VERSION 3.0)
+
+project(cpu_features-download NONE)
+
+include(ExternalProject)
+ExternalProject_Add(cpu_features
+  PREFIX            ${cpu_features_PREFIX}
+  GIT_REPOSITORY    https://github.com/google/cpu_features.git
+  GIT_TAG           main
+  CMAKE_ARGS        -DBUILD_TESTING:BOOL=OFF
+                    -DCMAKE_BUILD_TYPE:STRING=Release
+                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+  TEST_COMMAND      ""
+)
