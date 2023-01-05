@@ -2,6 +2,7 @@
 ./bind/fdelay_example.py -nodisplay && \
 ./bind/firfilt_benchmark.py -nodisplay && \
 ./bind/firfilt_example.py -nodisplay && \
+./bind/firhilb_example.py -nodisplay && \
 ./bind/firinterp_example.py -nodisplay && \
 ./bind/firpfbch2_benchmark.py -nodisplay && \
 ./bind/firpfbch2_example.py -nodisplay && \
