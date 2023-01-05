@@ -3,6 +3,7 @@
 #include "fdelay.hh"
 #include "fg64.hh"
 #include "firfilt.hh"
+#include "firhilb.hh"
 #include "firinterp.hh"
 #include "firpfbch2.hh"
 #include "fs64.hh"
@@ -61,6 +62,7 @@ PYBIND11_MODULE(liquid, m) {
     liquid::init_firfilt    (m);
     liquid::init_firpfbch2a (m);
     liquid::init_firpfbch2s (m);
+    liquid::init_firhilb    (m);
     liquid::init_firinterp  (m);
     liquid::init_fg64       (m);
     liquid::init_fs64       (m);

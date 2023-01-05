@@ -1278,6 +1278,7 @@ bind_headers :=					\
 	bind/liquid.hh				\
 	bind/fdelay.hh				\
 	bind/firfilt.hh				\
+	bind/firhilb.hh				\
 	bind/firinterp.hh			\
 	bind/firpfbch2.hh			\
 	bind/fg64.hh				\
