@@ -68,17 +68,10 @@ set(PACKAGE_VERSION "${PROJECT_VERSION}" CACHE INTERNAL
   "version of this package"
 )
 
-if(LIQUID_DEBUG_MESSAGES)
-  add_compile_definitions(DEBUG)
-endif()
-
 # code coverage
 if(LIQUID_COVERAGE)
   find_program(HAVE_GCOVR gcovr)
-  if(HAVE_GCOVR)
-    add_compile_options(--coverage)
-    add_link_options(--coverage)
-  else()
+  if(NOT HAVE_GCOVR)
     message(FATAL_ERROR "Need gcovr with coverage option")
   endif()
 endif()
@@ -126,10 +119,10 @@ endforeach()
 include(CheckSymbolExists)
 
 # check for necessary libraries, library functions
-check_symbol_exists(malloc "stdlib.h;malloc.h" HAVE_MALLOC)
-check_symbol_exists(realloc "stdlib.h;malloc.h" HAVE_REALLOC)
-check_symbol_exists(free "stdlib.h;malloc.h" HAVE_FREE)
-check_symbol_exists(memset "memory.h;string.h" HAVE_MEMSET)
+check_symbol_exists(malloc "stdlib.h" HAVE_MALLOC)
+check_symbol_exists(realloc "stdlib.h" HAVE_REALLOC)
+check_symbol_exists(free "stdlib.h" HAVE_FREE)
+check_symbol_exists(memset "string.h" HAVE_MEMSET)
 check_symbol_exists(memmove "string.h" HAVE_MEMMOVE)
 
 foreach(have_symbol HAVE_MALLOC HAVE_REALLOC HAVE_FREE HAVE_MEMSET HAVE_MEMMOVE)
@@ -315,14 +308,6 @@ endif()
 # Generate config.h file.
 #
 configure_file(config.h.cmake "${CMAKE_CURRENT_SOURCE_DIR}/config.h" @ONLY)
-
-# flags
-include_directories(. include)
-
-add_compile_options(
-  -Wall -Wno-deprecated -Wno-deprecated-declarations
-  $<$<COMPILE_LANG_AND_ID:CXX,AppleClang,Clang>:-Wno-return-type-c-linkage>
-)
 
 #
 # liquid headers
@@ -636,6 +621,13 @@ list(APPEND autotest_EXTRA_SOURCES
   src/fft/tests/data/fft_r2rdata_32.c
 )
 
+set(fft_AUTOTEST_BYPRODUCTS
+  autotest/logs/spgram.gnu
+  autotest/logs/spgramcf_signal.m
+  autotest/logs/spwaterfall.bin
+  autotest/logs/spwaterfall.gnu
+)
+
 set(fft_BENCHMARK_SOURCES
   src/fft/bench/fft_composite_benchmark.c
   src/fft/bench/fft_prime_benchmark.c
@@ -783,6 +775,93 @@ list(APPEND autotest_EXTRA_SOURCES
   src/filter/tests/data/iirfilt_cccf_data_h7x64.c
 )
 
+set(filter_AUTOTEST_BYPRODUCTS
+  autotest/logs/dds_cccf_decim.m
+  autotest/logs/dds_cccf_interp.m
+  autotest/logs/dds_cccf_orig.m
+  autotest/logs/firdes_doppler.m
+  autotest/logs/firdes_prototype_arkaiser.m
+  autotest/logs/firdes_prototype_farcsech.m
+  autotest/logs/firdes_prototype_fexp.m
+  autotest/logs/firdes_prototype_fsech.m
+  autotest/logs/firdes_prototype_hm3.m
+  autotest/logs/firdes_prototype_kaiser.m
+  autotest/logs/firdes_prototype_pm.m
+  autotest/logs/firdes_prototype_rcos.m
+  autotest/logs/firdes_prototype_rfarcsech.m
+  autotest/logs/firdes_prototype_rfexp.m
+  autotest/logs/firdes_prototype_rfsech.m
+  autotest/logs/firdes_prototype_rkaiser.m
+  autotest/logs/firdes_prototype_rrcos.m
+  autotest/logs/firdespm_callback.m
+  autotest/logs/firdespm_halfband_m10_ft200.m
+  autotest/logs/firdespm_halfband_m12_ft100.m
+  autotest/logs/firdespm_halfband_m20_ft050.m
+  autotest/logs/firdespm_halfband_m3_ft400.m
+  autotest/logs/firdespm_halfband_m40_ft050.m
+  autotest/logs/firdespm_halfband_m4_ft200.m
+  autotest/logs/firdespm_halfband_m4_ft400.m
+  autotest/logs/firdespm_halfband_m80_ft010.m
+  autotest/logs/firdespm_lowpass.m
+  autotest/logs/firfilt_cccf_notch.m
+  autotest/logs/firfilt_crcf_firdespm.m
+  autotest/logs/firfilt_crcf_kaiser.m
+  autotest/logs/firfilt_crcf_notch.m
+  autotest/logs/firfilt_crcf_rect.m
+  autotest/logs/firhilbf_decim.m
+  autotest/logs/firhilbf_interp.m
+  autotest/logs/firhilbf_orig.m
+  autotest/logs/iirdes_bessel.m
+  autotest/logs/iirdes_butter_lowpass.m
+  autotest/logs/iirdes_cheby1_lowpass.m
+  autotest/logs/iirdes_cheby2_lowpass.m
+  autotest/logs/iirdes_ellip_bandpass.m
+  autotest/logs/iirdes_ellip_bandstop.m
+  autotest/logs/iirdes_ellip_highpass.m
+  autotest/logs/iirdes_ellip_lowpass.m
+  autotest/logs/iirhilbf_decim.m
+  autotest/logs/iirhilbf_filter_c2r.m
+  autotest/logs/iirhilbf_filter_orig.m
+  autotest/logs/iirhilbf_filter_r2c.m
+  autotest/logs/iirhilbf_interp.m
+  autotest/logs/iirhilbf_orig.m
+  autotest/logs/msresamp2_crcf_interp_M16_f250_a60.m
+  autotest/logs/msresamp2_crcf_interp_M16_f450_a60.m
+  autotest/logs/msresamp2_crcf_interp_M2_f250_a60.m
+  autotest/logs/msresamp2_crcf_interp_M2_f450_a60.m
+  autotest/logs/msresamp2_crcf_interp_M4_f250_a60.m
+  autotest/logs/msresamp2_crcf_interp_M4_f450_a60.m
+  autotest/logs/msresamp2_crcf_interp_M8_f250_a60.m
+  autotest/logs/msresamp2_crcf_interp_M8_f450_a100.m
+  autotest/logs/msresamp2_crcf_interp_M8_f450_a60.m
+  autotest/logs/msresamp2_crcf_interp_M8_f450_a80.m
+  autotest/logs/msresamp2_crcf_interp_M8_f450_a90.m
+  autotest/logs/msresamp_crcf_r127_a60_autotest.m
+  autotest/logs/msresamp_crcf_r373_a60_autotest.m
+  autotest/logs/msresamp_crcf_r676_a60_autotest.m
+  autotest/logs/resamp2_crcf_filter_hi_m12_as60.m
+  autotest/logs/resamp2_crcf_filter_hi_m15_as100.m
+  autotest/logs/resamp2_crcf_filter_hi_m15_as120.m
+  autotest/logs/resamp2_crcf_filter_hi_m15_as80.m
+  autotest/logs/resamp2_crcf_filter_hi_m4_as60.m
+  autotest/logs/resamp2_crcf_filter_hi_m7_as60.m
+  autotest/logs/resamp2_crcf_filter_lo_m12_as60.m
+  autotest/logs/resamp2_crcf_filter_lo_m15_as100.m
+  autotest/logs/resamp2_crcf_filter_lo_m15_as120.m
+  autotest/logs/resamp2_crcf_filter_lo_m15_as80.m
+  autotest/logs/resamp2_crcf_filter_lo_m4_as60.m
+  autotest/logs/resamp2_crcf_filter_lo_m7_as60.m
+  autotest/logs/resamp_crcf_00.m
+  autotest/logs/resamp_crcf_01.m
+  autotest/logs/resamp_crcf_02.m
+  autotest/logs/resamp_crcf_03.m
+  autotest/logs/resamp_crcf_10.m
+  autotest/logs/resamp_crcf_11.m
+  autotest/logs/resamp_crcf_12.m
+  autotest/logs/resamp_crcf_13.m
+  autotest/logs/rresamp_crcf.m
+)
+
 set(filter_BENCHMARK_SOURCES
   src/filter/bench/fftfilt_crcf_benchmark.c
   src/filter/bench/firdecim_crcf_benchmark.c
@@ -856,6 +935,28 @@ set(framing_AUTOTEST_SOURCES
   src/framing/tests/symstreamrcf_delay_autotest.c
   src/framing/tests/symtrack_cccf_autotest.c
 )
+
+set(framing_AUTOTEST_BYPRODUCTS
+  autotest/logs/framesync64_n00000001.dat
+  autotest/logs/framesync64_u00000001.dat
+  autotest/logs/msourcecf_accessor_autotest.m
+  autotest/logs/msourcecf_aggregate_autotest.m
+  autotest/logs/msourcecf_chirp_autotest.m
+  autotest/logs/msourcecf_copy.m
+  autotest/logs/msourcecf_tone_autotest.m
+  autotest/logs/symstreamcf_psd_k2_m12_b030_autotest.m
+  autotest/logs/symstreamcf_psd_k4_m12_b030_autotest.m
+  autotest/logs/symstreamcf_psd_k4_m25_b020_autotest.m
+  autotest/logs/symstreamcf_psd_k7_m11_b035_autotest.m
+  autotest/logs/symstreamrcf_psd_bw200_m12_b030_autotest.m
+  autotest/logs/symstreamrcf_psd_bw400_m12_b030_autotest.m
+  autotest/logs/symstreamrcf_psd_bw400_m25_b020_autotest.m
+  autotest/logs/symstreamrcf_psd_bw700_m11_b035_autotest.m
+)
+
+# NOTE: most autotest/logs/framesync64_*.dat byproducts are non-deterministic
+#       and require a wildcard to remove automatically
+set(framing_AUTOTEST_GLOB_BYPRODUCTS autotest/logs/framesync64_*.dat)
 
 set(framing_BENCHMARK_SOURCES
   src/framing/bench/presync_benchmark.c
@@ -1240,6 +1341,12 @@ set(autotest_SOURCES
   ${vector_AUTOTEST_SOURCES}
 )
 
+set(autotest_BYPRODUCTS
+  ${fft_AUTOTEST_BYPRODUCTS}
+  ${filter_AUTOTEST_BYPRODUCTS}
+  ${framing_AUTOTEST_BYPRODUCTS}
+)
+
 set(benchmark_SOURCES
   bench/null_benchmark.c
   ${agc_BENCHMARK_SOURCES}
@@ -1269,19 +1376,46 @@ set(benchmark_SOURCES
 ## TARGET : all       - build shared library (default)
 ##
 
+# liquid configure options
+
+add_library(liquid_config INTERFACE)
+
+target_include_directories(liquid_config INTERFACE . include)
+
+target_compile_options(liquid_config INTERFACE
+  -Wall -Wno-deprecated -Wno-deprecated-declarations
+  $<$<COMPILE_LANG_AND_ID:CXX,AppleClang,Clang>:-Wno-return-type-c-linkage>
+)
+
+if(LIQUID_DEBUG_MESSAGES)
+  target_compile_definitions(liquid_config INTERFACE DEBUG)
+endif()
+
+if(LIQUID_COVERAGE)
+    target_compile_options(liquid_config INTERFACE --coverage)
+    target_link_options(liquid_config INTERFACE --coverage)
+endif()
+
+target_link_libraries(liquid_config INTERFACE arch_option)
+
+# liquid library
+
 add_library(liquid OBJECT ${liquid_SOURCES})
 
-target_link_libraries(liquid arch_option)
+target_link_libraries(liquid liquid_config)
 
-if (HAVE_LIBM)
-    target_link_libraries(liquid m)
-endif ()
-if (fec_FOUND)
-    target_link_libraries(liquid fec::fec)
-endif ()
-if (NOT LIQUID_FFTOVERRIDE AND FFTW_FOUND)
-    target_link_libraries(liquid FFTW::fftw3f)
-endif ()
+if(HAVE_LIBC)
+  target_link_libraries(liquid c)
+endif()
+if(HAVE_LIBM)
+  target_link_libraries(liquid m)
+endif()
+if(fec_FOUND)
+  target_link_libraries(liquid fec::fec)
+endif()
+if(NOT LIQUID_FFTOVERRIDE AND FFTW_FOUND)
+  target_link_libraries(liquid FFTW::fftw3f)
+endif()
 
 add_library(liquid-shared SHARED)
 target_link_libraries(liquid-shared liquid)
@@ -1392,8 +1526,22 @@ add_custom_command(
   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
+list(TRANSFORM autotest_BYPRODUCTS PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/"
+  OUTPUT_VARIABLE autotest_FULL_BYPRODUCTS
+)
+
 add_custom_target(check
+  COMMAND ""
   DEPENDS autotest.json
+  BYPRODUCTS ${autotest_FULL_BYPRODUCTS}
+  COMMENT "checking for autotest.json"
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+enable_testing()
+
+add_test(NAME check
+  COMMAND xautotest -v
   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
@@ -1407,24 +1555,35 @@ string(REPLACE "\n" ";" readme_md "${readme_md}")
 
 list(SUBLIST readme_md 23 20 readme_c_example)
 list(JOIN readme_c_example "\n" readme_c_example)
-file(WRITE readme.c.example.c "${readme_c_example}")
-
-add_executable(readme.c.example EXCLUDE_FROM_ALL readme.c.example.c)
-target_link_libraries(readme.c.example PRIVATE liquid-static)
-set_property(TARGET readme.c.example PROPERTY
-  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+string(REPLACE
+  [[<liquid/liquid.h>]] [["liquid.h"]]
+  readme_c_example "${readme_c_example}"
 )
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/readme.c.example.c"
+  "${readme_c_example}"
+)
+
+add_executable(readme.c.example EXCLUDE_FROM_ALL
+  "${CMAKE_CURRENT_BINARY_DIR}/readme.c.example.c"
+)
+target_link_libraries(readme.c.example PRIVATE liquid-static)
 
 if(CMAKE_CXX_COMPILER)
   list(SUBLIST readme_md 152 21 readme_cc_example)
   list(JOIN readme_cc_example "\n" readme_cc_example)
-  file(WRITE readme.cc.example.cc "${readme_cc_example}")
-
-  add_executable(readme.cc.example EXCLUDE_FROM_ALL readme.cc.example.cc)
-  target_link_libraries(readme.cc.example PRIVATE liquid-static)
-  set_property(TARGET readme.cc.example PROPERTY
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+  string(REPLACE
+    [[<liquid/liquid.h>]] [["liquid.h"]]
+    readme_cc_example "${readme_cc_example}"
   )
+
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/readme.cc.example.cc"
+    "${readme_cc_example}"
+  )
+
+  add_executable(readme.cc.example EXCLUDE_FROM_ALL
+    "${CMAKE_CURRENT_BINARY_DIR}/readme.cc.example.cc"
+  )
+  target_link_libraries(readme.cc.example PRIVATE liquid-static)
 
   add_custom_target(doc-check
     COMMAND readme.c.example
@@ -1458,6 +1617,11 @@ if(LIQUID_COVERAGE)
     DEPENDS coverage.out
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
   )
+else()
+  add_custom_target(coverage
+    COMMAND ""
+    COMMENT "Enable with LIQUID_COVERAGE option. Requries gcovr."
+  )
 endif()
 
 ##
@@ -1490,10 +1654,17 @@ set_property(TARGET benchmark PROPERTY
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-add_custom_target(bench
+add_custom_command(
+  OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/benchmark.json"
   COMMAND benchmark -o benchmark.json
   DEPENDS benchmark
   COMMENT "run the benchmark program"
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+add_custom_target(bench
+  DEPENDS benchmark.json
+  COMMENT "checking for benchmark.json"
   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
@@ -1692,7 +1863,6 @@ add_dependencies(examples ${examples_TARGETS})
 ## TARGET : sandbox   - build all sandbox binaries
 ##
 
-# NOTE: sandbox _requires_ fftw3 to build
 if (FFTW_FOUND)
   set(sandbox_SOURCES
     sandbox/am_demod_dsb_peak_detect_test.c
@@ -1815,18 +1985,39 @@ if (FFTW_FOUND)
 
   add_custom_target(sandbox)
   add_dependencies(sandbox ${sandbox_TARGETS})
+else()
+  add_custom_target(sandbox
+    COMMAND ""
+    COMMENT "sandbox requires fftw3 to build"
+  )
 endif()
 
 ##
 ## TARGET : check-link- test linking to installed library
 ##
 
-add_executable(liquid_linker_test scripts/liquid_linker_test.c)
-target_link_libraries(liquid_linker_test PRIVATE
-  $<TARGET_PROPERTY:liquid,LINK_LIBRARIES>
-  -lliquid
+add_executable(liquid_linker_test EXCLUDE_FROM_ALL scripts/liquid_linker_test.c)
+target_compile_options(liquid_linker_test PRIVATE -Wall -O2)
+target_link_libraries(liquid_linker_test PRIVATE -lliquid)
+if(HAVE_LIBC)
+  target_link_libraries(liquid_linker_test PRIVATE c)
+endif()
+if(HAVE_LIBM)
+  target_link_libraries(liquid_linker_test PRIVATE m)
+endif()
+if(fec_FOUND)
+  target_link_libraries(liquid_linker_test PRIVATE fec::fec)
+endif()
+if(NOT LIQUID_FFTOVERRIDE AND FFTW_FOUND)
+  target_link_libraries(liquid_linker_test PRIVATE FFTW::fftw3f)
+endif()
+
+target_include_directories(liquid_linker_test PRIVATE
+  "${CMAKE_INSTALL_FULL_INCLUDEDIR}"
 )
-target_link_directories(liquid_linker_test PRIVATE "${CMAKE_INSTALL_PREFIX}")
+target_link_directories(liquid_linker_test PRIVATE
+  "${CMAKE_INSTALL_FULL_LIBDIR}"
+)
 
 add_custom_target(check-link
   COMMAND liquid_linker_test
@@ -1846,6 +2037,29 @@ add_dependencies(programs xautotest benchmark examples sandbox)
 
 add_custom_target(world)
 add_dependencies(world bench check doc-check examples sandbox)
+
+##
+## TARGET : clean     - clean build (objects, dependencies, libraries, etc.)
+##
+
+# NOTE: Most cleanup is already handled by the global clean target
+
+##
+## TARGET : distclean - removes everything except originally distributed files
+##
+
+list(TRANSFORM framing_AUTOTEST_GLOB_BYPRODUCTS
+  PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/"
+  OUTPUT_VARIABLE autotest_FULL_GLOB_BYPRODUCTS
+)
+
+add_custom_target(distclean
+  COMMAND ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}" --target clean
+  COMMAND rm -f ${autotest_FULL_GLOB_BYPRODUCTS}
+  COMMAND rm -f "${CMAKE_CURRENT_SOURCE_DIR}/config.h"
+  COMMENT "cleaning distribution..."
+)
+
 
 ##
 ## TARGET : list      - print list of targets
