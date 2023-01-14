@@ -4791,7 +4791,7 @@ LIQUID_MSRESAMP_DEFINE_API(LIQUID_MSRESAMP_MANGLE_CCCF,
 // Direct digital [up/down] synthesizer
 //
 
-#define DDS_MANGLE_CCCF(name)  LIQUID_CONCAT(dds_cccf,name)
+#define LIQUID_DDS_MANGLE_CCCF(name)  LIQUID_CONCAT(dds_cccf,name)
 
 #define LIQUID_DDS_DEFINE_API(DDS,TO,TC,TI)                                 \
                                                                             \
@@ -4857,7 +4857,7 @@ int DDS(_interp_execute)(DDS() _q,                                          \
                           TI _x,                                            \
                           TO * _y);                                         \
 
-LIQUID_DDS_DEFINE_API(DDS_MANGLE_CCCF,
+LIQUID_DDS_DEFINE_API(LIQUID_DDS_MANGLE_CCCF,
                       liquid_float_complex,
                       liquid_float_complex,
                       liquid_float_complex)
