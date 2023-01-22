@@ -234,6 +234,7 @@ interp = dsp.firinterp(M=4, m=12, As=60.)
 
 # run on a single sample
 buf = interp.execute(1+1j,)
+```
 
 ### PlatformIO ###
 
