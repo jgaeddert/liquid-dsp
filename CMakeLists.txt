@@ -52,6 +52,24 @@ option(LIQUID_COVERAGE "Enable flags to test code coverage" OFF)
 option(LIQUID_SUPPRESS_ERROR_OUTPUT "Suppress printing errors to stderr" OFF)
 option(LIQUID_STRICT_EXIT "Enable strict program exit on error" OFF)
 
+# these are checked because they are in the default scripts/config.h file,
+# however these headers do not appear to be included directly by the liquid
+# source files
+option(LIQUID_ADDITIONAL_INCLUDE_CHECKS "Additional include file checks" OFF)
+set(additional_include_checks sys/types.h sys/stat.h strings.h)
+set_property(CACHE LIQUID_ADDITIONAL_INCLUDE_CHECKS
+  PROPERTY
+  STRINGS ${additional_include_checks}
+)
+set_property(CACHE LIQUID_ADDITIONAL_INCLUDE_CHECKS
+  APPEND_STRING PROPERTY
+  HELPSTRING " (${additional_include_checks})"
+)
+
+# typically the host compiler automatically links to the standard C library,
+# but this option forces the configuration to manually check linking libc
+option(LIQUID_CHECK_LIBC "Additional linker flag check for libc" OFF)
+
 # Configure init
 set(PACKAGE_BUGREPORT "joseph@liquidsdr.org" CACHE INTERNAL
   "address where bug reports for this package should be sent."
@@ -95,26 +113,26 @@ endforeach()
 # check default POSIX includes
 check_include_file("unistd.h" HAVE_UNISTD_H)
 
-if(NOT HAVE_UNISTD_H)
-  message(FATAL_ERROR "HAVE_UNISTD_H required.")
-endif()
+if(LIQUID_ADDITIONAL_INCLUDE_CHECKS)
+  get_property(additional_include_files
+    CACHE LIQUID_ADDITIONAL_INCLUDE_CHECKS PROPERTY STRINGS
+  )
+  foreach(include_file ${additional_include_files})
+    # create HAVE_* variable name from include_file string
+    string(TOUPPER ${include_file} have_include)
+    string(REGEX REPLACE "[/.]" "_" have_include ${have_include})
+    string(PREPEND have_include "HAVE_")
 
-# these are checked because they are in the default scripts/config.h file,
-# however these headers and/or #defines do not appear to be #included or used
-# directly by the liquid source files
-check_include_file("sys/types.h" HAVE_SYS_TYPES_H)
-check_include_file("sys/stat.h" HAVE_SYS_STAT_H)
-check_include_file("strings.h" HAVE_STRINGS_H)
+    check_include_file(${include_file} ${have_include})
+  endforeach()
+endif()
 
 include(CheckIncludeFiles)
 check_include_files("stdlib.h;stddef.h" STDC_HEADERS)
 
-foreach(have_include
-    HAVE_SYS_TYPES_H HAVE_SYS_STAT_H STDC_HEADERS HAVE_STRINGS_H)
-  if(NOT ${have_include})
-    message(FATAL_ERROR "${have_include} required.")
-  endif()
-endforeach()
+if(NOT STDC_HEADERS)
+  message(FATAL_ERROR "STDC_HEADERS required.")
+endif()
 
 include(CheckSymbolExists)
 
@@ -141,19 +159,25 @@ set(_c_main "int main() { return 0; }")
 include(CMakePushCheckState)
 cmake_push_check_state(RESET)
 
-set(CMAKE_REQUIRED_LINK_OPTIONS -lc)
-check_c_source_compiles("${_c_main}" HAVE_LIBC ${_common_patterns})
+if(LIQUID_CHECK_LIBC)
+  set(CMAKE_REQUIRED_LINK_OPTIONS -lc)
+  check_c_source_compiles("${_c_main}" HAVE_LIBC ${_common_patterns})
 
-cmake_reset_check_state()
+  if(NOT HAVE_LIBC)
+    message(FATAL_ERROR "HAVE_LIBC required.")
+  endif()
+
+  cmake_reset_check_state()
+endif()
+
 
 set(CMAKE_REQUIRED_LINK_OPTIONS -lm)
 check_c_source_compiles("${_c_main}" HAVE_LIBM ${_common_patterns})
 
-foreach(have_library HAVE_LIBC HAVE_LIBM)
-  if(NOT ${have_library})
-    message(FATAL_ERROR "${have_library} required.")
-  endif()
-endforeach()
+if(NOT HAVE_LIBM)
+  cmake_reset_check_state()
+  #message(FATAL_ERROR "HAVE_LIBM required.")
+endif()
 
 # check for required math functions
 check_symbol_exists(sinf "math.h" HAVE_SINF)
@@ -1404,7 +1428,7 @@ add_library(liquid OBJECT ${liquid_SOURCES})
 
 target_link_libraries(liquid liquid_config)
 
-if(HAVE_LIBC)
+if(LIQUID_CHECK_LIBC AND HAVE_LIBC)
   target_link_libraries(liquid c)
 endif()
 if(HAVE_LIBM)
@@ -1494,10 +1518,12 @@ set_property(TARGET autoscript PROPERTY
 # Autotests are used to check the validity and accuracy of the
 # DSP libraries.
 
+file(TO_NATIVE_PATH "/" PATH_SEP)
+
 add_custom_command(
   OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/autotest_include.h"
   COMMAND scripts/autoscript
-          $<SHELL_PATH:/> autotest
+          ${PATH_SEP} autotest
           ${autotest_SOURCES}
           > autotest_include.h
   DEPENDS autoscript
@@ -1634,7 +1660,7 @@ endif()
 add_custom_command(
   OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/benchmark_include.h"
   COMMAND scripts/autoscript
-          $<SHELL_PATH:/> benchmark
+          ${PATH_SEP} benchmark
           ${benchmark_SOURCES}
           > benchmark_include.h
   DEPENDS autoscript
@@ -1678,8 +1704,6 @@ set(examples_SOURCES
   examples/agc_crcf_qpsk_example.c
   examples/agc_rrrf_example.c
   examples/ampmodem_example.c
-  examples/asgramcf_example.c
-  examples/asgramf_example.c
   examples/autocorr_cccf_example.c
   examples/bpacketsync_example.c
   examples/bpresync_example.c
@@ -1846,6 +1870,14 @@ set(examples_SOURCES
   examples/windowing_example.c
 )
 
+if(HAVE_UNISTD_H)
+  list(APPEND examples_SOURCES
+    examples/asgramcf_example.c
+    examples/asgramf_example.c
+  )
+  list(SORT examples_SOURCES)
+endif()
+
 foreach(example_source ${examples_SOURCES})
   get_filename_component(example ${example_source} NAME_WE)
   list(APPEND examples_TARGETS ${example})
@@ -1999,7 +2031,7 @@ endif()
 add_executable(liquid_linker_test EXCLUDE_FROM_ALL scripts/liquid_linker_test.c)
 target_compile_options(liquid_linker_test PRIVATE -Wall -O2)
 target_link_libraries(liquid_linker_test PRIVATE -lliquid)
-if(HAVE_LIBC)
+if(LIQUID_CHECK_LIBC AND HAVE_LIBC)
   target_link_libraries(liquid_linker_test PRIVATE c)
 endif()
 if(HAVE_LIBM)
