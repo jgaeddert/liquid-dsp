@@ -4476,7 +4476,7 @@ void RRESAMP(_execute_block)(RRESAMP()      _q,                             \
 /*  _x  : input sample array, [size: decim*n x 1]                       */  \
 /*  _n  : block size                                                    */  \
 /*  _y  : output sample array, [size: interp*n x 1]                     */  \
-void RRESAMP(_execute_nonblock)(RRESAMP()      _q,                          \
+unsigned int RRESAMP(_execute_nonblock)(RRESAMP()      _q,                  \
                              TI *           _x,                             \
                              unsigned int   _n,                             \
                              TO *           _y);
