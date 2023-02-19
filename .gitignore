@@ -8,6 +8,7 @@
 *.gcno
 *.o
 *.so
+*~
 
 # ignore swap files for vim editing
 *.swp
@@ -30,6 +31,9 @@ config.status
 makefile
 xautotest
 *.m
+autotest.json
+autotest/logs/*.bin
+autotest/logs/*.gnu
 
 # miscellany
 octave-core
