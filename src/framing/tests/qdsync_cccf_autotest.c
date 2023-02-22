@@ -57,14 +57,16 @@ int autotest_qdsync_callback(float complex * _buf,
     return 0;
 }
 
-void testbench_qdsync(unsigned int _k)
+void testbench_qdsync_linear(unsigned int _k,
+                             unsigned int _m,
+                             float        _beta)
 {
     // options
     unsigned int seq_len      =  240;   // number of sync symbols
     unsigned int payload_len  =  800;   // number of payload symbols
     unsigned int k            =   _k;   // samples/symbol
-    unsigned int m            =    7;   // filter delay [symbols]
-    float        beta         = 0.3f;   // excess bandwidth factor
+    unsigned int m            =   _m;   // filter delay [symbols]
+    float        beta         = _beta;  // excess bandwidth factor
     int          ftype        = LIQUID_FIRFILT_ARKAISER;
     float        nstd         = 0.001f;
 
@@ -158,7 +160,7 @@ void testbench_qdsync(unsigned int _k)
 }
 
 // test specific configurations
-void autotest_qdsync_k2() { testbench_qdsync(2); }
-void autotest_qdsync_k3() { testbench_qdsync(3); }
-void autotest_qdsync_k4() { testbench_qdsync(4); }
+void autotest_qdsync_k2() { testbench_qdsync_linear(2, 7, 0.3f); }
+void autotest_qdsync_k3() { testbench_qdsync_linear(3, 7, 0.3f); }
+void autotest_qdsync_k4() { testbench_qdsync_linear(4, 7, 0.3f); }
 
