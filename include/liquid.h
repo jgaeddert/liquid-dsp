@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -6260,73 +6260,89 @@ float        qdetector_cccf_get_gamma   (qdetector_cccf _q); // channel gain
 float        qdetector_cccf_get_dphi    (qdetector_cccf _q); // carrier frequency offset estimate
 float        qdetector_cccf_get_phi     (qdetector_cccf _q); // carrier phase offset estimate
 
-// Frame detector and synchronizer; uses a novel correlation method to
-// detect a synchronization pattern, estimate carrier frequency and
-// phase offsets as well as timing phase, then correct for these
-// impairments in a simple interface suitable for custom frame recovery.
-typedef struct qdsync_cccf_s * qdsync_cccf;
+//
+// qdsync
+//
+#define LIQUID_QDSYNC_MANGLE_CCCF(name) LIQUID_CONCAT(qdsync_cccf,name)
 
-// synchronization callback, return 0:continue, 1:reset
-typedef int (*qdsync_callback)(liquid_float_complex * _buf,
-                               unsigned int           _buf_len,
-                               void *                 _context);
-// metadata struct:
-//  - sample count since object was created
-//  - sample count since beginning of frame
+#define LIQUID_QDSYNC_DEFINE_API(QDSYNC,TO,TC,TI)                           \
+                                                                            \
+/* Frame detector and synchronizer; uses a novel correlation method to  */  \
+/* detect a synchronization pattern, estimate carrier frequency and     */  \
+/* phase offsets as well as timing phase, then correct for these        */  \
+/* impairments in a simple interface suitable for custom frame recovery.*/  \
+typedef struct QDSYNC(_s) * QDSYNC();                                       \
+                                                                            \
+/* synchronization callback, return 0:continue, 1:reset                 */  \
+typedef int (*QDSYNC(_callback))(TO *         _buf,                         \
+                                 unsigned int _buf_len,                     \
+                                 void *       _context);                    \
+                                                                            \
+/* create detector with generic sequence                                */  \
+/*  _s          : sample sequence                                       */  \
+/*  _s_len      : length of sample sequence                             */  \
+/*  _ftype      : filter type                                           */  \
+/*  _k          : samples per symbol                                    */  \
+/*  _m          : filter semi-length                                    */  \
+/*  _beta       : filter excess bandwidth factor                        */  \
+/*  _callback   : user-defined callback                                 */  \
+/*  _context    : user-defined context                                  */  \
+QDSYNC() QDSYNC(_create_linear)(TI *              _s,                       \
+                                unsigned int      _s_len,                   \
+                                int               _ftype,                   \
+                                unsigned int      _k,                       \
+                                unsigned int      _m,                       \
+                                float             _beta,                    \
+                                QDSYNC(_callback) _callback,                \
+                                void *            _context);                \
+                                                                            \
+/* Copy object recursively including all internal objects and state     */  \
+QDSYNC() QDSYNC(_copy)(QDSYNC() _q);                                        \
+                                                                            \
+int QDSYNC(_destroy)(QDSYNC() _q);                                          \
+int QDSYNC(_reset)  (QDSYNC() _q);                                          \
+int QDSYNC(_print)  (QDSYNC() _q);                                          \
+                                                                            \
+/* get detection threshold                                              */  \
+float QDSYNC(_get_threshold)(QDSYNC() _q);                                  \
+                                                                            \
+/* set detection threshold                                              */  \
+int QDSYNC(_set_threshold)(QDSYNC() _q,                                     \
+                           float    _threshold);                            \
+                                                                            \
+/* set carrier offset search range                                      */  \
+int QDSYNC(_set_range)(QDSYNC() _q,                                         \
+                       float    _dphi_max);                                 \
+                                                                            \
+/* set callback method                                                  */  \
+int QDSYNC(_set_callback)(QDSYNC()          _q,                             \
+                          QDSYNC(_callback) _callback);                     \
+                                                                            \
+/* set context value                                                    */  \
+int QDSYNC(_set_context)(QDSYNC() _q, void * _context);                     \
+                                                                            \
+/* Set callback buffer size (the number of symbol provided to the       */  \
+/* callback whenever it is invoked).                                    */  \
+int QDSYNC(_set_buf_len )(QDSYNC() _q, unsigned int _buf_len);              \
+                                                                            \
+/* execute block of samples                                             */  \
+int QDSYNC(_execute)(QDSYNC()     _q,                                       \
+                     TI *         _buf,                                     \
+                     unsigned int _buf_len);                                \
+                                                                            \
+/* Return flag indicating if synchronizer actively running.             */  \
+int QDSYNC(_is_open)(QDSYNC() _q);                                          \
+                                                                            \
+float QDSYNC(_get_rxy)  (QDSYNC() _q);                                      \
+float QDSYNC(_get_tau)  (QDSYNC() _q);                                      \
+float QDSYNC(_get_gamma)(QDSYNC() _q);                                      \
+float QDSYNC(_get_dphi) (QDSYNC() _q);                                      \
+float QDSYNC(_get_phi)  (QDSYNC() _q);                                      \
 
-// create detector with generic sequence
-//  _s      :   sample sequence
-//  _s_len  :   length of sample sequence
-qdsync_cccf qdsync_cccf_create_linear(liquid_float_complex * _s,
-                                      unsigned int           _s_len,
-                                      int                    _ftype,
-                                      unsigned int           _k,
-                                      unsigned int           _m,
-                                      float                  _beta,
-                                      qdsync_callback        _callback,
-                                      void *                 _context);
-
-// Copy object recursively including all internal objects and state
-qdsync_cccf qdsync_cccf_copy(qdsync_cccf _q);
-
-int qdsync_cccf_destroy(qdsync_cccf _q);
-int qdsync_cccf_reset  (qdsync_cccf _q);
-int qdsync_cccf_print  (qdsync_cccf _q);
-
-// get detection threshold
-float qdsync_cccf_get_threshold(qdsync_cccf _q);
-
-// set detection threshold
-int qdsync_cccf_set_threshold(qdsync_cccf _q, float _threshold);
-
-// set carrier offset search range
-int qdsync_cccf_set_range(qdsync_cccf _q,
-                          float       _dphi_max);
-
-// set callback method
-int qdsync_cccf_set_callback(qdsync_cccf _q, qdsync_callback _callback);
-
-// set context value
-int qdsync_cccf_set_context (qdsync_cccf _q, void * _context);
-
-// Set callback buffer size (the number of symbol provided to the callback
-// whenever it is invoked).
-int qdsync_cccf_set_buf_len (qdsync_cccf _q, unsigned int _buf_len);
-
-// execute block of samples
-int qdsync_cccf_execute(qdsync_cccf            _q,
-                        liquid_float_complex * _buf,
-                        unsigned int           _buf_len);
-
-// is synchronizer actively running?
-int qdsync_cccf_is_open(qdsync_cccf _q);
-
-// get detection metrics and offsets
-float qdsync_cccf_get_rxy  (qdsync_cccf _q); // correlator output
-float qdsync_cccf_get_tau  (qdsync_cccf _q); // fractional timing offset estimate
-float qdsync_cccf_get_gamma(qdsync_cccf _q); // channel gain
-float qdsync_cccf_get_dphi (qdsync_cccf _q); // carrier frequency offset estimate
-float qdsync_cccf_get_phi  (qdsync_cccf _q); // carrier phase offset estimate
+LIQUID_QDSYNC_DEFINE_API(LIQUID_QDSYNC_MANGLE_CCCF,
+                         liquid_float_complex,
+                         liquid_float_complex,
+                         liquid_float_complex)
 
 //
 // Pre-demodulation detector
