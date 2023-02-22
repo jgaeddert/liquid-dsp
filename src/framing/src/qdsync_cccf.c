@@ -113,7 +113,7 @@ qdsync_cccf qdsync_cccf_create_linear(liquid_float_complex * _seq,
     q->mf   = firpfb_crcf_create_rnyquist(q->ftype, q->npfb, q->k, q->m, q->beta);
 
     // allocate buffer for storing output samples
-    q->buf_out_len = 64; // TODO: make user-defined?
+    q->buf_out_len = 64; // user can re-size this later
     q->buf_out     = (float complex*) malloc(q->buf_out_len*sizeof(float complex));
 
     // set callback and context values
@@ -128,7 +128,6 @@ qdsync_cccf qdsync_cccf_create_linear(liquid_float_complex * _seq,
 // copy object
 qdsync_cccf qdsync_cccf_copy(qdsync_cccf q_orig)
 {
-#if 0
     // validate input
     if (q_orig == NULL)
         return liquid_error_config("qdetector_%s_copy(), object cannot be NULL", "cccf");
@@ -137,14 +136,20 @@ qdsync_cccf qdsync_cccf_copy(qdsync_cccf q_orig)
     qdsync_cccf q_copy = (qdsync_cccf) malloc(sizeof(struct qdsync_cccf_s));
     memmove(q_copy, q_orig, sizeof(struct qdsync_cccf_s));
 
+    // set callback and userdata fields
+    q_copy->callback = q_orig->callback;
+    q_copy->context  = q_orig->context;
+
     // copy sub-objects
     q_copy->detector = qdetector_cccf_copy(q_orig->detector);
+    q_copy->mixer    = nco_crcf_copy      (q_orig->mixer);
+    q_copy->mf       = firpfb_crcf_copy   (q_orig->mf);
+
+    // copy memory in new allocation
+    q_copy->buf_out = (float complex*)liquid_malloc_copy(q_orig->buf_out, q_orig->buf_out_len, sizeof(float complex));
 
     // return new object
     return q_copy;
-#else
-    return liquid_error_config("qdsync_cccf_copy(), method not yet implemented");
-#endif
 }
 
 int qdsync_cccf_destroy(qdsync_cccf _q)

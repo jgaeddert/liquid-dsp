@@ -22,11 +22,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "autotest/autotest.h"
 #include "liquid.h"
 
 // common structure for relaying information to/from callback
 typedef struct {
+    int             id;
     float complex * buf;
     unsigned int    buf_len;
     unsigned int    count;
@@ -37,9 +39,9 @@ int autotest_qdsync_callback(float complex * _buf,
                              unsigned int    _buf_len,
                              void *          _context)
 {
-    printf("qdsync callback got %u samples\n", _buf_len);
     // save samples to buffer as appropriate
     autotest_qdsync_s * q = (autotest_qdsync_s *) _context;
+    printf("[%d] qdsync callback got %u samples\n", q->id, _buf_len);
     unsigned int i;
     for (i=0; i<_buf_len; i++) {
         if (q->count == q->buf_len)
@@ -73,7 +75,7 @@ void testbench_qdsync_linear(unsigned int _k,
     }
 
     // create sync object, only using first few symbols
-    autotest_qdsync_s obj = {.buf=seq_rx, .buf_len=seq_len, .count=0};
+    autotest_qdsync_s obj = {.id=0, .buf=seq_rx, .buf_len=seq_len, .count=0};
     qdsync_cccf q = qdsync_cccf_create_linear(seq_tx, 240, ftype, k, m, beta,
             autotest_qdsync_callback, (void*)&obj);
     qdsync_cccf_set_range(q, 0.001f);
@@ -147,4 +149,88 @@ void testbench_qdsync_linear(unsigned int _k,
 void autotest_qdsync_k2() { testbench_qdsync_linear(2, 7, 0.3f); }
 void autotest_qdsync_k3() { testbench_qdsync_linear(3, 7, 0.3f); }
 void autotest_qdsync_k4() { testbench_qdsync_linear(4, 7, 0.3f); }
+
+// test copying from one object to another
+void autotest_qdsync_cccf_copy()
+{
+    // options
+    unsigned int seq_len= 2400; // total number of symbols in sequence
+    unsigned int split  = 1033; // cut-off point where object gets copied
+    unsigned int k      =    2; // samples/symbol
+    unsigned int m      =   12; // filter delay [symbols]
+    float        beta   = 0.25; // excess bandwidth factor
+    int          ftype  = LIQUID_FIRFILT_ARKAISER;
+    float        nstd   = 0.001f;
+    unsigned int i;
+
+    // generate random frame sequence
+    float complex seq_tx     [seq_len];  // transmitted
+    float complex seq_rx_orig[seq_len];  // received with initial correction (original)
+    float complex seq_rx_copy[seq_len];  // received with initial correction (original)
+    for (i=0; i<seq_len ; i++) {
+        seq_tx[i] = (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 +
+                    (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 * _Complex_I;
+    }
+
+    // create objects
+    autotest_qdsync_s c_orig = {.id=0, .buf=seq_rx_orig, .buf_len=seq_len, .count=0};
+    qdsync_cccf q_orig = qdsync_cccf_create_linear(seq_tx, 240, ftype, k, m, beta,
+            autotest_qdsync_callback, (void*)&c_orig);
+
+    // create interpolator
+    firinterp_crcf interp = firinterp_crcf_create_prototype(ftype,k,m,beta,0);
+
+    // feed some symbols through synchronizer (about half)
+    float complex buf[k];
+    for (i=0; i<split; i++) {
+        // interpolate symbol
+        firinterp_crcf_execute(interp, (i < seq_len) ? seq_tx[i] : 0, buf);
+
+        // add noise
+        unsigned int j;
+        for (j=0; j<k; j++)
+            buf[j] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+
+        // run through synchronizer
+        qdsync_cccf_execute(q_orig, buf, k);
+    }
+
+    // copy object, but set different context
+    autotest_qdsync_s c_copy = {.id=1, .buf=seq_rx_copy, .buf_len=seq_len, .count=c_orig.count};
+    memmove(c_copy.buf, c_orig.buf, c_orig.count*sizeof(float complex)); // copy what's in buffer so far
+    qdsync_cccf q_copy = qdsync_cccf_copy(q_orig);
+    qdsync_cccf_set_context(q_copy, (void*)&c_copy);
+
+    // run remaining sequence through detectors
+    for (i=split; i<seq_len + 20*m * 40; i++) {
+        // interpolate symbol
+        firinterp_crcf_execute(interp, (i < seq_len) ? seq_tx[i] : 0, buf);
+
+        // add noise
+        unsigned int j;
+        for (j=0; j<k; j++)
+            buf[j] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+
+        // run through each synchronizer
+        qdsync_cccf_execute(q_orig, buf, k);
+        qdsync_cccf_execute(q_copy, buf, k);
+    }
+
+    // compare output buffers
+    CONTEND_EQUALITY(c_orig.count, seq_len);
+    CONTEND_EQUALITY(c_copy.count, seq_len);
+    // print values for visual comparison
+    /*
+    for (i=0; i<seq_len; i++) {
+        printf(" [%4u] orig={%12.8f,%12.8f}, copy={%12.8f,%12.8f}\n", i,
+                crealf(c_orig.buf[i]), cimagf(c_orig.buf[i]),
+                crealf(c_copy.buf[i]), cimagf(c_copy.buf[i]));
+    }
+    */
+    CONTEND_SAME_DATA(c_orig.buf, c_copy.buf, seq_len*sizeof(float complex));
+
+    // destroy objects
+    qdsync_cccf_destroy(q_orig);
+    qdsync_cccf_destroy(q_copy);
+}
 
