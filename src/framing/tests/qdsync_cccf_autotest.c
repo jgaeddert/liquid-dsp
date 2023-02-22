@@ -27,7 +27,6 @@
 
 // common structure for relaying information to/from callback
 typedef struct {
-    unsigned int    seq_len;
     float complex * buf;
     unsigned int    buf_len;
     unsigned int    count;
@@ -43,16 +42,11 @@ int autotest_qdsync_callback(float complex * _buf,
     autotest_qdsync_s * q = (autotest_qdsync_s *) _context;
     unsigned int i;
     for (i=0; i<_buf_len; i++) {
-        if (q->count < q->seq_len) {
-            // preamble sequence
-        } else if (q->count < q->seq_len + q->buf_len) {
-            // payload
-            q->buf[q->count - q->seq_len] = _buf[i];
-        } if (q->count == q->seq_len + q->buf_len) {
-            // buffer full; reset synchronizer
-            return 1;
-        }
-        q->count++;
+        if (q->count == q->buf_len)
+            return 1; // buffer full; reset synchronizer
+
+        // save payload
+        q->buf[q->count++] = _buf[i];
     }
     return 0;
 }
@@ -62,8 +56,7 @@ void testbench_qdsync_linear(unsigned int _k,
                              float        _beta)
 {
     // options
-    unsigned int seq_len      =  240;   // number of sync symbols
-    unsigned int payload_len  =  800;   // number of payload symbols
+    unsigned int seq_len      = 1200;   // total number of sync symbols
     unsigned int k            =   _k;   // samples/symbol
     unsigned int m            =   _m;   // filter delay [symbols]
     float        beta         = _beta;  // excess bandwidth factor
@@ -71,24 +64,17 @@ void testbench_qdsync_linear(unsigned int _k,
     float        nstd         = 0.001f;
 
     // generate synchronization sequence (QPSK symbols)
-    float complex seq[seq_len];
+    float complex seq_tx[seq_len];  // transmitted
+    float complex seq_rx[seq_len];  // received with initial correction
     unsigned int i;
     for (i=0; i<seq_len ; i++) {
-        seq[i] = (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 +
-                 (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 * _Complex_I;
+        seq_tx[i] = (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 +
+                    (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 * _Complex_I;
     }
 
-    // payload symbols
-    float complex payload_tx[payload_len];  // transmitted
-    float complex payload_rx[payload_len];  // received with initial correction
-    for (i=0; i<payload_len ; i++) {
-        payload_tx[i] = (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 +
-                        (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 * _Complex_I;
-    }
-
-    // create sync object
-    autotest_qdsync_s obj = {.seq_len=seq_len, .buf=payload_rx, .buf_len=payload_len, .count=0};
-    qdsync_cccf q = qdsync_cccf_create_linear(seq, seq_len, ftype, k, m, beta,
+    // create sync object, only using first few symbols
+    autotest_qdsync_s obj = {.buf=seq_rx, .buf_len=seq_len, .count=0};
+    qdsync_cccf q = qdsync_cccf_create_linear(seq_tx, 240, ftype, k, m, beta,
             autotest_qdsync_callback, (void*)&obj);
     qdsync_cccf_set_range(q, 0.001f);
 
@@ -101,14 +87,9 @@ void testbench_qdsync_linear(unsigned int _k,
 
     // run signal through sync object
     float complex buf[k];
-    for (i=0; i<4*seq_len + payload_len + 2*m + 50; i++) {
-        // produce symbol (preamble sequence, payload, or zero)
-        float complex s = 0;
-        if (i < seq_len) {
-            s = seq[i];
-        } else if (i < seq_len + payload_len) {
-            s = payload_tx[i - seq_len];
-        }
+    for (i=0; i<4*seq_len + 2*m + 50; i++) {
+        // produce symbol (preamble sequence or zero)
+        float complex s = (i < seq_len) ? seq_tx[i] : 0;
 
         // interpolate symbol
         firinterp_crcf_execute(interp, s, buf);
@@ -130,11 +111,11 @@ void testbench_qdsync_linear(unsigned int _k,
     // compute error in terms of offset from unity; might be residual carrier phase/gain
     // TODO: perform residual carrier/phase error correction?
     float rmse = 0.0f;
-    for (i=0; i<payload_len; i++) {
-        float e = cabsf(payload_rx[i]) - 1.0f;
+    for (i=0; i<seq_len; i++) {
+        float e = cabsf(seq_rx[i]) - 1.0f;
         rmse += e*e;
     }
-    rmse = 10*log10f( rmse / (float)payload_len );
+    rmse = 10*log10f( rmse / (float)seq_len );
     if (liquid_autotest_verbose)
         printf("qdsync: dphi: %12.4e, phi: %12.8f, rmse: %12.3f\n", dphi_hat, phi_hat, rmse);
     CONTEND_LESS_THAN( rmse,           -30.0f )
@@ -146,15 +127,18 @@ void testbench_qdsync_linear(unsigned int _k,
     firinterp_crcf_destroy(interp);
     fdelay_crcf_destroy(delay);
 #if 0
-    FILE * fid = fopen("qdsync_cccf_autotest.m","w");
+    FILE * fid = fopen("autotest/logs/qdsync_cccf_autotest.m","w");
     fprintf(fid,"clear all; close all;\n");
-    for (i=0; i<payload_len; i++) {
+    for (i=0; i<seq_len; i++) {
         fprintf(fid,"s(%4u)=%12.4e+%12.4ej; r(%4u)=%12.4e+%12.4ej;\n",
-            i+1, crealf(payload_tx[i]), cimagf(payload_tx[i]),
-            i+1, crealf(payload_rx[i]), cimagf(payload_rx[i]));
+            i+1, crealf(seq_tx[i]), cimagf(seq_tx[i]),
+            i+1, crealf(seq_rx[i]), cimagf(seq_rx[i]));
     }
-    fprintf(fid,"plot(r,'.','MarkerSize',6); grid on; axis square;\n");
-    fprintf(fid,"axis([-1 1 -1 1]*1.5); xlabel('I'); ylabel('Q');\n");
+    fprintf(fid,"figure('color','white','position',[100 100 800 400]);\n");
+    fprintf(fid,"subplot(1,2,1), plot(s,'.','MarkerSize',6); grid on; axis square;\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.5); xlabel('I'); ylabel('Q'); title('tx');\n");
+    fprintf(fid,"subplot(1,2,2), plot(r,'.','MarkerSize',6); grid on; axis square;\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.5); xlabel('I'); ylabel('Q'); title('rx');\n");
     fclose(fid);
 #endif
 }
