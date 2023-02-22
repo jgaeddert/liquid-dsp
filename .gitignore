@@ -1,5 +1,27 @@
+# common build directories
+build*/
+
+# CMake local configuration files
+CMakeUserPresets.json
+
+# CMake build system auto-generated files and directories
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+# CMake ExternalProject prefix directory for cpu_features dependency
+cpu_features-prefix
+
 # ignore all object files
 *.a
+*.a.*
 *.ar
 *.d
 *.dylib
@@ -8,6 +30,7 @@
 *.gcno
 *.o
 *.so
+*.so.*
 
 # ignore swap files for vim editing
 *.swp
@@ -49,3 +72,7 @@ src/utility/gentab/count_ones.c
 sandbox/*_test
 sandbox/*_example
 sandbox/*_gentab
+
+# doc-check
+readme.*.example
+readme.*.example.*
