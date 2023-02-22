@@ -654,6 +654,7 @@ framing_objects :=						\
 	src/framing/src/symstreamrcf.o				\
 	src/framing/src/symtrack_cccf.o				\
 	src/framing/src/qdetector_cccf.o			\
+	src/framing/src/qdsync_cccf.o				\
 	src/framing/src/qpacketmodem.o				\
 	src/framing/src/qpilotgen.o				\
 	src/framing/src/qpilotsync.o				\
@@ -698,6 +699,7 @@ framing_autotests :=						\
 	src/framing/tests/ofdmflexframe_autotest.c		\
 	src/framing/tests/qdetector_cccf_autotest.c		\
 	src/framing/tests/qdetector_cccf_copy_autotest.c	\
+	src/framing/tests/qdsync_cccf_autotest.c		\
 	src/framing/tests/qpacketmodem_autotest.c		\
 	src/framing/tests/qpilotsync_autotest.c			\
 	src/framing/tests/qsource_autotest.c			\
@@ -1626,6 +1628,7 @@ example_programs :=						\
 	examples/polyfit_lagrange_example			\
 	examples/poly_findroots_example				\
 	examples/qdetector_cccf_example				\
+	examples/qdsync_cccf_example				\
 	examples/qpacketmodem_performance_example		\
 	examples/qpacketmodem_example				\
 	examples/qpilotsync_example				\
