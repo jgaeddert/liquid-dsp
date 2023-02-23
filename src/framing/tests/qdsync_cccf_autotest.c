@@ -151,6 +151,63 @@ void autotest_qdsync_k2() { testbench_qdsync_linear(2, 7, 0.3f); }
 void autotest_qdsync_k3() { testbench_qdsync_linear(3, 7, 0.3f); }
 void autotest_qdsync_k4() { testbench_qdsync_linear(4, 7, 0.3f); }
 
+// test different configurations
+void autotest_qdsync_config()
+{
+    // options
+    unsigned int seq_len      = 2400;   // total number of sync symbols
+    unsigned int k            =    2;   // samples/symbol
+    unsigned int m            =   12;   // filter delay [symbols]
+    float        beta         = 0.3f;   // excess bandwidth factor
+    int          ftype        = LIQUID_FIRFILT_ARKAISER;
+
+    // generate synchronization sequence (QPSK symbols)
+    float complex seq_tx[seq_len];  // transmitted
+    float complex seq_rx[seq_len];  // received with initial correction
+    unsigned int i;
+    for (i=0; i<seq_len ; i++)
+        seq_tx[i] = cexpf(_Complex_I*2*M_PI*randf());
+
+    // create sync object, only using first few symbols
+    autotest_qdsync_s obj = {.id=0, .buf=seq_rx, .buf_len=seq_len, .count=0};
+    qdsync_cccf q = qdsync_cccf_create_linear(seq_tx, 120, ftype, k, m, beta,
+            autotest_qdsync_callback, (void*)&obj);
+    qdsync_cccf_set_range(q, 0.001f);
+
+    // create interpolator
+    firinterp_crcf interp = firinterp_crcf_create_prototype(ftype,k,m,beta,0);
+
+    // run signal through sync object
+    float complex buf[k];
+    for (i=0; i<seq_len + 20*m + 200; i++) {
+        // interpolate symbol
+        firinterp_crcf_execute(interp, (i < seq_len) ? seq_tx[i] : 0, buf);
+
+        // run through synchronizer
+        qdsync_cccf_execute(q, buf, k);
+
+        // periodically increase buffer length
+        if ( (i % 7)==0 )
+            qdsync_cccf_set_buf_len(q, 13 + 17*(i % 11));
+    }
+
+    // compute error in terms of offset from unity; might be residual carrier phase/gain
+    // TODO: perform residual carrier/phase error correction?
+    float rmse = 0.0f;
+    for (i=0; i<seq_len; i++) {
+        float e = cabsf(seq_rx[i]) - 1.0f;
+        rmse += e*e;
+    }
+    rmse = 10*log10f( rmse / (float)seq_len );
+    if (liquid_autotest_verbose)
+        printf("qdsync: rmse: %12.3f\n", rmse);
+    CONTEND_LESS_THAN( rmse, -30.0f )
+
+    // clean up objects
+    qdsync_cccf_destroy(q);
+    firinterp_crcf_destroy(interp);
+}
+
 // test copying from one object to another
 void autotest_qdsync_cccf_copy()
 {
