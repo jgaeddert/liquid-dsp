@@ -1012,6 +1012,7 @@ $(optim_objects) : %.o : %.c $(include_headers)
 
 # autotests
 optim_autotests :=						\
+	src/optim/tests/gasearch_autotest.c			\
 	src/optim/tests/gradsearch_autotest.c			\
 	src/optim/tests/qs1dsearch_autotest.c			\
 
