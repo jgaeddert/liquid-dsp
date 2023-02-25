@@ -59,5 +59,30 @@ void autotest_qnsearch_rosenbrock()
 
     // test value of utility (should be nearly 0)
     CONTEND_DELTA( liquid_rosenbrock(NULL, v_opt, num_parameters), 0.0f, tol );
+    CONTEND_LESS_THAN( u_opt, tol );
+}
+
+// test configuration
+void autotest_qnsearch_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping qnsearch config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+
+    // test configurations
+    float v[8] = {0,0,0,0,0,0,0,0};
+    CONTEND_ISNULL(qnsearch_create(NULL, v, 0, liquid_rosenbrock, LIQUID_OPTIM_MINIMIZE)) // no parameters
+    CONTEND_ISNULL(qnsearch_create(NULL, v, 8,              NULL, LIQUID_OPTIM_MINIMIZE)) // utility is null
+
+    // create proper object and test configurations
+    qnsearch q = qnsearch_create(NULL, v, 8, liquid_rosenbrock, LIQUID_OPTIM_MINIMIZE);
+    CONTEND_EQUALITY(LIQUID_OK, qnsearch_print(q))
+
+    // destroy objects
+    qnsearch_destroy(q);
 }
 
