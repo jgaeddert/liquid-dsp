@@ -63,9 +63,7 @@ gasearch gasearch_create_advanced(gasearch_utility _utility,
                                   unsigned int     _population_size,
                                   float            _mutation_rate)
 {
-    gasearch ga;
-    ga = (gasearch) malloc( sizeof(struct gasearch_s) );
-
+    // validate input
     if (_utility == NULL)
         return liquid_error_config("gasearch_create(), utility function cannot be NULL")
     if (_parent == NULL)
@@ -77,7 +75,8 @@ gasearch gasearch_create_advanced(gasearch_utility _utility,
     if (_mutation_rate < 0.0f || _mutation_rate > 1.0f)
         return liquid_error_config("gasearch_create(), mutation rate must be in [0,1]");
 
-    // initialize public values
+    // create object and initialize values
+    gasearch ga = (gasearch) malloc( sizeof(struct gasearch_s) );
     ga->userdata        = _userdata;
     ga->num_parameters  = _parent->num_traits;
     ga->population_size = _population_size;
