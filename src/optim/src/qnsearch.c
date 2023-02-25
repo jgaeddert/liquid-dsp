@@ -192,9 +192,9 @@ int qnsearch_step(qnsearch _q)
     return LIQUID_OK;
 }
 
-float qnsearch_run(qnsearch _q,
-                   unsigned int _max_iterations,
-                   float _target_utility)
+float qnsearch_execute(qnsearch _q,
+                       unsigned int _max_iterations,
+                       float _target_utility)
 {
     unsigned int i=0;
     do {
