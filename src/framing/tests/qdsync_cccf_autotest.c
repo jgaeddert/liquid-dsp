@@ -65,6 +65,7 @@ void testbench_qdsync_linear(unsigned int _k,
     float        beta         = _beta;  // excess bandwidth factor
     int          ftype        = LIQUID_FIRFILT_ARKAISER;
     float        nstd         = 0.001f;
+    float        tau          = 0.400f; // fractional sample timing offset
 
     // generate synchronization sequence (QPSK symbols)
     float complex seq_tx[seq_len];  // transmitted
@@ -86,7 +87,7 @@ void testbench_qdsync_linear(unsigned int _k,
 
     // create delay object
     fdelay_crcf delay = fdelay_crcf_create_default(100);
-    fdelay_crcf_set_delay(delay, 10*k - 0.4);
+    fdelay_crcf_set_delay(delay, 10*k + tau);
 
     // run signal through sync object
     float complex buf[k];
@@ -108,8 +109,11 @@ void testbench_qdsync_linear(unsigned int _k,
         // run through synchronizer
         qdsync_cccf_execute(q, buf, k);
     }
-    float dphi_hat = qdsync_cccf_get_dphi(q);
-    float phi_hat  = qdsync_cccf_get_phi(q);
+    float rxy_hat  = qdsync_cccf_get_rxy  (q);
+    float tau_hat  = qdsync_cccf_get_tau  (q);
+    float gamma_hat= qdsync_cccf_get_gamma(q);
+    float dphi_hat = qdsync_cccf_get_dphi (q);
+    float phi_hat  = qdsync_cccf_get_phi  (q);
 
     // compute error in terms of offset from unity; might be residual carrier phase/gain
     // TODO: perform residual carrier/phase error correction?
@@ -119,11 +123,16 @@ void testbench_qdsync_linear(unsigned int _k,
         rmse += e*e;
     }
     rmse = 10*log10f( rmse / (float)seq_len );
-    if (liquid_autotest_verbose)
-        printf("qdsync: dphi: %12.4e, phi: %12.8f, rmse: %12.3f\n", dphi_hat, phi_hat, rmse);
-    CONTEND_LESS_THAN( rmse,           -30.0f )
-    CONTEND_LESS_THAN( fabsf(dphi_hat), 1e-3f )
-    CONTEND_LESS_THAN( fabsf( phi_hat), 0.4f  )
+    if (liquid_autotest_verbose) {
+        printf("qdsync: rxy:%5.3f, tau:%5.2f, gamma:%5.3f, dphi:%12.4e, phi:%8.5f, rmse:%5.2f\n",
+                rxy_hat, tau_hat, gamma_hat, dphi_hat, phi_hat, rmse);
+    }
+    CONTEND_LESS_THAN   ( rmse,              -30.0f )
+    CONTEND_GREATER_THAN( rxy_hat,            0.75f )
+    CONTEND_LESS_THAN   ( fabsf(tau_hat-tau), 0.10f )
+    CONTEND_GREATER_THAN( gamma_hat,          0.75f )
+    CONTEND_LESS_THAN   ( fabsf(dphi_hat),    1e-3f )
+    CONTEND_LESS_THAN   ( fabsf( phi_hat),    0.4f  )
 
     // clean up objects
     qdsync_cccf_destroy(q);
@@ -147,9 +156,9 @@ void testbench_qdsync_linear(unsigned int _k,
 }
 
 // test specific configurations
-void autotest_qdsync_k2() { testbench_qdsync_linear(2, 7, 0.3f); }
-void autotest_qdsync_k3() { testbench_qdsync_linear(3, 7, 0.3f); }
-void autotest_qdsync_k4() { testbench_qdsync_linear(4, 7, 0.3f); }
+void autotest_qdsync_cccf_k2() { testbench_qdsync_linear(2, 7, 0.3f); }
+void autotest_qdsync_cccf_k3() { testbench_qdsync_linear(3, 7, 0.3f); }
+void autotest_qdsync_cccf_k4() { testbench_qdsync_linear(4, 7, 0.3f); }
 
 // test setting buffer length ot different sizes throughout run
 void autotest_qdsync_set_buf_len()
@@ -289,5 +298,40 @@ void autotest_qdsync_cccf_copy()
     // destroy objects
     qdsync_cccf_destroy(q_orig);
     qdsync_cccf_destroy(q_copy);
+}
+
+void autotest_qdsync_cccf_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping qdsync_cccf config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check invalid function calls
+    CONTEND_ISNULL(qdsync_cccf_copy(NULL));
+    CONTEND_ISNULL(qdsync_cccf_create_linear(NULL,0,LIQUID_FIRFILT_ARKAISER,4,12,0.25f,NULL,NULL));
+
+    // create proper object and test configurations
+    float complex seq[] = {+1,-1,+1,-1,-1,+1,-1,+1,-1,+1,-1,+1,+1,+1,-1,+1,-1,-1,-1,-1,};
+    qdsync_cccf q = qdsync_cccf_create_linear(seq,20,LIQUID_FIRFILT_ARKAISER,4,12,0.25f,NULL,NULL);
+
+    CONTEND_EQUALITY(LIQUID_OK, qdsync_cccf_print(q))
+    CONTEND_EQUALITY(LIQUID_OK, qdsync_cccf_set_callback(q,autotest_qdsync_callback))
+    CONTEND_EQUALITY(LIQUID_OK, qdsync_cccf_set_context(q,NULL))
+
+    // set/get threshold
+    CONTEND_EQUALITY(LIQUID_OK, qdsync_cccf_set_threshold(q,0.654321f))
+    CONTEND_EQUALITY(0.654321f, qdsync_cccf_get_threshold(q))
+
+    // set invalid buffer length
+    CONTEND_INEQUALITY(LIQUID_OK, qdsync_cccf_set_buf_len(q,0))
+
+    // query properties
+    CONTEND_EQUALITY(0, qdsync_cccf_is_open(q))
+
+    // destroy object
+    qdsync_cccf_destroy(q);
 }
 
