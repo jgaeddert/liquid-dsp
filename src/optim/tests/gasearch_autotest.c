@@ -120,13 +120,18 @@ void autotest_chromosome_config()
 
     // create prototype chromosome using more specific method
     prototype = chromosome_create(bits_per_trait_valid, 8);
-    CONTEND_EQUALITY(LIQUID_OK, chromosome_print(prototype))
+    CONTEND_EQUALITY  (LIQUID_OK, chromosome_print    (prototype))
+    CONTEND_EQUALITY  (LIQUID_OK, chromosome_reset    (prototype))
 
     // test initialization
     unsigned int values_invalid[] = {999,12,11,13,63,17, 3,123456789}; // invalid because first trait is only 6 bits
     unsigned int values_valid  [] = {  0,12,11,13,63,17, 3,123456789};
     CONTEND_INEQUALITY(LIQUID_OK, chromosome_init (prototype, values_invalid))
     CONTEND_EQUALITY  (LIQUID_OK, chromosome_init (prototype, values_valid  ))
+    CONTEND_EQUALITY  (        0, chromosome_value    (prototype,999))
+    CONTEND_EQUALITY  (     0.0f, chromosome_valuef   (prototype,999))
+    CONTEND_INEQUALITY(LIQUID_OK, chromosome_mutate   (prototype,999))
+    CONTEND_INEQUALITY(LIQUID_OK, chromosome_crossover(prototype,prototype,prototype,999))
 
     // check individual values
     CONTEND_EQUALITY( chromosome_value(prototype, 0),         0)
