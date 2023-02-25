@@ -151,7 +151,7 @@ void autotest_qdsync_k3() { testbench_qdsync_linear(3, 7, 0.3f); }
 void autotest_qdsync_k4() { testbench_qdsync_linear(4, 7, 0.3f); }
 
 // test setting buffer length ot different sizes throughout run
-void xautotest_qdsync_set_buf_len()
+void autotest_qdsync_set_buf_len()
 {
     // options
     unsigned int seq_len      = 2400;   // total number of sync symbols
