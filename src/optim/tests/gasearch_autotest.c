@@ -82,7 +82,7 @@ void autotest_gasearch_peak()
         chromosome_printf(prototype);
     }
 
-    // destroy gradient descent search object
+    // destroy search object
     chromosome_destroy(prototype);
     gasearch_destroy(ga);
 
@@ -92,5 +92,108 @@ void autotest_gasearch_peak()
 
     // test value of utility (should be nearly 1)
     CONTEND_GREATER_THAN( optimum_utility, 0.70f )
+}
+
+// test chromosome configuration
+void autotest_chromosome_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping chromosome config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // test chromosome
+    unsigned int bits_per_trait_invalid[8] = {6,6,6,6,6,6,6,1000};
+    unsigned int bits_per_trait_valid  [8] = {6,6,6,6,6,6,6,  32};
+    CONTEND_ISNULL(chromosome_create(bits_per_trait_invalid, 8))
+    CONTEND_ISNULL(chromosome_create(bits_per_trait_valid,   0))
+    CONTEND_ISNULL(chromosome_create_basic(0, 12)) // too few traits
+    CONTEND_ISNULL(chromosome_create_basic(8,  0)) // bits per trait too small
+    CONTEND_ISNULL(chromosome_create_basic(8, 99)) // bits per trait too large
+
+    // create prototype chromosome using basic method
+    chromosome prototype = chromosome_create_basic(20, 5);
+    CONTEND_EQUALITY(LIQUID_OK, chromosome_print(prototype))
+    chromosome_destroy(prototype);
+
+    // create prototype chromosome using more specific method
+    prototype = chromosome_create(bits_per_trait_valid, 8);
+    CONTEND_EQUALITY(LIQUID_OK, chromosome_print(prototype))
+
+    // test initialization
+    unsigned int values_invalid[] = {999,12,11,13,63,17, 3,123456789}; // invalid because first trait is only 6 bits
+    unsigned int values_valid  [] = {  0,12,11,13,63,17, 3,123456789};
+    CONTEND_INEQUALITY(LIQUID_OK, chromosome_init (prototype, values_invalid))
+    CONTEND_EQUALITY  (LIQUID_OK, chromosome_init (prototype, values_valid  ))
+
+    // check individual values
+    CONTEND_EQUALITY( chromosome_value(prototype, 0),         0)
+    CONTEND_EQUALITY( chromosome_value(prototype, 1),        12)
+    CONTEND_EQUALITY( chromosome_value(prototype, 2),        11)
+    CONTEND_EQUALITY( chromosome_value(prototype, 3),        13)
+    CONTEND_EQUALITY( chromosome_value(prototype, 4),        63)
+    CONTEND_EQUALITY( chromosome_value(prototype, 5),        17)
+    CONTEND_EQUALITY( chromosome_value(prototype, 6),         3)
+    CONTEND_EQUALITY( chromosome_value(prototype, 7), 123456789)
+
+    // test initialization (float values)
+    float valuesf_invalid[] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,999,};
+    float valuesf_valid  [] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,};
+    CONTEND_INEQUALITY(LIQUID_OK, chromosome_initf(prototype, valuesf_invalid))
+    CONTEND_EQUALITY  (LIQUID_OK, chromosome_initf(prototype, valuesf_valid  ))
+
+    // check individual values
+    CONTEND_DELTA( chromosome_valuef(prototype, 0), 0.0f, 0.02f )
+    CONTEND_DELTA( chromosome_valuef(prototype, 1), 0.1f, 0.02f )
+    CONTEND_DELTA( chromosome_valuef(prototype, 2), 0.2f, 0.02f )
+    CONTEND_DELTA( chromosome_valuef(prototype, 3), 0.3f, 0.02f )
+    CONTEND_DELTA( chromosome_valuef(prototype, 4), 0.4f, 0.02f )
+    CONTEND_DELTA( chromosome_valuef(prototype, 5), 0.5f, 0.02f )
+    CONTEND_DELTA( chromosome_valuef(prototype, 6), 0.6f, 0.02f )
+    CONTEND_DELTA( chromosome_valuef(prototype, 7), 0.7f, 0.02f )
+
+    // destroy objects
+    chromosome_destroy(prototype);
+}
+
+// test configuration
+void autotest_gasearch_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping gasearch config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // create prototype chromosome
+    chromosome prototype = chromosome_create_basic(8, 12);
+
+    // check invalid function calls
+    CONTEND_ISNULL(gasearch_create_advanced(                           NULL, NULL, prototype, LIQUID_OPTIM_MAXIMIZE, 16, 0.1f)) // bad utility function
+    CONTEND_ISNULL(gasearch_create_advanced(gasearch_autotest_peak_callback, NULL,      NULL, LIQUID_OPTIM_MAXIMIZE,  0, 0.1f)) // bad parent chromosome
+    CONTEND_ISNULL(gasearch_create_advanced(gasearch_autotest_peak_callback, NULL, prototype, LIQUID_OPTIM_MAXIMIZE,  0, 0.1f)) // bad population size
+    CONTEND_ISNULL(gasearch_create_advanced(gasearch_autotest_peak_callback, NULL, prototype, LIQUID_OPTIM_MAXIMIZE, -1, 0.1f)) // bad population size
+    CONTEND_ISNULL(gasearch_create_advanced(gasearch_autotest_peak_callback, NULL, prototype, LIQUID_OPTIM_MAXIMIZE, 16,-1.0f)) // bad mutation rate
+
+    // create proper object and test configurations
+    gasearch ga = gasearch_create(gasearch_autotest_peak_callback, NULL, prototype, LIQUID_OPTIM_MAXIMIZE);
+    CONTEND_EQUALITY(LIQUID_OK, gasearch_print(ga))
+
+    // test configurations
+    CONTEND_INEQUALITY(LIQUID_OK, gasearch_set_population_size(ga, 0, 8)) // population size too small
+    CONTEND_INEQUALITY(LIQUID_OK, gasearch_set_population_size(ga,-1, 8)) // population size too large
+    CONTEND_INEQUALITY(LIQUID_OK, gasearch_set_population_size(ga,24, 0)) // selection size too small
+    CONTEND_INEQUALITY(LIQUID_OK, gasearch_set_population_size(ga,24,24)) // selection size too large
+    CONTEND_EQUALITY  (LIQUID_OK, gasearch_set_population_size(ga,24,12)) // ok
+    CONTEND_INEQUALITY(LIQUID_OK, gasearch_set_mutation_rate  (ga,-1.0f)) // mutation rate out of range
+    CONTEND_INEQUALITY(LIQUID_OK, gasearch_set_mutation_rate  (ga, 2.0f)) // mutation rate out of range
+    CONTEND_EQUALITY  (LIQUID_OK, gasearch_set_mutation_rate  (ga, 0.1f)) // ok
+
+    // destroy objects
+    chromosome_destroy(prototype);
+    gasearch_destroy(ga);
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,8 +66,14 @@ gasearch gasearch_create_advanced(gasearch_utility _utility,
     gasearch ga;
     ga = (gasearch) malloc( sizeof(struct gasearch_s) );
 
+    if (_utility == NULL)
+        return liquid_error_config("gasearch_create(), utility function cannot be NULL")
+    if (_parent == NULL)
+        return liquid_error_config("gasearch_create(), parent cannot be NULL")
+    if (_population_size < 2)
+        return liquid_error_config("gasearch_create(), population size exceeds minimum");
     if (_population_size > LIQUID_GA_SEARCH_MAX_POPULATION_SIZE)
-        return liquid_error_config("gasearch_create(), population size exceeds maximum");
+        return liquid_error_config("gasearch_create(), population size exceeds maximum (%u)",LIQUID_GA_SEARCH_MAX_POPULATION_SIZE);
     if (_mutation_rate < 0.0f || _mutation_rate > 1.0f)
         return liquid_error_config("gasearch_create(), mutation rate must be in [0,1]");
 
@@ -162,6 +168,8 @@ int gasearch_set_population_size(gasearch     _g,
     // validate input
     if (_population_size < 2)
         return liquid_error(LIQUID_EICONFIG,"gasearch_set_population_size(), population must be at least 2");
+    if (_population_size > LIQUID_GA_SEARCH_MAX_POPULATION_SIZE)
+        return liquid_error(LIQUID_EICONFIG,"gasearch_set_population_size(), population exceeds maximum (%u)",LIQUID_GA_SEARCH_MAX_POPULATION_SIZE);
     if (_selection_size == 0)
         return liquid_error(LIQUID_EICONFIG,"gasearch_set_population_size(), selection size must be greater than zero");
     if (_selection_size >= _population_size)
