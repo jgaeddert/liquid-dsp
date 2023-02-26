@@ -694,6 +694,7 @@ framing_autotests :=						\
 	src/framing/tests/dsssframesync_autotest.c		\
 	src/framing/tests/flexframesync_autotest.c		\
 	src/framing/tests/framesync64_autotest.c		\
+	src/framing/tests/fskframesync_autotest.c		\
 	src/framing/tests/gmskframe_autotest.c			\
 	src/framing/tests/msource_autotest.c			\
 	src/framing/tests/ofdmflexframe_autotest.c		\

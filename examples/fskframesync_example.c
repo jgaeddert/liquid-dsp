@@ -1,13 +1,8 @@
-//
-// fskframesync_example.c
-//
 // This example demonstrates the interfaces to the fskframegen and
 // fskframesync objects used to completely encapsulate data for
 // over-the-air transmission.
 //
 // SEE ALSO: flexframesync_example.c
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
