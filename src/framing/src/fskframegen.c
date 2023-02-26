@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -321,7 +321,7 @@ int fskframegen_assemble(fskframegen     _q,
 
     // encode payload symbols
     qpacketmodem_encode_syms(_q->payload_encoder, _payload, _q->payload_sym);
-#if 1
+#if 0
     printf("tx payload symbols (%u)\n", _q->payload_sym_len);
     unsigned int i;
     for (i=0; i<_q->payload_sym_len; i++)
@@ -404,7 +404,7 @@ int fskframegen_encode_header(fskframegen     _q,
     // run packet encoder, encoding into symbols
     qpacketmodem_encode_syms(_q->header_encoder, _q->header_dec, _q->header_sym);
 
-#if 1
+#if 0
     printf("tx header symbols (%u):\n", _q->header_sym_len);
     unsigned int i;
     for (i=0; i<_q->header_sym_len; i++)
