@@ -1016,6 +1016,7 @@ optim_autotests :=						\
 	src/optim/tests/gradsearch_autotest.c			\
 	src/optim/tests/qnsearch_autotest.c			\
 	src/optim/tests/qs1dsearch_autotest.c			\
+	src/optim/tests/utility_autotest.c			\
 
 # benchmarks
 optim_benchmarks :=
