@@ -129,7 +129,13 @@ void autotest_qs1dsearch_config()
     qs1dsearch_init(q, 20);
 
     CONTEND_EQUALITY(LIQUID_OK, qs1dsearch_execute(q))
-    CONTEND_EQUALITY(        0, qs1dsearch_get_num_steps(q))
+
+    // run a few steps
+    CONTEND_EQUALITY( 0, qs1dsearch_get_num_steps(q))
+    qs1dsearch_step(q);
+    qs1dsearch_step(q);
+    qs1dsearch_step(q);
+    CONTEND_EQUALITY( 3, qs1dsearch_get_num_steps(q))
 
     // destroy objects
     qs1dsearch_destroy(q);
