@@ -90,10 +90,34 @@ void autotest_ofdmflexframe_07() { testbench_ofdmflexframe(1200, 40, 20,    1, L
 void autotest_ofdmflexframe_08() { testbench_ofdmflexframe(1200,  0,  0,  800, LIQUID_MODEM_QPSK); }
 void autotest_ofdmflexframe_09() { testbench_ofdmflexframe(1200, 40, 20, 8217, LIQUID_MODEM_QPSK); }
 
-void autotest_ofdmflexframe_config()
+void autotest_ofdmflexframegen_config()
 {
 #if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping ofdmflexframe config test with strict exit enabled\n");
+    AUTOTEST_WARN("skipping ofdmflexframegen config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check invalid function calls
+    //CONTEND_ISNULL(ofdmflexframegen_copy(NULL));
+    CONTEND_ISNULL(ofdmflexframegen_create( 0, 16, 4, NULL, NULL)) // too few subcarriers
+    CONTEND_ISNULL(ofdmflexframegen_create( 7, 16, 4, NULL, NULL)) // too few subcarriers
+    CONTEND_ISNULL(ofdmflexframegen_create(65, 16, 4, NULL, NULL)) // odd-length subcarriers
+    CONTEND_ISNULL(ofdmflexframegen_create(64, 66, 4, NULL, NULL)) // cyclic prefix length too large
+
+    // create proper object and test configurations
+    ofdmflexframegen q = ofdmflexframegen_create(64, 16, 4, NULL, NULL);
+
+    CONTEND_EQUALITY(LIQUID_OK, ofdmflexframegen_print(q))
+
+    ofdmflexframegen_destroy(q);
+}
+
+void autotest_ofdmflexframesync_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping ofdmflexframesync config test with strict exit enabled\n");
     return;
 #endif
 #if !LIQUID_SUPPRESS_ERROR_OUTPUT
