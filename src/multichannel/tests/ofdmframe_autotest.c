@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,8 @@ int ofdmframesync_autotest_callback(float complex * _X,
                                     unsigned int    _M,
                                     void * _userdata)
 {
-    printf("******** callback invoked!\n");
+    if (liquid_autotest_verbose)
+        printf("******** callback invoked!\n");
 
     // type cast _userdata as complex float array
     float complex * X = (float complex *)_userdata;
@@ -142,4 +143,52 @@ void autotest_ofdmframesync_acquire_n64()   { ofdmframesync_acquire_test(64,  8,
 void autotest_ofdmframesync_acquire_n128()  { ofdmframesync_acquire_test(128, 16, 0); }
 void autotest_ofdmframesync_acquire_n256()  { ofdmframesync_acquire_test(256, 32, 0); }
 void autotest_ofdmframesync_acquire_n512()  { ofdmframesync_acquire_test(512, 64, 0); }
+
+void autotest_ofdmframegen_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping ofdmframegen config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check invalid function calls
+    //CONTEND_ISNULL(ofdmframegen_copy(NULL));
+    CONTEND_ISNULL(ofdmframegen_create( 0, 16, 4, NULL)) // too few subcarriers
+    CONTEND_ISNULL(ofdmframegen_create( 7, 16, 4, NULL)) // too few subcarriers
+    CONTEND_ISNULL(ofdmframegen_create(65, 16, 4, NULL)) // odd-length subcarriers
+    CONTEND_ISNULL(ofdmframegen_create(64, 66, 4, NULL)) // cyclic prefix length too large
+
+    // create proper object and test configurations
+    ofdmframegen q = ofdmframegen_create(64, 16, 4, NULL);
+
+    CONTEND_EQUALITY(LIQUID_OK, ofdmframegen_print(q))
+
+    ofdmframegen_destroy(q);
+}
+
+void autotest_ofdmframesync_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping ofdmframesync config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check invalid function calls
+    //CONTEND_ISNULL(ofdmframesync_copy(NULL));
+    CONTEND_ISNULL(ofdmframesync_create( 0, 16, 4, NULL, NULL, NULL)) // too few subcarriers
+    CONTEND_ISNULL(ofdmframesync_create( 7, 16, 4, NULL, NULL, NULL)) // too few subcarriers
+    CONTEND_ISNULL(ofdmframesync_create(65, 16, 4, NULL, NULL, NULL)) // odd-length subcarriers
+    CONTEND_ISNULL(ofdmframesync_create(64, 66, 4, NULL, NULL, NULL)) // cyclic prefix length too large
+
+    // create proper object and test configurations
+    ofdmframesync q = ofdmframesync_create(64, 16, 4, NULL, NULL, NULL);
+
+    CONTEND_EQUALITY(LIQUID_OK, ofdmframesync_print(q))
+
+    ofdmframesync_destroy(q);
+}
 

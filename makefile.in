@@ -949,7 +949,7 @@ multichannel_autotests :=					\
 	src/multichannel/tests/firpfbch2_crcf_autotest.c	\
 	src/multichannel/tests/firpfbch_crcf_synthesizer_autotest.c	\
 	src/multichannel/tests/firpfbch_crcf_analyzer_autotest.c	\
-	src/multichannel/tests/ofdmframesync_autotest.c		\
+	src/multichannel/tests/ofdmframe_autotest.c		\
 
 # benchmarks
 multichannel_benchmarks :=					\
