@@ -20,10 +20,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: codecov/codecov-action@v3
-      with:
-        fail_ci_if_error: true # optional (default = false)
-        verbose: true # optional (default = false)
 
     - name: Setup gcovr (Linux)
       if: runner.os == 'Linux'
@@ -50,6 +46,10 @@ jobs:
     - name: make coverage
       run: make -j 2 coverage
 
-    - name: upload report
-      run: codecov/codecov-action@v3
+    - name: upload coverage report
+      uses: codecov/codecov-action@v3
+      with:
+        fail_ci_if_error: true
+        verbose: true
+        files: coverage.out
 
