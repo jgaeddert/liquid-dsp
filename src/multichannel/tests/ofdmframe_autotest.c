@@ -159,6 +159,7 @@ void autotest_ofdmframegen_config()
     CONTEND_ISNULL(ofdmframegen_create( 7, 16, 4, NULL)) // too few subcarriers
     CONTEND_ISNULL(ofdmframegen_create(65, 16, 4, NULL)) // odd-length subcarriers
     CONTEND_ISNULL(ofdmframegen_create(64, 66, 4, NULL)) // cyclic prefix length too large
+    CONTEND_ISNULL(ofdmframegen_create(64, 16,24, NULL)) // taper length greater than cyclic prefix
 
     // create proper object and test configurations
     ofdmframegen q = ofdmframegen_create(64, 16, 4, NULL);
@@ -183,6 +184,7 @@ void autotest_ofdmframesync_config()
     CONTEND_ISNULL(ofdmframesync_create( 7, 16, 4, NULL, NULL, NULL)) // too few subcarriers
     CONTEND_ISNULL(ofdmframesync_create(65, 16, 4, NULL, NULL, NULL)) // odd-length subcarriers
     CONTEND_ISNULL(ofdmframesync_create(64, 66, 4, NULL, NULL, NULL)) // cyclic prefix length too large
+    CONTEND_ISNULL(ofdmframesync_create(64, 16,24, NULL, NULL, NULL)) // taper length greater than cyclic prefix
 
     // create proper object and test configurations
     ofdmframesync q = ofdmframesync_create(64, 16, 4, NULL, NULL, NULL);

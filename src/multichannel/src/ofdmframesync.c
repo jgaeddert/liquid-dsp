@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -149,11 +149,13 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
 
     // validate input
     if (_M < 8)
-        return liquid_error_config("ofdmframesync_create(), less than 8 subcarriers");
+        return liquid_error_config("ofdmframesync_create(), number of subcarriers must be at least 8");
     if (_M % 2)
         return liquid_error_config("ofdmframesync_create(), number of subcarriers must be even");
     if (_cp_len > _M)
         return liquid_error_config("ofdmframesync_create(), cyclic prefix length cannot exceed number of subcarriers");
+    if (_taper_len > _cp_len)
+        return liquid_error_config("ofdmframesync_create(), taper length cannot exceed cyclic prefix");
 
     q->M = _M;
     q->cp_len = _cp_len;
@@ -172,12 +174,6 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
     // validate and count subcarrier allocation
     if (ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data))
         return liquid_error_config("ofdmframesync_create(), invalid subcarrier allocation");
-    if ( (q->M_pilot + q->M_data) == 0)
-        return liquid_error_config("ofdmframesync_create(), must have at least one enabled subcarrier");
-    if (q->M_data == 0)
-        return liquid_error_config("ofdmframesync_create(), must have at least one data subcarriers");
-    if (q->M_pilot < 2)
-        return liquid_error_config("ofdmframesync_create(), must have at least two pilot subcarriers");
 
     // create transform object
     q->X = (float complex*) FFT_MALLOC((q->M)*sizeof(float complex));
