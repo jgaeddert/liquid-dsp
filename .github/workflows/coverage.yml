@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - master
+      - github-ci
 
 jobs:
   standard:
@@ -19,6 +20,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - uses: codecov/codecov-action@v3
+      with:
+        fail_ci_if_error: true # optional (default = false)
+        verbose: true # optional (default = false)
 
     - name: Setup gcovr (Linux)
       if: runner.os == 'Linux'
@@ -46,4 +51,5 @@ jobs:
       run: make -j 2 coverage
 
     - name: upload report
-      run: bash <(curl -s https://codecov.io/bash)
+      run: codecov/codecov-action@v3
+
