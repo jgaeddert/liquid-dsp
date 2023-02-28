@@ -1,7 +1,7 @@
 // 
 // cpfskmodem_example.c
 //
-// This example demostrates the continuous phase frequency-shift keying
+// This example demonstrates the continuous phase frequency-shift keying
 // (CP-FSK) modem in liquid. A message signal is modulated and the
 // resulting signal is recovered using a demodulator object.
 //

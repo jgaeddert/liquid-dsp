@@ -1,13 +1,9 @@
-//
-// smatrix_example.c
-//
-
+// test sparse matrix operations
 #include <stdlib.h>
 #include <stdio.h>
 #include <getopt.h>
 #include <math.h>
-
-#include "liquid.internal.h"
+#include "liquid.h"
 
 int main(int argc, char*argv[])
 {

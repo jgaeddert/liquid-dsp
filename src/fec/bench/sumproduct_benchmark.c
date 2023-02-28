@@ -143,7 +143,7 @@ void sumproduct_generate(unsigned int    _m,
         }
     }
 
-    // initialze matrices
+    // initialize matrices
     for (i=0; i<_m; i++) {
         for (j=0; j<_m; j++) {
             // G = [I(m) P]^T

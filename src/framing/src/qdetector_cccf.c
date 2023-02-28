@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// qdetector_cccf.c
-//
+// Frame detector
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -54,8 +52,8 @@ struct qdetector_cccf_s {
     float complex * buf_freq_1;     // frequence-domain buffer (IFFT)
     float complex * buf_time_1;     // time-domain buffer (IFFT)
     unsigned int    nfft;           // fft size
-    fftplan         fft;            // FFT object:  buf_time_0 > buf_freq_0
-    fftplan         ifft;           // IFFT object: buf_freq_1 > buf_freq_1
+    FFT_PLAN        fft;            // FFT object:  buf_time_0 > buf_freq_0
+    FFT_PLAN        ifft;           // IFFT object: buf_freq_1 > buf_freq_1
 
     unsigned int    counter;        // sample counter for determining when to compute FFTs
     float           threshold;      // detection threshold
@@ -100,19 +98,19 @@ qdetector_cccf qdetector_cccf_create(float complex * _s,
 
     // prepare transforms
     q->nfft       = 1 << liquid_nextpow2( (unsigned int)( 2 * q->s_len ) ); // NOTE: must be even
-    q->buf_time_0 = (float complex*) malloc(q->nfft * sizeof(float complex));
-    q->buf_freq_0 = (float complex*) malloc(q->nfft * sizeof(float complex));
-    q->buf_freq_1 = (float complex*) malloc(q->nfft * sizeof(float complex));
-    q->buf_time_1 = (float complex*) malloc(q->nfft * sizeof(float complex));
+    q->buf_time_0 = (float complex*) FFT_MALLOC(q->nfft * sizeof(float complex));
+    q->buf_freq_0 = (float complex*) FFT_MALLOC(q->nfft * sizeof(float complex));
+    q->buf_freq_1 = (float complex*) FFT_MALLOC(q->nfft * sizeof(float complex));
+    q->buf_time_1 = (float complex*) FFT_MALLOC(q->nfft * sizeof(float complex));
 
-    q->fft  = fft_create_plan(q->nfft, q->buf_time_0, q->buf_freq_0, LIQUID_FFT_FORWARD,  0);
-    q->ifft = fft_create_plan(q->nfft, q->buf_freq_1, q->buf_time_1, LIQUID_FFT_BACKWARD, 0);
+    q->fft  = FFT_CREATE_PLAN(q->nfft, q->buf_time_0, q->buf_freq_0, FFT_DIR_FORWARD,  0);
+    q->ifft = FFT_CREATE_PLAN(q->nfft, q->buf_freq_1, q->buf_time_1, FFT_DIR_BACKWARD, 0);
 
     // create frequency-domain template by taking nfft-point transform on 's', storing in 'S'
     q->S = (float complex*) malloc(q->nfft * sizeof(float complex));
     memset(q->buf_time_0, 0x00, q->nfft*sizeof(float complex));
     memmove(q->buf_time_0, q->s, q->s_len*sizeof(float complex));
-    fft_execute(q->fft);
+    FFT_EXECUTE(q->fft);
     memmove(q->S, q->buf_freq_0, q->nfft*sizeof(float complex));
 
     // reset state variables
@@ -270,19 +268,51 @@ qdetector_cccf qdetector_cccf_create_cpfsk(unsigned char * _sequence,
     return q;
 }
 
+// copy object
+qdetector_cccf qdetector_cccf_copy(qdetector_cccf q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("qdetector_%s_copy(), object cannot be NULL", "cccf");
+
+    // create new object from internal sequence
+    qdetector_cccf q_copy = qdetector_cccf_create(q_orig->s, q_orig->s_len);
+
+    // copy buffer contents
+    memmove(q_copy->buf_time_0, q_orig->buf_time_0, q_orig->nfft*sizeof(float complex));
+    memmove(q_copy->buf_freq_0, q_orig->buf_freq_0, q_orig->nfft*sizeof(float complex));
+    memmove(q_copy->buf_time_1, q_orig->buf_time_1, q_orig->nfft*sizeof(float complex));
+    memmove(q_copy->buf_freq_1, q_orig->buf_freq_1, q_orig->nfft*sizeof(float complex));
+
+    // copy internal state
+    q_copy->counter         = q_orig->counter;
+    q_copy->threshold       = q_orig->threshold;
+    q_copy->range           = q_orig->range;
+    q_copy->num_transforms  = q_orig->num_transforms;
+    // buffer power magnitude
+    q_copy->x2_sum_0        = q_orig->x2_sum_0;
+    q_copy->x2_sum_1        = q_orig->x2_sum_1;
+    // state variables
+    q_copy->state           = q_orig->state;
+    q_copy->frame_detected  = q_orig->frame_detected;
+
+    // return new object
+    return q_copy;
+}
+
 int qdetector_cccf_destroy(qdetector_cccf _q)
 {
     // free allocated arrays
-    free(_q->s         );
-    free(_q->S         );
-    free(_q->buf_time_0);
-    free(_q->buf_freq_0);
-    free(_q->buf_freq_1);
-    free(_q->buf_time_1);
+    free(_q->s);
+    free(_q->S);
+    FFT_FREE(_q->buf_time_0);
+    FFT_FREE(_q->buf_freq_0);
+    FFT_FREE(_q->buf_freq_1);
+    FFT_FREE(_q->buf_time_1);
 
     // destroy objects
-    fft_destroy_plan(_q->fft);
-    fft_destroy_plan(_q->ifft);
+    FFT_DESTROY_PLAN(_q->fft);
+    FFT_DESTROY_PLAN(_q->ifft);
 
     // free main object memory
     free(_q);
@@ -435,7 +465,7 @@ int qdetector_cccf_execute_seek(qdetector_cccf _q,
     _q->counter = _q->nfft/2;
 
     // run forward transform
-    fft_execute(_q->fft);
+    FFT_EXECUTE(_q->fft);
 
     // compute scaling factor (TODO: use median rather than mean signal level)
     float g0;
@@ -474,7 +504,7 @@ int qdetector_cccf_execute_seek(qdetector_cccf _q,
         }
 
         // run inverse transform
-        fft_execute(_q->ifft);
+        FFT_EXECUTE(_q->ifft);
         
         // scale output appropriately
         liquid_vectorcf_mulscalar(_q->buf_time_1, _q->nfft, g, _q->buf_time_1);
@@ -555,7 +585,7 @@ int qdetector_cccf_execute_align(qdetector_cccf _q,
     //printf("signal is aligned!\n");
 
     // estimate timing offset
-    fft_execute(_q->fft);
+    FFT_EXECUTE(_q->fft);
     // cross-multiply frequency-domain components, aligning appropriately with
     // estimated FFT offset index due to carrier frequency offset in received signal
     unsigned int i;
@@ -564,7 +594,7 @@ int qdetector_cccf_execute_align(qdetector_cccf _q,
         unsigned int j = (i + _q->nfft - _q->offset) % _q->nfft;
         _q->buf_freq_1[i] = _q->buf_freq_0[i] * conjf(_q->S[j]);
     }
-    fft_execute(_q->ifft);
+    FFT_EXECUTE(_q->ifft);
     // time aligned to index 0
     // NOTE: taking the sqrt removes bias in the timing estimate, but messes up gamma estimate
     float yneg = cabsf(_q->buf_time_1[_q->nfft-1]);  yneg = sqrtf(yneg);
@@ -586,7 +616,7 @@ int qdetector_cccf_execute_align(qdetector_cccf _q,
     // estimate carrier frequency offset
     for (i=0; i<_q->nfft; i++)
         _q->buf_time_0[i] *= i < _q->s_len ? conjf(_q->s[i]) : 0.0f;
-    fft_execute(_q->fft);
+    FFT_EXECUTE(_q->fft);
 #if DEBUG_QDETECTOR
     // debug output
     char filename[64];

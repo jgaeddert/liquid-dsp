@@ -112,29 +112,29 @@ int liquid_unique_factor(unsigned int   _n,
     return LIQUID_OK;
 }
 
-// compute greatest common divisor between to numbers P and Q
-unsigned int liquid_gcd(unsigned int _P,
-                        unsigned int _Q)
+// compute greatest common divisor between to integers \(p\) and \(q\)
+unsigned int liquid_gcd(unsigned int _p,
+                        unsigned int _q)
 {
     // check base cases
-    if (_P == 0 || _Q == 0) {
-        liquid_error(LIQUID_EICONFIG,"liquid_gcd(%u,%u), input cannot be zero", _P, _Q);
+    if (_p == 0 || _q == 0) {
+        liquid_error(LIQUID_EICONFIG,"liquid_gcd(%u,%u), input cannot be zero", _p, _q);
         return 0;
-    } else if (_P == 1 || _Q == 1) {
+    } else if (_p == 1 || _q == 1) {
         return 1;
-    } else if (_P == _Q) {
-        return _P;
-    } else if (_P < _Q) {
-        return liquid_gcd(_Q, _P);
+    } else if (_p == _q) {
+        return _p;
+    } else if (_p < _q) {
+        return liquid_gcd(_q, _p);
     }
 
     // dumb, slow method
     unsigned int gcd = 1;
     unsigned int r   = 2; // root
-    while ( r*r <= _P ) {
-        while ((_P % r)==0 && (_Q % r) == 0) {
-            _P /= r;
-            _Q /= r;
+    while ( r <= _q ) {
+        while ((_p % r)==0 && (_q % r) == 0) {
+            _p /= r;
+            _q /= r;
             gcd *= r;
         }
         r += (r == 2) ? 1 : 2;

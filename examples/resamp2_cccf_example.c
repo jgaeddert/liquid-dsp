@@ -40,7 +40,7 @@ int main() {
         iirfilt_crcf_execute(lowpass, 4*randnf(), &v);
         float complex x_pos = v * cexpf(_Complex_I*2*M_PI*0.073f*i);
 
-        // compsite
+        // composite
         x[i] = (x_neg + x_pos) * liquid_hamming(i,num_samples);
     }
     iirfilt_crcf_destroy(lowpass);

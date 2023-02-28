@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,4 +89,52 @@ void autotest_ofdmflexframe_06() { testbench_ofdmflexframe(8192, 80, 40,  800, L
 void autotest_ofdmflexframe_07() { testbench_ofdmflexframe(1200, 40, 20,    1, LIQUID_MODEM_QPSK); }
 void autotest_ofdmflexframe_08() { testbench_ofdmflexframe(1200,  0,  0,  800, LIQUID_MODEM_QPSK); }
 void autotest_ofdmflexframe_09() { testbench_ofdmflexframe(1200, 40, 20, 8217, LIQUID_MODEM_QPSK); }
+
+void autotest_ofdmflexframegen_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping ofdmflexframegen config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check invalid function calls
+    //CONTEND_ISNULL(ofdmflexframegen_copy(NULL));
+    CONTEND_ISNULL(ofdmflexframegen_create( 0, 16, 4, NULL, NULL)) // too few subcarriers
+    CONTEND_ISNULL(ofdmflexframegen_create( 7, 16, 4, NULL, NULL)) // too few subcarriers
+    CONTEND_ISNULL(ofdmflexframegen_create(65, 16, 4, NULL, NULL)) // odd-length subcarriers
+    CONTEND_ISNULL(ofdmflexframegen_create(64, 66, 4, NULL, NULL)) // cyclic prefix length too large
+
+    // create proper object and test configurations
+    ofdmflexframegen q = ofdmflexframegen_create(64, 16, 4, NULL, NULL);
+
+    CONTEND_EQUALITY(LIQUID_OK, ofdmflexframegen_print(q))
+
+    ofdmflexframegen_destroy(q);
+}
+
+void autotest_ofdmflexframesync_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping ofdmflexframesync config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check invalid function calls
+    //CONTEND_ISNULL(ofdmflexframesync_copy(NULL));
+    CONTEND_ISNULL(ofdmflexframesync_create( 0, 16, 4, NULL, NULL, NULL)) // too few subcarriers
+    CONTEND_ISNULL(ofdmflexframesync_create( 7, 16, 4, NULL, NULL, NULL)) // too few subcarriers
+    CONTEND_ISNULL(ofdmflexframesync_create(65, 16, 4, NULL, NULL, NULL)) // odd-length subcarriers
+    CONTEND_ISNULL(ofdmflexframesync_create(64, 66, 4, NULL, NULL, NULL)) // cyclic prefix length too large
+
+    // create proper object and test configurations
+    ofdmflexframesync q = ofdmflexframesync_create(64, 16, 4, NULL, NULL, NULL);
+
+    CONTEND_EQUALITY(LIQUID_OK, ofdmflexframesync_print(q))
+
+    ofdmflexframesync_destroy(q);
+}
 

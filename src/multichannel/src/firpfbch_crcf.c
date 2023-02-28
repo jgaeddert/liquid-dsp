@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,8 +50,8 @@
 #define PRINTVAL_TC(X,F)    PRINTVAL_FLOAT(X,F)
 #define PRINTVAL_TI(X,F)    PRINTVAL_CFLOAT(X,F)
 
-// source files
-#include "firpfbch.c"       // maximally-decimated polyphase filterbank
-#include "firpfbch2.c"      // polyphase filterbank w/ output rate 2 Fs / M
-#include "firpfbchr.c"      // polyphase filterbank w/ output rate P Fs / M
+// prototypes
+#include "firpfbch.proto.c"     // maximally-decimated polyphase filterbank
+#include "firpfbch2.proto.c"    // polyphase filterbank w/ output rate 2 Fs / M
+#include "firpfbchr.proto.c"    // polyphase filterbank w/ output rate P Fs / M
 

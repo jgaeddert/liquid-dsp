@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,14 @@
 
 // Help function to keep code base small
 void firfilt_cccf_notch_test_harness(unsigned int _m,
-                                     float        _As,
+                                     float        _as,
                                      float        _f0)
 {
     unsigned int num_samples = 600;     // number of samples
     unsigned int h_len       = 2*_m+1;  // filter length
 
     // design filter from prototype
-    firfilt_cccf q = firfilt_cccf_create_notch(_m,_As,_f0);
+    firfilt_cccf q = firfilt_cccf_create_notch(_m,_as,_f0);
 
     // generate input signal
     unsigned int i;

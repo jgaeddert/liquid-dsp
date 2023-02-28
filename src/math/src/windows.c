@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -324,22 +324,22 @@ float liquid_flattop(unsigned int _i,
 // Triangular window
 float liquid_triangular(unsigned int _i,
                         unsigned int _wlen,
-                        unsigned int _L)
+                        unsigned int _n)
 {
     // validate input
     if (_i > _wlen) {
         liquid_error(LIQUID_EICONFIG,"liquid_triangular(), sample index must not exceed window length");
         return 0.0f;
-    } else if (_L != _wlen-1 && _L != _wlen && _L != _wlen+1) {
+    } else if (_n != _wlen-1 && _n != _wlen && _n != _wlen+1) {
         liquid_error(LIQUID_EICONFIG,"liquid_triangular(), sub-length must be in _wlen+{-1,0,1}");
         return 0.0f;
-    } else if (_L == 0) {
+    } else if (_n == 0) {
         liquid_error(LIQUID_EICONFIG,"liquid_triangular(), sub-length must be greater than zero");
         return 0.0f;
     }
 
 	float v0 = (float)_i - (float)((_wlen-1)/2.0f);
-	float v1 = ((float)_L)/2.0f;
+	float v1 = ((float)_n)/2.0f;
 	return 1.0 - fabsf(v0 / v1);
 }
 
@@ -367,4 +367,36 @@ float liquid_rcostaper_window(unsigned int _i,
     // return ramp or flat component
     return (_i < _t) ? 0.5f - 0.5f*cosf(M_PI*((float)_i + 0.5f) / (float)_t) : 1.0f;
 }
+
+// shim to support legacy APIs (backwards compatible with 1.3.2)
+
+float kaiser(unsigned int _i,unsigned int _wlen, float _beta, float _dt)
+    { return liquid_kaiser(_i,_wlen,_beta); }
+
+float hamming(unsigned int _i,unsigned int _wlen)
+    { return liquid_hamming(_i,_wlen); }
+
+float hann(unsigned int _i,unsigned int _wlen)
+    { return liquid_hann(_i,_wlen); }
+
+float blackmanharris(unsigned int _i,unsigned int _wlen)
+    { return liquid_blackmanharris(_i,_wlen); }
+
+float blackmanharris7(unsigned int _i,unsigned int _wlen)
+    { return liquid_blackmanharris7(_i,_wlen); }
+
+float flattop(unsigned int _i,unsigned int _wlen)
+    { return liquid_flattop(_i,_wlen); }
+
+float triangular(unsigned int _i,unsigned int _wlen,unsigned int _n)
+    { return liquid_triangular(_i,_wlen,_n); }
+
+float liquid_rcostaper_windowf(unsigned int _i,unsigned int _wlen,unsigned int _t)
+    { return liquid_rcostaper_window(_i,_wlen,_t); }
+
+float kbd(unsigned int _i,unsigned int _wlen,float _beta)
+    { return liquid_kbd(_i,_wlen,_beta); }
+
+int kbd_window(unsigned int _wlen,float _beta,float * _w)
+    { return liquid_kbd_window(_wlen,_beta,_w); }
 

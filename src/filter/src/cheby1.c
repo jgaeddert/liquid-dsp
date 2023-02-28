@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,11 +44,11 @@
 //  _za     :   output analog zeros [length:  0]
 //  _pa     :   output analog poles [length: _n]
 //  _ka     :   output analog gain
-void cheby1_azpkf(unsigned int _n,
-                  float _ep,
-                  liquid_float_complex * _za,
-                  liquid_float_complex * _pa,
-                  liquid_float_complex * _ka)
+int cheby1_azpkf(unsigned int           _n,
+                 float                  _ep,
+                 liquid_float_complex * _za,
+                 liquid_float_complex * _pa,
+                 liquid_float_complex * _ka)
 {
     // temporary values
     float t0 = sqrt(1.0 + 1.0/(_ep*_ep));
@@ -88,5 +88,7 @@ void cheby1_azpkf(unsigned int _n,
     *_ka = r ? 1.0f : 1.0f / sqrtf(1.0f + _ep*_ep);
     for (i=0; i<_n; i++)
         *_ka *= _pa[i];
+
+    return LIQUID_OK;
 }
 

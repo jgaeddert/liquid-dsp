@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,10 +37,10 @@
 #define DEBUG_DOTPROD_RRRF_NEON   0
 
 // basic dot product (ordinal calculation) using neon extensions
-void dotprod_rrrf_run(float *      _h,
-                      float *      _x,
-                      unsigned int _n,
-                      float *      _y)
+int dotprod_rrrf_run(float *      _h,
+                     float *      _x,
+                     unsigned int _n,
+                     float *      _y)
 {
     float32x4_t v;   // input vector
     float32x4_t h;   // coefficients vector
@@ -80,13 +80,14 @@ void dotprod_rrrf_run(float *      _h,
 
     // set return value
     *_y = total;
+    return LIQUID_OK;
 }
 
 // basic dot product (ordinal calculation) with loop unrolled, neon extensions
-void dotprod_rrrf_run4(float *      _h,
-                       float *      _x,
-                       unsigned int _n,
-                       float *      _y)
+int dotprod_rrrf_run4(float *      _h,
+                      float *      _x,
+                      unsigned int _n,
+                      float *      _y)
 {
     float32x4_t v0, v1, v2, v3;
     float32x4_t h0, h1, h2, h3;
@@ -149,6 +150,7 @@ void dotprod_rrrf_run4(float *      _h,
 
     // set return value
     *_y = total;
+    return LIQUID_OK;
 }
 
 
@@ -213,35 +215,52 @@ dotprod_rrrf dotprod_rrrf_recreate_rev(dotprod_rrrf _q,
     return dotprod_rrrf_create_rev(_h,_n);
 }
 
-// destroy dotprod object, freeing internal memory
-void dotprod_rrrf_destroy(dotprod_rrrf _q)
+dotprod_rrrf dotprod_rrrf_copy(dotprod_rrrf q_orig)
 {
-    // free coefficients
-    free(_q->h);
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("dotprod_rrrf_copy().neon, object cannot be NULL");
 
-    // free main object
+    dotprod_rrrf q_copy = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
+    q_copy->n = q_orig->n;
+
+    // allocate memory for coefficients
+    q_copy->h = (float*) malloc( q_copy->n*sizeof(float) );
+
+    // copy coefficients array
+    memmove(q_copy->h, q_orig->h, q_orig->n*sizeof(float));
+
+    // return object
+    return q_copy;
+}
+
+// destroy dotprod object, freeing internal memory
+int dotprod_rrrf_destroy(dotprod_rrrf _q)
+{
+    free(_q->h);
     free(_q);
+    return LIQUID_OK;
 }
 
 // print dotprod internal state
-void dotprod_rrrf_print(dotprod_rrrf _q)
+int dotprod_rrrf_print(dotprod_rrrf _q)
 {
     printf("dotprod_rrrf [arm-neon, %u coefficients]\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("%3u : %12.9f\n", i, _q->h[i]);
+    return LIQUID_OK;
 }
 
 // execute dot product on input vector
-void dotprod_rrrf_execute(dotprod_rrrf _q,
-                          float *      _x,
-                          float *      _y)
+int dotprod_rrrf_execute(dotprod_rrrf _q,
+                         float *      _x,
+                         float *      _y)
 {
     // switch based on size
     if (_q->n < 16) {
-        dotprod_rrrf_run(_q->h, _x, _q->n, _y);
-    } else {
-        dotprod_rrrf_run4(_q->h, _x, _q->n, _y);
+        return dotprod_rrrf_run(_q->h, _x, _q->n, _y);
     }
+    return dotprod_rrrf_run4(_q->h, _x, _q->n, _y);
 }
 

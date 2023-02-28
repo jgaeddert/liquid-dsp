@@ -26,7 +26,7 @@ void print_bitstring(unsigned int _x,
 //  _p          :   size of table
 //  _r          :   received sample
 //  _s          :   hard demodulator output
-//  _soft_bits  :   soft bit ouput (approximate log-likelihood ratio)
+//  _soft_bits  :   soft bit output (approximate log-likelihood ratio)
 void modemcf_demodulate_soft_tab(modemcf _q,
                                float complex * _c,
                                unsigned int * _cp,
@@ -316,7 +316,7 @@ int main(int argc, char*argv[])
 //  _p          :   size of table
 //  _r          :   received sample
 //  _s          :   hard demodulator output
-//  _soft_bits  :   soft bit ouput (approximate log-likelihood ratio)
+//  _soft_bits  :   soft bit output (approximate log-likelihood ratio)
 void modemcf_demodulate_soft_tab(modemcf _q,
                                float complex * _c,
                                unsigned int * _cp,

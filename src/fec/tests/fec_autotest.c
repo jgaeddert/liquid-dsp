@@ -61,7 +61,7 @@ void fec_test_codec(fec_scheme _fs, unsigned int _n, void * _opts)
     unsigned char msg_enc[n_enc];   // encoded message
     unsigned char msg_dec[_n];      // decoded message
 
-    // initialze message
+    // initialize message
     unsigned int i;
     for (i=0; i<_n; i++) {
         msg[i] = rand() & 0xff;

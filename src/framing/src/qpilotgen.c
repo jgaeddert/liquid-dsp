@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// qpilotgen.c
-//
 // pilot injection
-//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -103,7 +99,8 @@ qpilotgen qpilotgen_create(unsigned int _payload_len,
     }
     msequence_destroy(seq);
 
-    // return pointer to main object
+    // reset and return pointer to main object
+    qpilotgen_reset(q);
     return q;
 }
 
@@ -120,6 +117,17 @@ qpilotgen qpilotgen_recreate(qpilotgen    _q,
 
     // create new object
     return qpilotgen_create(_payload_len, _pilot_spacing);
+}
+
+// Copy object including all internal objects and state
+qpilotgen qpilotgen_copy(qpilotgen q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("qpilotgen_copy(), object cannot be NULL");
+
+    // create new object from parameters
+    return qpilotgen_create(q_orig->payload_len, q_orig->pilot_spacing);
 }
 
 int qpilotgen_destroy(qpilotgen _q)

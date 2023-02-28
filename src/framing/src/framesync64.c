@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// framesync64.c
-//
-// basic frame synchronizer
-//
+// basic frame synchronizer with 8 bytes header and 64 bytes payload
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -34,11 +30,6 @@
 #include <assert.h>
 
 #include "liquid.internal.h"
-
-#define DEBUG_FRAMESYNC64           1
-#define DEBUG_FRAMESYNC64_PRINT     0
-#define DEBUG_FILENAME              "framesync64_internal_debug.m"
-#define DEBUG_BUFFER_LEN            (1600)
 
 #define FRAMESYNC64_ENABLE_EQ       0
 
@@ -62,6 +53,14 @@ int framesync64_execute_rxpreamble(framesync64   _q,
 int framesync64_execute_rxpayload(framesync64   _q,
                                   float complex _x);
 
+// export debugging based on return value
+//  0   : do not write file
+//  >0  : write specific number (hex)
+//  -1  : number of packets detected
+//  -2  : id using first 4 bytes of header
+//  -3  : write with random extension
+int framesync64_debug_export(framesync64 _q, int _code);
+
 // framesync64 object structure
 struct framesync64_s {
     // callback
@@ -69,7 +68,7 @@ struct framesync64_s {
     void *              userdata;   // user-defined data structure
     framesyncstats_s    framesyncstats; // frame statistic object (synchronizer)
     framedatastats_s    framedatastats; // frame statistic object (packet statistics)
-    
+
     // synchronizer objects
     unsigned int        m;          // filter delay (symbols)
     float               beta;       // filter excess bandwidth factor
@@ -110,11 +109,10 @@ struct framesync64_s {
     unsigned int preamble_counter;  // counter: num of p/n syms received
     unsigned int payload_counter;   // counter: num of payload syms received
 
-#if DEBUG_FRAMESYNC64
-    int debug_enabled;              // debugging enabled?
-    int debug_objects_created;      // debugging objects created?
-    windowcf debug_x;               // debug: raw input samples
-#endif
+    windowcf     buf_debug;             // debug: raw input samples
+    char *       prefix;                // debug: filename prefix
+    char *       filename;              // debug: filename buffer
+    unsigned int num_files_exported;    // debug: number of files exported
 };
 
 // create framesync64 object
@@ -145,7 +143,7 @@ framesync64 framesync64_create(framesync_callback _callback,
     qdetector_cccf_set_threshold(q->detector, 0.5f);
 
     // create symbol timing recovery filters
-    q->npfb = 32;   // number of filters in the bank
+    q->npfb = 64;  // number of filters in the bank
     q->mf   = firpfb_crcf_create_rnyquist(LIQUID_FIRFILT_ARKAISER, q->npfb,k,q->m,q->beta);
 
 #if FRAMESYNC64_ENABLE_EQ
@@ -157,7 +155,7 @@ framesync64 framesync64_create(framesync_callback _callback,
 
     // create down-coverters for carrier phase tracking
     q->mixer = nco_crcf_create(LIQUID_NCO);
-    
+
     // create payload demodulator/decoder object
     int check      = LIQUID_CRC_24;
     int fec0       = LIQUID_FEC_NONE;
@@ -175,28 +173,54 @@ framesync64 framesync64_create(framesync_callback _callback,
     // reset global data counters
     framesync64_reset_framedatastats(q);
 
-#if DEBUG_FRAMESYNC64
-    // set debugging flags, objects to NULL
-    q->debug_enabled         = 0;
-    q->debug_objects_created = 0;
-    q->debug_x               = NULL;
-#endif
+    // set debugging fields
+    q->buf_debug= windowcf_create(LIQUID_FRAME64_LEN);
+    q->prefix   = NULL;
+    q->filename = NULL;
+    q->num_files_exported = 0;
+    framesync64_set_prefix(q, "framesync64");
 
     // reset state and return
     framesync64_reset(q);
     return q;
 }
 
+// copy object
+framesync64 framesync64_copy(framesync64 q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("framesync64_copy(), object cannot be NULL");
+
+    // allocate memory for new object
+    framesync64 q_copy = (framesync64) malloc(sizeof(struct framesync64_s));
+
+    // copy entire memory space over and overwrite values as needed
+    memmove(q_copy, q_orig, sizeof(struct framesync64_s));
+
+    // set callback and userdata fields
+    q_copy->callback = q_orig->callback;
+    q_copy->userdata = q_orig->userdata;
+
+    // copy objects
+    q_copy->detector = qdetector_cccf_copy(q_orig->detector);
+    q_copy->mixer    = nco_crcf_copy      (q_orig->mixer);
+    q_copy->mf       = firpfb_crcf_copy   (q_orig->mf);
+    q_copy->dec      = qpacketmodem_copy  (q_orig->dec);
+    q_copy->pilotsync= qpilotsync_copy    (q_orig->pilotsync);
+    q_copy->buf_debug= windowcf_copy      (q_orig->buf_debug);
+
+    // set prefix value
+    q_copy->prefix   = NULL;
+    q_copy->filename = NULL;
+    framesync64_set_prefix(q_copy, q_orig->prefix);
+
+    return q_copy;
+}
+
 // destroy frame synchronizer object, freeing all internal memory
 int framesync64_destroy(framesync64 _q)
 {
-#if DEBUG_FRAMESYNC64
-    // clean up debug objects (if created)
-    if (_q->debug_objects_created) {
-        windowcf_destroy(_q->debug_x);
-    }
-#endif
-
     // destroy synchronization objects
     qdetector_cccf_destroy(_q->detector);   // frame detector
     firpfb_crcf_destroy   (_q->mf);         // matched filter
@@ -206,6 +230,7 @@ int framesync64_destroy(framesync64 _q)
 #if FRAMESYNC64_ENABLE_EQ
     eqlms_cccf_destroy    (_q->equalizer);  // LMS equalizer
 #endif
+    windowcf_destroy(_q->buf_debug);
 
     // free main object memory
     free(_q);
@@ -238,6 +263,23 @@ int framesync64_reset(framesync64 _q)
     
     // reset frame statistics
     _q->framesyncstats.evm = 0.0f;
+
+    return LIQUID_OK;
+}
+
+// set the callback function
+int framesync64_set_callback(framesync64        _q,
+                             framesync_callback _callback)
+{
+    _q->callback = _callback;
+    return LIQUID_OK;
+}
+
+// set the user-defined data field (context)
+int framesync64_set_userdata(framesync64 _q,
+                             void *      _userdata)
+{
+    _q->userdata = _userdata;
     return LIQUID_OK;
 }
 
@@ -251,10 +293,9 @@ int framesync64_execute(framesync64     _q,
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
-#if DEBUG_FRAMESYNC64
-        if (_q->debug_enabled)
-            windowcf_push(_q->debug_x, _x[i]);
-#endif
+        // push sample into debug buffer
+        windowcf_push(_q->buf_debug, _x[i]);
+
         switch (_q->state) {
         case FRAMESYNC64_STATE_DETECTFRAME:
             // detect frame (look for p/n sequence)
@@ -297,11 +338,6 @@ int framesync64_execute_seekpn(framesync64   _q,
         _q->dphi_hat  = qdetector_cccf_get_dphi (_q->detector);
         _q->phi_hat   = qdetector_cccf_get_phi  (_q->detector);
 
-#if DEBUG_FRAMESYNC64_PRINT
-        printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
-                _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
-#endif
-
         // set appropriate filterbank index
         if (_q->tau_hat > 0) {
             _q->pfb_index = (unsigned int)(      _q->tau_hat  * _q->npfb) % _q->npfb;
@@ -310,6 +346,8 @@ int framesync64_execute_seekpn(framesync64   _q,
             _q->pfb_index = (unsigned int)((1.0f+_q->tau_hat) * _q->npfb) % _q->npfb;
             _q->mf_counter = 1;
         }
+        //printf("***** frame detected! tau-hat:%8.4f(%u/%u), dphi-hat:%8.4f, gamma:%8.2f dB\n",
+        //        _q->tau_hat, _q->pfb_index, _q->npfb, _q->dphi_hat, 20*log10f(_q->gamma_hat));
         
         // output filter scale
         firpfb_crcf_set_scale(_q->mf, 0.5f / _q->gamma_hat);
@@ -450,7 +488,7 @@ int framesync64_execute_rxpayload(framesync64   _q,
             // invoke callback
             if (_q->callback != NULL) {
                 // set framesyncstats internals
-                _q->framesyncstats.evm           = qpilotsync_get_evm(_q->pilotsync);
+                _q->framesyncstats.evm           = qpacketmodem_get_demodulator_evm(_q->dec); //qpilotsync_get_evm(_q->pilotsync);
                 _q->framesyncstats.rssi          = 20*log10f(_q->gamma_hat);
                 _q->framesyncstats.cfo           = nco_crcf_get_frequency(_q->mixer);
                 _q->framesyncstats.framesyms     = _q->payload_sym;
@@ -462,6 +500,7 @@ int framesync64_execute_rxpayload(framesync64   _q,
                 _q->framesyncstats.fec1          = LIQUID_FEC_GOLAY2412;
 
                 // invoke callback method
+                int rc =
                 _q->callback(&_q->payload_dec[0],   // header is first 8 bytes
                              _q->payload_valid,
                              &_q->payload_dec[8],   // payload is last 64 bytes
@@ -469,6 +508,9 @@ int framesync64_execute_rxpayload(framesync64   _q,
                              _q->payload_valid,
                              _q->framesyncstats,
                              _q->userdata);
+
+                // export debugging based on return value
+                framesync64_debug_export(_q, rc);
             }
 
             // reset frame synchronizer
@@ -478,106 +520,23 @@ int framesync64_execute_rxpayload(framesync64   _q,
     return LIQUID_OK;
 }
 
-// enable debugging
+// DEPRECATED: enable debugging
 int framesync64_debug_enable(framesync64 _q)
 {
-    // create debugging objects if necessary
-#if DEBUG_FRAMESYNC64
-    if (_q->debug_objects_created)
-        return LIQUID_OK;
-
-    // create debugging objects
-    _q->debug_x = windowcf_create(DEBUG_BUFFER_LEN);
-
-    // set debugging flags
-    _q->debug_enabled = 1;
-    _q->debug_objects_created = 1;
     return LIQUID_OK;
-#else
-    return liquid_error(LIQUID_EICONFIG,"framesync64_debug_enable(): compile-time debugging disabled\n");
-#endif
 }
 
-// disable debugging
+// DEPRECATED: disable debugging
 int framesync64_debug_disable(framesync64 _q)
 {
-    // disable debugging
-#if DEBUG_FRAMESYNC64
-    _q->debug_enabled = 0;
     return LIQUID_OK;
-#else
-    return liquid_error(LIQUID_EICONFIG,"framesync64_debug_enable(): compile-time debugging disabled\n");
-#endif
 }
 
-// print debugging information
-int framesync64_debug_print(framesync64  _q,
+// DEPRECATED: print debugging information
+int framesync64_debug_print(framesync64   _q,
                              const char * _filename)
 {
-#if DEBUG_FRAMESYNC64
-    if (!_q->debug_objects_created)
-        return liquid_error(LIQUID_EICONFIG,"framesync64_debug_print(), debugging objects don't exist; enable debugging first");
-
-    unsigned int i;
-    float complex * rc;
-    FILE* fid = fopen(_filename,"w");
-    fprintf(fid,"%% %s: auto-generated file", _filename);
-    fprintf(fid,"\n\n");
-    fprintf(fid,"clear all;\n");
-    fprintf(fid,"close all;\n\n");
-    fprintf(fid,"n = %u;\n", DEBUG_BUFFER_LEN);
-
-    // write x
-    fprintf(fid,"x = zeros(1,n);\n");
-    windowcf_read(_q->debug_x, &rc);
-    for (i=0; i<DEBUG_BUFFER_LEN; i++)
-        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(1:length(x),real(x), 1:length(x),imag(x));\n");
-    fprintf(fid,"ylabel('received signal, x');\n");
-
-    // write p/n sequence
-    fprintf(fid,"preamble_pn = zeros(1,64);\n");
-    rc = _q->preamble_pn;
-    for (i=0; i<64; i++)
-        fprintf(fid,"preamble_pn(%4u) = %12.4e + 1i*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-
-    // write p/n symbols
-    fprintf(fid,"preamble_rx = zeros(1,64);\n");
-    rc = _q->preamble_rx;
-    for (i=0; i<64; i++)
-        fprintf(fid,"preamble_rx(%4u) = %12.4e + 1i*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-
-    // write raw payload symbols
-    unsigned int payload_sym_len = 600;
-    fprintf(fid,"payload_rx = zeros(1,%u);\n", payload_sym_len);
-    rc = _q->payload_rx;
-    for (i=0; i<payload_sym_len; i++)
-        fprintf(fid,"payload_rx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-
-    // write payload symbols
-    fprintf(fid,"payload_syms = zeros(1,%u);\n", payload_sym_len);
-    rc = _q->payload_sym;
-    for (i=0; i<payload_sym_len; i++)
-        fprintf(fid,"payload_syms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(real(payload_syms),imag(payload_syms),'o');\n");
-    fprintf(fid,"xlabel('in-phase');\n");
-    fprintf(fid,"ylabel('quadrature phase');\n");
-    fprintf(fid,"grid on;\n");
-    fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
-    fprintf(fid,"axis square;\n");
-
-    fprintf(fid,"\n\n");
-    fclose(fid);
-
-    printf("framesync64/debug: results written to %s\n", _filename);
     return LIQUID_OK;
-#else
-    return liquid_error(LIQUID_EICONFIG,"framesync64_debug_print(): compile-time debugging disabled\n");
-#endif
 }
 
 // get detection threshold
@@ -593,6 +552,46 @@ int framesync64_set_threshold(framesync64 _q,
     return qdetector_cccf_set_threshold(_q->detector, _threshold);
 }
 
+// set prefix for exporting debugging files, default: "framesync64"
+//  _q      : frame sync object
+//  _prefix : string with valid file path
+int framesync64_set_prefix(framesync64  _q,
+                           const char * _prefix)
+{
+    // skip if input is NULL pointer
+    if (_prefix == NULL)
+        return LIQUID_OK;
+
+    // sanity check
+    unsigned int n = strlen(_prefix);
+    if (n > 1<<14)
+        return liquid_error(LIQUID_EICONFIG,"framesync64_set_prefix(), input string size exceeds reasonable limits");
+
+    // reallocate memory, copy input, and return
+    _q->prefix   = (char*) realloc(_q->prefix,   n+ 1);
+    _q->filename = (char*) realloc(_q->filename, n+15);
+    memmove(_q->prefix, _prefix, n);
+    _q->prefix[n] = '\0';
+    return LIQUID_OK;
+}
+
+// get prefix for exporting debugging files
+const char * framesync64_get_prefix(framesync64  _q)
+{
+    return (const char*) _q->prefix;
+}
+
+// get number of files exported
+unsigned int framesync64_get_num_files_exported(framesync64  _q)
+{
+    return _q->num_files_exported;
+}
+
+// get name of last debugging file written
+const char * framesync64_get_filename(framesync64  _q)
+{
+    return _q->num_files_exported == 0 ? NULL : (const char*) _q->filename;
+}
 
 // reset frame data statistics
 int framesync64_reset_framedatastats(framesync64 _q)
@@ -604,5 +603,69 @@ int framesync64_reset_framedatastats(framesync64 _q)
 framedatastats_s framesync64_get_framedatastats(framesync64 _q)
 {
     return _q->framedatastats;
+}
+
+// export debugging samples to file
+int framesync64_debug_export(framesync64 _q,
+                             int         _code)
+{
+    // determine what to do based on callback return code
+    if (_code == 0) {
+        // do not export file
+        return LIQUID_OK;
+    } else if (_code > 0) {
+        // user-defined value
+        sprintf(_q->filename,"%s_u%.8x.dat", _q->prefix, _code);
+    } else if (_code == -1) {
+        // based on number of packets detected
+        sprintf(_q->filename,"%s_n%.8x.dat", _q->prefix,
+                _q->framedatastats.num_frames_detected);
+    } else if (_code == -2) {
+        // decoded header (first 4 bytes)
+        sprintf(_q->filename,"%s_h", _q->prefix);
+        char * p = _q->filename + strlen(_q->prefix) + 2;
+        for (unsigned int i=0; i<4; i++) {
+            sprintf(p,"%.2x", _q->payload_dec[i]);
+            p += 2;
+        }
+        sprintf(p,".dat");
+    } else if (_code == -3) {
+        // random extension
+        sprintf(_q->filename,"%s_r%.8x.dat", _q->prefix, rand() & 0xffffffff);
+    } else {
+        return liquid_error(LIQUID_EICONFIG,"framesync64_debug_export(), invalid return code %d", _code);
+    }
+
+    FILE * fid = fopen(_q->filename,"wb");
+    if (fid == NULL)
+        return liquid_error(LIQUID_EIO,"framesync64_debug_export(), could not open %s for writing", _q->filename);
+
+    // TODO: write file header?
+
+    // write debug buffer
+    float complex * rc;
+    windowcf_read(_q->buf_debug, &rc);
+    fwrite(rc, sizeof(float complex), LIQUID_FRAME64_LEN, fid);
+
+    // export framesync stats
+    //framesyncstats_export(_q->framesyncstats, fid);
+
+    // export measured offsets
+    fwrite(&(_q->tau_hat),  sizeof(float), 1, fid);
+    fwrite(&(_q->dphi_hat), sizeof(float), 1, fid);
+    fwrite(&(_q->phi_hat),  sizeof(float), 1, fid);
+    fwrite(&(_q->gamma_hat),sizeof(float), 1, fid);
+    fwrite(&(_q->framesyncstats.evm), sizeof(float), 1, fid);
+
+    // export payload values
+    fwrite(_q->payload_rx,  sizeof(float complex), 630, fid);
+    fwrite(_q->payload_sym, sizeof(float complex), 600, fid);
+    fwrite(_q->payload_dec, sizeof(unsigned char),  72, fid);
+
+    fclose(fid);
+    _q->num_files_exported++;
+    printf("framesync64_debug_export(), results written to %s (%u total)\n",
+        _q->filename, _q->num_files_exported);
+    return LIQUID_OK;
 }
 

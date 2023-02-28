@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2021 Joseph Gaeddert
+# Copyright (c) 2007 - 2023 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 # Process with autoconf to generate configure script
 #
 
-AC_INIT([liquid-dsp],[1.3.2],[joseph@liquidsdr.org])
+AC_INIT([liquid-dsp],[1.5],[joseph@liquidsdr.org])
 AC_CONFIG_SRCDIR([src/libliquid.c])
 AC_CONFIG_MACRO_DIR([scripts])
 
@@ -39,6 +39,7 @@ AC_LANG(C)
 # Autoheader
 AH_TEMPLATE([LIQUID_FFTOVERRIDE],  [Force internal FFT even if libfftw is available])
 AH_TEMPLATE([LIQUID_SIMDOVERRIDE], [Force overriding of SIMD (use portable C code)])
+AH_TEMPLATE([LIQUID_SUPPRESS_ERROR_OUTPUT],[Suppress printing errors to stderr])
 AH_TEMPLATE([LIQUID_STRICT_EXIT],  [Enable strict program exit on error])
 
 AC_CONFIG_HEADERS([config.h])
@@ -79,6 +80,12 @@ AC_ARG_ENABLE(coverage,
               [AC_MSG_ERROR(Need gcovr with coverage option)],
               [COVERAGE_OPTION="--coverage"])],
     [COVERAGE_OPTION=""]
+)
+
+AC_ARG_ENABLE(suppress-errors,
+    AS_HELP_STRING([--enable-suppress-errors],[suppress printing errors to stderr]),
+    [AC_DEFINE(LIQUID_SUPPRESS_ERROR_OUTPUT)],
+    [],
 )
 
 AC_ARG_ENABLE(strict,
@@ -165,21 +172,35 @@ else
         #   AVX     :   immintrin.h
         AX_EXT
 
-        if [ test "$ax_cv_have_sse41_ext" = yes && test "$ac_cv_header_smmintrin_h" = yes ]; then
+        if [ test "$ax_cv_have_avx2_ext" = yes ]; then
+            # AVX2 extensions
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx.o \
+                           src/dotprod/src/dotprod_crcf.avx.o \
+                           src/dotprod/src/dotprod_rrrf.avx.o \
+                           src/dotprod/src/sumsq.avx.o"
+            ARCH_OPTION='-mavx2'
+        elif [ test "$ax_cv_have_avx_ext" = yes ]; then
+            # AVX extensions
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx.o \
+                           src/dotprod/src/dotprod_crcf.avx.o \
+                           src/dotprod/src/dotprod_rrrf.avx.o \
+                           src/dotprod/src/sumsq.avx.o"
+            ARCH_OPTION='-mavx'
+        elif [ test "$ax_cv_have_sse41_ext" = yes ]; then
             # SSE4.1/2 extensions
             MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                            src/dotprod/src/dotprod_crcf.mmx.o \
-                           src/dotprod/src/dotprod_rrrf.mmx.o \
+                           src/dotprod/src/dotprod_rrrf.sse4.o \
                            src/dotprod/src/sumsq.mmx.o"
             ARCH_OPTION='-msse4.1'
-        elif [ test "$ax_cv_have_sse3_ext" = yes && test "$ac_cv_header_pmmintrin_h" = yes ]; then
+        elif [ test "$ax_cv_have_sse3_ext" = yes ]; then
             # SSE3 extensions
             MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                            src/dotprod/src/dotprod_crcf.mmx.o \
                            src/dotprod/src/dotprod_rrrf.mmx.o \
                            src/dotprod/src/sumsq.mmx.o"
             ARCH_OPTION='-msse3'
-        elif [ test "$ax_cv_have_sse2_ext" = yes && test "$ac_cv_header_emmintrin_h" = yes ]; then
+        elif [ test "$ax_cv_have_sse2_ext" = yes ]; then
             # SSE2 extensions
             MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                            src/dotprod/src/dotprod_crcf.mmx.o \
@@ -206,7 +227,7 @@ else
                        src/dotprod/src/dotprod_rrrf.o \
                        src/dotprod/src/sumsq.o"
         ARCH_OPTION="-ffast-math";;
-    armv7*|armv8*)
+    arm|armv7*|armv8*)
         # assume neon instructions are available
         # TODO: check for Neon availability
 
@@ -215,9 +236,15 @@ else
                        src/dotprod/src/dotprod_crcf.neon.o \
                        src/dotprod/src/dotprod_rrrf.neon.o \
                        src/dotprod/src/sumsq.o"
-        # TODO: check these flags
-        #ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
-        ARCH_OPTION="-ffast-math -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4";;
+        case $target_os in
+        darwin*)
+            # M1 mac, ARM architecture : use neon extensions
+            ARCH_OPTION="-ffast-math";;
+        *)
+            # TODO: check these flags
+            #ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
+            ARCH_OPTION="-ffast-math -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4";;
+        esac;;
     *)
         # unknown architecture : use portable C version
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
@@ -248,8 +275,8 @@ darwin*)
     AC_DEFUN([AC_PROG_LIBTOOL], [AC_CHECK_TOOL(LIBTOOL, libtool, :)])
     AC_PROG_LIBTOOL
 
-    AR_LIB=libliquid.ar
-    SH_LIB=libliquid.dylib
+    AR_LIB=ar	    # archive extension
+    SH_LIB=dylib    # shared library extension
     REBIND=""
     CXX_FLAGS_PYBIND="-undefined dynamic_lookup"
     ;;
@@ -259,8 +286,8 @@ darwin*)
     AC_DEFUN([AC_PROG_AR], [AC_CHECK_TOOL(AR, ar, :)])
     AC_PROG_AR
 
-    AR_LIB=libliquid.a
-    SH_LIB=libliquid.so
+    AR_LIB=a	    # archive extension
+    SH_LIB=so	    # shared library extension
     REBIND=ldconfig
     CXX_FLAGS_PYBIND=""
     ;;

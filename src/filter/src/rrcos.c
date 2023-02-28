@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,22 +35,18 @@
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_rrcos(unsigned int _k,
-                         unsigned int _m,
-                         float _beta,
-                         float _dt,
-                         float * _h)
+int liquid_firdes_rrcos(unsigned int _k,
+                        unsigned int _m,
+                        float _beta,
+                        float _dt,
+                        float * _h)
 {
-    if ( _k < 1 ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rrcos(): k must be greater than 0");
-        return;
-    } else if ( _m < 1 ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rrcos(): m must be greater than 0");
-        return;
-    } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rrcos(): beta must be in [0,1]");
-        return;
-    }
+    if ( _k < 1 )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_rrcos(): k must be greater than 0");
+    if ( _m < 1 )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_rrcos(): m must be greater than 0");
+    if ( (_beta < 0.0f) || (_beta > 1.0f) )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_rrcos(): beta must be in [0,1]");
 
     unsigned int n;
     float z, t1, t2, t3, t4, T=1.0f;
@@ -92,5 +88,6 @@ void liquid_firdes_rrcos(unsigned int _k,
             }
         }
     }
+    return LIQUID_OK;
 }
 

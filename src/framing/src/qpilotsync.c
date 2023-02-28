@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// qpilotsync.c
-//
-// pilot injection
-//
+// symbol recovery with interleaved pilots
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -49,7 +45,7 @@ struct qpilotsync_s {
     unsigned int    nfft;           // FFT size
     float complex * buf_time;       // FFT time buffer
     float complex * buf_freq;       // FFT freq buffer
-    fftplan         fft;            // transform object
+    FFT_PLAN        fft;            // transform object
 
     float           dphi_hat;       // carrier frequency offset estimate
     float           phi_hat;        // carrier phase offset estimate
@@ -99,9 +95,9 @@ qpilotsync qpilotsync_create(unsigned int _payload_len,
 
     // compute fft size and create transform objects
     q->nfft = 1 << liquid_nextpow2(q->num_pilots + (q->num_pilots>>1));
-    q->buf_time = (float complex*) malloc(q->nfft*sizeof(float complex));
-    q->buf_freq = (float complex*) malloc(q->nfft*sizeof(float complex));
-    q->fft      = fft_create_plan(q->nfft, q->buf_time, q->buf_freq, LIQUID_FFT_FORWARD, 0);
+    q->buf_time = (float complex*) FFT_MALLOC(q->nfft*sizeof(float complex));
+    q->buf_freq = (float complex*) FFT_MALLOC(q->nfft*sizeof(float complex));
+    q->fft      = FFT_CREATE_PLAN(q->nfft, q->buf_time, q->buf_freq, FFT_DIR_FORWARD, 0);
 
     // reset and return pointer to main object
     qpilotsync_reset(q);
@@ -123,15 +119,26 @@ qpilotsync qpilotsync_recreate(qpilotsync   _q,
     return qpilotsync_create(_payload_len, _pilot_spacing);
 }
 
+// Copy object including all internal objects and state
+qpilotsync qpilotsync_copy(qpilotsync q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("qpilotsync_copy(), object cannot be NULL");
+
+    // create new object from parameters
+    return qpilotsync_create(q_orig->payload_len, q_orig->pilot_spacing);
+}
+
 int qpilotsync_destroy(qpilotsync _q)
 {
     // free arrays
     free(_q->pilots);
-    free(_q->buf_time);
-    free(_q->buf_freq);
+    FFT_FREE(_q->buf_time);
+    FFT_FREE(_q->buf_freq);
 
     // destroy objects
-    fft_destroy_plan(_q->fft);
+    FFT_DESTROY_PLAN(_q->fft);
     
     // free main object memory
     free(_q);
@@ -196,7 +203,7 @@ int qpilotsync_execute(qpilotsync      _q,
     }
 
     // compute frequency offset by computing transform and finding peak
-    fft_execute(_q->fft);
+    FFT_EXECUTE(_q->fft);
     unsigned int i0 = 0;
     float        y0 = 0;
     for (i=0; i<_q->nfft; i++) {

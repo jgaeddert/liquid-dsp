@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,7 @@ void benchmark_random_uniform(struct rusage *_start,
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
+    *_num_iterations += x > 0; // trivial use of variable
 }
 
 // 
@@ -71,6 +72,7 @@ void benchmark_random_normal(struct rusage *_start,
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
+    *_num_iterations += x > 0; // trivial use of variable
 }
 
 // 
@@ -96,6 +98,7 @@ void benchmark_random_complex_normal(struct rusage *_start,
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
+    *_num_iterations += crealf(x) > 0; // trivial use of variable
 }
 
 // 
@@ -124,6 +127,7 @@ void benchmark_random_weibull(struct rusage *_start,
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
+    *_num_iterations += x > 0; // trivial use of variable
 }
 
 // 
@@ -151,5 +155,6 @@ void benchmark_random_ricek(struct rusage *_start,
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
+    *_num_iterations += x > 0; // trivial use of variable
 }
 

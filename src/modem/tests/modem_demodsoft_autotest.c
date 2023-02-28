@@ -127,4 +127,5 @@ void autotest_demodsoft_arb64opt()  { modemcf_test_demodsoft(LIQUID_MODEM_ARB64O
 void autotest_demodsoft_arb128opt() { modemcf_test_demodsoft(LIQUID_MODEM_ARB128OPT); }
 void autotest_demodsoft_arb256opt() { modemcf_test_demodsoft(LIQUID_MODEM_ARB256OPT); }
 void autotest_demodsoft_arb64vt()   { modemcf_test_demodsoft(LIQUID_MODEM_ARB64VT);   }
+void autotest_demodsoft_pi4dqpsk()  { modemcf_test_demodsoft(LIQUID_MODEM_PI4DQPSK);  }
 

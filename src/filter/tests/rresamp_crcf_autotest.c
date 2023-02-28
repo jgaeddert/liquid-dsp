@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,161 +27,57 @@
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
 
-// 
-// AUTOTEST : test rational-rate resampler
-//
+// test rational-rate resampler
 void test_harness_rresamp_crcf(unsigned int _P,
                                unsigned int _Q,
                                unsigned int _m,
                                float        _bw,
-                               float        _As)
+                               float        _as)
 {
-    // target about 1500 max samples
-    unsigned int  n  = 1500 / max(_P,_Q);
-    unsigned int  ny = n * _P;  // number of output samples
-    unsigned int  nx = n * _Q;  // number of input samples
+    // options
+    unsigned int n=800000;  // number of output samples to analyze
+    float bw = 0.2f; // target output bandwidth
+    unsigned int nfft = 800;
+    float tol = 0.5f;
 
-    // buffers
-    float complex x[nx];        // input sample buffer
-    float complex y[ny];        // output sample buffer
+    // create resampler with rate P/Q
+    rresamp_crcf resamp = rresamp_crcf_create_kaiser(_P, _Q, _m, _bw, _as);
+    float r = rresamp_crcf_get_rate(resamp);
 
-    // create resampler
-    rresamp_crcf q = rresamp_crcf_create_kaiser(_P, _Q, _m, _bw, _As);
-    float r = rresamp_crcf_get_rate(q);
+    // create and configure objects
+    spgramcf     q   = spgramcf_create(nfft, LIQUID_WINDOW_HANN, nfft/2, nfft/4);
+    symstreamrcf gen = symstreamrcf_create_linear(LIQUID_FIRFILT_KAISER,r*bw,25,0.2f,LIQUID_MODEM_QPSK);
+    symstreamrcf_set_gain(gen, sqrtf(bw*r));
 
-    // generate input signal (windowed sinusoid)
-    unsigned int i;
-    float        wsum = 0.0f;
-    unsigned int wlen = (n - _m)*_Q;
-    float        fx = 0.25f*(r > 1.0f ? 1.0f : r);   // input tone frequency
-    for (i=0; i<nx; i++) {
-        // compute window
-        float w = i < wlen ? liquid_kaiser(i, wlen, 10.0f) : 0.0f;
+    // generate samples and push through spgram object
+    float complex buf_0[_Q]; // input buffer
+    float complex buf_1[_P]; // output buffer
+    while (spgramcf_get_num_samples_total(q) < n) {
+        // generate block of samples
+        symstreamrcf_write_samples(gen, buf_0, _Q);
 
-        // apply window to complex sinusoid
-        x[i] = cexpf(_Complex_I*2*M_PI*fx*i) * w;
+        // resample
+        rresamp_crcf_execute(resamp, buf_0, buf_1);
 
-        // accumulate window
-        wsum += w;
+        // run samples through the spgram object
+        spgramcf_write(q, buf_1, _P);
     }
 
-    // resample input in blocks
-    for (i=0; i<n; i++)
-        rresamp_crcf_execute(q, &x[i*_Q], &y[i*_P]);
+    // verify result
+    float psd[nfft];
+    spgramcf_get_psd(q, psd);
+    autotest_psd_s regions[] = {
+        {.fmin=-0.5f,    .fmax=-0.6f*bw, .pmin=0,     .pmax=-_as+tol, .test_lo=0, .test_hi=1},
+        {.fmin=-0.4f*bw, .fmax=+0.4f*bw, .pmin=0-tol, .pmax=  0 +tol, .test_lo=1, .test_hi=1},
+        {.fmin=+0.6f*bw, .fmax=+0.5f,    .pmin=0,     .pmax=-_as+tol, .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
+        liquid_autotest_verbose ? "autotest/logs/rresamp_crcf.m" : NULL);
 
-    // clean up allocated objects
-    rresamp_crcf_destroy(q);
-
-    // 
-    // analyze resulting signal
-    //
-
-    // check that the actual resampling rate is close to the target
-    float fy = fx / r;      // expected output frequency
-
-    // run FFT and ensure that carrier has moved and that image
-    // frequencies and distortion have been adequately suppressed
-    unsigned int nfft = 8192;   // about 1500 max samples
-    float complex yfft[nfft];   // fft input
-    float complex Yfft[nfft];   // fft output
-    for (i=0; i<nfft; i++)
-        yfft[i] = i < ny ? y[i]/(wsum*sqrt(r)) : 0.0f;
-    fft_run(nfft, yfft, Yfft, LIQUID_FFT_FORWARD, 0);
-    fft_shift(Yfft, nfft);  // run FFT shift
-
-    // find peak frequency
-    float Ypeak = 0.0f;
-    float fpeak = 0.0f;
-    float max_sidelobe = -1e9f;     // maximum side-lobe [dB]
-    float main_lobe_width = 0.07f;  // TODO: figure this out from Kaiser's equations
-    for (i=0; i<nfft; i++) {
-        // normalized output frequency
-        float f = (float)i/(float)nfft - 0.5f;
-
-        // scale FFT output appropriately
-        float Ymag = 20*log10f( cabsf(Yfft[i]) );
-
-        // find frequency location of maximum magnitude
-        if (Ymag > Ypeak || i==0) {
-            Ypeak = Ymag;
-            fpeak = f;
-        }
-
-        // find peak side-lobe value, ignoring frequencies
-        // within a certain range of signal frequency
-        if ( fabsf(f-fy) > main_lobe_width )
-            max_sidelobe = Ymag > max_sidelobe ? Ymag : max_sidelobe;
-    }
-
-    if (liquid_autotest_verbose) {
-        // print results
-        printf("test_harness_rresamp_crcf(P=%u, Q=%u, m=%u, A=%.3f)\n", _P, _Q, _m, _As);
-        printf("  desired resampling rate   :   %12.8f = %u / %u\n", r, _P, _Q);
-        printf("  frequency (input)         :   %12.8f / Fs\n", fx);
-        printf("  peak spectrum             :   %12.8f dB (expected 0.0 dB)\n", Ypeak);
-        printf("  peak frequency            :   %12.8f    (expected %-12.8f)\n", fpeak, fy);
-        printf("  max sidelobe              :   %12.8f dB (expected at least %.2f dB)\n", max_sidelobe, -_As);
-    }
-    CONTEND_DELTA(     Ypeak,    0.0f, 0.25f ); // peak should be about 0 dB
-    CONTEND_DELTA(     fpeak,    fy,   0.01f ); // peak frequency should be nearly 0.2
-    CONTEND_LESS_THAN( max_sidelobe, -_As );    // maximum side-lobe should be sufficiently low
-
-#if 0
-    // export results for debugging
-    char filename[256] = "";
-    sprintf(filename,"rresamp_crcf_autotest_P%u_Q%u.m", _P, _Q);
-    FILE*fid = fopen(filename,"w");
-    fprintf(fid,"%% %s: auto-generated file\n",filename);
-    fprintf(fid,"clear all;\n");
-    fprintf(fid,"close all;\n");
-    fprintf(fid,"r    = %12.8f;\n", r);
-    fprintf(fid,"fx   = %.4e;\n", fx);
-    fprintf(fid,"nx   = %u;\n", nx);
-    fprintf(fid,"ny   = %u;\n", ny);
-    fprintf(fid,"wsum = %.4e;\n", wsum);
-    fprintf(fid,"nfft = %u;\n", nfft);
-
-    fprintf(fid,"x = zeros(1,nx);\n");
-    for (i=0; i<nx; i++)
-        fprintf(fid,"x(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
-
-    fprintf(fid,"y = zeros(1,ny);\n");
-    for (i=0; i<ny; i++)
-        fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
-
-    fprintf(fid,"\n\n");
-    fprintf(fid,"%% plot frequency-domain result\n");
-    fprintf(fid,"X = 20*log10(abs(fftshift(fft(x / (wsum        ), nfft))));\n");
-    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y / (wsum*sqrt(r)), nfft))));\n");
-    fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
-    fprintf(fid,"figure('color','white','position',[100 100 800 800]);\n");
-    fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"  hold on;\n");
-    fprintf(fid,"    plot(f,  X,'Color',[0.5 0.5 0.5],'LineWidth',2);\n");
-    fprintf(fid,"    plot(f*r,Y,'Color',[0.0 0.3 0.5],'LineWidth',2);\n");
-    fprintf(fid,"    plot(fx, 0, 'or');\n");
-    fprintf(fid,"  hold off;\n");
-    fprintf(fid,"  grid on;\n");
-    fprintf(fid,"  xlabel('normalized frequency');\n");
-    fprintf(fid,"  ylabel('PSD [dB]');\n");
-    fprintf(fid,"  fmax = max(0.5,0.5*r);\n");
-    fprintf(fid,"  axis([-fmax fmax -140 20]);\n");
-    fprintf(fid,"  legend('original','resampled','location','northeast');\n");
-    fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"  hold on;\n");
-    fprintf(fid,"    plot(f,  X,'Color',[0.5 0.5 0.5],'LineWidth',2);\n");
-    fprintf(fid,"    plot(f*r,Y,'Color',[0.0 0.3 0.5],'LineWidth',2);\n");
-    fprintf(fid,"    plot(fx, 0, 'or');\n");
-    fprintf(fid,"  hold off;\n");
-    fprintf(fid,"  grid on;\n");
-    fprintf(fid,"  xlabel('normalized frequency');\n");
-    fprintf(fid,"  ylabel('PSD [dB]');\n");
-    fprintf(fid,"  axis([0.98*fx 1.02*fx -3 0.5]);\n");
-    fprintf(fid,"  legend('original','resampled','location','northeast');\n");
-
-    fclose(fid);
-    printf("results written to %s\n",filename);
-#endif
+    // destroy objects
+    rresamp_crcf_destroy(resamp);
+    spgramcf_destroy(q);
+    symstreamrcf_destroy(gen);
 }
 
 // actual tests
@@ -191,4 +87,49 @@ void autotest_rresamp_crcf_P3_Q5() { test_harness_rresamp_crcf( 3, 5, 15, 0.4f, 
 void autotest_rresamp_crcf_P6_Q5() { test_harness_rresamp_crcf( 6, 5, 15, 0.4f, 60.0f); }
 void autotest_rresamp_crcf_P8_Q5() { test_harness_rresamp_crcf( 8, 5, 15, 0.4f, 60.0f); }
 void autotest_rresamp_crcf_P9_Q5() { test_harness_rresamp_crcf( 9, 5, 15, 0.4f, 60.0f); }
+
+// test copy method
+void autotest_rresamp_copy()
+{
+    // create resampler with rate P/Q
+    unsigned int i, P = 17, Q = 23, m = 12;
+    rresamp_crcf q0 = rresamp_crcf_create_kaiser(P, Q, m, 0.4f, 60.0f);
+    rresamp_crcf_set_scale(q0, 0.12345f);
+
+    // create generator with default parameters
+    symstreamrcf gen = symstreamrcf_create();
+
+    // generate samples and push through resampler
+    float complex buf  [Q]; // input buffer
+    float complex buf_0[P]; // output buffer (orig)
+    float complex buf_1[P]; // output buffer (copy)
+    for (i=0; i<10; i++) {
+        // generate block of samples
+        symstreamrcf_write_samples(gen, buf, Q);
+
+        // resample
+        rresamp_crcf_execute(q0, buf_0, buf_1);
+    }
+
+    // copy object
+    rresamp_crcf q1 = rresamp_crcf_copy(q0);
+
+    // run samples through both resamplers in parallel
+    for (i=0; i<60; i++) {
+        // generate block of samples
+        symstreamrcf_write_samples(gen, buf, Q);
+
+        // resample
+        rresamp_crcf_execute(q0, buf, buf_0);
+        rresamp_crcf_execute(q1, buf, buf_1);
+
+        // compare output
+        CONTEND_SAME_DATA(buf_0, buf_1, P*sizeof(float complex));
+    }
+
+    // destroy objects
+    rresamp_crcf_destroy(q0);
+    rresamp_crcf_destroy(q1);
+    symstreamrcf_destroy(gen);
+}
 

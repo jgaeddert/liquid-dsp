@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,12 @@ void autotest_window_config_errors()
 #if LIQUID_STRICT_EXIT
     AUTOTEST_WARN("skipping window config test with strict exit enabled\n");
     return;
-#else
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
     CONTEND_EXPRESSION(windowcf_create(0)==NULL);
     CONTEND_EXPRESSION(windowf_create (0)==NULL);
-#endif
 }
 
 void autotest_windowf()
@@ -96,6 +98,7 @@ void autotest_windowf()
     windowf_index(w, 7, &x);    CONTEND_EQUALITY(x, 3);
     windowf_index(w, 8, &x);    CONTEND_EQUALITY(x, 3);
     windowf_index(w, 9, &x);    CONTEND_EQUALITY(x, 3);
+    CONTEND_INEQUALITY( windowf_index(w,999, &x), LIQUID_OK); // out of range
 
     // push 4 more elements
     // 7 6 3 3 3 3 5 5 5 5
@@ -145,7 +148,39 @@ void autotest_windowf()
     }
 
     windowf_destroy(w);
+}
 
-    printf("done.\n");
+void autotest_window_copy()
+{
+    // create window
+    unsigned int wlen = 20;
+    windowcf q0 = windowcf_create(wlen);
+
+    // write some values
+    unsigned int i;
+    for (i=0; i<wlen; i++) {
+        float complex v = randnf() + _Complex_I*randnf();
+        windowcf_push(q0, v);
+    }
+
+    // copy object
+    windowcf q1 = windowcf_copy(q0);
+
+    // write a few more values
+    for (i=0; i<wlen/2; i++) {
+        float complex v = randnf() + _Complex_I*randnf();
+        windowcf_push(q0, v);
+        windowcf_push(q1, v);
+    }
+
+    // read buffers and compare
+    float complex * r0, * r1;
+    windowcf_read(q0, &r0);
+    windowcf_read(q1, &r1);
+    CONTEND_SAME_DATA(r0, r1, wlen*sizeof(float complex));
+
+    // destroy objects
+    windowcf_destroy(q0);
+    windowcf_destroy(q1);
 }
 

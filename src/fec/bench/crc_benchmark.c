@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ void crc_bench(struct rusage *_start,
     unsigned char msg[_n];
     unsigned int key = 0;
 
-    // initialze message
+    // initialize message
     for (i=0; i<_n; i++)
         msg[i] = rand() & 0xff;
 
@@ -62,6 +62,9 @@ void crc_bench(struct rusage *_start,
         key ^= crc_generate_key(_crc, msg, _n);
         key ^= crc_generate_key(_crc, msg, _n);
         key ^= crc_generate_key(_crc, msg, _n);
+
+        // randomize input
+        msg[0] ^= key & 0xff;
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;

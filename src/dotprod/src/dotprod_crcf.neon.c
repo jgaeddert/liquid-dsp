@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,18 +37,18 @@
 #define DEBUG_DOTPROD_CRCF_NEON   0
 
 // forward declaration of internal methods
-void dotprod_crcf_execute_neon(dotprod_crcf    _q,
+int dotprod_crcf_execute_neon(dotprod_crcf    _q,
+                              float complex * _x,
+                              float complex * _y);
+int dotprod_crcf_execute_neon4(dotprod_crcf    _q,
                                float complex * _x,
                                float complex * _y);
-void dotprod_crcf_execute_neon4(dotprod_crcf    _q,
-                                float complex * _x,
-                                float complex * _y);
 
 // basic dot product (ordinal calculation) using neon extensions
-void dotprod_crcf_run(float *         _h,
-                      float complex * _x,
-                      unsigned int    _n,
-                      float complex * _y)
+int dotprod_crcf_run(float *         _h,
+                     float complex * _x,
+                     unsigned int    _n,
+                     float complex * _y)
 {
     // initialize accumulator
     float complex r=0;
@@ -59,14 +59,15 @@ void dotprod_crcf_run(float *         _h,
 
     // return result
     *_y = r;
+    return LIQUID_OK;
 }
 
 
 // basic dot product (ordinal calculation) with loop unrolled
-void dotprod_crcf_run4(float *         _h,
-                       float complex * _x,
-                       unsigned int    _n,
-                       float complex * _y)
+int dotprod_crcf_run4(float *         _h,
+                      float complex * _x,
+                      unsigned int    _n,
+                      float complex * _y)
 {
     float complex r = 0;
 
@@ -87,6 +88,7 @@ void dotprod_crcf_run4(float *         _h,
         r += _h[i] * _x[i];
 
     *_y = r;
+    return LIQUID_OK;
 }
 
 
@@ -154,17 +156,34 @@ dotprod_crcf dotprod_crcf_recreate_rev(dotprod_crcf _q,
     return dotprod_crcf_create_rev(_h,_n);
 }
 
-
-void dotprod_crcf_destroy(dotprod_crcf _q)
+dotprod_crcf dotprod_crcf_copy(dotprod_crcf q_orig)
 {
-    // free coefficients array
-    free(_q->h);
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("dotprod_crcf_copy().neon, object cannot be NULL");
 
-    // free main memory
-    free(_q);
+    dotprod_crcf q_copy = (dotprod_crcf)malloc(sizeof(struct dotprod_crcf_s));
+    q_copy->n = q_orig->n;
+
+    // allocate memory for coefficients (repeated)
+    q_copy->h = (float*) malloc( 2*q_copy->n*sizeof(float) );
+
+    // copy coefficients array (repeated)
+    //  h = { _h[0], _h[0], _h[1], _h[1], ... _h[n-1], _h[n-1]}
+    memmove(q_copy->h, q_orig->h, 2*q_orig->n*sizeof(float));
+
+    // return object
+    return q_copy;
 }
 
-void dotprod_crcf_print(dotprod_crcf _q)
+int dotprod_crcf_destroy(dotprod_crcf _q)
+{
+    free(_q->h);
+    free(_q);
+    return LIQUID_OK;
+}
+
+int dotprod_crcf_print(dotprod_crcf _q)
 {
     // print coefficients to screen, skipping odd entries (due
     // to repeated coefficients)
@@ -172,25 +191,25 @@ void dotprod_crcf_print(dotprod_crcf _q)
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("  %3u : %12.9f\n", i, _q->h[2*i]);
+    return LIQUID_OK;
 }
 
 // 
-void dotprod_crcf_execute(dotprod_crcf    _q,
-                          float complex * _x,
-                          float complex * _y)
+int dotprod_crcf_execute(dotprod_crcf    _q,
+                         float complex * _x,
+                         float complex * _y)
 {
     // switch based on size
     if (_q->n < 32) {
-        dotprod_crcf_execute_neon(_q, _x, _y);
-    } else {
-        dotprod_crcf_execute_neon4(_q, _x, _y);
+        return dotprod_crcf_execute_neon(_q, _x, _y);
     }
+    return dotprod_crcf_execute_neon4(_q, _x, _y);
 }
 
 // use ARM Neon extensions
-void dotprod_crcf_execute_neon(dotprod_crcf    _q,
-                               float complex * _x,
-                               float complex * _y)
+int dotprod_crcf_execute_neon(dotprod_crcf    _q,
+                              float complex * _x,
+                              float complex * _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;
@@ -242,12 +261,13 @@ void dotprod_crcf_execute_neon(dotprod_crcf    _q,
 
     // set return value
     *_y = w[0] + _Complex_I*w[1];
+    return LIQUID_OK;
 }
 
 // use ARM Neon extensions
-void dotprod_crcf_execute_neon4(dotprod_crcf    _q,
-                                float complex * _x,
-                                float complex * _y)
+int dotprod_crcf_execute_neon4(dotprod_crcf    _q,
+                               float complex * _x,
+                               float complex * _y)
 {
 #if 1
     // type cast input as floating point array
@@ -323,5 +343,6 @@ void dotprod_crcf_execute_neon4(dotprod_crcf    _q,
 #else
     dotprod_crcf_execute_neon(_q, _x, _y);
 #endif
+    return LIQUID_OK;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,19 +89,20 @@ void autotest_spgramcf_noise_kbd            () { testbench_spgramcf_noise(800, 0
 
 void testbench_spgramcf_signal(unsigned int _nfft, int _wtype, float _fc, float _SNRdB)
 {
-    unsigned int k = 4, m = 12;
-    float beta = 0.2f, noise_floor = -80.0f, tol = 0.5f;
+    float bw = 0.25f; // signal bandwidth (relative)
+    unsigned int m = 25;
+    float beta = 0.2f, n0 = -80.0f, tol = 0.5f;
     if (liquid_autotest_verbose)
         printf("  spgramcf test (signal): nfft=%6u, wtype=%24s, fc=%6.2f Fs, snr=%6.1f dB\n", _nfft, liquid_window_str[_wtype][1], _fc, _SNRdB);
 
     // create objects
-    spgramcf     q     =  spgramcf_create(_nfft, _wtype, _nfft/2, _nfft/4);
-    symstreamcf  gen   = symstreamcf_create_linear(LIQUID_FIRFILT_KAISER,k,m,beta,LIQUID_MODEM_QPSK);
+    spgramcf     q     = spgramcf_create(_nfft, _wtype, _nfft/2, _nfft/4);
+    symstreamrcf gen   = symstreamrcf_create_linear(LIQUID_FIRFILT_KAISER,bw,m,beta,LIQUID_MODEM_QPSK);
     nco_crcf     mixer = nco_crcf_create(LIQUID_VCO);
 
     // set parameters
-    float nstd = powf(10.0f,noise_floor/20.0f); // noise std. dev.
-    symstreamcf_set_gain(gen, powf(10.0f, (noise_floor + _SNRdB - 10*log10f(k))/20.0f));
+    float nstd = powf(10.0f,n0/20.0f); // noise std. dev.
+    symstreamrcf_set_gain(gen, powf(10.0f, (n0 + _SNRdB + 10*log10f(bw))/20.0f));
     nco_crcf_set_frequency(mixer, 2*M_PI*_fc);
 
     // generate samples and push through spgram object
@@ -109,7 +110,7 @@ void testbench_spgramcf_signal(unsigned int _nfft, int _wtype, float _fc, float 
     float complex buf[buf_len];
     while (num_samples < 2000*_nfft) {
         // generate block of samples
-        symstreamcf_write_samples(gen, buf, buf_len);
+        symstreamrcf_write_samples(gen, buf, buf_len);
 
         // mix to desired frequency and add noise
         nco_crcf_mix_block_up(mixer, buf, buf, buf_len);
@@ -121,46 +122,29 @@ void testbench_spgramcf_signal(unsigned int _nfft, int _wtype, float _fc, float 
         num_samples += buf_len;
     }
 
-    // determine appropriate indices
-    unsigned int i0 = ((unsigned int)roundf((_fc+0.5f)*_nfft)) % _nfft;
-    unsigned int ns = (unsigned int)roundf(_nfft*(1.0f-beta)/(float)k); // numer of samples to observe
-    float psd_target = 10*log10f(powf(10.0f,noise_floor/10.0f) + powf(10.0f,(noise_floor+_SNRdB)/10.0f));
-    //printf("i0=%u, ns=%u (nfft=%u), target=%.3f dB\n", i0, ns, _nfft, psd_target);
-
     // verify result
     float psd[_nfft];
     spgramcf_get_psd(q, psd);
-#if 0
-    // debug
-    const char filename[] = "testbench_spgramcf_signal.m";
-    FILE * fid = fopen(filename,"w");
-    fprintf(fid,"clear all; close all; nfft=%u; f=[0:(nfft-1)]/nfft-0.5; psd=zeros(1,nfft);\n", _nfft);
-    fprintf(fid,"i0=%u; ns=%u; target=%f; tol=%f; idx=mod(round([1:ns]-1+i0-ns/2),nfft)+1;\n", i0, ns, psd_target, tol);
-    for (i=0; i<_nfft; i++) { fprintf(fid,"psd(%6u) = %8.2f;\n", i+1, psd[i]); }
-    fprintf(fid,"figure; xlabel('f/F_s'); ylabel('PSD [dB]'); hold on;\n");
-    fprintf(fid,"  plot(f(idx),target*ones(1,ns)+tol,'Color',[0.5 0 0]);\n");
-    fprintf(fid,"  plot(f(idx),target*ones(1,ns)-tol,'Color',[0.5 0 0]);\n");
-    fprintf(fid,"  plot(f,psd,'LineWidth',2,'Color',[0 0.3 0.5]);\n");
-    fprintf(fid,"hold off; grid on; axis([-0.5 0.5 %f %f]);\n", noise_floor-5, noise_floor+_SNRdB+5);
-    fclose(fid);
-    printf("debug file written to %s\n", filename);
-#endif
-    for (i=0; i<ns; i++) {
-        unsigned int index = (i0 + i + _nfft - ns/2) % _nfft;
-        CONTEND_DELTA(psd[index], psd_target, tol)
-    }
+    float sn  = 10*log10f(powf(10,(_SNRdB+n0)/10.0f) + powf(10.0f,n0/10.0f));// signal + noise
+    autotest_psd_s regions[] = {
+        {.fmin=-0.5f,       .fmax=_fc-0.6f*bw, .pmin=n0-tol, .pmax=n0+tol, .test_lo=1, .test_hi=1},
+        {.fmin=_fc-0.4f*bw, .fmax=_fc+0.4f*bw, .pmin=sn-tol, .pmax=sn+tol, .test_lo=1, .test_hi=1},
+        {.fmin=_fc+0.6f*bw, .fmax=+0.5f,       .pmin=n0-tol, .pmax=n0+tol, .test_lo=1, .test_hi=1},
+    };
+    liquid_autotest_validate_spectrum(psd, _nfft, regions, 3,
+        liquid_autotest_verbose ? "autotest/logs/spgramcf_signal.m" : NULL);
 
     // destroy objects
     spgramcf_destroy(q);
-    symstreamcf_destroy(gen);
+    symstreamrcf_destroy(gen);
     nco_crcf_destroy(mixer);
 }
 
 void autotest_spgramcf_signal_00() { testbench_spgramcf_signal(800,LIQUID_WINDOW_HAMMING, 0.0f,30.0f); }
 void autotest_spgramcf_signal_01() { testbench_spgramcf_signal(800,LIQUID_WINDOW_HAMMING, 0.2f,10.0f); }
 void autotest_spgramcf_signal_02() { testbench_spgramcf_signal(800,LIQUID_WINDOW_HANN,    0.2f,10.0f); }
-void autotest_spgramcf_signal_03() { testbench_spgramcf_signal(400,LIQUID_WINDOW_KAISER, -0.3f,50.0f); }
-void autotest_spgramcf_signal_04() { testbench_spgramcf_signal(640,LIQUID_WINDOW_HAMMING,-0.5f, 0.0f); }
+void autotest_spgramcf_signal_03() { testbench_spgramcf_signal(400,LIQUID_WINDOW_KAISER, -0.3f,40.0f); }
+void autotest_spgramcf_signal_04() { testbench_spgramcf_signal(640,LIQUID_WINDOW_HAMMING,-0.2f, 0.0f); }
 void autotest_spgramcf_signal_05() { testbench_spgramcf_signal(640,LIQUID_WINDOW_HAMMING, 0.1f,-3.0f); }
 
 void autotest_spgramcf_counters()
@@ -229,8 +213,10 @@ void autotest_spgramcf_invalid_config()
     AUTOTEST_WARN("skipping spgram config test with strict exit enabled\n");
     return;
 #endif
-    // check that object returns NULL for invalid configurations
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
     fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check that object returns NULL for invalid configurations
     CONTEND_ISNULL(spgramcf_create(  0, LIQUID_WINDOW_HAMMING,       200, 200)); // nfft too small
     CONTEND_ISNULL(spgramcf_create(  1, LIQUID_WINDOW_HAMMING,       200, 200)); // nfft too small
     CONTEND_ISNULL(spgramcf_create(  2, LIQUID_WINDOW_HAMMING,       200, 200)); // window length too large
@@ -317,6 +303,53 @@ void autotest_spgramcf_short()
     free(buf);
 }
 
+// check copy method
+void autotest_spgramcf_copy()
+{
+    unsigned int nfft        = 1200;    // transform size
+    unsigned int num_samples = 9600;    // number of samples to generate
+    float        nstd        =  0.1f;   // noise standard deviation
+
+    // create object with some odd properties
+    spgramcf q0 = spgramcf_create(nfft, LIQUID_WINDOW_KAISER, 960, 373);
+
+    // generate a bunch of random noise samples
+    unsigned int i;
+    for (i=0; i<num_samples; i++) {
+        float complex v = 0.1f + nstd * (randnf() + _Complex_I*randnf());
+        spgramcf_push(q0, v);
+    }
+
+    // copy object and push same samples through both
+    spgramcf q1 = spgramcf_copy(q0);
+    for (i=0; i<num_samples; i++) {
+        float complex v = 0.1f + nstd * (randnf() + _Complex_I*randnf());
+        spgramcf_push(q0, v);
+        spgramcf_push(q1, v);
+    }
+
+    // get spectrum and compare outputs
+    float psd_0[nfft];
+    float psd_1[nfft];
+    spgramcf_get_psd(q0, psd_0);
+    spgramcf_get_psd(q1, psd_1);
+    CONTEND_SAME_DATA(psd_0, psd_1, nfft*sizeof(float));
+
+    // check parameters
+    CONTEND_EQUALITY(spgramcf_get_nfft                (q0),spgramcf_get_nfft                (q1));
+    CONTEND_EQUALITY(spgramcf_get_window_len          (q0),spgramcf_get_window_len          (q1));
+    CONTEND_EQUALITY(spgramcf_get_delay               (q0),spgramcf_get_delay               (q1));
+    CONTEND_EQUALITY(spgramcf_get_wtype               (q0),spgramcf_get_wtype               (q1));
+    CONTEND_EQUALITY(spgramcf_get_num_samples         (q0),spgramcf_get_num_samples         (q1));
+    CONTEND_EQUALITY(spgramcf_get_num_samples_total   (q0),spgramcf_get_num_samples_total   (q1));
+    CONTEND_EQUALITY(spgramcf_get_num_transforms      (q0),spgramcf_get_num_transforms      (q1));
+    CONTEND_EQUALITY(spgramcf_get_num_transforms_total(q0),spgramcf_get_num_transforms_total(q1));
+
+    // destroy objects
+    spgramcf_destroy(q0);
+    spgramcf_destroy(q1);
+}
+
 // check spectral periodogram behavior on null input (zero samples)
 void autotest_spgramcf_null()
 {
@@ -341,12 +374,12 @@ void autotest_spgram_gnuplot()
         spgramcf_push(q, randnf() + _Complex_I*randnf());
 
     // export once before setting values
-    CONTEND_EQUALITY(LIQUID_OK,spgramcf_export_gnuplot(q,"autotest_spgram"))
+    CONTEND_EQUALITY(LIQUID_OK,spgramcf_export_gnuplot(q,"autotest/logs/spgram.gnu"))
 
     // set values and export again
     CONTEND_EQUALITY(LIQUID_OK,spgramcf_set_freq(q, 100e6))
     CONTEND_EQUALITY(LIQUID_OK,spgramcf_set_rate(q,  20e6))
-    CONTEND_EQUALITY(LIQUID_OK,spgramcf_export_gnuplot(q,"autotest_spgram"))
+    CONTEND_EQUALITY(LIQUID_OK,spgramcf_export_gnuplot(q,"autotest/logs/spgram.gnu"))
 
     spgramcf_destroy(q);
 }

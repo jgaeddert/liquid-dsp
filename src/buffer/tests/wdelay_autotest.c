@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,7 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-//
-// AUTOTEST: wdelayf
-//
+// test basic wdelayf functionality
 void autotest_wdelayf()
 {
     float v;    // reader
@@ -81,7 +79,43 @@ void autotest_wdelayf()
     // wdelay: 1 1 1 2 3 4
     CONTEND_SAME_DATA(y2, y2_test, 10*sizeof(float));
 
+    CONTEND_EQUALITY(wdelayf_print(w), LIQUID_OK);
+
     // destroy object
     wdelayf_destroy(w);
+}
+
+// test copy method
+void autotest_wdelay_copy()
+{
+    // create base object
+    unsigned int delay = 20;
+    wdelaycf q0 = wdelaycf_create(delay);
+
+    // write some values
+    unsigned int i;
+    for (i=0; i<delay; i++) {
+        float complex v = randnf() + _Complex_I*randnf();
+        wdelaycf_push(q0, v);
+    }
+
+    // copy object
+    wdelaycf q1 = wdelaycf_copy(q0);
+
+    // write a few more values
+    for (i=0; i<64; i++) {
+        float complex v = randnf() + _Complex_I*randnf();
+        wdelaycf_push(q0, v);
+        wdelaycf_push(q1, v);
+
+        float complex y0, y1;
+        wdelaycf_read(q0, &y0);
+        wdelaycf_read(q1, &y1);
+        CONTEND_EQUALITY(y0, y1);
+    }
+
+    // destroy objects
+    wdelaycf_destroy(q0);
+    wdelaycf_destroy(q1);
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,23 +37,19 @@
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_gmsktx(unsigned int _k,
-                          unsigned int _m,
-                          float        _beta,
-                          float        _dt,
-                          float *      _h)
+int liquid_firdes_gmsktx(unsigned int _k,
+                         unsigned int _m,
+                         float        _beta,
+                         float        _dt,
+                         float *      _h)
 {
     // validate input
-    if ( _k < 1 ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmsktx(): k must be greater than 0");
-        return;
-    } else if ( _m < 1 ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmsktx(): m must be greater than 0");
-        return;
-    } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmsktx(): beta must be in [0,1]");
-        return;
-    } else;
+    if ( _k < 1 )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmsktx(): k must be greater than 0");
+    if ( _m < 1 )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmsktx(): m must be greater than 0");
+    if ( (_beta < 0.0f) || (_beta > 1.0f) )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmsktx(): beta must be in [0,1]");
 
     // derived values
     unsigned int h_len = 2*_k*_m+1;
@@ -78,6 +74,7 @@ void liquid_firdes_gmsktx(unsigned int _k,
         _h[i] *= M_PI / (2.0f * e);
     for (i=0; i<h_len; i++)
         _h[i] *= (float)_k;
+    return LIQUID_OK;
 }
 
 // Design GMSK receive filter
@@ -86,23 +83,19 @@ void liquid_firdes_gmsktx(unsigned int _k,
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_gmskrx(unsigned int _k,
-                          unsigned int _m,
-                          float        _beta,
-                          float        _dt,
-                          float *      _h)
+int liquid_firdes_gmskrx(unsigned int _k,
+                         unsigned int _m,
+                         float        _beta,
+                         float        _dt,
+                         float *      _h)
 {
     // validate input
-    if ( _k < 1 ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmskrx(): k must be greater than 0");
-        return;
-    } else if ( _m < 1 ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmskrx(): m must be greater than 0");
-        return;
-    } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmskrx(): beta must be in [0,1]");
-        return;
-    }
+    if ( _k < 1 )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmskrx(): k must be greater than 0");
+    if ( _m < 1 )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmskrx(): m must be greater than 0");
+    if ( (_beta < 0.0f) || (_beta > 1.0f) )
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmskrx(): beta must be in [0,1]");
 
     unsigned int k = _k;
     unsigned int m = _m;
@@ -120,7 +113,7 @@ void liquid_firdes_gmskrx(unsigned int _k,
 
     // arrays
     float ht[h_len];         // transmit filter coefficients
-    float hr[h_len];         // recieve filter coefficients
+    float hr[h_len];         // receive filter coefficients
 
     // design transmit filter
     liquid_firdes_gmsktx(k,m,BT,0.0f,ht);
@@ -148,8 +141,8 @@ void liquid_firdes_gmskrx(unsigned int _k,
 
     // create 'gain' filter to improve stop-band rejection
     float fc = (0.7f + 0.1*beta) / (float)k;
-    float As = 60.0f;
-    liquid_firdes_kaiser(h_len, fc, As, 0.0f, g_primef);
+    float as = 60.0f;
+    liquid_firdes_kaiser(h_len, fc, as, 0.0f, g_primef);
 
     // copy to fft input buffer, shifting appropriately
     for (i=0; i<h_len; i++) {
@@ -163,7 +156,7 @@ void liquid_firdes_gmskrx(unsigned int _k,
     fft_run(h_len, g_prime, G_prime, LIQUID_FFT_FORWARD, 0);
     fft_run(h_len, h_tx,    H_tx,    LIQUID_FFT_FORWARD, 0);
 
-    // find minimum of reponses
+    // find minimum of responses
     float H_tx_min = 0.0f;
     float H_prime_min = 0.0f;
     float G_prime_min = 0.0f;
@@ -175,7 +168,7 @@ void liquid_firdes_gmskrx(unsigned int _k,
 
     // compute 'prototype' response, removing minima, and add correction factor
     for (i=0; i<h_len; i++) {
-        // compute response necessary to yeild prototype response (not exact, but close)
+        // compute response necessary to yield prototype response (not exact, but close)
         H_hat[i] = crealf(H_prime[i] - H_prime_min + delta) / crealf(H_tx[i] - H_tx_min + delta);
 
         // include additional term to add stop-band suppression
@@ -190,5 +183,7 @@ void liquid_firdes_gmskrx(unsigned int _k,
     // copy result, scaling by (samples/symbol)^2
     for (i=0; i<h_len; i++)
         _h[i] = hr[i]*_k*_k;
+
+    return LIQUID_OK;
 }
 

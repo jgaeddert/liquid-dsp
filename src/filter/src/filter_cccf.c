@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,24 +67,24 @@
 #define PRINTVAL_TC(X,F)    PRINTVAL_CFLOAT(X,F)
 #define PRINTVAL_TI(X,F)    PRINTVAL_CFLOAT(X,F)
 
-// source files
-#include "autocorr.c"
-#include "dds.c"
-#include "fftfilt.c"
-#include "firdecim.c"
-#include "firfilt.c"
-#include "firinterp.c"
-#include "firpfb.c"
-#include "iirdecim.c"
-#include "iirfilt.c"
-#include "iirfiltsos.c"
-#include "iirinterp.c"
-//#include "qmfb.c"
+// prototype files
+#include "autocorr.proto.c"
+#include "dds.proto.c"
+#include "fftfilt.proto.c"
+#include "firdecim.proto.c"
+#include "firfilt.proto.c"
+#include "firinterp.proto.c"
+#include "firpfb.proto.c"
+#include "iirdecim.proto.c"
+#include "iirfilt.proto.c"
+#include "iirfiltsos.proto.c"
+#include "iirinterp.proto.c"
+//#include "qmfb.proto.c"
 // ordfilt
-#include "msresamp.c"
-#include "msresamp2.c"
-#include "rresamp.c"
-//#include "resamp.c"         // floating-point phase version
-#include "resamp.fixed.c" // fixed-point phase version
-#include "resamp2.c"
-//#include "symsync.c"
+#include "msresamp.proto.c"
+#include "msresamp2.proto.c"
+#include "rresamp.proto.c"
+//#include "resamp.proto.c"         // floating-point phase version
+#include "resamp.fixed.proto.c" // fixed-point phase version
+#include "resamp2.proto.c"
+//#include "symsync.proto.c"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,31 +45,32 @@
 #define DEBUG_DOTPROD_RRRF_SSE4     0
 
 // internal methods
-void dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
+int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
+                              float *      _x,
+                              float *      _y);
+int dotprod_rrrf_execute_sse4u(dotprod_rrrf _q,
                                float *      _x,
                                float *      _y);
-void dotprod_rrrf_execute_sse4u(dotprod_rrrf _q,
-                                float *      _x,
-                                float *      _y);
 
 // basic dot product (ordinal calculation)
-void dotprod_rrrf_run(float *      _h,
-                      float *      _x,
-                      unsigned int _n,
-                      float *      _y)
+int dotprod_rrrf_run(float *      _h,
+                     float *      _x,
+                     unsigned int _n,
+                     float *      _y)
 {
     float r=0;
     unsigned int i;
     for (i=0; i<_n; i++)
         r += _h[i] * _x[i];
     *_y = r;
+    return LIQUID_OK;
 }
 
 // basic dot product (ordinal calculation) with loop unrolled
-void dotprod_rrrf_run4(float *      _h,
-                       float *      _x,
-                       unsigned int _n,
-                       float *      _y)
+int dotprod_rrrf_run4(float *      _h,
+                      float *      _x,
+                      unsigned int _n,
+                      float *      _y)
 {
     float r=0;
 
@@ -90,6 +91,7 @@ void dotprod_rrrf_run4(float *      _h,
         r += _h[i] * _x[i];
 
     *_y = r;
+    return LIQUID_OK;
 }
 
 
@@ -102,8 +104,9 @@ struct dotprod_rrrf_s {
     float * h;          // coefficients array
 };
 
-dotprod_rrrf dotprod_rrrf_create(float *      _h,
-                                 unsigned int _n)
+dotprod_rrrf dotprod_rrrf_create_opt(float *      _h,
+                                     unsigned int _n,
+                                     int          _rev)
 {
     dotprod_rrrf q = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
     q->n = _n;
@@ -112,10 +115,24 @@ dotprod_rrrf dotprod_rrrf_create(float *      _h,
     q->h = (float*) _mm_malloc( q->n*sizeof(float), 16);
 
     // set coefficients
-    memmove(q->h, _h, _n*sizeof(float));
+    unsigned int i;
+    for (i=0; i<q->n; i++)
+        q->h[i] = _h[_rev ? q->n-i-1 : i];
 
     // return object
     return q;
+}
+
+dotprod_rrrf dotprod_rrrf_create(float *      _h,
+                                 unsigned int _n)
+{
+    return dotprod_rrrf_create_opt(_h, _n, 0);
+}
+
+dotprod_rrrf dotprod_rrrf_create_rev(float *      _h,
+                                     unsigned int _n)
+{
+    return dotprod_rrrf_create_opt(_h, _n, 1);
 }
 
 // re-create the structured dotprod object
@@ -128,38 +145,67 @@ dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _q,
     return dotprod_rrrf_create(_h,_n);
 }
 
+// re-create the structured dotprod object, coefficients reversed
+dotprod_rrrf dotprod_rrrf_recreate_rev(dotprod_rrrf _q,
+                                       float *      _h,
+                                       unsigned int _n)
+{
+    // completely destroy and re-create dotprod object
+    dotprod_rrrf_destroy(_q);
+    return dotprod_rrrf_create_rev(_h,_n);
+}
 
-void dotprod_rrrf_destroy(dotprod_rrrf _q)
+dotprod_rrrf dotprod_rrrf_copy(dotprod_rrrf q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("dotprod_rrrf_copy().sse4, object cannot be NULL");
+
+    dotprod_rrrf q_copy = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
+    q_copy->n = q_orig->n;
+
+    // allocate memory for coefficients, 16-byte aligned
+    q_copy->h = (float*) _mm_malloc( q_copy->n*sizeof(float), 16 );
+
+    // copy coefficients array
+    memmove(q_copy->h, q_orig->h, q_orig->n*sizeof(float));
+
+    // return object
+    return q_copy;
+}
+
+int dotprod_rrrf_destroy(dotprod_rrrf _q)
 {
     _mm_free(_q->h);
     free(_q);
+    return LIQUID_OK;
 }
 
-void dotprod_rrrf_print(dotprod_rrrf _q)
+int dotprod_rrrf_print(dotprod_rrrf _q)
 {
     printf("dotprod_rrrf [sse4.1/4.2, %u coefficients]\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("%3u : %12.9f\n", i, _q->h[i]);
+    return LIQUID_OK;
 }
 
 // 
-void dotprod_rrrf_execute(dotprod_rrrf _q,
+int dotprod_rrrf_execute(dotprod_rrrf _q,
                           float *      _x,
                           float *      _y)
 {
     // switch based on size
     if (_q->n < 16) {
-        dotprod_rrrf_execute_sse4(_q, _x, _y);
-    } else {
-        dotprod_rrrf_execute_sse4u(_q, _x, _y);
+        return dotprod_rrrf_execute_sse4(_q, _x, _y);
     }
+    return dotprod_rrrf_execute_sse4u(_q, _x, _y);
 }
 
 // use MMX/SSE extensions
-void dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
-                               float *      _x,
-                               float *      _y)
+int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
+                              float *      _x,
+                              float *      _y)
 {
     __m128 v;   // input vector
     __m128 h;   // coefficients vector
@@ -179,7 +225,7 @@ void dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
         h = _mm_load_ps(&_q->h[i]);
 
         // compute dot product
-        s = _mm_dp_ps(v, h, 0xffffffff);
+        s = _mm_dp_ps(v, h, 0xff);
         
         // parallel addition
         sum = _mm_add_ps( sum, s );
@@ -198,12 +244,13 @@ void dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
 
     // set return value
     *_y = total;
+    return LIQUID_OK;
 }
 
 // use MMX/SSE extensions (unrolled)
-void dotprod_rrrf_execute_sse4u(dotprod_rrrf _q,
-                                float *      _x,
-                                float *      _y)
+int dotprod_rrrf_execute_sse4u(dotprod_rrrf _q,
+                               float *      _x,
+                               float *      _y)
 {
     __m128 v0, v1, v2, v3;
     __m128 h0, h1, h2, h3;
@@ -229,10 +276,10 @@ void dotprod_rrrf_execute_sse4u(dotprod_rrrf _q,
         h3 = _mm_load_ps(&_q->h[4*i+12]);
 
         // compute dot products
-        s0 = _mm_dp_ps(v0, h0, 0xffffffff);
-        s1 = _mm_dp_ps(v1, h1, 0xffffffff);
-        s2 = _mm_dp_ps(v2, h2, 0xffffffff);
-        s3 = _mm_dp_ps(v3, h3, 0xffffffff);
+        s0 = _mm_dp_ps(v0, h0, 0xff);
+        s1 = _mm_dp_ps(v1, h1, 0xff);
+        s2 = _mm_dp_ps(v2, h2, 0xff);
+        s3 = _mm_dp_ps(v3, h3, 0xff);
         
         // parallel addition
         // FIXME: these additions are by far the limiting factor
@@ -255,5 +302,6 @@ void dotprod_rrrf_execute_sse4u(dotprod_rrrf _q,
 
     // set return value
     *_y = total;
+    return LIQUID_OK;
 }
 

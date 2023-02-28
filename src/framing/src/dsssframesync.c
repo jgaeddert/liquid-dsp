@@ -271,16 +271,20 @@ int dsssframesync_execute(dsssframesync _q, float complex * _x, unsigned int _n)
         switch (_q->state) {
         case DSSSFRAMESYNC_STATE_DETECTFRAME:
             // detect frame (look for p/n sequence)
-            return dsssframesync_execute_seekpn(_q, _x[i]);
+            dsssframesync_execute_seekpn(_q, _x[i]);
+            break;
         case DSSSFRAMESYNC_STATE_RXPREAMBLE:
             // receive p/n sequence symbols
-            return dsssframesync_execute_rxpreamble(_q, _x[i]);
+            dsssframesync_execute_rxpreamble(_q, _x[i]);
+            break;
         case DSSSFRAMESYNC_STATE_RXHEADER:
             // receive header symbols
-            return dsssframesync_execute_rxheader(_q, _x[i]);
+            dsssframesync_execute_rxheader(_q, _x[i]);
+            break;
         case DSSSFRAMESYNC_STATE_RXPAYLOAD:
             // receive payload symbols
-            return dsssframesync_execute_rxpayload(_q, _x[i]);
+            dsssframesync_execute_rxpayload(_q, _x[i]);
+            break;
         default:
             return liquid_error(LIQUID_EINT,"dsssframesync_execute(), invalid internal state");
         }
@@ -298,10 +302,8 @@ int dsssframesync_execute_seekpn(dsssframesync _q, float complex _x)
     float complex * v = qdetector_cccf_execute(_q->detector, _x);
 
     // check if frame has been detected
-    printf("seeking pn...\n");
     if (v == NULL)
         return LIQUID_OK;
-    printf("FRAME DETECTED\n");
 
     // get estimates
     _q->tau_hat   = qdetector_cccf_get_tau(_q->detector);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@ struct framegen64_s {
     float complex   payload_tx[630];    // modulated payload symbols with pilots
     unsigned int    m;                  // filter delay (symbols)
     float           beta;               // filter excess bandwidth factor
-    firinterp_crcf interp;              // pulse-shaping filter
+    firinterp_crcf  interp;             // pulse-shaping filter/interpolator
 };
 
 // create framegen64 object
@@ -83,6 +83,17 @@ framegen64 framegen64_create()
 
     // return main object
     return q;
+}
+
+// copy object
+framegen64 framegen64_copy(framegen64 q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("framegen64_copy(), object cannot be NULL");
+
+    // as this object is stateless, we can really create a new one
+    return framegen64_create();
 }
 
 // destroy framegen64 object

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,6 @@
 #define BUFFER_TYPE_CFLOAT
 
 #define CBUFFER(name)   LIQUID_CONCAT(cbuffercf, name)
-//#define SBUFFER(name)   LIQUID_CONCAT(sbuffercf, name)
 #define WDELAY(name)    LIQUID_CONCAT(wdelaycf,  name)
 #define WINDOW(name)    LIQUID_CONCAT(windowcf,  name)
 
@@ -42,8 +41,8 @@
 #define BUFFER_PRINT_VALUE(V) \
     printf("  : %12.4e + %12.4e", crealf(V), cimagf(V));
 
-#include "cbuffer.c"
-//#include "sbuffer.c"
-#include "window.c"
-#include "wdelay.c"
+// prototypes
+#include "cbuffer.proto.c"
+#include "window.proto.c"
+#include "wdelay.proto.c"
 

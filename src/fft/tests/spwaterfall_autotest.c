@@ -70,7 +70,7 @@ void testbench_spwaterfallcf_noise(unsigned int _nfft,
                                    unsigned int _time,
                                    float        _noise_floor)
 {
-    unsigned int num_samples = 10*_nfft*_time;  // number of samples to generate
+    unsigned int num_samples = 4*_nfft*_time;  // number of samples to generate
     float        nstd        = powf(10.0f,_noise_floor/20.0f); // noise std. dev.
     float        tol         = 4.0f; // error tolerance [dB] TODO: drop tolerance to 0.5 dB
     int _wtype = LIQUID_WINDOW_HAMMING;
@@ -114,9 +114,9 @@ void testbench_spwaterfallcf_noise(unsigned int _nfft,
 }
 
 // test different transform sizes
-void autotest_spwaterfallcf_noise_440()  { testbench_spwaterfallcf_noise( 440, 320, 10, 240, -80.0); }
-void autotest_spwaterfallcf_noise_1024() { testbench_spwaterfallcf_noise( 680, 320, 10, 640, -80.0); }
-void autotest_spwaterfallcf_noise_1200() { testbench_spwaterfallcf_noise(1200, 320, 10, 800, -80.0); }
+void autotest_spwaterfallcf_noise_440()  { testbench_spwaterfallcf_noise( 440, 320, 100, 240, -80.0); }
+void autotest_spwaterfallcf_noise_1024() { testbench_spwaterfallcf_noise( 680, 480, 150, 640, -80.0); }
+void autotest_spwaterfallcf_noise_1200() { testbench_spwaterfallcf_noise(1200, 800, 400, 800, -80.0); }
 
 // test normal operation
 void autotest_spwaterfall_operation()
@@ -151,6 +151,49 @@ void autotest_spwaterfall_operation()
     spwaterfallcf_destroy(q);
 }
 
+void autotest_spwaterfall_copy()
+{
+    unsigned int nfft =  240;   // transform size
+    unsigned int time =  192;   // time size
+    float        nstd =  0.1f;  // noise standard deviation
+
+    // create object with irregular values
+    spwaterfallcf q0 = spwaterfallcf_create(nfft, LIQUID_WINDOW_KAISER, 217, 137, time);
+
+    unsigned int i;
+    unsigned int num_samples = 17 * nfft * time;
+    for (i=0; i<num_samples; i++) {
+        float complex v = 0.1f + nstd * (randnf() + _Complex_I*randnf());
+        spwaterfallcf_push(q0, v);
+    }
+
+    // copy object and push same samples through both
+    spwaterfallcf q1 = spwaterfallcf_copy(q0);
+    for (i=0; i<num_samples; i++) {
+        float complex v = 0.1f + nstd * (randnf() + _Complex_I*randnf());
+        spwaterfallcf_push(q0, v);
+        spwaterfallcf_push(q1, v);
+    }
+
+    // check parameters
+    CONTEND_EQUALITY(spwaterfallcf_get_num_freq         (q0),spwaterfallcf_get_num_freq         (q1));
+    CONTEND_EQUALITY(spwaterfallcf_get_num_time         (q0),spwaterfallcf_get_num_time         (q1));
+    CONTEND_EQUALITY(spwaterfallcf_get_window_len       (q0),spwaterfallcf_get_window_len       (q1));
+    CONTEND_EQUALITY(spwaterfallcf_get_delay            (q0),spwaterfallcf_get_delay            (q1));
+    CONTEND_EQUALITY(spwaterfallcf_get_wtype            (q0),spwaterfallcf_get_wtype            (q1));
+    CONTEND_EQUALITY(spwaterfallcf_get_num_samples_total(q0),spwaterfallcf_get_num_samples_total(q1));
+
+    // compute power spectral density output
+    const float * psd_0 = spwaterfallcf_get_psd(q0);
+    const float * psd_1 = spwaterfallcf_get_psd(q1);
+    unsigned int nt = spwaterfallcf_get_num_time(q0);
+    CONTEND_SAME_DATA(psd_0, psd_1, nfft*nt*sizeof(float));
+
+    // destroy objects and free memory
+    spwaterfallcf_destroy(q0);
+    spwaterfallcf_destroy(q1);
+}
+
 // test file export
 void autotest_spwaterfall_gnuplot()
 {
@@ -161,7 +204,7 @@ void autotest_spwaterfall_gnuplot()
         spwaterfallcf_push(q, randnf() + _Complex_I*randnf());
 
     // export once before setting values
-    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_export(q,"autotest_spwaterfall"))
+    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_export(q,"autotest/logs/spwaterfall"))
 
     // set values and export again
     CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_freq(q, 100e6))
@@ -169,7 +212,7 @@ void autotest_spwaterfall_gnuplot()
     CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_dims(q, 640, 480))
     CONTEND_EQUALITY(LIQUID_OK, spwaterfallcf_set_commands(q,NULL))
     CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_commands(q,"set title 'waterfall'"))
-    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_export(q,"autotest_spwaterfall"))
+    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_export(q,"autotest/logs/spwaterfall"))
 
     spwaterfallcf_destroy(q);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,5 +63,9 @@ void autotest_gcd_base()
     testbench_gcd( 2*2*3*5*7, 2*3, 17);
     testbench_gcd( 2*2*3*5*7, 2*3, 17*17);
     testbench_gcd( 2*2*3*5*7, 2*3, 17*17*17);
+    testbench_gcd( 11,        3,   1);
+    testbench_gcd( 3,         127, 131);
+    testbench_gcd( 131,       127, 3);
+    testbench_gcd( 127,       131, 3);
 }
 

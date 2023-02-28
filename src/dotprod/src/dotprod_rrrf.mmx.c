@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,50 +34,51 @@
 // include proper SIMD extensions for x86 platforms
 // NOTE: these pre-processor macros are defined in config.h
 
-#if HAVE_MMX && HAVE_MMINTRIN_H
+#if HAVE_MMX
 #include <mmintrin.h>   // MMX
 #endif
 
-#if HAVE_SSE && HAVE_XMMINTRIN_H
+#if HAVE_SSE
 #include <xmmintrin.h>  // SSE
 #endif
 
-#if HAVE_SSE2 && HAVE_EMMINTRIN_H
+#if HAVE_SSE2
 #include <emmintrin.h>  // SSE2
 #endif
 
-#if HAVE_SSE3 && HAVE_PMMINTRIN_H
+#if HAVE_SSE3
 #include <pmmintrin.h>  // SSE3
 #endif
 
 #define DEBUG_DOTPROD_RRRF_MMX   0
 
 // internal methods
-void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
+int dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
+                             float *      _x,
+                             float *      _y);
+int dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
                               float *      _x,
                               float *      _y);
-void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
-                               float *      _x,
-                               float *      _y);
 
 // basic dot product (ordinal calculation)
-void dotprod_rrrf_run(float *      _h,
-                      float *      _x,
-                      unsigned int _n,
-                      float *      _y)
+int dotprod_rrrf_run(float *      _h,
+                     float *      _x,
+                     unsigned int _n,
+                     float *      _y)
 {
     float r=0;
     unsigned int i;
     for (i=0; i<_n; i++)
         r += _h[i] * _x[i];
     *_y = r;
+    return LIQUID_OK;
 }
 
 // basic dot product (ordinal calculation) with loop unrolled
-void dotprod_rrrf_run4(float *      _h,
-                       float *      _x,
-                       unsigned int _n,
-                       float *      _y)
+int dotprod_rrrf_run4(float *      _h,
+                      float *      _x,
+                      unsigned int _n,
+                      float *      _y)
 {
     float r=0;
 
@@ -98,6 +99,7 @@ void dotprod_rrrf_run4(float *      _h,
         r += _h[i] * _x[i];
 
     *_y = r;
+    return LIQUID_OK;
 }
 
 
@@ -161,38 +163,57 @@ dotprod_rrrf dotprod_rrrf_recreate_rev(dotprod_rrrf _q,
     return dotprod_rrrf_create_rev(_h,_n);
 }
 
+dotprod_rrrf dotprod_rrrf_copy(dotprod_rrrf q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("dotprod_rrrf_copy().mmx, object cannot be NULL");
 
-void dotprod_rrrf_destroy(dotprod_rrrf _q)
+    dotprod_rrrf q_copy = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
+    q_copy->n = q_orig->n;
+
+    // allocate memory for coefficients, 16-byte aligned
+    q_copy->h = (float*) _mm_malloc( q_copy->n*sizeof(float), 16 );
+
+    // copy coefficients array
+    memmove(q_copy->h, q_orig->h, q_orig->n*sizeof(float));
+
+    // return object
+    return q_copy;
+}
+
+int dotprod_rrrf_destroy(dotprod_rrrf _q)
 {
     _mm_free(_q->h);
     free(_q);
+    return LIQUID_OK;
 }
 
-void dotprod_rrrf_print(dotprod_rrrf _q)
+int dotprod_rrrf_print(dotprod_rrrf _q)
 {
     printf("dotprod_rrrf [mmx, %u coefficients]\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("%3u : %12.9f\n", i, _q->h[i]);
+    return LIQUID_OK;
 }
 
 // 
-void dotprod_rrrf_execute(dotprod_rrrf _q,
+int dotprod_rrrf_execute(dotprod_rrrf _q,
                           float *      _x,
                           float *      _y)
 {
     // switch based on size
     if (_q->n < 16) {
-        dotprod_rrrf_execute_mmx(_q, _x, _y);
-    } else {
-        dotprod_rrrf_execute_mmx4(_q, _x, _y);
+        return dotprod_rrrf_execute_mmx(_q, _x, _y);
     }
+    return dotprod_rrrf_execute_mmx4(_q, _x, _y);
 }
 
 // use MMX/SSE extensions
-void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
-                              float *      _x,
-                              float *      _y)
+int dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
+                             float *      _x,
+                             float *      _y)
 {
     // first cut: ...
     __m128 v;   // input vector
@@ -222,7 +243,7 @@ void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
     // aligned output array
     float w[4] __attribute__((aligned(16)));
 
-#if HAVE_SSE3 && HAVE_PMMINTRIN_H
+#if HAVE_SSE3
     // fold down into single value
     __m128 z = _mm_setzero_ps();
     sum = _mm_hadd_ps(sum, z);
@@ -243,12 +264,13 @@ void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
 
     // set return value
     *_y = total;
+    return LIQUID_OK;
 }
 
 // use MMX/SSE extensions, unrolled loop
-void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
-                               float *      _x,
-                               float *      _y)
+int dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
+                              float *      _x,
+                              float *      _y)
 {
     // first cut: ...
     __m128 v0, v1, v2, v3;
@@ -300,7 +322,7 @@ void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
     // aligned output array
     float w[4] __attribute__((aligned(16)));
 
-#if HAVE_SSE3 && HAVE_PMMINTRIN_H
+#if HAVE_SSE3
     // SSE3: fold down to single value using _mm_hadd_ps()
     __m128 z = _mm_setzero_ps();
     sum0 = _mm_hadd_ps(sum0, z);
@@ -322,5 +344,6 @@ void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
 
     // set return value
     *_y = total;
+    return LIQUID_OK;
 }
 

@@ -34,10 +34,6 @@
 
 #include "liquid.internal.h"
 
-#if HAVE_FFTW3_H
-#   include <fftw3.h>
-#endif
-
 #define DEBUG_OFDMFRAMEGEN            1
 
 struct ofdmframegen_s {
@@ -125,8 +121,8 @@ ofdmframegen ofdmframegen_create(unsigned int    _M,
     unsigned int i;
 
     // allocate memory for transform objects
-    q->X = (float complex*) malloc((q->M)*sizeof(float complex));
-    q->x = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->X = (float complex*) FFT_MALLOC((q->M)*sizeof(float complex));
+    q->x = (float complex*) FFT_MALLOC((q->M)*sizeof(float complex));
     q->ifft = FFT_CREATE_PLAN(q->M, q->X, q->x, FFT_DIR_BACKWARD, FFT_METHOD);
 
     // allocate memory for PLCP arrays
@@ -169,8 +165,8 @@ int ofdmframegen_destroy(ofdmframegen _q)
     free(_q->p);
 
     // free transform array memory
-    free(_q->X);
-    free(_q->x);
+    FFT_FREE(_q->X);
+    FFT_FREE(_q->x);
     FFT_DESTROY_PLAN(_q->ifft);
 
     // free tapering window and transition buffer

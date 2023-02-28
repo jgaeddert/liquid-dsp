@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
 #include "liquid.internal.h"
 
 // 
-// AUTOTEST: compare structured result to oridinal computation
+// AUTOTEST: compare structured result to ordinal computation
 //
 
 // 
@@ -55,7 +55,8 @@ void autotest_dotprod_cccf_rand16()
     };
 
     float complex y;
-    float complex test = -0.604285042605890 - 12.390925785344704 * _Complex_I;
+    float complex test     = -0.604285042605890 - 12.390925785344704 * _Complex_I;
+    float complex test_rev =  3.412365881765360 + 6.1885320363931480 * _Complex_I;
 
     float tol = 1e-3f;
 
@@ -72,6 +73,20 @@ void autotest_dotprod_cccf_rand16()
     dotprod_cccf_execute(q,x,&y);
     CONTEND_DELTA( crealf(y), crealf(test), tol);
     CONTEND_DELTA( cimagf(y), cimagf(test), tol);
+
+    // test running in reverse
+    q = dotprod_cccf_recreate_rev(q,h,16);
+    dotprod_cccf_execute(q,x,&y);
+    CONTEND_DELTA( crealf(y), crealf(test_rev), tol);
+    CONTEND_DELTA( cimagf(y), cimagf(test_rev), tol);
+
+    // create original again
+    q = dotprod_cccf_recreate(q,h,16);
+    dotprod_cccf_execute(q,x,&y);
+    CONTEND_DELTA( crealf(y), crealf(test), tol);
+    CONTEND_DELTA( cimagf(y), cimagf(test), tol);
+
+    // clean it up
     dotprod_cccf_destroy(q);
 }
 
@@ -172,8 +187,6 @@ void autotest_dotprod_cccf_struct_lengths()
     }
 }
 
-
-
 // helper function (compare structured object to ordinal computation)
 void runtest_dotprod_cccf(unsigned int _n)
 {
@@ -194,21 +207,38 @@ void runtest_dotprod_cccf(unsigned int _n)
         y_test += h[i] * x[i];
 
     // create and run dot product object
-    float complex y;
+    float complex y_struct;
     dotprod_cccf dp;
     dp = dotprod_cccf_create(h,_n);
-    dotprod_cccf_execute(dp, x, &y);
+    dotprod_cccf_execute(dp, x, &y_struct);
     dotprod_cccf_destroy(dp);
+
+    // run unstructured
+    float complex y_run, y_run4;
+    dotprod_cccf_run (h,x,_n,&y_run );
+    dotprod_cccf_run4(h,x,_n,&y_run4);
 
     // print results
     if (liquid_autotest_verbose) {
-        printf("  dotprod-cccf-%-4u : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
-                _n, crealf(y), cimagf(y), crealf(y_test), cimagf(y_test));
+        printf("  dotprod-cccf-%-4u(struct) : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
+                _n, crealf(y_struct), cimagf(y_struct), crealf(y_test), cimagf(y_test));
+        printf("  dotprod-cccf-%-4u(run   ) : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
+                _n, crealf(y_run   ), cimagf(y_run   ), crealf(y_test), cimagf(y_test));
+        printf("  dotprod-cccf-%-4u(run4  ) : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
+                _n, crealf(y_run4  ), cimagf(y_run4  ), crealf(y_test), cimagf(y_test));
     }
 
-    // validate result
-    CONTEND_DELTA(crealf(y), crealf(y_test), tol);
-    CONTEND_DELTA(cimagf(y), cimagf(y_test), tol);
+    // validate result (structured object)
+    CONTEND_DELTA(crealf(y_struct), crealf(y_test), tol);
+    CONTEND_DELTA(cimagf(y_struct), cimagf(y_test), tol);
+
+    // validate result (unstructured, run)
+    CONTEND_DELTA(crealf(y_run   ), crealf(y_test), tol);
+    CONTEND_DELTA(cimagf(y_run   ), cimagf(y_test), tol);
+
+    // validate result (unstructured, run4)
+    CONTEND_DELTA(crealf(y_run4  ), crealf(y_test), tol);
+    CONTEND_DELTA(cimagf(y_run4  ), cimagf(y_test), tol);
 }
 
 // compare structured object to ordinal computation

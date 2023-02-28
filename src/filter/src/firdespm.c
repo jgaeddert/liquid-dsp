@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,10 +63,12 @@
 int firdespm_output_debug_file(firdespm _q);
 #endif
 
+#if 0
 // initialize internal memory and arrays
 int firdespm_init_memory(firdespm     _q,
                          unsigned int _h_len,
                          unsigned int _num_bands);
+#endif
 
 // initialize the frequency grid on the disjoint bounded set
 int firdespm_init_grid(firdespm _q);
@@ -162,12 +164,12 @@ int firdespm_run(unsigned int            _h_len,
 // run filter design for basic low-pass filter
 //  _n      : filter length, _n > 0
 //  _fc     : cutoff frequency, 0 < _fc < 0.5
-//  _As     : stop-band attenuation [dB], _As > 0
+//  _as     : stop-band attenuation [dB], _as > 0
 //  _mu     : fractional sample offset, -0.5 < _mu < 0.5 [ignored]
 //  _h      : output coefficient buffer, [size: _n x 1]
 int firdespm_lowpass(unsigned int _n,
                      float        _fc,
-                     float        _As,
+                     float        _as,
                      float        _mu,
                      float *      _h)
 {
@@ -180,7 +182,7 @@ int firdespm_lowpass(unsigned int _n,
         return liquid_error(LIQUID_EICONFIG,"firdespm_lowpass(), filter length must be greater than zero");
 
     // estimate transition band
-    float ft = estimate_req_filter_df(_As, _n);
+    float ft = estimate_req_filter_df(_as, _n);
 
     // derived values
     float fp = _fc - 0.5*ft;     // pass-band cutoff frequency
@@ -225,7 +227,7 @@ firdespm firdespm_create(unsigned int            _h_len,
     unsigned int i;
     int bands_valid = 1;
     int weights_valid = 1;
-    // ensure bands are withing [0,0.5]
+    // ensure bands are within [0,0.5]
     for (i=0; i<2*_num_bands; i++)
         bands_valid &= _bands[i] >= 0.0 && _bands[i] <= 0.5;
     // ensure bands are non-decreasing
@@ -240,8 +242,6 @@ firdespm firdespm_create(unsigned int            _h_len,
         return liquid_error_config("firdespm_create(), invalid bands");
     if (!weights_valid)
         return liquid_error_config("firdespm_create(), invalid weights (must be positive)");
-    if (_num_bands == 0)
-        return liquid_error_config("firdespm_create(), number of bands must be > 0");
 
     // create object
     firdespm q = (firdespm) malloc(sizeof(struct firdespm_s));
@@ -324,11 +324,17 @@ firdespm firdespm_create_callback(unsigned int          _h_len,
                                   firdespm_callback     _callback,
                                   void *                _userdata)
 {
-    unsigned int i;
+    // basic validation
+    if (_h_len==0)
+        return liquid_error_config("firdespm_create_callback(), filter length cannot be 0");
+    if (_num_bands==0)
+        return liquid_error_config("firdespm_create_callback(), number of bands cannot be 0");
+
 
     // validate input
+    unsigned int i;
     int bands_valid = 1;
-    // ensure bands are withing [0,0.5]
+    // ensure bands are within [0,0.5]
     for (i=0; i<2*_num_bands; i++)
         bands_valid &= _bands[i] >= 0.0 && _bands[i] <= 0.5;
     // ensure bands are non-decreasing
@@ -337,8 +343,6 @@ firdespm firdespm_create_callback(unsigned int          _h_len,
 
     if (!bands_valid)
         return liquid_error_config("firdespm_create(), invalid bands");
-    if (_num_bands == 0)
-        return liquid_error_config("firdespm_create(), number of bands must be > 0");
 
     // create object
     firdespm q = (firdespm) malloc(sizeof(struct firdespm_s));
@@ -394,6 +398,38 @@ firdespm firdespm_create_callback(unsigned int          _h_len,
 
     // return object
     return q;
+}
+
+// copy object
+firdespm firdespm_copy(firdespm q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("firdespm_copy(), object cannot be NULL");
+
+    // create filter object and copy base parameters
+    firdespm q_copy = (firdespm) malloc(sizeof(struct firdespm_s));
+    memmove(q_copy, q_orig, sizeof(struct firdespm_s));
+
+    // copy memory for filter description parameters
+    q_copy->bands   = (double*)liquid_malloc_copy(q_orig->bands, 2*q_orig->num_bands, sizeof(double));
+    q_copy->des     = (double*)liquid_malloc_copy(q_orig->des,     q_orig->num_bands, sizeof(double));
+    q_copy->weights = (double*)liquid_malloc_copy(q_orig->weights, q_orig->num_bands, sizeof(double));
+    q_copy->wtype   = (liquid_firdespm_wtype*) liquid_malloc_copy(q_orig->wtype, q_orig->num_bands, sizeof(liquid_firdespm_wtype));
+
+    // copy the grid
+    q_copy->F = (double*) liquid_malloc_copy(q_copy->F, q_orig->grid_size, sizeof(double));
+    q_copy->D = (double*) liquid_malloc_copy(q_copy->D, q_orig->grid_size, sizeof(double));
+    q_copy->W = (double*) liquid_malloc_copy(q_copy->W, q_orig->grid_size, sizeof(double));
+    q_copy->E = (double*) liquid_malloc_copy(q_copy->E, q_orig->grid_size, sizeof(double));
+
+    // copy memory for extremal frequency set, interpolating polynomial
+    q_copy->iext  = (unsigned int*) liquid_malloc_copy(q_copy->iext, q_orig->r+1,sizeof(unsigned int));
+    q_copy->x     = (double*)       liquid_malloc_copy(q_copy->x,    q_orig->r+1,sizeof(double));
+    q_copy->alpha = (double*)       liquid_malloc_copy(q_copy->alpha,q_orig->r+1,sizeof(double));
+    q_copy->c     = (double*)       liquid_malloc_copy(q_copy->c,    q_orig->r+1,sizeof(double));
+
+    return q_copy;
 }
 
 // destroy firdespm object
@@ -497,6 +533,7 @@ int firdespm_execute(firdespm _q, float * _h)
 // internal methods
 //
 
+#if 0
 // initialize internal memory and arrays
 int firdespm_init_memory(firdespm     _q,
                          unsigned int _h_len,
@@ -504,6 +541,7 @@ int firdespm_init_memory(firdespm     _q,
 {
     return LIQUID_OK;
 }
+#endif
 
 // initialize the frequency grid on the disjoint bounded set
 int firdespm_init_grid(firdespm _q)
@@ -901,10 +939,10 @@ int firdespm_compute_taps(firdespm _q, float * _h)
         }
     } else if (_q->btype != LIQUID_FIRDESPM_BANDPASS && _q->s==1) {
         // odd filter length, odd symmetry
-        fprintf(stderr,"warning: firdespm_compute_taps(), filter configuration not yet supported\n");
+        return liquid_error(LIQUID_EINT,"firdespm_compute_taps(), filter configuration not yet supported");
     } else if (_q->btype != LIQUID_FIRDESPM_BANDPASS && _q->s==0) {
         // even filter length, odd symmetry
-        fprintf(stderr,"warning: firdespm_compute_taps(), filter configuration not yet supported\n");
+        return liquid_error(LIQUID_EINT,"firdespm_compute_taps(), filter configuration not yet supported");
     }
 #if LIQUID_FIRDESPM_DEBUG_PRINT
     printf("\n");
@@ -961,6 +999,38 @@ int firdespm_output_debug_file(firdespm _q)
 
     fclose(fid);
     printf("internal debugging results written to %s.\n", LIQUID_FIRDESPM_DEBUG_FILENAME);
+    return LIQUID_OK;
+}
+#endif
+
+#if 0
+// design halfband filter using Parks-McClellan algorithm given the
+// filter length and desired transition band
+int liquid_firdespm_halfband_ft(unsigned int _m,
+                                float        _ft,
+                                float *      _h)
+{
+    liquid_firdespm_btype btype = LIQUID_FIRDESPM_BANDPASS;
+    unsigned int h_len = 4*_m + 1;
+    unsigned int num_bands = 2;
+    float f0 = 0.25f - 0.5f*_ft;
+    float f1 = 0.25f + 0.5f*_ft;
+    float bands[4]   = {0.0f, f0, f1, 0.5f};
+    float des[2]     = {1.0f, 0.0f};
+    float weights[2] = {1.0f, 1.0f}; // best with {1, 1}
+    liquid_firdespm_wtype wtype[2] = { // best with {flat, flat}
+        LIQUID_FIRDESPM_FLATWEIGHT, LIQUID_FIRDESPM_FLATWEIGHT,};
+
+    // design filter
+    firdespm_run(h_len,num_bands,bands,des,weights,wtype,btype,_h);
+#if 0
+    // ensure values at odd indices are 0 (excepting center value)
+    unsigned int i;
+    for (i=0; i<_m; i++) {
+        _h[        2*i] = 0;
+        _h[h_len-2*i-1] = 0;
+    }
+#endif
     return LIQUID_OK;
 }
 #endif

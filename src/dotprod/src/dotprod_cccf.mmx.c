@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,51 +33,52 @@
 // include proper SIMD extensions for x86 platforms
 // NOTE: these pre-processor macros are defined in config.h
 
-#if HAVE_MMX && HAVE_MMINTRIN_H
+#if HAVE_MMX
 #include <mmintrin.h>   // MMX
 #endif
 
-#if HAVE_SSE && HAVE_XMMINTRIN_H
+#if HAVE_SSE
 #include <xmmintrin.h>  // SSE
 #endif
 
-#if HAVE_SSE2 && HAVE_EMMINTRIN_H
+#if HAVE_SSE2
 #include <emmintrin.h>  // SSE2
 #endif
 
-#if HAVE_SSE3 && HAVE_PMMINTRIN_H
+#if HAVE_SSE3
 #include <pmmintrin.h>  // SSE3
 #endif
 
 #define DEBUG_DOTPROD_CCCF_MMX   0
 
 // forward declaration of internal methods
-void dotprod_cccf_execute_mmx(dotprod_cccf    _q,
+int dotprod_cccf_execute_mmx(dotprod_cccf    _q,
+                             float complex * _x,
+                             float complex * _y);
+
+int dotprod_cccf_execute_mmx4(dotprod_cccf    _q,
                               float complex * _x,
                               float complex * _y);
 
-void dotprod_cccf_execute_mmx4(dotprod_cccf    _q,
-                               float complex * _x,
-                               float complex * _y);
-
 // basic dot product (ordinal calculation)
-void dotprod_cccf_run(float complex * _h,
-                      float complex * _x,
-                      unsigned int    _n,
-                      float complex * _y)
+int dotprod_cccf_run(float complex * _h,
+                     float complex * _x,
+                     unsigned int    _n,
+                     float complex * _y)
 {
     float complex r = 0;
     unsigned int i;
     for (i=0; i<_n; i++)
         r += _h[i] * _x[i];
     *_y = r;
+    return LIQUID_OK;
 }
 
 // basic dot product (ordinal calculation) with loop unrolled
-void dotprod_cccf_run4(float complex * _h,
-                       float complex * _x,
-                       unsigned int    _n,
-                       float complex * _y)
+int dotprod_cccf_run4(float complex * _h,
+                      float complex * _x,
+                      unsigned int    _n,
+                      float complex * _y)
 {
     float complex r = 0;
 
@@ -98,6 +99,7 @@ void dotprod_cccf_run4(float complex * _h,
         r += _h[i] * _x[i];
 
     *_y = r;
+    return LIQUID_OK;
 }
 
 
@@ -171,35 +173,59 @@ dotprod_cccf dotprod_cccf_recreate_rev(dotprod_cccf    _q,
     return dotprod_cccf_create_rev(_h,_n);
 }
 
-void dotprod_cccf_destroy(dotprod_cccf _q)
+dotprod_cccf dotprod_cccf_copy(dotprod_cccf q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("dotprod_cccf_copy().mmx, object cannot be NULL");
+
+    dotprod_cccf q_copy = (dotprod_cccf)malloc(sizeof(struct dotprod_cccf_s));
+    q_copy->n = q_orig->n;
+
+    // allocate memory for coefficients, 16-byte aligned (repeated)
+    q_copy->hi = (float*) _mm_malloc( 2*q_copy->n*sizeof(float), 16 );
+    q_copy->hq = (float*) _mm_malloc( 2*q_copy->n*sizeof(float), 16 );
+
+    // copy coefficients array (repeated)
+    //  hi = { crealf(_h[0]), crealf(_h[0]), ... crealf(_h[n-1]), crealf(_h[n-1])}
+    //  hq = { cimagf(_h[0]), cimagf(_h[0]), ... cimagf(_h[n-1]), cimagf(_h[n-1])}
+    memmove(q_copy->hi, q_orig->hi, 2*q_orig->n*sizeof(float));
+    memmove(q_copy->hq, q_orig->hq, 2*q_orig->n*sizeof(float));
+
+    // return object
+    return q_copy;
+}
+
+int dotprod_cccf_destroy(dotprod_cccf _q)
 {
     _mm_free(_q->hi);
     _mm_free(_q->hq);
     free(_q);
+    return LIQUID_OK;
 }
 
-void dotprod_cccf_print(dotprod_cccf _q)
+int dotprod_cccf_print(dotprod_cccf _q)
 {
     printf("dotprod_cccf [mmx, %u coefficients]\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("  %3u : %12.9f +j%12.9f\n", i, _q->hi[i], _q->hq[i]);
+    return LIQUID_OK;
 }
 
 // execute structured dot product
 //  _q      :   dotprod object
 //  _x      :   input array
 //  _y      :   output sample
-void dotprod_cccf_execute(dotprod_cccf    _q,
-                          float complex * _x,
-                          float complex * _y)
+int dotprod_cccf_execute(dotprod_cccf    _q,
+                         float complex * _x,
+                         float complex * _y)
 {
     // switch based on size
     if (_q->n < 32) {
-        dotprod_cccf_execute_mmx(_q, _x, _y);
-    } else {
-        dotprod_cccf_execute_mmx4(_q, _x, _y);
+        return dotprod_cccf_execute_mmx(_q, _x, _y);
     }
+    return dotprod_cccf_execute_mmx4(_q, _x, _y);
 }
 
 // use MMX/SSE extensions
@@ -222,9 +248,9 @@ void dotprod_cccf_execute(dotprod_cccf    _q,
 //           x[1].real * h[1].imag,
 //           x[1].imag * h[1].imag };
 //
-void dotprod_cccf_execute_mmx(dotprod_cccf    _q,
-                              float complex * _x,
-                              float complex * _y)
+int dotprod_cccf_execute_mmx(dotprod_cccf    _q,
+                             float complex * _x,
+                             float complex * _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;
@@ -242,7 +268,7 @@ void dotprod_cccf_execute_mmx(dotprod_cccf    _q,
     // aligned output array
     float w[4] __attribute__((aligned(16))) = {0,0,0,0};
 
-#if HAVE_SSE3 && HAVE_PMMINTRIN_H
+#if HAVE_SSE3
     // SSE3
     __m128 s;   // dot product
     __m128 sum = _mm_setzero_ps(); // load zeros into sum register
@@ -273,7 +299,7 @@ void dotprod_cccf_execute_mmx(dotprod_cccf    _q,
         // shuffle values
         cq = _mm_shuffle_ps( cq, cq, _MM_SHUFFLE(2,3,0,1) );
         
-#if HAVE_SSE3 && HAVE_PMMINTRIN_H
+#if HAVE_SSE3
         // SSE3: combine using addsub_ps()
         s = _mm_addsub_ps( ci, cq );
 
@@ -294,7 +320,7 @@ void dotprod_cccf_execute_mmx(dotprod_cccf    _q,
 #endif
     }
 
-#if HAVE_SSE3 && HAVE_PMMINTRIN_H
+#if HAVE_SSE3
     // unload packed array
     _mm_store_ps(w, sum);
 #endif
@@ -312,12 +338,13 @@ void dotprod_cccf_execute_mmx(dotprod_cccf    _q,
 
     // set return value
     *_y = total;
+    return LIQUID_OK;
 }
 
 // use MMX/SSE extensions
-void dotprod_cccf_execute_mmx4(dotprod_cccf    _q,
-                               float complex * _x,
-                               float complex * _y)
+int dotprod_cccf_execute_mmx4(dotprod_cccf    _q,
+                              float complex * _x,
+                              float complex * _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;
@@ -401,5 +428,6 @@ void dotprod_cccf_execute_mmx4(dotprod_cccf    _q,
 
     // set return value
     *_y = total;
+    return LIQUID_OK;
 }
 

@@ -4,10 +4,6 @@ on:
   workflow_dispatch:
   pull_request:
   push:
-    branches:
-      - master
-      - bind-dev
-      - v*
 
 jobs:
   standard:
@@ -50,3 +46,13 @@ jobs:
 
     - name: make check
       run: make -j 2 check
+
+    - name: make install
+      run: sudo make install
+
+    - name: ldconfig (Linux)
+      if: runner.os == 'Linux'
+      run: sudo ldconfig
+
+    - name: make check-link
+      run: make check-link

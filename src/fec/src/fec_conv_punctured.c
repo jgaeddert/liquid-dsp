@@ -172,7 +172,7 @@ int fec_conv_punctured_decode_hard(fec             _q,
     unsigned int num_enc_bits = num_dec_bits * _q->R;
     unsigned int i,r;
     unsigned int n=0;   // input byte index
-    unsigned int k=0;   // intput bit index (0<=k<8)
+    unsigned int k=0;   // input bit index (0<=k<8)
     unsigned int p=0;   // puncturing matrix column index
     unsigned char bit;
     unsigned char byte_in = _msg_enc[n];

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -155,19 +155,19 @@ void liquid_firdes_rkaiser_filter2(unsigned int _k,
     // 
 #if 0
     float fc = 0.5*(1.0 + _beta)/(float)(_k);
-    float As = 40.0f;
+    float as = 40.0f;
 #else
     float rho_hat = rkaiser_approximate_rho(_m,_beta);
     float fc = 0.5f*(1 + _beta*(1.0f-rho_hat))/(float)_k; // filter cutoff
     float del = _beta*rho_hat / (float)_k;                // transition bandwidth
-    float As = estimate_req_filter_As(del, h_len);  // stop-band suppression
+    float as = estimate_req_filter_As(del, h_len);  // stop-band suppression
 
     // reduce slightly to help ensure solution isn't stuck
     // (not really necessary)
     fc *= 0.995f;
-    As -= 1.0f;
+    as -= 1.0f;
 #endif
-    float v[2] = {fc, As/1000};
+    float v[2] = {fc, as/1000};
 
     struct gsuserdata_s q = {
         .k    = _k,
@@ -200,8 +200,8 @@ void liquid_firdes_rkaiser_filter2(unsigned int _k,
 
     // re-design filter and return
     fc = v[0];
-    As = v[1]*1000;
-    liquid_firdes_kaiser(h_len,fc,As,_dt,_h);
+    as = v[1]*1000;
+    liquid_firdes_kaiser(h_len,fc,as,_dt,_h);
 
     // normalize coefficients
     float e2 = 0.0f;
@@ -226,7 +226,7 @@ float gs_utility(void * _userdata,
 
     // parameters
     float fc = _v[0];
-    float As = _v[1]*1000;
+    float as = _v[1]*1000;
 
     // derived values
     unsigned int h_len = 2*k*m+1;
@@ -237,7 +237,7 @@ float gs_utility(void * _userdata,
 
     // compute filter
     float h[h_len];
-    liquid_firdes_kaiser(h_len,fc,As,dt,h);
+    liquid_firdes_kaiser(h_len,fc,as,dt,h);
 
     // normalize coefficients
     float e2 = 0.0f;

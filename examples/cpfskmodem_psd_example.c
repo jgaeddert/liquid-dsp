@@ -3,7 +3,7 @@
 //
 // This example demonstrates the differences in power spectral
 // density (PSD) for different continuous-phase frequency-shift
-// keying (CP-FSK) modems in liquid. Idential bit streams are fed
+// keying (CP-FSK) modems in liquid. Identical bit streams are fed
 // into modulators with different pulse-shaping filters and the
 // resulting PSDs are computed and logged to a file.
 //

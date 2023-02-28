@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -152,7 +152,7 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
 
     // validate input
     if (_M < 8)
-        return liquid_error_config("ofdmflexframesync_create(), less than 8 subcarriers");
+        return liquid_error_config("ofdmflexframesync_create(), number of subcarriers must be at least 8");
     if (_M % 2)
         return liquid_error_config("ofdmflexframesync_create(), number of subcarriers must be even");
     if (_cp_len > _M)
@@ -200,7 +200,7 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
     q->fec0         = LIQUID_FEC_NONE;
     q->fec1         = LIQUID_FEC_NONE;
 
-    // create payload objects (initally QPSK, etc but overridden by received properties)
+    // create payload objects (initially QPSK, etc but overridden by received properties)
     q->mod_payload = modemcf_create(q->ms_payload);
     q->payload_soft = 0;
     q->p_payload   = packetizer_create(q->payload_len, q->check, q->fec0, q->fec1);
@@ -343,6 +343,22 @@ int ofdmflexframesync_reset(ofdmflexframesync _q)
 
     // reset internal OFDM frame synchronizer object
     return ofdmframesync_reset(_q->fs);
+}
+
+// set the callback
+int ofdmflexframesync_set_callback(ofdmflexframesync  _q,
+                                   framesync_callback _callback)
+{
+    _q->callback = _callback;
+    return LIQUID_OK;
+}
+
+// set the user-defined data field (context)
+int ofdmflexframesync_set_userdata(ofdmflexframesync _q,
+                                   void *            _userdata)
+{
+    _q->userdata = _userdata;
+    return LIQUID_OK;
 }
 
 int ofdmflexframesync_is_frame_open(ofdmflexframesync _q)

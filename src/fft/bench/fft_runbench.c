@@ -37,8 +37,8 @@ void fft_runbench(struct rusage *     _start,
                   int                 _direction)
 {
     // initialize arrays, plan
-    float complex * x = (float complex *) malloc(_nfft*sizeof(float complex));
-    float complex * y = (float complex *) malloc(_nfft*sizeof(float complex));
+    float complex * x = (float complex *) fft_malloc(_nfft*sizeof(float complex));
+    float complex * y = (float complex *) fft_malloc(_nfft*sizeof(float complex));
     int _method = 0;
     fftplan q = fft_create_plan(_nfft, x, y, _direction, _method);
     
@@ -64,7 +64,7 @@ void fft_runbench(struct rusage *     _start,
     *_num_iterations *= 4;
 
     fft_destroy_plan(q);
-    free(x);
-    free(y);
+    fft_free(x);
+    fft_free(y);
 }
 

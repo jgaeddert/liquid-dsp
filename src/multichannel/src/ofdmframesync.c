@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -180,8 +180,8 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
         return liquid_error_config("ofdmframesync_create(), must have at least two pilot subcarriers");
 
     // create transform object
-    q->X = (float complex*) malloc((q->M)*sizeof(float complex));
-    q->x = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->X = (float complex*) FFT_MALLOC((q->M)*sizeof(float complex));
+    q->x = (float complex*) FFT_MALLOC((q->M)*sizeof(float complex));
     q->fft = FFT_CREATE_PLAN(q->M, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
  
     // create input buffer the length of the transform
@@ -284,8 +284,8 @@ int ofdmframesync_destroy(ofdmframesync _q)
 
     // free transform object
     windowcf_destroy(_q->input_buffer);
-    free(_q->X);
-    free(_q->x);
+    FFT_FREE(_q->X);
+    FFT_FREE(_q->x);
     FFT_DESTROY_PLAN(_q->fft);
 
     // clean up PLCP arrays
@@ -442,7 +442,7 @@ int ofdmframesync_execute_seekplcp(ofdmframesync _q)
 
     // estimate gain
     unsigned int i;
-    // start with a reasonbly small number to avoid divide-by-zero warning
+    // start with a reasonably small number to avoid divide-by-zero warning
     float g = 1.0e-9f;
     for (i=_q->cp_len; i<_q->M + _q->cp_len; i++) {
         // compute |rc[i]|^2 efficiently
@@ -601,12 +601,12 @@ int ofdmframesync_execute_S0b(ofdmframesync _q)
     }
 #endif
 
-    float complex g_hat = 0.0f;
     unsigned int i;
+#if 0
+    float complex g_hat = 0.0f;
     for (i=0; i<_q->M; i++)
         g_hat += _q->G0b[i] * conjf(_q->G0a[i]);
 
-#if 0
     // compute carrier frequency offset estimate using freq. domain method
     float nu_hat = 2.0f * cargf(g_hat) / (float)(_q->M);
 #else

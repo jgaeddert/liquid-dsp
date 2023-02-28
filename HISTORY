@@ -1,6 +1,121 @@
 
 ## Latest improvements ##
 
+## Improvements for v1.5.0 ##
+
+  * build
+    - added support for PlatformIO (https://platformio.org) for embeedded
+      development (thanks, @jcw!)
+    - incorporated recursive copy() methods to objects to facilitate c++ copy
+      constructors for bindings; now all objects can be deep copied to a new
+      object with their entire memory and state preserved
+    - added convenience method to malloc and copy memory arrays
+    - improved support for error codes across objects and methods
+    - cleaned up spelling errors across project (thanks, @nowls!)
+    - scrubbed function argument variable names to avoid underscore followed
+      by a capital letter, causing trouble with pre-compiler processing
+    - added basic test to check linking to installed library, incorporating
+      into CI/CD pipelines
+    - added more example programs
+  * autotest
+    - increased coverage testing (81% across entire project)
+    - added the ability to "hammer" a particular test by running repeatedly on
+      incremental seeds to assess specific edge cases (e.g. with random data)
+    - added timer to show execution time for each test and identify areas for
+      speed improvements
+    - added methods for testing spectral response of various fields
+    - added special directory for storing output logs: autotest/logs/
+  * benchmark
+    - replacing old C-based benchmark comparison with simpler python version
+  * dotprod
+    - added support for AVX SIMD in vector dot products (thanks, @vankxr!)
+  * fft
+    - adding macro to allow for aligned memory allocation if FFTW is used
+      (thanks, @nowls!)
+  * filter
+    - added new halfband filter design using Parks-McClellan algorithm and
+      qs1dsearch method to provide as exact a specification as possible
+    - added method to retrieve filter response from coefficients array
+    - dds: adding methods to get/set scale
+    - firhilb, iirhilb: added block processing method
+    - msresamp, resamp: adding method to provide the exact number of output
+      samples with provided input size
+    - msresamp2, resamp2: using better halfband filter design for exact user
+      specifications
+    - resamp: adding methods to get/set scale, fixing filter bank resolution
+      (was hard-coded, now respects user configuration)
+  * framing
+    - framesync64: added methods to set callback and userdata (context)
+      fields, adding support for exporting debugging files for post-analysis
+      as well as python script for processing, adding better estimate of
+      error vector magnitude
+    - msource: added convenience method to recall number of samples generated
+      by each source
+    - ofdmflexframesync: added methods to set callback and userdata (context)
+      fields
+    - qpacketmodem: returning much better estimate of error vector magnitude
+    - qsource: fixed issue with carrier frequency adjustment
+  * optim
+    - added qs1dsearch object to perform quad-section 1-dimensional search:
+      similar to bisection search, but to find potentially non-continuous
+      minimum/maximum of function
+
+## Improvements for v1.4.0 ##
+
+  * autotest
+    - automated code coverage testing (72%)
+  * build
+    - incorporated error handling in most methods with integer-based return value
+  * agc
+    - added interface to check if AGC is locked or not
+  * buffer
+    - cbuffer: added method to check if buffer is empty
+  * dotprod
+    - included methods to create/recreate object in reverse order
+  * equalization
+    - eqlms: added convenience methods for copying coefficients and running as
+      a decimator
+  * fft
+    - spgram: adding convenience methods for getting/setting properties
+    - spwaterfall: adding convenience methods for getting/setting properties
+  * filter
+    - new direct digital synthesis (DDS) family of objects which allows
+      cascaded half-band interpolation/decimation with arbitrary frequency
+      translation
+    - new fractional delay (fdelay) family of objects which allow for
+      adjustable large fractional delays
+    - firdecim: adding convenience method to get decimation rate
+    - firfilt: adding convenience methods to get/copy coefficients as well as
+      create object using firdespm algorithm
+    - firinterp: adding convenience methods for new ways to create object as
+      well as getting object properties
+    - firpfb: adding convenience methods to create default object, write
+      samples
+    - resamp2: adding methods to get/set output scale
+    - rresamp: adding methods to operate with block execution
+  * framing
+    - new arbitrary rate symstreamr object (derived from symstream family)
+    - framesync64: adding methods for getting/resetting frame data statistics
+      as well as getting/setting detection threshold
+    - gmskframegen/gmskframesync: extending methods to support easier
+      operation, getting/resetting frame data statistics, more control over
+      parameters in create methods
+    - ofdmflexframesync: adding methods to get/reset frame data statistics
+    - qdetector: adding method to get threshold
+    - qpilotsync: adding method to get error vector magnitude
+    - symstream: adding convenience methods for getting properties
+    - symtrack: adding convenience methods for getting/setting properties
+  * math
+    - adding `liquid_` prefix to winodowing functions while supporting backwards
+      compatibility with older methods
+    - adding `liquid_` prefix to internal polynomial functions, using
+      common double-precision method for finding polynomial roots
+  * multichannel
+    - firpfbch2: adding convenience methods to get object properties
+  * modem
+    - modem: adding type extension for more consistency: `modem` -> `modemcf`,
+      supporting backwards compatibility with API shim
+
 ## Improvements for v1.3.2 ##
 
   * autotest
@@ -51,7 +166,7 @@
     - adding new spwaterfall family of objects for generating waterfall plot
       and automatically down-size as input sample size grows
   * sequence
-    - fixed issue with order of operations causing inconsitent behavior across
+    - fixed issue with order of operations causing inconsistent behavior across
       different platforms
 
 ## Major improvements for v1.3.0 ##

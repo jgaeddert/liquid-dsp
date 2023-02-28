@@ -88,7 +88,7 @@ Seriously, I won't be offended.
 ### Run all test scripts ###
 
 Source code validation is a critical step in any software library,
-particulary for verifying the portability of code to different
+particularly for verifying the portability of code to different
 processors and platforms. Packaged with liquid-dsp are a number of
 automatic test scripts to validate the correctness of the source code.
 The test scripts are located under each module's `tests/` directory and
@@ -172,6 +172,19 @@ int main() {
     firinterp_crcf_destroy(interp);
     return 0;
 }
+```
+
+### PlatformIO ###
+
+Install [platformio](https://platformio.org)
+(`brew install platformio` on macOS,
+`sudo -H python3 -m pip install -U platformio` on Linux).
+Add `liquid-dsp` to your `platform.io` list of dependencies:
+
+```ini
+[env:native]
+platform = native
+lib_deps = https://github.com/jgaeddert/liquid-dsp.git
 ```
 
 ### C++ Bindings ###
