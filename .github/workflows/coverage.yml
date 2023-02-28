@@ -47,9 +47,12 @@ jobs:
       run: make -j 2 coverage
 
     - name: upload coverage report
-      uses: codecov/codecov-action@v3
-      with:
-        fail_ci_if_error: true
-        verbose: true
-        files: coverage.out
+      run: bash <(curl -s https://codecov.io/bash)
+      # prefer codecov action, but produces 'unusable report';
+      # (suspect path fixing needed: https://docs.codecov.com/docs/fixing-paths)
+      #uses: codecov/codecov-action@v3
+      #with:
+      #  fail_ci_if_error: true
+      #  verbose: true
+      #  files: coverage.out
 
