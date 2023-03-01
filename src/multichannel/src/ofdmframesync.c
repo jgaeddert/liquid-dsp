@@ -951,12 +951,7 @@ int ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
         return liquid_error(LIQUID_EINT,"ofdmframesync_estimate_eqgain_poly(), pilot subcarrier mismatch");
 
     // try to unwrap phase
-    for (i=1; i<N; i++) {
-        while ((y_arg[i] - y_arg[i-1]) >  M_PI)
-            y_arg[i] -= 2*M_PI;
-        while ((y_arg[i] - y_arg[i-1]) < -M_PI)
-            y_arg[i] += 2*M_PI;
-    }
+    liquid_unwrap_phase(y_arg, N);
 
     // fit to polynomial
     polyf_fit(x_freq, y_abs, N, p_abs, _order+1);
@@ -1032,12 +1027,7 @@ int ofdmframesync_rxsymbol(ofdmframesync _q)
         return liquid_error(LIQUID_EINT,"ofdmframesync_estimate_eqgain_poly(), pilot subcarrier mismatch");
 
     // try to unwrap phase
-    for (i=1; i<_q->M_pilot; i++) {
-        while ((y_phase[i] - y_phase[i-1]) >  M_PI)
-            y_phase[i] -= 2*M_PI;
-        while ((y_phase[i] - y_phase[i-1]) < -M_PI)
-            y_phase[i] += 2*M_PI;
-    }
+    liquid_unwrap_phase(y_phase, _q->M_pilot);
 
     // fit phase to 1st-order polynomial (2 coefficients)
     polyf_fit(x_phase, y_phase, _q->M_pilot, p_phase, 2);
