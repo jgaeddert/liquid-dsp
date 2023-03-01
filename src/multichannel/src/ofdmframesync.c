@@ -413,8 +413,7 @@ float ofdmframesync_get_cfo(ofdmframesync _q)
 // set receiver carrier frequency offset estimate
 int ofdmframesync_set_cfo(ofdmframesync _q, float _cfo)
 {
-    nco_crcf_set_frequency(_q->nco_rx, _cfo);
-    return LIQUID_OK;
+    return nco_crcf_set_frequency(_q->nco_rx, _cfo);
 }
 
 //
