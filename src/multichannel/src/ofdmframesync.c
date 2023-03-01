@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// ofdmframesync.c
-//
 // OFDM frame synchronizer
-//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -40,6 +36,49 @@
 #define DEBUG_OFDMFRAMESYNC_BUFFER_LEN  (2048)
 
 #define OFDMFRAMESYNC_ENABLE_SQUELCH    0
+
+// forward declaration of internal methods
+
+int ofdmframesync_execute_seekplcp(ofdmframesync _q);
+int ofdmframesync_execute_S0a(ofdmframesync _q);
+int ofdmframesync_execute_S0b(ofdmframesync _q);
+int ofdmframesync_execute_S1( ofdmframesync _q);
+int ofdmframesync_execute_rxsymbols(ofdmframesync _q);
+
+int ofdmframesync_S0_metrics(ofdmframesync   _q,
+                             float complex * _G,
+                             float complex * _s_hat);
+
+// estimate short sequence gain
+//  _q      :   ofdmframesync object
+//  _x      :   input array (time)
+//  _G      :   output gain (freq)
+int ofdmframesync_estimate_gain_S0(ofdmframesync   _q,
+                                   float complex * _x,
+                                   float complex * _G);
+
+// estimate long sequence gain
+//  _q      :   ofdmframesync object
+//  _x      :   input array (time)
+//  _G      :   output gain (freq)
+int ofdmframesync_estimate_gain_S1(ofdmframesync _q,
+                                   float complex * _x,
+                                   float complex * _G);
+
+// estimate complex equalizer gain from G0 and G1
+//  _q      :   ofdmframesync object
+//  _ntaps  :   number of time-domain taps for smoothing
+int ofdmframesync_estimate_eqgain(ofdmframesync _q,
+                                  unsigned int _ntaps);
+
+// estimate complex equalizer gain from G0 and G1 using polynomial fit
+//  _q      :   ofdmframesync object
+//  _order  :   polynomial order
+int ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
+                                       unsigned int _order);
+
+// recover symbol, correcting for gain, pilot phase, etc.
+int ofdmframesync_rxsymbol(ofdmframesync _q);
 
 struct ofdmframesync_s {
     unsigned int M;         // number of subcarriers
@@ -752,7 +791,7 @@ int ofdmframesync_execute_rxsymbols(ofdmframesync _q)
 }
 
 // compute S0 metrics
-int ofdmframesync_S0_metrics(ofdmframesync _q,
+int ofdmframesync_S0_metrics(ofdmframesync   _q,
                              float complex * _G,
                              float complex * _s_hat)
 {
