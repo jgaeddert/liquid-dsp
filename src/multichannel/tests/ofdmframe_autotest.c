@@ -190,6 +190,8 @@ void autotest_ofdmframesync_config()
     ofdmframesync q = ofdmframesync_create(64, 16, 4, NULL, NULL, NULL);
 
     CONTEND_EQUALITY(LIQUID_OK, ofdmframesync_print(q))
+    CONTEND_EQUALITY(        0, ofdmframesync_is_frame_open(q))
+    CONTEND_EQUALITY(LIQUID_OK, ofdmframesync_set_cfo(q,0.0f))
 
     ofdmframesync_destroy(q);
 }
