@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1481,10 +1481,6 @@ int ofdmframe_init_S1(unsigned char * _p,
                       float complex * _S1,
                       float complex * _s1,
                       unsigned int *  _M_S1);
-
-// generate symbol (add cyclic prefix/postfix, overlap)
-int ofdmframegen_gensymbol(ofdmframegen    _q,
-                           float complex * _buffer);
 
 // 
 // MODULE : nco (numerically-controlled oscillator)
