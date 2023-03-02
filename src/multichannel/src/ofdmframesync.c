@@ -68,8 +68,7 @@ int ofdmframesync_estimate_gain_S1(ofdmframesync _q,
 // estimate complex equalizer gain from G0 and G1
 //  _q      :   ofdmframesync object
 //  _ntaps  :   number of time-domain taps for smoothing
-int ofdmframesync_estimate_eqgain(ofdmframesync _q,
-                                  unsigned int _ntaps);
+//int ofdmframesync_estimate_eqgain(ofdmframesync _q, unsigned int _ntaps);
 
 // estimate complex equalizer gain from G0 and G1 using polynomial fit
 //  _q      :   ofdmframesync object
@@ -879,6 +878,7 @@ int ofdmframesync_estimate_gain_S1(ofdmframesync _q,
     return LIQUID_OK;
 }
 
+#if 0
 // estimate complex equalizer gain from G0 and G1
 //  _q      :   ofdmframesync object
 //  _ntaps  :   number of time-domain taps for smoothing
@@ -939,6 +939,7 @@ int ofdmframesync_estimate_eqgain(ofdmframesync _q,
     }
     return LIQUID_OK;
 }
+#endif
 
 // estimate complex equalizer gain from G0 and G1 using polynomial fit
 //  _q      :   ofdmframesync object
