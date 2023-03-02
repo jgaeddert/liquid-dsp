@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,10 @@
 #include "liquid.internal.h"
 
 #define DEBUG_OFDMFRAMEGEN            1
+
+// generate symbol (add cyclic prefix/postfix, overlap)
+int ofdmframegen_gensymbol(ofdmframegen    _q,
+                           float complex * _buffer);
 
 struct ofdmframegen_s {
     unsigned int M;         // number of subcarriers
