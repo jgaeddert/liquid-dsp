@@ -197,26 +197,8 @@ FIRPFBCH() FIRPFBCH(_create_rnyquist)(int          _type,
     // design filter based on requested prototype
     unsigned int h_len = 2*_M*_m + 1;
     float h[h_len];
-    switch (_ftype) {
-    case LIQUID_FIRFILT_ARKAISER:
-        // root-Nyquist Kaiser (approximate optimum)
-        liquid_firdes_arkaiser(_M, _m, _beta, 0.0f, h);
-        break;
-    case LIQUID_FIRFILT_RKAISER:
-        // root-Nyquist Kaiser (true optimum)
-        liquid_firdes_rkaiser(_M, _m, _beta, 0.0f, h);
-        break;
-    case LIQUID_FIRFILT_RRC:
-        // root raised-cosine
-        liquid_firdes_rrcos(_M, _m, _beta, 0.0f, h);
-        break;
-    case LIQUID_FIRFILT_hM3:
-        // harris-Moerder-3 filter
-        liquid_firdes_hM3(_M, _m, _beta, 0.0f, h);
-        break;
-    default:
-        return liquid_error_config("firpfbch_%s_create_rnyquist(), unknown/invalid prototype (%d)", EXTENSION_FULL, _ftype);
-    }
+    if (liquid_firdes_prototype(_ftype, _M, _m, _beta, 0.0f, h) != LIQUID_OK)
+        return liquid_error_config("firpfbch_%s_create_rnyquist(), invalid filter type/configuration", EXTENSION_FULL);
 
     // copy coefficients to type-specfic array, reversing order if
     // channelizer is an analyzer, matched filter: g(-t)
