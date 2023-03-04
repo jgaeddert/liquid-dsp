@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// firpfbch.c
-//
-// finite impulse response polyphase filterbank channelizer
-//
+// firpfbch : finite impulse response polyphase filterbank channelizer
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -77,7 +73,7 @@ FIRPFBCH() FIRPFBCH(_create)(int          _type,
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
-        return liquid_error_config("firpfbch_%s_create(), invalid type %d", EXTENSION_FULL, _type);
+        return liquid_error_config("firpfbch_%s_create(), invalid type: %d", EXTENSION_FULL, _type);
     if (_M == 0)
         return liquid_error_config("firpfbch_%s_create(), number of channels must be greater than 0", EXTENSION_FULL);
     if (_p == 0)
@@ -148,6 +144,8 @@ FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,
                                     float        _as)
 {
     // validate input
+    if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
+        return liquid_error_config("firpfbch_%s_create_kaiser(), invalid type: %d", EXTENSION_FULL, _type);
     if (_M == 0)
         return liquid_error_config("firpfbch_%s_create_kaiser(), number of channels must be greater than 0", EXTENSION_FULL);
     if (_m == 0)
@@ -190,7 +188,7 @@ FIRPFBCH() FIRPFBCH(_create_rnyquist)(int          _type,
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
-        return liquid_error_config("firpfbch_%s_create_rnyquist(), invalid type %d", EXTENSION_FULL, _type);
+        return liquid_error_config("firpfbch_%s_create_rnyquist(), invalid type: %d", EXTENSION_FULL, _type);
     if (_M == 0)
         return liquid_error_config("firpfbch_%s_create_rnyquist(), number of channels must be greater than 0", EXTENSION_FULL);
     if (_m == 0)

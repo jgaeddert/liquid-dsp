@@ -38,6 +38,14 @@ void autotest_firpfbch_crcf_config()
     CONTEND_ISNULL(firpfbch_crcf_create(LIQUID_ANALYZER,  0, 12, NULL)) // invalid number of channels
     CONTEND_ISNULL(firpfbch_crcf_create(LIQUID_ANALYZER, 76,  0, NULL)) // invalid filter semi-length
 
+    CONTEND_ISNULL(firpfbch_crcf_create_kaiser(             77, 76, 12, 60.0f)) // invalid type
+    CONTEND_ISNULL(firpfbch_crcf_create_kaiser(LIQUID_ANALYZER,  0, 12, 60.0f)) // invalid number of channels
+    CONTEND_ISNULL(firpfbch_crcf_create_kaiser(LIQUID_ANALYZER, 76,  0, 60.0f)) // invalid filter semi-length
+
+    CONTEND_ISNULL(firpfbch_crcf_create_rnyquist(             77, 76, 12, 0.2f, LIQUID_FIRFILT_ARKAISER)) // invalid type
+    CONTEND_ISNULL(firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER,  0, 12, 0.2f, LIQUID_FIRFILT_ARKAISER)) // invalid number of channels
+    CONTEND_ISNULL(firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER, 76,  0, 0.2f, LIQUID_FIRFILT_ARKAISER)) // invalid filter semi-length
+
     //CONTEND_ISNULL(firpfbch_crcf_copy(NULL))
 
     // create proper object and test configurations
