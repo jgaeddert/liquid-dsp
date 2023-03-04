@@ -174,6 +174,18 @@ void autotest_ofdmframe_common_config()
     // subcarrier allocation within an occupied frequency range
     CONTEND_EQUALITY(LIQUID_OK, ofdmframe_init_sctype_range(M, -0.4f,+0.4f,p))
     CONTEND_EQUALITY(LIQUID_OK, ofdmframe_validate_sctype(p, M, NULL, NULL, NULL))
+
+    // invalid subcarrier allocations
+    unsigned int i;
+    for (i=0; i<M; i++)
+        p[i] = OFDMFRAME_SCTYPE_NULL;
+    CONTEND_INEQUALITY(LIQUID_OK, ofdmframe_validate_sctype(p, M, NULL, NULL, NULL))
+
+    p[0] = OFDMFRAME_SCTYPE_PILOT;
+    CONTEND_INEQUALITY(LIQUID_OK, ofdmframe_validate_sctype(p, M, NULL, NULL, NULL))
+
+    p[1] = OFDMFRAME_SCTYPE_DATA;
+    CONTEND_INEQUALITY(LIQUID_OK, ofdmframe_validate_sctype(p, M, NULL, NULL, NULL))
 }
 
 void autotest_ofdmframegen_config()
