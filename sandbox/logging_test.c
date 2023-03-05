@@ -48,27 +48,30 @@ enum { LIQUID_TRACE=0, LIQUID_DEBUG, LIQUID_INFO, LIQUID_WARN, LIQUID_ERROR, LIQ
 
 void liquid_log(liquid_logger q, int level, const char * file, int line, const char * format, ...);
 
+#define liquid_log_trace(...) liquid_log(NULL,LIQUID_TRACE,__FILE__,__LINE__,__VA_ARGS__)
+
 int main(int argc, char*argv[])
 {
     int level;
     for (level=0; level<=LIQUID_FATAL; level++) {
-        liquid_log(NULL,level,__FILE__,__LINE__,"logger could not allocate memory for stack");
-        usleep(1000000);
+        liquid_log(NULL,level,__FILE__,__LINE__,"message with (%d) value", level);
+        usleep(100000);
     }
 
     //liquid_log(LIQUID_LOG_ERROR, "logger could not allocate memory for stack");
     //liquid_log_error("logger could not allocate memory for stack");
 
-    liquid_log(NULL,LIQUID_WARN,__FILE__,__LINE__,"logger could not allocate memory for stack");
+    liquid_log_trace("testing trace logging with narg=%u", 42);
 
     return 0;
 }
 
 void liquid_log(liquid_logger q,
-                int level,
-                const char * file,
-                int line,
-                const char * format, ...)
+                int           level,
+                const char *  file,
+                int           line,
+                const char *  format,
+                ...)
 {
     if (q == NULL)
         q = &qlog;
@@ -76,7 +79,13 @@ void liquid_log(liquid_logger q,
     char time_str[80];
     time_t t = time(NULL);
     strftime(time_str, sizeof(time_str), q->time_fmt, localtime(&t));
-    printf("[%s] %s%-5s\x1b[0m \x1b[90m%s:%d:\x1b[0m\n",
+    printf("[%s] %s%-5s\x1b[0m \x1b[90m%s:%d:\x1b[0m",
         time_str, liquid_log_colors[level], liquid_log_levels[level],__FILE__, __LINE__);
+    //vfprintf(ev->udata, ev->fmt, ev->ap);
+    va_list args;      // variadic function arguments
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+    printf("\n");
 }
 
