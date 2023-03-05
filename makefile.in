@@ -1766,6 +1766,7 @@ sandbox_programs =						\
 	sandbox/iirdes_gradsearch_test				\
 	sandbox/iirfilt_intdiff_test				\
 	sandbox/levinson_test					\
+	sandbox/logging_test					\
 	sandbox/matched_filter_test				\
 	sandbox/matched_filter_cfo_test				\
 	sandbox/math_lngamma_test				\
