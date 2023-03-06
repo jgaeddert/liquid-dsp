@@ -1,4 +1,5 @@
-// This example demonstrates logging capabilities with liquid
+// This example demonstrates logging capabilities with liquid,
+// heavily influenced by: https://github.com/rxi/log.c
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -63,6 +64,11 @@ const char * liquid_log_levels[] = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", 
 enum { LIQUID_TRACE=0, LIQUID_DEBUG, LIQUID_INFO, LIQUID_WARN, LIQUID_ERROR, LIQUID_FATAL };
 
 #define liquid_log_trace(...) liquid_log(NULL,LIQUID_TRACE,__FILE__,__LINE__,__VA_ARGS__)
+#define liquid_log_debug(...) liquid_log(NULL,LIQUID_DEBUG,__FILE__,__LINE__,__VA_ARGS__)
+#define liquid_log_info(...)  liquid_log(NULL,LIQUID_INFO, __FILE__,__LINE__,__VA_ARGS__)
+#define liquid_log_warn(...)  liquid_log(NULL,LIQUID_WARN, __FILE__,__LINE__,__VA_ARGS__)
+#define liquid_log_error(...) liquid_log(NULL,LIQUID_ERROR,__FILE__,__LINE__,__VA_ARGS__)
+#define liquid_log_fatal(...) liquid_log(NULL,LIQUID_FATAL,__FILE__,__LINE__,__VA_ARGS__)
 
 // test callback
 int callback(liquid_log_event event, void * context)
@@ -202,10 +208,11 @@ int liquid_log(liquid_logger q,
     strftime(time_str, sizeof(time_str), q->time_fmt, localtime(&t));
     printf("[%s] %s%-5s\x1b[0m \x1b[90m%s:%d:\x1b[0m",
         time_str, liquid_log_colors[level], liquid_log_levels[level],__FILE__, __LINE__);
-    //vfprintf(ev->udata, ev->fmt, ev->ap);
-    va_list args;      // variadic function arguments
+
+    // parse variadic function arguments
+    va_list args;
     va_start(args, format);
-    vprintf(format, args);
+    vfprintf(stdout, format, args);
     va_end(args);
     printf("\n");
     // invoke callbacks
