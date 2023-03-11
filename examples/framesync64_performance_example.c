@@ -10,10 +10,11 @@
 // add noise to channel
 void frame64_add_noise(float complex * _buf, float _SNRdB)
 {
-    float nstd = powf(10.0f, -_SNRdB/20.0f) * M_SQRT1_2;
+    float nstd = powf(10.0f, -_SNRdB/20.0f);
+    nstd *= M_SQRT2; // scale noise to account for signal being over-sampled by 2
     unsigned int i;
     for (i=0; i<LIQUID_FRAME64_LEN; i++)
-        _buf[i] += nstd*( randnf() + _Complex_I*randnf() );
+        _buf[i] += nstd*( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
 }
 
 int main(int argc, char*argv[])
