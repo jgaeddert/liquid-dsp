@@ -11,9 +11,9 @@ def main(argv=None):
     args = p.parse_args()
 
     for fname in args.sources:
-        filename = framesync64_plot(fname,args.export)
+        filename = framesync64_plot(fname,args.export,args.nodisplay)
 
-def framesync64_plot(filename,export=None):
+def framesync64_plot(filename,export=None,nodisplay=True):
     # open file and read values
     fid         = open(filename,'rb')
     buf         = np.fromfile(fid, count=1440, dtype=np.csingle)
@@ -26,7 +26,7 @@ def framesync64_plot(filename,export=None):
     payload_sym = np.fromfile(fid, count= 600, dtype=np.csingle)
     payload_dec = np.fromfile(fid, count=  72, dtype=np.int8)
 
-    # compute filter response in dB
+    # compute smooth spectral response in dB
     nfft = 2400
     f = np.arange(nfft)/nfft-0.5
     psd = np.abs(np.fft.fftshift(np.fft.fft(buf, nfft)))**2
@@ -35,7 +35,6 @@ def framesync64_plot(filename,export=None):
     h   = np.concatenate((w[m:], np.zeros(nfft-2*m-1), w[:m])) / (sum(w) * nfft)
     H   = np.fft.fft(h)
     psd = 10*np.log10( np.real(np.fft.ifft(H * np.fft.fft(psd))) )
-    #psd = 20*np.log10(np.abs(np.fft.fftshift(np.fft.fft(buf, nfft))))
 
     # plot impulse and spectral responses
     fig, _ax = plt.subplots(2,2,figsize=(12,12))
@@ -58,11 +57,13 @@ def framesync64_plot(filename,export=None):
         _ax.set_ylabel('Imag')
     for _ax in ax:
         _ax.grid(True)
-    fig.suptitle('frame64, tau:%.6f, dphi:%.6f, phi:%.6f, rssi:%.3f dB, evm:%.3f' % \
-        (tau_hat, dphi_hat, phi_hat, 20*np.log10(gamma_hat), evm))
-    if export==None:
+    title = '%s, tau:%9.6f, dphi:%9.6f, phi:%9.6f, rssi:%6.3f dB, evm:%6.3f' % \
+        (filename, tau_hat, dphi_hat, phi_hat, 20*np.log10(gamma_hat), evm)
+    print(title)
+    fig.suptitle(title)
+    if not nodisplay:
         plt.show()
-    else:
+    if export is not None:
         fig.savefig(os.path.splitext(filename)[0]+'.png',bbox_inches='tight')
     plt.close()
 
