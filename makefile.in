@@ -303,6 +303,7 @@ $(fec_objects) : %.o : %.c $(include_headers)
 fec_autotests :=						\
 	src/fec/tests/crc_autotest.c				\
 	src/fec/tests/fec_autotest.c				\
+	src/fec/tests/fec_config_autotest.c			\
 	src/fec/tests/fec_copy_autotest.c			\
 	src/fec/tests/fec_soft_autotest.c			\
 	src/fec/tests/fec_golay2412_autotest.c			\

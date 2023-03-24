@@ -65,16 +65,3 @@ void autotest_hamming3126_codec()
     }
 }
 
-void autotest_fec_hamming3126_config()
-{
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping fec_hamming3126 config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
-    // symbols too large
-    CONTEND_EQUALITY(fec_hamming3126_encode_symbol(1u<<26), 0)
-    CONTEND_EQUALITY(fec_hamming3126_decode_symbol(1u<<31), 0)
-}
