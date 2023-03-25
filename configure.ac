@@ -176,9 +176,9 @@ else
 
         if [ test "$ax_cv_have_avx512f_ext" = yes ]; then
             # AVX512 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx.o \
-                           src/dotprod/src/dotprod_crcf.avx.o \
-                           src/dotprod/src/dotprod_rrrf.avx.o \
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx512f.o \
+                           src/dotprod/src/dotprod_crcf.avx512f.o \
+                           src/dotprod/src/dotprod_rrrf.avx512f.o \
                            src/dotprod/src/sumsq.avx512f.o"
             ARCH_OPTION='-mavx512f'
         elif [ test "$ax_cv_have_avx2_ext" = yes ]; then
