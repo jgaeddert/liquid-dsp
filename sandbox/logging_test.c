@@ -44,6 +44,7 @@ int liquid_logger_reset  (liquid_logger _q);
 int liquid_logger_print  (liquid_logger _q);
 int liquid_logger_set_time_fmt(liquid_logger q, const char * fmt);
 int liquid_logger_add_callback(liquid_logger q, liquid_log_callback _callback, void * _context);
+int liquid_logger_add_file(liquid_logger q, FILE * fid);
 unsigned int liquid_logger_get_num_callbacks(liquid_logger q);
 int liquid_log(liquid_logger q, int level, const char * file, int line, const char * format, ...);
 
@@ -89,12 +90,17 @@ int main(int argc, char*argv[])
 
     // test logging with custom object
     printf("\ntesting custom log:\n");
+    char fname[] = "autotest/logs/logging_test.log";
+    FILE * logfile = fopen(fname,"w");
     liquid_logger custom_log = liquid_logger_create();
     custom_log->level = LIQUID_DEBUG;
     liquid_logger_add_callback(custom_log, test_callback, NULL);
+    liquid_logger_add_file    (custom_log, logfile);
     liquid_log(custom_log,LIQUID_ERROR,__FILE__,__LINE__,"could not allocate memory for %u bytes", 1024);
     liquid_logger_print(custom_log);
     liquid_logger_destroy(custom_log);
+    fclose(logfile);
+    printf("output log written to %s\n", fname);
 
     return 0;
 }
@@ -103,13 +109,40 @@ int main(int argc, char*argv[])
 liquid_logger liquid_logger_safe_cast(liquid_logger _q)
     { return _q == NULL ? &qlog : _q; }
 
-// file callback
-int file_callback(liquid_log_event event, void * context)
+// log to stdout/stderr
+int liquid_logger_callback_stdout(liquid_log_event _event,
+                                  FILE * restrict  _stream)
 {
-    char time_str[80];
-    time_str[strftime(time_str, sizeof(time_str), "%F-%T", event->timestamp)] = '\0';
+    fprintf(_stream,"[%s] %s%-5s\033[0m \033[90m%s:%d:\033[0m",
+        _event->time_str,
+        liquid_log_colors[_event->level],
+        liquid_log_levels[_event->level],
+        _event->file,
+        _event->line);
+
+    // parse variadic function arguments
+    vfprintf(_stream, _event->format, _event->args);
+    fprintf(_stream,"\n");
     return LIQUID_OK;
 }
+
+// log to file
+int liquid_logger_callback_file(liquid_log_event _event,
+                                void *           _fid)
+{
+    FILE * fid = (FILE*)_fid;
+    fprintf(fid,"[%s] %-5s %s:%d:",
+        _event->time_str,
+        liquid_log_levels[_event->level],
+        _event->file,
+        _event->line);
+
+    // parse variadic function arguments
+    vfprintf(fid, _event->format, _event->args);
+    fprintf(fid,"\n");
+    return LIQUID_OK;
+}
+
 
 liquid_logger liquid_logger_create()
 {
@@ -181,6 +214,12 @@ int liquid_logger_add_callback(liquid_logger       _q,
     return LIQUID_OK;
 }
 
+int liquid_logger_add_file(liquid_logger _q,
+                           FILE *        _fid)
+{
+    return liquid_logger_add_callback(_q, liquid_logger_callback_file, (void*)_fid);
+}
+
 unsigned int liquid_logger_get_num_callbacks(liquid_logger _q)
 {
     // first get index of NULL
@@ -190,23 +229,6 @@ unsigned int liquid_logger_get_num_callbacks(liquid_logger _q)
             break;
     }
     return i;
-}
-
-int liquid_logger_callback_stdout(liquid_log_event _event,
-                                  FILE * restrict  _stream)
-{
-    fprintf(_stream,"[%s] %s%-5s\033[0m \033[90m%s:%d:\033[0m",
-        _event->time_str,
-        liquid_log_colors[_event->level],
-        liquid_log_levels[_event->level],
-        _event->file,
-        _event->line);
-
-    // parse variadic function arguments
-    vfprintf(_stream, _event->format, _event->args);
-    fprintf(_stream,"\n");
-
-    return LIQUID_OK;
 }
 
 int liquid_log(liquid_logger _q,
