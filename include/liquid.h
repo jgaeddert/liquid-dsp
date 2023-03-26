@@ -129,6 +129,50 @@ typedef enum {
 extern const char * liquid_error_str[LIQUID_NUM_ERRORS];
 const char *        liquid_error_info(liquid_error_code _code);
 
+// logging
+typedef struct liquid_log_event_s * liquid_log_event;
+typedef struct liquid_logger_s    * liquid_logger;
+
+// callback function
+typedef int (*liquid_log_callback)(liquid_log_event event, void * context);
+
+struct liquid_log_event_s
+{
+    va_list      args;      // variadic function arguments
+    const char * format;    // message format
+    const char * file;      // source file name
+    unsigned int line;      // source line number
+    int          level;     // log level
+    struct tm *  timestamp; // timestamp of event
+    char         time_str[64];  // formatting time buffer
+};
+
+liquid_logger liquid_logger_create();
+int liquid_logger_destroy(liquid_logger _q);
+int liquid_logger_reset  (liquid_logger _q);
+int liquid_logger_print  (liquid_logger _q);
+int liquid_logger_set_level(liquid_logger q, int _level);
+int liquid_logger_set_time_fmt(liquid_logger q, const char * fmt);
+int liquid_logger_add_callback(liquid_logger q, liquid_log_callback _callback, void * _context, int _level);
+int liquid_logger_add_file(liquid_logger q, FILE * fid, int _level);
+unsigned int liquid_logger_get_num_callbacks(liquid_logger q);
+int liquid_log(liquid_logger q, int level, const char * file, int line, const char * format, ...);
+
+static const char * liquid_log_colors[] = {"\033[94m","\033[36m","\033[32m","\033[33m","\033[31m","\033[35m"};
+
+static const char * liquid_log_levels[] = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
+
+enum { LIQUID_TRACE=0, LIQUID_DEBUG, LIQUID_INFO, LIQUID_WARN, LIQUID_ERROR, LIQUID_FATAL };
+
+#define liquid_log_trace(...) liquid_log(NULL,LIQUID_TRACE,__FILE__,__LINE__,__VA_ARGS__)
+#define liquid_log_debug(...) liquid_log(NULL,LIQUID_DEBUG,__FILE__,__LINE__,__VA_ARGS__)
+#define liquid_log_info(...)  liquid_log(NULL,LIQUID_INFO, __FILE__,__LINE__,__VA_ARGS__)
+#define liquid_log_warn(...)  liquid_log(NULL,LIQUID_WARN, __FILE__,__LINE__,__VA_ARGS__)
+#define liquid_log_error(...) liquid_log(NULL,LIQUID_ERROR,__FILE__,__LINE__,__VA_ARGS__)
+#define liquid_log_fatal(...) liquid_log(NULL,LIQUID_FATAL,__FILE__,__LINE__,__VA_ARGS__)
+
+
+// macro concatenation
 #define LIQUID_CONCAT(prefix, name) prefix ## name
 #define LIQUID_VALIDATE_INPUT
 

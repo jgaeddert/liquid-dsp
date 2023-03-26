@@ -20,10 +20,14 @@
  * THE SOFTWARE.
  */
 
-// Run-time library version numbers, error handling
+// Run-time library version numbers, error handling, logging
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
 #include "liquid.internal.h"
 
 const char liquid_version[] = LIQUID_VERSION;
@@ -105,5 +109,224 @@ const char * liquid_error_info(liquid_error_code _code)
     }
 
     return liquid_error_str[_code];
+}
+
+
+
+#define LIQUID_LOGGER_MAX_CALLBACKS (32)
+struct liquid_logger_s {
+    int     level;
+    //int timezone;
+    char time_fmt[16];    // format of time to pass to strftime, default:"%F-%T"
+    liquid_log_callback cb_function[LIQUID_LOGGER_MAX_CALLBACKS];
+    void *              cb_context [LIQUID_LOGGER_MAX_CALLBACKS];
+    int                 cb_level   [LIQUID_LOGGER_MAX_CALLBACKS];
+
+    int count[6];       // counters showing number of events of each type
+};
+
+
+// global logger
+static struct liquid_logger_s qlog = {
+    .level       = 0,
+    .time_fmt    = "%F-%T",
+    .cb_function = {NULL,},
+    .count       = {0,0,0,0,0,0,},
+};
+
+// internal methods
+liquid_logger liquid_logger_safe_cast(liquid_logger _q)
+    { return _q == NULL ? &qlog : _q; }
+
+// log to stdout/stderr
+int liquid_logger_callback_stdout(liquid_log_event _event,
+                                  FILE * restrict  _stream)
+{
+    fprintf(_stream,"[%s] %s%-5s\033[0m \033[90m%s:%d:\033[0m",
+        _event->time_str,
+        liquid_log_colors[_event->level],
+        liquid_log_levels[_event->level],
+        _event->file,
+        _event->line);
+
+    // parse variadic function arguments
+    vfprintf(_stream, _event->format, _event->args);
+    fprintf(_stream,"\n");
+    return LIQUID_OK;
+}
+
+// log to file
+int liquid_logger_callback_file(liquid_log_event _event,
+                                void *           _fid)
+{
+    FILE * fid = (FILE*)_fid;
+    fprintf(fid,"[%s] %-5s %s:%d:",
+        _event->time_str,
+        liquid_log_levels[_event->level],
+        _event->file,
+        _event->line);
+
+    // parse variadic function arguments
+    vfprintf(fid, _event->format, _event->args);
+    fprintf(fid,"\n");
+    return LIQUID_OK;
+}
+
+
+liquid_logger liquid_logger_create()
+{
+    liquid_logger q = (liquid_logger) malloc(sizeof(struct liquid_logger_s));
+    liquid_logger_reset(q);
+    return q;
+}
+
+int liquid_logger_destroy(liquid_logger _q)
+{
+    free(_q);
+    return LIQUID_OK;
+}
+
+int liquid_logger_reset(liquid_logger _q)
+{
+    _q = liquid_logger_safe_cast(_q);
+    _q->level = LIQUID_WARN;
+    liquid_logger_set_time_fmt(_q, "%F-%T");
+    _q->cb_function[0] = NULL; // effectively reset all callbacks
+    int i;
+    for (i=0; i<6; i++)
+        _q->count[i] = 0;
+    return LIQUID_OK;
+}
+
+int liquid_logger_print(liquid_logger _q)
+{
+    _q = liquid_logger_safe_cast(_q);
+    printf("<liquid_logger, level:%s, callbacks:%u, fmt:%s, count:",
+        // TODO: validate
+        liquid_log_levels[_q->level],
+        liquid_logger_get_num_callbacks(_q),
+        _q->time_fmt);
+
+    // print event counts
+    printf("(");
+    int i;
+    for (i=0; i<6; i++)
+        printf("%u,", _q->count[i]);
+    printf(")>\n");
+    return LIQUID_OK;
+}
+
+int liquid_logger_set_level(liquid_logger _q,
+                            int           _level)
+{
+    _q = liquid_logger_safe_cast(_q);
+    _q->level = _level;
+    return LIQUID_OK;
+}
+
+int liquid_logger_set_time_fmt(liquid_logger _q,
+                               const char * _fmt)
+{
+    _q = liquid_logger_safe_cast(_q);
+    // TODO: validate copy operation was successful
+    strncpy(_q->time_fmt, _fmt, sizeof(_q->time_fmt));
+    return LIQUID_OK;
+}
+
+int liquid_logger_add_callback(liquid_logger       _q,
+                               liquid_log_callback _callback,
+                               void *              _context,
+                               int                 _level)
+{
+    _q = liquid_logger_safe_cast(_q);
+    unsigned int index = liquid_logger_get_num_callbacks(_q);
+
+    // check that maximum has not been reached already
+    if (index==LIQUID_LOGGER_MAX_CALLBACKS)
+        return liquid_error(LIQUID_EICONFIG,"maximum number of callbacks (%u) reached", LIQUID_LOGGER_MAX_CALLBACKS);
+
+    // set callback, context, and level at this index
+    _q->cb_function [index] = _callback;
+    _q->cb_context[index] = _context;
+    _q->cb_level  [index] = _level;
+
+    // assign next position NULL pointer, assuming not already full
+    if (index < LIQUID_LOGGER_MAX_CALLBACKS-1)
+        _q->cb_function[index+1] = NULL;
+
+    return LIQUID_OK;
+}
+
+int liquid_logger_add_file(liquid_logger _q,
+                           FILE *        _fid,
+                           int           _level)
+{
+    _q = liquid_logger_safe_cast(_q);
+    return liquid_logger_add_callback(_q, liquid_logger_callback_file, (void*)_fid, _level);
+}
+
+unsigned int liquid_logger_get_num_callbacks(liquid_logger _q)
+{
+    _q = liquid_logger_safe_cast(_q);
+    // first get index of NULL
+    unsigned int i;
+    for (i=0; i<LIQUID_LOGGER_MAX_CALLBACKS; i++) {
+        if (_q->cb_function[i] == NULL)
+            break;
+    }
+    return i;
+}
+
+int liquid_log(liquid_logger _q,
+               int           _level,
+               const char *  _file,
+               int           _line,
+               const char *  _format,
+               ...)
+{
+    // set to global object if input is NULL (default)
+    _q = liquid_logger_safe_cast(_q);
+
+    // validate level
+    if (_level < 0 || _level >= 6)
+        return liquid_error(LIQUID_EIRANGE,"log level (%d) out of range", _level);
+
+    // update count
+    _q->count[_level]++;
+
+    // create event
+    time_t t = time(NULL);
+    struct liquid_log_event_s event = {
+        .format    = _format,
+        .file      = _file,
+        .line      = _line,
+        .level     = _level,
+        .timestamp = localtime(&t),
+    };
+    event.time_str[
+        strftime(event.time_str, sizeof(event.time_str), _q->time_fmt, event.timestamp)
+    ] = '\0';
+
+    // TODO: lock
+
+    // output to stdout
+    if (_level >= _q->level) {
+        va_start(event.args, _format);
+        liquid_logger_callback_stdout(&event, stderr);
+        va_end(event.args);
+    }
+
+    // invoke callbacks
+    int i;
+    for (i=0; i<LIQUID_LOGGER_MAX_CALLBACKS && _q->cb_function[i] != NULL; i++) {
+        if (_level >= _q->cb_level[i]) {
+            va_start(event.args, _format);
+            _q->cb_function[i](&event, _q->cb_context[i]);
+            va_end(event.args);
+        }
+    }
+
+    // TODO: unlock
+    return LIQUID_OK;
 }
 
