@@ -57,7 +57,7 @@ static struct liquid_logger_s qlog = {
     .count     = {0,0,0,0,0,0,},
 };
 
-const char * liquid_log_colors[] = {"\x1b[94m","\x1b[36m","\x1b[32m","\x1b[33m","\x1b[31m","\x1b[35m"};
+const char * liquid_log_colors[] = {"\033[94m","\033[36m","\033[32m","\033[33m","\033[31m","\033[35m"};
 
 const char * liquid_log_levels[] = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
 
@@ -206,7 +206,7 @@ int liquid_log(liquid_logger q,
     char time_str[80];
     time_t t = time(NULL);
     strftime(time_str, sizeof(time_str), q->time_fmt, localtime(&t));
-    printf("[%s] %s%-5s\x1b[0m \x1b[90m%s:%d:\x1b[0m",
+    printf("[%s] %s%-5s\033[0m \033[90m%s:%d:\033[0m",
         time_str, liquid_log_colors[level], liquid_log_levels[level],__FILE__, __LINE__);
 
     // parse variadic function arguments
