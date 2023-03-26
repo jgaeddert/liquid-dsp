@@ -70,7 +70,7 @@ enum { LIQUID_TRACE=0, LIQUID_DEBUG, LIQUID_INFO, LIQUID_WARN, LIQUID_ERROR, LIQ
 
 // user-defined callback
 int test_callback(liquid_log_event event, void * context)
-    { printf("callback invoked!\n"); return 0; }
+    { printf("  custom callback invoked! (%s)\n", event->time_str); return 0; }
 
 int main(int argc, char*argv[])
 {
@@ -249,14 +249,11 @@ int liquid_log(liquid_logger _q,
     }
 
     // invoke callbacks
-    // TODO: actually pass event properly...
     int i;
-    for (i=0; i<LIQUID_LOGGER_MAX_CALLBACKS; i++) {
-        if (_q->callbacks[i] == NULL)
-            break;
-        
-        //
-        _q->callbacks[i](NULL, NULL);
+    for (i=0; i<LIQUID_LOGGER_MAX_CALLBACKS && _q->callbacks[i] != NULL; i++) {
+        va_start(event.args, _format);
+        _q->callbacks[i](&event, _q->context[i]);
+        va_end(event.args);
     }
 
     // TODO: unlock
