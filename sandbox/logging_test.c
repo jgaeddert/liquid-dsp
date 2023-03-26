@@ -101,6 +101,10 @@ int main(int argc, char*argv[])
     return 0;
 }
 
+// internal methods
+liquid_logger liquid_logger_safe_cast(liquid_logger _q)
+    { return _q == NULL ? &qlog : _q; }
+
 liquid_logger liquid_logger_create()
 {
     liquid_logger q = (liquid_logger) malloc(sizeof(struct liquid_logger_s));
@@ -116,6 +120,7 @@ int liquid_logger_destroy(liquid_logger _q)
 
 int liquid_logger_reset(liquid_logger _q)
 {
+    //_q = liquid_logger_safe_cast(_q);
     _q->level = LIQUID_WARN;
     _q->context = NULL;
     liquid_logger_set_time_fmt(_q, "%F-%T");
