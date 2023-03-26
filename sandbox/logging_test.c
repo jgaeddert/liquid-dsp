@@ -32,8 +32,9 @@ struct liquid_logger_s {
     int     level;
     //int timezone;
     char time_fmt[16];    // format of time to pass to strftime, default:"%F-%T"
-    liquid_log_callback callbacks[LIQUID_LOGGER_MAX_CALLBACKS];
-    void * context[LIQUID_LOGGER_MAX_CALLBACKS];
+    liquid_log_callback cb_function[LIQUID_LOGGER_MAX_CALLBACKS];
+    void *              cb_context [LIQUID_LOGGER_MAX_CALLBACKS];
+    int                 cb_level   [LIQUID_LOGGER_MAX_CALLBACKS];
 
     int count[6];       // counters showing number of events of each type
 };
@@ -43,17 +44,17 @@ int liquid_logger_destroy(liquid_logger _q);
 int liquid_logger_reset  (liquid_logger _q);
 int liquid_logger_print  (liquid_logger _q);
 int liquid_logger_set_time_fmt(liquid_logger q, const char * fmt);
-int liquid_logger_add_callback(liquid_logger q, liquid_log_callback _callback, void * _context);
-int liquid_logger_add_file(liquid_logger q, FILE * fid);
+int liquid_logger_add_callback(liquid_logger q, liquid_log_callback _callback, void * _context, int _level);
+int liquid_logger_add_file(liquid_logger q, FILE * fid, int _level);
 unsigned int liquid_logger_get_num_callbacks(liquid_logger q);
 int liquid_log(liquid_logger q, int level, const char * file, int line, const char * format, ...);
 
 // global logger
 static struct liquid_logger_s qlog = {
-    .level   = 0,
-    .time_fmt= "%F-%T",
-    .callbacks = {NULL,},
-    .count     = {0,0,0,0,0,0,},
+    .level       = 0,
+    .time_fmt    = "%F-%T",
+    .cb_function = {NULL,},
+    .count       = {0,0,0,0,0,0,},
 };
 
 const char * liquid_log_colors[] = {"\033[94m","\033[36m","\033[32m","\033[33m","\033[31m","\033[35m"};
@@ -94,8 +95,8 @@ int main(int argc, char*argv[])
     FILE * logfile = fopen(fname,"w");
     liquid_logger custom_log = liquid_logger_create();
     custom_log->level = LIQUID_DEBUG;
-    liquid_logger_add_callback(custom_log, test_callback, NULL);
-    liquid_logger_add_file    (custom_log, logfile);
+    liquid_logger_add_callback(custom_log, test_callback, NULL, 0);
+    liquid_logger_add_file    (custom_log, logfile, -1);
     liquid_log(custom_log,LIQUID_ERROR,__FILE__,__LINE__,"could not allocate memory for %u bytes", 1024);
     liquid_logger_print(custom_log);
     liquid_logger_destroy(custom_log);
@@ -162,7 +163,7 @@ int liquid_logger_reset(liquid_logger _q)
     //_q = liquid_logger_safe_cast(_q);
     _q->level = LIQUID_WARN;
     liquid_logger_set_time_fmt(_q, "%F-%T");
-    _q->callbacks[0] = NULL; // effectively reset all callbacks
+    _q->cb_function[0] = NULL; // effectively reset all callbacks
     int i;
     for (i=0; i<6; i++)
         _q->count[i] = 0;
@@ -195,7 +196,8 @@ int liquid_logger_set_time_fmt(liquid_logger _q,
 
 int liquid_logger_add_callback(liquid_logger       _q,
                                liquid_log_callback _callback,
-                               void *              _context)
+                               void *              _context,
+                               int                 _level)
 {
     unsigned int index = liquid_logger_get_num_callbacks(_q);
 
@@ -203,21 +205,23 @@ int liquid_logger_add_callback(liquid_logger       _q,
     if (index==LIQUID_LOGGER_MAX_CALLBACKS)
         return liquid_error(LIQUID_EICONFIG,"maximum number of callbacks (%u) reached", LIQUID_LOGGER_MAX_CALLBACKS);
 
-    // set callback and context at this index
-    _q->callbacks[index] = _callback;
-    _q->context  [index] = _context;
+    // set callback, context, and level at this index
+    _q->cb_function [index] = _callback;
+    _q->cb_context[index] = _context;
+    _q->cb_level  [index] = _level;
 
     // assign next position NULL pointer, assuming not already full
     if (index < LIQUID_LOGGER_MAX_CALLBACKS-1)
-        _q->callbacks[index+1] = NULL;
+        _q->cb_function[index+1] = NULL;
 
     return LIQUID_OK;
 }
 
 int liquid_logger_add_file(liquid_logger _q,
-                           FILE *        _fid)
+                           FILE *        _fid,
+                           int           _level)
 {
-    return liquid_logger_add_callback(_q, liquid_logger_callback_file, (void*)_fid);
+    return liquid_logger_add_callback(_q, liquid_logger_callback_file, (void*)_fid, _level);
 }
 
 unsigned int liquid_logger_get_num_callbacks(liquid_logger _q)
@@ -225,7 +229,7 @@ unsigned int liquid_logger_get_num_callbacks(liquid_logger _q)
     // first get index of NULL
     unsigned int i;
     for (i=0; i<LIQUID_LOGGER_MAX_CALLBACKS; i++) {
-        if (_q->callbacks[i] == NULL)
+        if (_q->cb_function[i] == NULL)
             break;
     }
     return i;
@@ -272,10 +276,12 @@ int liquid_log(liquid_logger _q,
 
     // invoke callbacks
     int i;
-    for (i=0; i<LIQUID_LOGGER_MAX_CALLBACKS && _q->callbacks[i] != NULL; i++) {
-        va_start(event.args, _format);
-        _q->callbacks[i](&event, _q->context[i]);
-        va_end(event.args);
+    for (i=0; i<LIQUID_LOGGER_MAX_CALLBACKS && _q->cb_function[i] != NULL; i++) {
+        if (_level >= _q->cb_level[i]) {
+            va_start(event.args, _format);
+            _q->cb_function[i](&event, _q->cb_context[i]);
+            va_end(event.args);
+        }
     }
 
     // TODO: unlock
