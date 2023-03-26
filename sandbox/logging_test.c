@@ -33,6 +33,8 @@ struct liquid_logger_s {
     //int timezone;
     char time_fmt[16];    // format of time to pass to strftime, default:"%F-%T"
     liquid_log_callback callbacks[LIQUID_LOGGER_MAX_CALLBACKS];
+
+    int count[6];       // counters showing number of events of each type
 };
 
 liquid_logger liquid_logger_create();
@@ -51,6 +53,7 @@ static struct liquid_logger_s qlog = {
     .context = NULL,
     .time_fmt= "%F-%T",
     .callbacks = {NULL,},
+    .count     = {0,0,0,0,0,0,},
 };
 
 const char * liquid_log_colors[] = {"\x1b[94m","\x1b[36m","\x1b[32m","\x1b[33m","\x1b[31m","\x1b[35m"};
@@ -78,13 +81,15 @@ int main(int argc, char*argv[])
 
     // test macro
     liquid_log_trace("testing trace logging with narg=%u", 42);
+    liquid_logger_print(&qlog);
 
     // test logging with custom object
+    printf("\ntesting custom log:\n");
     liquid_logger custom_log = liquid_logger_create();
     custom_log->level = LIQUID_DEBUG;
     liquid_logger_add_callback(custom_log, callback);
-    liquid_logger_print(custom_log);
     liquid_log(custom_log,LIQUID_ERROR,__FILE__,__LINE__,"could not allocate memory for %u bytes", 1024);
+    liquid_logger_print(custom_log);
     liquid_logger_destroy(custom_log);
 
     return 0;
@@ -109,17 +114,26 @@ int liquid_logger_reset(liquid_logger _q)
     _q->context = NULL;
     liquid_logger_set_time_fmt(_q, "%F-%T");
     _q->callbacks[0] = NULL; // effectively reset all callbacks
+    int i;
+    for (i=0; i<6; i++)
+        _q->count[i] = 0;
     return LIQUID_OK;
 }
 
 int liquid_logger_print(liquid_logger _q)
 {
-    printf("<liquid_logger, level:%s, callbacks:%u, context:%s, fmt:%s>\n",
+    printf("<liquid_logger, level:%s, callbacks:%u, context:%s, fmt:%s, count:",
         // TODO: validate
         liquid_log_levels[_q->level],
         liquid_logger_get_num_callbacks(_q),
         _q->context == NULL ? "null" : "set",
         _q->time_fmt);
+    // print event counts
+    printf("(");
+    int i;
+    for (i=0; i<6; i++)
+        printf("%u,", _q->count[i]);
+    printf(")>\n");
     return LIQUID_OK;
 }
 
@@ -175,6 +189,13 @@ int liquid_log(liquid_logger q,
 {
     if (q == NULL)
         q = &qlog;
+
+    // validate level
+    if (level < 0 || level >= 6)
+        return liquid_error(LIQUID_EIRANGE,"log level (%d) out of range", level);
+
+    // update count
+    q->count[level]++;
 
     char time_str[80];
     time_t t = time(NULL);
