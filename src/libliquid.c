@@ -30,6 +30,14 @@
 #include <unistd.h>
 #include "liquid.internal.h"
 
+// forward declaration of logging function with variadic arguments list
+int liquid_vlog(liquid_logger _q,
+                int           _level,
+                const char *  _file,
+                int           _line,
+                const char *  _format,
+                va_list       _ap);
+
 const char liquid_version[] = LIQUID_VERSION;
 
 const char * liquid_libversion(void)
@@ -50,14 +58,19 @@ int liquid_error_fl(int          _code,
                     ...)
 {
 #if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    // generate extended format
+    int  format_len = strlen(_format) + 20 + strlen(liquid_error_info(_code));
+    char format_ext[format_len];
+    snprintf(format_ext,format_len,"%s (code %u: %s)",
+        _format, _code, liquid_error_info(_code));
+
+    // log error
     va_list argptr;
     va_start(argptr, _format);
-    fprintf(stderr,"error [%d]: %s\n", _code, liquid_error_info(_code));
-    fprintf(stderr,"  %s:%u: ", _file, _line);
-    vfprintf(stderr, _format, argptr);
-    fprintf(stderr,"\n");
+    liquid_vlog(NULL,LIQUID_ERROR,_file,_line,format_ext,argptr);
     va_end(argptr);
 #endif
+
 #if LIQUID_STRICT_EXIT
     exit(_code);
 #endif
@@ -70,14 +83,19 @@ void * liquid_error_config_fl(const char * _file,
                               const char * _format,
                               ...)
 {
+    // TODO: call variadic arguments version of liquid_error_fl
     int code = LIQUID_EICONFIG;
 #if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    // generate extended format
+    int  format_len = strlen(_format) + 20 + strlen(liquid_error_info(code));
+    char format_ext[format_len];
+    snprintf(format_ext,format_len,"%s (code %u: %s)",
+        _format, code, liquid_error_info(code));
+
+    // log error
     va_list argptr;
     va_start(argptr, _format);
-    fprintf(stderr,"error [%d]: %s\n", code, liquid_error_info(code));
-    fprintf(stderr,"  %s:%u: ", _file, _line);
-    vfprintf(stderr, _format, argptr);
-    fprintf(stderr,"\n");
+    liquid_vlog(NULL,LIQUID_ERROR,_file,_line,format_ext,argptr);
     va_end(argptr);
 #endif
 #if LIQUID_STRICT_EXIT
@@ -284,6 +302,20 @@ int liquid_log(liquid_logger _q,
                const char *  _format,
                ...)
 {
+    va_list ap;
+    va_start(ap, _format);
+    int rv = liquid_vlog(_q, _level, _file, _line, _format, ap);
+    va_end(ap);
+    return rv;
+}
+
+int liquid_vlog(liquid_logger _q,
+                 int           _level,
+                 const char *  _file,
+                 int           _line,
+                 const char *  _format,
+                 va_list       _ap)
+{
     // set to global object if input is NULL (default)
     _q = liquid_logger_safe_cast(_q);
 
@@ -311,7 +343,7 @@ int liquid_log(liquid_logger _q,
 
     // output to stdout
     if (_level >= _q->level) {
-        va_start(event.args, _format);
+        va_copy(event.args, _ap);
         liquid_logger_callback_stdout(&event, stderr);
         va_end(event.args);
     }
@@ -320,7 +352,7 @@ int liquid_log(liquid_logger _q,
     int i;
     for (i=0; i<LIQUID_LOGGER_MAX_CALLBACKS && _q->cb_function[i] != NULL; i++) {
         if (_level >= _q->cb_level[i]) {
-            va_start(event.args, _format);
+            va_copy(event.args, _ap);
             _q->cb_function[i](&event, _q->cb_context[i]);
             va_end(event.args);
         }

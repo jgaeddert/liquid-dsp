@@ -1,7 +1,7 @@
 // demonstrate error handling in liquid
 #include <stdlib.h>
 #include <stdio.h>
-#include "liquid.h"
+#include "liquid.internal.h"
 
 int main(int argc, char*argv[])
 {
@@ -15,6 +15,9 @@ int main(int argc, char*argv[])
 
     // destroy object
     agc_crcf_destroy(q);
+
+    // set custom error
+    liquid_error(LIQUID_EICONFIG,"configuration (%s), invalid code %u > %u", "hello", 4, 2);
 
     //
     printf("done.\n");
