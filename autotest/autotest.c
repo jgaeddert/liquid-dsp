@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,15 +73,13 @@ void liquid_autotest_passed()
 void liquid_autotest_failed_expr(const char * _file,
                                  unsigned int _line,
                                  const char * _exprL,
-                                 double _valueL,
+                                 double       _valueL,
                                  const char * _qualifier,
                                  const char * _exprR,
-                                 double _valueR)
+                                 double       _valueR)
 {
-    if (liquid_autotest_verbose) {
-        printf("  TEST FAILED: %s line %u : expected %s (%0.2E) %s %s (%0.2E)\n",
-                _file, _line, _exprL, _valueL, _qualifier, _exprR, _valueR);
-    }
+    liquid_log(NULL,LIQUID_ERROR,_file,_line,"test failed: expected \"%s\" (%0.2E) %s %s (%0.2E)",
+            _exprL, _valueL, _qualifier, _exprR, _valueR);
     liquid_autotest_failed();
 }
 
@@ -97,10 +95,8 @@ void liquid_autotest_failed_bool(const char * _file,
                                  double       _valueL,
                                  int          _qualifier)
 {
-    if (liquid_autotest_verbose) {
-        printf("  TEST FAILED: %s line %u : expected \"%s\" (%g) is %s\n",
-                _file, _line, _exprL, _valueL, _qualifier ? "true" : "false");
-    }
+    liquid_log(NULL,LIQUID_ERROR,_file,_line,"test failed: expected \"%s\" (%g) is %s",
+                _exprL, _valueL, _qualifier ? "true" : "false");
     liquid_autotest_failed();
 }
 
@@ -111,8 +107,7 @@ void liquid_autotest_failed_msg(const char * _file,
                                 unsigned int _line,
                                 const char * _message)
 {
-    if (liquid_autotest_verbose)
-        printf("  TEST FAILED: %s line %u : %s\n", _file, _line, _message);
+    liquid_log(NULL,LIQUID_ERROR,_file,_line,"test failed: %s", _message);
     liquid_autotest_failed();
 }
 
@@ -148,11 +143,9 @@ void autotest_print_results(void)
 //  _message    :   message string
 void liquid_autotest_warn(const char * _file,
                           unsigned int _line,
-                         const char * _message)
+                          const char * _message)
 {
-    if (liquid_autotest_verbose)
-        fprintf(stderr,"  WARNING: %s line %u : %s\n", _file, _line, _message);
-
+    liquid_log(NULL,LIQUID_WARN,_file,_line,"%s", _message);
     liquid_autotest_num_warnings++;
 }
 
