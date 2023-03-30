@@ -6,7 +6,7 @@ import argparse, json, numpy as np
 p = argparse.ArgumentParser(description=__doc__)
 p.add_argument('old', help='old benchmark file (.json)')
 p.add_argument('new', help='new benchmark file (.json)')
-p.add_argument('-thresh', default=1.5, help='threshold for displaying deltas')
+p.add_argument('-thresh', default=1.5, type=float, help='threshold for displaying deltas')
 args = p.parse_args()
 
 # load json files
