@@ -21,7 +21,7 @@
  */
 
 // 
-// Floating-point dot product (MMX)
+// Floating-point dot product (SSE)
 //
 
 #include <stdio.h>
@@ -32,13 +32,28 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_DOTPROD_CRCF_MMX   0
+// include proper SIMD extensions for x86 platforms
+// NOTE: these pre-processor macros are defined in config.h
+
+#if HAVE_SSE
+#include <xmmintrin.h>  // SSE
+#endif
+
+#if HAVE_SSE2
+#include <emmintrin.h>  // SSE2
+#endif
+
+#if HAVE_SSE3
+#include <pmmintrin.h>  // SSE3
+#endif
+
+#define DEBUG_DOTPROD_CRCF_SSE   0
 
 // forward declaration of internal methods
-int dotprod_crcf_execute_mmx(dotprod_crcf    _q,
+int dotprod_crcf_execute_sse(dotprod_crcf    _q,
                              float complex * _x,
                              float complex * _y);
-int dotprod_crcf_execute_mmx4(dotprod_crcf    _q,
+int dotprod_crcf_execute_sse4(dotprod_crcf    _q,
                               float complex * _x,
                               float complex * _y);
 
@@ -86,7 +101,7 @@ int dotprod_crcf_run4(float *         _h,
 
 
 //
-// structured MMX dot product
+// structured SSE dot product
 //
 
 struct dotprod_crcf_s {
@@ -153,7 +168,7 @@ dotprod_crcf dotprod_crcf_copy(dotprod_crcf q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("dotprod_crcf_copy().mmx, object cannot be NULL");
+        return liquid_error_config("dotprod_crcf_copy().sse, object cannot be NULL");
 
     dotprod_crcf q_copy = (dotprod_crcf)malloc(sizeof(struct dotprod_crcf_s));
     q_copy->n = q_orig->n;
@@ -181,7 +196,7 @@ int dotprod_crcf_print(dotprod_crcf _q)
 {
     // print coefficients to screen, skipping odd entries (due
     // to repeated coefficients)
-    printf("dotprod_crcf [mmx, %u coefficients]\n", _q->n);
+    printf("dotprod_crcf [sse, %u coefficients]\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("  %3u : %12.9f\n", i, _q->h[2*i]);
@@ -195,13 +210,13 @@ int dotprod_crcf_execute(dotprod_crcf    _q,
 {
     // switch based on size
     if (_q->n < 32) {
-        return dotprod_crcf_execute_mmx(_q, _x, _y);
+        return dotprod_crcf_execute_sse(_q, _x, _y);
     }
-    return dotprod_crcf_execute_mmx4(_q, _x, _y);
+    return dotprod_crcf_execute_sse4(_q, _x, _y);
 }
 
-// use MMX/SSE extensions
-int dotprod_crcf_execute_mmx(dotprod_crcf    _q,
+// use SSE extensions
+int dotprod_crcf_execute_sse(dotprod_crcf    _q,
                              float complex * _x,
                              float complex * _y)
 {
@@ -257,8 +272,8 @@ int dotprod_crcf_execute_mmx(dotprod_crcf    _q,
     return LIQUID_OK;
 }
 
-// use MMX/SSE extensions
-int dotprod_crcf_execute_mmx4(dotprod_crcf    _q,
+// use SSE extensions
+int dotprod_crcf_execute_sse4(dotprod_crcf    _q,
                               float complex * _x,
                               float complex * _y)
 {
@@ -274,10 +289,7 @@ int dotprod_crcf_execute_mmx4(dotprod_crcf    _q,
     __m128 s0, s1, s2, s3;  // dot products [re, im, re, im]
 
     // load zeros into sum registers
-    __m128 sum0 = _mm_setzero_ps();
-    __m128 sum1 = _mm_setzero_ps();
-    __m128 sum2 = _mm_setzero_ps();
-    __m128 sum3 = _mm_setzero_ps();
+    __m128 sum = _mm_setzero_ps();
 
     // r = 4*floor(n/16)
     unsigned int r = (n >> 4) << 2;
@@ -304,22 +316,17 @@ int dotprod_crcf_execute_mmx4(dotprod_crcf    _q,
         s3 = _mm_mul_ps(v3, h3);
         
         // parallel addition
-        sum0 = _mm_add_ps( sum0, s0 );
-        sum1 = _mm_add_ps( sum1, s1 );
-        sum2 = _mm_add_ps( sum2, s2 );
-        sum3 = _mm_add_ps( sum3, s3 );
+        sum = _mm_add_ps( sum, s0 );
+        sum = _mm_add_ps( sum, s1 );
+        sum = _mm_add_ps( sum, s2 );
+        sum = _mm_add_ps( sum, s3 );
     }
-
-    // fold down
-    sum0 = _mm_add_ps( sum0, sum1 );
-    sum2 = _mm_add_ps( sum2, sum3 );
-    sum0 = _mm_add_ps( sum0, sum2 );
 
     // aligned output array
     float w[4] __attribute__((aligned(16)));
 
     // unload packed array and perform manual sum
-    _mm_store_ps(w, sum0);
+    _mm_store_ps(w, sum);
     w[0] += w[2];
     w[1] += w[3];
 

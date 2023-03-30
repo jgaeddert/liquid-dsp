@@ -21,7 +21,7 @@
  */
 
 // 
-// Floating-point dot product (AVX)
+// Floating-point dot product (AVX512-F)
 //
 
 #include <stdio.h>
@@ -35,10 +35,10 @@
 #define DEBUG_DOTPROD_CRCF_AVX   0
 
 // forward declaration of internal methods
-int dotprod_crcf_execute_avx(dotprod_crcf    _q,
+int dotprod_crcf_execute_avx512f(dotprod_crcf    _q,
                              float complex * _x,
                              float complex * _y);
-int dotprod_crcf_execute_avx4(dotprod_crcf    _q,
+int dotprod_crcf_execute_avx512f4(dotprod_crcf    _q,
                               float complex * _x,
                               float complex * _y);
 
@@ -86,7 +86,7 @@ int dotprod_crcf_run4(float *         _h,
 
 
 //
-// structured AVX dot product
+// structured AVX512-F dot product
 //
 
 struct dotprod_crcf_s {
@@ -101,8 +101,8 @@ dotprod_crcf dotprod_crcf_create_opt(float *      _h,
     dotprod_crcf q = (dotprod_crcf)malloc(sizeof(struct dotprod_crcf_s));
     q->n = _n;
 
-    // allocate memory for coefficients, 32-byte aligned
-    q->h = (float*) _mm_malloc( 2*q->n*sizeof(float), 32 );
+    // allocate memory for coefficients, 64-byte aligned
+    q->h = (float*) _mm_malloc( 2*q->n*sizeof(float), 64 );
 
     // set coefficients, repeated
     //  h = { _h[0], _h[0], _h[1], _h[1], ... _h[n-1], _h[n-1]}
@@ -153,13 +153,13 @@ dotprod_crcf dotprod_crcf_copy(dotprod_crcf q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("dotprod_crcf_copy().avx, object cannot be NULL");
+        return liquid_error_config("dotprod_crcf_copy().avx512f, object cannot be NULL");
 
     dotprod_crcf q_copy = (dotprod_crcf)malloc(sizeof(struct dotprod_crcf_s));
     q_copy->n = q_orig->n;
 
-    // allocate memory for coefficients, 32-byte aligned (repeated)
-    q_copy->h = (float*) _mm_malloc( 2*q_copy->n*sizeof(float), 32 );
+    // allocate memory for coefficients, 64-byte aligned (repeated)
+    q_copy->h = (float*) _mm_malloc( 2*q_copy->n*sizeof(float), 64 );
 
     // copy coefficients array (repeated)
     //  h = { _h[0], _h[0], _h[1], _h[1], ... _h[n-1], _h[n-1]}
@@ -181,7 +181,7 @@ int dotprod_crcf_print(dotprod_crcf _q)
 {
     // print coefficients to screen, skipping odd entries (due
     // to repeated coefficients)
-    printf("dotprod_crcf [avx, %u coefficients]\n", _q->n);
+    printf("dotprod_crcf [avx512f, %u coefficients]\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("  %3u : %12.9f\n", i, _q->h[2*i]);
@@ -194,14 +194,14 @@ int dotprod_crcf_execute(dotprod_crcf    _q,
                          float complex * _y)
 {
     // switch based on size
-    if (_q->n < 64) {
-        return dotprod_crcf_execute_avx(_q, _x, _y);
+    if (_q->n < 128) {
+        return dotprod_crcf_execute_avx512f(_q, _x, _y);
     }
-    return dotprod_crcf_execute_avx4(_q, _x, _y);
+    return dotprod_crcf_execute_avx512f4(_q, _x, _y);
 }
 
-// use AVX extensions
-int dotprod_crcf_execute_avx(dotprod_crcf    _q,
+// use AVX512-F extensions
+int dotprod_crcf_execute_avx512f(dotprod_crcf    _q,
                              float complex * _x,
                              float complex * _y)
 {
@@ -212,39 +212,36 @@ int dotprod_crcf_execute_avx(dotprod_crcf    _q,
     unsigned int n = 2*_q->n;
 
     // first cut: ...
-    __m256 v;   // input vector
-    __m256 h;   // coefficients vector
-    __m256 s;   // dot product
-    __m256 sum = _mm256_setzero_ps();  // load zeros into sum register
+    __m512 v;   // input vector
+    __m512 h;   // coefficients vector
+    __m512 s;   // dot product
+    __m512 sum = _mm512_setzero_ps();  // load zeros into sum register
 
-    // t = 8*(floor(_n/8))
-    unsigned int t = (n >> 3) << 3;
+    // t = 16*(floor(_n/16))
+    unsigned int t = (n >> 4) << 4;
 
     //
     unsigned int i;
-    for (i=0; i<t; i+=8) {
+    for (i=0; i<t; i+=16) {
         // load inputs into register (unaligned)
-        v = _mm256_loadu_ps(&x[i]);
+        v = _mm512_loadu_ps(&x[i]);
 
         // load coefficients into register (aligned)
-        h = _mm256_load_ps(&_q->h[i]);
+        h = _mm512_load_ps(&_q->h[i]);
 
         // compute multiplication
-        s = _mm256_mul_ps(v, h);
+        s = _mm512_mul_ps(v, h);
 
         // accumulate
-        sum = _mm256_add_ps(sum, s);
+        sum = _mm512_add_ps(sum, s);
     }
 
-    // aligned output array
-    float w[8] __attribute__((aligned(32)));
+    // output array
+    float w[2];
 
-    // unload packed array
-    _mm256_store_ps(w, sum);
-
-    // add in-phase and quadrature components
-    w[0] += w[2] + w[4] + w[6];
-    w[1] += w[3] + w[5] + w[7];
+    // fold down I/Q components into single value
+    w[0] = _mm512_mask_reduce_add_ps(0x5555, sum);
+    w[1] = _mm512_mask_reduce_add_ps(0xAAAA, sum);
 
     // cleanup (note: n _must_ be even)
     for (; i<n; i+=2) {
@@ -257,8 +254,8 @@ int dotprod_crcf_execute_avx(dotprod_crcf    _q,
     return LIQUID_OK;
 }
 
-// use AVX extensions
-int dotprod_crcf_execute_avx4(dotprod_crcf    _q,
+// use AVX512-F extensions
+int dotprod_crcf_execute_avx512f4(dotprod_crcf    _q,
                               float complex * _x,
                               float complex * _y)
 {
@@ -269,51 +266,50 @@ int dotprod_crcf_execute_avx4(dotprod_crcf    _q,
     unsigned int n = 2*_q->n;
 
     // first cut: ...
-    __m256 v0, v1, v2, v3;  // input vectors
-    __m256 h0, h1, h2, h3;  // coefficients vectors
-    __m256 s0, s1, s2, s3;  // dot products [re, im, re, im]
+    __m512 v0, v1, v2, v3;  // input vectors
+    __m512 h0, h1, h2, h3;  // coefficients vectors
+    __m512 s0, s1, s2, s3;  // dot products [re, im, re, im]
 
     // load zeros into sum registers
-    __m256 sum = _mm256_setzero_ps();
+    __m512 sum = _mm512_setzero_ps();
 
-    // r = 8*floor(n/32)
-    unsigned int r = (n >> 5) << 3;
+    // r = 16*floor(n/64)
+    unsigned int r = (n >> 6) << 4;
 
     //
     unsigned int i;
-    for (i=0; i<r; i+=8) {
+    for (i=0; i<r; i+=16) {
         // load inputs into register (unaligned)
-        v0 = _mm256_loadu_ps(&x[4*i+0]);
-        v1 = _mm256_loadu_ps(&x[4*i+8]);
-        v2 = _mm256_loadu_ps(&x[4*i+16]);
-        v3 = _mm256_loadu_ps(&x[4*i+24]);
+        v0 = _mm512_loadu_ps(&x[4*i+0]);
+        v1 = _mm512_loadu_ps(&x[4*i+16]);
+        v2 = _mm512_loadu_ps(&x[4*i+32]);
+        v3 = _mm512_loadu_ps(&x[4*i+48]);
 
         // load coefficients into register (aligned)
-        h0 = _mm256_load_ps(&_q->h[4*i+0]);
-        h1 = _mm256_load_ps(&_q->h[4*i+8]);
-        h2 = _mm256_load_ps(&_q->h[4*i+16]);
-        h3 = _mm256_load_ps(&_q->h[4*i+24]);
+        h0 = _mm512_load_ps(&_q->h[4*i+0]);
+        h1 = _mm512_load_ps(&_q->h[4*i+16]);
+        h2 = _mm512_load_ps(&_q->h[4*i+32]);
+        h3 = _mm512_load_ps(&_q->h[4*i+48]);
 
         // compute multiplication
-        s0 = _mm256_mul_ps(v0, h0);
-        s1 = _mm256_mul_ps(v1, h1);
-        s2 = _mm256_mul_ps(v2, h2);
-        s3 = _mm256_mul_ps(v3, h3);
+        s0 = _mm512_mul_ps(v0, h0);
+        s1 = _mm512_mul_ps(v1, h1);
+        s2 = _mm512_mul_ps(v2, h2);
+        s3 = _mm512_mul_ps(v3, h3);
         
         // parallel addition
-        sum = _mm256_add_ps( sum, s0 );
-        sum = _mm256_add_ps( sum, s1 );
-        sum = _mm256_add_ps( sum, s2 );
-        sum = _mm256_add_ps( sum, s3 );
+        sum = _mm512_add_ps( sum, s0 );
+        sum = _mm512_add_ps( sum, s1 );
+        sum = _mm512_add_ps( sum, s2 );
+        sum = _mm512_add_ps( sum, s3 );
     }
 
-    // aligned output array
-    float w[8] __attribute__((aligned(32)));
+    // output array
+    float w[2];
 
-    // unload packed array and perform manual sum
-    _mm256_store_ps(w, sum);
-    w[0] += w[2] + w[4] + w[6];
-    w[1] += w[3] + w[5] + w[7];
+    // fold down I/Q components into single value
+    w[0] = _mm512_mask_reduce_add_ps(0x5555, sum);
+    w[1] = _mm512_mask_reduce_add_ps(0xAAAA, sum);
 
     // cleanup (note: n _must_ be even)
     for (i=4*r; i<n; i+=2) {

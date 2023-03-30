@@ -170,9 +170,18 @@ else
         #   SSSE3   :   tmmintrin.h
         #   SSE4.1/2:   smmintrin.h
         #   AVX     :   immintrin.h
+        #   AVX2    :   immintrin.h
+        #   AVX512  :   immintrin.h
         AX_EXT
 
-        if [ test "$ax_cv_have_avx2_ext" = yes ]; then
+        if [ test "$ax_cv_have_avx512f_ext" = yes ]; then
+            # AVX512 extensions
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx512f.o \
+                           src/dotprod/src/dotprod_crcf.avx512f.o \
+                           src/dotprod/src/dotprod_rrrf.avx512f.o \
+                           src/dotprod/src/sumsq.avx512f.o"
+            ARCH_OPTION='-mavx512f'
+        elif [ test "$ax_cv_have_avx2_ext" = yes ]; then
             # AVX2 extensions
             MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx.o \
                            src/dotprod/src/dotprod_crcf.avx.o \
@@ -188,24 +197,24 @@ else
             ARCH_OPTION='-mavx'
         elif [ test "$ax_cv_have_sse41_ext" = yes ]; then
             # SSE4.1/2 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
-                           src/dotprod/src/dotprod_crcf.mmx.o \
-                           src/dotprod/src/dotprod_rrrf.sse4.o \
-                           src/dotprod/src/sumsq.mmx.o"
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.sse.o \
+                           src/dotprod/src/dotprod_crcf.sse.o \
+                           src/dotprod/src/dotprod_rrrf.sse.o \
+                           src/dotprod/src/sumsq.sse.o"
             ARCH_OPTION='-msse4.1'
         elif [ test "$ax_cv_have_sse3_ext" = yes ]; then
             # SSE3 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
-                           src/dotprod/src/dotprod_crcf.mmx.o \
-                           src/dotprod/src/dotprod_rrrf.mmx.o \
-                           src/dotprod/src/sumsq.mmx.o"
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.sse.o \
+                           src/dotprod/src/dotprod_crcf.sse.o \
+                           src/dotprod/src/dotprod_rrrf.sse.o \
+                           src/dotprod/src/sumsq.sse.o"
             ARCH_OPTION='-msse3'
         elif [ test "$ax_cv_have_sse2_ext" = yes ]; then
             # SSE2 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
-                           src/dotprod/src/dotprod_crcf.mmx.o \
-                           src/dotprod/src/dotprod_rrrf.mmx.o \
-                           src/dotprod/src/sumsq.mmx.o"
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.sse.o \
+                           src/dotprod/src/dotprod_crcf.sse.o \
+                           src/dotprod/src/dotprod_rrrf.sse.o \
+                           src/dotprod/src/sumsq.sse.o"
             ARCH_OPTION='-msse2'
         else
             # portable C version

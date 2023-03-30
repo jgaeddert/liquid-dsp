@@ -21,7 +21,7 @@
  */
 
 //
-// sumsq.avx.c : floating-point sum of squares (AVX)
+// sumsq.avx512f.c : floating-point sum of squares (AVX512-F)
 //
 
 #include <stdlib.h>
@@ -60,36 +60,28 @@ float liquid_sumsqf_avx(float *      _v,
                         unsigned int _n)
 {
     // first cut: ...
-    __m256 v;   // input vector
-    __m256 s;   // product
-    __m256 sum = _mm256_setzero_ps(); // load zeros into sum register
+    __m512 v;   // input vector
+    __m512 s;   // product
+    __m512 sum = _mm512_setzero_ps(); // load zeros into sum register
 
-    // t = 8*(floor(_n/8))
-    unsigned int t = (_n >> 3) << 3;
+    // t = 16*(floor(_n/16))
+    unsigned int t = (_n >> 4) << 4;
 
     //
     unsigned int i;
-    for (i=0; i<t; i+=8) {
+    for (i=0; i<t; i+=16) {
         // load inputs into register (unaligned)
-        v = _mm256_loadu_ps(&_v[i]);
+        v = _mm512_loadu_ps(&_v[i]);
 
         // compute multiplication
-        s = _mm256_mul_ps(v, v);
+        s = _mm512_mul_ps(v, v);
        
         // parallel addition
-        sum = _mm256_add_ps( sum, s );
+        sum = _mm512_add_ps( sum, s );
     }
 
     // fold down into single value
-    __m256 z = _mm256_setzero_ps();
-    sum = _mm256_hadd_ps(sum, z);
-    sum = _mm256_hadd_ps(sum, z);
-
-    // aligned output array
-    float w[8] __attribute__((aligned(32)));
-
-    _mm256_store_ps(w, sum);
-    float total = w[0] + w[4];
+    float total = _mm512_reduce_add_ps(sum);
 
     // cleanup
     for (; i<_n; i++)
@@ -106,45 +98,37 @@ float liquid_sumsqf_avxu(float *      _v,
                          unsigned int _n)
 {
     // first cut: ...
-    __m256 v0, v1, v2, v3;   // input vector
-    __m256 s0, s1, s2, s3;   // product
-    __m256 sum = _mm256_setzero_ps(); // load zeros into sum register
+    __m512 v0, v1, v2, v3;   // input vector
+    __m512 s0, s1, s2, s3;   // product
+    __m512 sum = _mm512_setzero_ps(); // load zeros into sum register
 
-    // t = 8*(floor(_n/32))
-    unsigned int t = (_n >> 5) << 3;
+    // t = 16*(floor(_n/64))
+    unsigned int t = (_n >> 6) << 4;
 
     //
     unsigned int i;
-    for (i=0; i<t; i+=8) {
+    for (i=0; i<t; i+=16) {
         // load inputs into register (unaligned)
-        v0 = _mm256_loadu_ps(&_v[4*i+ 0]);
-        v1 = _mm256_loadu_ps(&_v[4*i+ 8]);
-        v2 = _mm256_loadu_ps(&_v[4*i+16]);
-        v3 = _mm256_loadu_ps(&_v[4*i+24]);
+        v0 = _mm512_loadu_ps(&_v[4*i+ 0]);
+        v1 = _mm512_loadu_ps(&_v[4*i+16]);
+        v2 = _mm512_loadu_ps(&_v[4*i+32]);
+        v3 = _mm512_loadu_ps(&_v[4*i+48]);
 
         // compute multiplication
-        s0 = _mm256_mul_ps(v0, v0);
-        s1 = _mm256_mul_ps(v1, v1);
-        s2 = _mm256_mul_ps(v2, v2);
-        s3 = _mm256_mul_ps(v3, v3);
+        s0 = _mm512_mul_ps(v0, v0);
+        s1 = _mm512_mul_ps(v1, v1);
+        s2 = _mm512_mul_ps(v2, v2);
+        s3 = _mm512_mul_ps(v3, v3);
        
         // parallel addition
-        sum = _mm256_add_ps( sum, s0 );
-        sum = _mm256_add_ps( sum, s1 );
-        sum = _mm256_add_ps( sum, s2 );
-        sum = _mm256_add_ps( sum, s3 );
+        sum = _mm512_add_ps( sum, s0 );
+        sum = _mm512_add_ps( sum, s1 );
+        sum = _mm512_add_ps( sum, s2 );
+        sum = _mm512_add_ps( sum, s3 );
     }
 
     // fold down into single value
-    __m256 z = _mm256_setzero_ps();
-    sum = _mm256_hadd_ps(sum, z);
-    sum = _mm256_hadd_ps(sum, z);
-
-    // aligned output array
-    float w[8] __attribute__((aligned(32)));
-
-    _mm256_store_ps(w, sum);
-    float total = w[0] + w[4];
+    float total = _mm512_reduce_add_ps(sum);
 
     // cleanup
     for (i=4*t; i<_n; i++)
@@ -161,7 +145,7 @@ float liquid_sumsqf(float *      _v,
                     unsigned int _n)
 {
     // switch based on size
-    if (_n < 32) {
+    if (_n < 64) {
         return liquid_sumsqf_avx(_v, _n);
     }
     return liquid_sumsqf_avxu(_v, _n);
