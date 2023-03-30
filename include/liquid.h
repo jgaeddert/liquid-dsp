@@ -158,9 +158,9 @@ int liquid_logger_add_file(liquid_logger q, FILE * fid, int _level);
 unsigned int liquid_logger_get_num_callbacks(liquid_logger q);
 int liquid_log(liquid_logger q, int level, const char * file, int line, const char * format, ...);
 
-static const char * liquid_log_colors[] = {"\033[94m","\033[36m","\033[32m","\033[33m","\033[31m","\033[35m"};
+extern const char * liquid_log_colors[];
 
-static const char * liquid_log_levels[] = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
+extern const char * liquid_log_levels[];
 
 enum { LIQUID_TRACE=0, LIQUID_DEBUG, LIQUID_INFO, LIQUID_WARN, LIQUID_ERROR, LIQUID_FATAL };
 

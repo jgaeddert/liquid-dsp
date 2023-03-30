@@ -50,6 +50,10 @@ int liquid_libversion_number(void)
     return LIQUID_VERSION_NUMBER;
 }
 
+const char * liquid_log_colors[] = {"\033[94m","\033[36m","\033[32m","\033[33m","\033[31m","\033[35m"};
+
+const char * liquid_log_levels[] = {"trace","debug","info","warn","error","fatal"};
+
 // report error
 int liquid_error_fl(int          _code,
                     const char * _file,
