@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 #include <getopt.h>
 #include <time.h>
 #include <sys/resource.h>
+#include "liquid.internal.h"
 #include "autotest/autotest.h"
 
 void usage()
@@ -54,6 +55,7 @@ void usage()
     printf("  -v            verbose\n");
     printf("  -q            quiet\n");
     printf("  -o <filename> output file (json)\n");
+    printf("  -g <filename> output file (log)\n");
 }
 
 // define autotest function pointer
@@ -144,13 +146,14 @@ int main(int argc, char *argv[])
     unsigned int rseed              = time(NULL);
     unsigned int hammer_count       = 100;
     char         search_string[128] = "";
-    char         filename[256]      = "";
+    char         filename_json[256] = "";
+    char         filename_log [256] = "";
 
     unsigned int i;
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"ht:H:c:p:rR:Llxs:vqo:")) != EOF){
+    while((d = getopt(argc,argv,"ht:H:c:p:rR:Llxs:vqo:g:")) != EOF){
         switch (d) {
         case 'h':
             usage();
@@ -201,8 +204,12 @@ int main(int argc, char *argv[])
             liquid_autotest_verbose = 0;
             break;
         case 'o':
-            strncpy(filename,optarg,255);
-            filename[255] = '\0';
+            strncpy(filename_json,optarg,255);
+            filename_json[255] = '\0';
+            break;
+        case 'g':
+            strncpy(filename_log,optarg,255);
+            filename_log[255] = '\0';
             break;
         default:
             return 1;
@@ -219,6 +226,14 @@ int main(int argc, char *argv[])
     } else if (package_id >= NUM_PACKAGES) {
         printf("error, cannot run package %u; index exceeded\n", package_id);
         return -1;
+    }
+
+    FILE * log = NULL;
+    if (strcmp(filename_log,"")!=0) {
+        log = fopen(filename_log,"w");
+        if (log == NULL)
+            return liquid_error(LIQUID_EIO,"could not open '%s' for writing", filename_log);
+        liquid_logger_add_file(NULL,log,0);
     }
 
     unsigned int n=0;
@@ -307,18 +322,20 @@ int main(int argc, char *argv[])
     printf("autotest seed: %u\n", rseed);
     autotest_print_results();
 
+    liquid_log_info("autotest log file written to '%s'", filename_log);
+    if (log != NULL)
+        fclose(log);
+
     // program return value
     int rc = liquid_autotest_num_failed > 0 ? 1 : 0;
 
-    if (strcmp(filename,"")==0)
+    if (strcmp(filename_json,"")==0)
         return rc;
 
     // export results to output .json file; try to open file for writing
-    FILE * fid = fopen(filename,"w");
-    if (!fid) {
-        fprintf(stderr,"error: %s, could not open '%s' for writing\n", __FILE__, filename);
-        return -1;
-    }
+    FILE * fid = fopen(filename_json,"w");
+    if (!fid)
+        return liquid_log_error("could not open '%s' for writing", filename_json);
 
     // print header
     time_t now;
@@ -364,7 +381,7 @@ int main(int argc, char *argv[])
     fclose(fid);
 
     if (liquid_autotest_verbose)
-        printf("output JSON results written to %s\n", filename);
+        printf("output JSON results written to %s\n", filename_json);
 
     return rc;
 }
