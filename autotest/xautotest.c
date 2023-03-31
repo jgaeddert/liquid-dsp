@@ -322,9 +322,10 @@ int main(int argc, char *argv[])
     printf("autotest seed: %u\n", rseed);
     autotest_print_results();
 
-    liquid_log_info("autotest log file written to '%s'", filename_log);
-    if (log != NULL)
+    if (log != NULL) {
         fclose(log);
+        liquid_log_info("autotest log file written to '%s'", filename_log);
+    }
 
     // program return value
     int rc = liquid_autotest_num_failed > 0 ? 1 : 0;
