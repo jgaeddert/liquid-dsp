@@ -139,7 +139,7 @@ const char * liquid_error_info(liquid_error_code _code)
 struct liquid_logger_s {
     int     level;
     //int timezone;
-    char time_fmt[16];    // format of time to pass to strftime, default:"%F-%T"
+    char time_fmt[16];    // format of time to pass to strftime, default:"%T"
     liquid_log_callback cb_function[LIQUID_LOGGER_MAX_CALLBACKS];
     void *              cb_context [LIQUID_LOGGER_MAX_CALLBACKS];
     int                 cb_level   [LIQUID_LOGGER_MAX_CALLBACKS];
@@ -151,7 +151,7 @@ struct liquid_logger_s {
 // global logger
 static struct liquid_logger_s qlog = {
     .level       = 0,
-    .time_fmt    = "%F-%T",
+    .time_fmt    = "%T",
     .cb_function = {NULL,},
     .count       = {0,0,0,0,0,0,},
 };
@@ -214,7 +214,7 @@ int liquid_logger_reset(liquid_logger _q)
 {
     _q = liquid_logger_safe_cast(_q);
     _q->level = LIQUID_WARN;
-    liquid_logger_set_time_fmt(_q, "%F-%T");
+    liquid_logger_set_time_fmt(_q, "%T");
     _q->cb_function[0] = NULL; // effectively reset all callbacks
     int i;
     for (i=0; i<6; i++)
