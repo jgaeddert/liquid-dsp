@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -111,7 +111,7 @@ void autotest_firfilt_config()
     return;
 #endif
 #if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+    AUTOTEST_WARN("ignore potential errors here; checking for invalid configurations");
 #endif
     // no need to check every combination
     CONTEND_ISNULL(firfilt_crcf_create(NULL, 0));
@@ -138,7 +138,6 @@ void autotest_firfilt_config()
     firfilt_crcf_destroy(q);
 }
 
-// TODO: test recreate where new filter length does not match original
 void autotest_firfilt_recreate()
 {
     // create random-ish coefficients

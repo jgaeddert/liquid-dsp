@@ -274,7 +274,7 @@ void liquid_autotest_print_array(unsigned char * _x,
 
 
 // AUTOTEST WARN
-#define AUTOTEST_WARN_FL(F,L,MSG)      liquid_autotest_warn(F,L,#MSG)
+#define AUTOTEST_WARN_FL(F,L,MSG)      liquid_autotest_warn(F,L,MSG)
 #define AUTOTEST_WARN(MSG)             AUTOTEST_WARN_FL(__FILE__,__LINE__,MSG)
 
 // AUTOTEST PASS

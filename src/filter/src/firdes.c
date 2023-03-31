@@ -351,7 +351,7 @@ int liquid_firdes_notch(unsigned int _m,
 {
     // validate inputs
     if (_m < 1 || _m > 1000)
-        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_notch(), _m (%12u) out of range [1,1000]", _m);
+        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_notch(), _m (%u) out of range [1,1000]", _m);
     if (_f0 < -0.5f || _f0 > 0.5f)
         return liquid_error(LIQUID_EICONFIG,"liquid_firdes_notch(), notch frequency (%12.4e) must be in [-0.5,0.5]", _f0);
     if (_as <= 0.0f)

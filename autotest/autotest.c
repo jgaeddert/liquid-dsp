@@ -145,7 +145,7 @@ void liquid_autotest_warn(const char * _file,
                           unsigned int _line,
                           const char * _message)
 {
-    liquid_log(NULL,LIQUID_WARN,_file,_line,"%s", _message);
+    liquid_log(NULL,LIQUID_WARN,_file,_line,_message);
     liquid_autotest_num_warnings++;
 }
 
