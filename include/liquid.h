@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -133,7 +133,7 @@ const char *        liquid_error_info(liquid_error_code _code);
 typedef struct liquid_log_event_s * liquid_log_event;
 typedef struct liquid_logger_s    * liquid_logger;
 
-// callback function
+// logging callback function
 typedef int (*liquid_log_callback)(liquid_log_event event, void * context);
 
 struct liquid_log_event_s
@@ -147,16 +147,48 @@ struct liquid_log_event_s
     char         time_str[64];  // formatting time buffer
 };
 
+// create logger object with default parameters
 liquid_logger liquid_logger_create();
+
+// destroy logger object, freeing all internal memory
 int liquid_logger_destroy(liquid_logger _q);
-int liquid_logger_reset  (liquid_logger _q);
-int liquid_logger_print  (liquid_logger _q);
+
+// reset internal logger object counters, reset level, clear callbacks
+int liquid_logger_reset(liquid_logger _q);
+
+// print logger information to stdout
+int liquid_logger_print(liquid_logger _q);
+
+// set log level; any value below this will not be logged
 int liquid_logger_set_level(liquid_logger q, int _level);
+
+// set the format for the timestamp (see system's `strftime` help for options)
 int liquid_logger_set_time_fmt(liquid_logger q, const char * fmt);
-int liquid_logger_add_callback(liquid_logger q, liquid_log_callback _callback, void * _context, int _level);
-int liquid_logger_add_file(liquid_logger q, FILE * fid, int _level);
+
+// add callback with context
+//  _q          : logger object
+//  _callback   : user-defined callback function
+//  _context    : context passed when callback is invoked
+//  _level      : minimum log level for which callback will be invoked
+int liquid_logger_add_callback(liquid_logger       _q,
+                               liquid_log_callback _callback,
+                               void *              _context,
+                               int                 _level);
+
+// add file pointer for which to append logs; when file is closed, the callback
+// will cease appending to the file
+//  _q      : logger object
+//  _fid    : file handle
+//  _level  : minimum log level for which callback will be invoked
+int liquid_logger_add_file(liquid_logger _q,
+                           FILE *        _fid,
+                           int           _level);
+
+// get the number of callbacks currently used
 unsigned int liquid_logger_get_num_callbacks(liquid_logger q);
-int liquid_log(liquid_logger q, int level, const char * file, int line, const char * format, ...);
+
+// append a log message
+int liquid_log(liquid_logger _q, int _level, const char * _file, int _line, const char * _format, ...);
 
 extern const char * liquid_log_colors[];
 
