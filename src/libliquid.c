@@ -184,7 +184,7 @@ int liquid_logger_callback_file(liquid_log_event _event,
     FILE * fid = (FILE*)_fid;
     if (ftell(fid) < 0)
         return 0; // file is not open
-    fprintf(fid,"[%s] %-5s %s:%d:",
+    fprintf(fid,"[%s] %s: %s:%d:",
         _event->time_str,
         liquid_log_levels[_event->level],
         _event->file,
