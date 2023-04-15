@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -182,7 +182,7 @@ int liquid_logger_callback_file(liquid_log_event _event,
                                 void *           _fid)
 {
     FILE * fid = (FILE*)_fid;
-    if (ftell(fid) <= 0)
+    if (ftell(fid) < 0)
         return 0; // file is not open
     fprintf(fid,"[%s] %-5s %s:%d:",
         _event->time_str,
