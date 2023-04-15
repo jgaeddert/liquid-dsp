@@ -217,18 +217,6 @@ int main(int argc, char *argv[])
     }
     liquid_logger_set_level(NULL, LIQUID_INFO);
 
-    // set random seed for repeatability
-    srand(rseed);
-
-    // validate results
-    if (autotest_id >= NUM_AUTOSCRIPTS) {
-        printf("error, cannot run autotest %u; index exceeded\n", autotest_id);
-        return -1;
-    } else if (package_id >= NUM_PACKAGES) {
-        printf("error, cannot run package %u; index exceeded\n", package_id);
-        return -1;
-    }
-
     FILE * log = NULL;
     if (strcmp(filename_log,"")!=0) {
         log = fopen(filename_log,"w");
@@ -236,6 +224,15 @@ int main(int argc, char *argv[])
             return liquid_error(LIQUID_EIO,"could not open '%s' for writing", filename_log);
         liquid_logger_add_file(NULL,log,0);
     }
+
+    // set random seed for repeatability
+    srand(rseed);
+
+    // validate results
+    if (autotest_id >= NUM_AUTOSCRIPTS)
+        return liquid_error(LIQUID_EIRANGE,"cannot run autotest %u; index exceeded", autotest_id);
+    if (package_id >= NUM_PACKAGES)
+        return liquid_error(LIQUID_EIRANGE,"cannot run package %u; index exceeded", package_id);
 
     unsigned int n=0;
     switch (mode) {
@@ -289,7 +286,7 @@ int main(int argc, char *argv[])
             print_package_results( &packages[package_id] );
         break;
     case RUN_SEARCH:
-        printf("running all scripts matching '%s'...\n", search_string);
+        liquid_log_info("running all scripts matching '%s'", search_string);
 
         // search all packages
         for (i=0; i<NUM_PACKAGES; i++)
@@ -302,9 +299,10 @@ int main(int argc, char *argv[])
         }
         break;
     case HAMMER_SINGLE_TEST:
+        liquid_log_info("hammering test %u by running %u times", autotest_id, hammer_count);
         for (i=0; i<hammer_count; i++) {
             srand(rseed+i);
-            printf("trial %u/%u, rseed=%u\n", i+1, hammer_count, rseed+i);
+            liquid_log_info("trial %u/%u, rseed=%u", i+1, hammer_count, rseed+i);
             execute_autotest( &scripts[autotest_id], verbose );
             if (stop_on_fail && liquid_autotest_num_failed > 0)
                 break;
@@ -313,14 +311,13 @@ int main(int argc, char *argv[])
             print_autotest_results( &scripts[autotest_id] );
         break;
     default:
-        fprintf(stderr,"unknown run mode\n");
-        return -1;
+        return liquid_error(LIQUID_EIMODE,"unknown/invalid execution mode");
     }
 
     if (liquid_autotest_verbose)
         print_unstable_tests();
 
-    printf("autotest seed: %u\n", rseed);
+    liquid_log_info("autotest seed: %u", rseed);
     autotest_print_results();
 
     if (log != NULL) {
@@ -399,9 +396,8 @@ void execute_autotest(autotest_t * _test,
     unsigned long int autotest_num_warnings_init = liquid_autotest_num_warnings;
 
     // execute test
-    if (_verbose) {
-        printf("%s:\n", _test->name);
-    }
+    liquid_log_trace("running test %u '%s'", _test->id, _test->name);
+
     // start test and run timer
     struct rusage tic, toc;
     getrusage(RUSAGE_SELF, &tic);
@@ -431,9 +427,8 @@ void execute_autotest(autotest_t * _test,
 void execute_package(package_t * _p,
                      int _verbose)
 {
-    if (_verbose)
-        printf("%u: %s\n", _p->id, _p->name);
-    
+    liquid_log_trace("running package %u '%s'", _p->id, _p->name);
+
     unsigned int i;
     for (i=0; i<_p->num_scripts; i++) {
         execute_autotest( &scripts[ i + _p->index ], _verbose );
