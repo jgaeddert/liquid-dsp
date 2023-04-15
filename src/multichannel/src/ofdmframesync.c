@@ -1152,7 +1152,7 @@ int ofdmframesync_debug_enable(ofdmframesync _q)
     _q->debug_objects_created = 1;
     return LIQUID_OK;
 #else
-    fprintf(stderr,"ofdmframesync_debug_enable(): compile-time debugging disabled\n");
+    return liquid_error(LIQUID_EICONFIG,"ofdmframesync_debug_enable(): compile-time debugging disabled");
 #endif
 }
 
@@ -1163,7 +1163,7 @@ int ofdmframesync_debug_disable(ofdmframesync _q)
     _q->debug_enabled = 0;
     return LIQUID_OK;
 #else
-    fprintf(stderr,"ofdmframesync_debug_disable(): compile-time debugging disabled\n");
+    return liquid_error(LIQUID_EICONFIG,"ofdmframesync_debug_disable(): compile-time debugging disabled");
 #endif
 }
 
@@ -1325,7 +1325,7 @@ int ofdmframesync_debug_print(ofdmframesync _q,
     printf("ofdmframesync/debug: results written to '%s'\n", _filename);
     return LIQUID_OK;
 #else
-    fprintf(stderr,"ofdmframesync_debug_print(): compile-time debugging disabled\n");
+    return liquid_error(LIQUID_EICONFIG,"ofdmframesync_debug_print(): compile-time debugging disabled");
 #endif
 }
 

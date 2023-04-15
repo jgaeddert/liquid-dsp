@@ -219,11 +219,16 @@ int dotprod_rrrf_execute_avx(dotprod_rrrf _q,
         h = _mm256_load_ps(&_q->h[i]);
 
         // compute dot product
-        s = _mm256_dp_ps(v, h, 0xff);
-        
+        s = _mm256_mul_ps(v, h);
+
         // parallel addition
         sum = _mm256_add_ps( sum, s );
     }
+
+    // fold down into single value
+    __m256 z = _mm256_setzero_ps();
+    sum = _mm256_hadd_ps(sum, z);
+    sum = _mm256_hadd_ps(sum, z);
 
     // aligned output array
     float w[8] __attribute__((aligned(32)));
@@ -270,18 +275,22 @@ int dotprod_rrrf_execute_avxu(dotprod_rrrf _q,
         h3 = _mm256_load_ps(&_q->h[4*i+24]);
 
         // compute dot products
-        s0 = _mm256_dp_ps(v0, h0, 0xff);
-        s1 = _mm256_dp_ps(v1, h1, 0xff);
-        s2 = _mm256_dp_ps(v2, h2, 0xff);
-        s3 = _mm256_dp_ps(v3, h3, 0xff);
+        s0 = _mm256_mul_ps(v0, h0);
+        s1 = _mm256_mul_ps(v1, h1);
+        s2 = _mm256_mul_ps(v2, h2);
+        s3 = _mm256_mul_ps(v3, h3);
         
         // parallel addition
-        // FIXME: these additions are by far the limiting factor
         sum = _mm256_add_ps( sum, s0 );
         sum = _mm256_add_ps( sum, s1 );
         sum = _mm256_add_ps( sum, s2 );
         sum = _mm256_add_ps( sum, s3 );
     }
+
+    // fold down into single value
+    __m256 z = _mm256_setzero_ps();
+    sum = _mm256_hadd_ps(sum, z);
+    sum = _mm256_hadd_ps(sum, z);
 
     // aligned output array
     float w[8] __attribute__((aligned(32)));

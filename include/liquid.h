@@ -1270,7 +1270,7 @@ typedef enum {
 extern const char * crc_scheme_str[LIQUID_CRC_NUM_SCHEMES][2];
 
 // Print compact list of existing and available CRC schemes
-void liquid_print_crc_schemes();
+int liquid_print_crc_schemes();
 
 // returns crc_scheme based on input string
 crc_scheme liquid_getopt_str2crc(const char * _str);

@@ -297,11 +297,7 @@ void autoscript_parsefile(autoscript _q,
     // generate tag (e.g. "void benchmark_");
     unsigned int tag_len = 5 + strlen(_q->type) + 2;
     char tag[tag_len];
-    strcpy(tag, "void ");
-    strcpy(tag+5, _q->type);
-    tag[tag_len-2] = '_';
-    tag[tag_len-1] = '\0';
-    //printf("// tag : '%s'\n", tag);
+    sprintf(tag, "void %s_", _q->type);
 
     // parse file, looking for key
     char buffer[1024];      // line buffer

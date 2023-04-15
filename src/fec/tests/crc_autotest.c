@@ -55,11 +55,7 @@ void autotest_reverse_uint16()
     CONTEND_EQUALITY(liquid_reverse_uint16(b),r);
 }
 
-
-
-//
 // AUTOTEST: reverse uint32_t
-//
 void autotest_reverse_uint32()
 {
     // 0110 0010 1101 1001 0011 1011 1111 0000
@@ -72,11 +68,9 @@ void autotest_reverse_uint32()
     CONTEND_EQUALITY(liquid_reverse_uint32(b),r);
 }
 
-// 
 // autotest helper function
-//
-void validate_crc(crc_scheme _check,
-                  unsigned int _n)
+void testbench_autotest_crc(crc_scheme _check,
+                            unsigned int _n)
 {
     unsigned int i;
 
@@ -93,7 +87,7 @@ void validate_crc(crc_scheme _check,
     // contend data/key are valid
     CONTEND_EXPRESSION(crc_validate_message(_check, data, _n, key));
 
-    //
+    // test flipping bit value at each location in message and confirm check fails
     unsigned char data_corrupt[_n];
     unsigned int j;
     for (i=0; i<_n; i++) {
@@ -110,13 +104,32 @@ void validate_crc(crc_scheme _check,
     }
 }
 
-// 
-// AUTOTESTS : validate error-detection tests
-//
-void autotest_checksum() { validate_crc(LIQUID_CRC_CHECKSUM,    16); }
-void autotest_crc8()     { validate_crc(LIQUID_CRC_8,           16); }
-void autotest_crc16()    { validate_crc(LIQUID_CRC_16,          64); }
-void autotest_crc24()    { validate_crc(LIQUID_CRC_24,          64); }
-void autotest_crc32()    { validate_crc(LIQUID_CRC_32,          64); }
+// validate error-detection tests
+void autotest_checksum() { testbench_autotest_crc(LIQUID_CRC_CHECKSUM, 16); }
+void autotest_crc8()     { testbench_autotest_crc(LIQUID_CRC_8,        16); }
+void autotest_crc16()    { testbench_autotest_crc(LIQUID_CRC_16,       64); }
+void autotest_crc24()    { testbench_autotest_crc(LIQUID_CRC_24,       64); }
+void autotest_crc32()    { testbench_autotest_crc(LIQUID_CRC_32,       64); }
+
+void autotest_crc_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping crc config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    CONTEND_EQUALITY(LIQUID_OK, liquid_print_crc_schemes())
+
+    CONTEND_EQUALITY(LIQUID_CRC_UNKNOWN,    liquid_getopt_str2crc("unknown"))
+    CONTEND_EQUALITY(LIQUID_CRC_UNKNOWN,    liquid_getopt_str2crc("rosebud"))
+    CONTEND_EQUALITY(LIQUID_CRC_NONE,       liquid_getopt_str2crc("none"))
+    CONTEND_EQUALITY(LIQUID_CRC_CHECKSUM,   liquid_getopt_str2crc("checksum"))
+    CONTEND_EQUALITY(LIQUID_CRC_8,          liquid_getopt_str2crc("crc8"))
+    CONTEND_EQUALITY(LIQUID_CRC_16,         liquid_getopt_str2crc("crc16"))
+    CONTEND_EQUALITY(LIQUID_CRC_24,         liquid_getopt_str2crc("crc24"))
+    CONTEND_EQUALITY(LIQUID_CRC_32,         liquid_getopt_str2crc("crc32"))
+}
 
 
