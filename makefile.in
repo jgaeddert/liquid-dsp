@@ -1376,7 +1376,7 @@ $(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) autot
 
 # run the autotest program
 check: $(autotest_prog)
-	./$(autotest_prog) -v -o autotest.json
+	./$(autotest_prog) -v -o autotest.json -g autotest/logs/autotest.log
 
 # let 'make test' be an alias for 'make check'
 test: check
