@@ -12,6 +12,10 @@
 int test_callback(liquid_log_event event, void * context)
     { printf("  custom callback invoked! (%s)\n", event->time_str); return 0; }
 
+// user-defined lock function
+int test_lock(int _lock, void * _context)
+    { printf("%s\n", _lock ? "locking" : "unlocking"); return 0; }
+
 int main(int argc, char*argv[])
 {
     int level;
@@ -30,6 +34,7 @@ int main(int argc, char*argv[])
     FILE * logfile = fopen(fname,"w");
     liquid_logger custom_log = liquid_logger_create();
     liquid_logger_set_level(custom_log, LIQUID_DEBUG);
+    liquid_logger_set_lock(custom_log, test_lock, NULL);
     liquid_logger_add_callback(custom_log, test_callback, NULL, 0);
     liquid_logger_add_file    (custom_log, logfile, -1);
     liquid_log(custom_log,LIQUID_ERROR,__FILE__,__LINE__,"could not allocate memory for %u bytes", 1024);

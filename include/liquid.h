@@ -144,6 +144,9 @@ typedef struct liquid_logger_s    * liquid_logger;
 // logging callback function
 typedef int (*liquid_log_callback)(liquid_log_event event, void * context);
 
+// lock callback function
+typedef int (*liquid_lock_callback)(int _lock, void * context);
+
 struct liquid_log_event_s
 {
     va_list      args;      // variadic function arguments
@@ -172,6 +175,14 @@ int liquid_logger_set_level(liquid_logger q, int _level);
 
 // set the format for the timestamp (see system's `strftime` help for options)
 int liquid_logger_set_time_fmt(liquid_logger q, const char * fmt);
+
+// add lock function with context
+//  _q          : logger object
+//  _callback   : user-defined lock callback function
+//  _context    : context passed when callback is invoked
+int liquid_logger_set_lock(liquid_logger        _q,
+                           liquid_lock_callback _callback,
+                           void *               _context);
 
 // add callback with context
 //  _q          : logger object

@@ -155,15 +155,20 @@ struct liquid_logger_s {
     int                 cb_level   [LIQUID_LOGGER_MAX_CALLBACKS];
 
     int count[6];       // counters showing number of events of each type
+
+    liquid_lock_callback lock_callback; // locking callback function
+    void *               lock_context;  // locking context
 };
 
 
 // global logger
 static struct liquid_logger_s qlog = {
-    .level       = 0,
-    .time_fmt    = "%T",
-    .cb_function = {NULL,},
-    .count       = {0,0,0,0,0,0,},
+    .level         = 0,
+    .time_fmt      = "%T",
+    .cb_function   = {NULL,},
+    .count         = {0,0,0,0,0,0,},
+    .lock_callback = NULL,
+    .lock_context  = NULL,
 };
 
 // internal methods
@@ -296,6 +301,19 @@ int liquid_logger_set_time_fmt(liquid_logger _q,
     return LIQUID_OK;
 }
 
+// add lock function with context
+//  _q          : logger object
+//  _callback   : user-defined lock callback function
+//  _context    : context passed when callback is invoked
+int liquid_logger_set_lock(liquid_logger        _q,
+                           liquid_lock_callback _callback,
+                           void *               _context)
+{
+    _q->lock_callback = _callback;
+    _q->lock_context  = _context;
+    return LIQUID_OK;
+}
+
 int liquid_logger_add_callback(liquid_logger       _q,
                                liquid_log_callback _callback,
                                void *              _context,
@@ -384,7 +402,9 @@ int liquid_vlog(liquid_logger _q,
         strftime(event.time_str, sizeof(event.time_str), _q->time_fmt, event.timestamp)
     ] = '\0';
 
-    // TODO: lock
+    // lock
+    if (_q->lock_callback != NULL)
+        _q->lock_callback(1, _q->lock_context);
 
     // output to stdout
     if (_level >= _q->level) {
@@ -403,7 +423,10 @@ int liquid_vlog(liquid_logger _q,
         }
     }
 
-    // TODO: unlock
+    // unlock
+    if (_q->lock_callback != NULL)
+        _q->lock_callback(0, _q->lock_context);
+
     return LIQUID_OK;
 }
 
