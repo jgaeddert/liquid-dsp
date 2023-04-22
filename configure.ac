@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2022 Joseph Gaeddert
+# Copyright (c) 2007 - 2023 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,7 @@ AH_TEMPLATE([LIQUID_FFTOVERRIDE],  [Force internal FFT even if libfftw is availa
 AH_TEMPLATE([LIQUID_SIMDOVERRIDE], [Force overriding of SIMD (use portable C code)])
 AH_TEMPLATE([LIQUID_SUPPRESS_ERROR_OUTPUT],[Suppress printing errors to stderr])
 AH_TEMPLATE([LIQUID_STRICT_EXIT],  [Enable strict program exit on error])
+AH_TEMPLATE([LIQUID_COLORS],       [Enable color terminal output])
 
 AC_CONFIG_HEADERS([config.h])
 AH_TOP([
@@ -92,6 +93,12 @@ AC_ARG_ENABLE(strict,
     AS_HELP_STRING([--enable-strict],[use strict error handling at runtime]),
     [AC_DEFINE(LIQUID_STRICT_EXIT)],
     [],
+)
+
+AC_ARG_ENABLE(colors,
+    AS_HELP_STRING([--disable-colors],[disable color terminal]),
+    [],
+    [AC_DEFINE(LIQUID_COLORS)],
 )
 
 # Check for necessary programs

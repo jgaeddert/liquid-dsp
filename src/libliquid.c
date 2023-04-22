@@ -164,12 +164,20 @@ liquid_logger liquid_logger_safe_cast(liquid_logger _q)
 int liquid_logger_callback_stdout(liquid_log_event _event,
                                   FILE * restrict  _stream)
 {
+#if LIQUID_COLORS
     fprintf(_stream,"[%s] %s%s\033[0m: \033[90m%s:%d:\033[0m",
         _event->time_str,
         liquid_log_colors[_event->level],
         liquid_log_levels[_event->level],
         _event->file,
         _event->line);
+#else
+    fprintf(_stream,"[%s] %s: %s:%d:",
+        _event->time_str,
+        liquid_log_levels[_event->level],
+        _event->file,
+        _event->line);
+#endif
 
     // parse variadic function arguments
     vfprintf(_stream, _event->format, _event->args);
