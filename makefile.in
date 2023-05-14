@@ -651,14 +651,14 @@ framing_objects :=						\
 	src/framing/src/ofdmflexframegen.o			\
 	src/framing/src/ofdmflexframesync.o			\
 	src/framing/src/presync_cccf.o				\
-	src/framing/src/symstreamcf.o				\
-	src/framing/src/symstreamrcf.o				\
-	src/framing/src/symtrack_cccf.o				\
 	src/framing/src/qdetector_cccf.o			\
 	src/framing/src/qdsync_cccf.o				\
 	src/framing/src/qpacketmodem.o				\
 	src/framing/src/qpilotgen.o				\
 	src/framing/src/qpilotsync.o				\
+	src/framing/src/symstreamcf.o				\
+	src/framing/src/symstreamrcf.o				\
+	src/framing/src/symtrack_cccf.o				\
 
 
 # list explicit targets and dependencies here
@@ -682,10 +682,11 @@ src/framing/src/msourcecf.o         : %.o : %.c $(include_headers) src/framing/s
 src/framing/src/ofdmflexframegen.o  : %.o : %.c $(include_headers)
 src/framing/src/ofdmflexframesync.o : %.o : %.c $(include_headers)
 src/framing/src/presync_cccf.o      : %.o : %.c $(include_headers) src/framing/src/presync.proto.c
-src/framing/src/qpacketmodem.o      : %.o : %.c $(include_headers)
 src/framing/src/symstreamcf.o       : %.o : %.c $(include_headers) src/framing/src/symstream.proto.c
 src/framing/src/symstreamrcf.o      : %.o : %.c $(include_headers) src/framing/src/symstreamr.proto.c
 src/framing/src/symtrack_cccf.o     : %.o : %.c $(include_headers) src/framing/src/symtrack.proto.c
+src/framing/src/qdsync_cccf.o       : %.o : %.c $(include_headers) src/framing/src/qdsync.proto.c
+src/framing/src/qpacketmodem.o      : %.o : %.c $(include_headers)
 
 
 framing_autotests :=						\
