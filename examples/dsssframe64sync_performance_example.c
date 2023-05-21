@@ -11,10 +11,11 @@
 void frame64_add_noise(float complex * _buf,
         unsigned int _buf_len, float _SNRdB)
 {
-    float nstd = powf(10.0f, -_SNRdB/20.0f) * M_SQRT1_2;
+    float nstd = powf(10.0f, -_SNRdB/20.0f);
+    nstd *= M_SQRT2; // scale noise to account for signal being over-sampled by 2
     unsigned int i;
     for (i=0; i<_buf_len; i++)
-        _buf[i] += nstd*( randnf() + _Complex_I*randnf() );
+        _buf[i] += nstd*( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
 }
 
 int main(int argc, char*argv[])
@@ -22,9 +23,9 @@ int main(int argc, char*argv[])
     // create frame generator, synchronizer objects
     dsssframe64gen  fg = dsssframe64gen_create();
     dsssframe64sync fs = dsssframe64sync_create(NULL,NULL);
-    unsigned int min_errors =  10;
-    unsigned int min_trials =  10;
-    unsigned int max_trials = 800;
+    unsigned int min_errors =    5;
+    unsigned int min_trials =   80;
+    unsigned int max_trials = 1000;
 
     // create buffer for the frame samples
     unsigned int  frame_len = dsssframe64gen_get_frame_len(fg);
@@ -35,7 +36,8 @@ int main(int argc, char*argv[])
     fprintf(fid,"clear all; close all;\n");
     fprintf(fid,"SNR=[]; pdetect=[]; pvalid=[];\n");
     printf("# %8s %6s %6s %6s\n", "SNR", "detect", "valid", "trials");
-    while (SNRdB < -13.0f) {
+    fclose(fid);
+    while (SNRdB <  -5.0f) {
         dsssframe64sync_reset_framedatastats(fs);
         unsigned int num_trials = 0, num_errors = 0;
         while (1) {
@@ -64,14 +66,17 @@ int main(int argc, char*argv[])
         framedatastats_s stats = dsssframe64sync_get_framedatastats(fs);
         printf("  %8.3f %6u %6u %6u\n",
             SNRdB,stats.num_frames_detected,stats.num_payloads_valid,num_trials);
-        fprintf(fid,"SNR(end+1)=%g; pdetect(end+1)=%g; pvalid(end+1)=%g;\n",
+        fid = fopen(OUTPUT_FILENAME,"a");
+        fprintf(fid,"SNR(end+1)=%g; pdetect(end+1)=%12g; pvalid(end+1)=%12g;\n",
                 SNRdB,
                 (float)stats.num_frames_detected / (float)num_trials,
                 (float)stats.num_payloads_valid  / (float)num_trials);
+        fclose(fid);
         if (num_errors < min_errors)
             break;
         SNRdB += 1.0f;
     }
+    fid = fopen(OUTPUT_FILENAME,"a");
     fprintf(fid,"figure;\n");
     fprintf(fid,"hold on;\n");
     fprintf(fid,"  semilogy(SNR, 1-pdetect+eps,'-o', 'LineWidth',2, 'MarkerSize',2);\n");
@@ -80,7 +85,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"xlabel('SNR [dB]');\n");
     fprintf(fid,"ylabel('Prob. of Error');\n");
     fprintf(fid,"legend('detect','decoding','location','northeast');\n");
-    fprintf(fid,"axis([-25 0 1e-3 1]);\n");
+    fprintf(fid,"axis([-30 10 1e-3 1]);\n");
     fprintf(fid,"grid on;\n");
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
