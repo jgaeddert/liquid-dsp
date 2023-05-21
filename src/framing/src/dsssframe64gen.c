@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 
 // DS/SS frame generator with fixed fields: 8-byte header, 64-byte payload,
-// 256-symbol spreading factor
+// 128-symbol spreading factor
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -120,7 +120,7 @@ int dsssframe64gen_print(dsssframe64gen _q)
 // get full frame length [samples]
 unsigned int dsssframe64gen_get_frame_len(dsssframe64gen _q)
 {
-    return 2*(1024 + 650*256 + 2*_q->m);
+    return 2*(1024 + 650*128 + 2*_q->m);
 }
 
 // generate a frame
@@ -172,7 +172,7 @@ int dsssframe64gen_write(dsssframe64gen  _q,
     // frame payload
     for (i=0; i<650; i++) {
         float complex sym = _q->payload_tx[i]; // strip out raw payload symbol
-        for (j=0; j<256; j++) {
+        for (j=0; j<128; j++) {
             // generate pseudo-random symbol
             unsigned int  p = msequence_generate_symbol(_q->ms, 2);
             float complex s = cexpf(_Complex_I*2*M_PI*(float)p/(float)4);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -283,8 +283,8 @@ int dsssframe64sync_step(dsssframe64sync _q,
         _q->sym_despread += _buf[i] * conjf(s);
         _q->chip_counter++;
 
-        if (_q->chip_counter == 256) {
-            _q->payload_rx[_q->payload_counter] = _q->sym_despread / 256.0f;
+        if (_q->chip_counter == 128) {
+            _q->payload_rx[_q->payload_counter] = _q->sym_despread / 128.0f;
             _q->payload_counter++;
             _q->chip_counter = 0;
             _q->sym_despread = 0;
@@ -303,7 +303,7 @@ int dsssframe64sync_decode(dsssframe64sync _q)
 {
     // recover data symbols from pilots
     qpilotsync_execute(_q->pilotsync, _q->payload_rx, _q->payload_sym);
-    
+
     // decode payload
     int crc_pass = qpacketmodem_decode(_q->dec, _q->payload_sym, _q->payload_dec);
 #if 0
@@ -322,13 +322,13 @@ int dsssframe64sync_decode(dsssframe64sync _q)
     _q->framedatastats.num_headers_valid  += crc_pass;
     _q->framedatastats.num_payloads_valid += crc_pass;
     _q->framedatastats.num_bytes_received += crc_pass ? 64 : 0;
-    
+
     // invoke callback
     int rc = 0;
     if (_q->callback != NULL) {
         // offset estimates
         float dphi_hat = qdsync_cccf_get_dphi(_q->detector) +
-            qpilotsync_get_dphi(_q->pilotsync) / 256.0f;
+            qpilotsync_get_dphi(_q->pilotsync) / 128.0f;
 
         // set framesyncstats internals
         _q->framesyncstats.evm           = qpilotsync_get_evm(_q->pilotsync);
@@ -341,7 +341,7 @@ int dsssframe64sync_decode(dsssframe64sync _q)
         _q->framesyncstats.check         = LIQUID_CRC_24;
         _q->framesyncstats.fec0          = LIQUID_FEC_NONE;
         _q->framesyncstats.fec1          = LIQUID_FEC_GOLAY2412;
-    
+
         // invoke callback method
         rc = _q->callback(&_q->payload_dec[0],   // header is first 8 bytes
                      crc_pass,
@@ -351,7 +351,7 @@ int dsssframe64sync_decode(dsssframe64sync _q)
                      _q->framesyncstats,
                      _q->context);
     }
-    
+
     // reset frame synchronizer and return
     dsssframe64sync_reset(_q);
     return rc;
