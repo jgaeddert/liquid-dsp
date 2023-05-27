@@ -262,7 +262,7 @@ int main(int argc, char *argv[])
                     i %= NUM_AUTOSCRIPTS;
             }
 
-            liquid_log_info(NULL,"executing test %4u (%4u / %4u)\n", i, n+1, NUM_AUTOSCRIPTS);
+            liquid_log_info("executing test %4u (%4u / %4u)", i, n+1, NUM_AUTOSCRIPTS);
             execute_autotest( &scripts[i], verbose );
 
             n++;
@@ -379,7 +379,7 @@ int main(int argc, char *argv[])
     fprintf(fid,"}\n");
     fclose(fid);
 
-    liquid_log_info("output JSON results written to %s\n", filename_json);
+    liquid_log_info("output JSON results written to %s", filename_json);
     //liquid_logger_print(NULL);
 
     return rc;
