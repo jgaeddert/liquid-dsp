@@ -115,25 +115,25 @@ void liquid_autotest_failed_msg(const char * _file,
 void autotest_print_results(void)
 {
     if (liquid_autotest_num_warnings > 0) {
-        printf("==================================\n");
-        printf(" WARNINGS : %-lu\n", liquid_autotest_num_warnings);
+        liquid_log_info("==================================");
+        liquid_log_info(" WARNINGS : %-lu", liquid_autotest_num_warnings);
     }
 
-    printf("==================================\n");
+    liquid_log_info("==================================");
     if (liquid_autotest_num_checks==0) {
-        printf(" NO CHECKS RUN\n");
+        liquid_log_info(" NO CHECKS RUN");
     } else if (liquid_autotest_num_failed==0) {
-        printf(" PASSED ALL %lu CHECKS\n", liquid_autotest_num_passed);
+        liquid_log_info(" PASSED ALL %lu CHECKS", liquid_autotest_num_passed);
     } else {
         // compute and print percentage of failed tests
         double percent_failed = (double) liquid_autotest_num_failed /
                                 (double) liquid_autotest_num_checks;
-        printf(" FAILED %lu / %lu CHECKS (%7.2f%%)\n",
+        liquid_log_info(" FAILED %lu / %lu CHECKS (%7.2f%%)",
                 liquid_autotest_num_failed,
                 liquid_autotest_num_checks,
                 100.0*percent_failed);
     }
-    printf("==================================\n");
+    liquid_log_info("==================================");
 }
 
 // print warning to stderr
@@ -191,12 +191,16 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
         fail[j] = 0;
     for (i=0; i<_num_regions; i++) {
         autotest_psd_s r = _regions[i];
-        if (liquid_autotest_verbose) {
-            printf(" region[%2u]: f=(%6.3f,%6.3f), (", i, r.fmin, r.fmax);
-            if (r.test_lo) { printf("%7.2f,", r.pmin); } else { printf("   *   ,"); }
-            if (r.test_hi) { printf("%7.2f)", r.pmax); } else { printf("   *   )"); }
-            printf("\n");
-        }
+
+        // log result
+        char logstr[96];
+        int nc = snprintf(logstr, sizeof(logstr), " region[%2u]: f=(%6.3f,%6.3f), (", i, r.fmin, r.fmax);
+        if (r.test_lo) { nc += snprintf(logstr+nc, sizeof(logstr)-nc, "%7.2f,", r.pmin); }
+        else           { nc += snprintf(logstr+nc, sizeof(logstr)-nc, "   *   ,"); }
+        if (r.test_hi) { nc += snprintf(logstr+nc, sizeof(logstr)-nc, "%7.2f)", r.pmax); }
+        else           { nc += snprintf(logstr+nc, sizeof(logstr)-nc, "   *   )"); }
+        liquid_log_info(logstr);
+
         if (r.fmin < -0.5 || r.fmax > 0.5 || r.fmin > r.fmax) {
             AUTOTEST_FAIL("invalid frequency range");
             return -1;
@@ -251,7 +255,7 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
         fprintf(fid,"  plot(f(idx),psd(idx),'xr');\n"); // identifying errors
         fprintf(fid,"hold off; grid on; xlim([-0.5 0.5]);\n");
         fclose(fid);
-        printf("debug file written to %s\n", _debug_filename);
+        liquid_log_info("debug file written to %s", _debug_filename);
     }
     return 0;
 }
