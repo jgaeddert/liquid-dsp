@@ -83,10 +83,9 @@ int liquid_error_fl(int          _code,
     liquid_vlog(NULL,_liquid_error_downgrade ? LIQUID_WARN : LIQUID_ERROR,_file,_line,format_ext,argptr);
     va_end(argptr);
 #endif
-
 #if LIQUID_STRICT_EXIT
     if (!_liquid_error_downgrade)
-        exit(code);
+        exit(_code);
 #endif
     return _code;
 }
