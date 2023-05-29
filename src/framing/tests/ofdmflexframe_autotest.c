@@ -92,13 +92,6 @@ void autotest_ofdmflexframe_09() { testbench_ofdmflexframe(1200, 40, 20, 8217, L
 
 void autotest_ofdmflexframegen_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping ofdmflexframegen config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
     // check invalid function calls
     _liquid_error_downgrade_enable();
     //CONTEND_ISNULL(ofdmflexframegen_copy(NULL));
@@ -118,13 +111,6 @@ void autotest_ofdmflexframegen_config()
 
 void autotest_ofdmflexframesync_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping ofdmflexframesync config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
     // check invalid function calls
     //CONTEND_ISNULL(ofdmflexframesync_copy(NULL));
     CONTEND_ISNULL(ofdmflexframesync_create( 0, 16, 4, NULL, NULL, NULL)) // too few subcarriers
