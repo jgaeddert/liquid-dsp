@@ -57,6 +57,11 @@ void * liquid_error_config_fl(const char * _file, int _line, const char * _forma
 #define liquid_error_config(format, ...) \
     liquid_error_config_fl(__FILE__, __LINE__, format, ##__VA_ARGS__);
 
+// downgrade errors to warnings; this is used _internally_ to test error handling without
+// explicitly exiting or erroring out
+void _liquid_error_downgrade_enable (void);
+void _liquid_error_downgrade_disable(void);
+
 //
 // Debugging macros
 //

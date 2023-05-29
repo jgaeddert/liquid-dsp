@@ -30,6 +30,15 @@
 #include <unistd.h>
 #include "liquid.internal.h"
 
+// internal flag indicating if errors are downgraded to warnings for testing
+static int _liquid_error_downgrade = 0;
+
+// enable downgrade errors to warnings
+void _liquid_error_downgrade_enable (void) { _liquid_error_downgrade = 1; }
+
+// disable downgrade errors to warnings
+void _liquid_error_downgrade_disable(void) { _liquid_error_downgrade = 0; }
+
 // forward declaration of logging function with variadic arguments list
 int liquid_vlog(liquid_logger _q,
                 int           _level,
@@ -71,12 +80,13 @@ int liquid_error_fl(int          _code,
     // log error
     va_list argptr;
     va_start(argptr, _format);
-    liquid_vlog(NULL,LIQUID_ERROR,_file,_line,format_ext,argptr);
+    liquid_vlog(NULL,_liquid_error_downgrade ? LIQUID_WARN : LIQUID_ERROR,_file,_line,format_ext,argptr);
     va_end(argptr);
 #endif
 
 #if LIQUID_STRICT_EXIT
-    exit(_code);
+    if (!_liquid_error_downgrade)
+        exit(code);
 #endif
     return _code;
 }
@@ -99,11 +109,12 @@ void * liquid_error_config_fl(const char * _file,
     // log error
     va_list argptr;
     va_start(argptr, _format);
-    liquid_vlog(NULL,LIQUID_ERROR,_file,_line,format_ext,argptr);
+    liquid_vlog(NULL,_liquid_error_downgrade ? LIQUID_WARN : LIQUID_ERROR,_file,_line,format_ext,argptr);
     va_end(argptr);
 #endif
 #if LIQUID_STRICT_EXIT
-    exit(code);
+    if (!_liquid_error_downgrade)
+        exit(code);
 #endif
     return NULL;
 }
@@ -132,8 +143,6 @@ const char * liquid_error_info(liquid_error_code _code)
 
     return liquid_error_str[_code];
 }
-
-
 
 #define LIQUID_LOGGER_MAX_CALLBACKS (32)
 struct liquid_logger_s {

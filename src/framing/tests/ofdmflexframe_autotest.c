@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // AUTOTEST : test simple recovery of frame in noise
 void testbench_ofdmflexframe(unsigned int      _M,
@@ -100,11 +100,13 @@ void autotest_ofdmflexframegen_config()
     fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
 #endif
     // check invalid function calls
+    _liquid_error_downgrade_enable();
     //CONTEND_ISNULL(ofdmflexframegen_copy(NULL));
     CONTEND_ISNULL(ofdmflexframegen_create( 0, 16, 4, NULL, NULL)) // too few subcarriers
     CONTEND_ISNULL(ofdmflexframegen_create( 7, 16, 4, NULL, NULL)) // too few subcarriers
     CONTEND_ISNULL(ofdmflexframegen_create(65, 16, 4, NULL, NULL)) // odd-length subcarriers
     CONTEND_ISNULL(ofdmflexframegen_create(64, 66, 4, NULL, NULL)) // cyclic prefix length too large
+    _liquid_error_downgrade_disable();
 
     // create proper object and test configurations
     ofdmflexframegen q = ofdmflexframegen_create(64, 16, 4, NULL, NULL);
