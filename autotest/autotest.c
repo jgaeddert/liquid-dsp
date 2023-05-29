@@ -199,7 +199,7 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
         else           { nc += snprintf(logstr+nc, sizeof(logstr)-nc, "   *   ,"); }
         if (r.test_hi) { nc += snprintf(logstr+nc, sizeof(logstr)-nc, "%7.2f)", r.pmax); }
         else           { nc += snprintf(logstr+nc, sizeof(logstr)-nc, "   *   )"); }
-        liquid_log_info(logstr);
+        liquid_log_debug(logstr);
 
         if (r.fmin < -0.5 || r.fmax > 0.5 || r.fmin > r.fmax) {
             AUTOTEST_FAIL("invalid frequency range");
@@ -255,7 +255,7 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
         fprintf(fid,"  plot(f(idx),psd(idx),'xr');\n"); // identifying errors
         fprintf(fid,"hold off; grid on; xlim([-0.5 0.5]);\n");
         fclose(fid);
-        liquid_log_info("debug file written to %s", _debug_filename);
+        liquid_log_debug("debug file written to %s", _debug_filename);
     }
     return 0;
 }
