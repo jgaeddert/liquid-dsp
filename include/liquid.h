@@ -194,7 +194,30 @@ extern const char * liquid_log_colors[];
 
 extern const char * liquid_log_levels[];
 
-enum { LIQUID_TRACE=0, LIQUID_DEBUG, LIQUID_INFO, LIQUID_WARN, LIQUID_ERROR, LIQUID_FATAL };
+// logging levels
+enum {
+    // a union of all levels, allowing everything to be logged
+    LIQUID_TRACE=0,
+
+    // highly granular level allowing for performing low-level diagnostics
+    LIQUID_DEBUG,
+
+    // routine application operations
+    LIQUID_INFO,
+
+    // level to designate potentially harmful events, indicating something
+    // unexpected occurred and might require investigation
+    LIQUID_WARN,
+
+    // level to designate a serious event such as an invalid configuration
+    // for a new object, passing a NULL pointer to a method, or an algorithm
+    // failing to converge
+    LIQUID_ERROR,
+
+    // level indicating a catastrophic event has occurred, and the
+    // application should be aborted immediately
+    LIQUID_FATAL
+};
 
 #define liquid_log_trace(...) liquid_log(NULL,LIQUID_TRACE,__FILE__,__LINE__,__VA_ARGS__)
 #define liquid_log_debug(...) liquid_log(NULL,LIQUID_DEBUG,__FILE__,__LINE__,__VA_ARGS__)
