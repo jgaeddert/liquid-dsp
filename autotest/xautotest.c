@@ -246,8 +246,7 @@ int main(int argc, char *argv[])
         }
 
         for (i=0; i<n; i++) {
-            if (verbose)
-                print_package_results( &packages[i] );
+            print_package_results( &packages[i] );
         }
         break;
     case RUN_ALL_RANDOM:
@@ -471,31 +470,25 @@ double calculate_execution_time(struct rusage _tic, struct rusage _toc)
 // print results of a particular test
 void print_autotest_results(autotest_t * _test)
 {
-    printf("  %4u", _test->id);
     if (!_test->executed) {
-        printf("[     -     ] IGNORED  ");
+        liquid_log_info(" %4u [     -     ]   --  %26s %s", _test->id,"",_test->name);
     } else {
-        printf("[%8.2f ms] %8s ", _test->extime*1e3f, _test->pass ? "  PASS  " : "<<FAIL>>");
-    }
-
-    printf("passed %4lu/%4lu checks (%5.1f%%) %s\n",
+        liquid_log_info(" %4u [%8.2f ms]%8s%4lu/%4lu checks (%5.1f%%) %s",
+            _test->id, _test->extime*1e3f, _test->pass ? "  pass  " : "<<FAIL>>",
             _test->num_passed,
             _test->num_checks,
             _test->percent_passed,
             _test->name);
+    }
 }
 
 // print results of a particular package
 void print_package_results(package_t * _p)
 {
     unsigned int i;
-    printf("%u: %s:\n", _p->id, _p->name);
-    for (i=_p->index; i<(_p->index+_p->num_scripts); i++) {
-        //if ( scripts[i].executed ) // only print scripts that were executed
+    liquid_log_info("%u: %s:", _p->id, _p->name);
+    for (i=_p->index; i<(_p->index+_p->num_scripts); i++)
         print_autotest_results( &scripts[i] );
-    }
-
-    printf("\n");
 }
 
 // print all unstable tests (those which failed or gave warnings)
@@ -507,18 +500,16 @@ void print_unstable_tests(void)
         return;
     }
 
-    printf("==================================\n");
-    printf(" UNSTABLE TESTS:\n");
+    liquid_log_info("==================================");
+    liquid_log_info(" UNSTABLE TESTS:");
     unsigned int t;
     for (t=0; t<NUM_AUTOSCRIPTS; t++) {
         if (scripts[t].executed) {
-            if (!scripts[t].pass) {
-                printf("    %3u : <<FAIL>> %s\n", scripts[t].id,
-                                                  scripts[t].name);
-            }
-            
+            if (!scripts[t].pass)
+                liquid_log_info("    %3u : <<FAIL>> %s", scripts[t].id,scripts[t].name);
+
             if (scripts[t].num_warnings > 0) {
-                printf("    %3u : %4lu warnings %s\n", scripts[t].id,
+                liquid_log_info("    %3u : %4lu warnings %s", scripts[t].id,
                                                        scripts[t].num_warnings,
                                                        scripts[t].name);
             }
