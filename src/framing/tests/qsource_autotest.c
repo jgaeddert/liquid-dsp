@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,7 @@
 //
 void autotest_qsourcecf_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping qsource config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     CONTEND_ISNULL(qsourcecf_create( 0, 12, 60, 0.0f, 0.2f, 10.0f)); // too few subcarriers
     CONTEND_ISNULL(qsourcecf_create(17, 12, 60, 0.0f, 0.2f, 10.0f)); // odd-numbered subcarriers
     CONTEND_ISNULL(qsourcecf_create(64,  0, 60, 0.0f, 0.2f, 10.0f)); // filter semi-length too small
@@ -41,5 +35,6 @@ void autotest_qsourcecf_config()
     CONTEND_ISNULL(qsourcecf_create(64, 12, 60, 0.0f,-0.1f, 10.0f)); // bandwidth out of range
     CONTEND_ISNULL(qsourcecf_create(64, 12, 60, 0.0f, 1.1f, 10.0f)); // bandwidth out of range
     CONTEND_ISNULL(qsourcecf_copy(NULL));
+    _liquid_error_downgrade_disable();
 }
 

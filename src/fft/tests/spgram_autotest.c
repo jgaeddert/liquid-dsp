@@ -209,13 +209,7 @@ void autotest_spgramcf_counters()
 
 void autotest_spgramcf_invalid_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping spgram config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
     CONTEND_ISNULL(spgramcf_create(  0, LIQUID_WINDOW_HAMMING,       200, 200)); // nfft too small
     CONTEND_ISNULL(spgramcf_create(  1, LIQUID_WINDOW_HAMMING,       200, 200)); // nfft too small
@@ -236,6 +230,7 @@ void autotest_spgramcf_invalid_config()
     CONTEND_INEQUALITY(LIQUID_OK, spgramcf_set_rate(q, -10e6))
 
     spgramcf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_spgramcf_standalone()

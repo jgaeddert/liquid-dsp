@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -248,13 +248,7 @@ void autotest_msourcecf_aggregate()
 //
 void autotest_msourcecf_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping msource config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // no need to check every combination
     CONTEND_ISNULL(msourcecf_create( 0, 12, 60));   // too few subcarriers
     CONTEND_ISNULL(msourcecf_create(17, 12, 60));   // odd-numbered subcarriers
@@ -300,6 +294,7 @@ void autotest_msourcecf_config()
 
     // destroy object
     msourcecf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 // test accessor methods

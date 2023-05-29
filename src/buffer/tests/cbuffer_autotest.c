@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 
 #include <stdlib.h>
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // floating point
 void autotest_cbufferf()
@@ -298,6 +298,7 @@ void autotest_cbufferf_flow()
 // test invalid configurations, etc.
 void autotest_cbufferf_config()
 {
+    _liquid_error_downgrade_enable();
     // options
     unsigned int max_size = 48; // maximum number of elements in buffer
     unsigned int max_read = 17; // maximum number of elements to read
@@ -330,6 +331,7 @@ void autotest_cbufferf_config()
 
     // destroy object
     cbufferf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 // test copy

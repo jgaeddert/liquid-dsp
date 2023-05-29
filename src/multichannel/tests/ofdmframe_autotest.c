@@ -28,7 +28,7 @@
 #include <assert.h>
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 
 // internal callback
@@ -146,13 +146,7 @@ void autotest_ofdmframesync_acquire_n512()  { ofdmframesync_acquire_test(512, 64
 
 void autotest_ofdmframe_common_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping ofdmframe common config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check invalid function calls
     CONTEND_INEQUALITY(LIQUID_OK, ofdmframe_init_default_sctype(0, NULL)) // too few subcarriers
 
@@ -186,17 +180,12 @@ void autotest_ofdmframe_common_config()
 
     p[1] = OFDMFRAME_SCTYPE_DATA;
     CONTEND_INEQUALITY(LIQUID_OK, ofdmframe_validate_sctype(p, M, NULL, NULL, NULL))
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_ofdmframegen_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping ofdmframegen config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check invalid function calls
     //CONTEND_ISNULL(ofdmframegen_copy(NULL));
     CONTEND_ISNULL(ofdmframegen_create( 0, 16, 4, NULL)) // too few subcarriers
@@ -211,17 +200,12 @@ void autotest_ofdmframegen_config()
     CONTEND_EQUALITY(LIQUID_OK, ofdmframegen_print(q))
 
     ofdmframegen_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_ofdmframesync_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping ofdmframesync config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check invalid function calls
     //CONTEND_ISNULL(ofdmframesync_copy(NULL));
     CONTEND_ISNULL(ofdmframesync_create( 0, 16, 4, NULL, NULL, NULL)) // too few subcarriers
@@ -238,5 +222,6 @@ void autotest_ofdmframesync_config()
     CONTEND_EQUALITY(LIQUID_OK, ofdmframesync_set_cfo(q,0.0f))
 
     ofdmframesync_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 

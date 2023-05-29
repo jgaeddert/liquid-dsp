@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // common structure for relaying information to/from callback
 typedef struct {
@@ -302,13 +302,7 @@ void autotest_qdsync_cccf_copy()
 
 void autotest_qdsync_cccf_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping qdsync_cccf config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check invalid function calls
     CONTEND_ISNULL(qdsync_cccf_copy(NULL));
     CONTEND_ISNULL(qdsync_cccf_create_linear(NULL,0,LIQUID_FIRFILT_ARKAISER,4,12,0.25f,NULL,NULL));
@@ -333,5 +327,6 @@ void autotest_qdsync_cccf_config()
 
     // destroy object
     qdsync_cccf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 #include <string.h>
 #include <math.h>
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 static int callback_framesync64_autotest(
     unsigned char *  _header,
@@ -153,13 +153,7 @@ void autotest_framesync64_copy()
 
 void autotest_framesync64_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping framesync64 config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check invalid function calls
     CONTEND_ISNULL(framesync64_copy(NULL));
     CONTEND_ISNULL(framegen64_copy (NULL));
@@ -176,6 +170,7 @@ void autotest_framesync64_config()
 
 
     framesync64_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 static int callback_framesync64_autotest_debug(

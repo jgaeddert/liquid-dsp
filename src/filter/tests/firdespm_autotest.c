@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 //      Electroacoustics, vol. AU-21, No. 6, December 1973.
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 void autotest_firdespm_bandpass_n24()
 {
@@ -266,13 +266,7 @@ void autotest_firdespm_copy()
 
 void autotest_firdespm_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping firdespm config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     float h[51];
     CONTEND_EQUALITY(   LIQUID_OK, firdespm_lowpass(51, 0.2, 60, 0.0, h) ) // ok
     CONTEND_INEQUALITY( LIQUID_OK, firdespm_lowpass( 0, 0.2, 60, 0.0, h) )
@@ -313,18 +307,13 @@ void autotest_firdespm_config()
     CONTEND_ISNULL( firdespm_create_callback(51, 0, bands,   LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
     CONTEND_ISNULL( firdespm_create_callback(51, 2, bands_0, LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
     CONTEND_ISNULL( firdespm_create_callback(51, 2, bands_1, LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_firdespm_differentiator()
 {
+    _liquid_error_downgrade_enable();
     AUTOTEST_WARN("firdespm_differentiator(), unsupported configuration");
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping firdespm differentiator test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
     // create valid object
     unsigned int n = 51;
     float bands[4] = {0.0, 0.2, 0.3, 0.5};  // regions
@@ -337,18 +326,13 @@ void autotest_firdespm_differentiator()
     // error: unsupported configuration
     CONTEND_EQUALITY( LIQUID_EINT, firdespm_execute(q,h) )
     firdespm_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_firdespm_hilbert()
 {
     AUTOTEST_WARN("firdespm_hilbert(), unsupported configuration");
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping firdespm hilbert test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // create valid object
     unsigned int n = 51;
     float bands[4] = {0.0, 0.2, 0.3, 0.5};  // regions
@@ -361,5 +345,6 @@ void autotest_firdespm_hilbert()
     // error: unsupported configuration
     CONTEND_EQUALITY( LIQUID_EINT, firdespm_execute(q,h) )
     firdespm_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 

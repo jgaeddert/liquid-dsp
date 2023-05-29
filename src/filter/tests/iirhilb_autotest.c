@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // test end-to-end power specral density on interp/decim methods
 void autotest_iirhilbf_interp_decim()
@@ -174,13 +174,7 @@ void autotest_iirhilbf_filter()
 
 void autotest_iirhilbf_invalid_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping iirhilbf config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
     CONTEND_ISNULL(iirhilbf_create(LIQUID_IIRDES_BUTTER, 0, 0.1f, 60.0f)); // order out of range
     CONTEND_ISNULL(iirhilbf_create_default(0)); // order out of range
@@ -189,6 +183,7 @@ void autotest_iirhilbf_invalid_config()
     iirhilbf q = iirhilbf_create(LIQUID_IIRDES_BUTTER,5,0.1f,60.0f);
     iirhilbf_print(q);
     iirhilbf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_iirhilbf_copy_interp()

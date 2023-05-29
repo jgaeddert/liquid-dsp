@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -108,13 +108,7 @@ void autotest_qs1dsearch_max_13() { test_qs1dsearch(qs1dsearch_umax, 0, -.1, 15,
 // test configuration
 void autotest_qs1dsearch_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping qs1dsearch config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check invalid function calls
     CONTEND_ISNULL(qs1dsearch_create(NULL, NULL, LIQUID_OPTIM_MAXIMIZE)) // utility is NULL
     CONTEND_ISNULL(qs1dsearch_copy  (NULL))
@@ -139,5 +133,6 @@ void autotest_qs1dsearch_config()
 
     // destroy objects
     qs1dsearch_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 

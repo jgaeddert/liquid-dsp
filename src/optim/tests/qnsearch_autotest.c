@@ -65,13 +65,7 @@ void autotest_qnsearch_rosenbrock()
 // test configuration
 void autotest_qnsearch_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping qnsearch config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
 
     // test configurations
     float v[8] = {0,0,0,0,0,0,0,0};
@@ -84,5 +78,6 @@ void autotest_qnsearch_config()
 
     // destroy objects
     qnsearch_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 #include <string.h>
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 //
 // AUTOTEST: reverse byte
@@ -113,13 +113,7 @@ void autotest_crc32()    { testbench_autotest_crc(LIQUID_CRC_32,       64); }
 
 void autotest_crc_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping crc config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     CONTEND_EQUALITY(LIQUID_OK, liquid_print_crc_schemes())
 
     CONTEND_EQUALITY(LIQUID_CRC_UNKNOWN,    liquid_getopt_str2crc("unknown"))
@@ -130,6 +124,7 @@ void autotest_crc_config()
     CONTEND_EQUALITY(LIQUID_CRC_16,         liquid_getopt_str2crc("crc16"))
     CONTEND_EQUALITY(LIQUID_CRC_24,         liquid_getopt_str2crc("crc24"))
     CONTEND_EQUALITY(LIQUID_CRC_32,         liquid_getopt_str2crc("crc32"))
+    _liquid_error_downgrade_disable();
 }
 
 

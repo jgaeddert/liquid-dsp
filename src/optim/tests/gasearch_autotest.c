@@ -97,13 +97,7 @@ void autotest_gasearch_peak()
 // test chromosome configuration
 void autotest_chromosome_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping chromosome config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // test chromosome
     unsigned int bits_per_trait_invalid[8] = {6,6,6,6,6,6,6,1000};
     unsigned int bits_per_trait_valid  [8] = {6,6,6,6,6,6,6,  32};
@@ -161,18 +155,13 @@ void autotest_chromosome_config()
 
     // destroy objects
     chromosome_destroy(prototype);
+    _liquid_error_downgrade_disable();
 }
 
 // test configuration
 void autotest_gasearch_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping gasearch config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // create prototype chromosome
     chromosome prototype = chromosome_create_basic(8, 12);
 
@@ -200,5 +189,6 @@ void autotest_gasearch_config()
     // destroy objects
     chromosome_destroy(prototype);
     gasearch_destroy(ga);
+    _liquid_error_downgrade_disable();
 }
 

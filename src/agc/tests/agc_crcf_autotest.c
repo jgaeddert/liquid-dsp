@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -287,13 +287,7 @@ void autotest_agc_crcf_lock()
 // configuration
 void autotest_agc_crcf_invalid_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping agc config test with strict exit enabled");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // create main object and check invalid configurations
     agc_crcf q = agc_crcf_create();
 
@@ -318,6 +312,7 @@ void autotest_agc_crcf_invalid_config()
 
     // destroy object
     agc_crcf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 // copy test

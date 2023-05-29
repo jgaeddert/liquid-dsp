@@ -28,13 +28,7 @@
 
 void autotest_fec_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping fec_hamming3126 config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // symbols too large
     CONTEND_EQUALITY(fec_golay2412_encode_symbol(1u<<12), 0)
     CONTEND_EQUALITY(fec_golay2412_decode_symbol(1u<<24), 0)
@@ -47,5 +41,6 @@ void autotest_fec_config()
 
     CONTEND_EQUALITY(fec_hamming128_encode_symbol(1u<<8), 0)
     CONTEND_EQUALITY(fec_hamming128_decode_symbol(1u<<12), 0)
+    _liquid_error_downgrade_disable();
 }
 

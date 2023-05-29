@@ -29,10 +29,7 @@
 
 void autotest_spwaterfall_invalid_config()
 {
-#ifdef LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("spwaterfall test not run with strict mode enabled");
-    return;
-#endif
+    _liquid_error_downgrade_enable();
     AUTOTEST_WARN("testing spwaterfall invalid configurations; ignore printed errors");
     // default configurations
     unsigned int nfft  = 1200;
@@ -59,6 +56,7 @@ void autotest_spwaterfall_invalid_config()
     CONTEND_INEQUALITY(LIQUID_OK, spwaterfallcf_set_rate(q, -10e6))
 
     spwaterfallcf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 int testbench_spwaterfallcf_compare(const void * _v0, const void * _v1)

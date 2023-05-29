@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // test half-band filterbank (analyzer)
 void autotest_resamp2_analysis()
@@ -221,13 +221,7 @@ void autotest_resamp2_crcf_filter_5(){ testbench_resamp2_crcf_filter(15,120.0f);
 
 void autotest_resamp2_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping resamp2 config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
     CONTEND_ISNULL(resamp2_crcf_create( 0,  0.0f, 60.0f)); // m out of range
     CONTEND_ISNULL(resamp2_crcf_create( 1,  0.0f, 60.0f)); // m out of range
@@ -256,6 +250,7 @@ void autotest_resamp2_config()
 
     // destroy object
     resamp2_crcf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 // test copy method

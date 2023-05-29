@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,15 +25,10 @@
 
 void autotest_window_config_errors()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping window config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     CONTEND_EXPRESSION(windowcf_create(0)==NULL);
     CONTEND_EXPRESSION(windowf_create (0)==NULL);
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_windowf()
@@ -98,7 +93,9 @@ void autotest_windowf()
     windowf_index(w, 7, &x);    CONTEND_EQUALITY(x, 3);
     windowf_index(w, 8, &x);    CONTEND_EQUALITY(x, 3);
     windowf_index(w, 9, &x);    CONTEND_EQUALITY(x, 3);
+    _liquid_error_downgrade_enable();
     CONTEND_INEQUALITY( windowf_index(w,999, &x), LIQUID_OK); // out of range
+    _liquid_error_downgrade_disable();
 
     // push 4 more elements
     // 7 6 3 3 3 3 5 5 5 5

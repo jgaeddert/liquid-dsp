@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -200,13 +200,7 @@ void autotest_liquid_getopt_str2firfilt()
 
 void autotest_liquid_firdes_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping firdes config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check that estimate methods return zero for invalid configs
     CONTEND_EQUALITY( estimate_req_filter_len(-0.1f, 60.0f), 0 ); // invalid transition band
     CONTEND_EQUALITY( estimate_req_filter_len( 0.0f, 60.0f), 0 ); // invalid transition band
@@ -259,6 +253,7 @@ void autotest_liquid_firdes_config()
     CONTEND_EQUALITY(liquid_filter_energy(h,h_len, 0.3f,   0), 0.0f);
 
     CONTEND_EQUALITY( liquid_getopt_str2firfilt("unknown-filter-type" ), LIQUID_FIRFILT_UNKNOWN);
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_liquid_firdes_estimate()

@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // static channel filter, run equalization with various update strategies on modulated data
 void testbench_eqlms(unsigned int k, unsigned int m, float beta, int init,
@@ -146,13 +146,7 @@ void autotest_eqlms_11() { testbench_eqlms(2,7, 0.3,   0,7,0.1,800,     0,LIQUID
 
 void autotest_eqlms_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping eqlms config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
     CONTEND_ISNULL(eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_ARKAISER, 0, 12, 0.3f, 0.0f));
     CONTEND_ISNULL(eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_ARKAISER, 2,  0, 0.3f, 0.0f));
@@ -188,6 +182,7 @@ void autotest_eqlms_config()
 
     // clean it up
     eqlms_cccf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_eqlms_cccf_copy()

@@ -22,7 +22,7 @@
 
 #include <assert.h>
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // Helper function to keep code base small
 void firpfbch2_crcf_runtest(unsigned int _M,
@@ -141,13 +141,7 @@ void autotest_firpfbch2_crcf_copy()
 
 void autotest_firpfbch2_crcf_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping firpfbch2_crcf config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check invalid function calls
     CONTEND_ISNULL(firpfbch2_crcf_create(             77, 76, 12, NULL)) // invalid type
     CONTEND_ISNULL(firpfbch2_crcf_create(LIQUID_ANALYZER,  0, 12, NULL)) // invalid number of channels
@@ -170,5 +164,6 @@ void autotest_firpfbch2_crcf_config()
     CONTEND_EQUALITY(             12, firpfbch2_crcf_get_m(q))
 
     firpfbch2_crcf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 

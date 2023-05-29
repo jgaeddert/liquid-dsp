@@ -99,7 +99,6 @@ void autotest_ofdmflexframegen_config()
     CONTEND_ISNULL(ofdmflexframegen_create( 7, 16, 4, NULL, NULL)) // too few subcarriers
     CONTEND_ISNULL(ofdmflexframegen_create(65, 16, 4, NULL, NULL)) // odd-length subcarriers
     CONTEND_ISNULL(ofdmflexframegen_create(64, 66, 4, NULL, NULL)) // cyclic prefix length too large
-    _liquid_error_downgrade_disable();
 
     // create proper object and test configurations
     ofdmflexframegen q = ofdmflexframegen_create(64, 16, 4, NULL, NULL);
@@ -107,11 +106,13 @@ void autotest_ofdmflexframegen_config()
     CONTEND_EQUALITY(LIQUID_OK, ofdmflexframegen_print(q))
 
     ofdmflexframegen_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_ofdmflexframesync_config()
 {
     // check invalid function calls
+    _liquid_error_downgrade_enable();
     //CONTEND_ISNULL(ofdmflexframesync_copy(NULL));
     CONTEND_ISNULL(ofdmflexframesync_create( 0, 16, 4, NULL, NULL, NULL)) // too few subcarriers
     CONTEND_ISNULL(ofdmflexframesync_create( 7, 16, 4, NULL, NULL, NULL)) // too few subcarriers
@@ -124,5 +125,6 @@ void autotest_ofdmflexframesync_config()
     CONTEND_EQUALITY(LIQUID_OK, ofdmflexframesync_print(q))
 
     ofdmflexframesync_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 

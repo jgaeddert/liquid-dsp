@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -88,11 +88,7 @@ void autotest_fdelay_rrrf_9()  { testbench_fdelay_rrrf(200, 12, 64, 200.0f   ); 
 
 void autotest_fdelay_rrrf_config()
 {
-#ifdef LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("delay_rrrf test not run with strict mode enabled");
-    return;
-#endif
-    AUTOTEST_WARN("testing delay_rrrf invalid configurations; ignore printed errors");
+    _liquid_error_downgrade_enable();
     // default configurations
     unsigned int nmax  = 200;
     unsigned int m     =  12;
@@ -118,6 +114,7 @@ void autotest_fdelay_rrrf_config()
 
     // destroy object
     fdelay_rrrf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 // compare push vs write methods

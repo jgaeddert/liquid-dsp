@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 #define DEBUG_QPILOTSYNC_AUTOTEST 1
 
@@ -186,13 +186,7 @@ void autotest_qpilotsync_500_32() { qpilotsync_test(LIQUID_MODEM_QPSK, 500, 32, 
 
 void autotest_qpilotgen_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping qpilotgen config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check invalid function calls
     CONTEND_ISNULL(qpilotgen_create(  0, 100));    // invalid payload length
     CONTEND_ISNULL(qpilotgen_create(512,   0));    // invalid pilot spacing
@@ -204,17 +198,12 @@ void autotest_qpilotgen_config()
     CONTEND_EQUALITY(LIQUID_OK, qpilotgen_print(q))
 
     qpilotgen_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_qpilotsync_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping qpilotsync config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check invalid function calls
     CONTEND_ISNULL(qpilotsync_create(  0, 100));    // invalid payload length
     CONTEND_ISNULL(qpilotsync_create(512,   0));    // invalid pilot spacing
@@ -226,5 +215,6 @@ void autotest_qpilotsync_config()
     CONTEND_EQUALITY(LIQUID_OK, qpilotsync_print(q))
 
     qpilotsync_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 

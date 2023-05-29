@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 void autotest_firfilt_crcf_kaiser()
 {
@@ -106,13 +106,7 @@ void autotest_firfilt_cccf_notch()
 
 void autotest_firfilt_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping firfilt config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    AUTOTEST_WARN("ignore potential errors here; checking for invalid configurations");
-#endif
+    _liquid_error_downgrade_enable();
     // no need to check every combination
     CONTEND_ISNULL(firfilt_crcf_create(NULL, 0));
     CONTEND_ISNULL(firfilt_crcf_create_kaiser(0, 0, 0, 0));
@@ -136,6 +130,7 @@ void autotest_firfilt_config()
     CONTEND_EQUALITY(firfilt_crcf_get_length(q), 11)
 
     firfilt_crcf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_firfilt_recreate()
