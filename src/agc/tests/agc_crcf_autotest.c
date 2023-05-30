@@ -102,8 +102,7 @@ void autotest_agc_crcf_ac_gain_control()
         agc_crcf_execute(q, x, &y);
     }
 
-    if (liquid_autotest_verbose)
-        printf("gamma : %12.8f, rssi : %12.8f\n", gamma, agc_crcf_get_signal_level(q));
+    liquid_log_debug("gamma : %12.8f, rssi : %12.8f", gamma, agc_crcf_get_signal_level(q));
 
     // Check results
     CONTEND_DELTA( agc_crcf_get_gain(q), 1.0f/gamma, tol);
@@ -140,8 +139,7 @@ void autotest_agc_crcf_rssi_sinusoid()
     // get received signal strength indication
     float rssi = agc_crcf_get_signal_level(q);
 
-    if (liquid_autotest_verbose)
-        printf("gamma : %12.8f, rssi : %12.8f\n", gamma, rssi);
+    liquid_log_debug("gamma : %12.8f, rssi : %12.8f", gamma, rssi);
 
     // Check results
     CONTEND_DELTA( rssi, gamma, tol );
@@ -178,8 +176,7 @@ void autotest_agc_crcf_rssi_noise()
     // get received signal strength indication
     float rssi = agc_crcf_get_rssi(q);
 
-    if (liquid_autotest_verbose)
-        printf("gamma : %12.8f, rssi : %12.8f\n", gamma, rssi);
+    liquid_log_debug("gamma : %12.8f, rssi : %12.8f", gamma, rssi);
 
     // Check results
     CONTEND_DELTA( rssi, gamma, tol );
