@@ -52,8 +52,7 @@ void autotest_cvsd_rmse_sine()
     }   
 
     rmse = 10*log10f(rmse/n);
-    if (liquid_autotest_verbose)
-        printf("cvsd rmse : %8.2f dB\n", rmse);
+    liquid_log_debug("cvsd rmse : %8.2f dB", rmse);
     CONTEND_LESS_THAN(rmse, -20.0f);
 
     // destroy cvsd codecs
@@ -95,8 +94,7 @@ void autotest_cvsd_rmse_sine8()
     }   
 
     rmse = 10*log10f(rmse/(n*8));
-    if (liquid_autotest_verbose)
-        printf("cvsd rmse : %8.2f dB\n", rmse);
+    liquid_log_debug("cvsd rmse : %8.2f dB", rmse);
     CONTEND_LESS_THAN(rmse, -20.0f);
 
     // destroy cvsd codecs
