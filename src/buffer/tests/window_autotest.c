@@ -106,8 +106,6 @@ void autotest_windowf()
 
     windowf_read(w, &r);
     CONTEND_SAME_DATA(r,test4,10*sizeof(float));
-    if (liquid_autotest_verbose)
-        windowf_debug_print(w);
 
     // recreate window (truncate to last 6 elements)
     // 3 3 5 5 5 5
@@ -135,14 +133,10 @@ void autotest_windowf()
     windowf_read(w, &r);
     CONTEND_SAME_DATA(r,test8,10*sizeof(float));
 
-    if (liquid_autotest_verbose) {
-        // manual print
-        printf("manual output:\n");
-        for (i=0; i<10; i++)
-            printf("%6u : %f\n", i, r[i]);
-
-        windowf_debug_print(w);
-    }
+    // manual print
+    printf("manual output:\n");
+    for (i=0; i<10; i++)
+        liquid_log_debug("%6u : %f", i, r[i]);
 
     windowf_destroy(w);
 }

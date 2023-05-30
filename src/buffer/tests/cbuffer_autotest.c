@@ -271,8 +271,7 @@ void autotest_cbufferf_flow()
 
             // compare results
             for (i=0; i<num_read; i++) {
-                if (liquid_autotest_verbose)
-                    printf(" %s read %12.0f, expected %12u\n", r[i] == (float)read_id ? " " : "*", r[i], read_id);
+                liquid_log_debug(" %s read %12.0f, expected %12u", r[i] == (float)read_id ? " " : "*", r[i], read_id);
 
                 if (r[i] != (float)read_id)
                     success = 0;
