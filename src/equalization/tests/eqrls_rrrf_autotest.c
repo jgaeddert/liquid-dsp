@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -130,10 +130,6 @@ void autotest_eqrls_rrrf_copy()
         // step equalization algorithm
         eqrls_rrrf_step(q0, d[i], y0);
         eqrls_rrrf_step(q1, d[i], y1);
-    }
-    if (liquid_autotest_verbose) {
-        printf("orig "); eqrls_rrrf_print(q0);
-        printf("copy "); eqrls_rrrf_print(q1);
     }
 
     // get and compare coefficients

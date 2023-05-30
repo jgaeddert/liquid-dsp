@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@ void testbench_eqlms(unsigned int k, unsigned int m, float beta, int init,
                      unsigned int p, float mu, unsigned int num_symbols,
                      int update, int ms)
 {
-    //float          tol    = 0.025f; // error tolerance
+    float          tol    = 0.025f; // error tolerance
     unsigned int   i;
     modemcf        mod    = modemcf_create(ms);
     firinterp_crcf interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER,k,m,beta,0);
@@ -104,14 +104,10 @@ void testbench_eqlms(unsigned int k, unsigned int m, float beta, int init,
         // observe error
         float error = cabsf(sym_in-sym_out);
         rmse += error * error;
-#if 0
-        if (liquid_autotest_verbose) {
-            printf("%3u : x = {%12.8f,%12.8f}, y = {%12.8f,%12.8f}, error=%12.8f %s\n",
-                    i, crealf(sym_in ), cimagf(sym_in ), crealf(sym_out), cimagf(sym_out),
-                    error, error > tol ? "*" : "");
-        }
-        //CONTEND_DELTA(error, 0.0f, tol);
-#endif
+
+        liquid_log_debug("%3u : x = {%12.8f,%12.8f}, y = {%12.8f,%12.8f}, error=%12.8f %s",
+            i, crealf(sym_in ), cimagf(sym_in ), crealf(sym_out), cimagf(sym_out),
+            error, error > tol ? "*" : "");
     }
     rmse = 10*log10f( rmse/num_symbols );
     printf("rmse : %.3f dB\n", rmse);
