@@ -314,32 +314,28 @@ void autotest_dotprod_rrrf_struct_lengths()
     dotprod_rrrf_execute(dp, x, &y);
     CONTEND_DELTA(y, v32, tol);
     dotprod_rrrf_destroy(dp);
-    if (liquid_autotest_verbose)
-        printf("  dotprod-rrrf-32 : %12.8f (expected %12.8f)\n", y, v32);
+    liquid_log_debug("  dotprod-rrrf-32 : %12.8f (expected %12.8f)", y, v32);
 
     // n = 33
     dp = dotprod_rrrf_create(h,33);
     dotprod_rrrf_execute(dp, x, &y);
     CONTEND_DELTA(y, v33, tol);
     dotprod_rrrf_destroy(dp);
-    if (liquid_autotest_verbose)
-        printf("  dotprod-rrrf-33 : %12.8f (expected %12.8f)\n", y, v33);
+    liquid_log_debug("  dotprod-rrrf-33 : %12.8f (expected %12.8f)", y, v33);
 
     // n = 34
     dp = dotprod_rrrf_create(h,34);
     dotprod_rrrf_execute(dp, x, &y);
     CONTEND_DELTA(y, v34, tol);
     dotprod_rrrf_destroy(dp);
-    if (liquid_autotest_verbose)
-        printf("  dotprod-rrrf-34 : %12.8f (expected %12.8f)\n", y, v34);
+    liquid_log_debug("  dotprod-rrrf-34 : %12.8f (expected %12.8f)", y, v34);
 
     // n = 35
     dp = dotprod_rrrf_create(h,35);
     dotprod_rrrf_execute(dp, x, &y);
     CONTEND_DELTA(y, v35, tol);
     dotprod_rrrf_destroy(dp);
-    if (liquid_autotest_verbose)
-        printf("  dotprod-rrrf-35 : %12.8f (expected %12.8f)\n", y, v35);
+    liquid_log_debug("  dotprod-rrrf-35 : %12.8f (expected %12.8f)", y, v35);
 }
 
 // 
@@ -378,11 +374,9 @@ void runtest_dotprod_rrrf(unsigned int _n)
     dotprod_rrrf_run4(h,x,_n,&y_run4);
 
     // print results
-    if (liquid_autotest_verbose) {
-        printf("  dotprod-rrrf-%-4u(struct) : %12.8f (expected %12.8f)\n", _n, y_struct, y_test);
-        printf("  dotprod-rrrf-%-4u(run   ) : %12.8f (expected %12.8f)\n", _n, y_run,    y_test);
-        printf("  dotprod-rrrf-%-4u(run4  ) : %12.8f (expected %12.8f)\n", _n, y_run4,   y_test);
-    }
+    liquid_log_debug("  dotprod-rrrf-%-4u(struct) : %12.8f (expected %12.8f)", _n, y_struct, y_test);
+    liquid_log_debug("  dotprod-rrrf-%-4u(run   ) : %12.8f (expected %12.8f)", _n, y_run,    y_test);
+    liquid_log_debug("  dotprod-rrrf-%-4u(run4  ) : %12.8f (expected %12.8f)", _n, y_run4,   y_test);
 
     // validate result (structured object)
     CONTEND_DELTA(y_struct, y_test, tol);

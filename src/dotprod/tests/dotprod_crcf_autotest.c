@@ -119,10 +119,9 @@ void autotest_dotprod_crcf_rand02()
     // test object
     dotprod_crcf q = dotprod_crcf_create(h,16);
     dotprod_crcf_execute(q,x,&y);
-    if (liquid_autotest_verbose) {
-        printf("  dotprod : %12.8f + j%12.8f (expected: %12.8f + j%12.8f)\n",
-                crealf(y), cimagf(y), crealf(test), cimagf(test));
-    }
+
+    liquid_log_debug("  dotprod : %12.8f + j%12.8f (expected: %12.8f + j%12.8f)",crealf(y), cimagf(y), crealf(test), cimagf(test));
+
     CONTEND_DELTA( crealf(y), crealf(test), tol);
     CONTEND_DELTA( cimagf(y), cimagf(test), tol);
     dotprod_crcf_destroy(q);
@@ -163,15 +162,10 @@ void runtest_dotprod_crcf(unsigned int _n)
     dotprod_crcf_run (h,x,_n,&y_run );
     dotprod_crcf_run4(h,x,_n,&y_run4);
 
-    // print results
-    if (liquid_autotest_verbose) {
-        printf("  dotprod-crcf-%-4u(struct) : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
-                _n, crealf(y_struct), cimagf(y_struct), crealf(y_test), cimagf(y_test));
-        printf("  dotprod-crcf-%-4u(run   ) : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
-                _n, crealf(y_run   ), cimagf(y_run   ), crealf(y_test), cimagf(y_test));
-        printf("  dotprod-crcf-%-4u(run4  ) : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
-                _n, crealf(y_run4  ), cimagf(y_run4  ), crealf(y_test), cimagf(y_test));
-    }
+    // log results
+    liquid_log_debug("  dotprod-crcf-%-4u(struct) : %12.8f + j%12.8f (expected %12.8f + j%12.8f)",_n, crealf(y_struct), cimagf(y_struct), crealf(y_test), cimagf(y_test));
+    liquid_log_debug("  dotprod-crcf-%-4u(run   ) : %12.8f + j%12.8f (expected %12.8f + j%12.8f)",_n, crealf(y_run   ), cimagf(y_run   ), crealf(y_test), cimagf(y_test));
+    liquid_log_debug("  dotprod-crcf-%-4u(run4  ) : %12.8f + j%12.8f (expected %12.8f + j%12.8f)",_n, crealf(y_run4  ), cimagf(y_run4  ), crealf(y_test), cimagf(y_test));
 
     // validate result (structured object)
     CONTEND_DELTA(crealf(y_struct), crealf(y_test), tol);

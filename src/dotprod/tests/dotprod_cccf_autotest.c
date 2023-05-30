@@ -151,40 +151,28 @@ void autotest_dotprod_cccf_struct_lengths()
     dotprod_cccf_execute(dp, x, &y);
     CONTEND_DELTA(y, v32, tol);
     dotprod_cccf_destroy(dp);
-    if (liquid_autotest_verbose) {
-        printf("  dotprod-cccf-32 : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
-                crealf(y), cimagf(y), crealf(v32), cimagf(v32));
-    }
+    liquid_log_debug("  dotprod-cccf-32 : %12.8f + j%12.8f (expected %12.8f + j%12.8f)",crealf(y), cimagf(y), crealf(v32), cimagf(v32));
 
     // n = 33
     dp = dotprod_cccf_create(h,33);
     dotprod_cccf_execute(dp, x, &y);
     CONTEND_DELTA(y, v33, tol);
     dotprod_cccf_destroy(dp);
-    if (liquid_autotest_verbose) {
-        printf("  dotprod-cccf-33 : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
-                crealf(y), cimagf(y), crealf(v33), cimagf(v33));
-    }
+    liquid_log_debug("  dotprod-cccf-33 : %12.8f + j%12.8f (expected %12.8f + j%12.8f)",crealf(y), cimagf(y), crealf(v33), cimagf(v33));
 
     // n = 34
     dp = dotprod_cccf_create(h,34);
     dotprod_cccf_execute(dp, x, &y);
     CONTEND_DELTA(y, v34, tol);
     dotprod_cccf_destroy(dp);
-    if (liquid_autotest_verbose) {
-        printf("  dotprod-cccf-34 : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
-                crealf(y), cimagf(y), crealf(v34), cimagf(v34));
-    }
+    liquid_log_debug("  dotprod-cccf-34 : %12.8f + j%12.8f (expected %12.8f + j%12.8f)",crealf(y), cimagf(y), crealf(v34), cimagf(v34));
 
     // n = 35
     dp = dotprod_cccf_create(h,35);
     dotprod_cccf_execute(dp, x, &y);
     CONTEND_DELTA(y, v35, tol);
     dotprod_cccf_destroy(dp);
-    if (liquid_autotest_verbose) {
-        printf("  dotprod-cccf-35 : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
-                crealf(y), cimagf(y), crealf(v35), cimagf(v35));
-    }
+    liquid_log_debug("  dotprod-cccf-35 : %12.8f + j%12.8f (expected %12.8f + j%12.8f)",crealf(y), cimagf(y), crealf(v35), cimagf(v35));
 }
 
 // helper function (compare structured object to ordinal computation)
@@ -219,14 +207,9 @@ void runtest_dotprod_cccf(unsigned int _n)
     dotprod_cccf_run4(h,x,_n,&y_run4);
 
     // print results
-    if (liquid_autotest_verbose) {
-        printf("  dotprod-cccf-%-4u(struct) : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
-                _n, crealf(y_struct), cimagf(y_struct), crealf(y_test), cimagf(y_test));
-        printf("  dotprod-cccf-%-4u(run   ) : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
-                _n, crealf(y_run   ), cimagf(y_run   ), crealf(y_test), cimagf(y_test));
-        printf("  dotprod-cccf-%-4u(run4  ) : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
-                _n, crealf(y_run4  ), cimagf(y_run4  ), crealf(y_test), cimagf(y_test));
-    }
+    liquid_log_debug("  dotprod-cccf-%-4u(struct) : %12.8f + j%12.8f (expected %12.8f + j%12.8f)",_n, crealf(y_struct), cimagf(y_struct), crealf(y_test), cimagf(y_test));
+    liquid_log_debug("  dotprod-cccf-%-4u(run   ) : %12.8f + j%12.8f (expected %12.8f + j%12.8f)",_n, crealf(y_run   ), cimagf(y_run   ), crealf(y_test), cimagf(y_test));
+    liquid_log_debug("  dotprod-cccf-%-4u(run4  ) : %12.8f + j%12.8f (expected %12.8f + j%12.8f)",_n, crealf(y_run4  ), cimagf(y_run4  ), crealf(y_test), cimagf(y_test));
 
     // validate result (structured object)
     CONTEND_DELTA(crealf(y_struct), crealf(y_test), tol);
