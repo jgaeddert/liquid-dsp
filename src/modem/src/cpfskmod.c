@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
 // continuous phase frequency-shift keying modulator
-//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -61,7 +59,7 @@ struct cpfskmod_s {
 
     // phase integrator
     float * phase_interp;       // phase interpolation buffer
-    iirfilt_rrrf integrator;    // integrator
+    float b0, b1, a1, v0, v1;   // integrator
 };
 
 // create cpfskmod object (frequency modulator)
@@ -105,8 +103,9 @@ cpfskmod cpfskmod_create(unsigned int _bps,
     q->M = 1 << q->bps; // constellation size
 
     // create object depending upon input type
-    float b[2] = {0.5f,  0.5f}; // integrator feed-forward coefficients
-    float a[2] = {1.0f, -1.0f}; // integrator feed-back coefficients
+    q->b0 =  0.5f;
+    q->b1 =  0.5f;
+    q->a1 = -1.0f;
     q->ht_len = 0;
     q->ht = NULL;
     unsigned int i;
@@ -115,8 +114,8 @@ cpfskmod cpfskmod_create(unsigned int _bps,
         q->ht_len = q->k;
         q->symbol_delay = 1;
         // modify integrator
-        b[0] = 0.0f;
-        b[1] = 1.0f;
+        q->b0 = 0.0f;
+        q->b1 = 1.0f;
         break;
     case LIQUID_CPFSK_RCOS_FULL:
         q->ht_len = q->k;
@@ -142,9 +141,8 @@ cpfskmod cpfskmod_create(unsigned int _bps,
         q->ht[i] *= M_PI * q->h;
     q->interp = firinterp_rrrf_create(q->k, q->ht, q->ht_len);
 
-    // create phase integrator
+    // allocate buffer for phase interpolation
     q->phase_interp = (float*) malloc(q->k*sizeof(float));
-    q->integrator = iirfilt_rrrf_create(b,2,a,2);
 
     // reset modem object
     cpfskmod_reset(q);
@@ -159,9 +157,6 @@ int cpfskmod_destroy(cpfskmod _q)
     free(_q->ht);
     free(_q->phase_interp);
     firinterp_rrrf_destroy(_q->interp);
-
-    // destroy phase integrator
-    iirfilt_rrrf_destroy(_q->integrator);
 
     // free main object memory
     free(_q);
@@ -200,7 +195,8 @@ int cpfskmod_reset(cpfskmod _q)
     firinterp_rrrf_reset(_q->interp);
 
     // reset phase integrator
-    iirfilt_rrrf_reset(_q->integrator);
+    _q->v0 = 0.0f;
+    _q->v1 = 0.0f;
     return LIQUID_OK;
 }
 
@@ -227,7 +223,15 @@ int cpfskmod_modulate(cpfskmod        _q,
     float theta;
     for (i=0; i<_q->k; i++) {
         // push phase through integrator
-        iirfilt_rrrf_execute(_q->integrator, _q->phase_interp[i], &theta);
+        _q->v0 = _q->phase_interp[i] - _q->v1*_q->a1;
+        theta  = _q->v0*_q->b0 + _q->v1*_q->b1;
+        _q->v1 = _q->v0;
+
+        // constrain state
+        if (_q->v1 > 2*M_PI)
+            _q->v1 -= 2*M_PI;
+        if (_q->v1 < -2*M_PI)
+            _q->v1 += 2*M_PI;
 
         // compute output
         _y[i] = liquid_cexpjf(theta);
