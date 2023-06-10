@@ -148,6 +148,7 @@ int main(int argc, char *argv[])
     char         search_string[128] = "";
     char         filename_json[256] = "";
     char         filename_log [256] = "";
+    int          log_level          = LIQUID_INFO;
 
     unsigned int i;
 
@@ -198,10 +199,12 @@ int main(int argc, char *argv[])
         case 'v':
             verbose = 1;
             liquid_autotest_verbose = 1;
+            log_level--; // decrease threshold
             break;
         case 'q':
             verbose = 0;
             liquid_autotest_verbose = 0;
+            log_level++; // increase threshold
             break;
         case 'o':
             strncpy(filename_json,optarg,255);
@@ -215,7 +218,7 @@ int main(int argc, char *argv[])
             return 1;
         }
     }
-    liquid_logger_set_level(NULL, LIQUID_INFO);
+    liquid_logger_set_level(NULL, log_level);
 
     FILE * log = NULL;
     if (strcmp(filename_log,"")!=0) {
