@@ -9830,6 +9830,9 @@ unsigned int liquid_msb_index(unsigned int _x);
 // Print string of bits to stdout
 int liquid_print_bitstring(unsigned int _x, unsigned int _n);
 
+// print bitstring to char array
+int liquid_sprintf_bitstring(char * _str, unsigned int _x, unsigned int _n);
+
 // reverse byte, word, etc.
 unsigned char liquid_reverse_byte(  unsigned char _x);
 unsigned int  liquid_reverse_uint16(unsigned int  _x);

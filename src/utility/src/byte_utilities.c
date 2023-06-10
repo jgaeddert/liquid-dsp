@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -117,6 +117,18 @@ int liquid_print_bitstring(unsigned int _x,
     unsigned int i;
     for (i=0; i<_n; i++)
         printf("%1u", (_x >> (_n-i-1)) & 1);
+    return LIQUID_OK;
+}
+
+// print bitstring to char array
+int liquid_sprintf_bitstring(char *       _str,
+                             unsigned int _x,
+                             unsigned int _n)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        _str[i] = ((_x >> (_n-i-1)) & 1) ? '1' : '0';
+    _str[i] = '\0';
     return LIQUID_OK;
 }
 
