@@ -173,13 +173,34 @@ int liquid_logger_callback_stdout(liquid_log_event _event,
                                   FILE * restrict  _stream)
 {
 #if LIQUID_COLORS
+#if 0
+    // compact
+    // TODO: look for path delimiters using strtok?
+    int smax = 12;
+    fprintf(_stream,"%s%c\033[0m:",
+        liquid_log_colors[_event->level],
+        liquid_log_levels[_event->level][0]-32);
+    int slen = strlen(_event->file);
+    if (slen  > smax) {
+        fprintf(_stream,"\033[90m+%*s:%d:\033[0m",
+        smax - 1,
+        _event->file + slen - smax + 1,
+        _event->line);
+    } else {
+        fprintf(_stream,"\033[90m%*s:%3d:\033[0m",
+        smax,
+        _event->file,
+        _event->line);
+    }
+#else
     fprintf(_stream,"[%s] %s%s\033[0m: \033[90m%s:%d:\033[0m",
         _event->time_str,
         liquid_log_colors[_event->level],
         liquid_log_levels[_event->level],
         _event->file,
         _event->line);
-#else
+#endif
+#else // colors
     fprintf(_stream,"[%s] %s: %s:%d:",
         _event->time_str,
         liquid_log_levels[_event->level],
