@@ -92,3 +92,27 @@ void autotest_msequence_m10()   {   msequence_test_autocorrelation(10); }   // n
 void autotest_msequence_m11()   {   msequence_test_autocorrelation(11); }   // n = 2047
 void autotest_msequence_m12()   {   msequence_test_autocorrelation(12); }   // n = 4095
 
+void autotest_msequence_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping firfilt config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check invalid configurations
+    CONTEND_ISNULL(msequence_create(100, 0, 0))
+    CONTEND_ISNULL(msequence_create_genpoly(0))
+
+    // create proper object and test configurations
+    msequence q = msequence_create_genpoly(LIQUID_MSEQUENCE_GENPOLY_M11);
+
+    CONTEND_EQUALITY(LIQUID_OK, msequence_print(q))
+    CONTEND_EQUALITY(1<<10U, msequence_get_state(q))
+    CONTEND_EQUALITY(LIQUID_OK, msequence_set_state(q, 0x8a))
+    CONTEND_EQUALITY(0x8a, msequence_get_state(q))
+
+    msequence_destroy(q);
+}
+
