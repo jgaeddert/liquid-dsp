@@ -102,16 +102,17 @@ void autotest_msequence_config()
     fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
 #endif
     // check invalid configurations
-    CONTEND_ISNULL(msequence_create(100, 0, 0))
-    CONTEND_ISNULL(msequence_create_genpoly(0))
+    CONTEND_ISNULL(msequence_create        (100, 0, 0))
+    CONTEND_ISNULL(msequence_create_default( 16))
+    CONTEND_ISNULL(msequence_create_genpoly(  0))
 
     // create proper object and test configurations
     msequence q = msequence_create_genpoly(LIQUID_MSEQUENCE_GENPOLY_M11);
 
     CONTEND_EQUALITY(LIQUID_OK, msequence_print(q))
-    CONTEND_EQUALITY(1<<10U, msequence_get_state(q))
+    CONTEND_EQUALITY(1<<10U,    msequence_get_state(q))
     CONTEND_EQUALITY(LIQUID_OK, msequence_set_state(q, 0x8a))
-    CONTEND_EQUALITY(0x8a, msequence_get_state(q))
+    CONTEND_EQUALITY(0x8a,      msequence_get_state(q))
 
     msequence_destroy(q);
 }

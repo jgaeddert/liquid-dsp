@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// m-sequence
-//
+// maximum-length sequence
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,30 +30,30 @@
 #include "liquid.internal.h"
 
 #define LIQUID_MIN_MSEQUENCE_M  2
-#define LIQUID_MAX_MSEQUENCE_M  15
+#define LIQUID_MAX_MSEQUENCE_M  31
 
 // msequence structure
 //  Note that 'g' is stored as the default polynomial shifted to the
 //  right by one bit; this bit is implied and not actually used in
 //  the shift register's feedback bit computation.
 struct msequence_s msequence_default[16] = {
-//   m,     g,      a,      n,      v,      b
-    {0,     0,      1,      0,      1,      0}, // dummy placeholder
-    {0,     0,      1,      0,      1,      0}, // dummy placeholder
-    {2,     0x0003, 0x0002, 3,      0x0002, 0},
-    {3,     0x0005, 0x0004, 7,      0x0004, 0},
-    {4,     0x0009, 0x0008, 15,     0x0008, 0},
-    {5,     0x0012, 0x0010, 31,     0x0010, 0},
-    {6,     0x0021, 0x0020, 63,     0x0020, 0},
-    {7,     0x0044, 0x0040, 127,    0x0040, 0},
-    {8,     0x008E, 0x0080, 255,    0x0080, 0},
-    {9,     0x0108, 0x0100, 511,    0x0100, 0},
-    {10,    0x0204, 0x0200, 1023,   0x0200, 0},
-    {11,    0x0402, 0x0400, 2047,   0x0400, 0},
-    {12,    0x0829, 0x0800, 4095,   0x0800, 0},
-    {13,    0x100d, 0x1000, 8191,   0x1000, 0},
-    {14,    0x2015, 0x2000, 16383,  0x2000, 0},
-    {15,    0x4001, 0x4000, 32767,  0x4000, 0}
+//   m,     g,      a,      n,          v,      b
+    {0,     0,      1,      0,          1,      0}, // dummy placeholder
+    {0,     0,      1,      0,          1,      0}, // dummy placeholder
+    {2,     0x0003, 0x0002, (1<< 2U)-1, 0x0002, 0},
+    {3,     0x0005, 0x0004, (1<< 3U)-1, 0x0004, 0},
+    {4,     0x0009, 0x0008, (1<< 4U)-1, 0x0008, 0},
+    {5,     0x0012, 0x0010, (1<< 5U)-1, 0x0010, 0},
+    {6,     0x0021, 0x0020, (1<< 6U)-1, 0x0020, 0},
+    {7,     0x0044, 0x0040, (1<< 7U)-1, 0x0040, 0},
+    {8,     0x008E, 0x0080, (1<< 8U)-1, 0x0080, 0},
+    {9,     0x0108, 0x0100, (1<< 9U)-1, 0x0100, 0},
+    {10,    0x0204, 0x0200, (1<<10U)-1, 0x0200, 0},
+    {11,    0x0402, 0x0400, (1<<11U)-1, 0x0400, 0},
+    {12,    0x0829, 0x0800, (1<<12U)-1, 0x0800, 0},
+    {13,    0x100d, 0x1000, (1<<13U)-1, 0x1000, 0},
+    {14,    0x2015, 0x2000, (1<<14U)-1, 0x2000, 0},
+    {15,    0x4001, 0x4000, (1<<15U)-1, 0x4000, 0}
 };
 
 // create a maximal-length sequence (m-sequence) object with
@@ -117,7 +115,7 @@ msequence msequence_create_genpoly(unsigned int _g)
 msequence msequence_create_default(unsigned int _m)
 {
     // validate input
-    if (_m > LIQUID_MAX_MSEQUENCE_M || _m < LIQUID_MIN_MSEQUENCE_M)
+    if (_m < LIQUID_MIN_MSEQUENCE_M || _m > 15)
         return liquid_error_config("msequence_create(), m not in range");
     
     // allocate memory for msequence object
