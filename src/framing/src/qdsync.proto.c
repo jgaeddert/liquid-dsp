@@ -164,12 +164,6 @@ int QDSYNC(_destroy)(QDSYNC() _q)
     return LIQUID_OK;
 }
 
-int QDSYNC(_print)(QDSYNC() _q)
-{
-    printf("<liquid.QDSYNC()>\n");
-    return LIQUID_OK;
-}
-
 int QDSYNC(_reset)(QDSYNC() _q)
 {
     QDETECTOR(_reset)(_q->detector);
@@ -177,6 +171,12 @@ int QDSYNC(_reset)(QDSYNC() _q)
     _q->symbol_counter = 0;
     _q->buf_out_counter = 0;
     firpfb_crcf_reset(_q->mf);
+    return LIQUID_OK;
+}
+
+int QDSYNC(_print)(QDSYNC() _q)
+{
+    printf("<liquid.qdsync()>\n");
     return LIQUID_OK;
 }
 
@@ -254,6 +254,7 @@ int QDSYNC(_set_buf_len)(QDSYNC() _q, unsigned int _buf_len)
     return LIQUID_OK;
 }
 
+// execute synchronizer on a block of samples
 int QDSYNC(_execute)(QDSYNC()     _q,
                      TI *         _buf,
                      unsigned int _buf_len)

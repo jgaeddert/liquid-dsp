@@ -6323,14 +6323,19 @@ QDSYNC() QDSYNC(_create_linear)(TI *              _s,                       \
 /* Copy object recursively including all internal objects and state     */  \
 QDSYNC() QDSYNC(_copy)(QDSYNC() _q);                                        \
                                                                             \
+/* Destroy synchronizer object and free all internal memory             */  \
 int QDSYNC(_destroy)(QDSYNC() _q);                                          \
-int QDSYNC(_reset)  (QDSYNC() _q);                                          \
-int QDSYNC(_print)  (QDSYNC() _q);                                          \
                                                                             \
-/* get detection threshold                                              */  \
+/* Reset synchronizer object's internal buffer                          */  \
+int QDSYNC(_reset)(QDSYNC() _q);                                            \
+                                                                            \
+/* Print synchronizer object information to stdout                      */  \
+int QDSYNC(_print)(QDSYNC() _q);                                            \
+                                                                            \
+/* Get detection threshold                                              */  \
 float QDSYNC(_get_threshold)(QDSYNC() _q);                                  \
                                                                             \
-/* set detection threshold                                              */  \
+/* Set detection threshold                                              */  \
 int QDSYNC(_set_threshold)(QDSYNC() _q,                                     \
                            float    _threshold);                            \
                                                                             \
@@ -6338,16 +6343,16 @@ int QDSYNC(_set_threshold)(QDSYNC() _q,                                     \
 int QDSYNC(_set_range)(QDSYNC() _q,                                         \
                        float    _dphi_max);                                 \
                                                                             \
-/* set callback method                                                  */  \
+/* Set callback method                                                  */  \
 int QDSYNC(_set_callback)(QDSYNC()          _q,                             \
                           QDSYNC(_callback) _callback);                     \
                                                                             \
-/* set context value                                                    */  \
+/* Set context value                                                    */  \
 int QDSYNC(_set_context)(QDSYNC() _q, void * _context);                     \
                                                                             \
 /* Set callback buffer size (the number of symbol provided to the       */  \
 /* callback whenever it is invoked).                                    */  \
-int QDSYNC(_set_buf_len )(QDSYNC() _q, unsigned int _buf_len);              \
+int QDSYNC(_set_buf_len)(QDSYNC() _q, unsigned int _buf_len);               \
                                                                             \
 /* execute block of samples                                             */  \
 int QDSYNC(_execute)(QDSYNC()     _q,                                       \
@@ -6357,10 +6362,19 @@ int QDSYNC(_execute)(QDSYNC()     _q,                                       \
 /* Return flag indicating if synchronizer actively running.             */  \
 int QDSYNC(_is_open)(QDSYNC() _q);                                          \
                                                                             \
+/* Get synchronizer correlator output after frame was detected          */  \
 float QDSYNC(_get_rxy)  (QDSYNC() _q);                                      \
+                                                                            \
+/* Get synchronizer fractional timing offset after frame was detected   */  \
 float QDSYNC(_get_tau)  (QDSYNC() _q);                                      \
+                                                                            \
+/* Get synchronizer channel gain after frame was detected               */  \
 float QDSYNC(_get_gamma)(QDSYNC() _q);                                      \
+                                                                            \
+/* Get synchronizer frequency offset estimate after frame was detected  */  \
 float QDSYNC(_get_dphi) (QDSYNC() _q);                                      \
+                                                                            \
+/* Get synchronizer phase offset estimate after frame was detected      */  \
 float QDSYNC(_get_phi)  (QDSYNC() _q);                                      \
 
 LIQUID_QDSYNC_DEFINE_API(LIQUID_QDSYNC_MANGLE_CCCF,
