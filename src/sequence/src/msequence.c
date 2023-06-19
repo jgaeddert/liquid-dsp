@@ -164,24 +164,8 @@ int msequence_destroy(msequence _ms)
 // prints the sequence's internal state to the screen
 int msequence_print(msequence _ms)
 {
-    printf("<liquid.msequence, m=%u, n=%u, g=0x%x, genpoly=0x%x\n", _ms->m, _ms->n, _ms->g, _ms->genpoly);
-#if 0
-    unsigned int i;
-
-    printf("msequence: m=%u (n=%u):\n", _m->m, _m->n);
-
-    // print shift register
-    printf("    shift register: ");
-    for (i=0; i<_m->m; i++)
-        printf("%c", ((_m->v) >> (_m->m-i-1)) & 0x01 ? '1' : '0');
-    printf("\n");
-
-    // print generator polynomial
-    printf("    generator poly: ");
-    for (i=0; i<_m->m; i++)
-        printf("%c", ((_m->g) >> (_m->m-i-1)) & 0x01 ? '1' : '0');
-    printf("\n");
-#endif
+    printf("<liquid.msequence, m=%u, n=%u, g=0x%x, state=0x%x>\n",
+        _ms->m, _ms->n, _ms->g, _ms->v);
     return LIQUID_OK;
 }
 
