@@ -120,6 +120,22 @@ void autotest_msequence_period_m12() { msequence_test_period(12); }
 void autotest_msequence_period_m13() { msequence_test_period(13); }
 void autotest_msequence_period_m14() { msequence_test_period(14); }
 void autotest_msequence_period_m15() { msequence_test_period(15); }
+void autotest_msequence_period_m16() { msequence_test_period(16); }
+void autotest_msequence_period_m17() { msequence_test_period(17); }
+void autotest_msequence_period_m18() { msequence_test_period(18); }
+void autotest_msequence_period_m19() { msequence_test_period(19); }
+void autotest_msequence_period_m20() { msequence_test_period(20); }
+void autotest_msequence_period_m21() { msequence_test_period(21); }
+void autotest_msequence_period_m22() { msequence_test_period(22); }
+void autotest_msequence_period_m23() { msequence_test_period(23); }
+void autotest_msequence_period_m24() { msequence_test_period(24); }
+void autotest_msequence_period_m25() { msequence_test_period(25); }
+void autotest_msequence_period_m26() { msequence_test_period(26); }
+void autotest_msequence_period_m27() { msequence_test_period(27); }
+void autotest_msequence_period_m28() { msequence_test_period(28); }
+void autotest_msequence_period_m29() { msequence_test_period(29); }
+void autotest_msequence_period_m30() { msequence_test_period(30); }
+void autotest_msequence_period_m31() { msequence_test_period(31); }
 
 void autotest_msequence_config()
 {
@@ -132,7 +148,7 @@ void autotest_msequence_config()
 #endif
     // check invalid configurations
     CONTEND_ISNULL(msequence_create        (100, 0, 0))
-    CONTEND_ISNULL(msequence_create_default( 16))
+    CONTEND_ISNULL(msequence_create_default( 32)) // too long
     CONTEND_ISNULL(msequence_create_genpoly(  0))
 
     // create proper object and test configurations

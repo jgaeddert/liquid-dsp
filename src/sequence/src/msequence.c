@@ -130,6 +130,22 @@ msequence msequence_create_default(unsigned int _m)
     case 13: g = LIQUID_MSEQUENCE_GENPOLY_M13; break;
     case 14: g = LIQUID_MSEQUENCE_GENPOLY_M14; break;
     case 15: g = LIQUID_MSEQUENCE_GENPOLY_M15; break;
+    case 16: g = LIQUID_MSEQUENCE_GENPOLY_M16; break;
+    case 17: g = LIQUID_MSEQUENCE_GENPOLY_M17; break;
+    case 18: g = LIQUID_MSEQUENCE_GENPOLY_M18; break;
+    case 19: g = LIQUID_MSEQUENCE_GENPOLY_M19; break;
+    case 20: g = LIQUID_MSEQUENCE_GENPOLY_M20; break;
+    case 21: g = LIQUID_MSEQUENCE_GENPOLY_M21; break;
+    case 22: g = LIQUID_MSEQUENCE_GENPOLY_M22; break;
+    case 23: g = LIQUID_MSEQUENCE_GENPOLY_M23; break;
+    case 24: g = LIQUID_MSEQUENCE_GENPOLY_M24; break;
+    case 25: g = LIQUID_MSEQUENCE_GENPOLY_M25; break;
+    case 26: g = LIQUID_MSEQUENCE_GENPOLY_M26; break;
+    case 27: g = LIQUID_MSEQUENCE_GENPOLY_M27; break;
+    case 28: g = LIQUID_MSEQUENCE_GENPOLY_M28; break;
+    case 29: g = LIQUID_MSEQUENCE_GENPOLY_M29; break;
+    case 30: g = LIQUID_MSEQUENCE_GENPOLY_M30; break;
+    case 31: g = LIQUID_MSEQUENCE_GENPOLY_M31; break;
     default:
         return liquid_error_config("msequence_create_default(), m (%u) not in range", _m);
     }
