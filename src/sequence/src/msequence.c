@@ -42,7 +42,6 @@ struct msequence_s {
     unsigned int genpoly;   // generator polynomial, bit-reversed from above
     unsigned int n;         // length of sequence, n = (2^m)-1
     unsigned int v;         // shift register
-    unsigned int b;         // return bit
 };
 
 // create a maximal-length sequence (m-sequence) object with
@@ -88,8 +87,6 @@ msequence msequence_create(unsigned int _m,
 
     ms->n = (1<<_m)-1;  // sequence length, (2^m)-1
     ms->v = ms->a;      // shift register
-    ms->b = 0;          // return bit
-
     return ms;
 }
 
@@ -174,13 +171,12 @@ unsigned int msequence_advance(msequence _ms)
 {
     // compute return bit as binary dot product between the
     // internal shift register and the generator polynomial
-    _ms->b = liquid_bdotprod( _ms->v, _ms->genpoly );
+    unsigned int b = liquid_bdotprod( _ms->v, _ms->genpoly );
 
     _ms->v <<= 1;       // shift internal register
-    _ms->v |= _ms->b;   // push bit onto register
+    _ms->v |= b;        // push bit onto register
     _ms->v &= _ms->n;   // apply mask to register
-
-    return _ms->b;      // return result
+    return b;           // return result
 }
 
 
