@@ -1614,7 +1614,7 @@ example_programs :=						\
 	examples/modem_soft_example				\
 	examples/modular_arithmetic_example			\
 	examples/msequence_generator_example			\
-	examples/msequence_example				\
+	examples/msequence_autocorr_example			\
 	examples/msourcecf_example				\
 	examples/msresamp_crcf_example				\
 	examples/msresamp_crcf_noise_example			\
