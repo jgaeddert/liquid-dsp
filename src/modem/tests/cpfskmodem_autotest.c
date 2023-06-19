@@ -118,3 +118,56 @@ void autotest_cpfskmodem_bps2_h0p0250_k4_m3_square()    { cpfskmodem_test_mod_de
 void autotest_cpfskmodem_bps3_h0p1250_k4_m3_square()    { cpfskmodem_test_mod_demod( 3, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
 void autotest_cpfskmodem_bps4_h0p0625_k4_m3_square()    { cpfskmodem_test_mod_demod( 4, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
 
+// test spectral response
+void autotest_cpfskmodem_spectrum()
+{
+    // create modulator
+    unsigned int bps    = 1;
+    float        h      = 0.5f;
+    unsigned int k      = 4;
+    unsigned int m      = 3;
+    float        beta   = 0.35f;
+    int          type   = LIQUID_CPFSK_RCOS_PARTIAL;
+    cpfskmod mod = cpfskmod_create(bps, h, k, m, beta, type);
+
+    // spectral periodogram options
+    unsigned int nfft        =   2400;  // spectral periodogram FFT size
+    unsigned int num_symbols = 192000;  // number of symbols to generate
+    float complex buf[k];
+    unsigned int i;
+
+    // modulate many, many symbols
+    for (i=0; i<(1U<<24U); i++)
+        cpfskmod_modulate(mod, 0, buf);
+
+    // modulate several symbols and run result through spectral estimate
+    spgramcf periodogram = spgramcf_create_default(nfft);
+    for (i=0; i<num_symbols; i++) {
+        cpfskmod_modulate(mod, rand() & ((1<<bps)-1), buf);
+        spgramcf_write(periodogram, buf, k);
+    }
+
+    // compute power spectral density output
+    float psd[nfft];
+    spgramcf_get_psd(periodogram, psd);
+
+    // destroy objects
+    cpfskmod_destroy(mod);
+    spgramcf_destroy(periodogram);
+
+    // verify spectrum
+    autotest_psd_s regions[] = {
+      {.fmin=-0.50, .fmax=-0.35, .pmin= 0.0, .pmax=-40.0, .test_lo=0, .test_hi=1},
+      {.fmin=-0.35, .fmax=-0.20, .pmin= 0.0, .pmax=-20.0, .test_lo=0, .test_hi=1},
+      {.fmin=-0.10, .fmax= 0.10, .pmin= 0.0, .pmax= 10.0, .test_lo=1, .test_hi=1},
+      {.fmin= 0.20, .fmax= 0.35, .pmin= 0.0, .pmax=-20.0, .test_lo=0, .test_hi=1},
+      {.fmin= 0.35, .fmax= 0.50, .pmin= 0.0, .pmax=-40.0, .test_lo=0, .test_hi=1},
+    };
+    char filename[256];
+    //sprintf(filename,"autotest/logs/cpfskmodem_psd_b%u_h%.3u_k%u_m%u_b%.3u_t%u_autotest.m",
+    //        bps, (int)(h*100), k, m, (int)(beta*100), type);
+    sprintf(filename,"autotest/logs/cpfskmodem_psd_autotest.m");
+    liquid_autotest_validate_spectrum(psd, nfft, regions, 5,
+        liquid_autotest_verbose ? filename : NULL);
+}
+

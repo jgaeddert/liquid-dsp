@@ -5217,96 +5217,106 @@ typedef int (*framesync_callback)(unsigned char *  _header,
 //  _userdata       :   user-defined data pointer
 typedef void (*framesync_csma_callback)(void * _userdata);
 
-//
-// packet encoder/decoder
-//
 
-typedef struct qpacketmodem_s * qpacketmodem;
+#define LIQUID_QPACKETMODEM_MANGLE_RRRF(name) LIQUID_CONCAT(qpacketmodem,name)
 
-// create packet encoder
-qpacketmodem qpacketmodem_create ();
-qpacketmodem qpacketmodem_copy   (qpacketmodem _q);
-int          qpacketmodem_destroy(qpacketmodem _q);
-int          qpacketmodem_reset  (qpacketmodem _q);
-int          qpacketmodem_print  (qpacketmodem _q);
+// Macro:
+//   QPACKETMODEM   : name-mangling macro
+//   T              : data type
+#define LIQUID_QPACKETMODEM_DEFINE_API(QPACKETMODEM,T)                      \
+                                                                            \
+/* Packet encoder/decoder                                               */  \
+typedef struct QPACKETMODEM(_s) * QPACKETMODEM();                           \
+                                                                            \
+/* Create packet encoder                                                */  \
+QPACKETMODEM() QPACKETMODEM(_create)();                                     \
+                                                                            \
+QPACKETMODEM() QPACKETMODEM(_copy)   (QPACKETMODEM() _q);                   \
+int            QPACKETMODEM(_destroy)(QPACKETMODEM() _q);                   \
+int            QPACKETMODEM(_reset)  (QPACKETMODEM() _q);                   \
+int            QPACKETMODEM(_print)  (QPACKETMODEM() _q);                   \
+                                                                            \
+int QPACKETMODEM(_configure)(QPACKETMODEM() _q,                             \
+                           unsigned int _payload_len,                       \
+                           crc_scheme   _check,                             \
+                           fec_scheme   _fec0,                              \
+                           fec_scheme   _fec1,                              \
+                           int          _ms);                               \
+                                                                            \
+/* get length of encoded frame in symbols                               */  \
+unsigned int QPACKETMODEM(_get_frame_len)(QPACKETMODEM() _q);               \
+                                                                            \
+/* get unencoded/decoded payload length (bytes)                         */  \
+unsigned int QPACKETMODEM(_get_payload_len)(QPACKETMODEM() _q);             \
+                                                                            \
+/* regular access methods                                               */  \
+unsigned int QPACKETMODEM(_get_crc      )(QPACKETMODEM() _q);               \
+unsigned int QPACKETMODEM(_get_fec0     )(QPACKETMODEM() _q);               \
+unsigned int QPACKETMODEM(_get_fec1     )(QPACKETMODEM() _q);               \
+unsigned int QPACKETMODEM(_get_modscheme)(QPACKETMODEM() _q);               \
+                                                                            \
+float QPACKETMODEM(_get_demodulator_phase_error)(QPACKETMODEM() _q);        \
+float QPACKETMODEM(_get_demodulator_evm)(QPACKETMODEM() _q);                \
+                                                                            \
+/* encode packet into un-modulated frame symbol indices                 */  \
+/*  _q          : qpacketmodem object                                   */  \
+/*  _payload    : unencoded payload bytes                               */  \
+/*  _syms       : encoded but un-modulated payload symbol indices       */  \
+int QPACKETMODEM(_encode_syms)(QPACKETMODEM()          _q,                  \
+                               const unsigned char * _payload,              \
+                               unsigned char *       _syms);                \
+                                                                            \
+/* decode packet from demodulated frame symbol indices (hard-decision   */  \
+/* decoding)                                                            */  \
+/*  _q       : qpacketmodem object                                      */  \
+/*  _syms    : received hard-decision symbol indices,                   */  \
+/*             [size: frame_len x 1]                                    */  \
+/*  _payload : recovered decoded payload bytes                          */  \
+int QPACKETMODEM(_decode_syms)(QPACKETMODEM()    _q,                        \
+                               unsigned char * _syms,                       \
+                               unsigned char * _payload);                   \
+                                                                            \
+/* decode packet from demodulated frame bits (soft-decision decoding)   */  \
+/*  _q       : qpacketmodem object                                      */  \
+/*  _bits    : received soft-decision bits, [size: bps*frame_len x 1]   */  \
+/*  _payload : recovered decoded payload bytes                          */  \
+int QPACKETMODEM(_decode_bits)(QPACKETMODEM()    _q,                        \
+                             unsigned char * _bits,                         \
+                             unsigned char * _payload);                     \
+                                                                            \
+/* encode and modulate packet into modulated frame samples              */  \
+/*  _q          :   qpacketmodem object                                 */  \
+/*  _payload    :   unencoded payload bytes                             */  \
+/*  _frame      :   encoded/modulated payload symbols                   */  \
+int QPACKETMODEM(_encode)(QPACKETMODEM()           _q,                      \
+                        const unsigned char *  _payload,                    \
+                        liquid_float_complex * _frame);                     \
+                                                                            \
+/* decode packet from modulated frame samples, returning flag if CRC    */  \
+/* passed using hard-decision decoding                                  */  \
+/*  _q          :   qpacketmodem object                                 */  \
+/*  _frame      :   encoded/modulated payload symbols                   */  \
+/*  _payload    :   recovered decoded payload bytes                     */  \
+int QPACKETMODEM(_decode)(QPACKETMODEM()           _q,                      \
+                        liquid_float_complex * _frame,                      \
+                        unsigned char *        _payload);                   \
+                                                                            \
+/* decode packet from modulated frame samples, returning flag if CRC    */  \
+/* passed using soft-decision decoding                                  */  \
+/*  _q          :   qpacketmodem object                                 */  \
+/*  _frame      :   encoded/modulated payload symbols                   */  \
+/*  _payload    :   recovered decoded payload bytes                     */  \
+int QPACKETMODEM(_decode_soft)(QPACKETMODEM()           _q,                 \
+                             liquid_float_complex * _frame,                 \
+                             unsigned char *        _payload);              \
+                                                                            \
+int QPACKETMODEM(_decode_soft_sym)(QPACKETMODEM()  _q,                      \
+                                 liquid_float_complex _symbol);             \
+                                                                            \
+int QPACKETMODEM(_decode_soft_payload)(QPACKETMODEM()    _q,                \
+                                     unsigned char * _payload);             \
 
-int qpacketmodem_configure(qpacketmodem _q,
-                           unsigned int _payload_len,
-                           crc_scheme   _check,
-                           fec_scheme   _fec0,
-                           fec_scheme   _fec1,
-                           int          _ms);
-
-// get length of encoded frame in symbols
-unsigned int qpacketmodem_get_frame_len(qpacketmodem _q);
-
-// get unencoded/decoded payload length (bytes)
-unsigned int qpacketmodem_get_payload_len(qpacketmodem _q);
-
-// regular access methods
-unsigned int qpacketmodem_get_crc      (qpacketmodem _q);
-unsigned int qpacketmodem_get_fec0     (qpacketmodem _q);
-unsigned int qpacketmodem_get_fec1     (qpacketmodem _q);
-unsigned int qpacketmodem_get_modscheme(qpacketmodem _q);
-
-float qpacketmodem_get_demodulator_phase_error(qpacketmodem _q);
-float qpacketmodem_get_demodulator_evm(qpacketmodem _q);
-
-// encode packet into un-modulated frame symbol indices
-//  _q          :   qpacketmodem object
-//  _payload    :   unencoded payload bytes
-//  _syms       :   encoded but un-modulated payload symbol indices
-int qpacketmodem_encode_syms(qpacketmodem          _q,
-                             const unsigned char * _payload,
-                             unsigned char *       _syms);
-
-// decode packet from demodulated frame symbol indices (hard-decision decoding)
-//  _q          :   qpacketmodem object
-//  _syms       :   received hard-decision symbol indices, [size: frame_len x 1]
-//  _payload    :   recovered decoded payload bytes
-int qpacketmodem_decode_syms(qpacketmodem    _q,
-                             unsigned char * _syms,
-                             unsigned char * _payload);
-
-// decode packet from demodulated frame bits (soft-decision decoding)
-//  _q          :   qpacketmodem object
-//  _bits       :   received soft-decision bits, [size: bps*frame_len x 1]
-//  _payload    :   recovered decoded payload bytes
-int qpacketmodem_decode_bits(qpacketmodem    _q,
-                             unsigned char * _bits,
-                             unsigned char * _payload);
-
-// encode and modulate packet into modulated frame samples
-//  _q          :   qpacketmodem object
-//  _payload    :   unencoded payload bytes
-//  _frame      :   encoded/modulated payload symbols
-int qpacketmodem_encode(qpacketmodem           _q,
-                        const unsigned char *  _payload,
-                        liquid_float_complex * _frame);
-
-// decode packet from modulated frame samples, returning flag if CRC passed
-// NOTE: hard-decision decoding
-//  _q          :   qpacketmodem object
-//  _frame      :   encoded/modulated payload symbols
-//  _payload    :   recovered decoded payload bytes
-int qpacketmodem_decode(qpacketmodem           _q,
-                        liquid_float_complex * _frame,
-                        unsigned char *        _payload);
-
-// decode packet from modulated frame samples, returning flag if CRC passed
-// NOTE: soft-decision decoding
-//  _q          :   qpacketmodem object
-//  _frame      :   encoded/modulated payload symbols
-//  _payload    :   recovered decoded payload bytes
-int qpacketmodem_decode_soft(qpacketmodem           _q,
-                             liquid_float_complex * _frame,
-                             unsigned char *        _payload);
-
-int qpacketmodem_decode_soft_sym(qpacketmodem  _q,
-                                 liquid_float_complex _symbol);
-
-int qpacketmodem_decode_soft_payload(qpacketmodem    _q,
-                                     unsigned char * _payload);
+LIQUID_QPACKETMODEM_DEFINE_API(LIQUID_QPACKETMODEM_MANGLE_RRRF, float)
 
 //
 // pilot generator/synchronizer for packet burst recovery
@@ -6259,6 +6269,74 @@ float        qdetector_cccf_get_tau     (qdetector_cccf _q); // fractional timin
 float        qdetector_cccf_get_gamma   (qdetector_cccf _q); // channel gain
 float        qdetector_cccf_get_dphi    (qdetector_cccf _q); // carrier frequency offset estimate
 float        qdetector_cccf_get_phi     (qdetector_cccf _q); // carrier phase offset estimate
+
+// Frame detector and synchronizer; uses a novel correlation method to
+// detect a synchronization pattern, estimate carrier frequency and
+// phase offsets as well as timing phase, then correct for these
+// impairments in a simple interface suitable for custom frame recovery.
+typedef struct qdsync_cccf_s * qdsync_cccf;
+
+// synchronization callback, return 0:continue, 1:reset
+typedef int (*qdsync_callback)(liquid_float_complex * _buf,
+                               unsigned int           _buf_len,
+                               void *                 _context);
+// metadata struct:
+//  - sample count since object was created
+//  - sample count since beginning of frame
+
+// create detector with generic sequence
+//  _s      :   sample sequence
+//  _s_len  :   length of sample sequence
+qdsync_cccf qdsync_cccf_create_linear(liquid_float_complex * _s,
+                                      unsigned int           _s_len,
+                                      int                    _ftype,
+                                      unsigned int           _k,
+                                      unsigned int           _m,
+                                      float                  _beta,
+                                      qdsync_callback        _callback,
+                                      void *                 _context);
+
+// Copy object recursively including all internal objects and state
+qdsync_cccf qdsync_cccf_copy(qdsync_cccf _q);
+
+int qdsync_cccf_destroy(qdsync_cccf _q);
+int qdsync_cccf_reset  (qdsync_cccf _q);
+int qdsync_cccf_print  (qdsync_cccf _q);
+
+// get detection threshold
+float qdsync_cccf_get_threshold(qdsync_cccf _q);
+
+// set detection threshold
+int qdsync_cccf_set_threshold(qdsync_cccf _q, float _threshold);
+
+// set carrier offset search range
+int qdsync_cccf_set_range(qdsync_cccf _q,
+                          float       _dphi_max);
+
+// set callback method
+int qdsync_cccf_set_callback(qdsync_cccf _q, qdsync_callback _callback);
+
+// set context value
+int qdsync_cccf_set_context (qdsync_cccf _q, void * _context);
+
+// Set callback buffer size (the number of symbol provided to the callback
+// whenever it is invoked).
+int qdsync_cccf_set_buf_len (qdsync_cccf _q, unsigned int _buf_len);
+
+// execute block of samples
+int qdsync_cccf_execute(qdsync_cccf            _q,
+                        liquid_float_complex * _buf,
+                        unsigned int           _buf_len);
+
+// is synchronizer actively running?
+int qdsync_cccf_is_open(qdsync_cccf _q);
+
+// get detection metrics and offsets
+float qdsync_cccf_get_rxy  (qdsync_cccf _q); // correlator output
+float qdsync_cccf_get_tau  (qdsync_cccf _q); // fractional timing offset estimate
+float qdsync_cccf_get_gamma(qdsync_cccf _q); // channel gain
+float qdsync_cccf_get_dphi (qdsync_cccf _q); // carrier frequency offset estimate
+float qdsync_cccf_get_phi  (qdsync_cccf _q); // carrier phase offset estimate
 
 //
 // qdsync
@@ -9519,23 +9597,37 @@ int bsequence_create_ccodes(bsequence _a, bsequence _b);
 
 // M-Sequence
 
-#define LIQUID_MAX_MSEQUENCE_LENGTH   32767
-
-// default m-sequence generators:       g (hex)     m       n   g (oct)       g (binary)
-#define LIQUID_MSEQUENCE_GENPOLY_M2     0x0007  //  2       3        7               111
-#define LIQUID_MSEQUENCE_GENPOLY_M3     0x000B  //  3       7       13              1011
-#define LIQUID_MSEQUENCE_GENPOLY_M4     0x0013  //  4      15       23             10011
-#define LIQUID_MSEQUENCE_GENPOLY_M5     0x0025  //  5      31       45            100101
-#define LIQUID_MSEQUENCE_GENPOLY_M6     0x0043  //  6      63      103           1000011
-#define LIQUID_MSEQUENCE_GENPOLY_M7     0x0089  //  7     127      211          10001001
-#define LIQUID_MSEQUENCE_GENPOLY_M8     0x011D  //  8     255      435         100101101
-#define LIQUID_MSEQUENCE_GENPOLY_M9     0x0211  //  9     511     1021        1000010001
-#define LIQUID_MSEQUENCE_GENPOLY_M10    0x0409  // 10    1023     2011       10000001001
-#define LIQUID_MSEQUENCE_GENPOLY_M11    0x0805  // 11    2047     4005      100000000101
-#define LIQUID_MSEQUENCE_GENPOLY_M12    0x1053  // 12    4095    10123     1000001010011
-#define LIQUID_MSEQUENCE_GENPOLY_M13    0x201b  // 13    8191    20033    10000000011011
-#define LIQUID_MSEQUENCE_GENPOLY_M14    0x402b  // 14   16383    40053   100000000101011
-#define LIQUID_MSEQUENCE_GENPOLY_M15    0x8003  // 15   32767   100003  1000000000000011
+// default m-sequence generators:       g (hex)         m   n
+#define LIQUID_MSEQUENCE_GENPOLY_M2     0x00000003  //  2   3
+#define LIQUID_MSEQUENCE_GENPOLY_M3     0x00000006  //  3   7
+#define LIQUID_MSEQUENCE_GENPOLY_M4     0x0000000c  //  4   15
+#define LIQUID_MSEQUENCE_GENPOLY_M5     0x00000014  //  5   31
+#define LIQUID_MSEQUENCE_GENPOLY_M6     0x00000030  //  6   63
+#define LIQUID_MSEQUENCE_GENPOLY_M7     0x00000060  //  7   127
+#define LIQUID_MSEQUENCE_GENPOLY_M8     0x000000b8  //  8   255
+#define LIQUID_MSEQUENCE_GENPOLY_M9     0x00000110  //  9   511
+#define LIQUID_MSEQUENCE_GENPOLY_M10    0x00000240  // 10   1,023
+#define LIQUID_MSEQUENCE_GENPOLY_M11    0x00000500  // 11   2,047
+#define LIQUID_MSEQUENCE_GENPOLY_M12    0x00000e08  // 12   4,095
+#define LIQUID_MSEQUENCE_GENPOLY_M13    0x00001c80  // 13   8,191
+#define LIQUID_MSEQUENCE_GENPOLY_M14    0x00003802  // 14   16,383
+#define LIQUID_MSEQUENCE_GENPOLY_M15    0x00006000  // 15   32,767
+#define LIQUID_MSEQUENCE_GENPOLY_M16    0x0000d008  // 16   65,535
+#define LIQUID_MSEQUENCE_GENPOLY_M17    0x00012000  // 17   131,071
+#define LIQUID_MSEQUENCE_GENPOLY_M18    0x00020400  // 18   262,143
+#define LIQUID_MSEQUENCE_GENPOLY_M19    0x00072000  // 19   524,287
+#define LIQUID_MSEQUENCE_GENPOLY_M20    0x00090000  // 20   1,048,575
+#define LIQUID_MSEQUENCE_GENPOLY_M21    0x00140000  // 21   2,097,151
+#define LIQUID_MSEQUENCE_GENPOLY_M22    0x00300000  // 22   4,194,303
+#define LIQUID_MSEQUENCE_GENPOLY_M23    0x00420000  // 23   8,388,607
+#define LIQUID_MSEQUENCE_GENPOLY_M24    0x00e10000  // 24   16,777,215
+#define LIQUID_MSEQUENCE_GENPOLY_M25    0x01000004  // 25   33,554,431
+#define LIQUID_MSEQUENCE_GENPOLY_M26    0x02000023  // 26   67,108,863
+#define LIQUID_MSEQUENCE_GENPOLY_M27    0x04000013  // 27   134,217,727
+#define LIQUID_MSEQUENCE_GENPOLY_M28    0x08000004  // 28   268,435,455
+#define LIQUID_MSEQUENCE_GENPOLY_M29    0x10000002  // 29   536,870,911
+#define LIQUID_MSEQUENCE_GENPOLY_M30    0x20000029  // 30   1,073,741,823
+#define LIQUID_MSEQUENCE_GENPOLY_M31    0x40000004  // 31   2,147,483,647
 
 typedef struct msequence_s * msequence;
 
@@ -9567,7 +9659,7 @@ unsigned int msequence_advance(msequence _ms);
 // advancing _bps bits and returning compacted symbol
 //  _ms     :   m-sequence object
 //  _bps    :   bits per symbol of output
-unsigned int msequence_generate_symbol(msequence _ms,
+unsigned int msequence_generate_symbol(msequence    _ms,
                                        unsigned int _bps);
 
 // reset msequence shift register to original state, typically '1'
@@ -9579,8 +9671,14 @@ int msequence_reset(msequence _ms);
 int bsequence_init_msequence(bsequence _bs,
                              msequence _ms);
 
-// get the length of the sequence
+// get the length of the generator polynomial, g (m)
+unsigned int msequence_get_genpoly_length(msequence _ms);
+
+// get the length of the sequence (n=2^m-1)
 unsigned int msequence_get_length(msequence _ms);
+
+// get the generator polynomial, g
+unsigned int msequence_get_genpoly(msequence _ms);
 
 // get the internal state of the sequence
 unsigned int msequence_get_state(msequence _ms);
@@ -9588,6 +9686,12 @@ unsigned int msequence_get_state(msequence _ms);
 // set the internal state of the sequence
 int msequence_set_state(msequence    _ms,
                         unsigned int _a);
+
+// measure the period the shift register (should be 2^m-1 with a proper generator polynomial)
+unsigned int msequence_measure_period(msequence _ms);
+
+// measure the period of a generator polynomial
+unsigned int msequence_genpoly_period(unsigned int _g);
 
 
 //

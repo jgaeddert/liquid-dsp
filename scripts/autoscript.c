@@ -339,6 +339,7 @@ void autoscript_parsefile(autoscript _q,
                 package_added = 1;
             }
             autoscript_addscript(_q, _package_name, basename);
+            printf("// adding %s to package %s from %s:%u\n", basename, _package_name, _filename, n);
         }
     } while (!feof(fid));
 
