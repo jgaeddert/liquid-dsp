@@ -41,7 +41,7 @@ struct msequence_s {
     // derived values
     unsigned int genpoly;   // generator polynomial, bit-reversed from above
     unsigned int n;         // length of sequence, n = (2^m)-1
-    unsigned int v;         // shift register
+    unsigned int state;     // shift register
 };
 
 // create a maximal-length sequence (m-sequence) object with
@@ -86,7 +86,7 @@ msequence msequence_create(unsigned int _m,
     }
 
     ms->n = (1<<_m)-1;  // sequence length, (2^m)-1
-    ms->v = ms->a;      // shift register
+    ms->state = ms->a;  // shift register state
     return ms;
 }
 
@@ -162,7 +162,7 @@ int msequence_destroy(msequence _ms)
 int msequence_print(msequence _ms)
 {
     printf("<liquid.msequence, m=%u, n=%u, g=0x%x, state=0x%x>\n",
-        _ms->m, _ms->n, _ms->g, _ms->v);
+        _ms->m, _ms->n, _ms->g, _ms->state);
     return LIQUID_OK;
 }
 
@@ -171,12 +171,12 @@ unsigned int msequence_advance(msequence _ms)
 {
     // compute return bit as binary dot product between the
     // internal shift register and the generator polynomial
-    unsigned int b = liquid_bdotprod( _ms->v, _ms->genpoly );
+    unsigned int b = liquid_bdotprod( _ms->state, _ms->genpoly );
 
-    _ms->v <<= 1;       // shift internal register
-    _ms->v |= b;        // push bit onto register
-    _ms->v &= _ms->n;   // apply mask to register
-    return b;           // return result
+    _ms->state <<= 1;       // shift internal register
+    _ms->state |= b;        // push bit onto register
+    _ms->state &= _ms->n;   // apply mask to register
+    return b;               // return result
 }
 
 
@@ -198,7 +198,7 @@ unsigned int msequence_generate_symbol(msequence    _ms,
 // reset msequence shift register to original state, typically '1'
 int msequence_reset(msequence _ms)
 {
-    _ms->v = _ms->a;
+    _ms->state = _ms->a;
     return LIQUID_OK;
 }
 
@@ -238,7 +238,7 @@ unsigned int msequence_get_genpoly(msequence _ms)
 // get the internal state of the sequence
 unsigned int msequence_get_state(msequence _ms)
 {
-    return _ms->v;
+    return _ms->state;
 }
 
 // set the internal state of the sequence
@@ -248,7 +248,7 @@ int msequence_set_state(msequence    _ms,
     // set internal state
     // NOTE: if state is set to zero, this will lock the sequence generator,
     //       but let the user set this value if they wish
-    _ms->v = _a;
+    _ms->state = _a;
     return LIQUID_OK;
 }
 
