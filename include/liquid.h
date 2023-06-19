@@ -9561,7 +9561,7 @@ unsigned int msequence_advance(msequence _ms);
 // advancing _bps bits and returning compacted symbol
 //  _ms     :   m-sequence object
 //  _bps    :   bits per symbol of output
-unsigned int msequence_generate_symbol(msequence _ms,
+unsigned int msequence_generate_symbol(msequence    _ms,
                                        unsigned int _bps);
 
 // reset msequence shift register to original state, typically '1'
@@ -9573,8 +9573,14 @@ int msequence_reset(msequence _ms);
 int bsequence_init_msequence(bsequence _bs,
                              msequence _ms);
 
-// get the length of the sequence
+// get the length of the generator polynomial, g (m)
+unsigned int msequence_get_genpoly_length(msequence _ms);
+
+// get the length of the sequence (n=2^m-1)
 unsigned int msequence_get_length(msequence _ms);
+
+// get the generator polynomial, g
+unsigned int msequence_get_genpoly(msequence _ms);
 
 // get the internal state of the sequence
 unsigned int msequence_get_state(msequence _ms);

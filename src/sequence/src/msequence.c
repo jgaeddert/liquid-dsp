@@ -208,10 +208,22 @@ int bsequence_init_msequence(bsequence _bs,
     return LIQUID_OK;
 }
 
+// get the length of the generator polynomial, g (m)
+unsigned int msequence_get_genpoly_length(msequence _ms)
+{
+    return _ms->m;
+}
+
 // get the length of the sequence
 unsigned int msequence_get_length(msequence _ms)
 {
     return _ms->n;
+}
+
+// get the generator polynomial, g
+unsigned int msequence_get_genpoly(msequence _ms)
+{
+    return _ms->g;
 }
 
 // get the internal state of the sequence
