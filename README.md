@@ -233,11 +233,36 @@ lib_deps = https://github.com/jgaeddert/liquid-dsp.git
 ### License ###
 
 liquid projects are released under the X11/MIT license.
+By default, this project will try to link to [FFTW](http://www.fftw.org) if it
+is available on your build platform.
+Because FFTW starting with version 1.3 is
+[licensed](http://www.fftw.org/faq/section1.html)
+under the [GNU General Public License v2](http://www.fftw.org/doc/License-and-Copyright.html)
+this unfortunately means that (and I'm clearly not a lawyer, here)
+you cannot distribute `liquid-dsp` without also distributing the source code
+if you link to FFTW.
+This is a similar situation with the classic
+[libfec](https://github.com/quiet/libfec)
+which uses the
+[GNU Lesser GPL](https://www.gnu.org/licenses/licenses.html#LGPL).
+Finally, `liquid-dsp` makes extensive use of GNU
+[autoconf](https://www.gnu.org/software/autoconf/),
+[automake](https://www.gnu.org/software/automake/),
+and related tools.
+These are fantastic libraires with amazing functionality and their authors
+should be lauded for their efforts.
+In a similar vain, much the software I write for a living I give away for
+free;
+however I believe in more permissive licenses to allow individuals the
+flexibility to use software with more flexibility.
+If these restrictions are not acceptible, `liquid-dsp` can be compiled and run
+without use of these external libraries, albeit a bit slower and with limited
+functionality.
+
 Short version: this code is copyrighted to me (Joseph D. Gaeddert),
 I give you full permission to do whatever you want with it except remove my
 name from the credits.
-Seriously, go nuts.
-See the LICENSE file or
-[https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
-for specific terms.
+Seriously, go nuts! but take caution when linking to other libraries with
+different licenses.
+See the [license](https://opensource.org/licenses/MIT) for specific terms.
 
