@@ -34,14 +34,13 @@
 
 // maximal-length sequence
 struct msequence_s {
-    unsigned int m;         // length generator polynomial, shift register
-    unsigned int g;         // generator polynomial, form: { x^m + ... + 1 }
-    unsigned int a;         // initial shift register state, default: 1
+    unsigned int m;     // length generator polynomial, shift register
+    unsigned int g;     // generator polynomial, form: { x^m + ... + 1 }
+    unsigned int a;     // initial shift register state, default: 1
 
     // derived values
-    unsigned int genpoly;   // generator polynomial, bit-reversed from above
-    unsigned int n;         // length of sequence, n = (2^m)-1
-    unsigned int state;     // shift register
+    unsigned int n;     // length of sequence, n = (2^m)-1
+    unsigned int state; // shift register
 };
 
 // create a maximal-length sequence (m-sequence) object with
@@ -65,25 +64,7 @@ msequence msequence_create(unsigned int _m,
     // set internal values
     ms->m = _m;         // generator polynomial length
     ms->g = _g;         // generator polynomial
-    //ms->g = _g >> 1;    // generator polynomial (clip off most significant bit)
-
-    // initialize state register, reversing order
-    // 0001 -> 1000
-    unsigned int i;
-    ms->a = 0;
-    for (i=0; i<ms->m; i++) {
-        ms->a <<= 1;
-        ms->a |= (_a & 0x01);
-        _a >>= 1;
-    }
-
-    // initialize reverse-order generator polynomial, ignoring implied most-significant bit
-    ms->genpoly = 1;
-    for (i=0; i<ms->m-1; i++) {
-        ms->genpoly <<= 1;
-        ms->genpoly |= (_g & 0x01);
-        _g >>= 1;
-    }
+    ms->a = _a;         // generator polynomial
 
     ms->n = (1<<_m)-1;  // sequence length, (2^m)-1
     ms->state = ms->a;  // shift register state
@@ -171,7 +152,7 @@ unsigned int msequence_advance(msequence _ms)
 {
     // compute return bit as binary dot product between the
     // internal shift register and the generator polynomial
-    unsigned int b = liquid_bdotprod( _ms->state, _ms->genpoly );
+    unsigned int b = liquid_bdotprod( _ms->state, _ms->g);
 
     _ms->state <<= 1;       // shift internal register
     _ms->state |= b;        // push bit onto register
