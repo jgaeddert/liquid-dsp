@@ -98,19 +98,10 @@ void msequence_test_period(unsigned int _m)
     // create and initialize m-sequence
     msequence q = msequence_create_default(_m);
 
+    // measure period and compare to expected
     unsigned int n = (1U << _m) - 1;
-    unsigned int s = msequence_get_state(q);
-
-    // cycle through sequence and look for initial state
-    unsigned int i;
-    unsigned int period = 0;
-    for (i=0; i<n+1; i++) {
-        msequence_advance(q);
-        period++;
-        if (msequence_get_state(q)==s)
-            break;
-    }
-    CONTEND_EQUALITY(period,n)
+    unsigned int p = msequence_measure_period(q);
+    CONTEND_EQUALITY(p,n)
 
     // clean up objects
     msequence_destroy(q);

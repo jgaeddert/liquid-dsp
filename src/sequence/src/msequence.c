@@ -240,3 +240,36 @@ int msequence_set_state(msequence    _ms,
     return LIQUID_OK;
 }
 
+// measure the period the shift register (should be 2^m-1 with a proper generator polynomial)
+unsigned int msequence_measure_period(msequence _ms)
+{
+    // get current state
+    unsigned int s = msequence_get_state(_ms);
+
+    // cycle through sequence and look for initial state
+    unsigned int i;
+    unsigned int period = 0;
+    for (i=0; i<_ms->n+1; i++) {
+        msequence_advance(_ms);
+        period++;
+        if (msequence_get_state(_ms)==s)
+            break;
+    }
+
+    // assert that state has been returned
+    return period;
+}
+
+// measure the period of a generator polynomial
+unsigned int msequence_genpoly_period(unsigned int _g)
+{
+    msequence q = msequence_create_genpoly(_g);
+    if (q == NULL) {
+        liquid_error(LIQUID_EICONFIG,"msequence_genpoly_period(), invalid generator polynomial 0x%x\n", _g);
+        return 0;
+    }
+    unsigned int period = msequence_measure_period(q);
+    msequence_destroy(q);
+    return period;
+}
+

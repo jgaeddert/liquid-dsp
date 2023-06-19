@@ -9589,6 +9589,12 @@ unsigned int msequence_get_state(msequence _ms);
 int msequence_set_state(msequence    _ms,
                         unsigned int _a);
 
+// measure the period the shift register (should be 2^m-1 with a proper generator polynomial)
+unsigned int msequence_measure_period(msequence _ms);
+
+// measure the period of a generator polynomial
+unsigned int msequence_genpoly_period(unsigned int _g);
+
 
 //
 // MODULE : utility
