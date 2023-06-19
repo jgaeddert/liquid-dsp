@@ -32,6 +32,17 @@
 #define LIQUID_MIN_MSEQUENCE_M  2
 #define LIQUID_MAX_MSEQUENCE_M  31
 
+// maximal-length sequence
+struct msequence_s {
+    unsigned int m;     // length generator polynomial, shift register
+    unsigned int g;     // generator polynomial
+    unsigned int a;     // initial shift register state, default: 1
+
+    unsigned int n;     // length of sequence, n = (2^m)-1
+    unsigned int v;     // shift register
+    unsigned int b;     // return bit
+};
+
 // msequence structure
 //  Note that 'g' is stored as the default polynomial shifted to the
 //  right by one bit; this bit is implied and not actually used in
