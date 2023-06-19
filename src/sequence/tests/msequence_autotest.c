@@ -98,7 +98,7 @@ void msequence_test_period(unsigned int _m)
     // create and initialize m-sequence
     msequence q = msequence_create_default(_m);
 
-    unsigned int n = msequence_get_length(q);
+    unsigned int n = (1U << _m) - 1;
     unsigned int s = msequence_get_state(q);
 
     // cycle through sequence and look for initial state
@@ -126,6 +126,9 @@ void autotest_msequence_period_m9()  { msequence_test_period(9);  }
 void autotest_msequence_period_m10() { msequence_test_period(10); }
 void autotest_msequence_period_m11() { msequence_test_period(11); }
 void autotest_msequence_period_m12() { msequence_test_period(12); }
+void autotest_msequence_period_m13() { msequence_test_period(13); }
+void autotest_msequence_period_m14() { msequence_test_period(14); }
+void autotest_msequence_period_m15() { msequence_test_period(15); }
 
 void autotest_msequence_config()
 {

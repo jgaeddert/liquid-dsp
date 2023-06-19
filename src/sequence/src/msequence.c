@@ -43,30 +43,6 @@ struct msequence_s {
     unsigned int b;     // return bit
 };
 
-// msequence structure
-//  Note that 'g' is stored as the default polynomial shifted to the
-//  right by one bit; this bit is implied and not actually used in
-//  the shift register's feedback bit computation.
-struct msequence_s msequence_default[16] = {
-//   m,     g,      a,      n,          v,      b
-    {0,     0,      1,      0,          1,      0}, // dummy placeholder
-    {0,     0,      1,      0,          1,      0}, // dummy placeholder
-    {2,     0x0003, 0x0002, (1<< 2U)-1, 0x0002, 0},
-    {3,     0x0005, 0x0004, (1<< 3U)-1, 0x0004, 0},
-    {4,     0x0009, 0x0008, (1<< 4U)-1, 0x0008, 0},
-    {5,     0x0012, 0x0010, (1<< 5U)-1, 0x0010, 0},
-    {6,     0x0021, 0x0020, (1<< 6U)-1, 0x0020, 0},
-    {7,     0x0044, 0x0040, (1<< 7U)-1, 0x0040, 0},
-    {8,     0x008E, 0x0080, (1<< 8U)-1, 0x0080, 0},
-    {9,     0x0108, 0x0100, (1<< 9U)-1, 0x0100, 0},
-    {10,    0x0204, 0x0200, (1<<10U)-1, 0x0200, 0},
-    {11,    0x0402, 0x0400, (1<<11U)-1, 0x0400, 0},
-    {12,    0x0829, 0x0800, (1<<12U)-1, 0x0800, 0},
-    {13,    0x100d, 0x1000, (1<<13U)-1, 0x1000, 0},
-    {14,    0x2015, 0x2000, (1<<14U)-1, 0x2000, 0},
-    {15,    0x4001, 0x4000, (1<<15U)-1, 0x4000, 0}
-};
-
 // create a maximal-length sequence (m-sequence) object with
 // an internal shift register length of _m bits.
 //  _m      :   generator polynomial length, sequence length is (2^m)-1
@@ -125,18 +101,28 @@ msequence msequence_create_genpoly(unsigned int _g)
 // creates a default maximal-length sequence
 msequence msequence_create_default(unsigned int _m)
 {
-    // validate input
-    if (_m < LIQUID_MIN_MSEQUENCE_M || _m > 15)
-        return liquid_error_config("msequence_create(), m not in range");
-    
-    // allocate memory for msequence object
-    msequence ms = (msequence) malloc(sizeof(struct msequence_s));
-
-    // copy default sequence
-    memmove(ms, &msequence_default[_m], sizeof(struct msequence_s));
+    unsigned int g = 0;
+    switch (_m) {
+    case  2: g = LIQUID_MSEQUENCE_GENPOLY_M2;  break;
+    case  3: g = LIQUID_MSEQUENCE_GENPOLY_M3;  break;
+    case  4: g = LIQUID_MSEQUENCE_GENPOLY_M4;  break;
+    case  5: g = LIQUID_MSEQUENCE_GENPOLY_M5;  break;
+    case  6: g = LIQUID_MSEQUENCE_GENPOLY_M6;  break;
+    case  7: g = LIQUID_MSEQUENCE_GENPOLY_M7;  break;
+    case  8: g = LIQUID_MSEQUENCE_GENPOLY_M8;  break;
+    case  9: g = LIQUID_MSEQUENCE_GENPOLY_M9;  break;
+    case 10: g = LIQUID_MSEQUENCE_GENPOLY_M10; break;
+    case 11: g = LIQUID_MSEQUENCE_GENPOLY_M11; break;
+    case 12: g = LIQUID_MSEQUENCE_GENPOLY_M12; break;
+    case 13: g = LIQUID_MSEQUENCE_GENPOLY_M13; break;
+    case 14: g = LIQUID_MSEQUENCE_GENPOLY_M14; break;
+    case 15: g = LIQUID_MSEQUENCE_GENPOLY_M15; break;
+    default:
+        return liquid_error_config("msequence_create_default(), m (%u) not in range", _m);
+    }
 
     // return
-    return ms;
+    return msequence_create_genpoly(g);
 }
 
 // destroy an msequence object, freeing all internal memory
