@@ -34,13 +34,15 @@
 
 // maximal-length sequence
 struct msequence_s {
-    unsigned int m;     // length generator polynomial, shift register
-    unsigned int g;     // generator polynomial
-    unsigned int a;     // initial shift register state, default: 1
+    unsigned int m;         // length generator polynomial, shift register
+    unsigned int g;         // generator polynomial, form: { x^m + ... + 1 }
+    unsigned int a;         // initial shift register state, default: 1
 
-    unsigned int n;     // length of sequence, n = (2^m)-1
-    unsigned int v;     // shift register
-    unsigned int b;     // return bit
+    // derived values
+    unsigned int genpoly;   // generator polynomial, bit-reversed from above
+    unsigned int n;         // length of sequence, n = (2^m)-1
+    unsigned int v;         // shift register
+    unsigned int b;         // return bit
 };
 
 // create a maximal-length sequence (m-sequence) object with
@@ -54,14 +56,17 @@ msequence msequence_create(unsigned int _m,
 {
     // validate input
     if (_m > LIQUID_MAX_MSEQUENCE_M || _m < LIQUID_MIN_MSEQUENCE_M)
-        return liquid_error_config("msequence_create(), m not in range");
+        return liquid_error_config("msequence_create(), m (%u) not in range", _m);
+    //if (_a == 0)
+    //    return liquid_error_config("msequence_create(), state 'a' cannot be 0");
     
     // allocate memory for msequence object
     msequence ms = (msequence) malloc(sizeof(struct msequence_s));
 
     // set internal values
     ms->m = _m;         // generator polynomial length
-    ms->g = _g >> 1;    // generator polynomial (clip off most significant bit)
+    ms->g = _g;         // generator polynomial
+    //ms->g = _g >> 1;    // generator polynomial (clip off most significant bit)
 
     // initialize state register, reversing order
     // 0001 -> 1000
@@ -71,6 +76,14 @@ msequence msequence_create(unsigned int _m,
         ms->a <<= 1;
         ms->a |= (_a & 0x01);
         _a >>= 1;
+    }
+
+    // initialize reverse-order generator polynomial, ignoring implied most-significant bit
+    ms->genpoly = 1;
+    for (i=0; i<ms->m-1; i++) {
+        ms->genpoly <<= 1;
+        ms->genpoly |= (_g & 0x01);
+        _g >>= 1;
     }
 
     ms->n = (1<<_m)-1;  // sequence length, (2^m)-1
@@ -85,14 +98,14 @@ msequence msequence_create(unsigned int _m,
 msequence msequence_create_genpoly(unsigned int _g)
 {
     unsigned int t = liquid_msb_index(_g);
-    
+
     // validate input
     if (t < 2)
         return liquid_error_config("msequence_create_genpoly(), invalid generator polynomial: 0x%x", _g);
 
     // compute derived values
-    unsigned int m = t - 1; // m-sequence shift register length
-    unsigned int a = 1;     // m-sequence initial state
+    unsigned int m = t; // m-sequence shift register length
+    unsigned int a = 1; // m-sequence initial state
 
     // generate object and return
     return msequence_create(m,_g,a);
@@ -133,8 +146,10 @@ int msequence_destroy(msequence _ms)
 }
 
 // prints the sequence's internal state to the screen
-int msequence_print(msequence _m)
+int msequence_print(msequence _ms)
 {
+    printf("<liquid.msequence, m=%u, n=%u, g=0x%x, genpoly=0x%x\n", _ms->m, _ms->n, _ms->g, _ms->genpoly);
+#if 0
     unsigned int i;
 
     printf("msequence: m=%u (n=%u):\n", _m->m, _m->n);
@@ -150,6 +165,7 @@ int msequence_print(msequence _m)
     for (i=0; i<_m->m; i++)
         printf("%c", ((_m->g) >> (_m->m-i-1)) & 0x01 ? '1' : '0');
     printf("\n");
+#endif
     return LIQUID_OK;
 }
 
@@ -158,7 +174,7 @@ unsigned int msequence_advance(msequence _ms)
 {
     // compute return bit as binary dot product between the
     // internal shift register and the generator polynomial
-    _ms->b = liquid_bdotprod( _ms->v, _ms->g );
+    _ms->b = liquid_bdotprod( _ms->v, _ms->genpoly );
 
     _ms->v <<= 1;       // shift internal register
     _ms->v |= _ms->b;   // push bit onto register

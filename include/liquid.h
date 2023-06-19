@@ -9515,21 +9515,21 @@ int bsequence_create_ccodes(bsequence _a, bsequence _b);
 
 #define LIQUID_MAX_MSEQUENCE_LENGTH   32767
 
-// default m-sequence generators:       g (hex)     m       n   g (oct)       g (binary)
-#define LIQUID_MSEQUENCE_GENPOLY_M2     0x0007  //  2       3        7               111
-#define LIQUID_MSEQUENCE_GENPOLY_M3     0x000B  //  3       7       13              1011
-#define LIQUID_MSEQUENCE_GENPOLY_M4     0x0013  //  4      15       23             10011
-#define LIQUID_MSEQUENCE_GENPOLY_M5     0x0025  //  5      31       45            100101
-#define LIQUID_MSEQUENCE_GENPOLY_M6     0x0043  //  6      63      103           1000011
-#define LIQUID_MSEQUENCE_GENPOLY_M7     0x0089  //  7     127      211          10001001
-#define LIQUID_MSEQUENCE_GENPOLY_M8     0x011D  //  8     255      435         100101101
-#define LIQUID_MSEQUENCE_GENPOLY_M9     0x0211  //  9     511     1021        1000010001
-#define LIQUID_MSEQUENCE_GENPOLY_M10    0x0409  // 10    1023     2011       10000001001
-#define LIQUID_MSEQUENCE_GENPOLY_M11    0x0805  // 11    2047     4005      100000000101
-#define LIQUID_MSEQUENCE_GENPOLY_M12    0x1053  // 12    4095    10123     1000001010011
-#define LIQUID_MSEQUENCE_GENPOLY_M13    0x201b  // 13    8191    20033    10000000011011
-#define LIQUID_MSEQUENCE_GENPOLY_M14    0x402b  // 14   16383    40053   100000000101011
-#define LIQUID_MSEQUENCE_GENPOLY_M15    0x8003  // 15   32767   100003  1000000000000011
+// default m-sequence generators:       g (hex)     m       n
+#define LIQUID_MSEQUENCE_GENPOLY_M2     0x0003  //  2       3
+#define LIQUID_MSEQUENCE_GENPOLY_M3     0x0006  //  3       7
+#define LIQUID_MSEQUENCE_GENPOLY_M4     0x000c  //  4      15
+#define LIQUID_MSEQUENCE_GENPOLY_M5     0x0014  //  5      31
+#define LIQUID_MSEQUENCE_GENPOLY_M6     0x0030  //  6      63
+#define LIQUID_MSEQUENCE_GENPOLY_M7     0x0060  //  7     127
+#define LIQUID_MSEQUENCE_GENPOLY_M8     0x00b8  //  8     255
+#define LIQUID_MSEQUENCE_GENPOLY_M9     0x0110  //  9     511
+#define LIQUID_MSEQUENCE_GENPOLY_M10    0x0240  // 10    1023
+#define LIQUID_MSEQUENCE_GENPOLY_M11    0x0500  // 11    2047
+#define LIQUID_MSEQUENCE_GENPOLY_M12    0x0e08  // 12    4095
+#define LIQUID_MSEQUENCE_GENPOLY_M13    0x1c80  // 13    8191
+#define LIQUID_MSEQUENCE_GENPOLY_M14    0x3802  // 14   16383
+#define LIQUID_MSEQUENCE_GENPOLY_M15    0x6000  // 15   32767
 
 typedef struct msequence_s * msequence;
 

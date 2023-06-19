@@ -100,7 +100,6 @@ int main(int argc, char*argv[])
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
-
     return 0;
 }
 
