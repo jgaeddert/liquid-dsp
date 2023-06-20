@@ -5223,7 +5223,7 @@ typedef void (*framesync_csma_callback)(void * _userdata);
 // Macro:
 //   QPACKETMODEM   : name-mangling macro
 //   T              : primitive data type
-#define LIQUID_QPACKETMODEM_DEFINE_API(QPACKETMODEM,T)                      \
+#define LIQUID_QPACKETMODEM_DEFINE_API(QPACKETMODEM,T,TC)                   \
                                                                             \
 /* Packet encoder/decoder                                               */  \
 typedef struct QPACKETMODEM(_s) * QPACKETMODEM();                           \
@@ -5312,35 +5312,35 @@ int QPACKETMODEM(_decode_bits)(QPACKETMODEM()  _q,                          \
 /*  _q          :   qpacketmodem object                                 */  \
 /*  _payload    :   unencoded payload bytes                             */  \
 /*  _frame      :   encoded/modulated payload symbols                   */  \
-int QPACKETMODEM(_encode)(QPACKETMODEM()         _q,                        \
-                          const unsigned char *  _payload,                  \
-                          liquid_float_complex * _frame);                   \
+int QPACKETMODEM(_encode)(QPACKETMODEM()        _q,                         \
+                          const unsigned char * _payload,                   \
+                          TC *                  _frame);                    \
                                                                             \
 /* decode packet from modulated frame samples, returning flag if CRC    */  \
 /* passed using hard-decision decoding                                  */  \
 /*  _q          :   qpacketmodem object                                 */  \
 /*  _frame      :   encoded/modulated payload symbols                   */  \
 /*  _payload    :   recovered decoded payload bytes                     */  \
-int QPACKETMODEM(_decode)(QPACKETMODEM()         _q,                        \
-                          liquid_float_complex * _frame,                    \
-                          unsigned char *        _payload);                 \
+int QPACKETMODEM(_decode)(QPACKETMODEM()  _q,                               \
+                          TC *            _frame,                           \
+                          unsigned char * _payload);                        \
                                                                             \
 /* decode packet from modulated frame samples, returning flag if CRC    */  \
 /* passed using soft-decision decoding                                  */  \
 /*  _q          :   qpacketmodem object                                 */  \
 /*  _frame      :   encoded/modulated payload symbols                   */  \
 /*  _payload    :   recovered decoded payload bytes                     */  \
-int QPACKETMODEM(_decode_soft)(QPACKETMODEM()         _q,                   \
-                               liquid_float_complex * _frame,               \
-                               unsigned char *        _payload);            \
+int QPACKETMODEM(_decode_soft)(QPACKETMODEM()  _q,                          \
+                               TC *            _frame,                      \
+                               unsigned char * _payload);                   \
                                                                             \
-int QPACKETMODEM(_decode_soft_sym)(QPACKETMODEM()       _q,                 \
-                                   liquid_float_complex _symbol);           \
+int QPACKETMODEM(_decode_soft_sym)(QPACKETMODEM() _q,                       \
+                                   TC             _symbol);                 \
                                                                             \
 int QPACKETMODEM(_decode_soft_payload)(QPACKETMODEM()  _q,                  \
                                        unsigned char * _payload);           \
 
-LIQUID_QPACKETMODEM_DEFINE_API(LIQUID_QPACKETMODEM_MANGLE_FLOAT, float)
+LIQUID_QPACKETMODEM_DEFINE_API(LIQUID_QPACKETMODEM_MANGLE_FLOAT,float,liquid_float_complex)
 
 //
 // pilot generator/synchronizer for packet burst recovery

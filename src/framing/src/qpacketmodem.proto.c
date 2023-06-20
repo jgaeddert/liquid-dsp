@@ -288,9 +288,9 @@ int QPACKETMODEM(_decode_bits)(qpacketmodem    _q,
 //  _q          :   qpacketmodem object
 //  _payload    :   unencoded payload bytes
 //  _frame      :   encoded/modulated payload symbols
-int QPACKETMODEM(_encode)(qpacketmodem          _q,
+int QPACKETMODEM(_encode)(qpacketmodem        _q,
                         const unsigned char * _payload,
-                        float complex *       _frame)
+                        TO                  * _frame)
 {
     // encode payload symbols into internal buffer
     QPACKETMODEM(_encode_syms)(_q, _payload, _q->payload_mod);
@@ -307,8 +307,8 @@ int QPACKETMODEM(_encode)(qpacketmodem          _q,
 //  _frame      :   encoded/modulated payload symbols
 //  _payload    :   recovered decoded payload bytes
 int QPACKETMODEM(_decode)(qpacketmodem    _q,
-                        float complex * _frame,
-                        unsigned char * _payload)
+                          TO *            _frame,
+                          unsigned char * _payload)
 {
     unsigned int i;
 
@@ -344,8 +344,8 @@ int QPACKETMODEM(_decode)(qpacketmodem    _q,
 //  _frame      :   encoded/modulated payload symbols
 //  _payload    :   recovered decoded payload bytes
 int QPACKETMODEM(_decode_soft)(qpacketmodem    _q,
-                             float complex * _frame,
-                             unsigned char * _payload)
+                               TO *            _frame,
+                               unsigned char * _payload)
 {
     unsigned int i;
 
@@ -376,8 +376,8 @@ int QPACKETMODEM(_decode_soft)(qpacketmodem    _q,
 // decode symbol from modulated frame samples, returning flag if all symbols received
 //  _q          :   qpacketmodem object
 //  _frame      :   encoded/modulated symbol
-int QPACKETMODEM(_decode_soft_sym)(qpacketmodem  _q,
-                                 float complex _symbol)
+int QPACKETMODEM(_decode_soft_sym)(qpacketmodem _q,
+                                   TO           _symbol)
 {
     unsigned int sym;
     MODEM(_demodulate_soft)(_q->mod_payload, _symbol, &sym, _q->payload_enc + _q->n);
@@ -392,3 +392,4 @@ int QPACKETMODEM(_decode_soft_payload)(qpacketmodem    _q,
     _q->n = 0;
     return packetizer_decode_soft(_q->p, _q->payload_enc, _payload);
 }
+
