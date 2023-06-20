@@ -5218,11 +5218,11 @@ typedef int (*framesync_callback)(unsigned char *  _header,
 typedef void (*framesync_csma_callback)(void * _userdata);
 
 
-#define LIQUID_QPACKETMODEM_MANGLE_RRRF(name) LIQUID_CONCAT(qpacketmodem,name)
+#define LIQUID_QPACKETMODEM_MANGLE_FLOAT(name) LIQUID_CONCAT(qpacketmodem,name)
 
 // Macro:
 //   QPACKETMODEM   : name-mangling macro
-//   T              : data type
+//   T              : primitive data type
 #define LIQUID_QPACKETMODEM_DEFINE_API(QPACKETMODEM,T)                      \
                                                                             \
 /* Packet encoder/decoder                                               */  \
@@ -5231,38 +5231,62 @@ typedef struct QPACKETMODEM(_s) * QPACKETMODEM();                           \
 /* Create packet encoder                                                */  \
 QPACKETMODEM() QPACKETMODEM(_create)();                                     \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
 QPACKETMODEM() QPACKETMODEM(_copy)   (QPACKETMODEM() _q);                   \
-int            QPACKETMODEM(_destroy)(QPACKETMODEM() _q);                   \
-int            QPACKETMODEM(_reset)  (QPACKETMODEM() _q);                   \
-int            QPACKETMODEM(_print)  (QPACKETMODEM() _q);                   \
                                                                             \
+/* Destroy object, freeing all allocated memory                         */  \
+int QPACKETMODEM(_destroy)(QPACKETMODEM() _q);                              \
+                                                                            \
+/* Print modem status to stdout                                         */  \
+int QPACKETMODEM(_print)(QPACKETMODEM() _q);                                \
+                                                                            \
+/* Reset internal state of modem object                                 */  \
+int QPACKETMODEM(_reset)(QPACKETMODEM() _q);                                \
+                                                                            \
+/* Configure object with particular parameters                          */  \
+/*  _q           : qpacketmodem object                                  */  \
+/*  _payload_len : length of payload message [bytes]                    */  \
+/*  _check       : data integrity check, e.g LIQUID_CRC_32              */  \
+/*  _fec0        : forward error-correction scheme (inner), e.g.        */  \
+/*                 LIQUID_FEC_GOLAY2412                                 */  \
+/*  _fec1        : forward error-correction scheme (outer)              */  \
+/*  _ms          : modulation scheme, e.g. LIQUID_MODEM_QPSK            */  \
 int QPACKETMODEM(_configure)(QPACKETMODEM() _q,                             \
-                           unsigned int _payload_len,                       \
-                           crc_scheme   _check,                             \
-                           fec_scheme   _fec0,                              \
-                           fec_scheme   _fec1,                              \
-                           int          _ms);                               \
+                             unsigned int   _payload_len,                   \
+                             crc_scheme     _check,                         \
+                             fec_scheme     _fec0,                          \
+                             fec_scheme     _fec1,                          \
+                             int            _ms);                           \
                                                                             \
-/* get length of encoded frame in symbols                               */  \
+/* Get length of encoded frame in symbols                               */  \
 unsigned int QPACKETMODEM(_get_frame_len)(QPACKETMODEM() _q);               \
                                                                             \
-/* get unencoded/decoded payload length (bytes)                         */  \
+/* Get unencoded/decoded payload length (bytes)                         */  \
 unsigned int QPACKETMODEM(_get_payload_len)(QPACKETMODEM() _q);             \
                                                                             \
-/* regular access methods                                               */  \
-unsigned int QPACKETMODEM(_get_crc      )(QPACKETMODEM() _q);               \
-unsigned int QPACKETMODEM(_get_fec0     )(QPACKETMODEM() _q);               \
-unsigned int QPACKETMODEM(_get_fec1     )(QPACKETMODEM() _q);               \
+/* Get data integrity check, e.g. LIQUID_CRC_32                         */  \
+unsigned int QPACKETMODEM(_get_crc)(QPACKETMODEM() _q);                     \
+                                                                            \
+/* Get inner forward error-correction scheme, e.g. LIQUID_GOLAY_2412    */  \
+unsigned int QPACKETMODEM(_get_fec0)(QPACKETMODEM() _q);                    \
+                                                                            \
+/* Get outer forward error-correction scheme, e.g. LIQUID_GOLAY_2412    */  \
+unsigned int QPACKETMODEM(_get_fec1)(QPACKETMODEM() _q);                    \
+                                                                            \
+/* Get modulation scheme, e.g. LIQUID_MODEM_QPSK                        */  \
 unsigned int QPACKETMODEM(_get_modscheme)(QPACKETMODEM() _q);               \
                                                                             \
+/* Get demodulator phase error (instantaneous) [radians]                */  \
 float QPACKETMODEM(_get_demodulator_phase_error)(QPACKETMODEM() _q);        \
+                                                                            \
+/* Get demodulator error-vector magnitude after frame was received      */  \
 float QPACKETMODEM(_get_demodulator_evm)(QPACKETMODEM() _q);                \
                                                                             \
 /* encode packet into un-modulated frame symbol indices                 */  \
 /*  _q          : qpacketmodem object                                   */  \
 /*  _payload    : unencoded payload bytes                               */  \
 /*  _syms       : encoded but un-modulated payload symbol indices       */  \
-int QPACKETMODEM(_encode_syms)(QPACKETMODEM()          _q,                  \
+int QPACKETMODEM(_encode_syms)(QPACKETMODEM()        _q,                    \
                                const unsigned char * _payload,              \
                                unsigned char *       _syms);                \
                                                                             \
@@ -5280,43 +5304,43 @@ int QPACKETMODEM(_decode_syms)(QPACKETMODEM()    _q,                        \
 /*  _q       : qpacketmodem object                                      */  \
 /*  _bits    : received soft-decision bits, [size: bps*frame_len x 1]   */  \
 /*  _payload : recovered decoded payload bytes                          */  \
-int QPACKETMODEM(_decode_bits)(QPACKETMODEM()    _q,                        \
-                             unsigned char * _bits,                         \
-                             unsigned char * _payload);                     \
+int QPACKETMODEM(_decode_bits)(QPACKETMODEM()  _q,                          \
+                               unsigned char * _bits,                       \
+                               unsigned char * _payload);                   \
                                                                             \
 /* encode and modulate packet into modulated frame samples              */  \
 /*  _q          :   qpacketmodem object                                 */  \
 /*  _payload    :   unencoded payload bytes                             */  \
 /*  _frame      :   encoded/modulated payload symbols                   */  \
-int QPACKETMODEM(_encode)(QPACKETMODEM()           _q,                      \
-                        const unsigned char *  _payload,                    \
-                        liquid_float_complex * _frame);                     \
+int QPACKETMODEM(_encode)(QPACKETMODEM()         _q,                        \
+                          const unsigned char *  _payload,                  \
+                          liquid_float_complex * _frame);                   \
                                                                             \
 /* decode packet from modulated frame samples, returning flag if CRC    */  \
 /* passed using hard-decision decoding                                  */  \
 /*  _q          :   qpacketmodem object                                 */  \
 /*  _frame      :   encoded/modulated payload symbols                   */  \
 /*  _payload    :   recovered decoded payload bytes                     */  \
-int QPACKETMODEM(_decode)(QPACKETMODEM()           _q,                      \
-                        liquid_float_complex * _frame,                      \
-                        unsigned char *        _payload);                   \
+int QPACKETMODEM(_decode)(QPACKETMODEM()         _q,                        \
+                          liquid_float_complex * _frame,                    \
+                          unsigned char *        _payload);                 \
                                                                             \
 /* decode packet from modulated frame samples, returning flag if CRC    */  \
 /* passed using soft-decision decoding                                  */  \
 /*  _q          :   qpacketmodem object                                 */  \
 /*  _frame      :   encoded/modulated payload symbols                   */  \
 /*  _payload    :   recovered decoded payload bytes                     */  \
-int QPACKETMODEM(_decode_soft)(QPACKETMODEM()           _q,                 \
-                             liquid_float_complex * _frame,                 \
-                             unsigned char *        _payload);              \
+int QPACKETMODEM(_decode_soft)(QPACKETMODEM()         _q,                   \
+                               liquid_float_complex * _frame,               \
+                               unsigned char *        _payload);            \
                                                                             \
-int QPACKETMODEM(_decode_soft_sym)(QPACKETMODEM()  _q,                      \
-                                 liquid_float_complex _symbol);             \
+int QPACKETMODEM(_decode_soft_sym)(QPACKETMODEM()       _q,                 \
+                                   liquid_float_complex _symbol);           \
                                                                             \
-int QPACKETMODEM(_decode_soft_payload)(QPACKETMODEM()    _q,                \
-                                     unsigned char * _payload);             \
+int QPACKETMODEM(_decode_soft_payload)(QPACKETMODEM()  _q,                  \
+                                       unsigned char * _payload);           \
 
-LIQUID_QPACKETMODEM_DEFINE_API(LIQUID_QPACKETMODEM_MANGLE_RRRF, float)
+LIQUID_QPACKETMODEM_DEFINE_API(LIQUID_QPACKETMODEM_MANGLE_FLOAT, float)
 
 //
 // pilot generator/synchronizer for packet burst recovery
