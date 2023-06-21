@@ -254,7 +254,7 @@ should be lauded for their efforts.
 In a similar vain, much the software I write for a living I give away for
 free;
 however I believe in more permissive licenses to allow individuals the
-flexibility to use software with more flexibility.
+flexibility to use software with fewer limitations.
 If these restrictions are not acceptible, `liquid-dsp` can be compiled and run
 without use of these external libraries, albeit a bit slower and with limited
 functionality.

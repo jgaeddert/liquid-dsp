@@ -374,8 +374,6 @@ int QPACKETMODEM(_decode_soft)(qpacketmodem    _q,
 }
 
 // decode symbol from modulated frame samples, returning flag if all symbols received
-//  _q          :   qpacketmodem object
-//  _frame      :   encoded/modulated symbol
 int QPACKETMODEM(_decode_soft_sym)(qpacketmodem _q,
                                    TO           _symbol)
 {
@@ -386,9 +384,12 @@ int QPACKETMODEM(_decode_soft_sym)(qpacketmodem _q,
 }
 
 int QPACKETMODEM(_decode_soft_payload)(qpacketmodem    _q,
-                                     unsigned char * _payload)
+                                       unsigned char * _payload)
 {
-    assert( _q->n == _q->payload_mod_len * _q->bits_per_symbol);
+    if ( _q->n != _q->payload_mod_len * _q->bits_per_symbol) {
+        liquid_error(LIQUID_ENOINIT,"qpacketmodem_decode_soft_payload(), insufficient number of symbols received");
+        return 0;
+    }
     _q->n = 0;
     return packetizer_decode_soft(_q->p, _q->payload_enc, _payload);
 }

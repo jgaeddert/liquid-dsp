@@ -5296,7 +5296,8 @@ int QPACKETMODEM(_encode_syms)(QPACKETMODEM()        _q,                    \
 /*  _syms    : received hard-decision symbol indices,                   */  \
 /*             [size: frame_len x 1]                                    */  \
 /*  _payload : recovered decoded payload bytes                          */  \
-int QPACKETMODEM(_decode_syms)(QPACKETMODEM()    _q,                        \
+/*  _return  : flag indicating if data integrity check passed           */  \
+int QPACKETMODEM(_decode_syms)(QPACKETMODEM()  _q,                          \
                                unsigned char * _syms,                       \
                                unsigned char * _payload);                   \
                                                                             \
@@ -5318,25 +5319,36 @@ int QPACKETMODEM(_encode)(QPACKETMODEM()        _q,                         \
                                                                             \
 /* decode packet from modulated frame samples, returning flag if CRC    */  \
 /* passed using hard-decision decoding                                  */  \
-/*  _q          :   qpacketmodem object                                 */  \
-/*  _frame      :   encoded/modulated payload symbols                   */  \
-/*  _payload    :   recovered decoded payload bytes                     */  \
+/*  _q          : qpacketmodem object                                   */  \
+/*  _frame      : encoded/modulated payload symbols                     */  \
+/*  _payload    : recovered decoded payload bytes                       */  \
+/*  _return     : flag indicating if data integrity check passed        */  \
 int QPACKETMODEM(_decode)(QPACKETMODEM()  _q,                               \
                           TC *            _frame,                           \
                           unsigned char * _payload);                        \
                                                                             \
 /* decode packet from modulated frame samples, returning flag if CRC    */  \
 /* passed using soft-decision decoding                                  */  \
-/*  _q          :   qpacketmodem object                                 */  \
-/*  _frame      :   encoded/modulated payload symbols                   */  \
-/*  _payload    :   recovered decoded payload bytes                     */  \
+/*  _q          : qpacketmodem object                                   */  \
+/*  _frame      : encoded/modulated payload symbols                     */  \
+/*  _payload    : recovered decoded payload bytes                       */  \
+/*  _return     : flag indicating if data integrity check passed        */  \
 int QPACKETMODEM(_decode_soft)(QPACKETMODEM()  _q,                          \
                                TC *            _frame,                      \
                                unsigned char * _payload);                   \
                                                                             \
+/* decode symbol from modulated frame samples, returning flag if all    */  \
+/* symbols received                                                     */  \
+/*  _q          : qpacketmodem object                                   */  \
+/*  _symbol     : input received symbol before demodulation             */  \
+/*  _return     : flag indicating if all symbols were received          */  \
 int QPACKETMODEM(_decode_soft_sym)(QPACKETMODEM() _q,                       \
                                    TC             _symbol);                 \
                                                                             \
+/* Decode entire packet, assuming that entire frame has been received.  */  \
+/*  _q          : qpacketmodem object                                   */  \
+/*  _payload    : output payload [bytes]                                */  \
+/*  _return     : flag indicating if data integrity check passed        */  \
 int QPACKETMODEM(_decode_soft_payload)(QPACKETMODEM()  _q,                  \
                                        unsigned char * _payload);           \
 
