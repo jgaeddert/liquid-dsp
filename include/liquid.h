@@ -6306,16 +6306,7 @@ float        qdetector_cccf_get_gamma   (qdetector_cccf _q); // channel gain
 float        qdetector_cccf_get_dphi    (qdetector_cccf _q); // carrier frequency offset estimate
 float        qdetector_cccf_get_phi     (qdetector_cccf _q); // carrier phase offset estimate
 
-// Frame detector and synchronizer; uses a novel correlation method to
-// detect a synchronization pattern, estimate carrier frequency and
-// phase offsets as well as timing phase, then correct for these
-// impairments in a simple interface suitable for custom frame recovery.
-typedef struct qdsync_cccf_s * qdsync_cccf;
 
-// synchronization callback, return 0:continue, 1:reset
-typedef int (*qdsync_callback)(liquid_float_complex * _buf,
-                               unsigned int           _buf_len,
-                               void *                 _context);
 // metadata struct:
 //  - sample count since object was created
 //  - sample count since beginning of frame
