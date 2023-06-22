@@ -649,7 +649,6 @@ framing_objects :=						\
 	src/framing/src/gmskframesync.o				\
 	src/framing/src/ofdmflexframegen.o			\
 	src/framing/src/ofdmflexframesync.o			\
-	src/framing/src/qdetector_cccf.o			\
 	src/framing/src/qpilotgen.o				\
 	src/framing/src/qpilotsync.o				\
 
@@ -667,6 +666,7 @@ framing_prototypes_sync :=					\
 	src/framing/src/bpresync.proto.c			\
 	src/framing/src/bsync.proto.c				\
 	src/framing/src/presync.proto.c				\
+	src/framing/src/qdetector.proto.c			\
 	src/framing/src/qdsync.proto.c				\
 	src/framing/src/symtrack.proto.c			\
 

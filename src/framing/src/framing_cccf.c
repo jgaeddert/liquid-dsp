@@ -57,6 +57,7 @@
 #define BPRESYNC(name)      LIQUID_CONCAT(bpresync_cccf,name)
 #define BSYNC(name)         LIQUID_CONCAT(bsync_cccf,name)
 #define PRESYNC(name)       LIQUID_CONCAT(presync_cccf,name)
+#define QDETECTOR(name)     LIQUID_CONCAT(qdetector_cccf,name)
 #define QDSYNC(name)        LIQUID_CONCAT(qdsync_cccf,name)
 #define SYMTRACK(name)      LIQUID_CONCAT(symtrack_cccf,name)
 
@@ -64,6 +65,7 @@
 #include "bpresync.proto.c"
 #include "bsync.proto.c"
 #include "presync.proto.c"
+#include "qdetector.proto.c"
 #include "qdsync.proto.c"
 #include "symtrack.proto.c"
 
