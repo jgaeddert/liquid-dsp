@@ -6222,90 +6222,126 @@ LIQUID_PRESYNC_DEFINE_API(LIQUID_BPRESYNC_MANGLE_CCCF,
 // Frame detector
 //
 
-typedef struct qdetector_cccf_s * qdetector_cccf;
+#define LIQUID_QDETECTOR_MANGLE_CCCF(name) LIQUID_CONCAT(qdetector_cccf,name)
 
-// create detector with generic sequence
-//  _s      :   sample sequence
-//  _s_len  :   length of sample sequence
-qdetector_cccf qdetector_cccf_create(liquid_float_complex * _s,
-                                     unsigned int           _s_len);
+#define LIQUID_QDETECTOR_DEFINE_API(QDETECTOR,TO,TC,TI)                     \
+                                                                            \
+/* Frame detector and synchronizer; uses a novel correlation method to  */  \
+/* detect a synchronization pattern, estimate carrier frequency and     */  \
+/* phase offsets as well as timing phase, then correct for these        */  \
+/* impairments in a simple interface suitable for custom frame recovery.*/  \
+typedef struct QDETECTOR(_s) * QDETECTOR();                                 \
+                                                                            \
+typedef struct qdetector_cccf_s * qdetector_cccf;                           \
+                                                                            \
+/* Create detector with generic sequence                                */  \
+/*  _s      :   sample sequence                                         */  \
+/*  _s_len  :   length of sample sequence                               */  \
+QDETECTOR() QDETECTOR(_create)(TI *         _s,                             \
+                               unsigned int _s_len);                        \
+                                                                            \
+/* Create detector from sequence of symbols using internal linear       */  \
+/* interpolator                                                         */  \
+/*  _sequence       :   symbol sequence                                 */  \
+/*  _sequence_len   :   length of symbol sequence                       */  \
+/*  _ftype          :   filter prototype (e.g. LIQUID_FIRFILT_RRC)      */  \
+/*  _k              :   samples/symbol                                  */  \
+/*  _m              :   filter delay                                    */  \
+/*  _beta           :   excess bandwidth factor                         */  \
+QDETECTOR() QDETECTOR(_create_linear)(TI *         _sequence,               \
+                                      unsigned int _sequence_len,           \
+                                      int          _ftype,                  \
+                                      unsigned int _k,                      \
+                                      unsigned int _m,                      \
+                                      float        _beta);                  \
+                                                                            \
+/* create detector from sequence of GMSK symbols                        */  \
+/*  _sequence       :   bit sequence                                    */  \
+/*  _sequence_len   :   length of bit sequence                          */  \
+/*  _k              :   samples/symbol                                  */  \
+/*  _m              :   filter delay                                    */  \
+/*  _beta           :   excess bandwidth factor                         */  \
+QDETECTOR() QDETECTOR(_create_gmsk)(unsigned char * _sequence,              \
+                                    unsigned int    _sequence_len,          \
+                                    unsigned int    _k,                     \
+                                    unsigned int    _m,                     \
+                                    float           _beta);                 \
+                                                                            \
+/* create detector from sequence of CP-FSK symbols (assuming one        */  \
+/* bit/symbol)                                                          */  \
+/*  _sequence       :   bit sequence                                    */  \
+/*  _sequence_len   :   length of bit sequence                          */  \
+/*  _bps            :   bits per symbol, 0 < _bps <= 8                  */  \
+/*  _h              :   modulation index, _h > 0                        */  \
+/*  _k              :   samples/symbol                                  */  \
+/*  _m              :   filter delay                                    */  \
+/*  _beta           :   filter bandwidth parameter, _beta > 0           */  \
+/*  _type           :   filter type (e.g. LIQUID_CPFSK_SQUARE)          */  \
+QDETECTOR() QDETECTOR(_create_cpfsk)(unsigned char * _sequence,             \
+                                     unsigned int    _sequence_len,         \
+                                     unsigned int    _bps,                  \
+                                     float           _h,                    \
+                                     unsigned int    _k,                    \
+                                     unsigned int    _m,                    \
+                                     float           _beta,                 \
+                                     int             _type);                \
+                                                                            \
+/* Copy object including all internal objects and state                 */  \
+QDETECTOR() QDETECTOR(_copy)(QDETECTOR() _q);                               \
+                                                                            \
+/* Destroy synchronizer object and free all internal memory             */  \
+int QDETECTOR(_destroy)(QDETECTOR() _q);                                    \
+                                                                            \
+/* Reset synchronizer object's internal buffer                          */  \
+int QDETECTOR(_reset)(QDETECTOR() _q);                                      \
+                                                                            \
+/* Print synchronizer object information to stdout                      */  \
+int QDETECTOR(_print)(QDETECTOR() _q);                                      \
+                                                                            \
+/* run detector, looking for sequence; return pointer to aligned,       */  \
+/* buffered samples                                                     */  \
+void * QDETECTOR(_execute)(QDETECTOR() _q, TI _x);                          \
+                                                                            \
+/* get detection threshold                                              */  \
+float QDETECTOR(_get_threshold)(QDETECTOR() _q);                            \
+                                                                            \
+/* set detection threshold (should be between 0 and 1, good starting    */  \
+/* point is 0.5)                                                        */  \
+int QDETECTOR(_set_threshold)(QDETECTOR() _q,                               \
+                              float       _threshold);                      \
+                                                                            \
+/* Set carrier offset search range                                      */  \
+int QDETECTOR(_set_range)(QDETECTOR() _q,                                   \
+                          float       _dphi_max);                           \
+                                                                            \
+/* Get sequence length                                                  */  \
+unsigned int QDETECTOR(_get_seq_len)(QDETECTOR() _q);                       \
+                                                                            \
+/* Get pointer to sequence of detected frame                            */  \
+const void * QDETECTOR(_get_sequence)(QDETECTOR() _q);                      \
+                                                                            \
+/* Get buffer length                                                    */  \
+unsigned int QDETECTOR(_get_buf_len)(QDETECTOR() _q);                       \
+                                                                            \
+/* Get correlator output of detected frame                              */  \
+float QDETECTOR(_get_rxy)(QDETECTOR() _q);                                  \
+                                                                            \
+/* Get fractional timing offset estimate of detected frame              */  \
+float QDETECTOR(_get_tau)(QDETECTOR() _q);                                  \
+                                                                            \
+/* Get channel gain of detected frame                                   */  \
+float QDETECTOR(_get_gamma)(QDETECTOR() _q);                                \
+                                                                            \
+/* Get carrier frequency offset estimateof detected frame               */  \
+float QDETECTOR(_get_dphi)(QDETECTOR() _q);                                 \
+                                                                            \
+/* Get carrier phase offset estimate of detected frame                  */  \
+float QDETECTOR(_get_phi)(QDETECTOR() _q);                                  \
 
-// create detector from sequence of symbols using internal linear interpolator
-//  _sequence       :   symbol sequence
-//  _sequence_len   :   length of symbol sequence
-//  _ftype          :   filter prototype (e.g. LIQUID_FIRFILT_RRC)
-//  _k              :   samples/symbol
-//  _m              :   filter delay
-//  _beta           :   excess bandwidth factor
-qdetector_cccf qdetector_cccf_create_linear(liquid_float_complex * _sequence,
-                                            unsigned int           _sequence_len,
-                                            int                    _ftype,
-                                            unsigned int           _k,
-                                            unsigned int           _m,
-                                            float                  _beta);
-
-// create detector from sequence of GMSK symbols
-//  _sequence       :   bit sequence
-//  _sequence_len   :   length of bit sequence
-//  _k              :   samples/symbol
-//  _m              :   filter delay
-//  _beta           :   excess bandwidth factor
-qdetector_cccf qdetector_cccf_create_gmsk(unsigned char * _sequence,
-                                          unsigned int    _sequence_len,
-                                          unsigned int    _k,
-                                          unsigned int    _m,
-                                          float           _beta);
-
-// create detector from sequence of CP-FSK symbols (assuming one bit/symbol)
-//  _sequence       :   bit sequence
-//  _sequence_len   :   length of bit sequence
-//  _bps            :   bits per symbol, 0 < _bps <= 8
-//  _h              :   modulation index, _h > 0
-//  _k              :   samples/symbol
-//  _m              :   filter delay
-//  _beta           :   filter bandwidth parameter, _beta > 0
-//  _type           :   filter type (e.g. LIQUID_CPFSK_SQUARE)
-qdetector_cccf qdetector_cccf_create_cpfsk(unsigned char * _sequence,
-                                           unsigned int    _sequence_len,
-                                           unsigned int    _bps,
-                                           float           _h,
-                                           unsigned int    _k,
-                                           unsigned int    _m,
-                                           float           _beta,
-                                           int             _type);
-
-// Copy object including all internal objects and state
-qdetector_cccf qdetector_cccf_copy(qdetector_cccf _q);
-
-int qdetector_cccf_destroy(qdetector_cccf _q);
-int qdetector_cccf_print  (qdetector_cccf _q);
-int qdetector_cccf_reset  (qdetector_cccf _q);
-
-// run detector, looking for sequence; return pointer to aligned, buffered samples
-void * qdetector_cccf_execute(qdetector_cccf       _q,
-                              liquid_float_complex _x);
-
-// get detection threshold
-float qdetector_cccf_get_threshold(qdetector_cccf _q);
-
-// set detection threshold (should be between 0 and 1, good starting point is 0.5)
-int qdetector_cccf_set_threshold(qdetector_cccf _q,
-                                 float          _threshold);
-
-// set carrier offset search range
-int qdetector_cccf_set_range(qdetector_cccf _q,
-                             float          _dphi_max);
-
-// access methods
-unsigned int qdetector_cccf_get_seq_len (qdetector_cccf _q); // sequence length
-const void * qdetector_cccf_get_sequence(qdetector_cccf _q); // pointer to sequence
-unsigned int qdetector_cccf_get_buf_len (qdetector_cccf _q); // buffer length
-float        qdetector_cccf_get_rxy     (qdetector_cccf _q); // correlator output
-float        qdetector_cccf_get_tau     (qdetector_cccf _q); // fractional timing offset estimate
-float        qdetector_cccf_get_gamma   (qdetector_cccf _q); // channel gain
-float        qdetector_cccf_get_dphi    (qdetector_cccf _q); // carrier frequency offset estimate
-float        qdetector_cccf_get_phi     (qdetector_cccf _q); // carrier phase offset estimate
-
+LIQUID_QDETECTOR_DEFINE_API(LIQUID_QDETECTOR_MANGLE_CCCF,
+                         liquid_float_complex,
+                         liquid_float_complex,
+                         liquid_float_complex)
 
 // metadata struct:
 //  - sample count since object was created
