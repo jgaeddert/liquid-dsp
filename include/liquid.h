@@ -6232,8 +6232,6 @@ LIQUID_PRESYNC_DEFINE_API(LIQUID_BPRESYNC_MANGLE_CCCF,
 /* impairments in a simple interface suitable for custom frame recovery.*/  \
 typedef struct QDETECTOR(_s) * QDETECTOR();                                 \
                                                                             \
-typedef struct qdetector_cccf_s * qdetector_cccf;                           \
-                                                                            \
 /* Create detector with generic sequence                                */  \
 /*  _s      :   sample sequence                                         */  \
 /*  _s_len  :   length of sample sequence                               */  \
