@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -456,15 +456,16 @@ int fskframesync_execute_detectframe(fskframesync  _q,
         // NOTE: because this is a ratio of energies in frequency, we don't need
         //       to take the absolute value here; only positive values should work
         if (rxy > 0.5f) {
-            printf("### fskframe detected! ###\n");
+            //printf("### fskframe detected! ###\n");
             _q->frame_detected = 1;
         }
     } else {
         // frame has already been detected; wait for signal to peak
         if (_q->rxy[1] > _q->rxy[2]) {
-            printf("signal peaked! %12.8f %12.8f %12.8f\n",
-                    _q->rxy[0], _q->rxy[1], _q->rxy[2]);
+            //printf("signal peaked! %12.8f %12.8f %12.8f\n",
+            //        _q->rxy[0], _q->rxy[1], _q->rxy[2]);
 
+#if 0
             // compute estimate, apply bias compensation
             float gamma = (_q->rxy[2] - _q->rxy[0]) / _q->rxy[1];
             float p2 = 9.54907046918287e-01f;
@@ -474,6 +475,7 @@ int fskframesync_execute_detectframe(fskframesync  _q,
             int   num_samples = round(tau_hat * _q->k);
             printf("timing offset estimate  : %12.8f -> %12.8f (%d samples)\n",
                     gamma, tau_hat, num_samples);
+#endif
 
             // TODO: set timer and filterbank index accordingly
             _q->timer = 2*_q->k;
@@ -481,7 +483,7 @@ int fskframesync_execute_detectframe(fskframesync  _q,
             // update state...
             _q->state = STATE_RXHEADER;
         } else {
-            printf("signal not yet peaked...\n");
+            //printf("signal not yet peaked...\n");
         }
     }
     return LIQUID_OK;
@@ -524,7 +526,7 @@ int fskframesync_execute_rxheader(fskframesync  _q,
         int header_valid = qpacketmodem_decode_syms(_q->header_decoder,
                                                     _q->header_sym,
                                                     _q->header_dec);
-#if 1
+#if 0
         printf("rx header symbols (%u):\n", _q->header_sym_len);
         unsigned int i;
         for (i=0; i<_q->header_sym_len; i++)
@@ -612,7 +614,7 @@ int fskframesync_execute_rxpayload(fskframesync  _q,
 
     // decode payload if appropriate
     if (_q->symbol_counter == _q->payload_sym_len) {
-#if 1
+#if 0
         printf("rx payload symbols (%u)\n", _q->payload_sym_len);
         unsigned int i;
         for (i=0; i<_q->payload_sym_len; i++)
@@ -623,7 +625,7 @@ int fskframesync_execute_rxpayload(fskframesync  _q,
         int payload_valid = qpacketmodem_decode_syms(_q->payload_decoder,
                                                      _q->payload_sym,
                                                      _q->payload_dec);
-        printf("payload: %s\n", payload_valid ? "valid" : "INVALID");
+        //printf("payload: %s\n", payload_valid ? "valid" : "INVALID");
         
         // invoke callback
         if (_q->callback != NULL) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -256,7 +256,7 @@ int ASGRAM(_print)(ASGRAM() _q)
     float maxval;
     float maxfreq;
     char ascii[_q->nfft+1];
-    ascii[_q->nfft] = '\0'; // append null character to end of string
+    memset(ascii, '\0', _q->nfft+1); // fill buffer with null characters
         
     // execute the spectrogram
     ASGRAM(_execute)(_q, ascii, &maxval, &maxfreq);

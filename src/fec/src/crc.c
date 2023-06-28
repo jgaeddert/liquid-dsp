@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,12 +46,12 @@ const char * crc_scheme_str[LIQUID_CRC_NUM_SCHEMES][2] = {
 
 
 // Print compact list of existing and available crc schemes
-void liquid_print_crc_schemes()
+int liquid_print_crc_schemes()
 {
     unsigned int i;
     unsigned int len = 10;
 
-    // print all available MOD schemes
+    // print all available CRC schemes
     printf("          ");
     for (i=0; i<LIQUID_CRC_NUM_SCHEMES; i++) {
         printf("%s", crc_scheme_str[i][0]);
@@ -66,6 +66,7 @@ void liquid_print_crc_schemes()
         }
     }
     printf("\n");
+    return LIQUID_OK;
 }
 
 crc_scheme liquid_getopt_str2crc(const char * _str)
@@ -78,7 +79,7 @@ crc_scheme liquid_getopt_str2crc(const char * _str)
         }
     }
 
-    fprintf(stderr,"warning: liquid_getopt_str2crc(), unknown/unsupported crc scheme : %s\n", _str);
+    liquid_error(LIQUID_EICONFIG,"warning: liquid_getopt_str2crc(), unknown/unsupported crc scheme : %s\n", _str);
     return LIQUID_CRC_UNKNOWN;
 }
 
@@ -224,7 +225,6 @@ unsigned int checksum_generate_key(unsigned char *_data,
     unsigned int i, sum=0;
     for (i=0; i<_n; i++)
         sum += (unsigned int) (_data[i]);
-    //sum &= 0x00ff;
 
     // mask and convert to 2's complement
     unsigned char key = ~(sum&0x00ff) + 1;

@@ -164,10 +164,10 @@ cpfskdem cpfskdem_create(unsigned int _bps,
     // coherent or non-coherent?
     // TODO: allow user to specify
     if (q->h > 0.66667f) {
-        cpfskdem_init_noncoherent(q);
-    } else {
-        cpfskdem_init_coherent(q);
+        //cpfskdem_init_noncoherent(q);
+        fprintf(stderr,"warning: cpfskdem_create(), coherent demodulation with h > 2/3 not recommended\n");
     }
+    cpfskdem_init_coherent(q);
 
     // reset modem object
     cpfskdem_reset(q);
@@ -235,6 +235,7 @@ int cpfskdem_init_coherent(cpfskdem _q)
 // initialize non-coherent demodulator
 int cpfskdem_init_noncoherent(cpfskdem _q)
 {
+#if 0
     // specify non-coherent receiver
     _q->demod_type = CPFSKDEM_NONCOHERENT;
     
@@ -250,6 +251,9 @@ int cpfskdem_init_noncoherent(cpfskdem _q)
         break;
     }
     return LIQUID_OK;
+#else
+    return liquid_error(LIQUID_EUMODE,"cpfskdem_init_noncoherent(), unsupported mode");
+#endif
 }
 
 // destroy modem object

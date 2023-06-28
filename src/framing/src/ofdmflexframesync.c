@@ -152,7 +152,7 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
 
     // validate input
     if (_M < 8)
-        return liquid_error_config("ofdmflexframesync_create(), less than 8 subcarriers");
+        return liquid_error_config("ofdmflexframesync_create(), number of subcarriers must be at least 8");
     if (_M % 2)
         return liquid_error_config("ofdmflexframesync_create(), number of subcarriers must be even");
     if (_cp_len > _M)

@@ -294,10 +294,18 @@ int ofdmframe_validate_sctype(unsigned char * _p,
         }
     }
 
-    // set outputs
-    *_M_null  = M_null;
-    *_M_pilot = M_pilot;
-    *_M_data  = M_data;
+    // validate subcarrier allocation
+    if ( (M_pilot + M_data) == 0)
+        return liquid_error(LIQUID_EICONFIG,"ofdmframe_validate_sctype(), must have at least one enabled subcarrier");
+    if (M_data == 0)
+        return liquid_error(LIQUID_EICONFIG,"ofdmframe_validate_sctype(), must have at least one data subcarrier");
+    if (M_pilot < 2)
+        return liquid_error(LIQUID_EICONFIG,"ofdmframe_validate_sctype(), must have at least two pilot subcarriers");
+
+    // set outputs if requested
+    if (_M_null  != NULL) *_M_null  = M_null;
+    if (_M_pilot != NULL) *_M_pilot = M_pilot;
+    if (_M_data  != NULL) *_M_data  = M_data;
     return LIQUID_OK;
 }
 

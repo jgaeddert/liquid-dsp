@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,37 +20,37 @@
  * THE SOFTWARE.
  */
 
-//
-// Binary pre-demod synchronizer
-//
+#include "autotest/autotest.h"
+#include "liquid.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <getopt.h>
 
 #include "liquid.internal.h"
 
-// 
-#define PRESYNC(name)       LIQUID_CONCAT(presync_cccf,name)
+void autotest_optim_rosenbrock()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping rosenbrock config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
 
-// print and naming extensions
-#define PRINTVAL(x)         printf("%12.4e + j%12.4e", crealf(x), cimagf(x))
-#define EXTENSION_SHORT     "f"
-#define EXTENSION_FULL      "cccf"
+    // optimum
+    float v_ones[8] = {1,1,1,1,1,1,1,1};
+    CONTEND_DELTA( liquid_rosenbrock(NULL, v_ones, 8), 0.0f, 1e-6f )
+    CONTEND_DELTA( liquid_rosenbrock(NULL, v_ones, 1), 0.0f, 1e-6f )
 
-#define T                   float           // primitive type
-#define TO                  float complex   // output type
-#define TC                  float complex   // coefficient type
-#define TI                  float complex   // input type
+    // very far from optimum
+    float v_misc[8] = {0.3, 1.0, 4.5,-2.2, 6.7,-0.2, 1.1,-0.9,};
+    CONTEND_GREATER_THAN( liquid_rosenbrock(NULL, v_misc, 8), 1000.0f )
 
-#define ABS(X)              cabsf(X)
-#define REAL(X)             crealf(X)
-#define IMAG(X)             cimagf(X)
-
-#define WINDOW(name)        LIQUID_CONCAT(windowf,name)
-#define DOTPROD(name)       LIQUID_CONCAT(dotprod_rrrf,name)
-#define BSYNC(name)         LIQUID_CONCAT(bsync_cccf,name)
-
-#define TO_COMPLEX
-#define TC_COMPLEX
-#define TI_COMPLEX
-
-// prototypes
-#include "presync.proto.c"
+    // invalid configuration
+    CONTEND_EQUALITY( liquid_rosenbrock(NULL, v_misc, 0), 0.0f )
+}
 

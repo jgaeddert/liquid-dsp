@@ -131,7 +131,7 @@ unsigned int liquid_gcd(unsigned int _p,
     // dumb, slow method
     unsigned int gcd = 1;
     unsigned int r   = 2; // root
-    while ( r*r <= _p ) {
+    while ( r <= _q ) {
         while ((_p % r)==0 && (_q % r) == 0) {
             _p /= r;
             _q /= r;

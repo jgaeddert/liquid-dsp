@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -157,10 +157,12 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int              _M,
                                          ofdmflexframegenprops_s * _fgprops)
 {
     // validate input
-    if (_M < 2)
-        return liquid_error_config("ofdmflexframegen_create(), number of subcarriers must be at least 2");
+    if (_M < 8)
+        return liquid_error_config("ofdmflexframegen_create(), number of subcarriers must be at least 8");
     if (_M % 2)
         return liquid_error_config("ofdmflexframegen_create(), number of subcarriers must be even");
+    if (_cp_len > _M)
+        return liquid_error_config("ofdmflexframegen_create(), cyclic prefix length cannot exceed number of subcarriers");
 
     ofdmflexframegen q = (ofdmflexframegen) malloc(sizeof(struct ofdmflexframegen_s));
     q->M         = _M;          // number of subcarriers

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,28 +20,32 @@
  * THE SOFTWARE.
  */
 
-//
-// Framing API: floating-point
-//
+#include <stdlib.h>
+#include <stdio.h>
 
+#include "autotest/autotest.h"
 #include "liquid.internal.h"
 
-// 
-#define BSYNC(name)         LIQUID_CONCAT(bsync_cccf,name)
+void autotest_fec_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping fec_hamming3126 config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // symbols too large
+    CONTEND_EQUALITY(fec_golay2412_encode_symbol(1u<<12), 0)
+    CONTEND_EQUALITY(fec_golay2412_decode_symbol(1u<<24), 0)
 
-#define PRINTVAL(x)         printf("%12.4e + j%12.4e", crealf(x), cimagf(x))
+    CONTEND_EQUALITY(fec_hamming3126_encode_symbol(1u<<26), 0)
+    CONTEND_EQUALITY(fec_hamming3126_decode_symbol(1u<<31), 0)
 
-#define TO                  float complex
-#define TC                  float complex
-#define TI                  float complex
-#define ABS(X)              cabsf(X)
-#define WINDOW(name)        LIQUID_CONCAT(windowcf,name)
-#define DOTPROD(name)       LIQUID_CONCAT(dotprod_cccf,name)
+    CONTEND_EQUALITY(fec_hamming1511_encode_symbol(1u<<11), 0)
+    CONTEND_EQUALITY(fec_hamming1511_decode_symbol(1u<<15), 0)
 
-#define TO_COMPLEX
-#define TC_COMPLEX
-#define TI_COMPLEX
-
-// prototypes
-#include "bsync.proto.c"
+    CONTEND_EQUALITY(fec_hamming128_encode_symbol(1u<<8), 0)
+    CONTEND_EQUALITY(fec_hamming128_decode_symbol(1u<<12), 0)
+}
 
