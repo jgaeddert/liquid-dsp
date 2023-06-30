@@ -4470,6 +4470,16 @@ void RRESAMP(_execute_block)(RRESAMP()      _q,                             \
                              TI *           _x,                             \
                              unsigned int   _n,                             \
                              TO *           _y);                            \
+                                                                            \
+/* Execute on an arbitrary length block of input samples                */  \
+/*  _q  : resamp object                                                 */  \
+/*  _x  : input sample array, [size: decim*n x 1]                       */  \
+/*  _n  : block size                                                    */  \
+/*  _y  : output sample array, [size: interp*n x 1]                     */  \
+unsigned int RRESAMP(_execute_nonblock)(RRESAMP()      _q,                  \
+                             TI *           _x,                             \
+                             unsigned int   _n,                             \
+                             TO *           _y);
 
 LIQUID_RRESAMP_DEFINE_API(LIQUID_RRESAMP_MANGLE_RRRF,
                           float,

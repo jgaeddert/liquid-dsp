@@ -35,6 +35,7 @@ struct RRESAMP(_s) {
     unsigned int    Q;          // decimation factor (primitive)
     unsigned int    m;          // filter semi-length, h_len = 2*m + 1
     unsigned int    block_len;  // number of blocks to run in execute()
+    unsigned int    index;      // filterbank index
     FIRPFB()        pfb;        // filterbank object (interpolator), Q filters in bank
 };
 
@@ -70,6 +71,7 @@ RRESAMP() RRESAMP(_create)(unsigned int _interp,
     q->Q         = _decim;
     q->m         = _m;
     q->block_len =  1;
+    q->index     =  0;
 
     // create poly-phase filter bank
     q->pfb = FIRPFB(_create)(q->P, _h, 2*q->P*q->m);
@@ -321,6 +323,37 @@ void RRESAMP(_execute_block)(RRESAMP()      _q,
         _x += _q->Q;
         _y += _q->P;
     }
+}
+
+// Execute rational-rate resampler on an arbitrary length block of input samples and
+// store the resulting samples in the output array.
+//  _q  : resamp object
+//  _x  : input sample array, [size: _n]
+//  _n  : input data size, samples
+//  _y  : output sample array [size: ceil(_n x P/Q)]
+unsigned int RRESAMP(_execute_nonblock)(RRESAMP() _q,
+                        TI *      _x,
+                        unsigned int   _n,
+                        TO *      _y)
+{
+     unsigned int i, n=0;
+     unsigned int index = _q->index; // relax compiler with non-volatile
+ 
+     for (i=0; i<_n; i++) {
+         // push input
+         FIRPFB(_push)(_q->pfb, _x[i]);
+ 
+         // continue to produce output
+         while (index < _q->P) {
+             FIRPFB(_execute)(_q->pfb, index, &_y[n++]);
+             index += _q->Q;
+         }
+ 
+         // decrement filter-bank index by output rate
+         index -= _q->P;
+     }
+     _q->index = index;
+     return n;
 }
 
 // internal
