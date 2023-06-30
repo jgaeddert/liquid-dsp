@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,8 @@ void testbench_spgramcf_noise(unsigned int _nfft,
     unsigned int num_samples = 2000*_nfft;  // number of samples to generate
     float        nstd        = powf(10.0f,_noise_floor/20.0f); // noise std. dev.
     float        tol         = 0.5f; // error tolerance [dB]
-    if (liquid_autotest_verbose)
-        printf("  spgramcf test  (noise): nfft=%6u, wtype=%24s, noise floor=%6.1f\n", _nfft, liquid_window_str[_wtype][1], _noise_floor);
+    liquid_log_debug("spgramcf (noise): nfft=%4u, wtype=%15s, noise floor=%6.1f",
+            _nfft, liquid_window_str[_wtype][0], _noise_floor);
 
     // create spectral periodogram
     spgramcf q = NULL;
@@ -92,8 +92,8 @@ void testbench_spgramcf_signal(unsigned int _nfft, int _wtype, float _fc, float 
     float bw = 0.25f; // signal bandwidth (relative)
     unsigned int m = 25;
     float beta = 0.2f, n0 = -80.0f, tol = 0.5f;
-    if (liquid_autotest_verbose)
-        printf("  spgramcf test (signal): nfft=%6u, wtype=%24s, fc=%6.2f Fs, snr=%6.1f dB\n", _nfft, liquid_window_str[_wtype][1], _fc, _SNRdB);
+    liquid_log_debug("spgramcf (signal): nfft=%4u, wtype=%15s, fc=%6.2f Fs, snr=%4.1f dB",
+            _nfft, liquid_window_str[_wtype][0], _fc, _SNRdB);
 
     // create objects
     spgramcf     q     = spgramcf_create(_nfft, _wtype, _nfft/2, _nfft/4);
@@ -252,8 +252,7 @@ void autotest_spgramcf_standalone()
     for (i=0; i<nfft; i++) {
         float mask_lo = i ==nfft/2                     ? 2.0f : noise_floor - 3.0f;
         float mask_hi = i > nfft/2-10 && i < nfft/2+10 ? 8.0f : noise_floor + 3.0f;
-        if (liquid_autotest_verbose)
-            printf("%6u : %8.2f < %8.2f < %8.2f\n", i, mask_lo, psd[i], mask_hi);
+        //printf("%6u : %8.2f < %8.2f < %8.2f\n", i, mask_lo, psd[i], mask_hi);
         CONTEND_GREATER_THAN( psd[i], mask_lo );
         CONTEND_LESS_THAN   ( psd[i], mask_hi );
     }
@@ -283,15 +282,13 @@ void autotest_spgramcf_short()
     for (i=0; i<nfft; i++) {
         float f       = (float)i / (float)nfft - 0.5f;
         float mask_hi = fabsf(f) < 0.2f ? 15.0f - 30*fabsf(f)/0.2f : -15.0f;
-        if (liquid_autotest_verbose)
-            printf("%6u : f=%6.3f, %8.2f < %8.2f\n", i, f, psd[i], mask_hi);
+        //printf("%6u : f=%6.3f, %8.2f < %8.2f\n", i, f, psd[i], mask_hi);
         CONTEND_LESS_THAN( psd[i], mask_hi );
     }
     // consider lower mask only for DC term
     float mask_lo = 0.0f;
     unsigned int nfft_2 = nfft/2;
-    if (liquid_autotest_verbose)
-        printf("    DC : f=%6.3f, %8.2f > %8.2f\n", 0.0f, psd[nfft_2], mask_lo);
+    liquid_log_debug("DC : f=%6.3f, %8.2f > %8.2f", 0.0f, psd[nfft_2], mask_lo);
     CONTEND_GREATER_THAN( psd[nfft_2], mask_lo );
 
     // free memory
