@@ -236,9 +236,10 @@ void autotest_spgramcf_invalid_config()
 void autotest_spgramcf_standalone()
 {
     unsigned int nfft        = 1200;
-    unsigned int num_samples = 20*nfft;  // number of samples to generate
-    float        noise_floor = -20.0f;
-    float        nstd        = powf(10.0f,noise_floor/20.0f); // noise std. dev.
+    unsigned int num_samples = 20*nfft; // number of samples to generate
+    float        n0          = -20.0f;  // noise floor
+    float        tol         = 3.0f;    // tolerance [dB]
+    float        nstd        = powf(10.0f,n0/20.0f); // noise std. dev.
 
     float complex * buf = (float complex*)malloc(num_samples*sizeof(float complex));
     unsigned int i;
@@ -249,13 +250,13 @@ void autotest_spgramcf_standalone()
     spgramcf_estimate_psd(nfft, buf, num_samples, psd);
 
     // check mask
-    for (i=0; i<nfft; i++) {
-        float mask_lo = i ==nfft/2                     ? 2.0f : noise_floor - 3.0f;
-        float mask_hi = i > nfft/2-10 && i < nfft/2+10 ? 8.0f : noise_floor + 3.0f;
-        //printf("%6u : %8.2f < %8.2f < %8.2f\n", i, mask_lo, psd[i], mask_hi);
-        CONTEND_GREATER_THAN( psd[i], mask_lo );
-        CONTEND_LESS_THAN   ( psd[i], mask_hi );
-    }
+    autotest_psd_s regions[] = {
+        {.fmin=-0.500, .fmax=-0.050, .pmin=n0-tol, .pmax=n0+tol, .test_lo=1, .test_hi=1},
+        {.fmin=-0.001, .fmax=+0.001, .pmin=   2.0, .pmax=   8.0, .test_lo=1, .test_hi=1},
+        {.fmin=+0.050, .fmax=+0.500, .pmin=n0-tol, .pmax=n0+tol, .test_lo=1, .test_hi=1},
+    };
+    liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
+        liquid_autotest_verbose ? "autotest/logs/spgramcf_standalone.m" : NULL);
 
     // free memory
     free(buf);
