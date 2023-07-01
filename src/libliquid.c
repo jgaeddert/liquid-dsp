@@ -94,6 +94,7 @@ const char * liquid_error_str[LIQUID_NUM_ERRORS] = {
     "object has not been created or properly initialized",  // LIQUID_ENOINIT
     "not enough memory allocated for operation",            // LIQUID_EIMEM
     "file input/output",                                    // LIQUID_EIO
+    "algorithm could not converge",                         // LIQUID_ENOCONV
 };
 
 // get error string given code

@@ -72,7 +72,7 @@ int liquid_libversion_number(void);
   }                                                                         \
 
 // basic error types
-#define LIQUID_NUM_ERRORS 12
+#define LIQUID_NUM_ERRORS 13
 typedef enum {
     // everything ok
     LIQUID_OK=0,
@@ -122,6 +122,11 @@ typedef enum {
     //  - try to read more data than a file has space for
     //  - could not parse line in file (improper formatting)
     LIQUID_EIO,
+
+    // algorithm could not converge or no solution could be found
+    //  - try to find roots of polynomial can sometimes cause instability
+    //  - filter design using Parks-McClellan with extremely tight constraints
+    LIQUID_ENOCONV,
 
 } liquid_error_code;
 
