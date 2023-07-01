@@ -72,7 +72,7 @@ int liquid_libversion_number(void);
   }                                                                         \
 
 // basic error types
-#define LIQUID_NUM_ERRORS 13
+#define LIQUID_NUM_ERRORS 14
 typedef enum {
     // everything ok
     LIQUID_OK=0,
@@ -127,6 +127,9 @@ typedef enum {
     //  - try to find roots of polynomial can sometimes cause instability
     //  - filter design using Parks-McClellan with extremely tight constraints
     LIQUID_ENOCONV,
+
+    // method or function declared but not yet implemented
+    LIQUID_ENOIMP,
 
 } liquid_error_code;
 
