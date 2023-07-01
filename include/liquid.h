@@ -128,7 +128,7 @@ typedef enum {
     //  - filter design using Parks-McClellan with extremely tight constraints
     LIQUID_ENOCONV,
 
-    // method or function declared but not yet implemented
+    // method or function declared but not implemented or disabled
     LIQUID_ENOIMP,
 
 } liquid_error_code;
