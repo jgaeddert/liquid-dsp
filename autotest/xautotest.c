@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
         log = fopen(filename_log,"w");
         if (log == NULL)
             return liquid_error(LIQUID_EIO,"could not open '%s' for writing", filename_log);
-        liquid_logger_add_file(NULL,log,0);
+        liquid_logger_add_file(NULL,log,log_level);
     }
 
     // set random seed for repeatability
