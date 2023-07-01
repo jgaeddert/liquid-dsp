@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -421,7 +421,7 @@ int liquid_firdes_prototype(liquid_firfilt_type _type,
     // Nyquist filter prototypes
     case LIQUID_FIRFILT_KAISER:     return liquid_firdes_kaiser   (h_len, fc, as, _dt, _h);
     case LIQUID_FIRFILT_PM:
-        // WARNING: input timing offset is ignored here
+        // NOTE: input timing offset is ignored here
         return firdespm_run(h_len, 3, bands, des, weights, wtype, LIQUID_FIRDESPM_BANDPASS, _h);
     case LIQUID_FIRFILT_RCOS:       return liquid_firdes_rcos     (_k, _m, _beta, _dt, _h);
     case LIQUID_FIRFILT_FEXP:       return liquid_firdes_fexp     (_k, _m, _beta, _dt, _h);
@@ -721,7 +721,7 @@ int liquid_getopt_str2firfilt(const char * _str)
         }
     }
 
-    fprintf(stderr,"warning: liquid_getopt_str2firfilt(), unknown/unsupported type: %s\n", _str);
+    liquid_error(LIQUID_EICONFIG,"liquid_getopt_str2firfilt(), unknown/unsupported type: %s", _str);
     return LIQUID_FIRFILT_UNKNOWN;
 }
 

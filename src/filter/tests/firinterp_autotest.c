@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -247,5 +247,34 @@ void autotest_firinterp_copy()
     // destroy objects
     firinterp_crcf_destroy(q0);
     firinterp_crcf_destroy(q1);
+}
+
+// test flush method(s)
+void autotest_firinterp_flush()
+{
+    // create base object
+    unsigned int m = 7;
+    firinterp_crcf q = firinterp_crcf_create_kaiser(3, m, 60.0f);
+
+    // run samples through filter
+    unsigned int i;
+    float complex buf[3];
+    for (i=0; i<20; i++) {
+        float complex v = randnf() + _Complex_I*randnf();
+        firinterp_crcf_execute(q, v, buf);
+    }
+
+    // ensure buffer does not contain zeros
+    CONTEND_GREATER_THAN( liquid_sumsqcf(buf,3), 0.0f );
+
+    // flush buffer
+    for (i=0; i<2*m; i++)
+        firinterp_crcf_flush(q, buf);
+
+    // ensure buffer contains only zeros
+    CONTEND_EQUALITY( liquid_sumsqcf(buf,3), 0.0f );
+
+    // destroy objects
+    firinterp_crcf_destroy(q);
 }
 

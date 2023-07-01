@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,22 +89,16 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
     // validate input
     if (_num_stages > 16)
         return liquid_error_config("msresamp2_%s_create(), number of stages should not exceed 16", EXTENSION_FULL);
-
-    // ensure cut-off frequency is valid
-    if ( _fc <= 0.0f || _fc >= 0.5f ) {
+    if ( _fc <= 0.0f || _fc >= 0.5f )
         return liquid_error_config("msresamp2_%s_create(), cut-off frequency must be in (0,0.5)", EXTENSION_FULL);
-    } else if ( _fc > 0.499f ) {
-        fprintf(stderr,"warning: msresamp2_%s_create(), cut-off frequency greater than 0.499\n", EXTENSION_FULL);
-        fprintf(stderr,"    >> truncating to 0.499\n");
+    if ( _f0 != 0. )
+        return liquid_error_config("msresamp2_%s_create(), non-zero center frequency not yet supported", EXTENSION_FULL);
+
+    // truncate cut-off frequency to avoid excessive filter response
+    if ( _fc > 0.499f )
         _fc = 0.499f;
-    }
 
     // check center frequency
-    if ( _f0 != 0. ) {
-        fprintf(stderr,"warning: msresamp2_%s_create(), non-zero center frequency not yet supported\n", EXTENSION_FULL);
-        _f0 = 0.;
-    }
-
     unsigned int i;
 
     // create object

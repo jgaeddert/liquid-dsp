@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,9 @@
 
 #include "liquid.internal.h"
 
-struct qpacketmodem_s {
+struct QPACKETMODEM(_s) {
     // properties
-    modemcf         mod_payload;        // payload modulator/demodulator
+    MODEM()         mod_payload;        // payload modulator/demodulator
     packetizer      p;                  // packet encoder/decoder
     unsigned int    bits_per_symbol;    // modulator bits/symbol
     unsigned int    payload_dec_len;    // number of decoded payload bytes
@@ -47,13 +47,13 @@ struct qpacketmodem_s {
 };
 
 // create packet encoder
-qpacketmodem qpacketmodem_create()
+QPACKETMODEM() QPACKETMODEM(_create)()
 {
     // allocate memory for main object
-    qpacketmodem q = (qpacketmodem) malloc(sizeof(struct qpacketmodem_s));
+    QPACKETMODEM() q = (QPACKETMODEM()) malloc(sizeof(struct QPACKETMODEM(_s)));
 
     // create payload modem (initially QPSK, overridden by properties)
-    q->mod_payload = modemcf_create(LIQUID_MODEM_QPSK);
+    q->mod_payload = MODEM(_create)(LIQUID_MODEM_QPSK);
     q->bits_per_symbol = 2;
 
     // initial memory allocation for payload
@@ -87,22 +87,22 @@ qpacketmodem qpacketmodem_create()
 }
 
 // copy object
-qpacketmodem qpacketmodem_copy(qpacketmodem q_orig)
+QPACKETMODEM() QPACKETMODEM(_copy)(QPACKETMODEM() q_orig)
 {
     // validate input
     if (q_orig == NULL)
         return liquid_error_config("qpacketmodem_copy(), object cannot be NULL");
 
     // create new object
-    qpacketmodem q_copy = qpacketmodem_create();
+    QPACKETMODEM() q_copy = QPACKETMODEM(_create)();
 
     // configure identically as original
     unsigned int payload_len = q_orig->payload_dec_len;
     crc_scheme   check       = packetizer_get_crc (q_orig->p);
     fec_scheme   fec0        = packetizer_get_fec0(q_orig->p);
     fec_scheme   fec1        = packetizer_get_fec1(q_orig->p);
-    int          ms          = modemcf_get_scheme (q_orig->mod_payload);
-    qpacketmodem_configure(q_copy, payload_len, check, fec0, fec1, ms);
+    int          ms          = MODEM(_get_scheme )(q_orig->mod_payload);
+    QPACKETMODEM(_configure)(q_copy, payload_len, check, fec0, fec1, ms);
 
     // return new object
     return q_copy;
@@ -110,11 +110,11 @@ qpacketmodem qpacketmodem_copy(qpacketmodem q_orig)
 
 
 // destroy object, freeing all internal arrays
-int qpacketmodem_destroy(qpacketmodem _q)
+int QPACKETMODEM(_destroy)(QPACKETMODEM() _q)
 {
     // free objects
     packetizer_destroy(_q->p);
-    modemcf_destroy(_q->mod_payload);
+    MODEM(_destroy)(_q->mod_payload);
 
     // free arrays
     free(_q->payload_enc);
@@ -125,19 +125,19 @@ int qpacketmodem_destroy(qpacketmodem _q)
 }
 
 // reset object
-int qpacketmodem_reset(qpacketmodem _q)
+int QPACKETMODEM(_reset)(QPACKETMODEM() _q)
 {
-    return modemcf_reset(_q->mod_payload);
+    return MODEM(_reset)(_q->mod_payload);
 }
 
 // print object internals
-int qpacketmodem_print(qpacketmodem _q)
+int QPACKETMODEM(_print)(QPACKETMODEM() _q)
 {
     printf("qpacketmodem:\n");
     printf("  check             :   %s\n", crc_scheme_str[packetizer_get_crc(_q->p)][1]);
     printf("  fec (inner)       :   %s\n", fec_scheme_str[packetizer_get_fec0(_q->p)][1]);
     printf("  fec (outer)       :   %s\n", fec_scheme_str[packetizer_get_fec1(_q->p)][1]);
-    printf("  modulation scheme :   %s\n", modulation_types[modemcf_get_scheme(_q->mod_payload)].name);
+    printf("  modulation scheme :   %s\n", modulation_types[MODEM(_get_scheme)(_q->mod_payload)].name);
     printf("  payload dec len   :   %u\n", _q->payload_dec_len);
     printf("  payload enc len   :   %u\n", _q->payload_enc_len);
     printf("  payload bit len   :   %u\n", _q->payload_bit_len);
@@ -146,7 +146,7 @@ int qpacketmodem_print(qpacketmodem _q)
 }
 
 //
-int qpacketmodem_configure(qpacketmodem _q,
+int QPACKETMODEM(_configure)(QPACKETMODEM() _q,
                            unsigned int _payload_len,
                            crc_scheme   _check,
                            fec_scheme   _fec0,
@@ -157,8 +157,8 @@ int qpacketmodem_configure(qpacketmodem _q,
     _q->payload_dec_len = _payload_len;
 
     // recreate modem object and get new bits per symbol
-    _q->mod_payload = modemcf_recreate(_q->mod_payload, _ms);
-    _q->bits_per_symbol = modemcf_get_bps(_q->mod_payload);
+    _q->mod_payload = MODEM(_recreate)(_q->mod_payload, _ms);
+    _q->bits_per_symbol = MODEM(_get_bps)(_q->mod_payload);
 
     // recreate packetizer object and compute new encoded payload length
     _q->p = packetizer_recreate(_q->p, _q->payload_dec_len, _check, _fec0, _fec1);
@@ -185,44 +185,44 @@ int qpacketmodem_configure(qpacketmodem _q,
 }
 
 // get length of encoded frame in symbols
-unsigned int qpacketmodem_get_frame_len(qpacketmodem _q)
+unsigned int QPACKETMODEM(_get_frame_len)(QPACKETMODEM() _q)
 {
     return _q->payload_mod_len;
 }
 
 // get unencoded/decoded payload length (bytes)
-unsigned int qpacketmodem_get_payload_len(qpacketmodem _q)
+unsigned int QPACKETMODEM(_get_payload_len)(QPACKETMODEM() _q)
 {
     // number of decoded payload bytes
     return _q->payload_dec_len;
 }
 
-unsigned int qpacketmodem_get_crc(qpacketmodem _q)
+unsigned int QPACKETMODEM(_get_crc)(QPACKETMODEM() _q)
 {
     return packetizer_get_crc(_q->p);
 }
 
-unsigned int qpacketmodem_get_fec0(qpacketmodem _q)
+unsigned int QPACKETMODEM(_get_fec0)(QPACKETMODEM() _q)
 {
     return packetizer_get_fec0(_q->p);
 }
 
-unsigned int qpacketmodem_get_fec1(qpacketmodem _q)
+unsigned int QPACKETMODEM(_get_fec1)(QPACKETMODEM() _q)
 {
     return packetizer_get_fec1(_q->p);
 }
 
-unsigned int qpacketmodem_get_modscheme(qpacketmodem _q)
+unsigned int QPACKETMODEM(_get_modscheme)(QPACKETMODEM() _q)
 {
-    return modemcf_get_scheme(_q->mod_payload);
+    return MODEM(_get_scheme)(_q->mod_payload);
 }
 
-float qpacketmodem_get_demodulator_phase_error(qpacketmodem _q)
+float QPACKETMODEM(_get_demodulator_phase_error)(QPACKETMODEM() _q)
 {
-    return modemcf_get_demodulator_phase_error(_q->mod_payload);
+    return MODEM(_get_demodulator_phase_error)(_q->mod_payload);
 }
 
-float qpacketmodem_get_demodulator_evm(qpacketmodem _q)
+float QPACKETMODEM(_get_demodulator_evm)(QPACKETMODEM() _q)
 {
     return _q->evm;
 }
@@ -231,7 +231,7 @@ float qpacketmodem_get_demodulator_evm(qpacketmodem _q)
 //  _q          :   qpacketmodem object
 //  _payload    :   unencoded payload bytes
 //  _syms       :   encoded but un-modulated payload symbol indices
-int qpacketmodem_encode_syms(qpacketmodem          _q,
+int QPACKETMODEM(_encode_syms)(qpacketmodem          _q,
                              const unsigned char * _payload,
                              unsigned char *       _syms)
 {
@@ -256,7 +256,7 @@ int qpacketmodem_encode_syms(qpacketmodem          _q,
 //  _q          :   qpacketmodem object
 //  _syms       :   received hard-decision symbol indices
 //  _payload    :   recovered decoded payload bytes
-int qpacketmodem_decode_syms(qpacketmodem    _q,
+int QPACKETMODEM(_decode_syms)(qpacketmodem    _q,
                              unsigned char * _syms,
                              unsigned char * _payload)
 {
@@ -276,7 +276,7 @@ int qpacketmodem_decode_syms(qpacketmodem    _q,
 //  _q          :   qpacketmodem object
 //  _bits       :   received soft-decision bits
 //  _payload    :   recovered decoded payload bytes
-int qpacketmodem_decode_bits(qpacketmodem    _q,
+int QPACKETMODEM(_decode_bits)(qpacketmodem    _q,
                              unsigned char * _bits,
                              unsigned char * _payload)
 {
@@ -288,17 +288,17 @@ int qpacketmodem_decode_bits(qpacketmodem    _q,
 //  _q          :   qpacketmodem object
 //  _payload    :   unencoded payload bytes
 //  _frame      :   encoded/modulated payload symbols
-int qpacketmodem_encode(qpacketmodem          _q,
+int QPACKETMODEM(_encode)(qpacketmodem        _q,
                         const unsigned char * _payload,
-                        float complex *       _frame)
+                        TO                  * _frame)
 {
     // encode payload symbols into internal buffer
-    qpacketmodem_encode_syms(_q, _payload, _q->payload_mod);
+    QPACKETMODEM(_encode_syms)(_q, _payload, _q->payload_mod);
 
     // modulate symbols
     unsigned int i;
     for (i=0; i<_q->payload_mod_len; i++)
-        modemcf_modulate(_q->mod_payload, _q->payload_mod[i], &_frame[i]);
+        MODEM(_modulate)(_q->mod_payload, _q->payload_mod[i], &_frame[i]);
     return LIQUID_OK;
 }
 
@@ -306,9 +306,9 @@ int qpacketmodem_encode(qpacketmodem          _q,
 //  _q          :   qpacketmodem object
 //  _frame      :   encoded/modulated payload symbols
 //  _payload    :   recovered decoded payload bytes
-int qpacketmodem_decode(qpacketmodem    _q,
-                        float complex * _frame,
-                        unsigned char * _payload)
+int QPACKETMODEM(_decode)(qpacketmodem    _q,
+                          TO *            _frame,
+                          unsigned char * _payload)
 {
     unsigned int i;
 
@@ -318,10 +318,10 @@ int qpacketmodem_decode(qpacketmodem    _q,
     _q->evm = 0.0f;
     for (i=0; i<_q->payload_mod_len; i++) {
         // demodulate symbol
-        modemcf_demodulate(_q->mod_payload, _frame[i], &sym);
+        MODEM(_demodulate)(_q->mod_payload, _frame[i], &sym);
 
         // accumulate error vector magnitude estimate
-        float e = modemcf_get_demodulator_evm(_q->mod_payload);
+        float e = MODEM(_get_demodulator_evm)(_q->mod_payload);
         _q->evm += e*e;
 
         // pack decoded symbol into array
@@ -343,9 +343,9 @@ int qpacketmodem_decode(qpacketmodem    _q,
 //  _q          :   qpacketmodem object
 //  _frame      :   encoded/modulated payload symbols
 //  _payload    :   recovered decoded payload bytes
-int qpacketmodem_decode_soft(qpacketmodem    _q,
-                             float complex * _frame,
-                             unsigned char * _payload)
+int QPACKETMODEM(_decode_soft)(qpacketmodem    _q,
+                               TO *            _frame,
+                               unsigned char * _payload)
 {
     unsigned int i;
 
@@ -356,11 +356,11 @@ int qpacketmodem_decode_soft(qpacketmodem    _q,
     _q->evm = 0.0f;
     for (i=0; i<_q->payload_mod_len; i++) {
         // demodulate symbol
-        modemcf_demodulate_soft(_q->mod_payload, _frame[i], &sym, _q->payload_enc+n);
+        MODEM(_demodulate_soft)(_q->mod_payload, _frame[i], &sym, _q->payload_enc+n);
         n += _q->bits_per_symbol;
 
         // accumulate error vector magnitude estimate
-        float e = modemcf_get_demodulator_evm(_q->mod_payload);
+        float e = MODEM(_get_demodulator_evm)(_q->mod_payload);
         _q->evm += e*e;
     }
     //printf("received %u bits (expected %u)\n", n, _q->payload_mod_len * _q->bits_per_symbol);
@@ -374,21 +374,23 @@ int qpacketmodem_decode_soft(qpacketmodem    _q,
 }
 
 // decode symbol from modulated frame samples, returning flag if all symbols received
-//  _q          :   qpacketmodem object
-//  _frame      :   encoded/modulated symbol
-int qpacketmodem_decode_soft_sym(qpacketmodem  _q,
-                                 float complex _symbol)
+int QPACKETMODEM(_decode_soft_sym)(qpacketmodem _q,
+                                   TO           _symbol)
 {
     unsigned int sym;
-    modemcf_demodulate_soft(_q->mod_payload, _symbol, &sym, _q->payload_enc + _q->n);
+    MODEM(_demodulate_soft)(_q->mod_payload, _symbol, &sym, _q->payload_enc + _q->n);
     _q->n += _q->bits_per_symbol;
     return _q->n == _q->payload_mod_len * _q->bits_per_symbol;
 }
 
-int qpacketmodem_decode_soft_payload(qpacketmodem    _q,
-                                     unsigned char * _payload)
+int QPACKETMODEM(_decode_soft_payload)(qpacketmodem    _q,
+                                       unsigned char * _payload)
 {
-    assert( _q->n == _q->payload_mod_len * _q->bits_per_symbol);
+    if ( _q->n != _q->payload_mod_len * _q->bits_per_symbol) {
+        liquid_error(LIQUID_ENOINIT,"qpacketmodem_decode_soft_payload(), insufficient number of symbols received");
+        return 0;
+    }
     _q->n = 0;
     return packetizer_decode_soft(_q->p, _q->payload_enc, _payload);
 }
+

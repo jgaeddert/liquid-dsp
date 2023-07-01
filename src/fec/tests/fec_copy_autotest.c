@@ -49,6 +49,7 @@ void fec_test_copy(fec_scheme _fs)
     case LIQUID_FEC_RS_M8:
         AUTOTEST_WARN("convolutional, Reed-Solomon codes unavailable (install libfec)");
         return;
+    default:;
     }
 #endif
     unsigned int n_dec = 64;

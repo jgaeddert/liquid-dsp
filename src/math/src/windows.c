@@ -91,7 +91,7 @@ liquid_window_type liquid_getopt_str2window(const char * _str)
         }
     }
 
-    fprintf(stderr,"warning: liquid_getopt_str2window(), unknown/unsupported window scheme : %s\n", _str);
+    liquid_error(LIQUID_EICONFIG,"liquid_getopt_str2window(), unknown/unsupported window scheme: %s", _str);
     return LIQUID_WINDOW_UNKNOWN;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -199,7 +199,7 @@ unsigned int FFT(_estimate_mixed_radix)(unsigned int _nfft)
 
     // check if _nfft is prime
     if (num_factors < 2) {
-        fprintf(stderr,"warning: fft_estimate_mixed_radix(), %u is prime\n", _nfft);
+        liquid_error(LIQUID_EICONFIG,"fft_estimate_mixed_radix(), %u is prime", _nfft);
         return 0;
     }
 
