@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -102,7 +102,7 @@ fec_scheme liquid_getopt_str2fec(const char * _str)
         }
     }
 
-    fprintf(stderr,"warning: liquid_getopt_str2fec(), unknown/unsupported fec scheme : %s\n", _str);
+    liquid_error(LIQUID_EICONFIG,"liquid_getopt_str2fec(), unknown/unsupported crc scheme: %s", _str);
     return LIQUID_FEC_UNKNOWN;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@
 void autotest_reedsolomon_223_255()
 {
 #if !LIBFEC_ENABLED
-    printf("warning: Reed-Solomon codes unavailable\n");
+    liquid_error(LIQUID_EUMODE,"Reed-Solomon codes unavailable (install libfec)");
     return;
 #endif
 
