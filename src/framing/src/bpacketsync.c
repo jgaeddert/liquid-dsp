@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// bpacketsync
-//
 // binary packet synchronizer/decoder
-//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -436,8 +432,10 @@ int bpacketsync_decode_header(bpacketsync _q)
                       (_q->header_dec[5]     );
 
     // check version number
-    if (version != BPACKET_VERSION)
-        fprintf(stderr,"warning: bpacketsync, version mismatch!\n");
+    if (version != BPACKET_VERSION) {
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync, version mismatch (received %d, expected %d)",
+            version, BPACKET_VERSION);
+    }
 
     // TODO : check crc, fec0, fec1 schemes
     return LIQUID_OK;
