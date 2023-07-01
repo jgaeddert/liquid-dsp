@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -264,8 +264,10 @@ int liquid_firdes_rkaiser_bisection(unsigned int _k,
 #endif
     for (p=0; p<pmax; p++) {
         // check bounding conditions: y1 should be less than y0 and y2
-        if (y1 > y0 || y1 > y2)
-            fprintf(stderr,"warning: liquid_firdes_rkaiser_bisection(): bounding region is ill-conditioned\n");
+        if (y1 > y0 || y1 > y2) {
+            liquid_error(LIQUID_ENOCONV,"liquid_firdes_rkaiser_bisection(): bounding region is ill-conditioned, y:{%g,%g,%g}",
+                y0, y1, y2);
+        }
 
         // choose midway points xa, xb and compute ISI
         xa = 0.5f*(x0 + x1);    // bisect [x0,x1]
@@ -424,7 +426,8 @@ int liquid_firdes_rkaiser_quadratic(unsigned int _k,
 
         // ensure x_hat is within boundary (this will fail if y1 > y0 || y1 > y2)
         if (x_hat < x0 || x_hat > x2) {
-            //fprintf(stderr,"warning: liquid_firdes_rkaiser_quadratic(), quadratic minimum outside boundary\n");
+            //liquid_error(LIQUID_ENOCONV,"liquid_firdes_rkaiser_quadratic(): quadratic minimum outside boundary, y:{%g,%g,%g}, x-hat:%g,{%g,%g}",
+            //    y0, y1, y2, x_hat, x0, x2);
             break;
         }
 
@@ -474,9 +477,9 @@ float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
 {
     // validate input
     if (_rho < 0.0f) {
-        fprintf(stderr,"warning: liquid_firdes_rkaiser_internal_isi(), rho < 0\n");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_internal_isi(), rho < 0");
     } else if (_rho > 1.0f) {
-        fprintf(stderr,"warning: liquid_firdes_rkaiser_internal_isi(), rho > 1\n");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_internal_isi(), rho > 1");
     }
 
     unsigned int n=2*_k*_m+1;                   // filter length

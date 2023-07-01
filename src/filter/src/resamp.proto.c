@@ -297,7 +297,7 @@ int RESAMP(_adjust_timing_phase)(RESAMP() _q,
 unsigned int RESAMP(_get_num_output)(RESAMP()     _q,
                                      unsigned int _num_input)
 {
-    fprintf(stderr,"warning: resamp_%s_get_num_output(), function not implemented\n",EXTENSION_FULL);
+    liquid_error(LIQUID_EINT,"resamp_%s_get_num_output(), function not implemented",EXTENSION_FULL);
     return 0;
 }
 
