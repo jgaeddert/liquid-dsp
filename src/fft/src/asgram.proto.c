@@ -134,7 +134,7 @@ int ASGRAM(_set_scale)(ASGRAM() _q,
                        float    _div)
 {
     if (_div <= 0.0f)
-        return liquid_error(LIQUID_EICONFIG,"ASGRAM(_set_scale)(), div must be greater than zero");
+        return liquid_error(LIQUID_EICONFIG,"asgram%s_set_scale(), div must be greater than zero", EXTENSION);
 
     _q->ref = _ref;
     _q->div = _div;
@@ -154,7 +154,7 @@ int ASGRAM(_set_display)(ASGRAM()     _q,
     unsigned int i;
     for (i=0; i<10; i++) {
         if (_ascii[i] == '\0') {
-            fprintf(stderr,"warning: asgram%s_set_display(), invalid use of null character\n", EXTENSION);
+            liquid_error(LIQUID_EICONFIG,"asgram%s_display(), invalid use of null character", EXTENSION);
             _q->levelchar[i] = '?';
         } else {
             _q->levelchar[i] = _ascii[i];
