@@ -54,7 +54,7 @@ exec_prefix	:= @exec_prefix@
 VPATH		:= @srcdir@
 srcdir		:= @srcdir@
 libdir		:= @libdir@
-include_dirs	:= . include
+include_dirs	:= . ./include
 
 # programs
 CC		:= @CC@
