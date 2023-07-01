@@ -3846,6 +3846,13 @@ int FIRINTERP(_execute_block)(FIRINTERP()  _q,                              \
                               TI *         _x,                              \
                               unsigned int _n,                              \
                               TO *         _y);                             \
+                                                                            \
+/* Execute interpolation with zero-valued input (e.g. flush internal    */  \
+/* state)                                                               */  \
+/*  _q      : firinterp object                                          */  \
+/*  _y      : output sample array, [size: M x 1]                        */  \
+int FIRINTERP(_flush)(FIRINTERP() _q,                                       \
+                      TO *        _y);                                      \
 
 LIQUID_FIRINTERP_DEFINE_API(LIQUID_FIRINTERP_MANGLE_RRRF,
                             float,
