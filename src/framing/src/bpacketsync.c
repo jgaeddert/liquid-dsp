@@ -432,12 +432,15 @@ int bpacketsync_decode_header(bpacketsync _q)
                       (_q->header_dec[5]     );
 
     // check version number
-    if (version != BPACKET_VERSION) {
-        return liquid_error(LIQUID_EICONFIG,"bpacketsync, version mismatch (received %d, expected %d)",
-            version, BPACKET_VERSION);
-    }
+    if (version != BPACKET_VERSION)
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync, version mismatch (received %d, expected %d)",version, BPACKET_VERSION);
+    if (_q->crc == LIQUID_CRC_UNKNOWN || _q->crc >= LIQUID_CRC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync, invalid/unsupported crc: %u", _q->crc);
+    if (_q->fec0 == LIQUID_FEC_UNKNOWN || _q->fec0 >= LIQUID_FEC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync, invalid/unsupported fec (inner): %u", _q->fec0);
+    if (_q->fec1 == LIQUID_FEC_UNKNOWN || _q->fec1 >= LIQUID_FEC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync, invalid/unsupported fec (outer): %u", _q->fec1);
 
-    // TODO : check crc, fec0, fec1 schemes
     return LIQUID_OK;
 }
 
