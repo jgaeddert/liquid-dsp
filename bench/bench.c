@@ -45,14 +45,15 @@ typedef void(benchmark_function_t) (
 
 // define benchmark_t
 typedef struct {
-    unsigned int id;
-    benchmark_function_t * api;
-    const char* name;
-    unsigned int name_len;
-    unsigned int num_trials;
-    float extime;
-    float rate;
-    float cycles_per_trial;
+    unsigned int           id;     // identification of benchmark
+    benchmark_function_t * api;    // function interface
+    const char *           name;   // name of function
+    unsigned int           name_len;
+    unsigned int           num_trials;
+    float                  extime;
+    float                  rate;
+    float                  cycles_per_trial;//
+    unsigned int           num_attempts;    // number of attempts to reach target time
 } benchmark_t;
 
 // define package_t
@@ -292,12 +293,13 @@ int main(int argc, char *argv[])
     fprintf(fid,"  \"num_trials\"          : %lu,\n", num_base_trials);
     fprintf(fid,"  \"benchmarks\"          : [\n");
     for (i=0; i<NUM_AUTOSCRIPTS; i++) {
-        fprintf(fid,"    {\"id\":%5u, \"trials\":%12u, \"extime\":%12.4e, \"rate\":%12.4e, \"cycles_per_trial\":%12.4e, \"name\":\"%s\"}%s\n",
+        fprintf(fid,"    {\"id\":%5u, \"trials\":%12u, \"extime\":%12.4e, \"rate\":%12.4e, \"cycles_per_trial\":%12.4e, \"attempts\":%2u, \"name\":\"%s\"}%s\n",
                 scripts[i].id,
                 scripts[i].num_trials,
                 scripts[i].extime,
                 scripts[i].rate,
                 scripts[i].cycles_per_trial,
+                scripts[i].num_attempts,
                 scripts[i].name,
                 i==NUM_AUTOSCRIPTS-1 ? "" : ",");
     }
@@ -394,6 +396,7 @@ void execute_benchmark(benchmark_t* _benchmark, int _verbose)
     } while (1);
 
     _benchmark->num_trials = num_trials;
+    _benchmark->num_attempts = num_attempts;
     _benchmark->rate = _benchmark->extime==0 ? 0 : (float)(_benchmark->num_trials) / _benchmark->extime;
     _benchmark->cycles_per_trial = _benchmark->extime==0 ? 0 : cpu_clock / (_benchmark->rate);
 
@@ -448,8 +451,8 @@ void print_benchmark_results(benchmark_t* _b)
     float cycles_format = _b->cycles_per_trial;
     char cycles_units = convert_units(&cycles_format);
 
-    printf("  %-3u: %-30s: %6.2f %c trials / %6.2f %cs (%6.2f %c t/s, %6.2f %c c/t)\n",
-        _b->id, _b->name,
+    printf("  %-3u: [%2u] %-30s: %6.2f %c trials / %6.2f %cs (%6.2f %c t/s, %6.2f %c c/t)\n",
+        _b->id, _b->num_attempts, _b->name,
         trials_format, trials_units,
         extime_format, extime_units,
         rate_format, rate_units,
