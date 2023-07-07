@@ -33,22 +33,22 @@ void spgramcf_runbench(struct rusage *     _start,
                        unsigned long int * _num_iterations,
                        unsigned int        _nfft)
 {
+    // scale number of iterations to keep execution time
+    // relatively linear
+    *_num_iterations = (*_num_iterations) * liquid_nextpow2(1+_nfft) / _nfft;
+
     // create object
     spgramcf q = spgramcf_create_default(_nfft);
 
     // initialize buffer with random values
     unsigned long int i;
-    unsigned int buf_len = 17*_nfft + 31;
+    unsigned int buf_len = 2400;
     float complex * buf = (float complex*) malloc(buf_len*sizeof(float complex));
     for (i=0; i<buf_len; i++)
         buf[i] = randnf() + randnf()*_Complex_I;
 
     // buffer for holding PSD output
     float psd[_nfft];
-
-    // scale number of iterations to keep execution time
-    // relatively linear
-    *_num_iterations = (*_num_iterations) * 8 / _nfft;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
