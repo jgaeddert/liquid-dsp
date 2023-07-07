@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,7 @@ void smatrixf_mul_bench(struct rusage *     _start,
 {
     // normalize number of iterations
     // time ~ _n ^ 3
-    *_num_iterations /= _n * _n * _n;
-    if (*_num_iterations < 1) *_num_iterations = 1;
+    *_num_iterations = 1 + *_num_iterations * 8192 / (_n * _n * _n + 1);
 
     unsigned long int i;
 
