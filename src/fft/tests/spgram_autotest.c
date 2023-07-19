@@ -149,6 +149,7 @@ void autotest_spgramcf_signal_05() { testbench_spgramcf_signal(640,LIQUID_WINDOW
 
 void autotest_spgramcf_counters()
 {
+    _liquid_error_downgrade_enable();
     // create spectral periodogram with specific parameters
     unsigned int nfft=1200, wlen=400, delay=200;
     int wtype = LIQUID_WINDOW_HAMMING;
@@ -205,6 +206,7 @@ void autotest_spgramcf_counters()
 
     // destroy object(s)
     spgramcf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_spgramcf_invalid_config()
