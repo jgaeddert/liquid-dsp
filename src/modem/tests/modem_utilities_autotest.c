@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // test printing schemes
 void autotest_modemcf_print_schemes()
@@ -33,8 +33,9 @@ void autotest_modemcf_print_schemes()
 void autotest_modemcf_str2mod()
 {
     // start with invalid case
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+    _liquid_error_downgrade_enable();
     CONTEND_EQUALITY(liquid_getopt_str2mod("invalid scheme"), LIQUID_MODEM_UNKNOWN);
+    _liquid_error_downgrade_disable();
 
     // check normal cases
     CONTEND_EQUALITY(liquid_getopt_str2mod("psk2"     ), LIQUID_MODEM_PSK2);
