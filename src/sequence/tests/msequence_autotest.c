@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // test initialization of binary sequence on m-sequence
 void autotest_bsequence_init_msequence() {
@@ -139,13 +139,7 @@ void autotest_msequence_period_m31() { msequence_test_period(31); }
 
 void autotest_msequence_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping firfilt config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check invalid configurations
     CONTEND_ISNULL(msequence_create        (100, 0, 0))
     CONTEND_ISNULL(msequence_create_default( 32)) // too long
@@ -160,5 +154,6 @@ void autotest_msequence_config()
     CONTEND_EQUALITY(0x8a,      msequence_get_state(q))
 
     msequence_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
