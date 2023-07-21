@@ -340,7 +340,7 @@ int gmskframegen_gen_symbol(gmskframegen _q)
     case STATE_PAYLOAD:     gmskframegen_write_payload (_q); break;
     case STATE_TAIL:        gmskframegen_write_tail    (_q); break;
     default:
-        return liquid_error(LIQUID_EINT,"error: gmskframegen_writesymbol(), invalid internal state");
+        return liquid_error(LIQUID_EINT,"gmskframegen_writesymbol(), invalid internal state");
     }
 
     /*
