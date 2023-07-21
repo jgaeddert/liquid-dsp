@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ float randuf(float _a, float _b)
 {
     // check bounds
     if (_a >= _b) {
-        fprintf(stderr,"error: %s:%u, randuf() has invalid range\n", __FILE__, __LINE__);
+        liquid_error(LIQUID_EIRANGE,"randuf(%g,%g) has invalid range", _a, _b);
         return 0;
     }
 
@@ -72,7 +72,7 @@ float randuf_pdf(float _x,
 {
     // check bounds
     if (_a >= _b) {
-        fprintf(stderr,"error: %s:%u, randuf_pdf() has invalid range\n", __FILE__, __LINE__);
+        liquid_error(LIQUID_EIRANGE,"randuf_pdf(%g,%g,%g) has invalid range", _x, _a, _b);
         return 0;
     }
 
@@ -86,7 +86,7 @@ float randuf_cdf(float _x,
 {
     // check bounds
     if (_a >= _b) {
-        fprintf(stderr,"error: %s:%u, randuf_cdf() has invalid range\n", __FILE__, __LINE__);
+        liquid_error(LIQUID_EIRANGE,"randuf_cdf(%g,%g,%g) has invalid range", _x, _a, _b);
         return 0;
     }
 
