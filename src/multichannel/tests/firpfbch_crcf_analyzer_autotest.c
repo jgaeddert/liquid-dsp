@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -115,27 +115,15 @@ void autotest_firpfbch_crcf_analysis()
     firfilt_crcf_destroy(f);
     firpfbch_crcf_destroy(q);
 
-    if (liquid_autotest_verbose) {
-        // print filterbank channelizer
-        printf("\n");
-        printf("filterbank channelizer:\n");
-        for (i=0; i<num_symbols; i++) {
-            printf("%3u: ", i);
-            for (j=0; j<num_channels; j++) {
-                printf("  %8.5f+j%8.5f, ", crealf(Y0[i][j]), cimagf(Y0[i][j]));
-            }
-            printf("\n");
-        }
-
-        // print traditional channelizer
-        printf("\n");
-        printf("traditional channelizer:\n");
-        for (i=0; i<num_symbols; i++) {
-            printf("%3u: ", i);
-            for (j=0; j<num_channels; j++) {
-                printf("  %8.5f+j%8.5f, ", crealf(Y1[i][j]), cimagf(Y1[i][j]));
-            }
-            printf("\n");
+    // print difference
+    liquid_log_debug("filterbank channelizer:");
+    for (i=0; i<num_symbols; i++) {
+        liquid_log_debug("%3u: ", i);
+        for (j=0; j<num_channels; j++) {
+            liquid_log_debug(" ch:%8.5f+j%8.5f, naive:%8.5f+j%8.5f, err:%8.6f",
+                    crealf(Y0[i][j]), cimagf(Y0[i][j]),
+                    crealf(Y1[i][j]), cimagf(Y1[i][j]),
+                    cabsf(Y0[i][j] -Y1[i][j]) );
         }
     }
 

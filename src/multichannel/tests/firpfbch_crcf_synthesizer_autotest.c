@@ -123,20 +123,13 @@ void autotest_firpfbch_crcf_synthesis()
     firfilt_crcf_destroy(f);
     firpfbch_crcf_destroy(q);
 
-    // 
     // compare results
-    // 
     for (i=0; i<num_samples; i++) {
-
-        // print channelizer outputs
-        if (liquid_autotest_verbose) {
-            printf("%3u: old:%8.5f+j%8.5f, firpfbch:%8.5f+j%8.5f, error:%12.4e+j%12.4e\n",
-                i,
-                crealf(y0[i]),       cimagf(y0[i]),
-                crealf(y1[i]),       cimagf(y1[i]),
-                crealf(y1[i]-y0[i]), cimagf(y1[i]-y0[i]));
-        }
-
+        liquid_log_debug("%3u: old:%8.5f+j%8.5f, firpfbch:%8.5f+j%8.5f, error:%12.4e+j%12.4f",
+            i,
+            crealf(y0[i]),       cimagf(y0[i]),
+            crealf(y1[i]),       cimagf(y1[i]),
+            crealf(y1[i]-y0[i]), cimagf(y1[i]-y0[i]));
 
         CONTEND_DELTA( crealf(y0[i]), crealf(y1[i]), tol );
         CONTEND_DELTA( cimagf(y0[i]), cimagf(y1[i]), tol );
