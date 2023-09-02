@@ -184,12 +184,12 @@ int liquid_logger_callback_stdout(liquid_log_event _event,
         liquid_log_levels[_event->level][0]-32);
     int slen = strlen(_event->file);
     if (slen  > smax) {
-        fprintf(_stream,"\033[90m+%*s:%d:\033[0m",
+        fprintf(_stream,"\033[90m\u2026%*s:%-3d:\033[0m",
         smax - 1,
         _event->file + slen - smax + 1,
         _event->line);
     } else {
-        fprintf(_stream,"\033[90m%*s:%3d:\033[0m",
+        fprintf(_stream,"\033[90m%*s:%-3d:\033[0m",
         smax,
         _event->file,
         _event->line);
