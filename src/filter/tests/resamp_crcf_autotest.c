@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@ void testbench_resamp_crcf(float r, float As, int _id)
     // generate pulse with sharp transition and very narrow side-lobes
     unsigned int p = (unsigned int) (40.0f / r);
     unsigned int pulse_len = 4*p + 1;
-    //printf("pulse len: 4*%u+1 = %u, r=%f, bw=%f\n", p, pulse_len, r, bw);
+    liquid_log_info("pulse len: 4*%u+1 = %u, r=%f, bw=%f", p, pulse_len, r, bw);
     float        pulse[pulse_len];
     liquid_firdes_kaiser(pulse_len, 0.5*r*bw, 120, 0, pulse);
 
@@ -89,8 +89,7 @@ void autotest_resamp_crcf_13() { testbench_resamp_crcf(0.973621947f, 80.0f, 13);
 // test arbitrary resampler output length calculation
 void testbench_resamp_crcf_num_output(float _rate, unsigned int _npfb)
 {
-    if (liquid_autotest_verbose)
-        printf("testing resamp_crcf_get_num_output() with r=%g, npfb=%u\n", _rate, _npfb);
+    liquid_log_debug("testing resamp_crcf_get_num_output() with r=%g, npfb=%u", _rate, _npfb);
 
     // create object
     float fc = 0.4f;
@@ -104,7 +103,7 @@ void testbench_resamp_crcf_num_output(float _rate, unsigned int _npfb)
     // allocate buffers (over-provision output to help avoid segmentation faults on error)
     unsigned int max_input = 64;
     unsigned int max_output = 16 + (unsigned int)(4.0f * max_input * _rate);
-    printf("max_input : %u, max_output : %u\n", max_input, max_output);
+    liquid_log_debug("max_input : %u, max_output : %u", max_input, max_output);
     float complex buf_0[max_input];
     float complex buf_1[max_output];
     unsigned int i;
@@ -119,10 +118,8 @@ void testbench_resamp_crcf_num_output(float _rate, unsigned int _npfb)
             unsigned int num_output = resamp_crcf_get_num_output(q, num_input);
             unsigned int num_written;
             resamp_crcf_execute_block(q, buf_0, num_input, buf_1, &num_written);
-            if (liquid_autotest_verbose) {
-                printf(" b[%2u][%2u], num_input:%5u, num_output:%5u, num_written:%5u\n",
-                        b, i, num_input, num_output, num_written);
-            }
+            liquid_log_debug(" b[%2u][%2u], num_input:%5u, num_output:%5u, num_written:%5u",
+                    b, i, num_input, num_output, num_written);
             CONTEND_EQUALITY(num_output, num_written)
         }
     }

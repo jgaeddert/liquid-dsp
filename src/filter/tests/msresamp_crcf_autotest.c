@@ -83,8 +83,7 @@ void autotest_msresamp_crcf_03() { testbench_msresamp_crcf(0.676543210f, 60.0f);
 // test arbitrary resampler output length calculation
 void testbench_msresamp_crcf_num_output(float _rate)
 {
-    if (liquid_autotest_verbose)
-        printf("testing msresamp_crcf_get_num_output() with r=%g\n", _rate);
+    liquid_log_debug("testing msresamp_crcf_get_num_output() with r=%g", _rate);
 
     // create object
     float As = 60.0f;
@@ -97,7 +96,7 @@ void testbench_msresamp_crcf_num_output(float _rate)
     // allocate buffers (over-provision output to help avoid segmentation faults on error)
     unsigned int max_input = 64*s;
     unsigned int max_output = 16 + (unsigned int)(4.0f * max_input * _rate);
-    printf("max_input : %u, max_output : %u\n", max_input, max_output);
+    liquid_log_debug("max_input : %u, max_output : %u", max_input, max_output);
     float complex buf_0[max_input];
     float complex buf_1[max_output];
     unsigned int i;
@@ -112,10 +111,8 @@ void testbench_msresamp_crcf_num_output(float _rate)
             unsigned int num_output = msresamp_crcf_get_num_output(q, num_input);
             unsigned int num_written;
             msresamp_crcf_execute(q, buf_0, num_input, buf_1, &num_written);
-            if (liquid_autotest_verbose) {
-                printf(" b[%2u][%2u], num_input:%5u, num_output:%5u, num_written:%5u\n",
-                        b, i, num_input, num_output, num_written);
-            }
+            liquid_log_debug(" b[%2u][%2u], num_input:%5u, num_output:%5u, num_written:%5u",
+                    b, i, num_input, num_output, num_written);
             CONTEND_EQUALITY(num_output, num_written)
         }
     }
