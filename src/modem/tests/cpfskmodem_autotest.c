@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,11 +64,9 @@ void cpfskmodem_test_mod_demod(unsigned int _bps,
     for (i=0; i<num_symbols; i++) {
         if (i >= delay) {
             // print results
-            if (liquid_autotest_verbose) {
-                printf("  %3u : input = %2u, output = %2u %s\n",
-                        i, sym_in[i-delay], sym_out[i],
-                        (sym_in[i-delay] == sym_out[i]) ? "" : "*");
-            }
+            liquid_log_debug("  %3u : input = %2u, output = %2u %s",
+                    i, sym_in[i-delay], sym_out[i],
+                    (sym_in[i-delay] == sym_out[i]) ? "" : "*");
 
             // check result
             CONTEND_EQUALITY(sym_in[i-delay], sym_out[i]);
