@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -139,15 +139,8 @@ void symsync_crcf_test(unsigned int _k,
     // (initial filter + resampler + matched filter)
     unsigned int delay = m + 10 + m;
 
-    if (liquid_autotest_verbose) {
-        printf("symsync_crcf_test(),\n");
-        printf("    k       :   %u\n",      k);
-        printf("    m       :   %u\n",      m);
-        printf("    beta    :   %-8.4f\n",   beta);
-        printf("    tau     :   %-8.4f\n",   tau);
-        printf("    rate    :   %-12.8f\n",  rate);
-        printf("output symbols:\n");
-    }
+    liquid_log_debug("symsync_crcf_test(), k:%u, m:%u, beta:%8.4f, rau:%8.4f, rate:%12.8f",
+        k,m,beta,tau,rate);
 
     // compare (and print) results
     for (i=nz-num_symbols_test; i<nz; i++) {
@@ -158,13 +151,11 @@ void symsync_crcf_test(unsigned int _k,
         CONTEND_LESS_THAN( err, tol );
 
         // print formatted results if desired
-        if (liquid_autotest_verbose) {
-            printf("  sym_out(%4u) = %8.4f + j*%8.4f; %% {%8.4f + j*%8.4f} e = %12.8f %s\n",
-                    i+1,
-                    crealf(z[i]      ), cimagf(z[i]      ),
-                    crealf(s[i-delay]), cimagf(s[i-delay]),
-                    err, err < tol ? "" : "*");
-        }
+        liquid_log_debug(" sym_out(%4u)=%8.4f+j*%8.4f;%%{%8.4f+j*%8.4f},e=%12.8f %s",
+                i+1,
+                crealf(z[i]      ), cimagf(z[i]      ),
+                crealf(s[i-delay]), cimagf(s[i-delay]),
+                err, err < tol ? "" : "*");
     }
 
 }
