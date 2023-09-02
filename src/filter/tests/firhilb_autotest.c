@@ -54,11 +54,9 @@ void autotest_firhilbf_decim()
     for (i=0; i<16; i++)
         firhilbf_decim_execute(ht, &x[2*i], &y[i]);
 
-    if (liquid_autotest_verbose) {
-        printf("hilbert transform decimator output:\n");
-        for (i=0; i<16; i++)
-            printf("  y(%3u) = %8.5f + j*%8.5f;\n", i+1, crealf(y[i]), cimagf(y[i]));
-    }
+    liquid_log_debug("hilbert transform decimator output:");
+    for (i=0; i<16; i++)
+        liquid_log_debug("  y(%3u) = %8.5f + j*%8.5f;", i+1, crealf(y[i]), cimagf(y[i]));
 
     // run validation
     for (i=0; i<16; i++) {
@@ -100,12 +98,6 @@ void autotest_firhilbf_interp()
     for (i=0; i<16; i++)
         firhilbf_interp_execute(ht, x[i], &y[2*i]);
 
-    if (liquid_autotest_verbose) {
-        printf("hilbert transform interpolator output:\n");
-        for (i=0; i<32; i++)
-            printf("  y(%3u) = %8.5f;\n", i+1, y[i]);
-    }
-
     // run validation
     for (i=0; i<32; i++) {
         CONTEND_DELTA(y[i], test[i], tol);
@@ -126,7 +118,6 @@ void autotest_firhilbf_psd()
 
     // create transform
     firhilbf q = firhilbf_create(m,As);
-    firhilbf_print(q);
 
     unsigned int h_len       = 2*p+1; // pulse length
     unsigned int num_samples = h_len + 2*m + 8;
@@ -212,10 +203,8 @@ void autotest_firhilbf_copy_interp()
         float complex x = randnf() + _Complex_I*randnf();
         firhilbf_interp_execute(q0, x, y0);
         firhilbf_interp_execute(q1, x, y1);
-        if (liquid_autotest_verbose) {
-            printf("%3u : %12.8f +j%12.8f > {%12.8f, %12.8f}, {%12.8f, %12.8f}\n",
-                    i, crealf(x), cimagf(x), y0[0], y0[1], y1[0], y1[1]);
-        }
+        liquid_log_debug("%3u : %12.8f +j%12.8f > {%12.8f, %12.8f}, {%12.8f, %12.8f}",
+                i, crealf(x), cimagf(x), y0[0], y0[1], y1[0], y1[1]);
         CONTEND_EQUALITY(y0[0], y1[0]);
         CONTEND_EQUALITY(y0[1], y1[1]);
     }
@@ -247,10 +236,8 @@ void autotest_firhilbf_copy_decim()
         x[1] = randnf();
         firhilbf_decim_execute(q0, x, &y0);
         firhilbf_decim_execute(q1, x, &y1);
-        if (liquid_autotest_verbose) {
-            printf("%3u : {%12.8f %12.8f} > %12.8f +j%12.8f, %12.8f +j%12.8f\n",
-                    i, x[0], x[1], crealf(y0), cimagf(y0), crealf(y1), cimagf(y1));
-        }
+        liquid_log_debug("%3u : {%12.8f %12.8f} > %12.8f +j%12.8f, %12.8f +j%12.8f",
+                i, x[0], x[1], crealf(y0), cimagf(y0), crealf(y1), cimagf(y1));
         CONTEND_EQUALITY(y0, y1);
     }
 
