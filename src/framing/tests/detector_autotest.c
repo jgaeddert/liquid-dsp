@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -133,10 +133,8 @@ void detector_cccf_runtest(unsigned int _n,
         if (detected) {
             signal_detected = 1;
             delay_hat = (float)i + (float)tau_hat;
-            if (liquid_autotest_verbose) {
-                printf("****** preamble found, tau_hat=%8.6f, dphi_hat=%8.6f, gamma_hat=%8.6f\n",
-                        tau_hat, dphi_hat, gamma_hat);
-            }
+            liquid_log_debug("****** preamble found, tau_hat=%8.6f, dphi_hat=%8.6f, gamma_hat=%8.6f",
+                    tau_hat, dphi_hat, gamma_hat);
         }
     }
     
@@ -151,12 +149,10 @@ void detector_cccf_runtest(unsigned int _n,
     gamma     = 20*log10f(gamma);
     gamma_hat = 20*log10f(gamma_hat);
 
-    if (liquid_autotest_verbose) {
-        printf("detector autotest [%3u]: signal detected? %s\n", _n, signal_detected ? "yes" : "no");
-        printf("    dphi    :   estimate = %12.6f (expected %12.6f)\n", dphi_hat,  _dphi);
-        printf("    delay   :   estimate = %12.6f (expected %12.6f)\n", delay_hat, delay);
-        printf("    gamma   :   estimate = %12.6f (expected %12.6f)\n", gamma_hat, gamma);
-    }
+    liquid_log_debug("detector autotest [%3u]: signal detected? %s", _n, signal_detected ? "yes" : "no");
+    liquid_log_debug("    dphi    :   estimate = %12.6f (expected %12.6f)", dphi_hat,  _dphi);
+    liquid_log_debug("    delay   :   estimate = %12.6f (expected %12.6f)", delay_hat, delay);
+    liquid_log_debug("    gamma   :   estimate = %12.6f (expected %12.6f)", gamma_hat, gamma);
 
     // ensure signal was detected
     CONTEND_EXPRESSION( signal_detected );
