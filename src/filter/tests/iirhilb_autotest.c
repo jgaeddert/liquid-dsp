@@ -206,10 +206,8 @@ void autotest_iirhilbf_copy_interp()
         float complex x = randnf() + _Complex_I*randnf();
         iirhilbf_interp_execute(q0, x, y0);
         iirhilbf_interp_execute(q1, x, y1);
-        if (liquid_autotest_verbose) {
-            printf("%3u : %12.8f +j%12.8f > {%12.8f, %12.8f}, {%12.8f, %12.8f}\n",
-                    i, crealf(x), cimagf(x), y0[0], y0[1], y1[0], y1[1]);
-        }
+        liquid_log_debug("%3u : %12.8f +j%12.8f > {%12.8f, %12.8f}, {%12.8f, %12.8f}",
+                i, crealf(x), cimagf(x), y0[0], y0[1], y1[0], y1[1]);
         CONTEND_EQUALITY(y0[0], y1[0]);
         CONTEND_EQUALITY(y0[1], y1[1]);
     }
@@ -241,10 +239,8 @@ void autotest_iirhilbf_copy_decim()
         x[1] = randnf();
         iirhilbf_decim_execute(q0, x, &y0);
         iirhilbf_decim_execute(q1, x, &y1);
-        if (liquid_autotest_verbose) {
-            printf("%3u : {%12.8f %12.8f} > %12.8f +j%12.8f, %12.8f +j%12.8f\n",
-                    i, x[0], x[1], crealf(y0), cimagf(y0), crealf(y1), cimagf(y1));
-        }
+        liquid_log_debug("%3u : {%12.8f %12.8f} > %12.8f +j%12.8f, %12.8f +j%12.8f",
+                i, x[0], x[1], crealf(y0), cimagf(y0), crealf(y1), cimagf(y1));
         CONTEND_EQUALITY(y0, y1);
     }
 
