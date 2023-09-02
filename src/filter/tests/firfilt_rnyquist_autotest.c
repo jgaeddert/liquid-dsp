@@ -71,20 +71,19 @@ void testbench_firfilt_rnyquist(int          _ftype,// filter type
     unsigned int nfft = 2048;
     float As = 20*log10f( liquid_filter_energy(ht, h_len, 0.5f*(1.0f + _beta)/(float)_k, nfft) );
 
-    if (liquid_autotest_verbose) {
-        printf("ftype: %s, k: %u, m: %u, beta: %.3f, dt: %.3f\n",
-            liquid_firfilt_type_str[_ftype][0], _k, _m, _beta, _dt);
+    liquid_log_debug("ftype: %s, k: %u, m: %u, beta: %.3f, dt: %.3f",
+        liquid_firfilt_type_str[_ftype][0], _k, _m, _beta, _dt);
 #if 0
-        for (i=0; i<h_len; i++)
-            printf("  %3d: ht = %12.8f, hr = %12.8f\n", (int)i - 2*(int)_m, ht[i], hr[i]);
-        printf("composite:\n");
-        for (i=0; i<hc_len; i++)
-            printf("  %3d: hc = %12.8f%s\n", (int)i - 4*(int)_m, hc[i], i%_k ? "" : " *");
+    for (i=0; i<h_len; i++)
+        printf("  %3d: ht = %12.8f, hr = %12.8f\n", (int)i - 2*(int)_m, ht[i], hr[i]);
+    printf("composite:\n");
+    for (i=0; i<hc_len; i++)
+        printf("  %3d: hc = %12.8f%s\n", (int)i - 4*(int)_m, hc[i], i%_k ? "" : " *");
 #endif
-        printf("  rxx[0]    : %12.8f (expected %u)\n", rxx0, _k);
-        printf("  isi (rms) : %12.8f dB\n", isi_rms);
-        printf("  As        : %12.8f dB\n", As);
-    }
+    liquid_log_debug("  rxx[0]    : %12.8f (expected %u)", rxx0, _k);
+    liquid_log_debug("  isi (rms) : %12.8f dB", isi_rms);
+    liquid_log_debug("  As        : %12.8f dB", As);
+
     CONTEND_DELTA    ( rxx0,   (float)_k, 0.01f );
     CONTEND_LESS_THAN( isi_rms, -50.0f );
     CONTEND_LESS_THAN( As,      -50.0f );
