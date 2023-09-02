@@ -72,13 +72,6 @@ void autotest_reedsolomon_223_255()
     // validate data are the same
     CONTEND_SAME_DATA(msg_org, msg_dec, dec_msg_len);
 
-    if (liquid_autotest_verbose) {
-        printf("enc   dec\n");
-        printf("---   ---\n");
-        for (i=0; i<dec_msg_len; i++)
-            printf("%3u   %3u\n", msg_org[i], msg_dec[i]);
-    }
-
     // clean up objects
     fec_destroy(q);
 }
