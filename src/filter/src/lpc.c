@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// lpc.c
-//
 // linear prediction coefficients
-//
 
 #include <math.h>
 #include <stdio.h>
@@ -62,7 +58,7 @@ void liquid_lpc(float * _x,
         r[i] = 0.0f;
         for (j=lag; j<_n; j++)
             r[i] += _x[j] * _x[j-lag];
-        printf("r[%3u] = %12.8f\n", i, r[i]);
+        //printf("r[%3u] = %12.8f\n", i, r[i]);
     }
 
     // solve the Toeplitz inversion using Levinson-Durbin recursion
