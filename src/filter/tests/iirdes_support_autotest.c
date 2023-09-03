@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,15 +55,13 @@ void autotest_iirdes_cplxpair_n6()
 
     unsigned int i;
 
-    if (liquid_autotest_verbose) {
-        printf("complex set:\n");
-        for (i=0; i<6; i++)
-            printf("  r[%3u] : %12.8f + j*%12.8f\n", i, crealf(r[i]), cimagf(r[i]));
+    liquid_log_debug("complex set:");
+    for (i=0; i<6; i++)
+        liquid_log_debug("  r[%3u] : %12.8f + j*%12.8f", i, crealf(r[i]), cimagf(r[i]));
 
-        printf("complex pairs:\n");
-        for (i=0; i<6; i++)
-            printf("  p[%3u] : %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
-    }
+    liquid_log_debug("complex pairs:");
+    for (i=0; i<6; i++)
+        liquid_log_debug("  p[%3u] : %12.8f + j*%12.8f", i, crealf(p[i]), cimagf(p[i]));
 
     // run test
     for (i=0; i<6; i++) {
@@ -132,15 +130,13 @@ void autotest_iirdes_cplxpair_n20()
 
     unsigned int i;
 
-    if (liquid_autotest_verbose) {
-        printf("complex set:\n");
-        for (i=0; i<20; i++)
-            printf("  r[%3u] : %12.8f + j*%12.8f\n", i, crealf(r[i]), cimagf(r[i]));
+    liquid_log_debug("complex set:");
+    for (i=0; i<20; i++)
+        liquid_log_debug("  r[%3u] : %12.8f + j*%12.8f", i, crealf(r[i]), cimagf(r[i]));
 
-        printf("complex pairs:\n");
-        for (i=0; i<20; i++)
-            printf("  p[%3u] : %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
-    }
+    liquid_log_debug("complex pairs:");
+    for (i=0; i<20; i++)
+        liquid_log_debug("  p[%3u] : %12.8f + j*%12.8f", i, crealf(p[i]), cimagf(p[i]));
 
     // run test
     for (i=0; i<20; i++) {
@@ -174,27 +170,23 @@ void autotest_iirdes_dzpk2sosf()
                   ka,  m,
                   zd, pd, &kd);
 
-    if (liquid_autotest_verbose) {
-        printf("poles (digital):\n");
-        for (i=0; i<n; i++)
-            printf("  pd[%3u] = %12.8f + j*%12.8f\n", i, crealf(pd[i]), cimagf(pd[i]));
+    liquid_log_debug("poles (digital):");
+    for (i=0; i<n; i++)
+        liquid_log_debug("  pd[%3u] = %12.8f + j*%12.8f", i, crealf(pd[i]), cimagf(pd[i]));
 
-        printf("zeros (digital):\n");
-        for (i=0; i<n; i++)
-            printf("  zd[%3u] = %12.8f + j*%12.8f\n", i, crealf(zd[i]), cimagf(zd[i]));
-    }
+    liquid_log_debug("zeros (digital):");
+    for (i=0; i<n; i++)
+        liquid_log_debug("  zd[%3u] = %12.8f + j*%12.8f", i, crealf(zd[i]), cimagf(zd[i]));
 
     iirdes_dzpk2sosf(zd,pd,n,kd,B,A);
 
-    if (liquid_autotest_verbose) {
-        printf("B:\n");
-        for (i=0; i<L; i++)
-            printf("  %12.8f %12.8f %12.8f\n", B[3*i+0], B[3*i+1], B[3*i+2]);
+    liquid_log_debug("B:");
+    for (i=0; i<L; i++)
+        liquid_log_debug("  %12.8f %12.8f %12.8f", B[3*i+0], B[3*i+1], B[3*i+2]);
 
-        printf("A:\n");
-        for (i=0; i<L; i++)
-            printf("  %12.8f %12.8f %12.8f\n", A[3*i+0], A[3*i+1], A[3*i+2]);
-    }
+    liquid_log_debug("A:");
+    for (i=0; i<L; i++)
+        liquid_log_debug("  %12.8f %12.8f %12.8f", A[3*i+0], A[3*i+1], A[3*i+2]);
 }
 
 // iirdes_isstable
