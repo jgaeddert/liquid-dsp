@@ -110,7 +110,7 @@ void testbench_eqlms(unsigned int k, unsigned int m, float beta, int init,
             error, error > tol ? "*" : "");
     }
     rmse = 10*log10f( rmse/num_symbols );
-    printf("rmse : %.3f dB\n", rmse);
+    liquid_log_debug("rmse : %.3f dB", rmse);
     CONTEND_LESS_THAN(rmse, -20.0f);
 
     // clean up objects
@@ -186,7 +186,6 @@ void autotest_eqlms_cccf_copy()
     // create initial object
     eqlms_cccf q0 = eqlms_cccf_create_lowpass(21, 0.12345f);
     eqlms_cccf_set_bw(q0, 0.1f);
-    eqlms_cccf_print(q0);
 
     // run random samples through object
     unsigned int i;
