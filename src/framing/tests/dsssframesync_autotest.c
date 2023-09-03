@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,14 @@ static int callback_dsssframe(
     framesyncstats_s _stats,
     void *           _userdata)
 {
-    printf("*** dsssframe callback invoked ***\n");
-    framesyncstats_print(&_stats);
+    liquid_log_debug("*** dsssframe callback invoked ***");
+    liquid_log_debug(" rssi:%g dB, evm:%g dB, cfo:%g, syms:%u, mod:%s, crc:%s, fec0:%s, fec1:%s",
+        _stats.rssi, _stats.evm, _stats.cfo, _stats.num_framesyms,
+        modulation_types[_stats.mod_scheme].name,
+        crc_scheme_str[_stats.check][0],
+        fec_scheme_str[_stats.fec0][0],
+        fec_scheme_str[_stats.fec1][0]);
+
     if (_payload_valid)
         *((int*)_userdata) = 1; // success
     return 0;
@@ -74,10 +80,6 @@ void autotest_dsssframesync()
         // run through frame synchronizer
         dsssframesync_execute(fs, buf, buf_len);
     }
-
-    // get frame data statistics
-    if (liquid_autotest_verbose)
-        dsssframesync_print(fs);
 
     // check to see that frame was recovered
 #if 0
