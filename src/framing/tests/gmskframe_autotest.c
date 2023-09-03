@@ -63,11 +63,6 @@ void autotest_gmskframesync_process()
     gmskframesync fs = gmskframesync_create(
             gmskframesync_autotest_callback,(void*)&secret);
 
-    if (liquid_autotest_verbose) {
-        gmskframegen_print(fg);
-        gmskframesync_print(fs);
-    }
-
     // assemble frame with specific data
     CONTEND_EQUALITY(gmskframegen_is_assembled(fg), 0);
     unsigned int i;
@@ -137,9 +132,8 @@ void autotest_gmskframesync_multiple()
 
     // parse statistics
     framedatastats_s stats = gmskframesync_get_framedatastats(fs);
-    if (liquid_autotest_verbose)
-        gmskframesync_print(fs);
-
+    liquid_log_debug(" detected:%u, headers valid:%u, payloads valid:%u, bytes rx:%u",
+        stats.num_frames_detected, stats.num_headers_valid, stats.num_payloads_valid, stats.num_bytes_received);
     CONTEND_EQUALITY(stats.num_frames_detected, num_frames);
     CONTEND_EQUALITY(stats.num_headers_valid,   num_frames);
     CONTEND_EQUALITY(stats.num_payloads_valid,  num_frames);
@@ -168,9 +162,9 @@ void testbench_gmskframesync(unsigned int _k, unsigned int _m, float _bt)
     }
 
     // parse statistics
-    if (liquid_autotest_verbose)
-        gmskframesync_print(fs);
     framedatastats_s stats = gmskframesync_get_framedatastats(fs);
+    liquid_log_debug(" detected:%u, headers valid:%u, payloads valid:%u, bytes rx:%u",
+        stats.num_frames_detected, stats.num_headers_valid, stats.num_payloads_valid, stats.num_bytes_received);
     CONTEND_EQUALITY(stats.num_frames_detected, 1);
     CONTEND_EQUALITY(stats.num_headers_valid,   1);
     CONTEND_EQUALITY(stats.num_payloads_valid,  1);
