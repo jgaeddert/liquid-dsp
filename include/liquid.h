@@ -4341,7 +4341,7 @@ RESAMP2() RESAMP2(_copy)(RESAMP2() _q);                                     \
 void RESAMP2(_destroy)(RESAMP2() _q);                                       \
                                                                             \
 /* print resampler object's internals to stdout                         */  \
-void RESAMP2(_print)(RESAMP2() _q);                                         \
+int RESAMP2(_print)(RESAMP2() _q);                                          \
                                                                             \
 /* Reset internal buffer                                                */  \
 void RESAMP2(_reset)(RESAMP2() _q);                                         \

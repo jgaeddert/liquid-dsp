@@ -232,7 +232,7 @@ void autotest_resamp2_config()
     // create proper object and test configurations
     resamp2_crcf q = resamp2_crcf_create( 4, 0.0f, 60.0f);
     CONTEND_EQUALITY(resamp2_crcf_get_delay(q), 2*4-1);
-    resamp2_crcf_print(q);
+    CONTEND_EQUALITY(resamp2_crcf_print(q), LIQUID_OK);
 
     // redesign filter with new length
     q = resamp2_crcf_recreate(q, 8, 0.0f, 60.0f);

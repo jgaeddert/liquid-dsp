@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,15 +28,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-
-// defined:
-//  RESAMP2()       name-mangling macro
-//  TO              output data type
-//  TC              coefficient data type
-//  TI              input data type
-//  WINDOW()        window macro
-//  DOTPROD()       dotprod macro
-//  PRINTVAL()      print macro
 
 struct RESAMP2(_s) {
     TC *            h;      // filter prototype
@@ -210,23 +201,11 @@ void RESAMP2(_destroy)(RESAMP2() _q)
 }
 
 // print a resamp2 object's internals
-void RESAMP2(_print)(RESAMP2() _q)
+int RESAMP2(_print)(RESAMP2() _q)
 {
-    printf("fir half-band resampler: [%u taps, f0=%12.8f]\n",
-            _q->h_len,
-            _q->f0);
-    unsigned int i;
-    for (i=0; i<_q->h_len; i++) {
-        printf("  h(%4u) = ", i+1);
-        PRINTVAL_TC(_q->h[i],%12.8f);
-        printf(";\n");
-    }
-    printf("---\n");
-    for (i=0; i<_q->h1_len; i++) {
-        printf("  h1(%4u) = ", i+1);
-        PRINTVAL_TC(_q->h1[i],%12.8f);
-        printf(";\n");
-    }
+    printf("<resamp2_%s: len=%u, f0=%12.8f>\n",
+        EXTENSION_FULL, _q->h_len, _q->f0);
+    return LIQUID_OK;
 }
 
 // clear internal buffer

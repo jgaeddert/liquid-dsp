@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -88,8 +88,6 @@ void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
     iirfilt_crcf q = iirfilt_crcf_create_prototype(
         LIQUID_IIRDES_ELLIP, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
         _n,_fc,0.0f,_ap,_as);
-    if (liquid_autotest_verbose)
-        iirfilt_crcf_print(q);
 
     // compute regions for testing
     float H0 = 0.0f, H1 = -_ap, H2 = -_as;
@@ -132,8 +130,6 @@ void testbench_iirdes_cheby1_lowpass(unsigned int _n,  // filter order
     iirfilt_crcf q = iirfilt_crcf_create_prototype(
         LIQUID_IIRDES_CHEBY1, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
         _n,_fc,0.0f,_ap,60.0f);
-    if (liquid_autotest_verbose)
-        iirfilt_crcf_print(q);
 
     // compute regions for testing
     float H0 = 0.0f, H1 = -_ap, H2 = -60;
@@ -176,8 +172,6 @@ void testbench_iirdes_cheby2_lowpass(unsigned int _n,  // filter order
     iirfilt_crcf q = iirfilt_crcf_create_prototype(
         LIQUID_IIRDES_CHEBY2, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
         _n,_fc,0.0f,0.1,_as);
-    if (liquid_autotest_verbose)
-        iirfilt_crcf_print(q);
 
     // compute regions for testing
     float H0 = 0.0f, H1 = -3, H2 = -_as;
@@ -221,8 +215,6 @@ void testbench_iirdes_butter_lowpass(unsigned int _n,  // filter order
     iirfilt_crcf q = iirfilt_crcf_create_prototype(
         LIQUID_IIRDES_BUTTER, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
         _n,_fc,0.0f,1,60);
-    if (liquid_autotest_verbose)
-        iirfilt_crcf_print(q);
 
     // compute regions for testing
     float H0 = 0.0f, H1 = -3, H2 = -60.0f;
@@ -265,8 +257,6 @@ void autotest_iirdes_ellip_highpass() {
     // design filter from prototype
     iirfilt_crcf q = iirfilt_crcf_create_prototype(LIQUID_IIRDES_ELLIP,
         LIQUID_IIRDES_HIGHPASS, LIQUID_IIRDES_SOS,n,fc,0.0f,Ap,as);
-    if (liquid_autotest_verbose)
-        iirfilt_crcf_print(q);
 
     // compute response and compare to expected or mask
     unsigned int i;
@@ -301,8 +291,6 @@ void autotest_iirdes_ellip_bandpass() {
     // design filter from prototype
     iirfilt_crcf q = iirfilt_crcf_create_prototype(LIQUID_IIRDES_ELLIP,
         LIQUID_IIRDES_BANDPASS, LIQUID_IIRDES_SOS,n,fc,f0,Ap,as);
-    if (liquid_autotest_verbose)
-        iirfilt_crcf_print(q);
 
     // compute response and compare to expected or mask
     unsigned int i;
@@ -339,8 +327,6 @@ void autotest_iirdes_ellip_bandstop() {
     // design filter from prototype
     iirfilt_crcf q = iirfilt_crcf_create_prototype(LIQUID_IIRDES_ELLIP,
         LIQUID_IIRDES_BANDSTOP, LIQUID_IIRDES_SOS,n,fc,f0,Ap,as);
-    if (liquid_autotest_verbose)
-        iirfilt_crcf_print(q);
 
     // compute response and compare to expected or mask
     unsigned int i;
@@ -373,8 +359,6 @@ void autotest_iirdes_bessel() {
     // design filter from prototype
     iirfilt_crcf q = iirfilt_crcf_create_prototype(LIQUID_IIRDES_BESSEL,
         LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,n,fc,0,1,60);
-    if (liquid_autotest_verbose)
-        iirfilt_crcf_print(q);
 
     // compute response and compare to expected or mask
     unsigned int i;
