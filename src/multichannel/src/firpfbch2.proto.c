@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -261,10 +261,9 @@ int FIRPFBCH2(_print)(FIRPFBCH2() _q)
     printf("    h_len       :   %u\n", _q->h_len);
     printf("    semi-length :   %u\n", _q->m);
 
-    // TODO: print filter coefficients...
-    unsigned int i;
-    for (i=0; i<_q->M; i++)
-        DOTPROD(_print)(_q->dp[i]);
+    //unsigned int i;
+    //for (i=0; i<_q->M; i++)
+    //    DOTPROD(_print)(_q->dp[i]);
     return LIQUID_OK;
 }
 
