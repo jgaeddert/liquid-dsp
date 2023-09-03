@@ -121,8 +121,6 @@ void autotest_framesync64_copy()
     // copy object, but set different context
     framesync64 fs1 = framesync64_copy(fs0);
     framesync64_set_userdata(fs1, (void*)&frames_recovered_1);
-    framesync64_print(fs0);
-    framesync64_print(fs1);
 
     // try to receive the frame with each receiver
     for (i=0; i<LIQUID_FRAME64_LEN; i++) {
@@ -141,15 +139,16 @@ void autotest_framesync64_copy()
     // parse statistics
     framedatastats_s stats_0 = framesync64_get_framedatastats(fs0);
     framedatastats_s stats_1 = framesync64_get_framedatastats(fs1);
-    framedatastats_print(&stats_0);
-    framedatastats_print(&stats_1);
+    liquid_log_debug(" detected:%u(%u), headers valid:%u(%u), payloads valid:%u(%u), bytes rx:%u(%u)",
+        stats_0.num_frames_detected, stats_1.num_frames_detected,
+        stats_0.num_headers_valid,   stats_1.num_headers_valid,
+        stats_0.num_payloads_valid,  stats_1.num_payloads_valid,
+        stats_0.num_bytes_received,  stats_1.num_bytes_received);
 
     CONTEND_EQUALITY(stats_0.num_frames_detected, stats_1.num_frames_detected);
     CONTEND_EQUALITY(stats_0.num_headers_valid  , stats_1.num_headers_valid  );
     CONTEND_EQUALITY(stats_0.num_payloads_valid , stats_1.num_payloads_valid );
     CONTEND_EQUALITY(stats_0.num_bytes_received , stats_1.num_bytes_received );
-    framesync64_print(fs0);
-    framesync64_print(fs1);
 
     // destroy objects
     framegen64_destroy(fg);
@@ -229,7 +228,7 @@ void testbench_framesync64_debug(int _code)
 
     // get filename from the last file written
     const char * filename = framesync64_get_filename(fs);
-    printf("filename: %s\n", filename);
+    liquid_log_debug("filename: %s", filename);
 
     // destroy objects
     framegen64_destroy(fg);
@@ -325,10 +324,8 @@ void autotest_framesync64_estimation()
     // try to receive the frame
     framesync64_execute(fs, frame, LIQUID_FRAME64_LEN);
 
-    if (liquid_autotest_verbose)
-        framesyncstats_print(&stats);
-
     // check results (relatively high tolerance)
+    liquid_log_debug(" rssi:%.3f dB, SNRdB:%.3f dB, cfo:%.6f", stats.rssi, -stats.evm, stats.cfo);
     CONTEND_DELTA( stats.rssi, rssi,  1.0f );
     CONTEND_DELTA( -stats.evm, SNRdB, 3.0f ); // error biased negative
     CONTEND_DELTA( stats.cfo,  dphi,  4e-3f);
