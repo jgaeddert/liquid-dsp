@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,14 +59,9 @@ void gmskmodem_test_mod_demod(unsigned int _k,
     // count errors
     for (i=0; i<num_symbols; i++) {
         if (i >= delay) {
-#if 0
-            // print results
-            if (liquid_autotest_verbose) {
-                printf("  %3u : input = %2u, output = %2u %s\n",
-                        i, sym_in[i-delay], sym_out[i],
-                        (sym_in[i-delay] == sym_out[i]) ? "" : "*");
-            }
-#endif
+            liquid_log_debug("  %3u : input = %2u, output = %2u %s",
+                    i, sym_in[i-delay], sym_out[i],
+                    (sym_in[i-delay] == sym_out[i]) ? "" : "*");
 
             // check result
             CONTEND_EQUALITY(sym_in[i-delay], sym_out[i]);
