@@ -76,19 +76,16 @@ void autotest_gasearch_peak()
     for (i=0; i<num_parameters; i++)
         v_opt[i] = chromosome_valuef(prototype, i);
 
-    if (liquid_autotest_verbose) {
-        gasearch_print(ga);
-        printf(" opt: [  %6.4f] ", optimum_utility);
-        chromosome_printf(prototype);
-    }
-
     // destroy search object
     chromosome_destroy(prototype);
     gasearch_destroy(ga);
 
     // test results, optimum at {p, p, p, ...} where p = 1/sqrt(2)
-    for (i=0; i<num_parameters; i++)
+    liquid_log_debug("opt: [%12.6f]", optimum_utility);
+    for (i=0; i<num_parameters; i++) {
+        liquid_log_debug("  v_opt[%2u] = %12.8f", i, v_opt[i]);
         CONTEND_DELTA(v_opt[i], M_SQRT1_2, tol)
+    }
 
     // test value of utility (should be nearly 1)
     CONTEND_GREATER_THAN( optimum_utility, 0.70f )
