@@ -41,7 +41,7 @@ void testbench_resamp_crcf(float r, float As, int _id)
     // generate pulse with sharp transition and very narrow side-lobes
     unsigned int p = (unsigned int) (40.0f / r);
     unsigned int pulse_len = 4*p + 1;
-    liquid_log_info("pulse len: 4*%u+1 = %u, r=%f, bw=%f", p, pulse_len, r, bw);
+    liquid_log_debug("pulse len: 4*%u+1 = %u, r=%f, bw=%f", p, pulse_len, r, bw);
     float        pulse[pulse_len];
     liquid_firdes_kaiser(pulse_len, 0.5*r*bw, 120, 0, pulse);
 
