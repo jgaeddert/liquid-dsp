@@ -33,6 +33,9 @@ void testbench_ofdmflexframe(unsigned int      _M,
                              unsigned int      _payload_len,
                              modulation_scheme _ms)
 {
+    liquid_log_debug("ofdmflexframe, M:%u, cp_len:%u, taper:%u, payload:%u, ms:%s",
+        _M,_cp_len,_taper_len,_payload_len,modulation_types[_ms].name);
+
     // create frame generator/synchronizer
     ofdmflexframegenprops_s fgprops;
     ofdmflexframegenprops_init_default(&fgprops);
@@ -50,8 +53,6 @@ void testbench_ofdmflexframe(unsigned int      _M,
 
     // assemble the frame
     ofdmflexframegen_assemble(fg, header, payload, _payload_len);
-    if (liquid_autotest_verbose)
-        ofdmflexframegen_print(fg);
 
     // generate the frame
     unsigned int  buf_len = 1024;
@@ -62,12 +63,10 @@ void testbench_ofdmflexframe(unsigned int      _M,
         ofdmflexframesync_execute(fs, buf, buf_len);
     }
 
-    // get frame data statistics
-    if (liquid_autotest_verbose)
-        ofdmflexframesync_print(fs);
-
     // verify frame data statistics
     framedatastats_s stats = ofdmflexframesync_get_framedatastats(fs);
+    liquid_log_debug(" detected:%u, headers valid:%u, payloads valid:%u, bytes rx:%u",
+        stats.num_frames_detected, stats.num_headers_valid, stats.num_payloads_valid, stats.num_bytes_received);
     CONTEND_EQUALITY( stats.num_frames_detected, 1 );
     CONTEND_EQUALITY( stats.num_headers_valid,   1 );
     CONTEND_EQUALITY( stats.num_payloads_valid,  1 );
