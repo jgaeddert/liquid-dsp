@@ -37,8 +37,6 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
     // create resampler
     dds_cccf q = dds_cccf_create(_num_stages,_fc,bw,_as);
     dds_cccf_set_scale(q, 1.0f/r);
-    if (liquid_autotest_verbose)
-        dds_cccf_print(q);
 
     unsigned int delay_interp = dds_cccf_get_delay_interp(q);
     float        delay_decim  = dds_cccf_get_delay_decim (q);
@@ -122,7 +120,7 @@ void autotest_dds_config()
 
     // create proper object and test configurations
     dds_cccf q = dds_cccf_create( 2, 0.0f, 0.2f, 60.0f);
-    dds_cccf_print(q);
+    CONTEND_EQUALITY(dds_cccf_print(q), LIQUID_OK);
 
     // test setting/getting properties
     dds_cccf_set_scale(q, 2.0f - _Complex_I*3.0f);

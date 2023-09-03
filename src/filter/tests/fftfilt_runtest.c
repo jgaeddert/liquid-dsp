@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,10 +48,8 @@ void fftfilt_rrrf_test(float *      _h,
     // determine number of blocks
     div_t d = div(_x_len, n);
     unsigned int num_blocks = d.quot + (d.rem ? 1 : 0);
-    if (liquid_autotest_verbose) {
-        printf("fftfilt_rrrf_test(), h_len: %3u, x_len: %3u (%3u blocks @ %3u samples, %3u remaining)\n",
-                _h_len, _x_len, n, d.quot, d.rem);
-    }
+    liquid_log_debug("fftfilt_rrrf_test(), h_len: %3u, x_len: %3u (%3u blocks @ %3u samples, %3u remaining)",
+            _h_len, _x_len, n, d.quot, d.rem);
 
     // load filter coefficients externally
     fftfilt_rrrf q = fftfilt_rrrf_create(_h, _h_len, n);
@@ -96,10 +94,8 @@ void fftfilt_crcf_test(float *         _h,
     // determine number of blocks
     div_t d = div(_x_len, n);
     unsigned int num_blocks = d.quot + (d.rem ? 1 : 0);
-    if (liquid_autotest_verbose) {
-        printf("fftfilt_crcf_test(), h_len: %3u, x_len: %3u (%3u blocks @ %3u samples, %3u remaining)\n",
-                _h_len, _x_len, n, d.quot, d.rem);
-    }
+    liquid_log_debug("fftfilt_crcf_test(), h_len: %3u, x_len: %3u (%3u blocks @ %3u samples, %3u remaining)",
+            _h_len, _x_len, n, d.quot, d.rem);
 
     // load filter coefficients externally
     fftfilt_crcf q = fftfilt_crcf_create(_h, _h_len, n);
@@ -146,10 +142,8 @@ void fftfilt_cccf_test(float complex * _h,
     // determine number of blocks
     div_t d = div(_x_len, n);
     unsigned int num_blocks = d.quot + (d.rem ? 1 : 0);
-    if (liquid_autotest_verbose) {
-        printf("fftfilt_cccf_test(), h_len: %3u, x_len: %3u (%3u blocks @ %3u samples, %3u remaining)\n",
-                _h_len, _x_len, n, d.quot, d.rem);
-    }
+    liquid_log_debug("fftfilt_cccf_test(), h_len: %3u, x_len: %3u (%3u blocks @ %3u samples, %3u remaining)",
+            _h_len, _x_len, n, d.quot, d.rem);
 
     // load filter coefficients externally
     fftfilt_cccf q = fftfilt_cccf_create(_h, _h_len, n);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-// defined:
-//  FIRFILT()       name-mangling macro
-//  T               coefficients type
-//  WINDOW()        window macro
-//  DOTPROD()       dotprod macro
-//  PRINTVAL()      print macro
 
 // NOTE: using the window is about 27% slower, but fixes a valgrind issue
 #define LIQUID_FIRFILT_USE_WINDOW   (1)
@@ -348,23 +341,7 @@ int FIRFILT(_reset)(FIRFILT() _q)
 // print filter object internals (taps, buffer)
 int FIRFILT(_print)(FIRFILT() _q)
 {
-    printf("firfilt_%s:\n", EXTENSION_FULL);
-    unsigned int i;
-    unsigned int n = _q->h_len;
-    for (i=0; i<n; i++) {
-        printf("  h(%3u) = ", i+1);
-        PRINTVAL_TC(_q->h[n-i-1],%12.8f);
-        printf("\n");
-    }
-
-    // print scaling
-    printf("  scale = ");
-    PRINTVAL_TC(_q->scale,%12.8f);
-    printf("\n");
-
-#if LIQUID_FIRFILT_USE_WINDOW
-    WINDOW(_print)(_q->w);
-#endif
+    printf("<firfilt_%s, len:%u>", EXTENSION_FULL, _q->h_len);
     return LIQUID_OK;
 }
 

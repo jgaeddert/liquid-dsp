@@ -212,10 +212,8 @@ int FIRINTERP(_destroy)(FIRINTERP() _q)
 // print interpolator state
 int FIRINTERP(_print)(FIRINTERP() _q)
 {
-    printf("interp():\n");
-    printf("    interp  :   %u\n", _q->M);
-    printf("    h_len   :   %u\n", _q->h_len);
-    return FIRPFB(_print)(_q->filterbank);
+    printf("<firinterp_%s: interp=%u, len=%u>\n", EXTENSION_FULL, _q->M, _q->h_len);
+    return LIQUID_OK;
 }
 
 // clear internal state

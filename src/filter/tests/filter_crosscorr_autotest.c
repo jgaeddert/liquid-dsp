@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,18 +54,14 @@ void autotest_filter_crosscorr_rrrf()
           1.96850000,  -2.13700000,  -1.83370000};
 
 
-    if (liquid_autotest_verbose)
-        printf("testing corr(x,y):\n");
-
     // corr(x,y)
     int i;
+    liquid_log_debug("testing corr(x,y):");
     for (i=0; i<rxy_len; i++) {
         int lag = i - y_len + 1;
         rxy[i] = liquid_filter_crosscorr(x,x_len, y,y_len, lag);
 
-        // print results
-        if (liquid_autotest_verbose)
-            printf("  rxy(%3d) = %12.8f (expected %12.8f, e=%12.4e)\n", lag, rxy[i], rxy_test[i], rxy[i]-rxy_test[i]);
+        liquid_log_debug("  rxy(%3d) = %12.8f (expected %12.8f, e=%12.4e)", lag, rxy[i], rxy_test[i], rxy[i]-rxy_test[i]);
     }
     for (i=0; i<rxy_len; i++)
         CONTEND_DELTA( rxy[i], rxy_test[i], tol );
@@ -82,17 +78,13 @@ void autotest_filter_crosscorr_rrrf()
           1.25850000,  -1.95950000,  -0.39008000,   0.45660000, 
          -0.56685000,  -0.32455000,  -0.28013000};
         
-    if (liquid_autotest_verbose)
-        printf("testing corr(y,x):\n");
-
     // corr(y,x)
+    liquid_log_debug("testing corr(y,x):");
     for (i=0; i<ryx_len; i++) {
         int lag = i - x_len + 1;
         ryx[i] = liquid_filter_crosscorr(y,y_len, x,x_len, lag);
 
-        // print results
-        if (liquid_autotest_verbose)
-            printf("  ryx(%3d) = %12.8f (expected %12.8f, e=%12.4e)\n", lag, ryx[i], ryx_test[i], ryx[i]-ryx_test[i]);
+        liquid_log_debug("  ryx(%3d) = %12.8f (expected %12.8f, e=%12.4e)", lag, ryx[i], ryx_test[i], ryx[i]-ryx_test[i]);
     }
     for (i=0; i<ryx_len; i++)
         CONTEND_DELTA( ryx[i], ryx_test[i], tol );

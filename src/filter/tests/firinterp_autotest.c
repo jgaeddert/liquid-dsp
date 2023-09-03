@@ -83,14 +83,9 @@ void autotest_firinterp_rrrf_generic()
         firinterp_rrrf_execute(q, x[i], &y[i*M]);
 
     for (i=0; i<16; i++) {
+        liquid_log_debug("  y(%3u) = %8.4f;", i+1, y[i]);
         CONTEND_DELTA(y[i], test[i], tol);
-
-        if (liquid_autotest_verbose)
-            printf("  y(%u) = %8.4f;\n", i+1, y[i]);
     }
-
-    if (liquid_autotest_verbose)
-        firinterp_rrrf_print(q);
 
     // destroy interpolator object
     firinterp_rrrf_destroy(q);
@@ -150,15 +145,10 @@ void autotest_firinterp_crcf_generic()
         firinterp_crcf_execute(q, x[i], &y[i*M]);
 
     for (i=0; i<16; i++) {
+        liquid_log_debug("  y(%3u) = %8.4f + j%8.4f;", i+1, crealf(y[i]), cimagf(y[i]));
         CONTEND_DELTA( crealf(y[i]), crealf(test[i]), tol);
         CONTEND_DELTA( cimagf(y[i]), cimagf(test[i]), tol);
-
-        if (liquid_autotest_verbose)
-            printf("  y(%u) = %8.4f + j%8.4f;\n", i+1, crealf(y[i]), cimagf(y[i]));
     }
-
-    if (liquid_autotest_verbose)
-        firinterp_crcf_print(q);
 
     // destroy interpolator object
     firinterp_crcf_destroy(q);
@@ -189,14 +179,11 @@ void testbench_firinterp_crcf_nyquist(int          _ftype,
         // for a Nyquist filter, output should match input at
         // proper sampling time (compensating for delay)
         if (i >= _m) {
+            liquid_log_debug("%3u: x=%8.4f + j%8.4f, y=%8.4f + j%8.4f;", i+1,
+                    crealf(x[i-_m]), cimagf(x[i-_m]),
+                    crealf(y[   0]), cimagf(y[   0]));
             CONTEND_DELTA( crealf(x[i-_m]), crealf(y[0]), tol);
             CONTEND_DELTA( cimagf(x[i-_m]), cimagf(y[0]), tol);
-
-            if (liquid_autotest_verbose) {
-                printf("%3u: x=%8.4f + j%8.4f, y=%8.4f + j%8.4f;\n", i+1,
-                        crealf(x[i-_m]), cimagf(x[i-_m]),
-                        crealf(y[   0]), cimagf(y[   0]));
-            }
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -182,13 +182,7 @@ int FIRDECIM(_destroy)(FIRDECIM() _q)
 // print decimator object internals
 int FIRDECIM(_print)(FIRDECIM() _q)
 {
-    printf("FIRDECIM() [%u] :\n", _q->M);
-    printf("  window:\n");
-    WINDOW(_print)(_q->w);
-    // print scaling
-    printf("  scale = ");
-    PRINTVAL_TC(_q->scale,%12.8f);
-    printf("\n");
+    printf("<firdecim_%s, decim=%u>\n", EXTENSION_FULL, _q->M);
     return LIQUID_OK;
 }
 

@@ -65,10 +65,8 @@ void testbench_fdelay_rrrf(unsigned int _nmax,
     for (i=0; i<num_samples; i++)
         v += y[i] * cexpf(_Complex_I*2*M_PI*fc*i);
     float delay_est = cargf(v) / (2*M_PI*fc) - (float)_m;
-    if (liquid_autotest_verbose) {
-        printf("delay: measured=%g, expected=%g (error=%g)\n",
-                delay_est, _delay, delay_est - _delay);
-    }
+    liquid_log_debug("delay: measured=%g, expected=%g (error=%g)",
+            delay_est, _delay, delay_est - _delay);
 
     // verify delay
     CONTEND_DELTA(delay_est, _delay, tol);
