@@ -398,7 +398,7 @@ void execute_autotest(autotest_t * _test,
     unsigned long int autotest_num_warnings_init = liquid_autotest_num_warnings;
 
     // execute test
-    liquid_log_trace("running test %u '%s'", _test->id, _test->name);
+    liquid_log_info("running test %u '%s'", _test->id, _test->name);
 
     // start test and run timer
     struct rusage tic, toc;
