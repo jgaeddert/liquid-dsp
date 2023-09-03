@@ -139,10 +139,9 @@ void symsync_crcf_test(unsigned int _k,
     // (initial filter + resampler + matched filter)
     unsigned int delay = m + 10 + m;
 
+    // compare and log results
     liquid_log_debug("symsync_crcf_test(), k:%u, m:%u, beta:%8.4f, rau:%8.4f, rate:%12.8f",
         k,m,beta,tau,rate);
-
-    // compare (and print) results
     for (i=nz-num_symbols_test; i<nz; i++) {
         // compute error
         float err = cabsf( z[i] - s[i-delay] );
@@ -150,12 +149,12 @@ void symsync_crcf_test(unsigned int _k,
         // assert that error is below tolerance
         CONTEND_LESS_THAN( err, tol );
 
-        // print formatted results if desired
+        // log formatted results
         liquid_log_debug(" sym_out(%4u)=%8.4f+j*%8.4f;%%{%8.4f+j*%8.4f},e=%12.8f %s",
-                i+1,
-                crealf(z[i]      ), cimagf(z[i]      ),
-                crealf(s[i-delay]), cimagf(s[i-delay]),
-                err, err < tol ? "" : "*");
+            i+1,
+            crealf(z[i]      ), cimagf(z[i]      ),
+            crealf(s[i-delay]), cimagf(s[i-delay]),
+            err, err < tol ? "" : "*");
     }
 
 }
