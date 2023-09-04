@@ -36,7 +36,8 @@ static int callback_framesync64_autotest(
     framesyncstats_s _stats,
     void *           _userdata)
 {
-    //printf("callback invoked, payload valid: %s\n", _payload_valid ? "yes" : "no");
+    liquid_log_debug("framesync64 callback invoked, payload valid: %s",
+        _payload_valid ? "yes" : "no");
     *((int*)(_userdata)) += _header_valid && _payload_valid ? 1 : 0;
     return 0;
 }
@@ -281,7 +282,8 @@ static int callback_framesync64_autotest_estimation(
     framesyncstats_s _stats,
     void *           _userdata)
 {
-    //printf("callback invoked, payload valid: %s\n", _payload_valid ? "yes" : "no");
+    liquid_log_debug("framesync64 estimation callback invoked, payload valid: %s",
+        _payload_valid ? "yes" : "no");
     memmove(_userdata, &_stats, sizeof(framesyncstats_s));
     return 0;
 }
