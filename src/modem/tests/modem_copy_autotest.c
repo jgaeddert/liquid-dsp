@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,12 +42,10 @@ void modemcf_test_copy(modulation_scheme _ms)
     // copy modem
     modemcf modem_1 = modemcf_copy(modem_0);
 
-    if (liquid_autotest_verbose) {
-        printf("input: %20s, 0: %20s, 1:%20s\n",
-                modulation_types[_ms                        ].name,
-                modulation_types[modemcf_get_scheme(modem_0)].name,
-                modulation_types[modemcf_get_scheme(modem_1)].name);
-    }
+    liquid_log_debug("input: %20s, 0: %20s, 1:%20s",
+        modulation_types[_ms                        ].name,
+        modulation_types[modemcf_get_scheme(modem_0)].name,
+        modulation_types[modemcf_get_scheme(modem_1)].name);
 
     // ...
     for (i=0; i<10; i++) {
