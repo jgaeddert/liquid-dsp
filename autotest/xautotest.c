@@ -20,8 +20,6 @@
  * THE SOFTWARE.
  */
 
-// autotest.c
-//
 // This file is used in conjunction with autotest_include.h (generated with
 // autotest_gen.py) to produce an executable for automatically testing the
 // various signal processing algorithms in liquid.
@@ -69,7 +67,7 @@ typedef struct {
     long unsigned int num_checks;   // number of checks that were run for this test
     long unsigned int num_passed;   // number of checks that passed
     long unsigned int num_failed;   // number of checks that failed
-    long unsigned int num_warnings; // number of warnings 
+    long unsigned int num_warnings; // number of warnings
     float percent_passed;           // percent of checks that passed
     int executed;                   // was the test executed?
     int pass;                       // did the test pass? (i.e. no failures)
@@ -94,10 +92,6 @@ typedef struct {
 //   #define NUM_PACKAGES
 //   struct package_t packages[NUM_PACKAGES]
 #include "../autotest_include.h"
-
-// 
-// helper functions:
-//
 
 // execute a specific test
 void execute_autotest(autotest_t * _test, int _verbose);
@@ -398,7 +392,7 @@ void execute_autotest(autotest_t * _test,
     unsigned long int autotest_num_warnings_init = liquid_autotest_num_warnings;
 
     // execute test
-    liquid_log_info("running test %u '%s'", _test->id, _test->name);
+    liquid_log_trace("running %u '%s'...", _test->id, _test->name);
 
     // start test and run timer
     struct rusage tic, toc;
@@ -419,8 +413,7 @@ void execute_autotest(autotest_t * _test,
     _test->executed = 1;
     _test->extime = calculate_execution_time(tic, toc);
 
-    //if (_verbose)
-    //    print_autotest_results(_test);
+    print_autotest_results(_test);
 }
 
 // execute a specific package
@@ -435,7 +428,7 @@ void execute_package(package_t * _p,
     for (i=0; i<_p->num_scripts; i++) {
         execute_autotest( &scripts[ i + _p->index ], _verbose );
     }
-    
+
     _p->executed = 1;
 }
 
