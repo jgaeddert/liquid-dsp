@@ -41,8 +41,7 @@ int ofdmframesync_autotest_callback(float complex * _X,
                                     unsigned int    _M,
                                     void * _userdata)
 {
-    if (liquid_autotest_verbose)
-        printf("******** callback invoked!\n");
+    liquid_log_debug("*** ofdmframesync, callback invoked! ***");
 
     // type cast _userdata as complex float array
     float complex * X = (float complex *)_userdata;
@@ -81,7 +80,6 @@ void ofdmframesync_acquire_test(unsigned int _num_subcarriers,
 
     // create synthesizer/analyzer objects
     ofdmframegen fg = ofdmframegen_create(M, cp_len, taper_len, p);
-    //ofdmframegen_print(fg);
 
     float complex X[M];         // original data sequence
     float complex X_test[M];    // recovered data sequence

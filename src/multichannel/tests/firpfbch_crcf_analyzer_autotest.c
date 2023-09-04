@@ -115,7 +115,7 @@ void autotest_firpfbch_crcf_analysis()
     firfilt_crcf_destroy(f);
     firpfbch_crcf_destroy(q);
 
-    // print difference
+    // log difference
     liquid_log_debug("filterbank channelizer:");
     for (i=0; i<num_symbols; i++) {
         liquid_log_debug("%3u: ", i);

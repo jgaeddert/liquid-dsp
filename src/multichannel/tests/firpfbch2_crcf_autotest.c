@@ -72,7 +72,7 @@ void firpfbch2_crcf_runtest(unsigned int _M,
     unsigned int delay = 2*_M*_m - _M/2 + 1;
     float rmse = 0.0f;
     for (i=0; i<num_samples; i++) {
-        //printf("%3u : %12.8f + %12.8fj\n", i, crealf(y[i]), cimagf(y[i]));
+        liquid_log_debug("%3u : %12.8f + %12.8fj", i, crealf(y[i]), cimagf(y[i]));
         if (i < delay) {
             CONTEND_DELTA( crealf(y[i]), 0.0f, tol );
             CONTEND_DELTA( cimagf(y[i]), 0.0f, tol );
@@ -87,8 +87,7 @@ void firpfbch2_crcf_runtest(unsigned int _M,
     }
 
     rmse = sqrtf(rmse / (float)num_samples);
-    if (liquid_autotest_verbose)
-        printf("firpfbch2:  M=%3u, m=%2u, as=%8.2f dB, rmse=%12.4e\n", _M, _m, _as, rmse);
+    liquid_log_debug("firpfbch2:  M=%3u, m=%2u, as=%8.2f dB, rmse=%12.4e", _M, _m, _as, rmse);
 }
 
 // analysis
