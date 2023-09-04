@@ -82,15 +82,8 @@ void lpc_test_harness(unsigned int _n,
         rmse += (s0-s1)*(s0-s1);
     }
     rmse = 10*log10f( rmse / (float)n_error );
-#if 0
-    if (liquid_autotest_verbose) {
-        printf("original lowpass filter:\n");
-        iirfilt_rrrf_print(lowpass);
-        printf("linear predictive filter:\n");
-        iirfilt_rrrf_print(lpc);
-        printf("lpc(n=%u,p=%u,fc=%.3f), rmse: %.2f (tol: %.2f) dB\n", _n, _p, _fc, rmse, _tol);
-    }
-#endif
+    liquid_log_debug("lpc(n=%u,p=%u,fc=%.3f), rmse: %.2f (tol: %.2f) dB", _n, _p, _fc, rmse, _tol);
+
     CONTEND_LESS_THAN(rmse, _tol);
 
     // destroy objects
