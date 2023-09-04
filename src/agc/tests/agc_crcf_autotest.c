@@ -282,7 +282,7 @@ void autotest_agc_crcf_lock()
 }
 
 // configuration
-void autotest_agc_crcf_invalid_config()
+void autotest_agc_crcf_config()
 {
     _liquid_error_downgrade_enable();
     // create main object and check invalid configurations

@@ -171,7 +171,7 @@ void autotest_firhilbf_psd()
     firhilbf_destroy(q);
 }
 
-void autotest_firhilbf_invalid_config()
+void autotest_firhilbf_config()
 {
     _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations

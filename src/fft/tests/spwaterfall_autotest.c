@@ -27,7 +27,7 @@
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
-void autotest_spwaterfall_invalid_config()
+void autotest_spwaterfall_config()
 {
     _liquid_error_downgrade_enable();
 

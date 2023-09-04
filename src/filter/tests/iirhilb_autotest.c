@@ -170,7 +170,7 @@ void autotest_iirhilbf_filter()
     iirhilbf_destroy(q);
 }
 
-void autotest_iirhilbf_invalid_config()
+void autotest_iirhilbf_config()
 {
     _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations

@@ -103,7 +103,7 @@ void autotest_cvsd_rmse_sine8()
 }
 
 // configuration
-void autotest_cvsd_invalid_config()
+void autotest_cvsd_config()
 {
     // test invalid configuration to create()
     _liquid_error_downgrade_enable();
