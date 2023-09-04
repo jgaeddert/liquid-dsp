@@ -137,7 +137,7 @@ void autotest_matrixcf_linsolve()
     // x [size: 5 x 1]
     // b [size: 5 x 1]
     float complex x[5];
-    
+
     // run solver
     matrixcf_linsolve(matrixcf_data_linsolve_A, 5,
                       matrixcf_data_linsolve_b,

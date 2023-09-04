@@ -25,7 +25,7 @@
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
-// 
+//
 // AUTOTESTS: basic sparse matrix functionality
 //
 
@@ -45,7 +45,7 @@ void autotest_smatrixb_vmul()
     // x = [   1   1   0   0   1   0   0   1   1   1   0   1 ]
     // y = [   1   0   1   1   0   1   0   0 ]
     //
-    
+
     // create sparse matrix and set values
     smatrixb A = smatrixb_create(8,12);
     smatrixb_set(A,0,0,  1);
@@ -171,14 +171,14 @@ void autotest_smatrixb_mul()
             CONTEND_EQUALITY( smatrixb_get(c,i,j), c_test[i*5+j]);
         }
     }
-    
+
     // destroy objects
     smatrixb_destroy(a);
     smatrixb_destroy(b);
     smatrixb_destroy(c);
 }
 
-// 
+//
 void autotest_smatrixb_mulf()
 {
     // A = [
@@ -191,7 +191,7 @@ void autotest_smatrixb_mulf()
     //  1   0   1   0   0   0   0   0   0   0   1   1
     //  0   0   1   0   0   1   1   0   0   0   0   0]
     //
-    
+
     float tol = 1e-6f;
 
     // create sparse matrix and set values
@@ -272,7 +272,7 @@ void autotest_smatrixb_mulf()
     smatrixb_destroy(A);
 }
 
-// 
+//
 void autotest_smatrixb_vmulf()
 {
     // A = [
@@ -288,7 +288,7 @@ void autotest_smatrixb_vmulf()
     // x = [3.4,-5.7, 0.3, 2.3, 1.9, 3.9, 2.3,-4.0,-0.5, 1.5,-0.6,-1.0]^T
     // y = [3.4, 2.3, 4.4,-1.4, 0.0, 1.2, 2.1, 6.5]^T
     //
-    
+
     float tol = 1e-6f;
 
     // create sparse matrix and set values
