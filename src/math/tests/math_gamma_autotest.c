@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,7 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// 
-// AUTOTEST: Gamma
-//
+// gamma function
 void autotest_gamma()
 {
     // error tolerance
@@ -58,9 +56,7 @@ void autotest_gamma()
         // compute relative error
         float error = fabsf(gamma-g) / fabsf(g);
 
-        // print results
-        if (liquid_autotest_verbose)
-            printf("  gamma(%12.4e) = %12.4e (expected %12.4e) %12.4e\n", z, gamma, g, error);
+        liquid_log_debug("gamma(%12.4e) = %12.4e (expected %12.4e) error=%12.4e", z, gamma, g, error);
 
         // run test
         CONTEND_LESS_THAN(error, tol);
