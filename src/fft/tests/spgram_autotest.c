@@ -149,27 +149,15 @@ void autotest_spgramcf_signal_05() { testbench_spgramcf_signal(640,LIQUID_WINDOW
 
 void autotest_spgramcf_counters()
 {
-    _liquid_error_downgrade_enable();
     // create spectral periodogram with specific parameters
     unsigned int nfft=1200, wlen=400, delay=200;
     int wtype = LIQUID_WINDOW_HAMMING;
-    float alpha = 0.0123456f;
     spgramcf q = spgramcf_create(nfft, wtype, wlen, delay);
-
-    // check setting bandwidth
-    CONTEND_EQUALITY ( spgramcf_set_alpha(q, 0.1),  0 ); // valid
-    CONTEND_DELTA    ( spgramcf_get_alpha(q), 0.1, 1e-6f);
-    CONTEND_EQUALITY ( spgramcf_set_alpha(q,-7.0), -1 ); // invalid
-    CONTEND_DELTA    ( spgramcf_get_alpha(q), 0.1, 1e-6f);
-    CONTEND_EQUALITY ( spgramcf_set_alpha(q,alpha),  0); // valid
-    CONTEND_DELTA    ( spgramcf_get_alpha(q), alpha, 1e-6f);
-    CONTEND_EQUALITY(  spgramcf_print(q), LIQUID_OK );
 
     // check parameters
     CONTEND_EQUALITY( spgramcf_get_nfft(q),       nfft );
     CONTEND_EQUALITY( spgramcf_get_window_len(q), wlen );
     CONTEND_EQUALITY( spgramcf_get_delay(q),      delay);
-    CONTEND_EQUALITY( spgramcf_get_alpha(q),      alpha);
 
     unsigned int block_len = 1117, num_blocks = 1123;
     unsigned int i, num_samples = block_len * num_blocks;
@@ -206,10 +194,9 @@ void autotest_spgramcf_counters()
 
     // destroy object(s)
     spgramcf_destroy(q);
-    _liquid_error_downgrade_disable();
 }
 
-void autotest_spgramcf_invalid_config()
+void autotest_spgramcf_config()
 {
     _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
@@ -228,6 +215,17 @@ void autotest_spgramcf_invalid_config()
 
     // create proper object but test invalid internal configurations
     spgramcf q = spgramcf_create_default(540);
+
+    // check setting bandwidth
+    float alpha = 0.0123456f;
+    CONTEND_EQUALITY ( spgramcf_set_alpha(q, 0.1),  0 ); // valid
+    CONTEND_DELTA    ( spgramcf_get_alpha(q), 0.1, 1e-6f);
+    CONTEND_EQUALITY ( spgramcf_set_alpha(q,-7.0), -1 ); // invalid
+    CONTEND_DELTA    ( spgramcf_get_alpha(q), 0.1, 1e-6f);
+    CONTEND_EQUALITY ( spgramcf_set_alpha(q,alpha),  0); // valid
+    CONTEND_DELTA    ( spgramcf_get_alpha(q), alpha, 1e-6f);
+    CONTEND_EQUALITY ( spgramcf_get_alpha(q),      alpha);
+    CONTEND_EQUALITY ( spgramcf_print(q), LIQUID_OK );
 
     CONTEND_INEQUALITY(LIQUID_OK, spgramcf_set_rate(q, -10e6))
 
