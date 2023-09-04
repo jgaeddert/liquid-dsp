@@ -124,14 +124,12 @@ void autotest_secded2216_codec_e2()
             int syndrome_flag = fec_secded2216_decode_symbol(sym_rec, sym_dec);
 
 #if 0
-            if (liquid_autotest_verbose) {
-                // print error vector
-                printf("%3u, e = ", k);
-                liquid_print_bitstring(e[0], 6);
-                liquid_print_bitstring(e[1], 8);
-                liquid_print_bitstring(e[2], 8);
-                printf(" flag=%2d\n", syndrome_flag);
-            }
+            // print error vector
+            printf("%3u, e = ", k);
+            liquid_print_bitstring(e[0], 6);
+            liquid_print_bitstring(e[1], 8);
+            liquid_print_bitstring(e[2], 8);
+            printf(" flag=%2d\n", syndrome_flag);
 #endif
             liquid_log_debug("secded(22,16), testing errors at indices (%2u,%2u), syndrome flag: %2u",
                 j, k, syndrome_flag);

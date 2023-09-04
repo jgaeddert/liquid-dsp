@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@ void liquid_window_testbench(int _wtype, unsigned int _n, float _arg)
             break;
     }
     float bw = (float)i / (float)nfft;
-    if (liquid_autotest_verbose) printf("  bw: %12.8f\n", bw);
+    liquid_log_debug("bw: %12.8f", bw);
     CONTEND_GREATER_THAN(bw, 0.02f);
     CONTEND_LESS_THAN   (bw, 0.08f);
 

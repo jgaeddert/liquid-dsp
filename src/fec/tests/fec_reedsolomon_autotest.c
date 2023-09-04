@@ -55,8 +55,6 @@ void autotest_reedsolomon_223_255()
 
     // create object
     fec q = fec_create(LIQUID_FEC_RS_M8,NULL);
-    if (liquid_autotest_verbose)
-        fec_print(q);
 
     // encode message
     fec_encode(q, dec_msg_len, msg_org, msg_enc);

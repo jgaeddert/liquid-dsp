@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -125,8 +125,7 @@ void autotest_secded7264_codec_e2()
 
     for (j=0; j<72-1; j++) {
 #if 0
-        if (liquid_autotest_verbose)
-            printf("***** %2u *****\n", j);
+        printf("***** %2u *****\n", j);
 #endif
         
         for (k=0; k<72-1-j; k++) {
@@ -155,20 +154,17 @@ void autotest_secded7264_codec_e2()
             int syndrome_flag = fec_secded7264_decode_symbol(sym_rec, sym_dec);
 
 #if 0
-            if (liquid_autotest_verbose) {
-                // print error vector
-                printf("%3u, e = ", k);
-                liquid_print_bitstring(e[0], 8);
-                liquid_print_bitstring(e[1], 8);
-                liquid_print_bitstring(e[2], 8);
-                liquid_print_bitstring(e[3], 8);
-                liquid_print_bitstring(e[4], 8);
-                liquid_print_bitstring(e[5], 8);
-                liquid_print_bitstring(e[6], 8);
-                liquid_print_bitstring(e[7], 8);
-                liquid_print_bitstring(e[8], 8);
-                printf(" flag=%2d\n", syndrome_flag);
-            }
+            printf("%3u, e = ", k);
+            liquid_print_bitstring(e[0], 8);
+            liquid_print_bitstring(e[1], 8);
+            liquid_print_bitstring(e[2], 8);
+            liquid_print_bitstring(e[3], 8);
+            liquid_print_bitstring(e[4], 8);
+            liquid_print_bitstring(e[5], 8);
+            liquid_print_bitstring(e[6], 8);
+            liquid_print_bitstring(e[7], 8);
+            liquid_print_bitstring(e[8], 8);
+            printf(" flag=%2d\n", syndrome_flag);
 #endif
 
             // validate syndrome flag is '2'
