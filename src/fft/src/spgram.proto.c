@@ -264,7 +264,7 @@ int SPGRAM(_reset)(SPGRAM() _q)
 // prints the spgram object's parameters
 int SPGRAM(_print)(SPGRAM() _q)
 {
-    printf("spgram%s: nfft=%u, window=%u, delay=%u\n",
+    printf("<spgram%s: nfft=%u, window=%u, delay=%u>",
             EXTENSION, _q->nfft, _q->window_len, _q->delay);
     return LIQUID_OK;
 }

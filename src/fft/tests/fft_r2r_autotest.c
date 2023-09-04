@@ -43,7 +43,7 @@ void fft_r2r_test(float *      _x,
     fftplan q = fft_create_plan_r2r_1d(_n, _x, y, _kind, _flags);
     fft_execute(q);
 
-    // print results
+    // log results
     for (i=0; i<_n; i++)
         liquid_log_debug("[%2u] input:%12.8f, output:%12.8f, expected:%12.8f", i, _x[i], _test[i], y[i]);
 

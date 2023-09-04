@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@
 void autotest_spwaterfall_invalid_config()
 {
     _liquid_error_downgrade_enable();
-    AUTOTEST_WARN("testing spwaterfall invalid configurations; ignore printed errors");
+
     // default configurations
     unsigned int nfft  = 1200;
     int          wtype = LIQUID_WINDOW_HAMMING;
@@ -100,10 +100,8 @@ void testbench_spwaterfallcf_noise(unsigned int _nfft,
     memmove(v, psd, _nfft*time*sizeof(float));
     qsort(v, _nfft*time, sizeof(float), &testbench_spwaterfallcf_compare);
     float median = v[_nfft*time/2];
-    if (liquid_autotest_verbose) {
-        printf("  spwaterfallcf_test(noise): nfft:%4u, wtype:%s, n0:%6.1f, est:%6.1f, tol:%5.2f\n",
-                _nfft, liquid_window_str[_wtype][1], _noise_floor, median, tol);
-    }
+    liquid_log_debug("  spwaterfallcf_test(noise): nfft:%4u, wtype:%s, n0:%6.1f, est:%6.1f, tol:%5.2f",
+            _nfft, liquid_window_str[_wtype][1], _noise_floor, median, tol);
     CONTEND_DELTA(median, _noise_floor, tol)
 
     // destroy objects and free memory
@@ -121,7 +119,7 @@ void autotest_spwaterfall_operation()
 {
     // create default object
     spwaterfallcf q = spwaterfallcf_create(1200, LIQUID_WINDOW_HAMMING, 800, 10, 960);
-    spwaterfallcf_print(q);
+    CONTEND_EQUALITY(spwaterfallcf_print(q), LIQUID_OK);
     CONTEND_EQUALITY(spwaterfallcf_get_num_freq(q), 1200);
     CONTEND_EQUALITY(spwaterfallcf_get_num_time(q),    0);
     CONTEND_EQUALITY(spwaterfallcf_get_window_len(q),800);

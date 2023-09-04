@@ -163,7 +163,7 @@ void autotest_spgramcf_counters()
     CONTEND_DELTA    ( spgramcf_get_alpha(q), 0.1, 1e-6f);
     CONTEND_EQUALITY ( spgramcf_set_alpha(q,alpha),  0); // valid
     CONTEND_DELTA    ( spgramcf_get_alpha(q), alpha, 1e-6f);
-    spgramcf_print(q); // test for code coverage
+    CONTEND_EQUALITY(  spgramcf_print(q), LIQUID_OK );
 
     // check parameters
     CONTEND_EQUALITY( spgramcf_get_nfft(q),       nfft );
@@ -285,7 +285,7 @@ void autotest_spgramcf_short()
     for (i=0; i<nfft; i++) {
         float f       = (float)i / (float)nfft - 0.5f;
         float mask_hi = fabsf(f) < 0.2f ? 15.0f - 30*fabsf(f)/0.2f : -15.0f;
-        //printf("%6u : f=%6.3f, %8.2f < %8.2f\n", i, f, psd[i], mask_hi);
+        liquid_log_debug("%6u : f=%6.3f, %8.2f < %8.2f", i, f, psd[i], mask_hi);
         CONTEND_LESS_THAN( psd[i], mask_hi );
     }
     // consider lower mask only for DC term

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,10 +54,6 @@ void autotest_asgramcf_copy()
         float complex v = 0.1f + nstd * (randnf() + _Complex_I*randnf());
         asgramcf_push(q0, v);
         asgramcf_push(q1, v);
-    }
-    if (liquid_autotest_verbose) {
-        printf("q0:"); asgramcf_print(q0);
-        printf("q1:"); asgramcf_print(q1);
     }
 
     // get spectrum and compare outputs
