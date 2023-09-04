@@ -35,7 +35,6 @@ void autotest_iirhilbf_interp_decim()
     // create transform
     //iirhilbf q = iirhilbf_create(ftype,n,Ap,As);
     iirhilbf q = iirhilbf_create_default(m);
-    iirhilbf_print(q);
 
     unsigned int h_len       = 2*p+1; // pulse length
     unsigned int num_samples = h_len + 2*m + 8;
@@ -103,7 +102,6 @@ void autotest_iirhilbf_filter()
     // create transform
     //iirhilbf q = iirhilbf_create(ftype,n,Ap,As);
     iirhilbf q = iirhilbf_create_default(m);
-    iirhilbf_print(q);
 
     unsigned int h_len       = 2*p+1; // pulse length
     unsigned int num_samples = h_len + 2*m + 8;
@@ -181,7 +179,7 @@ void autotest_iirhilbf_invalid_config()
 
     // create proper object and test configuration methods
     iirhilbf q = iirhilbf_create(LIQUID_IIRDES_BUTTER,5,0.1f,60.0f);
-    iirhilbf_print(q);
+    CONTEND_EQUALITY(iirhilbf_print(q), LIQUID_OK);
     iirhilbf_destroy(q);
     _liquid_error_downgrade_disable();
 }

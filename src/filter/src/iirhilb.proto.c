@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -108,9 +108,10 @@ void IIRHILB(_destroy)(IIRHILB() _q)
 }
 
 // print iirhilb object internals
-void IIRHILB(_print)(IIRHILB() _q)
+int IIRHILB(_print)(IIRHILB() _q)
 {
-    printf("iir hilbert transform\n");
+    printf("<iirhilb%s>\n", EXTENSION_SHORT);
+    return LIQUID_OK;
 }
 
 // reset iirhilb object internal state

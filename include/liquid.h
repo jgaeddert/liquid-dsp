@@ -3288,7 +3288,7 @@ IIRHILB() IIRHILB(_create_default)(unsigned int _n);                        \
 void IIRHILB(_destroy)(IIRHILB() _q);                                       \
                                                                             \
 /* Print iirhilb object internals to stdout                             */  \
-void IIRHILB(_print)(IIRHILB() _q);                                         \
+int IIRHILB(_print)(IIRHILB() _q);                                          \
                                                                             \
 /* Reset iirhilb object internal state                                  */  \
 void IIRHILB(_reset)(IIRHILB() _q);                                         \
