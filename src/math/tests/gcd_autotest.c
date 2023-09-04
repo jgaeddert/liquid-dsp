@@ -30,8 +30,7 @@ void testbench_gcd(unsigned int _gcd,
 	unsigned int P = _p * _gcd;
 	unsigned int Q = _q * _gcd;
 	unsigned int gcd_test = liquid_gcd(P,Q);
-    if (liquid_autotest_verbose)
-        printf("  gcd(%12u,%12u) = %12u (expected %u)\n", P, Q, gcd_test, _gcd);
+    liquid_log_debug("  gcd(%12u,%12u) = %12u (expected %u)", P, Q, gcd_test, _gcd);
     CONTEND_EQUALITY(gcd_test, _gcd);
 }
 
