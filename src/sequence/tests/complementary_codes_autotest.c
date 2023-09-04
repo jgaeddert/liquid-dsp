@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,13 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// 
-// AUTOTEST: validate autocorrelation properties of
-//           complementary codes
-//
+// validate autocorrelation properties of complementary codes
 void complementary_codes_test(unsigned int _n)
 {
     // create and initialize codes
     bsequence a = bsequence_create(_n);
     bsequence b = bsequence_create(_n);
     bsequence_create_ccodes(a, b);
-
-    // print
-    if (liquid_autotest_verbose) {
-        bsequence_print(a);
-        bsequence_print(b);
-    }
 
     // generate test sequences
     bsequence ax = bsequence_create(_n);
@@ -58,7 +49,7 @@ void complementary_codes_test(unsigned int _n)
         bsequence_circshift(ax);
         bsequence_circshift(bx);
     }
-    
+
     // clean up memory
     bsequence_destroy(a);
     bsequence_destroy(b);
