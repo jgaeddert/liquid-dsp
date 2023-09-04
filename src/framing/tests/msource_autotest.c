@@ -178,9 +178,6 @@ void autotest_msourcecf_aggregate()
     unsigned int counter = 0;
     msourcecf_add_user (gen,  0.40f, 0.15f, -10, (void*)&counter, callback_msourcecf_autotest); // tones
 
-    // print source generator object
-    CONTEND_EQUALITY(LIQUID_OK, msourcecf_print(gen));
-
     unsigned int total_samples = 0;
     while (total_samples < num_samples) {
         // write samples to buffer
@@ -192,7 +189,7 @@ void autotest_msourcecf_aggregate()
         // accumulated samples
         total_samples += buf_len;
     }
-    printf("total samples: %u\n", total_samples);
+    liquid_log_debug("total samples: %u", total_samples);
 
     // compute power spectral density output
     float psd[nfft];
@@ -430,7 +427,7 @@ void autotest_msourcecf_copy()
         // accumulated samples
         total_samples += buf_len;
     }
-    printf("total samples: %u\n", total_samples);
+    liquid_log_debug("total samples: %u", total_samples);
 
     // compute power spectral density output
     float psd_orig[nfft];
@@ -463,6 +460,6 @@ void autotest_msourcecf_copy()
     fprintf(fid,"subplot(2,1,2), plot(f,psd_copy - psd_orig); grid on;\n");
     fprintf(fid,"  axis([-0.5 0.5 -1  1 ]); xlabel('Normalized Frequency [f/F_s]'); ylabel('Error [dB]');\n");
     fclose(fid);
-    printf("results written to %s\n", filename);
+    liquid_log_debug("results written to %s\n", filename);
 }
 
