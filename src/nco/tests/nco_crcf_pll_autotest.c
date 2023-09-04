@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -80,11 +80,8 @@ void nco_crcf_pll_test(int          _type,
     while (freq_error <= -2*M_PI) freq_error += 2*M_PI;
     CONTEND_DELTA(freq_error, 0, _tol);
 
-    if (liquid_autotest_verbose) {
-        printf("  phase error : %12.4e, frequency error : %12.4e\n",
-                phase_error,
-                freq_error);
-    }
+    liquid_log_debug("  phase error : %12.4e, frequency error : %12.4e",
+        phase_error, freq_error);
 
     // clean it up
     nco_crcf_destroy(nco_tx);
