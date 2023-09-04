@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,15 +61,14 @@ void autotest_matrixcf_aug()
     matrixcf_aug(matrixcf_data_aug_x, 5, 4,
                  matrixcf_data_aug_y, 5, 3,
                  z,                  5, 7);
-    
-    // print result
-    if (liquid_autotest_verbose) {
-        printf("augment:\n");
-        printf("  x: ");        matrixcf_print(matrixcf_data_aug_x, 5, 4);
-        printf("  y: ");        matrixcf_print(matrixcf_data_aug_y, 5, 3);
-        printf("  expected: "); matrixcf_print(matrixcf_data_aug_z, 5, 7);
-        printf("  z: ");        matrixcf_print(z,5,3);
-    }
+
+#if 0
+    printf("augment:\n");
+    printf("  x: ");        matrixcf_print(matrixcf_data_aug_x, 5, 4);
+    printf("  y: ");        matrixcf_print(matrixcf_data_aug_y, 5, 3);
+    printf("  expected: "); matrixcf_print(matrixcf_data_aug_z, 5, 7);
+    printf("  z: ");        matrixcf_print(z,5,3);
+#endif
 
     unsigned int i;
     for (i=0; i<35; i++) {
@@ -90,12 +89,12 @@ void autotest_matrixcf_chol()
     // run decomposition
     matrixcf_chol(matrixcf_data_chol_A, 4, L);
 
-    if (liquid_autotest_verbose) {
-        printf("chol:\n");
-        printf("  A: ");        matrixcf_print(matrixcf_data_chol_A, 4, 4);
-        printf("  expected: "); matrixcf_print(matrixcf_data_chol_L, 4, 4);
-        printf("  L: ");        matrixcf_print(L,                    4, 4);
-    }
+#if 0
+    printf("chol:\n");
+    printf("  A: ");        matrixcf_print(matrixcf_data_chol_A, 4, 4);
+    printf("  expected: "); matrixcf_print(matrixcf_data_chol_L, 4, 4);
+    printf("  L: ");        matrixcf_print(L,                    4, 4);
+#endif
 
     unsigned int i;
     for (i=0; i<16; i++) {
@@ -115,12 +114,12 @@ void autotest_matrixcf_inv()
     memmove(y, matrixcf_data_inv_x, 5*5*sizeof(float complex));
     matrixcf_inv(y, 5, 5);
 
-    if (liquid_autotest_verbose) {
-        printf("inv:\n");
-        printf("  x: ");        matrixcf_print(matrixcf_data_inv_x, 5, 5);
-        printf("  expected: "); matrixcf_print(matrixcf_data_inv_y, 5, 5);
-        printf("  y: ");        matrixcf_print(y,                   5, 5);
-    }
+#if 0
+    printf("inv:\n");
+    printf("  x: ");        matrixcf_print(matrixcf_data_inv_x, 5, 5);
+    printf("  expected: "); matrixcf_print(matrixcf_data_inv_y, 5, 5);
+    printf("  y: ");        matrixcf_print(y,                   5, 5);
+#endif
 
     unsigned int i;
     for (i=0; i<25; i++) {
@@ -144,13 +143,13 @@ void autotest_matrixcf_linsolve()
                       matrixcf_data_linsolve_b,
                       x, NULL);
 
-    if (liquid_autotest_verbose) {
-        printf("linsolve:\n");
-        printf("  A: ");        matrixcf_print(matrixcf_data_linsolve_A, 5, 5);
-        printf("  b: ");        matrixcf_print(matrixcf_data_linsolve_b, 5, 1);
-        printf("  expected: "); matrixcf_print(matrixcf_data_linsolve_x, 5, 1);
-        printf("  x: ");        matrixcf_print(x,                        5, 1);
-    }
+#if 0
+    printf("linsolve:\n");
+    printf("  A: ");        matrixcf_print(matrixcf_data_linsolve_A, 5, 5);
+    printf("  b: ");        matrixcf_print(matrixcf_data_linsolve_b, 5, 1);
+    printf("  expected: "); matrixcf_print(matrixcf_data_linsolve_x, 5, 1);
+    printf("  x: ");        matrixcf_print(x,                        5, 1);
+#endif
 
     unsigned int i;
     for (i=0; i<5; i++) {
@@ -178,13 +177,13 @@ void autotest_matrixcf_ludecomp_crout()
                  U,       8, 8,
                  LU_test, 8, 8);
 
-    if (liquid_autotest_verbose) {
-        printf("ludecomp_crout:\n");
-        printf("  A: ");  matrixcf_print(matrixcf_data_ludecomp_A, 8, 8);
-        printf("  L: ");  matrixcf_print(L,                        8, 8);
-        printf("  U: ");  matrixcf_print(U,                        8, 8);
-        printf("  LU: "); matrixcf_print(LU_test,                  8, 8);
-    }
+#if 0
+    printf("ludecomp_crout:\n");
+    printf("  A: ");  matrixcf_print(matrixcf_data_ludecomp_A, 8, 8);
+    printf("  L: ");  matrixcf_print(L,                        8, 8);
+    printf("  U: ");  matrixcf_print(U,                        8, 8);
+    printf("  LU: "); matrixcf_print(LU_test,                  8, 8);
+#endif
 
     unsigned int r,c;
     for (r=0; r<8; r++) {
@@ -228,13 +227,13 @@ void autotest_matrixcf_ludecomp_doolittle()
                  U,       8, 8,
                  LU_test, 8, 8);
 
-    if (liquid_autotest_verbose) {
-        printf("ludecomp_doolittle:\n");
-        printf("  A: ");  matrixcf_print(matrixcf_data_ludecomp_A, 8, 8);
-        printf("  L: ");  matrixcf_print(L,                        8, 8);
-        printf("  U: ");  matrixcf_print(U,                        8, 8);
-        printf("  LU: "); matrixcf_print(LU_test,                  8, 8);
-    }
+#if 0
+    printf("ludecomp_doolittle:\n");
+    printf("  A: ");  matrixcf_print(matrixcf_data_ludecomp_A, 8, 8);
+    printf("  L: ");  matrixcf_print(L,                        8, 8);
+    printf("  U: ");  matrixcf_print(U,                        8, 8);
+    printf("  LU: "); matrixcf_print(LU_test,                  8, 8);
+#endif
 
     unsigned int r,c;
     for (r=0; r<8; r++) {
@@ -272,14 +271,13 @@ void autotest_matrixcf_mul()
                  matrixcf_data_mul_y, 4, 3,
                  z,                   5, 3);
 
-    // print result
-    if (liquid_autotest_verbose) {
-        printf("multiplication:\n");
-        printf("  x: ");        matrixcf_print(matrixcf_data_mul_x,5,4);
-        printf("  y: ");        matrixcf_print(matrixcf_data_mul_y,4,3);
-        printf("  expected: "); matrixcf_print(matrixcf_data_mul_z,5,3);
-        printf("  z: ");        matrixcf_print(z,5,3);
-    }
+#if 0
+    printf("multiplication:\n");
+    printf("  x: ");        matrixcf_print(matrixcf_data_mul_x,5,4);
+    printf("  y: ");        matrixcf_print(matrixcf_data_mul_y,4,3);
+    printf("  expected: "); matrixcf_print(matrixcf_data_mul_z,5,3);
+    printf("  z: ");        matrixcf_print(z,5,3);
+#endif
 
     unsigned int i;
     for (i=0; i<15; i++) {
@@ -310,16 +308,16 @@ void autotest_matrixcf_qrdecomp()
     // compute Q*Q^T
     matrixcf_mul_transpose(Q, 4, 4, QQT_test);
 
-    if (liquid_autotest_verbose) {
-        printf("qrdecomp_gramschmidt:\n");
-        printf("  A: ");          matrixcf_print(matrixcf_data_qrdecomp_A, 4, 4);
-        printf("  Q: ");          matrixcf_print(Q,                        4, 4);
-        printf("  R: ");          matrixcf_print(R,                        4, 4);
-        printf("  Q expected: "); matrixcf_print(matrixcf_data_qrdecomp_Q, 4, 4);
-        printf("  R expected: "); matrixcf_print(matrixcf_data_qrdecomp_R, 4, 4);
-        printf("  QR: ");         matrixcf_print(QR_test,                  4, 4);
-        printf("  QQ: ");         matrixcf_print(QQT_test,                 4, 4);
-    }
+#if 0
+    printf("qrdecomp_gramschmidt:\n");
+    printf("  A: ");          matrixcf_print(matrixcf_data_qrdecomp_A, 4, 4);
+    printf("  Q: ");          matrixcf_print(Q,                        4, 4);
+    printf("  R: ");          matrixcf_print(R,                        4, 4);
+    printf("  Q expected: "); matrixcf_print(matrixcf_data_qrdecomp_Q, 4, 4);
+    printf("  R expected: "); matrixcf_print(matrixcf_data_qrdecomp_R, 4, 4);
+    printf("  QR: ");         matrixcf_print(QR_test,                  4, 4);
+    printf("  QQ: ");         matrixcf_print(QQT_test,                 4, 4);
+#endif
 
     unsigned int i;
 
@@ -361,23 +359,23 @@ void autotest_matrixcf_transmul()
     matrixcf_transpose_mul(matrixcf_data_transmul_x, 5, 4, xTx);
     matrixcf_hermitian_mul(matrixcf_data_transmul_x, 5, 4, xHx);
 
-    if (liquid_autotest_verbose) {
-        printf("transmul:\n");
-        printf("  x: ");            matrixcf_print(matrixcf_data_transmul_x,  5,4);
-        printf("\n");
-        printf("  xxT: ");          matrixcf_print(xxT,                      5,5);
-        printf("  xxT expected: "); matrixcf_print(matrixcf_data_transmul_xxT,5,5);
-        printf("\n");
-        printf("  xxH: ");          matrixcf_print(xxH,                      5,5);
-        printf("  xxH expected: "); matrixcf_print(matrixcf_data_transmul_xxH,5,5);
-        printf("\n");
-        printf("  xTx: ");          matrixcf_print(xTx,                      4,4);
-        printf("  xTx expected: "); matrixcf_print(matrixcf_data_transmul_xTx,4,4);
-        printf("\n");
-        printf("  xHx: ");          matrixcf_print(xHx,                      4,4);
-        printf("  xHx expected: "); matrixcf_print(matrixcf_data_transmul_xHx,4,4);
-        printf("\n");
-    }
+#if 0
+    printf("transmul:\n");
+    printf("  x: ");            matrixcf_print(matrixcf_data_transmul_x,  5,4);
+    printf("\n");
+    printf("  xxT: ");          matrixcf_print(xxT,                      5,5);
+    printf("  xxT expected: "); matrixcf_print(matrixcf_data_transmul_xxT,5,5);
+    printf("\n");
+    printf("  xxH: ");          matrixcf_print(xxH,                      5,5);
+    printf("  xxH expected: "); matrixcf_print(matrixcf_data_transmul_xxH,5,5);
+    printf("\n");
+    printf("  xTx: ");          matrixcf_print(xTx,                      4,4);
+    printf("  xTx expected: "); matrixcf_print(matrixcf_data_transmul_xTx,4,4);
+    printf("\n");
+    printf("  xHx: ");          matrixcf_print(xHx,                      4,4);
+    printf("  xHx expected: "); matrixcf_print(matrixcf_data_transmul_xHx,4,4);
+    printf("\n");
+#endif
 
     // run tests
     unsigned int i;
