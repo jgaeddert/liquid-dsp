@@ -98,7 +98,7 @@ void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int 
 
     // verify output constellation EVM is reasonably high
     evm = 10*log10f(evm / (float)num_symbols_evm);
-    printf("EVM: %12.8f, %u\n", evm, num_symbols_evm);
+    liquid_log_debug("EVM: %12.8f, %u", evm, num_symbols_evm);
     CONTEND_LESS_THAN(evm, -20.0f);
 }
 
