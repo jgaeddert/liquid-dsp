@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -122,8 +122,6 @@ void qdetector_cccf_runtest_linear(unsigned int _sequence_len)
 
     // create detector
     qdetector_cccf q = qdetector_cccf_create_linear(sequence, _sequence_len, ftype, k, m, beta);
-    if (liquid_autotest_verbose)
-        qdetector_cccf_print(q);
 
     unsigned int buf_len = qdetector_cccf_get_buf_len(q);
 
@@ -151,17 +149,12 @@ void qdetector_cccf_runtest_linear(unsigned int _sequence_len)
     // destroy objects
     qdetector_cccf_destroy(q);
 
-    if (liquid_autotest_verbose) {
-        // print results
-        printf("\n");
-        printf("frame detected  :   %s\n", frame_detected ? "yes" : "no");
-        printf("  sample index  : %8u, actual=%8u (error=%8d)\n", sample_index, buf_len, (int)sample_index - (int)buf_len);
-        printf("  gamma hat     : %8.3f, actual=%8.3f (error=%8.3f)\n",            gamma_hat, gamma, gamma_hat - gamma);
-        printf("  tau hat       : %8.3f, actual=%8.3f (error=%8.3f) samples\n",    tau_hat,   tau,   tau_hat   - tau  );
-        printf("  dphi hat      : %8.5f, actual=%8.5f (error=%8.5f) rad/sample\n", dphi_hat,  dphi,  dphi_hat  - dphi );
-        printf("  phi hat       : %8.5f, actual=%8.5f (error=%8.5f) radians\n",    phi_hat,   phi,   phi_hat   - phi  );
-        printf("\n");
-    }
+    liquid_log_debug("frame detected  :   %s", frame_detected ? "yes" : "no");
+    liquid_log_debug("  sample index  : %8u, actual=%8u (error=%8d)", sample_index, buf_len, (int)sample_index - (int)buf_len);
+    liquid_log_debug("  gamma hat     : %8.3f, actual=%8.3f (error=%8.3f)",            gamma_hat, gamma, gamma_hat - gamma);
+    liquid_log_debug("  tau hat       : %8.3f, actual=%8.3f (error=%8.3f) samples",    tau_hat,   tau,   tau_hat   - tau  );
+    liquid_log_debug("  dphi hat      : %8.5f, actual=%8.5f (error=%8.5f) rad/sample", dphi_hat,  dphi,  dphi_hat  - dphi );
+    liquid_log_debug("  phi hat       : %8.5f, actual=%8.5f (error=%8.5f) radians",    phi_hat,   phi,   phi_hat   - phi  );
 
     if (false_positive)
         AUTOTEST_FAIL("false positive detected");
@@ -244,8 +237,6 @@ void qdetector_cccf_runtest_gmsk(unsigned int _sequence_len)
 
     // create detector
     qdetector_cccf q = qdetector_cccf_create_gmsk(sequence, _sequence_len, k, m, beta);
-    if (liquid_autotest_verbose)
-        qdetector_cccf_print(q);
 
     unsigned int buf_len = qdetector_cccf_get_buf_len(q);
 
@@ -273,17 +264,12 @@ void qdetector_cccf_runtest_gmsk(unsigned int _sequence_len)
     // destroy objects
     qdetector_cccf_destroy(q);
 
-    if (liquid_autotest_verbose) {
-        // print results
-        printf("\n");
-        printf("frame detected  :   %s\n", frame_detected ? "yes" : "no");
-        printf("  sample index  : %8u, actual=%8u (error=%8d)\n", sample_index, buf_len, (int)sample_index - (int)buf_len);
-        printf("  gamma hat     : %8.3f, actual=%8.3f (error=%8.3f)\n",            gamma_hat, gamma, gamma_hat - gamma);
-        printf("  tau hat       : %8.3f, actual=%8.3f (error=%8.3f) samples\n",    tau_hat,   tau,   tau_hat   - tau  );
-        printf("  dphi hat      : %8.5f, actual=%8.5f (error=%8.5f) rad/sample\n", dphi_hat,  dphi,  dphi_hat  - dphi );
-        printf("  phi hat       : %8.5f, actual=%8.5f (error=%8.5f) radians\n",    phi_hat,   phi,   phi_hat   - phi  );
-        printf("\n");
-    }
+    liquid_log_debug("frame detected  :   %s", frame_detected ? "yes" : "no");
+    liquid_log_debug("  sample index  : %8u, actual=%8u (error=%8d)", sample_index, buf_len, (int)sample_index - (int)buf_len);
+    liquid_log_debug("  gamma hat     : %8.3f, actual=%8.3f (error=%8.3f)",            gamma_hat, gamma, gamma_hat - gamma);
+    liquid_log_debug("  tau hat       : %8.3f, actual=%8.3f (error=%8.3f) samples",    tau_hat,   tau,   tau_hat   - tau  );
+    liquid_log_debug("  dphi hat      : %8.5f, actual=%8.5f (error=%8.5f) rad/sample", dphi_hat,  dphi,  dphi_hat  - dphi );
+    liquid_log_debug("  phi hat       : %8.5f, actual=%8.5f (error=%8.5f) radians",    phi_hat,   phi,   phi_hat   - phi  );
 
     if (false_positive)
         AUTOTEST_FAIL("false positive detected");

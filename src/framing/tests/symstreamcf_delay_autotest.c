@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,8 +48,7 @@ void testbench_symstreamcf_delay(unsigned int _k,
             break;
     }
 
-    if (liquid_autotest_verbose)
-        printf("expected delay: %u, approximate delay: %u, tol: %.0f\n", delay, i, tol);
+    liquid_log_debug("expected delay: %u, approximate delay: %u, tol: %.0f", delay, i, tol);
 
     // verify delay is relatively close to expected
     CONTEND_DELTA((float)delay, (float)i, tol);

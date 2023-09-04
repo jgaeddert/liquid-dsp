@@ -106,14 +106,12 @@ void qpilotsync_test(modulation_scheme _ms,
     float gamma_hat = qpilotsync_get_gain(ps);
     float evm_hat   = qpilotsync_get_evm (ps);
 
-    if (liquid_autotest_verbose) {
-        qpilotgen_print(pg);
-        printf("  received bit errors : %u / %u\n", bit_errors, _payload_len * modemcf_get_bps(mod));
-        printf("  dphi (carrier freq.): %12.8f (expected %12.8f, error=%12.8f)\n", dphi_hat,  _dphi, _dphi-dphi_hat);
-        printf("  phi  (carrier phase): %12.8f (expected %12.8f, error=%12.8f)\n", phi_hat,   _phi, _phi-phi_hat);
-        printf("  gamma (channel gain): %12.8f (expected %12.8f, error=%12.8f)\n", gamma_hat, _gamma, _gamma-gamma_hat);
-        printf("  error vector mag.   : %12.8f (expected %12.8f, error=%12.8f)\n", evm_hat,   -_SNRdB,_SNRdB+evm_hat);
-    }
+    liquid_log_debug("qpilotgen, payload:%u, spacing:%u", _payload_len, _pilot_spacing);
+    liquid_log_debug("  received bit errors : %u / %u", bit_errors, _payload_len * modemcf_get_bps(mod));
+    liquid_log_debug("  dphi (carrier freq.): %8.5f (expected %8.5f, error=%8.5f)", dphi_hat,  _dphi, _dphi-dphi_hat);
+    liquid_log_debug("  phi  (carrier phase): %8.5f (expected %8.5f, error=%8.5f)", phi_hat,   _phi, _phi-phi_hat);
+    liquid_log_debug("  gamma (channel gain): %8.5f (expected %8.5f, error=%8.5f)", gamma_hat, _gamma, _gamma-gamma_hat);
+    liquid_log_debug("  error vector mag.   : %8.3f (expected %8.3f, error=%8.3f)", evm_hat,   -_SNRdB,_SNRdB+evm_hat);
 
     // check to see that frame was recovered
     CONTEND_DELTA   (   dphi_hat,  _dphi, 0.010f );

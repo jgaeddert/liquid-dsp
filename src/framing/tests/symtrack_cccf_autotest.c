@@ -55,8 +55,6 @@ void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int 
     symtrack_cccf symtrack = symtrack_cccf_create(ftype,_k,_m,_beta,_ms);
     symtrack_cccf_set_bandwidth(symtrack,bandwidth);
     //symtrack_cccf_set_eq_off(symtrack); // disable equalization
-    if (liquid_autotest_verbose)
-        symtrack_cccf_print(symtrack);
 
     unsigned int total_samples = 0;
     //unsigned int total_symbols = 0;

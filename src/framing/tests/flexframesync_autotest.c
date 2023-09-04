@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,8 +59,6 @@ void autotest_flexframesync()
     
     // assemble the frame
     flexframegen_assemble(fg, header, payload, _payload_len);
-    if (liquid_autotest_verbose)
-        flexframegen_print(fg);
 
     // generate the frame
     int frame_complete = 0;
@@ -75,8 +73,6 @@ void autotest_flexframesync()
 
     // get frame data statistics
     framedatastats_s stats = flexframesync_get_framedatastats(fs);
-    if (liquid_autotest_verbose)
-        flexframesync_print(fs);
 
     // check to see that frame was recovered
     CONTEND_EQUALITY( stats.num_frames_detected, 1 );

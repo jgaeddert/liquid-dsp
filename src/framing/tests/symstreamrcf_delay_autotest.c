@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,11 +66,8 @@ void testbench_symstreamrcf_delay(float        _bw,
         p += buf_freq[(nfft+i)%nfft] * conjf(buf_freq[(nfft+i+1)%nfft]);
     float delay_meas = cargf(p) * nfft / (2*M_PI);
 
-    // print results
-    if (liquid_autotest_verbose) {
-        printf("expected delay: %.6f, measured: %.6f, error: %.6f (tol= %.3f)\n",
+    liquid_log_debug("expected delay: %.6f, measured: %.6f, error: %.6f (tol= %.3f)",
                 delay, delay_meas, delay-delay_meas,tol);
-    }
 
     // verify delay is relatively close to expected
     CONTEND_DELTA(delay, delay_meas, tol);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,12 +59,12 @@ void autotest_qdetector_cccf_copy()
         v1 = qdetector_cccf_execute(q1,s);
 
         // debugging
-        if (v0 != NULL) printf(" [%3u] frame detected on detector 0\n", i);
-        if (v1 != NULL) printf(" [%3u] frame detected on detector 1\n", i);
+        if (v0 != NULL) liquid_log_debug(" [%3u] frame detected on detector 0", i);
+        if (v1 != NULL) liquid_log_debug(" [%3u] frame detected on detector 1", i);
 
         // check results
         if (v0 != NULL && v1 != NULL) {
-            printf(" [%3u] frame detected on both detectors\n", i);
+            liquid_log_debug(" [%3u] frame detected on both detectors", i);
             frames_detected++;
 
             // get statistics
