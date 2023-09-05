@@ -37,6 +37,7 @@ check:
 bench:
   stage: test
   script:
+    - ./configure
     - make -j4 bench
   artifacts:
     paths: [benchmark.json]
