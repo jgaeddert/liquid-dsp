@@ -6440,7 +6440,7 @@ int QDETECTOR(_set_range)(QDETECTOR() _q,                                   \
 /* Get sequence length                                                  */  \
 unsigned int QDETECTOR(_get_seq_len)(QDETECTOR() _q);                       \
                                                                             \
-/* Get pointer to sequence of detected frame                            */  \
+/* Get pointer to original sequence                                     */  \
 const void * QDETECTOR(_get_sequence)(QDETECTOR() _q);                      \
                                                                             \
 /* Get buffer length                                                    */  \

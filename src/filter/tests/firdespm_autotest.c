@@ -323,7 +323,7 @@ void autotest_firdespm_differentiator()
     liquid_firdespm_wtype wtype[2] = {LIQUID_FIRDESPM_FLATWEIGHT, LIQUID_FIRDESPM_FLATWEIGHT};
     liquid_firdespm_btype btype = LIQUID_FIRDESPM_DIFFERENTIATOR;
     firdespm q = firdespm_create(n, 2, bands, des, w, wtype, btype);
-    // error: unsupported configuration
+    // unsupported configuration
     CONTEND_EQUALITY( LIQUID_EINT, firdespm_execute(q,h) )
     firdespm_destroy(q);
     _liquid_error_downgrade_disable();
@@ -342,7 +342,7 @@ void autotest_firdespm_hilbert()
     liquid_firdespm_wtype wtype[2] = {LIQUID_FIRDESPM_FLATWEIGHT, LIQUID_FIRDESPM_FLATWEIGHT};
     liquid_firdespm_btype btype = LIQUID_FIRDESPM_HILBERT;
     firdespm q = firdespm_create(n, 2, bands, des, w, wtype, btype);
-    // error: unsupported configuration
+    // unsupported configuration
     CONTEND_EQUALITY( LIQUID_EINT, firdespm_execute(q,h) )
     firdespm_destroy(q);
     _liquid_error_downgrade_disable();

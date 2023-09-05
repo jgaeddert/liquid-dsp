@@ -30,9 +30,8 @@
 void qdetector_cccf_runtest_linear(unsigned int _sequence_len);
 void qdetector_cccf_runtest_gmsk  (unsigned int _sequence_len);
 
-//
-// AUTOTESTS
-//
+// run test given initialized object
+void qdetector_cccf_runtest(qdetector_cccf _q);
 
 // linear tests
 void autotest_qdetector_cccf_linear_n64()   { qdetector_cccf_runtest_linear(  64); }
@@ -66,115 +65,24 @@ void qdetector_cccf_runtest_linear(unsigned int _sequence_len)
     unsigned int m     =     7;     // filter delay [symbols]
     float        beta  =  0.3f;     // excess bandwidth factor
     int          ftype = LIQUID_FIRFILT_ARKAISER; // filter type
-    float        gamma =  1.0f;     // channel gain
-    float        tau   = -0.3f;     // fractional sample timing offset
-    float        dphi  = -0.000f;   // carrier frequency offset (zero for now)
-    float        phi   =  0.5f;     // carrier phase offset
-
-    unsigned int i;
-
-    // derived values
-    unsigned int num_symbols = 8*_sequence_len + 2*m;
-    unsigned int num_samples = k * num_symbols;
-
-    // arrays
-    float complex x[num_samples];   // transmitted signal
-    float complex y[num_samples];   // received signal
 
     // generate synchronization sequence (QPSK symbols)
+    unsigned int i;
     float complex sequence[_sequence_len];
     for (i=0; i<_sequence_len; i++) {
         sequence[i] = (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 +
                       (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 * _Complex_I;
     }
 
-    // generate transmitted signal
-    firinterp_crcf interp = firinterp_crcf_create_prototype(ftype, k, m, beta, -tau);
-    unsigned int n = 0;
-    for (i=0; i<num_symbols; i++) {
-        // original sequence, then random symbols
-        float complex sym = i < _sequence_len ? sequence[i] : sequence[rand()%_sequence_len];
-
-        // interpolate
-        firinterp_crcf_execute(interp, sym, &x[n]);
-        n += k;
-    }
-    firinterp_crcf_destroy(interp);
-
-    // add channel impairments
-    for (i=0; i<num_samples; i++) {
-        y[i] = x[i];
-
-        // channel gain
-        y[i] *= gamma;
-
-        // carrier offset
-        y[i] *= cexpf(_Complex_I*(dphi*i + phi));
-    }
-
-    // estimates
-    float tau_hat   = 0.0f;
-    float gamma_hat = 0.0f;
-    float dphi_hat  = 0.0f;
-    float phi_hat   = 0.0f;
-    int   frame_detected = 0;
-    int   false_positive = 0;
-
     // create detector
     qdetector_cccf q = qdetector_cccf_create_linear(sequence, _sequence_len, ftype, k, m, beta);
 
-    unsigned int buf_len = qdetector_cccf_get_buf_len(q);
-
-    // try to detect frame
-    float complex * v = NULL;
-    for (i=0; i<num_samples; i++) {
-        if (frame_detected)
-            break;
-
-        v = qdetector_cccf_execute(q,y[i]);
-
-        if (v != NULL) {
-            frame_detected = 1;
-
-            // get statistics
-            tau_hat   = qdetector_cccf_get_tau(q);
-            gamma_hat = qdetector_cccf_get_gamma(q);
-            dphi_hat  = qdetector_cccf_get_dphi(q);
-            phi_hat   = qdetector_cccf_get_phi(q);
-            break;
-        }
-    }
-    unsigned int sample_index = i;
+    // run test
+    qdetector_cccf_runtest(q);
 
     // destroy objects
     qdetector_cccf_destroy(q);
-
-    liquid_log_debug("frame detected  :   %s", frame_detected ? "yes" : "no");
-    liquid_log_debug("  sample index  : %8u, actual=%8u (error=%8d)", sample_index, buf_len, (int)sample_index - (int)buf_len);
-    liquid_log_debug("  gamma hat     : %8.3f, actual=%8.3f (error=%8.3f)",            gamma_hat, gamma, gamma_hat - gamma);
-    liquid_log_debug("  tau hat       : %8.3f, actual=%8.3f (error=%8.3f) samples",    tau_hat,   tau,   tau_hat   - tau  );
-    liquid_log_debug("  dphi hat      : %8.5f, actual=%8.5f (error=%8.5f) rad/sample", dphi_hat,  dphi,  dphi_hat  - dphi );
-    liquid_log_debug("  phi hat       : %8.5f, actual=%8.5f (error=%8.5f) radians",    phi_hat,   phi,   phi_hat   - phi  );
-
-    if (false_positive)
-        AUTOTEST_FAIL("false positive detected");
-    else if (!frame_detected)
-        AUTOTEST_FAIL("frame not detected");
-    else {
-        // check signal level estimate
-        CONTEND_DELTA( gamma_hat, gamma, 0.05f );
-
-        // check timing offset estimate
-        CONTEND_DELTA( tau_hat, tau, 0.05f );
-
-        // check carrier frequency offset estimate
-        CONTEND_DELTA( dphi_hat, dphi, 0.01f );
-
-        // check carrier phase offset estimate
-        CONTEND_DELTA( phi_hat, phi, 0.25f );
-    }
 }
-
 
 // autotest helper function
 //  _sequence_len   :   sequence length
@@ -183,48 +91,42 @@ void qdetector_cccf_runtest_gmsk(unsigned int _sequence_len)
     unsigned int k     =     2;     // samples per symbol
     unsigned int m     =     7;     // filter delay [symbols]
     float        beta  =  0.3f;     // excess bandwidth factor
-    float        gamma =  1.0f;     // channel gain
-    float        tau   =  0.0f;     // fractional sample timing offset
-    float        dphi  = -0.000f;   // carrier frequency offset (zero for now)
-    float        phi   =  0.5f;     // carrier phase offset
-
-    unsigned int i;
-
-    // derived values
-    unsigned int num_symbols = 8*_sequence_len + 2*m;
-    unsigned int num_samples = k * num_symbols;
-
-    // arrays
-    float complex x[num_samples];   // transmitted signal
-    float complex y[num_samples];   // received signal
 
     // generate synchronization sequence (QPSK symbols)
     unsigned char sequence[_sequence_len];
+    unsigned int i;
     for (i=0; i<_sequence_len; i++)
         sequence[i] = rand() & 0x01;
 
-    // generate transmitted signal (gmsk)
-    gmskmod mod = gmskmod_create(k, m, beta);
-    unsigned int n = 0;
-    for (i=0; i<num_symbols; i++) {
-        // original sequence, then random symbols
-        unsigned char bit = i < _sequence_len ? sequence[i] : rand() & 0x01;
+    // create detector
+    qdetector_cccf q = qdetector_cccf_create_gmsk(sequence, _sequence_len, k, m, beta);
 
-        // modulate
-        gmskmod_modulate(mod, bit, &x[n]);
-        n += k;
-    }
-    gmskmod_destroy(mod);
+    // run test
+    qdetector_cccf_runtest(q);
+
+    // destroy objects
+    qdetector_cccf_destroy(q);
+}
+
+// autotest helper function
+void qdetector_cccf_runtest(qdetector_cccf _q)
+{
+    float gamma =  1.0f;    // channel gain
+    float tau   =  0.0f;    // fractional sample timing offset
+    float dphi  = -0.000f;  // carrier frequency offset (zero for now)
+    float phi   =  0.5f;    // carrier phase offset
+
+    float complex * seq = (float complex*)qdetector_cccf_get_sequence(_q);
+    unsigned int sequence_len = qdetector_cccf_get_seq_len(_q);
+    unsigned int num_samples = 8*sequence_len;
+    float complex buf_rx[num_samples];
 
     // add channel impairments
+    unsigned int i;
     for (i=0; i<num_samples; i++) {
-        y[i] = x[i];
-
-        // channel gain
-        y[i] *= gamma;
-
-        // carrier offset
-        y[i] *= cexpf(_Complex_I*(dphi*i + phi));
+        buf_rx[i] = i < sequence_len ? seq[i] : 0.0f;
+        buf_rx[i] *= gamma;
+        buf_rx[i] *= cexpf(_Complex_I*(dphi*i + phi));
     }
 
     // estimates
@@ -235,34 +137,28 @@ void qdetector_cccf_runtest_gmsk(unsigned int _sequence_len)
     int   frame_detected = 0;
     int   false_positive = 0;
 
-    // create detector
-    qdetector_cccf q = qdetector_cccf_create_gmsk(sequence, _sequence_len, k, m, beta);
-
-    unsigned int buf_len = qdetector_cccf_get_buf_len(q);
-
     // try to detect frame
     float complex * v = NULL;
     for (i=0; i<num_samples; i++) {
         if (frame_detected)
             break;
 
-        v = qdetector_cccf_execute(q,y[i]);
+        v = qdetector_cccf_execute(_q,buf_rx[i]);
 
         if (v != NULL) {
             frame_detected = 1;
 
             // get statistics
-            tau_hat   = qdetector_cccf_get_tau(q);
-            gamma_hat = qdetector_cccf_get_gamma(q);
-            dphi_hat  = qdetector_cccf_get_dphi(q);
-            phi_hat   = qdetector_cccf_get_phi(q);
+            tau_hat   = qdetector_cccf_get_tau(_q);
+            gamma_hat = qdetector_cccf_get_gamma(_q);
+            dphi_hat  = qdetector_cccf_get_dphi(_q);
+            phi_hat   = qdetector_cccf_get_phi(_q);
             break;
         }
     }
     unsigned int sample_index = i;
 
-    // destroy objects
-    qdetector_cccf_destroy(q);
+    unsigned int buf_len = qdetector_cccf_get_buf_len(_q);
 
     liquid_log_debug("frame detected  :   %s", frame_detected ? "yes" : "no");
     liquid_log_debug("  sample index  : %8u, actual=%8u (error=%8d)", sample_index, buf_len, (int)sample_index - (int)buf_len);
@@ -290,5 +186,4 @@ void qdetector_cccf_runtest_gmsk(unsigned int _sequence_len)
         CONTEND_DELTA( phi_hat, phi, 0.1f );
     }
 }
-
 

@@ -138,7 +138,7 @@ void qpilotsync_test(modulation_scheme _ms,
     sprintf(filename,"autotest/logs/qpilotsync_autotest_%u_%u_debug.m", _payload_len, _pilot_spacing);
     FILE * fid = fopen(filename,"w");
     if (!fid) {
-        fprintf(stderr,"error: could not open '%s' for writing\n", filename);
+        liquid_error(LIQUID_EIO,"could not open '%s' for writing", filename);
         return;
     }
     fprintf(fid,"%% %s : auto-generated file\n", filename);

@@ -51,7 +51,7 @@ void autotest_firfilt_crcf_copy()
         firfilt_crcf_execute_one(filt_copy, x, &y_copy);
 
         float error = cabsf( y_orig - y_copy );
-        liquid_log_debug(" [%3u] orig:%8.5ff+j%8.5ff, copy:%8.5f+j%8.5f, error:%8g",
+        liquid_log_debug(" [%3u] orig:%8.5f+j%8.5f, copy:%8.5f+j%8.5f, error:%8g",
                 i+n,
                 crealf(y_orig), cimagf(y_orig),
                 crealf(y_copy), cimagf(y_copy),

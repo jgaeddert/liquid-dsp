@@ -35,7 +35,7 @@ liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
 {
     if (_nfft == 0) {
         // invalid length
-        fprintf(stderr,"error: liquid_fft_estimate_method(), fft size must be > 0\n");
+        liquid_error(LIQUID_EIRANGE,"liquid_fft_estimate_method(), fft size must be > 0");
         return LIQUID_FFT_METHOD_UNKNOWN;
 
     } else if (_nfft <= 8 || _nfft==11 || _nfft==13 || _nfft==16 || _nfft==17) {

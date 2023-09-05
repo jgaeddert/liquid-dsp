@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,8 @@ void rresamp_crcf_bench(struct rusage *     _start,
                         unsigned int        _P,
                         unsigned int        _Q)
 {
-    // adjust number of iterations: cycles/trial ~ 160 + 50 Q
-    *_num_iterations /= (160 + 50*_Q);
+    // adjust number of iterations
+    *_num_iterations = *_num_iterations * liquid_nextpow2(_Q+1) / (4*_Q);
 
     // create resampling object
     unsigned int m  = 12;
