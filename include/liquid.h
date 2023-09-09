@@ -4400,25 +4400,25 @@ RRESAMP() RRESAMP(_create_default)(unsigned int _interp,                    \
 RRESAMP() RRESAMP(_copy)(RRESAMP() _q);                                     \
                                                                             \
 /* Destroy resampler object, freeing all internal memory                */  \
-void RRESAMP(_destroy)(RRESAMP() _q);                                       \
+int RRESAMP(_destroy)(RRESAMP() _q);                                        \
                                                                             \
 /* Print resampler object internals to stdout                           */  \
-void RRESAMP(_print)(RRESAMP() _q);                                         \
+int RRESAMP(_print)(RRESAMP() _q);                                          \
                                                                             \
 /* Reset resampler object internals                                     */  \
-void RRESAMP(_reset)(RRESAMP() _q);                                         \
+int RRESAMP(_reset)(RRESAMP() _q);                                          \
                                                                             \
 /* Set output scaling for filter, default: \( 2 w \sqrt{P/Q} \)         */  \
 /*  _q      : resampler object                                          */  \
 /*  _scale  : scaling factor to apply to each output sample             */  \
-void RRESAMP(_set_scale)(RRESAMP() _q,                                      \
+int RRESAMP(_set_scale)(RRESAMP() _q,                                       \
                          TC        _scale);                                 \
                                                                             \
 /* Get output scaling for filter                                        */  \
 /*  _q      : resampler object                                          */  \
 /*  _scale  : scaling factor to apply to each output sample             */  \
-void RRESAMP(_get_scale)(RRESAMP() _q,                                      \
-                         TC *      _scale);                                 \
+int RRESAMP(_get_scale)(RRESAMP() _q,                                       \
+                        TC *      _scale);                                  \
                                                                             \
 /* Get resampler delay (filter semi-length \(m\))                       */  \
 unsigned int RRESAMP(_get_delay)(RRESAMP() _q);                             \
@@ -4451,8 +4451,8 @@ float RRESAMP(_get_rate)(RRESAMP() _q);                                     \
 /* internal state of the resampler.                                     */  \
 /*  _q      : resamp object                                             */  \
 /*  _buf    : input sample array, [size: decim x 1]                     */  \
-void RRESAMP(_write)(RRESAMP() _q,                                          \
-                     TI *      _buf);                                       \
+int RRESAMP(_write)(RRESAMP() _q,                                           \
+                    TI *      _buf);                                        \
                                                                             \
 /* Execute rational-rate resampler on a block of input samples and      */  \
 /* store the resulting samples in the output array.                     */  \
@@ -4472,19 +4472,19 @@ void RRESAMP(_write)(RRESAMP() _q,                                          \
 /*  _q  : resamp object                                                 */  \
 /*  _x  : input sample array, [size: decim x 1]                         */  \
 /*  _y  : output sample array, [size: interp x 1]                       */  \
-void RRESAMP(_execute)(RRESAMP()       _q,                                  \
-                        TI *           _x,                                  \
-                        TO *           _y);                                 \
+int RRESAMP(_execute)(RRESAMP()       _q,                                   \
+                      TI *           _x,                                    \
+                      TO *           _y);                                   \
                                                                             \
 /* Execute on a block of samples                                        */  \
 /*  _q  : resamp object                                                 */  \
 /*  _x  : input sample array, [size: decim*n x 1]                       */  \
 /*  _n  : block size                                                    */  \
 /*  _y  : output sample array, [size: interp*n x 1]                     */  \
-void RRESAMP(_execute_block)(RRESAMP()      _q,                             \
-                             TI *           _x,                             \
-                             unsigned int   _n,                             \
-                             TO *           _y);                            \
+int RRESAMP(_execute_block)(RRESAMP()      _q,                              \
+                            TI *           _x,                              \
+                            unsigned int   _n,                              \
+                            TO *           _y);                             \
 
 LIQUID_RRESAMP_DEFINE_API(LIQUID_RRESAMP_MANGLE_RRRF,
                           float,
