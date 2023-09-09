@@ -119,3 +119,64 @@ void autotest_kbd_n16() { liquid_kbd_window_test(16, 10.0f); }
 void autotest_kbd_n32() { liquid_kbd_window_test(32, 20.0f); }
 void autotest_kbd_n48() { liquid_kbd_window_test(48, 12.0f); }
 
+// test window configuration and error handling
+void autotest_window_config()
+{
+    //_liquid_error_downgrade_enable();
+    CONTEND_EQUALITY(liquid_print_windows(), LIQUID_OK);
+
+    // check normal cases
+    CONTEND_EQUALITY(liquid_getopt_str2window("unknown"        ), LIQUID_WINDOW_UNKNOWN); // <- no error
+    CONTEND_EQUALITY(liquid_getopt_str2window("hamming"        ), LIQUID_WINDOW_HAMMING);
+    CONTEND_EQUALITY(liquid_getopt_str2window("hann"           ), LIQUID_WINDOW_HANN);
+    CONTEND_EQUALITY(liquid_getopt_str2window("blackmanharris" ), LIQUID_WINDOW_BLACKMANHARRIS);
+    CONTEND_EQUALITY(liquid_getopt_str2window("blackmanharris7"), LIQUID_WINDOW_BLACKMANHARRIS7);
+    CONTEND_EQUALITY(liquid_getopt_str2window("kaiser"         ), LIQUID_WINDOW_KAISER);
+    CONTEND_EQUALITY(liquid_getopt_str2window("flattop"        ), LIQUID_WINDOW_FLATTOP);
+    CONTEND_EQUALITY(liquid_getopt_str2window("triangular"     ), LIQUID_WINDOW_TRIANGULAR);
+    CONTEND_EQUALITY(liquid_getopt_str2window("rcostaper"      ), LIQUID_WINDOW_RCOSTAPER);
+    CONTEND_EQUALITY(liquid_getopt_str2window("kbd"            ), LIQUID_WINDOW_KBD);
+    // check invalid cases
+    CONTEND_EQUALITY(liquid_getopt_str2window("invalid window" ), LIQUID_WINDOW_UNKNOWN);
+
+    // invalid KBD window parameters
+    CONTEND_EQUALITY(liquid_kbd(12, 10, 10.0f), 0.0f); // index exceeds maximum
+    CONTEND_EQUALITY(liquid_kbd( 0,  0, 10.0f), 0.0f); // window length is zero
+    CONTEND_EQUALITY(liquid_kbd(12, 27, 10.0f), 0.0f); // window length is odd
+
+    float w[20];
+    CONTEND_INEQUALITY(liquid_kbd_window( 0, 10.0f, w), LIQUID_OK); // length is zero
+    CONTEND_INEQUALITY(liquid_kbd_window( 7, 10.0f, w), LIQUID_OK); // length is odd
+    CONTEND_INEQUALITY(liquid_kbd_window(20, -1.0f, w), LIQUID_OK); // beta value is negative
+
+    // invalid Kaiser window parameters
+    CONTEND_EQUALITY(liquid_kaiser(12, 10, 10.0f), 0.0f); // index exceeds maximum
+    CONTEND_EQUALITY(liquid_kaiser(12, 20, -1.0f), 0.0f); // beta value is negative
+
+    // Hamming
+    CONTEND_EQUALITY(liquid_hamming(12, 10), 0.0f); // index exceeds maximum
+
+    // Hann
+    CONTEND_EQUALITY(liquid_hann(12, 10), 0.0f); // index exceeds maximum
+
+    // Blackman-harris
+    CONTEND_EQUALITY(liquid_blackmanharris(12, 10), 0.0f); // index exceeds maximum
+
+    // Blackman-harris 7
+    CONTEND_EQUALITY(liquid_blackmanharris7(12, 10), 0.0f); // index exceeds maximum
+
+    // flat-top
+    CONTEND_EQUALITY(liquid_flattop(12, 10), 0.0f); // index exceeds maximum
+
+    // triangular
+    CONTEND_EQUALITY(liquid_triangular(12, 10, 10), 0.0f); // index exceeds maximum
+    CONTEND_EQUALITY(liquid_triangular( 7, 10, 15), 0.0f); // sub-length is out of range
+    CONTEND_EQUALITY(liquid_triangular( 1,  1,  0), 0.0f); // sub-length is zero
+
+    // raised-cosine taper
+    CONTEND_EQUALITY(liquid_rcostaper_window(12, 10,  4), 0.0f); // index exceeds maximum
+    CONTEND_EQUALITY(liquid_rcostaper_window( 7, 10,  8), 0.0f); // taper length exceeds maximum
+
+    //_liquid_error_downgrade_disable();
+}
+

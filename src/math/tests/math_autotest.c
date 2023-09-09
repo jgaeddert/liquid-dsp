@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,7 @@
 #include "liquid.h"
 
 
-// 
-// AUTOTEST: Q function
-//
+// Q function
 void autotest_Q()
 {
     float tol = 1e-6f;
@@ -41,18 +39,14 @@ void autotest_Q()
     CONTEND_DELTA(liquid_Qf( 4.0f), 0.000031671f, tol);
 }
 
-// 
-// AUTOTEST: sincf
-//
+// sincf
 void autotest_sincf()
 {
     float tol = 1e-3f;
     CONTEND_DELTA(sincf(0.0f), 1.0f, tol);
 }
 
-// 
-// AUTOTEST: nextpow2
-//
+// nextpow2
 void autotest_nextpow2()
 {
     CONTEND_EQUALITY(liquid_nextpow2(1),    0);
@@ -78,5 +72,21 @@ void autotest_nextpow2()
     CONTEND_EQUALITY(liquid_nextpow2(67),   7);
     CONTEND_EQUALITY(liquid_nextpow2(179),  8);
     CONTEND_EQUALITY(liquid_nextpow2(888),  10);
+}
+
+// test math configuration and error handling
+void autotest_math_config()
+{
+    //_liquid_error_downgrade_enable();
+    CONTEND_EQUALITY(liquid_nextpow2(0), 0);
+
+    CONTEND_EQUALITY(liquid_nchoosek(4, 5), 0.0f);
+
+    CONTEND_EQUALITY(liquid_lngammaf(-1), 0.0f);
+
+    CONTEND_EQUALITY(liquid_gcd(12, 0), 0);
+    CONTEND_EQUALITY(liquid_gcd( 0,12), 0);
+    CONTEND_EQUALITY(liquid_gcd( 0, 0), 0);
+    //_liquid_error_downgrade_disable();
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ const char * liquid_window_str[LIQUID_WINDOW_NUM_FUNCTIONS][2] = {
 };
 
 // Print compact list of existing and available windowing functions
-void liquid_print_windows()
+int liquid_print_windows()
 {
     unsigned int i;
     unsigned int len = 10;
@@ -78,6 +78,7 @@ void liquid_print_windows()
         }
     }
     printf("\n");
+    return LIQUID_OK;
 }
 
 // returns modulation_scheme based on input string

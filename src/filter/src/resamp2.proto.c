@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
 // Halfband resampler (interpolator/decimator)
-//
 
 #include <stdio.h>
 #include <string.h>
@@ -183,7 +181,7 @@ RESAMP2() RESAMP2(_copy)(RESAMP2() q_orig)
 }
 
 // destroy a resamp2 object, clearing up all allocated memory
-void RESAMP2(_destroy)(RESAMP2() _q)
+int RESAMP2(_destroy)(RESAMP2() _q)
 {
     // destroy dotprod object
     DOTPROD(_destroy)(_q->dp);
@@ -198,23 +196,24 @@ void RESAMP2(_destroy)(RESAMP2() _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print a resamp2 object's internals
 int RESAMP2(_print)(RESAMP2() _q)
 {
-    printf("<resamp2_%s: len=%u, f0=%12.8f>\n",
-        EXTENSION_FULL, _q->h_len, _q->f0);
+    printf("<resamp2_%s, len=%u, f0=%12.8f>\n", EXTENSION_FULL, _q->h_len, _q->f0);
     return LIQUID_OK;
 }
 
 // clear internal buffer
-void RESAMP2(_reset)(RESAMP2() _q)
+int RESAMP2(_reset)(RESAMP2() _q)
 {
     WINDOW(_reset)(_q->w0);
     WINDOW(_reset)(_q->w1);
 
     _q->toggle = 0;
+    return LIQUID_OK;
 }
 
 // get filter delay (samples)
@@ -232,10 +231,11 @@ int RESAMP2(_set_scale)(RESAMP2() _q,
 }
 
 // get output scaling for filter
-void RESAMP2(_get_scale)(RESAMP2() _q,
+int RESAMP2(_get_scale)(RESAMP2() _q,
                          TC *      _scale)
 {
     *_scale = _q->scale;
+    return LIQUID_OK;
 }
 
 // execute resamp2 as half-band filter
@@ -243,10 +243,10 @@ void RESAMP2(_get_scale)(RESAMP2() _q,
 //  _x      :   input sample
 //  _y0     :   output sample pointer (low frequency)
 //  _y1     :   output sample pointer (high frequency)
-void RESAMP2(_filter_execute)(RESAMP2() _q,
-                              TI        _x,
-                              TO *      _y0,
-                              TO *      _y1)
+int RESAMP2(_filter_execute)(RESAMP2() _q,
+                             TI        _x,
+                             TO *      _y0,
+                             TO *      _y1)
 {
     TI * r;     // buffer read pointer
     TO yi;      // delay branch
@@ -280,15 +280,16 @@ void RESAMP2(_filter_execute)(RESAMP2() _q,
     // set return values, normalizing gain, applying scaling factor
     *_y0 = 0.5f*(yi + yq)*_q->scale;    // lower band
     *_y1 = 0.5f*(yi - yq)*_q->scale;    // upper band
+    return LIQUID_OK;
 }
 
 // execute analysis half-band filterbank
 //  _q      :   resamp2 object
 //  _x      :   input array [size: 2 x 1]
 //  _y      :   output array [size: 2 x 1]
-void RESAMP2(_analyzer_execute)(RESAMP2() _q,
-                                TI *      _x,
-                                TO *      _y)
+int RESAMP2(_analyzer_execute)(RESAMP2() _q,
+                               TI *      _x,
+                               TO *      _y)
 {
     TI * r;     // buffer read pointer
     TO y0;      // delay branch
@@ -306,15 +307,16 @@ void RESAMP2(_analyzer_execute)(RESAMP2() _q,
     // set return value, applying scaling factor
     _y[0] = (y1 + y0) * _q->scale;
     _y[1] = (y1 - y0) * _q->scale;
+    return LIQUID_OK;
 }
 
 // execute synthesis half-band filterbank
 //  _q      :   resamp2 object
 //  _x      :   input array [size: 2 x 1]
 //  _y      :   output array [size: 2 x 1]
-void RESAMP2(_synthesizer_execute)(RESAMP2() _q,
-                                   TI *      _x,
-                                   TO *      _y)
+int RESAMP2(_synthesizer_execute)(RESAMP2() _q,
+                                  TI *      _x,
+                                  TO *      _y)
 {
     TI * r;                 // buffer read pointer
     TI x0 = _x[0] + _x[1];  // delay branch input
@@ -332,6 +334,7 @@ void RESAMP2(_synthesizer_execute)(RESAMP2() _q,
     // apply scaling factor
     _y[0] *= _q->scale;
     _y[1] *= _q->scale;
+    return LIQUID_OK;
 }
 
 
@@ -339,9 +342,9 @@ void RESAMP2(_synthesizer_execute)(RESAMP2() _q,
 //  _q      :   resamp2 object
 //  _x      :   input array [size: 2 x 1]
 //  _y      :   output sample pointer
-void RESAMP2(_decim_execute)(RESAMP2() _q,
-                             TI *      _x,
-                             TO *      _y)
+int RESAMP2(_decim_execute)(RESAMP2() _q,
+                            TI *      _x,
+                            TO *      _y)
 {
     TI * r;     // buffer read pointer
     TO y0;      // delay branch
@@ -358,15 +361,16 @@ void RESAMP2(_decim_execute)(RESAMP2() _q,
 
     // set return value, applying scaling factor
     *_y = (y0 + y1) * _q->scale;
+    return LIQUID_OK;
 }
 
 // execute half-band interpolation
 //  _q      :   resamp2 object
 //  _x      :   input sample
 //  _y      :   output array [size: 2 x 1]
-void RESAMP2(_interp_execute)(RESAMP2() _q,
-                              TI        _x,
-                              TO *      _y)
+int RESAMP2(_interp_execute)(RESAMP2() _q,
+                             TI        _x,
+                             TO *      _y)
 {
     TI * r;  // buffer read pointer
 
@@ -382,5 +386,6 @@ void RESAMP2(_interp_execute)(RESAMP2() _q,
     // apply scaling factor
     _y[0] *= _q->scale;
     _y[1] *= _q->scale;
+    return LIQUID_OK;
 }
 

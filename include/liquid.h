@@ -3285,21 +3285,21 @@ IIRHILB() IIRHILB(_create_default)(unsigned int _n);                        \
                                                                             \
 /* Destroy finite impulse response Hilbert transform, freeing all       */  \
 /* internally-allocted memory and objects.                              */  \
-void IIRHILB(_destroy)(IIRHILB() _q);                                       \
+int IIRHILB(_destroy)(IIRHILB() _q);                                        \
                                                                             \
 /* Print iirhilb object internals to stdout                             */  \
 int IIRHILB(_print)(IIRHILB() _q);                                          \
                                                                             \
 /* Reset iirhilb object internal state                                  */  \
-void IIRHILB(_reset)(IIRHILB() _q);                                         \
+int IIRHILB(_reset)(IIRHILB() _q);                                          \
                                                                             \
 /* Execute Hilbert transform (real to complex)                          */  \
 /*  _q      : Hilbert transform object                                  */  \
 /*  _x      : real-valued input sample                                  */  \
 /*  _y      : complex-valued output sample                              */  \
-void IIRHILB(_r2c_execute)(IIRHILB() _q,                                    \
-                           T         _x,                                    \
-                           TC *      _y);                                   \
+int IIRHILB(_r2c_execute)(IIRHILB() _q,                                     \
+                          T         _x,                                     \
+                          TC *      _y);                                    \
                                                                             \
 /* Execute Hilbert transform (real to complex) on a block of samples    */  \
 /*  _q      : Hilbert transform object                                  */  \
@@ -3315,9 +3315,9 @@ int IIRHILB(_r2c_execute_block)(IIRHILB()    _q,                            \
 /*  _q      : Hilbert transform object                                  */  \
 /*  _x      : complex-valued input sample                               */  \
 /*  _y      : real-valued output sample                                 */  \
-void IIRHILB(_c2r_execute)(IIRHILB() _q,                                    \
-                           TC        _x,                                    \
-                           T *       _y);                                   \
+int IIRHILB(_c2r_execute)(IIRHILB() _q,                                     \
+                          TC        _x,                                     \
+                          T *       _y);                                    \
                                                                             \
 /* Execute Hilbert transform (complex to real) on a block of samples    */  \
 /*  _q      : Hilbert transform object                                  */  \
@@ -3333,9 +3333,9 @@ int IIRHILB(_c2r_execute_block)(IIRHILB()    _q,                            \
 /*  _q      : Hilbert transform object                                  */  \
 /*  _x      : real-valued input array, [size: 2 x 1]                    */  \
 /*  _y      : complex-valued output sample                              */  \
-void IIRHILB(_decim_execute)(IIRHILB() _q,                                  \
-                             T *       _x,                                  \
-                             TC *      _y);                                 \
+int IIRHILB(_decim_execute)(IIRHILB() _q,                                   \
+                            T *       _x,                                   \
+                            TC *      _y);                                  \
                                                                             \
 /* Execute Hilbert transform decimator (real to complex) on a block of  */  \
 /* samples                                                              */  \
@@ -3343,18 +3343,18 @@ void IIRHILB(_decim_execute)(IIRHILB() _q,                                  \
 /*  _x      : real-valued input array, [size: 2*_n x 1]                 */  \
 /*  _n      : number of output samples                                  */  \
 /*  _y      : complex-valued output array, [size: _n x 1]               */  \
-void IIRHILB(_decim_execute_block)(IIRHILB()    _q,                         \
-                                   T *          _x,                         \
-                                   unsigned int _n,                         \
-                                   TC *         _y);                        \
+int IIRHILB(_decim_execute_block)(IIRHILB()    _q,                          \
+                                  T *          _x,                          \
+                                  unsigned int _n,                          \
+                                  TC *         _y);                         \
                                                                             \
 /* Execute Hilbert transform interpolator (real to complex)             */  \
 /*  _q      : Hilbert transform object                                  */  \
 /*  _x      : complex-valued input sample                               */  \
 /*  _y      : real-valued output array, [size: 2 x 1]                   */  \
-void IIRHILB(_interp_execute)(IIRHILB() _q,                                 \
-                              TC        _x,                                 \
-                              T *       _y);                                \
+int IIRHILB(_interp_execute)(IIRHILB() _q,                                  \
+                             TC        _x,                                  \
+                             T *       _y);                                 \
                                                                             \
 /* Execute Hilbert transform interpolator (complex to real) on a block  */  \
 /* of samples                                                           */  \
@@ -3362,10 +3362,10 @@ void IIRHILB(_interp_execute)(IIRHILB() _q,                                 \
 /*  _x      : complex-valued input array, [size: _n x 1]                */  \
 /*  _n      : number of *input* samples                                 */  \
 /*  _y      : real-valued output array, [size: 2*_n x 1]                */  \
-void IIRHILB(_interp_execute_block)(IIRHILB()    _q,                        \
-                                    TC *         _x,                        \
-                                    unsigned int _n,                        \
-                                    T *          _y);                       \
+int IIRHILB(_interp_execute_block)(IIRHILB()    _q,                         \
+                                   TC *         _x,                         \
+                                   unsigned int _n,                         \
+                                   T *          _y);                        \
 
 LIQUID_IIRHILB_DEFINE_API(LIQUID_IIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 //LIQUID_IIRHILB_DEFINE_API(LIQUID_IIRHILB_MANGLE_DOUBLE, double, liquid_double_complex)
@@ -4043,32 +4043,32 @@ IIRINTERP() IIRINTERP(_create_prototype)(                                   \
 IIRINTERP() IIRINTERP(_copy)(IIRINTERP() _q);                               \
                                                                             \
 /* Destroy interpolator object and free internal memory                 */  \
-void IIRINTERP(_destroy)(IIRINTERP() _q);                                   \
+int IIRINTERP(_destroy)(IIRINTERP() _q);                                    \
                                                                             \
 /* Print interpolator object internals to stdout                        */  \
-void IIRINTERP(_print)(IIRINTERP() _q);                                     \
+int IIRINTERP(_print)(IIRINTERP() _q);                                      \
                                                                             \
 /* Reset interpolator object                                            */  \
-void IIRINTERP(_reset)(IIRINTERP() _q);                                     \
+int IIRINTERP(_reset)(IIRINTERP() _q);                                      \
                                                                             \
 /* Execute interpolation on single input sample and write \(M\) output  */  \
 /* samples (\(M\) is the interpolation factor)                          */  \
 /*  _q      : iirinterp object                                          */  \
 /*  _x      : input sample                                              */  \
 /*  _y      : output sample array, [size: _M x 1]                       */  \
-void IIRINTERP(_execute)(IIRINTERP() _q,                                    \
-                         TI          _x,                                    \
-                         TO *        _y);                                   \
+int IIRINTERP(_execute)(IIRINTERP() _q,                                     \
+                        TI          _x,                                     \
+                        TO *        _y);                                    \
                                                                             \
 /* Execute interpolation on block of input samples                      */  \
 /*  _q      : iirinterp object                                          */  \
 /*  _x      : input array, [size: _n x 1]                               */  \
 /*  _n      : size of input array                                       */  \
 /*  _y      : output sample array, [size: _M*_n x 1]                    */  \
-void IIRINTERP(_execute_block)(IIRINTERP()  _q,                             \
-                               TI *         _x,                             \
-                               unsigned int _n,                             \
-                               TO *         _y);                            \
+int IIRINTERP(_execute_block)(IIRINTERP()  _q,                              \
+                              TI *         _x,                              \
+                              unsigned int _n,                              \
+                              TO *         _y);                             \
                                                                             \
 /* Compute and return group delay of object                             */  \
 /*  _q      : filter object                                             */  \
@@ -4265,31 +4265,31 @@ IIRDECIM() IIRDECIM(_create_prototype)(                                     \
 IIRDECIM() IIRDECIM(_copy)(IIRDECIM() _q);                                  \
                                                                             \
 /* Destroy decimator object and free internal memory                    */  \
-void IIRDECIM(_destroy)(IIRDECIM() _q);                                     \
+int IIRDECIM(_destroy)(IIRDECIM() _q);                                      \
                                                                             \
 /* Print decimator object internals                                     */  \
-void IIRDECIM(_print)(IIRDECIM() _q);                                       \
+int IIRDECIM(_print)(IIRDECIM() _q);                                        \
                                                                             \
 /* Reset decimator object                                               */  \
-void IIRDECIM(_reset)(IIRDECIM() _q);                                       \
+int IIRDECIM(_reset)(IIRDECIM() _q);                                        \
                                                                             \
 /* Execute decimator on _M input samples                                */  \
 /*  _q      : decimator object                                          */  \
 /*  _x      : input samples, [size: _M x 1]                             */  \
 /*  _y      : output sample pointer                                     */  \
-void IIRDECIM(_execute)(IIRDECIM() _q,                                      \
-                        TI *       _x,                                      \
-                        TO *       _y);                                     \
+int IIRDECIM(_execute)(IIRDECIM() _q,                                       \
+                       TI *       _x,                                       \
+                       TO *       _y);                                      \
                                                                             \
 /* Execute decimator on block of _n*_M input samples                    */  \
 /*  _q      : decimator object                                          */  \
 /*  _x      : input array, [size: _n*_M x 1]                            */  \
 /*  _n      : number of _output_ samples                                */  \
 /*  _y      : output array, [_sze: _n x 1]                              */  \
-void IIRDECIM(_execute_block)(IIRDECIM()   _q,                              \
-                              TI *         _x,                              \
-                              unsigned int _n,                              \
-                              TO *         _y);                             \
+int IIRDECIM(_execute_block)(IIRDECIM()   _q,                               \
+                             TI *         _x,                               \
+                             unsigned int _n,                               \
+                             TO *         _y);                              \
                                                                             \
 /* Compute and return group delay of object                             */  \
 /*  _q      : filter object                                             */  \
@@ -4349,13 +4349,13 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2()    _q,                               \
 RESAMP2() RESAMP2(_copy)(RESAMP2() _q);                                     \
                                                                             \
 /* Destroy resampler, freeing all internally-allocated memory           */  \
-void RESAMP2(_destroy)(RESAMP2() _q);                                       \
+int RESAMP2(_destroy)(RESAMP2() _q);                                        \
                                                                             \
 /* print resampler object's internals to stdout                         */  \
 int RESAMP2(_print)(RESAMP2() _q);                                          \
                                                                             \
 /* Reset internal buffer                                                */  \
-void RESAMP2(_reset)(RESAMP2() _q);                                         \
+int RESAMP2(_reset)(RESAMP2() _q);                                          \
                                                                             \
 /* Get resampler filter delay (semi-length m)                           */  \
 unsigned int RESAMP2(_get_delay)(RESAMP2() _q);                             \
@@ -4369,8 +4369,8 @@ int RESAMP2(_set_scale)(RESAMP2() _q,                                       \
 /* Get output scaling for resampler                                     */  \
 /*  _q      : resampler object                                          */  \
 /*  _scale  : scaling factor applied to each output sample              */  \
-void RESAMP2(_get_scale)(RESAMP2() _q,                                      \
-                         TC *      _scale);                                 \
+int RESAMP2(_get_scale)(RESAMP2() _q,                                       \
+                        TC *      _scale);                                  \
                                                                             \
 /* Execute resampler as half-band filter for a single input sample      */  \
 /* \(x\) where \(y_0\) is the output of the effective low-pass filter,  */  \
@@ -4379,10 +4379,10 @@ void RESAMP2(_get_scale)(RESAMP2() _q,                                      \
 /*  _x  : input sample                                                  */  \
 /*  _y0 : output sample pointer (low frequency)                         */  \
 /*  _y1 : output sample pointer (high frequency)                        */  \
-void RESAMP2(_filter_execute)(RESAMP2() _q,                                 \
-                              TI        _x,                                 \
-                              TO *      _y0,                                \
-                              TO *      _y1);                               \
+int RESAMP2(_filter_execute)(RESAMP2() _q,                                  \
+                             TI        _x,                                  \
+                             TO *      _y0,                                 \
+                             TO *      _y1);                                \
                                                                             \
 /* Execute resampler as half-band analysis filterbank on a pair of      */  \
 /* sequential time-domain input samples.                                */  \
@@ -4391,9 +4391,9 @@ void RESAMP2(_filter_execute)(RESAMP2() _q,                                 \
 /*  _q  : resampler object                                              */  \
 /*  _x  : input array,  [size: 2 x 1]                                   */  \
 /*  _y  : output array, [size: 2 x 1]                                   */  \
-void RESAMP2(_analyzer_execute)(RESAMP2() _q,                               \
-                                TI *      _x,                               \
-                                TO *      _y);                              \
+int RESAMP2(_analyzer_execute)(RESAMP2() _q,                                \
+                               TI *      _x,                                \
+                               TO *      _y);                               \
                                                                             \
 /* Execute resampler as half-band synthesis filterbank on a pair of     */  \
 /* input samples. The low- and high-pass input samples are provided by  */  \
@@ -4402,26 +4402,26 @@ void RESAMP2(_analyzer_execute)(RESAMP2() _q,                               \
 /*  _q  : resampler object                                              */  \
 /*  _x  : input array, [size: 2 x 1]                                    */  \
 /*  _y  : output array, [size: 2 x 1]                                   */  \
-void RESAMP2(_synthesizer_execute)(RESAMP2() _q,                            \
-                                   TI *      _x,                            \
-                                   TO *      _y);                           \
+int RESAMP2(_synthesizer_execute)(RESAMP2() _q,                             \
+                                  TI *      _x,                             \
+                                  TO *      _y);                            \
                                                                             \
 /* Execute resampler as half-band decimator on a pair of sequential     */  \
 /* time-domain input samples.                                           */  \
 /*  _q  : resampler object                                              */  \
 /*  _x  : input array, [size: 2 x 1]                                    */  \
 /*  _y  : output sample pointer                                         */  \
-void RESAMP2(_decim_execute)(RESAMP2() _q,                                  \
-                             TI *      _x,                                  \
-                             TO *      _y);                                 \
+int RESAMP2(_decim_execute)(RESAMP2() _q,                                   \
+                            TI *      _x,                                   \
+                            TO *      _y);                                  \
                                                                             \
 /* Execute resampler as half-band interpolator on a single input sample */  \
 /*  _q  : resampler object                                              */  \
 /*  _x  : input sample                                                  */  \
 /*  _y  : output array, [size: 2 x 1]                                   */  \
-void RESAMP2(_interp_execute)(RESAMP2() _q,                                 \
-                              TI        _x,                                 \
-                              TO *      _y);                                \
+int RESAMP2(_interp_execute)(RESAMP2() _q,                                  \
+                             TI        _x,                                  \
+                             TO *      _y);                                 \
 
 LIQUID_RESAMP2_DEFINE_API(LIQUID_RESAMP2_MANGLE_RRRF,
                           float,
@@ -4510,25 +4510,25 @@ RRESAMP() RRESAMP(_create_default)(unsigned int _interp,                    \
 RRESAMP() RRESAMP(_copy)(RRESAMP() _q);                                     \
                                                                             \
 /* Destroy resampler object, freeing all internal memory                */  \
-void RRESAMP(_destroy)(RRESAMP() _q);                                       \
+int RRESAMP(_destroy)(RRESAMP() _q);                                        \
                                                                             \
 /* Print resampler object internals to stdout                           */  \
-void RRESAMP(_print)(RRESAMP() _q);                                         \
+int RRESAMP(_print)(RRESAMP() _q);                                          \
                                                                             \
 /* Reset resampler object internals                                     */  \
-void RRESAMP(_reset)(RRESAMP() _q);                                         \
+int RRESAMP(_reset)(RRESAMP() _q);                                          \
                                                                             \
 /* Set output scaling for filter, default: \( 2 w \sqrt{P/Q} \)         */  \
 /*  _q      : resampler object                                          */  \
 /*  _scale  : scaling factor to apply to each output sample             */  \
-void RRESAMP(_set_scale)(RRESAMP() _q,                                      \
+int RRESAMP(_set_scale)(RRESAMP() _q,                                       \
                          TC        _scale);                                 \
                                                                             \
 /* Get output scaling for filter                                        */  \
 /*  _q      : resampler object                                          */  \
 /*  _scale  : scaling factor to apply to each output sample             */  \
-void RRESAMP(_get_scale)(RRESAMP() _q,                                      \
-                         TC *      _scale);                                 \
+int RRESAMP(_get_scale)(RRESAMP() _q,                                       \
+                        TC *      _scale);                                  \
                                                                             \
 /* Get resampler delay (filter semi-length \(m\))                       */  \
 unsigned int RRESAMP(_get_delay)(RRESAMP() _q);                             \
@@ -4561,8 +4561,8 @@ float RRESAMP(_get_rate)(RRESAMP() _q);                                     \
 /* internal state of the resampler.                                     */  \
 /*  _q      : resamp object                                             */  \
 /*  _buf    : input sample array, [size: decim x 1]                     */  \
-void RRESAMP(_write)(RRESAMP() _q,                                          \
-                     TI *      _buf);                                       \
+int RRESAMP(_write)(RRESAMP() _q,                                           \
+                    TI *      _buf);                                        \
                                                                             \
 /* Execute rational-rate resampler on a block of input samples and      */  \
 /* store the resulting samples in the output array.                     */  \
@@ -4582,19 +4582,19 @@ void RRESAMP(_write)(RRESAMP() _q,                                          \
 /*  _q  : resamp object                                                 */  \
 /*  _x  : input sample array, [size: decim x 1]                         */  \
 /*  _y  : output sample array, [size: interp x 1]                       */  \
-void RRESAMP(_execute)(RRESAMP()       _q,                                  \
-                        TI *           _x,                                  \
-                        TO *           _y);                                 \
+int RRESAMP(_execute)(RRESAMP()       _q,                                   \
+                      TI *           _x,                                    \
+                      TO *           _y);                                   \
                                                                             \
 /* Execute on a block of samples                                        */  \
 /*  _q  : resamp object                                                 */  \
 /*  _x  : input sample array, [size: decim*n x 1]                       */  \
 /*  _n  : block size                                                    */  \
 /*  _y  : output sample array, [size: interp*n x 1]                     */  \
-void RRESAMP(_execute_block)(RRESAMP()      _q,                             \
-                             TI *           _x,                             \
-                             unsigned int   _n,                             \
-                             TO *           _y);                            \
+int RRESAMP(_execute_block)(RRESAMP()      _q,                              \
+                            TI *           _x,                              \
+                            unsigned int   _n,                              \
+                            TO *           _y);                             \
 
 LIQUID_RRESAMP_DEFINE_API(LIQUID_RRESAMP_MANGLE_RRRF,
                           float,
@@ -6252,19 +6252,19 @@ BSYNC() BSYNC(_create_msequence)(unsigned int _g,                           \
                                                                             \
 /* Destroy binary synchronizer object, freeing all internal memory      */  \
 /*  _q  :   bsync object                                                */  \
-void BSYNC(_destroy)(BSYNC() _q);                                           \
+int BSYNC(_destroy)(BSYNC() _q);                                            \
                                                                             \
 /* Print object internals to stdout                                     */  \
 /*  _q  :   bsync object                                                */  \
-void BSYNC(_print)(BSYNC() _q);                                             \
+int BSYNC(_print)(BSYNC() _q);                                              \
                                                                             \
 /* Correlate input signal against internal sequence                     */  \
 /*  _q  :   bsync object                                                */  \
 /*  _x  :   input sample                                                */  \
 /*  _y  :   pointer to output sample                                    */  \
-void BSYNC(_correlate)(BSYNC() _q,                                          \
-                       TI      _x,                                          \
-                       TO *    _y);                                         \
+int BSYNC(_correlate)(BSYNC() _q,                                           \
+                      TI      _x,                                           \
+                      TO *    _y);                                          \
 
 LIQUID_BSYNC_DEFINE_API(LIQUID_BSYNC_MANGLE_RRRF,
                         float,
@@ -7178,7 +7178,7 @@ typedef enum {
 extern const char * liquid_window_str[LIQUID_WINDOW_NUM_FUNCTIONS][2];
 
 // Print compact list of existing and available windowing functions
-void liquid_print_windows();
+int liquid_print_windows();
 
 // returns window type based on input string
 liquid_window_type liquid_getopt_str2window(const char * _str);
