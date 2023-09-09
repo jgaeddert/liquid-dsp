@@ -105,3 +105,13 @@ void autotest_factors()
     for (i=0; i<3; i++)
         CONTEND_EQUALITY(factors_280_unique[i], factors[i]);
 }
+
+// test Euler's totient function
+void autotest_totient()
+{
+    CONTEND_EQUALITY(liquid_totient(   9),   6)
+    CONTEND_EQUALITY(liquid_totient(  20),   8)
+    CONTEND_EQUALITY(liquid_totient( 100),  40)
+    CONTEND_EQUALITY(liquid_totient(1200), 320)
+    CONTEND_EQUALITY(liquid_totient(1201),1200)
+}
