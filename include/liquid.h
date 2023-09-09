@@ -3933,32 +3933,32 @@ IIRINTERP() IIRINTERP(_create_prototype)(                                   \
 IIRINTERP() IIRINTERP(_copy)(IIRINTERP() _q);                               \
                                                                             \
 /* Destroy interpolator object and free internal memory                 */  \
-void IIRINTERP(_destroy)(IIRINTERP() _q);                                   \
+int IIRINTERP(_destroy)(IIRINTERP() _q);                                    \
                                                                             \
 /* Print interpolator object internals to stdout                        */  \
-void IIRINTERP(_print)(IIRINTERP() _q);                                     \
+int IIRINTERP(_print)(IIRINTERP() _q);                                      \
                                                                             \
 /* Reset interpolator object                                            */  \
-void IIRINTERP(_reset)(IIRINTERP() _q);                                     \
+int IIRINTERP(_reset)(IIRINTERP() _q);                                      \
                                                                             \
 /* Execute interpolation on single input sample and write \(M\) output  */  \
 /* samples (\(M\) is the interpolation factor)                          */  \
 /*  _q      : iirinterp object                                          */  \
 /*  _x      : input sample                                              */  \
 /*  _y      : output sample array, [size: _M x 1]                       */  \
-void IIRINTERP(_execute)(IIRINTERP() _q,                                    \
-                         TI          _x,                                    \
-                         TO *        _y);                                   \
+int IIRINTERP(_execute)(IIRINTERP() _q,                                     \
+                        TI          _x,                                     \
+                        TO *        _y);                                    \
                                                                             \
 /* Execute interpolation on block of input samples                      */  \
 /*  _q      : iirinterp object                                          */  \
 /*  _x      : input array, [size: _n x 1]                               */  \
 /*  _n      : size of input array                                       */  \
 /*  _y      : output sample array, [size: _M*_n x 1]                    */  \
-void IIRINTERP(_execute_block)(IIRINTERP()  _q,                             \
-                               TI *         _x,                             \
-                               unsigned int _n,                             \
-                               TO *         _y);                            \
+int IIRINTERP(_execute_block)(IIRINTERP()  _q,                              \
+                              TI *         _x,                              \
+                              unsigned int _n,                              \
+                              TO *         _y);                             \
                                                                             \
 /* Compute and return group delay of object                             */  \
 /*  _q      : filter object                                             */  \
