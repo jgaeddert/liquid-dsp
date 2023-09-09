@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,7 +92,9 @@ float complex liquid_catanf(float complex _z)
     return 0.5f*_Complex_I*liquid_clogf( t0 / t1 );
 }
 
-// approximation to cargf() but faster
+#if 0
+// approximation to cargf() but faster(?)
+// NOTE: this is not actually very accurate
 float liquid_cargf_approx(float complex _x)
 {
     float theta;
@@ -113,4 +115,5 @@ float liquid_cargf_approx(float complex _x)
         theta = -M_PI_2;
     return theta;
 }
+#endif
 
