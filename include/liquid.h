@@ -4155,31 +4155,31 @@ IIRDECIM() IIRDECIM(_create_prototype)(                                     \
 IIRDECIM() IIRDECIM(_copy)(IIRDECIM() _q);                                  \
                                                                             \
 /* Destroy decimator object and free internal memory                    */  \
-void IIRDECIM(_destroy)(IIRDECIM() _q);                                     \
+int IIRDECIM(_destroy)(IIRDECIM() _q);                                      \
                                                                             \
 /* Print decimator object internals                                     */  \
-void IIRDECIM(_print)(IIRDECIM() _q);                                       \
+int IIRDECIM(_print)(IIRDECIM() _q);                                        \
                                                                             \
 /* Reset decimator object                                               */  \
-void IIRDECIM(_reset)(IIRDECIM() _q);                                       \
+int IIRDECIM(_reset)(IIRDECIM() _q);                                        \
                                                                             \
 /* Execute decimator on _M input samples                                */  \
 /*  _q      : decimator object                                          */  \
 /*  _x      : input samples, [size: _M x 1]                             */  \
 /*  _y      : output sample pointer                                     */  \
-void IIRDECIM(_execute)(IIRDECIM() _q,                                      \
-                        TI *       _x,                                      \
-                        TO *       _y);                                     \
+int IIRDECIM(_execute)(IIRDECIM() _q,                                       \
+                       TI *       _x,                                       \
+                       TO *       _y);                                      \
                                                                             \
 /* Execute decimator on block of _n*_M input samples                    */  \
 /*  _q      : decimator object                                          */  \
 /*  _x      : input array, [size: _n*_M x 1]                            */  \
 /*  _n      : number of _output_ samples                                */  \
 /*  _y      : output array, [_sze: _n x 1]                              */  \
-void IIRDECIM(_execute_block)(IIRDECIM()   _q,                              \
-                              TI *         _x,                              \
-                              unsigned int _n,                              \
-                              TO *         _y);                             \
+int IIRDECIM(_execute_block)(IIRDECIM()   _q,                               \
+                             TI *         _x,                               \
+                             unsigned int _n,                               \
+                             TO *         _y);                              \
                                                                             \
 /* Compute and return group delay of object                             */  \
 /*  _q      : filter object                                             */  \
