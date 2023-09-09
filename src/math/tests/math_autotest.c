@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 
 // Q function
@@ -77,7 +77,8 @@ void autotest_nextpow2()
 // test math configuration and error handling
 void autotest_math_config()
 {
-    //_liquid_error_downgrade_enable();
+    _liquid_error_downgrade_enable();
+
     CONTEND_EQUALITY(liquid_nextpow2(0), 0);
 
     CONTEND_EQUALITY(liquid_nchoosek(4, 5), 0.0f);
@@ -87,6 +88,7 @@ void autotest_math_config()
     CONTEND_EQUALITY(liquid_gcd(12, 0), 0);
     CONTEND_EQUALITY(liquid_gcd( 0,12), 0);
     CONTEND_EQUALITY(liquid_gcd( 0, 0), 0);
-    //_liquid_error_downgrade_disable();
+
+    _liquid_error_downgrade_disable();
 }
 

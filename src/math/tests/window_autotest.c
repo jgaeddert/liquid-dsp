@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // generic window testbench
 void liquid_window_testbench(int _wtype, unsigned int _n, float _arg)
@@ -122,7 +122,8 @@ void autotest_kbd_n48() { liquid_kbd_window_test(48, 12.0f); }
 // test window configuration and error handling
 void autotest_window_config()
 {
-    //_liquid_error_downgrade_enable();
+    _liquid_error_downgrade_enable();
+
     CONTEND_EQUALITY(liquid_print_windows(), LIQUID_OK);
 
     // check normal cases
@@ -177,6 +178,6 @@ void autotest_window_config()
     CONTEND_EQUALITY(liquid_rcostaper_window(12, 10,  4), 0.0f); // index exceeds maximum
     CONTEND_EQUALITY(liquid_rcostaper_window( 7, 10,  8), 0.0f); // taper length exceeds maximum
 
-    //_liquid_error_downgrade_disable();
+    _liquid_error_downgrade_disable();
 }
 
