@@ -39,11 +39,38 @@ void autotest_Q()
     CONTEND_DELTA(liquid_Qf( 4.0f), 0.000031671f, tol);
 }
 
+// Marcum Q function with M=1
+void autotest_MarcumQ1f()
+{
+    float tol = 1e-6f;
+    CONTEND_DELTA(liquid_MarcumQ1f(1.0, 2.0), 0.269012060035909996678, tol);
+    CONTEND_DELTA(liquid_MarcumQ1f(4.0, 2.0), 0.985276535891284799866, tol);
+    CONTEND_DELTA(liquid_MarcumQ1f(0.7, 1.2), 0.566189865978391927421, tol);
+}
+
+// Marcum Q function
+void xautotest_MarcumQf()
+{
+    //float tol = 1e-6f;
+    //CONTEND_DELTA(liquid_MarcumQf(1,1.0,2.0), 0.26901206003590999667, tol);
+    //CONTEND_DELTA(liquid_MarcumQf(1,4.0,2.0), 0.98527653589128479986, tol);
+    //CONTEND_DELTA(liquid_MarcumQf(2,0.7,1.2), 0.86541357815831636702, tol);
+}
+
 // sincf
 void autotest_sincf()
 {
     float tol = 1e-3f;
-    CONTEND_DELTA(sincf(0.0f), 1.0f, tol);
+    CONTEND_DELTA(sincf(-2.0f), 0.0f, tol);
+    CONTEND_DELTA(sincf(-1.0f), 0.0f, tol);
+    CONTEND_DELTA(sincf( 0.0f), 1.0f, tol);
+    CONTEND_DELTA(sincf( 1.0f), 0.0f, tol);
+    CONTEND_DELTA(sincf( 2.0f), 0.0f, tol);
+
+    CONTEND_DELTA(sincf(-0.1f), 0.983631643083466, tol);
+    CONTEND_DELTA(sincf( 0.1f), 0.983631643083466, tol);
+    CONTEND_DELTA(sincf( 3.1f),-0.031730053002692, tol);
+    CONTEND_DELTA(sincf( 6.5f), 0.048970751720583, tol);
 }
 
 // nextpow2
@@ -88,6 +115,10 @@ void autotest_math_config()
     CONTEND_EQUALITY(liquid_gcd(12, 0), 0);
     CONTEND_EQUALITY(liquid_gcd( 0,12), 0);
     CONTEND_EQUALITY(liquid_gcd( 0, 0), 0);
+
+    CONTEND_EQUALITY(liquid_MarcumQ1f( 0.0f, 2.0f), 0.0f); // alpha cannot be 0
+    CONTEND_EQUALITY(liquid_MarcumQ1f(-1.0f, 2.0f), 0.0f); // alpha cannot be negative
+    CONTEND_EQUALITY(liquid_MarcumQ1f( 1.0f,-1.0f), 0.0f); // beta cannot be negative
 
     _liquid_error_downgrade_disable();
 }
