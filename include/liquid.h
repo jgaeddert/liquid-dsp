@@ -6142,19 +6142,19 @@ BSYNC() BSYNC(_create_msequence)(unsigned int _g,                           \
                                                                             \
 /* Destroy binary synchronizer object, freeing all internal memory      */  \
 /*  _q  :   bsync object                                                */  \
-void BSYNC(_destroy)(BSYNC() _q);                                           \
+int BSYNC(_destroy)(BSYNC() _q);                                            \
                                                                             \
 /* Print object internals to stdout                                     */  \
 /*  _q  :   bsync object                                                */  \
-void BSYNC(_print)(BSYNC() _q);                                             \
+int BSYNC(_print)(BSYNC() _q);                                              \
                                                                             \
 /* Correlate input signal against internal sequence                     */  \
 /*  _q  :   bsync object                                                */  \
 /*  _x  :   input sample                                                */  \
 /*  _y  :   pointer to output sample                                    */  \
-void BSYNC(_correlate)(BSYNC() _q,                                          \
-                       TI      _x,                                          \
-                       TO *    _y);                                         \
+int BSYNC(_correlate)(BSYNC() _q,                                           \
+                      TI      _x,                                           \
+                      TO *    _y);                                          \
 
 LIQUID_BSYNC_DEFINE_API(LIQUID_BSYNC_MANGLE_RRRF,
                         float,
