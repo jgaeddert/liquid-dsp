@@ -150,6 +150,7 @@ struct liquid_logger_s {
     int     level;
     //int timezone;
     char time_fmt[16];    // format of time to pass to strftime, default:"%T"
+    int                 enable_color;
     liquid_log_callback cb_function[LIQUID_LOGGER_MAX_CALLBACKS];
     void *              cb_context [LIQUID_LOGGER_MAX_CALLBACKS];
     int                 cb_level   [LIQUID_LOGGER_MAX_CALLBACKS];
@@ -165,6 +166,7 @@ struct liquid_logger_s {
 static struct liquid_logger_s qlog = {
     .level         = 0,
     .time_fmt      = "%T",
+    .enable_color  = 1,
     .cb_function   = {NULL,},
     .count         = {0,0,0,0,0,0,},
     .lock_callback = NULL,
@@ -176,10 +178,12 @@ liquid_logger liquid_logger_safe_cast(liquid_logger _q)
     { return _q == NULL ? &qlog : _q; }
 
 // log to stdout/stderr
-int liquid_logger_callback_stdout(liquid_log_event _event,
-                                  FILE * restrict  _stream)
+int liquid_logger_callback_stream(liquid_log_event _event,
+                                  FILE * restrict  _stream,
+                                  int              _enable_color)
 {
-#if LIQUID_COLORS
+    if (ftell(_stream) < 0)
+        return 0; // file/stream is not open
 #if 0
     // compact
     // TODO: look for path delimiters using strtok?
@@ -199,21 +203,25 @@ int liquid_logger_callback_stdout(liquid_log_event _event,
         _event->file,
         _event->line);
     }
-#else
-    fprintf(_stream,"[%s] %s%s\033[0m: \033[90m%s:%d:\033[0m",
-        _event->time_str,
-        liquid_log_colors[_event->level],
-        liquid_log_levels[_event->level],
-        _event->file,
-        _event->line);
 #endif
-#else // colors
-    fprintf(_stream,"[%s] %s: %s:%d:",
-        _event->time_str,
-        liquid_log_levels[_event->level],
-        _event->file,
-        _event->line);
-#endif
+    // print timestamp
+    fprintf(_stream,"[%s]",_event->time_str);
+
+    // print log level
+    if (_enable_color) {
+        fprintf(_stream," %s%s\033[0m:",
+            liquid_log_colors[_event->level],
+            liquid_log_levels[_event->level]);
+    } else {
+        fprintf(_stream,"%s:",liquid_log_levels[_event->level]);
+    }
+
+    // print file/line
+    if (_enable_color) {
+        fprintf(_stream," \033[90m%s:%d:\033[0m",_event->file,_event->line);
+    } else {
+        fprintf(_stream," %s:%d:",_event->file,_event->line);
+    }
 
     // parse variadic function arguments
     vfprintf(_stream, _event->format, _event->args);
@@ -225,19 +233,7 @@ int liquid_logger_callback_stdout(liquid_log_event _event,
 int liquid_logger_callback_file(liquid_log_event _event,
                                 void *           _fid)
 {
-    FILE * fid = (FILE*)_fid;
-    if (ftell(fid) < 0)
-        return 0; // file is not open
-    fprintf(fid,"[%s] %s: %s:%d:",
-        _event->time_str,
-        liquid_log_levels[_event->level],
-        _event->file,
-        _event->line);
-
-    // parse variadic function arguments
-    vfprintf(fid, _event->format, _event->args);
-    fprintf(fid,"\n");
-    return LIQUID_OK;
+    return liquid_logger_callback_stream(_event, (FILE*)_fid, 0);
 }
 
 
@@ -373,11 +369,11 @@ int liquid_log(liquid_logger _q,
 }
 
 int liquid_vlog(liquid_logger _q,
-                 int           _level,
-                 const char *  _file,
-                 int           _line,
-                 const char *  _format,
-                 va_list       _ap)
+                int           _level,
+                const char *  _file,
+                int           _line,
+                const char *  _format,
+                va_list       _ap)
 {
     // set to global object if input is NULL (default)
     _q = liquid_logger_safe_cast(_q);
@@ -409,7 +405,7 @@ int liquid_vlog(liquid_logger _q,
     // output to stdout
     if (_level >= _q->level) {
         va_copy(event.args, _ap);
-        liquid_logger_callback_stdout(&event, stderr);
+        liquid_logger_callback_stream(&event, stderr, _q->enable_color);
         va_end(event.args);
     }
 
