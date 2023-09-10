@@ -30,30 +30,6 @@
 #include <unistd.h>
 #include "liquid.internal.h"
 
-#define LIQUID_LOG_TIMESTAMP        (1U << 9)   // log the timestamp
-
-#define LIQUID_LOG_LEVEL_FULL       (1U << 8)   // log the full level, e.g. "warning", "info"
-#define LIQUID_LOG_LEVEL_4          (1U << 7)   // log the level truncated to 4 characters, e.g. "warn", "info"
-#define LIQUID_LOG_LEVEL_1          (1U << 6)   // log the level truncated to a single character, e.g. "W", "I"
-
-#define LIQUID_LOG_FILENAME_FULL    (1U << 5)   // log the full filename
-#define LIQUID_LOG_FILENAME_32      (1U << 4)   // log the filename, trucated to 32 characters maximum
-#define LIQUID_LOG_FILENAME_20      (1U << 3)   // log the filename, trucated to 20 characters maximum
-#define LIQUID_LOG_FILENAME_12      (1U << 2)   // log the filename, trucated to 12 characters maximum
-
-#define LIQUID_LOG_LINE             (1U << 1)   // log the line number
-
-#define LIQUID_LOG_COLOR            (1U << 0)   // log in color
-
-#define LIQUID_LOG_LEVEL            LIQUID_LOG_LEVEL_FULL
-#define LIQUID_LOG_FILENAME         LIQUID_LOG_FILENAME_20
-
-// some default settings
-#define LIQUID_LOG_FULL    (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_FULL | LIQUID_LOG_FILENAME_FULL | LIQUID_LOG_LINE )
-#define LIQUID_LOG_CONCISE (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_4    | LIQUID_LOG_FILENAME_20   | LIQUID_LOG_LINE )
-#define LIQUID_LOG_COMPACT (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_1    | LIQUID_LOG_FILENAME_12   | LIQUID_LOG_LINE )
-#define LIQUID_LOG_DEFAULT LIQUID_LOG_FULL
-
 // internal flag indicating if errors are downgraded to warnings for testing
 static int _liquid_error_downgrade = 0;
 
@@ -338,6 +314,15 @@ int liquid_logger_set_time_fmt(liquid_logger _q,
         _q->time_fmt[0] = '\0';
         return liquid_error(LIQUID_EIMEM,"liquid_logger_set_time_fmt(), format \"%s\" length exceeds maximum", _fmt);
     }
+    return LIQUID_OK;
+}
+
+// set output configuration
+int liquid_logger_set_config(liquid_logger _q,
+                             int           _config)
+{
+    _q = liquid_logger_safe_cast(_q);
+    _q->config = _config;
     return LIQUID_OK;
 }
 

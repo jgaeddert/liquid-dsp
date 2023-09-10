@@ -16,13 +16,33 @@ int test_callback(liquid_log_event event, void * context)
 int test_lock(int _lock, void * _context)
     { printf("%s\n", _lock ? "locking" : "unlocking"); return 0; }
 
-int main(int argc, char*argv[])
+// sweep log levels
+void sweep_levels(liquid_logger _q)
 {
     int level;
     for (level=0; level<=LIQUID_FATAL; level++) {
-        liquid_log(NULL,level,__FILE__,__LINE__,"message with (%d) value", level);
-        usleep(100000);
+        liquid_log(_q,level,__FILE__,__LINE__,"message with (%d) value", level);
+        usleep(100000); // sleep to exercise different timestamps
     }
+}
+
+int main(int argc, char*argv[])
+{
+    liquid_log(NULL,LIQUID_INFO,__FILE__,__LINE__,"setting default logging (without color)");
+    liquid_logger_set_config(NULL, LIQUID_LOG_DEFAULT);
+    sweep_levels(NULL);
+
+    liquid_log(NULL,LIQUID_INFO,__FILE__,__LINE__,"setting default logging (with color)");
+    liquid_logger_set_config(NULL, LIQUID_LOG_DEFAULT | LIQUID_LOG_COLOR);
+    sweep_levels(NULL);
+
+    liquid_log(NULL,LIQUID_INFO,__FILE__,__LINE__,"setting concise logging");
+    liquid_logger_set_config(NULL, LIQUID_LOG_CONCISE | LIQUID_LOG_COLOR);
+    sweep_levels(NULL);
+
+    liquid_log(NULL,LIQUID_INFO,__FILE__,__LINE__,"setting compact logging");
+    liquid_logger_set_config(NULL, LIQUID_LOG_COMPACT | LIQUID_LOG_COLOR);
+    sweep_levels(NULL);
 
     // test macro
     liquid_log_trace("testing trace logging with narg=%u", 42);
