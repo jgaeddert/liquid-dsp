@@ -177,6 +177,9 @@ int liquid_logger_set_level(liquid_logger q, int _level);
 // setting to NULL or an empty string will disable timestamps
 int liquid_logger_set_time_fmt(liquid_logger q, const char * fmt);
 
+// enable and set compact formatting
+int liquid_logger_set_compact(liquid_logger q, int _compact);
+
 // add lock function with context
 //  _q          : logger object
 //  _callback   : user-defined lock callback function

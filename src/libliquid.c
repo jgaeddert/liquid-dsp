@@ -30,6 +30,30 @@
 #include <unistd.h>
 #include "liquid.internal.h"
 
+#define LIQUID_LOG_TIMESTAMP        (1U << 9)   // log the timestamp
+
+#define LIQUID_LOG_LEVEL_FULL       (1U << 8)   // log the full level, e.g. "warning", "info"
+#define LIQUID_LOG_LEVEL_4          (1U << 7)   // log the level truncated to 4 characters, e.g. "warn", "info"
+#define LIQUID_LOG_LEVEL_1          (1U << 6)   // log the level truncated to a single character, e.g. "W", "I"
+
+#define LIQUID_LOG_FILENAME_FULL    (1U << 5)   // log the full filename
+#define LIQUID_LOG_FILENAME_32      (1U << 4)   // log the filename, trucated to 32 characters maximum
+#define LIQUID_LOG_FILENAME_20      (1U << 3)   // log the filename, trucated to 20 characters maximum
+#define LIQUID_LOG_FILENAME_12      (1U << 2)   // log the filename, trucated to 12 characters maximum
+
+#define LIQUID_LOG_LINE             (1U << 1)   // log the line number
+
+#define LIQUID_LOG_COLOR            (1U << 0)   // log in color
+
+#define LIQUID_LOG_LEVEL            LIQUID_LOG_LEVEL_FULL
+#define LIQUID_LOG_FILENAME         LIQUID_LOG_FILENAME_20
+
+// some default settings
+#define LIQUID_LOG_FULL    (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_FULL | LIQUID_LOG_FILENAME_FULL | LIQUID_LOG_LINE )
+#define LIQUID_LOG_CONCISE (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_4    | LIQUID_LOG_FILENAME_20   | LIQUID_LOG_LINE )
+#define LIQUID_LOG_COMPACT (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_1    | LIQUID_LOG_FILENAME_12   | LIQUID_LOG_LINE )
+#define LIQUID_LOG_DEFAULT LIQUID_LOG_FULL
+
 // internal flag indicating if errors are downgraded to warnings for testing
 static int _liquid_error_downgrade = 0;
 
@@ -149,14 +173,12 @@ const char * liquid_error_info(liquid_error_code _code)
 struct liquid_logger_s {
     int     level;
     //int timezone;
-    char time_fmt[16];    // format of time to pass to strftime, default:"%T"
-    int                 enable_color;
-    liquid_log_callback cb_function[LIQUID_LOGGER_MAX_CALLBACKS];
-    void *              cb_context [LIQUID_LOGGER_MAX_CALLBACKS];
-    int                 cb_level   [LIQUID_LOGGER_MAX_CALLBACKS];
-
+    char time_fmt[16];  // format of time to pass to strftime, default:"%T"
+    int  config;        // display configuration
+    liquid_log_callback cb_function[LIQUID_LOGGER_MAX_CALLBACKS]; // callback function
+    void *              cb_context [LIQUID_LOGGER_MAX_CALLBACKS]; // callback context
+    int                 cb_level   [LIQUID_LOGGER_MAX_CALLBACKS]; // callback level
     int count[6];       // counters showing number of events of each type
-
     liquid_lock_callback lock_callback; // locking callback function
     void *               lock_context;  // locking context
 };
@@ -166,7 +188,7 @@ struct liquid_logger_s {
 static struct liquid_logger_s qlog = {
     .level         = 0,
     .time_fmt      = "[%T] ",
-    .enable_color  = 1,
+    .config        = (LIQUID_LOG_DEFAULT | LIQUID_LOG_COLOR),
     .cb_function   = {NULL,},
     .count         = {0,0,0,0,0,0,},
     .lock_callback = NULL,
@@ -180,14 +202,20 @@ liquid_logger liquid_logger_safe_cast(liquid_logger _q)
 // log to stdout/stderr
 int liquid_logger_callback_stream(liquid_log_event _event,
                                   FILE * restrict  _stream,
-                                  int              _enable_color)
+                                  int              _config)
 {
     if (ftell(_stream) < 0)
         return 0; // file/stream is not open
+
+    // compactness levels:
+    // <=0:  [09:17:53] warning: src/multichannel/src/firpfbch2.proto.c:183: firfilt_crcf_copy(), object cannot be NULL (code 3: invalid parameter or configuration)
+    //   1:  [09:17:53] warn:…c/firpfbch2.proto.c:183:firfilt_crcf_copy(), object cannot be NULL (code 3: invalid parameter or configuration)
+    //   2:  W:…bch2.proto.c:183:firfilt_crcf_copy(), object cannot be NULL (code 3: invalid parameter or configuration)
+    // >=3:  W:firfilt_crcf_copy(), object cannot be NULL (code 3: invalid parameter or configuration)
 #if 0
     // compact
     // TODO: look for path delimiters using strtok?
-    int smax = 12;
+    int smax = 20;
     fprintf(_stream,"%s%c\033[0m:",
         liquid_log_colors[_event->level],
         liquid_log_levels[_event->level][0]-32);
@@ -203,12 +231,16 @@ int liquid_logger_callback_stream(liquid_log_event _event,
         _event->file,
         _event->line);
     }
-#endif
+#else
+    // parse configuration
+    unsigned int enable_color = _config & LIQUID_LOG_COLOR;
+
     // print timestamp
-    fprintf(_stream,"%s",_event->time_str);
+    if (_config & LIQUID_LOG_TIMESTAMP)
+        fprintf(_stream,"%s",_event->time_str);
 
     // print log level
-    if (_enable_color) {
+    if (enable_color) {
         fprintf(_stream,"%s%s\033[0m: ",
             liquid_log_colors[_event->level],
             liquid_log_levels[_event->level]);
@@ -217,11 +249,12 @@ int liquid_logger_callback_stream(liquid_log_event _event,
     }
 
     // print file/line
-    if (_enable_color) {
+    if (enable_color) {
         fprintf(_stream,"\033[90m%s:%d:\033[0m ",_event->file,_event->line);
     } else {
         fprintf(_stream,"%s:%d: ",_event->file,_event->line);
     }
+#endif
 
     // parse variadic function arguments
     vfprintf(_stream, _event->format, _event->args);
@@ -233,7 +266,7 @@ int liquid_logger_callback_stream(liquid_log_event _event,
 int liquid_logger_callback_file(liquid_log_event _event,
                                 void *           _fid)
 {
-    return liquid_logger_callback_stream(_event, (FILE*)_fid, 0);
+    return liquid_logger_callback_stream(_event, (FILE*)_fid, LIQUID_LOG_DEFAULT);
 }
 
 
@@ -416,7 +449,7 @@ int liquid_vlog(liquid_logger _q,
     // output to stdout
     if (_level >= _q->level) {
         va_copy(event.args, _ap);
-        liquid_logger_callback_stream(&event, stderr, _q->enable_color);
+        liquid_logger_callback_stream(&event, stderr, _q->config);
         va_end(event.args);
     }
 
