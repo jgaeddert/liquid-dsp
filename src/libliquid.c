@@ -165,7 +165,7 @@ struct liquid_logger_s {
 // global logger
 static struct liquid_logger_s qlog = {
     .level         = 0,
-    .time_fmt      = "%T",
+    .time_fmt      = "[%T] ",
     .enable_color  = 1,
     .cb_function   = {NULL,},
     .count         = {0,0,0,0,0,0,},
@@ -205,22 +205,22 @@ int liquid_logger_callback_stream(liquid_log_event _event,
     }
 #endif
     // print timestamp
-    fprintf(_stream,"[%s]",_event->time_str);
+    fprintf(_stream,"%s",_event->time_str);
 
     // print log level
     if (_enable_color) {
-        fprintf(_stream," %s%s\033[0m:",
+        fprintf(_stream,"%s%s\033[0m: ",
             liquid_log_colors[_event->level],
             liquid_log_levels[_event->level]);
     } else {
-        fprintf(_stream,"%s:",liquid_log_levels[_event->level]);
+        fprintf(_stream,"%s: ",liquid_log_levels[_event->level]);
     }
 
     // print file/line
     if (_enable_color) {
-        fprintf(_stream," \033[90m%s:%d:\033[0m",_event->file,_event->line);
+        fprintf(_stream,"\033[90m%s:%d:\033[0m ",_event->file,_event->line);
     } else {
-        fprintf(_stream," %s:%d:",_event->file,_event->line);
+        fprintf(_stream,"%s:%d: ",_event->file,_event->line);
     }
 
     // parse variadic function arguments
@@ -254,7 +254,7 @@ int liquid_logger_reset(liquid_logger _q)
 {
     _q = liquid_logger_safe_cast(_q);
     _q->level = LIQUID_WARN;
-    liquid_logger_set_time_fmt(_q, "%T");
+    liquid_logger_set_time_fmt(_q, "[%T]");
     _q->cb_function[0] = NULL; // effectively reset all callbacks
     int i;
     for (i=0; i<6; i++)
@@ -292,8 +292,19 @@ int liquid_logger_set_time_fmt(liquid_logger _q,
                                const char * _fmt)
 {
     _q = liquid_logger_safe_cast(_q);
-    // TODO: validate copy operation was successful
-    strncpy(_q->time_fmt, _fmt, sizeof(_q->time_fmt));
+
+    // handle special case if input is empty
+    if (_fmt == NULL || strlen(_fmt)==0) {
+        _q->time_fmt[0] = '\0';
+        return LIQUID_OK;
+    }
+
+    // set format and validate copy operation was successful
+    int rc = snprintf(_q->time_fmt, sizeof(_q->time_fmt), "%s ", _fmt);
+    if (rc >= sizeof(_q->time_fmt)) {
+        _q->time_fmt[0] = '\0';
+        return liquid_error(LIQUID_EIMEM,"liquid_logger_set_time_fmt(), format \"%s\" length exceeds maximum", _fmt);
+    }
     return LIQUID_OK;
 }
 

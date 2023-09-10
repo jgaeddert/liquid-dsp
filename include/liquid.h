@@ -174,6 +174,7 @@ int liquid_logger_print(liquid_logger _q);
 int liquid_logger_set_level(liquid_logger q, int _level);
 
 // set the format for the timestamp (see system's `strftime` help for options)
+// setting to NULL or an empty string will disable timestamps
 int liquid_logger_set_time_fmt(liquid_logger q, const char * fmt);
 
 // add lock function with context
