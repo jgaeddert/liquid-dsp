@@ -60,8 +60,8 @@ int liquid_libversion_number(void)
 }
 
 const char * liquid_log_colors[] = {"\033[94m","\033[36m","\033[32m","\033[33m","\033[31m","\033[35m"};
-
-const char * liquid_log_levels[] = {"trace","debug","info","warning","error","fatal"};
+const char * liquid_log_levels[]         = {"trace","debug","info", "warning","error","fatal"};
+const char * liquid_log_levels_concise[] = {"trace","debug","info ","warn ",  "error","fatal"};
 
 // report error
 int liquid_error_fl(int          _code,
@@ -96,7 +96,6 @@ void * liquid_error_config_fl(const char * _file,
                               const char * _format,
                               ...)
 {
-    // TODO: call variadic arguments version of liquid_error_fl
     int code = LIQUID_EICONFIG;
 #if !LIQUID_SUPPRESS_ERROR_OUTPUT
     // generate extended format
@@ -234,7 +233,7 @@ int liquid_logger_callback_stream(liquid_log_event _event,
         fprintf(_stream,"%s",_event->time_str);
 
     // print log level
-    if (_config & (LIQUID_LOG_LEVEL_FULL | LIQUID_LOG_LEVEL_4 | LIQUID_LOG_LEVEL_1) )
+    if (_config & (LIQUID_LOG_LEVEL_FULL | LIQUID_LOG_LEVEL_5 | LIQUID_LOG_LEVEL_1) )
     {
         if (enable_color)
             fprintf(_stream,"%s",liquid_log_colors[_event->level]);
@@ -243,10 +242,9 @@ int liquid_logger_callback_stream(liquid_log_event _event,
         if (_config & (LIQUID_LOG_LEVEL_FULL)) {
             // e.g. "warning"
             fprintf(_stream,"%s",liquid_log_levels[_event->level]);
-        } else if (_config & (LIQUID_LOG_LEVEL_4)) {
+        } else if (_config & (LIQUID_LOG_LEVEL_5)) {
             // e.g. "warn "
-            // TODO: fix this
-            fprintf(_stream,"%c",liquid_log_levels[_event->level][0]-32);
+            fprintf(_stream,"%s", liquid_log_levels_concise[_event->level]);
         } else if (_config & (LIQUID_LOG_LEVEL_1)) {
             // e.g. "W"
             fprintf(_stream,"%c",liquid_log_levels[_event->level][0]-32);
