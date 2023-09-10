@@ -175,7 +175,44 @@ static struct liquid_logger_s qlog = {
 liquid_logger liquid_logger_safe_cast(liquid_logger _q)
     { return _q == NULL ? &qlog : _q; }
 
-// log to stdout/stderr
+// log filename and line number to stream output
+int liquid_logger_stream_file_line(liquid_log_event _event,
+                                   FILE * restrict  _stream,
+                                   int              _color,
+                                   int              _smax,
+                                   int              _line)
+{
+    if (_color)
+        fprintf(_stream,"\033[90m");
+
+    if (_smax < 0) {
+        // print full file/line
+        fprintf(_stream,"%s:",_event->file);
+    } else if (_smax > 0) {
+        // print compact file/line
+        // TODO: look for path delimiters using strtok?
+        int slen = strlen(_event->file);
+        if (slen  > _smax) {
+            fprintf(_stream,"\u2026%*s:", _smax - 1, _event->file + slen - _smax + 1);
+        } else {
+            fprintf(_stream,"%*s:",_smax, _event->file);
+        }
+    } else {
+        // _smax == 0; don't print filename at all
+    }
+
+    if (_line)
+        fprintf(_stream,"%-3d:",_event->line);
+
+    if (_color)
+        fprintf(_stream,"\033[0m");
+
+    if (_smax != 0 || _line)
+        fprintf(_stream," ");
+    return LIQUID_OK;
+}
+
+// log to file stream
 int liquid_logger_callback_stream(liquid_log_event _event,
                                   FILE * restrict  _stream,
                                   int              _config)
@@ -188,26 +225,7 @@ int liquid_logger_callback_stream(liquid_log_event _event,
     //   1:  [09:17:53] warn:…c/firpfbch2.proto.c:183:firfilt_crcf_copy(), object cannot be NULL (code 3: invalid parameter or configuration)
     //   2:  W:…bch2.proto.c:183:firfilt_crcf_copy(), object cannot be NULL (code 3: invalid parameter or configuration)
     // >=3:  W:firfilt_crcf_copy(), object cannot be NULL (code 3: invalid parameter or configuration)
-#if 0
-    // compact
-    // TODO: look for path delimiters using strtok?
-    int smax = 20;
-    fprintf(_stream,"%s%c\033[0m:",
-        liquid_log_colors[_event->level],
-        liquid_log_levels[_event->level][0]-32);
-    int slen = strlen(_event->file);
-    if (slen  > smax) {
-        fprintf(_stream,"\033[90m\u2026%*s:%-3d:\033[0m",
-        smax - 1,
-        _event->file + slen - smax + 1,
-        _event->line);
-    } else {
-        fprintf(_stream,"\033[90m%*s:%-3d:\033[0m",
-        smax,
-        _event->file,
-        _event->line);
-    }
-#else
+
     // parse configuration
     unsigned int enable_color = _config & LIQUID_LOG_COLOR;
 
@@ -216,21 +234,36 @@ int liquid_logger_callback_stream(liquid_log_event _event,
         fprintf(_stream,"%s",_event->time_str);
 
     // print log level
-    if (enable_color) {
-        fprintf(_stream,"%s%s\033[0m: ",
-            liquid_log_colors[_event->level],
-            liquid_log_levels[_event->level]);
-    } else {
-        fprintf(_stream,"%s: ",liquid_log_levels[_event->level]);
+    if (_config & (LIQUID_LOG_LEVEL_FULL | LIQUID_LOG_LEVEL_4 | LIQUID_LOG_LEVEL_1) )
+    {
+        if (enable_color)
+            fprintf(_stream,"%s",liquid_log_colors[_event->level]);
+
+        // print log level string, e.g. "warning" or "warn " or "W"
+        if (_config & (LIQUID_LOG_LEVEL_FULL)) {
+            // e.g. "warning"
+            fprintf(_stream,"%s",liquid_log_levels[_event->level]);
+        } else if (_config & (LIQUID_LOG_LEVEL_4)) {
+            // e.g. "warn "
+            // TODO: fix this
+            fprintf(_stream,"%c",liquid_log_levels[_event->level][0]-32);
+        } else if (_config & (LIQUID_LOG_LEVEL_1)) {
+            // e.g. "W"
+            fprintf(_stream,"%c",liquid_log_levels[_event->level][0]-32);
+        }
+
+        if (enable_color)
+            fprintf(_stream,"\033[0m");
+        fprintf(_stream,": ");
     }
 
     // print file/line
-    if (enable_color) {
-        fprintf(_stream,"\033[90m%s:%d:\033[0m ",_event->file,_event->line);
-    } else {
-        fprintf(_stream,"%s:%d: ",_event->file,_event->line);
-    }
-#endif
+    int smax = 0;
+    if      (_config & LIQUID_LOG_FILENAME_FULL) { smax = -1; }
+    else if (_config & LIQUID_LOG_FILENAME_32  ) { smax = 32; }
+    else if (_config & LIQUID_LOG_FILENAME_20  ) { smax = 20; }
+    else if (_config & LIQUID_LOG_FILENAME_12  ) { smax = 12; }
+    liquid_logger_stream_file_line(_event, _stream, enable_color, smax, _config & LIQUID_LOG_LINE);
 
     // parse variadic function arguments
     vfprintf(_stream, _event->format, _event->args);
