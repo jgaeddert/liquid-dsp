@@ -20,8 +20,30 @@ class nco : public object
         }
 
     // copy constructor
-    nco(const nco &m) { q = nco_crcf_copy(m.q); }
+    nco(const nco &rhs) { q = nco_crcf_copy(rhs.q); }
 
+    // move constructor
+    nco(nco &&rhs) { q = rhs.q; rhs.q = NULL; }
+
+    // copy assignment operator
+    nco& operator=(const nco &rhs) {
+        if (this != &rhs) {
+            nco_crcf_destroy(q);
+            q = nco_crcf_copy(rhs.q);
+        }
+        return *this;
+    }
+
+    // move assignment operator
+    nco& operator=(const nco &&rhs) {
+        if (this != &rhs) {
+            nco_crcf_destroy(q);
+            q = rhs.q;
+        }
+        return *this;
+    }
+
+    // destructor
     ~nco() { nco_crcf_destroy(q); }
 
     // reset object internals
