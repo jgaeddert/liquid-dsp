@@ -2,6 +2,17 @@
 '''Find memory leaks by iterating through all autotest packages'''
 import argparse, re, subprocess
 
+def packages():
+    '''get package names from xautotest command-line utility'''
+    cmd = './xautotest -L'
+    out = subprocess.check_output(cmd.split(),stderr=subprocess.STDOUT).decode('utf-8').split('\n')
+    r = []
+    for line in out:
+        m = re.search('^\d+: (.*)',line)
+        if m is not None:
+            r.append(m.group(1))
+    return r
+
 def parsecheck(lines):
     '''parse list of valgrind output lines and aggregate results into dictionary'''
     leaks = ('definitely lost', 'indirectly lost', 'possibly lost', 'still reachable', 'suppressed')
@@ -31,7 +42,7 @@ def checkresults(results):
     return str(results)
 
 #for package in range(68,76):
-for package in range(150):
-    r = memcheck(package)
-    print('%3u : %s' % (package,checkresults(r)))
+for idx, p in enumerate(packages()):
+    r = memcheck(idx)
+    print('%3u:%-26s:%s' % (idx, p, checkresults(r)))
 
