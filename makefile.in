@@ -165,7 +165,7 @@ src/buffer/src/buffercf.o : %.o : %.c $(include_headers) $(buffer_prototypes)
 buffer_autotests :=						\
 	src/buffer/tests/cbuffer_autotest.c			\
 	src/buffer/tests/wdelay_autotest.c			\
-	src/buffer/tests/window_autotest.c			\
+	src/buffer/tests/buffer_window_autotest.c			\
 
 buffer_benchmarks :=						\
 	src/buffer/bench/cbuffercf_benchmark.c			\
@@ -765,7 +765,7 @@ src/math/src/windows.o            : %.o : %.c $(include_headers)
 
 math_autotests :=						\
 	src/math/tests/gcd_autotest.c				\
-	src/math/tests/window_autotest.c			\
+	src/math/tests/math_window_autotest.c			\
 	src/math/tests/math_autotest.c				\
 	src/math/tests/math_bessel_autotest.c			\
 	src/math/tests/math_gamma_autotest.c			\
