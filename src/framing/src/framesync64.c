@@ -173,6 +173,10 @@ int framesync64_destroy(framesync64 _q)
     qpilotsync_destroy  (_q->pilotsync); // pilot synchronizer
     windowcf_destroy    (_q->buf_debug);
 
+    // free allocated buffers
+    free(_q->prefix);
+    free(_q->filename);
+
     // free main object memory
     free(_q);
     return LIQUID_OK;
