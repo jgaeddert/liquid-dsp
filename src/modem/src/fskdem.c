@@ -163,7 +163,7 @@ fskdem fskdem_copy(fskdem q_orig)
     memmove(q_copy->buf_freq, q_orig->buf_freq, q_copy->K * sizeof(float complex));
 
     // copy demodulation map
-    q_copy->demod_map = (unsigned int*)liquid_malloc_copy(q_orig->demod_map, q_copy->M, sizeof(float complex));
+    q_copy->demod_map = (unsigned int*)liquid_malloc_copy(q_orig->demod_map, q_copy->M, sizeof(unsigned int));
 
     // return new object
     return q_copy;
