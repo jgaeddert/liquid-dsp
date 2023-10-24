@@ -114,6 +114,7 @@ int SYMSTREAMR(_destroy)(SYMSTREAMR() _q)
 {
     // destroy objects
     SYMSTREAM(_destroy)(_q->symstream);
+    MSRESAMP(_destroy)(_q->resamp);
 
     // free buffer
     free(_q->buf);
