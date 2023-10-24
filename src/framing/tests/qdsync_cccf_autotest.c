@@ -296,6 +296,7 @@ void autotest_qdsync_cccf_copy()
     CONTEND_SAME_DATA(c_orig.buf, c_copy.buf, seq_len*sizeof(float complex));
 
     // destroy objects
+    firinterp_crcf_destroy(interp);
     qdsync_cccf_destroy(q_orig);
     qdsync_cccf_destroy(q_copy);
 }
