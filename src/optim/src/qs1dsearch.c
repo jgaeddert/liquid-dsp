@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,11 +60,16 @@ qs1dsearch qs1dsearch_create(liquid_utility_1d _utility,
 
 qs1dsearch qs1dsearch_copy(qs1dsearch _q)
 {
+    liquid_error(LIQUID_ENOIMP,"qs1dsearch_copy(), method not yet implemented");
     return NULL;
 }
 
 int qs1dsearch_destroy(qs1dsearch _q)
 {
+    if (_q == NULL)
+        return liquid_error(LIQUID_EIOBJ,"qs1dsearch_destroy(), invalid null pointer passed");
+
+    free(_q);
     return LIQUID_OK;
 }
 
