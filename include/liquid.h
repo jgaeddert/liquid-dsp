@@ -1644,6 +1644,14 @@ int FFT(_shift)(TC *         _x,                                            \
 
 LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
 
+// If using fftw library (and not overridden with configuration), clean up
+// planner's persistent data. This must be done outside any methods as fftw
+// uses *static memory* in its planner which cannot be cleaned up if any
+// other function or method in the calling process creates or uses an fftw
+// plan.
+int liquid_fftwf_cleanup_wrapper(void);
+
+
 // antiquated fft methods
 // FFT(plan) FFT(_create_plan_mdct)(unsigned int _n,
 //                                  T * _x,
