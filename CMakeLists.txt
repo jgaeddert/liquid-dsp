@@ -175,3 +175,12 @@ add_custom_command(
 enable_testing()
 add_test(NAME test COMMAND test_libliquid)
 
+
+# packaging
+set(CPACK_PACKAGE_NAME liquid)
+set(CPACK_PACKAGE_VENDOR liquidsdr)
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Software-Defined Radio Digital Signal Processing Library")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY ${CPACK_PACKAGE_NAME})
+set(CPACK_VERBATIM_VARIABLES TRUE)
+include(CPack)
+
