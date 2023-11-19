@@ -75,7 +75,7 @@ include (CheckLibraryExists)
 include (CheckSymbolExists)
 
 # global flags
-add_definitions ("-Wall -fPIC -O3")
+add_definitions ("-Wall -fPIC -O3 -Wno-deprecated -Wno-deprecated-declarations")
 
 # include files
 # mmintrin.h
