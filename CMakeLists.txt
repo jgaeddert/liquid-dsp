@@ -37,7 +37,7 @@
 
 # This is the CMake file used for generating build files
 cmake_minimum_required(VERSION 3.9...3.19)
-project(liquid C ASM)
+project(liquid VERSION 1.6.0 LANGUAGES C ASM)
 
 # require a C99 compiler for all targets
 set(CMAKE_C_STANDARD 99)
@@ -161,8 +161,11 @@ add_custom_command(
     DEPENDS ${PROJECT_BINARY_DIR}/autoscript
     COMMAND ${PROJECT_BINARY_DIR}/autoscript / autotest ${AUTOTEST_SOURCES} > autotest_include.h)
 
-add_custom_target(xautotest ALL
-    DEPENDS autotest_include.h)
+#add_custom_target(xautotest ALL
+#    DEPENDS autotest_include.h)
+
+#add_executable(xautotest autotest/xautotest.c autotest/autotest.h autotest_include.h)
+#target_include_directories(xautotest PRIVATE ${INCLUDE})
 
 #
 # testing
@@ -171,5 +174,4 @@ add_custom_target(xautotest ALL
 # enable testing
 enable_testing()
 add_test(NAME test COMMAND test_libliquid)
-
 
