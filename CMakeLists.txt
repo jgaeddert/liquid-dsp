@@ -145,6 +145,29 @@ target_link_libraries(test_libliquid ${LIBNAME})
 # TODO: uninstall?
 #install(TARGETS mylib)
 
+#
+# examples
+#
+#set_source_files_properties(DIRECTORY examples TARGET_DIRECTORY examples)
+
+#
+# autotest
+#
+
+set(AUTOTEST_SOURCES ${PROJECT_SOURCE_DIR}/src/agc/tests/agc_crcf_autotest.c)
+add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
+add_custom_command(
+    OUTPUT autotest_include.h
+    DEPENDS ${PROJECT_BINARY_DIR}/autoscript
+    COMMAND ${PROJECT_BINARY_DIR}/autoscript / autotest ${AUTOTEST_SOURCES} > autotest_include.h)
+
+add_custom_target(xautotest ALL
+    DEPENDS autotest_include.h)
+
+#
+# testing
+#
+
 # enable testing
 enable_testing()
 add_test(NAME test COMMAND test_libliquid)
