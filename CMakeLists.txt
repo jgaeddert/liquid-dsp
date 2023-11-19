@@ -43,32 +43,6 @@ project(liquid C ASM)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-#target_include_directories(test PRIVATE include)
-set(INCLUDE include)
-set(HEADER_FILES ${INCLUDE}/liquid.h ${INCLUDE}/liquid.internal.h)
-
-set(LIBSRC src/libliquid.c)
-
-# NOTE: if set to "liquid" it will unfortunately link to installed version... grumble...
-set(LIBNAME liquidtmp)
-add_library(${LIBNAME} SHARED ${LIBSRC} ${HEADER_FILES})
-target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
-
-add_executable(test_mylib examples/libliquid_example.c ${HEADER_FILES})
-target_include_directories(test_mylib PRIVATE ${INCLUDE})
-
-target_link_libraries(test_mylib ${LIBNAME})
-
-# see: https://cmake.org/cmake/help/latest/command/install.html#examples
-# TODO: install headers
-# TODO: uninstall?
-#install(TARGETS mylib)
-
-# enable testing
-enable_testing()
-add_test(NAME test COMMAND test_mylib)
-
-
 include (CheckIncludeFile)
 include (CheckFunctionExists)
 include (CheckLibraryExists)
@@ -93,20 +67,20 @@ add_definitions ("-Wall -fPIC -O3 -Wno-deprecated -Wno-deprecated-declarations")
 #   sys/param.h
 #   sys/utsname.h
 #   sys/types.h
-check_include_file      (assert.h         HAVE_ASSERT_H)
-check_include_file      (complex.h        HAVE_COMPLEX_H)
-check_include_file      (float.h          HAVE_FLOAT_H)
-check_include_file      (getopt.h         HAVE_GETOPT_H)
-check_include_file      (inttypes.h       HAVE_INTTYPES_H)
-check_include_file      (limits.h         HAVE_LIMITS_H)
-check_include_file      (math.h           HAVE_MATH_H)
-check_include_file      (stdio.h          HAVE_STDIO_H)
-check_include_file      (stdint.h         HAVE_STDINT_H)
-check_include_file      (stdlib.h         HAVE_STDLIB_H)
-check_include_file      (string.h         HAVE_STRING_H)
-check_include_file      (sys/resource.h   HAVE_SYS_RESOURCE_H)
-check_include_file      (time.h           HAVE_TIME_H)
-check_include_file      (unistd.h         HAVE_UNISTD_H)
+#check_include_file      (assert.h         HAVE_ASSERT_H)
+#check_include_file      (complex.h        HAVE_COMPLEX_H)
+#check_include_file      (float.h          HAVE_FLOAT_H)
+#check_include_file      (getopt.h         HAVE_GETOPT_H)
+#check_include_file      (inttypes.h       HAVE_INTTYPES_H)
+#check_include_file      (limits.h         HAVE_LIMITS_H)
+#check_include_file      (math.h           HAVE_MATH_H)
+#check_include_file      (stdio.h          HAVE_STDIO_H)
+#check_include_file      (stdint.h         HAVE_STDINT_H)
+#check_include_file      (stdlib.h         HAVE_STDLIB_H)
+#check_include_file      (string.h         HAVE_STRING_H)
+#check_include_file      (sys/resource.h   HAVE_SYS_RESOURCE_H)
+#check_include_file      (time.h           HAVE_TIME_H)
+#check_include_file      (unistd.h         HAVE_UNISTD_H)
 
 # check for necessary functions/symbols
 #check_symbol_exists     (malloc,    "stlib.h"   HAVE_MALLOC)
@@ -130,4 +104,49 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINAR
 #  
 #  include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 #  include_directories (${CMAKE_CURRENT_BINARY_DIR})
+
+#target_include_directories(test PRIVATE include)
+set(INCLUDE include)
+set(HEADER_FILES ${INCLUDE}/liquid.h ${INCLUDE}/liquid.internal.h)
+
+#
+# MODULE : agc - automatic gain control
+#
+
+set(AGC_SRC 
+    src/agc/src/agc_crcf.c
+    src/agc/src/agc_rrrf.c)
+
+set(AGC_PROTO
+    src/agc/src/agc.proto.c)
+
+add_library(agc OBJECT ${AGC_SRC} ${HEADER_FILES})
+#add_dependencies(agc ${AGC_PROTO} ${HEADER_FILES})
+target_include_directories(agc PRIVATE ${INCLUDE})
+
+#
+# main library
+#
+
+set(LIBSRC src/libliquid.c)
+
+# NOTE: if set to "liquid" it will unfortunately link to installed version... grumble...
+set(LIBNAME liquidtmp)
+add_library(${LIBNAME} SHARED ${LIBSRC} ${HEADER_FILES} $<TARGET_OBJECTS:agc>)
+target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
+
+add_executable(test_libliquid examples/libliquid_example.c ${HEADER_FILES})
+target_include_directories(test_libliquid PRIVATE ${INCLUDE})
+
+target_link_libraries(test_libliquid ${LIBNAME})
+
+# see: https://cmake.org/cmake/help/latest/command/install.html#examples
+# TODO: install headers
+# TODO: uninstall?
+#install(TARGETS mylib)
+
+# enable testing
+enable_testing()
+add_test(NAME test COMMAND test_libliquid)
+
 
