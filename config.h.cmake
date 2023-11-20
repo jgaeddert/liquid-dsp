@@ -4,3 +4,4 @@
 #cmakedefine HAVE_STDIO_H
 #cmakedefine HAVE_STDLIB_H
 #cmakedefine HAVE_LIBC
+#cmakedefine SIZEOF_INT @SIZEOF_INT@

@@ -98,6 +98,10 @@ add_definitions ("-Wall -fPIC -O3 -Wno-deprecated -Wno-deprecated-declarations")
 #check_symbol_exists     (crealf,    "complex.h" HAVE_CREALF)
 #check_symbol_exists     (cimagf,    "complex.h" HAVE_CIMAGF)
 
+
+include (CheckTypeSize)
+check_type_size(int SIZEOF_INT LANGUAGE C)
+
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 ################################################################################
@@ -107,23 +111,211 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINAR
 #  include_directories (${CMAKE_CURRENT_BINARY_DIR})
 
 #target_include_directories(test PRIVATE include)
-set(INCLUDE include)
-set(HEADER_FILES ${INCLUDE}/liquid.h ${INCLUDE}/liquid.internal.h)
+include_directories(include .)
 
-#
-# MODULE : agc - automatic gain control
-#
+# libraries
 
-set(AGC_SRC 
+add_library(agc OBJECT
     src/agc/src/agc_crcf.c
     src/agc/src/agc_rrrf.c)
 
-set(AGC_PROTO
-    src/agc/src/agc.proto.c)
+add_library(audio OBJECT
+    src/audio/src/cvsd.c)
 
-add_library(agc OBJECT ${AGC_SRC} ${HEADER_FILES})
-#add_dependencies(agc ${AGC_PROTO} ${HEADER_FILES})
-target_include_directories(agc PRIVATE ${INCLUDE})
+add_library(buffer OBJECT
+    src/buffer/src/bufferf.c
+    src/buffer/src/buffercf.c)
+
+add_library(channel OBJECT
+    src/channel/src/channel_cccf.c)
+
+add_library(dotprod OBJECT
+    src/dotprod/src/dotprod_cccf.c
+    src/dotprod/src/dotprod_crcf.c
+    src/dotprod/src/dotprod_rrrf.c
+    src/dotprod/src/sumsq.c)
+
+add_library(equalization OBJECT
+    src/equalization/src/equalizer_cccf.c
+    src/equalization/src/equalizer_rrrf.c)
+
+add_library(fec OBJECT
+    src/fec/src/crc.c
+    src/fec/src/fec.c
+    src/fec/src/fec_conv.c
+    src/fec/src/fec_conv_poly.c
+    src/fec/src/fec_conv_pmatrix.c
+    src/fec/src/fec_conv_punctured.c
+    src/fec/src/fec_golay2412.c
+    src/fec/src/fec_hamming74.c
+    src/fec/src/fec_hamming84.c
+    src/fec/src/fec_hamming128.c
+    src/fec/src/fec_hamming1511.c
+    src/fec/src/fec_hamming3126.c
+    src/fec/src/fec_hamming128_gentab.c
+    src/fec/src/fec_pass.c
+    src/fec/src/fec_rep3.c
+    src/fec/src/fec_rep5.c
+    src/fec/src/fec_rs.c
+    src/fec/src/fec_secded2216.c
+    src/fec/src/fec_secded3932.c
+    src/fec/src/fec_secded7264.c
+    src/fec/src/interleaver.c
+    src/fec/src/packetizer.c
+    src/fec/src/sumproduct.c)
+
+add_library(fft OBJECT
+    src/fft/src/fftf.c
+    src/fft/src/spgramcf.c
+    src/fft/src/spgramf.c
+    src/fft/src/fft_utilities.c)
+
+add_library(filter OBJECT
+    src/filter/src/bessel.c
+    src/filter/src/butter.c
+    src/filter/src/cheby1.c
+    src/filter/src/cheby2.c
+    src/filter/src/ellip.c
+    src/filter/src/filter_rrrf.c
+    src/filter/src/filter_crcf.c
+    src/filter/src/filter_cccf.c
+    src/filter/src/firdes.c
+    src/filter/src/firdespm.c
+    src/filter/src/firdespm_halfband.c
+    src/filter/src/fnyquist.c
+    src/filter/src/gmsk.c
+    src/filter/src/group_delay.c
+    src/filter/src/hM3.c
+    src/filter/src/iirdes.pll.c
+    src/filter/src/iirdes.c
+    src/filter/src/lpc.c
+    src/filter/src/rcos.c
+    src/filter/src/rkaiser.c
+    src/filter/src/rrcos.c)
+
+add_library(framing OBJECT
+    src/framing/src/bpacketgen.c
+    src/framing/src/bpacketsync.c
+    src/framing/src/detector_cccf.c
+    src/framing/src/dsssframegen.c
+    src/framing/src/dsssframesync.c
+    src/framing/src/framedatastats.c
+    src/framing/src/framesyncstats.c
+    src/framing/src/framegen64.c
+    src/framing/src/framesync64.c
+    src/framing/src/framingcf.c
+    src/framing/src/framing_rrrf.c
+    src/framing/src/framing_crcf.c
+    src/framing/src/framing_cccf.c
+    src/framing/src/flexframegen.c
+    src/framing/src/flexframesync.c
+    src/framing/src/fskframegen.c
+    src/framing/src/fskframesync.c
+    src/framing/src/gmskframegen.c
+    src/framing/src/gmskframesync.c
+    src/framing/src/ofdmflexframegen.c
+    src/framing/src/ofdmflexframesync.c
+    src/framing/src/qpilotgen.c
+    src/framing/src/qpilotsync.c)
+
+add_library(math OBJECT
+    src/math/src/poly.c
+    src/math/src/polyc.c
+    src/math/src/polyf.c
+    src/math/src/polycf.c
+    src/math/src/math.c
+    src/math/src/math.bessel.c
+    src/math/src/math.gamma.c
+    src/math/src/math.complex.c
+    src/math/src/math.trig.c
+    src/math/src/modular_arithmetic.c
+    src/math/src/poly.findroots.c
+    src/math/src/windows.c)
+
+add_library(matrix OBJECT
+    src/matrix/src/matrix.c
+    src/matrix/src/matrixf.c
+    src/matrix/src/matrixc.c
+    src/matrix/src/matrixcf.c
+    src/matrix/src/smatrix.common.c
+    src/matrix/src/smatrixb.c
+    src/matrix/src/smatrixf.c
+    src/matrix/src/smatrixi.c)
+
+add_library(modem OBJECT
+    src/modem/src/ampmodem.c
+    src/modem/src/cpfskdem.c
+    src/modem/src/cpfskmod.c
+    src/modem/src/fskdem.c
+    src/modem/src/fskmod.c
+    src/modem/src/gmskdem.c
+    src/modem/src/gmskmod.c
+    src/modem/src/modem.shim.c
+    src/modem/src/modemcf.c
+    src/modem/src/modem_utilities.c
+    src/modem/src/modem_apsk_const.c
+    src/modem/src/modem_arb_const.c)
+
+add_library(multichannel OBJECT
+    src/multichannel/src/firpfbch_crcf.c
+    src/multichannel/src/firpfbch_cccf.c
+    src/multichannel/src/ofdmframe.common.c
+    src/multichannel/src/ofdmframegen.c
+    src/multichannel/src/ofdmframesync.c)
+
+add_library(nco OBJECT
+    src/nco/src/nco_crcf.c
+    src/nco/src/nco.utilities.c)
+
+add_library(optim OBJECT
+    src/optim/src/chromosome.c
+    src/optim/src/gasearch.c
+    src/optim/src/gradsearch.c
+    src/optim/src/optim.common.c
+    src/optim/src/qnsearch.c
+    src/optim/src/qs1dsearch.c
+    src/optim/src/utilities.c)
+
+add_library(quantization OBJECT
+    src/quantization/src/compand.c
+    src/quantization/src/quantizercf.c
+    src/quantization/src/quantizerf.c
+    src/quantization/src/quantizer.inline.c)
+
+add_library(random OBJECT
+    src/random/src/rand.c
+    src/random/src/randn.c
+    src/random/src/randexp.c
+    src/random/src/randweib.c
+    src/random/src/randgamma.c
+    src/random/src/randnakm.c
+    src/random/src/randricek.c
+    src/random/src/scramble.c)
+
+add_library(sequence OBJECT
+    src/sequence/src/bsequence.c
+    src/sequence/src/msequence.c)
+
+add_library(utility OBJECT
+    src/utility/src/bshift_array.c
+    src/utility/src/byte_utilities.c
+    src/utility/src/memory.c
+    src/utility/src/msb_index.c
+    src/utility/src/pack_bytes.c
+    src/utility/src/shift_array.c
+    src/utility/src/utility.c)
+
+add_library(vector OBJECT
+    src/vector/src/vectorf_add.port.c
+    src/vector/src/vectorf_norm.port.c
+    src/vector/src/vectorf_mul.port.c
+    src/vector/src/vectorf_trig.port.c
+    src/vector/src/vectorcf_add.port.c
+    src/vector/src/vectorcf_norm.port.c
+    src/vector/src/vectorcf_mul.port.c
+    src/vector/src/vectorcf_trig.port.c)
+
+
 
 #
 # main library
@@ -185,11 +377,11 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY ${CPACK_PACKAGE_NAME})
 set(CPACK_VERBATIM_VARIABLES TRUE)
 include(CPack)
 
-message(${AGC_SRC})
-message("top: CMAKE_SOURCE_DIR         = ${CMAKE_SOURCE_DIR}")
-message("top: CMAKE_BINARY_DIR         = ${CMAKE_BINARY_DIR}")
-message("top: CMAKE_CURRENT_SOURCE_DIR = ${CMAKE_CURRENT_SOURCE_DIR}")
-message("top: CMAKE_CURRENT_BINARY_DIR = ${CMAKE_CURRENT_BINARY_DIR}")
+#message(${AGC_SRC})
+#message("top: CMAKE_SOURCE_DIR         = ${CMAKE_SOURCE_DIR}")
+#message("top: CMAKE_BINARY_DIR         = ${CMAKE_BINARY_DIR}")
+#message("top: CMAKE_CURRENT_SOURCE_DIR = ${CMAKE_CURRENT_SOURCE_DIR}")
+#message("top: CMAKE_CURRENT_BINARY_DIR = ${CMAKE_CURRENT_BINARY_DIR}")
 
 # this file can only use the @VARIABLE@ syntax
 configure_file(src/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
