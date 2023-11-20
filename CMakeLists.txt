@@ -30,11 +30,6 @@
 #   $ sudo make install
 #
 
-# cmake debugging
-#variable_watch(HAVE_SINF)
-#set(CMAKE_VERBOSE_MAKEFILE ON)
-
-
 # This is the CMake file used for generating build files
 cmake_minimum_required(VERSION 3.9...3.19)
 project(liquid VERSION 1.6.0 LANGUAGES C ASM)
@@ -42,6 +37,11 @@ project(liquid VERSION 1.6.0 LANGUAGES C ASM)
 # require a C99 compiler for all targets
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+
+# cmake debugging
+#variable_watch(HAVE_SINF)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
+
 
 include (CheckIncludeFile)
 include (CheckFunctionExists)
@@ -189,4 +189,7 @@ message("top: CMAKE_SOURCE_DIR         = ${CMAKE_SOURCE_DIR}")
 message("top: CMAKE_BINARY_DIR         = ${CMAKE_BINARY_DIR}")
 message("top: CMAKE_CURRENT_SOURCE_DIR = ${CMAKE_CURRENT_SOURCE_DIR}")
 message("top: CMAKE_CURRENT_BINARY_DIR = ${CMAKE_CURRENT_BINARY_DIR}")
+
+# this file can only use the @VARIABLE@ syntax
+configure_file(src/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 
