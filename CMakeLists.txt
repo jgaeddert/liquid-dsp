@@ -362,12 +362,6 @@ target_link_libraries(test_libliquid ${LIBNAME})
 #install(TARGETS mylib)
 
 #
-# examples
-#
-#set_source_files_properties(DIRECTORY examples TARGET_DIRECTORY examples)
-add_subdirectory(examples)
-
-#
 # autotest
 #
 
@@ -391,6 +385,12 @@ add_custom_command(
 # enable testing
 enable_testing()
 add_test(NAME test COMMAND test_libliquid)
+
+#
+# examples
+#
+#set_source_files_properties(DIRECTORY examples TARGET_DIRECTORY examples)
+add_subdirectory(examples)
 
 
 # packaging
