@@ -30,8 +30,7 @@
 #   $ sudo make install
 #
 
-# This is the CMake file used for generating build files
-cmake_minimum_required(VERSION 3.9...3.19)
+cmake_minimum_required(VERSION 3.10)
 project(liquid VERSION 1.6.0 LANGUAGES C ASM)
 
 # require a C99 compiler for all targets
@@ -42,6 +41,8 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 #variable_watch(HAVE_SINF)
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
+#cmake_host_system_information(RESULT info QUERY NUMBER_OF_LOGICAL_CORES)
+#message(${info})
 
 include (CheckIncludeFile)
 include (CheckFunctionExists)
