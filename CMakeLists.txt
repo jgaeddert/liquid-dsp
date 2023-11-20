@@ -31,7 +31,7 @@
 #
 
 cmake_minimum_required(VERSION 3.10)
-project(liquid VERSION 1.6.0 LANGUAGES C ASM)
+project(liquid VERSION 1.6.0 LANGUAGES C)
 
 # require a C99 compiler for all targets
 set(CMAKE_C_STANDARD 99)
@@ -365,6 +365,7 @@ target_link_libraries(test_libliquid ${LIBNAME})
 # examples
 #
 #set_source_files_properties(DIRECTORY examples TARGET_DIRECTORY examples)
+add_subdirectory(examples)
 
 #
 # autotest
