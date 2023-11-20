@@ -325,10 +325,33 @@ set(LIBSRC src/libliquid.c)
 
 # NOTE: if set to "liquid" it will unfortunately link to installed version... grumble...
 set(LIBNAME liquidtmp)
-add_library(${LIBNAME} SHARED ${LIBSRC} ${HEADER_FILES} $<TARGET_OBJECTS:agc>)
+add_library(${LIBNAME} SHARED
+    ${LIBSRC}
+    $<TARGET_OBJECTS:agc>
+    $<TARGET_OBJECTS:audio>
+    $<TARGET_OBJECTS:buffer>
+    $<TARGET_OBJECTS:channel>
+    $<TARGET_OBJECTS:dotprod>
+    $<TARGET_OBJECTS:equalization>
+    $<TARGET_OBJECTS:fec>
+    $<TARGET_OBJECTS:fft>
+    $<TARGET_OBJECTS:filter>
+    $<TARGET_OBJECTS:framing>
+    $<TARGET_OBJECTS:math>
+    $<TARGET_OBJECTS:matrix>
+    $<TARGET_OBJECTS:modem>
+    $<TARGET_OBJECTS:multichannel>
+    $<TARGET_OBJECTS:nco>
+    $<TARGET_OBJECTS:optim>
+    $<TARGET_OBJECTS:quantization>
+    $<TARGET_OBJECTS:random>
+    $<TARGET_OBJECTS:sequence>
+    $<TARGET_OBJECTS:utility>
+    $<TARGET_OBJECTS:vector>)
+
 target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
 
-add_executable(test_libliquid examples/libliquid_example.c ${HEADER_FILES})
+add_executable(test_libliquid examples/libliquid_example.c)
 target_include_directories(test_libliquid PRIVATE ${INCLUDE})
 
 target_link_libraries(test_libliquid ${LIBNAME})
