@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -779,8 +779,10 @@ int flexframesync_execute_rxpayload(flexframesync _q,
             // update statistics
             _q->framedatastats.num_frames_detected++;
             _q->framedatastats.num_headers_valid++;
-            _q->framedatastats.num_payloads_valid += _q->payload_valid;
-            _q->framedatastats.num_bytes_received += _q->payload_dec_len;
+            if (_q->payload_valid) {
+                _q->framedatastats.num_payloads_valid += 1;
+                _q->framedatastats.num_bytes_received += _q->payload_dec_len;
+            }
 
             // invoke callback
             if (_q->callback != NULL) {

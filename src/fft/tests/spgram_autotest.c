@@ -131,8 +131,13 @@ void testbench_spgramcf_signal(unsigned int _nfft, int _wtype, float _fc, float 
         {.fmin=_fc-0.4f*bw, .fmax=_fc+0.4f*bw, .pmin=sn-tol, .pmax=sn+tol, .test_lo=1, .test_hi=1},
         {.fmin=_fc+0.6f*bw, .fmax=+0.5f,       .pmin=n0-tol, .pmax=n0+tol, .test_lo=1, .test_hi=1},
     };
+    char filename[256];
+    sprintf(filename,"autotest/logs/spgramcf_signal_%s_n%u_f%c%.0f_s%c%.0f.m",
+        liquid_window_str[_wtype][0], _nfft,
+        _fc < 0 ? 'm' : 'p', fabsf(_fc*1000),
+        _SNRdB < 0 ? 'm' : 'p', fabsf(_SNRdB*1000));
     liquid_autotest_validate_spectrum(psd, _nfft, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/spgramcf_signal.m" : NULL);
+        liquid_autotest_verbose ? filename : NULL);
 
     // destroy objects
     spgramcf_destroy(q);

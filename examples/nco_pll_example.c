@@ -119,7 +119,7 @@ int main(int argc, char*argv[])
         fprintf(fid,"e(%4u) = %12.4e;\n", i+1, phase_error[i]);
     }
     fprintf(fid,"t=0:(n-1);\n");
-    fprintf(fid,"figure;\n");
+    fprintf(fid,"figure('color','white','position',[100 100 1200 600]);\n");
     fprintf(fid,"subplot(3,1,1);\n");
     fprintf(fid,"  hold on;\n");
     fprintf(fid,"  plot(t,real(x),'Color',[1 1 1]*0.8);\n");
