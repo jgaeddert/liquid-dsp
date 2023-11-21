@@ -641,12 +641,19 @@ add_custom_command(
     COMMAND ${PROJECT_BINARY_DIR}/autoscript / autotest ${AUTOTESTS} > autotest_include.h
     )
 
+# need to create output logging directory
+add_custom_command(
+    OUTPUT autotest/logs
+    COMMAND mkdir -p autotest/logs
+    )
+
 add_executable(xautotest
     autotest/xautotest.c
     ${PROJECT_BINARY_DIR}/autotest_include.h
     autotest/autotest.h
     autotest/autotest.c
     autotest/libliquid_autotest.c
+    autotest/logs
     ${AUTOTESTS}
     ${AUTOTEST_EXTRA}
     )
