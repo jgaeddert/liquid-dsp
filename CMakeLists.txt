@@ -368,12 +368,22 @@ target_link_libraries(test_libliquid ${LIBNAME})
 set(AUTOTEST_SOURCES ${PROJECT_SOURCE_DIR}/src/agc/tests/agc_crcf_autotest.c)
 add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
 add_custom_command(
-    OUTPUT autotest_include.h
-    DEPENDS ${PROJECT_BINARY_DIR}/autoscript
-    COMMAND ${PROJECT_BINARY_DIR}/autoscript / autotest ${AUTOTEST_SOURCES} > autotest_include.h)
+    OUTPUT  autotest_include.h
+    DEPENDS
+        ${PROJECT_BINARY_DIR}/autoscript
+        ${AUTOTEST_SOURCES}
+    COMMAND ${PROJECT_BINARY_DIR}/autoscript / autotest ${AUTOTEST_SOURCES} > autotest_include.h
+    )
 
-#add_custom_target(xautotest ALL
-#    DEPENDS autotest_include.h)
+add_executable(xautotest
+    autotest/xautotest.c
+    ${PROJECT_BINARY_DIR}/autotest_include.h
+    autotest/autotest.h
+    autotest/autotest.c
+    autotest/libliquid_autotest.c
+    ${AUTOTEST_SOURCES})
+target_include_directories(xautotest PRIVATE ${INCLUDE})
+target_link_libraries(xautotest ${LIBNAME})
 
 #add_executable(xautotest autotest/xautotest.c autotest/autotest.h autotest_include.h)
 #target_include_directories(xautotest PRIVATE ${INCLUDE})
