@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// test floating point precision nco phase
+// test copying object
 void autotest_nco_crcf_copy()
 {
     // create and initialize object

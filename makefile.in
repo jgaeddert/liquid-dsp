@@ -981,7 +981,7 @@ src/nco/src/nco.utilities.o : %.o : %.c $(include_headers)
 
 # autotests
 nco_autotests :=						\
-	src/nco/tests/nco_crcf_copy_autotest.c			\
+	src/nco/tests/nco_crcf_autotest.c			\
 	src/nco/tests/nco_crcf_frequency_autotest.c		\
 	src/nco/tests/nco_crcf_mix_autotest.c			\
 	src/nco/tests/nco_crcf_phase_autotest.c			\
