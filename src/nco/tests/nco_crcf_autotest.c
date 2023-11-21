@@ -25,6 +25,43 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
+// forward declaration of internal method to constrain phase
+uint32_t nco_crcf_constrain(float _theta);
+
+// test phase constraint
+void autotest_nco_crcf_constrain()
+{
+    float delta = (float)0x00001fff;
+
+    // phase: 0 mod 2 pi
+    CONTEND_DELTA( nco_crcf_constrain(    0.0f), (float)         0, delta );
+    CONTEND_DELTA( nco_crcf_constrain(  2*M_PI), (float)         0, delta );
+    CONTEND_DELTA( nco_crcf_constrain(  4*M_PI), (float)         0, delta );
+    CONTEND_DELTA( nco_crcf_constrain(  6*M_PI), (float)         0, delta );
+    CONTEND_DELTA( nco_crcf_constrain( 20*M_PI), (float)         0, delta );
+
+    // phase: 0 mod 2 pi (negative)
+    //CONTEND_DELTA( nco_crcf_constrain(   -0.0f), (float)         0, delta );
+    //CONTEND_DELTA( nco_crcf_constrain( -2*M_PI), (float)         0, delta );
+    //CONTEND_DELTA( nco_crcf_constrain( -4*M_PI), (float)         0, delta );
+    //CONTEND_DELTA( nco_crcf_constrain( -6*M_PI), (float)         0, delta );
+    //CONTEND_DELTA( nco_crcf_constrain(-20*M_PI), (float)         0, delta );
+
+    // phase: pi mod 2 pi
+    CONTEND_DELTA( nco_crcf_constrain(    M_PI), (float)0x80000000, delta );
+    CONTEND_DELTA( nco_crcf_constrain(  3*M_PI), (float)0x80000000, delta );
+    CONTEND_DELTA( nco_crcf_constrain(  5*M_PI), (float)0x80000000, delta );
+    CONTEND_DELTA( nco_crcf_constrain(  7*M_PI), (float)0x80000000, delta );
+    CONTEND_DELTA( nco_crcf_constrain( 27*M_PI), (float)0x80000000, delta );
+
+    // phase: pi mod 2 pi (negative)
+    CONTEND_DELTA( nco_crcf_constrain(   -M_PI), (float)0x80000000, delta );
+    CONTEND_DELTA( nco_crcf_constrain( -3*M_PI), (float)0x80000000, delta );
+    CONTEND_DELTA( nco_crcf_constrain( -5*M_PI), (float)0x80000000, delta );
+    CONTEND_DELTA( nco_crcf_constrain( -7*M_PI), (float)0x80000000, delta );
+    CONTEND_DELTA( nco_crcf_constrain(-27*M_PI), (float)0x80000000, delta );
+}
+
 // test copying object
 void autotest_nco_crcf_copy()
 {
