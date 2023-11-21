@@ -60,6 +60,10 @@ void autotest_nco_crcf_constrain()
     CONTEND_DELTA( nco_crcf_constrain( -5*M_PI), (float)0x80000000, delta );
     CONTEND_DELTA( nco_crcf_constrain( -7*M_PI), (float)0x80000000, delta );
     CONTEND_DELTA( nco_crcf_constrain(-27*M_PI), (float)0x80000000, delta );
+
+    // check phase near boundaries
+    CONTEND_DELTA( nco_crcf_constrain(+0.000001f), (float)         0, delta );
+    //CONTEND_DELTA( nco_crcf_constrain(-0.000001f), (float)         0, delta );
 }
 
 // test copying object
