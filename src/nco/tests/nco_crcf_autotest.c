@@ -28,42 +28,50 @@
 // forward declaration of internal method to constrain phase
 uint32_t nco_crcf_constrain(float _theta);
 
+// compute phase-constrained error
+uint32_t nco_crcf_constrain_error(float _theta, uint32_t _expected)
+{
+    uint32_t phase = nco_crcf_constrain(_theta);
+    uint32_t error = phase > _expected ? phase - _expected : _expected - phase;
+    return error < 0x80000000 ? error : 0xffffffff - error;
+}
+
 // test phase constraint
 void autotest_nco_crcf_constrain()
 {
-    float delta = (float)0x00001fff;
+    uint32_t tol = 0x00001fff;
 
     // phase: 0 mod 2 pi
-    CONTEND_DELTA( nco_crcf_constrain(    0.0f), (float)         0, delta );
-    CONTEND_DELTA( nco_crcf_constrain(  2*M_PI), (float)         0, delta );
-    CONTEND_DELTA( nco_crcf_constrain(  4*M_PI), (float)         0, delta );
-    CONTEND_DELTA( nco_crcf_constrain(  6*M_PI), (float)         0, delta );
-    CONTEND_DELTA( nco_crcf_constrain( 20*M_PI), (float)         0, delta );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(    0.0f, 0), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(  2*M_PI, 0), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(  4*M_PI, 0), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(  6*M_PI, 0), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error( 20*M_PI, 0), tol );
 
     // phase: 0 mod 2 pi (negative)
-    //CONTEND_DELTA( nco_crcf_constrain(   -0.0f), (float)         0, delta );
-    //CONTEND_DELTA( nco_crcf_constrain( -2*M_PI), (float)         0, delta );
-    //CONTEND_DELTA( nco_crcf_constrain( -4*M_PI), (float)         0, delta );
-    //CONTEND_DELTA( nco_crcf_constrain( -6*M_PI), (float)         0, delta );
-    //CONTEND_DELTA( nco_crcf_constrain(-20*M_PI), (float)         0, delta );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(   -0.0f, 0), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error( -2*M_PI, 0), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error( -4*M_PI, 0), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error( -6*M_PI, 0), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(-20*M_PI, 0), tol );
 
     // phase: pi mod 2 pi
-    CONTEND_DELTA( nco_crcf_constrain(    M_PI), (float)0x80000000, delta );
-    CONTEND_DELTA( nco_crcf_constrain(  3*M_PI), (float)0x80000000, delta );
-    CONTEND_DELTA( nco_crcf_constrain(  5*M_PI), (float)0x80000000, delta );
-    CONTEND_DELTA( nco_crcf_constrain(  7*M_PI), (float)0x80000000, delta );
-    CONTEND_DELTA( nco_crcf_constrain( 27*M_PI), (float)0x80000000, delta );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(    M_PI, 0x80000000), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(  3*M_PI, 0x80000000), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(  5*M_PI, 0x80000000), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(  7*M_PI, 0x80000000), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error( 27*M_PI, 0x80000000), tol );
 
     // phase: pi mod 2 pi (negative)
-    CONTEND_DELTA( nco_crcf_constrain(   -M_PI), (float)0x80000000, delta );
-    CONTEND_DELTA( nco_crcf_constrain( -3*M_PI), (float)0x80000000, delta );
-    CONTEND_DELTA( nco_crcf_constrain( -5*M_PI), (float)0x80000000, delta );
-    CONTEND_DELTA( nco_crcf_constrain( -7*M_PI), (float)0x80000000, delta );
-    CONTEND_DELTA( nco_crcf_constrain(-27*M_PI), (float)0x80000000, delta );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(   -M_PI, 0x80000000), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error( -3*M_PI, 0x80000000), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error( -5*M_PI, 0x80000000), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error( -7*M_PI, 0x80000000), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(-27*M_PI, 0x80000000), tol );
 
     // check phase near boundaries
-    CONTEND_DELTA( nco_crcf_constrain(+0.000001f), (float)         0, delta );
-    //CONTEND_DELTA( nco_crcf_constrain(-0.000001f), (float)         0, delta );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(+0.000001f, 0x00000000), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(-0.000001f, 0x00000000), tol );
 }
 
 // test copying object
