@@ -69,6 +69,15 @@ void autotest_nco_crcf_constrain()
     CONTEND_LESS_THAN( nco_crcf_constrain_error( -7*M_PI, 0x80000000), tol );
     CONTEND_LESS_THAN( nco_crcf_constrain_error(-27*M_PI, 0x80000000), tol );
 
+    // check other values
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(+0.500*M_PI, 0x40000000), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(+0.250*M_PI, 0x20000000), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(+0.125*M_PI, 0x10000000), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(+0.750*M_PI, 0x60000000), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(-0.500*M_PI, 0xc0000000), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(-0.250*M_PI, 0xe0000000), tol );
+    CONTEND_LESS_THAN( nco_crcf_constrain_error(-0.125*M_PI, 0xf0000000), tol );
+
     // check phase near boundaries
     CONTEND_LESS_THAN( nco_crcf_constrain_error(+0.000001f, 0x00000000), tol );
     CONTEND_LESS_THAN( nco_crcf_constrain_error(-0.000001f, 0x00000000), tol );
