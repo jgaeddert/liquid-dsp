@@ -47,5 +47,7 @@ void autotest_fec_config()
 
     CONTEND_EQUALITY(fec_hamming128_encode_symbol(1u<<8), 0)
     CONTEND_EQUALITY(fec_hamming128_decode_symbol(1u<<12), 0)
+
+    CONTEND_EQUALITY(liquid_print_fec_schemes(), LIQUID_OK);
 }
 
