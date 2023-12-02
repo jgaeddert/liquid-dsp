@@ -48,6 +48,43 @@ void autotest_fec_config()
     CONTEND_EQUALITY(fec_hamming128_encode_symbol(1u<<8), 0)
     CONTEND_EQUALITY(fec_hamming128_decode_symbol(1u<<12), 0)
 
+    // check printing schemes
     CONTEND_EQUALITY(liquid_print_fec_schemes(), LIQUID_OK);
+}
+
+void autotest_fec_str2fec()
+{
+    // start with invalid case
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+    CONTEND_EQUALITY(liquid_getopt_str2fec("invalid scheme"), LIQUID_MODEM_UNKNOWN);
+
+    // check normal cases
+    CONTEND_EQUALITY( liquid_getopt_str2fec("none"),       LIQUID_FEC_NONE);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("rep3"),       LIQUID_FEC_REP3);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("rep5"),       LIQUID_FEC_REP5);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("h74"),        LIQUID_FEC_HAMMING74);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("h84"),        LIQUID_FEC_HAMMING84);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("h128"),       LIQUID_FEC_HAMMING128);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("g2412"),      LIQUID_FEC_GOLAY2412);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("secded2216"), LIQUID_FEC_SECDED2216);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("secded3932"), LIQUID_FEC_SECDED3932);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("secded7264"), LIQUID_FEC_SECDED7264);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("v27"),        LIQUID_FEC_CONV_V27);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("v29"),        LIQUID_FEC_CONV_V29);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("v39"),        LIQUID_FEC_CONV_V39);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("v615"),       LIQUID_FEC_CONV_V615);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("v27p23"),     LIQUID_FEC_CONV_V27P23);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("v27p34"),     LIQUID_FEC_CONV_V27P34);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("v27p45"),     LIQUID_FEC_CONV_V27P45);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("v27p56"),     LIQUID_FEC_CONV_V27P56);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("v27p67"),     LIQUID_FEC_CONV_V27P67);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("v27p78"),     LIQUID_FEC_CONV_V27P78);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("v29p23"),     LIQUID_FEC_CONV_V29P23);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("v29p34"),     LIQUID_FEC_CONV_V29P34);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("v29p45"),     LIQUID_FEC_CONV_V29P45);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("v29p56"),     LIQUID_FEC_CONV_V29P56);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("v29p67"),     LIQUID_FEC_CONV_V29P67);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("v29p78"),     LIQUID_FEC_CONV_V29P78);
+    CONTEND_EQUALITY( liquid_getopt_str2fec("rs8"),        LIQUID_FEC_RS_M8);
 }
 
