@@ -87,6 +87,7 @@ void autotest_fec_str2fec()
     CONTEND_EQUALITY( liquid_getopt_str2fec("v29p78"),     LIQUID_FEC_CONV_V29P78);
     CONTEND_EQUALITY( liquid_getopt_str2fec("rs8"),        LIQUID_FEC_RS_M8);
 }
+
 void autotest_fec_is_convolutional()
 {
     CONTEND_EQUALITY( fec_scheme_is_convolutional(LIQUID_FEC_NONE),        0 );
@@ -117,3 +118,35 @@ void autotest_fec_is_convolutional()
     CONTEND_EQUALITY( fec_scheme_is_convolutional(LIQUID_FEC_CONV_V29P78), 1 );
     CONTEND_EQUALITY( fec_scheme_is_convolutional(LIQUID_FEC_RS_M8),       0 );
 }
+
+void autotest_fec_is_punctured()
+{
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_NONE),        0 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_REP3),        0 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_REP5),        0 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_HAMMING74),   0 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_HAMMING84),   0 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_HAMMING128),  0 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_GOLAY2412),   0 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_SECDED2216),  0 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_SECDED3932),  0 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_SECDED7264),  0 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_CONV_V27),    0 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_CONV_V29),    0 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_CONV_V39),    0 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_CONV_V615),   0 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_CONV_V27P23), 1 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_CONV_V27P34), 1 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_CONV_V27P45), 1 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_CONV_V27P56), 1 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_CONV_V27P67), 1 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_CONV_V27P78), 1 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_CONV_V29P23), 1 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_CONV_V29P34), 1 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_CONV_V29P45), 1 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_CONV_V29P56), 1 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_CONV_V29P67), 1 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_CONV_V29P78), 1 );
+    CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_RS_M8),       0 );
+}
+
