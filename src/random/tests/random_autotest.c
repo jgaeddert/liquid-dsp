@@ -171,3 +171,21 @@ void autotest_randexpf()
     CONTEND_DELTA(m2, m2_exp, tol);
 }
 
+void autotest_random_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping random config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // exponential: lambda out of range
+    CONTEND_EQUALITY( randexpf    (       -1.0f), 0.0f );
+    CONTEND_EQUALITY( randexpf_pdf( 0.0f, -1.0f), 0.0f );
+    CONTEND_EQUALITY( randexpf_cdf( 0.0f, -1.0f), 0.0f );
+    // exponential: pdf, cdf with valid input, but negative variable
+    CONTEND_EQUALITY( randexpf_pdf(-2.0f,  2.3f), 0.0f );
+    CONTEND_EQUALITY( randexpf_cdf(-2.0f,  2.3f), 0.0f );
+}
+
