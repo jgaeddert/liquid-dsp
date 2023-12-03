@@ -150,3 +150,27 @@ void autotest_fec_is_punctured()
     CONTEND_EQUALITY( fec_scheme_is_punctured(LIQUID_FEC_RS_M8),       0 );
 }
 
+void autotest_fec_is_reedsolomon()
+{
+    CONTEND_EQUALITY( fec_scheme_is_reedsolomon(LIQUID_FEC_NONE),        0 );
+    CONTEND_EQUALITY( fec_scheme_is_reedsolomon(LIQUID_FEC_REP3),        0 );
+    CONTEND_EQUALITY( fec_scheme_is_reedsolomon(LIQUID_FEC_HAMMING74),   0 );
+    CONTEND_EQUALITY( fec_scheme_is_reedsolomon(LIQUID_FEC_GOLAY2412),   0 );
+    CONTEND_EQUALITY( fec_scheme_is_reedsolomon(LIQUID_FEC_SECDED2216),  0 );
+    CONTEND_EQUALITY( fec_scheme_is_reedsolomon(LIQUID_FEC_CONV_V27),    0 );
+    CONTEND_EQUALITY( fec_scheme_is_reedsolomon(LIQUID_FEC_RS_M8),       1 );
+}
+
+void autotest_fec_is_hamming()
+{
+    CONTEND_EQUALITY( fec_scheme_is_hamming(LIQUID_FEC_NONE),        0 );
+    CONTEND_EQUALITY( fec_scheme_is_hamming(LIQUID_FEC_REP3),        0 );
+    CONTEND_EQUALITY( fec_scheme_is_hamming(LIQUID_FEC_HAMMING74),   1 );
+    CONTEND_EQUALITY( fec_scheme_is_hamming(LIQUID_FEC_HAMMING84),   1 );
+    CONTEND_EQUALITY( fec_scheme_is_hamming(LIQUID_FEC_HAMMING128),  1 );
+    CONTEND_EQUALITY( fec_scheme_is_hamming(LIQUID_FEC_GOLAY2412),   0 );
+    CONTEND_EQUALITY( fec_scheme_is_hamming(LIQUID_FEC_SECDED2216),  0 );
+    CONTEND_EQUALITY( fec_scheme_is_hamming(LIQUID_FEC_CONV_V27),    0 );
+    CONTEND_EQUALITY( fec_scheme_is_hamming(LIQUID_FEC_RS_M8),       0 );
+}
+
