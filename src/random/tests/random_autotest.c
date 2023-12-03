@@ -143,3 +143,31 @@ void autotest_randricekf()
     CONTEND_DELTA(m2, omega, tol);
 }
 
+// exponential
+void autotest_randexpf()
+{
+    unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
+    unsigned long int i;
+    float x, m1=0.0f, m2=0.0f;
+    float tol = LIQUID_RANDOM_AUTOTEST_ERROR_TOL;
+    float lambda = 2.3f;
+
+    // uniform
+    for (i=0; i<N; i++) {
+        x = randexpf(lambda);
+        m1 += x;
+        m2 += x*x;
+    }
+    m1 /= (float) N;
+    m2 = (m2 / (float)N) - m1*m1;
+
+    // compute expected moments (closed-form solution)
+    float m1_exp = 1. / lambda;
+    float m2_exp = 1. / (lambda * lambda);
+    //printf("m1: %12.8f (expected %12.8f)\n", m1, m1_exp);
+    //printf("m2: %12.8f (expected %12.8f)\n", m2, m2_exp);
+
+    CONTEND_DELTA(m1, m1_exp, tol);
+    CONTEND_DELTA(m2, m2_exp, tol);
+}
+
