@@ -153,3 +153,42 @@ void autotest_distribution_randnf()
     _support_histogram_validate(bins, pdf, cdf, num_bins, vmin, vmax, tol);
 }
 
+// exponential distribution
+void xautotest_distribution_randexpf()
+{
+    unsigned long int num_trials = 248000;
+    float lambda = 1.3f;
+    float tol = 0.05f;
+
+    unsigned int num_bins = 21;
+    float bins[num_bins];
+    unsigned long int i;
+    for (i=0; i<num_bins; i++)
+        bins[i] = 0.0f;
+    float vmin = -1.0f, vmax = +9.0f;
+
+    // compute histogram
+    for (i=0; i<num_trials; i++) {
+        float v = randexpf(lambda);
+        _support_histogram_add(v, bins, num_bins, vmin, vmax);
+    }
+
+    // compute ideal pdf and cdf
+    float vstep = (vmax - vmin) / (float)(num_bins-1);
+    float pdf[num_bins];
+    float cdf[num_bins];
+    for (i=0; i<num_bins; i++) {
+        float v = vmin + i*vstep;
+        pdf[i] = randexpf_pdf(v, lambda);
+        cdf[i] = randexpf_cdf(v, lambda);
+    }
+
+    // log histogram
+    _support_histogram_log(bins, num_bins, vmin, vmax);
+    //_support_histogram_log(pdf,  num_bins, vmin, vmax);
+    //_support_histogram_log(cdf,  num_bins, vmin, vmax);
+
+    // validate distributions
+    _support_histogram_validate(bins, pdf, cdf, num_bins, vmin, vmax, tol);
+}
+
