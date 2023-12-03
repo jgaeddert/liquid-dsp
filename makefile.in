@@ -1077,8 +1077,7 @@ $(random_objects) : %.o : %.c $(include_headers)
 # autotests
 random_autotests :=						\
 	src/random/tests/scramble_autotest.c			\
-
-#	src/random/tests/random_autotest.c
+	src/random/tests/random_autotest.c			\
 
 
 # benchmarks

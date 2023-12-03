@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -109,8 +109,16 @@ void autotest_randweibf()
     m1 /= (float) N;
     m2 = (m2 / (float)N) - m1*m1;
 
-    CONTEND_DELTA(m1, 1.2533f+gamma, tol);
-    CONTEND_DELTA(m2, 0.42920f, tol);
+    // compute expected moments (closed-form solution)
+    float t0     = liquid_gammaf(1. + 1./alpha);
+    float t1     = liquid_gammaf(1. + 2./alpha);
+    float m1_exp = beta * t0 + gamma;
+    float m2_exp = beta*beta*( t1 - t0*t0 );
+    //printf("m1: %12.8f (expected %12.8f)\n", m1, m1_exp);
+    //printf("m2: %12.8f (expected %12.8f)\n", m2, m2_exp);
+
+    CONTEND_DELTA(m1, m1_exp, tol);
+    CONTEND_DELTA(m2, m2_exp, tol);
 }
 
 // Rice-K
