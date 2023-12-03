@@ -201,5 +201,17 @@ void autotest_random_config()
     // gamma: pdf, cdf with valid input, but negative variable
     CONTEND_EQUALITY( randgammaf_pdf(-2.0f, 1.2f, 2.3f), 0.0f );
     CONTEND_EQUALITY( randgammaf_cdf(-2.0f, 1.2f, 2.3f), 0.0f );
+
+    // nakagami-m: parameters out of range (m)
+    CONTEND_EQUALITY( randnakmf    (       0.2f,  1.0f), 0.0f );
+    CONTEND_EQUALITY( randnakmf_pdf( 0.0f, 0.2f,  1.0f), 0.0f );
+    CONTEND_EQUALITY( randnakmf_cdf( 0.0f, 0.2f,  1.0f), 0.0f );
+    // nakagami-m: parameters out of range (omega)
+    CONTEND_EQUALITY( randnakmf    (       1.0f, -1.0f), 0.0f );
+    CONTEND_EQUALITY( randnakmf_pdf( 0.0f, 1.0f, -1.0f), 0.0f );
+    CONTEND_EQUALITY( randnakmf_cdf( 0.0f, 1.0f, -1.0f), 0.0f );
+    // nakagami-m: pdf, cdf with valid input, but negative variable
+    CONTEND_EQUALITY( randnakmf_pdf(-2.0f, 1.2f, 2.3f), 0.0f );
+    CONTEND_EQUALITY( randnakmf_cdf(-2.0f, 1.2f, 2.3f), 0.0f );
 }
 
