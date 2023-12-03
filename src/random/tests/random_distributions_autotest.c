@@ -79,7 +79,8 @@ void _support_histogram_log(float *      _bins,
         unsigned int k;
         unsigned int n = round(num_chars * _bins[i] / hist_max);
         for (k=0; k<n; k++)
-            printf("#");
+            printf("-");
+        printf("+");
         printf("\n");
     }
 }
@@ -90,6 +91,7 @@ void autotest_distribution_randnf()
     unsigned long int num_trials = 96000;
     unsigned long int i;
     float v;
+    float eta = 0.0f, sig = 1.0f;
 
     unsigned int num_bins = 31;
     float bins[num_bins];
@@ -97,18 +99,32 @@ void autotest_distribution_randnf()
         bins[i] = 0.0f;
     float vmin = -5.0f, vmax = +5.0f;
 
-    // compute distribution
+    // compute histogram
     for (i=0; i<num_trials; i++) {
-        v = randnf();
+        v = randnf()*sig + eta;
         _support_histogram_add(v, bins, num_bins, vmin, vmax);
     }
 
-    // noramlize distribution
+    // noramlize histogram
     float area;
     area = _support_histogram_normalize(bins, num_bins, vmin, vmax);
     printf("area: %g\n", area);
 
+    // compute ideal pdf and cdf
+    float vstep = (vmax - vmin) / (float)(num_bins-1);
+    float pdf[num_bins];
+    float cdf[num_bins];
+    for (i=0; i<num_bins; i++) {
+        v = vmin + i*vstep;
+        pdf[i] = randnf_pdf(v, eta, sig);
+        cdf[i] = randnf_cdf(v, eta, sig);
+    }
+
     // log histogram
     _support_histogram_log(bins, num_bins, vmin, vmax);
+    _support_histogram_log(pdf,  num_bins, vmin, vmax);
+    _support_histogram_log(cdf,  num_bins, vmin, vmax);
+
+    // TODO: validate distributions
 }
 
