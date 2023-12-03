@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 #define LIQUID_RANDOM_AUTOTEST_NUM_TRIALS (100000)
 #define LIQUID_RANDOM_AUTOTEST_ERROR_TOL  (0.1)
@@ -187,5 +187,19 @@ void autotest_random_config()
     // exponential: pdf, cdf with valid input, but negative variable
     CONTEND_EQUALITY( randexpf_pdf(-2.0f,  2.3f), 0.0f );
     CONTEND_EQUALITY( randexpf_cdf(-2.0f,  2.3f), 0.0f );
+
+    // gamma: parameters out of range (alpha)
+    CONTEND_EQUALITY( randgammaf    (       -1.0f,  1.0f), 0.0f );
+    CONTEND_EQUALITY( randgammaf_pdf( 0.0f, -1.0f,  1.0f), 0.0f );
+    CONTEND_EQUALITY( randgammaf_cdf( 0.0f, -1.0f,  1.0f), 0.0f );
+    // gamma: parameters out of range (beta)
+    CONTEND_EQUALITY( randgammaf    (        1.0f, -1.0f), 0.0f );
+    CONTEND_EQUALITY( randgammaf_pdf( 0.0f,  1.0f, -1.0f), 0.0f );
+    CONTEND_EQUALITY( randgammaf_cdf( 0.0f,  1.0f, -1.0f), 0.0f );
+    // gamma: delta function parameter out of range
+    CONTEND_EQUALITY( randgammaf_delta(-1.0f), 0.0f );
+    // gamma: pdf, cdf with valid input, but negative variable
+    CONTEND_EQUALITY( randgammaf_pdf(-2.0f, 1.2f, 2.3f), 0.0f );
+    CONTEND_EQUALITY( randgammaf_cdf(-2.0f, 1.2f, 2.3f), 0.0f );
 }
 
