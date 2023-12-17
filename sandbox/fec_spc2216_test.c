@@ -379,7 +379,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"         EbN0dB,      bit_errors_hard / num_bit_trials + 1e-12,  '-x',\n");
     fprintf(fid,"         EbN0dB,      bit_errors_soft / num_bit_trials + 1e-12,  '-x');\n");
     fprintf(fid,"axis([%f (%f-10*log10(r)) 1e-6 1]);\n", SNRdB_min, SNRdB_max);
-    fprintf(fid,"legend('uncoded','hard','soft',1);\n");
+    fprintf(fid,"legend('uncoded','hard','soft');\n");
     fprintf(fid,"xlabel('E_b/N_0 [dB]');\n");
     fprintf(fid,"ylabel('Bit Error Rate');\n");
     fprintf(fid,"title('BER vs. E_b/N_0 for SPC(22,16)');\n");
