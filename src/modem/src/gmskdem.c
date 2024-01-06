@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -212,7 +212,7 @@ int gmskdem_set_eq_bw(gmskdem _q,
     // set internal equalizer bandwidth
     eqlms_rrrf_set_bw(_q->eq, _bw);
 #else
-    fprintf(stderr,"warning: gmskdem_set_eq_bw(), equalizer is disabled\n");
+    return liquid_error(LIQUID_ENOIMP,"gmskdem_set_eq_bw(), equalizer is disabled");
 #endif
     return LIQUID_OK;
 }

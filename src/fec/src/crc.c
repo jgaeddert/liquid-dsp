@@ -79,7 +79,7 @@ crc_scheme liquid_getopt_str2crc(const char * _str)
         }
     }
 
-    liquid_error(LIQUID_EICONFIG,"warning: liquid_getopt_str2crc(), unknown/unsupported crc scheme : %s\n", _str);
+    liquid_error(LIQUID_EICONFIG,"liquid_getopt_str2crc(), unknown/unsupported crc scheme: %s", _str);
     return LIQUID_CRC_UNKNOWN;
 }
 

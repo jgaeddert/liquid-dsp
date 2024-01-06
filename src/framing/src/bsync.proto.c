@@ -128,7 +128,7 @@ BSYNC() BSYNC(_create_msequence)(unsigned int _g,
     return fs;
 }
 
-void BSYNC(_destroy)(BSYNC() _fs)
+int BSYNC(_destroy)(BSYNC() _fs)
 {
     bsequence_destroy(_fs->sync_i);
 #if TC_COMPLEX==1
@@ -140,14 +140,16 @@ void BSYNC(_destroy)(BSYNC() _fs)
     bsequence_destroy(_fs->sym_q);
 #endif
     free(_fs);
+    return LIQUID_OK;
 }
 
-void BSYNC(_print)(BSYNC() _fs)
+int BSYNC(_print)(BSYNC() _fs)
 {
-
+    printf("<bsync_%s, len=%u>\n", EXTENSION_FULL, _fs->n);
+    return LIQUID_OK;
 }
 
-void BSYNC(_correlate)(BSYNC() _fs, TI _sym, TO *_y)
+int BSYNC(_correlate)(BSYNC() _fs, TI _sym, TO *_y)
 {
     // push symbol into buffers
     bsequence_push(_fs->sym_i, crealf(_sym)>0.0 ? 1 : 0);
@@ -177,5 +179,6 @@ void BSYNC(_correlate)(BSYNC() _fs, TI _sym, TO *_y)
 
     // divide by sequence length
     *_y = _fs->rxy / (float)(_fs->n);
+    return LIQUID_OK;
 }
 

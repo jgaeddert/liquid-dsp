@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -287,7 +287,7 @@ int liquid_firdes_rfarcsech(unsigned int _k,
 float liquid_asechf(float _z)
 {
     if (_z <= 0.0f || _z > 1.0f) {
-        fprintf(stderr,"warning: liquid_asechf(), input out of range\n");
+        liquid_error(LIQUID_EICONFIG,"liquid_asechf(), input (_z=%g)out of range (0,1)", _z);
         return 0.0f;
     }
 

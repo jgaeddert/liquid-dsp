@@ -83,7 +83,7 @@ float liquid_gammaf(float _z)
         float t0 = liquid_gammaf(1.0 - _z);
         float t1 = sinf(M_PI*_z);
         if (t0==0 || t1==0)
-            fprintf(stderr,"warning: liquid_gammaf(), divide by zero\n");
+            liquid_error(LIQUID_EIVAL,"liquid_gammaf(), divide by zero");
         return M_PI / (t0 * t1);
     } else {
         return expf( liquid_lngammaf(_z) );

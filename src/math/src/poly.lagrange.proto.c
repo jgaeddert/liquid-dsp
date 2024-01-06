@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -118,7 +118,7 @@ int POLY(_fit_lagrange_barycentric)(T *         _x,
         _w[j] = 1. / _w[j];
     }
 
-    // normalize by _w[0], add minuscule margin to avoid divide-by-zero warning
+    // normalize by _w[0], add minuscule margin to avoid division by zero
     T w0 = _w[0] + 1.0e-9f;
     for (j=0; j<_n; j++)
         _w[j] /= w0;

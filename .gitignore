@@ -9,6 +9,7 @@
 *.o
 *.so
 *~
+build
 
 # ignore swap files for vim editing
 *.swp

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -114,7 +114,7 @@ modulation_scheme liquid_getopt_str2mod(const char * _str)
         if (strcmp(_str,modulation_types[i].name)==0)
             return i;
     }
-    fprintf(stderr,"warning: liquid_getopt_str2mod(), unknown/unsupported mod scheme : %s\n", _str);
+    liquid_error(LIQUID_EICONFIG,"liquid_getopt_str2mod(), unknown/unsupported mod scheme: %s", _str);
     return LIQUID_MODEM_UNKNOWN;
 }
 

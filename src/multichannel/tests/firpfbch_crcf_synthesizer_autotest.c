@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -130,7 +130,7 @@ void autotest_firpfbch_crcf_synthesis()
 
         // print channelizer outputs
         if (liquid_autotest_verbose) {
-            printf("%3u: old:%8.5f+j%8.5f, firpfbch:%8.5f+j%8.5f, error:%12.4e+j%12.4e\n",
+            printf("%3u: old:%8.5f+j%8.5f, firpfbch:%8.5f+j%8.5f, err:%12.4e+j%12.4e\n",
                 i,
                 crealf(y0[i]),       cimagf(y0[i]),
                 crealf(y1[i]),       cimagf(y1[i]),

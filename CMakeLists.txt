@@ -1,0 +1,696 @@
+# Copyright (c) 2007 - 2023 Joseph Gaeddert
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+# CMake build file for liquid-dsp
+#   $ mkdir build && cd build
+#   $ cmake ..
+#   $ make
+#
+# run autotest scripts
+#   $ make check
+#
+# install
+#   $ sudo make install
+#
+
+cmake_minimum_required(VERSION 3.10)
+project(liquid VERSION 1.6.0 LANGUAGES C)
+
+# require a C99 compiler for all targets
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+# cmake debugging
+#variable_watch(HAVE_SINF)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
+
+#cmake_host_system_information(RESULT info QUERY NUMBER_OF_LOGICAL_CORES)
+#message(${info})
+
+include (CheckIncludeFile)
+include (CheckFunctionExists)
+include (CheckLibraryExists)
+include (CheckSymbolExists)
+
+# global flags
+add_definitions ("-Wall -fPIC -O3 -Wno-deprecated -Wno-deprecated-declarations")
+
+# include files
+# mmintrin.h
+# xmmintrin.h
+# emmintrin.h
+# pmmintrin.h
+# smmintrin.h
+# arm_neon.h
+# fftw3.h (bench/fftbench.c)
+# configu.guess:
+#   features.h
+#   signal.h
+#   stdarg.h
+#   sys/stdarg.h
+#   sys/param.h
+#   sys/utsname.h
+#   sys/types.h
+#check_include_file      (assert.h         HAVE_ASSERT_H)
+#check_include_file      (complex.h        HAVE_COMPLEX_H)
+#check_include_file      (float.h          HAVE_FLOAT_H)
+#check_include_file      (getopt.h         HAVE_GETOPT_H)
+#check_include_file      (inttypes.h       HAVE_INTTYPES_H)
+#check_include_file      (limits.h         HAVE_LIMITS_H)
+#check_include_file      (math.h           HAVE_MATH_H)
+#check_include_file      (stdio.h          HAVE_STDIO_H)
+#check_include_file      (stdint.h         HAVE_STDINT_H)
+#check_include_file      (stdlib.h         HAVE_STDLIB_H)
+#check_include_file      (string.h         HAVE_STRING_H)
+#check_include_file      (sys/resource.h   HAVE_SYS_RESOURCE_H)
+#check_include_file      (time.h           HAVE_TIME_H)
+#check_include_file      (unistd.h         HAVE_UNISTD_H)
+
+# check for necessary functions/symbols
+#check_symbol_exists     (malloc,    "stlib.h"   HAVE_MALLOC)
+#check_symbol_exists     (realloc,   "stlib.h"   HAVE_REALLOC)
+#check_symbol_exists     (free,      "stlib.h"   HAVE_FREE)
+#check_symbol_exists     (memset,    "string.h"  HAVE_MEMSET)
+#check_symbol_exists     (memmove,   "string.h"  HAVE_MEMMOVE)
+#check_symbol_exists     (sinf,      "math.h"    HAVE_SINF)
+#check_symbol_exists     (cosf,      "math.h"    HAVE_COSF)
+#check_symbol_exists     (expf,      "math.h"    HAVE_EXPF)
+#check_symbol_exists     (sqrtf      "math.h"    HAVE_SQRTF)
+#check_symbol_exists     (cargf,     "complex.h" HAVE_CARGF)
+#check_symbol_exists     (cexpf,     "complex.h" HAVE_CEXPF)
+#check_symbol_exists     (crealf,    "complex.h" HAVE_CREALF)
+#check_symbol_exists     (cimagf,    "complex.h" HAVE_CIMAGF)
+
+
+include (CheckTypeSize)
+check_type_size(int SIZEOF_INT LANGUAGE C)
+
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+
+################################################################################
+# Targets
+#  
+#  include_directories (${CMAKE_CURRENT_SOURCE_DIR})
+#  include_directories (${CMAKE_CURRENT_BINARY_DIR})
+
+#target_include_directories(test PRIVATE include)
+include_directories(include .)
+
+# libraries
+
+add_library(agc OBJECT
+    src/agc/src/agc_crcf.c
+    src/agc/src/agc_rrrf.c)
+
+add_library(audio OBJECT
+    src/audio/src/cvsd.c)
+
+add_library(buffer OBJECT
+    src/buffer/src/bufferf.c
+    src/buffer/src/buffercf.c)
+
+add_library(channel OBJECT
+    src/channel/src/channel_cccf.c)
+
+add_library(dotprod OBJECT
+    src/dotprod/src/dotprod_cccf.c
+    src/dotprod/src/dotprod_crcf.c
+    src/dotprod/src/dotprod_rrrf.c
+    src/dotprod/src/sumsq.c)
+
+add_library(equalization OBJECT
+    src/equalization/src/equalizer_cccf.c
+    src/equalization/src/equalizer_rrrf.c)
+
+add_library(fec OBJECT
+    src/fec/src/crc.c
+    src/fec/src/fec.c
+    src/fec/src/fec_conv.c
+    src/fec/src/fec_conv_poly.c
+    src/fec/src/fec_conv_pmatrix.c
+    src/fec/src/fec_conv_punctured.c
+    src/fec/src/fec_golay2412.c
+    src/fec/src/fec_hamming74.c
+    src/fec/src/fec_hamming84.c
+    src/fec/src/fec_hamming128.c
+    src/fec/src/fec_hamming1511.c
+    src/fec/src/fec_hamming3126.c
+    src/fec/src/fec_hamming128_gentab.c
+    src/fec/src/fec_pass.c
+    src/fec/src/fec_rep3.c
+    src/fec/src/fec_rep5.c
+    src/fec/src/fec_rs.c
+    src/fec/src/fec_secded2216.c
+    src/fec/src/fec_secded3932.c
+    src/fec/src/fec_secded7264.c
+    src/fec/src/interleaver.c
+    src/fec/src/packetizer.c
+    src/fec/src/sumproduct.c)
+
+add_library(fft OBJECT
+    src/fft/src/fftf.c
+    src/fft/src/spgramcf.c
+    src/fft/src/spgramf.c
+    src/fft/src/fft_utilities.c)
+
+add_library(filter OBJECT
+    src/filter/src/bessel.c
+    src/filter/src/butter.c
+    src/filter/src/cheby1.c
+    src/filter/src/cheby2.c
+    src/filter/src/ellip.c
+    src/filter/src/filter_rrrf.c
+    src/filter/src/filter_crcf.c
+    src/filter/src/filter_cccf.c
+    src/filter/src/firdes.c
+    src/filter/src/firdespm.c
+    src/filter/src/firdespm_halfband.c
+    src/filter/src/fnyquist.c
+    src/filter/src/gmsk.c
+    src/filter/src/group_delay.c
+    src/filter/src/hM3.c
+    src/filter/src/iirdes.pll.c
+    src/filter/src/iirdes.c
+    src/filter/src/lpc.c
+    src/filter/src/rcos.c
+    src/filter/src/rkaiser.c
+    src/filter/src/rrcos.c)
+
+add_library(framing OBJECT
+    src/framing/src/bpacketgen.c
+    src/framing/src/bpacketsync.c
+    src/framing/src/detector_cccf.c
+    src/framing/src/dsssframegen.c
+    src/framing/src/dsssframesync.c
+    src/framing/src/framedatastats.c
+    src/framing/src/framesyncstats.c
+    src/framing/src/framegen64.c
+    src/framing/src/framesync64.c
+    src/framing/src/framingcf.c
+    src/framing/src/framing_rrrf.c
+    src/framing/src/framing_crcf.c
+    src/framing/src/framing_cccf.c
+    src/framing/src/flexframegen.c
+    src/framing/src/flexframesync.c
+    src/framing/src/fskframegen.c
+    src/framing/src/fskframesync.c
+    src/framing/src/gmskframegen.c
+    src/framing/src/gmskframesync.c
+    src/framing/src/ofdmflexframegen.c
+    src/framing/src/ofdmflexframesync.c
+    src/framing/src/qpilotgen.c
+    src/framing/src/qpilotsync.c)
+
+add_library(math OBJECT
+    src/math/src/poly.c
+    src/math/src/polyc.c
+    src/math/src/polyf.c
+    src/math/src/polycf.c
+    src/math/src/math.c
+    src/math/src/math.bessel.c
+    src/math/src/math.gamma.c
+    src/math/src/math.complex.c
+    src/math/src/math.trig.c
+    src/math/src/modular_arithmetic.c
+    src/math/src/poly.findroots.c
+    src/math/src/windows.c)
+
+add_library(matrix OBJECT
+    src/matrix/src/matrix.c
+    src/matrix/src/matrixf.c
+    src/matrix/src/matrixc.c
+    src/matrix/src/matrixcf.c
+    src/matrix/src/smatrix.common.c
+    src/matrix/src/smatrixb.c
+    src/matrix/src/smatrixf.c
+    src/matrix/src/smatrixi.c)
+
+add_library(modem OBJECT
+    src/modem/src/ampmodem.c
+    src/modem/src/cpfskdem.c
+    src/modem/src/cpfskmod.c
+    src/modem/src/fskdem.c
+    src/modem/src/fskmod.c
+    src/modem/src/gmskdem.c
+    src/modem/src/gmskmod.c
+    src/modem/src/modem.shim.c
+    src/modem/src/modemcf.c
+    src/modem/src/modem_utilities.c
+    src/modem/src/modem_apsk_const.c
+    src/modem/src/modem_arb_const.c)
+
+add_library(multichannel OBJECT
+    src/multichannel/src/firpfbch_crcf.c
+    src/multichannel/src/firpfbch_cccf.c
+    src/multichannel/src/ofdmframe.common.c
+    src/multichannel/src/ofdmframegen.c
+    src/multichannel/src/ofdmframesync.c)
+
+add_library(nco OBJECT
+    src/nco/src/nco_crcf.c
+    src/nco/src/nco.utilities.c)
+
+add_library(optim OBJECT
+    src/optim/src/chromosome.c
+    src/optim/src/gasearch.c
+    src/optim/src/gradsearch.c
+    src/optim/src/optim.common.c
+    src/optim/src/qnsearch.c
+    src/optim/src/qs1dsearch.c
+    src/optim/src/utilities.c)
+
+add_library(quantization OBJECT
+    src/quantization/src/compand.c
+    src/quantization/src/quantizercf.c
+    src/quantization/src/quantizerf.c
+    src/quantization/src/quantizer.inline.c)
+
+add_library(random OBJECT
+    src/random/src/rand.c
+    src/random/src/randn.c
+    src/random/src/randexp.c
+    src/random/src/randweib.c
+    src/random/src/randgamma.c
+    src/random/src/randnakm.c
+    src/random/src/randricek.c
+    src/random/src/scramble.c)
+
+add_library(sequence OBJECT
+    src/sequence/src/bsequence.c
+    src/sequence/src/msequence.c)
+
+add_library(utility OBJECT
+    src/utility/src/bshift_array.c
+    src/utility/src/byte_utilities.c
+    src/utility/src/memory.c
+    src/utility/src/msb_index.c
+    src/utility/src/pack_bytes.c
+    src/utility/src/shift_array.c
+    src/utility/src/utility.c)
+
+add_library(vector OBJECT
+    src/vector/src/vectorf_add.port.c
+    src/vector/src/vectorf_norm.port.c
+    src/vector/src/vectorf_mul.port.c
+    src/vector/src/vectorf_trig.port.c
+    src/vector/src/vectorcf_add.port.c
+    src/vector/src/vectorcf_norm.port.c
+    src/vector/src/vectorcf_mul.port.c
+    src/vector/src/vectorcf_trig.port.c)
+
+
+
+#
+# main library
+#
+
+set(LIBSRC src/libliquid.c)
+
+# NOTE: if set to "liquid" it will unfortunately link to installed version... grumble...
+set(LIBNAME liquidtmp)
+add_library(${LIBNAME} SHARED
+    ${LIBSRC}
+    $<TARGET_OBJECTS:agc>
+    $<TARGET_OBJECTS:audio>
+    $<TARGET_OBJECTS:buffer>
+    $<TARGET_OBJECTS:channel>
+    $<TARGET_OBJECTS:dotprod>
+    $<TARGET_OBJECTS:equalization>
+    $<TARGET_OBJECTS:fec>
+    $<TARGET_OBJECTS:fft>
+    $<TARGET_OBJECTS:filter>
+    $<TARGET_OBJECTS:framing>
+    $<TARGET_OBJECTS:math>
+    $<TARGET_OBJECTS:matrix>
+    $<TARGET_OBJECTS:modem>
+    $<TARGET_OBJECTS:multichannel>
+    $<TARGET_OBJECTS:nco>
+    $<TARGET_OBJECTS:optim>
+    $<TARGET_OBJECTS:quantization>
+    $<TARGET_OBJECTS:random>
+    $<TARGET_OBJECTS:sequence>
+    $<TARGET_OBJECTS:utility>
+    $<TARGET_OBJECTS:vector>)
+
+target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
+
+add_executable(test_libliquid examples/libliquid_example.c)
+target_include_directories(test_libliquid PRIVATE ${INCLUDE})
+
+target_link_libraries(test_libliquid ${LIBNAME})
+
+# see: https://cmake.org/cmake/help/latest/command/install.html#examples
+# TODO: install headers
+# TODO: uninstall?
+#install(TARGETS mylib)
+
+#
+# autotest
+#
+
+set(AUTOTESTS
+    ${PROJECT_SOURCE_DIR}/src/agc/tests/agc_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/audio/tests/cvsd_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/buffer/tests/cbuffer_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/buffer/tests/wdelay_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/buffer/tests/window_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/channel/tests/channel_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/channel/tests/tvmpch_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_rrrf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_cccf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/tests/sumsqf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/tests/sumsqcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/equalization/tests/eqlms_cccf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/equalization/tests/eqrls_rrrf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/crc_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_config_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_soft_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_golay2412_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_hamming74_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_hamming84_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_hamming128_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_hamming1511_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_hamming3126_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_reedsolomon_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_rep3_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_rep5_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_secded2216_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_secded3932_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_secded7264_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/interleaver_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/asgram_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_small_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_radix2_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_composite_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_prime_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_r2r_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_shift_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/spgram_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/spwaterfall_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/dds_cccf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/fdelay_rrrf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/fftfilt_xxxf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/filter_crosscorr_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/firdecim_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/firdecim_xxxf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/firdes_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/firdespm_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/firfilt_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/firfilt_cccf_notch_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/firfilt_coefficients_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/firfilt_rnyquist_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/firfilt_xxxf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/firfilt_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/firhilb_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/firinterp_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/firpfb_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/groupdelay_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/iirdecim_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/iirdes_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/iirdes_support_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/iirfilt_xxxf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/iirfilt_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/iirfiltsos_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/iirhilb_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/iirinterp_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/lpc_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/msresamp_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/msresamp2_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/ordfilt_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/rresamp_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/rresamp_crcf_partition_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/resamp_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/resamp2_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/symsync_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/symsync_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/symsync_rrrf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/bpacketsync_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/bsync_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/detector_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/dsssframesync_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/flexframesync_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/framesync64_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/fskframesync_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/gmskframe_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/msource_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/ofdmflexframe_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/qdetector_cccf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/qdetector_cccf_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/qdsync_cccf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/qpacketmodem_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/qpilotsync_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/qsource_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/symstreamcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/symstreamcf_delay_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/symstreamrcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/symstreamrcf_delay_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/symtrack_cccf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/gcd_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/window_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/math_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/math_bessel_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/math_gamma_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/math_complex_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/polynomial_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/polynomial_findroots_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/prime_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/matrixcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/matrixf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/smatrixb_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/smatrixf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/smatrixi_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/ampmodem_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/cpfskmodem_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/freqmodem_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/fskmodem_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/gmskmodem_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_demodsoft_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_demodstats_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_utilities_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch2_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch_crcf_synthesizer_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch_crcf_analyzer_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/tests/ofdmframe_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_frequency_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_mix_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_phase_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_pll_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/unwrap_phase_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/optim/tests/gasearch_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/optim/tests/gradsearch_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/optim/tests/qnsearch_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/optim/tests/qs1dsearch_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/optim/tests/utility_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/quantization/tests/compand_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/quantization/tests/quantize_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/random/tests/scramble_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/sequence/tests/bsequence_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/sequence/tests/complementary_codes_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/sequence/tests/msequence_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/utility/tests/bshift_array_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/utility/tests/count_bits_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/utility/tests/pack_bytes_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/utility/tests/shift_array_autotest.c
+    )
+
+set(AUTOTEST_EXTRA
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_runtest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_2.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_3.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_4.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_5.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_6.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_7.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_8.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_9.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_10.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_16.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_17.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_20.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_21.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_22.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_24.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_26.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_30.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_32.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_35.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_36.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_43.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_48.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_63.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_64.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_79.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_92.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_96.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_120.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_130.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_157.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_192.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_317.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_509.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_8.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_27.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_32.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/fftfilt_runtest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_rrrf_data_h4x256.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_crcf_data_h4x256.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_cccf_data_h4x256.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_rrrf_data_h7x256.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_crcf_data_h7x256.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_cccf_data_h7x256.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_rrrf_data_h13x256.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_crcf_data_h13x256.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_cccf_data_h13x256.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_rrrf_data_h23x256.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_crcf_data_h23x256.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_cccf_data_h23x256.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/firdecim_runtest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_rrrf_data_M2h4x20.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_crcf_data_M2h4x20.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_cccf_data_M2h4x20.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_rrrf_data_M3h7x30.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_crcf_data_M3h7x30.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_cccf_data_M3h7x30.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_rrrf_data_M4h13x40.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_crcf_data_M4h13x40.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_cccf_data_M4h13x40.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_rrrf_data_M5h23x50.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_crcf_data_M5h23x50.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_cccf_data_M5h23x50.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/firfilt_runtest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_rrrf_data_h4x8.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_crcf_data_h4x8.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_cccf_data_h4x8.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_rrrf_data_h7x16.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_crcf_data_h7x16.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_cccf_data_h7x16.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_rrrf_data_h13x32.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_crcf_data_h13x32.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_cccf_data_h13x32.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_rrrf_data_h23x64.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_crcf_data_h23x64.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_cccf_data_h23x64.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/iirfilt_runtest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_rrrf_data_h3x64.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_crcf_data_h3x64.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_cccf_data_h3x64.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_rrrf_data_h5x64.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_crcf_data_h5x64.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_cccf_data_h5x64.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_rrrf_data_h7x64.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_crcf_data_h7x64.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_cccf_data_h7x64.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_add.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_aug.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_cgsolve.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_chol.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_gramschmidt.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_inv.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_linsolve.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_ludecomp.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_mul.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_qrdecomp.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_transmul.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_add.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_aug.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_chol.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_inv.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_linsolve.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_ludecomp.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_mul.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_qrdecomp.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_transmul.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/data/nco_sincos_fsqrt1_2.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/data/nco_sincos_fsqrt1_3.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/data/nco_sincos_fsqrt1_5.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/data/nco_sincos_fsqrt1_7.c
+    )
+
+add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
+add_custom_command(
+    OUTPUT  autotest_include.h
+    DEPENDS
+        ${PROJECT_BINARY_DIR}/autoscript
+        ${AUTOTESTS}
+    COMMAND ${PROJECT_BINARY_DIR}/autoscript / autotest ${AUTOTESTS} > autotest_include.h
+    )
+
+# need to create output logging directory
+add_custom_command(
+    OUTPUT autotest/logs
+    COMMAND mkdir -p autotest/logs
+    )
+
+add_executable(xautotest
+    autotest/xautotest.c
+    ${PROJECT_BINARY_DIR}/autotest_include.h
+    autotest/autotest.h
+    autotest/autotest.c
+    autotest/libliquid_autotest.c
+    autotest/logs
+    ${AUTOTESTS}
+    ${AUTOTEST_EXTRA}
+    )
+target_include_directories(xautotest PRIVATE ${INCLUDE})
+target_link_libraries(xautotest ${LIBNAME})
+
+#add_executable(xautotest autotest/xautotest.c autotest/autotest.h autotest_include.h)
+#target_include_directories(xautotest PRIVATE ${INCLUDE})
+
+#
+# testing
+#
+
+# enable testing
+enable_testing()
+add_test(NAME test COMMAND test_libliquid)
+
+#
+# examples
+#
+#set_source_files_properties(DIRECTORY examples TARGET_DIRECTORY examples)
+add_subdirectory(examples)
+
+
+# packaging
+set(CPACK_PACKAGE_NAME liquid)
+set(CPACK_PACKAGE_VENDOR liquidsdr)
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Software-Defined Radio Digital Signal Processing Library")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY ${CPACK_PACKAGE_NAME})
+set(CPACK_VERBATIM_VARIABLES TRUE)
+include(CPack)
+
+#message("top: CMAKE_SOURCE_DIR         = ${CMAKE_SOURCE_DIR}")
+#message("top: CMAKE_BINARY_DIR         = ${CMAKE_BINARY_DIR}")
+#message("top: CMAKE_CURRENT_SOURCE_DIR = ${CMAKE_CURRENT_SOURCE_DIR}")
+#message("top: CMAKE_CURRENT_BINARY_DIR = ${CMAKE_CURRENT_BINARY_DIR}")
+
+# this file can only use the @VARIABLE@ syntax
+configure_file(src/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
+

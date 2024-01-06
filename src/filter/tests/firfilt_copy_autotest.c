@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +53,7 @@ void autotest_firfilt_crcf_copy()
 
         if (liquid_autotest_verbose) {
             float error = cabsf( y_orig - y_copy );
-            printf(" [%3u] orig: %12.8f + j%12.8f, copy: %12.8f + j%12.8f, error: %8g\n",
+            printf(" [%3u] orig: %12.8f + j%12.8f, copy: %12.8f + j%12.8f, err: %8g\n",
                     i+n,
                     crealf(y_orig), cimagf(y_orig),
                     crealf(y_copy), cimagf(y_copy),

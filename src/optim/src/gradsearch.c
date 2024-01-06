@@ -136,7 +136,7 @@ float gradsearch_step(gradsearch _q)
     }
     
     if (i == n) {
-        fprintf(stderr,"warning: gradsearch_step(), function ill-conditioned\n");
+        liquid_error(LIQUID_ENOCONV,"gradsearch_step(), function ill-conditioned");
         return _q->utility(_q->userdata, _q->v, _q->num_parameters);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// bpacketsync
-//
 // binary packet synchronizer/decoder
-//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -437,9 +433,14 @@ int bpacketsync_decode_header(bpacketsync _q)
 
     // check version number
     if (version != BPACKET_VERSION)
-        fprintf(stderr,"warning: bpacketsync, version mismatch!\n");
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync, version mismatch (received %d, expected %d)",version, BPACKET_VERSION);
+    if (_q->crc == LIQUID_CRC_UNKNOWN || _q->crc >= LIQUID_CRC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync, invalid/unsupported crc: %u", _q->crc);
+    if (_q->fec0 == LIQUID_FEC_UNKNOWN || _q->fec0 >= LIQUID_FEC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync, invalid/unsupported fec (inner): %u", _q->fec0);
+    if (_q->fec1 == LIQUID_FEC_UNKNOWN || _q->fec1 >= LIQUID_FEC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync, invalid/unsupported fec (outer): %u", _q->fec1);
 
-    // TODO : check crc, fec0, fec1 schemes
     return LIQUID_OK;
 }
 

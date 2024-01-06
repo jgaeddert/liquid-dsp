@@ -48,6 +48,7 @@ VERSION		:= @PACKAGE_VERSION@
 BUGREPORT	:= @PACKAGE_BUGREPORT@
 AR_LIB		:= @AR_LIB@
 SH_LIB		:= @SH_LIB@
+SOVERSION	:= 1
 
 # paths
 prefix		:= @prefix@
@@ -55,7 +56,7 @@ exec_prefix	:= @exec_prefix@
 VPATH		:= @srcdir@
 srcdir		:= @srcdir@
 libdir		:= @libdir@
-include_dirs	:= . include
+include_dirs	:= . ./include
 
 # programs
 CC		:= @CC@
@@ -1274,7 +1275,7 @@ libliquid.a : $(objects)
 	${RANLIB} $@
 
 libliquid.so : libliquid.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive $(LIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -shared -Xlinker -soname=libliquid.so.$(SOVERSION) -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive $(LIBS)
 
 # static archive and library objects
 all: ${ARCHIVE_LIB} ${SHARED_LIB}
@@ -1386,7 +1387,7 @@ install: all
 	install -m 644 -p libliquid.${SH_LIB} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${VERSION}
 	install -m 644 -p include/liquid.h $(DESTDIR)$(prefix)/include/liquid/liquid.h
 	ln -sf libliquid.${SH_LIB}.${VERSION} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
-	ln -sf libliquid.${SH_LIB}.${VERSION} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.1
+	ln -sf libliquid.${SH_LIB}.${VERSION} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${SOVERSION}
 	@echo ""
 	@echo "---------------------------------------------------------"
 	@echo "  liquid-dsp was successfully installed.     "
@@ -1411,7 +1412,7 @@ uninstall:
 	$(RM) $(DESTDIR)$(prefix)/include/liquid/liquid.h
 	$(RM) $(DESTDIR)$(libdir)/libliquid.${AR_LIB}
 	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${VERSION}
-	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.1
+	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${SOVERSION}
 	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
 	@echo "done."
 
@@ -1673,6 +1674,7 @@ example_programs :=						\
 	examples/firpfbch_crcf_analysis_example			\
 	examples/firpfbch_crcf_msource_example			\
 	examples/firpfbch_crcf_synthesis_example		\
+	examples/flexframesync_debug_example			\
 	examples/flexframesync_example				\
 	examples/flexframesync_reconfig_example			\
 	examples/framesync64_example				\

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 #define AGC_DEFAULT_BW   (1e-2f)
 
 // internal method definition
-void AGC(_squelch_update_mode)(AGC() _q);
+int AGC(_squelch_update_mode)(AGC() _q);
 
 // agc structure object
 struct AGC(_s) {
@@ -419,7 +419,7 @@ int AGC(_squelch_get_status)(AGC() _q)
 //
 
 // update squelch mode appropriately
-void AGC(_squelch_update_mode)(AGC() _q)
+int AGC(_squelch_update_mode)(AGC() _q)
 {
     //
     int threshold_exceeded = (AGC(_get_rssi)(_q) > _q->squelch_threshold);
@@ -453,8 +453,9 @@ void AGC(_squelch_update_mode)(AGC() _q)
         break;
     case LIQUID_AGC_SQUELCH_UNKNOWN:
     default:
-        fprintf(stderr,"warning: agc_%s_execute(), invalid squelch mode: %d\n",
+        return liquid_error(LIQUID_EINT,"agc_%s_execute(), invalid/unsupported squelch mode: %d",
                 EXTENSION_FULL, _q->squelch_mode);
     }
+    return LIQUID_OK;
 }
 
