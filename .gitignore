@@ -53,3 +53,6 @@ src/utility/gentab/count_ones.c
 sandbox/*_test
 sandbox/*_example
 sandbox/*_gentab
+
+# ignore cmake build directory
+build
