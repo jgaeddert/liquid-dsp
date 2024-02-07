@@ -34,7 +34,7 @@ option(LIQUID_SIMDOVERRIDE "Force overriding of SIMD (use portable C code)" OFF)
 
 # Default to CMAKE_BUILD_TYPE to Release unless specified otherwise
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (Debug, Release)" FORCE)
+  set(CMAKE_BUILD_TYPE Release)
 endif()
 
 # Add the modules in the `cmake` directory, and run GenConfig so we can check for required headers
