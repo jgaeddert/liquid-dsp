@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.27)
-project(liquid-dsp VERSION 1.6 LANGUAGES C)
+project(liquid-dsp VERSION 1.6.0 LANGUAGES C)
 
 # Package information. This is included in the `config.h` file that we generate
 set(PACKAGE_BUGREPORT "joseph@liquidsdr.org" CACHE INTERNAL
@@ -70,18 +70,20 @@ set(CMAKE_REQUIRED_LINK_OPTIONS -lc;-lm)
 #
 # Liquid config
 #
-add_library(liquid_config INTERFACE)
-target_include_directories(liquid_config INTERFACE . include)
-target_compile_options(liquid_config INTERFACE -Wall -Wno-deprecated-declarations)
-if(LIQUID_DEBUG_MESSAGES)
-    target_compile_definitions(liquid_config INTERFACE DEBUG)
-endif()
+# add_library(liquid_config INTERFACE)
+# target_include_directories(liquid_config INTERFACE . include)
+# target_compile_options(liquid_config INTERFACE -Wall -Wno-deprecated-declarations)
+# if(LIQUID_DEBUG_MESSAGES)
+#     target_compile_definitions(liquid_config INTERFACE DEBUG)
+# endif()
 
 #
 # Liquid library
 #
 add_library(liquid OBJECT ${liquid_SOURCES})
-target_link_libraries(liquid liquid_config m)
+target_link_libraries(liquid m)
+target_compile_options(liquid PRIVATE -Wall -Wno-deprecated-declarations)
+target_include_directories(liquid PRIVATE . include)
 
 # Link the fec library if available
 if(HAVE_LIBFEC)
@@ -108,18 +110,50 @@ set_target_properties(liquid-shared liquid-static PROPERTIES
   VERSION ${PROJECT_VERSION}
 )
 
-# Include the normal GNU installation directories
+# Include installation directories
 include(GNUInstallDirs)
 
 #
 # TARGET : install - install the libraries and headers into the host system
 #
-install(TARGETS liquid-shared liquid-static
+# Install shared and static libraries
+install(TARGETS liquid liquid-static liquid-shared
+  EXPORT liquid_Exports
   INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/liquid
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+# Install headers
 install(FILES include/liquid.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/liquid
+)
+
+# Install exports
+install(EXPORT liquid_Exports
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/liquid-${PROJECT_VERSION}
+  NAMESPACE liquid::
+)
+
+# Generate CMake config files
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  "${PROJECT_SOURCE_DIR}/cmake/liquidConfig.cmake.in"
+  "${PROJECT_BINARY_DIR}/liquidConfig.cmake"
+  INSTALL_DESTINATION
+  ${CMAKE_INSTALL_LIBDIR}/cmake/liquid-${PROJECT_VERSION}
+)
+write_basic_package_version_file(
+  "liquidConfigVersion.cmake"
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMinorVersion
+)
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/liquidConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/liquidConfigVersion.cmake
+  DESTINATION
+  ${CMAKE_INSTALL_LIBDIR}/cmake/liquid-${PROJECT_VERSION}
 )
 
 install(CODE "
