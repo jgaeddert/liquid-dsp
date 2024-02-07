@@ -32,6 +32,11 @@ option(LIQUID_DEBUG_MESSAGES "Enable verbose debug messages (-DDEBUG)" OFF)
 option(LIQUID_FFTOVERRIDE "Force internal FFT even if libfftw is available" OFF)
 option(LIQUID_SIMDOVERRIDE "Force overriding of SIMD (use portable C code)" OFF)
 
+# Default to CMAKE_BUILD_TYPE to Release unless specified otherwise
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (Debug, Release)" FORCE)
+endif()
+
 # Add the modules in the `cmake` directory, and run GenConfig so we can check for required headers
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(GenConfig)
