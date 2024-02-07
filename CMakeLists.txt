@@ -115,12 +115,12 @@ set_target_properties(liquid-shared liquid-static PROPERTIES
   VERSION ${PROJECT_VERSION}
 )
 
-# Include installation directories
-include(GNUInstallDirs)
-
 #
 # TARGET : install - install the libraries and headers into the host system
 #
+# Include installation directories
+include(GNUInstallDirs)
+
 # Install shared and static libraries
 install(TARGETS liquid liquid-static liquid-shared
   EXPORT liquid_Exports
@@ -141,7 +141,7 @@ install(EXPORT liquid_Exports
   NAMESPACE liquid::
 )
 
-# Generate CMake config files
+# Generate and install CMake config files
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
   "${PROJECT_SOURCE_DIR}/cmake/liquidConfig.cmake.in"
