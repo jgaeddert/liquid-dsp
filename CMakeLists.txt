@@ -72,8 +72,6 @@ set(liquid_SOURCES
   ${vector_SOURCES}
 )
 
-set(CMAKE_REQUIRED_LINK_OPTIONS -lc;-lm)
-
 #
 # Liquid library
 #
@@ -159,9 +157,9 @@ configure_file(
   "${PROJECT_BINARY_DIR}/liquid.pc"
   @ONLY
 )
-set(PKG_CONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
-install(FILES "${PROJECT_BINARY_DIR}/liquid.pc"
-  DESTINATION ${PKG_CONFIG_INSTALL_DIR}
+install(
+  FILES "${PROJECT_BINARY_DIR}/liquid.pc"
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
 )
 
 message(STATUS "VAR IS ${CMAKE_CURRENT_LIST_FILE}")
