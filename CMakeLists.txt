@@ -77,7 +77,7 @@ set(liquid_SOURCES
 #
 add_library(liquid OBJECT ${liquid_SOURCES})
 target_link_libraries(liquid m)
-target_compile_options(liquid PRIVATE -Wall -Wno-deprecated-declarations)
+target_compile_options(liquid PRIVATE -Wall -Wno-deprecated-declarations -Wno-unused-variable)
 target_include_directories(liquid PRIVATE . include)
 
 # Link the fec library if available
