@@ -75,16 +75,6 @@ set(liquid_SOURCES
 set(CMAKE_REQUIRED_LINK_OPTIONS -lc;-lm)
 
 #
-# Liquid config
-#
-# add_library(liquid_config INTERFACE)
-# target_include_directories(liquid_config INTERFACE . include)
-# target_compile_options(liquid_config INTERFACE -Wall -Wno-deprecated-declarations)
-# if(LIQUID_DEBUG_MESSAGES)
-#     target_compile_definitions(liquid_config INTERFACE DEBUG)
-# endif()
-
-#
 # Liquid library
 #
 add_library(liquid OBJECT ${liquid_SOURCES})
