@@ -6,5 +6,5 @@ includedir=${prefix}/include
 Name: liquid-dsp
 Description: dsp library for software-defined radios
 Version: @PROJECT_VERSION@
-Libs: -L${libdir} -lyour_library_name
+Libs: -L${libdir} -lliquid
 Cflags: -I${includedir}
