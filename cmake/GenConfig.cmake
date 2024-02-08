@@ -1,6 +1,6 @@
 #
 # Check for some headers, symbols, and type sizes. Most of this is used to generate the `config.h` file,
-# but it's also used by CMake to allow for more better platform-agnostic compilation
+# but, it's also used by the parent CMakeLists.txt
 #
 
 include(CheckIncludeFile)
@@ -93,7 +93,7 @@ HAVE_MEMSET HAVE_MEMMOVE
 HAVE_SINF HAVE_COSF HAVE_EXPF HAVE_SQRTF
 HAVE_CARGF HAVE_CEXPF HAVE_CREALF HAVE_CIMAGF)
   if(NOT ${have_symbol})
-    message(FATAL_ERROR "${have_symbol} check failed (the symbol wasn't found).")
+    message(FATAL_ERROR "${have_symbol} check failed (the symbol wasn't found)")
   endif()
 endforeach()
 
@@ -228,4 +228,8 @@ if(HAVE_LIBFFTW3F)
 endif()
 
 # Generate the `config.h` file
-configure_file(config.h.cmake "${CMAKE_CURRENT_SOURCE_DIR}/config.h" @ONLY)
+configure_file(
+  "${PROJECT_SOURCE_DIR}/cmake/config.h.cmake"
+  "${CMAKE_CURRENT_SOURCE_DIR}/config.h"
+  @ONLY
+)
