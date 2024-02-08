@@ -1,5 +1,12 @@
-cmake_minimum_required(VERSION 3.27)
+cmake_minimum_required(VERSION 3.12.4)
 project(liquid-dsp VERSION 1.6.0 LANGUAGES C)
+
+# Set some important variables
+set(CMAKE_POSITION_INDEPENDENT_CODE true)
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+list(APPEND CMAKE_REQUIRED_LIBRARIES m)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Package information. This is included in the `config.h` file that we generate
 set(PACKAGE_BUGREPORT "joseph@liquidsdr.org" CACHE INTERNAL
@@ -17,10 +24,6 @@ set(PACKAGE_VERSION "${PROJECT_VERSION}" CACHE INTERNAL
   "version of this package"
 )
 
-# Ensure the compiler supports the C99 standard
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-
 # Ensure the user isn't using MSVC, because it doesn't fully support the C99 standard
 if(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
     message(FATAL_ERROR "The Microsoft Visual Studio C Compiler is not fully compatibile with the C99 standard.
@@ -37,8 +40,7 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-# Add the modules in the `cmake` directory, and run GenConfig so we can check for required headers
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+# Generate the `config.h` file for liquid-dsp. This also provides us with some useful variables later in this file
 include(GenConfig)
 
 ##
@@ -161,6 +163,19 @@ install(FILES
   ${CMAKE_INSTALL_LIBDIR}/cmake/liquid-${PROJECT_VERSION}
 )
 
+# Generate and install pkg-config files
+configure_file(
+  "${PROJECT_SOURCE_DIR}/cmake/liquid.pc.in"
+  "${PROJECT_BINARY_DIR}/liquid.pc"
+  @ONLY
+)
+set(PKG_CONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+install(FILES "${PROJECT_BINARY_DIR}/liquid.pc"
+  DESTINATION ${PKG_CONFIG_INSTALL_DIR}
+)
+
+message(STATUS "VAR IS ${CMAKE_CURRENT_LIST_FILE}")
+
 install(CODE "
 message([===[
 
@@ -185,7 +200,7 @@ message([===[
 # TARGET : uninstall - uninstall the libraries and headers from the host system
 #
 # Generate the cmake_uninstall module
-configure_file(cmake/uninstall.CMakeLists.txt.in cmake_uninstall.cmake @ONLY)
+configure_file(cmake/uninstall.cmake.in cmake_uninstall.cmake @ONLY)
 # Create the uninstall target and point it to the cmake_uninstall module
 add_custom_target(uninstall
   COMMAND ${CMAKE_COMMAND}
