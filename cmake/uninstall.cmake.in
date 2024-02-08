@@ -2,8 +2,6 @@
 # This allows the user to install the library and headers from their host system
 #
 
-cmake_minimum_required(VERSION 3.27)
-
 # Find the install manifest
 if(NOT EXISTS "@CMAKE_BINARY_DIR@/install_manifest.txt")
   message(FATAL_ERROR
