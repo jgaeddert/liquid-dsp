@@ -1395,7 +1395,7 @@ clean-check:
 	$(RM) autotest/logs/*.bin autotest/logs/*.gnu autotest/logs/*.png
 
 ##
-## TARGET : doc-check - build and run basic documentation checks
+## TARGET : check-doc - build and run basic documentation checks
 ##
 
 readme.c.example.c : README.md
@@ -1416,9 +1416,9 @@ readme.cc.example.o : %.o : %.cc ${include_headers}
 readme.cc.example : % : %.o ${ARCHIVE_LIB}
 	${CXX} ${CXXFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
 
-doc-check : readme.c.example readme.cc.example ; ./readme.c.example && ./readme.cc.example
+check-doc : readme.c.example readme.cc.example ; ./readme.c.example && ./readme.cc.example
 
-clean-doc-check:
+clean-check-doc:
 	${RM} readme.*.example*
 
 ##
@@ -1859,7 +1859,7 @@ programs: all xautotest benchmark examples sandbox
 ##
 ## TARGET : world     - build absolutely everything
 ##
-world : all bench check doc-check examples sandbox
+world : all bench check check-doc examples sandbox
 
 ##
 ## TARGET : clean     - clean build (objects, dependencies, libraries, etc.)
@@ -1872,7 +1872,7 @@ clean-modules:
 	$(RM) src/*/src/*.o src/*/bench/*.o src/*/tests/*.o
 	$(RM) src/libliquid.o
 
-clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox clean-doc-check
+clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox clean-check-doc
 	$(RM) ${ARCHIVE_LIB} ${SHARED_LIB} $(extra_clean)
 
 ##
