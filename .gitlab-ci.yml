@@ -42,10 +42,10 @@ bench:
     paths: [benchmark.json]
 
 # compile and run documenation checks (e.g. example code in README.md)
-doc-check:
+check-doc:
   stage: test
   script:
-    - make doc-check
+    - make check-doc
 
 # compile and run all example programs, timing how long each takes to run
 examples:
