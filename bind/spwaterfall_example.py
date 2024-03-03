@@ -33,7 +33,7 @@ print(psd)
 Sxx,t,f = psd.get_psd(fs=20e6, fc=460e6)
 print('Sxx:',Sxx.shape,'t:',t.shape,'f:',f.shape)
 
-fix,ax = plt.subplots(1,figsize=(8,8))
+fig,ax = plt.subplots(1,figsize=(8,8))
 ax.pcolormesh(f*1e-6,t*1e3,Sxx.T,shading='auto')
 ax.set_xlabel('Frequency [MHz]')
 ax.set_ylabel('Time [ms]')

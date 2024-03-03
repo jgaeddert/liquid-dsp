@@ -29,7 +29,7 @@ while psd.num_samples_total < num_samples:
 # get spectrum plot and display
 print(psd)
 Sxx,f = psd.get_psd()
-fix,ax = plt.subplots(1,figsize=(8,8))
+fig,ax = plt.subplots(1,figsize=(8,8))
 ax.plot(f,Sxx)
 ax.set_xlabel('Frequency [MHz]')
 ax.set_ylabel('Time [samples]')

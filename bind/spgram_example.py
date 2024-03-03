@@ -28,7 +28,7 @@ print(psd)
 Sxx,f = psd.get_psd(fs=20e6, fc=460e6)
 print('Sxx:',Sxx.shape,'f:',f.shape)
 
-fix,ax = plt.subplots(1,figsize=(8,8))
+fig,ax = plt.subplots(1,figsize=(8,8))
 ax.plot(f*1e-6,Sxx)
 ax.set_xlabel('Frequency [MHz]')
 ax.set_ylabel('Time [samples]')
