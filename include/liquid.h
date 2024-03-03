@@ -4363,7 +4363,12 @@ RRESAMP() RRESAMP(_create)(unsigned int _interp,                            \
 /*  _interp : interpolation factor,               _interp > 0           */  \
 /*  _decim  : decimation factor,                   _decim > 0           */  \
 /*  _m      : filter semi-length (delay),               0 < _m          */  \
-/*  _bw     : filter bandwidth relative to sample rate, 0 < _bw <= 0.5  */  \
+/*  _bw     : filter bandwidth relative to sample rate. When the        */  \
+/*            the resampler is configured as an interpolator a value of */  \
+/*            0.5 (critically filtered) or less is recommended.         */  \
+/*            When the resampler is configured as a decimator, the      */  \
+/*            critical sampling rate is 0.5*_interp/_decim,             */  \
+/*            0 < _bw <= 0.5                                            */  \
 /*  _as     : filter stop-band attenuation [dB],        0 < _as         */  \
 RRESAMP() RRESAMP(_create_kaiser)(unsigned int _interp,                     \
                                   unsigned int _decim,                      \
