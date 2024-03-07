@@ -153,9 +153,9 @@ RRESAMP() RRESAMP(_create_prototype)(int          _type,
     RRESAMP() q = RRESAMP(_create)(_interp, _decim, _m, h);
     q->block_len = gcd;
 
-    // adjust gain for decimator
-    if (decim)
-        RRESAMP(_set_scale)(q, (float)(q->P)/(float)(q->Q));
+    // adjust gain according to resampling rate
+    float rate = RRESAMP(_get_rate)(q);
+    RRESAMP(_set_scale)(q, decim ? sqrtf(rate) : 1.0f / sqrtf(rate));
 
     // free allocated memory and return object
     free(hf);

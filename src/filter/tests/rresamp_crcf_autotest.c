@@ -20,28 +20,41 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// convenience methods
-#define min(a,b) ((a)<(b)?(a):(b))
-#define max(a,b) ((a)>(b)?(a):(b))
-
 // test rational-rate resampler
-void test_harness_rresamp_crcf(unsigned int _interp,
-                               unsigned int _decim,
-                               unsigned int _m,
-                               float        _bw,
-                               float        _as)
+void test_rresamp_crcf(const char * _method,
+                       unsigned int _interp,
+                       unsigned int _decim,
+                       unsigned int _m,
+                       float        _bw,
+                       float        _as)
 {
     // options
-    unsigned int n=800000;  // number of output samples to analyze
-    float bw = 0.2f; // target output bandwidth
-    unsigned int nfft = 800;
-    float tol = 0.5f;
+    unsigned int n    = 800000; // number of output samples to analyze
+    float        bw   = 0.2f;   // target output bandwidth
+    unsigned int nfft = 800;    // number of bins in transform
+    float        tol  = 0.5f;   // error tolerance [dB]
 
-    // create resampler with rate P/Q
-    rresamp_crcf resamp = rresamp_crcf_create_kaiser(_interp, _decim, _m, _bw, _as);
+    // create resampler with rate _interp/_decim
+    rresamp_crcf resamp = NULL;
+    if (strcmp(_method,"baseline")==0) {
+        resamp = rresamp_crcf_create_kaiser(_interp, _decim, _m, _bw, _as);
+    } else if (strcmp(_method,"default")==0) {
+        resamp = rresamp_crcf_create_default(_interp, _decim);
+    } else {
+        printf("creating resampler using %s\n", _method);
+        int ftype = liquid_getopt_str2firfilt(_method);
+        float beta = _bw; // rename to avoid confusion
+        resamp = rresamp_crcf_create_prototype(ftype, _interp, _decim, _m, beta);
+    }
+
+    if (resamp == NULL) {
+        liquid_autotest_failed();
+        return;
+    }
     float r = rresamp_crcf_get_rate(resamp);
 
     // create and configure objects
@@ -72,7 +85,7 @@ void test_harness_rresamp_crcf(unsigned int _interp,
         {.fmin=+0.6f*bw, .fmax=+0.5f,    .pmin=0,     .pmax=-_as+tol, .test_lo=0, .test_hi=1},
     };
     char filename[256];
-    sprintf(filename,"autotest/logs/rresamp_crcf_P%u_Q%u.m", _interp, _decim);
+    sprintf(filename,"autotest/logs/rresamp_crcf_%s_P%u_Q%u.m", _method, _interp, _decim);
     liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
         liquid_autotest_verbose ? filename : NULL);
 
@@ -82,13 +95,27 @@ void test_harness_rresamp_crcf(unsigned int _interp,
     symstreamrcf_destroy(gen);
 }
 
-// actual tests
-void autotest_rresamp_crcf_P1_Q5() { test_harness_rresamp_crcf( 1, 5, 15, 0.4f, 60.0f); }
-void autotest_rresamp_crcf_P2_Q5() { test_harness_rresamp_crcf( 2, 5, 15, 0.4f, 60.0f); }
-void autotest_rresamp_crcf_P3_Q5() { test_harness_rresamp_crcf( 3, 5, 15, 0.4f, 60.0f); }
-void autotest_rresamp_crcf_P6_Q5() { test_harness_rresamp_crcf( 6, 5, 15, 0.4f, 60.0f); }
-void autotest_rresamp_crcf_P8_Q5() { test_harness_rresamp_crcf( 8, 5, 15, 0.4f, 60.0f); }
-void autotest_rresamp_crcf_P9_Q5() { test_harness_rresamp_crcf( 9, 5, 15, 0.4f, 60.0f); }
+// baseline tests using create_kaiser() method
+void autotest_rresamp_crcf_baseline_P1_Q5() { test_rresamp_crcf("baseline", 1, 5, 15, -1, 60.0f); }
+void autotest_rresamp_crcf_baseline_P2_Q5() { test_rresamp_crcf("baseline", 2, 5, 15, -1, 60.0f); }
+void autotest_rresamp_crcf_baseline_P3_Q5() { test_rresamp_crcf("baseline", 3, 5, 15, -1, 60.0f); }
+void autotest_rresamp_crcf_baseline_P6_Q5() { test_rresamp_crcf("baseline", 6, 5, 15, -1, 60.0f); }
+void autotest_rresamp_crcf_baseline_P8_Q5() { test_rresamp_crcf("baseline", 8, 5, 15, -1, 60.0f); }
+void autotest_rresamp_crcf_baseline_P9_Q5() { test_rresamp_crcf("baseline", 9, 5, 15, -1, 60.0f); }
+
+// tests using create_default() method
+void autotest_rresamp_crcf_default_P1_Q5() { test_rresamp_crcf("default", 1, 5, 15, -1, 60.0f); }
+void autotest_rresamp_crcf_default_P2_Q5() { test_rresamp_crcf("default", 2, 5, 15, -1, 60.0f); }
+void autotest_rresamp_crcf_default_P3_Q5() { test_rresamp_crcf("default", 3, 5, 15, -1, 60.0f); }
+void autotest_rresamp_crcf_default_P6_Q5() { test_rresamp_crcf("default", 6, 5, 15, -1, 60.0f); }
+void autotest_rresamp_crcf_default_P8_Q5() { test_rresamp_crcf("default", 8, 5, 15, -1, 60.0f); }
+void autotest_rresamp_crcf_default_P9_Q5() { test_rresamp_crcf("default", 9, 5, 15, -1, 60.0f); }
+
+// tests using create_prototype() method
+void autotest_rresamp_crcf_arkaiser_P3_Q5() { test_rresamp_crcf("arkaiser", 3, 5, 40, 0.2, 50.0f); }
+void autotest_rresamp_crcf_arkaiser_P5_Q3() { test_rresamp_crcf("arkaiser", 5, 3, 40, 0.2, 50.0f); }
+void autotest_rresamp_crcf_rrcos_P3_Q5()    { test_rresamp_crcf("rrcos",    3, 5, 40, 0.2, 50.0f); }
+void autotest_rresamp_crcf_rrcos_P5_Q3()    { test_rresamp_crcf("rrcos",    5, 3, 40, 0.2, 50.0f); }
 
 // test copy method
 void autotest_rresamp_copy()

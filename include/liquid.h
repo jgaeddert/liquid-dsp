@@ -4383,6 +4383,11 @@ RRESAMP() RRESAMP(_create_kaiser)(unsigned int _interp,                     \
 /* Note that because the filter coefficients are computed internally    */  \
 /* here, the greatest common divisor (gcd) from _interp and _decim is   */  \
 /* internally removed to improve speed.                                 */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)                    */  \
+/*  _interp : interpolation factor,               _interp > 0           */  \
+/*  _decim  : decimation factor,                   _decim > 0           */  \
+/*  _m      : filter semi-length (delay),               0 < _m          */  \
+/*  _beta   : excess bandwidth factor,         0 <= _beta <= 1          */  \
 RRESAMP() RRESAMP(_create_prototype)(int          _type,                    \
                                      unsigned int _interp,                  \
                                      unsigned int _decim,                   \
