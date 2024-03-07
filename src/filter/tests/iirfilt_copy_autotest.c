@@ -23,6 +23,51 @@
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
+//
+void autotest_iirfilt_dcblock()
+{
+    // options
+    unsigned int n    = 400000; // number of output samples to analyze
+    float        alpha= 0.2f;   // forgetting factor
+    unsigned int nfft = 1200;   // number of bins in transform
+    float        tol  = 0.7f;   // error tolerance [dB]
+
+    // create base object
+    iirfilt_crcf filter = iirfilt_crcf_create_dc_blocker(alpha);
+
+    // create and configure objects
+    spgramcf q = spgramcf_create(nfft, LIQUID_WINDOW_HANN, nfft/2, nfft/4);
+
+    // start running input through filter
+    float complex x, y;
+    unsigned int i;
+    for (i=0; i<n; i++) {
+        // generate noise input
+        x = (randnf() + _Complex_I*randnf())*M_SQRT1_2;
+
+        // apply filter
+        iirfilt_crcf_execute(filter, x, &y);
+
+        // run samples through the spgram object
+        spgramcf_push(q, y);
+    }
+
+    // verify result
+    float psd[nfft];
+    spgramcf_get_psd(q, psd);
+    autotest_psd_s regions[] = {
+        {.fmin=-0.500f, .fmax=-0.200f, .pmin=-tol, .pmax=+tol, .test_lo=1, .test_hi=1},
+        {.fmin=-0.002f, .fmax=+0.002f, .pmin=-tol, .pmax=-20,  .test_lo=0, .test_hi=1},
+        {.fmin=+0.200f, .fmax=+0.500f, .pmin=-tol, .pmax=+tol, .test_lo=1, .test_hi=1},
+    };
+    liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
+        liquid_autotest_verbose ? "iirfilt_dcblock.m" : NULL);
+
+    // destroy objects
+    spgramcf_destroy(q);
+    iirfilt_crcf_destroy(filter);
+}
+
 void testbench_iirfilt_copy(liquid_iirdes_format _format)
 {
     // create base object

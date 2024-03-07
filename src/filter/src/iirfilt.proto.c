@@ -391,7 +391,11 @@ IIRFILT() IIRFILT(_create_dc_blocker)(float _alpha)
     // convert to type-specific array
     TC b[2] = {(TC)bf[0], (TC)bf[1]};
     TC a[2] = {(TC)af[0], (TC)af[1]};
-    return IIRFILT(_create)(b,2,a,2);
+    IIRFILT() q = IIRFILT(_create)(b,2,a,2);
+
+    // adjust scale so maintain consistent gain across the band
+    IIRFILT(_set_scale)(q, sqrt(1-_alpha));
+    return q;
 }
 
 // create phase-locked loop iirfilt object
