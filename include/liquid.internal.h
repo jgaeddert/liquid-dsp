@@ -1153,7 +1153,7 @@ float complex liquid_cacosf(float complex _z);
 float complex liquid_catanf(float complex _z);
 
 // faster approximation to arg{*}
-float liquid_cargf_approx(float complex _z);
+//float liquid_cargf_approx(float complex _z);
 
 
 // internal trig helper functions

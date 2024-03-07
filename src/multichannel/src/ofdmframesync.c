@@ -475,7 +475,7 @@ int ofdmframesync_execute_seekplcp(ofdmframesync _q)
 
     // estimate gain
     unsigned int i;
-    // start with a reasonably small number to avoid divide-by-zero warning
+    // start with a reasonably small number to avoid division by zero
     float g = 1.0e-9f;
     for (i=_q->cp_len; i<_q->M + _q->cp_len; i++) {
         // compute |rc[i]|^2 efficiently
@@ -932,7 +932,7 @@ int ofdmframesync_estimate_eqgain(ofdmframesync _q,
 
         // eliminate divide-by-zero issues
         if (cabsf(w0) < 1e-4f) {
-            fprintf(stderr,"warning: ofdmframesync_estimate_eqgain(), weighting factor is zero\n");
+            liquid_error(LIQUID_EINT,"ofdmframesync_estimate_eqgain(), weighting factor is zero");
             w0 = 1.0f;
         }
         _q->G[i] = G_hat / w0;

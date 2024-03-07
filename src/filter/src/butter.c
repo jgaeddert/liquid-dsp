@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,7 +60,7 @@ int butter_azpkf(unsigned int           _n,
     if (r) _pa[k++] = -1.0f;
 
     if (k != _n)
-        return liquid_error(LIQUID_EINT,"butter_azpkf(), internal error: filter order mismatch");
+        return liquid_error(LIQUID_EINT,"butter_azpkf(), filter order mismatch");
 
     *_ka = 1.0;
     return LIQUID_OK;

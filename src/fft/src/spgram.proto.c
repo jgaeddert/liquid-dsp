@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -275,7 +275,7 @@ int SPGRAM(_set_alpha)(SPGRAM() _q,
 {
     // validate input
     if (_alpha != -1 && (_alpha < 0.0f || _alpha > 1.0f)) {
-        fprintf(stderr,"warning: spgram%s_set_alpha(), alpha must be in {-1,[0,1]}\n", EXTENSION);
+        liquid_error(LIQUID_EICONFIG,"spgram%s_set_alpha(), alpha must be in {-1,[0,1]}", EXTENSION);
         return -1;
     }
 

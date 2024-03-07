@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2023 Joseph Gaeddert
+# Copyright (c) 2007 - 2024 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -48,6 +48,7 @@ VERSION		:= @PACKAGE_VERSION@
 BUGREPORT	:= @PACKAGE_BUGREPORT@
 AR_LIB		:= @AR_LIB@
 SH_LIB		:= @SH_LIB@
+SOVERSION	:= 1
 
 # paths
 prefix		:= @prefix@
@@ -55,7 +56,7 @@ exec_prefix	:= @exec_prefix@
 VPATH		:= @srcdir@
 srcdir		:= @srcdir@
 libdir		:= @libdir@
-include_dirs	:= . include
+include_dirs	:= . ./include
 
 # programs
 CC		:= @CC@
@@ -981,7 +982,7 @@ src/nco/src/nco.utilities.o : %.o : %.c $(include_headers)
 
 # autotests
 nco_autotests :=						\
-	src/nco/tests/nco_crcf_copy_autotest.c			\
+	src/nco/tests/nco_crcf_autotest.c			\
 	src/nco/tests/nco_crcf_frequency_autotest.c		\
 	src/nco/tests/nco_crcf_mix_autotest.c			\
 	src/nco/tests/nco_crcf_phase_autotest.c			\
@@ -1077,8 +1078,8 @@ $(random_objects) : %.o : %.c $(include_headers)
 # autotests
 random_autotests :=						\
 	src/random/tests/scramble_autotest.c			\
-
-#	src/random/tests/random_autotest.c
+	src/random/tests/random_autotest.c			\
+	src/random/tests/random_distributions_autotest.c	\
 
 
 # benchmarks
@@ -1274,7 +1275,7 @@ libliquid.a : $(objects)
 	${RANLIB} $@
 
 libliquid.so : libliquid.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive $(LIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -shared -Xlinker -soname=libliquid.so.$(SOVERSION) -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive $(LIBS)
 
 # static archive and library objects
 all: ${ARCHIVE_LIB} ${SHARED_LIB}
@@ -1386,7 +1387,7 @@ install: all
 	install -m 644 -p libliquid.${SH_LIB} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${VERSION}
 	install -m 644 -p include/liquid.h $(DESTDIR)$(prefix)/include/liquid/liquid.h
 	ln -sf libliquid.${SH_LIB}.${VERSION} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
-	ln -sf libliquid.${SH_LIB}.${VERSION} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.1
+	ln -sf libliquid.${SH_LIB}.${VERSION} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${SOVERSION}
 	@echo ""
 	@echo "---------------------------------------------------------"
 	@echo "  liquid-dsp was successfully installed.     "
@@ -1411,7 +1412,7 @@ uninstall:
 	$(RM) $(DESTDIR)$(prefix)/include/liquid/liquid.h
 	$(RM) $(DESTDIR)$(libdir)/libliquid.${AR_LIB}
 	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${VERSION}
-	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.1
+	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${SOVERSION}
 	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
 	@echo "done."
 
@@ -1480,7 +1481,7 @@ clean-check:
 	$(RM) autotest/logs/*.bin autotest/logs/*.gnu autotest/logs/*.png
 
 ##
-## TARGET : doc-check - build and run basic documentation checks
+## TARGET : check-doc - build and run basic documentation checks
 ##
 
 # C example
@@ -1517,10 +1518,10 @@ readme.bind.example : % : %.o ${ARCHIVE_LIB}
 readme.bind.py : README.md
 	${SED} -n '229,236p' $< > $@
 
-doc-check : readme.c.example readme.link.example readme.bind.example readme.bind.py ${pythonlib}
+check-doc : readme.c.example readme.link.example readme.bind.example readme.bind.py ${pythonlib}
 	./readme.c.example && ./readme.link.example && ./readme.bind.example && python3 readme.bind.py
 
-clean-doc-check:
+clean-check-doc:
 	${RM} readme.*.example* readme.bind.py
 
 ##
@@ -1673,6 +1674,7 @@ example_programs :=						\
 	examples/firpfbch_crcf_analysis_example			\
 	examples/firpfbch_crcf_msource_example			\
 	examples/firpfbch_crcf_synthesis_example		\
+	examples/flexframesync_debug_example			\
 	examples/flexframesync_example				\
 	examples/flexframesync_reconfig_example			\
 	examples/framesync64_example				\
@@ -1960,7 +1962,7 @@ programs: all xautotest benchmark examples sandbox
 ##
 ## TARGET : world     - build absolutely everything
 ##
-world : all check bench doc-check examples python sandbox
+world : all check bench check-doc examples python sandbox
 
 ##
 ## TARGET : clean     - clean build (objects, dependencies, libraries, etc.)
@@ -1973,7 +1975,7 @@ clean-modules:
 	$(RM) src/*/src/*.o src/*/bench/*.o src/*/tests/*.o
 	$(RM) src/libliquid.o
 
-clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox clean-doc-check clean-bind
+clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox clean-check-doc clean-bind
 	$(RM) ${ARCHIVE_LIB} ${SHARED_LIB} $(extra_clean)
 
 ##

@@ -65,6 +65,7 @@ qs1dsearch qs1dsearch_copy(qs1dsearch _q)
 
 int qs1dsearch_destroy(qs1dsearch _q)
 {
+    free(_q);
     return LIQUID_OK;
 }
 

@@ -251,8 +251,11 @@ int NCO(_pll_set_bandwidth)(NCO() _q,
 int NCO(_pll_step)(NCO() _q,
                    T     _dphi)
 {
+    // TODO: clamp to prevent large changes?
     // increase frequency proportional to error
     NCO(_adjust_frequency)(_q, _dphi*_q->alpha);
+
+    // TODO: ensure frequency doesn't run away
 
     // increase phase proportional to error
     NCO(_adjust_phase)(_q, _dphi*_q->beta);
@@ -382,6 +385,10 @@ int NCO(_mix_block_down)(NCO()        _q,
 // constrain phase (or frequency) and convert to fixed-point
 uint32_t NCO(_constrain)(float _theta)
 {
+#if 0
+    // NOTE: there seems to be an occasional issue with this causing tests to fail,
+    //       namely randomly setting the frequency to be pi radians/sample. This
+    //       results in nco_crcf_pll not locking
     // divide value by 2*pi and compute modulo
     float p = _theta * 0.159154943091895;   // 1/(2 pi) ~ 0.159154943091895
 
@@ -394,6 +401,13 @@ uint32_t NCO(_constrain)(float _theta)
     // map to range of precision needed
     uint32_t retVal = (uint32_t)(fpart * 0xffffffff);
     return retVal >= UINT_MAX ? UINT_MAX : retVal;
+#else
+    // NOTE: this is not efficient, but resolves the issue above
+    while (_theta >= 2*M_PI) _theta -= 2*M_PI;
+    while (_theta <       0) _theta += 2*M_PI;
+
+    return (uint32_t) ((_theta/(2*M_PI)) * 0xffffffff);
+#endif
 }
 
 // compute index for sine look-up table
