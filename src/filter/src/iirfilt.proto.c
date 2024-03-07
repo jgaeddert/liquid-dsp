@@ -350,8 +350,8 @@ IIRFILT() IIRFILT(_create_differentiator)()
         0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *  -40.51510f),
         0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *   40.51510f),
         0.1886088f,};
-    // gain, digital, differentiator
-    float complex kdd = 2.09049284907492e-05f;
+    // gain, digital, differentiator (slight adjustment added for proper gain)
+    float complex kdd = 2.09049284907492e-05f / 1.033477783203125000f;
 
     // second-order sections
     // allocate 12 values for 4 second-order sections each with

@@ -23,7 +23,59 @@
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
-//
+void autotest_iirfilt_integrator()
+{
+    // options
+    unsigned int num_ones    = 10;
+    unsigned int num_samples = 40;
+
+    // allocate memory for data arrays
+    float buf_0[num_samples]; // filter input
+    float buf_1[num_samples]; // filter output
+
+    // generate input signal
+    unsigned int i;
+    for (i=0; i<num_samples; i++)
+        buf_0[i] = i < num_ones ? 1 : 0;
+
+    // create integrator and run on sample data
+    iirfilt_rrrf q = iirfilt_rrrf_create_integrator();
+    iirfilt_rrrf_execute_block(q, buf_0, num_samples, buf_1);
+    iirfilt_rrrf_destroy(q);
+
+    //for (i=0; i<num_samples; i++)
+    //    printf("[%3u] %20.17f\n", i, buf_1[i]);
+
+    // check that last value matches expected
+    CONTEND_DELTA(buf_1[num_samples-1], num_ones, 0.01f);
+}
+
+void autotest_iirfilt_differentiator()
+{
+    // options
+    unsigned int num_samples = 400;
+
+    // allocate memory for data arrays
+    float buf_0[num_samples]; // filter input
+    float buf_1[num_samples]; // filter output
+
+    // generate input signal
+    unsigned int i;
+    for (i=0; i<num_samples; i++)
+        buf_0[i] = i;
+
+    // create differentiator and run on sample data
+    iirfilt_rrrf q = iirfilt_rrrf_create_differentiator();
+    iirfilt_rrrf_execute_block(q, buf_0, num_samples, buf_1);
+    iirfilt_rrrf_destroy(q);
+
+    //for (i=0; i<num_samples; i++)
+    //    printf("[%3u] %20.17f\n", i, buf_1[i]);
+
+    // check that derivative is equal to 1
+    CONTEND_DELTA(buf_1[num_samples-1], 1.0f, 0.01f);
+}
+
 void autotest_iirfilt_dcblock()
 {
     // options
@@ -66,30 +118,6 @@ void autotest_iirfilt_dcblock()
     // destroy objects
     spgramcf_destroy(q);
     iirfilt_crcf_destroy(filter);
-}
-
-void autotest_iirfilt_integrator()
-{
-    // options
-    unsigned int num_ones    = 10;
-    unsigned int num_samples = 40;
-
-    // allocate memory for data arrays
-    float buf_0[num_samples]; // filter input
-    float buf_1[num_samples]; // filter output
-
-    // generate input signal
-    unsigned int i;
-    for (i=0; i<num_samples; i++)
-        buf_0[i] = i < num_ones ? 1 : 0;
-
-    // create integrator and run on sample data
-    iirfilt_rrrf q = iirfilt_rrrf_create_integrator();
-    iirfilt_rrrf_execute_block(q, buf_0, num_samples, buf_1);
-    iirfilt_rrrf_destroy(q);
-
-    // check that last value matches expected
-    CONTEND_DELTA(buf_1[num_samples-1], num_ones, 0.1f);
 }
 
 void testbench_iirfilt_copy(liquid_iirdes_format _format)
