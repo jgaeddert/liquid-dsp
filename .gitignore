@@ -34,6 +34,7 @@ xautotest
 autotest.json
 autotest/logs/*.bin
 autotest/logs/*.gnu
+readme.*
 
 # miscellany
 octave-core
