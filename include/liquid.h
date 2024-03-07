@@ -3437,6 +3437,16 @@ int IIRFILT(_print)(IIRFILT() _q);                                          \
 /* Reset iirfilt object internals                                       */  \
 int IIRFILT(_reset)(IIRFILT() _q);                                          \
                                                                             \
+/* Set output scaling for filter                                        */  \
+/*  _q      : filter object                                             */  \
+/*  _scale  : scaling factor to apply to each output sample             */  \
+int IIRFILT(_set_scale)(IIRFILT() _q, TC _scale);                           \
+                                                                            \
+/* Get output scaling for filter                                        */  \
+/*  _q      : filter object                                             */  \
+/*  _scale  : scaling factor applied to each output sample              */  \
+int IIRFILT(_get_scale)(IIRFILT() _q, TC * _scale);                         \
+                                                                            \
 /* Compute filter output given a single input sample                    */  \
 /*  _q      : iirfilt object                                            */  \
 /*  _x      : input sample                                              */  \

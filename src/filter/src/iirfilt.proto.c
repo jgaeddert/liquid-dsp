@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,6 +69,8 @@ struct IIRFILT(_s) {
     // second-order sections 
     IIRFILTSOS() * qsos;    // second-order sections filters
     unsigned int nsos;      // number of second-order sections
+
+    TC scale;               // output scaling factor
 };
 
 // initialize internal objects/arrays
@@ -143,7 +145,8 @@ IIRFILT() IIRFILT(_create)(TC *         _b,
     // reset internal state
     IIRFILT(_reset)(q);
     
-    // return iirfilt object
+    // set scale and return
+    IIRFILT(_set_scale)(q, 1);
     return q;
 }
 
@@ -191,6 +194,9 @@ IIRFILT() IIRFILT(_create_sos)(TC *         _B,
         q->qsos[i] = IIRFILTSOS(_create)(bt,at);
         //q->qsos[i] = IIRFILT(_create)(q->b+3*i,3,q->a+3*i,3);
     }
+
+    // set scale and return
+    IIRFILT(_set_scale)(q, 1);
     return q;
 }
 
@@ -257,9 +263,7 @@ IIRFILT() IIRFILT(_create_prototype)(liquid_iirdes_filtertype _ftype,
 // create simplified low-pass Butterworth IIR filter
 //  _n      : filter order
 //  _fc     : low-pass prototype cut-off frequency
-IIRFILT() IIRFILT(_create_lowpass)(
-            unsigned int _order,
-            float        _fc)
+IIRFILT() IIRFILT(_create_lowpass)(unsigned int _order, float _fc)
 {
     return IIRFILT(_create_prototype)(LIQUID_IIRDES_BUTTER,
                                       LIQUID_IIRDES_LOWPASS,
@@ -542,6 +546,20 @@ int IIRFILT(_reset)(IIRFILT() _q)
     return LIQUID_OK;
 }
 
+// set scale value to be applied to each output sample
+int IIRFILT(_set_scale)(IIRFILT() _q, TC _scale)
+{
+    _q->scale = _scale;
+    return LIQUID_OK;
+}
+
+// get output scaling for filter
+int IIRFILT(_get_scale)(IIRFILT() _q, TC * _scale)
+{
+    *_scale = _q->scale;
+    return LIQUID_OK;
+}
+
 // execute normal iir filter using traditional numerator/denominator
 // form (not second-order sections form)
 //  _q      :   iirfilt object
@@ -581,6 +599,8 @@ int IIRFILT(_execute_norm)(IIRFILT() _q,
     // set return value
     *_y = y0;
 #endif
+    // apply scaling
+    *_y *= _q->scale;
     return LIQUID_OK;
 }
 
@@ -602,7 +622,7 @@ int IIRFILT(_execute_sos)(IIRFILT() _q,
         // output for filter n becomes input to filter n+1
         t0 = t1;
     }
-    *_y = t1;
+    *_y = t1 * _q->scale;
     return LIQUID_OK;
 }
 
@@ -653,8 +673,8 @@ unsigned int IIRFILT(_get_length)(IIRFILT() _q)
 //  _fc     :   frequency
 //  _H      :   output frequency response
 int IIRFILT(_freqresponse)(IIRFILT()       _q,
-                          float           _fc,
-                          float complex * _H)
+                           float           _fc,
+                           float complex * _H)
 {
     unsigned int i;
     float complex H = 0.0f;
@@ -692,7 +712,7 @@ int IIRFILT(_freqresponse)(IIRFILT()       _q,
     }
 
     // set return value
-    *_H = H;
+    *_H = H * _q->scale;
     return LIQUID_OK;
 }
 
