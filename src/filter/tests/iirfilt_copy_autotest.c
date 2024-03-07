@@ -68,6 +68,30 @@ void autotest_iirfilt_dcblock()
     iirfilt_crcf_destroy(filter);
 }
 
+void autotest_iirfilt_integrator()
+{
+    // options
+    unsigned int num_ones    = 10;
+    unsigned int num_samples = 200;
+
+    // allocate memory for data arrays
+    float buf_0[num_samples]; // filter input
+    float buf_1[num_samples]; // filter output
+
+    // generate input signal
+    unsigned int i;
+    for (i=0; i<num_samples; i++)
+        buf_0[i] = i < num_ones ? 1 : 0;
+
+    // create integrator and run on sample data
+    iirfilt_rrrf q = iirfilt_rrrf_create_integrator();
+    iirfilt_rrrf_execute_block(q, buf_0, num_samples, buf_1);
+    iirfilt_rrrf_destroy(q);
+
+    // check that last value matches expected
+    CONTEND_DELTA(buf_1[num_samples-1], num_ones, 0.1f);
+}
+
 void testbench_iirfilt_copy(liquid_iirdes_format _format)
 {
     // create base object

@@ -301,8 +301,8 @@ IIRFILT() IIRFILT(_create_integrator)()
         0.1641457f * cexpf(_Complex_I * M_PI / 180.0f *  -21.89539f),
         0.1641457f * cexpf(_Complex_I * M_PI / 180.0f *   21.89539f),
         1.0f,};
-    // gain, digital, integrator
-    float complex kdi = -1.89213380759321e-05f;
+    // gain, digital, integrator (slight adjustment added for proper gain)
+    float complex kdi = -1.89213380759321e-05f / 0.9695401191711425781f;
 
     // second-order sections
     // allocate 12 values for 4 second-order sections each with
