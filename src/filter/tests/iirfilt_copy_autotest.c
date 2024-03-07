@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,4 +58,35 @@ void testbench_iirfilt_copy(liquid_iirdes_format _format)
 
 void autotest_iirfilt_copy_tf () { testbench_iirfilt_copy(LIQUID_IIRDES_TF ); }
 void autotest_iirfilt_copy_sos() { testbench_iirfilt_copy(LIQUID_IIRDES_SOS); }
+
+// test errors and invalid configuration
+void autotest_iirfilt_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping iirfilt config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // test copying/creating invalid objects
+    CONTEND_ISNULL( iirfilt_crcf_copy(NULL) );
+    CONTEND_ISNULL( iirfilt_crcf_create(NULL, 0, NULL, 5) ); // nb is 0
+    CONTEND_ISNULL( iirfilt_crcf_create(NULL, 5, NULL, 0) ); // nb is 0
+    CONTEND_ISNULL( iirfilt_crcf_create_sos(NULL, NULL, 0) ); // nsos is 0
+
+    // create valid object
+    iirfilt_crcf filter = iirfilt_crcf_create_lowpass(7, 0.1f);
+    CONTEND_EQUALITY( LIQUID_OK, iirfilt_crcf_print(filter) );
+
+    // check properties
+    CONTEND_EQUALITY( LIQUID_OK, iirfilt_crcf_set_scale(filter, 7.22f) );
+    float scale;
+    CONTEND_EQUALITY( LIQUID_OK, iirfilt_crcf_get_scale(filter, &scale) );
+    CONTEND_EQUALITY( scale, 7.22f );
+    CONTEND_EQUALITY( 7+1, iirfilt_crcf_get_length(filter) );
+
+    // destroy object
+    iirfilt_crcf_destroy(filter);
+}
 
