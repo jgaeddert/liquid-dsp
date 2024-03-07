@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -95,6 +95,12 @@ RRESAMP() RRESAMP(_create_kaiser)(unsigned int _interp,
     unsigned int gcd = liquid_gcd(_interp, _decim);
     _interp /= gcd;
     _decim  /= gcd;
+
+    // check for critical bandwidth
+    if (_bw < 0)
+        _bw = _interp > _decim ? 0.5f : 0.5f * (float)_interp / (float)_decim;
+    else if (_bw > 0.5f)
+        return liquid_error_config("rresamp_%s_create_kaiser(), invalid bandwidth (%g), must be less than 0.5", EXTENSION_FULL, _bw);
 
     // design filter
     unsigned int h_len = 2*_interp*_m + 1;

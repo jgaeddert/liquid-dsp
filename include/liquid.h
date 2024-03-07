@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -4367,7 +4367,9 @@ RRESAMP() RRESAMP(_create)(unsigned int _interp,                            \
 /*            the resampler is configured as an interpolator a value of */  \
 /*            0.5 (critically filtered) or less is recommended.         */  \
 /*            When the resampler is configured as a decimator, the      */  \
-/*            critical sampling rate is 0.5*_interp/_decim,             */  \
+/*            critical bandwidth is 0.5*_interp/_decim.                 */  \
+/*            When _bw < 0, the object will use the appropriate         */  \
+/*            critical bandwidth (interpolation or decimation),         */  \
 /*            0 < _bw <= 0.5                                            */  \
 /*  _as     : filter stop-band attenuation [dB],        0 < _as         */  \
 RRESAMP() RRESAMP(_create_kaiser)(unsigned int _interp,                     \

@@ -19,7 +19,7 @@ void usage()
     printf("  -P <interp>   : interpolation rate,                default: 5\n");
     printf("  -Q <decim>    : decimation rate,                   default: 3\n");
     printf("  -m <len>      : filter semi-length (delay),        default: 12\n");
-    printf("  -w <bandwidth>: filter bandwidth,                  default: 0.5f\n");
+    printf("  -w <bandwidth>: filter bandwidth,                  default: -1\n");
     printf("  -s <atten>    : filter stop-band attenuation [dB], default: 60\n");
 }
 
@@ -28,8 +28,8 @@ int main(int argc, char*argv[])
     // options
     unsigned int interp = 3;        // output rate (interpolation factor)
     unsigned int decim  = 5;        // input rate (decimation factor)
-    unsigned int m      = 12;       // resampling filter semi-length (filter delay)
-    float        bw     = 0.5f;     // resampling filter bandwidth
+    unsigned int m      = 20;       // resampling filter semi-length (filter delay)
+    float        bw     = -1.0f;    // resampling filter bandwidth
     float        As     = 60.0f;    // resampling filter stop-band attenuation [dB]
 
     int dopt;
@@ -57,6 +57,7 @@ int main(int argc, char*argv[])
 
     // create resampler object
     rresamp_crcf q = rresamp_crcf_create_kaiser(interp,decim,m,bw,As);
+    if (q == NULL) return -1;
     rresamp_crcf_print(q);
     float rate = rresamp_crcf_get_rate(q);
 
@@ -64,12 +65,14 @@ int main(int argc, char*argv[])
     unsigned int n = 120e3 / (interp > decim ? interp : decim);
 
     // input/output buffers
-    float complex buf_x[decim]; // input
+    float complex buf_x[decim ]; // input
     float complex buf_y[interp]; // output
 
-    // create signal generator (wide-band noise)
+    // create signal generator (wide-band noise and tone)
+    float noise_bw = 0.7f * (rate > 1.0 ? 1.0 : rate);
     msourcecf gen = msourcecf_create_default();
-    msourcecf_add_noise(gen, 0.0f, 0.7f * (rate > 1.0 ? 1.0 : rate), 0);
+    msourcecf_add_noise(gen, 0.0f, noise_bw,  0);
+    msourcecf_add_tone (gen, rate > 1.0 ? 0.4 : noise_bw, 0.00f, 20);
 
     // create spectral periodogram objects
     unsigned int nfft = 2400;
@@ -123,7 +126,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"figure('Color','white','position',[500 500 800 600]);\n");
     fprintf(fid,"plot(fx,X,'-','LineWidth',2,'Color',[0.5 0.5 0.5],'MarkerSize',1,...\n");
     fprintf(fid,"     fy,Y,'-','LineWidth',2,'Color',[0.5 0 0],    'MarkerSize',1);\n");
-    fprintf(fid,"legend('original','resampled','location','northeast');");
+    fprintf(fid,"legend('original','resampled','location','northwest');");
     fprintf(fid,"xlabel('Normalized Frequency [f/F_s]');\n");
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
     fprintf(fid,"fmin = min(fx(   1),fy(   1));\n");
