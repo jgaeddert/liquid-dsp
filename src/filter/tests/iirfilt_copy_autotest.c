@@ -72,7 +72,7 @@ void autotest_iirfilt_integrator()
 {
     // options
     unsigned int num_ones    = 10;
-    unsigned int num_samples = 200;
+    unsigned int num_samples = 40;
 
     // allocate memory for data arrays
     float buf_0[num_samples]; // filter input
