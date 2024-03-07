@@ -1,10 +1,5 @@
-//
-// rresamp_crcf_example.c
-//
 // Demonstration of rresamp object whereby an input signal
-// is resampled at a rational rate Q/P.
-//
-
+// is resampled at a rational rate P/Q = interp/decim.
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>
@@ -19,10 +14,10 @@
 void usage()
 {
     printf("Usage: %s [OPTION]\n", __FILE__);
-    printf("Resample a signal at a rate P/Q\n");
+    printf("Resample a signal at a rate interp/decim\n");
     printf("  -h            : print help\n");
-    printf("  -P <decim>    : decimation (output) rate,          default: 3\n");
-    printf("  -Q <interp>   : interpolation (input) rate,        default: 5\n");
+    printf("  -P <interp>   : interpolation rate,                default: 5\n");
+    printf("  -Q <decim>    : decimation rate,                   default: 3\n");
     printf("  -m <len>      : filter semi-length (delay),        default: 12\n");
     printf("  -w <bandwidth>: filter bandwidth,                  default: 0.5f\n");
     printf("  -s <atten>    : filter stop-band attenuation [dB], default: 60\n");
@@ -31,46 +26,46 @@ void usage()
 int main(int argc, char*argv[])
 {
     // options
-    unsigned int    P   = 3;        // output rate (interpolation factor)
-    unsigned int    Q   = 5;        // input rate (decimation factor)
-    unsigned int    m   = 12;       // resampling filter semi-length (filter delay)
-    float           bw  = 0.5f;     // resampling filter bandwidth
-    float           As  = 60.0f;    // resampling filter stop-band attenuation [dB]
+    unsigned int interp = 3;        // output rate (interpolation factor)
+    unsigned int decim  = 5;        // input rate (decimation factor)
+    unsigned int m      = 12;       // resampling filter semi-length (filter delay)
+    float        bw     = 0.5f;     // resampling filter bandwidth
+    float        As     = 60.0f;    // resampling filter stop-band attenuation [dB]
 
     int dopt;
     while ((dopt = getopt(argc,argv,"hP:Q:m:s:w:")) != EOF) {
         switch (dopt) {
-        case 'h':   usage();            return 0;
-        case 'P':   P    = atoi(optarg); break;
-        case 'Q':   Q    = atoi(optarg); break;
-        case 'm':   m    = atoi(optarg); break;
-        case 'w':   bw   = atof(optarg); break;
-        case 's':   As   = atof(optarg); break;
+        case 'h': usage();               return 0;
+        case 'P': interp = atoi(optarg); break;
+        case 'Q': decim  = atoi(optarg); break;
+        case 'm': m      = atoi(optarg); break;
+        case 'w': bw     = atof(optarg); break;
+        case 's': As     = atof(optarg); break;
         default:
             exit(1);
         }
     }
 
     // validate input
-    if (P == 0 || P > 1000) {
-        fprintf(stderr,"error: %s, input rate P must be in [1,1000]\n", argv[0]);
+    if (interp == 0 || interp > 1000) {
+        fprintf(stderr,"error: %s, interpolation rate must be in [1,1000]\n", argv[0]);
         exit(1);
-    } else if (Q == 0 || Q > 1000) {
-        fprintf(stderr,"error: %s, output rate Q must be in [1,1000]\n", argv[0]);
+    } else if (decim == 0 || decim > 1000) {
+        fprintf(stderr,"error: %s, decimation rate must be in [1,1000]\n", argv[0]);
         exit(1);
     }
 
     // create resampler object
-    rresamp_crcf q = rresamp_crcf_create_kaiser(P,Q,m,bw,As);
+    rresamp_crcf q = rresamp_crcf_create_kaiser(interp,decim,m,bw,As);
     rresamp_crcf_print(q);
     float rate = rresamp_crcf_get_rate(q);
 
     // number of sample blocks (limit by large interp/decim rates)
-    unsigned int n = 120e3 / (P > Q ? P : Q);
+    unsigned int n = 120e3 / (interp > decim ? interp : decim);
 
     // input/output buffers
-    float complex buf_x[Q]; // input
-    float complex buf_y[P]; // output
+    float complex buf_x[decim]; // input
+    float complex buf_y[interp]; // output
 
     // create signal generator (wide-band noise)
     msourcecf gen = msourcecf_create_default();
@@ -84,15 +79,15 @@ int main(int argc, char*argv[])
     // generate input signal (filtered noise)
     unsigned int i;
     for (i=0; i<n; i++) {
-        // write Q input samples to buffer
-        msourcecf_write_samples(gen, buf_x, Q);
+        // write decim input samples to buffer
+        msourcecf_write_samples(gen, buf_x, decim);
 
-        // run resampler and write P output samples
+        // run resampler and write interp output samples
         rresamp_crcf_execute(q, buf_x, buf_y);
 
         // write input and output to respective spectral periodogram estimate
-        spgramcf_write(px, buf_x, Q);
-        spgramcf_write(py, buf_y, P);
+        spgramcf_write(px, buf_x, decim);
+        spgramcf_write(py, buf_y, interp);
     }
     printf("num samples out : %llu\n", spgramcf_get_num_samples_total(py));
     printf("num samples in  : %llu\n", spgramcf_get_num_samples_total(px));
@@ -111,12 +106,12 @@ int main(int argc, char*argv[])
     fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
-    fprintf(fid,"P    = %u;\n", P);
-    fprintf(fid,"Q    = %u;\n", Q);
-    fprintf(fid,"r    = P/Q;\n");
-    fprintf(fid,"nfft = %u;\n", nfft);
-    fprintf(fid,"X    = zeros(1,nfft);\n");
-    fprintf(fid,"Y    = zeros(1,nfft);\n");
+    fprintf(fid,"interp = %u;\n", interp);
+    fprintf(fid,"decim  = %u;\n", decim);
+    fprintf(fid,"r      = interp/decim;\n");
+    fprintf(fid,"nfft   = %u;\n", nfft);
+    fprintf(fid,"X      = zeros(1,nfft);\n");
+    fprintf(fid,"Y      = zeros(1,nfft);\n");
     for (i=0; i<nfft; i++) {
         fprintf(fid,"X(%3u) = %12.4e;\n", i+1, X[i]);
         fprintf(fid,"Y(%3u) = %12.4e;\n", i+1, Y[i]);
