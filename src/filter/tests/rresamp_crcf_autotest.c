@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,8 @@
 #define max(a,b) ((a)>(b)?(a):(b))
 
 // test rational-rate resampler
-void test_harness_rresamp_crcf(unsigned int _P,
-                               unsigned int _Q,
+void test_harness_rresamp_crcf(unsigned int _interp,
+                               unsigned int _decim,
                                unsigned int _m,
                                float        _bw,
                                float        _as)
@@ -41,7 +41,7 @@ void test_harness_rresamp_crcf(unsigned int _P,
     float tol = 0.5f;
 
     // create resampler with rate P/Q
-    rresamp_crcf resamp = rresamp_crcf_create_kaiser(_P, _Q, _m, _bw, _as);
+    rresamp_crcf resamp = rresamp_crcf_create_kaiser(_interp, _decim, _m, _bw, _as);
     float r = rresamp_crcf_get_rate(resamp);
 
     // create and configure objects
@@ -50,17 +50,17 @@ void test_harness_rresamp_crcf(unsigned int _P,
     symstreamrcf_set_gain(gen, sqrtf(bw*r));
 
     // generate samples and push through spgram object
-    float complex buf_0[_Q]; // input buffer
-    float complex buf_1[_P]; // output buffer
+    float complex buf_0[_decim]; // input buffer
+    float complex buf_1[_interp]; // output buffer
     while (spgramcf_get_num_samples_total(q) < n) {
         // generate block of samples
-        symstreamrcf_write_samples(gen, buf_0, _Q);
+        symstreamrcf_write_samples(gen, buf_0, _decim);
 
         // resample
         rresamp_crcf_execute(resamp, buf_0, buf_1);
 
         // run samples through the spgram object
-        spgramcf_write(q, buf_1, _P);
+        spgramcf_write(q, buf_1, _interp);
     }
 
     // verify result
@@ -71,8 +71,10 @@ void test_harness_rresamp_crcf(unsigned int _P,
         {.fmin=-0.4f*bw, .fmax=+0.4f*bw, .pmin=0-tol, .pmax=  0 +tol, .test_lo=1, .test_hi=1},
         {.fmin=+0.6f*bw, .fmax=+0.5f,    .pmin=0,     .pmax=-_as+tol, .test_lo=0, .test_hi=1},
     };
+    char filename[256];
+    sprintf(filename,"autotest/logs/rresamp_crcf_P%u_Q%u.m", _interp, _decim);
     liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/rresamp_crcf.m" : NULL);
+        liquid_autotest_verbose ? filename : NULL);
 
     // destroy objects
     rresamp_crcf_destroy(resamp);
