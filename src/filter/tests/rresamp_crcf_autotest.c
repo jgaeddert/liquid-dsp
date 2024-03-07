@@ -162,3 +162,35 @@ void autotest_rresamp_copy()
     symstreamrcf_destroy(gen);
 }
 
+// test errors and invalid configuration
+void autotest_rresamp_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping rresamp config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    CONTEND_ISNULL( rresamp_crcf_copy(NULL) );
+    // test creating invalid objects
+
+    // create valid object
+    rresamp_crcf resamp = rresamp_crcf_create_kaiser(30, 50, 20, 0.3f, 60.0f);
+    CONTEND_EQUALITY( LIQUID_OK, rresamp_crcf_print(resamp) );
+    CONTEND_EQUALITY( LIQUID_OK, rresamp_crcf_set_scale(resamp, 7.22f) );
+    float scale;
+    CONTEND_EQUALITY( LIQUID_OK, rresamp_crcf_get_scale(resamp, &scale) );
+    CONTEND_EQUALITY( scale, 7.22f );
+
+    // get properties
+    CONTEND_EQUALITY(  20,  rresamp_crcf_get_delay    (resamp) );
+    CONTEND_EQUALITY(  10,  rresamp_crcf_get_block_len(resamp) );
+    CONTEND_EQUALITY( 0.6f, rresamp_crcf_get_rate     (resamp) );
+    CONTEND_EQUALITY(  30,  rresamp_crcf_get_P        (resamp) );
+    CONTEND_EQUALITY(   3,  rresamp_crcf_get_interp   (resamp) );
+    CONTEND_EQUALITY(  50,  rresamp_crcf_get_Q        (resamp) );
+    CONTEND_EQUALITY(   5,  rresamp_crcf_get_decim    (resamp) );
+    rresamp_crcf_destroy(resamp);
+}
+
