@@ -18,7 +18,7 @@ int main() {
     // generate input signal
     unsigned int i;
     for (i=0; i<num_samples; i++)
-        buf_0[i] = (i > 0.1*num_samples && i < 0.6*num_samples ? 1 : 0) + 0.1*randnf();
+        buf_0[i] = (i > 200 && i < 800 ? 1 : 0) + 0.1*randnf();
 
     // design filter from prototype
     iirfilt_rrrf q = iirfilt_rrrf_create_integrator();
@@ -59,7 +59,7 @@ int main() {
     fprintf(fid,"  plot(t,y,'-','Color',[0 0.5 0.2],'LineWidth',2);\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('input with DC offset');\n");
-    fprintf(fid,"  axis([0 num_samples -3 3]);\n");
+    fprintf(fid,"  axis([0 num_samples -3 650]);\n");
     fprintf(fid,"  grid on;\n");
 
     // close output file
