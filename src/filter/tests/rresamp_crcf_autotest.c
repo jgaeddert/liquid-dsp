@@ -172,8 +172,12 @@ void autotest_rresamp_config()
 #if !LIQUID_SUPPRESS_ERROR_OUTPUT
     fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
 #endif
+    // test copying/creating invalid objects
     CONTEND_ISNULL( rresamp_crcf_copy(NULL) );
-    // test creating invalid objects
+    CONTEND_ISNULL( rresamp_crcf_create(0, 5, 20, NULL) ); // interp is 0
+    CONTEND_ISNULL( rresamp_crcf_create(3, 0, 20, NULL) ); // decim is 0
+    CONTEND_ISNULL( rresamp_crcf_create(3, 5,  0, NULL) ); // filter length is 0
+    CONTEND_ISNULL( rresamp_crcf_create_kaiser(3,5,20,99.0f,60) ); // bandwidth > 0.5
 
     // create valid object
     rresamp_crcf resamp = rresamp_crcf_create_kaiser(30, 50, 20, 0.3f, 60.0f);
