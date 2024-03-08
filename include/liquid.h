@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -3437,6 +3437,16 @@ int IIRFILT(_print)(IIRFILT() _q);                                          \
 /* Reset iirfilt object internals                                       */  \
 int IIRFILT(_reset)(IIRFILT() _q);                                          \
                                                                             \
+/* Set output scaling for filter                                        */  \
+/*  _q      : filter object                                             */  \
+/*  _scale  : scaling factor to apply to each output sample             */  \
+int IIRFILT(_set_scale)(IIRFILT() _q, TC _scale);                           \
+                                                                            \
+/* Get output scaling for filter                                        */  \
+/*  _q      : filter object                                             */  \
+/*  _scale  : scaling factor applied to each output sample              */  \
+int IIRFILT(_get_scale)(IIRFILT() _q, TC * _scale);                         \
+                                                                            \
 /* Compute filter output given a single input sample                    */  \
 /*  _q      : iirfilt object                                            */  \
 /*  _x      : input sample                                              */  \
@@ -4367,7 +4377,9 @@ RRESAMP() RRESAMP(_create)(unsigned int _interp,                            \
 /*            the resampler is configured as an interpolator a value of */  \
 /*            0.5 (critically filtered) or less is recommended.         */  \
 /*            When the resampler is configured as a decimator, the      */  \
-/*            critical sampling rate is 0.5*_interp/_decim,             */  \
+/*            critical bandwidth is 0.5*_interp/_decim.                 */  \
+/*            When _bw < 0, the object will use the appropriate         */  \
+/*            critical bandwidth (interpolation or decimation),         */  \
 /*            0 < _bw <= 0.5                                            */  \
 /*  _as     : filter stop-band attenuation [dB],        0 < _as         */  \
 RRESAMP() RRESAMP(_create_kaiser)(unsigned int _interp,                     \
@@ -4381,6 +4393,11 @@ RRESAMP() RRESAMP(_create_kaiser)(unsigned int _interp,                     \
 /* Note that because the filter coefficients are computed internally    */  \
 /* here, the greatest common divisor (gcd) from _interp and _decim is   */  \
 /* internally removed to improve speed.                                 */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)                    */  \
+/*  _interp : interpolation factor,               _interp > 0           */  \
+/*  _decim  : decimation factor,                   _decim > 0           */  \
+/*  _m      : filter semi-length (delay),               0 < _m          */  \
+/*  _beta   : excess bandwidth factor,         0 <= _beta <= 1          */  \
 RRESAMP() RRESAMP(_create_prototype)(int          _type,                    \
                                      unsigned int _interp,                  \
                                      unsigned int _decim,                   \
@@ -4944,6 +4961,10 @@ int SYMSYNC(_lock)(SYMSYNC() _q);                                           \
                                                                             \
 /* Unlock the symbol synchronizer's loop control                        */  \
 int SYMSYNC(_unlock)(SYMSYNC() _q);                                         \
+                                                                            \
+/* Check the lock state of the symbol synchronizer's loop control,      */  \
+/* returning 1 if the object is locked, 0 if unlocked.                  */  \
+int SYMSYNC(_is_locked)(SYMSYNC() _q);                                      \
                                                                             \
 /* Set synchronizer output rate (samples/symbol)                        */  \
 /*  _q      : synchronizer object                                       */  \

@@ -1,10 +1,5 @@
-//
-// iirinterp_crcf_example.c
-//
 // This example demonstrates the iirinterp object (IIR interpolator)
 // interface.
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -22,7 +17,6 @@ void usage()
     printf("  k     : samples/symbol (interp factor), k > 1, default: 4\n");
     printf("  n     : number of input samples, default: 64\n");
 }
-
 
 int main(int argc, char*argv[]) {
     // options
@@ -75,10 +69,7 @@ int main(int argc, char*argv[]) {
     // destroy interpolator object
     iirinterp_crcf_destroy(q);
 
-
-    // 
     // export output file
-    //
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\n");
@@ -93,7 +84,7 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
 
     for (i=0; i<k*num_samples; i++)
-        fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, k*crealf(y[i]), k*cimagf(y[i]));
+        fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
 
     fprintf(fid,"\n\n");
     fprintf(fid,"tx = [0:(  num_samples-1)];\n");

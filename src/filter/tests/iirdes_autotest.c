@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -85,31 +85,23 @@ void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
     unsigned int nfft = 800;    // number of points to evaluate
 
     // design filter from prototype
-    iirfilt_crcf q = iirfilt_crcf_create_prototype(
+    iirfilt_rrrf q = iirfilt_rrrf_create_prototype(
         LIQUID_IIRDES_ELLIP, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
         _n,_fc,0.0f,_ap,_as);
-    if (liquid_autotest_verbose)
-        iirfilt_crcf_print(q);
 
     // compute regions for testing
     float H0 = 0.0f, H1 = -_ap, H2 = -_as;
-
-    // compute response and compare to expected or mask
-    unsigned int i;
-    float H[nfft]; // filter response
-    for (i=0; i<nfft; i++)
-        H[i] = iirfilt_crcf_get_psd(q, (float)i/(float)nfft-0.5f);
 
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=0.0f, .fmax=_fc,   .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
       {.fmin=_fs,  .fmax=+0.5f, .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_spectrum(H, nfft, regions, 2,
+    liquid_autotest_validate_psd_iirfilt_rrrf(q, nfft, regions, 2,
         liquid_autotest_verbose ? "autotest/logs/iirdes_ellip_lowpass.m" : NULL);
 
     // destroy filter object
-    iirfilt_crcf_destroy(q);
+    iirfilt_rrrf_destroy(q);
 }
 
 // test different filter designs
@@ -129,31 +121,23 @@ void testbench_iirdes_cheby1_lowpass(unsigned int _n,  // filter order
     unsigned int nfft = 800;    // number of points to evaluate
 
     // design filter from prototype
-    iirfilt_crcf q = iirfilt_crcf_create_prototype(
+    iirfilt_rrrf q = iirfilt_rrrf_create_prototype(
         LIQUID_IIRDES_CHEBY1, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
         _n,_fc,0.0f,_ap,60.0f);
-    if (liquid_autotest_verbose)
-        iirfilt_crcf_print(q);
 
     // compute regions for testing
     float H0 = 0.0f, H1 = -_ap, H2 = -60;
-
-    // compute response and compare to expected or mask
-    unsigned int i;
-    float H[nfft]; // filter response
-    for (i=0; i<nfft; i++)
-        H[i] = iirfilt_crcf_get_psd(q, (float)i/(float)nfft-0.5f);
 
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=0.0f, .fmax=_fc,   .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
       {.fmin=_fs,  .fmax=+0.5f, .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_spectrum(H, nfft, regions, 2,
+    liquid_autotest_validate_psd_iirfilt_rrrf(q, nfft, regions, 2,
         liquid_autotest_verbose ? "autotest/logs/iirdes_cheby1_lowpass.m" : NULL);
 
     // destroy filter object
-    iirfilt_crcf_destroy(q);
+    iirfilt_rrrf_destroy(q);
 }
 
 // test different filter designs
@@ -173,31 +157,23 @@ void testbench_iirdes_cheby2_lowpass(unsigned int _n,  // filter order
     unsigned int nfft = 800;    // number of points to evaluate
 
     // design filter from prototype
-    iirfilt_crcf q = iirfilt_crcf_create_prototype(
+    iirfilt_rrrf q = iirfilt_rrrf_create_prototype(
         LIQUID_IIRDES_CHEBY2, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
         _n,_fc,0.0f,0.1,_as);
-    if (liquid_autotest_verbose)
-        iirfilt_crcf_print(q);
 
     // compute regions for testing
     float H0 = 0.0f, H1 = -3, H2 = -_as;
-
-    // compute response and compare to expected or mask
-    unsigned int i;
-    float H[nfft]; // filter response
-    for (i=0; i<nfft; i++)
-        H[i] = iirfilt_crcf_get_psd(q, (float)i/(float)nfft-0.5f);
 
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=0.0f, .fmax=_fp,   .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
       {.fmin=_fc,  .fmax=+0.5f, .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_spectrum(H, nfft, regions, 2,
+    liquid_autotest_validate_psd_iirfilt_rrrf(q, nfft, regions, 2,
         liquid_autotest_verbose ? "autotest/logs/iirdes_cheby2_lowpass.m" : NULL);
 
     // destroy filter object
-    iirfilt_crcf_destroy(q);
+    iirfilt_rrrf_destroy(q);
 }
 
 // test different filter designs
@@ -218,31 +194,23 @@ void testbench_iirdes_butter_lowpass(unsigned int _n,  // filter order
     unsigned int nfft = 800;    // number of points to evaluate
 
     // design filter from prototype
-    iirfilt_crcf q = iirfilt_crcf_create_prototype(
+    iirfilt_rrrf q = iirfilt_rrrf_create_prototype(
         LIQUID_IIRDES_BUTTER, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
         _n,_fc,0.0f,1,60);
-    if (liquid_autotest_verbose)
-        iirfilt_crcf_print(q);
 
     // compute regions for testing
     float H0 = 0.0f, H1 = -3, H2 = -60.0f;
-
-    // compute response and compare to expected or mask
-    unsigned int i;
-    float H[nfft]; // filter response
-    for (i=0; i<nfft; i++)
-        H[i] = iirfilt_crcf_get_psd(q, (float)i/(float)nfft-0.5f);
 
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=0.0f, .fmax=0.98*_fc, .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
       {.fmin=_fs,  .fmax=+0.5f,    .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_spectrum(H, nfft, regions, 2,
+    liquid_autotest_validate_psd_iirfilt_rrrf(q, nfft, regions, 2,
         liquid_autotest_verbose ? "autotest/logs/iirdes_butter_lowpass.m" : NULL);
 
     // destroy filter object
-    iirfilt_crcf_destroy(q);
+    iirfilt_rrrf_destroy(q);
 }
 
 // test different filter designs
@@ -263,16 +231,8 @@ void autotest_iirdes_ellip_highpass() {
     unsigned int nfft = 800;    // number of points to evaluate
 
     // design filter from prototype
-    iirfilt_crcf q = iirfilt_crcf_create_prototype(LIQUID_IIRDES_ELLIP,
+    iirfilt_rrrf q = iirfilt_rrrf_create_prototype(LIQUID_IIRDES_ELLIP,
         LIQUID_IIRDES_HIGHPASS, LIQUID_IIRDES_SOS,n,fc,0.0f,Ap,as);
-    if (liquid_autotest_verbose)
-        iirfilt_crcf_print(q);
-
-    // compute response and compare to expected or mask
-    unsigned int i;
-    float H[nfft]; // filter response
-    for (i=0; i<nfft; i++)
-        H[i] = iirfilt_crcf_get_psd(q, (float)i/(float)nfft-0.5f);
 
     // verify result
     autotest_psd_s regions[] = {
@@ -280,11 +240,11 @@ void autotest_iirdes_ellip_highpass() {
       {.fmin=-0.184, .fmax=0.184, .pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
       {.fmin=fc,     .fmax=0.5,   .pmin=-Ap-tol, .pmax=   +tol, .test_lo=1, .test_hi=1},
     };
-    liquid_autotest_validate_spectrum(H, nfft, regions, 3,
+    liquid_autotest_validate_psd_iirfilt_rrrf(q, nfft, regions, 3,
         liquid_autotest_verbose ? "autotest/logs/iirdes_ellip_highpass.m" : NULL);
 
     // destroy filter object
-    iirfilt_crcf_destroy(q);
+    iirfilt_rrrf_destroy(q);
 }
 
 // check elliptical filter design with band-pass transformation
@@ -299,16 +259,8 @@ void autotest_iirdes_ellip_bandpass() {
     unsigned int nfft = 2400;   // number of points to evaluate
 
     // design filter from prototype
-    iirfilt_crcf q = iirfilt_crcf_create_prototype(LIQUID_IIRDES_ELLIP,
+    iirfilt_rrrf q = iirfilt_rrrf_create_prototype(LIQUID_IIRDES_ELLIP,
         LIQUID_IIRDES_BANDPASS, LIQUID_IIRDES_SOS,n,fc,f0,Ap,as);
-    if (liquid_autotest_verbose)
-        iirfilt_crcf_print(q);
-
-    // compute response and compare to expected or mask
-    unsigned int i;
-    float H[nfft]; // filter response
-    for (i=0; i<nfft; i++)
-        H[i] = iirfilt_crcf_get_psd(q, (float)i/(float)nfft-0.5f);
 
     // verify result
     autotest_psd_s regions[] = {
@@ -318,11 +270,11 @@ void autotest_iirdes_ellip_bandpass() {
       {.fmin=+0.301, .fmax=+0.388,.pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
       {.fmin=+0.396, .fmax=+0.5,  .pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_spectrum(H, nfft, regions, 5,
+    liquid_autotest_validate_psd_iirfilt_rrrf(q, nfft, regions, 5,
         liquid_autotest_verbose ? "autotest/logs/iirdes_ellip_bandpass.m" : NULL);
 
     // destroy filter object
-    iirfilt_crcf_destroy(q);
+    iirfilt_rrrf_destroy(q);
 }
 
 // check elliptical filter design with band-stop transformation
@@ -337,16 +289,8 @@ void autotest_iirdes_ellip_bandstop() {
     unsigned int nfft = 2400;   // number of points to evaluate
 
     // design filter from prototype
-    iirfilt_crcf q = iirfilt_crcf_create_prototype(LIQUID_IIRDES_ELLIP,
+    iirfilt_rrrf q = iirfilt_rrrf_create_prototype(LIQUID_IIRDES_ELLIP,
         LIQUID_IIRDES_BANDSTOP, LIQUID_IIRDES_SOS,n,fc,f0,Ap,as);
-    if (liquid_autotest_verbose)
-        iirfilt_crcf_print(q);
-
-    // compute response and compare to expected or mask
-    unsigned int i;
-    float H[nfft]; // filter response
-    for (i=0; i<nfft; i++)
-        H[i] = iirfilt_crcf_get_psd(q, (float)i/(float)nfft-0.5f);
 
     // verify result
     autotest_psd_s regions[] = {
@@ -356,11 +300,11 @@ void autotest_iirdes_ellip_bandstop() {
       {.fmin=+0.306, .fmax=+0.387,.pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
       {.fmin=+0.391, .fmax=+0.5,  .pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
     };
-    liquid_autotest_validate_spectrum(H, nfft, regions, 5,
+    liquid_autotest_validate_psd_iirfilt_rrrf(q, nfft, regions, 5,
         liquid_autotest_verbose ? "autotest/logs/iirdes_ellip_bandstop.m" : NULL);
 
     // destroy filter object
-    iirfilt_crcf_destroy(q);
+    iirfilt_rrrf_destroy(q);
 }
 
 // check Bessel filter design
@@ -371,16 +315,8 @@ void autotest_iirdes_bessel() {
     unsigned int nfft = 960;  // number of points to evaluate
 
     // design filter from prototype
-    iirfilt_crcf q = iirfilt_crcf_create_prototype(LIQUID_IIRDES_BESSEL,
+    iirfilt_rrrf q = iirfilt_rrrf_create_prototype(LIQUID_IIRDES_BESSEL,
         LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,n,fc,0,1,60);
-    if (liquid_autotest_verbose)
-        iirfilt_crcf_print(q);
-
-    // compute response and compare to expected or mask
-    unsigned int i;
-    float H[nfft]; // filter response
-    for (i=0; i<nfft; i++)
-        H[i] = iirfilt_crcf_get_psd(q, (float)i/(float)nfft-0.5f);
 
     // verify result
     autotest_psd_s regions[] = {
@@ -388,10 +324,10 @@ void autotest_iirdes_bessel() {
       {.fmin=-0.095, .fmax=+0.095,.pmin=-3, .pmax=  0.1, .test_lo=1, .test_hi=1},
       {.fmin=+0.305, .fmax=+0.500,.pmin= 0, .pmax=-60,   .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_spectrum(H, nfft, regions, 3,
+    liquid_autotest_validate_psd_iirfilt_rrrf(q, nfft, regions, 3,
         liquid_autotest_verbose ? "autotest/logs/iirdes_bessel.m" : NULL);
 
     // destroy filter object
-    iirfilt_crcf_destroy(q);
+    iirfilt_rrrf_destroy(q);
 }
 
