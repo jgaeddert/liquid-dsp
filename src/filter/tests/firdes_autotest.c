@@ -241,6 +241,11 @@ void autotest_liquid_firdes_config()
     CONTEND_EQUALITY(liquid_firdes_rkaiser(2, 12, 2.7f, 0, NULL), LIQUID_EICONFIG);
     CONTEND_EQUALITY(liquid_firdes_rkaiser(2, 12, 0.2f, 3, NULL), LIQUID_EICONFIG);
 
+    CONTEND_EQUALITY(liquid_firdes_arkaiser(0, 12, 0.2f, 0, NULL), LIQUID_EICONFIG);
+    CONTEND_EQUALITY(liquid_firdes_arkaiser(2,  0, 0.2f, 0, NULL), LIQUID_EICONFIG);
+    CONTEND_EQUALITY(liquid_firdes_arkaiser(2, 12, 2.7f, 0, NULL), LIQUID_EICONFIG);
+    CONTEND_EQUALITY(liquid_firdes_arkaiser(2, 12, 0.2f, 3, NULL), LIQUID_EICONFIG);
+
     CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.2f, 60.0f, 0.0f, h), LIQUID_OK      );
     CONTEND_EQUALITY(liquid_firdes_kaiser(    0, 0.2f, 60.0f, 0.0f, h), LIQUID_EICONFIG);
     CONTEND_EQUALITY(liquid_firdes_kaiser(h_len,-0.1f, 60.0f, 0.0f, h), LIQUID_EICONFIG);
