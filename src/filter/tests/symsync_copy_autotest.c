@@ -67,3 +67,33 @@ void autotest_symsync_copy()
     symsync_crcf_destroy(q1);
 }
 
+// test errors and invalid configuration
+void autotest_symsync_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping symsync config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // test copying/creating invalid objects
+    CONTEND_ISNULL( symsync_crcf_copy(NULL) );
+
+    CONTEND_ISNULL( symsync_crcf_create(0, 12, NULL, 48) ); // k is too small
+    CONTEND_ISNULL( symsync_crcf_create(2,  0, NULL, 48) ); // M is too small
+    CONTEND_ISNULL( symsync_crcf_create(2, 12, NULL,  0) ); // h_len is too small
+    CONTEND_ISNULL( symsync_crcf_create(2, 12, NULL, 47) ); // h_len is not divisible by M
+
+    //CONTEND_ISNULL( symsync_crcf_create_nyquist(2, 12, NULL, 47) ); // h_len is not divisible by M
+
+    // // create valid object
+    // symsync_crcf q = symsync_crcf_create ...
+    // CONTEND_EQUALITY( LIQUID_OK, symsync_crcf_print(filter) );
+
+    // // check properties ...
+
+    // // destroy object
+    // symsync_crcf_destroy(filter);
+}
+
