@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -375,6 +375,12 @@ int SYMSYNC(_unlock)(SYMSYNC() _q)
 {
     _q->is_locked = 0;
     return LIQUID_OK;
+}
+
+// check lock state
+int SYMSYNC(_is_locked)(SYMSYNC() _q)
+{
+    return _q->is_locked;
 }
 
 // set synchronizer output rate (samples/symbol)

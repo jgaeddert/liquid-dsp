@@ -4962,6 +4962,10 @@ int SYMSYNC(_lock)(SYMSYNC() _q);                                           \
 /* Unlock the symbol synchronizer's loop control                        */  \
 int SYMSYNC(_unlock)(SYMSYNC() _q);                                         \
                                                                             \
+/* Check the lock state of the symbol synchronizer's loop control,      */  \
+/* returning 1 if the object is locked, 0 if unlocked.                  */  \
+int SYMSYNC(_is_locked)(SYMSYNC() _q);                                      \
+                                                                            \
 /* Set synchronizer output rate (samples/symbol)                        */  \
 /*  _q      : synchronizer object                                       */  \
 /*  _k_out  : output samples/symbol, _k_out > 0                         */  \
