@@ -123,7 +123,11 @@ void symsync_crcf_test(const char * _method,
     //
 
     // create symbol synchronizer
-    symsync_crcf sync = symsync_crcf_create_rnyquist(ftype_tx, k, m, beta, num_filters);
+    symsync_crcf sync = NULL;
+    if (strcmp(_method,"rnyquist")==0)
+        sync = symsync_crcf_create_rnyquist(ftype_tx, k, m, beta, num_filters);
+    else
+        sync = symsync_crcf_create_kaiser(k, m, beta, num_filters);
 
     // set loop filter bandwidth
     symsync_crcf_set_lf_bw(sync,bt);
@@ -169,9 +173,15 @@ void symsync_crcf_test(const char * _method,
 
 }
 
-// autotest scenarios
+// autotest scenarios (root-Nyquist)
 void autotest_symsync_crcf_scenario_0() { symsync_crcf_test("rnyquist", 2, 7, 0.35,  0.00, 1.0f    ); }
 void autotest_symsync_crcf_scenario_1() { symsync_crcf_test("rnyquist", 2, 7, 0.35, -0.25, 1.0f    ); }
 void autotest_symsync_crcf_scenario_2() { symsync_crcf_test("rnyquist", 2, 7, 0.35, -0.25, 1.0001f ); }
 void autotest_symsync_crcf_scenario_3() { symsync_crcf_test("rnyquist", 2, 7, 0.35, -0.25, 0.9999f ); }
+
+// autotest scenarios (Nyquist)
+void autotest_symsync_crcf_scenario_4() { symsync_crcf_test("nyquist", 2, 7, 0.35,  0.00, 1.0f    ); }
+void autotest_symsync_crcf_scenario_5() { symsync_crcf_test("nyquist", 2, 7, 0.35, -0.25, 1.0f    ); }
+void autotest_symsync_crcf_scenario_6() { symsync_crcf_test("nyquist", 2, 7, 0.35, -0.25, 1.0001f ); }
+void autotest_symsync_crcf_scenario_7() { symsync_crcf_test("nyquist", 2, 7, 0.35, -0.25, 0.9999f ); }
 
