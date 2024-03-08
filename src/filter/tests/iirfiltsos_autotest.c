@@ -169,3 +169,21 @@ void autotest_iirfiltsos_copy()
     iirfiltsos_crcf_destroy(q1);
 }
 
+// test errors and invalid configuration
+void autotest_iirfiltsos_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping iirfilt config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // test copying/creating invalid objects
+    CONTEND_ISNULL( iirfiltsos_crcf_copy(NULL) );
+
+    // create valid object and test configuration
+    //iirfiltsos_crcf filter = iirfiltsos_crcf_create(...);
+    //iirfiltsos_crcf_destroy(filter);
+}
+
