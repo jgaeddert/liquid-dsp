@@ -406,7 +406,7 @@ uint32_t NCO(_constrain)(float _theta)
     while (_theta >= 2*M_PI) _theta -= 2*M_PI;
     while (_theta <       0) _theta += 2*M_PI;
 
-    return (uint32_t) (_theta / (2*M_PI) * 0xffffffff);
+    return (uint32_t) ((_theta/(2*M_PI)) * 0xffffffff);
 #endif
 }
 

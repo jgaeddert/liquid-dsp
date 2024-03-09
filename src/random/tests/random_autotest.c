@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 #define LIQUID_RANDOM_AUTOTEST_NUM_TRIALS (100000)
 #define LIQUID_RANDOM_AUTOTEST_ERROR_TOL  (0.1)
@@ -109,8 +109,16 @@ void autotest_randweibf()
     m1 /= (float) N;
     m2 = (m2 / (float)N) - m1*m1;
 
-    CONTEND_DELTA(m1, 1.2533f+gamma, tol);
-    CONTEND_DELTA(m2, 0.42920f, tol);
+    // compute expected moments (closed-form solution)
+    float t0     = liquid_gammaf(1. + 1./alpha);
+    float t1     = liquid_gammaf(1. + 2./alpha);
+    float m1_exp = beta * t0 + gamma;
+    float m2_exp = beta*beta*( t1 - t0*t0 );
+    //printf("m1: %12.8f (expected %12.8f)\n", m1, m1_exp);
+    //printf("m2: %12.8f (expected %12.8f)\n", m2, m2_exp);
+
+    CONTEND_DELTA(m1, m1_exp, tol);
+    CONTEND_DELTA(m2, m2_exp, tol);
 }
 
 // Rice-K
@@ -133,5 +141,77 @@ void autotest_randricekf()
 
     CONTEND_DELTA(m1, 0.92749f, tol);
     CONTEND_DELTA(m2, omega, tol);
+}
+
+// exponential
+void autotest_randexpf()
+{
+    unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
+    unsigned long int i;
+    float x, m1=0.0f, m2=0.0f;
+    float tol = LIQUID_RANDOM_AUTOTEST_ERROR_TOL;
+    float lambda = 2.3f;
+
+    // uniform
+    for (i=0; i<N; i++) {
+        x = randexpf(lambda);
+        m1 += x;
+        m2 += x*x;
+    }
+    m1 /= (float) N;
+    m2 = (m2 / (float)N) - m1*m1;
+
+    // compute expected moments (closed-form solution)
+    float m1_exp = 1. / lambda;
+    float m2_exp = 1. / (lambda * lambda);
+    //printf("m1: %12.8f (expected %12.8f)\n", m1, m1_exp);
+    //printf("m2: %12.8f (expected %12.8f)\n", m2, m2_exp);
+
+    CONTEND_DELTA(m1, m1_exp, tol);
+    CONTEND_DELTA(m2, m2_exp, tol);
+}
+
+void autotest_random_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping random config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // exponential: lambda out of range
+    CONTEND_EQUALITY( randexpf    (       -1.0f), 0.0f );
+    CONTEND_EQUALITY( randexpf_pdf( 0.0f, -1.0f), 0.0f );
+    CONTEND_EQUALITY( randexpf_cdf( 0.0f, -1.0f), 0.0f );
+    // exponential: pdf, cdf with valid input, but negative variable
+    CONTEND_EQUALITY( randexpf_pdf(-2.0f,  2.3f), 0.0f );
+    CONTEND_EQUALITY( randexpf_cdf(-2.0f,  2.3f), 0.0f );
+
+    // gamma: parameters out of range (alpha)
+    CONTEND_EQUALITY( randgammaf    (       -1.0f,  1.0f), 0.0f );
+    CONTEND_EQUALITY( randgammaf_pdf( 0.0f, -1.0f,  1.0f), 0.0f );
+    CONTEND_EQUALITY( randgammaf_cdf( 0.0f, -1.0f,  1.0f), 0.0f );
+    // gamma: parameters out of range (beta)
+    CONTEND_EQUALITY( randgammaf    (        1.0f, -1.0f), 0.0f );
+    CONTEND_EQUALITY( randgammaf_pdf( 0.0f,  1.0f, -1.0f), 0.0f );
+    CONTEND_EQUALITY( randgammaf_cdf( 0.0f,  1.0f, -1.0f), 0.0f );
+    // gamma: delta function parameter out of range
+    CONTEND_EQUALITY( randgammaf_delta(-1.0f), 0.0f );
+    // gamma: pdf, cdf with valid input, but negative variable
+    CONTEND_EQUALITY( randgammaf_pdf(-2.0f, 1.2f, 2.3f), 0.0f );
+    CONTEND_EQUALITY( randgammaf_cdf(-2.0f, 1.2f, 2.3f), 0.0f );
+
+    // nakagami-m: parameters out of range (m)
+    CONTEND_EQUALITY( randnakmf    (       0.2f,  1.0f), 0.0f );
+    CONTEND_EQUALITY( randnakmf_pdf( 0.0f, 0.2f,  1.0f), 0.0f );
+    CONTEND_EQUALITY( randnakmf_cdf( 0.0f, 0.2f,  1.0f), 0.0f );
+    // nakagami-m: parameters out of range (omega)
+    CONTEND_EQUALITY( randnakmf    (       1.0f, -1.0f), 0.0f );
+    CONTEND_EQUALITY( randnakmf_pdf( 0.0f, 1.0f, -1.0f), 0.0f );
+    CONTEND_EQUALITY( randnakmf_cdf( 0.0f, 1.0f, -1.0f), 0.0f );
+    // nakagami-m: pdf, cdf with valid input, but negative variable
+    CONTEND_EQUALITY( randnakmf_pdf(-2.0f, 1.2f, 2.3f), 0.0f );
+    CONTEND_EQUALITY( randnakmf_cdf(-2.0f, 1.2f, 2.3f), 0.0f );
 }
 

@@ -523,8 +523,8 @@ filter_autotests :=						\
 	src/filter/tests/iirdecim_autotest.c			\
 	src/filter/tests/iirdes_autotest.c			\
 	src/filter/tests/iirdes_support_autotest.c		\
+	src/filter/tests/iirfilt_autotest.c			\
 	src/filter/tests/iirfilt_xxxf_autotest.c		\
-	src/filter/tests/iirfilt_copy_autotest.c		\
 	src/filter/tests/iirfiltsos_autotest.c			\
 	src/filter/tests/iirhilb_autotest.c			\
 	src/filter/tests/iirinterp_autotest.c			\
@@ -981,7 +981,7 @@ src/nco/src/nco.utilities.o : %.o : %.c $(include_headers)
 
 # autotests
 nco_autotests :=						\
-	src/nco/tests/nco_crcf_copy_autotest.c			\
+	src/nco/tests/nco_crcf_autotest.c			\
 	src/nco/tests/nco_crcf_frequency_autotest.c		\
 	src/nco/tests/nco_crcf_mix_autotest.c			\
 	src/nco/tests/nco_crcf_phase_autotest.c			\
@@ -1077,8 +1077,8 @@ $(random_objects) : %.o : %.c $(include_headers)
 # autotests
 random_autotests :=						\
 	src/random/tests/scramble_autotest.c			\
-
-#	src/random/tests/random_autotest.c
+	src/random/tests/random_autotest.c			\
+	src/random/tests/random_distributions_autotest.c	\
 
 
 # benchmarks
@@ -1395,7 +1395,7 @@ clean-check:
 	$(RM) autotest/logs/*.bin autotest/logs/*.gnu autotest/logs/*.png
 
 ##
-## TARGET : doc-check - build and run basic documentation checks
+## TARGET : check-doc - build and run basic documentation checks
 ##
 
 readme.c.example.c : README.md
@@ -1416,9 +1416,9 @@ readme.cc.example.o : %.o : %.cc ${include_headers}
 readme.cc.example : % : %.o ${ARCHIVE_LIB}
 	${CXX} ${CXXFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
 
-doc-check : readme.c.example readme.cc.example ; ./readme.c.example && ./readme.cc.example
+check-doc : readme.c.example readme.cc.example ; ./readme.c.example && ./readme.cc.example
 
-clean-doc-check:
+clean-check-doc:
 	${RM} readme.*.example*
 
 ##
@@ -1598,6 +1598,7 @@ example_programs :=						\
 	examples/iirfilt_cccf_example				\
 	examples/iirfilt_crcf_example				\
 	examples/iirfilt_crcf_dcblocker_example			\
+	examples/iirfilt_rrrf_integrator_example		\
 	examples/iirhilb_example				\
 	examples/iirhilb_filter_example				\
 	examples/iirinterp_crcf_example				\
@@ -1860,7 +1861,7 @@ programs: all xautotest benchmark examples sandbox
 ##
 ## TARGET : world     - build absolutely everything
 ##
-world : all bench check doc-check examples sandbox
+world : all bench check check-doc examples sandbox
 
 ##
 ## TARGET : clean     - clean build (objects, dependencies, libraries, etc.)
@@ -1873,7 +1874,7 @@ clean-modules:
 	$(RM) src/*/src/*.o src/*/bench/*.o src/*/tests/*.o
 	$(RM) src/libliquid.o
 
-clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox clean-doc-check
+clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox clean-check-doc
 	$(RM) ${ARCHIVE_LIB} ${SHARED_LIB} $(extra_clean)
 
 ##

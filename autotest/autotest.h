@@ -312,5 +312,9 @@ int liquid_autotest_validate_psd_firfilt_crcf(firfilt_crcf _q, unsigned int _nff
 int liquid_autotest_validate_psd_firfilt_cccf(firfilt_cccf _q, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
 
+// validate spectral content of an iir filter (real coefficients, input)
+int liquid_autotest_validate_psd_iirfilt_rrrf(iirfilt_rrrf _q, unsigned int _nfft,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
 #endif // __LIQUID_AUTOTEST_H__
 
