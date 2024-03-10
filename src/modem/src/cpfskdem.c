@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -138,14 +138,14 @@ cpfskdem cpfskdem_create(unsigned int _bps,
     // validate input
     if (_bps == 0)
         return liquid_error_config("cpfskdem_create(), bits/symbol must be greater than 0");
+    if (_h <= 0.0f)
+        return liquid_error_config("cpfskdem_create(), modulation index must be greater than 0");
     if (_k < 2 || (_k%2))
         return liquid_error_config("cpfskmod_create(), samples/symbol must be greater than 2 and even");
     if (_m == 0)
         return liquid_error_config("cpfskdem_create(), filter delay must be greater than 0");
     if (_beta <= 0.0f || _beta > 1.0f)
         return liquid_error_config("cpfskdem_create(), filter roll-off must be in (0,1]");
-    if (_h <= 0.0f)
-        return liquid_error_config("cpfskdem_create(), modulation index must be greater than 0");
 
     // create main object memory
     cpfskdem q = (cpfskdem) malloc(sizeof(struct cpfskdem_s));

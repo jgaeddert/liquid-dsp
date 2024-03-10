@@ -8222,6 +8222,7 @@ int gmskdem_demodulate(gmskdem                _q,
 
 // CP-FSK filter prototypes
 typedef enum {
+    //LIQUID_CPFSK_UNKNOWN=0
     LIQUID_CPFSK_SQUARE=0,      // square pulse
     LIQUID_CPFSK_RCOS_FULL,     // raised-cosine (full response)
     LIQUID_CPFSK_RCOS_PARTIAL,  // raised-cosine (partial response)

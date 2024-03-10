@@ -171,3 +171,31 @@ void autotest_cpfskmodem_spectrum()
         liquid_autotest_verbose ? filename : NULL);
 }
 
+
+// test errors and invalid configuration
+void autotest_cpfskmodem_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping modem config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // test copying/creating invalid objects
+    //CONTEND_ISNULL( modemcf_copy(NULL) );
+    CONTEND_ISNULL( cpfskmod_create(0, 0.5f, 4, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _bps is less than 1
+    CONTEND_ISNULL( cpfskmod_create(1, 0.0f, 4, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _h (mod index) is out of range
+    CONTEND_ISNULL( cpfskmod_create(1, 0.5f, 5, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _k is not even
+    CONTEND_ISNULL( cpfskmod_create(1, 0.5f, 4,  0, 0.25f, LIQUID_CPFSK_SQUARE) ); // _m is too small
+    CONTEND_ISNULL( cpfskmod_create(1, 0.5f, 4, 12, 0.00f, LIQUID_CPFSK_SQUARE) ); // _beta is too small
+
+    CONTEND_ISNULL( cpfskdem_create(0, 0.5f, 4, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _bps is less than 1
+    CONTEND_ISNULL( cpfskdem_create(1, 0.0f, 4, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _h (mod index) is out of range
+    CONTEND_ISNULL( cpfskdem_create(1, 0.5f, 5, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _k is not even
+    CONTEND_ISNULL( cpfskdem_create(1, 0.5f, 4,  0, 0.25f, LIQUID_CPFSK_SQUARE) ); // _m is too small
+    CONTEND_ISNULL( cpfskdem_create(1, 0.5f, 4, 12, 0.00f, LIQUID_CPFSK_SQUARE) ); // _beta is too small
+
+    // TODO: create object and check configuration
+}
+
