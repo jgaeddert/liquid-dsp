@@ -676,20 +676,6 @@ src/framing/src/framing_rrrf.o      : %.o : %.c $(include_headers) ${framing_pro
 src/framing/src/framing_crcf.o      : %.o : %.c $(include_headers) ${framing_prototypes_sync}
 src/framing/src/framing_cccf.o      : %.o : %.c $(include_headers) ${framing_prototypes_sync}
 
-src/framing/src/bpacketgen.o        : %.o : %.c $(include_headers)
-src/framing/src/bpacketsync.o       : %.o : %.c $(include_headers)
-src/framing/src/detector_cccf.o     : %.o : %.c $(include_headers)
-src/framing/src/dsssframegen.o      : %.o : %.c $(include_headers)
-src/framing/src/dsssframesync.o     : %.o : %.c $(include_headers)
-src/framing/src/framedatastats.o    : %.o : %.c $(include_headers)
-src/framing/src/framesyncstats.o    : %.o : %.c $(include_headers)
-src/framing/src/framegen64.o        : %.o : %.c $(include_headers)
-src/framing/src/framesync64.o       : %.o : %.c $(include_headers)
-src/framing/src/flexframegen.o      : %.o : %.c $(include_headers)
-src/framing/src/flexframesync.o     : %.o : %.c $(include_headers)
-src/framing/src/ofdmflexframegen.o  : %.o : %.c $(include_headers)
-src/framing/src/ofdmflexframesync.o : %.o : %.c $(include_headers)
-
 framing_autotests :=						\
 	src/framing/tests/bpacketsync_autotest.c		\
 	src/framing/tests/bsync_autotest.c			\
@@ -1194,7 +1180,8 @@ objects :=							\
 	$(sequence_objects)					\
 	$(utility_objects)					\
 	$(vector_objects)					\
-	
+
+$(objects) : %.o : %.c $(include_headers)
 
 autotest_sources :=						\
 	autotest/null_autotest.c				\
