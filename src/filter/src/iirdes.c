@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -470,6 +470,10 @@ int iirdes_dzpk2sosf(float complex * _zd,
 
         z0 = -zp[2*i+0];
         z1 = -zp[2*i+1];
+#if LIQUID_IIRDES_DEBUG_PRINT
+        printf("[%3u] z0 = %12.8f + j%12.8f,  z1 = %12.8f + j%12.8f\n",
+            i, crealf(z0), cimagf(z0), crealf(z1), cimagf(z1));
+#endif
 
         // expand complex pole pairs
         _a[3*i+0] = 1.0;
@@ -497,16 +501,30 @@ int iirdes_dzpk2sosf(float complex * _zd,
         _b[3*i+2] = 0.0;
     }
 
-    // distribute gain equally amongst all feed-forward
-    // coefficients
-    float k = powf( crealf(_kd), 1.0f/(float)(L+r) );
+    // distribute gain equally amongst all feed-forward coefficients
+    float k   = crealf(_kd);
+    float sgn = k < 0 ? -1 : 1;
+    float g   = powf( k*sgn, 1.0f/(float)(L+r) );
 
     // adjust gain of first element
     for (i=0; i<L+r; i++) {
-        _b[3*i+0] *= k;
-        _b[3*i+1] *= k;
-        _b[3*i+2] *= k;
+        _b[3*i+0] *= g;
+        _b[3*i+1] *= g;
+        _b[3*i+2] *= g;
     }
+    // apply sign to first section (handle case where gain is negative)
+    _b[0] *= sgn;
+    _b[1] *= sgn;
+    _b[2] *= sgn;
+
+#if LIQUID_IIRDES_DEBUG_PRINT
+    printf("sos:\n");
+    for (i=0; i<L+r; i++)
+        printf("  b[%3u] = {%12.8f, %12.8f, %12.8f}\n", i, _b[3*i+0], _b[3*i+1], _b[3*i+2]);
+    for (i=0; i<L+r; i++)
+        printf("  a[%3u] = {%12.8f, %12.8f, %12.8f}\n", i, _a[3*i+0], _a[3*i+1], _a[3*i+2]);
+#endif
+
     return LIQUID_OK;
 }
 

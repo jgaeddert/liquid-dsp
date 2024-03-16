@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -289,5 +289,14 @@ int FIRINTERP(_execute_block)(FIRINTERP()  _q,
         FIRINTERP(_execute)(_q, _x[i], &_y[i*_q->M]);
     }
     return LIQUID_OK;
+}
+
+// Execute interpolation with zero-valued input (e.g. flush internal state)
+//  _q      : firinterp object
+//  _y      : output sample array [size: M x 1]
+int FIRINTERP(_flush)(FIRINTERP() _q,
+                      TO *        _y)
+{
+    return FIRINTERP(_execute)(_q, 0, _y);
 }
 

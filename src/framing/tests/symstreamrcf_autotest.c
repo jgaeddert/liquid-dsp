@@ -69,7 +69,7 @@ void testbench_symstreamrcf_psd(float        _bw,
     float f1 = 0.5 * (1.0f + _beta) * _bw;
     autotest_psd_s regions[] = {
       {.fmin=-0.5, .fmax=-f1,  .pmin=  0-0, .pmax=-55.0, .test_lo=0, .test_hi=1},
-      {.fmin=-f0,  .fmax= f0,  .pmin= -1.0, .pmax=  1.0, .test_lo=1, .test_hi=1},
+      {.fmin=-f0,  .fmax= f0,  .pmin= -2.0, .pmax=  2.0, .test_lo=1, .test_hi=1},
       {.fmin= f1,  .fmax= 0.5, .pmin=  0.0, .pmax=-55.0, .test_lo=0, .test_hi=1},
     };
     char filename[256];

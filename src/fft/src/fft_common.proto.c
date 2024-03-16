@@ -100,6 +100,20 @@ struct FFT(plan_s)
     } data;
 };
 
+// allocate one-dimensional array 
+//  _n      :   array size
+void * FFT(_malloc)(unsigned int _n)
+{
+    return FFT_MALLOC(_n);
+}
+
+// allocate one-dimensional array allocated by fft_malloc
+//  _x      :   pointer to array
+void FFT(_free)(void * _x)
+{
+    FFT_FREE(_x);
+}
+
 // create FFT plan, regular complex one-dimensional transform
 //  _nfft   :   FFT size
 //  _x      :   input array [size: _nfft x 1]

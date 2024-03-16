@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,7 @@
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
-// 
-// AUTOTEST: cexpf
-//
+// cexpf
 void autotest_cexpf()
 {
     float tol = 1e-3f;
@@ -77,9 +75,7 @@ void autotest_cexpf()
 }
 
 
-// 
-// AUTOTEST: clogf
-//
+// clogf
 void autotest_clogf()
 {
     float tol = 1e-3f;
@@ -130,9 +126,7 @@ void autotest_clogf()
     }
 }
 
-// 
-// AUTOTEST: csqrtf
-//
+// csqrtf
 void autotest_csqrtf()
 {
     float tol = 1e-3f;
@@ -183,9 +177,7 @@ void autotest_csqrtf()
     }
 }
 
-// 
-// AUTOTEST: casinf
-//
+// casinf
 void autotest_casinf()
 {
     float tol = 1e-3f;
@@ -237,9 +229,7 @@ void autotest_casinf()
     }
 }
 
-// 
-// AUTOTEST: cacosf
-//
+// cacosf
 void autotest_cacosf()
 {
     float tol = 1e-3f;
@@ -292,9 +282,7 @@ void autotest_cacosf()
     }
 }
 
-// 
-// AUTOTEST: catanf
-//
+// catanf
 void autotest_catanf()
 {
     float tol = 1e-3f;
@@ -345,3 +333,44 @@ void autotest_catanf()
         CONTEND_DELTA(cimagf(t), cimagf(test[i]), tol);
     }
 }
+
+// cargf
+#if 0
+void xautotest_cargf()
+{
+    float tol = 1e-3f;
+    CONTEND_DELTA( liquid_cargf_approx( 1.3608e+00+_Complex_I* -4.2247e-01), -0.30102262, tol);
+    CONTEND_DELTA( liquid_cargf_approx( 1.1324e+00+_Complex_I*  1.1938e+00),  0.81178695, tol);
+    CONTEND_DELTA( liquid_cargf_approx( 1.6466e+00+_Complex_I* -1.2098e+00), -0.63365394, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-6.5911e-01+_Complex_I*  1.0729e+00),  2.12168288, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-8.8890e-01+_Complex_I*  2.1588e-01),  2.90334344, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-9.0412e-02+_Complex_I*  5.1548e-01),  1.74442410, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-5.4086e-01+_Complex_I*  5.3604e-02),  3.04280639, tol);
+    CONTEND_DELTA( liquid_cargf_approx( 1.8089e+00+_Complex_I*  1.6648e+00),  0.74393880, tol);
+    CONTEND_DELTA( liquid_cargf_approx( 5.4285e-01+_Complex_I*  8.6919e-01),  1.01252282, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-1.4336e+00+_Complex_I*  4.2788e-01),  2.85154438, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-1.9348e+00+_Complex_I* -1.0285e+00), -2.65300179, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-1.4511e+00+_Complex_I*  1.2167e+00),  2.44383216, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-1.3733e+00+_Complex_I* -3.9622e-01), -2.86070395, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-1.4808e+00+_Complex_I* -1.5648e+00), -2.32862067, tol);
+    CONTEND_DELTA( liquid_cargf_approx( 1.9957e+00+_Complex_I* -1.1270e+00), -0.51406980, tol);
+    CONTEND_DELTA( liquid_cargf_approx( 5.1730e-02+_Complex_I*  1.3564e+00),  1.53267705, tol);
+    CONTEND_DELTA( liquid_cargf_approx( 4.5056e-01+_Complex_I* -8.1587e-01), -1.06623125, tol);
+    CONTEND_DELTA( liquid_cargf_approx( 5.5021e-01+_Complex_I*  9.7149e-02),  0.17476583, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-2.5668e-02+_Complex_I*  1.8911e+00),  1.58436859, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-8.2993e-01+_Complex_I*  1.0854e+00),  2.22359538, tol);
+    CONTEND_DELTA( liquid_cargf_approx( 1.0698e-01+_Complex_I*  1.0797e+00),  1.47203565, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-3.9909e-01+_Complex_I*  1.5661e+00),  1.82031608, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-8.6674e-01+_Complex_I* -5.9017e-01), -2.54379559, tol);
+    CONTEND_DELTA( liquid_cargf_approx( 1.2309e+00+_Complex_I*  1.6761e+00),  0.93736500, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-1.7210e+00+_Complex_I*  1.7973e+00),  2.33451128, tol);
+    CONTEND_DELTA( liquid_cargf_approx( 1.0398e-01+_Complex_I* -1.6558e+00), -1.50808120, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-1.2311e+00+_Complex_I*  6.5291e-01),  2.65396333, tol);
+    CONTEND_DELTA( liquid_cargf_approx( 1.5609e+00+_Complex_I* -6.0443e-01), -0.36945102, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-1.7433e+00+_Complex_I* -1.9199e+00), -2.30802250, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-1.6919e-01+_Complex_I* -1.7476e+00), -1.66730833, tol);
+    CONTEND_DELTA( liquid_cargf_approx(-1.0469e+00+_Complex_I*  1.8825e+00),  2.07832766, tol);
+    CONTEND_DELTA( liquid_cargf_approx( 1.6088e+00+_Complex_I*  1.4037e+00),  0.71742004, tol);
+}
+#endif
+

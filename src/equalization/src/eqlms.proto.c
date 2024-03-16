@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -485,7 +485,8 @@ int EQLMS(_train)(EQLMS()      _q,
 {
     unsigned int p=_q->h_len;
     if (_n < _q->h_len) {
-        fprintf(stderr,"warning: eqlms_%s_train(), traning sequence less than filter order\n", EXTENSION_FULL);
+        return liquid_error(LIQUID_EICONFIG,"eqlms_%s_train(), traning sequence less than filter order",
+                EXTENSION_FULL);
     }
 
     unsigned int i;

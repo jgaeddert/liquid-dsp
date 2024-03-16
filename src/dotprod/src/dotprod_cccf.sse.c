@@ -21,7 +21,7 @@
  */
 
 // 
-// Floating-point dot product (MMX)
+// Floating-point dot product (SSE)
 //
 
 #include <stdio.h>
@@ -33,30 +33,26 @@
 // include proper SIMD extensions for x86 platforms
 // NOTE: these pre-processor macros are defined in config.h
 
-#if HAVE_MMX && HAVE_MMINTRIN_H
-#include <mmintrin.h>   // MMX
-#endif
-
-#if HAVE_SSE && HAVE_XMMINTRIN_H
+#if HAVE_SSE
 #include <xmmintrin.h>  // SSE
 #endif
 
-#if HAVE_SSE2 && HAVE_EMMINTRIN_H
+#if HAVE_SSE2
 #include <emmintrin.h>  // SSE2
 #endif
 
-#if HAVE_SSE3 && HAVE_PMMINTRIN_H
+#if HAVE_SSE3
 #include <pmmintrin.h>  // SSE3
 #endif
 
-#define DEBUG_DOTPROD_CCCF_MMX   0
+#define DEBUG_DOTPROD_CCCF_sse   0
 
 // forward declaration of internal methods
-int dotprod_cccf_execute_mmx(dotprod_cccf    _q,
+int dotprod_cccf_execute_sse(dotprod_cccf    _q,
                              float complex * _x,
                              float complex * _y);
 
-int dotprod_cccf_execute_mmx4(dotprod_cccf    _q,
+int dotprod_cccf_execute_sse4(dotprod_cccf    _q,
                               float complex * _x,
                               float complex * _y);
 
@@ -104,7 +100,7 @@ int dotprod_cccf_run4(float complex * _h,
 
 
 //
-// structured MMX dot product
+// structured sse dot product
 //
 
 struct dotprod_cccf_s {
@@ -177,7 +173,7 @@ dotprod_cccf dotprod_cccf_copy(dotprod_cccf q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("dotprod_cccf_copy().mmx, object cannot be NULL");
+        return liquid_error_config("dotprod_cccf_copy().sse, object cannot be NULL");
 
     dotprod_cccf q_copy = (dotprod_cccf)malloc(sizeof(struct dotprod_cccf_s));
     q_copy->n = q_orig->n;
@@ -206,7 +202,7 @@ int dotprod_cccf_destroy(dotprod_cccf _q)
 
 int dotprod_cccf_print(dotprod_cccf _q)
 {
-    printf("dotprod_cccf [mmx, %u coefficients]\n", _q->n);
+    printf("dotprod_cccf [sse, %u coefficients]\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("  %3u : %12.9f +j%12.9f\n", i, _q->hi[i], _q->hq[i]);
@@ -223,12 +219,12 @@ int dotprod_cccf_execute(dotprod_cccf    _q,
 {
     // switch based on size
     if (_q->n < 32) {
-        return dotprod_cccf_execute_mmx(_q, _x, _y);
+        return dotprod_cccf_execute_sse(_q, _x, _y);
     }
-    return dotprod_cccf_execute_mmx4(_q, _x, _y);
+    return dotprod_cccf_execute_sse4(_q, _x, _y);
 }
 
-// use MMX/SSE extensions
+// use SSE extensions
 //
 // (a + jb)(c + jd) = (ac - bd) + j(ad + bc)
 //
@@ -248,7 +244,7 @@ int dotprod_cccf_execute(dotprod_cccf    _q,
 //           x[1].real * h[1].imag,
 //           x[1].imag * h[1].imag };
 //
-int dotprod_cccf_execute_mmx(dotprod_cccf    _q,
+int dotprod_cccf_execute_sse(dotprod_cccf    _q,
                              float complex * _x,
                              float complex * _y)
 {
@@ -268,7 +264,7 @@ int dotprod_cccf_execute_mmx(dotprod_cccf    _q,
     // aligned output array
     float w[4] __attribute__((aligned(16))) = {0,0,0,0};
 
-#if HAVE_SSE3 && HAVE_PMMINTRIN_H
+#if HAVE_SSE3
     // SSE3
     __m128 s;   // dot product
     __m128 sum = _mm_setzero_ps(); // load zeros into sum register
@@ -299,7 +295,7 @@ int dotprod_cccf_execute_mmx(dotprod_cccf    _q,
         // shuffle values
         cq = _mm_shuffle_ps( cq, cq, _MM_SHUFFLE(2,3,0,1) );
         
-#if HAVE_SSE3 && HAVE_PMMINTRIN_H
+#if HAVE_SSE3
         // SSE3: combine using addsub_ps()
         s = _mm_addsub_ps( ci, cq );
 
@@ -320,7 +316,7 @@ int dotprod_cccf_execute_mmx(dotprod_cccf    _q,
 #endif
     }
 
-#if HAVE_SSE3 && HAVE_PMMINTRIN_H
+#if HAVE_SSE3
     // unload packed array
     _mm_store_ps(w, sum);
 #endif
@@ -341,8 +337,8 @@ int dotprod_cccf_execute_mmx(dotprod_cccf    _q,
     return LIQUID_OK;
 }
 
-// use MMX/SSE extensions
-int dotprod_cccf_execute_mmx4(dotprod_cccf    _q,
+// use SSE extensions
+int dotprod_cccf_execute_sse4(dotprod_cccf    _q,
                               float complex * _x,
                               float complex * _y)
 {

@@ -57,10 +57,10 @@ int main(int argc, char*argv[])
     float xcorr_norm = liquid_sumsqf(buf_mf, p*n);
 
     // allocate memory arrays
-    float complex * buf_0 = (float complex*) malloc(M*sizeof(float complex));
-    float complex * buf_1 = (float complex*) malloc(M*sizeof(float complex));
-    float complex * buf_2 = (float complex*) malloc(M*sizeof(float complex));
-    float complex * buf_3 = (float complex*) malloc(M*sizeof(float complex));
+    float complex * buf_0 = (float complex*) fft_malloc(M*sizeof(float complex));
+    float complex * buf_1 = (float complex*) fft_malloc(M*sizeof(float complex));
+    float complex * buf_2 = (float complex*) fft_malloc(M*sizeof(float complex));
+    float complex * buf_3 = (float complex*) fft_malloc(M*sizeof(float complex));
     windowcf buf_rx = windowcf_create(M);
 
     // create fft plans
@@ -165,10 +165,10 @@ int main(int argc, char*argv[])
     fclose(fid);
     printf("results written to fskcorr_test.m\n");
 
-    free(buf_0);
-    free(buf_1);
-    free(buf_2);
-    free(buf_3);
+    fft_free(buf_0);
+    fft_free(buf_1);
+    fft_free(buf_2);
+    fft_free(buf_3);
     fft_destroy_plan(fft);
     fft_destroy_plan(ifft);
     windowcf_destroy(buf_rx);

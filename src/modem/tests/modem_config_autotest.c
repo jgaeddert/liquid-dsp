@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -131,4 +131,24 @@ void autotest_modem_copy_arb128opt() { modemcf_test_copy(LIQUID_MODEM_ARB128OPT)
 void autotest_modem_copy_arb256opt() { modemcf_test_copy(LIQUID_MODEM_ARB256OPT); }
 void autotest_modem_copy_arb64vt()   { modemcf_test_copy(LIQUID_MODEM_ARB64VT);   }
 void autotest_modem_copy_pi4dqpsk()  { modemcf_test_copy(LIQUID_MODEM_PI4DQPSK);  }
+
+// test errors and invalid configuration
+void autotest_modem_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping modem config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // test copying/creating invalid objects
+    CONTEND_ISNULL( modemcf_copy(NULL) );
+    CONTEND_ISNULL( modemcf_create(LIQUID_MODEM_ARB) );
+
+    // create object and check configuration
+    modemcf q = modemcf_create(LIQUID_MODEM_QAM64);
+    CONTEND_EQUALITY( LIQUID_OK, modemcf_print(q) );
+    modemcf_destroy(q);
+}
 

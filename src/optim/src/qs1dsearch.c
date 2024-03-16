@@ -65,6 +65,7 @@ qs1dsearch qs1dsearch_copy(qs1dsearch _q)
 
 int qs1dsearch_destroy(qs1dsearch _q)
 {
+    free(_q);
     return LIQUID_OK;
 }
 
@@ -78,6 +79,7 @@ int qs1dsearch_print(qs1dsearch _q)
 int qs1dsearch_reset(qs1dsearch _q)
 {
     _q->init = 0;
+    _q->num_steps = 0;
     return LIQUID_OK;
 }
 

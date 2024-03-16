@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -126,24 +126,24 @@ IIRDECIM() IIRDECIM(_copy)(IIRDECIM() q_orig)
 }
 
 // destroy interpolator object
-void IIRDECIM(_destroy)(IIRDECIM() _q)
+int IIRDECIM(_destroy)(IIRDECIM() _q)
 {
     IIRFILT(_destroy)(_q->iirfilt);
     free(_q);
+    return LIQUID_OK;
 }
 
 // print interpolator state
-void IIRDECIM(_print)(IIRDECIM() _q)
+int IIRDECIM(_print)(IIRDECIM() _q)
 {
-    printf("interp():\n");
-    printf("    M       :   %u\n", _q->M);
-    IIRFILT(_print)(_q->iirfilt);
+    printf("<iirdecim_%s, decim=%u>\n", EXTENSION_FULL, _q->M);
+    return LIQUID_OK;
 }
 
 // clear internal state
-void IIRDECIM(_reset)(IIRDECIM() _q)
+int IIRDECIM(_reset)(IIRDECIM() _q)
 {
-    IIRFILT(_reset)(_q->iirfilt);
+    return IIRFILT(_reset)(_q->iirfilt);
 }
 
 // execute decimator
@@ -151,9 +151,9 @@ void IIRDECIM(_reset)(IIRDECIM() _q)
 //  _x      :   input sample array [size: _M x 1]
 //  _y      :   output sample pointer
 //  _index  :   decimator output index [0,_M-1]
-void IIRDECIM(_execute)(IIRDECIM()   _q,
-                        TI *         _x,
-                        TO *         _y)
+int IIRDECIM(_execute)(IIRDECIM()   _q,
+                       TI *         _x,
+                       TO *         _y)
 {
     TO v; // output value
     unsigned int i;
@@ -165,6 +165,7 @@ void IIRDECIM(_execute)(IIRDECIM()   _q,
         if (i==0)
             *_y = v;
     }
+    return LIQUID_OK;
 }
 
 // execute decimator on block of _n*_M input samples
@@ -172,16 +173,17 @@ void IIRDECIM(_execute)(IIRDECIM()   _q,
 //  _x      : input array [size: _n*_M x 1]
 //  _n      : number of _output_ samples
 //  _y      : output array [_sze: _n x 1]
-void IIRDECIM(_execute_block)(IIRDECIM()   _q,
-                              TI *         _x,
-                              unsigned int _n,
-                              TO *         _y)
+int IIRDECIM(_execute_block)(IIRDECIM()   _q,
+                             TI *         _x,
+                             unsigned int _n,
+                             TO *         _y)
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
         // execute _M input samples computing just one output each time
         IIRDECIM(_execute)(_q, &_x[i*_q->M], &_y[i]);
     }
+    return LIQUID_OK;
 }
 
 // get system group delay at frequency _fc

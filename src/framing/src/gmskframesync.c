@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
 // gmskframesync.c
-//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -787,7 +785,8 @@ int gmskframesync_decode_header(gmskframesync _q)
 
     // first byte is for expansion/version validation
     if (_q->header_dec[n+0] != GMSKFRAME_VERSION) {
-        fprintf(stderr,"warning: gmskframesync_decode_header(), invalid framing version\n");
+        liquid_error(LIQUID_EICONFIG,"gmskframesync_decode_header(), invalid framing version (received %u, expected %u)",
+            _q->header_dec[n+0], GMSKFRAME_VERSION);
         _q->header_valid = 0;
         return LIQUID_OK;
     }
@@ -804,23 +803,22 @@ int gmskframesync_decode_header(gmskframesync _q)
     unsigned int fec1  = (_q->header_dec[n+4]      ) & 0x1f;
 
     // validate properties
-    if (check >= LIQUID_CRC_NUM_SCHEMES) {
-        fprintf(stderr,"warning: gmskframesync_decode_header(), decoded CRC exceeds available\n");
+    if (check == LIQUID_CRC_UNKNOWN || check >= LIQUID_CRC_NUM_SCHEMES) {
+        liquid_error(LIQUID_EICONFIG,"gmskframesync_decode_header(), invalid/unsupported crc: %u", check);
         check = LIQUID_CRC_UNKNOWN;
         _q->header_valid = 0;
     }
     if (fec0 >= LIQUID_FEC_NUM_SCHEMES) {
-        fprintf(stderr,"warning: gmskframesync_decode_header(), decoded FEC (inner) exceeds available\n");
+        liquid_error(LIQUID_EICONFIG,"gmskframesync_decode_header(), invalid/unsupported fec (inner): %u", fec0);
         fec0 = LIQUID_FEC_UNKNOWN;
         _q->header_valid = 0;
     }
     if (fec1 >= LIQUID_FEC_NUM_SCHEMES) {
-        fprintf(stderr,"warning: gmskframesync_decode_header(), decoded FEC (outer) exceeds available\n");
+        liquid_error(LIQUID_EICONFIG,"gmskframesync_decode_header(), invalid/unsupported fec (outer): %u", fec1);
         fec1 = LIQUID_FEC_UNKNOWN;
         _q->header_valid = 0;
     }
 
-    // print results
     // configure payload receiver
     if (_q->header_valid) {
         // set new packetizer properties
@@ -846,5 +844,4 @@ int gmskframesync_decode_header(gmskframesync _q)
     //
     return LIQUID_OK;
 }
-
 

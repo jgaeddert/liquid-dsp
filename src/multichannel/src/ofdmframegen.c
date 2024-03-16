@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,11 +34,11 @@
 
 #include "liquid.internal.h"
 
-#if HAVE_FFTW3_H
-#   include <fftw3.h>
-#endif
-
 #define DEBUG_OFDMFRAMEGEN            1
+
+// generate symbol (add cyclic prefix/postfix, overlap)
+int ofdmframegen_gensymbol(ofdmframegen    _q,
+                           float complex * _buffer);
 
 struct ofdmframegen_s {
     unsigned int M;         // number of subcarriers
@@ -88,8 +88,8 @@ ofdmframegen ofdmframegen_create(unsigned int    _M,
                                  unsigned char * _p)
 {
     // validate input
-    if (_M < 2)
-        return liquid_error_config("ofdmframegen_create(), number of subcarriers must be at least 2");
+    if (_M < 8)
+        return liquid_error_config("ofdmframegen_create(), number of subcarriers must be at least 8");
     if (_M % 2)
         return liquid_error_config("ofdmframegen_create(), number of subcarriers must be even");
     if (_cp_len > _M)
@@ -115,18 +115,12 @@ ofdmframegen ofdmframegen_create(unsigned int    _M,
     // validate and count subcarrier allocation
     if (ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data))
         return liquid_error_config("ofdmframegen_create(), invalid subcarrier allocation");
-    if ( (q->M_pilot + q->M_data) == 0)
-        return liquid_error_config("ofdmframegen_create(), must have at least one enabled subcarrier");
-    if (q->M_data == 0)
-        return liquid_error_config("ofdmframegen_create(), must have at least one data subcarriers");
-    if (q->M_pilot < 2)
-        return liquid_error_config("ofdmframegen_create(), must have at least two pilot subcarriers");
 
     unsigned int i;
 
     // allocate memory for transform objects
-    q->X = (float complex*) malloc((q->M)*sizeof(float complex));
-    q->x = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->X = (float complex*) FFT_MALLOC((q->M)*sizeof(float complex));
+    q->x = (float complex*) FFT_MALLOC((q->M)*sizeof(float complex));
     q->ifft = FFT_CREATE_PLAN(q->M, q->X, q->x, FFT_DIR_BACKWARD, FFT_METHOD);
 
     // allocate memory for PLCP arrays
@@ -169,8 +163,8 @@ int ofdmframegen_destroy(ofdmframegen _q)
     free(_q->p);
 
     // free transform array memory
-    free(_q->X);
-    free(_q->x);
+    FFT_FREE(_q->X);
+    FFT_FREE(_q->x);
     FFT_DESTROY_PLAN(_q->ifft);
 
     // free tapering window and transition buffer

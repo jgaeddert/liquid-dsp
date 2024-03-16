@@ -1,6 +1,106 @@
 
 ## Latest improvements ##
 
+## Improvements for v1.6.0 ##
+
+Version 1.6.0 includes a new qdsync object to greatly simplify the frame
+synchronization process in liquid, allowing for both detection and channel
+impairment correction with a simplified interface. Additionally, code
+coverage has been increased to 85% across the entire project, with numerous
+bug fixes, stability improvements, and massive testing enhancements. From
+an "architectural" standpoint, objects have been migrated to use standard
+methods for consistency.
+
+  * build
+    - increased code coverage to 85% globally across entire project. This
+      is the single largest effort included in this version and touches
+      most modules in some way, most particularly the framing objects
+    - cleaning build to remove compiler warnings (e.g. unused variables)
+    - stripped version number off archive
+  * dotprod
+    - added support for AVX512-F (thanks, @vankxr!)
+  * framing
+    - added numerous tests to increase coverage to 84%
+    - framesync64: using new qdsync object for simplified operation
+    - qdsync: new frame detector and synchronizer to much more easily
+      support frame processing. The object not only detects the frame, but
+      also provides an initial carrier frequency, phase, and timign offset,
+      and also corrects for these impairments, passing the results to the
+      user in a clean callback function.
+  * modem
+    - cpfskmod: increasing phase stability for long runs
+  * multichannel
+    - added numerous tests to increase coverage to 88%
+  * optim
+    - added numerous tests to increase coverage to 92%
+  * sequence
+    - msequence: extended support for state variables up to m=31, reversed
+      order for generator polynomial and internal state definition to be
+      more consistent with literature and readily-available genpolys
+
+## Improvements for v1.5.0 ##
+
+This release includes substantially improved testing coverage, deep copy()
+methods for nearly all objects, improved speed, and resolves a number of
+issues and pull requests.
+
+  * build
+    - added support for PlatformIO (https://platformio.org) for embeedded
+      development (thanks, @jcw!)
+    - incorporated recursive copy() methods to objects to facilitate c++ copy
+      constructors for bindings; now all objects can be deep copied to a new
+      object with their entire memory and state preserved
+    - added convenience method to malloc and copy memory arrays
+    - improved support for error codes across objects and methods
+    - cleaned up spelling errors across project (thanks, @nowls!)
+    - scrubbed function argument variable names to avoid underscore followed
+      by a capital letter, causing trouble with pre-compiler processing
+    - added basic test to check linking to installed library, incorporating
+      into CI/CD pipelines
+    - added more example programs
+  * autotest
+    - increased coverage testing (81% across entire project)
+    - added the ability to "hammer" a particular test by running repeatedly on
+      incremental seeds to assess specific edge cases (e.g. with random data)
+    - added timer to show execution time for each test and identify areas for
+      speed improvements
+    - added methods for testing spectral response of various fields
+    - added special directory for storing output logs: autotest/logs/
+  * benchmark
+    - replacing old C-based benchmark comparison with simpler python version
+  * dotprod
+    - added support for AVX SIMD in vector dot products (thanks, @vankxr!)
+  * fft
+    - adding macro to allow for aligned memory allocation if FFTW is used
+      (thanks, @nowls!)
+  * filter
+    - added new halfband filter design using Parks-McClellan algorithm and
+      qs1dsearch method to provide as exact a specification as possible
+    - added method to retrieve filter response from coefficients array
+    - dds: adding methods to get/set scale
+    - firhilb, iirhilb: added block processing method
+    - msresamp, resamp: adding method to provide the exact number of output
+      samples with provided input size
+    - msresamp2, resamp2: using better halfband filter design for exact user
+      specifications
+    - resamp: adding methods to get/set scale, fixing filter bank resolution
+      (was hard-coded, now respects user configuration)
+  * framing
+    - framesync64: added methods to set callback and userdata (context)
+      fields, adding support for exporting debugging files for post-analysis
+      as well as python script for processing, adding better estimate of
+      error vector magnitude
+    - msource: added convenience method to recall number of samples generated
+      by each source
+    - ofdmflexframesync: added methods to set callback and userdata (context)
+      fields
+    - qpacketmodem: returning much better estimate of error vector magnitude
+    - qsource: fixed issue with carrier frequency adjustment
+  * optim
+    - added qs1dsearch object to perform quad-section 1-dimensional search:
+      similar to bisection search, but to find potentially non-continuous
+      minimum/maximum of function
+
 ## Improvements for v1.4.0 ##
 
   * autotest

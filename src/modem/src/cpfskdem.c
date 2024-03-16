@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -138,14 +138,14 @@ cpfskdem cpfskdem_create(unsigned int _bps,
     // validate input
     if (_bps == 0)
         return liquid_error_config("cpfskdem_create(), bits/symbol must be greater than 0");
+    if (_h <= 0.0f)
+        return liquid_error_config("cpfskdem_create(), modulation index must be greater than 0");
     if (_k < 2 || (_k%2))
         return liquid_error_config("cpfskmod_create(), samples/symbol must be greater than 2 and even");
     if (_m == 0)
         return liquid_error_config("cpfskdem_create(), filter delay must be greater than 0");
     if (_beta <= 0.0f || _beta > 1.0f)
         return liquid_error_config("cpfskdem_create(), filter roll-off must be in (0,1]");
-    if (_h <= 0.0f)
-        return liquid_error_config("cpfskdem_create(), modulation index must be greater than 0");
 
     // create main object memory
     cpfskdem q = (cpfskdem) malloc(sizeof(struct cpfskdem_s));
@@ -164,10 +164,10 @@ cpfskdem cpfskdem_create(unsigned int _bps,
     // coherent or non-coherent?
     // TODO: allow user to specify
     if (q->h > 0.66667f) {
-        cpfskdem_init_noncoherent(q);
-    } else {
-        cpfskdem_init_coherent(q);
+        //cpfskdem_init_noncoherent(q);
+        fprintf(stderr,"warning: cpfskdem_create(), coherent demodulation with h > 2/3 not recommended\n");
     }
+    cpfskdem_init_coherent(q);
 
     // reset modem object
     cpfskdem_reset(q);
@@ -235,6 +235,7 @@ int cpfskdem_init_coherent(cpfskdem _q)
 // initialize non-coherent demodulator
 int cpfskdem_init_noncoherent(cpfskdem _q)
 {
+#if 0
     // specify non-coherent receiver
     _q->demod_type = CPFSKDEM_NONCOHERENT;
     
@@ -250,6 +251,9 @@ int cpfskdem_init_noncoherent(cpfskdem _q)
         break;
     }
     return LIQUID_OK;
+#else
+    return liquid_error(LIQUID_EUMODE,"cpfskdem_init_noncoherent(), unsupported mode");
+#endif
 }
 
 // destroy modem object

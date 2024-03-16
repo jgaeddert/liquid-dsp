@@ -476,8 +476,8 @@ void benchmark_fftw(struct rusage *      _start,
                     struct benchmark_s * _benchmark)
 {
     // initialize arrays, plan
-    float complex * x = (float complex *) malloc((_benchmark->nfft)*sizeof(float complex));
-    float complex * y = (float complex *) malloc((_benchmark->nfft)*sizeof(float complex));
+    float complex * x = (float complex *) fftwf_malloc((_benchmark->nfft)*sizeof(float complex));
+    float complex * y = (float complex *) fftwf_malloc((_benchmark->nfft)*sizeof(float complex));
     fftwf_plan q = fftwf_plan_dft_1d(_benchmark->nfft,
                                      x, y,
                                      //_benchmark->direction,
@@ -508,8 +508,8 @@ void benchmark_fftw(struct rusage *      _start,
     _benchmark->num_trials = num_iterations * 4;
 
     fftwf_destroy_plan(q);
-    free(x);
-    free(y);
+    fftwf_free(x);
+    fftwf_free(y);
 }
 
 void benchmark_print_to_file(FILE * _fid,

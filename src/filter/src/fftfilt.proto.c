@@ -72,10 +72,10 @@ FFTFILT() FFTFILT(_create)(TC *         _h,
     memmove(q->h, _h, _h_len*sizeof(TC));
 
     // allocate internal memory arrays
-    q->time_buf = (float complex *) malloc((2*q->n)* sizeof(float complex)); // time buffer
-    q->freq_buf = (float complex *) malloc((2*q->n)* sizeof(float complex)); // frequency buffer
-    q->H        = (float complex *) malloc((2*q->n)* sizeof(float complex)); // FFT{ h }
-    q->w        = (float complex *) malloc((  q->n)* sizeof(float complex)); // delay buffer
+    q->time_buf = (float complex *) FFT_MALLOC((2*q->n)* sizeof(float complex)); // time buffer
+    q->freq_buf = (float complex *) FFT_MALLOC((2*q->n)* sizeof(float complex)); // frequency buffer
+    q->H        = (float complex *) malloc((2*q->n)* sizeof(float complex));     // FFT{ h }
+    q->w        = (float complex *) malloc((  q->n)* sizeof(float complex));     // delay buffer
 
     // create internal FFT objects
     q->fft  = FFT_CREATE_PLAN(2*q->n, q->time_buf, q->freq_buf, FFT_DIR_FORWARD,  FFT_METHOD);
@@ -113,11 +113,15 @@ FFTFILT() FFTFILT(_copy)(FFTFILT() q_orig)
     // copy filter coefficients
     q_copy->h = (TC *) liquid_malloc_copy(q_orig->h, q_orig->h_len, sizeof(TC));
 
+    // allocate FFT buffers
+    q_copy->time_buf = (float complex*) FFT_MALLOC((2*q_orig->n) * sizeof(float complex));
+    q_copy->freq_buf = (float complex*) FFT_MALLOC((2*q_orig->n) * sizeof(float complex));
+
     // copy buffers
-    q_copy->time_buf = (float complex*) liquid_malloc_copy(q_orig->time_buf, 2*q_orig->n, sizeof(float complex));
-    q_copy->freq_buf = (float complex*) liquid_malloc_copy(q_orig->freq_buf, 2*q_orig->n, sizeof(float complex));
-    q_copy->H        = (float complex*) liquid_malloc_copy(q_orig->H,        2*q_orig->n, sizeof(float complex));
-    q_copy->w        = (float complex*) liquid_malloc_copy(q_orig->w,          q_orig->n, sizeof(float complex));
+    memmove(q_copy->time_buf, q_orig->time_buf, (2*q_orig->n) * sizeof(float complex));
+    memmove(q_copy->freq_buf, q_orig->freq_buf, (2*q_orig->n) * sizeof(float complex));
+    q_copy->H = (float complex*) liquid_malloc_copy(q_orig->H, 2*q_orig->n, sizeof(float complex));
+    q_copy->w = (float complex*) liquid_malloc_copy(q_orig->w,   q_orig->n, sizeof(float complex));
 
     // create internal FFT objects and return
     q_copy->fft  = FFT_CREATE_PLAN(2*q_copy->n, q_copy->time_buf, q_copy->freq_buf, FFT_DIR_FORWARD,  FFT_METHOD);
@@ -130,8 +134,8 @@ int FFTFILT(_destroy)(FFTFILT() _q)
 {
     // free internal arrays
     free(_q->h);                // filter coefficients
-    free(_q->time_buf);         // buffer (time domain)
-    free(_q->freq_buf);         // buffer (frequency domain)
+    FFT_FREE(_q->time_buf);     // buffer (time domain)
+    FFT_FREE(_q->freq_buf);     // buffer (frequency domain)
     free(_q->H);                // frequency response of filter coefficients
     free(_q->w);                // output window buffer
 

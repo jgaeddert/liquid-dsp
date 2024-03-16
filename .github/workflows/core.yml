@@ -30,8 +30,18 @@ jobs:
     - name: make
       run: make -j 2
 
-    - name: make doc-check
-      run: make doc-check
+    - name: make check-doc
+      run: make check-doc
 
     - name: make check
       run: make -j 2 check
+
+    - name: make install
+      run: sudo make install
+
+    - name: ldconfig (Linux)
+      if: runner.os == 'Linux'
+      run: sudo ldconfig
+
+    - name: make check-link
+      run: make check-link

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -104,19 +104,22 @@ void qpilotsync_test(modulation_scheme _ms,
     float dphi_hat  = qpilotsync_get_dphi(ps);
     float phi_hat   = qpilotsync_get_phi (ps);
     float gamma_hat = qpilotsync_get_gain(ps);
+    float evm_hat   = qpilotsync_get_evm (ps);
 
     if (liquid_autotest_verbose) {
         qpilotgen_print(pg);
         printf("  received bit errors : %u / %u\n", bit_errors, _payload_len * modemcf_get_bps(mod));
-        printf("  dphi (carrier freq.): %12.8ff (expected %12.8f, error=%12.8f)\n", dphi_hat, _dphi, _dphi-dphi_hat);
-        printf("  phi  (carrier phase): %12.8ff (expected %12.8f, error=%12.8f)\n",  phi_hat,  _phi, _phi-phi_hat);
-        printf("  gamma (channel gain): %12.8ff (expected %12.8f, error=%12.8f)\n", gamma_hat, _gamma, _gamma-gamma_hat);
+        printf("  dphi (carrier freq.): %12.8f (expected %12.8f, error=%12.8f)\n", dphi_hat,  _dphi, _dphi-dphi_hat);
+        printf("  phi  (carrier phase): %12.8f (expected %12.8f, error=%12.8f)\n", phi_hat,   _phi, _phi-phi_hat);
+        printf("  gamma (channel gain): %12.8f (expected %12.8f, error=%12.8f)\n", gamma_hat, _gamma, _gamma-gamma_hat);
+        printf("  error vector mag.   : %12.8f (expected %12.8f, error=%12.8f)\n", evm_hat,   -_SNRdB,_SNRdB+evm_hat);
     }
-    
+
     // check to see that frame was recovered
     CONTEND_DELTA   (   dphi_hat,  _dphi, 0.010f );
     CONTEND_DELTA   (    phi_hat,   _phi, 0.087f );  // 0.087 radians is about 5 degrees
     CONTEND_DELTA   (  gamma_hat, _gamma, 0.010f );
+    //CONTEND_DELTA   (    evm_hat,-_SNRdB, 6.000f ); // EVM estimate poor for few pilots (up to 10 dB off for 16)
     CONTEND_EQUALITY( bit_errors, 0 );
     
     // destroy allocated objects
@@ -125,13 +128,19 @@ void qpilotsync_test(modulation_scheme _ms,
     modemcf_destroy(mod);
     modemcf_destroy(dem);
 
-#if DEBUG_QPILOTSYNC_AUTOTEST
+#if 0
+    // append error statistics to file for assessment
+    FILE * fp = fopen("qpilotsync_errors.txt", "a");
+    fprintf(fp,"%12.4e %12.4e %12.4e %12.4e\n",dphi_hat-_dphi,phi_hat-_phi,gamma_hat-_gamma,evm_hat+_SNRdB);
+    fclose(fp);
+#endif
+#if 0 //DEBUG_QPILOTSYNC_AUTOTEST
     // write symbols to output file for plotting
     char filename[256];
     sprintf(filename,"autotest/logs/qpilotsync_autotest_%u_%u_debug.m", _payload_len, _pilot_spacing);
     FILE * fid = fopen(filename,"w");
     if (!fid) {
-        fprintf(stderr,"error: could not open '%s' for writing\n", filename);
+        liquid_error(LIQUID_EIO,"could not open '%s' for writing", filename);
         return;
     }
     fprintf(fid,"%% %s : auto-generated file\n", filename);
@@ -168,6 +177,7 @@ void qpilotsync_test(modulation_scheme _ms,
 #endif
 }
 
+//                                                  ms                 pay  ps  dphi   phi   gamma  SNR
 void autotest_qpilotsync_100_16() { qpilotsync_test(LIQUID_MODEM_QPSK, 100, 16, 0.07f, 1.2f, 0.7f, 40.0f); }
 void autotest_qpilotsync_200_20() { qpilotsync_test(LIQUID_MODEM_QPSK, 200, 20, 0.07f, 1.2f, 0.7f, 40.0f); }
 void autotest_qpilotsync_300_24() { qpilotsync_test(LIQUID_MODEM_QPSK, 300, 24, 0.07f, 1.2f, 0.7f, 40.0f); }

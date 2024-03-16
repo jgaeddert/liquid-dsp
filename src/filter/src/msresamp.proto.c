@@ -135,7 +135,7 @@ MSRESAMP() MSRESAMP(_create)(float _r,
                                           7,
                                           min(0.515f*q->rate_arbitrary,0.49f),
                                           q->as,
-                                          64);
+                                          256);
 
     // reset object
     MSRESAMP(_reset)(q);

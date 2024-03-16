@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2022 Joseph Gaeddert
+# Copyright (c) 2007 - 2023 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,9 @@
 NAME		:= @PACKAGE_NAME@
 VERSION		:= @PACKAGE_VERSION@
 BUGREPORT	:= @PACKAGE_BUGREPORT@
+AR_LIB		:= @AR_LIB@
+SH_LIB		:= @SH_LIB@
+SOVERSION	:= 1
 
 # paths
 prefix		:= @prefix@
@@ -52,7 +55,7 @@ exec_prefix	:= @exec_prefix@
 VPATH		:= @srcdir@
 srcdir		:= @srcdir@
 libdir		:= @libdir@
-include_dirs	:= . include
+include_dirs	:= . ./include
 
 # programs
 CC		:= @CC@
@@ -218,6 +221,9 @@ src/dotprod/src/sumsq.mmx.o : %.o : %.c $(include_headers)
 # SSE4.1/2
 src/dotprod/src/dotprod_rrrf.sse4.o : %.o : %.c $(include_headers)
 
+# AVX
+src/dotprod/src/sumsq.avx.o : %.o : %.c $(include_headers)
+
 # ARM Neon
 src/dotprod/src/dotprod_rrrf.neon.o : %.o : %.c $(include_headers)
 src/dotprod/src/dotprod_crcf.neon.o : %.o : %.c $(include_headers)
@@ -298,6 +304,7 @@ $(fec_objects) : %.o : %.c $(include_headers)
 fec_autotests :=						\
 	src/fec/tests/crc_autotest.c				\
 	src/fec/tests/fec_autotest.c				\
+	src/fec/tests/fec_config_autotest.c			\
 	src/fec/tests/fec_copy_autotest.c			\
 	src/fec/tests/fec_soft_autotest.c			\
 	src/fec/tests/fec_golay2412_autotest.c			\
@@ -516,8 +523,8 @@ filter_autotests :=						\
 	src/filter/tests/iirdecim_autotest.c			\
 	src/filter/tests/iirdes_autotest.c			\
 	src/filter/tests/iirdes_support_autotest.c		\
+	src/filter/tests/iirfilt_autotest.c			\
 	src/filter/tests/iirfilt_xxxf_autotest.c		\
-	src/filter/tests/iirfilt_copy_autotest.c		\
 	src/filter/tests/iirfiltsos_autotest.c			\
 	src/filter/tests/iirhilb_autotest.c			\
 	src/filter/tests/iirinterp_autotest.c			\
@@ -624,10 +631,6 @@ filter_benchmarks :=						\
 framing_objects :=						\
 	src/framing/src/bpacketgen.o				\
 	src/framing/src/bpacketsync.o				\
-	src/framing/src/bpresync_cccf.o				\
-	src/framing/src/bsync_rrrf.o				\
-	src/framing/src/bsync_crcf.o				\
-	src/framing/src/bsync_cccf.o				\
 	src/framing/src/detector_cccf.o				\
 	src/framing/src/dsssframe64gen.o			\
 	src/framing/src/dsssframe64sync.o			\
@@ -637,54 +640,43 @@ framing_objects :=						\
 	src/framing/src/framesyncstats.o			\
 	src/framing/src/framegen64.o				\
 	src/framing/src/framesync64.o				\
+	src/framing/src/framingcf.o				\
+	src/framing/src/framing_rrrf.o				\
+	src/framing/src/framing_crcf.o				\
+	src/framing/src/framing_cccf.o				\
 	src/framing/src/flexframegen.o				\
 	src/framing/src/flexframesync.o				\
 	src/framing/src/fskframegen.o				\
 	src/framing/src/fskframesync.o				\
 	src/framing/src/gmskframegen.o				\
 	src/framing/src/gmskframesync.o				\
-	src/framing/src/msourcecf.o				\
 	src/framing/src/ofdmflexframegen.o			\
 	src/framing/src/ofdmflexframesync.o			\
-	src/framing/src/presync_cccf.o				\
-	src/framing/src/symstreamcf.o				\
-	src/framing/src/symstreamrcf.o				\
-	src/framing/src/symtrack_cccf.o				\
-	src/framing/src/qdetector_cccf.o			\
-	src/framing/src/qdsync_cccf.o				\
-	src/framing/src/qpacketmodem.o				\
 	src/framing/src/qpilotgen.o				\
 	src/framing/src/qpilotsync.o				\
 
 
 # list explicit targets and dependencies here
 
-src/framing/src/bpacketgen.o        : %.o : %.c $(include_headers)
-src/framing/src/bpacketsync.o       : %.o : %.c $(include_headers)
-src/framing/src/bpresync_cccf.o     : %.o : %.c $(include_headers) src/framing/src/bpresync.proto.c
-src/framing/src/bsync_rrrf.o        : %.o : %.c $(include_headers) src/framing/src/bsync.proto.c
-src/framing/src/bsync_crcf.o        : %.o : %.c $(include_headers) src/framing/src/bsync.proto.c
-src/framing/src/bsync_cccf.o        : %.o : %.c $(include_headers) src/framing/src/bsync.proto.c
-src/framing/src/detector_cccf.o     : %.o : %.c $(include_headers)
-src/framing/src/dsssframe64gen.o    : %.o : %.c $(include_headers)
-src/framing/src/dsssframe64sync.o   : %.o : %.c $(include_headers)
-src/framing/src/dsssframegen.o      : %.o : %.c $(include_headers)
-src/framing/src/dsssframesync.o     : %.o : %.c $(include_headers)
-src/framing/src/framedatastats.o    : %.o : %.c $(include_headers)
-src/framing/src/framesyncstats.o    : %.o : %.c $(include_headers)
-src/framing/src/framegen64.o        : %.o : %.c $(include_headers)
-src/framing/src/framesync64.o       : %.o : %.c $(include_headers)
-src/framing/src/flexframegen.o      : %.o : %.c $(include_headers)
-src/framing/src/flexframesync.o     : %.o : %.c $(include_headers)
-src/framing/src/msourcecf.o         : %.o : %.c $(include_headers) src/framing/src/msource.proto.c src/framing/src/qsource.proto.c
-src/framing/src/ofdmflexframegen.o  : %.o : %.c $(include_headers)
-src/framing/src/ofdmflexframesync.o : %.o : %.c $(include_headers)
-src/framing/src/presync_cccf.o      : %.o : %.c $(include_headers) src/framing/src/presync.proto.c
-src/framing/src/qpacketmodem.o      : %.o : %.c $(include_headers)
-src/framing/src/symstreamcf.o       : %.o : %.c $(include_headers) src/framing/src/symstream.proto.c
-src/framing/src/symstreamrcf.o      : %.o : %.c $(include_headers) src/framing/src/symstreamr.proto.c
-src/framing/src/symtrack_cccf.o     : %.o : %.c $(include_headers) src/framing/src/symtrack.proto.c
+framing_prototypes_gen :=					\
+	src/framing/src/msource.proto.c				\
+	src/framing/src/qpacketmodem.proto.c			\
+	src/framing/src/qsource.proto.c				\
+	src/framing/src/symstream.proto.c			\
+	src/framing/src/symstreamr.proto.c			\
 
+framing_prototypes_sync :=					\
+	src/framing/src/bpresync.proto.c			\
+	src/framing/src/bsync.proto.c				\
+	src/framing/src/presync.proto.c				\
+	src/framing/src/qdetector.proto.c			\
+	src/framing/src/qdsync.proto.c				\
+	src/framing/src/symtrack.proto.c			\
+
+src/framing/src/framingcf.o         : %.o : %.c $(include_headers) ${framing_prototypes_gen}
+src/framing/src/framing_rrrf.o      : %.o : %.c $(include_headers) ${framing_prototypes_sync}
+src/framing/src/framing_crcf.o      : %.o : %.c $(include_headers) ${framing_prototypes_sync}
+src/framing/src/framing_cccf.o      : %.o : %.c $(include_headers) ${framing_prototypes_sync}
 
 framing_autotests :=						\
 	src/framing/tests/bpacketsync_autotest.c		\
@@ -694,6 +686,7 @@ framing_autotests :=						\
 	src/framing/tests/dsssframesync_autotest.c		\
 	src/framing/tests/flexframesync_autotest.c		\
 	src/framing/tests/framesync64_autotest.c		\
+	src/framing/tests/fskframesync_autotest.c		\
 	src/framing/tests/gmskframe_autotest.c			\
 	src/framing/tests/msource_autotest.c			\
 	src/framing/tests/ofdmflexframe_autotest.c		\
@@ -905,7 +898,7 @@ modem_autotests :=						\
 	src/modem/tests/fskmodem_autotest.c			\
 	src/modem/tests/gmskmodem_autotest.c			\
 	src/modem/tests/modem_autotest.c			\
-	src/modem/tests/modem_copy_autotest.c			\
+	src/modem/tests/modem_config_autotest.c			\
 	src/modem/tests/modem_demodsoft_autotest.c		\
 	src/modem/tests/modem_demodstats_autotest.c		\
 	src/modem/tests/modem_utilities_autotest.c		\
@@ -948,7 +941,8 @@ multichannel_autotests :=					\
 	src/multichannel/tests/firpfbch2_crcf_autotest.c	\
 	src/multichannel/tests/firpfbch_crcf_synthesizer_autotest.c	\
 	src/multichannel/tests/firpfbch_crcf_analyzer_autotest.c	\
-	src/multichannel/tests/ofdmframesync_autotest.c		\
+	src/multichannel/tests/firpfbch_crcf_autotest.c		\
+	src/multichannel/tests/ofdmframe_autotest.c		\
 
 # benchmarks
 multichannel_benchmarks :=					\
@@ -976,7 +970,7 @@ src/nco/src/nco.utilities.o : %.o : %.c $(include_headers)
 
 # autotests
 nco_autotests :=						\
-	src/nco/tests/nco_crcf_copy_autotest.c			\
+	src/nco/tests/nco_crcf_autotest.c			\
 	src/nco/tests/nco_crcf_frequency_autotest.c		\
 	src/nco/tests/nco_crcf_mix_autotest.c			\
 	src/nco/tests/nco_crcf_phase_autotest.c			\
@@ -1012,8 +1006,11 @@ $(optim_objects) : %.o : %.c $(include_headers)
 
 # autotests
 optim_autotests :=						\
+	src/optim/tests/gasearch_autotest.c			\
 	src/optim/tests/gradsearch_autotest.c			\
+	src/optim/tests/qnsearch_autotest.c			\
 	src/optim/tests/qs1dsearch_autotest.c			\
+	src/optim/tests/utility_autotest.c			\
 
 # benchmarks
 optim_benchmarks :=
@@ -1069,8 +1066,8 @@ $(random_objects) : %.o : %.c $(include_headers)
 # autotests
 random_autotests :=						\
 	src/random/tests/scramble_autotest.c			\
-
-#	src/random/tests/random_autotest.c
+	src/random/tests/random_autotest.c			\
+	src/random/tests/random_distributions_autotest.c	\
 
 
 # benchmarks
@@ -1186,7 +1183,8 @@ objects :=							\
 	$(sequence_objects)					\
 	$(utility_objects)					\
 	$(vector_objects)					\
-	
+
+$(objects) : %.o : %.c $(include_headers)
 
 autotest_sources :=						\
 	autotest/null_autotest.c				\
@@ -1244,29 +1242,29 @@ benchmark_sources :=						\
 ##
 .PHONY: all
 
-# Shared library
-ARCHIVE_LIB	= @AR_LIB@
-SHARED_LIB	= @SH_LIB@
+# Shared library targets
+ARCHIVE_LIB	= libliquid.${AR_LIB}
+SHARED_LIB	= libliquid.${SH_LIB}
 
 #
 # darwin
 #
-libliquid.ar: $(objects)
+libliquid.ar : $(objects)
 	${LIBTOOL} -static -o $@ $^
 
 # gcc -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a 
-libliquid.dylib: $(objects)
+libliquid.dylib : $(objects)
 	$(CC) -dynamiclib ${COVERAGE_FLAGS} -install_name $@ -o $@ $^ $(LDFLAGS) $(LIBS)
 
 #
 # linux, et al
 #
-libliquid.a: $(objects)
+libliquid.a : $(objects)
 	${AR} r $@ $^
 	${RANLIB} $@
 
-libliquid.so: libliquid.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive $(LIBS)
+libliquid.so : libliquid.a
+	$(CC) $(CFLAGS) $(LDFLAGS) -shared -Xlinker -soname=libliquid.so.$(SOVERSION) -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive $(LIBS)
 
 # static archive and library objects
 all: ${ARCHIVE_LIB} ${SHARED_LIB}
@@ -1287,11 +1285,13 @@ help:
 install: all
 	@echo "installing..."
 	@echo ""
-	mkdir -p $(DESTDIR)$(prefix)/include
 	mkdir -p $(DESTDIR)$(prefix)/include/liquid
 	mkdir -p $(DESTDIR)$(libdir)
-	install -m 644 -p ${ARCHIVE_LIB} ${SHARED_LIB} $(DESTDIR)$(libdir)
-	install -m 644 -p $(addprefix include/,$(headers_install)) $(DESTDIR)$(prefix)/include/liquid
+	install -m 644 -p libliquid.${AR_LIB} $(DESTDIR)$(libdir)/libliquid.${AR_LIB}
+	install -m 644 -p libliquid.${SH_LIB} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${VERSION}
+	install -m 644 -p include/liquid.h $(DESTDIR)$(prefix)/include/liquid/liquid.h
+	ln -sf libliquid.${SH_LIB}.${VERSION} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
+	ln -sf libliquid.${SH_LIB}.${VERSION} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${SOVERSION}
 	@echo ""
 	@echo "---------------------------------------------------------"
 	@echo "  liquid-dsp was successfully installed.     "
@@ -1310,11 +1310,14 @@ install: all
 ## TARGET : uninstall - uninstalls the libraries and header files in the host system
 ##
 
+#$(RM) $(addprefix $(DESTDIR)$(prefix)/include/liquid/, $(headers_install))
 uninstall:
 	@echo "uninstalling..."
-	$(RM) $(addprefix $(DESTDIR)$(prefix)/include/liquid/, $(headers_install))
-	$(RM) $(DESTDIR)$(libdir)/${ARCHIVE_LIB}
-	$(RM) $(DESTDIR)$(libdir)/${SHARED_LIB}
+	$(RM) $(DESTDIR)$(prefix)/include/liquid/liquid.h
+	$(RM) $(DESTDIR)$(libdir)/libliquid.${AR_LIB}
+	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${VERSION}
+	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${SOVERSION}
+	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
 	@echo "done."
 
 ##
@@ -1382,7 +1385,7 @@ clean-check:
 	$(RM) autotest/logs/*.bin autotest/logs/*.gnu autotest/logs/*.png
 
 ##
-## TARGET : doc-check - build and run basic documentation checks
+## TARGET : check-doc - build and run basic documentation checks
 ##
 
 readme.c.example.c : README.md
@@ -1403,9 +1406,9 @@ readme.cc.example.o : %.o : %.cc ${include_headers}
 readme.cc.example : % : %.o ${ARCHIVE_LIB}
 	${CXX} ${CXXFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
 
-doc-check : readme.c.example readme.cc.example ; ./readme.c.example && ./readme.cc.example
+check-doc : readme.c.example readme.cc.example ; ./readme.c.example && ./readme.cc.example
 
-clean-doc-check:
+clean-check-doc:
 	${RM} readme.*.example*
 
 ##
@@ -1469,10 +1472,6 @@ $(bench_prog): $(bench_prog).o $(benchmark_obj) $(benchmark_extra_obj) ${ARCHIVE
 bench: $(bench_prog)
 	./$(bench_prog) -o benchmark.json
 
-# benchmark compare script
-scripts/benchmark_compare : % : %.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $< $(LIBS)
-
 # fftbench program
 bench/fftbench.o : %.o : %.c
 	$(CC) $(BENCH_CPPFLAGS) $(BENCH_CFLAGS) $< -c -o $@
@@ -1483,7 +1482,6 @@ bench/fftbench : % : %.o ${ARCHIVE_LIB}
 # clean up the generated files
 clean-bench:
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
-	$(RM) scripts/benchmark_compare
 	$(RM) $(benchmark_obj)
 	$(RM) $(benchmark_extra_obj)
 	$(RM) bench/fftbench.o
@@ -1565,6 +1563,7 @@ example_programs :=						\
 	examples/firpfbch_crcf_analysis_example			\
 	examples/firpfbch_crcf_msource_example			\
 	examples/firpfbch_crcf_synthesis_example		\
+	examples/flexframesync_debug_example			\
 	examples/flexframesync_example				\
 	examples/flexframesync_reconfig_example			\
 	examples/framesync64_example				\
@@ -1591,6 +1590,7 @@ example_programs :=						\
 	examples/iirfilt_cccf_example				\
 	examples/iirfilt_crcf_example				\
 	examples/iirfilt_crcf_dcblocker_example			\
+	examples/iirfilt_rrrf_integrator_example		\
 	examples/iirhilb_example				\
 	examples/iirhilb_filter_example				\
 	examples/iirinterp_crcf_example				\
@@ -1606,8 +1606,9 @@ example_programs :=						\
 	examples/modem_pi4dqpsk_example				\
 	examples/modem_soft_example				\
 	examples/modular_arithmetic_example			\
-	examples/msequence_generator_example			\
+	examples/msequence_autocorr_example			\
 	examples/msequence_example				\
+	examples/msequence_generator_example			\
 	examples/msourcecf_example				\
 	examples/msresamp_crcf_example				\
 	examples/msresamp_crcf_noise_example			\
@@ -1827,6 +1828,23 @@ clean-sandbox:
 	$(RM) $(sandbox_programs)
 
 ##
+## TARGET : check-link- test linking to installed library
+##
+
+# run program, ensuring proper error code
+check-link: scripts/liquid_linker_test ; ./$<
+
+# use subset of compiler flags so we don't try to build or link against
+# local files
+scripts/liquid_linker_test.o : %.o : %.c
+	$(CC) -c -Wall -O2 -o $@ $<
+
+scripts/liquid_linker_test : % : %.o
+	$(CC) -Wall -O2 -o $@ $< -L/usr/local/lib ${LIBS} -lliquid
+
+extra_clean += scripts/liquid_linker_test.o scripts/liquid_linker_test
+
+##
 ## TARGET : programs  - build all programs, but don't run anything
 ##
 programs: all xautotest benchmark examples sandbox
@@ -1834,7 +1852,7 @@ programs: all xautotest benchmark examples sandbox
 ##
 ## TARGET : world     - build absolutely everything
 ##
-world : all bench check doc-check examples sandbox
+world : all bench check check-doc examples sandbox
 
 ##
 ## TARGET : clean     - clean build (objects, dependencies, libraries, etc.)
@@ -1847,7 +1865,7 @@ clean-modules:
 	$(RM) src/*/src/*.o src/*/bench/*.o src/*/tests/*.o
 	$(RM) src/libliquid.o
 
-clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox clean-doc-check
+clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox clean-check-doc
 	$(RM) ${ARCHIVE_LIB} ${SHARED_LIB} $(extra_clean)
 
 ##

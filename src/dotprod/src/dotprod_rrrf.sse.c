@@ -21,7 +21,7 @@
  */
 
 // 
-// Floating-point dot product (SSE4.1/2)
+// Floating-point dot product (SSE)
 //
 
 #include <stdio.h>
@@ -34,23 +34,27 @@
 // include proper SIMD extensions for x86 platforms
 // NOTE: these pre-processor macros are defined in config.h
 
-#if 0
-#include <mmintrin.h>   // MMX
+#if HAVE_SSE
 #include <xmmintrin.h>  // SSE
+#endif
+
+#if HAVE_SSE2
 #include <emmintrin.h>  // SSE2
+#endif
+
+#if HAVE_SSE3
 #include <pmmintrin.h>  // SSE3
 #endif
-#include <smmintrin.h>  // SSE4.1/2
 
-#define DEBUG_DOTPROD_RRRF_SSE4     0
+#define DEBUG_DOTPROD_RRRF_SSE   0
 
 // internal methods
+int dotprod_rrrf_execute_sse(dotprod_rrrf _q,
+                             float *      _x,
+                             float *      _y);
 int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
                               float *      _x,
                               float *      _y);
-int dotprod_rrrf_execute_sse4u(dotprod_rrrf _q,
-                               float *      _x,
-                               float *      _y);
 
 // basic dot product (ordinal calculation)
 int dotprod_rrrf_run(float *      _h,
@@ -96,7 +100,7 @@ int dotprod_rrrf_run4(float *      _h,
 
 
 //
-// structured MMX dot product
+// structured SSE dot product
 //
 
 struct dotprod_rrrf_s {
@@ -104,8 +108,9 @@ struct dotprod_rrrf_s {
     float * h;          // coefficients array
 };
 
-dotprod_rrrf dotprod_rrrf_create(float *      _h,
-                                 unsigned int _n)
+dotprod_rrrf dotprod_rrrf_create_opt(float *      _h,
+                                     unsigned int _n,
+                                     int          _rev)
 {
     dotprod_rrrf q = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
     q->n = _n;
@@ -114,10 +119,24 @@ dotprod_rrrf dotprod_rrrf_create(float *      _h,
     q->h = (float*) _mm_malloc( q->n*sizeof(float), 16);
 
     // set coefficients
-    memmove(q->h, _h, _n*sizeof(float));
+    unsigned int i;
+    for (i=0; i<q->n; i++)
+        q->h[i] = _h[_rev ? q->n-i-1 : i];
 
     // return object
     return q;
+}
+
+dotprod_rrrf dotprod_rrrf_create(float *      _h,
+                                 unsigned int _n)
+{
+    return dotprod_rrrf_create_opt(_h, _n, 0);
+}
+
+dotprod_rrrf dotprod_rrrf_create_rev(float *      _h,
+                                     unsigned int _n)
+{
+    return dotprod_rrrf_create_opt(_h, _n, 1);
 }
 
 // re-create the structured dotprod object
@@ -130,11 +149,21 @@ dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _q,
     return dotprod_rrrf_create(_h,_n);
 }
 
+// re-create the structured dotprod object, coefficients reversed
+dotprod_rrrf dotprod_rrrf_recreate_rev(dotprod_rrrf _q,
+                                       float *      _h,
+                                       unsigned int _n)
+{
+    // completely destroy and re-create dotprod object
+    dotprod_rrrf_destroy(_q);
+    return dotprod_rrrf_create_rev(_h,_n);
+}
+
 dotprod_rrrf dotprod_rrrf_copy(dotprod_rrrf q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("dotprod_rrrf_copy().sse4, object cannot be NULL");
+        return liquid_error_config("dotprod_rrrf_copy().sse, object cannot be NULL");
 
     dotprod_rrrf q_copy = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
     q_copy->n = q_orig->n;
@@ -158,7 +187,7 @@ int dotprod_rrrf_destroy(dotprod_rrrf _q)
 
 int dotprod_rrrf_print(dotprod_rrrf _q)
 {
-    printf("dotprod_rrrf [sse4.1/4.2, %u coefficients]\n", _q->n);
+    printf("dotprod_rrrf [sse, %u coefficients]\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("%3u : %12.9f\n", i, _q->h[i]);
@@ -172,16 +201,17 @@ int dotprod_rrrf_execute(dotprod_rrrf _q,
 {
     // switch based on size
     if (_q->n < 16) {
-        return dotprod_rrrf_execute_sse4(_q, _x, _y);
+        return dotprod_rrrf_execute_sse(_q, _x, _y);
     }
-    return dotprod_rrrf_execute_sse4u(_q, _x, _y);
+    return dotprod_rrrf_execute_sse4(_q, _x, _y);
 }
 
-// use MMX/SSE extensions
-int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
-                              float *      _x,
-                              float *      _y)
+// use SSE extensions
+int dotprod_rrrf_execute_sse(dotprod_rrrf _q,
+                             float *      _x,
+                             float *      _y)
 {
+    // first cut: ...
     __m128 v;   // input vector
     __m128 h;   // coefficients vector
     __m128 s;   // dot product
@@ -199,9 +229,9 @@ int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
         // load coefficients into register (aligned)
         h = _mm_load_ps(&_q->h[i]);
 
-        // compute dot product
-        s = _mm_dp_ps(v, h, 0xffffffff);
-        
+        // compute multiplication
+        s = _mm_mul_ps(v, h);
+
         // parallel addition
         sum = _mm_add_ps( sum, s );
     }
@@ -209,9 +239,20 @@ int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
     // aligned output array
     float w[4] __attribute__((aligned(16)));
 
+#if HAVE_SSE3
+    // fold down into single value
+    __m128 z = _mm_setzero_ps();
+    sum = _mm_hadd_ps(sum, z);
+    sum = _mm_hadd_ps(sum, z);
+   
+    // unload single (lower value)
+    _mm_store_ss(w, sum);
+    float total = w[0];
+#else
     // unload packed array
     _mm_store_ps(w, sum);
-    float total = w[0];
+    float total = w[0] + w[1] + w[2] + w[3];
+#endif
 
     // cleanup
     for (; i<_q->n; i++)
@@ -222,42 +263,44 @@ int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
     return LIQUID_OK;
 }
 
-// use MMX/SSE extensions (unrolled)
-int dotprod_rrrf_execute_sse4u(dotprod_rrrf _q,
-                               float *      _x,
-                               float *      _y)
+// use SSE extensions, unrolled loop
+int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
+                              float *      _x,
+                              float *      _y)
 {
+    // first cut: ...
     __m128 v0, v1, v2, v3;
     __m128 h0, h1, h2, h3;
     __m128 s0, s1, s2, s3;
-    __m128 sum = _mm_setzero_ps(); // load zeros into sum register
 
-    // t = 4*(floor(_n/16))
+    // load zeros into sum registers
+    __m128 sum = _mm_setzero_ps();
+
+    // r = 4*floor(n/16)
     unsigned int r = (_q->n >> 4) << 2;
 
     //
     unsigned int i;
     for (i=0; i<r; i+=4) {
         // load inputs into register (unaligned)
-        v0 = _mm_loadu_ps(&_x[4*i+ 0]);
-        v1 = _mm_loadu_ps(&_x[4*i+ 4]);
-        v2 = _mm_loadu_ps(&_x[4*i+ 8]);
+        v0 = _mm_loadu_ps(&_x[4*i+0]);
+        v1 = _mm_loadu_ps(&_x[4*i+4]);
+        v2 = _mm_loadu_ps(&_x[4*i+8]);
         v3 = _mm_loadu_ps(&_x[4*i+12]);
 
         // load coefficients into register (aligned)
-        h0 = _mm_load_ps(&_q->h[4*i+ 0]);
-        h1 = _mm_load_ps(&_q->h[4*i+ 4]);
-        h2 = _mm_load_ps(&_q->h[4*i+ 8]);
+        h0 = _mm_load_ps(&_q->h[4*i+0]);
+        h1 = _mm_load_ps(&_q->h[4*i+4]);
+        h2 = _mm_load_ps(&_q->h[4*i+8]);
         h3 = _mm_load_ps(&_q->h[4*i+12]);
 
-        // compute dot products
-        s0 = _mm_dp_ps(v0, h0, 0xffffffff);
-        s1 = _mm_dp_ps(v1, h1, 0xffffffff);
-        s2 = _mm_dp_ps(v2, h2, 0xffffffff);
-        s3 = _mm_dp_ps(v3, h3, 0xffffffff);
+        // compute multiplication
+        s0 = _mm_mul_ps(v0, h0);
+        s1 = _mm_mul_ps(v1, h1);
+        s2 = _mm_mul_ps(v2, h2);
+        s3 = _mm_mul_ps(v3, h3);
         
         // parallel addition
-        // FIXME: these additions are by far the limiting factor
         sum = _mm_add_ps( sum, s0 );
         sum = _mm_add_ps( sum, s1 );
         sum = _mm_add_ps( sum, s2 );
@@ -267,11 +310,23 @@ int dotprod_rrrf_execute_sse4u(dotprod_rrrf _q,
     // aligned output array
     float w[4] __attribute__((aligned(16)));
 
-    // unload packed array
-    _mm_store_ps(w, sum);
+#if HAVE_SSE3
+    // SSE3: fold down to single value using _mm_hadd_ps()
+    __m128 z = _mm_setzero_ps();
+    sum = _mm_hadd_ps(sum, z);
+    sum = _mm_hadd_ps(sum, z);
+   
+    // unload single (lower value)
+    _mm_store_ss(w, sum);
     float total = w[0];
+#else
+    // SSE2 and below: unload packed array and perform manual sum
+    _mm_store_ps(w, sum);
+    float total = w[0] + w[1] + w[2] + w[3];
+#endif
 
     // cleanup
+    // TODO : use intrinsics here as well
     for (i=4*r; i<_q->n; i++)
         total += _x[i] * _q->h[i];
 

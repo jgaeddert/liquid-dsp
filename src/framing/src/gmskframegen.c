@@ -228,7 +228,7 @@ int gmskframegen_set_header_len(gmskframegen _q,
                                 unsigned int _len)
 {
     if (_q->frame_assembled)
-        fprintf(stderr, "warning: gmskframegen_set_header_len(), frame is already assembled; must reset() first\n");
+        return liquid_error(LIQUID_EICONFIG,"gmskframegen_set_header_len(), frame is already assembled; must reset() first");
 
     _q->header_user_len = _len;
     unsigned int header_dec_len = GMSKFRAME_H_DEC + _q->header_user_len;
@@ -315,7 +315,7 @@ int gmskframegen_assemble_default(gmskframegen _q,
 unsigned int gmskframegen_getframelen(gmskframegen _q)
 {
     if (!_q->frame_assembled) {
-        fprintf(stderr,"warning: gmskframegen_getframelen(), frame not assembled!\n");
+        liquid_error(LIQUID_EICONFIG,"gmskframegen_getframelen(), frame not assembled");
         return 0;
     }
 
@@ -340,7 +340,7 @@ int gmskframegen_gen_symbol(gmskframegen _q)
     case STATE_PAYLOAD:     gmskframegen_write_payload (_q); break;
     case STATE_TAIL:        gmskframegen_write_tail    (_q); break;
     default:
-        return liquid_error(LIQUID_EINT,"error: gmskframegen_writesymbol(), invalid internal state");
+        return liquid_error(LIQUID_EINT,"gmskframegen_writesymbol(), invalid internal state");
     }
 
     /*

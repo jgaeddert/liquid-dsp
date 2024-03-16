@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ float randexpf(float _lambda)
 {
     // validate input
     if (_lambda <= 0) {
-        fprintf(stderr,"error: randexpf(), lambda must be greater than zero\n");
+        liquid_error(LIQUID_EIRANGE,"randexpf(%g) has invalid range", _lambda);
         return 0.0f;
     }
 
@@ -55,7 +55,7 @@ float randexpf_pdf(float _x,
 {
     // validate input
     if (_lambda <= 0) {
-        fprintf(stderr,"error: randexpf(), lambda must be greater than zero\n");
+        liquid_error(LIQUID_EIRANGE,"randexpf_pdf(%g,%g) has invalid range", _x, _lambda);
         return 0.0f;
     }
 
@@ -71,7 +71,7 @@ float randexpf_cdf(float _x,
 {
     // validate input
     if (_lambda <= 0) {
-        fprintf(stderr,"error: randexpf(), lambda must be greater than zero\n");
+        liquid_error(LIQUID_EIRANGE,"randexpf_cdf(%g,%g) has invalid range", _x, _lambda);
         return 0.0f;
     }
 

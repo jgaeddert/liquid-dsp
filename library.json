@@ -1,6 +1,6 @@
 {
   "name": "liquid-dsp",
-  "version": "1.4.0",
+  "version": "1.6.0",
   "description": "Software-defined radio digital signal processing library",
   "homepage": "https://liquidsdr.org",
   "keywords":
@@ -39,9 +39,10 @@
         "-<.git/>",
         "-<*/src/*.proto.c>",
         "-<*/src/*.av.c>",
-        "-<*/src/*.mmx.c>",
         "-<*/src/*.neon.c>",
-        "-<*/src/*.sse4.c>",
+        "-<*/src/*.sse.c>",
+        "-<*/src/*.avx.c>",
+        "-<*/src/*.avx512f.c>",
         "-<*/src/*.x86.s>"
     ]
   },

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -110,8 +110,8 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
     SPGRAM(_set_alpha)(q, -1.0f);
 
     // create FFT arrays, object
-    q->buf_time = (TC*) malloc((q->nfft)*sizeof(TC));
-    q->buf_freq = (TC*) malloc((q->nfft)*sizeof(TC));
+    q->buf_time = (TC*) FFT_MALLOC((q->nfft)*sizeof(TC));
+    q->buf_freq = (TC*) FFT_MALLOC((q->nfft)*sizeof(TC));
     q->psd      = (T *) malloc((q->nfft)*sizeof(T ));
     q->fft      = FFT_CREATE_PLAN(q->nfft, q->buf_time, q->buf_freq, FFT_DIR_FORWARD, FFT_METHOD);
 
@@ -186,8 +186,8 @@ SPGRAM() SPGRAM(_copy)(SPGRAM() q_orig)
     q_copy->buffer = WINDOW(_copy)(q_orig->buffer);
 
     // create FFT arrays, object
-    q_copy->buf_time = (TC*) malloc((q_copy->nfft)*sizeof(TC));
-    q_copy->buf_freq = (TC*) malloc((q_copy->nfft)*sizeof(TC));
+    q_copy->buf_time = (TC*) FFT_MALLOC((q_copy->nfft)*sizeof(TC));
+    q_copy->buf_freq = (TC*) FFT_MALLOC((q_copy->nfft)*sizeof(TC));
     q_copy->psd      = (T *) malloc((q_copy->nfft)*sizeof(T ));
     q_copy->fft      = FFT_CREATE_PLAN(q_copy->nfft, q_copy->buf_time, q_copy->buf_freq, FFT_DIR_FORWARD, FFT_METHOD);
 
@@ -214,8 +214,8 @@ int SPGRAM(_destroy)(SPGRAM() _q)
         return liquid_error(LIQUID_EIOBJ,"spgram%s_destroy(), invalid null pointer passed",EXTENSION);
 
     // free allocated memory
-    free(_q->buf_time);
-    free(_q->buf_freq);
+    FFT_FREE(_q->buf_time);
+    FFT_FREE(_q->buf_freq);
     free(_q->w);
     free(_q->psd);
     WINDOW(_destroy)(_q->buffer);
@@ -275,7 +275,7 @@ int SPGRAM(_set_alpha)(SPGRAM() _q,
 {
     // validate input
     if (_alpha != -1 && (_alpha < 0.0f || _alpha > 1.0f)) {
-        fprintf(stderr,"warning: spgram%s_set_alpha(), alpha must be in {-1,[0,1]}\n", EXTENSION);
+        liquid_error(LIQUID_EICONFIG,"spgram%s_set_alpha(), alpha must be in {-1,[0,1]}", EXTENSION);
         return -1;
     }
 

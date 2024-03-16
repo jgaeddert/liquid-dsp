@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2022 Joseph Gaeddert
+# Copyright (c) 2007 - 2023 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 # Process with autoconf to generate configure script
 #
 
-AC_INIT([liquid-dsp],[1.4.0],[joseph@liquidsdr.org])
+AC_INIT([liquid-dsp],[1.6],[joseph@liquidsdr.org])
 AC_CONFIG_SRCDIR([src/libliquid.c])
 AC_CONFIG_MACRO_DIR([scripts])
 
@@ -170,28 +170,51 @@ else
         #   SSSE3   :   tmmintrin.h
         #   SSE4.1/2:   smmintrin.h
         #   AVX     :   immintrin.h
+        #   AVX2    :   immintrin.h
+        #   AVX512  :   immintrin.h
         AX_EXT
 
-        if [ test "$ax_cv_have_sse41_ext" = yes && test "$ac_cv_header_smmintrin_h" = yes ]; then
+        if [ test "$ax_cv_have_avx512f_ext" = yes ]; then
+            # AVX512 extensions
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx512f.o \
+                           src/dotprod/src/dotprod_crcf.avx512f.o \
+                           src/dotprod/src/dotprod_rrrf.avx512f.o \
+                           src/dotprod/src/sumsq.avx512f.o"
+            ARCH_OPTION='-mavx512f'
+        elif [ test "$ax_cv_have_avx2_ext" = yes ]; then
+            # AVX2 extensions
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx.o \
+                           src/dotprod/src/dotprod_crcf.avx.o \
+                           src/dotprod/src/dotprod_rrrf.avx.o \
+                           src/dotprod/src/sumsq.avx.o"
+            ARCH_OPTION='-mavx2'
+        elif [ test "$ax_cv_have_avx_ext" = yes ]; then
+            # AVX extensions
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx.o \
+                           src/dotprod/src/dotprod_crcf.avx.o \
+                           src/dotprod/src/dotprod_rrrf.avx.o \
+                           src/dotprod/src/sumsq.avx.o"
+            ARCH_OPTION='-mavx'
+        elif [ test "$ax_cv_have_sse41_ext" = yes ]; then
             # SSE4.1/2 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
-                           src/dotprod/src/dotprod_crcf.mmx.o \
-                           src/dotprod/src/dotprod_rrrf.mmx.o \
-                           src/dotprod/src/sumsq.mmx.o"
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.sse.o \
+                           src/dotprod/src/dotprod_crcf.sse.o \
+                           src/dotprod/src/dotprod_rrrf.sse.o \
+                           src/dotprod/src/sumsq.sse.o"
             ARCH_OPTION='-msse4.1'
-        elif [ test "$ax_cv_have_sse3_ext" = yes && test "$ac_cv_header_pmmintrin_h" = yes ]; then
+        elif [ test "$ax_cv_have_sse3_ext" = yes ]; then
             # SSE3 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
-                           src/dotprod/src/dotprod_crcf.mmx.o \
-                           src/dotprod/src/dotprod_rrrf.mmx.o \
-                           src/dotprod/src/sumsq.mmx.o"
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.sse.o \
+                           src/dotprod/src/dotprod_crcf.sse.o \
+                           src/dotprod/src/dotprod_rrrf.sse.o \
+                           src/dotprod/src/sumsq.sse.o"
             ARCH_OPTION='-msse3'
-        elif [ test "$ax_cv_have_sse2_ext" = yes && test "$ac_cv_header_emmintrin_h" = yes ]; then
+        elif [ test "$ax_cv_have_sse2_ext" = yes ]; then
             # SSE2 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
-                           src/dotprod/src/dotprod_crcf.mmx.o \
-                           src/dotprod/src/dotprod_rrrf.mmx.o \
-                           src/dotprod/src/sumsq.mmx.o"
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.sse.o \
+                           src/dotprod/src/dotprod_crcf.sse.o \
+                           src/dotprod/src/dotprod_rrrf.sse.o \
+                           src/dotprod/src/sumsq.sse.o"
             ARCH_OPTION='-msse2'
         else
             # portable C version
@@ -259,8 +282,8 @@ darwin*)
     AC_DEFUN([AC_PROG_LIBTOOL], [AC_CHECK_TOOL(LIBTOOL, libtool, :)])
     AC_PROG_LIBTOOL
 
-    AR_LIB=libliquid.ar
-    SH_LIB=libliquid.dylib
+    AR_LIB=ar	    # archive extension
+    SH_LIB=dylib    # shared library extension
     REBIND=""
     ;;
 *)
@@ -269,8 +292,8 @@ darwin*)
     AC_DEFUN([AC_PROG_AR], [AC_CHECK_TOOL(AR, ar, :)])
     AC_PROG_AR
 
-    AR_LIB=libliquid.a
-    SH_LIB=libliquid.so
+    AR_LIB=a	    # archive extension
+    SH_LIB=so	    # shared library extension
     REBIND=ldconfig
     ;;
 esac

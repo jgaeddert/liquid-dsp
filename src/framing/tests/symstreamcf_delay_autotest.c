@@ -44,9 +44,10 @@ void testbench_symstreamcf_delay(unsigned int _k,
         symstreamcf_write_samples(gen, &sample, 1);
 
         // check to see if value exceeds 1
-        if (cabsf(sample) > 1.0f)
+        if (cabsf(sample) > 0.9f)
             break;
     }
+
     if (liquid_autotest_verbose)
         printf("expected delay: %u, approximate delay: %u, tol: %.0f\n", delay, i, tol);
 

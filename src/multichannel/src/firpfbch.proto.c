@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// firpfbch.c
-//
-// finite impulse response polyphase filterbank channelizer
-//
+// firpfbch : finite impulse response polyphase filterbank channelizer
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -77,7 +73,7 @@ FIRPFBCH() FIRPFBCH(_create)(int          _type,
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
-        return liquid_error_config("firpfbch_%s_create(), invalid type %d", EXTENSION_FULL, _type);
+        return liquid_error_config("firpfbch_%s_create(), invalid type: %d", EXTENSION_FULL, _type);
     if (_M == 0)
         return liquid_error_config("firpfbch_%s_create(), number of channels must be greater than 0", EXTENSION_FULL);
     if (_p == 0)
@@ -120,9 +116,8 @@ FIRPFBCH() FIRPFBCH(_create)(int          _type,
     }
 
     // allocate memory for buffers
-    // TODO : use fftw_malloc if HAVE_FFTW3_H
-    q->x = (T*) malloc((q->num_channels)*sizeof(T));
-    q->X = (T*) malloc((q->num_channels)*sizeof(T));
+    q->x = (T*) FFT_MALLOC((q->num_channels)*sizeof(T));
+    q->X = (T*) FFT_MALLOC((q->num_channels)*sizeof(T));
 
     // create fft plan
     if (q->type == LIQUID_ANALYZER)
@@ -149,6 +144,8 @@ FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,
                                     float        _as)
 {
     // validate input
+    if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
+        return liquid_error_config("firpfbch_%s_create_kaiser(), invalid type: %d", EXTENSION_FULL, _type);
     if (_M == 0)
         return liquid_error_config("firpfbch_%s_create_kaiser(), number of channels must be greater than 0", EXTENSION_FULL);
     if (_m == 0)
@@ -191,7 +188,7 @@ FIRPFBCH() FIRPFBCH(_create_rnyquist)(int          _type,
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
-        return liquid_error_config("firpfbch_%s_create_rnyquist(), invalid type %d", EXTENSION_FULL, _type);
+        return liquid_error_config("firpfbch_%s_create_rnyquist(), invalid type: %d", EXTENSION_FULL, _type);
     if (_M == 0)
         return liquid_error_config("firpfbch_%s_create_rnyquist(), number of channels must be greater than 0", EXTENSION_FULL);
     if (_m == 0)
@@ -200,26 +197,8 @@ FIRPFBCH() FIRPFBCH(_create_rnyquist)(int          _type,
     // design filter based on requested prototype
     unsigned int h_len = 2*_M*_m + 1;
     float h[h_len];
-    switch (_ftype) {
-    case LIQUID_FIRFILT_ARKAISER:
-        // root-Nyquist Kaiser (approximate optimum)
-        liquid_firdes_arkaiser(_M, _m, _beta, 0.0f, h);
-        break;
-    case LIQUID_FIRFILT_RKAISER:
-        // root-Nyquist Kaiser (true optimum)
-        liquid_firdes_rkaiser(_M, _m, _beta, 0.0f, h);
-        break;
-    case LIQUID_FIRFILT_RRC:
-        // root raised-cosine
-        liquid_firdes_rrcos(_M, _m, _beta, 0.0f, h);
-        break;
-    case LIQUID_FIRFILT_hM3:
-        // harris-Moerder-3 filter
-        liquid_firdes_hM3(_M, _m, _beta, 0.0f, h);
-        break;
-    default:
-        return liquid_error_config("firpfbch_%s_create_rnyquist(), unknown/invalid prototype (%d)", EXTENSION_FULL, _ftype);
-    }
+    if (liquid_firdes_prototype(_ftype, _M, _m, _beta, 0.0f, h) != LIQUID_OK)
+        return liquid_error_config("firpfbch_%s_create_rnyquist(), invalid filter type/configuration", EXTENSION_FULL);
 
     // copy coefficients to type-specfic array, reversing order if
     // channelizer is an analyzer, matched filter: g(-t)
@@ -260,8 +239,8 @@ int FIRPFBCH(_destroy)(FIRPFBCH() _q)
 
     // free additional arrays
     free(_q->h);
-    free(_q->x);
-    free(_q->X);
+    FFT_FREE(_q->x);
+    FFT_FREE(_q->X);
 
     // free main object memory
     free(_q);

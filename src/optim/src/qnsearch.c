@@ -72,9 +72,14 @@ qnsearch qnsearch_create(void *           _userdata,
                          utility_function _u,
                          int              _minmax)
 {
-    qnsearch q = (qnsearch) malloc( sizeof(struct qnsearch_s) );
+    // validate input
+    if (_u == NULL)
+        return liquid_error_config("qnsearch_create(), utility function cannot be NULL")
+    if (_num_parameters == 0)
+        return liquid_error_config("qnsearch_create(), number of parameters must be greater than zero");
 
-    // initialize public values
+    // create object and initialize public values
+    qnsearch q = (qnsearch) malloc( sizeof(struct qnsearch_s) );
     q->delta = 1e-6f;   //_delta;
     q->gamma = 1e-3f;   //_gamma;
     q->dgamma = 0.99f;
@@ -146,7 +151,6 @@ int qnsearch_step(qnsearch _q)
 
     // compute normalized gradient vector
     qnsearch_compute_gradient(_q);
-    //qnsearch_normalize_gradient(_q);
 
     // TODO : perform line search to find optimal gamma
 
@@ -192,9 +196,9 @@ int qnsearch_step(qnsearch _q)
     return LIQUID_OK;
 }
 
-float qnsearch_run(qnsearch _q,
-                   unsigned int _max_iterations,
-                   float _target_utility)
+float qnsearch_execute(qnsearch _q,
+                       unsigned int _max_iterations,
+                       float _target_utility)
 {
     unsigned int i=0;
     do {
@@ -228,22 +232,6 @@ int qnsearch_compute_gradient(qnsearch _q)
         _q->v_prime[i] -= _q->delta;
         _q->gradient[i] = (f_prime - _q->utility) / _q->delta;
     }
-    return LIQUID_OK;
-}
-
-// normalize gradient vector to unity
-int qnsearch_normalize_gradient(qnsearch _q)
-{
-    // normalize gradient
-    float sig = 0.0f;
-    unsigned int i;
-    for (i=0; i<_q->num_parameters; i++)
-        sig += _q->gradient[i] * _q->gradient[i];
-
-    sig = 1.0f / sqrtf(sig/(float)(_q->num_parameters));
-
-    for (i=0; i<_q->num_parameters; i++)
-        _q->gradient[i] *= sig;
     return LIQUID_OK;
 }
 

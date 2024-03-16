@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,15 +37,20 @@
 //  _bits_per_trait     :   array of bits/trait [size: _num_traits x 1]
 //  _num_traits         :   number of traits in this chromosome
 chromosome chromosome_create(unsigned int * _bits_per_trait,
-                             unsigned int _num_traits)
+                             unsigned int   _num_traits)
 {
+    // validate input
+    unsigned int i;
+    if (_num_traits < 1)
+        return liquid_error_config("chromosome_create(), must have at least one trait");
+    for (i=0; i<_num_traits; i++) {
+        if (_bits_per_trait[i] > LIQUID_CHROMOSOME_MAX_SIZE)
+            return liquid_error_config("chromosome_create(), bits/trait cannot exceed %u", LIQUID_CHROMOSOME_MAX_SIZE);
+    }
+
     chromosome q;
     q = (chromosome) malloc( sizeof(struct chromosome_s) );
     q->num_traits = _num_traits;
-
-    // validate input
-    if (q->num_traits < 1)
-        return liquid_error_config("chromosome_create(), must have at least one trait");
 
     // initialize internal arrays
     q->bits_per_trait = (unsigned int *) malloc(q->num_traits*sizeof(unsigned int));
@@ -53,16 +58,12 @@ chromosome chromosome_create(unsigned int * _bits_per_trait,
     q->traits =         (unsigned long*) malloc(q->num_traits*sizeof(unsigned long));
 
     // copy/initialize values
-    unsigned int i;
     q->num_bits = 0;
     for (i=0; i<q->num_traits; i++) {
         q->bits_per_trait[i] = _bits_per_trait[i];
 
-        if (q->bits_per_trait[i] > LIQUID_CHROMOSOME_MAX_SIZE)
-            return liquid_error_config("chromosome_create(), bits/trait cannot exceed %u", LIQUID_CHROMOSOME_MAX_SIZE);
-
-        q->max_value[i] = 1 << q->bits_per_trait[i];
-        q->traits[i] = 0;
+        q->max_value[i] = 1LU << q->bits_per_trait[i];
+        q->traits[i] = 0LU;
 
         q->num_bits += q->bits_per_trait[i];
     }
@@ -79,6 +80,8 @@ chromosome chromosome_create_basic(unsigned int _num_traits,
     // validate input
     if (_num_traits == 0)
         return liquid_error_config("chromosome_create_basic(), must have at least one trait");
+    if (_bits_per_trait == 0 || _bits_per_trait > 64)
+        return liquid_error_config("chromosome_create_basic(), bits per trait out of range");
 
     unsigned int * bpt = (unsigned int *) malloc(_num_traits*sizeof(unsigned int));
     unsigned int i;
@@ -175,6 +178,7 @@ int chromosome_init(chromosome     _c,
 {
     unsigned int i;
     for (i=0; i<_c->num_traits; i++) {
+        //printf("===> [%3u] bits:%3u, max:%12lu, value:%12lu\n", i, _c->bits_per_trait[i], _c->max_value[i], _v[i]);
         if (_v[i] >= _c->max_value[i])
             return liquid_error(LIQUID_EIRANGE,"chromosome_init(), value exceeds maximum");
 
@@ -189,12 +193,14 @@ int chromosome_initf(chromosome _c,
 {
     unsigned int i;
     for (i=0; i<_c->num_traits; i++) {
-        if (_v[i] > 1.0f || _v[i] < 0.0f)
+        if (_v[i] < 0.0f || _v[i] > 1.0f)
             return liquid_error(LIQUID_EIRANGE,"chromosome_initf(), value must be in [0,1]");
 
         // quantize sample
-        unsigned int N = 1 << _c->bits_per_trait[i];
-        _c->traits[i] = (unsigned int) floorf( _v[i] * N );
+        unsigned long N = 1LU << _c->bits_per_trait[i];
+        _c->traits[i] = (unsigned long) floorf( _v[i] * N );
+        //printf("===> [%3u] quantizing %8.2f, bits:%3u, N:%12lu, trait:%12lu/%12lu => %12.8f\n",
+        //    i, _v[i], _c->bits_per_trait[i], N, _c->traits[i], _c->max_value[i], chromosome_valuef(_c,i));
     }
     return LIQUID_OK;
 }
@@ -212,10 +218,10 @@ int chromosome_mutate(chromosome   _q,
     for (i=0; i<_q->num_traits; i++) {
         unsigned int b = _q->bits_per_trait[i];
         if (t == _index) {
-            _q->traits[i] ^= (unsigned long)(1 << (b-1));
+            _q->traits[i] ^= (unsigned long)(1LU << (b-1));
             return LIQUID_OK;
         } else if (t > _index) {
-            _q->traits[i-1] ^= (unsigned long)(1 << (t-_index-1));
+            _q->traits[i-1] ^= (unsigned long)(1LU << (t-_index-1));
             return LIQUID_OK;
         } else {
             t += b;
@@ -289,18 +295,18 @@ int chromosome_init_random(chromosome _q)
 {
     unsigned int i;
     for (i=0; i<_q->num_traits; i++)
-        _q->traits[i] = rand() & (_q->max_value[i]-1);
+        _q->traits[i] = rand() & (_q->max_value[i]-1LU);
     return LIQUID_OK;
 }
 
-float chromosome_valuef(chromosome _q,
+float chromosome_valuef(chromosome   _q,
                         unsigned int _index)
 {
     if (_index > _q->num_traits) {
         liquid_error(LIQUID_EIRANGE,"chromosome_valuef(), trait index exceeded");
         return 0.0f;
     }
-    return (float) (_q->traits[_index]) / (float)(_q->max_value[_index] - 1);
+    return (float) (_q->traits[_index]) / (float)(_q->max_value[_index]-1LU);
 }
 
 unsigned int chromosome_value(chromosome   _q,

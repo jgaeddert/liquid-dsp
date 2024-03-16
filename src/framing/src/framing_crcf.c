@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,36 +20,41 @@
  * THE SOFTWARE.
  */
 
-//
-// Framing API: floating-point
-//
+// complex floating-point synchronization and supporting objects
 
 #include "liquid.internal.h"
 
 // naming extensions (useful for print statements)
 #define EXTENSION_SHORT     "f"
-#define EXTENSION_FULL      "cccf"
+#define EXTENSION_FULL      "crcf"
 
 #define PRINTVAL(x)         printf("%12.4e + j%12.4e", crealf(x), cimagf(x))
 
 #define T                   float
 #define TO                  float complex
-#define TC                  float complex
+#define TC                  float
 #define TI                  float complex
 #define ABS(X)              cabsf(X)
-
-// object references
-#define SYMTRACK(name)      LIQUID_CONCAT(symtrack_cccf,name)
-#define AGC(name)           LIQUID_CONCAT(agc_crcf,name)
-#define SYMSYNC(name)       LIQUID_CONCAT(symsync_crcf,name)
-#define EQLMS(name)         LIQUID_CONCAT(eqlms_cccf,name)
-#define NCO(name)           LIQUID_CONCAT(nco_crcf,name)
-#define MODEM(name)         LIQUID_CONCAT(modemcf,name)
+#define REAL(X)             crealf(X)
+#define IMAG(X)             cimagf(X)
 
 #define TO_COMPLEX          1
-#define TC_COMPLEX          1
+#define TC_COMPLEX          0
 #define TI_COMPLEX          1
 
+// supporting references
+#define AGC(name)           LIQUID_CONCAT(agc_crcf,name)
+#define BSYNC(name)         LIQUID_CONCAT(bsync_crcf,name)
+#define DOTPROD(name)       LIQUID_CONCAT(dotprod_rrrf,name)
+#define EQLMS(name)         LIQUID_CONCAT(eqlms_crcf,name)
+#define MODEM(name)         LIQUID_CONCAT(modemcf,name)
+#define NCO(name)           LIQUID_CONCAT(nco_crcf,name)
+#define SYMSYNC(name)       LIQUID_CONCAT(symsync_crcf,name)
+#define WINDOW(name)        LIQUID_CONCAT(windowf,name)
+
+// object references
+#define BSYNC(name)         LIQUID_CONCAT(bsync_crcf,name)
+
 // prototypes
-#include "symtrack.proto.c"
+#include "bsync.proto.c"
 

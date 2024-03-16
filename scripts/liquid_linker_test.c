@@ -20,28 +20,25 @@
  * THE SOFTWARE.
  */
 
-//
-// Framing API: floating-point
-//
+#include <stdio.h>
+#include <stdlib.h>
+#include <liquid/liquid.h>
 
-#include "liquid.internal.h"
+// test linking to liquid after library has been installed
 
-// 
-#define BSYNC(name)         LIQUID_CONCAT(bsync_cccf,name)
+int main()
+{
+    // test liquid version number
+    printf("checking installed liquid version numbers...\n");
+    printf("  header  : %d\n", LIQUID_VERSION_NUMBER);
+    printf("  library : %d\n", liquid_libversion_number());
+    LIQUID_VALIDATE_LIBVERSION;
 
-#define PRINTVAL(x)         printf("%12.4e + j%12.4e", crealf(x), cimagf(x))
-
-#define TO                  float complex
-#define TC                  float complex
-#define TI                  float complex
-#define ABS(X)              cabsf(X)
-#define WINDOW(name)        LIQUID_CONCAT(windowcf,name)
-#define DOTPROD(name)       LIQUID_CONCAT(dotprod_cccf,name)
-
-#define TO_COMPLEX
-#define TC_COMPLEX
-#define TI_COMPLEX
-
-// prototypes
-#include "bsync.proto.c"
+    // create object, print and return
+    printf("creating test object...\n");
+    resamp_crcf q = resamp_crcf_create(0.12345f, 12, 0.25f, 60.0f, 256);
+    resamp_crcf_print(q);
+    resamp_crcf_destroy(q);
+    return 0;
+}
 

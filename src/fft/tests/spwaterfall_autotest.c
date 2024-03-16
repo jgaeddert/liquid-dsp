@@ -70,7 +70,7 @@ void testbench_spwaterfallcf_noise(unsigned int _nfft,
                                    unsigned int _time,
                                    float        _noise_floor)
 {
-    unsigned int num_samples = 10*_nfft*_time;  // number of samples to generate
+    unsigned int num_samples = 4*_nfft*_time;  // number of samples to generate
     float        nstd        = powf(10.0f,_noise_floor/20.0f); // noise std. dev.
     float        tol         = 4.0f; // error tolerance [dB] TODO: drop tolerance to 0.5 dB
     int _wtype = LIQUID_WINDOW_HAMMING;
@@ -114,9 +114,9 @@ void testbench_spwaterfallcf_noise(unsigned int _nfft,
 }
 
 // test different transform sizes
-void autotest_spwaterfallcf_noise_440()  { testbench_spwaterfallcf_noise( 440, 320, 10, 240, -80.0); }
-void autotest_spwaterfallcf_noise_1024() { testbench_spwaterfallcf_noise( 680, 320, 10, 640, -80.0); }
-void autotest_spwaterfallcf_noise_1200() { testbench_spwaterfallcf_noise(1200, 320, 10, 800, -80.0); }
+void autotest_spwaterfallcf_noise_440()  { testbench_spwaterfallcf_noise( 440, 320, 100, 240, -80.0); }
+void autotest_spwaterfallcf_noise_1024() { testbench_spwaterfallcf_noise( 680, 480, 150, 640, -80.0); }
+void autotest_spwaterfallcf_noise_1200() { testbench_spwaterfallcf_noise(1200, 800, 400, 800, -80.0); }
 
 // test normal operation
 void autotest_spwaterfall_operation()

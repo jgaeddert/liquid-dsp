@@ -37,9 +37,7 @@ static int callback_framesync64_autotest(
     void *           _userdata)
 {
     //printf("callback invoked, payload valid: %s\n", _payload_valid ? "yes" : "no");
-    int * frames_recovered = (int*) _userdata;
-
-    *frames_recovered += _header_valid && _payload_valid ? 1 : 0;
+    *((int*)(_userdata)) += _header_valid && _payload_valid ? 1 : 0;
     return 0;
 }
 
@@ -53,11 +51,6 @@ void autotest_framesync64()
     framegen64 fg = framegen64_create();
     framesync64 fs = framesync64_create(callback_framesync64_autotest,
             (void*)&frames_recovered);
-
-    if (liquid_autotest_verbose) {
-        framesync64_print(fs);
-        framegen64_print(fg);
-    }
 
     // generate the frame
     float complex frame[LIQUID_FRAME64_LEN];
@@ -128,6 +121,8 @@ void autotest_framesync64_copy()
     // copy object, but set different context
     framesync64 fs1 = framesync64_copy(fs0);
     framesync64_set_userdata(fs1, (void*)&frames_recovered_1);
+    framesync64_print(fs0);
+    framesync64_print(fs1);
 
     // try to receive the frame with each receiver
     for (i=0; i<LIQUID_FRAME64_LEN; i++) {
@@ -146,11 +141,15 @@ void autotest_framesync64_copy()
     // parse statistics
     framedatastats_s stats_0 = framesync64_get_framedatastats(fs0);
     framedatastats_s stats_1 = framesync64_get_framedatastats(fs1);
+    framedatastats_print(&stats_0);
+    framedatastats_print(&stats_1);
 
     CONTEND_EQUALITY(stats_0.num_frames_detected, stats_1.num_frames_detected);
     CONTEND_EQUALITY(stats_0.num_headers_valid  , stats_1.num_headers_valid  );
     CONTEND_EQUALITY(stats_0.num_payloads_valid , stats_1.num_payloads_valid );
     CONTEND_EQUALITY(stats_0.num_bytes_received , stats_1.num_bytes_received );
+    framesync64_print(fs0);
+    framesync64_print(fs1);
 
     // destroy objects
     framegen64_destroy(fg);
@@ -265,7 +264,7 @@ void testbench_framesync64_debug(int _code)
                (630 + 600)*sizeof(float complex),
           SEEK_SET);
     unsigned char payload_dec[72];
-    fread(payload_dec, sizeof(unsigned char), 72, fid);
+    CONTEND_EQUALITY( fread(payload_dec, sizeof(unsigned char), 72, fid), 72 )
     CONTEND_SAME_DATA(payload_dec,   header,   8);
     CONTEND_SAME_DATA(payload_dec+8, payload, 64);
     fclose(fid);
@@ -277,4 +276,93 @@ void autotest_framesync64_debug_user() { testbench_framesync64_debug( 1); }
 void autotest_framesync64_debug_ndet() { testbench_framesync64_debug(-1); }
 void autotest_framesync64_debug_head() { testbench_framesync64_debug(-2); }
 void autotest_framesync64_debug_rand() { testbench_framesync64_debug(-3); }
+
+
+static int callback_framesync64_autotest_estimation(
+    unsigned char *  _header,
+    int              _header_valid,
+    unsigned char *  _payload,
+    unsigned int     _payload_len,
+    int              _payload_valid,
+    framesyncstats_s _stats,
+    void *           _userdata)
+{
+    //printf("callback invoked, payload valid: %s\n", _payload_valid ? "yes" : "no");
+    memmove(_userdata, &_stats, sizeof(framesyncstats_s));
+    return 0;
+}
+
+// add channel offsets to frame
+void framesync64_channel(float complex * _frame,
+                         float           _rssi,
+                         float           _SNRdB,
+                         float           _dphi)
+{
+    // derived values
+    float gain = powf(10.0f, _rssi/20.0f); // for RSSI, not PSD (given 2 samples/symbol)
+    float n0   = _rssi - _SNRdB + 10*log10f(2.0f);  // noise floor accounting for 2 samples/symbol
+    float nstd = powf(10.0f, n0/20.0f);
+
+    unsigned int i;
+    for (i=0; i<LIQUID_FRAME64_LEN; i++)
+        _frame[i] = _frame[i]*cexp(_Complex_I*_dphi*i)*gain + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+}
+
+// AUTOTEST : test simple recovery of frame in noise
+void autotest_framesync64_estimation()
+{
+    // create objects
+    framegen64 fg = framegen64_create();
+    framesyncstats_s stats;
+    framesync64 fs = framesync64_create(callback_framesync64_autotest_estimation,
+            (void*)&stats);
+
+    // generate the frame
+    float complex frame[LIQUID_FRAME64_LEN];
+    framegen64_execute(fg, NULL, NULL, frame);
+
+    // add offsets
+    float rssi  = -43.0f;
+    float SNRdB =  25.0f;
+    float dphi  =   1e-2f;
+    framesync64_channel(frame, rssi, SNRdB, dphi);
+
+    // try to receive the frame
+    framesync64_execute(fs, frame, LIQUID_FRAME64_LEN);
+
+    if (liquid_autotest_verbose)
+        framesyncstats_print(&stats);
+
+    // check results (relatively high tolerance)
+    CONTEND_DELTA( stats.rssi, rssi,  1.0f );
+    CONTEND_DELTA( -stats.evm, SNRdB, 3.0f ); // error biased negative
+    CONTEND_DELTA( stats.cfo,  dphi,  4e-3f);
+
+    // destroy objects
+    framegen64_destroy(fg);
+    framesync64_destroy(fs);
+
+#if 0
+    FILE * fp = fopen("framesync64_errors.txt", "a");
+    fprintf(fp,"%12.8f %12.8f %12.4e\n",(stats.rssi-rssi),(-stats.evm-SNRdB),(stats.cfo-dphi));
+    fclose(fp);
+#endif
+
+#if 0
+    FILE * fid = fopen("framesync64_estimation.m","w");
+    fprintf(fid,"clear all; close all; n=%u; y=zeros(1,n);\n", LIQUID_FRAME64_LEN);
+    unsigned int nfft=240;
+    spgramcf q = spgramcf_create_default(nfft);
+    spgramcf_write(q, frame, LIQUID_FRAME64_LEN);
+    float psd[nfft];
+    spgramcf_get_psd(q, psd);
+    spgramcf_destroy(q);
+    unsigned int i;
+    for (i=0; i<LIQUID_FRAME64_LEN; i++)
+        fprintf(fid,"y(%3u) = %12.4e + %12.4ej;\n", i+1, crealf(frame[i]), cimagf(frame[i]));
+    for (i=0; i<nfft; i++)
+        fprintf(fid,"Y(%3u) = %12.4e;\n", i+1, psd[i]);
+    fclose(fid);
+#endif
+}
 
