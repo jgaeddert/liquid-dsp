@@ -20,8 +20,7 @@
  * THE SOFTWARE.
  */
 
-// DS/SS frame generator with fixed fields: 8-byte header, 64-byte payload,
-// 128-symbol spreading factor
+// DS/SS frame generator with fixed fields: 8-byte header and 64-byte payload
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -36,16 +35,19 @@
 int dsssframe64gen_write(dsssframe64gen _q, float complex * _buf);
 
 struct dsssframe64gen_s {
+    unsigned int    m;                  // filter delay (symbols)
+    float           beta;               // filter excess bandwidth factor
+    unsigned int    sf;                 // spreading factor (fixed)
+    // objects
     qpacketmodem    enc;                // packet encoder/modulator
     qpilotgen       pilotgen;           // pilot symbol generator
     msequence       ms;                 // spreading sequence generator
+    firinterp_crcf  interp;             // pulse-shaping filter/interpolator
+    // buffers
     float complex   preamble_pn[1024];  // 1024-symbol p/n sequence
     unsigned char   payload_dec[ 150];  // 600 = 150 bytes * 8 bits/bytes / 2 bits/symbol
     float complex   payload_sym[ 600];  // modulated payload symbols
     float complex   payload_tx [ 650];  // modulated payload symbols with pilots
-    unsigned int    m;                  // filter delay (symbols)
-    float           beta;               // filter excess bandwidth factor
-    firinterp_crcf  interp;             // pulse-shaping filter/interpolator
 };
 
 // create dsssframe64gen object
@@ -54,6 +56,7 @@ dsssframe64gen dsssframe64gen_create()
     dsssframe64gen q = (dsssframe64gen) malloc(sizeof(struct dsssframe64gen_s));
     q->m    = 15;
     q->beta = 0.20f;
+    q->sf   = 128;  // spreading factor
 
     unsigned int i;
 
@@ -120,7 +123,7 @@ int dsssframe64gen_print(dsssframe64gen _q)
 // get full frame length [samples]
 unsigned int dsssframe64gen_get_frame_len(dsssframe64gen _q)
 {
-    return 2*(1024 + 650*128 + 2*_q->m);
+    return 2*(1024 + 650*_q->sf + 2*_q->m);
 }
 
 // generate a frame
@@ -172,7 +175,7 @@ int dsssframe64gen_write(dsssframe64gen  _q,
     // frame payload
     for (i=0; i<650; i++) {
         float complex sym = _q->payload_tx[i]; // strip out raw payload symbol
-        for (j=0; j<128; j++) {
+        for (j=0; j<_q->sf; j++) {
             // generate pseudo-random symbol
             unsigned int  p = msequence_generate_symbol(_q->ms, 2);
             float complex s = cexpf(_Complex_I*2*M_PI*(float)p/(float)4);

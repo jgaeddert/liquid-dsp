@@ -22,6 +22,8 @@
 
 // basic direct sequence/spread spectrum frame synchronizer with 8 bytes header
 // and 64 bytes payload
+//   * reliable frame detection (1% missed) down to -14 dB SNR
+//   * reliable frame decoding (1% errors) down to -13 dB SNR
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -53,6 +55,7 @@ struct dsssframe64sync_s {
     void *              context;    // user-defined data structure
     unsigned int        m;          // filter delay (symbols)
     float               beta;       // filter excess bandwidth factor
+    unsigned int        sf;         // spreading factor (fixed)
 
     framesyncstats_s framesyncstats;// frame statistic object (synchronizer)
     framedatastats_s framedatastats;// frame statistic object (packet statistics)
@@ -90,6 +93,7 @@ dsssframe64sync dsssframe64sync_create(framesync_callback _callback,
     q->context  = _context;
     q->m        = 15;   // filter delay (symbols)
     q->beta     = 0.20f;// excess bandwidth factor
+    q->sf       = 128;  // spreading factor
 
     unsigned int i;
 
@@ -268,29 +272,30 @@ int dsssframe64sync_step(dsssframe64sync _q,
                          float complex * _buf,
                          unsigned int    _buf_len)
 {
-    // TODO: do this more efficiently?
     unsigned int i;
     for (i=0; i<_buf_len; i++) {
-        // receive preamble
+        // receive preamble (not currently used)
         if (_q->preamble_counter < 1024) {
             _q->preamble_rx[_q->preamble_counter++] = _buf[i];
             continue;
         }
 
-        // generate pseudo-random symbol
+        // generate pseudo-random spreading symbol and de-spread chip
         unsigned int  p = msequence_generate_symbol(_q->ms, 2);
         float complex s = cexpf(_Complex_I*2*M_PI*(float)p/(float)4);
         _q->sym_despread += _buf[i] * conjf(s);
         _q->chip_counter++;
 
-        if (_q->chip_counter == 128) {
-            _q->payload_rx[_q->payload_counter] = _q->sym_despread / 128.0f;
+        // accumulate
+        if (_q->chip_counter == _q->sf) {
+            _q->payload_rx[_q->payload_counter] = _q->sym_despread / (float)(_q->sf);
             _q->payload_counter++;
             _q->chip_counter = 0;
             _q->sym_despread = 0;
             if (_q->payload_counter == 650) {
                 dsssframe64sync_decode(_q);
-                return 1; // reset
+                msequence_reset(_q->ms);
+                return 1; // reset qdsync
             }
         }
     }
@@ -328,7 +333,7 @@ int dsssframe64sync_decode(dsssframe64sync _q)
     if (_q->callback != NULL) {
         // offset estimates
         float dphi_hat = qdsync_cccf_get_dphi(_q->detector) +
-            qpilotsync_get_dphi(_q->pilotsync) / 128.0f;
+            qpilotsync_get_dphi(_q->pilotsync) / (float)(_q->sf);
 
         // set framesyncstats internals
         _q->framesyncstats.evm           = qpilotsync_get_evm(_q->pilotsync);
