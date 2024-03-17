@@ -5994,6 +5994,83 @@ int dsssframesync_debug_print         (dsssframesync _q, const char * _filename)
 framedatastats_s dsssframesync_get_framedatastats  (dsssframesync _q);
 
 //
+// Direct sequence/spread spectrum framing with fixed 64-byte payload
+//
+
+// frame generator object type
+typedef struct dsssframe64gen_s * dsssframe64gen;
+
+// create dsssframe64gen object
+dsssframe64gen dsssframe64gen_create();
+
+// copy object
+dsssframe64gen dsssframe64gen_copy(dsssframe64gen q_orig);
+
+// destroy dsssframe64gen object
+int dsssframe64gen_destroy(dsssframe64gen _q);
+
+// print dsssframe64gen object internals
+int dsssframe64gen_print(dsssframe64gen _q);
+
+// get length of assembled frame (samples)
+unsigned int dsssframe64gen_get_frame_len(dsssframe64gen _q);
+
+// generate a frame
+//  _q          :   frame generator object
+//  _header     :   8-byte header data, NULL for random
+//  _payload    :   64-byte payload data, NULL for random
+//  _frame      :   output frame samples, [size: dsssframegen64gen_get_frame_len() x 1]
+int dsssframe64gen_execute(dsssframe64gen         _q,
+                           const unsigned char *  _header,
+                           const unsigned char *  _payload,
+                           liquid_float_complex * _buf);
+
+// get full frame length [samples]
+unsigned int dsssframe64gen_get_frame_len(dsssframe64gen _q);
+
+// frame synchronizer object type
+typedef struct dsssframe64sync_s * dsssframe64sync;
+
+dsssframe64sync dsssframe64sync_create(framesync_callback _callback, void * _userdata);
+
+// copy object
+dsssframe64sync dsssframe64sync_copy(dsssframe64sync q_orig);
+
+int dsssframe64sync_destroy             (dsssframe64sync _q);
+int dsssframe64sync_print               (dsssframe64sync _q);
+int dsssframe64sync_reset               (dsssframe64sync _q);
+int dsssframe64sync_is_frame_open       (dsssframe64sync _q);
+int dsssframe64sync_set_callback(dsssframe64sync    _q,
+                                 framesync_callback _callback);
+int dsssframe64sync_set_context(dsssframe64sync _q,
+                                void *          _context);
+// execute frame synchronizer
+//  _q       : frame synchronizer object
+//  _buf     : input sample array, shape: (_buf_len,)
+//  _buf_len : number of input samples
+int dsssframe64sync_execute(dsssframe64sync _q, liquid_float_complex * _buf, unsigned int _buf_len);
+
+// get detection threshold
+float dsssframe64sync_get_threshold(dsssframe64sync _q);
+
+// set detection threshold
+int dsssframe64sync_set_threshold(dsssframe64sync _q,
+                                  float           _threshold);
+
+// get carrier offset search range [radians/sample]
+float dsssframe64sync_get_range(dsssframe64sync _q);
+
+// set carrier offset search range
+int dsssframe64sync_set_range(dsssframe64sync _q,
+                              float           _dphi_max);
+
+// reset frame data statistics
+int dsssframe64sync_reset_framedatastats(dsssframe64sync _q);
+
+// retrieve frame data statistics
+framedatastats_s dsssframe64sync_get_framedatastats(dsssframe64sync _q);
+
+//
 // OFDM flexframe generator
 //
 

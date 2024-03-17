@@ -632,6 +632,8 @@ framing_objects :=						\
 	src/framing/src/bpacketgen.o				\
 	src/framing/src/bpacketsync.o				\
 	src/framing/src/detector_cccf.o				\
+	src/framing/src/dsssframe64gen.o			\
+	src/framing/src/dsssframe64sync.o			\
 	src/framing/src/dsssframegen.o				\
 	src/framing/src/dsssframesync.o				\
 	src/framing/src/framedatastats.o			\
@@ -680,6 +682,7 @@ framing_autotests :=						\
 	src/framing/tests/bpacketsync_autotest.c		\
 	src/framing/tests/bsync_autotest.c			\
 	src/framing/tests/detector_autotest.c			\
+	src/framing/tests/dsssframe64_autotest.c		\
 	src/framing/tests/dsssframesync_autotest.c		\
 	src/framing/tests/flexframesync_autotest.c		\
 	src/framing/tests/framesync64_autotest.c		\
@@ -1514,6 +1517,8 @@ example_programs :=						\
 	examples/cvsd_example					\
 	examples/detector_cccf_example				\
 	examples/dds_cccf_example				\
+	examples/dsssframe64sync_performance_example		\
+	examples/dsssframe64sync_example			\
 	examples/dsssframesync_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
