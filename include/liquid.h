@@ -6434,6 +6434,9 @@ int QDSYNC(_reset)(QDSYNC() _q);                                            \
 /* Print synchronizer object information to stdout                      */  \
 int QDSYNC(_print)(QDSYNC() _q);                                            \
                                                                             \
+/* Get detection state                                                  */  \
+int QDSYNC(_is_detected)(QDSYNC() _q);                                  \
+                                                                            \
 /* Get detection threshold                                              */  \
 float QDSYNC(_get_threshold)(QDSYNC() _q);                                  \
                                                                             \

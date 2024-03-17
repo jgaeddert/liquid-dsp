@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -118,6 +118,7 @@ QDSYNC() QDSYNC(_create_linear)(TI *              _seq,
     QDSYNC(_set_context )(q, _context );
 
     // reset and return object
+    QDSYNC(_set_threshold)(q, 0.05f); // TODO: set threshold appropriate to sequence length
     QDSYNC(_reset)(q);
     return q;
 }
@@ -178,6 +179,12 @@ int QDSYNC(_print)(QDSYNC() _q)
 {
     printf("<liquid.qdsync()>\n");
     return LIQUID_OK;
+}
+
+// get detection state
+int QDSYNC(_is_detected)(QDSYNC() _q)
+{
+    return _q->state == QDSYNC_STATE_SYNC;
 }
 
 // get detection threshold
