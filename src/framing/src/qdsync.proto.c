@@ -118,7 +118,6 @@ QDSYNC() QDSYNC(_create_linear)(TI *              _seq,
     QDSYNC(_set_context )(q, _context );
 
     // reset and return object
-    QDSYNC(_set_threshold)(q, 0.05f); // TODO: set threshold appropriate to sequence length
     QDSYNC(_reset)(q);
     return q;
 }
