@@ -6057,6 +6057,9 @@ float dsssframe64sync_get_threshold(dsssframe64sync _q);
 int dsssframe64sync_set_threshold(dsssframe64sync _q,
                                   float           _threshold);
 
+// get carrier offset search range [radians/sample]
+float dsssframe64sync_get_range(dsssframe64sync _q);
+
 // set carrier offset search range
 int dsssframe64sync_set_range(dsssframe64sync _q,
                               float           _dphi_max);

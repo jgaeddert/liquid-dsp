@@ -237,12 +237,6 @@ int dsssframe64sync_execute(dsssframe64sync _q,
     return qdsync_cccf_execute(_q->detector, _buf, _buf_len);
 }
 
-// get detection threshold
-float dsssframe64sync_get_threshold(dsssframe64sync _q)
-{
-    return qdsync_cccf_get_threshold(_q->detector);
-}
-
 // set detection threshold
 int dsssframe64sync_set_threshold(dsssframe64sync _q,
                                   float           _threshold)
@@ -250,11 +244,23 @@ int dsssframe64sync_set_threshold(dsssframe64sync _q,
     return qdsync_cccf_set_threshold(_q->detector, _threshold);
 }
 
+// get detection threshold
+float dsssframe64sync_get_threshold(dsssframe64sync _q)
+{
+    return qdsync_cccf_get_threshold(_q->detector);
+}
+
 // set carrier offset search range
 int dsssframe64sync_set_range(dsssframe64sync _q,
                               float           _dphi_max)
 {
     return qdsync_cccf_set_range(_q->detector, _dphi_max);
+}
+
+// get detection threshold
+float dsssframe64sync_get_range(dsssframe64sync _q)
+{
+    return qdsync_cccf_get_range(_q->detector);
 }
 
 // reset frame data statistics

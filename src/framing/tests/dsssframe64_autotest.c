@@ -80,6 +80,17 @@ void autotest_dsssframe64_config()
     CONTEND_EQUALITY( LIQUID_OK, dsssframe64gen_print(fg) );
     CONTEND_EQUALITY( LIQUID_OK, dsssframe64sync_print(fs) );
 
+    // synchronizer parameters
+    CONTEND_EQUALITY( 0,         dsssframe64sync_is_frame_open(fs) );
+    CONTEND_EQUALITY( LIQUID_OK, dsssframe64sync_set_callback(fs, NULL) );
+    CONTEND_EQUALITY( LIQUID_OK, dsssframe64sync_set_context (fs, NULL) );
+    float threshold = 0.123f;
+    CONTEND_EQUALITY( LIQUID_OK, dsssframe64sync_set_threshold(fs, threshold) );
+    CONTEND_EQUALITY( threshold, dsssframe64sync_get_threshold(fs) );
+    float range = 0.00722f;
+    CONTEND_EQUALITY( LIQUID_OK, dsssframe64sync_set_range(fs, range) );
+    //CONTEND_EQUALITY( range,     dsssframe64sync_get_range(fs) );
+
     dsssframe64gen_destroy(fg);
     dsssframe64sync_destroy(fs);
 }
