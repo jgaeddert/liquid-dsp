@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -171,7 +171,6 @@ void autotest_cpfskmodem_spectrum()
         liquid_autotest_verbose ? filename : NULL);
 }
 
-
 // test errors and invalid configuration
 void autotest_cpfskmodem_config()
 {
@@ -189,13 +188,23 @@ void autotest_cpfskmodem_config()
     CONTEND_ISNULL( cpfskmod_create(1, 0.5f, 5, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _k is not even
     CONTEND_ISNULL( cpfskmod_create(1, 0.5f, 4,  0, 0.25f, LIQUID_CPFSK_SQUARE) ); // _m is too small
     CONTEND_ISNULL( cpfskmod_create(1, 0.5f, 4, 12, 0.00f, LIQUID_CPFSK_SQUARE) ); // _beta is too small
+    CONTEND_ISNULL( cpfskmod_create(1, 0.5f, 4, 12, 0.00f, -1) ); // invalid filter type
 
     CONTEND_ISNULL( cpfskdem_create(0, 0.5f, 4, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _bps is less than 1
     CONTEND_ISNULL( cpfskdem_create(1, 0.0f, 4, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _h (mod index) is out of range
     CONTEND_ISNULL( cpfskdem_create(1, 0.5f, 5, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _k is not even
     CONTEND_ISNULL( cpfskdem_create(1, 0.5f, 4,  0, 0.25f, LIQUID_CPFSK_SQUARE) ); // _m is too small
     CONTEND_ISNULL( cpfskdem_create(1, 0.5f, 4, 12, 0.00f, LIQUID_CPFSK_SQUARE) ); // _beta is too small
+    CONTEND_ISNULL( cpfskdem_create(1, 0.5f, 4, 12, 0.00f, -1) ); // invalid filter type
 
-    // TODO: create object and check configuration
+    // create modulator object and check configuration
+    cpfskmod mod = cpfskmod_create(1, 0.5f, 4, 12, 0.5f, LIQUID_CPFSK_SQUARE);
+    CONTEND_EQUALITY( LIQUID_OK, cpfskmod_print(mod) );
+    cpfskmod_destroy(mod);
+
+    // create demodulator object and check configuration
+    cpfskdem dem = cpfskdem_create(1, 0.5f, 4, 12, 0.5f, LIQUID_CPFSK_SQUARE);
+    CONTEND_EQUALITY( LIQUID_OK, cpfskdem_print(dem) );
+    cpfskdem_destroy(dem);
 }
 
