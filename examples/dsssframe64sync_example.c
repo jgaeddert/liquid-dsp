@@ -44,8 +44,8 @@ int main(int argc, char *argv[])
 
     // generate the frame in blocks
     unsigned int  buf_len = dsssframe64gen_get_frame_len(fg);
-    float complex buf_tx[buf_len];  // transmit buffer
-    float complex buf_rx[buf_len];  // receive buffer (channel output)
+    float complex * buf_tx = (float complex *)malloc(buf_len*sizeof(float complex));
+    float complex * buf_rx = (float complex *)malloc(buf_len*sizeof(float complex));
 
     // export results to file
     FILE * fid = fopen(filename,"w");
@@ -88,8 +88,10 @@ int main(int argc, char *argv[])
     fclose(fid);
     printf("results written to %s\n", filename);
 
-    // destroy allocated objects
+    // destroy allocated objects and free memory
     dsssframe64gen_destroy(fg);
+    free(buf_tx);
+    free(buf_rx);
     return 0;
 }
 

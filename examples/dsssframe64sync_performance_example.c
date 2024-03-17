@@ -29,7 +29,7 @@ int main(int argc, char*argv[])
 
     // create buffer for the frame samples
     unsigned int  frame_len = dsssframe64gen_get_frame_len(fg);
-    float complex frame[frame_len];
+    float complex * frame = (float complex *)malloc(frame_len*sizeof(float complex));
     float SNRdB = -25.0f;
     FILE* fid = fopen(OUTPUT_FILENAME, "w");
     fprintf(fid,"%% %s: auto-generated file\n", OUTPUT_FILENAME);
@@ -93,8 +93,9 @@ int main(int argc, char*argv[])
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 
-    // clean up allocated objects
+    // clean up allocated objects and memory blocks
     dsssframe64gen_destroy(fg);
     dsssframe64sync_destroy(fs);
+    free(frame);
     return 0;
 }
