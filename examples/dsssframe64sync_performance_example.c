@@ -35,7 +35,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"%% %s: auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all; close all;\n");
     fprintf(fid,"SNR=[]; pdetect=[]; pvalid=[];\n");
-    printf("# %8s %6s %6s %6s\n", "SNR", "detect", "valid", "trials");
+    printf("# %8s %6s (%7s) %6s (%7s) %6s\n", "SNR", "missed", "percent", "errors", "percent", "trials");
     fclose(fid);
     while (SNRdB <  -5.0f) {
         dsssframe64sync_reset_framedatastats(fs);
@@ -64,8 +64,11 @@ int main(int argc, char*argv[])
         }
         // print results
         framedatastats_s stats = dsssframe64sync_get_framedatastats(fs);
-        printf("  %8.3f %6u %6u %6u\n",
-            SNRdB,stats.num_frames_detected,stats.num_payloads_valid,num_trials);
+        unsigned int num_misses = num_trials - stats.num_frames_detected;
+        float pmd = (float) num_misses / (float) num_trials;
+        float per = (float) num_errors / (float) num_trials;
+        printf("  %8.3f %6u (%6.2f%%) %6u (%6.2f%%) %6u\n",
+            SNRdB,num_misses,pmd*100,num_errors,per*100,num_trials);
         fid = fopen(OUTPUT_FILENAME,"a");
         fprintf(fid,"SNR(end+1)=%g; pdetect(end+1)=%12g; pvalid(end+1)=%12g;\n",
                 SNRdB,

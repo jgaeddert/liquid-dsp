@@ -104,7 +104,7 @@ dsssframe64sync dsssframe64sync_create(framesync_callback _callback,
     unsigned int k = 2;    // samples/symbol
     q->detector = qdsync_cccf_create_linear(q->preamble_pn, 1024, LIQUID_FIRFILT_ARKAISER, k, q->m, q->beta,
         dsssframe64sync_callback_internal, (void*)q);
-    qdsync_cccf_set_threshold(q->detector, 0.100f); // detection threshold
+    qdsync_cccf_set_threshold(q->detector, 0.097f); // detection threshold
     qdsync_cccf_set_range    (q->detector, 0.006f); // frequency offset search range [radians/sample]
 
     // create payload demodulator/decoder object
