@@ -1632,6 +1632,7 @@ example_programs :=						\
 	examples/poly_findroots_example				\
 	examples/qdetector_cccf_example				\
 	examples/qdsync_cccf_example				\
+	examples/qdsync_cccf_performance_example		\
 	examples/qpacketmodem_performance_example		\
 	examples/qpacketmodem_example				\
 	examples/qpilotsync_example				\
