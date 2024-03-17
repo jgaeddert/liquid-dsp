@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ dsssframe64gen dsssframe64gen_create()
     unsigned int i;
 
     // generate p/n sequence
-    q->ms = msequence_create(11, 0x0805, 1);
+    q->ms = msequence_create(11, 0x0500, 1);
     for (i=0; i<1024; i++) {
         q->preamble_pn[i]  = (msequence_advance(q->ms) ? M_SQRT1_2 : -M_SQRT1_2);
         q->preamble_pn[i] += (msequence_advance(q->ms) ? M_SQRT1_2 : -M_SQRT1_2)*_Complex_I;
