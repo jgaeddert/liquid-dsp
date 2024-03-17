@@ -158,7 +158,9 @@ dsssframe64sync dsssframe64sync_copy(dsssframe64sync q_orig)
 
     return q_copy;
 #else
-    return liquid_error_config("dsssframe64sync_copy(), method not yet implemented");
+    // not yet implemented
+    liquid_error(LIQUID_ENOIMP, "dsssframe64sync_copy(), method not yet implemented");
+    return NULL;
 #endif
 }
 

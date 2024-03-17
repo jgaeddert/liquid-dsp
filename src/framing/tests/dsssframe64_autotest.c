@@ -60,3 +60,27 @@ void autotest_dsssframe64sync()
     free(frame);
 }
 
+// test errors and invalid configuration
+void autotest_dsssframe64_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping dsssframe64 config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // test copying/creating invalid objects
+    CONTEND_ISNULL( dsssframe64gen_copy(NULL) );
+    CONTEND_ISNULL( dsssframe64sync_copy(NULL) );
+
+    // create valid objects
+    dsssframe64gen  fg = dsssframe64gen_create();
+    dsssframe64sync fs = dsssframe64sync_create(NULL, NULL);
+    CONTEND_EQUALITY( LIQUID_OK, dsssframe64gen_print(fg) );
+    CONTEND_EQUALITY( LIQUID_OK, dsssframe64sync_print(fs) );
+
+    dsssframe64gen_destroy(fg);
+    dsssframe64sync_destroy(fs);
+}
+

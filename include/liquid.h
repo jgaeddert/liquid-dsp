@@ -6003,6 +6003,9 @@ typedef struct dsssframe64gen_s * dsssframe64gen;
 // create dsssframe64gen object
 dsssframe64gen dsssframe64gen_create();
 
+// copy object
+dsssframe64gen dsssframe64gen_copy(dsssframe64gen q_orig);
+
 // destroy dsssframe64gen object
 int dsssframe64gen_destroy(dsssframe64gen _q);
 
@@ -6029,6 +6032,10 @@ unsigned int dsssframe64gen_get_frame_len(dsssframe64gen _q);
 typedef struct dsssframe64sync_s * dsssframe64sync;
 
 dsssframe64sync dsssframe64sync_create(framesync_callback _callback, void * _userdata);
+
+// copy object
+dsssframe64sync dsssframe64sync_copy(dsssframe64sync q_orig);
+
 int dsssframe64sync_destroy             (dsssframe64sync _q);
 int dsssframe64sync_print               (dsssframe64sync _q);
 int dsssframe64sync_reset               (dsssframe64sync _q);

@@ -96,6 +96,7 @@ dsssframe64gen dsssframe64gen_copy(dsssframe64gen q_orig)
         return liquid_error_config("dsssframe64gen_copy(), object cannot be NULL");
 
     // not yet implemented
+    liquid_error(LIQUID_ENOIMP, "dsssframe64gen_copy(), method not yet implemented");
     return NULL;
 }
 
