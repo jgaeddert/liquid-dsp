@@ -56,7 +56,7 @@ dsssframe64gen dsssframe64gen_create()
     dsssframe64gen q = (dsssframe64gen) malloc(sizeof(struct dsssframe64gen_s));
     q->m    = 15;
     q->beta = 0.20f;
-    q->sf   = 128;  // spreading factor
+    q->sf   =  80;  // spreading factor
 
     unsigned int i;
 
@@ -123,7 +123,8 @@ int dsssframe64gen_print(dsssframe64gen _q)
 // get full frame length [samples]
 unsigned int dsssframe64gen_get_frame_len(dsssframe64gen _q)
 {
-    return 2*(1024 + 650*_q->sf + 2*_q->m);
+    // add a small amount of zero-padding to ensure entire frame gets pushed through synchronizer
+    return 2*(1024 + 650*_q->sf + 2*_q->m) + 64;
 }
 
 // generate a frame
@@ -190,7 +191,10 @@ int dsssframe64gen_write(dsssframe64gen  _q,
         n+=2;
     }
 
-    assert(n==dsssframe64gen_get_frame_len(_q));
+    // zero-pad end to ensure synchronizer can receive full payload
+    while (n < dsssframe64gen_get_frame_len(_q))
+        _buf[n++] = 0;
+
     return LIQUID_OK;
 }
 

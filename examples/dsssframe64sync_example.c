@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 {
     // options
     unsigned int nfft  = 2400;
-    float        SNRdB =   -15.0f;
+    float        SNRdB =   -10.0f;
     const char * filename = "dsssframe64sync_example.m";
 
     // create dsssframe64gen object

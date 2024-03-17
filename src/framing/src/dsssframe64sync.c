@@ -23,7 +23,7 @@
 // basic direct sequence/spread spectrum frame synchronizer with 8 bytes header
 // and 64 bytes payload
 //   * reliable frame detection (1% missed) down to -14 dB SNR
-//   * reliable frame decoding (1% errors) down to -13 dB SNR
+//   * reliable frame decoding (1% errors) down to -11 dB SNR
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -93,7 +93,7 @@ dsssframe64sync dsssframe64sync_create(framesync_callback _callback,
     q->context  = _context;
     q->m        = 15;   // filter delay (symbols)
     q->beta     = 0.20f;// excess bandwidth factor
-    q->sf       = 128;  // spreading factor
+    q->sf       =  80;  // spreading factor
 
     unsigned int i;
 
