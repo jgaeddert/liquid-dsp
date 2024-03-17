@@ -198,6 +198,12 @@ int QDSYNC(_set_threshold)(QDSYNC() _q, float _threshold)
     return QDETECTOR(_set_threshold)(_q->detector, _threshold);
 }
 
+// get carrier offset search range
+float QDSYNC(_get_range)(QDSYNC() _q)
+{
+    return QDETECTOR(_get_range)(_q->detector);
+}
+
 // set carrier offset search range
 int QDSYNC(_set_range)(QDSYNC() _q, float _dphi_max)
 {

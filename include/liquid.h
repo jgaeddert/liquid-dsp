@@ -6344,10 +6344,13 @@ void * QDETECTOR(_execute)(QDETECTOR() _q, TI _x);                          \
 /* get detection threshold                                              */  \
 float QDETECTOR(_get_threshold)(QDETECTOR() _q);                            \
                                                                             \
-/* set detection threshold (should be between 0 and 1, good starting    */  \
+/* Set detection threshold (should be between 0 and 1, good starting    */  \
 /* point is 0.5)                                                        */  \
 int QDETECTOR(_set_threshold)(QDETECTOR() _q,                               \
                               float       _threshold);                      \
+                                                                            \
+/* Get carrier offset search range                                      */  \
+float QDETECTOR(_get_range)(QDETECTOR() _q);                                \
                                                                             \
 /* Set carrier offset search range                                      */  \
 int QDETECTOR(_set_range)(QDETECTOR() _q,                                   \
@@ -6444,7 +6447,10 @@ float QDSYNC(_get_threshold)(QDSYNC() _q);                                  \
 int QDSYNC(_set_threshold)(QDSYNC() _q,                                     \
                            float    _threshold);                            \
                                                                             \
-/* set carrier offset search range                                      */  \
+/* Get carrier offset search range                                      */  \
+float QDSYNC(_get_range)(QDSYNC() _q);                                      \
+                                                                            \
+/* Set carrier offset search range                                      */  \
 int QDSYNC(_set_range)(QDSYNC() _q,                                         \
                        float    _dphi_max);                                 \
                                                                             \
