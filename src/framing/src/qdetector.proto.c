@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -378,6 +378,12 @@ int QDETECTOR(_set_threshold)(QDETECTOR() _q,
     // set internal threshold value
     _q->threshold = _threshold;
     return LIQUID_OK;
+}
+
+// get carrier offset search range
+float QDETECTOR(_get_range)(QDETECTOR() _q)
+{
+    return _q->range;
 }
 
 // set carrier offset search range
