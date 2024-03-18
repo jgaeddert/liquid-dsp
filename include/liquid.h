@@ -9789,6 +9789,9 @@ msequence msequence_create(unsigned int _m,
                            unsigned int _g,
                            unsigned int _a);
 
+// Copy maximal-length sequence (m-sequence) object
+msequence msequence_copy(msequence q_orig);
+
 // create a maximal-length sequence (m-sequence) object from a generator polynomial
 msequence msequence_create_genpoly(unsigned int _g);
 
