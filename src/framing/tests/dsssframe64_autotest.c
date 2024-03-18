@@ -95,3 +95,34 @@ void autotest_dsssframe64_config()
     dsssframe64sync_destroy(fs);
 }
 
+// test that the complete internal state of one generator can be copied to a new
+// object
+void autotest_dsssframe64gen_copy()
+{
+    // create object and copy
+    dsssframe64gen q0 = dsssframe64gen_create();
+    dsssframe64gen q1 = dsssframe64gen_copy(q0);
+
+    // allocate buffers for frames
+    unsigned int frame_len = dsssframe64gen_get_frame_len(q0);
+    float complex * buf_0 = (float complex *)malloc(frame_len*sizeof(float complex));
+    float complex * buf_1 = (float complex *)malloc(frame_len*sizeof(float complex));
+    unsigned char   header [ 8] = {0,0,0,0,0,0,0,0,};
+    unsigned char   payload[64] = {
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,};
+
+    // encode
+    dsssframe64gen_execute(q0, header, payload, buf_0);
+    dsssframe64gen_execute(q1, header, payload, buf_1);
+
+    // ensure identical outputs
+    CONTEND_SAME_DATA(buf_0, buf_1, frame_len*sizeof(float complex));
+
+    // destroy objects and free memory
+    dsssframe64gen_destroy(q0);
+    dsssframe64gen_destroy(q1);
+    free(buf_0);
+    free(buf_1);
+}
+

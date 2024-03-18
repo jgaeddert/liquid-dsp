@@ -95,9 +95,16 @@ dsssframe64gen dsssframe64gen_copy(dsssframe64gen q_orig)
     if (q_orig == NULL)
         return liquid_error_config("dsssframe64gen_copy(), object cannot be NULL");
 
-    // not yet implemented
-    liquid_error(LIQUID_ENOIMP, "dsssframe64gen_copy(), method not yet implemented");
-    return NULL;
+    // create filter object and copy base parameters
+    dsssframe64gen q_copy = (dsssframe64gen) malloc(sizeof(struct dsssframe64gen_s));
+    memmove(q_copy, q_orig, sizeof(struct dsssframe64gen_s));
+
+    // copy objects
+    q_copy->enc      = qpacketmodem_copy  (q_orig->enc     );
+    q_copy->pilotgen = qpilotgen_copy     (q_orig->pilotgen);
+    q_copy->ms       = msequence_copy     (q_orig->ms      );
+    q_copy->interp   = firinterp_crcf_copy(q_orig->interp  );
+    return q_copy;
 }
 
 // destroy dsssframe64gen object
