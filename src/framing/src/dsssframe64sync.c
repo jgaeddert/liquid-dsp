@@ -136,7 +136,6 @@ dsssframe64sync dsssframe64sync_create(framesync_callback _callback,
 // copy object
 dsssframe64sync dsssframe64sync_copy(dsssframe64sync q_orig)
 {
-#if 0
     // validate input
     if (q_orig == NULL)
         return liquid_error_config("dsssframe64sync_copy(), object cannot be NULL");
@@ -147,21 +146,16 @@ dsssframe64sync dsssframe64sync_copy(dsssframe64sync q_orig)
     // copy entire memory space over and overwrite values as needed
     memmove(q_copy, q_orig, sizeof(struct dsssframe64sync_s));
 
-    // set callback and context fields
-    q_copy->callback = q_orig->callback;
-    q_copy->context  = q_orig->context;
+    // copy internal objects
+    q_copy->detector  = qdsync_cccf_copy (q_orig->detector);
+    q_copy->ms        = msequence_copy   (q_orig->ms);
+    q_copy->dec       = qpacketmodem_copy(q_orig->dec);
+    q_copy->pilotsync = qpilotsync_copy  (q_orig->pilotsync);
 
-    // copy objects
-    q_copy->detector = qdsync_cccf_copy(q_orig->detector);
-    q_copy->dec      = qpacketmodem_copy  (q_orig->dec);
-    q_copy->pilotsync= qpilotsync_copy    (q_orig->pilotsync);
+    // update detector callback's context to use q_copy
+    qdsync_cccf_set_context(q_copy->detector, (void*)q_copy);
 
     return q_copy;
-#else
-    // not yet implemented
-    liquid_error(LIQUID_ENOIMP, "dsssframe64sync_copy(), method not yet implemented");
-    return NULL;
-#endif
 }
 
 // destroy frame synchronizer object, freeing all internal memory
@@ -181,7 +175,10 @@ int dsssframe64sync_destroy(dsssframe64sync _q)
 // print frame synchronizer object internals
 int dsssframe64sync_print(dsssframe64sync _q)
 {
-    printf("<liquid.dsssframe64sync>\n");
+    printf("<liquid.dsssframe64sync, %u, %u, %u>\n",
+        _q->preamble_counter,
+        _q->chip_counter,
+        _q->payload_counter);
     return LIQUID_OK;
 }
 

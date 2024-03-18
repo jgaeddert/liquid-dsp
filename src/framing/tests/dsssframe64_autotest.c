@@ -126,3 +126,52 @@ void autotest_dsssframe64gen_copy()
     free(buf_1);
 }
 
+// test that the complete internal state of one synchronizer can be copied to a new
+// object and it can maintain state
+void autotest_dsssframe64sync_copy()
+{
+    // create object and generte frame
+    dsssframe64gen fg = dsssframe64gen_create();
+    unsigned int    frame_len = dsssframe64gen_get_frame_len(fg);
+    float complex * frame= (float complex *)malloc(frame_len*sizeof(float complex));
+    dsssframe64gen_execute(fg, NULL, NULL, frame);
+
+    // creamte original frame synchronizer
+    dsssframe64sync q0 = dsssframe64sync_create(NULL, NULL);
+
+    // run half of frame through synchronizer
+    unsigned int n = 12000;
+    dsssframe64sync_execute(q0, frame, n);
+
+    // ensure frame was not yet decoded
+    framedatastats_s s0, s1;
+    s0 = dsssframe64sync_get_framedatastats(q0);
+    CONTEND_EQUALITY(s0.num_frames_detected, 0);
+
+    // copy object
+    dsssframe64sync q1 = dsssframe64sync_copy(q0);
+
+    // run remaining half of frame through synchronizers
+    dsssframe64sync_execute(q0, frame+n, frame_len-n);
+    dsssframe64sync_execute(q1, frame+n, frame_len-n);
+
+    // ensure frame was decoded by both synchronizers
+    s0 = dsssframe64sync_get_framedatastats(q0);
+    CONTEND_EQUALITY(s0.num_frames_detected, 1);
+    CONTEND_EQUALITY(s0.num_headers_valid,   1);
+    CONTEND_EQUALITY(s0.num_payloads_valid,  1);
+    CONTEND_EQUALITY(s0.num_bytes_received, 64);
+
+    s1 = dsssframe64sync_get_framedatastats(q1);
+    CONTEND_EQUALITY(s1.num_frames_detected, 1);
+    CONTEND_EQUALITY(s1.num_headers_valid,   1);
+    CONTEND_EQUALITY(s1.num_payloads_valid,  1);
+    CONTEND_EQUALITY(s1.num_bytes_received, 64);
+
+    // destroy objects and free memory
+    dsssframe64gen_destroy(fg);
+    dsssframe64sync_destroy(q0);
+    dsssframe64sync_destroy(q1);
+    free(frame);
+}
+
