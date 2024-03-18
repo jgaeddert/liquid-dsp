@@ -108,7 +108,7 @@ void autotest_dsssframe64_config()
     CONTEND_EQUALITY( threshold, dsssframe64sync_get_threshold(fs) );
     float range = 0.00722f;
     CONTEND_EQUALITY( LIQUID_OK, dsssframe64sync_set_range(fs, range) );
-    //CONTEND_EQUALITY( range,     dsssframe64sync_get_range(fs) );
+    CONTEND_EQUALITY( range,     dsssframe64sync_get_range(fs) );
 
     dsssframe64gen_destroy(fg);
     dsssframe64sync_destroy(fs);
