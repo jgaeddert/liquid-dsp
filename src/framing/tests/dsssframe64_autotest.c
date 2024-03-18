@@ -27,22 +27,6 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// static callback function
-static int framing_autotest_callback(
-    unsigned char *  _header,
-    int              _header_valid,
-    unsigned char *  _payload,
-    unsigned int     _payload_len,
-    int              _payload_valid,
-    framesyncstats_s _stats,
-    void *           _context)
-{
-    printf("*** callback invoked (%s) ***\n", _payload_valid ? "pass" : "FAIL");
-    unsigned int * secret = (unsigned int*) _context;
-    *secret = 0x01234567;
-    return 0;
-}
-
 void autotest_dsssframe64sync()
 {
     // create objects
@@ -64,7 +48,7 @@ void autotest_dsssframe64sync()
     dsssframe64sync_execute(fs, frame, frame_len);
 
     // ensure callback was invoked
-    CONTEND_EQUALITY(context, 0x01234567);
+    CONTEND_EQUALITY(context, FRAMING_AUTOTEST_SECRET);
 
     // parse statistics
     framedatastats_s stats = dsssframe64sync_get_framedatastats(fs);
