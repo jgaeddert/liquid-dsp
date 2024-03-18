@@ -27,12 +27,28 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// AUTOTEST : test simple recovery of frame in noise
+// static callback function
+static int framing_autotest_callback(
+    unsigned char *  _header,
+    int              _header_valid,
+    unsigned char *  _payload,
+    unsigned int     _payload_len,
+    int              _payload_valid,
+    framesyncstats_s _stats,
+    void *           _context)
+{
+    printf("*** callback invoked (%s) ***\n", _payload_valid ? "pass" : "FAIL");
+    unsigned int * secret = (unsigned int*) _context;
+    *secret = 0x01234567;
+    return 0;
+}
+
 void autotest_dsssframe64sync()
 {
     // create objects
+    unsigned int context = 0;
     dsssframe64gen  fg = dsssframe64gen_create();
-    dsssframe64sync fs = dsssframe64sync_create(NULL, NULL);
+    dsssframe64sync fs = dsssframe64sync_create(framing_autotest_callback, (void*)&context);
 
     // generate the frame
     unsigned int frame_len = dsssframe64gen_get_frame_len(fg);
@@ -46,6 +62,9 @@ void autotest_dsssframe64sync()
 
     // try to receive the frame
     dsssframe64sync_execute(fs, frame, frame_len);
+
+    // ensure callback was invoked
+    CONTEND_EQUALITY(context, 0x01234567);
 
     // parse statistics
     framedatastats_s stats = dsssframe64sync_get_framedatastats(fs);
