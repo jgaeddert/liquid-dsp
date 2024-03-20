@@ -105,8 +105,12 @@ struct dsssframegen_s {
     enum state          state;           // write state
 };
 
-dsssframegen dsssframegen_create(dsssframegenprops_s * _fgprops)
+dsssframegen dsssframegen_create_set(unsigned int _n,
+                                     dsssframegenprops_s * _fgprops)
 {
+    if ((_n < 2) || (_n > 64))
+        return liquid_error_config("dsssframegen_create_set(), spreading factor must be between 2 and 64");
+
     dsssframegen q = (dsssframegen)calloc(1, sizeof(struct dsssframegen_s));
     unsigned int i;
 
@@ -125,14 +129,14 @@ dsssframegen dsssframegen_create(dsssframegenprops_s * _fgprops)
     }
     msequence_destroy(ms);
 
-    float complex * pn = (float complex *)malloc(64 * sizeof(float complex));
+    float complex * pn = (float complex *)malloc(_n * sizeof(float complex));
     ms                        = msequence_create(7, 0x00cb, 0x53);
-    for (i = 0; i < 64; i++) {
+    for (i = 0; i < _n; i++) {
         pn[i] = (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2);
         pn[i] += (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2) * _Complex_I;
     }
-    q->header_synth  = synth_crcf_create(pn, 64);
-    q->payload_synth = synth_crcf_create(pn, 64);
+    q->header_synth  = synth_crcf_create(pn, _n);
+    q->payload_synth = synth_crcf_create(pn, _n);
     free(pn);
     msequence_destroy(ms);
 
@@ -154,6 +158,11 @@ dsssframegen dsssframegen_create(dsssframegenprops_s * _fgprops)
     dsssframegen_set_header_len(q, q->header_user_len);
 
     return q;
+}
+
+dsssframegen dsssframegen_create(dsssframegenprops_s * _fgprops)
+{
+    return dsssframegen_create_set(64, _fgprops);
 }
 
 int dsssframegen_destroy(dsssframegen _q)
