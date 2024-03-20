@@ -19,6 +19,7 @@ void usage()
     printf("agc_example [options]\n");
     printf("  h     : print usage\n");
     printf("  n     : number of samples, n >=100, default: 2000\n");
+    printf("  g     : signal level,      g >=  0, default: 0.001\n");
     printf("  b     : AGC bandwidth,     b >=  0, default: 0.01\n");
 }
 
@@ -31,10 +32,11 @@ int main(int argc, char*argv[])
     unsigned int num_samples = 2000;    // number of samples
 
     int dopt;
-    while((dopt = getopt(argc,argv,"hn:N:s:b:")) != EOF){
+    while((dopt = getopt(argc,argv,"hn:g:b:")) != EOF){
         switch (dopt) {
         case 'h': usage();                      return 0;
         case 'n': num_samples = atoi(optarg);   break;
+        case 'g': gamma       = atof(optarg);   break;
         case 'b': bt          = atof(optarg);   break;
         default:
             exit(1);
@@ -44,6 +46,9 @@ int main(int argc, char*argv[])
     // validate input
     if (bt < 0.0f) {
         fprintf(stderr,"error: %s, bandwidth must be positive\n", argv[0]);
+        exit(1);
+    } else if (gamma < 0.0f) {
+        fprintf(stderr,"error: %s, signal level must be positive\n", argv[0]);
         exit(1);
     } else if (num_samples == 0) {
         fprintf(stderr,"error: %s, number of samples must be greater than zero\n", argv[0]);
