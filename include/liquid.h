@@ -51,8 +51,8 @@ extern "C" {
 // LIQUID_VERSION = "X.Y.Z"
 // LIQUID_VERSION_NUMBER = (X*1000000 + Y*1000 + Z)
 //
-#define LIQUID_VERSION          "1.6.0"
-#define LIQUID_VERSION_NUMBER   1006000
+#define LIQUID_VERSION          "1.7.0"
+#define LIQUID_VERSION_NUMBER   1007000
 
 //
 // Run-time library version numbers

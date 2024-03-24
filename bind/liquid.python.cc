@@ -57,6 +57,12 @@ py::dict framesyncstats_to_dict(framesyncstats_s _stats,
 PYBIND11_MODULE(liquid, m) {
     m.doc() = "software-defined radio signal processing library";
 
+    m.def("version", &liquid_libversion_number, R"pbdoc(
+        Version number for liquid.
+
+        Some other explanation about the version function.
+    )pbdoc");
+
     // initialize objects
     liquid::init_fdelay     (m);
     liquid::init_firfilt    (m);

@@ -2,7 +2,7 @@
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
 
-__version__ = "0.0.1"
+__version__ = "1.6.0"
 
 # The main interface is through Pybind11Extension.
 # * You can add cxx_std=11/14/17, and then build_ext can be removed.
@@ -181,7 +181,6 @@ ext_modules = [
         sources=["bind/liquid.python.cc", ],
         libraries=["m","c","fftw3f"],
         include_dirs=['.','./include','./bind'],
-        # Example: passing in the version to the compiled code
         define_macros=[("VERSION_INFO", __version__),
                        ("LIQUID_PYTHONLIB", 1)],
         extra_objects=obj,
@@ -204,31 +203,4 @@ setup(
     zip_safe=False,
     python_requires=">=3.7",
 )
-
-# bind/liquid.python.cc
-# bind/main.cc
-# bind/fdelay.hh
-# bind/fg64.hh
-# bind/firfilt.hh
-# bind/firhilb.hh
-# bind/firinterp.hh
-# bind/firpfbch2.hh
-# bind/fs64.hh
-# bind/liquid.hh
-# bind/liquid.python.hh
-# bind/modem.hh
-# bind/msresamp.hh
-# bind/nco.hh
-# bind/ofdmflexframerx.hh
-# bind/ofdmflexframetx.hh
-# bind/rresamp.hh
-# bind/spgram.hh
-# bind/spwaterfall.hh
-# bind/symstreamr.hh
-# bind/symtrack.hh
-
-#g++ -g -O2 -Wall -fPIC -Wno-deprecated -Wno-deprecated-declarations -std=c++14 -Wno-return-type-c-linkage 
-#  -D LIQUID_PYTHONLIB -I/opt/homebrew/opt/python@3.12/Frameworks/Python.framework/Versions/3.12/include/python3.12 -I/opt/homebrew/Cellar/pybind11/2.11.1/libexec/lib/python3.12/site-packages/pybind11/include
-#  -I./include -I./bind/ -c -o bind/liquid.python.o",
-#bind/liquid.python.cc
 
