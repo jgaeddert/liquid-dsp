@@ -183,6 +183,10 @@ ext_modules = [
         include_dirs=['.','./include','./bind'],
         define_macros=[("VERSION_INFO", __version__),
                        ("LIQUID_PYTHONLIB", 1)],
+        extra_compile_args=["-Wall",
+                            "-Wno-deprecated",
+                            "-Wno-deprecated-declarations",
+                            "-Wno-return-type-c-linkage"],
         extra_objects=["libliquid.ar"],
     ),
 ]
