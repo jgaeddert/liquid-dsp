@@ -183,7 +183,7 @@ ext_modules = [
         include_dirs=['.','./include','./bind'],
         define_macros=[("VERSION_INFO", __version__),
                        ("LIQUID_PYTHONLIB", 1)],
-        extra_objects=obj,
+        extra_objects=["libliquid.ar"],
     ),
 ]
 
