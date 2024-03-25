@@ -4,8 +4,10 @@ stages: [build, test]
 before_script:
   - apt-get -qq update
   - apt-get -qq install -y --no-install-recommends automake autoconf gcc g++ gcovr make valgrind time curl
-  - apt-get -qq install python3-pip pybind11-dev
-  - python3 -m pip install pybind11 numpy matplotlib
+  - apt-get -qq install virtualenv python3-pip pybind11-dev
+  - virtualenv /tmp/liquid
+  - source /tmp/liquid/bin/activate
+  - pip install pybind11 numpy matplotlib setuptools wheel
 
 # build from scratch
 compile:
@@ -92,5 +94,6 @@ python:
   script:
     - ./bootstrap.sh
     - ./configure
-    - make -j4 python
+    - make -j4
+    - pip install -v .
 
