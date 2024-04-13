@@ -8393,6 +8393,9 @@ CPFSKDEM() CPFSKDEM(_create)(unsigned int _bps,                             \
 /* CPFSKDEM() CPFSKDEM(_create_msk)(unsigned int _k);                   */  \
 /* CPFSKDEM() CPFSKDEM(_create_gmsk)(unsigned int _k, float _BT);       */  \
                                                                             \
+/* Copy object including all internal objects and state                 */  \
+CPFSKDEM() CPFSKDEM(_copy)(CPFSKDEM() _q);                                  \
+                                                                            \
 /* Destroy demodulator object, freeing all internal memory              */  \
 int CPFSKDEM(_destroy)(CPFSKDEM() _q);                                      \
                                                                             \

@@ -149,6 +149,31 @@ CPFSKDEM() CPFSKDEM(_create)(unsigned int _bps,
     return q;
 }
 
+// Copy object including all internal objects and state
+CPFSKDEM() CPFSKDEM(_copy)(CPFSKDEM() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("cpfskdem_copy(), object cannot be NULL");
+
+    // create filter object and copy base parameters
+    CPFSKDEM() q_copy = (CPFSKDEM()) malloc(sizeof(struct CPFSKDEM(_s)));
+    memmove(q_copy, q_orig, sizeof(struct CPFSKDEM(_s)));
+
+    // copy objects
+    if (q_orig->demod_type == CPFSKDEM_COHERENT) {
+        //return liquid_error_config("cpfskdem_copy(), coherent mode not supported");
+        liquid_error(LIQUID_EINT,"cpfskdem_copy(), coherent mode not supported");
+        return NULL;
+    } else {
+        q_copy->demod.noncoherent.mf = firfilt_crcf_copy(q_orig->demod.noncoherent.mf);
+    }
+
+    // return new object
+    return q_copy;
+}
+
+
 // initialize non-coherent demodulator
 int CPFSKDEM(_init_coherent)(CPFSKDEM() _q)
 {
