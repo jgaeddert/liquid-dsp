@@ -849,7 +849,6 @@ matrix_benchmarks :=						\
 modem_objects :=						\
 	src/modem/src/ampmodem.o				\
 	src/modem/src/cpfskdem.o				\
-	src/modem/src/cpfskmod.o				\
 	src/modem/src/fskdem.o					\
 	src/modem/src/fskmod.o					\
 	src/modem/src/gmskdem.o					\
@@ -862,6 +861,7 @@ modem_objects :=						\
 
 # explicit targets and dependencies
 modem_prototypes :=						\
+	src/modem/src/cpfskmod.proto.c				\
 	src/modem/src/freqdem.proto.c				\
 	src/modem/src/freqmod.proto.c				\
 	src/modem/src/modem_common.proto.c			\

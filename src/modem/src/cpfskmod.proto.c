@@ -29,15 +29,15 @@
 #include "liquid.internal.h"
 
 // design transmit filter
-int cpfskmod_firdes(unsigned int _k,
-                    unsigned int _m,
-                    float        _beta,
-                    int          _type,
-                    float *      _h,
-                    unsigned int _h_len);
+int CPFSKMOD(_firdes)(unsigned int _k,
+                      unsigned int _m,
+                      float        _beta,
+                      int          _type,
+                      float *      _h,
+                      unsigned int _h_len);
 
 // cpfskmod
-struct cpfskmod_s {
+struct CPFSKMOD(_s) {
     // common
     unsigned int bps;           // bits per symbol
     unsigned int k;             // samples per symbol
@@ -58,19 +58,19 @@ struct cpfskmod_s {
     float b0, b1, a1, v0, v1;   // integrator
 };
 
-// create cpfskmod object (frequency modulator)
+// create CPFSKMOD() object (frequency modulator)
 //  _bps    :   bits per symbol, _bps > 0
 //  _h      :   modulation index, _h > 0
 //  _k      :   samples/symbol, _k > 1, _k even
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   filter bandwidth parameter, _beta > 0
 //  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
-cpfskmod cpfskmod_create(unsigned int _bps,
-                         float        _h,
-                         unsigned int _k,
-                         unsigned int _m,
-                         float        _beta,
-                         int          _type)
+CPFSKMOD() CPFSKMOD(_create)(unsigned int _bps,
+                             float        _h,
+                             unsigned int _k,
+                             unsigned int _m,
+                             float        _beta,
+                             int          _type)
 {
     // validate input
     if (_bps == 0)
@@ -85,7 +85,7 @@ cpfskmod cpfskmod_create(unsigned int _bps,
         return liquid_error_config("cpfskmod_create(), filter roll-off must be in (0,1]");
 
     // create main object memory
-    cpfskmod q = (cpfskmod) malloc(sizeof(struct cpfskmod_s));
+    CPFSKMOD() q = (CPFSKMOD()) malloc(sizeof(struct CPFSKMOD(_s)));
 
     // set basic internal properties
     q->bps  = _bps;     // bits per symbol
@@ -146,8 +146,8 @@ cpfskmod cpfskmod_create(unsigned int _bps,
     return q;
 }
 
-// destroy cpfskmod object
-int cpfskmod_destroy(cpfskmod _q)
+// destroy CPFSKMOD() object
+int CPFSKMOD(_destroy)(CPFSKMOD() _q)
 {
     // destroy pulse-shaping filter/interpolator
     free(_q->ht);
@@ -159,8 +159,8 @@ int cpfskmod_destroy(cpfskmod _q)
     return LIQUID_OK;
 }
 
-// print cpfskmod object internals
-int cpfskmod_print(cpfskmod _q)
+// print CPFSKMOD() object internals
+int CPFSKMOD(_print)(CPFSKMOD() _q)
 {
     printf("<cpfskmod, bps=%u, h=%g, sps=%u, m=%u, beta=%g",
         _q->bps, _q->h, _q->k, _q->m, _q->beta);
@@ -176,7 +176,7 @@ int cpfskmod_print(cpfskmod _q)
 }
 
 // reset state
-int cpfskmod_reset(cpfskmod _q)
+int CPFSKMOD(_reset)(CPFSKMOD() _q)
 {
     // reset interpolator
     firinterp_rrrf_reset(_q->interp);
@@ -188,7 +188,7 @@ int cpfskmod_reset(cpfskmod _q)
 }
 
 // get transmit delay [symbols]
-unsigned int cpfskmod_get_delay(cpfskmod _q)
+unsigned int CPFSKMOD(_get_delay)(CPFSKMOD() _q)
 {
     return _q->symbol_delay;
 }
@@ -197,7 +197,7 @@ unsigned int cpfskmod_get_delay(cpfskmod _q)
 //  _q      :   frequency modulator object
 //  _s      :   input symbol
 //  _y      :   output sample array [size: _k x 1]
-int cpfskmod_modulate(cpfskmod        _q,
+int CPFSKMOD(_modulate)(CPFSKMOD()      _q,
                       unsigned int    _s,
                       float complex * _y)
 {
@@ -231,12 +231,12 @@ int cpfskmod_modulate(cpfskmod        _q,
 //
 
 // design transmit filter
-int cpfskmod_firdes(unsigned int _k,
-                    unsigned int _m,
-                    float        _beta,
-                    int          _type,
-                    float *      _ht,
-                    unsigned int _ht_len)
+int CPFSKMOD(_firdes)(unsigned int _k,
+                      unsigned int _m,
+                      float        _beta,
+                      int          _type,
+                      float *      _ht,
+                      unsigned int _ht_len)
 {
     unsigned int i;
     // create filter based on specified type

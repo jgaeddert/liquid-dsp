@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 #include "liquid.internal.h"
 
 // Macro definitions
+#define CPFSKMOD(name)      LIQUID_CONCAT(cpfskmod,name)
 #define MODEM(name)         LIQUID_CONCAT(modemcf,name)
 #define FREQMOD(name)       LIQUID_CONCAT(freqmod,name)
 #define FREQDEM(name)       LIQUID_CONCAT(freqdem,name)
@@ -60,6 +61,9 @@
 
 // arbitrary modems
 #include "modem_arb.proto.c"
+
+// non-linear modems
+#include "cpfskmod.proto.c"
 
 // analog modems
 #include "freqmod.proto.c"
