@@ -1602,6 +1602,7 @@ example_programs :=						\
 	examples/math_lngamma_example				\
 	examples/math_primitive_root_example			\
 	examples/modem_arb_example				\
+	examples/modem_ber_example				\
 	examples/modem_example					\
 	examples/modem_pi4dqpsk_example				\
 	examples/modem_soft_example				\
