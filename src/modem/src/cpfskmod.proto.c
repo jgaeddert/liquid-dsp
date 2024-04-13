@@ -36,8 +36,8 @@ int CPFSKMOD(_firdes)(unsigned int _k,
                       float *      _h,
                       unsigned int _h_len);
 
-// cpfskmod
-struct CPFSKMOD(_s) {
+struct CPFSKMOD(_s)
+{
     // common
     unsigned int bps;           // bits per symbol
     unsigned int k;             // samples per symbol
@@ -49,13 +49,13 @@ struct CPFSKMOD(_s) {
     unsigned int symbol_delay;  // transmit filter delay [symbols]
 
     // pulse-shaping filter
-    float * ht;                 // filter coefficients
+    T *          ht;            // filter coefficients
     unsigned int ht_len;        // filter length
-    firinterp_rrrf  interp;     // interpolator
+    firinterp_rrrf  interp;     // phase interpolator
 
     // phase integrator
-    float * phase_interp;       // phase interpolation buffer
-    float b0, b1, a1, v0, v1;   // integrator
+    T * phase_interp;           // phase interpolation buffer
+    T b0, b1, a1, v0, v1;       // integrator
 };
 
 // create CPFSKMOD() object (frequency modulator)
@@ -131,14 +131,14 @@ CPFSKMOD() CPFSKMOD(_create)(unsigned int _bps,
     }
 
     // create pulse-shaping filter and scale by modulation index
-    q->ht = (float*) malloc(q->ht_len *sizeof(float));
-    cpfskmod_firdes(q->k, q->m, q->beta, q->type, q->ht, q->ht_len);
+    q->ht = (T*) malloc(q->ht_len *sizeof(T));
+    CPFSKMOD(_firdes)(q->k, q->m, q->beta, q->type, q->ht, q->ht_len);
     for (i=0; i<q->ht_len; i++)
         q->ht[i] *= M_PI * q->h;
     q->interp = firinterp_rrrf_create(q->k, q->ht, q->ht_len);
 
     // allocate buffer for phase interpolation
-    q->phase_interp = (float*) malloc(q->k*sizeof(float));
+    q->phase_interp = (T*) malloc(q->k*sizeof(T));
 
     // reset modem object
     cpfskmod_reset(q);
@@ -146,7 +146,27 @@ CPFSKMOD() CPFSKMOD(_create)(unsigned int _bps,
     return q;
 }
 
-// destroy CPFSKMOD() object
+// Copy object including all internal objects and state
+CPFSKMOD() CPFSKMOD(_copy)(CPFSKMOD() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("cpfskmod_copy(), object cannot be NULL");
+
+    // create filter object and copy base parameters
+    CPFSKMOD() q_copy = (CPFSKMOD()) malloc(sizeof(struct CPFSKMOD(_s)));
+    memmove(q_copy, q_orig, sizeof(struct CPFSKMOD(_s)));
+
+    // copy objects, arrays
+    q_copy->interp = firinterp_rrrf_copy(q_orig->interp);
+    q_copy->ht           = (T*) liquid_malloc_copy(q_orig->ht,           q_orig->ht_len, sizeof(T));
+    q_copy->phase_interp = (T*) liquid_malloc_copy(q_orig->phase_interp, q_orig->k,      sizeof(T));
+
+    // return new object
+    return q_copy;
+}
+
+// destroy modulator object
 int CPFSKMOD(_destroy)(CPFSKMOD() _q)
 {
     // destroy pulse-shaping filter/interpolator
@@ -159,7 +179,7 @@ int CPFSKMOD(_destroy)(CPFSKMOD() _q)
     return LIQUID_OK;
 }
 
-// print CPFSKMOD() object internals
+// print modulator object internals
 int CPFSKMOD(_print)(CPFSKMOD() _q)
 {
     printf("<cpfskmod, bps=%u, h=%g, sps=%u, m=%u, beta=%g",
@@ -197,9 +217,9 @@ unsigned int CPFSKMOD(_get_delay)(CPFSKMOD() _q)
 //  _q      :   frequency modulator object
 //  _s      :   input symbol
 //  _y      :   output sample array [size: _k x 1]
-int CPFSKMOD(_modulate)(CPFSKMOD()      _q,
-                      unsigned int    _s,
-                      float complex * _y)
+int CPFSKMOD(_modulate)(CPFSKMOD()     _q,
+                        unsigned int   _s,
+                        TC           * _y)
 {
     // run interpolator
     float v = 2.0f*_s - (float)(_q->M) + 1.0f;

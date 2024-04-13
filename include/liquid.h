@@ -8340,13 +8340,16 @@ CPFSKMOD() CPFSKMOD(_create)(unsigned int _bps,                             \
 /* cpfskmod cpfskmod_create_msk(unsigned int _k);                       */  \
 /* cpfskmod cpfskmod_create_gmsk(unsigned int _k, float _BT);           */  \
                                                                             \
-/* destroy cpfskmod object                                              */  \
+/* Copy object including all internal objects and state                 */  \
+CPFSKMOD() CPFSKMOD(_copy)(CPFSKMOD() _q);                                  \
+                                                                            \
+/* Destroy modulator object, freeing all allocate memory                */  \
 int CPFSKMOD(_destroy)(CPFSKMOD() _q);                                      \
                                                                             \
-/* print cpfskmod object internals                                      */  \
+/* Print modulator status to stdout                                     */  \
 int CPFSKMOD(_print)(CPFSKMOD() _q);                                        \
                                                                             \
-/* reset state                                                          */  \
+/* Reset internal state of modulator object                             */  \
 int CPFSKMOD(_reset)(CPFSKMOD() _q);                                        \
                                                                             \
 /* get transmit delay [symbols]                                         */  \
