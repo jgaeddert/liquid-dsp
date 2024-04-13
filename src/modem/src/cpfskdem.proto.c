@@ -78,16 +78,14 @@ struct CPFSKDEM(_s) {
             //nco_crcf nco;       // oscillator/phase-locked loop
             //firpfb_crcf mf;     // matched filter
             //firpfb_crcf dmf;    // matched filter (derivative)
-            firfilt_crcf mf;    // matched filter
+            //eqlms_rrrf equalizer;
         } coherent;
 
         // non-coherent demodulator
         struct {
-            firpfb_rrrf mf;     // matched filter
-            firpfb_rrrf dmf;    // matched filter (derivative)
-            eqlms_rrrf equalizer;
+            firfilt_crcf mf;    // matched filter
         } noncoherent;
-    } data;
+    } demod;
 
     // state variables
     unsigned int  index;    // debug
@@ -141,7 +139,7 @@ CPFSKDEM() CPFSKDEM(_create)(unsigned int _bps,
         //cpfskdem_init_noncoherent(q);
         fprintf(stderr,"warning: cpfskdem_create(), coherent demodulation with h > 2/3 not recommended\n");
     }
-    CPFSKDEM(_init_coherent)(q);
+    CPFSKDEM(_init_noncoherent)(q);
 
     // reset modem object
     CPFSKDEM(_reset)(q);
@@ -151,14 +149,20 @@ CPFSKDEM() CPFSKDEM(_create)(unsigned int _bps,
     return q;
 }
 
-// initialize coherent demodulator
+// initialize non-coherent demodulator
 int CPFSKDEM(_init_coherent)(CPFSKDEM() _q)
 {
+    return liquid_error(LIQUID_EUMODE,"cpfskdem_init_coherent(), unsupported mode");
+}
+
+// initialize noncoherent demodulator
+int CPFSKDEM(_init_noncoherent)(CPFSKDEM() _q)
+{
     // specify coherent receiver
-    _q->demod_type = CPFSKDEM_COHERENT;
+    _q->demod_type = CPFSKDEM_NONCOHERENT;
 
     // set demodulate function pointer
-    _q->demodulate = cpfskdem_demodulate_coherent;
+    _q->demodulate = cpfskdem_demodulate_noncoherent;
 
     // create object depending upon input type
     float bw = 0.0f;
@@ -169,28 +173,28 @@ int CPFSKDEM(_init_coherent)(CPFSKDEM() _q)
         //bw = 0.9f / (float)k;
         bw = 0.4f;
         _q->symbol_delay = _q->m;
-        _q->data.coherent.mf = firfilt_crcf_create_kaiser(2*_q->k*_q->m+1, bw, 60.0f, 0.0f);
-        firfilt_crcf_set_scale(_q->data.coherent.mf, 2.0f * bw);
+        _q->demod.noncoherent.mf = firfilt_crcf_create_kaiser(2*_q->k*_q->m+1, bw, 60.0f, 0.0f);
+        firfilt_crcf_set_scale(_q->demod.noncoherent.mf, 2.0f * bw);
         break;
     case LIQUID_CPFSK_RCOS_FULL:
         if (_q->M==2) {
-            _q->data.coherent.mf = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,_q->k,_q->m,0.5f,0);
-            firfilt_crcf_set_scale(_q->data.coherent.mf, 1.33f / (float)_q->k);
+            _q->demod.noncoherent.mf = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,_q->k,_q->m,0.5f,0);
+            firfilt_crcf_set_scale(_q->demod.noncoherent.mf, 1.33f / (float)_q->k);
             _q->symbol_delay = _q->m;
         } else {
-            _q->data.coherent.mf = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,_q->k/2,2*_q->m,0.9f,0);
-            firfilt_crcf_set_scale(_q->data.coherent.mf, 3.25f / (float)_q->k);
+            _q->demod.noncoherent.mf = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,_q->k/2,2*_q->m,0.9f,0);
+            firfilt_crcf_set_scale(_q->demod.noncoherent.mf, 3.25f / (float)_q->k);
             _q->symbol_delay = 0; // TODO: fix this value
         }
         break;
     case LIQUID_CPFSK_RCOS_PARTIAL:
         if (_q->M==2) {
-            _q->data.coherent.mf = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,_q->k,_q->m,0.3f,0);
-            firfilt_crcf_set_scale(_q->data.coherent.mf, 1.10f / (float)_q->k);
+            _q->demod.noncoherent.mf = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,_q->k,_q->m,0.3f,0);
+            firfilt_crcf_set_scale(_q->demod.noncoherent.mf, 1.10f / (float)_q->k);
             _q->symbol_delay = _q->m;
         } else {
-            _q->data.coherent.mf = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,_q->k/2,2*_q->m,0.27f,0);
-            firfilt_crcf_set_scale(_q->data.coherent.mf, 2.90f / (float)_q->k);
+            _q->demod.noncoherent.mf = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,_q->k/2,2*_q->m,0.27f,0);
+            firfilt_crcf_set_scale(_q->demod.noncoherent.mf, 2.90f / (float)_q->k);
             _q->symbol_delay = 0; // TODO: fix this value
         }
         break;
@@ -198,38 +202,14 @@ int CPFSKDEM(_init_coherent)(CPFSKDEM() _q)
         bw = 0.5f / (float)_q->k;
         // TODO: figure out beta value here
         beta = (_q->M == 2) ? 0.8*gmsk_bt : 1.0*gmsk_bt;
-        _q->data.coherent.mf = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,_q->k,_q->m,beta,0);
-        firfilt_crcf_set_scale(_q->data.coherent.mf, 2.0f * bw);
+        _q->demod.noncoherent.mf = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,_q->k,_q->m,beta,0);
+        firfilt_crcf_set_scale(_q->demod.noncoherent.mf, 2.0f * bw);
         _q->symbol_delay = _q->m;
         break;
     default:
-        return liquid_error(LIQUID_EICONFIG,"cpfskdem_init_coherent(), invalid tx filter type");
+        return liquid_error(LIQUID_EICONFIG,"cpfskdem_init_noncoherent(), invalid tx filter type");
     }
     return LIQUID_OK;
-}
-
-// initialize non-coherent demodulator
-int CPFSKDEM(_init_noncoherent)(CPFSKDEM() _q)
-{
-#if 0
-    // specify non-coherent receiver
-    _q->demod_type = CPFSKDEM_NONCOHERENT;
-
-    // set demodulate function pointer
-    _q->demodulate = cpfskdem_demodulate_noncoherent;
-
-    // create object depending upon input type
-    switch(_q->type) {
-    case LIQUID_CPFSK_SQUARE:
-    case LIQUID_CPFSK_RCOS_FULL:
-    case LIQUID_CPFSK_RCOS_PARTIAL:
-    case LIQUID_CPFSK_GMSK:
-        break;
-    }
-    return LIQUID_OK;
-#else
-    return liquid_error(LIQUID_EUMODE,"cpfskdem_init_noncoherent(), unsupported mode");
-#endif
 }
 
 // destroy modem object
@@ -242,9 +222,10 @@ int CPFSKDEM(_destroy)(CPFSKDEM() _q)
 #endif
     switch(_q->demod_type) {
     case CPFSKDEM_COHERENT:
-        firfilt_crcf_destroy(_q->data.coherent.mf);
+        return liquid_error(LIQUID_EINT,"cpfskdem_destroy(), coherent mode not supported");
         break;
     case CPFSKDEM_NONCOHERENT:
+        firfilt_crcf_destroy(_q->demod.noncoherent.mf);
         break;
     }
 
@@ -274,7 +255,7 @@ int CPFSKDEM(_reset)(CPFSKDEM() _q)
 {
     switch(_q->demod_type) {
     case CPFSKDEM_COHERENT:
-        firfilt_crcf_reset(_q->data.coherent.mf);
+        firfilt_crcf_reset(_q->demod.noncoherent.mf);
         break;
     case CPFSKDEM_NONCOHERENT:
         break;
@@ -301,7 +282,7 @@ unsigned int CPFSKDEM(_get_delay)(CPFSKDEM() _q)
 //  _n      :   input sample array length
 //  _s      :   output symbol array
 //  _nw     :   number of output symbols written
-int CPFSKDEM(_demodulate)(CPFSKDEM()       _q,
+int CPFSKDEM(_demodulate)(CPFSKDEM()     _q,
                           TC           * _y,
                           unsigned int   _n,
                           unsigned int * _s,
@@ -333,12 +314,12 @@ int CPFSKDEM(_demodulate_coherent)(CPFSKDEM()     _q,
     *_nw = 0;
 
     // push input sample through filter
-    firfilt_crcf_push(_q->data.coherent.mf, _y);
+    firfilt_crcf_push(_q->demod.noncoherent.mf, _y);
 
 #if DEBUG_CPFSKDEM
     // compute output sample
     float complex zp;
-    firfilt_crcf_execute(_q->data.coherent.mf, &zp);
+    firfilt_crcf_execute(_q->demod.noncoherent.mf, &zp);
     printf("y(end+1) = %12.8f + 1i*%12.8f;\n", crealf(_y), cimagf(_y));
     printf("z(end+1) = %12.8f + 1i*%12.8f;\n", crealf(zp), cimagf(zp));
 #endif
@@ -351,7 +332,7 @@ int CPFSKDEM(_demodulate_coherent)(CPFSKDEM()     _q,
 
         // compute output sample
         float complex z;
-        firfilt_crcf_execute(_q->data.coherent.mf, &z);
+        firfilt_crcf_execute(_q->demod.noncoherent.mf, &z);
 
         // compute instantaneous frequency scaled by modulation index
         // TODO: pre-compute scaling factor
@@ -402,17 +383,25 @@ unsigned int CPFSKDEM(_demodulate)(CPFSKDEM() _q,
 unsigned int CPFSKDEM(_demodulate_coherent)(CPFSKDEM() _q,
                                             TC *       _y)
 {
+    liquid_error(LIQUID_EINT,"cpfskdem_demodulate_coherent(), coherent mode not supported");
+    return 0;
+}
+
+// demodulate array of samples (non-coherent)
+unsigned int CPFSKDEM(_demodulate_noncoherent)(CPFSKDEM() _q,
+                                               TC *       _y)
+{
     unsigned int i;
     unsigned int sym_out = 0;
 
     for (i=0; i<_q->k; i++) {
         // push input sample through filter
-        firfilt_crcf_push(_q->data.coherent.mf, _y[i]);
+        firfilt_crcf_push(_q->demod.noncoherent.mf, _y[i]);
 
 #if DEBUG_CPFSKDEM
         // compute output sample
         float complex zp;
-        firfilt_crcf_execute(_q->data.coherent.mf, &zp);
+        firfilt_crcf_execute(_q->demod.noncoherent.mf, &zp);
         printf("y(end+1) = %12.8f + %12.8fj;\n", crealf(_y[i]), cimagf(_y[i]));
         printf("z(end+1) = %12.8f + %12.8fj;\n", crealf(   zp), cimagf(   zp));
 #endif
@@ -421,7 +410,7 @@ unsigned int CPFSKDEM(_demodulate_coherent)(CPFSKDEM() _q,
         if ( i == 0 ) {
             // compute output sample
             float complex z;
-            firfilt_crcf_execute(_q->data.coherent.mf, &z);
+            firfilt_crcf_execute(_q->demod.noncoherent.mf, &z);
 
             // compute instantaneous frequency scaled by modulation index
             // TODO: pre-compute scaling factor
@@ -444,11 +433,5 @@ unsigned int CPFSKDEM(_demodulate_coherent)(CPFSKDEM() _q,
     return sym_out;
 }
 
-// demodulate array of samples (non-coherent)
-unsigned int CPFSKDEM(_demodulate_noncoherent)(CPFSKDEM() _q,
-                                               TC *       _y)
-{
-    return 0;
-}
 #endif
 
