@@ -27,6 +27,7 @@
 #include "liquid.internal.h"
 
 // Macro definitions
+#define CPFSKDEM(name)      LIQUID_CONCAT(cpfskdem,name)
 #define CPFSKMOD(name)      LIQUID_CONCAT(cpfskmod,name)
 #define MODEM(name)         LIQUID_CONCAT(modemcf,name)
 #define FREQMOD(name)       LIQUID_CONCAT(freqmod,name)
@@ -63,6 +64,7 @@
 #include "modem_arb.proto.c"
 
 // non-linear modems
+#include "cpfskdem.proto.c"
 #include "cpfskmod.proto.c"
 
 // analog modems

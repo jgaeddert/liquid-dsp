@@ -8364,58 +8364,54 @@ int CPFSKMOD(_modulate)(CPFSKMOD()   _q,                                    \
 LIQUID_CPFSKMOD_DEFINE_API(LIQUID_CPFSKMOD_MANGLE_FLOAT,float,liquid_float_complex)
 
 
-// CP-FSK demodulator
-typedef struct cpfskdem_s * cpfskdem;
 
-// create cpfskdem object (frequency modulator)
-//  _bps    :   bits per symbol, _bps > 0
-//  _h      :   modulation index, _h > 0
-//  _k      :   samples/symbol, _k > 1, _k even
-//  _m      :   filter delay (symbols), _m > 0
-//  _beta   :   filter bandwidth parameter, _beta > 0
-//  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
-cpfskdem cpfskdem_create(unsigned int _bps,
-                         float        _h,
-                         unsigned int _k,
-                         unsigned int _m,
-                         float        _beta,
-                         int          _type);
-//cpfskdem cpfskdem_create_msk(unsigned int _k);
-//cpfskdem cpfskdem_create_gmsk(unsigned int _k, float _BT);
+// TODO: rename to cpfskdemcf for consistency
+#define LIQUID_CPFSKDEM_MANGLE_FLOAT(name) LIQUID_CONCAT(cpfskdem,name)
 
-// destroy cpfskdem object
-int cpfskdem_destroy(cpfskdem _q);
+#define LIQUID_CPFSKDEM_DEFINE_API(CPFSKDEM,T,TC)                           \
+                                                                            \
+/* Continuous-Phase Frequency-Shift Keying Demodulator                  */  \
+typedef struct CPFSKDEM(_s) * CPFSKDEM();                                   \
+                                                                            \
+/* create demodulator object                                            */  \
+/*  _bps    :   bits per symbol, _bps > 0                               */  \
+/*  _h      :   modulation index, _h > 0                                */  \
+/*  _k      :   samples/symbol, _k > 1, _k even                         */  \
+/*  _m      :   filter delay (symbols), _m > 0                          */  \
+/*  _beta   :   filter bandwidth parameter, _beta > 0                   */  \
+/*  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)                  */  \
+CPFSKDEM() CPFSKDEM(_create)(unsigned int _bps,                             \
+                             float        _h,                               \
+                             unsigned int _k,                               \
+                             unsigned int _m,                               \
+                             float        _beta,                            \
+                             int          _type);                           \
+                                                                            \
+/* CPFSKDEM() CPFSKDEM(_create_msk)(unsigned int _k);                   */  \
+/* CPFSKDEM() CPFSKDEM(_create_gmsk)(unsigned int _k, float _BT);       */  \
+                                                                            \
+/* Destroy demodulator object, freeing all internal memory              */  \
+int CPFSKDEM(_destroy)(CPFSKDEM() _q);                                      \
+                                                                            \
+/* Print demodulator object internals                                   */  \
+int CPFSKDEM(_print)(CPFSKDEM() _q);                                        \
+                                                                            \
+/* Reset state                                                          */  \
+int CPFSKDEM(_reset)(CPFSKDEM() _q);                                        \
+                                                                            \
+/* get receive delay [symbols]                                          */  \
+unsigned int CPFSKDEM(_get_delay)(CPFSKDEM() _q);                           \
+                                                                            \
+/* demodulate array of samples, assuming perfect timing                 */  \
+/*  _q      :   continuous-phase frequency demodulator object           */  \
+/*  _y      :   input sample array, [size: _k x 1]                      */  \
+unsigned int CPFSKDEM(_demodulate)(CPFSKDEM() _q,                           \
+                                   TC *       _y);                          \
+                                                                            \
+/* demodulate_block */                                                      \
 
-// print cpfskdem object internals
-int cpfskdem_print(cpfskdem _q);
-
-// reset state
-int cpfskdem_reset(cpfskdem _q);
-
-// get receive delay [symbols]
-unsigned int cpfskdem_get_delay(cpfskdem _q);
-
-#if 0
-// demodulate array of samples
-//  _q      :   continuous-phase frequency demodulator object
-//  _y      :   input sample array, [size: _n x 1]
-//  _n      :   input sample array length
-//  _s      :   output symbol array
-//  _nw     :   number of output symbols written
-int cpfskdem_demodulate(cpfskdem               _q,
-                        liquid_float_complex * _y,
-                        unsigned int           _n,
-                        unsigned int         * _s,
-                        unsigned int         * _nw);
-#else
-// demodulate array of samples, assuming perfect timing
-//  _q      :   continuous-phase frequency demodulator object
-//  _y      :   input sample array, [size: _k x 1]
-unsigned int cpfskdem_demodulate(cpfskdem               _q,
-                                 liquid_float_complex * _y);
-#endif
-
-
+// define cpfskmod APIs
+LIQUID_CPFSKDEM_DEFINE_API(LIQUID_CPFSKDEM_MANGLE_FLOAT,float,liquid_float_complex)
 
 //
 // M-ary frequency-shift keying (MFSK) modems

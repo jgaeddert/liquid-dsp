@@ -28,38 +28,22 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_CPFSKDEM  0
+#define DEBUG_CPFSKDEM()  0
 
 // initialize coherent demodulator
-int cpfskdem_init_coherent(cpfskdem _q);
+int CPFSKDEM(_init_coherent)(CPFSKDEM() _q);
 
 // initialize non-coherent demodulator
-int cpfskdem_init_noncoherent(cpfskdem _q);
+int CPFSKDEM(_init_noncoherent)(CPFSKDEM() _q);
 
-#if 0
 // demodulate array of samples (coherent)
-int cpfskdem_demodulate_coherent(cpfskdem        _q,
-                                 float complex   _y,
-                                 unsigned int  * _s,
-                                 unsigned int  * _nw);
+unsigned int CPFSKDEM(_demodulate_coherent)(CPFSKDEM() _q, TC * _y);
 
 // demodulate array of samples (non-coherent)
-int cpfskdem_demodulate_noncoherent(cpfskdem        _q,
-                                    float complex   _y,
-                                    unsigned int  * _s,
-                                    unsigned int  * _nw);
-#else
-// demodulate array of samples (coherent)
-unsigned int cpfskdem_demodulate_coherent(cpfskdem        _q,
-                                          float complex * _y);
-
-// demodulate array of samples (non-coherent)
-unsigned int cpfskdem_demodulate_noncoherent(cpfskdem        _q,
-                                             float complex * _y);
-#endif
+unsigned int CPFSKDEM(_demodulate_noncoherent)(CPFSKDEM() _q, TC * _y);
 
 // cpfskdem
-struct cpfskdem_s {
+struct CPFSKDEM(_s) {
     // common
     unsigned int bps;           // bits per symbol
     unsigned int k;             // samples per symbol
@@ -78,13 +62,12 @@ struct cpfskdem_s {
 
     // demodulation function pointer
 #if 0
-    void (*demodulate)(cpfskdem        _q,
-                       float complex   _y,
-                       unsigned int  * _s,
-                       unsigned int  * _nw);
+    void (*demodulate)(CPFSKDEM()     _q,
+                       TC             _y,
+                       unsigned int * _s,
+                       unsigned int * _nw);
 #else
-    unsigned int (*demodulate)(cpfskdem        _q,
-                               float complex * _y);
+    unsigned int (*demodulate)(CPFSKDEM() _q, TC * _y);
 #endif
 
     // common data structure shared between coherent and non-coherent
@@ -92,12 +75,9 @@ struct cpfskdem_s {
     union {
         // coherent demodulator
         struct {
-            /*
-            nco_crcf nco;       // oscillator/phase-locked loop
-            firpfb_crcf mf;     // matched filter
-            firpfb_crcf dmf;    // matched filter (derivative)
-            */
-            
+            //nco_crcf nco;       // oscillator/phase-locked loop
+            //firpfb_crcf mf;     // matched filter
+            //firpfb_crcf dmf;    // matched filter (derivative)
             firfilt_crcf mf;    // matched filter
         } coherent;
 
@@ -115,19 +95,19 @@ struct cpfskdem_s {
     float complex z_prime;  // (coherent only)
 };
 
-// create cpfskdem object (frequency demodulator)
+// create CPFSKDEM() object (frequency demodulator)
 //  _bps    :   bits per symbol, _bps > 0
 //  _h      :   modulation index, _h > 0
 //  _k      :   samples/symbol, _k > 1, _k even
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   filter bandwidth parameter, _beta > 0
 //  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
-cpfskdem cpfskdem_create(unsigned int _bps,
-                         float        _h,
-                         unsigned int _k,
-                         unsigned int _m,
-                         float        _beta,
-                         int          _type)
+CPFSKDEM() CPFSKDEM(_create)(unsigned int _bps,
+                             float        _h,
+                             unsigned int _k,
+                             unsigned int _m,
+                             float        _beta,
+                             int          _type)
 {
     // validate input
     if (_bps == 0)
@@ -135,14 +115,14 @@ cpfskdem cpfskdem_create(unsigned int _bps,
     if (_h <= 0.0f)
         return liquid_error_config("cpfskdem_create(), modulation index must be greater than 0");
     if (_k < 2 || (_k%2))
-        return liquid_error_config("cpfskmod_create(), samples/symbol must be greater than 2 and even");
+        return liquid_error_config("cpfskdem_create(), samples/symbol must be greater than 2 and even");
     if (_m == 0)
         return liquid_error_config("cpfskdem_create(), filter delay must be greater than 0");
     if (_beta <= 0.0f || _beta > 1.0f)
         return liquid_error_config("cpfskdem_create(), filter roll-off must be in (0,1]");
 
     // create main object memory
-    cpfskdem q = (cpfskdem) malloc(sizeof(struct cpfskdem_s));
+    CPFSKDEM() q = (cpfskdem) malloc(sizeof(struct CPFSKDEM(_s)));
 
     // set basic internal properties
     q->bps  = _bps;     // bits per symbol
@@ -161,10 +141,10 @@ cpfskdem cpfskdem_create(unsigned int _bps,
         //cpfskdem_init_noncoherent(q);
         fprintf(stderr,"warning: cpfskdem_create(), coherent demodulation with h > 2/3 not recommended\n");
     }
-    cpfskdem_init_coherent(q);
+    CPFSKDEM(_init_coherent)(q);
 
     // reset modem object
-    cpfskdem_reset(q);
+    CPFSKDEM(_reset)(q);
 #if DEBUG_CPFSKDEM
     printf("clear all; close all; y=[]; z=[];\n");
 #endif
@@ -172,7 +152,7 @@ cpfskdem cpfskdem_create(unsigned int _bps,
 }
 
 // initialize coherent demodulator
-int cpfskdem_init_coherent(cpfskdem _q)
+int CPFSKDEM(_init_coherent)(CPFSKDEM() _q)
 {
     // specify coherent receiver
     _q->demod_type = CPFSKDEM_COHERENT;
@@ -229,12 +209,12 @@ int cpfskdem_init_coherent(cpfskdem _q)
 }
 
 // initialize non-coherent demodulator
-int cpfskdem_init_noncoherent(cpfskdem _q)
+int CPFSKDEM(_init_noncoherent)(CPFSKDEM() _q)
 {
 #if 0
     // specify non-coherent receiver
     _q->demod_type = CPFSKDEM_NONCOHERENT;
-    
+
     // set demodulate function pointer
     _q->demodulate = cpfskdem_demodulate_noncoherent;
 
@@ -253,7 +233,7 @@ int cpfskdem_init_noncoherent(cpfskdem _q)
 }
 
 // destroy modem object
-int cpfskdem_destroy(cpfskdem _q)
+int CPFSKDEM(_destroy)(CPFSKDEM() _q)
 {
 #if DEBUG_CPFSKDEM
     printf("figure('position',[100 100 400 400]);\n");
@@ -274,7 +254,7 @@ int cpfskdem_destroy(cpfskdem _q)
 }
 
 // print modulation internals
-int cpfskdem_print(cpfskdem _q)
+int CPFSKDEM(_print)(CPFSKDEM() _q)
 {
     printf("<cpfskdem, bps=%u, h=%g, sps=%u, m=%u, beta=%g",
         _q->bps, _q->h, _q->k, _q->m, _q->beta);
@@ -290,7 +270,7 @@ int cpfskdem_print(cpfskdem _q)
 }
 
 // reset modem object
-int cpfskdem_reset(cpfskdem _q)
+int CPFSKDEM(_reset)(CPFSKDEM() _q)
 {
     switch(_q->demod_type) {
     case CPFSKDEM_COHERENT:
@@ -309,7 +289,7 @@ int cpfskdem_reset(cpfskdem _q)
 }
 
 // get transmit delay [symbols]
-unsigned int cpfskdem_get_delay(cpfskdem _q)
+unsigned int CPFSKDEM(_get_delay)(CPFSKDEM() _q)
 {
     return _q->symbol_delay;
 }
@@ -321,11 +301,11 @@ unsigned int cpfskdem_get_delay(cpfskdem _q)
 //  _n      :   input sample array length
 //  _s      :   output symbol array
 //  _nw     :   number of output symbols written
-int cpfskdem_demodulate(cpfskdem        _q,
-                        float complex * _y,
-                        unsigned int    _n,
-                        unsigned int  * _s,
-                        unsigned int  * _nw)
+int CPFSKDEM(_demodulate)(CPFSKDEM()       _q,
+                          TC           * _y,
+                          unsigned int   _n,
+                          unsigned int * _s,
+                          unsigned int * _nw)
 {
     // iterate through each sample calling type-specific demodulation function
     unsigned int i;
@@ -344,10 +324,10 @@ int cpfskdem_demodulate(cpfskdem        _q,
 }
 
 // demodulate array of samples (coherent)
-int cpfskdem_demodulate_coherent(cpfskdem        _q,
-                                 float complex   _y,
-                                 unsigned int  * _s,
-                                 unsigned int  * _nw)
+int CPFSKDEM(_demodulate_coherent)(CPFSKDEM()     _q,
+                                   TC             _y,
+                                   unsigned int * _s,
+                                   unsigned int * _nw)
 {
     // clear output counter
     *_nw = 0;
@@ -368,7 +348,7 @@ int cpfskdem_demodulate_coherent(cpfskdem        _q,
     if ( (_q->counter % _q->k)==0 ) {
         // reset sample counter
         _q->counter = 0;
-    
+
         // compute output sample
         float complex z;
         firfilt_crcf_execute(_q->data.coherent.mf, &z);
@@ -398,7 +378,7 @@ int cpfskdem_demodulate_coherent(cpfskdem        _q,
 }
 
 // demodulate array of samples (non-coherent)
-int cpfskdem_demodulate_noncoherent(cpfskdem        _q,
+int CPFSKDEM(_demodulate_noncoherent)(CPFSKDEM()        _q,
                                     float complex   _y,
                                     unsigned int  * _s,
                                     unsigned int  * _nw)
@@ -412,15 +392,15 @@ int cpfskdem_demodulate_noncoherent(cpfskdem        _q,
 // demodulate array of samples
 //  _q      :   continuous-phase frequency demodulator object
 //  _y      :   input sample array [size: _k x 1]
-unsigned int cpfskdem_demodulate(cpfskdem        _q,
-                                 float complex * _y)
+unsigned int CPFSKDEM(_demodulate)(CPFSKDEM() _q,
+                                   TC *       _y)
 {
     return _q->demodulate(_q, _y);
 }
 
 // demodulate array of samples (coherent)
-unsigned int cpfskdem_demodulate_coherent(cpfskdem        _q,
-                                          float complex * _y)
+unsigned int CPFSKDEM(_demodulate_coherent)(CPFSKDEM() _q,
+                                            TC *       _y)
 {
     unsigned int i;
     unsigned int sym_out = 0;
@@ -465,8 +445,8 @@ unsigned int cpfskdem_demodulate_coherent(cpfskdem        _q,
 }
 
 // demodulate array of samples (non-coherent)
-unsigned int cpfskdem_demodulate_noncoherent(cpfskdem        _q,
-                                             float complex * _y)
+unsigned int CPFSKDEM(_demodulate_noncoherent)(CPFSKDEM() _q,
+                                               TC *       _y)
 {
     return 0;
 }
