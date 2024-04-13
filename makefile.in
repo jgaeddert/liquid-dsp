@@ -1576,6 +1576,7 @@ example_programs :=						\
 	examples/gasearch_knapsack_example			\
 	examples/gmskframesync_example				\
 	examples/gmskmodem_example				\
+	examples/gmskmodem_ber_example				\
 	examples/gmsk_eqlms_example				\
 	examples/gmsk_tracking_example				\
 	examples/gradsearch_datafit_example			\
