@@ -28,10 +28,6 @@
 
 #include "liquid.internal.h"
 
-// 
-// internal methods
-//
-
 // design transmit filter
 int cpfskmod_firdes(unsigned int _k,
                     unsigned int _m,
@@ -166,25 +162,16 @@ int cpfskmod_destroy(cpfskmod _q)
 // print cpfskmod object internals
 int cpfskmod_print(cpfskmod _q)
 {
-    printf("cpfskmod : continuous-phase frequency-shift keying modem\n");
-    printf("    bits/symbol     :   %u\n", _q->bps);
-    printf("    modulation index:   %-6.3f\n", _q->h);
-    printf("    samples/symbol  :   %u\n", _q->k);
-    printf("    filter delay    :   %u symbols\n", _q->m);
-    printf("    filter roll-off :   %-6.3f\n", _q->beta);
-    printf("    filter type     :   ");
+    printf("<cpfskmod, bps=%u, h=%g, sps=%u, m=%u, beta=%g",
+        _q->bps, _q->h, _q->k, _q->m, _q->beta);
     switch(_q->type) {
-    case LIQUID_CPFSK_SQUARE:       printf("square\n");         break;
-    case LIQUID_CPFSK_RCOS_FULL:    printf("rcos (full)\n");    break;
-    case LIQUID_CPFSK_RCOS_PARTIAL: printf("rcos (partial)\n"); break;
-    case LIQUID_CPFSK_GMSK:         printf("gmsk\n");           break;
-    default:                        printf("unknown\n");        break;
+    case LIQUID_CPFSK_SQUARE:       printf(", type=\"square\"");       break;
+    case LIQUID_CPFSK_RCOS_FULL:    printf(", type=\"rcos-full\"");    break;
+    case LIQUID_CPFSK_RCOS_PARTIAL: printf(", type=\"rcos-partial\""); break;
+    case LIQUID_CPFSK_GMSK:         printf(", type=\"gmsk\"");         break;
+    default:;
     }
-    printf("    filter          :\n");
-    // print filter coefficients
-    unsigned int i;
-    for (i=0; i<_q->ht_len; i++)
-        printf("        h(%3u) = %12.8f;\n", i+1, _q->ht[i]);
+    printf(">\n");
     return LIQUID_OK;
 }
 

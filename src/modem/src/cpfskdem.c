@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
 // continuous phase frequency-shift keying demodulator
-//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -31,10 +29,6 @@
 #include "liquid.internal.h"
 
 #define DEBUG_CPFSKDEM  0
-
-// 
-// internal methods
-//
 
 // initialize coherent demodulator
 int cpfskdem_init_coherent(cpfskdem _q);
@@ -171,7 +165,9 @@ cpfskdem cpfskdem_create(unsigned int _bps,
 
     // reset modem object
     cpfskdem_reset(q);
-
+#if DEBUG_CPFSKDEM
+    printf("clear all; close all; y=[]; z=[];\n");
+#endif
     return q;
 }
 
@@ -259,6 +255,11 @@ int cpfskdem_init_noncoherent(cpfskdem _q)
 // destroy modem object
 int cpfskdem_destroy(cpfskdem _q)
 {
+#if DEBUG_CPFSKDEM
+    printf("figure('position',[100 100 400 400]);\n");
+    printf("n=length(z); i=1:%u:n; plot(z,'-',z(i),'o');\n", _q->k);
+    printf("axis square; axis([-1 1 -1 1]*1.5); grid on;\n");
+#endif
     switch(_q->demod_type) {
     case CPFSKDEM_COHERENT:
         firfilt_crcf_destroy(_q->data.coherent.mf);
@@ -275,8 +276,16 @@ int cpfskdem_destroy(cpfskdem _q)
 // print modulation internals
 int cpfskdem_print(cpfskdem _q)
 {
-    printf("cpfskdem:\n");
-    printf("    k   :   %u\n", _q->k);
+    printf("<cpfskdem, bps=%u, h=%g, sps=%u, m=%u, beta=%g",
+        _q->bps, _q->h, _q->k, _q->m, _q->beta);
+    switch(_q->type) {
+    case LIQUID_CPFSK_SQUARE:       printf(", type=\"square\"");       break;
+    case LIQUID_CPFSK_RCOS_FULL:    printf(", type=\"rcos-full\"");    break;
+    case LIQUID_CPFSK_RCOS_PARTIAL: printf(", type=\"rcos-partial\""); break;
+    case LIQUID_CPFSK_GMSK:         printf(", type=\"gmsk\"");         break;
+    default:;
+    }
+    printf(">\n");
     return LIQUID_OK;
 }
 
@@ -424,8 +433,8 @@ unsigned int cpfskdem_demodulate_coherent(cpfskdem        _q,
         // compute output sample
         float complex zp;
         firfilt_crcf_execute(_q->data.coherent.mf, &zp);
-        printf("y(end+1) = %12.8f + 1i*%12.8f;\n", crealf(_y), cimagf(_y));
-        printf("z(end+1) = %12.8f + 1i*%12.8f;\n", crealf(zp), cimagf(zp));
+        printf("y(end+1) = %12.8f + %12.8fj;\n", crealf(_y[i]), cimagf(_y[i]));
+        printf("z(end+1) = %12.8f + %12.8fj;\n", crealf(   zp), cimagf(   zp));
 #endif
 
         // decimate output
@@ -447,7 +456,7 @@ unsigned int cpfskdem_demodulate_coherent(cpfskdem        _q,
 
 #if DEBUG_CPFSKDEM
             // print result to screen
-            printf("  %3u : %12.8f + j%12.8f, <f=%8.4f : %8.4f> (%1u)\n",
+            printf("%%  %3u : %12.8f + j%12.8f, <f=%8.4f : %8.4f> (%1u)\n",
                     _q->index++, crealf(z), cimagf(z), phi_hat, v, sym_out);
 #endif
         }
