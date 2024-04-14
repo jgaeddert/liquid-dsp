@@ -130,6 +130,16 @@ CPFSKDEM() CPFSKDEM(_create)(unsigned int _bps,
     q->beta = _beta;    // filter roll-off factor (only for certain filters)
     q->type = _type;    // filter type
 
+    switch(q->type) {
+    case LIQUID_CPFSK_SQUARE:
+    case LIQUID_CPFSK_RCOS_FULL:
+    case LIQUID_CPFSK_RCOS_PARTIAL:
+    case LIQUID_CPFSK_GMSK:
+        break;
+    default:
+        return liquid_error_config("cpfskdem_create(), invalid filter type '%d'", q->type);
+    }
+
     // derived values
     q->M = 1 << q->bps; // constellation size
 
@@ -312,11 +322,42 @@ int CPFSKDEM(_reset)(CPFSKDEM() _q)
     return LIQUID_OK;
 }
 
-// get transmit delay [symbols]
+// Get demodulator's number of bits per symbol
+unsigned int CPFSKDEM(_get_bits_per_symbol)(CPFSKDEM() _q)
+{
+    return _q->bps;
+}
+
+// Get demodulator's modulation index
+float CPFSKDEM(_get_modulation_index)(CPFSKDEM() _q)
+{
+    return _q->h;
+}
+
+// Get demodulator's number of samples per symbol
+unsigned int CPFSKDEM(_get_samples_per_symbol)(CPFSKDEM() _q)
+{
+    return _q->k;
+}
+
+// Get demodulator's filter delay [symbols]
 unsigned int CPFSKDEM(_get_delay)(CPFSKDEM() _q)
 {
     return _q->symbol_delay;
 }
+
+// Get demodulator's bandwidth parameter
+float CPFSKDEM(_get_beta)(CPFSKDEM() _q)
+{
+    return _q->beta;
+}
+
+// Get demodulator's filter type
+int CPFSKDEM(_get_type)(CPFSKDEM() _q)
+{
+    return _q->type;
+}
+
 
 #if 0
 // demodulate array of samples

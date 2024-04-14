@@ -8361,8 +8361,23 @@ int CPFSKMOD(_print)(CPFSKMOD() _q);                                        \
 /* Reset internal state of modulator object                             */  \
 int CPFSKMOD(_reset)(CPFSKMOD() _q);                                        \
                                                                             \
-/* get transmit delay [symbols]                                         */  \
+/* Get modulator's number of bits per symbol                            */  \
+unsigned int CPFSKMOD(_get_bits_per_symbol)(CPFSKMOD() _q);                 \
+                                                                            \
+/* Get modulator's modulation index                                     */  \
+float CPFSKMOD(_get_modulation_index)(CPFSKMOD() _q);                       \
+                                                                            \
+/* Get modulator's number of samples per symbol                         */  \
+unsigned int CPFSKMOD(_get_samples_per_symbol)(CPFSKMOD() _q);              \
+                                                                            \
+/* Get modulator's filter delay [symbols]                               */  \
 unsigned int CPFSKMOD(_get_delay)(CPFSKMOD() _q);                           \
+                                                                            \
+/* Get modulator's bandwidth parameter                                  */  \
+float CPFSKMOD(_get_beta)(CPFSKMOD() _q);                                   \
+                                                                            \
+/* Get modulator's filter type                                          */  \
+int CPFSKMOD(_get_type)(CPFSKMOD() _q);                                     \
                                                                             \
 /* modulate sample                                                      */  \
 /*  _q      :   frequency modulator object                              */  \
@@ -8423,8 +8438,23 @@ int CPFSKDEM(_print)(CPFSKDEM() _q);                                        \
 /* Reset state                                                          */  \
 int CPFSKDEM(_reset)(CPFSKDEM() _q);                                        \
                                                                             \
-/* get receive delay [symbols]                                          */  \
+/* Get demodulator's number of bits per symbol                          */  \
+unsigned int CPFSKDEM(_get_bits_per_symbol)(CPFSKDEM() _q);                 \
+                                                                            \
+/* Get demodulator's modulation index                                   */  \
+float CPFSKDEM(_get_modulation_index)(CPFSKDEM() _q);                       \
+                                                                            \
+/* Get demodulator's number of samples per symbol                       */  \
+unsigned int CPFSKDEM(_get_samples_per_symbol)(CPFSKDEM() _q);              \
+                                                                            \
+/* Get demodulator's transmit delay [symbols]                           */  \
 unsigned int CPFSKDEM(_get_delay)(CPFSKDEM() _q);                           \
+                                                                            \
+/* Get demodulator's bandwidth parameter                                */  \
+float CPFSKDEM(_get_beta)(CPFSKDEM() _q);                                   \
+                                                                            \
+/* Get demodulator's filter type                                        */  \
+int CPFSKDEM(_get_type)(CPFSKDEM() _q);                                     \
                                                                             \
 /* demodulate array of samples, assuming perfect timing                 */  \
 /*  _q      :   continuous-phase frequency demodulator object           */  \

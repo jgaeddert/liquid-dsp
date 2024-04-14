@@ -127,7 +127,7 @@ CPFSKMOD() CPFSKMOD(_create)(unsigned int _bps,
         q->ht_len = 2*(q->k)*(q->m) + (q->k) + 1;
         break;
     default:
-        return liquid_error_config("cpfskmodem_create(), invalid filter type '%d'", q->type);
+        return liquid_error_config("cpfskmod_create(), invalid filter type '%d'", q->type);
     }
 
     // create pulse-shaping filter and scale by modulation index
@@ -225,11 +225,42 @@ int CPFSKMOD(_reset)(CPFSKMOD() _q)
     return LIQUID_OK;
 }
 
-// get transmit delay [symbols]
+// Get modulator's number of bits per symbol
+unsigned int CPFSKMOD(_get_bits_per_symbol)(CPFSKMOD() _q)
+{
+    return _q->bps;
+}
+
+// Get modulator's modulation index
+float CPFSKMOD(_get_modulation_index)(CPFSKMOD() _q)
+{
+    return _q->h;
+}
+
+// Get modulator's number of samples per symbol
+unsigned int CPFSKMOD(_get_samples_per_symbol)(CPFSKMOD() _q)
+{
+    return _q->k;
+}
+
+// Get modulator's filter delay [symbols]
 unsigned int CPFSKMOD(_get_delay)(CPFSKMOD() _q)
 {
     return _q->symbol_delay;
 }
+
+// Get modulator's bandwidth parameter
+float CPFSKMOD(_get_beta)(CPFSKMOD() _q)
+{
+    return _q->beta;
+}
+
+// Get modulator's filter type
+int CPFSKMOD(_get_type)(CPFSKMOD() _q)
+{
+    return _q->type;
+}
+
 
 // modulate sample
 //  _q      :   frequency modulator object
