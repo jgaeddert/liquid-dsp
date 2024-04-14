@@ -51,6 +51,4 @@ jobs:
       with:
         fail_ci_if_error: true
         verbose: true
-        token: "my-secret-token" #${{ secrets.CODECOV_TOKEN }}
-
-
+        token: ${{ secrets.CODECOV_TOKEN }}
