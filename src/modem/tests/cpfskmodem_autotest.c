@@ -37,17 +37,14 @@ void cpfskmodem_test_mod_demod(unsigned int _bps,
 
     // derived values
     unsigned int delay = cpfskmod_get_delay(mod) + cpfskdem_get_delay(dem);
-    //unsigned int  M = 1 << _m;      // constellation size
-    
-    unsigned int  num_symbols = 80 + delay; // number of symbols to test
-
-    msequence ms = msequence_create_default(7);
+    unsigned int num_symbols = 180 + delay; // number of symbols to test
 
     float complex buf[_k];      // sample buffer
     unsigned int  sym_in [num_symbols]; // symbol buffer
     unsigned int  sym_out[num_symbols]; // symbol buffer
 
     // modulate, demodulate, count errors
+    msequence ms = msequence_create_default(7);
     unsigned int i;
     for (i=0; i<num_symbols; i++) {
         // generate random symbol
@@ -117,6 +114,17 @@ void autotest_cpfskmodem_bps1_h0p0625_k4_m3_gmsk()      { cpfskmodem_test_mod_de
 void autotest_cpfskmodem_bps2_h0p0250_k4_m3_square()    { cpfskmodem_test_mod_demod( 2, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
 void autotest_cpfskmodem_bps3_h0p1250_k4_m3_square()    { cpfskmodem_test_mod_demod( 3, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
 void autotest_cpfskmodem_bps4_h0p0625_k4_m3_square()    { cpfskmodem_test_mod_demod( 4, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+
+//
+// AUTOTESTS: check different samples per symbol
+//
+
+// GMSK
+// TODO: allow samples per symbol to be odd
+void autotest_cpfskmodem_bps1_h0p5_k2_m7_gmsk() { cpfskmodem_test_mod_demod( 1, 0.5f, 2, 7, 0.30f, LIQUID_CPFSK_GMSK ); }
+void autotest_cpfskmodem_bps1_h0p5_k4_m7_gmsk() { cpfskmodem_test_mod_demod( 1, 0.5f, 4, 7, 0.30f, LIQUID_CPFSK_GMSK ); }
+void autotest_cpfskmodem_bps1_h0p5_k6_m7_gmsk() { cpfskmodem_test_mod_demod( 1, 0.5f, 6, 7, 0.30f, LIQUID_CPFSK_GMSK ); }
+void autotest_cpfskmodem_bps1_h0p5_k8_m7_gmsk() { cpfskmodem_test_mod_demod( 1, 0.5f, 8, 7, 0.30f, LIQUID_CPFSK_GMSK ); }
 
 // test spectral response
 void autotest_cpfskmodem_spectrum()
