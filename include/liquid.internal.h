@@ -1381,19 +1381,6 @@ int MODEM(_demodulate_soft_table)(MODEM()         _q,           \
                                   unsigned int *  _sym_out,     \
                                   unsigned char * _soft_bits);  \
                                                                 \
-/* Demodulate a linear symbol constellation using dynamic   */  \
-/* threshold calculation                                    */  \
-/*  _v      :   input value             */                      \
-/*  _m      :   bits per symbol         */                      \
-/*  _alpha  :   scaling factor          */                      \
-/*  _s      :   demodulated symbol      */                      \
-/*  _res    :   residual                */                      \
-int MODEM(_demodulate_linear_array)(T              _v,          \
-                                    unsigned int   _m,          \
-                                    T              _alpha,      \
-                                    unsigned int * _s,          \
-                                    T *            _res);       \
-                                                                \
 /* Demodulate a linear symbol constellation using           */  \
 /* referenced lookup table                                  */  \
 /*  _v      :   input value             */                      \
