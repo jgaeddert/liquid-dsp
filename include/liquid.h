@@ -8324,12 +8324,12 @@ typedef enum {
 typedef struct CPFSKMOD(_s) * CPFSKMOD();                                   \
                                                                             \
 /* create cpfskmod object (frequency modulator)                         */  \
-/*  _bps    :   bits per symbol, _bps > 0                               */  \
-/*  _h      :   modulation index, _h > 0                                */  \
-/*  _k      :   samples/symbol, _k > 1, _k even                         */  \
-/*  _m      :   filter delay (symbols), _m > 0                          */  \
-/*  _beta   :   filter bandwidth parameter, _beta > 0                   */  \
-/*  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)                  */  \
+/*  _bps    : bits per symbol, _bps > 0                                 */  \
+/*  _h      : modulation index, _h > 0                                  */  \
+/*  _k      : samples/symbol, _k > 1, _k even                           */  \
+/*  _m      : filter delay (symbols), _m > 0                            */  \
+/*  _beta   : filter bandwidth parameter, _beta > 0                     */  \
+/*  _type   : filter type (e.g. LIQUID_CPFSK_SQUARE)                    */  \
 CPFSKMOD() CPFSKMOD(_create)(unsigned int _bps,                             \
                              float        _h,                               \
                              unsigned int _k,                               \
@@ -8337,8 +8337,17 @@ CPFSKMOD() CPFSKMOD(_create)(unsigned int _bps,                             \
                              float        _beta,                            \
                              int          _type);                           \
                                                                             \
-/* cpfskmod cpfskmod_create_msk(unsigned int _k);                       */  \
-/* cpfskmod cpfskmod_create_gmsk(unsigned int _k, float _BT);           */  \
+/* create modulator object for minimum-shift keying                     */  \
+/*  _k      : samples/symbol, _k > 1, _k even                           */  \
+CPFSKMOD() CPFSKMOD(_create_msk)(unsigned int _k);                          \
+                                                                            \
+/* create modulator object for Gauss minimum-shift keying               */  \
+/*  _k      : samples/symbol, _k > 1, _k even                           */  \
+/*  _m      : filter delay (symbols), _m > 0                            */  \
+/*  _BT     : bandwidth-time factor, 0 < _BT < 1                        */  \
+CPFSKMOD() CPFSKMOD(_create_gmsk)(unsigned int _k,                          \
+                                  unsigned int _m,                          \
+                                  float        _BT);                        \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
 CPFSKMOD() CPFSKMOD(_copy)(CPFSKMOD() _q);                                  \
@@ -8390,8 +8399,17 @@ CPFSKDEM() CPFSKDEM(_create)(unsigned int _bps,                             \
                              float        _beta,                            \
                              int          _type);                           \
                                                                             \
-/* CPFSKDEM() CPFSKDEM(_create_msk)(unsigned int _k);                   */  \
-/* CPFSKDEM() CPFSKDEM(_create_gmsk)(unsigned int _k, float _BT);       */  \
+/* create demodulator object for minimum-shift keying                   */  \
+/*  _k      : samples/symbol, _k > 1, _k even                           */  \
+CPFSKDEM() CPFSKDEM(_create_msk)(unsigned int _k);                          \
+                                                                            \
+/* create demodulator object for Gauss minimum-shift keying             */  \
+/*  _k      : samples/symbol, _k > 1, _k even                           */  \
+/*  _m      : filter delay (symbols), _m > 0                            */  \
+/*  _BT     : bandwidth-time factor, 0 < _BT < 1                        */  \
+CPFSKDEM() CPFSKDEM(_create_gmsk)(unsigned int _k,                          \
+                                  unsigned int _m,                          \
+                                  float        _BT);                        \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
 CPFSKDEM() CPFSKDEM(_copy)(CPFSKDEM() _q);                                  \

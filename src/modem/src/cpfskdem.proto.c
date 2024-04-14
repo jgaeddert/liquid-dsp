@@ -173,6 +173,24 @@ CPFSKDEM() CPFSKDEM(_copy)(CPFSKDEM() q_orig)
     return q_copy;
 }
 
+// create demodulator object for minimum-shift keying
+//  _k      : samples/symbol, _k > 1, _k even
+CPFSKDEM() CPFSKDEM(_create_msk)(unsigned int _k)
+{
+    return CPFSKDEM(_create)(1, 0.5f, _k, 1, 1.0f, LIQUID_CPFSK_SQUARE);
+}
+
+// create demodulator object for Gauss minimum-shift keying
+//  _k      : samples/symbol, _k > 1, _k even
+//  _m      : filter delay (symbols), _m > 0
+//  _BT     : bandwidth-time factor, 0 < _BT < 1
+CPFSKDEM() CPFSKDEM(_create_gmsk)(unsigned int _k,
+                                  unsigned int _m,
+                                  float        _BT)
+{
+    return CPFSKDEM(_create)(1, 0.5f, _k, _m, _BT, LIQUID_CPFSK_GMSK);
+}
+
 
 // initialize non-coherent demodulator
 int CPFSKDEM(_init_coherent)(CPFSKDEM() _q)

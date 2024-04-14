@@ -146,6 +146,24 @@ CPFSKMOD() CPFSKMOD(_create)(unsigned int _bps,
     return q;
 }
 
+// create modulator object for minimum-shift keying
+//  _k      : samples/symbol, _k > 1, _k even
+CPFSKMOD() CPFSKMOD(_create_msk)(unsigned int _k)
+{
+    return CPFSKMOD(_create)(1, 0.5f, _k, 1, 1.0f, LIQUID_CPFSK_SQUARE);
+}
+
+// create modulator object for minimum-shift keying
+//  _k      : samples/symbol, _k > 1, _k even
+//  _m      : filter delay (symbols), _m > 0
+//  _BT     : bandwidth-time factor, 0 < _BT < 1
+CPFSKMOD() CPFSKMOD(_create_gmsk)(unsigned int _k,
+                                  unsigned int _m,
+                                  float        _BT)
+{
+    return CPFSKMOD(_create)(1, 0.5f, _k, _m, _BT, LIQUID_CPFSK_GMSK);
+}
+
 // Copy object including all internal objects and state
 CPFSKMOD() CPFSKMOD(_copy)(CPFSKMOD() q_orig)
 {
