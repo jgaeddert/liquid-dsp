@@ -24,6 +24,85 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
+void autotest_firpfbchr_crcf()
+{
+    // options
+    unsigned int M = 16;            // number of channels
+    unsigned int P =  6;            // output decimation rate
+    unsigned int m =  5;            // filter semi-length (symbols)
+    unsigned int num_blocks=1<<16;  // number of symbols
+    float As = 60.0f;               // filter stop-band attenuation
+    
+    unsigned int i;
+    unsigned int channel_id = 3;
+
+    // create filterbank objects from prototype
+    firpfbchr_crcf qa = firpfbchr_crcf_create_kaiser(M, P, m, As);
+    firpfbchr_crcf_print(qa);
+
+    // create multi-signal source generator
+    msourcecf gen = msourcecf_create_default();
+
+    // add signals          (gen,  fc,    bw,    gain, {options})
+    msourcecf_add_noise(gen,  0.00f, 1.0f, -60);   // wide-band noise
+    msourcecf_add_noise(gen, -0.30f, 0.1f, -20);   // narrow-band noise
+    msourcecf_add_tone (gen,  0.08f, 0.0f,   0);   // tone
+    // modulated data
+    msourcecf_add_modem(gen,
+       (float)channel_id/(float)M, // center frequency
+       0.080f,                     // bandwidth (symbol rate)
+       -20,                        // gain
+       LIQUID_MODEM_QPSK,          // modulation scheme
+       12,                         // filter semi-length
+       0.3f);                      // modem parameters
+
+    // create spectral periodogoram
+    unsigned int nfft = 2400;
+    spgramcf     p0   = spgramcf_create_default(nfft);
+    spgramcf     p1   = spgramcf_create_default(nfft);
+
+    // run channelizer
+    float complex buf_0[P];
+    float complex buf_1[M];
+    for (i=0; i<num_blocks; i++) {
+        // write samples to buffer
+        msourcecf_write_samples(gen, buf_0, P);
+
+        // run analysis filterbank
+        firpfbchr_crcf_push   (qa, buf_0);
+        firpfbchr_crcf_execute(qa, buf_1);
+
+        // push results through periodograms
+        spgramcf_write(p0, buf_0, P);
+        spgramcf_push (p1, buf_1[channel_id]);
+    }
+    spgramcf_print(p0);
+    spgramcf_print(p1);
+
+    // compute power spectral density output
+    float psd_0[nfft];
+    float psd_1[nfft];
+    spgramcf_get_psd(p0, psd_0);
+    spgramcf_get_psd(p1, psd_1);
+
+    // destroy objects
+    firpfbchr_crcf_destroy(qa);
+    msourcecf_destroy(gen);
+    spgramcf_destroy(p0);
+    spgramcf_destroy(p1);
+
+    // verify result
+    autotest_psd_s regions[] = {
+        {.fmin=-0.5f, .fmax=-0.3f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
+        {.fmin=-0.2f, .fmax=+0.2f, .pmin=-25, .pmax=-15, .test_lo=1, .test_hi=1},
+        {.fmin= 0.3f, .fmax=+0.5f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
+    };
+    char filename[256];
+    sprintf(filename,"autotest/logs/firpfbchr_crcf_ch0.m");
+    liquid_autotest_validate_spectrum(psd_1, nfft, regions, 3,
+        liquid_autotest_verbose ? filename : NULL);
+}
+
 void autotest_firpfbchr_crcf_config()
 {
 #if LIQUID_STRICT_EXIT
