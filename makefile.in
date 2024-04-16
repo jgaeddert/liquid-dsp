@@ -938,10 +938,11 @@ src/multichannel/src/firpfbch_cccf.o : %.o : %.c $(include_headers) $(multichann
 
 # autotests
 multichannel_autotests :=					\
-	src/multichannel/tests/firpfbch2_crcf_autotest.c	\
 	src/multichannel/tests/firpfbch_crcf_synthesizer_autotest.c	\
 	src/multichannel/tests/firpfbch_crcf_analyzer_autotest.c	\
 	src/multichannel/tests/firpfbch_crcf_autotest.c		\
+	src/multichannel/tests/firpfbch2_crcf_autotest.c	\
+	src/multichannel/tests/firpfbchr_crcf_autotest.c	\
 	src/multichannel/tests/ofdmframe_autotest.c		\
 
 # benchmarks

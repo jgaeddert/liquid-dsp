@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,8 @@
  * THE SOFTWARE.
  */
 
-//
-// firpfbchr.c
-//
 // finite impulse response polyphase filterbank channelizer with output
 // rate Fs / P
-//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -71,8 +67,12 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _chans,
     // validate input
     if (_chans < 2)
         return liquid_error_config("firpfbchr_%s_create(), number of channels must be at least 2", EXTENSION_FULL);
+    if (_decim < 1)
+        return liquid_error_config("firpfbchr_%s_create(), decimation rate must be at least 1", EXTENSION_FULL);
     if (_m < 1)
         return liquid_error_config("firpfbchr_%s_create(), filter semi-length must be at least 1", EXTENSION_FULL);
+    if (_h == NULL)
+        return liquid_error_config("firpfbchr_%s_create(), filter coefficients cannot be null", EXTENSION_FULL);
 
     // create object
     FIRPFBCHR() q = (FIRPFBCHR()) malloc(sizeof(struct FIRPFBCHR(_s)));
