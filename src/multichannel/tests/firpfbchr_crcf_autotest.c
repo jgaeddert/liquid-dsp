@@ -44,6 +44,12 @@ void autotest_firpfbchr_crcf_config()
     CONTEND_ISNULL(firpfbchr_crcf_create(64, 76,  0,    h)) // filter delay too small
     CONTEND_ISNULL(firpfbchr_crcf_create(64, 76, 12, NULL)) // coefficients pointer set to NULL
 
+    // kaiser
+    CONTEND_ISNULL(firpfbchr_crcf_create_kaiser( 0, 76, 12, 60.0f)) // too few channels
+    CONTEND_ISNULL(firpfbchr_crcf_create_kaiser(64,  0, 12, 60.0f)) // decimation rate too small
+    CONTEND_ISNULL(firpfbchr_crcf_create_kaiser(64, 76,  0, 60.0f)) // filter delay too small
+    CONTEND_ISNULL(firpfbchr_crcf_create_kaiser(64, 76, 12, -1.0f)) // stop-band suppression out of range
+
     //CONTEND_ISNULL(firpfbchr_crcf_copy(NULL))
 
     // create proper object and test configurations

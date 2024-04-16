@@ -130,8 +130,12 @@ FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _chans,
     // validate input
     if (_chans < 2)
         return liquid_error_config("firpfbchr_%s_create_kaiser(), number of channels must be at least 2", EXTENSION_FULL);
+    if (_decim < 1)
+        return liquid_error_config("firpfbchr_%s_create_kaiser(), decimation rate must be at least 1", EXTENSION_FULL);
     if (_m < 1)
         return liquid_error_config("firpfbchr_%s_create_kaiser(), filter semi-length must be at least 1", EXTENSION_FULL);
+    if (_as <= 0.0f)
+        return liquid_error_config("firpfbchr_%s_create_kaiser(), stop-band suppression out of range", EXTENSION_FULL);
 
     // design prototype filter
     unsigned int h_len = 2*_chans*_m+1;
