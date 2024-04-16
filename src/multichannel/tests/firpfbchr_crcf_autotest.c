@@ -29,13 +29,10 @@ void autotest_firpfbchr_crcf()
     // options
     unsigned int M = 16;            // number of channels
     unsigned int P =  6;            // output decimation rate
-    unsigned int m =  5;            // filter semi-length (symbols)
+    unsigned int m = 12;            // filter semi-length (symbols)
     unsigned int num_blocks=1<<16;  // number of symbols
     float As = 60.0f;               // filter stop-band attenuation
     
-    unsigned int i;
-    unsigned int channel_id = 3;
-
     // create filterbank objects from prototype
     firpfbchr_crcf qa = firpfbchr_crcf_create_kaiser(M, P, m, As);
     firpfbchr_crcf_print(qa);
@@ -43,27 +40,29 @@ void autotest_firpfbchr_crcf()
     // create multi-signal source generator
     msourcecf gen = msourcecf_create_default();
 
-    // add signals          (gen,  fc,    bw,    gain, {options})
-    msourcecf_add_noise(gen,  0.00f, 1.0f, -60);   // wide-band noise
-    msourcecf_add_noise(gen, -0.30f, 0.1f, -20);   // narrow-band noise
-    msourcecf_add_tone (gen,  0.08f, 0.0f,   0);   // tone
+    // add signals     (gen,  fc,    bw,    gain, {options})
+    msourcecf_add_noise(gen,  0.00f, 1.00f, -60);   // wide-band noise
+    msourcecf_add_noise(gen, -0.30f, 0.10f, -20);   // narrow-band noise
+    msourcecf_add_noise(gen,  0.08f, 0.01f, -30);   // very narrow-band noise
     // modulated data
     msourcecf_add_modem(gen,
-       (float)channel_id/(float)M, // center frequency
-       0.080f,                     // bandwidth (symbol rate)
-       -20,                        // gain
-       LIQUID_MODEM_QPSK,          // modulation scheme
-       12,                         // filter semi-length
-       0.3f);                      // modem parameters
+       0.1875f,             // center frequency
+       0.065f,              // bandwidth (symbol rate)
+       -20,                 // gain
+       LIQUID_MODEM_QPSK,   // modulation scheme
+       12,                  // filter semi-length
+       0.3f);               // modem parameters
 
     // create spectral periodogoram
     unsigned int nfft = 2400;
     spgramcf     p0   = spgramcf_create_default(nfft);
-    spgramcf     p1   = spgramcf_create_default(nfft);
+    spgramcf     c1   = spgramcf_create_default(nfft);
+    spgramcf     c3   = spgramcf_create_default(nfft);
 
     // run channelizer
     float complex buf_0[P];
     float complex buf_1[M];
+    unsigned int i;
     for (i=0; i<num_blocks; i++) {
         // write samples to buffer
         msourcecf_write_samples(gen, buf_0, P);
@@ -74,33 +73,46 @@ void autotest_firpfbchr_crcf()
 
         // push results through periodograms
         spgramcf_write(p0, buf_0, P);
-        spgramcf_push (p1, buf_1[channel_id]);
+        spgramcf_push (c1, buf_1[1]);
+        spgramcf_push (c3, buf_1[3]);
     }
-    spgramcf_print(p0);
-    spgramcf_print(p1);
 
-    // compute power spectral density output
-    float psd_0[nfft];
-    float psd_1[nfft];
-    spgramcf_get_psd(p0, psd_0);
-    spgramcf_get_psd(p1, psd_1);
+    // verify results: full spectrum
+    autotest_psd_s regions[] = {
+        {.fmin=-0.50f, .fmax=-0.37f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
+        {.fmin=-0.34f, .fmax=-0.26f, .pmin=-25, .pmax=-15, .test_lo=1, .test_hi=1},
+        {.fmin=-0.24f, .fmax= 0.05f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
+        {.fmin= 0.10f, .fmax= 0.13f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
+        {.fmin= 0.16f, .fmax= 0.21f, .pmin=-25, .pmax=-15, .test_lo=1, .test_hi=1},
+        {.fmin= 0.25f, .fmax= 0.50f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_spgramcf(p0, regions, 6,
+        liquid_autotest_verbose ? "autotest/logs/firpfbchr_crcf_psd.m" : NULL);
+
+    // verify results: channel 2
+    autotest_psd_s regions_2[] = {
+        {.fmin=-0.50f, .fmax= 0.05f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
+        {.fmin= 0.08f, .fmax= 0.12f, .pmin=-35, .pmax=-25, .test_lo=1, .test_hi=1},
+        {.fmin= 0.15f, .fmax= 0.50f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_spgramcf(c1, regions_2, 3,
+        liquid_autotest_verbose ? "autotest/logs/firpfbchr_crcf_c1.m" : NULL);
+
+    // verify results: channel 3
+    autotest_psd_s regions_3[] = {
+        {.fmin=-0.50f, .fmax=-0.28f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
+        {.fmin=-0.15f, .fmax=+0.15f, .pmin=-25, .pmax=-15, .test_lo=1, .test_hi=1},
+        {.fmin= 0.28f, .fmax=+0.50f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_spgramcf(c3, regions_3, 3,
+        liquid_autotest_verbose ? "autotest/logs/firpfbchr_crcf_c3.m" : NULL);
 
     // destroy objects
     firpfbchr_crcf_destroy(qa);
     msourcecf_destroy(gen);
     spgramcf_destroy(p0);
-    spgramcf_destroy(p1);
-
-    // verify result
-    autotest_psd_s regions[] = {
-        {.fmin=-0.5f, .fmax=-0.3f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
-        {.fmin=-0.2f, .fmax=+0.2f, .pmin=-25, .pmax=-15, .test_lo=1, .test_hi=1},
-        {.fmin= 0.3f, .fmax=+0.5f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
-    };
-    char filename[256];
-    sprintf(filename,"autotest/logs/firpfbchr_crcf_ch0.m");
-    liquid_autotest_validate_spectrum(psd_1, nfft, regions, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    spgramcf_destroy(c1);
+    spgramcf_destroy(c3);
 }
 
 void autotest_firpfbchr_crcf_config()
