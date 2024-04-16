@@ -362,6 +362,16 @@ int liquid_autotest_validate_psd_iirfilt_rrrf(iirfilt_rrrf _q, unsigned int _nff
     return liquid_autotest_validate_spectrum(psd,_nfft,_regions,num_regions,debug_filename);
 }
 
+// validate spectral content of a spectral periodogram object
+int liquid_autotest_validate_psd_spgramcf(spgramcf _q,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
+{
+    unsigned int nfft = spgramcf_get_nfft(_q);
+    float psd[nfft];
+    spgramcf_get_psd(_q, psd);
+    return liquid_autotest_validate_spectrum(psd,nfft,_regions,num_regions,debug_filename);
+}
+
 // callback function to simplify testing for framing objects
 int framing_autotest_callback(
     unsigned char *  _header,

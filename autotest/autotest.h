@@ -316,6 +316,10 @@ int liquid_autotest_validate_psd_firfilt_cccf(firfilt_cccf _q, unsigned int _nff
 int liquid_autotest_validate_psd_iirfilt_rrrf(iirfilt_rrrf _q, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
 
+// validate spectral content of a spectral periodogram object
+int liquid_autotest_validate_psd_spgramcf(spgramcf _q,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
 // callback function to simplify testing for framing objects
 #define FRAMING_AUTOTEST_SECRET 0x01234567
 int framing_autotest_callback(
