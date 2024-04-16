@@ -56,6 +56,9 @@ void autotest_firpfbchr_crcf_config()
     firpfbchr_crcf q = firpfbchr_crcf_create_kaiser(64, 76, 12, 60.0f);
 
     CONTEND_EQUALITY(LIQUID_OK, firpfbchr_crcf_print(q))
+    CONTEND_EQUALITY(64, firpfbchr_crcf_get_num_channels(q))
+    CONTEND_EQUALITY(76, firpfbchr_crcf_get_decim_rate(q))
+    CONTEND_EQUALITY(12, firpfbchr_crcf_get_m(q))
 
     firpfbchr_crcf_destroy(q);
 }
