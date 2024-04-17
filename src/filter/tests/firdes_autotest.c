@@ -93,15 +93,17 @@ void autotest_liquid_firdes_rrcos() {
 void autotest_liquid_firdes_rkaiser()
 {
     // Initialize variables
-    unsigned int k=2, m=3;
+    unsigned int k=2, m=10;
     float beta=0.3f;
     float offset=0.0f;
-    float isi_test = -30.0f;
+    float isi_test = -60.0f;
 
     // Create filter
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
     liquid_firdes_rkaiser(k,m,beta,offset,h);
+    // scale by samples per symbol
+    liquid_vectorf_mulscalar(h, h_len, 1.0f/(float)k, h);
 
     // compute filter ISI
     float isi_max;
@@ -115,6 +117,15 @@ void autotest_liquid_firdes_rkaiser()
     // ensure ISI is sufficiently small
     CONTEND_LESS_THAN(isi_max, isi_test);
     CONTEND_LESS_THAN(isi_rms, isi_test);
+
+    // verify spectrum
+    autotest_psd_s regions[] = {
+      {.fmin=-0.50, .fmax=-0.35f, .pmin= 0, .pmax=-70, .test_lo=0, .test_hi=1},
+      {.fmin=-0.20, .fmax= 0.20f, .pmin=-1, .pmax= +1, .test_lo=1, .test_hi=1},
+      {.fmin= 0.35, .fmax= 0.50f, .pmin= 0, .pmax=-70, .test_lo=0, .test_hi=1},
+    };
+    liquid_autotest_validate_psd_signalf(h, h_len, regions, 3,
+        liquid_autotest_verbose ? "autotest/logs/firdes_rkaiser.m" : NULL);
 }
 
 void autotest_liquid_firdes_dcblock()
@@ -319,7 +330,7 @@ void testbench_firdes_prototype(const char * _type,
     // scale by samples per symbol
     liquid_vectorf_mulscalar(h, h_len, 1.0f/(float)_k, h);
 
-    // verify interpolated spectrum
+    // verify spectrum
     float bw = 1.0f / (float)_k;
     float f0 = 0.45*bw*(1-_beta);
     float f1 = 0.55*bw*(1+_beta);
