@@ -795,22 +795,6 @@ float rkaiser_approximate_rho(unsigned int _m,
                               float _beta);
 
 // Design frequency-shifted root-Nyquist filter based on
-// the Kaiser-windowed sinc using the bisection method
-//
-//  _k      :   filter over-sampling rate (samples/symbol)
-//  _m      :   filter delay (symbols)
-//  _beta   :   filter excess bandwidth factor (0,1)
-//  _dt     :   filter fractional sample delay
-//  _h      :   resulting filter, [size: 2*_k*_m+1]
-//  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-int liquid_firdes_rkaiser_bisection(unsigned int _k,
-                                    unsigned int _m,
-                                    float _beta,
-                                    float _dt,
-                                    float * _h,
-                                    float * _rho);
-
-// Design frequency-shifted root-Nyquist filter based on
 // the Kaiser-windowed sinc using the quadratic method.
 //
 //  _k      :   filter over-sampling rate (samples/symbol)

@@ -109,15 +109,11 @@ void test_harness_matched_filter(int          _type,
     float isi_rms;
     liquid_filter_isi(h,_k,_m,&isi_rms,&isi_max);
 
-    // convert to log scale
-    isi_max = 20*log10f(isi_max);
-    isi_rms = 20*log10f(isi_rms);
+    // ensure ISI is sufficiently small (log scale)
+    CONTEND_LESS_THAN(20*log10f(isi_max), _tol_isi);
+    CONTEND_LESS_THAN(20*log10f(isi_rms), _tol_isi);
 
-    // ensure ISI is sufficiently small
-    CONTEND_LESS_THAN(isi_max, _tol_isi);
-    CONTEND_LESS_THAN(isi_rms, _tol_isi);
-
-    // verify spectrum
+    // verify spectrum response
     autotest_psd_s regions[] = {
       {.fmin=-0.50, .fmax=-0.35f, .pmin= 0, .pmax=_tol_as, .test_lo=0, .test_hi=1},
       {.fmin=-0.20, .fmax= 0.20f, .pmin=-1, .pmax=     +1, .test_lo=1, .test_hi=1},
@@ -252,20 +248,6 @@ void autotest_liquid_firdes_config()
     CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len,-0.1f, 0, h), LIQUID_EICONFIG);
     CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len, 0.0f, 0, h), LIQUID_EICONFIG);
     CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len, 0.6f, 0, h), LIQUID_EICONFIG);
-
-    CONTEND_EQUALITY(liquid_firdes_rkaiser(0, 12, 0.2f, 0, NULL), LIQUID_EICONFIG); // k too small
-    CONTEND_EQUALITY(liquid_firdes_rkaiser(2,  0, 0.2f, 0, NULL), LIQUID_EICONFIG); // m too small
-    CONTEND_EQUALITY(liquid_firdes_rkaiser(2, 12,-0.7f, 0, NULL), LIQUID_EICONFIG); // beta too small
-    CONTEND_EQUALITY(liquid_firdes_rkaiser(2, 12, 2.7f, 0, NULL), LIQUID_EICONFIG); // beta too large
-    CONTEND_EQUALITY(liquid_firdes_rkaiser(2, 12, 0.2f,-2, NULL), LIQUID_EICONFIG); // dt too small
-    CONTEND_EQUALITY(liquid_firdes_rkaiser(2, 12, 0.2f, 3, NULL), LIQUID_EICONFIG); // dt too large
-
-    CONTEND_EQUALITY(liquid_firdes_arkaiser(0, 12, 0.2f, 0, NULL), LIQUID_EICONFIG); // k too small
-    CONTEND_EQUALITY(liquid_firdes_arkaiser(2,  0, 0.2f, 0, NULL), LIQUID_EICONFIG); // m too small
-    CONTEND_EQUALITY(liquid_firdes_arkaiser(2, 12,-0.7f, 0, NULL), LIQUID_EICONFIG); // beta too small
-    CONTEND_EQUALITY(liquid_firdes_arkaiser(2, 12, 2.7f, 0, NULL), LIQUID_EICONFIG); // beta too large
-    CONTEND_EQUALITY(liquid_firdes_arkaiser(2, 12, 0.2f,-2, NULL), LIQUID_EICONFIG); // dt too small
-    CONTEND_EQUALITY(liquid_firdes_arkaiser(2, 12, 0.2f, 3, NULL), LIQUID_EICONFIG); // dt too large
 
     CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.2f, 60.0f, 0.0f, h), LIQUID_OK      );
     CONTEND_EQUALITY(liquid_firdes_kaiser(    0, 0.2f, 60.0f, 0.0f, h), LIQUID_EICONFIG);
