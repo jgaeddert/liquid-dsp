@@ -65,7 +65,7 @@ const char * fec_scheme_str[LIQUID_FEC_NUM_SCHEMES][2] = {
 };
 
 // Print compact list of existing and available fec schemes
-void liquid_print_fec_schemes()
+int liquid_print_fec_schemes()
 {
     unsigned int i;
     unsigned int len = 10;
@@ -89,6 +89,7 @@ void liquid_print_fec_schemes()
         }
     }
     printf("\n");
+    return LIQUID_OK;
 }
 
 

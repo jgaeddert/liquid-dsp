@@ -34,7 +34,11 @@ xautotest
 autotest.json
 autotest/logs/*.bin
 autotest/logs/*.gnu
+<<<<<<< HEAD
 autotest/logs/*.log
+=======
+readme.*
+>>>>>>> master
 
 # miscellany
 octave-core

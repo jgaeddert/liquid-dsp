@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -180,6 +180,12 @@ int QDSYNC(_print)(QDSYNC() _q)
     return LIQUID_OK;
 }
 
+// get detection state
+int QDSYNC(_is_detected)(QDSYNC() _q)
+{
+    return _q->state == QDSYNC_STATE_SYNC;
+}
+
 // get detection threshold
 float QDSYNC(_get_threshold)(QDSYNC() _q)
 {
@@ -190,6 +196,12 @@ float QDSYNC(_get_threshold)(QDSYNC() _q)
 int QDSYNC(_set_threshold)(QDSYNC() _q, float _threshold)
 {
     return QDETECTOR(_set_threshold)(_q->detector, _threshold);
+}
+
+// get carrier offset search range
+float QDSYNC(_get_range)(QDSYNC() _q)
+{
+    return QDETECTOR(_get_range)(_q->detector);
 }
 
 // set carrier offset search range
