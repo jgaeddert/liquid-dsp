@@ -41,17 +41,17 @@ typedef void(autotest_function_t) (void);
 
 // define autotest_t
 typedef struct {
-    unsigned int id;                // test identification
-    autotest_function_t * api;      // test function, e.g. autotest_modem()
-    const char* name;               // test name
-    long unsigned int num_checks;   // number of checks that were run for this test
-    long unsigned int num_passed;   // number of checks that passed
-    long unsigned int num_failed;   // number of checks that failed
-    long unsigned int num_warnings; // number of warnings 
-    float percent_passed;           // percent of checks that passed
-    int executed;                   // was the test executed?
-    int pass;                       // did the test pass? (i.e. no failures)
-    double extime;                  // execution time (seconds)
+    unsigned int          id;               // test identification
+    autotest_function_t * api;              // test function, e.g. autotest_modem()
+    const char *          name;             // test name
+    long unsigned int     num_checks;       // number of checks that were run for this test
+    long unsigned int     num_passed;       // number of checks that passed
+    long unsigned int     num_failed;       // number of checks that failed
+    long unsigned int     num_warnings;     // number of warnings
+    float                 percent_passed;   // percent of checks that passed
+    int                   executed;         // was the test executed?
+    int                   pass;             // did the test pass? (i.e. no failures)
+    double                extime;           // execution time (seconds)
 } autotest_t;
 
 // define package_t
@@ -73,7 +73,7 @@ typedef struct {
 //   struct package_t packages[NUM_PACKAGES]
 #include "autotest_include.h"
 
-// 
+//
 // helper functions:
 //
 
@@ -319,12 +319,12 @@ void execute_package(package_t * _p,
 {
     if (_verbose)
         printf("%u: %s\n", _p->id, _p->name);
-    
+
     unsigned int i;
     for (i=0; i<_p->num_scripts; i++) {
         execute_autotest( &scripts[ i + _p->index ], _verbose );
     }
-    
+
     _p->executed = 1;
 }
 
@@ -407,7 +407,7 @@ void print_unstable_tests(void)
                 printf("    %3u : <<FAIL>> %s\n", scripts[t].id,
                                                   scripts[t].name);
             }
-            
+
             if (scripts[t].num_warnings > 0) {
                 printf("    %3u : %4lu warnings %s\n", scripts[t].id,
                                                        scripts[t].num_warnings,

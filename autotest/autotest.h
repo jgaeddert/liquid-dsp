@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// Lightweight autotest header
-//
-// Similar to CxxTest, but written for liquid DSP code in C
-//
+// Lightweight autotest header, customized for liquid-dsp
 
 #ifndef __LIQUID_AUTOTEST_H__
 #define __LIQUID_AUTOTEST_H__

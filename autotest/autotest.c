@@ -20,10 +20,6 @@
  * THE SOFTWARE.
  */
 
-//
-// autotestlib.c
-//
-
 // default include headers
 #include <stdio.h>
 #include <stdlib.h>
@@ -148,7 +144,7 @@ void autotest_print_results(void)
 //  _message    :   message string
 void liquid_autotest_warn(const char * _file,
                           unsigned int _line,
-                         const char * _message)
+                          const char * _message)
 {
     if (liquid_autotest_verbose)
         fprintf(stderr,"  WARNING: %s line %u : %s\n", _file, _line, _message);
