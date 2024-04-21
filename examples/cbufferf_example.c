@@ -1,6 +1,3 @@
-//
-// cbufferf_example.c
-//
 // This example demonstrates the circular buffer object on
 // floating-point data.
 //
@@ -35,7 +32,6 @@ int main() {
     cbufferf_write(cb, v, 8);
 
     // print
-    cbufferf_debug_print(cb);
     cbufferf_print(cb);
 
     // destroy object
