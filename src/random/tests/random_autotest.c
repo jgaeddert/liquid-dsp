@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -173,13 +173,7 @@ void autotest_randexpf()
 
 void autotest_random_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping random config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // exponential: lambda out of range
     CONTEND_EQUALITY( randexpf    (       -1.0f), 0.0f );
     CONTEND_EQUALITY( randexpf_pdf( 0.0f, -1.0f), 0.0f );
@@ -213,5 +207,6 @@ void autotest_random_config()
     // nakagami-m: pdf, cdf with valid input, but negative variable
     CONTEND_EQUALITY( randnakmf_pdf(-2.0f, 1.2f, 2.3f), 0.0f );
     CONTEND_EQUALITY( randnakmf_cdf(-2.0f, 1.2f, 2.3f), 0.0f );
+    _liquid_error_downgrade_disable();
 }
 
