@@ -120,11 +120,11 @@ int qnsearch_destroy(qnsearch _q)
 
 int qnsearch_print(qnsearch _q)
 {
-    printf("[%.3f] ", _q->utility);
+    printf("<liquid.qnsearch, u=%g, v=[", _q->utility);
     unsigned int i;
     for (i=0; i<_q->num_parameters; i++)
-        printf("%.3f ", _q->v[i]);
-    printf("\n");
+        printf("%g,", _q->v[i]);
+    printf("]>\n");
     return LIQUID_OK;
 }
 

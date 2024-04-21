@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // test copying object
 void autotest_symsync_copy()
@@ -70,13 +70,8 @@ void autotest_symsync_copy()
 // test errors and invalid configuration
 void autotest_symsync_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping symsync config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
+
     // test copying/creating invalid objects
     CONTEND_ISNULL( symsync_crcf_copy(NULL) );
 
@@ -85,12 +80,15 @@ void autotest_symsync_config()
     CONTEND_ISNULL( symsync_crcf_create(2, 12, NULL,  0) ); // h_len is too small
     CONTEND_ISNULL( symsync_crcf_create(2, 12, NULL, 47) ); // h_len is not divisible by M
 
+    CONTEND_ISNULL( symsync_crcf_create_rnyquist(LIQUID_FIRFILT_RRC, 0, 12, 0.2, 48) ); // k is too small
+    CONTEND_ISNULL( symsync_crcf_create_rnyquist(LIQUID_FIRFILT_RRC, 2,  0, 0.2, 48) ); // m is too small
+    CONTEND_ISNULL( symsync_crcf_create_rnyquist(LIQUID_FIRFILT_RRC, 2, 12, 7.2, 48) ); // beta is too large
+    CONTEND_ISNULL( symsync_crcf_create_rnyquist(LIQUID_FIRFILT_RRC, 2, 12, 0.2,  0) ); // M is too small
+
     CONTEND_ISNULL( symsync_crcf_create_kaiser(0, 12, 0.2, 48) ); // k is too small
     CONTEND_ISNULL( symsync_crcf_create_kaiser(2,  0, 0.2, 48) ); // m is too small
     CONTEND_ISNULL( symsync_crcf_create_kaiser(2, 12, 7.2, 48) ); // beta is too large
     CONTEND_ISNULL( symsync_crcf_create_kaiser(2, 12, 0.2,  0) ); // M is too small
-
-    //CONTEND_ISNULL( symsync_crcf_create_nyquist(2, 12, NULL, 47) ); // h_len is not divisible by M
 
     // create valid object
     symsync_crcf q = symsync_crcf_create_kaiser(2, 12, 0.2, 48);

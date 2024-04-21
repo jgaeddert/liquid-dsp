@@ -80,7 +80,7 @@ int liquid_error_fl(int          _code,
     // log error
     va_list argptr;
     va_start(argptr, _format);
-    liquid_vlog(NULL,_liquid_error_downgrade ? LIQUID_WARN : LIQUID_ERROR,_file,_line,format_ext,argptr);
+    liquid_vlog(NULL,_liquid_error_downgrade ? LIQUID_INFO : LIQUID_ERROR,_file,_line,format_ext,argptr);
     va_end(argptr);
 #endif
 #if LIQUID_STRICT_EXIT
@@ -107,7 +107,7 @@ void * liquid_error_config_fl(const char * _file,
     // log error
     va_list argptr;
     va_start(argptr, _format);
-    liquid_vlog(NULL,_liquid_error_downgrade ? LIQUID_WARN : LIQUID_ERROR,_file,_line,format_ext,argptr);
+    liquid_vlog(NULL,_liquid_error_downgrade ? LIQUID_INFO : LIQUID_ERROR,_file,_line,format_ext,argptr);
     va_end(argptr);
 #endif
 #if LIQUID_STRICT_EXIT

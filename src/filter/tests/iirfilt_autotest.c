@@ -159,13 +159,7 @@ void autotest_iirfilt_copy_sos() { testbench_iirfilt_copy(LIQUID_IIRDES_SOS); }
 // test errors and invalid configuration
 void autotest_iirfilt_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping iirfilt config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // test copying/creating invalid objects
     CONTEND_ISNULL( iirfilt_crcf_copy(NULL) );
     CONTEND_ISNULL( iirfilt_crcf_create(NULL, 0, NULL, 5) ); // nb is 0
@@ -185,5 +179,6 @@ void autotest_iirfilt_config()
 
     // destroy object
     iirfilt_crcf_destroy(filter);
+    _liquid_error_downgrade_disable();
 }
 

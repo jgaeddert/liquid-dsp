@@ -137,4 +137,3 @@ void autotest_crc_config()
     _liquid_error_downgrade_disable();
 }
 
-

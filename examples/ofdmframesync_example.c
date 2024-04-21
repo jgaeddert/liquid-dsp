@@ -102,11 +102,11 @@ int main(int argc, char*argv[])
 
     // create frame generator
     ofdmframegen fg = ofdmframegen_create(M, cp_len, taper_len, p);
-    //ofdmframegen_print(fg);
+    ofdmframegen_print(fg);
 
     // create frame synchronizer
     ofdmframesync fs = ofdmframesync_create(M, cp_len, taper_len, p, callback, (void*)&data);
-    //ofdmframesync_print(fs);
+    ofdmframesync_print(fs);
 
     unsigned int n=0;
 

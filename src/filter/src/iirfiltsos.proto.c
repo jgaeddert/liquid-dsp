@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -134,17 +134,19 @@ int IIRFILTSOS(_destroy)(IIRFILTSOS() _q)
 // print iirfiltsos object properties to stdout
 int IIRFILTSOS(_print)(IIRFILTSOS() _q)
 {
-    printf("iir filter | sos:\n");
+    printf("<liquid.iirfiltsos");
 
-    printf("  b : ");
-    PRINTVAL_TC(_q->b[0],%12.8f); printf(",");
-    PRINTVAL_TC(_q->b[1],%12.8f); printf(",");
-    PRINTVAL_TC(_q->b[2],%12.8f); printf("\n");
+    printf(", b=[");
+    PRINTVAL_TC(_q->b[0],%g); printf(",");
+    PRINTVAL_TC(_q->b[1],%g); printf(",");
+    PRINTVAL_TC(_q->b[2],%g); printf("]");
 
-    printf("  a : ");
-    PRINTVAL_TC(_q->a[0],%12.8f); printf(",");
-    PRINTVAL_TC(_q->a[1],%12.8f); printf(",");
-    PRINTVAL_TC(_q->a[2],%12.8f); printf("\n");
+    printf(", a=[");
+    PRINTVAL_TC(_q->a[0],%g); printf(",");
+    PRINTVAL_TC(_q->a[1],%g); printf(",");
+    PRINTVAL_TC(_q->a[2],%g); printf("]");
+
+    printf(">\n");
     return LIQUID_OK;
 }
 

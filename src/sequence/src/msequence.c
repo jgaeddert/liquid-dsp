@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,6 +71,18 @@ msequence msequence_create(unsigned int _m,
     return ms;
 }
 
+// Copy maximal-length sequence (m-sequence) object
+msequence msequence_copy(msequence q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("msequence_copy(), object cannot be NULL");
+
+    // create filter object and copy base parameters
+    msequence q_copy = (msequence) malloc(sizeof(struct msequence_s));
+    memmove(q_copy, q_orig, sizeof(struct msequence_s));
+    return q_copy;
+}
 
 // create a maximal-length sequence (m-sequence) object from a generator polynomial
 msequence msequence_create_genpoly(unsigned int _g)

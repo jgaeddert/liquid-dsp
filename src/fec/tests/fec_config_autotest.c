@@ -50,8 +50,9 @@ void autotest_fec_config()
 void autotest_fec_str2fec()
 {
     // start with invalid case
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+    _liquid_error_downgrade_enable();
     CONTEND_EQUALITY(liquid_getopt_str2fec("invalid scheme"), LIQUID_MODEM_UNKNOWN);
+    _liquid_error_downgrade_disable();
 
     // check normal cases
     CONTEND_EQUALITY( liquid_getopt_str2fec("none"),       LIQUID_FEC_NONE);
