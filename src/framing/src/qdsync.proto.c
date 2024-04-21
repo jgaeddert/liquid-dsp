@@ -176,7 +176,7 @@ int QDSYNC(_reset)(QDSYNC() _q)
 
 int QDSYNC(_print)(QDSYNC() _q)
 {
-    printf("<liquid.qdsync()>\n");
+    printf("<liquid.qdsync, n=%u>\n", _q->seq_len);
     return LIQUID_OK;
 }
 

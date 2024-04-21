@@ -12,6 +12,7 @@ int main(int argc, char*argv[]) {
 
     // create object
     firpfb_rrrf pfb = firpfb_rrrf_create_default(M, m);
+    firpfb_rrrf_print(pfb);
 
     // generate and interpolate signal (windowed sinc pulse)
     float buf_0[  num_samples];

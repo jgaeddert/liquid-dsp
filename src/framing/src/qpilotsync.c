@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -161,12 +161,8 @@ int qpilotsync_reset(qpilotsync _q)
 
 int qpilotsync_print(qpilotsync _q)
 {
-    printf("qpilotsync:\n");
-    printf("  payload len   :   %u\n", _q->payload_len);
-    printf("  pilot spacing :   %u\n", _q->pilot_spacing);
-    printf("  num pilots    :   %u\n", _q->num_pilots);
-    printf("  frame len     :   %u\n", _q->frame_len);
-    printf("  nfft          :   %u\n", _q->nfft);
+    printf("<liquid.qpilotsync, payload=%u, frame=%u, pilots=%u, nfft=%u>\n",
+        _q->payload_len, _q->frame_len, _q->num_pilots, _q->nfft);
     return LIQUID_OK;
 }
 

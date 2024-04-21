@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -134,7 +134,7 @@ void autotest_windowf()
     CONTEND_SAME_DATA(r,test8,10*sizeof(float));
 
     // manual print
-    printf("manual output:\n");
+    liquid_log_debug("manual output");
     for (i=0; i<10; i++)
         liquid_log_debug("%6u : %f", i, r[i]);
 

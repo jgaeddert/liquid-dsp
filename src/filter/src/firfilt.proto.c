@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -341,7 +341,10 @@ int FIRFILT(_reset)(FIRFILT() _q)
 // print filter object internals (taps, buffer)
 int FIRFILT(_print)(FIRFILT() _q)
 {
-    printf("<firfilt_%s, len:%u>\n", EXTENSION_FULL, _q->h_len);
+    printf("<liquid.firfilt_%s, len=%u>\n", EXTENSION_FULL, _q->h_len);
+    printf(", scale=");
+    PRINTVAL_TC(_q->scale,%12.8f);
+    printf(">\n");
     return LIQUID_OK;
 }
 

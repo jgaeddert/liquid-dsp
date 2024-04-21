@@ -211,11 +211,8 @@ int FIRPFBCHR(_reset)(FIRPFBCHR() _q)
 // print firpfbchr object internals
 int FIRPFBCHR(_print)(FIRPFBCHR() _q)
 {
-    printf("firpfbchr_%s:\n", EXTENSION_FULL);
-    printf("    channels    :   %u\n", _q->M);
-    printf("    decim (P)   :   %u\n", _q->P);
-    printf("    h_len       :   %u\n", _q->h_len);
-    printf("    semi-length :   %u\n", _q->m);
+    printf("<liquid.firpfbchr, channels=%u, decim=%u, semilen=%u>\n",
+        _q->M, _q->P, _q->m);
     return LIQUID_OK;
 }
 

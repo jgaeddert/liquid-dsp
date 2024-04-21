@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
 // circular buffer
-//
 
 #include <stdio.h>
 #include <string.h>
@@ -123,9 +121,8 @@ int CBUFFER(_destroy)(CBUFFER() _q)
 // print cbuffer object properties
 int CBUFFER(_print)(CBUFFER() _q)
 {
-    printf("<cbuffer%s, max_size:%u, max_read:%u, elements:%u>\n",
+    printf("<liquid.cbuffer%s, max_size:%u, max_read:%u, elements:%u>\n",
             EXTENSION, _q->max_size, _q->max_read, _q->num_elements);
-
     return LIQUID_OK;
 }
 
