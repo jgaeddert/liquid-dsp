@@ -269,7 +269,7 @@ int ofdmflexframegen_is_assembled(ofdmflexframegen _q)
 
 int ofdmflexframegen_print(ofdmflexframegen _q)
 {
-    printf("<ofdmflexframegen");
+    printf("<liquid.ofdmflexframegen");
     printf(", subcarriers=%u", _q->M);
     printf(", null=%u", _q->M_null);
     printf(", pilot=%u", _q->M_pilot);

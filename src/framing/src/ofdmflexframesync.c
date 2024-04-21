@@ -239,7 +239,7 @@ int ofdmflexframesync_destroy(ofdmflexframesync _q)
 
 int ofdmflexframesync_print(ofdmflexframesync _q)
 {
-    printf("<ofdmflexframesync");
+    printf("<liquid.ofdmflexframesync");
     printf(", subcarriers=%u", _q->M);
     printf(", null=%u", _q->M_null);
     printf(", pilot=%u", _q->M_pilot);
