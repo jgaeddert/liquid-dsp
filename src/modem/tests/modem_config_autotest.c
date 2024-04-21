@@ -133,13 +133,7 @@ void autotest_modem_copy_pi4dqpsk()  { modemcf_test_copy(LIQUID_MODEM_PI4DQPSK);
 // test errors and invalid configuration
 void autotest_modem_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping modem config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // test copying/creating invalid objects
     CONTEND_ISNULL( modemcf_copy(NULL) );
     CONTEND_ISNULL( modemcf_create(LIQUID_MODEM_ARB) );
@@ -160,5 +154,6 @@ void autotest_modem_config()
     CONTEND_INEQUALITY( LIQUID_OK, modemcf_demodsoft_gentab(q,227) );
 
     modemcf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
