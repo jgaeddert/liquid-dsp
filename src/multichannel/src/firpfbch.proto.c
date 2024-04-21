@@ -263,9 +263,9 @@ int FIRPFBCH(_reset)(FIRPFBCH() _q)
 // print firpfbch object
 int FIRPFBCH(_print)(FIRPFBCH() _q)
 {
-    printf("<firpfbch, type=\"%s\", channels=%u>\n",
+    printf("<liquid.firpfbch, type=\"%s\", channels=%u, semilen=%u>\n",
         _q->type == LIQUID_ANALYZER ? "analyzer" : "synthesizer",
-        _q->num_channels);
+        _q->num_channels, _q->p);
     return LIQUID_OK;
 }
 
