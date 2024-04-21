@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // test copying object
 void autotest_symsync_copy()
@@ -70,13 +70,8 @@ void autotest_symsync_copy()
 // test errors and invalid configuration
 void autotest_symsync_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping symsync config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
+
     // test copying/creating invalid objects
     CONTEND_ISNULL( symsync_crcf_copy(NULL) );
 
