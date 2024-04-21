@@ -300,9 +300,8 @@ int MODEM(_destroy)(MODEM() _q)
 // print a modem object
 int MODEM(_print)(MODEM() _q)
 {
-    printf("linear modem:\n");
-    printf("    scheme:         %s\n", modulation_types[_q->scheme].name);
-    printf("    bits/symbol:    %u\n", _q->m);
+    printf("<liquid.modem%s, scheme=\"%s\", order=%u>\n",
+        EXTENSION, modulation_types[_q->scheme].name, 1 << (_q->m));
     return LIQUID_OK;
 }
 
