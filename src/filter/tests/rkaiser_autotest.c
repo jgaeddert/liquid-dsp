@@ -25,13 +25,8 @@
 
 void autotest_liquid_rkaiser_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
+
     CONTEND_EQUALITY(liquid_firdes_rkaiser(0, 12, 0.2f, 0, NULL), LIQUID_EICONFIG); // k too small
     CONTEND_EQUALITY(liquid_firdes_rkaiser(2,  0, 0.2f, 0, NULL), LIQUID_EICONFIG); // m too small
     CONTEND_EQUALITY(liquid_firdes_rkaiser(2, 12,-0.7f, 0, NULL), LIQUID_EICONFIG); // beta too small
@@ -45,5 +40,7 @@ void autotest_liquid_rkaiser_config()
     CONTEND_EQUALITY(liquid_firdes_arkaiser(2, 12, 2.7f, 0, NULL), LIQUID_EICONFIG); // beta too large
     CONTEND_EQUALITY(liquid_firdes_arkaiser(2, 12, 0.2f,-2, NULL), LIQUID_EICONFIG); // dt too small
     CONTEND_EQUALITY(liquid_firdes_arkaiser(2, 12, 0.2f, 3, NULL), LIQUID_EICONFIG); // dt too large
+
+    _liquid_error_downgrade_disable();
 }
 
