@@ -420,9 +420,6 @@ int CBUFFER(_destroy)(CBUFFER() _q);                                        \
 /* Print cbuffer object properties to stdout                            */  \
 int CBUFFER(_print)(CBUFFER() _q);                                          \
                                                                             \
-/* Print cbuffer object properties and internal state                   */  \
-int CBUFFER(_debug_print)(CBUFFER() _q);                                    \
-                                                                            \
 /* Clear internal buffer                                                */  \
 int CBUFFER(_reset)(CBUFFER() _q);                                          \
                                                                             \

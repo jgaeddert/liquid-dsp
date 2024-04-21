@@ -124,48 +124,7 @@ int CBUFFER(_destroy)(CBUFFER() _q)
 int CBUFFER(_print)(CBUFFER() _q)
 {
     printf("<cbuffer%s, max_size=%u, max_read=%u, elements=%u>\n",
-            EXTENSION,
-            _q->max_size,
-            _q->max_read,
-            _q->num_elements);
-    return LIQUID_OK;
-}
-
-// print cbuffer object properties and internal state
-int CBUFFER(_debug_print)(CBUFFER() _q)
-{
-    printf("cbuffer%s [max size: %u, max read: %u, elements: %u]\n",
-            EXTENSION,
-            _q->max_size,
-            _q->max_read,
-            _q->num_elements);
-
-    unsigned int i;
-    for (i=0; i<_q->max_size; i++) {
-        // print read index pointer
-        if (i==_q->read_index)
-            printf("<r>");
-        else
-            printf("   ");
-
-        // print write index pointer
-        if (i==_q->write_index)
-            printf("<w>");
-        else
-            printf("   ");
-
-        // print buffer value
-        BUFFER_PRINT_LINE(_q,i)
-        printf("\n");
-    }
-    printf("----------------------------------\n");
-
-    // print excess buffer memory
-    for (i=_q->max_size; i<_q->num_allocated; i++) {
-        printf("      ");
-        BUFFER_PRINT_LINE(_q,i)
-        printf("\n");
-    }
+        EXTENSION, _q->max_size, _q->max_read, _q->num_elements);
     return LIQUID_OK;
 }
 
