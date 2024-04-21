@@ -341,7 +341,7 @@ int FIRFILT(_reset)(FIRFILT() _q)
 // print filter object internals (taps, buffer)
 int FIRFILT(_print)(FIRFILT() _q)
 {
-    printf("<liquid.firfilt_%s, len=%u>\n", EXTENSION_FULL, _q->h_len);
+    printf("<liquid.firfilt_%s, len=%un", EXTENSION_FULL, _q->h_len);
     printf(", scale=");
     PRINTVAL_TC(_q->scale,%12.8f);
     printf(">\n");
