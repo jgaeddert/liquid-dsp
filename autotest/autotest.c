@@ -383,7 +383,7 @@ int framing_autotest_callback(
     framesyncstats_s _stats,
     void *           _context)
 {
-    printf("*** callback invoked (%s) ***\n", _payload_valid ? "pass" : "FAIL");
+    liquid_log_info("callback invoked (%s)", _payload_valid ? "pass" : "FAIL");
     unsigned int * secret = (unsigned int*) _context;
     *secret = FRAMING_AUTOTEST_SECRET;
     return 0;
