@@ -205,7 +205,7 @@ int DDS(_destroy)(DDS() _q)
 // print dds object internals
 int DDS(_print)(DDS() _q)
 {
-    printf("<dds, rate=%u, fc=%g, bw=%g, nco=%g, as=%g, n=%u, stages=[",
+    printf("<liquid.dds, rate=%u, fc=%g, bw=%g, nco=%g, as=%g, n=%u, stages=[",
         _q->rate,
         _q->fc0,
         _q->bw0,

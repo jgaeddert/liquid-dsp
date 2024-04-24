@@ -112,7 +112,7 @@ int cvsd_destroy(cvsd _q)
 // print cvsd object parameters
 int cvsd_print(cvsd _q)
 {
-    printf("<cvsd, bits=%u, zeta=%g", _q->num_bits, _q->zeta);
+    printf("<liquid.cvsd, bits=%u, zeta=%g", _q->num_bits, _q->zeta);
 #if CVSD_ENABLE_SIGNAL_CONDITIONING
     printf(", alpha=%g", _q->alpha);
 #endif

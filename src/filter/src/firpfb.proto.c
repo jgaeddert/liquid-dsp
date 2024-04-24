@@ -297,7 +297,7 @@ int FIRPFB(_destroy)(FIRPFB() _q)
 // print firpfb object's parameters
 int FIRPFB(_print)(FIRPFB() _q)
 {
-    printf("<liquid.firpf_%s, num_filters=%u, len=%u",
+    printf("<liquid.firpfb_%s, num_filters=%u, len=%u",
         EXTENSION_FULL, _q->num_filters, _q->h_sub_len);
     printf(", scale=");
     PRINTVAL_TC(_q->scale,%g);

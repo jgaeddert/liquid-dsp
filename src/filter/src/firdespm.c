@@ -466,7 +466,7 @@ int firdespm_destroy(firdespm _q)
 int firdespm_print(firdespm _q)
 {
     unsigned int i;
-    printf("<firdespm");
+    printf("<liquid.firdespm");
 
     printf(", lo=[");
     for (i=0; i<_q->num_bands; i++) printf("%g,", _q->bands[2*i+0]);

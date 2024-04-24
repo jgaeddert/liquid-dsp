@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
 // Recursive least-squares (RLS) equalizer
-//
 
 #include <stdlib.h>
 #include <string.h>
@@ -181,43 +179,8 @@ int EQRLS(_destroy)(EQRLS() _q)
 // print eqrls object internals
 int EQRLS(_print)(EQRLS() _q)
 {
-    printf("equalizer (RLS):\n");
-    printf("    order:      %u\n", _q->p);
-    unsigned int i;
-    for (i=0; i<_q->p; i++) {
-#if T_COMPLEX
-        printf("  %3u: w = %12.8f + j%12.8f\n", i, crealf(_q->w1[_q->p-i-1]), cimagf(_q->w1[_q->p-i-1]));
-#else
-        printf("  %3u: w = %12.8f\n", i, _q->w1[_q->p-i-1]);
-#endif
-    }
-
-#ifdef DEBUG
-    unsigned int r,c,p=_q->p;
-    printf("P0:\n");
-    for (r=0; r<p; r++) {
-        for (c=0; c<p; c++) {
-            PRINTVAL(matrix_access(_q->P0,p,p,r,c));
-        }
-        printf("\n");
-    }
-
-    printf("P1:\n");
-    for (r=0; r<p; r++) {
-        for (c=0; c<p; c++) {
-            PRINTVAL(matrix_access(_q->P1,p,p,r,c));
-        }
-        printf("\n");
-    }
-
-    printf("gxl:\n");
-    for (r=0; r<p; r++) {
-        for (c=0; c<p; c++) {
-            PRINTVAL(matrix_access(_q->gxl,p,p,r,c));
-        }
-        printf("\n");
-    }
-#endif
+    printf("<liquid.eqrls_%s, order=%u, lambda=%g, delta=%g>\n",
+        EXTENSION_FULL, _q->p, _q->lambda, _q->delta);
     return LIQUID_OK;
 }
 
