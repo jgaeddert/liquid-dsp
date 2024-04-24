@@ -196,16 +196,17 @@ void bpacketgen_destroy(bpacketgen _q)
 // print bpacketgen internals
 void bpacketgen_print(bpacketgen _q)
 {
-    printf("bpacketgen:\n");
-    printf("    p/n poly    :   0x%.4x\n", _q->g);
-    printf("    p/n len     :   %u bytes\n", _q->pnsequence_len);
-    printf("    header len  :   %u bytes\n", _q->header_len);
-    printf("    payload len :   %u bytes\n", _q->dec_msg_len);
-    printf("    crc         :   %s\n", crc_scheme_str[_q->crc][1]);
-    printf("    fec (inner) :   %s\n", fec_scheme_str[_q->fec0][1]);
-    printf("    fec (outer) :   %s\n", fec_scheme_str[_q->fec1][1]);
-    printf("    packet len  :   %u bytes\n", _q->packet_len);
-    printf("    efficiency  :   %8.2f %%\n", 100.0f*(float)_q->dec_msg_len/(float)_q->packet_len);
+    printf("<liquid.bpacketgen,");
+    printf(", pn_poly0x%.4x", _q->g);
+    printf(", pn_len%u", _q->pnsequence_len);
+    printf(", header=%u", _q->header_len);
+    printf(", payload=%u", _q->dec_msg_len);
+    printf(", crc=\"%s\"", crc_scheme_str[_q->crc][0]);
+    printf(", fec_0=\"%s\"", fec_scheme_str[_q->fec0][0]);
+    printf(", fec_1=\"%s\"", fec_scheme_str[_q->fec1][0]);
+    printf(", packet=%u", _q->packet_len);
+    printf(", efficiency=%g", (float)_q->dec_msg_len/(float)_q->packet_len);
+    printf(">\n");
 }
 
 // return length of full packet
