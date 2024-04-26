@@ -111,8 +111,8 @@ int NCO(_destroy)(NCO() _q)
 // Print nco object internals to stdout
 int NCO(_print)(NCO() _q)
 {
-    printf("nco [phase: 0x%.8x rad, freq: 0x%.8x rad/sample]\n",
-            _q->theta, _q->d_theta);
+    printf("<liquid.nco_%s, phase=0x%.8x, freq=0x%.8x>\n",
+            EXTENSION, _q->theta, _q->d_theta);
 #if LIQUID_DEBUG_NCO
     // print entire table
     unsigned int i;
