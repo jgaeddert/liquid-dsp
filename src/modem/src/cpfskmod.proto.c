@@ -200,7 +200,7 @@ int CPFSKMOD(_destroy)(CPFSKMOD() _q)
 // print modulator object internals
 int CPFSKMOD(_print)(CPFSKMOD() _q)
 {
-    printf("<cpfskmod, bps=%u, h=%g, sps=%u, m=%u, beta=%g",
+    printf("<liquid.cpfskmod, bps=%u, h=%g, sps=%u, m=%u, beta=%g",
         _q->bps, _q->h, _q->k, _q->m, _q->beta);
     switch(_q->type) {
     case LIQUID_CPFSK_SQUARE:       printf(", type=\"square\"");       break;

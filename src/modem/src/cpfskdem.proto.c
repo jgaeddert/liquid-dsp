@@ -290,7 +290,7 @@ int CPFSKDEM(_destroy)(CPFSKDEM() _q)
 // print modulation internals
 int CPFSKDEM(_print)(CPFSKDEM() _q)
 {
-    printf("<cpfskdem, bps=%u, h=%g, sps=%u, m=%u, beta=%g",
+    printf("<liquid.cpfskdem, bps=%u, h=%g, sps=%u, m=%u, beta=%g",
         _q->bps, _q->h, _q->k, _q->m, _q->beta);
     switch(_q->type) {
     case LIQUID_CPFSK_SQUARE:       printf(", type=\"square\"");       break;
