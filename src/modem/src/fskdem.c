@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -186,10 +186,11 @@ int fskdem_destroy(fskdem _q)
 // print fskdem object internals
 int fskdem_print(fskdem _q)
 {
-    printf("fskdem : frequency-shift keying demodulator\n");
-    printf("    bits/symbol     :   %u\n", _q->m);
-    printf("    samples/symbol  :   %u\n", _q->k);
-    printf("    bandwidth       :   %8.5f\n", _q->bandwidth);
+    printf("<liquid.fskdem");
+    printf(", bits/symbol=%u", _q->m);
+    printf(", samples/symbol=%u", _q->k);
+    printf(", bandwidth=%g", _q->bandwidth);
+    printf(">\n");
     return LIQUID_OK;
 }
 
@@ -264,7 +265,7 @@ float fskdem_get_symbol_energy(fskdem       _q,
 {
     // validate input
     if (_s >= _q->M) {
-        fprintf(stderr,"warning: fskdem_get_symbol_energy(), input symbol (%u) exceeds maximum (%u)\n",
+        liquid_error(LIQUID_EICONFIG,"fskdem_get_symbol_energy(), input symbol (%u) exceeds maximum (%u)",
                 _s, _q->M);
         _s = 0;
     }

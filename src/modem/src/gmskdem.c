@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -173,13 +173,14 @@ int gmskdem_destroy(gmskdem _q)
 
 int gmskdem_print(gmskdem _q)
 {
-    printf("gmskdem [k=%u, m=%u, BT=%8.3f]\n", _q->k, _q->m, _q->BT);
+    printf("<liquid.gmskdem, k=%u, m=%u, BT=%g", _q->k, _q->m, _q->BT);
 #if GMSKDEM_USE_EQUALIZER
-    printf("    equalizer bandwidth :   %12.8f\n", eqlms_rrrf_get_bw(_q->eq));
+    printf(", eq_bw=%g", eqlms_rrrf_get_bw(_q->eq));
 #endif
-    unsigned int i;
-    for (i=0; i<_q->h_len; i++)
-        printf("  hr(%4u) = %12.8f;\n", i+1, _q->h[i]);
+    //unsigned int i;
+    //for (i=0; i<_q->h_len; i++)
+    //    printf("  hr(%4u) = %12.8f;\n", i+1, _q->h[i]);
+    printf(">\n");
     return LIQUID_OK;
 }
 
@@ -212,7 +213,7 @@ int gmskdem_set_eq_bw(gmskdem _q,
     // set internal equalizer bandwidth
     eqlms_rrrf_set_bw(_q->eq, _bw);
 #else
-    fprintf(stderr,"warning: gmskdem_set_eq_bw(), equalizer is disabled\n");
+    return liquid_error(LIQUID_ENOIMP,"gmskdem_set_eq_bw(), equalizer is disabled");
 #endif
     return LIQUID_OK;
 }

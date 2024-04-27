@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,10 @@
 #include "liquid.internal.h"
 
 #define DEBUG_OFDMFRAMEGEN            1
+
+// generate symbol (add cyclic prefix/postfix, overlap)
+int ofdmframegen_gensymbol(ofdmframegen    _q,
+                           float complex * _buffer);
 
 struct ofdmframegen_s {
     unsigned int M;         // number of subcarriers
@@ -84,8 +88,8 @@ ofdmframegen ofdmframegen_create(unsigned int    _M,
                                  unsigned char * _p)
 {
     // validate input
-    if (_M < 2)
-        return liquid_error_config("ofdmframegen_create(), number of subcarriers must be at least 2");
+    if (_M < 8)
+        return liquid_error_config("ofdmframegen_create(), number of subcarriers must be at least 8");
     if (_M % 2)
         return liquid_error_config("ofdmframegen_create(), number of subcarriers must be even");
     if (_cp_len > _M)
@@ -111,12 +115,6 @@ ofdmframegen ofdmframegen_create(unsigned int    _M,
     // validate and count subcarrier allocation
     if (ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data))
         return liquid_error_config("ofdmframegen_create(), invalid subcarrier allocation");
-    if ( (q->M_pilot + q->M_data) == 0)
-        return liquid_error_config("ofdmframegen_create(), must have at least one enabled subcarrier");
-    if (q->M_data == 0)
-        return liquid_error_config("ofdmframegen_create(), must have at least one data subcarriers");
-    if (q->M_pilot < 2)
-        return liquid_error_config("ofdmframegen_create(), must have at least two pilot subcarriers");
 
     unsigned int i;
 
@@ -189,15 +187,15 @@ int ofdmframegen_destroy(ofdmframegen _q)
 
 int ofdmframegen_print(ofdmframegen _q)
 {
-    printf("ofdmframegen:\n");
-    printf("    num subcarriers     :   %-u\n", _q->M);
-    printf("      - NULL            :   %-u\n", _q->M_null);
-    printf("      - pilot           :   %-u\n", _q->M_pilot);
-    printf("      - data            :   %-u\n", _q->M_data);
-    printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
-    printf("    taper len           :   %-u\n", _q->taper_len);
-    printf("    ");
-    return ofdmframe_print_sctype(_q->p, _q->M);
+    printf("<liquid.ofdmframegen");
+    printf(", subcarriers=%u", _q->M);
+    printf(", null=%u", _q->M_null);
+    printf(", pilot=%u", _q->M_pilot);
+    printf(", data=%u", _q->M_data);
+    printf(", cp=%u", _q->cp_len);
+    printf(", taper=%u", _q->taper_len);
+    printf(">\n");
+    return LIQUID_OK;
 }
 
 int ofdmframegen_reset(ofdmframegen _q)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -105,7 +105,7 @@ int FDELAY(_reset)(FDELAY() _q)
 // Print delay object internals
 int FDELAY(_print)(FDELAY() _q)
 {
-    printf("<fdelay, nmax=%u, m=%u, npfb=%u, delay=%.6f>\n",
+    printf("<liquid.fdelay, nmax=%u, m=%u, npfb=%u, delay=%.6f>\n",
             _q->nmax, _q->m, _q->npfb, _q->delay);
     return LIQUID_OK;
 }
@@ -142,7 +142,7 @@ int FDELAY(_set_delay)(FDELAY() _q,
     // ensure valid range; clip if needed. Note that w_index can be equal
     // to nmax because the window was provisioned for nmax+1
     if (_q->w_index > _q->nmax)
-        return liquid_error(LIQUID_EINT,"fdelay_%s_set_delay(), logic error: window index exceeds maximum", EXTENSION_FULL);
+        return liquid_error(LIQUID_EINT,"fdelay_%s_set_delay(), window index exceeds maximum", EXTENSION_FULL);
 #if 0
     // debug
     printf("delay:%f -> offset:%f -> %d + %f -> %d + (%u/%u)\n",

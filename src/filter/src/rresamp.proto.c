@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,9 +40,9 @@ struct RRESAMP(_s) {
 
 // internal: execute rational-rate resampler on a primitive-length block of
 // input samples and store the resulting samples in the output array.
-void RRESAMP(_execute_primitive)(RRESAMP() _q,
-                                 TI *      _x,
-                                 TO *      _y);
+int RRESAMP(_execute_primitive)(RRESAMP() _q,
+                                TI *      _x,
+                                TO *      _y);
 
 // Create rational-rate resampler object from external coefficients
 //  _interp : interpolation factor
@@ -96,6 +96,12 @@ RRESAMP() RRESAMP(_create_kaiser)(unsigned int _interp,
     _interp /= gcd;
     _decim  /= gcd;
 
+    // check for critical bandwidth
+    if (_bw < 0)
+        _bw = _interp > _decim ? 0.5f : 0.5f * (float)_interp / (float)_decim;
+    else if (_bw > 0.5f)
+        return liquid_error_config("rresamp_%s_create_kaiser(), invalid bandwidth (%g), must be less than 0.5", EXTENSION_FULL, _bw);
+
     // design filter
     unsigned int h_len = 2*_interp*_m + 1;
     float * hf = (float*) malloc(h_len*sizeof(float));
@@ -147,9 +153,9 @@ RRESAMP() RRESAMP(_create_prototype)(int          _type,
     RRESAMP() q = RRESAMP(_create)(_interp, _decim, _m, h);
     q->block_len = gcd;
 
-    // adjust gain for decimator
-    if (decim)
-        RRESAMP(_set_scale)(q, (float)(q->P)/(float)(q->Q));
+    // adjust gain according to resampling rate
+    float rate = RRESAMP(_get_rate)(q);
+    RRESAMP(_set_scale)(q, decim ? sqrtf(rate) : 1.0f / sqrtf(rate));
 
     // free allocated memory and return object
     free(hf);
@@ -190,45 +196,47 @@ RRESAMP() RRESAMP(_copy)(RRESAMP() q_orig)
 }
 
 // free resampler object
-void RRESAMP(_destroy)(RRESAMP() _q)
+int RRESAMP(_destroy)(RRESAMP() _q)
 {
     // free polyphase filterbank
     FIRPFB(_destroy)(_q->pfb);
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print resampler object
-void RRESAMP(_print)(RRESAMP() _q)
+int RRESAMP(_print)(RRESAMP() _q)
 {
-    printf("resampler [rate: %u/%u=%.6f, block length=%u], m=%u\n",
+    printf("<liquid.rresamp_%s, rate=%u/%u=%.6f, block=%u, u=%u>\n", EXTENSION_FULL,
             _q->P, _q->Q, (float)(_q->P) / (float)(_q->Q), _q->block_len, _q->m);
+    return LIQUID_OK;
 }
 
 // reset resampler object
-void RRESAMP(_reset)(RRESAMP() _q)
+int RRESAMP(_reset)(RRESAMP() _q)
 {
     // clear filterbank
-    FIRPFB(_reset)(_q->pfb);
+    return FIRPFB(_reset)(_q->pfb);
 }
 
 // Set output scaling for filter, default: \( 2 w \sqrt{P/Q} \)
 //  _q      : resampler object
 //  _scale  : scaling factor to apply to each output sample
-void RRESAMP(_set_scale)(RRESAMP() _q,
-                         TC        _scale)
+int RRESAMP(_set_scale)(RRESAMP() _q,
+                        TC        _scale)
 {
-    FIRPFB(_set_scale)(_q->pfb, _scale);
+    return FIRPFB(_set_scale)(_q->pfb, _scale);
 }
 
 // Get output scaling for filter
 //  _q      : resampler object
 //  _scale  : scaling factor to apply to each output sample
-void RRESAMP(_get_scale)(RRESAMP() _q,
-                         TC *      _scale)
+int RRESAMP(_get_scale)(RRESAMP() _q,
+                        TC *      _scale)
 {
-    FIRPFB(_get_scale)(_q->pfb, _scale);
+    return FIRPFB(_get_scale)(_q->pfb, _scale);
 }
 
 // get resampler filter delay (semi-length m)
@@ -278,10 +286,10 @@ unsigned int RRESAMP(_get_decim)(RRESAMP() _q)
 // internal state of the resampler.
 //  _q      : resamp object
 //  _buf    : input sample array, [size: Q x 1]
-void RRESAMP(_write)(RRESAMP() _q,
-                     TI *      _buf)
+int RRESAMP(_write)(RRESAMP() _q,
+                    TI *      _buf)
 {
-    FIRPFB(_write)(_q->pfb, _buf, _q->Q);
+    return FIRPFB(_write)(_q->pfb, _buf, _q->Q);
 }
 
 // Execute rational-rate resampler on a block of input samples and
@@ -289,9 +297,9 @@ void RRESAMP(_write)(RRESAMP() _q,
 //  _q  : resamp object
 //  _x  : input sample array, [size: Q x 1]
 //  _y  : output sample array [size: P x 1]
-void RRESAMP(_execute)(RRESAMP() _q,
-                       TI *      _x,
-                       TO *      _y)
+int RRESAMP(_execute)(RRESAMP() _q,
+                      TI *      _x,
+                      TO *      _y)
 {
     // run in blocks
     unsigned int i;
@@ -303,6 +311,7 @@ void RRESAMP(_execute)(RRESAMP() _q,
         _x += _q->Q;
         _y += _q->P;
     }
+    return LIQUID_OK;
 }
 
 // Execute on a block of samples
@@ -310,10 +319,10 @@ void RRESAMP(_execute)(RRESAMP() _q,
 //  _x  : input sample array, [size: Q*n x 1]
 //  _n  : block size
 //  _y  : output sample array [size: P*n x 1]
-void RRESAMP(_execute_block)(RRESAMP()      _q,
-                             TI *           _x,
-                             unsigned int   _n,
-                             TO *           _y)
+int RRESAMP(_execute_block)(RRESAMP()      _q,
+                            TI *           _x,
+                            unsigned int   _n,
+                            TO *           _y)
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
@@ -321,12 +330,13 @@ void RRESAMP(_execute_block)(RRESAMP()      _q,
         _x += _q->Q;
         _y += _q->P;
     }
+    return LIQUID_OK;
 }
 
 // internal
-void RRESAMP(_execute_primitive)(RRESAMP() _q,
-                                 TI *      _x,
-                                 TO *      _y)
+int RRESAMP(_execute_primitive)(RRESAMP() _q,
+                                TI *      _x,
+                                TO *      _y)
 {
     unsigned int index = 0; // filterbank index
     unsigned int i, n=0;
@@ -344,10 +354,13 @@ void RRESAMP(_execute_primitive)(RRESAMP() _q,
         index -= _q->P;
     }
 
-#if 0
-    // error checking for now
-    assert(index == 0);
-    assert(n == _q->P);
-#endif
+    if (index != 0) {
+        return liquid_error(LIQUID_EINT,"rresamp_%s_execute_primitive(), index=%u (expected 0)",
+                EXTENSION_FULL, index);
+    } else if (n != _q->P) {
+        return liquid_error(LIQUID_EINT,"rresamp_%s_execute_primitive(), n=%u (expected P=%u)",
+                EXTENSION_FULL, n, _q->P);
+    }
+    return LIQUID_OK;
 }
 

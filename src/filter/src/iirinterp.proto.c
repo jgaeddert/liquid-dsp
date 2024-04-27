@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,7 +70,7 @@ IIRINTERP() IIRINTERP(_create_default)(unsigned int _M,
                                        unsigned int _order)
 {
     return IIRINTERP(_create_prototype)(_M,
-                                        LIQUID_IIRDES_BUTTER,
+                                        LIQUID_IIRDES_CHEBY2,
                                         LIQUID_IIRDES_LOWPASS,
                                         LIQUID_IIRDES_SOS,
                                         _order,
@@ -101,7 +101,11 @@ IIRINTERP() IIRINTERP(_create_prototype)(unsigned int _M,
     q->M = _M;
 
     // create filter
-    q->iirfilt = IIRFILT(_create_prototype)(_ftype, _btype, _format, _order, _fc, _f0, _ap, _as);
+    q->iirfilt = IIRFILT(_create_prototype)(_ftype, _btype, _format,
+        _order, _fc, _f0, _ap, _as);
+
+    // set appropriate scale
+    IIRFILT(_set_scale)(q->iirfilt, q->M);
 
     // return interpolator object
     return q;
@@ -124,31 +128,31 @@ IIRINTERP() IIRINTERP(_copy)(IIRINTERP() q_orig)
 }
 
 // destroy interpolator object
-void IIRINTERP(_destroy)(IIRINTERP() _q)
+int IIRINTERP(_destroy)(IIRINTERP() _q)
 {
     IIRFILT(_destroy)(_q->iirfilt);
     free(_q);
+    return LIQUID_OK;
 }
 
 // print interpolator state
-void IIRINTERP(_print)(IIRINTERP() _q)
+int IIRINTERP(_print)(IIRINTERP() _q)
 {
-    printf("interp():\n");
-    printf("    M       :   %u\n", _q->M);
-    IIRFILT(_print)(_q->iirfilt);
+    printf("<liquid.iirinterp_%s, interp=%u>\n", EXTENSION_FULL, _q->M);
+    return LIQUID_OK;
 }
 
 // clear internal state
-void IIRINTERP(_reset)(IIRINTERP() _q)
+int IIRINTERP(_reset)(IIRINTERP() _q)
 {
-    IIRFILT(_reset)(_q->iirfilt);
+    return IIRFILT(_reset)(_q->iirfilt);
 }
 
 // execute interpolator
 //  _q      :   interpolator object
 //  _x      :   input sample
 //  _y      :   output array [size: 1 x _M]
-void IIRINTERP(_execute)(IIRINTERP() _q,
+int IIRINTERP(_execute)(IIRINTERP() _q,
                          TI          _x,
                          TO *        _y)
 {
@@ -156,6 +160,7 @@ void IIRINTERP(_execute)(IIRINTERP() _q,
     unsigned int i;
     for (i=0; i<_q->M; i++)
         IIRFILT(_execute)(_q->iirfilt, i==0 ? _x : 0.0f, &_y[i]);
+    return LIQUID_OK;
 }
 
 // execute interpolation on block of input samples
@@ -163,16 +168,17 @@ void IIRINTERP(_execute)(IIRINTERP() _q,
 //  _x      : input array [size: _n x 1]
 //  _n      : size of input array
 //  _y      : output sample array [size: _M*_n x 1]
-void IIRINTERP(_execute_block)(IIRINTERP()  _q,
-                               TI *         _x,
-                               unsigned int _n,
-                               TO *         _y)
+int IIRINTERP(_execute_block)(IIRINTERP()  _q,
+                              TI *         _x,
+                              unsigned int _n,
+                              TO *         _y)
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
         // execute one input at a time with an output stride _M
         IIRINTERP(_execute)(_q, _x[i], &_y[i*_q->M]);
     }
+    return LIQUID_OK;
 }
 
 // get system group delay at frequency _fc

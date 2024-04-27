@@ -12,7 +12,7 @@ compile:
   stage: build
   script:
     - ./bootstrap.sh
-    - ./configure --enable-strict
+    - ./configure
     - make -j4
   artifacts: # save output objects for test stages
     paths: [makefile, configure, config.h, config.h.in]
@@ -53,10 +53,10 @@ bench:
     paths: [benchmark.json]
 
 # compile and run documenation checks (e.g. example code in README.md)
-doc-check:
+check-doc:
   stage: test
   script:
-    - make doc-check
+    - make check-doc
 
 # compile and run all example programs, timing how long each takes to run
 examples:
@@ -90,7 +90,11 @@ coverage:
     - ./bootstrap.sh
     - ./configure --enable-coverage
     - make -j4 coverage
-    - bash <(curl -s https://codecov.io/bash)
+    - curl -Os http://cli.codecov.io/latest/linux/codecov
+    - chmod +x codecov
+    - ./codecov --version
+    - ./codecov upload-process -t $CODECOV_TOKEN --git-service gitlab --slug jgaeddert/liquid-dsp
+
   coverage: '/lines: \d+\.\d+%/'
   artifacts:
     paths: [coverage.out]

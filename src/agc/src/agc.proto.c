@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 #define AGC_DEFAULT_BW   (1e-2f)
 
 // internal method definition
-void AGC(_squelch_update_mode)(AGC() _q);
+int AGC(_squelch_update_mode)(AGC() _q);
 
 // agc structure object
 struct AGC(_s) {
@@ -113,12 +113,12 @@ int AGC(_destroy)(AGC() _q)
 // print agc object internals
 int AGC(_print)(AGC() _q)
 {
-    printf("agc [rssi: %12.4f dB, output gain: %.3f dB, bw: %12.4e, locked: %s, squelch: %s]:\n",
-            AGC(_get_rssi)(_q),
-            _q->scale > 0 ? 10.*log10f(_q->scale) : -100.0f,
-            _q->bandwidth,
-            _q->is_locked ? "yes" : "no",
-            _q->squelch_mode == LIQUID_AGC_SQUELCH_DISABLED ? "disabled" : "enabled");
+    printf("<liquid.agc, rssi=%g dB, gain%g dB, bw=%g, locked=%s, squelch=%s>\n",
+        AGC(_get_rssi)(_q),
+        _q->scale > 0 ? 10.*log10f(_q->scale) : -100.0f,
+        _q->bandwidth,
+        _q->is_locked ? "true" : "false",
+        _q->squelch_mode == LIQUID_AGC_SQUELCH_DISABLED ? "disabled" : "enabled");
     return LIQUID_OK;
 }
 
@@ -419,7 +419,7 @@ int AGC(_squelch_get_status)(AGC() _q)
 //
 
 // update squelch mode appropriately
-void AGC(_squelch_update_mode)(AGC() _q)
+int AGC(_squelch_update_mode)(AGC() _q)
 {
     //
     int threshold_exceeded = (AGC(_get_rssi)(_q) > _q->squelch_threshold);
@@ -453,8 +453,9 @@ void AGC(_squelch_update_mode)(AGC() _q)
         break;
     case LIQUID_AGC_SQUELCH_UNKNOWN:
     default:
-        fprintf(stderr,"warning: agc_%s_execute(), invalid squelch mode: %d\n",
+        return liquid_error(LIQUID_EINT,"agc_%s_execute(), invalid/unsupported squelch mode: %d",
                 EXTENSION_FULL, _q->squelch_mode);
     }
+    return LIQUID_OK;
 }
 

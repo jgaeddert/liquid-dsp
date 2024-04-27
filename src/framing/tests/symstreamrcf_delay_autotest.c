@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -68,7 +68,7 @@ void testbench_symstreamrcf_delay(float        _bw,
 
     // print results
     if (liquid_autotest_verbose) {
-        printf("expected delay: %.6f, measured: %.6f, error: %.6f (tol= %.3f)\n",
+        printf("expected delay: %.6f, measured: %.6f, err: %.6f (tol= %.3f)\n",
                 delay, delay_meas, delay-delay_meas,tol);
     }
 

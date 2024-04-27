@@ -274,10 +274,7 @@ int dotprod_crcf_execute_avx4(dotprod_crcf    _q,
     __m256 s0, s1, s2, s3;  // dot products [re, im, re, im]
 
     // load zeros into sum registers
-    __m256 sum0 = _mm256_setzero_ps();
-    __m256 sum1 = _mm256_setzero_ps();
-    __m256 sum2 = _mm256_setzero_ps();
-    __m256 sum3 = _mm256_setzero_ps();
+    __m256 sum = _mm256_setzero_ps();
 
     // r = 8*floor(n/32)
     unsigned int r = (n >> 5) << 3;
@@ -304,22 +301,17 @@ int dotprod_crcf_execute_avx4(dotprod_crcf    _q,
         s3 = _mm256_mul_ps(v3, h3);
         
         // parallel addition
-        sum0 = _mm256_add_ps( sum0, s0 );
-        sum1 = _mm256_add_ps( sum1, s1 );
-        sum2 = _mm256_add_ps( sum2, s2 );
-        sum3 = _mm256_add_ps( sum3, s3 );
+        sum = _mm256_add_ps( sum, s0 );
+        sum = _mm256_add_ps( sum, s1 );
+        sum = _mm256_add_ps( sum, s2 );
+        sum = _mm256_add_ps( sum, s3 );
     }
-
-    // fold down
-    sum0 = _mm256_add_ps( sum0, sum1 );
-    sum2 = _mm256_add_ps( sum2, sum3 );
-    sum0 = _mm256_add_ps( sum0, sum2 );
 
     // aligned output array
     float w[8] __attribute__((aligned(32)));
 
     // unload packed array and perform manual sum
-    _mm256_store_ps(w, sum0);
+    _mm256_store_ps(w, sum);
     w[0] += w[2] + w[4] + w[6];
     w[1] += w[3] + w[5] + w[7];
 

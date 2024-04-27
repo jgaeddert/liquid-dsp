@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// m-sequence
-//
+// maximum-length sequence
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,30 +30,17 @@
 #include "liquid.internal.h"
 
 #define LIQUID_MIN_MSEQUENCE_M  2
-#define LIQUID_MAX_MSEQUENCE_M  15
+#define LIQUID_MAX_MSEQUENCE_M  31
 
-// msequence structure
-//  Note that 'g' is stored as the default polynomial shifted to the
-//  right by one bit; this bit is implied and not actually used in
-//  the shift register's feedback bit computation.
-struct msequence_s msequence_default[16] = {
-//   m,     g,      a,      n,      v,      b
-    {0,     0,      1,      0,      1,      0}, // dummy placeholder
-    {0,     0,      1,      0,      1,      0}, // dummy placeholder
-    {2,     0x0003, 0x0002, 3,      0x0002, 0},
-    {3,     0x0005, 0x0004, 7,      0x0004, 0},
-    {4,     0x0009, 0x0008, 15,     0x0008, 0},
-    {5,     0x0012, 0x0010, 31,     0x0010, 0},
-    {6,     0x0021, 0x0020, 63,     0x0020, 0},
-    {7,     0x0044, 0x0040, 127,    0x0040, 0},
-    {8,     0x008E, 0x0080, 255,    0x0080, 0},
-    {9,     0x0108, 0x0100, 511,    0x0100, 0},
-    {10,    0x0204, 0x0200, 1023,   0x0200, 0},
-    {11,    0x0402, 0x0400, 2047,   0x0400, 0},
-    {12,    0x0829, 0x0800, 4095,   0x0800, 0},
-    {13,    0x100d, 0x1000, 8191,   0x1000, 0},
-    {14,    0x2015, 0x2000, 16383,  0x2000, 0},
-    {15,    0x4001, 0x4000, 32767,  0x4000, 0}
+// maximal-length sequence
+struct msequence_s {
+    unsigned int m;     // length generator polynomial, shift register
+    unsigned int g;     // generator polynomial, form: { x^m + ... + 1 }
+    unsigned int a;     // initial shift register state, default: 1
+
+    // derived values
+    unsigned int n;     // length of sequence, n = (2^m)-1
+    unsigned int state; // shift register
 };
 
 // create a maximal-length sequence (m-sequence) object with
@@ -69,45 +54,48 @@ msequence msequence_create(unsigned int _m,
 {
     // validate input
     if (_m > LIQUID_MAX_MSEQUENCE_M || _m < LIQUID_MIN_MSEQUENCE_M)
-        return liquid_error_config("msequence_create(), m not in range");
+        return liquid_error_config("msequence_create(), m (%u) not in range", _m);
+    //if (_a == 0)
+    //    return liquid_error_config("msequence_create(), state 'a' cannot be 0");
     
     // allocate memory for msequence object
     msequence ms = (msequence) malloc(sizeof(struct msequence_s));
 
     // set internal values
     ms->m = _m;         // generator polynomial length
-    ms->g = _g >> 1;    // generator polynomial (clip off most significant bit)
-
-    // initialize state register, reversing order
-    // 0001 -> 1000
-    unsigned int i;
-    ms->a = 0;
-    for (i=0; i<ms->m; i++) {
-        ms->a <<= 1;
-        ms->a |= (_a & 0x01);
-        _a >>= 1;
-    }
+    ms->g = _g;         // generator polynomial
+    ms->a = _a;         // generator polynomial
 
     ms->n = (1<<_m)-1;  // sequence length, (2^m)-1
-    ms->v = ms->a;      // shift register
-    ms->b = 0;          // return bit
-
+    ms->state = ms->a;  // shift register state
     return ms;
 }
 
+// Copy maximal-length sequence (m-sequence) object
+msequence msequence_copy(msequence q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("msequence_copy(), object cannot be NULL");
+
+    // create filter object and copy base parameters
+    msequence q_copy = (msequence) malloc(sizeof(struct msequence_s));
+    memmove(q_copy, q_orig, sizeof(struct msequence_s));
+    return q_copy;
+}
 
 // create a maximal-length sequence (m-sequence) object from a generator polynomial
 msequence msequence_create_genpoly(unsigned int _g)
 {
     unsigned int t = liquid_msb_index(_g);
-    
+
     // validate input
     if (t < 2)
         return liquid_error_config("msequence_create_genpoly(), invalid generator polynomial: 0x%x", _g);
 
     // compute derived values
-    unsigned int m = t - 1; // m-sequence shift register length
-    unsigned int a = 1;     // m-sequence initial state
+    unsigned int m = t; // m-sequence shift register length
+    unsigned int a = 1; // m-sequence initial state
 
     // generate object and return
     return msequence_create(m,_g,a);
@@ -116,18 +104,44 @@ msequence msequence_create_genpoly(unsigned int _g)
 // creates a default maximal-length sequence
 msequence msequence_create_default(unsigned int _m)
 {
-    // validate input
-    if (_m > LIQUID_MAX_MSEQUENCE_M || _m < LIQUID_MIN_MSEQUENCE_M)
-        return liquid_error_config("msequence_create(), m not in range");
-    
-    // allocate memory for msequence object
-    msequence ms = (msequence) malloc(sizeof(struct msequence_s));
-
-    // copy default sequence
-    memmove(ms, &msequence_default[_m], sizeof(struct msequence_s));
+    unsigned int g = 0;
+    switch (_m) {
+    case  2: g = LIQUID_MSEQUENCE_GENPOLY_M2;  break;
+    case  3: g = LIQUID_MSEQUENCE_GENPOLY_M3;  break;
+    case  4: g = LIQUID_MSEQUENCE_GENPOLY_M4;  break;
+    case  5: g = LIQUID_MSEQUENCE_GENPOLY_M5;  break;
+    case  6: g = LIQUID_MSEQUENCE_GENPOLY_M6;  break;
+    case  7: g = LIQUID_MSEQUENCE_GENPOLY_M7;  break;
+    case  8: g = LIQUID_MSEQUENCE_GENPOLY_M8;  break;
+    case  9: g = LIQUID_MSEQUENCE_GENPOLY_M9;  break;
+    case 10: g = LIQUID_MSEQUENCE_GENPOLY_M10; break;
+    case 11: g = LIQUID_MSEQUENCE_GENPOLY_M11; break;
+    case 12: g = LIQUID_MSEQUENCE_GENPOLY_M12; break;
+    case 13: g = LIQUID_MSEQUENCE_GENPOLY_M13; break;
+    case 14: g = LIQUID_MSEQUENCE_GENPOLY_M14; break;
+    case 15: g = LIQUID_MSEQUENCE_GENPOLY_M15; break;
+    case 16: g = LIQUID_MSEQUENCE_GENPOLY_M16; break;
+    case 17: g = LIQUID_MSEQUENCE_GENPOLY_M17; break;
+    case 18: g = LIQUID_MSEQUENCE_GENPOLY_M18; break;
+    case 19: g = LIQUID_MSEQUENCE_GENPOLY_M19; break;
+    case 20: g = LIQUID_MSEQUENCE_GENPOLY_M20; break;
+    case 21: g = LIQUID_MSEQUENCE_GENPOLY_M21; break;
+    case 22: g = LIQUID_MSEQUENCE_GENPOLY_M22; break;
+    case 23: g = LIQUID_MSEQUENCE_GENPOLY_M23; break;
+    case 24: g = LIQUID_MSEQUENCE_GENPOLY_M24; break;
+    case 25: g = LIQUID_MSEQUENCE_GENPOLY_M25; break;
+    case 26: g = LIQUID_MSEQUENCE_GENPOLY_M26; break;
+    case 27: g = LIQUID_MSEQUENCE_GENPOLY_M27; break;
+    case 28: g = LIQUID_MSEQUENCE_GENPOLY_M28; break;
+    case 29: g = LIQUID_MSEQUENCE_GENPOLY_M29; break;
+    case 30: g = LIQUID_MSEQUENCE_GENPOLY_M30; break;
+    case 31: g = LIQUID_MSEQUENCE_GENPOLY_M31; break;
+    default:
+        return liquid_error_config("msequence_create_default(), m (%u) not in range", _m);
+    }
 
     // return
-    return ms;
+    return msequence_create_genpoly(g);
 }
 
 // destroy an msequence object, freeing all internal memory
@@ -138,23 +152,10 @@ int msequence_destroy(msequence _ms)
 }
 
 // prints the sequence's internal state to the screen
-int msequence_print(msequence _m)
+int msequence_print(msequence _ms)
 {
-    unsigned int i;
-
-    printf("msequence: m=%u (n=%u):\n", _m->m, _m->n);
-
-    // print shift register
-    printf("    shift register: ");
-    for (i=0; i<_m->m; i++)
-        printf("%c", ((_m->v) >> (_m->m-i-1)) & 0x01 ? '1' : '0');
-    printf("\n");
-
-    // print generator polynomial
-    printf("    generator poly: ");
-    for (i=0; i<_m->m; i++)
-        printf("%c", ((_m->g) >> (_m->m-i-1)) & 0x01 ? '1' : '0');
-    printf("\n");
+    printf("<liquid.msequence, m=%u, n=%u, g=0x%x, state=0x%x>\n",
+        _ms->m, _ms->n, _ms->g, _ms->state);
     return LIQUID_OK;
 }
 
@@ -163,13 +164,12 @@ unsigned int msequence_advance(msequence _ms)
 {
     // compute return bit as binary dot product between the
     // internal shift register and the generator polynomial
-    _ms->b = liquid_bdotprod( _ms->v, _ms->g );
+    unsigned int b = liquid_bdotprod( _ms->state, _ms->g);
 
-    _ms->v <<= 1;       // shift internal register
-    _ms->v |= _ms->b;   // push bit onto register
-    _ms->v &= _ms->n;   // apply mask to register
-
-    return _ms->b;      // return result
+    _ms->state <<= 1;       // shift internal register
+    _ms->state |= b;        // push bit onto register
+    _ms->state &= _ms->n;   // apply mask to register
+    return b;               // return result
 }
 
 
@@ -191,7 +191,7 @@ unsigned int msequence_generate_symbol(msequence    _ms,
 // reset msequence shift register to original state, typically '1'
 int msequence_reset(msequence _ms)
 {
-    _ms->v = _ms->a;
+    _ms->state = _ms->a;
     return LIQUID_OK;
 }
 
@@ -210,16 +210,28 @@ int bsequence_init_msequence(bsequence _bs,
     return LIQUID_OK;
 }
 
+// get the length of the generator polynomial, g (m)
+unsigned int msequence_get_genpoly_length(msequence _ms)
+{
+    return _ms->m;
+}
+
 // get the length of the sequence
 unsigned int msequence_get_length(msequence _ms)
 {
     return _ms->n;
 }
 
+// get the generator polynomial, g
+unsigned int msequence_get_genpoly(msequence _ms)
+{
+    return _ms->g;
+}
+
 // get the internal state of the sequence
 unsigned int msequence_get_state(msequence _ms)
 {
-    return _ms->v;
+    return _ms->state;
 }
 
 // set the internal state of the sequence
@@ -229,7 +241,40 @@ int msequence_set_state(msequence    _ms,
     // set internal state
     // NOTE: if state is set to zero, this will lock the sequence generator,
     //       but let the user set this value if they wish
-    _ms->v = _a;
+    _ms->state = _a;
     return LIQUID_OK;
+}
+
+// measure the period the shift register (should be 2^m-1 with a proper generator polynomial)
+unsigned int msequence_measure_period(msequence _ms)
+{
+    // get current state
+    unsigned int s = msequence_get_state(_ms);
+
+    // cycle through sequence and look for initial state
+    unsigned int i;
+    unsigned int period = 0;
+    for (i=0; i<_ms->n+1; i++) {
+        msequence_advance(_ms);
+        period++;
+        if (msequence_get_state(_ms)==s)
+            break;
+    }
+
+    // assert that state has been returned
+    return period;
+}
+
+// measure the period of a generator polynomial
+unsigned int msequence_genpoly_period(unsigned int _g)
+{
+    msequence q = msequence_create_genpoly(_g);
+    if (q == NULL) {
+        liquid_error(LIQUID_EICONFIG,"msequence_genpoly_period(), invalid generator polynomial 0x%x\n", _g);
+        return 0;
+    }
+    unsigned int period = msequence_measure_period(q);
+    msequence_destroy(q);
+    return period;
 }
 

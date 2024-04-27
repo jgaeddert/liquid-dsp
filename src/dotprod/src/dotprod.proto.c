@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -189,7 +189,7 @@ DOTPROD() DOTPROD(_copy)(DOTPROD() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("error: dotprod_%s_copy(), window object cannot be NULL", "xxxt");
+        return liquid_error_config("dotprod_%s_copy(), window object cannot be NULL", "xxxt");
 
     // create new base object and copy parameters
     DOTPROD() q_copy = (DOTPROD()) malloc(sizeof(struct DOTPROD(_s)));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// API: floating-point
-//
+// complex floating-point framing and signal generators
 
 #include "liquid.internal.h"
 
@@ -35,15 +33,25 @@
 #define TO_COMPLEX          1
 #define T_COMPLEX           0
 
-// object references
-#define QSOURCE(name)       LIQUID_CONCAT(qsourcecf,name)
-#define MSOURCE(name)       LIQUID_CONCAT(msourcecf,name)
+// supporting references
+#define FIRINTERP(name)     LIQUID_CONCAT(firinterp_crcf,name)
+#define IIRFILT(name)       LIQUID_CONCAT(iirfilt_crcf, name)
+#define MODEM(name)         LIQUID_CONCAT(modemcf,      name)
+#define MSRESAMP(name)      LIQUID_CONCAT(msresamp_crcf,name)
+#define NCO(name)           LIQUID_CONCAT(nco_crcf,     name)
+#define SYMSTREAM(name)     LIQUID_CONCAT(symstreamcf,  name)
 
-#define IIRFILT(name)       LIQUID_CONCAT(iirfilt_crcf,name)
-#define NCO(name)           LIQUID_CONCAT(nco_crcf,name)
-#define SYMSTREAM(name)     LIQUID_CONCAT(symstreamcf,name)
+// object references
+#define MSOURCE(name)       LIQUID_CONCAT(msourcecf,    name)
+#define QPACKETMODEM(name)  LIQUID_CONCAT(qpacketmodem, name)
+#define QSOURCE(name)       LIQUID_CONCAT(qsourcecf,    name)
+#define SYMSTREAM(name)     LIQUID_CONCAT(symstreamcf,  name)
+#define SYMSTREAMR(name)    LIQUID_CONCAT(symstreamrcf, name)
 
 // prototypes
 #include "msource.proto.c"
+#include "qpacketmodem.proto.c"
 #include "qsource.proto.c"
+#include "symstream.proto.c"
+#include "symstreamr.proto.c"
 

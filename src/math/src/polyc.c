@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,6 +52,6 @@ int polyc_findroots(double complex * _p,
                     unsigned int     _k,
                     double complex * _roots)
 {
-    return liquid_error(LIQUID_EUMODE,"polyc_findroots(), complex root-finding not yet supported");
+    return liquid_error(LIQUID_ENOIMP,"polyc_findroots(), complex root-finding not yet supported");
 }
 

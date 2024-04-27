@@ -145,7 +145,7 @@ float randgammaf_delta(float _delta)
     float V1 = 0.0f;
     float V2 = 0.0f;
 
-    unsigned int m = 1;
+    //unsigned int m = 1;
 
     float xi = 0.0f;
     float eta = 0.0f;
@@ -168,7 +168,7 @@ float randgammaf_delta(float _delta)
 
         // step 6
         if ( eta > powf(xi,_delta-1.0f)*expf(-xi) ) {
-            m++;
+            //m++;
         } else {
             break;
         }

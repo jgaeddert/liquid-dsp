@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,7 +62,6 @@ int liquid_firdes_rkaiser(unsigned int _k,
 
     // simply call internal method and ignore output rho value
     float rho;
-    //liquid_firdes_rkaiser_bisection(_k,_m,_beta,_dt,_h,&rho);
     return liquid_firdes_rkaiser_quadratic(_k,_m,_beta,_dt,_h,&rho);
 }
 
@@ -90,29 +89,18 @@ int liquid_firdes_arkaiser(unsigned int _k,
     if (_dt < -1.0f || _dt > 1.0f)
         return liquid_error(LIQUID_EICONFIG,"liquid_firdes_arkaiser(), dt must be in [-1,1]");
 
-#if 0
-    // compute bandwidth adjustment estimate
-    float rho_hat = rkaiser_approximate_rho(_m,_beta);  // bandwidth correction factor
-#else
-    // rho ~ c0 + c1*log(_beta) + c2*log^2(_beta)
-
-    // c0 ~ 0.762886 + 0.067663*log(m)
-    // c1 ~ 0.065515
-    // c2 ~ log( 1 - 0.088*m^-1.6 )
-
+    // compute bandwidth correction factor, rho ~ c0 + c1*log(_beta) + c2*log^2(_beta)
     float c0 = 0.762886 + 0.067663*logf(_m);
     float c1 = 0.065515;
     float c2 = logf( 1 - 0.088*powf(_m,-1.6 ) );
-
     float log_beta = logf(_beta);
-
     float rho_hat = c0 + c1*log_beta + c2*log_beta*log_beta;
 
-    // ensure range is valid
+    // ensure range is valid and override if approximation is out of range
     if (rho_hat <= 0.0f || rho_hat >= 1.0f)
         rho_hat = rkaiser_approximate_rho(_m,_beta);
-#endif
 
+    // compute filter design parameters
     unsigned int n=2*_k*_m+1;                       // filter length
     float kf = (float)_k;                           // samples/symbol (float)
     float del = _beta*rho_hat / kf;                 // transition bandwidth
@@ -199,6 +187,7 @@ float rkaiser_approximate_rho(unsigned int _m,
     return rho_hat;
 }
 
+#if 0
 // Design frequency-shifted root-Nyquist filter based on
 // the Kaiser-windowed sinc.
 //
@@ -264,8 +253,10 @@ int liquid_firdes_rkaiser_bisection(unsigned int _k,
 #endif
     for (p=0; p<pmax; p++) {
         // check bounding conditions: y1 should be less than y0 and y2
-        if (y1 > y0 || y1 > y2)
-            fprintf(stderr,"warning: liquid_firdes_rkaiser_bisection(): bounding region is ill-conditioned\n");
+        if (y1 > y0 || y1 > y2) {
+            liquid_error(LIQUID_ENOCONV,"liquid_firdes_rkaiser_bisection(): bounding region is ill-conditioned, y:{%g,%g,%g}",
+                y0, y1, y2);
+        }
 
         // choose midway points xa, xb and compute ISI
         xa = 0.5f*(x0 + x1);    // bisect [x0,x1]
@@ -315,6 +306,7 @@ int liquid_firdes_rkaiser_bisection(unsigned int _k,
     *_rho = x_hat;
     return LIQUID_OK;
 }
+#endif
 
 // Design frequency-shifted root-Nyquist filter based on
 // the Kaiser-windowed sinc using the quadratic search method.
@@ -332,13 +324,6 @@ int liquid_firdes_rkaiser_quadratic(unsigned int _k,
                                     float * _h,
                                     float * _rho)
 {
-    if ( _k < 1 )
-        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_quadratic(): k must be greater than 0");
-    if ( _m < 1 )
-        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_quadratic(): m must be greater than 0");
-    if ( (_beta < 0.0f) || (_beta > 1.0f) )
-        return liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_quadratic(): beta must be in [0,1]");
-
     // algorithm:
     //  1. choose initial bounding points [x0,x2] where x0 < x2
     //  2. choose x1 as bisection of [x0,x2]: x1 = 0.5*(x0+x2)
@@ -424,7 +409,8 @@ int liquid_firdes_rkaiser_quadratic(unsigned int _k,
 
         // ensure x_hat is within boundary (this will fail if y1 > y0 || y1 > y2)
         if (x_hat < x0 || x_hat > x2) {
-            //fprintf(stderr,"warning: liquid_firdes_rkaiser_quadratic(), quadratic minimum outside boundary\n");
+            //liquid_error(LIQUID_ENOCONV,"liquid_firdes_rkaiser_quadratic(): quadratic minimum outside boundary, y:{%g,%g,%g}, x-hat:%g,{%g,%g}",
+            //    y0, y1, y2, x_hat, x0, x2);
             break;
         }
 
@@ -474,9 +460,9 @@ float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
 {
     // validate input
     if (_rho < 0.0f) {
-        fprintf(stderr,"warning: liquid_firdes_rkaiser_internal_isi(), rho < 0\n");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_internal_isi(), rho < 0");
     } else if (_rho > 1.0f) {
-        fprintf(stderr,"warning: liquid_firdes_rkaiser_internal_isi(), rho > 1\n");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rkaiser_internal_isi(), rho > 1");
     }
 
     unsigned int n=2*_k*_m+1;                   // filter length

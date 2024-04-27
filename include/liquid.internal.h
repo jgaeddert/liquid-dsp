@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -795,22 +795,6 @@ float rkaiser_approximate_rho(unsigned int _m,
                               float _beta);
 
 // Design frequency-shifted root-Nyquist filter based on
-// the Kaiser-windowed sinc using the bisection method
-//
-//  _k      :   filter over-sampling rate (samples/symbol)
-//  _m      :   filter delay (symbols)
-//  _beta   :   filter excess bandwidth factor (0,1)
-//  _dt     :   filter fractional sample delay
-//  _h      :   resulting filter, [size: 2*_k*_m+1]
-//  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-int liquid_firdes_rkaiser_bisection(unsigned int _k,
-                                    unsigned int _m,
-                                    float _beta,
-                                    float _dt,
-                                    float * _h,
-                                    float * _rho);
-
-// Design frequency-shifted root-Nyquist filter based on
 // the Kaiser-windowed sinc using the quadratic method.
 //
 //  _k      :   filter over-sampling rate (samples/symbol)
@@ -1153,7 +1137,7 @@ float complex liquid_cacosf(float complex _z);
 float complex liquid_catanf(float complex _z);
 
 // faster approximation to arg{*}
-float liquid_cargf_approx(float complex _z);
+//float liquid_cargf_approx(float complex _z);
 
 
 // internal trig helper functions
@@ -1381,19 +1365,6 @@ int MODEM(_demodulate_soft_table)(MODEM()         _q,           \
                                   unsigned int *  _sym_out,     \
                                   unsigned char * _soft_bits);  \
                                                                 \
-/* Demodulate a linear symbol constellation using dynamic   */  \
-/* threshold calculation                                    */  \
-/*  _v      :   input value             */                      \
-/*  _m      :   bits per symbol         */                      \
-/*  _alpha  :   scaling factor          */                      \
-/*  _s      :   demodulated symbol      */                      \
-/*  _res    :   residual                */                      \
-int MODEM(_demodulate_linear_array)(T              _v,          \
-                                    unsigned int   _m,          \
-                                    T              _alpha,      \
-                                    unsigned int * _s,          \
-                                    T *            _res);       \
-                                                                \
 /* Demodulate a linear symbol constellation using           */  \
 /* referenced lookup table                                  */  \
 /*  _v      :   input value             */                      \
@@ -1481,55 +1452,6 @@ int ofdmframe_init_S1(unsigned char * _p,
                       float complex * _S1,
                       float complex * _s1,
                       unsigned int *  _M_S1);
-
-// generate symbol (add cyclic prefix/postfix, overlap)
-int ofdmframegen_gensymbol(ofdmframegen    _q,
-                           float complex * _buffer);
-
-int ofdmframesync_cpcorrelate(ofdmframesync _q);
-int ofdmframesync_findrxypeak(ofdmframesync _q);
-int ofdmframesync_rxpayload(ofdmframesync _q);
-
-int ofdmframesync_execute_seekplcp(ofdmframesync _q);
-int ofdmframesync_execute_S0a(ofdmframesync _q);
-int ofdmframesync_execute_S0b(ofdmframesync _q);
-int ofdmframesync_execute_S1( ofdmframesync _q);
-int ofdmframesync_execute_rxsymbols(ofdmframesync _q);
-
-int ofdmframesync_S0_metrics(ofdmframesync   _q,
-                             float complex * _G,
-                             float complex * _s_hat);
-
-// estimate short sequence gain
-//  _q      :   ofdmframesync object
-//  _x      :   input array (time)
-//  _G      :   output gain (freq)
-int ofdmframesync_estimate_gain_S0(ofdmframesync   _q,
-                                   float complex * _x,
-                                   float complex * _G);
-
-// estimate long sequence gain
-//  _q      :   ofdmframesync object
-//  _x      :   input array (time)
-//  _G      :   output gain (freq)
-int ofdmframesync_estimate_gain_S1(ofdmframesync _q,
-                                   float complex * _x,
-                                   float complex * _G);
-
-// estimate complex equalizer gain from G0 and G1
-//  _q      :   ofdmframesync object
-//  _ntaps  :   number of time-domain taps for smoothing
-int ofdmframesync_estimate_eqgain(ofdmframesync _q,
-                                  unsigned int _ntaps);
-
-// estimate complex equalizer gain from G0 and G1 using polynomial fit
-//  _q      :   ofdmframesync object
-//  _order  :   polynomial order
-int ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
-                                       unsigned int _order);
-
-// recover symbol, correcting for gain, pilot phase, etc.
-int ofdmframesync_rxsymbol(ofdmframesync _q);
 
 // 
 // MODULE : nco (numerically-controlled oscillator)
@@ -1693,20 +1615,6 @@ float randgammaf_delta(float _delta);
 //
 // MODULE : sequence
 //
-
-// maximal-length sequence
-struct msequence_s {
-    unsigned int m;     // length generator polynomial, shift register
-    unsigned int g;     // generator polynomial
-    unsigned int a;     // initial shift register state, default: 1
-
-    unsigned int n;     // length of sequence, n = (2^m)-1
-    unsigned int v;     // shift register
-    unsigned int b;     // return bit
-};
-
-// Default msequence generator objects
-extern struct msequence_s msequence_default[16];
 
 
 //

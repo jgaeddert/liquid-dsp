@@ -145,7 +145,7 @@ int liquid_poly_findroots_bairstow(double *         _p,
 
         // initial estimates for u, v
         if (p[n-1] == 0) {
-            fprintf(stderr,"warning: poly_findroots_bairstow(), irreducible polynomial");
+            liquid_error(LIQUID_EIVAL,"poly_findroots_bairstow(), irreducible polynomial");
             p[n-1] = 1e-12;
         }
         u = p[n-2] / p[n-1];

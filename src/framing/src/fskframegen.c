@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// fskframegen.c
-//
+// frequency-shift keying (FSK) frame generator
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -255,6 +253,7 @@ int fskframegen_reset(fskframegen _q)
 // print fskframegen object internals
 int fskframegen_print(fskframegen _q)
 {
+#if 0
     printf("fskframegen:\n");
     printf("  physical properties\n");
     printf("    bits/symbol     :   %u\n", _q->m);
@@ -269,6 +268,9 @@ int fskframegen_print(fskframegen _q)
     printf("    fec (inner)     :   %s\n", fec_scheme_str[_q->payload_fec0][1]);
     printf("    fec (outer)     :   %s\n", fec_scheme_str[_q->payload_fec1][1]);
     printf("  total samples     :   %-4u samples\n", fskframegen_getframelen(_q));
+#else
+    printf("<liquid.fskframegen>\n");
+#endif
     return LIQUID_OK;
 }
 
@@ -289,7 +291,7 @@ int fskframegen_assemble(fskframegen     _q,
                          fec_scheme      _fec1)
 {
 #if 1
-    fprintf(stderr,"warning: fskframegen_assemble(), ignoring input parameters for now\n");
+    liquid_error(LIQUID_ENOIMP,"fskframegen_assemble(), base functionality not implemented; ignoring input parameters for now");
 #else
     // set properties
     _q->payload_dec_len = _payload_len;
@@ -338,7 +340,7 @@ int fskframegen_assemble(fskframegen     _q,
 unsigned int fskframegen_getframelen(fskframegen _q)
 {
     if (!_q->frame_assembled) {
-        fprintf(stderr,"warning: fskframegen_getframelen(), frame not assembled!\n");
+        liquid_error(LIQUID_EICONFIG,"fskframegen_getframelen(), frame not assembled!");
         return 0;
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -205,22 +205,17 @@ int DDS(_destroy)(DDS() _q)
 // print dds object internals
 int DDS(_print)(DDS() _q)
 {
-    printf("direct digital synthesizer (dds), rate : %u\n", _q->rate);
-    printf("      fc    : %8.5f\n", _q->fc0);
-    printf("      bw    : %8.5f\n", _q->bw0);
-    printf("      nco/f : %8.4f\n", nco_crcf_get_frequency(_q->ncox) / (2.0f*M_PI));
-    printf("      as    : %8.2f [dB]\n", _q->as0);
-    printf("    halfband stages (low rate -> high rate) :\n");
+    printf("<liquid.dds, rate=%u, fc=%g, bw=%g, nco=%g, as=%g, n=%u, stages=[",
+        _q->rate,
+        _q->fc0,
+        _q->bw0,
+        nco_crcf_get_frequency(_q->ncox) / (2.0f*M_PI),
+        _q->as0,
+        _q->num_stages);
     unsigned int i;
-    for (i=0; i<_q->num_stages; i++) {
-        printf("      [%3u] : fc = %8.5f, ft = %8.5f, m = %3u\n",
-                    i,
-                    _q->fc[i],
-                    _q->ft[i],
-                    _q->m[i]);
-        //RESAMP2(_print)(_q->halfband_resamp[i]);
-    }
-    printf("    complexity : %12.4f\n",0.0f);
+    for (i=0; i<_q->num_stages; i++)
+        printf("{fc=%.5f, ft=%.5f, m=%u},",_q->fc[i],_q->ft[i],_q->m[i]);
+    printf("]>\n");
     return LIQUID_OK;
 }
 

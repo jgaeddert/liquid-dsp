@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -97,7 +97,6 @@ void autotest_firpfbch2_crcf_n16()   { firpfbch2_crcf_runtest(  16, 5, 60.0f); }
 void autotest_firpfbch2_crcf_n32()   { firpfbch2_crcf_runtest(  32, 5, 60.0f); }
 void autotest_firpfbch2_crcf_n64()   { firpfbch2_crcf_runtest(  64, 5, 60.0f); }
 
-
 void autotest_firpfbch2_crcf_copy()
 {
     // create channelizer
@@ -138,5 +137,38 @@ void autotest_firpfbch2_crcf_copy()
     // destroy filter objects
     firpfbch2_crcf_destroy(q_orig);
     firpfbch2_crcf_destroy(q_copy);
+}
+
+void autotest_firpfbch2_crcf_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping firpfbch2_crcf config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check invalid function calls
+    CONTEND_ISNULL(firpfbch2_crcf_create(             77, 76, 12, NULL)) // invalid type
+    CONTEND_ISNULL(firpfbch2_crcf_create(LIQUID_ANALYZER,  0, 12, NULL)) // invalid number of channels
+    CONTEND_ISNULL(firpfbch2_crcf_create(LIQUID_ANALYZER, 17, 12, NULL)) // invalid number of channels
+    CONTEND_ISNULL(firpfbch2_crcf_create(LIQUID_ANALYZER, 76,  0, NULL)) // invalid filter semi-length
+
+    CONTEND_ISNULL(firpfbch2_crcf_create_kaiser(             77, 76, 12, 60.0f)) // invalid type
+    CONTEND_ISNULL(firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER,  0, 12, 60.0f)) // invalid number of channels
+    CONTEND_ISNULL(firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER, 17, 12, 60.0f)) // invalid number of channels
+    CONTEND_ISNULL(firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER, 76,  0, 60.0f)) // invalid filter semi-length
+
+    CONTEND_ISNULL(firpfbch2_crcf_copy(NULL))
+
+    // create proper object and test configurations
+    firpfbch2_crcf q = firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER, 76, 12, 60.0f);
+
+    CONTEND_EQUALITY(LIQUID_OK,       firpfbch2_crcf_print(q))
+    CONTEND_EQUALITY(LIQUID_ANALYZER, firpfbch2_crcf_get_type(q))
+    CONTEND_EQUALITY(             76, firpfbch2_crcf_get_M(q))
+    CONTEND_EQUALITY(             12, firpfbch2_crcf_get_m(q))
+
+    firpfbch2_crcf_destroy(q);
 }
 

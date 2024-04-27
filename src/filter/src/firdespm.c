@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -466,26 +466,25 @@ int firdespm_destroy(firdespm _q)
 int firdespm_print(firdespm _q)
 {
     unsigned int i;
+    printf("<liquid.firdespm");
 
-    printf("firdespm:               ");
-    for (i=0; i<_q->num_bands; i++) printf("      band %-5u", i);
-    printf("\n");
+    printf(", lo=[");
+    for (i=0; i<_q->num_bands; i++) printf("%g,", _q->bands[2*i+0]);
+    printf("]");
 
-    printf("  lower band edge       ");
-    for (i=0; i<_q->num_bands; i++) printf("%16.8f", _q->bands[2*i+0]);
-    printf("\n");
+    printf(", hi=[");
+    for (i=0; i<_q->num_bands; i++) printf("%g,", _q->bands[2*i+1]);
+    printf("]");
 
-    printf("  upper band edge       ");
-    for (i=0; i<_q->num_bands; i++) printf("%16.8f", _q->bands[2*i+1]);
-    printf("\n");
+    printf(", des=[");
+    for (i=0; i<_q->num_bands; i++) printf("%g,", _q->des[i]);
+    printf("]");
 
-    printf("  desired value         ");
-    for (i=0; i<_q->num_bands; i++) printf("%16.8f", _q->des[i]);
-    printf("\n");
+    printf(", w=[");
+    for (i=0; i<_q->num_bands; i++) printf("%g,", _q->weights[i]);
+    printf("]");
 
-    printf("  weighting             ");
-    for (i=0; i<_q->num_bands; i++) printf("%16.8f", _q->weights[i]);
-    printf("\n");
+    printf(">\n");
     return LIQUID_OK;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,33 +89,46 @@ void autotest_liquid_firdes_rrcos() {
         CONTEND_DELTA( h[i], h0[i], 0.00001f );
 }
 
-
-void autotest_liquid_firdes_rkaiser()
+void test_harness_matched_filter(int          _type,
+                                 unsigned int _k,
+                                 unsigned int _m,
+                                 float        _beta,
+                                 float        _tol_isi,
+                                 float        _tol_as)
 {
-    // Initialize variables
-    unsigned int k=2, m=3;
-    float beta=0.3f;
-    float offset=0.0f;
-    float isi_test = -30.0f;
-
     // Create filter
-    unsigned int h_len = 2*k*m+1;
+    unsigned int h_len = 2*_k*_m+1;
     float h[h_len];
-    liquid_firdes_rkaiser(k,m,beta,offset,h);
+    liquid_firdes_prototype(_type,_k,_m,_beta,0.0f,h);
+
+    // scale by samples per symbol
+    liquid_vectorf_mulscalar(h, h_len, 1.0f/(float)_k, h);
 
     // compute filter ISI
     float isi_max;
     float isi_rms;
-    liquid_filter_isi(h,k,m,&isi_rms,&isi_max);
+    liquid_filter_isi(h,_k,_m,&isi_rms,&isi_max);
 
-    // convert to log scale
-    isi_max = 20*log10f(isi_max);
-    isi_rms = 20*log10f(isi_rms);
+    // ensure ISI is sufficiently small (log scale)
+    CONTEND_LESS_THAN(20*log10f(isi_max), _tol_isi);
+    CONTEND_LESS_THAN(20*log10f(isi_rms), _tol_isi);
 
-    // ensure ISI is sufficiently small
-    CONTEND_LESS_THAN(isi_max, isi_test);
-    CONTEND_LESS_THAN(isi_rms, isi_test);
+    // verify spectrum response
+    autotest_psd_s regions[] = {
+      {.fmin=-0.50, .fmax=-0.35f, .pmin= 0, .pmax=_tol_as, .test_lo=0, .test_hi=1},
+      {.fmin=-0.20, .fmax= 0.20f, .pmin=-1, .pmax=     +1, .test_lo=1, .test_hi=1},
+      {.fmin= 0.35, .fmax= 0.50f, .pmin= 0, .pmax=_tol_as, .test_lo=0, .test_hi=1},
+    };
+    char filename[256];
+    sprintf(filename,"autotest/logs/firdes_%s.m", liquid_firfilt_type_str[_type][0]);
+    liquid_autotest_validate_psd_signalf(h, h_len, regions, 3,
+        liquid_autotest_verbose ? filename : NULL);
 }
+
+// test matched filter responses for square-root nyquist filter prototypes
+void autotest_firdes_rrcos   () { test_harness_matched_filter(LIQUID_FIRFILT_RRC,     2, 10, 0.3f, -60.0f, -40.0f); }
+void autotest_firdes_rkaiser () { test_harness_matched_filter(LIQUID_FIRFILT_RKAISER, 2, 10, 0.3f, -60.0f, -70.0f); }
+void autotest_firdes_arkaiser() { test_harness_matched_filter(LIQUID_FIRFILT_ARKAISER,2, 10, 0.3f, -60.0f, -70.0f); }
 
 void autotest_liquid_firdes_dcblock()
 {
@@ -305,7 +318,7 @@ void testbench_firdes_prototype(const char * _type,
     // scale by samples per symbol
     liquid_vectorf_mulscalar(h, h_len, 1.0f/(float)_k, h);
 
-    // verify interpolated spectrum
+    // verify spectrum
     float bw = 1.0f / (float)_k;
     float f0 = 0.45*bw*(1-_beta);
     float f1 = 0.55*bw*(1+_beta);

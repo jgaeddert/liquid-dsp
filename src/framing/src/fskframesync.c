@@ -309,6 +309,7 @@ int fskframesync_destroy(fskframesync _q)
 // print frame synchronizer object internals
 int fskframesync_print(fskframesync _q)
 {
+#if 0
     printf("fskframesync:\n");
     printf("  physical properties\n");
     printf("    bits/symbol     :   %u\n", _q->m);
@@ -323,6 +324,9 @@ int fskframesync_print(fskframesync _q)
     printf("    fec (inner)     :   %s\n", fec_scheme_str[_q->payload_fec0][1]);
     printf("    fec (outer)     :   %s\n", fec_scheme_str[_q->payload_fec1][1]);
     printf("  total samples     :   %-4u samples\n", 0);
+#else
+    printf("<liquid.fskframesync>\n");
+#endif
     return LIQUID_OK;
 }
 
@@ -465,6 +469,7 @@ int fskframesync_execute_detectframe(fskframesync  _q,
             //printf("signal peaked! %12.8f %12.8f %12.8f\n",
             //        _q->rxy[0], _q->rxy[1], _q->rxy[2]);
 
+#if 0
             // compute estimate, apply bias compensation
             float gamma = (_q->rxy[2] - _q->rxy[0]) / _q->rxy[1];
             float p2 = 9.54907046918287e-01f;
@@ -472,8 +477,9 @@ int fskframesync_execute_detectframe(fskframesync  _q,
             float xf      = fabsf(gamma);
             float tau_hat = copysignf(p2*xf*xf + p1*xf, gamma);
             int   num_samples = round(tau_hat * _q->k);
-            //printf("timing offset estimate  : %12.8f -> %12.8f (%d samples)\n",
-            //        gamma, tau_hat, num_samples);
+            printf("timing offset estimate  : %12.8f -> %12.8f (%d samples)\n",
+                    gamma, tau_hat, num_samples);
+#endif
 
             // TODO: set timer and filterbank index accordingly
             _q->timer = 2*_q->k;

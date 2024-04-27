@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,26 +32,27 @@ void fec_test_soft_codec(fec_scheme _fs,
                          void * _opts)
 {
 #if !LIBFEC_ENABLED
-    if ( _fs == LIQUID_FEC_CONV_V27    ||
-         _fs == LIQUID_FEC_CONV_V29    ||
-         _fs == LIQUID_FEC_CONV_V39    ||
-         _fs == LIQUID_FEC_CONV_V615   ||
-         _fs == LIQUID_FEC_CONV_V27P23 ||
-         _fs == LIQUID_FEC_CONV_V27P34 ||
-         _fs == LIQUID_FEC_CONV_V27P45 ||
-         _fs == LIQUID_FEC_CONV_V27P56 ||
-         _fs == LIQUID_FEC_CONV_V27P67 ||
-         _fs == LIQUID_FEC_CONV_V27P78 ||
-         _fs == LIQUID_FEC_CONV_V29P23 ||
-         _fs == LIQUID_FEC_CONV_V29P34 ||
-         _fs == LIQUID_FEC_CONV_V29P45 ||
-         _fs == LIQUID_FEC_CONV_V29P56 ||
-         _fs == LIQUID_FEC_CONV_V29P67 ||
-         _fs == LIQUID_FEC_CONV_V29P78 ||
-         _fs == LIQUID_FEC_RS_M8)
-    {
-        AUTOTEST_WARN("convolutional, Reed-Solomon codes unavailable (install libfec)\n");
+    switch (_fs) {
+    case LIQUID_FEC_CONV_V27:
+    case LIQUID_FEC_CONV_V29:
+    case LIQUID_FEC_CONV_V39:
+    case LIQUID_FEC_CONV_V615:
+    case LIQUID_FEC_CONV_V27P23:
+    case LIQUID_FEC_CONV_V27P34:
+    case LIQUID_FEC_CONV_V27P45:
+    case LIQUID_FEC_CONV_V27P56:
+    case LIQUID_FEC_CONV_V27P67:
+    case LIQUID_FEC_CONV_V27P78:
+    case LIQUID_FEC_CONV_V29P23:
+    case LIQUID_FEC_CONV_V29P34:
+    case LIQUID_FEC_CONV_V29P45:
+    case LIQUID_FEC_CONV_V29P56:
+    case LIQUID_FEC_CONV_V29P67:
+    case LIQUID_FEC_CONV_V29P78:
+    case LIQUID_FEC_RS_M8:
+        AUTOTEST_WARN("convolutional, Reed-Solomon codes unavailable (install libfec)");
         return;
+    default:;
     }
 #endif
 

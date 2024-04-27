@@ -253,9 +253,9 @@ int main(int argc, char*argv[])
     // 
     // run SNR trials
     //
-    float SNRdB_min = -1.0f;                // signal-to-noise ratio (minimum)
-    float SNRdB_max =  7.0f;                // signal-to-noise ratio (maximum)
-    unsigned int num_snr = 33;              // number of SNR steps
+    float SNRdB_min = -5.0f;                // signal-to-noise ratio (minimum)
+    float SNRdB_max = 10.0f;                // signal-to-noise ratio (maximum)
+    unsigned int num_snr = 31;              // number of SNR steps
     unsigned int num_trials=10000;          // number of trials
 
     // arrays
@@ -379,7 +379,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"         EbN0dB,      bit_errors_hard / num_bit_trials + 1e-12,  '-x',\n");
     fprintf(fid,"         EbN0dB,      bit_errors_soft / num_bit_trials + 1e-12,  '-x');\n");
     fprintf(fid,"axis([%f (%f-10*log10(r)) 1e-6 1]);\n", SNRdB_min, SNRdB_max);
-    fprintf(fid,"legend('uncoded','hard','soft',1);\n");
+    fprintf(fid,"legend('uncoded','hard','soft');\n");
     fprintf(fid,"xlabel('E_b/N_0 [dB]');\n");
     fprintf(fid,"ylabel('Bit Error Rate');\n");
     fprintf(fid,"title('BER vs. E_b/N_0 for SPC(22,16)');\n");
@@ -484,14 +484,15 @@ void spc2216_decode(unsigned char * _msg_rec,
     spc2216_transpose_col(w, m_hat, parity_row);
 
     // compute syndromes on rows and decode
+#if DEBUG_SPC2216
     unsigned int num_uncorrected_errors = 0;
+#endif
     for (i=0; i<16; i++) {
         sym_enc[0] = parity_row[i];
         sym_enc[1] = m_hat[2*i+0];
         sym_enc[2] = m_hat[2*i+1];
-        int syndrome_flag = fec_secded2216_estimate_ehat(sym_enc, e_hat);
-
 #if DEBUG_SPC2216
+        int syndrome_flag = fec_secded2216_estimate_ehat(sym_enc, e_hat);
         if (syndrome_flag == 0) {
             printf("%3u : no errors detected\n", i);
         } else if (syndrome_flag == 1) {
@@ -499,10 +500,10 @@ void spc2216_decode(unsigned char * _msg_rec,
         } else {
             printf("%3u : multiple errors detected\n", i);
         }
-#endif
 
         if (syndrome_flag == 2)
             num_uncorrected_errors++;
+#endif
 
         // apply error vector estimate to appropriate arrays
         parity_col[i] ^= e_hat[0];
@@ -510,7 +511,9 @@ void spc2216_decode(unsigned char * _msg_rec,
         m_hat[2*i+1]  ^= e_hat[2];
     }
 
-    //printf("number of uncorrected errors: %u\n", num_uncorrected_errors);
+#if DEBUG_SPC2216
+    printf("number of uncorrected errors: %u\n", num_uncorrected_errors);
+#endif
     
     // copy decoded message to output
     memmove(_msg_dec, m_hat, 32*sizeof(unsigned char));

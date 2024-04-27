@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,20 +27,6 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-static int callback_fskframesync_autotest(
-    unsigned char *  _header,
-    int              _header_valid,
-    unsigned char *  _payload,
-    unsigned int     _payload_len,
-    int              _payload_valid,
-    framesyncstats_s _stats,
-    void *           _userdata)
-{
-    //printf("callback invoked, payload valid: %s\n", _payload_valid ? "yes" : "no");
-    *((int*)(_userdata)) += _header_valid && _payload_valid ? 1 : 0;
-    return 0;
-}
-
 // AUTOTEST : test simple recovery of frame in noise
 void autotest_fskframesync()
 {
@@ -60,12 +46,11 @@ void autotest_fskframesync()
     float gamma = powf(10.0f, (SNRdB+noise_floor)/20.0f); // channel gain
 
     unsigned int i;
-    int frames_recovered = 0;
+    unsigned int context = 0;
 
     // create objects
     fskframegen fg = fskframegen_create();
-    fskframesync fs = fskframesync_create(callback_fskframesync_autotest,
-            (void*)&frames_recovered);
+    fskframesync fs = fskframesync_create(framing_autotest_callback, (void*)&context);
 
     // assemble the frame
     unsigned char header [  8];
@@ -94,8 +79,8 @@ void autotest_fskframesync()
         fskframesync_execute_block(fs, buf_rx, buf_len);
     }
 
-    // check to see that exactly one frame was recovered
-    CONTEND_EQUALITY( frames_recovered, 1 );
+    // check to see that callback was invoked
+    CONTEND_EQUALITY(context, FRAMING_AUTOTEST_SECRET);
 
 #if 0
     // parse statistics

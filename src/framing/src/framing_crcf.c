@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,37 +20,41 @@
  * THE SOFTWARE.
  */
 
-//
-// Binary pre-demod synchronizer
-//
+// complex floating-point synchronization and supporting objects
 
 #include "liquid.internal.h"
 
-// 
-#define PRESYNC(name)       LIQUID_CONCAT(presync_cccf,name)
-
-// print and naming extensions
-#define PRINTVAL(x)         printf("%12.4e + j%12.4e", crealf(x), cimagf(x))
+// naming extensions (useful for print statements)
 #define EXTENSION_SHORT     "f"
-#define EXTENSION_FULL      "cccf"
+#define EXTENSION_FULL      "crcf"
 
-#define T                   float           // primitive type
-#define TO                  float complex   // output type
-#define TC                  float complex   // coefficient type
-#define TI                  float complex   // input type
+#define PRINTVAL(x)         printf("%12.4e + j%12.4e", crealf(x), cimagf(x))
 
+#define T                   float
+#define TO                  float complex
+#define TC                  float
+#define TI                  float complex
 #define ABS(X)              cabsf(X)
 #define REAL(X)             crealf(X)
 #define IMAG(X)             cimagf(X)
 
-#define WINDOW(name)        LIQUID_CONCAT(windowf,name)
-#define DOTPROD(name)       LIQUID_CONCAT(dotprod_rrrf,name)
-#define BSYNC(name)         LIQUID_CONCAT(bsync_cccf,name)
+#define TO_COMPLEX          1
+#define TC_COMPLEX          0
+#define TI_COMPLEX          1
 
-#define TO_COMPLEX
-#define TC_COMPLEX
-#define TI_COMPLEX
+// supporting references
+#define AGC(name)           LIQUID_CONCAT(agc_crcf,name)
+#define BSYNC(name)         LIQUID_CONCAT(bsync_crcf,name)
+#define DOTPROD(name)       LIQUID_CONCAT(dotprod_rrrf,name)
+#define EQLMS(name)         LIQUID_CONCAT(eqlms_crcf,name)
+#define MODEM(name)         LIQUID_CONCAT(modemcf,name)
+#define NCO(name)           LIQUID_CONCAT(nco_crcf,name)
+#define SYMSYNC(name)       LIQUID_CONCAT(symsync_crcf,name)
+#define WINDOW(name)        LIQUID_CONCAT(windowf,name)
+
+// object references
+#define BSYNC(name)         LIQUID_CONCAT(bsync_crcf,name)
 
 // prototypes
-#include "presync.proto.c"
+#include "bsync.proto.c"
 

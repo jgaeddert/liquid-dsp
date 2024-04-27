@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,6 @@ struct IIRHILB(_s) {
     // filter objects
     IIRFILT()       filt_0; // upper filter branch
     IIRFILT()       filt_1; // lower filter branch
-
     unsigned int    state;  // bookkeeping state
 };
 
@@ -97,40 +96,48 @@ IIRHILB() IIRHILB(_copy)(IIRHILB() q_orig)
 }
 
 // destroy iirhilb object
-void IIRHILB(_destroy)(IIRHILB() _q)
+int IIRHILB(_destroy)(IIRHILB() _q)
 {
     // destroy window buffers
-    IIRFILT(_destroy)(_q->filt_0);
-    IIRFILT(_destroy)(_q->filt_1);
+    int rc_0 = IIRFILT(_destroy)(_q->filt_0);
+    int rc_1 = IIRFILT(_destroy)(_q->filt_1);
 
     // free main object memory
     free(_q);
+
+    return (rc_0 == LIQUID_OK && rc_1 == LIQUID_OK) ?
+        LIQUID_OK :
+        liquid_error(LIQUID_EINT,"iirhilb%s_destroy(), could not destroy object", EXTENSION_SHORT);
 }
 
 // print iirhilb object internals
-void IIRHILB(_print)(IIRHILB() _q)
+int IIRHILB(_print)(IIRHILB() _q)
 {
-    printf("iir hilbert transform\n");
+    printf("<liquid.iirhilb>\n");
+    return LIQUID_OK;
 }
 
 // reset iirhilb object internal state
-void IIRHILB(_reset)(IIRHILB() _q)
+int IIRHILB(_reset)(IIRHILB() _q)
 {
     // clear window buffers
-    IIRFILT(_reset)(_q->filt_0);
-    IIRFILT(_reset)(_q->filt_1);
+    int rc_0 = IIRFILT(_reset)(_q->filt_0);
+    int rc_1 = IIRFILT(_reset)(_q->filt_1);
 
     // reset state flag
     _q->state = 0;
+    return (rc_0 == LIQUID_OK && rc_1 == LIQUID_OK) ?
+        LIQUID_OK :
+        liquid_error(LIQUID_EINT,"iirhilb%s_reset(), could not reset object", EXTENSION_SHORT);
 }
 
 // execute Hilbert transform (real to complex)
 //  _q      :   iirhilb object
 //  _x      :   real-valued input sample
 //  _y      :   complex-valued output sample
-void IIRHILB(_r2c_execute)(IIRHILB()   _q,
-                           T           _x,
-                           T complex * _y)
+int IIRHILB(_r2c_execute)(IIRHILB()   _q,
+                          T           _x,
+                          T complex * _y)
 {
     // compute relevant output depending on state
     T yi = 0;
@@ -161,6 +168,7 @@ void IIRHILB(_r2c_execute)(IIRHILB()   _q,
 
     // cycle through state
     _q->state = (_q->state + 1) & 0x3;
+    return LIQUID_OK;
 }
 
 // Execute Hilbert transform (real to complex) on a block of samples
@@ -179,9 +187,9 @@ int IIRHILB(_r2c_execute_block)(IIRHILB()    _q,
 //  _q      :   iirhilb object
 //  _y      :   complex-valued input sample
 //  _x      :   real-valued output sample
-void IIRHILB(_c2r_execute)(IIRHILB() _q,
-                           T complex _x,
-                           T *       _y)
+int IIRHILB(_c2r_execute)(IIRHILB() _q,
+                          T complex _x,
+                          T *       _y)
 {
     // compute relevant output depending on state
     T yi = 0;
@@ -212,6 +220,7 @@ void IIRHILB(_c2r_execute)(IIRHILB() _q,
 
     // cycle through state
     _q->state = (_q->state + 1) & 0x3;
+    return LIQUID_OK;
 }
 // Execute Hilbert transform (complex to real) on a block of samples
 int IIRHILB(_c2r_execute_block)(IIRHILB()    _q,
@@ -229,9 +238,9 @@ int IIRHILB(_c2r_execute_block)(IIRHILB()    _q,
 //  _q      :   iirhilb object
 //  _x      :   real-valued input array [size: 2 x 1]
 //  _y      :   complex-valued output sample
-void IIRHILB(_decim_execute)(IIRHILB()   _q,
-                             T *         _x,
-                             T complex * _y)
+int IIRHILB(_decim_execute)(IIRHILB()   _q,
+                            T *         _x,
+                            T complex * _y)
 {
     // mix down by Fs/4
     T xi = _q->state ? -_x[0] :  _x[0];
@@ -252,6 +261,7 @@ void IIRHILB(_decim_execute)(IIRHILB()   _q,
 
     // toggle state flag
     _q->state = 1 - _q->state;
+    return LIQUID_OK;
 }
 
 // execute Hilbert transform decimator (real to complex) on
@@ -260,24 +270,25 @@ void IIRHILB(_decim_execute)(IIRHILB()   _q,
 //  _x      :   real-valued input array [size: 2*_n x 1]
 //  _n      :   number of *output* samples
 //  _y      :   complex-valued output array [size: _n x 1]
-void IIRHILB(_decim_execute_block)(IIRHILB()    _q,
-                                   T *          _x,
-                                   unsigned int _n,
-                                   T complex *  _y)
+int IIRHILB(_decim_execute_block)(IIRHILB()    _q,
+                                  T *          _x,
+                                  unsigned int _n,
+                                  T complex *  _y)
 {
     unsigned int i;
 
     for (i=0; i<_n; i++)
         IIRHILB(_decim_execute)(_q, &_x[2*i], &_y[i]);
+    return LIQUID_OK;
 }
 
 // execute Hilbert transform interpolator (complex to real)
 //  _q      :   iirhilb object
 //  _y      :   complex-valued input sample
 //  _x      :   real-valued output array [size: 2 x 1]
-void IIRHILB(_interp_execute)(IIRHILB() _q,
-                              T complex _x,
-                              T *       _y)
+int IIRHILB(_interp_execute)(IIRHILB() _q,
+                             T complex _x,
+                             T *       _y)
 {
     // upper branch
     T yi0, yi1;
@@ -298,6 +309,7 @@ void IIRHILB(_interp_execute)(IIRHILB() _q,
 
     // toggle state flag
     _q->state = 1 - _q->state;
+    return LIQUID_OK;
 }
 
 // execute Hilbert transform interpolator (complex to real)
@@ -306,13 +318,14 @@ void IIRHILB(_interp_execute)(IIRHILB() _q,
 //  _x      :   complex-valued input array [size: _n x 1]
 //  _n      :   number of *input* samples
 //  _y      :   real-valued output array [size: 2*_n x 1]
-void IIRHILB(_interp_execute_block)(IIRHILB()    _q,
-                                    T complex *  _x,
-                                    unsigned int _n,
-                                    T *          _y)
+int IIRHILB(_interp_execute_block)(IIRHILB()    _q,
+                                   T complex *  _x,
+                                   unsigned int _n,
+                                   T *          _y)
 {
     unsigned int i;
 
     for (i=0; i<_n; i++)
         IIRHILB(_interp_execute)(_q, _x[i], &_y[2*i]);
+    return LIQUID_OK;
 }

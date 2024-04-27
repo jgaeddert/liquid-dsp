@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -140,7 +140,7 @@ void qpilotsync_test(modulation_scheme _ms,
     sprintf(filename,"autotest/logs/qpilotsync_autotest_%u_%u_debug.m", _payload_len, _pilot_spacing);
     FILE * fid = fopen(filename,"w");
     if (!fid) {
-        fprintf(stderr,"error: could not open '%s' for writing\n", filename);
+        liquid_error(LIQUID_EIO,"could not open '%s' for writing", filename);
         return;
     }
     fprintf(fid,"%% %s : auto-generated file\n", filename);

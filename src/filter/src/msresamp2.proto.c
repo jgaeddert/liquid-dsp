@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,22 +89,16 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
     // validate input
     if (_num_stages > 16)
         return liquid_error_config("msresamp2_%s_create(), number of stages should not exceed 16", EXTENSION_FULL);
-
-    // ensure cut-off frequency is valid
-    if ( _fc <= 0.0f || _fc >= 0.5f ) {
+    if ( _fc <= 0.0f || _fc >= 0.5f )
         return liquid_error_config("msresamp2_%s_create(), cut-off frequency must be in (0,0.5)", EXTENSION_FULL);
-    } else if ( _fc > 0.499f ) {
-        fprintf(stderr,"warning: msresamp2_%s_create(), cut-off frequency greater than 0.499\n", EXTENSION_FULL);
-        fprintf(stderr,"    >> truncating to 0.499\n");
+    if ( _f0 != 0. )
+        return liquid_error_config("msresamp2_%s_create(), non-zero center frequency not yet supported", EXTENSION_FULL);
+
+    // truncate cut-off frequency to avoid excessive filter response
+    if ( _fc > 0.499f )
         _fc = 0.499f;
-    }
 
     // check center frequency
-    if ( _f0 != 0. ) {
-        fprintf(stderr,"warning: msresamp2_%s_create(), non-zero center frequency not yet supported\n", EXTENSION_FULL);
-        _f0 = 0.;
-    }
-
     unsigned int i;
 
     // create object
@@ -234,6 +228,12 @@ int MSRESAMP2(_destroy)(MSRESAMP2() _q)
 // print msresamp2 object internals
 int MSRESAMP2(_print)(MSRESAMP2() _q)
 {
+    printf("<liquid.msresamp2_%s, type=\"%s\", stages=%u, rate=%g>\n",
+        EXTENSION_FULL,
+        _q->type == LIQUID_RESAMP_INTERP ? "interp" : "decim",
+        _q->num_stages,
+        MSRESAMP2(_get_rate)(_q));
+#if 0
     printf("multi-stage half-band resampler:\n");
     printf("    type                    : %s\n", _q->type == LIQUID_RESAMP_DECIM ? "decimator" : "interpolator");
     printf("    number of stages        : %u stage%s\n", _q->num_stages, _q->num_stages == 1 ? "" : "s");
@@ -252,6 +252,7 @@ int MSRESAMP2(_print)(MSRESAMP2() _q)
         printf("    stage[%2u]  {m=%3u, as=%6.2f dB, fc=%6.3f, f0=%6.3f}\n",
                     i, _q->m_stage[g], _q->as_stage[g], _q->fc_stage[g], _q->f0_stage[g]);
     }
+#endif
     return LIQUID_OK;
 }
 

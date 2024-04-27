@@ -205,7 +205,7 @@ int gmskframegen_is_assembled(gmskframegen _q)
 // print gmskframegen object internals
 int gmskframegen_print(gmskframegen _q)
 {
-    // plot
+#if 0
     printf("gmskframegen:\n");
     printf("  physical properties\n");
     printf("    samples/symbol  :   %u\n", _q->k);
@@ -221,6 +221,9 @@ int gmskframegen_print(gmskframegen _q)
     printf("    fec (inner)     :   %s\n", fec_scheme_str[_q->fec0][1]);
     printf("    fec (outer)     :   %s\n", fec_scheme_str[_q->fec1][1]);
     printf("  total samples     :   %-4u samples\n", gmskframegen_getframelen(_q));
+#else
+    printf("<liquid.gmskframegen>\n");
+#endif
     return LIQUID_OK;
 }
 
@@ -228,7 +231,7 @@ int gmskframegen_set_header_len(gmskframegen _q,
                                 unsigned int _len)
 {
     if (_q->frame_assembled)
-        fprintf(stderr, "warning: gmskframegen_set_header_len(), frame is already assembled; must reset() first\n");
+        return liquid_error(LIQUID_EICONFIG,"gmskframegen_set_header_len(), frame is already assembled; must reset() first");
 
     _q->header_user_len = _len;
     unsigned int header_dec_len = GMSKFRAME_H_DEC + _q->header_user_len;
@@ -315,7 +318,7 @@ int gmskframegen_assemble_default(gmskframegen _q,
 unsigned int gmskframegen_getframelen(gmskframegen _q)
 {
     if (!_q->frame_assembled) {
-        fprintf(stderr,"warning: gmskframegen_getframelen(), frame not assembled!\n");
+        liquid_error(LIQUID_EICONFIG,"gmskframegen_getframelen(), frame not assembled");
         return 0;
     }
 
@@ -340,7 +343,7 @@ int gmskframegen_gen_symbol(gmskframegen _q)
     case STATE_PAYLOAD:     gmskframegen_write_payload (_q); break;
     case STATE_TAIL:        gmskframegen_write_tail    (_q); break;
     default:
-        return liquid_error(LIQUID_EINT,"error: gmskframegen_writesymbol(), invalid internal state");
+        return liquid_error(LIQUID_EINT,"gmskframegen_writesymbol(), invalid internal state");
     }
 
     /*

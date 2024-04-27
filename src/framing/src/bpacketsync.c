@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// bpacketsync
-//
 // binary packet synchronizer/decoder
-//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -183,16 +179,17 @@ int bpacketsync_destroy(bpacketsync _q)
 
 int bpacketsync_print(bpacketsync _q)
 {
-    printf("bpacketsync:\n");
-    printf("    p/n poly    :   0x%.4x\n", _q->g);
-    printf("    p/n len     :   %u bytes\n", _q->pnsequence_len);
-    printf("    header len  :   %u bytes\n", _q->header_len);
-    printf("    payload len :   %u bytes\n", _q->dec_msg_len);
-    printf("    crc         :   %s\n", crc_scheme_str[_q->crc][1]);
-    printf("    fec (inner) :   %s\n", fec_scheme_str[_q->fec0][1]);
-    printf("    fec (outer) :   %s\n", fec_scheme_str[_q->fec1][1]);
-    printf("    packet len  :   %u bytes\n", _q->packet_len);
-    printf("    efficiency  :   %8.2f %%\n", 100.0f*(float)_q->dec_msg_len/(float)_q->packet_len);
+    printf("<liquid.bpacketsync,");
+    printf(", pn_poly0x%.4x", _q->g);
+    printf(", pn_len%u", _q->pnsequence_len);
+    printf(", header=%u", _q->header_len);
+    printf(", payload=%u", _q->dec_msg_len);
+    printf(", crc=\"%s\"", crc_scheme_str[_q->crc][0]);
+    printf(", fec_0=\"%s\"", fec_scheme_str[_q->fec0][0]);
+    printf(", fec_1=\"%s\"", fec_scheme_str[_q->fec1][0]);
+    printf(", packet=%u", _q->packet_len);
+    printf(", efficiency=%g", (float)_q->dec_msg_len/(float)_q->packet_len);
+    printf(">\n");
     return LIQUID_OK;
 }
 
@@ -437,9 +434,14 @@ int bpacketsync_decode_header(bpacketsync _q)
 
     // check version number
     if (version != BPACKET_VERSION)
-        fprintf(stderr,"warning: bpacketsync, version mismatch!\n");
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync, version mismatch (received %d, expected %d)",version, BPACKET_VERSION);
+    if (_q->crc == LIQUID_CRC_UNKNOWN || _q->crc >= LIQUID_CRC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync, invalid/unsupported crc: %u", _q->crc);
+    if (_q->fec0 == LIQUID_FEC_UNKNOWN || _q->fec0 >= LIQUID_FEC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync, invalid/unsupported fec (inner): %u", _q->fec0);
+    if (_q->fec1 == LIQUID_FEC_UNKNOWN || _q->fec1 >= LIQUID_FEC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync, invalid/unsupported fec (outer): %u", _q->fec1);
 
-    // TODO : check crc, fec0, fec1 schemes
     return LIQUID_OK;
 }
 

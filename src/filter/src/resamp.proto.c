@@ -185,7 +185,8 @@ int RESAMP(_destroy)(RESAMP() _q)
 // print resampler object
 int RESAMP(_print)(RESAMP() _q)
 {
-    printf("resampler [rate: %f]\n", _q->rate);
+    printf("<liquid.resamp_%s, rate=%g, m=%u, as=%.3f, fc=%g, npfb=%u>\n",
+        EXTENSION_FULL, _q->r, _q->m, _q->as, _q->fc, _q->npfb);
     return FIRPFB(_print)(_q->f);
 }
 
@@ -297,7 +298,7 @@ int RESAMP(_adjust_timing_phase)(RESAMP() _q,
 unsigned int RESAMP(_get_num_output)(RESAMP()     _q,
                                      unsigned int _num_input)
 {
-    fprintf(stderr,"warning: resamp_%s_get_num_output(), function not implemented\n",EXTENSION_FULL);
+    liquid_error(LIQUID_EINT,"resamp_%s_get_num_output(), function not implemented",EXTENSION_FULL);
     return 0;
 }
 

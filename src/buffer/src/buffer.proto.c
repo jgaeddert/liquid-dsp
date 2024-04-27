@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -142,14 +142,12 @@ void BUFFER(_read)(BUFFER() _b, T ** _v, unsigned int *_n)
 void BUFFER(_c_read)(BUFFER() _b, T ** _v, unsigned int *_n)
 {
     //printf("buffer_read() trying to read %u elements (%u available)\n", *_n, _b->num_elements);
-#if 0
     if (*_n > _b->num_elements) {
-        printf("error: buffer_read(), cannot read more elements than are available\n");
+        liquid_error(LIQUID_EIRANGE,"buffer%s_read(), cannot read more elements than are available", EXTENSION);
         *_v = NULL;
         *_n = 0;
         return;
     } else
-#endif
     if (*_n > (_b->len - _b->read_index)) {
         //
         BUFFER(_linearize)(_b);
@@ -178,7 +176,7 @@ void BUFFER(_c_release)(BUFFER() _b, unsigned int _n)
 {
     // advance read_index by _n making sure not to step on write_index
     if (_n > _b->num_elements) {
-        printf("error: buffer_c_release(), cannot release more elements in buffer than exist\n");
+        liquid_error(LIQUID_EIRANGE,"buffer%s_c_release(), cannot release more elements in buffer than exist", EXTENSION);
         return;
     }
 
@@ -204,7 +202,7 @@ void BUFFER(_c_write)(BUFFER() _b, T * _v, unsigned int _n)
 {
     //
     if (_n > (_b->len - _b->num_elements)) {
-        printf("error: buffer_write(), cannot write more elements than are available\n");
+        liquid_error(LIQUID_EIRANGE,"buffer%s_write(), cannot write more elements than are available", EXTENSION);
         return;
     }
 
@@ -227,7 +225,7 @@ void BUFFER(_c_write)(BUFFER() _b, T * _v, unsigned int _n)
 void BUFFER(_s_write)(BUFFER() _b, T * _v, unsigned int _n)
 {
     if (_n > (_b->len - _b->num_elements)) {
-        printf("error: buffer_s_write(), cannot write more elements than are available\n");
+        liquid_error(LIQUID_EIRANGE,"buffer%s_s_write(), cannot write more elements than are available", EXTENSION);
         return;
     }
 

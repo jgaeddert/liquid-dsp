@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -235,12 +235,7 @@ int EQLMS(_reset)(EQLMS() _q)
 // print eqlms object internals
 int EQLMS(_print)(EQLMS() _q)
 {
-    printf("<eqlms_%s, n=%u, mu=%.3f>\n", EXTENSION_FULL, _q->h_len, _q->mu);
-    unsigned int i, j;
-    for (i=0; i<_q->h_len; i++) {
-        j = _q->h_len - i - 1;
-        printf("  w[%3u] = %12.4e + j*%12.4e;\n", i, creal(_q->w0[j]), cimag(_q->w0[j]));
-    }
+    printf("<liquid.eqlms_%s, order=%u, mu=%.3f>\n", EXTENSION_FULL, _q->h_len, _q->mu);
     return LIQUID_OK;
 }
 
@@ -485,7 +480,8 @@ int EQLMS(_train)(EQLMS()      _q,
 {
     unsigned int p=_q->h_len;
     if (_n < _q->h_len) {
-        fprintf(stderr,"warning: eqlms_%s_train(), traning sequence less than filter order\n", EXTENSION_FULL);
+        return liquid_error(LIQUID_EICONFIG,"eqlms_%s_train(), traning sequence less than filter order",
+                EXTENSION_FULL);
     }
 
     unsigned int i;
