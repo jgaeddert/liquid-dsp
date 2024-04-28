@@ -1477,6 +1477,16 @@ readme.c.example.o : %.o : %.c ${include_headers}
 readme.c.example : % : %.o ${ARCHIVE_LIB}
 	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
 
+# C++ example
+readme.cc.example.cc : README.md
+	${SED} -n '153,174p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+
+readme.cc.example.o : %.o : %.cc ${include_headers}
+	${CXX} ${CPPFLAGS} ${CXXFLAGS} $< -c -o $@
+
+readme.cc.example : % : %.o ${ARCHIVE_LIB}
+	${CXX} ${CXXFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
+
 # C++ link example
 readme.link.example.cc : README.md
 	${SED} -n '153,174p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
@@ -1489,7 +1499,7 @@ readme.link.example : % : %.o ${ARCHIVE_LIB}
 
 # C++ bind example
 readme.bind.example.cc : README.md
-	${SED} -n '188,205p' $< | ${SED} "s/<liquid\/liquid.hh>/\"liquid.hh\"/g" > $@
+	${SED} -n '201,218p' $< | ${SED} "s/<liquid\/liquid.hh>/\"liquid.hh\"/g" > $@
 
 readme.bind.example.o : %.o : %.cc ${include_headers} bind/firinterp.hh
 	${CXX} ${CPPFLAGS} ${CXXFLAGS} -I ./bind -c -o $@ $<
@@ -1499,9 +1509,11 @@ readme.bind.example : % : %.o ${ARCHIVE_LIB}
 
 # Python bind example
 readme.bind.py : README.md
-	${SED} -n '229,236p' $< > $@
+	${SED} -n '242,250p' $< > $@
 
 check-doc : readme.c.example readme.cc.example ; ./readme.c.example && ./readme.cc.example
+#check-doc : readme.c.example readme.cc.example readme.link.example readme.bind.example
+#	readme.c.example && ./readme.cc.example && ./readme.link.example && ./readme.bind.example
 
 clean-check-doc:
 	${RM} readme.*.example*
