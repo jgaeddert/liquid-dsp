@@ -46,17 +46,16 @@ jobs:
     - name: make coverage
       run: make -j 2 coverage
 
-    - name: upload report to codecov with github action
-      uses: codecov/codecov-action@v4
-      with:
-        fail_ci_if_error: true
-        verbose: true
-        token: ${{ secrets.CODECOV_TOKEN }}
+    # prefer codecov action (below), but produces 'unusable report';
+    - name: upload report to codecov using bash script
       run: bash <(curl -s https://codecov.io/bash)
-      # prefer codecov action, but produces 'unusable report';
-      # (suspect path fixing needed: https://docs.codecov.com/docs/fixing-paths)
-      #uses: codecov/codecov-action@v3
-      #with:
-      #  fail_ci_if_error: true
-      #  verbose: true
-      #  files: coverage.out
+
+    # NOTE: this fails to upload
+    # (suspect path fixing needed: https://docs.codecov.com/docs/fixing-paths)
+    #- name: upload report to codecov with github action
+    #  uses: codecov/codecov-action@v4
+    #  with:
+    #    fail_ci_if_error: true
+    #    verbose: true
+    #    token: ${{ secrets.CODECOV_TOKEN }}
+
