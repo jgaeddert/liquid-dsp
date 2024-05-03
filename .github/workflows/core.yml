@@ -35,8 +35,11 @@ jobs:
       if: runner.os == 'macOS'
       run: brew install pybind11
 
-    - name: Setup python dependencies (pip)
-      run: sudo -H python3 -m pip install pybind11 numpy matplotlib
+    - name: Setup python environment and install dependencies (pip)
+      run: |
+        python3 -m venv /tmp/liquid
+        source /tmp/liquid/bin/activate
+        python3 -m pip install pybind11 numpy matplotlib
 
     - name: bootstrap
       run: ./bootstrap.sh
