@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,25 +26,6 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-static int callback_dsssframe(
-    unsigned char *  _header,
-    int              _header_valid,
-    unsigned char *  _payload,
-    unsigned int     _payload_len,
-    int              _payload_valid,
-    framesyncstats_s _stats,
-    void *           _userdata)
-{
-    printf("*** dsssframe callback invoked ***\n");
-    framesyncstats_print(&_stats);
-    if (_payload_valid)
-        *((int*)_userdata) = 1; // success
-    return 0;
-}
-
-// 
-// AUTOTEST : test simple recovery of frame in noise
-//
 void autotest_dsssframesync()
 {
     unsigned int _payload_len = 400;
@@ -60,8 +41,8 @@ void autotest_dsssframesync()
     dsssframegen_assemble(fg, NULL, NULL, _payload_len);
 
     // create dsssframesync object
-    int success = 0;
-    dsssframesync fs = dsssframesync_create(callback_dsssframe,(void*)&success);
+    unsigned int context = 0;
+    dsssframesync fs = dsssframesync_create(framing_autotest_callback, (void*)&context);
 
     // generate the frame
     int frame_complete = 0;
@@ -87,7 +68,7 @@ void autotest_dsssframesync()
     CONTEND_EQUALITY( stats.num_payloads_valid,  1 );
     CONTEND_EQUALITY( stats.num_bytes_received,  _payload_len );
 #endif
-    CONTEND_EQUALITY( success, 1 );
+    CONTEND_EQUALITY(context, FRAMING_AUTOTEST_SECRET);
 
     // destroy objects
     dsssframegen_destroy(fg);

@@ -420,9 +420,6 @@ int CBUFFER(_destroy)(CBUFFER() _q);                                        \
 /* Print cbuffer object properties to stdout                            */  \
 int CBUFFER(_print)(CBUFFER() _q);                                          \
                                                                             \
-/* Print cbuffer object properties and internal state                   */  \
-int CBUFFER(_debug_print)(CBUFFER() _q);                                    \
-                                                                            \
 /* Clear internal buffer                                                */  \
 int CBUFFER(_reset)(CBUFFER() _q);                                          \
                                                                             \
@@ -5994,6 +5991,83 @@ int dsssframesync_debug_print         (dsssframesync _q, const char * _filename)
 framedatastats_s dsssframesync_get_framedatastats  (dsssframesync _q);
 
 //
+// Direct sequence/spread spectrum framing with fixed 64-byte payload
+//
+
+// frame generator object type
+typedef struct dsssframe64gen_s * dsssframe64gen;
+
+// create dsssframe64gen object
+dsssframe64gen dsssframe64gen_create();
+
+// copy object
+dsssframe64gen dsssframe64gen_copy(dsssframe64gen q_orig);
+
+// destroy dsssframe64gen object
+int dsssframe64gen_destroy(dsssframe64gen _q);
+
+// print dsssframe64gen object internals
+int dsssframe64gen_print(dsssframe64gen _q);
+
+// get length of assembled frame (samples)
+unsigned int dsssframe64gen_get_frame_len(dsssframe64gen _q);
+
+// generate a frame
+//  _q          :   frame generator object
+//  _header     :   8-byte header data, NULL for random
+//  _payload    :   64-byte payload data, NULL for random
+//  _frame      :   output frame samples, [size: dsssframegen64gen_get_frame_len() x 1]
+int dsssframe64gen_execute(dsssframe64gen         _q,
+                           const unsigned char *  _header,
+                           const unsigned char *  _payload,
+                           liquid_float_complex * _buf);
+
+// get full frame length [samples]
+unsigned int dsssframe64gen_get_frame_len(dsssframe64gen _q);
+
+// frame synchronizer object type
+typedef struct dsssframe64sync_s * dsssframe64sync;
+
+dsssframe64sync dsssframe64sync_create(framesync_callback _callback, void * _userdata);
+
+// copy object
+dsssframe64sync dsssframe64sync_copy(dsssframe64sync q_orig);
+
+int dsssframe64sync_destroy             (dsssframe64sync _q);
+int dsssframe64sync_print               (dsssframe64sync _q);
+int dsssframe64sync_reset               (dsssframe64sync _q);
+int dsssframe64sync_is_frame_open       (dsssframe64sync _q);
+int dsssframe64sync_set_callback(dsssframe64sync    _q,
+                                 framesync_callback _callback);
+int dsssframe64sync_set_context(dsssframe64sync _q,
+                                void *          _context);
+// execute frame synchronizer
+//  _q       : frame synchronizer object
+//  _buf     : input sample array, shape: (_buf_len,)
+//  _buf_len : number of input samples
+int dsssframe64sync_execute(dsssframe64sync _q, liquid_float_complex * _buf, unsigned int _buf_len);
+
+// get detection threshold
+float dsssframe64sync_get_threshold(dsssframe64sync _q);
+
+// set detection threshold
+int dsssframe64sync_set_threshold(dsssframe64sync _q,
+                                  float           _threshold);
+
+// get carrier offset search range [radians/sample]
+float dsssframe64sync_get_range(dsssframe64sync _q);
+
+// set carrier offset search range
+int dsssframe64sync_set_range(dsssframe64sync _q,
+                              float           _dphi_max);
+
+// reset frame data statistics
+int dsssframe64sync_reset_framedatastats(dsssframe64sync _q);
+
+// retrieve frame data statistics
+framedatastats_s dsssframe64sync_get_framedatastats(dsssframe64sync _q);
+
+//
 // OFDM flexframe generator
 //
 
@@ -6344,10 +6418,13 @@ void * QDETECTOR(_execute)(QDETECTOR() _q, TI _x);                          \
 /* get detection threshold                                              */  \
 float QDETECTOR(_get_threshold)(QDETECTOR() _q);                            \
                                                                             \
-/* set detection threshold (should be between 0 and 1, good starting    */  \
+/* Set detection threshold (should be between 0 and 1, good starting    */  \
 /* point is 0.5)                                                        */  \
 int QDETECTOR(_set_threshold)(QDETECTOR() _q,                               \
                               float       _threshold);                      \
+                                                                            \
+/* Get carrier offset search range                                      */  \
+float QDETECTOR(_get_range)(QDETECTOR() _q);                                \
                                                                             \
 /* Set carrier offset search range                                      */  \
 int QDETECTOR(_set_range)(QDETECTOR() _q,                                   \
@@ -6434,6 +6511,9 @@ int QDSYNC(_reset)(QDSYNC() _q);                                            \
 /* Print synchronizer object information to stdout                      */  \
 int QDSYNC(_print)(QDSYNC() _q);                                            \
                                                                             \
+/* Get detection state                                                  */  \
+int QDSYNC(_is_detected)(QDSYNC() _q);                                  \
+                                                                            \
 /* Get detection threshold                                              */  \
 float QDSYNC(_get_threshold)(QDSYNC() _q);                                  \
                                                                             \
@@ -6441,7 +6521,10 @@ float QDSYNC(_get_threshold)(QDSYNC() _q);                                  \
 int QDSYNC(_set_threshold)(QDSYNC() _q,                                     \
                            float    _threshold);                            \
                                                                             \
-/* set carrier offset search range                                      */  \
+/* Get carrier offset search range                                      */  \
+float QDSYNC(_get_range)(QDSYNC() _q);                                      \
+                                                                            \
+/* Set carrier offset search range                                      */  \
 int QDSYNC(_set_range)(QDSYNC() _q,                                         \
                        float    _dphi_max);                                 \
                                                                             \
@@ -8228,105 +8311,164 @@ int gmskdem_demodulate(gmskdem                _q,
 
 // CP-FSK filter prototypes
 typedef enum {
+    //LIQUID_CPFSK_UNKNOWN=0
     LIQUID_CPFSK_SQUARE=0,      // square pulse
     LIQUID_CPFSK_RCOS_FULL,     // raised-cosine (full response)
     LIQUID_CPFSK_RCOS_PARTIAL,  // raised-cosine (partial response)
     LIQUID_CPFSK_GMSK,          // Gauss minimum-shift keying pulse
 } liquid_cpfsk_filter;
 
-// CP-FSK modulator
-typedef struct cpfskmod_s * cpfskmod;
+// TODO: rename to cpfskmodcf for consistency
+#define LIQUID_CPFSKMOD_MANGLE_FLOAT(name) LIQUID_CONCAT(cpfskmod,name)
 
-// create cpfskmod object (frequency modulator)
-//  _bps    :   bits per symbol, _bps > 0
-//  _h      :   modulation index, _h > 0
-//  _k      :   samples/symbol, _k > 1, _k even
-//  _m      :   filter delay (symbols), _m > 0
-//  _beta   :   filter bandwidth parameter, _beta > 0
-//  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
-cpfskmod cpfskmod_create(unsigned int _bps,
-                         float        _h,
-                         unsigned int _k,
-                         unsigned int _m,
-                         float        _beta,
-                         int          _type);
-//cpfskmod cpfskmod_create_msk(unsigned int _k);
-//cpfskmod cpfskmod_create_gmsk(unsigned int _k, float _BT);
+#define LIQUID_CPFSKMOD_DEFINE_API(CPFSKMOD,T,TC)                           \
+                                                                            \
+/* Continuous-Phase Frequency-Shift Keying Modulator                    */  \
+typedef struct CPFSKMOD(_s) * CPFSKMOD();                                   \
+                                                                            \
+/* create cpfskmod object (frequency modulator)                         */  \
+/*  _bps    : bits per symbol, _bps > 0                                 */  \
+/*  _h      : modulation index, _h > 0                                  */  \
+/*  _k      : samples/symbol, _k > 1, _k even                           */  \
+/*  _m      : filter delay (symbols), _m > 0                            */  \
+/*  _beta   : filter bandwidth parameter, _beta > 0                     */  \
+/*  _type   : filter type (e.g. LIQUID_CPFSK_SQUARE)                    */  \
+CPFSKMOD() CPFSKMOD(_create)(unsigned int _bps,                             \
+                             float        _h,                               \
+                             unsigned int _k,                               \
+                             unsigned int _m,                               \
+                             float        _beta,                            \
+                             int          _type);                           \
+                                                                            \
+/* create modulator object for minimum-shift keying                     */  \
+/*  _k      : samples/symbol, _k > 1, _k even                           */  \
+CPFSKMOD() CPFSKMOD(_create_msk)(unsigned int _k);                          \
+                                                                            \
+/* create modulator object for Gauss minimum-shift keying               */  \
+/*  _k      : samples/symbol, _k > 1, _k even                           */  \
+/*  _m      : filter delay (symbols), _m > 0                            */  \
+/*  _BT     : bandwidth-time factor, 0 < _BT < 1                        */  \
+CPFSKMOD() CPFSKMOD(_create_gmsk)(unsigned int _k,                          \
+                                  unsigned int _m,                          \
+                                  float        _BT);                        \
+                                                                            \
+/* Copy object including all internal objects and state                 */  \
+CPFSKMOD() CPFSKMOD(_copy)(CPFSKMOD() _q);                                  \
+                                                                            \
+/* Destroy modulator object, freeing all allocate memory                */  \
+int CPFSKMOD(_destroy)(CPFSKMOD() _q);                                      \
+                                                                            \
+/* Print modulator status to stdout                                     */  \
+int CPFSKMOD(_print)(CPFSKMOD() _q);                                        \
+                                                                            \
+/* Reset internal state of modulator object                             */  \
+int CPFSKMOD(_reset)(CPFSKMOD() _q);                                        \
+                                                                            \
+/* Get modulator's number of bits per symbol                            */  \
+unsigned int CPFSKMOD(_get_bits_per_symbol)(CPFSKMOD() _q);                 \
+                                                                            \
+/* Get modulator's modulation index                                     */  \
+float CPFSKMOD(_get_modulation_index)(CPFSKMOD() _q);                       \
+                                                                            \
+/* Get modulator's number of samples per symbol                         */  \
+unsigned int CPFSKMOD(_get_samples_per_symbol)(CPFSKMOD() _q);              \
+                                                                            \
+/* Get modulator's filter delay [symbols]                               */  \
+unsigned int CPFSKMOD(_get_delay)(CPFSKMOD() _q);                           \
+                                                                            \
+/* Get modulator's bandwidth parameter                                  */  \
+float CPFSKMOD(_get_beta)(CPFSKMOD() _q);                                   \
+                                                                            \
+/* Get modulator's filter type                                          */  \
+int CPFSKMOD(_get_type)(CPFSKMOD() _q);                                     \
+                                                                            \
+/* modulate sample                                                      */  \
+/*  _q      :   frequency modulator object                              */  \
+/*  _s      :   input symbol                                            */  \
+/*  _y      :   output sample array, [size: _k x 1]                     */  \
+int CPFSKMOD(_modulate)(CPFSKMOD()   _q,                                    \
+                        unsigned int _s,                                    \
+                        TC *         _y);                                   \
 
-// destroy cpfskmod object
-int cpfskmod_destroy(cpfskmod _q);
-
-// print cpfskmod object internals
-int cpfskmod_print(cpfskmod _q);
-
-// reset state
-int cpfskmod_reset(cpfskmod _q);
-
-// get transmit delay [symbols]
-unsigned int cpfskmod_get_delay(cpfskmod _q);
-
-// modulate sample
-//  _q      :   frequency modulator object
-//  _s      :   input symbol
-//  _y      :   output sample array, [size: _k x 1]
-int cpfskmod_modulate(cpfskmod               _q,
-                      unsigned int           _s,
-                      liquid_float_complex * _y);
-
-
-
-// CP-FSK demodulator
-typedef struct cpfskdem_s * cpfskdem;
-
-// create cpfskdem object (frequency modulator)
-//  _bps    :   bits per symbol, _bps > 0
-//  _h      :   modulation index, _h > 0
-//  _k      :   samples/symbol, _k > 1, _k even
-//  _m      :   filter delay (symbols), _m > 0
-//  _beta   :   filter bandwidth parameter, _beta > 0
-//  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
-cpfskdem cpfskdem_create(unsigned int _bps,
-                         float        _h,
-                         unsigned int _k,
-                         unsigned int _m,
-                         float        _beta,
-                         int          _type);
-//cpfskdem cpfskdem_create_msk(unsigned int _k);
-//cpfskdem cpfskdem_create_gmsk(unsigned int _k, float _BT);
-
-// destroy cpfskdem object
-int cpfskdem_destroy(cpfskdem _q);
-
-// print cpfskdem object internals
-int cpfskdem_print(cpfskdem _q);
-
-// reset state
-int cpfskdem_reset(cpfskdem _q);
-
-// get receive delay [symbols]
-unsigned int cpfskdem_get_delay(cpfskdem _q);
-
-#if 0
-// demodulate array of samples
-//  _q      :   continuous-phase frequency demodulator object
-//  _y      :   input sample array, [size: _n x 1]
-//  _n      :   input sample array length
-//  _s      :   output symbol array
-//  _nw     :   number of output symbols written
-int cpfskdem_demodulate(cpfskdem               _q,
-                        liquid_float_complex * _y,
-                        unsigned int           _n,
-                        unsigned int         * _s,
-                        unsigned int         * _nw);
-#else
-// demodulate array of samples, assuming perfect timing
-//  _q      :   continuous-phase frequency demodulator object
-//  _y      :   input sample array, [size: _k x 1]
-unsigned int cpfskdem_demodulate(cpfskdem               _q,
-                                 liquid_float_complex * _y);
-#endif
+// define cpfskmod APIs
+LIQUID_CPFSKMOD_DEFINE_API(LIQUID_CPFSKMOD_MANGLE_FLOAT,float,liquid_float_complex)
 
 
+
+// TODO: rename to cpfskdemcf for consistency
+#define LIQUID_CPFSKDEM_MANGLE_FLOAT(name) LIQUID_CONCAT(cpfskdem,name)
+
+#define LIQUID_CPFSKDEM_DEFINE_API(CPFSKDEM,T,TC)                           \
+                                                                            \
+/* Continuous-Phase Frequency-Shift Keying Demodulator                  */  \
+typedef struct CPFSKDEM(_s) * CPFSKDEM();                                   \
+                                                                            \
+/* create demodulator object                                            */  \
+/*  _bps    :   bits per symbol, _bps > 0                               */  \
+/*  _h      :   modulation index, _h > 0                                */  \
+/*  _k      :   samples/symbol, _k > 1, _k even                         */  \
+/*  _m      :   filter delay (symbols), _m > 0                          */  \
+/*  _beta   :   filter bandwidth parameter, _beta > 0                   */  \
+/*  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)                  */  \
+CPFSKDEM() CPFSKDEM(_create)(unsigned int _bps,                             \
+                             float        _h,                               \
+                             unsigned int _k,                               \
+                             unsigned int _m,                               \
+                             float        _beta,                            \
+                             int          _type);                           \
+                                                                            \
+/* create demodulator object for minimum-shift keying                   */  \
+/*  _k      : samples/symbol, _k > 1, _k even                           */  \
+CPFSKDEM() CPFSKDEM(_create_msk)(unsigned int _k);                          \
+                                                                            \
+/* create demodulator object for Gauss minimum-shift keying             */  \
+/*  _k      : samples/symbol, _k > 1, _k even                           */  \
+/*  _m      : filter delay (symbols), _m > 0                            */  \
+/*  _BT     : bandwidth-time factor, 0 < _BT < 1                        */  \
+CPFSKDEM() CPFSKDEM(_create_gmsk)(unsigned int _k,                          \
+                                  unsigned int _m,                          \
+                                  float        _BT);                        \
+                                                                            \
+/* Copy object including all internal objects and state                 */  \
+CPFSKDEM() CPFSKDEM(_copy)(CPFSKDEM() _q);                                  \
+                                                                            \
+/* Destroy demodulator object, freeing all internal memory              */  \
+int CPFSKDEM(_destroy)(CPFSKDEM() _q);                                      \
+                                                                            \
+/* Print demodulator object internals                                   */  \
+int CPFSKDEM(_print)(CPFSKDEM() _q);                                        \
+                                                                            \
+/* Reset state                                                          */  \
+int CPFSKDEM(_reset)(CPFSKDEM() _q);                                        \
+                                                                            \
+/* Get demodulator's number of bits per symbol                          */  \
+unsigned int CPFSKDEM(_get_bits_per_symbol)(CPFSKDEM() _q);                 \
+                                                                            \
+/* Get demodulator's modulation index                                   */  \
+float CPFSKDEM(_get_modulation_index)(CPFSKDEM() _q);                       \
+                                                                            \
+/* Get demodulator's number of samples per symbol                       */  \
+unsigned int CPFSKDEM(_get_samples_per_symbol)(CPFSKDEM() _q);              \
+                                                                            \
+/* Get demodulator's transmit delay [symbols]                           */  \
+unsigned int CPFSKDEM(_get_delay)(CPFSKDEM() _q);                           \
+                                                                            \
+/* Get demodulator's bandwidth parameter                                */  \
+float CPFSKDEM(_get_beta)(CPFSKDEM() _q);                                   \
+                                                                            \
+/* Get demodulator's filter type                                        */  \
+int CPFSKDEM(_get_type)(CPFSKDEM() _q);                                     \
+                                                                            \
+/* demodulate array of samples, assuming perfect timing                 */  \
+/*  _q      :   continuous-phase frequency demodulator object           */  \
+/*  _y      :   input sample array, [size: _k x 1]                      */  \
+unsigned int CPFSKDEM(_demodulate)(CPFSKDEM() _q,                           \
+                                   TC *       _y);                          \
+                                                                            \
+/* demodulate_block */                                                      \
+
+// define cpfskmod APIs
+LIQUID_CPFSKDEM_DEFINE_API(LIQUID_CPFSKDEM_MANGLE_FLOAT,float,liquid_float_complex)
 
 //
 // M-ary frequency-shift keying (MFSK) modems
@@ -9707,6 +9849,9 @@ typedef struct msequence_s * msequence;
 msequence msequence_create(unsigned int _m,
                            unsigned int _g,
                            unsigned int _a);
+
+// Copy maximal-length sequence (m-sequence) object
+msequence msequence_copy(msequence q_orig);
 
 // create a maximal-length sequence (m-sequence) object from a generator polynomial
 msequence msequence_create_genpoly(unsigned int _g);

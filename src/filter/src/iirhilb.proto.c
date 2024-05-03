@@ -113,7 +113,7 @@ int IIRHILB(_destroy)(IIRHILB() _q)
 // print iirhilb object internals
 int IIRHILB(_print)(IIRHILB() _q)
 {
-    printf("<iirhilb>\n");
+    printf("<liquid.iirhilb>\n");
     return LIQUID_OK;
 }
 

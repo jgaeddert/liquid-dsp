@@ -133,15 +133,16 @@ int QPACKETMODEM(_reset)(QPACKETMODEM() _q)
 // print object internals
 int QPACKETMODEM(_print)(QPACKETMODEM() _q)
 {
-    printf("qpacketmodem:\n");
-    printf("  check             :   %s\n", crc_scheme_str[packetizer_get_crc(_q->p)][1]);
-    printf("  fec (inner)       :   %s\n", fec_scheme_str[packetizer_get_fec0(_q->p)][1]);
-    printf("  fec (outer)       :   %s\n", fec_scheme_str[packetizer_get_fec1(_q->p)][1]);
-    printf("  modulation scheme :   %s\n", modulation_types[MODEM(_get_scheme)(_q->mod_payload)].name);
-    printf("  payload dec len   :   %u\n", _q->payload_dec_len);
-    printf("  payload enc len   :   %u\n", _q->payload_enc_len);
-    printf("  payload bit len   :   %u\n", _q->payload_bit_len);
-    printf("  payload mod len   :   %u\n", _q->payload_mod_len);
+    printf("<liquid.qpacketmodem");
+    printf(", check=\"%s\"", crc_scheme_str[packetizer_get_crc(_q->p)][0]);
+    printf(", fec_0=\"%s\"", fec_scheme_str[packetizer_get_fec0(_q->p)][0]);
+    printf(", fec_1=\"%s\"", fec_scheme_str[packetizer_get_fec1(_q->p)][0]);
+    printf(", ms=\"%s\"", modulation_types[MODEM(_get_scheme)(_q->mod_payload)].name);
+    printf(", dec=%u", _q->payload_dec_len);
+    printf(", enc=%u", _q->payload_enc_len);
+    printf(", bit=%u", _q->payload_bit_len);
+    printf(", mod=%u", _q->payload_mod_len);
+    printf(">\n");
     return LIQUID_OK;
 }
 

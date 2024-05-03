@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -255,16 +255,9 @@ int FIRPFBCH2(_reset)(FIRPFBCH2() _q)
 // print firpfbch2 object internals
 int FIRPFBCH2(_print)(FIRPFBCH2() _q)
 {
-    printf("firpfbch2_%s:\n", EXTENSION_FULL);
-    printf("    type        :   %s\n", _q->type==LIQUID_ANALYZER ? "analysis" : "synthesis");
-    printf("    channels    :   %u\n", _q->M);
-    printf("    h_len       :   %u\n", _q->h_len);
-    printf("    semi-length :   %u\n", _q->m);
-
-    // TODO: print filter coefficients...
-    unsigned int i;
-    for (i=0; i<_q->M; i++)
-        DOTPROD(_print)(_q->dp[i]);
+    printf("<liquid.firpfbch2, type=\"%s\", channels=%u, semilen=%u>\n",
+        _q->type == LIQUID_ANALYZER ? "analyzer" : "synthesizer",
+        _q->M, _q->m);
     return LIQUID_OK;
 }
 

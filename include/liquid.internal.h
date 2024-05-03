@@ -795,22 +795,6 @@ float rkaiser_approximate_rho(unsigned int _m,
                               float _beta);
 
 // Design frequency-shifted root-Nyquist filter based on
-// the Kaiser-windowed sinc using the bisection method
-//
-//  _k      :   filter over-sampling rate (samples/symbol)
-//  _m      :   filter delay (symbols)
-//  _beta   :   filter excess bandwidth factor (0,1)
-//  _dt     :   filter fractional sample delay
-//  _h      :   resulting filter, [size: 2*_k*_m+1]
-//  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-int liquid_firdes_rkaiser_bisection(unsigned int _k,
-                                    unsigned int _m,
-                                    float _beta,
-                                    float _dt,
-                                    float * _h,
-                                    float * _rho);
-
-// Design frequency-shifted root-Nyquist filter based on
 // the Kaiser-windowed sinc using the quadratic method.
 //
 //  _k      :   filter over-sampling rate (samples/symbol)
@@ -1380,19 +1364,6 @@ int MODEM(_demodulate_soft_table)(MODEM()         _q,           \
                                   TC              _x,           \
                                   unsigned int *  _sym_out,     \
                                   unsigned char * _soft_bits);  \
-                                                                \
-/* Demodulate a linear symbol constellation using dynamic   */  \
-/* threshold calculation                                    */  \
-/*  _v      :   input value             */                      \
-/*  _m      :   bits per symbol         */                      \
-/*  _alpha  :   scaling factor          */                      \
-/*  _s      :   demodulated symbol      */                      \
-/*  _res    :   residual                */                      \
-int MODEM(_demodulate_linear_array)(T              _v,          \
-                                    unsigned int   _m,          \
-                                    T              _alpha,      \
-                                    unsigned int * _s,          \
-                                    T *            _res);       \
                                                                 \
 /* Demodulate a linear symbol constellation using           */  \
 /* referenced lookup table                                  */  \

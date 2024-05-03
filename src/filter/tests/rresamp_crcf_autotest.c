@@ -45,7 +45,7 @@ void test_rresamp_crcf(const char * _method,
     } else if (strcmp(_method,"default")==0) {
         resamp = rresamp_crcf_create_default(_interp, _decim);
     } else {
-        printf("creating resampler using %s\n", _method);
+        //printf("creating resampler using %s\n", _method);
         int ftype = liquid_getopt_str2firfilt(_method);
         float beta = _bw; // rename to avoid confusion
         resamp = rresamp_crcf_create_prototype(ftype, _interp, _decim, _m, beta);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -144,11 +144,8 @@ int qpilotgen_reset(qpilotgen _q)
 
 int qpilotgen_print(qpilotgen _q)
 {
-    printf("qpilotgen:\n");
-    printf("  payload len   :   %u\n", _q->payload_len);
-    printf("  pilot spacing :   %u\n", _q->pilot_spacing);
-    printf("  num pilots    :   %u\n", _q->num_pilots);
-    printf("  frame len     :   %u\n", _q->frame_len);
+    printf("<liquid.qpilotgen, payload=%u, frame=%u, pilots=%u>\n",
+        _q->payload_len, _q->frame_len, _q->num_pilots);
     return LIQUID_OK;
 }
 

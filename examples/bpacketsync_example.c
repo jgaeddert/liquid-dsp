@@ -118,6 +118,7 @@ int main(int argc, char*argv[]) {
 
     // create packet synchronizer
     bpacketsync ps = bpacketsync_create(0, callback, (void*)msg_dec);
+    bpacketsync_print(ps);
 
     // initialize original data message
     for (i=0; i<n; i++)

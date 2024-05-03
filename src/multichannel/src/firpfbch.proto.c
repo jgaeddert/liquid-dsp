@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -263,12 +263,9 @@ int FIRPFBCH(_reset)(FIRPFBCH() _q)
 // print firpfbch object
 int FIRPFBCH(_print)(FIRPFBCH() _q)
 {
-    unsigned int i;
-    printf("firpfbch (%s) [%u channels]:\n",
-            _q->type == LIQUID_ANALYZER ? "analyzer" : "synthesizer",
-            _q->num_channels);
-    for (i=0; i<_q->h_len; i++)
-        printf("  h[%3u] = %12.8f + %12.8f*j\n", i, crealf(_q->h[i]), cimagf(_q->h[i]));
+    printf("<liquid.firpfbch, type=\"%s\", channels=%u, semilen=%u>\n",
+        _q->type == LIQUID_ANALYZER ? "analyzer" : "synthesizer",
+        _q->num_channels, _q->p);
     return LIQUID_OK;
 }
 
