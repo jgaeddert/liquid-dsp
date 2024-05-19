@@ -20,7 +20,9 @@
  * THE SOFTWARE.
  */
 
-// data scrambler
+//
+// Scramble
+//
 
 #include <stdio.h>
 #include <stdlib.h>

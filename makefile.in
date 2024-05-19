@@ -208,21 +208,27 @@ src/dotprod/src/sumsq.o : %.o : %.c $(include_headers)
 
 # specific machine architectures
 
+# AVX512F
+src/dotprod/src/dotprod_rrrf.avx512f.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_crcf.avx512f.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_cccf.avx512f.o : %.o : %.c $(include_headers)
+src/dotprod/src/sumsq.avx512f.o : %.o : %.c $(include_headers)
+
+# AVX/AVX2
+src/dotprod/src/dotprod_rrrf.avx.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_crcf.avx.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_cccf.avx.o : %.o : %.c $(include_headers)
+src/dotprod/src/sumsq.avx.o : %.o : %.c $(include_headers)
+
+# SSE2/SSE3/SSE4.1/SSE4.2
+src/dotprod/src/dotprod_rrrf.sse.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_crcf.sse.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_cccf.sse.o : %.o : %.c $(include_headers)
+src/dotprod/src/sumsq.sse.o : %.o : %.c $(include_headers)
+
 # AltiVec
 src/dotprod/src/dotprod_rrrf.av.o : %.o : %.c $(include_headers)
-
-# MMX/SSE2
-src/dotprod/src/dotprod_rrrf.mmx.o : %.o : %.c $(include_headers)
-src/dotprod/src/dotprod_crcf.mmx.o : %.o : %.c $(include_headers)
-src/dotprod/src/dotprod_cccf.mmx.o : %.o : %.c $(include_headers)
-
-src/dotprod/src/sumsq.mmx.o : %.o : %.c $(include_headers)
-
-# SSE4.1/2
-src/dotprod/src/dotprod_rrrf.sse4.o : %.o : %.c $(include_headers)
-
-# AVX
-src/dotprod/src/sumsq.avx.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_crcf.av.o : %.o : %.c $(include_headers)
 
 # ARM Neon
 src/dotprod/src/dotprod_rrrf.neon.o : %.o : %.c $(include_headers)
@@ -1049,10 +1055,11 @@ quantization_benchmarks :=					\
 	src/quantization/bench/quantizer_benchmark.c		\
 	src/quantization/bench/compander_benchmark.c		\
 
-# 
+#
 # MODULE : random
 #
 
+# main objects that only have portable builds
 random_objects :=						\
 	src/random/src/rand.o					\
 	src/random/src/randn.o					\
@@ -1061,10 +1068,32 @@ random_objects :=						\
 	src/random/src/randgamma.o				\
 	src/random/src/randnakm.o				\
 	src/random/src/randricek.o				\
-	src/random/src/scramble.o				\
-
 
 $(random_objects) : %.o : %.c $(include_headers)
+
+# main objects list
+random_objects +=						\
+	@MLIBS_RANDOM@						\
+
+# portable builds
+src/random/src/scramble.o : %.o : %.c $(include_headers)
+
+# specific machine architectures
+
+# avx512f
+src/random/src/scramble.avx512v.o : %.o : %.c $(include_headers)
+
+# AVX/AVX2
+src/random/src/scramble.avx.o : %.o : %.c $(include_headers)
+
+# SSE2/SSE3/SSE4.1/SSE4.2
+src/random/src/scramble.sse.o : %.o : %.c $(include_headers)
+
+# AltiVec
+# TODO...
+
+# ARM Neon
+# TODO...
 
 # autotests
 random_autotests :=						\
@@ -1136,17 +1165,31 @@ vector_objects :=						\
 	@MLIBS_VECTOR@						\
 
 # portable builds
-src/vector/src/vectorf_add.port.o   : %.o : %.c $(include_headers) src/vector/src/vector_add.proto.c
-src/vector/src/vectorf_norm.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_norm.proto.c
-src/vector/src/vectorf_mul.port.o   : %.o : %.c $(include_headers) src/vector/src/vector_mul.proto.c
-src/vector/src/vectorf_trig.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_trig.proto.c
-src/vector/src/vectorcf_add.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_add.proto.c
-src/vector/src/vectorcf_norm.port.o : %.o : %.c $(include_headers) src/vector/src/vector_norm.proto.c
-src/vector/src/vectorcf_mul.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_mul.proto.c
-src/vector/src/vectorcf_trig.port.o : %.o : %.c $(include_headers) src/vector/src/vector_trig.proto.c
+src/vector/src/vectorf_add.o   : %.o : %.c $(include_headers) src/vector/src/vector_add.proto.c
+src/vector/src/vectorf_norm.o  : %.o : %.c $(include_headers) src/vector/src/vector_norm.proto.c
+src/vector/src/vectorf_mul.o   : %.o : %.c $(include_headers) src/vector/src/vector_mul.proto.c
+src/vector/src/vectorf_trig.o  : %.o : %.c $(include_headers) src/vector/src/vector_trig.proto.c
+src/vector/src/vectorcf_add.o  : %.o : %.c $(include_headers) src/vector/src/vector_add.proto.c
+src/vector/src/vectorcf_norm.o : %.o : %.c $(include_headers) src/vector/src/vector_norm.proto.c
+src/vector/src/vectorcf_mul.o  : %.o : %.c $(include_headers) src/vector/src/vector_mul.proto.c
+src/vector/src/vectorcf_trig.o : %.o : %.c $(include_headers) src/vector/src/vector_trig.proto.c
 
-# builds for specific architectures
-# ...
+# specific machine architectures
+
+# avx512f
+src/vector/src/vectorcf_mul.avx512f.o  : %.o : %.c $(include_headers)
+
+# AVX/AVX2
+src/vector/src/vectorcf_mul.avx.o  : %.o : %.c $(include_headers)
+
+# SSE2/SSE3/SSE4.1/SSE4.2
+src/vector/src/vectorcf_mul.sse.o  : %.o : %.c $(include_headers)
+
+# AltiVec
+# TODO...
+
+# ARM Neon
+# TODO...
 
 # vector autotest scripts
 vector_autotests :=
