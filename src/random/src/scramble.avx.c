@@ -47,7 +47,7 @@ void scramble_data(unsigned char * _x,
     // apply static masks
     unsigned int i;
     for (i=0; i<t; i+=32) {
-        x = _mm256_loadu_si256((const __m256i_u *)&_x[i]);
+        x = _mm256_lddqu_si256((const __m256i_u *)&_x[i]);
 
 #if HAVE_AVX2
         x = _mm256_xor_si256(x, mask);
@@ -97,7 +97,7 @@ void unscramble_data_soft(unsigned char * _x,
     // apply static masks
     unsigned int i;
     for (i=0; i<t; i+=4) {
-        x = _mm256_loadu_si256((const __m256i_u *)&_x[8 * i]);
+        x = _mm256_lddqu_si256((const __m256i_u *)&_x[8 * i]);
         y = _mm256_sub_epi8(mask, x);
         x = _mm256_blendv_epi8(x, y, mask);
         _mm256_storeu_si256((__m256i_u *)&_x[8 * i], x);

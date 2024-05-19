@@ -49,7 +49,7 @@ void scramble_data(unsigned char * _x,
     // apply static masks
     unsigned int i;
     for (i=0; i<t; i+=16) {
-        x = _mm_loadu_si128((const __m128i_u *)&_x[i]);
+        x = _mm_lddqu_si128((const __m128i_u *)&_x[i]);
 
         x = _mm_xor_si128(x, mask);
 
@@ -96,12 +96,12 @@ void unscramble_data_soft(unsigned char * _x,
     // apply static masks
     unsigned int i;
     for (i=0; i<t; i+=4) {
-        x = _mm_loadu_si128((const __m128i_u *)&_x[8 * i]);
+        x = _mm_lddqu_si128((const __m128i_u *)&_x[8 * i]);
         y = _mm_sub_epi8(mask01, x);
         x = _mm_blendv_epi8(x, y, mask01);
         _mm_storeu_si128((__m128i_u *)&_x[8 * i], x);
 
-        x = _mm_loadu_si128((const __m128i_u *)&_x[8 * i + 16]);
+        x = _mm_lddqu_si128((const __m128i_u *)&_x[8 * i + 16]);
         y = _mm_sub_epi8(mask23, x);
         x = _mm_blendv_epi8(x, y, mask23);
         _mm_storeu_si128((__m128i_u *)&_x[8 * i + 16], x);
