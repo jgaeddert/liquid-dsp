@@ -184,7 +184,7 @@ else
         AX_EXT
 
         if [ test "$ax_cv_have_avx512bw_ext" = yes ]; then
-            # AVX512 extensions
+            # AVX512-BW extensions
             MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx512f.o \
                            src/dotprod/src/dotprod_crcf.avx512f.o \
                            src/dotprod/src/dotprod_rrrf.avx512f.o \
@@ -200,7 +200,7 @@ else
              MLIBS_RANDOM="src/random/src/scramble.avx512f.o"
             ARCH_OPTION='-mavx512bw'
         elif [ test "$ax_cv_have_avx512f_ext" = yes ]; then
-            # AVX512 extensions
+            # AVX512-F extensions
             MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx512f.o \
                            src/dotprod/src/dotprod_crcf.avx512f.o \
                            src/dotprod/src/dotprod_rrrf.avx512f.o \

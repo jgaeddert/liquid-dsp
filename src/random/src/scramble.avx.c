@@ -79,12 +79,10 @@ void unscramble_data(unsigned char * _x,
 void unscramble_data_soft(unsigned char * _x,
                           unsigned int _n)
 {
-#if HAVE_AVX2
     // t = 4*(floor(_n/4))
     unsigned int t = (_n >> 2) << 2;
 
     __m256i x;
-    __m256i y;
     __m256i mask = _mm256_set_epi8((LIQUID_SCRAMBLE_MASK3 & 0x01) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK3 & 0x02) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK3 & 0x04) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK3 & 0x08) ? 0xFF : 0,
                                    (LIQUID_SCRAMBLE_MASK3 & 0x10) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK3 & 0x20) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK3 & 0x40) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK3 & 0x80) ? 0xFF : 0,
                                    (LIQUID_SCRAMBLE_MASK2 & 0x01) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK2 & 0x02) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK2 & 0x04) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK2 & 0x08) ? 0xFF : 0,
@@ -98,17 +96,17 @@ void unscramble_data_soft(unsigned char * _x,
     unsigned int i;
     for (i=0; i<t; i+=4) {
         x = _mm256_lddqu_si256((const __m256i_u *)&_x[8 * i]);
-        y = _mm256_sub_epi8(mask, x);
-        x = _mm256_blendv_epi8(x, y, mask);
+
+#if HAVE_AVX2
+        x = _mm256_xor_si256(x, mask);
+#else
+        x = (__m256i)_mm256_xor_pd((__m256d)x, (__m256d)mask); // Same effect as _mm256_xor_si256, but maybe higher latency
+#endif
+
         _mm256_storeu_si256((__m256i_u *)&_x[8 * i], x);
     }
 
     for (; i<_n; i++) {
-#else
-    // apply static masks
-    unsigned int i;
-    for (i=0; i<_n; i++) {
-#endif
         unsigned char mask;
 
         switch ( i % 4 ) {
@@ -119,14 +117,14 @@ void unscramble_data_soft(unsigned char * _x,
         default:;
         }
 
-        if ( mask & 0x80 ) _x[8*i+0] = 255 - _x[8*i+0];
-        if ( mask & 0x40 ) _x[8*i+1] = 255 - _x[8*i+1];
-        if ( mask & 0x20 ) _x[8*i+2] = 255 - _x[8*i+2];
-        if ( mask & 0x10 ) _x[8*i+3] = 255 - _x[8*i+3];
-        if ( mask & 0x08 ) _x[8*i+4] = 255 - _x[8*i+4];
-        if ( mask & 0x04 ) _x[8*i+5] = 255 - _x[8*i+5];
-        if ( mask & 0x02 ) _x[8*i+6] = 255 - _x[8*i+6];
-        if ( mask & 0x01 ) _x[8*i+7] = 255 - _x[8*i+7];
+        if ( mask & 0x80 ) _x[8*i+0] ^= 255;
+        if ( mask & 0x40 ) _x[8*i+1] ^= 255;
+        if ( mask & 0x20 ) _x[8*i+2] ^= 255;
+        if ( mask & 0x10 ) _x[8*i+3] ^= 255;
+        if ( mask & 0x08 ) _x[8*i+4] ^= 255;
+        if ( mask & 0x04 ) _x[8*i+5] ^= 255;
+        if ( mask & 0x02 ) _x[8*i+6] ^= 255;
+        if ( mask & 0x01 ) _x[8*i+7] ^= 255;
     }
 }
 

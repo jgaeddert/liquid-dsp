@@ -86,14 +86,14 @@ void unscramble_data_soft(unsigned char * _x,
                 _x[8*i+j] = 255 - _x[8*i+j];
         }
 #else
-        if ( mask & 0x80 ) _x[8*i+0] = 255 - _x[8*i+0];
-        if ( mask & 0x40 ) _x[8*i+1] = 255 - _x[8*i+1];
-        if ( mask & 0x20 ) _x[8*i+2] = 255 - _x[8*i+2];
-        if ( mask & 0x10 ) _x[8*i+3] = 255 - _x[8*i+3];
-        if ( mask & 0x08 ) _x[8*i+4] = 255 - _x[8*i+4];
-        if ( mask & 0x04 ) _x[8*i+5] = 255 - _x[8*i+5];
-        if ( mask & 0x02 ) _x[8*i+6] = 255 - _x[8*i+6];
-        if ( mask & 0x01 ) _x[8*i+7] = 255 - _x[8*i+7];
+        if ( mask & 0x80 ) _x[8*i+0] ^= 255;
+        if ( mask & 0x40 ) _x[8*i+1] ^= 255;
+        if ( mask & 0x20 ) _x[8*i+2] ^= 255;
+        if ( mask & 0x10 ) _x[8*i+3] ^= 255;
+        if ( mask & 0x08 ) _x[8*i+4] ^= 255;
+        if ( mask & 0x04 ) _x[8*i+5] ^= 255;
+        if ( mask & 0x02 ) _x[8*i+6] ^= 255;
+        if ( mask & 0x01 ) _x[8*i+7] ^= 255;
 #endif
     }
 }

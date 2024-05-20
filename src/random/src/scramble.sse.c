@@ -83,7 +83,6 @@ void unscramble_data_soft(unsigned char * _x,
     unsigned int t = (_n >> 2) << 2;
 
     __m128i x;
-    __m128i y;
     __m128i mask01 = _mm_set_epi8((LIQUID_SCRAMBLE_MASK1 & 0x01) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK1 & 0x02) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK1 & 0x04) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK1 & 0x08) ? 0xFF : 0,
                                   (LIQUID_SCRAMBLE_MASK1 & 0x10) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK1 & 0x20) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK1 & 0x40) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK1 & 0x80) ? 0xFF : 0,
                                   (LIQUID_SCRAMBLE_MASK0 & 0x01) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK0 & 0x02) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK0 & 0x04) ? 0xFF : 0, (LIQUID_SCRAMBLE_MASK0 & 0x08) ? 0xFF : 0,
@@ -97,13 +96,11 @@ void unscramble_data_soft(unsigned char * _x,
     unsigned int i;
     for (i=0; i<t; i+=4) {
         x = _mm_lddqu_si128((const __m128i_u *)&_x[8 * i]);
-        y = _mm_sub_epi8(mask01, x);
-        x = _mm_blendv_epi8(x, y, mask01);
+        x = _mm_xor_si128(x, mask01);
         _mm_storeu_si128((__m128i_u *)&_x[8 * i], x);
 
         x = _mm_lddqu_si128((const __m128i_u *)&_x[8 * i + 16]);
-        y = _mm_sub_epi8(mask23, x);
-        x = _mm_blendv_epi8(x, y, mask23);
+        x = _mm_xor_si128(x, mask23);
         _mm_storeu_si128((__m128i_u *)&_x[8 * i + 16], x);
     }
 
@@ -123,14 +120,14 @@ void unscramble_data_soft(unsigned char * _x,
         default:;
         }
 
-        if ( mask & 0x80 ) _x[8*i+0] = 255 - _x[8*i+0];
-        if ( mask & 0x40 ) _x[8*i+1] = 255 - _x[8*i+1];
-        if ( mask & 0x20 ) _x[8*i+2] = 255 - _x[8*i+2];
-        if ( mask & 0x10 ) _x[8*i+3] = 255 - _x[8*i+3];
-        if ( mask & 0x08 ) _x[8*i+4] = 255 - _x[8*i+4];
-        if ( mask & 0x04 ) _x[8*i+5] = 255 - _x[8*i+5];
-        if ( mask & 0x02 ) _x[8*i+6] = 255 - _x[8*i+6];
-        if ( mask & 0x01 ) _x[8*i+7] = 255 - _x[8*i+7];
+        if ( mask & 0x80 ) _x[8*i+0] ^= 255;
+        if ( mask & 0x40 ) _x[8*i+1] ^= 255;
+        if ( mask & 0x20 ) _x[8*i+2] ^= 255;
+        if ( mask & 0x10 ) _x[8*i+3] ^= 255;
+        if ( mask & 0x08 ) _x[8*i+4] ^= 255;
+        if ( mask & 0x04 ) _x[8*i+5] ^= 255;
+        if ( mask & 0x02 ) _x[8*i+6] ^= 255;
+        if ( mask & 0x01 ) _x[8*i+7] ^= 255;
     }
 }
 
