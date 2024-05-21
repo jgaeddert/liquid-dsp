@@ -163,8 +163,7 @@ NCO() NCO(_create)(liquid_ncotype _type)
         break;
     }
     default:
-        fprintf(stderr,"error: NCO(_create)(), unknown type : %u\n", q->type);
-        exit(1);
+        return liquid_error_config("nco_%s_create(), unknown type : %u\n", EXTENSION, q->type);
     }
 
     // set default pll bandwidth
@@ -293,9 +292,8 @@ int NCO(_set_frequency)(NCO() _q,
                         T     _dtheta)
 {
     if (_q->type == LIQUID_VCO_DIRECT) {
-        fprintf(stderr,"error: nco_set_frequency(), "
-                       "cannot be used with object type == LIQUID_VCO_DIRECT\n");
-        exit(1);
+        return liquid_error(LIQUID_EICONFIG,"nco_set_frequency(), "
+                       "cannot be used with object type == LIQUID_VCO_DIRECT");
     }
     _q->d_theta = NCO(_constrain)(_dtheta);
     return LIQUID_OK;
@@ -306,9 +304,8 @@ int NCO(_adjust_frequency)(NCO() _q,
                            T     _df)
 {
     if (_q->type == LIQUID_VCO_DIRECT) {
-        fprintf(stderr,"error: nco_adjust_frequency(), "
-                       "cannot be used with object type == LIQUID_VCO_DIRECT\n");
-        exit(1);
+        return liquid_error(LIQUID_EICONFIG,"nco_adjust_frequency(), "
+                       "cannot be used with object type == LIQUID_VCO_DIRECT");
     }
     _q->d_theta += NCO(_constrain)(_df);
     return LIQUID_OK;
@@ -319,9 +316,8 @@ int NCO(_set_phase)(NCO() _q,
                     T     _phi)
 {
     if (_q->type == LIQUID_VCO_DIRECT) {
-        fprintf(stderr,"error: nco_set_phase(), "
+        return liquid_error(LIQUID_EICONFIG,"error: nco_set_phase(), "
                        "cannot be used with object type == LIQUID_VCO_DIRECT\n");
-        exit(1);
     }
     _q->theta = NCO(_constrain)(_phi);
     return LIQUID_OK;
@@ -332,9 +328,8 @@ int NCO(_adjust_phase)(NCO() _q,
                        T     _dphi)
 {
     if (_q->type == LIQUID_VCO_DIRECT) {
-        fprintf(stderr,"error: nco_adjust_phase(), "
-                       "cannot be used with object type == LIQUID_VCO_DIRECT\n");
-        exit(1);
+        return liquid_error(LIQUID_EICONFIG,"error: nco_adjust_phase(), "
+                       "cannot be used with object type == LIQUID_VCO_DIRECT");
     }
     _q->theta += NCO(_constrain)(_dphi);
     return LIQUID_OK;
@@ -357,9 +352,8 @@ int NCO(_step)(NCO() _q)
 T NCO(_get_phase)(NCO() _q)
 {
     if (_q->type == LIQUID_VCO_DIRECT) {
-        fprintf(stderr,"error: nco_get_phase(), "
-                       "cannot be used with object type == LIQUID_VCO_DIRECT\n");
-        exit(1);
+        return liquid_error(LIQUID_EICONFIG,"error: nco_get_phase(), "
+                       "cannot be used with object type == LIQUID_VCO_DIRECT");
     }
     return TIL(2)*TFL(M_PI)*(T)_q->theta / (T)(1LLU<<32);
 }
@@ -636,7 +630,7 @@ int NCO(_mix_block_up)(NCO()        _q,
     for (i=0; i<_n; i++) {
         // multiply _x[i] by [cos(theta) + _Complex_I*sin(theta)]
         _y[i] = _x[i] * liquid_cexpjf(theta);
-        
+
         theta += d_theta;
     }
 
@@ -675,7 +669,7 @@ int NCO(_mix_block_down)(NCO()        _q,
     for (i=0; i<_n; i++) {
         // multiply _x[i] by [cos(-theta) + _Complex_I*sin(-theta)]
         _y[i] = _x[i] * liquid_cexpjf(-theta);
-        
+
         theta += d_theta;
     }
 
