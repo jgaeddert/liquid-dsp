@@ -182,9 +182,24 @@ NCO() NCO(_copy)(NCO() q_orig)
     if (q_orig == NULL)
         return liquid_error_config("nco_%s_copy(), object cannot be NULL", EXTENSION);
 
-    // allocate new object, copy all memory, return
+    // allocate new object, copy main component memory
     NCO() q_copy = (NCO()) malloc(sizeof(struct NCO(_s)));
     memmove(q_copy, q_orig, sizeof(struct NCO(_s)));
+
+    // re-allocate arrays as needed
+    switch (q_copy->type) {
+    case LIQUID_NCO:
+        q_copy->nco_sintab = (T *) liquid_malloc_copy(q_orig->nco_sintab, NCO_STATIC_LUT_SIZE, sizeof(T));
+        break;
+    case LIQUID_VCO_INTERP:
+        q_copy->vcoi_sintab = (vco_tab_e *) liquid_malloc_copy(q_orig->vcoi_sintab, NCO_STATIC_LUT_SIZE, sizeof(vco_tab_e));
+        break;
+    case LIQUID_VCO_DIRECT:
+        break;
+    default:
+        return liquid_error_config("nco_%s_copy(), unknown type: %u", q_copy->type, EXTENSION);
+    }
+
     return q_copy;
 }
 
