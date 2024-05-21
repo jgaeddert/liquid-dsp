@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2023 Joseph Gaeddert
+# Copyright (c) 2007 - 2024 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -977,6 +977,7 @@ nco_autotests :=						\
 	src/nco/tests/nco_crcf_mix_autotest.c			\
 	src/nco/tests/nco_crcf_phase_autotest.c			\
 	src/nco/tests/nco_crcf_pll_autotest.c			\
+	src/nco/tests/nco_crcf_spectrum_autotest.c		\
 	src/nco/tests/unwrap_phase_autotest.c			\
 
 # additional autotest objects
