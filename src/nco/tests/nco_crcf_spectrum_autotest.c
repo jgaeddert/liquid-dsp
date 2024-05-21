@@ -26,9 +26,10 @@
 #include "liquid.h"
 
 // autotest helper function
+//  _id     : test id for saving log file
 //  _type   : NCO type (e.g. LIQUID_NCO)
 //  _freq   : normalized frequency (f/Fs), _freq in [-0.5,0.5)
-void nco_crcf_spectrum_test(int _type, float _freq)
+void nco_crcf_spectrum_test(int _id, int _type, float _freq)
 {
     unsigned long int num_samples = 1UL<<16;
     unsigned int nfft = 9600;
@@ -70,15 +71,20 @@ void nco_crcf_spectrum_test(int _type, float _freq)
         {.fmin=_freq-0.002, .fmax=_freq+0.002,.pmin=  0, .pmax=  0, .test_lo=0, .test_hi=1},
         {.fmin=_freq+0.002, .fmax=0.5,        .pmin=  0, .pmax=-60, .test_lo=0, .test_hi=1},
     };
+    char filename[256];
+    sprintf(filename,"autotest/logs/nco_crcf_spectrum_f%.2d.m", _id);
     liquid_autotest_validate_psd_spgramcf(psd, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/nco_crcf_spectrum.m" : NULL);
+        liquid_autotest_verbose ? filename : NULL);
 
     // destroy object
     nco_crcf_destroy(nco);
     spgramcf_destroy(psd);
 }
 
-
 // test floating point precision nco phase
-void autotest_nco_crcf_spectrum_f00() { nco_crcf_spectrum_test(LIQUID_NCO, 0.123f); }
+void autotest_nco_crcf_spectrum_f00() { nco_crcf_spectrum_test( 0, LIQUID_NCO, 0.    ); }
+void autotest_nco_crcf_spectrum_f01() { nco_crcf_spectrum_test( 1, LIQUID_NCO, 0.1234); }
+void autotest_nco_crcf_spectrum_f02() { nco_crcf_spectrum_test( 2, LIQUID_NCO,-0.1234); }
+void autotest_nco_crcf_spectrum_f03() { nco_crcf_spectrum_test( 3, LIQUID_NCO, 0.25  ); }
+void autotest_nco_crcf_spectrum_f04() { nco_crcf_spectrum_test( 4, LIQUID_NCO, 0.1   ); }
 
