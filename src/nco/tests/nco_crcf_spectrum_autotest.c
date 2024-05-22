@@ -72,7 +72,7 @@ void nco_crcf_spectrum_test(int _id, int _type, float _freq)
         {.fmin=_freq+0.002, .fmax=0.5,        .pmin=  0, .pmax=-60, .test_lo=0, .test_hi=1},
     };
     char filename[256];
-    sprintf(filename,"autotest/logs/nco_crcf_spectrum_f%.2d.m", _id);
+    sprintf(filename,"autotest/logs/nco_crcf_spectrum_%s_f%.2d.m", _type==LIQUID_NCO ? "nco" : "vco", _id);
     liquid_autotest_validate_psd_spgramcf(psd, regions, 3,
         liquid_autotest_verbose ? filename : NULL);
 
@@ -81,10 +81,17 @@ void nco_crcf_spectrum_test(int _id, int _type, float _freq)
     spgramcf_destroy(psd);
 }
 
-// test floating point precision nco phase
-void autotest_nco_crcf_spectrum_f00() { nco_crcf_spectrum_test( 0, LIQUID_NCO, 0.    ); }
-void autotest_nco_crcf_spectrum_f01() { nco_crcf_spectrum_test( 1, LIQUID_NCO, 0.1234); }
-void autotest_nco_crcf_spectrum_f02() { nco_crcf_spectrum_test( 2, LIQUID_NCO,-0.1234); }
-void autotest_nco_crcf_spectrum_f03() { nco_crcf_spectrum_test( 3, LIQUID_NCO, 0.25  ); }
-void autotest_nco_crcf_spectrum_f04() { nco_crcf_spectrum_test( 4, LIQUID_NCO, 0.1   ); }
+// test NCO
+void autotest_nco_crcf_spectrum_nco_f00() { nco_crcf_spectrum_test( 0, LIQUID_NCO, 0.    ); }
+void autotest_nco_crcf_spectrum_nco_f01() { nco_crcf_spectrum_test( 1, LIQUID_NCO, 0.1234); }
+void autotest_nco_crcf_spectrum_nco_f02() { nco_crcf_spectrum_test( 2, LIQUID_NCO,-0.1234); }
+void autotest_nco_crcf_spectrum_nco_f03() { nco_crcf_spectrum_test( 3, LIQUID_NCO, 0.25  ); }
+void autotest_nco_crcf_spectrum_nco_f04() { nco_crcf_spectrum_test( 4, LIQUID_NCO, 0.1   ); }
+
+// test VCO interp
+void autotest_nco_crcf_spectrum_vco_f00() { nco_crcf_spectrum_test( 0, LIQUID_VCO_INTERP, 0.    ); }
+void autotest_nco_crcf_spectrum_vco_f01() { nco_crcf_spectrum_test( 1, LIQUID_VCO_INTERP, 0.1234); }
+void autotest_nco_crcf_spectrum_vco_f02() { nco_crcf_spectrum_test( 2, LIQUID_VCO_INTERP,-0.1234); }
+void autotest_nco_crcf_spectrum_vco_f03() { nco_crcf_spectrum_test( 3, LIQUID_VCO_INTERP, 0.25  ); }
+void autotest_nco_crcf_spectrum_vco_f04() { nco_crcf_spectrum_test( 4, LIQUID_VCO_INTERP, 0.1   ); }
 
