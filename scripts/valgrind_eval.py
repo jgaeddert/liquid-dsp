@@ -18,7 +18,7 @@ def main(argv=None):
     # iterate over all tests and execute
     opts = '--tool=memcheck --leak-check=full --track-origins=yes'
     for i,test in enumerate(v['tests']):
-        filename = '%s/memcheck.%.3u.%s.log' % (args.output, test['id'], test['name'])
+        filename = '%s/memcheck.%.4u.%s.log' % (args.output, test['id'], test['name'])
         cmd = 'valgrind %s --log-file=%s ./xautotest -t %u' % (opts, filename, test['id'],)
         print(cmd)
         os.system(cmd)
