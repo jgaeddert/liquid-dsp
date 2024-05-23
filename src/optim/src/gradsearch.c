@@ -92,13 +92,12 @@ void gradsearch_destroy(gradsearch _q)
 // print status
 void gradsearch_print(gradsearch _q)
 {
+#if 0
     //printf("gradient search:\n");
     printf("u=%12.4e ",   _q->u);       // utility
-#if 0
     // enable more verbose output
     printf("|p|=%7.1e ",  _q->pnorm);   // norm(p)
     printf("del=%7.1e ",  _q->delta);   // delta
-#endif
     printf("step=%7.1e ", _q->alpha);   // alpha (step size)
 
     unsigned int i;
@@ -106,6 +105,16 @@ void gradsearch_print(gradsearch _q)
     for (i=0; i<_q->num_parameters; i++)
         printf("%8.4f", _q->v[i]);
     printf("}\n");
+#else
+    printf("<liquid.gradsearch");
+    printf(", n=%u", _q->num_parameters);
+    printf(", dir=\"%s\"", _q->direction == LIQUID_OPTIM_MAXIMIZE ? "max" : "min");
+    printf(", pnorm=%g", _q->pnorm);   // norm(p)
+    printf(", delta=%g", _q->delta);   // delta
+    printf(", u=%g", _q->u);
+    printf(">\n");
+#endif
+    // return LIQUID_OK;
 }
 
 float gradsearch_step(gradsearch _q)

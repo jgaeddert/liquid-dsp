@@ -145,7 +145,7 @@ int ORDFILT(_reset)(ORDFILT() _q)
 // print filter object internals (taps, buffer)
 int ORDFILT(_print)(ORDFILT() _q)
 {
-    printf("ordfilt_%s:\n", EXTENSION_FULL);
+    printf("<liquid.ordfilt_%s, len=%u, order=%u>\n", EXTENSION_FULL, _q->n, _q->k);
     return LIQUID_OK;
 }
 

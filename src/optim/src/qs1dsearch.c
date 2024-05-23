@@ -75,7 +75,7 @@ int qs1dsearch_destroy(qs1dsearch _q)
 
 int qs1dsearch_print(qs1dsearch _q)
 {
-    printf("<liquid.qs1dsearch{%12g,%12g,%12g}{%12g,%12g,%12g}>\n",
+    printf("<liquid.qs1dsearch, v=[%12g,%12g,%12g], u=[%12g,%12g,%12g]>\n",
         _q->vn, _q->v0, _q->vp, _q->un, _q->u0, _q->up);
     return LIQUID_OK;
 }

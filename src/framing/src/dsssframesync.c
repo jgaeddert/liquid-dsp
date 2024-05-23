@@ -190,8 +190,8 @@ int dsssframesync_destroy(dsssframesync _q)
 
 int dsssframesync_print(dsssframesync _q)
 {
-    printf("dsssframesync:\n");
-    return framedatastats_print(&_q->framedatastats);
+    printf("<liquid.dsssframesync>\n");
+    return LIQUID_OK;
 }
 
 int dsssframesync_reset(dsssframesync _q)

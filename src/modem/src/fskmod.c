@@ -110,10 +110,11 @@ int fskmod_destroy(fskmod _q)
 // print fskmod object internals
 int fskmod_print(fskmod _q)
 {
-    printf("fskmod : frequency-shift keying modulator\n");
-    printf("    bits/symbol     :   %u\n", _q->m);
-    printf("    samples/symbol  :   %u\n", _q->k);
-    printf("    bandwidth       :   %8.5f\n", _q->bandwidth);
+    printf("<liquid.fskmod");
+    printf(", bits/symbol=%u", _q->m);
+    printf(", samples/symbol=%u", _q->k);
+    printf(", bandwidth=%g", _q->bandwidth);
+    printf(">\n");
     return LIQUID_OK;
 }
 

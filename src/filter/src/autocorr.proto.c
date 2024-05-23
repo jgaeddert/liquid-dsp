@@ -111,7 +111,7 @@ int AUTOCORR(_reset)(AUTOCORR() _q)
 // print auto-correlator parameters to stdout
 int AUTOCORR(_print)(AUTOCORR() _q)
 {
-    printf("autocorr [%u window, %u delay]\n", _q->window_size, _q->delay);
+    printf("<liquid.autocorr, window=%u, delay=%u>\n", _q->window_size, _q->delay);
     return LIQUID_OK;
 }
 

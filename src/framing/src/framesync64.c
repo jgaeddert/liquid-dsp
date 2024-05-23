@@ -185,8 +185,8 @@ int framesync64_destroy(framesync64 _q)
 // print frame synchronizer object internals
 int framesync64_print(framesync64 _q)
 {
-    printf("framesync64:\n");
-    return framedatastats_print(&_q->framedatastats);
+    printf("<liquid.framesync64>\n");
+    return LIQUID_OK;
 }
 
 // reset frame synchronizer object

@@ -112,6 +112,7 @@ int framegen64_destroy(framegen64 _q)
 // print framegen64 object internals
 int framegen64_print(framegen64 _q)
 {
+#if 0
     float eta = (float) (8*(64 + 8)) / (float) (LIQUID_FRAME64_LEN/2);
     printf("framegen64 [m=%u, beta=%4.2f]:\n", _q->m, _q->beta);
     printf("  preamble/etc.\n");
@@ -133,6 +134,9 @@ int framegen64_print(framegen64 _q)
     printf("  summary\n");
     printf("    * total symbols         :   %3u\n", LIQUID_FRAME64_LEN/2);
     printf("    * spectral efficiency   :   %6.4f b/s/Hz\n", eta);
+#else
+    printf("<liquid.framegen64, m=%u, beta=%g>\n", _q->m, _q->beta);
+#endif
     return LIQUID_OK;
 }
 

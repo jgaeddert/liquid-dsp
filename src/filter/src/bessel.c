@@ -68,9 +68,15 @@ int bessel_azpkf(unsigned int    _n,
                  float complex * _pa,
                  float complex * _ka)
 {
+    // roots are computed with order _n+1 so we must use a longer array to
+    // prevent out-of-bounds write on the provided _pa array
+    float complex _tmp_pa[_n+1];
+
     // compute poles (roots to Bessel polynomial)
-    if (fpoly_bessel_roots(_n+1,_pa) != LIQUID_OK)
+    if (fpoly_bessel_roots(_n+1,_tmp_pa) != LIQUID_OK)
         return liquid_error(LIQUID_EICONFIG,"bessel_azpkf(), invalid configuration");
+    for (int i = 0; i < _n; i++)
+        _pa[i] = _tmp_pa[i];
 
     // analog Bessel filter prototype has no zeros
 

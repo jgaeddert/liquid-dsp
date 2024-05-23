@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -345,5 +345,46 @@ int liquid_autotest_validate_psd_firfilt_cccf(firfilt_cccf _q, unsigned int _nff
         psd[i] = 20*log10f(cabsf(H));
     }
     return liquid_autotest_validate_spectrum(psd,_nfft,_regions,num_regions,debug_filename);
+}
+
+// validate spectral content of an iir filter (real coefficients, input)
+int liquid_autotest_validate_psd_iirfilt_rrrf(iirfilt_rrrf _q, unsigned int _nfft,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
+{
+    float psd[_nfft];
+    unsigned int i;
+    for (i=0; i<_nfft; i++) {
+        float f = (float)(i)/(float)(_nfft) - 0.5f;
+        float complex H;
+        iirfilt_rrrf_freqresponse(_q, f, &H);
+        psd[i] = 20*log10f(cabsf(H));
+    }
+    return liquid_autotest_validate_spectrum(psd,_nfft,_regions,num_regions,debug_filename);
+}
+
+// validate spectral content of a spectral periodogram object
+int liquid_autotest_validate_psd_spgramcf(spgramcf _q,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
+{
+    unsigned int nfft = spgramcf_get_nfft(_q);
+    float psd[nfft];
+    spgramcf_get_psd(_q, psd);
+    return liquid_autotest_validate_spectrum(psd,nfft,_regions,num_regions,debug_filename);
+}
+
+// callback function to simplify testing for framing objects
+int framing_autotest_callback(
+    unsigned char *  _header,
+    int              _header_valid,
+    unsigned char *  _payload,
+    unsigned int     _payload_len,
+    int              _payload_valid,
+    framesyncstats_s _stats,
+    void *           _context)
+{
+    printf("*** callback invoked (%s) ***\n", _payload_valid ? "pass" : "FAIL");
+    unsigned int * secret = (unsigned int*) _context;
+    *secret = FRAMING_AUTOTEST_SECRET;
+    return 0;
 }
 

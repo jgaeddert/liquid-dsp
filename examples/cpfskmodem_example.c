@@ -92,6 +92,7 @@ int main(int argc, char*argv[])
 
     // print modulator
     cpfskmod_print(mod);
+    cpfskdem_print(dem);
     
     // get full symbol delay
     unsigned int delay = cpfskmod_get_delay(mod) + cpfskdem_get_delay(dem);

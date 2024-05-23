@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,34 +24,24 @@
 #include "liquid.h"
 
 // Help function to keep code base small
-void cpfskmodem_test_mod_demod(unsigned int _bps,
-                               float        _h,
-                               unsigned int _k,
-                               unsigned int _m,
-                               float        _beta,
-                               int          _filter_type)
+void cpfskmodem_test_mod_demod(cpfskmod mod, cpfskdem dem)
 {
-    // create modulator/demodulator pair
-    cpfskmod mod = cpfskmod_create(_bps, _h, _k, _m, _beta, _filter_type);
-    cpfskdem dem = cpfskdem_create(_bps, _h, _k, _m, _beta, _filter_type);
-
     // derived values
     unsigned int delay = cpfskmod_get_delay(mod) + cpfskdem_get_delay(dem);
-    //unsigned int  M = 1 << _m;      // constellation size
-    
-    unsigned int  num_symbols = 80 + delay; // number of symbols to test
+    unsigned int k   = cpfskmod_get_samples_per_symbol(mod);
+    unsigned int bps = cpfskmod_get_bits_per_symbol(mod);
 
-    msequence ms = msequence_create_default(7);
-
-    float complex buf[_k];      // sample buffer
+    unsigned int num_symbols = 180 + delay; // number of symbols to test
+    float complex buf[k];      // sample buffer
     unsigned int  sym_in [num_symbols]; // symbol buffer
     unsigned int  sym_out[num_symbols]; // symbol buffer
 
     // modulate, demodulate, count errors
+    msequence ms = msequence_create_default(7);
     unsigned int i;
     for (i=0; i<num_symbols; i++) {
         // generate random symbol
-        sym_in[i] = msequence_generate_symbol(ms, _bps);
+        sym_in[i] = msequence_generate_symbol(ms, bps);
 
         // modulate
         cpfskmod_modulate(mod, sym_in[i], buf);
@@ -59,6 +49,7 @@ void cpfskmodem_test_mod_demod(unsigned int _bps,
         // demodulate
         sym_out[i] = cpfskdem_demodulate(dem, buf);
     }
+    msequence_destroy(ms);
 
     // count errors
     for (i=0; i<num_symbols; i++) {
@@ -74,9 +65,28 @@ void cpfskmodem_test_mod_demod(unsigned int _bps,
             CONTEND_EQUALITY(sym_in[i-delay], sym_out[i]);
         }
     }
+}
+
+// Help function to keep code base small
+void cpfskmodem_test_harness(unsigned int _bps,
+                             float        _h,
+                             unsigned int _k,
+                             unsigned int _m,
+                             float        _beta,
+                             int          _filter_type)
+{
+    // create modulator/demodulator pair
+    cpfskmod mod = cpfskmod_create(_bps, _h, _k, _m, _beta, _filter_type);
+    cpfskdem dem = cpfskdem_create(_bps, _h, _k, _m, _beta, _filter_type);
+
+    // ensure values match
+    CONTEND_EQUALITY( cpfskmod_get_samples_per_symbol(mod), _k );
+    CONTEND_EQUALITY( cpfskdem_get_samples_per_symbol(dem), _k );
+
+    // run modulation/demodulation tests
+    cpfskmodem_test_mod_demod(mod, dem);
 
     // clean it up
-    msequence_destroy(ms);
     cpfskmod_destroy(mod);
     cpfskdem_destroy(dem);
 }
@@ -86,37 +96,48 @@ void cpfskmodem_test_mod_demod(unsigned int _bps,
 //
 
 // square pulse shape
-void autotest_cpfskmodem_bps1_h0p5000_k4_m3_square()    { cpfskmodem_test_mod_demod( 1, 0.5000f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
-void autotest_cpfskmodem_bps1_h0p0250_k4_m3_square()    { cpfskmodem_test_mod_demod( 1, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
-void autotest_cpfskmodem_bps1_h0p1250_k4_m3_square()    { cpfskmodem_test_mod_demod( 1, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
-void autotest_cpfskmodem_bps1_h0p0625_k4_m3_square()    { cpfskmodem_test_mod_demod( 1, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+void autotest_cpfskmodem_bps1_h0p5000_k4_m3_square()    { cpfskmodem_test_harness( 1, 0.5000f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+void autotest_cpfskmodem_bps1_h0p0250_k4_m3_square()    { cpfskmodem_test_harness( 1, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+void autotest_cpfskmodem_bps1_h0p1250_k4_m3_square()    { cpfskmodem_test_harness( 1, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+void autotest_cpfskmodem_bps1_h0p0625_k4_m3_square()    { cpfskmodem_test_harness( 1, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
 
 // raised-cosine pulse shape (full)
-void autotest_cpfskmodem_bps1_h0p5000_k4_m3_rcosfull()  { cpfskmodem_test_mod_demod( 1, 0.5000f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_FULL ); }
-void autotest_cpfskmodem_bps1_h0p0250_k4_m3_rcosfull()  { cpfskmodem_test_mod_demod( 1, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_FULL ); }
-void autotest_cpfskmodem_bps1_h0p1250_k4_m3_rcosfull()  { cpfskmodem_test_mod_demod( 1, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_FULL ); }
-void autotest_cpfskmodem_bps1_h0p0625_k4_m3_rcosfull()  { cpfskmodem_test_mod_demod( 1, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_FULL ); }
+void autotest_cpfskmodem_bps1_h0p5000_k4_m3_rcosfull()  { cpfskmodem_test_harness( 1, 0.5000f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_FULL ); }
+void autotest_cpfskmodem_bps1_h0p0250_k4_m3_rcosfull()  { cpfskmodem_test_harness( 1, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_FULL ); }
+void autotest_cpfskmodem_bps1_h0p1250_k4_m3_rcosfull()  { cpfskmodem_test_harness( 1, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_FULL ); }
+void autotest_cpfskmodem_bps1_h0p0625_k4_m3_rcosfull()  { cpfskmodem_test_harness( 1, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_FULL ); }
 
 // raised-cosine pulse shape (partial)
-void autotest_cpfskmodem_bps1_h0p5000_k4_m3_rcospart()  { cpfskmodem_test_mod_demod( 1, 0.5000f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_PARTIAL ); }
-void autotest_cpfskmodem_bps1_h0p0250_k4_m3_rcospart()  { cpfskmodem_test_mod_demod( 1, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_PARTIAL ); }
-void autotest_cpfskmodem_bps1_h0p1250_k4_m3_rcospart()  { cpfskmodem_test_mod_demod( 1, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_PARTIAL ); }
-void autotest_cpfskmodem_bps1_h0p0625_k4_m3_rcospart()  { cpfskmodem_test_mod_demod( 1, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_PARTIAL ); }
+void autotest_cpfskmodem_bps1_h0p5000_k4_m3_rcospart()  { cpfskmodem_test_harness( 1, 0.5000f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_PARTIAL ); }
+void autotest_cpfskmodem_bps1_h0p0250_k4_m3_rcospart()  { cpfskmodem_test_harness( 1, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_PARTIAL ); }
+void autotest_cpfskmodem_bps1_h0p1250_k4_m3_rcospart()  { cpfskmodem_test_harness( 1, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_PARTIAL ); }
+void autotest_cpfskmodem_bps1_h0p0625_k4_m3_rcospart()  { cpfskmodem_test_harness( 1, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_PARTIAL ); }
 
 // Gauss minimum-shift keying
-void autotest_cpfskmodem_bps1_h0p5000_k4_m3_gmsk()      { cpfskmodem_test_mod_demod( 1, 0.5000f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
-void autotest_cpfskmodem_bps1_h0p0250_k4_m3_gmsk()      { cpfskmodem_test_mod_demod( 1, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
-void autotest_cpfskmodem_bps1_h0p1250_k4_m3_gmsk()      { cpfskmodem_test_mod_demod( 1, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
-void autotest_cpfskmodem_bps1_h0p0625_k4_m3_gmsk()      { cpfskmodem_test_mod_demod( 1, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
+void autotest_cpfskmodem_bps1_h0p5000_k4_m3_gmsk()      { cpfskmodem_test_harness( 1, 0.5000f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
+void autotest_cpfskmodem_bps1_h0p0250_k4_m3_gmsk()      { cpfskmodem_test_harness( 1, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
+void autotest_cpfskmodem_bps1_h0p1250_k4_m3_gmsk()      { cpfskmodem_test_harness( 1, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
+void autotest_cpfskmodem_bps1_h0p0625_k4_m3_gmsk()      { cpfskmodem_test_harness( 1, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
 
 //
 // AUTOTESTS: check different bits per symbol
 //
 
 // square pulse shape
-void autotest_cpfskmodem_bps2_h0p0250_k4_m3_square()    { cpfskmodem_test_mod_demod( 2, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
-void autotest_cpfskmodem_bps3_h0p1250_k4_m3_square()    { cpfskmodem_test_mod_demod( 3, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
-void autotest_cpfskmodem_bps4_h0p0625_k4_m3_square()    { cpfskmodem_test_mod_demod( 4, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+void autotest_cpfskmodem_bps2_h0p0250_k4_m3_square()    { cpfskmodem_test_harness( 2, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+void autotest_cpfskmodem_bps3_h0p1250_k4_m3_square()    { cpfskmodem_test_harness( 3, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+void autotest_cpfskmodem_bps4_h0p0625_k4_m3_square()    { cpfskmodem_test_harness( 4, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+
+//
+// AUTOTESTS: check different samples per symbol
+//
+
+// GMSK
+// TODO: allow samples per symbol to be odd
+void autotest_cpfskmodem_bps1_h0p5_k2_m7_gmsk() { cpfskmodem_test_harness( 1, 0.5f, 2, 7, 0.30f, LIQUID_CPFSK_GMSK ); }
+void autotest_cpfskmodem_bps1_h0p5_k4_m7_gmsk() { cpfskmodem_test_harness( 1, 0.5f, 4, 7, 0.30f, LIQUID_CPFSK_GMSK ); }
+void autotest_cpfskmodem_bps1_h0p5_k6_m7_gmsk() { cpfskmodem_test_harness( 1, 0.5f, 6, 7, 0.30f, LIQUID_CPFSK_GMSK ); }
+void autotest_cpfskmodem_bps1_h0p5_k8_m7_gmsk() { cpfskmodem_test_harness( 1, 0.5f, 8, 7, 0.30f, LIQUID_CPFSK_GMSK ); }
 
 // test spectral response
 void autotest_cpfskmodem_spectrum()
@@ -169,5 +190,46 @@ void autotest_cpfskmodem_spectrum()
     sprintf(filename,"autotest/logs/cpfskmodem_psd_autotest.m");
     liquid_autotest_validate_spectrum(psd, nfft, regions, 5,
         liquid_autotest_verbose ? filename : NULL);
+}
+
+// test errors and invalid configuration
+void autotest_cpfskmodem_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping modem config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // test copying/creating invalid objects
+    //CONTEND_ISNULL( modemcf_copy(NULL) );
+    CONTEND_ISNULL( cpfskmod_create(0, 0.5f, 4, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _bps is less than 1
+    CONTEND_ISNULL( cpfskmod_create(1, 0.0f, 4, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _h (mod index) is out of range
+    CONTEND_ISNULL( cpfskmod_create(1, 0.5f, 0, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _k is too small
+    CONTEND_ISNULL( cpfskmod_create(1, 0.5f, 5, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _k is not even
+    CONTEND_ISNULL( cpfskmod_create(1, 0.5f, 4,  0, 0.25f, LIQUID_CPFSK_SQUARE) ); // _m is too small
+    CONTEND_ISNULL( cpfskmod_create(1, 0.5f, 4, 12, 0.00f, LIQUID_CPFSK_SQUARE) ); // _beta is too small
+    CONTEND_ISNULL( cpfskmod_create(1, 0.5f, 4, 12, 7.22f, LIQUID_CPFSK_SQUARE) ); // _beta is too large
+    CONTEND_ISNULL( cpfskmod_create(1, 0.5f, 4, 12, 0.25f, -1) ); // invalid filter type
+
+    CONTEND_ISNULL( cpfskdem_create(0, 0.5f, 4, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _bps is less than 1
+    CONTEND_ISNULL( cpfskdem_create(1, 0.0f, 4, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _h (mod index) is out of range
+    CONTEND_ISNULL( cpfskdem_create(1, 0.5f, 0, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _k is too small
+    CONTEND_ISNULL( cpfskdem_create(1, 0.5f, 5, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _k is not even
+    CONTEND_ISNULL( cpfskdem_create(1, 0.5f, 4,  0, 0.25f, LIQUID_CPFSK_SQUARE) ); // _m is too small
+    CONTEND_ISNULL( cpfskdem_create(1, 0.5f, 4, 12, 0.00f, LIQUID_CPFSK_SQUARE) ); // _beta is too small
+    CONTEND_ISNULL( cpfskdem_create(1, 0.5f, 4, 12, 7.22f, LIQUID_CPFSK_SQUARE) ); // _beta is too large
+    CONTEND_ISNULL( cpfskdem_create(1, 0.5f, 4, 12, 0.25f, -1) ); // invalid filter type
+
+    // create modulator object and check configuration
+    cpfskmod mod = cpfskmod_create(1, 0.5f, 4, 12, 0.5f, LIQUID_CPFSK_SQUARE);
+    CONTEND_EQUALITY( LIQUID_OK, cpfskmod_print(mod) );
+    cpfskmod_destroy(mod);
+
+    // create demodulator object and check configuration
+    cpfskdem dem = cpfskdem_create(1, 0.5f, 4, 12, 0.5f, LIQUID_CPFSK_SQUARE);
+    CONTEND_EQUALITY( LIQUID_OK, cpfskdem_print(dem) );
+    cpfskdem_destroy(dem);
 }
 

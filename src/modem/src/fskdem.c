@@ -186,10 +186,11 @@ int fskdem_destroy(fskdem _q)
 // print fskdem object internals
 int fskdem_print(fskdem _q)
 {
-    printf("fskdem : frequency-shift keying demodulator\n");
-    printf("    bits/symbol     :   %u\n", _q->m);
-    printf("    samples/symbol  :   %u\n", _q->k);
-    printf("    bandwidth       :   %8.5f\n", _q->bandwidth);
+    printf("<liquid.fskdem");
+    printf(", bits/symbol=%u", _q->m);
+    printf(", samples/symbol=%u", _q->k);
+    printf(", bandwidth=%g", _q->bandwidth);
+    printf(">\n");
     return LIQUID_OK;
 }
 

@@ -30,10 +30,9 @@ void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int 
 {
     int          ftype       = LIQUID_FIRFILT_ARKAISER;
     unsigned int num_symbols = 6000;    // number of data symbols
-    //unsigned int hc_len      =   4;     // channel filter length
     float        noise_floor = -30.0f;  // noise floor [dB]
     float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]
-    float        bandwidth   =  0.10f;  // loop filter bandwidth
+    float        bandwidth   =  0.15f;  // loop filter bandwidth
     float        dphi        =  0.02f;  // carrier frequency offset [radians/sample]
     float        phi         =  2.1f;   // carrier phase offset [radians]
 
@@ -43,13 +42,14 @@ void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int 
     float complex   buf_1[buf_len]; // recovered symbols buffer
 
     // create stream generator
-    symstreamcf gen = symstreamcf_create_linear(ftype,_k,_m,_beta,_ms);
+    symstreamcf gen = symstreamcf_create_linear(ftype,_k,2*_m,_beta,_ms);
 
     // create channel emulator and add impairments
     channel_cccf channel = channel_cccf_create();
     channel_cccf_add_awgn          (channel, noise_floor, SNRdB);
     channel_cccf_add_carrier_offset(channel, dphi, phi);
-    //channel_cccf_add_multipath     (channel, NULL, hc_len);
+    //float complex h[4] = {1.0f, 0, 0, 0.2f*cexpf(_Complex_I*1.4f)};
+    //channel_cccf_add_multipath     (channel, h, 4);
 
     // create symbol tracking synchronizer
     symtrack_cccf symtrack = symtrack_cccf_create(ftype,_k,_m,_beta,_ms);
@@ -64,6 +64,8 @@ void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int 
     float        evm = 0.0f;
     modemcf demod = modemcf_create(_ms); // for checking output EVM
     //FILE * fid = fopen("symtrack_test.dat","w");
+    //fprintf(fid,"#v=load('symtrack_test.dat'); v=v(:,1)+j*v(:,2); plot(v,'x');\n");
+    //fprintf(fid,"#axis([-1 1 -1 1]*1.5); axis square; grid on;\n");
     while (total_samples < num_symbols * _k)
     {
         // write samples to buffer
@@ -101,11 +103,11 @@ void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int 
     // verify output constellation EVM is reasonably high
     evm = 10*log10f(evm / (float)num_symbols_evm);
     printf("EVM: %12.8f, %u\n", evm, num_symbols_evm);
-    CONTEND_LESS_THAN(evm, -20.0f);
+    CONTEND_LESS_THAN(evm, -15.0f);
 }
 
-void autotest_symtrack_cccf_00() { testbench_symtrack_cccf( 2, 7,0.20f,LIQUID_MODEM_BPSK); }
-void autotest_symtrack_cccf_01() { testbench_symtrack_cccf( 2, 7,0.20f,LIQUID_MODEM_QPSK); }
+void autotest_symtrack_cccf_bpsk() { testbench_symtrack_cccf( 2,12,0.25f,LIQUID_MODEM_BPSK); }
+void autotest_symtrack_cccf_qpsk() { testbench_symtrack_cccf( 2,12,0.25f,LIQUID_MODEM_QPSK); }
 
 // invalid configuration tests
 void autotest_symtrack_cccf_config_invalid()

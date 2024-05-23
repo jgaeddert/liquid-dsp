@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -212,8 +212,6 @@ MODEM() MODEM(_create)(modulation_scheme _scheme)
         return liquid_error_config("modem%s_create(), unknown/unsupported modulation scheme : %u",EXTENSION,_scheme);
     }
 
-    // should never get to this point, but adding return statement
-    // to keep compiler happy
     return NULL;
 }
 
@@ -302,9 +300,8 @@ int MODEM(_destroy)(MODEM() _q)
 // print a modem object
 int MODEM(_print)(MODEM() _q)
 {
-    printf("linear modem:\n");
-    printf("    scheme:         %s\n", modulation_types[_q->scheme].name);
-    printf("    bits/symbol:    %u\n", _q->m);
+    printf("<liquid.modem%s, scheme=\"%s\", order=%u>\n",
+        EXTENSION, modulation_types[_q->scheme].name, 1 << (_q->m));
     return LIQUID_OK;
 }
 
@@ -578,6 +575,7 @@ T MODEM(_get_demodulator_evm)(MODEM() _q)
     return cabsf(_q->x_hat - _q->r);
 }
 
+#if 0
 // Demodulate a linear symbol constellation using dynamic threshold calculation
 //  _v      :   input value
 //  _m      :   bits per symbol
@@ -604,6 +602,7 @@ int MODEM(_demodulate_linear_array)(T              _v,
     *_res = _v;
     return LIQUID_OK;
 }
+#endif
 
 // Demodulate a linear symbol constellation using referenced lookup table
 //  _v      :   input value

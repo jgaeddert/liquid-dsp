@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,6 +57,7 @@ struct QDETECTOR(_s) {
 
     unsigned int    counter;        // sample counter for determining when to compute FFTs
     float           threshold;      // detection threshold
+    float           dphi_max;       // carrier offset search range (radians/sample)
     int             range;          // carrier offset search range (subcarriers)
     unsigned int    num_transforms; // number of transforms taken (debugging)
 
@@ -287,6 +288,7 @@ QDETECTOR() QDETECTOR(_copy)(QDETECTOR() q_orig)
     // copy internal state
     q_copy->counter         = q_orig->counter;
     q_copy->threshold       = q_orig->threshold;
+    q_copy->dphi_max        = q_orig->dphi_max;
     q_copy->range           = q_orig->range;
     q_copy->num_transforms  = q_orig->num_transforms;
     // buffer power magnitude
@@ -321,12 +323,13 @@ int QDETECTOR(_destroy)(QDETECTOR() _q)
 
 int QDETECTOR(_print)(QDETECTOR() _q)
 {
-    printf("qdetector_%s:\n", EXTENSION_FULL);
-    printf("  template length (time):   %-u\n",   _q->s_len);
-    printf("  FFT size              :   %-u\n",   _q->nfft);
-    printf("  search range (bins)   :   %-d\n",   _q->range);
-    printf("  detection threshold   :   %6.4f\n", _q->threshold);
-    printf("  sum{ s^2 }            :   %.2f\n",  _q->s2_sum);
+    printf("<liquid.qdetector_%s:\n", EXTENSION_FULL);
+    printf(", seq=%u", _q->s_len);
+    printf(", nfft=%u", _q->nfft);
+    printf(", dphi_max=%g",_q->dphi_max);
+    printf(", thresh=%g", _q->threshold);
+    printf(", energy=%g\n", _q->s2_sum);
+    printf(">\n");
     return LIQUID_OK;
 }
 
@@ -380,16 +383,23 @@ int QDETECTOR(_set_threshold)(QDETECTOR() _q,
     return LIQUID_OK;
 }
 
+// get carrier offset search range
+float QDETECTOR(_get_range)(QDETECTOR() _q)
+{
+    return _q->dphi_max;
+}
+
 // set carrier offset search range
 int QDETECTOR(_set_range)(QDETECTOR() _q,
-                             float          _dphi_max)
+                          float       _dphi_max)
 {
     if (_dphi_max < 0.0f || _dphi_max > 0.5f)
         return liquid_error(LIQUID_EICONFIG,"carrier offset search range (%12.4e) out of range; ignoring", _dphi_max);
 
     // set internal search range
-    _q->range = (int)(_dphi_max * _q->nfft / (2*M_PI));
-    _q->range = _q->range < 0 ? 0 : _q->range;
+    _q->dphi_max = _dphi_max;
+    _q->range    = (int)(_q->dphi_max * _q->nfft / (2*M_PI));
+    _q->range    = _q->range < 0 ? 0 : _q->range;
     //printf("range: %d / %u\n", _q->range, _q->nfft);
     return LIQUID_OK;
 }

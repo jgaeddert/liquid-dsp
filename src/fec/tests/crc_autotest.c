@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -130,6 +130,16 @@ void autotest_crc_config()
     CONTEND_EQUALITY(LIQUID_CRC_16,         liquid_getopt_str2crc("crc16"))
     CONTEND_EQUALITY(LIQUID_CRC_24,         liquid_getopt_str2crc("crc24"))
     CONTEND_EQUALITY(LIQUID_CRC_32,         liquid_getopt_str2crc("crc32"))
+
+    // check length
+    CONTEND_EQUALITY(crc_get_length(LIQUID_CRC_UNKNOWN),  0);
+    CONTEND_EQUALITY(crc_get_length(LIQUID_CRC_NONE),     0);
+    CONTEND_EQUALITY(crc_get_length(LIQUID_CRC_CHECKSUM), 1);
+    CONTEND_EQUALITY(crc_get_length(LIQUID_CRC_8),        1);
+    CONTEND_EQUALITY(crc_get_length(LIQUID_CRC_16),       2);
+    CONTEND_EQUALITY(crc_get_length(LIQUID_CRC_24),       3);
+    CONTEND_EQUALITY(crc_get_length(LIQUID_CRC_32),       4);
+    CONTEND_EQUALITY(crc_get_length(-1),                  0);
 }
 
 

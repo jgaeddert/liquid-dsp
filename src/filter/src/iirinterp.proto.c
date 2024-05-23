@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,7 +70,7 @@ IIRINTERP() IIRINTERP(_create_default)(unsigned int _M,
                                        unsigned int _order)
 {
     return IIRINTERP(_create_prototype)(_M,
-                                        LIQUID_IIRDES_BUTTER,
+                                        LIQUID_IIRDES_CHEBY2,
                                         LIQUID_IIRDES_LOWPASS,
                                         LIQUID_IIRDES_SOS,
                                         _order,
@@ -101,7 +101,11 @@ IIRINTERP() IIRINTERP(_create_prototype)(unsigned int _M,
     q->M = _M;
 
     // create filter
-    q->iirfilt = IIRFILT(_create_prototype)(_ftype, _btype, _format, _order, _fc, _f0, _ap, _as);
+    q->iirfilt = IIRFILT(_create_prototype)(_ftype, _btype, _format,
+        _order, _fc, _f0, _ap, _as);
+
+    // set appropriate scale
+    IIRFILT(_set_scale)(q->iirfilt, q->M);
 
     // return interpolator object
     return q;
@@ -134,7 +138,7 @@ int IIRINTERP(_destroy)(IIRINTERP() _q)
 // print interpolator state
 int IIRINTERP(_print)(IIRINTERP() _q)
 {
-    printf("<iirinterp_%s, interp=%u>\n", EXTENSION_FULL, _q->M);
+    printf("<liquid.iirinterp_%s, interp=%u>\n", EXTENSION_FULL, _q->M);
     return LIQUID_OK;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -84,6 +84,7 @@ struct ofdmframesync_s {
     unsigned int M2;        // number of subcarriers (divided by 2)
     unsigned int cp_len;    // cyclic prefix length
     unsigned char * p;      // subcarrier allocation (null, pilot, data)
+    unsigned int taper_len; // number of samples in tapering window/overlap
 
     // constants
     unsigned int M_null;    // number of null subcarriers
@@ -197,6 +198,7 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
     ofdmframesync q = (ofdmframesync) malloc(sizeof(struct ofdmframesync_s));
     q->M = _M;
     q->cp_len = _cp_len;
+    q->taper_len = _taper_len;
 
     // derived values
     q->M2 = _M/2;
@@ -346,10 +348,14 @@ int ofdmframesync_destroy(ofdmframesync _q)
 
 int ofdmframesync_print(ofdmframesync _q)
 {
-    printf("ofdmframesync:\n");
-    printf("    num subcarriers     :   %-u\n", _q->M);
-    printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
-    //printf("    taper len           :   %-u\n", _q->taper_len);
+    printf("<liquid.ofdmframesync");
+    printf(", subcarriers=%u", _q->M);
+    printf(", null=%u", _q->M_null);
+    printf(", pilot=%u", _q->M_pilot);
+    printf(", data=%u", _q->M_data);
+    printf(", cp=%u", _q->cp_len);
+    printf(", taper=%u", _q->taper_len);
+    printf(">\n");
     return LIQUID_OK;
 }
 

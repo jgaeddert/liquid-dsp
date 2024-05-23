@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,11 +39,6 @@
 #include <string.h>
 #include <math.h>
 
-#define DEBUG_SYMSYNC           0
-#define DEBUG_SYMSYNC_PRINT     0
-#define DEBUG_SYMSYNC_FILENAME  "symsync_internal_debug.m"
-#define DEBUG_BUFFER_LEN        (1024)
-
 //
 // forward declaration of internal methods
 //
@@ -65,12 +60,6 @@ int SYMSYNC(_step)(SYMSYNC()      _q,
 int SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
                                     TO        _mf,
                                     TO        _dmf);
-
-// print results to output debugging file
-//  _q          : synchronizer object
-//  _filename   : output filename
-int SYMSYNC(_output_debug_file)(SYMSYNC()    _q,
-                                const char * _filename);
 
 // internal structure
 struct SYMSYNC(_s) {
@@ -101,15 +90,6 @@ struct SYMSYNC(_s) {
     unsigned int npfb;          // number of filters in the bank
     FIRPFB()      mf;           // matched filter
     FIRPFB()     dmf;           // derivative matched filter
-
-#if DEBUG_SYMSYNC
-    windowf debug_rate;
-    windowf debug_del;
-    windowf debug_tau;
-    windowf debug_bsoft;
-    windowf debug_b;
-    windowf debug_q_hat;
-#endif
 };
 
 // create synchronizer object from external coefficients
@@ -180,15 +160,6 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
 
     // unlock loop control
     SYMSYNC(_unlock)(q);
-
-#if DEBUG_SYMSYNC
-    q->debug_rate  = windowf_create(DEBUG_BUFFER_LEN);
-    q->debug_del   = windowf_create(DEBUG_BUFFER_LEN);
-    q->debug_tau   = windowf_create(DEBUG_BUFFER_LEN);
-    q->debug_bsoft = windowf_create(DEBUG_BUFFER_LEN);
-    q->debug_b     = windowf_create(DEBUG_BUFFER_LEN);
-    q->debug_q_hat = windowf_create(DEBUG_BUFFER_LEN);
-#endif
 
     // return main object
     return q;
@@ -294,15 +265,6 @@ SYMSYNC() SYMSYNC(_copy)(SYMSYNC() q_orig)
     q_copy->mf  = FIRPFB(_copy)(q_orig->mf);
     q_copy->dmf = FIRPFB(_copy)(q_orig->dmf);
 
-#if DEBUG_SYMSYNC
-    // copy debugging windows
-    q_copy->debug_rate  = windowf_copy(q_orig->debug_rate);
-    q_copy->debug_del   = windowf_copy(q_orig->debug_del);
-    q_copy->debug_tau   = windowf_copy(q_orig->debug_tau);
-    q_copy->debug_bsoft = windowf_copy(q_orig->debug_bsoft);
-    q_copy->debug_b     = windowf_copy(q_orig->debug_b);
-    q_copy->debug_q_hat = windowf_copy(q_orig->debug_q_hat);
-#endif
     // return object
     return q_copy;
 }
@@ -310,19 +272,6 @@ SYMSYNC() SYMSYNC(_copy)(SYMSYNC() q_orig)
 // destroy symsync object, freeing all internal memory
 int SYMSYNC(_destroy)(SYMSYNC() _q)
 {
-#if DEBUG_SYMSYNC
-    // output debugging file
-    SYMSYNC(_output_debug_file)(_q, DEBUG_SYMSYNC_FILENAME);
-
-    // destroy internal window objects
-    windowf_destroy(_q->debug_rate);
-    windowf_destroy(_q->debug_del);
-    windowf_destroy(_q->debug_tau);
-    windowf_destroy(_q->debug_bsoft);
-    windowf_destroy(_q->debug_b);
-    windowf_destroy(_q->debug_q_hat);
-#endif
-
     // destroy filterbank objects
     FIRPFB(_destroy)(_q->mf);
     FIRPFB(_destroy)(_q->dmf);
@@ -338,7 +287,8 @@ int SYMSYNC(_destroy)(SYMSYNC() _q)
 // print symsync object's parameters
 int SYMSYNC(_print)(SYMSYNC() _q)
 {
-    printf("symsync_%s [rate: %f]\n", EXTENSION_FULL, _q->rate);
+    printf("<liquid.symsync_%s, rate=%g, k_in=%u, k_out=%u>\n",
+        EXTENSION_FULL, _q->rate, _q->k, _q->k_out);
     return FIRPFB(_print)(_q->mf);
 }
 
@@ -375,6 +325,12 @@ int SYMSYNC(_unlock)(SYMSYNC() _q)
 {
     _q->is_locked = 0;
     return LIQUID_OK;
+}
+
+// check lock state
+int SYMSYNC(_is_locked)(SYMSYNC() _q)
+{
+    return _q->is_locked;
 }
 
 // set synchronizer output rate (samples/symbol)
@@ -482,10 +438,6 @@ int SYMSYNC(_step)(SYMSYNC()      _q,
     // continue loop until filterbank index rolls over
     while (_q->b < _q->npfb) {
 
-#if DEBUG_SYMSYNC_PRINT
-        printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n, _q->tau, _q->b, _q->bf);
-#endif
-
         // compute filterbank output
         FIRPFB(_execute)(_q->mf, _q->b, &mf);
 
@@ -496,16 +448,6 @@ int SYMSYNC(_step)(SYMSYNC()      _q,
         if (_q->decim_counter == _q->k_out) {
             // reset counter
             _q->decim_counter = 0;
-
-#if DEBUG_SYMSYNC
-            // save debugging variables
-            windowf_push(_q->debug_rate,   _q->rate);
-            windowf_push(_q->debug_del,    _q->del);
-            windowf_push(_q->debug_tau,    _q->tau);
-            windowf_push(_q->debug_bsoft,  _q->bf);
-            windowf_push(_q->debug_b,      _q->b);
-            windowf_push(_q->debug_q_hat,  _q->q_hat);
-#endif
 
             // if synchronizer is locked, don't update internal timing offset
             if (_q->is_locked)
@@ -566,154 +508,6 @@ int SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
     _q->rate += _q->rate_adjustment * _q->q_hat;
     _q->del   = _q->rate + _q->q_hat;
 
-#if DEBUG_SYMSYNC_PRINT
-    printf("q : %12.8f, rate : %12.8f, del : %12.8f, q_hat : %12.8f\n", _q->q, _q->rate, _q->del, _q->q_hat);
-#endif
-    return LIQUID_OK;
-}
-
-// print results to output debugging file
-//  _q          : synchronizer object
-//  _filename   : output filename
-int SYMSYNC(_output_debug_file)(SYMSYNC()    _q,
-                                const char * _filename)
-{
-    FILE * fid = fopen(_filename, "w");
-    if (!fid)
-        return liquid_error(LIQUID_EICONFIG,"symsync_%s_output_debug_file(), could not open '%s' for writing", EXTENSION_FULL, _filename);
-    fprintf(fid,"%% %s, auto-generated file\n\n", DEBUG_SYMSYNC_FILENAME);
-    fprintf(fid,"\n");
-    fprintf(fid,"clear all;\n");
-    fprintf(fid,"close all;\n");
-
-    fprintf(fid,"npfb = %u;\n",_q->npfb);
-    fprintf(fid,"k    = %u;\n",_q->k);
-    fprintf(fid,"\n\n");
-
-#if DEBUG_SYMSYNC
-    fprintf(fid,"n = %u;\n", DEBUG_BUFFER_LEN);
-    float * r;
-    unsigned int i;
-
-    // save filter responses
-    FIRPFB(_reset)(_q->mf);
-    FIRPFB(_reset)(_q->dmf);
-    fprintf(fid,"h = [];\n");
-    fprintf(fid,"dh = [];\n");
-    fprintf(fid,"h_len = %u;\n", _q->h_len);
-    for (i=0; i<_q->h_len; i++) {
-        // push impulse
-        if (i==0) {
-            FIRPFB(_push)(_q->mf,  1.0f);
-            FIRPFB(_push)(_q->dmf, 1.0f);
-        } else {
-            FIRPFB(_push)(_q->mf,  0.0f);
-            FIRPFB(_push)(_q->dmf, 0.0f);
-        }
-
-        // compute output for all filters
-        TO  mf;     // matched filter output
-        TO dmf;     // derivative matched filter output
-
-        unsigned int n;
-        for (n=0; n<_q->npfb; n++) {
-            FIRPFB(_execute)(_q->mf,  n, &mf);
-            FIRPFB(_execute)(_q->dmf, n, &dmf);
-
-            fprintf(fid,"h(%4u) = %12.8f; dh(%4u) = %12.8f;\n", i*_q->npfb+n+1, crealf(mf), i*_q->npfb+n+1, crealf(dmf));
-        }
-    }
-    // plot response
-    fprintf(fid,"\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"th = [0:(h_len*npfb-1)]/(k*npfb) - h_len/(2*k);\n");
-    fprintf(fid,"m  = abs(round(th(1)));\n");
-    //fprintf(fid,"plot(t,h,t,dh);\n");
-    fprintf(fid,"subplot(3,1,1),\n");
-    fprintf(fid,"  plot(th, h, 'LineWidth', 2, 'Color', [0 0.5 0.2]);\n");
-    fprintf(fid,"  ylabel('MF');\n");
-    fprintf(fid,"  axis([-m m -0.25 1.25]);\n");
-    fprintf(fid,"  grid on;\n");
-    fprintf(fid,"subplot(3,1,2),\n");
-    fprintf(fid,"  plot(th, dh, 'LineWidth', 2, 'Color', [0 0.2 0.5]);\n");
-    fprintf(fid,"  ylabel('dMF');\n");
-    fprintf(fid,"  axis([-m m -0.10 0.10]);\n");
-    fprintf(fid,"  grid on;\n");
-    fprintf(fid,"subplot(3,1,3),\n");
-    fprintf(fid,"  plot(th,-h.*dh, 'LineWidth', 2, 'Color', [0.5 0 0]);\n");
-    fprintf(fid,"  xlabel('Symbol Index');\n");
-    fprintf(fid,"  ylabel('-MF*dMF');\n");
-    fprintf(fid,"  axis([-m m -0.08 0.08]);\n");
-    fprintf(fid,"  grid on;\n");
-
-    // print rate buffer
-    fprintf(fid,"rate = zeros(1,n);\n");
-    windowf_read(_q->debug_rate, &r);
-    for (i=0; i<DEBUG_BUFFER_LEN; i++)
-        fprintf(fid,"rate(%4u) = %12.8f;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-
-    // print del buffer
-    fprintf(fid,"del = zeros(1,n);\n");
-    windowf_read(_q->debug_del, &r);
-    for (i=0; i<DEBUG_BUFFER_LEN; i++)
-        fprintf(fid,"del(%4u) = %12.8f;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-
-    // print tau buffer
-    fprintf(fid,"tau = zeros(1,n);\n");
-    windowf_read(_q->debug_tau, &r);
-    for (i=0; i<DEBUG_BUFFER_LEN; i++)
-        fprintf(fid,"tau(%4u) = %12.8f;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-
-    // print bsoft buffer
-    fprintf(fid,"bf = zeros(1,n);\n");
-    windowf_read(_q->debug_bsoft, &r);
-    for (i=0; i<DEBUG_BUFFER_LEN; i++)
-        fprintf(fid,"bf(%4u) = %12.8f;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-
-    // print b (filterbank index) buffer
-    fprintf(fid,"b = zeros(1,n);\n");
-    windowf_read(_q->debug_b, &r);
-    for (i=0; i<DEBUG_BUFFER_LEN; i++)
-        fprintf(fid,"b(%4u) = %12.8f;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-
-    // print filtered error signal
-    fprintf(fid,"q_hat = zeros(1,n);\n");
-    windowf_read(_q->debug_q_hat, &r);
-    for (i=0; i<DEBUG_BUFFER_LEN; i++)
-        fprintf(fid,"q_hat(%4u) = %12.8f;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-
-    fprintf(fid,"\n\n");
-    fprintf(fid,"t=1:n;\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"  hold on;\n");
-    fprintf(fid,"  plot(t,b,'Color',[0.5 0.5 0.5]);\n");
-    fprintf(fid,"  plot(t,bf,'LineWidth',2,'Color',[0 0.25 0.5]);\n");
-    fprintf(fid,"  hold off;\n");
-    fprintf(fid,"  grid on;\n");
-    fprintf(fid,"  axis([t(1) t(end) -1 npfb]);\n");
-    fprintf(fid,"  legend('b','b (soft)',0);\n");
-    fprintf(fid,"  xlabel('Symbol Index')\n");
-    fprintf(fid,"  ylabel('Polyphase Filter Index')\n");
-    fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"  hold on;\n");
-    fprintf(fid,"  plot(t,rate,'LineWidth',2,'Color',[0 0.25 0.5]);\n");
-    fprintf(fid,"  hold off;\n");
-    fprintf(fid,"  grid on;\n");
-    fprintf(fid,"  axis([t(1) t(end) 0.99 1.01]);\n");
-    fprintf(fid,"  xlabel('Symbol Index')\n");
-    fprintf(fid,"  ylabel('Rate')\n");
-    fprintf(fid,"%% done.\n");
-#endif
-
-    fclose(fid);
-    printf("symsync: internal results written to '%s'\n", _filename);
     return LIQUID_OK;
 }
 

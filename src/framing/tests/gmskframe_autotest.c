@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,26 +26,6 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-static int gmskframesync_autotest_callback(
-    unsigned char *  _header,
-    int              _header_valid,
-    unsigned char *  _payload,
-    unsigned int     _payload_len,
-    int              _payload_valid,
-    framesyncstats_s _stats,
-    void *           _userdata)
-{
-    // check data
-    unsigned int * secret = (unsigned int*) _userdata;
-    unsigned int i, num_errors = 0;
-    for (i=0; i<8; i++)
-        num_errors += _header[i] != i;
-    for (i=0; i<_payload_len; i++) 
-        num_errors += _payload[i] != (i & 0xff);
-    *secret = num_errors == 0 ? 0x01234567 : 0;
-    return 0;
-}
-
 // test simple recovery of GMSK frame
 void autotest_gmskframesync_process()
 {
@@ -54,14 +34,13 @@ void autotest_gmskframesync_process()
     crc_scheme   crc    = LIQUID_CRC_32;
     fec_scheme   fec0   = LIQUID_FEC_NONE;
     fec_scheme   fec1   = LIQUID_FEC_NONE;
-    unsigned int secret = 0;        // placeholder for secret return value
+    unsigned int context = 0;
 
     // create objects
     gmskframegen fg = gmskframegen_create();
 
     // create frame synchronizer
-    gmskframesync fs = gmskframesync_create(
-            gmskframesync_autotest_callback,(void*)&secret);
+    gmskframesync fs = gmskframesync_create(framing_autotest_callback, (void*)&context);
 
     if (liquid_autotest_verbose) {
         gmskframegen_print(fg);
@@ -91,7 +70,7 @@ void autotest_gmskframesync_process()
     CONTEND_EQUALITY( gmskframesync_is_frame_open(fs), 0 );
 
     // check to see that frame was recovered
-    CONTEND_EQUALITY( secret, 0x01234567 );
+    CONTEND_EQUALITY( context, FRAMING_AUTOTEST_SECRET );
 
     // parse statistics
     framedatastats_s stats = gmskframesync_get_framedatastats(fs);
