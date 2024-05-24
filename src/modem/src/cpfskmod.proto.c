@@ -84,6 +84,16 @@ CPFSKMOD() CPFSKMOD(_create)(unsigned int _bps,
     if (_beta <= 0.0f || _beta > 1.0f)
         return liquid_error_config("cpfskmod_create(), filter roll-off must be in (0,1]");
 
+    switch(_type) {
+    case LIQUID_CPFSK_SQUARE:
+    case LIQUID_CPFSK_RCOS_FULL:
+    case LIQUID_CPFSK_RCOS_PARTIAL:
+    case LIQUID_CPFSK_GMSK:
+        break;
+    default:
+        return liquid_error_config("cpfskmod_create(), invalid filter type '%d'", _type);
+    }
+
     // create main object memory
     CPFSKMOD() q = (CPFSKMOD()) malloc(sizeof(struct CPFSKMOD(_s)));
 
