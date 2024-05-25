@@ -58,18 +58,15 @@ examples:
   artifacts:
     paths: [run_examples.sh, time.txt]
 
-# compile and run all example programs with valgrind
-# TODO: ensure no errors
-#examples-memcheck:
-#  stage: test
-#  script:
-#    - make -j4 examples
-#    # setting --track-origins=yes gives more detail but takes longer than gitlab allows
-#    - ls examples/*_example | sed -E "s#examples/(.*)#valgrind --tool=memcheck --log-file=examples/\1.log ./examples/\1#g" > run_examples_valgrind.sh
-#    - /bin/sh run_examples_valgrind.sh
-#    - tail -n +1 examples/*.log > valgrind.log
-#  artifacts:
-#    paths: [run_examples_valgrind.sh, valgrind.log]
+# compile and run all autotest programs with valgrind
+examples-memcheck:
+  stage: test
+  script:
+    - make -j4 xautotest
+    - mkdir valgrind
+    - ./scripts/valgrind_eval.py -output valgrind -test 881
+  artifacts:
+    paths: [valgrind/*]
 
 # build from scratch
 coverage:
