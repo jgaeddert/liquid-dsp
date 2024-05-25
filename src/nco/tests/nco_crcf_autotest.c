@@ -130,6 +130,7 @@ void autotest_nco_config()
 #endif
     //
     CONTEND_INEQUALITY(LIQUID_OK, nco_crcf_destroy(NULL));
+    CONTEND_ISNULL(nco_crcf_copy(NULL));
 
     // create proper NCO object and test configurations
     nco_crcf q_nco = nco_crcf_create(LIQUID_NCO);
