@@ -173,6 +173,10 @@ int framesync64_destroy(framesync64 _q)
     qpilotsync_destroy  (_q->pilotsync); // pilot synchronizer
     windowcf_destroy    (_q->buf_debug);
 
+    // free allocated buffers
+    free(_q->prefix);
+    free(_q->filename);
+
     // free main object memory
     free(_q);
     return LIQUID_OK;
@@ -181,7 +185,7 @@ int framesync64_destroy(framesync64 _q)
 // print frame synchronizer object internals
 int framesync64_print(framesync64 _q)
 {
-    printf("<framesync64, detected:%u, headers valid:%u, payloads valid:%u, bytes:%lu>\n",
+    printf("<liquid.framesync64, detected:%u, headers valid:%u, payloads valid:%u, bytes:%lu>\n",
         _q->framedatastats.num_frames_detected,
         _q->framedatastats.num_headers_valid,
         _q->framedatastats.num_payloads_valid,

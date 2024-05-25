@@ -209,11 +209,12 @@ void detector_cccf_destroy(detector_cccf _q)
 
 void detector_cccf_print(detector_cccf _q)
 {
-    printf("detector_cccf:\n");
-    printf("    sequence length     :   %-u\n", _q->n);
-    printf("    threshold           :   %8.4f\n", _q->threshold);
-    printf("    maximum carrier     :   %8.4f rad/sample\n", _q->dphi_max);
-    printf("    num. correlators    :   %u\n", _q->m);
+    printf("<liquid.detector_cccf:\n");
+    printf(", seq=%u", _q->n);
+    printf(", thresh=%g", _q->threshold);
+    printf(", dphi_max=%8.4f", _q->dphi_max);
+    printf(", ncorrs=%u", _q->m);
+    printf(">\n");
 }
 
 void detector_cccf_reset(detector_cccf _q)

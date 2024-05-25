@@ -30,6 +30,15 @@
 
 #include "liquid.internal.h"
 
+// clean up fftw's static plan memory
+int liquid_fftwf_cleanup_wrapper(void)
+{
+#if HAVE_FFTW3_H && !defined LIQUID_FFTOVERRIDE
+    fftwf_cleanup();
+#endif
+    return LIQUID_OK;
+}
+
 // determine best FFT method based on size
 liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
 {

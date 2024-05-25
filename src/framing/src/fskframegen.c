@@ -253,6 +253,7 @@ int fskframegen_reset(fskframegen _q)
 // print fskframegen object internals
 int fskframegen_print(fskframegen _q)
 {
+#if 0
     printf("fskframegen:\n");
     printf("  physical properties\n");
     printf("    bits/symbol     :   %u\n", _q->m);
@@ -267,6 +268,9 @@ int fskframegen_print(fskframegen _q)
     printf("    fec (inner)     :   %s\n", fec_scheme_str[_q->payload_fec0][1]);
     printf("    fec (outer)     :   %s\n", fec_scheme_str[_q->payload_fec1][1]);
     printf("  total samples     :   %-4u samples\n", fskframegen_getframelen(_q));
+#else
+    printf("<liquid.fskframegen>\n");
+#endif
     return LIQUID_OK;
 }
 

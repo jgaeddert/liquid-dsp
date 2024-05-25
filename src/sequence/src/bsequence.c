@@ -116,6 +116,7 @@ int bsequence_init(bsequence       _bs,
 // Print sequence to the screen
 int bsequence_print(bsequence _bs)
 {
+#if 0
     unsigned int i, j;
     unsigned int chunk;
     unsigned int p = 8*sizeof(unsigned int);
@@ -136,6 +137,9 @@ int bsequence_print(bsequence _bs)
         }
     }
     printf("\n");
+#else
+    printf("<liquid.bsequence, bits=%u\n>", _bs->num_bits);
+#endif
     return LIQUID_OK;
 }
 

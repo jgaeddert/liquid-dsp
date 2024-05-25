@@ -144,8 +144,6 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
                                            framesync_callback _callback,
                                            void *             _userdata)
 {
-    ofdmflexframesync q = (ofdmflexframesync) malloc(sizeof(struct ofdmflexframesync_s));
-
     // validate input
     if (_M < 8)
         return liquid_error_config("ofdmflexframesync_create(), number of subcarriers must be at least 8");
@@ -154,7 +152,8 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
     if (_cp_len > _M)
         return liquid_error_config("ofdmflexframesync_create(), cyclic prefix length cannot exceed number of subcarriers");
 
-    // set internal properties
+    // allocate memory for object and set internal properties
+    ofdmflexframesync q = (ofdmflexframesync) malloc(sizeof(struct ofdmflexframesync_s));
     q->M         = _M;
     q->cp_len    = _cp_len;
     q->taper_len = _taper_len;

@@ -205,7 +205,7 @@ int gmskframegen_is_assembled(gmskframegen _q)
 // print gmskframegen object internals
 int gmskframegen_print(gmskframegen _q)
 {
-    // plot
+#if 0
     printf("gmskframegen:\n");
     printf("  physical properties\n");
     printf("    samples/symbol  :   %u\n", _q->k);
@@ -221,6 +221,9 @@ int gmskframegen_print(gmskframegen _q)
     printf("    fec (inner)     :   %s\n", fec_scheme_str[_q->fec0][1]);
     printf("    fec (outer)     :   %s\n", fec_scheme_str[_q->fec1][1]);
     printf("  total samples     :   %-4u samples\n", gmskframegen_getframelen(_q));
+#else
+    printf("<liquid.gmskframegen>\n");
+#endif
     return LIQUID_OK;
 }
 

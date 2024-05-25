@@ -202,7 +202,8 @@ int RESAMP2(_destroy)(RESAMP2() _q)
 // print a resamp2 object's internals
 int RESAMP2(_print)(RESAMP2() _q)
 {
-    printf("<resamp2_%s, len=%u, f0=%12.8f>\n", EXTENSION_FULL, _q->h_len, _q->f0);
+    printf("<liquid.resamp2_%s, len=%u, f0=%12.8f>\n",
+        EXTENSION_FULL, _q->h_len,_q->f0);
     return LIQUID_OK;
 }
 

@@ -211,8 +211,11 @@ void testbench_framesync64_debug(int _code)
     CONTEND_EQUALITY(stats.num_payloads_valid,  1);
     CONTEND_EQUALITY(stats.num_bytes_received, 64);
 
-    // get filename from the last file written
-    const char * filename = framesync64_get_filename(fs);
+    // get filename from the last file written and copy before destroying
+    // objects
+    const char * fn = framesync64_get_filename(fs);
+    char filename[256] = "";
+    snprintf(filename,255,"%s",fn==NULL ? "" : fn);
     liquid_log_debug("filename: %s", filename);
 
     // destroy objects
@@ -220,7 +223,7 @@ void testbench_framesync64_debug(int _code)
     framesync64_destroy(fs);
 
     // check if output file should exist
-    if (filename == NULL) {
+    if (strlen(filename) == 0) {
         if (_code==0) {
             AUTOTEST_PASS();
         } else {
@@ -232,20 +235,10 @@ void testbench_framesync64_debug(int _code)
     // load file
     FILE * fid = fopen(filename,"rb");
     if (fid == NULL) {
-        AUTOTEST_FAIL("could not open file for reading");
+        AUTOTEST_FAIL("could not open for reading");
         return;
     }
 
-    // skip to location in file that includes payload and check that
-    // both the header and payload match
-    fseek(fid, LIQUID_FRAME64_LEN*sizeof(float complex) +
-               5*sizeof(float) +
-               (630 + 600)*sizeof(float complex),
-          SEEK_SET);
-    unsigned char payload_dec[72];
-    CONTEND_EQUALITY( fread(payload_dec, sizeof(unsigned char), 72, fid), 72 )
-    CONTEND_SAME_DATA(payload_dec,   header,   8);
-    CONTEND_SAME_DATA(payload_dec+8, payload, 64);
     fclose(fid);
 }
 

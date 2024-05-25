@@ -173,13 +173,14 @@ int gmskdem_destroy(gmskdem _q)
 
 int gmskdem_print(gmskdem _q)
 {
-    printf("gmskdem [k=%u, m=%u, BT=%8.3f]\n", _q->k, _q->m, _q->BT);
+    printf("<liquid.gmskdem, k=%u, m=%u, BT=%g", _q->k, _q->m, _q->BT);
 #if GMSKDEM_USE_EQUALIZER
-    printf("    equalizer bandwidth :   %12.8f\n", eqlms_rrrf_get_bw(_q->eq));
+    printf(", eq_bw=%g", eqlms_rrrf_get_bw(_q->eq));
 #endif
-    unsigned int i;
-    for (i=0; i<_q->h_len; i++)
-        printf("  hr(%4u) = %12.8f;\n", i+1, _q->h[i]);
+    //unsigned int i;
+    //for (i=0; i<_q->h_len; i++)
+    //    printf("  hr(%4u) = %12.8f;\n", i+1, _q->h[i]);
+    printf(">\n");
     return LIQUID_OK;
 }
 

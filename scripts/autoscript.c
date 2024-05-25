@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -351,6 +351,17 @@ void autoscript_addpackage(autoscript _q,
                            char * _package_name,
                            char * _filename)
 {
+    // verify that package name is unique with existing scripts
+    unsigned int i;
+    for (i=0; i<_q->num_packages; i++) {
+        if (strcmp(_q->packages[i].name, _package_name)==0) {
+            fprintf(stderr,"error: duplicate package name '%s', defined in:\n", _package_name);
+            fprintf(stderr,"  %s\n", _q->packages[i].filename);
+            fprintf(stderr,"  %s\n", _filename);
+            exit(1);
+        }
+    }
+
     // increase package size
     _q->num_packages++;
 

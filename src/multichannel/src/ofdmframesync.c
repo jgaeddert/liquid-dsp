@@ -184,8 +184,6 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
                                    ofdmframesync_callback _callback,
                                    void *                 _userdata)
 {
-    ofdmframesync q = (ofdmframesync) malloc(sizeof(struct ofdmframesync_s));
-
     // validate input
     if (_M < 8)
         return liquid_error_config("ofdmframesync_create(), number of subcarriers must be at least 8");
@@ -196,6 +194,8 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
     if (_taper_len > _cp_len)
         return liquid_error_config("ofdmframesync_create(), taper length cannot exceed cyclic prefix");
 
+    // allocate object and set parameters
+    ofdmframesync q = (ofdmframesync) malloc(sizeof(struct ofdmframesync_s));
     q->M = _M;
     q->cp_len = _cp_len;
     q->taper_len = _taper_len;

@@ -86,9 +86,10 @@ int FREQMOD(_destroy)(FREQMOD() _q)
 // print modulation internals
 int FREQMOD(_print)(FREQMOD() _q)
 {
-    printf("freqmod:\n");
-    printf("    mod. factor         :   %8.4f\n", _q->kf);
-    printf("    sincos table len    :   %u\n",    _q->sincos_table_len);
+    printf("<liquid.freqmod");
+    printf(", mod_factor=%g", _q->kf);
+    printf(", tablen=%u",    _q->sincos_table_len);
+    printf(">\n");
     return LIQUID_OK;
 }
 

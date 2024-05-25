@@ -136,7 +136,7 @@ int IIRDECIM(_destroy)(IIRDECIM() _q)
 // print interpolator state
 int IIRDECIM(_print)(IIRDECIM() _q)
 {
-    printf("<iirdecim_%s, decim=%u>\n", EXTENSION_FULL, _q->M);
+    printf("<liquid.iirdecim_%s, decim=%u>\n", EXTENSION_FULL, _q->M);
     return LIQUID_OK;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -136,7 +136,8 @@ int FIRFARROW(_destroy)(FIRFARROW() _q)
 // print firfarrow object's internal properties
 int FIRFARROW(_print)(FIRFARROW() _q)
 {
-    printf("firfarrow [len : %u, poly-order : %u]\n", _q->h_len, _q->Q);
+    printf("<firfarrow, len=%u, order=%u>\n", _q->h_len, _q->Q);
+#if 0
     printf("polynomial coefficients:\n");
 
     // print coefficients
@@ -155,6 +156,7 @@ int FIRFARROW(_print)(FIRFARROW() _q)
         PRINTVAL_TC(_q->h[n-i-1],%12.8f);
         printf(";\n");
     }
+#endif
     return LIQUID_OK;
 }
 

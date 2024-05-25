@@ -157,19 +157,7 @@ int FIRHILB(_destroy)(FIRHILB() _q)
 // print firhilb object internals
 int FIRHILB(_print)(FIRHILB() _q)
 {
-    printf("fir hilbert transform: [%u]\n", _q->h_len);
-    unsigned int i;
-    for (i=0; i<_q->h_len; i++) {
-        printf("  hc(%4u) = %8.4f + j*%8.4f;\n", i+1, crealf(_q->hc[i]), cimagf(_q->hc[i]));
-    }
-    printf("---\n");
-    for (i=0; i<_q->h_len; i++) {
-        printf("  h(%4u) = %8.4f;\n", i+1, _q->h[i]);
-    }
-    printf("---\n");
-    for (i=0; i<_q->hq_len; i++) {
-        printf("  hq(%4u) = %8.4f;\n", i+1, _q->hq[i]);
-    }
+    printf("<liquid.firhilb%s, len=%u>\n", EXTENSION_SHORT, _q->h_len);
     return LIQUID_OK;
 }
 

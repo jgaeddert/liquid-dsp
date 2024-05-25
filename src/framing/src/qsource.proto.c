@@ -317,22 +317,22 @@ int QSOURCE(_init_gmsk)(QSOURCE()    _q,
 int QSOURCE(_print)(QSOURCE() _q)
 {
     // TODO: print generic parameters
-    printf("  qsource%s[%3d] : ", EXTENSION, _q->id);
+    printf("<liquid.qsource%s, id=%3d", EXTENSION, _q->id);
     // print type-specific parameters
     float bw = _q->bw;
     switch (_q->type) {
-    case QSOURCE_USER:  printf("user ");             break;
-    case QSOURCE_TONE:  printf("tone ");             break;
-    case QSOURCE_CHIRP: printf("chirp");             break;
-    case QSOURCE_NOISE: printf("noise");             break;
-    case QSOURCE_MODEM: printf("modem"); bw *= 0.5f; break;
-    case QSOURCE_FSK:   printf("fsk  "); bw *= 0.5f; break;
-    case QSOURCE_GMSK:  printf("gmsk "); bw *= 0.5f; break;
+    case QSOURCE_USER:  printf(", type=\"user\"");              break;
+    case QSOURCE_TONE:  printf(", type=\"tone\"");              break;
+    case QSOURCE_CHIRP: printf(", type=\"chirp\"");             break;
+    case QSOURCE_NOISE: printf(", type=\"noise\"");             break;
+    case QSOURCE_MODEM: printf(", type=\"modem\""); bw *= 0.5f; break;
+    case QSOURCE_FSK:   printf(", type=\"fsk\"");   bw *= 0.5f; break;
+    case QSOURCE_GMSK:  printf(", type=\"gmsk\"");  bw *= 0.5f; break;
     default:
         return liquid_error(LIQUID_EINT,"qsource%s_print(), invalid internal state",EXTENSION);
     }
-    printf(" : fc=%6.3f, bw=%5.3f, P=%4u, m=%2u, as=%5.1f dB, gain=%5.1f dB %c\n",
-            _q->fc, bw, _q->P, _q->m, _q->as, QSOURCE(_get_gain)(_q), _q->enabled ? '*' : ' ');
+    printf(", fc=%g, bw=%g, P=%u, m=%u, as=%g, gain=%g, enabled=%u>\n",
+        _q->fc, bw, _q->P, _q->m, _q->as, QSOURCE(_get_gain)(_q), _q->enabled);
     return LIQUID_OK;
 }
 

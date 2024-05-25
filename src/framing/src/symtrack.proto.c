@@ -169,6 +169,7 @@ int SYMTRACK(_destroy)(SYMTRACK() _q)
 // print symtrack object's parameters
 int SYMTRACK(_print)(SYMTRACK() _q)
 {
+#if 0
     printf("symtrack_%s:\n", EXTENSION_FULL);
     printf("  k:%u, m:%u, beta:%.3f, ms:%s\n", _q->k, _q->m, _q->beta,
             modulation_types[_q->mod_scheme].name);
@@ -181,6 +182,11 @@ int SYMTRACK(_print)(SYMTRACK() _q)
         printf("?\n");
         return liquid_error(LIQUID_EINT,"symtrack_%s_print(), invalid equalization strategy");
     }
+#else
+    printf("<liquid.symtrack_%s\n", EXTENSION_FULL);
+    printf(", k=%u, m=%u, beta=%.3f, ms\"%s\">\n",
+        _q->k, _q->m, _q->beta, modulation_types[_q->mod_scheme].name);
+#endif
     return LIQUID_OK;
 }
 

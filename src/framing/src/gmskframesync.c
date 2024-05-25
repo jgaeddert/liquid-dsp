@@ -282,8 +282,8 @@ int gmskframesync_destroy(gmskframesync _q)
 // print frame synchronizer object internals
 int gmskframesync_print(gmskframesync _q)
 {
-    printf("gmskframesync:\n");
-    return framedatastats_print(&_q->framedatastats);
+    printf("<liquid.gmskframesync>\n");
+    return LIQUID_OK;
 }
 
 int gmskframesync_set_header_len(gmskframesync _q,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
 // Symbol streaming generator
-//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -138,7 +136,13 @@ int SYMSTREAM(_destroy)(SYMSTREAM() _q)
 // print symstream object's parameters
 int SYMSTREAM(_print)(SYMSTREAM() _q)
 {
-    printf("symstream_%s:\n", EXTENSION);
+    printf("<liquid.symstream_%s", EXTENSION);
+    printf(", k=%u", _q->k);
+    printf(", m=%u", _q->m);
+    printf(", beta=%.3f", _q->beta);
+    printf(", ms=\"%s\"", modulation_types[_q->mod_scheme].name);
+    printf(", gain=%g", _q->gain);
+    printf(">\n");
     return LIQUID_OK;
 }
 

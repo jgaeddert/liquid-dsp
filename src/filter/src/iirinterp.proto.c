@@ -138,7 +138,7 @@ int IIRINTERP(_destroy)(IIRINTERP() _q)
 // print interpolator state
 int IIRINTERP(_print)(IIRINTERP() _q)
 {
-    printf("<iirinterp_%s, interp=%u>\n", EXTENSION_FULL, _q->M);
+    printf("<liquid.iirinterp_%s, interp=%u>\n", EXTENSION_FULL, _q->M);
     return LIQUID_OK;
 }
 

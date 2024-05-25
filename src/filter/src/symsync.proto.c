@@ -287,7 +287,8 @@ int SYMSYNC(_destroy)(SYMSYNC() _q)
 // print symsync object's parameters
 int SYMSYNC(_print)(SYMSYNC() _q)
 {
-    printf("symsync_%s [rate: %f]\n", EXTENSION_FULL, _q->rate);
+    printf("<liquid.symsync_%s, rate=%g, k_in=%u, k_out=%u>\n",
+        EXTENSION_FULL, _q->rate, _q->k, _q->k_out);
     return FIRPFB(_print)(_q->mf);
 }
 

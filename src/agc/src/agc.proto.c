@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -113,12 +113,12 @@ int AGC(_destroy)(AGC() _q)
 // print agc object internals
 int AGC(_print)(AGC() _q)
 {
-    printf("agc [rssi: %12.4f dB, output gain: %.3f dB, bw: %12.4e, locked: %s, squelch: %s]:\n",
-            AGC(_get_rssi)(_q),
-            _q->scale > 0 ? 10.*log10f(_q->scale) : -100.0f,
-            _q->bandwidth,
-            _q->is_locked ? "yes" : "no",
-            _q->squelch_mode == LIQUID_AGC_SQUELCH_DISABLED ? "disabled" : "enabled");
+    printf("<liquid.agc, rssi=%g dB, gain%g dB, bw=%g, locked=%s, squelch=%s>\n",
+        AGC(_get_rssi)(_q),
+        _q->scale > 0 ? 10.*log10f(_q->scale) : -100.0f,
+        _q->bandwidth,
+        _q->is_locked ? "true" : "false",
+        _q->squelch_mode == LIQUID_AGC_SQUELCH_DISABLED ? "disabled" : "enabled");
     return LIQUID_OK;
 }
 

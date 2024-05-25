@@ -163,7 +163,7 @@ fskdem fskdem_copy(fskdem q_orig)
     memmove(q_copy->buf_freq, q_orig->buf_freq, q_copy->K * sizeof(float complex));
 
     // copy demodulation map
-    q_copy->demod_map = (unsigned int*)liquid_malloc_copy(q_orig->demod_map, q_copy->M, sizeof(float complex));
+    q_copy->demod_map = (unsigned int*)liquid_malloc_copy(q_orig->demod_map, q_copy->M, sizeof(unsigned int));
 
     // return new object
     return q_copy;
@@ -186,10 +186,11 @@ int fskdem_destroy(fskdem _q)
 // print fskdem object internals
 int fskdem_print(fskdem _q)
 {
-    printf("fskdem : frequency-shift keying demodulator\n");
-    printf("    bits/symbol     :   %u\n", _q->m);
-    printf("    samples/symbol  :   %u\n", _q->k);
-    printf("    bandwidth       :   %8.5f\n", _q->bandwidth);
+    printf("<liquid.fskdem");
+    printf(", bits/symbol=%u", _q->m);
+    printf(", samples/symbol=%u", _q->k);
+    printf(", bandwidth=%g", _q->bandwidth);
+    printf(">\n");
     return LIQUID_OK;
 }
 

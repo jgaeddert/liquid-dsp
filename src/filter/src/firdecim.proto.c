@@ -182,7 +182,11 @@ int FIRDECIM(_destroy)(FIRDECIM() _q)
 // print decimator object internals
 int FIRDECIM(_print)(FIRDECIM() _q)
 {
-    printf("<firdecim_%s, decim=%u>\n", EXTENSION_FULL, _q->M);
+    printf("<liquid.firdecim, decim=%u", _q->M);
+    // print scaling
+    printf(", scale=");
+    PRINTVAL_TC(_q->scale,%g);
+    printf(">\n");
     return LIQUID_OK;
 }
 

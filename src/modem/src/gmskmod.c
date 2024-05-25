@@ -122,10 +122,12 @@ int gmskmod_destroy(gmskmod _q)
 
 int gmskmod_print(gmskmod _q)
 {
-    printf("gmskmod [k=%u, m=%u, BT=%8.3f]\n", _q->k, _q->m, _q->BT);
+    printf("<liquid.gmskmod, k=%u, m=%u, BT=%g>\n", _q->k, _q->m, _q->BT);
+#if 0
     unsigned int i;
     for (i=0; i<_q->h_len; i++)
         printf("  ht(%4u) = %12.8f;\n", i+1, _q->h[i]);
+#endif
     return LIQUID_OK;
 }
 

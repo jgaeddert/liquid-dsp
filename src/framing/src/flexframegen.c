@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// flexframegen.c
-//
 // flexible frame generator
-//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -178,6 +174,8 @@ int flexframegen_destroy(flexframegen _q)
 // print flexframegen object internals
 int flexframegen_print(flexframegen _q)
 {
+    printf("<liquid.flexframegen>\n");
+#if 0
     unsigned int num_frame_symbols =
             64 +                    // preamble p/n sequence length
             _q->header_sym_len +    // header symbols
@@ -198,6 +196,7 @@ int flexframegen_print(flexframegen _q)
     printf("  tail          : %u symbols\n", _q->m);
     printf("  total         : %u symbols\n", num_frame_symbols);
     printf("  efficiency    : %.2f bits/second/Hz\n", eta);
+#endif
     return LIQUID_OK;
 }
 

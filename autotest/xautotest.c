@@ -310,6 +310,9 @@ int main(int argc, char *argv[])
         return liquid_error(LIQUID_EIMODE,"unknown/invalid execution mode");
     }
 
+    // ugh
+    liquid_fftwf_cleanup_wrapper();
+
     if (liquid_autotest_verbose)
         print_unstable_tests();
 

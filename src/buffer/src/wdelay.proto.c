@@ -116,7 +116,7 @@ int WDELAY(_destroy)(WDELAY() _q)
 // print delay buffer object's state to stdout
 int WDELAY(_print)(WDELAY() _q)
 {
-    printf("<wdelay, delay=%u>\n", _q->delay);
+    printf("<liquid.wdelay, delay=%u>\n", _q->delay);
     return LIQUID_OK;
 }
 

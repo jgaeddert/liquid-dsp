@@ -145,7 +145,7 @@ int BSYNC(_destroy)(BSYNC() _fs)
 
 int BSYNC(_print)(BSYNC() _fs)
 {
-    printf("<bsync_%s, len=%u>\n", EXTENSION_FULL, _fs->n);
+    printf("<liquid.bsync_%s, len=%u>\n", EXTENSION_FULL, _fs->n);
     return LIQUID_OK;
 }
 

@@ -235,7 +235,7 @@ int EQLMS(_reset)(EQLMS() _q)
 // print eqlms object internals
 int EQLMS(_print)(EQLMS() _q)
 {
-    printf("<eqlms_%s, n=%u, mu=%.3f>\n", EXTENSION_FULL, _q->h_len, _q->mu);
+    printf("<liquid.eqlms_%s, order=%u, mu=%.3f>\n", EXTENSION_FULL, _q->h_len, _q->mu);
     return LIQUID_OK;
 }
 

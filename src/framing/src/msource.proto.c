@@ -175,11 +175,13 @@ int MSOURCE(_reset)(MSOURCE() _q)
 // print
 int MSOURCE(_print)(MSOURCE() _q)
 {
-    printf("msource%s, M=%u, m=%u, as=%.1f dB, %llu samples:\n",
+    printf("<liquid.msource%s, M=%u, m=%u, as=%.1f dB, %llu samples>\n",
             EXTENSION, _q->M, _q->m, _q->as, _q->num_samples);
+#if 0
     unsigned int i;
     for (i=0; i<_q->num_sources; i++)
         QSOURCE(_print)(_q->sources[i]);
+#endif
     return LIQUID_OK;
 }
 

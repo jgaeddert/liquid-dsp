@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -113,7 +113,7 @@ int IIRHILB(_destroy)(IIRHILB() _q)
 // print iirhilb object internals
 int IIRHILB(_print)(IIRHILB() _q)
 {
-    printf("<iirhilb%s>\n", EXTENSION_SHORT);
+    printf("<liquid.iirhilb>\n");
     return LIQUID_OK;
 }
 

@@ -36,7 +36,6 @@ void autotest_windowf()
     float v[] = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
     float *r;   // reader pointer
     float x;    // temporary value holder
-    unsigned int i;
 
     float test0[10] = {0,0,0,0,0,0,0,0,0,0};
     float test1[10] = {0,0,0,0,0,0,1,1,1,1};
@@ -135,6 +134,7 @@ void autotest_windowf()
 
     // manual print
     liquid_log_debug("manual output");
+    unsigned int i;
     for (i=0; i<10; i++)
         liquid_log_debug("%6u : %f", i, r[i]);
 

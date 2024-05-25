@@ -31,6 +31,10 @@
 #define EXTENSION   "crcf"
 #define T           float
 #define TC          float complex
+#define TIL_(l)     l ## .0f
+#define TFL_(l)     l ## f
+#define TIL(l)      TIL_(l)
+#define TFL(l)      TFL_(l)
 
 #define SIN         sinf
 #define COS         cosf

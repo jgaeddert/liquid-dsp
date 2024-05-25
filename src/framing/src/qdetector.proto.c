@@ -323,12 +323,13 @@ int QDETECTOR(_destroy)(QDETECTOR() _q)
 
 int QDETECTOR(_print)(QDETECTOR() _q)
 {
-    printf("qdetector_%s:\n", EXTENSION_FULL);
-    printf("  template length (time):   %-u\n",   _q->s_len);
-    printf("  FFT size              :   %-u\n",   _q->nfft);
-    printf("  search range          :   %g [radians/sample], %-d [bins]\n",_q->dphi_max, _q->range);
-    printf("  detection threshold   :   %6.4f\n", _q->threshold);
-    printf("  sum{ s^2 }            :   %.2f\n",  _q->s2_sum);
+    printf("<liquid.qdetector_%s:\n", EXTENSION_FULL);
+    printf(", seq=%u", _q->s_len);
+    printf(", nfft=%u", _q->nfft);
+    printf(", dphi_max=%g",_q->dphi_max);
+    printf(", thresh=%g", _q->threshold);
+    printf(", energy=%g\n", _q->s2_sum);
+    printf(">\n");
     return LIQUID_OK;
 }
 

@@ -97,8 +97,8 @@ void testbench_msresamp_crcf_num_output(float _rate)
     unsigned int max_input = 64*s;
     unsigned int max_output = 16 + (unsigned int)(4.0f * max_input * _rate);
     liquid_log_debug("max_input : %u, max_output : %u", max_input, max_output);
-    float complex buf_0[max_input];
-    float complex buf_1[max_output];
+    float complex * buf_0 = (float complex*) malloc(max_input  * sizeof(float complex));
+    float complex * buf_1 = (float complex*) malloc(max_output * sizeof(float complex));
     unsigned int i;
     for (i=0; i<max_input; i++)
         buf_0[i] = 0.0f;
@@ -118,6 +118,8 @@ void testbench_msresamp_crcf_num_output(float _rate)
     }
 
     // destroy object
+    free(buf_0);
+    free(buf_1);
     msresamp_crcf_destroy(q);
 }
 
