@@ -24,6 +24,14 @@ install:
     - ldconfig
     - make check-link
 
+# compile and run benchmark program
+bench:
+  stage: test
+  script:
+    - make -j4 bench
+  artifacts:
+    paths: [benchmark.json]
+
 # run all test programs
 check:
   stage: test
@@ -33,13 +41,17 @@ check:
   artifacts:
     paths: [autotest.json]
 
-# compile and run benchmark program
-bench:
+# build from scratch
+coverage:
   stage: test
   script:
-    - make -j4 bench
+    - make distclean
+    - ./bootstrap.sh
+    - ./configure --enable-coverage
+    - make -j4 coverage
+  coverage: '/lines: \d+\.\d+%/'
   artifacts:
-    paths: [benchmark.json]
+    paths: [coverage.out]
 
 # compile and run documenation checks (e.g. example code in README.md)
 check-doc:
