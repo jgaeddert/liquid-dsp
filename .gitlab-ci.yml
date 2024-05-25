@@ -71,7 +71,7 @@ examples:
     paths: [run_examples.sh, time.txt]
 
 # compile and run all autotest programs with valgrind
-examples-memcheck:
+autotest-memcheck:
   stage: test
   script:
     - make -j4 xautotest
