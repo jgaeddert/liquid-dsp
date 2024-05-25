@@ -33,7 +33,7 @@
 #include <getopt.h>
 #include <time.h>
 #include <sys/resource.h>
-#include <fftw3.h>
+#include "liquid.internal.h"
 #include "autotest/autotest.h"
 
 void usage()
