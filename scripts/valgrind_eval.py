@@ -20,8 +20,8 @@ def run_test(test: dict, opts: str='--tool=memcheck --leak-check=full --track-or
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('-output', default='valgrind', type=str, help='output directory')
-    #p.add_argument('-search', default=None,       type=str, help='search')
-    p.add_argument('-test', default=None,       type=int, help='run a specific test')
+    p.add_argument('-search', default=None,       type=str, help='search')
+    p.add_argument('-test',   default=None,       type=int, help='run a specific test')
     args = p.parse_args()
 
     # generate and load .json object
@@ -30,13 +30,19 @@ def main(argv=None):
     # set additional configuration options
     opts = '--tool=memcheck --leak-check=full --track-origins=yes'
 
-    if args.test is None:
+    if args.test is not None:
+        # run a specific test
+        run_test(v['tests'][args.test], opts, seed=v['rseed'])
+    elif args.search is not None:
+        # run all tests matching search string
+        print("running all tests containing '%s'...\n" % (args.search))
+        for i,test in enumerate(v['tests']):
+            if test['name'].lower().__contains__(args.search.lower()):
+                run_test(test, opts, seed=v['rseed'])
+    else:
         # iterate over all tests and execute
         for i,test in enumerate(v['tests']):
             run_test(test, opts, seed=v['rseed'])
-    else:
-        # run a specific test
-        run_test(v['tests'][args.test], opts, seed=v['rseed'])
 
 if __name__ == '__main__':
     sys.exit(main())
