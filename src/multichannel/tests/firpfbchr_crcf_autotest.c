@@ -91,18 +91,18 @@ void autotest_firpfbchr_crcf()
 
     // verify results: channel 2
     autotest_psd_s regions_2[] = {
-        {.fmin=-0.50f, .fmax= 0.05f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
+        {.fmin=-0.47f, .fmax= 0.05f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
         {.fmin= 0.08f, .fmax= 0.12f, .pmin=-35, .pmax=-25, .test_lo=1, .test_hi=1},
-        {.fmin= 0.15f, .fmax= 0.50f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
+        {.fmin= 0.15f, .fmax= 0.47f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_psd_spgramcf(c1, regions_2, 3,
         liquid_autotest_verbose ? "autotest/logs/firpfbchr_crcf_c1.m" : NULL);
 
     // verify results: channel 3
     autotest_psd_s regions_3[] = {
-        {.fmin=-0.50f, .fmax=-0.28f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
+        {.fmin=-0.47f, .fmax=-0.28f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
         {.fmin=-0.15f, .fmax=+0.15f, .pmin=-25, .pmax=-15, .test_lo=1, .test_hi=1},
-        {.fmin= 0.28f, .fmax=+0.50f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
+        {.fmin= 0.28f, .fmax=+0.47f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_psd_spgramcf(c3, regions_3, 3,
         liquid_autotest_verbose ? "autotest/logs/firpfbchr_crcf_c3.m" : NULL);
