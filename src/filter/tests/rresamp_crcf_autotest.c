@@ -137,7 +137,7 @@ void autotest_rresamp_copy()
         symstreamrcf_write_samples(gen, buf, Q);
 
         // resample
-        rresamp_crcf_execute(q0, buf_0, buf_1);
+        rresamp_crcf_execute(q0, buf, buf_0);
     }
 
     // copy object
