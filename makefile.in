@@ -1081,7 +1081,7 @@ src/random/src/scramble.o : %.o : %.c $(include_headers)
 # specific machine architectures
 
 # avx512f
-src/random/src/scramble.avx512v.o : %.o : %.c $(include_headers)
+src/random/src/scramble.avx512f.o : %.o : %.c $(include_headers)
 
 # AVX/AVX2
 src/random/src/scramble.avx.o : %.o : %.c $(include_headers)
