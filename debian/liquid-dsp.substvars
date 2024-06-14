@@ -1,0 +1,3 @@
+shlibs:Depends=libc6 (>= 2.14), libfftw3-single3
+misc:Depends=
+misc:Pre-Depends=

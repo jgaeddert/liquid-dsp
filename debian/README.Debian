@@ -1,0 +1,7 @@
+liquid-dsp for Debian
+---------------------
+
+I just debianized this package to make it nicely build on Debian. Patches are
+more than welcome.
+
+ -- dsx <dsx@droidnest.org>  Tue, 20 Oct 2015 20:30:00 -0400

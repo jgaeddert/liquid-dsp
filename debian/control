@@ -1,0 +1,24 @@
+Source: liquid-dsp
+Section: unknown
+Priority: optional
+Maintainer: unknown <user@host.local>
+Build-Depends: debhelper (>= 9), autotools-dev
+Standards-Version: 3.9.6
+Homepage: https://github.com/jgaeddert/liquid-dsp
+Vcs-Git: https://github.com/jgaeddert/liquid-dsp.git
+Vcs-Browser: https://github.com/jgaeddert/liquid-dsp/tree/master
+
+Package: liquid-dsp
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Software-Defined Radio Digital Signal Processing Library
+ liquid-dsp is a free and open-source digital signal processing (DSP) library
+ designed specifically for software-defined radios on embedded platforms. The
+ aim is to provide a lightweight DSP library that does not rely on a myriad of
+ external dependencies or proprietary and otherwise cumbersome frameworks. All
+ signal processing elements are designed to be flexible, scalable, and dynamic,
+ including filters, filter design, oscillators, modems, synchronizers, and
+ complex mathematical operations.
+ For more information, please refer to the documentation:
+ online HTML version: http://liquidsdr.org/doc
+
