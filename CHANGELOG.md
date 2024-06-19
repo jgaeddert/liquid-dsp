@@ -372,3 +372,8 @@ issues and pull requests.
       equalization
   * optim
     - simplified interface to gradient search
+
+## [1.0.0] - 2011-04-29
+
+_First release._
+
