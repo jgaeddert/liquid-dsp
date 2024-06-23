@@ -253,8 +253,8 @@ int dsssframegen_set_header_props(dsssframegen _q, dsssframegenprops_s * _props)
 
 unsigned int dsssframegen_getframelen(dsssframegen _q)
 {
-    if (_q->frame_assembled) {
-        liquid_error(LIQUID_EICONFIG,"dsssframegen_get_header_props(), frame is already assembled; must reset() first");
+    if (!_q->frame_assembled) {
+        liquid_error(LIQUID_EICONFIG,"dsssframegen_getframelen(), frame not assembled!");
         return 0;
     }
 
