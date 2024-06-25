@@ -6,24 +6,24 @@ stages:
 before_script:
   - apt-get -qq update
   - apt-get -qq install -y --no-install-recommends build-essential cmake valgrind time curl
+  - mkdir build
+  - cd build
+  - cmake ..
 
 # build from scratch
 compile:
   stage: build
   script:
-    - mkdir build
-    - cd build
-    - cmake ..
     - make -j4
 
 # test installation and linking appropriately
-.install:
+install:
   stage: test
   script:
     - make -j4
     - make install
     - ldconfig
-    - make check-link
+    #- make check-link
 
 # run all test programs
 .check:
