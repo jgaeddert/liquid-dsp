@@ -356,10 +356,25 @@ target_include_directories(test_libliquid PRIVATE ${INCLUDE})
 
 target_link_libraries(test_libliquid ${LIBNAME})
 
+set_property(TARGET ${LIBNAME} PROPERTY SOVERSION 1)
+
 # see: https://cmake.org/cmake/help/latest/command/install.html#examples
 # TODO: install headers
 # TODO: uninstall?
-#install(TARGETS mylib)
+install(TARGETS
+          ${LIBNAME}
+        RUNTIME           # Following options apply to runtime artifacts.
+          COMPONENT Runtime
+        LIBRARY           # Following options apply to library artifacts.
+          COMPONENT Runtime
+          NAMELINK_COMPONENT Development
+        ARCHIVE           # Following options apply to archive artifacts.
+          COMPONENT Development
+          DESTINATION lib/static
+        FILE_SET HEADERS  # Following options apply to file set HEADERS.
+          COMPONENT Development
+        )
+
 
 #
 # autotest
