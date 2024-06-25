@@ -102,7 +102,7 @@ add_definitions ("-Wall -fPIC -O3 -Wno-deprecated -Wno-deprecated-declarations")
 include (CheckTypeSize)
 check_type_size(int SIZEOF_INT LANGUAGE C)
 
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+configure_file(config.h.cmake config.h)
 
 ################################################################################
 # Targets
@@ -321,6 +321,9 @@ add_library(vector OBJECT
 # main library
 #
 
+# necessary to include this for the generated "config.h" header
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 set(LIBSRC src/libliquid.c)
 
 # NOTE: if set to "liquid" it will unfortunately link to installed version... grumble...
@@ -350,6 +353,7 @@ add_library(${LIBNAME} SHARED
     $<TARGET_OBJECTS:vector>)
 
 target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
+
 target_link_libraries(${LIBNAME} c m)
 
 add_executable(test_libliquid examples/libliquid_example.c)
