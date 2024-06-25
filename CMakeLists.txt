@@ -350,6 +350,7 @@ add_library(${LIBNAME} SHARED
     $<TARGET_OBJECTS:vector>)
 
 target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
+target_link_libraries(${LIBNAME} c m)
 
 add_executable(test_libliquid examples/libliquid_example.c)
 target_include_directories(test_libliquid PRIVATE ${INCLUDE})
@@ -371,8 +372,8 @@ install(TARGETS
         ARCHIVE           # Following options apply to archive artifacts.
           COMPONENT Development
           DESTINATION lib/static
-        FILE_SET HEADERS  # Following options apply to file set HEADERS.
-          COMPONENT Development
+        #FILE_SET HEADERS  # Following options apply to file set HEADERS.
+          #COMPONENT Development
         )
 
 
