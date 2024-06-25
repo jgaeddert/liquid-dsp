@@ -32,7 +32,7 @@ check:
     - make -j4
     - ./xautotest
   artifacts:
-    paths: [autotest.json]
+    paths: [build/autotest.json]
 
 # compile and run benchmark program
 .bench:
