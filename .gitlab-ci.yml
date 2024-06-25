@@ -26,11 +26,11 @@ install:
     #- make check-link
 
 # run all test programs
-.check:
+check:
   stage: test
   script:
-    - ./configure
-    - make -j4 check
+    - make -j4
+    - ./xautotest
   artifacts:
     paths: [autotest.json]
 
