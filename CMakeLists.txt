@@ -31,11 +31,15 @@
 #
 
 cmake_minimum_required(VERSION 3.10)
-project(liquid VERSION 1.6.0 LANGUAGES C)
+project(liquid VERSION 1.6.0 LANGUAGES C CXX)
 
 # require a C99 compiler for all targets
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+
+set(CMAKE_CXX_STANDARD 14 CACHE STRING "C++ version selection")  # or 11, 14, 17, 20
+set(CMAKE_CXX_STANDARD_REQUIRED ON)  # optional, ensure standard is supported
+#set(CMAKE_CXX_EXTENSIONS OFF)  # optional, keep compiler extensions off
 
 # cmake debugging
 #variable_watch(HAVE_SINF)
@@ -693,4 +697,37 @@ include(CPack)
 
 # this file can only use the @VARIABLE@ syntax
 configure_file(src/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
+
+#
+# python binding
+#
+set(PYBIND11_NEWPYTHON ON)
+find_package(pybind11 CONFIG REQUIRED)
+
+
+pybind11_add_module(pyliquid MODULE
+	bind/liquid.python.cc
+    $<TARGET_OBJECTS:agc>
+    $<TARGET_OBJECTS:audio>
+    $<TARGET_OBJECTS:buffer>
+    $<TARGET_OBJECTS:channel>
+    $<TARGET_OBJECTS:dotprod>
+    $<TARGET_OBJECTS:equalization>
+    $<TARGET_OBJECTS:fec>
+    $<TARGET_OBJECTS:fft>
+    $<TARGET_OBJECTS:filter>
+    $<TARGET_OBJECTS:framing>
+    $<TARGET_OBJECTS:math>
+    $<TARGET_OBJECTS:matrix>
+    $<TARGET_OBJECTS:modem>
+    $<TARGET_OBJECTS:multichannel>
+    $<TARGET_OBJECTS:nco>
+    $<TARGET_OBJECTS:optim>
+    $<TARGET_OBJECTS:quantization>
+    $<TARGET_OBJECTS:random>
+    $<TARGET_OBJECTS:sequence>
+    $<TARGET_OBJECTS:utility>
+    $<TARGET_OBJECTS:vector>)
+
+install(TARGETS pyliquid LIBRARY DESTINATION .)
 

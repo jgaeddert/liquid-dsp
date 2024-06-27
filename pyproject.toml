@@ -1,0 +1,42 @@
+[build-system]
+requires = ["scikit-build-core", "pybind11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "liquid-dsp"
+description = "software-defined radio digital signal processing library"
+dynamic = ["version"]
+requires-python = ">= 3.6"
+authors = [{name = "Joseph D. Gaeddert", email = "joseph@liquidsdr.org"}]
+dependencies = []
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["digital","signal","processing","DSP","software-defined radio","SDR"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering",
+    "Programming Language :: C",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: MIT License",
+]
+
+[project.optional-dependencies]
+
+[project.urls]
+Homepage = "https://liquidsdr.org"
+Documentation = "https://liquidsdr.org/doc"
+Repository = "https://github.com/jgaeddert/liquid-dsp"
+Issues = "https://github.com/jgaeddert/liquid-dsp/issues"
+Changelog = "https://github.com/jgaeddert/liquid-dsp/blob/master/CHANGELOG.md"
+
+
+
+#[project.scripts]
+#liquid = "liquid:main_cli"
+
+#[tool.cibuildwheel]
+#test-command = "python {project}/tests/test.py"
+#test-skip = "*universal2:arm64"
+
