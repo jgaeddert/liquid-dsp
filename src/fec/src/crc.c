@@ -247,7 +247,7 @@ unsigned int checksum_generate_key(unsigned char *_data,
 unsigned int crc8_generate_key(unsigned char *_msg,
                                unsigned int _n)
 {
-    unsigned int i, j, b, mask, key8=~0;
+    unsigned int i, j, b, mask, key8=0xFF;
     unsigned int poly = liquid_reverse_byte_gentab[CRC8_POLY];
     for (i=0; i<_n; i++) {
         b = _msg[i];
@@ -275,7 +275,7 @@ unsigned int crc8_generate_key(unsigned char *_msg,
 unsigned int crc16_generate_key(unsigned char *_msg,
                                 unsigned int _n)
 {
-    unsigned int i, j, b, mask, key16=~0;
+    unsigned int i, j, b, mask, key16=0xFFFF;
     unsigned int poly = liquid_reverse_uint16(CRC16_POLY);
     for (i=0; i<_n; i++) {
         b = _msg[i];
@@ -303,7 +303,7 @@ unsigned int crc16_generate_key(unsigned char *_msg,
 unsigned int crc24_generate_key(unsigned char *_msg,
                                 unsigned int _n)
 {
-    unsigned int i, j, b, mask, key24=~0;
+    unsigned int i, j, b, mask, key24=0xFFFFFF;
     unsigned int poly = liquid_reverse_uint24(CRC24_POLY);
     for (i=0; i<_n; i++) {
         b = _msg[i];
