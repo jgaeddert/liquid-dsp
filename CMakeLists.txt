@@ -104,6 +104,10 @@ check_type_size(int SIZEOF_INT LANGUAGE C)
 
 configure_file(config.h.cmake config.h)
 
+find_library(C_LIBRARY c)
+find_library(MATH_LIBRARY m)
+
+
 ################################################################################
 # Targets
 #  
@@ -354,7 +358,10 @@ add_library(${LIBNAME} SHARED
 
 target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
 
-target_link_libraries(${LIBNAME} c m)
+target_link_libraries(${LIBNAME} PUBLIC ${C_LIBRARY} ${MATH_LIBRARY})
+#if (MATH_LIBRARY)
+#    target_link_libraries(MyTarget PUBLIC ${MATH_LIBRARY})
+#endif()
 
 add_executable(test_libliquid examples/libliquid_example.c)
 target_include_directories(test_libliquid PRIVATE ${INCLUDE})
