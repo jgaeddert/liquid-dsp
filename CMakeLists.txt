@@ -727,6 +727,7 @@ find_package(pybind11 CONFIG REQUIRED)
 
 pybind11_add_module(pyliquid MODULE
 	bind/liquid.python.cc
+    ${LIBSRC}
     $<TARGET_OBJECTS:agc>
     $<TARGET_OBJECTS:audio>
     $<TARGET_OBJECTS:buffer>
@@ -748,6 +749,8 @@ pybind11_add_module(pyliquid MODULE
     $<TARGET_OBJECTS:sequence>
     $<TARGET_OBJECTS:utility>
     $<TARGET_OBJECTS:vector>)
+
+target_compile_definitions(pyliquid PUBLIC LIQUID_PYTHONLIB)
 
 install(TARGETS pyliquid LIBRARY DESTINATION .)
 
