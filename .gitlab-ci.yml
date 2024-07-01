@@ -1,21 +1,22 @@
 # base configuration
 image: debian
-stages: [build, test]
+stages:
+  - build
+  - test
 before_script:
   - apt-get -qq update
-  - apt-get -qq install -y --no-install-recommends automake autoconf gcc g++ gcovr make valgrind time curl
+  - apt-get -qq install -y --no-install-recommends build-essential cmake valgrind time curl
   - apt-get -qq install python3-pip pybind11-dev
   - python3 -m pip install pybind11 numpy matplotlib
+  - mkdir build
+  - cd build
+  - cmake ..
 
 # build from scratch
 compile:
   stage: build
   script:
-    - ./bootstrap.sh
-    - ./configure --enable-strict
     - make -j4
-  artifacts: # save output objects for test stages
-    paths: [makefile, configure, config.h, config.h.in]
 
 # test installation and linking appropriately
 install:
@@ -24,19 +25,19 @@ install:
     - make -j4
     - make install
     - ldconfig
-    - make check-link
+    #- make check-link
 
 # run all test programs
 check:
   stage: test
   script:
-    - ./configure
-    - make -j4 check
+    - make -j4
+    - ./xautotest
   artifacts:
-    paths: [autotest.json]
+    paths: [build/autotest.json]
 
 # compile and run benchmark program
-bench:
+.bench:
   stage: test
   script:
     - make -j4 bench
@@ -44,13 +45,13 @@ bench:
     paths: [benchmark.json]
 
 # compile and run documenation checks (e.g. example code in README.md)
-doc-check:
+.doc-check:
   stage: test
   script:
     - make doc-check
 
 # compile and run all example programs, timing how long each takes to run
-examples:
+.examples:
   stage: test
   script:
     - make -j4 examples
@@ -62,19 +63,19 @@ examples:
 
 # compile and run all example programs with valgrind
 # TODO: ensure no errors
-#examples-memcheck:
-#  stage: test
-#  script:
-#    - make -j4 examples
-#    # setting --track-origins=yes gives more detail but takes longer than gitlab allows
-#    - ls examples/*_example | sed -E "s#examples/(.*)#valgrind --tool=memcheck --log-file=examples/\1.log ./examples/\1#g" > run_examples_valgrind.sh
-#    - /bin/sh run_examples_valgrind.sh
-#    - tail -n +1 examples/*.log > valgrind.log
-#  artifacts:
-#    paths: [run_examples_valgrind.sh, valgrind.log]
+.examples-memcheck:
+  stage: test
+  script:
+    - make -j4 examples
+    # setting --track-origins=yes gives more detail but takes longer than gitlab allows
+    - ls examples/*_example | sed -E "s#examples/(.*)#valgrind --tool=memcheck --log-file=examples/\1.log ./examples/\1#g" > run_examples_valgrind.sh
+    - /bin/sh run_examples_valgrind.sh
+    - tail -n +1 examples/*.log > valgrind.log
+  artifacts:
+    paths: [run_examples_valgrind.sh, valgrind.log]
 
 # build from scratch
-coverage:
+.coverage:
   stage: test
   script:
     - make distclean

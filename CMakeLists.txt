@@ -106,7 +106,7 @@ add_definitions ("-Wall -fPIC -O3 -Wno-deprecated -Wno-deprecated-declarations")
 include (CheckTypeSize)
 check_type_size(int SIZEOF_INT LANGUAGE C)
 
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+configure_file(config.h.cmake config.h)
 
 ################################################################################
 # Targets
@@ -325,6 +325,9 @@ add_library(vector OBJECT
 # main library
 #
 
+# necessary to include this for the generated "config.h" header
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 set(LIBSRC src/libliquid.c)
 
 # NOTE: if set to "liquid" it will unfortunately link to installed version... grumble...
@@ -355,15 +358,32 @@ add_library(${LIBNAME} SHARED
 
 target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
 
+target_link_libraries(${LIBNAME} c m)
+
 add_executable(test_libliquid examples/libliquid_example.c)
 target_include_directories(test_libliquid PRIVATE ${INCLUDE})
 
 target_link_libraries(test_libliquid ${LIBNAME})
 
+set_property(TARGET ${LIBNAME} PROPERTY SOVERSION 1)
+
 # see: https://cmake.org/cmake/help/latest/command/install.html#examples
 # TODO: install headers
 # TODO: uninstall?
-#install(TARGETS mylib)
+install(TARGETS
+          ${LIBNAME}
+        RUNTIME           # Following options apply to runtime artifacts.
+          COMPONENT Runtime
+        LIBRARY           # Following options apply to library artifacts.
+          COMPONENT Runtime
+          NAMELINK_COMPONENT Development
+        ARCHIVE           # Following options apply to archive artifacts.
+          COMPONENT Development
+          DESTINATION lib/static
+        #FILE_SET HEADERS  # Following options apply to file set HEADERS.
+          #COMPONENT Development
+        )
+
 
 #
 # autotest
