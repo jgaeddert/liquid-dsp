@@ -219,7 +219,7 @@ Then install the python dependencies with
 Once these dependencies are installed, you can build the liquid-dsp python
 library with
 
-    make python
+    pip install .
 
 From python3 simply use `import liquid as dsp`.
 Our interpolation example used throughout this document can be written
