@@ -725,8 +725,8 @@ set(PYBIND11_NEWPYTHON ON)
 find_package(pybind11 CONFIG REQUIRED)
 
 
-pybind11_add_module(pyliquid MODULE
-	bind/liquid.python.cc
+pybind11_add_module(liquid MODULE
+    bind/liquid.python.cc
     ${LIBSRC}
     $<TARGET_OBJECTS:agc>
     $<TARGET_OBJECTS:audio>
@@ -750,7 +750,7 @@ pybind11_add_module(pyliquid MODULE
     $<TARGET_OBJECTS:utility>
     $<TARGET_OBJECTS:vector>)
 
-target_compile_definitions(pyliquid PUBLIC LIQUID_PYTHONLIB)
+target_compile_definitions(liquid PUBLIC LIQUID_PYTHONLIB)
 
-install(TARGETS pyliquid LIBRARY DESTINATION .)
+install(TARGETS liquid LIBRARY DESTINATION .)
 
