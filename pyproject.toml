@@ -7,7 +7,7 @@ name = "liquid-dsp"
 description = "software-defined radio digital signal processing library"
 version = "1.6.0"
 #dynamic = ["version"]
-requires-python = ">= 3.6"
+requires-python = ">= 3.7"
 authors = [{name = "Joseph D. Gaeddert", email = "joseph@liquidsdr.org"}]
 dependencies = []
 readme = "README.md"
