@@ -54,7 +54,7 @@ py::dict framesyncstats_to_dict(framesyncstats_s _stats,
 }
 
 
-PYBIND11_MODULE(liquid, m) {
+PYBIND11_MODULE(pyliquid, m) {
     m.doc() = "software-defined radio signal processing library";
 
     // initialize objects
