@@ -1,0 +1,4 @@
+cibuildwheel
+pybind11[global]
+scikit-build-core
+twine
