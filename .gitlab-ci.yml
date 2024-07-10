@@ -1,6 +1,6 @@
 
 build:
-  image: debian
+  image: ubuntu:latest
   variables:
     DEBIAN_FRONTEND: noninteractive
   script:
