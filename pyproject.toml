@@ -37,7 +37,8 @@ Changelog = "https://github.com/jgaeddert/liquid-dsp/blob/master/CHANGELOG.md"
 #[project.scripts]
 #liquid = "liquid:main_cli"
 
-#[tool.cibuildwheel]
+[tool.cibuildwheel]
+before-all = "uname -a"
 #test-command = "python {project}/tests/test.py"
 #test-skip = "*universal2:arm64"
 
