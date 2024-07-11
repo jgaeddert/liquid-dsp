@@ -1,13 +1,15 @@
 
 build:
-  image: ubuntu:latest
+  image: debian
   variables:
     DEBIAN_FRONTEND: noninteractive
   script:
-    - apt-get -qq update
-    - apt-get -qq install -y --no-install-recommends build-essential cmake
-    - apt-get -qq install python3-pip pybind11-dev
-    - python3 -m pip install pybind11 numpy matplotlib
+    - apt -qq update
+    - apt -qq install -y --no-install-recommends build-essential cmake
+    - apt -qq install python3-pip pybind11-dev virtualenv
+    - virtualenv env/liquid
+    - source env/liquid/bin/activate
+    - python -m pip install pybind11 numpy matplotlib
     - mkdir build
     - cd build
     - cmake ..
