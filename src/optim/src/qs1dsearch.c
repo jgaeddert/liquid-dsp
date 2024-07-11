@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,6 +48,7 @@ qs1dsearch qs1dsearch_create(liquid_utility_1d _utility,
     if (_utility == NULL)
         return liquid_error_config("qs1dsearch_create(), utility callback cannot be NULL");
 
+    // allocate main object memory and initialize
     qs1dsearch q = (qs1dsearch) malloc( sizeof(struct qs1dsearch_s) );
     q->utility   = _utility;
     q->context   = _context;
@@ -60,18 +61,22 @@ qs1dsearch qs1dsearch_create(liquid_utility_1d _utility,
 
 qs1dsearch qs1dsearch_copy(qs1dsearch _q)
 {
+    liquid_error(LIQUID_ENOIMP,"qs1dsearch_copy(), method not yet implemented");
     return NULL;
 }
 
 int qs1dsearch_destroy(qs1dsearch _q)
 {
+    if (_q == NULL)
+        return liquid_error(LIQUID_EIOBJ,"qs1dsearch_destroy(), invalid null pointer passed");
+
     free(_q);
     return LIQUID_OK;
 }
 
 int qs1dsearch_print(qs1dsearch _q)
 {
-    printf("<liquid.qs1dsearch{%12g,%12g,%12g}{%12g,%12g,%12g}>\n",
+    printf("<liquid.qs1dsearch, v=[%12g,%12g,%12g], u=[%12g,%12g,%12g]>\n",
         _q->vn, _q->v0, _q->vp, _q->un, _q->u0, _q->up);
     return LIQUID_OK;
 }
@@ -80,6 +85,11 @@ int qs1dsearch_reset(qs1dsearch _q)
 {
     _q->init = 0;
     _q->num_steps = 0;
+    _q->vn = 0.0f; _q->un = 0.0f;
+    _q->va = 0.0f; _q->ua = 0.0f;
+    _q->v0 = 0.0f; _q->u0 = 0.0f;
+    _q->vb = 0.0f; _q->ub = 0.0f;
+    _q->vp = 0.0f; _q->up = 0.0f;
     return LIQUID_OK;
 }
 

@@ -43,7 +43,6 @@ linux:
     paths:
       - wheelhouse/
 
-
 # compile and run all example programs, timing how long each takes to run
 .examples:
   stage: test
@@ -68,6 +67,16 @@ linux:
   artifacts:
     paths: [run_examples_valgrind.sh, valgrind.log]
 
+# compile and run all autotest programs with valgrind
+.autotest-memcheck:
+  stage: test
+  script:
+    - make -j4 xautotest
+    - mkdir valgrind
+    - ./scripts/valgrind_eval.py -output valgrind -test 881
+  artifacts:
+    paths: [valgrind/*]
+
 # build from scratch
 .coverage:
   stage: test
@@ -76,7 +85,12 @@ linux:
     - ./bootstrap.sh
     - ./configure --enable-coverage
     - make -j4 coverage
+    #- curl -Os http://cli.codecov.io/latest/linux/codecov
+    #- chmod +x codecov
+    #- ./codecov --version
+    #- ./codecov upload-process -t $CODECOV_TOKEN --git-service gitlab --slug jgaeddert/liquid-dsp
     - bash <(curl -s https://codecov.io/bash)
+
   coverage: '/lines: \d+\.\d+%/'
   artifacts:
     paths: [coverage.out]

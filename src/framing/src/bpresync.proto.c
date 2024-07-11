@@ -146,7 +146,7 @@ int BPRESYNC(_destroy)(BPRESYNC() _q)
 
 int BPRESYNC(_print)(BPRESYNC() _q)
 {
-    printf("bpresync_%s: %u samples\n", EXTENSION_FULL, _q->n);
+    printf("<liquid.bpresync_%s, n=%u>\n", EXTENSION_FULL, _q->n);
     return LIQUID_OK;
 }
 

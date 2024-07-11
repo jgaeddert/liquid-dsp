@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -296,6 +296,7 @@ void autotest_qdsync_cccf_copy()
     CONTEND_SAME_DATA(c_orig.buf, c_copy.buf, seq_len*sizeof(float complex));
 
     // destroy objects
+    firinterp_crcf_destroy(interp);
     qdsync_cccf_destroy(q_orig);
     qdsync_cccf_destroy(q_copy);
 }
@@ -324,6 +325,10 @@ void autotest_qdsync_cccf_config()
     // set/get threshold
     CONTEND_EQUALITY(LIQUID_OK, qdsync_cccf_set_threshold(q,0.654321f))
     CONTEND_EQUALITY(0.654321f, qdsync_cccf_get_threshold(q))
+
+    // set/get range
+    CONTEND_EQUALITY(LIQUID_OK, qdsync_cccf_set_range(q,0.007220f))
+    CONTEND_EQUALITY(0.007220f, qdsync_cccf_get_range(q))
 
     // set invalid buffer length
     CONTEND_INEQUALITY(LIQUID_OK, qdsync_cccf_set_buf_len(q,0))

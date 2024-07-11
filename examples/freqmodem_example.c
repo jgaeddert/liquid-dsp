@@ -1,9 +1,4 @@
-// file: freqmodem_test.c
-//
-// Tests simple modulation/demodulation without noise or phase
-// offset
-//
-
+// Tests simple frequency modulation/demodulation
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,6 @@ void autotest_windowf()
     float v[] = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
     float *r;   // reader pointer
     float x;    // temporary value holder
-    unsigned int i;
 
     float test0[10] = {0,0,0,0,0,0,0,0,0,0};
     float test1[10] = {0,0,0,0,0,0,1,1,1,1};
@@ -137,15 +136,6 @@ void autotest_windowf()
 
     windowf_read(w, &r);
     CONTEND_SAME_DATA(r,test8,10*sizeof(float));
-
-    if (liquid_autotest_verbose) {
-        // manual print
-        printf("manual output:\n");
-        for (i=0; i<10; i++)
-            printf("%6u : %f\n", i, r[i]);
-
-        windowf_debug_print(w);
-    }
 
     windowf_destroy(w);
 }

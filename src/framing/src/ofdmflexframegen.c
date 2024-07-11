@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// ofdmflexframegen.c
-//
 // OFDM flexible frame generator
-//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -273,35 +269,14 @@ int ofdmflexframegen_is_assembled(ofdmflexframegen _q)
 
 int ofdmflexframegen_print(ofdmflexframegen _q)
 {
-    printf("ofdmflexframegen:\n");
-    printf("    num subcarriers     :   %-u\n", _q->M);
-    printf("      * NULL            :   %-u\n", _q->M_null);
-    printf("      * pilot           :   %-u\n", _q->M_pilot);
-    printf("      * data            :   %-u\n", _q->M_data);
-    printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
-    printf("    taper len           :   %-u\n", _q->taper_len);
-    printf("    properties:\n");
-    printf("      * mod scheme      :   %s\n", modulation_types[_q->props.mod_scheme].fullname);
-    printf("      * fec (inner)     :   %s\n", fec_scheme_str[_q->props.fec0][1]);
-    printf("      * fec (outer)     :   %s\n", fec_scheme_str[_q->props.fec1][1]);
-    printf("      * CRC scheme      :   %s\n", crc_scheme_str[_q->props.check][1]);
-    printf("    frame assembled     :   %s\n", _q->frame_assembled ? "yes" : "no");
-    if (_q->frame_assembled) {
-        printf("    payload:\n");
-        printf("      * decoded bytes   :   %-u\n", _q->payload_dec_len);
-        printf("      * encoded bytes   :   %-u\n", _q->payload_enc_len);
-        printf("      * modulated syms  :   %-u\n", _q->payload_mod_len);
-        printf("    total OFDM symbols  :   %-u\n", ofdmflexframegen_getframelen(_q));
-        printf("      * S0 symbols      :   %-u @ %u\n", 2, _q->M+_q->cp_len);
-        printf("      * S1 symbols      :   %-u @ %u\n", 1, _q->M+_q->cp_len);
-        printf("      * header symbols  :   %-u @ %u\n", _q->num_symbols_header,  _q->M+_q->cp_len);
-        printf("      * payload symbols :   %-u @ %u\n", _q->num_symbols_payload, _q->M+_q->cp_len);
-
-        // compute asymptotic spectral efficiency
-        unsigned int num_bits = 8*_q->payload_dec_len;
-        unsigned int num_samples = (_q->M+_q->cp_len)*(3 + _q->num_symbols_header + _q->num_symbols_payload);
-        printf("    spectral efficiency :   %-6.4f b/s/Hz\n", (float)num_bits / (float)num_samples);
-    }
+    printf("<liquid.ofdmflexframegen");
+    printf(", subcarriers=%u", _q->M);
+    printf(", null=%u", _q->M_null);
+    printf(", pilot=%u", _q->M_pilot);
+    printf(", data=%u", _q->M_data);
+    printf(", cp=%u", _q->cp_len);
+    printf(", taper=%u", _q->taper_len);
+    printf(">\n");
     return LIQUID_OK;
 }
 

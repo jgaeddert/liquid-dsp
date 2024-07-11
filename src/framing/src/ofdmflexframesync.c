@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// ofdmflexframesync.c
-//
 // OFDM frame synchronizer
-//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -148,8 +144,6 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
                                            framesync_callback _callback,
                                            void *             _userdata)
 {
-    ofdmflexframesync q = (ofdmflexframesync) malloc(sizeof(struct ofdmflexframesync_s));
-
     // validate input
     if (_M < 8)
         return liquid_error_config("ofdmflexframesync_create(), number of subcarriers must be at least 8");
@@ -158,7 +152,8 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
     if (_cp_len > _M)
         return liquid_error_config("ofdmflexframesync_create(), cyclic prefix length cannot exceed number of subcarriers");
 
-    // set internal properties
+    // allocate memory for object and set internal properties
+    ofdmflexframesync q = (ofdmflexframesync) malloc(sizeof(struct ofdmflexframesync_s));
     q->M         = _M;
     q->cp_len    = _cp_len;
     q->taper_len = _taper_len;
@@ -243,14 +238,15 @@ int ofdmflexframesync_destroy(ofdmflexframesync _q)
 
 int ofdmflexframesync_print(ofdmflexframesync _q)
 {
-    printf("ofdmflexframesync:\n");
-    printf("    num subcarriers     :   %-u\n", _q->M);
-    printf("      * NULL            :   %-u\n", _q->M_null);
-    printf("      * pilot           :   %-u\n", _q->M_pilot);
-    printf("      * data            :   %-u\n", _q->M_data);
-    printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
-    printf("    taper len           :   %-u\n", _q->taper_len);
-    return framedatastats_print(&_q->framedatastats);
+    printf("<liquid.ofdmflexframesync");
+    printf(", subcarriers=%u", _q->M);
+    printf(", null=%u", _q->M_null);
+    printf(", pilot=%u", _q->M_pilot);
+    printf(", data=%u", _q->M_data);
+    printf(", cp=%u", _q->cp_len);
+    printf(", taper=%u", _q->taper_len);
+    printf(">\n");
+    return LIQUID_OK;
 }
 
 int ofdmflexframesync_set_header_len(ofdmflexframesync _q,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-// 
-// chromosome.c
-//
+// chromosome object for genetic algorithm search
 
 #include <limits.h>
 #include <stdio.h>
@@ -138,7 +136,7 @@ unsigned int chromosome_get_num_traits(chromosome _q)
 int chromosome_print(chromosome _q)
 {
     unsigned int i,j;
-    printf("chromosome: ");
+    printf("<liquid.chromosome, ");
     // print one bit at a time
     for (i=0; i<_q->num_traits; i++) {
         for (j=0; j<_q->bits_per_trait[i]; j++) {
@@ -149,17 +147,17 @@ int chromosome_print(chromosome _q)
         if (i != _q->num_traits-1)
             printf(".");
     }
-    printf("\n");
+    printf(">\n");
     return LIQUID_OK;
 }
 
 int chromosome_printf(chromosome _q)
 {
     unsigned int i;
-    printf("chromosome: ");
+    printf("<liquid.chromosome, ");
     for (i=0; i<_q->num_traits; i++)
         printf("%6.3f", chromosome_valuef(_q,i));
-    printf("\n");
+    printf(">\n");
     return LIQUID_OK;
 }
 

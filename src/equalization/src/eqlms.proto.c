@@ -235,12 +235,7 @@ int EQLMS(_reset)(EQLMS() _q)
 // print eqlms object internals
 int EQLMS(_print)(EQLMS() _q)
 {
-    printf("<eqlms_%s, n=%u, mu=%.3f>\n", EXTENSION_FULL, _q->h_len, _q->mu);
-    unsigned int i, j;
-    for (i=0; i<_q->h_len; i++) {
-        j = _q->h_len - i - 1;
-        printf("  w[%3u] = %12.4e + j*%12.4e;\n", i, creal(_q->w0[j]), cimag(_q->w0[j]));
-    }
+    printf("<liquid.eqlms_%s, order=%u, mu=%.3f>\n", EXTENSION_FULL, _q->h_len, _q->mu);
     return LIQUID_OK;
 }
 

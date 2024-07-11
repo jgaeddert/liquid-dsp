@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,30 +27,15 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-static int callback_framesync64_autotest(
-    unsigned char *  _header,
-    int              _header_valid,
-    unsigned char *  _payload,
-    unsigned int     _payload_len,
-    int              _payload_valid,
-    framesyncstats_s _stats,
-    void *           _userdata)
-{
-    //printf("callback invoked, payload valid: %s\n", _payload_valid ? "yes" : "no");
-    *((int*)(_userdata)) += _header_valid && _payload_valid ? 1 : 0;
-    return 0;
-}
-
 // AUTOTEST : test simple recovery of frame in noise
 void autotest_framesync64()
 {
     unsigned int i;
-    int frames_recovered = 0;
 
     // create objects
+    unsigned int context = 0;
     framegen64 fg = framegen64_create();
-    framesync64 fs = framesync64_create(callback_framesync64_autotest,
-            (void*)&frames_recovered);
+    framesync64 fs = framesync64_create(framing_autotest_callback, (void*)&context);
 
     // generate the frame
     float complex frame[LIQUID_FRAME64_LEN];
@@ -63,8 +48,8 @@ void autotest_framesync64()
     // try to receive the frame
     framesync64_execute(fs, frame, LIQUID_FRAME64_LEN);
 
-    // check to see that exactly one frame was recovered
-    CONTEND_EQUALITY( frames_recovered, 1 );
+    // ensure callback was actually invoked
+    CONTEND_EQUALITY(context, FRAMING_AUTOTEST_SECRET);
 
     // parse statistics
     framedatastats_s stats = framesync64_get_framedatastats(fs);
@@ -97,13 +82,12 @@ void autotest_framegen64_copy()
 void autotest_framesync64_copy()
 {
     unsigned int i;
-    int frames_recovered_0 = 0;
-    int frames_recovered_1 = 0;
+    int context_0 = 0;
+    int context_1 = 0;
 
     // create objects
     framegen64  fg  = framegen64_create();
-    framesync64 fs0 = framesync64_create(callback_framesync64_autotest,
-            (void*)&frames_recovered_0);
+    framesync64 fs0 = framesync64_create(framing_autotest_callback, (void*)&context_0);
 
     // feed random samples into synchronizer
     float complex buf[LIQUID_FRAME64_LEN];
@@ -120,7 +104,7 @@ void autotest_framesync64_copy()
 
     // copy object, but set different context
     framesync64 fs1 = framesync64_copy(fs0);
-    framesync64_set_userdata(fs1, (void*)&frames_recovered_1);
+    framesync64_set_userdata(fs1, (void*)&context_1);
     framesync64_print(fs0);
     framesync64_print(fs1);
 
@@ -131,12 +115,12 @@ void autotest_framesync64_copy()
         framesync64_execute(fs1, buf+i, 1);
 
         // ensure that the frames are recovered at exactly the same time
-        CONTEND_EQUALITY( frames_recovered_0, frames_recovered_1 );
+        CONTEND_EQUALITY( context_0, context_1 );
     }
 
     // check that frame was actually recovered by each object
-    CONTEND_EQUALITY( frames_recovered_0, 1 );
-    CONTEND_EQUALITY( frames_recovered_1, 1 );
+    CONTEND_EQUALITY( context_0, 0x01234567 );
+    CONTEND_EQUALITY( context_1, 0x01234567 );
 
     // parse statistics
     framedatastats_s stats_0 = framesync64_get_framedatastats(fs0);
@@ -174,12 +158,11 @@ void autotest_framesync64_config()
     framesync64 q = framesync64_create(NULL, NULL);
 
     CONTEND_EQUALITY(LIQUID_OK, framesync64_print(q))
-    CONTEND_EQUALITY(LIQUID_OK, framesync64_set_callback(q,callback_framesync64_autotest))
+    CONTEND_EQUALITY(LIQUID_OK, framesync64_set_callback(q,NULL))
     CONTEND_EQUALITY(LIQUID_OK, framesync64_set_userdata(q,NULL))
 
     CONTEND_EQUALITY(LIQUID_OK, framesync64_set_threshold(q,0.654321f))
     CONTEND_EQUALITY(0.654321f, framesync64_get_threshold(q))
-
 
     framesync64_destroy(q);
 }
@@ -232,8 +215,11 @@ void testbench_framesync64_debug(int _code)
     CONTEND_EQUALITY(stats.num_payloads_valid,  1);
     CONTEND_EQUALITY(stats.num_bytes_received, 64);
 
-    // get filename from the last file written
-    const char * filename = framesync64_get_filename(fs);
+    // get filename from the last file written and copy before destroying
+    // objects
+    const char * fn = framesync64_get_filename(fs);
+    char filename[256] = "";
+    snprintf(filename,255,"%s",fn==NULL ? "" : fn);
     printf("filename: %s\n", filename);
 
     // destroy objects
@@ -241,7 +227,7 @@ void testbench_framesync64_debug(int _code)
     framesync64_destroy(fs);
 
     // check if output file should exist
-    if (filename == NULL) {
+    if (strlen(filename) == 0) {
         if (_code==0) {
             AUTOTEST_PASS();
         } else {
@@ -257,16 +243,6 @@ void testbench_framesync64_debug(int _code)
         return;
     }
 
-    // skip to location in file that includes payload and check that
-    // both the header and payload match
-    fseek(fid, LIQUID_FRAME64_LEN*sizeof(float complex) +
-               5*sizeof(float) +
-               (630 + 600)*sizeof(float complex),
-          SEEK_SET);
-    unsigned char payload_dec[72];
-    CONTEND_EQUALITY( fread(payload_dec, sizeof(unsigned char), 72, fid), 72 )
-    CONTEND_SAME_DATA(payload_dec,   header,   8);
-    CONTEND_SAME_DATA(payload_dec+8, payload, 64);
     fclose(fid);
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -187,15 +187,15 @@ int ofdmframegen_destroy(ofdmframegen _q)
 
 int ofdmframegen_print(ofdmframegen _q)
 {
-    printf("ofdmframegen:\n");
-    printf("    num subcarriers     :   %-u\n", _q->M);
-    printf("      - NULL            :   %-u\n", _q->M_null);
-    printf("      - pilot           :   %-u\n", _q->M_pilot);
-    printf("      - data            :   %-u\n", _q->M_data);
-    printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
-    printf("    taper len           :   %-u\n", _q->taper_len);
-    printf("    ");
-    return ofdmframe_print_sctype(_q->p, _q->M);
+    printf("<liquid.ofdmframegen");
+    printf(", subcarriers=%u", _q->M);
+    printf(", null=%u", _q->M_null);
+    printf(", pilot=%u", _q->M_pilot);
+    printf(", data=%u", _q->M_data);
+    printf(", cp=%u", _q->cp_len);
+    printf(", taper=%u", _q->taper_len);
+    printf(">\n");
+    return LIQUID_OK;
 }
 
 int ofdmframegen_reset(ofdmframegen _q)

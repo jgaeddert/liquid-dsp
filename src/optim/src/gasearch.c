@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -141,18 +141,13 @@ int gasearch_destroy(gasearch _g)
 // print search parameter internals
 int gasearch_print(gasearch _g)
 {
-    printf("ga search :\n");
-    printf("    num traits      :   %u\n", _g->num_parameters);
-    printf("    bits/chromosome :   %u\n", _g->bits_per_chromosome);
-    printf("    population size :   %u\n", _g->population_size);
-    printf("    selection size  :   %u\n", _g->selection_size);
-    printf("    mutation rate   :   %12.8f\n", _g->mutation_rate);
-    printf("population:\n");
-    unsigned int i;
-    for (i=0; i<_g->population_size; i++) {
-        printf("%4u: [%8.4f] ", i, _g->utility[i]);
-        chromosome_printf( _g->population[i] );
-    }
+    printf("<liquid.gasearch");
+    printf(", traits=%u", _g->num_parameters);
+    printf(", bits=%u", _g->bits_per_chromosome);
+    printf(", population=%u", _g->population_size);
+    printf(", selection=%u", _g->selection_size);
+    printf(", mutation=%g", _g->mutation_rate);
+    printf(">\n");
     return LIQUID_OK;
 }
 

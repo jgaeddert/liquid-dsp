@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,9 @@ void autotest_iirfiltsos_impulse_n2()
         0.1952621458756350,
         0.0976310729378175};
 
-    iirfiltsos_rrrf f = iirfiltsos_rrrf_create(b,a);
+    // create identical objects
+    iirfiltsos_rrrf q0 = iirfiltsos_rrrf_create(b,a);
+    iirfiltsos_rrrf q1 = iirfiltsos_rrrf_create(b,a);
 
     // initialize oracle; expected output (generated with octave)
     float test[15] = {
@@ -62,14 +64,20 @@ void autotest_iirfiltsos_impulse_n2()
 
     // hit filter with impulse, compare output
     for (i=0; i<15; i++) {
+        // generate input
         v = (i==0) ? 1.0f : 0.0f;
 
-        iirfiltsos_rrrf_execute(f, v, &y);
+        // run direct-form I
+        iirfiltsos_rrrf_execute_df1(q0, v, &y);
+        CONTEND_DELTA(test[i], y, tol);
 
+        // run direct-form II
+        iirfiltsos_rrrf_execute_df2(q1, v, &y);
         CONTEND_DELTA(test[i], y, tol);
     }
 
-    iirfiltsos_rrrf_destroy(f);
+    iirfiltsos_rrrf_destroy(q0);
+    iirfiltsos_rrrf_destroy(q1);
 }
 
 
@@ -86,7 +94,9 @@ void autotest_iirfiltsos_step_n2()
         0.1952621458756350,
         0.0976310729378175};
 
-    iirfiltsos_rrrf f = iirfiltsos_rrrf_create(b,a);
+    // create identical objects
+    iirfiltsos_rrrf q0 = iirfiltsos_rrrf_create(b,a);
+    iirfiltsos_rrrf q1 = iirfiltsos_rrrf_create(b,a);
 
     float test[15] = {
        0.0976310729378175,
@@ -111,12 +121,17 @@ void autotest_iirfiltsos_step_n2()
 
     // hit filter with step, compare output
     for (i=0; i<15; i++) {
-        iirfiltsos_rrrf_execute(f, 1.0f, &y);
+        // run direct-form I
+        iirfiltsos_rrrf_execute_df1(q0, 1, &y);
+        CONTEND_DELTA(test[i], y, tol);
 
-        CONTEND_DELTA(test[i], y, tol );
+        // run direct-form II
+        iirfiltsos_rrrf_execute_df2(q1, 1, &y);
+        CONTEND_DELTA(test[i], y, tol);
     }
 
-    iirfiltsos_rrrf_destroy(f);
+    iirfiltsos_rrrf_destroy(q0);
+    iirfiltsos_rrrf_destroy(q1);
 }
 
 void autotest_iirfiltsos_copy()
@@ -152,5 +167,23 @@ void autotest_iirfiltsos_copy()
     // destroy filter objects
     iirfiltsos_crcf_destroy(q0);
     iirfiltsos_crcf_destroy(q1);
+}
+
+// test errors and invalid configuration
+void autotest_iirfiltsos_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping iirfilt config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // test copying/creating invalid objects
+    CONTEND_ISNULL( iirfiltsos_crcf_copy(NULL) );
+
+    // create valid object and test configuration
+    //iirfiltsos_crcf filter = iirfiltsos_crcf_create(...);
+    //iirfiltsos_crcf_destroy(filter);
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -311,6 +311,25 @@ int liquid_autotest_validate_psd_firfilt_crcf(firfilt_crcf _q, unsigned int _nff
 // validate spectral content of a filter (complex coefficients)
 int liquid_autotest_validate_psd_firfilt_cccf(firfilt_cccf _q, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
+// validate spectral content of an iir filter (real coefficients, input)
+int liquid_autotest_validate_psd_iirfilt_rrrf(iirfilt_rrrf _q, unsigned int _nfft,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
+// validate spectral content of a spectral periodogram object
+int liquid_autotest_validate_psd_spgramcf(spgramcf _q,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
+// callback function to simplify testing for framing objects
+#define FRAMING_AUTOTEST_SECRET 0x01234567
+int framing_autotest_callback(
+    unsigned char *  _header,
+    int              _header_valid,
+    unsigned char *  _payload,
+    unsigned int     _payload_len,
+    int              _payload_valid,
+    framesyncstats_s _stats,
+    void *           _context);
 
 #endif // __LIQUID_AUTOTEST_H__
 

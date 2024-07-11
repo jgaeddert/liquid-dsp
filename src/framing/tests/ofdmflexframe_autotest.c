@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@ void testbench_ofdmflexframe(unsigned int      _M,
                              modulation_scheme _ms)
 {
     // create frame generator/synchronizer
+    unsigned int context = 0;
     ofdmflexframegenprops_s fgprops;
     ofdmflexframegenprops_init_default(&fgprops);
     fgprops.check        = LIQUID_CRC_32;
@@ -41,7 +42,8 @@ void testbench_ofdmflexframe(unsigned int      _M,
     fgprops.fec1         = LIQUID_FEC_NONE;
     fgprops.mod_scheme   = _ms;
     ofdmflexframegen  fg = ofdmflexframegen_create( _M, _cp_len, _taper_len, NULL, &fgprops);
-    ofdmflexframesync fs = ofdmflexframesync_create(_M, _cp_len, _taper_len, NULL, NULL, NULL);
+    ofdmflexframesync fs = ofdmflexframesync_create(_M, _cp_len, _taper_len, NULL,
+                            framing_autotest_callback, (void*)&context);
 
     // initialize header and payload
     unsigned char header[8] = {0, 1, 2, 3, 4, 5, 6, 7};
@@ -65,6 +67,9 @@ void testbench_ofdmflexframe(unsigned int      _M,
     // get frame data statistics
     if (liquid_autotest_verbose)
         ofdmflexframesync_print(fs);
+
+    // verify callback was invoked
+    CONTEND_EQUALITY( context, FRAMING_AUTOTEST_SECRET );
 
     // verify frame data statistics
     framedatastats_s stats = ofdmflexframesync_get_framedatastats(fs);

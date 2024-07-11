@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -281,8 +281,8 @@ int flexframesync_destroy(flexframesync _q)
 // print frame synchronizer object internals
 int flexframesync_print(flexframesync _q)
 {
-    printf("flexframesync:\n");
-    return framedatastats_print(&_q->framedatastats);
+    printf("<liquid.flexframesync>\n");
+    return LIQUID_OK;
 }
 
 // reset frame synchronizer object
