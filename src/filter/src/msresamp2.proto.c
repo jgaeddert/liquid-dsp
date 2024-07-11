@@ -228,6 +228,12 @@ int MSRESAMP2(_destroy)(MSRESAMP2() _q)
 // print msresamp2 object internals
 int MSRESAMP2(_print)(MSRESAMP2() _q)
 {
+    printf("<liquid.msresamp2_%s, type=\"%s\", stages=%u, rate=%g>\n",
+        EXTENSION_FULL,
+        _q->type == LIQUID_RESAMP_INTERP ? "interp" : "decim",
+        _q->num_stages,
+        MSRESAMP2(_get_rate)(_q));
+#if 0
     printf("multi-stage half-band resampler:\n");
     printf("    type                    : %s\n", _q->type == LIQUID_RESAMP_DECIM ? "decimator" : "interpolator");
     printf("    number of stages        : %u stage%s\n", _q->num_stages, _q->num_stages == 1 ? "" : "s");
@@ -246,6 +252,7 @@ int MSRESAMP2(_print)(MSRESAMP2() _q)
         printf("    stage[%2u]  {m=%3u, as=%6.2f dB, fc=%6.3f, f0=%6.3f}\n",
                     i, _q->m_stage[g], _q->as_stage[g], _q->fc_stage[g], _q->f0_stage[g]);
     }
+#endif
     return LIQUID_OK;
 }
 

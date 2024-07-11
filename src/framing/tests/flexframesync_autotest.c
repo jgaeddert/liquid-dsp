@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,8 @@ void autotest_flexframesync()
     flexframegen fg = flexframegen_create(&fgprops);
 
     // create flexframesync object
-    flexframesync fs = flexframesync_create(NULL,NULL);
+    unsigned int context = 0;
+    flexframesync fs = flexframesync_create(framing_autotest_callback, (void*)&context);
     
     // initialize header and payload
     unsigned char header[14] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
@@ -77,6 +78,9 @@ void autotest_flexframesync()
     framedatastats_s stats = flexframesync_get_framedatastats(fs);
     if (liquid_autotest_verbose)
         flexframesync_print(fs);
+
+    // ensure callback was invoked
+    CONTEND_EQUALITY(context, FRAMING_AUTOTEST_SECRET);
 
     // check to see that frame was recovered
     CONTEND_EQUALITY( stats.num_frames_detected, 1 );

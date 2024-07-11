@@ -45,7 +45,7 @@ void test_rresamp_crcf(const char * _method,
     } else if (strcmp(_method,"default")==0) {
         resamp = rresamp_crcf_create_default(_interp, _decim);
     } else {
-        printf("creating resampler using %s\n", _method);
+        //printf("creating resampler using %s\n", _method);
         int ftype = liquid_getopt_str2firfilt(_method);
         float beta = _bw; // rename to avoid confusion
         resamp = rresamp_crcf_create_prototype(ftype, _interp, _decim, _m, beta);
@@ -137,7 +137,7 @@ void autotest_rresamp_copy()
         symstreamrcf_write_samples(gen, buf, Q);
 
         // resample
-        rresamp_crcf_execute(q0, buf_0, buf_1);
+        rresamp_crcf_execute(q0, buf, buf_0);
     }
 
     // copy object

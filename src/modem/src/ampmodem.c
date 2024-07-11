@@ -136,16 +136,16 @@ int ampmodem_destroy(ampmodem _q)
 
 int ampmodem_print(ampmodem _q)
 {
-    printf("ampmodem:\n");
-    printf("    type            :   ");
+    printf("<liquid.ampmodem");
     switch (_q->type) {
-    case LIQUID_AMPMODEM_DSB: printf("double side-band\n");         break;
-    case LIQUID_AMPMODEM_USB: printf("single side-band (upper)\n"); break;
-    case LIQUID_AMPMODEM_LSB: printf("single side-band (lower)\n"); break;
-    default:                  printf("unknown\n");
+    case LIQUID_AMPMODEM_DSB: printf(", type=\"DSB\""); break;
+    case LIQUID_AMPMODEM_USB: printf(", type=\"USB\""); break;
+    case LIQUID_AMPMODEM_LSB: printf(", type=\"LSB\""); break;
+    default:                  printf(", type=\"?\"");
     }
-    printf("    supp. carrier   :   %s\n", _q->suppressed_carrier ? "yes" : "no");
-    printf("    mod. index      :   %-8.4f\n", _q->mod_index);
+    printf(", carrier_suppressed=%s", _q->suppressed_carrier ? "true" : "false");
+    printf(", mod_index=%g", _q->mod_index);
+    printf(">\n");
     return LIQUID_OK;
 }
 

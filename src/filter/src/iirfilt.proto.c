@@ -504,9 +504,13 @@ int IIRFILT(_destroy)(IIRFILT() _q)
 // print iirfilt object internals
 int IIRFILT(_print)(IIRFILT() _q)
 {
-    printf("iir filter [%s]:\n", _q->type == IIRFILT_TYPE_NORM ? "normal" : "sos");
-    unsigned int i;
+    printf("<liquid.iirfilt_%s", EXTENSION_FULL);
+    printf(", type=\"%s\"", _q->type == IIRFILT_TYPE_NORM ? "normal" : "sos");
+    printf(", order=%u", _q->n-1);
+    printf(">\n");
 
+#if 0
+    unsigned int i;
     if (_q->type == IIRFILT_TYPE_SOS) {
         for (i=0; i<_q->nsos; i++)
             IIRFILTSOS(_print)(_q->qsos[i]);
@@ -521,14 +525,8 @@ int IIRFILT(_print)(IIRFILT() _q)
         for (i=0; i<_q->na; i++)
             PRINTVAL_TC(_q->a[i],%12.8f);
         printf("\n");
-
-#if 0
-        printf("  v :");
-        for (i=0; i<_q->n; i++)
-            PRINTVAL(_q->v[i]);
-        printf("\n");
-#endif
     }
+#endif
     return LIQUID_OK;
 }
 

@@ -119,3 +119,22 @@ void autotest_nco_crcf_copy()
     nco_crcf_destroy(nco_1);
 }
 
+void autotest_nco_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping nco config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    //
+    CONTEND_INEQUALITY(LIQUID_OK, nco_crcf_destroy(NULL));
+    CONTEND_ISNULL(nco_crcf_copy(NULL));
+
+    // create proper NCO object and test configurations
+    nco_crcf q_nco = nco_crcf_create(LIQUID_NCO);
+    CONTEND_EQUALITY(LIQUID_OK, nco_crcf_print(q_nco))
+    nco_crcf_destroy(q_nco);
+}
+

@@ -1,7 +1,8 @@
+# Changelog
 
-## Latest improvements ##
+## Unreleased
 
-## Improvements for v1.6.0 ##
+## 1.6.0 - 2023-06-19
 
 Version 1.6.0 includes a new qdsync object to greatly simplify the frame
 synchronization process in liquid, allowing for both detection and channel
@@ -38,7 +39,7 @@ methods for consistency.
       order for generator polynomial and internal state definition to be
       more consistent with literature and readily-available genpolys
 
-## Improvements for v1.5.0 ##
+## 1.5.0 - 2022-11-20
 
 This release includes substantially improved testing coverage, deep copy()
 methods for nearly all objects, improved speed, and resolves a number of
@@ -101,7 +102,7 @@ issues and pull requests.
       similar to bisection search, but to find potentially non-continuous
       minimum/maximum of function
 
-## Improvements for v1.4.0 ##
+## 1.4.0 - 2022-02-03
 
   * autotest
     - automated code coverage testing (72%)
@@ -157,7 +158,7 @@ issues and pull requests.
     - modem: adding type extension for more consistency: `modem` -> `modemcf`,
       supporting backwards compatibility with API shim
 
-## Improvements for v1.3.2 ##
+## 1.3.1 - 2019-07-28
 
   * autotest
     - runs with random seeds (based on time) for diveristy
@@ -194,7 +195,7 @@ issues and pull requests.
   * nco
     - improving consistency across platforms
 
-## Improvements for v1.3.1 ##
+## 1.3.1 - 2017-10-23
 
   * improved selection of SSE/MMX extension flags for gcc
   * agc
@@ -210,7 +211,7 @@ issues and pull requests.
     - fixed issue with order of operations causing inconsistent behavior across
       different platforms
 
-## Major improvements for v1.3.0 ##
+## 1.3.0 - 2016-12-30
 
   * New MIT/X11 license (https://opensource.org/licenses/MIT)
   * agc (automatic gain control)
@@ -300,7 +301,7 @@ issues and pull requests.
     - global header file (`liquid.h`) include more structured source
     - consistent naming of reset() methods for most objects
 
-## Major improvements for v1.2.0 ##
+## 1.2.0 - 2012-04-26
 
   * dotprod
     - leveraging SIMD extensions for vector operations (SSE2, SSE3)
@@ -315,7 +316,7 @@ issues and pull requests.
       LIQUID_MODEM_QAM16
     - new type definitions for analog modems
 
-## Major improvements for v1.1.0 ##
+## 1.1.0 - 2011-12-23
 
   * build
     - simplifying build environment by explicitly defining object
@@ -371,3 +372,8 @@ issues and pull requests.
       equalization
   * optim
     - simplified interface to gradient search
+
+## [1.0.0] - 2011-04-29
+
+_First release._
+

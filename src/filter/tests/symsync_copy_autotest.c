@@ -85,12 +85,15 @@ void autotest_symsync_config()
     CONTEND_ISNULL( symsync_crcf_create(2, 12, NULL,  0) ); // h_len is too small
     CONTEND_ISNULL( symsync_crcf_create(2, 12, NULL, 47) ); // h_len is not divisible by M
 
+    CONTEND_ISNULL( symsync_crcf_create_rnyquist(LIQUID_FIRFILT_RRC, 0, 12, 0.2, 48) ); // k is too small
+    CONTEND_ISNULL( symsync_crcf_create_rnyquist(LIQUID_FIRFILT_RRC, 2,  0, 0.2, 48) ); // m is too small
+    CONTEND_ISNULL( symsync_crcf_create_rnyquist(LIQUID_FIRFILT_RRC, 2, 12, 7.2, 48) ); // beta is too large
+    CONTEND_ISNULL( symsync_crcf_create_rnyquist(LIQUID_FIRFILT_RRC, 2, 12, 0.2,  0) ); // M is too small
+
     CONTEND_ISNULL( symsync_crcf_create_kaiser(0, 12, 0.2, 48) ); // k is too small
     CONTEND_ISNULL( symsync_crcf_create_kaiser(2,  0, 0.2, 48) ); // m is too small
     CONTEND_ISNULL( symsync_crcf_create_kaiser(2, 12, 7.2, 48) ); // beta is too large
     CONTEND_ISNULL( symsync_crcf_create_kaiser(2, 12, 0.2,  0) ); // M is too small
-
-    //CONTEND_ISNULL( symsync_crcf_create_nyquist(2, 12, NULL, 47) ); // h_len is not divisible by M
 
     // create valid object
     symsync_crcf q = symsync_crcf_create_kaiser(2, 12, 0.2, 48);

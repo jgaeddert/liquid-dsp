@@ -209,7 +209,7 @@ int RRESAMP(_destroy)(RRESAMP() _q)
 // print resampler object
 int RRESAMP(_print)(RRESAMP() _q)
 {
-    printf("<rresamp_%s, rate=%u/%u=%.6f, block=%u, u=%u>\n", EXTENSION_FULL,
+    printf("<liquid.rresamp_%s, rate=%u/%u=%.6f, block=%u, u=%u>\n", EXTENSION_FULL,
             _q->P, _q->Q, (float)(_q->P) / (float)(_q->Q), _q->block_len, _q->m);
     return LIQUID_OK;
 }

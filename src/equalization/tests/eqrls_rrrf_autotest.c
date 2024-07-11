@@ -142,6 +142,7 @@ void autotest_eqrls_rrrf_copy()
     //                  21 * sizeof(float));
 
     // destroy filter objects
+    firfilt_rrrf_destroy(fc);
     eqrls_rrrf_destroy(q0);
     eqrls_rrrf_destroy(q1);
 }

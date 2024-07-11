@@ -173,6 +173,10 @@ int framesync64_destroy(framesync64 _q)
     qpilotsync_destroy  (_q->pilotsync); // pilot synchronizer
     windowcf_destroy    (_q->buf_debug);
 
+    // free allocated buffers
+    free(_q->prefix);
+    free(_q->filename);
+
     // free main object memory
     free(_q);
     return LIQUID_OK;
@@ -181,8 +185,8 @@ int framesync64_destroy(framesync64 _q)
 // print frame synchronizer object internals
 int framesync64_print(framesync64 _q)
 {
-    printf("framesync64:\n");
-    return framedatastats_print(&_q->framedatastats);
+    printf("<liquid.framesync64>\n");
+    return LIQUID_OK;
 }
 
 // reset frame synchronizer object

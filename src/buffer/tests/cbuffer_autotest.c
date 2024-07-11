@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -315,8 +315,7 @@ void autotest_cbufferf_config()
         CONTEND_EQUALITY(cbufferf_push(q,0), LIQUID_OK);
 
     // ensure no errors with printing
-    CONTEND_EQUALITY(cbufferf_print(q),       LIQUID_OK);
-    CONTEND_EQUALITY(cbufferf_debug_print(q), LIQUID_OK);
+    CONTEND_EQUALITY(cbufferf_print(q), LIQUID_OK);
 
     // buffer full; cannot write more
     CONTEND_INEQUALITY(cbufferf_push(q,0), LIQUID_OK);

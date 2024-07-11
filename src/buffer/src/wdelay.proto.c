@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -116,14 +116,7 @@ int WDELAY(_destroy)(WDELAY() _q)
 // print delay buffer object's state to stdout
 int WDELAY(_print)(WDELAY() _q)
 {
-    printf("wdelay [%u elements] :\n", _q->delay+1);
-    unsigned int i, j;
-    for (i=0; i<_q->delay+1; i++) {
-        j = (i + _q->read_index) % (_q->delay+1);
-        printf("%4u", i);
-        BUFFER_PRINT_VALUE(_q->v[j]);
-        printf("\n");
-    }
+    printf("<liquid.wdelay, delay=%u>\n", _q->delay);
     return LIQUID_OK;
 }
 
