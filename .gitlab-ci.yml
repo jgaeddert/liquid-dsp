@@ -6,7 +6,7 @@ build:
   script:
     - apt -qq update
     - apt -qq install -y --no-install-recommends build-essential cmake
-    - apt -qq install python3-pip pybind11-dev virtualenv
+    - apt -qq install -y --no-install-recommends python3-pip pybind11-dev virtualenv
     - virtualenv env/liquid
     - source env/liquid/bin/activate
     - python -m pip install pybind11 numpy matplotlib
