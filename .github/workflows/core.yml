@@ -27,16 +27,10 @@ jobs:
     - name: Setup environment (Linux)
       if: runner.os == 'Linux'
       run: |
-        sudo apt-get install -y --no-install-recommends build-essential pybind11-dev virtualenv
+        sudo apt-get install -y --no-install-recommends build-essential pybind11-dev virtualenv python3-dev
 
     #- name: Setup libfec
     #  run: git clone https://github.com/jgaeddert/libfec.git && cd libfec && ./configure && make && sudo make install
-
-    - name: Setup python virtual environment
-      run: |
-        python3 -m venv /tmp/liquid
-        source /tmp/liquid/bin/activate
-        pip install pybind11 numpy matplotlib
 
     - name: bootstrap
       run: ./bootstrap.sh
@@ -48,7 +42,11 @@ jobs:
       run: make -j 2
 
     - name: make check-doc
-      run: make check-doc
+      run: |
+        python3 -m venv /tmp/liquid
+        source /tmp/liquid/bin/activate
+        pip install pybind11 numpy matplotlib
+        make check-doc
 
     - name: make check
       run: make -j 2 check
