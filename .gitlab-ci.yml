@@ -43,6 +43,19 @@ build:
     paths:
       - wheelhouse/
 
+macos:
+  image: macos-14-xcode-15
+  before_script:
+    - python3 -m pip install cibuildwheel==2.19.2
+  script:
+    - python3 -m cibuildwheel --output-dir wheelhouse
+  artifacts:
+    paths:
+      - wheelhouse/
+  tags:
+    - saas-macos-medium-m1
+
+
 # compile and run all example programs, timing how long each takes to run
 .examples:
   stage: test
