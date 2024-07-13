@@ -32,8 +32,8 @@ jobs:
 
     - name: Setup python virtual environment
       run: |
-        virtualenv liquid
-        source liquid/bin/activate
+        python3 -m venv /tmp/liquid
+        source /tmp/liquid/bin/activate
         pip install pybind11 numpy matplotlib
 
     - name: bootstrap
