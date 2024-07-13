@@ -1409,7 +1409,11 @@ readme.cc.example.o : %.o : %.cc ${include_headers}
 readme.cc.example : % : %.o ${ARCHIVE_LIB}
 	${CXX} ${CXXFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
 
-check-doc : readme.c.example readme.cc.example ; ./readme.c.example && ./readme.cc.example
+check-doc-c : readme.c.example ; ./readme.c.example
+
+check-doc-cc : readme.cc.example ; ./readme.cc.example
+
+check-doc : check-doc-c check-doc-cc
 
 clean-check-doc:
 	${RM} readme.*.example*
