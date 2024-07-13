@@ -44,6 +44,10 @@ jobs:
     - name: make check
       run: make -j 2 check
 
+    - name: make check-doc
+      run: make check-doc-c
+      run: make check-doc-cc
+
     - name: make install
       run: sudo make install
 
@@ -76,11 +80,13 @@ jobs:
       run: |
         sudo apt-get install -y --no-install-recommends pybind11-dev virtualenv python3-dev
 
-    - name: python
+    - name: bind
       run: |
         python3 -m venv /tmp/liquid
         source /tmp/liquid/bin/activate
         pip install pybind11 numpy matplotlib
         make python
         make check-python
+        make check-bind-cc
+        make check-bind-python
 
