@@ -43,7 +43,7 @@ build:
     paths:
       - wheelhouse/
 
-macos:
+.macos:
   image: macos-14-xcode-15
   before_script:
     - python3 -m pip install cibuildwheel==2.19.2
@@ -54,6 +54,20 @@ macos:
       - wheelhouse/
   tags:
     - saas-macos-medium-m1
+
+.windows:
+  image: mcr.microsoft.com/windows/servercore:1809
+  before_script:
+    - choco install python -y --version 3.12.4
+    - choco install git.install -y
+    - py -m pip install cibuildwheel==2.19.2
+  script:
+    - py -m cibuildwheel --output-dir wheelhouse --platform windows
+  artifacts:
+    paths:
+      - wheelhouse/
+  tags:
+    - saas-windows-medium-amd64
 
 
 # compile and run all example programs, timing how long each takes to run
