@@ -86,6 +86,10 @@ jobs:
         python3 -m venv /tmp/liquid
         source /tmp/liquid/bin/activate
         pip install pybind11 numpy matplotlib
+        ./bootstrap.sh
+        ./configure
+        make -j 2
+        make -j 2 python
         make check-python
         make check-doc-bind-cc
         make check-doc-python
