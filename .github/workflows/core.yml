@@ -70,6 +70,8 @@ jobs:
     needs: standard
 
     steps:
+    - uses: actions/checkout@v4
+
     - name: Setup environment (macOS)
       if: runner.os == 'macos'
       run: |
