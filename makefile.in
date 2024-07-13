@@ -1487,6 +1487,8 @@ readme.c.example.o : %.o : %.c ${include_headers}
 readme.c.example : % : %.o ${ARCHIVE_LIB}
 	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
 
+check-doc-c : readme.c.example ; ./$<
+
 # C++ link example
 readme.link.example.cc : README.md
 	${SED} -n '153,174p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
@@ -1496,6 +1498,8 @@ readme.link.example.o : %.o : %.cc ${include_headers}
 
 readme.link.example : % : %.o ${ARCHIVE_LIB}
 	${CXX} ${CXXFLAGS} ${LDFLAGS} -o $@ ${LIBS} $^
+
+check-doc-cc : readme.link.example ; ./$<
 
 # C++ bind example
 readme.bind.example.cc : README.md
@@ -1507,12 +1511,16 @@ readme.bind.example.o : %.o : %.cc ${include_headers} bind/firinterp.hh
 readme.bind.example : % : %.o ${ARCHIVE_LIB}
 	${CXX} ${CXXFLAGS} ${LDFLAGS} -o $@ ${LIBS} $^
 
+check-doc-bind-cc : readme.bind.example ; ./$<
+
 # Python bind example
 readme.bind.py : README.md
 	${SED} -n '229,236p' $< > $@
 
-check-doc : readme.c.example readme.link.example readme.bind.example readme.bind.py ${pythonlib}
-	./readme.c.example && ./readme.link.example && ./readme.bind.example && python3 readme.bind.py
+check-doc-python : readme.bind.py ${pythonlib} ; python3 ./readme.bind.py
+
+# run all documentation examples
+check-doc : check-doc-c check-doc-cc check-doc-bind-cc check-doc-python
 
 clean-check-doc:
 	${RM} readme.*.example* readme.bind.py
