@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,35 +20,35 @@
  * THE SOFTWARE.
  */
 
-//
-// symsync_rrrf_autotest.c : test symbol timing synchronizer
-//
+// symbol timing synchronizer tests
 
+#include <string.h>
 #include "autotest/autotest.h"
 #include "liquid.h"
 
 //
-void symsync_rrrf_test(unsigned int _k,
+void symsync_rrrf_test(const char * _method,
+                       unsigned int _k,
                        unsigned int _m,
                        float        _beta,
                        float        _tau,
                        float        _rate)
 {
     // options
-    float        tol        =  0.2f;    // error tolerance
+    float        tol        =  0.20f;   // error tolerance
     unsigned int k          =  _k;      // samples/symbol (input)
     unsigned int m          =  _m;      // filter delay (symbols)
     float        beta       =  _beta;   // filter excess bandwidth factor
     unsigned int num_filters= 32;       // number of filters in the bank
 
-    unsigned int num_symbols_init=200;  // number of initial symbols
+    unsigned int num_symbols_init=400;  // number of initial symbols
     unsigned int num_symbols_test=100;  // number of testing symbols
 
-    // transmit/receive filter types
-    liquid_firfilt_type ftype_tx = LIQUID_FIRFILT_ARKAISER;
-    liquid_firfilt_type ftype_rx = LIQUID_FIRFILT_ARKAISER;
+    // transmit filter type
+    liquid_firfilt_type ftype_tx = strcmp(_method,"rnyquist")==0 ?
+        LIQUID_FIRFILT_ARKAISER : LIQUID_FIRFILT_KAISER;
 
-    float bt    =  0.02f;               // loop filter bandwidth
+    float bt    =  0.01f;               // loop filter bandwidth
     float tau   =  _tau;                // fractional symbol offset
     float rate  =  _rate;               // resampled rate
 
@@ -119,7 +119,11 @@ void symsync_rrrf_test(unsigned int _k,
     //
 
     // create symbol synchronizer
-    symsync_rrrf sync = symsync_rrrf_create_rnyquist(ftype_rx, k, m, beta, num_filters);
+    symsync_rrrf sync = NULL;
+    if (strcmp(_method,"rnyquist")==0)
+        sync = symsync_rrrf_create_rnyquist(ftype_tx, k, m, beta, num_filters);
+    else
+        sync = symsync_rrrf_create_kaiser(k, m, beta, num_filters);
 
     // set loop filter bandwidth
     symsync_rrrf_set_lf_bw(sync,bt);
@@ -165,9 +169,15 @@ void symsync_rrrf_test(unsigned int _k,
 
 }
 
-// autotest scenarios
-void autotest_symsync_rrrf_scenario_0() { symsync_rrrf_test(2, 7, 0.35,  0.00, 1.0f    ); }
-void autotest_symsync_rrrf_scenario_1() { symsync_rrrf_test(2, 7, 0.35, -0.25, 1.0f    ); }
-void autotest_symsync_rrrf_scenario_2() { symsync_rrrf_test(2, 7, 0.35, -0.25, 1.0001f ); }
-void autotest_symsync_rrrf_scenario_3() { symsync_rrrf_test(2, 7, 0.35, -0.25, 0.9999f ); }
+// autotest scenarios (root-Nyquist)
+void autotest_symsync_rrrf_scenario_0() { symsync_rrrf_test("rnyquist", 2, 7, 0.35,  0.00, 1.0f    ); }
+void autotest_symsync_rrrf_scenario_1() { symsync_rrrf_test("rnyquist", 2, 7, 0.35, -0.25, 1.0f    ); }
+void autotest_symsync_rrrf_scenario_2() { symsync_rrrf_test("rnyquist", 2, 7, 0.35, -0.25, 1.0001f ); }
+void autotest_symsync_rrrf_scenario_3() { symsync_rrrf_test("rnyquist", 2, 7, 0.35, -0.25, 0.9999f ); }
+
+// autotest scenarios (Nyquist)
+void autotest_symsync_rrrf_scenario_4() { symsync_rrrf_test("nyquist", 2, 7, 0.35,  0.00, 1.0f    ); }
+void autotest_symsync_rrrf_scenario_5() { symsync_rrrf_test("nyquist", 2, 7, 0.35, -0.25, 1.0f    ); }
+void autotest_symsync_rrrf_scenario_6() { symsync_rrrf_test("nyquist", 2, 7, 0.35, -0.25, 1.0001f ); }
+void autotest_symsync_rrrf_scenario_7() { symsync_rrrf_test("nyquist", 2, 7, 0.35, -0.25, 0.9999f ); }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -112,12 +112,11 @@ int cvsd_destroy(cvsd _q)
 // print cvsd object parameters
 int cvsd_print(cvsd _q)
 {
-    printf("cvsd codec:\n");
-    printf("    num bits: %u\n", _q->num_bits);
-    printf("    zeta    : %8.4f\n", _q->zeta);
+    printf("<liquid.cvsd, bits=%u, zeta=%g", _q->num_bits, _q->zeta);
 #if CVSD_ENABLE_SIGNAL_CONDITIONING
-    printf("    alpha   : %8.4f\n", _q->alpha);
+    printf(", alpha=%g", _q->alpha);
 #endif
+    printf(">\n");
     return LIQUID_OK;
 }
 

@@ -25,6 +25,14 @@ install:
     - ldconfig
     #- make check-link
 
+# compile and run benchmark program
+.bench:
+  stage: test
+  script:
+    - make -j4 bench
+  artifacts:
+    paths: [benchmark.json]
+
 # run all test programs
 check:
   stage: test
@@ -34,19 +42,23 @@ check:
   artifacts:
     paths: [build/autotest.json]
 
-# compile and run benchmark program
-.bench:
+# build from scratch
+.coverage:
   stage: test
   script:
-    - make -j4 bench
+    - make distclean
+    - ./bootstrap.sh
+    - ./configure --enable-coverage
+    - make -j4 coverage
+  coverage: '/lines: \d+\.\d+%/'
   artifacts:
-    paths: [benchmark.json]
+    paths: [coverage.out]
 
 # compile and run documenation checks (e.g. example code in README.md)
-.doc-check:
+.check-doc:
   stage: test
   script:
-    - make doc-check
+    - make check-doc
 
 # compile and run all example programs, timing how long each takes to run
 .examples:
@@ -59,18 +71,15 @@ check:
   artifacts:
     paths: [run_examples.sh, time.txt]
 
-# compile and run all example programs with valgrind
-# TODO: ensure no errors
-.examples-memcheck:
+# compile and run all autotest programs with valgrind
+.autotest-memcheck:
   stage: test
   script:
-    - make -j4 examples
-    # setting --track-origins=yes gives more detail but takes longer than gitlab allows
-    - ls examples/*_example | sed -E "s#examples/(.*)#valgrind --tool=memcheck --log-file=examples/\1.log ./examples/\1#g" > run_examples_valgrind.sh
-    - /bin/sh run_examples_valgrind.sh
-    - tail -n +1 examples/*.log > valgrind.log
+    - make -j4 xautotest
+    - mkdir valgrind
+    - ./scripts/valgrind_eval.py -output valgrind -test 881
   artifacts:
-    paths: [run_examples_valgrind.sh, valgrind.log]
+    paths: [valgrind/*]
 
 # build from scratch
 .coverage:
@@ -80,7 +89,12 @@ check:
     - ./bootstrap.sh
     - ./configure --enable-coverage
     - make -j4 coverage
+    #- curl -Os http://cli.codecov.io/latest/linux/codecov
+    #- chmod +x codecov
+    #- ./codecov --version
+    #- ./codecov upload-process -t $CODECOV_TOKEN --git-service gitlab --slug jgaeddert/liquid-dsp
     - bash <(curl -s https://codecov.io/bash)
+
   coverage: '/lines: \d+\.\d+%/'
   artifacts:
     paths: [coverage.out]

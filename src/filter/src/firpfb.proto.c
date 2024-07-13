@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -297,12 +297,11 @@ int FIRPFB(_destroy)(FIRPFB() _q)
 // print firpfb object's parameters
 int FIRPFB(_print)(FIRPFB() _q)
 {
-    printf("fir polyphase filterbank [%u] :\n", _q->num_filters);
-    unsigned int i;
-    for (i=0; i<_q->num_filters; i++) {
-        printf("  bank %3u: ",i);
-        DOTPROD(_print)(_q->dp[i]);
-    }
+    printf("<liquid.firpfb_%s, num_filters=%u, len=%u",
+        EXTENSION_FULL, _q->num_filters, _q->h_sub_len);
+    printf(", scale=");
+    PRINTVAL_TC(_q->scale,%g);
+    printf(">\n");
     return LIQUID_OK;
 }
 

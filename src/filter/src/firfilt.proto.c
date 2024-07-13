@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -348,23 +348,10 @@ int FIRFILT(_reset)(FIRFILT() _q)
 // print filter object internals (taps, buffer)
 int FIRFILT(_print)(FIRFILT() _q)
 {
-    printf("firfilt_%s:\n", EXTENSION_FULL);
-    unsigned int i;
-    unsigned int n = _q->h_len;
-    for (i=0; i<n; i++) {
-        printf("  h(%3u) = ", i+1);
-        PRINTVAL_TC(_q->h[n-i-1],%12.8f);
-        printf("\n");
-    }
-
-    // print scaling
-    printf("  scale = ");
+    printf("<liquid.firfilt_%s, n=%u", EXTENSION_FULL, _q->h_len);
+    printf(", scale=");
     PRINTVAL_TC(_q->scale,%12.8f);
-    printf("\n");
-
-#if LIQUID_FIRFILT_USE_WINDOW
-    WINDOW(_print)(_q->w);
-#endif
+    printf(">\n");
     return LIQUID_OK;
 }
 

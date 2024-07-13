@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - master
+      - coverage-dev
 
 jobs:
   standard:
@@ -45,5 +46,9 @@ jobs:
     - name: make coverage
       run: make -j 2 coverage
 
-    - name: upload report
-      run: bash <(curl -s https://codecov.io/bash)
+    - name: upload report to codecov with github action
+      uses: codecov/codecov-action@v4
+      with:
+        fail_ci_if_error: true
+        verbose: true
+        token: ${{ secrets.CODECOV_TOKEN }}

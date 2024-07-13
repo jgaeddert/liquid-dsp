@@ -16,7 +16,13 @@ jobs:
     runs-on: ${{ matrix.runs-on }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
+
+    - name: setup
+      if: runner.os == 'macos'
+      run: |
+        brew update
+        brew install autoconf automake
 
     #- name: Setup libfec
     #  run: git clone https://github.com/jgaeddert/libfec.git && cd libfec && ./configure && make && sudo make install
@@ -30,8 +36,8 @@ jobs:
     - name: make
       run: make -j 2
 
-    - name: make doc-check
-      run: make doc-check
+    - name: make check-doc
+      run: make check-doc
 
     - name: make check
       run: make -j 2 check

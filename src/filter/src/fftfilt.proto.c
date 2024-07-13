@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
 // finite impulse response (FIR) filter using fast Fourier transforms (FFTs)
-//
 
 #include <stdio.h>
 #include <string.h>
@@ -162,19 +160,12 @@ int FFTFILT(_reset)(FFTFILT() _q)
 // print filter object internals (taps, buffer)
 int FFTFILT(_print)(FFTFILT() _q)
 {
-    printf("fftfilt_%s: [h_len=%u, n=%u]\n", EXTENSION_FULL, _q->h_len, _q->n);
-    unsigned int i;
-    unsigned int n = _q->h_len;
-    for (i=0; i<n; i++) {
-        printf("  h(%3u) = ", i+1);
-        PRINTVAL_TC(_q->h[n-i-1],%12.8f);
-        printf("\n");
-    }
+    printf("<liquid.fftfilt_%s, len=%u, nfft=%u",
+        EXTENSION_FULL, _q->h_len, _q->n);
 
-    // print scaling
-    printf("  scale = ");
-    PRINTVAL_TC(_q->scale,%12.8f);
-    printf("\n");
+    printf(", scale=");
+    PRINTVAL_TC(_q->scale,%g);
+    printf(">\n");
     return LIQUID_OK;
 }
 

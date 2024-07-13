@@ -187,6 +187,12 @@ int MSRESAMP(_destroy)(MSRESAMP() _q)
 // print msresamp object internals
 int MSRESAMP(_print)(MSRESAMP() _q)
 {
+    printf("<liquid.msresamp_%s, type=\"%s\", stages=%u, rate=%g>\n",
+        EXTENSION_FULL,
+        _q->type == LIQUID_RESAMP_INTERP ? "interp" : "decim",
+        _q->num_halfband_stages,
+        _q->rate);
+#if 0
     printf("multi-stage resampler\n");
     printf("    composite rate      : %12.10f\n", _q->rate);
     printf("    type                : %s\n", _q->type == LIQUID_RESAMP_INTERP ? "interp" : "decim");
@@ -227,6 +233,7 @@ int MSRESAMP(_print)(MSRESAMP() _q)
         printf("    [%2u, r=%11.7f] : arbitrary, r=%12.8f\n", stage, r, rate);
         stage++;
     }
+#endif
     return LIQUID_OK;
 }
 

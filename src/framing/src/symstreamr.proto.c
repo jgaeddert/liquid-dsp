@@ -114,6 +114,7 @@ int SYMSTREAMR(_destroy)(SYMSTREAMR() _q)
 {
     // destroy objects
     SYMSTREAM(_destroy)(_q->symstream);
+    MSRESAMP(_destroy)(_q->resamp);
 
     // free buffer
     free(_q->buf);
@@ -126,14 +127,14 @@ int SYMSTREAMR(_destroy)(SYMSTREAMR() _q)
 // print symstream object's parameters
 int SYMSTREAMR(_print)(SYMSTREAMR() _q)
 {
-    printf("<symstreamr%s, ftype:%s, bw:%.6f, m:%u, beta:%.3f, ms:%s, gain:%.6f>\n",
-            EXTENSION,
-            liquid_firfilt_type_str[SYMSTREAMR(_get_ftype)(_q)][0],
-            SYMSTREAMR(_get_bw)  (_q),
-            SYMSTREAMR(_get_m)   (_q),
-            SYMSTREAMR(_get_beta)(_q),
-            modulation_types[SYMSTREAMR(_get_scheme)(_q)].name,
-            SYMSTREAMR(_get_gain)(_q));
+    printf("<liquid.symstreamr%s, ftype\"%s\", bw=%.6f, m=%u, beta=%.3f, ms=\"%s\", gain=%g>\n",
+        EXTENSION,
+        liquid_firfilt_type_str[SYMSTREAMR(_get_ftype)(_q)][0],
+        SYMSTREAMR(_get_bw)  (_q),
+        SYMSTREAMR(_get_m)   (_q),
+        SYMSTREAMR(_get_beta)(_q),
+        modulation_types[SYMSTREAMR(_get_scheme)(_q)].name,
+        SYMSTREAMR(_get_gain)(_q));
     return LIQUID_OK;
 }
 

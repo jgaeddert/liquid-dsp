@@ -21,7 +21,7 @@
  */
 
 //
-// dsssdsssframegen.c
+// dsssframegen.c
 //
 // dsss flexible frame generator
 //

@@ -74,8 +74,7 @@ int FREQDEM(_destroy)(FREQDEM() _q)
 // print modulation internals
 int FREQDEM(_print)(FREQDEM() _q)
 {
-    printf("freqdem:\n");
-    printf("    mod. factor :   %8.4f\n", _q->kf);
+    printf("<liquid.freqdem, mod_factor=%g>\n", _q->kf);
     return LIQUID_OK;
 }
 

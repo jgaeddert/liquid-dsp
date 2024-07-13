@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 #include <getopt.h>
 #include <time.h>
 #include <sys/resource.h>
+#include "liquid.internal.h"
 #include "autotest/autotest.h"
 
 void usage()
@@ -300,6 +301,9 @@ int main(int argc, char *argv[])
         fprintf(stderr,"unknown run mode\n");
         return -1;
     }
+
+    // ugh
+    liquid_fftwf_cleanup_wrapper();
 
     if (liquid_autotest_verbose)
         print_unstable_tests();

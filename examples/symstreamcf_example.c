@@ -33,6 +33,7 @@ int main()
 
     // create stream generator
     symstreamcf gen = symstreamcf_create_linear(ftype,k,m,beta,ms);
+    symstreamcf_print(gen);
 
     unsigned int total_samples = 0;
     while (total_samples < num_samples) {

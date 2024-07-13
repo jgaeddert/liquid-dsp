@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -81,8 +81,11 @@ void nco_crcf_pll_test(int          _type,
     CONTEND_DELTA(freq_error, 0, _tol);
 
     if (liquid_autotest_verbose) {
-        printf("  phase error : %12.4e, frequency error : %12.4e\n",
+        printf("  nco[bw:%6.4f,n=%6u], phase:%9.6f,e=%11.4e, freq:%9.6f,e=%11.4e\n",
+                _pll_bandwidth, _num_iterations,
+                _phase_offset,
                 phase_error,
+                _freq_offset,
                 freq_error);
     }
 
@@ -91,40 +94,49 @@ void nco_crcf_pll_test(int          _type,
     nco_crcf_destroy(nco_rx);
 }
 
-//
-// AUTOTEST: test frequency and phase offsets
-//
+// test phase offsets
 void autotest_nco_crcf_pll_phase()
 {
-    float        bw        = 0.1f;
-    unsigned int num_steps = 256;
-    float        tol       = 1e-2f;
+    float bw[4] = {0.1f, 0.01f, 0.001f, 0.0001f};
+    float tol   = 1e-2f;
 
-    // test various phase offsets
-    nco_crcf_pll_test(LIQUID_NCO, -M_PI/1.1f,  0.0f, bw, num_steps, tol);
-    nco_crcf_pll_test(LIQUID_NCO, -M_PI/2.0f,  0.0f, bw, num_steps, tol);
-    nco_crcf_pll_test(LIQUID_NCO, -M_PI/4.0f,  0.0f, bw, num_steps, tol);
-    nco_crcf_pll_test(LIQUID_NCO, -M_PI/8.0f,  0.0f, bw, num_steps, tol);
-    nco_crcf_pll_test(LIQUID_NCO,  M_PI/8.0f,  0.0f, bw, num_steps, tol);
-    nco_crcf_pll_test(LIQUID_NCO,  M_PI/4.0f,  0.0f, bw, num_steps, tol);
-    nco_crcf_pll_test(LIQUID_NCO,  M_PI/2.0f,  0.0f, bw, num_steps, tol);
-    nco_crcf_pll_test(LIQUID_NCO,  M_PI/1.1f,  0.0f, bw, num_steps, tol);
+    unsigned int i;
+    for (i=0; i<4; i++) {
+        // adjust number of steps according to loop bandwidth
+        unsigned int num_steps = (unsigned int)(32.0f / bw[i]);
+
+        // test various phase offsets
+        nco_crcf_pll_test(LIQUID_NCO, -M_PI/1.1f,  0.0f, bw[i], num_steps, tol);
+        nco_crcf_pll_test(LIQUID_NCO, -M_PI/2.0f,  0.0f, bw[i], num_steps, tol);
+        nco_crcf_pll_test(LIQUID_NCO, -M_PI/4.0f,  0.0f, bw[i], num_steps, tol);
+        nco_crcf_pll_test(LIQUID_NCO, -M_PI/8.0f,  0.0f, bw[i], num_steps, tol);
+        nco_crcf_pll_test(LIQUID_NCO,  M_PI/8.0f,  0.0f, bw[i], num_steps, tol);
+        nco_crcf_pll_test(LIQUID_NCO,  M_PI/4.0f,  0.0f, bw[i], num_steps, tol);
+        nco_crcf_pll_test(LIQUID_NCO,  M_PI/2.0f,  0.0f, bw[i], num_steps, tol);
+        nco_crcf_pll_test(LIQUID_NCO,  M_PI/1.1f,  0.0f, bw[i], num_steps, tol);
+    }
 }
-    
+
+// test phase offsets
 void autotest_nco_crcf_pll_freq()
 {
-    float        bw        = 0.1f;
-    unsigned int num_steps = 256;
-    float        tol       = 1e-2f;
+    float bw[4] = {0.1f, 0.05f, 0.02f, 0.01f};
+    float tol   = 1e-2f;
 
-    // test various frequency offsets
-    nco_crcf_pll_test(LIQUID_NCO,  0.0f,      -1.6f, bw, num_steps, tol);
-    nco_crcf_pll_test(LIQUID_NCO,  0.0f,      -0.8f, bw, num_steps, tol);
-    nco_crcf_pll_test(LIQUID_NCO,  0.0f,      -0.4f, bw, num_steps, tol);
-    nco_crcf_pll_test(LIQUID_NCO,  0.0f,      -0.2f, bw, num_steps, tol);
-    nco_crcf_pll_test(LIQUID_NCO,  0.0f,       0.2f, bw, num_steps, tol);
-    nco_crcf_pll_test(LIQUID_NCO,  0.0f,       0.4f, bw, num_steps, tol);
-    nco_crcf_pll_test(LIQUID_NCO,  0.0f,       0.8f, bw, num_steps, tol);
-    nco_crcf_pll_test(LIQUID_NCO,  0.0f,       1.6f, bw, num_steps, tol);
+    unsigned int i;
+    for (i=0; i<4; i++) {
+        // adjust number of steps according to loop bandwidth
+        unsigned int num_steps = (unsigned int)(32.0f / bw[i]);
+
+        // test various frequency offsets
+        nco_crcf_pll_test(LIQUID_NCO, 0.0f, -0.8f, bw[i], num_steps, tol);
+        nco_crcf_pll_test(LIQUID_NCO, 0.0f, -0.4f, bw[i], num_steps, tol);
+        nco_crcf_pll_test(LIQUID_NCO, 0.0f, -0.2f, bw[i], num_steps, tol);
+        nco_crcf_pll_test(LIQUID_NCO, 0.0f, -0.1f, bw[i], num_steps, tol);
+        nco_crcf_pll_test(LIQUID_NCO, 0.0f,  0.1f, bw[i], num_steps, tol);
+        nco_crcf_pll_test(LIQUID_NCO, 0.0f,  0.2f, bw[i], num_steps, tol);
+        nco_crcf_pll_test(LIQUID_NCO, 0.0f,  0.4f, bw[i], num_steps, tol);
+        nco_crcf_pll_test(LIQUID_NCO, 0.0f,  0.8f, bw[i], num_steps, tol);
+    }
 }
 

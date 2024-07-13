@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,6 +69,8 @@ struct IIRFILT(_s) {
     // second-order sections 
     IIRFILTSOS() * qsos;    // second-order sections filters
     unsigned int nsos;      // number of second-order sections
+
+    TC scale;               // output scaling factor
 };
 
 // initialize internal objects/arrays
@@ -143,7 +145,8 @@ IIRFILT() IIRFILT(_create)(TC *         _b,
     // reset internal state
     IIRFILT(_reset)(q);
     
-    // return iirfilt object
+    // set scale and return
+    IIRFILT(_set_scale)(q, 1);
     return q;
 }
 
@@ -191,6 +194,9 @@ IIRFILT() IIRFILT(_create_sos)(TC *         _B,
         q->qsos[i] = IIRFILTSOS(_create)(bt,at);
         //q->qsos[i] = IIRFILT(_create)(q->b+3*i,3,q->a+3*i,3);
     }
+
+    // set scale and return
+    IIRFILT(_set_scale)(q, 1);
     return q;
 }
 
@@ -257,9 +263,7 @@ IIRFILT() IIRFILT(_create_prototype)(liquid_iirdes_filtertype _ftype,
 // create simplified low-pass Butterworth IIR filter
 //  _n      : filter order
 //  _fc     : low-pass prototype cut-off frequency
-IIRFILT() IIRFILT(_create_lowpass)(
-            unsigned int _order,
-            float        _fc)
+IIRFILT() IIRFILT(_create_lowpass)(unsigned int _order, float _fc)
 {
     return IIRFILT(_create_prototype)(LIQUID_IIRDES_BUTTER,
                                       LIQUID_IIRDES_LOWPASS,
@@ -297,8 +301,8 @@ IIRFILT() IIRFILT(_create_integrator)()
         0.1641457f * cexpf(_Complex_I * M_PI / 180.0f *  -21.89539f),
         0.1641457f * cexpf(_Complex_I * M_PI / 180.0f *   21.89539f),
         1.0f,};
-    // gain, digital, integrator
-    float complex kdi = -1.89213380759321e-05f;
+    // gain, digital, integrator (slight adjustment added for proper gain)
+    float complex kdi = -1.89213380759321e-05f / 0.9695401191711425781f;
 
     // second-order sections
     // allocate 12 values for 4 second-order sections each with
@@ -346,8 +350,8 @@ IIRFILT() IIRFILT(_create_differentiator)()
         0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *  -40.51510f),
         0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *   40.51510f),
         0.1886088f,};
-    // gain, digital, differentiator
-    float complex kdd = 2.09049284907492e-05f;
+    // gain, digital, differentiator (slight adjustment added for proper gain)
+    float complex kdd = 2.09049284907492e-05f / 1.033477783203125000f;
 
     // second-order sections
     // allocate 12 values for 4 second-order sections each with
@@ -387,7 +391,11 @@ IIRFILT() IIRFILT(_create_dc_blocker)(float _alpha)
     // convert to type-specific array
     TC b[2] = {(TC)bf[0], (TC)bf[1]};
     TC a[2] = {(TC)af[0], (TC)af[1]};
-    return IIRFILT(_create)(b,2,a,2);
+    IIRFILT() q = IIRFILT(_create)(b,2,a,2);
+
+    // adjust scale so maintain consistent gain across the band
+    IIRFILT(_set_scale)(q, sqrt(1-_alpha));
+    return q;
 }
 
 // create phase-locked loop iirfilt object
@@ -496,9 +504,13 @@ int IIRFILT(_destroy)(IIRFILT() _q)
 // print iirfilt object internals
 int IIRFILT(_print)(IIRFILT() _q)
 {
-    printf("iir filter [%s]:\n", _q->type == IIRFILT_TYPE_NORM ? "normal" : "sos");
-    unsigned int i;
+    printf("<liquid.iirfilt_%s", EXTENSION_FULL);
+    printf(", type=\"%s\"", _q->type == IIRFILT_TYPE_NORM ? "normal" : "sos");
+    printf(", order=%u", _q->n-1);
+    printf(">\n");
 
+#if 0
+    unsigned int i;
     if (_q->type == IIRFILT_TYPE_SOS) {
         for (i=0; i<_q->nsos; i++)
             IIRFILTSOS(_print)(_q->qsos[i]);
@@ -513,14 +525,8 @@ int IIRFILT(_print)(IIRFILT() _q)
         for (i=0; i<_q->na; i++)
             PRINTVAL_TC(_q->a[i],%12.8f);
         printf("\n");
-
-#if 0
-        printf("  v :");
-        for (i=0; i<_q->n; i++)
-            PRINTVAL(_q->v[i]);
-        printf("\n");
-#endif
     }
+#endif
     return LIQUID_OK;
 }
 
@@ -539,6 +545,20 @@ int IIRFILT(_reset)(IIRFILT() _q)
         for (i=0; i<_q->n; i++)
             _q->v[i] = 0;
     }
+    return LIQUID_OK;
+}
+
+// set scale value to be applied to each output sample
+int IIRFILT(_set_scale)(IIRFILT() _q, TC _scale)
+{
+    _q->scale = _scale;
+    return LIQUID_OK;
+}
+
+// get output scaling for filter
+int IIRFILT(_get_scale)(IIRFILT() _q, TC * _scale)
+{
+    *_scale = _q->scale;
     return LIQUID_OK;
 }
 
@@ -581,6 +601,8 @@ int IIRFILT(_execute_norm)(IIRFILT() _q,
     // set return value
     *_y = y0;
 #endif
+    // apply scaling
+    *_y *= _q->scale;
     return LIQUID_OK;
 }
 
@@ -602,7 +624,7 @@ int IIRFILT(_execute_sos)(IIRFILT() _q,
         // output for filter n becomes input to filter n+1
         t0 = t1;
     }
-    *_y = t1;
+    *_y = t1 * _q->scale;
     return LIQUID_OK;
 }
 
@@ -653,8 +675,8 @@ unsigned int IIRFILT(_get_length)(IIRFILT() _q)
 //  _fc     :   frequency
 //  _H      :   output frequency response
 int IIRFILT(_freqresponse)(IIRFILT()       _q,
-                          float           _fc,
-                          float complex * _H)
+                           float           _fc,
+                           float complex * _H)
 {
     unsigned int i;
     float complex H = 0.0f;
@@ -692,7 +714,7 @@ int IIRFILT(_freqresponse)(IIRFILT()       _q,
     }
 
     // set return value
-    *_H = H;
+    *_H = H * _q->scale;
     return LIQUID_OK;
 }
 

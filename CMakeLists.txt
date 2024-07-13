@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2023 Joseph Gaeddert
+# Copyright (c) 2007 - 2024 Joseph Gaeddert
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -197,6 +197,8 @@ add_library(framing OBJECT
     src/framing/src/bpacketgen.c
     src/framing/src/bpacketsync.c
     src/framing/src/detector_cccf.c
+    src/framing/src/dsssframe64gen.c
+    src/framing/src/dsssframe64sync.c
     src/framing/src/dsssframegen.c
     src/framing/src/dsssframesync.c
     src/framing/src/framedatastats.c
@@ -244,8 +246,6 @@ add_library(matrix OBJECT
 
 add_library(modem OBJECT
     src/modem/src/ampmodem.c
-    src/modem/src/cpfskdem.c
-    src/modem/src/cpfskmod.c
     src/modem/src/fskdem.c
     src/modem/src/fskmod.c
     src/modem/src/gmskdem.c
@@ -390,7 +390,7 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/audio/tests/cvsd_autotest.c
     ${PROJECT_SOURCE_DIR}/src/buffer/tests/cbuffer_autotest.c
     ${PROJECT_SOURCE_DIR}/src/buffer/tests/wdelay_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/buffer/tests/window_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/buffer/tests/buffer_window_autotest.c
     ${PROJECT_SOURCE_DIR}/src/channel/tests/channel_copy_autotest.c
     ${PROJECT_SOURCE_DIR}/src/channel/tests/tvmpch_copy_autotest.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_rrrf_autotest.c
@@ -450,8 +450,8 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/filter/tests/iirdecim_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/iirdes_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/iirdes_support_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/iirfilt_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/iirfilt_xxxf_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/filter/tests/iirfilt_copy_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/iirfiltsos_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/iirhilb_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/iirinterp_autotest.c
@@ -463,12 +463,14 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/filter/tests/rresamp_crcf_partition_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/resamp_crcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/resamp2_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/filter/tests/rkaiser_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/symsync_copy_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/symsync_crcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/symsync_rrrf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/framing/tests/bpacketsync_autotest.c
     ${PROJECT_SOURCE_DIR}/src/framing/tests/bsync_autotest.c
     ${PROJECT_SOURCE_DIR}/src/framing/tests/detector_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/dsssframe64_autotest.c
     ${PROJECT_SOURCE_DIR}/src/framing/tests/dsssframesync_autotest.c
     ${PROJECT_SOURCE_DIR}/src/framing/tests/flexframesync_autotest.c
     ${PROJECT_SOURCE_DIR}/src/framing/tests/framesync64_autotest.c
@@ -488,7 +490,7 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/framing/tests/symstreamrcf_delay_autotest.c
     ${PROJECT_SOURCE_DIR}/src/framing/tests/symtrack_cccf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/math/tests/gcd_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/math/tests/window_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/math_window_autotest.c
     ${PROJECT_SOURCE_DIR}/src/math/tests/math_autotest.c
     ${PROJECT_SOURCE_DIR}/src/math/tests/math_bessel_autotest.c
     ${PROJECT_SOURCE_DIR}/src/math/tests/math_gamma_autotest.c
@@ -507,20 +509,22 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/modem/tests/fskmodem_autotest.c
     ${PROJECT_SOURCE_DIR}/src/modem/tests/gmskmodem_autotest.c
     ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_config_autotest.c
     ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_demodsoft_autotest.c
     ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_demodstats_autotest.c
     ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_utilities_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch2_crcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch_crcf_synthesizer_autotest.c
     ${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch_crcf_analyzer_autotest.c
     ${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch2_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbchr_crcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/multichannel/tests/ofdmframe_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_frequency_autotest.c
     ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_mix_autotest.c
     ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_phase_autotest.c
     ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_pll_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_spectrum_autotest.c
     ${PROJECT_SOURCE_DIR}/src/nco/tests/unwrap_phase_autotest.c
     ${PROJECT_SOURCE_DIR}/src/optim/tests/gasearch_autotest.c
     ${PROJECT_SOURCE_DIR}/src/optim/tests/gradsearch_autotest.c
@@ -530,14 +534,15 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/quantization/tests/compand_autotest.c
     ${PROJECT_SOURCE_DIR}/src/quantization/tests/quantize_autotest.c
     ${PROJECT_SOURCE_DIR}/src/random/tests/scramble_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/random/tests/random_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/random/tests/random_distributions_autotest.c
     ${PROJECT_SOURCE_DIR}/src/sequence/tests/bsequence_autotest.c
     ${PROJECT_SOURCE_DIR}/src/sequence/tests/complementary_codes_autotest.c
     ${PROJECT_SOURCE_DIR}/src/sequence/tests/msequence_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/bshift_array_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/count_bits_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/pack_bytes_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/utility/tests/shift_array_autotest.c
-    )
+    ${PROJECT_SOURCE_DIR}/src/utility/tests/shift_array_autotest.c)
 
 set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_runtest.c

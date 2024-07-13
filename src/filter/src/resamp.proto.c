@@ -185,7 +185,8 @@ int RESAMP(_destroy)(RESAMP() _q)
 // print resampler object
 int RESAMP(_print)(RESAMP() _q)
 {
-    printf("resampler [rate: %f]\n", _q->rate);
+    printf("<liquid.resamp_%s, rate=%g, m=%u, as=%.3f, fc=%g, npfb=%u>\n",
+        EXTENSION_FULL, _q->r, _q->m, _q->as, _q->fc, _q->npfb);
     return FIRPFB(_print)(_q->f);
 }
 

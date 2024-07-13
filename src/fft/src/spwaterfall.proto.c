@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -196,7 +196,7 @@ int SPWATERFALL(_reset)(SPWATERFALL() _q)
 // prints the spwaterfall object's parameters
 int SPWATERFALL(_print)(SPWATERFALL() _q)
 {
-    printf("spwaterfall%s: nfft=%u, time=%u\n", EXTENSION, _q->nfft, _q->time);
+    printf("<spwaterfall%s: nfft=%u, time=%u>\n", EXTENSION, _q->nfft, _q->time);
     return LIQUID_OK;
 }
 
