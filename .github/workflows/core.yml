@@ -76,12 +76,12 @@ jobs:
       if: runner.os == 'macos'
       run: |
         brew update
-        brew install pybind11 virtualenv
+        brew install autoconf automake pybind11 virtualenv
 
     - name: Setup environment (Linux)
       if: runner.os == 'Linux'
       run: |
-        sudo apt-get install -y --no-install-recommends pybind11-dev virtualenv python3-dev
+        sudo apt-get install -y --no-install-recommends build-essential pybind11-dev virtualenv python3-dev
 
     - name: bind
       run: |
