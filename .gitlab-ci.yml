@@ -23,7 +23,7 @@ build:
   artifacts:
     paths: [build/autotest.json]
 
-linux:
+.linux:
   image: python:3.12
   # make a docker daemon available for cibuildwheel to use
   services:
