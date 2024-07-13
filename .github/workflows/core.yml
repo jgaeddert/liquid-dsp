@@ -45,8 +45,9 @@ jobs:
       run: make -j 2 check
 
     - name: make check-doc
-      run: make check-doc-c
-      run: make check-doc-cc
+      run: |
+        make check-doc-c
+        make check-doc-cc
 
     - name: make install
       run: sudo make install
