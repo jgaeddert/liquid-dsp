@@ -330,8 +330,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(LIBSRC src/libliquid.c)
 
-# NOTE: if set to "liquid" it will unfortunately link to installed version... grumble...
-set(LIBNAME liquidtmp)
+set(LIBNAME liquid)
 add_library(${LIBNAME} SHARED
     ${LIBSRC}
     $<TARGET_OBJECTS:agc>
