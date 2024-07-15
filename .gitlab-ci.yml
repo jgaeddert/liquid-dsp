@@ -41,18 +41,6 @@ check:
   artifacts:
     paths: [autotest.json]
 
-# build from scratch
-coverage:
-  stage: test
-  script:
-    - make distclean
-    - ./bootstrap.sh
-    - ./configure --enable-coverage
-    - make -j4 coverage
-  coverage: '/lines: \d+\.\d+%/'
-  artifacts:
-    paths: [coverage.out]
-
 # compile and run documenation checks (e.g. example code in README.md)
 check-doc:
   stage: test
