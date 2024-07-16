@@ -9,6 +9,11 @@ coverage:
   range: 70..90
   round: down
   precision: 3
+  status:
+    project:
+      default:
+        target: 75
+        threshold: 5
 
 ignore:
   - autotest/*
