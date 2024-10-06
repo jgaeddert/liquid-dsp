@@ -23,7 +23,8 @@ build:
   artifacts:
     paths: [build/autotest.json]
 
-.linux:
+linux:
+  when: manual
   image: python:3.12
   # make a docker daemon available for cibuildwheel to use
   services:
@@ -43,7 +44,8 @@ build:
     paths:
       - wheelhouse/
 
-.macos:
+macos:
+  when: manual
   image: macos-14-xcode-15
   before_script:
     - python3 -m pip install cibuildwheel==2.19.2
@@ -55,7 +57,8 @@ build:
   tags:
     - saas-macos-medium-m1
 
-.windows:
+windows:
+  when: manual
   image: mcr.microsoft.com/windows/servercore:1809
   before_script:
     - choco install python -y --version 3.12.4
