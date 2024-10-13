@@ -9,7 +9,7 @@ build:
     - apt -qq install -y --no-install-recommends python3-pip python3-dev pybind11-dev virtualenv
     - virtualenv env/liquid
     - source env/liquid/bin/activate
-    - python -m pip install pybind11 numpy matplotlib
+    - pip install -r requirements.txt
     - mkdir build
     - cd build
     - cmake ..
