@@ -17,6 +17,7 @@ build:
     - make install
     - ldconfig
     - ./xautotest -v -o autotest.json
+    - python3 -c 'import liquid as dsp'
     #- make check-link
     #- make doc-check
     #- make bench

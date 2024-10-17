@@ -728,8 +728,8 @@ configure_file(src/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 set(PYBIND11_NEWPYTHON ON)
 find_package(pybind11 CONFIG REQUIRED)
 
-
-pybind11_add_module(liquid MODULE
+set(LIBNAME_PYTHON pyliquid)
+pybind11_add_module(${LIBNAME_PYTHON} MODULE
     bind/liquid.python.cc
     ${LIBSRC}
     $<TARGET_OBJECTS:agc>
@@ -754,7 +754,13 @@ pybind11_add_module(liquid MODULE
     $<TARGET_OBJECTS:utility>
     $<TARGET_OBJECTS:vector>)
 
-target_compile_definitions(liquid PUBLIC LIQUID_PYTHONLIB)
+# Use different names for cmake target and output file since we cannot use
+# the cmake target 'liquid' more than once, but we also want the python package
+# to called 'liquid' and not something odd like 'pyliquid'
+# see: https://stackoverflow.com/questions/67212833/python-library-and-cmake-target-with-the-same-name#67226146
+set_target_properties(${LIBNAME_PYTHON} PROPERTIES OUTPUT_NAME liquid)
 
-install(TARGETS liquid LIBRARY DESTINATION .)
+target_compile_definitions(${LIBNAME_PYTHON} PUBLIC LIQUID_PYTHONLIB)
+
+install(TARGETS ${LIBNAME_PYTHON} LIBRARY DESTINATION .)
 
