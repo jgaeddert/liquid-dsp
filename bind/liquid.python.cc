@@ -55,7 +55,11 @@ py::dict framesyncstats_to_dict(framesyncstats_s _stats,
 
 
 PYBIND11_MODULE(liquid, m) {
-    m.doc() = "software-defined radio signal processing library";
+    m.doc() =
+    R"pbdoc(
+        liquid-dsp: software-defined radio signal processing library
+        ------------------------------------------------------------
+    )pbdoc";
 
     // initialize objects
     liquid::init_fdelay     (m);
@@ -76,6 +80,12 @@ PYBIND11_MODULE(liquid, m) {
     liquid::init_spwaterfall(m);
     liquid::init_symstreamr (m);
     liquid::init_symtrack   (m);
+
+#ifdef VERSION_INFO
+    m.attr("__version__") = VERSION_INFO;
+#else
+    m.attr("__version__") = "dev";
+#endif
 }
 
 } // namespace liquid

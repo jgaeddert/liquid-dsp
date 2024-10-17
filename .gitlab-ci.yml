@@ -17,7 +17,7 @@ build:
     - make install
     - ldconfig
     - ./xautotest -v -o autotest.json
-    - python3 -c 'import liquid as dsp'
+    - python3 -c "import liquid as dsp; print('liquid-dsp python version:',dsp.__version__)"
     #- make check-link
     #- make doc-check
     #- make bench
@@ -45,7 +45,7 @@ linux:
     paths:
       - wheelhouse/
 
-macos:
+.macos:
   when: manual
   image: macos-14-xcode-15
   before_script:

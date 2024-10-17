@@ -760,7 +760,17 @@ pybind11_add_module(${LIBNAME_PYTHON} MODULE
 # see: https://stackoverflow.com/questions/67212833/python-library-and-cmake-target-with-the-same-name#67226146
 set_target_properties(${LIBNAME_PYTHON} PROPERTIES OUTPUT_NAME liquid)
 
+# enable python extensions to C++ classes
 target_compile_definitions(${LIBNAME_PYTHON} PUBLIC LIQUID_PYTHONLIB)
+# pull version info from pyproject.toml
+target_compile_definitions(${LIBNAME_PYTHON} PRIVATE VERSION_INFO="${liquid_VERSION}")
 
 install(TARGETS ${LIBNAME_PYTHON} LIBRARY DESTINATION .)
+
+# dump a (sorted) list of cmake variables
+# get_cmake_property(_variableNames VARIABLES)
+# list (SORT _variableNames)
+# foreach (_variableName ${_variableNames})
+#     message(STATUS "${_variableName}=${${_variableName}}")
+# endforeach()
 
