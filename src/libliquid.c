@@ -30,7 +30,7 @@ const char liquid_version[] = LIQUID_VERSION;
 
 const char * liquid_libversion(void)
 {
-    return LIQUID_VERSION;
+    return liquid_version;
 }
 
 int liquid_libversion_number(void)
