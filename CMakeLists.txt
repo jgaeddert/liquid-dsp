@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2023 Joseph Gaeddert
+# Copyright (c) 2007 - 2024 Joseph Gaeddert
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,14 @@
 #
 
 cmake_minimum_required(VERSION 3.10)
+
+# run custom command to parse version number from include/liquid.h
+#execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/version.sh
+#    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#    OUTPUT_VARIABLE LIQUID_VERSION)
+
+# project definition
+#project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
 project(liquid VERSION 1.6.0 LANGUAGES C CXX)
 
 # require a C99 compiler for all targets
@@ -762,15 +770,16 @@ set_target_properties(${LIBNAME_PYTHON} PROPERTIES OUTPUT_NAME liquid)
 
 # enable python extensions to C++ classes
 target_compile_definitions(${LIBNAME_PYTHON} PUBLIC LIQUID_PYTHONLIB)
-# pull version info from pyproject.toml
+# pull version info from top of this file
 target_compile_definitions(${LIBNAME_PYTHON} PRIVATE VERSION_INFO="${liquid_VERSION}")
 
 install(TARGETS ${LIBNAME_PYTHON} LIBRARY DESTINATION .)
 
+
 # dump a (sorted) list of cmake variables
-# get_cmake_property(_variableNames VARIABLES)
-# list (SORT _variableNames)
-# foreach (_variableName ${_variableNames})
-#     message(STATUS "${_variableName}=${${_variableName}}")
-# endforeach()
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
 
