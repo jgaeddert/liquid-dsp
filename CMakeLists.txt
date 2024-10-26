@@ -33,13 +33,13 @@
 cmake_minimum_required(VERSION 3.10)
 
 # run custom command to parse version number from include/liquid.h
-#execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/version.sh
-#    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-#    OUTPUT_VARIABLE LIQUID_VERSION)
+execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/version.sh
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE LIQUID_VERSION)
 
 # project definition
-#project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
-project(liquid VERSION 1.6.0 LANGUAGES C CXX)
+project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
+#project(liquid VERSION 1.6.0 LANGUAGES C CXX)
 
 # require a C99 compiler for all targets
 set(CMAKE_C_STANDARD 99)
