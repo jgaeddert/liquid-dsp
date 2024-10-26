@@ -58,7 +58,18 @@ remove = "dev0"
 #liquid = "liquid:main_cli"
 
 [tool.cibuildwheel]
-before-all = "uname -a"
+build = "*"
 #test-command = "python {project}/tests/test.py"
 #test-skip = "*universal2:arm64"
 
+[tool.cibuildwheel.linux]
+before-all = "uname -a"
+#repair-wheel-command = "auditwheel repair -w {dest_dir} {wheel}"
+
+[tool.cibuildwheel.macos]
+before-all = "uname -a"
+#repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
+
+[tool.cibuildwheel.windows]
+
+[tool.cibuildwheel.pyodide]
