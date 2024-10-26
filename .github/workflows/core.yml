@@ -41,9 +41,10 @@ jobs:
         cd build
         cmake ..
         make
+        ./xautotest -v -o autotest.json
+        python3 -c "import liquid as dsp; print('liquid-dsp python version:',dsp.__version__)"
         #make install
         #ldconfig
-        ./xautotest -v -o autotest.json
         #make check-link
         #make doc-check
         #make bench
