@@ -62,7 +62,13 @@ include (CheckLibraryExists)
 include (CheckSymbolExists)
 
 # global flags
-add_definitions ("-Wall -fPIC -O3 -Wno-deprecated -Wno-deprecated-declarations")
+if (MSVC)
+    # warning level 4
+    add_compile_options(/W4)
+else()
+    # additional warnings
+    add_compile_options(-Wall -Wno-deprecated -Wno-deprecated-declarations)
+endif()
 
 # include files
 # mmintrin.h
