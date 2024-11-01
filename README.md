@@ -63,7 +63,7 @@ The recommended way to obtain the source code is to clone the entire
 [repository](https://github.com/jgaeddert/liquid-dsp) from
 [GitHub](https://github.com):
 
-    git clone git://github.com/jgaeddert/liquid-dsp.git
+    git clone https://github.com/jgaeddert/liquid-dsp.git
 
 Building and installing the main library is a simple as
 
