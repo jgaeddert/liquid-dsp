@@ -8,9 +8,52 @@ on:
       - bind-scikit-build-dev
 
 jobs:
+  baseline:
+    strategy:
+      fail-fast: false
+      matrix:
+        runs-on: [ubuntu-latest, macos-latest]
+
+    name: "💦 ${{ matrix.runs-on }}"
+    runs-on: ${{ matrix.runs-on }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup environment (macOS)
+      if: runner.os == 'macos'
+      run: |
+        brew update
+        brew install autoconf automake pybind11 virtualenv
+
+    - name: Setup environment (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get install -y --no-install-recommends build-essential pybind11-dev virtualenv python3-dev
+
+    #- name: Setup libfec
+    #  run: git clone https://github.com/jgaeddert/libfec.git && cd libfec && ./configure && make && sudo make install
+
+    - name: Build and test
+      run: |
+        virtualenv env/liquid
+        source env/liquid/bin/activate
+        python -m pip install pybind11 numpy matplotlib
+        mkdir build
+        cd build
+        cmake ..
+        make -j4
+        ./xautotest -v -o autotest.json
+        python3 -c "import liquid as dsp; print('liquid-dsp python version:',dsp.__version__)"
+        #make install
+        #ldconfig
+        #make check-link
+        #make doc-check
+        #make bench
+
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
-    needs: standard
+    needs: baseline
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
