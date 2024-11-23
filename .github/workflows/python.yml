@@ -5,52 +5,34 @@ on:
   pull_request:
   push:
     branches:
-      - master
-      - bind-dev
-      - v*
+      - bind-scikit-build-dev
 
 jobs:
-  standard:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    needs: standard
+    runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
-        runs-on: [ubuntu-latest, macos-latest]
-        #python: [3.8, 3.9]
-
-    name: "💦  ${{ matrix.runs-on }}" # • 🐍 ${{ matrix.python }}
-    runs-on: ${{ matrix.runs-on }}
+        # macos-13 is an intel runner, macos-14 is apple silicon
+        #os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+        os: [ubuntu-latest, macos-13, macos-14]
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-    #- name: Setup Python ${{ matrix.python }}
-    #  uses: actions/setup-python@v2
-    #  with:
-    #    python-version: ${{ matrix.python }}
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.19.2
+        # env:
+        #   CIBW_SOME_OPTION: value
+        #    ...
+        # with:
+        #   package-dir: .
+        #   output-dir: wheelhouse
+        #   config-file: "{package}/pyproject.toml"
 
-    - name: Setup pybind-dev (Linux)
-      if: runner.os == 'Linux'
-      run: sudo apt-get install pybind11-dev
-
-    - name: Setup pybind-dev (macOS)
-      if: runner.os == 'macOS'
-      run: brew install pybind11
-
-    - name: Setup python dependencies (pip)
-      run: sudo -H python3 -m pip install pybind11 numpy matplotlib
-
-    - name: bootstrap
-      run: ./bootstrap.sh
-
-    - name: configure
-      run: ./configure
-
-    - name: make python
-      run: make -j 2 python
-
-    - name: make check-python
-      run: make check-python
-
-    - name: make check-bind
-      run: make -j 2 check-bind
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          path: ./wheelhouse/*.whl
 
