@@ -85,15 +85,16 @@ check:
 .coverage:
   stage: test
   script:
+    - apt-get -qq install -y --no-install-recommends virtualenv
+    - virtualenv codecov
+    - source codecov/bin/activate
+    - pip install codecov-cli
     - make distclean
     - ./bootstrap.sh
     - ./configure --enable-coverage
     - make -j4 coverage
-    #- curl -Os http://cli.codecov.io/latest/linux/codecov
-    #- chmod +x codecov
-    #- ./codecov --version
-    #- ./codecov upload-process -t $CODECOV_TOKEN --git-service gitlab --slug jgaeddert/liquid-dsp
-    - bash <(curl -s https://codecov.io/bash)
+    - codecovcli --version
+    - codecovcli upload-process -t $CODECOV_TOKEN --git-service gitlab --slug jgaeddert/liquid-dsp
 
   coverage: '/lines: \d+\.\d+%/'
   artifacts:

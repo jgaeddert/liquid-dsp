@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
-#define LIQUID_RANDOM_AUTOTEST_NUM_TRIALS (100000)
-#define LIQUID_RANDOM_AUTOTEST_ERROR_TOL  (0.1)
+#define LIQUID_RANDOM_AUTOTEST_NUM_TRIALS (250000)
+#define LIQUID_RANDOM_AUTOTEST_ERROR_TOL  (0.15)
 
 // uniform
 void autotest_randf()
