@@ -31,11 +31,23 @@
 #
 
 cmake_minimum_required(VERSION 3.10)
-project(liquid VERSION 1.6.0 LANGUAGES C)
+
+# run custom command to parse version number from include/liquid.h
+execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/version.sh
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE LIQUID_VERSION)
+
+# project definition
+project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
+#project(liquid VERSION 1.6.0 LANGUAGES C CXX)
 
 # require a C99 compiler for all targets
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+
+set(CMAKE_CXX_STANDARD 14 CACHE STRING "C++ version selection")  # or 11, 14, 17, 20
+set(CMAKE_CXX_STANDARD_REQUIRED ON)  # optional, ensure standard is supported
+#set(CMAKE_CXX_EXTENSIONS OFF)  # optional, keep compiler extensions off
 
 # cmake debugging
 #variable_watch(HAVE_SINF)
@@ -50,7 +62,13 @@ include (CheckLibraryExists)
 include (CheckSymbolExists)
 
 # global flags
-add_definitions ("-Wall -fPIC -O3 -Wno-deprecated -Wno-deprecated-declarations")
+if (MSVC)
+    # warning level 4
+    add_compile_options(/W4)
+else()
+    # additional warnings
+    add_compile_options(-Wall -fPIC -O3 -Wno-deprecated -Wno-deprecated-declarations)
+endif()
 
 # include files
 # mmintrin.h
@@ -103,10 +121,6 @@ include (CheckTypeSize)
 check_type_size(int SIZEOF_INT LANGUAGE C)
 
 configure_file(config.h.cmake config.h)
-
-find_library(C_LIBRARY c)
-find_library(MATH_LIBRARY m)
-
 
 ################################################################################
 # Targets
@@ -330,8 +344,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(LIBSRC src/libliquid.c)
 
-# NOTE: if set to "liquid" it will unfortunately link to installed version... grumble...
-set(LIBNAME liquidtmp)
+set(LIBNAME liquid)
 add_library(${LIBNAME} SHARED
     ${LIBSRC}
     $<TARGET_OBJECTS:agc>
@@ -358,10 +371,7 @@ add_library(${LIBNAME} SHARED
 
 target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
 
-target_link_libraries(${LIBNAME} PUBLIC ${C_LIBRARY} ${MATH_LIBRARY})
-#if (MATH_LIBRARY)
-#    target_link_libraries(MyTarget PUBLIC ${MATH_LIBRARY})
-#endif()
+target_link_libraries(${LIBNAME} c m)
 
 add_executable(test_libliquid examples/libliquid_example.c)
 target_include_directories(test_libliquid PRIVATE ${INCLUDE})
@@ -393,6 +403,7 @@ install(TARGETS
 #
 
 set(AUTOTESTS
+    ${PROJECT_SOURCE_DIR}/autotest/null_autotest.c
     ${PROJECT_SOURCE_DIR}/src/agc/tests/agc_crcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/audio/tests/cvsd_autotest.c
     ${PROJECT_SOURCE_DIR}/src/buffer/tests/cbuffer_autotest.c
@@ -725,4 +736,11 @@ include(CPack)
 
 # this file can only use the @VARIABLE@ syntax
 configure_file(src/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
+
+# dump a (sorted) list of cmake variables
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
 
