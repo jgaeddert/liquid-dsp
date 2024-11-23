@@ -65,7 +65,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.19.2
+        uses: pypa/cibuildwheel@v2.21.0
         # env:
         #   CIBW_SOME_OPTION: value
         #    ...
