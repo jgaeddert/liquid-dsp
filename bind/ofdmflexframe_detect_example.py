@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 '''test ofdmflexframe detection using class with callback function'''
-import argparse, sys
-sys.path.extend(['.','..'])
+import argparse
 import liquid as dsp, numpy as np, matplotlib.pyplot as plt
 p = argparse.ArgumentParser(description=__doc__)
 p.add_argument('-nodisplay', action='store_true', help='disable display')
