@@ -23,7 +23,7 @@ while psd.num_samples_total < num_samples:
 # get spectrum plot and display
 Sxx,f = psd.get_psd()
 
-fix,ax = plt.subplots(1,figsize=(8,8))
+fig,ax = plt.subplots(1,figsize=(8,8))
 ax.plot(f,Sxx)
 ax.set_xlabel('Normalized Frequency [f/Fs]')
 ax.set_ylabel('Time [samples]')
