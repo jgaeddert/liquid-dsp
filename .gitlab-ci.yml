@@ -8,7 +8,7 @@ before_script:
   - apt-get -qq install -y --no-install-recommends build-essential cmake valgrind time curl
   - mkdir build
   - cd build
-  - cmake ..
+  - cmake -DBUILD_TESTS=ON -DBUILD_EXAMPLES=ON ..
 
 # build from scratch
 compile:
