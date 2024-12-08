@@ -41,6 +41,14 @@ execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/version.sh
 project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
 #project(liquid VERSION 1.6.0 LANGUAGES C CXX)
 
+# options
+option(BUILD_TESTS    "Set to ON to build tests"              OFF)
+option(BUILD_EXAMPLES "Set to ON to build examples"           OFF)
+#option(BUILD_DOCS     "Set to ON to build documentation"      OFF)
+#option(BUILD_BENCH    "Set to ON to build benchmarks"         OFF)
+#option(COVERAGE       "Set to ON to build with code coverage" OFF)
+#option(PROFILE        "Set to ON to build with profiling"     OFF)
+
 # require a C99 compiler for all targets
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -398,6 +406,11 @@ install(TARGETS
         )
 
 
+# enable examples
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif(BUILD_EXAMPLES)
+
 #
 # autotest
 #
@@ -703,22 +716,11 @@ add_executable(xautotest
 target_include_directories(xautotest PRIVATE ${INCLUDE})
 target_link_libraries(xautotest ${LIBNAME})
 
-#add_executable(xautotest autotest/xautotest.c autotest/autotest.h autotest_include.h)
-#target_include_directories(xautotest PRIVATE ${INCLUDE})
-
-#
-# testing
-#
-
 # enable testing
-enable_testing()
-add_test(NAME test COMMAND test_libliquid)
-
-#
-# examples
-#
-#set_source_files_properties(DIRECTORY examples TARGET_DIRECTORY examples)
-add_subdirectory(examples)
+if(BUILD_TESTS)
+    enable_testing()
+    add_test(NAME test COMMAND test_libliquid)
+endif(BUILD_TESTS)
 
 
 # packaging
@@ -737,10 +739,10 @@ include(CPack)
 # this file can only use the @VARIABLE@ syntax
 configure_file(src/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 
-# dump a (sorted) list of cmake variables
-get_cmake_property(_variableNames VARIABLES)
-list (SORT _variableNames)
-foreach (_variableName ${_variableNames})
-    message(STATUS "${_variableName}=${${_variableName}}")
-endforeach()
+## dump a (sorted) list of cmake variables
+#get_cmake_property(_variableNames VARIABLES)
+#list (SORT _variableNames)
+#foreach (_variableName ${_variableNames})
+#    message(STATUS "${_variableName}=${${_variableName}}")
+#endforeach()
 
