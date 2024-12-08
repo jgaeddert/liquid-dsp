@@ -746,3 +746,7 @@ configure_file(src/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 #    message(STATUS "${_variableName}=${${_variableName}}")
 #endforeach()
 
+# cmake config summary
+include(scripts/summary.cmake)
+liquid_print_config_summary()
+
