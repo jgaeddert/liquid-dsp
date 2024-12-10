@@ -87,6 +87,7 @@ function(liquid_print_config_summary)
     liquid_status("  BUILD_TESTS       :   ${BUILD_TESTS}")
     #liquid_status("  BUILD_DOCS        :   ${BUILD_DOCS}")
     #liquid_status("  BUILD_BENCH       :   ${BUILD_BENCH}")
+    liquid_status("  COVERAGE          :   ${COVERAGE}")
     liquid_status("")
     liquid_status("Dependencies:") # MMX, neon
     liquid_status("  SSE               : " USE_SSE AND COMPILER_HAS_SSE_FLAG THEN "Yes" ELSE "No")

@@ -716,6 +716,16 @@ add_executable(xautotest
 target_include_directories(xautotest PRIVATE ${INCLUDE})
 target_link_libraries(xautotest ${LIBNAME})
 
+if(COVERAGE)
+    message(STATUS "Code coverage: Enabled")
+    set_target_properties(xautotest
+        PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -g -fprofile-arcs -ftest-coverage"
+        LINK_FLAGS "-lgcov --coverage")
+
+else(COVERAGE)
+    message(STATUS "Code coverage: Disabled")
+endif(COVERAGE)
+
 # enable testing
 if(BUILD_TESTS)
     enable_testing()
