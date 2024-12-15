@@ -42,8 +42,9 @@ project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
 #project(liquid VERSION 1.6.0 LANGUAGES C CXX)
 
 # options
-option(BUILD_EXAMPLES "Set to ON to build examples"           OFF)
-option(BUILD_AUTOTESTS  "Set to ON to build autotest program"  OFF)
+option(BUILD_EXAMPLES   "Set to ON to build examples"           OFF)
+option(BUILD_SANDBOX    "Set to ON to build sanbox programs"    OFF)
+option(BUILD_AUTOTESTS  "Set to ON to build autotest program"   OFF)
 option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  OFF)
 #option(BUILD_DOCS     "Set to ON to build documentation"      OFF)
 #option(BUILD_BENCH    "Set to ON to build benchmarks"         OFF)
@@ -407,10 +408,19 @@ install(TARGETS
         )
 
 
+# ---------------------------------------- examples ----------------------------------------
+
 # enable examples
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif(BUILD_EXAMPLES)
+
+# ---------------------------------------- sandbox ----------------------------------------
+
+# enable sandbox
+if(BUILD_SANDBOX)
+    add_subdirectory(sandbox)
+endif(BUILD_SANDBOX)
 
 # ---------------------------------------- autotest ----------------------------------------
 
