@@ -39,7 +39,7 @@ check:
   stage: test
   script:
     - make -j4
-    - ./xautotest
+    - ./xautotest -v -o autotest.json
   artifacts:
     paths: [build/autotest.json]
 
