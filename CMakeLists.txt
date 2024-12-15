@@ -48,6 +48,7 @@ option(BUILD_EXAMPLES "Set to ON to build examples"           OFF)
 #option(BUILD_BENCH    "Set to ON to build benchmarks"         OFF)
 #option(COVERAGE       "Set to ON to build with code coverage" OFF)
 #option(PROFILE        "Set to ON to build with profiling"     OFF)
+option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  OFF)
 
 # require a C99 compiler for all targets
 set(CMAKE_C_STANDARD 99)
@@ -411,9 +412,7 @@ if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif(BUILD_EXAMPLES)
 
-#
-# autotest
-#
+# ---------------------------------------- autotest ----------------------------------------
 
 set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/autotest/null_autotest.c
@@ -573,7 +572,8 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/utility/tests/bshift_array_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/count_bits_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/pack_bytes_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/utility/tests/shift_array_autotest.c)
+    ${PROJECT_SOURCE_DIR}/src/utility/tests/shift_array_autotest.c
+    )
 
 set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_runtest.c
@@ -733,7 +733,115 @@ if(BUILD_TESTS)
 endif(BUILD_TESTS)
 
 
-# packaging
+# ---------------------------------------- benchmarks ----------------------------------------
+
+set(BENCHMARKS
+    ${PROJECT_SOURCE_DIR}/bench/null_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/agc/bench/agc_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/audio/bench/cvsd_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/buffer/bench/cbuffercf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/buffer/bench/window_push_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/buffer/bench/window_read_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/bench/dotprod_cccf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/bench/dotprod_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/bench/dotprod_rrrf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/bench/sumsqf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/bench/sumsqcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/equalization/bench/eqlms_cccf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/equalization/bench/eqrls_cccf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fec/bench/crc_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fec/bench/fec_encode_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fec/bench/fec_decode_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fec/bench/fecsoft_decode_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fec/bench/sumproduct_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fec/bench/interleaver_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fec/bench/packetizer_decode_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_composite_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_prime_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_radix2_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_r2r_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fft/bench/spgramcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/fftfilt_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/firdecim_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/firhilb_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/firinterp_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/firfilt_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/iirdecim_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/iirfilt_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/iirinterp_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/rresamp_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/resamp_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/resamp2_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/symsync_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/presync_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/bpacketsync_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/bpresync_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/bsync_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/detector_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/flexframesync_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/framesync64_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/gmskframesync_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/qdetector_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/math/bench/polyfit_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/bench/matrixf_inv_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/bench/matrixf_linsolve_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/bench/matrixf_mul_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/bench/smatrixf_mul_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/modem/bench/freqdem_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/modem/bench/freqmod_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/modem/bench/fskdem_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/modem/bench/fskmod_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/modem/bench/gmskmodem_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/modem/bench/modem_modulate_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/modem/bench/modem_demodulate_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/modem/bench/modem_demodsoft_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/bench/firpfbch_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/bench/firpfbch2_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/bench/firpfbchr_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/bench/ofdmframesync_acquire_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/bench/ofdmframesync_rxsymbol_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/nco/bench/nco_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/nco/bench/vco_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/quantization/bench/quantizer_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/quantization/bench/compander_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/random/bench/random_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/sequence/bench/bsequence_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/utility/bench/byte_utilities_benchmark.c
+    )
+
+set(BENCHMARKS_EXTRA
+    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_runbench.c
+    )
+
+if(BUILD_BENCHMARKS)
+    add_custom_command(
+        OUTPUT  benchmark_include.h
+        DEPENDS
+            ${PROJECT_BINARY_DIR}/autoscript
+            ${BENCHMARKS}
+        COMMAND ${PROJECT_BINARY_DIR}/autoscript / benchmark ${BENCHMARKS} > benchmark_include.h
+        )
+
+    # create output logging directory
+    #add_custom_command(
+    #    OUTPUT benchmark/logs
+    #    COMMAND mkdir -p benchmark/logs
+    #    )
+
+    #benchmark/logs
+    add_executable(benchmark
+        bench/bench.c
+        ${PROJECT_BINARY_DIR}/benchmark_include.h
+        ${BENCHMARKS}
+        ${BENCHMARKS_EXTRA}
+        )
+    target_include_directories(benchmark PRIVATE ${INCLUDE})
+    target_link_libraries(benchmark ${LIBNAME})
+endif(BUILD_BENCHMARKS)
+
+
+# ---------------------------------------- packaging ----------------------------------------
+
 set(CPACK_PACKAGE_NAME liquid)
 set(CPACK_PACKAGE_VENDOR liquidsdr)
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Software-Defined Radio Digital Signal Processing Library")
