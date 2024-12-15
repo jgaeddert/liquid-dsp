@@ -8,7 +8,7 @@ before_script:
   - apt-get -qq install -y --no-install-recommends build-essential cmake valgrind time curl
   - mkdir build
   - cd build
-  - cmake -DBUILD_TESTS=ON -DBUILD_EXAMPLES=ON ..
+  - cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=ON -DBUILD_EXAMPLES=ON ..
 
 # build from scratch
 compile:
@@ -26,12 +26,13 @@ install:
     #- make check-link
 
 # compile and run benchmark program
-.bench:
+bench:
   stage: test
   script:
-    - make -j4 bench
+    - make -j4
+    - ./benchmark -t 0.01
   artifacts:
-    paths: [benchmark.json]
+    paths: [build/benchmark.json]
 
 # run all test programs
 check:

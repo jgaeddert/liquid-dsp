@@ -42,13 +42,13 @@ project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
 #project(liquid VERSION 1.6.0 LANGUAGES C CXX)
 
 # options
-option(BUILD_TESTS    "Set to ON to build tests"              OFF)
 option(BUILD_EXAMPLES "Set to ON to build examples"           OFF)
+option(BUILD_AUTOTESTS  "Set to ON to build autotest program"  OFF)
+option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  OFF)
 #option(BUILD_DOCS     "Set to ON to build documentation"      OFF)
 #option(BUILD_BENCH    "Set to ON to build benchmarks"         OFF)
 #option(COVERAGE       "Set to ON to build with code coverage" OFF)
 #option(PROFILE        "Set to ON to build with profiling"     OFF)
-option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  OFF)
 
 # require a C99 compiler for all targets
 set(CMAKE_C_STANDARD 99)
@@ -688,49 +688,49 @@ set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/nco/tests/data/nco_sincos_fsqrt1_7.c
     )
 
-add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
-add_custom_command(
-    OUTPUT  autotest_include.h
-    DEPENDS
-        ${PROJECT_BINARY_DIR}/autoscript
+if(BUILD_AUTOTESTS)
+    add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
+    add_custom_command(
+        OUTPUT  autotest_include.h
+        DEPENDS
+            ${PROJECT_BINARY_DIR}/autoscript
+            ${AUTOTESTS}
+        COMMAND ${PROJECT_BINARY_DIR}/autoscript / autotest ${AUTOTESTS} > autotest_include.h
+        )
+
+    # need to create output logging directory
+    add_custom_command(
+        OUTPUT autotest/logs
+        COMMAND mkdir -p autotest/logs
+        )
+
+    add_executable(xautotest
+        autotest/xautotest.c
+        ${PROJECT_BINARY_DIR}/autotest_include.h
+        autotest/autotest.h
+        autotest/autotest.c
+        autotest/libliquid_autotest.c
+        autotest/logs
         ${AUTOTESTS}
-    COMMAND ${PROJECT_BINARY_DIR}/autoscript / autotest ${AUTOTESTS} > autotest_include.h
-    )
+        ${AUTOTEST_EXTRA}
+        )
+    target_include_directories(xautotest PRIVATE ${INCLUDE})
+    target_link_libraries(xautotest ${LIBNAME})
 
-# need to create output logging directory
-add_custom_command(
-    OUTPUT autotest/logs
-    COMMAND mkdir -p autotest/logs
-    )
+    if(COVERAGE)
+        message(STATUS "Code coverage: Enabled")
+        set_target_properties(xautotest
+            PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -g -fprofile-arcs -ftest-coverage"
+            LINK_FLAGS "-lgcov --coverage")
 
-add_executable(xautotest
-    autotest/xautotest.c
-    ${PROJECT_BINARY_DIR}/autotest_include.h
-    autotest/autotest.h
-    autotest/autotest.c
-    autotest/libliquid_autotest.c
-    autotest/logs
-    ${AUTOTESTS}
-    ${AUTOTEST_EXTRA}
-    )
-target_include_directories(xautotest PRIVATE ${INCLUDE})
-target_link_libraries(xautotest ${LIBNAME})
+    else(COVERAGE)
+        message(STATUS "Code coverage: Disabled")
+    endif(COVERAGE)
 
-if(COVERAGE)
-    message(STATUS "Code coverage: Enabled")
-    set_target_properties(xautotest
-        PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -g -fprofile-arcs -ftest-coverage"
-        LINK_FLAGS "-lgcov --coverage")
-
-else(COVERAGE)
-    message(STATUS "Code coverage: Disabled")
-endif(COVERAGE)
-
-# enable testing
-if(BUILD_TESTS)
+    # enable testing
     enable_testing()
     add_test(NAME test COMMAND test_libliquid)
-endif(BUILD_TESTS)
+endif(BUILD_AUTOTESTS)
 
 
 # ---------------------------------------- benchmarks ----------------------------------------
@@ -865,6 +865,6 @@ configure_file(src/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 #endforeach()
 
 # cmake config summary
-include(scripts/summary.cmake)
+include(cmake/summary.cmake)
 liquid_print_config_summary()
 
