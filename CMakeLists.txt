@@ -48,8 +48,12 @@ option(BUILD_AUTOTESTS  "Set to ON to build autotest program"   OFF)
 option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  OFF)
 #option(BUILD_DOCS     "Set to ON to build documentation"      OFF)
 #option(BUILD_BENCH    "Set to ON to build benchmarks"         OFF)
-#option(COVERAGE       "Set to ON to build with code coverage" OFF)
+option(COVERAGE       "Set to ON to build with code coverage" OFF)
 #option(PROFILE        "Set to ON to build with profiling"     OFF)
+
+if(COVERAGE)
+    set(CMAKE_BUILD_TYPE "Debug")
+endif(COVERAGE)
 
 # require a C99 compiler for all targets
 set(CMAKE_C_STANDARD 99)
@@ -381,6 +385,32 @@ add_library(${LIBNAME} SHARED
 
 target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
 
+if(COVERAGE)
+    target_compile_options(agc          PRIVATE -coverage -O0 -g)
+    target_compile_options(audio        PRIVATE -coverage -O0 -g)
+    target_compile_options(buffer       PRIVATE -coverage -O0 -g)
+    target_compile_options(channel      PRIVATE -coverage -O0 -g)
+    target_compile_options(dotprod      PRIVATE -coverage -O0 -g)
+    target_compile_options(equalization PRIVATE -coverage -O0 -g)
+    target_compile_options(fec          PRIVATE -coverage -O0 -g)
+    target_compile_options(fft          PRIVATE -coverage -O0 -g)
+    target_compile_options(filter       PRIVATE -coverage -O0 -g)
+    target_compile_options(framing      PRIVATE -coverage -O0 -g)
+    target_compile_options(math         PRIVATE -coverage -O0 -g)
+    target_compile_options(matrix       PRIVATE -coverage -O0 -g)
+    target_compile_options(modem        PRIVATE -coverage -O0 -g)
+    target_compile_options(multichannel PRIVATE -coverage -O0 -g)
+    target_compile_options(nco          PRIVATE -coverage -O0 -g)
+    target_compile_options(optim        PRIVATE -coverage -O0 -g)
+    target_compile_options(quantization PRIVATE -coverage -O0 -g)
+    target_compile_options(random       PRIVATE -coverage -O0 -g)
+    target_compile_options(sequence     PRIVATE -coverage -O0 -g)
+    target_compile_options(utility      PRIVATE -coverage -O0 -g)
+    target_compile_options(vector       PRIVATE -coverage -O0 -g)
+
+    target_compile_options(${LIBNAME} PRIVATE -coverage -O0 -g)
+    target_link_options(${LIBNAME} PRIVATE -coverage)
+endif(COVERAGE)
 target_link_libraries(${LIBNAME} c m)
 
 add_executable(test_libliquid examples/libliquid_example.c)
@@ -725,16 +755,11 @@ if(BUILD_AUTOTESTS)
         ${AUTOTEST_EXTRA}
         )
     target_include_directories(xautotest PRIVATE ${INCLUDE})
+
     target_link_libraries(xautotest ${LIBNAME})
-
     if(COVERAGE)
-        message(STATUS "Code coverage: Enabled")
-        set_target_properties(xautotest
-            PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -g -fprofile-arcs -ftest-coverage"
-            LINK_FLAGS "-lgcov --coverage")
-
-    else(COVERAGE)
-        message(STATUS "Code coverage: Disabled")
+        target_compile_options(xautotest PRIVATE -coverage -O0 -g)
+        target_link_options(xautotest PRIVATE -coverage)
     endif(COVERAGE)
 
     # enable testing
