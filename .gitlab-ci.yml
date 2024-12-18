@@ -53,7 +53,7 @@ coverage:
     - ./xautotest -v -o autotest.json
     - cd ..
     - gcovr --version
-    - gcovr --filter="src/.*/src/*.c" --print-summary
+    - gcovr --filter="src/.*/src/.*.c" --print-summary | tee coverage.out
   coverage: '/lines: \d+\.\d+%/'
   artifacts:
     paths: [coverage.out]
