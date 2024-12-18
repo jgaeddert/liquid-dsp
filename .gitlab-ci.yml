@@ -52,10 +52,11 @@ coverage:
     - make -j4
     - ./xautotest -v -o autotest.json
     - cd ..
+    - gcovr --version
     - gcovr --filter="src/.*/src/*.c" --print-summary
   coverage: '/lines: \d+\.\d+%/'
   artifacts:
-    paths: [build/coverage.out]
+    paths: [coverage.out]
 
 # compile and run documenation checks (e.g. example code in README.md)
 .check-doc:
