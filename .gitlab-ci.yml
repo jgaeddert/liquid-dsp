@@ -47,11 +47,14 @@ check:
 coverage:
   stage: test
   script:
-    - apt-get -qq install -y --no-install-recommends gcovr
     - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=ON ..
     - make -j4
     - ./xautotest -v -o autotest.json
     - cd ..
+    - apt-get -qq install -y --no-install-recommends virtualenv
+    - virtualenv coverage
+    - source codecov/bin/coverage
+    - pip install gcovr==7.0
     - gcovr --version
     - gcovr --filter="src/.*/src/.*.c" --print-summary | tee coverage.out
   coverage: '/lines: \d+\.\d+%/'
