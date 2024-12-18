@@ -43,7 +43,7 @@ check:
   artifacts:
     paths: [build/autotest.json]
 
-# generate coverage report (locally)
+# generate coverage report and push to codecov.io
 coverage:
   stage: test
   script:
@@ -54,9 +54,11 @@ coverage:
     - apt-get -qq install -y --no-install-recommends virtualenv
     - virtualenv coverage
     - source coverage/bin/activate
-    - pip install gcovr==7.0
+    - pip install codecov-cli gcovr==7.0
     - gcovr --version
     - gcovr --filter="src/.*/src/.*.c" --print-summary | tee coverage.out
+    - codecovcli --version
+    - codecovcli upload-process -t $CODECOV_TOKEN --git-service gitlab --slug jgaeddert/liquid-dsp
   coverage: '/lines: \d+\.\d+%/'
   artifacts:
     paths: [coverage.out]
