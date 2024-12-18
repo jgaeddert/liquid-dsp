@@ -47,6 +47,7 @@ check:
 coverage:
   stage: test
   script:
+    - apt-get -qq install -y --no-install-recommends gcovr
     - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=ON ..
     - make -j4
     - ./xautotest -v -o autotest.json
