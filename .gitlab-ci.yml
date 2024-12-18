@@ -51,7 +51,8 @@ coverage:
     - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=ON ..
     - make -j4
     - ./xautotest -v -o autotest.json
-    - gcovr --root=../ --exclude-directories=../src/*/tests --print-summary | tee coverage.out
+    - cd ..
+    - gcovr --filter="src/.*/src/*.c" --print-summary
   coverage: '/lines: \d+\.\d+%/'
   artifacts:
     paths: [build/coverage.out]
