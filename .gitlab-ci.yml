@@ -43,14 +43,14 @@ check:
   artifacts:
     paths: [build/autotest.json]
 
-# build from scratch
-.coverage:
+# generate coverage report (locally)
+coverage:
   stage: test
   script:
-    - make distclean
-    - ./bootstrap.sh
-    - ./configure --enable-coverage
-    - make -j4 coverage
+    - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=ON ..
+    - make -j4
+    - ./xautotest -v -o autotest.json
+    - gcovr --root=../ --exclude-directories=../src/*/tests --print-summary | tee coverage.out
   coverage: '/lines: \d+\.\d+%/'
   artifacts:
     paths: [coverage.out]
