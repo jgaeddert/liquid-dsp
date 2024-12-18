@@ -54,7 +54,7 @@ coverage:
     - gcovr --root=../ --exclude-directories=../src/*/tests --print-summary | tee coverage.out
   coverage: '/lines: \d+\.\d+%/'
   artifacts:
-    paths: [coverage.out]
+    paths: [build/coverage.out]
 
 # compile and run documenation checks (e.g. example code in README.md)
 .check-doc:
