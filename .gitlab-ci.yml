@@ -53,7 +53,7 @@ coverage:
     - cd ..
     - apt-get -qq install -y --no-install-recommends virtualenv
     - virtualenv coverage
-    - source codecov/bin/coverage
+    - source coverage/bin/activate
     - pip install gcovr==7.0
     - gcovr --version
     - gcovr --filter="src/.*/src/.*.c" --print-summary | tee coverage.out
