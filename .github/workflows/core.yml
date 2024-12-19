@@ -18,29 +18,28 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: setup
+    - name: setup (macos)
       if: runner.os == 'macos'
       run: |
         brew update
-        brew install autoconf automake
+        brew install cmake
+
+    - name: setup (linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update --fix-missing
+        sudo apt-get install -y --no-install-recommends cmake valgrind time curl
 
     #- name: Setup libfec
     #  run: git clone https://github.com/jgaeddert/libfec.git && cd libfec && ./configure && make && sudo make install
 
-    - name: bootstrap
-      run: ./bootstrap.sh
-
-    - name: configure
-      run: ./configure
-
-    - name: make
-      run: make -j 2
-
-    - name: make check-doc
-      run: make check-doc
-
-    - name: make check
-      run: make -j 2 check
+    - name: build
+      run: |
+        mkdir build
+        cd build
+        cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=ON -DBUILD_EXAMPLES=ON ..
+        make -j2
+        ./xautotest -v -o autotest.json
 
     - name: make install
       run: sudo make install
