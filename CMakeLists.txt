@@ -41,6 +41,21 @@ execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/version.sh
 project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
 #project(liquid VERSION 1.6.0 LANGUAGES C CXX)
 
+# options
+option(BUILD_EXAMPLES   "Set to ON to build examples"           OFF)
+option(BUILD_SANDBOX    "Set to ON to build sanbox programs"    OFF)
+option(BUILD_AUTOTESTS  "Set to ON to build autotest program"   OFF)
+option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  OFF)
+#option(BUILD_DOCS     "Set to ON to build documentation"      OFF)
+#option(BUILD_BENCH    "Set to ON to build benchmarks"         OFF)
+option(COVERAGE       "Set to ON to build with code coverage" OFF)
+#option(PROFILE        "Set to ON to build with profiling"     OFF)
+option(PYTHON           "Set to ON to build python bindings"   ON)
+
+if(COVERAGE)
+    set(CMAKE_BUILD_TYPE "Debug")
+endif(COVERAGE)
+
 # require a C99 compiler for all targets
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -370,7 +385,34 @@ add_library(${LIBNAME} SHARED
     $<TARGET_OBJECTS:vector>)
 
 target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
+#target_sources(${LIBNAME} PUBLIC FILE_SET HEADERS FILES include/liquid.h)
 
+if(COVERAGE)
+    target_compile_options(agc          PRIVATE -coverage -O0 -g)
+    target_compile_options(audio        PRIVATE -coverage -O0 -g)
+    target_compile_options(buffer       PRIVATE -coverage -O0 -g)
+    target_compile_options(channel      PRIVATE -coverage -O0 -g)
+    target_compile_options(dotprod      PRIVATE -coverage -O0 -g)
+    target_compile_options(equalization PRIVATE -coverage -O0 -g)
+    target_compile_options(fec          PRIVATE -coverage -O0 -g)
+    target_compile_options(fft          PRIVATE -coverage -O0 -g)
+    target_compile_options(filter       PRIVATE -coverage -O0 -g)
+    target_compile_options(framing      PRIVATE -coverage -O0 -g)
+    target_compile_options(math         PRIVATE -coverage -O0 -g)
+    target_compile_options(matrix       PRIVATE -coverage -O0 -g)
+    target_compile_options(modem        PRIVATE -coverage -O0 -g)
+    target_compile_options(multichannel PRIVATE -coverage -O0 -g)
+    target_compile_options(nco          PRIVATE -coverage -O0 -g)
+    target_compile_options(optim        PRIVATE -coverage -O0 -g)
+    target_compile_options(quantization PRIVATE -coverage -O0 -g)
+    target_compile_options(random       PRIVATE -coverage -O0 -g)
+    target_compile_options(sequence     PRIVATE -coverage -O0 -g)
+    target_compile_options(utility      PRIVATE -coverage -O0 -g)
+    target_compile_options(vector       PRIVATE -coverage -O0 -g)
+
+    target_compile_options(${LIBNAME} PRIVATE -coverage -O0 -g)
+    target_link_options(${LIBNAME} PRIVATE -coverage)
+endif(COVERAGE)
 target_link_libraries(${LIBNAME} c m)
 
 add_executable(test_libliquid examples/libliquid_example.c)
@@ -378,10 +420,10 @@ target_include_directories(test_libliquid PRIVATE ${INCLUDE})
 
 target_link_libraries(test_libliquid ${LIBNAME})
 
-set_property(TARGET ${LIBNAME} PROPERTY SOVERSION 1)
+set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
+
 
 # see: https://cmake.org/cmake/help/latest/command/install.html#examples
-# TODO: install headers
 # TODO: uninstall?
 install(TARGETS
           ${LIBNAME}
@@ -397,10 +439,24 @@ install(TARGETS
           #COMPONENT Development
         )
 
+install(FILES include/liquid.h DESTINATION include/liquid)
 
-#
-# autotest
-#
+
+# ---------------------------------------- examples ----------------------------------------
+
+# enable examples
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif(BUILD_EXAMPLES)
+
+# ---------------------------------------- sandbox ----------------------------------------
+
+# enable sandbox
+if(BUILD_SANDBOX)
+    add_subdirectory(sandbox)
+endif(BUILD_SANDBOX)
+
+# ---------------------------------------- autotest ----------------------------------------
 
 set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/autotest/null_autotest.c
@@ -675,53 +731,155 @@ set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/nco/tests/data/nco_sincos_fsqrt1_7.c
     )
 
-add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
-add_custom_command(
-    OUTPUT  autotest_include.h
-    DEPENDS
-        ${PROJECT_BINARY_DIR}/autoscript
+if(BUILD_AUTOTESTS)
+    add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
+    add_custom_command(
+        OUTPUT  autotest_include.h
+        DEPENDS
+            ${PROJECT_BINARY_DIR}/autoscript
+            ${AUTOTESTS}
+        COMMAND ${PROJECT_BINARY_DIR}/autoscript / autotest ${AUTOTESTS} > autotest_include.h
+        )
+
+    # need to create output logging directory
+    add_custom_command(
+        OUTPUT autotest/logs
+        COMMAND mkdir -p autotest/logs
+        )
+
+    add_executable(xautotest
+        autotest/xautotest.c
+        ${PROJECT_BINARY_DIR}/autotest_include.h
+        autotest/autotest.h
+        autotest/autotest.c
+        autotest/libliquid_autotest.c
+        autotest/logs
         ${AUTOTESTS}
-    COMMAND ${PROJECT_BINARY_DIR}/autoscript / autotest ${AUTOTESTS} > autotest_include.h
+        ${AUTOTEST_EXTRA}
+        )
+    target_include_directories(xautotest PRIVATE ${INCLUDE})
+
+    target_link_libraries(xautotest ${LIBNAME})
+    if(COVERAGE)
+        target_compile_options(xautotest PRIVATE -coverage -O0 -g)
+        target_link_options(xautotest PRIVATE -coverage)
+    endif(COVERAGE)
+
+    # enable testing
+    enable_testing()
+    add_test(NAME test COMMAND test_libliquid)
+endif(BUILD_AUTOTESTS)
+
+
+# ---------------------------------------- benchmarks ----------------------------------------
+
+set(BENCHMARKS
+    ${PROJECT_SOURCE_DIR}/bench/null_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/agc/bench/agc_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/audio/bench/cvsd_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/buffer/bench/cbuffercf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/buffer/bench/window_push_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/buffer/bench/window_read_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/bench/dotprod_cccf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/bench/dotprod_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/bench/dotprod_rrrf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/bench/sumsqf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/bench/sumsqcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/equalization/bench/eqlms_cccf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/equalization/bench/eqrls_cccf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fec/bench/crc_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fec/bench/fec_encode_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fec/bench/fec_decode_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fec/bench/fecsoft_decode_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fec/bench/sumproduct_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fec/bench/interleaver_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fec/bench/packetizer_decode_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_composite_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_prime_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_radix2_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_r2r_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fft/bench/spgramcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/fftfilt_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/firdecim_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/firhilb_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/firinterp_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/firfilt_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/iirdecim_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/iirfilt_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/iirinterp_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/rresamp_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/resamp_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/resamp2_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/filter/bench/symsync_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/presync_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/bpacketsync_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/bpresync_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/bsync_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/detector_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/flexframesync_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/framesync64_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/gmskframesync_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/framing/bench/qdetector_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/math/bench/polyfit_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/bench/matrixf_inv_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/bench/matrixf_linsolve_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/bench/matrixf_mul_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/bench/smatrixf_mul_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/modem/bench/freqdem_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/modem/bench/freqmod_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/modem/bench/fskdem_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/modem/bench/fskmod_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/modem/bench/gmskmodem_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/modem/bench/modem_modulate_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/modem/bench/modem_demodulate_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/modem/bench/modem_demodsoft_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/bench/firpfbch_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/bench/firpfbch2_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/bench/firpfbchr_crcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/bench/ofdmframesync_acquire_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/bench/ofdmframesync_rxsymbol_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/nco/bench/nco_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/nco/bench/vco_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/quantization/bench/quantizer_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/quantization/bench/compander_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/random/bench/random_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/sequence/bench/bsequence_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/utility/bench/byte_utilities_benchmark.c
     )
 
-# need to create output logging directory
-add_custom_command(
-    OUTPUT autotest/logs
-    COMMAND mkdir -p autotest/logs
+set(BENCHMARKS_EXTRA
+    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_runbench.c
     )
 
-add_executable(xautotest
-    autotest/xautotest.c
-    ${PROJECT_BINARY_DIR}/autotest_include.h
-    autotest/autotest.h
-    autotest/autotest.c
-    autotest/libliquid_autotest.c
-    autotest/logs
-    ${AUTOTESTS}
-    ${AUTOTEST_EXTRA}
-    )
-target_include_directories(xautotest PRIVATE ${INCLUDE})
-target_link_libraries(xautotest ${LIBNAME})
+if(BUILD_BENCHMARKS)
+    add_custom_command(
+        OUTPUT  benchmark_include.h
+        DEPENDS
+            ${PROJECT_BINARY_DIR}/autoscript
+            ${BENCHMARKS}
+        COMMAND ${PROJECT_BINARY_DIR}/autoscript / benchmark ${BENCHMARKS} > benchmark_include.h
+        )
 
-#add_executable(xautotest autotest/xautotest.c autotest/autotest.h autotest_include.h)
-#target_include_directories(xautotest PRIVATE ${INCLUDE})
+    # create output logging directory
+    #add_custom_command(
+    #    OUTPUT benchmark/logs
+    #    COMMAND mkdir -p benchmark/logs
+    #    )
 
-#
-# testing
-#
-
-# enable testing
-enable_testing()
-add_test(NAME test COMMAND test_libliquid)
-
-#
-# examples
-#
-#set_source_files_properties(DIRECTORY examples TARGET_DIRECTORY examples)
-add_subdirectory(examples)
+    #benchmark/logs
+    add_executable(benchmark
+        bench/bench.c
+        ${PROJECT_BINARY_DIR}/benchmark_include.h
+        ${BENCHMARKS}
+        ${BENCHMARKS_EXTRA}
+        )
+    target_include_directories(benchmark PRIVATE ${INCLUDE})
+    target_link_libraries(benchmark ${LIBNAME})
+endif(BUILD_BENCHMARKS)
 
 
-# packaging
+# ---------------------------------------- packaging ----------------------------------------
+
 set(CPACK_PACKAGE_NAME liquid)
 set(CPACK_PACKAGE_VENDOR liquidsdr)
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Software-Defined Radio Digital Signal Processing Library")
@@ -737,56 +895,60 @@ include(CPack)
 # this file can only use the @VARIABLE@ syntax
 configure_file(src/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 
-#
-# python binding
-#
-set(PYBIND11_NEWPYTHON ON)
-find_package(pybind11 CONFIG REQUIRED)
+# ---------------------------------------- python bindings ----------------------------------------
 
-set(LIBNAME_PYTHON pyliquid)
-pybind11_add_module(${LIBNAME_PYTHON} MODULE
-    bind/liquid.python.cc
-    ${LIBSRC}
-    $<TARGET_OBJECTS:agc>
-    $<TARGET_OBJECTS:audio>
-    $<TARGET_OBJECTS:buffer>
-    $<TARGET_OBJECTS:channel>
-    $<TARGET_OBJECTS:dotprod>
-    $<TARGET_OBJECTS:equalization>
-    $<TARGET_OBJECTS:fec>
-    $<TARGET_OBJECTS:fft>
-    $<TARGET_OBJECTS:filter>
-    $<TARGET_OBJECTS:framing>
-    $<TARGET_OBJECTS:math>
-    $<TARGET_OBJECTS:matrix>
-    $<TARGET_OBJECTS:modem>
-    $<TARGET_OBJECTS:multichannel>
-    $<TARGET_OBJECTS:nco>
-    $<TARGET_OBJECTS:optim>
-    $<TARGET_OBJECTS:quantization>
-    $<TARGET_OBJECTS:random>
-    $<TARGET_OBJECTS:sequence>
-    $<TARGET_OBJECTS:utility>
-    $<TARGET_OBJECTS:vector>)
+if(PYTHON)
+    set(PYBIND11_NEWPYTHON ON)
+    find_package(pybind11 CONFIG REQUIRED)
 
-# Use different names for cmake target and output file since we cannot use
-# the cmake target 'liquid' more than once, but we also want the python package
-# to called 'liquid' and not something odd like 'pyliquid'
-# see: https://stackoverflow.com/questions/67212833/python-library-and-cmake-target-with-the-same-name#67226146
-set_target_properties(${LIBNAME_PYTHON} PROPERTIES OUTPUT_NAME liquid)
+    set(LIBNAME_PYTHON pyliquid)
+    pybind11_add_module(${LIBNAME_PYTHON} MODULE
+        bind/liquid.python.cc
+        ${LIBSRC}
+        $<TARGET_OBJECTS:agc>
+        $<TARGET_OBJECTS:audio>
+        $<TARGET_OBJECTS:buffer>
+        $<TARGET_OBJECTS:channel>
+        $<TARGET_OBJECTS:dotprod>
+        $<TARGET_OBJECTS:equalization>
+        $<TARGET_OBJECTS:fec>
+        $<TARGET_OBJECTS:fft>
+        $<TARGET_OBJECTS:filter>
+        $<TARGET_OBJECTS:framing>
+        $<TARGET_OBJECTS:math>
+        $<TARGET_OBJECTS:matrix>
+        $<TARGET_OBJECTS:modem>
+        $<TARGET_OBJECTS:multichannel>
+        $<TARGET_OBJECTS:nco>
+        $<TARGET_OBJECTS:optim>
+        $<TARGET_OBJECTS:quantization>
+        $<TARGET_OBJECTS:random>
+        $<TARGET_OBJECTS:sequence>
+        $<TARGET_OBJECTS:utility>
+        $<TARGET_OBJECTS:vector>)
 
-# enable python extensions to C++ classes
-target_compile_definitions(${LIBNAME_PYTHON} PUBLIC LIQUID_PYTHONLIB)
-# pull version info from top of this file
-target_compile_definitions(${LIBNAME_PYTHON} PRIVATE VERSION_INFO="${liquid_VERSION}")
+    # Use different names for cmake target and output file since we cannot use
+    # the cmake target 'liquid' more than once, but we also want the python package
+    # to called 'liquid' and not something odd like 'pyliquid'
+    # see: https://stackoverflow.com/questions/67212833/python-library-and-cmake-target-with-the-same-name#67226146
+    set_target_properties(${LIBNAME_PYTHON} PROPERTIES OUTPUT_NAME liquid)
 
-install(TARGETS ${LIBNAME_PYTHON} LIBRARY DESTINATION .)
+    # enable python extensions to C++ classes
+    target_compile_definitions(${LIBNAME_PYTHON} PUBLIC LIQUID_PYTHONLIB)
+    # pull version info from top of this file
+    target_compile_definitions(${LIBNAME_PYTHON} PRIVATE VERSION_INFO="${liquid_VERSION}")
 
+    install(TARGETS ${LIBNAME_PYTHON} LIBRARY DESTINATION .)
+endif(PYTHON)
 
-# dump a (sorted) list of cmake variables
-get_cmake_property(_variableNames VARIABLES)
-list (SORT _variableNames)
-foreach (_variableName ${_variableNames})
-    message(STATUS "${_variableName}=${${_variableName}}")
-endforeach()
+## dump a (sorted) list of cmake variables
+#get_cmake_property(_variableNames VARIABLES)
+#list (SORT _variableNames)
+#foreach (_variableName ${_variableNames})
+#    message(STATUS "${_variableName}=${${_variableName}}")
+#endforeach()
+
+# cmake config summary
+#include(cmake/summary.cmake)
+#liquid_print_config_summary()
 
