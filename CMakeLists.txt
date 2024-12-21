@@ -384,6 +384,7 @@ add_library(${LIBNAME} SHARED
     $<TARGET_OBJECTS:vector>)
 
 target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
+#target_sources(${LIBNAME} PUBLIC FILE_SET HEADERS FILES include/liquid.h)
 
 if(COVERAGE)
     target_compile_options(agc          PRIVATE -coverage -O0 -g)
@@ -420,8 +421,8 @@ target_link_libraries(test_libliquid ${LIBNAME})
 
 set_property(TARGET ${LIBNAME} PROPERTY SOVERSION 1)
 
+
 # see: https://cmake.org/cmake/help/latest/command/install.html#examples
-# TODO: install headers
 # TODO: uninstall?
 install(TARGETS
           ${LIBNAME}
@@ -436,6 +437,8 @@ install(TARGETS
         #FILE_SET HEADERS  # Following options apply to file set HEADERS.
           #COMPONENT Development
         )
+
+install(FILES include/liquid.h DESTINATION include/liquid)
 
 
 # ---------------------------------------- examples ----------------------------------------
