@@ -113,7 +113,7 @@ void autotest_iirfilt_dcblock()
         {.fmin=+0.200f, .fmax=+0.500f, .pmin=-tol, .pmax=+tol, .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
-        liquid_autotest_verbose ? "iirfilt_dcblock.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/iirfilt_dcblock.m" : NULL);
 
     // destroy objects
     spgramcf_destroy(q);
