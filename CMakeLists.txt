@@ -419,7 +419,7 @@ target_include_directories(test_libliquid PRIVATE ${INCLUDE})
 
 target_link_libraries(test_libliquid ${LIBNAME})
 
-set_property(TARGET ${LIBNAME} PROPERTY SOVERSION 1)
+set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
 
 
 # see: https://cmake.org/cmake/help/latest/command/install.html#examples
