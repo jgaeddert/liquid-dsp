@@ -1,5 +1,4 @@
-// Tests library versioning.
-
+// test library versioning
 #include <stdio.h>
 #include <stdlib.h>
 #include "liquid.h"
@@ -14,6 +13,5 @@ int main() {
     printf("  patch                     :   %d\n", LIQUID_VERSION_PATCH);
     printf("liquid libversion           :   %s\n", liquid_libversion());
     printf("liquid libversion number    : 0x%.8x\n", liquid_libversion_number());
-
     return 0;
 }

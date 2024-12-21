@@ -1,5 +1,18 @@
+# gitlab ci/cd pipeline configuration
+stages:
+  - build
+  - test
+  - bind
+
+# deploy
+
+before_script:
+  - apt-get -qq update
+  - apt-get -qq install -y --no-install-recommends build-essential cmake valgrind time curl
+  - mkdir build
 
 build:
+  stage: build
   image: debian
   variables:
     DEBIAN_FRONTEND: noninteractive
@@ -24,55 +37,33 @@ build:
   artifacts:
     paths: [build/autotest.json]
 
-linux:
-  when: manual
-  image: python:3.12
-  # make a docker daemon available for cibuildwheel to use
-  services:
-    - name: docker:dind
-      entrypoint: ["env", "-u", "DOCKER_HOST"]
-      command: ["dockerd-entrypoint.sh"]
-  variables:
-    DOCKER_HOST: tcp://docker:2375/
-    DOCKER_DRIVER: overlay2
-    # See https://github.com/docker-library/docker/pull/166
-    DOCKER_TLS_CERTDIR: ""
+# test installation and linking appropriately
+.install:
+  stage: test
   script:
-    - curl -sSL https://get.docker.com/ | sh
-    - python -m pip install cibuildwheel==2.20.0
-    - cibuildwheel --output-dir wheelhouse
-  artifacts:
-    paths:
-      - wheelhouse/
+    - make -j4
+    - make install
+    - ldconfig
+    - cd ..
+    - make -f scripts/liquid_linker_test.mk
 
-.macos:
-  when: manual
-  image: macos-14-xcode-15
-  before_script:
-    - python3 -m pip install cibuildwheel==2.20.0
+# compile and run benchmark program
+.bench:
+  stage: test
   script:
-    - python3 -m cibuildwheel --output-dir wheelhouse
+    - make -j4
+    - ./benchmark -t 0.01
   artifacts:
-    paths:
-      - wheelhouse/
-  tags:
-    - saas-macos-medium-m1
+    paths: [build/benchmark.json]
 
-windows:
-  when: manual
-  image: mcr.microsoft.com/windows/servercore:1809
-  before_script:
-    - choco install python -y --version 3.12.4
-    - choco install git.install -y
-    - py -m pip install cibuildwheel==2.20.0
+# run all test programs
+.check:
+  stage: test
   script:
-    - py -m cibuildwheel --output-dir wheelhouse --platform windows
+    - make -j4
+    - ./xautotest -v -o autotest.json
   artifacts:
-    paths:
-      - wheelhouse/
-  tags:
-    - saas-windows-medium-amd64
-
+    paths: [build/autotest.json]
 
 # compile and run all example programs, timing how long each takes to run
 .examples:
@@ -84,6 +75,25 @@ windows:
     - /bin/sh run_examples.sh
   artifacts:
     paths: [run_examples.sh, time.txt]
+
+# generate coverage report and push to codecov.io
+coverage:
+  stage: test
+  script:
+    - apt -qq update
+    - apt -qq install -y --no-install-recommends build-essential cmake virtualenv
+    - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=ON -DPYTHON=OFF ..
+    - make -j4
+    - ./xautotest -v -o autotest.json
+    - cd ..
+    - virtualenv coverage
+    - source coverage/bin/activate
+    - pip install codecov-cli gcovr==7.0
+    - gcovr --version
+    - gcovr --filter="src/.*/src/.*.c" --print-summary | tee coverage.out
+    - codecovcli --version
+    - codecovcli upload-process -t $CODECOV_TOKEN --git-service gitlab --slug jgaeddert/liquid-dsp
+  coverage: '/lines: \d+\.\d+%/'
 
 # compile and run all example programs with valgrind
 # TODO: ensure no errors
@@ -108,21 +118,56 @@ windows:
   artifacts:
     paths: [valgrind/*]
 
-# build from scratch
-.coverage:
-  stage: test
+linux:
+  stage: bind
+  when: manual
+  image: python:3.12
+  # make a docker daemon available for cibuildwheel to use
+  services:
+    - name: docker:dind
+      entrypoint: ["env", "-u", "DOCKER_HOST"]
+      command: ["dockerd-entrypoint.sh"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    # See https://github.com/docker-library/docker/pull/166
+    DOCKER_TLS_CERTDIR: ""
   script:
-    - make distclean
-    - ./bootstrap.sh
-    - ./configure --enable-coverage
-    - make -j4 coverage
-    #- curl -Os http://cli.codecov.io/latest/linux/codecov
-    #- chmod +x codecov
-    #- ./codecov --version
-    #- ./codecov upload-process -t $CODECOV_TOKEN --git-service gitlab --slug jgaeddert/liquid-dsp
-    - bash <(curl -s https://codecov.io/bash)
-
-  coverage: '/lines: \d+\.\d+%/'
+    - curl -sSL https://get.docker.com/ | sh
+    - python -m pip install cibuildwheel==2.20.0
+    - cibuildwheel --output-dir wheelhouse
   artifacts:
-    paths: [coverage.out]
+    paths:
+      - wheelhouse/
+
+macos:
+  stage: bind
+  when: manual
+  image: macos-14-xcode-15
+  before_script:
+    - python3 -m pip install cibuildwheel==2.20.0
+  script:
+    - python3 -m cibuildwheel --output-dir wheelhouse
+  artifacts:
+    paths:
+      - wheelhouse/
+  tags:
+    - saas-macos-medium-m1
+
+windows:
+  stage: bind
+  when: manual
+  image: mcr.microsoft.com/windows/servercore:1809
+  before_script:
+    - choco install python -y --version 3.12.4
+    - choco install git.install -y
+    - py -m pip install cibuildwheel==2.20.0
+  script:
+    - py -m cibuildwheel --output-dir wheelhouse --platform windows
+  artifacts:
+    paths:
+      - wheelhouse/
+  tags:
+    - saas-windows-medium-amd64
+
 

@@ -18,16 +18,17 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup environment (macOS)
+    - name: setup (macos)
       if: runner.os == 'macos'
       run: |
         brew update
-        brew install autoconf automake pybind11 virtualenv
+        brew install cmake pybind11 virtualenv
 
-    - name: Setup environment (Linux)
+    - name: setup (linux)
       if: runner.os == 'Linux'
       run: |
-        sudo apt-get install -y --no-install-recommends build-essential pybind11-dev virtualenv python3-dev
+        sudo apt-get update --fix-missing
+        sudo apt-get install -y --no-install-recommends build-essential cmake pybind11-dev virtualenv python3-dev
 
     #- name: Setup libfec
     #  run: git clone https://github.com/jgaeddert/libfec.git && cd libfec && ./configure && make && sudo make install
@@ -48,4 +49,21 @@ jobs:
         #make check-link
         #make doc-check
         #make bench
+
+    - name: install
+      run: |
+        cd build
+        sudo make install
+
+    - name: check installation (macos)
+      if: runner.os == 'macos'
+      run: |
+        gcc -Wall -O2 -rpath /usr/local/lib -o liquid_linker_test scripts/liquid_linker_test.c -lm -lc -lliquid
+        ./liquid_linker_test
+
+    - name: check installation (linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo ldconfig
+        make -f scripts/liquid_linker_test.mk
 
