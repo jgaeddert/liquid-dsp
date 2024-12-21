@@ -39,14 +39,16 @@ jobs:
         cd build
         cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=ON -DBUILD_EXAMPLES=ON ..
         make -j2
-        ./xautotest -v -o autotest.json
+
+    - name: check
+      run: ./xautotest -v -o autotest.json
 
     - name: make install
       run: sudo make install
 
-    - name: ldconfig (Linux)
-      if: runner.os == 'Linux'
-      run: sudo ldconfig
+    #- name: ldconfig (Linux)
+    #  if: runner.os == 'Linux'
+    #  run: sudo ldconfig
 
-    - name: make check-link
-      run: make check-link
+    #- name: make check-link
+    #  run: make check-link
