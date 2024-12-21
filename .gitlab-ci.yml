@@ -23,7 +23,7 @@ install:
     - make -j4
     - make install
     - ldconfig
-    #- make check-link
+    - make -f scripts/liquid_linker_test.mk
 
 # compile and run benchmark program
 bench:

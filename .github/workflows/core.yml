@@ -50,9 +50,10 @@ jobs:
         cd build
         sudo make install
 
-    #- name: ldconfig (Linux)
-    #  if: runner.os == 'Linux'
-    #  run: sudo ldconfig
+    - name: ldconfig (Linux)
+      if: runner.os == 'Linux'
+      run: sudo ldconfig
 
-    #- name: make check-link
-    #  run: make check-link
+    - name: check installation
+      run: make -f scripts/liquid_linker_test.mk
+
