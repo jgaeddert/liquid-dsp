@@ -7,6 +7,7 @@ on:
     branches:
       - master
       - coverage-dev
+      - cmake-dev
 
 jobs:
   standard:
