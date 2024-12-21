@@ -41,10 +41,14 @@ jobs:
         make -j2
 
     - name: check
-      run: ./xautotest -v -o autotest.json
+      run: |
+        cd build
+        ./xautotest -v -o autotest.json
 
     - name: make install
-      run: sudo make install
+      run: |
+        cd build
+        sudo make install
 
     #- name: ldconfig (Linux)
     #  if: runner.os == 'Linux'
