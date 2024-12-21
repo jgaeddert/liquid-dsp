@@ -23,7 +23,6 @@ build:
     - virtualenv env/liquid
     - source env/liquid/bin/activate
     - pip install -r requirements.txt
-    - mkdir build
     - cd build
     - cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=ON -DBUILD_EXAMPLES=ON -DPYTHON=ON ..
     - make
@@ -41,6 +40,8 @@ build:
 .install:
   stage: test
   script:
+    - cd build
+    - cmake ..
     - make -j4
     - make install
     - ldconfig
@@ -51,6 +52,8 @@ build:
 .bench:
   stage: test
   script:
+    - cd build
+    - cmake ..
     - make -j4
     - ./benchmark -t 0.01
   artifacts:
@@ -60,6 +63,8 @@ build:
 .check:
   stage: test
   script:
+    - cd build
+    - cmake ..
     - make -j4
     - ./xautotest -v -o autotest.json
   artifacts:
@@ -69,6 +74,8 @@ build:
 .examples:
   stage: test
   script:
+    - cd build
+    - cmake ..
     - make -j4 examples
     - echo '' > time.txt
     - ls examples/*_example | sed -E "s#(.*)#echo '\1' >> time.txt; { time -p ./\1 ; } 2>> time.txt#g" > run_examples.sh
@@ -83,6 +90,7 @@ coverage:
     - apt -qq update
     - apt -qq install -y --no-install-recommends build-essential cmake virtualenv
     - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=ON -DPYTHON=OFF ..
+    - cd build
     - make -j4
     - ./xautotest -v -o autotest.json
     - cd ..
@@ -100,6 +108,8 @@ coverage:
 .examples-memcheck:
   stage: test
   script:
+    - cd build
+    - cmake ..
     - make -j4 examples
     # setting --track-origins=yes gives more detail but takes longer than gitlab allows
     - ls examples/*_example | sed -E "s#examples/(.*)#valgrind --tool=memcheck --log-file=examples/\1.log ./examples/\1#g" > run_examples_valgrind.sh
@@ -112,6 +122,8 @@ coverage:
 .autotest-memcheck:
   stage: test
   script:
+    - cd build
+    - cmake ..
     - make -j4 xautotest
     - mkdir valgrind
     - ./scripts/valgrind_eval.py -output valgrind -test 881
