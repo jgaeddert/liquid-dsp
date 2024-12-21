@@ -1,35 +1,4 @@
-# Copyright (c) 2007 - 2024 Joseph Gaeddert
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
-#
-# CMake build file for liquid-dsp
-#   $ mkdir build && cd build
-#   $ cmake ..
-#   $ make
-#
-# run autotest scripts
-#   $ make check
-#
-# install
-#   $ sudo make install
-#
-
+# cmake build file for liquid-dsp
 cmake_minimum_required(VERSION 3.10)
 
 # run custom command to parse version number from include/liquid.h
@@ -41,19 +10,21 @@ execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/version.sh
 project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
 #project(liquid VERSION 1.6.0 LANGUAGES C CXX)
 
-# options
-option(BUILD_EXAMPLES   "Set to ON to build examples"           OFF)
-option(BUILD_SANDBOX    "Set to ON to build sanbox programs"    OFF)
-option(BUILD_AUTOTESTS  "Set to ON to build autotest program"   OFF)
-option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  OFF)
+# ---------------------------------------- options ----------------------------------------
+
+option(BUILD_EXAMPLES   "Set to ON to build examples"           ON)
+option(BUILD_SANDBOX    "Set to ON to build sanbox programs"    ON)
+option(BUILD_AUTOTESTS  "Set to ON to build autotest program"   ON)
+option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  ON)
 #option(BUILD_DOCS     "Set to ON to build documentation"      OFF)
-#option(BUILD_BENCH    "Set to ON to build benchmarks"         OFF)
 option(COVERAGE       "Set to ON to build with code coverage" OFF)
 #option(PROFILE        "Set to ON to build with profiling"     OFF)
 
 if(COVERAGE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif(COVERAGE)
+
+set(LIBNAME liquid)
 
 # require a C99 compiler for all targets
 set(CMAKE_C_STANDARD 99)
@@ -62,13 +33,6 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 14 CACHE STRING "C++ version selection")  # or 11, 14, 17, 20
 set(CMAKE_CXX_STANDARD_REQUIRED ON)  # optional, ensure standard is supported
 #set(CMAKE_CXX_EXTENSIONS OFF)  # optional, keep compiler extensions off
-
-# cmake debugging
-#variable_watch(HAVE_SINF)
-#set(CMAKE_VERBOSE_MAKEFILE ON)
-
-#cmake_host_system_information(RESULT info QUERY NUMBER_OF_LOGICAL_CORES)
-#message(${info})
 
 include (CheckIncludeFile)
 include (CheckFunctionExists)
@@ -92,60 +56,16 @@ endif()
 # smmintrin.h
 # arm_neon.h
 # fftw3.h (bench/fftbench.c)
-# configu.guess:
-#   features.h
-#   signal.h
-#   stdarg.h
-#   sys/stdarg.h
-#   sys/param.h
-#   sys/utsname.h
-#   sys/types.h
-#check_include_file      (assert.h         HAVE_ASSERT_H)
-#check_include_file      (complex.h        HAVE_COMPLEX_H)
-#check_include_file      (float.h          HAVE_FLOAT_H)
-#check_include_file      (getopt.h         HAVE_GETOPT_H)
-#check_include_file      (inttypes.h       HAVE_INTTYPES_H)
-#check_include_file      (limits.h         HAVE_LIMITS_H)
-#check_include_file      (math.h           HAVE_MATH_H)
-#check_include_file      (stdio.h          HAVE_STDIO_H)
-#check_include_file      (stdint.h         HAVE_STDINT_H)
-#check_include_file      (stdlib.h         HAVE_STDLIB_H)
-#check_include_file      (string.h         HAVE_STRING_H)
-#check_include_file      (sys/resource.h   HAVE_SYS_RESOURCE_H)
-#check_include_file      (time.h           HAVE_TIME_H)
-#check_include_file      (unistd.h         HAVE_UNISTD_H)
-
-# check for necessary functions/symbols
-#check_symbol_exists     (malloc,    "stlib.h"   HAVE_MALLOC)
-#check_symbol_exists     (realloc,   "stlib.h"   HAVE_REALLOC)
-#check_symbol_exists     (free,      "stlib.h"   HAVE_FREE)
-#check_symbol_exists     (memset,    "string.h"  HAVE_MEMSET)
-#check_symbol_exists     (memmove,   "string.h"  HAVE_MEMMOVE)
-#check_symbol_exists     (sinf,      "math.h"    HAVE_SINF)
-#check_symbol_exists     (cosf,      "math.h"    HAVE_COSF)
-#check_symbol_exists     (expf,      "math.h"    HAVE_EXPF)
-#check_symbol_exists     (sqrtf      "math.h"    HAVE_SQRTF)
-#check_symbol_exists     (cargf,     "complex.h" HAVE_CARGF)
-#check_symbol_exists     (cexpf,     "complex.h" HAVE_CEXPF)
-#check_symbol_exists     (crealf,    "complex.h" HAVE_CREALF)
-#check_symbol_exists     (cimagf,    "complex.h" HAVE_CIMAGF)
-
 
 include (CheckTypeSize)
 check_type_size(int SIZEOF_INT LANGUAGE C)
 
 configure_file(config.h.cmake config.h)
 
-################################################################################
-# Targets
-#  
-#  include_directories (${CMAKE_CURRENT_SOURCE_DIR})
-#  include_directories (${CMAKE_CURRENT_BINARY_DIR})
-
 #target_include_directories(test PRIVATE include)
 include_directories(include .)
 
-# libraries
+# ---------------------------------------- main sources ----------------------------------------
 
 add_library(agc OBJECT
     src/agc/src/agc_crcf.c
@@ -349,16 +269,13 @@ add_library(vector OBJECT
 
 
 
-#
-# main library
-#
+# ---------------------------------------- main library ----------------------------------------
 
 # necessary to include this for the generated "config.h" header
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(LIBSRC src/libliquid.c)
 
-set(LIBNAME liquid)
 add_library(${LIBNAME} SHARED
     ${LIBSRC}
     $<TARGET_OBJECTS:agc>
@@ -901,6 +818,8 @@ configure_file(src/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 #foreach (_variableName ${_variableNames})
 #    message(STATUS "${_variableName}=${${_variableName}}")
 #endforeach()
+
+# ---------------------------------------- summary ----------------------------------------
 
 # cmake config summary
 include(cmake/summary.cmake)
