@@ -22,7 +22,7 @@ jobs:
       if: runner.os == 'macos'
       run: |
         brew update
-        brew install autoconf automake pybind11 virtualenv
+        brew install cmake pybind11 virtualenv
 
     - name: Setup environment (Linux)
       if: runner.os == 'Linux'
@@ -39,7 +39,7 @@ jobs:
         python -m pip install pybind11 numpy matplotlib
         mkdir build
         cd build
-        cmake ..
+        cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=ON -DBUILD_EXAMPLES=ON -DPYTHON=ON ..
         make
         ./xautotest -v -o autotest.json
         python3 -c "import liquid as dsp; print('liquid-dsp python version:',dsp.__version__)"
