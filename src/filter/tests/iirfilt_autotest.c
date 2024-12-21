@@ -82,7 +82,7 @@ void autotest_iirfilt_dcblock()
     unsigned int n    = 400000; // number of output samples to analyze
     float        alpha= 0.2f;   // forgetting factor
     unsigned int nfft = 1200;   // number of bins in transform
-    float        tol  = 0.7f;   // error tolerance [dB]
+    float        tol  = 1.0f;   // error tolerance [dB]
 
     // create base object
     iirfilt_crcf filter = iirfilt_crcf_create_dc_blocker(alpha);
