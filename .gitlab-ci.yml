@@ -5,6 +5,9 @@ stages:
   - build
   - test
 
+variables:
+  DEBIAN_FRONTEND: noninteractive
+
 before_script:
   - apt-get -qq update
   - apt-get -qq install -y --no-install-recommends build-essential cmake valgrind time curl
