@@ -1,56 +1,45 @@
-# base configuration
+# gitlab ci/cd pipeline configuration
 image: debian
+
 stages:
   - build
   - test
+
 before_script:
   - apt-get -qq update
   - apt-get -qq install -y --no-install-recommends build-essential cmake valgrind time curl
-  - mkdir build
-  - cd build
-  - cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=ON -DBUILD_EXAMPLES=ON ..
 
-# build from scratch
-compile:
+# build main library and run test programs
+build:
   stage: build
   script:
+    - rm -rf build
+    - mkdir build
+    - cd build
+    - cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=ON -DBUILD_EXAMPLES=ON -DBUILD_SANDBOX=ON -DCOVERAGE=OFF ..
     - make -j4
-
-# test installation and linking appropriately
-install:
-  stage: test
-  script:
-    - make -j4
+    - ./benchmark -q -o benchmark.json -t 0.01
+    - ./xautotest -q -o autotest.json
+    #- make check-doc # compile and run documenation checks (e.g. example code in README.md)
     - make install
     - ldconfig
     - cd ..
     - make -f scripts/liquid_linker_test.mk
-
-# compile and run benchmark program
-bench:
-  stage: test
-  script:
-    - make -j4
-    - ./benchmark -t 0.01
   artifacts:
-    paths: [build/benchmark.json]
-
-# run all test programs
-check:
-  stage: test
-  script:
-    - make -j4
-    - ./xautotest -v -o autotest.json
-  artifacts:
-    paths: [build/autotest.json]
+    paths:
+      - build/benchmark.json
+      - build/autotest.json
 
 # generate coverage report and push to codecov.io
 coverage:
   stage: test
   script:
-    - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=ON ..
+    - rm -rf build
+    - mkdir build
+    - cd build
+    - cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_SANDBOX=OFF -DCOVERAGE=ON ..
     - make -j4
-    - ./xautotest -v -o autotest.json
+    - ./xautotest -q -o autotest.json
     - cd ..
     - apt-get -qq install -y --no-install-recommends virtualenv
     - virtualenv coverage
@@ -62,13 +51,9 @@ coverage:
     - codecovcli upload-process -t $CODECOV_TOKEN --git-service gitlab --slug jgaeddert/liquid-dsp
   coverage: '/lines: \d+\.\d+%/'
   artifacts:
-    paths: [coverage.out]
-
-# compile and run documenation checks (e.g. example code in README.md)
-.check-doc:
-  stage: test
-  script:
-    - make check-doc
+    paths:
+      - coverage.out
+      - build/autotest.json
 
 # compile and run all example programs, timing how long each takes to run
 .examples:
@@ -90,23 +75,4 @@ coverage:
     - ./scripts/valgrind_eval.py -output valgrind -test 881
   artifacts:
     paths: [valgrind/*]
-
-# build from scratch
-.coverage:
-  stage: test
-  script:
-    - apt-get -qq install -y --no-install-recommends virtualenv
-    - virtualenv codecov
-    - source codecov/bin/activate
-    - pip install codecov-cli
-    - make distclean
-    - ./bootstrap.sh
-    - ./configure --enable-coverage
-    - make -j4 coverage
-    - codecovcli --version
-    - codecovcli upload-process -t $CODECOV_TOKEN --git-service gitlab --slug jgaeddert/liquid-dsp
-
-  coverage: '/lines: \d+\.\d+%/'
-  artifacts:
-    paths: [coverage.out]
 
