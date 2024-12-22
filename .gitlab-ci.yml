@@ -152,7 +152,7 @@ linux:
     paths:
       - wheelhouse/
 
-macos:
+.macos:
   stage: bind
   when: manual
   image: macos-14-xcode-15
