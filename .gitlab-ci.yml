@@ -89,8 +89,8 @@ coverage:
   script:
     - apt -qq update
     - apt -qq install -y --no-install-recommends build-essential cmake virtualenv
-    - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=ON -DPYTHON=OFF ..
     - cd build
+    - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=ON -DPYTHON=OFF ..
     - make -j4
     - ./xautotest -v -o autotest.json
     - cd ..
