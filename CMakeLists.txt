@@ -92,7 +92,9 @@ add_library(buffer OBJECT
 add_library(channel OBJECT
     src/channel/src/channel_cccf.c)
 
-add_library(dotprod OBJECT
+add_library(dotprod OBJECT)
+
+target_sources(dotprod PUBLIC
     src/dotprod/src/dotprod_cccf.c
     src/dotprod/src/dotprod_crcf.c
     src/dotprod/src/dotprod_rrrf.c
