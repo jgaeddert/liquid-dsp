@@ -19,10 +19,21 @@ option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  ON)
 #option(BUILD_DOCS     "Set to ON to build documentation"      OFF)
 option(COVERAGE       "Set to ON to build with code coverage" OFF)
 #option(PROFILE        "Set to ON to build with profiling"     OFF)
+option(SSE            "Set to ON to build with SSE extions"   OFF)
+option(AVX            "Set to ON to build with AVX extions"   OFF)
+option(AVX2           "Set to ON to build with AVX extions"   OFF)
 
 if(COVERAGE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif(COVERAGE)
+
+if(AVX)
+    add_compile_options("-mavx")
+endif(AVX)
+
+if(AVX2)
+    add_compile_options("-mavx2")
+endif(AVX2)
 
 set(LIBNAME liquid)
 
