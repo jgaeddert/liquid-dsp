@@ -13,27 +13,21 @@ project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
 # ---------------------------------------- options ----------------------------------------
 
 option(BUILD_EXAMPLES   "Set to ON to build examples"           ON)
-option(BUILD_SANDBOX    "Set to ON to build sanbox programs"    ON)
+option(BUILD_SANDBOX    "Set to ON to build sandbox programs"   ON)
 option(BUILD_AUTOTESTS  "Set to ON to build autotest program"   ON)
 option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  ON)
 #option(BUILD_DOCS     "Set to ON to build documentation"      OFF)
-option(COVERAGE       "Set to ON to build with code coverage" OFF)
+option(COVERAGE         "Set to ON to build with code coverage" OFF)
 #option(PROFILE        "Set to ON to build with profiling"     OFF)
-option(SSE            "Set to ON to build with SSE extions"   OFF)
-option(AVX            "Set to ON to build with AVX extions"   OFF)
-option(AVX2           "Set to ON to build with AVX extions"   OFF)
+option(NEON             "Set to ON to build with ARM NEON extensions"    OFF)
+option(SSE              "Set to ON to build with x86 SSE extensions"     OFF)
+option(AVX              "Set to ON to build with x86 AVX extensions"     OFF)
+option(AVX512           "Set to ON to build with x86 AVX512 extensions"  OFF)
+option(ALTIVEC          "Set to ON to build with PPC ALTIVEC extensions" OFF)
 
 if(COVERAGE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif(COVERAGE)
-
-if(AVX)
-    add_compile_options("-mavx")
-endif(AVX)
-
-if(AVX2)
-    add_compile_options("-mavx2")
-endif(AVX2)
 
 set(LIBNAME liquid)
 
@@ -93,12 +87,6 @@ add_library(channel OBJECT
     src/channel/src/channel_cccf.c)
 
 add_library(dotprod OBJECT)
-
-target_sources(dotprod PUBLIC
-    src/dotprod/src/dotprod_cccf.c
-    src/dotprod/src/dotprod_crcf.c
-    src/dotprod/src/dotprod_rrrf.c
-    src/dotprod/src/sumsq.c)
 
 add_library(equalization OBJECT
     src/equalization/src/equalizer_cccf.c
@@ -281,6 +269,54 @@ add_library(vector OBJECT
     src/vector/src/vectorcf_trig.port.c)
 
 
+# ---------------------------------------- SIMD extensions ----------------------------------------
+if (NEON)
+    # -ffast-math -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4
+    add_compile_options("-ffast-math")
+    target_sources(dotprod PUBLIC
+        src/dotprod/src/dotprod_cccf.neon.c
+        src/dotprod/src/dotprod_crcf.neon.c
+        src/dotprod/src/dotprod_rrrf.neon.c
+        src/dotprod/src/sumsq.c)
+elseif (SSE)
+    # -msse2
+    # -msse3
+    add_compile_options("-msse4.1")
+    target_sources(dotprod PUBLIC
+        src/dotprod/src/dotprod_cccf.sse.c
+        src/dotprod/src/dotprod_crcf.sse.c
+        src/dotprod/src/dotprod_rrrf.sse.c
+        src/dotprod/src/sumsq.sse.c)
+elseif (AVX)
+    # -mavx
+    add_compile_options("-mavx2")
+    target_sources(dotprod PUBLIC
+        src/dotprod/src/dotprod_cccf.avx.c
+        src/dotprod/src/dotprod_crcf.avx.c
+        src/dotprod/src/dotprod_rrrf.avx.c
+        src/dotprod/src/sumsq.avx.c)
+elseif (AVX512)
+    add_compile_options("-mavx512f")
+    target_sources(dotprod PUBLIC
+        src/dotprod/src/dotprod_cccf.avx512f.c
+        src/dotprod/src/dotprod_crcf.avx512f.c
+        src/dotprod/src/dotprod_rrrf.avx512f.c
+        src/dotprod/src/sumsq.avx512f.c)
+elseif (ALTIVEC)
+    add_compile_options("-fno-common -faltivec")
+    target_sources(dotprod PUBLIC
+        src/dotprod/src/dotprod_cccf.c
+        src/dotprod/src/dotprod_crcf.av.c
+        src/dotprod/src/dotprod_rrrf.av.c
+        src/dotprod/src/sumsq.c)
+else()
+    # portable C version
+    target_sources(dotprod PUBLIC
+        src/dotprod/src/dotprod_cccf.c
+        src/dotprod/src/dotprod_crcf.c
+        src/dotprod/src/dotprod_rrrf.c
+        src/dotprod/src/sumsq.c)
+endif()
 
 # ---------------------------------------- main library ----------------------------------------
 
