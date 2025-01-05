@@ -54,11 +54,7 @@ else()
 endif()
 
 # include files
-# mmintrin.h
-# xmmintrin.h
-# emmintrin.h
-# pmmintrin.h
-# smmintrin.h
+# immintrin.h
 # arm_neon.h
 # fftw3.h (bench/fftbench.c)
 
