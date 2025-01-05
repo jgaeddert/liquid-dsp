@@ -46,6 +46,7 @@ include (CheckSymbolExists)
 
 # check for hardware acceleration
 include(cmake/FindARM.cmake)
+include(cmake/FindAVX.cmake)
 
 # global flags
 if (MSVC)
