@@ -44,6 +44,9 @@ include (CheckFunctionExists)
 include (CheckLibraryExists)
 include (CheckSymbolExists)
 
+# check for hardware acceleration
+include(cmake/FindARM.cmake)
+
 # global flags
 if (MSVC)
     # warning level 4
