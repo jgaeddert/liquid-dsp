@@ -53,6 +53,25 @@ else()
     add_compile_options(-Wall -fPIC -O3 -Wno-deprecated -Wno-deprecated-declarations)
 endif()
 
+if (NEON)
+    # -ffast-math -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4
+    add_compile_options("-ffast-math")
+elseif (SSE)
+    # -msse2
+    # -msse3
+    add_compile_options("-msse4.1")
+elseif (AVX)
+    # -mavx
+    add_compile_options("-mavx2")
+elseif (AVX512)
+    add_compile_options("-mavx512f")
+elseif (ALTIVEC)
+    add_compile_options("-fno-common -faltivec")
+else()
+    # portable C version
+endif()
+
+
 # include files
 # immintrin.h
 # arm_neon.h
@@ -267,39 +286,30 @@ add_library(vector OBJECT
 
 # ---------------------------------------- SIMD extensions ----------------------------------------
 if (NEON)
-    # -ffast-math -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4
-    add_compile_options("-ffast-math")
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.neon.c
         src/dotprod/src/dotprod_crcf.neon.c
         src/dotprod/src/dotprod_rrrf.neon.c
         src/dotprod/src/sumsq.c)
 elseif (SSE)
-    # -msse2
-    # -msse3
-    add_compile_options("-msse4.1")
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.sse.c
         src/dotprod/src/dotprod_crcf.sse.c
         src/dotprod/src/dotprod_rrrf.sse.c
         src/dotprod/src/sumsq.sse.c)
 elseif (AVX)
-    # -mavx
-    add_compile_options("-mavx2")
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.avx.c
         src/dotprod/src/dotprod_crcf.avx.c
         src/dotprod/src/dotprod_rrrf.avx.c
         src/dotprod/src/sumsq.avx.c)
 elseif (AVX512)
-    add_compile_options("-mavx512f")
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.avx512f.c
         src/dotprod/src/dotprod_crcf.avx512f.c
         src/dotprod/src/dotprod_rrrf.avx512f.c
         src/dotprod/src/sumsq.avx512f.c)
 elseif (ALTIVEC)
-    add_compile_options("-fno-common -faltivec")
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.c
         src/dotprod/src/dotprod_crcf.av.c
