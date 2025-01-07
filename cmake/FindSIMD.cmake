@@ -45,12 +45,31 @@ SET(AVX2_CODE "
   }
 ")
 
-MACRO(CHECK_SSE lang type flags)
+SET(NEON_CODE "
+  #include <arm_neon.h>
+  int main()
+  {
+    float _v[4] = {1.0f, 2.0f, 3.0f, 4.0f};
+    float _h[4] = {2.0f, 4.0f, 6.0f, 8.0f};
+    float32x4_t v = vld1q_f32(_v);
+    float32x4_t h = vld1q_f32(_h);
+    float32x4_t s = vmulq_f32(h,v);
+       
+    // unload packed array
+    float w[4];
+    vst1q_f32(w, s);
+    return (w[0] == 2.0f && w[1] == 8.0f && w[2] == 18.0f && w[3] == 32.0f) ? 0 : -1;
+  }
+")
+
+MACRO(CHECK_SIMD lang type flags)
   SET(__FLAG_I 1)
   SET(CMAKE_REQUIRED_FLAGS_SAVE ${CMAKE_REQUIRED_FLAGS})
   FOREACH(__FLAG ${flags})
+    #message("testing ${lang} ${type} ${__FLAG}")
     IF(NOT ${lang}_${type}_FOUND)
       SET(CMAKE_REQUIRED_FLAGS ${__FLAG})
+      # TODO: check that program runs and returns proper exit code 0
       IF(lang STREQUAL "CXX")
         CHECK_CXX_SOURCE_COMPILES("${${type}_CODE}" ${lang}_HAS_${type}_${__FLAG_I})
       ELSE()
@@ -74,10 +93,14 @@ MACRO(CHECK_SSE lang type flags)
 
 ENDMACRO()
 
-CHECK_SSE(C "AVX" " ;-mavx;/arch:AVX")
-CHECK_SSE(C "AVX2" " ;-mavx2 -mfma -mf16c;/arch:AVX2")
-CHECK_SSE(C "AVX512" " ;-mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma;/arch:AVX512")
+# TODO: check msvc arch flags
 
-CHECK_SSE(CXX "AVX" " ;-mavx;/arch:AVX")
-CHECK_SSE(CXX "AVX2" " ;-mavx2 -mfma -mf16c;/arch:AVX2")
-CHECK_SSE(CXX "AVX512" " ;-mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma;/arch:AVX512")
+CHECK_SIMD(C "AVX" " ;-mavx;/arch:AVX")
+CHECK_SIMD(C "AVX2" " ;-mavx2 -mfma -mf16c;/arch:AVX2")
+CHECK_SIMD(C "AVX512" " ;-mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma;/arch:AVX512")
+CHECK_SIMD(C "NEON" " ;-ffast-math;/arch:armv8.0;/arch:armv9.0")
+
+CHECK_SIMD(CXX "AVX" " ;-mavx;/arch:AVX")
+CHECK_SIMD(CXX "AVX2" " ;-mavx2 -mfma -mf16c;/arch:AVX2")
+CHECK_SIMD(CXX "AVX512" " ;-mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma;/arch:AVX512")
+CHECK_SIMD(CXX "NEON" " ;-ffast-math;/arch:armv8.0;/arch:armv9.0")
