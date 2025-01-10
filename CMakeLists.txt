@@ -290,7 +290,7 @@ add_library(vector OBJECT
 
 
 # ---------------------------------------- SIMD extensions ----------------------------------------
-if (NEON)
+if (C_NEON_FOUND)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.neon.c
         src/dotprod/src/dotprod_crcf.neon.c
