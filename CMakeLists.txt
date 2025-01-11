@@ -296,24 +296,35 @@ if (C_NEON_FOUND)
         src/dotprod/src/dotprod_crcf.neon.c
         src/dotprod/src/dotprod_rrrf.neon.c
         src/dotprod/src/sumsq.c)
+    target_compile_options(dotprod PUBLIC ${C_NEON_FLAGS})
+#elseif (C_AVX512_FOUND)
+#    target_sources(dotprod PUBLIC
+#        src/dotprod/src/dotprod_cccf.avx512f.c
+#        src/dotprod/src/dotprod_crcf.avx512f.c
+#        src/dotprod/src/dotprod_rrrf.avx512f.c
+#        src/dotprod/src/sumsq.avx512f.c)
+#    #target_compile_options(dotprod PUBLIC ${C_AVX512_FLAGS})
+#    target_compile_options(dotprod PUBLIC -mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma)
+elseif (C_AVX2_FOUND)
+    target_sources(dotprod PUBLIC
+        src/dotprod/src/dotprod_cccf.avx.c
+        src/dotprod/src/dotprod_crcf.avx.c
+        src/dotprod/src/dotprod_rrrf.avx.c
+        src/dotprod/src/sumsq.avx.c)
+    target_compile_options(dotprod PUBLIC -mavx2 -mfma -mf16c)
+elseif (C_AVX_FOUND)
+    target_sources(dotprod PUBLIC
+        src/dotprod/src/dotprod_cccf.avx.c
+        src/dotprod/src/dotprod_crcf.avx.c
+        src/dotprod/src/dotprod_rrrf.avx.c
+        src/dotprod/src/sumsq.avx.c)
+    target_compile_options(dotprod PUBLIC -mavx)
 elseif (SSE)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.sse.c
         src/dotprod/src/dotprod_crcf.sse.c
         src/dotprod/src/dotprod_rrrf.sse.c
         src/dotprod/src/sumsq.sse.c)
-elseif (AVX)
-    target_sources(dotprod PUBLIC
-        src/dotprod/src/dotprod_cccf.avx.c
-        src/dotprod/src/dotprod_crcf.avx.c
-        src/dotprod/src/dotprod_rrrf.avx.c
-        src/dotprod/src/sumsq.avx.c)
-elseif (AVX512)
-    target_sources(dotprod PUBLIC
-        src/dotprod/src/dotprod_cccf.avx512f.c
-        src/dotprod/src/dotprod_crcf.avx512f.c
-        src/dotprod/src/dotprod_rrrf.avx512f.c
-        src/dotprod/src/sumsq.avx512f.c)
 elseif (ALTIVEC)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.c
@@ -872,12 +883,12 @@ include(CPack)
 # this file can only use the @VARIABLE@ syntax
 configure_file(src/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 
-## dump a (sorted) list of cmake variables
-#get_cmake_property(_variableNames VARIABLES)
-#list (SORT _variableNames)
-#foreach (_variableName ${_variableNames})
-#    message(STATUS "${_variableName}=${${_variableName}}")
-#endforeach()
+# dump a (sorted) list of cmake variables
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
 
 # ---------------------------------------- summary ----------------------------------------
 
