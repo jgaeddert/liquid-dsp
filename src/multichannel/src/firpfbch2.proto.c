@@ -313,7 +313,7 @@ int FIRPFBCH2(_execute_analyzer)(FIRPFBCH2() _q,
 
     // scale result by 1/num_channels (C transform)
     for (i=0; i<_q->M; i++)
-        _y[i] = _q->x[i] / (float)(_q->M);
+        _y[i] = _q->x[i];
 
     // update flag
     _q->flag = 1 - _q->flag;
