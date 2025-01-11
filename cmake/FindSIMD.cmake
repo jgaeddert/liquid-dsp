@@ -89,6 +89,7 @@ MACRO(CHECK_SIMD lang type flags)
     SET(${lang}_${type}_FLAGS "" CACHE STRING "${lang} ${type} flags")
   ENDIF()
 
+  SEPARATE_ARGUMENTS(${lang}_${type}_FLAGS)
   MARK_AS_ADVANCED(${lang}_${type}_FOUND ${lang}_${type}_FLAGS)
 
 ENDMACRO()

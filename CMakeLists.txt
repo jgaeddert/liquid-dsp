@@ -303,15 +303,14 @@ if (C_NEON_FOUND)
 #        src/dotprod/src/dotprod_crcf.avx512f.c
 #        src/dotprod/src/dotprod_rrrf.avx512f.c
 #        src/dotprod/src/sumsq.avx512f.c)
-#    #target_compile_options(dotprod PUBLIC ${C_AVX512_FLAGS})
-#    target_compile_options(dotprod PUBLIC -mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma)
+#    target_compile_options(dotprod PUBLIC ${C_AVX512_FLAGS})
 elseif (C_AVX2_FOUND)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.avx.c
         src/dotprod/src/dotprod_crcf.avx.c
         src/dotprod/src/dotprod_rrrf.avx.c
         src/dotprod/src/sumsq.avx.c)
-    target_compile_options(dotprod PUBLIC -mavx2 -mfma -mf16c)
+    target_compile_options(dotprod PUBLIC ${C_AVX2_FLAGS})
 elseif (C_AVX_FOUND)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.avx.c
