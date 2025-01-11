@@ -21,11 +21,6 @@ option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  ON)
 #option(BUILD_DOCS     "Set to ON to build documentation"      OFF)
 option(COVERAGE         "Set to ON to build with code coverage" OFF)
 #option(PROFILE        "Set to ON to build with profiling"     OFF)
-option(NEON             "Set to ON to build with ARM NEON extensions"    OFF)
-option(SSE              "Set to ON to build with x86 SSE extensions"     OFF)
-option(AVX              "Set to ON to build with x86 AVX extensions"     OFF)
-option(AVX512           "Set to ON to build with x86 AVX512 extensions"  OFF)
-option(ALTIVEC          "Set to ON to build with PPC ALTIVEC extensions" OFF)
 
 if(COVERAGE)
     set(CMAKE_BUILD_TYPE "Debug")
@@ -57,25 +52,6 @@ else()
     # additional warnings
     add_compile_options(-Wall -fPIC -O3 -Wno-deprecated -Wno-deprecated-declarations)
 endif()
-
-if (NEON)
-    # -ffast-math -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4
-    add_compile_options("-ffast-math")
-elseif (SSE)
-    # -msse2
-    # -msse3
-    add_compile_options("-msse4.1")
-elseif (AVX)
-    # -mavx
-    add_compile_options("-mavx2")
-elseif (AVX512)
-    add_compile_options("-mavx512f")
-elseif (ALTIVEC)
-    add_compile_options("-fno-common -faltivec")
-else()
-    # portable C version
-endif()
-
 
 # include files
 # immintrin.h
