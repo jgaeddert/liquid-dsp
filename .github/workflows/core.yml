@@ -37,7 +37,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=ON -DBUILD_EXAMPLES=ON ..
+        cmake ..
         make -j2
 
     - name: check
