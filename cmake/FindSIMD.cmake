@@ -2,14 +2,19 @@ INCLUDE(CheckCSourceRuns)
 INCLUDE(CheckCSourceCompiles)
 INCLUDE(CheckCXXSourceRuns)
 
-SET(AVX_CODE "
+SET(SSE4_CODE "
   #include <immintrin.h>
-
   int main()
   {
-    __m256 a;
-    a = _mm256_set1_ps(0);
-    return 0;
+    float _v[8] = { 0.f, 1.f, 2.f, 3.f,};
+    float _h[8] = { 1.f,-1.f, 1.f,-1.f,};
+    __m128 v = _mm_loadu_ps(_v);
+    __m128 h = _mm_loadu_ps(_h);
+    __m128 s = _mm_mul_ps(v, h);
+    // unload packed array
+    float w[4];
+    _mm_storeu_ps(w, s);
+    return (w[0]== 0.f && w[1]== -1.f && w[2]== 2.f && w[3]== -3.f) ? 0 : 1;
   }
 ")
 
@@ -100,11 +105,13 @@ ENDMACRO()
 
 # TODO: check msvc arch flags
 
+CHECK_SIMD(C "SSE4" " ;-msse4.2;/arch:SSE")
 CHECK_SIMD(C "AVX" " ;-mavx;/arch:AVX")
 CHECK_SIMD(C "AVX2" " ;-mavx2 -mfma -mf16c;/arch:AVX2")
 CHECK_SIMD(C "AVX512" " ;-mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma;/arch:AVX512")
 CHECK_SIMD(C "NEON" " ;-ffast-math;/arch:armv8.0;/arch:armv9.0")
 
+CHECK_SIMD(CXX "SSE4" " ;-msse4.2;/arch:SSE")
 CHECK_SIMD(CXX "AVX" " ;-mavx;/arch:AVX")
 CHECK_SIMD(CXX "AVX2" " ;-mavx2 -mfma -mf16c;/arch:AVX2")
 CHECK_SIMD(CXX "AVX512" " ;-mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma;/arch:AVX512")

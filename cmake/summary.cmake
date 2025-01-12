@@ -92,7 +92,7 @@ function(liquid_print_config_summary)
     liquid_status("")
     liquid_status("Acceleration:") # MMX, neon
     liquid_status("  NEON              : " C_NEON_FOUND THEN "Yes" ELSE "No")
-    liquid_status("  SSE               : " "No")
+    liquid_status("  SSE4              : " C_SSE4_FOUND THEN "Yes" ELSE "No")
     liquid_status("  AVX               : " C_AVX_FOUND THEN "Yes" ELSE "No")
     liquid_status("  AVX2              : " C_AVX2_FOUND THEN "Yes" ELSE "No")
     liquid_status("  AVX512            : " C_AVX512_FOUND THEN "Yes" ELSE "No")

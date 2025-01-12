@@ -294,12 +294,13 @@ elseif (C_AVX_FOUND)
         src/dotprod/src/dotprod_rrrf.avx.c
         src/dotprod/src/sumsq.avx.c)
     target_compile_options(dotprod PUBLIC -mavx)
-elseif (SSE)
+elseif (C_SSE4_FOUND)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.sse.c
         src/dotprod/src/dotprod_crcf.sse.c
         src/dotprod/src/dotprod_rrrf.sse.c
         src/dotprod/src/sumsq.sse.c)
+    target_compile_options(dotprod PUBLIC -msse4.2)
 elseif (ALTIVEC)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.c
