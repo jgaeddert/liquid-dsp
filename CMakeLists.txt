@@ -18,6 +18,7 @@ option(BUILD_EXAMPLES   "Set to ON to build examples"           ON)
 option(BUILD_SANDBOX    "Set to ON to build sandbox programs"   ON)
 option(BUILD_AUTOTESTS  "Set to ON to build autotest program"   ON)
 option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  ON)
+option(ENABLE_SIMD      "Set to ON to build SIMD extensions"    ON)
 #option(BUILD_DOCS     "Set to ON to build documentation"      OFF)
 option(COVERAGE         "Set to ON to build with code coverage" OFF)
 #option(PROFILE        "Set to ON to build with profiling"     OFF)
@@ -266,42 +267,42 @@ add_library(vector OBJECT
 
 
 # ---------------------------------------- SIMD extensions ----------------------------------------
-if (C_NEON_FOUND)
+if (C_NEON_FOUND AND ENABLE_SIMD)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.neon.c
         src/dotprod/src/dotprod_crcf.neon.c
         src/dotprod/src/dotprod_rrrf.neon.c
         src/dotprod/src/sumsq.c)
     target_compile_options(dotprod PUBLIC ${C_NEON_FLAGS})
-elseif (C_AVX512_FOUND)
+elseif (C_AVX512_FOUND AND ENABLE_SIMD)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.avx512f.c
         src/dotprod/src/dotprod_crcf.avx512f.c
         src/dotprod/src/dotprod_rrrf.avx512f.c
         src/dotprod/src/sumsq.avx512f.c)
     target_compile_options(dotprod PUBLIC ${C_AVX512_FLAGS})
-elseif (C_AVX2_FOUND)
+elseif (C_AVX2_FOUND AND ENABLE_SIMD)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.avx.c
         src/dotprod/src/dotprod_crcf.avx.c
         src/dotprod/src/dotprod_rrrf.avx.c
         src/dotprod/src/sumsq.avx.c)
     target_compile_options(dotprod PUBLIC ${C_AVX2_FLAGS})
-elseif (C_AVX_FOUND)
+elseif (C_AVX_FOUND AND ENABLE_SIMD)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.avx.c
         src/dotprod/src/dotprod_crcf.avx.c
         src/dotprod/src/dotprod_rrrf.avx.c
         src/dotprod/src/sumsq.avx.c)
     target_compile_options(dotprod PUBLIC -mavx)
-elseif (C_SSE4_FOUND)
+elseif (C_SSE4_FOUND AND ENABLE_SIMD)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.sse.c
         src/dotprod/src/dotprod_crcf.sse.c
         src/dotprod/src/dotprod_rrrf.sse.c
         src/dotprod/src/sumsq.sse.c)
     target_compile_options(dotprod PUBLIC -msse4.2)
-elseif (C_ALTIVEC_FOUND)
+elseif (C_ALTIVEC_FOUND AND ENABLE_SIMD)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.c
         src/dotprod/src/dotprod_crcf.av.c
