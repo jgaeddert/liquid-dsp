@@ -63,11 +63,26 @@ SET(NEON_CODE "
     float32x4_t v = vld1q_f32(_v);
     float32x4_t h = vld1q_f32(_h);
     float32x4_t s = vmulq_f32(h,v);
-       
+
     // unload packed array
     float w[4];
     vst1q_f32(w, s);
     return (w[0] == 2.0f && w[1] == 8.0f && w[2] == 18.0f && w[3] == 32.0f) ? 0 : -1;
+  }
+")
+
+# NOTE: altivec is extremely old at this point; I'm not sure if this code is even correct
+SET(ALTIVEC_CODE "
+  int main()
+  {
+    vector float v = {1.0f, 2.0f, 3.0f, 4.0f};
+    vector float h = {2.0f, 4.0f, 6.0f, 8.0f};
+    vector float z = (vector float)(0);
+    union { vector float r; float w[4]; } s;
+    s.r = vec_madd(v, h, z);
+
+    // unload packed array
+    return (s.w[0]== 0.f && s.w[1]== -1.f && s.w[2]== 2.f && s.w[3]== -3.f) ? 0 : 1;
   }
 ")
 
@@ -110,9 +125,11 @@ CHECK_SIMD(C "AVX" " ;-mavx;/arch:AVX")
 CHECK_SIMD(C "AVX2" " ;-mavx2 -mfma -mf16c;/arch:AVX2")
 CHECK_SIMD(C "AVX512" " ;-mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma;/arch:AVX512")
 CHECK_SIMD(C "NEON" " ;-ffast-math;/arch:armv8.0;/arch:armv9.0")
+CHECK_SIMD(C "ALTIVEC" " ;-fno-common -faltivec;/arch:altivec")
 
 CHECK_SIMD(CXX "SSE4" " ;-msse4.2;/arch:SSE")
 CHECK_SIMD(CXX "AVX" " ;-mavx;/arch:AVX")
 CHECK_SIMD(CXX "AVX2" " ;-mavx2 -mfma -mf16c;/arch:AVX2")
 CHECK_SIMD(CXX "AVX512" " ;-mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma;/arch:AVX512")
 CHECK_SIMD(CXX "NEON" " ;-ffast-math;/arch:armv8.0;/arch:armv9.0")
+CHECK_SIMD(CXX "ALTIVEC" " ;-fno-common -faltivec;/arch:altivec")

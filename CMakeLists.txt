@@ -301,7 +301,7 @@ elseif (C_SSE4_FOUND)
         src/dotprod/src/dotprod_rrrf.sse.c
         src/dotprod/src/sumsq.sse.c)
     target_compile_options(dotprod PUBLIC -msse4.2)
-elseif (ALTIVEC)
+elseif (C_ALTIVEC_FOUND)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.c
         src/dotprod/src/dotprod_crcf.av.c
