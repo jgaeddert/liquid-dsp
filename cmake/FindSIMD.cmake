@@ -13,22 +13,6 @@ SET(AVX_CODE "
   }
 ")
 
-SET(AVX512_CODE "
-  #include <immintrin.h>
-  int main()
-  {
-    float _v[4] = {1.0f, 2.0f, 3.0f, 4.0f};
-    float _h[4] = {2.0f, 4.0f, 6.0f, 8.0f};
-    __m512f v = _mm512_loadu_ps(_v);
-    __m512f h = _mm512_loadu_ps(_h);
-    __m512i s = _mm512_mul_ps(v, h);
-    // unload packed array
-    float w[4];
-    _mm512_storeu_ps(w, s);
-    return (w[0] == 2.0f && w[1] == 8.0f && w[2] == 18.0f && w[3] == 32.0f) ? 0 : -1;
-  }
-")
-
 SET(AVX2_CODE "
   #include <immintrin.h>
 
@@ -39,6 +23,25 @@ SET(AVX2_CODE "
     __m256i x;
     _mm256_extract_epi64(x, 0); // we rely on this in our AVX2 code
     return 0;
+  }
+")
+
+SET(AVX512_CODE "
+  #include <immintrin.h>
+  int main()
+  {
+    float _v[16] = { 0.f, 1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f,10.f,11.f,12.f,13.f,14.f,15.f,};
+    float _h[16] = { 1.f,-1.f, 1.f,-1.f, 1.f,-1.f, 1.f,-1.f, 1.f,-1.f, 1.f,-1.f, 1.f,-1.f, 1.f,-1.f,};
+    __m512f v = _mm512_loadu_ps(_v);
+    __m512f h = _mm512_loadu_ps(_h);
+    __m512i s = _mm512_mul_ps(v, h);
+    // unload packed array
+    float w[4];
+    _mm512_storeu_ps(w, s);
+    return (w[ 0]== 0.f && w[ 1]== -1.f && w[ 2]== 2.f && w[ 3]== -3.f &&
+            w[ 4]== 4.f && w[ 5]== -5.f && w[ 6]== 6.f && w[ 7]== -7.f &&
+            w[ 8]== 8.f && w[ 9]== -9.f && w[10]==10.f && w[11]==-11.f &&
+            w[12]==12.f && w[13]==-13.f && w[14]==14.f && w[15]==-15.f) ? 0 : 1;
   }
 ")
 
