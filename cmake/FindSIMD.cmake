@@ -15,20 +15,17 @@ SET(AVX_CODE "
 
 SET(AVX512_CODE "
   #include <immintrin.h>
-
   int main()
   {
-    __m512i a = _mm512_set_epi8(0, 0, 0, 0, 0, 0, 0, 0,
-                                0, 0, 0, 0, 0, 0, 0, 0,
-                                0, 0, 0, 0, 0, 0, 0, 0,
-                                0, 0, 0, 0, 0, 0, 0, 0,
-                                0, 0, 0, 0, 0, 0, 0, 0,
-                                0, 0, 0, 0, 0, 0, 0, 0,
-                                0, 0, 0, 0, 0, 0, 0, 0,
-                                0, 0, 0, 0, 0, 0, 0, 0);
-    __m512i b = a;
-    __mmask64 equality_mask = _mm512_cmp_epi8_mask(a, b, _MM_CMPINT_EQ);
-    return 0;
+    float _v[4] = {1.0f, 2.0f, 3.0f, 4.0f};
+    float _h[4] = {2.0f, 4.0f, 6.0f, 8.0f};
+    __m512f v = _mm512_loadu_ps(_v);
+    __m512f h = _mm512_loadu_ps(_h);
+    __m512i s = _mm512_mul_ps(v, h);
+    // unload packed array
+    float w[4];
+    _mm512_storeu_ps(w, s);
+    return (w[0] == 2.0f && w[1] == 8.0f && w[2] == 18.0f && w[3] == 32.0f) ? 0 : -1;
   }
 ")
 
