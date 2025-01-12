@@ -8942,6 +8942,13 @@ int FIRPFBCHR(_push)(FIRPFBCHR() _q,                                        \
 /*  _y      : channelizer output, [size: chans x 1]                     */  \
 int FIRPFBCHR(_execute)(FIRPFBCHR() _q,                                     \
                         TO *        _y);                                    \
+                                                                            \
+/* execute filterbank channelizer (analyzer)                            */  \
+/* _x      :   channelizer input,  [size: P x 1]                        */  \
+/* _y      :   channelizer output, [size: M x 1]                        */  \
+int FIRPFBCHR(_execute_analyzer)(FIRPFBCHR() _q,                            \
+                                 TI *        _x,                            \
+                                 TO *        _y);                           \
 
 
 LIQUID_FIRPFBCHR_DEFINE_API(LIQUID_FIRPFBCHR_MANGLE_CRCF,

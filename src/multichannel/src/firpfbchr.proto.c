@@ -51,6 +51,9 @@ struct FIRPFBCHR(_s) {
     // synthesis algorithms
     WINDOW() * w;       // window buffer object array
     unsigned int base_index;
+
+    unsigned int window_offset;
+    unsigned int filter_offset;
 };
 
 // create rational rate resampling channelizer (firpfbchr) object by
@@ -205,6 +208,8 @@ int FIRPFBCHR(_reset)(FIRPFBCHR() _q)
 
     // reset filter/buffer alignment flag
     _q->base_index = _q->M - 1;
+    _q->window_offset = _q->P - 1;
+    _q->filter_offset = 0;
     return LIQUID_OK;
 }
 
@@ -292,6 +297,48 @@ int FIRPFBCHR(_execute)(FIRPFBCHR() _q,
     float g = 1.0f / (float)(_q->M);
     for (i=0; i<_q->M; i++)
         _y[i] = _q->x[i] * g;
+    return LIQUID_OK;
+}
+
+// execute filterbank channelizer (analyzer)
+//  _x      :   channelizer input,  [size: P x 1]
+//  _y      :   channelizer output, [size: M x 1]
+int FIRPFBCHR(_execute_analyzer)(FIRPFBCHR() _q,
+                                 TI *        _x,
+                                 TO *        _y)
+{
+    unsigned int i;
+
+    // load buffers in blocks of P starting
+    // at window_offset of the filter bankand moving in the
+    // negative direction
+    for (i=0; i<_q->P; i++) {
+        // buffer index
+        unsigned int buffer_index = (_q->window_offset+_q->M-i)%_q->M;
+
+        // push sample into buffer at filter index
+        WINDOW(_push)(_q->w[buffer_index], _x[i]);
+    }
+
+    // execute filter outputs
+    TI * r;      // buffer read pointer
+    for (i=0; i<_q->M; i++) {
+        // read buffer at index
+        WINDOW(_read)(_q->w[i], &r);
+
+        // run dot product storing result in IFFT input buffer
+        DOTPROD(_execute)(_q->dp[(_q->filter_offset+i)%_q->M], r, &_q->X[i]);
+    }
+
+    // execute IFFT, store result in buffer 'x'
+    FFT_EXECUTE(_q->ifft);
+
+    // move to output array
+    memmove(_y, _q->x, _q->M*sizeof(TO));
+
+    // update window_offset&filter_offset
+    _q->window_offset = (_q->window_offset+_q->M-_q->P)%_q->M;
+    _q->filter_offset = (_q->filter_offset+_q->P)%_q->M;
     return LIQUID_OK;
 }
 
