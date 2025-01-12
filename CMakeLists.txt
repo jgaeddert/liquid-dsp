@@ -858,14 +858,11 @@ include(CPack)
 # this file can only use the @VARIABLE@ syntax
 configure_file(src/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 
-# dump a (sorted) list of cmake variables
-get_cmake_property(_variableNames VARIABLES)
-list (SORT _variableNames)
-foreach (_variableName ${_variableNames})
-    message(STATUS "${_variableName}=${${_variableName}}")
-endforeach()
-
 # ---------------------------------------- summary ----------------------------------------
+
+# debug cmake variables
+include(cmake/debug.cmake)
+#liquid_debug_print_vars()
 
 # cmake config summary
 include(cmake/summary.cmake)
