@@ -18,6 +18,7 @@ SET(SSE4_CODE "
   }
 ")
 
+# TODO: distinguish between AVX, FMA, AVX2
 SET(AVX2_CODE "
   #include <immintrin.h>
   int main()
