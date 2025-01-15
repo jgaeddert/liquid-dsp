@@ -67,8 +67,8 @@ The recommended way to obtain the source code is to clone the entire
 
 Building and installing the main library is a simple as
 
-    ./bootstrap.sh
-    ./configure
+    mkdir build
+    cmake ..
     make
     sudo make install
 
