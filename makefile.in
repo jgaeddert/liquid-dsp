@@ -1391,8 +1391,8 @@ clean-check:
 ## TARGET : check-doc - build and run basic documentation checks
 ##
 
-readme.c.example.c : README.md
-	${SED} -n '23,43p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+readme.c.example.c : README.rst
+	${SED} -n '19,39p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
 readme.c.example.o : %.o : %.c ${include_headers}
 	${CC} ${CPPFLAGS} ${CFLAGS} $< -c -o $@
@@ -1400,8 +1400,8 @@ readme.c.example.o : %.o : %.c ${include_headers}
 readme.c.example : % : %.o ${ARCHIVE_LIB}
 	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
 
-readme.cc.example.cc : README.md
-	${SED} -n '152,173p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+readme.cc.example.cc : README.rst
+	${SED} -n '172,193p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
 readme.cc.example.o : %.o : %.cc ${include_headers}
 	${CXX} ${CPPFLAGS} ${CXXFLAGS} $< -c -o $@
