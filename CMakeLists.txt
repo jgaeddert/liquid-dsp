@@ -379,10 +379,6 @@ if(COVERAGE)
 endif(COVERAGE)
 target_link_libraries(${LIBNAME} c m)
 
-add_executable(test_libliquid examples/libliquid_example.c)
-target_include_directories(test_libliquid PRIVATE ${INCLUDE})
-
-target_link_libraries(test_libliquid ${LIBNAME})
 
 set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
 
@@ -706,7 +702,7 @@ if(BUILD_AUTOTESTS)
         COMMAND ${PROJECT_BINARY_DIR}/autoscript / autotest ${AUTOTESTS} > autotest_include.h
         )
 
-    # need to create output logging directory
+    # create output logging directory
     add_custom_command(
         OUTPUT autotest/logs
         COMMAND mkdir -p autotest/logs
@@ -730,9 +726,9 @@ if(BUILD_AUTOTESTS)
         target_link_options(xautotest PRIVATE -coverage)
     endif(COVERAGE)
 
-    # enable testing
+    # enable testing; might consider splitting these up for parallel execution
     enable_testing()
-    add_test(NAME test COMMAND test_libliquid)
+    add_test(NAME test COMMAND xautotest)
 endif(BUILD_AUTOTESTS)
 
 
