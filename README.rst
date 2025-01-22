@@ -14,7 +14,7 @@ flexible, scalable, and dynamic, including filters, filter design,
 oscillators, modems, synchronizers, complex mathematical operations, and
 much more.
 
-.. code-block:: C
+.. code-block:: c
 
     // get in, manipulate data, get out
     #include <liquid/liquid.h>
