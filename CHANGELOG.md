@@ -1,6 +1,46 @@
 # Changelog
 
-## Unreleased
+## 1.7.0 - 2025-01-31
+
+Version 1.7.0 includes support for the [CMake](https://cmake.org) build
+system. While the existing autotools environment will be supported for a time,
+this will be removed in a future release. This version also includes many
+changes to improve testing coverage across all interfaces, and make the
+interfaces across objects consistent.
+
+  * build
+    - migrated to the [CMake](https://cmake.org) build system, including
+      building examples, sandbox programs, benchmarks, autotests, and
+      detecting SIMD instruction extensions.
+    - increased testing across the board including automated memory validation
+      with [valgrind](https://valgrind.org)
+    - detected and fixed memory leaks for numerous methods and testing
+      harnesses including `bessel_azpdf` (thanks, @andreasbombe),
+      `ofdmflexframesync`, `qdsync`, `qs1dsearch` (thanks, @nowls),
+      `framesync64`, `eqrls`, and `fskdem`
+    - added new `LIQUID_ENOCONV` error type to identify errors where
+      algorithms did not converge
+    - added new `LIQUID_ENOIMP` error type to identify methods that are not
+      yet implemented
+    - replaced warnings with internal error handling for many existing object
+      methods
+    - fixed SONAME not set in shared library (thanks again, @andreasbombe)
+  * framing
+    - added more description to method definitions such as qpacketmodem and
+      qdetector
+    - dsssframe64: extended functionality to use qdsync, added standard
+      methods such as copy(), added interfaces for specifying thresholds,
+      reduced default spreading gain
+  * filter
+    - firinterp: added flush() method to run zeros through filter
+    - rresamp: allow for default bandwidth with an input of -1
+  * nco
+    - fixed issue where frequency was being set improperly, added more
+      extensive testing
+    - improved the NCO object with VCO precision (thanks, @ArtemPisarenko)
+  * random
+    - added more extensive testing for various distributions to ensure values
+      are generated properly
 
 ## 1.6.0 - 2023-06-19
 
