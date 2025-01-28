@@ -62,7 +62,7 @@ endif()
 include (CheckTypeSize)
 check_type_size(int SIZEOF_INT LANGUAGE C)
 
-configure_file(config.h.cmake config.h)
+configure_file(cmake/config.h.cmake config.h)
 
 #target_include_directories(test PRIVATE include)
 include_directories(include .)
