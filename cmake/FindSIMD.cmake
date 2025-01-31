@@ -42,9 +42,9 @@ SET(AVX512_CODE "
   {
     float _v[16] = { 0.f, 1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f,10.f,11.f,12.f,13.f,14.f,15.f,};
     float _h[16] = { 1.f,-1.f, 1.f,-1.f, 1.f,-1.f, 1.f,-1.f, 1.f,-1.f, 1.f,-1.f, 1.f,-1.f, 1.f,-1.f,};
-    __m512f v = _mm512_loadu_ps(_v);
-    __m512f h = _mm512_loadu_ps(_h);
-    __m512f s = _mm512_mul_ps(v, h);
+    __m512 v = _mm512_loadu_ps(_v);
+    __m512 h = _mm512_loadu_ps(_h);
+    __m512 s = _mm512_mul_ps(v, h);
     // unload packed array
     float w[4];
     _mm512_storeu_ps(w, s);
