@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2023 Joseph Gaeddert
+# Copyright (c) 2007 - 2025 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 # Process with autoconf to generate configure script
 #
 
-AC_INIT([liquid-dsp],[1.6],[joseph@liquidsdr.org])
+AC_INIT([liquid-dsp],[1.7.0],[joseph@liquidsdr.org])
 AC_CONFIG_SRCDIR([src/libliquid.c])
 AC_CONFIG_MACRO_DIR([scripts])
 

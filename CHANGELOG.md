@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.7.0 - 2025-01-31
+## 1.7.0 - 2025-02-01
 
 Version 1.7.0 includes support for the [CMake](https://cmake.org) build
 system. While the existing autotools environment will be supported for a time,
