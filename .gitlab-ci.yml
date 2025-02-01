@@ -71,6 +71,16 @@ legacy:
     - ldconfig
     - make -f scripts/liquid_linker_test.mk
 
+# test cross-compiling with platformio
+platformio:
+  stage: test
+  script:
+    - apt-get -qq install -y --no-install-recommends virtualenv
+    - virtualenv platformio
+    - source platformio/bin/activate
+    - pip install platformio
+    - pio ci --lib="." --board=pico examples/platformio_example.c
+
 # compile and run all example programs, timing how long each takes to run
 .examples:
   stage: test
