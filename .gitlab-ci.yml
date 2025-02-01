@@ -62,7 +62,7 @@ coverage:
 legacy:
   stage: test
   script:
-    - apt-get -qq install -y --no-install-recommends autotools automake
+    - apt-get -qq install -y --no-install-recommends automake autoconf
     - ./bootstrap.sh
     - ./configure
     - make -j4
