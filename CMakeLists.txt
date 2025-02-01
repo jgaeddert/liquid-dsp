@@ -8,7 +8,6 @@ execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/version.sh
 
 # project definition
 project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
-#project(liquid VERSION 1.6.0 LANGUAGES C CXX)
 
 cmake_policy(SET CMP0076 NEW)
 
