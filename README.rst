@@ -79,14 +79,6 @@ to rebind your dynamic libraries with ``sudo ldconfig`` to make the
 shared object available.
 This is not necessary on macOS.
 
-If you decide that you want to remove the installed DSP library, simply
-run
-
-.. code-block:: bash
-
-    sudo make uninstall
-
-Seriously, I won't be offended.
 
 Run all test scripts
 --------------------
