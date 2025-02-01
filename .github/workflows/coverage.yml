@@ -41,13 +41,13 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=ON -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF ..
-        make -j2
+        cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=ON -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_SANDBOX=OFF ..
+        make -j4
 
     - name: check
       run: |
         cd build
-        ./xautotest -v -o autotest.json
+        ./xautotest -q -o autotest.json
 
     - name: upload report to codecov with github action
       uses: codecov/codecov-action@v4

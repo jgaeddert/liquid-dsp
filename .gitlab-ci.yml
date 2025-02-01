@@ -40,7 +40,7 @@ coverage:
     - rm -rf build
     - mkdir build
     - cd build
-    - cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_SANDBOX=OFF -DCOVERAGE=ON ..
+    - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=ON -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_SANDBOX=OFF ..
     - make -j4
     - ./xautotest -q -o autotest.json
     - cd ..
