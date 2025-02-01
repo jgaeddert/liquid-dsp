@@ -23,7 +23,7 @@ build:
     - make -j4
     - ./benchmark -q -o benchmark.json -f
     - ./xautotest -q -o autotest.json
-    #- make check-doc # compile and run documenation checks (e.g. example code in README.md)
+    #- make check-doc # compile and run documenation checks (e.g. example code in README)
     - make install
     - ldconfig
     - cd ..
@@ -57,6 +57,19 @@ coverage:
     paths:
       - coverage.out
       - build/autotest.json
+
+# test building using legacy environment
+legacy:
+  stage: test
+  script:
+    - apt-get -qq install -y --no-install-recommends autotools automake
+    - ./bootstrap.sh
+    - ./configure
+    - make -j4
+    - make check-doc
+    - make install
+    - ldconfig
+    - make -f scripts/liquid_linker_test.mk
 
 # compile and run all example programs, timing how long each takes to run
 .examples:
