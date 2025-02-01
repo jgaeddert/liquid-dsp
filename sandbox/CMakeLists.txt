@@ -13,7 +13,7 @@ set(SANDBOX
     ellip_func_test
     ellip_test
     eqlms_cccf_test
-    fct_test
+    #fct_test
     fec_g2412product_test
     fec_golay2412_test
     fec_golay_test

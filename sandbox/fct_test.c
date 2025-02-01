@@ -18,12 +18,8 @@ int main() {
         x[i] = (float)i;
 
     // execute dcts
-#if 0
     dct(x,y,n);
     idct(y,z,n);
-#else
-#    warning "dct/idct no longer supported"
-#endif
 
     // run equivalent ffts
     float complex x0[2*n];
