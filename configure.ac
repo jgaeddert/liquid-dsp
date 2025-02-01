@@ -236,7 +236,7 @@ else
                        src/dotprod/src/dotprod_rrrf.o \
                        src/dotprod/src/sumsq.o"
         ARCH_OPTION="-ffast-math";;
-    arm|armv7*|armv8*)
+    arm|armv7*|armv8*|aarch64)
         # assume neon instructions are available
         # TODO: check for Neon availability
 
