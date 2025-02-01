@@ -12,10 +12,10 @@ project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
 # ---------------------------------------- options ----------------------------------------
 
 option(BUILD_EXAMPLES   "Set to ON to build examples"           ON)
-option(BUILD_SANDBOX    "Set to ON to build sandbox programs"   ON)
 option(BUILD_AUTOTESTS  "Set to ON to build autotest program"   ON)
 option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  ON)
 option(ENABLE_SIMD      "Set to ON to build SIMD extensions"    ON)
+option(BUILD_SANDBOX    "Set to ON to build sandbox programs"   OFF)
 option(BUILD_DOC        "Set to ON to build documentation"      OFF)
 option(COVERAGE         "Set to ON to build with code coverage" OFF)
 #option(PROFILE        "Set to ON to build with profiling"     OFF)
