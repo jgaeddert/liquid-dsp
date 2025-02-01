@@ -212,10 +212,9 @@ Here is the same example as the one above but in C++ instead of C:
 PlatformIO
 ----------
 
-Install `platformio <https://platformio.org>`_
-(``brew install platformio`` on macOS,
-``sudo -H python3 -m pip install -U platformio`` on Linux).
-Add ``liquid-dsp`` to your ``platform.io`` list of dependencies:
+Cross-compling for embedded platforms is most easily achieved with
+`platformio <https://platformio.org>`_.
+Just add ``liquid-dsp`` to your ``platform.io`` list of dependencies:
 
 .. code-block:: ini
 
@@ -223,6 +222,25 @@ Add ``liquid-dsp`` to your ``platform.io`` list of dependencies:
     platform = native
     lib_deps = https://github.com/jgaeddert/liquid-dsp.git
 
+To test this, compile the example program for a
+`Raspberry Pi Pico microcontroller <https://www.raspberrypi.com/documentation/microcontrollers/pico-series.html>`_:
+
+.. code-block:: bash
+
+    # create a virtual environment, install platformio, and compile an example
+    virtualenv pio
+    source pio/bin/activate
+    pip install platformio
+    pio ci --lib="." --board=pico examples/platformio_example.c
+    # ...
+    # Generating UF2 image
+    # elf2uf2 ".pio/build/pico/firmware.elf" ".pio/build/pico/firmware.uf2"
+    # Checking size .pio/build/pico/firmware.elf
+    # Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+    # RAM:   [==        ]  15.5% (used 41820 bytes from 270336 bytes)
+    # Flash: [          ]   0.2% (used 5196 bytes from 2097152 bytes)
+    # Building .pio/build/pico/firmware.bin
+    # ===================== [SUCCESS] Took 23.63 seconds =====================
 
 Build
 -----
