@@ -6,8 +6,9 @@ on:
   push:
     branches:
       - master
-      - coverage-dev
       - cmake-dev
+      - coverage-dev
+      - release-dev
 
 jobs:
   standard:
