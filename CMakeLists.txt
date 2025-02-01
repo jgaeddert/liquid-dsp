@@ -9,8 +9,6 @@ execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/version.sh
 # project definition
 project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
 
-cmake_policy(SET CMP0076 NEW)
-
 # ---------------------------------------- options ----------------------------------------
 
 option(BUILD_EXAMPLES   "Set to ON to build examples"           ON)
@@ -25,6 +23,9 @@ option(COVERAGE         "Set to ON to build with code coverage" OFF)
 if(COVERAGE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif(COVERAGE)
+
+# target_sources() command converts relative paths to absolute.
+cmake_policy(SET CMP0076 NEW)
 
 set(LIBNAME liquid)
 
@@ -43,6 +44,7 @@ include (CheckSymbolExists)
 
 # check for hardware acceleration
 include(cmake/FindSIMD.cmake)
+# TODO: check for FFTW
 
 # global flags
 if (MSVC)
@@ -53,15 +55,13 @@ else()
     add_compile_options(-Wall -fPIC -O3 -Wno-deprecated -Wno-deprecated-declarations)
 endif()
 
-# include files
-# immintrin.h
-# arm_neon.h
-# fftw3.h (bench/fftbench.c)
-
 include (CheckTypeSize)
 check_type_size(int SIZEOF_INT LANGUAGE C)
 
 configure_file(cmake/config.h.cmake config.h)
+
+# this file can only use the @VARIABLE@ syntax
+#configure_file(cmake/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 
 #target_include_directories(test PRIVATE include)
 include_directories(include .)
@@ -293,14 +293,14 @@ elseif (C_AVX_FOUND AND ENABLE_SIMD)
         src/dotprod/src/dotprod_crcf.avx.c
         src/dotprod/src/dotprod_rrrf.avx.c
         src/dotprod/src/sumsq.avx.c)
-    target_compile_options(dotprod PUBLIC -mavx)
+    target_compile_options(dotprod PUBLIC ${C_AVX_FLAGS})
 elseif (C_SSE4_FOUND AND ENABLE_SIMD)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.sse.c
         src/dotprod/src/dotprod_crcf.sse.c
         src/dotprod/src/dotprod_rrrf.sse.c
         src/dotprod/src/sumsq.sse.c)
-    target_compile_options(dotprod PUBLIC -msse4.2)
+    target_compile_options(dotprod PUBLIC ${C_SSE4_FLAGS})
 elseif (C_ALTIVEC_FOUND AND ENABLE_SIMD)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.c
@@ -321,10 +321,8 @@ endif()
 # necessary to include this for the generated "config.h" header
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-set(LIBSRC src/libliquid.c)
-
 add_library(${LIBNAME} SHARED
-    ${LIBSRC}
+    src/libliquid.c
     $<TARGET_OBJECTS:agc>
     $<TARGET_OBJECTS:audio>
     $<TARGET_OBJECTS:buffer>
@@ -376,11 +374,10 @@ if(COVERAGE)
     target_compile_options(${LIBNAME} PRIVATE -coverage -O0 -g)
     target_link_options(${LIBNAME} PRIVATE -coverage)
 endif(COVERAGE)
+
 target_link_libraries(${LIBNAME} c m)
 
-
 set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
-
 
 # see: https://cmake.org/cmake/help/latest/command/install.html#examples
 # TODO: uninstall?
@@ -399,7 +396,6 @@ install(TARGETS
         )
 
 install(FILES include/liquid.h DESTINATION include/liquid)
-
 
 # ---------------------------------------- examples ----------------------------------------
 
@@ -848,25 +844,16 @@ endif(BUILD_DOC)
 # ---------------------------------------- packaging ----------------------------------------
 
 set(CPACK_PACKAGE_NAME liquid)
-set(CPACK_PACKAGE_VENDOR liquidsdr)
+set(CPACK_PACKAGE_VENDOR "Joseph D. Gaeddert")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Software-Defined Radio Digital Signal Processing Library")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY ${CPACK_PACKAGE_NAME})
 set(CPACK_VERBATIM_VARIABLES TRUE)
 include(CPack)
 
-#message("top: CMAKE_SOURCE_DIR         = ${CMAKE_SOURCE_DIR}")
-#message("top: CMAKE_BINARY_DIR         = ${CMAKE_BINARY_DIR}")
-#message("top: CMAKE_CURRENT_SOURCE_DIR = ${CMAKE_CURRENT_SOURCE_DIR}")
-#message("top: CMAKE_CURRENT_BINARY_DIR = ${CMAKE_CURRENT_BINARY_DIR}")
-
-# this file can only use the @VARIABLE@ syntax
-configure_file(src/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
-
 # ---------------------------------------- summary ----------------------------------------
 
 # debug cmake variables
-include(cmake/debug.cmake)
-#liquid_debug_print_vars()
+#include(cmake/debug.cmake)
 
 # cmake config summary
 include(cmake/summary.cmake)
