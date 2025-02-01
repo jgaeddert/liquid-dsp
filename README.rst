@@ -229,19 +229,23 @@ Build
 
 Here is a table of CMake options available for configuring liquid:
 
-.. table:: Linear modulation types available in |liquid|
-   :widths: auto
-
-   ======================== ======= ===========
-   Option                   Default Description
-   ======================== ======= ===========
-    ``BUILD_EXAMPLES``      ON      Compile example programs
-    ``BUILD_SANDBOX``       ON      Compile sandbox (testing) programs
-    ``BUILD_AUTOTESTS``     ON      Parse and compile autotests into executable binary
-    ``BUILD_BENCHMARKS``    ON      Parse and compile benchmarks into executable binary
-    ``ENABLE_SIMD``         ON      Enable use of single instruction, multiple data (SIMD) extensions
-    ``BUILD_DOC``           OFF     Generate documentation
-    ``COVERAGE``            OFF     Set flags to enable code coverage testing
++------------------------+---------+--------------------------------------------------------------------+
+| Option                 | Default | Description                                                        |
++========================+=========+====================================================================+
+| ``BUILD_EXAMPLES``     | ON      | Compile example programs                                           |
++------------------------+---------+--------------------------------------------------------------------+
+| ``BUILD_SANDBOX``      | ON      | Compile sandbox (testing) programs                                 |
++------------------------+---------+--------------------------------------------------------------------+
+| ``BUILD_AUTOTESTS``    | ON      | Parse and compile autotests into executable binary                 |
++------------------------+---------+--------------------------------------------------------------------+
+| ``BUILD_BENCHMARKS``   | ON      | Parse and compile benchmarks into executable binary                |
++------------------------+---------+--------------------------------------------------------------------+
+| ``ENABLE_SIMD``        | ON      | Enable use of single instruction, multiple data (SIMD) extensions  |
++------------------------+---------+--------------------------------------------------------------------+
+| ``BUILD_DOC``          | OFF     | Generate documentation                                             |
++------------------------+---------+--------------------------------------------------------------------+
+| ``COVERAGE``           | OFF     | Set flags to enable code coverage testing                          |
++------------------------+---------+--------------------------------------------------------------------+
 
 For example, if you want to benchmark how fast a vector dot product
 runs without SIMD extensions, you could run the following:
