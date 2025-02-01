@@ -238,7 +238,9 @@ IIRFILT() IIRFILT(_create_prototype)(liquid_iirdes_filtertype _ftype,
     float A[h_len];
 
     // design filter (compute coefficients)
-    liquid_iirdes(_ftype, _btype, _format, _order, _fc, _f0, _ap, _as, B, A);
+    int err = liquid_iirdes(_ftype, _btype, _format, _order, _fc, _f0, _ap, _as, B, A);
+    if (err != LIQUID_OK)
+        return NULL;
 
     // move coefficients to type-specific arrays (e.g. float complex)
     TC Bc[h_len];
