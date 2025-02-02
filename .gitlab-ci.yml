@@ -66,7 +66,7 @@ legacy:
     - apt-get -qq install -y --no-install-recommends virtualenv automake autoconf python3-dev
     - virtualenv legacy
     - source legacy/bin/activate
-    - pip install -r requirements.txt
+    - pip install numpy "pybind11[global]"
     - ./bootstrap.sh
     - ./configure
     - make -j4
