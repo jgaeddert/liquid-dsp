@@ -50,7 +50,7 @@ int main(int argc, char*argv[])
 
     // test logging with custom object
     printf("\ntesting custom log:\n");
-    char fname[] = "autotest/logs/logging_test.log";
+    char fname[] = "logging_test.log";
     FILE * logfile = fopen(fname,"w");
     liquid_logger custom_log = liquid_logger_create();
     liquid_logger_set_level(custom_log, LIQUID_DEBUG);
