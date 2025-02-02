@@ -49,7 +49,7 @@ liquid-dsp only relies on ``libc`` and ``libm`` (standard C and math)
 libraries to run; however liquid will take advantage of other libraries
 (such as `FFTW <http://www.fftw.org)>`_ if they are available.
 Starting with version 1.7.0, liquid-dsp has moved to the
-`CMake <https://cmake.org>` build system which can be installed with
+`CMake <https://cmake.org>`_ build system which can be installed with
 ``brew install cmake`` on macOS,
 ``sudo apt-get install cmake`` on Debian variants.
 
@@ -258,7 +258,7 @@ Here is a table of CMake options available for configuring liquid:
 +------------------------+---------+--------------------------------------------------------------------+
 | ``ENABLE_SIMD``        | ON      | Enable use of single instruction, multiple data (SIMD) extensions  |
 +------------------------+---------+--------------------------------------------------------------------+
-| ``BUILD_SANDBOX``      | ON      | Compile sandbox (testing) programs                                 |
+| ``BUILD_SANDBOX``      | OFF     | Compile sandbox (testing) programs                                 |
 +------------------------+---------+--------------------------------------------------------------------+
 | ``BUILD_DOC``          | OFF     | Generate documentation                                             |
 +------------------------+---------+--------------------------------------------------------------------+
