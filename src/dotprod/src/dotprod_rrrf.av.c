@@ -178,7 +178,7 @@ int dotprod_rrrf_print(dotprod_rrrf _q)
     return LIQUID_OK;
 }
 
-// exectue vectorized structured inner dot product
+// execute vectorized structured inner dot product
 int dotprod_rrrf_execute(dotprod_rrrf _q,
                          float *      _x,
                          float *      _r)

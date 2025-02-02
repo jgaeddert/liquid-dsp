@@ -8,22 +8,25 @@ execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/version.sh
 
 # project definition
 project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
-#project(liquid VERSION 1.6.0 LANGUAGES C CXX)
 
 # ---------------------------------------- options ----------------------------------------
 
 option(BUILD_EXAMPLES   "Set to ON to build examples"           ON)
-option(BUILD_SANDBOX    "Set to ON to build sanbox programs"    ON)
 option(BUILD_AUTOTESTS  "Set to ON to build autotest program"   ON)
 option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  ON)
-#option(BUILD_DOCS     "Set to ON to build documentation"      OFF)
-option(COVERAGE       "Set to ON to build with code coverage" OFF)
+option(ENABLE_SIMD      "Set to ON to build SIMD extensions"    ON)
+option(BUILD_SANDBOX    "Set to ON to build sandbox programs"   OFF)
+option(BUILD_DOC        "Set to ON to build documentation"      OFF)
+option(COVERAGE         "Set to ON to build with code coverage" OFF)
 #option(PROFILE        "Set to ON to build with profiling"     OFF)
 option(PYTHON           "Set to ON to build python bindings"   ON)
 
 if(COVERAGE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif(COVERAGE)
+
+# target_sources() command converts relative paths to absolute.
+cmake_policy(SET CMP0076 NEW)
 
 set(LIBNAME liquid)
 
@@ -40,6 +43,10 @@ include (CheckFunctionExists)
 include (CheckLibraryExists)
 include (CheckSymbolExists)
 
+# check for hardware acceleration
+include(cmake/FindSIMD.cmake)
+# TODO: check for FFTW
+
 # global flags
 if (MSVC)
     # warning level 4
@@ -49,19 +56,13 @@ else()
     add_compile_options(-Wall -fPIC -O3 -Wno-deprecated -Wno-deprecated-declarations)
 endif()
 
-# include files
-# mmintrin.h
-# xmmintrin.h
-# emmintrin.h
-# pmmintrin.h
-# smmintrin.h
-# arm_neon.h
-# fftw3.h (bench/fftbench.c)
-
 include (CheckTypeSize)
 check_type_size(int SIZEOF_INT LANGUAGE C)
 
-configure_file(config.h.cmake config.h)
+configure_file(cmake/config.h.cmake config.h)
+
+# this file can only use the @VARIABLE@ syntax
+#configure_file(cmake/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 
 #target_include_directories(test PRIVATE include)
 include_directories(include .)
@@ -82,11 +83,7 @@ add_library(buffer OBJECT
 add_library(channel OBJECT
     src/channel/src/channel_cccf.c)
 
-add_library(dotprod OBJECT
-    src/dotprod/src/dotprod_cccf.c
-    src/dotprod/src/dotprod_crcf.c
-    src/dotprod/src/dotprod_rrrf.c
-    src/dotprod/src/sumsq.c)
+add_library(dotprod OBJECT)
 
 add_library(equalization OBJECT
     src/equalization/src/equalizer_cccf.c
@@ -269,16 +266,64 @@ add_library(vector OBJECT
     src/vector/src/vectorcf_trig.port.c)
 
 
+# ---------------------------------------- SIMD extensions ----------------------------------------
+if (C_NEON_FOUND AND ENABLE_SIMD)
+    target_sources(dotprod PUBLIC
+        src/dotprod/src/dotprod_cccf.neon.c
+        src/dotprod/src/dotprod_crcf.neon.c
+        src/dotprod/src/dotprod_rrrf.neon.c
+        src/dotprod/src/sumsq.c)
+    target_compile_options(dotprod PUBLIC ${C_NEON_FLAGS})
+elseif (C_AVX512_FOUND AND ENABLE_SIMD)
+    target_sources(dotprod PUBLIC
+        src/dotprod/src/dotprod_cccf.avx512f.c
+        src/dotprod/src/dotprod_crcf.avx512f.c
+        src/dotprod/src/dotprod_rrrf.avx512f.c
+        src/dotprod/src/sumsq.avx512f.c)
+    target_compile_options(dotprod PUBLIC ${C_AVX512_FLAGS})
+elseif (C_AVX2_FOUND AND ENABLE_SIMD)
+    target_sources(dotprod PUBLIC
+        src/dotprod/src/dotprod_cccf.avx.c
+        src/dotprod/src/dotprod_crcf.avx.c
+        src/dotprod/src/dotprod_rrrf.avx.c
+        src/dotprod/src/sumsq.avx.c)
+    target_compile_options(dotprod PUBLIC ${C_AVX2_FLAGS})
+elseif (C_AVX_FOUND AND ENABLE_SIMD)
+    target_sources(dotprod PUBLIC
+        src/dotprod/src/dotprod_cccf.avx.c
+        src/dotprod/src/dotprod_crcf.avx.c
+        src/dotprod/src/dotprod_rrrf.avx.c
+        src/dotprod/src/sumsq.avx.c)
+    target_compile_options(dotprod PUBLIC ${C_AVX_FLAGS})
+elseif (C_SSE4_FOUND AND ENABLE_SIMD)
+    target_sources(dotprod PUBLIC
+        src/dotprod/src/dotprod_cccf.sse.c
+        src/dotprod/src/dotprod_crcf.sse.c
+        src/dotprod/src/dotprod_rrrf.sse.c
+        src/dotprod/src/sumsq.sse.c)
+    target_compile_options(dotprod PUBLIC ${C_SSE4_FLAGS})
+elseif (C_ALTIVEC_FOUND AND ENABLE_SIMD)
+    target_sources(dotprod PUBLIC
+        src/dotprod/src/dotprod_cccf.c
+        src/dotprod/src/dotprod_crcf.av.c
+        src/dotprod/src/dotprod_rrrf.av.c
+        src/dotprod/src/sumsq.c)
+else()
+    # portable C version
+    target_sources(dotprod PUBLIC
+        src/dotprod/src/dotprod_cccf.c
+        src/dotprod/src/dotprod_crcf.c
+        src/dotprod/src/dotprod_rrrf.c
+        src/dotprod/src/sumsq.c)
+endif()
 
 # ---------------------------------------- main library ----------------------------------------
 
 # necessary to include this for the generated "config.h" header
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-set(LIBSRC src/libliquid.c)
-
 add_library(${LIBNAME} SHARED
-    ${LIBSRC}
+    src/libliquid.c
     $<TARGET_OBJECTS:agc>
     $<TARGET_OBJECTS:audio>
     $<TARGET_OBJECTS:buffer>
@@ -330,15 +375,10 @@ if(COVERAGE)
     target_compile_options(${LIBNAME} PRIVATE -coverage -O0 -g)
     target_link_options(${LIBNAME} PRIVATE -coverage)
 endif(COVERAGE)
+
 target_link_libraries(${LIBNAME} c m)
 
-add_executable(test_libliquid examples/libliquid_example.c)
-target_include_directories(test_libliquid PRIVATE ${INCLUDE})
-
-target_link_libraries(test_libliquid ${LIBNAME})
-
 set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
-
 
 # see: https://cmake.org/cmake/help/latest/command/install.html#examples
 # TODO: uninstall?
@@ -357,7 +397,6 @@ install(TARGETS
         )
 
 install(FILES include/liquid.h DESTINATION include/liquid)
-
 
 # ---------------------------------------- examples ----------------------------------------
 
@@ -658,7 +697,7 @@ if(BUILD_AUTOTESTS)
         COMMAND ${PROJECT_BINARY_DIR}/autoscript / autotest ${AUTOTESTS} > autotest_include.h
         )
 
-    # need to create output logging directory
+    # create output logging directory
     add_custom_command(
         OUTPUT autotest/logs
         COMMAND mkdir -p autotest/logs
@@ -682,9 +721,9 @@ if(BUILD_AUTOTESTS)
         target_link_options(xautotest PRIVATE -coverage)
     endif(COVERAGE)
 
-    # enable testing
+    # enable testing; might consider splitting these up for parallel execution
     enable_testing()
-    add_test(NAME test COMMAND test_libliquid)
+    add_test(NAME test COMMAND xautotest)
 endif(BUILD_AUTOTESTS)
 
 
@@ -795,23 +834,21 @@ if(BUILD_BENCHMARKS)
 endif(BUILD_BENCHMARKS)
 
 
+# ---------------------------------------- documentation ----------------------------------------
+
+# enable examples
+if(BUILD_DOC)
+    add_subdirectory(doc)
+endif(BUILD_DOC)
+
 # ---------------------------------------- packaging ----------------------------------------
 
 set(CPACK_PACKAGE_NAME liquid)
-set(CPACK_PACKAGE_VENDOR liquidsdr)
+set(CPACK_PACKAGE_VENDOR "Joseph D. Gaeddert")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Software-Defined Radio Digital Signal Processing Library")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY ${CPACK_PACKAGE_NAME})
 set(CPACK_VERBATIM_VARIABLES TRUE)
 include(CPack)
-
-#message("top: CMAKE_SOURCE_DIR         = ${CMAKE_SOURCE_DIR}")
-#message("top: CMAKE_BINARY_DIR         = ${CMAKE_BINARY_DIR}")
-#message("top: CMAKE_CURRENT_SOURCE_DIR = ${CMAKE_CURRENT_SOURCE_DIR}")
-#message("top: CMAKE_CURRENT_BINARY_DIR = ${CMAKE_CURRENT_BINARY_DIR}")
-
-# this file can only use the @VARIABLE@ syntax
-configure_file(src/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
-
 
 # ---------------------------------------- python bindings ----------------------------------------
 
@@ -821,8 +858,8 @@ if(PYTHON)
 
     set(LIBNAME_PYTHON pyliquid)
     pybind11_add_module(${LIBNAME_PYTHON} MODULE
+        src/libliquid.c
         bind/liquid.python.cc
-        ${LIBSRC}
         $<TARGET_OBJECTS:agc>
         $<TARGET_OBJECTS:audio>
         $<TARGET_OBJECTS:buffer>
@@ -859,14 +896,10 @@ if(PYTHON)
     install(TARGETS ${LIBNAME_PYTHON} LIBRARY DESTINATION .)
 endif(PYTHON)
 
-## dump a (sorted) list of cmake variables
-#get_cmake_property(_variableNames VARIABLES)
-#list (SORT _variableNames)
-#foreach (_variableName ${_variableNames})
-#    message(STATUS "${_variableName}=${${_variableName}}")
-#endforeach()
-
 # ---------------------------------------- summary ----------------------------------------
+
+# debug cmake variables
+#include(cmake/debug.cmake)
 
 # cmake config summary
 include(cmake/summary.cmake)

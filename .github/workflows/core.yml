@@ -22,33 +22,28 @@ jobs:
       if: runner.os == 'macos'
       run: |
         brew update
-        brew install cmake pybind11 virtualenv
+        brew install cmake
 
     - name: setup (linux)
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update --fix-missing
-        sudo apt-get install -y --no-install-recommends build-essential cmake pybind11-dev virtualenv python3-dev
+        sudo apt-get install -y --no-install-recommends cmake valgrind time curl
 
     #- name: Setup libfec
     #  run: git clone https://github.com/jgaeddert/libfec.git && cd libfec && ./configure && make && sudo make install
 
-    - name: Build and test
+    - name: build
       run: |
-        virtualenv env/liquid
-        source env/liquid/bin/activate
-        python -m pip install pybind11 numpy matplotlib
         mkdir build
         cd build
-        cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=ON -DBUILD_EXAMPLES=ON -DPYTHON=ON ..
-        make
+        cmake ..
+        make -j2
+
+    - name: check
+      run: |
+        cd build
         ./xautotest -v -o autotest.json
-        python3 -c "import liquid as dsp; print('liquid-dsp python version:',dsp.__version__)"
-        #make install
-        #ldconfig
-        #make check-link
-        #make doc-check
-        #make bench
 
     - name: install
       run: |

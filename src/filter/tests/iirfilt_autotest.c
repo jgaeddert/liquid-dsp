@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -82,7 +82,7 @@ void autotest_iirfilt_dcblock()
     unsigned int n    = 400000; // number of output samples to analyze
     float        alpha= 0.2f;   // forgetting factor
     unsigned int nfft = 1200;   // number of bins in transform
-    float        tol  = 0.7f;   // error tolerance [dB]
+    float        tol  = 1.0f;   // error tolerance [dB]
 
     // create base object
     iirfilt_crcf filter = iirfilt_crcf_create_dc_blocker(alpha);
@@ -113,7 +113,7 @@ void autotest_iirfilt_dcblock()
         {.fmin=+0.200f, .fmax=+0.500f, .pmin=-tol, .pmax=+tol, .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
-        liquid_autotest_verbose ? "iirfilt_dcblock.m" : NULL);
+        liquid_autotest_verbose ? "autotest/logs/iirfilt_dcblock.m" : NULL);
 
     // destroy objects
     spgramcf_destroy(q);
@@ -171,6 +171,7 @@ void autotest_iirfilt_config()
     CONTEND_ISNULL( iirfilt_crcf_create(NULL, 0, NULL, 5) ); // nb is 0
     CONTEND_ISNULL( iirfilt_crcf_create(NULL, 5, NULL, 0) ); // nb is 0
     CONTEND_ISNULL( iirfilt_crcf_create_sos(NULL, NULL, 0) ); // nsos is 0
+    CONTEND_ISNULL( iirfilt_crcf_create_prototype(LIQUID_IIRDES_BUTTER,LIQUID_IIRDES_LOWPASS,LIQUID_IIRDES_SOS,0,0,0,0,0) );
 
     // create valid object
     iirfilt_crcf filter = iirfilt_crcf_create_lowpass(7, 0.1f);

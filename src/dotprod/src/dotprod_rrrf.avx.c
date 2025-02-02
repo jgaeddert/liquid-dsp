@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
+#include <immintrin.h>
 #include "liquid.internal.h"
-
-// include proper SIMD extensions for x86 platforms
-// NOTE: these pre-processor macros are defined in config.h
-
-#include <immintrin.h>  // AVX
 
 #define DEBUG_DOTPROD_RRRF_AVX     0
 

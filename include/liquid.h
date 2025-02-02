@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ extern "C" {
 #define LIQUID_VERSION_STR(num) LIQUID_VERSION_STR_EX(num)
 
 #define LIQUID_VERSION_MAJOR    1
-#define LIQUID_VERSION_MINOR    6
+#define LIQUID_VERSION_MINOR    7
 #define LIQUID_VERSION_PATCH    0
 #define LIQUID_VERSION_DEV      0
 
