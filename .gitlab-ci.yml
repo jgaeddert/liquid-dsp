@@ -63,7 +63,10 @@ coverage:
 legacy:
   stage: test
   script:
-    - apt-get -qq install -y --no-install-recommends automake autoconf
+    - apt-get -qq install -y --no-install-recommends virtualenv automake autoconf python3-dev
+    - virtualenv legacy
+    - source legacy/bin/activate
+    - pip install -r requirements.txt
     - ./bootstrap.sh
     - ./configure
     - make -j4
