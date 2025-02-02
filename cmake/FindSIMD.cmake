@@ -1,5 +1,4 @@
 INCLUDE(CheckCSourceRuns)
-INCLUDE(CheckCSourceCompiles)
 INCLUDE(CheckCXXSourceRuns)
 
 SET(SSE4_CODE "
@@ -12,14 +11,13 @@ SET(SSE4_CODE "
     __m128 h = _mm_loadu_ps(_h);
     __m128 s = _mm_mul_ps(v, h);
     // unload packed array
-    float w[4];
-    _mm_storeu_ps(w, s);
+    volatile float w[4];
+    _mm_storeu_ps((float*)w, s);
     return (w[0]== 0.f && w[1]== -1.f && w[2]== 2.f && w[3]== -3.f) ? 0 : 1;
   }
 ")
 
-# TODO: distinguish between AVX, FMA, AVX2
-SET(AVX2_CODE "
+SET(AVX_CODE "
   #include <immintrin.h>
   int main()
   {
@@ -29,12 +27,16 @@ SET(AVX2_CODE "
     __m256 h = _mm256_loadu_ps(_h);
     __m256 s = _mm256_mul_ps(v, h);
     // unload packed array
-    float w[4];
-    _mm256_storeu_ps(w, s);
+    volatile float w[8];
+    _mm256_storeu_ps((float*)w, s);
     return (w[ 0]== 0.f && w[ 1]== -1.f && w[ 2]== 2.f && w[ 3]== -3.f &&
             w[ 4]== 4.f && w[ 5]== -5.f && w[ 6]== 6.f && w[ 7]== -7.f) ? 0 : 1;
   }
 ")
+
+# TODO: distinguish between AVX and AVX2 if, at some point, AVX2-specific code
+# needs to be added.
+SET(AVX2_CODE ${AVX_CODE})
 
 SET(AVX512_CODE "
   #include <immintrin.h>
@@ -46,8 +48,8 @@ SET(AVX512_CODE "
     __m512 h = _mm512_loadu_ps(_h);
     __m512 s = _mm512_mul_ps(v, h);
     // unload packed array
-    float w[4];
-    _mm512_storeu_ps(w, s);
+    volatile float w[16];
+    _mm512_storeu_ps((float*)w, s);
     return (w[ 0]== 0.f && w[ 1]== -1.f && w[ 2]== 2.f && w[ 3]== -3.f &&
             w[ 4]== 4.f && w[ 5]== -5.f && w[ 6]== 6.f && w[ 7]== -7.f &&
             w[ 8]== 8.f && w[ 9]== -9.f && w[10]==10.f && w[11]==-11.f &&
@@ -94,7 +96,6 @@ MACRO(CHECK_SIMD lang type flags)
     #message("testing ${lang} ${type} ${__FLAG}")
     IF(NOT ${lang}_${type}_FOUND)
       SET(CMAKE_REQUIRED_FLAGS ${__FLAG})
-      # TODO: check that program runs and returns proper exit code 0
       IF(lang STREQUAL "CXX")
         CHECK_CXX_SOURCE_RUNS("${${type}_CODE}" ${lang}_HAS_${type}_${__FLAG_I})
       ELSE()
