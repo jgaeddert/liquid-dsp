@@ -10,7 +10,7 @@ dynamic = ["version"] # set automatically from cmake
 requires-python = ">= 3.7"
 authors = [{name = "Joseph D. Gaeddert", email = "joseph@liquidsdr.org"}]
 dependencies = []
-readme = "README.md"
+readme = "README.rst"
 license = {file = "LICENSE"}
 keywords = ["digital","signal","processing","DSP","software-defined radio","SDR"]
 classifiers = [
