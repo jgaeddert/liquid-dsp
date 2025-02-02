@@ -9,6 +9,7 @@
 *.o
 *.so
 *~
+build
 
 # ignore swap files for vim editing
 *.swp
@@ -36,6 +37,7 @@ autotest/logs/*.bin
 autotest/logs/*.gnu
 autotest/logs/*.log
 readme.*
+liquid_linker_test
 
 # miscellany
 octave-core

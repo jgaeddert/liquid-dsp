@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -91,7 +91,7 @@ typedef struct {
 //   autotest_t scripts[NUM_AUTOSCRIPTS]
 //   #define NUM_PACKAGES
 //   struct package_t packages[NUM_PACKAGES]
-#include "../autotest_include.h"
+#include "autotest_include.h"
 
 // execute a specific test
 void execute_autotest(autotest_t * _test, int _verbose);

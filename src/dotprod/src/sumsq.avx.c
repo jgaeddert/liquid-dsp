@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,31 +27,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
+#include <immintrin.h>
 #include "liquid.internal.h"
-
-// include proper SIMD extensions for x86 platforms
-// NOTE: these pre-processor macros are defined in config.h
-
-#if HAVE_MMX
-#include <mmintrin.h>   // MMX
-#endif
-
-#if HAVE_SSE
-#include <xmmintrin.h>  // SSE
-#endif
-
-#if HAVE_SSE2
-#include <emmintrin.h>  // SSE2
-#endif
-
-#if HAVE_SSE3
-#include <pmmintrin.h>  // SSE3
-#endif
-
-#if HAVE_AVX
-#include <immintrin.h>  // AVX
-#endif
 
 // sum squares, basic loop
 //  _v      :   input array [size: 1 x _n]

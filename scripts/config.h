@@ -169,7 +169,7 @@
 #define PACKAGE_NAME "liquid-dsp"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "liquid-dsp 1.6.0"
+#define PACKAGE_STRING "liquid-dsp 1.7.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "liquid-dsp"
@@ -178,7 +178,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.6.0"
+#define PACKAGE_VERSION "1.7.0"
 
 /* The size of `int', as computed by sizeof. */
 #define SIZEOF_INT 4

@@ -97,20 +97,6 @@ void _liquid_error_downgrade_disable(void);
 // MODULE : fec (forward error-correction)
 //
 
-// checksum / cyclic redundancy check (crc)
-
-#define CRC8_POLY 0x07
-#define CRC16_POLY 0x8005
-#define CRC24_POLY 0x5D6DCB
-#define CRC32_POLY 0x04C11DB7
-
-unsigned int checksum_generate_key(unsigned char * _msg, unsigned int _msg_len);
-unsigned int crc8_generate_key(unsigned char * _msg, unsigned int _msg_len);
-unsigned int crc16_generate_key(unsigned char * _msg, unsigned int _msg_len);
-unsigned int crc24_generate_key(unsigned char * _msg, unsigned int _msg_len);
-unsigned int crc32_generate_key(unsigned char * _msg, unsigned int _msg_len);
-
-
 // fec : basic object
 struct fec_s {
     // common

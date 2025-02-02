@@ -23,8 +23,8 @@
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
-#define LIQUID_RANDOM_AUTOTEST_NUM_TRIALS (100000)
-#define LIQUID_RANDOM_AUTOTEST_ERROR_TOL  (0.1)
+#define LIQUID_RANDOM_AUTOTEST_NUM_TRIALS (250000)
+#define LIQUID_RANDOM_AUTOTEST_ERROR_TOL  (0.15)
 
 // uniform
 void autotest_randf()

@@ -1,7 +1,50 @@
+# Changelog
 
-## Latest improvements ##
+## 1.7.0 - 2025-02-01
 
-## Improvements for v1.6.0 ##
+Version 1.7.0 includes support for the [CMake](https://cmake.org) build
+system. While the existing autotools environment will be supported for a time,
+this will be removed in a future release.
+This version also includes many changes to improve
+[testing coverage](https://app.codecov.io/gh/jgaeddert/liquid-dsp/)
+across all interfaces, and make the interfaces across objects consistent.
+
+  * build
+    - migrated to the [CMake](https://cmake.org) build system, including
+      building examples, sandbox programs, benchmarks, autotests, and
+      detecting SIMD instruction extensions.
+    - increased testing across the board including automated memory validation
+      with [valgrind](https://valgrind.org)
+    - detected and fixed memory leaks for numerous methods and testing
+      harnesses including `bessel_azpdf` (thanks, @andreasbombe),
+      `ofdmflexframesync`, `qdsync`, `qs1dsearch` (thanks, @nowls),
+      `framesync64`, `eqrls`, and `fskdem`
+    - added new `LIQUID_ENOCONV` error type to identify errors where
+      algorithms did not converge
+    - added new `LIQUID_ENOIMP` error type to identify methods that are not
+      yet implemented
+    - replaced warnings with internal error handling for many existing object
+      methods
+    - fixed SONAME not set in shared library (thanks again, @andreasbombe)
+    - migrated README from markdown to re-structured text
+  * framing
+    - added more description to method definitions such as qpacketmodem and
+      qdetector
+    - dsssframe64: extended functionality to use qdsync, added standard
+      methods such as copy(), added interfaces for specifying thresholds,
+      reduced default spreading gain
+  * filter
+    - firinterp: added flush() method to run zeros through filter
+    - rresamp: allow for default bandwidth with an input of -1
+  * nco
+    - fixed issue where frequency was being set improperly, added more
+      extensive testing
+    - improved the NCO object with VCO precision (thanks, @ArtemPisarenko)
+  * random
+    - added more extensive testing for various distributions to ensure values
+      are generated properly
+
+## 1.6.0 - 2023-06-19
 
 Version 1.6.0 includes a new qdsync object to greatly simplify the frame
 synchronization process in liquid, allowing for both detection and channel
@@ -38,7 +81,7 @@ methods for consistency.
       order for generator polynomial and internal state definition to be
       more consistent with literature and readily-available genpolys
 
-## Improvements for v1.5.0 ##
+## 1.5.0 - 2022-11-20
 
 This release includes substantially improved testing coverage, deep copy()
 methods for nearly all objects, improved speed, and resolves a number of
@@ -101,7 +144,7 @@ issues and pull requests.
       similar to bisection search, but to find potentially non-continuous
       minimum/maximum of function
 
-## Improvements for v1.4.0 ##
+## 1.4.0 - 2022-02-03
 
   * autotest
     - automated code coverage testing (72%)
@@ -157,7 +200,7 @@ issues and pull requests.
     - modem: adding type extension for more consistency: `modem` -> `modemcf`,
       supporting backwards compatibility with API shim
 
-## Improvements for v1.3.2 ##
+## 1.3.1 - 2019-07-28
 
   * autotest
     - runs with random seeds (based on time) for diveristy
@@ -194,7 +237,7 @@ issues and pull requests.
   * nco
     - improving consistency across platforms
 
-## Improvements for v1.3.1 ##
+## 1.3.1 - 2017-10-23
 
   * improved selection of SSE/MMX extension flags for gcc
   * agc
@@ -210,7 +253,7 @@ issues and pull requests.
     - fixed issue with order of operations causing inconsistent behavior across
       different platforms
 
-## Major improvements for v1.3.0 ##
+## 1.3.0 - 2016-12-30
 
   * New MIT/X11 license (https://opensource.org/licenses/MIT)
   * agc (automatic gain control)
@@ -300,7 +343,7 @@ issues and pull requests.
     - global header file (`liquid.h`) include more structured source
     - consistent naming of reset() methods for most objects
 
-## Major improvements for v1.2.0 ##
+## 1.2.0 - 2012-04-26
 
   * dotprod
     - leveraging SIMD extensions for vector operations (SSE2, SSE3)
@@ -315,7 +358,7 @@ issues and pull requests.
       LIQUID_MODEM_QAM16
     - new type definitions for analog modems
 
-## Major improvements for v1.1.0 ##
+## 1.1.0 - 2011-12-23
 
   * build
     - simplifying build environment by explicitly defining object
@@ -371,3 +414,8 @@ issues and pull requests.
       equalization
   * optim
     - simplified interface to gradient search
+
+## [1.0.0] - 2011-04-29
+
+_First release._
+

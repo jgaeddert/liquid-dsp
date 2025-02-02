@@ -48,6 +48,7 @@ qs1dsearch qs1dsearch_create(liquid_utility_1d _utility,
     if (_utility == NULL)
         return liquid_error_config("qs1dsearch_create(), utility callback cannot be NULL");
 
+    // allocate main object memory and initialize
     qs1dsearch q = (qs1dsearch) malloc( sizeof(struct qs1dsearch_s) );
     q->utility   = _utility;
     q->context   = _context;
@@ -84,6 +85,11 @@ int qs1dsearch_reset(qs1dsearch _q)
 {
     _q->init = 0;
     _q->num_steps = 0;
+    _q->vn = 0.0f; _q->un = 0.0f;
+    _q->va = 0.0f; _q->ua = 0.0f;
+    _q->v0 = 0.0f; _q->u0 = 0.0f;
+    _q->vb = 0.0f; _q->ub = 0.0f;
+    _q->vp = 0.0f; _q->up = 0.0f;
     return LIQUID_OK;
 }
 
