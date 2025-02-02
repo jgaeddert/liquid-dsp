@@ -20,7 +20,7 @@ build:
     - rm -rf build
     - mkdir build
     - cd build
-    - cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=ON -DBUILD_EXAMPLES=ON -DBUILD_SANDBOX=ON -DCOVERAGE=OFF ..
+    - cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=ON -DBUILD_EXAMPLES=ON -DBUILD_SANDBOX=ON -DCOVERAGE=OFF -DPYTHON=OFF ..
     - make -j4
     - ./benchmark -q -o benchmark.json -f
     - ./xautotest -q -o autotest.json
@@ -41,7 +41,7 @@ coverage:
     - rm -rf build
     - mkdir build
     - cd build
-    - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=ON -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_SANDBOX=OFF ..
+    - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=ON -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_SANDBOX=OFF -DPYTHON=OFF ..
     - make -j4
     - ./xautotest -q -o autotest.json
     - cd ..
