@@ -311,9 +311,8 @@ int FIRPFBCH2(_execute_analyzer)(FIRPFBCH2() _q,
     // execute IFFT, store result in buffer 'x'
     FFT_EXECUTE(_q->ifft);
 
-    // scale result by 1/num_channels (C transform)
-    for (i=0; i<_q->M; i++)
-        _y[i] = _q->x[i] / (float)(_q->M);
+    // move to output array
+    memmove(_y, _q->x, _q->M*sizeof(TO));
 
     // update flag
     _q->flag = 1 - _q->flag;
