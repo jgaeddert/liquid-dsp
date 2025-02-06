@@ -1,54 +1,88 @@
-# base configuration
+# gitlab ci/cd pipeline configuration
 image: debian
-stages: [build, test]
+
+stages:
+  - build
+  - test
+
+variables:
+  DEBIAN_FRONTEND: noninteractive
+
 before_script:
   - apt-get -qq update
-  - apt-get -qq install -y --no-install-recommends automake autoconf gcc g++ gcovr make valgrind time curl
+  - apt-get -qq install -y --no-install-recommends build-essential cmake valgrind time curl
 
-# build from scratch
-compile:
+# build main library and run test programs
+build:
   stage: build
   script:
+    - rm -rf build
+    - mkdir build
+    - cd build
+    - cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=ON -DBUILD_EXAMPLES=ON -DBUILD_SANDBOX=ON -DCOVERAGE=OFF ..
+    - make -j4
+    - ./benchmark -q -o benchmark.json -f
+    - ./xautotest -q -o autotest.json
+    #- make check-doc # compile and run documenation checks (e.g. example code in README)
+    - make install
+    - ldconfig
+    - cd ..
+    - make -f scripts/liquid_linker_test.mk
+  artifacts:
+    paths:
+      - build/benchmark.json
+      - build/autotest.json
+
+# generate coverage report and push to codecov.io
+coverage:
+  stage: test
+  script:
+    - rm -rf build
+    - mkdir build
+    - cd build
+    - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=ON -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_SANDBOX=OFF ..
+    - make -j4
+    - ./xautotest -q -o autotest.json
+    - cd ..
+    - apt-get -qq install -y --no-install-recommends virtualenv
+    - virtualenv coverage
+    - source coverage/bin/activate
+    - pip install codecov-cli gcovr==7.0
+    - gcovr --version
+    - gcovr --filter="src/.*/src/.*.c" --print-summary | tee coverage.out
+    - codecovcli --version
+    - codecovcli upload-process -t $CODECOV_TOKEN --git-service gitlab --slug jgaeddert/liquid-dsp
+  coverage: '/lines: \d+\.\d+%/'
+  artifacts:
+    paths:
+      - coverage.out
+      - build/autotest.json
+
+# test building using legacy environment
+legacy:
+  stage: test
+  script:
+    - apt-get -qq install -y --no-install-recommends automake autoconf
     - ./bootstrap.sh
     - ./configure
     - make -j4
-  artifacts: # save output objects for test stages
-    paths: [makefile, configure, config.h, config.h.in]
-
-# test installation and linking appropriately
-install:
-  stage: test
-  script:
-    - make -j4
+    - make check-doc
     - make install
     - ldconfig
-    - make check-link
+    - make -f scripts/liquid_linker_test.mk
 
-# compile and run benchmark program
-bench:
+# test cross-compiling with platformio
+platformio:
   stage: test
   script:
-    - make -j4 bench
-  artifacts:
-    paths: [benchmark.json]
-
-# run all test programs
-check:
-  stage: test
-  script:
-    - ./configure
-    - make -j4 check
-  artifacts:
-    paths: [autotest.json]
-
-# compile and run documenation checks (e.g. example code in README.md)
-check-doc:
-  stage: test
-  script:
-    - make check-doc
+    - apt-get -qq install -y --no-install-recommends virtualenv
+    - virtualenv platformio
+    - source platformio/bin/activate
+    - pip install platformio
+    - pio ci --lib="." --board=pico examples/platformio_example.c
 
 # compile and run all example programs, timing how long each takes to run
-examples:
+.examples:
   stage: test
   script:
     - make -j4 examples
@@ -59,7 +93,7 @@ examples:
     paths: [run_examples.sh, time.txt]
 
 # compile and run all autotest programs with valgrind
-autotest-memcheck:
+.autotest-memcheck:
   stage: test
   script:
     - make -j4 xautotest
@@ -67,23 +101,4 @@ autotest-memcheck:
     - ./scripts/valgrind_eval.py -output valgrind -test 881
   artifacts:
     paths: [valgrind/*]
-
-# build from scratch
-coverage:
-  stage: test
-  script:
-    - apt-get -qq install -y --no-install-recommends virtualenv
-    - virtualenv codecov
-    - source codecov/bin/activate
-    - pip install codecov-cli
-    - make distclean
-    - ./bootstrap.sh
-    - ./configure --enable-coverage
-    - make -j4 coverage
-    - codecovcli --version
-    - codecovcli upload-process -t $CODECOV_TOKEN --git-service gitlab --slug jgaeddert/liquid-dsp
-
-  coverage: '/lines: \d+\.\d+%/'
-  artifacts:
-    paths: [coverage.out]
 

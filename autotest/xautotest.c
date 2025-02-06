@@ -92,7 +92,7 @@ typedef struct {
 //   autotest_t scripts[NUM_AUTOSCRIPTS]
 //   #define NUM_PACKAGES
 //   struct package_t packages[NUM_PACKAGES]
-#include "../autotest_include.h"
+#include "autotest_include.h"
 
 // 
 // helper functions:

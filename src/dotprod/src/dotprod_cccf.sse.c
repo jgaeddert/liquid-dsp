@@ -27,23 +27,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <immintrin.h>
 
 #include "liquid.internal.h"
-
-// include proper SIMD extensions for x86 platforms
-// NOTE: these pre-processor macros are defined in config.h
-
-#if HAVE_SSE
-#include <xmmintrin.h>  // SSE
-#endif
-
-#if HAVE_SSE2
-#include <emmintrin.h>  // SSE2
-#endif
-
-#if HAVE_SSE3
-#include <pmmintrin.h>  // SSE3
-#endif
 
 #define DEBUG_DOTPROD_CCCF_sse   0
 

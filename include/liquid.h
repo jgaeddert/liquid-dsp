@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,14 +45,29 @@ extern "C" {
 #  undef LIQUID_VERSION_NUMBER
 #endif
 
-//
 // Compile-time version numbers
-//
-// LIQUID_VERSION = "X.Y.Z"
-// LIQUID_VERSION_NUMBER = (X*1000000 + Y*1000 + Z)
-//
-#define LIQUID_VERSION          "1.6.0"
-#define LIQUID_VERSION_NUMBER   1006000
+
+// macros for expanding version numbers to string literals
+#define LIQUID_VERSION_STR_EX(num) #num
+#define LIQUID_VERSION_STR(num) LIQUID_VERSION_STR_EX(num)
+
+#define LIQUID_VERSION_MAJOR    1
+#define LIQUID_VERSION_MINOR    7
+#define LIQUID_VERSION_PATCH    0
+#define LIQUID_VERSION_DEV      0
+
+// final version string is constructed by concatenating inidividual string versions
+#define LIQUID_VERSION \
+    LIQUID_VERSION_STR(LIQUID_VERSION_MAJOR) "." \
+    LIQUID_VERSION_STR(LIQUID_VERSION_MINOR) "." \
+    LIQUID_VERSION_STR(LIQUID_VERSION_PATCH)
+
+// final version number is constructed from major, minor, patch
+#define LIQUID_VERSION_NUMBER ( \
+    (uint32_t) ( \
+    (LIQUID_VERSION_MAJOR << 16) | \
+    (LIQUID_VERSION_MINOR <<  8) | \
+    (LIQUID_VERSION_PATCH      )))
 
 //
 // Run-time library version numbers
@@ -9314,13 +9329,13 @@ void SYNTH(_mix_down)(SYNTH() _q, TC _x, TC *_y);                           \
 void SYNTH(_mix_block_up)(SYNTH() _q,                                       \
                           TC *_x,                                           \
                           TC *_y,                                           \
-                          unsigned int _N);                                 \
+                          unsigned int _n);                                 \
                                                                             \
 /* Rotate input vector down by SYNTH angle (stepping)     */                \
 void SYNTH(_mix_block_down)(SYNTH() _q,                                     \
                             TC *_x,                                         \
                             TC *_y,                                         \
-                            unsigned int _N);                               \
+                            unsigned int _n);                               \
                                                                             \
 void SYNTH(_spread)(SYNTH() _q,                                             \
                     TC _x,                                                  \

@@ -16,12 +16,12 @@ coverage:
         threshold: 5
 
 ignore:
-  - autotest/*
-  - examples/*
-  - sandbox/*
-  - scripts/*
-  - src/*/bench/*
-  - src/*/tests/*
+  - "**/autotest/*"
+  - "**/examples/*"
+  - "**/sandbox/*"
+  - "**/scripts/*"
+  - "**/src/*/bench/*"
+  - "**/src/*/tests/*"
 
 # parse coverage reports
 parsers:

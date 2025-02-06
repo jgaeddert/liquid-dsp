@@ -31,8 +31,6 @@
 #include "liquid.internal.h"
 
 // include proper SIMD extensions for x86 platforms
-// NOTE: these pre-processor macros are defined in config.h
-
 #include <immintrin.h>  // AVX
 
 #define DEBUG_DOTPROD_CCCF_AVX   0

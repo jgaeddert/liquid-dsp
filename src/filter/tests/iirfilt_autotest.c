@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -171,6 +171,7 @@ void autotest_iirfilt_config()
     CONTEND_ISNULL( iirfilt_crcf_create(NULL, 0, NULL, 5) ); // nb is 0
     CONTEND_ISNULL( iirfilt_crcf_create(NULL, 5, NULL, 0) ); // nb is 0
     CONTEND_ISNULL( iirfilt_crcf_create_sos(NULL, NULL, 0) ); // nsos is 0
+    CONTEND_ISNULL( iirfilt_crcf_create_prototype(LIQUID_IIRDES_BUTTER,LIQUID_IIRDES_LOWPASS,LIQUID_IIRDES_SOS,0,0,0,0,0) );
 
     // create valid object
     iirfilt_crcf filter = iirfilt_crcf_create_lowpass(7, 0.1f);
