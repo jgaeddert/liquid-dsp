@@ -24,9 +24,13 @@ if(COVERAGE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif(COVERAGE)
 
+# add 'cmake' subdirectory available for custom scripts
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
 # target_sources() command converts relative paths to absolute.
 cmake_policy(SET CMP0076 NEW)
 
+# main library name
 set(LIBNAME liquid)
 
 # require a C99 compiler for all targets
@@ -43,7 +47,7 @@ include (CheckLibraryExists)
 include (CheckSymbolExists)
 
 # check for hardware acceleration
-include(cmake/FindSIMD.cmake)
+find_package(SIMD)
 # TODO: check for FFTW
 
 # global flags
