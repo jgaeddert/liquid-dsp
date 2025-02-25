@@ -89,7 +89,7 @@ processors and platforms. Packaged with liquid-dsp are a number of
 automatic test scripts to validate the correctness of the source code.
 The test scripts are located under each module's ``tests/`` directory and
 take the form of a C source file. When configured with ``BUILD_AUTOTESTS``
-enabled, these tests are parsed, compliled, and linked into an executable
+enabled, these tests are parsed, compiled, and linked into an executable
 which will run the tests.
 
 .. code-block:: bash
@@ -339,13 +339,13 @@ Finally, ``liquid-dsp`` makes extensive use of GNU
 `autoconf <https://www.gnu.org/software/autoconf/>`_,
 `automake <https://www.gnu.org/software/automake/>`_,
 and related tools.
-These are fantastic libraires with amazing functionality and their authors
+These are fantastic libraries with amazing functionality and their authors
 should be lauded for their efforts.
 In a similar vain, much the software I write for a living I give away for
 free;
 however I believe in more permissive licenses to allow individuals the
 flexibility to use software with fewer limitations.
-If these restrictions are not acceptible, ``liquid-dsp`` can be compiled and run
+If these restrictions are not acceptable, ``liquid-dsp`` can be compiled and run
 without use of these external libraries, albeit a bit slower and with limited
 functionality.
 

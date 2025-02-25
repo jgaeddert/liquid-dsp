@@ -1,4 +1,4 @@
-// Demonstate soft demodulation of linear modulation schemes.
+// Demonstrate soft demodulation of linear modulation schemes.
 #include <stdlib.h>
 #include <stdio.h>
 #include <getopt.h>

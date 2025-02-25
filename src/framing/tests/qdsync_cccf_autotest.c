@@ -160,7 +160,7 @@ void autotest_qdsync_cccf_k2() { testbench_qdsync_linear(2, 7, 0.3f); }
 void autotest_qdsync_cccf_k3() { testbench_qdsync_linear(3, 7, 0.3f); }
 void autotest_qdsync_cccf_k4() { testbench_qdsync_linear(4, 7, 0.3f); }
 
-// test setting buffer length ot different sizes throughout run
+// test setting buffer length to different sizes throughout run
 void autotest_qdsync_set_buf_len()
 {
     // options

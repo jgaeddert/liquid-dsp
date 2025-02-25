@@ -137,7 +137,7 @@ int MATRIX(_cgsolve)(T *          _A,
 
         // update r
         if ( ((i+1)%50) == 0) {
-            // peridically re-compute: r = b - A*x1
+            // periodically re-compute: r = b - A*x1
             MATRIX(_mul)(_A,  _n, _n,
                          x1,  _n,  1,
                          Ax1, _n, 1);

@@ -36,7 +36,7 @@ extern "C" {
 
 //
 // Make sure the version and version number macros weren't defined by
-// some prevoiusly included header file.
+// some previously included header file.
 //
 #ifdef LIQUID_VERSION
 #  undef LIQUID_VERSION
@@ -56,7 +56,7 @@ extern "C" {
 #define LIQUID_VERSION_PATCH    0
 #define LIQUID_VERSION_DEV      0
 
-// final version string is constructed by concatenating inidividual string versions
+// final version string is constructed by concatenating individual string versions
 #define LIQUID_VERSION \
     LIQUID_VERSION_STR(LIQUID_VERSION_MAJOR) "." \
     LIQUID_VERSION_STR(LIQUID_VERSION_MINOR) "." \

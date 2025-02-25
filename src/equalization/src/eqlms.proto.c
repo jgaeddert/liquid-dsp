@@ -480,7 +480,7 @@ int EQLMS(_train)(EQLMS()      _q,
 {
     unsigned int p=_q->h_len;
     if (_n < _q->h_len) {
-        return liquid_error(LIQUID_EICONFIG,"eqlms_%s_train(), traning sequence less than filter order",
+        return liquid_error(LIQUID_EICONFIG,"eqlms_%s_train(), training sequence less than filter order",
                 EXTENSION_FULL);
     }
 
