@@ -1,10 +1,9 @@
 # cmake build file for liquid-dsp
 cmake_minimum_required(VERSION 3.10)
 
-# run custom command to parse version number from include/liquid.h
-execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/version.sh
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    OUTPUT_VARIABLE LIQUID_VERSION)
+# parse version number from include/liquid.h
+include(cmake/version.cmake)
+get_liquid_version("${CMAKE_CURRENT_SOURCE_DIR}/include/liquid.h" LIQUID_VERSION)
 
 # project definition
 project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
