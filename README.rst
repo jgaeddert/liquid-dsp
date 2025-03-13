@@ -57,8 +57,7 @@ Installation
 ------------
 
 The recommended way to obtain the source code is to clone the entire
-`repository <https://github.com/jgaeddert/liquid-dsp>`_ from
-`GitHub <https://github.com>`_:
+`repository <https://github.com/jgaeddert/liquid-dsp>`_:
 
 .. code-block:: bash
 
