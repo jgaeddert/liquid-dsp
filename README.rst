@@ -61,7 +61,7 @@ The recommended way to obtain the source code is to clone the entire
 
 .. code-block:: bash
 
-    git clone git://github.com/jgaeddert/liquid-dsp.git
+    git clone https://github.com/jgaeddert/liquid-dsp
 
 Building and installing the main library is a simple as
 
