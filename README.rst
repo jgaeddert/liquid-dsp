@@ -67,6 +67,7 @@ Building and installing the main library is a simple as
 
 .. code-block:: bash
 
+    cd liquid-dsp
     mkdir build
     cd build
     cmake ..
