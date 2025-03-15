@@ -252,7 +252,8 @@ else
         *)
             # TODO: check these flags
             #ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
-            ARCH_OPTION="-ffast-math -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4";;
+            #ARCH_OPTION="-ffast-math -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4";;
+            ARCH_OPTION="";; # -ffast-math causes tests to fail on pi4 due to imprecision
         esac;;
     *)
         # unknown architecture : use portable C version
