@@ -47,7 +47,9 @@ include (CheckLibraryExists)
 include (CheckSymbolExists)
 
 # check for hardware acceleration
-find_package(SIMD)
+if (ENABLE_SIMD)
+    find_package(SIMD)
+endif()
 # TODO: check for FFTW
 
 # global flags
