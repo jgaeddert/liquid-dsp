@@ -865,7 +865,4 @@ include(CPack)
 # cmake config summary
 include(cmake/summary.cmake)
 liquid_print_config_summary()
-message("test")
-message("${FIND_SIMD}")
-message("${C_SSE4_FLAGS}")
 
