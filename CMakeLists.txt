@@ -15,6 +15,7 @@ option(BUILD_EXAMPLES   "Set to ON to build examples"           ON)
 option(BUILD_AUTOTESTS  "Set to ON to build autotest program"   ON)
 option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  ON)
 option(ENABLE_SIMD      "Set to ON to build SIMD extensions"    ON)
+option(FIND_SIMD        "Set to ON to find SIMD extensions"     ON)
 option(BUILD_SANDBOX    "Set to ON to build sandbox programs"   OFF)
 option(BUILD_DOC        "Set to ON to build documentation"      OFF)
 option(COVERAGE         "Set to ON to build with code coverage" OFF)
@@ -47,7 +48,7 @@ include (CheckLibraryExists)
 include (CheckSymbolExists)
 
 # check for hardware acceleration
-if (ENABLE_SIMD)
+if (ENABLE_SIMD AND FIND_SIMD)
     find_package(SIMD)
 endif()
 # TODO: check for FFTW
@@ -864,4 +865,7 @@ include(CPack)
 # cmake config summary
 include(cmake/summary.cmake)
 liquid_print_config_summary()
+message("test")
+message("${FIND_SIMD}")
+message("${C_SSE4_FLAGS}")
 
