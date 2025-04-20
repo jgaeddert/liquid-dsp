@@ -7,9 +7,9 @@
 
 int main() {
     // spectral periodogram options
-    unsigned int nfft  = 1024;  // spectral periodogram FFT size
-    float        alpha = 0.05f; // integration bandwidth
-    //unsigned int num_samples =    2e6;  // number of samples
+    unsigned int nfft        = 1024;    // spectral periodogram FFT size
+    float        alpha       = 0.05f;   // integration bandwidth
+    int          num_samples = 2e6;     // number of samples
 
     // create spectral periodogram
     spgramcf q0 = spgramcf_create_default(nfft);    // infinite integration
@@ -34,9 +34,11 @@ int main() {
     unsigned int i;
     unsigned int  buf_len = 1024;
     float complex buf[buf_len];
-    for (i=0; i<100; i++) {
+    while (num_samples > 0)
+    {
         // write samples to buffer
         msourcecf_write_samples(gen, buf, buf_len);
+        num_samples -= buf_len;
 
         // push resulting sample through periodogram objects
         spgramcf_write(q0, buf, buf_len);
@@ -78,4 +80,3 @@ int main() {
     printf("results written to %s.\n", OUTPUT_FILENAME);
     return 0;
 }
-
