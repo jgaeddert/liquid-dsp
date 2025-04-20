@@ -160,6 +160,7 @@ set(EXAMPLES
     ricek_channel_example
     scramble_example
     smatrix_example
+    spgramcf_compare_example
     spgramcf_example
     spgramf_example
     spwaterfallcf_example
