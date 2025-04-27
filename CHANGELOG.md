@@ -88,7 +88,7 @@ methods for nearly all objects, improved speed, and resolves a number of
 issues and pull requests.
 
   * build
-    - added support for PlatformIO (https://platformio.org) for embeedded
+    - added support for PlatformIO (https://platformio.org) for embedded
       development (thanks, @jcw!)
     - incorporated recursive copy() methods to objects to facilitate c++ copy
       constructors for bindings; now all objects can be deep copied to a new
@@ -323,7 +323,7 @@ issues and pull requests.
       modulation, often with many samples per symbol (e.g. 256-FSK)
   * multicarrier
     - adding OFDM framing option for window tapering
-    - simplfying OFDM framing for generating preamble symbols (all
+    - simplifying OFDM framing for generating preamble symbols (all
       generated OFDM symbols are the same length)
     - adding run-time option for debugging ofdmframesync
     - adding method for initializing subcarriers with frequency range

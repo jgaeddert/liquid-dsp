@@ -57,7 +57,7 @@ int main() {
 
     // close debug file
     fclose(fid);
-    printf("results wrtten to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", OUTPUT_FILENAME);
     printf("done.\n");
     return 0;
 }

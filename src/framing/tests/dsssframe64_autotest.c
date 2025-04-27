@@ -133,7 +133,7 @@ void autotest_dsssframe64gen_copy()
 // object and it can maintain state
 void autotest_dsssframe64sync_copy()
 {
-    // create object and generte frame
+    // create object and generate frame
     dsssframe64gen fg = dsssframe64gen_create();
     unsigned int    frame_len = dsssframe64gen_get_frame_len(fg);
     float complex * frame= (float complex *)malloc(frame_len*sizeof(float complex));

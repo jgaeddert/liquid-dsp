@@ -45,7 +45,7 @@ struct ofdmframegen_s {
     unsigned int cp_len;    // cyclic prefix length
     unsigned char * p;      // subcarrier allocation (null, pilot, data)
 
-    // tapering/trasition
+    // tapering/transition
     unsigned int taper_len; // number of samples in tapering window/overlap
     float * taper;          // tapering window
     float complex *postfix; // overlapping symbol buffer
