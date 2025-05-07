@@ -104,6 +104,7 @@ set(EXAMPLES
     lpc_example
     libliquid_example
     logging_example
+    logging_extensive_example
     matched_filter_example
     math_lngamma_example
     math_primitive_root_example
