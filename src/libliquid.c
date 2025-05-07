@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -216,7 +216,7 @@ int liquid_logger_callback_stream(liquid_log_event _event,
                                   FILE * restrict  _stream,
                                   int              _config)
 {
-    if (ftell(_stream) < 0)
+    if (_stream != stdout && _stream != stderr && ftell(_stream) < 0)
         return 0; // file/stream is not open
 
     // compactness levels:
