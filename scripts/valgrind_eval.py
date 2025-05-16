@@ -77,6 +77,7 @@ def main(argv=None):
             ":" if len(tests_with_errors)>0 else ""));
         for test in tests_with_errors:
             print('  ', test)
+        sys.exit(total_errors)
     elif args.test is not None:
         # run a specific test
         print("running all test at index %u...\n" % (args.test))
