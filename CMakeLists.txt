@@ -51,7 +51,10 @@ include (CheckSymbolExists)
 if (ENABLE_SIMD AND FIND_SIMD)
     find_package(SIMD)
 endif()
-# TODO: check for FFTW
+
+# check external libraries
+#variable_watch(fftw3f_INCLUDE_DIR)
+find_package(fftw3f)
 
 # global flags
 if (MSVC)
