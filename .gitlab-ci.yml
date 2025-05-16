@@ -10,7 +10,7 @@ variables:
 
 before_script:
   - apt-get -qq update
-  - apt-get -qq install -y --no-install-recommends build-essential cmake valgrind time curl
+  - apt-get -qq install -y --no-install-recommends build-essential cmake time curl
 
 # build main library and run test programs
 build:
@@ -96,8 +96,10 @@ platformio:
 .autotest-memcheck:
   stage: test
   script:
+    - apt-get -qq install -y --no-install-recommends automake autoconf valgrind
+    - ./bootstrap.sh
+    - ./configure
     - make -j4 xautotest
-    - mkdir valgrind
     - ./scripts/valgrind_eval.py -output valgrind -test 881
     - ./scripts/valgrind_eval.py -output valgrind -summary
   artifacts:
