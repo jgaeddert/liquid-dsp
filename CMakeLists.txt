@@ -352,6 +352,9 @@ add_library(${LIBNAME} SHARED
     $<TARGET_OBJECTS:utility>
     $<TARGET_OBJECTS:vector>)
 
+# TODO: build static library in addition to shared
+# https://alexreinking.com/blog/building-a-dual-shared-and-static-library-with-cmake.html
+
 target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
 #target_sources(${LIBNAME} PUBLIC FILE_SET HEADERS FILES include/liquid.h)
 
