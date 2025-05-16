@@ -16,6 +16,7 @@ option(BUILD_AUTOTESTS  "Set to ON to build autotest program"   ON)
 option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  ON)
 option(ENABLE_SIMD      "Set to ON to build SIMD extensions"    ON)
 option(FIND_SIMD        "Set to ON to find SIMD extensions"     ON)
+option(FIND_FFTW        "Set to ON to find FFTW library"        ON)
 option(BUILD_SANDBOX    "Set to ON to build sandbox programs"   OFF)
 option(BUILD_DOC        "Set to ON to build documentation"      OFF)
 option(COVERAGE         "Set to ON to build with code coverage" OFF)
@@ -54,7 +55,9 @@ endif()
 
 # check external libraries
 #variable_watch(fftw3f_INCLUDE_DIR)
-find_package(fftw3f)
+if (FIND_FFTW)
+    find_package(fftw3f)
+endif()
 
 # global flags
 if (MSVC)
@@ -388,7 +391,11 @@ if(COVERAGE)
     target_link_options(${LIBNAME} PRIVATE -coverage)
 endif(COVERAGE)
 
+
 target_link_libraries(${LIBNAME} c m)
+if (fftw3f_FOUND)
+    target_link_libraries(${LIBNAME} fftw3f)
+endif()
 
 set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
 
