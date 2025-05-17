@@ -75,33 +75,42 @@ def main(argv=None):
     p.add_argument('-summary',action='store_true',          help='rather than run tests, parse output logs and print summary of results')
     p.add_argument('-search', default=None,       type=str, help='run tests whose name matches search string')
     p.add_argument('-test',   default=None,       type=int, help='run a specific test at index')
+    p.add_argument('-exclude',default=[], action='append',  help='exclude tests that match a particular search string')
+    #p.add_argument('-skip',   default=None,       type=str, help='skip tests, e.g. "12,17,44-48,123"')
+    #p.add_argument('-jobs',   default=1,          type=int, help='number of processes to run concurrently')
     p.add_argument('-dry-run',action='store_true',          help='print tests to run without actually running them')
     args = p.parse_args()
 
     # generate and load .json object
     v = generate_json(args.output)
 
-    # set additional configuration options
-    opts = '--tool=memcheck --leak-check=full --track-origins=yes'
-
+    # just print a summary
     if args.summary:
         total_errors = summary(v['tests'], args.output)
         sys.exit(total_errors)
-    elif args.test is not None:
-        # run a specific test
-        print("running all test at index %u...\n" % (args.test))
-        run_test(v['tests'][args.test], opts, path=args.output, seed=v['rseed'], dry_run=args.dry_run)
+
+    # set additional configuration options
+    opts = '--tool=memcheck --leak-check=full --track-origins=yes'
+
+    # build up a list of tests to run from the command-line specification
+    if args.test is not None:
+        tests = [v['tests'][arg.test],]
     elif args.search is not None:
         # run all tests matching search string
-        print("running all tests containing '%s'...\n" % (args.search))
-        for i,test in enumerate(v['tests']):
-            if test['name'].lower().__contains__(args.search.lower()):
-                run_test(test, opts, path=args.output, seed=v['rseed'], dry_run=args.dry_run)
+        tests = list(filter(lambda t: t['name'].lower().__contains__(args.search.lower()), v['tests']))
     else:
         # iterate over all tests and execute
-        print("running all tests...\n")
-        for i,test in enumerate(v['tests']):
-            run_test(test, opts, path=args.output, seed=v['rseed'], dry_run=args.dry_run)
+        tests = v['tests']
+
+    # exclude tests that match strings
+    for exclude in args.exclude:
+        tests = list(filter(lambda t: not t['name'].lower().__contains__(exclude.lower()), tests))
+
+    # run all tests specified
+    # TODO: use popen and run concurrent jobs
+    print("running %u tests...\n" % (len(tests)))
+    for test in tests:
+        run_test(test, opts, path=args.output, seed=v['rseed'], dry_run=args.dry_run)
 
 if __name__ == '__main__':
     sys.exit(main())
