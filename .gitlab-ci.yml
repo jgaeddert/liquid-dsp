@@ -100,7 +100,7 @@ platformio:
     - ./bootstrap.sh
     - ./configure
     - make -j4 xautotest
-    - ./scripts/valgrind_eval.py -output valgrind -test 881
+    - ./scripts/valgrind_eval.py -output valgrind -test 361
     - ./scripts/valgrind_eval.py -output valgrind -summary
   artifacts:
     paths: [valgrind/*]

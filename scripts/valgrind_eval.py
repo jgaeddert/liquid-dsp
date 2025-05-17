@@ -90,18 +90,18 @@ def main(argv=None):
     elif args.test is not None:
         # run a specific test
         print("running all test at index %u...\n" % (args.test))
-        run_test(v['tests'][args.test], opts, seed=v['rseed'], dry_run=args.dry_run)
+        run_test(v['tests'][args.test], opts, path=args.output, seed=v['rseed'], dry_run=args.dry_run)
     elif args.search is not None:
         # run all tests matching search string
         print("running all tests containing '%s'...\n" % (args.search))
         for i,test in enumerate(v['tests']):
             if test['name'].lower().__contains__(args.search.lower()):
-                run_test(test, opts, seed=v['rseed'], dry_run=args.dry_run)
+                run_test(test, opts, path=args.output, seed=v['rseed'], dry_run=args.dry_run)
     else:
         # iterate over all tests and execute
         print("running all tests...\n")
         for i,test in enumerate(v['tests']):
-            run_test(test, opts, seed=v['rseed'], dry_run=args.dry_run)
+            run_test(test, opts, path=args.output, seed=v['rseed'], dry_run=args.dry_run)
 
 if __name__ == '__main__':
     sys.exit(main())
