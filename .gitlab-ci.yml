@@ -92,16 +92,19 @@ platformio:
   artifacts:
     paths: [run_examples.sh, time.txt]
 
-# compile and run all autotest programs with valgrind
-.autotest-memcheck:
+# compile and run autotest programs with valgrind
+# NOTE: running all tests on a single-core system can take well over an hour
+autotest-memcheck:
   stage: test
   script:
-    - apt-get -qq install -y --no-install-recommends automake autoconf valgrind
-    - ./bootstrap.sh
-    - ./configure
-    - make -j4 xautotest
-    - ./scripts/valgrind_eval.py -output valgrind -test 361
-    - ./scripts/valgrind_eval.py -output valgrind -summary
+    - apt-get -qq install -y --no-install-recommends valgrind
+    - rm -rf build
+    - mkdir build
+    - cd build
+    - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=OFF -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_SANDBOX=OFF ..
+    - make -j4
+    - ../scripts/valgrind_eval.py -output valgrind -test 361 # run a single test initially
+    - ../scripts/valgrind_eval.py -output valgrind -summary
   artifacts:
     paths: [valgrind/*]
 
