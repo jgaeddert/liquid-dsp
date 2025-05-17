@@ -92,7 +92,7 @@ platformio:
 
 # compile and run autotest programs with valgrind
 # NOTE: running all tests on a single-core system can take well over an hour
-autotest-memcheck:
+valgrind:
   stage: test
   script:
     - rm -rf build
@@ -106,5 +106,6 @@ autotest-memcheck:
     - ../scripts/valgrind_eval.py -output valgrind -test 361 # run a single test initially
     - ../scripts/valgrind_eval.py -output valgrind -summary
   artifacts:
-    paths: [valgrind/*]
+    paths:
+      - build/valgrind/*
 
