@@ -94,7 +94,7 @@ def main(argv=None):
 
     # build up a list of tests to run from the command-line specification
     if args.test is not None:
-        tests = [v['tests'][arg.test],]
+        tests = [v['tests'][args.test],]
     elif args.search is not None:
         # run all tests matching search string
         tests = list(filter(lambda t: t['name'].lower().__contains__(args.search.lower()), v['tests']))
