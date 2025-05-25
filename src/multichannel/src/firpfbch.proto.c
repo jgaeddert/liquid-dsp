@@ -32,7 +32,7 @@
 // firpfbch object structure definition
 struct FIRPFBCH(_s) {
     int type;                   // synthesis/analysis
-    unsigned int num_channels;  // number of channels
+    unsigned int M;             // number of channels
     unsigned int p;             // filter length (symbols)
 
     // filter
@@ -43,6 +43,7 @@ struct FIRPFBCH(_s) {
     DOTPROD() * dp;             // dot product object array
     WINDOW() * w;               // window buffer object array
     unsigned int filter_index;  // running filter index (analysis)
+    unsigned int initial_index; // initial filter index (complementary to delay)
 
     // fft plan
     FFT_PLAN fft;               // fft|ifft object
@@ -83,16 +84,16 @@ FIRPFBCH() FIRPFBCH(_create)(int          _type,
     FIRPFBCH() q = (FIRPFBCH()) malloc(sizeof(struct FIRPFBCH(_s)));
 
     // set user-defined properties
-    q->type         = _type;
-    q->num_channels = _M;
-    q->p            = _p;
+    q->type = _type;
+    q->M    = _M;
+    q->p    = _p;
 
     // derived values
-    q->h_len = q->num_channels * q->p;
+    q->h_len = q->M * q->p;
 
     // create bank of filters
-    q->dp = (DOTPROD()*) malloc((q->num_channels)*sizeof(DOTPROD()));
-    q->w  = (WINDOW()*)  malloc((q->num_channels)*sizeof(WINDOW()));
+    q->dp = (DOTPROD()*) malloc((q->M)*sizeof(DOTPROD()));
+    q->w  = (WINDOW()*)  malloc((q->M)*sizeof(WINDOW()));
 
     // copy filter coefficients
     q->h = (TC*) malloc((q->h_len)*sizeof(TC));
@@ -104,10 +105,10 @@ FIRPFBCH() FIRPFBCH(_create)(int          _type,
     unsigned int n;
     unsigned int h_sub_len = q->p;
     TC h_sub[h_sub_len];
-    for (i=0; i<q->num_channels; i++) {
+    for (i=0; i<q->M; i++) {
         // sub-sample prototype filter, loading coefficients in reverse order
         for (n=0; n<h_sub_len; n++) {
-            h_sub[h_sub_len-n-1] = q->h[i + n*(q->num_channels)];
+            h_sub[h_sub_len-n-1] = q->h[i + n*(q->M)];
         }
         // create window buffer and dotprod object (coefficients
         // loaded in reverse order)
@@ -116,16 +117,19 @@ FIRPFBCH() FIRPFBCH(_create)(int          _type,
     }
 
     // allocate memory for buffers
-    q->x = (T*) FFT_MALLOC((q->num_channels)*sizeof(T));
-    q->X = (T*) FFT_MALLOC((q->num_channels)*sizeof(T));
+    q->x = (T*) FFT_MALLOC((q->M)*sizeof(T));
+    q->X = (T*) FFT_MALLOC((q->M)*sizeof(T));
 
     // create fft plan
     if (q->type == LIQUID_ANALYZER)
-        q->fft = FFT_CREATE_PLAN(q->num_channels, q->X, q->x, FFT_DIR_FORWARD, FFT_METHOD);
+        q->fft = FFT_CREATE_PLAN(q->M, q->X, q->x, FFT_DIR_FORWARD, FFT_METHOD);
     else
-        q->fft = FFT_CREATE_PLAN(q->num_channels, q->X, q->x, FFT_DIR_BACKWARD, FFT_METHOD);
+        q->fft = FFT_CREATE_PLAN(q->M, q->X, q->x, FFT_DIR_BACKWARD, FFT_METHOD);
 
     // reset filterbank object
+    // set default initial index to M-1(i.e. default delay is 1)for backward compatibility with previous versions
+    // or alternatively set it to 0 to align with MATLAB's DSP toolbox
+    q->initial_index = q->M-1;
     FIRPFBCH(_reset)(q);
 
     // return filterbank object
@@ -227,7 +231,7 @@ int FIRPFBCH(_destroy)(FIRPFBCH() _q)
     unsigned int i;
 
     // free dot product, window objects and arrays
-    for (i=0; i<_q->num_channels; i++) {
+    for (i=0; i<_q->M; i++) {
         DOTPROD(_destroy)(_q->dp[i]);
         WINDOW(_destroy)(_q->w[i]);
     }
@@ -251,21 +255,35 @@ int FIRPFBCH(_destroy)(FIRPFBCH() _q)
 int FIRPFBCH(_reset)(FIRPFBCH() _q)
 {
     unsigned int i;
-    for (i=0; i<_q->num_channels; i++) {
+    for (i=0; i<_q->M; i++) {
         WINDOW(_reset)(_q->w[i]);
         _q->x[i] = 0;
         _q->X[i] = 0;
     }
-    _q->filter_index = _q->num_channels-1;
+    _q->filter_index = _q->initial_index;
     return LIQUID_OK;
 }
+
+// Set the delay of channelizer, which is complementary to initial_index
+//  _q      :   firpfbch object
+//  _d      :   delay of channelizer
+int FIRPFBCH(_set_chan_delay)(FIRPFBCH() _q, unsigned int _d)
+{
+    // wrap _d into valid range
+    _d = _d % _q->M;
+
+    _q->initial_index = _d == 0 ? 0 : _q->M - _d;
+    _q->filter_index = _q->initial_index;
+    return LIQUID_OK;
+}
+
 
 // print firpfbch object
 int FIRPFBCH(_print)(FIRPFBCH() _q)
 {
     printf("<liquid.firpfbch, type=\"%s\", channels=%u, semilen=%u>\n",
         _q->type == LIQUID_ANALYZER ? "analyzer" : "synthesizer",
-        _q->num_channels, _q->p);
+        _q->M, _q->p);
     return LIQUID_OK;
 }
 
@@ -284,15 +302,15 @@ int FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,
     unsigned int i;
 
     // copy channelized symbols to transform input
-    memmove(_q->X, _x, _q->num_channels*sizeof(TI));
+    memmove(_q->X, _x, _q->M*sizeof(TI));
 
     // execute inverse DFT, store result in buffer 'x'
     FFT_EXECUTE(_q->fft);
 
     // push samples into filter bank and execute
     T * r;      // read pointer
-    for (i=0; i<_q->num_channels; i++) {
-        WINDOW(_push)(_q->w[i], _q->x[i]);
+    for (i=0; i<_q->M; i++) {
+        WINDOW(_push)(_q->w[i], _q->x[(i+_q->initial_index+1)%_q->M]);
         WINDOW(_read)(_q->w[i], &r);
         DOTPROD(_execute)(_q->dp[i], r, &_y[i]);
 
@@ -317,12 +335,20 @@ int FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,
     unsigned int i;
 
     // push samples into buffers
-    for (i=0; i<_q->num_channels; i++)
+    for (i=0; i<_q->M; i++) {
         FIRPFBCH(_analyzer_push)(_q, _x[i]);
 
-    // execute analysis filters on the given input starting
-    // with filterbank at index zero
-    return FIRPFBCH(_analyzer_run)(_q, 0, _y);
+        // if filters already have M samples after being pushed,
+        // execute analysis filters on the given input starting
+        // with filterbank at index zero
+        // Note: after the filters perform a calculation,
+        // the remaining points still need to be pushed into the windows
+        if ( _q->filter_index == _q->M-1) {
+            FIRPFBCH(_analyzer_run)(_q, 0, _y);
+        }
+    }
+
+    return LIQUID_OK;
 }
 
 // 
@@ -340,7 +366,7 @@ int FIRPFBCH(_analyzer_push)(FIRPFBCH() _q,
     WINDOW(_push)(_q->w[_q->filter_index], _x);
 
     // decrement filter index
-    _q->filter_index = (_q->filter_index + _q->num_channels - 1) % _q->num_channels;
+    _q->filter_index = _q->filter_index == 0 ? _q->M-1 : _q->filter_index-1;
     return LIQUID_OK;
 }
 
@@ -358,22 +384,22 @@ int FIRPFBCH(_analyzer_run)(FIRPFBCH()   _q,
     // sure why this is necessary)
     T * r;  // read pointer
     unsigned int index;
-    for (i=0; i<_q->num_channels; i++) {
+    for (i=0; i<_q->M; i++) {
         // compute appropriate index
-        index = (i+_k) % _q->num_channels;
+        index = (i+_k) % _q->M;
 
         // read buffer at specified index
         WINDOW(_read)(_q->w[index], &r);
 
         // compute dot product
-        DOTPROD(_execute)(_q->dp[i], r, &_q->X[_q->num_channels-i-1]);
+        DOTPROD(_execute)(_q->dp[i], r, &_q->X[(_q->initial_index+_q->M-i)%_q->M]);
     }
 
     // execute DFT, store result in buffer 'x'
     FFT_EXECUTE(_q->fft);
 
     // move to output array
-    memmove(_y, _q->x, _q->num_channels*sizeof(TO));
+    memmove(_y, _q->x, _q->M*sizeof(TO));
     return LIQUID_OK;
 }
 

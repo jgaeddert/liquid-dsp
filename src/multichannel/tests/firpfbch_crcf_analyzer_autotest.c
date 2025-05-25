@@ -52,8 +52,11 @@ void autotest_firpfbch_crcf_analysis()
         h[i] = (float)msequence_generate_symbol(ms, 2) - 1.5f; // (-1.5, -0.5, 0.5, 1.5)
     msequence_destroy(ms);
 
-    // create filterbank object
+    unsigned int chan_delay;
+    for (chan_delay = 0; chan_delay < num_channels; chan_delay++){
+    // create filterbank object with delay values from 0 to num_channels-1
     firpfbch_crcf q = firpfbch_crcf_create(LIQUID_ANALYZER, num_channels, p, h);
+    firpfbch_crcf_set_chan_delay(q, chan_delay);
 
     // generate filter object
     firfilt_crcf f = firfilt_crcf_create(h, h_len);
@@ -101,8 +104,8 @@ void autotest_firpfbch_crcf_analysis()
             firfilt_crcf_push(f, y[j]*cexpf(-_Complex_I*j*dphi));
 
             // compute output at the appropriate sample time
-            assert(n<num_symbols);
-            if ( ((j+1)%num_channels)==0 ) {
+            assert(n<=num_symbols);
+            if ( ((j+chan_delay)%num_channels)==0 ) {
                 firfilt_crcf_execute(f, &Y1[n][i]);
                 n++;
             }
@@ -118,7 +121,7 @@ void autotest_firpfbch_crcf_analysis()
     if (liquid_autotest_verbose) {
         // print filterbank channelizer
         printf("\n");
-        printf("filterbank channelizer:\n");
+        printf("filterbank channelizer, delay is %d:\n",chan_delay);
         for (i=0; i<num_symbols; i++) {
             printf("%3u: ", i);
             for (j=0; j<num_channels; j++) {
@@ -129,7 +132,7 @@ void autotest_firpfbch_crcf_analysis()
 
         // print traditional channelizer
         printf("\n");
-        printf("traditional channelizer:\n");
+        printf("traditional channelizer, delay is %d:\n",chan_delay);
         for (i=0; i<num_symbols; i++) {
             printf("%3u: ", i);
             for (j=0; j<num_channels; j++) {
@@ -145,6 +148,7 @@ void autotest_firpfbch_crcf_analysis()
             CONTEND_DELTA( crealf(Y0[i][j]), crealf(Y1[i][j]), tol );
             CONTEND_DELTA( cimagf(Y0[i][j]), cimagf(Y1[i][j]), tol );
         }
+    }
     }
 
 }
