@@ -41,6 +41,46 @@ py::dict update_dict(py::dict dst, py::dict src)
     return r;
 }
 
+// get instance type as string (debugging)
+// see: https://pybind11.readthedocs.io/en/stable/reference.html#convenience-classes-for-specific-python-types
+std::string get_instance_as_string(py::object & object)
+{
+    // primitive types
+    if (py::isinstance<py::bool_>(object))
+        return "py::bool_";
+    if (py::isinstance<py::none>(object))
+        return "py::none";
+    if (py::isinstance<py::str>(object))
+        return "py::str";
+
+    // still basic but more complex types
+    if (py::isinstance<py::tuple>(object))
+        return "py::tuple";
+    if (py::isinstance<py::list>(object))
+        return "py::list";
+    if (py::isinstance<py::dict>(object))
+        return "py::dict";
+    if (py::isinstance<py::set>(object))
+        return "py::set";
+
+    // bytes
+    if (py::isinstance<py::bytes>(object))
+        return "py::bytes";
+    if (py::isinstance<py::bytearray>(object))
+        return "py::bytearray";
+
+    // arrays of simple type
+    if (py::isinstance<py::array_t<uint8_t>>(object))
+        return "py::array_t<uint8_t>";
+    if (py::isinstance<py::array_t<int8_t>>(object))
+        return "py::array_t<int8_t>";
+    if (py::isinstance<py::array_t<char>>(object))
+        return "py::array_t<char>";
+
+    //
+    return "unknown";
+}
+
 py::dict framesyncstats_to_dict(framesyncstats_s _stats,
                                 bool             _header_valid,
                                 bool             _payload_valid)

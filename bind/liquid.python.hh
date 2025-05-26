@@ -18,6 +18,9 @@ namespace liquid {
 // validate keys ('dst' cannot contain any keys not in 'src')
 bool validate_dict(py::dict dst, py::dict src);
 
+// get instance type as string (debugging)
+std::string get_instance_as_string(py::object & object);
+
 // validate and update
 py::dict update_dict(py::dict dst, py::dict src);
 
