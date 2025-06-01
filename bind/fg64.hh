@@ -5,6 +5,7 @@
 #include <complex>
 #include <iostream>
 #include <string>
+#include <vector>
 #include "liquid.hh"
 #include "liquid.python.hh"
 
@@ -46,48 +47,32 @@ class fg64 : public object
     framegen64 q;
 
 #ifdef LIQUID_PYTHONLIB
+  private:
+    std::vector<uint8_t> py_header  = std::vector<uint8_t>( 8); ///< internal header
+    std::vector<uint8_t> py_payload = std::vector<uint8_t>(64); ///< internal payload
+
   public:
     py::array_t<std::complex<float>> py_execute(py::object & _header,
                                                 py::object & _payload)
     {
-        // initialize pointers for header and payload
-        unsigned char * header_ptr(NULL);
-        unsigned char * payload_ptr(NULL);
+        //py::print("payload type:", get_instance_as_string(_payload));
+        // create and copy header contents
+        py_copy_object_to_array(_header,  py_header);
+        py_copy_object_to_array(_payload, py_payload);
 
-        // determine header
-        if (py::isinstance<py::array_t<uint8_t>>(_header)) {
-            // get output info and validate size/shape
-            py::buffer_info header = py::cast<py::array_t<uint8_t>>(_header).request();
-            //if (header.itemsize != sizeof(uint8_t))
-            //    throw std::runtime_error("invalid header input numpy size, use dtype=np.uint8");
-            if (header.ndim != 1)
-                throw std::runtime_error("invalid header number of input dimensions, must be 1-D array");
-            if (header.shape[0] != 8)
-                throw std::runtime_error("invalid header length; expected 8");
-            header_ptr = (unsigned char*) header.ptr;
-        } else if (!py::isinstance<py::none>(_header)) {
-            throw std::runtime_error("invalid header type");
-        }
+        // run internal method to generate frame samples
+        return py_execute_internal();
+    }
 
-        // determine payload
-        if (py::isinstance<py::array_t<uint8_t>>(_payload)) {
-            py::buffer_info payload = py::cast<py::array_t<uint8_t>>(_payload).request();
-            //if (payload.itemsize != sizeof(uint8_t))
-            //    throw std::runtime_error("invalid payload input numpy size, use dtype=np.uint8");
-            if (payload.ndim != 1)
-                throw std::runtime_error("invalid payload number of input dimensions, must be 1-D array");
-            if (payload.shape[0] != 64)
-                throw std::runtime_error("invalid payload length; expected 64");
-            payload_ptr = (unsigned char*) payload.ptr;
-        } else if (!py::isinstance<py::none>(_payload)) {
-            throw std::runtime_error("invalid payload type");
-        }
-
+  private:
+    // internal method to operate on internal arrays (data copied to py_header, py_payload)
+    py::array_t<std::complex<float>> py_execute_internal()
+    {
         // allocate output buffer
         py::array_t<std::complex<float>> buf(get_frame_length());
 
         // pass to top-level execute method
-        execute(header_ptr, payload_ptr, (std::complex<float>*) buf.request().ptr);
+        execute(py_header.data(), py_payload.data(), (std::complex<float>*) buf.request().ptr);
         return buf;
     }
 #endif
@@ -110,7 +95,7 @@ static void init_fg64(py::module &m)
             "get length of output frame (samples)")
         .def("execute",
             &fg64::py_execute,
-            "generate a frame given header and payload",
+            "generate a frame given header and payload, header and payload must be of type str, bytes, or np.array(np.uint8)",
             py::arg("header")=py::none(),
             py::arg("payload")=py::none())
         ;

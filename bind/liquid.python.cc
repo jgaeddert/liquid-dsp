@@ -1,3 +1,4 @@
+#include <string>
 #include "liquid.python.hh"
 
 #include "fdelay.hh"
@@ -43,13 +44,17 @@ py::dict update_dict(py::dict dst, py::dict src)
 
 // get instance type as string (debugging)
 // see: https://pybind11.readthedocs.io/en/stable/reference.html#convenience-classes-for-specific-python-types
-std::string get_instance_as_string(py::object & object)
+std::string get_instance_as_string(const py::object & object)
 {
     // primitive types
     if (py::isinstance<py::bool_>(object))
         return "py::bool_";
     if (py::isinstance<py::none>(object))
         return "py::none";
+    if (py::isinstance<py::int_>(object))
+        return "py::int_";
+    if (py::isinstance<py::float_>(object))
+        return "py::float_";
     if (py::isinstance<py::str>(object))
         return "py::str";
 
@@ -79,6 +84,43 @@ std::string get_instance_as_string(py::object & object)
 
     //
     return "unknown";
+}
+
+void py_copy_object_to_array(const py::object &     object,
+                             std::vector<uint8_t> & buffer,
+                             uint8_t                pad_value,
+                             bool                   error_on_truncate)
+{
+    // lambda function to copy data to destination
+    auto copy_pad = [](uint8_t * src, int src_len, uint8_t * dst, int dst_len, uint8_t pad)
+    {
+        for (int i=0; i<dst_len; i++)
+            dst[i] = i < src_len ? src[i] : pad;
+    };
+
+    // determine object type (cast for any 8-bit value)
+    if (py::isinstance<py::array_t<uint8_t>>(object)) {
+        // get output info and validate size/shape
+        py::buffer_info info = py::cast<py::array_t<uint8_t>>(object).request();
+        if (info.ndim != 1)
+            throw std::runtime_error("object shape must be 1-D array");
+        auto object_len = info.shape[0];
+        if (object_len > buffer.size() && error_on_truncate)
+            throw std::runtime_error("object length cannot exceed output vector size");
+        // TODO: check stride
+        copy_pad((uint8_t*)info.ptr, object_len, buffer.data(), buffer.size(), pad_value);
+
+    } else if (py::isinstance<py::str>(object)) {
+        std::string str(py::cast<py::str>(object));
+        copy_pad((uint8_t*)str.data(), str.size(), buffer.data(), buffer.size(), pad_value);
+
+    } else if (py::isinstance<py::none>(object)) {
+        for (auto & b: buffer)
+            b = pad_value;
+    } else {
+        throw std::invalid_argument("cannot copy contents of input type: " +
+            get_instance_as_string(object));
+    }
 }
 
 py::dict framesyncstats_to_dict(framesyncstats_s _stats,

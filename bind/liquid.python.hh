@@ -19,10 +19,30 @@ namespace liquid {
 bool validate_dict(py::dict dst, py::dict src);
 
 // get instance type as string (debugging)
-std::string get_instance_as_string(py::object & object);
+std::string get_instance_as_string(const py::object & object);
 
 // validate and update
 py::dict update_dict(py::dict dst, py::dict src);
+
+/*! @brief copy object contents to byte array to use for frame encoding
+ *  @param object input python object (array, string. etc.)
+ *  @param buffer reference to fixed-size output buffer
+ *  @param pad_value value used to pad if object size is too small
+ *  @param error_on_truncate flag indicating if error should be thrown if object is truncated
+ */
+void py_copy_object_to_array(const py::object &     object,
+                             std::vector<uint8_t> & buffer,
+                             uint8_t                pad_value = '\0',
+                             bool                   error_on_truncate = false);
+
+#if 0
+/*! @brief copy object contents to output and resize as needed
+ *  @param object input python object (array, string. etc.)
+ *  @param buffer reference to output buffer which will be resized as needed
+ */
+void py_copy_object_to_vector(const py::object &     object,
+                              py::array_t<uint8_t> & buffer);
+#endif
 
 py::dict framesyncstats_to_dict(framesyncstats_s _stats,
                                 bool             _header_valid=true,
