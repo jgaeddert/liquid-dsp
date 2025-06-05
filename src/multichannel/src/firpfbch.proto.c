@@ -43,7 +43,7 @@ struct FIRPFBCH(_s) {
     DOTPROD() * dp;             // dot product object array
     WINDOW() * w;               // window buffer object array
     unsigned int filter_index;  // running filter index (analysis)
-    unsigned int initial_index; // initial filter index (complementary to delay)
+    unsigned int initial_index; // initial filter index (complementary to decimator delay)
 
     // fft plan
     FFT_PLAN fft;               // fft|ifft object
@@ -264,10 +264,10 @@ int FIRPFBCH(_reset)(FIRPFBCH() _q)
     return LIQUID_OK;
 }
 
-// Set the delay of channelizer, which is complementary to initial_index
+// Set the delay of decimator, which is complementary to initial_index
 //  _q      :   firpfbch object
 //  _d      :   delay of channelizer
-int FIRPFBCH(_set_chan_delay)(FIRPFBCH() _q, unsigned int _d)
+int FIRPFBCH(_set_decimate_delay)(FIRPFBCH() _q, unsigned int _d)
 {
     // wrap _d into valid range
     _d = _d % _q->M;

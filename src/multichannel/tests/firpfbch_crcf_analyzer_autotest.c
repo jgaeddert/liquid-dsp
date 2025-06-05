@@ -56,7 +56,7 @@ void autotest_firpfbch_crcf_analysis()
     for (chan_delay = 0; chan_delay < num_channels; chan_delay++){
     // create filterbank object with delay values from 0 to num_channels-1
     firpfbch_crcf q = firpfbch_crcf_create(LIQUID_ANALYZER, num_channels, p, h);
-    firpfbch_crcf_set_chan_delay(q, chan_delay);
+    firpfbch_crcf_set_decimate_delay(q, chan_delay);
 
     // generate filter object
     firfilt_crcf f = firfilt_crcf_create(h, h_len);
