@@ -749,6 +749,7 @@ set(BENCHMARKS
     ${PROJECT_SOURCE_DIR}/src/fec/bench/sumproduct_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fec/bench/interleaver_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fec/bench/packetizer_decode_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fft/bench/asgramcf_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_composite_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_prime_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_radix2_benchmark.c
