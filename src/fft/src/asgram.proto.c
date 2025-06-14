@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,7 +60,8 @@ ASGRAM() ASGRAM(_create)(unsigned int _nfft)
     q->nfft  = _nfft;
 
     // derived values
-    q->p     = 4;   // over-sampling rate
+    // NOTE: over-sampling does not provide meaningful benefit but increases computation
+    q->p     = 1;   // over-sampling rate
     q->nfftp = q->nfft * q->p;
 
     // allocate memory for PSD estimate
