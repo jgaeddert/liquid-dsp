@@ -10119,6 +10119,9 @@ int liquid_get_scale(float   _val,
                      char *  _unit,
                      float * _scale);
 
+// compare two values (e.g. qsort), single-precision float
+int liquid_compare_float(const void * _a, const void* _b);
+
 //
 // MODULE : vector
 //
