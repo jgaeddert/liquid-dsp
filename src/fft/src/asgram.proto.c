@@ -33,22 +33,21 @@
 #include "liquid.internal.h"
 
 struct ASGRAM(_s) {
-    unsigned int nfft;          // transform size (display)
-    unsigned int nfftp;         // transform size (processing)
-    unsigned int p;             // over-sampling rate
-    SPGRAM()     periodogram;   // spectral periodogram object
-    float *      psd;           // power spectral density
-    float *      psd_sorted;    // power spectral density (sorted)
+    unsigned int    nfft;           // transform size (display)
+    SPGRAM()        periodogram;    // spectral periodogram object
+    float *         psd;            // power spectral density
+    float *         psd_sorted;     // power spectral density (sorted)
 
-    float        levels[10];    // threshold for signal levels
-    char         levelchar[10]; // characters representing levels
-    unsigned int num_levels;    // number of levels
-    float        div;           // dB per division
-    float        ref;           // dB reference value
+    float           levels[10];     // threshold for signal levels
+    char            levelchar[10];  // characters representing levels
+    unsigned int    num_levels;     // number of levels
+    float           div;            // dB per division
+    float           ref;            // dB reference value
 
-    int          autolevel;     // enable automatic level-setting?
-    int          autolevel_index; // index in sorted buffer (percentile) for noise floor estimate
-    float        n0_est;        // noise floor estimate
+    // autolevel
+    int             autolevel;      // enable automatic level-setting?
+    int             autolevel_index;// index in sorted buffer (percentile) for noise floor estimate
+    float           n0_est;         // noise floor estimate
 };
 
 // create asgram object with size _nfft
@@ -60,20 +59,14 @@ ASGRAM() ASGRAM(_create)(unsigned int _nfft)
 
     // create main object
     ASGRAM() q = (ASGRAM()) malloc(sizeof(struct ASGRAM(_s)));
-
     q->nfft  = _nfft;
 
-    // derived values
-    // NOTE: over-sampling does not provide meaningful benefit but increases computation
-    q->p     = 1;   // over-sampling rate
-    q->nfftp = q->nfft * q->p;
-
     // allocate memory for PSD estimate
-    q->psd        = (float *) malloc((q->nfftp)*sizeof(float));
-    q->psd_sorted = (float *) malloc((q->nfftp)*sizeof(float));
+    q->psd        = (float *) malloc((q->nfft)*sizeof(float));
+    q->psd_sorted = (float *) malloc((q->nfft)*sizeof(float));
 
     // create spectral periodogram object
-    q->periodogram = SPGRAM(_create)(q->nfftp,LIQUID_WINDOW_HANN,q->nfft,q->nfft/2);
+    q->periodogram = SPGRAM(_create)(q->nfft,LIQUID_WINDOW_HANN,q->nfft,q->nfft/2);
 
     // power spectral density levels
     q->num_levels = 10;
@@ -82,7 +75,7 @@ ASGRAM() ASGRAM(_create)(unsigned int _nfft)
 
     // set autolevel parameters
     q->autolevel = 1;
-    q->autolevel_index = q->nfftp / 4; // 25th percentile
+    q->autolevel_index = q->nfft / 4; // 25th percentile
     q->n0_est = 0.0f;
 
     return q;
@@ -105,8 +98,8 @@ ASGRAM() ASGRAM(_copy)(ASGRAM() q_orig)
     q_copy->periodogram = SPGRAM(_copy)(q_orig->periodogram);
 
     // allocate and copy memory arrays
-    q_copy->psd        = liquid_malloc_copy(q_orig->psd,        q_orig->nfftp, sizeof(float));
-    q_copy->psd_sorted = liquid_malloc_copy(q_orig->psd_sorted, q_orig->nfftp, sizeof(float));
+    q_copy->psd        = liquid_malloc_copy(q_orig->psd,        q_orig->nfft, sizeof(float));
+    q_copy->psd_sorted = liquid_malloc_copy(q_orig->psd_sorted, q_orig->nfft, sizeof(float));
 
     // return copied object
     return q_copy;
@@ -233,8 +226,8 @@ int ASGRAM(_execute)(ASGRAM() _q,
     // set autolevel parameters
     if (_q->autolevel) {
         // estimate noise floor for this step: sort psd and find percentile
-        memmove(_q->psd_sorted, _q->psd, _q->nfftp*sizeof(float));
-        qsort(_q->psd_sorted, _q->nfftp, sizeof(float), liquid_compare_float);
+        memmove(_q->psd_sorted, _q->psd, _q->nfft*sizeof(float));
+        qsort(_q->psd_sorted, _q->nfft, sizeof(float), liquid_compare_float);
         float n0_est = _q->psd_sorted[_q->autolevel_index];
 
         // check if this is the first run of the spectrum
@@ -254,30 +247,18 @@ int ASGRAM(_execute)(ASGRAM() _q,
     unsigned int i;
     unsigned int j;
     // find peak
-    for (i=0; i<_q->nfftp; i++) {
+    for (i=0; i<_q->nfft; i++) {
         if (i==0 || _q->psd[i] > *_peakval) {
             *_peakval = _q->psd[i];
-            *_peakfreq = (float)(i) / (float)(_q->nfftp) - 0.5f;
+            *_peakfreq = (float)(i) / (float)(_q->nfft) - 0.5f;
         }
     }
 
     // down-sample from nfft*p frequency bins to just nfft by retaining
     // one value (e.g. maximum or average) over range.
     for (i=0; i<_q->nfft; i++) {
-#if 0
-        // find maximum within 'p' samples
-        float psd_val = 0.0f;
-        for (j=0; j<_q->p; j++) {
-            unsigned int index = (_q->p*i) + j;
-            psd_val = (j==0 || _q->psd[index] > psd_val) ? _q->psd[index] : psd_val;
-        }
-#else
         // find average over 'p' samples
-        float psd_val = 0.0f;
-        for (j=0; j<_q->p; j++)
-            psd_val += _q->psd[(_q->p*i) + j];
-        psd_val /= (float)(_q->p);
-#endif
+        float psd_val = _q->psd[i];
 
         // determine ascii level (which character to use)
         _ascii[i] = _q->levelchar[0];
