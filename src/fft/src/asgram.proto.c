@@ -37,7 +37,6 @@ struct ASGRAM(_s) {
     unsigned int nfftp;         // transform size (processing)
     unsigned int p;             // over-sampling rate
     SPGRAM()     periodogram;   // spectral periodogram object
-    TC *         X;             // spectral periodogram output
     float *      psd;           // power spectral density
 
     float        levels[10];    // threshold for signal levels
@@ -65,7 +64,6 @@ ASGRAM() ASGRAM(_create)(unsigned int _nfft)
     q->nfftp = q->nfft * q->p;
 
     // allocate memory for PSD estimate
-    q->X   = (TC *   ) malloc((q->nfftp)*sizeof(TC)   );
     q->psd = (float *) malloc((q->nfftp)*sizeof(float));
 
     // create spectral periodogram object
@@ -96,9 +94,7 @@ ASGRAM() ASGRAM(_copy)(ASGRAM() q_orig)
     q_copy->periodogram = SPGRAM(_copy)(q_orig->periodogram);
 
     // allocate and copy memory arrays
-    q_copy->X   = (TC *   ) malloc((q_copy->nfftp)*sizeof(TC)   );
     q_copy->psd = (float *) malloc((q_copy->nfftp)*sizeof(float));
-    memmove(q_copy->X,   q_orig->X,   q_copy->nfftp*sizeof(TC));
     memmove(q_copy->psd, q_orig->psd, q_copy->nfftp*sizeof(float));
 
     // return copied object
@@ -112,7 +108,6 @@ int ASGRAM(_destroy)(ASGRAM() _q)
     SPGRAM(_destroy)(_q->periodogram);
 
     // free PSD estimate array
-    free(_q->X);
     free(_q->psd);
 
     // free main object memory
