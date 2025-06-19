@@ -44,9 +44,9 @@ struct ASGRAM(_s) {
     float           div;            // dB per division
     float           ref;            // dB reference value
 
-    // autolevel
-    int             autolevel;      // enable automatic level-setting?
-    int             autolevel_index;// index in sorted buffer (percentile) for noise floor estimate
+    // autoscale
+    int             autoscale;      // enable automatic level-setting?
+    int             autoscale_index;// index in sorted buffer (percentile) for noise floor estimate
     float           n0_est;         // noise floor estimate
 };
 
@@ -73,9 +73,9 @@ ASGRAM() ASGRAM(_create)(unsigned int _nfft)
     ASGRAM(_set_display)(q," .,-+*&NM#");
     ASGRAM(_set_scale)(q, 0.0f, 10.0f);
 
-    // set autolevel parameters
-    q->autolevel = 1;
-    q->autolevel_index = q->nfft / 4; // 25th percentile
+    // set autoscale parameters
+    q->autoscale = 1;
+    q->autoscale_index = q->nfft / 4; // 25th percentile
     q->n0_est = 0.0f;
 
     return q;
@@ -129,14 +129,14 @@ int ASGRAM(_reset)(ASGRAM() _q)
 // Enable automatic display scaling based on noise floor estimation
 int ASGRAM(_autoscale_enable)(ASGRAM() _q)
 {
-    _q->autolevel = 1;
+    _q->autoscale = 1;
     return LIQUID_OK;
 }
 
 // Disable automatic display scaling based on noise floor estimation
 int ASGRAM(_autoscale_disable)(ASGRAM() _q)
 {
-    _q->autolevel = 0;
+    _q->autoscale = 0;
     return LIQUID_OK;
 }
 
@@ -223,12 +223,12 @@ int ASGRAM(_execute)(ASGRAM() _q,
     SPGRAM(_get_psd)(_q->periodogram, _q->psd);
     SPGRAM(_reset)(_q->periodogram);
 
-    // set autolevel parameters
-    if (_q->autolevel) {
+    // set autoscale parameters
+    if (_q->autoscale) {
         // estimate noise floor for this step: sort psd and find percentile
         memmove(_q->psd_sorted, _q->psd, _q->nfft*sizeof(float));
         qsort(_q->psd_sorted, _q->nfft, sizeof(float), liquid_compare_float);
-        float n0_est = _q->psd_sorted[_q->autolevel_index];
+        float n0_est = _q->psd_sorted[_q->autoscale_index];
 
         // check if this is the first run of the spectrum
         if (!SPGRAM(_get_num_transforms)(_q->periodogram)) {
