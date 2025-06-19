@@ -31,7 +31,8 @@
 void asgramcf_runbench(struct rusage *     _start,
                        struct rusage *     _finish,
                        unsigned long int * _num_iterations,
-                       unsigned int        _nfft)
+                       unsigned int        _nfft,
+                       int                 _autoscale)
 {
     // scale number of iterations to keep execution time relatively linear
     *_num_iterations = (*_num_iterations) * liquid_nextpow2(1+_nfft) / _nfft;
@@ -39,6 +40,8 @@ void asgramcf_runbench(struct rusage *     _start,
 
     // create object
     asgramcf q = asgramcf_create(_nfft);
+    if (_autoscale)
+        asgramcf_autoscale_enable(q);
 
     // initialize buffer with random values
     unsigned long int i;
@@ -70,16 +73,31 @@ void asgramcf_runbench(struct rusage *     _start,
     asgramcf_destroy(q);
 }
 
-// run several configurations
+// run several configurations (autoscale disabled)
 void benchmark_asgramcf_64(struct rusage * _s, struct rusage * _x,
-    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 64); }
+    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 64, 0); }
 
 void benchmark_asgramcf_80(struct rusage * _s, struct rusage * _x,
-    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 80); }
+    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 80, 0); }
 
 void benchmark_asgramcf_96(struct rusage * _s, struct rusage * _x,
-    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 96); }
+    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 96, 0); }
 
 void benchmark_asgramcf_120(struct rusage * _s, struct rusage * _x,
-    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 120); }
+    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 120, 0); }
+
+
+
+// run several configurations (autoscale enabled)
+void benchmark_asgramcf_64_autoscale(struct rusage * _s, struct rusage * _x,
+    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 64, 1); }
+
+void benchmark_asgramcf_80_autoscale(struct rusage * _s, struct rusage * _x,
+    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 80, 1); }
+
+void benchmark_asgramcf_96_autoscale(struct rusage * _s, struct rusage * _x,
+    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 96, 1); }
+
+void benchmark_asgramcf_120_autoscale(struct rusage * _s, struct rusage * _x,
+    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 120, 1); }
 

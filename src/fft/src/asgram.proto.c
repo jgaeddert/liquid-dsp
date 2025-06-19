@@ -38,12 +38,17 @@ struct ASGRAM(_s) {
     unsigned int p;             // over-sampling rate
     SPGRAM()     periodogram;   // spectral periodogram object
     float *      psd;           // power spectral density
+    float *      psd_sorted;    // power spectral density (sorted)
 
     float        levels[10];    // threshold for signal levels
     char         levelchar[10]; // characters representing levels
     unsigned int num_levels;    // number of levels
     float        div;           // dB per division
     float        ref;           // dB reference value
+
+    int          autolevel;     // enable automatic level-setting?
+    int          autolevel_index;
+    float        n0_est;        // noise floor estimate
 };
 
 // create asgram object with size _nfft
@@ -64,7 +69,8 @@ ASGRAM() ASGRAM(_create)(unsigned int _nfft)
     q->nfftp = q->nfft * q->p;
 
     // allocate memory for PSD estimate
-    q->psd = (float *) malloc((q->nfftp)*sizeof(float));
+    q->psd        = (float *) malloc((q->nfftp)*sizeof(float));
+    q->psd_sorted = (float *) malloc((q->nfftp)*sizeof(float));
 
     // create spectral periodogram object
     q->periodogram = SPGRAM(_create)(q->nfftp,LIQUID_WINDOW_HANN,q->nfft,q->nfft/2);
@@ -73,6 +79,11 @@ ASGRAM() ASGRAM(_create)(unsigned int _nfft)
     q->num_levels = 10;
     ASGRAM(_set_display)(q," .,-+*&NM#");
     ASGRAM(_set_scale)(q, 0.0f, 10.0f);
+
+    // set autolevel parameters
+    q->autolevel = 1;
+    q->autolevel_index = q->nfftp / 4; // 25th percentile
+    q->n0_est = 0.0f;
 
     return q;
 }
@@ -94,7 +105,8 @@ ASGRAM() ASGRAM(_copy)(ASGRAM() q_orig)
     q_copy->periodogram = SPGRAM(_copy)(q_orig->periodogram);
 
     // allocate and copy memory arrays
-    q_copy->psd = liquid_malloc_copy(q_orig->psd, q_orig->nfftp, sizeof(float));
+    q_copy->psd        = liquid_malloc_copy(q_orig->psd,        q_orig->nfftp, sizeof(float));
+    q_copy->psd_sorted = liquid_malloc_copy(q_orig->psd_sorted, q_orig->nfftp, sizeof(float));
 
     // return copied object
     return q_copy;
@@ -106,8 +118,9 @@ int ASGRAM(_destroy)(ASGRAM() _q)
     // destroy spectral periodogram object
     SPGRAM(_destroy)(_q->periodogram);
 
-    // free PSD estimate array
+    // free arrays
     free(_q->psd);
+    free(_q->psd_sorted);
 
     // free main object memory
     free(_q);
@@ -118,6 +131,20 @@ int ASGRAM(_destroy)(ASGRAM() _q)
 int ASGRAM(_reset)(ASGRAM() _q)
 {
     return SPGRAM(_reset)(_q->periodogram);
+}
+
+// Enable automatic display scaling based on noise floor estimation
+int ASGRAM(_autoscale_enable)(ASGRAM() _q)
+{
+    _q->autolevel = 1;
+    return LIQUID_OK;
+}
+
+// Disable automatic display scaling based on noise floor estimation
+int ASGRAM(_autoscale_disable)(ASGRAM() _q)
+{
+    _q->autolevel = 0;
+    return LIQUID_OK;
 }
 
 // set scale and offset for spectrogram
@@ -202,6 +229,27 @@ int ASGRAM(_execute)(ASGRAM() _q,
     // execute spectral periodogram
     SPGRAM(_get_psd)(_q->periodogram, _q->psd);
     SPGRAM(_reset)(_q->periodogram);
+
+    // set autolevel parameters
+    if (_q->autolevel) {
+        // estimate noise floor for this step: sort psd and find percentile
+        memmove(_q->psd_sorted, _q->psd, _q->nfftp*sizeof(float));
+        qsort(_q->psd_sorted, _q->nfftp, sizeof(float), liquid_compare_float);
+        float n0_est = _q->psd_sorted[(int)(0.25*_q->nfftp)];
+
+        // check if this is the first run of the spectrum
+        if (!SPGRAM(_get_num_transforms)(_q->periodogram)) {
+            _q->n0_est = n0_est;
+        } else {
+            float alpha = 0.1f;
+            _q->n0_est = (1.0f-alpha)*n0_est + alpha*_q->n0_est;
+        }
+
+        // set reference based on noise floor, adjusting offset based
+        // on dB per division
+        float offset = _q->div; //(_q->div < 1.0f) ? 0 : 1.0*_q->div;
+        ASGRAM(_set_scale)(_q, _q->n0_est - offset, _q->div);
+    }
 
     unsigned int i;
     unsigned int j;

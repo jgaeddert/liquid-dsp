@@ -15,10 +15,11 @@ int main() {
     unsigned int nfft        =   64;    // transform size
     unsigned int num_frames  =  200;    // total number of frames
     unsigned int msdelay     =   25;    // delay between transforms [ms]
-    float        noise_floor = -40.0f;  // noise floor
+    float        noise_floor = -80.0f;  // noise floor
 
     // initialize objects
     asgramcf q = asgramcf_create(nfft);
+    asgramcf_autoscale_enable(q);
     asgramcf_set_scale(q, noise_floor+15.0f, 5.0f);
 
     unsigned int i;
