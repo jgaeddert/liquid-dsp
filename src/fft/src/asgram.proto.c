@@ -47,7 +47,7 @@ struct ASGRAM(_s) {
     float        ref;           // dB reference value
 
     int          autolevel;     // enable automatic level-setting?
-    int          autolevel_index;
+    int          autolevel_index; // index in sorted buffer (percentile) for noise floor estimate
     float        n0_est;        // noise floor estimate
 };
 
@@ -235,7 +235,7 @@ int ASGRAM(_execute)(ASGRAM() _q,
         // estimate noise floor for this step: sort psd and find percentile
         memmove(_q->psd_sorted, _q->psd, _q->nfftp*sizeof(float));
         qsort(_q->psd_sorted, _q->nfftp, sizeof(float), liquid_compare_float);
-        float n0_est = _q->psd_sorted[(int)(0.25*_q->nfftp)];
+        float n0_est = _q->psd_sorted[_q->autolevel_index];
 
         // check if this is the first run of the spectrum
         if (!SPGRAM(_get_num_transforms)(_q->periodogram)) {
