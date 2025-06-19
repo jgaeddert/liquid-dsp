@@ -94,8 +94,7 @@ ASGRAM() ASGRAM(_copy)(ASGRAM() q_orig)
     q_copy->periodogram = SPGRAM(_copy)(q_orig->periodogram);
 
     // allocate and copy memory arrays
-    q_copy->psd = (float *) malloc((q_copy->nfftp)*sizeof(float));
-    memmove(q_copy->psd, q_orig->psd, q_copy->nfftp*sizeof(float));
+    q_copy->psd = liquid_malloc_copy(q_orig->psd, q_orig->nfftp, sizeof(float));
 
     // return copied object
     return q_copy;
