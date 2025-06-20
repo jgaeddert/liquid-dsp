@@ -1,10 +1,9 @@
 # cmake build file for liquid-dsp
 cmake_minimum_required(VERSION 3.10)
 
-# run custom command to parse version number from include/liquid.h
-execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/version.sh
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    OUTPUT_VARIABLE LIQUID_VERSION)
+# parse version number from include/liquid.h
+include(cmake/version.cmake)
+get_liquid_version("${CMAKE_CURRENT_SOURCE_DIR}/include/liquid.h" LIQUID_VERSION)
 
 # project definition
 project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
@@ -770,6 +769,7 @@ set(BENCHMARKS
     ${PROJECT_SOURCE_DIR}/src/fec/bench/sumproduct_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fec/bench/interleaver_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fec/bench/packetizer_decode_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fft/bench/asgramcf_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_composite_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_prime_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_radix2_benchmark.c

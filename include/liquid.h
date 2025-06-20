@@ -1873,6 +1873,12 @@ int ASGRAM(_destroy)(ASGRAM() _q);                                          \
 /* Reset the internal state of the asgram object                        */  \
 int ASGRAM(_reset)(ASGRAM() _q);                                            \
                                                                             \
+/* Enable automatic display scaling based on noise floor estimation     */  \
+int ASGRAM(_autoscale_enable)(ASGRAM() _q);                                 \
+                                                                            \
+/* Disable automatic display scaling based on noise floor estimation    */  \
+int ASGRAM(_autoscale_disable)(ASGRAM() _q);                                \
+                                                                            \
 /* Set the scale and offset for spectrogram in terms of dB for display  */  \
 /* purposes                                                             */  \
 /*  _q      : asgram object                                             */  \
@@ -10118,6 +10124,9 @@ unsigned int  liquid_reverse_uint32(unsigned int  _x);
 int liquid_get_scale(float   _val,
                      char *  _unit,
                      float * _scale);
+
+// compare two values (e.g. qsort), single-precision float
+int liquid_compare_float(const void * _a, const void* _b);
 
 //
 // MODULE : vector
