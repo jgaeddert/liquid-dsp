@@ -258,6 +258,8 @@ Here is a table of CMake options available for configuring liquid:
 +------------------------+---------+--------------------------------------------------------------------+
 | ``ENABLE_SIMD``        | ON      | Enable use of single instruction, multiple data (SIMD) extensions  |
 +------------------------+---------+--------------------------------------------------------------------+
+| ``FIND_SIMD``          | ON      | Try to find available SIMD instruction sets on host computer       |
++------------------------+---------+--------------------------------------------------------------------+
 | ``BUILD_SANDBOX``      | OFF     | Compile sandbox (testing) programs                                 |
 +------------------------+---------+--------------------------------------------------------------------+
 | ``BUILD_DOC``          | OFF     | Generate documentation                                             |
