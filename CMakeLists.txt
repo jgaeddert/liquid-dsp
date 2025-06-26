@@ -591,6 +591,7 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/utility/tests/count_bits_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/pack_bytes_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/shift_array_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/vector/tests/vectorcf_autotest.c
     )
 
 set(AUTOTEST_EXTRA
