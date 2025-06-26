@@ -822,6 +822,7 @@ set(BENCHMARKS
     ${PROJECT_SOURCE_DIR}/src/random/bench/random_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/sequence/bench/bsequence_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/utility/bench/byte_utilities_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/vector/bench/vectorcf_benchmark.c
     )
 
 set(BENCHMARKS_EXTRA
