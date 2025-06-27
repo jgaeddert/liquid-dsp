@@ -278,7 +278,7 @@ if (C_NEON_FOUND AND ENABLE_SIMD)
         src/dotprod/src/sumsq.c)
     target_sources(vector PUBLIC
         src/vector/src/vectorf.port.c
-        src/vector/src/vectorcf.port.c)
+        src/vector/src/vectorcf.neon.c)
     target_compile_options(dotprod PUBLIC ${C_NEON_FLAGS})
     target_compile_options(vector PUBLIC ${C_NEON_FLAGS})
 elseif (C_AVX512_FOUND AND ENABLE_SIMD)
