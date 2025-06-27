@@ -1159,6 +1159,7 @@ autotest_extra_obj +=
 # vector benchmark scripts
 vector_benchmarks :=						\
 	src/vector/bench/vectorcf_benchmark.c			\
+	src/vector/bench/vectorf_benchmark.c			\
 
 
 
