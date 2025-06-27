@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -104,8 +104,8 @@ QDETECTOR() QDETECTOR(_create)(TI *         _s,
     q->buf_freq_1 = (TI*) FFT_MALLOC(q->nfft * sizeof(TI));
     q->buf_time_1 = (TI*) FFT_MALLOC(q->nfft * sizeof(TI));
 
-    q->fft  = FFT_CREATE_PLAN(q->nfft, q->buf_time_0, q->buf_freq_0, FFT_DIR_FORWARD,  0);
-    q->ifft = FFT_CREATE_PLAN(q->nfft, q->buf_freq_1, q->buf_time_1, FFT_DIR_BACKWARD, 0);
+    q->fft  = FFT_CREATE_PLAN(q->nfft, q->buf_time_0, q->buf_freq_0, FFT_DIR_FORWARD,  FFT_METHOD);
+    q->ifft = FFT_CREATE_PLAN(q->nfft, q->buf_freq_1, q->buf_time_1, FFT_DIR_BACKWARD, FFT_METHOD);
 
     // create frequency-domain template by taking nfft-point transform on 's', storing in 'S'
     q->S = (TI*) malloc(q->nfft * sizeof(TI));
