@@ -129,3 +129,59 @@ void autotest_vectorf_mul_35()
     }
 }
 
+// multiply by scalar
+void autotest_vectorf_mulscalar_4()
+{
+    float tol = 4e-6; // error tolerance
+    float buf_0[4] = {1.0f, 2.0f,-3.0f, 4.0f};
+
+    // run vector multiplication and check result
+    float buf_test[4];
+    liquid_vectorf_mulscalar(buf_0, 4, 2.0f, buf_test);
+
+    CONTEND_DELTA(buf_test[0],  2.0f, tol);
+    CONTEND_DELTA(buf_test[1],  4.0f, tol);
+    CONTEND_DELTA(buf_test[2], -6.0f, tol);
+    CONTEND_DELTA(buf_test[3],  8.0f, tol);
+}
+
+void autotest_vectorf_mulscalar_35()
+{
+    float tol = 4e-6;
+
+    float buf_0[35] = {
+      1.11555653, -0.36133676,  0.17714505,  2.20424609,
+     -0.44699194,  0.60613931, -1.18746289, -0.46277775,
+      0.93796307, -2.18699829,  0.16145611, -0.62653631,
+     -0.67042462,  0.70333438, -0.32923580,  0.27534332,
+      0.41492559,  3.25368958,  1.63002035,  2.22057186,
+      1.40896777, -0.22334033, -1.48631186, -1.91632185,
+     -0.52054895, -1.56515607, -0.91107117, -0.77007659,
+     -0.46645585,  0.80317663,  0.26992512, -0.72456446,
+      1.19573306,  1.42491943,  1.08243614, };
+
+    float buf_2[35] = {
+      0.78869843, -0.25546509,  0.12524155,  1.55840194,
+     -0.31602332,  0.42854050, -0.83953631, -0.32718387,
+      0.66313988, -1.54620790,  0.11414947, -0.44296119,
+     -0.47399023,  0.49725744, -0.23276971,  0.19466774,
+      0.29335240,  2.30035853,  1.15242445,  1.56994426,
+      0.99614018, -0.15790161, -1.05082250, -1.35483956,
+     -0.36802810, -1.10656536, -0.64412737, -0.54444414,
+     -0.32978430,  0.56784588,  0.19083706, -0.51226705,
+      0.84538329,  1.00741816,  0.76528233, };
+
+    // run vector multiplication
+    float buf_test[35];
+    float scalar = 0.707f;
+    liquid_vectorf_mulscalar(buf_0, 35, 0.707f, buf_test);
+
+    //compare result
+    unsigned int i;
+    for (i=0; i<35; i++) {
+        CONTEND_DELTA(buf_test[i], buf_2[i], tol);
+        //float v = buf_0[i] * scalar;
+        //printf("%12.8f\n", v);
+    }
+}
+
