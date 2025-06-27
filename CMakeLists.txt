@@ -299,7 +299,7 @@ elseif (C_AVX2_FOUND AND ENABLE_SIMD)
         src/dotprod/src/dotprod_rrrf.avx.c
         src/dotprod/src/sumsq.avx.c)
     target_sources(vector PUBLIC
-        src/vector/src/vectorf.port.c
+        src/vector/src/vectorf.avx.c
         src/vector/src/vectorcf.port.c)
     target_compile_options(dotprod PUBLIC ${C_AVX2_FLAGS})
     target_compile_options(vector PUBLIC ${C_AVX2_FLAGS})
