@@ -267,14 +267,8 @@ add_library(utility OBJECT
     src/utility/src/utility.c)
 
 add_library(vector OBJECT
-    src/vector/src/vectorf_add.port.c
-    src/vector/src/vectorf_norm.port.c
-    src/vector/src/vectorf_mul.port.c
-    src/vector/src/vectorf_trig.port.c
-    src/vector/src/vectorcf_add.port.c
-    src/vector/src/vectorcf_norm.port.c
-    src/vector/src/vectorcf_mul.port.c
-    src/vector/src/vectorcf_trig.port.c)
+    src/vector/src/vectorf.port.c
+    src/vector/src/vectorcf.port.c)
 
 
 # ---------------------------------------- SIMD extensions ----------------------------------------

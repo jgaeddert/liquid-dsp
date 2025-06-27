@@ -267,14 +267,7 @@ fi
 
 
 # for now all vector operations are portable C versions
-MLIBS_VECTOR="src/vector/src/vectorf_add.port.o   \
-              src/vector/src/vectorf_norm.port.o  \
-              src/vector/src/vectorf_mul.port.o   \
-              src/vector/src/vectorf_trig.port.o  \
-              src/vector/src/vectorcf_add.port.o  \
-              src/vector/src/vectorcf_norm.port.o \
-              src/vector/src/vectorcf_mul.port.o  \
-              src/vector/src/vectorcf_trig.port.o"
+MLIBS_VECTOR="src/vector/src/vectorf.port.o src/vector/src/vectorcf.port.o"
 
 case $target_os in
 darwin*)
