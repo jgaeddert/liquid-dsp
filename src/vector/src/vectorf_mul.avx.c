@@ -40,9 +40,6 @@ void liquid_vectorf_mul(float *      _v0,
     // t = 8*(floor(_n/8))
     unsigned int t = (_n >> 3) << 3;
 
-    // aligned output array
-    float w[8] __attribute__((aligned(32)));
-
     // operate in blocks of 8 samples (register size)
     unsigned int i;
     for (i=0; i<t; i+=8) {
@@ -53,11 +50,8 @@ void liquid_vectorf_mul(float *      _v0,
         // compute product
         y = _mm256_mul_ps(v0, v1);
 
-        // unload packed array (aligned)
-        _mm256_store_ps(w, y);
-
-        // copy to output (unaligned)
-        memmove(&_y[i], w, 8*sizeof(float));
+        // unload packed array (unaligned)
+        _mm256_storeu_ps(&_y[i], y);
     }
 
     // cleanup (residual multiplications that do not fit in register)
@@ -83,9 +77,6 @@ void liquid_vectorf_mulscalar(float *      _v,
     float s[8] __attribute__((aligned(32))) = {_s,_s,_s,_s,_s,_s,_s,_s,};
     v1 = _mm256_load_ps(s);
 
-    // aligned output array
-    float w[8] __attribute__((aligned(32)));
-
     // operate in blocks of 8 samples (register size)
     unsigned int i;
     for (i=0; i<t; i+=8) {
@@ -95,11 +86,8 @@ void liquid_vectorf_mulscalar(float *      _v,
         // compute product
         y = _mm256_mul_ps(v0, v1);
 
-        // unload packed array (aligned)
-        _mm256_store_ps(w, y);
-
-        // copy to output (unaligned)
-        memmove(&_y[i], w, 8*sizeof(float));
+        // unload packed array (unaligned)
+        _mm256_storeu_ps(&_y[i], y);
     }
 
     // cleanup (residual multiplications that do not fit in register)
