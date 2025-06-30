@@ -569,7 +569,10 @@ int QDETECTOR(_execute_seek)(QDETECTOR() _q, TI _x)
         // search for peak
         // TODO: only search over range [-nfft/2, nfft/2)
         for (i=0; i<_q->nfft; i++) {
-            float rxy_abs = cabsf(_q->buf_time_1[i]);
+            //float rxy_abs = cabsf(_q->buf_time_1[i]); // <-- slow
+            float vi = crealf(_q->buf_time_1[i]);
+            float vq = cimagf(_q->buf_time_1[i]);
+            float rxy_abs = vi*vi + vq*vq;
             if (rxy_abs > rxy_peak) {
                 rxy_peak   = rxy_abs;
                 rxy_index  = i;
@@ -577,6 +580,7 @@ int QDETECTOR(_execute_seek)(QDETECTOR() _q, TI _x)
             }
         }
     }
+    rxy_peak = sqrtf(rxy_peak);
 
     // increment number of transforms (debugging)
     _q->num_transforms++;
