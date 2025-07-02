@@ -122,11 +122,8 @@ void autotest_vectorf_mul_35()
 
     //compare result
     unsigned int i;
-    for (i=0; i<35; i++) {
+    for (i=0; i<35; i++)
         CONTEND_DELTA(buf_test[i], buf_2[i], tol);
-        //float v = buf_0[i] * buf_1[i];
-        //printf("%12.8f\n", v);
-    }
 }
 
 // multiply by scalar
@@ -173,15 +170,11 @@ void autotest_vectorf_mulscalar_35()
 
     // run vector multiplication
     float buf_test[35];
-    float scalar = 0.707f;
     liquid_vectorf_mulscalar(buf_0, 35, 0.707f, buf_test);
 
     //compare result
     unsigned int i;
-    for (i=0; i<35; i++) {
+    for (i=0; i<35; i++)
         CONTEND_DELTA(buf_test[i], buf_2[i], tol);
-        //float v = buf_0[i] * scalar;
-        //printf("%12.8f\n", v);
-    }
 }
 
