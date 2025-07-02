@@ -6455,9 +6455,21 @@ int QDETECTOR(_set_threshold)(QDETECTOR() _q,                               \
 /* Get carrier offset search range                                      */  \
 float QDETECTOR(_get_range)(QDETECTOR() _q);                                \
                                                                             \
-/* Set carrier offset search range                                      */  \
+/* Set carrier offset search range; note that the larger this value is, */  \
+/* the more clock cycles execute() will require. This value is actually */  \
+/* a percentage of the input sample rate: fmax = 2 * pi * _dphi_max/Fs  */  \
+/*  _q          : detector object                                       */  \
+/*  _dphi_max   : maximum carrier offset range over which to search,    */  \
+/*                relative to sample rate [radians/sample]              */  \
 int QDETECTOR(_set_range)(QDETECTOR() _q,                                   \
                           float       _dphi_max);                           \
+                                                                            \
+/* Set carrier offset search range based on the FFT offset index        */  \
+/*  _q          : detector object                                       */  \
+/*  _index_max  : maximum FFT bin search range,                         */  \
+/*                0 <= _index_max < sequence_len                        */  \
+int QDETECTOR(_set_range_index)(QDETECTOR() _q,                             \
+                                int         _index_max);                    \
                                                                             \
 /* Get sequence length                                                  */  \
 unsigned int QDETECTOR(_get_seq_len)(QDETECTOR() _q);                       \
