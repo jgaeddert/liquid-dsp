@@ -496,11 +496,18 @@ int QDETECTOR(_execute_seek)(QDETECTOR() _q, TI _x)
 
     // compute scaling factor (TODO: use median rather than mean signal level)
     float g0;
+#if 0
     if (_q->x2_sum_0 == 0.f) {
         g0 = sqrtf(_q->x2_sum_1) * sqrtf((float)(_q->s_len) / (float)(_q->nfft / 2));
     } else {
         g0 = sqrtf(_q->x2_sum_0 + _q->x2_sum_1) * sqrtf((float)(_q->s_len) / (float)(_q->nfft));
     }
+    //printf("x2: {%12.6f, %12.6f}: g0=%12.6f\n", _q->x2_sum_0, _q->x2_sum_1, g0);
+#else
+    float x2_prime = _q->x2_sum_0 > _q->x2_sum_1 ? _q->x2_sum_0 : _q->x2_sum_1;
+    g0 = sqrtf(x2_prime) * sqrtf((float)(_q->s_len) / (float)(_q->nfft / 2));
+    //printf("x2: {%12.6f, %12.6f} (%12.6f): g0=%12.6f\n", _q->x2_sum_0, _q->x2_sum_1, x2_prime, g0);
+#endif
     if (g0 < 1e-10) {
         memmove(_q->buf_time_0,
                 _q->buf_time_0 + _q->nfft / 2,
