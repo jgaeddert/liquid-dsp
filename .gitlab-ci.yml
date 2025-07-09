@@ -105,7 +105,7 @@ valgrind:
     - apt-get -qq install -y --no-install-recommends valgrind
     - virtualenv env
     - source env/bin/activate
-    - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=OFF -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_SANDBOX=OFF ..
+    - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=OFF -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_SANDBOX=OFF -DPYTHON=OFF ..
     - make -j4
     - ../scripts/valgrind_eval.py -output valgrind -test 361 # run a single test initially
     - ../scripts/valgrind_eval.py -output valgrind -summary
