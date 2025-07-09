@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -133,7 +133,7 @@ fskdem fskdem_create(unsigned int _m,
     // allocate memory for transform
     q->buf_time = (float complex*) FFT_MALLOC(q->K * sizeof(float complex));
     q->buf_freq = (float complex*) FFT_MALLOC(q->K * sizeof(float complex));
-    q->fft = FFT_CREATE_PLAN(q->K, q->buf_time, q->buf_freq, FFT_DIR_FORWARD, 0);
+    q->fft = FFT_CREATE_PLAN(q->K, q->buf_time, q->buf_freq, FFT_DIR_FORWARD, FFT_METHOD);
 
     // reset modem object
     fskdem_reset(q);
@@ -156,7 +156,7 @@ fskdem fskdem_copy(fskdem q_orig)
     // allocate memory for transform
     q_copy->buf_time = (float complex*) FFT_MALLOC(q_copy->K * sizeof(float complex));
     q_copy->buf_freq = (float complex*) FFT_MALLOC(q_copy->K * sizeof(float complex));
-    q_copy->fft = FFT_CREATE_PLAN(q_copy->K, q_copy->buf_time, q_copy->buf_freq, FFT_DIR_FORWARD, 0);
+    q_copy->fft = FFT_CREATE_PLAN(q_copy->K, q_copy->buf_time, q_copy->buf_freq, FFT_DIR_FORWARD, FFT_METHOD);
 
     // copy internal time and frequency buffers
     memmove(q_copy->buf_time, q_orig->buf_time, q_copy->K * sizeof(float complex));

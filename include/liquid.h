@@ -1871,6 +1871,12 @@ int ASGRAM(_destroy)(ASGRAM() _q);                                          \
 /* Reset the internal state of the asgram object                        */  \
 int ASGRAM(_reset)(ASGRAM() _q);                                            \
                                                                             \
+/* Enable automatic display scaling based on noise floor estimation     */  \
+int ASGRAM(_autoscale_enable)(ASGRAM() _q);                                 \
+                                                                            \
+/* Disable automatic display scaling based on noise floor estimation    */  \
+int ASGRAM(_autoscale_disable)(ASGRAM() _q);                                \
+                                                                            \
 /* Set the scale and offset for spectrogram in terms of dB for display  */  \
 /* purposes                                                             */  \
 /*  _q      : asgram object                                             */  \
@@ -6447,9 +6453,21 @@ int QDETECTOR(_set_threshold)(QDETECTOR() _q,                               \
 /* Get carrier offset search range                                      */  \
 float QDETECTOR(_get_range)(QDETECTOR() _q);                                \
                                                                             \
-/* Set carrier offset search range                                      */  \
+/* Set carrier offset search range; note that the larger this value is, */  \
+/* the more clock cycles execute() will require. This value is actually */  \
+/* a percentage of the input sample rate: fmax = 2 * pi * _dphi_max/Fs  */  \
+/*  _q          : detector object                                       */  \
+/*  _dphi_max   : maximum carrier offset range over which to search,    */  \
+/*                relative to sample rate [radians/sample]              */  \
 int QDETECTOR(_set_range)(QDETECTOR() _q,                                   \
                           float       _dphi_max);                           \
+                                                                            \
+/* Set carrier offset search range based on the FFT offset index        */  \
+/*  _q          : detector object                                       */  \
+/*  _index_max  : maximum FFT bin search range,                         */  \
+/*                0 <= _index_max < sequence_len                        */  \
+int QDETECTOR(_set_range_index)(QDETECTOR() _q,                             \
+                                int         _index_max);                    \
                                                                             \
 /* Get sequence length                                                  */  \
 unsigned int QDETECTOR(_get_seq_len)(QDETECTOR() _q);                       \
@@ -10122,6 +10140,9 @@ unsigned int  liquid_reverse_uint32(unsigned int  _x);
 int liquid_get_scale(float   _val,
                      char *  _unit,
                      float * _scale);
+
+// compare two values (e.g. qsort), single-precision float
+int liquid_compare_float(const void * _a, const void* _b);
 
 //
 // MODULE : vector

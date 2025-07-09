@@ -726,7 +726,7 @@ LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_comp
 
 // Use fftw library if installed (and not overridden with configuration),
 // otherwise use internal (less efficient) fft library.
-#if HAVE_FFTW3_H && !defined LIQUID_FFTOVERRIDE
+#if fftw3f_FOUND || (HAVE_FFTW3_H && !defined LIQUID_FFTOVERRIDE)
 #   include <fftw3.h>
 #   define FFT_PLAN             fftwf_plan
 #   define FFT_CREATE_PLAN      fftwf_plan_dft_1d

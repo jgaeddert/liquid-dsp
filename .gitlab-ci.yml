@@ -11,7 +11,7 @@ variables:
 
 before_script:
   - apt-get -qq update
-  - apt-get -qq install -y --no-install-recommends build-essential cmake valgrind time curl
+  - apt-get -qq install -y --no-install-recommends build-essential cmake time curl virtualenv
 
 # build main library and run test programs
 build:
@@ -45,7 +45,6 @@ coverage:
     - make -j4
     - ./xautotest -q -o autotest.json
     - cd ..
-    - apt-get -qq install -y --no-install-recommends virtualenv
     - virtualenv coverage
     - source coverage/bin/activate
     - pip install codecov-cli gcovr==7.0
@@ -79,7 +78,6 @@ legacy:
 platformio:
   stage: test
   script:
-    - apt-get -qq install -y --no-install-recommends virtualenv
     - virtualenv platformio
     - source platformio/bin/activate
     - pip install platformio
@@ -96,15 +94,24 @@ platformio:
   artifacts:
     paths: [run_examples.sh, time.txt]
 
-# compile and run all autotest programs with valgrind
-.autotest-memcheck:
+# compile and run autotest programs with valgrind
+# NOTE: running all tests on a single-core system can take well over an hour
+valgrind:
   stage: test
   script:
-    - make -j4 xautotest
-    - mkdir valgrind
-    - ./scripts/valgrind_eval.py -output valgrind -test 881
+    - rm -rf build
+    - mkdir build
+    - cd build
+    - apt-get -qq install -y --no-install-recommends valgrind
+    - virtualenv env
+    - source env/bin/activate
+    - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=OFF -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_SANDBOX=OFF ..
+    - make -j4
+    - ../scripts/valgrind_eval.py -output valgrind -test 361 # run a single test initially
+    - ../scripts/valgrind_eval.py -output valgrind -summary
   artifacts:
-    paths: [valgrind/*]
+    paths:
+      - build/valgrind/*
 
 # cibuildwheel (linux)
 linux:

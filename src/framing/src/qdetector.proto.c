@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -104,8 +104,8 @@ QDETECTOR() QDETECTOR(_create)(TI *         _s,
     q->buf_freq_1 = (TI*) FFT_MALLOC(q->nfft * sizeof(TI));
     q->buf_time_1 = (TI*) FFT_MALLOC(q->nfft * sizeof(TI));
 
-    q->fft  = FFT_CREATE_PLAN(q->nfft, q->buf_time_0, q->buf_freq_0, FFT_DIR_FORWARD,  0);
-    q->ifft = FFT_CREATE_PLAN(q->nfft, q->buf_freq_1, q->buf_time_1, FFT_DIR_BACKWARD, 0);
+    q->fft  = FFT_CREATE_PLAN(q->nfft, q->buf_time_0, q->buf_freq_0, FFT_DIR_FORWARD,  FFT_METHOD);
+    q->ifft = FFT_CREATE_PLAN(q->nfft, q->buf_freq_1, q->buf_time_1, FFT_DIR_BACKWARD, FFT_METHOD);
 
     // create frequency-domain template by taking nfft-point transform on 's', storing in 'S'
     q->S = (TI*) malloc(q->nfft * sizeof(TI));
@@ -323,12 +323,13 @@ int QDETECTOR(_destroy)(QDETECTOR() _q)
 
 int QDETECTOR(_print)(QDETECTOR() _q)
 {
-    printf("<liquid.qdetector_%s:\n", EXTENSION_FULL);
-    printf(", seq=%u", _q->s_len);
+    printf("<liquid.qdetector_%s:", EXTENSION_FULL);
+    printf(" seq=%u", _q->s_len);
     printf(", nfft=%u", _q->nfft);
     printf(", dphi_max=%g",_q->dphi_max);
+    printf(", range=%d", _q->range);
     printf(", thresh=%g", _q->threshold);
-    printf(", energy=%g\n", _q->s2_sum);
+    printf(", energy=%g", _q->s2_sum);
     printf(">\n");
     return LIQUID_OK;
 }
@@ -389,11 +390,11 @@ float QDETECTOR(_get_range)(QDETECTOR() _q)
     return _q->dphi_max;
 }
 
-// set carrier offset search range
+// set carrier offset search range based on relative frequency
 int QDETECTOR(_set_range)(QDETECTOR() _q,
                           float       _dphi_max)
 {
-    if (_dphi_max < 0.0f || _dphi_max > 0.5f)
+    if (_dphi_max < 0.0f || _dphi_max > M_PI)
         return liquid_error(LIQUID_EICONFIG,"carrier offset search range (%12.4e) out of range; ignoring", _dphi_max);
 
     // set internal search range
@@ -401,6 +402,24 @@ int QDETECTOR(_set_range)(QDETECTOR() _q,
     _q->range    = (int)(_q->dphi_max * _q->nfft / (2*M_PI));
     _q->range    = _q->range < 0 ? 0 : _q->range;
     //printf("range: %d / %u\n", _q->range, _q->nfft);
+    return LIQUID_OK;
+}
+
+// set carrier offset search range based on FFT index
+int QDETECTOR(_set_range_index)(QDETECTOR() _q,
+                                int         _index_max)
+{
+    // silently cap negative values
+    if (_index_max < 0)
+        _index_max = 0;
+
+    // silently cap positive values
+    if (_index_max > _q->nfft)
+        _index_max = _q->nfft;
+
+    // set internal search range
+    _q->range    = _index_max;
+    _q->dphi_max = (float)(_q->range) * 2.0f * M_PI / (float)(_q->nfft);
     return LIQUID_OK;
 }
 
@@ -539,7 +558,10 @@ int QDETECTOR(_execute_seek)(QDETECTOR() _q, TI _x)
         // search for peak
         // TODO: only search over range [-nfft/2, nfft/2)
         for (i=0; i<_q->nfft; i++) {
-            float rxy_abs = cabsf(_q->buf_time_1[i]);
+            //float rxy_abs = cabsf(_q->buf_time_1[i]); // <-- slow
+            float vi = crealf(_q->buf_time_1[i]);
+            float vq = cimagf(_q->buf_time_1[i]);
+            float rxy_abs = vi*vi + vq*vq;
             if (rxy_abs > rxy_peak) {
                 rxy_peak   = rxy_abs;
                 rxy_index  = i;
@@ -547,6 +569,7 @@ int QDETECTOR(_execute_seek)(QDETECTOR() _q, TI _x)
             }
         }
     }
+    rxy_peak = sqrtf(rxy_peak);
 
     // increment number of transforms (debugging)
     _q->num_transforms++;

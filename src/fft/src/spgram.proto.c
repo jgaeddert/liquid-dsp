@@ -449,11 +449,12 @@ int SPGRAM(_step)(SPGRAM() _q)
 int SPGRAM(_get_psd_mag)(SPGRAM() _q,
                          T *      _psd)
 {
+    // determine appropriate scaling factor
+    T scale = _q->accumulate ? 1.0f / max(1,_q->num_transforms) : 1.0f;
+
     // compute magnitude (linear) and run FFT shift
     unsigned int i;
     unsigned int nfft_2 = _q->nfft / 2;
-    T scale = _q->accumulate ? 1.0f / max(1,_q->num_transforms) : 0.0f;
-    // TODO: adjust scale if infinite integration
     for (i=0; i<_q->nfft; i++) {
         unsigned int k = (i + nfft_2) % _q->nfft;
         _psd[i] = max(LIQUID_SPGRAM_PSD_MIN,_q->psd[k]) * scale;
