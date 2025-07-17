@@ -132,9 +132,9 @@ int interleaver_set_depth(interleaver  _q,
 //  _q          :   interleaver object
 //  _msg_dec    :   decoded (un-interleaved) message
 //  _msg_enc    :   encoded (interleaved) message
-int interleaver_encode(interleaver     _q,
-                       unsigned char * _msg_dec,
-                       unsigned char * _msg_enc)
+int interleaver_encode(interleaver           _q,
+                       const unsigned char * _msg_dec,
+                       unsigned char *       _msg_enc)
 {
     // copy data to output
     memmove(_msg_enc, _msg_dec, _q->n);
@@ -151,9 +151,9 @@ int interleaver_encode(interleaver     _q,
 //  _q          :   interleaver object
 //  _msg_dec    :   decoded (un-interleaved) message
 //  _msg_enc    :   encoded (interleaved) message
-int interleaver_encode_soft(interleaver     _q,
-                            unsigned char * _msg_dec,
-                            unsigned char * _msg_enc)
+int interleaver_encode_soft(interleaver           _q,
+                            const unsigned char * _msg_dec,
+                            unsigned char *       _msg_enc)
 {
     // copy data to output
     memmove(_msg_enc, _msg_dec, 8*_q->n);
@@ -170,9 +170,9 @@ int interleaver_encode_soft(interleaver     _q,
 //  _q          :   interleaver object
 //  _msg_enc    :   encoded (interleaved) message
 //  _msg_dec    :   decoded (un-interleaved) message
-int interleaver_decode(interleaver     _q,
-                       unsigned char * _msg_enc,
-                       unsigned char * _msg_dec)
+int interleaver_decode(interleaver           _q,
+                       const unsigned char * _msg_enc,
+                       unsigned char *       _msg_dec)
 {
     // copy data to output
     memmove(_msg_dec, _msg_enc, _q->n);
@@ -189,9 +189,9 @@ int interleaver_decode(interleaver     _q,
 //  _q          :   interleaver object
 //  _msg_enc    :   encoded (interleaved) message
 //  _msg_dec    :   decoded (un-interleaved) message
-int interleaver_decode_soft(interleaver     _q,
-                            unsigned char * _msg_enc,
-                            unsigned char * _msg_dec)
+int interleaver_decode_soft(interleaver           _q,
+                            const unsigned char * _msg_enc,
+                            unsigned char *       _msg_dec)
 {
     // copy data to output
     memmove(_msg_dec, _msg_enc, 8*_q->n);

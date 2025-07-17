@@ -1226,9 +1226,9 @@ unsigned int crc_get_length(crc_scheme _scheme);
 //  _scheme     :   error-detection scheme
 //  _msg        :   input data message, [size: _n x 1]
 //  _n          :   input data message size
-unsigned int crc_generate_key(crc_scheme      _scheme,
-                              unsigned char * _msg,
-                              unsigned int    _n);
+unsigned int crc_generate_key(crc_scheme            _scheme,
+                              const unsigned char * _msg,
+                              unsigned int          _n);
 
 // generate error-detection key and append to end of message
 //  _scheme     :   error-detection scheme (resulting in 'p' bytes)
@@ -1243,18 +1243,18 @@ int crc_append_key(crc_scheme      _scheme,
 //  _msg        :   input data message, [size: _n x 1]
 //  _n          :   input data message size
 //  _key        :   error-detection key
-int crc_validate_message(crc_scheme      _scheme,
-                         unsigned char * _msg,
-                         unsigned int    _n,
-                         unsigned int    _key);
+int crc_validate_message(crc_scheme            _scheme,
+                         const unsigned char * _msg,
+                         unsigned int          _n,
+                         unsigned int          _key);
 
 // check message with key appended to end of array
 //  _scheme     :   error-detection scheme (resulting in 'p' bytes)
 //  _msg        :   input data message, [size: _n+p x 1]
 //  _n          :   input data message size (excluding key at end)
-int crc_check_key(crc_scheme      _scheme,
-                  unsigned char * _msg,
-                  unsigned int    _n);
+int crc_check_key(crc_scheme            _scheme,
+                  const unsigned char * _msg,
+                  unsigned int          _n);
 
 // get size of key (bytes)
 unsigned int crc_sizeof_key(crc_scheme _scheme);
@@ -1352,30 +1352,30 @@ int fec_print(fec _q);
 //  _dec_msg_len    :   decoded message length
 //  _msg_dec        :   decoded message
 //  _msg_enc        :   encoded message
-int fec_encode(fec _q,
-               unsigned int _dec_msg_len,
-               unsigned char * _msg_dec,
-               unsigned char * _msg_enc);
+int fec_encode(fec                     _q,
+               unsigned int           _dec_msg_len,
+               const unsigned char * _msg_dec,
+               unsigned char *       _msg_enc);
 
 // decode a block of data using a fec scheme
 //  _q              :   fec object
 //  _dec_msg_len    :   decoded message length
 //  _msg_enc        :   encoded message
 //  _msg_dec        :   decoded message
-int fec_decode(fec _q,
-               unsigned int _dec_msg_len,
-               unsigned char * _msg_enc,
-               unsigned char * _msg_dec);
+int fec_decode(fec                     _q,
+               unsigned int           _dec_msg_len,
+               const unsigned char * _msg_enc,
+               unsigned char *       _msg_dec);
 
 // decode a block of data using a fec scheme (soft decision)
 //  _q              :   fec object
 //  _dec_msg_len    :   decoded message length
 //  _msg_enc        :   encoded message (soft bits)
 //  _msg_dec        :   decoded message
-int fec_decode_soft(fec _q,
-                    unsigned int _dec_msg_len,
-                    unsigned char * _msg_enc,
-                    unsigned char * _msg_dec);
+int fec_decode_soft(fec                     _q,
+                    unsigned int           _dec_msg_len,
+                    const unsigned char * _msg_enc,
+                    unsigned char *       _msg_dec);
 
 //
 // Packetizer
@@ -1504,33 +1504,33 @@ int interleaver_set_depth(interleaver  _q,
 //  _q          :   interleaver object
 //  _msg_dec    :   decoded (un-interleaved) message
 //  _msg_enc    :   encoded (interleaved) message
-int interleaver_encode(interleaver     _q,
-                       unsigned char * _msg_dec,
-                       unsigned char * _msg_enc);
+int interleaver_encode(interleaver           _q,
+                       const unsigned char * _msg_dec,
+                       unsigned char *       _msg_enc);
 
 // execute forward interleaver (encoder) on soft bits
 //  _q          :   interleaver object
 //  _msg_dec    :   decoded (un-interleaved) message
 //  _msg_enc    :   encoded (interleaved) message
-int interleaver_encode_soft(interleaver     _q,
-                            unsigned char * _msg_dec,
-                            unsigned char * _msg_enc);
+int interleaver_encode_soft(interleaver           _q,
+                            const unsigned char * _msg_dec,
+                            unsigned char *       _msg_enc);
 
 // execute reverse interleaver (decoder)
 //  _q          :   interleaver object
 //  _msg_enc    :   encoded (interleaved) message
 //  _msg_dec    :   decoded (un-interleaved) message
-int interleaver_decode(interleaver     _q,
-                       unsigned char * _msg_enc,
-                       unsigned char * _msg_dec);
+int interleaver_decode(interleaver           _q,
+                       const unsigned char * _msg_enc,
+                       unsigned char *       _msg_dec);
 
 // execute reverse interleaver (decoder) on soft bits
 //  _q          :   interleaver object
 //  _msg_enc    :   encoded (interleaved) message
 //  _msg_dec    :   decoded (un-interleaved) message
-int interleaver_decode_soft(interleaver     _q,
-                            unsigned char * _msg_enc,
-                            unsigned char * _msg_dec);
+int interleaver_decode_soft(interleaver           _q,
+                            const unsigned char * _msg_enc,
+                            unsigned char *       _msg_dec);
 
 
 

@@ -62,7 +62,7 @@ unsigned char secded2216_syndrome_w1[22] = {
     0x10, 0x20};
 
 // compute parity on 16-bit input
-unsigned char fec_secded2216_compute_parity(unsigned char * _m)
+unsigned char fec_secded2216_compute_parity(const unsigned char * _m)
 {
     // compute encoded/transmitted message: v = m*G
     unsigned char parity = 0x00;
@@ -82,7 +82,7 @@ unsigned char fec_secded2216_compute_parity(unsigned char * _m)
 }
 
 // compute syndrome on 22-bit input
-unsigned char fec_secded2216_compute_syndrome(unsigned char * _v)
+unsigned char fec_secded2216_compute_syndrome(const unsigned char * _v)
 {
     // TODO : unwrap this loop
     unsigned int i;
@@ -104,8 +104,8 @@ unsigned char fec_secded2216_compute_syndrome(unsigned char * _v)
 // encode symbol
 //  _sym_dec    :   decoded symbol [size: 2 x 1]
 //  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
-int fec_secded2216_encode_symbol(unsigned char * _sym_dec,
-                                 unsigned char * _sym_enc)
+int fec_secded2216_encode_symbol(const unsigned char * _sym_dec,
+                                 unsigned char *       _sym_enc)
 {
     // first six bits is parity block
     _sym_enc[0] = fec_secded2216_compute_parity(_sym_dec);
@@ -120,8 +120,8 @@ int fec_secded2216_encode_symbol(unsigned char * _sym_dec,
 // detected, respectively
 //  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
 //  _sym_dec    :   decoded symbol [size: 2 x 1]
-int fec_secded2216_decode_symbol(unsigned char * _sym_enc,
-                                 unsigned char * _sym_dec)
+int fec_secded2216_decode_symbol(const unsigned char * _sym_enc,
+                                 unsigned char *       _sym_dec)
 {
 #if 0
     // validate input
@@ -156,8 +156,8 @@ int fec_secded2216_decode_symbol(unsigned char * _sym_enc,
 // detected, respectively
 //  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
 //  _e_hat      :   estimated error vector [size: 3 x 1]
-int fec_secded2216_estimate_ehat(unsigned char * _sym_enc,
-                                 unsigned char * _e_hat)
+int fec_secded2216_estimate_ehat(const unsigned char * _sym_enc,
+                                 unsigned char *       _e_hat)
 {
     // clear output array
     _e_hat[0] = 0x00;
@@ -225,10 +225,10 @@ int fec_secded2216_destroy(fec _q)
 //  _dec_msg_len    :   decoded message length (number of bytes)
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
 //  _msg_enc        :   encoded message [size: 1 x 2*_dec_msg_len]
-int fec_secded2216_encode(fec             _q,
-                          unsigned int    _dec_msg_len,
-                          unsigned char * _msg_dec,
-                          unsigned char * _msg_enc)
+int fec_secded2216_encode(fec                   _q,
+                          unsigned int          _dec_msg_len,
+                          const unsigned char * _msg_dec,
+                          unsigned char *       _msg_enc)
 {
     unsigned int i=0;       // decoded byte counter
     unsigned int j=0;       // encoded byte counter
@@ -286,10 +286,10 @@ int fec_secded2216_encode(fec             _q,
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
 //
 //unsigned int
-int fec_secded2216_decode(fec             _q,
-                          unsigned int    _dec_msg_len,
-                          unsigned char * _msg_enc,
-                          unsigned char * _msg_dec)
+int fec_secded2216_decode(fec                   _q,
+                          unsigned int          _dec_msg_len,
+                          const unsigned char * _msg_enc,
+                          unsigned char *       _msg_dec)
 {
     unsigned int i=0;       // decoded byte counter
     unsigned int j=0;       // encoded byte counter
