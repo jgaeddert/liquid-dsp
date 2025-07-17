@@ -39,7 +39,7 @@
 #include <complex.h>
 #include "liquid.h"
 
-#if defined HAVE_FEC_H && defined HAVE_LIBFEC
+#if fec_FOUND || (defined HAVE_FEC_H && defined HAVE_LIBFEC)
 #  define LIBFEC_ENABLED 1
 #endif
 
