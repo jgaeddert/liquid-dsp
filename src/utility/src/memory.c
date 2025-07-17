@@ -28,7 +28,7 @@
 //  _orig   : pointer to original memory array
 //  _num    : number of original elements
 //  _size   : size of each element
-void * liquid_malloc_copy(void *       _orig,
+void * liquid_malloc_copy(const void * _orig,
                           unsigned int _num,
                           unsigned int _size)
 {

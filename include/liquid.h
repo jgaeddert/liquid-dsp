@@ -9974,7 +9974,7 @@ unsigned int msequence_genpoly_period(unsigned int _g);
 //  _orig   : pointer to original memory array
 //  _num    : number of original elements
 //  _size   : size of each element
-void * liquid_malloc_copy(void * _orig, unsigned int _num, unsigned int _size);
+void * liquid_malloc_copy(const void * _orig, unsigned int _num, unsigned int _size);
 
 // pack binary array with symbol(s)
 //  _src        :   source array, [size: _n x 1]
@@ -9994,7 +9994,7 @@ int liquid_pack_array(unsigned char * _src,
 //  _k          :   bit index to write in _src
 //  _b          :   number of bits in output symbol
 //  _sym_out    :   output symbol
-int liquid_unpack_array(unsigned char * _src,
+int liquid_unpack_array(const unsigned char * _src,
                         unsigned int _n,
                         unsigned int _k,
                         unsigned int _b,
@@ -10006,7 +10006,7 @@ int liquid_unpack_array(unsigned char * _src,
 //  _sym_out            :   output symbols
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-int liquid_pack_bytes(unsigned char * _sym_in,
+int liquid_pack_bytes(const unsigned char * _sym_in,
                       unsigned int _sym_in_len,
                       unsigned char * _sym_out,
                       unsigned int _sym_out_len,
@@ -10018,7 +10018,7 @@ int liquid_pack_bytes(unsigned char * _sym_in,
 //  _sym_out            :   output symbols array
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-int liquid_unpack_bytes(unsigned char * _sym_in,
+int liquid_unpack_bytes(const unsigned char * _sym_in,
                         unsigned int _sym_in_len,
                         unsigned char * _sym_out,
                         unsigned int _sym_out_len,
@@ -10032,7 +10032,7 @@ int liquid_unpack_bytes(unsigned char * _sym_in,
 //  _sym_out_bps        :   number of bits per output symbol
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-int liquid_repack_bytes(unsigned char * _sym_in,
+int liquid_repack_bytes(const unsigned char * _sym_in,
                         unsigned int _sym_in_bps,
                         unsigned int _sym_in_len,
                         unsigned char * _sym_out,

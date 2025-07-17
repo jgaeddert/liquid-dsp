@@ -111,11 +111,11 @@ int liquid_pack_array(unsigned char * _src,
 //  _k          :   bit index to write in _src
 //  _b          :   number of bits in output symbol
 //  _sym_out    :   output symbol
-int liquid_unpack_array(unsigned char * _src,
-                        unsigned int    _n,
-                        unsigned int    _k,
-                        unsigned int    _b,
-                        unsigned char * _sym_out)
+int liquid_unpack_array(const unsigned char * _src,
+                        unsigned int          _n,
+                        unsigned int          _k,
+                        unsigned int          _b,
+                        unsigned char *       _sym_out)
 {
     // validate input
     if (_k >= 8*_n)
@@ -179,11 +179,11 @@ int liquid_unpack_array(unsigned char * _src,
 //  _sym_out            :   output symbols
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-int liquid_pack_bytes(unsigned char * _sym_in,
-                      unsigned int    _sym_in_len,
-                      unsigned char * _sym_out,
-                      unsigned int    _sym_out_len,
-                      unsigned int *  _num_written)
+int liquid_pack_bytes(const unsigned char * _sym_in,
+                      unsigned int          _sym_in_len,
+                      unsigned char *       _sym_out,
+                      unsigned int          _sym_out_len,
+                      unsigned int *        _num_written)
 {
     div_t d = div(_sym_in_len,8);
     unsigned int req__sym_out_len = d.quot;
@@ -221,11 +221,11 @@ int liquid_pack_bytes(unsigned char * _sym_in,
 //  _sym_out            :   output symbols array
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-int liquid_unpack_bytes(unsigned char * _sym_in,
-                        unsigned int    _sym_in_len,
-                        unsigned char * _sym_out,
-                        unsigned int    _sym_out_len,
-                        unsigned int *  _num_written)
+int liquid_unpack_bytes(const unsigned char * _sym_in,
+                        unsigned int          _sym_in_len,
+                        unsigned char *       _sym_out,
+                        unsigned int          _sym_out_len,
+                        unsigned int *        _num_written)
 {
     if ( _sym_out_len < 8*_sym_in_len )
         return liquid_error(LIQUID_EIMEM,"unpack_bytes(), output too short");
@@ -261,13 +261,13 @@ int liquid_unpack_bytes(unsigned char * _sym_in,
 //  _sym_out_bps        :   number of bits per output symbol
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-int liquid_repack_bytes(unsigned char * _sym_in,
-                        unsigned int    _sym_in_bps,
-                        unsigned int    _sym_in_len,
-                        unsigned char * _sym_out,
-                        unsigned int    _sym_out_bps,
-                        unsigned int    _sym_out_len,
-                        unsigned int *  _num_written)
+int liquid_repack_bytes(const unsigned char * _sym_in,
+                        unsigned int          _sym_in_bps,
+                        unsigned int          _sym_in_len,
+                        unsigned char *       _sym_out,
+                        unsigned int          _sym_out_bps,
+                        unsigned int          _sym_out_len,
+                        unsigned int *        _num_written)
 {
     // compute number of output symbols and determine if output array
     // is sufficiently sized
