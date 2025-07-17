@@ -114,22 +114,17 @@ QDETECTOR() QDETECTOR(_create)(TI *         _s,
     FFT_EXECUTE(q->fft);
     memmove(q->S, q->buf_freq_0, q->nfft*sizeof(TI));
 
-    // reset state variables
-    q->counter        = q->nfft/2;
-    q->num_transforms = 0;
-    q->x2_sum_0       = 0.0f;
-    q->x2_sum_1       = 0.0f;
-    q->state          = QDETECTOR_STATE_SEEK;
-    q->frame_detected = 0;
-    memset(q->buf_time_0, 0x00, q->nfft*sizeof(TI));
-    
-    // reset estimates
+    // clear estimates
     q->rxy       = 0.0f;
     q->tau_hat   = 0.0f;
     q->gamma_hat = 0.0f;
     q->dphi_hat  = 0.0f;
     q->phi_hat   = 0.0f;
 
+    // reset state variables
+    QDETECTOR(_reset)(q);
+
+    // set default threshold and range values
     QDETECTOR(_set_threshold)(q,0.5f);
     QDETECTOR(_set_range    )(q,0.3f); // set initial range for higher detection
 
@@ -336,6 +331,15 @@ int QDETECTOR(_print)(QDETECTOR() _q)
 
 int QDETECTOR(_reset)(QDETECTOR() _q)
 {
+    // reset state variables
+    _q->counter        = _q->nfft/2;
+    _q->num_transforms = 0;
+    _q->x2_sum_0       = 0.0f;
+    _q->x2_sum_1       = 0.0f;
+    _q->state          = QDETECTOR_STATE_SEEK;
+    _q->frame_detected = 0;
+    memset(_q->buf_time_0, 0x00, _q->nfft*sizeof(TI));
+
     return LIQUID_OK;
 }
 
