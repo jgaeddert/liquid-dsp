@@ -124,10 +124,10 @@ void VECTOR(_abs)(T *          _x,
         _y[i+2] = cabsf(_x[i+2]);
         _y[i+3] = cabsf(_x[i+3]);
 #else
-        _x[i  ] = fabsf(_x[i  ]);
-        _x[i+1] = fabsf(_x[i+1]);
-        _x[i+2] = fabsf(_x[i+2]);
-        _x[i+3] = fabsf(_x[i+3]);
+        _y[i  ] = fabsf(_x[i  ]);
+        _y[i+1] = fabsf(_x[i+1]);
+        _y[i+2] = fabsf(_x[i+2]);
+        _y[i+3] = fabsf(_x[i+3]);
 #endif
     }
 
@@ -136,7 +136,7 @@ void VECTOR(_abs)(T *          _x,
 #if T_COMPLEX
         _y[i] = cabsf(_x[i]);
 #else
-        _x[i] = fabsf(_x[i]);
+        _y[i] = fabsf(_x[i]);
 #endif
     }
 }
