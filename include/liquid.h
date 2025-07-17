@@ -839,8 +839,8 @@ typedef struct DOTPROD(_s) * DOTPROD();                                     \
 /*  _x      : input array, [size: _n x 1]                               */  \
 /*  _n      : dotprod length, _n > 0                                    */  \
 /*  _y      : output sample pointer                                     */  \
-int DOTPROD(_run)( TC *         _v,                                         \
-                   TI *         _x,                                         \
+int DOTPROD(_run)( const TC *   _v,                                         \
+                   const TI *   _x,                                         \
                    unsigned int _n,                                         \
                    TO *         _y);                                        \
                                                                             \
@@ -851,21 +851,21 @@ int DOTPROD(_run)( TC *         _v,                                         \
 /*  _x      : input array, [size: _n x 1]                               */  \
 /*  _n      : dotprod length, _n > 0                                    */  \
 /*  _y      : output sample pointer                                     */  \
-int DOTPROD(_run4)(TC *         _v,                                         \
-                   TI *         _x,                                         \
+int DOTPROD(_run4)(const TC *   _v,                                         \
+                   const TI *   _x,                                         \
                    unsigned int _n,                                         \
                    TO *         _y);                                        \
                                                                             \
 /* Create vector dot product object                                     */  \
 /*  _v      : coefficients array, [size: _n x 1]                        */  \
 /*  _n      : dotprod length, _n > 0                                    */  \
-DOTPROD() DOTPROD(_create)(TC *         _v,                                 \
+DOTPROD() DOTPROD(_create)(const TC *   _v,                                 \
                            unsigned int _n);                                \
                                                                             \
 /* Create vector dot product object with time-reversed coefficients     */  \
 /*  _v      : time-reversed coefficients array, [size: _n x 1]          */  \
 /*  _n      : dotprod length, _n > 0                                    */  \
-DOTPROD() DOTPROD(_create_rev)(TC *         _v,                             \
+DOTPROD() DOTPROD(_create_rev)(const TC *   _v,                             \
                                unsigned int _n);                            \
                                                                             \
 /* Re-create dot product object of potentially a different length with  */  \
@@ -875,7 +875,7 @@ DOTPROD() DOTPROD(_create_rev)(TC *         _v,                             \
 /*  _v      : coefficients array, [size: _n x 1]                        */  \
 /*  _n      : dotprod length, _n > 0                                    */  \
 DOTPROD() DOTPROD(_recreate)(DOTPROD()    _q,                               \
-                             TC *         _v,                               \
+                             const TC *   _v,                               \
                              unsigned int _n);                              \
                                                                             \
 /* Re-create dot product object of potentially a different length with  */  \
@@ -886,7 +886,7 @@ DOTPROD() DOTPROD(_recreate)(DOTPROD()    _q,                               \
 /*  _v      : time-reversed coefficients array, [size: _n x 1]          */  \
 /*  _n      : dotprod length, _n > 0                                    */  \
 DOTPROD() DOTPROD(_recreate_rev)(DOTPROD()    _q,                           \
-                                 TC *         _v,                           \
+                                 const TC *   _v,                           \
                                  unsigned int _n);                          \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
@@ -903,7 +903,7 @@ int DOTPROD(_print)(DOTPROD() _q);                                          \
 /*  _x      : input array, [size: _n x 1]                               */  \
 /*  _y      : output sample pointer                                     */  \
 int DOTPROD(_execute)(DOTPROD() _q,                                         \
-                      TI *      _x,                                         \
+                      const TI * _x,                                        \
                       TO *      _y);                                        \
 
 LIQUID_DOTPROD_DEFINE_API(LIQUID_DOTPROD_MANGLE_RRRF,
@@ -925,11 +925,11 @@ LIQUID_DOTPROD_DEFINE_API(LIQUID_DOTPROD_MANGLE_CRCF,
 // sum squared methods
 //
 
-float liquid_sumsqf(float *      _v,
+float liquid_sumsqf(const float * _v,
                     unsigned int _n);
 
-float liquid_sumsqcf(liquid_float_complex * _v,
-                     unsigned int           _n);
+float liquid_sumsqcf(const liquid_float_complex * _v,
+                     unsigned int                 _n);
 
 
 //

@@ -33,8 +33,8 @@
 // sum squares, basic loop
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
-float liquid_sumsqf_avx(float *      _v,
-                        unsigned int _n)
+float liquid_sumsqf_avx(const float * _v,
+                        unsigned int  _n)
 {
     // first cut: ...
     __m256 v;   // input vector
@@ -79,8 +79,8 @@ float liquid_sumsqf_avx(float *      _v,
 // sum squares, unrolled loop
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
-float liquid_sumsqf_avxu(float *      _v,
-                         unsigned int _n)
+float liquid_sumsqf_avxu(const float * _v,
+                         unsigned int  _n)
 {
     // first cut: ...
     __m256 v0, v1, v2, v3;   // input vector
@@ -134,8 +134,8 @@ float liquid_sumsqf_avxu(float *      _v,
 // sum squares
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
-float liquid_sumsqf(float *      _v,
-                    unsigned int _n)
+float liquid_sumsqf(const float * _v,
+                    unsigned int  _n)
 {
     // switch based on size
     if (_n < 32) {
@@ -147,8 +147,8 @@ float liquid_sumsqf(float *      _v,
 // sum squares, complex
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
-float liquid_sumsqcf(float complex * _v,
-                     unsigned int    _n)
+float liquid_sumsqcf(const float complex * _v,
+                     unsigned int          _n)
 {
     // simple method: type cast input as real pointer, run double
     // length sumsqf method

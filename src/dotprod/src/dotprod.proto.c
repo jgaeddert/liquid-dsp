@@ -39,8 +39,8 @@ struct DOTPROD(_s) {
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-int DOTPROD(_run)(TC *         _h,
-                  TI *         _x,
+int DOTPROD(_run)(const TC *   _h,
+                  const TI *   _x,
                   unsigned int _n,
                   TO *         _y)
 {
@@ -61,8 +61,8 @@ int DOTPROD(_run)(TC *         _h,
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-int DOTPROD(_run4)(TC *         _h,
-                   TI *         _x,
+int DOTPROD(_run4)(const TC *   _h,
+                   const TI *   _x,
                    unsigned int _n,
                    TO *         _y)
 {
@@ -97,7 +97,7 @@ int DOTPROD(_run4)(TC *         _h,
 // create vector dot product object
 //  _h      :   coefficients array [size: 1 x _n]
 //  _n      :   dot product length
-DOTPROD() DOTPROD(_create)(TC *         _h,
+DOTPROD() DOTPROD(_create)(const TC *   _h,
                            unsigned int _n)
 {
     DOTPROD() q = (DOTPROD()) malloc(sizeof(struct DOTPROD(_s)));
@@ -116,7 +116,7 @@ DOTPROD() DOTPROD(_create)(TC *         _h,
 // create vector dot product object with time-reversed coefficients
 //  _h      :   coefficients array [size: 1 x _n]
 //  _n      :   dot product length
-DOTPROD() DOTPROD(_create_rev)(TC *         _h,
+DOTPROD() DOTPROD(_create_rev)(const TC *   _h,
                                unsigned int _n)
 {
     DOTPROD() q = (DOTPROD()) malloc(sizeof(struct DOTPROD(_s)));
@@ -139,7 +139,7 @@ DOTPROD() DOTPROD(_create_rev)(TC *         _h,
 //  _h      :   new coefficients [size: 1 x _n]
 //  _n      :   new dot product size
 DOTPROD() DOTPROD(_recreate)(DOTPROD()    _q,
-                             TC *         _h,
+                             const TC *   _h,
                              unsigned int _n)
 {
     // check to see if length has changed
@@ -163,7 +163,7 @@ DOTPROD() DOTPROD(_recreate)(DOTPROD()    _q,
 //  _h      :   time-reversed new coefficients [size: 1 x _n]
 //  _n      :   new dot product size
 DOTPROD() DOTPROD(_recreate_rev)(DOTPROD()    _q,
-                                 TC *         _h,
+                                 const TC *   _h,
                                  unsigned int _n)
 {
     // check to see if length has changed
@@ -230,9 +230,9 @@ int DOTPROD(_print)(DOTPROD() _q)
 //  _q      :   dot product object
 //  _x      :   input array [size: 1 x _n]
 //  _y      :   output dot product
-int DOTPROD(_execute)(DOTPROD() _q,
-                      TI *      _x,
-                      TO *      _y)
+int DOTPROD(_execute)(DOTPROD()  _q,
+                      const TI * _x,
+                      TO *       _y)
 {
     // run basic dot product with unrolled loops
     DOTPROD(_run4)(_q->h, _x, _q->n, _y);

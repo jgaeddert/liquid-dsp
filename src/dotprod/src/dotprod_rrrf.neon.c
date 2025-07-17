@@ -37,10 +37,10 @@
 #define DEBUG_DOTPROD_RRRF_NEON   0
 
 // basic dot product (ordinal calculation) using neon extensions
-int dotprod_rrrf_run(float *      _h,
-                     float *      _x,
-                     unsigned int _n,
-                     float *      _y)
+int dotprod_rrrf_run(const float * _h,
+                     const float * _x,
+                     unsigned int  _n,
+                     float *       _y)
 {
     float32x4_t v;   // input vector
     float32x4_t h;   // coefficients vector
@@ -84,10 +84,10 @@ int dotprod_rrrf_run(float *      _h,
 }
 
 // basic dot product (ordinal calculation) with loop unrolled, neon extensions
-int dotprod_rrrf_run4(float *      _h,
-                      float *      _x,
-                      unsigned int _n,
-                      float *      _y)
+int dotprod_rrrf_run4(const float * _h,
+                      const float * _x,
+                      unsigned int  _n,
+                      float *       _y)
 {
     float32x4_t v0, v1, v2, v3;
     float32x4_t h0, h1, h2, h3;
@@ -164,8 +164,8 @@ struct dotprod_rrrf_s {
 };
 
 // create dotprod object
-dotprod_rrrf dotprod_rrrf_create_opt(float *      _h,
-                                     unsigned int _n,
+dotprod_rrrf dotprod_rrrf_create_opt(const float * _h,
+                                     unsigned int  _n,
                                      int          _rev)
 {
     dotprod_rrrf q = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
@@ -183,22 +183,22 @@ dotprod_rrrf dotprod_rrrf_create_opt(float *      _h,
     return q;
 }
 
-dotprod_rrrf dotprod_rrrf_create(float *      _h,
-                                 unsigned int _n)
+dotprod_rrrf dotprod_rrrf_create(const float * _h,
+                                 unsigned int  _n)
 {
     return dotprod_rrrf_create_opt(_h,_n,0);
 }
 
-dotprod_rrrf dotprod_rrrf_create_rev(float *      _h,
-                                     unsigned int _n)
+dotprod_rrrf dotprod_rrrf_create_rev(const float * _h,
+                                     unsigned int  _n)
 {
     return dotprod_rrrf_create_opt(_h,_n,1);
 }
 
 // re-create the structured dotprod object
-dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _q,
-                                   float *      _h,
-                                   unsigned int _n)
+dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf  _q,
+                                   const float * _h,
+                                   unsigned int  _n)
 {
     // completely destroy and re-create dotprod object
     dotprod_rrrf_destroy(_q);
@@ -206,9 +206,9 @@ dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _q,
 }
 
 // re-create the structured dotprod object, reversing coefficients
-dotprod_rrrf dotprod_rrrf_recreate_rev(dotprod_rrrf _q,
-                                       float *      _h,
-                                        unsigned int _n)
+dotprod_rrrf dotprod_rrrf_recreate_rev(dotprod_rrrf  _q,
+                                       const float * _h,
+                                       unsigned int  _n)
 {
     // completely destroy and re-create dotprod object
     dotprod_rrrf_destroy(_q);
@@ -253,9 +253,9 @@ int dotprod_rrrf_print(dotprod_rrrf _q)
 }
 
 // execute dot product on input vector
-int dotprod_rrrf_execute(dotprod_rrrf _q,
-                         float *      _x,
-                         float *      _y)
+int dotprod_rrrf_execute(dotprod_rrrf  _q,
+                         const float * _x,
+                         float *       _y)
 {
     // switch based on size
     if (_q->n < 16) {
