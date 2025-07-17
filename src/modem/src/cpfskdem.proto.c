@@ -37,10 +37,10 @@ int CPFSKDEM(_init_coherent)(CPFSKDEM() _q);
 int CPFSKDEM(_init_noncoherent)(CPFSKDEM() _q);
 
 // demodulate array of samples (coherent)
-unsigned int CPFSKDEM(_demodulate_coherent)(CPFSKDEM() _q, TC * _y);
+unsigned int CPFSKDEM(_demodulate_coherent)(CPFSKDEM() _q, const TC * _y);
 
 // demodulate array of samples (non-coherent)
-unsigned int CPFSKDEM(_demodulate_noncoherent)(CPFSKDEM() _q, TC * _y);
+unsigned int CPFSKDEM(_demodulate_noncoherent)(CPFSKDEM() _q, const TC * _y);
 
 // cpfskdem
 struct CPFSKDEM(_s) {
@@ -67,7 +67,7 @@ struct CPFSKDEM(_s) {
                        unsigned int * _s,
                        unsigned int * _nw);
 #else
-    unsigned int (*demodulate)(CPFSKDEM() _q, TC * _y);
+    unsigned int (*demodulate)(CPFSKDEM() _q, const TC * _y);
 #endif
 
     // common data structure shared between coherent and non-coherent
@@ -458,14 +458,14 @@ int CPFSKDEM(_demodulate_noncoherent)(CPFSKDEM()        _q,
 //  _q      :   continuous-phase frequency demodulator object
 //  _y      :   input sample array [size: _k x 1]
 unsigned int CPFSKDEM(_demodulate)(CPFSKDEM() _q,
-                                   TC *       _y)
+                                   const TC * _y)
 {
     return _q->demodulate(_q, _y);
 }
 
 // demodulate array of samples (coherent)
 unsigned int CPFSKDEM(_demodulate_coherent)(CPFSKDEM() _q,
-                                            TC *       _y)
+                                            const TC * _y)
 {
     liquid_error(LIQUID_EINT,"cpfskdem_demodulate_coherent(), coherent mode not supported");
     return 0;
@@ -473,7 +473,7 @@ unsigned int CPFSKDEM(_demodulate_coherent)(CPFSKDEM() _q,
 
 // demodulate array of samples (non-coherent)
 unsigned int CPFSKDEM(_demodulate_noncoherent)(CPFSKDEM() _q,
-                                               TC *       _y)
+                                               const TC * _y)
 {
     unsigned int i;
     unsigned int sym_out = 0;

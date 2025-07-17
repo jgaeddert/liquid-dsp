@@ -8151,8 +8151,8 @@ unsigned int count_bit_errors(unsigned int _s1, unsigned int _s2);
 //  _msg0   :   original message, [size: _n x 1]
 //  _msg1   :   copy of original message, [size: _n x 1]
 //  _n      :   message size
-unsigned int count_bit_errors_array(unsigned char * _msg0,
-                                    unsigned char * _msg1,
+unsigned int count_bit_errors_array(const unsigned char * _msg0,
+                                    const unsigned char * _msg1,
                                     unsigned int _n);
 
 // converts binary-coded decimal (BCD) to gray, ensuring successive values
@@ -8166,7 +8166,7 @@ unsigned int gray_decode(unsigned int symbol_in);
 //  _soft_bits  :   soft input bits, [size: _bps x 1]
 //  _bps        :   bits per symbol
 //  _sym_out    :   output symbol, value in [0,2^_bps)
-int liquid_pack_soft_bits(unsigned char * _soft_bits,
+int liquid_pack_soft_bits(const unsigned char * _soft_bits,
                           unsigned int _bps,
                           unsigned int * _sym_out);
 
@@ -8210,8 +8210,8 @@ MODEM() MODEM(_create)(modulation_scheme _scheme);                          \
 /* provided as complex float pairs and converted internally if needed.  */  \
 /*  _table  : array of complex constellation points, [size: _M x 1]     */  \
 /*  _M      : modulation order and table size, _M must be power of 2    */  \
-MODEM() MODEM(_create_arbitrary)(liquid_float_complex * _table,             \
-                                 unsigned int           _M);                \
+MODEM() MODEM(_create_arbitrary)(const liquid_float_complex * _table,       \
+                                 unsigned int                   _M);        \
                                                                             \
 /* Recreate modulation scheme, re-allocating memory as necessary        */  \
 /*  _q      : modem object                                              */  \
@@ -8498,7 +8498,7 @@ int CPFSKDEM(_get_type)(CPFSKDEM() _q);                                     \
 /*  _q      :   continuous-phase frequency demodulator object           */  \
 /*  _y      :   input sample array, [size: _k x 1]                      */  \
 unsigned int CPFSKDEM(_demodulate)(CPFSKDEM() _q,                           \
-                                   TC *       _y);                          \
+                                   const TC * _y);                          \
                                                                             \
 /* demodulate_block */                                                      \
 
@@ -8568,8 +8568,8 @@ int fskdem_reset(fskdem _q);
 // demodulate symbol, assuming perfect symbol timing
 //  _q      :   fskdem object
 //  _y      :   input sample array, [size: _k x 1]
-unsigned int fskdem_demodulate(fskdem                 _q,
-                               liquid_float_complex * _y);
+unsigned int fskdem_demodulate(fskdem                       _q,
+                               const liquid_float_complex * _y);
 
 // get demodulator frequency error
 float fskdem_get_frequency_error(fskdem _q);
@@ -8622,7 +8622,7 @@ int FREQMOD(_modulate)(FREQMOD() _q,                                        \
 /*  _n  : number of input, output samples                               */  \
 /*  _s  : complex baseband signal \( s(t) \),  [size: _n x 1]           */  \
 int FREQMOD(_modulate_block)(FREQMOD()    _q,                               \
-                             T *          _m,                               \
+                             const T *    _m,                               \
                              unsigned int _n,                               \
                              TC *         _s);                              \
 
@@ -8671,7 +8671,7 @@ int FREQDEM(_demodulate)(FREQDEM() _q,                                      \
 /*  _n      :   number of input, output samples                         */  \
 /*  _m      :   message signal m(t), [size: _n x 1]                     */  \
 int FREQDEM(_demodulate_block)(FREQDEM()    _q,                             \
-                               TC *         _r,                             \
+                               const TC *   _r,                             \
                                unsigned int _n,                             \
                                T *          _m);                            \
 
@@ -8716,7 +8716,7 @@ int ampmodem_modulate(ampmodem               _q,
                       liquid_float_complex * _y);
 
 int ampmodem_modulate_block(ampmodem               _q,
-                            float *                _m,
+                            const float *          _m,
                             unsigned int           _n,
                             liquid_float_complex * _s);
 
@@ -8725,10 +8725,10 @@ int ampmodem_demodulate(ampmodem             _q,
                         liquid_float_complex _y,
                         float *              _x);
 
-int ampmodem_demodulate_block(ampmodem               _q,
-                              liquid_float_complex * _r,
-                              unsigned int           _n,
-                              float *                _m);
+int ampmodem_demodulate_block(ampmodem                     _q,
+                              const liquid_float_complex * _r,
+                              unsigned int                 _n,
+                              float *                      _m);
 
 //
 // MODULE : multichannel

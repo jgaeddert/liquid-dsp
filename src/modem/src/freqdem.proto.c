@@ -108,7 +108,7 @@ int FREQDEM(_demodulate)(FREQDEM() _q,
 //  _n      :   number of input, output samples
 //  _m      :   message signal m(t), [size: _n x 1]
 int FREQDEM(_demodulate_block)(FREQDEM()    _q,
-                               TC *         _r,
+                               const TC *   _r,
                                unsigned int _n,
                                T *          _m)
 {
