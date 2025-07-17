@@ -57,7 +57,7 @@
 //  _x  :   input vector  [size:  mx  x  nx ]
 //  _y  :   output vector [size:  my  x  ny ]
 int smatrixb_mulf(smatrixb     _A,
-                  float *      _x,
+                  const float * _x,
                   unsigned int _mx,
                   unsigned int _nx,
                   float *      _y,
@@ -93,9 +93,9 @@ int smatrixb_mulf(smatrixb     _A,
 //  _q  :   sparse matrix
 //  _x  :   input vector [size: _N x 1]
 //  _y  :   output vector [size: _M x 1]
-int smatrixb_vmulf(smatrixb _q,
-                   float *  _x,
-                   float *  _y)
+int smatrixb_vmulf(smatrixb     _q,
+                   const float * _x,
+                   float *      _y)
 {
     unsigned int i;
     unsigned int j;

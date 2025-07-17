@@ -7574,7 +7574,7 @@ unsigned int liquid_totient(unsigned int _n);
 /*  _x      : input matrix, [size: _r x _c]                             */  \
 /*  _r      : rows in matrix                                            */  \
 /*  _c      : columns in matrix                                         */  \
-int MATRIX(_print)(T *          _x,                                         \
+int MATRIX(_print)(const T *    _x,                                         \
                    unsigned int _r,                                         \
                    unsigned int _c);                                        \
                                                                             \
@@ -7587,8 +7587,8 @@ int MATRIX(_print)(T *          _x,                                         \
 /*  _z      : output matrix, [size: _r x _c]                            */  \
 /*  _r      : number of rows in each matrix                             */  \
 /*  _c      : number of columns in each matrix                          */  \
-int MATRIX(_add)(T *          _x,                                           \
-                 T *          _y,                                           \
+int MATRIX(_add)(const T *    _x,                                           \
+                 const T *    _y,                                           \
                  T *          _z,                                           \
                  unsigned int _r,                                           \
                  unsigned int _c);                                          \
@@ -7602,8 +7602,8 @@ int MATRIX(_add)(T *          _x,                                           \
 /*  _z      : output matrix, [size: _r x _c]                            */  \
 /*  _r      : number of rows in each matrix                             */  \
 /*  _c      : number of columns in each matrix                          */  \
-int MATRIX(_sub)(T *          _x,                                           \
-                 T *          _y,                                           \
+int MATRIX(_sub)(const T *    _x,                                           \
+                 const T *    _y,                                           \
                  T *          _z,                                           \
                  unsigned int _r,                                           \
                  unsigned int _c);                                          \
@@ -7617,8 +7617,8 @@ int MATRIX(_sub)(T *          _x,                                           \
 /*  _z      : output matrix, [size: _r x _c]                            */  \
 /*  _r      : number of rows in each matrix                             */  \
 /*  _c      : number of columns in each matrix                          */  \
-int MATRIX(_pmul)(T *          _x,                                          \
-                  T *          _y,                                          \
+int MATRIX(_pmul)(const T *    _x,                                          \
+                  const T *    _y,                                          \
                   T *          _z,                                          \
                   unsigned int _r,                                          \
                   unsigned int _c);                                         \
@@ -7632,8 +7632,8 @@ int MATRIX(_pmul)(T *          _x,                                          \
 /*  _z      : output matrix, [size: _r x _c]                            */  \
 /*  _r      : number of rows in each matrix                             */  \
 /*  _c      : number of columns in each matrix                          */  \
-int MATRIX(_pdiv)(T *          _x,                                          \
-                  T *          _y,                                          \
+int MATRIX(_pdiv)(const T *    _x,                                          \
+                  const T *    _y,                                          \
                   T *          _z,                                          \
                   unsigned int _r,                                          \
                   unsigned int _c);                                         \
@@ -7650,8 +7650,8 @@ int MATRIX(_pdiv)(T *          _x,                                          \
 /*  _z      : output matrix, [size: _rz x _cz]                          */  \
 /*  _rz     : number of rows in _z                                      */  \
 /*  _cz     : number of columns in _z                                   */  \
-int MATRIX(_mul)(T * _x, unsigned int _rx, unsigned int _cx,                \
-                 T * _y, unsigned int _ry, unsigned int _cy,                \
+int MATRIX(_mul)(const T * _x, unsigned int _rx, unsigned int _cx,          \
+                 const T * _y, unsigned int _ry, unsigned int _cy,          \
                  T * _z, unsigned int _rz, unsigned int _cz);               \
                                                                             \
 /* Solve \(\vec{X} = \vec{Y} \vec{Z}\) for \(\vec{Z}\) for square       */  \
@@ -7660,8 +7660,8 @@ int MATRIX(_mul)(T * _x, unsigned int _rx, unsigned int _cx,                \
 /*  _y      : input matrix,  [size: _n x _n]                            */  \
 /*  _z      : output matrix, [size: _n x _n]                            */  \
 /*  _n      : number of rows and columns in each matrix                 */  \
-int MATRIX(_div)(T *          _x,                                           \
-                 T *          _y,                                           \
+int MATRIX(_div)(const T *    _x,                                           \
+                 const T *    _y,                                           \
                  T *          _z,                                           \
                  unsigned int _n);                                          \
                                                                             \
@@ -7669,7 +7669,7 @@ int MATRIX(_div)(T *          _x,                                           \
 /*  _x      : input matrix, [size: _r x _c]                             */  \
 /*  _r      : rows                                                      */  \
 /*  _c      : columns                                                   */  \
-T MATRIX(_det)(T *          _x,                                             \
+T MATRIX(_det)(const T *    _x,                                             \
                unsigned int _r,                                             \
                unsigned int _c);                                            \
                                                                             \
@@ -7695,7 +7695,7 @@ int MATRIX(_hermitian)(T *          _x,                                     \
 /*  _m      : input rows                                                */  \
 /*  _n      : input columns                                             */  \
 /*  _xxT    : output matrix, [size: _m x _m]                            */  \
-int MATRIX(_mul_transpose)(T *          _x,                                 \
+int MATRIX(_mul_transpose)(const T *    _x,                                 \
                            unsigned int _m,                                 \
                            unsigned int _n,                                 \
                            T *          _xxT);                              \
@@ -7706,7 +7706,7 @@ int MATRIX(_mul_transpose)(T *          _x,                                 \
 /*  _m      : input rows                                                */  \
 /*  _n      : input columns                                             */  \
 /*  _xTx    : output matrix, [size: _n x _n]                            */  \
-int MATRIX(_transpose_mul)(T *          _x,                                 \
+int MATRIX(_transpose_mul)(const T *    _x,                                 \
                            unsigned int _m,                                 \
                            unsigned int _n,                                 \
                            T *          _xTx);                              \
@@ -7717,7 +7717,7 @@ int MATRIX(_transpose_mul)(T *          _x,                                 \
 /*  _m      : input rows                                                */  \
 /*  _n      : input columns                                             */  \
 /*  _xxH    : output matrix, [size: _m x _m]                            */  \
-int MATRIX(_mul_hermitian)(T *          _x,                                 \
+int MATRIX(_mul_hermitian)(const T *    _x,                                 \
                            unsigned int _m,                                 \
                            unsigned int _n,                                 \
                            T *          _xxH);                              \
@@ -7728,7 +7728,7 @@ int MATRIX(_mul_hermitian)(T *          _x,                                 \
 /*  _m      : input rows                                                */  \
 /*  _n      : input columns                                             */  \
 /*  _xHx    : output matrix, [size: _n x _n]                            */  \
-int MATRIX(_hermitian_mul)(T *          _x,                                 \
+int MATRIX(_hermitian_mul)(const T *    _x,                                 \
                            unsigned int _m,                                 \
                            unsigned int _n,                                 \
                            T *          _xHx);                              \
@@ -7746,8 +7746,8 @@ int MATRIX(_hermitian_mul)(T *          _x,                                 \
 /*  _z      : output matrix, [size: _rz x _cz]                          */  \
 /*  _rz     : number of rows in _z                                      */  \
 /*  _cz     : number of columns in _z                                   */  \
-int MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,                \
-                 T * _y, unsigned int _ry, unsigned int _cy,                \
+int MATRIX(_aug)(const T * _x, unsigned int _rx, unsigned int _cx,          \
+                 const T * _y, unsigned int _ry, unsigned int _cy,          \
                  T * _z, unsigned int _rz, unsigned int _cz);               \
                                                                             \
 /* Compute the inverse of a square matrix \(\vec{X}\)                   */  \
@@ -7818,9 +7818,9 @@ int MATRIX(_swaprows)(T *          _x,                                      \
 /*  _b      : equality vector, [size: _n x 1]                           */  \
 /*  _x      : solution vector, [size: _n x 1]                           */  \
 /*  _opts   : options (ignored for now)                                 */  \
-int MATRIX(_linsolve)(T *          _A,                                      \
+int MATRIX(_linsolve)(const T *    _A,                                      \
                       unsigned int _n,                                      \
-                      T *          _b,                                      \
+                      const T *    _b,                                      \
                       T *          _x,                                      \
                       void *       _opts);                                  \
                                                                             \
@@ -7830,9 +7830,9 @@ int MATRIX(_linsolve)(T *          _A,                                      \
 /*  _b      : equality, [size: _n x 1]                                  */  \
 /*  _x      : solution estimate, [size: _n x 1]                         */  \
 /*  _opts   : options (ignored for now)                                 */  \
-int MATRIX(_cgsolve)(T *          _A,                                       \
+int MATRIX(_cgsolve)(const T *    _A,                                       \
                      unsigned int _n,                                       \
-                     T *          _b,                                       \
+                     const T *    _b,                                       \
                      T *          _x,                                       \
                      void *       _opts);                                   \
                                                                             \
@@ -7843,7 +7843,7 @@ int MATRIX(_cgsolve)(T *          _A,                                       \
 /*  _l      : first row to swap                                         */  \
 /*  _u      : first row to swap                                         */  \
 /*  _p      : first row to swap                                         */  \
-int MATRIX(_ludecomp_crout)(T *          _x,                                \
+int MATRIX(_ludecomp_crout)(const T *    _x,                                \
                             unsigned int _rx,                               \
                             unsigned int _cx,                               \
                             T *          _l,                                \
@@ -7857,7 +7857,7 @@ int MATRIX(_ludecomp_crout)(T *          _x,                                \
 /*  _l      : first row to swap                                         */  \
 /*  _u      : first row to swap                                         */  \
 /*  _p      : first row to swap                                         */  \
-int MATRIX(_ludecomp_doolittle)(T *          _x,                            \
+int MATRIX(_ludecomp_doolittle)(const T *    _x,                            \
                                 unsigned int _rx,                           \
                                 unsigned int _cx,                           \
                                 T *          _l,                            \
@@ -7869,7 +7869,7 @@ int MATRIX(_ludecomp_doolittle)(T *          _x,                            \
 /*  _r      : rows                                                      */  \
 /*  _c      : columns                                                   */  \
 /*  _v      : output matrix                                             */  \
-int MATRIX(_gramschmidt)(T *          _A,                                   \
+int MATRIX(_gramschmidt)(const T *    _A,                                   \
                          unsigned int _r,                                   \
                          unsigned int _c,                                   \
                          T *          _v);                                  \
@@ -7884,7 +7884,7 @@ int MATRIX(_gramschmidt)(T *          _A,                                   \
 /*  _n      : columns (same as cols)                                    */  \
 /*  _q      : output matrix, [size: _m x _m]                            */  \
 /*  _r      : output matrix, [size: _m x _m]                            */  \
-int MATRIX(_qrdecomp_gramschmidt)(T *          _a,                          \
+int MATRIX(_qrdecomp_gramschmidt)(const T *    _a,                          \
                                   unsigned int _m,                          \
                                   unsigned int _n,                          \
                                   T *          _q,                          \
@@ -7895,7 +7895,7 @@ int MATRIX(_qrdecomp_gramschmidt)(T *          _a,                          \
 /*  _a      : input square matrix, [size: _n x _n]                      */  \
 /*  _n      : input matrix dimension                                    */  \
 /*  _l      : output lower-triangular matrix                            */  \
-int MATRIX(_chol)(T *          _a,                                          \
+int MATRIX(_chol)(const T *    _a,                                          \
                   unsigned int _n,                                          \
                   T *          _l);                                         \
 
@@ -7935,7 +7935,7 @@ SMATRIX() SMATRIX(_create)(unsigned int _m,                                 \
 /*  _x  : input matrix, [size: _m x _n]                                 */  \
 /*  _m  : number of rows in input matrix                                */  \
 /*  _n  : number of columns in input matrix                             */  \
-SMATRIX() SMATRIX(_create_array)(T *          _x,                           \
+SMATRIX() SMATRIX(_create_array)(const T *    _x,                           \
                                  unsigned int _m,                           \
                                  unsigned int _n);                          \
                                                                             \
@@ -8023,8 +8023,8 @@ int SMATRIX(_mul)(SMATRIX() _x,                                             \
 /*  _q  : sparse matrix                                                 */  \
 /*  _x  : input vector, [size: _n x 1]                                  */  \
 /*  _y  : output vector, [size: _m x 1]                                 */  \
-int SMATRIX(_vmul)(SMATRIX() _q,                                            \
-                   T *       _x,                                            \
+int SMATRIX(_vmul)(SMATRIX()  _q,                                           \
+                   const T * _x,                                            \
                    T *       _y);                                           \
 
 LIQUID_SMATRIX_DEFINE_API(LIQUID_SMATRIX_MANGLE_BOOL,  unsigned char)
@@ -8040,7 +8040,7 @@ LIQUID_SMATRIX_DEFINE_API(LIQUID_SMATRIX_MANGLE_INT,   short int)
 //  _x  :   input vector,  [size:  mx  x  nx ]
 //  _y  :   output vector, [size:  my  x  ny ]
 int smatrixb_mulf(smatrixb     _A,
-                  float *      _x,
+                  const float * _x,
                   unsigned int _mx,
                   unsigned int _nx,
                   float *      _y,
@@ -8051,9 +8051,9 @@ int smatrixb_mulf(smatrixb     _A,
 //  _q  :   sparse matrix
 //  _x  :   input vector, [size: _N x 1]
 //  _y  :   output vector, [size: _M x 1]
-int smatrixb_vmulf(smatrixb _q,
-                   float *  _x,
-                   float *  _y);
+int smatrixb_vmulf(smatrixb     _q,
+                   const float * _x,
+                   float *      _y);
 
 
 //

@@ -42,9 +42,9 @@
 //  _b      :   equality [size: _n x 1]
 //  _x      :   solution estimate [size: _n x 1]
 //  _opts   :   options (ignored for now)
-int MATRIX(_cgsolve)(T *          _A,
+int MATRIX(_cgsolve)(const T *    _A,
                      unsigned int _n,
-                     T *          _b,
+                     const T *    _b,
                      T *          _x,
                      void *       _opts)
 {

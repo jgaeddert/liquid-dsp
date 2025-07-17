@@ -1183,7 +1183,7 @@ int liquid_poly_sort_roots_compare(const void * _a,
 //   MATRIX : name-mangling macro
 //   T      : data type
 #define LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX,T)             \
-T    MATRIX(_det2x2)(T * _x,                                    \
+T    MATRIX(_det2x2)(const T *     _x,                          \
                      unsigned int _rx,                          \
                      unsigned int _cx);
 

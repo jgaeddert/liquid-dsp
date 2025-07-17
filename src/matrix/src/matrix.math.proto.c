@@ -34,8 +34,8 @@
 //  _Z      :   output matrix [size: _R x _C]
 //  _R      :   number of rows
 //  _C      :   number of columns
-int MATRIX(_add)(T *          _X,
-                 T *          _Y,
+int MATRIX(_add)(const T *    _X,
+                 const T *    _Y,
                  T *          _Z,
                  unsigned int _R,
                  unsigned int _C)
@@ -52,8 +52,8 @@ int MATRIX(_add)(T *          _X,
 //  _Z      :   output matrix [size: _R x _C]
 //  _R      :   number of rows
 //  _C      :   number of columns
-int MATRIX(_sub)(T *          _X,
-                 T *          _Y,
+int MATRIX(_sub)(const T *    _X,
+                 const T *    _Y,
                  T *          _Z,
                  unsigned int _R,
                  unsigned int _C)
@@ -70,8 +70,8 @@ int MATRIX(_sub)(T *          _X,
 //  _Z      :   output matrix [size: _R x _C]
 //  _R      :   number of rows
 //  _C      :   number of columns
-int MATRIX(_pmul)(T *          _X,
-                  T *          _Y,
+int MATRIX(_pmul)(const T *    _X,
+                  const T *    _Y,
                   T *          _Z,
                   unsigned int _R,
                   unsigned int _C)
@@ -88,8 +88,8 @@ int MATRIX(_pmul)(T *          _X,
 //  _Z      :   output matrix [size: _R x _C]
 //  _R      :   number of rows
 //  _C      :   number of columns
-int MATRIX(_pdiv)(T *          _X,
-                  T *          _Y,
+int MATRIX(_pdiv)(const T *    _X,
+                  const T *    _Y,
                   T *          _Z,
                   unsigned int _R,
                   unsigned int _C)
@@ -102,8 +102,8 @@ int MATRIX(_pdiv)(T *          _X,
 
 
 // multiply two matrices together
-int MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
-                 T * _Y, unsigned int _YR, unsigned int _YC,
+int MATRIX(_mul)(const T * _X, unsigned int _XR, unsigned int _XC,
+                 const T * _Y, unsigned int _YR, unsigned int _YC,
                  T * _Z, unsigned int _ZR, unsigned int _ZC)
 {
     // ensure lengths are valid
@@ -132,8 +132,8 @@ int MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
 
 // augment matrices x and y:
 //  z = [x | y]
-int MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,
-                 T * _y, unsigned int _ry, unsigned int _cy,
+int MATRIX(_aug)(const T * _x, unsigned int _rx, unsigned int _cx,
+                 const T * _y, unsigned int _ry, unsigned int _cy,
                  T * _z, unsigned int _rz, unsigned int _cz)
 {
     // ensure lengths are valid
@@ -153,8 +153,8 @@ int MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,
 }
 
 // solve set of linear equations
-int MATRIX(_div)(T *          _X,
-                 T *          _Y,
+int MATRIX(_div)(const T *    _X,
+                 const T *    _Y,
                  T *          _Z,
                  unsigned int _n)
 {
@@ -171,7 +171,7 @@ int MATRIX(_div)(T *          _X,
 }
 
 // matrix determinant (2 x 2)
-T MATRIX(_det2x2)(T *          _X,
+T MATRIX(_det2x2)(const T *    _X,
                   unsigned int _r,
                   unsigned int _c)
 {
@@ -183,7 +183,7 @@ T MATRIX(_det2x2)(T *          _X,
 }
 
 // matrix determinant (n x n)
-T MATRIX(_det)(T *          _X,
+T MATRIX(_det)(const T *    _X,
                unsigned int _r,
                unsigned int _c)
 {
@@ -242,7 +242,7 @@ int MATRIX(_hermitian)(T *          _X,
 }
 
 // compute x*x' on m x n matrix, result: m x m
-int MATRIX(_mul_transpose)(T *          _x,
+int MATRIX(_mul_transpose)(const T *    _x,
                            unsigned int _m,
                            unsigned int _n,
                            T *          _xxT)
@@ -276,7 +276,7 @@ int MATRIX(_mul_transpose)(T *          _x,
 
 
 // compute x'*x on m x n matrix, result: n x n
-int MATRIX(_transpose_mul)(T *          _x,
+int MATRIX(_transpose_mul)(const T *    _x,
                            unsigned int _m,
                            unsigned int _n,
                            T *          _xTx)
@@ -310,7 +310,7 @@ int MATRIX(_transpose_mul)(T *          _x,
 
 
 // compute x*x.' on m x n matrix, result: m x m
-int MATRIX(_mul_hermitian)(T *          _x,
+int MATRIX(_mul_hermitian)(const T *    _x,
                            unsigned int _m,
                            unsigned int _n,
                            T *          _xxH)
@@ -343,7 +343,7 @@ int MATRIX(_mul_hermitian)(T *          _x,
 
 
 // compute x.'*x on m x n matrix, result: n x n
-int MATRIX(_hermitian_mul)(T *          _x,
+int MATRIX(_hermitian_mul)(const T *    _x,
                            unsigned int _m,
                            unsigned int _n,
                            T *          _xHx)
