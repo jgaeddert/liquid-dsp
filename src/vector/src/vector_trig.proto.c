@@ -34,7 +34,7 @@
 //  _theta  :   input primitive array [size: _n x 1]
 //  _n      :   array length
 //  _x      :   output array pointer [size: _n x 1]
-void VECTOR(_cexpj)(TP *         _theta,
+void VECTOR(_cexpj)(const TP *   _theta,
                     unsigned int _n,
                     T *          _x)
 {
@@ -71,7 +71,7 @@ void VECTOR(_cexpj)(TP *         _theta,
 //  _x      :   input array [size: _n x 1]
 //  _n      :   array length
 //  _theta  :   output primitive array [size: _n x 1]
-void VECTOR(_carg)(T *          _x,
+void VECTOR(_carg)(const T *    _x,
                    unsigned int _n,
                    TP *         _theta)
 {
@@ -108,7 +108,7 @@ void VECTOR(_carg)(T *          _x,
 //  _x      :   input array [size: _n x 1]
 //  _n      :   array length
 //  _y      :   output primitive array pointer [size: _n x 1]
-void VECTOR(_abs)(T *          _x,
+void VECTOR(_abs)(const T *    _x,
                   unsigned int _n,
                   TP *         _y)
 {

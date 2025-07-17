@@ -10159,59 +10159,59 @@ void VECTOR(_init)(T            _c,                                         \
                    unsigned int _n);                                        \
                                                                             \
 /* Add each element pointwise: z[i] = x[i] + y[i]                       */  \
-void VECTOR(_add)(T *          _x,                                          \
-                  T *          _y,                                          \
+void VECTOR(_add)(const T *    _x,                                          \
+                  const T *    _y,                                          \
                   unsigned int _n,                                          \
                   T *          _z);                                         \
                                                                             \
 /* Add scalar to each element: y[i] = x[i] + c                          */  \
-void VECTOR(_addscalar)(T *          _x,                                    \
+void VECTOR(_addscalar)(const T *    _x,                                    \
                         unsigned int _n,                                    \
                         T            _c,                                    \
                         T *          _y);                                   \
                                                                             \
 /* Multiply each element pointwise: z[i] = x[i] * y[i]                  */  \
-void VECTOR(_mul)(T *          _x,                                          \
-                  T *          _y,                                          \
+void VECTOR(_mul)(const T *    _x,                                          \
+                  const T *    _y,                                          \
                   unsigned int _n,                                          \
                   T *          _z);                                         \
                                                                             \
 /* Multiply each element with scalar: y[i] = x[i] * c                   */  \
-void VECTOR(_mulscalar)(T *          _x,                                    \
+void VECTOR(_mulscalar)(const T *    _x,                                    \
                         unsigned int _n,                                    \
                         T            _c,                                    \
                         T *          _y);                                   \
                                                                             \
 /* Compute complex phase rotation: x[i] = exp{j theta[i]}               */  \
-void VECTOR(_cexpj)(TP *         _theta,                                    \
+void VECTOR(_cexpj)(const TP *   _theta,                                    \
                     unsigned int _n,                                        \
                     T *          _x);                                       \
                                                                             \
 /* Compute angle of each element: theta[i] = arg{ x[i] }                */  \
-void VECTOR(_carg)(T *          _x,                                         \
+void VECTOR(_carg)(const T *    _x,                                         \
                    unsigned int _n,                                         \
                    TP *         _theta);                                    \
                                                                             \
 /* Compute absolute value of each element: y[i] = |x[i]|                */  \
-void VECTOR(_abs)(T *          _x,                                          \
+void VECTOR(_abs)(const T *    _x,                                          \
                   unsigned int _n,                                          \
                   TP *         _y);                                         \
                                                                             \
 /* Compute sum of squares: sum{ |x|^2 }                                 */  \
-TP VECTOR(_sumsq)(T *          _x,                                          \
+TP VECTOR(_sumsq)(const T *    _x,                                          \
                   unsigned int _n);                                         \
                                                                             \
 /* Compute l-2 norm: sqrt{ sum{ |x|^2 } }                               */  \
-TP VECTOR(_norm)(T *          _x,                                           \
+TP VECTOR(_norm)(const T *    _x,                                           \
                  unsigned int _n);                                          \
                                                                             \
 /* Compute l-p norm: { sum{ |x|^p } }^(1/p)                             */  \
-TP VECTOR(_pnorm)(T *          _x,                                          \
+TP VECTOR(_pnorm)(const T *    _x,                                          \
                   unsigned int _n,                                          \
                   TP           _p);                                         \
                                                                             \
 /* Scale vector elements by l-2 norm: y[i] = x[i]/norm(x)               */  \
-void VECTOR(_normalize)(T *          _x,                                    \
+void VECTOR(_normalize)(const T *    _x,                                    \
                         unsigned int _n,                                    \
                         T *          _y);                                   \
 
