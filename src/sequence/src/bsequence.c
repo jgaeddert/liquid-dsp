@@ -93,8 +93,8 @@ int bsequence_reset(bsequence _bs)
 }
 
 // initialize sequence on external array
-int bsequence_init(bsequence       _bs,
-                   unsigned char * _v)
+int bsequence_init(bsequence             _bs,
+                   const unsigned char * _v)
 {
     // push single bit at a time
     unsigned int i;

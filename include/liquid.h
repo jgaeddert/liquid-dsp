@@ -9826,8 +9826,8 @@ int bsequence_destroy(bsequence _bs);
 int bsequence_reset(bsequence _bs);
 
 // initialize sequence on external array
-int bsequence_init(bsequence       _bs,
-                   unsigned char * _v);
+int bsequence_init(bsequence             _bs,
+                   const unsigned char * _v);
 
 // Print sequence to the screen
 int bsequence_print(bsequence _bs);
