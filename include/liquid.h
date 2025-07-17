@@ -9372,9 +9372,9 @@ LIQUID_SYNTH_DEFINE_API(SYNTH_MANGLE_FLOAT, float, liquid_float_complex)
 //
 
 // utility function pointer definition
-typedef float (*utility_function)(void *       _userdata,
-                                  float *      _v,
-                                  unsigned int _n);
+typedef float (*utility_function)(void *        _userdata,
+                                  const float * _v,
+                                  unsigned int  _n);
 
 // One-dimensional utility function pointer definition
 typedef float (*liquid_utility_1d)(float  _v,
@@ -9384,33 +9384,33 @@ typedef float (*liquid_utility_1d)(float  _v,
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector, [size: _n x 1]
 //  _n          :   input vector size
-float liquid_rosenbrock(void *       _userdata,
-                        float *      _v,
-                        unsigned int _n);
+float liquid_rosenbrock(void *        _userdata,
+                        const float * _v,
+                        unsigned int  _n);
 
 // n-dimensional inverse Gauss utility function (minimum at _v = {0,0,0...}
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector, [size: _n x 1]
 //  _n          :   input vector size
-float liquid_invgauss(void *       _userdata,
-                      float *      _v,
-                      unsigned int _n);
+float liquid_invgauss(void *        _userdata,
+                      const float * _v,
+                      unsigned int  _n);
 
 // n-dimensional multimodal utility function (minimum at _v = {0,0,0...}
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector, [size: _n x 1]
 //  _n          :   input vector size
-float liquid_multimodal(void *       _userdata,
-                        float *      _v,
-                        unsigned int _n);
+float liquid_multimodal(void *        _userdata,
+                        const float * _v,
+                        unsigned int  _n);
 
 // n-dimensional spiral utility function (minimum at _v = {0,0,0...}
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector, [size: _n x 1]
 //  _n          :   input vector size
-float liquid_spiral(void *       _userdata,
-                    float *      _v,
-                    unsigned int _n);
+float liquid_spiral(void *        _userdata,
+                    const float * _v,
+                    unsigned int  _n);
 
 
 //
@@ -9515,7 +9515,7 @@ float qnsearch_execute(qnsearch _g,
 typedef struct chromosome_s * chromosome;
 
 // create a chromosome object, variable bits/trait
-chromosome chromosome_create(unsigned int * _bits_per_trait,
+chromosome chromosome_create(const unsigned int * _bits_per_trait,
                              unsigned int _num_traits);
 
 // create a chromosome object, all traits same resolution
@@ -9546,10 +9546,10 @@ int chromosome_reset(chromosome _c);
 
 // initialize chromosome on integer values
 int chromosome_init(chromosome _c,
-                     unsigned int * _v);
+                    const unsigned int * _v);
 
 // initialize chromosome on floating-point values
-int chromosome_initf(chromosome _c, float * _v);
+int chromosome_initf(chromosome _c, const float * _v);
 
 // Mutates chromosome _c at _index
 int chromosome_mutate(chromosome _c, unsigned int _index);
