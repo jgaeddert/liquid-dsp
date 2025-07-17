@@ -427,7 +427,7 @@ CBUFFER() CBUFFER(_create_max)(unsigned int _max_size,                      \
                                unsigned int _max_read);                     \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
-CBUFFER() CBUFFER(_copy)(CBUFFER() _q);                                     \
+CBUFFER() CBUFFER(_copy)(const CBUFFER() _q);                               \
                                                                             \
 /* Destroy cbuffer object, freeing all internal memory                  */  \
 int CBUFFER(_destroy)(CBUFFER() _q);                                        \
@@ -467,7 +467,7 @@ int CBUFFER(_push)(CBUFFER() _q,                                            \
 /*  _v  : array of samples to write to buffer                           */  \
 /*  _n  : number of samples to write                                    */  \
 int CBUFFER(_write)(CBUFFER()    _q,                                        \
-                    T *          _v,                                        \
+                    const T *    _v,                                        \
                     unsigned int _n);                                       \
                                                                             \
 /* Remove and return a single element from the buffer by setting the    */  \
@@ -530,7 +530,7 @@ WINDOW() WINDOW(_create)(unsigned int _n);                                  \
 WINDOW() WINDOW(_recreate)(WINDOW() _q, unsigned int _n);                   \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
-WINDOW() WINDOW(_copy)(WINDOW() _q);                                        \
+WINDOW() WINDOW(_copy)(const WINDOW() _q);                                  \
                                                                             \
 /* Destroy window object, freeing all internally memory                 */  \
 int WINDOW(_destroy)(WINDOW() _q);                                          \
@@ -585,7 +585,7 @@ int WINDOW(_push)(WINDOW() _q,                                              \
 /*  _v      : input array of values to write                            */  \
 /*  _n      : number of input values to write                           */  \
 int WINDOW(_write)(WINDOW()     _q,                                         \
-                   T *          _v,                                         \
+                   const T *    _v,                                         \
                    unsigned int _n);                                        \
 
 // Define window APIs
@@ -614,7 +614,7 @@ typedef struct WDELAY(_s) * WDELAY();                                       \
 WDELAY() WDELAY(_create)(unsigned int _delay);                              \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
-WDELAY() WDELAY(_copy)(WDELAY() _q);                                        \
+WDELAY() WDELAY(_copy)(const WDELAY() _q);                                  \
                                                                             \
 /* Re-create delay buffer object, adjusting the delay size, preserving  */  \
 /* the internal state of the object                                     */  \
