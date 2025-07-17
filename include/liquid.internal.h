@@ -1137,7 +1137,7 @@ float complex liquid_catanf(float complex _z);
 //  _p      :   polynomial array, ascending powers, [size: _k x 1]
 //  _k      :   polynomials length (poly order = _k - 1)
 //  _roots  :   resulting complex roots, [size: _k-1 x 1]
-int liquid_poly_findroots_durandkerner(double *         _p,
+int liquid_poly_findroots_durandkerner(const double *   _p,
                                        unsigned int     _k,
                                        double complex * _roots);
 
@@ -1145,7 +1145,7 @@ int liquid_poly_findroots_durandkerner(double *         _p,
 //  _p      :   polynomial array, ascending powers, [size: _k x 1]
 //  _k      :   polynomials length (poly order = _k - 1)
 //  _roots  :   resulting complex roots, [size: _k-1 x 1]
-int liquid_poly_findroots_bairstow(double *         _p,
+int liquid_poly_findroots_bairstow(const double *   _p,
                                    unsigned int     _k,
                                    double complex * _roots);
 

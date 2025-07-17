@@ -7335,7 +7335,7 @@ int   kbd_window(unsigned int _wlen,float _beta,float * _w);
 /*  _p      : polynomial coefficients, [size: _k x 1]                   */  \
 /*  _k      : polynomial coefficients length, order is _k - 1           */  \
 /*  _x      : input to evaluate polynomial                              */  \
-T POLY(_val)(T *          _p,                                               \
+T POLY(_val)(const T *    _p,                                               \
              unsigned int _k,                                               \
              T            _x);                                              \
                                                                             \
@@ -7345,8 +7345,8 @@ T POLY(_val)(T *          _p,                                               \
 /*  _n      : number of samples in _x and _y                            */  \
 /*  _p      : polynomial coefficients output, [size: _k x 1]            */  \
 /*  _k      : polynomial coefficients length, order is _k - 1           */  \
-int POLY(_fit)(T *          _x,                                             \
-               T *          _y,                                             \
+int POLY(_fit)(const T *    _x,                                             \
+               const T *    _y,                                             \
                unsigned int _n,                                             \
                T *          _p,                                             \
                unsigned int _k);                                            \
@@ -7356,8 +7356,8 @@ int POLY(_fit)(T *          _x,                                             \
 /*  _y      : y-value sample set, size [_n x 1]                         */  \
 /*  _n      : number of samples in _x and _y                            */  \
 /*  _p      : polynomial coefficients output, [size: _n x 1]            */  \
-int POLY(_fit_lagrange)(T *          _x,                                    \
-                        T *          _y,                                    \
+int POLY(_fit_lagrange)(const T *    _x,                                    \
+                        const T *    _y,                                    \
                         unsigned int _n,                                    \
                         T *          _p);                                   \
                                                                             \
@@ -7367,8 +7367,8 @@ int POLY(_fit_lagrange)(T *          _x,                                    \
 /*  _y      : y-value sample set, [size: _n x 1]                        */  \
 /*  _n      : number of samples in _x and _y                            */  \
 /*  _x0     : x-value to evaluate and compute interpolant               */  \
-T POLY(_interp_lagrange)(T *          _x,                                   \
-                         T *          _y,                                   \
+T POLY(_interp_lagrange)(const T *    _x,                                   \
+                         const T *    _y,                                   \
                          unsigned int _n,                                   \
                          T           _x0);                                  \
                                                                             \
@@ -7376,7 +7376,7 @@ T POLY(_interp_lagrange)(T *          _x,                                   \
 /*  _x      : x-value sample set, size [_n x 1]                         */  \
 /*  _n      : number of samples in _x                                   */  \
 /*  _w      : barycentric weights normalized so _w[0]=1, size [_n x 1]  */  \
-int POLY(_fit_lagrange_barycentric)(T *          _x,                        \
+int POLY(_fit_lagrange_barycentric)(const T *    _x,                        \
                                     unsigned int _n,                        \
                                     T *          _w);                       \
                                                                             \
@@ -7387,9 +7387,9 @@ int POLY(_fit_lagrange_barycentric)(T *          _x,                        \
 /*  _w      : barycentric weights, [size: _n x 1]                       */  \
 /*  _x0     : x-value to evaluate and compute interpolant               */  \
 /*  _n      : number of samples in _x, _y, and _w                       */  \
-T POLY(_val_lagrange_barycentric)(T *          _x,                          \
-                                  T *          _y,                          \
-                                  T *          _w,                          \
+T POLY(_val_lagrange_barycentric)(const T *    _x,                          \
+                                  const T *    _y,                          \
+                                  const T *    _w,                          \
                                   T            _x0,                         \
                                   unsigned int _n);                         \
                                                                             \
@@ -7424,7 +7424,7 @@ int POLY(_expandbinomial_pm)(unsigned int _m,                               \
 /*  _r      : roots of polynomial, [size: _n x 1]                       */  \
 /*  _n      : number of roots in polynomial                             */  \
 /*  _p      : polynomial coefficients, [size: _n+1 x 1]                 */  \
-int POLY(_expandroots)(T *          _r,                                     \
+int POLY(_expandroots)(const T *    _r,                                     \
                        unsigned int _n,                                     \
                        T *          _p);                                    \
                                                                             \
@@ -7437,8 +7437,8 @@ int POLY(_expandroots)(T *          _r,                                     \
 /*  _b      : multiplicant of polynomial roots, [size: _n x 1]          */  \
 /*  _n      : number of roots in polynomial                             */  \
 /*  _p      : polynomial coefficients, [size: _n+1 x 1]                 */  \
-int POLY(_expandroots2)(T *          _a,                                    \
-                        T *          _b,                                    \
+int POLY(_expandroots2)(const T *    _a,                                    \
+                        const T *    _b,                                    \
                         unsigned int _n,                                    \
                         T *          _p);                                   \
                                                                             \
@@ -7446,7 +7446,7 @@ int POLY(_expandroots2)(T *          _a,                                    \
 /*  _p      : polynomial coefficients, [size: _n x 1]                   */  \
 /*  _k      : polynomial length                                         */  \
 /*  _roots  : resulting complex roots, [size: _k-1 x 1]                 */  \
-int POLY(_findroots)(T *          _poly,                                    \
+int POLY(_findroots)(const T *    _poly,                                    \
                      unsigned int _n,                                       \
                      TC *         _roots);                                  \
                                                                             \
@@ -7455,7 +7455,7 @@ int POLY(_findroots)(T *          _poly,                                    \
 /*  _p      : polynomial coefficients, [size: _n x 1]                   */  \
 /*  _k      : polynomial length                                         */  \
 /*  _roots  : resulting complex roots, [size: _k-1 x 1]                 */  \
-int POLY(_findroots_durandkerner)(T *          _p,                          \
+int POLY(_findroots_durandkerner)(const T *    _p,                          \
                                   unsigned int _k,                          \
                                   TC *         _roots);                     \
                                                                             \
@@ -7463,7 +7463,7 @@ int POLY(_findroots_durandkerner)(T *          _p,                          \
 /*  _p      : polynomial coefficients, [size: _n x 1]                   */  \
 /*  _k      : polynomial length                                         */  \
 /*  _roots  : resulting complex roots, [size: _k-1 x 1]                 */  \
-int POLY(_findroots_bairstow)(T *          _p,                              \
+int POLY(_findroots_bairstow)(const T *    _p,                              \
                               unsigned int _k,                              \
                               TC *         _roots);                         \
                                                                             \
@@ -7478,9 +7478,9 @@ int POLY(_findroots_bairstow)(T *          _p,                              \
 /*  _b          : 2nd polynomial coefficients (length is _order_b+1)    */  \
 /*  _order_b    : 2nd polynomial order                                  */  \
 /*  _c          : output polynomial, [size: _order_a+_order_b+1 x 1]    */  \
-int POLY(_mul)(T *          _a,                                             \
+int POLY(_mul)(const T *    _a,                                             \
                unsigned int _order_a,                                       \
-               T *          _b,                                             \
+               const T *    _b,                                             \
                unsigned int _order_b,                                       \
                T *          _c);                                            \
 

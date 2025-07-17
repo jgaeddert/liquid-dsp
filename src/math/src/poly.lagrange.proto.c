@@ -28,8 +28,8 @@
 #include <string.h>
 
 // Lagrange polynomial exact fit (order _n-1)
-int POLY(_fit_lagrange)(T *          _x,
-                        T *          _y,
+int POLY(_fit_lagrange)(const T *    _x,
+                        const T *    _y,
                         unsigned int _n,
                         T *          _p)
 {
@@ -80,8 +80,8 @@ int POLY(_fit_lagrange)(T *          _x,
 }
 
 // Lagrange polynomial interpolation
-T POLY(_interp_lagrange)(T * _x,
-                         T * _y,
+T POLY(_interp_lagrange)(const T * _x,
+                         const T * _y,
                          unsigned int _n,
                          T   _x0)
 {
@@ -101,7 +101,7 @@ T POLY(_interp_lagrange)(T * _x,
     return y0;
 }
 // Lagrange polynomial fit (barycentric form)
-int POLY(_fit_lagrange_barycentric)(T *         _x,
+int POLY(_fit_lagrange_barycentric)(const T *   _x,
                                    unsigned int _n,
                                    T *          _w)
 {
@@ -126,9 +126,9 @@ int POLY(_fit_lagrange_barycentric)(T *         _x,
 }
 
 // Lagrange polynomial interpolation (barycentric form)
-T POLY(_val_lagrange_barycentric)(T *          _x,
-                                  T *          _y,
-                                  T *          _w,
+T POLY(_val_lagrange_barycentric)(const T *    _x,
+                                  const T *    _y,
+                                  const T *    _w,
                                   T            _x0,
                                   unsigned int _n)
 {
