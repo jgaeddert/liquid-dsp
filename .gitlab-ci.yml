@@ -109,3 +109,23 @@ valgrind:
     paths:
       - build/valgrind/*
 
+# test building and linking to libfec/libquiet
+libfec:
+  stage: test
+  script:
+    - git clone https://github.com/quiet/libcorrect.git
+    - cd libcorrect
+    - mkdir build
+    - cd build
+    - cmake -DCMAKE_BUILD_TYPE=Release ..
+    - make -j2
+    - make -j2 shim
+    - sudo make install
+    - cd ..
+    - rm -rf build
+    - mkdir build
+    - cd build
+    - cmake -DBUILD_AUTOTESTS=OFF -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=ON -DBUILD_SANDBOX=OFF -DCOVERAGE=OFF ..
+    - make -j4
+    - ./examples/fec_example -h
+
