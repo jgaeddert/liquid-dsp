@@ -68,7 +68,7 @@ struct FIRPFBCH2(_s) {
 FIRPFBCH2() FIRPFBCH2(_create)(int          _type,
                                unsigned int _M,
                                unsigned int _m,
-                               TC *         _h)
+                               const TC *   _h)
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
@@ -283,7 +283,7 @@ unsigned int FIRPFBCH2(_get_m)(FIRPFBCH2() _q)
 //  _x      :   channelizer input,  [size: M/2 x 1]
 //  _y      :   channelizer output, [size: M   x 1]
 int FIRPFBCH2(_execute_analyzer)(FIRPFBCH2() _q,
-                                 TI *        _x,
+                                 const TI *  _x,
                                  TO *        _y)
 {
     unsigned int i;
@@ -324,7 +324,7 @@ int FIRPFBCH2(_execute_analyzer)(FIRPFBCH2() _q,
 //  _x      :   channelizer input,  [size: M   x 1]
 //  _y      :   channelizer output, [size: M/2 x 1]
 int FIRPFBCH2(_execute_synthesizer)(FIRPFBCH2() _q,
-                                    TI *        _x,
+                                    const TI *  _x,
                                     TO *        _y)
 {
     unsigned int i;
@@ -380,7 +380,7 @@ int FIRPFBCH2(_execute_synthesizer)(FIRPFBCH2() _q,
 //  _x      :   channelizer input
 //  _y      :   channelizer output
 int FIRPFBCH2(_execute)(FIRPFBCH2() _q,
-                        TI *        _x,
+                        const TI *  _x,
                         TO *        _y)
 {
     switch (_q->type) {

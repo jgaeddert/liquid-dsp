@@ -8768,7 +8768,7 @@ typedef struct FIRPFBCH(_s) * FIRPFBCH();                                   \
 FIRPFBCH() FIRPFBCH(_create)(int          _type,                            \
                              unsigned int _M,                               \
                              unsigned int _p,                               \
-                             TC *         _h);                              \
+                             const TC *   _h);                              \
                                                                             \
 /* Create FIR polyphase filterbank channelizer object with              */  \
 /* prototype filter based on windowed Kaiser design                     */  \
@@ -8808,7 +8808,7 @@ int FIRPFBCH(_print)(FIRPFBCH() _q);                                        \
 /*  _x      : channelized input, [size: num_channels x 1]               */  \
 /*  _y      : output time series, [size: num_channels x 1]              */  \
 int FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,                           \
-                                   TI *       _x,                           \
+                                   const TI * _x,                           \
                                    TO *       _y);                          \
                                                                             \
 /* Execute filterbank as analyzer on block of samples                   */  \
@@ -8816,7 +8816,7 @@ int FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,                           \
 /*  _x      : input time series, [size: num_channels x 1]               */  \
 /*  _y      : channelized output, [size: num_channels x 1]              */  \
 int FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,                              \
-                                TI *       _x,                              \
+                                const TI * _x,                              \
                                 TO *       _y);                             \
 
 
@@ -8858,7 +8858,7 @@ typedef struct FIRPFBCH2(_s) * FIRPFBCH2();                                 \
 FIRPFBCH2() FIRPFBCH2(_create)(int          _type,                          \
                                unsigned int _M,                             \
                                unsigned int _m,                             \
-                               TC *         _h);                            \
+                               const TC *   _h);                            \
                                                                             \
 /* Create firpfbch2 object using Kaiser window prototype                */  \
 /*  _type   : channelizer type (e.g. LIQUID_ANALYZER)                   */  \
@@ -8897,7 +8897,7 @@ unsigned int FIRPFBCH2(_get_m)(FIRPFBCH2() _q);                             \
 /*  _x      :   channelizer input                                       */  \
 /*  _y      :   channelizer output                                      */  \
 int FIRPFBCH2(_execute)(FIRPFBCH2() _q,                                     \
-                        TI *        _x,                                     \
+                        const TI *  _x,                                     \
                         TO *        _y);                                    \
 
 
@@ -8928,7 +8928,7 @@ typedef struct FIRPFBCHR(_s) * FIRPFBCHR();                                 \
 FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _chans,                         \
                                unsigned int _decim,                         \
                                unsigned int _m,                             \
-                               TC *         _h);                            \
+                               const TC *   _h);                            \
                                                                             \
 /* create rational rate resampling channelizer (firpfbchr) object by    */  \
 /* specifying filter design parameters for Kaiser prototype             */  \
@@ -8967,7 +8967,7 @@ unsigned int FIRPFBCHR(_get_m)(FIRPFBCHR() _q);                             \
 /*  _q      : channelizer object                                        */  \
 /*  _x      : channelizer input, [size: decim x 1]                      */  \
 int FIRPFBCHR(_push)(FIRPFBCHR() _q,                                        \
-                     TI *        _x);                                       \
+                     const TI *  _x);                                       \
                                                                             \
 /* execute filterbank channelizer, writing complex baseband samples for */  \
 /* each channel into output array                                       */  \
@@ -9011,7 +9011,7 @@ int ofdmframe_init_sctype_range(unsigned int    _M,
 //  _M_null     :   output number of null subcarriers
 //  _M_pilot    :   output number of pilot subcarriers
 //  _M_data     :   output number of data subcarriers
-int ofdmframe_validate_sctype(unsigned char * _p,
+int ofdmframe_validate_sctype(const unsigned char * _p,
                               unsigned int _M,
                               unsigned int * _M_null,
                               unsigned int * _M_pilot,
@@ -9020,8 +9020,8 @@ int ofdmframe_validate_sctype(unsigned char * _p,
 // print subcarrier allocation to screen
 //  _p      :   output subcarrier allocation array, [size: _M x 1]
 //  _M      :   number of subcarriers
-int ofdmframe_print_sctype(unsigned char * _p,
-                           unsigned int    _M);
+int ofdmframe_print_sctype(const unsigned char * _p,
+                           unsigned int          _M);
 
 
 //
@@ -9034,10 +9034,10 @@ typedef struct ofdmframegen_s * ofdmframegen;
 //  _cp_len     :   cyclic prefix length
 //  _taper_len  :   taper length (OFDM symbol overlap)
 //  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
-ofdmframegen ofdmframegen_create(unsigned int    _M,
-                                 unsigned int    _cp_len,
-                                 unsigned int    _taper_len,
-                                 unsigned char * _p);
+ofdmframegen ofdmframegen_create(unsigned int          _M,
+                                 unsigned int          _cp_len,
+                                 unsigned int          _taper_len,
+                                 const unsigned char * _p);
 
 int ofdmframegen_destroy(ofdmframegen _q);
 
@@ -9059,7 +9059,7 @@ int ofdmframegen_write_S1(ofdmframegen _q,
 
 // write data symbol
 int ofdmframegen_writesymbol(ofdmframegen _q,
-                             liquid_float_complex * _x,
+                             const liquid_float_complex * _x,
                              liquid_float_complex *_y);
 
 // write tail
@@ -9085,7 +9085,7 @@ typedef struct ofdmframesync_s * ofdmframesync;
 ofdmframesync ofdmframesync_create(unsigned int           _M,
                                    unsigned int           _cp_len,
                                    unsigned int           _taper_len,
-                                   unsigned char *        _p,
+                                   const unsigned char *  _p,
                                    ofdmframesync_callback _callback,
                                    void *                 _userdata);
 int ofdmframesync_destroy(ofdmframesync _q);
@@ -9093,7 +9093,7 @@ int ofdmframesync_print(ofdmframesync _q);
 int ofdmframesync_reset(ofdmframesync _q);
 int ofdmframesync_is_frame_open(ofdmframesync _q);
 int ofdmframesync_execute(ofdmframesync _q,
-                          liquid_float_complex * _x,
+                          const liquid_float_complex * _x,
                           unsigned int _n);
 
 // query methods
