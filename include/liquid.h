@@ -530,7 +530,7 @@ WINDOW() WINDOW(_create)(unsigned int _n);                                  \
 WINDOW() WINDOW(_recreate)(WINDOW() _q, unsigned int _n);                   \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
-WINDOW() WINDOW(_copy)(const WINDOW() _q);                                  \
+WINDOW() WINDOW(_copy)(WINDOW() _q);                                        \
                                                                             \
 /* Destroy window object, freeing all internally memory                 */  \
 int WINDOW(_destroy)(WINDOW() _q);                                          \
@@ -614,7 +614,7 @@ typedef struct WDELAY(_s) * WDELAY();                                       \
 WDELAY() WDELAY(_create)(unsigned int _delay);                              \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
-WDELAY() WDELAY(_copy)(const WDELAY() _q);                                  \
+WDELAY() WDELAY(_copy)(WDELAY() _q);                                        \
                                                                             \
 /* Re-create delay buffer object, adjusting the delay size, preserving  */  \
 /* the internal state of the object                                     */  \
