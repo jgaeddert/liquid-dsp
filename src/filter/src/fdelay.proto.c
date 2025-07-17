@@ -194,7 +194,7 @@ int FDELAY(_push)(FDELAY() _q,
 //  _x      : buffer of input samples, [size: _n x 1]
 //  _n      : number of input samples
 int FDELAY(_write)(FDELAY()     _q,
-                   TI *         _x,
+                   const TI *   _x,
                    unsigned int _n)
 {
     unsigned int i;
@@ -224,7 +224,7 @@ int FDELAY(_execute)(FDELAY() _q,
 //  _n      : number of input, output samples
 //  _y      : pointer to output array, [size: _n x 1]
 int FDELAY(_execute_block)(FDELAY()     _q,
-                           TI *         _x,
+                           const TI *   _x,
                            unsigned int _n,
                            TO *         _y)
 {

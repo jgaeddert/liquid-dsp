@@ -141,14 +141,14 @@ struct firdespm_s {
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
 //  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 //  _h          :   output coefficients array [size: _h_len x 1]
-int firdespm_run(unsigned int            _h_len,
-                 unsigned int            _num_bands,
-                 float *                 _bands,
-                 float *                 _des,
-                 float *                 _weights,
-                 liquid_firdespm_wtype * _wtype,
-                 liquid_firdespm_btype   _btype,
-                 float *                 _h)
+int firdespm_run(unsigned int                  _h_len,
+                 unsigned int                  _num_bands,
+                 const float *                 _bands,
+                 const float *                 _des,
+                 const float *                 _weights,
+                 const liquid_firdespm_wtype * _wtype,
+                 liquid_firdespm_btype         _btype,
+                 float *                       _h)
 {
     // create object
     firdespm q = firdespm_create(_h_len,_num_bands,_bands,_des,_weights,_wtype,_btype);
@@ -209,13 +209,13 @@ int firdespm_lowpass(unsigned int _n,
 //  _weights    :   response weighting [size: _num_bands x 1]
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
 //  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
-firdespm firdespm_create(unsigned int            _h_len,
-                         unsigned int            _num_bands,
-                         float *                 _bands,
-                         float *                 _des,
-                         float *                 _weights,
-                         liquid_firdespm_wtype * _wtype,
-                         liquid_firdespm_btype   _btype)
+firdespm firdespm_create(unsigned int                  _h_len,
+                         unsigned int                  _num_bands,
+                         const float *                 _bands,
+                         const float *                 _des,
+                         const float *                 _weights,
+                         const liquid_firdespm_wtype * _wtype,
+                         liquid_firdespm_btype         _btype)
 {
     // basic validation
     if (_h_len==0)
@@ -319,7 +319,7 @@ firdespm firdespm_create(unsigned int            _h_len,
 //  _userdata   :   user-defined data structure for callback function
 firdespm firdespm_create_callback(unsigned int          _h_len,
                                   unsigned int          _num_bands,
-                                  float *               _bands,
+                                  const float *         _bands,
                                   liquid_firdespm_btype _btype,
                                   firdespm_callback     _callback,
                                   void *                _userdata)

@@ -494,9 +494,9 @@ int liquid_firdes_doppler(unsigned int _n,
 //  _h      :   filter coefficients [size: _h_len x 1]
 //  _h_len  :   filter length
 //  _lag    :   auto-correlation lag (samples)
-float liquid_filter_autocorr(float *      _h,
-                             unsigned int _h_len,
-                             int          _lag)
+float liquid_filter_autocorr(const float * _h,
+                             unsigned int  _h_len,
+                             int           _lag)
 {
     // auto-correlation is even symmetric
     _lag = abs(_lag);
@@ -522,11 +522,11 @@ float liquid_filter_autocorr(float *      _h,
 //  _g      :   filter coefficients [size: _g_len]
 //  _g_len  :   filter length
 //  _lag    :   cross-correlation lag (samples)
-float liquid_filter_crosscorr(float *      _h,
-                              unsigned int _h_len,
-                              float *      _g,
-                              unsigned int _g_len,
-                              int          _lag)
+float liquid_filter_crosscorr(const float * _h,
+                              unsigned int  _h_len,
+                              const float * _g,
+                              unsigned int  _g_len,
+                              int           _lag)
 {
     // cross-correlation is odd symmetric
     if (_h_len < _g_len) {
@@ -577,11 +577,11 @@ float liquid_filter_crosscorr(float *      _h,
 //  _m      :   filter delay (symbols)
 //  _rms    :   output root mean-squared ISI
 //  _max    :   maximum ISI
-void liquid_filter_isi(float *      _h,
-                       unsigned int _k,
-                       unsigned int _m,
-                       float *      _rms,
-                       float *      _max)
+void liquid_filter_isi(const float * _h,
+                       unsigned int  _k,
+                       unsigned int  _m,
+                       float *       _rms,
+                       float *       _max)
 {
     unsigned int h_len = 2*_k*_m+1;
 
@@ -613,10 +613,10 @@ void liquid_filter_isi(float *      _h,
 //  _h_len  :   filter length
 //  _fc     :   analysis cut-off frequency
 //  _nfft   :   fft size
-float liquid_filter_energy(float *      _h,
-                           unsigned int _h_len,
-                           float        _fc,
-                           unsigned int _nfft)
+float liquid_filter_energy(const float * _h,
+                           unsigned int  _h_len,
+                           float         _fc,
+                           unsigned int  _nfft)
 {
     // validate input
     if (_fc < 0.0f || _fc > 0.5f) {
@@ -672,7 +672,7 @@ float liquid_filter_energy(float *      _h,
 //  _h_len  : length of coefficients array
 //  _fc     : center frequency for analysis, -0.5 <= _fc <= 0.5
 //  _H      : pointer to output value
-int liquid_freqrespf(float *         _h,
+int liquid_freqrespf(const float *   _h,
                      unsigned int    _h_len,
                      float           _fc,
                      float complex * _H)
@@ -694,10 +694,10 @@ int liquid_freqrespf(float *         _h,
 //  _h_len  : length of coefficients array
 //  _fc     : center frequency for analysis, -0.5 <= _fc <= 0.5
 //  _H      : pointer to output value
-int liquid_freqrespcf(float complex * _h,
-                      unsigned int    _h_len,
-                      float           _fc,
-                      float complex * _H)
+int liquid_freqrespcf(const float complex * _h,
+                      unsigned int          _h_len,
+                      float                 _fc,
+                      float complex *       _H)
 {
     // compute dot product between coefficients and exp{ 2 pi fc {0..n-1} }
     float complex H = 0.0f;

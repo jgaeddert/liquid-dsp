@@ -167,7 +167,7 @@ int ORDFILT(_push)(ORDFILT() _q,
 //  _x      : array of input samples, [size: _n x 1]
 //  _n      : number of input elements
 int ORDFILT(_write)(ORDFILT()    _q,
-                    TI *         _x,
+                    const TI *   _x,
                     unsigned int _n)
 {
 #if LIQUID_ORDFILT_USE_WINDOW
@@ -220,7 +220,7 @@ int ORDFILT(_execute_one)(ORDFILT() _q,
 //  _n      : number of input, output samples
 //  _y      : pointer to output array [size: _n x 1]
 int ORDFILT(_execute_block)(ORDFILT()    _q,
-                            TI *         _x,
+                            const TI *   _x,
                             unsigned int _n,
                             TO *         _y)
 {

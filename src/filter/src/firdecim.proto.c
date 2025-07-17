@@ -42,7 +42,7 @@ struct FIRDECIM(_s) {
 //  _h      :   filter coefficients [size: _h_len x 1]
 //  _h_len  :   filter coefficients length
 FIRDECIM() FIRDECIM(_create)(unsigned int _M,
-                             TC *         _h,
+                             const TC *   _h,
                              unsigned int _h_len)
 {
     // validate input
@@ -249,7 +249,7 @@ int FIRDECIM(_freqresp)(FIRDECIM()             _q,
 //  _x      :   input sample array [size: _M x 1]
 //  _y      :   output sample pointer
 int FIRDECIM(_execute)(FIRDECIM() _q,
-                       TI *       _x,
+                       const TI * _x,
                        TO *       _y)
 {
     TI * r; // read pointer
@@ -277,7 +277,7 @@ int FIRDECIM(_execute)(FIRDECIM() _q,
 //  _n      : number of _output_ samples
 //  _y      : output array [_size: _n x 1]
 int FIRDECIM(_execute_block)(FIRDECIM()   _q,
-                             TI *         _x,
+                             const TI *   _x,
                              unsigned int _n,
                              TO *         _y)
 {

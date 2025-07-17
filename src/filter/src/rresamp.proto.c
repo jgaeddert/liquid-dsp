@@ -40,9 +40,9 @@ struct RRESAMP(_s) {
 
 // internal: execute rational-rate resampler on a primitive-length block of
 // input samples and store the resulting samples in the output array.
-int RRESAMP(_execute_primitive)(RRESAMP() _q,
-                                TI *      _x,
-                                TO *      _y);
+int RRESAMP(_execute_primitive)(RRESAMP()  _q,
+                                const TI * _x,
+                                TO *       _y);
 
 // Create rational-rate resampler object from external coefficients
 //  _interp : interpolation factor
@@ -52,7 +52,7 @@ int RRESAMP(_execute_primitive)(RRESAMP() _q,
 RRESAMP() RRESAMP(_create)(unsigned int _interp,
                            unsigned int _decim,
                            unsigned int _m,
-                           TC *         _h)
+                           const TC *   _h)
 {
     // validate input
     if (_interp == 0)
@@ -286,8 +286,8 @@ unsigned int RRESAMP(_get_decim)(RRESAMP() _q)
 // internal state of the resampler.
 //  _q      : resamp object
 //  _buf    : input sample array, [size: Q x 1]
-int RRESAMP(_write)(RRESAMP() _q,
-                    TI *      _buf)
+int RRESAMP(_write)(RRESAMP()  _q,
+                    const TI * _buf)
 {
     return FIRPFB(_write)(_q->pfb, _buf, _q->Q);
 }
@@ -297,9 +297,9 @@ int RRESAMP(_write)(RRESAMP() _q,
 //  _q  : resamp object
 //  _x  : input sample array, [size: Q x 1]
 //  _y  : output sample array [size: P x 1]
-int RRESAMP(_execute)(RRESAMP() _q,
-                      TI *      _x,
-                      TO *      _y)
+int RRESAMP(_execute)(RRESAMP()  _q,
+                      const TI * _x,
+                      TO *       _y)
 {
     // run in blocks
     unsigned int i;
@@ -319,10 +319,10 @@ int RRESAMP(_execute)(RRESAMP() _q,
 //  _x  : input sample array, [size: Q*n x 1]
 //  _n  : block size
 //  _y  : output sample array [size: P*n x 1]
-int RRESAMP(_execute_block)(RRESAMP()      _q,
-                            TI *           _x,
-                            unsigned int   _n,
-                            TO *           _y)
+int RRESAMP(_execute_block)(RRESAMP()    _q,
+                            const TI *   _x,
+                            unsigned int _n,
+                            TO *         _y)
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
@@ -334,9 +334,9 @@ int RRESAMP(_execute_block)(RRESAMP()      _q,
 }
 
 // internal
-int RRESAMP(_execute_primitive)(RRESAMP() _q,
-                                TI *      _x,
-                                TO *      _y)
+int RRESAMP(_execute_primitive)(RRESAMP()  _q,
+                                const TI * _x,
+                                TO *       _y)
 {
     unsigned int index = 0; // filterbank index
     unsigned int i, n=0;

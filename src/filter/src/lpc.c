@@ -40,7 +40,7 @@
 //  _p      :   prediction filter order
 //  _a      :   prediction filter [size: _p+1 x 1]
 //  _e      :   prediction error variance [size: _p+1 x 1]
-void liquid_lpc(float * _x,
+void liquid_lpc(const float * _x,
                 unsigned int _n,
                 unsigned int _p,
                 float * _a,
@@ -79,7 +79,7 @@ void liquid_lpc(float * _x,
 //
 // NOTES:
 //  By definition _a[0] = 1.0
-void liquid_levinson(float * _r,
+void liquid_levinson(const float * _r,
                      unsigned int _p,
                      float * _a,
                      float * _e)

@@ -858,10 +858,10 @@ int liquid_firdes_farcsech_freqresponse(unsigned int _k,
 //  _n      :   number of elements in _z
 //  _tol    :   tolerance for finding complex pairs
 //  _p      :   resulting pairs, pure real values of _z at end
-int liquid_cplxpair(float complex * _z,
-                    unsigned int    _n,
-                    float           _tol,
-                    float complex * _p);
+int liquid_cplxpair(const float complex * _z,
+                    unsigned int          _n,
+                    float                 _tol,
+                    float complex *       _p);
 
 // post-process cleanup used with liquid_cplxpair
 //

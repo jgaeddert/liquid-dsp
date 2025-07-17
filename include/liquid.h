@@ -2176,14 +2176,14 @@ typedef enum {
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
 //  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 //  _h          :   output coefficients array, [size: _h_len x 1]
-int firdespm_run(unsigned int            _h_len,
-                 unsigned int            _num_bands,
-                 float *                 _bands,
-                 float *                 _des,
-                 float *                 _weights,
-                 liquid_firdespm_wtype * _wtype,
-                 liquid_firdespm_btype   _btype,
-                 float *                 _h);
+int firdespm_run(unsigned int                  _h_len,
+                 unsigned int                  _num_bands,
+                 const float *                 _bands,
+                 const float *                 _des,
+                 const float *                 _weights,
+                 const liquid_firdespm_wtype * _wtype,
+                 liquid_firdespm_btype         _btype,
+                 float *                       _h);
 
 // run filter design for basic low-pass filter
 //  _n      : filter length, _n > 0
@@ -2218,13 +2218,13 @@ typedef struct firdespm_s * firdespm;
 //  _weights    :   response weighting, [size: _num_bands x 1]
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
 //  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
-firdespm firdespm_create(unsigned int            _h_len,
-                         unsigned int            _num_bands,
-                         float *                 _bands,
-                         float *                 _des,
-                         float *                 _weights,
-                         liquid_firdespm_wtype * _wtype,
-                         liquid_firdespm_btype   _btype);
+firdespm firdespm_create(unsigned int                  _h_len,
+                         unsigned int                  _num_bands,
+                         const float *                 _bands,
+                         const float *                 _des,
+                         const float *                 _weights,
+                         const liquid_firdespm_wtype * _wtype,
+                         liquid_firdespm_btype         _btype);
 
 // create firdespm object with user-defined callback
 //  _h_len      :   length of filter (number of taps)
@@ -2235,7 +2235,7 @@ firdespm firdespm_create(unsigned int            _h_len,
 //  _userdata   :   user-defined data structure for callback function
 firdespm firdespm_create_callback(unsigned int          _h_len,
                                   unsigned int          _num_bands,
-                                  float *               _bands,
+                                  const float *         _bands,
                                   liquid_firdespm_btype _btype,
                                   firdespm_callback     _callback,
                                   void *                _userdata);
@@ -2361,7 +2361,7 @@ int liquid_firdes_rfarcsech(unsigned int _k, unsigned int _m, float _beta, float
 //  _h      : filter coefficients array
 //  _n      : filter length
 //  _fc     : frequency at which delay is evaluated (-0.5 < _fc < 0.5)
-float fir_group_delay(float * _h,
+float fir_group_delay(const float * _h,
                       unsigned int _n,
                       float _fc);
 
@@ -2371,9 +2371,9 @@ float fir_group_delay(float * _h,
 //  _a      : filter denominator coefficients
 //  _na     : filter denominator length
 //  _fc     : frequency at which delay is evaluated (-0.5 < _fc < 0.5)
-float iir_group_delay(float * _b,
+float iir_group_delay(const float * _b,
                       unsigned int _nb,
-                      float * _a,
+                      const float * _a,
                       unsigned int _na,
                       float _fc);
 
@@ -2385,9 +2385,9 @@ float iir_group_delay(float * _b,
 //  _h      :   filter coefficients, [size: _h_len x 1]
 //  _h_len  :   filter length
 //  _lag    :   auto-correlation lag (samples)
-float liquid_filter_autocorr(float *      _h,
-                             unsigned int _h_len,
-                             int          _lag);
+float liquid_filter_autocorr(const float * _h,
+                             unsigned int  _h_len,
+                             int           _lag);
 
 // liquid_filter_crosscorr()
 //
@@ -2398,11 +2398,11 @@ float liquid_filter_autocorr(float *      _h,
 //  _g      :   filter coefficients, [size: _g_len]
 //  _g_len  :   filter length
 //  _lag    :   cross-correlation lag (samples)
-float liquid_filter_crosscorr(float *      _h,
-                              unsigned int _h_len,
-                              float *      _g,
-                              unsigned int _g_len,
-                              int          _lag);
+float liquid_filter_crosscorr(const float * _h,
+                              unsigned int  _h_len,
+                              const float * _g,
+                              unsigned int  _g_len,
+                              int           _lag);
 
 // liquid_filter_isi()
 //
@@ -2414,11 +2414,11 @@ float liquid_filter_crosscorr(float *      _h,
 //  _m      :   filter delay (symbols)
 //  _rms    :   output root mean-squared ISI
 //  _max    :   maximum ISI
-void liquid_filter_isi(float *      _h,
-                       unsigned int _k,
-                       unsigned int _m,
-                       float *      _rms,
-                       float *      _max);
+void liquid_filter_isi(const float * _h,
+                       unsigned int  _k,
+                       unsigned int  _m,
+                       float *       _rms,
+                       float *       _max);
 
 // Compute relative out-of-band energy
 //
@@ -2426,10 +2426,10 @@ void liquid_filter_isi(float *      _h,
 //  _h_len  :   filter length
 //  _fc     :   analysis cut-off frequency
 //  _nfft   :   fft size
-float liquid_filter_energy(float *      _h,
-                           unsigned int _h_len,
-                           float        _fc,
-                           unsigned int _nfft);
+float liquid_filter_energy(const float * _h,
+                           unsigned int  _h_len,
+                           float         _fc,
+                           unsigned int  _nfft);
 
 // Get static frequency response from filter coefficients at particular
 // frequency with real-valued coefficients
@@ -2437,7 +2437,7 @@ float liquid_filter_energy(float *      _h,
 //  _h_len  : length of coefficients array
 //  _fc     : center frequency for analysis, -0.5 <= _fc <= 0.5
 //  _H      : pointer to output value
-int liquid_freqrespf(float *                _h,
+int liquid_freqrespf(const float *          _h,
                      unsigned int           _h_len,
                      float                  _fc,
                      liquid_float_complex * _H);
@@ -2448,10 +2448,10 @@ int liquid_freqrespf(float *                _h,
 //  _h_len  : length of coefficients array
 //  _fc     : center frequency for analysis, -0.5 <= _fc <= 0.5
 //  _H      : pointer to output value
-int liquid_freqrespcf(liquid_float_complex * _h,
-                      unsigned int           _h_len,
-                      float                  _fc,
-                      liquid_float_complex * _H);
+int liquid_freqrespcf(const liquid_float_complex * _h,
+                      unsigned int                 _h_len,
+                      float                        _fc,
+                      liquid_float_complex *       _H);
 
 
 //
@@ -2543,15 +2543,15 @@ float iirdes_freqprewarp(liquid_iirdes_bandtype _btype,
 //  _zd     :   output digital zeros [length: _npa]
 //  _pd     :   output digital poles [length: _npa]
 //  _kd     :   output digital gain (should actually be real-valued)
-int bilinear_zpkf(liquid_float_complex * _za,
-                  unsigned int           _nza,
-                  liquid_float_complex * _pa,
-                  unsigned int           _npa,
-                  liquid_float_complex   _ka,
-                  float                  _m,
-                  liquid_float_complex * _zd,
-                  liquid_float_complex * _pd,
-                  liquid_float_complex * _kd);
+int bilinear_zpkf(const liquid_float_complex * _za,
+                  unsigned int                 _nza,
+                  const liquid_float_complex * _pa,
+                  unsigned int                 _npa,
+                  liquid_float_complex         _ka,
+                  float                        _m,
+                  liquid_float_complex *       _zd,
+                  liquid_float_complex *       _pd,
+                  liquid_float_complex *       _kd);
 
 // compute bilinear z-transform using polynomial expansion in numerator and
 // denominator
@@ -2573,13 +2573,13 @@ int bilinear_zpkf(liquid_float_complex * _za,
 //  _m          : bilateral warping factor
 //  _bd         : output digital filter numerator, [size: _b_order+1]
 //  _ad         : output digital filter numerator, [size: _a_order+1]
-int bilinear_nd(liquid_float_complex * _b,
-                unsigned int           _b_order,
-                liquid_float_complex * _a,
-                unsigned int           _a_order,
-                float                  _m,
-                liquid_float_complex * _bd,
-                liquid_float_complex * _ad);
+int bilinear_nd(const liquid_float_complex * _b,
+                unsigned int                 _b_order,
+                const liquid_float_complex * _a,
+                unsigned int                 _a_order,
+                float                        _m,
+                liquid_float_complex *       _bd,
+                liquid_float_complex *       _ad);
 
 // digital z/p/k low-pass to high-pass
 //  _zd     :   digital zeros (low-pass prototype), [length: _n]
@@ -2587,11 +2587,11 @@ int bilinear_nd(liquid_float_complex * _b,
 //  _n      :   low-pass filter order
 //  _zdt    :   output digital zeros transformed [length: _n]
 //  _pdt    :   output digital poles transformed [length: _n]
-int iirdes_dzpk_lp2hp(liquid_float_complex * _zd,
-                      liquid_float_complex * _pd,
-                      unsigned int _n,
-                      liquid_float_complex * _zdt,
-                      liquid_float_complex * _pdt);
+int iirdes_dzpk_lp2hp(const liquid_float_complex * _zd,
+                      const liquid_float_complex * _pd,
+                      unsigned int                 _n,
+                      liquid_float_complex *       _zdt,
+                      liquid_float_complex *       _pdt);
 
 // digital z/p/k low-pass to band-pass
 //  _zd     :   digital zeros (low-pass prototype), [length: _n]
@@ -2600,12 +2600,12 @@ int iirdes_dzpk_lp2hp(liquid_float_complex * _zd,
 //  _f0     :   center frequency
 //  _zdt    :   output digital zeros transformed [length: 2*_n]
 //  _pdt    :   output digital poles transformed [length: 2*_n]
-int iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
-                      liquid_float_complex * _pd,
-                      unsigned int           _n,
-                      float                  _f0,
-                      liquid_float_complex * _zdt,
-                      liquid_float_complex * _pdt);
+int iirdes_dzpk_lp2bp(const liquid_float_complex * _zd,
+                      const liquid_float_complex * _pd,
+                      unsigned int                 _n,
+                      float                        _f0,
+                      liquid_float_complex *       _zdt,
+                      liquid_float_complex *       _pdt);
 
 // convert discrete z/p/k form to transfer function
 //  _zd     :   digital zeros [length: _n]
@@ -2614,12 +2614,12 @@ int iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
 //  _kd     :   digital gain
 //  _b      :   output numerator [length: _n+1]
 //  _a      :   output denominator [length: _n+1]
-int iirdes_dzpk2tff(liquid_float_complex * _zd,
-                    liquid_float_complex * _pd,
-                    unsigned int           _n,
-                    liquid_float_complex   _kd,
-                    float *                _b,
-                    float *                _a);
+int iirdes_dzpk2tff(const liquid_float_complex * _zd,
+                    const liquid_float_complex * _pd,
+                    unsigned int                 _n,
+                    liquid_float_complex         _kd,
+                    float *                      _b,
+                    float *                      _a);
 
 // convert discrete z/p/k form to second-order sections
 //  _zd     :   digital zeros [length: _n]
@@ -2629,12 +2629,12 @@ int iirdes_dzpk2tff(liquid_float_complex * _zd,
 //  _b      :   output numerator, [size: 3 x L+r]
 //  _a      :   output denominator, [size: 3 x L+r]
 //  where r = _n%2, L = (_n-r)/2
-int iirdes_dzpk2sosf(liquid_float_complex * _zd,
-                     liquid_float_complex * _pd,
-                     unsigned int           _n,
-                     liquid_float_complex   _kd,
-                     float *                _b,
-                     float *                _a);
+int iirdes_dzpk2sosf(const liquid_float_complex * _zd,
+                     const liquid_float_complex * _pd,
+                     unsigned int                 _n,
+                     liquid_float_complex         _kd,
+                     float *                      _b,
+                     float *                      _a);
 
 // additional IIR filter design templates
 
@@ -2674,8 +2674,8 @@ void iirdes_pll_active_PI(float _w,
 //  _b      :   feed-forward coefficients, [size: _n x 1]
 //  _a      :   feed-back coefficients, [size: _n x 1]
 //  _n      :   number of coefficients
-int iirdes_isstable(float * _b,
-                    float * _a,
+int iirdes_isstable(const float * _b,
+                    const float * _a,
                     unsigned int _n);
 
 //
@@ -2688,7 +2688,7 @@ int iirdes_isstable(float * _b,
 //  _p      :   prediction filter order
 //  _a      :   prediction filter, [size: _p+1 x 1]
 //  _e      :   prediction error variance, [size: _p+1 x 1]
-void liquid_lpc(float * _x,
+void liquid_lpc(const float * _x,
                 unsigned int _n,
                 unsigned int _p,
                 float * _a,
@@ -2703,7 +2703,7 @@ void liquid_lpc(float * _x,
 //
 // NOTES:
 //  By definition _a[0] = 1.0
-void liquid_levinson(float * _r,
+void liquid_levinson(const float * _r,
                      unsigned int _p,
                      float * _a,
                      float * _e);
@@ -2752,7 +2752,7 @@ int AUTOCORR(_push)(AUTOCORR() _q,                                          \
 /*  _x      :   input array, [size: _n x 1]                             */  \
 /*  _n      :   number of input samples                                 */  \
 int AUTOCORR(_write)(AUTOCORR()   _q,                                       \
-                     TI *         _x,                                       \
+                     const TI *   _x,                                       \
                      unsigned int _n);                                      \
                                                                             \
 /* Compute single auto-correlation output                               */  \
@@ -2768,7 +2768,7 @@ int AUTOCORR(_execute)(AUTOCORR() _q,                                       \
 /*  _n      :   number of input, output samples                         */  \
 /*  _rxx    :   input array, [size: _n x 1]                             */  \
 int AUTOCORR(_execute_block)(AUTOCORR()   _q,                               \
-                             TI *         _x,                               \
+                             const TI *   _x,                               \
                              unsigned int _n,                               \
                              TO *         _rxx);                            \
                                                                             \
@@ -2808,7 +2808,7 @@ typedef struct FIRFILT(_s) * FIRFILT();                                     \
 /* specifying the filter coefficients in an array                       */  \
 /*  _h      : filter coefficients, [size: _n x 1]                       */  \
 /*  _n      : number of filter coefficients, _n > 0                     */  \
-FIRFILT() FIRFILT(_create)(TC *         _h,                                 \
+FIRFILT() FIRFILT(_create)(const TC *   _h,                                 \
                            unsigned int _n);                                \
                                                                             \
 /* Create object using Kaiser-Bessel windowed sinc method               */  \
@@ -2869,7 +2869,7 @@ FIRFILT() FIRFILT(_create_notch)(unsigned int _m,                           \
 /*  _h      : pointer to filter coefficients, [size: _n x 1]            */  \
 /*  _n      : filter length, _n > 0                                     */  \
 FIRFILT() FIRFILT(_recreate)(FIRFILT()    _q,                               \
-                             TC *         _h,                               \
+                             const TC *   _h,                               \
                              unsigned int _n);                              \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
@@ -2907,7 +2907,7 @@ int FIRFILT(_push)(FIRFILT() _q,                                            \
 /*  _x      : buffer of input samples, [size: _n x 1]                   */  \
 /*  _n      : number of input samples                                   */  \
 int FIRFILT(_write)(FIRFILT()    _q,                                        \
-                    TI *         _x,                                        \
+                    const TI *   _x,                                        \
                     unsigned int _n);                                       \
                                                                             \
 /* Execute vector dot product on the filter's internal buffer and       */  \
@@ -2932,7 +2932,7 @@ int FIRFILT(_execute_one)(FIRFILT() _q,                                     \
 /*  _n      : number of input, output samples                           */  \
 /*  _y      : pointer to output array, [size: _n x 1]                   */  \
 int FIRFILT(_execute_block)(FIRFILT()    _q,                                \
-                            TI *         _x,                                \
+                            const TI *   _x,                                \
                             unsigned int _n,                                \
                             TO *         _y);                               \
                                                                             \
@@ -3033,7 +3033,7 @@ int FDELAY(_push)(FDELAY() _q,                                              \
 /*  _x      : buffer of input samples, [size: _n x 1]                   */  \
 /*  _n      : number of input samples                                   */  \
 int FDELAY(_write)(FDELAY()     _q,                                         \
-                   TI *         _x,                                         \
+                   const TI *   _x,                                         \
                    unsigned int _n);                                        \
                                                                             \
 /* Execute vector dot product on the filter's internal buffer and       */  \
@@ -3050,7 +3050,7 @@ int FDELAY(_execute)(FDELAY() _q,                                           \
 /*  _n      : number of input, output samples                           */  \
 /*  _y      : pointer to output array, [size: _n x 1]                   */  \
 int FDELAY(_execute_block)(FDELAY()     _q,                                 \
-                           TI *         _x,                                 \
+                           const TI *   _x,                                 \
                            unsigned int _n,                                 \
                            TO *         _y);                                \
 
@@ -3127,7 +3127,7 @@ int FIRHILB(_c2r_execute)(FIRHILB() _q,                                     \
 /*  _x      :   real-valued input array, [size: 2 x 1]                  */  \
 /*  _y      :   complex-valued output sample                            */  \
 int FIRHILB(_decim_execute)(FIRHILB() _q,                                   \
-                            T *       _x,                                   \
+                            const T * _x,                                   \
                             TC *      _y);                                  \
                                                                             \
 /* Execute Hilbert transform decimator (real to complex) on a block of  */  \
@@ -3137,7 +3137,7 @@ int FIRHILB(_decim_execute)(FIRHILB() _q,                                   \
 /*  _n      :   number of output samples                                */  \
 /*  _y      :   complex-valued output array, [size: _n x 1]             */  \
 int FIRHILB(_decim_execute_block)(FIRHILB()    _q,                          \
-                                  T *          _x,                          \
+                                  const T *    _x,                          \
                                   unsigned int _n,                          \
                                   TC *         _y);                         \
                                                                             \
@@ -3156,7 +3156,7 @@ int FIRHILB(_interp_execute)(FIRHILB() _q,                                  \
 /*  _n      :   number of *input* samples                               */  \
 /*  _y      :   real-valued output array, [size: 2*_n x 1]              */  \
 int FIRHILB(_interp_execute_block)(FIRHILB()    _q,                         \
-                                   TC *         _x,                         \
+                                   const TC *   _x,                         \
                                    unsigned int _n,                         \
                                    T *          _y);                        \
 
@@ -3223,7 +3223,7 @@ int IIRHILB(_r2c_execute)(IIRHILB() _q,                                     \
 /*  _n      : number of input,output samples                            */  \
 /*  _y      : complex-valued output sample array, [size: _n x 1]        */  \
 int IIRHILB(_r2c_execute_block)(IIRHILB()    _q,                            \
-                                T *          _x,                            \
+                                const T *    _x,                            \
                                 unsigned int _n,                            \
                                 TC *         _y);                           \
                                                                             \
@@ -3241,7 +3241,7 @@ int IIRHILB(_c2r_execute)(IIRHILB() _q,                                     \
 /*  _n      : number of input,output samples                            */  \
 /*  _y      : real-valued output sample array, [size: _n x 1]           */  \
 int IIRHILB(_c2r_execute_block)(IIRHILB()    _q,                            \
-                                TC *         _x,                            \
+                                const TC *   _x,                            \
                                 unsigned int _n,                            \
                                 T *          _y);                           \
                                                                             \
@@ -3250,7 +3250,7 @@ int IIRHILB(_c2r_execute_block)(IIRHILB()    _q,                            \
 /*  _x      : real-valued input array, [size: 2 x 1]                    */  \
 /*  _y      : complex-valued output sample                              */  \
 int IIRHILB(_decim_execute)(IIRHILB() _q,                                   \
-                            T *       _x,                                   \
+                            const T * _x,                                   \
                             TC *      _y);                                  \
                                                                             \
 /* Execute Hilbert transform decimator (real to complex) on a block of  */  \
@@ -3260,7 +3260,7 @@ int IIRHILB(_decim_execute)(IIRHILB() _q,                                   \
 /*  _n      : number of output samples                                  */  \
 /*  _y      : complex-valued output array, [size: _n x 1]               */  \
 int IIRHILB(_decim_execute_block)(IIRHILB()    _q,                          \
-                                  T *          _x,                          \
+                                  const T *    _x,                          \
                                   unsigned int _n,                          \
                                   TC *         _y);                         \
                                                                             \
@@ -3279,7 +3279,7 @@ int IIRHILB(_interp_execute)(IIRHILB() _q,                                  \
 /*  _n      : number of *input* samples                                 */  \
 /*  _y      : real-valued output array, [size: 2*_n x 1]                */  \
 int IIRHILB(_interp_execute_block)(IIRHILB()    _q,                         \
-                                   TC *         _x,                         \
+                                   const TC *   _x,                         \
                                    unsigned int _n,                         \
                                    T *          _y);                        \
 
@@ -3309,7 +3309,7 @@ typedef struct FFTFILT(_s) * FFTFILT();                                     \
 /*  _h      : filter coefficients, [size: _h_len x 1]                   */  \
 /*  _h_len  : filter length, _h_len > 0                                 */  \
 /*  _n      : block size = nfft/2, _n >= _h_len-1                       */  \
-FFTFILT() FFTFILT(_create)(TC *         _h,                                 \
+FFTFILT() FFTFILT(_create)(const TC *   _h,                                 \
                            unsigned int _h_len,                             \
                            unsigned int _n);                                \
                                                                             \
@@ -3340,7 +3340,7 @@ int FFTFILT(_get_scale)(FFTFILT() _q,                                       \
 /*  _x      : pointer to input data array,  [size: _n x 1]              */  \
 /*  _y      : pointer to output data array, [size: _n x 1]              */  \
 int FFTFILT(_execute)(FFTFILT() _q,                                         \
-                      TI *      _x,                                         \
+                      const TI * _x,                                        \
                       TO *      _y);                                        \
                                                                             \
 /* Get length of filter object's internal coefficients                  */  \
@@ -3392,9 +3392,9 @@ typedef struct IIRFILT(_s) * IIRFILT();                                     \
 /*  _nb     : number of feed-forward coefficients, _nb > 0              */  \
 /*  _a      : feed-back coefficients (denominator), [size: _na x 1]     */  \
 /*  _na     : number of feed-back coefficients, _na > 0                 */  \
-IIRFILT() IIRFILT(_create)(TC *         _b,                                 \
+IIRFILT() IIRFILT(_create)(const TC *   _b,                                 \
                            unsigned int _nb,                                \
-                           TC *         _a,                                 \
+                           const TC *   _a,                                 \
                            unsigned int _na);                               \
                                                                             \
 /* Create IIR filter using 2nd-order sections from external             */  \
@@ -3402,8 +3402,8 @@ IIRFILT() IIRFILT(_create)(TC *         _b,                                 \
 /*  _b      : feed-forward coefficients, [size: _nsos x 3]              */  \
 /*  _a      : feed-back coefficients,    [size: _nsos x 3]              */  \
 /*  _nsos   : number of second-order sections (sos), _nsos > 0          */  \
-IIRFILT() IIRFILT(_create_sos)(TC *         _b,                             \
-                               TC *         _a,                             \
+IIRFILT() IIRFILT(_create_sos)(const TC *   _b,                             \
+                               const TC *   _a,                             \
                                unsigned int _nsos);                         \
                                                                             \
 /* Create IIR filter from design template                               */  \
@@ -3489,7 +3489,7 @@ int IIRFILT(_execute)(IIRFILT() _q,                                         \
 /*  _n      : number of input, output samples, _n > 0                   */  \
 /*  _y      : pointer to output array, [size: _n x 1]                   */  \
 int IIRFILT(_execute_block)(IIRFILT()    _q,                                \
-                            TI *         _x,                                \
+                            const TI *   _x,                                \
                             unsigned int _n,                                \
                             TO *         _y);                               \
                                                                             \
@@ -3548,8 +3548,8 @@ typedef struct IIRFILTSOS(_s) * IIRFILTSOS();                               \
 /* create 2nd-order infinite impulse response filter                    */  \
 /*  _b      : feed-forward coefficients, [size: _3 x 1]                 */  \
 /*  _a      : feed-back coefficients,    [size: _3 x 1]                 */  \
-IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                                   \
-                                 TC * _a);                                  \
+IIRFILTSOS() IIRFILTSOS(_create)(const TC * _b,                             \
+                                 const TC * _a);                            \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
 IIRFILTSOS() IIRFILTSOS(_copy)(IIRFILTSOS() _q);                            \
@@ -3559,8 +3559,8 @@ IIRFILTSOS() IIRFILTSOS(_copy)(IIRFILTSOS() _q);                            \
 /*  _b      : feed-forward coefficients, [size: 3 x 1]                  */  \
 /*  _a      : feed-back coefficients, [size: 3 x 1]                     */  \
 int IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,                          \
-                                  TC *         _b,                          \
-                                  TC *         _a);                         \
+                                  const TC *   _b,                          \
+                                  const TC *   _a);                         \
                                                                             \
 /* destroy iirfiltsos object, freeing all internal memory               */  \
 int IIRFILTSOS(_destroy)(IIRFILTSOS() _q);                                  \
@@ -3641,7 +3641,7 @@ typedef struct FIRPFB(_s) * FIRPFB();                                       \
 /*  _h_len          : complete filter length (where _h_len is a         */  \
 /*                    multiple of _num_filters), _h_len >= _num_filters */  \
 FIRPFB() FIRPFB(_create)(unsigned int _num_filters,                         \
-                         TC *         _h,                                   \
+                         const TC *   _h,                                   \
                          unsigned int _h_len);                              \
                                                                             \
 /* Create firpfb object using Kaiser-Bessel windowed sinc filter design */  \
@@ -3699,7 +3699,7 @@ FIRPFB() FIRPFB(_create_drnyquist)(int          _type,                      \
 /*                    multiple of _num_filters), _h_len >= _num_filters */  \
 FIRPFB() FIRPFB(_recreate)(FIRPFB()     _q,                                 \
                            unsigned int _num_filters,                       \
-                           TC *         _h,                                 \
+                           const TC *   _h,                                 \
                            unsigned int _h_len);                            \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
@@ -3737,7 +3737,7 @@ int FIRPFB(_push)(FIRPFB() _q,                                              \
 /*  _q      : filter object                                             */  \
 /*  _x      : single input sample                                       */  \
 int FIRPFB(_write)(FIRPFB()     _q,                                         \
-                   TI *         _x,                                         \
+                   const TI *   _x,                                         \
                    unsigned int _n);                                        \
                                                                             \
 /* Execute vector dot product on the filter's internal buffer and       */  \
@@ -3759,7 +3759,7 @@ int FIRPFB(_execute)(FIRPFB()     _q,                                       \
 /*  _y      : pointer to output array, [size: _n x 1]                   */  \
 int FIRPFB(_execute_block)(FIRPFB()     _q,                                 \
                            unsigned int _i,                                 \
-                           TI *         _x,                                 \
+                           const TI *   _x,                                 \
                            unsigned int _n,                                 \
                            TO *         _y);                                \
 
@@ -3802,7 +3802,7 @@ typedef struct FIRINTERP(_s) * FIRINTERP();                                 \
 /*  _h      : filter coefficients, [size: _h_len x 1]                   */  \
 /*  _h_len  : filter length, _h_len >= _interp                          */  \
 FIRINTERP() FIRINTERP(_create)(unsigned int _interp,                        \
-                               TC *         _h,                             \
+                               const TC *   _h,                             \
                                unsigned int _h_len);                        \
                                                                             \
 /* Create interpolator from filter prototype prototype (Kaiser-Bessel   */  \
@@ -3882,7 +3882,7 @@ int FIRINTERP(_execute)(FIRINTERP() _q,                                     \
 /*  _n      : size of input array                                       */  \
 /*  _y      : output sample array, [size: M*_n x 1]                     */  \
 int FIRINTERP(_execute_block)(FIRINTERP()  _q,                              \
-                              TI *         _x,                              \
+                              const TI *   _x,                              \
                               unsigned int _n,                              \
                               TO *         _y);                             \
                                                                             \
@@ -3933,9 +3933,9 @@ typedef struct IIRINTERP(_s) * IIRINTERP();                                 \
 /*  _a      : feed-back coefficients (denominator), [size: _na x 1]     */  \
 /*  _na     : number of feed-back coefficients, _na > 0                 */  \
 IIRINTERP() IIRINTERP(_create)(unsigned int _M,                             \
-                               TC *         _b,                             \
+                               const TC *   _b,                             \
                                unsigned int _nb,                            \
-                               TC *         _a,                             \
+                               const TC *   _a,                             \
                                unsigned int _na);                           \
                                                                             \
 /* Create interpolator object with default Butterworth prototype        */  \
@@ -3992,7 +3992,7 @@ int IIRINTERP(_execute)(IIRINTERP() _q,                                     \
 /*  _n      : size of input array                                       */  \
 /*  _y      : output sample array, [size: _M*_n x 1]                    */  \
 int IIRINTERP(_execute_block)(IIRINTERP()  _q,                              \
-                              TI *         _x,                              \
+                              const TI *   _x,                              \
                               unsigned int _n,                              \
                               TO *         _y);                             \
                                                                             \
@@ -4036,7 +4036,7 @@ typedef struct FIRDECIM(_s) * FIRDECIM();                                   \
 /*  _h      : filter coefficients, [size: _h_len x 1]                   */  \
 /*  _h_len  : filter length, _h_len >= _M                               */  \
 FIRDECIM() FIRDECIM(_create)(unsigned int _M,                               \
-                             TC *         _h,                               \
+                             const TC *   _h,                               \
                              unsigned int _h_len);                          \
                                                                             \
 /* Create decimator from filter prototype prototype (Kaiser-Bessel      */  \
@@ -4101,7 +4101,7 @@ int FIRDECIM(_freqresp)(FIRDECIM()             _q,                          \
 /*  _x      : input samples, [size: _M x 1]                             */  \
 /*  _y      : output sample pointer                                     */  \
 int FIRDECIM(_execute)(FIRDECIM() _q,                                       \
-                       TI *       _x,                                       \
+                       const TI * _x,                                       \
                        TO *       _y);                                      \
                                                                             \
 /* Execute decimator on block of _n*_M input samples                    */  \
@@ -4110,7 +4110,7 @@ int FIRDECIM(_execute)(FIRDECIM() _q,                                       \
 /*  _n      : number of _output_ samples                                */  \
 /*  _y      : output array, [_size: _n x 1]                             */  \
 int FIRDECIM(_execute_block)(FIRDECIM()   _q,                               \
-                             TI *         _x,                               \
+                             const TI *   _x,                               \
                              unsigned int _n,                               \
                              TO *         _y);                              \
 
@@ -4155,9 +4155,9 @@ typedef struct IIRDECIM(_s) * IIRDECIM();                                   \
 /*  _a      : feed-back coefficients (denominator), [size: _na x 1]     */  \
 /*  _na     : number of feed-back coefficients, _na > 0                 */  \
 IIRDECIM() IIRDECIM(_create)(unsigned int _M,                               \
-                             TC *         _b,                               \
+                             const TC *   _b,                               \
                              unsigned int _nb,                              \
-                             TC *         _a,                               \
+                             const TC *   _a,                               \
                              unsigned int _na);                             \
                                                                             \
 /* Create decimator object with default Butterworth prototype           */  \
@@ -4204,7 +4204,7 @@ int IIRDECIM(_reset)(IIRDECIM() _q);                                        \
 /*  _x      : input samples, [size: _M x 1]                             */  \
 /*  _y      : output sample pointer                                     */  \
 int IIRDECIM(_execute)(IIRDECIM() _q,                                       \
-                       TI *       _x,                                       \
+                       const TI * _x,                                       \
                        TO *       _y);                                      \
                                                                             \
 /* Execute decimator on block of _n*_M input samples                    */  \
@@ -4213,7 +4213,7 @@ int IIRDECIM(_execute)(IIRDECIM() _q,                                       \
 /*  _n      : number of _output_ samples                                */  \
 /*  _y      : output array, [_sze: _n x 1]                              */  \
 int IIRDECIM(_execute_block)(IIRDECIM()   _q,                               \
-                             TI *         _x,                               \
+                             const TI *   _x,                               \
                              unsigned int _n,                               \
                              TO *         _y);                              \
                                                                             \
@@ -4389,7 +4389,7 @@ typedef struct RRESAMP(_s) * RRESAMP();                                     \
 RRESAMP() RRESAMP(_create)(unsigned int _interp,                            \
                            unsigned int _decim,                             \
                            unsigned int _m,                                 \
-                           TC *         _h);                                \
+                           const TC *   _h);                                \
                                                                             \
 /* Create rational-rate resampler object from filter prototype to       */  \
 /* resample at an exact rate \(P/Q\) = interp/decim.                    */  \
@@ -4499,8 +4499,8 @@ float RRESAMP(_get_rate)(RRESAMP() _q);                                     \
 /* internal state of the resampler.                                     */  \
 /*  _q      : resamp object                                             */  \
 /*  _buf    : input sample array, [size: decim x 1]                     */  \
-int RRESAMP(_write)(RRESAMP() _q,                                           \
-                    TI *      _buf);                                        \
+int RRESAMP(_write)(RRESAMP()   _q,                                         \
+                    const TI * _buf);                                       \
                                                                             \
 /* Execute rational-rate resampler on a block of input samples and      */  \
 /* store the resulting samples in the output array.                     */  \
@@ -4520,8 +4520,8 @@ int RRESAMP(_write)(RRESAMP() _q,                                           \
 /*  _q  : resamp object                                                 */  \
 /*  _x  : input sample array, [size: decim x 1]                         */  \
 /*  _y  : output sample array, [size: interp x 1]                       */  \
-int RRESAMP(_execute)(RRESAMP()       _q,                                   \
-                      TI *           _x,                                    \
+int RRESAMP(_execute)(RRESAMP()      _q,                                    \
+                      const TI *     _x,                                    \
                       TO *           _y);                                   \
                                                                             \
 /* Execute on a block of samples                                        */  \
@@ -4530,7 +4530,7 @@ int RRESAMP(_execute)(RRESAMP()       _q,                                   \
 /*  _n  : block size                                                    */  \
 /*  _y  : output sample array, [size: interp*n x 1]                     */  \
 int RRESAMP(_execute_block)(RRESAMP()      _q,                              \
-                            TI *           _x,                              \
+                            const TI *     _x,                              \
                             unsigned int   _n,                              \
                             TO *           _y);                             \
 
@@ -4670,7 +4670,7 @@ int RESAMP(_execute)(RESAMP()       _q,                                     \
 /*  _y              : output sample array (pointer)                     */  \
 /*  _ny             : number of samples written to _y                   */  \
 int RESAMP(_execute_block)(RESAMP()       _q,                               \
-                           TI *           _x,                               \
+                           const TI *     _x,                               \
                            unsigned int   _nx,                              \
                            TO *           _y,                               \
                            unsigned int * _ny);                             \
@@ -4830,7 +4830,7 @@ unsigned int MSRESAMP(_get_num_output)(MSRESAMP()   _q,                     \
 /*  _y  : pointer to output array for storing result                    */  \
 /*  _ny : number of samples written to _y                               */  \
 int MSRESAMP(_execute)(MSRESAMP()     _q,                                   \
-                       TI *           _x,                                   \
+                       const TI *     _x,                                   \
                        unsigned int   _nx,                                  \
                        TO *           _y,                                   \
                        unsigned int * _ny);                                 \
@@ -4908,9 +4908,9 @@ float        DDS(_get_delay_decim)(DDS() _q);                               \
 /*  _q      : synthesizer object                                        */  \
 /*  _x      : input data array, [size: (1<<_num_stages) x 1]            */  \
 /*  _y      : output sample                                             */  \
-int DDS(_decim_execute)(DDS() _q,                                           \
-                        TI *  _x,                                           \
-                        TO *  _y);                                          \
+int DDS(_decim_execute)(DDS()      _q,                                      \
+                        const TI * _x,                                      \
+                        TO *       _y);                                     \
                                                                             \
 /* Run DDS object as interpolator                                       */  \
 /*  _q      : synthesizer object                                        */  \
@@ -4944,7 +4944,7 @@ typedef struct SYMSYNC(_s) * SYMSYNC();                                     \
 /*  _h_len  : length of matched filter; \( h_{len} = 2 k m + 1 \)       */  \
 SYMSYNC() SYMSYNC(_create)(unsigned int _k,                                 \
                            unsigned int _M,                                 \
-                           TC *         _h,                                 \
+                           const TC *   _h,                                 \
                            unsigned int _h_len);                            \
                                                                             \
 /* Create square-root Nyquist symbol synchronizer from prototype        */  \
@@ -5014,7 +5014,7 @@ float SYMSYNC(_get_tau)(SYMSYNC() _q);                                      \
 /*  _y      : output data array                                         */  \
 /*  _ny     : number of samples written to output buffer                */  \
 int SYMSYNC(_execute)(SYMSYNC()      _q,                                    \
-                      TI *           _x,                                    \
+                      const TI *     _x,                                    \
                       unsigned int   _nx,                                   \
                       TO *           _y,                                    \
                       unsigned int * _ny);                                  \
@@ -5092,10 +5092,10 @@ int FIRFARROW(_execute)(FIRFARROW() _q,                                     \
 /*  _x      : input array, [size: _n x 1]                               */  \
 /*  _n      : input, output array size                                  */  \
 /*  _y      : output array, [size: _n x 1]                              */  \
-int FIRFARROW(_execute_block)(FIRFARROW()  _q,                              \
-                              TI *         _x,                              \
-                              unsigned int _n,                              \
-                              TO *         _y);                             \
+int FIRFARROW(_execute_block)(FIRFARROW()    _q,                            \
+                              const TI *     _x,                            \
+                              unsigned int   _n,                            \
+                              TO *           _y);                           \
                                                                             \
 /* Get length of firfarrow object (number of filter taps)               */  \
 unsigned int FIRFARROW(_get_length)(FIRFARROW() _q);                        \
@@ -5181,7 +5181,7 @@ int ORDFILT(_push)(ORDFILT() _q,                                            \
 /*  _x      : array of input samples, [size: _n x 1]                    */  \
 /*  _n      : number of input elements                                  */  \
 int ORDFILT(_write)(ORDFILT()    _q,                                        \
-                    TI *         _x,                                        \
+                    const TI *   _x,                                        \
                     unsigned int _n);                                       \
                                                                             \
 /* Execute on the filter's internal buffer                              */  \
@@ -5205,7 +5205,7 @@ int ORDFILT(_execute_one)(ORDFILT() _q,                                     \
 /*  _n      : number of input, output samples                           */  \
 /*  _y      : pointer to output array, [size: _n x 1]                   */  \
 int ORDFILT(_execute_block)(ORDFILT()    _q,                                \
-                            TI *         _x,                                \
+                            const TI *   _x,                                \
                             unsigned int _n,                                \
                             TO *         _y);                               \
 

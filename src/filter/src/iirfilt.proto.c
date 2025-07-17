@@ -92,9 +92,9 @@ void IIRFILT(_init)(IIRFILT() _q)
 //  _nb     :   length of numerator
 //  _a      :   denominator, feed-back coefficients [size: _na x 1]
 //  _na     :   length of denominator
-IIRFILT() IIRFILT(_create)(TC *         _b,
+IIRFILT() IIRFILT(_create)(const TC *   _b,
                            unsigned int _nb,
-                           TC *         _a,
+                           const TC *   _a,
                            unsigned int _na)
 {
     // validate input
@@ -161,8 +161,8 @@ IIRFILT() IIRFILT(_create)(TC *         _b,
 //   r = n % 2
 //   L = (n-r)/2
 //   nsos = L+r
-IIRFILT() IIRFILT(_create_sos)(TC *         _B,
-                               TC *         _A,
+IIRFILT() IIRFILT(_create_sos)(const TC *   _B,
+                               const TC *   _A,
                                unsigned int _nsos)
 {
     // validate input
@@ -652,7 +652,7 @@ int IIRFILT(_execute)(IIRFILT() _q,
 //  _n      : number of input, output samples
 //  _y      : pointer to output array [size: _n x 1]
 int IIRFILT(_execute_block)(IIRFILT()    _q,
-                            TI *         _x,
+                            const TI *   _x,
                             unsigned int _n,
                             TO *         _y)
 {

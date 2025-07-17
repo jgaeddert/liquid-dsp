@@ -50,7 +50,7 @@ struct FFTFILT(_s) {
 //  _h      : filter coefficients [size: _h_len x 1]
 //  _h_len  : filter length, _h_len > 0
 //  _n      : block size = nfft/2, at least _h_len-1
-FFTFILT() FFTFILT(_create)(TC *         _h,
+FFTFILT() FFTFILT(_create)(const TC *   _h,
                            unsigned int _h_len,
                            unsigned int _n)
 {
@@ -192,7 +192,7 @@ int FFTFILT(_get_scale)(FFTFILT() _q,
 //  _x      : pointer to input data array  [size: _n x 1]
 //  _y      : pointer to output data array [size: _n x 1]
 int FFTFILT(_execute)(FFTFILT() _q,
-                      TI *      _x,
+                      const TI * _x,
                       TO *      _y)
 {
     unsigned int i;
