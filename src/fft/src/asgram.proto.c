@@ -194,7 +194,7 @@ int ASGRAM(_push)(ASGRAM() _q,
 //  _x      :   input buffer [size: _n x 1]
 //  _n      :   input buffer length
 int ASGRAM(_write)(ASGRAM()     _q,
-                   TI *         _x,
+                   const TI *   _x,
                    unsigned int _n)
 {
     // write samples to internal spectral periodogram

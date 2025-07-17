@@ -1797,7 +1797,7 @@ int SPGRAM(_push)(SPGRAM() _q,                                              \
 /*  _x  : input buffer, [size: _n x 1]                                  */  \
 /*  _n  : input buffer length                                           */  \
 int SPGRAM(_write)(SPGRAM()     _q,                                         \
-                   TI *         _x,                                         \
+                   const TI *   _x,                                         \
                    unsigned int _n);                                        \
                                                                             \
 /* Compute spectral periodogram output (fft-shifted values, linear)     */  \
@@ -1828,7 +1828,7 @@ int SPGRAM(_export_gnuplot)(SPGRAM()     _q,                                \
 /*  _n      : input signal length                                       */  \
 /*  _psd    : output spectrum, [size: _nfft x 1]                        */  \
 int SPGRAM(_estimate_psd)(unsigned int _nfft,                               \
-                          TI *         _x,                                  \
+                          const TI *   _x,                                  \
                           unsigned int _n,                                  \
                           T *          _psd);                               \
 
@@ -1908,7 +1908,7 @@ int ASGRAM(_push)(ASGRAM() _q,                                              \
 /*  _x  : input buffer, [size: _n x 1]                                  */  \
 /*  _n  : input buffer length                                           */  \
 int ASGRAM(_write)(ASGRAM()     _q,                                         \
-                   TI *         _x,                                         \
+                   const TI *   _x,                                         \
                    unsigned int _n);                                        \
                                                                             \
 /* Compute spectral periodogram output from current buffer contents     */  \
@@ -2052,7 +2052,7 @@ int SPWATERFALL(_push)(SPWATERFALL() _q,                                    \
 /*  _x  : input buffer, [size: _n x 1]                                  */  \
 /*  _n  : input buffer length                                           */  \
 int SPWATERFALL(_write)(SPWATERFALL() _q,                                   \
-                        TI *          _x,                                   \
+                        const TI *    _x,                                   \
                         unsigned int  _n);                                  \
                                                                             \
 /* Export set of files for plotting                                     */  \
