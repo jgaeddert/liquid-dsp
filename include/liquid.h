@@ -951,7 +951,7 @@ typedef struct EQLMS(_s) * EQLMS();                                         \
 /* Create LMS EQ initialized with external coefficients                 */  \
 /*  _h : filter coefficients; set to NULL for {1,0,0...},[size: _n x 1] */  \
 /*  _n : filter length                                                  */  \
-EQLMS() EQLMS(_create)(T *          _h,                                     \
+EQLMS() EQLMS(_create)(const T *    _h,                                     \
                        unsigned int _n);                                    \
                                                                             \
 /* Create LMS EQ initialized with square-root Nyquist prototype filter  */  \
@@ -982,7 +982,7 @@ EQLMS() EQLMS(_create_lowpass)(unsigned int _n,                             \
 /*  _h : filter coefficients; set to NULL for {1,0,0...},[size: _n x 1] */  \
 /*  _n : filter length                                                  */  \
 EQLMS() EQLMS(_recreate)(EQLMS()      _q,                                   \
-                         T *          _h,                                   \
+                         const T *    _h,                                   \
                          unsigned int _n);                                  \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
@@ -1037,7 +1037,7 @@ int EQLMS(_push)(EQLMS() _q,                                                \
 /*  _x      :   input sample array, [size: _n x 1]                      */  \
 /*  _n      :   input sample array length                               */  \
 int EQLMS(_push_block)(EQLMS()      _q,                                     \
-                       T *          _x,                                     \
+                       const T *    _x,                                     \
                        unsigned int _n);                                    \
                                                                             \
 /* Execute internal dot product and return result                       */  \
@@ -1052,7 +1052,7 @@ int EQLMS(_execute)(EQLMS() _q,                                             \
 /*  _y      :   output sample                                           */  \
 /*  _k      :   down-sampling rate                                      */  \
 int EQLMS(_decim_execute)(EQLMS()      _q,                                  \
-                          T *          _x,                                  \
+                          const T *    _x,                                  \
                           T *          _y,                                  \
                           unsigned int _k);                                 \
                                                                             \
@@ -1066,7 +1066,7 @@ int EQLMS(_decim_execute)(EQLMS()      _q,                                  \
 /*  _y      :   output sample array, [size: _n x 1]                     */  \
 int EQLMS(_execute_block)(EQLMS()      _q,                                  \
                           unsigned int _k,                                  \
-                          T *          _x,                                  \
+                          const T *    _x,                                  \
                           unsigned int _n,                                  \
                           T *          _y);                                 \
                                                                             \
@@ -1093,8 +1093,8 @@ int EQLMS(_step_blind)(EQLMS() _q,                                          \
 DEPRECATED("method provides complexity with little benefit",                \
 int EQLMS(_train)(EQLMS()      _q,                                          \
                   T *          _w,                                          \
-                  T *          _x,                                          \
-                  T *          _d,                                          \
+                  const T *    _x,                                          \
+                  const T *    _d,                                          \
                   unsigned int _n);                                         \
 )                                                                           \
 
@@ -1117,7 +1117,7 @@ typedef struct EQRLS(_s) * EQRLS();                                         \
 /* Create RLS EQ initialized with external coefficients                 */  \
 /*  _h : filter coefficients; set to NULL for {1,0,0...},[size: _n x 1] */  \
 /*  _n : filter length                                                  */  \
-EQRLS() EQRLS(_create)(T *          _h,                                     \
+EQRLS() EQRLS(_create)(const T *    _h,                                     \
                        unsigned int _n);                                    \
                                                                             \
 /* Re-create EQ initialized with external coefficients                  */  \
@@ -1125,7 +1125,7 @@ EQRLS() EQRLS(_create)(T *          _h,                                     \
 /*  _h :   filter coefficients (NULL for {1,0,0...}), [size: _n x 1]    */  \
 /*  _n :   filter length                                                */  \
 EQRLS() EQRLS(_recreate)(EQRLS()      _q,                                   \
-                         T *          _h,                                   \
+                         const T *    _h,                                   \
                          unsigned int _n);                                  \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
@@ -1179,8 +1179,8 @@ int EQRLS(_get_weights)(EQRLS() _q,                                         \
 /*  _n      :   input, output vector length                             */  \
 int EQRLS(_train)(EQRLS()      _q,                                          \
                   T *          _w,                                          \
-                  T *          _x,                                          \
-                  T *          _d,                                          \
+                  const T *    _x,                                          \
+                  const T *    _d,                                          \
                   unsigned int _n);                                         \
 
 LIQUID_EQRLS_DEFINE_API(LIQUID_EQRLS_MANGLE_RRRF, float)
