@@ -393,7 +393,7 @@ unsigned char   cvsd_encode(cvsd _q, float _audio_sample);
 float           cvsd_decode(cvsd _q, unsigned char _bit);
 
 // encode/decode 8 samples at a time
-int cvsd_encode8(cvsd _q, float * _audio, unsigned char * _data);
+int cvsd_encode8(cvsd _q, const float * _audio, unsigned char * _data);
 int cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 
 
