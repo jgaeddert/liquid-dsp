@@ -616,7 +616,7 @@ int NCO(_mix_down)(NCO() _q,
 //  _y      :   output sample [size: _n x 1]
 //  _n      :   number of input, output samples
 int NCO(_mix_block_up)(NCO()        _q,
-                       TC *         _x,
+                       const TC *   _x,
                        TC *         _y,
                        unsigned int _n)
 {
@@ -655,7 +655,7 @@ int NCO(_mix_block_up)(NCO()        _q,
 //  _y      :   output sample [size: _n x 1]
 //  _n      :   number of input, output samples
 int NCO(_mix_block_down)(NCO()        _q,
-                         TC *         _x,
+                         const TC *   _x,
                          TC *         _y,
                          unsigned int _n)
 {

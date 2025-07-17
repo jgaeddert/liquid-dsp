@@ -9266,7 +9266,7 @@ int NCO(_mix_down)(NCO() _q,                                                \
 /*  _y      : array of output samples, [size: _n x 1]                   */  \
 /*  _n      : number of input (and output) samples                      */  \
 int NCO(_mix_block_up)(NCO()        _q,                                     \
-                       TC *         _x,                                     \
+                       const TC *   _x,                                     \
                        TC *         _y,                                     \
                        unsigned int _n);                                    \
                                                                             \
@@ -9278,7 +9278,7 @@ int NCO(_mix_block_up)(NCO()        _q,                                     \
 /*  _y      : array of output samples, [size: _n x 1]                   */  \
 /*  _n      : number of input (and output) samples                      */  \
 int NCO(_mix_block_down)(NCO()        _q,                                   \
-                         TC *         _x,                                   \
+                         const TC *   _x,                                   \
                          TC *         _y,                                   \
                          unsigned int _n);                                  \
 
@@ -9338,13 +9338,13 @@ void SYNTH(_mix_down)(SYNTH() _q, TC _x, TC *_y);                           \
                                                                             \
 /* Rotate input vector up by SYNTH angle (stepping)       */                \
 void SYNTH(_mix_block_up)(SYNTH() _q,                                       \
-                          TC *_x,                                           \
+                          const TC *_x,                                     \
                           TC *_y,                                           \
                           unsigned int _n);                                 \
                                                                             \
 /* Rotate input vector down by SYNTH angle (stepping)     */                \
 void SYNTH(_mix_block_down)(SYNTH() _q,                                     \
-                            TC *_x,                                         \
+                            const TC *_x,                                   \
                             TC *_y,                                         \
                             unsigned int _n);                               \
                                                                             \
@@ -9353,11 +9353,11 @@ void SYNTH(_spread)(SYNTH() _q,                                             \
                     TC *_y);                                                \
                                                                             \
 void SYNTH(_despread)(SYNTH() _q,                                           \
-                      TC *_x,                                               \
+                      const TC *_x,                                         \
                       TC *_y);                                              \
                                                                             \
 void SYNTH(_despread_triple)(SYNTH() _q,                                    \
-                             TC *_x,                                        \
+                             const TC *_x,                                  \
                              TC *_early,                                    \
                              TC *_punctual,                                 \
                              TC *_late);                                    \
