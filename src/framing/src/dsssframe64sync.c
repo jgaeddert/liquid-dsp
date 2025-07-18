@@ -226,9 +226,9 @@ int dsssframe64sync_set_context(dsssframe64sync _q,
 //  _q       : frame synchronizer object
 //  _buf     : input sample array, shape: (_buf_len,)
 //  _buf_len : number of input samples
-int dsssframe64sync_execute(dsssframe64sync _q,
-                            float complex * _buf,
-                            unsigned int    _buf_len)
+int dsssframe64sync_execute(dsssframe64sync       _q,
+                            const float complex * _buf,
+                            unsigned int          _buf_len)
 {
     // run detector/synchronizer, invoking internal callback as needed
     return qdsync_cccf_execute(_q->detector, _buf, _buf_len);
@@ -366,4 +366,3 @@ int dsssframe64sync_decode(dsssframe64sync _q)
     dsssframe64sync_reset(_q);
     return rc;
 }
-

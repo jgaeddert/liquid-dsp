@@ -33,10 +33,10 @@ void usage()
 //  _p          : subcarrier allocation array [size: _M x 1]
 //  _M          : number of subcarriers
 //  _userdata   : user-defined data pointer
-static int callback(float complex * _X,
-                    unsigned char * _p,
-                    unsigned int    _M,
-                    void *          _userdata);
+static int callback(float complex *       _X,
+                    const unsigned char * _p,
+                    unsigned int          _M,
+                    void *                _userdata);
 
 // custom data type to pass to callback function
 struct rx_symbols {
@@ -242,10 +242,10 @@ int main(int argc, char*argv[])
 //  _p          : subcarrier allocation array [size: _M x 1]
 //  _M          : number of subcarriers
 //  _userdata   : user-defined data pointer
-static int callback(float complex * _X,
-                    unsigned char * _p,
-                    unsigned int    _M,
-                    void *          _userdata)
+static int callback(float complex *       _X,
+                    const unsigned char * _p,
+                    unsigned int          _M,
+                    void *                _userdata)
 {
     // print status to the screen
     printf("**** callback invoked\n");

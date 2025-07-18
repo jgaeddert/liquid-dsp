@@ -11,13 +11,13 @@
 #include "liquid.h"
 
 // static callback function
-static int callback(unsigned char *  _header,
-                    int              _header_valid,
-                    unsigned char *  _payload,
-                    unsigned int     _payload_len,
-                    int              _payload_valid,
-                    framesyncstats_s _stats,
-                    void *           _context)
+static int callback(const unsigned char *  _header,
+                    int                    _header_valid,
+                    const unsigned char *  _payload,
+                    unsigned int           _payload_len,
+                    int                    _payload_valid,
+                    framesyncstats_s       _stats,
+                    void *                 _context)
 {
     printf("*** callback invoked (%s) ***\n", _payload_valid ? "pass" : "FAIL");
     framesyncstats_print(&_stats);

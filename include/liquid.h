@@ -5272,13 +5272,13 @@ int framedatastats_print(framedatastats_s * _stats);
 //  _payload_valid  :   is payload valid? (0:no, 1:yes)
 //  _stats          :   frame statistics object
 //  _userdata       :   pointer to userdata
-typedef int (*framesync_callback)(unsigned char *  _header,
-                                  int              _header_valid,
-                                  unsigned char *  _payload,
-                                  unsigned int     _payload_len,
-                                  int              _payload_valid,
-                                  framesyncstats_s _stats,
-                                  void *           _userdata);
+typedef int (*framesync_callback)(const unsigned char * _header,
+                                  int                   _header_valid,
+                                  const unsigned char * _payload,
+                                  unsigned int          _payload_len,
+                                  int                   _payload_valid,
+                                  framesyncstats_s      _stats,
+                                  void *                _userdata);
 
 // framesync csma callback functions invoked when signal levels is high or low
 //  _userdata       :   user-defined data pointer
@@ -5457,9 +5457,9 @@ int qpilotgen_print(  qpilotgen _q);
 unsigned int qpilotgen_get_frame_len(qpilotgen _q);
 
 // insert pilot symbols
-int qpilotgen_execute(qpilotgen              _q,
-                      liquid_float_complex * _payload,
-                      liquid_float_complex * _frame);
+int qpilotgen_execute(qpilotgen                    _q,
+                      const liquid_float_complex * _payload,
+                      liquid_float_complex *       _frame);
 
 //
 // pilot synchronizer for packet burst recovery
@@ -5522,8 +5522,8 @@ int framegen64_print(framegen64 _q);
 //  _payload    :   64-byte payload data, NULL for random
 //  _frame      :   output frame samples, [size: LIQUID_FRAME64_LEN x 1]
 int framegen64_execute(framegen64             _q,
-                       unsigned char *        _header,
-                       unsigned char *        _payload,
+                       const unsigned char *  _header,
+                       const unsigned char *  _payload,
                        liquid_float_complex * _frame);
 
 typedef struct framesync64_s * framesync64;
@@ -5771,19 +5771,19 @@ void bpacketgen_print(bpacketgen _q);
 unsigned int bpacketgen_get_packet_len(bpacketgen _q);
 
 // encode packet
-void bpacketgen_encode(bpacketgen _q,
-                       unsigned char * _msg_dec,
-                       unsigned char * _packet);
+void bpacketgen_encode(bpacketgen            _q,
+                       const unsigned char * _msg_dec,
+                       unsigned char *       _packet);
 
 //
 // bpacket synchronizer/decoder
 //
 typedef struct bpacketsync_s * bpacketsync;
-typedef int (*bpacketsync_callback)(unsigned char *  _payload,
-                                    int              _payload_valid,
-                                    unsigned int     _payload_len,
-                                    framesyncstats_s _stats,
-                                    void *           _userdata);
+typedef int (*bpacketsync_callback)(const unsigned char * _payload,
+                                    int                   _payload_valid,
+                                    unsigned int          _payload_len,
+                                    framesyncstats_s      _stats,
+                                    void *                _userdata);
 bpacketsync bpacketsync_create(unsigned int _m,
                                bpacketsync_callback _callback,
                                void * _userdata);
@@ -5828,13 +5828,13 @@ fskframegen fskframegen_create();
 int fskframegen_destroy (fskframegen     _fg);
 int fskframegen_print   (fskframegen     _fg);
 int fskframegen_reset   (fskframegen     _fg);
-int fskframegen_assemble(fskframegen     _fg,
-                         unsigned char * _header,
-                         unsigned char * _payload,
-                         unsigned int    _payload_len,
-                         crc_scheme      _check,
-                         fec_scheme      _fec0,
-                         fec_scheme      _fec1);
+int fskframegen_assemble(fskframegen           _fg,
+                         const unsigned char * _header,
+                         const unsigned char * _payload,
+                         unsigned int          _payload_len,
+                         crc_scheme            _check,
+                         fec_scheme            _fec0,
+                         fec_scheme            _fec1);
 unsigned int fskframegen_getframelen(fskframegen _q);
 int fskframegen_write_samples(fskframegen            _fg,
                               liquid_float_complex * _buf,
@@ -6012,7 +6012,7 @@ int dsssframesync_set_header_len      (dsssframesync _q, unsigned int  _len);
 int dsssframesync_decode_header_soft  (dsssframesync _q, int _soft);
 int dsssframesync_decode_payload_soft (dsssframesync _q, int _soft);
 int dsssframesync_set_header_props    (dsssframesync _q, dsssframegenprops_s * _props);
-int dsssframesync_execute             (dsssframesync _q, liquid_float_complex * _x, unsigned int _n);
+int dsssframesync_execute             (dsssframesync _q, const liquid_float_complex * _x, unsigned int _n);
 int dsssframesync_reset_framedatastats(dsssframesync _q);
 int dsssframesync_debug_enable        (dsssframesync _q);
 int dsssframesync_debug_disable       (dsssframesync _q);
@@ -6074,7 +6074,7 @@ int dsssframe64sync_set_context(dsssframe64sync _q,
 //  _q       : frame synchronizer object
 //  _buf     : input sample array, shape: (_buf_len,)
 //  _buf_len : number of input samples
-int dsssframe64sync_execute(dsssframe64sync _q, liquid_float_complex * _buf, unsigned int _buf_len);
+int dsssframe64sync_execute(dsssframe64sync _q, const liquid_float_complex * _buf, unsigned int _buf_len);
 
 // get detection threshold
 float dsssframe64sync_get_threshold(dsssframe64sync _q);
@@ -6261,7 +6261,7 @@ typedef struct BSYNC(_s) * BSYNC();                                         \
 /*  _n  : sequence length                                               */  \
 /*  _v  : correlation sequence, [size: _n x 1]                          */  \
 BSYNC() BSYNC(_create)(unsigned int _n,                                     \
-                       TC *         _v);                                    \
+                       const TC *   _v);                                    \
                                                                             \
 /* Create binary synchronizer from m-sequence                           */  \
 /*  _g  :   m-sequence generator polynomial                             */  \
@@ -6322,7 +6322,7 @@ typedef struct PRESYNC(_s) * PRESYNC();                                     \
 /*  _n          : baseband sequence length, _n > 0                      */  \
 /*  _dphi_max   : maximum absolute frequency deviation for detection    */  \
 /*  _m          : number of correlators, _m > 0                         */  \
-PRESYNC() PRESYNC(_create)(TC *         _v,                                 \
+PRESYNC() PRESYNC(_create)(const TC *   _v,                                 \
                            unsigned int _n,                                 \
                            float        _dphi_max,                          \
                            unsigned int _m);                                \
@@ -6379,7 +6379,7 @@ typedef struct QDETECTOR(_s) * QDETECTOR();                                 \
 /* Create detector with generic sequence                                */  \
 /*  _s      :   sample sequence                                         */  \
 /*  _s_len  :   length of sample sequence                               */  \
-QDETECTOR() QDETECTOR(_create)(TI *         _s,                             \
+QDETECTOR() QDETECTOR(_create)(const TI *   _s,                             \
                                unsigned int _s_len);                        \
                                                                             \
 /* Create detector from sequence of symbols using internal linear       */  \
@@ -6390,7 +6390,7 @@ QDETECTOR() QDETECTOR(_create)(TI *         _s,                             \
 /*  _k              :   samples/symbol                                  */  \
 /*  _m              :   filter delay                                    */  \
 /*  _beta           :   excess bandwidth factor                         */  \
-QDETECTOR() QDETECTOR(_create_linear)(TI *         _sequence,               \
+QDETECTOR() QDETECTOR(_create_linear)(const TI *   _sequence,               \
                                       unsigned int _sequence_len,           \
                                       int          _ftype,                  \
                                       unsigned int _k,                      \
@@ -6403,11 +6403,11 @@ QDETECTOR() QDETECTOR(_create_linear)(TI *         _sequence,               \
 /*  _k              :   samples/symbol                                  */  \
 /*  _m              :   filter delay                                    */  \
 /*  _beta           :   excess bandwidth factor                         */  \
-QDETECTOR() QDETECTOR(_create_gmsk)(unsigned char * _sequence,              \
-                                    unsigned int    _sequence_len,          \
-                                    unsigned int    _k,                     \
-                                    unsigned int    _m,                     \
-                                    float           _beta);                 \
+QDETECTOR() QDETECTOR(_create_gmsk)(const unsigned char * _sequence,        \
+                                    unsigned int          _sequence_len,    \
+                                    unsigned int          _k,               \
+                                    unsigned int          _m,               \
+                                    float                 _beta);           \
                                                                             \
 /* create detector from sequence of CP-FSK symbols (assuming one        */  \
 /* bit/symbol)                                                          */  \
@@ -6419,14 +6419,14 @@ QDETECTOR() QDETECTOR(_create_gmsk)(unsigned char * _sequence,              \
 /*  _m              :   filter delay                                    */  \
 /*  _beta           :   filter bandwidth parameter, _beta > 0           */  \
 /*  _type           :   filter type (e.g. LIQUID_CPFSK_SQUARE)          */  \
-QDETECTOR() QDETECTOR(_create_cpfsk)(unsigned char * _sequence,             \
-                                     unsigned int    _sequence_len,         \
-                                     unsigned int    _bps,                  \
-                                     float           _h,                    \
-                                     unsigned int    _k,                    \
-                                     unsigned int    _m,                    \
-                                     float           _beta,                 \
-                                     int             _type);                \
+QDETECTOR() QDETECTOR(_create_cpfsk)(const unsigned char * _sequence,       \
+                                     unsigned int          _sequence_len,   \
+                                     unsigned int          _bps,            \
+                                     float                 _h,              \
+                                     unsigned int          _k,              \
+                                     unsigned int          _m,              \
+                                     float                 _beta,           \
+                                     int                   _type);          \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
 QDETECTOR() QDETECTOR(_copy)(QDETECTOR() _q);                               \
@@ -6531,7 +6531,7 @@ typedef int (*QDSYNC(_callback))(TO *         _buf,                         \
 /*  _beta       : filter excess bandwidth factor                        */  \
 /*  _callback   : user-defined callback                                 */  \
 /*  _context    : user-defined context                                  */  \
-QDSYNC() QDSYNC(_create_linear)(TI *              _s,                       \
+QDSYNC() QDSYNC(_create_linear)(const TI *        _s,                       \
                                 unsigned int      _s_len,                   \
                                 int               _ftype,                   \
                                 unsigned int      _k,                       \
@@ -6582,7 +6582,7 @@ int QDSYNC(_set_buf_len)(QDSYNC() _q, unsigned int _buf_len);               \
                                                                             \
 /* execute block of samples                                             */  \
 int QDSYNC(_execute)(QDSYNC()     _q,                                       \
-                     TI *         _buf,                                     \
+                     const TI *   _buf,                                     \
                      unsigned int _buf_len);                                \
                                                                             \
 /* Return flag indicating if synchronizer actively running.             */  \
@@ -6619,10 +6619,10 @@ typedef struct detector_cccf_s * detector_cccf;
 //  _n          :   sequence length
 //  _threshold  :   detection threshold (default: 0.7)
 //  _dphi_max   :   maximum carrier offset
-detector_cccf detector_cccf_create(liquid_float_complex * _s,
-                                   unsigned int           _n,
-                                   float                  _threshold,
-                                   float                  _dphi_max);
+detector_cccf detector_cccf_create(const liquid_float_complex * _s,
+                                   unsigned int                 _n,
+                                   float                        _threshold,
+                                   float                        _dphi_max);
 
 // destroy pre-demo detector object
 void detector_cccf_destroy(detector_cccf _q);
@@ -9070,9 +9070,9 @@ int ofdmframegen_writetail(ofdmframegen _q,
 // OFDM frame (symbol) synchronizer
 //
 typedef int (*ofdmframesync_callback)(liquid_float_complex * _y,
-                                      unsigned char * _p,
-                                      unsigned int _M,
-                                      void * _userdata);
+                                      const unsigned char *  _p,
+                                      unsigned int           _M,
+                                      void *                 _userdata);
 typedef struct ofdmframesync_s * ofdmframesync;
 
 // create OFDM framing synchronizer object

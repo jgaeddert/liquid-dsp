@@ -145,10 +145,10 @@ int framegen64_print(framegen64 _q)
 //  _header     :   8-byte header data, NULL for random
 //  _payload    :   64-byte payload data, NULL for random
 //  _frame      :   output frame samples [size: LIQUID_FRAME64_LEN x 1]
-int framegen64_execute(framegen64      _q,
-                       unsigned char * _header,
-                       unsigned char * _payload,
-                       float complex * _frame)
+int framegen64_execute(framegen64             _q,
+                       const unsigned char *  _header,
+                       const unsigned char *  _payload,
+                       liquid_float_complex * _frame)
 {
     unsigned int i;
 

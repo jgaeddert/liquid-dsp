@@ -216,9 +216,9 @@ unsigned int bpacketgen_get_packet_len(bpacketgen _q)
 }
 
 // encode packet
-void bpacketgen_encode(bpacketgen _q,
-                       unsigned char * _msg_dec,
-                       unsigned char * _packet)
+void bpacketgen_encode(bpacketgen            _q,
+                       const unsigned char * _msg_dec,
+                       unsigned char *       _packet)
 {
     // output byte index counter
     unsigned int n=0;
