@@ -33,13 +33,13 @@ void usage()
 }
 
 // callback function
-int callback(unsigned char *  _header,
-             int              _header_valid,
-             unsigned char *  _payload,
-             unsigned int     _payload_len,
-             int              _payload_valid,
-             framesyncstats_s _stats,
-             void *           _userdata);
+int callback(const unsigned char *  _header,
+             int                    _header_valid,
+             const unsigned char *  _payload,
+             unsigned int           _payload_len,
+             int                    _payload_valid,
+             framesyncstats_s       _stats,
+             void *                 _userdata);
 
 int main(int argc, char*argv[])
 {
@@ -148,13 +148,13 @@ int main(int argc, char*argv[])
 }
 
 // callback function
-int callback(unsigned char *  _header,
-             int              _header_valid,
-             unsigned char *  _payload,
-             unsigned int     _payload_len,
-             int              _payload_valid,
-             framesyncstats_s _stats,
-             void *           _userdata)
+int callback(const unsigned char *  _header,
+             int                    _header_valid,
+             const unsigned char *  _payload,
+             unsigned int           _payload_len,
+             int                    _payload_valid,
+             framesyncstats_s       _stats,
+             void *                 _userdata)
 {
     printf("**** callback invoked : rssi = %8.3f dB, evm = %8.3f dB, cfo = %8.5f\n", _stats.rssi, _stats.evm, _stats.cfo);
 

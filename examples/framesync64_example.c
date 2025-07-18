@@ -16,13 +16,13 @@
 #define OUTPUT_FILENAME  "framesync64_example.m"
 
 // static callback function
-static int callback(unsigned char *  _header,
-                    int              _header_valid,
-                    unsigned char *  _payload,
-                    unsigned int     _payload_len,
-                    int              _payload_valid,
-                    framesyncstats_s _stats,
-                    void *           _userdata)
+static int callback(const unsigned char *  _header,
+                    int                    _header_valid,
+                    const unsigned char *  _payload,
+                    unsigned int           _payload_len,
+                    int                    _payload_valid,
+                    framesyncstats_s       _stats,
+                    void *                 _userdata)
 {
     printf("*** callback invoked ***\n");
     framesyncstats_print(&_stats);

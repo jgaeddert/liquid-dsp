@@ -35,11 +35,11 @@
 #define CRC24_POLY 0x5D6DCB
 #define CRC32_POLY 0x04C11DB7
 
-unsigned int checksum_generate_key(unsigned char * _msg, unsigned int _msg_len);
-unsigned int crc8_generate_key(unsigned char * _msg, unsigned int _msg_len);
-unsigned int crc16_generate_key(unsigned char * _msg, unsigned int _msg_len);
-unsigned int crc24_generate_key(unsigned char * _msg, unsigned int _msg_len);
-unsigned int crc32_generate_key(unsigned char * _msg, unsigned int _msg_len);
+unsigned int checksum_generate_key(const unsigned char * _msg, unsigned int _msg_len);
+unsigned int crc8_generate_key(const unsigned char * _msg, unsigned int _msg_len);
+unsigned int crc16_generate_key(const unsigned char * _msg, unsigned int _msg_len);
+unsigned int crc24_generate_key(const unsigned char * _msg, unsigned int _msg_len);
+unsigned int crc32_generate_key(const unsigned char * _msg, unsigned int _msg_len);
 
 // object-independent methods
 
@@ -114,9 +114,9 @@ unsigned int crc_get_length(crc_scheme _scheme)
 //  _scheme     :   error-detection scheme
 //  _msg        :   input data message, [size: _n x 1]
 //  _n          :   input data message size
-unsigned int crc_generate_key(crc_scheme      _scheme,
-                              unsigned char * _msg,
-                              unsigned int    _n)
+unsigned int crc_generate_key(crc_scheme            _scheme,
+                              const unsigned char * _msg,
+                              unsigned int          _n)
 {
     switch (_scheme) {
     case LIQUID_CRC_UNKNOWN:
@@ -161,10 +161,10 @@ int crc_append_key(crc_scheme      _scheme,
 //  _msg        :   input data message, [size: _n x 1]
 //  _n          :   input data message size
 //  _key        :   error-detection key
-int crc_validate_message(crc_scheme      _scheme,
-                         unsigned char * _msg,
-                         unsigned int    _n,
-                         unsigned int    _key)
+int crc_validate_message(crc_scheme            _scheme,
+                         const unsigned char * _msg,
+                         unsigned int          _n,
+                         unsigned int          _key)
 {
     if (_scheme == LIQUID_CRC_UNKNOWN) {
         liquid_error(LIQUID_EIMODE,"crc_validate_message(), cannot validate with CRC unknown type");
@@ -180,9 +180,9 @@ int crc_validate_message(crc_scheme      _scheme,
 //  _scheme     :   error-detection scheme (resulting in 'p' bytes)
 //  _msg        :   input data message, [size: _n+p x 1]
 //  _n          :   input data message size (excluding key at end)
-int crc_check_key(crc_scheme      _scheme,
-                  unsigned char * _msg,
-                  unsigned int    _n)
+int crc_check_key(crc_scheme            _scheme,
+                  const unsigned char * _msg,
+                  unsigned int          _n)
 {
     // get key size
     unsigned int len = crc_sizeof_key(_scheme);
@@ -229,7 +229,7 @@ unsigned int crc_sizeof_key(crc_scheme _scheme)
 //  _scheme     :   error-detection scheme
 //  _msg        :   input data message, [size: _n x 1]
 //  _n          :   input data message size
-unsigned int checksum_generate_key(unsigned char *_data,
+unsigned int checksum_generate_key(const unsigned char *_data,
                                    unsigned int _n)
 {
     unsigned int i, sum=0;
@@ -254,7 +254,7 @@ unsigned int checksum_generate_key(unsigned char *_data,
 //
 //  _msg    :   input data message [size: _n x 1]
 //  _n      :   input data message size
-unsigned int crc8_generate_key(unsigned char *_msg,
+unsigned int crc8_generate_key(const unsigned char *_msg,
                                unsigned int _n)
 {
     unsigned int i, j, b, mask, key8=~0;
@@ -282,7 +282,7 @@ unsigned int crc8_generate_key(unsigned char *_msg,
 //
 //  _msg    :   input data message [size: _n x 1]
 //  _n      :   input data message size
-unsigned int crc16_generate_key(unsigned char *_msg,
+unsigned int crc16_generate_key(const unsigned char *_msg,
                                 unsigned int _n)
 {
     unsigned int i, j, b, mask, key16=~0;
@@ -310,7 +310,7 @@ unsigned int crc16_generate_key(unsigned char *_msg,
 //
 //  _msg    :   input data message [size: _n x 1]
 //  _n      :   input data message size
-unsigned int crc24_generate_key(unsigned char *_msg,
+unsigned int crc24_generate_key(const unsigned char *_msg,
                                 unsigned int _n)
 {
     unsigned int i, j, b, mask, key24=~0;
@@ -338,7 +338,7 @@ unsigned int crc24_generate_key(unsigned char *_msg,
 //
 //  _msg    :   input data message [size: _n x 1]
 //  _n      :   input data message size
-unsigned int crc32_generate_key(unsigned char *_msg,
+unsigned int crc32_generate_key(const unsigned char *_msg,
                                 unsigned int _n)
 {
     unsigned int i, j, b, mask, key32=~0;

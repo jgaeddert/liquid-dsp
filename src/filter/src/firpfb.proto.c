@@ -43,7 +43,7 @@ struct FIRPFB(_s) {
 //  _h           : coefficients [size: _num_filters*_h_len x 1]
 //  _h_len       : filter delay (symbols)
 FIRPFB() FIRPFB(_create)(unsigned int _num_filters,
-                         TC *         _h,
+                         const TC *   _h,
                          unsigned int _h_len)
 {
     // validate input
@@ -233,7 +233,7 @@ FIRPFB() FIRPFB(_create_drnyquist)(int          _type,
 //  _h_len       : length of each filter
 FIRPFB() FIRPFB(_recreate)(FIRPFB()     _q,
                            unsigned int _num_filters,
-                           TC *         _h,
+                           const TC *   _h,
                            unsigned int _h_len)
 {
     // check to see if filter length has changed
@@ -336,7 +336,7 @@ int FIRPFB(_push)(FIRPFB() _q, TI _x)
 
 // Write a block of samples into object's internal buffer
 int FIRPFB(_write)(FIRPFB()     _q,
-                    TI *         _x,
+                    const TI *   _x,
                     unsigned int _n)
 {
     return WINDOW(_write)(_q->w, _x, _n);
@@ -376,7 +376,7 @@ int FIRPFB(_execute)(FIRPFB()     _q,
 //  _y      : pointer to output array [size: _n x 1]
 int FIRPFB(_execute_block)(FIRPFB()     _q,
                            unsigned int _i,
-                           TI *         _x,
+                           const TI *   _x,
                            unsigned int _n,
                            TO *         _y)
 {

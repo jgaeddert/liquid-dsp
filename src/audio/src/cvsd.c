@@ -199,7 +199,7 @@ float cvsd_decode(cvsd _q,
 
 // encode 8 samples
 int cvsd_encode8(cvsd _q,
-                 float * _audio,
+                 const float * _audio,
                  unsigned char * _data)
 {
     unsigned char data=0x00;

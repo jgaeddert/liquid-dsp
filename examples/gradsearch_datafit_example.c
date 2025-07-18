@@ -22,11 +22,11 @@ struct gsdataset {
 
 // gradient search curve-fit error
 float gserror(void * _dataset,
-              float * _v,
+              const float * _v,
               unsigned int _n);
 
 // parameterized function
-float gsfunc(float _x, float * _v)
+float gsfunc(float _x, const float * _v)
 {
     float c0 = _v[0];
     float c1 = _v[1];
@@ -124,7 +124,7 @@ int main() {
 
 // gradient search fit
 float gserror(void * _dataset,
-              float * _v,
+              const float * _v,
               unsigned int _n)
 {
     struct gsdataset * p = (struct gsdataset *) _dataset;

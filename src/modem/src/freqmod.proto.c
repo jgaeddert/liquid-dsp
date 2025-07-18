@@ -130,7 +130,7 @@ int FREQMOD(_modulate)(FREQMOD()   _q,
 //  _n      :   number of input, output samples
 //  _s      :   complex baseband signal s(t) [size: _n x 1]
 int FREQMOD(_modulate_block)(FREQMOD()    _q,
-                             T *          _m,
+                             const T *    _m,
                              unsigned int _n,
                              TC *         _s)
 {

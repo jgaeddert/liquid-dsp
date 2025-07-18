@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 
-int MATRIX(_print)(T *          _X,
+int MATRIX(_print)(const T *    _X,
                    unsigned int _R,
                    unsigned int _C)
 {

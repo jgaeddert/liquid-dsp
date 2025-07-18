@@ -87,7 +87,7 @@ int fec_conv_punctured_destroy(fec _q)
 
 int fec_conv_punctured_encode(fec _q,
                               unsigned int _dec_msg_len,
-                              unsigned char *_msg_dec,
+                              const unsigned char *_msg_dec,
                               unsigned char *_msg_enc)
 {
     unsigned int i,j,r; // bookkeeping
@@ -222,10 +222,10 @@ int fec_conv_punctured_decode_hard(fec             _q,
     return LIQUID_OK;
 }
 
-int fec_conv_punctured_decode_soft(fec             _q,
-                                   unsigned int    _dec_msg_len,
-                                   unsigned char * _msg_enc,
-                                   unsigned char * _msg_dec)
+int fec_conv_punctured_decode_soft(fec                   _q,
+                                   unsigned int          _dec_msg_len,
+                                   const unsigned char * _msg_enc,
+                                   unsigned char *       _msg_dec)
 {
     // re-allocate resources if necessary
     fec_conv_punctured_setlength(_q, _dec_msg_len);
@@ -453,19 +453,19 @@ int fec_conv_punctured_destroy(fec _q)
     return liquid_error(LIQUID_EUMODE,"fec_conv_punctured_destroy(), libfec not installed");
 }
 
-int fec_conv_punctured_encode(fec             _q,
-                              unsigned int    _dec_msg_len,
-                              unsigned char * _msg_dec,
-                              unsigned char * _msg_enc)
+int fec_conv_punctured_encode(fec                   _q,
+                              unsigned int          _dec_msg_len,
+                              const unsigned char * _msg_dec,
+                              unsigned char *       _msg_enc)
 {
     return liquid_error(LIQUID_EUMODE,"fec_conv_punctured_encode(), libfec not installed");
 }
 
 //unsigned int
-int fec_conv_punctured_decode(fec             _q,
-                              unsigned int    _dec_msg_len,
-                              unsigned char * _msg_enc,
-                              unsigned char * _msg_dec)
+int fec_conv_punctured_decode(fec                   _q,
+                              unsigned int          _dec_msg_len,
+                              const unsigned char * _msg_enc,
+                              unsigned char *       _msg_dec)
 {
     return liquid_error(LIQUID_EUMODE,"fec_conv_punctured_decode(), libfec not installed");
 }

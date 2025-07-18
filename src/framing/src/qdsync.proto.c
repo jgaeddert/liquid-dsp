@@ -78,7 +78,7 @@ struct QDSYNC(_s) {
 };
 
 // create detector with generic sequence
-QDSYNC() QDSYNC(_create_linear)(TI *              _seq,
+QDSYNC() QDSYNC(_create_linear)(const TI *        _seq,
                                 unsigned int      _seq_len,
                                 int               _ftype,
                                 unsigned int      _k,
@@ -268,7 +268,7 @@ int QDSYNC(_set_buf_len)(QDSYNC() _q, unsigned int _buf_len)
 
 // execute synchronizer on a block of samples
 int QDSYNC(_execute)(QDSYNC()     _q,
-                     TI *         _buf,
+                     const TI *   _buf,
                      unsigned int _buf_len)
 {
     unsigned int i;

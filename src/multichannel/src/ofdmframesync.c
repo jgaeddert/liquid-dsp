@@ -180,7 +180,7 @@ struct ofdmframesync_s {
 ofdmframesync ofdmframesync_create(unsigned int           _M,
                                    unsigned int           _cp_len,
                                    unsigned int           _taper_len,
-                                   unsigned char *        _p,
+                                   const unsigned char *  _p,
                                    ofdmframesync_callback _callback,
                                    void *                 _userdata)
 {
@@ -394,9 +394,9 @@ int ofdmframesync_is_frame_open(ofdmframesync _q)
     return (_q->state == OFDMFRAMESYNC_STATE_SEEKPLCP) ? 0 : 1;
 }
 
-int ofdmframesync_execute(ofdmframesync   _q,
-                          float complex * _x,
-                          unsigned int    _n)
+int ofdmframesync_execute(ofdmframesync         _q,
+                          const float complex * _x,
+                          unsigned int          _n)
 {
     unsigned int i;
     float complex x;

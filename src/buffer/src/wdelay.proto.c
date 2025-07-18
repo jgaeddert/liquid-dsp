@@ -84,7 +84,7 @@ WDELAY() WDELAY(_recreate)(WDELAY()     _q,
 }
 
 // copy object
-WDELAY() WDELAY(_copy)(WDELAY() q_orig)
+WDELAY() WDELAY(_copy)(const WDELAY() q_orig)
 {
     // validate input
     if (q_orig == NULL)

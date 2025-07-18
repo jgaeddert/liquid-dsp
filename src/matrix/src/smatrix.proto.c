@@ -112,7 +112,7 @@ SMATRIX() SMATRIX(_create)(unsigned int _m,
 }
 
 // create _m x _n matrix, initialized on array
-SMATRIX() SMATRIX(_create_array)(T *          _v,
+SMATRIX() SMATRIX(_create_array)(const T *    _v,
                                  unsigned int _m,
                                  unsigned int _n)
 {
@@ -548,8 +548,8 @@ int SMATRIX(_mul)(SMATRIX() _a,
 //  _q  :   sparse matrix
 //  _x  :   input vector [size: _n x 1]
 //  _y  :   output vector [size: _m x 1]
-int SMATRIX(_vmul)(SMATRIX() _q,
-                   T *       _x,
+int SMATRIX(_vmul)(SMATRIX()  _q,
+                   const T * _x,
                    T *       _y)
 {
     unsigned int i;

@@ -34,7 +34,7 @@
 #define DEBUG_FSKFRAMEGEN    0
 
 // fskframegen
-int fskframegen_encode_header    (fskframegen _q, unsigned char * _header);
+int fskframegen_encode_header    (fskframegen _q, const unsigned char * _header);
 int fskframegen_generate_symbol  (fskframegen _q);
 int fskframegen_generate_zeros   (fskframegen _q);
 int fskframegen_generate_preamble(fskframegen _q);
@@ -282,13 +282,13 @@ int fskframegen_print(fskframegen _q)
 //  _check          :   data validity check
 //  _fec0           :   inner forward error correction
 //  _fec1           :   outer forward error correction
-int fskframegen_assemble(fskframegen     _q,
-                         unsigned char * _header,
-                         unsigned char * _payload,
-                         unsigned int    _payload_len,
-                         crc_scheme      _check,
-                         fec_scheme      _fec0,
-                         fec_scheme      _fec1)
+int fskframegen_assemble(fskframegen           _q,
+                         const unsigned char * _header,
+                         const unsigned char * _payload,
+                         unsigned int          _payload_len,
+                         crc_scheme            _check,
+                         fec_scheme            _fec0,
+                         fec_scheme            _fec1)
 {
 #if 1
     liquid_error(LIQUID_ENOIMP,"fskframegen_assemble(), base functionality not implemented; ignoring input parameters for now");
@@ -376,8 +376,8 @@ int fskframegen_write_samples(fskframegen     _q,
 // internal methods
 //
 
-int fskframegen_encode_header(fskframegen     _q,
-                               unsigned char * _header)
+int fskframegen_encode_header(fskframegen            _q,
+                               const unsigned char * _header)
 {
     // first 8 bytes user data
     memmove(_q->header_dec, _header, 8);

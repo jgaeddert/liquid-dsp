@@ -39,10 +39,10 @@
 //
 
 // internal callback
-int ofdmflexframesync_internal_callback(float complex * _X,
-                                        unsigned char * _p,
-                                        unsigned int    _M,
-                                        void * _userdata);
+int ofdmflexframesync_internal_callback(float complex *       _X,
+                                        const unsigned char * _p,
+                                        unsigned int          _M,
+                                        void *                _userdata);
 
 // receive header data
 int ofdmflexframesync_rxheader(ofdmflexframesync _q,
@@ -441,10 +441,10 @@ int ofdmflexframesync_debug_print(ofdmflexframesync _q,
 //  _p          :   subcarrier allocation
 //  _M          :   number of subcarriers
 //  _userdata   :   user-defined data structure
-int ofdmflexframesync_internal_callback(float complex * _X,
-                                        unsigned char * _p,
-                                        unsigned int    _M,
-                                        void *          _userdata)
+int ofdmflexframesync_internal_callback(float complex *       _X,
+                                        const unsigned char * _p,
+                                        unsigned int          _M,
+                                        void *                _userdata)
 {
 #if DEBUG_OFDMFLEXFRAMESYNC
     printf("******* ofdmflexframesync callback invoked!\n");

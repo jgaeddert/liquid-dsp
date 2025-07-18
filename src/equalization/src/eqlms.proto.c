@@ -53,7 +53,7 @@ int EQLMS(_update_sumsq)(EQLMS() _q, T _x);
 // create least mean-squares (LMS) equalizer object
 //  _h      :   initial coefficients [size: _h_len x 1], default if NULL
 //  _p      :   equalizer length (number of taps)
-EQLMS() EQLMS(_create)(T *          _h,
+EQLMS() EQLMS(_create)(const T *    _h,
                        unsigned int _h_len)
 {
     EQLMS() q = (EQLMS()) malloc(sizeof(struct EQLMS(_s)));
@@ -156,7 +156,7 @@ EQLMS() EQLMS(_create_lowpass)(unsigned int _h_len,
 //  _h      :   initial coefficients [size: _h_len x 1], default if NULL
 //  _p      :   equalizer length (number of taps)
 EQLMS() EQLMS(_recreate)(EQLMS()      _q,
-                         T *          _h,
+                         const T *    _h,
                          unsigned int _h_len)
 {
     // only destroy when length differs
@@ -311,7 +311,7 @@ int EQLMS(_push)(EQLMS() _q,
 //  _x      :   input sample array
 //  _n      :   input sample array length
 int EQLMS(_push_block)(EQLMS()      _q,
-                       T *          _x,
+                       const T *    _x,
                        unsigned int _n)
 {
     unsigned int i;
@@ -349,7 +349,7 @@ int EQLMS(_execute)(EQLMS() _q,
 //  _y      :   output sample
 //  _k      :   down-sampling rate
 int EQLMS(_decim_execute)(EQLMS()      _q,
-                          T *          _x,
+                          const T *    _x,
                           T *          _y,
                           unsigned int _k)
 {
@@ -374,7 +374,7 @@ int EQLMS(_decim_execute)(EQLMS()      _q,
 //  _y      :   output sample array [size: _n x 1]
 int EQLMS(_execute_block)(EQLMS()      _q,
                           unsigned int _k,
-                          T *          _x,
+                          const T *    _x,
                           unsigned int _n,
                           T *          _y)
 {
@@ -474,8 +474,8 @@ int EQLMS(_step_blind)(EQLMS() _q,
 //  _n      :   vector length
 int EQLMS(_train)(EQLMS()      _q,
                   T *          _w,
-                  T *          _x,
-                  T *          _d,
+                  const T *    _x,
+                  const T *    _d,
                   unsigned int _n)
 {
     unsigned int p=_q->h_len;

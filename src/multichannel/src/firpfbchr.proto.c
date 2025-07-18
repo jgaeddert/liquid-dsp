@@ -62,7 +62,7 @@ struct FIRPFBCHR(_s) {
 FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _chans,
                                unsigned int _decim,
                                unsigned int _m,
-                               TC *         _h)
+                               const TC *   _h)
 {
     // validate input
     if (_chans < 2)
@@ -250,7 +250,7 @@ unsigned int FIRPFBCHR(_get_m)(FIRPFBCHR() _q)
 //  _q      : channelizer object
 //  _x      : channelizer input, [size: decim x 1]
 int FIRPFBCHR(_push)(FIRPFBCHR() _q,
-                     TI *        _x)
+                     const TI *  _x)
 {
     // load buffers in blocks of P in the reverse direction
     unsigned int i;

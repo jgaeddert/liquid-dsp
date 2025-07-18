@@ -69,7 +69,7 @@ int FIRPFBCH(_analyzer_run)(FIRPFBCH()   _q,
 FIRPFBCH() FIRPFBCH(_create)(int          _type,
                              unsigned int _M,
                              unsigned int _p,
-                             TC *         _h)
+                             const TC *   _h)
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
@@ -278,7 +278,7 @@ int FIRPFBCH(_print)(FIRPFBCH() _q)
 //  _x      :   channelized input, [size: num_channels x 1]
 //  _y      :   output time series, [size: num_channels x 1]
 int FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,
-                                   TI *       _x,
+                                   const TI * _x,
                                    TO *       _y)
 {
     unsigned int i;
@@ -311,7 +311,7 @@ int FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,
 //  _x      :   input time series, [size: num_channels x 1]
 //  _y      :   channelized output, [size: num_channels x 1]
 int FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,
-                                TI *       _x,
+                                const TI * _x,
                                 TO *       _y)
 {
     unsigned int i;

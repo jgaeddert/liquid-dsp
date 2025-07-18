@@ -34,7 +34,7 @@
 //  _a      :   input square matrix [size: _n x _n]
 //  _n      :   input matrix dimension
 //  _l      :   output lower-triangular matrix
-int MATRIX(_chol)(T *          _a,
+int MATRIX(_chol)(const T *    _a,
                   unsigned int _n,
                   T *          _l)
 {

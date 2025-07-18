@@ -39,14 +39,14 @@
 
 // execute multi-stage interpolation
 int MSRESAMP(_interp_execute)(MSRESAMP()    _q,
-                             TI *           _x,
+                             const TI *     _x,
                              unsigned int   _nx,
                              TO *           _y,
                              unsigned int * _num_written);
 
 // execute multi-stage decimation
 int MSRESAMP(_decim_execute)(MSRESAMP()     _q,
-                             TI *           _x,
+                             const TI *     _x,
                              unsigned int   _nx,
                              TO *           _y,
                              unsigned int * _num_written);
@@ -312,7 +312,7 @@ unsigned int MSRESAMP(_get_num_output)(MSRESAMP()   _q,
 //  _y      :   output sample array
 //  _ny     :   number of samples written to _y
 int MSRESAMP(_execute)(MSRESAMP()     _q,
-                       TI *           _x,
+                       const TI *     _x,
                        unsigned int   _nx,
                        TO *           _y,
                        unsigned int * _ny)
@@ -337,7 +337,7 @@ int MSRESAMP(_execute)(MSRESAMP()     _q,
 //  _y      :   output sample array
 //  _nw     :   number of samples written to _y
 int MSRESAMP(_interp_execute)(MSRESAMP()     _q,
-                              TI *           _x,
+                              const TI *     _x,
                               unsigned int   _nx,
                               TO *           _y,
                               unsigned int * _ny)
@@ -373,7 +373,7 @@ int MSRESAMP(_interp_execute)(MSRESAMP()     _q,
 //  _y      :   output sample array
 //  _nw     :   number of samples written to _y
 int MSRESAMP(_decim_execute)(MSRESAMP()     _q,
-                             TI *           _x,
+                             const TI *     _x,
                              unsigned int   _nx,
                              TO *           _y,
                              unsigned int * _ny)

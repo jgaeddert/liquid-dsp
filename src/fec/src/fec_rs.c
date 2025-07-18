@@ -85,10 +85,10 @@ int fec_rs_destroy(fec _q)
     return LIQUID_OK;
 }
 
-int fec_rs_encode(fec             _q,
-                  unsigned int    _dec_msg_len,
-                  unsigned char * _msg_dec,
-                  unsigned char * _msg_enc)
+int fec_rs_encode(fec                   _q,
+                  unsigned int          _dec_msg_len,
+                  const unsigned char * _msg_dec,
+                  unsigned char *       _msg_enc)
 {
     // validate input
     if (_dec_msg_len == 0)
@@ -131,10 +131,10 @@ int fec_rs_encode(fec             _q,
 }
 
 //unsigned int
-int fec_rs_decode(fec             _q,
-                  unsigned int    _dec_msg_len,
-                  unsigned char * _msg_enc,
-                  unsigned char * _msg_dec)
+int fec_rs_decode(fec                   _q,
+                  unsigned int          _dec_msg_len,
+                  const unsigned char * _msg_enc,
+                  unsigned char *       _msg_dec)
 {
     // validate input
     if (_dec_msg_len == 0)
@@ -297,18 +297,18 @@ int fec_rs_destroy(fec _q)
 }
 
 int fec_rs_encode(fec _q,
-                   unsigned int _dec_msg_len,
-                   unsigned char *_msg_dec,
-                   unsigned char *_msg_enc)
+                   unsigned int         _dec_msg_len,
+                   const unsigned char *_msg_dec,
+                   unsigned char *      _msg_enc)
 {
     return liquid_error(LIQUID_EUMODE,"fec_rs_encode(), libfec not installed");
 }
 
 //unsigned int
 int fec_rs_decode(fec _q,
-                   unsigned int _dec_msg_len,
-                   unsigned char *_msg_enc,
-                   unsigned char *_msg_dec)
+                   unsigned int         _dec_msg_len,
+                   const unsigned char *_msg_enc,
+                   unsigned char *      _msg_dec)
 {
     return liquid_error(LIQUID_EUMODE,"fec_rs_decode(), libfec not installed");
 }

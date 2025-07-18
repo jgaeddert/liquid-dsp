@@ -168,13 +168,13 @@ void autotest_framesync64_config()
 }
 
 static int callback_framesync64_autotest_debug(
-    unsigned char *  _header,
-    int              _header_valid,
-    unsigned char *  _payload,
-    unsigned int     _payload_len,
-    int              _payload_valid,
-    framesyncstats_s _stats,
-    void *           _userdata)
+    const unsigned char *  _header,
+    int                    _header_valid,
+    const unsigned char *  _payload,
+    unsigned int           _payload_len,
+    int                    _payload_valid,
+    framesyncstats_s       _stats,
+    void *                 _userdata)
 {
     // return custom code based on user context
     return *((int*)_userdata);
@@ -255,13 +255,13 @@ void autotest_framesync64_debug_rand() { testbench_framesync64_debug(-3); }
 
 
 static int callback_framesync64_autotest_estimation(
-    unsigned char *  _header,
-    int              _header_valid,
-    unsigned char *  _payload,
-    unsigned int     _payload_len,
-    int              _payload_valid,
-    framesyncstats_s _stats,
-    void *           _userdata)
+    const unsigned char *  _header,
+    int                    _header_valid,
+    const unsigned char *  _payload,
+    unsigned int           _payload_len,
+    int                    _payload_valid,
+    framesyncstats_s       _stats,
+    void *                 _userdata)
 {
     //printf("callback invoked, payload valid: %s\n", _payload_valid ? "yes" : "no");
     memmove(_userdata, &_stats, sizeof(framesyncstats_s));

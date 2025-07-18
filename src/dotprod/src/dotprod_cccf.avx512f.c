@@ -36,19 +36,19 @@
 #define DEBUG_DOTPROD_CCCF_AVX   0
 
 // forward declaration of internal methods
-int dotprod_cccf_execute_avx512f(dotprod_cccf    _q,
-                             float complex * _x,
-                             float complex * _y);
+int dotprod_cccf_execute_avx512f(dotprod_cccf      _q,
+                             const float complex * _x,
+                             float complex *       _y);
 
-int dotprod_cccf_execute_avx512f4(dotprod_cccf    _q,
-                              float complex * _x,
-                              float complex * _y);
+int dotprod_cccf_execute_avx512f4(dotprod_cccf      _q,
+                              const float complex * _x,
+                              float complex *       _y);
 
 // basic dot product (ordinal calculation)
-int dotprod_cccf_run(float complex * _h,
-                     float complex * _x,
-                     unsigned int    _n,
-                     float complex * _y)
+int dotprod_cccf_run(const float complex * _h,
+                     const float complex * _x,
+                     unsigned int          _n,
+                     float complex *       _y)
 {
     float complex r = 0;
     unsigned int i;
@@ -59,10 +59,10 @@ int dotprod_cccf_run(float complex * _h,
 }
 
 // basic dot product (ordinal calculation) with loop unrolled
-int dotprod_cccf_run4(float complex * _h,
-                      float complex * _x,
-                      unsigned int    _n,
-                      float complex * _y)
+int dotprod_cccf_run4(const float complex * _h,
+                      const float complex * _x,
+                      unsigned int          _n,
+                      float complex *       _y)
 {
     float complex r = 0;
 
@@ -97,9 +97,9 @@ struct dotprod_cccf_s {
     float * hq;         // quadrature
 };
 
-dotprod_cccf dotprod_cccf_create_opt(float complex * _h,
-                                     unsigned int    _n,
-                                     int             _rev)
+dotprod_cccf dotprod_cccf_create_opt(const float complex * _h,
+                                     unsigned int          _n,
+                                     int                   _rev)
 {
     dotprod_cccf q = (dotprod_cccf)malloc(sizeof(struct dotprod_cccf_s));
     q->n = _n;
@@ -125,22 +125,22 @@ dotprod_cccf dotprod_cccf_create_opt(float complex * _h,
     return q;
 }
 
-dotprod_cccf dotprod_cccf_create(float complex * _h,
-                                 unsigned int    _n)
+dotprod_cccf dotprod_cccf_create(const float complex * _h,
+                                 unsigned int          _n)
 {
     return dotprod_cccf_create_opt(_h, _n, 0);
 }
 
-dotprod_cccf dotprod_cccf_create_rev(float complex * _h,
-                                     unsigned int    _n)
+dotprod_cccf dotprod_cccf_create_rev(const float complex * _h,
+                                     unsigned int          _n)
 {
     return dotprod_cccf_create_opt(_h, _n, 1);
 }
 
 // re-create the structured dotprod object
-dotprod_cccf dotprod_cccf_recreate(dotprod_cccf    _q,
-                                   float complex * _h,
-                                   unsigned int    _n)
+dotprod_cccf dotprod_cccf_recreate(dotprod_cccf          _q,
+                                   const float complex * _h,
+                                   unsigned int          _n)
 {
     // completely destroy and re-create dotprod object
     dotprod_cccf_destroy(_q);
@@ -148,9 +148,9 @@ dotprod_cccf dotprod_cccf_recreate(dotprod_cccf    _q,
 }
 
 // re-create the structured dotprod object, coefficients reversed
-dotprod_cccf dotprod_cccf_recreate_rev(dotprod_cccf    _q,
-                                       float complex * _h,
-                                       unsigned int    _n)
+dotprod_cccf dotprod_cccf_recreate_rev(dotprod_cccf          _q,
+                                       const float complex * _h,
+                                       unsigned int          _n)
 {
     // completely destroy and re-create dotprod object
     dotprod_cccf_destroy(_q);
@@ -201,9 +201,9 @@ int dotprod_cccf_print(dotprod_cccf _q)
 //  _q      :   dotprod object
 //  _x      :   input array
 //  _y      :   output sample
-int dotprod_cccf_execute(dotprod_cccf    _q,
-                         float complex * _x,
-                         float complex * _y)
+int dotprod_cccf_execute(dotprod_cccf          _q,
+                         const float complex * _x,
+                         float complex *       _y)
 {
     // switch based on size
     if (_q->n < 128) {
@@ -240,9 +240,9 @@ int dotprod_cccf_execute(dotprod_cccf    _q,
 //           x[3].real * h[3].imag,
 //           x[3].imag * h[3].imag };
 //
-int dotprod_cccf_execute_avx512f(dotprod_cccf    _q,
-                             float complex * _x,
-                             float complex * _y)
+int dotprod_cccf_execute_avx512f(dotprod_cccf      _q,
+                             const float complex * _x,
+                             float complex *       _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;
@@ -309,9 +309,9 @@ int dotprod_cccf_execute_avx512f(dotprod_cccf    _q,
 }
 
 // use AVX512-F extensions
-int dotprod_cccf_execute_avx512f4(dotprod_cccf    _q,
-                              float complex * _x,
-                              float complex * _y)
+int dotprod_cccf_execute_avx512f4(dotprod_cccf      _q,
+                              const float complex * _x,
+                              float complex *       _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;

@@ -45,9 +45,9 @@ struct IIRDECIM(_s) {
 //  _a      : feed-forward coefficients [size: _na x 1]
 //  _na     : feed-forward coefficients length
 IIRDECIM() IIRDECIM(_create)(unsigned int _M,
-                             TC *         _b,
+                             const TC *   _b,
                              unsigned int _nb,
-                             TC *         _a,
+                             const TC *   _a,
                              unsigned int _na)
 {
     // validate input
@@ -152,7 +152,7 @@ int IIRDECIM(_reset)(IIRDECIM() _q)
 //  _y      :   output sample pointer
 //  _index  :   decimator output index [0,_M-1]
 int IIRDECIM(_execute)(IIRDECIM()   _q,
-                       TI *         _x,
+                       const TI *   _x,
                        TO *         _y)
 {
     TO v; // output value
@@ -174,7 +174,7 @@ int IIRDECIM(_execute)(IIRDECIM()   _q,
 //  _n      : number of _output_ samples
 //  _y      : output array [_sze: _n x 1]
 int IIRDECIM(_execute_block)(IIRDECIM()   _q,
-                             TI *         _x,
+                             const TI *   _x,
                              unsigned int _n,
                              TO *         _y)
 {

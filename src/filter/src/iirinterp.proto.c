@@ -43,9 +43,9 @@ struct IIRINTERP(_s) {
 //  _a      : feed-forward coefficients [size: _na x 1]
 //  _na     : feed-forward coefficients length
 IIRINTERP() IIRINTERP(_create)(unsigned int _M,
-                               TC *         _b,
+                               const TC *   _b,
                                unsigned int _nb,
-                               TC *         _a,
+                               const TC *   _a,
                                unsigned int _na)
 {
     // validate input
@@ -169,7 +169,7 @@ int IIRINTERP(_execute)(IIRINTERP() _q,
 //  _n      : size of input array
 //  _y      : output sample array [size: _M*_n x 1]
 int IIRINTERP(_execute_block)(IIRINTERP()  _q,
-                              TI *         _x,
+                              const TI *   _x,
                               unsigned int _n,
                               TO *         _y)
 {

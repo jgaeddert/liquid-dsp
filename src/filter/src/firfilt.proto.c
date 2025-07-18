@@ -60,7 +60,7 @@ struct FIRFILT(_s) {
 // create firfilt object
 //  _h      :   coefficients (filter taps) [size: _n x 1]
 //  _n      :   filter length
-FIRFILT() FIRFILT(_create)(TC * _h,
+FIRFILT() FIRFILT(_create)(const TC * _h,
                            unsigned int _n)
 {
     // validate input
@@ -253,7 +253,7 @@ FIRFILT() FIRFILT(_create_notch)(unsigned int _m,
 //  _h      :   new coefficients [size: _n x 1]
 //  _n      :   new filter length
 FIRFILT() FIRFILT(_recreate)(FIRFILT() _q,
-                             TC * _h,
+                             const TC * _h,
                              unsigned int _n)
 {
     unsigned int i;
@@ -401,7 +401,7 @@ int FIRFILT(_push)(FIRFILT() _q,
 //  _x      : buffer of input samples, [size: _n x 1]
 //  _n      : number of input samples
 int FIRFILT(_write)(FIRFILT()    _q,
-                    TI *         _x,
+                    const TI *   _x,
                     unsigned int _n)
 {
 #if LIQUID_FIRFILT_USE_WINDOW
@@ -457,7 +457,7 @@ int FIRFILT(_execute_one)(FIRFILT() _q,
 //  _n      : number of input, output samples
 //  _y      : pointer to output array [size: _n x 1]
 int FIRFILT(_execute_block)(FIRFILT()    _q,
-                            TI *         _x,
+                            const TI *   _x,
                             unsigned int _n,
                             TO *         _y)
 {

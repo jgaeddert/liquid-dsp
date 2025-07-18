@@ -56,10 +56,10 @@
 //  _n      :   number of elements in _z
 //  _tol    :   tolerance for finding complex pairs
 //  _p      :   resulting pairs, pure real values of _z at end
-int liquid_cplxpair(float complex * _z,
-                    unsigned int    _n,
-                    float           _tol,
-                    float complex * _p)
+int liquid_cplxpair(const float complex * _z,
+                    unsigned int          _n,
+                    float                 _tol,
+                    float complex *       _p)
 {
     // validate input
     if (_tol < 0)
@@ -227,15 +227,15 @@ float iirdes_freqprewarp(liquid_iirdes_bandtype _btype,
 // The filter order is characterized by the number of analog
 // poles.  The analog filter may have up to _npa zeros.
 // The number of digital zeros and poles is equal to _npa.
-int bilinear_zpkf(float complex * _za,
-                  unsigned int    _nza,
-                  float complex * _pa,
-                  unsigned int    _npa,
-                  float complex   _ka,
-                  float           _m,
-                  float complex * _zd,
-                  float complex * _pd,
-                  float complex * _kd)
+int bilinear_zpkf(const float complex * _za,
+                  unsigned int          _nza,
+                  const float complex * _pa,
+                  unsigned int          _npa,
+                  float complex         _ka,
+                  float                 _m,
+                  float complex *       _zd,
+                  float complex *       _pd,
+                  float complex *       _kd)
 {
     unsigned int i;
 
@@ -294,13 +294,13 @@ int bilinear_zpkf(float complex * _za,
 //  _m          : bilateral warping factor
 //  _bd         : output digital filter numerator, [size: _b_order+1]
 //  _ad         : output digital filter numerator, [size: _a_order+1]
-int bilinear_nd(float complex * _b,
-                unsigned int    _b_order,
-                float complex * _a,
-                unsigned int    _a_order,
-                float           _m,
-                float complex * _bd,
-                float complex * _ad)
+int bilinear_nd(const float complex * _b,
+                unsigned int          _b_order,
+                const float complex * _a,
+                unsigned int          _a_order,
+                float                 _m,
+                float complex *       _bd,
+                float complex *       _ad)
 {
     if (_b_order > _a_order)
         return liquid_error(LIQUID_EICONFIG,"bilinear_nd(), numerator order cannot be higher than denominator");
@@ -380,12 +380,12 @@ int bilinear_nd(float complex * _b,
 //  _k      :   digital gain
 //  _b      :   output numerator (length: _n+1)
 //  _a      :   output denominator (length: _n+1)
-int iirdes_dzpk2tff(float complex * _zd,
-                    float complex * _pd,
-                    unsigned int    _n,
-                    float complex   _k,
-                    float *         _b,
-                    float *         _a)
+int iirdes_dzpk2tff(const float complex * _zd,
+                    const float complex * _pd,
+                    unsigned int          _n,
+                    float complex         _k,
+                    float *               _b,
+                    float *               _a)
 {
     unsigned int i;
     float complex q[_n+1];
@@ -419,12 +419,12 @@ int iirdes_dzpk2tff(float complex * _zd,
 //  L is the number of sections in the cascade:
 //      r = _n % 2
 //      L = (_n - r) / 2;
-int iirdes_dzpk2sosf(float complex * _zd,
-                     float complex * _pd,
-                     unsigned int    _n,
-                     float complex   _kd,
-                     float *         _b,
-                     float *         _a)
+int iirdes_dzpk2sosf(const float complex * _zd,
+                     const float complex * _pd,
+                     unsigned int          _n,
+                     float complex         _kd,
+                     float *               _b,
+                     float *               _a)
 {
     int i;
     float tol=1e-6f; // tolerance for conjuate pair computation
@@ -534,11 +534,11 @@ int iirdes_dzpk2sosf(float complex * _zd,
 //  _n      :   low-pass filter order
 //  _zdt    :   digital zeros transformed [length: _n]
 //  _pdt    :   digital poles transformed [length: _n]
-int iirdes_dzpk_lp2hp(liquid_float_complex * _zd,
-                      liquid_float_complex * _pd,
-                      unsigned int           _n,
-                      liquid_float_complex * _zdt,
-                      liquid_float_complex * _pdt)
+int iirdes_dzpk_lp2hp(const liquid_float_complex * _zd,
+                      const liquid_float_complex * _pd,
+                      unsigned int                 _n,
+                      liquid_float_complex *       _zdt,
+                      liquid_float_complex *       _pdt)
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
@@ -556,12 +556,12 @@ int iirdes_dzpk_lp2hp(liquid_float_complex * _zd,
 //  _f0     :   center frequency
 //  _zdt    :   digital zeros transformed [length: 2*_n]
 //  _pdt    :   digital poles transformed [length: 2*_n]
-int iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
-                      liquid_float_complex * _pd,
-                      unsigned int           _n,
-                      float                  _f0,
-                      liquid_float_complex * _zdt,
-                      liquid_float_complex * _pdt)
+int iirdes_dzpk_lp2bp(const liquid_float_complex * _zd,
+                      const liquid_float_complex * _pd,
+                      unsigned int                 _n,
+                      float                        _f0,
+                      liquid_float_complex *       _zdt,
+                      liquid_float_complex *       _pdt)
 {
     float c0 = cosf(2*M_PI*_f0);
 
@@ -789,8 +789,8 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
 //  _b      :   feed-forward coefficients [size: _n x 1]
 //  _a      :   feed-back coefficients [size: _n x 1]
 //  _n      :   number of coefficients
-int iirdes_isstable(float * _b,
-                    float * _a,
+int iirdes_isstable(const float * _b,
+                    const float * _a,
                     unsigned int _n)
 {
     // validate input

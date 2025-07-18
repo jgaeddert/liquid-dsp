@@ -84,10 +84,10 @@ int fec_hamming74_destroy(fec _q)
 //  _dec_msg_len    :   decoded message length (number of bytes)
 //  _msg_dec        :   decoded message [size: _dec_msg_len x 1]
 //  _msg_enc        :   encoded message [size: ...]
-int fec_hamming74_encode(fec             _q,
-                         unsigned int    _dec_msg_len,
-                         unsigned char * _msg_dec,
-                         unsigned char * _msg_enc)
+int fec_hamming74_encode(fec                   _q,
+                         unsigned int          _dec_msg_len,
+                         const unsigned char * _msg_dec,
+                         unsigned char *       _msg_enc)
 {
     unsigned int i;         // input byte counter
     unsigned int k=0;       // array bit index
@@ -126,10 +126,10 @@ int fec_hamming74_encode(fec             _q,
 //  _msg_dec        :   decoded message [size: _dec_msg_len x 1]
 //
 //unsigned int
-int fec_hamming74_decode(fec             _q,
-                         unsigned int    _dec_msg_len,
-                         unsigned char * _msg_enc,
-                         unsigned char * _msg_dec)
+int fec_hamming74_decode(fec                   _q,
+                         unsigned int          _dec_msg_len,
+                         const unsigned char * _msg_enc,
+                         unsigned char *       _msg_dec)
 {
     unsigned int i;
     unsigned int k=0;       // array bit index
@@ -166,10 +166,10 @@ int fec_hamming74_decode(fec             _q,
 //  _msg_dec        :   decoded message [size: _dec_msg_len x 1]
 //
 //unsigned int
-int fec_hamming74_decode_soft(fec             _q,
-                              unsigned int    _dec_msg_len,
-                              unsigned char * _msg_enc,
-                              unsigned char * _msg_dec)
+int fec_hamming74_decode_soft(fec                   _q,
+                              unsigned int          _dec_msg_len,
+                              const unsigned char * _msg_enc,
+                              unsigned char *       _msg_dec)
 {
     unsigned int i;
     unsigned int k=0;       // array bit index
@@ -201,7 +201,7 @@ int fec_hamming74_decode_soft(fec             _q,
 //
 
 // soft decoding of one symbol
-unsigned char fecsoft_hamming74_decode(unsigned char * _soft_bits)
+unsigned char fecsoft_hamming74_decode(const unsigned char * _soft_bits)
 {
     // find symbol with minimum distance from all 2^4 possible
     unsigned int d;             // distance metric
