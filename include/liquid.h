@@ -6525,9 +6525,9 @@ typedef int (*QDSYNC(_callback))(TO *         _buf,                         \
                                  void *       _context);                    \
                                                                             \
 /* create detector with generic sequence                                */  \
-/*  _s          : sample sequence                                       */  \
-/*  _s_len      : length of sample sequence                             */  \
-/*  _ftype      : filter type                                           */  \
+/*  _s          : symbol sequence                                       */  \
+/*  _s_len      : length of symbol sequence                             */  \
+/*  _ftype      : Nyquist filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
 /*  _k          : samples per symbol                                    */  \
 /*  _m          : filter semi-length                                    */  \
 /*  _beta       : filter excess bandwidth factor                        */  \
@@ -6542,6 +6542,30 @@ QDSYNC() QDSYNC(_create_linear)(TI *              _s,                       \
                                 QDSYNC(_callback) _callback,                \
                                 void *            _context);                \
                                                                             \
+/* create detector with sequence of CP-FSK symbols                      */  \
+/*  _seq        : symbol sequence                                       */  \
+/*  _seq_len    : length of symbol sequence                             */  \
+/*  _ftype      : Nyquist filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
+/*  _bps        : bits per symbol, 0 < _bps <= 8                        */  \
+/*  _h          : modulation index, _h > 0                              */  \
+/*  _k          : samples per symbol                                    */  \
+/*  _m          : filter semi-length                                    */  \
+/*  _beta       : filter excess bandwidth factor                        */  \
+/*  _cpfsk_type : cpfsk filter type (e.g. LIQUID_CPFSK_SQUARE)          */  \
+/*  _callback   : user-defined callback                                 */  \
+/*  _context    : user-defined context                                  */  \
+QDSYNC() QDSYNC(_create_cpfsk)(unsigned char *   _seq,                      \
+                               unsigned int      _seq_len,                  \
+                               int               _ftype,                    \
+                               unsigned int      _bps,                      \
+                               float             _h,                        \
+                               unsigned int      _k,                        \
+                               unsigned int      _m,                        \
+                               float             _beta,                     \
+                               int               _cpfsk_type,               \
+                               QDSYNC(_callback) _callback,                 \
+                               void *            _context);                 \
+                                                                            \
 /* Copy object recursively including all internal objects and state     */  \
 QDSYNC() QDSYNC(_copy)(QDSYNC() _q);                                        \
                                                                             \
@@ -6555,7 +6579,7 @@ int QDSYNC(_reset)(QDSYNC() _q);                                            \
 int QDSYNC(_print)(QDSYNC() _q);                                            \
                                                                             \
 /* Get detection state                                                  */  \
-int QDSYNC(_is_detected)(QDSYNC() _q);                                  \
+int QDSYNC(_is_detected)(QDSYNC() _q);                                      \
                                                                             \
 /* Get detection threshold                                              */  \
 float QDSYNC(_get_threshold)(QDSYNC() _q);                                  \
