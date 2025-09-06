@@ -124,6 +124,9 @@ framesync64 framesync64_create(framesync_callback _callback,
     q->num_files_exported = 0;
     framesync64_set_prefix(q, "framesync64");
 
+    framesync64_set_threshold(q, 0.1f);
+    framesync64_set_range(q, 0.003f);
+
     // reset state and return
     framesync64_reset(q);
     return q;
@@ -311,6 +314,13 @@ int framesync64_set_threshold(framesync64 _q,
                               float       _threshold)
 {
     return qdsync_cccf_set_threshold(_q->sync, _threshold);
+}
+
+// set detection range
+int framesync64_set_range(framesync64 _q,
+                          float       _dphi_max)
+{
+    return qdsync_cccf_set_range(_q->sync, _dphi_max);
 }
 
 // set prefix for exporting debugging files, default: "framesync64"

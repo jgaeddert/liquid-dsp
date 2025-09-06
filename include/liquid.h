@@ -5589,6 +5589,8 @@ const char * framesync64_get_filename(framesync64  _q);
 float framesync64_get_threshold(framesync64 _q);
 int   framesync64_set_threshold(framesync64 _q, float _threshold);
 
+int   framesync64_set_range(framesync64 _q, float _threshold);
+
 // frame data statistics
 int              framesync64_reset_framedatastats(framesync64 _q);
 framedatastats_s framesync64_get_framedatastats  (framesync64 _q);
