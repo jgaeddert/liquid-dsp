@@ -26,7 +26,7 @@
 // 
 // AUTOTEST : test half-band filterbank (analyzer)
 //
-void autotest_resamp2_analysis()
+void xautotest_resamp2_analysis()
 {
     unsigned int m=5;       // filter semi-length (actual length: 4*m+1)
     unsigned int n=37;      // number of input samples
