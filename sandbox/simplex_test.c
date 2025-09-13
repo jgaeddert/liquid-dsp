@@ -1,7 +1,4 @@
-// 
-// simpelx.c : simplex method for solving linear programming problems
-//
-
+// simplex method for solving linear programming problems
 #include <stdio.h>
 #include <stdlib.h>
 #include "liquid.h"

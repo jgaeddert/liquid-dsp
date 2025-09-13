@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <float.h>
 
 #include "liquid.internal.h"
 
@@ -42,7 +43,21 @@ float liquid_lnbesselif(float _nu,
                         float _z)
 {
     // TODO : validate input
-    // TODO : compute low-signal approximation to avoid log(0)
+
+    // special case: check for zeros; besseli_nu(0) = (nu = 0 ? 1 : 0)
+    if (_z == 0) {
+        return _nu == 0.0f ? 0.0f : -FLT_MAX;
+    }
+
+    // special case: _nu = 1/2, besseli(z) = sqrt(2/pi*z)*sinh(z)
+    if (_nu == 0.5f) {
+        return 0.5f*logf(2.0f/(M_PI*_z)) + logf(sinhf(_z));
+    }
+
+    // low signal approximation
+    if (_z < 1e-3f*sqrtf(_nu + 1.0f)) {
+        return -liquid_lngammaf(_nu + 1.0f) + _nu*logf(0.5f*_z);
+    }
 
 #if 0
     // high-signal approximation: _z >> _nu
@@ -69,6 +84,7 @@ float liquid_lnbesselif(float _nu,
 
         // accumulate y
         y += expf( t1 - t2 - t3 );
+        //printf("%3u : t1: %12.3e, t2: %12.4e, t3: %12.4e, y: %12.4e\n", k, t1, t2, t3, y);
     }
 
     return t0 + logf(y);
@@ -78,29 +94,29 @@ float liquid_lnbesselif(float _nu,
 float liquid_besselif(float _nu,
                       float _z)
 {
+    // special case: check for zeros; besseli_nu(0) = (nu = 0 ? 1 : 0)
+    if (_z == 0) {
+        return _nu == 0.0f ? 1.0f : 0.0f;
+    }
+
+    // special case: _nu = 1/2, besseli(z) = sqrt(2/pi*z)*sinh(z)
+    if (_nu == 0.5f) {
+        return sqrtf(2.0f/(M_PI*_z)) * sinhf(_z);
+    }
+
+    // low signal approximation
+    if (_z < 1e-3f*sqrtf(_nu + 1.0f)) {
+        return powf(0.5f*_z,_nu) / liquid_gammaf(_nu + 1.0f);
+    }
+
+    // derive from logarithmic expansion
     return expf( liquid_lnbesselif(_nu, _z) );
 }
 
 // I_0(z) : Modified bessel function of the first kind (order zero)
-#define NUM_BESSELI0_ITERATIONS 32
 float liquid_besseli0f(float _z)
 {
-    // TODO : use better low-signal approximation
-    if (_z == 0.0f)
-        return 1.0f;
-
-    unsigned int k;
-    float t, y=0.0f;
-    for (k=0; k<NUM_BESSELI0_ITERATIONS; k++) {
-#if 0
-        t = powf(_z/2, (float)k) / tgamma((float)k+1);
-        y += t*t;
-#else
-        t = k * logf(0.5f*_z) - liquid_lngammaf((float)k + 1.0f);
-        y += expf(2*t);
-#endif
-    }
-    return y;
+    return liquid_besselif(0,_z);
 }
 
 // J_v(z) : Bessel function of the first kind
@@ -109,6 +125,16 @@ float liquid_besseljf(float _nu,
                       float _z)
 {
     // TODO : validate input
+
+    // special case: check for zeros; besselj_nu(0) = (nu = 0 ? 1 : 0)
+    if (_z == 0) {
+        return _nu == 0.0f ? 1.0f : 0.0f;
+    }
+
+    // low signal approximation
+    if (_z < 1e-3f*sqrtf(_nu + 1.0f)) {
+        return powf(0.5f*_z,_nu) / liquid_gammaf(_nu + 1.0f);
+    }
 
     float J = 0.0f;
 

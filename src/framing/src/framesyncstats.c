@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,27 +53,23 @@ framesyncstats_s framesyncstats_default = {
 };
 
 // initialize framesyncstats object on default
-void framesyncstats_init_default(framesyncstats_s * _stats)
+int framesyncstats_init_default(framesyncstats_s * _stats)
 {
     memmove(_stats, &framesyncstats_default, sizeof(framesyncstats_s));
+    return LIQUID_OK;
 }
 // print framesyncstats object
-void framesyncstats_print(framesyncstats_s * _stats)
+int framesyncstats_print(framesyncstats_s * _stats)
 {
     // validate statistics object
-    if (_stats->mod_scheme >= LIQUID_MODEM_NUM_SCHEMES) {
-        fprintf(stderr,"error: framesyncstats_print(), invalid modulation scheme\n");
-        exit(1);
-     } else if (_stats->check >= LIQUID_CRC_NUM_SCHEMES) {
-        fprintf(stderr,"error: framesyncstats_print(), invalid CRC scheme\n");
-        exit(1);
-     } else if (_stats->fec0 >= LIQUID_FEC_NUM_SCHEMES) {
-        fprintf(stderr,"error: framesyncstats_print(), invalid FEC scheme (inner)\n");
-        exit(1);
-     } else if (_stats->fec1 >= LIQUID_FEC_NUM_SCHEMES) {
-        fprintf(stderr,"error: framesyncstats_print(), invalid FEC scheme (outer)\n");
-        exit(1);
-    }
+    if (_stats->mod_scheme >= LIQUID_MODEM_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"framesyncstats_print(), invalid modulation scheme");
+     if (_stats->check >= LIQUID_CRC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"framesyncstats_print(), invalid CRC scheme");
+     if (_stats->fec0 >= LIQUID_FEC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"framesyncstats_print(), invalid FEC scheme (inner)");
+     if (_stats->fec1 >= LIQUID_FEC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"framesyncstats_print(), invalid FEC scheme (outer)");
 
     printf("    EVM                 :   %12.8f dB\n", _stats->evm);
     printf("    rssi                :   %12.8f dB\n", _stats->rssi);
@@ -85,5 +81,6 @@ void framesyncstats_print(framesyncstats_s * _stats)
     printf("    validity check      :   %s\n", crc_scheme_str[_stats->check][0]);
     printf("    fec (inner)         :   %s\n", fec_scheme_str[_stats->fec0][0]);
     printf("    fec (outer)         :   %s\n", fec_scheme_str[_stats->fec1][0]);
+    return LIQUID_OK;
 }
 

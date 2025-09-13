@@ -1,9 +1,4 @@
-//
-// qpilotsync_example.c
-//
-// This example demonstrates...
-//
-
+// Demonstrate using qpilotsync for carrier recovery.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -74,16 +69,16 @@ int main(int argc, char *argv[])
     unsigned char payload_sym_rx[payload_len];  // received payload symbols
 
     // create modem objects for payload
-    modem mod = modem_create(ms);
-    modem dem = modem_create(ms);
+    modemcf mod = modemcf_create(ms);
+    modemcf dem = modemcf_create(ms);
 
     // assemble payload symbols
     for (i=0; i<payload_len; i++) {
         // generate random symbol
-        payload_sym_tx[i] = modem_gen_rand_sym(mod);
+        payload_sym_tx[i] = modemcf_gen_rand_sym(mod);
 
         // modulate
-        modem_modulate(mod, payload_sym_tx[i], &payload_tx[i]);
+        modemcf_modulate(mod, payload_sym_tx[i], &payload_tx[i]);
     }
 
     // assemble frame
@@ -96,13 +91,13 @@ int main(int argc, char *argv[])
         frame_rx[i] *= gain;
     }
 
-    // recieve frame
+    // receive frame
     qpilotsync_execute(ps, frame_rx, payload_rx);
 
     // demodulate
     for (i=0; i<payload_len; i++) {
         unsigned int sym_demod;
-        modem_demodulate(dem, payload_rx[i], &sym_demod);
+        modemcf_demodulate(dem, payload_rx[i], &sym_demod);
         payload_sym_rx[i] = (unsigned char)sym_demod;
     }
 
@@ -110,14 +105,13 @@ int main(int argc, char *argv[])
     unsigned int bit_errors = 0;
     for (i=0; i<payload_len; i++)
         bit_errors += count_bit_errors(payload_sym_rx[i], payload_sym_tx[i]);
-    printf("received bit errors : %u / %u\n", bit_errors, payload_len * modem_get_bps(mod));
+    printf("received bit errors : %u / %u\n", bit_errors, payload_len * modemcf_get_bps(mod));
 
     // destroy allocated objects
     qpilotgen_destroy(pg);
     qpilotsync_destroy(ps);
-    modem_destroy(mod);
-    modem_destroy(dem);
-
+    modemcf_destroy(mod);
+    modemcf_destroy(dem);
 
     // write symbols to output file for plotting
     FILE * fid = fopen(filename,"w");

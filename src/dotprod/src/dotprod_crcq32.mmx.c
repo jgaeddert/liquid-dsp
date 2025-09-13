@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,26 +57,26 @@
 #define DEBUG_DOTPROD_CRCq32_MMX   0
 
 #if DEBUG_DOTPROD_CRCq32_MMX
-void _mm_printq32_epi16(__m128i _v);
-void _mm_printq32_epi32(__m128i _v);
+int _mm_printq32_epi16(__m128i _v);
+int _mm_printq32_epi32(__m128i _v);
 #endif
 
 // internal methods
-void dotprod_crcq32_execute_mmx(dotprod_crcq32 _q, cq32_t * _x, cq32_t * _y);
-void dotprod_crcq32_execute_mmx4(dotprod_crcq32 _q, cq32_t * _x, cq32_t * _y);
+int dotprod_crcq32_execute_mmx(dotprod_crcq32 _q, cq32_t * _x, cq32_t * _y);
+int dotprod_crcq32_execute_mmx4(dotprod_crcq32 _q, cq32_t * _x, cq32_t * _y);
 
 // alternate methods
-void dotprod_crcq32_execute_mmx_packed(dotprod_crcq32 _q, cq32_t * _x, cq32_t * _y);
+int dotprod_crcq32_execute_mmx_packed(dotprod_crcq32 _q, cq32_t * _x, cq32_t * _y);
 
 // basic dot product
 //  _h      :   coefficients array [size: 1 x _n]
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void dotprod_crcq32_run(q32_t *      _h,
-                        cq32_t *     _x,
-                        unsigned int _n,
-                        cq32_t *     _y)
+int dotprod_crcq32_run(q32_t *      _h,
+                       cq32_t *     _x,
+                       unsigned int _n,
+                       cq32_t *     _y)
 {
     // initialize accumulators (separate I/Q)
     q32_at ri = 0;
@@ -91,6 +91,7 @@ void dotprod_crcq32_run(q32_t *      _h,
     // return result
     (*_y).real = (ri >> q32_fracbits);
     (*_y).imag = (rq >> q32_fracbits);
+    return LIQUID_OK;
 }
 
 // basic dotproduct, unrolling loop
@@ -98,10 +99,10 @@ void dotprod_crcq32_run(q32_t *      _h,
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void dotprod_crcq32_run4(q32_t *      _h,
-                         cq32_t *     _x,
-                         unsigned int _n,
-                         cq32_t *     _y)
+int dotprod_crcq32_run4(q32_t *      _h,
+                        cq32_t *     _x,
+                        unsigned int _n,
+                        cq32_t *     _y)
 {
     // initialize accumulator (separate I/Q)
     q32_at ri = 0;
@@ -135,6 +136,7 @@ void dotprod_crcq32_run4(q32_t *      _h,
     // return result
     (*_y).real = (ri >> q32_fracbits);
     (*_y).imag = (rq >> q32_fracbits);
+    return LIQUID_OK;
 }
 
 
@@ -175,47 +177,49 @@ dotprod_crcq32 dotprod_crcq32_recreate(dotprod_crcq32 _dp,
 }
 
 
-void dotprod_crcq32_destroy(dotprod_crcq32 _q)
+int dotprod_crcq32_destroy(dotprod_crcq32 _q)
 {
     free(_q->h);
     free(_q);
+    return LIQUID_OK;
 }
 
-void dotprod_crcq32_print(dotprod_crcq32 _q)
+int dotprod_crcq32_print(dotprod_crcq32 _q)
 {
     printf("dotprod_crcq32:\n");
     unsigned int i;
     // print coefficients to screen
     for (i=0; i<_q->n; i++)
         printf("%3u : %12.8f\n", i, q32_fixed_to_float(_q->h[i]));
+    return LIQUID_OK;
 }
 
 // 
-void dotprod_crcq32_execute(dotprod_crcq32 _q,
-                            cq32_t *       _x,
-                            cq32_t *       _y)
+int dotprod_crcq32_execute(dotprod_crcq32 _q,
+                           cq32_t *       _x,
+                           cq32_t *       _y)
 {
     // switch based on size
     if (_q->n < 64) {
-        dotprod_crcq32_execute_mmx(_q, _x, _y);
-    } else {
-        dotprod_crcq32_execute_mmx4(_q, _x, _y);
+        return dotprod_crcq32_execute_mmx(_q, _x, _y);
     }
+
+    return dotprod_crcq32_execute_mmx4(_q, _x, _y);
 }
 
 // use MMX/SSE extensions
-void dotprod_crcq32_execute_mmx(dotprod_crcq32 _q,
-                                cq32_t *       _x,
-                                cq32_t *       _y)
+int dotprod_crcq32_execute_mmx(dotprod_crcq32 _q,
+                               cq32_t *       _x,
+                               cq32_t *       _y)
 {
-    dotprod_crcq32_run4(_q->h, _x, _q->n, _y);
+    return dotprod_crcq32_run4(_q->h, _x, _q->n, _y);
 }
 
 // use MMX/SSE extensions, unrolled loop
-void dotprod_crcq32_execute_mmx4(dotprod_crcq32 _q,
-                                 cq32_t *       _x,
-                                 cq32_t *       _y)
+int dotprod_crcq32_execute_mmx4(dotprod_crcq32 _q,
+                                cq32_t *       _x,
+                                cq32_t *       _y)
 {
-    dotprod_crcq32_run4(_q->h, _x, _q->n, _y);
+    return dotprod_crcq32_run4(_q->h, _x, _q->n, _y);
 }
 

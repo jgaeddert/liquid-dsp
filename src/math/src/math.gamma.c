@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,8 +44,8 @@ float liquid_lngammaf(float _z)
 {
     float g;
     if (_z < 0) {
-        fprintf(stderr,"error: liquid_lngammaf(), undefined for z <= 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_lngammaf(), undefined for z <= 0");
+        return 0.0f;
     } else if (_z < 10.0f) {
 #if 0
         g = -EULER_GAMMA*_z - logf(_z);
@@ -83,7 +83,7 @@ float liquid_gammaf(float _z)
         float t0 = liquid_gammaf(1.0 - _z);
         float t1 = sinf(M_PI*_z);
         if (t0==0 || t1==0)
-            fprintf(stderr,"warning: liquid_gammaf(), divide by zero\n");
+            liquid_error(LIQUID_EIVAL,"liquid_gammaf(), divide by zero");
         return M_PI / (t0 * t1);
     } else {
         return expf( liquid_lngammaf(_z) );
@@ -116,7 +116,7 @@ float liquid_lnlowergammaf(float _z, float _alpha)
         // accumulate e^t
         t3 += expf(t);
 
-        // check premature exit criteria
+        // check premature stopping criteria
         if (k==0 || t > tmax)
             tmax = t;
 

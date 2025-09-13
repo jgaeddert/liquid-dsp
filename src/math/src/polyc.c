@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 #define MATRIX(name)    LIQUID_CONCAT(matrixc, name)
 #define POLY(name)      LIQUID_CONCAT(polyc,   name)
 #define POLY_NAME       "polyc"
+#define EXTENSION       "c"
 #define T               double complex
 #define TC              double complex
 
@@ -38,8 +39,19 @@
 #define T_ABS(X)        cabs(X)
 #define TC_ABS(X)       cabs(X)
 
-#include "poly.common.c"
-#include "poly.expand.c"
-#include "poly.findroots.c"
-#include "poly.lagrange.c"
+// prototypes
+#include "poly.common.proto.c"
+#include "poly.expand.proto.c"
+#include "poly.lagrange.proto.c"
+
+// finds the complex roots of the polynomial
+//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _k      :   polynomials length (poly order = _k - 1)
+//  _roots  :   resulting complex roots [size: _k-1 x 1]
+int polyc_findroots(double complex * _p,
+                    unsigned int     _k,
+                    double complex * _roots)
+{
+    return liquid_error(LIQUID_ENOIMP,"polyc_findroots(), complex root-finding not yet supported");
+}
 

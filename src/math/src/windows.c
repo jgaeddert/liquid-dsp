@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ const char * liquid_window_str[LIQUID_WINDOW_NUM_FUNCTIONS][2] = {
 };
 
 // Print compact list of existing and available windowing functions
-void liquid_print_windows()
+int liquid_print_windows()
 {
     unsigned int i;
     unsigned int len = 10;
@@ -78,6 +78,7 @@ void liquid_print_windows()
         }
     }
     printf("\n");
+    return LIQUID_OK;
 }
 
 // returns modulation_scheme based on input string
@@ -91,7 +92,7 @@ liquid_window_type liquid_getopt_str2window(const char * _str)
         }
     }
 
-    fprintf(stderr,"warning: liquid_getopt_str2window(), unknown/unsupported window scheme : %s\n", _str);
+    liquid_error(LIQUID_EICONFIG,"liquid_getopt_str2window(), unknown/unsupported window scheme: %s", _str);
     return LIQUID_WINDOW_UNKNOWN;
 }
 
@@ -117,29 +118,27 @@ float liquid_windowf(liquid_window_type _type,
     case LIQUID_WINDOW_KBD:             return liquid_kbd             (_i, _wlen, _arg);
     case LIQUID_WINDOW_UNKNOWN:
     default:
-        fprintf(stderr,"error: liquid_windowf(), invalid type: %d\n", _type);
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_windowf(), invalid type: %d", _type);
     }
     return 0.0f;
 }
 
 // Kaiser-Bessel derived window
+// TODO add reference
 float liquid_kbd(unsigned int _i,
                  unsigned int _wlen,
                  float        _beta)
 {
-    // TODO add reference
-
     // validate input
     if (_i >= _wlen) {
-        fprintf(stderr,"error: liquid_kbd(), index exceeds maximum\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_kbd(), index exceeds maximum");
+        return 0.0f;
     } else if (_wlen == 0) {
-        fprintf(stderr,"error: liquid_kbd(), window length must be greater than zero\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_kbd(), window length must be greater than zero");
+        return 0.0f;
     } else if ( _wlen % 2 ) {
-        fprintf(stderr,"error: liquid_kbd(), window length must be odd\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_kbd(), window length must be odd");
+        return 0.0f;
     }
 
     unsigned int M = _wlen / 2;
@@ -165,29 +164,24 @@ float liquid_kbd(unsigned int _i,
 
 
 // Kaiser-Bessel derived window (full window function)
-void liquid_kbd_window(unsigned int _i,
-                       float        _beta,
-                       float *      _w)
+// TODO add reference
+int liquid_kbd_window(unsigned int _i,
+                      float        _beta,
+                      float *      _w)
 {
-    unsigned int i;
-    // TODO add reference
-
     // validate input
-    if (_i == 0) {
-        fprintf(stderr,"error: liquid_kbd_window(), window length must be greater than zero\n");
-        exit(1);
-    } else if ( _i % 2 ) {
-        fprintf(stderr,"error: liquid_kbd_window(), window length must be odd\n");
-        exit(1);
-    } else if ( _beta < 0.0f ) {
-        fprintf(stderr,"error: liquid_kbd_window(), _beta must be positive\n");
-        exit(1);
-    }
+    if (_i == 0)
+        return liquid_error(LIQUID_EICONFIG,"liquid_kbd_window(), window length must be greater than zero");
+    if ( _i % 2 )
+        return liquid_error(LIQUID_EICONFIG,"liquid_kbd_window(), window length must be odd");
+    if ( _beta < 0.0f )
+        return liquid_error(LIQUID_EICONFIG,"liquid_kbd_window(), _beta must be positive");
 
     // compute half length
     unsigned int M = _i / 2;
 
     // generate regular Kaiser window, length M+1
+    unsigned int i;
     float w_kaiser[M+1];
     for (i=0; i<=M; i++)
         w_kaiser[i] = liquid_kaiser(i,M+1,_beta);
@@ -207,6 +201,7 @@ void liquid_kbd_window(unsigned int _i,
     // window has even symmetry; flip around index M
     for (i=0; i<M; i++)
         _w[_i-i-1] = _w[i];
+    return LIQUID_OK;
 }
 
 
@@ -220,11 +215,11 @@ float liquid_kaiser(unsigned int _i,
 {
     // validate input
     if (_i >= _wlen) {
-        fprintf(stderr,"error: liquid_kaiser(), sample index must not exceed window length\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_kaiser(), sample index must not exceed window length");
+        return 0.0f;
     } else if (_beta < 0) {
-        fprintf(stderr,"error: liquid_kaiser(), beta must be greater than or equal to zero\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_kaiser(), beta must be greater than or equal to zero");
+        return 0.0f;
     }
 
     float t = (float)_i - (float)(_wlen-1)/2;
@@ -241,8 +236,8 @@ float liquid_hamming(unsigned int _i,
 {
     // validate input
     if (_i > _wlen) {
-        fprintf(stderr,"error: liquid_hamming(), sample index must not exceed window length\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_hamming(), sample index must not exceed window length");
+        return 0.0f;
     }
 
     return 0.53836 - 0.46164*cosf( (2*M_PI*(float)_i) / ((float)(_wlen-1)) );
@@ -254,8 +249,8 @@ float liquid_hann(unsigned int _i,
 {
     // validate input
     if (_i > _wlen) {
-        fprintf(stderr,"error: liquid_hann(), sample index must not exceed window length\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_hann(), sample index must not exceed window length");
+        return 0.0f;
     }
 
     // TODO test this function
@@ -269,8 +264,8 @@ float liquid_blackmanharris(unsigned int _i,
 {
     // validate input
     if (_i > _wlen) {
-        fprintf(stderr,"error: liquid_blackmanharris(), sample index must not exceed window length\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_blackmanharris(), sample index must not exceed window length");
+        return 0.0f;
     }
 
     // TODO test this function
@@ -290,8 +285,8 @@ float liquid_blackmanharris7(unsigned int _i,
 {
     // validate input
     if (_i > _wlen) {
-        fprintf(stderr,"error: liquid_blackmanharris7(), sample index must not exceed window length\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_blackmanharris7(), sample index must not exceed window length");
+        return 0.0f;
     }
 
 	float a0 = 0.27105f;
@@ -313,8 +308,8 @@ float liquid_flattop(unsigned int _i,
 {
     // validate input
     if (_i > _wlen) {
-        fprintf(stderr,"error: liquid_flattop(), sample index must not exceed window length\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_flattop(), sample index must not exceed window length");
+        return 0.0f;
     }
 
 	float a0 = 1.000f;
@@ -330,22 +325,22 @@ float liquid_flattop(unsigned int _i,
 // Triangular window
 float liquid_triangular(unsigned int _i,
                         unsigned int _wlen,
-                        unsigned int _L)
+                        unsigned int _n)
 {
     // validate input
     if (_i > _wlen) {
-        fprintf(stderr,"error: liquid_triangular(), sample index must not exceed window length\n");
-        exit(1);
-    } else if (_L != _wlen-1 && _L != _wlen && _L != _wlen+1) {
-        fprintf(stderr,"error: liquid_triangular(), sub-length must be in _wlen+{-1,0,1}\n");
-        exit(1);
-    } else if (_L == 0) {
-        fprintf(stderr,"error: liquid_triangular(), sub-length must be greater than zero\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_triangular(), sample index must not exceed window length");
+        return 0.0f;
+    } else if (_n != _wlen-1 && _n != _wlen && _n != _wlen+1) {
+        liquid_error(LIQUID_EICONFIG,"liquid_triangular(), sub-length must be in _wlen+{-1,0,1}");
+        return 0.0f;
+    } else if (_n == 0) {
+        liquid_error(LIQUID_EICONFIG,"liquid_triangular(), sub-length must be greater than zero");
+        return 0.0f;
     }
 
 	float v0 = (float)_i - (float)((_wlen-1)/2.0f);
-	float v1 = ((float)_L)/2.0f;
+	float v1 = ((float)_n)/2.0f;
 	return 1.0 - fabsf(v0 / v1);
 }
 
@@ -359,11 +354,11 @@ float liquid_rcostaper_window(unsigned int _i,
 {
     // validate input
     if (_i > _wlen) {
-        fprintf(stderr,"error: liquid_rcostaper_window(), sample index must not exceed window length\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_rcostaper_window(), sample index must not exceed window length");
+        return 0.0f;
     } else if (_t > _wlen/2) {
-        fprintf(stderr,"error: liquid_rcostaper_window(), taper length cannot exceed half window length\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_rcostaper_window(), taper length cannot exceed half window length");
+        return 0.0f;
     }
 
     // reverse time for ramp-down section
@@ -373,4 +368,36 @@ float liquid_rcostaper_window(unsigned int _i,
     // return ramp or flat component
     return (_i < _t) ? 0.5f - 0.5f*cosf(M_PI*((float)_i + 0.5f) / (float)_t) : 1.0f;
 }
+
+// shim to support legacy APIs (backwards compatible with 1.3.2)
+
+float kaiser(unsigned int _i,unsigned int _wlen, float _beta, float _dt)
+    { return liquid_kaiser(_i,_wlen,_beta); }
+
+float hamming(unsigned int _i,unsigned int _wlen)
+    { return liquid_hamming(_i,_wlen); }
+
+float hann(unsigned int _i,unsigned int _wlen)
+    { return liquid_hann(_i,_wlen); }
+
+float blackmanharris(unsigned int _i,unsigned int _wlen)
+    { return liquid_blackmanharris(_i,_wlen); }
+
+float blackmanharris7(unsigned int _i,unsigned int _wlen)
+    { return liquid_blackmanharris7(_i,_wlen); }
+
+float flattop(unsigned int _i,unsigned int _wlen)
+    { return liquid_flattop(_i,_wlen); }
+
+float triangular(unsigned int _i,unsigned int _wlen,unsigned int _n)
+    { return liquid_triangular(_i,_wlen,_n); }
+
+float liquid_rcostaper_windowf(unsigned int _i,unsigned int _wlen,unsigned int _t)
+    { return liquid_rcostaper_window(_i,_wlen,_t); }
+
+float kbd(unsigned int _i,unsigned int _wlen,float _beta)
+    { return liquid_kbd(_i,_wlen,_beta); }
+
+int kbd_window(unsigned int _wlen,float _beta,float * _w)
+    { return liquid_kbd_window(_wlen,_beta,_w); }
 

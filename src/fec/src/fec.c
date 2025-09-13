@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -65,7 +65,7 @@ const char * fec_scheme_str[LIQUID_FEC_NUM_SCHEMES][2] = {
 };
 
 // Print compact list of existing and available fec schemes
-void liquid_print_fec_schemes()
+int liquid_print_fec_schemes()
 {
     unsigned int i;
     unsigned int len = 10;
@@ -89,6 +89,7 @@ void liquid_print_fec_schemes()
         }
     }
     printf("\n");
+    return LIQUID_OK;
 }
 
 
@@ -102,7 +103,7 @@ fec_scheme liquid_getopt_str2fec(const char * _str)
         }
     }
 
-    fprintf(stderr,"warning: liquid_getopt_str2fec(), unknown/unsupported fec scheme : %s\n", _str);
+    liquid_error(LIQUID_EICONFIG,"liquid_getopt_str2fec(), unknown/unsupported crc scheme: %s", _str);
     return LIQUID_FEC_UNKNOWN;
 }
 
@@ -204,7 +205,7 @@ int fec_scheme_is_repeat(fec_scheme _scheme)
 // correction scheme (object-independent method)
 //  _scheme     :   forward error-correction scheme
 //  _msg_len    :   raw, uncoded message length
-unsigned int fec_get_enc_msg_length(fec_scheme _scheme,
+unsigned int fec_get_enc_msg_length(fec_scheme   _scheme,
                                     unsigned int _msg_len)
 {
     switch (_scheme) {
@@ -261,18 +262,13 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme,
     case LIQUID_FEC_CONV_V29P56:
     case LIQUID_FEC_CONV_V29P67:
     case LIQUID_FEC_CONV_V29P78:
-        fprintf(stderr, "error: fec_get_enc_msg_length(), convolutional codes unavailable (install libfec)\n");
-        exit(-1);
-
+        liquid_error(LIQUID_EUMODE,"fec_get_enc_msg_length(), convolutional codes unavailable (install libfec)");
     case LIQUID_FEC_RS_M8:
-        fprintf(stderr, "error: fec_get_enc_msg_length(), Reed-Solomon codes unavailable (install libfec)\n");
-        exit(-1);
+        liquid_error(LIQUID_EUMODE,"fec_get_enc_msg_length(), Reed-Solomon codes unavailable (install libfec)");
 #endif
     default:
-        printf("error: fec_get_enc_msg_length(), unknown/unsupported scheme: %d\n", _scheme);
-        exit(-1);
+        liquid_error(LIQUID_EIMODE,"fec_get_enc_msg_length(), unknown/unsupported scheme: %d\n", _scheme);
     }
-
     return 0;
 }
 
@@ -287,10 +283,10 @@ unsigned int fec_block_get_enc_msg_len(unsigned int _dec_msg_len,
     // validate input
     if (_m == 0) {
         fprintf(stderr,"fec_block_get_enc_msg_len(), input block size cannot be zero\n");
-        exit(1);
+        return 0;
     } else if (_k < _m) {
         fprintf(stderr,"fec_block_get_enc_msg_len(), output block size cannot be smaller than input\n");
-        exit(1);
+        return 0;
     }
 
     // compute total number of bits in decoded message
@@ -367,8 +363,8 @@ unsigned int fec_rs_get_enc_msg_len(unsigned int _dec_msg_len,
 {
     // validate input
     if (_dec_msg_len == 0) {
-        fprintf(stderr,"error: fec_rs_get_enc_msg_len(), _dec_msg_len must be greater than 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"fec_rs_get_enc_msg_len(), _dec_msg_len must be greater than 0");
+        return 0;
     }
 
     div_t d;
@@ -454,19 +450,19 @@ float fec_get_rate(fec_scheme _scheme)
     case LIQUID_FEC_CONV_V29P56:
     case LIQUID_FEC_CONV_V29P67:
     case LIQUID_FEC_CONV_V29P78:
-        fprintf(stderr,"error: fec_get_rate(), convolutional codes unavailable (install libfec)\n");
-        exit(-1);
-
+        liquid_error(LIQUID_EUMODE,"fec_get_rate(), convolutional codes unavailable (install libfec)");
+        return 0.0f;
     case LIQUID_FEC_RS_M8:
-        fprintf(stderr,"error: fec_get_rate(), Reed-Solomon codes unavailable (install libfec)\n");
-        exit(-1);
+        liquid_error(LIQUID_EUMODE,"fec_get_rate(), Reed-Solomon codes unavailable (install libfec)");
+        return 0.0f;
 #endif
 
     default:
-        printf("error: fec_get_rate(), unknown/unsupported scheme: %d\n", _scheme);
-        exit(-1);
+        liquid_error(LIQUID_EIMODE,"fec_get_rate(), unknown/unsupported scheme: %d", _scheme);
+        return 0.0f;
     }
-    return 0;
+    return liquid_error(LIQUID_EINT,"internal error");
+    return 0.0f;
 }
 
 // create a fec object of a particular scheme
@@ -476,31 +472,19 @@ fec fec_create(fec_scheme _scheme, void *_opts)
 {
     switch (_scheme) {
     case LIQUID_FEC_UNKNOWN:
-        printf("error: fec_create(), cannot create fec object of type \"UNKNOWN\"\n");
-        exit(-1);
-    case LIQUID_FEC_NONE:
-        return fec_pass_create(NULL);
-    case LIQUID_FEC_REP3:
-        return fec_rep3_create(_opts);
-    case LIQUID_FEC_REP5:
-        return fec_rep5_create(_opts);
-    case LIQUID_FEC_HAMMING74:
-        return fec_hamming74_create(_opts);
-    case LIQUID_FEC_HAMMING84:
-        return fec_hamming84_create(_opts);
-    case LIQUID_FEC_HAMMING128:
-        return fec_hamming128_create(_opts);
-
-    case LIQUID_FEC_GOLAY2412:
-        return fec_golay2412_create(_opts);
+        return liquid_error_config("fec_create(), cannot create fec object of unknown type\n");
+    case LIQUID_FEC_NONE:       return fec_pass_create(NULL);
+    case LIQUID_FEC_REP3:       return fec_rep3_create(_opts);
+    case LIQUID_FEC_REP5:       return fec_rep5_create(_opts);
+    case LIQUID_FEC_HAMMING74:  return fec_hamming74_create(_opts);
+    case LIQUID_FEC_HAMMING84:  return fec_hamming84_create(_opts);
+    case LIQUID_FEC_HAMMING128: return fec_hamming128_create(_opts);
+    case LIQUID_FEC_GOLAY2412:  return fec_golay2412_create(_opts);
 
     // SEC-DED codecs (single error correction, double error detection)
-    case LIQUID_FEC_SECDED2216:
-        return fec_secded2216_create(_opts);
-    case LIQUID_FEC_SECDED3932:
-        return fec_secded3932_create(_opts);
-    case LIQUID_FEC_SECDED7264:
-        return fec_secded7264_create(_opts);
+    case LIQUID_FEC_SECDED2216: return fec_secded2216_create(_opts);
+    case LIQUID_FEC_SECDED3932: return fec_secded3932_create(_opts);
+    case LIQUID_FEC_SECDED7264: return fec_secded7264_create(_opts);
 
     // convolutional codes
 #if LIBFEC_ENABLED
@@ -548,21 +532,20 @@ fec fec_create(fec_scheme _scheme, void *_opts)
     case LIQUID_FEC_CONV_V29P56:
     case LIQUID_FEC_CONV_V29P67:
     case LIQUID_FEC_CONV_V29P78:
-        fprintf(stderr,"error: fec_create(), convolutional codes unavailable (install libfec)\n");
-        exit(-1);
-
+        liquid_error(LIQUID_EUMODE,"fec_create(), convolutional codes unavailable (install libfec)");
+        return NULL;
     case LIQUID_FEC_RS_M8:
-        fprintf(stderr,"error: fec_create(), Reed-Solomon codes unavailable (install libfec)\n");
-        exit(-1);
+        liquid_error(LIQUID_EUMODE,"fec_create(), Reed-Solomon codes unavailable (install libfec)");
+        return NULL;
 #endif
-
     default:
-        printf("error: fec_create(), unknown/unsupported scheme: %d\n", _scheme);
-        exit(-1);
+        liquid_error(LIQUID_EIMODE,"fec_create(), unknown/unsupported scheme: %d", _scheme);
+        return NULL;
     }
 
     // should never get to this point, but return NULL to keep
     // compiler happy
+    liquid_error(LIQUID_EINT,"internal error");
     return NULL;
 }
 
@@ -584,46 +567,34 @@ fec fec_recreate(fec _q,
     return _q;
 }
 
+// copy object
+fec fec_copy(fec q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("fec_copy(), object cannot be NULL");
+
+    // TODO: ensure state is retained
+    return fec_create(q_orig->scheme, NULL);
+}
+
 // destroy fec object
-void fec_destroy(fec _q)
+int fec_destroy(fec _q)
 {
     switch (_q->scheme) {
-    case LIQUID_FEC_UNKNOWN:
-        printf("error: fec_destroy(), cannot destroy fec object of type \"UNKNOWN\"\n");
-        exit(-1);
-    case LIQUID_FEC_NONE:
-        fec_pass_destroy(_q);
-        return;
-    case LIQUID_FEC_REP3:
-        fec_rep3_destroy(_q);
-        return;
-    case LIQUID_FEC_REP5:
-        fec_rep5_destroy(_q);
-        return;
-    case LIQUID_FEC_HAMMING74:
-        fec_hamming74_destroy(_q);
-        return;
-    case LIQUID_FEC_HAMMING84:
-        fec_hamming84_destroy(_q);
-        return;
-    case LIQUID_FEC_HAMMING128:
-        fec_hamming128_destroy(_q);
-        return;
-
-    case LIQUID_FEC_GOLAY2412:
-        fec_golay2412_destroy(_q);
-        return;
+    case LIQUID_FEC_UNKNOWN:    return liquid_error(LIQUID_EIMODE,"fec_destroy(), cannot destroy fec object of unknown type");
+    case LIQUID_FEC_NONE:       return fec_pass_destroy(_q);
+    case LIQUID_FEC_REP3:       return fec_rep3_destroy(_q);
+    case LIQUID_FEC_REP5:       return fec_rep5_destroy(_q);
+    case LIQUID_FEC_HAMMING74:  return fec_hamming74_destroy(_q);
+    case LIQUID_FEC_HAMMING84:  return fec_hamming84_destroy(_q);
+    case LIQUID_FEC_HAMMING128: return fec_hamming128_destroy(_q);
+    case LIQUID_FEC_GOLAY2412:  return fec_golay2412_destroy(_q);
 
     // SEC-DED codecs (single error correction, double error detection)
-    case LIQUID_FEC_SECDED2216:
-        fec_secded2216_destroy(_q);
-        return;
-    case LIQUID_FEC_SECDED3932:
-        fec_secded3932_destroy(_q);
-        return;
-    case LIQUID_FEC_SECDED7264:
-        fec_secded7264_destroy(_q);
-        return;
+    case LIQUID_FEC_SECDED2216: return fec_secded2216_destroy(_q);
+    case LIQUID_FEC_SECDED3932: return fec_secded3932_destroy(_q);
+    case LIQUID_FEC_SECDED7264: return fec_secded7264_destroy(_q);
 
     // convolutional codes
 #if LIBFEC_ENABLED
@@ -631,8 +602,7 @@ void fec_destroy(fec _q)
     case LIQUID_FEC_CONV_V29:
     case LIQUID_FEC_CONV_V39:
     case LIQUID_FEC_CONV_V615:
-        fec_conv_destroy(_q);
-        return;
+        return fec_conv_destroy(_q);
 
     // punctured
     case LIQUID_FEC_CONV_V27P23:
@@ -641,59 +611,51 @@ void fec_destroy(fec _q)
     case LIQUID_FEC_CONV_V27P56:
     case LIQUID_FEC_CONV_V27P67:
     case LIQUID_FEC_CONV_V27P78:
-
     case LIQUID_FEC_CONV_V29P23:
     case LIQUID_FEC_CONV_V29P34:
     case LIQUID_FEC_CONV_V29P45:
     case LIQUID_FEC_CONV_V29P56:
     case LIQUID_FEC_CONV_V29P67:
     case LIQUID_FEC_CONV_V29P78:
-        fec_conv_punctured_destroy(_q);
-        return;
+        return fec_conv_punctured_destroy(_q);
 
     // Reed-Solomon codes
     case LIQUID_FEC_RS_M8:
-        fec_rs_destroy(_q);
-        return;
+        return fec_rs_destroy(_q);
 #else
     case LIQUID_FEC_CONV_V27:
     case LIQUID_FEC_CONV_V29:
     case LIQUID_FEC_CONV_V39:
     case LIQUID_FEC_CONV_V615:
-
     case LIQUID_FEC_CONV_V27P23:
     case LIQUID_FEC_CONV_V27P34:
     case LIQUID_FEC_CONV_V27P45:
     case LIQUID_FEC_CONV_V27P56:
     case LIQUID_FEC_CONV_V27P67:
     case LIQUID_FEC_CONV_V27P78:
-
     case LIQUID_FEC_CONV_V29P23:
     case LIQUID_FEC_CONV_V29P34:
     case LIQUID_FEC_CONV_V29P45:
     case LIQUID_FEC_CONV_V29P56:
     case LIQUID_FEC_CONV_V29P67:
     case LIQUID_FEC_CONV_V29P78:
-        fprintf(stderr,"error: fec_destroy(), convolutional codes unavailable (install libfec)\n");
-        exit(-1);
-
+        return liquid_error(LIQUID_EUMODE,"fec_destroy(), convolutional codes unavailable (install libfec)");
     case LIQUID_FEC_RS_M8:
-        fprintf(stderr,"error: fec_destroy(), Reed-Solomon codes unavailable (install libfec)\n");
-        exit(-1);
+        return liquid_error(LIQUID_EUMODE,"fec_destroy(), Reed-Solomon codes unavailable (install libfec)");
 #endif
-
     default:
-        printf("error: fec_destroy(), unknown/unsupported scheme: %d\n", _q->scheme);
-        exit(-1);
+        return liquid_error(LIQUID_EUMODE,"fec_destroy(), unknown/unsupported scheme: %d\n", _q->scheme);
     }
+    return liquid_error(LIQUID_EINT,"internal error");
 }
 
 // print basic fec object internals
-void fec_print(fec _q)
+int fec_print(fec _q)
 {
     printf("fec: %s [rate: %4.3f]\n",
         fec_scheme_str[_q->scheme][1],
         _q->rate);
+    return LIQUID_OK;
 }
 
 // encode a block of data using a fec scheme
@@ -701,13 +663,13 @@ void fec_print(fec _q)
 //  _dec_msg_len    :   decoded message length
 //  _msg_dec        :   decoded message
 //  _msg_enc        :   encoded message
-void fec_encode(fec _q,
-                unsigned int _dec_msg_len,
-                unsigned char * _msg_dec,
-                unsigned char * _msg_enc)
+int fec_encode(fec _q,
+               unsigned int _dec_msg_len,
+               unsigned char * _msg_dec,
+               unsigned char * _msg_enc)
 {
     // call internal encoding method
-    _q->encode_func(_q, _dec_msg_len, _msg_dec, _msg_enc);
+    return _q->encode_func(_q, _dec_msg_len, _msg_dec, _msg_enc);
 }
 
 // decode a block of data using a fec scheme
@@ -715,13 +677,13 @@ void fec_encode(fec _q,
 //  _dec_msg_len    :   decoded message length
 //  _msg_enc        :   encoded message
 //  _msg_dec        :   decoded message
-void fec_decode(fec _q,
-                unsigned int _dec_msg_len,
-                unsigned char * _msg_enc,
-                unsigned char * _msg_dec)
+int fec_decode(fec _q,
+               unsigned int _dec_msg_len,
+               unsigned char * _msg_enc,
+               unsigned char * _msg_dec)
 {
     // call internal decoding method
-    _q->decode_func(_q, _dec_msg_len, _msg_enc, _msg_dec);
+    return _q->decode_func(_q, _dec_msg_len, _msg_enc, _msg_dec);
 }
 
 // decode a block of data using a fec scheme
@@ -729,14 +691,14 @@ void fec_decode(fec _q,
 //  _dec_msg_len    :   decoded message length
 //  _msg_enc        :   encoded message
 //  _msg_dec        :   decoded message
-void fec_decode_soft(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char * _msg_enc,
-                     unsigned char * _msg_dec)
+int fec_decode_soft(fec _q,
+                    unsigned int _dec_msg_len,
+                    unsigned char * _msg_enc,
+                    unsigned char * _msg_dec)
 {
     if (_q->decode_soft_func != NULL) {
         // call internal decoding method
-        _q->decode_soft_func(_q, _dec_msg_len, _msg_enc, _msg_dec);
+        return _q->decode_soft_func(_q, _dec_msg_len, _msg_enc, _msg_dec);
     } else {
         // pack bytes and use hard-decision decoding
         unsigned enc_msg_len = fec_get_enc_msg_length(_q->scheme, _dec_msg_len);
@@ -756,7 +718,7 @@ void fec_decode_soft(fec _q,
         }
 
         // use hard-decoding method
-        fec_decode(_q, _dec_msg_len, msg_enc_hard, _msg_dec);
+        return fec_decode(_q, _dec_msg_len, msg_enc_hard, _msg_dec);
     }
 }
 

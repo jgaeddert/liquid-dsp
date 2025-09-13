@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 #include <getopt.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 #include <sys/resource.h>
 
 // define benchmark function pointer
@@ -44,14 +45,15 @@ typedef void(benchmark_function_t) (
 
 // define benchmark_t
 typedef struct {
-    unsigned int id;
-    benchmark_function_t * api;
-    const char* name;
-    unsigned int name_len;
-    unsigned int num_trials;
-    float extime;
-    float rate;
-    float cycles_per_trial;
+    unsigned int           id;     // identification of benchmark
+    benchmark_function_t * api;    // function interface
+    const char *           name;   // name of function
+    unsigned int           name_len;
+    unsigned int           num_trials;
+    float                  extime;
+    float                  rate;
+    float                  cycles_per_trial;//
+    unsigned int           num_attempts;    // number of attempts to reach target time
 } benchmark_t;
 
 // define package_t
@@ -85,7 +87,7 @@ double calculate_execution_time(struct rusage, struct rusage);
 
 unsigned long int num_base_trials = 1<<12;
 float cpu_clock = 1.0f; // cpu clock speed (Hz)
-float runtime=0.100f;   // minimum run time (s)
+float runtime=0.050f;   // minimum run time (s)
 
 FILE * fid; // output file id
 void output_benchmark_to_file(FILE * _fid, benchmark_t * _benchmark);
@@ -128,7 +130,7 @@ int main(int argc, char *argv[])
     int verbose = 1;
     int autoscale = 1;
     int cpu_clock_detect = 1;
-    char filename[256];
+    char filename[256] = "benchmark.json";
     char search_string[128];
 
     // get input options
@@ -272,8 +274,13 @@ int main(int argc, char *argv[])
     }
 
     // print header
+    time_t now;
+    time(&now);
+    char timestamp[80];
+    strftime(timestamp,80,"%c",localtime(&now));
     fprintf(fid,"{\n");
     fprintf(fid,"  \"build-info\" : {},\n");
+    fprintf(fid,"  \"timestamp\" : \"%s\",\n", timestamp);
     fprintf(fid,"  \"command-line\" : \"");
     for (i=0; i<(unsigned int)argc; i++)
         fprintf(fid," %s", argv[i]);
@@ -286,12 +293,13 @@ int main(int argc, char *argv[])
     fprintf(fid,"  \"num_trials\"          : %lu,\n", num_base_trials);
     fprintf(fid,"  \"benchmarks\"          : [\n");
     for (i=0; i<NUM_AUTOSCRIPTS; i++) {
-        fprintf(fid,"    {\"id\":%5u, \"trials\":%12u, \"extime\":%12.4e, \"rate\":%12.4e, \"cycles_per_trial\":%12.4e, \"name\":\"%s\"}%s\n",
+        fprintf(fid,"    {\"id\":%5u, \"trials\":%12u, \"extime\":%12.4e, \"rate\":%12.4e, \"cycles_per_trial\":%12.4e, \"attempts\":%2u, \"name\":\"%s\"}%s\n",
                 scripts[i].id,
                 scripts[i].num_trials,
                 scripts[i].extime,
                 scripts[i].rate,
                 scripts[i].cycles_per_trial,
+                scripts[i].num_attempts,
                 scripts[i].name,
                 i==NUM_AUTOSCRIPTS-1 ? "" : ",");
     }
@@ -353,7 +361,7 @@ void estimate_cpu_clock(void)
 void set_num_trials_from_cpu_speed(void)
 {
     unsigned long int min_trials = 256;
-    num_base_trials = (unsigned long int) ( cpu_clock / 10e3 );
+    num_base_trials = (unsigned long int) ( cpu_clock / 20e3 );
     num_base_trials = (num_base_trials < min_trials) ? min_trials : num_base_trials;
 
     printf("  setting number of base trials to %ld\n", num_base_trials);
@@ -388,8 +396,9 @@ void execute_benchmark(benchmark_t* _benchmark, int _verbose)
     } while (1);
 
     _benchmark->num_trials = num_trials;
-    _benchmark->rate = (float)(_benchmark->num_trials) / _benchmark->extime;
-    _benchmark->cycles_per_trial = cpu_clock / (_benchmark->rate);
+    _benchmark->num_attempts = num_attempts;
+    _benchmark->rate = _benchmark->extime==0 ? 0 : (float)(_benchmark->num_trials) / _benchmark->extime;
+    _benchmark->cycles_per_trial = _benchmark->extime==0 ? 0 : cpu_clock / (_benchmark->rate);
 
     if (_verbose)
         print_benchmark_results(_benchmark);
@@ -442,8 +451,8 @@ void print_benchmark_results(benchmark_t* _b)
     float cycles_format = _b->cycles_per_trial;
     char cycles_units = convert_units(&cycles_format);
 
-    printf("  %-3u: %-30s: %6.2f %c trials / %6.2f %cs (%6.2f %c t/s, %6.2f %c c/t)\n",
-        _b->id, _b->name,
+    printf("  %-3u: [%2u] %-30s: %6.2f %c trials / %6.2f %cs (%6.2f %c t/s, %6.2f %c c/t)\n",
+        _b->id, _b->num_attempts, _b->name,
         trials_format, trials_units,
         extime_format, extime_units,
         rate_format, rate_units,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2017 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,33 +60,35 @@
 
 #define LIQUID_FIRDESPM_DEBUG_FILENAME "firdespm_internal_debug.m"
 #if LIQUID_FIRDESPM_DEBUG
-void firdespm_output_debug_file(firdespm _q);
+int firdespm_output_debug_file(firdespm _q);
 #endif
 
+#if 0
 // initialize internal memory and arrays
-void firdespm_init_memory(firdespm     _q,
-                          unsigned int _h_len,
-                          unsigned int _num_bands);
+int firdespm_init_memory(firdespm     _q,
+                         unsigned int _h_len,
+                         unsigned int _num_bands);
+#endif
 
 // initialize the frequency grid on the disjoint bounded set
-void firdespm_init_grid(firdespm _q);
+int firdespm_init_grid(firdespm _q);
 
 // compute interpolating polynomial
-void firdespm_compute_interp(firdespm _q);
+int firdespm_compute_interp(firdespm _q);
 
 // compute error signal from actual response (interpolator
 // output), desired response, and weights
-void firdespm_compute_error(firdespm _q);
+int firdespm_compute_error(firdespm _q);
 
 // search error curve for _r+1 extremal indices
-void firdespm_iext_search(firdespm _q);
+int firdespm_iext_search(firdespm _q);
 
 // evaluates result to determine if Remez exchange algorithm
 // has converged
 int firdespm_is_search_complete(firdespm _q);
 
 // compute filter taps (coefficients) from result
-void firdespm_compute_taps(firdespm _q, float * _h);
+int firdespm_compute_taps(firdespm _q, float * _h);
 
 // structured data type
 struct firdespm_s {
@@ -139,14 +141,14 @@ struct firdespm_s {
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
 //  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 //  _h          :   output coefficients array [size: _h_len x 1]
-void firdespm_run(unsigned int            _h_len,
-                  unsigned int            _num_bands,
-                  float *                 _bands,
-                  float *                 _des,
-                  float *                 _weights,
-                  liquid_firdespm_wtype * _wtype,
-                  liquid_firdespm_btype   _btype,
-                  float *                 _h)
+int firdespm_run(unsigned int            _h_len,
+                 unsigned int            _num_bands,
+                 float *                 _bands,
+                 float *                 _des,
+                 float *                 _weights,
+                 liquid_firdespm_wtype * _wtype,
+                 liquid_firdespm_btype   _btype,
+                 float *                 _h)
 {
     // create object
     firdespm q = firdespm_create(_h_len,_num_bands,_bands,_des,_weights,_wtype,_btype);
@@ -156,34 +158,31 @@ void firdespm_run(unsigned int            _h_len,
 
     // destroy
     firdespm_destroy(q);
+    return LIQUID_OK;
 }
 
 // run filter design for basic low-pass filter
 //  _n      : filter length, _n > 0
 //  _fc     : cutoff frequency, 0 < _fc < 0.5
-//  _As     : stop-band attenuation [dB], _As > 0
+//  _as     : stop-band attenuation [dB], _as > 0
 //  _mu     : fractional sample offset, -0.5 < _mu < 0.5 [ignored]
 //  _h      : output coefficient buffer, [size: _n x 1]
-void firdespm_lowpass(unsigned int _n,
-                      float        _fc,
-                      float        _As,
-                      float        _mu,
-                      float *      _h)
+int firdespm_lowpass(unsigned int _n,
+                     float        _fc,
+                     float        _as,
+                     float        _mu,
+                     float *      _h)
 {
     // validate inputs
-    if (_mu < -0.5f || _mu > 0.5f) {
-        fprintf(stderr,"error: firdespm_lowpass(), _mu (%12.4e) out of range [-0.5,0.5]\n", _mu);
-        exit(1);
-    } else if (_fc < 0.0f || _fc > 0.5f) {
-        fprintf(stderr,"error: firdespm_lowpass(), cutoff frequency (%12.4e) out of range (0, 0.5)\n", _fc);
-        exit(1);
-    } else if (_n == 0) {
-        fprintf(stderr,"error: firdespm_lowpass(), filter length must be greater than zero\n");
-        exit(1);
-    }
+    if (_mu < -0.5f || _mu > 0.5f)
+        return liquid_error(LIQUID_EICONFIG,"firdespm_lowpass(), _mu (%12.4e) out of range [-0.5,0.5]", _mu);
+    if (_fc < 0.0f || _fc > 0.5f)
+        return liquid_error(LIQUID_EICONFIG,"firdespm_lowpass(), cutoff frequency (%12.4e) out of range (0, 0.5)", _fc);
+    if (_n == 0)
+        return liquid_error(LIQUID_EICONFIG,"firdespm_lowpass(), filter length must be greater than zero");
 
     // estimate transition band
-    float ft = estimate_req_filter_df(_As, _n);
+    float ft = estimate_req_filter_df(_as, _n);
 
     // derived values
     float fp = _fc - 0.5*ft;     // pass-band cutoff frequency
@@ -199,7 +198,7 @@ void firdespm_lowpass(unsigned int _n,
                                       LIQUID_FIRDESPM_EXPWEIGHT};
 
     // design filter
-    firdespm_run(_n,num_bands,bands,des,weights,wtype,btype,_h);
+    return firdespm_run(_n,num_bands,bands,des,weights,wtype,btype,_h);
 }
 
 // create firdespm object
@@ -218,12 +217,17 @@ firdespm firdespm_create(unsigned int            _h_len,
                          liquid_firdespm_wtype * _wtype,
                          liquid_firdespm_btype   _btype)
 {
-    unsigned int i;
+    // basic validation
+    if (_h_len==0)
+        return liquid_error_config("firdespm_create(), filter length cannot be 0");
+    if (_num_bands==0)
+        return liquid_error_config("firdespm_create(), number of bands cannot be 0");
 
-    // validate input
+    // validate filter specification
+    unsigned int i;
     int bands_valid = 1;
     int weights_valid = 1;
-    // ensure bands are withing [0,0.5]
+    // ensure bands are within [0,0.5]
     for (i=0; i<2*_num_bands; i++)
         bands_valid &= _bands[i] >= 0.0 && _bands[i] <= 0.5;
     // ensure bands are non-decreasing
@@ -234,16 +238,10 @@ firdespm firdespm_create(unsigned int            _h_len,
     for (i=0; i<_num_bands; i++)
         weights_valid &= _weights[i] > 0;
 
-    if (!bands_valid) {
-        fprintf(stderr,"error: firdespm_create(), invalid bands\n");
-        exit(1);
-    } else if (!weights_valid) {
-        fprintf(stderr,"error: firdespm_create(), invalid weights (must be positive)\n");
-        exit(1);
-    } else if (_num_bands == 0) {
-        fprintf(stderr,"error: firdespm_create(), number of bands must be > 0\n");
-        exit(1);
-    }
+    if (!bands_valid)
+        return liquid_error_config("firdespm_create(), invalid bands");
+    if (!weights_valid)
+        return liquid_error_config("firdespm_create(), invalid weights (must be positive)");
 
     // create object
     firdespm q = (firdespm) malloc(sizeof(struct firdespm_s));
@@ -326,24 +324,25 @@ firdespm firdespm_create_callback(unsigned int          _h_len,
                                   firdespm_callback     _callback,
                                   void *                _userdata)
 {
-    unsigned int i;
+    // basic validation
+    if (_h_len==0)
+        return liquid_error_config("firdespm_create_callback(), filter length cannot be 0");
+    if (_num_bands==0)
+        return liquid_error_config("firdespm_create_callback(), number of bands cannot be 0");
+
 
     // validate input
+    unsigned int i;
     int bands_valid = 1;
-    // ensure bands are withing [0,0.5]
+    // ensure bands are within [0,0.5]
     for (i=0; i<2*_num_bands; i++)
         bands_valid &= _bands[i] >= 0.0 && _bands[i] <= 0.5;
     // ensure bands are non-decreasing
     for (i=1; i<2*_num_bands; i++)
         bands_valid &= _bands[i] >= _bands[i-1];
 
-    if (!bands_valid) {
-        fprintf(stderr,"error: firdespm_create(), invalid bands\n");
-        exit(1);
-    } else if (_num_bands == 0) {
-        fprintf(stderr,"error: firdespm_create(), number of bands must be > 0\n");
-        exit(1);
-    }
+    if (!bands_valid)
+        return liquid_error_config("firdespm_create(), invalid bands");
 
     // create object
     firdespm q = (firdespm) malloc(sizeof(struct firdespm_s));
@@ -401,8 +400,40 @@ firdespm firdespm_create_callback(unsigned int          _h_len,
     return q;
 }
 
+// copy object
+firdespm firdespm_copy(firdespm q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("firdespm_copy(), object cannot be NULL");
+
+    // create filter object and copy base parameters
+    firdespm q_copy = (firdespm) malloc(sizeof(struct firdespm_s));
+    memmove(q_copy, q_orig, sizeof(struct firdespm_s));
+
+    // copy memory for filter description parameters
+    q_copy->bands   = (double*)liquid_malloc_copy(q_orig->bands, 2*q_orig->num_bands, sizeof(double));
+    q_copy->des     = (double*)liquid_malloc_copy(q_orig->des,     q_orig->num_bands, sizeof(double));
+    q_copy->weights = (double*)liquid_malloc_copy(q_orig->weights, q_orig->num_bands, sizeof(double));
+    q_copy->wtype   = (liquid_firdespm_wtype*) liquid_malloc_copy(q_orig->wtype, q_orig->num_bands, sizeof(liquid_firdespm_wtype));
+
+    // copy the grid
+    q_copy->F = (double*) liquid_malloc_copy(q_copy->F, q_orig->grid_size, sizeof(double));
+    q_copy->D = (double*) liquid_malloc_copy(q_copy->D, q_orig->grid_size, sizeof(double));
+    q_copy->W = (double*) liquid_malloc_copy(q_copy->W, q_orig->grid_size, sizeof(double));
+    q_copy->E = (double*) liquid_malloc_copy(q_copy->E, q_orig->grid_size, sizeof(double));
+
+    // copy memory for extremal frequency set, interpolating polynomial
+    q_copy->iext  = (unsigned int*) liquid_malloc_copy(q_copy->iext, q_orig->r+1,sizeof(unsigned int));
+    q_copy->x     = (double*)       liquid_malloc_copy(q_copy->x,    q_orig->r+1,sizeof(double));
+    q_copy->alpha = (double*)       liquid_malloc_copy(q_copy->alpha,q_orig->r+1,sizeof(double));
+    q_copy->c     = (double*)       liquid_malloc_copy(q_copy->c,    q_orig->r+1,sizeof(double));
+
+    return q_copy;
+}
+
 // destroy firdespm object
-void firdespm_destroy(firdespm _q)
+int firdespm_destroy(firdespm _q)
 {
 #if LIQUID_FIRDESPM_DEBUG
     firdespm_output_debug_file(_q);
@@ -428,36 +459,37 @@ void firdespm_destroy(firdespm _q)
 
     // free object
     free(_q);
+    return LIQUID_OK;
 }
 
 // print firdespm object internals
-void firdespm_print(firdespm _q)
+int firdespm_print(firdespm _q)
 {
     unsigned int i;
+    printf("<liquid.firdespm");
 
-    printf("firdespm:               ");
-    for (i=0; i<_q->num_bands; i++) printf("      band %-5u", i);
-    printf("\n");
+    printf(", lo=[");
+    for (i=0; i<_q->num_bands; i++) printf("%g,", _q->bands[2*i+0]);
+    printf("]");
 
-    printf("  lower band edge       ");
-    for (i=0; i<_q->num_bands; i++) printf("%16.8f", _q->bands[2*i+0]);
-    printf("\n");
+    printf(", hi=[");
+    for (i=0; i<_q->num_bands; i++) printf("%g,", _q->bands[2*i+1]);
+    printf("]");
 
-    printf("  upper band edge       ");
-    for (i=0; i<_q->num_bands; i++) printf("%16.8f", _q->bands[2*i+1]);
-    printf("\n");
+    printf(", des=[");
+    for (i=0; i<_q->num_bands; i++) printf("%g,", _q->des[i]);
+    printf("]");
 
-    printf("  desired value         ");
-    for (i=0; i<_q->num_bands; i++) printf("%16.8f", _q->des[i]);
-    printf("\n");
+    printf(", w=[");
+    for (i=0; i<_q->num_bands; i++) printf("%g,", _q->weights[i]);
+    printf("]");
 
-    printf("  weighting             ");
-    for (i=0; i<_q->num_bands; i++) printf("%16.8f", _q->weights[i]);
-    printf("\n");
+    printf(">\n");
+    return LIQUID_OK;
 }
 
 // execute filter design, storing result in _h
-void firdespm_execute(firdespm _q, float * _h)
+int firdespm_execute(firdespm _q, float * _h)
 {
     unsigned int i;
 
@@ -483,7 +515,7 @@ void firdespm_execute(firdespm _q, float * _h)
         // search for new extremal frequencies
         firdespm_iext_search(_q);
 
-        // check exit criteria
+        // check stopping criteria
         if (firdespm_is_search_complete(_q))
             break;
     }
@@ -492,7 +524,7 @@ void firdespm_execute(firdespm _q, float * _h)
 #endif
 
     // compute filter taps
-    firdespm_compute_taps(_q, _h);
+    return firdespm_compute_taps(_q, _h);
 }
 
 
@@ -500,15 +532,18 @@ void firdespm_execute(firdespm _q, float * _h)
 // internal methods
 //
 
+#if 0
 // initialize internal memory and arrays
-void firdespm_init_memory(firdespm     _q,
-                          unsigned int _h_len,
-                          unsigned int _num_bands)
+int firdespm_init_memory(firdespm     _q,
+                         unsigned int _h_len,
+                         unsigned int _num_bands)
 {
+    return LIQUID_OK;
 }
+#endif
 
 // initialize the frequency grid on the disjoint bounded set
-void firdespm_init_grid(firdespm _q)
+int firdespm_init_grid(firdespm _q)
 {
     unsigned int i,j;
 
@@ -534,7 +569,6 @@ void firdespm_init_grid(firdespm _q)
     if (g < gmin)
         df *= g / gmin;
     printf("df : %12.8f\n", df);
-    //exit(1);
 #endif
 
     // number of grid points counter
@@ -577,8 +611,7 @@ void firdespm_init_grid(firdespm _q)
                 case LIQUID_FIRDESPM_EXPWEIGHT:  fw = expf(2.0f*j*df);  break;
                 case LIQUID_FIRDESPM_LINWEIGHT:  fw = 1.0f + 2.7f*j*df; break;
                 default:
-                    fprintf(stderr,"error: firdespm_init_grid(), invalid weighting specifyer: %d\n", _q->wtype[i]);
-                    exit(1);
+                    return liquid_error(LIQUID_EICONFIG,"firdespm_init_grid(), invalid weighting specifier: %d", _q->wtype[i]);
                 }
                 _q->W[n] = _q->weights[i] * fw;
             }
@@ -617,10 +650,11 @@ void firdespm_init_grid(firdespm _q)
             }
         }
     }
+    return LIQUID_OK;
 }
 
 // compute interpolating polynomial
-void firdespm_compute_interp(firdespm _q)
+int firdespm_compute_interp(firdespm _q)
 {
     unsigned int i;
 
@@ -661,10 +695,10 @@ void firdespm_compute_interp(firdespm _q)
         printf("c[%3u] = %16.8e\n", i, _q->c[i]);
 #endif
     }
-
+    return LIQUID_OK;
 }
 
-void firdespm_compute_error(firdespm _q)
+int firdespm_compute_error(firdespm _q)
 {
     unsigned int i;
 
@@ -678,11 +712,12 @@ void firdespm_compute_error(firdespm _q)
         // compute error
         _q->E[i] = _q->W[i] * (_q->D[i] - H);
     }
+    return LIQUID_OK;
 }
 
 // search error curve for r+1 extremal indices
-// TODO : return number of values which have changed (exit criteria)
-void firdespm_iext_search(firdespm _q)
+// TODO : return number of values which have changed (stopping criteria)
+int firdespm_iext_search(firdespm _q)
 {
     unsigned int i;
 
@@ -708,8 +743,9 @@ void firdespm_iext_search(firdespm _q)
         if ( ((_q->E[i]>=0.0) && (_q->E[i-1]<=_q->E[i]) && (_q->E[i+1]<=_q->E[i]) ) ||
              ((_q->E[i]< 0.0) && (_q->E[i-1]>=_q->E[i]) && (_q->E[i+1]>=_q->E[i]) ) )
         {
-            assert(num_found < nmax);
-            found_iext[num_found++] = i;
+            //assert(num_found < nmax);
+            if (num_found < nmax)
+                found_iext[num_found++] = i;
 #if LIQUID_FIRDESPM_DEBUG_PRINT
             printf("num_found : %4u [%4u / %4u]\n", num_found, i, _q->grid_size);
 #endif
@@ -722,8 +758,9 @@ void firdespm_iext_search(firdespm _q)
         found_iext[num_found++] = _q->grid_size-1;
 #else
     // force f=0.5 into candidate set
-    assert(num_found < nmax);
-    found_iext[num_found++] = _q->grid_size-1;
+    //assert(num_found < nmax);
+    if (num_found < nmax)
+        found_iext[num_found++] = _q->grid_size-1;
     //printf("num_found : %4u [%4u / %4u]\n", num_found, _q->grid_size-1, _q->grid_size);
 #endif
     //printf("r+1 = %4u, num_found = %4u\n", _q->r+1, num_found);
@@ -733,10 +770,10 @@ void firdespm_iext_search(firdespm _q)
         // guarantees at least r+1 extrema, however due to finite
         // machine precision, interpolation can be imprecise
 
-        fprintf(stderr,"warning: firdespm_iext_search(), too few extrema found (expected %u, found %u); exiting prematurely\n",
-                _q->r+1, num_found);
         _q->num_exchanges = 0;
-        return;
+        return 0;
+        //return liquid_error(LIQUID_EINT,"firdespm_iext_search(), too few extrema found (expected %u, found %u); returning prematurely",
+        //_q->r+1, num_found);
     }
 
     assert(num_found <= nmax);
@@ -822,7 +859,7 @@ void firdespm_iext_search(firdespm _q)
     for (i=0; i<_q->r+1; i++)
         printf("iext_new[%4u] = %4u : %16.8e\n", i, found_iext[i], _q->E[found_iext[i]]);
 #endif
-
+    return LIQUID_OK;
 }
 
 // evaluates result to determine if Remez exchange algorithm
@@ -853,7 +890,7 @@ int firdespm_is_search_complete(firdespm _q)
 }
 
 // compute filter taps (coefficients) from result
-void firdespm_compute_taps(firdespm _q, float * _h)
+int firdespm_compute_taps(firdespm _q, float * _h)
 {
     unsigned int i;
 
@@ -901,20 +938,21 @@ void firdespm_compute_taps(firdespm _q, float * _h)
         }
     } else if (_q->btype != LIQUID_FIRDESPM_BANDPASS && _q->s==1) {
         // odd filter length, odd symmetry
-        fprintf(stderr,"warning: firdespm_compute_taps(), filter configuration not yet supported\n");
+        return liquid_error(LIQUID_EINT,"firdespm_compute_taps(), filter configuration not yet supported");
     } else if (_q->btype != LIQUID_FIRDESPM_BANDPASS && _q->s==0) {
         // even filter length, odd symmetry
-        fprintf(stderr,"warning: firdespm_compute_taps(), filter configuration not yet supported\n");
+        return liquid_error(LIQUID_EINT,"firdespm_compute_taps(), filter configuration not yet supported");
     }
 #if LIQUID_FIRDESPM_DEBUG_PRINT
     printf("\n");
     for (i=0; i<_q->h_len; i++)
         printf("h(%3u) = %12.8f;\n", i+1, _h[i]);
 #endif
+    return LIQUID_OK;
 }
 
 #if LIQUID_FIRDESPM_DEBUG
-void firdespm_output_debug_file(firdespm _q)
+int firdespm_output_debug_file(firdespm _q)
 {
     FILE * fid = fopen(LIQUID_FIRDESPM_DEBUG_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", LIQUID_FIRDESPM_DEBUG_FILENAME);
@@ -960,6 +998,39 @@ void firdespm_output_debug_file(firdespm _q)
 
     fclose(fid);
     printf("internal debugging results written to %s.\n", LIQUID_FIRDESPM_DEBUG_FILENAME);
+    return LIQUID_OK;
+}
+#endif
+
+#if 0
+// design halfband filter using Parks-McClellan algorithm given the
+// filter length and desired transition band
+int liquid_firdespm_halfband_ft(unsigned int _m,
+                                float        _ft,
+                                float *      _h)
+{
+    liquid_firdespm_btype btype = LIQUID_FIRDESPM_BANDPASS;
+    unsigned int h_len = 4*_m + 1;
+    unsigned int num_bands = 2;
+    float f0 = 0.25f - 0.5f*_ft;
+    float f1 = 0.25f + 0.5f*_ft;
+    float bands[4]   = {0.0f, f0, f1, 0.5f};
+    float des[2]     = {1.0f, 0.0f};
+    float weights[2] = {1.0f, 1.0f}; // best with {1, 1}
+    liquid_firdespm_wtype wtype[2] = { // best with {flat, flat}
+        LIQUID_FIRDESPM_FLATWEIGHT, LIQUID_FIRDESPM_FLATWEIGHT,};
+
+    // design filter
+    firdespm_run(h_len,num_bands,bands,des,weights,wtype,btype,_h);
+#if 0
+    // ensure values at odd indices are 0 (excepting center value)
+    unsigned int i;
+    for (i=0; i<_m; i++) {
+        _h[        2*i] = 0;
+        _h[h_len-2*i-1] = 0;
+    }
+#endif
+    return LIQUID_OK;
 }
 #endif
 

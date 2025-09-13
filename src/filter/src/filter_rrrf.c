@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 
 // 
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_rrrf,name)
+#define FDELAY(name)        LIQUID_CONCAT(fdelay_rrrf,name)
 #define FFTFILT(name)       LIQUID_CONCAT(fftfilt_rrrf,name)
 #define FIRDECIM(name)      LIQUID_CONCAT(firdecim_rrrf,name)
 #define FIRFARROW(name)     LIQUID_CONCAT(firfarrow_rrrf,name)
@@ -60,8 +61,14 @@
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_rrrf,name)
 #define POLY(name)          LIQUID_CONCAT(polyf,name)
 
+// basic arithmetic operations
+#define MUL_TI_TC(X,Y)      (X*Y)
+#define ADD_TO_TO(X,Y)      (X+Y)
+#define SUB_TO_TO(X,Y)      (X-Y)
+
 // basic constants
 #define TO_ZERO             (0.0f)
+#define TC_ONE              (1.0f)
 
 #define TO_COMPLEX          0
 #define TC_COMPLEX          0
@@ -71,25 +78,26 @@
 #define PRINTVAL_TC(X,F)    PRINTVAL_FLOAT(X,F)
 #define PRINTVAL_TI(X,F)    PRINTVAL_FLOAT(X,F)
 
-// source files
-#include "autocorr.c"
-#include "fftfilt.c"
-#include "firdecim.c"
-#include "firfarrow.c"
-#include "firfilt.c"
-#include "firinterp.c"
-#include "firhilb.c"
-#include "firpfb.c"
-#include "iirdecim.c"
-#include "iirfilt.c"
-#include "iirfiltsos.c"
-#include "iirhilb.c"
-#include "iirinterp.c"
-#include "msresamp.c"
-#include "msresamp2.c"
-#include "ordfilt.c"
-#include "rresamp.c"
-//#include "resamp.c"         // floating-point phase version
-#include "resamp.fixed.c" // fixed-point phase version
-#include "resamp2.c"
-#include "symsync.c"
+// prototype files
+#include "autocorr.proto.c"
+#include "fdelay.proto.c"
+#include "fftfilt.proto.c"
+#include "firdecim.proto.c"
+#include "firfarrow.proto.c"
+#include "firfilt.proto.c"
+#include "firinterp.proto.c"
+#include "firhilb.proto.c"
+#include "firpfb.proto.c"
+#include "iirdecim.proto.c"
+#include "iirfilt.proto.c"
+#include "iirfiltsos.proto.c"
+#include "iirhilb.proto.c"
+#include "iirinterp.proto.c"
+#include "msresamp.proto.c"
+#include "msresamp2.proto.c"
+#include "ordfilt.proto.c"
+#include "rresamp.proto.c"
+//#include "resamp.proto.c"         // floating-point phase version
+#include "resamp.fixed.proto.c" // fixed-point phase version
+#include "resamp2.proto.c"
+#include "symsync.proto.c"

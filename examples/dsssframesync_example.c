@@ -112,6 +112,7 @@ int main(int argc, char * argv[])
         // run through frame synchronizer
         dsssframesync_execute(fs, y, buf_len);
     }
+    dsssframesync_print(fs);
 
     // export debugging file
     if (debug_enabled) {

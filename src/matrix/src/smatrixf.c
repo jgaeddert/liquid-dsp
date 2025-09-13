@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 
 // macro
 #define SMATRIX(name)       LIQUID_CONCAT(smatrixf,name)
+#define EXTENSION           "f"
 
 // primitive type
 #define T                   float
@@ -44,5 +45,5 @@
 #define PRINTVAL_ZERO()     printf(" %6s", ".");
 #define PRINTVAL(V)         printf(" %6.2f", V);
 
-// source files
-#include "smatrix.c"
+// prototypes
+#include "smatrix.proto.c"

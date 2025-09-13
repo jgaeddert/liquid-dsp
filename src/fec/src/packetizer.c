@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,33 @@
 
 #include "liquid.internal.h"
 
+// fec/interleaver plan
+struct fecintlv_plan {
+    unsigned int dec_msg_len;   // decoded message length
+    unsigned int enc_msg_len;   // encoded message length
+    fec_scheme   fs;            // error-correction scheme
+    fec          f;             // error-correction object
+    interleaver  q;             // interleaver object
+};
+
+// packetizer object
+struct packetizer_s {
+    unsigned int    msg_len;    // original message length [bytes]
+    unsigned int    packet_len; // output packet length [bytes]
+    crc_scheme      check;      // check scheme
+    unsigned int    crc_length; // check object
+
+    struct fecintlv_plan* plan; // array of fec/interleaver plans
+    unsigned int plan_len;      // number of steps in plan
+
+    // buffers (ping-pong)
+    unsigned int    buffer_len; // length of each buffer
+    unsigned char * buffer_0;
+    unsigned char * buffer_1;
+};
+
 // reallocate memory for buffers
-void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
+int packetizer_realloc_buffers(packetizer _p, unsigned int _len);
 
 // computes the number of encoded bytes after packetizing
 //
@@ -86,7 +111,7 @@ unsigned int packetizer_compute_dec_msg_len(unsigned int _k,
 
 // create packetizer object
 //
-//  _n      :   number of uncoded intput bytes
+//  _n      :   number of uncoded input bytes
 //  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
@@ -142,7 +167,7 @@ packetizer packetizer_create(unsigned int _n,
 // re-create packetizer object
 //
 //  _p      :   initialz packetizer object
-//  _n      :   number of uncoded intput bytes
+//  _n      :   number of uncoded input bytes
 //  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
@@ -174,11 +199,26 @@ packetizer packetizer_recreate(packetizer _p,
 }
 
 // destroy packetizer object
-void packetizer_destroy(packetizer _p)
+packetizer packetizer_copy(packetizer q_orig)
 {
-    if (!_p) {
-        return;
-    }
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("packetizer_copy(), object cannot be NULL");
+
+    // strip parameters and create new object from them
+    // TODO: handle case where plan_len != 2
+    unsigned int n    = q_orig->msg_len;
+    int          crc  = q_orig->check;
+    int          fec0 = q_orig->plan[0].fs;
+    int          fec1 = q_orig->plan[1].fs;
+    return packetizer_create(n, crc, fec0, fec1);
+}
+
+// destroy packetizer object
+int packetizer_destroy(packetizer _p)
+{
+    if (!_p)
+        return liquid_error(LIQUID_EIOBJ,"packetizer_destroy(), input is a NULL pointer");
 
     // free fec, interleaver objects
     unsigned int i;
@@ -196,10 +236,11 @@ void packetizer_destroy(packetizer _p)
 
     // free packetizer object
     free(_p);
+    return LIQUID_OK;
 }
 
 // print packetizer object internals
-void packetizer_print(packetizer _p)
+int packetizer_print(packetizer _p)
 {
     printf("packetizer [dec: %u, enc: %u]\n", _p->msg_len, _p->packet_len);
     printf("     : crc      %-10u %-10u %-16s\n",
@@ -214,6 +255,7 @@ void packetizer_print(packetizer _p)
             _p->plan[i].enc_msg_len,
             fec_scheme_str[_p->plan[i].fs][1]);
     }
+    return LIQUID_OK;
 }
 
 // get decoded message length
@@ -248,9 +290,9 @@ fec_scheme packetizer_get_fec1(packetizer _p)
 //  _p      :   packetizer object
 //  _msg    :   input message (uncoded bytes)
 //  _pkt    :   encoded output message
-void packetizer_encode(packetizer            _p,
-                       const unsigned char * _msg,
-                       unsigned char *       _pkt)
+int packetizer_encode(packetizer            _p,
+                      const unsigned char * _msg,
+                      unsigned char *       _pkt)
 {
     unsigned int i;
 
@@ -292,6 +334,7 @@ void packetizer_encode(packetizer            _p,
 
     // copy result to output
     memmove(_pkt, _p->buffer_0, _p->packet_len);
+    return LIQUID_OK;
 }
 
 // Execute the packetizer to decode an input message, return validity
@@ -408,19 +451,16 @@ int packetizer_decode_soft(packetizer            _p,
                                 key);
 }
 
-void packetizer_set_scheme(packetizer _p, int _fec0, int _fec1)
-{
-    //
-}
-
 // 
 // internal methods
 //
 
-void packetizer_realloc_buffers(packetizer _p, unsigned int _len)
+int packetizer_realloc_buffers(packetizer   _p,
+                               unsigned int _len)
 {
     _p->buffer_len = _len;
     _p->buffer_0 = (unsigned char*) realloc(_p->buffer_0, _p->buffer_len);
     _p->buffer_1 = (unsigned char*) realloc(_p->buffer_1, _p->buffer_len);
+    return LIQUID_OK;
 }
 

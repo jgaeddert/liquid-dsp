@@ -1,10 +1,4 @@
-// 
-// modem_soft_example.c
-//
-// This example demonstates soft demodulation of linear
-// modulation schemes.
-//
-
+// Demonstate soft demodulation of linear modulation schemes.
 #include <stdlib.h>
 #include <stdio.h>
 #include <getopt.h>
@@ -61,14 +55,14 @@ int main(int argc, char*argv[])
     }
 
     // create the modem objects
-    modem mod   = modem_create(ms);
-    modem demod = modem_create(ms);
+    modemcf mod   = modemcf_create(ms);
+    modemcf demod = modemcf_create(ms);
 
     // ensure bits/symbol matches modem description (only
     // applicable to certain specific modems)
-    unsigned int bps = modem_get_bps(mod);
+    unsigned int bps = modemcf_get_bps(mod);
 
-    modem_print(mod);
+    modemcf_print(mod);
 
     unsigned int i;         // modulated symbol
     unsigned int s_hard;    // demodulated symbol (hard)
@@ -87,10 +81,10 @@ int main(int argc, char*argv[])
 
     for (i=0; i<num_symbols; i++) {
         // modulate symbol
-        modem_modulate(mod, i, &x);
+        modemcf_modulate(mod, i, &x);
 
         // demodulate, including soft decision
-        modem_demodulate_soft(demod, x, &s_hard, soft_bits);
+        modemcf_demodulate_soft(demod, x, &s_hard, soft_bits);
 
         // re-pack soft bits to hard decision
         liquid_pack_soft_bits(soft_bits, bps, &s_soft);
@@ -112,7 +106,7 @@ int main(int argc, char*argv[])
     printf("num sym errors: %4u / %4u\n", num_sym_errors, num_symbols);
     printf("num bit errors: %4u / %4u\n", num_bit_errors, num_symbols*bps);
 
-    modem_destroy(mod);
-    modem_destroy(demod);
+    modemcf_destroy(mod);
+    modemcf_destroy(demod);
     return 0;
 }

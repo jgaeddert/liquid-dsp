@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2017 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,10 +51,11 @@ void qdetector_cccf_bench(struct rusage *     _start,
     unsigned int m            =    7;   // filter delay [symbols]
     float        beta         = 0.3f;   // excess bandwidth factor
     float        threshold    = 0.5f;   // threshold for detection
-    float        range        = 0.05f;  // carrier offset search range [radians/sample]
+    int          range_index  =    5;   // carrier offset search range [index]
     qdetector_cccf q = qdetector_cccf_create_linear(h, _n, ftype, k, m, beta);
     qdetector_cccf_set_threshold(q,threshold);
-    qdetector_cccf_set_range    (q, range);
+    qdetector_cccf_set_range_index(q, range_index);
+    //qdetector_cccf_print(q);
 
     // input sequence (random)
     float complex x[7];
@@ -75,6 +76,9 @@ void qdetector_cccf_bench(struct rusage *     _start,
         detected ^= qdetector_cccf_execute(q, x[4]) != NULL;
         detected ^= qdetector_cccf_execute(q, x[5]) != NULL;
         detected ^= qdetector_cccf_execute(q, x[6]) != NULL;
+
+        // randomize input
+        x[0] += detected > 2 ? -1e-3f : 1e-3f;
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 7;
@@ -89,9 +93,15 @@ void qdetector_cccf_bench(struct rusage *     _start,
     unsigned long int * _num_iterations)    \
 { qdetector_cccf_bench(_start, _finish, _num_iterations, N); }
 
-void benchmark_qdetector_cccf_16   QDETECTOR_CCCF_BENCHMARK_API(16);
-void benchmark_qdetector_cccf_32   QDETECTOR_CCCF_BENCHMARK_API(32);
-void benchmark_qdetector_cccf_64   QDETECTOR_CCCF_BENCHMARK_API(64);
-void benchmark_qdetector_cccf_128  QDETECTOR_CCCF_BENCHMARK_API(128);
-void benchmark_qdetector_cccf_256  QDETECTOR_CCCF_BENCHMARK_API(256);
+void benchmark_qdetector_cccf_16    QDETECTOR_CCCF_BENCHMARK_API(16);
+void benchmark_qdetector_cccf_32    QDETECTOR_CCCF_BENCHMARK_API(32);
+void benchmark_qdetector_cccf_64    QDETECTOR_CCCF_BENCHMARK_API(64);
+void benchmark_qdetector_cccf_128   QDETECTOR_CCCF_BENCHMARK_API(128);
+void benchmark_qdetector_cccf_256   QDETECTOR_CCCF_BENCHMARK_API(256);
+void benchmark_qdetector_cccf_512   QDETECTOR_CCCF_BENCHMARK_API(512);
+void benchmark_qdetector_cccf_1024  QDETECTOR_CCCF_BENCHMARK_API(1024);
+void benchmark_qdetector_cccf_2048  QDETECTOR_CCCF_BENCHMARK_API(2048);
+void benchmark_qdetector_cccf_4096  QDETECTOR_CCCF_BENCHMARK_API(4096);
+void benchmark_qdetector_cccf_8192  QDETECTOR_CCCF_BENCHMARK_API(8192);
+void benchmark_qdetector_cccf_16384 QDETECTOR_CCCF_BENCHMARK_API(16384);
 

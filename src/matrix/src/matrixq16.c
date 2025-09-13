@@ -37,16 +37,22 @@
 #define TP              q16_t           // primitive type
 #define T_COMPLEX       0               // is type complex?
 
+// basic constants
+#define T_ZERO          (q16_zero)
+#define T_ONE           (q16_one)
+
+// basic functions
 #define MATRIX_PRINT_ELEMENT(X,R,C,r,c) \
     printf("%12.7f", q16_fixed_to_float(matrix_access(X,R,C,r,c)));
 
-#include "matrix.base.c"
-#include "matrix.cgsolve.c"
-//#include "matrix.chol.c"
-//#include "matrix.gramschmidt.c"
-#include "matrix.inv.c"
-#include "matrix.linsolve.c"
-//#include "matrix.ludecomp.c"
-//#include "matrix.qrdecomp.c"
-#include "matrix.math.c"
+// prototypes
+#include "matrix.base.proto.c"
+#include "matrix.cgsolve.proto.c"
+//#include "matrix.chol.proto.c"
+//#include "matrix.gramschmidt.proto.c"
+#include "matrix.inv.proto.c"
+#include "matrix.linsolve.proto.c"
+//#include "matrix.ludecomp.proto.c"
+//#include "matrix.qrdecomp.proto.c"
+#include "matrix.math.proto.c"
 

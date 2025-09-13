@@ -79,7 +79,7 @@ int main(int argc, char*argv[]) {
         x[i] *= (i < w_len) ? liquid_hamming(i,w_len) : 0;
     }
 
-    // create deimator object adn set scale
+    // create decimator object and set scale
     firdecim_crcf decim = firdecim_crcf_create_kaiser(M, m, As);
     firdecim_crcf_set_scale(decim, 1.0f/(float)M);
 

@@ -289,7 +289,6 @@ float gs_callback(void * _context,
 
 #if 0
 make examples/iirdes_example && ./examples/iirdes_example -t ellip -n 2 -o sos -f 0.25
-make: `examples/iirdes_example' is up to date.
 B [1 x 3] :
     0.30749798   0.61379653   0.30749798
 A [1 x 3] :
@@ -299,7 +298,6 @@ done.
 
 
 make examples/iirdes_example && ./examples/iirdes_example -t ellip -n 2 -o tf -f 0.25
-make: `examples/iirdes_example' is up to date.
 a[  0] =   1.00000000;
 a[  1] =   0.06440119;
 a[  2] =   0.31432679;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,13 +92,12 @@ void gradsearch_destroy(gradsearch _q)
 // print status
 void gradsearch_print(gradsearch _q)
 {
+#if 0
     //printf("gradient search:\n");
     printf("u=%12.4e ",   _q->u);       // utility
-#if 0
     // enable more verbose output
     printf("|p|=%7.1e ",  _q->pnorm);   // norm(p)
     printf("del=%7.1e ",  _q->delta);   // delta
-#endif
     printf("step=%7.1e ", _q->alpha);   // alpha (step size)
 
     unsigned int i;
@@ -106,6 +105,16 @@ void gradsearch_print(gradsearch _q)
     for (i=0; i<_q->num_parameters; i++)
         printf("%8.4f", _q->v[i]);
     printf("}\n");
+#else
+    printf("<liquid.gradsearch");
+    printf(", n=%u", _q->num_parameters);
+    printf(", dir=\"%s\"", _q->direction == LIQUID_OPTIM_MAXIMIZE ? "max" : "min");
+    printf(", pnorm=%g", _q->pnorm);   // norm(p)
+    printf(", delta=%g", _q->delta);   // delta
+    printf(", u=%g", _q->u);
+    printf(">\n");
+#endif
+    // return LIQUID_OK;
 }
 
 float gradsearch_step(gradsearch _q)
@@ -136,7 +145,7 @@ float gradsearch_step(gradsearch _q)
     }
     
     if (i == n) {
-        fprintf(stderr,"warning: gradsearch_step(), function ill-conditioned\n");
+        liquid_error(LIQUID_ENOCONV,"gradsearch_step(), function ill-conditioned");
         return _q->utility(_q->userdata, _q->v, _q->num_parameters);
     }
 
@@ -328,17 +337,16 @@ float gradsearch_linesearch(utility_function _utility,
 float gradsearch_norm(float *      _v,
                       unsigned int _n)
 {
-    float vnorm = 0.0f;
+    // compute l2-norm
+    float vnorm = liquid_vectorf_norm(_v, _n);
 
+    // scale values (avoiding division by zero)
+    float scale = vnorm == 0.0f ? 0.0f : 1.0f / vnorm;
     unsigned int i;
     for (i=0; i<_n; i++)
-        vnorm += _v[i]*_v[i];
+        _v[i] *= scale;
 
-    vnorm = sqrtf(vnorm);
-
-    for (i=0; i<_n; i++)
-        _v[i] /= vnorm;
-
+    // return normalization
     return vnorm;
 }
 

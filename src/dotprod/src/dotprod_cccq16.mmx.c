@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,23 +57,23 @@
 #define DEBUG_DOTPROD_CCCQ16_MMX   0
 
 #if DEBUG_DOTPROD_CCCQ16_MMX
-void _mm_printq16_epi16(__m128i _v);
-void _mm_printq16_epi32(__m128i _v);
+int _mm_printq16_epi16(__m128i _v);
+int _mm_printq16_epi32(__m128i _v);
 #endif
 
 // internal methods
-void dotprod_cccq16_execute_mmx(dotprod_cccq16 _q, cq16_t * _x, cq16_t * _y);
-//void dotprod_cccq16_execute_mmx4(dotprod_cccq16 _q, cq16_t * _x, cq16_t * _y);
+int dotprod_cccq16_execute_mmx(dotprod_cccq16 _q, cq16_t * _x, cq16_t * _y);
+//int dotprod_cccq16_execute_mmx4(dotprod_cccq16 _q, cq16_t * _x, cq16_t * _y);
 
 // basic dot product
 //  _h      :   coefficients array [size: 1 x _n]
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void dotprod_cccq16_run(cq16_t *     _h,
-                        cq16_t *     _x,
-                        unsigned int _n,
-                        cq16_t *     _y)
+int dotprod_cccq16_run(cq16_t *     _h,
+                       cq16_t *     _x,
+                       unsigned int _n,
+                       cq16_t *     _y)
 {
     // initialize accumulators (separate I/Q)
     q16_at ri = 0;
@@ -94,6 +94,7 @@ void dotprod_cccq16_run(cq16_t *     _h,
     // return result
     (*_y).real = (ri >> q16_fracbits);
     (*_y).imag = (rq >> q16_fracbits);
+    return LIQUID_OK;
 }
 
 // basic dotproduct, unrolling loop
@@ -101,10 +102,10 @@ void dotprod_cccq16_run(cq16_t *     _h,
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void dotprod_cccq16_run4(cq16_t *     _h,
-                         cq16_t *     _x,
-                         unsigned int _n,
-                         cq16_t *     _y)
+int dotprod_cccq16_run4(cq16_t *     _h,
+                        cq16_t *     _x,
+                        unsigned int _n,
+                        cq16_t *     _y)
 {
     // initialize accumulator (separate I/Q)
     q16_at ri = 0;
@@ -152,6 +153,7 @@ void dotprod_cccq16_run4(cq16_t *     _h,
     // return result
     (*_y).real = (ri >> q16_fracbits);
     (*_y).imag = (rq >> q16_fracbits);
+    return LIQUID_OK;
 }
 
 
@@ -204,7 +206,7 @@ dotprod_cccq16 dotprod_cccq16_recreate(dotprod_cccq16 _dp,
 }
 
 
-void dotprod_cccq16_destroy(dotprod_cccq16 _q)
+int dotprod_cccq16_destroy(dotprod_cccq16 _q)
 {
     // free coefficients arrays
     _mm_free(_q->hi);
@@ -212,9 +214,10 @@ void dotprod_cccq16_destroy(dotprod_cccq16 _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
-void dotprod_cccq16_print(dotprod_cccq16 _q)
+int dotprod_cccq16_print(dotprod_cccq16 _q)
 {
     printf("dotprod_cccq16:\n");
     unsigned int i;
@@ -226,14 +229,15 @@ void dotprod_cccq16_print(dotprod_cccq16 _q)
                 q16_fixed_to_float(_q->hi[2*i]),
                 q16_fixed_to_float(_q->hq[2*i]));
     }
+    return LIQUID_OK;
 }
 
 // 
-void dotprod_cccq16_execute(dotprod_cccq16 _q,
+int dotprod_cccq16_execute(dotprod_cccq16 _q,
                             cq16_t *       _x,
                             cq16_t *       _y)
 {
-    dotprod_cccq16_execute_mmx(_q, _x, _y);
+    return dotprod_cccq16_execute_mmx(_q, _x, _y);
 }
 
 // use MMX/SSE extensions to compute eight samples with each loop
@@ -254,9 +258,9 @@ void dotprod_cccq16_execute(dotprod_cccq16 _q,
 //
 //  s0      :   [   AI+EM   BI+FM   CK+GO   DK+HO   ]   size: 4x32
 //  s1      :   [   AJ+EN   BJ+FN   CL+GP   DL+HP   ]   size: 4x32
-void dotprod_cccq16_execute_mmx(dotprod_cccq16 _q,
-                                cq16_t *       _x,
-                                cq16_t *       _y)
+int dotprod_cccq16_execute_mmx(dotprod_cccq16 _q,
+                               cq16_t *       _x,
+                               cq16_t *       _y)
 {
     // type cast input as real array
     q16_t * x = (q16_t*) _x;
@@ -359,15 +363,16 @@ void dotprod_cccq16_execute_mmx(dotprod_cccq16 _q,
     // set return value
     (*_y).real = (sum_i >> q16_fracbits);
     (*_y).imag = (sum_q >> q16_fracbits);
+    return LIQUID_OK;
 }
 
 #if 0
 // use MMX/SSE extensions, unrolled loop
-void dotprod_cccq16_execute_mmx4(dotprod_cccq16 _q,
+int dotprod_cccq16_execute_mmx4(dotprod_cccq16 _q,
                                  cq16_t *       _x,
                                  cq16_t *       _y)
 {
-    dotprod_cccq16_execute_mmx(_q, _x, _y);
+    return dotprod_cccq16_execute_mmx(_q, _x, _y);
 }
 #endif
 
@@ -377,7 +382,7 @@ void dotprod_cccq16_execute_mmx4(dotprod_cccq16 _q,
 //
 
 #if DEBUG_DOTPROD_CCCQ16_MMX
-void _mm_printq16_epi16(__m128i _v) {
+int _mm_printq16_epi16(__m128i _v) {
     q16_t v[8] __attribute__((aligned(16)));
     _mm_store_si128((__m128i*)v, _v);
     printf("{");
@@ -388,9 +393,10 @@ void _mm_printq16_epi16(__m128i _v) {
     for (i=0; i<8; i++) printf(" %8d", v[i]);
 #endif
     printf("}");
+    return LIQUID_OK;
 }
 
-void _mm_printq16_epi32(__m128i _v) {
+int _mm_printq16_epi32(__m128i _v) {
     int32_t v[4] __attribute__((aligned(16)));
     _mm_store_si128((__m128i*)v, _v);
 
@@ -402,6 +408,7 @@ void _mm_printq16_epi32(__m128i _v) {
     for (i=0; i<4; i++) printf(" %17d", v[i]);
 #endif
     printf("}");
+    return LIQUID_OK;
 }
 #endif
 

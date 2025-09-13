@@ -1,10 +1,5 @@
-//
-// resamp_crcf_example.c
-//
 // Demonstration of arbitrary resampler object whereby an input signal
 // is resampled at an arbitrary rate.
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>
@@ -91,6 +86,7 @@ int main(int argc, char*argv[])
 
     // create resampler
     resamp_crcf q = resamp_crcf_create(r,m,bw,As,npfb);
+    resamp_crcf_print(q);
 
     // generate input signal
     float wsum = 0.0f;

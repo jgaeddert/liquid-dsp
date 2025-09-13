@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,18 +26,9 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-#define DEBUG_QPILOTSYNC_AUTOTEST 0
+#define DEBUG_QPILOTSYNC_AUTOTEST 1
 
-// 
-// AUTOTEST : test simple recovery of frame in noise
-//
-//  _ms             :   modulation scheme (e.g. LIQUID_MODEM_QPSK)
-//  _payload_len    :   payload length [symbols]
-//  _pilot_spacing  :   spacing between pilot symbols
-//  _dphi           :   carrier frequency offset
-//  _phi            :   carrier phase offset
-//  _gamma          :   channel gain
-//  _SNRdB          :   signal-to-noise ratio [dB]
+// test simple recovery of frame in noise
 void qpilotsync_test(modulation_scheme _ms,
                      unsigned int      _payload_len,
                      unsigned int      _pilot_spacing,
@@ -56,6 +47,7 @@ void qpilotsync_test(modulation_scheme _ms,
 
     // get frame length
     unsigned int frame_len = qpilotgen_get_frame_len(pg);
+    CONTEND_EQUALITY(frame_len, qpilotsync_get_frame_len(ps));
 
     // allocate arrays
     unsigned char payload_sym_tx[_payload_len]; // transmitted payload symbols
@@ -66,16 +58,16 @@ void qpilotsync_test(modulation_scheme _ms,
     unsigned char payload_sym_rx[_payload_len]; // received payload symbols
 
     // create modem objects for payload
-    modem mod = modem_create(_ms);
-    modem dem = modem_create(_ms);
+    modemcf mod = modemcf_create(_ms);
+    modemcf dem = modemcf_create(_ms);
 
     // assemble payload symbols
     for (i=0; i<_payload_len; i++) {
         // generate random symbol
-        payload_sym_tx[i] = modem_gen_rand_sym(mod);
+        payload_sym_tx[i] = modemcf_gen_rand_sym(mod);
 
         // modulate
-        modem_modulate(mod, payload_sym_tx[i], &payload_tx[i]);
+        modemcf_modulate(mod, payload_sym_tx[i], &payload_tx[i]);
     }
 
     // assemble frame
@@ -93,13 +85,13 @@ void qpilotsync_test(modulation_scheme _ms,
         frame_rx[i] *= _gamma;
     }
 
-    // recieve frame
+    // receive frame
     qpilotsync_execute(ps, frame_rx, payload_rx);
 
     // demodulate
     for (i=0; i<_payload_len; i++) {
         unsigned int sym_demod;
-        modem_demodulate(dem, payload_rx[i], &sym_demod);
+        modemcf_demodulate(dem, payload_rx[i], &sym_demod);
         payload_sym_rx[i] = (unsigned char)sym_demod;
     }
 
@@ -112,34 +104,43 @@ void qpilotsync_test(modulation_scheme _ms,
     float dphi_hat  = qpilotsync_get_dphi(ps);
     float phi_hat   = qpilotsync_get_phi (ps);
     float gamma_hat = qpilotsync_get_gain(ps);
+    float evm_hat   = qpilotsync_get_evm (ps);
 
     if (liquid_autotest_verbose) {
         qpilotgen_print(pg);
-        printf("  received bit errors : %u / %u\n", bit_errors, _payload_len * modem_get_bps(mod));
-        printf("  dphi (carrier freq.): %12.8ff (expected %12.8f, error=%12.8f)\n", dphi_hat, _dphi, _dphi-dphi_hat);
-        printf("  phi  (carrier phase): %12.8ff (expected %12.8f, error=%12.8f)\n",  phi_hat,  _phi, _phi-phi_hat);
-        printf("  gamma (channel gain): %12.8ff (expected %12.8f, error=%12.8f)\n", gamma_hat, _gamma, _gamma-gamma_hat);
+        printf("  received bit errors : %u / %u\n", bit_errors, _payload_len * modemcf_get_bps(mod));
+        printf("  dphi (carrier freq.): %12.8f (expected %12.8f, error=%12.8f)\n", dphi_hat,  _dphi, _dphi-dphi_hat);
+        printf("  phi  (carrier phase): %12.8f (expected %12.8f, error=%12.8f)\n", phi_hat,   _phi, _phi-phi_hat);
+        printf("  gamma (channel gain): %12.8f (expected %12.8f, error=%12.8f)\n", gamma_hat, _gamma, _gamma-gamma_hat);
+        printf("  error vector mag.   : %12.8f (expected %12.8f, error=%12.8f)\n", evm_hat,   -_SNRdB,_SNRdB+evm_hat);
     }
-    
+
     // check to see that frame was recovered
     CONTEND_DELTA   (   dphi_hat,  _dphi, 0.010f );
     CONTEND_DELTA   (    phi_hat,   _phi, 0.087f );  // 0.087 radians is about 5 degrees
     CONTEND_DELTA   (  gamma_hat, _gamma, 0.010f );
+    //CONTEND_DELTA   (    evm_hat,-_SNRdB, 6.000f ); // EVM estimate poor for few pilots (up to 10 dB off for 16)
     CONTEND_EQUALITY( bit_errors, 0 );
     
     // destroy allocated objects
     qpilotgen_destroy(pg);
     qpilotsync_destroy(ps);
-    modem_destroy(mod);
-    modem_destroy(dem);
+    modemcf_destroy(mod);
+    modemcf_destroy(dem);
 
-#if DEBUG_QPILOTSYNC_AUTOTEST
+#if 0
+    // append error statistics to file for assessment
+    FILE * fp = fopen("qpilotsync_errors.txt", "a");
+    fprintf(fp,"%12.4e %12.4e %12.4e %12.4e\n",dphi_hat-_dphi,phi_hat-_phi,gamma_hat-_gamma,evm_hat+_SNRdB);
+    fclose(fp);
+#endif
+#if 0 //DEBUG_QPILOTSYNC_AUTOTEST
     // write symbols to output file for plotting
     char filename[256];
-    sprintf(filename,"qpilotsync_autotest_%u_%u_debug.m", _payload_len, _pilot_spacing);
+    sprintf(filename,"autotest/logs/qpilotsync_autotest_%u_%u_debug.m", _payload_len, _pilot_spacing);
     FILE * fid = fopen(filename,"w");
     if (!fid) {
-        fprintf(stderr,"error: could not open '%s' for writing\n", filename);
+        liquid_error(LIQUID_EIO,"could not open '%s' for writing", filename);
         return;
     }
     fprintf(fid,"%% %s : auto-generated file\n", filename);
@@ -176,9 +177,54 @@ void qpilotsync_test(modulation_scheme _ms,
 #endif
 }
 
+//                                                  ms                 pay  ps  dphi   phi   gamma  SNR
 void autotest_qpilotsync_100_16() { qpilotsync_test(LIQUID_MODEM_QPSK, 100, 16, 0.07f, 1.2f, 0.7f, 40.0f); }
 void autotest_qpilotsync_200_20() { qpilotsync_test(LIQUID_MODEM_QPSK, 200, 20, 0.07f, 1.2f, 0.7f, 40.0f); }
 void autotest_qpilotsync_300_24() { qpilotsync_test(LIQUID_MODEM_QPSK, 300, 24, 0.07f, 1.2f, 0.7f, 40.0f); }
 void autotest_qpilotsync_400_28() { qpilotsync_test(LIQUID_MODEM_QPSK, 400, 28, 0.07f, 1.2f, 0.7f, 40.0f); }
 void autotest_qpilotsync_500_32() { qpilotsync_test(LIQUID_MODEM_QPSK, 500, 32, 0.07f, 1.2f, 0.7f, 40.0f); }
+
+void autotest_qpilotgen_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping qpilotgen config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check invalid function calls
+    CONTEND_ISNULL(qpilotgen_create(  0, 100));    // invalid payload length
+    CONTEND_ISNULL(qpilotgen_create(512,   0));    // invalid pilot spacing
+    CONTEND_ISNULL(qpilotgen_copy(NULL));
+
+    // create proper object and test configurations
+    qpilotgen q = qpilotgen_create(512, 16);
+
+    CONTEND_EQUALITY(LIQUID_OK, qpilotgen_print(q))
+
+    qpilotgen_destroy(q);
+}
+
+void autotest_qpilotsync_config()
+{
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping qpilotsync config test with strict exit enabled\n");
+    return;
+#endif
+#if !LIQUID_SUPPRESS_ERROR_OUTPUT
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+#endif
+    // check invalid function calls
+    CONTEND_ISNULL(qpilotsync_create(  0, 100));    // invalid payload length
+    CONTEND_ISNULL(qpilotsync_create(512,   0));    // invalid pilot spacing
+    CONTEND_ISNULL(qpilotsync_copy(NULL));
+
+    // create proper object and test configurations
+    qpilotsync q = qpilotsync_create(512, 16);
+
+    CONTEND_EQUALITY(LIQUID_OK, qpilotsync_print(q))
+
+    qpilotsync_destroy(q);
+}
 

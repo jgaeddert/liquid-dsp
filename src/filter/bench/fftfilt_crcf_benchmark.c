@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  */
 
 #include <sys/resource.h>
+#include <math.h>
 #include "liquid.h"
 
 // Helper function to keep code base small
@@ -30,11 +31,8 @@ void fftfilt_crcf_bench(struct rusage *     _start,
                         unsigned int        _n)
 {
     // adjust number of iterations:
-    *_num_iterations *= 100;
-
-    if      (_n <  6) *_num_iterations /= 120;
-    else if (_n < 12) *_num_iterations /= 40;
-    else              *_num_iterations /= 5*_n;
+    *_num_iterations = *_num_iterations * 5 / (_n*logf(_n));
+    if (*_num_iterations < 1) *_num_iterations = 1;
 
     // generate coefficients
     unsigned int h_len = _n+1;

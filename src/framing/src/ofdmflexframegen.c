@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2017 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// ofdmflexframegen.c
-//
 // OFDM flexible frame generator
-//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -37,23 +33,23 @@
 #define DEBUG_OFDMFLEXFRAMEGEN  0
 
 // reconfigure internal buffers, objects, etc.
-void ofdmflexframegen_reconfigure(ofdmflexframegen _q);
+int ofdmflexframegen_reconfigure(ofdmflexframegen _q);
 
 // encode header
-void ofdmflexframegen_encode_header(ofdmflexframegen _q);
+int ofdmflexframegen_encode_header(ofdmflexframegen _q);
 
 // modulate header
-void ofdmflexframegen_modulate_header(ofdmflexframegen _q);
+int ofdmflexframegen_modulate_header(ofdmflexframegen _q);
 
 // generate samples of assembled frame (internally)
-void ofdmflexframegen_gen_symbol (ofdmflexframegen _q); // (generic)
-void ofdmflexframegen_gen_S0a    (ofdmflexframegen _q); // generate S0 symbol (first)
-void ofdmflexframegen_gen_S0b    (ofdmflexframegen _q); // generate S0 symbol (second)
-void ofdmflexframegen_gen_S1     (ofdmflexframegen _q); // generate S1 symbol
-void ofdmflexframegen_gen_header (ofdmflexframegen _q); // generate header symbol
-void ofdmflexframegen_gen_payload(ofdmflexframegen _q); // generate payload symbol
-void ofdmflexframegen_gen_tail   (ofdmflexframegen _q); // generate tail symbol
-void ofdmflexframegen_gen_zeros  (ofdmflexframegen _q); // generate zeros
+int ofdmflexframegen_gen_symbol (ofdmflexframegen _q); // (generic)
+int ofdmflexframegen_gen_S0a    (ofdmflexframegen _q); // generate S0 symbol (first)
+int ofdmflexframegen_gen_S0b    (ofdmflexframegen _q); // generate S0 symbol (second)
+int ofdmflexframegen_gen_S1     (ofdmflexframegen _q); // generate S1 symbol
+int ofdmflexframegen_gen_header (ofdmflexframegen _q); // generate header symbol
+int ofdmflexframegen_gen_payload(ofdmflexframegen _q); // generate payload symbol
+int ofdmflexframegen_gen_tail   (ofdmflexframegen _q); // generate tail symbol
+int ofdmflexframegen_gen_zeros  (ofdmflexframegen _q); // generate zeros
 
 // default ofdmflexframegen properties
 static ofdmflexframegenprops_s ofdmflexframegenprops_default = {
@@ -71,9 +67,10 @@ static ofdmflexframegenprops_s ofdmflexframegenprops_header_default = {
     OFDMFLEXFRAME_H_MOD,
 };
 
-void ofdmflexframegenprops_init_default(ofdmflexframegenprops_s * _props)
+int ofdmflexframegenprops_init_default(ofdmflexframegenprops_s * _props)
 {
     memmove(_props, &ofdmflexframegenprops_default, sizeof(ofdmflexframegenprops_s));
+    return LIQUID_OK;
 }
 
 struct ofdmflexframegen_s {
@@ -103,7 +100,7 @@ struct ofdmflexframegen_s {
     unsigned int num_symbols_payload;   // number of payload OFDM symbols
 
     // header
-    modem mod_header;             // header modulator
+    modemcf mod_header;           // header modulator
     packetizer p_header;          // header packetizer
     unsigned char * header;       // header data (uncoded)
     unsigned char * header_enc;   // header data (encoded)
@@ -116,7 +113,7 @@ struct ofdmflexframegen_s {
     // payload
     packetizer p_payload;               // payload packetizer
     unsigned int payload_dec_len;       // payload length (num un-encoded bytes)
-    modem mod_payload;                  // payload modulator
+    modemcf mod_payload;                // payload modulator
     unsigned char * payload_enc;        // payload data (encoded bytes)
     unsigned char * payload_mod;        // payload data (modulated symbols)
     unsigned int payload_enc_len;       // length of encoded payload
@@ -156,13 +153,12 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int              _M,
                                          ofdmflexframegenprops_s * _fgprops)
 {
     // validate input
-    if (_M < 2) {
-        fprintf(stderr,"error: ofdmflexframegen_create(), number of subcarriers must be at least 2\n");
-        exit(1);
-    } else if (_M % 2) {
-        fprintf(stderr,"error: ofdmflexframegen_create(), number of subcarriers must be even\n");
-        exit(1);
-    }
+    if (_M < 8)
+        return liquid_error_config("ofdmflexframegen_create(), number of subcarriers must be at least 8");
+    if (_M % 2)
+        return liquid_error_config("ofdmflexframegen_create(), number of subcarriers must be even");
+    if (_cp_len > _M)
+        return liquid_error_config("ofdmflexframegen_create(), cyclic prefix length cannot exceed number of subcarriers");
 
     ofdmflexframegen q = (ofdmflexframegen) malloc(sizeof(struct ofdmflexframegen_s));
     q->M         = _M;          // number of subcarriers
@@ -213,7 +209,7 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int              _M,
     q->payload_mod = (unsigned char*) malloc(q->payload_mod_len*sizeof(unsigned char));
 
     // create payload modem (initially QPSK, overridden by properties)
-    q->mod_payload = modem_create(LIQUID_MODEM_QPSK);
+    q->mod_payload = modemcf_create(LIQUID_MODEM_QPSK);
 
     // initialize properties
     ofdmflexframegen_setprops(q, _fgprops);
@@ -225,14 +221,14 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int              _M,
     return q;
 }
 
-void ofdmflexframegen_destroy(ofdmflexframegen _q)
+int ofdmflexframegen_destroy(ofdmflexframegen _q)
 {
     // destroy internal objects
     ofdmframegen_destroy(_q->fg);       // OFDM frame generator
     packetizer_destroy(_q->p_header);   // header packetizer
-    modem_destroy(_q->mod_header);      // header modulator
+    modemcf_destroy(_q->mod_header);      // header modulator
     packetizer_destroy(_q->p_payload);  // payload packetizer
-    modem_destroy(_q->mod_payload);     // payload modulator
+    modemcf_destroy(_q->mod_payload);     // payload modulator
 
     // free buffers/arrays
     free(_q->payload_enc);              // encoded payload bytes
@@ -246,9 +242,10 @@ void ofdmflexframegen_destroy(ofdmflexframegen _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
-void ofdmflexframegen_reset(ofdmflexframegen _q)
+int ofdmflexframegen_reset(ofdmflexframegen _q)
 {
     // reset symbol counter and state
     _q->symbol_number        = 0;
@@ -261,7 +258,7 @@ void ofdmflexframegen_reset(ofdmflexframegen _q)
 
     // reset internal OFDM frame generator object
     // NOTE: this is important for appropriately setting the pilot phases
-    ofdmframegen_reset(_q->fg);
+    return ofdmframegen_reset(_q->fg);
 }
 
 // is frame assembled?
@@ -270,69 +267,44 @@ int ofdmflexframegen_is_assembled(ofdmflexframegen _q)
     return _q->frame_assembled;
 }
 
-void ofdmflexframegen_print(ofdmflexframegen _q)
+int ofdmflexframegen_print(ofdmflexframegen _q)
 {
-    printf("ofdmflexframegen:\n");
-    printf("    num subcarriers     :   %-u\n", _q->M);
-    printf("      * NULL            :   %-u\n", _q->M_null);
-    printf("      * pilot           :   %-u\n", _q->M_pilot);
-    printf("      * data            :   %-u\n", _q->M_data);
-    printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
-    printf("    taper len           :   %-u\n", _q->taper_len);
-    printf("    properties:\n");
-    printf("      * mod scheme      :   %s\n", modulation_types[_q->props.mod_scheme].fullname);
-    printf("      * fec (inner)     :   %s\n", fec_scheme_str[_q->props.fec0][1]);
-    printf("      * fec (outer)     :   %s\n", fec_scheme_str[_q->props.fec1][1]);
-    printf("      * CRC scheme      :   %s\n", crc_scheme_str[_q->props.check][1]);
-    printf("    frame assembled     :   %s\n", _q->frame_assembled ? "yes" : "no");
-    if (_q->frame_assembled) {
-        printf("    payload:\n");
-        printf("      * decoded bytes   :   %-u\n", _q->payload_dec_len);
-        printf("      * encoded bytes   :   %-u\n", _q->payload_enc_len);
-        printf("      * modulated syms  :   %-u\n", _q->payload_mod_len);
-        printf("    total OFDM symbols  :   %-u\n", ofdmflexframegen_getframelen(_q));
-        printf("      * S0 symbols      :   %-u @ %u\n", 2, _q->M+_q->cp_len);
-        printf("      * S1 symbols      :   %-u @ %u\n", 1, _q->M+_q->cp_len);
-        printf("      * header symbols  :   %-u @ %u\n", _q->num_symbols_header,  _q->M+_q->cp_len);
-        printf("      * payload symbols :   %-u @ %u\n", _q->num_symbols_payload, _q->M+_q->cp_len);
-
-        // compute asymptotic spectral efficiency
-        unsigned int num_bits = 8*_q->payload_dec_len;
-        unsigned int num_samples = (_q->M+_q->cp_len)*(3 + _q->num_symbols_header + _q->num_symbols_payload);
-        printf("    spectral efficiency :   %-6.4f b/s/Hz\n", (float)num_bits / (float)num_samples);
-    }
+    printf("<liquid.ofdmflexframegen");
+    printf(", subcarriers=%u", _q->M);
+    printf(", null=%u", _q->M_null);
+    printf(", pilot=%u", _q->M_pilot);
+    printf(", data=%u", _q->M_data);
+    printf(", cp=%u", _q->cp_len);
+    printf(", taper=%u", _q->taper_len);
+    printf(">\n");
+    return LIQUID_OK;
 }
 
 // get ofdmflexframegen properties
 //  _q      :   frame generator object
 //  _props  :   frame generator properties structure pointer
-void ofdmflexframegen_getprops(ofdmflexframegen _q,
+int ofdmflexframegen_getprops(ofdmflexframegen _q,
                                ofdmflexframegenprops_s * _props)
 {
     // copy properties structure to output pointer
     memmove(_props, &_q->props, sizeof(ofdmflexframegenprops_s));
+    return LIQUID_OK;
 }
 
-void ofdmflexframegen_setprops(ofdmflexframegen _q,
-                               ofdmflexframegenprops_s * _props)
+int ofdmflexframegen_setprops(ofdmflexframegen _q,
+                              ofdmflexframegenprops_s * _props)
 {
     // if properties object is NULL, initialize with defaults
-    if (_props == NULL) {
-        ofdmflexframegen_setprops(_q, &ofdmflexframegenprops_default);
-        return;
-    }
+    if (_props == NULL)
+        return ofdmflexframegen_setprops(_q, &ofdmflexframegenprops_default);
 
     // validate input
-    if (_props->check == LIQUID_CRC_UNKNOWN || _props->check >= LIQUID_CRC_NUM_SCHEMES) {
-        fprintf(stderr, "error: ofdmflexframegen_setprops(), invalid/unsupported CRC scheme\n");
-        exit(1);
-    } else if (_props->fec0 == LIQUID_FEC_UNKNOWN || _props->fec1 == LIQUID_FEC_UNKNOWN) {
-        fprintf(stderr, "error: ofdmflexframegen_setprops(), invalid/unsupported FEC scheme\n");
-        exit(1);
-    } else if (_props->mod_scheme == LIQUID_MODEM_UNKNOWN ) {
-        fprintf(stderr, "error: ofdmflexframegen_setprops(), invalid/unsupported modulation scheme\n");
-        exit(1);
-    }
+    if (_props->check == LIQUID_CRC_UNKNOWN || _props->check >= LIQUID_CRC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"ofdmflexframegen_setprops(), invalid/unsupported CRC scheme");
+    if (_props->fec0 == LIQUID_FEC_UNKNOWN || _props->fec1 == LIQUID_FEC_UNKNOWN)
+        return liquid_error(LIQUID_EICONFIG,"ofdmflexframegen_setprops(), invalid/unsupported FEC scheme");
+    if (_props->mod_scheme == LIQUID_MODEM_UNKNOWN )
+        return liquid_error(LIQUID_EICONFIG,"ofdmflexframegen_setprops(), invalid/unsupported modulation scheme");
 
     // TODO : determine if re-configuration is necessary
 
@@ -340,11 +312,11 @@ void ofdmflexframegen_setprops(ofdmflexframegen _q,
     memmove(&_q->props, _props, sizeof(ofdmflexframegenprops_s));
 
     // reconfigure internal buffers, objects, etc.
-    ofdmflexframegen_reconfigure(_q);
+    return ofdmflexframegen_reconfigure(_q);
 }
 
-void ofdmflexframegen_set_header_len(ofdmflexframegen _q,
-                                     unsigned int     _len)
+int ofdmflexframegen_set_header_len(ofdmflexframegen _q,
+                                    unsigned int     _len)
 {
     _q->header_user_len = _len;
     _q->header_dec_len = OFDMFLEXFRAME_H_DEC + _q->header_user_len;
@@ -366,17 +338,18 @@ void ofdmflexframegen_set_header_len(ofdmflexframegen _q,
     _q->header_mod = realloc(_q->header_mod, _q->header_sym_len*sizeof(unsigned char));
     // create header objects
     if (_q->mod_header) {
-        modem_destroy(_q->mod_header);
+        modemcf_destroy(_q->mod_header);
     }
-    _q->mod_header = modem_create(_q->header_props.mod_scheme);
+    _q->mod_header = modemcf_create(_q->header_props.mod_scheme);
 
     // compute number of header symbols
     div_t d = div(_q->header_sym_len, _q->M_data);
     _q->num_symbols_header = d.quot + (d.rem ? 1 : 0);
+    return LIQUID_OK;
 }
 
-void ofdmflexframegen_set_header_props(ofdmflexframegen _q,
-                                       ofdmflexframegenprops_s * _props)
+int ofdmflexframegen_set_header_props(ofdmflexframegen _q,
+                                      ofdmflexframegenprops_s * _props)
 {
     // if properties object is NULL, initialize with defaults
     if (_props == NULL) {
@@ -384,22 +357,18 @@ void ofdmflexframegen_set_header_props(ofdmflexframegen _q,
     }
 
     // validate input
-    if (_props->check == LIQUID_CRC_UNKNOWN || _props->check >= LIQUID_CRC_NUM_SCHEMES) {
-        fprintf(stderr, "error: ofdmflexframegen_setprops(), invalid/unsupported CRC scheme\n");
-        exit(1);
-    } else if (_props->fec0 == LIQUID_FEC_UNKNOWN || _props->fec1 == LIQUID_FEC_UNKNOWN) {
-        fprintf(stderr, "error: ofdmflexframegen_setprops(), invalid/unsupported FEC scheme\n");
-        exit(1);
-    } else if (_props->mod_scheme == LIQUID_MODEM_UNKNOWN ) {
-        fprintf(stderr, "error: ofdmflexframegen_setprops(), invalid/unsupported modulation scheme\n");
-        exit(1);
-    }
+    if (_props->check == LIQUID_CRC_UNKNOWN || _props->check >= LIQUID_CRC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"ofdmflexframegen_setprops(), invalid/unsupported CRC scheme");
+    if (_props->fec0 == LIQUID_FEC_UNKNOWN || _props->fec1 == LIQUID_FEC_UNKNOWN)
+        return liquid_error(LIQUID_EICONFIG,"ofdmflexframegen_setprops(), invalid/unsupported FEC scheme");
+    if (_props->mod_scheme == LIQUID_MODEM_UNKNOWN )
+        return liquid_error(LIQUID_EICONFIG,"ofdmflexframegen_setprops(), invalid/unsupported modulation scheme");
 
     // copy properties to internal structure
     memmove(&_q->header_props, _props, sizeof(ofdmflexframegenprops_s));
 
     // reconfigure internal buffers, objects, etc.
-    ofdmflexframegen_set_header_len(_q, _q->header_user_len);
+    return ofdmflexframegen_set_header_len(_q, _q->header_user_len);
 }
 
 // get length of frame (symbols)
@@ -421,10 +390,10 @@ unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q)
 //  _header         :   frame header
 //  _payload        :   payload data [size: _payload_len x 1]
 //  _payload_len    :   payload data length
-void ofdmflexframegen_assemble(ofdmflexframegen      _q,
-                               const unsigned char * _header,
-                               const unsigned char * _payload,
-                               unsigned int          _payload_len)
+int ofdmflexframegen_assemble(ofdmflexframegen      _q,
+                              const unsigned char * _header,
+                              const unsigned char * _payload,
+                              unsigned int          _payload_len)
 {
     // reset state
     ofdmflexframegen_reset(_q);
@@ -469,6 +438,7 @@ void ofdmflexframegen_assemble(ofdmflexframegen      _q,
 #if DEBUG_OFDMFLEXFRAMEGEN
     printf("wrote %u symbols (expected %u)\n", num_written, _q->payload_mod_len);
 #endif
+    return LIQUID_OK;
 }
 
 // write samples of assembled frame
@@ -498,7 +468,7 @@ int ofdmflexframegen_write(ofdmflexframegen _q,
 //
 
 // reconfigure internal buffers, objects, etc.
-void ofdmflexframegen_reconfigure(ofdmflexframegen _q)
+int ofdmflexframegen_reconfigure(ofdmflexframegen _q)
 {
     // re-create payload packetizer
     _q->p_payload = packetizer_recreate(_q->p_payload,
@@ -517,7 +487,7 @@ void ofdmflexframegen_reconfigure(ofdmflexframegen _q)
 
     // re-create modem
     // TODO : only do this if necessary
-    _q->mod_payload = modem_recreate(_q->mod_payload, _q->props.mod_scheme);
+    _q->mod_payload = modemcf_recreate(_q->mod_payload, _q->props.mod_scheme);
 
     // re-allocate memory for payload modem symbols
     unsigned int bps = modulation_types[_q->props.mod_scheme].bps;
@@ -529,10 +499,11 @@ void ofdmflexframegen_reconfigure(ofdmflexframegen _q)
     // re-compute number of payload OFDM symbols
     d = div(_q->payload_mod_len, _q->M_data);
     _q->num_symbols_payload = d.quot + (d.rem ? 1 : 0);
+    return LIQUID_OK;
 }
 
 // encode header
-void ofdmflexframegen_encode_header(ofdmflexframegen _q)
+int ofdmflexframegen_encode_header(ofdmflexframegen _q)
 {
     // first 'n' bytes user data
     unsigned int n = _q->header_user_len;
@@ -575,10 +546,11 @@ void ofdmflexframegen_encode_header(ofdmflexframegen _q)
         printf("%.2X ", _q->header_enc[i]);
     printf("\n");
 #endif
+    return LIQUID_OK;
 }
 
 // modulate header
-void ofdmflexframegen_modulate_header(ofdmflexframegen _q)
+int ofdmflexframegen_modulate_header(ofdmflexframegen _q)
 {
     // repack 8-bit header bytes into 'bps'-bit payload symbols
     unsigned int bps = modulation_types[_q->header_props.mod_scheme].bps;
@@ -586,30 +558,30 @@ void ofdmflexframegen_modulate_header(ofdmflexframegen _q)
     liquid_repack_bytes(_q->header_enc, 8,   _q->header_enc_len,
                         _q->header_mod, bps, _q->header_sym_len,
                         &num_written);
+    return LIQUID_OK;
 }
 
 // generate transmit samples (fill internal buffer)
-void ofdmflexframegen_gen_symbol(ofdmflexframegen _q)
+int ofdmflexframegen_gen_symbol(ofdmflexframegen _q)
 {
     // increment symbol counter
     _q->symbol_number++;
 
     switch (_q->state) {
-    case OFDMFLEXFRAMEGEN_STATE_S0a:     ofdmflexframegen_gen_S0a    (_q); break;
-    case OFDMFLEXFRAMEGEN_STATE_S0b:     ofdmflexframegen_gen_S0b    (_q); break;
-    case OFDMFLEXFRAMEGEN_STATE_S1:      ofdmflexframegen_gen_S1     (_q); break;
-    case OFDMFLEXFRAMEGEN_STATE_HEADER:  ofdmflexframegen_gen_header (_q); break;
-    case OFDMFLEXFRAMEGEN_STATE_PAYLOAD: ofdmflexframegen_gen_payload(_q); break;
-    case OFDMFLEXFRAMEGEN_STATE_TAIL:    ofdmflexframegen_gen_tail   (_q); break;
-    case OFDMFLEXFRAMEGEN_STATE_ZEROS:   ofdmflexframegen_gen_zeros  (_q); break;
-    default:
-        fprintf(stderr,"error: ofdmflexframegen_writesymbol(), unknown/unsupported internal state\n");
-        exit(1);
+    case OFDMFLEXFRAMEGEN_STATE_S0a:     return ofdmflexframegen_gen_S0a    (_q);
+    case OFDMFLEXFRAMEGEN_STATE_S0b:     return ofdmflexframegen_gen_S0b    (_q);
+    case OFDMFLEXFRAMEGEN_STATE_S1:      return ofdmflexframegen_gen_S1     (_q);
+    case OFDMFLEXFRAMEGEN_STATE_HEADER:  return ofdmflexframegen_gen_header (_q);
+    case OFDMFLEXFRAMEGEN_STATE_PAYLOAD: return ofdmflexframegen_gen_payload(_q);
+    case OFDMFLEXFRAMEGEN_STATE_TAIL:    return ofdmflexframegen_gen_tail   (_q);
+    case OFDMFLEXFRAMEGEN_STATE_ZEROS:   return ofdmflexframegen_gen_zeros  (_q);
+    default:;
     }
+    return liquid_error(LIQUID_EINT,"ofdmflexframegen_writesymbol(), invalid internal state");
 }
 
 // write first S0 symbol
-void ofdmflexframegen_gen_S0a(ofdmflexframegen _q)
+int ofdmflexframegen_gen_S0a(ofdmflexframegen _q)
 {
 #if DEBUG_OFDMFLEXFRAMEGEN
     printf("writing S0[a] symbol\n");
@@ -620,10 +592,11 @@ void ofdmflexframegen_gen_S0a(ofdmflexframegen _q)
 
     // update state
     _q->state = OFDMFLEXFRAMEGEN_STATE_S0b;
+    return LIQUID_OK;
 }
 
 // write second S0 symbol
-void ofdmflexframegen_gen_S0b(ofdmflexframegen _q)
+int ofdmflexframegen_gen_S0b(ofdmflexframegen _q)
 {
 #if DEBUG_OFDMFLEXFRAMEGEN
     printf("writing S0[b] symbol\n");
@@ -634,10 +607,11 @@ void ofdmflexframegen_gen_S0b(ofdmflexframegen _q)
 
     // update state
     _q->state = OFDMFLEXFRAMEGEN_STATE_S1;
+    return LIQUID_OK;
 }
 
 // write S1 symbol
-void ofdmflexframegen_gen_S1(ofdmflexframegen _q)
+int ofdmflexframegen_gen_S1(ofdmflexframegen _q)
 {
 #if DEBUG_OFDMFLEXFRAMEGEN
     printf("writing S1 symbol\n");
@@ -649,10 +623,11 @@ void ofdmflexframegen_gen_S1(ofdmflexframegen _q)
     // update state
     _q->symbol_number = 0;
     _q->state = OFDMFLEXFRAMEGEN_STATE_HEADER;
+    return LIQUID_OK;
 }
 
 // write header symbol
-void ofdmflexframegen_gen_header(ofdmflexframegen _q)
+int ofdmflexframegen_gen_header(ofdmflexframegen _q)
 {
 #if DEBUG_OFDMFLEXFRAMEGEN
     printf("writing header symbol\n");
@@ -670,13 +645,13 @@ void ofdmflexframegen_gen_header(ofdmflexframegen _q)
             // load...
             if (_q->header_symbol_index < _q->header_sym_len) {
                 // modulate header symbol onto data subcarrier
-                modem_modulate(_q->mod_header, _q->header_mod[_q->header_symbol_index++], &_q->X[i]);
+                modemcf_modulate(_q->mod_header, _q->header_mod[_q->header_symbol_index++], &_q->X[i]);
                 //printf("  writing symbol %3u / %3u (x = %8.5f + j%8.5f)\n", _q->header_symbol_index, OFDMFLEXFRAME_H_SYM, crealf(_q->X[i]), cimagf(_q->X[i]));
             } else {
                 //printf("  random header symbol\n");
                 // load random symbol
-                unsigned int sym = modem_gen_rand_sym(_q->mod_header);
-                modem_modulate(_q->mod_header, sym, &_q->X[i]);
+                unsigned int sym = modemcf_gen_rand_sym(_q->mod_header);
+                modemcf_modulate(_q->mod_header, sym, &_q->X[i]);
             }
         } else {
             // ignore subcarrier (ofdmframegen handles nulls and pilots)
@@ -692,10 +667,11 @@ void ofdmflexframegen_gen_header(ofdmflexframegen _q)
         _q->symbol_number = 0;
         _q->state = OFDMFLEXFRAMEGEN_STATE_PAYLOAD;
     }
+    return LIQUID_OK;
 }
 
 // write payload symbol
-void ofdmflexframegen_gen_payload(ofdmflexframegen _q)
+int ofdmflexframegen_gen_payload(ofdmflexframegen _q)
 {
 #if DEBUG_OFDMFLEXFRAMEGEN
     printf("writing payload symbol\n");
@@ -713,12 +689,12 @@ void ofdmflexframegen_gen_payload(ofdmflexframegen _q)
             // load...
             if (_q->payload_symbol_index < _q->payload_mod_len) {
                 // modulate payload symbol onto data subcarrier
-                modem_modulate(_q->mod_payload, _q->payload_mod[_q->payload_symbol_index++], &_q->X[i]);
+                modemcf_modulate(_q->mod_payload, _q->payload_mod[_q->payload_symbol_index++], &_q->X[i]);
             } else {
                 //printf("  random payload symbol\n");
                 // load random symbol
-                unsigned int sym = modem_gen_rand_sym(_q->mod_payload);
-                modem_modulate(_q->mod_payload, sym, &_q->X[i]);
+                unsigned int sym = modemcf_gen_rand_sym(_q->mod_payload);
+                modemcf_modulate(_q->mod_payload, sym, &_q->X[i]);
             }
         } else {
             // ignore subcarrier (ofdmframegen handles nulls and pilots)
@@ -732,10 +708,11 @@ void ofdmflexframegen_gen_payload(ofdmflexframegen _q)
     // check to see if this is the last symbol in the payload
     if (_q->symbol_number == _q->num_symbols_payload)
         _q->state = OFDMFLEXFRAMEGEN_STATE_TAIL;
+    return LIQUID_OK;
 }
 
 // generate buffer of zeros
-void ofdmflexframegen_gen_tail(ofdmflexframegen _q)
+int ofdmflexframegen_gen_tail(ofdmflexframegen _q)
 {
 #if DEBUG_OFDMFLEXFRAMEGEN
     printf("writing tail\n");
@@ -752,16 +729,16 @@ void ofdmflexframegen_gen_tail(ofdmflexframegen _q)
     _q->frame_complete = 1;
     _q->frame_assembled = 0;
     _q->state = OFDMFLEXFRAMEGEN_STATE_ZEROS;
+    return LIQUID_OK;
 }
 
 // generate buffer of zeros
-void ofdmflexframegen_gen_zeros(ofdmflexframegen _q)
+int ofdmflexframegen_gen_zeros(ofdmflexframegen _q)
 {
 #if DEBUG_OFDMFLEXFRAMEGEN
     printf("writing zeros\n");
 #endif
-    unsigned int i;
-    for (i=0; i<_q->frame_len; i++)
-        _q->buf_tx[i] = 0.0f;
+    memset(_q->buf_tx, 0x00, (_q->frame_len)*sizeof(float complex));
+    return LIQUID_OK;
 }
 

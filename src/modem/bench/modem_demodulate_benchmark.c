@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,46 +24,42 @@
 #include <stdlib.h>
 #include <math.h>
 #include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.internal.h"
 
 #define MODEM_DEMODULATE_BENCH_API(MS)  \
 (   struct rusage *_start,              \
     struct rusage *_finish,             \
     unsigned long int *_num_iterations) \
-{ modem_demodulate_bench(_start, _finish, _num_iterations, MS); }
+{ modemcf_demodulate_bench(_start, _finish, _num_iterations, MS); }
 
 // Helper function to keep code base small
-void modem_demodulate_bench(struct rusage *_start,
-                            struct rusage *_finish,
-                            unsigned long int *_num_iterations,
-                            modulation_scheme _ms)
+void modemcf_demodulate_bench(struct rusage *_start,
+                              struct rusage *_finish,
+                              unsigned long int *_num_iterations,
+                              modulation_scheme _ms)
 {
+    // initialize modulator
+    modemcf demod = modemcf_create(_ms);
+
     // normalize number of iterations
+    unsigned int bps = modemcf_get_bps(demod);
     switch (_ms) {
     case LIQUID_MODEM_UNKNOWN:
-        fprintf(stderr,"error: modem_demodulate_bench(), unknown modem scheme\n");
-        exit(1);
-    case LIQUID_MODEM_BPSK:     *_num_iterations *= 2;      break;
-    case LIQUID_MODEM_QPSK:     *_num_iterations *= 2;      break;
-    case LIQUID_MODEM_OOK:      *_num_iterations *= 2;      break;
-    case LIQUID_MODEM_SQAM32:   *_num_iterations /= 10;     break;
-    case LIQUID_MODEM_SQAM128:  *_num_iterations /= 20;     break;
-    case LIQUID_MODEM_V29:      *_num_iterations /= 16;     break;
-    case LIQUID_MODEM_ARB16OPT: *_num_iterations /= 8;      break;
-    case LIQUID_MODEM_ARB32OPT: *_num_iterations /= 16;     break;
-    case LIQUID_MODEM_ARB64OPT: *_num_iterations /= 32;     break;
-    case LIQUID_MODEM_ARB128OPT: *_num_iterations /= 64;    break;
-    case LIQUID_MODEM_ARB256OPT: *_num_iterations /= 128;   break;
-    case LIQUID_MODEM_ARB64VT:  *_num_iterations /= 64;     break;
-    default:;
-        *_num_iterations /= 8;
+        liquid_error(LIQUID_EINT,"modemcf_modulate_bench(), unknown modem scheme");
+        return;
+    case LIQUID_MODEM_ARB16OPT:
+    case LIQUID_MODEM_ARB32OPT:
+    case LIQUID_MODEM_ARB64OPT:
+    case LIQUID_MODEM_ARB128OPT:
+    case LIQUID_MODEM_ARB256OPT:
+    case LIQUID_MODEM_ARB64VT:
+    case LIQUID_MODEM_ARB:
+        *_num_iterations /= 2*(1<<bps);
+        break;
+    default:
+        *_num_iterations /= bps;
     }
-
     if (*_num_iterations < 1) *_num_iterations = 1;
-
-
-    // initialize modulator
-    modem demod = modem_create(_ms);
 
     unsigned long int i;
 
@@ -77,31 +73,31 @@ void modem_demodulate_bench(struct rusage *_start,
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        modem_demodulate(demod, x[ 0], &symbol_out);
-        modem_demodulate(demod, x[ 1], &symbol_out);
-        modem_demodulate(demod, x[ 2], &symbol_out);
-        modem_demodulate(demod, x[ 3], &symbol_out);
-        modem_demodulate(demod, x[ 4], &symbol_out);
-        modem_demodulate(demod, x[ 5], &symbol_out);
-        modem_demodulate(demod, x[ 6], &symbol_out);
-        modem_demodulate(demod, x[ 7], &symbol_out);
-        modem_demodulate(demod, x[ 8], &symbol_out);
-        modem_demodulate(demod, x[ 9], &symbol_out);
-        modem_demodulate(demod, x[10], &symbol_out);
-        modem_demodulate(demod, x[11], &symbol_out);
-        modem_demodulate(demod, x[12], &symbol_out);
-        modem_demodulate(demod, x[13], &symbol_out);
-        modem_demodulate(demod, x[14], &symbol_out);
-        modem_demodulate(demod, x[15], &symbol_out);
-        modem_demodulate(demod, x[16], &symbol_out);
-        modem_demodulate(demod, x[17], &symbol_out);
-        modem_demodulate(demod, x[18], &symbol_out);
-        modem_demodulate(demod, x[19], &symbol_out);
+        modemcf_demodulate(demod, x[ 0], &symbol_out);
+        modemcf_demodulate(demod, x[ 1], &symbol_out);
+        modemcf_demodulate(demod, x[ 2], &symbol_out);
+        modemcf_demodulate(demod, x[ 3], &symbol_out);
+        modemcf_demodulate(demod, x[ 4], &symbol_out);
+        modemcf_demodulate(demod, x[ 5], &symbol_out);
+        modemcf_demodulate(demod, x[ 6], &symbol_out);
+        modemcf_demodulate(demod, x[ 7], &symbol_out);
+        modemcf_demodulate(demod, x[ 8], &symbol_out);
+        modemcf_demodulate(demod, x[ 9], &symbol_out);
+        modemcf_demodulate(demod, x[10], &symbol_out);
+        modemcf_demodulate(demod, x[11], &symbol_out);
+        modemcf_demodulate(demod, x[12], &symbol_out);
+        modemcf_demodulate(demod, x[13], &symbol_out);
+        modemcf_demodulate(demod, x[14], &symbol_out);
+        modemcf_demodulate(demod, x[15], &symbol_out);
+        modemcf_demodulate(demod, x[16], &symbol_out);
+        modemcf_demodulate(demod, x[17], &symbol_out);
+        modemcf_demodulate(demod, x[18], &symbol_out);
+        modemcf_demodulate(demod, x[19], &symbol_out);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 20;
 
-    modem_destroy(demod);
+    modemcf_destroy(demod);
 }
 
 // specific modems

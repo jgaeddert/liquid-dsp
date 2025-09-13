@@ -1,9 +1,4 @@
-// 
-// modem_demodulate_soft_test.c
-//
-// Tests soft demoulation using log-likelihood ratio
-//
-
+// Test soft demoulation using log-likelihood ratio
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -27,13 +22,13 @@ int main() {
     float sig = 0.2f;           // noise standard deviation
 
     // generate constellation
-    modem q = modem_create(ms);
-    unsigned int bps = modem_get_bps(q);
+    modemcf q = modemcf_create(ms);
+    unsigned int bps = modemcf_get_bps(q);
     unsigned int M = 1 << bps;  // constellation size
     float complex c[M];         // constellation
     for (i=0; i<M; i++)
-        modem_modulate(q, i, &c[i]);
-    modem_destroy(q);
+        modemcf_modulate(q, i, &c[i]);
+    modemcf_destroy(q);
 
     // select input symbol and compute received symbol
     unsigned int sym_in = rand() % M;

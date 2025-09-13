@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,4 +31,8 @@
 #define TC              float
 #define TI              float
 
-#include "dotprod.c"
+#define TO_COMPLEX      0
+#define TC_COMPLEX      0
+#define TI_COMPLEX      0
+
+#include "dotprod.proto.c"

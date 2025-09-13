@@ -30,12 +30,21 @@
 
 #include "liquid.internal.h"
 
+// clean up fftw's static plan memory
+int liquid_fftwf_cleanup_wrapper(void)
+{
+#if HAVE_FFTW3_H && !defined LIQUID_FFTOVERRIDE
+    fftwf_cleanup();
+#endif
+    return LIQUID_OK;
+}
+
 // determine best FFT method based on size
 liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
 {
     if (_nfft == 0) {
         // invalid length
-        fprintf(stderr,"error: liquid_fft_estimate_method(), fft size must be > 0\n");
+        liquid_error(LIQUID_EIRANGE,"liquid_fft_estimate_method(), fft size must be > 0");
         return LIQUID_FFT_METHOD_UNKNOWN;
 
     } else if (_nfft <= 8 || _nfft==11 || _nfft==13 || _nfft==16 || _nfft==17) {
@@ -48,7 +57,7 @@ liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
         // use radix-2 algorithm
         return LIQUID_FFT_METHOD_RADIX2;
 #else
-        // acutally, prefer Cooley-Tukey algorithm
+        // actually, prefer Cooley-Tukey algorithm
         return LIQUID_FFT_METHOD_MIXED_RADIX;
 #endif
 

@@ -57,8 +57,8 @@ void detector_cccf_estimate_offsets(detector_cccf _q,
                                     float *       _dphi_hat);
 
 // print debugging information
-void detector_cccf_debug_print(detector_cccf _q,
-                               const char *  _filename);
+int detector_cccf_debug_print(detector_cccf _q,
+                              const char *  _filename);
 
 struct detector_cccf_s {
     float complex * s;      // sequence
@@ -112,13 +112,10 @@ detector_cccf detector_cccf_create(float complex * _s,
                                    float           _dphi_max)
 {
     // validate input
-    if (_n == 0) {
-        fprintf(stderr,"error: detector_cccf_create(), sequence length cannot be zero\n");
-        exit(1);
-    } else if (_threshold <= 0.0f) {
-        fprintf(stderr,"error: detector_cccf_create(), threshold must be greater than zero (0.6 recommended)\n");
-        exit(1);
-    }
+    if (_n == 0)
+        return liquid_error_config("detector_cccf_create(), sequence length cannot be zero");
+    if (_threshold <= 0.0f)
+        return liquid_error_config("detector_cccf_create(), threshold must be greater than zero (0.6 recommended)");
     
     // allocate memory for main object
     detector_cccf q = (detector_cccf) malloc(sizeof(struct detector_cccf_s));
@@ -212,11 +209,12 @@ void detector_cccf_destroy(detector_cccf _q)
 
 void detector_cccf_print(detector_cccf _q)
 {
-    printf("detector_cccf:\n");
-    printf("    sequence length     :   %-u\n", _q->n);
-    printf("    threshold           :   %8.4f\n", _q->threshold);
-    printf("    maximum carrier     :   %8.4f rad/sample\n", _q->dphi_max);
-    printf("    num. correlators    :   %u\n", _q->m);
+    printf("<liquid.detector_cccf:\n");
+    printf(", seq=%u", _q->n);
+    printf(", thresh=%g", _q->threshold);
+    printf(", dphi_max=%8.4f", _q->dphi_max);
+    printf(", ncorrs=%u", _q->m);
+    printf(">\n");
 }
 
 void detector_cccf_reset(detector_cccf _q)
@@ -323,8 +321,8 @@ int detector_cccf_correlate(detector_cccf _q,
             return 1;
         }
     } else {
-        fprintf(stderr,"error: detector_cccf_correlate(), unknown/unsupported internal state\n");
-        exit(1);
+        liquid_error(LIQUID_EINT,"detector_cccf_correlate(), unknown/unsupported internal state");
+        return 0;
     }
 
     return 0;
@@ -480,15 +478,14 @@ float detector_cccf_estimate_dphi(detector_cccf _q)
 }
 #endif
 
-void detector_cccf_debug_print(detector_cccf _q,
-                               const char *  _filename)
+int detector_cccf_debug_print(detector_cccf _q,
+                              const char *  _filename)
 {
 #if DEBUG_DETECTOR
     FILE * fid = fopen(_filename,"w");
-    if (!fid) {
-        fprintf(stderr,"error: detector_cccf_debug_print(), could not open '%s' for writing\n", _filename);
-        return;
-    }
+    if (!fid)
+        return liquid_error(LIQUID_EIO,"detector_cccf_debug_print(), could not open '%s' for writing", _filename);
+
     fprintf(fid,"%% %s : auto-generated file\n", DEBUG_DETECTOR_FILENAME);
     fprintf(fid,"close all;\n");
     fprintf(fid,"clear all;\n");
@@ -530,6 +527,8 @@ void detector_cccf_debug_print(detector_cccf _q,
     fclose(fid);
     printf("detector_cccf/debug: results written to '%s'\n", _filename);
 #else
-    fprintf(stderr,"detector_cccf_debug_print(): compile-time debugging disabled\n");
+    return liquid_error(LIQUID_EUMODE,"detector_cccf_debug_print(): compile-time debugging disabled\n");
 #endif
+    return LIQUID_OK;
 }
+

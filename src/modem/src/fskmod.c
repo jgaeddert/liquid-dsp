@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,14 @@
  * THE SOFTWARE.
  */
 
-//
 // M-ary frequency-shift keying modulator
-//
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 
 #include "liquid.internal.h"
-
-// 
-// internal methods
-//
 
 // fskmod
 struct fskmod_s {
@@ -55,16 +50,12 @@ fskmod fskmod_create(unsigned int _m,
                      float        _bandwidth)
 {
     // validate input
-    if (_m == 0) {
-        fprintf(stderr,"error: fskmod_create(), bits/symbol must be greater than 0\n");
-        exit(1);
-    } else if (_k < 2 || _k > 2048) {
-        fprintf(stderr,"error: fskmod_create(), samples/symbol must be in [2^_m, 2048]\n");
-        exit(1);
-    } else if (_bandwidth <= 0.0f || _bandwidth >= 0.5f) {
-        fprintf(stderr,"error: fskmod_create(), bandwidth must be in (0,0.5)\n");
-        exit(1);
-    }
+    if (_m == 0)
+        return liquid_error_config("fskmod_create(), bits/symbol must be greater than 0");
+    if (_k < 2 || _k > 2048)
+        return liquid_error_config("fskmod_create(), samples/symbol must be in [2^_m, 2048]");
+    if (_bandwidth <= 0.0f || _bandwidth >= 0.5f)
+        return liquid_error_config("fskmod_create(), bandwidth must be in (0,0.5)");
 
     // create main object memory
     fskmod q = (fskmod) malloc(sizeof(struct fskmod_s));
@@ -87,46 +78,65 @@ fskmod fskmod_create(unsigned int _m,
     return q;
 }
 
+// copy object
+fskmod fskmod_copy(fskmod q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("fskmod_copy(), object cannot be NULL");
+
+    // create object and copy base parameters
+    fskmod q_copy = (fskmod) malloc(sizeof(struct fskmod_s));
+    memmove(q_copy, q_orig, sizeof(struct fskmod_s));
+
+    // copy oscillator object
+    q_copy->oscillator = nco_crcf_copy(q_orig->oscillator);
+
+    // return new object
+    return q_copy;
+}
+
 // destroy fskmod object
-void fskmod_destroy(fskmod _q)
+int fskmod_destroy(fskmod _q)
 {
     // destroy oscillator object
     nco_crcf_destroy(_q->oscillator);
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print fskmod object internals
-void fskmod_print(fskmod _q)
+int fskmod_print(fskmod _q)
 {
-    printf("fskmod : frequency-shift keying modulator\n");
-    printf("    bits/symbol     :   %u\n", _q->m);
-    printf("    samples/symbol  :   %u\n", _q->k);
-    printf("    bandwidth       :   %8.5f\n", _q->bandwidth);
+    printf("<liquid.fskmod");
+    printf(", bits/symbol=%u", _q->m);
+    printf(", samples/symbol=%u", _q->k);
+    printf(", bandwidth=%g", _q->bandwidth);
+    printf(">\n");
+    return LIQUID_OK;
 }
 
 // reset state
-void fskmod_reset(fskmod _q)
+int fskmod_reset(fskmod _q)
 {
     // reset internal objects
     nco_crcf_reset(_q->oscillator);
+    return LIQUID_OK;
 }
 
 // modulate sample
 //  _q      :   frequency modulator object
 //  _s      :   input symbol
 //  _y      :   output sample array [size: _k x 1]
-void fskmod_modulate(fskmod          _q,
-                     unsigned int    _s,
-                     float complex * _y)
+int fskmod_modulate(fskmod          _q,
+                    unsigned int    _s,
+                    float complex * _y)
 {
     // validate input
-    if (_s >= _q->M) {
-        fprintf(stderr,"warning: fskmod_modulate(), input symbol (%u) exceeds maximum (%u)\n",
-                _s, _q->M);
-        _s = 0;
-    }
+    if (_s >= _q->M)
+        return liquid_error(LIQUID_EIRANGE,"fskmod_modulate(), input symbol (%u) exceeds maximum (%u)",_s, _q->M);
 
     // compute appropriate frequency
     float dphi = ((float)_s - _q->M2) * 2 * M_PI * _q->bandwidth / _q->M2;
@@ -143,5 +153,6 @@ void fskmod_modulate(fskmod          _q,
         // step oscillator
         nco_crcf_step(_q->oscillator);
     }
+    return LIQUID_OK;
 }
 

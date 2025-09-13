@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,18 +57,18 @@
 #define DEBUG_DOTPROD_RRRQ16_MMX   0
 
 // internal methods
-void dotprod_rrrq16_execute_mmx(dotprod_rrrq16 _q, q16_t * _x, q16_t * _y);
-void dotprod_rrrq16_execute_mmx4(dotprod_rrrq16 _q, q16_t * _x, q16_t * _y);
+int dotprod_rrrq16_execute_mmx(dotprod_rrrq16 _q, q16_t * _x, q16_t * _y);
+int dotprod_rrrq16_execute_mmx4(dotprod_rrrq16 _q, q16_t * _x, q16_t * _y);
 
 // basic dot product
 //  _h      :   coefficients array [size: 1 x _n]
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void dotprod_rrrq16_run(q16_t *      _h,
-                        q16_t *      _x,
-                        unsigned int _n,
-                        q16_t *      _y)
+int dotprod_rrrq16_run(q16_t *      _h,
+                       q16_t *      _x,
+                       unsigned int _n,
+                       q16_t *      _y)
 {
     // initialize accumulator
     q16_at r=0;
@@ -79,6 +79,7 @@ void dotprod_rrrq16_run(q16_t *      _h,
 
     // return result
     *_y = (r >> q16_fracbits);
+    return LIQUID_OK;
 }
 
 // basic dotproduct, unrolling loop
@@ -86,10 +87,10 @@ void dotprod_rrrq16_run(q16_t *      _h,
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void dotprod_rrrq16_run4(q16_t *      _h,
-                         q16_t *      _x,
-                         unsigned int _n,
-                         q16_t *      _y)
+int dotprod_rrrq16_run4(q16_t *      _h,
+                        q16_t *      _x,
+                        unsigned int _n,
+                        q16_t *      _y)
 {
     // initialize accumulator
     q16_at r=0;
@@ -112,6 +113,7 @@ void dotprod_rrrq16_run4(q16_t *      _h,
 
     // return result
     *_y = (r >> q16_fracbits);
+    return LIQUID_OK;
 }
 
 
@@ -152,37 +154,38 @@ dotprod_rrrq16 dotprod_rrrq16_recreate(dotprod_rrrq16 _dp,
 }
 
 
-void dotprod_rrrq16_destroy(dotprod_rrrq16 _q)
+int dotprod_rrrq16_destroy(dotprod_rrrq16 _q)
 {
     _mm_free(_q->h);
     free(_q);
+    return LIQUID_OK;
 }
 
-void dotprod_rrrq16_print(dotprod_rrrq16 _q)
+int dotprod_rrrq16_print(dotprod_rrrq16 _q)
 {
     printf("dotprod_rrrq16:\n");
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("%3u : %12.8f\n", i, q16_fixed_to_float(_q->h[i]));
+    return LIQUID_OK;
 }
 
 // 
-void dotprod_rrrq16_execute(dotprod_rrrq16 _q,
-                            q16_t *        _x,
-                            q16_t *        _y)
+int dotprod_rrrq16_execute(dotprod_rrrq16 _q,
+                           q16_t *        _x,
+                           q16_t *        _y)
 {
     // switch based on size
     if (_q->n < 64) {
-        dotprod_rrrq16_execute_mmx(_q, _x, _y);
-    } else {
-        dotprod_rrrq16_execute_mmx4(_q, _x, _y);
+        return dotprod_rrrq16_execute_mmx(_q, _x, _y);
     }
+    return dotprod_rrrq16_execute_mmx4(_q, _x, _y);
 }
 
 // use MMX/SSE extensions
-void dotprod_rrrq16_execute_mmx(dotprod_rrrq16 _q,
-                                q16_t *        _x,
-                                q16_t *        _y)
+int dotprod_rrrq16_execute_mmx(dotprod_rrrq16 _q,
+                               q16_t *        _x,
+                               q16_t *        _y)
 {
     // input, coefficients, multiply/accumulate vectors
     __m128i v;   // input vector
@@ -236,12 +239,13 @@ void dotprod_rrrq16_execute_mmx(dotprod_rrrq16 _q,
 
     // set return value, shifting appropriately
     *_y = (q16_t)(total >> q16_fracbits);
+    return LIQUID_OK;
 }
 
 // use MMX/SSE extensions, unrolled loop
-void dotprod_rrrq16_execute_mmx4(dotprod_rrrq16 _q,
-                                 q16_t *        _x,
-                                 q16_t *        _y)
+int dotprod_rrrq16_execute_mmx4(dotprod_rrrq16 _q,
+                                q16_t *        _x,
+                                q16_t *        _y)
 {
     // input, coefficients, multiply/accumulate vectors (four 8x16-bit)
     __m128i v0, v1, v2, v3;
@@ -339,5 +343,6 @@ void dotprod_rrrq16_execute_mmx4(dotprod_rrrq16 _q,
 
     // set return value, shifting appropriately
     *_y = (q16_t)(total >> q16_fracbits);
+    return LIQUID_OK;
 }
 

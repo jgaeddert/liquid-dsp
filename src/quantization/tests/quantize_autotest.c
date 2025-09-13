@@ -45,7 +45,7 @@ void autotest_quantize_float_n8() {
         if (liquid_autotest_verbose)
             printf("%8.4f > 0x%2.2x > %8.4f\n", x, q, x_hat);
 
-        // ensure original value is recovered withing tolerance
+        // ensure original value is recovered within tolerance
         CONTEND_DELTA(x,x_hat,tol);
 
         x += dx;

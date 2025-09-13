@@ -77,10 +77,10 @@ int main(int argc, char*argv[]) {
     nco_crcq16 nco_tx = nco_crcq16_create(LIQUID_VCO);
     nco_crcq16 nco_rx = nco_crcq16_create(LIQUID_VCO);
 
-    modemq16 mod   = modemq16_create(ms);
-    modemq16 demod = modemq16_create(ms);
+    modemcq16 mod   = modemcq16_create(ms);
+    modemcq16 demod = modemcq16_create(ms);
 
-    unsigned int bps = modemq16_get_bps(mod);
+    unsigned int bps = modemcq16_get_bps(mod);
 
     // initialize objects
     nco_crcq16_set_phase(nco_tx,         q16_angle_float_to_fixed(phase_offset) );
@@ -104,7 +104,7 @@ int main(int argc, char*argv[]) {
         sym_in = rand() % M;
 
         // modulate
-        modemq16_modulate(mod, sym_in, &x);
+        modemcq16_modulate(mod, sym_in, &x);
 
         // channel
         //r = nco_crcq16_cexpf(nco_tx);
@@ -119,12 +119,12 @@ int main(int argc, char*argv[]) {
         nco_crcq16_mix_down(nco_rx, r, &v);
 
         // demodulate
-        modemq16_demodulate(demod, v, &sym_out);
+        modemcq16_demodulate(demod, v, &sym_out);
         num_errors += count_bit_errors(sym_in, sym_out);
 
         // error estimation
         //phase_error = cargf(r*conjf(v));
-        phase_error = modemq16_get_demodulator_phase_error(demod);
+        phase_error = modemcq16_get_demodulator_phase_error(demod);
 
         // perfect error estimation
         //phase_error = nco_tx->theta - nco_rx->theta;
@@ -179,8 +179,8 @@ int main(int argc, char*argv[]) {
     nco_crcq16_destroy(nco_tx);
     nco_crcq16_destroy(nco_rx);
 
-    modemq16_destroy(mod);
-    modemq16_destroy(demod);
+    modemcq16_destroy(mod);
+    modemcq16_destroy(demod);
 
     printf("bit errors: %u / %u\n", num_errors, bps*n);
     printf("done.\n");

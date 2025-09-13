@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <inttypes.h>
+#include "liquid.h"
 
 // total number of checks invoked
 extern unsigned long int liquid_autotest_num_checks;
@@ -74,6 +75,18 @@ void liquid_autotest_failed_expr(const char * _file,
                                  const char * _exprR,
                                  double _valueR);
 
+// fail test, given true/false value
+//  _file       :   filename (string)
+//  _line       :   line number of test
+//  _exprL      :   left side of expression (string)
+//  _valueL     :   left side of expression (value)
+//  _qualifier  :   expression qualifier
+void liquid_autotest_failed_bool(const char * _file,
+                                 unsigned int _line,
+                                 const char * _exprL,
+                                 double       _valueL,
+                                 int          _qualifier);
+
 // fail test with message
 //  _file       :   filename (string)
 //  _line       :   line number of test
@@ -115,6 +128,35 @@ void liquid_autotest_print_array(unsigned char * _x,
 
 // Compute magnitude of (possibly) complex number
 #define LIQUID_AUTOTEST_VMAG(V) (sqrt(creal(V)*creal(V)+cimag(V)*cimag(V)))
+
+// Compute isnan on (possibly) complex number
+#define LIQUID_AUTOTEST_ISNAN(V) (isnan(crealf(V)) || isnan(cimagf(V)))
+
+// CONTEND_TRUE
+#define TEST_TRUE(F,L,EX,X)                                         \
+{                                                                   \
+    if (!(X))                                                       \
+    {                                                               \
+        liquid_autotest_failed_bool(F,L,EX,X,1);                    \
+    } else {                                                        \
+         liquid_autotest_passed();                                  \
+    }                                                               \
+}
+#define CONTEND_TRUE_FL(F,L,X) TEST_TRUE(F,L,#X,(X))
+#define CONTEND_TRUE(X)        CONTEND_TRUE_FL(__FILE__,__LINE__,X)
+
+// CONTEND_FALSE
+#define TEST_FALSE(F,L,EX,X)                                        \
+{                                                                   \
+    if ((X))                                                        \
+    {                                                               \
+        liquid_autotest_failed_bool(F,L,EX,X,0);                    \
+    } else {                                                        \
+         liquid_autotest_passed();                                  \
+    }                                                               \
+}
+#define CONTEND_FALSE_FL(F,L,X) TEST_FALSE(F,L,#X,(X))
+#define CONTEND_FALSE(X)        CONTEND_FALSE_FL(__FILE__,__LINE__,X)
 
 // CONTEND_EQUALITY
 #define TEST_EQUALITY(F,L,EX,X,EY,Y)                                \
@@ -160,7 +202,7 @@ void liquid_autotest_print_array(unsigned char * _x,
 {                                                                   \
     if ((X)>=(Y))                                                   \
     {                                                               \
-        liquid_autotest_failed_expr(F,L,EX,X,">",EY,Y);             \
+        liquid_autotest_failed_expr(F,L,EX,X,"<",EY,Y);             \
     } else {                                                        \
         liquid_autotest_passed();                                   \
     }                                                               \
@@ -174,7 +216,8 @@ void liquid_autotest_print_array(unsigned char * _x,
 // as well as complex numbers
 #define TEST_DELTA(F,L,EX,X,EY,Y,ED,D)                                          \
 {                                                                               \
-    if (LIQUID_AUTOTEST_VMAG((X)-(Y)) > (D))                                    \
+    if (LIQUID_AUTOTEST_VMAG((X)-(Y)) > (D) ||                                  \
+        LIQUID_AUTOTEST_ISNAN((X)) || LIQUID_AUTOTEST_ISNAN((Y)) )              \
     {                                                                           \
         liquid_autotest_failed_expr(F,L,"abs(" #X "-" #Y ")",                   \
             LIQUID_AUTOTEST_VMAG((X)-(Y)),"<",ED,D);                            \
@@ -197,6 +240,19 @@ void liquid_autotest_print_array(unsigned char * _x,
 }
 #define CONTEND_EXPRESSION_FL(F,L,X)      TEST_EXPRESSION(F,L,#X,(X))
 #define CONTEND_EXPRESSION(X)             CONTEND_EXPRESSION_FL(__FILE__,__LINE__,X)
+
+// CONTEND_ISNULL
+#define TEST_ISNULL(F,L,EX,X)                                       \
+{                                                                   \
+    if ((void*)(X)!=(NULL))                                         \
+    {                                                               \
+        liquid_autotest_failed_expr(F,L,EX,(long)X,"==","NULL",1);  \
+    } else {                                                        \
+         liquid_autotest_passed();                                  \
+    }                                                               \
+}
+#define CONTEND_ISNULL_FL(F,L,X)          TEST_ISNULL(F,L,#X,(X))
+#define CONTEND_ISNULL(X)                 CONTEND_ISNULL_FL(__FILE__,__LINE__,X)
 
 // CONTEND_SAME_DATA
 #define TEST_SAME_DATA(F,L,EX,X,EY,Y,EN,N)                                      \
@@ -228,6 +284,52 @@ void liquid_autotest_print_array(unsigned char * _x,
 // AUTOTEST FAIL
 #define AUTOTEST_FAIL_FL(F,L,MSG)      liquid_autotest_failed_msg(F,L,MSG)
 #define AUTOTEST_FAIL(MSG)             AUTOTEST_FAIL_FL(__FILE__,__LINE__,MSG)
+
+// supporting methods
+typedef struct {
+    float fmin, fmax;
+    float pmin, pmax;
+    int   test_lo, test_hi;
+} autotest_psd_s;
+
+// validate spectral content
+int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
+// validate spectral content of a signal (complex)
+int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_len,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
+// validate spectral content of a signal (real)
+int liquid_autotest_validate_psd_signalf(float * _buf, unsigned int _buf_len,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
+// validate spectral content of a filter (real coefficients)
+int liquid_autotest_validate_psd_firfilt_crcf(firfilt_crcf _q, unsigned int _nfft,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
+// validate spectral content of a filter (complex coefficients)
+int liquid_autotest_validate_psd_firfilt_cccf(firfilt_cccf _q, unsigned int _nfft,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
+// validate spectral content of an iir filter (real coefficients, input)
+int liquid_autotest_validate_psd_iirfilt_rrrf(iirfilt_rrrf _q, unsigned int _nfft,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
+// validate spectral content of a spectral periodogram object
+int liquid_autotest_validate_psd_spgramcf(spgramcf _q,
+        autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
+
+// callback function to simplify testing for framing objects
+#define FRAMING_AUTOTEST_SECRET 0x01234567
+int framing_autotest_callback(
+    unsigned char *  _header,
+    int              _header_valid,
+    unsigned char *  _payload,
+    unsigned int     _payload_len,
+    int              _payload_valid,
+    framesyncstats_s _stats,
+    void *           _context);
 
 #endif // __LIQUID_AUTOTEST_H__
 

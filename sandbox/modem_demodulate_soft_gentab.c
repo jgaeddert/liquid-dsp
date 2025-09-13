@@ -1,9 +1,4 @@
-// 
-// modem_demodulate_soft_gentab.c
-//
-// Generates table of nearest symbols and tests soft demodulation
-//
-
+// Generate table of nearest symbols and tests soft demodulation
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -31,8 +26,8 @@ void print_bitstring(unsigned int _x,
 //  _p          :   size of table
 //  _r          :   received sample
 //  _s          :   hard demodulator output
-//  _soft_bits  :   soft bit ouput (approximate log-likelihood ratio)
-void modem_demodulate_soft_tab(modem _q,
+//  _soft_bits  :   soft bit output (approximate log-likelihood ratio)
+void modemcf_demodulate_soft_tab(modemcf _q,
                                float complex * _c,
                                unsigned int * _cp,
                                unsigned int _p,
@@ -70,11 +65,11 @@ int main(int argc, char*argv[])
     float sig = 0.2f;           // noise standard deviation
 
     // generate constellation
-    modem q = modem_create(ms);
+    modemcf q = modemcf_create(ms);
     float complex c[M];         // constellation
     for (i=0; i<M; i++)
-        modem_modulate(q, i, &c[i]);
-    modem_destroy(q);
+        modemcf_modulate(q, i, &c[i]);
+    modemcf_destroy(q);
 
     // 
     // find nearest symbols
@@ -226,11 +221,11 @@ int main(int argc, char*argv[])
     // 
     // demodulate using internal method
     //
-    q = modem_create(ms);
+    q = modemcf_create(ms);
     unsigned int sym_out_tab;
     float soft_bits_tab[bps];
-    modem_demodulate_soft_tab(q,c,cp,p,r,&sym_out_tab,soft_bits_tab);
-    modem_destroy(q);
+    modemcf_demodulate_soft_tab(q,c,cp,p,r,&sym_out_tab,soft_bits_tab);
+    modemcf_destroy(q);
 
     // print results
     printf("\n");
@@ -321,8 +316,8 @@ int main(int argc, char*argv[])
 //  _p          :   size of table
 //  _r          :   received sample
 //  _s          :   hard demodulator output
-//  _soft_bits  :   soft bit ouput (approximate log-likelihood ratio)
-void modem_demodulate_soft_tab(modem _q,
+//  _soft_bits  :   soft bit output (approximate log-likelihood ratio)
+void modemcf_demodulate_soft_tab(modemcf _q,
                                float complex * _c,
                                unsigned int * _cp,
                                unsigned int _p,
@@ -334,12 +329,12 @@ void modem_demodulate_soft_tab(modem _q,
     printf("\nmodem_demodulate_soft_tab() invoked\n");
 #endif
     // run hard demodulation
-    modem_demodulate(_q, _r, _s);
+    modemcf_demodulate(_q, _r, _s);
 #if DEBUG
     printf("  hard demod    :   %3u\n", *_s);
 #endif
 
-    unsigned int bps = modem_get_bps(_q);
+    unsigned int bps = modemcf_get_bps(_q);
 
     float sig = 0.2f;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -297,11 +297,7 @@ void autoscript_parsefile(autoscript _q,
     // generate tag (e.g. "void benchmark_");
     unsigned int tag_len = 5 + strlen(_q->type) + 2;
     char tag[tag_len];
-    strcpy(tag, "void ");
-    strcpy(tag+5, _q->type);
-    tag[tag_len-2] = '_';
-    tag[tag_len-1] = '\0';
-    //printf("// tag : '%s'\n", tag);
+    sprintf(tag, "void %s_", _q->type);
 
     // parse file, looking for key
     char buffer[1024];      // line buffer
@@ -343,6 +339,7 @@ void autoscript_parsefile(autoscript _q,
                 package_added = 1;
             }
             autoscript_addscript(_q, _package_name, basename);
+            printf("// adding %s to package %s from %s:%u\n", basename, _package_name, _filename, n);
         }
     } while (!feof(fid));
 
@@ -354,6 +351,17 @@ void autoscript_addpackage(autoscript _q,
                            char * _package_name,
                            char * _filename)
 {
+    // verify that package name is unique with existing scripts
+    unsigned int i;
+    for (i=0; i<_q->num_packages; i++) {
+        if (strcmp(_q->packages[i].name, _package_name)==0) {
+            fprintf(stderr,"error: duplicate package name '%s', defined in:\n", _package_name);
+            fprintf(stderr,"  %s\n", _q->packages[i].filename);
+            fprintf(stderr,"  %s\n", _filename);
+            exit(1);
+        }
+    }
+
     // increase package size
     _q->num_packages++;
 

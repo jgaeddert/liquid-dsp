@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include <math.h>
 #include <getopt.h>
 
-#include "liquid.h"
+#include "liquid.internal.h"
 
 //
 // AUTOTEST: Find minimum of Rosenbrock function, should be [1 1 1 ...]
@@ -95,8 +95,8 @@ float utility_max_autotest(void *       _userdata,
                            unsigned int _n)
 {
     if (_n == 0) {
-        fprintf(stderr,"error: liquid_invgauss(), input vector length cannot be zero\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_invgauss(), input vector length cannot be zero");
+        return 0.0f;
     }
 
     float t = 0.0f;

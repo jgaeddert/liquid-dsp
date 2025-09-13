@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@ struct framegen64_s {
     float complex   payload_tx[630];    // modulated payload symbols with pilots
     unsigned int    m;                  // filter delay (symbols)
     float           beta;               // filter excess bandwidth factor
-    firinterp_crcf interp;              // pulse-shaping filter
+    firinterp_crcf  interp;             // pulse-shaping filter/interpolator
 };
 
 // create framegen64 object
@@ -85,20 +85,34 @@ framegen64 framegen64_create()
     return q;
 }
 
+// copy object
+framegen64 framegen64_copy(framegen64 q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("framegen64_copy(), object cannot be NULL");
+
+    // as this object is stateless, we can really create a new one
+    return framegen64_create();
+}
+
 // destroy framegen64 object
-void framegen64_destroy(framegen64 _q)
+int framegen64_destroy(framegen64 _q)
 {
     // destroy internal objects
     qpacketmodem_destroy(_q->enc);
     qpilotgen_destroy(_q->pilotgen);
+    firinterp_crcf_destroy(_q->interp);
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print framegen64 object internals
-void framegen64_print(framegen64 _q)
+int framegen64_print(framegen64 _q)
 {
+#if 0
     float eta = (float) (8*(64 + 8)) / (float) (LIQUID_FRAME64_LEN/2);
     printf("framegen64 [m=%u, beta=%4.2f]:\n", _q->m, _q->beta);
     printf("  preamble/etc.\n");
@@ -120,6 +134,10 @@ void framegen64_print(framegen64 _q)
     printf("  summary\n");
     printf("    * total symbols         :   %3u\n", LIQUID_FRAME64_LEN/2);
     printf("    * spectral efficiency   :   %6.4f b/s/Hz\n", eta);
+#else
+    printf("<liquid.framegen64, m=%u, beta=%g>\n", _q->m, _q->beta);
+#endif
+    return LIQUID_OK;
 }
 
 // execute frame generator (creates a frame)
@@ -127,10 +145,10 @@ void framegen64_print(framegen64 _q)
 //  _header     :   8-byte header data, NULL for random
 //  _payload    :   64-byte payload data, NULL for random
 //  _frame      :   output frame samples [size: LIQUID_FRAME64_LEN x 1]
-void framegen64_execute(framegen64      _q,
-                        unsigned char * _header,
-                        unsigned char * _payload,
-                        float complex * _frame)
+int framegen64_execute(framegen64      _q,
+                       unsigned char * _header,
+                       unsigned char * _payload,
+                       float complex * _frame)
 {
     unsigned int i;
 
@@ -170,6 +188,7 @@ void framegen64_execute(framegen64      _q,
     }
 
     assert(n==LIQUID_FRAME64_LEN);
+    return LIQUID_OK;
 }
 
 

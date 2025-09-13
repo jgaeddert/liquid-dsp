@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,14 +52,14 @@ void iirdes_pll_active_lag(float _w,
 {
     // validate input
     if (_w <= 0.0f) {
-        fprintf(stderr,"error: iirdes_pll_active_lag(), bandwidth must be greater than 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"iirdes_pll_active_lag(), bandwidth must be greater than 0");
+        return;
     } else if (_zeta <= 0.0f) {
-        fprintf(stderr,"error: iirdes_pll_active_lag(), damping factor must be greater than 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"iirdes_pll_active_lag(), damping factor must be greater than 0");
+        return;
     } else if (_K <= 0.0f) {
-        fprintf(stderr,"error: iirdes_pll_active_lag(), gain must be greater than 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"iirdes_pll_active_lag(), gain must be greater than 0");
+        return;
     }
 
     float wn = _w;                  // natural frequency
@@ -93,14 +93,14 @@ void iirdes_pll_active_PI(float _w,
 {
     // validate input
     if (_w <= 0.0f) {
-        fprintf(stderr,"error: iirdes_pll_active_PI(), bandwidth must be greater than 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"iirdes_pll_active_PI(), bandwidth must be greater than 0");
+        return;
     } else if (_zeta <= 0.0f) {
-        fprintf(stderr,"error: iirdes_pll_active_PI(), damping factor must be greater than 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"iirdes_pll_active_PI(), damping factor must be greater than 0");
+        return;
     } else if (_K <= 0.0f) {
-        fprintf(stderr,"error: iirdes_pll_active_PI(), gain must be greater than 0\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"iirdes_pll_active_PI(), gain must be greater than 0");
+        return;
     }
 
     // loop filter (active lag)

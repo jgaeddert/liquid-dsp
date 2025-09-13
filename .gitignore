@@ -1,5 +1,6 @@
 # ignore all object files
 *.a
+*.ar
 *.d
 *.dylib
 *.dSYM
@@ -7,6 +8,8 @@
 *.gcno
 *.o
 *.so
+*~
+build
 
 # ignore swap files for vim editing
 *.swp
@@ -29,6 +32,11 @@ config.status
 makefile
 xautotest
 *.m
+autotest.json
+autotest/logs/*.bin
+autotest/logs/*.gnu
+readme.*
+liquid_linker_test
 
 # miscellany
 octave-core

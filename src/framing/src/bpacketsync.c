@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// bpacketsync
-//
 // binary packet synchronizer/decoder
-//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,7 +43,7 @@ struct bpacketsync_s {
     fec_scheme fec1;                // payload fec (outer)
     
     // derived values
-    unsigned int enc_msg_len;       // encoded mesage length
+    unsigned int enc_msg_len;       // encoded message length
     unsigned int header_len;        // header length (12 bytes encoded)
     unsigned int packet_len;        // total packet length
 
@@ -94,6 +90,15 @@ struct bpacketsync_s {
     void * userdata;
     framesyncstats_s framestats;
 };
+
+// internal methods
+int bpacketsync_assemble_pnsequence(bpacketsync _q);
+int bpacketsync_execute_seekpn     (bpacketsync _q, unsigned char _bit);
+int bpacketsync_execute_rxheader   (bpacketsync _q, unsigned char _bit);
+int bpacketsync_execute_rxpayload  (bpacketsync _q, unsigned char _bit);
+int bpacketsync_decode_header      (bpacketsync _q);
+int bpacketsync_decode_payload     (bpacketsync _q);
+int bpacketsync_reconfig           (bpacketsync _q);
 
 bpacketsync bpacketsync_create(unsigned int _m,
                                bpacketsync_callback _callback,
@@ -153,7 +158,7 @@ bpacketsync bpacketsync_create(unsigned int _m,
     return q;
 }
 
-void bpacketsync_destroy(bpacketsync _q)
+int bpacketsync_destroy(bpacketsync _q)
 {
     // free arrays
     free(_q->pnsequence);
@@ -169,23 +174,26 @@ void bpacketsync_destroy(bpacketsync _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
-void bpacketsync_print(bpacketsync _q)
+int bpacketsync_print(bpacketsync _q)
 {
-    printf("bpacketsync:\n");
-    printf("    p/n poly    :   0x%.4x\n", _q->g);
-    printf("    p/n len     :   %u bytes\n", _q->pnsequence_len);
-    printf("    header len  :   %u bytes\n", _q->header_len);
-    printf("    payload len :   %u bytes\n", _q->dec_msg_len);
-    printf("    crc         :   %s\n", crc_scheme_str[_q->crc][1]);
-    printf("    fec (inner) :   %s\n", fec_scheme_str[_q->fec0][1]);
-    printf("    fec (outer) :   %s\n", fec_scheme_str[_q->fec1][1]);
-    printf("    packet len  :   %u bytes\n", _q->packet_len);
-    printf("    efficiency  :   %8.2f %%\n", 100.0f*(float)_q->dec_msg_len/(float)_q->packet_len);
+    printf("<liquid.bpacketsync,");
+    printf(", pn_poly0x%.4x", _q->g);
+    printf(", pn_len%u", _q->pnsequence_len);
+    printf(", header=%u", _q->header_len);
+    printf(", payload=%u", _q->dec_msg_len);
+    printf(", crc=\"%s\"", crc_scheme_str[_q->crc][0]);
+    printf(", fec_0=\"%s\"", fec_scheme_str[_q->fec0][0]);
+    printf(", fec_1=\"%s\"", fec_scheme_str[_q->fec1][0]);
+    printf(", packet=%u", _q->packet_len);
+    printf(", efficiency=%g", (float)_q->dec_msg_len/(float)_q->packet_len);
+    printf(">\n");
+    return LIQUID_OK;
 }
 
-void bpacketsync_reset(bpacketsync _q)
+int bpacketsync_reset(bpacketsync _q)
 {
     // clear received sequence buffer
     bsequence_reset(_q->brx);
@@ -198,26 +206,28 @@ void bpacketsync_reset(bpacketsync _q)
 
     // reset state
     _q->state = BPACKETSYNC_STATE_SEEKPN;
+    return LIQUID_OK;
 }
 
 // run synchronizer on array of input bytes
 //  _q      :   bpacketsync object
 //  _bytes  :   input data array [size: _n x 1]
 //  _n      :   input array size
-void bpacketsync_execute(bpacketsync _q,
-                         unsigned char * _bytes,
-                         unsigned int _n)
+int bpacketsync_execute(bpacketsync     _q,
+                        unsigned char * _bytes,
+                        unsigned int    _n)
 {
     unsigned int i;
     for (i=0; i<_n; i++)
         bpacketsync_execute_byte(_q, _bytes[i]);
+    return LIQUID_OK;
 }
 
 // run synchronizer on input byte
 //  _q      :   bpacketsync object
 //  _byte   :   input byte
-void bpacketsync_execute_byte(bpacketsync _q,
-                              unsigned char _byte)
+int bpacketsync_execute_byte(bpacketsync   _q,
+                             unsigned char _byte)
 {
     unsigned int j;
     for (j=0; j<8; j++) {
@@ -227,21 +237,20 @@ void bpacketsync_execute_byte(bpacketsync _q,
         // run synchronizer on bit
         bpacketsync_execute_bit(_q, bit);
     }
+    return LIQUID_OK;
 }
 
 // run synchronizer on input symbol
 //  _q      :   bpacketsync object
 //  _sym    :   input symbol with _bps significant bits
 //  _bps    :   number of bits in input symbol
-void bpacketsync_execute_sym(bpacketsync _q,
-                             unsigned char _sym,
-                             unsigned int _bps)
+int bpacketsync_execute_sym(bpacketsync   _q,
+                            unsigned char _sym,
+                            unsigned int  _bps)
 {
     // validate input
-    if (_bps > 8) {
-        fprintf(stderr,"error: bpacketsync_execute_sym(), bits per symbol must be in [0,8]\n");
-        exit(1);
-    }
+    if (_bps > 8)
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync_execute_sym(), bits per symbol must be in [0,8]");
 
     unsigned int j;
     for (j=0; j<_bps; j++) {
@@ -251,12 +260,13 @@ void bpacketsync_execute_sym(bpacketsync _q,
         // run synchronizer on bit
         bpacketsync_execute_bit(_q, bit);
     }
+    return LIQUID_OK;
 }
 
 
 // execute one bit at a time
-void bpacketsync_execute_bit(bpacketsync _q,
-                             unsigned char _bit)
+int bpacketsync_execute_bit(bpacketsync   _q,
+                            unsigned char _bit)
 {
     // mask input to ensure one bit of resolution
     _bit = _bit & 0x01;
@@ -273,16 +283,16 @@ void bpacketsync_execute_bit(bpacketsync _q,
         bpacketsync_execute_rxpayload(_q, _bit);
         break;
     default:
-        fprintf(stderr,"error: bpacketsync_execute(), invalid state\n");
-        exit(1);
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync_execute(), invalid state");
     }
+    return LIQUID_OK;
 }
 
 // 
 // internal methods
 //
 
-void bpacketsync_assemble_pnsequence(bpacketsync _q)
+int bpacketsync_assemble_pnsequence(bpacketsync _q)
 {
     // reset m-sequence generator
     msequence_reset(_q->ms);
@@ -290,10 +300,11 @@ void bpacketsync_assemble_pnsequence(bpacketsync _q)
     unsigned int i;
     for (i=0; i<8*_q->pnsequence_len; i++)
         bsequence_push(_q->bpn, msequence_advance(_q->ms));
+    return LIQUID_OK;
 }
 
-void bpacketsync_execute_seekpn(bpacketsync _q,
-                                unsigned char _bit)
+int bpacketsync_execute_seekpn(bpacketsync   _q,
+                               unsigned char _bit)
 {
     // push bit into correlator
     bsequence_push(_q->brx, _bit);
@@ -314,10 +325,11 @@ void bpacketsync_execute_seekpn(bpacketsync _q,
         // switch operational mode
         _q->state = BPACKETSYNC_STATE_RXHEADER;
     }
+    return LIQUID_OK;
 }
 
-void bpacketsync_execute_rxheader(bpacketsync _q,
-                                  unsigned char _bit)
+int bpacketsync_execute_rxheader(bpacketsync   _q,
+                                 unsigned char _bit)
 {
     // push bit into accumulated byte
     _q->byte_rx <<= 1;
@@ -353,10 +365,11 @@ void bpacketsync_execute_rxheader(bpacketsync _q,
             }
         }
     }
+    return LIQUID_OK;
 }
 
-void bpacketsync_execute_rxpayload(bpacketsync _q,
-                                   unsigned char _bit)
+int bpacketsync_execute_rxpayload(bpacketsync   _q,
+                                  unsigned char _bit)
 {
     // push bit into accumulated byte
     _q->byte_rx <<= 1;
@@ -397,9 +410,10 @@ void bpacketsync_execute_rxpayload(bpacketsync _q,
             bpacketsync_reset(_q);
         }
     }
+    return LIQUID_OK;
 }
 
-void bpacketsync_decode_header(bpacketsync _q)
+int bpacketsync_decode_header(bpacketsync _q)
 {
     // decode header array
     _q->header_valid = packetizer_decode(_q->p_header,
@@ -408,7 +422,7 @@ void bpacketsync_decode_header(bpacketsync _q)
 
     // return unconditionally if header failed
     if (!_q->header_valid)
-        return;
+        return LIQUID_OK;
 
     // strip header info
     int version = _q->header_dec[0];
@@ -420,20 +434,27 @@ void bpacketsync_decode_header(bpacketsync _q)
 
     // check version number
     if (version != BPACKET_VERSION)
-        fprintf(stderr,"warning: bpacketsync, version mismatch!\n");
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync, version mismatch (received %d, expected %d)",version, BPACKET_VERSION);
+    if (_q->crc == LIQUID_CRC_UNKNOWN || _q->crc >= LIQUID_CRC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync, invalid/unsupported crc: %u", _q->crc);
+    if (_q->fec0 == LIQUID_FEC_UNKNOWN || _q->fec0 >= LIQUID_FEC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync, invalid/unsupported fec (inner): %u", _q->fec0);
+    if (_q->fec1 == LIQUID_FEC_UNKNOWN || _q->fec1 >= LIQUID_FEC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync, invalid/unsupported fec (outer): %u", _q->fec1);
 
-    // TODO : check crc, fec0, fec1 schemes
+    return LIQUID_OK;
 }
 
-void bpacketsync_decode_payload(bpacketsync _q)
+int bpacketsync_decode_payload(bpacketsync _q)
 {
     // decode payload
     _q->payload_valid = packetizer_decode(_q->p_payload,
                                           _q->payload_enc,
                                           _q->payload_dec);
+    return LIQUID_OK;
 }
 
-void bpacketsync_reconfig(bpacketsync _q)
+int bpacketsync_reconfig(bpacketsync _q)
 {
     // reconfigure packetizer
     _q->p_payload = packetizer_recreate(_q->p_payload,
@@ -452,5 +473,6 @@ void bpacketsync_reconfig(bpacketsync _q)
     // re-allocate memory for decoded packet
     _q->payload_dec = (unsigned char*) realloc(_q->payload_dec,
                                                _q->dec_msg_len*sizeof(unsigned char));
+    return LIQUID_OK;
 }
 

@@ -113,11 +113,12 @@ int main(int argc, char*argv[]) {
     // initialize arrays
     unsigned char msg_org[n];   // original message
     unsigned char msg_enc[k];   // encoded message
-    unsigned char msg_rec[k+1]; // recieved message
+    unsigned char msg_rec[k+1]; // received message
     unsigned char msg_dec[n];   // decoded message
 
     // create packet synchronizer
     bpacketsync ps = bpacketsync_create(0, callback, (void*)msg_dec);
+    bpacketsync_print(ps);
 
     // initialize original data message
     for (i=0; i<n; i++)

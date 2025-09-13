@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 #include "liquid.h"
 #define OUTPUT_FILENAME  "framesync64_example.m"
 

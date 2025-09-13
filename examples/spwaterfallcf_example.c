@@ -13,7 +13,7 @@ int main()
     // spectral periodogram options
     unsigned int nfft        = 1800;    // spectral periodogram FFT size
     unsigned int time        = 1000;    // minimum time buffer
-    unsigned int num_samples = 20e6;    // number of samples
+    unsigned int num_samples =  2e6;    // number of samples
 
     // create spectral waterfall object
     spwaterfallcf periodogram = spwaterfallcf_create_default(nfft,time);
@@ -32,10 +32,10 @@ int main()
     msourcecf_add_tone(gen, -0.4f, 0.0f, 0);
 
     // add fsk modem
-    msourcecf_add_fsk(gen, -0.35f, 0.03f, -30.0f, 2, 2000);
+    msourcecf_add_fsk(gen, -0.35f, 0.03f, -30.0f, 2, 500);
 
     // add chirp signal
-    msourcecf_add_chirp(gen, 0.17f, 0.10f, -50, 5e6, 0, 0);
+    msourcecf_add_chirp(gen, 0.17f, 0.10f, -50, 250e3, 0, 0);
 
     // add modulated data
     msourcecf_add_modem(gen, -0.1f, 0.15f, -10, LIQUID_MODEM_QPSK, 12, 0.25);
@@ -51,18 +51,18 @@ int main()
         // write samples to buffer
         msourcecf_write_samples(gen, buf, buf_len);
 
-        // push resulting sample through waterfall object
+        // push resulting samples through waterfall object
         spwaterfallcf_write(periodogram, buf, buf_len);
 
         // accumulated samples
         total_samples += buf_len;
 
         // update state for noise source
-        if (state == 0 && randf() < 1e-4f) {
+        if (state == 0 && randf() < 1e-3f) {
             state = 1;
             msourcecf_enable(gen, id_noise);
             //printf("turning noise on\n");
-        } else if (state == 1 && randf() < 3e-4f) {
+        } else if (state == 1 && randf() < 3e-3f) {
             state = 0;
             msourcecf_disable(gen, id_noise);
             //printf("turning noise off\n");

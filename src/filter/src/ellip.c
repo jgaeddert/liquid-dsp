@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <assert.h>
 #include "liquid.internal.h"
 
 #define LIQUID_DEBUG_ELLIP_PRINT   0
@@ -46,9 +45,9 @@
 //  _k      :   elliptic modulus
 //  _n      :   number of iterations
 //  _v      :   sequence of decreasing moduli [size: _n]
-void landenf(float _k,
-             unsigned int _n,
-             float * _v)
+int landenf(float        _k,
+            unsigned int _n,
+            float *      _v)
 {
     unsigned int i;
 
@@ -59,6 +58,7 @@ void landenf(float _k,
         k  = (1 - kp)/(1 + kp);
         _v[i] = k;
     }
+    return LIQUID_OK;
 }
 
 // ellipkf()
@@ -69,10 +69,10 @@ void landenf(float _k,
 //  _n      :   number of iterations
 //  _K      :   complete elliptic integral (modulus k)
 //  _Kp     :   complete elliptic integral (modulus k')
-void ellipkf(float _k,
+int ellipkf(float         _k,
              unsigned int _n,
-             float * _K,
-             float * _Kp)
+             float *      _K,
+             float *      _Kp)
 {
     // define range for k due to machine precision
     float kmin = 4e-4f;
@@ -118,6 +118,7 @@ void ellipkf(float _k,
     // set return values
     *_K  = K;
     *_Kp = Kp;
+    return LIQUID_OK;
 }
 
 // ellipdegf()
@@ -127,8 +128,8 @@ void ellipkf(float _k,
 //  _N      :   analog filter order
 //  _k1     :   elliptic modulus for stop-band, ep/ep1
 //  _n      :   number of Landen iterations
-float ellipdegf(float _N,
-                float _k1,
+float ellipdegf(float        _N,
+                float        _k1,
                 unsigned int _n)
 {
     // compute K1, K1p from _k1
@@ -172,8 +173,8 @@ float ellipdegf(float _N,
 //  _k      :   elliptic modulus (0 <= _k < 1)
 //  _n      :   number of Landen iterations (typically 5-6)
 float complex ellip_cdf(float complex _u,
-                        float _k,
-                        unsigned int _n)
+                        float         _k,
+                        unsigned int  _n)
 {
     float complex wn = ccosf(_u*M_PI*0.5f);
     float v[_n];
@@ -193,8 +194,8 @@ float complex ellip_cdf(float complex _u,
 //  _k      :   elliptic modulus (0 <= _k < 1)
 //  _n      :   number of Landen iterations (typically 5-6)
 float complex ellip_snf(float complex _u,
-                        float _k,
-                        unsigned int _n)
+                        float         _k,
+                        unsigned int  _n)
 {
     float complex wn = csinf(_u*M_PI*0.5f);
     float v[_n];
@@ -215,8 +216,8 @@ float complex ellip_snf(float complex _u,
 //  _k      :   elliptic modulus (0 <= _k < 1)
 //  _n      :   number of Landen iterations (typically 5-6)
 float complex ellip_acdf(float complex _w,
-                         float _k,
-                         unsigned int _n)
+                         float         _k,
+                         unsigned int  _n)
 {
     float v[_n];
     landenf(_k,_n,v);
@@ -250,8 +251,8 @@ float complex ellip_acdf(float complex _w,
 //  _k      :   elliptic modulus (0 <= _k < 1)
 //  _n      :   number of Landen iterations (typically 5-6)
 float complex ellip_asnf(float complex _w,
-                         float _k,
-                         unsigned int _n)
+                         float         _k,
+                         unsigned int  _n)
 {
     return 1.0 - ellip_acdf(_w,_k,_n);
 }
@@ -268,12 +269,12 @@ float complex ellip_asnf(float complex _w,
 //  _za     :   output analog zeros [length: floor(_n/2)]
 //  _pa     :   output analog poles [length: _n]
 //  _ka     :   output analog gain
-void ellip_azpkf(unsigned int _n,
-                 float _ep,
-                 float _es,
-                 float complex * _za,
-                 float complex * _pa,
-                 float complex * _ka)
+int ellip_azpkf(unsigned int    _n,
+                float           _ep,
+                float           _es,
+                float complex * _za,
+                float complex * _pa,
+                float complex * _ka)
 {
     // filter specifications
     float fp = 1.0f / (2.0f * M_PI);    // pass-band cutoff
@@ -380,14 +381,16 @@ void ellip_azpkf(unsigned int _n,
         _pa[t++] = conjf(pa[i]);
     }
     if (r) _pa[t++] = pa0;
-    assert(t==_n);
+    if (t != _n)
+        return liquid_error(LIQUID_EINT,"ellip_azpkf(), invalid derived order (poles)");
 
     t=0;
     for (i=0; i<L; i++) {
         _za[t++] =       za[i];
         _za[t++] = conjf(za[i]);
     }
-    assert(t==2*L);
+    if (t != 2*L)
+        return liquid_error(LIQUID_EINT,"ellip_azpkf(), invalid derived order (zeros)");
 
     // compute gain
     *_ka = r ? 1.0f : 1.0f / sqrtf(1.0f + _ep*_ep);
@@ -395,6 +398,7 @@ void ellip_azpkf(unsigned int _n,
         *_ka *= _pa[i];
     for (i=0; i<2*L; i++)
         *_ka /= _za[i];
+    return LIQUID_OK;
 }
 
 

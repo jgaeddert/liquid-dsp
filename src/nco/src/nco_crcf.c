@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,20 +26,37 @@
 
 #include "liquid.internal.h"
 
-#define LIQUID_FPM              (0)
+// data types
+#define T                       float           // primitive/general
+#define TC                      float complex   // input/output/complex
+
+// naming extensions (useful for print statements)
+#define EXTENSION               "crcf"
+//#define EXTENSION_SHORT         "f"
+//#define EXTENSION_FULL          "crcf"
+
+// macros
 #define NCO(name)               LIQUID_CONCAT(nco_crcf,name)
-#define T                       float
-#define TC                      float complex
+#define SYNTH(name)             LIQUID_CONCAT(synth_crcf,name)
 
 // supporting objects/methods
 #define SIN                     sinf
 #define COS                     cosf
-#define IIRFILT_RRR(name)       LIQUID_CONCAT(iirfilt_rrrf,   name)
-#define IIRFILTSOS_RRR(name)    LIQUID_CONCAT(iirfiltsos_rrrf,name)
+#define SQRT                    sqrtf
+#define CONJ                    conjf
 
 // constants, etc.
-#define NCO_ONE                 (1.0f)
-#define NCO_PI                  (M_PI)
-#define NCO_2PI                 (2.0f*M_PI)
+//#define NCO_ONE                 (1.0f)
+//#define NCO_PI                  (M_PI)
+//#define NCO_2PI                 (2.0f*M_PI)
 
-#include "nco.c"
+// literal macros
+#define TIL_(l)                 l ## .0f
+#define TFL_(l)                 l ## f
+#define TIL(l)                  TIL_(l)
+#define TFL(l)                  TFL_(l)
+
+// prototypes
+#include "nco.proto.c"
+#include "synth.proto.c"
+

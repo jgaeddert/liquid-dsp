@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,32 +36,33 @@
 #define DEBUG_DOTPROD_CCCF_NEON   0
 
 // forward declaration of internal methods
-void dotprod_cccf_execute_neon(dotprod_cccf    _q,
+int dotprod_cccf_execute_neon(dotprod_cccf    _q,
+                              float complex * _x,
+                              float complex * _y);
+
+int dotprod_cccf_execute_neon4(dotprod_cccf    _q,
                                float complex * _x,
                                float complex * _y);
 
-void dotprod_cccf_execute_neon4(dotprod_cccf    _q,
-                                float complex * _x,
-                                float complex * _y);
-
 // basic dot product (ordinal calculation)
-void dotprod_cccf_run(float complex * _h,
-                      float complex * _x,
-                      unsigned int    _n,
-                      float complex * _y)
+int dotprod_cccf_run(float complex * _h,
+                     float complex * _x,
+                     unsigned int    _n,
+                     float complex * _y)
 {
     float complex r = 0;
     unsigned int i;
     for (i=0; i<_n; i++)
         r += _h[i] * _x[i];
     *_y = r;
+    return LIQUID_OK;
 }
 
 // basic dot product (ordinal calculation) with loop unrolled
-void dotprod_cccf_run4(float complex * _h,
-                       float complex * _x,
-                       unsigned int    _n,
-                       float complex * _y)
+int dotprod_cccf_run4(float complex * _h,
+                      float complex * _x,
+                      unsigned int    _n,
+                      float complex * _y)
 {
     float complex r = 0;
 
@@ -82,6 +83,7 @@ void dotprod_cccf_run4(float complex * _h,
         r += _h[i] * _x[i];
 
     *_y = r;
+    return LIQUID_OK;
 }
 
 
@@ -95,8 +97,9 @@ struct dotprod_cccf_s {
     float * hq;         // quadrature
 };
 
-dotprod_cccf dotprod_cccf_create(float complex * _h,
-                                 unsigned int    _n)
+dotprod_cccf dotprod_cccf_create_opt(float complex * _h,
+                                     unsigned int    _n,
+                                     int             _rev)
 {
     dotprod_cccf q = (dotprod_cccf)malloc(sizeof(struct dotprod_cccf_s));
     q->n = _n;
@@ -110,15 +113,28 @@ dotprod_cccf dotprod_cccf_create(float complex * _h,
     //  hq = { cimagf(_h[0]), cimagf(_h[0]), ... cimagf(_h[n-1]), cimagf(_h[n-1])}
     unsigned int i;
     for (i=0; i<q->n; i++) {
-        q->hi[2*i+0] = crealf(_h[i]);
-        q->hi[2*i+1] = crealf(_h[i]);
+        unsigned int k = _rev ? q->n-i-1 : i;
+        q->hi[2*i+0] = crealf(_h[k]);
+        q->hi[2*i+1] = crealf(_h[k]);
 
-        q->hq[2*i+0] = cimagf(_h[i]);
-        q->hq[2*i+1] = cimagf(_h[i]);
+        q->hq[2*i+0] = cimagf(_h[k]);
+        q->hq[2*i+1] = cimagf(_h[k]);
     }
 
     // return object
     return q;
+}
+
+dotprod_cccf dotprod_cccf_create(float complex * _h,
+                                 unsigned int    _n)
+{
+    return dotprod_cccf_create_opt(_h,_n,0);
+}
+
+dotprod_cccf dotprod_cccf_create_rev(float complex * _h,
+                                     unsigned int    _n)
+{
+    return dotprod_cccf_create_opt(_h,_n,1);
 }
 
 // re-create the structured dotprod object
@@ -131,8 +147,40 @@ dotprod_cccf dotprod_cccf_recreate(dotprod_cccf    _q,
     return dotprod_cccf_create(_h,_n);
 }
 
+// re-create the structured dotprod object, reversing coefficients
+dotprod_cccf dotprod_cccf_recreate_rev(dotprod_cccf    _q,
+                                       float complex * _h,
+                                       unsigned int    _n)
+{
+    // completely destroy and re-create dotprod object
+    dotprod_cccf_destroy(_q);
+    return dotprod_cccf_create_rev(_h,_n);
+}
 
-void dotprod_cccf_destroy(dotprod_cccf _q)
+dotprod_cccf dotprod_cccf_copy(dotprod_cccf q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("dotprod_cccf_copy().neon, object cannot be NULL");
+
+    dotprod_cccf q_copy = (dotprod_cccf)malloc(sizeof(struct dotprod_cccf_s));
+    q_copy->n = q_orig->n;
+
+    // allocate memory for coefficients (repeated)
+    q_copy->hi = (float*) malloc( 2*q_copy->n*sizeof(float) );
+    q_copy->hq = (float*) malloc( 2*q_copy->n*sizeof(float) );
+
+    // copy coefficients array (repeated)
+    //  hi = { crealf(_h[0]), crealf(_h[0]), ... crealf(_h[n-1]), crealf(_h[n-1])}
+    //  hq = { cimagf(_h[0]), cimagf(_h[0]), ... cimagf(_h[n-1]), cimagf(_h[n-1])}
+    memmove(q_copy->hi, q_orig->hi, 2*q_orig->n*sizeof(float));
+    memmove(q_copy->hq, q_orig->hq, 2*q_orig->n*sizeof(float));
+
+    // return object
+    return q_copy;
+}
+
+int dotprod_cccf_destroy(dotprod_cccf _q)
 {
     // free coefficients arrays
     free(_q->hi);
@@ -140,30 +188,31 @@ void dotprod_cccf_destroy(dotprod_cccf _q)
 
     // free main memory
     free(_q);
+    return LIQUID_OK;
 }
 
-void dotprod_cccf_print(dotprod_cccf _q)
+int dotprod_cccf_print(dotprod_cccf _q)
 {
     printf("dotprod_cccf [arm-neon, %u coefficients]\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("  %3u : %12.9f +j%12.9f\n", i, _q->hi[i], _q->hq[i]);
+    return LIQUID_OK;
 }
 
 // execute structured dot product
 //  _q      :   dotprod object
 //  _x      :   input array
 //  _y      :   output sample
-void dotprod_cccf_execute(dotprod_cccf    _q,
-                          float complex * _x,
-                          float complex * _y)
+int dotprod_cccf_execute(dotprod_cccf    _q,
+                         float complex * _x,
+                         float complex * _y)
 {
     // switch based on size
     if (_q->n < 32) {
-        dotprod_cccf_execute_neon(_q, _x, _y);
-    } else {
-        dotprod_cccf_execute_neon4(_q, _x, _y);
+        return dotprod_cccf_execute_neon(_q, _x, _y);
     }
+    return dotprod_cccf_execute_neon4(_q, _x, _y);
 }
 
 // use ARM Neon extensions
@@ -186,9 +235,9 @@ void dotprod_cccf_execute(dotprod_cccf    _q,
 //           x[1].real * h[1].imag,
 //           x[1].imag * h[1].imag };
 //
-void dotprod_cccf_execute_neon(dotprod_cccf    _q,
-                               float complex * _x,
-                               float complex * _y)
+int dotprod_cccf_execute_neon(dotprod_cccf    _q,
+                              float complex * _x,
+                              float complex * _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;
@@ -250,13 +299,14 @@ void dotprod_cccf_execute_neon(dotprod_cccf    _q,
 
     // set return value
     *_y = total;
+    return LIQUID_OK;
 }
 
 // use ARM Neon extensions (unrolled loop)
 // NOTE: unrolling doesn't show any appreciable performance difference
-void dotprod_cccf_execute_neon4(dotprod_cccf    _q,
-                                float complex * _x,
-                                float complex * _y)
+int dotprod_cccf_execute_neon4(dotprod_cccf    _q,
+                               float complex * _x,
+                               float complex * _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;
@@ -338,5 +388,6 @@ void dotprod_cccf_execute_neon4(dotprod_cccf    _q,
 
     // set return value
     *_y = total;
+    return LIQUID_OK;
 }
 

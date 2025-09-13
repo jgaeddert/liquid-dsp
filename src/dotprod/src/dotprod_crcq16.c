@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // portable structured dot product object
 struct dotprod_crcq16_s {
@@ -41,10 +41,10 @@ struct dotprod_crcq16_s {
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void dotprod_crcq16_run(q16_t *      _h,
-                        cq16_t *     _x,
-                        unsigned int _n,
-                        cq16_t *     _y)
+int dotprod_crcq16_run(q16_t *      _h,
+                       cq16_t *     _x,
+                       unsigned int _n,
+                       cq16_t *     _y)
 {
     // initialize accumulators (separate I/Q)
     q16_at ri = 0;
@@ -59,6 +59,7 @@ void dotprod_crcq16_run(q16_t *      _h,
     // return result
     (*_y).real = (ri >> q16_fracbits);
     (*_y).imag = (rq >> q16_fracbits);
+    return LIQUID_OK;
 }
 
 // basic dotproduct, unrolling loop
@@ -66,10 +67,10 @@ void dotprod_crcq16_run(q16_t *      _h,
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void dotprod_crcq16_run4(q16_t *      _h,
-                         cq16_t *     _x,
-                         unsigned int _n,
-                         cq16_t *     _y)
+int dotprod_crcq16_run4(q16_t *      _h,
+                        cq16_t *     _x,
+                        unsigned int _n,
+                        cq16_t *     _y)
 {
     // initialize accumulator (separate I/Q)
     q16_at ri = 0;
@@ -103,6 +104,7 @@ void dotprod_crcq16_run4(q16_t *      _h,
     // return result
     (*_y).real = (ri >> q16_fracbits);
     (*_y).imag = (rq >> q16_fracbits);
+    return LIQUID_OK;
 }
 
 //
@@ -123,6 +125,27 @@ dotprod_crcq16 dotprod_crcq16_create(q16_t * _h,
 
     // move coefficients
     memmove(q->h, _h, (q->n)*sizeof(q16_t));
+
+    // return object
+    return q;
+}
+
+// create dot product object with coefficients in reverse order
+//  _h      :   coefficients array [size: 1 x _n]
+//  _n      :   dot product length
+dotprod_crcq16 dotprod_crcq16_create_rev(q16_t *      _h,
+                                         unsigned int _n)
+{
+    dotprod_crcq16 q = (dotprod_crcq16) malloc(sizeof(struct dotprod_crcq16_s));
+    q->n = _n;
+
+    // allocate memory for coefficients (complex)
+    q->h = (q16_t*) malloc((q->n)*sizeof(q16_t));
+
+    // copy coefficients in time-reversed order
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        q->h[i] = _h[_n-i-1];
 
     // return object
     return q;
@@ -152,31 +175,78 @@ dotprod_crcq16 dotprod_crcq16_recreate(dotprod_crcq16 _q,
     return _q;
 }
 
+// re-create dot product object with coefficients in reverse order
+//  _q      :   old dot dot product object
+//  _h      :   time-reversed new coefficients [size: 1 x _n]
+//  _n      :   new dot product size
+dotprod_crcq16 dotprod_crcq16_recreate_rev(dotprod_crcq16 _q,
+                                           q16_t *        _h,
+                                           unsigned int   _n)
+{
+    // check to see if length has changed
+    if (_q->n != _n) {
+        // set new length
+        _q->n = _n;
+
+        // re-allocate memory
+        _q->h = (q16_t*) realloc(_q->h, (_q->n)*sizeof(q16_t));
+    }
+
+    // copy coefficients in time-reversed order
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        _q->h[i] = _h[_n-i-1];
+
+    // return re-structured object
+    return _q;
+}
+
+// copy object
+dotprod_crcq16 dotprod_crcq16_copy(dotprod_crcq16 q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("dotprod_%s_copy(), input object cannot be NULL", "xxxt");
+
+    // create new base object and copy parameters
+    dotprod_crcq16 q_copy = (dotprod_crcq16) malloc(sizeof(struct dotprod_crcq16_s));
+    q_copy->n = q_orig->n;
+
+    // allocate memory and copy coefficients
+    q_copy->h = (q16_t*) malloc((q_copy->n)*sizeof(q16_t));
+    memmove(q_copy->h, q_orig->h, (q_copy->n)*sizeof(q16_t));
+
+    // return new object
+    return q_copy;
+}
+
 // destroy dot product object
-void dotprod_crcq16_destroy(dotprod_crcq16 _q)
+int dotprod_crcq16_destroy(dotprod_crcq16 _q)
 {
     free(_q->h);    // free coefficients memory
     free(_q);       // free main object memory
+    return LIQUID_OK;
 }
 
 // print dot product object
-void dotprod_crcq16_print(dotprod_crcq16 _q)
+int dotprod_crcq16_print(dotprod_crcq16 _q)
 {
     printf("dotprod [%u elements]:\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("  %4u: %12.8f\n", i, q16_fixed_to_float(_q->h[i]));
+    return LIQUID_OK;
 }
 
 // execute structured dot product
 //  _q      :   dot product object
 //  _x      :   input array [size: 1 x _n]
 //  _y      :   output dot product
-void dotprod_crcq16_execute(dotprod_crcq16 _q,
-                            cq16_t *       _x,
-                            cq16_t *       _y)
+int dotprod_crcq16_execute(dotprod_crcq16 _q,
+                           cq16_t *       _x,
+                           cq16_t *       _y)
 {
     // run basic dot product with unrolled loops
-    dotprod_crcq16_run4(_q->h, _x, _q->n, _y);
+    return dotprod_crcq16_run4(_q->h, _x, _q->n, _y);
 }
 

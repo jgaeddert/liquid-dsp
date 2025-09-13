@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 #define EXTENSION_SHORT     "q16"
 #define EXTENSION_FULL      "rrrq16"
 
-// 
+// macros
 #define FIRFILT(name)       LIQUID_CONCAT(firfilt_rrrq16,name)
 #define FIRINTERP(name)     LIQUID_CONCAT(firinterp_rrrq16,name)
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_rrrq16,name)
@@ -47,10 +47,17 @@
 
 #if 0
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_rrrq16,name)
+#define FDELAY(name)        LIQUID_CONCAT(fdelay_rrrq16,name)
+#define FFTFILT(name)       LIQUID_CONCAT(fftfilt_rrrq16,name)
+#define FIRDECIM(name)      LIQUID_CONCAT(firdecim_rrrq16,name)
 #define FIRFARROW(name)     LIQUID_CONCAT(firfarrow_rrrq16,name)
-#define FIRHILB(name)       LIQUID_CONCAT(firhilbf,name)
-#define DECIM(name)         LIQUID_CONCAT(decim_rrrq16,name)
+#define FIRHILB(name)       LIQUID_CONCAT(firhilbq16,name)
+#define IIRDECIM(name)      LIQUID_CONCAT(iirdecim_rrrq16,name)
+#define IIRHILB(name)       LIQUID_CONCAT(iirhilbq16,name)
 #define MSRESAMP(name)      LIQUID_CONCAT(msresamp_rrrq16,name)
+#define MSRESAMP2(name)     LIQUID_CONCAT(msresamp2_rrrq16,name)
+#define ORDFILT(name)       LIQUID_CONCAT(ordfilt_rrrq16,name)
+#define RRESAMP(name)       LIQUID_CONCAT(rresamp_rrrq16,name)
 #define SYMSYNC(name)       LIQUID_CONCAT(symsync_rrrq16,name)
 #endif
 
@@ -69,6 +76,7 @@
 
 // basic constants
 #define TO_ZERO             (q16_zero)
+#define TC_ONE              (q16_one)
 
 #define TO_COMPLEX          0
 #define TC_COMPLEX          0
@@ -78,21 +86,29 @@
 #define PRINTVAL_TC(X,F)    PRINTVAL_Q16(X,F)
 #define PRINTVAL_TI(X,F)    PRINTVAL_Q16(X,F)
 
-// source files
-#include "firfilt.c"
-#include "firinterp.c"
-#include "firpfb.c"
-#include "iirfilt.c"
-#include "iirfiltsos.c"
-#include "iirinterp.c"
-#include "resamp.c"
-#include "resamp2.c"
+// prototype files
+#include "firfilt.proto.c"
+#include "firinterp.proto.c"
+#include "firpfb.proto.c"
+#include "iirfilt.proto.c"
+#include "iirfiltsos.proto.c"
+#include "iirinterp.proto.c"
+//#include "resamp.proto.c"         // floating-point phase version
+#include "resamp.fixed.proto.c" // fixed-point phase version
+#include "resamp2.proto.c"
 
 #if 0
-#include "autocorr.c"
-#include "firfarrow.c"
-#include "firhilb.c"
-#include "decim.c"
-#include "msresamp.c"
-#include "symsync.c"
+#include "autocorr.proto.c"
+#include "fdelay.proto.c"
+#include "fftfilt.proto.c"
+#include "firdecim.proto.c"
+#include "firfarrow.proto.c"
+#include "firhilb.proto.c"
+#include "iirdecim.proto.c"
+#include "iirhilb.proto.c"
+#include "msresamp.proto.c"
+#include "msresamp2.proto.c"
+#include "ordfilt.proto.c"
+#include "rresamp.proto.c"
+#include "symsync.proto.c"
 #endif

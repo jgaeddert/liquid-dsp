@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ const struct modulation_type_s modulation_types[LIQUID_MODEM_NUM_SCHEMES] = {
     // name       fullname        scheme          bps
 
     // unknown
-    {"unknown",   "unkown",       LIQUID_MODEM_UNKNOWN, 0},
+    {"unknown",   "unknown",       LIQUID_MODEM_UNKNOWN, 0},
 
     // phase-shift keying
     {"psk2",      "phase-shift keying (2)",   LIQUID_MODEM_PSK2,  1},
@@ -98,6 +98,7 @@ const struct modulation_type_s modulation_types[LIQUID_MODEM_NUM_SCHEMES] = {
     {"arb128opt", "arb128opt (optimal 128-qam)",   LIQUID_MODEM_ARB128OPT, 7},
     {"arb256opt", "arb256opt (optimal 256-qam)",   LIQUID_MODEM_ARB256OPT, 8},
     {"arb64vt",   "arb64vt (64-qam vt logo)",      LIQUID_MODEM_ARB64VT,   6},
+    {"pi4dqpsk",  "pi/4 differential QPSK",        LIQUID_MODEM_PI4DQPSK,  2},
 
     // arbitrary modem type
     {"arb",       "arbitrary constellation",       LIQUID_MODEM_ARB,       0},
@@ -113,12 +114,12 @@ modulation_scheme liquid_getopt_str2mod(const char * _str)
         if (strcmp(_str,modulation_types[i].name)==0)
             return i;
     }
-    fprintf(stderr,"warning: liquid_getopt_str2mod(), unknown/unsupported mod scheme : %s\n", _str);
+    liquid_error(LIQUID_EICONFIG,"liquid_getopt_str2mod(), unknown/unsupported mod scheme: %s", _str);
     return LIQUID_MODEM_UNKNOWN;
 }
 
 // Print compact list of existing and available modulation schemes
-void liquid_print_modulation_schemes()
+int liquid_print_modulation_schemes()
 {
     unsigned int i;
     unsigned int len = 10;
@@ -138,6 +139,7 @@ void liquid_print_modulation_schemes()
         }
     }
     printf("\n");
+    return LIQUID_OK;
 }
 
 // query basic modulation types
@@ -271,15 +273,13 @@ unsigned int gray_decode(unsigned int symbol_in)
 //  _soft_bits  :   soft input bits [size: _bps x 1]
 //  _bps        :   bits per symbol
 //  _sym_out    :   output symbol, value in [0,2^_bps)
-void liquid_pack_soft_bits(unsigned char * _soft_bits,
-                           unsigned int _bps,
-                           unsigned int * _sym_out)
+int liquid_pack_soft_bits(unsigned char * _soft_bits,
+                          unsigned int _bps,
+                          unsigned int * _sym_out)
 {
     // validate input
-    if (_bps > MAX_MOD_BITS_PER_SYMBOL) {
-        fprintf(stderr,"error: liquid_unpack_soft_bits(), bits/symbol exceeds maximum (%u)\n", MAX_MOD_BITS_PER_SYMBOL);
-        exit(1);
-    }
+    if (_bps > MAX_MOD_BITS_PER_SYMBOL)
+        return liquid_error(LIQUID_EIRANGE,"liquid_unpack_soft_bits(), bits/symbol exceeds maximum (%u)", MAX_MOD_BITS_PER_SYMBOL);
 
     unsigned int i;
     unsigned int s=0;
@@ -288,25 +288,25 @@ void liquid_pack_soft_bits(unsigned char * _soft_bits,
         s |= _soft_bits[i] > LIQUID_SOFTBIT_ERASURE ? 1 : 0;
     }
     *_sym_out = s;
+    return LIQUID_OK;
 }
 
 // unpack soft bits into symbol
 //  _sym_in     :   input symbol, value in [0,2^_bps)
 //  _bps        :   bits per symbol
 //  _soft_bits  :   soft output bits [size: _bps x 1]
-void liquid_unpack_soft_bits(unsigned int _sym_in,
-                             unsigned int _bps,
-                             unsigned char * _soft_bits)
+int liquid_unpack_soft_bits(unsigned int _sym_in,
+                            unsigned int _bps,
+                            unsigned char * _soft_bits)
 {
     // validate input
-    if (_bps > MAX_MOD_BITS_PER_SYMBOL) {
-        fprintf(stderr,"error: liquid_unpack_soft_bits(), bits/symbol exceeds maximum (%u)\n", MAX_MOD_BITS_PER_SYMBOL);
-        exit(1);
-    }
+    if (_bps > MAX_MOD_BITS_PER_SYMBOL)
+        return liquid_error(LIQUID_EIRANGE,"liquid_unpack_soft_bits(), bits/symbol exceeds maximum (%u)", MAX_MOD_BITS_PER_SYMBOL);
 
     unsigned int i;
     for (i=0; i<_bps; i++)
         _soft_bits[i] = ((_sym_in >> (_bps-i-1)) & 0x0001) ? LIQUID_SOFTBIT_1 : LIQUID_SOFTBIT_0;
+    return LIQUID_OK;
 }
 
 

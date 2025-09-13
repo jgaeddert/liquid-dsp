@@ -108,6 +108,8 @@ int main(int argc, char*argv[])
     // create symbol tracking synchronizer
     symtrack_cccf symtrack = symtrack_cccf_create(ftype,k,m,beta,ms);
     symtrack_cccf_set_bandwidth(symtrack,bandwidth);
+    //symtrack_cccf_set_eq_off(symtrack); // disable equalization
+    symtrack_cccf_print(symtrack);
 
     // create spectral periodogram for estimating spectrum
     spgramcf periodogram = spgramcf_create_default(nfft);

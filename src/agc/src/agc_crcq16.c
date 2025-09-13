@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,5 +44,6 @@
 
 #define TC_COMPLEX          1
 
-// source files
-#include "agc.c"
+// prototypes
+#include "agc.proto.c"
+

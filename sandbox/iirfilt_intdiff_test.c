@@ -1,6 +1,6 @@
 // iirfilt_intdiff_test
 //
-// Tests infinite impulse reponse (IIR) integrator and differentiator
+// Tests infinite impulse response (IIR) integrator and differentiator
 // filters. The filters are each order 8 and have a near-integer group
 // delay of 7 samples. The magnitude response of the ideal is on the
 // order of -140 dB error.

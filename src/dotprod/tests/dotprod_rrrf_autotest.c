@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -178,7 +178,7 @@ void autotest_dotprod_rrrf_struct_align()
     // create dotprod object
     dotprod_rrrf dp = dotprod_rrrf_create(h,16);
 
-    // test data mis-alignment conditions
+    // test data misalignment conditions
     float x_buffer[20];
     float * x_hat;
     unsigned int i;
@@ -245,12 +245,31 @@ void autotest_dotprod_rrrf_rand02()
     -0.144000, -1.435200, -0.893420,  1.657800
     };
 
-    float test = -8.17832326680587;
+    float test     = -8.17832326680587;
+    float test_rev =  4.56839328512000;
     float tol = 1e-3f;
     float y;
 
     dotprod_rrrf_run(h,x,16,&y);
     CONTEND_DELTA(y,test,tol);
+
+    // create object
+    dotprod_rrrf q = dotprod_rrrf_create(h,16);
+    dotprod_rrrf_execute(q,x,&y);
+    CONTEND_DELTA(y,test,tol);
+
+    // test running in reverse
+    q = dotprod_rrrf_recreate_rev(q,h,16);
+    dotprod_rrrf_execute(q,x,&y);
+    CONTEND_DELTA(y,test_rev,tol);
+
+    // create original again
+    q = dotprod_rrrf_recreate(q,h,16);
+    dotprod_rrrf_execute(q,x,&y);
+    CONTEND_DELTA(y,test,tol);
+
+    // clean it up
+    dotprod_rrrf_destroy(q);
 }
 
 // 
@@ -324,7 +343,7 @@ void autotest_dotprod_rrrf_struct_lengths()
 }
 
 // 
-// AUTOTEST: compare structured result to oridinal computation
+// AUTOTEST: compare structured result to ordinal computation
 //
 
 // helper function (compare structured object to ordinal computation)
@@ -347,18 +366,32 @@ void runtest_dotprod_rrrf(unsigned int _n)
         y_test += h[i] * x[i];
 
     // create and run dot product object
-    float y;
+    float y_struct;
     dotprod_rrrf dp;
     dp = dotprod_rrrf_create(h,_n);
-    dotprod_rrrf_execute(dp, x, &y);
+    dotprod_rrrf_execute(dp, x, &y_struct);
     dotprod_rrrf_destroy(dp);
 
-    // print results
-    if (liquid_autotest_verbose)
-        printf("  dotprod-rrrf-%-4u : %12.8f (expected %12.8f)\n", _n, y, y_test);
+    // run unstructured
+    float y_run, y_run4;
+    dotprod_rrrf_run (h,x,_n,&y_run );
+    dotprod_rrrf_run4(h,x,_n,&y_run4);
 
-    // validate result
-    CONTEND_DELTA(y, y_test, tol);
+    // print results
+    if (liquid_autotest_verbose) {
+        printf("  dotprod-rrrf-%-4u(struct) : %12.8f (expected %12.8f)\n", _n, y_struct, y_test);
+        printf("  dotprod-rrrf-%-4u(run   ) : %12.8f (expected %12.8f)\n", _n, y_run,    y_test);
+        printf("  dotprod-rrrf-%-4u(run4  ) : %12.8f (expected %12.8f)\n", _n, y_run4,   y_test);
+    }
+
+    // validate result (structured object)
+    CONTEND_DELTA(y_struct, y_test, tol);
+
+    // validate result (unstructured, run)
+    CONTEND_DELTA(y_run, y_test, tol);
+
+    // validate result (unstructured, run4)
+    CONTEND_DELTA(y_run4, y_test, tol);
 }
 
 // compare structured object to ordinal computation

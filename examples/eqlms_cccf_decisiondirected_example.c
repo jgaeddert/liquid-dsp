@@ -121,9 +121,9 @@ int main(int argc, char*argv[])
     firinterp_crcf interp = firinterp_crcf_create(k, hm, hm_len);
 
     // create the modem objects
-    modem mod   = modem_create(ms);
-    modem demod = modem_create(ms);
-    unsigned int M = 1 << modem_get_bps(mod);
+    modemcf mod   = modemcf_create(ms);
+    modemcf demod = modemcf_create(ms);
+    unsigned int M = 1 << modemcf_get_bps(mod);
 
     // generate channel impulse response, filter
     hc[0] = 1.0f;
@@ -133,7 +133,7 @@ int main(int argc, char*argv[])
 
     // generate random symbols
     for (i=0; i<num_symbols; i++)
-        modem_modulate(mod, rand()%M, &sym_tx[i]);
+        modemcf_modulate(mod, rand()%M, &sym_tx[i]);
 
     // interpolate
     for (i=0; i<num_symbols; i++)
@@ -150,19 +150,19 @@ int main(int argc, char*argv[])
     }
 
     // push through equalizer
-    // create equalizer, intialized with square-root Nyquist filter
+    // create equalizer, initialized with square-root Nyquist filter
     eqlms_cccf eq = eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_RRC, k, p, beta, 0.0f);
     eqlms_cccf_set_bw(eq, mu);
 
     // get initialized weights
-    eqlms_cccf_get_weights(eq, hp);
+    eqlms_cccf_copy_coefficients(eq, hp);
 
-    // filtered error vector magnitude (emperical RMS error)
+    // filtered error vector magnitude (empirical RMS error)
     float evm_hat = 0.03f;
 
     float complex d_hat = 0.0f;
     for (i=0; i<num_samples; i++) {
-        // print filtered evm (emperical rms error)
+        // print filtered evm (empirical rms error)
         if ( ((i+1)%50)==0 )
             printf("%4u : rms error = %12.8f dB\n", i+1, 10*log10(evm_hat));
 
@@ -178,8 +178,8 @@ int main(int argc, char*argv[])
         // estimate transmitted signal
         unsigned int sym_out;   // output symbol
         float complex d_prime;  // estimated input sample
-        modem_demodulate(demod, d_hat, &sym_out);
-        modem_get_demodulator_sample(demod, &d_prime);
+        modemcf_demodulate(demod, d_hat, &sym_out);
+        modemcf_get_demodulator_sample(demod, &d_prime);
 
         // update equalizer
         eqlms_cccf_step(eq, d_prime, d_hat);
@@ -190,14 +190,14 @@ int main(int argc, char*argv[])
     }
 
     // get equalizer weights
-    eqlms_cccf_get_weights(eq, hp);
+    eqlms_cccf_copy_coefficients(eq, hp);
 
     // destroy objects
     eqlms_cccf_destroy(eq);
     firinterp_crcf_destroy(interp);
     firfilt_cccf_destroy(fchannel);
-    modem_destroy(mod);
-    modem_destroy(demod);
+    modemcf_destroy(mod);
+    modemcf_destroy(demod);
 
     // 
     // export output

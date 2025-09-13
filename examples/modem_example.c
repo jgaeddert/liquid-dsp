@@ -1,13 +1,8 @@
-// 
-// modem_example.c
-//
-// This example demonstates the digital modulator/demodulator
+// This example demonstrates the digital modulator/demodulator
 // (modem) object.  Data symbols are modulated into complex
 // samples which are then demodulated without noise or phase
 // offsets.  The user may select the modulation scheme via
 // the command-line interface.
-// SEE ALSO: modem_arb_example.c
-//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -52,14 +47,14 @@ int main(int argc, char*argv[])
     }
 
     // create the modem objects
-    modem mod   = modem_create(ms);
-    modem demod = modem_create(ms);
+    modemcf mod   = modemcf_create(ms);
+    modemcf demod = modemcf_create(ms);
 
     // ensure bits/symbol matches modem description (only
     // applicable to certain specific modems)
-    unsigned int bps = modem_get_bps(mod);
+    unsigned int bps = modemcf_get_bps(mod);
 
-    modem_print(mod);
+    modemcf_print(mod);
 
     // open output file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
@@ -79,8 +74,8 @@ int main(int argc, char*argv[])
     unsigned int num_bit_errors = 0;
 
     for (i=0; i<num_symbols; i++) {
-        modem_modulate(mod, i, &x);
-        modem_demodulate(demod, x, &s);
+        modemcf_modulate(mod, i, &x);
+        modemcf_demodulate(demod, x, &s);
 
         if (verbose)
             printf("%4u > %4u : %12.8f + j*%12.8f\n", i, s, crealf(x), cimagf(x));
@@ -111,7 +106,7 @@ int main(int argc, char*argv[])
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
 
-    modem_destroy(mod);
-    modem_destroy(demod);
+    modemcf_destroy(mod);
+    modemcf_destroy(demod);
     return 0;
 }

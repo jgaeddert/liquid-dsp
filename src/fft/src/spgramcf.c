@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,8 +46,8 @@
 #define PRINTVAL_TC(X,F)    PRINTVAL_CFLOAT(X,F)
 #define PRINTVAL_TI(X,F)    PRINTVAL_CFLOAT(X,F)
 
-// source files
-#include "asgram.c"
-#include "spgram.c"
-#include "spwaterfall.c"
+// prototypes
+#include "asgram.proto.c"
+#include "spgram.proto.c"
+#include "spwaterfall.proto.c"
 

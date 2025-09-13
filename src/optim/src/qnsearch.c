@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,17 +26,60 @@
 #include <math.h>
 #include "liquid.internal.h"
 
-#define LIQUID_qnsearch_GAMMA_MIN 0.000001
+// quasi-Newton search object
+struct qnsearch_s {
+    float* v;           // vector to optimize (externally allocated)
+    unsigned int num_parameters;    // number of parameters to optimize [n]
 
-qnsearch qnsearch_create(void * _userdata,
-                         float * _v,
-                         unsigned int _num_parameters,
+    float gamma;        // nominal stepsize
+    float delta;        // differential used to compute (estimate) derivative
+    float dgamma;       // decremental gamma parameter
+    float gamma_hat;    // step size (decreases each epoch)
+    float* v_prime;     // temporary vector array
+    float* dv;          // parameter step vector
+
+    float * B;          // approximate Hessian matrix inverse [n x n]
+    float * H;          // Hessian matrix
+
+    float* p;           // search direction
+    float* gradient;    // gradient approximation
+    float* gradient0;   // gradient approximation (previous step)
+
+    // External utility function.
+    utility_function get_utility;
+    float utility;      // current utility
+    void * userdata;    // userdata pointer passed to utility callback
+    int minimize;       // minimize/maximimze utility (search direction)
+};
+
+// compute gradient(x_k)
+int qnsearch_compute_gradient(qnsearch _q);
+
+// compute the norm of the gradient(x_k)
+int qnsearch_normalize_gradient(qnsearch _q);
+
+// compute Hessian (estimate)
+int qnsearch_compute_Hessian(qnsearch _q);
+
+// compute the updated inverse hessian matrix using the Broyden, Fletcher,
+// Goldfarb & Shanno method (BFGS)
+int qnsearch_update_hessian_bfgs(qnsearch _q);
+
+// create quasi-newton method search object
+qnsearch qnsearch_create(void *           _userdata,
+                         float *          _v,
+                         unsigned int     _num_parameters,
                          utility_function _u,
-                         int _minmax)
+                         int              _minmax)
 {
-    qnsearch q = (qnsearch) malloc( sizeof(struct qnsearch_s) );
+    // validate input
+    if (_u == NULL)
+        return liquid_error_config("qnsearch_create(), utility function cannot be NULL")
+    if (_num_parameters == 0)
+        return liquid_error_config("qnsearch_create(), number of parameters must be greater than zero");
 
-    // initialize public values
+    // create object and initialize public values
+    qnsearch q = (qnsearch) malloc( sizeof(struct qnsearch_s) );
     q->delta = 1e-6f;   //_delta;
     q->gamma = 1e-3f;   //_gamma;
     q->dgamma = 0.99f;
@@ -59,33 +102,43 @@ qnsearch qnsearch_create(void * _userdata,
     q->utility = q->get_utility(q->userdata, q->v, q->num_parameters);
 
     qnsearch_reset(q);
-
     return q;
 }
 
-void qnsearch_destroy(qnsearch _q)
+int qnsearch_destroy(qnsearch _q)
 {
     free(_q->B);
     free(_q->H);
-
     free(_q->p);
     free(_q->gradient);
     free(_q->gradient0);
     free(_q->v_prime);
     free(_q->dv);
     free(_q);
+    return LIQUID_OK;
 }
 
-void qnsearch_print(qnsearch _q)
+int qnsearch_print(qnsearch _q)
 {
+#if 0
     printf("[%.3f] ", _q->utility);
     unsigned int i;
     for (i=0; i<_q->num_parameters; i++)
         printf("%.3f ", _q->v[i]);
     printf("\n");
+#else
+    printf("<liquid.gradsearch");
+    printf(", n=%u", _q->num_parameters);
+    printf(", dir=\"%s\"", _q->minimize ? "min" : "max");
+    printf(", gamma=%g", _q->gamma);
+    printf(", delta=%g", _q->delta);   // delta
+    printf(", u=%g", _q->utility);
+    printf(">\n");
+#endif
+    return LIQUID_OK;
 }
 
-void qnsearch_reset(qnsearch _q)
+int qnsearch_reset(qnsearch _q)
 {
     _q->gamma_hat = _q->gamma;
 
@@ -98,16 +151,16 @@ void qnsearch_reset(qnsearch _q)
     }
 
     _q->utility = _q->get_utility(_q->userdata, _q->v, _q->num_parameters);
+    return LIQUID_OK;
 }
 
-void qnsearch_step(qnsearch _q)
+int qnsearch_step(qnsearch _q)
 {
     unsigned int i;
     unsigned int n = _q->num_parameters;
 
     // compute normalized gradient vector
     qnsearch_compute_gradient(_q);
-    //qnsearch_normalize_gradient(_q);
 
     // TODO : perform line search to find optimal gamma
 
@@ -150,11 +203,12 @@ void qnsearch_step(qnsearch _q)
     }
 
     _q->utility = u_prime;
+    return LIQUID_OK;
 }
 
-float qnsearch_run(qnsearch _q,
-                   unsigned int _max_iterations,
-                   float _target_utility)
+float qnsearch_execute(qnsearch _q,
+                       unsigned int _max_iterations,
+                       float _target_utility)
 {
     unsigned int i=0;
     do {
@@ -174,7 +228,7 @@ float qnsearch_run(qnsearch _q,
 //
 
 // compute gradient
-void qnsearch_compute_gradient(qnsearch _q)
+int qnsearch_compute_gradient(qnsearch _q)
 {
     unsigned int i;
     float f_prime;
@@ -188,25 +242,11 @@ void qnsearch_compute_gradient(qnsearch _q)
         _q->v_prime[i] -= _q->delta;
         _q->gradient[i] = (f_prime - _q->utility) / _q->delta;
     }
-}
-
-// normalize gradient vector to unity
-void qnsearch_normalize_gradient(qnsearch _q)
-{
-    // normalize gradient
-    float sig = 0.0f;
-    unsigned int i;
-    for (i=0; i<_q->num_parameters; i++)
-        sig += _q->gradient[i] * _q->gradient[i];
-
-    sig = 1.0f / sqrtf(sig/(float)(_q->num_parameters));
-
-    for (i=0; i<_q->num_parameters; i++)
-        _q->gradient[i] *= sig;
+    return LIQUID_OK;
 }
 
 // compute Hessian
-void qnsearch_compute_Hessian(qnsearch _q)
+int qnsearch_compute_Hessian(qnsearch _q)
 {
     unsigned int i, j;
     unsigned int n = _q->num_parameters;
@@ -267,8 +307,6 @@ void qnsearch_compute_Hessian(qnsearch _q)
             }
         }
     }
-    //matrixf_print(_q->H, n, n);
-    //exit(1);
+    return LIQUID_OK;
 }
-
 

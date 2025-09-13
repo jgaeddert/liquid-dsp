@@ -1,13 +1,8 @@
-//
-// modem_arb_example.c
-//
 // This example demonstrates the functionality of the arbitrary
 // modem, a digital modulator/demodulator object with signal
 // constellation points chosen arbitrarily.  A simple bit-error
 // rate simulation is then run to test the performance of the
 // modem.  The results are written to a file.
-// SEE ALSO: modem_example.c
-//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,10 +59,10 @@ int main(int argc, char*argv[])
     }
     
     // create mod/demod objects
-    modem mod   = modem_create_arbitrary(constellation, M);
-    modem demod = modem_create_arbitrary(constellation, M);
+    modemcf mod   = modemcf_create_arbitrary(constellation, M);
+    modemcf demod = modemcf_create_arbitrary(constellation, M);
 
-    modem_print(mod);
+    modemcf_print(mod);
 
     // run simulation
     float complex x[n];
@@ -79,14 +74,14 @@ int main(int argc, char*argv[])
     unsigned int sym_out;
     for (i=0; i<n; i++) {
         // generate and modulate random symbol
-        sym_in = modem_gen_rand_sym(mod);
-        modem_modulate(mod, sym_in, &x[i]);
+        sym_in = modemcf_gen_rand_sym(mod);
+        modemcf_modulate(mod, sym_in, &x[i]);
 
         // add noise
         x[i] += 0.05 * randnf() * cexpf(_Complex_I*M_PI*randf());
 
         // demodulate
-        modem_demodulate(demod, x[i], &sym_out);
+        modemcf_demodulate(demod, x[i], &sym_out);
 
         // accumulate errors
         num_errors += count_bit_errors(sym_in,sym_out);
@@ -94,8 +89,8 @@ int main(int argc, char*argv[])
     printf("num bit errors: %4u / %4u\n", num_errors, bps*n);
 
     // destroy modem objects
-    modem_destroy(mod);
-    modem_destroy(demod);
+    modemcf_destroy(mod);
+    modemcf_destroy(demod);
 
     // 
     // export output file

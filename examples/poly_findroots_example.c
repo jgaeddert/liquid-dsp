@@ -1,13 +1,7 @@
-// 
-// poly_findroots_example.c
-//
-// test polynomial root-finding algorithm (Bairstow's method)
-//
-
+// test polynomial root-finding algorithm
 #include <stdio.h>
 #include <math.h>
-
-#include "liquid.internal.h"
+#include "liquid.h"
 
 int main() {
     unsigned int n=6;   // polynomial length (order+1)
@@ -26,11 +20,9 @@ int main() {
     polyf_findroots(p,n,roots);
     printf("roots:\n");
     for (i=0; i<n-1; i++) {
-        printf("  r[%3u] = %12.8f + j*%12.8f\n", i,
-                                                 crealf(roots[i]),
-                                                 cimagf(roots[i]));
+        printf("  r[%3u] = %8.5f + j*%8.5f\n",
+            i, crealf(roots[i]), cimagf(roots[i]));
     }
 
-    printf("done.\n");
     return 0;
 }

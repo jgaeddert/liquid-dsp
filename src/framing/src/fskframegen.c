@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
-// fskframegen.c
-//
+// frequency-shift keying (FSK) frame generator
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -36,12 +34,12 @@
 #define DEBUG_FSKFRAMEGEN    0
 
 // fskframegen
-void fskframegen_encode_header    (fskframegen _q, unsigned char * _header);
-void fskframegen_generate_symbol  (fskframegen _q);
-void fskframegen_generate_zeros   (fskframegen _q);
-void fskframegen_generate_preamble(fskframegen _q);
-void fskframegen_generate_header  (fskframegen _q);
-void fskframegen_generate_payload (fskframegen _q);
+int fskframegen_encode_header    (fskframegen _q, unsigned char * _header);
+int fskframegen_generate_symbol  (fskframegen _q);
+int fskframegen_generate_zeros   (fskframegen _q);
+int fskframegen_generate_preamble(fskframegen _q);
+int fskframegen_generate_header  (fskframegen _q);
+int fskframegen_generate_payload (fskframegen _q);
 
 // fskframe object structure
 struct fskframegen_s {
@@ -201,7 +199,7 @@ fskframegen fskframegen_create()
 }
 
 // destroy fskframegen object
-void fskframegen_destroy(fskframegen _q)
+int fskframegen_destroy(fskframegen _q)
 {
     // destroy modulators
     fskmod_destroy(_q->mod_header);
@@ -233,10 +231,11 @@ void fskframegen_destroy(fskframegen _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // reset frame generator object
-void fskframegen_reset(fskframegen _q)
+int fskframegen_reset(fskframegen _q)
 {
     // reset modulator
     fskmod_reset(_q->mod_header);
@@ -248,11 +247,13 @@ void fskframegen_reset(fskframegen _q)
     _q->frame_complete  = 0;
     _q->symbol_counter  = 0;
     _q->sample_counter  = _q->k;    // indicate we are ready for a new symbol
+    return LIQUID_OK;
 }
 
 // print fskframegen object internals
-void fskframegen_print(fskframegen _q)
+int fskframegen_print(fskframegen _q)
 {
+#if 0
     printf("fskframegen:\n");
     printf("  physical properties\n");
     printf("    bits/symbol     :   %u\n", _q->m);
@@ -267,6 +268,10 @@ void fskframegen_print(fskframegen _q)
     printf("    fec (inner)     :   %s\n", fec_scheme_str[_q->payload_fec0][1]);
     printf("    fec (outer)     :   %s\n", fec_scheme_str[_q->payload_fec1][1]);
     printf("  total samples     :   %-4u samples\n", fskframegen_getframelen(_q));
+#else
+    printf("<liquid.fskframegen>\n");
+#endif
+    return LIQUID_OK;
 }
 
 // assemble frame
@@ -277,16 +282,16 @@ void fskframegen_print(fskframegen _q)
 //  _check          :   data validity check
 //  _fec0           :   inner forward error correction
 //  _fec1           :   outer forward error correction
-void fskframegen_assemble(fskframegen     _q,
-                          unsigned char * _header,
-                          unsigned char * _payload,
-                          unsigned int    _payload_len,
-                          crc_scheme      _check,
-                          fec_scheme      _fec0,
-                          fec_scheme      _fec1)
+int fskframegen_assemble(fskframegen     _q,
+                         unsigned char * _header,
+                         unsigned char * _payload,
+                         unsigned int    _payload_len,
+                         crc_scheme      _check,
+                         fec_scheme      _fec0,
+                         fec_scheme      _fec1)
 {
 #if 1
-    fprintf(stderr,"warning: fskframegen_assemble(), ignoring input parameters for now\n");
+    liquid_error(LIQUID_ENOIMP,"fskframegen_assemble(), base functionality not implemented; ignoring input parameters for now");
 #else
     // set properties
     _q->payload_dec_len = _payload_len;
@@ -318,7 +323,7 @@ void fskframegen_assemble(fskframegen     _q,
 
     // encode payload symbols
     qpacketmodem_encode_syms(_q->payload_encoder, _payload, _q->payload_sym);
-#if 1
+#if 0
     printf("tx payload symbols (%u)\n", _q->payload_sym_len);
     unsigned int i;
     for (i=0; i<_q->payload_sym_len; i++)
@@ -328,13 +333,14 @@ void fskframegen_assemble(fskframegen     _q,
 
     // set state appropriately
     _q->state = STATE_PREAMBLE;
+    return LIQUID_OK;
 }
 
 // get frame length (number of samples)
 unsigned int fskframegen_getframelen(fskframegen _q)
 {
     if (!_q->frame_assembled) {
-        fprintf(stderr,"warning: fskframegen_getframelen(), frame not assembled!\n");
+        liquid_error(LIQUID_EICONFIG,"fskframegen_getframelen(), frame not assembled!");
         return 0;
     }
 
@@ -370,7 +376,7 @@ int fskframegen_write_samples(fskframegen     _q,
 // internal methods
 //
 
-void fskframegen_encode_header(fskframegen     _q,
+int fskframegen_encode_header(fskframegen     _q,
                                unsigned char * _header)
 {
     // first 8 bytes user data
@@ -400,7 +406,7 @@ void fskframegen_encode_header(fskframegen     _q,
     // run packet encoder, encoding into symbols
     qpacketmodem_encode_syms(_q->header_encoder, _q->header_dec, _q->header_sym);
 
-#if 1
+#if 0
     printf("tx header symbols (%u):\n", _q->header_sym_len);
     unsigned int i;
     for (i=0; i<_q->header_sym_len; i++)
@@ -414,46 +420,31 @@ void fskframegen_encode_header(fskframegen     _q,
     printf("\n");
 #endif
     // TODO: scramble header
+    return LIQUID_OK;
 }
 
 // write single symbol to internal buffer
-void fskframegen_generate_symbol(fskframegen _q)
+int fskframegen_generate_symbol(fskframegen _q)
 {
     switch (_q->state) {
-    case STATE_OFF:
-        // write blank symbols
-        fskframegen_generate_zeros(_q);
-        break;
-
-    case STATE_PREAMBLE:
-        // write preamble
-        fskframegen_generate_preamble(_q);
-        break;
-
-    case STATE_HEADER:
-        // write header
-        fskframegen_generate_header(_q);
-        break;
-
-    case STATE_PAYLOAD:
-        // write payload symbols
-        fskframegen_generate_payload(_q);
-        break;
-
-    default:
-        fprintf(stderr,"error: fskframegen_writesymbol(), unknown/unsupported internal state\n");
-        exit(1);
+    case STATE_OFF:      return fskframegen_generate_zeros(_q);
+    case STATE_PREAMBLE: return fskframegen_generate_preamble(_q);
+    case STATE_HEADER:   return fskframegen_generate_header(_q);
+    case STATE_PAYLOAD:  return fskframegen_generate_payload(_q);
+    default:;
     }
+    return liquid_error(LIQUID_EINT,"fskframegen_writesymbol(), unknown/unsupported internal state");
 }
 
-void fskframegen_generate_zeros(fskframegen _q)
+int fskframegen_generate_zeros(fskframegen _q)
 {
     unsigned int i;
     for (i=0; i<_q->k; i++)
         _q->buf[i] = 0.0f;
+    return LIQUID_OK;
 }
 
-void fskframegen_generate_preamble(fskframegen _q)
+int fskframegen_generate_preamble(fskframegen _q)
 {
     unsigned char s = _q->preamble_sym[_q->symbol_counter];
     fskmod_modulate(_q->mod_header, s, _q->buf);
@@ -467,9 +458,10 @@ void fskframegen_generate_preamble(fskframegen _q)
         _q->symbol_counter = 0;
         _q->state = STATE_HEADER;
     }
+    return LIQUID_OK;
 }
 
-void fskframegen_generate_header(fskframegen _q)
+int fskframegen_generate_header(fskframegen _q)
 {
     unsigned int s = _q->header_sym[_q->symbol_counter];
 
@@ -481,9 +473,10 @@ void fskframegen_generate_header(fskframegen _q)
         _q->symbol_counter = 0;
         _q->state = STATE_PAYLOAD;
     }
+    return LIQUID_OK;
 }
 
-void fskframegen_generate_payload(fskframegen _q)
+int fskframegen_generate_payload(fskframegen _q)
 {
     unsigned int s = _q->payload_sym[_q->symbol_counter];
 
@@ -496,5 +489,6 @@ void fskframegen_generate_payload(fskframegen _q)
         _q->frame_assembled = 0;
         _q->state = STATE_OFF;
     }
+    return LIQUID_OK;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdlib.h>
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -74,5 +75,43 @@ void autotest_firpfb_impulse_response()
     }
     
     firpfb_rrrf_destroy(f);
+}
+
+void autotest_firpfb_crcf_copy()
+{
+    // create base object with irregular parameters
+    unsigned int M = 13, m = 7;
+    firpfb_crcf q0 = firpfb_crcf_create_default(M, m);
+
+    // run random samples through filter
+    unsigned int i, num_samples = 80;
+    for (i=0; i<num_samples; i++) {
+        float complex v = randnf() + _Complex_I*randnf();
+        firpfb_crcf_push(q0, v);
+    }
+
+    // copy object
+    firpfb_crcf q1 = firpfb_crcf_copy(q0);
+
+    // run random samples through filter
+    for (i=0; i<num_samples; i++) {
+        // random input channel and index
+        float complex v  = randnf() + _Complex_I*randnf();
+        unsigned int idx = rand() % M;
+
+        // push sample through each filter
+        firpfb_crcf_push(q0, v);
+        firpfb_crcf_push(q1, v);
+
+        // compare outputs
+        float complex y0, y1;
+        firpfb_crcf_execute(q0, idx, &y0);
+        firpfb_crcf_execute(q1, idx, &y1);
+        CONTEND_EQUALITY(y0, y1);
+    }
+
+    // destroy objects
+    firpfb_crcf_destroy(q0);
+    firpfb_crcf_destroy(q1);
 }
 

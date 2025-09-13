@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,31 +38,30 @@
 //
 
 // permute one iteration
-void interleaver_permute(unsigned char * _x,
-                         unsigned int    _n,
-                         unsigned int    _M,
-                         unsigned int    _N);
+int interleaver_permute(unsigned char * _x,
+                        unsigned int    _n,
+                        unsigned int    _M,
+                        unsigned int    _N);
 
 // permute one iteration (soft bit input)
-void interleaver_permute_soft(unsigned char * _x,
-                              unsigned int    _n,
-                              unsigned int    _M,
-                              unsigned int    _N);
+int interleaver_permute_soft(unsigned char * _x,
+                             unsigned int    _n,
+                             unsigned int    _M,
+                             unsigned int    _N);
 
 // permute one iteration with mask
-void interleaver_permute_mask(unsigned char * _x,
-                              unsigned int    _n,
-                              unsigned int    _M,
-                              unsigned int    _N,
-                              unsigned char   _mask);
+int interleaver_permute_mask(unsigned char * _x,
+                             unsigned int    _n,
+                             unsigned int    _M,
+                             unsigned int    _N,
+                             unsigned char   _mask);
 
 // permute one iteration (soft bit input) with mask
-void interleaver_permute_mask_soft(unsigned char * _x,
-                                   unsigned int    _n,
-                                   unsigned int    _M,
-                                   unsigned int    _N,
-                                   unsigned char   _mask);
-
+int interleaver_permute_mask_soft(unsigned char * _x,
+                                  unsigned int    _n,
+                                  unsigned int    _M,
+                                  unsigned int    _N,
+                                  unsigned char   _mask);
 
 // structured interleaver object
 struct interleaver_s {
@@ -93,36 +92,49 @@ interleaver interleaver_create(unsigned int _n)
     return q;
 }
 
+// copy interleaver object
+interleaver interleaver_copy(interleaver q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("interleaver_copy(), object cannot be NULL");
+
+    return interleaver_create(q_orig->n);
+}
+
 // destroy interleaver object
-void interleaver_destroy(interleaver _q)
+int interleaver_destroy(interleaver _q)
 {
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print interleaver internals
-void interleaver_print(interleaver _q)
+int interleaver_print(interleaver _q)
 {
     printf("interleaver [block, %u bytes] :\n", _q->n);
     printf("    M       :   %u\n", _q->M);
     printf("    N       :   %u\n", _q->N);
     printf("    depth   :   %u\n", _q->depth);
+    return LIQUID_OK;
 }
 
 // set depth (number of internal iterations)
-void interleaver_set_depth(interleaver  _q,
-                           unsigned int _depth)
+int interleaver_set_depth(interleaver  _q,
+                          unsigned int _depth)
 {
     _q->depth = _depth;
+    return LIQUID_OK;
 }
 
 // execute forward interleaver (encoder)
 //  _q          :   interleaver object
 //  _msg_dec    :   decoded (un-interleaved) message
 //  _msg_enc    :   encoded (interleaved) message
-void interleaver_encode(interleaver _q,
-                        unsigned char * _msg_dec,
-                        unsigned char * _msg_enc)
+int interleaver_encode(interleaver     _q,
+                       unsigned char * _msg_dec,
+                       unsigned char * _msg_enc)
 {
     // copy data to output
     memmove(_msg_enc, _msg_dec, _q->n);
@@ -131,15 +143,17 @@ void interleaver_encode(interleaver _q,
     if (_q->depth > 1) interleaver_permute_mask(_msg_enc, _q->n, _q->M, _q->N+2, 0x0f);
     if (_q->depth > 2) interleaver_permute_mask(_msg_enc, _q->n, _q->M, _q->N+4, 0x55);
     if (_q->depth > 3) interleaver_permute_mask(_msg_enc, _q->n, _q->M, _q->N+8, 0x33);
+
+    return LIQUID_OK;
 }
 
 // execute forward interleaver (encoder) on soft bits
 //  _q          :   interleaver object
 //  _msg_dec    :   decoded (un-interleaved) message
 //  _msg_enc    :   encoded (interleaved) message
-void interleaver_encode_soft(interleaver _q,
-                             unsigned char * _msg_dec,
-                             unsigned char * _msg_enc)
+int interleaver_encode_soft(interleaver     _q,
+                            unsigned char * _msg_dec,
+                            unsigned char * _msg_enc)
 {
     // copy data to output
     memmove(_msg_enc, _msg_dec, 8*_q->n);
@@ -148,15 +162,17 @@ void interleaver_encode_soft(interleaver _q,
     if (_q->depth > 1) interleaver_permute_mask_soft(_msg_enc, _q->n, _q->M, _q->N+2, 0x0f);
     if (_q->depth > 2) interleaver_permute_mask_soft(_msg_enc, _q->n, _q->M, _q->N+4, 0x55);
     if (_q->depth > 3) interleaver_permute_mask_soft(_msg_enc, _q->n, _q->M, _q->N+8, 0x33);
+
+    return LIQUID_OK;
 }
 
 // execute reverse interleaver (decoder)
 //  _q          :   interleaver object
 //  _msg_enc    :   encoded (interleaved) message
 //  _msg_dec    :   decoded (un-interleaved) message
-void interleaver_decode(interleaver _q,
-                        unsigned char * _msg_enc,
-                        unsigned char * _msg_dec)
+int interleaver_decode(interleaver     _q,
+                       unsigned char * _msg_enc,
+                       unsigned char * _msg_dec)
 {
     // copy data to output
     memmove(_msg_dec, _msg_enc, _q->n);
@@ -165,15 +181,17 @@ void interleaver_decode(interleaver _q,
     if (_q->depth > 2) interleaver_permute_mask(_msg_dec, _q->n, _q->M, _q->N+4, 0x55);
     if (_q->depth > 1) interleaver_permute_mask(_msg_dec, _q->n, _q->M, _q->N+2, 0x0f);
     if (_q->depth > 0) interleaver_permute(_msg_dec, _q->n, _q->M, _q->N);
+
+    return LIQUID_OK;
 }
 
 // execute reverse interleaver (decoder) on soft bits
 //  _q          :   interleaver object
 //  _msg_enc    :   encoded (interleaved) message
 //  _msg_dec    :   decoded (un-interleaved) message
-void interleaver_decode_soft(interleaver _q,
-                             unsigned char * _msg_enc,
-                             unsigned char * _msg_dec)
+int interleaver_decode_soft(interleaver     _q,
+                            unsigned char * _msg_enc,
+                            unsigned char * _msg_dec)
 {
     // copy data to output
     memmove(_msg_dec, _msg_enc, 8*_q->n);
@@ -182,6 +200,8 @@ void interleaver_decode_soft(interleaver _q,
     if (_q->depth > 2) interleaver_permute_mask_soft(_msg_dec, _q->n, _q->M, _q->N+4, 0x55);
     if (_q->depth > 1) interleaver_permute_mask_soft(_msg_dec, _q->n, _q->M, _q->N+2, 0x0f);
     if (_q->depth > 0) interleaver_permute_soft(_msg_dec, _q->n, _q->M, _q->N);
+
+    return LIQUID_OK;
 }
 
 // 
@@ -189,10 +209,10 @@ void interleaver_decode_soft(interleaver _q,
 //
 
 // permute one iteration
-void interleaver_permute(unsigned char * _x,
-                         unsigned int    _n,
-                         unsigned int    _M,
-                         unsigned int    _N)
+int interleaver_permute(unsigned char * _x,
+                        unsigned int    _n,
+                        unsigned int    _M,
+                        unsigned int    _N)
 {
     unsigned int i;
     unsigned int j;
@@ -216,13 +236,15 @@ void interleaver_permute(unsigned char * _x,
         _x[2*j+1] = _x[2*i+0];
         _x[2*i+0] = tmp;
     }
+
+    return LIQUID_OK;
 }
 
 // permute one iteration (soft bit input)
-void interleaver_permute_soft(unsigned char * _x,
-                              unsigned int    _n,
-                              unsigned int    _M,
-                              unsigned int    _N)
+int interleaver_permute_soft(unsigned char * _x,
+                             unsigned int    _n,
+                             unsigned int    _M,
+                             unsigned int    _N)
 {
     unsigned int i;
     unsigned int j;
@@ -247,15 +269,17 @@ void interleaver_permute_soft(unsigned char * _x,
         memmove( &_x[8*(2*i+0)], tmp,            8);
     }
     //printf("\n");
+
+    return LIQUID_OK;
 }
 
 
 // permute one iteration with mask
-void interleaver_permute_mask(unsigned char * _x,
-                              unsigned int    _n,
-                              unsigned int    _M,
-                              unsigned int    _N,
-                              unsigned char   _mask)
+int interleaver_permute_mask(unsigned char * _x,
+                             unsigned int    _n,
+                             unsigned int    _M,
+                             unsigned int    _N,
+                             unsigned char   _mask)
 {
     unsigned int i;
     unsigned int j;
@@ -281,14 +305,16 @@ void interleaver_permute_mask(unsigned char * _x,
         _x[2*i+0] = tmp0;
         _x[2*j+1] = tmp1;
     }
+
+    return LIQUID_OK;
 }
 
 // permute one iteration (soft bit input)
-void interleaver_permute_mask_soft(unsigned char * _x,
-                                   unsigned int    _n,
-                                   unsigned int    _M,
-                                   unsigned int    _N,
-                                   unsigned char   _mask)
+int interleaver_permute_mask_soft(unsigned char * _x,
+                                  unsigned int    _n,
+                                  unsigned int    _M,
+                                  unsigned int    _N,
+                                  unsigned char   _mask)
 {
     unsigned int i;
     unsigned int j;
@@ -318,5 +344,7 @@ void interleaver_permute_mask_soft(unsigned char * _x,
         }
     }
     //printf("\n");
+
+    return LIQUID_OK;
 }
 

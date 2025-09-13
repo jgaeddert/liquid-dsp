@@ -1,7 +1,4 @@
-//
-// ofdm_ber_test.c
-//
-
+// test OFDM bit error rate
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -83,9 +80,9 @@ int main(int argc, char*argv[])
     float complex buffer[symbol_len];   // 
 
     // create modulator/demodulator objects
-    modem mod   = modem_create(ms);
-    modem demod = modem_create(ms);
-    unsigned int bps = modem_get_bps(mod);  // modem bits/symbol
+    modemcf mod   = modemcf_create(ms);
+    modemcf demod = modemcf_create(ms);
+    unsigned int bps = modemcf_get_bps(mod);  // modem bits/symbol
 
     // create channel filter (random taps)
     float complex hc[hc_len];
@@ -102,7 +99,7 @@ int main(int argc, char*argv[])
         for (i=0; i<M; i++) {
             sym_in[i] = rand() % (1<<bps);
 
-            modem_modulate(mod, sym_in[i], &X[i]);
+            modemcf_modulate(mod, sym_in[i], &X[i]);
         }
 
         // run inverse transform
@@ -134,15 +131,15 @@ int main(int argc, char*argv[])
             // scale by fft size
             X[i] *= fft_gain;
 
-            modem_demodulate(demod, X[i], &sym_out[i]);
+            modemcf_demodulate(demod, X[i], &sym_out[i]);
 
             num_bit_errors += liquid_count_ones(sym_in[i] ^ sym_out[i]);
         }
     }
 
     // destroy objects
-    modem_destroy(mod);
-    modem_destroy(demod);
+    modemcf_destroy(mod);
+    modemcf_destroy(demod);
     firfilt_cccf_destroy(fchannel);
 
     // print results

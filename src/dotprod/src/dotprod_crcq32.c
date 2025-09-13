@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // portable structured dot product object
 struct dotprod_crcq32_s {
@@ -41,10 +41,10 @@ struct dotprod_crcq32_s {
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void dotprod_crcq32_run(q32_t *      _h,
-                        cq32_t *     _x,
-                        unsigned int _n,
-                        cq32_t *     _y)
+int dotprod_crcq32_run(q32_t *      _h,
+                       cq32_t *     _x,
+                       unsigned int _n,
+                       cq32_t *     _y)
 {
     // initialize accumulators (separate I/Q)
     q32_at ri = 0;
@@ -59,6 +59,7 @@ void dotprod_crcq32_run(q32_t *      _h,
     // return result
     (*_y).real = (ri >> q32_fracbits);
     (*_y).imag = (rq >> q32_fracbits);
+    return LIQUID_OK;
 }
 
 // basic dotproduct, unrolling loop
@@ -66,10 +67,10 @@ void dotprod_crcq32_run(q32_t *      _h,
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void dotprod_crcq32_run4(q32_t *      _h,
-                         cq32_t *     _x,
-                         unsigned int _n,
-                         cq32_t *     _y)
+int dotprod_crcq32_run4(q32_t *      _h,
+                        cq32_t *     _x,
+                        unsigned int _n,
+                        cq32_t *     _y)
 {
     // initialize accumulator (separate I/Q)
     q32_at ri = 0;
@@ -103,6 +104,7 @@ void dotprod_crcq32_run4(q32_t *      _h,
     // return result
     (*_y).real = (ri >> q32_fracbits);
     (*_y).imag = (rq >> q32_fracbits);
+    return LIQUID_OK;
 }
 
 //
@@ -153,30 +155,32 @@ dotprod_crcq32 dotprod_crcq32_recreate(dotprod_crcq32 _q,
 }
 
 // destroy dot product object
-void dotprod_crcq32_destroy(dotprod_crcq32 _q)
+int dotprod_crcq32_destroy(dotprod_crcq32 _q)
 {
     free(_q->h);    // free coefficients memory
     free(_q);       // free main object memory
+    return LIQUID_OK;
 }
 
 // print dot product object
-void dotprod_crcq32_print(dotprod_crcq32 _q)
+int dotprod_crcq32_print(dotprod_crcq32 _q)
 {
     printf("dotprod [%u elements]:\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("  %4u: %12.8f\n", i, q32_fixed_to_float(_q->h[i]));
+    return LIQUID_OK;
 }
 
 // execute structured dot product
 //  _q      :   dot product object
 //  _x      :   input array [size: 1 x _n]
 //  _y      :   output dot product
-void dotprod_crcq32_execute(dotprod_crcq32 _q,
-                            cq32_t *       _x,
-                            cq32_t *       _y)
+int dotprod_crcq32_execute(dotprod_crcq32 _q,
+                           cq32_t *       _x,
+                           cq32_t *       _y)
 {
     // run basic dot product with unrolled loops
-    dotprod_crcq32_run4(_q->h, _x, _q->n, _y);
+    return dotprod_crcq32_run4(_q->h, _x, _q->n, _y);
 }
 

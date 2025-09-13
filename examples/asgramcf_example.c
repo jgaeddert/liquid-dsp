@@ -1,11 +1,7 @@
-//
-// asgramcf_example.c
-//
 // ASCII spectrogram example for complex inputs. This example demonstrates
 // the functionality of the ASCII spectrogram. A sweeping complex sinusoid
 // is generated and the resulting spectral periodogram is printed to the
 // screen.
-//
 
 #include <unistd.h> // usleep
 #include <string.h>
@@ -18,11 +14,12 @@ int main() {
     // options
     unsigned int nfft        =   64;    // transform size
     unsigned int num_frames  =  200;    // total number of frames
-    unsigned int msdelay     =   50;    // delay between transforms [ms]
-    float        noise_floor = -40.0f;  // noise floor
+    unsigned int msdelay     =   25;    // delay between transforms [ms]
+    float        noise_floor = -80.0f;  // noise floor
 
     // initialize objects
     asgramcf q = asgramcf_create(nfft);
+    asgramcf_autoscale_enable(q);
     asgramcf_set_scale(q, noise_floor+15.0f, 5.0f);
 
     unsigned int i;

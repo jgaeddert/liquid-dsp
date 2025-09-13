@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,8 @@
 #define BUFFER_PRINT_LINE(B,I)  printf("    : %12.8f + j%12.8f", q16_fixed_to_float(B->v[I].real), q16_fixed_to_float(B->v[I].imag));
 #define BUFFER_PRINT_VALUE(V)   printf("    : %12.4f + j%12.8f", q16_fixed_to_float(V.real), q16_fixed_to_float(V.imag));
 
-#include "cbuffer.c"
-//#include "wdelay.c"
-#include "window.c"
+// prototypes
+#include "cbuffer.proto.c"
+//#include "wdelay.proto.c"
+#include "window.proto.c"
 

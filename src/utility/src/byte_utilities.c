@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -111,12 +111,13 @@ unsigned int count_bit_errors_array(unsigned char * _msg0,
 }
 
 // print string of bits to standard output
-void liquid_print_bitstring(unsigned int _x,
-                            unsigned int _n)
+int liquid_print_bitstring(unsigned int _x,
+                           unsigned int _n)
 {
     unsigned int i;
     for (i=0; i<_n; i++)
         printf("%1u", (_x >> (_n-i-1)) & 1);
+    return LIQUID_OK;
 }
 
 // number of ones in a byte
@@ -227,7 +228,7 @@ unsigned int liquid_reverse_uint24(unsigned int _x)
 // reverse integer with 32 bits of data
 unsigned int liquid_reverse_uint32(unsigned int _x)
 {
-    return (liquid_reverse_byte_gentab[(_x      ) & 0xff] << 24) |
+    return ((unsigned int)(liquid_reverse_byte_gentab[(_x      ) & 0xff]) << 24) |
            (liquid_reverse_byte_gentab[(_x >>  8) & 0xff] << 16) |
            (liquid_reverse_byte_gentab[(_x >> 16) & 0xff] <<  8) |
            (liquid_reverse_byte_gentab[(_x >> 24) & 0xff]      );

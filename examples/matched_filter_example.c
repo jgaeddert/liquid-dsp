@@ -17,7 +17,7 @@ void usage()
 {
     printf("matched_filter_example options:\n");
     printf("  u/h   : print usage/help\n");
-    printf("  t     : filter type: [rrcos], rkaiser, arkaiser, hM3, gmsk, fexp, fsech, farcsech\n");
+    printf("  t     : filter type: [rrcos], rkaiser, arkaiser, hm3, gmsk, fexp, fsech, farcsech\n");
     printf("  k     : filter samples/symbol, k >= 2, default: 2\n");
     printf("  m     : filter delay (symbols), m >= 1, default: 3\n");
     printf("  b     : filter excess bandwidth factor, 0 < b < 1, default: 0.5\n");

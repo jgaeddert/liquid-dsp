@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
 // M-ary frequency-shift keying demodulator
-//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -33,16 +31,12 @@
 
 #define DEBUG_FSKDEM 0
 
-// 
-// internal methods
-//
-
 // fskdem
 struct fskdem_s {
     // common
-    unsigned int m;             // bits per symbol
-    unsigned int k;             // samples per symbol
-    float        bandwidth;     // filter bandwidth parameter
+    unsigned int    m;          // bits per symbol
+    unsigned int    k;          // samples per symbol
+    float           bandwidth;  // filter bandwidth parameter
 
     // derived values
     unsigned int    M;          // constellation size
@@ -66,16 +60,12 @@ fskdem fskdem_create(unsigned int _m,
                      float        _bandwidth)
 {
     // validate input
-    if (_m == 0) {
-        fprintf(stderr,"error: fskdem_create(), bits/symbol must be greater than 0\n");
-        exit(1);
-    } else if (_k < 2 || _k > 2048) {
-        fprintf(stderr,"error: fskdem_create(), samples/symbol must be in [2^_m, 2048]\n");
-        exit(1);
-    } else if (_bandwidth <= 0.0f || _bandwidth >= 0.5f) {
-        fprintf(stderr,"error: fskdem_create(), bandwidth must be in (0,0.5)\n");
-        exit(1);
-    }
+    if (_m == 0)
+        return liquid_error_config("fskdem_create(), bits/symbol must be greater than 0");
+    if (_k < 2 || _k > 2048)
+        return liquid_error_config("fskdem_create(), samples/symbol must be in [2^_m, 2048]");
+    if (_bandwidth <= 0.0f || _bandwidth >= 0.5f)
+        return liquid_error_config("fskdem_create(), bandwidth must be in (0,0.5)");
 
     // create main object memory
     fskdem q = (fskdem) malloc(sizeof(struct fskdem_s));
@@ -135,15 +125,15 @@ fskdem fskdem_create(unsigned int _m,
     // check for uniqueness
     for (i=1; i<q->M; i++) {
         if (q->demod_map[i] == q->demod_map[i-1]) {
-            fprintf(stderr,"warning: fskdem_create(), demod map is not unique; consider increasing bandwidth\n");
+            liquid_error(LIQUID_EICONFIG,"fskdem_create(), demod map is not unique; consider increasing bandwidth");
             break;
         }
     }
 
     // allocate memory for transform
-    q->buf_time = (float complex*) malloc(q->K * sizeof(float complex));
-    q->buf_freq = (float complex*) malloc(q->K * sizeof(float complex));
-    q->fft = FFT_CREATE_PLAN(q->K, q->buf_time, q->buf_freq, FFT_DIR_FORWARD, 0);
+    q->buf_time = (float complex*) FFT_MALLOC(q->K * sizeof(float complex));
+    q->buf_freq = (float complex*) FFT_MALLOC(q->K * sizeof(float complex));
+    q->fft = FFT_CREATE_PLAN(q->K, q->buf_time, q->buf_freq, FFT_DIR_FORWARD, FFT_METHOD);
 
     // reset modem object
     fskdem_reset(q);
@@ -152,30 +142,60 @@ fskdem fskdem_create(unsigned int _m,
     return q;
 }
 
+// copy object
+fskdem fskdem_copy(fskdem q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("fskdem_copy(), object cannot be NULL");
+
+    // create object and copy base parameters
+    fskdem q_copy = (fskdem) malloc(sizeof(struct fskdem_s));
+    memmove(q_copy, q_orig, sizeof(struct fskdem_s));
+
+    // allocate memory for transform
+    q_copy->buf_time = (float complex*) FFT_MALLOC(q_copy->K * sizeof(float complex));
+    q_copy->buf_freq = (float complex*) FFT_MALLOC(q_copy->K * sizeof(float complex));
+    q_copy->fft = FFT_CREATE_PLAN(q_copy->K, q_copy->buf_time, q_copy->buf_freq, FFT_DIR_FORWARD, FFT_METHOD);
+
+    // copy internal time and frequency buffers
+    memmove(q_copy->buf_time, q_orig->buf_time, q_copy->K * sizeof(float complex));
+    memmove(q_copy->buf_freq, q_orig->buf_freq, q_copy->K * sizeof(float complex));
+
+    // copy demodulation map
+    q_copy->demod_map = (unsigned int*)liquid_malloc_copy(q_orig->demod_map, q_copy->M, sizeof(unsigned int));
+
+    // return new object
+    return q_copy;
+}
+
 // destroy fskdem object
-void fskdem_destroy(fskdem _q)
+int fskdem_destroy(fskdem _q)
 {
     // free allocated arrays
     free(_q->demod_map);
-    free(_q->buf_time);
-    free(_q->buf_freq);
+    FFT_FREE(_q->buf_time);
+    FFT_FREE(_q->buf_freq);
     FFT_DESTROY_PLAN(_q->fft);
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print fskdem object internals
-void fskdem_print(fskdem _q)
+int fskdem_print(fskdem _q)
 {
-    printf("fskdem : frequency-shift keying demodulator\n");
-    printf("    bits/symbol     :   %u\n", _q->m);
-    printf("    samples/symbol  :   %u\n", _q->k);
-    printf("    bandwidth       :   %8.5f\n", _q->bandwidth);
+    printf("<liquid.fskdem");
+    printf(", bits/symbol=%u", _q->m);
+    printf(", samples/symbol=%u", _q->k);
+    printf(", bandwidth=%g", _q->bandwidth);
+    printf(">\n");
+    return LIQUID_OK;
 }
 
 // reset state
-void fskdem_reset(fskdem _q)
+int fskdem_reset(fskdem _q)
 {
     // reset time and frequency buffers
     unsigned int i;
@@ -186,6 +206,7 @@ void fskdem_reset(fskdem _q)
 
     // clear state variables
     _q->s_demod = 0;
+    return LIQUID_OK;
 }
 
 // demodulate symbol, assuming perfect symbol timing
@@ -244,7 +265,7 @@ float fskdem_get_symbol_energy(fskdem       _q,
 {
     // validate input
     if (_s >= _q->M) {
-        fprintf(stderr,"warning: fskdem_get_symbol_energy(), input symbol (%u) exceeds maximum (%u)\n",
+        liquid_error(LIQUID_EICONFIG,"fskdem_get_symbol_energy(), input symbol (%u) exceeds maximum (%u)",
                 _s, _q->M);
         _s = 0;
     }

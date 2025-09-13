@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,20 +37,17 @@
 //  _k          :   bit index to write in _src
 //  _b          :   number of bits in input symbol
 //  _sym_in     :   input symbol
-void liquid_pack_array(unsigned char * _src,
-                       unsigned int _n,
-                       unsigned int _k,
-                       unsigned int _b,
-                       unsigned char _sym_in)
+int liquid_pack_array(unsigned char * _src,
+                      unsigned int    _n,
+                      unsigned int    _k,
+                      unsigned int    _b,
+                      unsigned char   _sym_in)
 {
     // validate input
-    if (_k >= 8*_n) {
-        fprintf(stderr,"error: liquid_pack_array(), bit index exceeds array length\n");
-        exit(1);
-    } else if (_b > 8) {
-        fprintf(stderr,"error: liquid_pack_array(), symbol size cannot exceed 8 bits\n");
-        exit(1);
-    }
+    if (_k >= 8*_n)
+        return liquid_error(LIQUID_EIRANGE,"liquid_pack_array(), bit index exceeds array length");
+    if (_b > 8)
+        return liquid_error(LIQUID_EIRANGE,"liquid_pack_array(), symbol size cannot exceed 8 bits");
 
     // find base index
     unsigned int i0 = _k / 8;       // byte index
@@ -105,6 +102,7 @@ void liquid_pack_array(unsigned char * _src,
         printf("  mask : 0x%.2x\n", mask_0);
 #endif
     }
+    return LIQUID_OK;
 }
 
 // unpack symbols from binary array
@@ -113,20 +111,17 @@ void liquid_pack_array(unsigned char * _src,
 //  _k          :   bit index to write in _src
 //  _b          :   number of bits in output symbol
 //  _sym_out    :   output symbol
-void liquid_unpack_array(unsigned char * _src,
-                         unsigned int _n,
-                         unsigned int _k,
-                         unsigned int _b,
-                         unsigned char * _sym_out)
+int liquid_unpack_array(unsigned char * _src,
+                        unsigned int    _n,
+                        unsigned int    _k,
+                        unsigned int    _b,
+                        unsigned char * _sym_out)
 {
     // validate input
-    if (_k >= 8*_n) {
-        fprintf(stderr,"error: liquid_unpack_array(), bit index exceeds array length\n");
-        exit(1);
-    } else if (_b > 8) {
-        fprintf(stderr,"error: liquid_unpack_array(), symbol size cannot exceed 8 bits\n");
-        exit(1);
-    }
+    if (_k >= 8*_n)
+        return liquid_error(LIQUID_EIRANGE,"liquid_unpack_array(), bit index exceeds array length");
+    if (_b > 8)
+        return liquid_error(LIQUID_EIRANGE,"liquid_unpack_array(), symbol size cannot exceed 8 bits");
 
     // find base index
     unsigned int i0 = _k / 8;       // byte index
@@ -172,6 +167,7 @@ void liquid_unpack_array(unsigned char * _src,
         printf("  mask : 0x%.2x\n", mask_0);
 #endif
     }
+    return LIQUID_OK;
 }
 
 
@@ -183,19 +179,17 @@ void liquid_unpack_array(unsigned char * _src,
 //  _sym_out            :   output symbols
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-void liquid_pack_bytes(unsigned char * _sym_in,
-                       unsigned int _sym_in_len,
-                       unsigned char * _sym_out,
-                       unsigned int _sym_out_len,
-                       unsigned int * _num_written)
+int liquid_pack_bytes(unsigned char * _sym_in,
+                      unsigned int    _sym_in_len,
+                      unsigned char * _sym_out,
+                      unsigned int    _sym_out_len,
+                      unsigned int *  _num_written)
 {
     div_t d = div(_sym_in_len,8);
     unsigned int req__sym_out_len = d.quot;
     req__sym_out_len += ( d.rem > 0 ) ? 1 : 0;
-    if ( _sym_out_len < req__sym_out_len ) {
-        fprintf(stderr,"error: pack_bytes(), output too short\n");
-        exit(-1);
-    }
+    if ( _sym_out_len < req__sym_out_len )
+        return liquid_error(LIQUID_EIMEM,"pack_bytes(), output too short");
     
     unsigned int i;
     unsigned int N = 0;         // number of bytes written to output
@@ -216,6 +210,7 @@ void liquid_pack_bytes(unsigned char * _sym_in,
         _sym_out[N++] = byte >> 1;
     
     *_num_written = N;
+    return LIQUID_OK;
 }
 
 
@@ -226,21 +221,19 @@ void liquid_pack_bytes(unsigned char * _sym_in,
 //  _sym_out            :   output symbols array
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-void liquid_unpack_bytes(unsigned char * _sym_in,
-                         unsigned int _sym_in_len,
-                         unsigned char * _sym_out,
-                         unsigned int _sym_out_len,
-                         unsigned int * _num_written)
+int liquid_unpack_bytes(unsigned char * _sym_in,
+                        unsigned int    _sym_in_len,
+                        unsigned char * _sym_out,
+                        unsigned int    _sym_out_len,
+                        unsigned int *  _num_written)
 {
+    if ( _sym_out_len < 8*_sym_in_len )
+        return liquid_error(LIQUID_EIMEM,"unpack_bytes(), output too short");
+
     unsigned int i;
     unsigned int n = 0;
     unsigned char byte;
 
-    if ( _sym_out_len < 8*_sym_in_len ) {
-        fprintf(stderr,"error: unpack_bytes(), output too short\n");
-        exit(-1);
-    }
-    
     for (i=0; i<_sym_in_len; i++) {
         // read input byte
         byte = _sym_in[i];
@@ -257,6 +250,7 @@ void liquid_unpack_bytes(unsigned char * _sym_in,
     }
 
     *_num_written = n;
+    return LIQUID_OK;
 }
 
 // repack bytes with arbitrary symbol sizes
@@ -267,13 +261,13 @@ void liquid_unpack_bytes(unsigned char * _sym_in,
 //  _sym_out_bps        :   number of bits per output symbol
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-void liquid_repack_bytes(unsigned char * _sym_in,
-                         unsigned int _sym_in_bps,
-                         unsigned int _sym_in_len,
-                         unsigned char * _sym_out,
-                         unsigned int _sym_out_bps,
-                         unsigned int _sym_out_len,
-                         unsigned int * _num_written)
+int liquid_repack_bytes(unsigned char * _sym_in,
+                        unsigned int    _sym_in_bps,
+                        unsigned int    _sym_in_len,
+                        unsigned char * _sym_out,
+                        unsigned int    _sym_out_bps,
+                        unsigned int    _sym_out_len,
+                        unsigned int *  _num_written)
 {
     // compute number of output symbols and determine if output array
     // is sufficiently sized
@@ -281,11 +275,10 @@ void liquid_repack_bytes(unsigned char * _sym_in,
     unsigned int req__sym_out_len = d.quot;
     req__sym_out_len += ( d.rem > 0 ) ? 1 : 0;
     if ( _sym_out_len < req__sym_out_len ) {
-        fprintf(stderr,"error: repack_bytes(), output too short\n");
-        fprintf(stderr,"  %u %u-bit symbols cannot be packed into %u %u-bit elements\n",
+        return liquid_error(LIQUID_EIMEM,
+                "repack_bytes(), output too short; %u %u-bit symbols cannot be packed into %u %u-bit elements",
                 _sym_in_len, _sym_in_bps,
                 _sym_out_len, _sym_out_bps);
-        exit(-1);
     }
     
     unsigned int i;
@@ -336,5 +329,6 @@ void liquid_repack_bytes(unsigned char * _sym_in,
     }
     
     *_num_written = i_out;
+    return LIQUID_OK;
 }
 

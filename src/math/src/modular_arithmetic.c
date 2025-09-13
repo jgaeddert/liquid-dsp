@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // determine if number is prime (slow, simple method)
 // https://en.ikipedia.org/wiki/Primality_test#Pseudocode
@@ -53,9 +52,9 @@ int liquid_is_prime(unsigned int _n)
 //  _n          :   number to factor
 //  _factors    :   pre-allocated array of factors [size: LIQUID_MAX_FACTORS x 1]
 //  _num_factors:   number of factors found, sorted ascending
-void liquid_factor(unsigned int   _n,
-                   unsigned int * _factors,
-                   unsigned int * _num_factors)
+int liquid_factor(unsigned int   _n,
+                  unsigned int * _factors,
+                  unsigned int * _num_factors)
 {
     unsigned int k;
     unsigned int n = _n;
@@ -71,21 +70,20 @@ void liquid_factor(unsigned int   _n,
         }
     } while (n > 1 && num_factors < LIQUID_MAX_FACTORS);
 
-    if (n > 1 && num_factors == LIQUID_MAX_FACTORS) {
-        fprintf(stderr,"error, liquid_factor(), could not factor %u in %u numbers\n", _n, LIQUID_MAX_FACTORS);
-        exit(1);
-    }
+    if (n > 1 && num_factors == LIQUID_MAX_FACTORS)
+        return liquid_error(LIQUID_EICONFIG,"liquid_factor(), could not factor %u in %u numbers", _n, LIQUID_MAX_FACTORS);
 
     *_num_factors = num_factors;
+    return LIQUID_OK;
 }
 
 // compute number's unique prime factors
 //  _n          :   number to factor
 //  _factors    :   pre-allocated array of factors [size: LIQUID_MAX_FACTORS x 1]
 //  _num_factors:   number of unique factors found, sorted ascending
-void liquid_unique_factor(unsigned int   _n,
-                          unsigned int * _factors,
-                          unsigned int * _num_factors)
+int liquid_unique_factor(unsigned int   _n,
+                         unsigned int * _factors,
+                         unsigned int * _num_factors)
 {
     unsigned int k;
     unsigned int n = _n;
@@ -107,37 +105,36 @@ void liquid_unique_factor(unsigned int   _n,
         }
     } while (n > 1 && num_factors < LIQUID_MAX_FACTORS);
 
-    if (n > 1 && num_factors == LIQUID_MAX_FACTORS) {
-        fprintf(stderr,"error, liquid_unqiue_factor(), could not factor %u in %u numbers\n", _n, LIQUID_MAX_FACTORS);
-        exit(1);
-    }
+    if (n > 1 && num_factors == LIQUID_MAX_FACTORS)
+        return liquid_error(LIQUID_EICONFIG,"liquid_unqiue_factor(), could not factor %u in %u numbers", _n, LIQUID_MAX_FACTORS);
 
     *_num_factors = num_factors;
+    return LIQUID_OK;
 }
 
-// compute greatest common divisor between to numbers P and Q
-unsigned int liquid_gcd(unsigned int _P,
-                        unsigned int _Q)
+// compute greatest common divisor between to integers \(p\) and \(q\)
+unsigned int liquid_gcd(unsigned int _p,
+                        unsigned int _q)
 {
     // check base cases
-    if (_P == 0 || _Q == 0) {
-        fprintf(stderr,"error: liquid_gcd(%u,%u), input cannot be zero\n", _P, _Q);
-        exit(-1);
-    } else if (_P == 1 || _Q == 1) {
+    if (_p == 0 || _q == 0) {
+        liquid_error(LIQUID_EICONFIG,"liquid_gcd(%u,%u), input cannot be zero", _p, _q);
+        return 0;
+    } else if (_p == 1 || _q == 1) {
         return 1;
-    } else if (_P == _Q) {
-        return _P;
-    } else if (_P < _Q) {
-        return liquid_gcd(_Q, _P);
+    } else if (_p == _q) {
+        return _p;
+    } else if (_p < _q) {
+        return liquid_gcd(_q, _p);
     }
 
     // dumb, slow method
     unsigned int gcd = 1;
     unsigned int r   = 2; // root
-    while ( r*r <= _P ) {
-        while ((_P % r)==0 && (_Q % r) == 0) {
-            _P /= r;
-            _Q /= r;
+    while ( r <= _q ) {
+        while ((_p % r)==0 && (_q % r) == 0) {
+            _p /= r;
+            _q /= r;
             gcd *= r;
         }
         r += (r == 2) ? 1 : 2;

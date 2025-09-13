@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2021 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,23 +30,26 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+// NOTE: this is defined in multiple places, but should be included here
+//       until an appropriate place for literals can be found
+#define LIQUID_PI   (3.14159265358979323846264338327950288f)
+
 // unwrap phase of array (basic)
 void liquid_unwrap_phase(float * _theta,
                          unsigned int _n)
 {
     unsigned int i;
     for (i=1; i<_n; i++) {
-        while ( (_theta[i] - _theta[i-1]) >  M_PI ) _theta[i] -= 2*M_PI;
-        while ( (_theta[i] - _theta[i-1]) < -M_PI ) _theta[i] += 2*M_PI;
+        while ( (_theta[i] - _theta[i-1]) >  LIQUID_PI ) _theta[i] -= 2*LIQUID_PI;
+        while ( (_theta[i] - _theta[i-1]) < -LIQUID_PI ) _theta[i] += 2*LIQUID_PI;
     }
 }
 
 // unwrap phase of array (advanced)
+// TODO: verify this method
 void liquid_unwrap_phase2(float * _theta,
                           unsigned int _n)
 {
-    fprintf(stderr,"warning: liquid_unwrap_phase2() has not yet been tested!\n");
-
     unsigned int i;
 
     // make an initial estimate of phase difference
@@ -57,8 +60,8 @@ void liquid_unwrap_phase2(float * _theta,
     dphi /= (float)(_n-1);
 
     for (i=1; i<_n; i++) {
-        while ( (_theta[i] - _theta[i-1]) >  M_PI+dphi ) _theta[i] -= 2*M_PI;
-        while ( (_theta[i] - _theta[i-1]) < -M_PI+dphi ) _theta[i] += 2*M_PI;
+        while ( (_theta[i] - _theta[i-1]) >  LIQUID_PI+dphi ) _theta[i] -= 2*LIQUID_PI;
+        while ( (_theta[i] - _theta[i-1]) < -LIQUID_PI+dphi ) _theta[i] += 2*LIQUID_PI;
     }
 }
 

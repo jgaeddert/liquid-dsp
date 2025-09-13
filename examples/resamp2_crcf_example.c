@@ -50,10 +50,11 @@ int main() {
 
     // clear resamp2 object
     resamp2_crcf_reset(q);
+    resamp2_crcf_set_scale(q, 0.5f);
 
     // execute decimation stage
     for (i=0; i<n; i++)
-        resamp2_crcf_interp_execute(q, y[2*i], &z[i]);
+        resamp2_crcf_decim_execute(q, &y[2*i], &z[i]);
 
     // clean up allocated objects
     resamp2_crcf_destroy(q);
@@ -89,35 +90,34 @@ int main() {
 
     // print results
     fprintf(fid,"\n\n");
+    fprintf(fid,"figure('position',[100 100 1200 600]);\n");
     fprintf(fid,"nfft=1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"X = 20*log10(abs(fftshift(fft(x*bw*2,nfft))));\n");
     fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y*bw,  nfft))));\n");
     fprintf(fid,"Z = 20*log10(abs(fftshift(fft(z*bw*2,nfft))));\n");
+    fprintf(fid,"subplot(3,2,[1,3,5,]);\n");
     fprintf(fid,"plot(f,X,f,Y,f,Z);\n");
-    fprintf(fid,"legend('original','up-converted','down-converted',1);\n");
+    fprintf(fid,"legend('original','up-converted','down-converted');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([-0.5 0.5 -120 20]);\n");
 
     fprintf(fid,"\n\n");
     fprintf(fid,"t0 = 0:[n-1];\n");
     fprintf(fid,"t1 = 0:[n*2-1];\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(3,1,1);\n");
+    fprintf(fid,"subplot(3,2,2);\n");
     fprintf(fid,"  plot(t0,real(x),t0,imag(x));\n");
-    fprintf(fid,"  legend('I','Q',0);\n");
+    fprintf(fid,"  legend('I','Q');\n");
     fprintf(fid,"  axis([0 n -1 1]);\n");
     fprintf(fid,"  ylabel('original');\n");
-    fprintf(fid,"subplot(3,1,2);\n");
+    fprintf(fid,"subplot(3,2,4);\n");
     fprintf(fid,"  plot(t1,real(y),t1,imag(y));\n");
     fprintf(fid,"  axis([0 n*2 -1 1]);\n");
     fprintf(fid,"  ylabel('interpolated');\n");
-    fprintf(fid,"subplot(3,1,3);\n");
+    fprintf(fid,"subplot(3,2,6);\n");
     fprintf(fid,"  plot(t0,real(z),t0,imag(z));\n");
     fprintf(fid,"  axis([0 n -1 1]);\n");
     fprintf(fid,"  ylabel('interp/decim');\n");
-
-
     fclose(fid);
     printf("results written to %s\n",OUTPUT_FILENAME);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2022 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,11 @@
 #define TP              double          // primitive type
 #define T_COMPLEX       1               // is type complex?
 
+// basic constants
+#define T_ZERO          (0.0)
+#define T_ONE           (1.0)
+
+// basic functions
 #define T_ABS(X)        cabs(X)
 #define TP_ABS(X)       fabs(X)
 
@@ -41,13 +46,14 @@
         crealf(matrix_access(X,R,C,r,c)),   \
         cimagf(matrix_access(X,R,C,r,c)));
 
-#include "matrix.base.c"
-#include "matrix.cgsolve.c"
-#include "matrix.chol.c"
-#include "matrix.gramschmidt.c"
-#include "matrix.inv.c"
-#include "matrix.linsolve.c"
-#include "matrix.ludecomp.c"
-#include "matrix.qrdecomp.c"
-#include "matrix.math.c"
+// prototypes
+#include "matrix.base.proto.c"
+#include "matrix.cgsolve.proto.c"
+#include "matrix.chol.proto.c"
+#include "matrix.gramschmidt.proto.c"
+#include "matrix.inv.proto.c"
+#include "matrix.linsolve.proto.c"
+#include "matrix.ludecomp.proto.c"
+#include "matrix.qrdecomp.proto.c"
+#include "matrix.math.proto.c"
 

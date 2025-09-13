@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,7 +67,7 @@ void fecsoft_decode_bench(
          _fs == LIQUID_FEC_CONV_V29P78 ||
          _fs == LIQUID_FEC_RS_M8)
     {
-        fprintf(stderr,"warning: convolutional, Reed-Solomon codes unavailable (install libfec)\n");
+        liquid_error(LIQUID_EUMODE,"convolutional, Reed-Solomon codes unavailable (install libfec)");
         getrusage(RUSAGE_SELF, _start);
         memmove((void*)_finish,(void*)_start,sizeof(struct rusage));
         return;
@@ -121,7 +121,7 @@ void fecsoft_decode_bench(
     unsigned char msg_soft[8*n_enc];// encoded message (soft bits)
     unsigned char msg_dec[_n];      // decoded message
 
-    // initialze message
+    // initialize message
     unsigned long int i;
     for (i=0; i<_n; i++)
         msg[i] = rand() & 0xff;

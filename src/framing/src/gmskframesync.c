@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-//
 // gmskframesync.c
-//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -33,44 +31,39 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_GMSKFRAMESYNC             1
-#define DEBUG_GMSKFRAMESYNC_PRINT       0
-#define DEBUG_GMSKFRAMESYNC_FILENAME    "gmskframesync_debug.m"
-#define DEBUG_GMSKFRAMESYNC_BUFFER_LEN  (2000)
-
 // enable pre-demodulation filter (remove out-of-band noise)
 #define GMSKFRAMESYNC_PREFILTER         1
 
 // execute a single, post-filtered sample
-void gmskframesync_execute_sample(gmskframesync _q,
-                                  float complex _x);
+int gmskframesync_execute_sample(gmskframesync _q,
+                                 float complex _x);
 
 // push buffered p/n sequence through synchronizer
-void gmskframesync_pushpn(gmskframesync _q);
+int gmskframesync_pushpn(gmskframesync _q);
 
 // ...
-void gmskframesync_syncpn(gmskframesync _q);
+int gmskframesync_syncpn(gmskframesync _q);
 
 // update instantaneous frequency estimate
-void gmskframesync_update_fi(gmskframesync _q,
-                             float complex _x);
+int gmskframesync_update_fi(gmskframesync _q,
+                            float complex _x);
 
 // update symbol synchronizer internal state (filtered error, index, etc.)
 //  _q      :   frame synchronizer
 //  _x      :   input sample
 //  _y      :   output symbol
 int gmskframesync_update_symsync(gmskframesync _q,
-                                 float         _x,
-                                 float *       _y);
+                                float         _x,
+                                float *       _y);
 
 // execute stages
-void gmskframesync_execute_detectframe(gmskframesync _q, float complex _x);
-void gmskframesync_execute_rxpreamble( gmskframesync _q, float complex _x);
-void gmskframesync_execute_rxheader(   gmskframesync _q, float complex _x);
-void gmskframesync_execute_rxpayload(  gmskframesync _q, float complex _x);
+int gmskframesync_execute_detectframe(gmskframesync _q, float complex _x);
+int gmskframesync_execute_rxpreamble( gmskframesync _q, float complex _x);
+int gmskframesync_execute_rxheader(   gmskframesync _q, float complex _x);
+int gmskframesync_execute_rxpayload(  gmskframesync _q, float complex _x);
 
 // decode header
-void gmskframesync_decode_header(gmskframesync _q);
+int gmskframesync_decode_header(gmskframesync _q);
 
 // gmskframesync object structure
 struct gmskframesync_s {
@@ -82,8 +75,9 @@ struct gmskframesync_s {
     float BT;                       // filter bandwidth-time product
     framesync_callback callback;    // user-defined callback function
     void * userdata;                // user-defined data structure
-    framesyncstats_s framestats;    // frame statistic object
-    
+    framesyncstats_s framesyncstats;// frame statistic object
+    framedatastats_s framedatastats;// frame statistic object (packet statistics)
+
     //
     float complex x_prime;          // received sample state
     float fi_hat;                   // instantaneous frequency estimate
@@ -143,29 +137,26 @@ struct gmskframesync_s {
     unsigned int preamble_counter;  // counter: num of p/n syms received
     unsigned int header_counter;    // counter: num of header syms received
     unsigned int payload_counter;   // counter: num of payload syms received
-    // debugging structures
-#if DEBUG_GMSKFRAMESYNC
-    int debug_enabled;              // debugging enabled?
-    int debug_objects_created;      // debugging objects created?
-    windowcf debug_x;               // received samples buffer
-    windowf  debug_fi;              // instantaneous frequency
-    windowf  debug_mf;              // matched filter output
-    windowf  debug_framesyms;       // GMSK output symbols
-#endif
 };
 
 // create GMSK frame synchronizer
+//  _k          :   samples/symbol
+//  _m          :   filter delay (symbols)
+//  _BT         :   excess bandwidth factor
 //  _callback   :   callback function
 //  _userdata   :   user data pointer passed to callback function
-gmskframesync gmskframesync_create(framesync_callback _callback,
-                                   void *             _userdata)
+gmskframesync gmskframesync_create_set(unsigned int       _k,
+                                       unsigned int       _m,
+                                       float              _BT,
+                                       framesync_callback _callback,
+                                       void *             _userdata)
 {
     gmskframesync q = (gmskframesync) malloc(sizeof(struct gmskframesync_s));
     q->callback = _callback;
     q->userdata = _userdata;
-    q->k        = 2;        // samples/symbol
-    q->m        = 3;        // filter delay (symbols)
-    q->BT       = 0.5f;     // filter bandwidth-time product
+    q->k        = _k;        // samples/symbol
+    q->m        = _m;        // filter delay (symbols)
+    q->BT       = _BT;      // filter bandwidth-time product
 
 #if GMSKFRAMESYNC_PREFILTER
     // create default low-pass Butterworth filter
@@ -236,37 +227,28 @@ gmskframesync gmskframesync_create(framesync_callback _callback,
     q->payload_dec = (unsigned char*) malloc(q->payload_dec_len*sizeof(unsigned char));
     q->payload_enc = (unsigned char*) malloc(q->payload_enc_len*sizeof(unsigned char));
 
-#if DEBUG_GMSKFRAMESYNC
-    // debugging structures
-    q->debug_enabled         = 0;
-    q->debug_objects_created = 0;
-    q->debug_x               = NULL;
-    q->debug_fi              = NULL;
-    q->debug_mf              = NULL;
-    q->debug_framesyms       = NULL;
-#endif
-
     // reset synchronizer
     gmskframesync_reset(q);
+
+    // reset global data counters
+    gmskframesync_reset_framedatastats(q);
 
     // return synchronizer object
     return q;
 }
 
+// create GMSK frame synchronizer with default parameters (k=2, m=3, bt=0.5)
+//  _callback   :   callback function
+//  _userdata   :   user data pointer passed to callback function
+gmskframesync gmskframesync_create(framesync_callback _callback,
+                                   void *             _userdata)
+{
+    return gmskframesync_create_set(2, 3, 0.5f, _callback, _userdata);
+}
 
 // destroy frame synchronizer object, freeing all internal memory
-void gmskframesync_destroy(gmskframesync _q)
+int gmskframesync_destroy(gmskframesync _q)
 {
-#if DEBUG_GMSKFRAMESYNC
-    // destroy debugging objects
-    if (_q->debug_objects_created) {
-        windowcf_destroy(_q->debug_x);
-        windowf_destroy(_q->debug_fi);
-        windowf_destroy(_q->debug_mf);
-        windowf_destroy( _q->debug_framesyms);
-    }
-#endif
-
     // destroy synchronizer objects
 #if GMSKFRAMESYNC_PREFILTER
     iirfilt_crcf_destroy(_q->prefilter);// pre-demodulator filter
@@ -294,16 +276,18 @@ void gmskframesync_destroy(gmskframesync _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print frame synchronizer object internals
-void gmskframesync_print(gmskframesync _q)
+int gmskframesync_print(gmskframesync _q)
 {
-    printf("gmskframesync:\n");
+    printf("<liquid.gmskframesync>\n");
+    return LIQUID_OK;
 }
 
-void gmskframesync_set_header_len(gmskframesync _q,
-                                  unsigned int _len)
+int gmskframesync_set_header_len(gmskframesync _q,
+                                 unsigned int _len)
 {
 
     _q->header_user_len = _len;
@@ -324,10 +308,11 @@ void gmskframesync_set_header_len(gmskframesync _q,
 
     _q->header_mod_len = _q->header_enc_len * 8;
     _q->header_mod = (unsigned char*)realloc(_q->header_mod, _q->header_mod_len*sizeof(unsigned char));
+    return LIQUID_OK;
 }
 
 // reset frame synchronizer object
-void gmskframesync_reset(gmskframesync _q)
+int gmskframesync_reset(gmskframesync _q)
 {
     // reset state and counters
     _q->state = STATE_DETECTFRAME;
@@ -352,7 +337,7 @@ void gmskframesync_reset(gmskframesync _q)
     firpfb_rrrf_reset(_q->mf);
     firpfb_rrrf_reset(_q->dmf);
     _q->pfb_q = 0.0f;   // filtered error signal
-        
+    return LIQUID_OK;
 }
 
 int gmskframesync_is_frame_open(gmskframesync _q)
@@ -360,39 +345,27 @@ int gmskframesync_is_frame_open(gmskframesync _q)
     return (_q->state == STATE_DETECTFRAME) ? 0 : 1;
 }
 
-void gmskframesync_execute_sample(gmskframesync _q,
-                                  float complex _x)
+int gmskframesync_execute_sample(gmskframesync _q,
+                                 float complex _x)
 {
     switch (_q->state) {
-    case STATE_DETECTFRAME:
-        // look for p/n sequence
-        gmskframesync_execute_detectframe(_q, _x);
-        break;
-
-    case STATE_RXPREAMBLE:
-        // receive p/n sequence symbols
-        gmskframesync_execute_rxpreamble(_q, _x);
-        break;
-
-    case STATE_RXHEADER:
-        // receive header
-        gmskframesync_execute_rxheader(_q, _x);
-        break;
-
-    case STATE_RXPAYLOAD:
-        // receive payload
-        gmskframesync_execute_rxpayload(_q, _x);
-        break;
+    case STATE_DETECTFRAME: return gmskframesync_execute_detectframe(_q, _x);
+    case STATE_RXPREAMBLE:  return gmskframesync_execute_rxpreamble (_q, _x);
+    case STATE_RXHEADER:    return gmskframesync_execute_rxheader   (_q, _x);
+    case STATE_RXPAYLOAD:   return gmskframesync_execute_rxpayload  (_q, _x);
+    default:;
     }
+
+    return liquid_error(LIQUID_EINT,"gmskframesync_execute_sample(), invalid internal state");
 }
 
 // execute frame synchronizer
 //  _q      :   frame synchronizer object
 //  _x      :   input sample array [size: _n x 1]
 //  _n      :   number of input samples
-void gmskframesync_execute(gmskframesync   _q,
-                           float complex * _x,
-                           unsigned int    _n)
+int gmskframesync_execute(gmskframesync   _q,
+                          float complex * _x,
+                          unsigned int    _n)
 {
     // push through synchronizer
     unsigned int i;
@@ -404,14 +377,41 @@ void gmskframesync_execute(gmskframesync   _q,
         xf = _x[i];
 #endif
 
-#if DEBUG_GMSKFRAMESYNC
-        if (_q->debug_enabled)
-            windowcf_push(_q->debug_x, xf);
-#endif
-
         gmskframesync_execute_sample(_q, xf);
 
     }
+    return LIQUID_OK;
+}
+
+// reset frame data statistics
+int gmskframesync_reset_framedatastats(gmskframesync _q)
+{
+    return framedatastats_reset(&_q->framedatastats);
+}
+
+// retrieve frame data statistics
+framedatastats_s gmskframesync_get_framedatastats(gmskframesync _q)
+{
+    return _q->framedatastats;
+}
+
+// DEPRECATED
+int gmskframesync_debug_enable(gmskframesync _q)
+{
+    return LIQUID_OK;
+}
+
+// DEPRECATED
+int gmskframesync_debug_disable(gmskframesync _q)
+{
+    return LIQUID_OK;
+}
+
+// DEPRECATED
+int gmskframesync_debug_print(gmskframesync _q,
+                              const char *  _filename)
+{
+    return LIQUID_OK;
 }
 
 // 
@@ -433,15 +433,6 @@ int gmskframesync_update_symsync(gmskframesync _q,
     //
     float mf_out  = 0.0f;    // matched-filter output
     float dmf_out = 0.0f;    // derivatived matched-filter output
-#if DEBUG_GMSKFRAMESYNC
-    if (_q->debug_enabled) {
-        windowf_push(_q->debug_fi, _q->fi_hat);
-        firpfb_rrrf_execute(_q->mf,  _q->pfb_index, &mf_out);
-        windowf_push(_q->debug_mf, mf_out);
-    }
-#endif
-
-
     int sample_available = 0;
 
     // compute output if timeout
@@ -449,7 +440,7 @@ int gmskframesync_update_symsync(gmskframesync _q,
         sample_available = 1;
 
         // reset timer
-        _q->pfb_timer = 2;  // k samples/symbol
+        _q->pfb_timer = _q->k;  // k samples/symbol
 
         firpfb_rrrf_execute(_q->mf,  _q->pfb_index, &mf_out);
         firpfb_rrrf_execute(_q->dmf, _q->pfb_index, &dmf_out);
@@ -466,7 +457,7 @@ int gmskframesync_update_symsync(gmskframesync _q,
         // compute actual filterbank index
         _q->pfb_index = roundf(_q->pfb_soft);
 
-        // contrain index to be in [0, npfb-1]
+        // constrain index to be in [0, npfb-1]
         while (_q->pfb_index < 0) {
             _q->pfb_index += _q->npfb;
             _q->pfb_soft  += _q->npfb;
@@ -494,7 +485,7 @@ int gmskframesync_update_symsync(gmskframesync _q,
 }
 
 // push buffered p/n sequence through synchronizer
-void gmskframesync_pushpn(gmskframesync _q)
+int gmskframesync_pushpn(gmskframesync _q)
 {
     unsigned int i;
 
@@ -545,11 +536,11 @@ void gmskframesync_pushpn(gmskframesync _q)
         // run remaining samples through sample state machine
         gmskframesync_execute_sample(_q, rc[i]);
     }
-
+    return LIQUID_OK;
 }
 
 // 
-void gmskframesync_syncpn(gmskframesync _q)
+int gmskframesync_syncpn(gmskframesync _q)
 {
 #if 0
     // compare expected p/n sequence with received
@@ -557,21 +548,23 @@ void gmskframesync_syncpn(gmskframesync _q)
     for (i=0; i<_q->preamble_len; i++)
         printf("  %3u : %12.8f : %12.8f\n", i, _q->preamble_pn[i], _q->preamble_rx[i]);
 #endif
+    return LIQUID_OK;
 }
 
 // update instantaneous frequency estimate
-void gmskframesync_update_fi(gmskframesync _q,
-                             float complex _x)
+int gmskframesync_update_fi(gmskframesync _q,
+                            float complex _x)
 {
     // compute differential phase
     _q->fi_hat = cargf(conjf(_q->x_prime)*_x) * _q->k;
 
     // update internal state
     _q->x_prime = _x;
+    return LIQUID_OK;
 }
 
-void gmskframesync_execute_detectframe(gmskframesync _q,
-                                       float complex _x)
+int gmskframesync_execute_detectframe(gmskframesync _q,
+                                      float complex _x)
 {
     // push sample into pre-demod p/n sequence buffer
     windowcf_push(_q->buffer, _x);
@@ -592,16 +585,15 @@ void gmskframesync_execute_detectframe(gmskframesync _q,
         // NOTE: state will be updated to STATE_RXPREAMBLE internally
         gmskframesync_pushpn(_q);
     }
+    return LIQUID_OK;
 }
 
-void gmskframesync_execute_rxpreamble(gmskframesync _q,
-                                      float complex _x)
+int gmskframesync_execute_rxpreamble(gmskframesync _q,
+                                     float complex _x)
 {
     // validate input
-    if (_q->preamble_counter == _q->preamble_len) {
-        fprintf(stderr,"warning: gmskframesync_execute_rxpn(), p/n buffer already full!\n");
-        return;
-    }
+    if (_q->preamble_counter == _q->preamble_len)
+        return liquid_error(LIQUID_EINT,"gmskframesync_execute_rxpn(), p/n buffer already full!\n");
 
     // mix signal down
     float complex y;
@@ -628,10 +620,11 @@ void gmskframesync_execute_rxpreamble(gmskframesync _q,
             _q->state = STATE_RXHEADER;
         }
     }
+    return LIQUID_OK;
 }
 
-void gmskframesync_execute_rxheader(gmskframesync _q,
-                                    float complex _x)
+int gmskframesync_execute_rxheader(gmskframesync _q,
+                                   float complex _x)
 {
     // mix signal down
     float complex y;
@@ -662,17 +655,18 @@ void gmskframesync_execute_rxheader(gmskframesync _q,
             gmskframesync_decode_header(_q);
 
             // invoke callback if header is invalid
+            _q->framedatastats.num_frames_detected++;
             if (!_q->header_valid && _q->callback != NULL) {
-                // set framestats internals
-                _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
-                _q->framestats.evm           = 0.0f;
-                _q->framestats.framesyms     = NULL;
-                _q->framestats.num_framesyms = 0;
-                _q->framestats.mod_scheme    = LIQUID_MODEM_UNKNOWN;
-                _q->framestats.mod_bps       = 1;
-                _q->framestats.check         = LIQUID_CRC_UNKNOWN;
-                _q->framestats.fec0          = LIQUID_FEC_UNKNOWN;
-                _q->framestats.fec1          = LIQUID_FEC_UNKNOWN;
+                // set framesyncstats internals
+                _q->framesyncstats.rssi          = 20*log10f(_q->gamma_hat);
+                _q->framesyncstats.evm           = 0.0f;
+                _q->framesyncstats.framesyms     = NULL;
+                _q->framesyncstats.num_framesyms = 0;
+                _q->framesyncstats.mod_scheme    = LIQUID_MODEM_UNKNOWN;
+                _q->framesyncstats.mod_bps       = 1;
+                _q->framesyncstats.check         = LIQUID_CRC_UNKNOWN;
+                _q->framesyncstats.fec0          = LIQUID_FEC_UNKNOWN;
+                _q->framesyncstats.fec1          = LIQUID_FEC_UNKNOWN;
 
                 // invoke callback method
                 _q->callback(_q->header_dec,
@@ -680,26 +674,25 @@ void gmskframesync_execute_rxheader(gmskframesync _q,
                              NULL,
                              0,
                              0,
-                             _q->framestats,
+                             _q->framesyncstats,
                              _q->userdata);
 
                 gmskframesync_reset(_q);
             }
 
             // reset if invalid
-            if (!_q->header_valid) {
-                gmskframesync_reset(_q);
-                return;
-            }
+            if (!_q->header_valid)
+                return gmskframesync_reset(_q);
 
             // update state
             _q->state = STATE_RXPAYLOAD;
         }
     }
+    return LIQUID_OK;
 }
 
-void gmskframesync_execute_rxpayload(gmskframesync _q,
-                                     float complex _x)
+int gmskframesync_execute_rxpayload(gmskframesync _q,
+                                    float complex _x)
 {
     // mix signal down
     float complex y;
@@ -734,18 +727,23 @@ void gmskframesync_execute_rxpayload(gmskframesync _q,
                                                   _q->payload_enc,
                                                   _q->payload_dec);
 
+            // update statistics
+            _q->framedatastats.num_headers_valid++;
+            _q->framedatastats.num_payloads_valid += _q->payload_valid;
+            _q->framedatastats.num_bytes_received += _q->payload_dec_len;
+
             // invoke callback
             if (_q->callback != NULL) {
-                // set framestats internals
-                _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
-                _q->framestats.evm           = 0.0f;
-                _q->framestats.framesyms     = NULL;
-                _q->framestats.num_framesyms = 0;
-                _q->framestats.mod_scheme    = LIQUID_MODEM_UNKNOWN;
-                _q->framestats.mod_bps       = 1;
-                _q->framestats.check         = _q->check;
-                _q->framestats.fec0          = _q->fec0;
-                _q->framestats.fec1          = _q->fec1;
+                // set framesyncstats internals
+                _q->framesyncstats.rssi          = 20*log10f(_q->gamma_hat);
+                _q->framesyncstats.evm           = 0.0f;
+                _q->framesyncstats.framesyms     = NULL;
+                _q->framesyncstats.num_framesyms = 0;
+                _q->framesyncstats.mod_scheme    = LIQUID_MODEM_UNKNOWN;
+                _q->framesyncstats.mod_bps       = 1;
+                _q->framesyncstats.check         = _q->check;
+                _q->framesyncstats.fec0          = _q->fec0;
+                _q->framesyncstats.fec1          = _q->fec1;
 
                 // invoke callback method
                 _q->callback(_q->header_dec,
@@ -753,7 +751,7 @@ void gmskframesync_execute_rxpayload(gmskframesync _q,
                              _q->payload_dec,
                              _q->payload_dec_len,
                              _q->payload_valid,
-                             _q->framestats,
+                             _q->framesyncstats,
                              _q->userdata);
             }
 
@@ -761,10 +759,11 @@ void gmskframesync_execute_rxpayload(gmskframesync _q,
             gmskframesync_reset(_q);
         }
     }
+    return LIQUID_OK;
 }
 
 // decode header and re-configure payload decoder
-void gmskframesync_decode_header(gmskframesync _q)
+int gmskframesync_decode_header(gmskframesync _q)
 {
     // pack each 1-bit header symbols into 8-bit bytes
     unsigned int num_written;
@@ -779,20 +778,17 @@ void gmskframesync_decode_header(gmskframesync _q)
     // run packet decoder
     _q->header_valid = packetizer_decode(_q->p_header, _q->header_enc, _q->header_dec);
 
-#if DEBUG_GMSKFRAMESYNC_PRINT
-    printf("****** header extracted [%s]\n", _q->header_valid ? "valid" : "INVALID!");
-#endif
-
     if (!_q->header_valid)
-        return;
+        return LIQUID_OK;
 
     unsigned int n = _q->header_user_len;
 
     // first byte is for expansion/version validation
     if (_q->header_dec[n+0] != GMSKFRAME_VERSION) {
-        fprintf(stderr,"warning: gmskframesync_decode_header(), invalid framing version\n");
+        liquid_error(LIQUID_EICONFIG,"gmskframesync_decode_header(), invalid framing version (received %u, expected %u)",
+            _q->header_dec[n+0], GMSKFRAME_VERSION);
         _q->header_valid = 0;
-        return;
+        return LIQUID_OK;
     }
 
     // strip off payload length
@@ -807,30 +803,21 @@ void gmskframesync_decode_header(gmskframesync _q)
     unsigned int fec1  = (_q->header_dec[n+4]      ) & 0x1f;
 
     // validate properties
-    if (check >= LIQUID_CRC_NUM_SCHEMES) {
-        fprintf(stderr,"warning: gmskframesync_decode_header(), decoded CRC exceeds available\n");
+    if (check == LIQUID_CRC_UNKNOWN || check >= LIQUID_CRC_NUM_SCHEMES) {
+        liquid_error(LIQUID_EICONFIG,"gmskframesync_decode_header(), invalid/unsupported crc: %u", check);
         check = LIQUID_CRC_UNKNOWN;
         _q->header_valid = 0;
     }
     if (fec0 >= LIQUID_FEC_NUM_SCHEMES) {
-        fprintf(stderr,"warning: gmskframesync_decode_header(), decoded FEC (inner) exceeds available\n");
+        liquid_error(LIQUID_EICONFIG,"gmskframesync_decode_header(), invalid/unsupported fec (inner): %u", fec0);
         fec0 = LIQUID_FEC_UNKNOWN;
         _q->header_valid = 0;
     }
     if (fec1 >= LIQUID_FEC_NUM_SCHEMES) {
-        fprintf(stderr,"warning: gmskframesync_decode_header(), decoded FEC (outer) exceeds available\n");
+        liquid_error(LIQUID_EICONFIG,"gmskframesync_decode_header(), invalid/unsupported fec (outer): %u", fec1);
         fec1 = LIQUID_FEC_UNKNOWN;
         _q->header_valid = 0;
     }
-
-    // print results
-#if DEBUG_GMSKFRAMESYNC_PRINT
-    printf("    properties:\n");
-    printf("      * fec (inner)     :   %s\n", fec_scheme_str[fec0][1]);
-    printf("      * fec (outer)     :   %s\n", fec_scheme_str[fec1][1]);
-    printf("      * CRC scheme      :   %s\n", crc_scheme_str[check][1]);
-    printf("      * payload length  :   %u bytes\n", payload_dec_len);
-#endif
 
     // configure payload receiver
     if (_q->header_valid) {
@@ -849,124 +836,12 @@ void gmskframesync_decode_header(gmskframesync _q)
 
         // re-compute payload encoded message length
         _q->payload_enc_len = packetizer_get_enc_msg_len(_q->p_payload);
-#if DEBUG_GMSKFRAMESYNC_PRINT
-        printf("      * payload encoded :   %u bytes\n", _q->payload_enc_len);
-#endif
 
         // re-allocate buffers accordingly
         _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->payload_enc_len*sizeof(unsigned char));
         _q->payload_dec = (unsigned char*) realloc(_q->payload_dec, _q->payload_dec_len*sizeof(unsigned char));
     }
     //
+    return LIQUID_OK;
 }
 
-
-void gmskframesync_debug_enable(gmskframesync _q)
-{
-    // create debugging objects if necessary
-#if DEBUG_GMSKFRAMESYNC
-    if (!_q->debug_objects_created) {
-        _q->debug_x  = windowcf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
-        _q->debug_fi = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
-        _q->debug_mf = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
-        _q->debug_framesyms  = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
-    }
-    
-    // set debugging flags
-    _q->debug_enabled = 1;
-    _q->debug_objects_created = 1;
-#else
-    fprintf(stderr,"gmskframesync_debug_enable(): compile-time debugging disabled\n");
-#endif
-}
-
-void gmskframesync_debug_disable(gmskframesync _q)
-{
-#if DEBUG_GMSKFRAMESYNC
-    _q->debug_enabled = 0;
-#else
-    fprintf(stderr,"gmskframesync_debug_disable(): compile-time debugging disabled\n");
-#endif
-}
-
-void gmskframesync_debug_print(gmskframesync _q,
-                               const char *  _filename)
-{
-#if DEBUG_GMSKFRAMESYNC
-    if (!_q->debug_objects_created) {
-        fprintf(stderr,"error: gmskframe_debug_print(), debugging objects don't exist; enable debugging first\n");
-        return;
-    }
-
-    FILE* fid = fopen(_filename,"w");
-    if (!fid) {
-        fprintf(stderr, "error: gmskframesync_debug_print(), could not open '%s' for writing\n", _filename);
-        return;
-    }
-    fprintf(fid,"%% %s: auto-generated file", _filename);
-    fprintf(fid,"\n\n");
-    fprintf(fid,"clear all;\n");
-    fprintf(fid,"close all;\n\n");
-
-    fprintf(fid,"num_samples = %u;\n", DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
-    fprintf(fid,"t = 0:(num_samples-1);\n");
-    unsigned int i;
-    float complex * rc;
-
-    // write x
-    fprintf(fid,"x = zeros(1,num_samples);\n");
-    windowcf_read(_q->debug_x, &rc);
-    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(1:length(x),real(x), 1:length(x),imag(x));\n");
-    fprintf(fid,"ylabel('received signal, x');\n");
-    fprintf(fid,"\n\n");
-
-    // write instantaneous frequency
-    float * r;
-    fprintf(fid,"fi = zeros(1,num_samples);\n");
-    windowf_read(_q->debug_fi, &r);
-    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"fi(%4u) = %12.4e;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(1:length(fi),fi);\n");
-    fprintf(fid,"ylabel('Inst. Freq.');\n");
-    fprintf(fid,"\n\n");
-
-    // write matched filter output
-    fprintf(fid,"mf = zeros(1,num_samples);\n");
-    windowf_read(_q->debug_mf, &r);
-    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"mf(%4u) = %12.4e;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(1:length(mf),mf);\n");
-    fprintf(fid,"ylabel('MF output');\n");
-    fprintf(fid,"\n\n");
-
-#if 0
-    // write framesyms
-    fprintf(fid,"framesyms = zeros(1,num_samples);\n");
-    windowf_read(_q->debug_framesyms, &r);
-    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"framesyms(%4u) = %12.4e;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,framesyms,'x')\n");
-    fprintf(fid,"xlabel('time (symbol index)');\n");
-    fprintf(fid,"ylabel('GMSK demodulator output');\n");
-    fprintf(fid,"grid on;\n");
-    fprintf(fid,"\n\n");
-#endif
-
-    fclose(fid);
-
-    printf("gmskframesync/debug: results written to '%s'\n", _filename);
-#else
-    fprintf(stderr,"gmskframesync_debug_print(): compile-time debugging disabled\n");
-#endif
-
-}

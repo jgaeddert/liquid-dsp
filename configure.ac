@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2020 Joseph Gaeddert
+# Copyright (c) 2007 - 2025 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 # Process with autoconf to generate configure script
 #
 
-AC_INIT([liquid-dsp],[1.3.2],[joseph@liquidsdr.org])
+AC_INIT([liquid-dsp],[1.7.0],[joseph@liquidsdr.org])
 AC_CONFIG_SRCDIR([src/libliquid.c])
 AC_CONFIG_MACRO_DIR([scripts])
 
@@ -39,8 +39,10 @@ AC_LANG(C)
 # Autoheader
 AH_TEMPLATE([LIQUID_FFTOVERRIDE],  [Force internal FFT even if libfftw is available])
 AH_TEMPLATE([LIQUID_SIMDOVERRIDE], [Force overriding of SIMD (use portable C code)])
+AH_TEMPLATE([LIQUID_SUPPRESS_ERROR_OUTPUT],[Suppress printing errors to stderr])
+AH_TEMPLATE([LIQUID_STRICT_EXIT],  [Enable strict program exit on error])
 
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 AH_TOP([
 #ifndef __LIQUID_CONFIG_H__
 #define __LIQUID_CONFIG_H__
@@ -78,6 +80,18 @@ AC_ARG_ENABLE(coverage,
               [AC_MSG_ERROR(Need gcovr with coverage option)],
               [COVERAGE_OPTION="--coverage"])],
     [COVERAGE_OPTION=""]
+)
+
+AC_ARG_ENABLE(suppress-errors,
+    AS_HELP_STRING([--enable-suppress-errors],[suppress printing errors to stderr]),
+    [AC_DEFINE(LIQUID_SUPPRESS_ERROR_OUTPUT)],
+    [],
+)
+
+AC_ARG_ENABLE(strict,
+    AS_HELP_STRING([--enable-strict],[use strict error handling at runtime]),
+    [AC_DEFINE(LIQUID_STRICT_EXIT)],
+    [],
 )
 
 # Check for necessary programs
@@ -162,85 +176,141 @@ else
         #   SSSE3   :   tmmintrin.h
         #   SSE4.1/2:   smmintrin.h
         #   AVX     :   immintrin.h
+        #   AVX2    :   immintrin.h
+        #   AVX512  :   immintrin.h
         AX_EXT
 
-        if [ test "$ax_cv_have_sse41_ext" = yes && test "$ac_cv_header_smmintrin_h" = yes ]; then
+        if [ test "$ax_cv_have_avx512f_ext" = yes ]; then
+            # AVX512 extensions
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx512f.o \
+                           src/dotprod/src/dotprod_crcf.avx512f.o \
+                           src/dotprod/src/dotprod_rrrf.avx512f.o \
+                           src/dotprod/src/sumsq.avx512f.o"
+            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
+                          src/vector/src/vectorcf.port.o"
+            ARCH_OPTION='-mavx512f'
+        elif [ test "$ax_cv_have_avx2_ext" = yes ]; then
+            # AVX2 extensions
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx.o \
+                           src/dotprod/src/dotprod_crcf.avx.o \
+                           src/dotprod/src/dotprod_rrrf.avx.o \
+                           src/dotprod/src/sumsq.avx.o"
+            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
+                          src/vector/src/vectorcf.port.o"
+            ARCH_OPTION='-mavx2'
+        elif [ test "$ax_cv_have_avx_ext" = yes ]; then
+            # AVX extensions
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx.o \
+                           src/dotprod/src/dotprod_crcf.avx.o \
+                           src/dotprod/src/dotprod_rrrf.avx.o \
+                           src/dotprod/src/sumsq.avx.o"
+            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
+                          src/vector/src/vectorcf.port.o"
+            ARCH_OPTION='-mavx'
+        elif [ test "$ax_cv_have_sse41_ext" = yes ]; then
             # SSE4.1/2 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
-                           src/dotprod/src/dotprod_crcf.mmx.o \
-                           src/dotprod/src/dotprod_rrrf.mmx.o \
-                           src/dotprod/src/sumsq.mmx.o \
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.sse.o \
+                           src/dotprod/src/dotprod_crcf.sse.o \
+                           src/dotprod/src/dotprod_rrrf.sse.o \
                            src/dotprod/src/dotprod_cccq16.mmx.o \
                            src/dotprod/src/dotprod_crcq16.mmx.o \
                            src/dotprod/src/dotprod_rrrq16.mmx.o \
                            src/dotprod/src/dotprod_cccq32.mmx.o \
                            src/dotprod/src/dotprod_crcq32.mmx.o \
                            src/dotprod/src/dotprod_rrrq32.mmx.o \
-                           src/dotprod/src/sumsqq16.o"
+                           src/dotprod/src/sumsqq16.o \
+                           src/dotprod/src/sumsq.sse.o"
+            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
+                          src/vector/src/vectorcf.port.o"
             ARCH_OPTION='-msse4.1'
-        elif [ test "$ax_cv_have_sse3_ext" = yes && test "$ac_cv_header_pmmintrin_h" = yes ]; then
+        elif [ test "$ax_cv_have_sse3_ext" = yes ]; then
             # SSE3 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
-                           src/dotprod/src/dotprod_crcf.mmx.o \
-                           src/dotprod/src/dotprod_rrrf.mmx.o \
-                           src/dotprod/src/sumsq.mmx.o \
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.sse.o \
+                           src/dotprod/src/dotprod_crcf.sse.o \
+                           src/dotprod/src/dotprod_rrrf.sse.o \
                            src/dotprod/src/dotprod_cccq16.mmx.o \
                            src/dotprod/src/dotprod_crcq16.mmx.o \
                            src/dotprod/src/dotprod_rrrq16.mmx.o \
                            src/dotprod/src/dotprod_cccq32.mmx.o \
                            src/dotprod/src/dotprod_crcq32.mmx.o \
                            src/dotprod/src/dotprod_rrrq32.mmx.o \
-                           src/dotprod/src/sumsqq16.o"
+                           src/dotprod/src/sumsqq16.o \
+                           src/dotprod/src/sumsq.sse.o"
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.sse.o \
+                           src/dotprod/src/dotprod_crcf.sse.o \
+                           src/dotprod/src/dotprod_rrrf.sse.o \
+                           src/dotprod/src/sumsq.sse.o"
+            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
+                          src/vector/src/vectorcf.port.o"
             ARCH_OPTION='-msse3'
-        elif [ test "$ax_cv_have_sse2_ext" = yes && test "$ac_cv_header_emmintrin_h" = yes ]; then
+        elif [ test "$ax_cv_have_sse2_ext" = yes ]; then
             # SSE2 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
-                           src/dotprod/src/dotprod_crcf.mmx.o \
-                           src/dotprod/src/dotprod_rrrf.mmx.o \
-                           src/dotprod/src/sumsq.mmx.o \
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.sse.o \
+                           src/dotprod/src/dotprod_crcf.sse.o \
+                           src/dotprod/src/dotprod_rrrf.sse.o \
                            src/dotprod/src/dotprod_cccq16.mmx.o \
                            src/dotprod/src/dotprod_crcq16.mmx.o \
                            src/dotprod/src/dotprod_rrrq16.mmx.o \
                            src/dotprod/src/dotprod_cccq32.mmx.o \
                            src/dotprod/src/dotprod_crcq32.mmx.o \
                            src/dotprod/src/dotprod_rrrq32.mmx.o \
-                           src/dotprod/src/sumsqq16.o"
+                           src/dotprod/src/sumsqq16.o \
+                           src/dotprod/src/sumsq.sse.o"
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.sse.o \
+                           src/dotprod/src/dotprod_crcf.sse.o \
+                           src/dotprod/src/dotprod_rrrf.sse.o \
+                           src/dotprod/src/sumsq.sse.o"
+            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
+                          src/vector/src/vectorcf.port.o"
             ARCH_OPTION='-msse2'
         else
             # portable C version
             MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                            src/dotprod/src/dotprod_crcf.o \
                            src/dotprod/src/dotprod_rrrf.o \
-                           src/dotprod/src/sumsq.o \
                            src/dotprod/src/dotprod_cccq16.o \
                            src/dotprod/src/dotprod_crcq16.o \
                            src/dotprod/src/dotprod_rrrq16.o \
                            src/dotprod/src/dotprod_cccq32.o \
                            src/dotprod/src/dotprod_crcq32.o \
                            src/dotprod/src/dotprod_rrrq32.o \
-                           src/dotprod/src/sumsqq16.o"
+                           src/dotprod/src/sumsqq16.o \
+                           src/dotprod/src/sumsq.o"
+            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
+                          src/vector/src/vectorcf.port.o"
         fi;;
     powerpc*)
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                        src/dotprod/src/dotprod_rrrf.av.o \
                        src/dotprod/src/dotprod_crcf.av.o \
-                       src/dotprod/src/sumsq.o \
                        src/dotprod/src/dotprod_cccq16.o \
                        src/dotprod/src/dotprod_crcq16.o \
                        src/dotprod/src/dotprod_rrrq16.o \
                        src/dotprod/src/dotprod_cccq32.o \
                        src/dotprod/src/dotprod_crcq32.o \
                        src/dotprod/src/dotprod_rrrq32.o \
-                       src/dotprod/src/sumsqq16.o"
+                       src/dotprod/src/sumsqq16.o \
+                       src/dotprod/src/sumsq.o"
+        MLIBS_VECTOR="src/vector/src/vectorf.port.o \
+                      src/vector/src/vectorcf.port.o"
         ARCH_OPTION="-fno-common -faltivec";;
     armv1*|armv2*|armv3*|armv4*|armv5*|armv6*)
         # assume neon instructions are NOT available
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                        src/dotprod/src/dotprod_crcf.o \
                        src/dotprod/src/dotprod_rrrf.o \
+                       src/dotprod/src/dotprod_cccq16.o \
+                       src/dotprod/src/dotprod_crcq16.o \
+                       src/dotprod/src/dotprod_rrrq16.o \
+                       src/dotprod/src/dotprod_cccq32.o \
+                       src/dotprod/src/dotprod_crcq32.o \
+                       src/dotprod/src/dotprod_rrrq32.o \
+                       src/dotprod/src/sumsqq16.o \
                        src/dotprod/src/sumsq.o"
+        MLIBS_VECTOR="src/vector/src/vectorf.port.o \
+                      src/vector/src/vectorcf.port.o"
         ARCH_OPTION="-ffast-math";;
-    armv7*|armv8*)
+    arm|armv7*|armv8*|aarch64)
         # assume neon instructions are available
         # TODO: check for Neon availability
 
@@ -248,43 +318,45 @@ else
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.neon.o \
                        src/dotprod/src/dotprod_crcf.neon.o \
                        src/dotprod/src/dotprod_rrrf.neon.o \
-                       src/dotprod/src/sumsq.o \
                        src/dotprod/src/dotprod_cccq16.o \
                        src/dotprod/src/dotprod_crcq16.o \
                        src/dotprod/src/dotprod_rrrq16.o \
                        src/dotprod/src/dotprod_cccq32.o \
                        src/dotprod/src/dotprod_crcq32.o \
                        src/dotprod/src/dotprod_rrrq32.o \
-                       src/dotprod/src/sumsqq16.o"
-        # TODO: check these flags
-        #ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
-        ARCH_OPTION="-ffast-math -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4";;
+                       src/dotprod/src/sumsqq16.o \
+                       src/dotprod/src/sumsq.o"
+        MLIBS_VECTOR="src/vector/src/vectorf.port.o \
+                      src/vector/src/vectorcf.port.o"
+        case $target_os in
+        darwin*)
+            # M1 mac, ARM architecture : use neon extensions
+            ARCH_OPTION="-ffast-math";;
+        *)
+            # TODO: check these flags
+            #ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
+            #ARCH_OPTION="-ffast-math -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4";;
+            ARCH_OPTION="";; # -ffast-math causes tests to fail on pi4 due to imprecision
+        esac;;
     *)
         # unknown architecture : use portable C version
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                        src/dotprod/src/dotprod_crcf.o \
                        src/dotprod/src/dotprod_rrrf.o \
-                       src/dotprod/src/sumsq.o \
                        src/dotprod/src/dotprod_cccq16.o \
                        src/dotprod/src/dotprod_crcq16.o \
                        src/dotprod/src/dotprod_rrrq16.o \
                        src/dotprod/src/dotprod_cccq32.o \
                        src/dotprod/src/dotprod_crcq32.o \
                        src/dotprod/src/dotprod_rrrq32.o \
+                       src/dotprod/src/sumsq.o \
                        src/dotprod/src/sumsqq16.o"
+        MLIBS_VECTOR="src/vector/src/vectorf.port.o \
+                      src/vector/src/vectorcf.port.o"
         ARCH_OPTION="";;
     esac
 fi
 
-# for now all vector operations are portable C versions
-MLIBS_VECTOR="src/vector/src/vectorf_add.port.o   \
-              src/vector/src/vectorf_norm.port.o  \
-              src/vector/src/vectorf_mul.port.o   \
-              src/vector/src/vectorf_trig.port.o  \
-              src/vector/src/vectorcf_add.port.o  \
-              src/vector/src/vectorcf_norm.port.o \
-              src/vector/src/vectorcf_mul.port.o  \
-              src/vector/src/vectorcf_trig.port.o"
 
 case $target_os in
 darwin*)
@@ -293,8 +365,8 @@ darwin*)
     AC_DEFUN([AC_PROG_LIBTOOL], [AC_CHECK_TOOL(LIBTOOL, libtool, :)])
     AC_PROG_LIBTOOL
 
-    AR_LIB=libliquid.ar
-    SH_LIB=libliquid.dylib
+    AR_LIB=ar	    # archive extension
+    SH_LIB=dylib    # shared library extension
     REBIND=""
     ;;
 *)
@@ -303,8 +375,8 @@ darwin*)
     AC_DEFUN([AC_PROG_AR], [AC_CHECK_TOOL(AR, ar, :)])
     AC_PROG_AR
 
-    AR_LIB=libliquid.a
-    SH_LIB=libliquid.so
+    AR_LIB=a	    # archive extension
+    SH_LIB=so	    # shared library extension
     REBIND=ldconfig
     ;;
 esac
