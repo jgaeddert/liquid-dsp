@@ -19,10 +19,14 @@ $(gentab_objects): %.o : %.c
 $(gentab_programs): % : %.o ${ARCHIVE_LIB}
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(LIBS)
 
-# clean gentab
-clean-gentab:
+# clean gentab binaries
+clean:
 	$(RM) gentab/*.o
 	$(RM) $(gentab_programs)
 
-all: $(gentab_programs)
+run: $(gentab_programs)
+	./gentab/count_ones_gentab > src/utility/src/count_ones.c
+
+all: run
+
 
