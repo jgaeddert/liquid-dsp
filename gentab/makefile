@@ -9,6 +9,12 @@ LIBS    := -lm -lc
 .PHONY: gentab
 gentab_programs =						\
 	gentab/count_ones_gentab				\
+	gentab/qtype_constants_gentab				\
+	gentab/qtype_cordic_gentab				\
+	gentab/qtype_hyperbolic_cordic_gentab			\
+	gentab/qtype_logexp_frac_gentab				\
+	gentab/qtype_logexp_shiftadd_gentab			\
+	gentab/qtype_trig_gentab				\
 
 gentab_objects	= $(patsubst %,%.o,$(gentab_programs))
 gentab: $(gentab_programs)
@@ -25,8 +31,21 @@ clean:
 	$(RM) $(gentab_programs)
 
 run: $(gentab_programs)
+	# utility
 	./gentab/count_ones_gentab > src/utility/src/count_ones.c
+	# fixed-point math
+	./gentab/qtype_constants_gentab         -n 16 > src/fpm/src/q16_constants.c
+	./gentab/qtype_constants_gentab         -n 32 > src/fpm/src/q32_constants.c
+	./gentab/qtype_cordic_gentab            -n 16 > src/fpm/src/q16_cordic.c
+	./gentab/qtype_cordic_gentab            -n 32 > src/fpm/src/q32_cordic.c
+	./gentab/qtype_hyperbolic_cordic_gentab -n 16 > src/fpm/src/q16_hyperbolic_cordic.c
+	./gentab/qtype_hyperbolic_cordic_gentab -n 32 > src/fpm/src/q32_hyperbolic_cordic.c
+	./gentab/qtype_logexp_frac_gentab       -n 16 > src/fpm/src/q16_logexp_frac.c
+	./gentab/qtype_logexp_frac_gentab       -n 32 > src/fpm/src/q32_logexp_frac.c
+	./gentab/qtype_logexp_shiftadd_gentab   -n 16 > src/fpm/src/q16_logexp_shiftadd.c
+	./gentab/qtype_logexp_shiftadd_gentab   -n 32 > src/fpm/src/q32_logexp_shiftadd.c
+	./gentab/qtype_trig_gentab              -n 16 > src/fpm/src/q16_trigtab.c
+	./gentab/qtype_trig_gentab              -n 32 > src/fpm/src/q32_trigtab.c
 
 all: run
-
 

@@ -686,39 +686,6 @@ filter_benchmarks :=						\
 # define specific headers for building fixed-point math objects
 fpm_headers	:= $(include_headers) include/liquidfpm.h include/liquidfpm.internal.h
 
-# fixed-point math auto-generated tables
-#   The target generator programs listed below determine which
-#   source files are generated. For example,
-#     "src/fpm/gentab.qtype_cordic"
-#   generates these sources:
-#     "src/fpm/gentab.q16_cordic.c"
-#     "src/fpm/gentab.q32_cordic.c"
-
-# target generator programs
-fpm_gentab_programs :=						\
-	src/fpm/gentab/gentab.qtype_constants			\
-	src/fpm/gentab/gentab.qtype_logexp_shiftadd		\
-	src/fpm/gentab/gentab.qtype_logexp_frac			\
-	src/fpm/gentab/gentab.qtype_cordic			\
-	src/fpm/gentab/gentab.qtype_hyperbolic_cordic	 	\
-	src/fpm/gentab/gentab.qtype_trigtab			\
-
-# declare target source files from above "target generator programs"
-fpm_gentab_src_q16 = $(patsubst src/fpm/gentab/gentab.qtype%,src/fpm/gentab/q16%.c,$(fpm_gentab_programs))
-fpm_gentab_src_q32 = $(patsubst src/fpm/gentab/gentab.qtype%,src/fpm/gentab/q32%.c,$(fpm_gentab_programs))
-
-# declare resulting object files from above source files
-fpm_gentab_obj_q16 = $(patsubst %.c,%.o,$(fpm_gentab_src_q16))
-fpm_gentab_obj_q32 = $(patsubst %.c,%.o,$(fpm_gentab_src_q32))
-
-# build gentab programs from source
-$(fpm_gentab_programs) : % : %.c $(fpm_headers)
-	$(CC) $(CFLAGS) $(INCLUDE_CFLAGS) -o $@ $< $(LDFLAGS)
-
-# generate source files by running program and piping output to target
-$(fpm_gentab_src_q16) : src/fpm/gentab/q16%.c : src/fpm/gentab/gentab.qtype% ;  ./$< -n16 > $@
-$(fpm_gentab_src_q32) : src/fpm/gentab/q32%.c : src/fpm/gentab/gentab.qtype% ;  ./$< -n32 > $@
-
 # type conversion scripts
 scripts/q16_float_to_fixed : % : %.c
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
@@ -729,11 +696,6 @@ scripts/q16_fixed_to_float : % : %.c
 # add auto-generated files to extra_clean list (programs, sources,
 # and objects)
 extra_clean +=							\
-	$(fpm_gentab_programs)					\
-	$(fpm_gentab_src_q16)					\
-	$(fpm_gentab_src_q32)					\
-	$(fpm_gentab_obj_q16)					\
-	$(fpm_gentab_obj_q32)					\
 	scripts/q16_float_to_fixed				\
 	scripts/q16_fixed_to_float				\
 
@@ -741,8 +703,18 @@ extra_clean +=							\
 fpm_objects :=							\
 	src/fpm/src/q16.o					\
 	src/fpm/src/q32.o					\
-	$(fpm_gentab_obj_q16)					\
-	$(fpm_gentab_obj_q32)					\
+	src/fpm/src/q16_constants.o				\
+	src/fpm/src/q32_constants.o				\
+	src/fpm/src/q16_logexp_shiftadd.o			\
+	src/fpm/src/q32_logexp_shiftadd.o			\
+	src/fpm/src/q16_logexp_frac.o				\
+	src/fpm/src/q32_logexp_frac.o				\
+	src/fpm/src/q16_cordic.o				\
+	src/fpm/src/q32_cordic.o				\
+	src/fpm/src/q16_hyperbolic_cordic.o			\
+	src/fpm/src/q32_hyperbolic_cordic.o			\
+	src/fpm/src/q16_trigtab.o				\
+	src/fpm/src/q32_trigtab.o				\
 
 # files included by macro sources
 fpm_includes :=							\
