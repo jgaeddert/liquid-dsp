@@ -57,9 +57,6 @@ struct RESAMP2(_s) {
     unsigned int    toggle;
 };
 
-// initialize coefficients
-void RESAMP2(_init_coefficients)(RESAMP2() _q);
-
 // create a resamp2 object
 //  _m      :   filter semi-length (effective length: 4*_m+1)
 //  _f0     :   center frequency of half-band filter
@@ -117,7 +114,6 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
         q->h1[j++] = q->h[q->h_len - i - 1];
 
     // initialize coefficients and create dotprod object
-    RESAMP2(_init_coefficients)(q);
     q->dp = DOTPROD(_create)(q->h1, 2*q->m);
 
     // create window buffers
@@ -281,11 +277,11 @@ int RESAMP2(_filter_execute)(RESAMP2() _q,
     //*_y0 = CQ(_add)(yi, yq);
     //*_y1 = CQ(_sub)(yi, yq);
 
-    _y0->real = 0.5f*(yi.real + yq.real);  // lower band
-    _y0->imag = 0.5f*(yi.imag + yq.imag);  // lower band
+    _y0->real = (yi.real + yq.real) / 2;  // lower band
+    _y0->imag = (yi.imag + yq.imag) / 2;  // lower band
 
-    _y1->real = 0.5f*(yi.real - yq.real);  // upper band
-    _y1->imag = 0.5f*(yi.imag - yq.imag);  // upper band
+    _y1->real = (yi.real - yq.real) / 2;  // upper band
+    _y1->imag = (yi.imag - yq.imag) / 2;  // upper band
 
     *_y0 = MUL_TI_TC(*_y0, _q->scale);
     *_y1 = MUL_TI_TC(*_y1, _q->scale);
@@ -447,43 +443,5 @@ int RESAMP2(_interp_execute)(RESAMP2() _q,
     _y[0] = MUL_TI_TC(_y[0], _q->scale);
     _y[1] = MUL_TI_TC(_y[1], _q->scale);
     return LIQUID_OK;
-}
-
-// 
-// internal methods
-//
-
-// initialize coefficients
-void RESAMP2(_init_coefficients)(RESAMP2() _q)
-{
-    // design half-band filter prototype (real coefficients)
-    float h[_q->h_len];
-    liquid_firdes_kaiser(_q->h_len, 0.25f, _q->as, 0.0f, h);
-
-    unsigned int i;
-#if TC_COMPLEX == 1
-    // modulate filter coefficients
-    float complex hc[_q->h_len];
-    float t;
-    for (i=0; i<_q->h_len; i++) {
-        t = (float)i - (float)(_q->h_len-1)/2.0f;
-        hc[i] = h[i] * liquid_cexpjf(t);
-    }
-#else
-    // set pointer to original coefficients
-    float * hc = h;
-#endif
-
-    // resample, alternate sign, [reverse direction]
-    unsigned int j=0;
-    for (i=1; i<_q->h_len; i+=2) {
-#if defined LIQUID_FIXED && TC_COMPLEX == 1
-        _q->h1[j++] = CQ(_float_to_fixed)(hc[_q->h_len - i - 1]);
-#elif defined LIQUID_FIXED && TC_COMPLEX == 0
-        _q->h1[j++] = Q(_float_to_fixed)(hc[_q->h_len - i - 1]);
-#else
-        _q->h1[j++] = hc[_q->h_len - i - 1];
-#endif
-    }
 }
 
