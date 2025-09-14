@@ -7,7 +7,6 @@ set(SANDBOX
     am_demod_ssb_pll_carrier_test
     bpresync_test
     chromosome_test
-    count_ones_gentab
     cpmodem_test
     crc_gentab
     ellip_func_test

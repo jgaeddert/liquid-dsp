@@ -270,6 +270,7 @@ add_library(sequence OBJECT
 add_library(utility OBJECT
     src/utility/src/bshift_array.c
     src/utility/src/byte_utilities.c
+    src/utility/src/count_ones.c
     src/utility/src/memory.c
     src/utility/src/msb_index.c
     src/utility/src/pack_bytes.c

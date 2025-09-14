@@ -1293,6 +1293,7 @@ sequence_benchmarks :=						\
 utility_objects :=						\
 	src/utility/src/bshift_array.o				\
 	src/utility/src/byte_utilities.o			\
+	src/utility/src/count_ones.o				\
 	src/utility/src/memory.o				\
 	src/utility/src/msb_index.o				\
 	src/utility/src/pack_bytes.o				\
@@ -1916,7 +1917,6 @@ sandbox_programs =						\
 	sandbox/bpresync_test					\
 	sandbox/chromosome_test					\
 	sandbox/cpmodem_test					\
-	sandbox/count_ones_gentab				\
 	sandbox/crc_gentab					\
 	sandbox/ellip_func_test					\
 	sandbox/ellip_test					\
