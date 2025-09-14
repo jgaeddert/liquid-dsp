@@ -308,14 +308,22 @@ int RESAMP2(_analyzer_execute)(RESAMP2() _q,
     TI * r;     // buffer read pointer
     TO y0;      // delay branch
     TO y1;      // filter branch
+    // cut input in half
+#if defined LIQUID_FIXED && TO_COMPLEX==1
+    TI _x0_2 = CQ(_mul_scalar)(_x[0], Q(_one)>>1);
+    TI _x1_2 = CQ(_mul_scalar)(_x[1], Q(_one)>>1);
+#else
+    TI _x0_2 = _x[0] / 2;
+    TI _x1_2 = _x[1] / 2;
+#endif
 
     // compute filter branch
-    WINDOW(_push)(_q->w1, _x[0]);
+    WINDOW(_push)(_q->w1, _x0_2);
     WINDOW(_read)(_q->w1, &r);
     DOTPROD(_execute)(_q->dp, r, &y1);
 
     // compute delay branch
-    WINDOW(_push)(_q->w0, _x[1]);
+    WINDOW(_push)(_q->w0, _x1_2);
     WINDOW(_index)(_q->w0, _q->m-1, &y0);
 
     // set return value
