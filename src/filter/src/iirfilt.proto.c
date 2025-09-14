@@ -844,6 +844,7 @@ int IIRFILT(_freqresponse_sos)(IIRFILT()       _q,
 
     // compute 3-point DFT for each second-order section
     for (i=0; i<_q->nsos; i++) {
+        // copy coefficients to temporary complex array
 #if defined LIQUID_FIXED && TC_COMPLEX==0
         float complex b[3] = { Q(_fixed_to_float)(_q->b[3*i+0]),
                                Q(_fixed_to_float)(_q->b[3*i+1]),
@@ -859,8 +860,8 @@ int IIRFILT(_freqresponse_sos)(IIRFILT()       _q,
                                CQ(_fixed_to_float)(_q->a[3*i+1]),
                                CQ(_fixed_to_float)(_q->a[3*i+2])};
 #else
-        TC * b = &_q->b[3*i];
-        TC * a = &_q->b[3*i];
+        float complex b[3] = {_q->b[3*i+0], _q->b[3*i+1], _q->b[3*i+2]};
+        float complex a[3] = {_q->a[3*i+0], _q->a[3*i+1], _q->a[3*i+2]};
 #endif
         float complex Hb = b[0] * cexpf(_Complex_I*2*M_PI*_fc*0) +
                            b[1] * cexpf(_Complex_I*2*M_PI*_fc*1) +

@@ -21,12 +21,12 @@
 
 int main() {
     // options
-    unsigned int order=4;   // filter order
-    float fc=0.1f;          // cutoff frequency
-    float f0=0.0f;          // center frequency
-    float Ap=1.0f;          // pass-band ripple
-    float As=40.0f;         // stop-band attenuation
-    unsigned int n=128;     // number of samples
+    unsigned int order =   4;       // filter order
+    float        fc    =   0.1f;    // cutoff frequency
+    float        f0    =   0.0f;    // center frequency
+    float        Ap    =   1.0f;    // pass-band ripple
+    float        As    =  40.0f;    // stop-band attenuation
+    unsigned int n     = 128;       // number of samples
     liquid_iirdes_filtertype ftype  = LIQUID_IIRDES_ELLIP;
     liquid_iirdes_bandtype   btype  = LIQUID_IIRDES_LOWPASS;
     liquid_iirdes_format     format = LIQUID_IIRDES_SOS;
@@ -106,14 +106,14 @@ int main() {
     fprintf(fid,"       t,real(y),'-','Color',[0 0.5 0.25],'LineWidth',2);\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('real');\n");
-    fprintf(fid,"  legend('input','filtered output',1);\n");
+    fprintf(fid,"  legend('input','filtered output','location','northeast');\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(2,1,2);\n");
     fprintf(fid,"  plot(t,imag(x),'-','Color',[1 1 1]*0.5,'LineWidth',1,...\n");
     fprintf(fid,"       t,imag(y),'-','Color',[0 0.25 0.5],'LineWidth',2);\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('imag');\n");
-    fprintf(fid,"  legend('input','filtered output',1);\n");
+    fprintf(fid,"  legend('input','filtered output','location','northeast');\n");
     fprintf(fid,"  grid on;\n");
 
     // plot frequency response
@@ -123,17 +123,17 @@ int main() {
     fprintf(fid,"  plot(f,20*log10(abs(H)));\n");
     fprintf(fid,"  axis([0 0.5 -3 0]);\n");
     fprintf(fid,"  grid on;\n");
-    fprintf(fid,"  legend('Pass band (dB)',0);\n");
+    fprintf(fid,"  legend('Pass band (dB)');\n");
     fprintf(fid,"subplot(3,1,2);\n");
     fprintf(fid,"  plot(f,20*log10(abs(H)));\n");
     fprintf(fid,"  axis([0 0.5 -100 0]);\n");
     fprintf(fid,"  grid on;\n");
-    fprintf(fid,"  legend('Stop band (dB)',0);\n");
+    fprintf(fid,"  legend('Stop band (dB)');\n");
     fprintf(fid,"subplot(3,1,3);\n");
     fprintf(fid,"  plot(f,180/pi*arg(H));\n");
     //fprintf(fid,"  axis([0 0.5 -100 0]);\n");
     fprintf(fid,"  grid on;\n");
-    fprintf(fid,"  legend('Phase (degrees)',0);\n");
+    fprintf(fid,"  legend('Phase (degrees)');\n");
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
 
