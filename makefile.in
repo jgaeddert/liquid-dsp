@@ -1718,7 +1718,6 @@ sandbox_programs =						\
 	sandbox/bpresync_test					\
 	sandbox/chromosome_test					\
 	sandbox/cpmodem_test					\
-	sandbox/count_ones_gentab				\
 	sandbox/crc_gentab					\
 	sandbox/ellip_func_test					\
 	sandbox/ellip_test					\
