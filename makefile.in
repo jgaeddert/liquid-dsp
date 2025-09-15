@@ -1795,6 +1795,7 @@ example_programs :=						\
 	examples/msresamp2_crcf_example				\
 	examples/nco_crcf_mix_example				\
 	examples/nco_crcf_tone_example				\
+	examples/nco_crcq16_example				\
 	examples/nco_example					\
 	examples/nco_pll_example				\
 	examples/nco_pll_real_example				\
