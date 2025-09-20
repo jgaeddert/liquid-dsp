@@ -27,32 +27,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <immintrin.h>
 #include <assert.h>
 
 #include "liquid.internal.h"
-
-// include proper SIMD extensions for x86 platforms
-// NOTE: these pre-processor macros are defined in config.h
-
-#if HAVE_MMINTRIN_H
-#include <mmintrin.h>   // MMX
-#endif
-
-#if HAVE_XMMINTRIN_H
-#include <xmmintrin.h>  // SSE
-#endif
-
-#if HAVE_EMMINTRIN_H
-#include <emmintrin.h>  // SSE2
-#endif
-
-#if HAVE_PMMINTRIN_H
-#include <pmmintrin.h>  // SSE3
-#endif
-
-#if HAVE_TMMINTRIN_H
-#include <tmmintrin.h>  // SSSE3
-#endif
 
 #define DEBUG_DOTPROD_RRRQ16_MMX   0
 
@@ -142,6 +120,20 @@ dotprod_rrrq16 dotprod_rrrq16_create(q16_t * _h,
     return q;
 }
 
+// create object with reversed coefficients
+dotprod_rrrq16 dotprod_rrrq16_create_rev(q16_t *      _h,
+                                         unsigned int _n)
+{
+    // copy coefficients to temporary buffer in reversed order
+    q16_t h_rev[_n];
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        h_rev[i] = _h[_n-i-1];
+
+    // create new object with reversed coefficients
+    return dotprod_rrrq16_create(h_rev, _n);
+}
+
 // re-create the structured dotprod object
 dotprod_rrrq16 dotprod_rrrq16_recreate(dotprod_rrrq16 _dp,
                                        q16_t *        _h,
@@ -151,6 +143,27 @@ dotprod_rrrq16 dotprod_rrrq16_recreate(dotprod_rrrq16 _dp,
     dotprod_rrrq16_destroy(_dp);
     _dp = dotprod_rrrq16_create(_h,_n);
     return _dp;
+}
+
+// copy object
+dotprod_rrrq16 dotprod_rrrq16_copy(dotprod_rrrq16 q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("dotprod_rrrq16_copy().mmx, object cannot be NULL");
+
+    dotprod_rrrq16 q_copy = (dotprod_rrrq16)malloc(sizeof(struct dotprod_rrrq16_s));
+    q_copy->n = q_orig->n;
+
+    // allocate memory for coefficients, 32-byte aligned
+    q_copy->h = (q16_t*) _mm_malloc( q_copy->n*sizeof(q16_t), 32 );
+
+    // copy coefficients array
+    //  h = { _h[0], _h[1], _h[2], ... _h[n-1] }
+    memmove(q_copy->h, q_orig->h, q_orig->n*sizeof(q16_t));
+
+    // return object
+    return q_copy;
 }
 
 

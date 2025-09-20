@@ -27,36 +27,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <immintrin.h>
 #include <assert.h>
 
 #include "liquid.internal.h"
 
-// include proper SIMD extensions for x86 platforms
-// NOTE: these pre-processor macros are defined in config.h
+#define DEBUG_DOTPROD_CCCQ32_MMX   0
 
-#if HAVE_MMINTRIN_H
-#include <mmintrin.h>   // MMX
-#endif
-
-#if HAVE_XMMINTRIN_H
-#include <xmmintrin.h>  // SSE
-#endif
-
-#if HAVE_EMMINTRIN_H
-#include <emmintrin.h>  // SSE2
-#endif
-
-#if HAVE_PMMINTRIN_H
-#include <pmmintrin.h>  // SSE3
-#endif
-
-#if HAVE_TMMINTRIN_H
-#include <tmmintrin.h>  // SSSE3
-#endif
-
-#define DEBUG_DOTPROD_CCCq32_MMX   0
-
-#if DEBUG_DOTPROD_CCCq32_MMX
+#if DEBUG_DOTPROD_CCCQ32_MMX
 int _mm_printq32_epi16(__m128i _v);
 int _mm_printq32_epi32(__m128i _v);
 #endif
@@ -183,6 +161,20 @@ dotprod_cccq32 dotprod_cccq32_create(cq32_t *     _h,
     return q;
 }
 
+// create object with reversed coefficients
+dotprod_cccq32 dotprod_cccq32_create_rev(cq32_t *     _h,
+                                         unsigned int _n)
+{
+    // copy coefficients to temporary buffer in reversed order
+    cq32_t h_rev[_n];
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        h_rev[i] = _h[_n-i-1];
+
+    // create new object with reversed coefficients
+    return dotprod_cccq32_create(h_rev, _n);
+}
+
 // re-create the structured dotprod object
 dotprod_cccq32 dotprod_cccq32_recreate(dotprod_cccq32 _dp,
                                        cq32_t *       _h,
@@ -192,6 +184,26 @@ dotprod_cccq32 dotprod_cccq32_recreate(dotprod_cccq32 _dp,
     dotprod_cccq32_destroy(_dp);
     _dp = dotprod_cccq32_create(_h,_n);
     return _dp;
+}
+
+// copy object
+dotprod_cccq32 dotprod_cccq32_copy(dotprod_cccq32 q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("dotprod_cccq32_copy().mmx, object cannot be NULL");
+
+    dotprod_cccq32 q_copy = (dotprod_cccq32)malloc(sizeof(struct dotprod_cccq32_s));
+    q_copy->n = q_orig->n;
+
+    // allocate memory for coefficients, 32-byte aligned (repeated)
+    q_copy->h = (q32_t*) _mm_malloc( q_copy->n*sizeof(cq32_t), 32 );
+
+    // copy coefficients array
+    memmove(q_copy->h, q_orig->h, 2*q_orig->n*sizeof(cq32_t));
+
+    // return object
+    return q_copy;
 }
 
 
