@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ void sumsqq16_bench(struct rusage *     _start,
     if (*_num_iterations < 1) *_num_iterations = 1;
 
     q16_t x[_n];
-    q16_t y;
+    q16_t y = 0;
     unsigned int long i;
     for (i=0; i<_n; i++)
         x[i] = q16_one >> 2;
@@ -43,13 +43,14 @@ void sumsqq16_bench(struct rusage *     _start,
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        y = liquid_sumsqq16(x, _n);
-        y = liquid_sumsqq16(x, _n);
-        y = liquid_sumsqq16(x, _n);
-        y = liquid_sumsqq16(x, _n);
+        y += liquid_sumsqq16(x, _n);
+        y += liquid_sumsqq16(x, _n);
+        y += liquid_sumsqq16(x, _n);
+        y += liquid_sumsqq16(x, _n);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
+    *_num_iterations += (y % 2); // artificial use of 'y' to avoid compiler warning
 }
 
 #define SUMSQQ16_BENCHMARK_API(N)       \

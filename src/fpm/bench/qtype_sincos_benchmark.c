@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,20 +40,21 @@ void benchmark_q16_sincos_cordic(struct rusage *_start,
     q16_t x1 = rand() & 0xffff;
     q16_t x2 = rand() & 0xffff;
     q16_t x3 = rand() & 0xffff;
-    q16_t s, c;
+    q16_t s = 0, c = 0;
     unsigned int precision = 16;
 
     // start trials
     unsigned long int i;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        q16_sincos_cordic(x0, &s, &c, precision);
-        q16_sincos_cordic(x1, &s, &c, precision);
-        q16_sincos_cordic(x2, &s, &c, precision);
-        q16_sincos_cordic(x3, &s, &c, precision);
+        q16_sincos_cordic(x0 + s - c, &s, &c, precision);
+        q16_sincos_cordic(x1 + s - c, &s, &c, precision);
+        q16_sincos_cordic(x2 + s - c, &s, &c, precision);
+        q16_sincos_cordic(x3 + s - c, &s, &c, precision);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
+    *_num_iterations += ((s^c)%2); // artificial use of output to avoid compiler warning
 }
 
 // 
@@ -69,19 +70,20 @@ void benchmark_q16_sincos_tab(struct rusage *_start,
     q16_t x1 = rand() & 0xffff;
     q16_t x2 = rand() & 0xffff;
     q16_t x3 = rand() & 0xffff;
-    q16_t s, c;
+    q16_t s = 0, c = 0;
 
     // start trials
     unsigned long int i;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        q16_sincos_tab(x0, &s, &c);
-        q16_sincos_tab(x1, &s, &c);
-        q16_sincos_tab(x2, &s, &c);
-        q16_sincos_tab(x3, &s, &c);
+        q16_sincos_tab(x0 + s - c, &s, &c);
+        q16_sincos_tab(x1 + s - c, &s, &c);
+        q16_sincos_tab(x2 + s - c, &s, &c);
+        q16_sincos_tab(x3 + s - c, &s, &c);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
+    *_num_iterations += ((s^c)%2); // artificial use of output to avoid compiler warning
 }
 
 
@@ -98,20 +100,21 @@ void benchmark_q32_sincos_cordic(struct rusage *_start,
     q32_t x1 = rand() & 0xffff;
     q32_t x2 = rand() & 0xffff;
     q32_t x3 = rand() & 0xffff;
-    q32_t s, c;
+    q32_t s = 0, c = 0;
     unsigned int precision = 32;
 
     // start trials
     unsigned long int i;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        q32_sincos_cordic(x0, &s, &c, precision);
-        q32_sincos_cordic(x1, &s, &c, precision);
-        q32_sincos_cordic(x2, &s, &c, precision);
-        q32_sincos_cordic(x3, &s, &c, precision);
+        q32_sincos_cordic(x0 + s - c, &s, &c, precision);
+        q32_sincos_cordic(x1 + s - c, &s, &c, precision);
+        q32_sincos_cordic(x2 + s - c, &s, &c, precision);
+        q32_sincos_cordic(x3 + s - c, &s, &c, precision);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
+    *_num_iterations += ((s^c)%2); // artificial use of output to avoid compiler warning
 }
 
 
@@ -128,19 +131,20 @@ void benchmark_q32_sincos_tab(struct rusage *_start,
     q32_t x1 = rand() & 0xffff;
     q32_t x2 = rand() & 0xffff;
     q32_t x3 = rand() & 0xffff;
-    q32_t s, c;
+    q32_t s = 0, c = 0;
 
     // start trials
     unsigned long int i;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        q32_sincos_tab(x0, &s, &c);
-        q32_sincos_tab(x1, &s, &c);
-        q32_sincos_tab(x2, &s, &c);
-        q32_sincos_tab(x3, &s, &c);
+        q32_sincos_tab(x0 + s - c, &s, &c);
+        q32_sincos_tab(x1 + s - c, &s, &c);
+        q32_sincos_tab(x2 + s - c, &s, &c);
+        q32_sincos_tab(x3 + s - c, &s, &c);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
+    *_num_iterations += ((s^c)%2); // artificial use of output to avoid compiler warning
 }
 
 // 
@@ -156,18 +160,19 @@ void benchmark_float_sincos(struct rusage *_start,
     float x1 = 2 * M_PI * randf();
     float x2 = 2 * M_PI * randf();
     float x3 = 2 * M_PI * randf();
-    float s, c;
+    float s = 0, c = 0;
 
     // start trials
     unsigned long int i;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        s = sinf(x0);   c = cosf(x0);
-        s = sinf(x1);   c = cosf(x1);
-        s = sinf(x2);   c = cosf(x2);
-        s = sinf(x3);   c = cosf(x3);
+        s += sinf(x0);   c += cosf(x0);
+        s += sinf(x1);   c += cosf(x1);
+        s += sinf(x2);   c += cosf(x2);
+        s += sinf(x3);   c += cosf(x3);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
+    *_num_iterations += ((s+c)>2); // artificial use of output to avoid compiler warning
 }
 

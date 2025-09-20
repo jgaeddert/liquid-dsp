@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@ void benchmark_q16_atan2_cordic(struct rusage *_start,
     q16_t x1 = rand() & 0xffff, y1 = rand() & 0xffff;
     q16_t x2 = rand() & 0xffff, y2 = rand() & 0xffff;
     q16_t x3 = rand() & 0xffff, y3 = rand() & 0xffff;
-    q16_t r, theta;
+    q16_t r, theta = 0;
     unsigned int precision = 16;
 
     // start trials
@@ -54,6 +54,7 @@ void benchmark_q16_atan2_cordic(struct rusage *_start,
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
+    *_num_iterations += (theta % 2); // artificial use of output to avoid compiler warning
 }
 
 
@@ -70,19 +71,20 @@ void benchmark_q16_atan2_frac(struct rusage *_start,
     q16_t x1 = rand() & 0xffff, y1 = rand() & 0xffff;
     q16_t x2 = rand() & 0xffff, y2 = rand() & 0xffff;
     q16_t x3 = rand() & 0xffff, y3 = rand() & 0xffff;
-    q16_t theta;
+    q16_t theta = 0;
 
     // start trials
     unsigned long int i;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        theta = q16_atan2_frac(x0, y0);
-        theta = q16_atan2_frac(x1, y1);
-        theta = q16_atan2_frac(x2, y2);
-        theta = q16_atan2_frac(x3, y3);
+        theta += q16_atan2_frac(x0, y0);
+        theta += q16_atan2_frac(x1, y1);
+        theta += q16_atan2_frac(x2, y2);
+        theta += q16_atan2_frac(x3, y3);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
+    *_num_iterations += (theta % 2); // artificial use of output to avoid compiler warning
 }
 
 
@@ -99,7 +101,7 @@ void benchmark_q32_atan2_cordic(struct rusage *_start,
     q32_t x1 = rand() & 0xffff, y1 = rand() & 0xffff;
     q32_t x2 = rand() & 0xffff, y2 = rand() & 0xffff;
     q32_t x3 = rand() & 0xffff, y3 = rand() & 0xffff;
-    q32_t r, theta;
+    q32_t r, theta = 0;
     unsigned int precision = 32;
 
     // start trials
@@ -113,6 +115,7 @@ void benchmark_q32_atan2_cordic(struct rusage *_start,
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
+    *_num_iterations += (theta % 2); // artificial use of output to avoid compiler warning
 }
 
 
@@ -129,19 +132,20 @@ void benchmark_q32_atan2_frac(struct rusage *_start,
     q32_t x1 = rand() & 0xffff, y1 = rand() & 0xffff;
     q32_t x2 = rand() & 0xffff, y2 = rand() & 0xffff;
     q32_t x3 = rand() & 0xffff, y3 = rand() & 0xffff;
-    q32_t theta;
+    q32_t theta = 0;
 
     // start trials
     unsigned long int i;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        theta = q32_atan2_frac(x0, y0);
-        theta = q32_atan2_frac(x1, y1);
-        theta = q32_atan2_frac(x2, y2);
-        theta = q32_atan2_frac(x3, y3);
+        theta += q32_atan2_frac(x0, y0);
+        theta += q32_atan2_frac(x1, y1);
+        theta += q32_atan2_frac(x2, y2);
+        theta += q32_atan2_frac(x3, y3);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
+    *_num_iterations += (theta % 2); // artificial use of output to avoid compiler warning
 }
 
 
@@ -159,18 +163,19 @@ void benchmark_atan2f(struct rusage *_start,
     float x1 = randnf(), y1 = randnf();
     float x2 = randnf(), y2 = randnf();
     float x3 = randnf(), y3 = randnf();
-    float theta;
+    float theta = 0;
 
     // start trials
     unsigned long int i;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        theta = atan2f(y0, x0);
-        theta = atan2f(y1, x1);
-        theta = atan2f(y2, x2);
-        theta = atan2f(y3, x3);
+        theta += atan2f(y0, x0);
+        theta += atan2f(y1, x1);
+        theta += atan2f(y2, x2);
+        theta += atan2f(y3, x3);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
+    *_num_iterations += (theta > 2); // artificial use of output to avoid compiler warning
 }
 
