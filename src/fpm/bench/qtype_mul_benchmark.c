@@ -37,16 +37,16 @@ void benchmark_q16_mul(struct rusage *_start,
     // initialize arrays
     q16_t x = rand() % 0xffff;
     q16_t y = rand() % 0xffff;
-    q16_t z;
+    q16_t z = q16_one;
 
     // start trials
     unsigned long int i;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
+        z = q16_mul( x, z );
         z = q16_mul( x, y );
-        z = q16_mul( x, y );
-        z = q16_mul( x, y );
-        z = q16_mul( x, y );
+        z = q16_mul( y, z );
+        z = q16_mul( z, y );
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
@@ -63,16 +63,16 @@ void benchmark_q32_mul(struct rusage *_start,
     // initialize arrays
     q32_t x = rand() % 0xffffffff;
     q32_t y = rand() % 0xffffffff;
-    q32_t z;
+    q32_t z = q32_one;
 
     // start trials
     unsigned long int i;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
+        z = q32_mul( x, z );
         z = q32_mul( x, y );
-        z = q32_mul( x, y );
-        z = q32_mul( x, y );
-        z = q32_mul( x, y );
+        z = q32_mul( y, z );
+        z = q32_mul( z, y );
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
@@ -89,16 +89,16 @@ void benchmark_float_mul(struct rusage *_start,
     // initialize arrays
     float x = randf();
     float y = randf();
-    float z;
+    float z = 1.0f;
 
     // start trials
     unsigned long int i;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
+        z = x * z;
         z = x * y;
-        z = x * y;
-        z = x * y;
-        z = x * y;
+        z = y * z;
+        z = z * y;
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
