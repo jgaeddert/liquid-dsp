@@ -1,4 +1,3 @@
-/
 // This example demonstrates how the use the nco/pll object
 // (numerically-controlled oscillator with phase-locked loop) interface for
 // tracking to a complex sinusoid.  The loop bandwidth, phase offset, and
