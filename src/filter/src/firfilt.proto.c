@@ -278,11 +278,12 @@ FIRFILT() FIRFILT(_create_notch)(unsigned int _m,
     unsigned int  i;
     unsigned int  h_len = 2*_m+1;   // filter length
     float         hf[h_len];        // prototype filter with float coefficients
-    float complex h [h_len];        // output filter with type-specific coefficients
 #if TC_COMPLEX
     // design notch filter as DC blocker, then mix to appropriate frequency
     if (liquid_firdes_notch(_m, 0, _as, hf) != LIQUID_OK)
         return liquid_error_config("firfilt_%s_create_notch(), invalid config",EXTENSION_FULL);
+    // output filter with type-specific coefficients
+    float complex h [h_len];
     for (i=0; i<h_len; i++) {
         float phi = 2.0f * M_PI * _f0 * ((float)i - (float)_m);
         h[i] = cexpf(_Complex_I*phi) * hf[i];
@@ -291,8 +292,6 @@ FIRFILT() FIRFILT(_create_notch)(unsigned int _m,
     // design notch filter for real-valued coefficients directly
     if (liquid_firdes_notch(_m, _f0, _as, hf) != LIQUID_OK)
         return liquid_error_config("firfilt_%s_create_notch(), invalid config",EXTENSION_FULL);
-    for (i=0; i<h_len; i++)
-        h[i] = hf[i];
 #endif
 
     // copy coefficients to type-specific array
@@ -302,8 +301,10 @@ FIRFILT() FIRFILT(_create_notch)(unsigned int _m,
         hc[i] = CQ(_float_to_fixed)( h[i] );
 #elif defined LIQUID_FIXED && TC_COMPLEX == 0
         hc[i] = Q(_float_to_fixed)( hf[i] );
-#else
+#elif TC_COMPLEX == 1
         hc[i] = h[i];
+#else
+        hc[i] = hf[i];
 #endif
     }
 
