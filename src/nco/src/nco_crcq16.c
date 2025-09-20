@@ -280,7 +280,7 @@ int nco_crcq16_pll_set_bandwidth(nco_crcq16 _q,
 {
     // validate input
     if (_b < 0.0f) {
-        return liquid_error_config("nco_%s_set_bandwidth(), bandwidth must be positive", EXTENSION);
+        return liquid_error(LIQUID_EICONFIG, "nco_%s_set_bandwidth(), bandwidth must be positive", EXTENSION);
     }
 
     _q->bandwidth = _b;
