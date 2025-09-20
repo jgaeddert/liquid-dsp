@@ -110,8 +110,8 @@ set(EXAMPLES
     modem_example
     modem_pi4dqpsk_example
     modem_soft_example
-    modemcq_example
-    modemcq_soft_example
+    modemcq16_example
+    modemcq16_soft_example
     modular_arithmetic_example
     msequence_autocorr_example
     msequence_example
