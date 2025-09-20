@@ -1,15 +1,7 @@
-//
-// nco_crcq16_pll_modem_example.c
-//
 // This example demonstrates how the nco/pll object (numerically-controlled
 // oscillator with phase-locked loop) can be used for carrier frequency
 // recovery in digital modems.  The modem type, SNR, and other parameters are
 // specified via the command-line interface.
-//
-// SEE ALSO: nco_example.c
-//           nco_pll_example.c
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -85,7 +77,7 @@ int main(int argc, char*argv[]) {
     // initialize objects
     nco_crcq16_set_phase(nco_tx,         q16_angle_float_to_fixed(phase_offset) );
     nco_crcq16_set_frequency(nco_tx,     q16_angle_float_to_fixed(frequency_offset));
-    nco_crcq16_pll_set_bandwidth(nco_rx, q16_float_to_fixed(pll_bandwidth));
+    nco_crcq16_pll_set_bandwidth(nco_rx, pll_bandwidth);
 
     float nstd = powf(10.0f, -SNRdB/20.0f);
 

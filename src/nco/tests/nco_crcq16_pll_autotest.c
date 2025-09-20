@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ void nco_crcq16_pll_test(int          _type,
     // initialize objects
     nco_crcq16_set_phase(nco_tx,         q16_angle_float_to_fixed(_phase_offset) );
     nco_crcq16_set_frequency(nco_tx,     q16_angle_float_to_fixed(_freq_offset) );
-    nco_crcq16_pll_set_bandwidth(nco_rx, q16_float_to_fixed(_pll_bandwidth) );
+    nco_crcq16_pll_set_bandwidth(nco_rx, _pll_bandwidth);
 
     // run loop
     unsigned int i;
