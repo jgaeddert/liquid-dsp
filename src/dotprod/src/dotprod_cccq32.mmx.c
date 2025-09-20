@@ -197,7 +197,7 @@ dotprod_cccq32 dotprod_cccq32_copy(dotprod_cccq32 q_orig)
     q_copy->n = q_orig->n;
 
     // allocate memory for coefficients, 32-byte aligned (repeated)
-    q_copy->h = (q32_t*) _mm_malloc( q_copy->n*sizeof(cq32_t), 32 );
+    q_copy->h = (cq32_t*) _mm_malloc( q_copy->n*sizeof(cq32_t), 32 );
 
     // copy coefficients array
     memmove(q_copy->h, q_orig->h, 2*q_orig->n*sizeof(cq32_t));
