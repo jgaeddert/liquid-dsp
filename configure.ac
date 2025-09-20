@@ -185,7 +185,14 @@ else
             MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx512f.o \
                            src/dotprod/src/dotprod_crcf.avx512f.o \
                            src/dotprod/src/dotprod_rrrf.avx512f.o \
-                           src/dotprod/src/sumsq.avx512f.o"
+                           src/dotprod/src/sumsq.avx512f.o \
+                           src/dotprod/src/dotprod_cccq16.mmx.o \
+                           src/dotprod/src/dotprod_crcq16.mmx.o \
+                           src/dotprod/src/dotprod_rrrq16.mmx.o \
+                           src/dotprod/src/dotprod_cccq32.mmx.o \
+                           src/dotprod/src/dotprod_crcq32.mmx.o \
+                           src/dotprod/src/dotprod_rrrq32.mmx.o \
+                           src/dotprod/src/sumsqq16.o"
             MLIBS_VECTOR="src/vector/src/vectorf.port.o \
                           src/vector/src/vectorcf.port.o"
             ARCH_OPTION='-mavx512f'
@@ -194,7 +201,14 @@ else
             MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx.o \
                            src/dotprod/src/dotprod_crcf.avx.o \
                            src/dotprod/src/dotprod_rrrf.avx.o \
-                           src/dotprod/src/sumsq.avx.o"
+                           src/dotprod/src/sumsq.avx.o \
+                           src/dotprod/src/dotprod_cccq16.mmx.o \
+                           src/dotprod/src/dotprod_crcq16.mmx.o \
+                           src/dotprod/src/dotprod_rrrq16.mmx.o \
+                           src/dotprod/src/dotprod_cccq32.mmx.o \
+                           src/dotprod/src/dotprod_crcq32.mmx.o \
+                           src/dotprod/src/dotprod_rrrq32.mmx.o \
+                           src/dotprod/src/sumsqq16.o"
             MLIBS_VECTOR="src/vector/src/vectorf.port.o \
                           src/vector/src/vectorcf.port.o"
             ARCH_OPTION='-mavx2'
@@ -203,7 +217,14 @@ else
             MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx.o \
                            src/dotprod/src/dotprod_crcf.avx.o \
                            src/dotprod/src/dotprod_rrrf.avx.o \
-                           src/dotprod/src/sumsq.avx.o"
+                           src/dotprod/src/sumsq.avx.o \
+                           src/dotprod/src/dotprod_cccq16.mmx.o \
+                           src/dotprod/src/dotprod_crcq16.mmx.o \
+                           src/dotprod/src/dotprod_rrrq16.mmx.o \
+                           src/dotprod/src/dotprod_cccq32.mmx.o \
+                           src/dotprod/src/dotprod_crcq32.mmx.o \
+                           src/dotprod/src/dotprod_rrrq32.mmx.o \
+                           src/dotprod/src/sumsqq16.o"
             MLIBS_VECTOR="src/vector/src/vectorf.port.o \
                           src/vector/src/vectorcf.port.o"
             ARCH_OPTION='-mavx'
