@@ -155,7 +155,7 @@ const char *        liquid_error_info(liquid_error_code _code);
 #define LIQUID_CONCAT(prefix, name) prefix ## name
 #define LIQUID_VALIDATE_INPUT
 
-#include <liquidfpm.h>
+#include <liquid/liquidfpm.h>
 
 /* 
  * Compile-time complex data type definitions

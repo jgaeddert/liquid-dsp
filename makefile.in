@@ -55,7 +55,7 @@ exec_prefix	:= @exec_prefix@
 VPATH		:= @srcdir@
 srcdir		:= @srcdir@
 libdir		:= @libdir@
-include_dirs	:= . ./include
+include_dirs	:= . ./include ./include/liquid
 
 # programs
 CC		:= @CC@
@@ -82,7 +82,7 @@ PATHSEP		= /
 # 
 # liquid headers
 #
-headers_install	:= liquid.h liquidfpm.h
+headers_install	:= liquid.h liquid/liquidfpm.h
 headers		:= $(headers_install) liquid.internal.h
 include_headers	:= $(addprefix include/,$(headers))
 
@@ -684,7 +684,7 @@ filter_benchmarks :=						\
 #
 
 # define specific headers for building fixed-point math objects
-fpm_headers	:= $(include_headers) include/liquidfpm.h include/liquidfpm.internal.h
+fpm_headers	:= $(include_headers) include/liquid/liquidfpm.h include/liquidfpm.internal.h
 
 # type conversion scripts
 scripts/q16_float_to_fixed : % : %.c

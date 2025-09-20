@@ -23,7 +23,7 @@
 #ifndef __LIQUID_FPM_INTERNAL_H__
 #define __LIQUID_FPM_INTERNAL_H__
 
-#include "liquidfpm.h"
+#include "liquid/liquidfpm.h"
 //#include "config.h"
 
 /* Internal API definition macro

@@ -76,7 +76,7 @@ configure_file(cmake/config.h.cmake config.h)
 #configure_file(cmake/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 
 #target_include_directories(test PRIVATE include)
-include_directories(include .)
+include_directories(. include include/liquid)
 
 # ---------------------------------------- main sources ----------------------------------------
 
@@ -460,7 +460,7 @@ add_library(${LIBNAME} SHARED
 # https://alexreinking.com/blog/building-a-dual-shared-and-static-library-with-cmake.html
 
 target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
-#target_sources(${LIBNAME} PUBLIC FILE_SET HEADERS FILES include/liquid.h include/liquidfpm.h)
+#target_sources(${LIBNAME} PUBLIC FILE_SET HEADERS FILES include/liquid.h include/liquid/liquidfpm.h)
 
 if(COVERAGE)
     target_compile_options(agc          PRIVATE -coverage -O0 -g)
@@ -514,7 +514,7 @@ install(TARGETS
           #COMPONENT Development
         )
 
-install(FILES include/liquid.h include/liquidfpm.h DESTINATION include/liquid)
+install(FILES include/liquid.h include/liquid/liquidfpm.h DESTINATION include/liquid)
 
 # ---------------------------------------- examples ----------------------------------------
 
