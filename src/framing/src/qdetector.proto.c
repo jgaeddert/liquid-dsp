@@ -289,6 +289,13 @@ QDETECTOR() QDETECTOR(_copy)(QDETECTOR() q_orig)
     // buffer power magnitude
     q_copy->x2_sum_0        = q_orig->x2_sum_0;
     q_copy->x2_sum_1        = q_orig->x2_sum_1;
+    // estimation values
+    q_copy->rxy             = q_orig->rxy;
+    q_copy->offset          = q_orig->offset;
+    q_copy->tau_hat         = q_orig->tau_hat;
+    q_copy->gamma_hat       = q_orig->gamma_hat;
+    q_copy->dphi_hat        = q_orig->dphi_hat;
+    q_copy->phi_hat         = q_orig->phi_hat;
     // state variables
     q_copy->state           = q_orig->state;
     q_copy->frame_detected  = q_orig->frame_detected;
