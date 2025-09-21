@@ -149,7 +149,7 @@ typedef T  Q(_t);                                                   \
 typedef TA Q(_at);                                                  \
                                                                     \
 /* constants */                                                     \
-const static float Q(_angle_scalarf) =                              \
+static const float Q(_angle_scalarf) =                              \
     (3.14159265358979/(float)(1<<(INTBITS-2)));                     \
                                                                     \
 /* conversion */                                                    \
