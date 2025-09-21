@@ -251,9 +251,9 @@ extern const Q(_t) Q(_SQRT1_2);     /* 1/sqrt(2)        */          \
 typedef struct {Q(_t) real; Q(_t) imag;} CQ(_t);                    \
                                                                     \
 /* constants */                                                     \
-const static CQ(_t) CQ(_zero) = {Q(_zero), Q(_zero)}; /* 0 + j0 */  \
-const static CQ(_t) CQ(_one)  = {Q(_one),  Q(_zero)}; /* 1 + j0 */  \
-const static CQ(_t) CQ(_I)    = {Q(_zero), Q(_one)};  /* 0 + j1 */  \
+static const CQ(_t) CQ(_zero) = {Q(_zero), Q(_zero)}; /* 0 + j0 */  \
+static const CQ(_t) CQ(_one)  = {Q(_one),  Q(_zero)}; /* 1 + j0 */  \
+static const CQ(_t) CQ(_I)    = {Q(_zero), Q(_one)};  /* 0 + j1 */  \
                                                                     \
 /* conversion */                                                    \
 liquidfpm_float_complex CQ(_fixed_to_float)(CQ(_t) _x);             \
