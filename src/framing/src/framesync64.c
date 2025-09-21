@@ -124,7 +124,8 @@ framesync64 framesync64_create(framesync_callback _callback,
     q->num_files_exported = 0;
     framesync64_set_prefix(q, "framesync64");
 
-    framesync64_set_threshold(q, 0.1f);
+    // set threshold to substantially reduce number of false alarms (0.02%)
+    framesync64_set_threshold(q, 0.32f);
     framesync64_set_range(q, 0.003f);
 
     // reset state and return
