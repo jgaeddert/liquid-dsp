@@ -279,7 +279,7 @@ float fskdem_get_symbol_energy(fskdem       _q,
     // compute energy around FFT bin
     float complex v = _q->buf_freq[index];
     float energy = crealf(v)*crealf(v) + cimagf(v)*cimagf(v);
-    int i;
+    unsigned int i;
     for (i=0; i<_range; i++) {
         // positive negative indices
         unsigned int i0 = (index         + i) % _q->K;

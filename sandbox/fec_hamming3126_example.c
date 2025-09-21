@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -173,7 +173,7 @@ unsigned int fec_hamming_encode_symbol(unsigned int _sym_dec)
 unsigned int fec_hamming_decode_symbol(unsigned int _sym_enc)
 {
     // validate input
-    if (_sym_enc >= (1<<31)) {
+    if (_sym_enc >= (1U<<31)) {
         fprintf(stderr,"error, fec_hamming_decode(), input symbol too large\n");
         exit(1);
     }

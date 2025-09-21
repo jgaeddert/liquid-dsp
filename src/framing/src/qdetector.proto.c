@@ -425,8 +425,8 @@ int QDETECTOR(_set_range_index)(QDETECTOR() _q,
         _index_max = 0;
 
     // silently cap positive values
-    if (_index_max > _q->nfft)
-        _index_max = _q->nfft;
+    if (_index_max > (int) _q->nfft)
+        _index_max = (int) _q->nfft;
 
     // set internal search range
     _q->range    = _index_max;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -234,7 +234,7 @@ int liquid_poly_findroots_bairstow_recursion(double *     _p,
     b[n] = b[n-1] = 0;
     f[n] = f[n-1] = 0;
 
-    int i;
+    unsigned int i;
     unsigned int num_iterations = 0;  // current iteration count
     int          rc             = 0;  //
     while (1) {
