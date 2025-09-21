@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,32 +30,32 @@
 #define CQ(name)    LIQUIDFPM_CONCAT(cq16,name)
 
 // source files
-#include "qtype_arithmetic.port.c"
-#include "qtype_conversion.c"
-#include "qtype_inv_newton.c"
-#include "qtype_log2_frac.c"
-#include "qtype_exp2_frac.c"
-#include "qtype_log2_shiftadd.c"
-#include "qtype_exp2_shiftadd.c"
-#include "qtype_atan_frac.c"
-#include "qtype_atan_cordic.c"
-#include "qtype_sincos_cordic.c"
-#include "qtype_sincos_tab.c"
-#include "qtype_sinhcosh_cordic.c"
-#include "qtype_hyperbolic_shiftadd.c"
-#include "qtype_sqrt.c"
-#include "qtype_cbrt.c"
+#include "qtype_arithmetic.port.proto.c"
+#include "qtype_conversion.proto.c"
+#include "qtype_inv_newton.proto.c"
+#include "qtype_log2_frac.proto.c"
+#include "qtype_exp2_frac.proto.c"
+#include "qtype_log2_shiftadd.proto.c"
+#include "qtype_exp2_shiftadd.proto.c"
+#include "qtype_atan_frac.proto.c"
+#include "qtype_atan_cordic.proto.c"
+#include "qtype_sincos_cordic.proto.c"
+#include "qtype_sincos_tab.proto.c"
+#include "qtype_sinhcosh_cordic.proto.c"
+#include "qtype_hyperbolic_shiftadd.proto.c"
+#include "qtype_sqrt.proto.c"
+#include "qtype_cbrt.proto.c"
 
 // specific type definitions (e.g. use cordic)
-#include "qtype_trig.c"
-#include "qtype_hyperbolic.c"
-#include "qtype_logexp.c"
-#include "qtype_power.c"
-#include "qtype_erf.c"
-#include "qtype_gamma.c"
+#include "qtype_trig.proto.c"
+#include "qtype_hyperbolic.proto.c"
+#include "qtype_logexp.proto.c"
+#include "qtype_power.proto.c"
+#include "qtype_erf.proto.c"
+#include "qtype_gamma.proto.c"
 
 // complex
-#include "cqtype_arithmetic.c"
-#include "cqtype_conversion.c"
-#include "cqtype_logexp_cordic.c"
-#include "cqtype_trig_cordic.c"
+#include "cqtype_arithmetic.proto.c"
+#include "cqtype_conversion.proto.c"
+#include "cqtype_logexp_cordic.proto.c"
+#include "cqtype_trig_cordic.proto.c"

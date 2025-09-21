@@ -718,31 +718,31 @@ fpm_objects :=							\
 
 # files included by macro sources
 fpm_includes :=							\
-	src/fpm/src/cqtype_arithmetic.c				\
-	src/fpm/src/cqtype_conversion.c				\
-	src/fpm/src/cqtype_trig_cordic.c			\
-	src/fpm/src/cqtype_logexp_cordic.c			\
-	src/fpm/src/qtype_arithmetic.port.c			\
-	src/fpm/src/qtype_conversion.c				\
-	src/fpm/src/qtype_inv_newton.c				\
-	src/fpm/src/qtype_log2_frac.c				\
-	src/fpm/src/qtype_exp2_frac.c				\
-	src/fpm/src/qtype_log2_shiftadd.c			\
-	src/fpm/src/qtype_exp2_shiftadd.c			\
-	src/fpm/src/qtype_atan_frac.c				\
-	src/fpm/src/qtype_atan_cordic.c				\
-	src/fpm/src/qtype_sincos_cordic.c			\
-	src/fpm/src/qtype_sincos_tab.c				\
-	src/fpm/src/qtype_sinhcosh_cordic.c			\
-	src/fpm/src/qtype_hyperbolic_shiftadd.c			\
-	src/fpm/src/qtype_sqrt.c				\
-	src/fpm/src/qtype_cbrt.c				\
-	src/fpm/src/qtype_gamma.c				\
-	src/fpm/src/qtype_erf.c					\
-	src/fpm/src/qtype_trig.c				\
-	src/fpm/src/qtype_hyperbolic.c				\
-	src/fpm/src/qtype_logexp.c				\
-	src/fpm/src/qtype_power.c				\
+	src/fpm/src/cqtype_arithmetic.proto.c			\
+	src/fpm/src/cqtype_conversion.proto.c			\
+	src/fpm/src/cqtype_trig_cordic.proto.c			\
+	src/fpm/src/cqtype_logexp_cordic.proto.c		\
+	src/fpm/src/qtype_arithmetic.port.proto.c		\
+	src/fpm/src/qtype_conversion.proto.c			\
+	src/fpm/src/qtype_inv_newton.proto.c			\
+	src/fpm/src/qtype_log2_frac.proto.c			\
+	src/fpm/src/qtype_exp2_frac.proto.c			\
+	src/fpm/src/qtype_log2_shiftadd.proto.c			\
+	src/fpm/src/qtype_exp2_shiftadd.proto.c			\
+	src/fpm/src/qtype_atan_frac.proto.c			\
+	src/fpm/src/qtype_atan_cordic.proto.c			\
+	src/fpm/src/qtype_sincos_cordic.proto.c			\
+	src/fpm/src/qtype_sincos_tab.proto.c			\
+	src/fpm/src/qtype_sinhcosh_cordic.proto.c		\
+	src/fpm/src/qtype_hyperbolic_shiftadd.proto.c		\
+	src/fpm/src/qtype_sqrt.proto.c				\
+	src/fpm/src/qtype_cbrt.proto.c				\
+	src/fpm/src/qtype_gamma.proto.c				\
+	src/fpm/src/qtype_erf.proto.c				\
+	src/fpm/src/qtype_trig.proto.c				\
+	src/fpm/src/qtype_hyperbolic.proto.c			\
+	src/fpm/src/qtype_logexp.proto.c			\
+	src/fpm/src/qtype_power.proto.c				\
 
 src/fpm/src/q16.o : %.o : %.c $(fpm_headers) $(fpm_includes)
 
