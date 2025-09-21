@@ -30,6 +30,7 @@
     "flags":
     [
         "-I.",
+        "-I./include/liquid",
         "-Wno-deprecated-declarations"
     ],
     "srcFilter":
@@ -39,10 +40,11 @@
         "-<.git/>",
         "-<*/src/*.proto.c>",
         "-<*/src/*.av.c>",
-        "-<*/src/*.neon.c>",
-        "-<*/src/*.sse.c>",
         "-<*/src/*.avx.c>",
         "-<*/src/*.avx512f.c>",
+        "-<*/src/*.mmx.c>",
+        "-<*/src/*.neon.c>",
+        "-<*/src/*.sse.c>",
         "-<*/src/*.x86.s>"
     ]
   },
