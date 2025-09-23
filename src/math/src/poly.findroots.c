@@ -234,7 +234,7 @@ int liquid_poly_findroots_bairstow_recursion(double *     _p,
     b[n] = b[n-1] = 0;
     f[n] = f[n-1] = 0;
 
-    unsigned int i;
+    int i;
     unsigned int num_iterations = 0;  // current iteration count
     int          rc             = 0;  //
     while (1) {
@@ -247,7 +247,7 @@ int liquid_poly_findroots_bairstow_recursion(double *     _p,
         num_iterations++;
 
         // update reduced polynomial coefficients
-        for (i=n-2; i>=0; i--) {
+        for (i=(int)n-2; i>=0; i--) {
             b[i] = _p[i+2] - u*b[i+1] - v*b[i+2];
             f[i] =  b[i+2] - u*f[i+1] - v*f[i+2];
         }
