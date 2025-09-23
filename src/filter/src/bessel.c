@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,7 +75,7 @@ int bessel_azpkf(unsigned int    _n,
     // compute poles (roots to Bessel polynomial)
     if (fpoly_bessel_roots(_n+1,_tmp_pa) != LIQUID_OK)
         return liquid_error(LIQUID_EICONFIG,"bessel_azpkf(), invalid configuration");
-    for (int i = 0; i < _n; i++)
+    for (unsigned int i = 0U; i < _n; i++)
         _pa[i] = _tmp_pa[i];
 
     // analog Bessel filter prototype has no zeros

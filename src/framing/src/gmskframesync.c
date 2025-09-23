@@ -465,7 +465,7 @@ int gmskframesync_update_symsync(gmskframesync _q,
             // adjust pfb output timer
             _q->pfb_timer--;
         }
-        while (_q->pfb_index > _q->npfb-1) {
+        while (_q->pfb_index > (int)_q->npfb-1) {
             _q->pfb_index -= _q->npfb;
             _q->pfb_soft  -= _q->npfb;
 
