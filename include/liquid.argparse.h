@@ -134,7 +134,7 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
     //printf("appending type: %s\n", _type);
     if (strcmp(_type,"int")==0)
         _q->args[_q->num_args].type = TYPE_INT;
-    else if (strcmp(_type,"unsigned int")==0)
+    else if (strcmp(_type,"unsigned int")==0 || strcmp(_type,"unsigned")==0)
         _q->args[_q->num_args].type = TYPE_UINT;
     else if (strcmp(_type,"float")==0)
         _q->args[_q->num_args].type = TYPE_FLOAT;
@@ -142,12 +142,9 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
         _q->args[_q->num_args].type = TYPE_DOUBLE;
     else if (strcmp(_type,"char")==0)
         _q->args[_q->num_args].type = TYPE_CHAR;
-    else if (strcmp(_type,"char*")==0 ||
-             strcmp(_type,"char *")==0 ||
-             strcmp(_type,"char[]")==0)
-    {
+    else if (strcmp(_type,"char*")==0 || strcmp(_type,"char *")==0 || strcmp(_type,"char[]")==0)
         _q->args[_q->num_args].type = TYPE_STRING;
-    } else {
+    else {
         _q->args[_q->num_args].type = TYPE_CUSTOM;
         if (_callback == NULL) {
             fprintf(stderr,"liquid_argparse_append('%s'), callback required to handle non-standard type '%s'\n",
