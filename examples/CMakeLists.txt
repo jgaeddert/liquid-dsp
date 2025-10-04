@@ -103,6 +103,7 @@ set(EXAMPLES
     kbd_window_example
     lpc_example
     libliquid_example
+    liquid_argparse_example
     matched_filter_example
     math_lngamma_example
     math_primitive_root_example
