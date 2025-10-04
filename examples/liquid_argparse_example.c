@@ -34,6 +34,8 @@ int main(int argc, char*argv[])
 
     // print values
     printf("verbose = %d\n", verbose);
+    printf("sample rate = %f\n", sample_rate);
+    printf("custom = %d\n", custom);
 
     return 0;
 }
