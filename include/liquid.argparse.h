@@ -150,6 +150,7 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
         if (_callback == NULL) {
             fprintf(stderr,"liquid_argparse_append('%s'), callback required to handle non-standard type '%s'\n",
                 _varname, _type);
+            fprintf(stderr,"  supported types: unsigned int, unsigned, int, float, double, char, char*\n");
             return -1;
         }
     }
