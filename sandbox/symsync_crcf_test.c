@@ -189,7 +189,7 @@ int main(int argc, char*argv[]) {
                 pfb_soft  += npfb;
                 pfb_timer--;
             }
-            while (pfb_index > npfb-1) {
+            while (pfb_index > (int)npfb-1) {
                 pfb_index -= npfb;
                 pfb_soft  -= npfb;
                 pfb_timer++;

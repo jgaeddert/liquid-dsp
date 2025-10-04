@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,9 +62,9 @@ void msequence_test_autocorrelation(unsigned int _m)
     CONTEND_EQUALITY( bsequence_get_length(bs2), n )
 
     // when sequences are aligned, autocorrelation is equal to length
-    signed int rxy;
+    int rxy;
     rxy = bsequence_correlate(bs1, bs2);
-    CONTEND_EQUALITY( rxy, n )
+    CONTEND_EQUALITY( rxy, (int)n )
 
     // when sequences are misaligned, autocorrelation is equal to -1
     unsigned int i;

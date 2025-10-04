@@ -1,9 +1,4 @@
-//
-// interleaver_scatterplot_example.c
-// 
 // generate interleaver scatterplot figure
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -90,7 +85,7 @@ int main(int argc, char*argv[]) {
     // print header
     fprintf(fid,"%% %s : auto-generated file (do not edit)\n", OUTPUT_FILENAME);
     fprintf(fid,"%% invoked as :");
-    for (i=0; i<argc; i++)
+    for (i=0; i<(unsigned int)argc; i++)
         fprintf(fid," %s",argv[i]);
     fprintf(fid,"\n");
     fprintf(fid,"clear all\n");

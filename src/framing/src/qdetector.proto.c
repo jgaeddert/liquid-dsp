@@ -114,22 +114,17 @@ QDETECTOR() QDETECTOR(_create)(TI *         _s,
     FFT_EXECUTE(q->fft);
     memmove(q->S, q->buf_freq_0, q->nfft*sizeof(TI));
 
-    // reset state variables
-    q->counter        = q->nfft/2;
-    q->num_transforms = 0;
-    q->x2_sum_0       = 0.0f;
-    q->x2_sum_1       = 0.0f;
-    q->state          = QDETECTOR_STATE_SEEK;
-    q->frame_detected = 0;
-    memset(q->buf_time_0, 0x00, q->nfft*sizeof(TI));
-    
-    // reset estimates
+    // clear estimates
     q->rxy       = 0.0f;
     q->tau_hat   = 0.0f;
     q->gamma_hat = 0.0f;
     q->dphi_hat  = 0.0f;
     q->phi_hat   = 0.0f;
 
+    // reset state variables
+    QDETECTOR(_reset)(q);
+
+    // set default threshold and range values
     QDETECTOR(_set_threshold)(q,0.5f);
     QDETECTOR(_set_range    )(q,0.3f); // set initial range for higher detection
 
@@ -294,6 +289,13 @@ QDETECTOR() QDETECTOR(_copy)(QDETECTOR() q_orig)
     // buffer power magnitude
     q_copy->x2_sum_0        = q_orig->x2_sum_0;
     q_copy->x2_sum_1        = q_orig->x2_sum_1;
+    // estimation values
+    q_copy->rxy             = q_orig->rxy;
+    q_copy->offset          = q_orig->offset;
+    q_copy->tau_hat         = q_orig->tau_hat;
+    q_copy->gamma_hat       = q_orig->gamma_hat;
+    q_copy->dphi_hat        = q_orig->dphi_hat;
+    q_copy->phi_hat         = q_orig->phi_hat;
     // state variables
     q_copy->state           = q_orig->state;
     q_copy->frame_detected  = q_orig->frame_detected;
@@ -336,6 +338,15 @@ int QDETECTOR(_print)(QDETECTOR() _q)
 
 int QDETECTOR(_reset)(QDETECTOR() _q)
 {
+    // reset state variables
+    _q->counter        = _q->nfft/2;
+    _q->num_transforms = 0;
+    _q->x2_sum_0       = 0.0f;
+    _q->x2_sum_1       = 0.0f;
+    _q->state          = QDETECTOR_STATE_SEEK;
+    _q->frame_detected = 0;
+    memset(_q->buf_time_0, 0x00, _q->nfft*sizeof(TI));
+
     return LIQUID_OK;
 }
 
@@ -414,8 +425,8 @@ int QDETECTOR(_set_range_index)(QDETECTOR() _q,
         _index_max = 0;
 
     // silently cap positive values
-    if (_index_max > _q->nfft)
-        _index_max = _q->nfft;
+    if (_index_max > (int) _q->nfft)
+        _index_max = (int) _q->nfft;
 
     // set internal search range
     _q->range    = _index_max;
@@ -496,11 +507,18 @@ int QDETECTOR(_execute_seek)(QDETECTOR() _q, TI _x)
 
     // compute scaling factor (TODO: use median rather than mean signal level)
     float g0;
+#if 0
     if (_q->x2_sum_0 == 0.f) {
         g0 = sqrtf(_q->x2_sum_1) * sqrtf((float)(_q->s_len) / (float)(_q->nfft / 2));
     } else {
         g0 = sqrtf(_q->x2_sum_0 + _q->x2_sum_1) * sqrtf((float)(_q->s_len) / (float)(_q->nfft));
     }
+    //printf("x2: {%12.6f, %12.6f}: g0=%12.6f\n", _q->x2_sum_0, _q->x2_sum_1, g0);
+#else
+    float x2_prime = _q->x2_sum_0 > _q->x2_sum_1 ? _q->x2_sum_0 : _q->x2_sum_1;
+    g0 = sqrtf(x2_prime) * sqrtf((float)(_q->s_len) / (float)(_q->nfft / 2));
+    //printf("x2: {%12.6f, %12.6f} (%12.6f): g0=%12.6f\n", _q->x2_sum_0, _q->x2_sum_1, x2_prime, g0);
+#endif
     if (g0 < 1e-10) {
         memmove(_q->buf_time_0,
                 _q->buf_time_0 + _q->nfft / 2,
