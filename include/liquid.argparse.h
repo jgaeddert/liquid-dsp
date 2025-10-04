@@ -51,7 +51,7 @@ struct liquid_arg_s
     const char * help;
 
     // custom function for setting value
-    int (*callback)(char * optarg, void * ref);
+    int (*callback)(const char * optarg, void * ref);
 };
 
 // print help for argument
@@ -70,6 +70,26 @@ void liquid_arg_print(struct liquid_arg_s * _arg)
     printf(">] %s\n", _arg->help);
 }
 
+// set value from input string
+int liquid_arg_set(struct liquid_arg_s * _arg, const char * _optarg)
+{
+    if (_arg->callback != NULL)
+        return _arg->callback(_optarg, _arg->ref);
+
+    switch (_arg->type) {
+    case TYPE_INT:      *(int*)(_arg->ref) = atoi(_optarg);    break;
+    case TYPE_UINT:     *(unsigned*)(_arg->ref) = atoi(_optarg); break;
+    case TYPE_FLOAT:    *(float*)(_arg->ref) = atof(_optarg); break;
+    case TYPE_CHAR:     *(char*)(_arg->ref) = _optarg[0]; break;
+    case TYPE_STRING:
+    default:
+        fprintf(stderr,"liquid_argparse_set('%s'), could not set from input '%s'\n",
+            _arg->varname, _optarg);
+        return -1;
+    }
+    return 0;
+}
+
 #define LIQUID_ARGPARSE_MAX_ARGS (64)
 struct liquid_argparse_s
 {
@@ -77,7 +97,7 @@ struct liquid_argparse_s
     const char * docstr;
     struct liquid_arg_s args[LIQUID_ARGPARSE_MAX_ARGS];
     int num_args;
-    char optstr[200];
+    char optstr[2*LIQUID_ARGPARSE_MAX_ARGS+1];
 };
 
 int liquid_argparse_append(struct liquid_argparse_s * _q,
@@ -126,8 +146,30 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
     _q->args[_q->num_args].opt      = _opt;
     _q->args[_q->num_args].help     = _help;
     _q->args[_q->num_args].callback = _callback;
+
+    // extend optarg string
+    int n = strlen(_q->optstr);
+    _q->optstr[n++] = _opt;
+    _q->optstr[n++] = ':';
+    _q->optstr[n++] = '\0';
+
     _q->num_args++;
     return 0;
+}
+
+int liquid_argparse_set(struct liquid_argparse_s * _q,
+                        char _dopt,
+                        const char * _optarg)
+{
+    // find and set element
+    int i;
+    for (i=0; i<_q->num_args; i++) {
+        if (_q->args[i].opt == _dopt)
+            return liquid_arg_set(_q->args + i, _optarg);
+    }
+
+    fprintf(stderr,"invalid option '%c'\n", _dopt);
+    return -1;
 }
 
 //
@@ -157,14 +199,11 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
             /* TODO: wrap docstring across multiple lines */                    \
             printf("%s - %s\n", argv[0], __parser.docstr);                      \
             printf(" [-h print this help file]\n");                             \
-            for (__i=0; __i<__parser.num_args; __i++) {                         \
+            for (__i=0; __i<__parser.num_args; __i++)                           \
                 liquid_arg_print(__parser.args + __i);                          \
-            }                                                                   \
             break;                                                              \
         default:                                                                \
-            /* TODO: iterate over elements in parser */                         \
-            fprintf(stderr,"invalid option: %c", (char)__dopt);                 \
-            exit(1);                                                            \
+            liquid_argparse_set(&__parser, __dopt, optarg);                     \
         }                                                                       \
     }                                                                           \
 
