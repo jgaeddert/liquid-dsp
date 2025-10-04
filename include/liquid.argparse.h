@@ -33,6 +33,9 @@ extern "C" {
 #include <stdio.h>
 #include <string.h>
 
+// callback function pointer for custom type parsing
+typedef int (*liquid_argparse_callback)(const char * _optarg, void * _ref);
+
 // argument
 struct liquid_arg_s
 {
@@ -51,7 +54,7 @@ struct liquid_arg_s
     const char * help;
 
     // custom function for setting value
-    int (*callback)(const char * optarg, void * ref);
+    liquid_argparse_callback callback;
 };
 
 // print help for argument
@@ -106,13 +109,13 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
                            const char * _varname,
                            char         _opt,
                            const char * _help,
-                           void *       _callback)
+                           liquid_argparse_callback _callback)
 {
     // check if object is full
     if (_q->num_args >= LIQUID_ARGPARSE_MAX_ARGS) {
         fprintf(stderr,"liquid_argparse_append(), cannot create more than %u arguments\n",
             LIQUID_ARGPARSE_MAX_ARGS);
-        exit(-1);
+        return -1;
     }
 
     // check for duplicate entries
@@ -121,7 +124,7 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
         if (_q->args[i].opt == _opt) {
             fprintf(stderr,"liquid_argparse_append('%s'), duplicate key '%c' already exists with variable '%s'\n",
                 _varname, _q->args[i].opt, _q->args[i].varname);
-            exit(-1);
+            return -1;
         }
     }
 
@@ -138,6 +141,11 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
         _q->args[_q->num_args].type = TYPE_STRING;
     else {
         _q->args[_q->num_args].type = TYPE_CUSTOM;
+        if (_callback == NULL) {
+            fprintf(stderr,"liquid_argparse_append('%s'), callback required to handle non-standard type '%s'\n",
+                _varname, _type);
+            return -1;
+        }
     }
 
     // add remaining elements
@@ -183,14 +191,19 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
     __parser.num_args = 0;                                                      \
     sprintf(__parser.optstr,"h");                                               \
 
-// add...
+// add option to list of arguments
 #define liquid_argparse_add(TYPE, VAR, DEFAULT, KEY, HELP, FUNC)                \
     /* TODO: check for certain types like 'string' */                           \
     TYPE VAR = DEFAULT; /* define and declare variable */                       \
-    liquid_argparse_append(&__parser, #TYPE, (void*)&VAR, #VAR,                 \
-        KEY, HELP, FUNC);
+    if (liquid_argparse_append(&__parser, #TYPE, (void*)&VAR, #VAR,             \
+        KEY, HELP, FUNC))                                                       \
+    {                                                                           \
+        fprintf(stderr,"%s:%u: could not create argument\n",                    \
+            __FILE__,__LINE__);                                                 \
+        return -1;                                                              \
+    }                                                                           \
 
-// parse
+// parse input
 #define liquid_argparse_parse(argc,argv)                                        \
     int __dopt, __i;                                                            \
     while ((__dopt = getopt(argc,argv,__parser.optstr)) != EOF) {               \
@@ -203,7 +216,8 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
                 liquid_arg_print(__parser.args + __i);                          \
             break;                                                              \
         default:                                                                \
-            liquid_argparse_set(&__parser, __dopt, optarg);                     \
+            if (liquid_argparse_set(&__parser, __dopt, optarg))                 \
+                exit(-1);                                                       \
         }                                                                       \
     }                                                                           \
 
