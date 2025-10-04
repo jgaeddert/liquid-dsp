@@ -335,6 +335,8 @@ Here is a table of CMake options available for configuring liquid:
 +------------------------+---------+--------------------------------------------------------------------+
 | ``COVERAGE``           | OFF     | Set flags to enable code coverage testing                          |
 +------------------------+---------+--------------------------------------------------------------------+
+| ``PYTHON``             | OFF     | Set flags to enable building python bindings                       |
++------------------------+---------+--------------------------------------------------------------------+
 
 For example, if you want to benchmark how fast a vector dot product
 runs without SIMD extensions, you could run the following:

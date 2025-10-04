@@ -20,7 +20,7 @@ option(BUILD_SANDBOX    "Set to ON to build sandbox programs"   OFF)
 option(BUILD_DOC        "Set to ON to build documentation"      OFF)
 option(COVERAGE         "Set to ON to build with code coverage" OFF)
 #option(PROFILE        "Set to ON to build with profiling"     OFF)
-option(PYTHON           "Set to ON to build python bindings"   ON)
+option(PYTHON           "Set to ON to build python bindings"   OFF)
 
 if(COVERAGE)
     set(CMAKE_BUILD_TYPE "Debug")
@@ -897,7 +897,7 @@ include(CPack)
 # ---------------------------------------- python bindings ----------------------------------------
 
 if(PYTHON)
-    set(PYBIND11_NEWPYTHON ON)
+    set(PYBIND11_FINDPYTHON ON)
     find_package(pybind11 CONFIG REQUIRED)
 
     set(LIBNAME_PYTHON pyliquid)
