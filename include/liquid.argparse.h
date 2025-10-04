@@ -48,10 +48,10 @@ struct liquid_arg_s
         TYPE_STRING,
         TYPE_CUSTOM
     } type;
-    void * ref; // pointer to reference variable
-    const char * varname; // reference variable name
-    char   opt;
-    const char * help;
+    void *       ref;       // pointer to reference variable
+    const char * varname;   // reference variable name
+    char         opt;       // option character
+    const char * help;      // help string
 
     // custom function for setting value
     liquid_argparse_callback callback;
@@ -67,7 +67,7 @@ void liquid_arg_print(struct liquid_arg_s * _arg)
     case TYPE_UINT:     printf("%u", *(unsigned*)(_arg->ref)); break;
     case TYPE_FLOAT:    printf("%g", *(float*)(_arg->ref));    break;
     case TYPE_CHAR:     printf("%c", *(char*)(_arg->ref));     break;
-    case TYPE_STRING:   printf("%s", (char*)(_arg->ref));      break;
+    case TYPE_STRING:   printf("%s", *(char**)(_arg->ref));    break;
     default: printf("?");
     }
     printf(">] %s\n", _arg->help);
@@ -80,11 +80,11 @@ int liquid_arg_set(struct liquid_arg_s * _arg, const char * _optarg)
         return _arg->callback(_optarg, _arg->ref);
 
     switch (_arg->type) {
-    case TYPE_INT:      *(int*)(_arg->ref) = atoi(_optarg);    break;
-    case TYPE_UINT:     *(unsigned*)(_arg->ref) = atoi(_optarg); break;
-    case TYPE_FLOAT:    *(float*)(_arg->ref) = atof(_optarg); break;
-    case TYPE_CHAR:     *(char*)(_arg->ref) = _optarg[0]; break;
-    case TYPE_STRING:
+    case TYPE_INT:    *(int*)(_arg->ref)      = atoi(_optarg);   break;
+    case TYPE_UINT:   *(unsigned*)(_arg->ref) = atoi(_optarg);   break;
+    case TYPE_FLOAT:  *(float*)(_arg->ref)    = atof(_optarg);   break;
+    case TYPE_CHAR:   *(char*)(_arg->ref)     = _optarg[0];      break;
+    case TYPE_STRING: *(char**)(_arg->ref)    = (char*)_optarg;  break;
     default:
         fprintf(stderr,"liquid_argparse_set('%s'), could not set from input '%s'\n",
             _arg->varname, _optarg);
@@ -137,9 +137,12 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
         _q->args[_q->num_args].type = TYPE_FLOAT;
     else if (strcmp(_type,"char")==0)
         _q->args[_q->num_args].type = TYPE_CHAR;
-    else if (strcmp(_type,"string")==0)
+    else if (strcmp(_type,"char*")==0 ||
+             strcmp(_type,"char *")==0 ||
+             strcmp(_type,"char[]")==0)
+    {
         _q->args[_q->num_args].type = TYPE_STRING;
-    else {
+    } else {
         _q->args[_q->num_args].type = TYPE_CUSTOM;
         if (_callback == NULL) {
             fprintf(stderr,"liquid_argparse_append('%s'), callback required to handle non-standard type '%s'\n",
@@ -165,9 +168,10 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
     return 0;
 }
 
+// set value according to string
 int liquid_argparse_set(struct liquid_argparse_s * _q,
-                        char _dopt,
-                        const char * _optarg)
+                        char                       _dopt,
+                        const char *               _optarg)
 {
     // find and set element
     int i;
@@ -211,10 +215,10 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
         case 'h':                                                               \
             /* TODO: wrap docstring across multiple lines */                    \
             printf("%s - %s\n", argv[0], __parser.docstr);                      \
-            printf(" [-h print this help file]\n");                             \
+            printf(" [-h print this help file and exit]\n");                    \
             for (__i=0; __i<__parser.num_args; __i++)                           \
                 liquid_arg_print(__parser.args + __i);                          \
-            break;                                                              \
+            exit(0);                                                            \
         default:                                                                \
             if (liquid_argparse_set(&__parser, __dopt, optarg))                 \
                 exit(-1);                                                       \
