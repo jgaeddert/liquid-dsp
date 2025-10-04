@@ -107,13 +107,26 @@ struct liquid_argparse_s
     char optstr[2*LIQUID_ARGPARSE_MAX_ARGS+1];
 };
 
+// print formatted help
+void liquid_argparse_print(struct liquid_argparse_s * _q,
+                           const char *               _argv0)
+{
+    // TODO: wrap docstring across multiple lines
+    printf("%s - %s\n", _argv0, _q->docstr);
+    unsigned int i;
+    printf(" [-h print this help file and exit]\n");
+    for (i=0; i<_q->num_args; i++)
+        liquid_arg_print(_q->args + i);
+}
+
+// append argument to parser
 int liquid_argparse_append(struct liquid_argparse_s * _q,
-                           const char * _type,
-                           void *       _ref,
-                           const char * _varname,
-                           char         _opt,
-                           const char * _help,
-                           liquid_argparse_callback _callback)
+                           const char *               _type,
+                           void *                     _ref,
+                           const char *               _varname,
+                           char                       _opt,
+                           const char *               _help,
+                           liquid_argparse_callback   _callback)
 {
     // check if object is full
     if (_q->num_args >= LIQUID_ARGPARSE_MAX_ARGS) {
@@ -194,34 +207,29 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
 
 // initialize the parsing object
 #define liquid_argparse_init(DOCSTR)                                            \
+    /* declare parser object and initialize with input options */               \
     struct liquid_argparse_s __parser;                                          \
     __parser.docstr = DOCSTR;                                                   \
     __parser.num_args = 0;                                                      \
-    sprintf(__parser.optstr,"h");                                               \
+    sprintf(__parser.optstr,"h"); /* ensure '-h' is reserved for help */        \
 
 // add option to list of arguments
 #define liquid_argparse_add(TYPE, VAR, DEFAULT, KEY, HELP, FUNC)                \
-    /* TODO: check for certain types like 'string' */                           \
     TYPE VAR = DEFAULT; /* define and declare variable */                       \
     if (liquid_argparse_append(&__parser, #TYPE, (void*)&VAR, #VAR,             \
         KEY, HELP, FUNC))                                                       \
     {                                                                           \
-        fprintf(stderr,"%s:%u: could not create argument\n",                    \
-            __FILE__,__LINE__);                                                 \
+        fprintf(stderr,"%s:%u: could not create argument\n",__FILE__,__LINE__); \
         return -1;                                                              \
     }                                                                           \
 
 // parse input
 #define liquid_argparse_parse(argc,argv)                                        \
-    int __dopt, __i;                                                            \
+    int __dopt;                                                                 \
     while ((__dopt = getopt(argc,argv,__parser.optstr)) != EOF) {               \
         switch (__dopt) {                                                       \
         case 'h':                                                               \
-            /* TODO: wrap docstring across multiple lines */                    \
-            printf("%s - %s\n", argv[0], __parser.docstr);                      \
-            printf(" [-h print this help file and exit]\n");                    \
-            for (__i=0; __i<__parser.num_args; __i++)                           \
-                liquid_arg_print(__parser.args + __i);                          \
+            liquid_argparse_print(&__parser, argv[0]);                          \
             exit(0);                                                            \
         default:                                                                \
             if (liquid_argparse_set(&__parser, __dopt, optarg))                 \
