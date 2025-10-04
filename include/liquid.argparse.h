@@ -32,6 +32,7 @@ extern "C" {
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <getopt.h>
 
 // callback function pointer for custom type parsing
 typedef int (*liquid_argparse_callback)(const char * _optarg, void * _ref);

@@ -2,9 +2,6 @@ char __docstr__[] =
 "This example demonstrates liquid's simplified method for creating"
 " and parsing arguments for command-line options.";
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <getopt.h>
 #include "liquid.h"
 #include "liquid.argparse.h"
 
