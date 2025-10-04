@@ -43,6 +43,7 @@ struct liquid_arg_s
         TYPE_INT,
         TYPE_UINT,
         TYPE_FLOAT,
+        TYPE_DOUBLE,
         TYPE_CHAR,
         //TYPE_BOOL,
         TYPE_STRING,
@@ -63,11 +64,12 @@ void liquid_arg_print(struct liquid_arg_s * _arg)
     printf(" [-%c ", _arg->opt);
     printf("<%s:", _arg->varname);
     switch (_arg->type) {
-    case TYPE_INT:      printf("%d", *(int*)(_arg->ref));      break;
+    case TYPE_INT:      printf("%d", *(int*)     (_arg->ref)); break;
     case TYPE_UINT:     printf("%u", *(unsigned*)(_arg->ref)); break;
-    case TYPE_FLOAT:    printf("%g", *(float*)(_arg->ref));    break;
-    case TYPE_CHAR:     printf("%c", *(char*)(_arg->ref));     break;
-    case TYPE_STRING:   printf("%s", *(char**)(_arg->ref));    break;
+    case TYPE_FLOAT:    printf("%g", *(float*)   (_arg->ref)); break;
+    case TYPE_DOUBLE:   printf("%g", *(double*)  (_arg->ref)); break;
+    case TYPE_CHAR:     printf("%c", *(char*)    (_arg->ref)); break;
+    case TYPE_STRING:   printf("%s", *(char**)   (_arg->ref)); break;
     default: printf("?");
     }
     printf(">] %s\n", _arg->help);
@@ -80,11 +82,12 @@ int liquid_arg_set(struct liquid_arg_s * _arg, const char * _optarg)
         return _arg->callback(_optarg, _arg->ref);
 
     switch (_arg->type) {
-    case TYPE_INT:    *(int*)(_arg->ref)      = atoi(_optarg);   break;
+    case TYPE_INT:    *(int*)     (_arg->ref) = atoi(_optarg);   break;
     case TYPE_UINT:   *(unsigned*)(_arg->ref) = atoi(_optarg);   break;
-    case TYPE_FLOAT:  *(float*)(_arg->ref)    = atof(_optarg);   break;
-    case TYPE_CHAR:   *(char*)(_arg->ref)     = _optarg[0];      break;
-    case TYPE_STRING: *(char**)(_arg->ref)    = (char*)_optarg;  break;
+    case TYPE_FLOAT:  *(float*)   (_arg->ref) = atof(_optarg);   break;
+    case TYPE_DOUBLE: *(double*)  (_arg->ref) = atof(_optarg);   break;
+    case TYPE_CHAR:   *(char*)    (_arg->ref) = _optarg[0];      break;
+    case TYPE_STRING: *(char**)   (_arg->ref) = (char*)_optarg;  break;
     default:
         fprintf(stderr,"liquid_argparse_set('%s'), could not set from input '%s'\n",
             _arg->varname, _optarg);
@@ -135,6 +138,8 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
         _q->args[_q->num_args].type = TYPE_UINT;
     else if (strcmp(_type,"float")==0)
         _q->args[_q->num_args].type = TYPE_FLOAT;
+    else if (strcmp(_type,"double")==0)
+        _q->args[_q->num_args].type = TYPE_DOUBLE;
     else if (strcmp(_type,"char")==0)
         _q->args[_q->num_args].type = TYPE_CHAR;
     else if (strcmp(_type,"char*")==0 ||
