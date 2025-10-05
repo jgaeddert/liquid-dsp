@@ -23,19 +23,21 @@ int main(int argc, char*argv[])
 {
     // create argument parser using macros to define variables and set values from command line
     liquid_argparse_init(__docstr__);
-    liquid_argparse_add(int,   verbose,     0,      'v', "enable verbosity",  NULL);
-    liquid_argparse_add(float, sample_rate, 12.0f,  'r', "sample rate in Hz", NULL);
-    liquid_argparse_add(double,center_freq, 2450e6, 'f', "center freq in Hz", NULL);
-    liquid_argparse_add(char*, mod_scheme,  "qpsk", 'm', "modulation scheme", NULL);
+    liquid_argparse_add(bool,  verbose,     false,  'v', "enable verbose mode",  NULL);
+    liquid_argparse_add(int,   iterations,  0,      'i', "number of iterations", NULL);
+    liquid_argparse_add(float, sample_rate, 12.0f,  'r', "sample rate in Hz",    NULL);
+    liquid_argparse_add(double,center_freq, 2450e6, 'f', "center freq in Hz",    NULL);
+    liquid_argparse_add(char*, mod_scheme,  "qpsk", 'm', "modulation scheme",    NULL);
     liquid_argparse_add(int,   custom,      -1,     'c', "custom option, valid values are {true,false}", callback);
     liquid_argparse_parse(argc,argv);
 
     // print values
-    printf("verbose = %d\n", verbose);
+    printf("verbose     = %s\n", verbose ? "true" : "false");
+    printf("iterations  = %d\n", iterations);
     printf("sample rate = %f\n", sample_rate);
     printf("center freq = %g\n", center_freq);
-    printf("mod scheme = '%s'\n", mod_scheme);
-    printf("custom = %d\n", custom);
+    printf("mod scheme  = '%s'\n", mod_scheme);
+    printf("custom      = %d\n", custom);
 
     return 0;
 }

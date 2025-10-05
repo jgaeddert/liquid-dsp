@@ -32,7 +32,11 @@ extern "C" {
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include <getopt.h>
+
+// the maximum number of arguments allowed
+#define LIQUID_ARGPARSE_MAX_ARGS (64)
 
 // callback function pointer for custom type parsing
 typedef int (*liquid_argparse_callback)(const char * _optarg, void * _ref);
@@ -41,12 +45,12 @@ typedef int (*liquid_argparse_callback)(const char * _optarg, void * _ref);
 struct liquid_arg_s
 {
     enum {
+        TYPE_BOOL,
         TYPE_INT,
         TYPE_UINT,
         TYPE_FLOAT,
         TYPE_DOUBLE,
         TYPE_CHAR,
-        //TYPE_BOOL,
         TYPE_STRING,
         TYPE_CUSTOM
     } type;
@@ -63,17 +67,21 @@ struct liquid_arg_s
 void liquid_arg_print(struct liquid_arg_s * _arg)
 {
     printf(" [-%c ", _arg->opt);
-    printf("<%s:", _arg->varname);
+    if (_arg->type != TYPE_BOOL)
+        printf("<%s:", _arg->varname); // requires argument
     switch (_arg->type) {
-    case TYPE_INT:      printf("%d", *(int*)     (_arg->ref)); break;
-    case TYPE_UINT:     printf("%u", *(unsigned*)(_arg->ref)); break;
-    case TYPE_FLOAT:    printf("%g", *(float*)   (_arg->ref)); break;
-    case TYPE_DOUBLE:   printf("%g", *(double*)  (_arg->ref)); break;
-    case TYPE_CHAR:     printf("%c", *(char*)    (_arg->ref)); break;
-    case TYPE_STRING:   printf("%s", *(char**)   (_arg->ref)); break;
+    case TYPE_BOOL:   printf("%s", *(bool*)    (_arg->ref) ? "true": "false" ); break;
+    case TYPE_INT:    printf("%d", *(int*)     (_arg->ref)); break;
+    case TYPE_UINT:   printf("%u", *(unsigned*)(_arg->ref)); break;
+    case TYPE_FLOAT:  printf("%g", *(float*)   (_arg->ref)); break;
+    case TYPE_DOUBLE: printf("%g", *(double*)  (_arg->ref)); break;
+    case TYPE_CHAR:   printf("%c", *(char*)    (_arg->ref)); break;
+    case TYPE_STRING: printf("%s", *(char**)   (_arg->ref)); break;
     default: printf("?");
     }
-    printf(">] %s\n", _arg->help);
+    if (_arg->type != TYPE_BOOL)
+        printf(">"); // requires argument
+    printf("] %s\n", _arg->help);
 }
 
 // set value from input string
@@ -83,6 +91,7 @@ int liquid_arg_set(struct liquid_arg_s * _arg, const char * _optarg)
         return _arg->callback(_optarg, _arg->ref);
 
     switch (_arg->type) {
+    case TYPE_BOOL:   *(bool*)    (_arg->ref) = true;/* enable */break;
     case TYPE_INT:    *(int*)     (_arg->ref) = atoi(_optarg);   break;
     case TYPE_UINT:   *(unsigned*)(_arg->ref) = atoi(_optarg);   break;
     case TYPE_FLOAT:  *(float*)   (_arg->ref) = atof(_optarg);   break;
@@ -97,7 +106,6 @@ int liquid_arg_set(struct liquid_arg_s * _arg, const char * _optarg)
     return 0;
 }
 
-#define LIQUID_ARGPARSE_MAX_ARGS (64)
 struct liquid_argparse_s
 {
     // documentation string
@@ -146,7 +154,9 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
     }
 
     //printf("appending type: %s\n", _type);
-    if (strcmp(_type,"int")==0)
+    if (strcmp(_type,"bool")==0)
+        _q->args[_q->num_args].type = TYPE_BOOL;
+    else if (strcmp(_type,"int")==0)
         _q->args[_q->num_args].type = TYPE_INT;
     else if (strcmp(_type,"unsigned int")==0 || strcmp(_type,"unsigned")==0)
         _q->args[_q->num_args].type = TYPE_UINT;
@@ -163,7 +173,7 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
         if (_callback == NULL) {
             fprintf(stderr,"liquid_argparse_append('%s'), callback required to handle non-standard type '%s'\n",
                 _varname, _type);
-            fprintf(stderr,"  supported types: unsigned int, unsigned, int, float, double, char, char*\n");
+            fprintf(stderr,"  supported types: bool, int, unsigned int, unsigned, int, float, double, char, char*\n");
             return -1;
         }
     }
@@ -178,7 +188,8 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
     // extend optarg string
     int n = strlen(_q->optstr);
     _q->optstr[n++] = _opt;
-    _q->optstr[n++] = ':';
+    if (_q->args[_q->num_args].type != TYPE_BOOL)
+        _q->optstr[n++] = ':';
     _q->optstr[n++] = '\0';
 
     _q->num_args++;
