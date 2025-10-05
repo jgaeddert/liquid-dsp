@@ -1,12 +1,9 @@
-//
-// resamp2_crcf_example.c
-//
-// This example demonstrates the halfband resampler running as both an
-// interpolator and a decimator. A narrow-band signal is first
-// interpolated by a factor of 2, and then decimated. The resulting RMS
-// error between the final signal and original is computed and printed
-// to the screen.
-//
+char __docstr__[] =
+"This example demonstrates the halfband resampler running as both an"
+" interpolator and a decimator. A narrow-band signal is first"
+" interpolated by a factor of 2, and then decimated. The resulting RMS"
+" error between the final signal and original is computed and printed"
+" to the screen.";
 
 #include <stdio.h>
 #include <complex.h>

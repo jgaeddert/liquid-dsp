@@ -1,6 +1,7 @@
-// This example tests the performance for detecting and decoding frames
-// with the framegen64 and framesync64 objects.
-// SEE ALSO: framesync64_example.c
+char __docstr__[] =
+"This example tests the performance for detecting and decoding frames"
+" with the framegen64 and framesync64 objects.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

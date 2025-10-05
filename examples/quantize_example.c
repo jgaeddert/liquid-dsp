@@ -1,8 +1,4 @@
-//
-// quantize_example.c
-//
-// Demonstrates the quantizer/compander combo.
-//
+char __docstr__[] = "Demonstrates the quantizer/compander combination.";
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -1,6 +1,5 @@
-//
-// gasearch_knapsack_example.c
-//
+char __docstr__[] =
+"Demonstration of genetic algorithm search on the knapsack problem";
 
 #include <stdio.h>
 #include <stdlib.h>

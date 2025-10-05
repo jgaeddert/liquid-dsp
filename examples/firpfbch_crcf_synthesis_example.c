@@ -1,11 +1,8 @@
-//
-// firpfbch_crcf_synthesis_example.c
-//
-// Example of the synthesis channelizer filterbank. The input signal is
-// comprised of several signals spanning different frequency bands. The
-// channelizer downconverts each to baseband (maximally decimated), and
-// the resulting spectrum of each is plotted.
-//
+char __docstr__[] =
+"Example of the synthesis channelizer filterbank. The input signal is"
+" comprised of several signals spanning different frequency bands. The"
+" channelizer downconverts each to baseband (maximally decimated), and"
+" the resulting spectrum of each is plotted.";
 
 #include <stdio.h>
 #include <math.h>

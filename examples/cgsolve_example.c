@@ -1,10 +1,7 @@
-// 
-// cgsolve_example.c
-//
-// Solve linear system of equations A*x = b using the conjugate-
-// gradient method where A is a symmetric positive-definite matrix.
-// Compare speed to matrixf_linsolve() for same system.
-//
+char __docstr__[] =
+"Solve linear system of equations A*x = b using the conjugate-"
+" gradient method where A is a symmetric positive-definite matrix."
+" Compare speed to matrixf_linsolve() for same system.";
 
 #include <stdio.h>
 #include <stdlib.h>

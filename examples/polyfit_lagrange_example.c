@@ -1,10 +1,6 @@
-// 
-// polyfit_lagrange_example.c
-//
-// Test exact polynomial fit to sample data using Lagrange
-// interpolating polynomials.
-// SEE ALSO: polyfit_example.c
-//
+char __docstr__[] =
+"Test exact polynomial fit to sample data using Lagrange"
+" interpolating polynomials.";
 
 #include <stdio.h>
 #include <stdlib.h>

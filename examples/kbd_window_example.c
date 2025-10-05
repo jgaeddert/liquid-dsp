@@ -1,8 +1,4 @@
-//
-// kbd_window_example.c
-//
-// Kaiser-Bessel derived window example
-//
+char __docstr__[] = "Kaiser-Bessel derived window example.";
 
 #include <stdio.h>
 

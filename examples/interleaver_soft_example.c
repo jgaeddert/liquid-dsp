@@ -1,6 +1,4 @@
-//
-// interleaver_soft_example.c
-//
+char __docstr__[] = "Demonstrate interleaving on soft-decision bit values";
 
 #include <stdio.h>
 #include <stdlib.h> // for rand()

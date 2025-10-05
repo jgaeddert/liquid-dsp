@@ -1,9 +1,6 @@
-//
-// gradsearch_datafit_example.c
-//
-// Fit 3-parameter curve to sampled data set in the minimum
-// mean-squared error sense.
-//
+char __docstr__[] =
+"Fit 3-parameter curve to sampled data set in the minimum"
+" mean-squared error sense.";
 
 #include <stdio.h>
 #include <stdlib.h>

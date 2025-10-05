@@ -1,4 +1,5 @@
-// Demonstrate partitioning rresamp work in separate blocks
+char __docstr__[] = "Demonstrate partitioning rresamp work in separate blocks";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>

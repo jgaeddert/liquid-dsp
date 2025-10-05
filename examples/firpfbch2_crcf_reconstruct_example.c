@@ -1,4 +1,6 @@
-// Demonstrate partial-band reconstruction using firpfbch2_crcf
+char __docstr__[] =
+"Demonstrate partial-band reconstruction using firpfbch2_crcf object.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

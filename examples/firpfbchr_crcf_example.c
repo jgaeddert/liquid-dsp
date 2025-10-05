@@ -1,9 +1,6 @@
-//
-// firpfbchr_crcf_example.c
-//
-// Example of the finite impulse response (FIR) polyphase filterbank
-// (PFB) channelizer with an output rate independent of channel spacing.
-//
+char __docstr__[] =
+"Example of the finite impulse response (FIR) polyphase filterbank"
+" (PFB) channelizer with an output rate independent of channel spacing.";
 
 #include <stdio.h>
 #include <stdlib.h>

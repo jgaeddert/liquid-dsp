@@ -1,4 +1,7 @@
-// example demonstrating performance of GA search algorithm for finding basic function peak
+char __docstr__[] =
+"Example demonstrating performance of GA search algorithm for finding basic"
+" function peak";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

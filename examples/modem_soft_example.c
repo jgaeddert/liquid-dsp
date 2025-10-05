@@ -1,4 +1,5 @@
-// Demonstate soft demodulation of linear modulation schemes.
+char __docstr__[] = "Demonstate soft demodulation of linear modulation schemes.";
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <getopt.h>

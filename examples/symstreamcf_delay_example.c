@@ -1,4 +1,5 @@
-// show delay in symstream object
+char __docstr__[] = "Show delay in symstream object.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

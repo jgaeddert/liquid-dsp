@@ -1,6 +1,5 @@
-// compare polyfit and polyfit_lagrange
-//
-// SEE ALSO: polyfit_example.c polyfit_lagrange_example.c
+char __docstr__[] = "Compare polyfit and polyfit_lagrange.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

@@ -1,4 +1,5 @@
-// gmsk_tracking_example.c : demonstrate symbol tracking of GMSK signal
+char __docstr__[] = "Demonstrate symbol tracking of GMSK signal.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>

@@ -1,10 +1,7 @@
-//
-// firpfbch2_crcf_example.c
-//
-// Example of the finite impulse response (FIR) polyphase filterbank
-// (PFB) channelizer with an output rate of 2 Fs / M as an (almost)
-// perfect reconstructive system.
-//
+char __docstr__[] =
+"Example of the finite impulse response (FIR) polyphase filterbank"
+" (PFB) channelizer with an output rate of 2 Fs / M as an (almost)"
+" perfect reconstructive system.";
 
 #include <stdio.h>
 #include <stdlib.h>

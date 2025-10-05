@@ -1,10 +1,5 @@
-// 
-// iirdes_example.c
-//
-// Tests infinite impulse response (IIR) digital filter design.
-// SEE ALSO: iirdes_analog_example.c
-//           iir_filter_crcf_example.c
-//
+char __docstr__[] =
+"Tests infinite impulse response (IIR) digital filter design.";
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -1,4 +1,6 @@
-// Compare spgram between accumulation methods (infinite vs. real-time integration)
+char __docstr__[] =
+"Compare spgram between accumulation methods (infinite vs. real-time integration).";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

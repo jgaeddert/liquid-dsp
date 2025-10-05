@@ -1,6 +1,4 @@
-//
-// nyquist_filter_example.c
-//
+char __docstr__[] = "Demonstrate Nyquist filter operation.";
 
 #include <stdio.h>
 #include <stdlib.h>

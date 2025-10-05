@@ -1,4 +1,5 @@
-// create halfband filter using firdespm
+char __docstr__[] = "Create halfband filter using firdespm";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

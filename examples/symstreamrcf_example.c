@@ -1,4 +1,5 @@
-// demonstrate arbitrary rate symstreamrcf object
+char __docstr__[] = "Demonstrate arbitrary rate symstreamrcf object.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

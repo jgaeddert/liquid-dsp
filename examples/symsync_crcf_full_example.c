@@ -1,11 +1,8 @@
-//
-// symsync_crcf_full_example.c
-//
-// This example extends that of `symsync_crcf_example.c` by including options
-// for simulating a timing rate offset in addition to just a timing phase
-// error. The resulting output file shows not just the constellation but the
-// time domain sequence as well as the timing phase estimate over time.
-//
+char __docstr__[] =
+"This example extends that of `symsync_crcf_example.c` by including options"
+" for simulating a timing rate offset in addition to just a timing phase"
+" error. The resulting output file shows not just the constellation but the"
+" time domain sequence as well as the timing phase estimate over time.";
 
 #include <stdio.h>
 #include <stdlib.h>

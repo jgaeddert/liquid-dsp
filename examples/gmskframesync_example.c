@@ -1,4 +1,5 @@
-// Example demonstrating the GMSK flexible frame synchronizer.
+char __docstr__[] = "Example demonstrating the GMSK flexible frame synchronizer.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

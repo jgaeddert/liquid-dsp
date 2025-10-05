@@ -1,8 +1,4 @@
-//
-// kaiser_window_example.c
-//
-// Kaiser-Bessel window example
-//
+char __docstr__[] = "Kaiser-Bessel window example.";
 
 #include <stdio.h>
 #include "liquid.h"

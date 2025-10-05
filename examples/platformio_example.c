@@ -1,3 +1,5 @@
+char __docstr__[] = "Demonstrate using liquid-dsp with platformio";
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <getopt.h>

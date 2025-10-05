@@ -1,4 +1,5 @@
-// This example exports the output constellation to file for debugging.
+char __docstr__[] =
+"This example exports the output constellation to file for debugging.";
 
 #include <stdio.h>
 #include <stdlib.h>

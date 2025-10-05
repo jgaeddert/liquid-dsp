@@ -1,6 +1,4 @@
-//
-// compand_cf_example.c
-//
+char __docstr__[] = "Demonstrate interface to compress/expand methods.";
 
 #include <stdio.h>
 #include <stdlib.h>

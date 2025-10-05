@@ -1,9 +1,6 @@
-// 
-// eqrls_cccf_example.c
-//
-// Tests recursive least-squares (RLS) equalizer (EQ) on a QPSK
-// signal at the symbol level.
-//
+char __docstr__[] =
+"Tests recursive least-squares (RLS) equalizer (EQ) on a QPSK"
+" signal at the symbol level.";
 
 #include <stdio.h>
 #include <stdlib.h>

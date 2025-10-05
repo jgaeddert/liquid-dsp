@@ -1,8 +1,4 @@
-//
-// msresamp_crcf_example.c
-//
-// Demonstration of the multi-stage arbitrary resampler
-//
+char __docstr__[] = "Demonstration of the multi-stage arbitrary resampler";
 
 #include <stdio.h>
 #include <stdlib.h>

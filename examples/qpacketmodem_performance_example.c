@@ -1,6 +1,8 @@
-// This example demonstrates the performance of the qpacket modem
-// object to combine forward error-correction and modulation in one
-// simple interface.
+char __docstr__[] =
+"This example demonstrates the performance of the qpacket modem"
+" object to combine forward error-correction and modulation in one"
+" simple interface.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

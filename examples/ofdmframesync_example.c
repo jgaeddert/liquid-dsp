@@ -1,9 +1,6 @@
-//
-// ofdmframesync_example.c
-//
-// Example demonstrating the base OFDM frame synchronizer with different
-// parameters and options.
-//
+char __docstr__[] =
+"Example demonstrating the base OFDM frame synchronizer with different"
+" parameters and options.";
 
 #include <stdio.h>
 #include <stdlib.h>

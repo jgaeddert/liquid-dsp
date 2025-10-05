@@ -1,11 +1,4 @@
-//
-// resamp2_crcf_filter_example.c
-//
-// Halfband filter example.
-//
-// SEE ALSO: resamp2_crcf_decim_example.c
-//           resamp2_crcf_interp_example.c
-//
+char __docstr__[] = "Halfband filter example.";
 
 #include <stdio.h>
 #include <complex.h>

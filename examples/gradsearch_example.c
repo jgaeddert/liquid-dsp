@@ -1,6 +1,4 @@
-//
-// gradsearch_example.c
-//
+char __docstr__[] = "Gradient descent search algorithm demonstration.";
 
 #include <stdio.h>
 #include <stdlib.h>

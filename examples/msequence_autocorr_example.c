@@ -1,12 +1,11 @@
-// This example demonstrates the auto-correlation properties of a
-// maximal-length sequence (m-sequence).  An m-sequence of a
-// certain length is used to generate two binary sequences
-// (buffers) which are then cross-correlated.  The resulting
-// correlation produces -1 for all values except at index zero,
-// where the sequences align.
-//
-// SEE ALSO: bsequence_example.c
-//
+char __docstr__[] =
+"This example demonstrates the auto-correlation properties of a"
+" maximal-length sequence (m-sequence).  An m-sequence of a"
+" certain length is used to generate two binary sequences"
+" (buffers) which are then cross-correlated.  The resulting"
+" correlation produces -1 for all values except at index zero,"
+" where the sequences align.";
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <complex.h>

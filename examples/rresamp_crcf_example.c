@@ -1,5 +1,7 @@
-// Demonstration of rresamp object whereby an input signal
-// is resampled at a rational rate P/Q = interp/decim.
+char __docstr__[] =
+"Demonstration of rresamp object whereby an input signal"
+" is resampled at a rational rate P/Q = interp/decim.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>

@@ -1,12 +1,5 @@
-// 
-// nco_crcf_mix_example.c
-//
-// This example demonstrates how to mix a signal down at complex
-// baseband.
-//
-// SEE ALSO: nco_pll_example.c
-//           nco_pll_modem_example.c
-//
+char __docstr__[] =
+"This example demonstrates how to mix a signal down to complex baseband.";
 
 #include <stdio.h>
 #include <math.h>

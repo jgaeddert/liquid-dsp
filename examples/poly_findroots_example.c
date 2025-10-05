@@ -1,4 +1,5 @@
-// test polynomial root-finding algorithm
+char __docstr__[] = "Test polynomial root-finding algorithm";
+
 #include <stdio.h>
 #include <math.h>
 #include "liquid.h"

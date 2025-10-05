@@ -1,11 +1,6 @@
-//
-// firdecim_crcf_example.c
-//
-// This example demonstrates the interface to the firdecim (finite
-// impulse response decimator) family of objects.
-//
-// SEE ALSO: firinterp_crcf_example.c
-//
+char __docstr__[] =
+"This example demonstrates the interface to the firdecim (finite"
+" impulse response decimator) family of objects.";
 
 #include <stdio.h>
 #include <stdlib.h>

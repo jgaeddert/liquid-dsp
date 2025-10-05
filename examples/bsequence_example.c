@@ -1,10 +1,7 @@
-//
-// bsequence_example.c
-//
-// This example demonstrates the interface to the bsequence (binary
-// sequence) object.  The bsequence object acts like a buffer of bits
-// which are stored and manipulated efficiently in memory.
-//
+char __docstr__[] =
+"This example demonstrates the interface to the bsequence (binary"
+" sequence) object.  The bsequence object acts like a buffer of bits"
+" which are stored and manipulated efficiently in memory.";
 
 #include <stdio.h>
 #include <complex.h>

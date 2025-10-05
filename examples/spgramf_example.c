@@ -1,8 +1,4 @@
-//
-// spgramf_example.c
-//
-// Spectral periodogram example with real inputs.
-//
+char __docstr__[] = "Spectral periodogram example with real inputs.";
 
 #include <stdio.h>
 #include <stdlib.h>

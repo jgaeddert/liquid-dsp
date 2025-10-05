@@ -1,12 +1,6 @@
-//
-// iirdes_pll_example.c
-//
-// This example demonstrates 2nd-order IIR phase-locked loop filter
-// design with a practical simulation.
-//
-// SEE ALSO: nco_pll_example.c
-//           nco_pll_modem_example.c
-//
+char __docstr__[] =
+"This example demonstrates 2nd-order IIR phase-locked loop filter"
+" design with a practical simulation.";
 
 #include <stdio.h>
 #include <stdlib.h>

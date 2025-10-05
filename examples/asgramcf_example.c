@@ -1,7 +1,8 @@
-// ASCII spectrogram example for complex inputs. This example demonstrates
-// the functionality of the ASCII spectrogram. A sweeping complex sinusoid
-// is generated and the resulting spectral periodogram is printed to the
-// screen.
+char __docstr__[] =
+"ASCII spectrogram example for complex inputs. This example demonstrates"
+" the functionality of the ASCII spectrogram. A sweeping complex sinusoid"
+" is generated and the resulting spectral periodogram is printed to the"
+" screen.";
 
 #include <unistd.h> // usleep
 #include <string.h>

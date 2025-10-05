@@ -1,4 +1,5 @@
-// This example demonstrates the a window interpolator.
+char __docstr__[] = "This example demonstrates the a window interpolator.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

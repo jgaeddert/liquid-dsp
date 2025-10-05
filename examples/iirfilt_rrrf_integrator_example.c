@@ -1,5 +1,7 @@
-// This example demonstrates how to create an integrating recursive
-// (infinite impulse response) filter.
+char __docstr__[] =
+"This example demonstrates how to create an integrating recursive"
+" (infinite impulse response) filter.";
+
 #include <stdio.h>
 #include <math.h>
 

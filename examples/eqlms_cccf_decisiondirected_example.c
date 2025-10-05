@@ -1,10 +1,7 @@
-// 
-// eqlms_cccf_decisiondirected_example.c
-//
-// Tests least mean-squares (LMS) equalizer (EQ) on a signal with a known
-// linear modulation scheme, but unknown data. The equalizer is updated
-// using decision-directed demodulator output samples.
-//
+char __docstr__[] =
+"Tests least mean-squares (LMS) equalizer (EQ) on a signal with a known"
+" linear modulation scheme, but unknown data. The equalizer is updated"
+" using decision-directed demodulator output samples.";
 
 #include <stdio.h>
 #include <stdlib.h>

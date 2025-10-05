@@ -1,4 +1,5 @@
-// This example demonstrates the a linear interpolator.
+char __docstr__[] = "This example demonstrates the a linear interpolator.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

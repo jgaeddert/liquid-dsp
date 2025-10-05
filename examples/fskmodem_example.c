@@ -1,10 +1,7 @@
-// 
-// fskmodem_example.c
-//
-// This example demonstrates the M-ary frequency-shift keying
-// (MFSK) modem in liquid. A message signal is modulated and the
-// resulting signal is recovered using a demodulator object.
-//
+char __docstr__[] =
+"This example demonstrates the M-ary frequency-shift keying"
+" (MFSK) modem in liquid. A message signal is modulated and the"
+" resulting signal is recovered using a demodulator object.";
 
 #include <stdio.h>
 #include <stdlib.h>

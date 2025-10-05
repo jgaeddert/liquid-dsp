@@ -1,8 +1,4 @@
-//
-// ofdmflexframesync_example.c
-//
-// Example demonstrating the OFDM flexible frame synchronizer.
-//
+char __docstr__[] = "Example demonstrating the OFDM flexible frame synchronizer.";
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,14 +1,11 @@
-//
-// channel_cccf_example.c
-//
-// This example demonstrates how the channel_cccf object can be used to
-// emulate a multi-path fading, log-normal shadowing, and AWGN channel.
-// A stream of modulated and interpolated symbols are generated using the
-// symstream object. The resulting samples are passed through a channel
-// to add various impairments. The symtrack object recovers timing,
-// carrier, and other information imparted by the channel and returns
-// data symbols ready for demodulation.
-//
+char __docstr__[] =
+"This example demonstrates how the channel_cccf object can be used to"
+" emulate a multi-path fading, log-normal shadowing, and AWGN channel."
+" A stream of modulated and interpolated symbols are generated using the"
+" symstream object. The resulting samples are passed through a channel"
+" to add various impairments. The symtrack object recovers timing,"
+" carrier, and other information imparted by the channel and returns"
+" data symbols ready for demodulation.";
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,16 +1,13 @@
-//
-// scramble_example.c
-//
-// Data-scrambling example.  Physical layer synchronization of
-// received waveforms relies on independent and identically
-// distributed underlying data symbols.  If the message sequence,
-// however, is '00000....' and the modulation scheme is BPSK,
-// the synchronizer probably won't be able to recover the symbol
-// timing.  It is imperative to increase the entropy of the data
-// for this to happen.  The data scrambler routine attempts to
-// 'whiten' the data sequence with a bit mask in order to achieve
-// maximum entropy.  This example demonstrates the interface.
-//
+char __docstr__[] =
+"Data-scrambling example.  Physical layer synchronization of"
+" received waveforms relies on independent and identically"
+" distributed underlying data symbols.  If the message sequence,"
+" however, is '00000....' and the modulation scheme is BPSK,"
+" the synchronizer probably won't be able to recover the symbol"
+" timing.  It is imperative to increase the entropy of the data"
+" for this to happen.  The data scrambler routine attempts to"
+" 'whiten' the data sequence with a bit mask in order to achieve"
+" maximum entropy.  This example demonstrates the interface.";
 
 #include <stdio.h>
 #include <stdlib.h>

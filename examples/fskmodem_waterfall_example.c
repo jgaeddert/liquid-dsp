@@ -1,10 +1,7 @@
-// 
-// fskmodem_waterfall_example.c
-//
-// This example demonstrates the M-ary frequency-shift keying
-// (MFSK) modem in liquid by showing the resulting spectral
-// waterfall.
-//
+char __docstr__[] =
+"This example demonstrates the M-ary frequency-shift keying"
+" (MFSK) modem in liquid by showing the resulting spectral"
+" waterfall.";
 
 #include <stdio.h>
 #include <stdlib.h>

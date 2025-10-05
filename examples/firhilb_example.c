@@ -1,13 +1,7 @@
-//
-// firhilb_example.c
-//
-// Hilbert transform example.  This example demonstrates the
-// functionality of firhilbf (finite impulse response Hilbert transform)
-// which converts a complex time series into a real one and then back.
-//
-// SEE ALSO: firhilb_interp_example.c
-//           firhilb_example.c
-//
+char __docstr__[] =
+"Hilbert transform example.  This example demonstrates the"
+" functionality of firhilbf (finite impulse response Hilbert transform)"
+" which converts a complex time series into a real one and then back.";
 
 #include <stdio.h>
 #include <complex.h>

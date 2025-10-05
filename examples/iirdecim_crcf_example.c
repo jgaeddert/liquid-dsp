@@ -1,9 +1,6 @@
-//
-// iirdecim_crcf_example.c
-//
-// This example demonstrates the interface to the iirdecim (infinite
-// impulse response decimator) family of objects.
-//
+char __docstr__[] =
+"This example demonstrates the interface to the iirdecim (infinite"
+" impulse response decimator) family of objects.";
 
 #include <stdio.h>
 #include <stdlib.h>

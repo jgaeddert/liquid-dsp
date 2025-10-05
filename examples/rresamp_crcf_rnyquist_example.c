@@ -1,11 +1,8 @@
-//
-// rresamp_crcf_rnyquist_example.c
-//
-// Demonstration of matched filter interpolator and decimator running at
-// rational rate that is only slightly higher than occupied bandwidth.
-// The resulting constellation has minimal inter-symbol interference and
-// is normalized to unity gain.
-//
+char __docstr__[] =
+"Demonstration of matched filter interpolator and decimator running at"
+" rational rate that is only slightly higher than occupied bandwidth."
+" The resulting constellation has minimal inter-symbol interference and"
+" is normalized to unity gain.";
 
 #include <stdio.h>
 #include <stdlib.h>

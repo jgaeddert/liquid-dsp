@@ -1,12 +1,9 @@
-//
-// repack_bytes_example.c
-//
-// This example demonstrates the repack_bytes() interface by packing a
-// sequence of three 3-bit symbols into five 2-bit symbols.  The results
-// are printed to the screen.  Because the total number of bits in the
-// input is 9 and not evenly divisible by 2, the last of the 5 output
-// symbols has a zero explicitly padded to the end.
-//
+char __docstr__[] =
+"This example demonstrates the repack_bytes() interface by packing a"
+" sequence of three 3-bit symbols into five 2-bit symbols.  The results"
+" are printed to the screen.  Because the total number of bits in the"
+" input is 9 and not evenly divisible by 2, the last of the 5 output"
+" symbols has a zero explicitly padded to the end.";
 
 #include <stdio.h>
 

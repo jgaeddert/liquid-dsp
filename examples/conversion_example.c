@@ -1,26 +1,23 @@
-//
-// conversion_example.c
-//
-// This example demonstrates conversion from complex baseband to a real-valued
-// signal, and then down-conversion back to complex baseband while removing the
-// negative image.
-//
-//  STEP 1: A signal is generated at complex baseband consisting of narrow-band
-//          filtered noise and an offset tone (to show asymmetry in the transmit
-//          spectrum).
-//
-//  STEP 2: The signal is mixed up to a carrier 'fc' (relative to the sampling
-//          frequency) and the real-component of the result is retained. This is
-//          the DAC output. The spectrum of this signal has two images: one at
-//          +fc, the other at -fc.
-//
-//  STEP 3: The DAC output is mixed back down to complex baseband and the lower
-//          image is (mostly) filtered off. Reminants of the lower frequency
-//          component are still visible due to the wide-band and low-order
-//          filter on the receiver. The received complex baseband signal also
-//          has a reduction in power by 2 because half the signal's energy (the
-//          negative image) is filtered off.
-//
+char __docstr__[] =
+"This example demonstrates conversion from complex baseband to a real-valued"
+" signal, and then down-conversion back to complex baseband while removing the"
+" negative image."
+""
+" STEP 1: A signal is generated at complex baseband consisting of narrow-band"
+"         filtered noise and an offset tone (to show asymmetry in the transmit"
+"         spectrum)."
+""
+" STEP 2: The signal is mixed up to a carrier 'fc' (relative to the sampling"
+"         frequency) and the real-component of the result is retained. This is"
+"         the DAC output. The spectrum of this signal has two images: one at"
+"         +fc, the other at -fc."
+""
+" STEP 3: The DAC output is mixed back down to complex baseband and the lower"
+"         image is (mostly) filtered off. Reminants of the lower frequency"
+"         component are still visible due to the wide-band and low-order"
+"         filter on the receiver. The received complex baseband signal also"
+"         has a reduction in power by 2 because half the signal's energy (the"
+"         negative image) is filtered off.";
 
 #include <stdio.h>
 #include <stdlib.h>

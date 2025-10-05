@@ -1,6 +1,4 @@
-//
-// qnsearch_example.c
-//
+char __docstr__[] = "Demonstrate quasi-Newton search method.";
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,14 +1,8 @@
-//
-// windowf_example.c
-//
-// This example demonstrates the functionality of a window buffer (also
-// known as a circular or ring buffer) of floating-point values.  Values
-// are written to and read from the buffer using several different
-// methods.
-//
-// SEE ALSO: bufferf_example.c
-//           wdelayf_example.c
-//
+char __docstr__[] =
+"This example demonstrates the functionality of a window buffer (also"
+" known as a circular or ring buffer) of floating-point values.  Values"
+" are written to and read from the buffer using several different"
+" methods.";
 
 #include <stdio.h>
 

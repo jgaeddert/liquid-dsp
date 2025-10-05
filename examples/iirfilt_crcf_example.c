@@ -1,13 +1,10 @@
-//
-// iirfilt_crcf_example.c
-//
-// Complex infinite impulse response filter example. Demonstrates
-// the functionality of iirfilt by designing a low-order
-// prototype (e.g. Butterworth) and using it to filter a noisy
-// signal.  The filter coefficients are real, but the input and
-// output arrays are complex.  The filter order and cutoff
-// frequency are specified at the beginning.
-//
+char __docstr__[] =
+"Complex infinite impulse response filter example. Demonstrates"
+" the functionality of iirfilt by designing a low-order"
+" prototype (e.g. Butterworth) and using it to filter a noisy"
+" signal.  The filter coefficients are real, but the input and"
+" output arrays are complex.  The filter order and cutoff"
+" frequency are specified at the beginning.";
 
 #include <stdio.h>
 #include <math.h>

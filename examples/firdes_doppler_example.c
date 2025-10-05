@@ -1,4 +1,6 @@
-// This example demonstrates finite impulse response Doppler filter design
+char __docstr__[] =
+"This example demonstrates finite impulse response Doppler filter design";
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <getopt.h>

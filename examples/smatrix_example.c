@@ -1,4 +1,5 @@
-// test sparse matrix operations
+char __docstr__[] = "Test sparse matrix operations.";
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <getopt.h>

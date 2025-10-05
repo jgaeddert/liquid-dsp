@@ -1,14 +1,9 @@
-//
-// crc_example.c
-//
-// Cyclic redundancy check (CRC) example.  This example demonstrates
-// how a CRC can be used to validate data received through un-reliable
-// means (e.g. a noisy channel).  A CRC is, in essence, a strong
-// algebraic error detection code that computes a key on a block of data
-// using base-2 polynomials.
-// SEE ALSO: checksum_example.c
-//           fec_example.c
-//
+char __docstr__[] =
+"Cyclic redundancy check (CRC) example.  This example demonstrates"
+" how a CRC can be used to validate data received through un-reliable"
+" means (e.g. a noisy channel).  A CRC is, in essence, a strong"
+" algebraic error detection code that computes a key on a block of data"
+" using base-2 polynomials.";
 
 #include <stdio.h>
 #include <stdlib.h>

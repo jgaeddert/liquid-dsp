@@ -1,10 +1,7 @@
-//
-// firinterp_crcf_example.c
-//
-// This example demonstrates the firinterp object (interpolator) interface.
-// Data symbols are generated and then interpolated according to a
-// finite impulse response Nyquist filter.
-//
+char __docstr__[] =
+"This example demonstrates the firinterp object (interpolator) interface."
+" Data symbols are generated and then interpolated according to a"
+" finite impulse response Nyquist filter.";
 
 #include <stdio.h>
 #include <stdlib.h>

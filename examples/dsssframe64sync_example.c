@@ -1,5 +1,7 @@
-// This example demonstrates the basic interface to the dsssframe64gen and
-// dsssframe64sync objects.
+char __docstr__[] =
+"This example demonstrates the basic interface to the dsssframe64gen and"
+" dsssframe64sync objects."
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

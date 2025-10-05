@@ -1,13 +1,10 @@
-//
-// resamp2_cccf_example.c
-//
-// This example demonstrates the halfband resampler cenetered at the
-// quarter sample rate to split the signal into positive and negative
-// frequency bands. Two distinct narrow-band signals are generated; one
-// at a positive frequency and one at a negative frequency. The resamp2
-// object is run as a filter to separate the two about the zero-
-// frequency center point.
-//
+char __docstr__[] =
+"This example demonstrates the halfband resampler cenetered at the"
+" quarter sample rate to split the signal into positive and negative"
+" frequency bands. Two distinct narrow-band signals are generated; one"
+" at a positive frequency and one at a negative frequency. The resamp2"
+" object is run as a filter to separate the two about the zero-frequency"
+" center point.";
 
 #include <stdio.h>
 #include <complex.h>

@@ -1,4 +1,5 @@
-// generate tone at low frequency and test phase response
+char __docstr__[] = "Generate tone at low frequency and test phase response";
+
 #include <stdio.h>
 #include <math.h>
 #include <complex.h>

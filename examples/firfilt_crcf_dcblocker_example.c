@@ -1,9 +1,6 @@
-//
-// firfilt_crcf_dcblocker_example.c
-//
-// This example demonstrates how to create a DC-blocking non-recursive
-// (finite impulse response) filter.
-//
+char __docstr__[] =
+"This example demonstrates how to create a DC-blocking non-recursive"
+" (finite impulse response) filter.";
 
 #include <stdio.h>
 #include <math.h>

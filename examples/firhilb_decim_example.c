@@ -1,15 +1,10 @@
-//
-// firhilb_decim_example.c
-//
-// Hilbert transform: 2:1 real-to-complex decimator.  This example
-// demonstrates the functionality of firhilb (finite impulse response
-// Hilbert transform) decimator which converts a real time series
-// into a complex one with half the number of samples.  The input
-// is a real-valued sinusoid of N samples. The output is a complex-
-// valued sinusoid of N/2 samples.
-//
-// SEE ALSO: firhilb_interp_example.c
-//
+char __docstr__[] =
+"Hilbert transform: 2:1 real-to-complex decimator.  This example"
+" demonstrates the functionality of firhilb (finite impulse response"
+" Hilbert transform) decimator which converts a real time series"
+" into a complex one with half the number of samples.  The input"
+" is a real-valued sinusoid of N samples. The output is a complex-"
+"valued sinusoid of N/2 samples.";
 
 #include <stdio.h>
 #include <complex.h>

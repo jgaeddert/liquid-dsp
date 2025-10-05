@@ -1,4 +1,5 @@
-// Demonstrate using qpilotsync for carrier recovery.
+char __docstr__[] = "Demonstrate using qpilotsync for carrier recovery.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

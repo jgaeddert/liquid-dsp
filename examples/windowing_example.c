@@ -1,4 +1,5 @@
-// demonstrate windowing functions
+char __docstr__[] = "Demonstrate windowing functions.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "liquid.h"

@@ -1,4 +1,6 @@
-// firpf_rrrf_example.c - demonstrate poly-phase filter-bank as interpolator
+char __docstr__[] =
+"This example demonstrates using a poly-phase filter-bank as interpolator";
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "liquid.h"

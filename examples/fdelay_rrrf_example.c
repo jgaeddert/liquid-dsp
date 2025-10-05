@@ -1,4 +1,5 @@
-// Demonstrate fdelay object to add arbitrary fractional delays.
+char __docstr__[] = "Demonstrate fdelay object to add arbitrary fractional delays.";
+
 #include <stdio.h>
 #include <math.h>
 #include <complex.h>

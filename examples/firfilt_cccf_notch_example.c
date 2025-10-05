@@ -1,9 +1,6 @@
-//
-// firfilt_cccf_notch_example.c
-//
-// This example demonstrates how to create a notching non-recursive
-// (finite impulse response) filter.
-//
+char __docstr__[] =
+"This example demonstrates how to create a notching non-recursive"
+" (finite impulse response) filter.";
 
 #include <stdio.h>
 #include <math.h>

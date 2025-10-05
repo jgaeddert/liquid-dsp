@@ -1,8 +1,8 @@
-// This example demonstrates the interfaces to the fskframegen and
-// fskframesync objects used to completely encapsulate data for
-// over-the-air transmission.
-//
-// SEE ALSO: flexframesync_example.c
+char __docstr__[] =
+"This example demonstrates the interfaces to the fskframegen and"
+" fskframesync objects used to completely encapsulate data for"
+" over-the-air transmission.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

@@ -1,7 +1,9 @@
-// This example demonstrates the functionality of the qdsync object to
-// detect and synchronize an arbitrary signal in time in the presence of noise,
-// carrier frequency/phase offsets, and fractional-sample timing offsets.
-// offsets.
+char __docstr__[] =
+"This example demonstrates the functionality of the qdsync object to"
+" detect and synchronize an arbitrary signal in time in the presence of noise,"
+" carrier frequency/phase offsets, and fractional-sample timing offsets."
+" offsets.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

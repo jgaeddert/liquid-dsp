@@ -1,4 +1,5 @@
-// test GMSK equalization
+char __docstr__[] = "Test GMSK equalization.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

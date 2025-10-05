@@ -1,15 +1,10 @@
-//
-// firinterp_firdecim_crcf_example.c
-//
-// This example demonstrates interpolation and decimation of a QPSK
-// signal with a square-root Nyquist filter.
-// Data symbols are generated and then interpolated according to a
-// finite impulse response square-root Nyquist filter.  The resulting
-// sequence is then decimated with the same filter, matched to the
-// interpolator.
-//
-// SEE ALSO: firinterp_crcf_example.c
-//
+char __docstr__[] =
+"This example demonstrates interpolation and decimation of a QPSK"
+" signal with a square-root Nyquist filter."
+" Data symbols are generated and then interpolated according to a"
+" finite impulse response square-root Nyquist filter.  The resulting"
+" sequence is then decimated with the same filter, matched to the"
+" interpolator.";
 
 #include <stdio.h>
 #include <stdlib.h>

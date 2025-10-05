@@ -1,4 +1,6 @@
-// Generate continuous signals, decompose with analysis channelizer, show spectra
+char __docstr__[] =
+"Generate continuous signals, decompose with analysis channelizer, show spectra.";
+
 #include <stdio.h>
 #include <math.h>
 #include <complex.h>

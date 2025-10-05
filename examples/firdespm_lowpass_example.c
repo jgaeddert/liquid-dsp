@@ -1,10 +1,6 @@
-//
-// firdespm_lowpass_example.c
-//
-// This example demonstrates a low-pass finite impulse response filter
-// design using the Parks-McClellan algorithm.
-//
-// SEE ALSO: firdes_kaiser_example.c
+char __docstr__[] =
+"This example demonstrates a low-pass finite impulse response filter"
+" design using the Parks-McClellan algorithm.";
 
 #include <stdio.h>
 #include <stdlib.h>

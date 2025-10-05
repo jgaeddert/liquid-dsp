@@ -1,9 +1,10 @@
-// This example tests the least mean-squares (LMS) equalizer (EQ) on a
-// signal with an unknown modulation and carrier frequency offset. That
-// is, the equalization is done completely blind of the modulation
-// scheme or its underlying data set. The error estimate assumes a
-// constant modulus linear modulation scheme. This works surprisingly
-// well even more amplitude-modulated signals, e.g. 'qam16'.
+char __docstr__[] =
+"This example tests the least mean-squares (LMS) equalizer (EQ) on a"
+" signal with an unknown modulation and carrier frequency offset. That"
+" is, the equalization is done completely blind of the modulation"
+" scheme or its underlying data set. The error estimate assumes a"
+" constant modulus linear modulation scheme. This works surprisingly"
+" well even more amplitude-modulated signals, e.g. 'qam16'.";
 
 #include <stdio.h>
 #include <stdlib.h>

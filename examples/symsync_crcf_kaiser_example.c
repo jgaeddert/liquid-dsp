@@ -1,9 +1,6 @@
-//
-// symsync_crcf_kaiser_example.c
-//
-// This is a simplified example of the symync family of objects to show how
-// symbol timing can be recovered after the matched filter output.
-//
+char __docstr__[] =
+"This is a simplified example of the symync family of objects to show how"
+" symbol timing can be recovered after the matched filter output.";
 
 #include <stdio.h>
 #include <stdlib.h>

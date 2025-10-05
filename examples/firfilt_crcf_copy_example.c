@@ -1,4 +1,5 @@
-// Demonstrate filter copy operation
+char __docstr__[] = "Demonstrate filter copy operation";
+
 #include <stdio.h>
 #include <math.h>
 #include <complex.h>

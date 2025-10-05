@@ -1,4 +1,6 @@
-// Demonstrates least mean-squares (LMS) equalizer (EQ) on a QPSK signal
+char __docstr__[] =
+"Demonstrates least mean-squares (LMS) equalizer (EQ) on a QPSK signal";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>

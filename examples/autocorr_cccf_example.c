@@ -1,11 +1,12 @@
-// This example demonstrates the autocorr (auto-correlation) object
-// functionality.  A random time-domain sequence is generated which
-// exhibits time-domain repetitions (auto-correlation properties),
-// for example:  abcdabcdabcd....abcd.  The sequence is pushed through
-// the autocorr object, and the results are written to an output file.
-// The command-line arguments allow the user to experiment with the
-// sequence length, number of sequence repetitions, and properties of
-// the auto-correlator, as well as signal-to-noise ratio.
+char __docstr__[] =
+"This example demonstrates the autocorr (auto-correlation) object"
+" functionality.  A random time-domain sequence is generated which"
+" exhibits time-domain repetitions (auto-correlation properties),"
+" for example:  abcdabcdabcd....abcd.  The sequence is pushed through"
+" the autocorr object, and the results are written to an output file."
+" The command-line arguments allow the user to experiment with the"
+" sequence length, number of sequence repetitions, and properties of"
+" the auto-correlator, as well as signal-to-noise ratio.";
 
 #include <stdio.h>
 #include <stdlib.h>

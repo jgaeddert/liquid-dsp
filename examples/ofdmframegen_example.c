@@ -1,6 +1,4 @@
-//
-//
-//
+char __docstr__[] = "Example demonstrating the OFDM frame generator.";
 
 #include <stdio.h>
 #include <math.h>

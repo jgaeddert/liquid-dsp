@@ -1,6 +1,4 @@
-//
-// Fading generator example
-//
+char __docstr__[] = "Fading generator example";
 
 #include <stdio.h>
 #include <stdlib.h>

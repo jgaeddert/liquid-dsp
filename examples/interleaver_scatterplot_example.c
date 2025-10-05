@@ -1,4 +1,5 @@
-// generate interleaver scatterplot figure
+char __docstr__[] = "Generate interleaver scatterplot figure.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

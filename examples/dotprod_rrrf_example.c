@@ -1,9 +1,6 @@
-//
-// dotprod_rrrf_example.c
-//
-// This example demonstrates the interface to the floating-point dot
-// product object (dotprod_rrrf).
-//
+char __docstr__[] =
+"This example demonstrates the interface to the floating-point dot"
+" product object (dotprod_rrrf).";
 
 #include <stdio.h>
 #include "liquid.h"

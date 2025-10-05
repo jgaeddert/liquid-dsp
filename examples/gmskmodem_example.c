@@ -1,6 +1,4 @@
-// 
-// gmskmodem_example.c
-//
+char __docstr__[] = "Demonstrate GMSK modem interface.";
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,8 +1,9 @@
-// This example demonstrates the functionality of the arbitrary
-// modem, a digital modulator/demodulator object with signal
-// constellation points chosen arbitrarily.  A simple bit-error
-// rate simulation is then run to test the performance of the
-// modem.  The results are written to a file.
+char __docstr__[] =
+"This example demonstrates the functionality of the arbitrary"
+" modem, a digital modulator/demodulator object with signal"
+" constellation points chosen arbitrarily.  A simple bit-error"
+" rate simulation is then run to test the performance of the"
+" modem.  The results are written to a file.";
 
 #include <stdio.h>
 #include <stdlib.h>

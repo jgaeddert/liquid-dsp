@@ -1,9 +1,6 @@
-//
-// agc_rrrf_example.c
-//
-// Automatic gain control example demonstrating its transient
-// response.
-//
+char __docstr__[] =
+"Automatic gain control example demonstrating its transient"
+" response on real-valued inputs";
 
 #include <stdio.h>
 #include <stdlib.h>

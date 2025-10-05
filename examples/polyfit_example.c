@@ -1,4 +1,5 @@
-// Test polynomial fit to sample data.
+char __docstr__[] = "Test polynomial fit to sample data.";
+
 #include <stdio.h>
 #include "liquid.h"
 #define OUTPUT_FILENAME "polyfit_example.m"

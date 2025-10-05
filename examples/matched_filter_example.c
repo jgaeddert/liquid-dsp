@@ -1,6 +1,4 @@
-//
-// matched_filter_example.c
-//
+char __docstr__[] = "Demonstrate how to run a matched filter.";
 
 #include <stdio.h>
 #include <stdlib.h>

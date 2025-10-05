@@ -1,11 +1,8 @@
-//
-// qdetector_example.c
-//
-// This example demonstrates the functionality of the qdetector object
-// to detect an arbitrary signal in time in the presence of noise,
-// carrier frequency/phase offsets, and fractional-sample timing
-// offsets.
-//
+char __docstr__[] =
+"This example demonstrates the functionality of the qdetector object"
+" to detect an arbitrary signal in time in the presence of noise,"
+" carrier frequency/phase offsets, and fractional-sample timing"
+" offsets.";
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,4 +1,5 @@
-// Tests simple frequency modulation/demodulation
+char __docstr__[] = "Tests simple frequency modulation/demodulation";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

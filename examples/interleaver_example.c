@@ -1,15 +1,11 @@
-//
-// interleaver_example.c
-//
-// This example demonstrates the functionality of the liquid
-// interleaver object.  Interleavers serve to distribute 
-// grouped bit errors evenly throughout a block of data. This
-// aids certain forward error-correction codes in correcting
-// bit errors.  In this example, data bits are interleaved and
-// de-interleaved; the resulting sequence is validated to
-// match the original.
-// SEE ALSO: packetizer_example.c
-//
+char __docstr__[] =
+"This example demonstrates the functionality of the liquid"
+" interleaver object.  Interleavers serve to distribute"
+" grouped bit errors evenly throughout a block of data. This"
+" aids certain forward error-correction codes in correcting"
+" bit errors.  In this example, data bits are interleaved and"
+" de-interleaved; the resulting sequence is validated to"
+" match the original.";
 
 #include <stdio.h>
 #include <stdlib.h> // for rand()

@@ -1,7 +1,9 @@
-// This example demonstrates how the nco/pll object (numerically-controlled
-// oscillator with phase-locked loop) can be used for carrier frequency
-// recovery in digital modems.  The modem type, SNR, and other parameters are
-// specified via the command-line interface.
+char __docstr__[] =
+"This example demonstrates how the nco/pll object (numerically-controlled"
+" oscillator with phase-locked loop) can be used for carrier frequency"
+" recovery in digital modems.  The modem type, SNR, and other parameters are"
+" specified via the command-line interface.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>

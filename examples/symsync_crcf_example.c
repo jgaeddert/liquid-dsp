@@ -1,12 +1,9 @@
-//
-// symsync_crcf_example.c
-//
-// This example demonstrates the basic principles of the symbol timing
-// recovery family of objects, specifically symsync_crcf. A set of random
-// QPSK symbols are generated and interpolated with a timing offset. The
-// resulting signal is run through the symsync_crcf object which applies a
-// matched filter and recovers timing producing a clean constellation.
-//
+char __docstr__[] =
+"This example demonstrates the basic principles of the symbol timing"
+" recovery family of objects, specifically symsync_crcf. A set of random"
+" QPSK symbols are generated and interpolated with a timing offset. The"
+" resulting signal is run through the symsync_crcf object which applies a"
+" matched filter and recovers timing producing a clean constellation.";
 
 #include <stdio.h>
 #include <stdlib.h>

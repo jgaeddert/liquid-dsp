@@ -1,11 +1,8 @@
-//
-// qpacketmodem_example.c
-//
-// This example demonstrates the basic packet modem encoder/decoder
-// operation. A packet of data is encoded and modulated into symbols,
-// channel noise is added, and the resulting packet is demodulated
-// and decoded.
-//
+char __docstr__[] =
+"This example demonstrates the basic packet modem encoder/decoder"
+" operation. A packet of data is encoded and modulated into symbols,"
+" channel noise is added, and the resulting packet is demodulated"
+" and decoded.";
 
 #include <stdio.h>
 #include <stdlib.h>

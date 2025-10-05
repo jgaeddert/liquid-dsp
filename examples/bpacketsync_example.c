@@ -1,6 +1,4 @@
-//
-// bpacketsync_example.c
-//
+char __docstr__[] = "Demonstrate bpacketsync interface.";
 
 #include <stdio.h>
 #include <stdlib.h>

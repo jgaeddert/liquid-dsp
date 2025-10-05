@@ -1,9 +1,6 @@
-// 
-// random_histogram_example.c
-//
-// This example tests the random number generators for different
-// distributions.
-//
+char __docstr__[] =
+"This example tests the random number generators for different"
+" distributions.";
 
 #include <stdio.h>
 #include <stdlib.h>

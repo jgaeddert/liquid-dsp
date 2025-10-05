@@ -1,4 +1,5 @@
-// Demonstration of rate matching with the arbitrary resampler
+char __docstr__[] = "Demonstration of rate matching with the arbitrary resampler";
+
 #include <complex.h>
 #include <math.h>
 #include <stdio.h>

@@ -1,11 +1,7 @@
-//
-// firdespm_callback_example.c
-//
-// This example demonstrates finite impulse response filter design
-// using the Parks-McClellan algorithm with callback function for
-// arbitrary response and weighting function.
-//
-// SEE ALSO: firdes_kaiser_example.c
+char __docstr__[] =
+"This example demonstrates finite impulse response filter design"
+" using the Parks-McClellan algorithm with callback function for"
+" arbitrary response and weighting function.";
 
 #include <stdio.h>
 #include <stdlib.h>

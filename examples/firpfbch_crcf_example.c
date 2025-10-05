@@ -1,13 +1,10 @@
-//
-// firpfbch_crcf_example.c
-//
-// Finite impulse response (FIR) polyphase filter bank (PFB)
-// channelizer example.  This example demonstrates the functionality
-// of the polyphase filter bank channelizer and how its output
-// is mathematically equivalent to a series of parallel down-
-// converters (mixers/decimators). Both the synthesis and analysis
-// filter banks are presented.
-//
+char __docstr__[] =
+"Finite impulse response (FIR) polyphase filter bank (PFB)"
+" channelizer example.  This example demonstrates the functionality"
+" of the polyphase filter bank channelizer and how its output"
+" is mathematically equivalent to a series of parallel down-converts"
+" (mixers/decimators). Both the synthesis and analysis"
+" filter banks are presented.";
 
 #include <stdio.h>
 #include <stdlib.h>

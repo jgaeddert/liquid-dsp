@@ -1,4 +1,5 @@
-// Compute equivalent noise bandwidth of window functions
+char __docstr__[] = "Compute equivalent noise bandwidth of window functions.";
+
 #include <stdio.h>
 #include <string.h>
 #include "liquid.h"

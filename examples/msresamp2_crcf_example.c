@@ -1,8 +1,4 @@
-//
-// msresamp2_crcf_example.c
-//
-// Demonstration of the multi-stage half-band resampler
-//
+char __docstr__[] = "Demonstration of the multi-stage half-band resampler";
 
 #include <stdio.h>
 #include <stdlib.h>

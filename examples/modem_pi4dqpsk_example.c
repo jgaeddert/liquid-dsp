@@ -1,4 +1,5 @@
-// Demonstrate pi/4 differential QPSK modem.
+char __docstr__[] = "Demonstrate pi/4 differential QPSK modem.";
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>

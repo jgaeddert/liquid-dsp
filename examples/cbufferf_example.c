@@ -1,8 +1,6 @@
-// This example demonstrates the circular buffer object on
-// floating-point data.
-//
-// SEE ALSO: wdelayf_example.c
-//           windowf_example.c
+char __docstr__[] =
+"This example demonstrates the circular buffer object on"
+" floating-point data.";
 
 #include <stdio.h>
 

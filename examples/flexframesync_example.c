@@ -1,19 +1,13 @@
-//
-// flexframesync_example.c
-//
-// This example demonstrates the basic interface to the flexframegen and
-// flexframesync objects used to completely encapsulate raw data bytes
-// into frame samples (nearly) ready for over-the-air transmission. A
-// 14-byte header and variable length payload are encoded into baseband
-// symbols using the flexframegen object.  The resulting symbols are
-// interpolated using a root-Nyquist filter and the resulting samples are
-// then fed into the flexframesync object which attempts to decode the
-// frame. Whenever frame is found and properly decoded, its callback
-// function is invoked.
-//
-// SEE ALSO: flexframesync_reconfig_example.c
-//           framesync64_example.c
-//
+char __docstr__[] =
+"This example demonstrates the basic interface to the flexframegen and"
+" flexframesync objects used to completely encapsulate raw data bytes"
+" into frame samples (nearly) ready for over-the-air transmission. A"
+" 14-byte header and variable length payload are encoded into baseband"
+" symbols using the flexframegen object.  The resulting symbols are"
+" interpolated using a root-Nyquist filter and the resulting samples are"
+" then fed into the flexframesync object which attempts to decode the"
+" frame. Whenever frame is found and properly decoded, its callback"
+" function is invoked.";
 
 #include <stdio.h>
 #include <stdlib.h>

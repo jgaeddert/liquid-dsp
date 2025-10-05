@@ -1,4 +1,5 @@
-// demonstrate error handling in liquid
+char __docstr__[] = "Demonstrate error handling in liquid";
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "liquid.h"

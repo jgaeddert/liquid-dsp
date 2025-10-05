@@ -1,4 +1,5 @@
-// test library versioning
+char __docstr__[] = "Test libliquid library versioning";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "liquid.h"

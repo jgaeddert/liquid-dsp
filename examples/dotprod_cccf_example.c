@@ -1,9 +1,6 @@
-//
-// dotprod_cccf_example.c
-//
-// This example demonstrates the interface to the complex floating-point
-// dot product object (dotprod_cccf).
-//
+char __docstr__[] =
+"This example demonstrates the interface to the complex floating-point"
+" dot product object (dotprod_cccf).";
 
 #include <stdio.h>
 #include "liquid.h"

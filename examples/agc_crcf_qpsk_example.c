@@ -1,7 +1,8 @@
-// Automatic gain control test for data signals with fluctuating signal
-// levels.  QPSK modulation introduces periodic random zero-crossings
-// which gives instantaneous amplitude levels near zero.  This example
-// tests the response of the AGC to these types of signals.
+char __docstr__[] =
+"Automatic gain control test for data signals with fluctuating signal"
+" levels.  QPSK modulation introduces periodic random zero-crossings"
+" which gives instantaneous amplitude levels near zero.  This example"
+" tests the response of the AGC to these types of signals.";
 
 #include <stdio.h>
 #include <stdlib.h>

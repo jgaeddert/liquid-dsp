@@ -1,8 +1,4 @@
-//
-// wdelayf_example.c
-//
-// SEE ALSO: bufferf_example.c
-//           windowf_example.c
+char __docstr__[] = "Demonstration of wdelayf object";
 
 #include <stdio.h>
 

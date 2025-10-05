@@ -1,12 +1,9 @@
-// 
-// detector_example.c
-//
-// This example demonstrates the binary pre-demodulator synchronizer. A random
-// binary sequence is generated, modulated with BPSK, and then interpolated.
-// The resulting sequence is used to generate a detector object which in turn
-// is used to detect a signal in the presence of carrier frequency and timing
-// offsets and additive white Gauss noise.
-//
+char __docstr__[] =
+"This example demonstrates the binary pre-demodulator synchronizer. A random"
+" binary sequence is generated, modulated with BPSK, and then interpolated."
+" The resulting sequence is used to generate a detector object which in turn"
+" is used to detect a signal in the presence of carrier frequency and timing"
+" offsets and additive white Gauss noise.";
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,15 +1,10 @@
-//
-// fec_soft_example.c
-//
-// This example demonstrates the interface for forward error-correction
-// (FEC) codes with soft-decision decoding.  A buffer of data bytes is
-// encoded before the data are corrupted with at least one error and
-// noise. The decoder then attempts to recover the original data set
-// from the soft input bits.  The user may select the FEC scheme from
-// the command-line interface.
-//
-// SEE ALSO: fec_example.c
-//           packetizer_soft_example.c
+char __docstr__[] =
+"This example demonstrates the interface for forward error-correction"
+" (FEC) codes with soft-decision decoding.  A buffer of data bytes is"
+" encoded before the data are corrupted with at least one error and"
+" noise. The decoder then attempts to recover the original data set"
+" from the soft input bits.  The user may select the FEC scheme from"
+" the command-line interface.";
 
 #include <stdio.h>
 #include <stdlib.h>

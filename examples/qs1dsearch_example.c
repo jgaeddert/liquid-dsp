@@ -1,4 +1,5 @@
-// quad-section search in one dimension
+char __docstr__[] = "Demonstrate quad-section search in one dimension.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

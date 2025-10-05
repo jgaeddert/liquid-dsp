@@ -1,4 +1,4 @@
-// waterfall example
+char __docstr__[] = "Spectrum waterfall example.";
 
 #include <stdio.h>
 #include <stdlib.h>

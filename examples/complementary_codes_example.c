@@ -1,14 +1,9 @@
-//
-// complementary_codes_example.c
-// 
-// This example demonstrates how to generate complementary binary
-// codes in liquid.  A pair of codes is generated using the bsequence
-// interface, their auto-correlations are computed, and the result is
-// summed and printed to the screen.  The results are also printed to an
-// output file, which plots the sequences and their auto-correlations.
-//
-// SEE ALSO: bsequence_example.c
-//           msequence_example.c
+char __docstr__[] =
+"This example demonstrates how to generate complementary binary"
+" codes in liquid.  A pair of codes is generated using the bsequence"
+" interface, their auto-correlations are computed, and the result is"
+" summed and printed to the screen.  The results are also printed to an"
+" output file, which plots the sequences and their auto-correlations.";
 
 #include <stdio.h>
 #include <stdlib.h>

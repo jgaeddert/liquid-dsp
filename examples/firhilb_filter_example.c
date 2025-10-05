@@ -1,13 +1,7 @@
-//
-// firhilb_filter_example.c
-//
-// Hilbert transform example. This example demonstrates the
-// functionality of firhilbf (finite impulse response Hilbert transform)
-// as a filter to remove the negative half of the spectrum.
-//
-// SEE ALSO: firhilb_interp_example.c
-//           firhilb_example.c
-//
+char __docstr__[] =
+"Hilbert transform example. This example demonstrates the"
+" functionality of firhilbf (finite impulse response Hilbert transform)"
+" as a filter to remove the negative half of the spectrum.";
 
 #include <stdio.h>
 #include <complex.h>

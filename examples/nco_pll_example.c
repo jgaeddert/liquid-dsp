@@ -1,14 +1,8 @@
-//
-// nco_pll_example.c
-//
-// This example demonstrates how the use the nco/pll object
-// (numerically-controlled oscillator with phase-locked loop) interface for
-// tracking to a complex sinusoid.  The loop bandwidth, phase offset, and
-// other parameter can be specified via the command-line interface.
-//
-// SEE ALSO: nco_example.c
-//           nco_pll_modem_example.c
-//
+char __docstr__[] =
+"This example demonstrates how the use the nco/pll object"
+" (numerically-controlled oscillator with phase-locked loop) interface for"
+" tracking to a complex sinusoid.  The loop bandwidth, phase offset, and"
+" other parameter can be specified via the command-line interface.";
 
 #include <stdio.h>
 #include <stdlib.h>

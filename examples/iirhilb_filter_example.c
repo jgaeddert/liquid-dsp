@@ -1,13 +1,7 @@
-//
-// iirhilb_filter_example.c
-//
-// Hilbert transform example. This example demonstrates the
-// functionality of iirhilbf (infinite impulse response Hilbert transform)
-// as a filter to remove the negative half of the spectrum.
-//
-// SEE ALSO: iirhilb_interp_example.c
-//           iirhilb_example.c
-//
+char __docstr__[] =
+"Hilbert transform example. This example demonstrates the"
+" functionality of iirhilbf (infinite impulse response Hilbert transform)"
+" as a filter to remove the negative half of the spectrum.";
 
 #include <stdio.h>
 #include <complex.h>

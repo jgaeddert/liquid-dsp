@@ -1,9 +1,6 @@
-//
-// msourcecf_example.c
-//
-// This example demonstrates generating multiple signal sources simultaneously
-// for testing using the msource (multi-source) family of objects.
-//
+char __docstr__[] =
+"This example demonstrates generating multiple signal sources simultaneously"
+" for testing using the msource (multi-source) family of objects.";
 
 #include <stdio.h>
 #include <stdlib.h>

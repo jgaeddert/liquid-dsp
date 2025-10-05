@@ -1,8 +1,5 @@
-//
-// modular_arithmetic_example.c
-//
-// This example demonstrates some modular arithmetic functions.
-//
+char __docstr__[] =
+"This example demonstrates some modular arithmetic functions.";
 
 #include <stdio.h>
 #include "liquid.h"

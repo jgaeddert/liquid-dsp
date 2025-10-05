@@ -1,5 +1,6 @@
-// This example demonstrates the iirinterp object (IIR interpolator)
-// interface.
+char __docstr__[] =
+"This example demonstrates the iirinterp object (IIR interpolator) interface.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

@@ -1,9 +1,6 @@
-//
-// msresamp_crcf_noise_example.c
-//
-// Demonstration of mulsti-stage resamp object whereby an input noise signal
-// is resampled at a rate 'r'.
-//
+char __docstr__[] =
+"Demonstration of mulsti-stage resamp object whereby an input noise signal"
+" is resampled at a rate 'r'.";
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,6 +1,7 @@
-// This example tests the performance for detecting and decoding frames
-// with the dsssframe64gen and dsssframe64sync objects.
-// SEE ALSO: dsssframe64sync_example.c
+char __docstr__[] =
+"This example tests the performance for detecting and decoding frames"
+" with the dsssframe64gen and dsssframe64sync objects.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

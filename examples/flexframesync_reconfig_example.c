@@ -1,9 +1,6 @@
-//
-// flexframesync_reconfig_example.c
-//
-// Demonstrates the reconfigurability of the flexframegen and
-// flexframesync objects.
-//
+char __docstr__[] =
+"Demonstrates the reconfigurability of the flexframegen and"
+" flexframesync objects.";
 
 #include <stdio.h>
 #include <stdlib.h>

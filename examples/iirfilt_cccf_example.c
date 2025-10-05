@@ -1,10 +1,7 @@
-//
-// iirfilt_cccf_example.c
-//
-// Complex infinite impulse response filter example. Demonstrates the
-// functionality of iirfilt with complex coefficients by designing a
-// filter with specified parameters and then filters noise.
-//
+char __docstr__[] =
+"Complex infinite impulse response filter example. Demonstrates the"
+" functionality of iirfilt with complex coefficients by designing a"
+" filter with specified parameters and then filters noise.";
 
 #include <stdlib.h>
 #include <stdio.h>

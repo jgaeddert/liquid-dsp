@@ -1,4 +1,5 @@
-// This example runs a bit error rate simulation for GMSK modulation.
+char __docstr__[] = "This example runs a bit error rate simulation for GMSK modulation.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>

@@ -1,9 +1,6 @@
-//
-// agc_crcf_example.c
-//
-// Automatic gain control example demonstrating its transient
-// response.
-//
+char __docstr__[] =
+"Automatic gain control example demonstrating its transient"
+" response with squelch control.";
 
 #include <stdio.h>
 #include <stdlib.h>

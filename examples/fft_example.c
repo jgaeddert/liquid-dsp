@@ -1,11 +1,6 @@
-//
-// fft_example.c
-//
-// This example demonstrates the interface to the fast discrete Fourier
-// transform (FFT).
-// SEE ALSO: mdct_example.c
-//           fct_example.c
-//
+char __docstr__[] =
+"This example demonstrates the interface to the fast discrete Fourier"
+" transform (FFT).";
 
 #include <stdio.h>
 #include <stdlib.h>

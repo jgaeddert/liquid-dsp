@@ -1,7 +1,6 @@
-// msequence_generator_example.c
-//
-// This example demonstrates finding maximal-length sequence
-// (m-sequence) generator polynomials of a certain length.
+char __docstr__[] =
+"This example demonstrates finding maximal-length sequence"
+" (m-sequence) generator polynomials of a certain length.";
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,5 +1,7 @@
-// This example runs a bit error rate simulation for a specified modulation
-// scheme and saves the resulting data points to a file for plotting.
+char __docstr__[] =
+"This example runs a bit error rate simulation for a specified modulation"
+" scheme and saves the resulting data points to a file for plotting.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>

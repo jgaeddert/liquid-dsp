@@ -1,12 +1,6 @@
-// 
-// nco_example.c
-//
-// This example demonstrates the most basic functionality of the
-// numerically-controlled oscillator (NCO) object.
-//
-// SEE ALSO: nco_pll_example.c
-//           nco_pll_modem_example.c
-//
+char __docstr__[] =
+"This example demonstrates the most basic functionality of the"
+" numerically-controlled oscillator (NCO) object.";
 
 #include <stdio.h>
 #include <math.h>

@@ -1,8 +1,4 @@
-//
-// spgramcf_example.c
-//
-// Spectral periodogram example with complex inputs.
-//
+char __docstr__[] = "Spectral periodogram example with complex inputs.";
 
 #include <stdio.h>
 #include <stdlib.h>

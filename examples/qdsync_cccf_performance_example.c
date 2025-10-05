@@ -1,5 +1,7 @@
-// This example tests the performance for detecting and decoding frames
-// with the qdsync_cccf object.
+char __docstr__[] =
+"This example tests the performance for detecting and decoding frames"
+" with the qdsync_cccf object.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

@@ -1,9 +1,5 @@
-//
-// math_primitive_root_example.c
-//
-// Demonstrates computing primitive root of a number using modular
-// arithmetic.
-//
+char __docstr__[] =
+"Demonstrates computing primitive root of a number using modular arithmetic.";
 
 #include <stdio.h>
 #include <stdlib.h>

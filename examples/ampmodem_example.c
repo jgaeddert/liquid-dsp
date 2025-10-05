@@ -1,10 +1,7 @@
-// 
-// ampmodem_test.c
-//
-// Tests simple modulation/demodulation of the ampmodem (analog
-// amplitude modulator/demodulator) with noise, carrier phase,
-// and carrier frequency offsets.
-//
+char __docstr__[] =
+"Tests simple modulation/demodulation of the ampmodem (analog"
+" amplitude modulator/demodulator) with noise, carrier phase,"
+" and carrier frequency offsets.";
 
 #include <stdlib.h>
 #include <stdio.h>

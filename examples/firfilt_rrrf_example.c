@@ -1,4 +1,5 @@
-// Demonstrate firfilt_rrrf object.
+char __docstr__[] = "Demonstrate firfilt_rrrf object.";
+
 #include <stdio.h>
 #include <math.h>
 #include "liquid.h"

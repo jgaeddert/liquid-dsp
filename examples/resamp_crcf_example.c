@@ -1,5 +1,7 @@
-// Demonstration of arbitrary resampler object whereby an input signal
-// is resampled at an arbitrary rate.
+char __docstr__[] =
+"Demonstration of arbitrary resampler object whereby an input signal"
+" is resampled at an arbitrary rate.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>

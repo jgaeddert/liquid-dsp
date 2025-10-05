@@ -1,13 +1,13 @@
-// This example demonstrates the interfaces to the framegen64 and
-// framesync64 objects used to completely encapsulate data for
-// over-the-air transmission.  A 64-byte payload is generated, and then
-// encoded, modulated, and interpolated using the framegen64 object.
-// The resulting complex baseband samples are corrupted with noise and
-// moderate carrier frequency and phase offsets before the framesync64
-// object attempts to decode the frame.  The resulting data are compared
-// to the original to validate correctness.
-//
-// SEE ALSO: flexframesync_example.c
+char __docstr__[] =
+"This example demonstrates the interfaces to the framegen64 and"
+" framesync64 objects used to completely encapsulate data for"
+" over-the-air transmission.  A 64-byte payload is generated, and then"
+" encoded, modulated, and interpolated using the framegen64 object."
+" The resulting complex baseband samples are corrupted with noise and"
+" moderate carrier frequency and phase offsets before the framesync64"
+" object attempts to decode the frame.  The resulting data are compared"
+" to the original to validate correctness.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

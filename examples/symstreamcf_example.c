@@ -1,6 +1,4 @@
-//
-// symstreamcf_example.c
-//
+char __docstr__[] = "Demonstrate symstreamcf object.";
 
 #include <stdio.h>
 #include <stdlib.h>

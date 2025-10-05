@@ -1,8 +1,4 @@
-//
-// math_lngamma_example.c
-//
-// Demonstrates accuracy of lngamma function
-//
+char __docstr__[] = "Demonstrates accuracy of lngamma function";
 
 #include "liquid.h"
 #include <stdio.h>

@@ -1,11 +1,8 @@
-//
-// lpc_example.c
-//
-// This example demonstrates linear prediction in liquid. An input signal
-// is generated which exhibits a strong temporal correlation. The linear
-// predictor generates an approximating all-pole filter which minimizes
-// the squared error between the prediction and the actual output.
-//
+char __docstr__[] =
+"This example demonstrates linear prediction in liquid. An input signal"
+" is generated which exhibits a strong temporal correlation. The linear"
+" predictor generates an approximating all-pole filter which minimizes"
+" the squared error between the prediction and the actual output.";
 
 #include <stdio.h>
 #include <math.h>

@@ -1,4 +1,5 @@
-// nco_pll_real_example.c : simulation of a real-valued phase-locked loop
+char __docstr__[] = "Simulation of a real-valued phase-locked loop";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

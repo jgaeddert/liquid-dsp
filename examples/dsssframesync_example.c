@@ -1,6 +1,4 @@
-//
-// dsssframesync_example.c
-//
+char __docstr__[] = "Demonstrate the interface to dsssframesync";
 
 #include <assert.h>
 #include <getopt.h>

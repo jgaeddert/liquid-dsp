@@ -1,10 +1,7 @@
-//
-// firfilt_cccf_example.c
-//
-// This example demonstrates the finite impulse response (FIR) filter
-// with complex coefficients as a cross-correlator between transmitted
-// and received sequences.
-//
+char __docstr__[] =
+"This example demonstrates the finite impulse response (FIR) filter"
+" with complex coefficients as a cross-correlator between transmitted"
+" and received sequences.";
 
 #include <stdio.h>
 #include <stdlib.h>

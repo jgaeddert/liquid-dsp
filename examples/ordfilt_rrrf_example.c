@@ -1,6 +1,4 @@
-//
-// ordfilt_rrrf_example.c
-//
+char __docstr__[] = "Demonstration of filter based on order statistics";
 
 #include <stdio.h>
 #include <math.h>

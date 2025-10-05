@@ -1,9 +1,6 @@
-//
-// rresamp_rrrf_example.c
-//
-// Demonstration of rresamp object whereby an input signal
-// is resampled at a rational rate Q/P.
-//
+char __docstr__[] =
+"Demonstration of rresamp object whereby an input signal"
+" is resampled at a rational rate Q/P.";
 
 #include <stdio.h>
 #include <stdlib.h>
