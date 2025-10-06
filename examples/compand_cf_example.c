@@ -5,11 +5,14 @@ char __docstr__[] = "Demonstrate interface to compress/expand methods.";
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "compand_cf_example.m"
 
-int main() {
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     float mu=255.0f;
     int n=31;
 

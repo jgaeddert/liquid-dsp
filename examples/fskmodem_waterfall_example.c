@@ -10,6 +10,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 // print usage/help message
 void usage()
@@ -25,7 +26,8 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int m           =     2;   // number of bits/symbol
     unsigned int num_symbols =   400;   // number of data symbols
     float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]

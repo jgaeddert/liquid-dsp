@@ -8,6 +8,7 @@ char __docstr__[] =
 #include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "firfarrow_rrrf_example.m"
 
@@ -21,7 +22,8 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int h_len       = 19;      // filter length
     unsigned int p           = 5;       // polynomial order
     float        fc          = 0.45f;   // filter cutoff

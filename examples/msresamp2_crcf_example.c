@@ -4,9 +4,9 @@ char __docstr__[] = "Demonstration of the multi-stage half-band resampler";
 #include <stdlib.h>
 #include <complex.h>
 #include <math.h>
-#include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "msresamp2_crcf_example.m"
 
@@ -23,7 +23,8 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     float        r  = 0.25f;    // resampling rate (output/input)
     float        As = 60.0f;    // resampling filter stop-band attenuation [dB]
     unsigned int n  =   128;    // number of low-rate samples

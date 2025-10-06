@@ -9,6 +9,7 @@ char __docstr__[] =
 #include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "firinterp_crcf_example.m"
 
@@ -24,8 +25,10 @@ void usage()
 }
 
 
-int main(int argc, char*argv[]) {
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int    k        = 4;       // samples/symbol
     unsigned int    m        = 3;       // filter delay
     float           As       = 60.0f;   // filter stop-band attenuation

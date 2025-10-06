@@ -9,11 +9,11 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <getopt.h>
 #include <time.h>
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "symsync_crcf_example.m"
 
@@ -29,10 +29,10 @@ void usage()
     printf("  n     : number of symbols, default: 400\n");
 }
 
-int main(int argc, char*argv[]) {
-    srand(time(NULL));
-
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int k           = 2;       // samples/symbol (input)
     unsigned int m           = 5;       // filter delay (symbols)
     float        beta        = 0.5f;    // filter excess bandwidth factor
@@ -70,6 +70,8 @@ int main(int argc, char*argv[]) {
         fprintf(stderr,"error: number of symbols must be greater than 0\n");
         exit(1);
     }
+
+    srand(time(NULL));
 
     unsigned int i;
 

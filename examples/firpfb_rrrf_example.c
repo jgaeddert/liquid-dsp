@@ -4,10 +4,13 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <stdio.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 #define OUTPUT_FILENAME "firpfb_rrrf_example.m"
 
-int main(int argc, char*argv[]) {
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int M           = 16;  // interpolation factor
     unsigned int m           =  4;  // filter delay (input samples)
     unsigned int num_samples = 40;  // number of input samples to generate

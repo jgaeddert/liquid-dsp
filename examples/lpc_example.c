@@ -9,11 +9,13 @@ char __docstr__[] =
 #include <complex.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "lpc_example.m"
 
 int main() {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int n = 200;   // input sequence length
     unsigned int p = 4;     // prediction filter order
 

@@ -9,22 +9,22 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "agc_crcf_qpsk_example.m"
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // options
-    float        noise_floor= -40.0f;   // noise floor [dB]
-    float        SNRdB      = 20.0f;    // signal-to-noise ratio [dB]
-    float        bt         = 0.05f;    // loop bandwidth
-    unsigned int num_symbols= 100;      // number of iterations
-    unsigned int d          = 5;        // print every d iterations
-
-    unsigned int k          = 2;        // interpolation factor (samples/symbol)
-    unsigned int m          = 3;        // filter delay (symbols)
-    float        beta       = 0.3f;     // filter excess bandwidth factor
-    float        dt         = 0.0f;     // filter fractional sample delay
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char *,   filename, "agc_crcf_example.m",'o', "output filename",NULL);
+    liquid_argparse_add(float,    noise_floor, -40.0f, 'N', "noise floor [dB]", NULL);
+    liquid_argparse_add(float,    SNRdB,       20.0f,  's', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_add(float,    bt,          0.05f,  'B', "loop bandwidth", NULL);
+    liquid_argparse_add(unsigned, num_symbols, 100,    'n', "number of iterations", NULL);
+    liquid_argparse_add(unsigned, d,           5,      'd', "print every d iterations", NULL);
+    liquid_argparse_add(unsigned, k,           2,      'k', "interpolation factor (samples/symbol)", NULL);
+    liquid_argparse_add(unsigned, m,           3,      'm', "filter delay (symbols)", NULL);
+    liquid_argparse_add(float,    beta,        0.3f,   'b', "filter excess bandwidth factor", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // derived values
     unsigned int num_samples=num_symbols*k;
@@ -38,7 +38,7 @@ int main(int argc, char*argv[])
 
     // create objects
     modemcf mod = modemcf_create(LIQUID_MODEM_QPSK);
-    firinterp_crcf interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_RRC,k,m,beta,dt);
+    firinterp_crcf interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_RRC,k,m,beta,0);
     agc_crcf p = agc_crcf_create();
     agc_crcf_set_bandwidth(p, bt);
 
@@ -84,12 +84,12 @@ int main(int argc, char*argv[])
     // 
     // export results
     //
-    FILE* fid = fopen(OUTPUT_FILENAME,"w");
+    FILE* fid = fopen(filename,"w");
     if (!fid) {
-        fprintf(stderr,"error: %s, could not open '%s' for writing\n", argv[0], OUTPUT_FILENAME);
+        fprintf(stderr,"error: %s, could not open '%s' for writing\n", argv[0], filename);
         exit(1);
     }
-    fprintf(fid,"%% %s: auto-generated file\n\n",OUTPUT_FILENAME);
+    fprintf(fid,"%% %s: auto-generated file\n\n",filename);
     fprintf(fid,"n = %u;\n", num_samples);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
@@ -113,7 +113,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  ylabel('agc output');\n");
     fprintf(fid,"  grid on;\n");
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

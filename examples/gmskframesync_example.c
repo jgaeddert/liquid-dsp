@@ -5,6 +5,7 @@ char __docstr__[] = "Example demonstrating the GMSK flexible frame synchronizer.
 #include <math.h>
 #include <string.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 #define OUTPUT_FILENAME "gmskframesync_example.m"
 
 // callback function
@@ -22,6 +23,10 @@ int callback(unsigned char *  _header,
 
 int main(int argc, char*argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     unsigned int k           = 2;       // samples/symbol
     unsigned int m           = 3;       // filter delay (symbols)
     float        BT          = 0.5f;    // filter bandwidth-time product

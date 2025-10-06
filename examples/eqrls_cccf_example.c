@@ -6,11 +6,14 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <complex.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "eqrls_cccf_example.m"
 
-int main() {
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int n=512;     // number of symbols to observe
     unsigned int ntrain=256;// number of training symbols
     unsigned int h_len=6;   // channel filter length

@@ -4,10 +4,12 @@ char __docstr__[] = "Test GMSK equalization.";
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 #define OUTPUT_FILENAME "gmsk_eqlms_example.m"
 
 int main(int argc, char*argv[]) {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int k      =     4;    // filter samples/symbol
     float        beta   =  0.3f;    // bandwidth-time product
     unsigned int p      =     3;    // equalizer length (symbols, hp_len = 2*k*p+1)

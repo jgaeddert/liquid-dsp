@@ -10,6 +10,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "fskmodem_example.m"
 
@@ -28,7 +29,8 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int m           =   3;     // number of bits/symbol
     unsigned int k           =   0;     // filter samples/symbol
     unsigned int num_symbols = 8000;    // number of data symbols

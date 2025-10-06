@@ -7,6 +7,7 @@ char __docstr__[] =
 #include <math.h>
 #include <getopt.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 // print usage/help message
 void usage()
@@ -19,7 +20,8 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int nfft = 16; // transform size
     int method = 0;         // fft method (ignored)
     int verbose = 0;        // verbose output?

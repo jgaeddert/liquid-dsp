@@ -10,6 +10,7 @@ char __docstr__[] =
 #include <time.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME  "fskframesync_example.m"
 
@@ -41,7 +42,8 @@ int main(int argc, char*argv[])
 {
     srand( time(NULL) );
 
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     float SNRdB       =  20.0f; // signal-to-noise ratio
     float noise_floor = -20.0f; // noise floor
     float dphi        =  0.01f; // carrier frequency offset

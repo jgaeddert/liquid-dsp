@@ -4,8 +4,14 @@ char __docstr__[] = "Demonstrate filter copy operation";
 #include <math.h>
 #include <complex.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-int main() {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // design filter from prototype
     firfilt_crcf filt_orig = firfilt_crcf_create_kaiser(21, 0.345f, 60.0f, 0.0f);
     firfilt_crcf_set_scale(filt_orig, 2.0f);

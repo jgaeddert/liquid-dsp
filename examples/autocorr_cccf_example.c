@@ -14,6 +14,7 @@ char __docstr__[] =
 #include <getopt.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "autocorr_cccf_example.m"
 
@@ -31,8 +32,10 @@ void usage()
 }
 
 
-int main(int argc, char*argv[]) {
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int sequence_len = 32;     // short sequence length
     unsigned int n = 8;                 // number short sequences (repetition length)
     unsigned int window_size = 64;      // autocorr window size

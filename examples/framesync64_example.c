@@ -13,6 +13,7 @@ char __docstr__[] =
 #include <math.h>
 #include <time.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 #define OUTPUT_FILENAME  "framesync64_example.m"
 
 // static callback function
@@ -31,6 +32,10 @@ static int callback(unsigned char *  _header,
 
 int main(int argc, char*argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // create frame generator, synchronizer objects
     framegen64  fg = framegen64_create();
     framesync64 fs = framesync64_create(callback,NULL);

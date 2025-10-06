@@ -7,6 +7,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "gradsearch_datafit_example.m"
 
@@ -34,7 +35,8 @@ float gsfunc(float _x, float * _v)
 
 
 int main() {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int num_samples = 400;     // number of samples
     float sig = 0.1f;                   // noise variance
     unsigned int num_iterations = 1000; // number of iterations to run

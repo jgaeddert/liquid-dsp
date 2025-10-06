@@ -9,9 +9,14 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // create and initialize m-sequence
     msequence q = msequence_create_default(5);
     msequence_print(q);

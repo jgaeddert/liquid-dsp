@@ -5,10 +5,16 @@ char __docstr__[] = "Spectral periodogram example with real inputs.";
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "spgramf_example.m"
 
-int main() {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // spectral periodogram options
     unsigned int nfft        =   1024;  // spectral periodogram FFT size
     unsigned int num_samples =    1e6;  // number of samples

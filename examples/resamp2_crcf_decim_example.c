@@ -7,11 +7,11 @@ char __docstr__[] =
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <getopt.h>
 #include <complex.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "resamp2_crcf_decim_example.m"
 
@@ -27,6 +27,10 @@ void usage()
 
 int main(int argc, char*argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     unsigned int m  =    12; // filter semi-length
     float        As = 60.0f; // stop-band attenuation [dB]
     float        bw =  0.1f; // pulse bandwidth

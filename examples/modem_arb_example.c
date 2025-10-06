@@ -9,9 +9,9 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "modem_arb_example.m"
 
@@ -25,7 +25,8 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int bps=6;         // bits per symbol
     unsigned int n=1024;        // number of data points to evaluate
 

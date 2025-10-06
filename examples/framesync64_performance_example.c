@@ -6,6 +6,7 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 #define OUTPUT_FILENAME  "framesync64_performance_example.m"
 
 // add noise to channel
@@ -20,6 +21,10 @@ void frame64_add_noise(float complex * _buf, float _SNRdB)
 
 int main(int argc, char*argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // create frame generator, synchronizer objects
     framegen64  fg = framegen64_create();
     framesync64 fs = framesync64_create(NULL,NULL);

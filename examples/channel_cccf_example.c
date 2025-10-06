@@ -16,6 +16,7 @@ char __docstr__[] =
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "channel_cccf_example.m"
 
@@ -35,7 +36,8 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int k           = 2;       // samples per symbol
     unsigned int m           = 7;       // filter delay (symbols)
     float        beta        = 0.25f;   // filter excess bandwidth factor

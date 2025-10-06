@@ -6,11 +6,13 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "iirfilt_rrrf_integrator_example.m"
 
 int main() {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int num_samples = 1200;    // number of samples
 
     // allocate memory for data arrays

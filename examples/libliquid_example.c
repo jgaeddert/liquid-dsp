@@ -3,8 +3,14 @@ char __docstr__[] = "Test libliquid library versioning";
 #include <stdio.h>
 #include <stdlib.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-int main() {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // validate that the included header matches linked version
     LIQUID_VALIDATE_LIBVERSION;
 

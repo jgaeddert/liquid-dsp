@@ -12,9 +12,9 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <math.h>
 #include <complex.h>
-#include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "ricek_channel_example.m"
 
@@ -31,7 +31,8 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int h_len = 51;        // doppler filter length
     float fd           = 0.1f;      // maximum doppler frequency
     float K            = 2.0f;      // Rice fading factor

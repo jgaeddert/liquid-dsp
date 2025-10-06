@@ -5,12 +5,14 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "firpfbch2_crcf_reconstruct_example.m"
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int M  = 64;           // number of channels in analysis filterbank
     unsigned int P  = 22;           // number of channels in synthesis filterbank
     unsigned int m  =  5;           // filter semi-length (symbols)

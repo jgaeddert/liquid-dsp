@@ -6,11 +6,14 @@ char __docstr__[] = "Fading generator example";
 #include <complex.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "debug_fading_generator_example.m"
 
-int main() {
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int h_len=51;  // doppler filter length
     float fd=0.05f;         // maximum doppler frequency
     float K=2.0f;           // Rice fading factor

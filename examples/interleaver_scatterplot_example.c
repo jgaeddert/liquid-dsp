@@ -3,10 +3,10 @@ char __docstr__[] = "Generate interleaver scatterplot figure.";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <getopt.h>
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "interleaver_scatterplot_example.m"
 
@@ -24,7 +24,8 @@ unsigned int interleaver_find_bit(unsigned char * _x,
                                   unsigned int _n);
 
 int main(int argc, char*argv[]) {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int n=8; // message length
     unsigned int depth = 4;
 

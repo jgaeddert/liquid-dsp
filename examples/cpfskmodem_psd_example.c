@@ -11,6 +11,7 @@ char __docstr__[] =
 #include <getopt.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "cpfsk_psd_example.m"
 
@@ -30,7 +31,8 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int    bps         = 1;        // number of bits/symbol
     float           h           = 0.5f;     // modulation index (h=1/2 for MSK)
     unsigned int    k           = 8;        // filter samples/symbol

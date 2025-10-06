@@ -14,10 +14,10 @@ char __docstr__[] =
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include <getopt.h>
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 void usage()
 {
@@ -49,7 +49,8 @@ int main(int argc, char *argv[])
 {
     //srand( time(NULL) );
 
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     modulation_scheme ms     =  LIQUID_MODEM_QPSK; // mod. scheme
     crc_scheme check         =  LIQUID_CRC_32;     // data validity check
     fec_scheme fec0          =  LIQUID_FEC_NONE;   // fec (inner)

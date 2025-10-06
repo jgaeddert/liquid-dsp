@@ -3,10 +3,10 @@ char __docstr__[] = "Demonstrate how to run a matched filter.";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <getopt.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "matched_filter_example.m"
 
@@ -24,7 +24,8 @@ void usage()
 
 
 int main(int argc, char*argv[]) {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int k=2;   // samples/symbol
     unsigned int m=3;   // symbol delay
     float beta=0.7f;    // excess bandwidth factor

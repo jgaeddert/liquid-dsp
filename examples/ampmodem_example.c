@@ -11,6 +11,7 @@ char __docstr__[] =
 #include <complex.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "ampmodem_example.m"
 
@@ -30,7 +31,8 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     float        mod_index          = 0.8f;     // modulation index (bandwidth)
     float        dphi               = 0.05f;    // carrier frequency offset [radians/sample]
     float        phi                = 2.8f;     // carrier phase offset [radians]

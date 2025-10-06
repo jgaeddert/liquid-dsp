@@ -7,11 +7,14 @@ char __docstr__[] =
 #include <complex.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "firfilt_cccf_notch_example.m"
 
-int main() {
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int num_samples = 600;     // number of samples
     unsigned int m           = 25;      // prototype filter semi-length
     float        As          = 30.0f;   // prototype filter stop-band suppression

@@ -3,10 +3,16 @@ char __docstr__[] = "Demonstration of wdelayf object";
 #include <stdio.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "wdelayf_example.m"
 
-int main() {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     unsigned int delay = 10;
     unsigned int num_samples = 64;
 

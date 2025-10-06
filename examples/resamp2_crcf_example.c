@@ -10,15 +10,20 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "resamp2_crcf_example.m"
 
-int main() {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
     unsigned int m=5;               // filter semi-length (actual length: 4*m+1)
     float bw=0.13f;                 // input signal bandwidth
     float fc=-0.597f;               // input signal carrier frequency (radians/sample)
     unsigned int num_samples=37;    // number of input samples
     float As=60.0f;                 // stop-band attenuation [dB]
+    liquid_argparse_parse(argc,argv);
 
     unsigned int i;
 

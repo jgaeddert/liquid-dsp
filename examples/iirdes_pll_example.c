@@ -6,9 +6,9 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "iirdes_pll_example.m"
 
@@ -28,7 +28,8 @@ void usage()
 int main(int argc, char*argv[]) {
     srand( time(NULL) );
 
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     float phase_offset = M_PI / 4.0f;   // phase offset
     float frequency_offset = 0.3f;      // frequency offset
     float pll_bandwidth = 0.01f;        // PLL bandwidth

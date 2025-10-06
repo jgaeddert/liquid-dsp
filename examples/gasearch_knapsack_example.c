@@ -4,9 +4,9 @@ char __docstr__[] =
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "gasearch_knapsack_example.m"
 
@@ -44,6 +44,10 @@ float knapsack_utility(void * _userdata,
 
 int main(int argc, char*argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     unsigned int num_items = 1000;      // number of items available
     unsigned int num_iterations = 2000; // number of iterations to run
     float capacity = 20.0f;             // total capacity of the knapsack

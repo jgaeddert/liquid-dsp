@@ -8,32 +8,15 @@ char __docstr__[] =
 #include <complex.h>
 #include <getopt.h>
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "agc_crcf_squelch_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("agc_crcf_squelch_example [options]\n");
-    printf("  -h             : print usage\n");
-    printf("  -b <bandwidth> : AGC bandwidth, b >=  0, default: 0.25\n");
-}
-
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // options
-    float bt = 0.25f;   // agc loop bandwidth
-
-    int dopt;
-    while((dopt = getopt(argc,argv,"hn:N:s:b:")) != EOF){
-        switch (dopt) {
-        case 'h': usage();           return 0;
-        case 'b': bt = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char *,   filename, "agc_crcf_squelch_example.m",'o', "output filename",NULL);
+    liquid_argparse_add(float,    bt,       0.01f,               'b', "agc loop bandwidth", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
     if (bt < 0.0f) {
@@ -109,12 +92,12 @@ int main(int argc, char*argv[])
     // 
     // export results
     //
-    FILE* fid = fopen(OUTPUT_FILENAME,"w");
+    FILE* fid = fopen(filename,"w");
     if (!fid) {
-        fprintf(stderr,"error: %s, could not open '%s' for writing\n", argv[0], OUTPUT_FILENAME);
+        fprintf(stderr,"error: %s, could not open '%s' for writing\n", argv[0], filename);
         exit(1);
     }
-    fprintf(fid,"%% %s: auto-generated file\n\n",OUTPUT_FILENAME);
+    fprintf(fid,"%% %s: auto-generated file\n\n",filename);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"n = %u;\n", num_samples);
 
@@ -155,7 +138,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  axis([0 %u 0 8]);\n", num_samples);
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

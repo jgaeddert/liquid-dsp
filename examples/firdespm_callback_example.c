@@ -7,6 +7,7 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "firdespm_callback_example.m"
 
@@ -34,6 +35,10 @@ int callback(double   _frequency,
 
 int main(int argc, char*argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // filter design parameters
     unsigned int n     =  8;    // sinc filter length
     unsigned int h_len = 81;    // inverse sinc filter length

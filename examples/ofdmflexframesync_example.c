@@ -4,10 +4,10 @@ char __docstr__[] = "Example demonstrating the OFDM flexible frame synchronizer.
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include <getopt.h>
 #include <time.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 void usage()
 {
@@ -41,7 +41,8 @@ int main(int argc, char*argv[])
 {
     //srand(time(NULL));
 
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int      M           = 64;                 // number of subcarriers
     unsigned int      cp_len      = 16;                 // cyclic prefix length
     unsigned int      taper_len   = 4;                  // taper length

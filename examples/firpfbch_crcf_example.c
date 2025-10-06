@@ -12,11 +12,14 @@ char __docstr__[] =
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "firpfbch_crcf_example.m"
 
-int main() {
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int num_channels=4;    // number of channels
     unsigned int p=3;               // filter length (symbols)
     unsigned int num_symbols=6;     // number of symbols

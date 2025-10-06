@@ -6,9 +6,15 @@ char __docstr__[] =
 #include <complex.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 #define OUTPUT_FILENAME "eqlms_cccf_example.m"
 
-int main() {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     unsigned int i, h_len=5, w_len=11, num_symbols=400;
     float mu = 0.7f;
 

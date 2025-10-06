@@ -5,10 +5,9 @@ char __docstr__[] = "Demonstrate using qpilotsync for carrier recovery.";
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include <getopt.h>
-#include <assert.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 void usage()
 {
@@ -25,7 +24,8 @@ int main(int argc, char *argv[])
 {
     //srand( time(NULL) );
 
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     int          ms            = LIQUID_MODEM_QAM16;        // mod. scheme
     unsigned int payload_len   = 400;                       // payload length
     unsigned int pilot_spacing =  20;                       // pilot spacing

@@ -4,12 +4,14 @@ char __docstr__[] =
 #include <stdio.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "nco_crcf_mix_example.m"
 
 int main()
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     int          type        = LIQUID_NCO;  // nco type
     float        fc          =      0.05f;  // signal offset frequency
     unsigned int num_samples =     240000;  // number of samples to run

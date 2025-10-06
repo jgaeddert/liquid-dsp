@@ -2,9 +2,9 @@ char __docstr__[] = "Demonstrate GMSK modem interface.";
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <getopt.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "gmskmodem_example.m"
 
@@ -22,7 +22,8 @@ void usage()
 }
 
 int main(int argc, char*argv[]) {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int k=4;                   // filter samples/symbol
     unsigned int m=3;                   // filter delay (symbols)
     float BT=0.3f;                      // bandwidth-time product

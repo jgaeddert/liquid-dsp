@@ -2,11 +2,13 @@ char __docstr__[] = "Kaiser-Bessel window example.";
 
 #include <stdio.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "kaiser_window_example.m"
 
 int main() {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int n=51;      // window length
     float beta = 10.0f;     // Kaiser beta factor
 

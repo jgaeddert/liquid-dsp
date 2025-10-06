@@ -6,11 +6,13 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 #define OUTPUT_FILENAME  "qdsync_cccf_performance_example.m"
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int seq_len      = 1024;   // number of sync symbols
     unsigned int k            =    2;   // samples/symbol
     unsigned int m            =    7;   // filter delay [symbols]

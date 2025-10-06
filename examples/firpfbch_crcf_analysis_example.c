@@ -9,11 +9,14 @@ char __docstr__[] =
 #include <complex.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "firpfbch_crcf_analysis_example.m"
 
-int main() {
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int num_channels =  8;     // number of channels
     unsigned int m            =  4;     // filter delay
     float        As           = 60;     // stop-band attenuation

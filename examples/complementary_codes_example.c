@@ -9,6 +9,7 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <getopt.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "complementary_codes_example.m"
 
@@ -23,7 +24,8 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int n = 32;
 
     int dopt;

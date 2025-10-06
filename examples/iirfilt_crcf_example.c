@@ -11,11 +11,13 @@ char __docstr__[] =
 #include <complex.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "iirfilt_crcf_example.m"
 
 int main() {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int order =   4;       // filter order
     float        fc    =   0.1f;    // cutoff frequency
     float        f0    =   0.0f;    // center frequency

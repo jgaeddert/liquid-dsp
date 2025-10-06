@@ -6,10 +6,10 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include <getopt.h>
 #include <time.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "ofdmframesync_example.m"
 
@@ -49,7 +49,8 @@ int main(int argc, char*argv[])
     // set the random seed differently for each run
     srand(time(NULL));
 
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int M           = 1200;    // number of subcarriers
     unsigned int cp_len      = 60;      // cyclic prefix length
     unsigned int taper_len   = 50;      // taper length

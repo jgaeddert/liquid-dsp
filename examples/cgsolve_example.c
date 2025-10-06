@@ -8,9 +8,12 @@ char __docstr__[] =
 #include <string.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-int main() {
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int n = 8;
 
     unsigned int i;

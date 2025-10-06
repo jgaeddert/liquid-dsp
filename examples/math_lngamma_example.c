@@ -1,13 +1,19 @@
 char __docstr__[] = "Demonstrates accuracy of lngamma function";
 
-#include "liquid.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
+#include "liquid.h"
+#include "liquid.argparse.h"
 #define OUTPUT_FILENAME "math_lngamma_example.m"
 
-int main() {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     unsigned int n = 256;   // number of steps
     float zmin = 1e-3f;     // minimum value
     float zmax = 6.00f;     // maximum value

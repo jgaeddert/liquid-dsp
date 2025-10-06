@@ -11,6 +11,7 @@ char __docstr__[] =
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 // static callback function
 static int callback(unsigned char *  _header,
@@ -36,7 +37,8 @@ static int callback(unsigned char *  _header,
 
 int main(int argc, char *argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int nfft  = 2400;
     float        SNRdB =   -10.0f;
     const char * filename = "dsssframe64sync_example.m";

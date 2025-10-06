@@ -11,6 +11,7 @@ char __docstr__[] =
 #include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "cvsd_example.m"
 
@@ -28,7 +29,8 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int n=512;     // number of samples
     float fc = 0.02;        // input signal frequency
     unsigned int nbits=3;   // number of adjacent bits to observe

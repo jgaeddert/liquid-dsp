@@ -5,11 +5,14 @@ char __docstr__[] = "This example demonstrates the a linear interpolator.";
 #include <math.h>
 #include <getopt.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "firinterp_rrrf_linear_example.m"
 
-int main(int argc, char*argv[]) {
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int M          =  8;   // interpolation factor
     unsigned int num_symbols= 16;   // number of data symbols
 

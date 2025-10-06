@@ -7,6 +7,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "gasearch_example.m"
 
@@ -27,7 +28,12 @@ float peak_callback(void * _userdata, chromosome _c)
     return u_global;
 }
 
-int main() {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     unsigned int num_parameters     = 16;   // dimensionality of search (minimum 1)
     unsigned int bits_per_parameter =  6;   // parameter resolution
     unsigned int num_iterations     = 8000; // number of iterations to run

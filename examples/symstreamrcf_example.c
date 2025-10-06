@@ -5,11 +5,16 @@ char __docstr__[] = "Demonstrate arbitrary rate symstreamrcf object.";
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "symstreamrcf_example.m"
 
-int main()
+int main(int argc, char* argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // symstream parameters
     int          ftype       = LIQUID_FIRFILT_ARKAISER;
     float        bw          =     0.23456789f;

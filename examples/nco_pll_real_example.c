@@ -4,12 +4,16 @@ char __docstr__[] = "Simulation of a real-valued phase-locked loop";
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 #define OUTPUT_FILENAME "nco_pll_real_example.m"
 
-int main() {
-    // parameters and simulation options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
     float        alpha  =  0.002f;  // PLL bandwidth
     unsigned int n      =     500;  // number of samples
+    liquid_argparse_parse(argc,argv);
 
     // objects
     nco_crcf nco_tx = nco_crcf_create(LIQUID_VCO);

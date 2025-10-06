@@ -8,6 +8,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "firdespm_lowpass_example.m"
 
@@ -21,8 +22,10 @@ void usage()
     printf("  -s <atten>: stop-band attenuation [dB], 0 < s,       default: 60\n");
 }
 
-int main(int argc, char*argv[]) {
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int n  =  57;      // filter cutoff frequency
     float        fc = 0.2f;     // filter cutoff frequency
     float        As = 60.0f;    // stop-band attenuation [dB]

@@ -11,6 +11,7 @@ char __docstr__[] =
 #include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 // print usage/help message
 void usage()
@@ -25,7 +26,8 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int n = 4;                     // data length (bytes)
     unsigned int nmax = 2048;               // maximum data length
     fec_scheme fs = LIQUID_FEC_HAMMING74;   // error-correcting scheme

@@ -6,10 +6,12 @@ char __docstr__[] = "Demonstration of rate matching with the arbitrary resampler
 #include <stdlib.h>
 #include <string.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     float        r          = 1.618034; // true resampling rate (output/input) offset
     unsigned int num_blocks = 400;      // number of blocks to simulate
     unsigned int block_len  = 256;      // number of samples in block

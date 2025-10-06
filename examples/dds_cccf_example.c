@@ -10,11 +10,14 @@ char __docstr__[] =
 #include <complex.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "dds_cccf_example.m"
 
-int main() {
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     float           fc          = -0.2f;    // input (output) decim (interp) frequency
     unsigned int    num_stages  = 3;        // number of halfband interp/decim stages
     unsigned int    num_samples = 64;       // number of input samples

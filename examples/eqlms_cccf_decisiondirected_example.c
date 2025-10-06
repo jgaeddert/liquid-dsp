@@ -11,6 +11,7 @@ char __docstr__[] =
 #include <getopt.h>
 #include <time.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "eqlms_cccf_decisiondirected_example.m"
 
@@ -33,9 +34,8 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    srand(time(NULL));
-
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int num_symbols=500;   // number of symbols to observe
     float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
     unsigned int hc_len=5;          // channel filter length
@@ -95,6 +95,8 @@ int main(int argc, char*argv[])
         fprintf(stderr,"error: %s, equalizer learning rate must be in [0,1]\n", argv[0]);
         exit(1);
     }
+
+    srand(time(NULL));
 
     // derived values
     unsigned int hm_len = 2*k*m+1;   // matched filter length

@@ -6,6 +6,7 @@ char __docstr__[] = "Tests simple frequency modulation/demodulation";
 #include <math.h>
 #include <getopt.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "freqmodem_example.m"
 
@@ -21,7 +22,8 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     float        kf          = 0.1f;    // modulation factor
     unsigned int num_samples = 1024;    // number of samples
     float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]

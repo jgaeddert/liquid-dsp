@@ -5,12 +5,14 @@ char __docstr__[] =
 #include <stdio.h>
 #include <getopt.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "firdes_doppler_example.m"
 
-int main()
+int main(int argc, char* argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     float        fd     = 0.2f;  // Normalized Doppler frequency
     float        K      = 10.0f; // Rice fading factor
     float        theta  = 0.0f;  // LoS component angle of arrival

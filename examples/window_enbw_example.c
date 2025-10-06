@@ -3,11 +3,13 @@ char __docstr__[] = "Compute equivalent noise bandwidth of window functions.";
 #include <stdio.h>
 #include <string.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "window_enbw_example.m"
 
 int main() {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int m    = 20;     // window semi-length
     float        beta = 10.0f;  // Kaiser beta factor
     unsigned int nfft = 1200;   // transform size

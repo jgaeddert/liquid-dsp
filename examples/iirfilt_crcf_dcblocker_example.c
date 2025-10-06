@@ -7,11 +7,13 @@ char __docstr__[] =
 #include <complex.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "iirfilt_crcf_dcblocker_example.m"
 
 int main() {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int num_samples = 1200;    // number of samples
     float        alpha       = 0.10f;   // filter cut-off
 

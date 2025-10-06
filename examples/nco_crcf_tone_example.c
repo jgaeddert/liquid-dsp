@@ -4,11 +4,13 @@ char __docstr__[] = "Generate tone at low frequency and test phase response";
 #include <math.h>
 #include <complex.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 #define OUTPUT_FILENAME "nco_crcf_tone_example.m"
 
 int main()
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     int          type        = LIQUID_NCO;      // nco type
     float        fc          = 0.000241852307f; // frequency
     unsigned int num_samples = 2400;            // number of samples to run

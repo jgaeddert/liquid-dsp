@@ -9,6 +9,7 @@ char __docstr__[] = "Demonstrate the interface to dsssframesync";
 #include <time.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 void usage()
 {
@@ -36,9 +37,8 @@ static int callback(unsigned char *  _header,
 
 int main(int argc, char * argv[])
 {
-    srand(time(NULL));
-
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     crc_scheme   check         = LIQUID_CRC_32;   // data validity check
     fec_scheme   fec0          = LIQUID_FEC_NONE; // fec (inner)
     fec_scheme   fec1          = LIQUID_FEC_NONE; // fec (outer)
@@ -64,6 +64,8 @@ int main(int argc, char * argv[])
         default: exit(-1);
         }
     }
+
+    srand(time(NULL));
 
     // derived values
     unsigned int i;

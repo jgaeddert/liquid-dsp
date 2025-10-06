@@ -5,10 +5,16 @@ char __docstr__[] = "Demonstrate quasi-Newton search method.";
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "qnsearch_example.m"
 
-int main() {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     unsigned int num_parameters = 8;    // dimensionality of search (minimum 2)
     unsigned int num_iterations = 4000; // number of iterations to run
 

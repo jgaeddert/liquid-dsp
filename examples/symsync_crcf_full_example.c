@@ -8,11 +8,11 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <getopt.h>
 #include <time.h>
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "symsync_crcf_full_example.m"
 
@@ -35,10 +35,10 @@ void usage()
 }
 
 
-int main(int argc, char*argv[]) {
-    srand(time(NULL));
-
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int k           =   2;     // samples/symbol (input)
     unsigned int k_out       =   2;     // samples/symbol (output)
     unsigned int m           =   5;     // filter delay (symbols)
@@ -46,6 +46,8 @@ int main(int argc, char*argv[]) {
     unsigned int num_filters =  32;     // number of filters in the bank
     unsigned int num_symbols = 400;     // number of data symbols
     float        SNRdB       =  30.0f;  // signal-to-noise ratio
+
+    srand(time(NULL));
 
     // transmit/receive filter types
     liquid_firfilt_type ftype_tx = LIQUID_FIRFILT_RRC;

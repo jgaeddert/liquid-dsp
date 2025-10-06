@@ -3,12 +3,14 @@ char __docstr__[] = "Demonstrate windowing functions.";
 #include <stdio.h>
 #include <stdlib.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "windowing_example.m"
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     liquid_window_type  wtype = LIQUID_WINDOW_KAISER;
     unsigned int        wlen  = 51;     // window size
     float               arg   = 10.0f;  // generic argument

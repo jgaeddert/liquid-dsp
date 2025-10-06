@@ -4,9 +4,11 @@ char __docstr__[] = "Demonstrate interleaving on soft-decision bit values";
 #include <stdlib.h> // for rand()
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 int main() {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int n=9; // message length (bits)
 
     // create the interleaver

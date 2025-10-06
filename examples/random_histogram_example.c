@@ -7,8 +7,9 @@ char __docstr__[] =
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#include <getopt.h>
+
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "random_histogram_example.m"
 
@@ -39,6 +40,10 @@ void usage()
 
 int main(int argc, char*argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     srand(time(NULL));
     unsigned long int num_trials = 100000; // number of trials
     unsigned int num_bins = 30;

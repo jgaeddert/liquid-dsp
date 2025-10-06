@@ -5,11 +5,13 @@ char __docstr__[] = "Example demonstrating the OFDM frame generator.";
 #include <string.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "ofdmframegen_example.m"
 
 int main() {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int num_subcarriers=64;// 
     unsigned int cp_len=16;         // cyclic prefix length
     //unsigned int num_symbols=2;     // number of ofdm symbols

@@ -11,10 +11,16 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "resamp2_cccf_example.m"
 
-int main() {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     unsigned int m           = 12;      // filter semi-length (actual length: 4*m+1)
     float        As          = 60.0f;   // stop-band attenuation [dB]
     unsigned int num_samples = 400;     // number of input samples

@@ -4,9 +4,9 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <getopt.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "iirdes_example.m"
 
@@ -31,7 +31,8 @@ void usage()
 
 
 int main(int argc, char*argv[]) {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int order=5;   // filter order
     float fc = 0.20f;       // cutoff frequency (low-pass prototype)
     float f0 = 0.25f;       // center frequency (band-pass, band-stop)

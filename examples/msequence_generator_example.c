@@ -7,6 +7,7 @@ char __docstr__[] =
 #include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 void usage()
 {
@@ -17,6 +18,10 @@ void usage()
 
 int main(int argc, char *argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     unsigned int degree = 2;
 
     // get options

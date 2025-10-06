@@ -5,11 +5,14 @@ char __docstr__[] =
 #include <math.h>
 #include <complex.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "firpfbch_crcf_msource_example.m"
 
-int main() {
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int M          =  5;     // number of channels
     unsigned int m          = 12;     // filter delay
     unsigned int num_samples= 512000; // number of samples to generate

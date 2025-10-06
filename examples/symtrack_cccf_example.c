@@ -10,11 +10,11 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <getopt.h>
 #include <time.h>
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "symtrack_cccf_example.m"
 
@@ -33,7 +33,8 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     int          ftype       = LIQUID_FIRFILT_ARKAISER;
     int          ms          = LIQUID_MODEM_QAM16;
     unsigned int k           = 2;       // samples per symbol

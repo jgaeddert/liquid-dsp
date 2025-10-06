@@ -6,6 +6,7 @@ char __docstr__[] = "Demonstrates the quantizer/compander combination.";
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "quantize_example.m"
 
@@ -19,7 +20,12 @@ void usage()
 }
 
 
-int main(int argc, char*argv[]) {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     unsigned int num_bits=4;
     float mu = 255.0f;
     unsigned int num_samples = 64;

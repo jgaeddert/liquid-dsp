@@ -4,11 +4,13 @@ char __docstr__[] = "Demonstration of filter based on order statistics";
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "ordfilt_rrrf_example.m"
 
 int main() {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int num_samples = 2400; // number of random input samples
     unsigned int n           =  101; // filter length
     unsigned int k           =    5; // order statistic index

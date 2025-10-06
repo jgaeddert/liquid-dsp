@@ -12,12 +12,14 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "msequence_autocorr_example.m"
 
 int main(int argc, char*argv[])
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int m=5;   // shift register length, n=2^m - 1
 
     // create and initialize m-sequence

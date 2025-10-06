@@ -7,6 +7,7 @@ char __docstr__[] = "Demonstrate bpacketsync interface.";
 #include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 int callback(unsigned char *  _payload,
              int              _payload_valid,
@@ -43,10 +44,12 @@ void usage()
 }
 
 
-int main(int argc, char*argv[]) {
+int main(int argc, char* argv[])
+{
     srand(time(NULL));
 
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int n=8;                       // original data message length
     crc_scheme check = LIQUID_CRC_32;       // data integrity check
     fec_scheme fec0 = LIQUID_FEC_HAMMING74; // inner code

@@ -7,9 +7,9 @@ char __docstr__[] =
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME  "flexframesync_reconfig_example.m"
 
@@ -21,7 +21,12 @@ void usage()
     printf("  n     : number of frames, default: 3\n");
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     srand( time(NULL) );
 
     // define parameters

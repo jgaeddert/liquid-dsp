@@ -10,9 +10,12 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-int main() {
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int nfft        =   64;    // transform size
     unsigned int num_frames  =  200;    // total number of frames
     unsigned int msdelay     =   25;    // delay between transforms [ms]

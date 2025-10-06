@@ -12,6 +12,7 @@ char __docstr__[] =
 #include <getopt.h>
 #include <time.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "eqlms_cccf_block_example.m"
 
@@ -31,9 +32,8 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    //srand(time(NULL));
-
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int    num_samples = 2400;     // number of symbols to observe
     unsigned int    hc_len      = 5;        // channel filter length
     unsigned int    k           = 2;        // matched filter samples/symbol

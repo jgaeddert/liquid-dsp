@@ -2,14 +2,15 @@ char __docstr__[] = "Demonstrate symbol tracking of GMSK signal.";
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <getopt.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "gmsk_tracking_example.m"
 
 int main(int argc, char*argv[]) {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int k      =    4; // filter samples/symbol
     float        beta   = 0.3f; // bandwidth-time product
 

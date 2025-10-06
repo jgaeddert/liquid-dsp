@@ -4,10 +4,15 @@ char __docstr__[] = "Compare polyfit and polyfit_lagrange.";
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 #define OUTPUT_FILENAME "polyfit_comparison_example.m"
 
-int main()
+int main(int argc, char* argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     float x[3] = {-1.0, 0.0, 1.0};
     float y[3] = { 2.0, 7.0, 4.0};
     float p0[3], p1[3];

@@ -11,6 +11,7 @@ char __docstr__[] =
 #include <math.h>
 #include <time.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "detector_example.m"
 
@@ -31,7 +32,8 @@ int main(int argc, char*argv[])
 {
     //srand(time(NULL));
 
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int n    =  128;       // number of sync samples
     float dt          =  0.0f;      // fractional sample timing offset
     float noise_floor = -30.0f;     // noise floor [dB]

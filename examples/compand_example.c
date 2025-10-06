@@ -10,6 +10,7 @@ char __docstr__[] =
 #include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "compand_example.m"
 
@@ -25,8 +26,10 @@ void usage()
 }
 
 
-int main(int argc, char*argv[]) {
-    // options
+int main(int argc, char*argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int n=31;
     float mu=255.0f;
     float range = 1.25f;

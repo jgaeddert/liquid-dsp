@@ -11,6 +11,7 @@ char __docstr__[] =
 #include <math.h>
 #include <time.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "bpresync_example.m"
 
@@ -33,7 +34,8 @@ int main(int argc, char*argv[])
 {
     srand(time(NULL));
 
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int k=2;                   // filter samples/symbol
     unsigned int m=5;                   // filter delay (symbols)
     float beta=0.3f;                    // bandwidth-time product

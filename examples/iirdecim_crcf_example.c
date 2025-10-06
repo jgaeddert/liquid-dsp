@@ -5,9 +5,9 @@ char __docstr__[] =
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "iirdecim_crcf_example.m"
 
@@ -22,7 +22,8 @@ void usage()
 
 
 int main(int argc, char*argv[]) {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int M=4;               // decimation rate
     unsigned int num_samples=400;   // number of input samples
 

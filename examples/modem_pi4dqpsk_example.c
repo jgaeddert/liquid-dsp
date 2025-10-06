@@ -4,12 +4,14 @@ char __docstr__[] = "Demonstrate pi/4 differential QPSK modem.";
 #include <stdio.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "modem_pi4dqpsk_example.m"
 
 int main()
 {
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     float        SNRdB       = 25.0f;
     unsigned int num_symbols = 800;
 

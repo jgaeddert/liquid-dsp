@@ -4,10 +4,13 @@ char __docstr__[] = "Demonstrate fdelay object to add arbitrary fractional delay
 #include <math.h>
 #include <complex.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 #define OUTPUT_FILENAME "fdelay_rrrf_example.m"
 
-int main() {
-    // options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int nmax       = 200;  // maximum delay
     unsigned int m          =  12;  // filter semi-length
     unsigned int npfb       =  10;  // fractional delay resolution

@@ -5,13 +5,18 @@ char __docstr__[] = "Halfband filter example.";
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "resamp2_crcf_filter_example.m"
 
-int main() {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
     unsigned int m=9;               // filter semi-length
     unsigned int num_samples=128;   // number of input samples
     float As=60.0f;                 // stop-band attenuation [dB]
+    liquid_argparse_parse(argc,argv);
 
     // derived values
     unsigned int h_len = 4*m+1;     // half-band filter length

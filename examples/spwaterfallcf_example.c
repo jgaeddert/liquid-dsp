@@ -5,11 +5,16 @@ char __docstr__[] = "Spectrum waterfall example.";
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "spwaterfallcf_waterfall_example.gnu"
 
-int main()
+int main(int argc, char* argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // spectral periodogram options
     unsigned int nfft        = 1800;    // spectral periodogram FFT size
     unsigned int time        = 1000;    // minimum time buffer

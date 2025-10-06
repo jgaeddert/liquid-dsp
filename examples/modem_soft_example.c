@@ -2,8 +2,9 @@ char __docstr__[] = "Demonstate soft demodulation of linear modulation schemes."
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <getopt.h>
+
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "modem_soft_example.m"
 
@@ -34,6 +35,10 @@ void print_bitstring(unsigned int _x,
 
 int main(int argc, char*argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // create mod/demod objects
     modulation_scheme ms = LIQUID_MODEM_QPSK;
 

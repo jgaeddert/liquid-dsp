@@ -9,12 +9,15 @@ char __docstr__[] =
 #include <time.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 // output to octave-friendly format
 #define OUTPUT_FILENAME "pll_example.m"
 
-int main() {
-    // parameters
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
     float phase_offset      = 0.8f;     // carrier phase offset
     float frequency_offset  = 0.01f;    // carrier frequency offset
     float wn                = 0.05f;    // pll bandwidth
@@ -22,6 +25,7 @@ int main() {
     float K                 = 1000;     // pll loop gain
     unsigned int n          = 256;      // number of samples
     unsigned int d          = n/32;     // print every "d" lines
+    liquid_argparse_parse(argc,argv);
 
     //
     float theta[n];         // input phase

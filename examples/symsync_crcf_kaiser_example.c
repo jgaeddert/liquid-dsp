@@ -6,11 +6,11 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <getopt.h>
 #include <time.h>
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define OUTPUT_FILENAME "symsync_crcf_kaiser_example.m"
 
@@ -34,7 +34,8 @@ int main(int argc, char*argv[])
 {
     srand(time(NULL));
 
-    // options
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
     unsigned int k           =   2;     // samples/symbol (input)
     unsigned int m           =   3;     // filter delay (symbols)
     float        beta        =   0.5f;  // filter excess bandwidth factor

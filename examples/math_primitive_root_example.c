@@ -5,9 +5,14 @@ char __docstr__[] =
 #include <stdlib.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // maximum number
     unsigned int n = 140;
     unsigned int i;

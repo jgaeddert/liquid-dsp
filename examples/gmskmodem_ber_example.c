@@ -6,6 +6,7 @@ char __docstr__[] = "This example runs a bit error rate simulation for GMSK modu
 #include <getopt.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 // print usage/help message
 void usage()
@@ -16,6 +17,10 @@ void usage()
 
 int main(int argc, char*argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // simulation parameters
     unsigned int k          = 4;        // filter samples/symbol
     unsigned int m          = 3;        // filter delay (symbols)
