@@ -7,18 +7,18 @@ char __docstr__[] = "Demonstrate interface to compress/expand methods.";
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "compand_cf_example.m"
-
 int main(int argc, char* argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    float mu=255.0f;
-    int n=31;
+    liquid_argparse_add(char*, filename, "compand_cf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(int,   n,  31,     'n', "number of levels to test", NULL);
+    liquid_argparse_add(float, mu, 255.0f, 'm', "compression factor", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // open debug file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
 
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 
     // close debug file
     fclose(fid);
-    printf("results wrtten to %s\n", OUTPUT_FILENAME);
+    printf("results wrtten to %s\n", filename);
     printf("done.\n");
     return 0;
 }

@@ -13,46 +13,18 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "cvsd_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("cvsd_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  n     : number of samples, default: 512\n");
-    printf("  f     : input signal frequency, default: 0.02\n");
-    printf("  b     : cvsd param: num-bits, default: 3\n");
-    printf("  z     : cvsd param: zeta, default: 1.5\n");
-    printf("  a     : cvsd param: alpha, default: 0.95\n");
-}
-
 int main(int argc, char*argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int n=512;     // number of samples
-    float fc = 0.02;        // input signal frequency
-    unsigned int nbits=3;   // number of adjacent bits to observe
-    float zeta=1.5f;        // slope adjustment multiplier
-    float alpha = 0.95;     // pre-/post-filter coefficient
+    liquid_argparse_add(char*, filename, "cvsd_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, n,     512,  'n', "number of samples", NULL);
+    liquid_argparse_add(float,    fc,    0.02, 'f', "input signal frequency", NULL);
+    liquid_argparse_add(unsigned, nbits, 3,    'b', "number of adjacent bits to observe", NULL);
+    liquid_argparse_add(float,    zeta,  1.5f, 'z', "slope adjustment multiplier", NULL);
+    liquid_argparse_add(float,    alpha, 0.95, 'a', "pre-/post-filter coefficient", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    int dopt;
-    while ((dopt = getopt(argc,argv,"uhn:f:b:z:a:")) != EOF) {
-        switch (dopt) {
-        case 'u':
-        case 'h': usage();              return 0;
-        case 'n': n = atoi(optarg);     break;
-        case 'f': fc = atof(optarg);    break;
-        case 'b': nbits = atoi(optarg); break;
-        case 'z': zeta = atof(optarg);  break;
-        case 'a': alpha = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
-
-    // validate input
     unsigned int i;
 
     // data arrays
@@ -98,8 +70,8 @@ int main(int argc, char*argv[])
     // 
     // export results to file
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
 
@@ -117,11 +89,11 @@ int main(int argc, char*argv[])
     fprintf(fid,"plot(1:n,x,1:n,y);\n");
     fprintf(fid,"xlabel('time [sample index]');\n");
     fprintf(fid,"ylabel('signal');\n");
-    fprintf(fid,"legend('audio input','cvsd output',1);\n");
+    fprintf(fid,"legend('audio input','cvsd output');\n");
 
     // close debug file
     fclose(fid);
-    printf("results wrtten to %s\n", OUTPUT_FILENAME);
+    printf("results wrtten to %s\n", filename);
     printf("done.\n");
 
     return 0;

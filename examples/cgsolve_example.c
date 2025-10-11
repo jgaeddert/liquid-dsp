@@ -12,9 +12,10 @@ char __docstr__[] =
 
 int main(int argc, char* argv[])
 {
-    // define variables and parse command-line options
+    // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    unsigned int n = 8;
+    liquid_argparse_add(unsigned, n, 8, 'n', "number of independent equations to solve", NULL);
+    liquid_argparse_parse(argc,argv);
 
     unsigned int i;
 

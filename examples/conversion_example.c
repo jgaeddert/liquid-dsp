@@ -26,12 +26,11 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "conversion_example.m"
-
 int main(int argc, char* argv[])
 {
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "conversion_example.m", 'o', "output filename", NULL);
     liquid_argparse_parse(argc,argv);
 
     // spectral periodogram options
@@ -103,8 +102,8 @@ int main(int argc, char* argv[])
     // 
     // export output file
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
 
@@ -133,7 +132,7 @@ int main(int argc, char* argv[])
     fprintf(fid,"legend('transmit (complex)','DAC output (real)','receive (complex)','location','northeast');\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     printf("done.\n");
     return 0;

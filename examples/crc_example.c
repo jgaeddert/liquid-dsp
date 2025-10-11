@@ -22,33 +22,18 @@ void usage()
     liquid_print_crc_schemes();
 }
 
-
 int main(int argc, char*argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int n     = 32;            // data length (bytes)
-    crc_scheme   check = LIQUID_CRC_32; // error-detection scheme
+    liquid_argparse_add(char*,    crc_type, "crc32", 'v', "data integrity check", NULL);
+    liquid_argparse_add(unsigned, n,        32,      'n', "original data message length", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    int dopt;
-    while((dopt = getopt(argc,argv,"uhn:v:")) != EOF){
-        switch (dopt) {
-        case 'h':
-        case 'u': usage(); return 0;
-        case 'n': n = atoi(optarg); break;
-        case 'v':
-            check = liquid_getopt_str2crc(optarg);
-            if (check == LIQUID_CRC_UNKNOWN) {
-                fprintf(stderr,"error: unknown/unsupported error-detection scheme \"%s\"\n\n",optarg);
-                exit(1);
-            }
-            break;
-        default:
-            exit(1);
-        }
-    }
-
-    // validate input
+    // validate options
+    crc_scheme crc  = liquid_getopt_str2crc(crc_type);
+    if (crc == LIQUID_CRC_UNKNOWN)
+        return fprintf(stderr,"error: unknown/unsupported CRC scheme \"%s\"\n",crc_type);
 
     unsigned int i;
 
@@ -58,14 +43,14 @@ int main(int argc, char*argv[])
         data[i] = rand() & 0xff;
 
     // append key to data message
-    crc_append_key(check, data, n);
+    crc_append_key(crc, data, n);
 
     // check uncorrupted data
-    printf("testing uncorrupted data... %s\n", crc_check_key(check, data, n) ? "pass" : "FAIL");
+    printf("testing uncorrupted data... %s\n", crc_check_key(crc, data, n) ? "pass" : "FAIL");
 
     // corrupt message and check data again
     data[0]++;
-    printf("testing corrupted data...   %s\n", crc_check_key(check, data, n) ? "pass" : "FAIL (ok)");
+    printf("testing corrupted data...   %s\n", crc_check_key(crc, data, n) ? "pass (unexpected)" : "FAIL (expected)");
 
     printf("done.\n");
     return 0;
