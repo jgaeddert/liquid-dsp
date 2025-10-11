@@ -26,6 +26,8 @@ set(EXAMPLES
     detector_cccf_example
     dds_cccf_example
     dsssframesync_example
+    dsssframe64sync_example
+    dsssframe64sync_performance_example
     dotprod_rrrf_example
     dotprod_cccf_example
     eqlms_cccf_block_example
