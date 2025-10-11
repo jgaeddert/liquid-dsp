@@ -12,16 +12,6 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-// print usage/help message
-void usage()
-{
-    printf("crc_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  n     : input data size (number of uncoded bytes)\n");
-    printf("  v     : checking scheme, (crc32 default):\n");
-    liquid_print_crc_schemes();
-}
-
 int main(int argc, char*argv[])
 {
     // define variables and parse command-line options
