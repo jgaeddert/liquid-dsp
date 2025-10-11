@@ -16,15 +16,18 @@ int main(int argc, char* argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int nfft        =   64;    // transform size
-    unsigned int num_frames  =  200;    // total number of frames
-    unsigned int msdelay     =   25;    // delay between transforms [ms]
-    float        noise_floor = -80.0f;  // noise floor
+    liquid_argparse_add(unsigned, nfft,         64, 'n', "transform size", NULL);
+    liquid_argparse_add(unsigned, num_frames,  200, 'N', "total number of frames", NULL);
+    liquid_argparse_add(unsigned, msdelay,      25, 'd', "delay between transforms [ms]", NULL);
+    liquid_argparse_add(float,    noise_floor, -80, 'f', "noise floor", NULL);
+    liquid_argparse_add(bool,     autoscale,     0, 'a', "enable autoscale", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    // initialize objects
+    // initialize object
     asgramcf q = asgramcf_create(nfft);
-    asgramcf_autoscale_enable(q);
-    asgramcf_set_scale(q, noise_floor+15.0f, 5.0f);
+    if (!autoscale) // enabled by default
+        asgramcf_autoscale_disable(q);
+    asgramcf_set_scale(q, noise_floor+50, 5.0f);
 
     unsigned int i;
     unsigned int n;

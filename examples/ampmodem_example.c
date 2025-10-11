@@ -13,58 +13,30 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "ampmodem_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("ampmodem_example [options]\n");
-    printf("  -h         : print usage\n");
-    printf("  -m <index> : modulation index,          default: 0.8\n");
-    printf("  -f <freq>  : freq. offset [rad/sample], default: 0.05\n");
-    printf("  -p <phase> : phase offset,              default: 2.8\n");
-    printf("  -n <num>   : number of samples,         default: 2400\n");
-    printf("  -S <snr>   : SNR [dB],                  default: 30\n");
-    printf("  -t <type>  : AM type (dsb/usb/lsb),     default: usb\n");
-    printf("  -s         : suppress the carrier,      default: off (carrier enabled)\n");
-}
-
 int main(int argc, char*argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    float        mod_index          = 0.8f;     // modulation index (bandwidth)
-    float        dphi               = 0.05f;    // carrier frequency offset [radians/sample]
-    float        phi                = 2.8f;     // carrier phase offset [radians]
-    float        SNRdB              = 30.0f;    // signal-to-noise ratio (set very high for testing)
-    unsigned int num_samples        = 2400;     // number of samples
-    liquid_ampmodem_type type       = LIQUID_AMPMODEM_USB;
-    int          suppressed_carrier = 0;
+    liquid_argparse_add(char*,    filename, "ampmodem_example.m",'o', "output filename", NULL);
+    liquid_argparse_add(float,    mod_index,          0.8f,  'm', "modulation index (bandwidth)", NULL);
+    liquid_argparse_add(float,    dphi,               0.05f, 'f', "carrier frequency offset [radians/sample]", NULL);
+    liquid_argparse_add(float,    phi,                2.8f,  'p', "carrier phase offset [radians]", NULL);
+    liquid_argparse_add(float,    SNRdB,              30.0f, 'S', "signal-to-noise ratio (set very high for testing)", NULL);
+    liquid_argparse_add(unsigned, num_samples,        2400,  'n', "number of samples", NULL);
+    liquid_argparse_add(char*,    mod_type,           "usb", 't', "modulation type: dsb/usb/lsb", NULL);
+    liquid_argparse_add(bool,     suppressed_carrier, 0,     's', "enable carrier suppression", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hm:f:p:n:S:t:s")) != EOF) {
-        switch (dopt) {
-        case 'h': usage();                    return 0;
-        case 'm': mod_index   = atof(optarg); break;
-        case 'f': dphi        = atof(optarg); break;
-        case 'p': phi         = atof(optarg); break;
-        case 'n': num_samples = atoi(optarg); break;
-        case 'S': SNRdB       = atof(optarg); break;
-        case 't':
-            if (strcmp(optarg,"dsb")==0) {
-                type = LIQUID_AMPMODEM_DSB;
-            } else if (strcmp(optarg,"usb")==0) {
-                type = LIQUID_AMPMODEM_USB;
-            } else if (strcmp(optarg,"lsb")==0) {
-                type = LIQUID_AMPMODEM_LSB;
-            } else {
-                fprintf(stderr,"error: %s, invalid AM type: %s\n", argv[0], optarg);
-                return 1;
-            }
-            break;
-        case 's': suppressed_carrier = 1;     break;
-        default:                              return 1;
-        }
+    // validate input
+    liquid_ampmodem_type type = LIQUID_AMPMODEM_USB;
+    if (strcmp(mod_type,"dsb")==0) {
+        type = LIQUID_AMPMODEM_DSB;
+    } else if (strcmp(mod_type,"usb")==0) {
+        type = LIQUID_AMPMODEM_USB;
+    } else if (strcmp(mod_type,"lsb")==0) {
+        type = LIQUID_AMPMODEM_LSB;
+    } else {
+        return fprintf(stderr,"error: invalid AM type: %s\n", mod_type);
     }
 
     // create mod/demod objects
@@ -119,8 +91,8 @@ int main(int argc, char*argv[])
     printf("rms error : %.3f dB\n", rmse);
 
     // export results
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"n=%u;\n",num_samples);
@@ -161,6 +133,6 @@ int main(int argc, char*argv[])
     fprintf(fid,"  ylabel('Received PSD [dB]');\n");
     fprintf(fid,"  grid on;\n");
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
     return 0;
 }
