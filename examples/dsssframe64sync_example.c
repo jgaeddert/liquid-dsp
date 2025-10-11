@@ -1,6 +1,6 @@
 char __docstr__[] =
 "This example demonstrates the basic interface to the dsssframe64gen and"
-" dsssframe64sync objects."
+" dsssframe64sync objects.";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,9 +39,10 @@ int main(int argc, char *argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int nfft  = 2400;
-    float        SNRdB =   -10.0f;
-    const char * filename = "dsssframe64sync_example.m";
+    liquid_argparse_add(char*, filename, "dsssframe64sync_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, nfft,  2400,  'n', "FFT size", NULL);
+    liquid_argparse_add(float,    SNRdB,-10.0f, 'S', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // create dsssframe64gen object
     dsssframe64gen fg = dsssframe64gen_create();

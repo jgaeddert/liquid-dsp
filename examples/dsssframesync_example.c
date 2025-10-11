@@ -11,21 +11,6 @@ char __docstr__[] = "Demonstrate the interface to dsssframesync";
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-void usage()
-{
-    printf("dsssframesync_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  s     : signal-to-noise ratio [dB], default: 20\n");
-    printf("  F     : carrier frequency offset, default: 0.01\n");
-    printf("  n     : payload length [bytes], default: 480\n");
-    printf("  v     : data integrity check: crc32 default\n");
-    liquid_print_crc_schemes();
-    printf("  c     : coding scheme (inner): h74 default\n");
-    printf("  k     : coding scheme (outer): none default\n");
-    liquid_print_fec_schemes();
-    printf("  d     : enable debugging\n");
-}
-
 // dsssframesync callback function
 static int callback(unsigned char *  _header,
                     int              _header_valid,
@@ -39,33 +24,29 @@ int main(int argc, char * argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    crc_scheme   check         = LIQUID_CRC_32;   // data validity check
-    fec_scheme   fec0          = LIQUID_FEC_NONE; // fec (inner)
-    fec_scheme   fec1          = LIQUID_FEC_NONE; // fec (outer)
-    unsigned int payload_len   = 20;              // payload length
-    int          debug_enabled = 0;               // enable debugging?
-    float        noise_floor   = -60.0f;          // noise floor
-    float        SNRdB         = -3.0f;           // signal-to-noise ratio
-    float        dphi          = 0.03f;           // carrier frequency offset
+    liquid_argparse_add(char*,    crc_type,      "crc32", 'v', "data integrity check", NULL);
+    liquid_argparse_add(char*,    fec0_type,     "none",  'c', "inner code", NULL);
+    liquid_argparse_add(char*,    fec1_type,     "none",  'k', "outer code", NULL);
+    liquid_argparse_add(unsigned, payload_len,   20,      'n', "payload length", NULL);
+    liquid_argparse_add(float,    noise_floor,   -60.0f,  '0', "noise floor", NULL);
+    liquid_argparse_add(float,    SNRdB,         -3.0f,   's', "signal-to-noise ratio", NULL);
+    liquid_argparse_add(float,    dphi,          0.005f,  'F', "carrier frequency offset", NULL);
+    liquid_argparse_add(int,      debug_enabled, 0,       'd', "enable debugging", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    // get options
-    int dopt;
-    while ((dopt = getopt(argc, argv, "uhs:F:n:m:v:c:k:d")) != EOF) {
-        switch (dopt) {
-        case 'u':
-        case 'h': usage(); return 0;
-        case 's': SNRdB = atof(optarg); break;
-        case 'F': dphi = atof(optarg); break;
-        case 'n': payload_len = atol(optarg); break;
-        case 'v': check = liquid_getopt_str2crc(optarg); break;
-        case 'c': fec0 = liquid_getopt_str2fec(optarg); break;
-        case 'k': fec1 = liquid_getopt_str2fec(optarg); break;
-        case 'd': debug_enabled = 1; break;
-        default: exit(-1);
-        }
-    }
+    // validate options
+    crc_scheme check= liquid_getopt_str2crc(crc_type);
+    fec_scheme fec0 = liquid_getopt_str2fec(fec0_type);
+    fec_scheme fec1 = liquid_getopt_str2fec(fec1_type);
 
-    srand(time(NULL));
+    if (payload_len == 0)
+        return fprintf(stderr,"error: packet length must be greater than zero\n");
+    if (check == LIQUID_CRC_UNKNOWN)
+        return fprintf(stderr,"error: unknown/unsupported CRC scheme \"%s\"\n",crc_type);
+    if (fec0 == LIQUID_FEC_UNKNOWN)
+        return fprintf(stderr,"error: unknown/unsupported inner FEC scheme \"%s\"\n",fec0_type);
+    if (fec1 == LIQUID_FEC_UNKNOWN)
+        return fprintf(stderr,"error: unknown/unsupported inner FEC scheme \"%s\"\n",fec1_type);
 
     // derived values
     unsigned int i;

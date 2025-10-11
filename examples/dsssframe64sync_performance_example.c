@@ -7,7 +7,6 @@ char __docstr__[] =
 #include <math.h>
 #include "liquid.h"
 #include "liquid.argparse.h"
-#define OUTPUT_FILENAME  "dsssframe64sync_performance_example.m"
 
 // add noise to channel
 void frame64_add_noise(float complex * _buf,
@@ -24,21 +23,23 @@ int main(int argc, char*argv[])
 {
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "dsssframe64sync_performance_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, nfft,  2400,  'n', "FFT size", NULL);
+    liquid_argparse_add(unsigned, min_errors,    5, 'e', "minimum number of errors to simulation", NULL);
+    liquid_argparse_add(unsigned, min_trials,   80, 't', "minimum number of packet trials to simulate", NULL);
+    liquid_argparse_add(unsigned, max_trials, 1000, 'T', "maximum number of packet trials to simulate", NULL);
     liquid_argparse_parse(argc,argv);
 
     // create frame generator, synchronizer objects
     dsssframe64gen  fg = dsssframe64gen_create();
     dsssframe64sync fs = dsssframe64sync_create(NULL,NULL);
-    unsigned int min_errors =    5;
-    unsigned int min_trials =   80;
-    unsigned int max_trials = 1000;
 
     // create buffer for the frame samples
     unsigned int  frame_len = dsssframe64gen_get_frame_len(fg);
     float complex * frame = (float complex *)malloc(frame_len*sizeof(float complex));
     float SNRdB = -25.0f;
-    FILE* fid = fopen(OUTPUT_FILENAME, "w");
-    fprintf(fid,"%% %s: auto-generated file\n", OUTPUT_FILENAME);
+    FILE* fid = fopen(filename, "w");
+    fprintf(fid,"%% %s: auto-generated file\n", filename);
     fprintf(fid,"clear all; close all;\n");
     fprintf(fid,"SNR=[]; pdetect=[]; pvalid=[];\n");
     printf("# %8s %6s (%7s) %6s (%7s) %6s\n", "SNR", "missed", "percent", "errors", "percent", "trials");
@@ -75,7 +76,7 @@ int main(int argc, char*argv[])
         float per = (float) num_errors / (float) num_trials;
         printf("  %8.3f %6u (%6.2f%%) %6u (%6.2f%%) %6u\n",
             SNRdB,num_misses,pmd*100,num_errors,per*100,num_trials);
-        fid = fopen(OUTPUT_FILENAME,"a");
+        fid = fopen(filename,"a");
         fprintf(fid,"SNR(end+1)=%g; pdetect(end+1)=%12g; pvalid(end+1)=%12g;\n",
                 SNRdB,
                 (float)stats.num_frames_detected / (float)num_trials,
@@ -85,7 +86,7 @@ int main(int argc, char*argv[])
             break;
         SNRdB += 1.0f;
     }
-    fid = fopen(OUTPUT_FILENAME,"a");
+    fid = fopen(filename,"a");
     fprintf(fid,"figure;\n");
     fprintf(fid,"hold on;\n");
     fprintf(fid,"  semilogy(SNR, 1-pdetect+eps,'-o', 'LineWidth',2, 'MarkerSize',2);\n");
@@ -97,7 +98,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"axis([-30 10 1e-3 1]);\n");
     fprintf(fid,"grid on;\n");
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     // clean up allocated objects and memory blocks
     dsssframe64gen_destroy(fg);
