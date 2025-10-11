@@ -10,12 +10,11 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-//#define OUTPUT_FILENAME "bsequence_example.m"
-
 int main(int argc, char* argv[])
 {
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
+    //liquid_argparse_add(char*, filename, "bsequence_example.m", 'o', "output filename", NULL);
     liquid_argparse_parse(argc,argv);
 
     // create and initialize binary sequence

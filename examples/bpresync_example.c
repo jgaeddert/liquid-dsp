@@ -13,53 +13,20 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "bpresync_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("bpresync_example -- test binary pre-demodulation synchronization\n");
-    printf("options (default values in <>):\n");
-    printf("  h     : print usage/help\n");
-    printf("  k     : samples/symbol, default: 2\n");
-    printf("  m     : filter delay [symbols], default: 5\n");
-    printf("  n     : number of data symbols, default: 64\n");
-    printf("  b     : bandwidth-time product beta in (0,1), default: 0.3\n");
-    printf("  F     : carrier frequency offset, default: 0.02\n");
-    printf("  t     : fractional sample offset dt in [-0.5, 0.5], default: 0\n");
-    printf("  S     : SNR [dB], default: 20\n");
-}
-
 int main(int argc, char*argv[])
 {
-    srand(time(NULL));
-
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int k=2;                   // filter samples/symbol
-    unsigned int m=5;                   // filter delay (symbols)
-    float beta=0.3f;                    // bandwidth-time product
-    float dt = 0.0f;                    // fractional sample timing offset
-    unsigned int num_sync_symbols = 64; // number of synchronization symbols
-    float SNRdB = 20.0f;                // signal-to-noise ratio [dB]
-    float dphi = 0.02f;                 // carrier frequency offset
-    float phi  = 2*M_PI*randf();        // carrier phase offset
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"uhk:m:n:b:t:F:t:S:")) != EOF) {
-        switch (dopt) {
-        case 'h': usage();                          return 0;
-        case 'k': k = atoi(optarg);                 break;
-        case 'm': m = atoi(optarg);                 break;
-        case 'n': num_sync_symbols = atoi(optarg);  break;
-        case 'b': beta = atof(optarg);              break;
-        case 'F': dphi = atof(optarg);              break;
-        case 't': dt = atof(optarg);                break;
-        case 'S': SNRdB = atof(optarg);             break;
-        default:
-            exit(1);
-        }
-    }
+    liquid_argparse_add(char*,    filename, "bpresync_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, k,                2,     'k', "filter samples/symbol", NULL);
+    liquid_argparse_add(unsigned, m,                5,     'm', "filter delay (symbols)", NULL);
+    liquid_argparse_add(float,    beta,             0.3f,  'b', "bandwidth-time product", NULL);
+    liquid_argparse_add(float,    dt,               0.0f,  't', "fractional sample timing offset", NULL);
+    liquid_argparse_add(unsigned, num_sync_symbols, 64,    'n', "number of synchronization symbols", NULL);
+    liquid_argparse_add(float,    SNRdB,            20.0f, 'S', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_add(float,    dphi,             0.02f, 'F', "carrier frequency offset", NULL);
+    liquid_argparse_add(float,    phi,              0.234, 'P', "carrier phase offset", NULL);
+    liquid_argparse_parse(argc,argv);
 
     unsigned int i;
 
@@ -157,8 +124,8 @@ int main(int argc, char*argv[])
     // 
     // export results
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"num_samples = %u;\n", num_samples);
@@ -190,7 +157,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  grid on;\n");
 
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     return 0;
 }
