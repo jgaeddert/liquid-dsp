@@ -11,22 +11,31 @@ char __docstr__[] =
 
 int main(int argc, char* argv[])
 {
-    // define variables and parse command-line arguments
+    // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "eqlms_cccf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, num_symbols, 800,    'n', "number of symbols to observe", NULL);
+    liquid_argparse_add(unsigned, hc_len,      5,      'c', "channel filter length", NULL);
+    liquid_argparse_add(unsigned, w_len,       11,     'w', "equalizer filter length", NULL);
+    liquid_argparse_add(float,    mu,          0.08f,  'u', "equalizer learning rate", NULL);
+    liquid_argparse_add(char *,   mod_scheme,  "qpsk", 'M', "modulation scheme", NULL);
     liquid_argparse_parse(argc,argv);
 
-    unsigned int i, h_len=5, w_len=11, num_symbols=400;
-    float mu = 0.7f;
+    // modulation type/depth
+    modulation_scheme ms = liquid_getopt_str2mod(mod_scheme);
+    if (ms == LIQUID_MODEM_UNKNOWN)
+        return fprintf(stderr,"error: unknown modulation scheme '%s'\n", mod_scheme);
 
     // modem
-    modemcf mod = modemcf_create(LIQUID_MODEM_QPSK);
+    modemcf mod = modemcf_create(ms);
 
     // create channel filter (random coefficients)
-    float complex h[h_len];
+    float complex h[hc_len];
     h[0] = 1.0f;
-    for (i=1; i<h_len; i++)
+    unsigned int i;
+    for (i=1; i<hc_len; i++)
         h[i] = (randnf() + randnf()*_Complex_I) * 0.1f;
-    firfilt_cccf fchannel = firfilt_cccf_create(h,h_len);
+    firfilt_cccf fchannel = firfilt_cccf_create(h,hc_len);
 
     // create equalizer (default initial coefficients)
     float complex w[w_len];
@@ -74,9 +83,9 @@ int main(int argc, char* argv[])
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all; close all;\n");
-    fprintf(fid,"h_len=%u; w_len=%u;\n", h_len, w_len);
+    fprintf(fid,"hc_len=%u; w_len=%u;\n", hc_len, w_len);
     // save channel coefficients
-    for (i=0; i<h_len; i++)
+    for (i=0; i<hc_len; i++)
         fprintf(fid,"h(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(h[i]), cimagf(h[i]));
     // save equalizer coefficients
     for (i=0; i<w_len; i++)
