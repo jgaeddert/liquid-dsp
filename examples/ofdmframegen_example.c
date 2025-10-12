@@ -14,6 +14,7 @@ int main() {
     liquid_argparse_init(__docstr__);
     unsigned int num_subcarriers=64;// 
     unsigned int cp_len=16;         // cyclic prefix length
+    unsigned int taper_len=0;         // taper length [samples]
     //unsigned int num_symbols=2;     // number of ofdm symbols
 
     // 
@@ -22,7 +23,7 @@ int main() {
     //unsigned int num_samples = num_subcarriers * num_frames;
 
     // create synthesizer/analyzer objects
-    ofdmframegen fg = ofdmframegen_create(num_subcarriers, cp_len);
+    ofdmframegen fg = ofdmframegen_create(num_subcarriers, cp_len, taper_len, NULL);
     ofdmframegen_print(fg);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
@@ -43,7 +44,7 @@ int main() {
         X[i] = i==4 ? 0.707f + _Complex_I*0.707f : 0.0f;
     }
 
-    ofdmframegen_execute(fg,X,x);
+    ofdmframegen_writesymbol(fg,X,x);
 
     //
     for (i=0; i<num_subcarriers; i++)

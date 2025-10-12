@@ -2,8 +2,8 @@
 
 set(EXAMPLES
     agc_crcf_example
-    agc_crcf_squelch_example
     agc_crcf_qpsk_example
+    agc_crcf_squelch_example
     agc_rrrf_example
     ampmodem_example
     asgramcf_example
@@ -15,62 +15,63 @@ set(EXAMPLES
     cbufferf_example
     cgsolve_example
     channel_cccf_example
-    compand_example
     compand_cf_example
+    compand_example
     complementary_codes_example
     conversion_example
-    crc_example
     cpfskmodem_example
     cpfskmodem_psd_example
+    crc_example
     cvsd_example
-    detector_cccf_example
     dds_cccf_example
-    dsssframesync_example
+    detector_cccf_example
+    dotprod_cccf_example
+    dotprod_rrrf_example
     dsssframe64sync_example
     dsssframe64sync_performance_example
-    dotprod_rrrf_example
-    dotprod_cccf_example
-    eqlms_cccf_block_example
+    dsssframesync_example
     eqlms_cccf_blind_example
+    eqlms_cccf_block_example
     eqlms_cccf_decisiondirected_example
     eqlms_cccf_example
     eqrls_cccf_example
     error_handling_example
+    fading_generator_example
+    fdelay_rrrf_example
     fec_example
     fec_soft_example
-    fdelay_rrrf_example
     fft_example
     fftfilt_crcf_example
     firdecim_crcf_example
+    firdes_doppler_example
+    firdes_kaiser_example
+    firdespm_callback_example
+    firdespm_example
+    firdespm_halfband_example
+    firdespm_lowpass_example
     firfarrow_rrrf_example
     firfilt_cccf_example
     firfilt_cccf_notch_example
     firfilt_crcf_copy_example
-    firfilt_crcf_example
     firfilt_crcf_dcblocker_example
+    firfilt_crcf_example
     firfilt_rrrf_example
-    firdes_doppler_example
-    firdes_kaiser_example
-    firdespm_callback_example
-    firdespm_halfband_example
-    firdespm_example
-    firdespm_lowpass_example
-    firhilb_example
     firhilb_decim_example
+    firhilb_example
     firhilb_filter_example
     firhilb_interp_example
-    firpfb_rrrf_example
-    firpfbch2_crcf_example
-    firpfbch2_crcf_reconstruct_example
-    firpfbchr_crcf_example
     firinterp_crcf_example
     firinterp_firdecim_crcf_example
     firinterp_rrrf_linear_example
     firinterp_rrrf_window_example
-    firpfbch_crcf_example
+    firpfb_rrrf_example
     firpfbch_crcf_analysis_example
+    firpfbch_crcf_example
     firpfbch_crcf_msource_example
     firpfbch_crcf_synthesis_example
+    firpfbch2_crcf_example
+    firpfbch2_crcf_reconstruct_example
+    firpfbchr_crcf_example
     flexframesync_debug_example
     flexframesync_example
     flexframesync_reconfig_example
@@ -82,34 +83,37 @@ set(EXAMPLES
     fskmodem_waterfall_example
     gasearch_example
     gasearch_knapsack_example
-    gmskframesync_example
-    gmskmodem_example
     gmsk_eqlms_example
     gmsk_tracking_example
+    gmskframesync_example
+    gmskmodem_ber_example
+    gmskmodem_example
     gradsearch_datafit_example
     gradsearch_example
-    interleaver_example
-    interleaver_soft_example
-    interleaver_scatterplot_example
-    iirdes_example
-    iirdes_analog_example
-    iirdes_pll_example
     iirdecim_crcf_example
+    iirdes_analog_example
+    iirdes_example
+    iirdes_pll_example
     iirfilt_cccf_example
-    iirfilt_crcf_example
     iirfilt_crcf_dcblocker_example
+    iirfilt_crcf_example
+    iirfilt_rrrf_integrator_example
     iirhilb_example
     iirhilb_filter_example
     iirinterp_crcf_example
+    interleaver_example
+    interleaver_scatterplot_example
+    interleaver_soft_example
     kaiser_window_example
     kbd_window_example
-    lpc_example
     libliquid_example
     liquid_argparse_example
+    lpc_example
     matched_filter_example
     math_lngamma_example
     math_primitive_root_example
     modem_arb_example
+    modem_ber_example
     modem_example
     modem_pi4dqpsk_example
     modem_soft_example
@@ -125,59 +129,62 @@ set(EXAMPLES
     nco_crcf_tone_example
     nco_example
     nco_pll_example
-    nco_pll_real_example
     nco_pll_modem_example
+    nco_pll_real_example
     nyquist_filter_example
     ofdmflexframesync_example
+    ofdmframegen_example
     ofdmframesync_example
     ordfilt_rrrf_example
     packetizer_example
     packetizer_soft_example
+    platformio_example
     pll_example
+    poly_findroots_example
     polyfit_comparison_example
     polyfit_example
     polyfit_lagrange_example
-    poly_findroots_example
     qdetector_cccf_example
     qdsync_cccf_example
-    qpacketmodem_performance_example
-    qpacketmodem_example
-    qpilotsync_example
+    qdsync_cccf_performance_example
     qnsearch_example
+    qpacketmodem_example
+    qpacketmodem_performance_example
+    qpilotsync_example
     qs1dsearch_example
     quantize_example
     random_histogram_example
     repack_bytes_example
-    rresamp_crcf_example
-    rresamp_crcf_partition_example
-    rresamp_crcf_rnyquist_example
-    rresamp_rrrf_example
     resamp_crcf_example
     resamp_crcf_noise_example
     resamp_crcf_rate_match_example
     resamp2_cccf_example
-    resamp2_crcf_example
     resamp2_crcf_decim_example
+    resamp2_crcf_example
     resamp2_crcf_filter_example
     resamp2_crcf_interp_example
     ricek_channel_example
+    rresamp_crcf_example
+    rresamp_crcf_partition_example
+    rresamp_crcf_rnyquist_example
+    rresamp_rrrf_example
     scramble_example
     smatrix_example
     spgramcf_compare_example
     spgramcf_example
     spgramf_example
     spwaterfallcf_example
-    symsync_crcf_example
-    symsync_crcf_full_example
-    symsync_crcf_kaiser_example
     symstreamcf_delay_example
     symstreamcf_example
     symstreamrcf_delay_example
     symstreamrcf_example
+    symsync_crcf_example
+    symsync_crcf_full_example
+    symsync_crcf_kaiser_example
     symtrack_cccf_example
     wdelayf_example
-    windowf_example
     window_enbw_example
+    windowf_example
     windowing_example
     )
 
@@ -190,4 +197,5 @@ foreach(example IN LISTS EXAMPLES)
     # add example program as a test
     #add_test(NAME ${example} COMMAND ${example})
 endforeach()
+
 
