@@ -5,41 +5,22 @@ char __docstr__[] =
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <getopt.h>
 
 #include "liquid.h"
 #include "liquid.argparse.h"
-
-#define OUTPUT_FILENAME "firfarrow_rrrf_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("firfarrow_rrrf_example [options]\n");
-    printf("  h     : print help\n");
-    printf("  t     : fractional sample offset, t in [-0.5,0.5], default: 0.2\n");
-}
 
 int main(int argc, char*argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int h_len       = 19;      // filter length
-    unsigned int p           = 5;       // polynomial order
-    float        fc          = 0.45f;   // filter cutoff
-    float        As          = 60.0f;   // stop-band attenuation [dB]
-    float        mu          = 0.1f;    // fractional sample delay
-    unsigned int num_samples = 60;      // number of samples to evaluate
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"ht:")) != EOF) {
-        switch (dopt) {
-        case 'h': usage();              return 0;
-        case 't': mu = atof(optarg);    break;
-        default:
-            exit(1);
-        }
-    }
+    liquid_argparse_add(char*,    filename, "firfarrow_rrrf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, h_len,         19, 'H', "filter length", NULL);
+    liquid_argparse_add(unsigned, p,              5, 'p', "polynomial order", NULL);
+    liquid_argparse_add(float,    fc,          0.45, 'f', "filter cutoff", NULL);
+    liquid_argparse_add(float,    As,          60.0, 's', "stop-band attenuation [dB]", NULL);
+    liquid_argparse_add(float,    mu,           0.1, 'u', "fractional sample delay", NULL);
+    liquid_argparse_add(unsigned, num_samples,   60, 'n', "number of samples to evaluate", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // data arrays
     float x[num_samples];   // input data array
@@ -67,8 +48,8 @@ int main(int argc, char*argv[])
     firfarrow_rrrf_destroy(f);
     iirfilt_rrrf_destroy(lowpass);
 
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"h_len = %u;\n", h_len);
     fprintf(fid,"mu = %f;\n", mu);
@@ -84,10 +65,10 @@ int main(int argc, char*argv[])
     fprintf(fid,"ty = tx - (h_len-1)/2 + mu; %% output time scale\n");
     fprintf(fid,"plot(tx, x,'-s','MarkerSize',3, ...\n");
     fprintf(fid,"     ty, y,'-x','MarkerSize',3);\n");
-    fprintf(fid,"legend('input','output',0);\n");
+    fprintf(fid,"legend('input','output');\n");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

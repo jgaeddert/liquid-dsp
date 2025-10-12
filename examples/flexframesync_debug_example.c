@@ -37,12 +37,27 @@ int main(int argc, char *argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    modulation_scheme ms     =  LIQUID_MODEM_QPSK; // mod. scheme
-    crc_scheme check         =  LIQUID_CRC_32;     // data validity check
-    fec_scheme fec0          =  LIQUID_FEC_NONE;   // fec (inner)
-    fec_scheme fec1          =  LIQUID_FEC_NONE;   // fec (outer)
-    unsigned int payload_len =  480;               // payload length
-    const char * filename    = "flexframesync_debug_example.dat";
+    liquid_argparse_add(char*,    filename, "flexframesync_debug_example.dat", 'o', "output filename", NULL);
+    liquid_argparse_add(char*,    mod,      "qpsk", 'm', "FEC scheme", NULL);
+    liquid_argparse_add(char*,    crc,     "crc32", 'v', "FEC scheme", NULL);
+    liquid_argparse_add(char*,    fs0,      "none", 'c', "FEC scheme", NULL);
+    liquid_argparse_add(char*,    fs1,      "none", 'k', "FEC scheme", NULL);
+    liquid_argparse_add(unsigned, payload_len, 480, 'n', "data length (bytes)", NULL);
+    liquid_argparse_parse(argc,argv);
+
+    modulation_scheme ms    = liquid_getopt_str2mod(mod);
+    crc_scheme        check = liquid_getopt_str2crc(crc);
+    fec_scheme        fec0  = liquid_getopt_str2fec(fs0);
+    fec_scheme        fec1  = liquid_getopt_str2fec(fs1);
+
+    if (ms == LIQUID_MODEM_UNKNOWN)
+        return fprintf(stderr,"error: unknown/unsupported modulation scheme '%s'\n",mod);
+    if (check == LIQUID_CRC_UNKNOWN)
+        return fprintf(stderr,"error: unknown/unsupported crc scheme '%s'\n",crc);
+    if (fec0 == LIQUID_FEC_UNKNOWN)
+        return fprintf(stderr,"error: unknown/unsupported fec scheme '%s'\n",fs0);
+    if (fec1 == LIQUID_FEC_UNKNOWN)
+        return fprintf(stderr,"error: unknown/unsupported fec scheme '%s'\n",fs1);
 
     // create flexframegen object
     flexframegenprops_s fgprops;

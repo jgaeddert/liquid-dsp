@@ -7,7 +7,6 @@ char __docstr__[] =
 #include <math.h>
 #include "liquid.h"
 #include "liquid.argparse.h"
-#define OUTPUT_FILENAME  "framesync64_performance_example.m"
 
 // add noise to channel
 void frame64_add_noise(float complex * _buf, float _SNRdB)
@@ -23,23 +22,25 @@ int main(int argc, char*argv[])
 {
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "framesync64_performance_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, nfft,  2400,  'n', "FFT size", NULL);
+    liquid_argparse_add(unsigned, min_errors,    5, 'e', "minimum number of errors to simulation", NULL);
+    liquid_argparse_add(unsigned, min_trials,   80, 't', "minimum number of packet trials to simulate", NULL);
+    liquid_argparse_add(unsigned, max_trials, 1000, 'T', "maximum number of packet trials to simulate", NULL);
+    liquid_argparse_add(float,    per_target, 1e-2, 'p', "target packet error rate", NULL);
     liquid_argparse_parse(argc,argv);
 
     // create frame generator, synchronizer objects
     framegen64  fg = framegen64_create();
     framesync64 fs = framesync64_create(NULL,NULL);
-    unsigned int min_errors =   50;
-    unsigned int min_trials =  500;
-    unsigned int max_trials = 5000;
-    float per_target = 1e-2f;
 
     // create buffer for the frame samples
     float complex frame[LIQUID_FRAME64_LEN];
     float SNRdB = -3.0f;
     float per_0 =-1.0f, per_1 = -1.0f;
     float snr_0 = 0.0f, snr_1 =  0.0f;
-    FILE* fid = fopen(OUTPUT_FILENAME, "w");
-    fprintf(fid,"%% %s: auto-generated file\n", OUTPUT_FILENAME);
+    FILE* fid = fopen(filename, "w");
+    fprintf(fid,"%% %s: auto-generated file\n", filename);
     fprintf(fid,"clear all; close all;\n");
     fprintf(fid,"SNR=[]; pdetect=[]; pvalid=[];\n");
     printf("# %8s %6s %6s %6s %12s\n", "SNR", "detect", "valid", "trials", "PER");
@@ -98,7 +99,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"axis([-6 10 1e-3 1]);\n");
     fprintf(fid,"grid on;\n");
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     // clean up allocated objects
     framegen64_destroy(fg);

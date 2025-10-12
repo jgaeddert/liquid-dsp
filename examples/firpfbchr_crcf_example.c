@@ -11,18 +11,18 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "firpfbchr_crcf_example.m"
-
 int main(int argc, char*argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int M = 16;            // number of channels
-    unsigned int P =  6;            // output decimation rate
-    unsigned int m =  5;            // filter semi-length (symbols)
-    unsigned int num_blocks=1<<16;  // number of symbols
-    float As = 60.0f;               // filter stop-band attenuation
-    
+    liquid_argparse_add(char*,    filename, "firpfbchr_crcf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, M,            16, 'M', "number of channels in analysis filterbank", NULL);
+    liquid_argparse_add(unsigned, P,             6, 'P', "number of channels in synthesis filterbank", NULL);
+    liquid_argparse_add(unsigned, m,             5, 'm', "filter length [symbols]", NULL);
+    liquid_argparse_add(float,    As,           60, 'a', "filter stop-band attenuation", NULL);
+    liquid_argparse_add(unsigned, num_blocks,1<<16, 'n', "number of symbols", NULL);
+    liquid_argparse_parse(argc,argv);
+
     unsigned int i;
     unsigned int channel_id = 3;
 
@@ -81,11 +81,9 @@ int main(int argc, char*argv[])
     spgramcf_destroy(p0);
     spgramcf_destroy(p1);
 
-    //
-    // EXPORT DATA TO FILE
-    //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    // export data to file
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"nfft = %u;\n", nfft);
@@ -121,7 +119,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  ylabel('Power Spectral Density [dB]');\n");
 
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     printf("done.\n");
     return 0;

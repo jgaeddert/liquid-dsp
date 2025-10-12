@@ -14,7 +14,6 @@ char __docstr__[] =
 #include <time.h>
 #include "liquid.h"
 #include "liquid.argparse.h"
-#define OUTPUT_FILENAME  "framesync64_example.m"
 
 // static callback function
 static int callback(unsigned char *  _header,
@@ -34,6 +33,7 @@ int main(int argc, char*argv[])
 {
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "framesync64_example.m", 'o', "output filename", NULL);
     liquid_argparse_parse(argc,argv);
 
     // create frame generator, synchronizer objects
@@ -64,8 +64,8 @@ int main(int argc, char*argv[])
     framesync64_destroy(fs);
     
     // export results
-    FILE* fid = fopen(OUTPUT_FILENAME, "w");
-    fprintf(fid,"%% %s: auto-generated file\n", OUTPUT_FILENAME);
+    FILE* fid = fopen(filename, "w");
+    fprintf(fid,"%% %s: auto-generated file\n", filename);
     fprintf(fid,"clear all; close all;\n");
     fprintf(fid,"frame_len   = %u;\n", frame_len);
     for (i=0; i<frame_len; i++)
@@ -73,7 +73,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"t=0:(length(y)-1);\n");
     fprintf(fid,"plot(t,real(y),t,imag(y));\n");
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
     printf("done.\n");
     return 0;
 }

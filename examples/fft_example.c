@@ -5,7 +5,6 @@ char __docstr__[] =
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <getopt.h>
 #include "liquid.h"
 #include "liquid.argparse.h"
 
@@ -22,21 +21,10 @@ int main(int argc, char*argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int nfft = 16; // transform size
-    int method = 0;         // fft method (ignored)
-    int verbose = 0;        // verbose output?
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hvqn:")) != EOF) {
-        switch (dopt) {
-        case 'h': usage();              return 0;
-        case 'v': verbose = 1;          break;
-        case 'q': verbose = 0;          break;
-        case 'n': nfft = atoi(optarg);  break;
-        default:
-            exit(1);
-        }
-    }
+    liquid_argparse_add(unsigned, nfft,       16, 'n', "FFT size", NULL);
+    liquid_argparse_add(unsigned, method,      0, 'm', "FFT method (ignored)", NULL);
+    liquid_argparse_add(bool,     verbose,     0, 'v', "enable verbose output", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // allocate memory arrays
     float complex * x = (float complex*) fft_malloc(nfft*sizeof(float complex));

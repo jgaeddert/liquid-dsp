@@ -5,62 +5,30 @@ char __docstr__[] =
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <getopt.h>
 
 #include "liquid.h"
 #include "liquid.argparse.h"
-
-#define OUTPUT_FILENAME "firdecim_crcf_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("firdecim_crcf_example:\n");
-    printf("  -h         : print usage/help\n");
-    printf("  -M <decim> : decimation factor, M > 1           default: 2\n");
-    printf("  -m <delay> : filter delay (symbols), m > 0,     default: 2\n");
-    printf("  -s <atten> : filter stop-band attenuation [dB], default: 60\n");
-    printf("  -n <num>   : number of samples (after decim),   default: 8\n");
-}
-
 
 int main(int argc, char* argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int M           = 6;       // decimation factor
-    unsigned int m           = 8;       // filter delay
-    float        As          = 60.0f;   // filter stop-band attenuation
-    unsigned int num_samples = 120;     // number of samples (after decim)
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hM:m:s:n:")) != EOF) {
-        switch (dopt) {
-        case 'h': usage();                    return 0;
-        case 'M': M           = atoi(optarg); break;
-        case 'm': m           = atoi(optarg); break;
-        case 's': As          = atof(optarg); break;
-        case 'n': num_samples = atoi(optarg); break;
-        default:
-            usage();
-            return 1;
-        }
-    }
+    liquid_argparse_add(char*,    filename, "firdecim_crcf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, M,             6, 'M', "decimation factor", NULL);
+    liquid_argparse_add(unsigned, m,             8, 'm', "filter delay", NULL);
+    liquid_argparse_add(float,    As,           60, 'a', "filter stop-band attenuation", NULL);
+    liquid_argparse_add(unsigned, num_samples, 120, 'n', "number of samples (after decim)", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate options
-    if (M < 2) {
-        fprintf(stderr,"error: %s, decim factor must be greater than 1\n", argv[0]);
-        return 1;
-    } else if (m < 1) {
-        fprintf(stderr,"error: %s, filter delay must be greater than 0\n", argv[0]);
-        return 1;
-    } else if (As <= 0.0) {
-        fprintf(stderr,"error: %s, stop-band attenuation must be greater than zero\n", argv[0]);
-        return 1;
-    } else if (num_samples < 1) {
-        fprintf(stderr,"error: %s, must have at least one sample\n", argv[0]);
-        return 1;
-    }
+    if (M < 2)
+        fprintf(stderr,"error: decim factor must be greater than 1\n");
+    else if (m < 1)
+        fprintf(stderr,"error: filter delay must be greater than 0\n");
+    else if (As <= 0.0)
+        fprintf(stderr,"error: stop-band attenuation must be greater than zero\n");
+    else if (num_samples < 1)
+        fprintf(stderr,"error: must have at least one sample\n");
 
     // data arrays
     float complex x[M*num_samples]; // number of samples before decimation
@@ -90,8 +58,8 @@ int main(int argc, char* argv[])
     // 
     // export results to file
     //
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"M  = %u;\n", M);
@@ -138,7 +106,7 @@ int main(int argc, char* argv[])
     fprintf(fid,"  legend('original/real','transformed/decimated','location','northeast');");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

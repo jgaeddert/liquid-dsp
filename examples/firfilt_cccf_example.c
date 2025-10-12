@@ -11,37 +11,15 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "firfilt_cccf_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("firfilt_cccf_example:\n");
-    printf("  h     : print usage/help\n");
-    printf("  n     : sequence length, default: 32\n");
-    printf("  s     : SNR, signal-to-noise ratio [dB], default: 20\n");
-}
-
-
 int main(int argc, char* argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int sequence_len = 256;    // sequence length
-    float        SNRdB        = 10.0f;  // signal-to-noise ratio (dB)
+    liquid_argparse_add(char*,    filename, "firfilt_cccf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, sequence_len, 256, 's', "sequence length", NULL);
+    liquid_argparse_add(float,    SNRdB,        10, 'S',  "signal-to-noise ratio (dB)", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hn:s:")) != EOF) {
-        switch (dopt) {
-        case 'h': usage();                      return 0;
-        case 'n': sequence_len = atof(optarg);  break;
-        case 's': SNRdB = atoi(optarg);         break;
-        default:
-            usage();
-            exit(-1);
-        }
-    }
-    
     unsigned int i;
 
     // derived values
@@ -75,7 +53,7 @@ int main(int argc, char* argv[])
     float nstd = powf(10.0f, -SNRdB/20.0f);
     for (i=0; i<num_samples; i++)
         cawgn(&x[i],nstd);
-        
+
     // compute cross-correlation
     for (i=0; i<num_samples; i++) {
         firfilt_cccf_push(q,x[i]);
@@ -94,11 +72,9 @@ int main(int argc, char* argv[])
     // destroy allocated objects
     firfilt_cccf_destroy(q);
 
-    // 
     // write results to file
-    //
-    FILE* fid = fopen(OUTPUT_FILENAME, "w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE* fid = fopen(filename, "w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"num_samples = %u;\n", num_samples);
@@ -132,7 +108,7 @@ int main(int argc, char* argv[])
 
     fprintf(fid,"\n\n");
     fclose(fid);
-    printf("data written to %s\n", OUTPUT_FILENAME);
+    printf("data written to %s\n", filename);
 
     printf("done.\n");
     return 0;

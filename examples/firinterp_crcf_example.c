@@ -11,62 +11,31 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "firinterp_crcf_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("firinterp_crcf_example:\n");
-    printf("  -h         : print usage/help\n");
-    printf("  -k <s/sym> : samples/symbol (interp factor), k > 1, default: 4\n");
-    printf("  -m <delay> : filter delay (symbols), m > 0,         default: 3\n");
-    printf("  -s <atten> : filter stop-band attenuation [dB],     default: 60\n");
-    printf("  -n <num>   : number of data symbols,                default: 16\n");
-}
-
-
 int main(int argc, char* argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int    k        = 4;       // samples/symbol
-    unsigned int    m        = 3;       // filter delay
-    float           As       = 60.0f;   // filter stop-band attenuation
-    unsigned int    num_syms = 16;      // number of data symbols
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"uhk:m:s:n:")) != EOF) {
-        switch (dopt) {
-        case 'u':
-        case 'h': usage();                          return 0;
-        case 'k': k = atoi(optarg);                 break;
-        case 'm': m = atoi(optarg);                 break;
-        case 's': As = atof(optarg);                break;
-        case 'n': num_syms = atoi(optarg);  break;
-        default:
-            exit(1);
-        }
-    }
+    liquid_argparse_add(char*,    filename, "firinterp_crcf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, M,         4, 'M', "interpolation factor", NULL);
+    liquid_argparse_add(unsigned, m,         7, 'm', "filter semi-length", NULL);
+    liquid_argparse_add(float,    As,       60, 's', "filter stop-band suppression", NULL);
+    liquid_argparse_add(unsigned, num_syms, 16, 'n', "number of samples", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate options
-    if (k < 2) {
-        fprintf(stderr,"error: %s, interp factor must be greater than 1\n", argv[0]);
-        exit(1);
-    } else if (m < 1) {
-        fprintf(stderr,"error: %s, filter delay must be greater than 0\n", argv[0]);
-        exit(1);
-    } else if (num_syms < 1) {
-        fprintf(stderr,"error: %s, must have at least one data symbol\n", argv[0]);
-        usage();
-        return 1;
-    }
+    if (M < 2)
+        return fprintf(stderr,"error: %s, interp factor must be greater than 1\n");
+    if (m < 1)
+        return fprintf(stderr,"error: %s, filter delay must be greater than 0\n");
+    if (num_syms < 1)
+        return fprintf(stderr,"error: %s, must have at least one data symbol\n");
 
     // derived values
     unsigned int num_syms_total = num_syms + 2*m;   // total symbols (w/ delay)
-    unsigned int num_samples    = k*num_syms_total; // total samples
+    unsigned int num_samples    = M*num_syms_total; // total samples
 
     // create interpolator from prototype
-    firinterp_crcf q = firinterp_crcf_create_kaiser(k,m,As);
+    firinterp_crcf q = firinterp_crcf_create_kaiser(M,m,As);
 
     // generate input signal and interpolate
     float complex x[num_syms_total];   // input symbols
@@ -83,7 +52,7 @@ int main(int argc, char* argv[])
 
     // interpolate symbols
     for (i=0; i<num_syms_total; i++)
-        firinterp_crcf_execute(q, x[i], &y[k*i]);
+        firinterp_crcf_execute(q, x[i], &y[M*i]);
 
     // destroy interpolator object
     firinterp_crcf_destroy(q);
@@ -96,23 +65,21 @@ int main(int argc, char* argv[])
     printf("y(t) :\n");
     for (i=0; i<num_samples; i++) {
         printf("  y(%4u) = %8.4f + j*%8.4f;", i, crealf(y[i]), cimagf(y[i]));
-        if ( (i >= k*m) && ((i%k)==0))
+        if ( (i >= M*m) && ((i%M)==0))
             printf(" **\n");
         else
             printf("\n");
     }
 
-    // 
     // export output file
-    //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
-    fprintf(fid,"k = %u;\n", k);
+    fprintf(fid,"M = %u;\n", M);
     fprintf(fid,"m = %u;\n", m);
     fprintf(fid,"num_syms_total = %u;\n", num_syms_total);
-    fprintf(fid,"num_samples = k*num_syms_total;\n");
+    fprintf(fid,"num_samples = M*num_syms_total;\n");
     fprintf(fid,"x = zeros(1,num_syms_total);\n");
     fprintf(fid,"y = zeros(1,num_samples);\n");
 
@@ -124,7 +91,7 @@ int main(int argc, char* argv[])
 
     fprintf(fid,"\n\n");
     fprintf(fid,"tx = [0:(num_syms_total-1)];\n");
-    fprintf(fid,"ty = [0:(num_samples-1)]/k - m;\n");
+    fprintf(fid,"ty = [0:(num_samples-1)]/M - m;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
     fprintf(fid,"    plot(ty,real(y),'-',tx,real(x),'s');\n");
@@ -138,7 +105,7 @@ int main(int argc, char* argv[])
     fprintf(fid,"    grid on;\n");
 
     fclose(fid);
-    printf("results written to %s.\n",OUTPUT_FILENAME);
+    printf("results written to %s.\n",filename);
 
     printf("done.\n");
     return 0;

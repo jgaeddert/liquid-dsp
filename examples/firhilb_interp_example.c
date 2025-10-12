@@ -13,18 +13,16 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "firhilb_interp_example.m"
-
 int main(int argc, char* argv[])
 {
-    // define variables and parse command-line arguments
+    // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename, "firhilb_interp_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, m,             7, 'm', "filter semi-length", NULL);
+    liquid_argparse_add(float,    As,           60, 's', "filter stop-band suppression", NULL);
+    liquid_argparse_add(float,    fc,         0.31, 'c', "signal center frequency", NULL);
+    liquid_argparse_add(unsigned, num_samples, 120, 'n', "number of samples", NULL);
     liquid_argparse_parse(argc,argv);
-
-    unsigned int m=5;               // Hilbert filter semi-length
-    float As=60.0f;                 // stop-band attenuation [dB]
-    float fc=0.31f;                 // signal center frequency
-    unsigned int num_samples=128;   // number of samples
 
     // data arrays
     float complex x[num_samples];   // complex input
@@ -50,8 +48,8 @@ int main(int argc, char* argv[])
     // 
     // export results to file
     //
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"h_len=%u;\n", 4*m+1);
@@ -81,7 +79,7 @@ int main(int argc, char* argv[])
     fprintf(fid,"legend('original/complex','transformed/interpolated','location','northeast');");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

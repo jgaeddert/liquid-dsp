@@ -7,24 +7,24 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "firdes_doppler_example.m"
-
 int main(int argc, char* argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    float        fd     = 0.2f;  // Normalized Doppler frequency
-    float        K      = 10.0f; // Rice fading factor
-    float        theta  = 0.0f;  // LoS component angle of arrival
-    unsigned int h_len  = 161;   // filter length
+    liquid_argparse_add(char*,    filename, "firdes_doppler_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(float,    fd,    0.2, 'f', "Normalized Doppler frequency", NULL);
+    liquid_argparse_add(float,    K,      10, 'K', "Rice fading factor", NULL);
+    liquid_argparse_add(float,    theta,   0, 't', "LoS component angle of arrival", NULL);
+    liquid_argparse_add(unsigned, h_len, 161, 'p', "filter length", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // generate the filter
     float h[h_len];
     liquid_firdes_doppler(h_len,fd,K,theta,h);
 
     // output to file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"h_len=%u;\n",h_len);
     unsigned int i;
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
             fd, K, theta, h_len);
     fprintf(fid,"xlim([-0.5 0.5]);\n");
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
     return 0;
 }
 

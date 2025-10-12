@@ -14,15 +14,15 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "firpfbch_crcf_example.m"
-
 int main(int argc, char* argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int num_channels=4;    // number of channels
-    unsigned int p=3;               // filter length (symbols)
-    unsigned int num_symbols=6;     // number of symbols
+    liquid_argparse_add(char*,    filename, "firpfbch_crcf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, num_channels, 4, 'M', "number of channels", NULL);
+    liquid_argparse_add(unsigned, p,            3, 'p', "filter length [symbols]", NULL);
+    liquid_argparse_add(unsigned, num_symbols,  6, 'n', "number of frames", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // derived values
     unsigned int num_samples = num_channels * num_symbols;
@@ -233,8 +233,8 @@ int main(int argc, char* argv[])
     // EXPORT DATA TO FILE
     //
 
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"num_channels=%u;\n", num_channels);
@@ -291,7 +291,7 @@ int main(int argc, char* argv[])
 
 
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     printf("done.\n");
     return 0;

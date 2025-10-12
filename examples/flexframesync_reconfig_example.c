@@ -11,41 +11,15 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME  "flexframesync_reconfig_example.m"
-
-void usage()
-{
-    printf("flexframesync_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  s     : signal-to-noise ratio [dB], default: 30\n");
-    printf("  n     : number of frames, default: 3\n");
-}
-
 int main(int argc, char* argv[])
 {
-    // define variables and parse command-line arguments
+    // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
+    //liquid_argparse_add(char*,    filename, "flexframesync_reconfig_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(float,    noise_floor,-30, '0', "noise floor [dB]", NULL);
+    liquid_argparse_add(float,    SNRdB,       20, 's', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_add(unsigned, num_frames,   3, 'n', "number of frames", NULL);
     liquid_argparse_parse(argc,argv);
-
-    srand( time(NULL) );
-
-    // define parameters
-    float SNRdB = 30.0f;
-    float noise_floor = -30.0f;
-    unsigned int num_frames = 3;
-
-    // get options
-    int dopt;
-    while((dopt = getopt(argc,argv,"uhvqs:f:m:p:n:")) != EOF){
-        switch (dopt) {
-        case 'u':
-        case 'h': usage();                      return 0;
-        case 's': SNRdB = atof(optarg);         break;
-        case 'n': num_frames = atoi(optarg);    break;
-        default:
-            exit(1);
-        }
-    }
 
     // create flexframegen object
     flexframegenprops_s fgprops;

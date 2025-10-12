@@ -6,17 +6,14 @@ char __docstr__[] = "Create halfband filter using firdespm";
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "firdespm_halfband_example.m"
-
 int main(int argc, char*argv[])
 {
-    // define variables and parse command-line arguments
+    // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename, "firdespm_halfband_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, m,    4, 'm', "filter semi-length", NULL);
+    liquid_argparse_add(float,    ft, 0.4, 'f', "filter transition bandwidth", NULL);
     liquid_argparse_parse(argc,argv);
-
-    // filter design parameters
-    unsigned int m  = 4;
-    float        ft = 0.4f;
 
     // derived values
     unsigned int h_len = 4*m + 1;
@@ -29,8 +26,8 @@ int main(int argc, char*argv[])
         printf("h(%4u) = %16.12f;\n", i+1, h[i]);
 
     // open output file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"h_len=%u;\n", h_len);
@@ -50,7 +47,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  axis([-0.5 0.5 -180 5]);\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     printf("done.\n");
     return 0;

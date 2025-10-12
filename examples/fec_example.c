@@ -13,42 +13,18 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-// print usage/help message
-void usage()
-{
-    printf("fec_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  n     : input data size (number of uncoded bytes)\n");
-    printf("  c     : coding scheme, (h74 default):\n");
-    liquid_print_fec_schemes();
-}
-
-
 int main(int argc, char*argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int n = 4;                     // data length (bytes)
-    unsigned int nmax = 2048;               // maximum data length
-    fec_scheme fs = LIQUID_FEC_HAMMING74;   // error-correcting scheme
+    liquid_argparse_add(unsigned, n,        4, 'n', "data lengtht (bytes)", NULL);
+    liquid_argparse_add(unsigned, nmax,  2048, 'N', "maximum data length", NULL);
+    liquid_argparse_add(char*,    fec0, "h74", 'c', "FEC scheme", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    int dopt;
-    while((dopt = getopt(argc,argv,"uhn:c:")) != EOF){
-        switch (dopt) {
-        case 'h':
-        case 'u': usage(); return 0;
-        case 'n': n = atoi(optarg); break;
-        case 'c':
-            fs = liquid_getopt_str2fec(optarg);
-            if (fs == LIQUID_FEC_UNKNOWN) {
-                fprintf(stderr,"error: unknown/unsupported fec scheme \"%s\"\n\n",optarg);
-                exit(1);
-            }
-            break;
-        default:
-            exit(1);
-        }
-    }
+    fec_scheme fs = liquid_getopt_str2fec(fec0);
+    if (fs == LIQUID_FEC_UNKNOWN)
+        return fprintf(stderr,"error: unknown/unsupported fec scheme '%s'\n",fec0);
 
     // ensure proper data length
     n = (n > nmax) ? nmax : n;

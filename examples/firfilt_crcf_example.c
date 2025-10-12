@@ -12,16 +12,16 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "firfilt_crcf_example.m"
-
 int main(int argc, char* argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int h_len=65;  // filter length
-    float fc=0.1f;          // cutoff frequency
-    float As=60.0f;         // stop-band attenuation
-    unsigned int n=240;     // number of samples
+    liquid_argparse_add(char*,    filename, "firfilt_crcf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, h_len,        65, 'H', "filter length", NULL);
+    liquid_argparse_add(float,    fc,          0.1, 'c', "filter cutoff frequency", NULL);
+    liquid_argparse_add(float,    As,           60, 's', "filter stop-band suppression", NULL);
+    liquid_argparse_add(unsigned, num_samples, 240, 'n', "number of samples", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // design filter from prototype and scale to bandwidth
     firfilt_crcf q = firfilt_crcf_create_kaiser(h_len, fc, As, 0.0f);
@@ -31,12 +31,12 @@ int main(int argc, char* argv[])
     unsigned int i;
 
     // allocate memory for data arrays
-    float complex x[n];
-    float complex y[n];
+    float complex x[num_samples];
+    float complex y[num_samples];
 
     // generate input signal (sine wave with decaying amplitude)
-    unsigned int wlen = (unsigned int)roundf(0.75*n);
-    for (i=0; i<n; i++) {
+    unsigned int wlen = (unsigned int)roundf(0.75*num_samples);
+    for (i=0; i<num_samples; i++) {
         // generate input signal
         x[i] = 0.7f*cexpf(2*M_PI*0.057f*_Complex_I*i) +
                0.3f*cexpf(2*M_PI*0.357f*_Complex_I*i);
@@ -60,22 +60,20 @@ int main(int argc, char* argv[])
     // destroy filter object
     firfilt_crcf_destroy(q);
 
-    // 
     // plot results to output file
-    //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"\n");
     fprintf(fid,"h_len=%u;\n", h_len);
-    fprintf(fid,"n=%u;\n",n);
+    fprintf(fid,"n=%u;\n",num_samples);
     fprintf(fid,"nfft=%u;\n",nfft);
     fprintf(fid,"x=zeros(1,n);\n");
     fprintf(fid,"y=zeros(1,n);\n");
     fprintf(fid,"H=zeros(1,nfft);\n");
 
-    for (i=0; i<n; i++) {
+    for (i=0; i<num_samples; i++) {
         //printf("%4u : %12.8f + j*%12.8f\n", i, crealf(y), cimagf(y));
         fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
         fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
@@ -118,7 +116,7 @@ int main(int argc, char* argv[])
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
     fprintf(fid,"legend('input','output','filter','location','northeast');\n");
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     printf("done.\n");
     return 0;
