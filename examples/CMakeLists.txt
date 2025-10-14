@@ -195,7 +195,8 @@ foreach(example IN LISTS EXAMPLES)
     target_link_libraries(${example} ${LIBNAME})
 
     # add example program as a test
-    #add_test(NAME ${example} COMMAND ${example})
+    add_test(NAME ${example} COMMAND ${example})
+    set_tests_properties(${example} PROPERTIES LABELS "example")
 endforeach()
 
 

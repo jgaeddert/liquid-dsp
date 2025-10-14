@@ -80,15 +80,21 @@ platformio:
     - pio ci --lib="." --board=pico examples/platformio_example.c
 
 # compile and run all example programs, timing how long each takes to run
-.examples:
+examples:
   stage: test
   script:
-    - make -j4 examples
-    - echo '' > time.txt
-    - ls examples/*_example | sed -E "s#(.*)#echo '\1' >> time.txt; { time -p ./\1 ; } 2>> time.txt#g" > run_examples.sh
-    - /bin/sh run_examples.sh
+    - rm -rf build
+    - mkdir build
+    - cd build
+    - cmake -DBUILD_AUTOTESTS=OFF -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=ON -DBUILD_SANDBOX=OFF -DCOVERAGE=OFF ..
+    - make -j4
+    - ctest -j4 -L example
+    #- echo '' > time.txt
+    #- ls examples/*_example | sed -E "s#(.*)#echo '\1' >> time.txt; { time -p ./\1 ; } 2>> time.txt#g" > run_examples.sh
+    #- /bin/sh run_examples.sh
   artifacts:
-    paths: [run_examples.sh, time.txt]
+    paths:
+      - build/Testing/
 
 # compile and run autotest programs with valgrind
 # NOTE: running all tests on a single-core system can take well over an hour

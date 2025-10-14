@@ -78,6 +78,9 @@ configure_file(cmake/config.h.cmake config.h)
 #target_include_directories(test PRIVATE include)
 include_directories(include .)
 
+# enable testing always
+enable_testing()
+
 # ---------------------------------------- main sources ----------------------------------------
 
 add_library(agc OBJECT
@@ -762,8 +765,7 @@ if(BUILD_AUTOTESTS)
     endif(COVERAGE)
 
     # enable testing; might consider splitting these up for parallel execution
-    enable_testing()
-    add_test(NAME test COMMAND xautotest)
+    add_test(NAME autotest COMMAND xautotest)
 endif(BUILD_AUTOTESTS)
 
 

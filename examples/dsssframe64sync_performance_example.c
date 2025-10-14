@@ -26,8 +26,8 @@ int main(int argc, char*argv[])
     liquid_argparse_add(char*, filename, "dsssframe64sync_performance_example.m", 'o', "output filename", NULL);
     liquid_argparse_add(unsigned, nfft,  2400,  'n', "FFT size", NULL);
     liquid_argparse_add(unsigned, min_errors,    5, 'e', "minimum number of errors to simulation", NULL);
-    liquid_argparse_add(unsigned, min_trials,   80, 't', "minimum number of packet trials to simulate", NULL);
-    liquid_argparse_add(unsigned, max_trials, 1000, 'T', "maximum number of packet trials to simulate", NULL);
+    liquid_argparse_add(unsigned, min_trials,   20, 't', "minimum number of packet trials to simulate", NULL);
+    liquid_argparse_add(unsigned, max_trials,  400, 'T', "maximum number of packet trials to simulate", NULL);
     liquid_argparse_parse(argc,argv);
 
     // create frame generator, synchronizer objects
