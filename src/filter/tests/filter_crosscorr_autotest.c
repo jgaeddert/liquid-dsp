@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +55,7 @@ void autotest_filter_crosscorr_rrrf()
 
 
     // corr(x,y)
-    int i;
+    unsigned int i;
     liquid_log_debug("testing corr(x,y):");
     for (i=0; i<rxy_len; i++) {
         int lag = i - y_len + 1;

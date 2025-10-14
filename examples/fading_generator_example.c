@@ -23,7 +23,7 @@ int main() {
     // generate filter
     unsigned int i;
     float h[h_len];
-    fir_design_doppler(h_len,fd,K,theta,h);
+    liquid_firdes_doppler(h_len,fd,K,theta,h);
     firfilt_rrrf fi = firfilt_rrrf_create(h,h_len);
     firfilt_rrrf fq = firfilt_rrrf_create(h,h_len);
 

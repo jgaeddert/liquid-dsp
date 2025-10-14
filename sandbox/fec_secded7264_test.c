@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,7 +71,7 @@ void print_bitstring(unsigned char * _x,
     // print leader
     printf("    ");
     if (d.rem == 0) printf(" ");
-    for (i=0; i<8-d.rem-1; i++)
+    for (i=0; i<8U-d.rem-1U; i++)
         printf(" ");
 
     // print bitstring

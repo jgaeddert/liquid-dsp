@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@ int POLY(_expandbinomial)(unsigned int _n,
         return LIQUID_OK;
     }
 
-    int i, j;
+    unsigned int i, j;
     // initialize coefficients array to [1,0,0,....0]
     for (i=0; i<=_n; i++)
         _c[i] = (i==0) ? 1 : 0;
@@ -75,7 +75,7 @@ int POLY(_expandbinomial_pm)(unsigned int _m,
         return LIQUID_OK;
     }
 
-    int i, j;
+    unsigned int i, j;
     // initialize coefficients array to [1,0,0,....0]
     for (i=0; i<=n; i++)
         _c[i] = (i==0) ? 1 : 0;
@@ -110,7 +110,7 @@ int POLY(_expandbinomial)(T *          _a,
         return LIQUID_OK;
     }
 
-    int i, j;
+    unsigned int i, j;
     // initialize coefficients array to [1,0,0,....0]
     for (i=0; i<=_n; i++)
         _c[i] = (i==0) ? 1 : 0;
@@ -157,7 +157,7 @@ int POLY(_expandroots)(T *          _r,
         return LIQUID_OK;
     }
 
-    int i, j;
+    unsigned int i, j;
     // initialize coefficients array to [1,0,0,....0]
     for (i=0; i<=_n; i++)
         _p[i] = (i==0) ? 1 : 0;

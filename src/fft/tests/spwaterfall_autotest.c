@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,9 +59,6 @@ void autotest_spwaterfall_config()
     _liquid_error_downgrade_disable();
 }
 
-int testbench_spwaterfallcf_compare(const void * _v0, const void * _v1)
-    { return *(float*)_v0 > *(float*)_v1 ? 1 : -1; }
-
 void testbench_spwaterfallcf_noise(unsigned int _nfft,
                                    unsigned int _window_len,
                                    unsigned int _delay,
@@ -98,7 +95,7 @@ void testbench_spwaterfallcf_noise(unsigned int _nfft,
     // compute median value; should be close to noise floor
     float * v = (float*) malloc(_nfft*time*sizeof(float));
     memmove(v, psd, _nfft*time*sizeof(float));
-    qsort(v, _nfft*time, sizeof(float), &testbench_spwaterfallcf_compare);
+    qsort(v, _nfft*time, sizeof(float), &liquid_compare_float);
     float median = v[_nfft*time/2];
     liquid_log_debug("  spwaterfallcf_test(noise): nfft:%4u, wtype:%s, n0:%6.1f, est:%6.1f, tol:%5.2f",
             _nfft, liquid_window_str[_wtype][1], _noise_floor, median, tol);

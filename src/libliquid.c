@@ -162,7 +162,7 @@ struct liquid_logger_s {
 // global logger
 static struct liquid_logger_s qlog = {
     .level         = 0,
-    .time_fmt      = "[%T] ",
+    .time_fmt      = "%Y-%m-%d %T",
     .config        = (LIQUID_LOG_DEFAULT | LIQUID_LOG_COLOR),
     .cb_function   = {NULL,},
     .count         = {0,0,0,0,0,0,},
@@ -230,7 +230,7 @@ int liquid_logger_callback_stream(liquid_log_event _event,
 
     // print timestamp
     if (_config & LIQUID_LOG_TIMESTAMP)
-        fprintf(_stream,"%s",_event->time_str);
+        fprintf(_stream,"%s | ",_event->time_str);
 
     // print log level
     if (_config & (LIQUID_LOG_LEVEL_FULL | LIQUID_LOG_LEVEL_5 | LIQUID_LOG_LEVEL_1) )
@@ -252,7 +252,7 @@ int liquid_logger_callback_stream(liquid_log_event _event,
 
         if (enable_color)
             fprintf(_stream,"\033[0m");
-        fprintf(_stream,": ");
+        fprintf(_stream," | ");
     }
 
     // print file/line

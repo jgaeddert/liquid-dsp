@@ -5,3 +5,4 @@
 #cmakedefine HAVE_STDLIB_H
 #cmakedefine HAVE_LIBC
 #cmakedefine SIZEOF_INT @SIZEOF_INT@
+#cmakedefine01 fftw3f_FOUND

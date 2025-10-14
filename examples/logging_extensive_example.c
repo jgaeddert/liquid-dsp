@@ -28,23 +28,24 @@ void sweep_levels(liquid_logger _q)
 
 int main(int argc, char*argv[])
 {
-    liquid_log(NULL,LIQUID_INFO,__FILE__,__LINE__,"setting default logging (without color)");
+    printf("\nsetting default logging (without color)\n");
     liquid_logger_set_config(NULL, LIQUID_LOG_DEFAULT);
     sweep_levels(NULL);
 
-    liquid_log(NULL,LIQUID_INFO,__FILE__,__LINE__,"setting default logging (with color)");
+    printf("\nsetting default logging (with color)\n");
     liquid_logger_set_config(NULL, LIQUID_LOG_DEFAULT | LIQUID_LOG_COLOR);
     sweep_levels(NULL);
 
-    liquid_log(NULL,LIQUID_INFO,__FILE__,__LINE__,"setting concise logging");
+    printf("\nsetting concise logging\n");
     liquid_logger_set_config(NULL, LIQUID_LOG_CONCISE | LIQUID_LOG_COLOR);
     sweep_levels(NULL);
 
-    liquid_log(NULL,LIQUID_INFO,__FILE__,__LINE__,"setting compact logging");
+    printf("\nsetting compact logging\n");
     liquid_logger_set_config(NULL, LIQUID_LOG_COMPACT | LIQUID_LOG_COLOR);
     sweep_levels(NULL);
 
     // test macro
+    printf("\ntesting macro\n");
     liquid_log_trace("testing trace logging with narg=%u", 42);
     liquid_logger_print(NULL);
 

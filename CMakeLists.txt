@@ -1,10 +1,9 @@
 # cmake build file for liquid-dsp
 cmake_minimum_required(VERSION 3.10)
 
-# run custom command to parse version number from include/liquid.h
-execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/version.sh
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    OUTPUT_VARIABLE LIQUID_VERSION)
+# parse version number from include/liquid.h
+include(cmake/version.cmake)
+get_liquid_version("${CMAKE_CURRENT_SOURCE_DIR}/include/liquid.h" LIQUID_VERSION)
 
 # project definition
 project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
@@ -15,6 +14,8 @@ option(BUILD_EXAMPLES   "Set to ON to build examples"           ON)
 option(BUILD_AUTOTESTS  "Set to ON to build autotest program"   ON)
 option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  ON)
 option(ENABLE_SIMD      "Set to ON to build SIMD extensions"    ON)
+option(FIND_SIMD        "Set to ON to find SIMD extensions"     ON)
+option(FIND_FFTW        "Set to ON to find FFTW library"        ON)
 option(BUILD_SANDBOX    "Set to ON to build sandbox programs"   OFF)
 option(BUILD_DOC        "Set to ON to build documentation"      OFF)
 option(COVERAGE         "Set to ON to build with code coverage" OFF)
@@ -24,9 +25,13 @@ if(COVERAGE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif(COVERAGE)
 
+# add 'cmake' subdirectory available for custom scripts
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
 # target_sources() command converts relative paths to absolute.
 cmake_policy(SET CMP0076 NEW)
 
+# main library name
 set(LIBNAME liquid)
 
 # require a C99 compiler for all targets
@@ -43,8 +48,15 @@ include (CheckLibraryExists)
 include (CheckSymbolExists)
 
 # check for hardware acceleration
-include(cmake/FindSIMD.cmake)
-# TODO: check for FFTW
+if (ENABLE_SIMD AND FIND_SIMD)
+    find_package(SIMD)
+endif()
+
+# check external libraries
+#variable_watch(fftw3f_INCLUDE_DIR)
+if (FIND_FFTW)
+    find_package(fftw3f)
+endif()
 
 # global flags
 if (MSVC)
@@ -65,6 +77,9 @@ configure_file(cmake/config.h.cmake config.h)
 
 #target_include_directories(test PRIVATE include)
 include_directories(include .)
+
+# enable testing always
+enable_testing()
 
 # ---------------------------------------- main sources ----------------------------------------
 
@@ -248,21 +263,14 @@ add_library(sequence OBJECT
 add_library(utility OBJECT
     src/utility/src/bshift_array.c
     src/utility/src/byte_utilities.c
+    src/utility/src/count_ones.c
     src/utility/src/memory.c
     src/utility/src/msb_index.c
     src/utility/src/pack_bytes.c
     src/utility/src/shift_array.c
     src/utility/src/utility.c)
 
-add_library(vector OBJECT
-    src/vector/src/vectorf_add.port.c
-    src/vector/src/vectorf_norm.port.c
-    src/vector/src/vectorf_mul.port.c
-    src/vector/src/vectorf_trig.port.c
-    src/vector/src/vectorcf_add.port.c
-    src/vector/src/vectorcf_norm.port.c
-    src/vector/src/vectorcf_mul.port.c
-    src/vector/src/vectorcf_trig.port.c)
+add_library(vector OBJECT)
 
 
 # ---------------------------------------- SIMD extensions ----------------------------------------
@@ -272,41 +280,64 @@ if (C_NEON_FOUND AND ENABLE_SIMD)
         src/dotprod/src/dotprod_crcf.neon.c
         src/dotprod/src/dotprod_rrrf.neon.c
         src/dotprod/src/sumsq.c)
+    target_sources(vector PUBLIC
+        src/vector/src/vectorf.port.c
+        src/vector/src/vectorcf.neon.c)
     target_compile_options(dotprod PUBLIC ${C_NEON_FLAGS})
+    target_compile_options(vector PUBLIC ${C_NEON_FLAGS})
 elseif (C_AVX512_FOUND AND ENABLE_SIMD)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.avx512f.c
         src/dotprod/src/dotprod_crcf.avx512f.c
         src/dotprod/src/dotprod_rrrf.avx512f.c
         src/dotprod/src/sumsq.avx512f.c)
+    target_sources(vector PUBLIC
+        src/vector/src/vectorf.port.c
+        src/vector/src/vectorcf.port.c)
     target_compile_options(dotprod PUBLIC ${C_AVX512_FLAGS})
+    target_compile_options(vector PUBLIC ${C_AVX512_FLAGS})
 elseif (C_AVX2_FOUND AND ENABLE_SIMD)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.avx.c
         src/dotprod/src/dotprod_crcf.avx.c
         src/dotprod/src/dotprod_rrrf.avx.c
         src/dotprod/src/sumsq.avx.c)
+    target_sources(vector PUBLIC
+        src/vector/src/vectorf.avx.c
+        src/vector/src/vectorcf.port.c)
     target_compile_options(dotprod PUBLIC ${C_AVX2_FLAGS})
+    target_compile_options(vector PUBLIC ${C_AVX2_FLAGS})
 elseif (C_AVX_FOUND AND ENABLE_SIMD)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.avx.c
         src/dotprod/src/dotprod_crcf.avx.c
         src/dotprod/src/dotprod_rrrf.avx.c
         src/dotprod/src/sumsq.avx.c)
+    target_sources(vector PUBLIC
+        src/vector/src/vectorf.port.c
+        src/vector/src/vectorcf.port.c)
     target_compile_options(dotprod PUBLIC ${C_AVX_FLAGS})
+    target_compile_options(vector PUBLIC ${C_AVX_FLAGS})
 elseif (C_SSE4_FOUND AND ENABLE_SIMD)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.sse.c
         src/dotprod/src/dotprod_crcf.sse.c
         src/dotprod/src/dotprod_rrrf.sse.c
         src/dotprod/src/sumsq.sse.c)
+    target_sources(vector PUBLIC
+        src/vector/src/vectorf.port.c
+        src/vector/src/vectorcf.port.c)
     target_compile_options(dotprod PUBLIC ${C_SSE4_FLAGS})
+    target_compile_options(vector PUBLIC ${C_SSE4_FLAGS})
 elseif (C_ALTIVEC_FOUND AND ENABLE_SIMD)
     target_sources(dotprod PUBLIC
         src/dotprod/src/dotprod_cccf.c
         src/dotprod/src/dotprod_crcf.av.c
         src/dotprod/src/dotprod_rrrf.av.c
         src/dotprod/src/sumsq.c)
+    target_sources(vector PUBLIC
+        src/vector/src/vectorf.port.c
+        src/vector/src/vectorcf.port.c)
 else()
     # portable C version
     target_sources(dotprod PUBLIC
@@ -314,6 +345,9 @@ else()
         src/dotprod/src/dotprod_crcf.c
         src/dotprod/src/dotprod_rrrf.c
         src/dotprod/src/sumsq.c)
+    target_sources(vector PUBLIC
+        src/vector/src/vectorf.port.c
+        src/vector/src/vectorcf.port.c)
 endif()
 
 # ---------------------------------------- main library ----------------------------------------
@@ -345,6 +379,9 @@ add_library(${LIBNAME} SHARED
     $<TARGET_OBJECTS:utility>
     $<TARGET_OBJECTS:vector>)
 
+# TODO: build static library in addition to shared
+# https://alexreinking.com/blog/building-a-dual-shared-and-static-library-with-cmake.html
+
 target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
 #target_sources(${LIBNAME} PUBLIC FILE_SET HEADERS FILES include/liquid.h)
 
@@ -375,7 +412,11 @@ if(COVERAGE)
     target_link_options(${LIBNAME} PRIVATE -coverage)
 endif(COVERAGE)
 
+
 target_link_libraries(${LIBNAME} c m)
+if (fftw3f_FOUND)
+    target_link_libraries(${LIBNAME} fftw3f)
+endif()
 
 set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
 
@@ -572,6 +613,8 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/utility/tests/count_bits_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/pack_bytes_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/shift_array_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/vector/tests/vectorcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/vector/tests/vectorf_autotest.c
     )
 
 set(AUTOTEST_EXTRA
@@ -722,8 +765,7 @@ if(BUILD_AUTOTESTS)
     endif(COVERAGE)
 
     # enable testing; might consider splitting these up for parallel execution
-    enable_testing()
-    add_test(NAME test COMMAND xautotest)
+    add_test(NAME autotest COMMAND xautotest)
 endif(BUILD_AUTOTESTS)
 
 
@@ -750,6 +792,7 @@ set(BENCHMARKS
     ${PROJECT_SOURCE_DIR}/src/fec/bench/sumproduct_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fec/bench/interleaver_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fec/bench/packetizer_decode_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fft/bench/asgramcf_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_composite_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_prime_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_radix2_benchmark.c
@@ -801,6 +844,8 @@ set(BENCHMARKS
     ${PROJECT_SOURCE_DIR}/src/random/bench/random_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/sequence/bench/bsequence_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/utility/bench/byte_utilities_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/vector/bench/vectorcf_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/vector/bench/vectorf_benchmark.c
     )
 
 set(BENCHMARKS_EXTRA

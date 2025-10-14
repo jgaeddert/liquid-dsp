@@ -23,9 +23,9 @@ int main(int argc, char*argv[])
     // create frame generator, synchronizer objects
     dsssframe64gen  fg = dsssframe64gen_create();
     dsssframe64sync fs = dsssframe64sync_create(NULL,NULL);
-    unsigned int min_errors =    5;
-    unsigned int min_trials =   80;
-    unsigned int max_trials = 1000;
+    unsigned int min_errors =   5;
+    unsigned int min_trials =  20;
+    unsigned int max_trials = 400;
 
     // create buffer for the frame samples
     unsigned int  frame_len = dsssframe64gen_get_frame_len(fg);

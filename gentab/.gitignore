@@ -1,0 +1,4 @@
+# ignore compiled objects and executables
+*.o
+*_gentab
+

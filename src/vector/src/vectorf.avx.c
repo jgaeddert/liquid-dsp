@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,15 +20,18 @@
  * THE SOFTWARE.
  */
 
-// 
-// Vector
-//
+// vector operatios
 
 #include "liquid.internal.h"
 
 #define VECTOR(name)    LIQUID_CONCAT(liquid_vectorf,name)
-#define T               float
-#define TP              float
+#define T               float           // input/output type
+#define TP              float           // primitive type
 
+#define T_COMPLEX       0               // is input type complex
+
+#include "vector_add.proto.c"
+#include "vectorf_mul.avx.c"            // AVX version
 #include "vector_norm.proto.c"
+#include "vector_trig.proto.c"
 
