@@ -18,11 +18,11 @@ int main(int argc, char* argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    liquid_argparse_add(char*,    filename, "firinterp_crcf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char*,    filename, "firinterp_firdecim_crcf_example.m", 'o', "output filename", NULL);
     liquid_argparse_add(unsigned, M,         7, 'M', "interpolation factor", NULL);
     liquid_argparse_add(unsigned, m,         7, 'm', "filter semi-length", NULL);
     liquid_argparse_add(float,    dt,      0.5, 't', "filter fractional sample delay", NULL);
-    liquid_argparse_add(float,    beta,     60, 's', "filter excess bandwidth", NULL);
+    liquid_argparse_add(float,    beta,    0.2, 's', "filter excess bandwidth", NULL);
     liquid_argparse_add(unsigned, num_syms, 16, 'n', "number of samples", NULL);
     liquid_argparse_parse(argc,argv);
 
@@ -107,9 +107,7 @@ int main(int argc, char* argv[])
         else           printf(" *\n");
     }
 
-    //
     // export results to file
-    //
     FILE * fid = fopen(filename,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\n");
@@ -146,7 +144,7 @@ int main(int argc, char* argv[])
     fprintf(fid,"    xlabel('time');\n");
     fprintf(fid,"    ylabel('real');\n");
     fprintf(fid,"    grid on;\n");
-    fprintf(fid,"    legend('symbols in','interp','symbols out',0);\n");
+    fprintf(fid,"    legend('symbols in','interp','symbols out');\n");
     fprintf(fid,"subplot(2,1,2);\n");
     fprintf(fid,"    plot(tx,imag(x),'s',ty,imag(y),'-',tz,imag(z),'x');\n");
     fprintf(fid,"    xlabel('time');\n");
