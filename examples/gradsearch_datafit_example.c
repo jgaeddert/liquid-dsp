@@ -9,8 +9,6 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "gradsearch_datafit_example.m"
-
 // gradient search data set
 struct gsdataset {
     float * x;
@@ -33,13 +31,15 @@ float gsfunc(float _x, float * _v)
     return c0 + sincf(c1*(_x-c2));
 }
 
-
-int main() {
-    // define variables and parse command-line options
+int main(int argc, char*argv[])
+{
+    // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    unsigned int num_samples = 400;     // number of samples
-    float sig = 0.1f;                   // noise variance
-    unsigned int num_iterations = 1000; // number of iterations to run
+    liquid_argparse_add(char*, filename, "gradsearch_datafit_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, num_samples,    400,  'n', "number of samples", NULL);
+    liquid_argparse_add(float,    nstd,           0.1f, 's', "noise standard deviation", NULL);
+    liquid_argparse_add(unsigned, num_iterations, 200,  'i', "number of iterations to run", NULL);
+    liquid_argparse_parse(argc,argv);
 
     float v[3] = {1, 1, 1};
     unsigned int i;
@@ -54,7 +54,7 @@ int main() {
     float y[num_samples];
     for (i=0; i<num_samples; i++) {
         x[i] = xmin + i*dx;
-        y[i] = sincf(x[i]) + randnf()*sig;
+        y[i] = sincf(x[i]) + randnf()*nstd;
     }
     struct gsdataset q = {x, y, num_samples};
 
@@ -67,8 +67,8 @@ int main() {
     //rmse = gradsearch_run(gs, num_iterations, -1e-6f);
 
      // open output file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
 
@@ -110,11 +110,11 @@ int main() {
     fprintf(fid,"xlabel('x');\n");
     fprintf(fid,"ylabel('f(x)');\n");
     fprintf(fid,"grid on;\n");
-    fprintf(fid,"legend('data','fit',1);\n");
+    fprintf(fid,"legend('data','fit');\n");
 
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     gradsearch_destroy(gs);
 

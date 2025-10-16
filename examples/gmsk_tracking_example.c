@@ -6,21 +6,24 @@ char __docstr__[] = "Demonstrate symbol tracking of GMSK signal.";
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "gmsk_tracking_example.m"
-
-int main(int argc, char*argv[]) {
+int main(int argc, char*argv[])
+{
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int k      =    4; // filter samples/symbol
-    float        beta   = 0.3f; // bandwidth-time product
+    liquid_argparse_add(char*, filename, "gmsk_tracking_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, k,            4, 'k', "filter semi-length", NULL);
+    liquid_argparse_add(unsigned, m,            3, 'm', "filter samples/symbol", NULL);
+    liquid_argparse_add(float,    beta,       0.3, 'b', "bandwidth-time product", NULL);
+    liquid_argparse_add(unsigned, num_blocks,  25, 'n', "number of symbols to simulate", NULL);
+    liquid_argparse_add(unsigned, P,          203, 'P', "output rate (interpolation factor)", NULL);
+    liquid_argparse_add(unsigned, Q,          200, 'Q', "input rate (decimation factor)", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // create resampler object to facilitate sample rate offset
-    unsigned int    P   = 203;  // output rate (interpolation factor)
-    unsigned int    Q   = 200;  // input rate (decimation factor)
     rresamp_crcf resamp = rresamp_crcf_create_kaiser(k*P,k*Q,12,0.5,60.0f);
 
     // create modulator
-    gmskmod mod = gmskmod_create(k, 3, beta);
+    gmskmod mod = gmskmod_create(k, m, beta);
     gmskmod_print(mod);
 
     // frequency demodulator
@@ -37,8 +40,8 @@ int main(int argc, char*argv[]) {
     symsync_rrrf_set_output_rate(sync,2);   // set output rate as 2 samples/symbol
 
     // write results to output file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all; close all;\n");
     fprintf(fid,"k = %u; v = [];\n", k);
 
@@ -48,7 +51,7 @@ int main(int argc, char*argv[]) {
     float         buf_2[k*P]; // freqdem output & matched filter output
     float         buf_3[k*P]; // symbol timing recovery output
     unsigned int i, j;
-    for (i=0; i<25; i++)
+    for (i=0; i<num_blocks; i++)
     {
         // generate input GMSK signal
         for (j=0; j<Q; j++)
@@ -78,7 +81,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"axis([0 t(end) -2 2]); grid on;\n");
     fprintf(fid,"xlabel('Time [symbol index]'); ylabel('symsync output');\n");
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     // destroy objects
     gmskmod_destroy(mod);

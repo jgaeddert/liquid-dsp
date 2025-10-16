@@ -6,7 +6,6 @@ char __docstr__[] = "Example demonstrating the GMSK flexible frame synchronizer.
 #include <string.h>
 #include "liquid.h"
 #include "liquid.argparse.h"
-#define OUTPUT_FILENAME "gmskframesync_example.m"
 
 // callback function
 int callback(unsigned char *  _header,
@@ -23,17 +22,30 @@ int callback(unsigned char *  _header,
 
 int main(int argc, char*argv[])
 {
-    // define variables and parse command-line arguments
+    // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename, "gmskframesync_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char*,    crc,     "crc32",   'v', "CRC scheme", NULL);
+    liquid_argparse_add(char*,    fs0,      "none",   'c', "FEC scheme (inner)", NULL);
+    liquid_argparse_add(char*,    fs1,      "none",   'k', "FEC scheme (outer)", NULL);
+    liquid_argparse_add(unsigned, k,            2,    'M', "samples/symbol", NULL);
+    liquid_argparse_add(unsigned, m,            3,    'm', "filter delay (symbols)", NULL);
+    liquid_argparse_add(float,    BT,           0.5f, 'b', "filter bandwidth-time product", NULL);
+    liquid_argparse_add(unsigned, payload_len,  40,   'n', "length of payload (bytes)", NULL);
     liquid_argparse_parse(argc,argv);
 
-    unsigned int k           = 2;       // samples/symbol
-    unsigned int m           = 3;       // filter delay (symbols)
-    float        BT          = 0.5f;    // filter bandwidth-time product
-    unsigned int payload_len = 40;      // length of payload (bytes)
-    crc_scheme   check       = LIQUID_CRC_32;
-    fec_scheme   fec0        = LIQUID_FEC_HAMMING128;
-    fec_scheme   fec1        = LIQUID_FEC_NONE;
+    // validate input
+    crc_scheme        check = liquid_getopt_str2crc(crc);
+    fec_scheme        fec0  = liquid_getopt_str2fec(fs0);
+    fec_scheme        fec1  = liquid_getopt_str2fec(fs1);
+
+    if (check == LIQUID_CRC_UNKNOWN)
+        return fprintf(stderr,"error: unknown/unsupported crc scheme '%s'\n",crc);
+    if (fec0 == LIQUID_FEC_UNKNOWN)
+        return fprintf(stderr,"error: unknown/unsupported fec scheme '%s'\n",fs0);
+    if (fec1 == LIQUID_FEC_UNKNOWN)
+        return fprintf(stderr,"error: unknown/unsupported fec scheme '%s'\n",fs1);
+
     unsigned int i;
 
     // allocate memory for payload and initialize
@@ -69,12 +81,12 @@ int main(int argc, char*argv[])
     gmskframesync_destroy(fs);
 
     // export output
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    FILE * fid = fopen(filename,"w");
     if (fid == NULL) {
-        fprintf(stderr,"error: %s, could not open '%s' for writing\n", argv[0], OUTPUT_FILENAME);
+        fprintf(stderr,"error: %s, could not open '%s' for writing\n", argv[0], filename);
         exit(1);
     }
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"\n");
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
@@ -90,9 +102,9 @@ int main(int argc, char*argv[])
     fprintf(fid,"plot(t, real(y), t,imag(y));\n");
     fprintf(fid,"xlabel('time');\n");
     fprintf(fid,"ylabel('received signal');\n");
-    fprintf(fid,"legend('real','imag',0);\n");
+    fprintf(fid,"legend('real','imag');\n");
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
     return 0;
 }
 

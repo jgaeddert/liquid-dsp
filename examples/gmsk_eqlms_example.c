@@ -5,20 +5,23 @@ char __docstr__[] = "Test GMSK equalization.";
 #include <math.h>
 #include "liquid.h"
 #include "liquid.argparse.h"
-#define OUTPUT_FILENAME "gmsk_eqlms_example.m"
 
-int main(int argc, char*argv[]) {
+int main(int argc, char*argv[])
+{
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int k      =     4;    // filter samples/symbol
-    float        beta   =  0.3f;    // bandwidth-time product
-    unsigned int p      =     3;    // equalizer length (symbols, hp_len = 2*k*p+1)
-    float        mu     = 0.08f;    // learning rate
-    unsigned int num_symbols = 2400;// number of symbols to simulate
-    unsigned int nfft        = 1200;// number of symbols to simulate
+    liquid_argparse_add(char*, filename, "gmsk_eqlms_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, k,                4, 'k', "filter semi-length", NULL);
+    liquid_argparse_add(unsigned, m,                3, 'm', "filter samples/symbol", NULL);
+    liquid_argparse_add(float,    beta,          0.3f, 'b', "bandwidth-time product", NULL);
+    liquid_argparse_add(unsigned, p,                3, 'p', "equalizer length (symbols, hp_len = 2*k*p+1)", NULL);
+    liquid_argparse_add(float,    mu,           0.08f, 'u', "learning rate", NULL);
+    liquid_argparse_add(unsigned, num_symbols,   2400, 'n', "number of symbols to simulate", NULL);
+    liquid_argparse_add(unsigned, nfft,          1200, 'N', "FFT size", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // create modulator
-    gmskmod mod = gmskmod_create(k, 3, beta);
+    gmskmod mod = gmskmod_create(k, m, beta);
 
     // create equalizer
     eqlms_cccf eq = eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_GMSKRX, k, p, beta, 0.0f);
@@ -28,8 +31,8 @@ int main(int argc, char*argv[]) {
     spgramcf q = spgramcf_create_default(nfft);
 
     // write results to output file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"k = %u;\n", k);
@@ -87,7 +90,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"axis([-0.5 0.5 -50 10]); grid on;\n");
     fprintf(fid,"xlabel('Normalized Frequency'); ylabel('PSD [dB]');\n");
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     // destroy objects
     gmskmod_destroy(mod);

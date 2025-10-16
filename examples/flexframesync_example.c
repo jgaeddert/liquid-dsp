@@ -33,9 +33,9 @@ int main(int argc, char *argv[])
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
     liquid_argparse_add(char*,    mod,      "qpsk", 'm', "FEC scheme", NULL);
-    liquid_argparse_add(char*,    crc,     "crc32", 'v', "FEC scheme", NULL);
-    liquid_argparse_add(char*,    fs0,      "none", 'c', "FEC scheme", NULL);
-    liquid_argparse_add(char*,    fs1,      "none", 'k', "FEC scheme", NULL);
+    liquid_argparse_add(char*,    crc,     "crc32", 'v', "CRC scheme", NULL);
+    liquid_argparse_add(char*,    fs0,      "none", 'c', "FEC scheme (inner)", NULL);
+    liquid_argparse_add(char*,    fs1,      "none", 'k', "FEC scheme (outer)", NULL);
     liquid_argparse_add(unsigned, payload_len, 480, 'n', "data length (bytes)", NULL);
     liquid_argparse_add(float,    noise_floor, -60, '0', "noise floor [dB]", NULL);
     liquid_argparse_add(float,    SNRdB,        20, 's', "signal-to-noise ratio [dB]", NULL);
