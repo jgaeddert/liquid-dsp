@@ -4,21 +4,22 @@ char __docstr__[] = "Kaiser-Bessel window example.";
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "kaiser_window_example.m"
-
-int main() {
-    // define variables and parse command-line options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    unsigned int n=51;      // window length
-    float beta = 10.0f;     // Kaiser beta factor
+    liquid_argparse_add(char*, filename, "kaiser_window_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned,    n,    51, 'n', "window length (samples)", NULL);
+    liquid_argparse_add(float,       beta, 10, 'b', "Kaiser beta factor)", NULL);
+    liquid_argparse_parse(argc,argv);
 
     float w[n];
     unsigned int i;
     for (i=0; i<n; i++)
         w[i] = liquid_kaiser(i,n,beta);
 
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"n=%u;\n",n);
@@ -45,10 +46,10 @@ int main() {
     fprintf(fid,"  xlabel('normalized frequency');\n");
     fprintf(fid,"  ylabel('PSD [dB]');\n");
     fprintf(fid,"  axis([-0.5 0.5 -140 20]);\n");
-    fprintf(fid,"title(['Kaiser-Bessel derived window']);\n");
+    fprintf(fid,"title(['Kaiser-Bessel window']);\n");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

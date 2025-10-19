@@ -11,13 +11,14 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "lpc_example.m"
-
-int main() {
-    // define variables and parse command-line options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    unsigned int n = 200;   // input sequence length
-    unsigned int p = 4;     // prediction filter order
+    liquid_argparse_add(char*, filename, "lpc_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, n, 200, 'n', "input sequence length (samples)", NULL);
+    liquid_argparse_add(unsigned, p,   4, 'p', "prediction filter order", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // create low-pass filter object
     iirfilt_rrrf f = iirfilt_rrrf_create_lowpass(2, 0.05f);
@@ -79,11 +80,9 @@ int main() {
 
     printf("  prediction rmse = %12.8f\n", sqrtf(rxx0 / n));
 
-    // 
     // plot results to output file
-    //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"\n");
@@ -134,7 +133,7 @@ int main() {
     fprintf(fid,"  grid on;\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     printf("done.\n");
     return 0;
