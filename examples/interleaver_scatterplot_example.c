@@ -8,38 +8,18 @@ char __docstr__[] = "Generate interleaver scatterplot figure.";
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "interleaver_scatterplot_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("interleaver_scatterplot_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  n     : number of bytes, default: 8\n");
-    printf("  d     : interleaver depth, default: 4\n");
-}
-
 // find most significant bit in array (starting from left)
 unsigned int interleaver_find_bit(unsigned char * _x,
                                   unsigned int _n);
 
-int main(int argc, char*argv[]) {
-    // define variables and parse command-line options
+int main(int argc, char*argv[])
+{
+    // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    unsigned int n=8; // message length
-    unsigned int depth = 4;
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"uhn:d:")) != EOF) {
-        switch (dopt) {
-        case 'u':
-        case 'h': usage();              return 0;
-        case 'n': n = atoi(optarg);     break;
-        case 'd': depth = atoi(optarg); break;
-        default:
-            exit(1);
-        }
-    }
+    liquid_argparse_add(char*, filename, "interleaver_scatterplot_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned,     n, 64, 'n', "message length", NULL);
+    liquid_argparse_add(unsigned, depth,  4, 'd', "interleaver depth", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // create the interleaver
     interleaver q = interleaver_create(n);
@@ -79,13 +59,13 @@ int main(int argc, char*argv[]) {
     interleaver_destroy(q);
 
     // write output file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    FILE * fid = fopen(filename,"w");
     if (fid == NULL) {
-        fprintf(stderr,"error: %s, could not open file '%s' for writing.\n", argv[0],OUTPUT_FILENAME);
+        fprintf(stderr,"error: %s, could not open file '%s' for writing.\n", argv[0],filename);
         exit(1);
     }
     // print header
-    fprintf(fid,"%% %s : auto-generated file (do not edit)\n", OUTPUT_FILENAME);
+    fprintf(fid,"%% %s : auto-generated file (do not edit)\n", filename);
     fprintf(fid,"%% invoked as :");
     for (i=0; i<(unsigned int)argc; i++)
         fprintf(fid," %s",argv[i]);
@@ -99,14 +79,14 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"index(%6u) = %6u;\n", i+1, index[i]);
     fprintf(fid,"figure;\n");
     fprintf(fid,"i = [0:(n-1)];\n");
-    fprintf(fid,"plot(i/n,index/n,'x');\n");
+    fprintf(fid,"plot(i/n,index/n,'.');\n");
     fprintf(fid,"axis square\n");
     fprintf(fid,"axis([0 1 0 1]);\n");
 
     // close it up
     fclose(fid);
 
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     printf("done.\n");
     return 0;

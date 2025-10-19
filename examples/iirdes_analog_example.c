@@ -16,85 +16,40 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "iirdes_analog_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char*argv[])
 {
-    printf("iirdes_analog_example -- infinite impulse response filter design\n");
-    printf("options (default values in []):\n");
-    printf("  u/h   : print usage/help\n");
-    printf("  t     : filter type: [butter], cheby1, cheby2, ellip, bessel\n");
-//    printf("  b     : filter transformation: [LP], HP, BP, BS\n");
-    printf("  n     : filter order, n > 0 [5]\n");
-    printf("  r     : passband ripple in dB (cheby1, ellip), r > 0 [3.0]\n");
-    printf("  s     : stopband attenuation in dB (cheby2, ellip), s > 0 [60.0]\n");
-    printf("  f     : angular passband cut-off frequency, f > 0 [1.0]\n");
-//    printf("  c     : center frequency (BP, BS cases), 0 < c < 0.5 [0.25]\n");
-//    printf("  o     : format [sos], tf\n");
-//    printf("          sos   : second-order sections form\n");
-//    printf("          tf    : regular transfer function form (potentially\n");
-//    printf("                  unstable for large orders\n");
-}
-
-int main(int argc, char*argv[]) {
-    // define variables and parse command-line options
+    // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    unsigned int order=3;   // filter order
-    float wc=1.0f;          // angular cutoff frequency
-    float Ap=3.0f;          // pass-band Ap
-    float As=60.0f;         // stop-band attenuation
+    liquid_argparse_add(char*, filename, "iirdes_analog_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char*,     type, "butter", 't', "filter type: [butter], cheby1, cheby2, ellip, bessel", NULL);
+    liquid_argparse_add(unsigned, order,        3, 'n', "filter order", NULL);
+    liquid_argparse_add(float,       Ap,     1.0f, 'p', "passband ripple in dB (cheby1, ellip)", NULL);
+    liquid_argparse_add(float,       As,    60.0f, 's', "stopband attenuation in dB (cheby2, ellip)", NULL);
+    liquid_argparse_add(float,       wc,     1.0f, 'w', "angular passband cut-off frequency", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // filter type
     liquid_iirdes_filtertype ftype = LIQUID_IIRDES_BUTTER;
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"uht:n:r:s:f:")) != EOF) {
-        switch (dopt) {
-        case 'u':
-        case 'h':
-            usage();
-            return 0;
-        case 't':
-            if (strcmp(optarg,"butter")==0) {
-                ftype = LIQUID_IIRDES_BUTTER;
-            } else if (strcmp(optarg,"cheby1")==0) {
-                ftype = LIQUID_IIRDES_CHEBY1;
-            } else if (strcmp(optarg,"cheby2")==0) {
-                ftype = LIQUID_IIRDES_CHEBY2;
-            } else if (strcmp(optarg,"ellip")==0) {
-                ftype = LIQUID_IIRDES_ELLIP;
-            } else if (strcmp(optarg,"bessel")==0) {
-                ftype = LIQUID_IIRDES_BESSEL;
-            } else {
-                fprintf(stderr,"error: %s, unknown filter type \"%s\"\n", argv[0], optarg);
-                usage();
-                exit(1);
-            }
-            break;
-        case 'n': order = atoi(optarg); break;
-        case 'r': Ap = atof(optarg);    break;
-        case 's': As = atof(optarg);    break;
-        case 'f': wc = atof(optarg);    break;
-        default:
-            exit(1);
-        }
-    }
+    if (strcmp(type,"butter")==0)
+        ftype = LIQUID_IIRDES_BUTTER;
+    else if (strcmp(type,"cheby1")==0)
+        ftype = LIQUID_IIRDES_CHEBY1;
+    else if (strcmp(type,"cheby2")==0)
+        ftype = LIQUID_IIRDES_CHEBY2;
+    else if (strcmp(type,"ellip")==0)
+        ftype = LIQUID_IIRDES_ELLIP;
+    else if (strcmp(type,"bessel")==0)
+        ftype = LIQUID_IIRDES_BESSEL;
+    else
+        return fprintf(stderr,"error: unknown filter type '%s'\n", type);
 
     // validate input
-    if (wc <= 0) {
-        fprintf(stderr,"error: %s, cutoff frequency out of range\n", argv[0]);
-        usage();
-        exit(1);
-    } else if (Ap <= 0) {
-        fprintf(stderr,"error: %s, pass-band ripple out of range\n", argv[0]);
-        usage();
-        exit(1);
-    } else if (As <= 0) {
-        fprintf(stderr,"error: %s, stop-band ripple out of range\n", argv[0]);
-        usage();
-        exit(1);
-    }
+    if (wc <= 0)
+        return fprintf(stderr,"error: cutoff frequency out of range\n");
+    if (Ap <= 0)
+        return fprintf(stderr,"error: pass-band ripple out of range\n");
+    if (As <= 0)
+        return fprintf(stderr,"error: stop-band ripple out of range\n");
 
     // number of analog poles/zeros
     unsigned int npa = order;
@@ -175,8 +130,8 @@ int main(int argc, char*argv[]) {
     printf("ka = %12.4e + j*%12.4e;\n", crealf(ka), cimagf(ka));
 
     // open output file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"\n");
@@ -216,9 +171,9 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"     real(pa),imag(pa),'x');\n");
     fprintf(fid,"if nza > 0,\n");
     fprintf(fid,"  hold on; plot(real(za),imag(za),'ob'); hold off;\n");
-    fprintf(fid,"  legend('(\\omega_c)','poles','zeros',0);\n");
+    fprintf(fid,"  legend('(\\omega_c)','poles','zeros');\n");
     fprintf(fid,"else,\n");
-    fprintf(fid,"  legend('(\\omega_c)','poles',0);\n");
+    fprintf(fid,"  legend('(\\omega_c)','poles');\n");
     fprintf(fid,"end;\n");
     fprintf(fid,"  axis([-1 1 -1 1]*1.2*max([wc abs(pa) abs(za)]));\n");
     //fprintf(fid,"     real(za),imag(za),'x');\n");
@@ -252,7 +207,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"  ylabel('PSD [dB]');\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     printf("done.\n");
     return 0;

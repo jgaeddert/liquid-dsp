@@ -6,10 +6,12 @@ char __docstr__[] = "Demonstrate interleaving on soft-decision bit values";
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-int main() {
-    // define variables and parse command-line options
+int main(int argc, char*argv[])
+{
+    // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    unsigned int n=9; // message length (bits)
+    liquid_argparse_add(unsigned, n,  64, 'n', "message length (bits)", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // create the interleaver
     interleaver q = interleaver_create(n);

@@ -9,13 +9,14 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "iirfilt_crcf_dcblocker_example.m"
-
-int main() {
-    // define variables and parse command-line options
+int main(int argc, char*argv[])
+{
+    // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    unsigned int num_samples = 1200;    // number of samples
-    float        alpha       = 0.10f;   // filter cut-off
+    liquid_argparse_add(char*, filename, "iirfilt_crcf_dcblocker_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, num_samples, 1200, 'n', "number of samples", NULL);
+    liquid_argparse_add(float,    alpha,      0.10f, 'a', "filter cut-off", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // design filter from prototype
     iirfilt_crcf q = iirfilt_crcf_create_dc_blocker(alpha);
@@ -42,11 +43,9 @@ int main() {
     // destroy filter object
     iirfilt_crcf_destroy(q);
 
-    // 
     // plot results to output file
-    //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"\n");
@@ -91,7 +90,7 @@ int main() {
 
     // close output file
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     printf("done.\n");
     return 0;

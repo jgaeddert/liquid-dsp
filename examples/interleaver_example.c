@@ -13,10 +13,13 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-int main() {
-    // define variables and parse command-line options
+int main(int argc, char*argv[])
+{
+    // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    unsigned int n=9; // message length
+    //liquid_argparse_add(char*, filename, "interleaver_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, n,  64, 'n', "message length", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // create the interleaver
     interleaver q = interleaver_create(n);
