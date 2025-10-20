@@ -34,6 +34,7 @@ extern "C" {
 #include <string.h>
 #include <stdbool.h>
 #include <getopt.h>
+#include "liquid.h"
 
 // the maximum number of arguments allowed
 #define LIQUID_ARGPARSE_MAX_ARGS (64)
@@ -247,6 +248,15 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
                 exit(-1);                                                       \
         }                                                                       \
     }                                                                           \
+
+// callback: fec scheme - handle valid types
+int liquid_argparse_fec(const char * _optarg, void * _ref)
+{
+    if (liquid_getopt_str2fec(_optarg) == LIQUID_FEC_UNKNOWN) {
+        return fprintf(stderr,"error: unknown/unsupported fec scheme '%s'\n",_optarg);
+    }
+    return 0;
+}
 
 #ifdef __cplusplus
 } //extern "C"
