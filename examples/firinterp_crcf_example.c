@@ -24,11 +24,11 @@ int main(int argc, char* argv[])
 
     // validate options
     if (M < 2)
-        return fprintf(stderr,"error: %s, interp factor must be greater than 1\n");
+        return fprintf(stderr,"error: interp factor must be greater than 1\n");
     if (m < 1)
-        return fprintf(stderr,"error: %s, filter delay must be greater than 0\n");
+        return fprintf(stderr,"error: filter delay must be greater than 0\n");
     if (num_syms < 1)
-        return fprintf(stderr,"error: %s, must have at least one data symbol\n");
+        return fprintf(stderr,"error: must have at least one data symbol\n");
 
     // derived values
     unsigned int num_syms_total = num_syms + 2*m;   // total symbols (w/ delay)
