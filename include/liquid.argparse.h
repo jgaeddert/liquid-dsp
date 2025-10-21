@@ -267,6 +267,15 @@ int liquid_argparse_fec(const char * _optarg, void * _ref)
     return 0;
 }
 
+// callback: mod scheme - handle invalid types
+int liquid_argparse_modem(const char * _optarg, void * _ref)
+{
+    if (liquid_getopt_str2mod(_optarg) == LIQUID_MODEM_UNKNOWN) {
+        return fprintf(stderr,"error: unknown/unsupported modulation scheme '%s'\n",_optarg);
+    }
+    return 0;
+}
+
 #ifdef __cplusplus
 } //extern "C"
 #endif // __cplusplus

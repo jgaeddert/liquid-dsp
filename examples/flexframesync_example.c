@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    liquid_argparse_add(char*,    mod,      "qpsk", 'm', "FEC scheme", NULL);
+    liquid_argparse_add(char*,    mod,      "qpsk", 'm', "FEC scheme", liquid_argparse_modem);
     liquid_argparse_add(char*,    crc,     "crc32", 'v', "CRC scheme", liquid_argparse_crc);
     liquid_argparse_add(char*,    fs0,      "none", 'c', "FEC scheme (inner)", liquid_argparse_fec);
     liquid_argparse_add(char*,    fs1,      "none", 'k', "FEC scheme (outer)", liquid_argparse_fec);
@@ -47,9 +47,6 @@ int main(int argc, char *argv[])
     crc_scheme        check = liquid_getopt_str2crc(crc);
     fec_scheme        fec0  = liquid_getopt_str2fec(fs0);
     fec_scheme        fec1  = liquid_getopt_str2fec(fs1);
-
-    if (ms == LIQUID_MODEM_UNKNOWN)
-        return fprintf(stderr,"error: unknown/unsupported modulation scheme '%s'\n",mod);
 
     // derived values
     unsigned int i;
