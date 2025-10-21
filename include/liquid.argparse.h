@@ -276,6 +276,24 @@ int liquid_argparse_modem(const char * _optarg, void * _ref)
     return 0;
 }
 
+// callback: filter - handle invalid types
+int liquid_argparse_firfilt(const char * _optarg, void * _ref)
+{
+    if (liquid_getopt_str2firfilt(_optarg) == LIQUID_FIRFILT_UNKNOWN) {
+        return fprintf(stderr,"error: unknown/unsupported filter type '%s'\n",_optarg);
+    }
+    return 0;
+}
+
+// callback: window - handle invalid types
+int liquid_argparse_window(const char * _optarg, void * _ref)
+{
+    if (liquid_getopt_str2window(_optarg) == LIQUID_WINDOW_UNKNOWN) {
+        return fprintf(stderr,"error: unknown/unsupported window type '%s'\n",_optarg);
+    }
+    return 0;
+}
+
 #ifdef __cplusplus
 } //extern "C"
 #endif // __cplusplus
