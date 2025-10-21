@@ -255,6 +255,7 @@ int liquid_argparse_crc(const char * _optarg, void * _ref)
     if (liquid_getopt_str2crc(_optarg) == LIQUID_CRC_UNKNOWN) {
         return fprintf(stderr,"error: unknown/unsupported crc scheme '%s'\n",_optarg);
     }
+    *((const char**)_ref) = _optarg;
     return 0;
 }
 
@@ -264,6 +265,7 @@ int liquid_argparse_fec(const char * _optarg, void * _ref)
     if (liquid_getopt_str2fec(_optarg) == LIQUID_FEC_UNKNOWN) {
         return fprintf(stderr,"error: unknown/unsupported fec scheme '%s'\n",_optarg);
     }
+    *((const char**)_ref) = _optarg;
     return 0;
 }
 
@@ -273,6 +275,7 @@ int liquid_argparse_modem(const char * _optarg, void * _ref)
     if (liquid_getopt_str2mod(_optarg) == LIQUID_MODEM_UNKNOWN) {
         return fprintf(stderr,"error: unknown/unsupported modulation scheme '%s'\n",_optarg);
     }
+    *((const char**)_ref) = _optarg;
     return 0;
 }
 
@@ -282,6 +285,7 @@ int liquid_argparse_firfilt(const char * _optarg, void * _ref)
     if (liquid_getopt_str2firfilt(_optarg) == LIQUID_FIRFILT_UNKNOWN) {
         return fprintf(stderr,"error: unknown/unsupported filter type '%s'\n",_optarg);
     }
+    *((const char**)_ref) = _optarg;
     return 0;
 }
 
@@ -291,6 +295,7 @@ int liquid_argparse_window(const char * _optarg, void * _ref)
     if (liquid_getopt_str2window(_optarg) == LIQUID_WINDOW_UNKNOWN) {
         return fprintf(stderr,"error: unknown/unsupported window type '%s'\n",_optarg);
     }
+    *((const char**)_ref) = _optarg;
     return 0;
 }
 
