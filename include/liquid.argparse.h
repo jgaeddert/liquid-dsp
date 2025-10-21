@@ -249,7 +249,16 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
         }                                                                       \
     }                                                                           \
 
-// callback: fec scheme - handle valid types
+// callback: crc scheme - handle invalid types
+int liquid_argparse_crc(const char * _optarg, void * _ref)
+{
+    if (liquid_getopt_str2crc(_optarg) == LIQUID_CRC_UNKNOWN) {
+        return fprintf(stderr,"error: unknown/unsupported crc scheme '%s'\n",_optarg);
+    }
+    return 0;
+}
+
+// callback: fec scheme - handle invalid types
 int liquid_argparse_fec(const char * _optarg, void * _ref)
 {
     if (liquid_getopt_str2fec(_optarg) == LIQUID_FEC_UNKNOWN) {
