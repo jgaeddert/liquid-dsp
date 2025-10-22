@@ -7,7 +7,6 @@ char __docstr__[] =
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <getopt.h>
 #include <math.h>
 #include <time.h>
 #include "liquid.h"
@@ -31,13 +30,10 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // validate input
-    if (beta <= 0.0f || beta >= 1.0f) {
-        fprintf(stderr,"error: %s, bandwidth-time product must be in (0,1)\n", argv[0]);
-        exit(1);
-    } else if (dt < -0.5f || dt > 0.5f) {
-        fprintf(stderr,"error: %s, fractional sample offset must be in [-0.5,0.5]\n", argv[0]);
-        exit(1);
-    }
+    if (beta <= 0.0f || beta >= 1.0f)
+        return fprintf(stderr,"error: bandwidth-time product must be in (0,1)\n");
+    if (dt < -0.5f || dt > 0.5f)
+        return fprintf(stderr,"error: fractional sample offset must be in [-0.5,0.5]\n");
 
     // derived values
     unsigned int num_symbols = num_sync_symbols + 2*m + 10;

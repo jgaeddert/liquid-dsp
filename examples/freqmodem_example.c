@@ -4,7 +4,6 @@ char __docstr__[] = "Tests simple frequency modulation/demodulation";
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <getopt.h>
 #include "liquid.h"
 #include "liquid.argparse.h"
 

@@ -18,13 +18,11 @@ int main(int argc, char* argv[])
     liquid_argparse_add(unsigned, hc_len,      5,      'c', "channel filter length", NULL);
     liquid_argparse_add(unsigned, w_len,       11,     'w', "equalizer filter length", NULL);
     liquid_argparse_add(float,    mu,          0.08f,  'u', "equalizer learning rate", NULL);
-    liquid_argparse_add(char *,   mod_scheme,  "qpsk", 'M', "modulation scheme", NULL);
+    liquid_argparse_add(char *,   mod_scheme,  "qpsk", 'M', "modulation scheme", liquid_argparse_modem);
     liquid_argparse_parse(argc,argv);
 
     // modulation type/depth
     modulation_scheme ms = liquid_getopt_str2mod(mod_scheme);
-    if (ms == LIQUID_MODEM_UNKNOWN)
-        return fprintf(stderr,"error: unknown modulation scheme '%s'\n", mod_scheme);
 
     // modem
     modemcf mod = modemcf_create(ms);

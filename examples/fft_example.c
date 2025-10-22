@@ -21,9 +21,9 @@ int main(int argc, char*argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    liquid_argparse_add(unsigned, nfft,       16, 'n', "FFT size", NULL);
-    liquid_argparse_add(unsigned, method,      0, 'm', "FFT method (ignored)", NULL);
-    liquid_argparse_add(bool,     verbose,     0, 'v', "enable verbose output", NULL);
+    liquid_argparse_add(unsigned, nfft,    16, 'n', "FFT size", NULL);
+    liquid_argparse_add(unsigned, method,   0, 'm', "FFT method (ignored)", NULL);
+    liquid_argparse_add(bool,     verbose,  0, 'v', "enable verbose output", NULL);
     liquid_argparse_parse(argc,argv);
 
     // allocate memory arrays

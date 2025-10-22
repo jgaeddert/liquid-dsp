@@ -34,9 +34,9 @@ int main(int argc, char*argv[])
     liquid_argparse_add(float,    dphi,         0.01f, 'F', "carrier frequency offset", NULL);
     liquid_argparse_add(float,    theta,         0.0f, 'P', "carrier phase offset", NULL);
     liquid_argparse_add(float,    dt,           -0.2f, 'T', "fractional sample timing offset", NULL);
-    liquid_argparse_add(char*,    crc,        "crc32", 'v', "FEC scheme", NULL);
-    liquid_argparse_add(char*,    fs0,         "none", 'c', "FEC scheme", NULL);
-    liquid_argparse_add(char*,    fs1,         "none", 'k', "FEC scheme", NULL);
+    liquid_argparse_add(char*,    crc,        "crc32", 'v', "FEC scheme", liquid_argparse_crc);
+    liquid_argparse_add(char*,    fs0,         "none", 'c', "FEC scheme", liquid_argparse_fec);
+    liquid_argparse_add(char*,    fs1,         "none", 'k', "FEC scheme", liquid_argparse_fec);
     liquid_argparse_add(unsigned, payload_len,    480, 'n', "payload length (bytes)", NULL);
     liquid_argparse_add(bool,  debug_enabled,   false, 'D', "enable debugging", NULL);
     liquid_argparse_parse(argc,argv);
@@ -45,13 +45,6 @@ int main(int argc, char*argv[])
     crc_scheme check = liquid_getopt_str2crc(crc);
     fec_scheme fec0  = liquid_getopt_str2fec(fs0);
     fec_scheme fec1  = liquid_getopt_str2fec(fs1);
-
-    if (check == LIQUID_CRC_UNKNOWN)
-        return fprintf(stderr,"error: unknown/unsupported crc scheme '%s'\n",crc);
-    if (fec0 == LIQUID_FEC_UNKNOWN)
-        return fprintf(stderr,"error: unknown/unsupported fec scheme '%s'\n",fs0);
-    if (fec1 == LIQUID_FEC_UNKNOWN)
-        return fprintf(stderr,"error: unknown/unsupported fec scheme '%s'\n",fs1);
 
     printf("channel offsets: dt=%.3f, dphi=%.3f, theta=%.3f\n", dt, dphi, theta);
 

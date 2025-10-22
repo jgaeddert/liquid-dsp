@@ -7,7 +7,6 @@ char __docstr__[] =
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <getopt.h>
 
 #include "liquid.h"
 #include "liquid.argparse.h"
@@ -16,14 +15,12 @@ int main(int argc, char*argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    liquid_argparse_add(char*,    crc_type, "crc32", 'v', "data integrity check", NULL);
+    liquid_argparse_add(char*,    crc_type, "crc32", 'v', "data integrity check", liquid_argparse_crc);
     liquid_argparse_add(unsigned, n,        32,      'n', "original data message length", NULL);
     liquid_argparse_parse(argc,argv);
 
     // validate options
     crc_scheme crc  = liquid_getopt_str2crc(crc_type);
-    if (crc == LIQUID_CRC_UNKNOWN)
-        return fprintf(stderr,"error: unknown/unsupported CRC scheme \"%s\"\n",crc_type);
 
     unsigned int i;
 

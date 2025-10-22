@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
 
     // validate input
     if (fc <= 0 || fc >= 0.5)
-        fprintf(stderr,"error: cutoff frequency out of range\n");
+        return fprintf(stderr,"error: cutoff frequency out of range\n");
     if (Ap <= 0)
         return fprintf(stderr,"error: pass-band ripple out of range\n");
     if (As <= 0)

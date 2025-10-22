@@ -7,7 +7,6 @@ char __docstr__[] =
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include <getopt.h>
 #include <assert.h>
 
 #include "liquid.h"

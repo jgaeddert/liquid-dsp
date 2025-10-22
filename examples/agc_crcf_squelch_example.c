@@ -6,7 +6,6 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <math.h>
 #include <complex.h>
-#include <getopt.h>
 #include "liquid.h"
 #include "liquid.argparse.h"
 
@@ -19,10 +18,9 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (bt < 0.0f) {
-        fprintf(stderr,"error: %s, bandwidth must be positive\n", argv[0]);
-        exit(1);
-    }
+    if (bt < 0.0f)
+        return fprintf(stderr,"error: bandwidth must be positive\n");
+
     unsigned int i;
 
     // create agc object, set loop bandwidth, and initialize parameters

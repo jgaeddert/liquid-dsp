@@ -24,9 +24,9 @@ int main(int argc, char * argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    liquid_argparse_add(char*,    crc_type,      "crc32", 'v', "data integrity check", NULL);
-    liquid_argparse_add(char*,    fec0_type,     "none",  'c', "inner code", NULL);
-    liquid_argparse_add(char*,    fec1_type,     "none",  'k', "outer code", NULL);
+    liquid_argparse_add(char*,    crc_type,      "crc32", 'v', "data integrity check", liquid_argparse_crc);
+    liquid_argparse_add(char*,    fec0_type,     "none",  'c', "inner code", liquid_argparse_fec);
+    liquid_argparse_add(char*,    fec1_type,     "none",  'k', "outer code", liquid_argparse_fec);
     liquid_argparse_add(unsigned, payload_len,   20,      'n', "payload length", NULL);
     liquid_argparse_add(float,    noise_floor,   -60.0f,  '0', "noise floor", NULL);
     liquid_argparse_add(float,    SNRdB,         -3.0f,   's', "signal-to-noise ratio", NULL);
@@ -41,12 +41,6 @@ int main(int argc, char * argv[])
 
     if (payload_len == 0)
         return fprintf(stderr,"error: packet length must be greater than zero\n");
-    if (check == LIQUID_CRC_UNKNOWN)
-        return fprintf(stderr,"error: unknown/unsupported CRC scheme \"%s\"\n",crc_type);
-    if (fec0 == LIQUID_FEC_UNKNOWN)
-        return fprintf(stderr,"error: unknown/unsupported inner FEC scheme \"%s\"\n",fec0_type);
-    if (fec1 == LIQUID_FEC_UNKNOWN)
-        return fprintf(stderr,"error: unknown/unsupported inner FEC scheme \"%s\"\n",fec1_type);
 
     // derived values
     unsigned int i;

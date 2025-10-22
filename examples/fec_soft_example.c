@@ -19,13 +19,11 @@ int main(int argc, char*argv[])
     liquid_argparse_init(__docstr__);
     liquid_argparse_add(unsigned, n,           4, 'n', "data lengtht (bytes)", NULL);
     liquid_argparse_add(unsigned, nmax,     2048, 'N', "maximum data length", NULL);
-    liquid_argparse_add(char*,    fec0,    "h74", 'c', "FEC scheme", NULL);
+    liquid_argparse_add(char*,    fec0,    "h74", 'c', "FEC scheme", liquid_argparse_fec);
     liquid_argparse_add(bool,     verbose,     0, 'v', "enable verbose output", NULL);
     liquid_argparse_parse(argc,argv);
 
     fec_scheme fs = liquid_getopt_str2fec(fec0);
-    if (fs == LIQUID_FEC_UNKNOWN)
-        return fprintf(stderr,"error: unknown/unsupported fec scheme '%s'\n",fec0);
 
     // ensure proper data length
     n = (n > nmax) ? nmax : n;

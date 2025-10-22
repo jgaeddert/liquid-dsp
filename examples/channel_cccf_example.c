@@ -11,7 +11,6 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <getopt.h>
 #include <time.h>
 #include <assert.h>
 
@@ -33,7 +32,7 @@ int main(int argc, char*argv[])
     liquid_argparse_add(float,    bandwidth,    0.25f, 'w', "loop filter bandwidth", NULL);
     liquid_argparse_add(float,    dphi,         0.00f, 'F', "carrier frequency offset [radians/sample]", NULL);
     liquid_argparse_add(float,    phi,          2.1f,  'P', "carrier phase offset [radians]", NULL);
-    liquid_argparse_add(char*,    mod_scheme, "qpsk",  'M', "modulation scheme", NULL);
+    liquid_argparse_add(char*,    mod_scheme, "qpsk",  'M', "modulation scheme", liquid_argparse_modem);
     liquid_argparse_parse(argc,argv);
 
     // validate input
@@ -48,8 +47,6 @@ int main(int argc, char*argv[])
         return fprintf(stderr,"error: number of symbols must be greater than 0\n");
     if (bandwidth <= 0.0f)
         return fprintf(stderr,"error: timing PLL bandwidth must be greater than 0\n");
-    if (ms == LIQUID_MODEM_UNKNOWN)
-        return fprintf(stderr,"error: invalid modulation scheme '%s'\n", mod_scheme);
 
     unsigned int i;
 

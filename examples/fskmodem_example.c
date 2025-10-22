@@ -24,9 +24,6 @@ int main(int argc, char*argv[])
     liquid_argparse_add(unsigned, nfft,          1200, 'N', "FFT size", NULL);
     liquid_argparse_parse(argc,argv);
 
-    unsigned int i;
-    unsigned int j;
-
     // derived values
     if (k == 0)
         k = 2 << m; // set samples per symbol if not otherwise specified
@@ -57,6 +54,7 @@ int main(int argc, char*argv[])
 
     // modulate, demodulate, count errors
     unsigned int num_symbol_errors = 0;
+    unsigned int i, j;
     for (i=0; i<num_symbols; i++) {
         // generate random symbol
         unsigned int sym_in = rand() % M;

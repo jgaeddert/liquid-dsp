@@ -22,13 +22,13 @@ int main(int argc, char* argv[])
 
     // validate options
     if (M < 2)
-        fprintf(stderr,"error: decim factor must be greater than 1\n");
+        return fprintf(stderr,"error: decim factor must be greater than 1\n");
     else if (m < 1)
-        fprintf(stderr,"error: filter delay must be greater than 0\n");
+        return fprintf(stderr,"error: filter delay must be greater than 0\n");
     else if (As <= 0.0)
-        fprintf(stderr,"error: stop-band attenuation must be greater than zero\n");
+        return fprintf(stderr,"error: stop-band attenuation must be greater than zero\n");
     else if (num_samples < 1)
-        fprintf(stderr,"error: must have at least one sample\n");
+        return fprintf(stderr,"error: must have at least one sample\n");
 
     // data arrays
     float complex x[M*num_samples]; // number of samples before decimation

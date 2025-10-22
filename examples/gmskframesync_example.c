@@ -25,9 +25,9 @@ int main(int argc, char*argv[])
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
     liquid_argparse_add(char*,    filename, "gmskframesync_example.m", 'o', "output filename", NULL);
-    liquid_argparse_add(char*,    crc,     "crc32",   'v', "CRC scheme", NULL);
-    liquid_argparse_add(char*,    fs0,      "none",   'c', "FEC scheme (inner)", NULL);
-    liquid_argparse_add(char*,    fs1,      "none",   'k', "FEC scheme (outer)", NULL);
+    liquid_argparse_add(char*,    crc,     "crc32",   'v', "CRC scheme",         liquid_argparse_crc);
+    liquid_argparse_add(char*,    fs0,      "none",   'c', "FEC scheme (inner)", liquid_argparse_fec);
+    liquid_argparse_add(char*,    fs1,      "none",   'k', "FEC scheme (outer)", liquid_argparse_fec);
     liquid_argparse_add(unsigned, k,            2,    'M', "samples/symbol", NULL);
     liquid_argparse_add(unsigned, m,            3,    'm', "filter delay (symbols)", NULL);
     liquid_argparse_add(float,    BT,           0.5f, 'b', "filter bandwidth-time product", NULL);
@@ -38,13 +38,6 @@ int main(int argc, char*argv[])
     crc_scheme        check = liquid_getopt_str2crc(crc);
     fec_scheme        fec0  = liquid_getopt_str2fec(fs0);
     fec_scheme        fec1  = liquid_getopt_str2fec(fs1);
-
-    if (check == LIQUID_CRC_UNKNOWN)
-        return fprintf(stderr,"error: unknown/unsupported crc scheme '%s'\n",crc);
-    if (fec0 == LIQUID_FEC_UNKNOWN)
-        return fprintf(stderr,"error: unknown/unsupported fec scheme '%s'\n",fs0);
-    if (fec1 == LIQUID_FEC_UNKNOWN)
-        return fprintf(stderr,"error: unknown/unsupported fec scheme '%s'\n",fs1);
 
     unsigned int i;
 

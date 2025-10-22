@@ -5,7 +5,6 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <math.h>
 #include <complex.h>
-#include <getopt.h>
 #include "liquid.h"
 #include "liquid.argparse.h"
 
@@ -20,13 +19,10 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (bt < 0.0f) {
-        fprintf(stderr,"error: %s, bandwidth must be positive\n", argv[0]);
-        exit(1);
-    } else if (num_samples == 0) {
-        fprintf(stderr,"error: %s, number of samples must be greater than zero\n", argv[0]);
-        exit(1);
-    }
+    if (bt < 0.0f)
+        return fprintf(stderr,"error: bandwidth must be positive\n");
+    if (num_samples == 0)
+        return fprintf(stderr,"error: number of samples must be greater than zero\n");
     
     unsigned int i;
 

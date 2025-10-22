@@ -3,7 +3,6 @@ char __docstr__[] =
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <getopt.h>
 #include "liquid.h"
 #include "liquid.argparse.h"
 

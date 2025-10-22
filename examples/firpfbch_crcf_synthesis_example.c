@@ -22,10 +22,6 @@ int main(int argc, char* argv[])
     liquid_argparse_add(unsigned, num_frames,   25, 'n', "number of frames", NULL);
     liquid_argparse_parse(argc,argv);
 
-    //
-    unsigned int i;
-    unsigned int k;
-
     // derived values
     unsigned int num_samples = num_frames * num_channels;
 
@@ -40,6 +36,7 @@ int main(int argc, char* argv[])
     liquid_firdes_kaiser(pulse_len, bw, 50.0f, 0.0f, pulse);
 
     // generate input signal(s)
+    unsigned int i, k;
     int enabled[num_channels];  // signal enabled?
     for (i=0; i<num_channels; i++) {
         // pseudo-random channel enabled flag
