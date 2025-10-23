@@ -9,8 +9,8 @@
 int main(int argc, char*argv[])
 {
     // filter design parameters
-    unsigned int m  = 4;
-    float        ft = 0.4f;
+    unsigned int m  = 12;
+    float        ft = 0.10f;
 
     // derived values
     unsigned int h_len = 4*m + 1;
@@ -41,7 +41,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  xlabel('normalized frequency');\n");
     fprintf(fid,"  ylabel('PSD [dB]');\n");
     fprintf(fid,"  title('Filter design (firdespm)');\n");
-    fprintf(fid,"  axis([-0.5 0.5 -180 5]);\n");
+    fprintf(fid,"  axis([-0.5 0.5 -120 5]);\n");
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);

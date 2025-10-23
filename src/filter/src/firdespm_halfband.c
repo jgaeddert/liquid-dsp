@@ -67,6 +67,8 @@ float firdespm_halfband_utility(float _gamma, void * _userdata)
         q->h[           2*i] = 0;
         q->h[q->h_len-2*i-1] = 0;
     }
+    // force center coefficient to be exactly 1/2
+    q->h[q->h_len/2] = 0.5;
     // copy coefficients to input buffer
     for (i=0; i<q->nfft; i++) {
         q->buf_time[i] = i < q->h_len ? q->h[i] : 0.0f;
