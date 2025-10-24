@@ -42,8 +42,20 @@ int main(int argc, char*argv[])
     FILE * fid = stdout;
 
     fprintf(fid,"\n");
+    fprintf(fid,"// half-band filter: m = 12, As = 60 dB\n");
+    design_halfband(12, 0.070, "liquid_firfilt_m12_M2_a60", fid);
+
+    fprintf(fid,"\n");
     fprintf(fid,"// half-band filter: m = 12, As = 80 dB\n");
-    design_halfband(12, 0.1, "liquid_firfilt_m12_M2_a80", fid);
+    design_halfband(12, 0.100, "liquid_firfilt_m12_M2_a80", fid);
+
+    fprintf(fid,"\n");
+    fprintf(fid,"// half-band filter: m = 25, As = 60 dB\n");
+    design_halfband(25, 0.035, "liquid_firfilt_m25_M2_a60", fid);
+
+    fprintf(fid,"\n");
+    fprintf(fid,"// half-band filter: m = 25, As = 80 dB\n");
+    design_halfband(25, 0.050, "liquid_firfilt_m25_M2_a80", fid);
 
     return 0;
 }
