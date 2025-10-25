@@ -22,82 +22,62 @@
 
 // generate a small set of pre-computed FIR filter coefficients
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <liquid/liquid.h>
 
-// print weights as C-style array
-int export_weights(const float * _h,
-                   unsigned int  _n,
-                   const char *  _varname,
-                   FILE *        _fid);
-
 // design halfband filter and export to file
-int design_halfband(unsigned int _m, float _ft, const char * _varname, FILE * _fid);
+int design_halfband(unsigned int _m, float _as, const char * _varname, FILE * _fid);
 
 //
 int main(int argc, char*argv[])
 {
     FILE * fid = stdout;
 
-    fprintf(fid,"\n");
-    fprintf(fid,"// half-band filter: m = 12, As = 60 dB\n");
-    design_halfband(12, 0.070, "liquid_firfilt_m12_M2_a60", fid);
-
-    fprintf(fid,"\n");
-    fprintf(fid,"// half-band filter: m = 12, As = 80 dB\n");
-    design_halfband(12, 0.100, "liquid_firfilt_m12_M2_a80", fid);
-
-    fprintf(fid,"\n");
-    fprintf(fid,"// half-band filter: m = 25, As = 60 dB\n");
-    design_halfband(25, 0.035, "liquid_firfilt_m25_M2_a60", fid);
-
-    fprintf(fid,"\n");
-    fprintf(fid,"// half-band filter: m = 25, As = 80 dB\n");
-    design_halfband(25, 0.050, "liquid_firfilt_m25_M2_a80", fid);
+    // design halfband filters
+    design_halfband(12, 60, "liquid_firfilt_0", fid);
+    design_halfband(12, 80, "liquid_firfilt_1", fid);
+    design_halfband(24, 60, "liquid_firfilt_2", fid);
+    design_halfband(24, 80, "liquid_firfilt_3", fid);
 
     return 0;
 }
 
-// print weights as C-style array
-int export_weights(const float * _h,
-                   unsigned int  _n,
-                   const char *  _varname,
-                   FILE *        _fid)
-{
-    fprintf(_fid, "const float %s[%u] = {\n", _varname, _n);
-    fprintf(_fid, "  ");
-    unsigned int i;
-    for (i=0; i<_n; i++) {
-        printf("%20.12e,", _h[i]);
-
-        if ( i != _n-1 ) {
-            if ( ((i+1)%2)==0 )
-                printf("\n  ");
-            else
-                printf(" ");
-        }
-
-    }
-    printf("};\n\n");
-    return LIQUID_OK;
-}
-
 // design halfband filter and export to file
 int design_halfband(unsigned int _m,
-                    float        _ft,
+                    float        _as,
                     const char * _varname,
                     FILE *       _fid)
 {
     // design filter
     unsigned int h_len = 4*_m + 1;
     float h[h_len];
-    liquid_firdespm_halfband_ft(_m, _ft, h);
+    liquid_firdespm_halfband_as(_m, _as, h);
 
     // TODO: scale coefficients by 2 to have peak value at 1?
 
     // export coefficients
-    return export_weights(h, h_len, _varname, _fid);
+    fprintf(_fid,"\n");
+    fprintf(_fid,"// half-band filter\n");
+    fprintf(_fid,"unsigned int %s_m   = %3u;  // filter quarter-length, h_len = 4*m+1\n", _varname, _m);
+    fprintf(_fid,"float        %s_as  = %.1f; // dB, filter stop-band suppression\n", _varname, _as);
+    //fprintf(_fid,"float        %s_ft  = %.9f; // transition bandwidth...
+    fprintf(_fid,"const float  %s[%u] =       // coefficients\n", _varname, h_len);
+    fprintf(_fid,"{\n");
+    unsigned int i;
+    for (i=0; i<h_len; i++) {
+        if ( ((i+1)%2)==0 )
+            fprintf(_fid,"%20.12e,\n", h[i]);
+        else if (i== 2*_m)
+            fprintf(_fid,"  %4.1f,", h[i]);
+        else {
+            assert( h[i] == 0 );
+            fprintf(_fid,"     0,");
+        }
+    }
+    fprintf(_fid,"\n};\n");
+    return LIQUID_OK;
 }
 
