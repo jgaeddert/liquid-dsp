@@ -62,7 +62,6 @@ struct firdespm_halfband_s
     float complex * buf_time;   // time buffer
     float complex * buf_freq;   // frequency buffer
     fftplan         fft;        // transform object
-    unsigned int    n;          // number of points to evaluate
 };
 
 // pointer to struct
@@ -86,6 +85,9 @@ firdespm_halfband firdespm_halfband_create(unsigned int _m, float _ft)
     q->buf_freq = (float complex*) fft_malloc(q->nfft*sizeof(float complex));
     q->fft      = fft_create_plan(q->nfft, q->buf_time, q->buf_freq, LIQUID_FFT_FORWARD, 0);
 
+    // ensure entire input buffer is empty
+    memset(q->buf_time, 0x00, q->nfft * sizeof(float complex));
+
     //
     return q;
 }
@@ -104,7 +106,21 @@ int firdespm_halfband_destroy(firdespm_halfband _q)
     return LIQUID_OK;
 }
 
-// primary utility for evaluating filter design
+// design filter with particular cutoff frequencies
+int firdespm_halfband_design(firdespm_halfband _q, float _f0, float _f1)
+{
+    // design filter
+    float bands[4]   = {0.00f, _f0, _f1, 0.50f};
+    float des[2]     = {1.0f, 0.0f};
+    float weights[2] = {1.0f, 1.0f}; // best with {1, 1}
+    liquid_firdespm_wtype wtype[2] = {
+        LIQUID_FIRDESPM_FLATWEIGHT, LIQUID_FIRDESPM_EXPWEIGHT,};
+    return firdespm_run(_q->h_len, 2, bands, des, weights, wtype,
+        LIQUID_FIRDESPM_BANDPASS, _q->h);
+}
+
+// callback function to design and evaluate filter based on the expectation
+// that even-indexed coefficients (besides center coefficient) should be 0
 float firdespm_halfband_utility(float _gamma, void * _userdata)
 {
     // type-cast input structure as pointer
@@ -113,44 +129,11 @@ float firdespm_halfband_utility(float _gamma, void * _userdata)
     // design filter
     float f0 = 0.25f - 0.5f*q->ft*_gamma;
     float f1 = 0.25f + 0.5f*q->ft;
-    float bands[4]   = {0.00f, f0, f1, 0.50f};
-    float des[2]     = {1.0f, 0.0f};
-    float weights[2] = {1.0f, 1.0f}; // best with {1, 1}
-    liquid_firdespm_wtype wtype[2] = {
-        LIQUID_FIRDESPM_FLATWEIGHT, LIQUID_FIRDESPM_EXPWEIGHT,};
-    firdespm_run(q->h_len, 2, bands, des, weights, wtype,
-        LIQUID_FIRDESPM_BANDPASS, q->h);
+    firdespm_halfband_design(q, f0, f1);
 
     // compute utility; copy ideal non-zero coefficients and compute transform
+    float u = 0.0f;
     unsigned int i;
-#if 0
-    // force zeros for even coefficients
-    for (i=0; i<q->m; i++) {
-        q->h[           2*i] = 0;
-        q->h[q->h_len-2*i-1] = 0;
-    }
-    // force center coefficient to be exactly 1/2
-    q->h[q->h_len/2] = 0.5;
-    // copy coefficients to input buffer
-    for (i=0; i<q->nfft; i++) {
-        q->buf_time[i] = i < q->h_len ? q->h[i] : 0.0f;
-    }
-    // compute transform
-    fft_execute(q->fft);
-
-    // compute metric: power in stop-band
-    float u = 0.0f;
-    for (i=0; i<q->n; i++) {
-        unsigned int idx = q->nfft/2 - i;
-        float u_test = cabsf(q->buf_freq[idx]);
-        //printf(" %3u : %12.8f : %12.3f\n", i, (float)(idx) / (float)(q->nfft), 20*log10f(u_test));
-        u += u_test * u_test;
-    }
-
-    // return utility in dB
-    return 10*log10f(u / (float)(q->n));
-#else
-    float u = 0.0f;
     for (i=0; i<q->m; i++) {
         // compute utility: deviation from zero for even coefficients
         float hp = q->h[2*i];
@@ -162,20 +145,39 @@ float firdespm_halfband_utility(float _gamma, void * _userdata)
     // force center coefficient to be exactly 1/2
     q->h[q->h_len/2] = 0.5;
     return 10*log10f(u);
-#endif
+}
+
+// function to evaluate the frequency response of a filter already designed
+float firdespm_halfband_evaluate_stopband(firdespm_halfband _q)
+{
+    // copy coefficients to input buffer
+    unsigned int i;
+    for (i=0; i<_q->nfft; i++)
+        _q->buf_time[i] = i < _q->h_len ? _q->h[i] : 0.0f;
+
+    // compute transform
+    fft_execute(_q->fft);
+
+    // compute metric: maximum value in stop-band
+    unsigned int n = (unsigned int)(_q->nfft * (0.25f - 0.5f*_q->ft));
+    float u = 0.0f;
+    for (i=0; i<n; i++) {
+        unsigned int idx = _q->nfft/2 - i;
+        float u_test = cabsf(_q->buf_freq[idx]);
+        //printf(" %3u : %12.8f : %12.3f\n", i, (float)(idx) / (float)(_q->nfft), 20*log10f(u_test));
+        if (i==0 || u_test > u)
+            u = u_test;
+    }
+
+    // return utility in dB
+    return 20*log10f(u);
 }
 
 // perform search to find optimal coefficients given transition band
-int liquid_firdespm_halfband_ft(unsigned int _m, float _ft, float * _h)
+int firdespm_halfband_optimize_ft(firdespm_halfband _q, float * _h)
 {
-    // create and initialize object
-    firdespm_halfband q = firdespm_halfband_create(_m, _ft);
-
-    // compute indices of stop-band analysis
-    //q->n = (unsigned int)(q->nfft * (0.25f - 0.5f*_ft));
-
     // create optimizer and run search
-    qs1dsearch optim = qs1dsearch_create(firdespm_halfband_utility, q, LIQUID_OPTIM_MINIMIZE);
+    qs1dsearch optim = qs1dsearch_create(firdespm_halfband_utility, _q, LIQUID_OPTIM_MINIMIZE);
     qs1dsearch_init_bounds(optim, 1.0f, 0.9f);
     unsigned int i;
     float u_prime = 0; // previous utility
@@ -191,16 +193,24 @@ int liquid_firdespm_halfband_ft(unsigned int _m, float _ft, float * _h)
         }
         u_prime = u;
     }
-    qs1dsearch_destroy(optim);
 
     // copy optimal coefficients
-    memmove(_h, q->h, q->h_len*sizeof(float));
+    memmove(_h, _q->h, _q->h_len*sizeof(float));
+
+    return qs1dsearch_destroy(optim);
+}
+
+// perform search to find optimal coefficients given transition band
+int liquid_firdespm_halfband_ft(unsigned int _m, float _ft, float * _h)
+{
+    // create and initialize object
+    firdespm_halfband q = firdespm_halfband_create(_m, _ft);
+
+    // optimize for transition band
+    firdespm_halfband_optimize_ft(q, _h);
 
     // destroy objects
-    firdespm_halfband_destroy(q);
-
-    //
-    return LIQUID_OK;
+    return firdespm_halfband_destroy(q);
 }
 
 // perform search to find optimal coefficients given stop-band suppression
@@ -209,9 +219,17 @@ int liquid_firdespm_halfband_as(unsigned int _m, float _as, float * _h)
     // estimate transition band given other parameters
     float ft = estimate_req_filter_df(_as, 4*_m+1);
 
-    // TODO: evaluate filter and adjust transition band accordingly
+    // create and initialize object
+    firdespm_halfband q = firdespm_halfband_create(_m, ft);
 
-    // return filter design
-    return liquid_firdespm_halfband_ft(_m, ft, _h);
+    // optimize for transition band
+    firdespm_halfband_optimize_ft(q, _h);
+
+    // evaluate stop-band
+    float As = firdespm_halfband_evaluate_stopband(q);
+    printf("As = %f\n", As);
+    // TODO: run in loop until desired stop-band attenuation is achieved
+
+    // destroy objects
+    return firdespm_halfband_destroy(q);
 }
-
