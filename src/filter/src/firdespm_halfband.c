@@ -79,7 +79,7 @@ firdespm_halfband firdespm_halfband_create(unsigned int _m, float _ft)
 
     // initialize values for utility calculation
     q->nfft = 1200;
-    while (q->nfft < 20*q->m)
+    while (q->nfft < 120*q->m)
         q->nfft <<= 1;
     q->buf_time = (float complex*) fft_malloc(q->nfft*sizeof(float complex));
     q->buf_freq = (float complex*) fft_malloc(q->nfft*sizeof(float complex));
@@ -214,6 +214,8 @@ int liquid_firdespm_halfband_ft(unsigned int _m, float _ft, float * _h)
 }
 
 // perform search to find optimal coefficients given stop-band suppression
+// NOTE: this is accurate but slow as it must iterate over the search for
+//       a halfband filter design with a specific transition band
 int liquid_firdespm_halfband_as(unsigned int _m, float _as, float * _h)
 {
     // estimate transition band given other parameters
@@ -222,14 +224,51 @@ int liquid_firdespm_halfband_as(unsigned int _m, float _as, float * _h)
     // create and initialize object
     firdespm_halfband q = firdespm_halfband_create(_m, ft);
 
-    // optimize for transition band
-    firdespm_halfband_optimize_ft(q, _h);
+    // find boundaries and run bisection search
+    float ft_0 = -1, ft_1 = -1;
+    float as_0 = -1, as_1 = -1;
 
-    // evaluate stop-band
-    float As = firdespm_halfband_evaluate_stopband(q);
-    printf("As = %f\n", As);
-    // TODO: run in loop until desired stop-band attenuation is achieved
+    // run in loop until desired stop-band attenuation is achieved
+    unsigned int i;
+    float alpha = 0.9f;
+    for (i=0; i<10; i++)
+    {
+        // optimize for transition band
+        firdespm_halfband_optimize_ft(q, _h);
+
+        // evaluate stop-band as "positive attenuation"
+        float as = -firdespm_halfband_evaluate_stopband(q);
+        //printf("%3u: ft:{%12.8f,%12.8f}, as:{%12.8f,%12.8f} -> ft = %12.8f, as = %12.8f\n",
+        //    i, ft_0, ft_1, as_0, as_1, ft, as);
+
+        // early-exit criteria
+        if (as > _as && (as - _as) < 0.05)
+            break;
+        // check bounds
+        if (as > _as) { // ft is too large
+            ft_1 = ft;
+            as_1 = as;
+        } else { // ft is too small
+            ft_0 = ft;
+            as_0 = as;
+        }
+
+        // check if either upper or lower bound is open
+        if (ft_0 < 0)
+            ft = alpha*ft; // nudge ft closer to 0
+        else if (ft_1 < 0)
+            ft = 1 - alpha*(1-ft); // nudge ft closer to 1 without exceeding
+        else {
+            // linear interpolation
+            float del = (_as - as_0)/(as_1 - as_0);
+            ft = ft_0 + del*(ft_1 - ft_0);
+        }
+
+        // set transition bandwidth within object
+        q->ft = ft;
+    }
 
     // destroy objects
     return firdespm_halfband_destroy(q);
 }
+
