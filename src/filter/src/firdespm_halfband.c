@@ -65,6 +65,7 @@ struct firdespm_halfband_s
     unsigned int    n;          // number of points to evaluate
 };
 
+// primary utility for evaluating filter design
 float firdespm_halfband_utility(float _gamma, void * _userdata)
 {
     // type-cast input structure as pointer
@@ -148,13 +149,22 @@ int liquid_firdespm_halfband_ft(unsigned int _m, float _ft, float * _h)
     //printf("firdespm.halfband, m=%u, ft=%.3f, n=%u, nfft=%u, n=%u\n",
     //    q.m, q.ft, q.h_len, q.nfft, q.n);
 
-    // create and run search
+    // create optimizer and run search
     qs1dsearch optim = qs1dsearch_create(firdespm_halfband_utility, &q, LIQUID_OPTIM_MINIMIZE);
     qs1dsearch_init_bounds(optim, 1.0f, 0.9f);
     unsigned int i;
-    for (i=0; i<32; i++) {
+    float u_prime = 0; // previous utility
+    unsigned int persistence = 8, count = 0;
+    for (i=0; i<32 && count < persistence; i++) {
         qs1dsearch_step (optim);
         //qs1dsearch_print(optim);
+
+        // early stopping; break if utility hasn't improved in 'persistence' steps
+        float u = qs1dsearch_get_opt_u(optim);
+        if (i > 0) {
+            count = (u >= u_prime) ? count+1 : 0;
+        }
+        u_prime = u;
     }
     qs1dsearch_destroy(optim);
 
@@ -176,6 +186,8 @@ int liquid_firdespm_halfband_as(unsigned int _m, float _as, float * _h)
 {
     // estimate transition band given other parameters
     float ft = estimate_req_filter_df(_as, 4*_m+1);
+
+    // TODO: evaluate filter and adjust transition band accordingly
 
     // return filter design
     return liquid_firdespm_halfband_ft(_m, ft, _h);

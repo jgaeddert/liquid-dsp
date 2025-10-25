@@ -10,12 +10,12 @@ int main(int argc, char*argv[])
 {
     // filter design parameters
     unsigned int m  = 12;
-    float        ft = 0.10f;
+    float        As = 60;
 
     // derived values
     unsigned int h_len = 4*m + 1;
     float h[h_len];
-    liquid_firdespm_halfband_ft(m, ft, h);
+    liquid_firdespm_halfband_as(m, As, h);
 
     // print coefficients
     unsigned int i;
