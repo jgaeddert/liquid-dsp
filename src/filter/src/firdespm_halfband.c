@@ -65,11 +65,50 @@ struct firdespm_halfband_s
     unsigned int    n;          // number of points to evaluate
 };
 
+// pointer to struct
+typedef struct firdespm_halfband_s * firdespm_halfband;
+
+// create object
+firdespm_halfband firdespm_halfband_create(unsigned int _m, float _ft)
+{
+    // create and initialize object
+    firdespm_halfband q = malloc(sizeof(struct firdespm_halfband_s));
+    q->m     = _m;
+    q->h_len = 4*_m+1;
+    q->ft    = _ft;
+    q->h     = (float*)malloc(q->h_len*sizeof(float));
+
+    // initialize values for utility calculation
+    q->nfft = 1200;
+    while (q->nfft < 20*q->m)
+        q->nfft <<= 1;
+    q->buf_time = (float complex*) fft_malloc(q->nfft*sizeof(float complex));
+    q->buf_freq = (float complex*) fft_malloc(q->nfft*sizeof(float complex));
+    q->fft      = fft_create_plan(q->nfft, q->buf_time, q->buf_freq, LIQUID_FFT_FORWARD, 0);
+
+    //
+    return q;
+}
+
+// destroy object, freeing all internal memory
+int firdespm_halfband_destroy(firdespm_halfband _q)
+{
+    // destroy objects
+    free(_q->h);
+    fft_destroy_plan(_q->fft);
+    fft_free(_q->buf_time);
+    fft_free(_q->buf_freq);
+
+    // free main object memory
+    free(_q);
+    return LIQUID_OK;
+}
+
 // primary utility for evaluating filter design
 float firdespm_halfband_utility(float _gamma, void * _userdata)
 {
     // type-cast input structure as pointer
-    struct firdespm_halfband_s * q = (struct firdespm_halfband_s*)_userdata;
+    firdespm_halfband q = (firdespm_halfband)_userdata;
 
     // design filter
     float f0 = 0.25f - 0.5f*q->ft*_gamma;
@@ -130,27 +169,13 @@ float firdespm_halfband_utility(float _gamma, void * _userdata)
 int liquid_firdespm_halfband_ft(unsigned int _m, float _ft, float * _h)
 {
     // create and initialize object
-    struct firdespm_halfband_s q;
-    q.m     = _m;
-    q.h_len = 4*_m+1;
-    q.ft    = _ft;
-    q.h     = (float*)malloc(q.h_len*sizeof(float));
-
-    // initialize values for utility calculation
-    q.nfft = 1200;
-    while (q.nfft < 20*q.m)
-        q.nfft <<= 1;
-    q.buf_time = (float complex*) fft_malloc(q.nfft*sizeof(float complex));
-    q.buf_freq = (float complex*) fft_malloc(q.nfft*sizeof(float complex));
-    q.fft      = fft_create_plan(q.nfft, q.buf_time, q.buf_freq, LIQUID_FFT_FORWARD, 0);
+    firdespm_halfband q = firdespm_halfband_create(_m, _ft);
 
     // compute indices of stop-band analysis
-    q.n = (unsigned int)(q.nfft * (0.25f - 0.5f*_ft));
-    //printf("firdespm.halfband, m=%u, ft=%.3f, n=%u, nfft=%u, n=%u\n",
-    //    q.m, q.ft, q.h_len, q.nfft, q.n);
+    //q->n = (unsigned int)(q->nfft * (0.25f - 0.5f*_ft));
 
     // create optimizer and run search
-    qs1dsearch optim = qs1dsearch_create(firdespm_halfband_utility, &q, LIQUID_OPTIM_MINIMIZE);
+    qs1dsearch optim = qs1dsearch_create(firdespm_halfband_utility, q, LIQUID_OPTIM_MINIMIZE);
     qs1dsearch_init_bounds(optim, 1.0f, 0.9f);
     unsigned int i;
     float u_prime = 0; // previous utility
@@ -169,13 +194,10 @@ int liquid_firdespm_halfband_ft(unsigned int _m, float _ft, float * _h)
     qs1dsearch_destroy(optim);
 
     // copy optimal coefficients
-    memmove(_h, q.h, q.h_len*sizeof(float));
+    memmove(_h, q->h, q->h_len*sizeof(float));
 
     // destroy objects
-    free(q.h);
-    fft_destroy_plan(q.fft);
-    fft_free(q.buf_time);
-    fft_free(q.buf_freq);
+    firdespm_halfband_destroy(q);
 
     //
     return LIQUID_OK;
