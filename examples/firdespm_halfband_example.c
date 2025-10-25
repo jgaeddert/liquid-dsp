@@ -32,7 +32,7 @@ int main(int argc, char*argv[])
     for (i=0; i<h_len; i++)
         fprintf(fid,"h(%4u) = %20.8e;\n", i+1, h[i]);
 
-    fprintf(fid,"nfft=1024;\n");
+    fprintf(fid,"nfft=120*(2^nextpow2(h_len));\n");
     fprintf(fid,"H=20*log10(abs(fftshift(fft(h,nfft))));\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
     fprintf(fid,"figure;\n");

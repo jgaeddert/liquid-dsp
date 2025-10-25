@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,29 @@
 
 #include "liquid.h"
 
+// Use Parks-McClellan FIR filter design method to find transition
+// band which gives time-series response as close to ideal as possible
+// (center coefficient 1/2, and all other even coefficients 0).
+//
+//  H(z)
+//   ^             ~ft
+//   |           |<--->|
+//   |************. . . . . . . . . . H0
+//   |/\/\/\/\/\/\  *
+//   |************\  *. . . . . . . . H1
+//   |           | \  *
+//   |           |  \  *
+//   |           |  :\  ************* H2
+//   |           |  : \ /^\ /^\ /^\ /|
+//   |           |  :  |   |   |   | |
+//   0           |  :  |            1/2
+//               |  :  f1 = 1/4 + ft/2
+//               | 1/4
+//              f0 = 1/4 - gamma*ft/2
+
 // structured data type
-struct firdespm_halfband_s {
+struct firdespm_halfband_s
+{
     // top-level filter design parameters
     unsigned int    m;          // filter semi-length
     unsigned int    h_len;      // filter length, 4*m+1
@@ -55,13 +76,14 @@ float firdespm_halfband_utility(float _gamma, void * _userdata)
     float bands[4]   = {0.00f, f0, f1, 0.50f};
     float des[2]     = {1.0f, 0.0f};
     float weights[2] = {1.0f, 1.0f}; // best with {1, 1}
-    liquid_firdespm_wtype wtype[2] = { // best with {flat, flat}
-        LIQUID_FIRDESPM_FLATWEIGHT, LIQUID_FIRDESPM_FLATWEIGHT,};
+    liquid_firdespm_wtype wtype[2] = {
+        LIQUID_FIRDESPM_FLATWEIGHT, LIQUID_FIRDESPM_EXPWEIGHT,};
     firdespm_run(q->h_len, 2, bands, des, weights, wtype,
         LIQUID_FIRDESPM_BANDPASS, q->h);
 
     // compute utility; copy ideal non-zero coefficients and compute transform
     unsigned int i;
+#if 0
     // force zeros for even coefficients
     for (i=0; i<q->m; i++) {
         q->h[           2*i] = 0;
@@ -87,6 +109,20 @@ float firdespm_halfband_utility(float _gamma, void * _userdata)
 
     // return utility in dB
     return 10*log10f(u / (float)(q->n));
+#else
+    float u = 0.0f;
+    for (i=0; i<q->m; i++) {
+        // compute utility: deviation from zero for even coefficients
+        float hp = q->h[2*i];
+        u += hp*hp;
+        // force zeros for even coefficients
+        q->h[           2*i] = 0;
+        q->h[q->h_len-2*i-1] = 0;
+    }
+    // force center coefficient to be exactly 1/2
+    q->h[q->h_len/2] = 0.5;
+    return 10*log10f(u);
+#endif
 }
 
 // perform search to find optimal coefficients given transition band
