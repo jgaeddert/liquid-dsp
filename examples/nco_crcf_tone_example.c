@@ -5,18 +5,23 @@ char __docstr__[] = "Generate tone at low frequency and test phase response";
 #include <complex.h>
 #include "liquid.h"
 #include "liquid.argparse.h"
-#define OUTPUT_FILENAME "nco_crcf_tone_example.m"
 
-int main()
+int main(int argc, char* argv[])
 {
-    // define variables and parse command-line options
+    // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    int          type        = LIQUID_NCO;      // nco type
-    float        fc          = 0.000241852307f; // frequency
-    unsigned int num_samples = 2400;            // number of samples to run
+    liquid_argparse_add(char*, filename, "nco_crcf_tone_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char*,    type_str,      "nco", 't', "nco type, {nco, vco}", NULL);
+    liquid_argparse_add(float,    fc,   0.000241852307, 'r', "center frequency", NULL);
+    liquid_argparse_add(unsigned, num_samples,    2400, 'n', "number of samples", NULL);
+    liquid_argparse_parse(argc,argv);
+
+    // validate input
+    if (strcmp(type_str,"nco") && strcmp(type_str,"vco"))
+        return fprintf(stderr,"error: invalid nco type '%s' (must be either 'nco' or 'vco')\n", type_str);
 
     // create the NCO object
-    nco_crcf q = nco_crcf_create(type);
+    nco_crcf q = nco_crcf_create(strcmp(type_str,"nco")==0 ? LIQUID_NCO : LIQUID_VCO);
     nco_crcf_set_frequency(q, 2*M_PI*fc);
     nco_crcf_print(q);
 
@@ -31,8 +36,8 @@ int main()
     nco_crcf_destroy(q);
 
     // export output file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"n = %u;\n", num_samples);
@@ -49,6 +54,6 @@ int main()
     fprintf(fid,"axis([0 n -1 1]);\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
     return 0;
 }

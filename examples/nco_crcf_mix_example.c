@@ -6,16 +6,20 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "nco_crcf_mix_example.m"
-
-int main()
+int main(int argc, char* argv[])
 {
-    // define variables and parse command-line options
+    // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    int          type        = LIQUID_NCO;  // nco type
-    float        fc          =      0.05f;  // signal offset frequency
-    unsigned int num_samples =     240000;  // number of samples to run
-    unsigned int nfft        =       1200;  // spectral periodogram FFT size
+    liquid_argparse_add(char*, filename, "nco_crcf_mix_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char*,    type_str,    "nco",  't', "nco type, {nco, vco}", NULL);
+    liquid_argparse_add(float,    fc,           0.05f, 'r', "center frequency", NULL);
+    liquid_argparse_add(unsigned, num_samples,  240000,'n', "number of samples", NULL);
+    liquid_argparse_add(unsigned, nfft,         1200,  'N', "FFT size", NULL);
+    liquid_argparse_parse(argc,argv);
+
+    // validate input
+    if (strcmp(type_str,"nco") && strcmp(type_str,"vco"))
+        return fprintf(stderr,"error: invalid nco type '%s' (must be either 'nco' or 'vco')\n", type_str);
 
     // create stream generator and add some sources
     msourcecf gen = msourcecf_create_default();
@@ -25,7 +29,7 @@ int main()
     msourcecf_add_modem(gen,  0.2f, 0.1f,  -30, LIQUID_MODEM_QPSK, 12, 0.25f); // modem
 
     // create the NCO object
-    nco_crcf q = nco_crcf_create(type);
+    nco_crcf q = nco_crcf_create(strcmp(type_str,"nco")==0 ? LIQUID_NCO : LIQUID_VCO);
     nco_crcf_set_frequency(q, 2*M_PI*fc);
     nco_crcf_print(q);
 
@@ -68,8 +72,8 @@ int main()
     msourcecf_destroy(gen);
 
     // export output file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"nfft = %u;\n", nfft);
@@ -91,6 +95,6 @@ int main()
     fprintf(fid,"axis([-0.5 0.5 -70 -10]);\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
     return 0;
 }
