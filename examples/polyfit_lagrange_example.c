@@ -9,18 +9,17 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "polyfit_lagrange_example.m"
-
 int main(int argc, char* argv[])
 {
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename,"polyfit_lagrange_example.m",'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, n,     15, 'n', "number of samples to evaluate", NULL);
     liquid_argparse_parse(argc,argv);
 
-    unsigned int n=15;      // number of samples
-
-    FILE * fid = fopen(OUTPUT_FILENAME, "w");
-    fprintf(fid,"%% %s : auto-generated file\n\n", OUTPUT_FILENAME);
+    // open output file for writing
+    FILE * fid = fopen(filename, "w");
+    fprintf(fid,"%% %s : auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\nclose all;\n\n");
 
     // initialize data vectors
@@ -66,12 +65,12 @@ int main(int argc, char* argv[])
     fprintf(fid,"plot(x,y,'s',xtest,ytest,'-');\n");
     fprintf(fid,"xlabel('x');\n");
     fprintf(fid,"ylabel('y, p^{(%u)}(x)');\n", n);
-    fprintf(fid,"legend('data','poly-fit (barycentric)',0);\n");
+    fprintf(fid,"legend('data','poly-fit (barycentric)');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([-1.1 1.1 1.5*min(y) 1.5*max(y)]);\n");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;
