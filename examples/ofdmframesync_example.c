@@ -11,18 +11,6 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "ofdmframesync_example.m"
-
-void usage()
-{
-    printf("Usage: ofdmframesync_example [OPTION]\n");
-    printf("  h     : print help\n");
-    printf("  M     : number of subcarriers (must be even),  default: 1200\n");
-    printf("  C     : cyclic prefix length,                  default: 60\n");
-    printf("  T     : taper length,                          default: 50\n");
-    printf("  s     : signal-to-noise ratio [dB],            default: 30\n");
-}
-
 // forward declaration of callback function; this will be invoked for every
 // OFDM symbol received by the parent ofdmframesync object. The object will
 // reset when something other than a zero is returned.
@@ -43,36 +31,18 @@ struct rx_symbols {
     unsigned int  num_qpsk;         // counter
 };
 
-// main function
-int main(int argc, char*argv[])
+int main(int argc, char *argv[])
 {
-    // set the random seed differently for each run
-    srand(time(NULL));
-
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int M           = 1200;    // number of subcarriers
-    unsigned int cp_len      = 60;      // cyclic prefix length
-    unsigned int taper_len   = 50;      // taper length
-    unsigned int num_symbols = 20;      // number of data symbols
-    float noise_floor        = -120.0f; // noise floor [dB]
-    float SNRdB              = 30.0f;   // signal-to-noise ratio [dB]
-
-    // get options
-    int dopt;
-    while((dopt = getopt(argc,argv,"hdM:C:T:s:")) != EOF){
-        switch (dopt) {
-        case 'h': usage();                      return 0;
-        case 'M': M         = atoi(optarg);     break;
-        case 'C': cp_len    = atoi(optarg);     break;
-        case 'T': taper_len = atoi(optarg);     break;
-        case 's': SNRdB     = atof(optarg);     break;
-        default:
-            exit(1);
-        }
-    }
-
-    unsigned int i;
+    liquid_argparse_add(char*, filename, "ofdmframegen_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, M,         1200, 'M', "number of subcarriers", NULL);
+    liquid_argparse_add(unsigned, cp_len,      60, 'C', "cyclic prefix length", NULL);
+    liquid_argparse_add(unsigned, taper_len,   50, 'T', "taper length", NULL);
+    liquid_argparse_add(unsigned, num_symbols, 20, 'n', "number of symbols to generate", NULL);
+    liquid_argparse_add(float,    noise_floor,-60, '0', "noise floor [dB]", NULL);
+    liquid_argparse_add(float,    SNRdB,       30, 's', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // derived values
     unsigned int frame_len   = M + cp_len;
@@ -90,6 +60,7 @@ int main(int argc, char*argv[])
     // create subcarrier notch in upper half of band
     unsigned int n0 = (unsigned int) (0.13 * M);    // lower edge of notch
     unsigned int n1 = (unsigned int) (0.21 * M);    // upper edge of notch
+    unsigned int i;
     for (i=n0; i<n1; i++)
         p[i] = OFDMFRAME_SCTYPE_NULL;
 
@@ -171,8 +142,8 @@ int main(int argc, char*argv[])
     // 
     // export output file
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"M           = %u;\n", M);
@@ -229,7 +200,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"legend('even subcarriers (BPSK)','odd subcarriers (QPSK)','location','northeast');\n");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;
