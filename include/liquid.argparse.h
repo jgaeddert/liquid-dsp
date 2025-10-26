@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
@@ -23,9 +22,38 @@
 #ifndef __LIQUID_ARGPARSE_H__
 #define __LIQUID_ARGPARSE_H__
 
+// <liquid.argparse.h>
+//
+// convenience macros for argument parsing to allow for consolidation of
+//   1. variable declaration and initial assignment
+//   2. command-line argument parsing using getopt
+//   3. brief variable description with 'help' support
+//   4. limited error-handling and custom argument parsing
+//
+// For example:
+//
+// int main(int argc, char*argv[])
+// {
+//     // create argument parser using macros to define variables and set values from command line
+//     liquid_argparse_init(__docstr__);
+//     liquid_argparse_add(char*, filename, "test.out",'o', "output filename",      NULL);
+//     liquid_argparse_add(bool,  verbose,     false,  'v', "enable verbose mode",  NULL);
+//     liquid_argparse_add(int,   iterations,  0,      'i', "number of iterations", NULL);
+//     liquid_argparse_parse(argc,argv);
+//
+//     // print values
+//     printf("filename   = %s\n", filename);
+//     printf("verbose    = %s\n", verbose ? "true" : "false");
+//     printf("iterations = %d\n", iterations);
+//     return 0;
+// }
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
+
+// the maximum number of arguments allowed
+#define LIQUID_ARGPARSE_MAX_ARGS (64)
 
 // common headers
 #include <inttypes.h>
@@ -35,9 +63,6 @@ extern "C" {
 #include <stdbool.h>
 #include <getopt.h>
 #include "liquid.h"
-
-// the maximum number of arguments allowed
-#define LIQUID_ARGPARSE_MAX_ARGS (64)
 
 // callback function pointer for custom type parsing
 typedef int (*liquid_argparse_callback)(const char * _optarg, void * _ref);
