@@ -7,15 +7,14 @@ char __docstr__[] = "Halfband filter example.";
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "resamp2_crcf_filter_example.m"
-
 int main(int argc, char* argv[])
 {
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    unsigned int m=9;               // filter semi-length
-    unsigned int num_samples=128;   // number of input samples
-    float As=60.0f;                 // stop-band attenuation [dB]
+    liquid_argparse_add(char*, filename, "resamp2_crcf_filter_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, m,           5,      'm', "filter semi-length (actual length: 4*m+1)", NULL);
+    liquid_argparse_add(unsigned, num_samples, 37,     'n', "number of input samples", NULL);
+    liquid_argparse_add(float,    As,          60.0,   'a', "stop-band attenuation [dB]", NULL);
     liquid_argparse_parse(argc,argv);
 
     // derived values
@@ -50,11 +49,9 @@ int main(int argc, char* argv[])
     // clean up allocated objects
     resamp2_crcf_destroy(q);
 
-    // 
     // export output file
-    //
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"m = %u;\n", m);
     fprintf(fid,"num_samples = %u;\n", num_samples);
@@ -75,7 +72,7 @@ int main(int argc, char* argv[])
     fprintf(fid,"       t-2*m,real(y1),'LineWidth',1,'Color',[0.00 0.50 0.25]);\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('real');\n");
-    fprintf(fid,"  legend('original','lower band','upper band',1);");
+    fprintf(fid,"  legend('original','lower band','upper band');");
     fprintf(fid,"subplot(2,1,2);\n");
     fprintf(fid,"  plot(t,    imag(x), 'LineWidth',2,'Color',[0.50 0.50 0.50],...\n");
     fprintf(fid,"       t-2*m,imag(y0),'LineWidth',1,'Color',[0.00 0.25 0.50],...\n");
@@ -101,7 +98,7 @@ int main(int argc, char* argv[])
     fprintf(fid,"axis([-0.5 0.5 -80 20]);\n");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

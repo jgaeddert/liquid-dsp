@@ -10,53 +10,40 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "resamp_crcf_noise_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char* argv[])
 {
-    printf("Usage: %s [OPTION]\n", __FILE__);
-    printf("  -h            : print help\n");
-    printf("  -r <rate>     : resampling rate,                   default: 0.6\n");
-    printf("  -m <len>      : filter semi-length (delay),        default: 25\n");
-    printf("  -w <bandwidth>: filter bandwidth,                  default: 0.51*rate\n");
-    printf("  -s <atten>    : filter stop-band attenuation [dB], default: 60\n");
-}
-
-int main(int argc, char*argv[])
-{
-    // define variables and parse command-line options
+    // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    float           rate= 0.60f;    // resampling rate
-    unsigned int    m   = 25;       // resampling filter semi-length (filter delay)
-    float           bw  = -1;       // resampling filter bandwidth
-    float           As  = 60.0f;    // resampling filter stop-band attenuation [dB]
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hr:m:s:w:")) != EOF) {
-        switch (dopt) {
-        case 'h':   usage();            return 0;
-        case 'r':   rate = atof(optarg); break;
-        case 'm':   m    = atoi(optarg); break;
-        case 'w':   bw   = atof(optarg); break;
-        case 's':   As   = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
+    liquid_argparse_add(char*, filename, "resamp_crcf_noise_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(float,    r,   0.60, 'r', "resampling rate (output/input)", NULL);
+    liquid_argparse_add(unsigned, m,     13, 'm', "resampling filter semi-length (filter delay)", NULL);
+    liquid_argparse_add(float,    As,  60.0, 'a', "resampling filter stop-band attenuation [dB]", NULL);
+    liquid_argparse_add(float,    bw,    -1, 'w', "resampling filter bandwidth (normalized)", NULL);
+    liquid_argparse_add(unsigned, npfb,  64, 'b', "number of filters in bank (timing resolution)", NULL);
+    liquid_argparse_add(unsigned, n,    400, 'n', "number of input samples", NULL);
+    liquid_argparse_add(float,    fc, 0.044, 'f', "complex sinusoid frequency", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (rate >= 1.0f) {
-        fprintf(stderr,"error: %s, input rate r must be less than 1\n", argv[0]);
-        exit(1);
-    }
+    if (r <= 0.0f)
+        return fprintf(stderr,"error: resampling rate must be greater than zero\n");
+    if (m == 0)
+        return fprintf(stderr,"error: filter semi-length must be greater than zero\n");
+    if (bw >= 0.5f)
+        return fprintf(stderr,"error: filter bandwidth must be less than 0.5\n");
+    if (As < 0.0f)
+        return fprintf(stderr,"error: filter stop-band attenuation must be greater than zero\n");
+    if (npfb == 0)
+        return fprintf(stderr,"error: filter bank size must be greater than zero\n");
+    if (n == 0)
+        return fprintf(stderr,"error: number of input samples must be greater than zero\n");
 
     // set default bandwidth if not otherwise specified
     if (bw < 0)
-        bw = 0.35f*rate;
+        bw = 0.35f*r;
 
     // create resampler object
-    resamp_crcf q = resamp_crcf_create(rate,m,bw,As,256);
+    resamp_crcf q = resamp_crcf_create(r,m,bw,As,256);
     //resamp_crcf_print(q);
 
     // number of sample blocks
@@ -71,10 +58,10 @@ int main(int argc, char*argv[])
     msourcecf gen = msourcecf_create_default();
 
     // in-band signal
-    msourcecf_add_noise(gen, 0.0f, 0.5f*rate, 0);
+    msourcecf_add_noise(gen, 0.0f, 0.5f*r, 0);
 
     // high-power signal just out of band
-    msourcecf_add_noise(gen, (0.5f*rate+0.04f), 0.02f, 10);
+    msourcecf_add_noise(gen, (0.5f*r+0.04f), 0.02f, 10);
 
     // create spectral periodogram objects
     unsigned int nfft = 2400;
@@ -108,11 +95,11 @@ int main(int argc, char*argv[])
     spgramcf_get_psd(py, Y);
 
     // export results to file for plotting
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n",filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
-    fprintf(fid,"r    = %f;\n", rate);
+    fprintf(fid,"r    = %f;\n", r);
     fprintf(fid,"nfft = %u;\n", nfft);
     fprintf(fid,"X    = zeros(1,nfft);\n");
     fprintf(fid,"Y    = zeros(1,nfft);\n");
@@ -136,6 +123,6 @@ int main(int argc, char*argv[])
     fprintf(fid,"axis([fmin fmax -100 20]);\n");
     fprintf(fid,"grid on;\n");
     fclose(fid);
-    printf("results written to %s\n",OUTPUT_FILENAME);
+    printf("results written to %s\n",filename);
     return 0;
 }

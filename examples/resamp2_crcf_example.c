@@ -12,20 +12,17 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "resamp2_crcf_example.m"
-
 int main(int argc, char* argv[])
 {
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    unsigned int m=5;               // filter semi-length (actual length: 4*m+1)
-    float bw=0.13f;                 // input signal bandwidth
-    float fc=-0.597f;               // input signal carrier frequency (radians/sample)
-    unsigned int num_samples=37;    // number of input samples
-    float As=60.0f;                 // stop-band attenuation [dB]
+    liquid_argparse_add(char*, filename, "resamp2_crcf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, m,           5,      'm', "filter semi-length (actual length: 4*m+1)", NULL);
+    liquid_argparse_add(float,    bw,          0.13,   'w', "input signal bandwidth", NULL);
+    liquid_argparse_add(float,    fc,          -0.597, 'f', "input signal carrier frequency (radians/sample", NULL);
+    liquid_argparse_add(unsigned, num_samples, 37,     'n', "number of input samples", NULL);
+    liquid_argparse_add(float,    As,          60.0,   'a', "stop-band attenuation [dB]", NULL);
     liquid_argparse_parse(argc,argv);
-
-    unsigned int i;
 
     // derived values
     unsigned int n = num_samples + 2*m + 1; // adjusted input sequence length
@@ -38,6 +35,7 @@ int main(int argc, char* argv[])
     // generate the baseband signal (filter pulse)
     float h[num_samples];
     liquid_firdes_kaiser(num_samples,bw,60.0f,0.0f,h);
+    unsigned int i;
     for (i=0; i<n; i++)
         x[i] = i < num_samples ? h[i] * cexpf(_Complex_I*fc*i) : 0.0f;
 
@@ -73,8 +71,8 @@ int main(int argc, char* argv[])
     // 
     // print results to file
     //
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n",filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"bw=%12.8f;\n", bw);
@@ -121,7 +119,7 @@ int main(int argc, char* argv[])
     fprintf(fid,"  axis([0 n -1 1]);\n");
     fprintf(fid,"  ylabel('interp/decim');\n");
     fclose(fid);
-    printf("results written to %s\n",OUTPUT_FILENAME);
+    printf("results written to %s\n",filename);
 
     printf("done.\n");
     return 0;
