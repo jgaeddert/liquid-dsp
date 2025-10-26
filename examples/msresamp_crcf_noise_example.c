@@ -10,47 +10,23 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "msresamp_crcf_noise_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char* argv[])
 {
-    printf("Usage: %s [OPTION]\n", __FILE__);
-    printf("  -h         : print help\n");
-    printf("  -r <rate>  : resampling rate,                   default: 0.3\n");
-    printf("  -s <atten> : filter stop-band attenuation [dB], default: 60\n");
-}
-
-int main(int argc, char*argv[])
-{
-    // define variables and parse command-line options
+    // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    float   rate= 0.30f;    // resampling rate
-    float   As  = 60.0f;    // resampling filter stop-band attenuation [dB]
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hr:s:")) != EOF) {
-        switch (dopt) {
-        case 'h':   usage();             return 0;
-        case 'r':   rate = atof(optarg); break;
-        case 's':   As   = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
+    liquid_argparse_add(char*, filename, "msresamp_crcf_noise_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(float,    rate,       0.3,   'r', "resampling rate (output/input)", NULL);
+    liquid_argparse_add(float,    As,         60.0f, 'a', "resampling filter stop-band attenuation [dB]", NULL);
+    liquid_argparse_add(unsigned, num_blocks, 1000,  'n', "number of blocks", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (rate >= 1.0f) {
-        fprintf(stderr,"error: %s, input rate r must be less than 1\n", argv[0]);
-        exit(1);
-    }
+    if (rate >= 1.0f)
+        return fprintf(stderr,"error: input rate r must be less than 1\n");
 
     // create resampler object
     msresamp_crcf q = msresamp_crcf_create(rate,As);
     msresamp_crcf_print(q);
-
-    // number of sample blocks
-    unsigned int num_blocks = 1000;
 
     // arrays
     unsigned int  buf_len = 1024;
@@ -101,8 +77,8 @@ int main(int argc, char*argv[])
     spgramcf_get_psd(py, Y);
 
     // export results to file for plotting
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n",filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"r    = %f;\n", rate);
@@ -129,6 +105,6 @@ int main(int argc, char*argv[])
     fprintf(fid,"axis([fmin fmax -80 20]);\n");
     fprintf(fid,"grid on;\n");
     fclose(fid);
-    printf("results written to %s\n",OUTPUT_FILENAME);
+    printf("results written to %s\n",filename);
     return 0;
 }

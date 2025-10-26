@@ -13,39 +13,18 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "modem_arb_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("modem_arb_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  p     : modulation depth (default 4 bits/symbol)\n");
-}
-
 int main(int argc, char*argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int bps=6;         // bits per symbol
-    unsigned int n=1024;        // number of data points to evaluate
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"uhp:")) != EOF) {
-        switch (dopt) {
-        case 'u':
-        case 'h': usage(); return 0;
-        case 'p': bps = atoi(optarg); break;
-        default:
-            exit(1);
-        }
-    }
+    liquid_argparse_add(char*, filename, "modem_arb_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, bps,  6, 'b', "number of bits per symbol", NULL);
+    liquid_argparse_add(unsigned, n, 4800, 'n', "number of data points to evaluate", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (bps == 0) {
-        fprintf(stderr,"error: %s, bits/symbol must be greater than zero\n", argv[0]);
-        exit(1);
-    }
+    if (bps == 0)
+        return fprintf(stderr,"error: bits/symbol must be greater than zero\n");
 
     // derived values
     unsigned int i;
@@ -53,11 +32,12 @@ int main(int argc, char*argv[])
 
     // initialize constellation table
     float complex constellation[M];
-    // initialize constellation (spiral)
+    // initialize constellation (golden spiral)
+    float phi = (3 - sqrtf(5))/2.0f;
     for (i=0; i<M; i++) {
-        float r   = (float)i / logf((float)M) + 4.0f;
-        float phi = (float)i / logf((float)M);
-        constellation[i] = r * cexpf(_Complex_I*phi);
+        float r     = sqrtf(2.0f*logf((float)M/(float)(M-i)));
+        float theta = 2*M_PI*phi*(float)i;
+        constellation[i] = r * cexpf(_Complex_I*theta);
     }
     
     // create mod/demod objects
@@ -97,8 +77,8 @@ int main(int argc, char*argv[])
     // 
     // export output file
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"bps = %u;\n", bps);
@@ -116,12 +96,12 @@ int main(int argc, char*argv[])
     fprintf(fid,"xlabel('in-phase');\n");
     fprintf(fid,"ylabel('quadrature phase');\n");
     fprintf(fid,"title(['Arbitrary ' num2str(M) '-QAM']);\n");
-    fprintf(fid,"axis([-1 1 -1 1]*1.9);\n");
+    fprintf(fid,"axis([-1 1 -1 1]*2);\n");
     fprintf(fid,"axis square;\n");
     fprintf(fid,"grid on;\n");
     fclose(fid);
 
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
     printf("done.\n");
 
     return 0;

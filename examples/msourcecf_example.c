@@ -9,8 +9,6 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "msourcecf_example.m"
-
 // user-defined callback; generate tones
 int callback(void *          _userdata,
              float complex * _v,
@@ -29,17 +27,17 @@ int main(int argc, char* argv[])
 {
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "msourcecf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char*,    mod_str,   "qpsk", 'M', "linear modulation scheme", liquid_argparse_modem);
+    liquid_argparse_add(unsigned, m,             12, 'm', "modulation filter semi-length", NULL);
+    liquid_argparse_add(float,    beta,       0.30f, 'b', "modulation filter excess bandwidth factor", NULL);
+    liquid_argparse_add(float,    bt,         0.35f, 'B', "GMSK filter bandwidth-time factor", NULL);
+    liquid_argparse_add(unsigned, nfft,        2400, 'n', "spectral periodogram FFT size", NULL);
+    liquid_argparse_add(unsigned, num_samples,48000, 'N', "number of samples", NULL);
     liquid_argparse_parse(argc,argv);
 
     // msource parameters
-    int          ms     = LIQUID_MODEM_QPSK;    // linear modulation scheme
-    unsigned int m      =    12;                // modulation filter semi-length
-    float        beta   = 0.30f;                // modulation filter excess bandwidth factor
-    float        bt     = 0.35f;                // GMSK filter bandwidth-time factor
-
-    // spectral periodogram options
-    unsigned int nfft        =   2400;  // spectral periodogram FFT size
-    unsigned int num_samples =  48000;  // number of samples
+    int ms = liquid_getopt_str2mod(mod_str);
 
     // create spectral periodogram
     spgramcf periodogram = spgramcf_create_default(nfft);
@@ -83,11 +81,9 @@ int main(int argc, char* argv[])
     msourcecf_destroy(gen);
     spgramcf_destroy(periodogram);
 
-    // 
     // export output file
-    //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"nfft = %u;\n", nfft);
@@ -107,7 +103,7 @@ int main(int argc, char* argv[])
     fprintf(fid,"axis([-0.5 0.5 -80 40]);\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
     return 0;
 }
 

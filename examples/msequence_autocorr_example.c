@@ -14,13 +14,13 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "msequence_autocorr_example.m"
-
-int main(int argc, char*argv[])
+int main(int argc, char* argv[])
 {
-    // define variables and parse command-line options
+    // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    unsigned int m=5;   // shift register length, n=2^m - 1
+    liquid_argparse_add(char*, filename, "msequence_autocorr_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, m, 5, 'm', "shift register length, m=2^m-1", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // create and initialize m-sequence
     msequence ms = msequence_create_default(m);
@@ -66,13 +66,13 @@ int main(int argc, char*argv[])
     //
     // export results
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    FILE * fid = fopen(filename,"w");
     if (!fid) {
-        fprintf(stderr,"error: %s, cannot open output file '%s' for writing\n", argv[0], OUTPUT_FILENAME);
+        fprintf(stderr,"error: %s, cannot open output file '%s' for writing\n", argv[0], filename);
         exit(1);
     }
 
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"n = %u;\n", n);
@@ -97,7 +97,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"   ylabel('auto-correlation');\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
     return 0;
 }
 

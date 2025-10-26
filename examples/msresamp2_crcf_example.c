@@ -8,52 +8,24 @@ char __docstr__[] = "Demonstration of the multi-stage half-band resampler";
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "msresamp2_crcf_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char* argv[])
 {
-    printf("Usage: %s [OPTION]\n", __FILE__);
-    printf(" -h         : print help\n");
-    printf(" -r <rate>  : resampling rate (output/input), default: 0.25\n");
-    printf(" -s <atten> : stop-band attenuation [dB],     default: 60\n");
-    printf(" -n <num>   : number of low-rate samples,     default: 256\n");
-    printf(" -f <freq>  : pass-band cut-off frequency,    default: 0.45\n");
-}
-
-int main(int argc, char*argv[])
-{
-    // define variables and parse command-line options
+    // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    float        r  = 0.25f;    // resampling rate (output/input)
-    float        As = 60.0f;    // resampling filter stop-band attenuation [dB]
-    unsigned int n  =   128;    // number of low-rate samples
-    float        fc = 0.45f;    // filter pass-band cut-off frequency
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hr:s:n:f:")) != EOF) {
-        switch (dopt) {
-        case 'h': usage();                return 0;
-        case 'r': r       = atof(optarg); break;
-        case 's': As      = atof(optarg); break;
-        case 'n': n       = atoi(optarg); break;
-        case 'f': fc      = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
+    liquid_argparse_add(char*, filename, "msresamp2_crcf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(float,        r,  0.25f, 'r', "resampling rate (output/input)", NULL);
+    liquid_argparse_add(float,        As, 60.0f, 'a', "resampling filter stop-band attenuation [dB]", NULL);
+    liquid_argparse_add(unsigned int, n,    128, 'n', "number of low-rate samples", NULL);
+    liquid_argparse_add(float,        fc, 0.45f, 'f', "filter pass-band cut-off frequency", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (n == 0) {
-        fprintf(stderr,"error: %s, number of input samples must be greater than zero\n", argv[0]);
-        exit(1);
-    } else if (r <= 0.0f) {
-        fprintf(stderr,"error: %s, resampling rate must be greater than zero\n", argv[0]);
-        exit(1);
-    } else if ( roundf(fabsf(log2f(r))) > 10 ) {
-        fprintf(stderr,"error: %s, resampling rate unreasonable\n", argv[0]);
-        exit(1);
-    }
+    if (n == 0)
+        return fprintf(stderr,"error: number of input samples must be greater than zero\n");
+    if (r <= 0.0f)
+        return fprintf(stderr,"error: resampling rate must be greater than zero\n");
+    if ( roundf(fabsf(log2f(r))) > 10 )
+        return fprintf(stderr,"error: resampling rate unreasonable\n");
 
     // determine type and compute number of stages
     unsigned int num_stages = (unsigned int) roundf(fabsf(log2f(r)));
@@ -161,8 +133,8 @@ int main(int argc, char*argv[])
     // 
     // export results
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n",filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"delay=%f;\n", delay);
@@ -227,7 +199,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"axis([-0.5 0.5 -120 20]);\n");
 
     fclose(fid);
-    printf("results written to %s\n",OUTPUT_FILENAME);
+    printf("results written to %s\n",filename);
 
     printf("done.\n");
     return 0;

@@ -6,17 +6,16 @@ char __docstr__[] = "Demonstrates accuracy of lngamma function";
 
 #include "liquid.h"
 #include "liquid.argparse.h"
-#define OUTPUT_FILENAME "math_lngamma_example.m"
 
 int main(int argc, char* argv[])
 {
-    // define variables and parse command-line arguments
+    // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "math_lngamma_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, n,    256,   'n', "number of steps", NULL);
+    liquid_argparse_add(float,    zmin, 1e-3f, 'z', "minimum value", NULL);
+    liquid_argparse_add(float,    zmax, 6.00f, 'Z', "maximum value", NULL);
     liquid_argparse_parse(argc,argv);
-
-    unsigned int n = 256;   // number of steps
-    float zmin = 1e-3f;     // minimum value
-    float zmax = 6.00f;     // maximum value
 
     unsigned int d = n/32;  // print every d values to screen
 
@@ -25,7 +24,7 @@ int main(int argc, char* argv[])
     float xmax = logf(zmax);
     float dx = (xmax-xmin)/(n-1);
 
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    FILE * fid = fopen(filename,"w");
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     unsigned int i;
@@ -51,7 +50,7 @@ int main(int argc, char* argv[])
     fprintf(fid,"  xlabel('z');\n");
     fprintf(fid,"  ylabel('error');\n");
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     return 0;
 }

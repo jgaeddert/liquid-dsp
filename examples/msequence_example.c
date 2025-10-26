@@ -11,14 +11,16 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-int main(int argc, char*argv[])
+int main(int argc, char* argv[])
 {
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
+    //liquid_argparse_add(char*, filename, "msequence_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, m, 5, 'm', "shift register length, m=2^m-1", NULL);
     liquid_argparse_parse(argc,argv);
 
     // create and initialize m-sequence
-    msequence q = msequence_create_default(5);
+    msequence q = msequence_create_default(m);
     msequence_print(q);
 
     // cycle through values and print state

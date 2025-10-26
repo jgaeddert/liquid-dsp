@@ -15,14 +15,11 @@ int main(int argc, char*argv[])
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
     liquid_argparse_add(char*, filename, "modem_example.m", 'o', "output filename", NULL);
-    liquid_argparse_add(char*, mod_scheme, "qpsk", 'm', "modulation scheme", NULL);
+    liquid_argparse_add(char*, mod_scheme, "qpsk", 'm', "modulation scheme", liquid_argparse_modem);
     liquid_argparse_parse(argc,argv);
 
-    modulation_scheme ms = liquid_getopt_str2mod(mod_scheme);
-    if (ms == LIQUID_MODEM_UNKNOWN)
-        return fprintf(stderr,"error: unknown/unsupported modulation scheme '%s'\n", optarg);
-
     // create the modem objects
+    modulation_scheme ms = liquid_getopt_str2mod(mod_scheme);
     modemcf mod   = modemcf_create(ms);
     modemcf demod = modemcf_create(ms);
 

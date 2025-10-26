@@ -9,15 +9,13 @@ char __docstr__[] =
 
 int main(int argc, char*argv[])
 {
-    // define variables and parse command-line arguments
+    // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(unsigned, n, 140, 'n', "maximum number", NULL);
     liquid_argparse_parse(argc,argv);
 
-    // maximum number
-    unsigned int n = 140;
-    unsigned int i;
-
     printf("primitive roots of prime numbers up to %u:\n", n);
+    unsigned int i;
     for (i=3; i<=n; i++) {
         if (!liquid_is_prime(i))
             continue;
