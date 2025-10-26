@@ -13,8 +13,6 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "qdsync_cccf_example.m"
-
 // synchronization callback, return 0:continue, 1:reset
 int callback(float complex * _buf,
              unsigned int    _buf_len,
@@ -31,28 +29,34 @@ int main(int argc, char*argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    unsigned int seq_len      =   80;   // number of sync symbols
-    unsigned int k            =    2;   // samples/symbol
-    unsigned int m            =    7;   // filter delay [symbols]
-    float        beta         = 0.3f;   // excess bandwidth factor
-    int          ftype        = LIQUID_FIRFILT_ARKAISER;
-    float        nstd         = 0.01f;
+    liquid_argparse_add(char*, filename, "qdsync_cccf_example.m",'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, sequence_len,   80,   'n', "number of sync symbols", NULL);
+    liquid_argparse_add(unsigned, k,               2,   'k', "samples/symbol", NULL);
+    liquid_argparse_add(unsigned, m,               7,   'm', "filter delay [symbols]", NULL);
+    liquid_argparse_add(float,    beta,         0.3f,   'b', "excess bandwidth factor", NULL);
+    liquid_argparse_add(char*,    ftype_str, "arkaiser",'t', "filter type", liquid_argparse_firfilt);
+    //liquid_argparse_add(float,    tau,          -0.3f,  'T', "fractional sample timing offset", NULL);
+    //liquid_argparse_add(float,    dphi,         -0.01f, 'F', "carrier frequency offset", NULL);
+    //liquid_argparse_add(float,    phi,           0.5f,  'P', "carrier phase offset", NULL);
+    liquid_argparse_add(float,    nstd,          0.01f, '0', "noise standard deviation", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // generate synchronization sequence (QPSK symbols)
-    float complex seq[seq_len];
+    float complex seq[sequence_len];
     unsigned int i;
-    for (i=0; i<seq_len ; i++) {
+    for (i=0; i<sequence_len ; i++) {
         seq[i] = (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 +
                  (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 * _Complex_I;
     }
 
     // open file for storing results
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all; close all; y=[];\n");
 
     // create sync object
-    qdsync_cccf q = qdsync_cccf_create_linear(seq, seq_len, ftype, k, m, beta, callback, fid);
+    int ftype = liquid_getopt_str2firfilt(ftype_str);
+    qdsync_cccf q = qdsync_cccf_create_linear(seq, sequence_len, ftype, k, m, beta, callback, fid);
     qdsync_cccf_print(q);
 
     // create interpolator
@@ -60,9 +64,9 @@ int main(int argc, char*argv[])
 
     // run signal through sync object
     float complex buf[k];
-    for (i=0; i<10*seq_len; i++) {
+    for (i=0; i<10*sequence_len; i++) {
         // generate random symbol
-        float complex s = i < seq_len ? seq[i] : (rand() & 1 ? 1.0f : -1.0f);
+        float complex s = i < sequence_len ? seq[i] : (rand() & 1 ? 1.0f : -1.0f);
 
         // interpolate symbol
         firinterp_crcf_execute(interp, s, buf);
@@ -79,15 +83,15 @@ int main(int argc, char*argv[])
     firinterp_crcf_destroy(interp);
 
     // export results
-    fprintf(fid,"seq_len = %u;\n", seq_len);
-    fprintf(fid,"figure('color','white','position',[100 100 800 800]);\n");
+    fprintf(fid,"sequence_len = %u;\n", sequence_len);
+    fprintf(fid,"figure('color','white','position',[100 100 720 720]);\n");
     fprintf(fid,"hold on;\n");
-    fprintf(fid,"  plot(real(y(1:seq_len)),      imag(y(1:seq_len)),      '.','MarkerSize',6,'Color',[0 0.2 0.5]);\n");
-    fprintf(fid,"  plot(real(y((seq_len+1):end)),imag(y((seq_len+1):end)),'.','MarkerSize',6,'Color',[0 0.5 0.2]);\n");
+    fprintf(fid,"  plot(real(y(1:sequence_len)),      imag(y(1:sequence_len)),      '.','MarkerSize',6,'Color',[0 0.2 0.5]);\n");
+    fprintf(fid,"  plot(real(y((sequence_len+1):end)),imag(y((sequence_len+1):end)),'.','MarkerSize',6,'Color',[0 0.5 0.2]);\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"legend('Preamble','Payload');\n");
     fprintf(fid,"grid on; xlabel('real'); ylabel('imag');\n");
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
     return 0;
 }

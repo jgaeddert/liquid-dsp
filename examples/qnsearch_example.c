@@ -7,16 +7,14 @@ char __docstr__[] = "Demonstrate quasi-Newton search method.";
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "qnsearch_example.m"
-
 int main(int argc, char* argv[])
 {
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "qnsearch_example.m",'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, num_parameters,    8, 'p', "dimensionality of search (minimum 2)", NULL);
+    liquid_argparse_add(unsigned, num_iterations, 4000, 'n', "number of iterations to run", NULL);
     liquid_argparse_parse(argc,argv);
-
-    unsigned int num_parameters = 8;    // dimensionality of search (minimum 2)
-    unsigned int num_iterations = 4000; // number of iterations to run
 
     float optimum_vect[num_parameters];
     unsigned int i;
@@ -26,8 +24,8 @@ int main(int argc, char* argv[])
     float optimum_utility;
 
     // open output file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
 
@@ -61,7 +59,7 @@ int main(int argc, char* argv[])
     fprintf(fid,"title('quasinewton search results');\n");
     fprintf(fid,"grid on;\n");
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     // test results, optimum at [1, 1, 1, ... 1];
 
