@@ -11,115 +11,46 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "random_histogram_example.m"
-
-
-// print usage/help message
-void usage()
-{
-    printf("random_histogram_example [options]\n");
-    printf("  -h    : print usage\n");
-    printf("  -N     : number of trials\n");
-    printf("  -n     : number of histogram bins\n");
-    printf("  -d     : distribution: {uniform, normal, exp, weib, gamma, nak, rice}\n");
-    printf("  -u     : u      UNIFORM: lower edge\n");
-    printf("  -v     : v      UNIFORM: upper edge\n");
-    printf("  -e     : eta    NORMAL: mean\n");
-    printf("  -s     : sigma  NORMAL: standard deviation\n");
-    printf("  -l     : lambda EXPONENTIAL: decay factor\n");
-    printf("  -a     : alpha  WEIBULL: shape\n");
-    printf("  -b     : beta   WEIBULL: spread\n");
-    printf("  -g     : gamma  WEIBULL: threshold\n");
-    printf("  -A     : alpha  GAMMA: shape\n");
-    printf("  -B     : beta   GAMMA: spread\n");
-    printf("  -m     : m      NAKAGAMI: shape\n");
-    printf("  -o     : omega  NAKAGAMI: spread\n");
-    printf("  -K     : K      RICE-K: spread\n");
-    printf("  -O     : omega  RICE-K: spread\n");
-}
-
-int main(int argc, char*argv[])
+int main(int argc, char* argv[])
 {
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "random_histogram_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char*, dist_str, "normal", 'd', "distribution: {uniform, normal, exp, weib, gamma, nak, rice}", NULL);
+    liquid_argparse_add(long,  num_trials, 100000, 'N', "number of trials", NULL);
+    liquid_argparse_add(unsigned, num_bins, 30,'n', "number of histogram bins", NULL);
+    liquid_argparse_add(float, u,         0.0, 'u', "UNIFORM: lower edge", NULL);
+    liquid_argparse_add(float, v,         1.0, 'v', "UNIFORM: upper edge", NULL);
+    liquid_argparse_add(float, eta,       0.0, 'e', "NORMAL: mean", NULL);
+    liquid_argparse_add(float, sigma,     1.0, 's', "NORMAL: standard deviation", NULL);
+    liquid_argparse_add(float, lambda,    3.0, 'l', "EXPONENTIAL: decay factor", NULL);
+    liquid_argparse_add(float, alphaw,    1.0, 'a', "WEIBULL: shape", NULL);
+    liquid_argparse_add(float, betaw,     1.0, 'b', "WEIBULL: spread", NULL);
+    liquid_argparse_add(float, gammaw,    1.0, 'g', "WEIBULL: threshold", NULL);
+    liquid_argparse_add(float, alphag,    4.5, 'A', "GAMMA: shape", NULL);
+    liquid_argparse_add(float, betag,     1.0, 'B', "GAMMA: spread", NULL);
+    liquid_argparse_add(float, m,         4.5, 'm', "NAKAGAMI: shape factor", NULL);
+    liquid_argparse_add(float, omeganak,  1.0, 'p', "NAKAGMAI: spread factor", NULL);
+    liquid_argparse_add(float, K,         4.0, 'K', "RICE-K: K-factor (shape)", NULL);
+    liquid_argparse_add(float, omegarice, 1.0, 'O', "RICE-K: spread factor", NULL);
     liquid_argparse_parse(argc,argv);
 
-    srand(time(NULL));
-    unsigned long int num_trials = 100000; // number of trials
-    unsigned int num_bins = 30;
-    enum {
-        UNIFORM=0,
-        NORMAL,
-        EXPONENTIAL,
-        WEIBULL,
-        GAMMA,
-        NAKAGAMIM,
-        RICEK
-    } distribution=NORMAL;
-
-    // distribution parameters
-    float u         = 0.0f; // UNIFORM: lower edge
-    float v         = 1.0f; // UNIFORM: upper edge
-    float eta       = 0.0f; // NORMAL: mean
-    float sigma     = 1.0f; // NORMAL: standard deviation
-    float lambda    = 3.0f; // EXPONENTIAL: decay factor
-    float alphaw    = 1.0f; // WEIBULL: shape
-    float betaw     = 1.0f; // WEIBULL: spread
-    float gammaw    = 1.0f; // WEIBULL: threshold
-    float alphag    = 4.5f; // GAMMA: shape
-    float betag     = 1.0f; // GAMMA: spread
-    float m         = 4.5f; // NAKAGAMI: shape factor
-    float omeganak  = 1.0f; // NAKAGMAI: spread factor
-    float K         = 4.0f; // RICE-K: K-factor (shape)
-    float omegarice = 1.0f; // RICE-K: spread factor
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hN:n:d:u:v:e:s:l:a:b:g:A:B:m:o:K:O:")) != EOF) {
-        switch (dopt) {
-        case 'h':
-            usage();
-            return 0;
-        case 'N': num_trials = atoi(optarg); break;
-        case 'n': num_bins = atoi(optarg); break;
-        case 'd':
-            if      (strcmp(optarg,"uniform")==0)   distribution = UNIFORM;
-            else if (strcmp(optarg,"normal")==0)    distribution = NORMAL;
-            else if (strcmp(optarg,"exp")==0)       distribution = EXPONENTIAL;
-            else if (strcmp(optarg,"weib")==0)      distribution = WEIBULL;
-            else if (strcmp(optarg,"gamma")==0)     distribution = GAMMA;
-            else if (strcmp(optarg,"nak")==0)       distribution = NAKAGAMIM;
-            else if (strcmp(optarg,"rice")==0)      distribution = RICEK;
-            else {
-                fprintf(stderr,"error: %s, unknown/unsupported distribution '%s'\n", argv[0], optarg);
-                exit(1);
-            }
-        case 'u': u         = atof(optarg); break;
-        case 'v': v         = atof(optarg); break;
-        case 'e': eta       = atof(optarg); break;
-        case 's': sigma     = atof(optarg); break;
-        case 'l': lambda    = atof(optarg); break;
-        case 'a': alphaw    = atof(optarg); break;
-        case 'b': betaw     = atof(optarg); break;
-        case 'g': gammaw    = atof(optarg); break;
-        case 'A': alphag    = atof(optarg); break;
-        case 'B': betag     = atof(optarg); break;
-        case 'm': m         = atof(optarg); break;
-        case 'o': omeganak  = atof(optarg); break;
-        case 'K': K         = atof(optarg); break;
-        case 'O': omegarice = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
-
     // validate input
-    if (num_bins == 0) {
-        fprintf(stderr,"error: %s, number of bins must be greater than zero\n", argv[0]);
-        exit(1);
-    } else if (num_trials == 0) {
-        fprintf(stderr,"error: %s, number of trials must be greater than zero\n", argv[0]);
-        exit(1);
+    enum { UNIFORM=0, NORMAL, EXPONENTIAL, WEIBULL, GAMMA, NAKAGAMIM, RICEK } distribution=NORMAL;
+    if      (strcmp(dist_str,"uniform")==0) distribution = UNIFORM;
+    else if (strcmp(dist_str,"normal") ==0) distribution = NORMAL;
+    else if (strcmp(dist_str,"exp")    ==0) distribution = EXPONENTIAL;
+    else if (strcmp(dist_str,"weib")   ==0) distribution = WEIBULL;
+    else if (strcmp(dist_str,"gamma")  ==0) distribution = GAMMA;
+    else if (strcmp(dist_str,"nak")    ==0) distribution = NAKAGAMIM;
+    else if (strcmp(dist_str,"rice")   ==0) distribution = RICEK;
+    else {
+        return fprintf(stderr,"error: unknown/unsupported distribution '%s'\n", dist_str);
     }
+    if (num_bins == 0)
+        return fprintf(stderr,"error: number of bins must be greater than zero\n");
+    if (num_trials == 0)
+        return fprintf(stderr,"error: number of trials must be greater than zero\n");
 
     float xmin = 0.0f;
     float xmax = 1.0f;
@@ -314,8 +245,8 @@ int main(int argc, char*argv[])
     // 
     // export results
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"xmin = %12.4e;\n", xmin);
@@ -346,7 +277,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"xlabel('x');\n");
     fprintf(fid,"ylabel('f_x(x)');\n");
     fprintf(fid,"axis([(xmin-0.1*xspan) (xmax+0.1*xspan) 0 1.1*max([h f])]);\n");
-    fprintf(fid,"legend('histogram','true PDF',1);\n");
+    fprintf(fid,"legend('histogram','true PDF');\n");
 
     // plot results
     fprintf(fid,"figure;\n");
@@ -354,12 +285,10 @@ int main(int argc, char*argv[])
     fprintf(fid,"xlabel('x');\n");
     fprintf(fid,"ylabel('f_x(x)');\n");
     //fprintf(fid,"axis([(xmin-0.1*xspan) (xmax+0.1*xspan) 0 1]);\n");
-    fprintf(fid,"legend('histogram','true CDF',0);\n");
+    fprintf(fid,"legend('histogram','true CDF');\n");
 
     fclose(fid);
-    printf("results written to %s.\n",OUTPUT_FILENAME);
-
-
+    printf("results written to %s.\n",filename);
     printf("done.\n");
     return 0;
 }
