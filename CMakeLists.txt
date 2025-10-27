@@ -33,6 +33,7 @@ cmake_policy(SET CMP0076 NEW)
 
 # main library name
 set(LIBNAME liquid)
+set(NAMESPACE liquid)
 
 # require a C99 compiler for all targets
 set(CMAKE_C_STANDARD 99)
@@ -70,13 +71,10 @@ endif()
 include (CheckTypeSize)
 check_type_size(int SIZEOF_INT LANGUAGE C)
 
-configure_file(cmake/config.h.cmake config.h)
+configure_file(cmake/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 # this file can only use the @VARIABLE@ syntax
 #configure_file(cmake/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
-
-#target_include_directories(test PRIVATE include)
-include_directories(include .)
 
 # enable testing always
 enable_testing()
@@ -272,6 +270,15 @@ add_library(utility OBJECT
 
 add_library(vector OBJECT)
 
+foreach(lib
+    agc audio buffer channel dotprod equalization fec fft filter framing math
+    matrix modem multichannel nco optim quantization random sequence utility
+    vector)
+    target_include_directories(${lib}
+        PUBLIC
+            "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include;${CMAKE_CURRENT_BINARY_DIR}>"
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+endforeach()
 
 # ---------------------------------------- SIMD extensions ----------------------------------------
 if (C_NEON_FOUND AND ENABLE_SIMD)
@@ -352,9 +359,6 @@ endif()
 
 # ---------------------------------------- main library ----------------------------------------
 
-# necessary to include this for the generated "config.h" header
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 add_library(${LIBNAME}
     src/libliquid.c
     $<TARGET_OBJECTS:agc>
@@ -378,12 +382,18 @@ add_library(${LIBNAME}
     $<TARGET_OBJECTS:sequence>
     $<TARGET_OBJECTS:utility>
     $<TARGET_OBJECTS:vector>)
+add_library(${NAMESPACE}::${LIBNAME} ALIAS ${LIBNAME})
 
 # TODO: build static library in addition to shared
 # https://alexreinking.com/blog/building-a-dual-shared-and-static-library-with-cmake.html
 
-target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
-#target_sources(${LIBNAME} PUBLIC FILE_SET HEADERS FILES include/liquid.h)
+target_include_directories(${LIBNAME}
+    PUBLIC
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include;${CMAKE_CURRENT_BINARY_DIR}>"
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+set_target_properties(${LIBNAME}
+    PROPERTIES
+        PUBLIC_HEADER include/liquid.h)
 
 if(COVERAGE)
     target_compile_options(agc          PRIVATE -coverage -O0 -g)
@@ -418,25 +428,64 @@ if (fftw3f_FOUND)
     target_link_libraries(${LIBNAME} fftw3f)
 endif()
 
-set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
+if(BUILD_SHARED_LIBS)
+  set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
+endif()
 
 # see: https://cmake.org/cmake/help/latest/command/install.html#examples
 # TODO: uninstall?
-install(TARGETS
-          ${LIBNAME}
-        RUNTIME           # Following options apply to runtime artifacts.
-          COMPONENT Runtime
-        LIBRARY           # Following options apply to library artifacts.
-          COMPONENT Runtime
-          NAMELINK_COMPONENT Development
-        ARCHIVE           # Following options apply to archive artifacts.
-          COMPONENT Development
-          DESTINATION lib/static
-        #FILE_SET HEADERS  # Following options apply to file set HEADERS.
-          #COMPONENT Development
-        )
+install(TARGETS ${LIBNAME}
+    EXPORT
+        ${LIBNAME}Targets
+    RUNTIME
+        COMPONENT Runtime
+        DESTINATION bin
+    LIBRARY
+        COMPONENT Runtime
+        NAMELINK_COMPONENT Development
+        DESTINATION lib
+    ARCHIVE
+        COMPONENT Runtime
+        DESTINATION lib
+    PUBLIC_HEADER
+        COMPONENT Development
+        DESTINATION include/liquid
+)
 
-install(FILES include/liquid.h DESTINATION include/liquid)
+include(GNUInstallDirs)
+
+export(EXPORT ${LIBNAME}Targets
+    FILE ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME}Targets.cmake
+    NAMESPACE ${NAMESPACE}::
+)
+
+install(EXPORT ${LIBNAME}Targets
+    FILE ${LIBNAME}Targets.cmake
+    NAMESPACE ${NAMESPACE}::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${LIBNAME}
+)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME}ConfigVersion.cmake
+    COMPATIBILITY ExactVersion
+)
+
+set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/${LIBNAME})
+configure_package_config_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME}Config.cmake
+    INSTALL_DESTINATION
+        ${CMAKE_INSTALL_LIBDIR}/cmake/${LIBNAME}
+    PATH_VARS
+        INCLUDE_INSTALL_DIR
+)
+
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME}Config.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME}ConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${LIBNAME}
+)
 
 # ---------------------------------------- examples ----------------------------------------
 
@@ -756,7 +805,7 @@ if(BUILD_AUTOTESTS)
         ${AUTOTESTS}
         ${AUTOTEST_EXTRA}
         )
-    target_include_directories(xautotest PRIVATE ${INCLUDE})
+    target_include_directories(xautotest PRIVATE include .)
 
     target_link_libraries(xautotest ${LIBNAME})
     if(COVERAGE)
@@ -874,7 +923,7 @@ if(BUILD_BENCHMARKS)
         ${BENCHMARKS}
         ${BENCHMARKS_EXTRA}
         )
-    target_include_directories(benchmark PRIVATE ${INCLUDE})
+    target_include_directories(benchmark PRIVATE include .)
     target_link_libraries(benchmark ${LIBNAME})
 endif(BUILD_BENCHMARKS)
 
