@@ -355,7 +355,7 @@ endif()
 # necessary to include this for the generated "config.h" header
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(${LIBNAME} SHARED
+add_library(${LIBNAME}
     src/libliquid.c
     $<TARGET_OBJECTS:agc>
     $<TARGET_OBJECTS:audio>
