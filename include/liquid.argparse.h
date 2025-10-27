@@ -74,6 +74,8 @@ struct liquid_arg_s
         TYPE_BOOL,
         TYPE_INT,
         TYPE_UINT,
+        TYPE_LONG,
+        TYPE_ULONG,
         TYPE_FLOAT,
         TYPE_DOUBLE,
         TYPE_CHAR,
@@ -96,13 +98,15 @@ void liquid_arg_print(struct liquid_arg_s * _arg)
     if (_arg->type != TYPE_BOOL)
         printf("<%s:", _arg->varname); // requires argument
     switch (_arg->type) {
-    case TYPE_BOOL:   printf("%s", *(bool*)    (_arg->ref) ? "true": "false" ); break;
-    case TYPE_INT:    printf("%d", *(int*)     (_arg->ref)); break;
-    case TYPE_UINT:   printf("%u", *(unsigned*)(_arg->ref)); break;
-    case TYPE_FLOAT:  printf("%g", *(float*)   (_arg->ref)); break;
-    case TYPE_DOUBLE: printf("%g", *(double*)  (_arg->ref)); break;
-    case TYPE_CHAR:   printf("%c", *(char*)    (_arg->ref)); break;
-    case TYPE_STRING: printf("%s", *(char**)   (_arg->ref)); break;
+    case TYPE_BOOL:   printf("%s", *(bool*)         (_arg->ref) ? "true": "false" ); break;
+    case TYPE_INT:    printf("%d", *(int*)          (_arg->ref)); break;
+    case TYPE_UINT:   printf("%u", *(unsigned*)     (_arg->ref)); break;
+    case TYPE_LONG:   printf("%ld",*(long*)         (_arg->ref)); break;
+    case TYPE_ULONG:  printf("%lu",*(unsigned long*)(_arg->ref)); break;
+    case TYPE_FLOAT:  printf("%g", *(float*)        (_arg->ref)); break;
+    case TYPE_DOUBLE: printf("%g", *(double*)       (_arg->ref)); break;
+    case TYPE_CHAR:   printf("%c", *(char*)         (_arg->ref)); break;
+    case TYPE_STRING: printf("%s", *(char**)        (_arg->ref)); break;
     default: printf("?");
     }
     if (_arg->type != TYPE_BOOL)
@@ -117,13 +121,15 @@ int liquid_arg_set(struct liquid_arg_s * _arg, const char * _optarg)
         return _arg->callback(_optarg, _arg->ref);
 
     switch (_arg->type) {
-    case TYPE_BOOL:   *(bool*)    (_arg->ref) = true;/* enable */break;
-    case TYPE_INT:    *(int*)     (_arg->ref) = atoi(_optarg);   break;
-    case TYPE_UINT:   *(unsigned*)(_arg->ref) = atoi(_optarg);   break;
-    case TYPE_FLOAT:  *(float*)   (_arg->ref) = atof(_optarg);   break;
-    case TYPE_DOUBLE: *(double*)  (_arg->ref) = atof(_optarg);   break;
-    case TYPE_CHAR:   *(char*)    (_arg->ref) = _optarg[0];      break;
-    case TYPE_STRING: *(char**)   (_arg->ref) = (char*)_optarg;  break;
+    case TYPE_BOOL:   *(bool*)         (_arg->ref) = true;/* enable */break;
+    case TYPE_INT:    *(int*)          (_arg->ref) = atoi(_optarg);   break;
+    case TYPE_UINT:   *(unsigned*)     (_arg->ref) = atoi(_optarg);   break;
+    case TYPE_LONG:   *(long*)         (_arg->ref) = atol(_optarg);   break;
+    case TYPE_ULONG:  *(unsigned long*)(_arg->ref) = atol(_optarg);   break;
+    case TYPE_FLOAT:  *(float*)        (_arg->ref) = atof(_optarg);   break;
+    case TYPE_DOUBLE: *(double*)       (_arg->ref) = atof(_optarg);   break;
+    case TYPE_CHAR:   *(char*)         (_arg->ref) = _optarg[0];      break;
+    case TYPE_STRING: *(char**)        (_arg->ref) = (char*)_optarg;  break;
     default:
         fprintf(stderr,"liquid_argparse_set('%s'), could not set from input '%s'\n",
             _arg->varname, _optarg);
@@ -186,6 +192,10 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
         _q->args[_q->num_args].type = TYPE_INT;
     else if (strcmp(_type,"unsigned int")==0 || strcmp(_type,"unsigned")==0)
         _q->args[_q->num_args].type = TYPE_UINT;
+    else if (strcmp(_type,"long")==0 || strcmp(_type,"long int")==0)
+        _q->args[_q->num_args].type = TYPE_LONG;
+    else if (strcmp(_type,"unsigned long")==0 || strcmp(_type,"unsigned long int")==0)
+        _q->args[_q->num_args].type = TYPE_ULONG;
     else if (strcmp(_type,"float")==0)
         _q->args[_q->num_args].type = TYPE_FLOAT;
     else if (strcmp(_type,"double")==0)
