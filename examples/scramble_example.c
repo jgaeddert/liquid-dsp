@@ -23,17 +23,15 @@ int main(int argc, char* argv[])
 {
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(unsigned, n, 32, 'm', "number of data bytes", NULL);
     liquid_argparse_parse(argc,argv);
-
-    unsigned int n=32;  // number of data bytes
 
     unsigned char x[n]; // input data
     unsigned char y[n]; // scrambled data
     unsigned char z[n]; // unscrambled data
 
-    unsigned int i;
-
     // generate data
+    unsigned int i;
     for (i=0; i<n; i++)
         x[i] = rand() % 2 ? 0x0f : 0xc8;
 

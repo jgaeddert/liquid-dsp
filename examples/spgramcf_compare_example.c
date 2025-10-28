@@ -7,18 +7,16 @@ char __docstr__[] =
 
 #include "liquid.h"
 #include "liquid.argparse.h"
-#define OUTPUT_FILENAME "spgramcf_compare_example.m"
 
 int main(int argc, char* argv[])
 {
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "spgramcf_compare_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, nfft,           1024, 'n', "spectral periodogram FFT size", NULL);
+    liquid_argparse_add(float,    alpha,          0.05, 'a', "integration bandwidth", NULL);
+    liquid_argparse_add(int,      num_samples, 2000000, 'N', "number of samples", NULL);
     liquid_argparse_parse(argc,argv);
-
-    // spectral periodogram options
-    unsigned int nfft        = 1024;    // spectral periodogram FFT size
-    float        alpha       = 0.05f;   // integration bandwidth
-    int          num_samples = 2e6;     // number of samples
 
     // create spectral periodogram
     spgramcf q0 = spgramcf_create_default(nfft);    // infinite integration
@@ -66,8 +64,8 @@ int main(int argc, char* argv[])
     spgramcf_destroy(q1);
 
     // export output file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"nfft = %u;\n", nfft);
@@ -86,6 +84,6 @@ int main(int argc, char* argv[])
     fprintf(fid,"axis([-0.5 0.5 -80 20]);\n");
     fprintf(fid,"legend('infinite integration','alpha=%.3f');\n", alpha);
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
     return 0;
 }

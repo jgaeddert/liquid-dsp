@@ -16,75 +16,47 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "symtrack_cccf_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char* argv[])
 {
-    printf("symtrack_cccf_example [options]\n");
-    printf("  h     : print this help file\n");
-    printf("  k     : filter samples/symbol,   default: 2\n");
-    printf("  m     : filter delay (symbols),  default: 3\n");
-    printf("  b     : filter excess bandwidth, default: 0.5\n");
-    printf("  s     : signal-to-noise ratio,   default: 30 dB\n");
-    printf("  w     : timing pll bandwidth,    default: 0.02\n");
-    printf("  n     : number of symbols,       default: 4000\n");
-}
-
-int main(int argc, char*argv[])
-{
-    // define variables and parse command-line options
+    // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    int          ftype       = LIQUID_FIRFILT_ARKAISER;
-    int          ms          = LIQUID_MODEM_QAM16;
-    unsigned int k           = 2;       // samples per symbol
-    unsigned int m           = 7;       // filter delay (symbols)
-    float        beta        = 0.20f;   // filter excess bandwidth factor
-    unsigned int num_symbols = 4000;    // number of data symbols
-    unsigned int hc_len      =   4;     // channel filter length
-    float        noise_floor = -60.0f;  // noise floor [dB]
-    float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]
-    float        bandwidth   =  0.10f;  // loop filter bandwidth
-    float        dphi        =  0.02f;  // carrier frequency offset [radians/sample]
-    float        phi         =  2.1f;   // carrier phase offset [radians]
+    liquid_argparse_add(char*, filename, "symtrack_cccf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char*,    ftype_str, "arkaiser",'f',"filter type", liquid_argparse_firfilt);
+    liquid_argparse_add(char*,    mod_str,   "qpsk",'M', "modulation scheme", liquid_argparse_modem);
+    liquid_argparse_add(unsigned, k,             2, 'k', "filter samples per symbol (input)", NULL);
+    liquid_argparse_add(unsigned, m,             9, 'm', "filter semi-length", NULL);
+    liquid_argparse_add(float,    beta,        0.3, 'b', "filter excess bandwidth factor", NULL);
+    liquid_argparse_add(unsigned, num_symbols,4000, 'N', "number of data symbols to simulate", NULL);
+    liquid_argparse_add(unsigned, hc_len,        4, 'H', "channel filter length", NULL);
+    liquid_argparse_add(float,    noise_floor, -80, '0', "noise floor [dB]", NULL);
+    liquid_argparse_add(float,    SNRdB,        30, 's', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_add(float,    bandwidth,  0.10, 'w', "loop filter bandwidth", NULL);
+    liquid_argparse_add(float,    dphi,      0.010, 'F', "frequency offset [radians/sample]", NULL);
+    liquid_argparse_add(float,    phi,       0.800, 'P', "phase offset [radians]", NULL);
+    liquid_argparse_add(unsigned, nfft,       2400, 'n', "FFT size", NULL);
+    liquid_argparse_add(unsigned, num_samples,80000,'S',"number of samples to simulate", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    unsigned int nfft        =   2400;  // spectral periodogram FFT size
-    unsigned int num_samples = 200000;  // number of samples
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hk:m:b:s:w:n:")) != EOF) {
-        switch (dopt) {
-        case 'h':   usage();                        return 0;
-        case 'k':   k           = atoi(optarg);     break;
-        case 'm':   m           = atoi(optarg);     break;
-        case 'b':   beta        = atof(optarg);     break;
-        case 's':   SNRdB       = atof(optarg);     break;
-        case 'w':   bandwidth   = atof(optarg);     break;
-        case 'n':   num_symbols = atoi(optarg);     break;
-        default:
-            exit(1);
-        }
-    }
+    // set filter types
+    int ftype_tx = liquid_getopt_str2firfilt(ftype_str);
+    int ftype_rx = liquid_getopt_str2firfilt(ftype_str);
+    // ensure appropriate GMSK filter pairs are used if either tx or rx is specified
+    if (strcmp(ftype_str,"gmsktx")==0)
+        ftype_rx = LIQUID_FIRFILT_GMSKRX;
+    if (strcmp(ftype_str,"gmskrx")==0)
+        ftype_tx = LIQUID_FIRFILT_GMSKTX;
 
     // validate input
-    if (k < 2) {
-        fprintf(stderr,"error: k (samples/symbol) must be greater than 1\n");
-        exit(1);
-    } else if (m < 1) {
+    if (k < 2)
+        fprintf(stderr,"error: k (samples/symbol) must be at least 2\n");
+    if (m < 1)
         fprintf(stderr,"error: m (filter delay) must be greater than 0\n");
-        exit(1);
-    } else if (beta <= 0.0f || beta > 1.0f) {
+    if (beta <= 0.0f || beta > 1.0f)
         fprintf(stderr,"error: beta (excess bandwidth factor) must be in (0,1]\n");
-        exit(1);
-    } else if (bandwidth <= 0.0f) {
+    if (bandwidth <= 0.0f)
         fprintf(stderr,"error: timing PLL bandwidth must be greater than 0\n");
-        exit(1);
-    } else if (num_symbols == 0) {
+    if (num_symbols == 0)
         fprintf(stderr,"error: number of symbols must be greater than 0\n");
-        exit(1);
-    }
-
-    unsigned int i;
 
     // buffers
     unsigned int    buf_len = 800;      // buffer size
@@ -95,7 +67,9 @@ int main(int argc, char*argv[])
     windowcf sym_buf = windowcf_create(buf_len);
 
     // create stream generator
-    symstreamcf gen = symstreamcf_create_linear(ftype,k,m,beta,ms);
+    int         ftype = liquid_getopt_str2firfilt(ftype_str);
+    int         ms    = liquid_getopt_str2mod(mod_str);
+    symstreamcf gen   = symstreamcf_create_linear(ftype,k,m,beta,ms);
 
     // create channel emulator and add impairments
     channel_cccf channel = channel_cccf_create();
@@ -147,8 +121,8 @@ int main(int argc, char*argv[])
     // export output file
     //
 
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s, auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s, auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
 
@@ -156,6 +130,7 @@ int main(int argc, char*argv[])
     float complex * rc;
     windowcf_read(sym_buf, &rc);
     fprintf(fid,"syms = zeros(1,%u);\n", buf_len);
+    unsigned int i;
     for (i=0; i<buf_len; i++)
         fprintf(fid,"syms(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
@@ -185,7 +160,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  ylabel('Power Spectral Density [dB]');\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     // destroy objects
     symstreamcf_destroy  (gen);

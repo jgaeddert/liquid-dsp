@@ -7,36 +7,31 @@ char __docstr__[] = "Demonstrate symstreamcf object.";
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "symstreamcf_example.m"
-
 int main(int argc, char* argv[])
 {
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "symstreamcf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char*, ftype_str, "arkaiser", 'f', "filter type", liquid_argparse_firfilt);
+    liquid_argparse_add(unsigned, k,         4,  'k', "interpolation factor", NULL);
+    liquid_argparse_add(unsigned, m,         9,  'm', "filter semi-length", NULL);
+    liquid_argparse_add(float,    beta,    0.3,  'b', "filter excess bandwidth factor", NULL);
+    liquid_argparse_add(char*,    mod_str,"qpsk",'M', "modulation scheme", liquid_argparse_modem);
+    liquid_argparse_add(unsigned, nfft,   2400,  'n', "FFT size", NULL);
+    liquid_argparse_add(unsigned, num_samples, 80000,'N', "number of samples to simulate", NULL);
     liquid_argparse_parse(argc,argv);
 
-    // symstream parameters
-    int          ftype       = LIQUID_FIRFILT_ARKAISER;
-    unsigned int k           =     4;
-    unsigned int m           =     9;
-    float        beta        = 0.30f;
-    int          ms          = LIQUID_MODEM_QPSK;
-
-    // spectral periodogram options
-    unsigned int nfft        =   2400;  // spectral periodogram FFT size
-    unsigned int num_samples =  80000;  // number of samples
-
-    unsigned int i;
+    // create stream generator
+    int ftype = liquid_getopt_str2firfilt(ftype_str);
+    int ms    = liquid_getopt_str2mod(mod_str);
+    symstreamcf gen = symstreamcf_create_linear(ftype,k,m,beta,ms);
+    symstreamcf_print(gen);
 
     // create spectral periodogram
     spgramcf periodogram = spgramcf_create_default(nfft);
 
     unsigned int buf_len = 1024;
     float complex buf[buf_len];
-
-    // create stream generator
-    symstreamcf gen = symstreamcf_create_linear(ftype,k,m,beta,ms);
-    symstreamcf_print(gen);
 
     unsigned int total_samples = 0;
     while (total_samples < num_samples) {
@@ -59,17 +54,15 @@ int main(int argc, char* argv[])
     symstreamcf_destroy(gen);
     spgramcf_destroy(periodogram);
 
-    // 
     // export output file
-    //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"nfft = %u;\n", nfft);
     fprintf(fid,"f    = [0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"H    = zeros(1,nfft);\n");
-    
+    unsigned int i;
     for (i=0; i<nfft; i++)
         fprintf(fid,"H(%6u) = %12.4e;\n", i+1, psd[i]);
 
@@ -81,9 +74,7 @@ int main(int argc, char* argv[])
     fprintf(fid,"axis([-0.5 0.5 -120 20]);\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
-
-    printf("done.\n");
+    printf("results written to %s.\n", filename);
     return 0;
 }
 

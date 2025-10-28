@@ -7,18 +7,15 @@ char __docstr__[] = "Spectrum waterfall example.";
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "spwaterfallcf_waterfall_example.gnu"
-
 int main(int argc, char* argv[])
 {
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filebase, "spwaterfallcf_waterfall_example", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, nfft,           1024, 'n', "spectral periodogram FFT size", NULL);
+    liquid_argparse_add(unsigned, time,           1000, 't', "minimum time buffer", NULL);
+    liquid_argparse_add(unsigned, num_samples, 2000000, 'N', "number of samples", NULL);
     liquid_argparse_parse(argc,argv);
-
-    // spectral periodogram options
-    unsigned int nfft        = 1800;    // spectral periodogram FFT size
-    unsigned int time        = 1000;    // minimum time buffer
-    unsigned int num_samples =  2e6;    // number of samples
 
     // create spectral waterfall object
     spwaterfallcf periodogram = spwaterfallcf_create_default(nfft,time);
@@ -78,7 +75,7 @@ int main(int argc, char* argv[])
     spwaterfallcf_set_freq    (periodogram,750e6);
     spwaterfallcf_set_dims    (periodogram,1200, 800);
     spwaterfallcf_set_commands(periodogram,"set cbrange [-45:25]; set title 'waterfall'");
-    spwaterfallcf_export(periodogram,"spwaterfallcf_example");
+    spwaterfallcf_export(periodogram,filebase);
 
     // destroy objects
     msourcecf_destroy(gen);
