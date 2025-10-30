@@ -387,10 +387,22 @@ add_library(${NAMESPACE}::${LIBNAME} ALIAS ${LIBNAME})
 # TODO: build static library in addition to shared
 # https://alexreinking.com/blog/building-a-dual-shared-and-static-library-with-cmake.html
 
+include(GNUInstallDirs)
+
 target_include_directories(${LIBNAME}
     PUBLIC
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include;${CMAKE_CURRENT_BINARY_DIR}>"
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+configure_file(include/liquid.h ${CMAKE_CURRENT_BINARY_DIR}/liquid/liquid.h COPYONLY)
+target_sources(${LIBNAME}
+    PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/liquid.h>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/liquid/liquid.h>
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/liquid/liquid.h>)
+# Use set_target_properties() instead of defining a FILE_SET in
+# target_sources() because the feature was introduced in CMake 3.23, and is new
+# enough that various distros (e.g. Ubuntu 22.04) ship older versions.
 set_target_properties(${LIBNAME}
     PROPERTIES
         PUBLIC_HEADER include/liquid.h)
@@ -449,10 +461,8 @@ install(TARGETS ${LIBNAME}
         DESTINATION lib
     PUBLIC_HEADER
         COMPONENT Development
-        DESTINATION include/liquid
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/liquid
 )
-
-include(GNUInstallDirs)
 
 export(EXPORT ${LIBNAME}Targets
     FILE ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME}Targets.cmake
@@ -468,7 +478,7 @@ install(EXPORT ${LIBNAME}Targets
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
     ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME}ConfigVersion.cmake
-    COMPATIBILITY ExactVersion
+    COMPATIBILITY SameMinorVersion
 )
 
 set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/${LIBNAME})
