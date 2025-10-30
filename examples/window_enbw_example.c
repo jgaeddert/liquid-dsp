@@ -5,15 +5,16 @@ char __docstr__[] = "Compute equivalent noise bandwidth of window functions.";
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "window_enbw_example.m"
-
-int main() {
-    // define variables and parse command-line options
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
-    unsigned int m    = 20;     // window semi-length
-    float        beta = 10.0f;  // Kaiser beta factor
-    unsigned int nfft = 1200;   // transform size
-    float        th   =  0.95f; // threshold for spectral energy
+    liquid_argparse_add(char*, filename, "window_enbw_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, m,       20, 'm', "window semi-length", NULL);
+    liquid_argparse_add(float,    beta,    10, 'b', "Kaiser beta factor", NULL);
+    liquid_argparse_add(unsigned, nfft,  1200, 'n', "transform size", NULL);
+    liquid_argparse_add(float,    th,    0.95, 't', "threshold for spectral energy", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // derived values
     unsigned int i;
@@ -57,8 +58,8 @@ int main() {
     float enbw = (float)i_threshold / (float)nfft;
     printf("equivalent noise bandwidth: %.6f Fs\n", enbw);
 
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"m=%u;\n",m);
@@ -98,7 +99,7 @@ int main() {
     fprintf(fid,"  axis([0 0.1 -0.1 1.1]);\n");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;
