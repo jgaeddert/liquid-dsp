@@ -1,5 +1,5 @@
 # cmake build file for liquid-dsp
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.22)
 
 # parse version number from include/liquid.h
 include(cmake/version.cmake)
@@ -8,11 +8,15 @@ get_liquid_version("${CMAKE_CURRENT_SOURCE_DIR}/include/liquid.h" LIQUID_VERSION
 # project definition
 project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
 
-# ---------------------------------------- options ----------------------------------------
+include(CMakeDependentOption)
 
+# ---------------------------------------- options ----------------------------------------
+option(liquid_SHARED_LIBS "Build as a shared library"           ON)
 option(BUILD_EXAMPLES   "Set to ON to build examples"           ON)
-option(BUILD_AUTOTESTS  "Set to ON to build autotest program"   ON)
-option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  ON)
+cmake_dependent_option(BUILD_AUTOTESTS "Set to ON to build autotest program" ON "NOT CMAKE_CROSSCOMPILING" OFF)
+#option(BUILD_AUTOTESTS  "Set to ON to build autotest program"   OFF)
+cmake_dependent_option(BUILD_BENCHMARKS "Set to ON to build benchmark program" ON "NOT CMAKE_CROSSCOMPILING" OFF)
+#option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  OFF)
 option(ENABLE_SIMD      "Set to ON to build SIMD extensions"    ON)
 option(FIND_SIMD        "Set to ON to find SIMD extensions"     ON)
 option(FIND_FFTW        "Set to ON to find FFTW library"        ON)
@@ -20,6 +24,10 @@ option(BUILD_SANDBOX    "Set to ON to build sandbox programs"   OFF)
 option(BUILD_DOC        "Set to ON to build documentation"      OFF)
 option(COVERAGE         "Set to ON to build with code coverage" OFF)
 #option(PROFILE        "Set to ON to build with profiling"     OFF)
+
+if (DEFINED liquid_SHARED_LIBS)
+    set(BUILD_SHARED_LIBS "${liquid_SHARED_LIBS}")
+endif()
 
 if(COVERAGE)
     set(CMAKE_BUILD_TYPE "Debug")
@@ -355,7 +363,7 @@ endif()
 # necessary to include this for the generated "config.h" header
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(${LIBNAME} SHARED
+add_library(${LIBNAME}
     src/libliquid.c
     $<TARGET_OBJECTS:agc>
     $<TARGET_OBJECTS:audio>
@@ -379,10 +387,15 @@ add_library(${LIBNAME} SHARED
     $<TARGET_OBJECTS:utility>
     $<TARGET_OBJECTS:vector>)
 
+add_library("${LIBNAME}::${LIBNAME}" ALIAS "${LIBNAME}")
+
 # TODO: build static library in addition to shared
 # https://alexreinking.com/blog/building-a-dual-shared-and-static-library-with-cmake.html
 
-target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
+#target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
+target_include_directories(
+    ${LIBNAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
+
 #target_sources(${LIBNAME} PUBLIC FILE_SET HEADERS FILES include/liquid.h)
 
 if(COVERAGE)
@@ -413,7 +426,7 @@ if(COVERAGE)
 endif(COVERAGE)
 
 
-target_link_libraries(${LIBNAME} c m)
+target_link_libraries(${LIBNAME} m)
 if (fftw3f_FOUND)
     target_link_libraries(${LIBNAME} fftw3f)
 endif()
