@@ -1,12 +1,18 @@
-// test sparse matrix operations
+char __docstr__[] = "Test sparse matrix operations.";
+
 #include <stdlib.h>
 #include <stdio.h>
-#include <getopt.h>
 #include <math.h>
+
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
 #if 0
     unsigned int M = 12;
     unsigned int N = 16;

@@ -107,6 +107,7 @@ set(EXAMPLES
     kaiser_window_example
     kbd_window_example
     libliquid_example
+    liquid_argparse_example
     lpc_example
     matched_filter_example
     math_lngamma_example

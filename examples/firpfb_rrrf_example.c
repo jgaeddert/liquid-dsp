@@ -1,14 +1,20 @@
-// firpf_rrrf_example.c - demonstrate poly-phase filter-bank as interpolator
+char __docstr__[] =
+"This example demonstrates using a poly-phase filter-bank as interpolator";
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "liquid.h"
-#define OUTPUT_FILENAME "firpfb_rrrf_example.m"
+#include "liquid.argparse.h"
 
-int main(int argc, char*argv[]) {
-    // options
-    unsigned int M           = 16;  // interpolation factor
-    unsigned int m           =  4;  // filter delay (input samples)
-    unsigned int num_samples = 40;  // number of input samples to generate
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename, "firpfb_rrrf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, M,           16, 'M', "interpolation factor", NULL);
+    liquid_argparse_add(unsigned, m,            4, 'm', "filter delay (input samples)", NULL);
+    liquid_argparse_add(unsigned, num_samples, 40, 'n', "number of samples to generate", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // create object
     firpfb_rrrf pfb = firpfb_rrrf_create_default(M, m);
@@ -34,8 +40,8 @@ int main(int argc, char*argv[]) {
     firpfb_rrrf_destroy(pfb);
 
     // output to file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all; close all;\n\n");
     fprintf(fid,"M = %u; m = %u; num_samples = %u\n", M, m, num_samples);
     fprintf(fid,"x = zeros(1,  num_samples);\n");
@@ -51,6 +57,6 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"ylabel('Signal');\n");
     fprintf(fid,"legend('Output','Input');\n");
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
     return 0;
 }

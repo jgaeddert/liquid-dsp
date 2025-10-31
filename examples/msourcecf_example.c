@@ -1,17 +1,13 @@
-//
-// msourcecf_example.c
-//
-// This example demonstrates generating multiple signal sources simultaneously
-// for testing using the msource (multi-source) family of objects.
-//
+char __docstr__[] =
+"This example demonstrates generating multiple signal sources simultaneously"
+" for testing using the msource (multi-source) family of objects.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "msourcecf_example.m"
+#include "liquid.argparse.h"
 
 // user-defined callback; generate tones
 int callback(void *          _userdata,
@@ -27,17 +23,21 @@ int callback(void *          _userdata,
     return 0;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
-    // msource parameters
-    int          ms     = LIQUID_MODEM_QPSK;    // linear modulation scheme
-    unsigned int m      =    12;                // modulation filter semi-length
-    float        beta   = 0.30f;                // modulation filter excess bandwidth factor
-    float        bt     = 0.35f;                // GMSK filter bandwidth-time factor
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "msourcecf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char*,    mod_str,   "qpsk", 'M', "linear modulation scheme", liquid_argparse_modem);
+    liquid_argparse_add(unsigned, m,             12, 'm', "modulation filter semi-length", NULL);
+    liquid_argparse_add(float,    beta,       0.30f, 'b', "modulation filter excess bandwidth factor", NULL);
+    liquid_argparse_add(float,    bt,         0.35f, 'B', "GMSK filter bandwidth-time factor", NULL);
+    liquid_argparse_add(unsigned, nfft,        2400, 'n', "spectral periodogram FFT size", NULL);
+    liquid_argparse_add(unsigned, num_samples,48000, 'N', "number of samples", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    // spectral periodogram options
-    unsigned int nfft        =   2400;  // spectral periodogram FFT size
-    unsigned int num_samples =  48000;  // number of samples
+    // msource parameters
+    int ms = liquid_getopt_str2mod(mod_str);
 
     // create spectral periodogram
     spgramcf periodogram = spgramcf_create_default(nfft);
@@ -81,11 +81,9 @@ int main()
     msourcecf_destroy(gen);
     spgramcf_destroy(periodogram);
 
-    // 
     // export output file
-    //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"nfft = %u;\n", nfft);
@@ -105,7 +103,7 @@ int main()
     fprintf(fid,"axis([-0.5 0.5 -80 40]);\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
     return 0;
 }
 

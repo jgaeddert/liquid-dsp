@@ -1,13 +1,10 @@
-//
-// firpfbch_crcf_example.c
-//
-// Finite impulse response (FIR) polyphase filter bank (PFB)
-// channelizer example.  This example demonstrates the functionality
-// of the polyphase filter bank channelizer and how its output
-// is mathematically equivalent to a series of parallel down-
-// converters (mixers/decimators). Both the synthesis and analysis
-// filter banks are presented.
-//
+char __docstr__[] =
+"Finite impulse response (FIR) polyphase filter bank (PFB)"
+" channelizer example.  This example demonstrates the functionality"
+" of the polyphase filter bank channelizer and how its output"
+" is mathematically equivalent to a series of parallel down-converts"
+" (mixers/decimators). Both the synthesis and analysis"
+" filter banks are presented.";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,14 +12,17 @@
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "firpfbch_crcf_example.m"
-
-int main() {
-    // options
-    unsigned int num_channels=4;    // number of channels
-    unsigned int p=3;               // filter length (symbols)
-    unsigned int num_symbols=6;     // number of symbols
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename, "firpfbch_crcf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, num_channels, 4, 'M', "number of channels", NULL);
+    liquid_argparse_add(unsigned, p,            3, 'p', "filter length [symbols]", NULL);
+    liquid_argparse_add(unsigned, num_symbols,  6, 'n', "number of frames", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // derived values
     unsigned int num_samples = num_channels * num_symbols;
@@ -233,8 +233,8 @@ int main() {
     // EXPORT DATA TO FILE
     //
 
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"num_channels=%u;\n", num_channels);
@@ -291,7 +291,7 @@ int main() {
 
 
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     printf("done.\n");
     return 0;

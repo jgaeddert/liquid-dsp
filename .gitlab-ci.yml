@@ -21,8 +21,8 @@ build:
     - cd build
     - cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=ON -DBUILD_EXAMPLES=ON -DBUILD_SANDBOX=ON -DCOVERAGE=OFF ..
     - make -j4
-    - ./benchmark -q -o benchmark.json -f
-    - ./xautotest -q -o autotest.json
+    - ./benchmark -o benchmark.json -f -q
+    - ./xautotest -o autotest.json
     #- make check-doc # compile and run documenation checks (e.g. example code in README)
     - make install
     - ldconfig
@@ -42,7 +42,7 @@ coverage:
     - cd build
     - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=ON -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_SANDBOX=OFF ..
     - make -j4
-    - ./xautotest -q -o autotest.json
+    - ./xautotest -o autotest.json
     - cd ..
     - virtualenv coverage
     - source coverage/bin/activate

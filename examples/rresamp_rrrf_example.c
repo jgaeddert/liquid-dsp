@@ -1,75 +1,43 @@
-//
-// rresamp_rrrf_example.c
-//
-// Demonstration of rresamp object whereby an input signal
-// is resampled at a rational rate Q/P.
-//
+char __docstr__[] =
+"Demonstration of rresamp object whereby an input signal"
+" is resampled at a rational rate Q/P.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "rresamp_rrrf_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char* argv[])
 {
-    printf("Usage: %s [OPTION]\n", __FILE__);
-    printf("Resample a signal at a rate P/Q\n");
-    printf("  -h            : print help\n");
-    printf("  -P <decim>    : decimation (output) rate,          default: 3\n");
-    printf("  -Q <interp>   : interpolation (input) rate,        default: 5\n");
-    printf("  -m <len>      : filter semi-length (delay),        default: 12\n");
-    printf("  -w <bandwidth>: filter bandwidth,                  default: 0.5f\n");
-    printf("  -s <atten>    : filter stop-band attenuation [dB], default: 60\n");
-}
-
-int main(int argc, char*argv[])
-{
-    // options
-    unsigned int    P   = 3;        // output rate (interpolation factor)
-    unsigned int    Q   = 5;        // input rate (decimation factor)
-    unsigned int    m   = 12;       // resampling filter semi-length (filter delay)
-    float           bw  = 0.5f;     // resampling filter bandwidth
-    float           As  = 60.0f;    // resampling filter stop-band attenuation [dB]
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hP:Q:m:s:w:")) != EOF) {
-        switch (dopt) {
-        case 'h':   usage();            return 0;
-        case 'P':   P    = atoi(optarg); break;
-        case 'Q':   Q    = atoi(optarg); break;
-        case 'm':   m    = atoi(optarg); break;
-        case 'w':   bw   = atof(optarg); break;
-        case 's':   As   = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "rresamp_rrrf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, interp,   5, 'i', "output rate (interpolation factor)", NULL);
+    liquid_argparse_add(unsigned, decim,    4, 'd', "input rate (decimation factor)", NULL);
+    liquid_argparse_add(unsigned, m,       15, 'm', "filter semi-length (actual length: 4*m+1)", NULL);
+    liquid_argparse_add(float,    bw,     0.5, 'w', "resampling filter bandwidth", NULL);
+    liquid_argparse_add(float,    As,      60, 'a', "stop-band attenuation [dB]", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (P == 0 || P > 1000) {
-        fprintf(stderr,"error: %s, input rate P must be in [1,1000]\n", argv[0]);
-        exit(1);
-    } else if (Q == 0 || Q > 1000) {
-        fprintf(stderr,"error: %s, output rate Q must be in [1,1000]\n", argv[0]);
-        exit(1);
-    }
+    if (interp == 0 || interp > 1000)
+        return fprintf(stderr,"error: interpolation rate must be in [1,1000]\n");
+    if (decim == 0 || decim > 1000)
+        return fprintf(stderr,"error: decimation rate must be in [1,1000]\n");
 
     // create resampler object
-    rresamp_rrrf q = rresamp_rrrf_create_kaiser(P,Q,m,bw,As);
+    rresamp_rrrf q = rresamp_rrrf_create_kaiser(interp,decim,m,bw,As);
     rresamp_rrrf_print(q);
     float rate = rresamp_rrrf_get_rate(q);
 
     // number of sample blocks (limit by large interp/decim rates)
-    unsigned int n = 120e3 / (P > Q ? P : Q);
+    unsigned int n = 120e3 / (interp > decim ? interp : decim);
 
     // input/output buffers
-    float buf_x[Q]; // input
-    float buf_y[P]; // output
+    float buf_x[decim]; // input
+    float buf_y[interp]; // output
 
     // create wide-band noise source with one-sided cut-off frequency
     iirfilt_rrrf lowpass = iirfilt_rrrf_create_lowpass(15, 0.7f*0.5f*(rate > 1.0 ? 1.0 : rate));
@@ -82,16 +50,16 @@ int main(int argc, char*argv[])
     // generate input signal (filtered noise)
     unsigned int i, j;
     for (i=0; i<n; i++) {
-        // write Q input samples to buffer
-        for (j=0; j<Q; j++)
+        // write decim input samples to buffer
+        for (j=0; j<decim; j++)
             iirfilt_rrrf_execute(lowpass, randnf(), &buf_x[j]);
 
-        // run resampler and write P output samples
+        // run resampler and write interp output samples
         rresamp_rrrf_execute(q, buf_x, buf_y);
 
         // write input and output to respective spectral periodogram estimate
-        spgramf_write(px, buf_x, Q);
-        spgramf_write(py, buf_y, P);
+        spgramf_write(px, buf_x, decim);
+        spgramf_write(py, buf_y, interp);
     }
     printf("num samples out : %llu\n", spgramf_get_num_samples_total(py));
     printf("num samples in  : %llu\n", spgramf_get_num_samples_total(px));
@@ -107,13 +75,13 @@ int main(int argc, char*argv[])
     spgramf_get_psd(py, Y);
 
     // export results to file for plotting
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n",filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
-    fprintf(fid,"P    = %u;\n", P);
-    fprintf(fid,"Q    = %u;\n", Q);
-    fprintf(fid,"r    = P/Q;\n");
+    fprintf(fid,"interp    = %u;\n", interp);
+    fprintf(fid,"decim    = %u;\n", decim);
+    fprintf(fid,"r    = interp/decim;\n");
     fprintf(fid,"nfft = %u;\n", nfft);
     fprintf(fid,"X    = zeros(1,nfft);\n");
     fprintf(fid,"Y    = zeros(1,nfft);\n");
@@ -136,6 +104,6 @@ int main(int argc, char*argv[])
     fprintf(fid,"axis([fmin fmax -100 20]);\n");
     fprintf(fid,"grid on;\n");
     fclose(fid);
-    printf("results written to %s\n",OUTPUT_FILENAME);
+    printf("results written to %s\n",filename);
     return 0;
 }

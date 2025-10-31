@@ -1,29 +1,28 @@
-//
-// resamp2_crcf_example.c
-//
-// This example demonstrates the halfband resampler running as both an
-// interpolator and a decimator. A narrow-band signal is first
-// interpolated by a factor of 2, and then decimated. The resulting RMS
-// error between the final signal and original is computed and printed
-// to the screen.
-//
+char __docstr__[] =
+"This example demonstrates the halfband resampler running as both an"
+" interpolator and a decimator. A narrow-band signal is first"
+" interpolated by a factor of 2, and then decimated. The resulting RMS"
+" error between the final signal and original is computed and printed"
+" to the screen.";
 
 #include <stdio.h>
 #include <complex.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "resamp2_crcf_example.m"
-
-int main() {
-    unsigned int m=5;               // filter semi-length (actual length: 4*m+1)
-    float bw=0.13f;                 // input signal bandwidth
-    float fc=-0.597f;               // input signal carrier frequency (radians/sample)
-    unsigned int num_samples=37;    // number of input samples
-    float As=60.0f;                 // stop-band attenuation [dB]
-
-    unsigned int i;
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "resamp2_crcf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, m,           5,      'm', "filter semi-length (actual length: 4*m+1)", NULL);
+    liquid_argparse_add(float,    bw,          0.13,   'w', "input signal bandwidth", NULL);
+    liquid_argparse_add(float,    fc,          -0.597, 'f', "input signal carrier frequency (radians/sample", NULL);
+    liquid_argparse_add(unsigned, num_samples, 37,     'n', "number of input samples", NULL);
+    liquid_argparse_add(float,    As,          60.0,   'a', "stop-band attenuation [dB]", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // derived values
     unsigned int n = num_samples + 2*m + 1; // adjusted input sequence length
@@ -36,6 +35,7 @@ int main() {
     // generate the baseband signal (filter pulse)
     float h[num_samples];
     liquid_firdes_kaiser(num_samples,bw,60.0f,0.0f,h);
+    unsigned int i;
     for (i=0; i<n; i++)
         x[i] = i < num_samples ? h[i] * cexpf(_Complex_I*fc*i) : 0.0f;
 
@@ -71,8 +71,8 @@ int main() {
     // 
     // print results to file
     //
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n",filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"bw=%12.8f;\n", bw);
@@ -119,7 +119,7 @@ int main() {
     fprintf(fid,"  axis([0 n -1 1]);\n");
     fprintf(fid,"  ylabel('interp/decim');\n");
     fclose(fid);
-    printf("results written to %s\n",OUTPUT_FILENAME);
+    printf("results written to %s\n",filename);
 
     printf("done.\n");
     return 0;
