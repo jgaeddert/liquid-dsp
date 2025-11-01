@@ -32,20 +32,20 @@
 // band which gives time-series response as close to ideal as possible
 // (center coefficient 1/2, and all other even coefficients 0).
 //
-//  H(z)
+//  H(f/Fs)
 //   ^             ~ft
 //   |           |<--->|
-//   |************. . . . . . . . . . H0
-//   |/\/\/\/\/\/\  *
-//   |************\  *. . . . . . . . H1
-//   |           | \  *
-//   |           |  \  *
-//   |           |  :\  ************* H2
+//   |. . . . . . . . . . . . . . . . +Ap/2
+//   |/\/\/\/\/\/\
+//   |. . . . . . \ . . . . . . . . . -Ap/2
+//   |           | \
+//   |           |  \
+//   |           |  :\  . . . . . . . -As
 //   |           |  : \ /^\ /^\ /^\ /|
 //   |           |  :  |   |   |   | |
-//   0           |  :  |            1/2
-//               |  :  f1 = 1/4 + ft/2
-//               | 1/4
+//   0           :  :  :            1/2   ---> f/Fs
+//               :  :  f1 = 1/4 + ft/2
+//               : 1/4
 //              f0 = 1/4 - gamma*ft/2
 
 // structured data type
@@ -95,13 +95,10 @@ firdespm_halfband firdespm_halfband_create(unsigned int _m, float _ft)
 // destroy object, freeing all internal memory
 int firdespm_halfband_destroy(firdespm_halfband _q)
 {
-    // destroy objects
     free(_q->h);
     fft_destroy_plan(_q->fft);
     fft_free(_q->buf_time);
     fft_free(_q->buf_freq);
-
-    // free main object memory
     free(_q);
     return LIQUID_OK;
 }
@@ -131,17 +128,18 @@ float firdespm_halfband_utility(float _gamma, void * _userdata)
     float f1 = 0.25f + 0.5f*q->ft;
     firdespm_halfband_design(q, f0, f1);
 
-    // compute utility; copy ideal non-zero coefficients and compute transform
+    // compute utility: deviation from zero for even coefficients
     float u = 0.0f;
     unsigned int i;
+    for (i=0; i<q->m; i++)
+        u += q->h[2*i] * q->h[2*i];
+
+    // force zeros for even coefficients
     for (i=0; i<q->m; i++) {
-        // compute utility: deviation from zero for even coefficients
-        float hp = q->h[2*i];
-        u += hp*hp;
-        // force zeros for even coefficients
         q->h[           2*i] = 0;
         q->h[q->h_len-2*i-1] = 0;
     }
+
     // force center coefficient to be exactly 1/2
     q->h[q->h_len/2] = 0.5;
     return 10*log10f(u);
@@ -179,6 +177,8 @@ int firdespm_halfband_optimize_ft(firdespm_halfband _q, float * _h)
     // create optimizer and run search
     qs1dsearch optim = qs1dsearch_create(firdespm_halfband_utility, _q, LIQUID_OPTIM_MINIMIZE);
     qs1dsearch_init_bounds(optim, 1.0f, 0.9f);
+
+    // run optimizer, allowing for early stopping
     unsigned int i;
     float u_prime = 0; // previous utility
     unsigned int persistence = 8, count = 0;
@@ -188,9 +188,9 @@ int firdespm_halfband_optimize_ft(firdespm_halfband _q, float * _h)
 
         // early stopping; break if utility hasn't improved in 'persistence' steps
         float u = qs1dsearch_get_opt_u(optim);
-        if (i > 0) {
+        if (i > 0)
             count = (u >= u_prime) ? count+1 : 0;
-        }
+
         u_prime = u;
     }
 

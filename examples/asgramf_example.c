@@ -1,25 +1,33 @@
-// ASCII spectrogram example for real-valued input. This example demonstrates
-// the functionality of the ASCII spectrogram for real-valued input siganls.
-// A cosine signal with time-varying frequency is generated and the resulting
-// spectral periodogram is printed to the screen. Because the time signal has
-// no complex component, its spectrum is symmetric.
+char __docstr__[] =
+"ASCII spectrogram example for real-valued input. This example demonstrates"
+" the functionality of the ASCII spectrogram for real-valued input siganls."
+" A cosine signal with time-varying frequency is generated and the resulting"
+" spectral periodogram is printed to the screen. Because the time signal has"
+" no complex component, its spectrum is symmetric.";
 
 #include <unistd.h> // usleep
 #include <stdio.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-int main() {
-    // options
-    unsigned int nfft        =   64;    // transform size
-    unsigned int num_frames  =  200;    // total number of frames
-    unsigned int msdelay     =   25;    // delay between transforms [ms]
-    float        noise_floor = -40.0f;  // noise floor
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(unsigned, nfft,         64, 'n', "transform size", NULL);
+    liquid_argparse_add(unsigned, num_frames,  200, 'N', "total number of frames", NULL);
+    liquid_argparse_add(unsigned, msdelay,      25, 'd', "delay between transforms [ms]", NULL);
+    liquid_argparse_add(float,    noise_floor, -80, 'f', "noise floor", NULL);
+    liquid_argparse_add(bool,     autoscale,     0, 'a', "enable autoscale", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    // initialize objects
+    // initialize object
     asgramf q = asgramf_create(nfft);
-    asgramf_set_scale(q, noise_floor+15.0f, 5.0f);
+    if (!autoscale) // enabled by default
+        asgramf_autoscale_disable(q);
+    asgramf_set_scale(q, noise_floor+50, 5.0f);
 
     unsigned int i;
     unsigned int n;

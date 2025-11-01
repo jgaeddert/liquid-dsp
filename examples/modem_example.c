@@ -1,52 +1,25 @@
-// This example demonstrates the digital modulator/demodulator
-// (modem) object.  Data symbols are modulated into complex
-// samples which are then demodulated without noise or phase
-// offsets.  The user may select the modulation scheme via
-// the command-line interface.
+char __docstr__[] =
+"This example demonstrates the digital modulator/demodulator"
+" (modem) object.  Data symbols are modulated into complex"
+" samples which are then demodulated without noise or phase"
+" offsets.  The user may select the modulation scheme via"
+" the command-line interface.";
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <getopt.h>
+#include <math.h>
+#include <complex.h>
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "modem_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("modem_example [options]\n");
-    printf("  h     : print help\n");
-    printf("  v/q   : verbose/quiet\n");
-    printf("  m     : modulation scheme (qam16 default)\n");
-    liquid_print_modulation_schemes();
-}
-
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // create mod/demod objects
-    modulation_scheme ms = LIQUID_MODEM_QAM16;
-    int verbose = 1;
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hvqm:")) != EOF) {
-        switch (dopt) {
-        case 'h':   usage();        return 0;
-        case 'v':   verbose = 1;    break;
-        case 'q':   verbose = 0;    break;
-        case 'm':
-            ms = liquid_getopt_str2mod(optarg);
-            if (ms == LIQUID_MODEM_UNKNOWN) {
-                fprintf(stderr,"error: %s, unknown/unsupported modulation scheme '%s'\n", argv[0], optarg);
-                return 1;
-            }
-            break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "modem_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char*, mod_scheme, "qpsk", 'm', "modulation scheme", liquid_argparse_modem);
+    liquid_argparse_parse(argc,argv);
 
     // create the modem objects
+    modulation_scheme ms = liquid_getopt_str2mod(mod_scheme);
     modemcf mod   = modemcf_create(ms);
     modemcf demod = modemcf_create(ms);
 
@@ -57,8 +30,8 @@ int main(int argc, char*argv[])
     modemcf_print(mod);
 
     // open output file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"m = %u;\n", bps);
@@ -77,8 +50,7 @@ int main(int argc, char*argv[])
         modemcf_modulate(mod, i, &x);
         modemcf_demodulate(demod, x, &s);
 
-        if (verbose)
-            printf("%4u : %12.8f + j*%12.8f\n", i, crealf(x), cimagf(x));
+        printf("%4u : %12.8f + j*%12.8f\n", i, crealf(x), cimagf(x));
 
         num_sym_errors += i == s ? 0 : 1;
         num_bit_errors += count_bit_errors(i,s);
@@ -104,7 +76,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"ylabel('quadrature phase');\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     modemcf_destroy(mod);
     modemcf_destroy(demod);

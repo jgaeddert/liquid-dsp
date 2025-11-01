@@ -1,61 +1,31 @@
-// 
-// gmskmodem_example.c
-//
+char __docstr__[] = "Demonstrate GMSK modem interface.";
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <getopt.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "gmskmodem_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char*argv[])
 {
-    printf("gmskmodem_example -- Gaussian minimum-shift keying modem example\n");
-    printf("options (default values in <>):\n");
-    printf("  u/h   : print usage/help\n");
-    printf("  k     : samples/symbol, default: 4\n");
-    printf("  m     : filter delay [symbols], default: 3\n");
-    printf("  n     : number of data symbols, default: 200\n");
-    printf("  b     : bandwidth-time product, 0 <= b <= 1, default: 0.3\n");
-    printf("  s     : SNR [dB], default: 30\n");
-}
-
-int main(int argc, char*argv[]) {
-    // options
-    unsigned int k=4;                   // filter samples/symbol
-    unsigned int m=3;                   // filter delay (symbols)
-    float BT=0.3f;                      // bandwidth-time product
-    unsigned int num_data_symbols=200;  // number of data symbols
-    float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
-    float phi = 0.0f;                   // carrier phase offset
-    float dphi = 0.0f;                  // carrier frequency offset
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"uhk:m:n:b:s:")) != EOF) {
-        switch (dopt) {
-        case 'u':
-        case 'h': usage();              return 0;
-        case 'k': k = atoi(optarg); break;
-        case 'm': m = atoi(optarg); break;
-        case 'n': num_data_symbols = atoi(optarg); break;
-        case 'b': BT = atof(optarg); break;
-        case 's': SNRdB = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "gmskmodem_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, k,        4,     'k', "filter samples/symbol", NULL);
+    liquid_argparse_add(unsigned, m,        3,     'm', "filter delay (symbols)", NULL);
+    liquid_argparse_add(float,    BT,       0.3f,  'b', "bandwidth-time product", NULL);
+    liquid_argparse_add(unsigned, n,        200,   'n', "number of symbols", NULL);
+    liquid_argparse_add(float,    SNRdB,    30.0f, 's', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_add(float,    dphi,     0.0f,  'F', "carrier frequency offset", NULL);
+    liquid_argparse_add(float,    phi,      0.0f,  'P', "carrier phase offset", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (BT <= 0.0f || BT >= 1.0f) {
-        fprintf(stderr,"error: %s, bandwidth-time product must be in (0,1)\n", argv[0]);
-        exit(1);
-    }
+    if (BT <= 0.0f || BT >= 1.0f)
+        return fprintf(stderr,"error: bandwidth-time product must be in (0,1)\n");
 
     // derived values
-    unsigned int num_symbols = num_data_symbols + 2*m;
+    unsigned int num_symbols = n + 2*m;
     unsigned int num_samples = k*num_symbols;
     float nstd = powf(10.0f,-SNRdB/20.0f);  // noise standard deviation
 
@@ -103,11 +73,11 @@ int main(int argc, char*argv[]) {
         //printf("  %4u : %2u (%2u)\n", i, s[i-delay], sym_out[i]);
         num_errors += (s[i-delay] == sym_out[i]) ? 0 : 1;
     }
-    printf("symbol errors : %4u / %4u\n", num_errors, num_data_symbols);
+    printf("symbol errors : %4u / %4u\n", num_errors, n);
 
     // write results to output file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"k = %u;\n", k);
@@ -137,7 +107,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"grid on;\n");
 
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     return 0;
 }

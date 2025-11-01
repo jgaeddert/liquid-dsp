@@ -1,46 +1,24 @@
-//
-// firdespm_lowpass_example.c
-//
-// This example demonstrates a low-pass finite impulse response filter
-// design using the Parks-McClellan algorithm.
-//
-// SEE ALSO: firdes_kaiser_example.c
+char __docstr__[] =
+"This example demonstrates a low-pass finite impulse response filter"
+" design using the Parks-McClellan algorithm.";
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <getopt.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "firdespm_lowpass_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char* argv[])
 {
-    printf("firdespm_lowpass_example:\n");
-    printf("  -h        : print usage/help\n");
-    printf("  -n <len>  : filter length,              1 < n        default: 57\n");
-    printf("  -f <freq> : filter cutoff frequency,    0 < f < 0.5, default: 0.2\n");
-    printf("  -s <atten>: stop-band attenuation [dB], 0 < s,       default: 60\n");
-}
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename, "firdespm_lowpass_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, n,   57, 'n', "filter length", NULL);
+    liquid_argparse_add(float,    fc, 0.2, 'f', "filter cutoff frequency", NULL);
+    liquid_argparse_add(float,    As,  60, 'a', "filter stop-band attenuation [dB]", NULL);
+    liquid_argparse_parse(argc,argv);
 
-int main(int argc, char*argv[]) {
-    // options
-    unsigned int n  =  57;      // filter cutoff frequency
-    float        fc = 0.2f;     // filter cutoff frequency
-    float        As = 60.0f;    // stop-band attenuation [dB]
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hn:f:s:")) != EOF) {
-        switch (dopt) {
-        case 'h': usage();           return 0;
-        case 'n': n  = atoi(optarg); break;
-        case 'f': fc = atof(optarg); break;
-        case 's': As = atof(optarg); break;
-        default: return -1;
-        }
-    }
     unsigned int i;
     printf("filter design parameters\n");
     printf("  length                : %12u\n",      n);
@@ -51,15 +29,9 @@ int main(int argc, char*argv[]) {
     float h[n];
     firdespm_lowpass(n,fc,As,0,h);
 
-#if 0
-    // print coefficients
-    for (i=0; i<n; i++)
-        printf("h(%4u) = %16.12f;\n", i+1, h[i]);
-#endif
-
     // open output file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"h_len=%u;\n", n);
@@ -81,7 +53,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"axis([-0.5 0.5 -As-20 10]);\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     printf("done.\n");
     return 0;

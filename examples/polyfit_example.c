@@ -1,11 +1,17 @@
-// Test polynomial fit to sample data.
+char __docstr__[] = "Test polynomial fit to sample data.";
+
 #include <stdio.h>
 #include "liquid.h"
-#define OUTPUT_FILENAME "polyfit_example.m"
+#include "liquid.argparse.h"
 
-int main() {
-    unsigned int n= 25;      // number of samples
-    unsigned int order=2;   // polynomial order
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename,"polyfit_example.m",'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, n,     25, 'n', "number of samples to evaluate", NULL);
+    liquid_argparse_add(unsigned, order,  2, 'p', "polynomial order", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // initialize data vectors
     float x[n];
@@ -27,8 +33,8 @@ int main() {
         printf("p[%3u] = %12.8f\n", i, p[i]);
 
     // plot results
-    FILE * fid = fopen(OUTPUT_FILENAME, "w");
-    fprintf(fid,"%% %s : auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename, "w");
+    fprintf(fid,"%% %s : auto-generated file\n\n", filename);
     fprintf(fid,"clear all; close all;\n");
     fprintf(fid,"n = %u; order = %u;\n", n, order);
     fprintf(fid,"x = zeros(1,n); y = zeros(1,n); p = zeros(1,order+1);\n");
@@ -44,7 +50,7 @@ int main() {
     fprintf(fid,"legend('data','poly-fit');\n");
     fprintf(fid,"grid on;\n");
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
     printf("done.\n");
     return 0;
 }

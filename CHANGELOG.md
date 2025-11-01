@@ -1,5 +1,12 @@
 # Changelog
 
+## Latest
+
+  * build
+    - introduced new argument parsing header to simplify creating variables,
+      parsing command-line options, printing help, and validating results;
+      refactored examples and removed over 2,000 lines of redundant code.
+
 ## 1.7.0 - 2025-02-01
 
 Version 1.7.0 includes support for the [CMake](https://cmake.org) build
