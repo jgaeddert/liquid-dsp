@@ -32,7 +32,7 @@ int main(int argc, char*argv[])
 
     // validate input
     if (k < M)
-        return fprintf(stderr,"errors: samples/symbol must be at least modulation size (M=%u)\n");
+        return fprintf(stderr,"errors: samples/symbol must be at least modulation size (M=%u)\n", M);
     if (k > 2048)
         return fprintf(stderr,"errors: samples/symbol exceeds maximum (2048)\n");
     if (M > 1024)
