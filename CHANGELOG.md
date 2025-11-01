@@ -6,6 +6,9 @@
     - introduced new argument parsing header to simplify creating variables,
       parsing command-line options, printing help, and validating results;
       refactored examples and removed over 2,000 lines of redundant code.
+    - added CMake rules to create exportable interface, option for building
+      shared vs. static library, and simplified directory inclusion
+      (thanks @burnbot-alt)
 
 ## 1.7.0 - 2025-02-01
 
