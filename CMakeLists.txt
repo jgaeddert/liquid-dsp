@@ -514,6 +514,9 @@ endif(BUILD_SANDBOX)
 
 # ---------------------------------------- autotest ----------------------------------------
 
+# build autoscript executable for both autotests and benchmarks
+add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
+
 set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/autotest/null_autotest.c
     ${PROJECT_SOURCE_DIR}/src/agc/tests/agc_crcf_autotest.c
@@ -791,7 +794,6 @@ set(AUTOTEST_EXTRA
     )
 
 if(BUILD_AUTOTESTS)
-    add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
     add_custom_command(
         OUTPUT  autotest_include.h
         DEPENDS
