@@ -261,7 +261,10 @@ Your ``CMakeLists.txt`` file might look something like this:
         GIT_REPOSITORY https://github.com/jgaeddert/liquid-dsp.git
         GIT_TAG        v1.7.0
         )
-    FetchContent_MakeAvailable(liquid) # _Populate() for older cmake versions
+    set(BUILD_AUTOTESTS  OFF CACHE INTERNAL "Disable building liquid tests")
+    set(BUILD_BENCHMARKS OFF CACHE INTERNAL "Disable building liquid benchmarks")
+    set(BUILD_EXAMPLES   OFF CACHE INTERNAL "Disable building liquid examples")
+    FetchContent_MakeAvailable(liquid)
     # FetchContent_Populate(liquid) <- older policy, see CMP0169
 
     add_executable(main main.c)
