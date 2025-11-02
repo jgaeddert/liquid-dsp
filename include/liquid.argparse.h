@@ -114,6 +114,26 @@ void liquid_arg_print(struct liquid_arg_s * _arg)
     printf("] %s\n", _arg->help);
 }
 
+// print help for argument in JSON format
+void liquid_arg_print_json(struct liquid_arg_s * _arg)
+{
+    printf("{\"opt\":\"%c\", ", _arg->opt);
+    printf("\"varname\":\"%s\",", _arg->varname);
+    switch (_arg->type) {
+    case TYPE_BOOL:   printf("\"type\":\"bool\", \"value\":%s", *(bool*)                  (_arg->ref) ? "true": "false" ); break;
+    case TYPE_INT:    printf("\"type\":\"int\", \"value\":%d", *(int*)                    (_arg->ref)); break;
+    case TYPE_UINT:   printf("\"type\":\"unsigned\", \"value\":%u", *(unsigned*)          (_arg->ref)); break;
+    case TYPE_LONG:   printf("\"type\":\"long\", \"value\":%ld",*(long*)                  (_arg->ref)); break;
+    case TYPE_ULONG:  printf("\"type\":\"unsigned long\", \"value\":%lu",*(unsigned long*)(_arg->ref)); break;
+    case TYPE_FLOAT:  printf("\"type\":\"float\", \"value\":%g", *(float*)                (_arg->ref)); break;
+    case TYPE_DOUBLE: printf("\"type\":\"double\", \"value\":%g", *(double*)              (_arg->ref)); break;
+    case TYPE_CHAR:   printf("\"type\":\"char\", \"value\":%c", *(char*)                  (_arg->ref)); break;
+    case TYPE_STRING: printf("\"type\":\"char*\", \"value\":\"%s\"", *(char**)            (_arg->ref)); break;
+    default: printf("?");
+    }
+    printf(", \"help\" : \"%s\"}", _arg->help);
+}
+
 // set value from input string
 int liquid_arg_set(struct liquid_arg_s * _arg, const char * _optarg)
 {
@@ -157,6 +177,26 @@ void liquid_argparse_print(struct liquid_argparse_s * _q,
     printf(" [-h print this help file and exit]\n");
     for (i=0; i<_q->num_args; i++)
         liquid_arg_print(_q->args + i);
+}
+
+// print formatted help as JSON
+void liquid_argparse_print_json(struct liquid_argparse_s * _q,
+                                const char *               _argv0)
+{
+    printf("{\n");
+    printf("  \"application\":\"%s\",\n",_argv0);
+    printf("  \"description\":\"%s\",\n",_q->docstr);
+    printf("  \"options\":\n");
+    printf("  [\n");
+    unsigned int i;
+    for (i=0; i<_q->num_args; i++) {
+        printf("    ");
+        liquid_arg_print_json(_q->args + i);
+        printf(",\n");
+    }
+    printf("    {\"opt\":\"h\", \"varname\":null, \"type\":null, \"value\":false, \"help\":\"print this help file and exit\"}\n");
+    printf("  ]\n");
+    printf("}\n");
 }
 
 // append argument to parser
