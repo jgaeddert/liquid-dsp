@@ -178,6 +178,7 @@ int liquid_argparse_print(struct liquid_argparse_s * _q,
     printf("%s - %s\n", _argv0, _q->docstr);
     unsigned int i;
     printf(" [-h print this help file and exit]\n");
+    printf(" [-j print this help file as JSON and exit]\n");
     for (i=0; i<_q->num_args; i++)
         liquid_arg_print(_q->args + i);
     return LIQUID_OK;
@@ -222,6 +223,8 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
     // check for reserved keys
     if (_opt == 'h')
         return liquid_error(LIQUID_EICONFIG,"liquid_argparse_append('%s'), key 'h' is reserved for help", _varname);
+    if (_opt == 'j')
+        return liquid_error(LIQUID_EICONFIG,"liquid_argparse_append('%s'), key 'j' is reserved for help", _varname);
 
     // check for duplicate entries
     int i;
@@ -274,7 +277,7 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
     _q->optstr[n++] = '\0';
 
     _q->num_args++;
-    return 0;
+    return LIQUID_OK;
 }
 
 // set value according to string
@@ -302,7 +305,7 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
     struct liquid_argparse_s __parser;                                          \
     __parser.docstr = DOCSTR;                                                   \
     __parser.num_args = 0;                                                      \
-    sprintf(__parser.optstr,"h"); /* ensure '-h' is reserved for help */        \
+    sprintf(__parser.optstr,"hj"); /* ensure 'h', 'j' are reserved for help */  \
 
 // add option to list of arguments
 #define liquid_argparse_add(TYPE, VAR, DEFAULT, KEY, HELP, FUNC)                \
@@ -320,6 +323,8 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
         switch (__dopt) {                                                       \
         case 'h':                                                               \
             exit( liquid_argparse_print(&__parser, argv[0]) );                  \
+        case 'j':                                                               \
+            exit( liquid_argparse_print_json(&__parser, argv[0]) );             \
         default:                                                                \
             if (liquid_argparse_set(&__parser, __dopt, optarg))                 \
                 exit(-1);                                                       \
