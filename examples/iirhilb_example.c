@@ -36,15 +36,15 @@ int main(int argc, char* argv[])
     else if (strcmp(ftype_str,"bessel")==0)
         ftype = LIQUID_IIRDES_BESSEL;
     else
-        return fprintf(stderr,"error: unknown filter type '%s'\n", ftype_str);
+        return liquid_error(LIQUID_EICONFIG,"unknown filter type '%s'", ftype_str);
 
     // validate input
     if (fc <= 0 || fc >= 0.5)
-        return fprintf(stderr,"error: cutoff frequency out of range\n");
+        return liquid_error(LIQUID_EICONFIG,"cutoff frequency out of range");
     if (Ap <= 0)
-        return fprintf(stderr,"error: pass-band ripple out of range\n");
+        return liquid_error(LIQUID_EICONFIG,"pass-band ripple out of range");
     if (As <= 0)
-        return fprintf(stderr,"error: stop-band ripple out of range\n");
+        return liquid_error(LIQUID_EICONFIG,"stop-band ripple out of range");
 
     // derived values
     unsigned int num_total_samples = num_samples + 50; // allow for filter settling

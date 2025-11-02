@@ -23,9 +23,9 @@ int main(int argc, char* argv[])
 
     // validate input
     if (interp == 0 || interp > 1000)
-        return fprintf(stderr,"error: interpolation rate must be in [1,1000]\n");
+        return liquid_error(LIQUID_EICONFIG,"interpolation rate must be in [1,1000]");
     if (decim == 0 || decim > 1000)
-        return fprintf(stderr,"error: decimation rate must be in [1,1000]\n");
+        return liquid_error(LIQUID_EICONFIG,"decimation rate must be in [1,1000]");
 
     // create resampler object
     rresamp_rrrf q = rresamp_rrrf_create_kaiser(interp,decim,m,bw,As);

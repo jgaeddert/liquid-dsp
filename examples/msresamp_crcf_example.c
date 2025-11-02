@@ -21,11 +21,11 @@ int main(int argc, char* argv[])
 
     // validate input
     if (n == 0)
-        return fprintf(stderr,"error: number of input samples must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"number of input samples must be greater than zero");
     if (r <= 0.0f)
-        return fprintf(stderr,"error: resampling rate must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"resampling rate must be greater than zero");
     if ( fabsf(log2f(r)) > 10 )
-        return fprintf(stderr,"error: resampling rate unreasonable\n");
+        return liquid_error(LIQUID_EICONFIG,"resampling rate unreasonable");
 
     unsigned int i;
 

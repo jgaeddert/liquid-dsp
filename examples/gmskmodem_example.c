@@ -22,7 +22,7 @@ int main(int argc, char*argv[])
 
     // validate input
     if (BT <= 0.0f || BT >= 1.0f)
-        return fprintf(stderr,"error: bandwidth-time product must be in (0,1)\n");
+        return liquid_error(LIQUID_EICONFIG,"bandwidth-time product must be in (0,1)");
 
     // derived values
     unsigned int num_symbols = n + 2*m;

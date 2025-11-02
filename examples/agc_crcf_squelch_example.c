@@ -19,7 +19,7 @@ int main(int argc, char*argv[])
 
     // validate input
     if (bt < 0.0f)
-        return fprintf(stderr,"error: bandwidth must be positive\n");
+        return liquid_error(LIQUID_EICONFIG,"bandwidth must be positive");
 
     unsigned int i;
 

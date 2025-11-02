@@ -31,15 +31,15 @@ int main(int argc, char* argv[])
 
     // validate input
     if (K < 0.0f)
-        return fprintf(stderr,"error: fading factor K must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"fading factor K must be greater than zero");
     if (omega < 0.0f)
-        return fprintf(stderr,"error: signal power Omega must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"signal power Omega must be greater than zero");
     if (fd <= 0.0f || fd >= 0.5f)
-        return fprintf(stderr,"error: Doppler frequency must be in (0,0.5)\n");
+        return liquid_error(LIQUID_EICONFIG,"Doppler frequency must be in (0,0.5)");
     if (h_len < 4)
-        return fprintf(stderr,"error: Doppler filter length too small\n");
+        return liquid_error(LIQUID_EICONFIG,"Doppler filter length too small");
     if (num_samples == 0)
-        return fprintf(stderr,"error: number of samples must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"number of samples must be greater than zero");
 
     // allocate array for output samples
     float complex * y = (float complex*) malloc(num_samples*sizeof(float complex));

@@ -24,9 +24,9 @@ int main(int argc, char*argv[])
 
     // validate input
     if (mu < 0)
-        return fprintf(stderr,"error: mu must be positive\n");
+        return liquid_error(LIQUID_EICONFIG,"mu must be positive");
     if (range <= 0)
-        return fprintf(stderr,"error: range must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"range must be greater than zero");
 
     // open debug file
     FILE * fid = fopen(filename,"w");

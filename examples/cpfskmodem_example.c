@@ -36,7 +36,7 @@ int main(int argc, char*argv[])
     } else if (strcmp(filter,"gmsk")==0) {
         filter_type = LIQUID_CPFSK_GMSK;
     } else {
-        return fprintf(stderr,"error: unknown filter type '%s'\n", filter);
+        return liquid_error(LIQUID_EICONFIG,"unknown filter type '%s'", filter);
     }
 
     unsigned int i;

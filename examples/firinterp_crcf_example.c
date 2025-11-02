@@ -23,11 +23,11 @@ int main(int argc, char* argv[])
 
     // validate options
     if (M < 2)
-        return fprintf(stderr,"error: interp factor must be greater than 1\n");
+        return liquid_error(LIQUID_EICONFIG,"interp factor must be greater than 1");
     if (m < 1)
-        return fprintf(stderr,"error: filter delay must be greater than 0\n");
+        return liquid_error(LIQUID_EICONFIG,"filter delay must be greater than 0");
     if (num_syms < 1)
-        return fprintf(stderr,"error: must have at least one data symbol\n");
+        return liquid_error(LIQUID_EICONFIG,"must have at least one data symbol");
 
     // derived values
     unsigned int num_syms_total = num_syms + 2*m;   // total symbols (w/ delay)
