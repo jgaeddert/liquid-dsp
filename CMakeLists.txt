@@ -489,7 +489,7 @@ target_sources(${LIBNAME}
 set_target_properties(${LIBNAME}
     PROPERTIES
         PUBLIC_HEADER include/liquid.h
-        PUBLIC_HEADER include/liquidfpm.h
+        PUBLIC_HEADER include/liquid/liquidfpm.h
 )
 
 if(COVERAGE)
