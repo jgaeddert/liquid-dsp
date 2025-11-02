@@ -488,8 +488,7 @@ target_sources(${LIBNAME}
 # enough that various distros (e.g. Ubuntu 22.04) ship older versions.
 set_target_properties(${LIBNAME}
     PROPERTIES
-        PUBLIC_HEADER include/liquid.h
-        PUBLIC_HEADER include/liquid/liquidfpm.h
+        PUBLIC_HEADER "include/liquid.h;include/liquid/liquidfpm.h"
 )
 
 if(COVERAGE)
