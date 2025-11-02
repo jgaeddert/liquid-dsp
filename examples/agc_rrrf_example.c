@@ -21,9 +21,9 @@ int main(int argc, char*argv[])
 
     // validate input
     if (bt < 0.0f)
-        fprintf(stderr,"error: bandwidth must be positive\n");
+        return liquid_error(LIQUID_EICONFIG,"bandwidth must be positive");
     if (num_samples == 0)
-        fprintf(stderr,"error: number of samples must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"number of samples must be greater than zero");
     
     unsigned int i;
 

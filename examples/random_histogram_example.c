@@ -45,12 +45,12 @@ int main(int argc, char* argv[])
     else if (strcmp(dist_str,"nak")    ==0) distribution = NAKAGAMIM;
     else if (strcmp(dist_str,"rice")   ==0) distribution = RICEK;
     else {
-        return fprintf(stderr,"error: unknown/unsupported distribution '%s'\n", dist_str);
+        return liquid_error(LIQUID_EICONFIG,"unknown/unsupported distribution '%s'", dist_str);
     }
     if (num_bins == 0)
-        return fprintf(stderr,"error: number of bins must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"number of bins must be greater than zero");
     if (num_trials == 0)
-        return fprintf(stderr,"error: number of trials must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"number of trials must be greater than zero");
 
     float xmin = 0.0f;
     float xmax = 1.0f;

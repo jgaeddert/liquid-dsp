@@ -26,17 +26,17 @@ int main(int argc, char* argv[])
 
     // validate input
     if (r <= 0.0f)
-        return fprintf(stderr,"error: resampling rate must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"resampling rate must be greater than zero");
     if (m == 0)
-        return fprintf(stderr,"error: filter semi-length must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"filter semi-length must be greater than zero");
     if (bw >= 0.5f)
-        return fprintf(stderr,"error: filter bandwidth must be less than 0.5\n");
+        return liquid_error(LIQUID_EICONFIG,"filter bandwidth must be less than 0.5");
     if (As < 0.0f)
-        return fprintf(stderr,"error: filter stop-band attenuation must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"filter stop-band attenuation must be greater than zero");
     if (npfb == 0)
-        return fprintf(stderr,"error: filter bank size must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"filter bank size must be greater than zero");
     if (n == 0)
-        return fprintf(stderr,"error: number of input samples must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"number of input samples must be greater than zero");
 
     // set default bandwidth if not otherwise specified
     if (bw < 0)

@@ -35,7 +35,7 @@ int main(int argc, char*argv[])
     } else if (strcmp(mod_type,"lsb")==0) {
         type = LIQUID_AMPMODEM_LSB;
     } else {
-        return fprintf(stderr,"error: invalid AM type: %s\n", mod_type);
+        return liquid_error(LIQUID_EICONFIG,"invalid AM type: %s", mod_type);
     }
 
     // create mod/demod objects

@@ -26,11 +26,11 @@ int main(int argc, char* argv[])
 
     // validate input
     if (interp == 0 || interp > 1000)
-        return fprintf(stderr,"error: interpolation rate must be in [1,1000]\n");
+        return liquid_error(LIQUID_EICONFIG,"interpolation rate must be in [1,1000]");
     if (decim == 0 || decim > 1000)
-        return fprintf(stderr,"error: decimation rate must be in [1,1000]\n");
+        return liquid_error(LIQUID_EICONFIG,"decimation rate must be in [1,1000]");
     if (decim > interp)
-        return fprintf(stderr,"error: this example requires interp > decim\n");
+        return liquid_error(LIQUID_EICONFIG,"this example requires interp > decim");
 
     // create resampler objects
     rresamp_crcf q0 = rresamp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER,interp,decim,m,beta);

@@ -33,15 +33,15 @@ int main(int argc, char* argv[])
 
     // validate input
     if (k < 2)
-        return fprintf(stderr,"error: k (samples/symbol) must be at least 2\n");
+        return liquid_error(LIQUID_EICONFIG,"k (samples/symbol) must be at least 2");
     if (m < 1)
-        return fprintf(stderr,"error: m (filter delay) must be greater than 0\n");
+        return liquid_error(LIQUID_EICONFIG,"m (filter delay) must be greater than 0");
     if (beta <= 0.0f || beta > 1.0f)
-        return fprintf(stderr,"error: beta (excess bandwidth factor) must be in (0,1]\n");
+        return liquid_error(LIQUID_EICONFIG,"beta (excess bandwidth factor) must be in (0,1]");
     if (num_filters == 0)
-        return fprintf(stderr,"error: number of polyphase filters must be greater than 0\n");
+        return liquid_error(LIQUID_EICONFIG,"number of polyphase filters must be greater than 0");
     if (num_symbols == 0)
-        return fprintf(stderr,"error: number of symbols must be greater than 0\n");
+        return liquid_error(LIQUID_EICONFIG,"number of symbols must be greater than 0");
 
     // static values
     liquid_firfilt_type ftype = liquid_getopt_str2firfilt(ftype_str);

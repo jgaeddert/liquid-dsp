@@ -21,7 +21,7 @@ int main(int argc, char*argv[])
 
     // validate input
     if ( (1<<liquid_nextpow2(n)) != n )
-        return fprintf(stderr,"error: sequence length must be a power of 2\n");
+        return liquid_error(LIQUID_EICONFIG,"sequence length must be a power of 2");
 
     // create and initialize codes
     bsequence a = bsequence_create(n);

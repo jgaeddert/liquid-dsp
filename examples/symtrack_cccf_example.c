@@ -48,15 +48,15 @@ int main(int argc, char* argv[])
 
     // validate input
     if (k < 2)
-        fprintf(stderr,"error: k (samples/symbol) must be at least 2\n");
+        return liquid_error(LIQUID_EICONFIG,"k (samples/symbol) must be at least 2");
     if (m < 1)
-        fprintf(stderr,"error: m (filter delay) must be greater than 0\n");
+        return liquid_error(LIQUID_EICONFIG,"m (filter delay) must be greater than 0");
     if (beta <= 0.0f || beta > 1.0f)
-        fprintf(stderr,"error: beta (excess bandwidth factor) must be in (0,1]\n");
+        return liquid_error(LIQUID_EICONFIG,"beta (excess bandwidth factor) must be in (0,1]");
     if (bandwidth <= 0.0f)
-        fprintf(stderr,"error: timing PLL bandwidth must be greater than 0\n");
+        return liquid_error(LIQUID_EICONFIG,"timing PLL bandwidth must be greater than 0");
     if (num_symbols == 0)
-        fprintf(stderr,"error: number of symbols must be greater than 0\n");
+        return liquid_error(LIQUID_EICONFIG,"number of symbols must be greater than 0");
 
     // buffers
     unsigned int    buf_len = 800;      // buffer size
