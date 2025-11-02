@@ -215,6 +215,11 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
         return -1;
     }
 
+    // check for reserved keys
+    if (_opt == 'h') {
+        fprintf(stderr,"liquid_argparse_append('%s'), key 'h' is reserved for help\n", _varname);
+        return -1;
+    }
     // check for duplicate entries
     int i;
     for (i=0; i<_q->num_args; i++) {
