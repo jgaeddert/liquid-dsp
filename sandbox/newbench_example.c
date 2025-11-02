@@ -35,7 +35,7 @@
 #include <sys/resource.h>
 #include <getopt.h>
 #include <math.h>
-#include "include/liquid.h"
+#include "liquid.h"
 
 double calculate_execution_time(struct rusage _start, struct rusage _finish)
 {
@@ -45,26 +45,26 @@ double calculate_execution_time(struct rusage _start, struct rusage _finish)
         + 1e-6*(_finish.ru_stime.tv_usec - _start.ru_stime.tv_usec);
 }
 
-struct decim_crcf_opts {
+struct firdecim_crcf_opts {
     unsigned int n; // filter length
     unsigned int D; // decimation factor
 };
 
-void benchmark_decim_crcf(
+void benchmark_firdecim_crcf(
     void * _opts,
     struct rusage *_start,
     struct rusage *_finish,
     unsigned long int *_num_iterations)
 {
     // retrieve options
-    struct decim_crcf_opts * opts = (struct decim_crcf_opts*) _opts;
+    struct firdecim_crcf_opts * opts = (struct firdecim_crcf_opts*) _opts;
 
     unsigned long int i;
     // DSP initiazation goes here
     float h[opts->n];
     for (i=0; i<opts->n; i++)
         h[i] = 0.0f;
-    decim_crcf decim = decim_crcf_create(opts->D,h,opts->n);
+    firdecim_crcf decim = firdecim_crcf_create(opts->D,h,opts->n);
 
     float complex x[opts->D];
     float complex y;
@@ -73,15 +73,15 @@ void benchmark_decim_crcf(
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
         // DSP execution goes here
-        decim_crcf_execute(decim,x,&y,opts->D-1);
+        firdecim_crcf_execute(decim,x,&y);
     }
     getrusage(RUSAGE_SELF, _finish);
 
     // DSP cleanup goes here
-    decim_crcf_destroy(decim);
+    firdecim_crcf_destroy(decim);
 }
 
-void precision_decim_crcf(
+void precision_firdecim_crcf(
     unsigned int argc,
     char *argv[],
     float * _error)
@@ -98,13 +98,13 @@ int main() {
     double extime;
     double cpuclock=2.4e9;
     double cycles_per_trial;
-    struct decim_crcf_opts opts;
+    struct firdecim_crcf_opts opts;
     for (D=2; D<=8; D*=2) {
         printf("***** D = %u\n",D);
         for (n=5; n<31; n+=4) {
             opts.D = D;
             opts.n = n;
-            benchmark_decim_crcf((void*)(&opts),&start,&finish,&num_trials);
+            benchmark_firdecim_crcf((void*)(&opts),&start,&finish,&num_trials);
             extime = calculate_execution_time(start,finish);
             cycles_per_trial = cpuclock * extime / (double)(num_trials);
             printf("n : %3u, D : %3u, cycles/trial : %6.2f\n", n,D,cycles_per_trial);

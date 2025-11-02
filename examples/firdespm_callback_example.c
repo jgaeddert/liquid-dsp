@@ -1,18 +1,13 @@
-//
-// firdespm_callback_example.c
-//
-// This example demonstrates finite impulse response filter design
-// using the Parks-McClellan algorithm with callback function for
-// arbitrary response and weighting function.
-//
-// SEE ALSO: firdes_kaiser_example.c
+char __docstr__[] =
+"This example demonstrates finite impulse response filter design"
+" using the Parks-McClellan algorithm with callback function for"
+" arbitrary response and weighting function.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "firdespm_callback_example.m"
+#include "liquid.argparse.h"
 
 // user-defined callback function defining response and weights
 int callback(double   _frequency,
@@ -38,9 +33,14 @@ int callback(double   _frequency,
 
 int main(int argc, char*argv[])
 {
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename, "firdespm_callback_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, n,      8, 'n', "sinc filter length", NULL);
+    liquid_argparse_add(unsigned, h_len, 81, 'p', "inverse sinc filter length", NULL);
+    liquid_argparse_parse(argc,argv);
+
     // filter design parameters
-    unsigned int n     =  8;    // sinc filter length
-    unsigned int h_len = 81;    // inverse sinc filter length
     liquid_firdespm_btype btype = LIQUID_FIRDESPM_BANDPASS;
     unsigned int num_bands = 2;
     float        bands[4]  = {0.00f, 0.75f/(float)n, // pass-band
@@ -58,8 +58,8 @@ int main(int argc, char*argv[])
         printf("h(%4u) = %16.12f;\n", i+1, h[i]);
 
     // open output file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"n=%u;\n", n);
@@ -87,7 +87,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"axis([-0.5 0.5 -80 20]);\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     printf("done.\n");
     return 0;

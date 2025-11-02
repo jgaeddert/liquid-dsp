@@ -14,22 +14,23 @@ set(SANDBOX
     eqlms_cccf_test
     #fct_test
     fec_g2412product_test
-    fec_golay2412_test
     fec_golay_test
+    fec_golay2412_test
+    fec_hamming_test
     fec_hamming128_example
     fec_hamming128_gentab
     fec_hamming128_test
     fec_hamming3126_example
     fec_hamming74_gentab
     fec_hamming84_gentab
-    fec_hamming_test
     fec_ldpc_test
     fec_rep3_test
     fec_rep5_test
+    fec_secded_punctured_test
     fec_secded2216_test
     fec_secded3932_test
     fec_secded7264_test
-    fec_secded_punctured_test
+    #fec_spc128_test
     fec_spc2216_test
     fec_sumproduct_test
     fecsoft_ber_test
@@ -51,13 +52,13 @@ set(SANDBOX
     firdespm_halfband_test
     firfarrow_rrrf_test
     firfilt_dcblocker_test
-    firpfbch2_analysis_equivalence_test
-    firpfbch2_flatness_test
-    firpfbch2_test
     firpfbch_analysis_alignment_test
     firpfbch_analysis_equivalence_test
     #firpfbch_analysis_test
     firpfbch_synthesis_equivalence_test
+    firpfbch2_analysis_equivalence_test
+    firpfbch2_flatness_test
+    firpfbch2_test
     fskcorr_test
     fskmodem_test
     gmskmodem_coherent_test
@@ -81,14 +82,14 @@ set(SANDBOX
     matrix_eig_test
     matrix_test
     #mdct_test
-    minsearch2_test
     minsearch_test
+    minsearch2_test
     modem_demodulate_arb_gentab
     modem_demodulate_soft_gentab
     modem_demodulate_soft_test
     mskmodem_test
     msresamp_crcf_test
-    #newbench_example
+    newbench_example
     ofdm_ber_test
     ofdmframe_papr_test
     ofdmframesync_cfo_test

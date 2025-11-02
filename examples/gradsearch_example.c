@@ -1,52 +1,31 @@
-//
-// gradsearch_example.c
-//
+char __docstr__[] = "Gradient descent search algorithm demonstration.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <getopt.h>
 
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "gradsearch_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("%s [options]\n", __FILE__);
-    printf("  h     : print help\n");
-    printf("  n     : number of parameters, default: 6\n");
-    printf("  t     : number of iterations, default: 2000\n");
-    printf("  u     : utility function: {rosenbrock, invgauss, multimodal, spiral}\n");
-}
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    unsigned int num_parameters = 6;    // dimensionality of search (minimum 2)
-    unsigned int num_iterations = 2000; // number of iterations to run
-    utility_function func = liquid_rosenbrock;
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "gradsearch_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, num_parameters,    6,  'n', "number of parameters", NULL);
+    liquid_argparse_add(unsigned, num_iterations, 2000,  'i', "number of iterations to run", NULL);
+    liquid_argparse_add(char*,    function,"rosenbrock", 'f', "utility function: {rosenbrock, invgauss, multimodal, spiral}", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hn:t:u:")) != EOF) {
-        switch (dopt) {
-        case 'h':   usage();                        return 0;
-        case 'n':   num_parameters = atoi(optarg);  break;
-        case 't':   num_iterations = atoi(optarg);  break;
-        case 'u':
-            if      (strcmp(optarg,"rosenbrock")==0) func = liquid_rosenbrock;
-            else if (strcmp(optarg,"invgauss")==0)   func = liquid_invgauss;
-            else if (strcmp(optarg,"multimodal")==0) func = liquid_multimodal;
-            else if (strcmp(optarg,"spiral")==0)     func = liquid_spiral;
-            else {
-                fprintf(stderr,"error: %s, unknown/unsupported utility '%s'\n", argv[0], optarg);
-                exit(1);
-            }
-            break;
-        default:
-            exit(1);
-        }
+    // validate input
+    utility_function func = liquid_rosenbrock;
+    if      (strcmp(function,"rosenbrock")==0) func = liquid_rosenbrock;
+    else if (strcmp(function,"invgauss")==0)   func = liquid_invgauss;
+    else if (strcmp(function,"multimodal")==0) func = liquid_multimodal;
+    else if (strcmp(function,"spiral")==0)     func = liquid_spiral;
+    else {
+        return liquid_error(LIQUID_EICONFIG,"unknown/unsupported utility '%s'", function);
     }
 
     float optimum_vect[num_parameters];
@@ -57,8 +36,8 @@ int main(int argc, char*argv[])
     float optimum_utility;
 
     // open output file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
 
@@ -93,6 +72,9 @@ int main(int argc, char*argv[])
     printf("\n");
     printf("%5u: ", num_iterations);
     gradsearch_print(gs);
+    printf("solution:\n");
+    for (i=0; i<num_parameters; i++)
+        printf("  %12.7f\n", optimum_vect[i]);
 
     fprintf(fid,"figure;\n");
     fprintf(fid,"semilogy(u);\n");
@@ -101,7 +83,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"title('gradient search results');\n");
     fprintf(fid,"grid on;\n");
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     // test results, optimum at [1, 1, 1, ... 1];
 

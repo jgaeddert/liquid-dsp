@@ -1,16 +1,14 @@
-//
-// repack_bytes_example.c
-//
-// This example demonstrates the repack_bytes() interface by packing a
-// sequence of three 3-bit symbols into five 2-bit symbols.  The results
-// are printed to the screen.  Because the total number of bits in the
-// input is 9 and not evenly divisible by 2, the last of the 5 output
-// symbols has a zero explicitly padded to the end.
-//
+char __docstr__[] =
+"This example demonstrates the repack_bytes() interface by packing a"
+" sequence of three 3-bit symbols into five 2-bit symbols.  The results"
+" are printed to the screen.  Because the total number of bits in the"
+" input is 9 and not evenly divisible by 2, the last of the 5 output"
+" symbols has a zero explicitly padded to the end.";
 
 #include <stdio.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 // print symbol to screen, one bit at a time
 void print_symbol(unsigned char _sym,
@@ -36,7 +34,12 @@ void print_symbol_array(unsigned char * _sym,
     }
 }
 
-int main() {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // input symbols:   111 000 111
     // expected output: 11 10 00 11 1(0)
     unsigned char input[3] = {

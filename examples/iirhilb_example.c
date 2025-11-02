@@ -1,32 +1,53 @@
-//
-// iirhilb_example.c
-//
-// Hilbert transform example.  This example demonstrates the
-// functionality of iirhilbf (finite impulse response Hilbert transform)
-// which converts a complex time series into a real one and then back.
-//
-// SEE ALSO: iirhilb_interp_example.c
-//           iirhilb_example.c
-//
+char __docstr__[] =
+"Hilbert transform example.  This example demonstrates the"
+" functionality of iirhilbf (finite impulse response Hilbert transform)"
+" which converts a complex time series into a real one and then back.";
 
 #include <stdio.h>
 #include <complex.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "iirhilb_example.m"
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "iirhilb_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char*,ftype_str, "butter", 't', "filter type: butter, cheby1, cheby2, ellip, bessel", NULL);
+    liquid_argparse_add(unsigned,     n,        3, 'O', "filter order", NULL);
+    liquid_argparse_add(float,       fc,    0.20f, 'c', "pass-band cutoff frequency (low-pass prototype)", NULL);
+    liquid_argparse_add(float,       As,    60.0f, 's', "stopband attenuation [dB", NULL);
+    liquid_argparse_add(float,       Ap,     1.0f, 'p', "passband ripple [dB]", NULL);
+    liquid_argparse_add(unsigned, num_samples,180, 'n', "number of samples", NULL);
+    liquid_argparse_parse(argc,argv);
 
-int main() {
-    int             ftype   = LIQUID_IIRDES_BUTTER; // filter prototype
-    unsigned int    n       =     7;                // Hilbert filter order
-    float           Ap      =  0.1f;                // pass-band ripple [dB]
-    float           As      = 60.0f;                // stop-band attenuation [dB]
-    float           fc      = 0.123456;             // signal center frequency
-    unsigned int num_input_samples=180;             // number of samples
+    // filter type
+    liquid_iirdes_filtertype ftype = LIQUID_IIRDES_BUTTER;
+    if (strcmp(ftype_str,"butter")==0)
+        ftype = LIQUID_IIRDES_BUTTER;
+    else if (strcmp(ftype_str,"cheby1")==0)
+        ftype = LIQUID_IIRDES_CHEBY1;
+    else if (strcmp(ftype_str,"cheby2")==0)
+        ftype = LIQUID_IIRDES_CHEBY2;
+    else if (strcmp(ftype_str,"ellip")==0)
+        ftype = LIQUID_IIRDES_ELLIP;
+    else if (strcmp(ftype_str,"bessel")==0)
+        ftype = LIQUID_IIRDES_BESSEL;
+    else
+        return liquid_error(LIQUID_EICONFIG,"unknown filter type '%s'", ftype_str);
+
+    // validate input
+    if (fc <= 0 || fc >= 0.5)
+        return liquid_error(LIQUID_EICONFIG,"cutoff frequency out of range");
+    if (Ap <= 0)
+        return liquid_error(LIQUID_EICONFIG,"pass-band ripple out of range");
+    if (As <= 0)
+        return liquid_error(LIQUID_EICONFIG,"stop-band ripple out of range");
 
     // derived values
-    unsigned int num_total_samples = num_input_samples + 50; // allow for filter settling
+    unsigned int num_total_samples = num_samples + 50; // allow for filter settling
 
     // create Hilbert transform objects
     iirhilbf qi = iirhilbf_create(ftype,n,Ap,As);    // interpolator
@@ -43,7 +64,7 @@ int main() {
     for (i=0; i<num_total_samples; i++) {
         x[i]  = cexpf(_Complex_I*2*M_PI*fc*i) +
                 cexpf(_Complex_I*2*M_PI*fc*i*1.3f)*0.1f;
-        x[i] *= (i < num_input_samples) ? 1.855f*liquid_hamming(i,num_input_samples) : 0.0f;
+        x[i] *= (i < num_samples) ? 1.855f*liquid_hamming(i,num_samples) : 0.0f;
     }
 
     // execute interpolator (complex to real conversion)
@@ -59,11 +80,11 @@ int main() {
     // 
     // export results to file
     //
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
-    fprintf(fid,"num_input_samples=%u;\n", num_input_samples);
+    fprintf(fid,"num_samples=%u;\n", num_samples);
     fprintf(fid,"num_total_samples=%u;\n", num_total_samples);
     fprintf(fid,"tx = 0:(num_total_samples-1);\n");
     fprintf(fid,"ty = [0:(2*num_total_samples-1)]/2;\n");
@@ -101,9 +122,9 @@ int main() {
     // plot results
     fprintf(fid,"nfft=4096;\n");
     fprintf(fid,"%% compute normalized windowing functions\n");
-    fprintf(fid,"X=20*log10(abs(fftshift(fft(x/num_input_samples,nfft))));\n");
-    fprintf(fid,"Y=20*log10(abs(fftshift(fft(y/num_input_samples,nfft))));\n");
-    fprintf(fid,"Z=20*log10(abs(fftshift(fft(z/num_input_samples,nfft))));\n");
+    fprintf(fid,"X=20*log10(abs(fftshift(fft(x/num_samples,nfft))));\n");
+    fprintf(fid,"Y=20*log10(abs(fftshift(fft(y/num_samples,nfft))));\n");
+    fprintf(fid,"Z=20*log10(abs(fftshift(fft(z/num_samples,nfft))));\n");
     fprintf(fid,"f =[0:(nfft-1)]/nfft-0.5;\n");
     fprintf(fid,"figure; plot(f+0.5,X,'LineWidth',1,'Color',[0.50 0.50 0.50],...\n");
     fprintf(fid,"             f*2,  Y,'LineWidth',2,'Color',[0.00 0.50 0.25],...\n");
@@ -115,7 +136,7 @@ int main() {
     fprintf(fid,"legend('original/cplx','transformed/real','regenerated/cplx','location','northeast');");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

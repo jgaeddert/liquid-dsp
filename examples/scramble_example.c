@@ -1,36 +1,37 @@
-//
-// scramble_example.c
-//
-// Data-scrambling example.  Physical layer synchronization of
-// received waveforms relies on independent and identically
-// distributed underlying data symbols.  If the message sequence,
-// however, is '00000....' and the modulation scheme is BPSK,
-// the synchronizer probably won't be able to recover the symbol
-// timing.  It is imperative to increase the entropy of the data
-// for this to happen.  The data scrambler routine attempts to
-// 'whiten' the data sequence with a bit mask in order to achieve
-// maximum entropy.  This example demonstrates the interface.
-//
+char __docstr__[] =
+"Data-scrambling example.  Physical layer synchronization of"
+" received waveforms relies on independent and identically"
+" distributed underlying data symbols.  If the message sequence,"
+" however, is '00000....' and the modulation scheme is BPSK,"
+" the synchronizer probably won't be able to recover the symbol"
+" timing.  It is imperative to increase the entropy of the data"
+" for this to happen.  The data scrambler routine attempts to"
+" 'whiten' the data sequence with a bit mask in order to achieve"
+" maximum entropy.  This example demonstrates the interface.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 float compute_entropy(unsigned char * _x,
                       unsigned int _n);
 
-int main() {
-    unsigned int n=32;  // number of data bytes
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(unsigned, n, 32, 'm', "number of data bytes", NULL);
+    liquid_argparse_parse(argc,argv);
 
     unsigned char x[n]; // input data
     unsigned char y[n]; // scrambled data
     unsigned char z[n]; // unscrambled data
 
-    unsigned int i;
-
     // generate data
+    unsigned int i;
     for (i=0; i<n; i++)
         x[i] = rand() % 2 ? 0x0f : 0xc8;
 

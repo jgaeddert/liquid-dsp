@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,10 @@
  * THE SOFTWARE.
  */
 
-// This file is used in conjunction with autotest_include.h (generated with
-// autotest_gen.py) to produce an executable for automatically testing the
-// various signal processing algorithms in liquid.
+char __docstr__[] =
+"This file is used in conjunction with autotest_include.h (generated with"
+" autotest_gen.py) to produce an executable for automatically testing the"
+" various signal processing algorithms in liquid.";
 
 // default include headers
 #include <stdio.h>
@@ -32,29 +33,8 @@
 #include <time.h>
 #include <sys/resource.h>
 #include "liquid.internal.h"
+#include "liquid.argparse.h"
 #include "autotest/autotest.h"
-
-void usage()
-{
-    // help
-    printf("Usage: xautotest [OPTION]\n");
-    printf("Execute autotest scripts for liquid-dsp library.\n");
-    printf("  -h            display this help and exit\n");
-    printf("  -t <id>       run specific test\n");
-    printf("  -H <id>       hammer on a specific test\n");
-    printf("  -c <count>    number of time to run hammer test\n");
-    printf("  -p <id>       run specific package\n");
-    printf("  -r            run all tests, random order\n");
-    printf("  -R <seed>     specify random seed value\n");
-    printf("  -L            lists all scripts\n");
-    printf("  -l            lists all packages\n");
-    printf("  -x            stop on fail\n");
-    printf("  -s <string>   run all tests matching search string\n");
-    printf("  -v            verbose\n");
-    printf("  -q            quiet\n");
-    printf("  -o <filename> output file (json)\n");
-    printf("  -g <filename> output file (log)\n");
-}
 
 // define autotest function pointer
 typedef void(autotest_function_t) (void);
@@ -115,105 +95,34 @@ void print_package_results(package_t * _p);
 void print_unstable_tests(void);
 
 // print list of tests
-void print_test_list(void);
+int print_test_list(void);
 
 // print list of packages
-void print_package_list(void);
+int print_package_list(void);
 
 // main function
 int main(int argc, char *argv[])
 {
-    // options
-    enum {RUN_ALL,              // run all tests
-          RUN_ALL_RANDOM,       // run all tests (random order)
-          RUN_SINGLE_TEST,      // run just a single test
-          RUN_SINGLE_PACKAGE,   // run just a single package
-          RUN_SEARCH,           // run search
-          HAMMER_SINGLE_TEST,   // run just a single test, but repeatedly and with incrementing seeds
-    } mode = RUN_ALL;
+    // create argument parser using macros to define variables and set values from command line
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(bool,         list_tests,    false,      'L', "list all tests and exit", NULL);
+    liquid_argparse_add(bool,         list_packages, false,      'l', "list all packages and exit", NULL);
+    liquid_argparse_add(int,          autotest_id,   -1,         't', "run specific test", NULL);
+    liquid_argparse_add(int,          package_id,    -1,         'p', "run specific package", NULL);
+    liquid_argparse_add(bool,         verbose,       false,      'v', "enable verbose mode", NULL);
+    liquid_argparse_add(bool,         stop_on_fail,  false,      'x', "stop on failure", NULL);
+    liquid_argparse_add(bool,         randomize,     false,      'r', "run all tests, random order", NULL);
+    liquid_argparse_add(unsigned int, rseed,         time(NULL), 'R', "specify random seed value", NULL);
+    liquid_argparse_add(int,          hammer_id,     -1,         'H', "hammer on a specific test", NULL);
+    liquid_argparse_add(unsigned int, hammer_count,  100,        'c', "", NULL);
+    liquid_argparse_add(char *,       search_string, "",         's', "run all tests matching search string", NULL);
+    liquid_argparse_add(char *,       filename_json, "",         'o', "output filename to store JSON results", NULL);
+    liquid_argparse_add(char *,       filename_log,  "",         'g', "output filename to store all logs", NULL);
+    liquid_argparse_add(int,          log_level,     LIQUID_INFO,'V', "log level", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    // set defaults
-    unsigned int autotest_id        = 0;
-    unsigned int package_id         = 0;
-    int          verbose            = 1;
-    int          stop_on_fail       = 0;
-    unsigned int rseed              = time(NULL);
-    unsigned int hammer_count       = 100;
-    char         search_string[128] = "";
-    char         filename_json[256] = "";
-    char         filename_log [256] = "";
-    int          log_level          = LIQUID_INFO;
-
-    unsigned int i;
-
-    // get input options
-    int d;
-    while((d = getopt(argc,argv,"ht:H:c:p:rR:Llxs:vqo:g:")) != EOF){
-        switch (d) {
-        case 'h':
-            usage();
-            return 0;
-        case 't':
-            autotest_id = atoi(optarg);
-            mode = RUN_SINGLE_TEST;
-            break;
-        case 'H':
-            autotest_id = atoi(optarg);
-            mode = HAMMER_SINGLE_TEST;
-            break;
-        case 'c':
-            hammer_count = atoi(optarg);
-            break;
-        case 'p':
-            package_id = atoi(optarg);
-            mode = RUN_SINGLE_PACKAGE;
-            break;
-        case 'r':
-            mode = RUN_ALL_RANDOM;
-            break;
-        case 'R':
-            rseed = atoi(optarg);
-            break;
-        case 'L':
-            // list packages, scripts and exit
-            print_test_list();
-            return 0;
-        case 'l':
-            // list only packages and exit
-            print_package_list();
-            return 0;
-        case 'x':
-            stop_on_fail = 1;
-            break;
-        case 's':
-            mode = RUN_SEARCH;
-            strncpy(search_string, optarg, 128);
-            search_string[127] = '\0';
-            break;
-        case 'v':
-            verbose = 1;
-            liquid_autotest_verbose = 1;
-            log_level--; // decrease threshold
-            break;
-        case 'q':
-            verbose = 0;
-            liquid_autotest_verbose = 0;
-            log_level++; // increase threshold
-            break;
-        case 'o':
-            strncpy(filename_json,optarg,255);
-            filename_json[255] = '\0';
-            break;
-        case 'g':
-            strncpy(filename_log,optarg,255);
-            filename_log[255] = '\0';
-            break;
-        default:
-            return 1;
-        }
-    }
+    // configure logging
     liquid_logger_set_level(NULL, log_level);
-
     FILE * log = NULL;
     if (strcmp(filename_log,"")!=0) {
         log = fopen(filename_log,"w");
@@ -222,33 +131,59 @@ int main(int argc, char *argv[])
         liquid_logger_add_file(NULL,log,log_level);
     }
 
+    if (list_tests)
+        return print_test_list();
+    if (list_packages)
+        return print_package_list();
+
+    // validate configuration
+    if (autotest_id >= 0 && autotest_id >= NUM_AUTOSCRIPTS)
+        return liquid_error(LIQUID_EIRANGE,"cannot run autotest %u; index exceeded", autotest_id);
+    if (package_id >= 0 && package_id >= NUM_PACKAGES)
+        return liquid_error(LIQUID_EICONFIG,"cannot run package %u; maximum index (%u) exceeded", package_id, NUM_PACKAGES-1);
+    if (hammer_id >= 0 && hammer_id >= NUM_AUTOSCRIPTS)
+        return liquid_error(LIQUID_EICONFIG,"cannot hammer autotest %u; maximum index (%u) exceeded", hammer_id, NUM_AUTOSCRIPTS-1);
+
     // set random seed for repeatability
     srand(rseed);
 
-    // validate results
-    if (autotest_id >= NUM_AUTOSCRIPTS)
-        return liquid_error(LIQUID_EIRANGE,"cannot run autotest %u; index exceeded", autotest_id);
-    if (package_id >= NUM_PACKAGES)
-        return liquid_error(LIQUID_EIRANGE,"cannot run package %u; index exceeded", package_id);
-
+    unsigned int i;
     unsigned int n=0;
-    switch (mode) {
-    case RUN_ALL:
-        for (i=0; i<NUM_PACKAGES; i++) {
-            execute_package( &packages[i], verbose );
+    if (autotest_id >= 0) {
+        // run single test
+        execute_autotest( &scripts[autotest_id], verbose );
+        if (verbose)
+            print_autotest_results( &scripts[autotest_id] );
+    } else if (package_id >= 0) {
+        // run single package
+        execute_package( &packages[package_id], verbose );
+        if (verbose)
+            print_package_results( &packages[package_id] );
+    } else if (strlen(search_string) > 0 ) {
+        printf("running all scripts matching '%s'...\n", search_string);
 
-            n++;
+        // search all packages
+        for (i=0; i<NUM_PACKAGES; i++)
+            execute_package_search( &packages[i], search_string, verbose);
+
+        // print results
+        for (i=0; i<NUM_PACKAGES; i++) {
+            if (verbose && packages[i].executed)
+                print_package_results( &packages[i] );
+        }
+    } else if (hammer_id >= 0) {
+        for (i=0; i<hammer_count; i++) {
+            srand(rseed+i);
+            printf("trial %u/%u, rseed=%u\n", i+1, hammer_count, rseed+i);
+            execute_autotest( &scripts[hammer_id], verbose );
             if (stop_on_fail && liquid_autotest_num_failed > 0)
                 break;
         }
-
-        for (i=0; i<n; i++) {
-            print_package_results( &packages[i] );
-        }
-        break;
-    case RUN_ALL_RANDOM:
-        // initialize with large random number
-        i = (rseed + 8191) % NUM_AUTOSCRIPTS;
+        if (verbose)
+            print_autotest_results( &scripts[hammer_id] );
+    } else if (randomize) {
+        // run all tests in random order
+        i = (rseed + 8191) % NUM_AUTOSCRIPTS; // initialize with large random number
 
         while (n < NUM_AUTOSCRIPTS) {
             i = (i + 524287) % NUM_AUTOSCRIPTS;
@@ -270,44 +205,20 @@ int main(int argc, char *argv[])
             if (verbose)
                 print_autotest_results( &scripts[i] );
         }
-        break;
-    case RUN_SINGLE_TEST:
-        execute_autotest( &scripts[autotest_id], verbose );
-        if (verbose)
-            print_autotest_results( &scripts[autotest_id] );
-        break;
-    case RUN_SINGLE_PACKAGE:
-        execute_package( &packages[package_id], verbose );
-        if (verbose)
-            print_package_results( &packages[package_id] );
-        break;
-    case RUN_SEARCH:
-        liquid_log_info("running all scripts matching '%s'", search_string);
-
-        // search all packages
-        for (i=0; i<NUM_PACKAGES; i++)
-            execute_package_search( &packages[i], search_string, verbose);
-
-        // print results
+    } else {
+        // run all
         for (i=0; i<NUM_PACKAGES; i++) {
-            if (verbose && packages[i].executed)
-                print_package_results( &packages[i] );
-        }
-        break;
-    case HAMMER_SINGLE_TEST:
-        liquid_log_info("hammering test %u by running %u times", autotest_id, hammer_count);
-        for (i=0; i<hammer_count; i++) {
-            srand(rseed+i);
-            liquid_log_info("trial %u/%u, rseed=%u", i+1, hammer_count, rseed+i);
-            execute_autotest( &scripts[autotest_id], verbose );
+            execute_package( &packages[i], verbose );
+
+            n++;
             if (stop_on_fail && liquid_autotest_num_failed > 0)
                 break;
         }
-        if (verbose)
-            print_autotest_results( &scripts[autotest_id] );
-        break;
-    default:
-        return liquid_error(LIQUID_EIMODE,"unknown/invalid execution mode");
+
+        for (i=0; i<n; i++) {
+            if (verbose)
+                print_package_results( &packages[i] );
+        }
     }
 
     // ugh
@@ -351,16 +262,6 @@ int main(int argc, char *argv[])
     for (i=0; i<(unsigned int)argc; i++)
         fprintf(fid," %s", argv[i]);
     fprintf(fid,"\",\n");
-    fprintf(fid,"  \"run-mode\" : ");
-    switch (mode) {
-    case RUN_ALL:            fprintf(fid,"\"RUN_ALL\",\n");            break;
-    case RUN_ALL_RANDOM:     fprintf(fid,"\"RUN_RANDOM\",\n");         break;
-    case RUN_SINGLE_TEST:    fprintf(fid,"\"RUN_SINGLE_TEST\",\n");    break;
-    case RUN_SINGLE_PACKAGE: fprintf(fid,"\"RUN_SINGLE_PACKAGE\",\n"); break;
-    case RUN_SEARCH:         fprintf(fid,"\"RUN_SEARCH\",\n");         break;
-    case HAMMER_SINGLE_TEST: fprintf(fid,"\"HAMMER_SINGLE_TEST\",\n"); break;
-    default:                 fprintf(fid,"\"(unknown)\",\n");
-    }
     fprintf(fid,"  \"rseed\" : %u,\n", rseed);
     fprintf(fid,"  \"stop-on-fail\" : %s,\n", stop_on_fail ? "true" : "false");
     fprintf(fid,"  \"tests\" : [\n");
@@ -516,7 +417,7 @@ void print_unstable_tests(void)
     }
 }
 
-void print_test_list(void)
+int print_test_list(void)
 {
     unsigned int i;
     unsigned int j;
@@ -525,13 +426,14 @@ void print_test_list(void)
         for (j=packages[i].index; j<packages[i].num_scripts+packages[i].index; j++)
             printf("    %u: %s\n", scripts[j].id, scripts[j].name);
     }
+    return LIQUID_OK;
 }
 
-void print_package_list(void)
+int print_package_list(void)
 {
     unsigned int i;
     for (i=0; i<NUM_PACKAGES; i++)
         printf("%u: %s\n", packages[i].id, packages[i].name);
+    return LIQUID_OK;
 }
-
 

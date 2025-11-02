@@ -1,10 +1,7 @@
-// 
-// cpfskmodem_example.c
-//
-// This example demonstrates the continuous phase frequency-shift keying
-// (CP-FSK) modem in liquid. A message signal is modulated and the
-// resulting signal is recovered using a demodulator object.
-//
+char __docstr__[] =
+"This example demonstrates the continuous phase frequency-shift keying"
+" (CP-FSK) modem in liquid. A message signal is modulated and the"
+" resulting signal is recovered using a demodulator object.";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,65 +9,34 @@
 #include <getopt.h>
 #include <math.h>
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "cpfskmodem_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("cpfskmodem_example -- continuous-phase frequency-shift keying example\n");
-    printf("options:\n");
-    printf(" -h             : print help\n");
-    printf(" -t <type>      : filter type: [square], rcos-full, rcos-half, gmsk\n");
-    printf(" -p <b/s>       : bits/symbol,              default:  1\n");
-    printf(" -H <index>     : modulation index,         default:  0.5\n");
-    printf(" -k <s/sym>     : samples/symbol,           default:  8\n");
-    printf(" -m <delay>     : filter delay (symbols),   default:  3\n");
-    printf(" -b <rolloff>   : filter roll-off,          default:  0.35\n");
-    printf(" -n <num>       : number of data symbols,   default: 80\n");
-    printf(" -s <snr>       : SNR [dB],                 default: 40\n");
-}
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // options
-    unsigned int    bps         = 1;        // number of bits/symbol
-    float           h           = 0.5f;     // modulation index (h=1/2 for MSK)
-    unsigned int    k           = 4;        // filter samples/symbol
-    unsigned int    m           = 3;        // filter delay (symbols)
-    float           beta        = 0.35f;    // GMSK bandwidth-time factor
-    unsigned int    num_symbols = 20;       // number of data symbols
-    float           SNRdB       = 40.0f;    // signal-to-noise ratio [dB]
-    int             filter_type = LIQUID_CPFSK_SQUARE;
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "cpfskmodem_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char *,   filter,      "square",'t', "filter type: square, rcos-full, rcos-half, gmsk", NULL);
+    liquid_argparse_add(unsigned, bps,         1,       'p', "number of bits/symbol", NULL);
+    liquid_argparse_add(float,    h,           0.5f,    'H', "modulation index (h=1/2 for MSK)", NULL);
+    liquid_argparse_add(unsigned, k,           4,       'k', "filter samples/symbol", NULL);
+    liquid_argparse_add(unsigned, m,           3,       'm', "filter delay (symbols)", NULL);
+    liquid_argparse_add(float,    beta,        0.35f,   'b', "GMSK bandwidth-time factor", NULL);
+    liquid_argparse_add(unsigned, num_symbols, 20,      'n', "number of data symbols", NULL);
+    liquid_argparse_add(float,    SNRdB,       40.0f,   's', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    int dopt;
-    while ((dopt = getopt(argc,argv,"ht:p:H:k:m:b:n:s:")) != EOF) {
-        switch (dopt) {
-        case 'h': usage();                      return 0;
-        case 't':
-            if (strcmp(optarg,"square")==0) {
-                filter_type = LIQUID_CPFSK_SQUARE;
-            } else if (strcmp(optarg,"rcos-full")==0) {
-                filter_type = LIQUID_CPFSK_RCOS_FULL;
-            } else if (strcmp(optarg,"rcos-half")==0) {
-                filter_type = LIQUID_CPFSK_RCOS_PARTIAL;
-            } else if (strcmp(optarg,"gmsk")==0) {
-                filter_type = LIQUID_CPFSK_GMSK;
-            } else {
-                fprintf(stderr,"error: %s, unknown filter type '%s'\n", argv[0], optarg);
-                exit(1);
-            }
-            break;
-        case 'p': bps   = atoi(optarg);         break;
-        case 'H': h     = atof(optarg);         break;
-        case 'k': k     = atoi(optarg);         break;
-        case 'm': m     = atoi(optarg);         break;
-        case 'b': beta  = atof(optarg);         break;
-        case 'n': num_symbols = atoi(optarg);   break;
-        case 's': SNRdB = atof(optarg);         break;
-        default:
-            exit(1);
-        }
+    int filter_type = LIQUID_CPFSK_SQUARE;
+    if (strcmp(filter,"square")==0) {
+        filter_type = LIQUID_CPFSK_SQUARE;
+    } else if (strcmp(filter,"rcos-full")==0) {
+        filter_type = LIQUID_CPFSK_RCOS_FULL;
+    } else if (strcmp(filter,"rcos-half")==0) {
+        filter_type = LIQUID_CPFSK_RCOS_PARTIAL;
+    } else if (strcmp(filter,"gmsk")==0) {
+        filter_type = LIQUID_CPFSK_GMSK;
+    } else {
+        return liquid_error(LIQUID_EICONFIG,"unknown filter type '%s'", filter);
     }
 
     unsigned int i;
@@ -135,8 +101,8 @@ int main(int argc, char*argv[])
     // 
     // export results
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"k = %u;\n", k);
@@ -199,7 +165,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  grid on;\n");
 
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     return 0;
 }

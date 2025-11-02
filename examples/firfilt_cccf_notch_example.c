@@ -1,24 +1,24 @@
-//
-// firfilt_cccf_notch_example.c
-//
-// This example demonstrates how to create a notching non-recursive
-// (finite impulse response) filter.
-//
+char __docstr__[] =
+"This example demonstrates how to create a notching non-recursive"
+" (finite impulse response) filter.";
 
 #include <stdio.h>
 #include <math.h>
 #include <complex.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "firfilt_cccf_notch_example.m"
-
-int main() {
-    // options
-    unsigned int num_samples = 600;     // number of samples
-    unsigned int m           = 25;      // prototype filter semi-length
-    float        As          = 30.0f;   // prototype filter stop-band suppression
-    float        f0          = 0.15f;   // notch frequency
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename, "firfilt_cccf_notch_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, num_samples, 600, 'n', "number of samples", NULL);
+    liquid_argparse_add(unsigned, m,    25, 'm', "prototype filter semi-length", NULL);
+    liquid_argparse_add(float,    As,   10, 's', "prototype filter stop-band suppression", NULL);
+    liquid_argparse_add(float,    f0, 0.15, 'f', "notch frequency", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // design filter from prototype
     firfilt_cccf q = firfilt_cccf_create_notch(m,As,f0);
@@ -41,11 +41,11 @@ int main() {
     // destroy filter object
     firfilt_cccf_destroy(q);
 
-    // 
+    //
     // plot results to output file
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"\n");
@@ -93,7 +93,7 @@ int main() {
 
     // close output file
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     printf("done.\n");
     return 0;

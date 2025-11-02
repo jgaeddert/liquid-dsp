@@ -1,68 +1,37 @@
-//
-// firpfbch2_crcf_example.c
-//
-// Example of the finite impulse response (FIR) polyphase filterbank
-// (PFB) channelizer with an output rate of 2 Fs / M as an (almost)
-// perfect reconstructive system.
-//
+char __docstr__[] =
+"Example of the finite impulse response (FIR) polyphase filterbank"
+" (PFB) channelizer with an output rate of 2 Fs / M as an (almost)"
+" perfect reconstructive system.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <getopt.h>
 #include <assert.h>
 
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "firpfbch2_crcf_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("%s [options]\n", __FILE__);
-    printf("  h     : print help\n");
-    printf("  M     : number of channels, default: 6\n");
-    printf("  m     : prototype filter semi-length, default: 4\n");
-    printf("  s     : prototype filter stop-band attenuation, default: 80\n");
-    printf("  n     : number of 'symbols' to analyze, default: 20\n");
-}
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // options
-    unsigned int num_channels=6;    // number of channels
-    unsigned int m = 4;             // filter semi-length (symbols)
-    unsigned int num_symbols=20;    // number of symbols
-    float As = 80.0f;               // filter stop-band attenuation
-    
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hM:m:s:n:")) != EOF) {
-        switch (dopt) {
-        case 'h':   usage();                     return 0;
-        case 'M':   num_channels = atoi(optarg); break;
-        case 'm':   m            = atoi(optarg); break;
-        case 's':   As           = atof(optarg); break;
-        case 'n':   num_symbols  = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
-
-    unsigned int i;
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename, "firpfbch2_crcf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, num_channels,  6, 'M', "number of channels", NULL);
+    liquid_argparse_add(unsigned, m,             4, 'm', "filter length [symbols]", NULL);
+    liquid_argparse_add(float,    As,           80, 'a', "filter stop-band attenuation", NULL);
+    liquid_argparse_add(unsigned, num_symbols,  24, 'n', "number of symbols", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (num_channels < 2 || num_channels % 2) {
-        fprintf(stderr,"error: %s, number of channels must be greater than 2 and even\n", argv[0]);
-        exit(1);
-    } else if (m == 0) {
-        fprintf(stderr,"error: %s, filter semi-length must be greater than zero\n", argv[0]);
-        exit(1);
-    } else if (num_symbols == 0) {
-        fprintf(stderr,"error: %s, number of symbols must be greater than zero", argv[0]);
-        exit(1);
-    }
+    if (num_channels < 2 || num_channels % 2)
+        return liquid_error(LIQUID_EICONFIG,"number of channels must be greater than 2 and even");
+    if (m == 0)
+        return liquid_error(LIQUID_EICONFIG,"filter semi-length must be greater than zero");
+    if (num_symbols == 0)
+        return liquid_error(LIQUID_EICONFIG,"number of symbols must be greater than zero");
 
     // derived values
+    unsigned int i;
     unsigned int num_samples = num_channels * num_symbols;
 
     // allocate arrays
@@ -112,8 +81,8 @@ int main(int argc, char*argv[])
     //
     // EXPORT DATA TO FILE
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"num_channels=%u;\n", num_channels);
@@ -162,7 +131,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"    grid on;\n");
 
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     printf("done.\n");
     return 0;

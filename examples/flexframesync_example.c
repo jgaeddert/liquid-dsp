@@ -1,46 +1,23 @@
-//
-// flexframesync_example.c
-//
-// This example demonstrates the basic interface to the flexframegen and
-// flexframesync objects used to completely encapsulate raw data bytes
-// into frame samples (nearly) ready for over-the-air transmission. A
-// 14-byte header and variable length payload are encoded into baseband
-// symbols using the flexframegen object.  The resulting symbols are
-// interpolated using a root-Nyquist filter and the resulting samples are
-// then fed into the flexframesync object which attempts to decode the
-// frame. Whenever frame is found and properly decoded, its callback
-// function is invoked.
-//
-// SEE ALSO: flexframesync_reconfig_example.c
-//           framesync64_example.c
-//
+char __docstr__[] =
+"This example demonstrates the basic interface to the flexframegen and"
+" flexframesync objects used to completely encapsulate raw data bytes"
+" into frame samples (nearly) ready for over-the-air transmission. A"
+" 14-byte header and variable length payload are encoded into baseband"
+" symbols using the flexframegen object.  The resulting symbols are"
+" interpolated using a root-Nyquist filter and the resulting samples are"
+" then fed into the flexframesync object which attempts to decode the"
+" frame. Whenever frame is found and properly decoded, its callback"
+" function is invoked.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include <getopt.h>
 #include <assert.h>
 
 #include "liquid.h"
-
-void usage()
-{
-    printf("flexframesync_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  s     : signal-to-noise ratio [dB], default: 20\n");
-    printf("  F     : carrier frequency offset, default: 0.01\n");
-    printf("  n     : payload length [bytes], default: 480\n");
-    printf("  m     : modulation scheme (qpsk default)\n");
-    liquid_print_modulation_schemes();
-    printf("  v     : data integrity check: crc32 default\n");
-    liquid_print_crc_schemes();
-    printf("  c     : coding scheme (inner): h74 default\n");
-    printf("  k     : coding scheme (outer): none default\n");
-    liquid_print_fec_schemes();
-    printf("  d     : enable debugging\n");
-}
+#include "liquid.argparse.h"
 
 // flexframesync callback function
 static int callback(unsigned char *  _header,
@@ -53,37 +30,23 @@ static int callback(unsigned char *  _header,
 
 int main(int argc, char *argv[])
 {
-    //srand( time(NULL) );
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    mod,      "qpsk", 'm', "FEC scheme", liquid_argparse_modem);
+    liquid_argparse_add(char*,    crc,     "crc32", 'v', "CRC scheme", liquid_argparse_crc);
+    liquid_argparse_add(char*,    fs0,      "none", 'c', "FEC scheme (inner)", liquid_argparse_fec);
+    liquid_argparse_add(char*,    fs1,      "none", 'k', "FEC scheme (outer)", liquid_argparse_fec);
+    liquid_argparse_add(unsigned, payload_len, 480, 'n', "data length (bytes)", NULL);
+    liquid_argparse_add(float,    noise_floor, -60, '0', "noise floor [dB]", NULL);
+    liquid_argparse_add(float,    SNRdB,        20, 's', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_add(float,    dphi,       0.01, 'f', "carrier frequency offset [radians/sample]", NULL);
+    liquid_argparse_add(bool,     debug,     false, 'd', "enable debugging", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    // options
-    modulation_scheme ms     =  LIQUID_MODEM_QPSK; // mod. scheme
-    crc_scheme check         =  LIQUID_CRC_32;     // data validity check
-    fec_scheme fec0          =  LIQUID_FEC_NONE;   // fec (inner)
-    fec_scheme fec1          =  LIQUID_FEC_NONE;   // fec (outer)
-    unsigned int payload_len =  480;               // payload length
-    int debug_enabled        =  0;                 // enable debugging?
-    float noise_floor        = -60.0f;             // noise floor
-    float SNRdB              =  20.0f;             // signal-to-noise ratio
-    float dphi               =  0.01f;             // carrier frequency offset
-
-    // get options
-    int dopt;
-    while((dopt = getopt(argc,argv,"uhs:F:n:m:v:c:k:d")) != EOF){
-        switch (dopt) {
-        case 'u':
-        case 'h': usage();                                       return 0;
-        case 's': SNRdB         = atof(optarg);                  break;
-        case 'F': dphi          = atof(optarg);                  break;
-        case 'n': payload_len   = atol(optarg);                  break;
-        case 'm': ms            = liquid_getopt_str2mod(optarg); break;
-        case 'v': check         = liquid_getopt_str2crc(optarg); break;
-        case 'c': fec0          = liquid_getopt_str2fec(optarg); break;
-        case 'k': fec1          = liquid_getopt_str2fec(optarg); break;
-        case 'd': debug_enabled = 1;                             break;
-        default:
-            exit(-1);
-        }
-    }
+    modulation_scheme ms    = liquid_getopt_str2mod(mod);
+    crc_scheme        check = liquid_getopt_str2crc(crc);
+    fec_scheme        fec0  = liquid_getopt_str2fec(fs0);
+    fec_scheme        fec1  = liquid_getopt_str2fec(fs1);
 
     // derived values
     unsigned int i;
@@ -101,7 +64,7 @@ int main(int argc, char *argv[])
 
     // create flexframesync object
     flexframesync fs = flexframesync_create(callback,NULL);
-    if (debug_enabled)
+    if (debug)
         flexframesync_debug_enable(fs);
 
     // assemble the frame (NULL pointers for default values)
@@ -134,7 +97,7 @@ int main(int argc, char *argv[])
     }
 
     // export debugging file
-    if (debug_enabled)
+    if (debug)
         flexframesync_debug_print(fs, "flexframesync_debug.m");
 
     flexframesync_print(fs);

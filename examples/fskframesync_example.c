@@ -1,28 +1,15 @@
-// This example demonstrates the interfaces to the fskframegen and
-// fskframesync objects used to completely encapsulate data for
-// over-the-air transmission.
-//
-// SEE ALSO: flexframesync_example.c
+char __docstr__[] =
+"This example demonstrates the interfaces to the fskframegen and"
+" fskframesync objects used to completely encapsulate data for"
+" over-the-air transmission.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <getopt.h>
 #include <time.h>
 
 #include "liquid.h"
-
-#define OUTPUT_FILENAME  "fskframesync_example.m"
-
-void usage()
-{
-    printf("fskframesync_example [options]\n");
-    printf("  h     : print usage\n");
-    printf("  d     : enable debugging\n");
-    printf("  S     : signal-to-noise ratio [dB], default: 20\n");
-    printf("  F     : carrier frequency offset, default: 0\n");
-    printf("  P     : carrier phase offset, default: 0\n");
-    printf("  T     : fractional sample timing offset, default: 0.01\n");
-}
+#include "liquid.argparse.h"
 
 // static callback function
 static int callback(unsigned char *  _header,
@@ -39,36 +26,26 @@ unsigned char payload[200];
 
 int main(int argc, char*argv[])
 {
-    srand( time(NULL) );
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "fskframesync_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(float,    SNRdB,        20.0f, 'S', "signal-to-noise ratio", NULL);
+    liquid_argparse_add(float,    noise_floor, -20.0f, '0', "noise floor", NULL);
+    liquid_argparse_add(float,    dphi,         0.01f, 'F', "carrier frequency offset", NULL);
+    liquid_argparse_add(float,    theta,         0.0f, 'P', "carrier phase offset", NULL);
+    liquid_argparse_add(float,    dt,           -0.2f, 'T', "fractional sample timing offset", NULL);
+    liquid_argparse_add(char*,    crc,        "crc32", 'v', "FEC scheme", liquid_argparse_crc);
+    liquid_argparse_add(char*,    fs0,         "none", 'c', "FEC scheme", liquid_argparse_fec);
+    liquid_argparse_add(char*,    fs1,         "none", 'k', "FEC scheme", liquid_argparse_fec);
+    liquid_argparse_add(unsigned, payload_len,    480, 'n', "payload length (bytes)", NULL);
+    liquid_argparse_add(bool,  debug_enabled,   false, 'D', "enable debugging", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    // options
-    float SNRdB       =  20.0f; // signal-to-noise ratio
-    float noise_floor = -20.0f; // noise floor
-    float dphi        =  0.01f; // carrier frequency offset
-    float theta       =  0.0f;  // carrier phase offset
-    float dt          =  -0.2f;  // fractional sample timing offset
+    // validate input
+    crc_scheme check = liquid_getopt_str2crc(crc);
+    fec_scheme fec0  = liquid_getopt_str2fec(fs0);
+    fec_scheme fec1  = liquid_getopt_str2fec(fs1);
 
-    crc_scheme check         =  LIQUID_CRC_32;     // data validity check
-    fec_scheme fec0          =  LIQUID_FEC_NONE;   // fec (inner)
-    fec_scheme fec1          =  LIQUID_FEC_NONE;   // fec (outer)
-    unsigned int payload_len =  200;               // payload length
-
-    int debug_enabled = 0;
-
-    // get options
-    int dopt;
-    while((dopt = getopt(argc,argv,"hdS:F:P:T:")) != EOF){
-        switch (dopt) {
-        case 'h': usage();              return 0;
-        case 'd': debug_enabled = 1;    break;
-        case 'S': SNRdB = atof(optarg); break;
-        case 'F': dphi  = atof(optarg); break;
-        case 'P': theta = atof(optarg); break;
-        case 'T': dt    = atof(optarg); break;
-        default:
-            exit(-1);
-        }
-    }
     printf("channel offsets: dt=%.3f, dphi=%.3f, theta=%.3f\n", dt, dphi, theta);
 
     // derived values
@@ -134,8 +111,8 @@ int main(int argc, char*argv[])
     // 
     // export results
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"nfft        = %u;\n", nfft);
@@ -155,7 +132,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"grid on;\n");
 
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     printf("done.\n");
     return 0;

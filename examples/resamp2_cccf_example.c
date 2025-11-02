@@ -1,28 +1,27 @@
-//
-// resamp2_cccf_example.c
-//
-// This example demonstrates the halfband resampler cenetered at the
-// quarter sample rate to split the signal into positive and negative
-// frequency bands. Two distinct narrow-band signals are generated; one
-// at a positive frequency and one at a negative frequency. The resamp2
-// object is run as a filter to separate the two about the zero-
-// frequency center point.
-//
+char __docstr__[] =
+"This example demonstrates the halfband resampler cenetered at the"
+" quarter sample rate to split the signal into positive and negative"
+" frequency bands. Two distinct narrow-band signals are generated; one"
+" at a positive frequency and one at a negative frequency. The resamp2"
+" object is run as a filter to separate the two about the zero-frequency"
+" center point.";
 
 #include <stdio.h>
 #include <complex.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "resamp2_cccf_example.m"
-
-int main() {
-    unsigned int m           = 12;      // filter semi-length (actual length: 4*m+1)
-    float        As          = 60.0f;   // stop-band attenuation [dB]
-    unsigned int num_samples = 400;     // number of input samples
-
-    unsigned int i;
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "resamp2_cccf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, m,            12, 'm', "filter semi-length (actual length: 4*m+1)", NULL);
+    liquid_argparse_add(float,    As,           60, 'a', "resampling filter stop-band attenuation [dB]", NULL);
+    liquid_argparse_add(unsigned, num_samples, 400, 'n', "number of low-rate samples", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // allocate memory for data arrays
     float complex x [num_samples];  // input signal
@@ -31,6 +30,7 @@ int main() {
 
     // generate the two signals
     iirfilt_crcf lowpass = iirfilt_crcf_create_lowpass(6,0.02);
+    unsigned int i;
     for (i=0; i<num_samples; i++) {
         // signal at negative frequency: tone
         float complex x_neg = cexpf(-_Complex_I*2*M_PI*0.059f*i);
@@ -57,8 +57,8 @@ int main() {
     // 
     // print results to file
     //
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n",filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"num_samples=%u;\n", num_samples);
@@ -124,7 +124,7 @@ int main() {
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
 
     fclose(fid);
-    printf("results written to %s\n",OUTPUT_FILENAME);
+    printf("results written to %s\n",filename);
 
     printf("done.\n");
     return 0;
