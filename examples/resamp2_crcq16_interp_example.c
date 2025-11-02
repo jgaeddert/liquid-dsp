@@ -1,57 +1,37 @@
-//
-// resamp2_crcq16_interp_example.c
-//
-// Halfband interpolator.  This example demonstrates the interface to the
-// interpolating halfband resampler in fixed-point math.
-//
-// SEE ALSO: resamp2_crcf_interp_example.c
-//
+char __docstr__[] =
+"Halfband interpolator.  This example demonstrates the interface to the"
+" interpolating halfband resampler.  A low-frequency input sinusoid is"
+" generated and fed into the interpolator one sample at a time,"
+" producing two outputs at each iteration.  The results are written to"
+" an output file."
+" All operations are in 16-bit fixed-point format";
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <getopt.h>
 #include <complex.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "resamp2_crcq16_interp_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char* argv[])
 {
-    printf("%s [options]\n", __FILE__);
-    printf("  h     :   print help\n");
-    printf("  n     :   number of input samples,      default: 64\n");
-    printf("  m     :   filter semi-length,           default: 5\n");
-    printf("  s     :   filter stop-band attenuation, default: 60 dB\n");
-}
-
-int main(int argc, char*argv[])
-{
-    unsigned int m=5;               // filter semi-length
-    float fc=0.074f;                // input tone frequency
-    unsigned int num_samples = 64;  // number of input samples
-    float As=60.0f;                 // stop-band attenuation [dB]
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hn:m:s:")) != EOF) {
-        switch (dopt) {
-        case 'h':   usage();                    return 0;
-        case 'n':   num_samples = atoi(optarg); break;
-        case 'm':   m           = atoi(optarg); break;
-        case 's':   As          = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
-    unsigned int i;
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "resamp2_crcq16_interp_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, m,           12, 'm', "filter semi-length (actual length: 4*m+1)", NULL);
+    liquid_argparse_add(float,    As,          60, 'a', "resampling filter stop-band attenuation [dB]", NULL);
+    liquid_argparse_add(float,    bw,         0.1, 'w', "pulse bandwidth (relative)", NULL);
+    liquid_argparse_add(unsigned, num_samples, 64, 'n', "number of output samples", NULL);
+    liquid_argparse_add(float,    fc,       0.037, 'f', "input tone frequency", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // allocate arrays
     cq16_t x[  num_samples]; // input array
     cq16_t y[2*num_samples]; // output array
 
     // generate input
+    unsigned int i;
     unsigned int w_len = num_samples - 2*m; // window length
     float beta = 8.0f;                      // kaiser window factor
     float w_sum = 0.0f;                     // gain due to window
@@ -87,8 +67,8 @@ int main(int argc, char*argv[])
     // 
     // export results
     //
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"num_samples=%u;\n", num_samples);
     fprintf(fid,"delay      =%u;\n", delay);
@@ -138,7 +118,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"axis([-1 1 -100 10]);\n");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

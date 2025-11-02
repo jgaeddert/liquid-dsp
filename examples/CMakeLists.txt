@@ -78,6 +78,7 @@ set(EXAMPLES
     framesync64_example
     framesync64_performance_example
     freqmodem_example
+    freqmodemq16_example
     fskframesync_example
     fskmodem_example
     fskmodem_waterfall_example
@@ -97,10 +98,12 @@ set(EXAMPLES
     iirfilt_cccf_example
     iirfilt_crcf_dcblocker_example
     iirfilt_crcf_example
+    iirfilt_crcq16_example
     iirfilt_rrrf_integrator_example
     iirhilb_example
     iirhilb_filter_example
     iirinterp_crcf_example
+    iirinterp_crcq16_example
     interleaver_example
     interleaver_scatterplot_example
     interleaver_soft_example
@@ -129,6 +132,9 @@ set(EXAMPLES
     msresamp2_crcf_example
     nco_crcf_mix_example
     nco_crcf_tone_example
+    nco_crcq16_example
+    nco_crcq16_pll_example
+    nco_crcq16_pll_modem_example
     nco_example
     nco_pll_example
     nco_pll_modem_example
@@ -165,6 +171,8 @@ set(EXAMPLES
     resamp2_crcf_example
     resamp2_crcf_filter_example
     resamp2_crcf_interp_example
+    resamp2_crcq16_decim_example
+    resamp2_crcq16_interp_example
     ricek_channel_example
     rresamp_crcf_example
     rresamp_crcf_partition_example

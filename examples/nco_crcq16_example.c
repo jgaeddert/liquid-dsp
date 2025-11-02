@@ -1,21 +1,30 @@
-// This example demonstrates the most basic functionality of the
-// numerically-controlled oscillator (NCO) object.
+char __docstr__[] =
+"This example demonstrates the most basic functionality of the"
+" numerically-controlled oscillator (NCO) object with 16-bit"
+" fixed-point data types";
+
 #include <stdio.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "nco_crcq16_example.m"
-
-int main()
+int main(int argc, char* argv[])
 {
-    // options
-    int          type        = LIQUID_NCO;      // nco type
-    float        fc          = 0.1f*M_SQRT1_2;  // nco tone frequency
-    unsigned int num_samples =   4000;          // number of samples to run
-    unsigned int nfft        =    960;          // spectral periodogram FFT size
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename,"nco_crcq16_example.m",'o', "output filename", NULL);
+    liquid_argparse_add(char*,    type_str,      "nco", 't', "nco type, {nco, vco}", NULL);
+    liquid_argparse_add(float,    fc,       0.07221980, 'r', "center frequency", NULL);
+    liquid_argparse_add(unsigned, num_samples,  240000, 'n', "number of samples", NULL);
+    liquid_argparse_add(unsigned, nfft,           4000, 'N', "spectral periodogram FFT size", NULL);
+    liquid_argparse_parse(argc,argv);
+
+    // validate input
+    if (strcmp(type_str,"nco") && strcmp(type_str,"vco"))
+        return liquid_error(LIQUID_EICONFIG,"invalid nco type '%s' (must be either 'nco' or 'vco')", type_str);
 
     // create the NCO object
-    nco_crcq16 q = nco_crcq16_create(type);
+    nco_crcq16 q = nco_crcq16_create(strcmp(type_str,"nco")==0 ? LIQUID_NCO : LIQUID_VCO);
     nco_crcq16_set_frequency(q, q16_angle_float_to_fixed(2*M_PI*fc));
     nco_crcq16_print(q);
 
@@ -44,8 +53,8 @@ int main()
     nco_crcq16_destroy(q);
 
     // export output file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"n    = %u;\n", num_samples);
@@ -73,6 +82,6 @@ int main()
     fprintf(fid,"  axis([-0.5 0.5 -60 40]);\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
     return 0;
 }

@@ -1,77 +1,45 @@
-// This example demonstrates how the nco/pll object (numerically-controlled
-// oscillator with phase-locked loop) can be used for carrier frequency
-// recovery in digital modems.  The modem type, SNR, and other parameters are
-// specified via the command-line interface.
+char __docstr__[] =
+"This example demonstrates how the nco/pll object (numerically-controlled"
+" oscillator with phase-locked loop) can be used for carrier frequency"
+" recovery in digital modems.  The modem type, SNR, and other parameters are"
+" specified via the command-line interface."
+" All operations are in 16-bit fixed-point format";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "nco_crcq16_pll_modem_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char* argv[])
 {
-    printf("nco_pll_modem_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  s     : signal-to-noise ratio, default: 30dB\n");
-    printf("  b     : pll bandwidth, default: 1e-3\n");
-    printf("  n     : number of symbols, default: 256\n");
-    printf("  P     : phase offset (radians), default: pi/10 ~ 0.3146\n");
-    printf("  F     : frequency offset (radians), default: 0.001\n");
-    printf("  m     : modulation scheme, default: qpsk\n");
-    liquid_print_modulation_schemes();
-}
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename,"nco_crcq16_pll_modem_example.m",'o', "output filename", NULL);
+    liquid_argparse_add(char*,    mod_str,         "qpsk", 'm', "modulation scheme", liquid_argparse_modem);
+    liquid_argparse_add(char*,    type_str,         "nco", 't', "nco type, {nco, vco}", NULL);
+    liquid_argparse_add(float,    phase_offset,     0.200, 'p', "phase offset [radians]", NULL);
+    liquid_argparse_add(float,    frequency_offset, 0.070, 'f', "frequency offset [f/Fs]", NULL);
+    liquid_argparse_add(float,    pll_bandwidth,    0.010, 'w', "phase-locked loop bandwidth", NULL);
+    liquid_argparse_add(float,    SNRdB,               30, 's', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_add(unsigned, num_symbols,        512, 'n', "number of symbols", NULL);
+    liquid_argparse_parse(argc,argv);
 
-int main(int argc, char*argv[]) {
-    srand( time(NULL) );
-    // parameters
-    float phase_offset     = M_PI/10;
-    float frequency_offset = 0.001f;
-    float SNRdB            = 30.0f;
-    float pll_bandwidth    = 0.02f;
-    modulation_scheme ms   = LIQUID_MODEM_QPSK;
-    unsigned int n         = 256;     // number of iterations
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"uhs:b:n:P:F:m:")) != EOF) {
-        switch (dopt) {
-        case 'u':
-        case 'h':   usage();                        return 0;
-        case 's':   SNRdB           = atof(optarg); break;
-        case 'b':   pll_bandwidth   = atof(optarg); break;
-        case 'n':   n               = atoi(optarg); break;
-        case 'P':   phase_offset    = atof(optarg); break;
-        case 'F':   frequency_offset= atof(optarg); break;
-        case 'm':
-            ms = liquid_getopt_str2mod(optarg);
-            if (ms == LIQUID_MODEM_UNKNOWN) {
-                fprintf(stderr,"error: %s, unknown/unsupported modulation scheme '%s'\n", argv[0], optarg);
-                return 1;
-            }
-            break;
-        default:
-            exit(1);
-        }
-    }
-    unsigned int d=n/32;      // print every "d" lines
-
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid, "%% %s : auto-generated file\n", OUTPUT_FILENAME);
-    fprintf(fid, "clear all;\n");
-    fprintf(fid, "phi=zeros(1,%u);\n",n);
-    fprintf(fid, "r=zeros(1,%u);\n",n);
+    // validate input
+    if (strcmp(type_str,"nco") && strcmp(type_str,"vco"))
+        return liquid_error(LIQUID_EICONFIG,"invalid nco type '%s' (must be either 'nco' or 'vco')", type_str);
 
     // objects
+    int type = strcmp(type_str,"nco")==0 ? LIQUID_NCO : LIQUID_VCO;
     nco_crcq16 nco_tx = nco_crcq16_create(LIQUID_VCO);
     nco_crcq16 nco_rx = nco_crcq16_create(LIQUID_VCO);
 
+    // create modems
+    modulation_scheme ms = liquid_getopt_str2mod(mod_str);
     modemcq16 mod   = modemcq16_create(ms);
     modemcq16 demod = modemcq16_create(ms);
-
     unsigned int bps = modemcq16_get_bps(mod);
 
     // initialize objects
@@ -87,11 +55,18 @@ int main(int argc, char*argv[]) {
     printf("frequency offset: %6.3f, phase offset: %6.3f, SNR: %6.2fdB, pll b/w: %6.3f\n",
             frequency_offset, phase_offset, SNRdB, pll_bandwidth);
 
+    // open output file for writing
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid, "%% %s : auto-generated file\n", filename);
+    fprintf(fid, "clear all;\n");
+    fprintf(fid, "phi=zeros(1,%u);\n",num_symbols);
+    fprintf(fid, "r=zeros(1,%u);\n",num_symbols);
+
     // run loop
     unsigned int i, M=1<<bps, sym_in, sym_out, num_errors=0;
     q16_t phase_error;
     cq16_t x, r, v;
-    for (i=0; i<n; i++) {
+    for (i=0; i<num_symbols; i++) {
         // generate random symbol
         sym_in = rand() % M;
 
@@ -106,7 +81,6 @@ int main(int argc, char*argv[]) {
         r.real += q16_float_to_fixed( randnf()*nstd/M_SQRT2 );
         r.imag += q16_float_to_fixed( randnf()*nstd/M_SQRT2 );
 
-        // 
         //v = nco_crcq16_cexpf(nco_rx);
         nco_crcq16_mix_down(nco_rx, r, &v);
 
@@ -128,7 +102,7 @@ int main(int argc, char*argv[]) {
                 q16_fixed_to_float(v.real),
                 q16_fixed_to_float(v.imag));
 
-        if ((i+1)%d == 0 || i==n-1) {
+        if ((i+1)%20 == 0 || i==num_symbols-1) {
             q16_t v0 = nco_crcq16_get_phase(nco_tx) - nco_crcq16_get_phase(nco_rx);// true phase error
             q16_t v1 = nco_crcq16_get_frequency(nco_tx) - nco_crcq16_get_frequency(nco_rx);// true frequency error
             printf("  %4u: e_hat : %6.3f, phase error : %6.3f, freq error : %6.3f\n",
@@ -166,7 +140,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid, "legend(['first 25%%'],['last 75%%'],'location','northeast');\n");
     fclose(fid);
 
-    printf("results written to %s.\n",OUTPUT_FILENAME);
+    printf("results written to %s.\n",filename);
 
     nco_crcq16_destroy(nco_tx);
     nco_crcq16_destroy(nco_rx);
@@ -174,7 +148,7 @@ int main(int argc, char*argv[]) {
     modemcq16_destroy(mod);
     modemcq16_destroy(demod);
 
-    printf("bit errors: %u / %u\n", num_errors, bps*n);
+    printf("bit errors: %u / %u\n", num_errors, bps*num_symbols);
     printf("done.\n");
     return 0;
 }
