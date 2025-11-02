@@ -1,36 +1,13 @@
-//
-// ofdmflexframesync_example.c
-//
-// Example demonstrating the OFDM flexible frame synchronizer.
-//
+char __docstr__[] = "Example demonstrating the OFDM flexible frame synchronizer.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include <getopt.h>
 #include <time.h>
 
 #include "liquid.h"
-
-void usage()
-{
-    printf("ofdmflexframesync_example [options]\n");
-    printf(" -h        : print usage\n");
-    printf(" -s  <snr> : signal-to-noise ratio [dB], default: 20\n");
-    printf(" -F <freq> : carrier frequency offset, default: 0.002\n");
-    printf(" -M  <num> : number of subcarriers (must be even), default: 64\n");
-    printf(" -C  <len> : cyclic prefix length, default: 16\n");
-    printf(" -n  <len> : payload length [bytes], default: 120\n");
-    printf(" -m  <mod> : modulation scheme (qpsk default)\n");
-    liquid_print_modulation_schemes();
-    printf(" -v  <crc> : data integrity check: crc32 default\n");
-    liquid_print_crc_schemes();
-    printf(" -c  <fec> : coding scheme (inner): h74 default\n");
-    printf(" -k  <fec> : coding scheme (outer): none default\n");
-    liquid_print_fec_schemes();
-    printf(" -d       : enable debugging\n");
-}
+#include "liquid.argparse.h"
 
 // callback function
 int callback(unsigned char *  _header,
@@ -41,48 +18,28 @@ int callback(unsigned char *  _header,
              framesyncstats_s _stats,
              void *           _userdata);
 
-int main(int argc, char*argv[])
+int main(int argc, char *argv[])
 {
-    //srand(time(NULL));
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    mod,      "qpsk", 'm', "FEC scheme", liquid_argparse_modem);
+    liquid_argparse_add(char*,    crc,     "crc32", 'v', "CRC scheme", liquid_argparse_crc);
+    liquid_argparse_add(char*,    fs0,      "none", 'c', "FEC scheme (inner)", liquid_argparse_fec);
+    liquid_argparse_add(char*,    fs1,      "none", 'k', "FEC scheme (outer)", liquid_argparse_fec);
+    liquid_argparse_add(unsigned, M,            64, 'M', "number of subcarriers", NULL);
+    liquid_argparse_add(unsigned, cp_len,       16, 'C', "cyclic prefix length", NULL);
+    liquid_argparse_add(unsigned, taper_len,     4, 'T', "taper length", NULL);
+    liquid_argparse_add(unsigned, payload_len, 120, 'n', "data length (bytes)", NULL);
+    liquid_argparse_add(float,    noise_floor, -60, '0', "noise floor [dB]", NULL);
+    liquid_argparse_add(float,    SNRdB,        20, 's', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_add(float,    dphi,       0.02, 'f', "carrier frequency offset [radians/sample]", NULL);
+    liquid_argparse_add(bool,     debug,     false, 'd', "enable debugging", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    // options
-    unsigned int      M           = 64;                 // number of subcarriers
-    unsigned int      cp_len      = 16;                 // cyclic prefix length
-    unsigned int      taper_len   = 4;                  // taper length
-    unsigned int      payload_len = 120;                // length of payload (bytes)
-    modulation_scheme ms          = LIQUID_MODEM_QPSK;  // modulation scheme
-    fec_scheme        fec0        = LIQUID_FEC_NONE;    // inner code
-    fec_scheme        fec1        = LIQUID_FEC_HAMMING128; // outer code
-    crc_scheme        check       = LIQUID_CRC_32;      // validity check
-    float             noise_floor = -80.0f;             // noise floor [dB]
-    float             SNRdB       = 20.0f;              // signal-to-noise ratio [dB]
-    float             dphi        = 0.02f;              // carrier frequency offset
-    int               debug       =  0;                 // enable debugging?
-
-    // get options
-    int dopt;
-    while((dopt = getopt(argc,argv,"uhds:F:M:C:n:m:v:c:k:")) != EOF){
-        switch (dopt) {
-        case 'u':
-        case 'h': usage();                    return 0;
-        case 'd': debug       = 1;            break;
-        case 's': SNRdB       = atof(optarg); break;
-        case 'F': dphi        = atof(optarg); break;
-        case 'M': M           = atoi(optarg); break;
-        case 'C': cp_len      = atoi(optarg); break;
-        case 'n': payload_len = atol(optarg); break;
-        case 'm': ms          = liquid_getopt_str2mod(optarg); break;
-        case 'v': check       = liquid_getopt_str2crc(optarg); break;
-        case 'c': fec0        = liquid_getopt_str2fec(optarg); break;
-        case 'k': fec1        = liquid_getopt_str2fec(optarg); break;
-        default:
-            exit(-1);
-        }
-    }
-
-    unsigned int i;
-
-    // TODO : validate options
+    modulation_scheme ms    = liquid_getopt_str2mod(mod);
+    crc_scheme        check = liquid_getopt_str2crc(crc);
+    fec_scheme        fec0  = liquid_getopt_str2fec(fs0);
+    fec_scheme        fec1  = liquid_getopt_str2fec(fs1);
 
     // derived values
     unsigned int  buf_len = 256;
@@ -107,6 +64,7 @@ int main(int argc, char*argv[])
         ofdmflexframesync_debug_enable(fs);
 
     // initialize header/payload and assemble frame
+    unsigned int i;
     for (i=0; i<8; i++)
         header[i] = i & 0xff;
     for (i=0; i<payload_len; i++)

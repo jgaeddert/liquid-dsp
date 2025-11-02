@@ -1,76 +1,42 @@
-// Demonstration of arbitrary resampler object whereby an input signal
-// is resampled at an arbitrary rate.
+char __docstr__[] =
+"Demonstration of arbitrary resampler object whereby an input signal"
+" is resampled at an arbitrary rate.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>
 #include <math.h>
-#include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "resamp_crcf_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char* argv[])
 {
-    printf("Usage: %s [OPTION]\n", __FILE__);
-    printf("  -h            : print help\n");
-    printf("  -r <rate>     : resampling rate (output/input),    default: 1.1\n");
-    printf("  -m <delay>    : filter semi-length (delay),        default: 13\n");
-    printf("  -b <bandwidth>: filter bandwidth, 0 < b < 0.5,     default: 0.4\n");
-    printf("  -s <atten>    : filter stop-band attenuation [dB], default: 60\n");
-    printf("  -p <npfb>     : filter bank size,                  default: 64\n");
-    printf("  -n <num>      : number of input samples,           default: 400\n");
-    printf("  -f <frequency>: input signal frequency,            default: 0.044\n");
-}
-
-int main(int argc, char*argv[])
-{
-    // options
-    float        r    = 1.1f;   // resampling rate (output/input)
-    unsigned int m    = 13;     // resampling filter semi-length (filter delay)
-    float        As   = 60.0f;  // resampling filter stop-band attenuation [dB]
-    float        bw   = 0.45f;  // resampling filter bandwidth
-    unsigned int npfb = 64;     // number of filters in bank (timing resolution)
-    unsigned int n    = 400;    // number of input samples
-    float        fc   = 0.044f; // complex sinusoid frequency
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hr:m:b:s:p:n:f:")) != EOF) {
-        switch (dopt) {
-        case 'h':   usage();            return 0;
-        case 'r':   r    = atof(optarg); break;
-        case 'm':   m    = atoi(optarg); break;
-        case 'b':   bw   = atof(optarg); break;
-        case 's':   As   = atof(optarg); break;
-        case 'p':   npfb = atoi(optarg); break;
-        case 'n':   n    = atoi(optarg); break;
-        case 'f':   fc   = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "resamp_crcf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(float,    r,   1.10, 'r', "resampling rate (output/input)", NULL);
+    liquid_argparse_add(unsigned, m,     13, 'm', "resampling filter semi-length (filter delay)", NULL);
+    liquid_argparse_add(float,    As,  60.0, 'a', "resampling filter stop-band attenuation [dB]", NULL);
+    liquid_argparse_add(float,    bw,  0.45, 'w', "resampling filter bandwidth (normalized)", NULL);
+    liquid_argparse_add(unsigned, npfb,  64, 'b', "number of filters in bank (timing resolution)", NULL);
+    liquid_argparse_add(unsigned, n,    400, 'n', "number of input samples", NULL);
+    liquid_argparse_add(float,    fc, 0.044, 'f', "complex sinusoid frequency", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (r <= 0.0f) {
-        fprintf(stderr,"error: %s, resampling rate must be greater than zero\n", argv[0]);
-        exit(1);
-    } else if (m == 0) {
-        fprintf(stderr,"error: %s, filter semi-length must be greater than zero\n", argv[0]);
-        exit(1);
-    } else if (bw == 0.0f || bw >= 0.5f) {
-        fprintf(stderr,"error: %s, filter bandwidth must be in (0,0.5)\n", argv[0]);
-        exit(1);
-    } else if (As < 0.0f) {
-        fprintf(stderr,"error: %s, filter stop-band attenuation must be greater than zero\n", argv[0]);
-        exit(1);
-    } else if (npfb == 0) {
-        fprintf(stderr,"error: %s, filter bank size must be greater than zero\n", argv[0]);
-        exit(1);
-    } else if (n == 0) {
-        fprintf(stderr,"error: %s, number of input samples must be greater than zero\n", argv[0]);
-        exit(1);
-    }
+    if (r <= 0.0f)
+        return liquid_error(LIQUID_EICONFIG,"resampling rate must be greater than zero");
+    if (m == 0)
+        return liquid_error(LIQUID_EICONFIG,"filter semi-length must be greater than zero");
+    if (bw == 0.0f || bw >= 0.5f)
+        return liquid_error(LIQUID_EICONFIG,"filter bandwidth must be in (0,0.5)");
+    if (As < 0.0f)
+        return liquid_error(LIQUID_EICONFIG,"filter stop-band attenuation must be greater than zero");
+    if (npfb == 0)
+        return liquid_error(LIQUID_EICONFIG,"filter bank size must be greater than zero");
+    if (n == 0)
+        return liquid_error(LIQUID_EICONFIG,"number of input samples must be greater than zero");
 
     unsigned int i;
 
@@ -158,10 +124,9 @@ int main(int argc, char*argv[])
     printf("  peak frequency            :   %12.8f    (expected %-12.8f)\n", fpeak, fy);
     printf("  max sidelobe              :   %12.8f dB (expected at least %.2f dB)\n", max_sidelobe, -As);
 
-
     // export results
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n",filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"m=%u;\n", m);
@@ -183,7 +148,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"%% plot time-domain result\n");
     fprintf(fid,"tx=[0:(length(x)-1)];\n");
     fprintf(fid,"ty=[0:(length(y)-1)]/r-m;\n");
-    fprintf(fid,"figure('Color','white','position',[500 500 500 900]);\n");
+    fprintf(fid,"figure('Color','white','position',[500 500 600 800]);\n");
     fprintf(fid,"subplot(4,1,1);\n");
     fprintf(fid,"  plot(tx,real(x),'-s','Color',[0.5 0.5 0.5],'MarkerSize',1,...\n");
     fprintf(fid,"       ty,real(y),'-s','Color',[0.5 0 0],    'MarkerSize',1);\n");
@@ -221,7 +186,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  axis([-0.5 0.5 -120 20]);\n");
 
     fclose(fid);
-    printf("results written to %s\n",OUTPUT_FILENAME);
+    printf("results written to %s\n",filename);
 
     printf("done.\n");
     return 0;

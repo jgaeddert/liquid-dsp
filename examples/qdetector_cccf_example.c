@@ -1,11 +1,8 @@
-//
-// qdetector_example.c
-//
-// This example demonstrates the functionality of the qdetector object
-// to detect an arbitrary signal in time in the presence of noise,
-// carrier frequency/phase offsets, and fractional-sample timing
-// offsets.
-//
+char __docstr__[] =
+"This example demonstrates the functionality of the qdetector object"
+" to detect an arbitrary signal in time in the presence of noise,"
+" carrier frequency/phase offsets, and fractional-sample timing"
+" offsets.";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,67 +10,30 @@
 #include <math.h>
 #include <time.h>
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "qdetector_cccf_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("qdetector_cccf_example\n");
-    printf("options:\n");
-    printf("  h     : print usage/help\n");
-    printf("  n     : number of sync symbols,     default:  80\n");
-    printf("  k     : samples/symbol,             default:  2\n");
-    printf("  m     : filter delay,               default:  7 sybmols\n");
-    printf("  b     : excess bandwidth factor,    default:  0.3\n");
-    printf("  F     : carrier frequency offset,   default: -0.01\n");
-    printf("  T     : fractional sample offset,   default:  0\n");
-    printf("  S     : SNR [dB],                   default:  20 dB\n");
-    printf("  t     : detection threshold,        default:  0.3\n");
-    printf("  r     : carrier offset search range,default:  0.05\n");
-}
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // options
-    unsigned int sequence_len =   80;   // number of sync symbols
-    unsigned int k            =    2;   // samples/symbol
-    unsigned int m            =    7;   // filter delay [symbols]
-    float        beta         = 0.3f;   // excess bandwidth factor
-    int          ftype        = LIQUID_FIRFILT_ARKAISER;
-    float        tau          = -0.3f;  // fractional sample timing offset
-    float        dphi         = -0.01f; // carrier frequency offset
-    float        phi          =  0.5f;  // carrier phase offset
-    float        noise_floor  = -30.0f; // noise floor [dB]
-    float        SNRdB        = 20.0f;  // signal-to-noise ratio [dB]
-    float        threshold    =  0.5f;  // detection threshold
-    float        range        =  0.05f; // carrier offset search range [radians/sample]
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hn:k:m:b:F:T:S:t:r:")) != EOF) {
-        switch (dopt) {
-        case 'h': usage();                      return 0;
-        case 'n': sequence_len  = atoi(optarg); break;
-        case 'k': k             = atoi(optarg); break;
-        case 'm': m             = atoi(optarg); break;
-        case 'b': beta          = atof(optarg); break;
-        case 'F': dphi          = atof(optarg); break;
-        case 'T': tau           = atof(optarg); break;
-        case 'S': SNRdB         = atof(optarg); break;
-        case 't': threshold     = atof(optarg); break;
-        case 'r': range         = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
-
-    unsigned int i;
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "qdetector_cccf_example.m",'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, sequence_len,   80,   'n', "number of sync symbols", NULL);
+    liquid_argparse_add(unsigned, k,               2,   'k', "samples/symbol", NULL);
+    liquid_argparse_add(unsigned, m,               7,   'm', "filter delay [symbols]", NULL);
+    liquid_argparse_add(float,    beta,         0.3f,   'b', "excess bandwidth factor", NULL);
+    liquid_argparse_add(char*,    ftype_str, "arkaiser",'t', "filter type", liquid_argparse_firfilt);
+    liquid_argparse_add(float,    tau,          -0.3f,  'T', "fractional sample timing offset", NULL);
+    liquid_argparse_add(float,    dphi,         -0.01f, 'F', "carrier frequency offset", NULL);
+    liquid_argparse_add(float,    phi,           0.5f,  'P', "carrier phase offset", NULL);
+    liquid_argparse_add(float,    noise_floor,  -30.0f, '0', "noise floor [dB]", NULL);
+    liquid_argparse_add(float,    SNRdB,        20.0f,  's', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_add(float,    threshold,     0.5f,  'z', "detection threshold", NULL);
+    liquid_argparse_add(float,    range,         0.05f, 'r', "carrier offset search range [radians/sample]", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (tau < -0.5f || tau > 0.5f) {
-        fprintf(stderr,"error: %s, fractional sample offset must be in [-0.5,0.5]\n", argv[0]);
-        exit(1);
-    }
+    if (tau < -0.5f || tau > 0.5f)
+        return liquid_error(LIQUID_EICONFIG,"fractional sample offset must be in [-0.5,0.5]");
 
     // derived values
     float nstd = powf(10.0f, noise_floor/20.0f);
@@ -81,6 +41,7 @@ int main(int argc, char*argv[])
 
     // generate synchronization sequence (QPSK symbols)
     float complex sequence[sequence_len];
+    unsigned int i;
     for (i=0; i<sequence_len; i++) {
         sequence[i] = (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 +
                       (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 * _Complex_I;
@@ -95,6 +56,7 @@ int main(int argc, char*argv[])
     int   frame_detected = 0;
 
     // create detector
+    int ftype = liquid_getopt_str2firfilt(ftype_str);
     qdetector_cccf q = qdetector_cccf_create_linear(sequence, sequence_len, ftype, k, m, beta);
     qdetector_cccf_set_threshold(q, threshold);
     qdetector_cccf_set_range    (q, range);
@@ -192,11 +154,9 @@ int main(int argc, char*argv[])
     }
     printf("\n");
 
-    //
     // export results
-    //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"sequence_len= %u;\n", sequence_len);
@@ -225,9 +185,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('real');\n");
     fprintf(fid,"  ylabel('imag');\n");
-
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
-
+    printf("results written to '%s'\n", filename);
     return 0;
 }

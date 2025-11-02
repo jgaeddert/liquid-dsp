@@ -1,14 +1,17 @@
-//
-// dotprod_rrrf_example.c
-//
-// This example demonstrates the interface to the floating-point dot
-// product object (dotprod_rrrf).
-//
+char __docstr__[] =
+"This example demonstrates the interface to the floating-point dot"
+" product object (dotprod_rrrf).";
 
 #include <stdio.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-int main() {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // input array
     float x[] = { 1,  2,  3,  4,  5};
 

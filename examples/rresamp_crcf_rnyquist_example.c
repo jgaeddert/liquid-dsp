@@ -1,103 +1,72 @@
-//
-// rresamp_crcf_rnyquist_example.c
-//
-// Demonstration of matched filter interpolator and decimator running at
-// rational rate that is only slightly higher than occupied bandwidth.
-// The resulting constellation has minimal inter-symbol interference and
-// is normalized to unity gain.
-//
+char __docstr__[] =
+"Demonstration of matched filter interpolator and decimator running at"
+" rational rate that is only slightly higher than occupied bandwidth."
+" The resulting constellation has minimal inter-symbol interference and"
+" is normalized to unity gain.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>
 #include <math.h>
-#include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "rresamp_crcf_rnyquist_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char* argv[])
 {
-    printf("Usage: %s [OPTION]\n", __FILE__);
-    printf("Resample a signal at a rate P/Q\n");
-    printf("  -h            : print help\n");
-    printf("  -P <decim>    : decimation (output) rate,       default: 3\n");
-    printf("  -Q <interp>   : interpolation (input) rate,     default: 5\n");
-    printf("  -m <len>      : filter semi-length (delay),     default: 12\n");
-    printf("  -b <beta>     : filter excess bandwidth factor, default: 0.2\n");
-}
-
-int main(int argc, char*argv[])
-{
-    // options
-    unsigned int    P   = 5;        // output rate (interpolation factor)
-    unsigned int    Q   = 4;        // input rate (decimation factor)
-    unsigned int    m   = 15;       // resampling filter semi-length (filter delay)
-    float           beta= 0.15f;    // filter excess bandwidth factor
-    unsigned int    num_symbols = 800; // number of symbols to generate
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hP:Q:m:b:")) != EOF) {
-        switch (dopt) {
-        case 'h':   usage();            return 0;
-        case 'P':   P    = atoi(optarg); break;
-        case 'Q':   Q    = atoi(optarg); break;
-        case 'm':   m    = atoi(optarg); break;
-        case 'b':   beta = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "rresamp_crcf_rnyquist_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, interp,        5, 'i', "output rate (interpolation factor)", NULL);
+    liquid_argparse_add(unsigned, decim,         4, 'd', "input rate (decimation factor)", NULL);
+    liquid_argparse_add(unsigned, m,            15, 'm', "filter semi-length (actual length: 4*m+1)", NULL);
+    liquid_argparse_add(float,    beta,       0.15, 'w', "filter excess bandwidth", NULL);
+    liquid_argparse_add(unsigned, num_symbols, 800, 'n', "number of symbols to generate", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (P == 0 || P > 1000) {
-        fprintf(stderr,"error: %s, input rate P must be in [1,1000]\n", argv[0]);
-        exit(1);
-    } else if (Q == 0 || Q > 1000) {
-        fprintf(stderr,"error: %s, output rate Q must be in [1,1000]\n", argv[0]);
-        exit(1);
-    } else if (Q > P) {
-        fprintf(stderr,"error: %s, this example requires P > Q (interpolation)\n", argv[0]);
-        exit(1);
-    }
+    if (interp == 0 || interp > 1000)
+        return liquid_error(LIQUID_EICONFIG,"interpolation rate must be in [1,1000]");
+    if (decim == 0 || decim > 1000)
+        return liquid_error(LIQUID_EICONFIG,"decimation rate must be in [1,1000]");
+    if (decim > interp)
+        return liquid_error(LIQUID_EICONFIG,"this example requires interp > decim");
 
     // create resampler objects
-    rresamp_crcf q0 = rresamp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER,P,Q,m,beta);
-    rresamp_crcf q1 = rresamp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER,Q,P,m,beta);
+    rresamp_crcf q0 = rresamp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER,interp,decim,m,beta);
+    rresamp_crcf q1 = rresamp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER,decim,interp,m,beta);
     rresamp_crcf_print(q0);
 
     // input/output buffers
-    float complex buf_x[Q]; // input
-    float complex buf_y[P]; // interp
-    float complex buf_z[Q]; // decim
+    float complex buf_x[decim]; // input
+    float complex buf_y[interp]; // interp
+    float complex buf_z[decim]; // decim
 
     // generate input symbols
     unsigned int i, n = 0;
-    FILE * fid = fopen(OUTPUT_FILENAME, "w");
+    FILE * fid = fopen(filename, "w");
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"x = []; y = []; z = [];\n");
     float g = M_SQRT1_2;
     while (n < num_symbols) {
-        n += Q;
+        n += decim;
         if (n > num_symbols-2*m)
             g = 0;
         // generate symbols
-        for (i=0; i<Q; i++)
+        for (i=0; i<decim; i++)
             buf_x[i] = g * ( (rand() & 1 ? 1 : -1 ) + ( rand() & 1 ? 1 : -1 )*_Complex_I);
 
-        // run resampler and write P output samples
+        // run resampler and write interp output samples
         rresamp_crcf_execute(q0, buf_x, buf_y);
 
         // run through matched filter
         rresamp_crcf_execute(q1, buf_y, buf_z);
 
         // write results to file
-        for (i=0; i<Q; i++) fprintf(fid,"x(end+1) = %12.4e + 1i*%12.4e;\n", crealf(buf_x[i]), cimagf(buf_x[i]));
-        for (i=0; i<P; i++) fprintf(fid,"y(end+1) = %12.4e + 1i*%12.4e;\n", crealf(buf_y[i]), cimagf(buf_y[i]));
-        for (i=0; i<Q; i++) fprintf(fid,"z(end+1) = %12.4e + 1i*%12.4e;\n", crealf(buf_z[i]), cimagf(buf_z[i]));
+        for (i=0; i<decim; i++) fprintf(fid,"x(end+1) = %12.4e + 1i*%12.4e;\n", crealf(buf_x[i]), cimagf(buf_x[i]));
+        for (i=0; i<interp; i++) fprintf(fid,"y(end+1) = %12.4e + 1i*%12.4e;\n", crealf(buf_y[i]), cimagf(buf_y[i]));
+        for (i=0; i<decim; i++) fprintf(fid,"z(end+1) = %12.4e + 1i*%12.4e;\n", crealf(buf_z[i]), cimagf(buf_z[i]));
     }
     fprintf(fid,"ny = length(y);\n");
     fprintf(fid,"ty = 0:(ny-1);\n");
@@ -129,6 +98,6 @@ int main(int argc, char*argv[])
     // clean up allocated objects
     rresamp_crcf_destroy(q0);
     rresamp_crcf_destroy(q1);
-    printf("results written to %s\n",OUTPUT_FILENAME);
+    printf("results written to %s\n",filename);
     return 0;
 }

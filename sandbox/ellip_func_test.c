@@ -1,14 +1,9 @@
-//
-// ellip_func_test.c
-//
-// gcc -I. -I./include -lm libliquid.a ellip_func_test.c -o ellip_func_test
-//
+char __docstr__[] = "Test elliptic functions";
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "include/liquid.h"
-#include "src/filter/src/ellip.c"
+#include "liquid.internal.h"
 
 int main() {
 

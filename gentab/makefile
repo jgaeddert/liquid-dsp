@@ -4,7 +4,7 @@ all:
 
 CFLAGS  := -I include -g -O2 -Wall
 LDFLAGS :=
-LIBS    := -lm -lc
+LIBS    := -lm -lc -lliquid
 
 .PHONY: gentab
 gentab_programs =						\
@@ -15,6 +15,7 @@ gentab_programs =						\
 	gentab/qtype_logexp_frac_gentab				\
 	gentab/qtype_logexp_shiftadd_gentab			\
 	gentab/qtype_trig_gentab				\
+	gentab/firfilt_gentab					\
 
 gentab_objects	= $(patsubst %,%.o,$(gentab_programs))
 gentab: $(gentab_programs)

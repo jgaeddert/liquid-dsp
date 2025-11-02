@@ -1,6 +1,4 @@
-//
-// Fading generator example
-//
+char __docstr__[] = "Fading generator example";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,27 +6,30 @@
 #include <complex.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "debug_fading_generator_example.m"
-
-int main() {
-    // options
-    unsigned int h_len=51;  // doppler filter length
-    float fd=0.05f;         // maximum doppler frequency
-    float K=2.0f;           // Rice fading factor
-    float omega=1.0f;       // mean power
-    float theta=0.0f;       // angle of arrival
-    unsigned int n=256;     // number of samples
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "fading_generator_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, h_len, 51,    'p', "doppler filter length", NULL);
+    liquid_argparse_add(float,    fd,    0.05f, 'f', "maximum doppler frequency", NULL);
+    liquid_argparse_add(float,    K,     2.0f,  'K', "Rice fading factor", NULL);
+    liquid_argparse_add(float,    omega, 1.0f,  'O', "mean power", NULL);
+    liquid_argparse_add(float,    theta, 0.0f,  't', "angle of arrival", NULL);
+    liquid_argparse_add(unsigned, n,     256,   'n', "number of samples", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // generate filter
     unsigned int i;
     float h[h_len];
-    fir_design_doppler(h_len,fd,K,theta,h);
+    liquid_firdes_doppler(h_len,fd,K,theta,h);
     firfilt_rrrf fi = firfilt_rrrf_create(h,h_len);
     firfilt_rrrf fq = firfilt_rrrf_create(h,h_len);
 
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s, auto-generated file\n\n",OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s, auto-generated file\n\n",filename);
     fprintf(fid,"clear all;\nclose all;\n\n");
 
     for (i=0; i<h_len; i++)
@@ -91,7 +92,7 @@ int main() {
 
     fclose(fid);
 
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     // clean up objects
     firfilt_rrrf_destroy(fi);

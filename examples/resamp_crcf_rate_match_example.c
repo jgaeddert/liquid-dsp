@@ -1,19 +1,27 @@
-// Demonstration of rate matching with the arbitrary resampler
+char __docstr__[] = "Demonstration of rate matching with the arbitrary resampler";
+
 #include <complex.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-int main(int argc, char*argv[])
+int main(int argc, char* argv[])
 {
-    // options
-    float        r          = 1.618034; // true resampling rate (output/input) offset
-    unsigned int num_blocks = 400;      // number of blocks to simulate
-    unsigned int block_len  = 256;      // number of samples in block
-    float        alpha      = 0.1f;     // loop bandwidth factor
-    const char   filename[] = "resamp_crcf_rate_match_example.m";   // output filename
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "resamp_crcf_rate_match_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(float,    r,         1.6183, 'r', "resampling rate (output/input)", NULL);
+    liquid_argparse_add(unsigned, num_blocks,   400, 'n', "number of blocks to simulate", NULL);
+    liquid_argparse_add(unsigned, block_len,    256, 'b', "number of samples in block", NULL);
+    liquid_argparse_add(float,    alpha,        0.1, 'a', "loop bandwidth factor", NULL);
+    liquid_argparse_parse(argc,argv);
+
+    // validate input
+    if (r <= 0.0f)
+        return liquid_error(LIQUID_EICONFIG,"resampling rate must be greater than zero");
 
     // buffers
     float complex buf_0[2*block_len];   // original

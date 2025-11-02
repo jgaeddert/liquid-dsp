@@ -10,16 +10,17 @@ project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
 
 # ---------------------------------------- options ----------------------------------------
 
-option(BUILD_EXAMPLES   "Set to ON to build examples"           ON)
-option(BUILD_AUTOTESTS  "Set to ON to build autotest program"   ON)
-option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  ON)
-option(ENABLE_SIMD      "Set to ON to build SIMD extensions"    ON)
-option(FIND_SIMD        "Set to ON to find SIMD extensions"     ON)
-option(FIND_FFTW        "Set to ON to find FFTW library"        ON)
-option(BUILD_SANDBOX    "Set to ON to build sandbox programs"   OFF)
-option(BUILD_DOC        "Set to ON to build documentation"      OFF)
-option(COVERAGE         "Set to ON to build with code coverage" OFF)
-#option(PROFILE        "Set to ON to build with profiling"     OFF)
+option(BUILD_EXAMPLES    "Set to ON to build examples"               ON)
+option(BUILD_AUTOTESTS   "Set to ON to build autotest program"       ON)
+option(BUILD_BENCHMARKS  "Set to ON to build benchmark program"      ON)
+option(BUILD_SHARED_LIBS "Set to ON to build shared object library"  ON)
+option(ENABLE_SIMD       "Set to ON to build SIMD extensions"        ON)
+option(FIND_SIMD         "Set to ON to find SIMD extensions"         ON)
+option(FIND_FFTW         "Set to ON to find FFTW library"            ON)
+option(BUILD_SANDBOX     "Set to ON to build sandbox programs"       OFF)
+option(BUILD_DOC         "Set to ON to build documentation"          OFF)
+option(COVERAGE          "Set to ON to build with code coverage"     OFF)
+#option(PROFILE           "Set to ON to build with profiling"         OFF)
 
 if(COVERAGE)
     set(CMAKE_BUILD_TYPE "Debug")
@@ -33,6 +34,7 @@ cmake_policy(SET CMP0076 NEW)
 
 # main library name
 set(LIBNAME liquid)
+set(NAMESPACE liquid)
 
 # require a C99 compiler for all targets
 set(CMAKE_C_STANDARD 99)
@@ -70,13 +72,13 @@ endif()
 include (CheckTypeSize)
 check_type_size(int SIZEOF_INT LANGUAGE C)
 
-configure_file(cmake/config.h.cmake config.h)
+configure_file(cmake/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 # this file can only use the @VARIABLE@ syntax
 #configure_file(cmake/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 
-#target_include_directories(test PRIVATE include)
-include_directories(. include include/liquid)
+# enable testing always
+enable_testing()
 
 # ---------------------------------------- main sources ----------------------------------------
 
@@ -299,6 +301,16 @@ add_library(utility OBJECT
 
 add_library(vector OBJECT)
 
+foreach(lib
+    agc audio buffer channel dotprod equalization fec fft filter fpm framing math
+    matrix modem multichannel nco optim quantization random sequence utility
+    vector)
+    target_include_directories(${lib}
+        PUBLIC
+            "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include;${CMAKE_CURRENT_BINARY_DIR}>"
+            "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/liquid;${CMAKE_CURRENT_BINARY_DIR}>"
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+endforeach()
 
 # ---------------------------------------- SIMD extensions ----------------------------------------
 if (C_NEON_FOUND AND ENABLE_SIMD)
@@ -428,10 +440,7 @@ endif()
 
 # ---------------------------------------- main library ----------------------------------------
 
-# necessary to include this for the generated "config.h" header
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-add_library(${LIBNAME} SHARED
+add_library(${LIBNAME}
     src/libliquid.c
     $<TARGET_OBJECTS:agc>
     $<TARGET_OBJECTS:audio>
@@ -455,12 +464,33 @@ add_library(${LIBNAME} SHARED
     $<TARGET_OBJECTS:sequence>
     $<TARGET_OBJECTS:utility>
     $<TARGET_OBJECTS:vector>)
+add_library(${NAMESPACE}::${LIBNAME} ALIAS ${LIBNAME})
 
 # TODO: build static library in addition to shared
 # https://alexreinking.com/blog/building-a-dual-shared-and-static-library-with-cmake.html
 
-target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
-#target_sources(${LIBNAME} PUBLIC FILE_SET HEADERS FILES include/liquid.h include/liquid/liquidfpm.h)
+include(GNUInstallDirs)
+
+target_include_directories(${LIBNAME}
+    PUBLIC
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include;${CMAKE_CURRENT_BINARY_DIR}>"
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/liquid;${CMAKE_CURRENT_BINARY_DIR}>"
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+configure_file(include/liquid.h ${CMAKE_CURRENT_BINARY_DIR}/liquid/liquid.h COPYONLY)
+target_sources(${LIBNAME}
+    PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/liquid.h>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/liquid/liquid.h>
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/liquid/liquid.h>)
+# Use set_target_properties() instead of defining a FILE_SET in
+# target_sources() because the feature was introduced in CMake 3.23, and is new
+# enough that various distros (e.g. Ubuntu 22.04) ship older versions.
+set_target_properties(${LIBNAME}
+    PROPERTIES
+        PUBLIC_HEADER include/liquid.h
+        PUBLIC_HEADER include/liquidfpm.h
+)
 
 if(COVERAGE)
     target_compile_options(agc          PRIVATE -coverage -O0 -g)
@@ -496,25 +526,62 @@ if (fftw3f_FOUND)
     target_link_libraries(${LIBNAME} fftw3f)
 endif()
 
-set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
+if(BUILD_SHARED_LIBS)
+  set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
+endif()
 
 # see: https://cmake.org/cmake/help/latest/command/install.html#examples
 # TODO: uninstall?
-install(TARGETS
-          ${LIBNAME}
-        RUNTIME           # Following options apply to runtime artifacts.
-          COMPONENT Runtime
-        LIBRARY           # Following options apply to library artifacts.
-          COMPONENT Runtime
-          NAMELINK_COMPONENT Development
-        ARCHIVE           # Following options apply to archive artifacts.
-          COMPONENT Development
-          DESTINATION lib/static
-        #FILE_SET HEADERS  # Following options apply to file set HEADERS.
-          #COMPONENT Development
-        )
+install(TARGETS ${LIBNAME}
+    EXPORT
+        ${LIBNAME}Targets
+    RUNTIME
+        COMPONENT Runtime
+        DESTINATION bin
+    LIBRARY
+        COMPONENT Runtime
+        NAMELINK_COMPONENT Development
+        DESTINATION lib
+    ARCHIVE
+        COMPONENT Runtime
+        DESTINATION lib
+    PUBLIC_HEADER
+        COMPONENT Development
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/liquid
+)
 
-install(FILES include/liquid.h include/liquid/liquidfpm.h DESTINATION include/liquid)
+export(EXPORT ${LIBNAME}Targets
+    FILE ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME}Targets.cmake
+    NAMESPACE ${NAMESPACE}::
+)
+
+install(EXPORT ${LIBNAME}Targets
+    FILE ${LIBNAME}Targets.cmake
+    NAMESPACE ${NAMESPACE}::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${LIBNAME}
+)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME}ConfigVersion.cmake
+    COMPATIBILITY SameMinorVersion
+)
+
+set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/${LIBNAME})
+configure_package_config_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME}Config.cmake
+    INSTALL_DESTINATION
+        ${CMAKE_INSTALL_LIBDIR}/cmake/${LIBNAME}
+    PATH_VARS
+        INCLUDE_INSTALL_DIR
+)
+
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME}Config.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME}ConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${LIBNAME}
+)
 
 # ---------------------------------------- examples ----------------------------------------
 
@@ -531,6 +598,9 @@ if(BUILD_SANDBOX)
 endif(BUILD_SANDBOX)
 
 # ---------------------------------------- autotest ----------------------------------------
+
+# build autoscript executable for both autotests and benchmarks
+add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
 
 set(AUTOTESTS
     # basic
@@ -859,7 +929,6 @@ set(AUTOTEST_EXTRA
     )
 
 if(BUILD_AUTOTESTS)
-    add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
     add_custom_command(
         OUTPUT  autotest_include.h
         DEPENDS
@@ -884,7 +953,7 @@ if(BUILD_AUTOTESTS)
         ${AUTOTESTS}
         ${AUTOTEST_EXTRA}
         )
-    target_include_directories(xautotest PRIVATE ${INCLUDE})
+    target_include_directories(xautotest PRIVATE include .)
 
     target_link_libraries(xautotest ${LIBNAME})
     if(COVERAGE)
@@ -893,8 +962,7 @@ if(BUILD_AUTOTESTS)
     endif(COVERAGE)
 
     # enable testing; might consider splitting these up for parallel execution
-    enable_testing()
-    add_test(NAME test COMMAND xautotest)
+    add_test(NAME autotest COMMAND xautotest)
 endif(BUILD_AUTOTESTS)
 
 
@@ -1003,7 +1071,7 @@ if(BUILD_BENCHMARKS)
         ${BENCHMARKS}
         ${BENCHMARKS_EXTRA}
         )
-    target_include_directories(benchmark PRIVATE ${INCLUDE})
+    target_include_directories(benchmark PRIVATE include .)
     target_link_libraries(benchmark ${LIBNAME})
 endif(BUILD_BENCHMARKS)
 

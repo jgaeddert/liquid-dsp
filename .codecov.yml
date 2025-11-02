@@ -11,9 +11,15 @@ coverage:
   precision: 3
   status:
     project:
+      #default: false  # disable the default status that measures entire project
       default:
         target: 75
         threshold: 5
+    patch:
+      default:
+        target: 0  # new contributions should have a coverage at least equal to target
+        informational: true
+        #threshold: 5
 
 ignore:
   - "**/autotest/*"

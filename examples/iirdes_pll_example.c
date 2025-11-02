@@ -1,75 +1,35 @@
-//
-// iirdes_pll_example.c
-//
-// This example demonstrates 2nd-order IIR phase-locked loop filter
-// design with a practical simulation.
-//
-// SEE ALSO: nco_pll_example.c
-//           nco_pll_modem_example.c
-//
+char __docstr__[] =
+"This example demonstrates 2nd-order IIR phase-locked loop filter"
+" design with a practical simulation.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "iirdes_pll_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char*argv[])
 {
-    printf("iirdes_pll_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  b     : pll bandwidth, default: 0.01\n");
-    printf("  z     : zeta (damping factor), default 0.70711\n");
-    printf("  K     : loop filter gain, default: 1000\n");
-    printf("  n     : number of samples, default: 512\n");
-    printf("  p     : phase offset (radians), default: pi/4\n");
-    printf("  f     : frequency offset (radians), default: 0.3\n");
-}
-
-int main(int argc, char*argv[]) {
-    srand( time(NULL) );
-
-    // options
-    float phase_offset = M_PI / 4.0f;   // phase offset
-    float frequency_offset = 0.3f;      // frequency offset
-    float pll_bandwidth = 0.01f;        // PLL bandwidth
-    float zeta = 1/sqrtf(2.0f);         // PLL damping factor
-    float K = 1000.0f;                  // PLL loop gain
-    unsigned int n=512;                 // number of iterations
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"uhb:z:K:n:p:f:")) != EOF) {
-        switch (dopt) {
-        case 'u':
-        case 'h':   usage();    return 0;
-        case 'b':   pll_bandwidth = atof(optarg);   break;
-        case 'z':   zeta = atof(optarg);            break;
-        case 'K':   K = atof(optarg);               break;
-        case 'n':   n = atoi(optarg);               break;
-        case 'p':   phase_offset = atof(optarg);    break;
-        case 'f':   frequency_offset= atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
-    unsigned int d=n/32;      // print every "d" lines
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "iirdes_pll_example.m",  'o', "output filename", NULL);
+    liquid_argparse_add(float,   pll_bandwidth,    0.01f;,        'b', "PLL bandwidth", NULL);
+    liquid_argparse_add(float,   zeta,             1/sqrtf(2.0f), 'z', "PLL damping factor", NULL);
+    liquid_argparse_add(float,   K,                1000.0f,       'K', "PLL loop gain", NULL);
+    liquid_argparse_add(unsigned,n,                800,           'n', "number of iterations", NULL);
+    liquid_argparse_add(float,   phase_offset,     M_PI / 4.0f,   'p', "phase offset", NULL);
+    liquid_argparse_add(float,   frequency_offset, 0.3f,          'f', "frequency offset", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (pll_bandwidth <= 0.0f) {
-        fprintf(stderr,"error: bandwidth must be greater than 0\n");
-        exit(1);
-    } else if (zeta <= 0.0f) {
-        fprintf(stderr,"error: damping factor must be greater than 0\n");
-        exit(1);
-    } else if (K <= 0.0f) {
-        fprintf(stderr,"error: loop gain must be greater than 0\n");
-        exit(1);
-    }
+    if (pll_bandwidth <= 0.0f)
+        return liquid_error(LIQUID_EICONFIG,"bandwidth must be greater than 0");
+    if (zeta <= 0.0f)
+        return liquid_error(LIQUID_EICONFIG,"damping factor must be greater than 0");
+    if (K <= 0.0f)
+        return liquid_error(LIQUID_EICONFIG,"loop gain must be greater than 0");
 
     // data arrays
     float complex x[n];         // input complex sinusoid
@@ -83,6 +43,7 @@ int main(int argc, char*argv[]) {
     iirfilt_rrrf pll = iirfilt_rrrf_create(b,3,a,3);
     iirfilt_rrrf_print(pll);
 
+    unsigned int d=n/32;      // print every "d" lines
     unsigned int i;
     float phi;
     for (i=0; i<n; i++) {
@@ -113,8 +74,8 @@ int main(int argc, char*argv[]) {
     iirfilt_rrrf_destroy(pll);
 
     // write output file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"n = %u;\n", n);
@@ -143,7 +104,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"grid on;\n");
 
     fclose(fid);
-    printf("results written to %s.\n",OUTPUT_FILENAME);
+    printf("results written to %s.\n",filename);
 
     printf("done.\n");
     return 0;
