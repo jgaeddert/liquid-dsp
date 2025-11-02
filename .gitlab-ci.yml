@@ -163,7 +163,7 @@ windows:
   when: manual
   image: mcr.microsoft.com/windows/servercore:1809
   before_script:
-    - choco install python -y --version 3.12.4
+    - choco install python -y --version 3.12.4 --allow-downgrade
     - choco install git.install -y
     - py -m pip install cibuildwheel==2.20.0
   script:
