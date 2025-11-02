@@ -210,7 +210,7 @@ issues and pull requests.
     - modem: adding type extension for more consistency: `modem` -> `modemcf`,
       supporting backwards compatibility with API shim
 
-## 1.3.1 - 2019-07-28
+## 1.3.2 - 2019-07-28
 
   * autotest
     - runs with random seeds (based on time) for diveristy
