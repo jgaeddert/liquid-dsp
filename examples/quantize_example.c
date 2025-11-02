@@ -1,8 +1,4 @@
-//
-// quantize_example.c
-//
-// Demonstrates the quantizer/compander combo.
-//
+char __docstr__[] = "Demonstrates the quantizer/compander combination.";
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -10,44 +6,23 @@
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "quantize_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char *argv[])
 {
-    printf("quantize_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  b     : number of bits, 0 < b <= 16 [default: 4]\n");
-    printf("  m     : mu, compression factor, mu > 0 [default: 255.0]\n");
-}
-
-
-int main(int argc, char*argv[]) {
-    unsigned int num_bits=4;
-    float mu = 255.0f;
-    unsigned int num_samples = 64;
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"uhb:m:")) != EOF) {
-        switch (dopt) {
-        case 'u':
-        case 'h': usage();                  return 0;
-        case 'b': num_bits = atoi(optarg);  break;
-        case 'm': mu = atof(optarg);        break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "quantize_example.m",'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, num_bits,      4, 'b', "number of bits", NULL);
+    liquid_argparse_add(unsigned, num_samples,  64, 'n', "number of samples", NULL);
+    liquid_argparse_add(float,    mu,          255, 'm', "mu (compression parameter)", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (num_bits > 16 || num_bits < 1) {
-        fprintf(stderr,"error: %s, quantizer bits must be in [1,16]\n", argv[0]);
-        exit(1);
-    } else if (mu < 0.0f) {
-        fprintf(stderr,"error: %s, mu must be greater than 0\n", argv[0]);
-        exit(1);
-    }
+    if (num_bits > 16 || num_bits < 1)
+        fprintf(stderr,"error: quantizer bits must be in [1,16]\n");
+    if (mu < 0.0f)
+        fprintf(stderr,"error: mu must be greater than 0\n");
 
     unsigned int i;
     float x[num_samples];
@@ -91,8 +66,8 @@ int main(int argc, char*argv[]) {
     printf("rmse : %12.4e\n", rmse);
 
     // open debug file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"num_samples = %u;\n", num_samples);
@@ -107,14 +82,15 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"y0 = reshape([y(1:num_samples-1)(:) y(2:num_samples)(:)]',  1,2*(num_samples-1));\n");
     fprintf(fid,"hold on;\n");
     fprintf(fid,"plot(t,x,t0,y0);\n");
+    fprintf(fid,"axis([0 num_samples -0.5 0.5]);\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('signal');\n");
-    fprintf(fid,"legend('original','reconstructed',1);\n");
+    fprintf(fid,"legend('original','reconstructed');\n");
     fprintf(fid,"grid on;\n");
  
     // close debug file
     fclose(fid);
-    printf("results wrtten to %s\n", OUTPUT_FILENAME);
+    printf("results wrtten to %s\n", filename);
 
     printf("done.\n");
     return 0;

@@ -1,59 +1,26 @@
-//
-// firdes_kaiser_example.c
-//
-// This example demonstrates finite impulse response filter design
-// using a Kaiser window.
-// SEE ALSO: firdespm_example.c
-//
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <getopt.h>
+char __docstr__[] =
+"This example demonstrates finite impulse response filter design"
+" using a Kaiser window.";
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "firdes_kaiser_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char*argv[])
 {
-    printf("firdes_kaiser_example:\n");
-    printf("  u/h   : print usage/help\n");
-    printf("  f     : filter cutoff frequency,           0 < f < 0.5, default: 0.2\n");
-    printf("  s     : filter stop-band attenuation [dB], 0 < s,       default: 60\n");
-    printf("  m     : fractional sample delay,        -0.5 < m < 0.5, default: 0\n");
-    printf("  n     : filter length [taps],              n > 1,       default: 55\n");
-}
-
-int main(int argc, char*argv[]) {
-    // options
-    float fc=0.2f;          // filter cutoff frequency
-    float As=60.0f;         // stop-band attenuation [dB]
-    float mu=0.0f;          // fractional timing offset
-    unsigned int h_len=55;  // filter length
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"uhf:n:s:m:")) != EOF) {
-        switch (dopt) {
-        case 'u':
-        case 'h': usage();              return 0;
-        case 'f': fc    = atof(optarg); break;
-        case 'n': h_len = atoi(optarg); break;
-        case 's': As    = atof(optarg); break;
-        case 'm': mu    = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename, "firdes_kaiser_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(float,    fc,    0.20f, 'f', "filter cutoff frequency (relative)", NULL);
+    liquid_argparse_add(float,    As,    60.0f, 's', "filter stop-band attenuation [dB]",  NULL);
+    liquid_argparse_add(float,    mu,    0.00f, 'm', "filter fractional timing offset",    NULL);
+    liquid_argparse_add(unsigned, h_len, 55,    'n', "filter length (number of coefficients)", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if ( fc <= 0.0f ) {
-        fprintf(stderr,"error: %s, filter cutoff frequency must be greater than zero\n", argv[0]);
-        exit(1);
-    } else if ( h_len == 0 ) {
-        fprintf(stderr,"error: %s, filter length must be greater than zero\n", argv[0]);
-        exit(1);
-    }
+    if ( fc <= 0.0f )
+        return fprintf(stderr,"error: filter cutoff frequency must be greater than zero\n");
+    if ( h_len == 0 )
+        return fprintf(stderr,"error: filter length must be greater than zero\n");
 
     printf("filter design parameters\n");
     printf("    cutoff frequency            :   %8.4f\n", fc);
@@ -71,8 +38,8 @@ int main(int argc, char*argv[]) {
         printf("h(%4u) = %16.12f;\n", i+1, h[i]);
 
     // output to file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"h_len=%u;\n",h_len);
     fprintf(fid,"fc=%12.4e;\n",fc);
@@ -93,7 +60,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"axis([-0.5 0.5 -As-40 10]);\n");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

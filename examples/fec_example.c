@@ -1,58 +1,27 @@
-//
-// fec_example.c
-//
-// This example demonstrates the interface for forward error-
-// correction (FEC) codes.  A buffer of data bytes is encoded and
-// corrupted with several errors.  The decoder then attempts to
-// recover the original data set.  The user may select the FEC
-// scheme from the command-line interface.
-// SEE ALSO: crc_example.c
-//           checksum_example.c
-//           packetizer_example.c
-//
+char __docstr__[] =
+"This example demonstrates the interface for forward error-correction "
+" (FEC) codes.  A buffer of data bytes is encoded and"
+" corrupted with several errors.  The decoder then attempts to"
+" recover the original data set.  The user may select the FEC"
+" scheme from the command-line interface.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <getopt.h>
 
 #include "liquid.h"
-
-// print usage/help message
-void usage()
-{
-    printf("fec_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  n     : input data size (number of uncoded bytes)\n");
-    printf("  c     : coding scheme, (h74 default):\n");
-    liquid_print_fec_schemes();
-}
-
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // options
-    unsigned int n = 4;                     // data length (bytes)
-    unsigned int nmax = 2048;               // maximum data length
-    fec_scheme fs = LIQUID_FEC_HAMMING74;   // error-correcting scheme
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(unsigned, n,        4, 'n', "data lengtht (bytes)", NULL);
+    liquid_argparse_add(unsigned, nmax,  2048, 'N', "maximum data length", NULL);
+    liquid_argparse_add(char*,    fec0, "h74", 'c', "FEC scheme", liquid_argparse_fec);
+    liquid_argparse_parse(argc,argv);
 
-    int dopt;
-    while((dopt = getopt(argc,argv,"uhn:c:")) != EOF){
-        switch (dopt) {
-        case 'h':
-        case 'u': usage(); return 0;
-        case 'n': n = atoi(optarg); break;
-        case 'c':
-            fs = liquid_getopt_str2fec(optarg);
-            if (fs == LIQUID_FEC_UNKNOWN) {
-                fprintf(stderr,"error: unknown/unsupported fec scheme \"%s\"\n\n",optarg);
-                exit(1);
-            }
-            break;
-        default:
-            exit(1);
-        }
-    }
+    fec_scheme fs = liquid_getopt_str2fec(fec0);
 
     // ensure proper data length
     n = (n > nmax) ? nmax : n;

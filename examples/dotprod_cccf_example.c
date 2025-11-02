@@ -1,14 +1,17 @@
-//
-// dotprod_cccf_example.c
-//
-// This example demonstrates the interface to the complex floating-point
-// dot product object (dotprod_cccf).
-//
+char __docstr__[] =
+"This example demonstrates the interface to the complex floating-point"
+" dot product object (dotprod_cccf).";
 
 #include <stdio.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-int main() {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // input array
     float complex x[] = { 1 + 1 * _Complex_I,
                           2 + 1 * _Complex_I,

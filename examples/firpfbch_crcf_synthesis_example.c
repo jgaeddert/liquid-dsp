@@ -1,30 +1,26 @@
-//
-// firpfbch_crcf_synthesis_example.c
-//
-// Example of the synthesis channelizer filterbank. The input signal is
-// comprised of several signals spanning different frequency bands. The
-// channelizer downconverts each to baseband (maximally decimated), and
-// the resulting spectrum of each is plotted.
-//
+char __docstr__[] =
+"Example of the synthesis channelizer filterbank. The input signal is"
+" comprised of several signals spanning different frequency bands. The"
+" channelizer downconverts each to baseband (maximally decimated), and"
+" the resulting spectrum of each is plotted.";
 
 #include <stdio.h>
 #include <math.h>
 #include <complex.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "firpfbch_crcf_synthesis_example.m"
-
-int main() {
-    // options
-    unsigned int num_channels = 16;     // number of channels
-    unsigned int m            =  5;     // filter delay
-    float        As           = 60;     // stop-band attenuation
-    unsigned int num_frames   = 25;     // number of frames
-
-    //
-    unsigned int i;
-    unsigned int k;
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename, "firpfbch_crcf_synthesis_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, num_channels,  5, 'M', "number of channels", NULL);
+    liquid_argparse_add(unsigned, m,            12, 'm', "filter length [symbols]", NULL);
+    liquid_argparse_add(float,    As,           60, 'a', "filter stop-band attenuation", NULL);
+    liquid_argparse_add(unsigned, num_frames,   25, 'n', "number of frames", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // derived values
     unsigned int num_samples = num_frames * num_channels;
@@ -40,6 +36,7 @@ int main() {
     liquid_firdes_kaiser(pulse_len, bw, 50.0f, 0.0f, pulse);
 
     // generate input signal(s)
+    unsigned int i, k;
     int enabled[num_channels];  // signal enabled?
     for (i=0; i<num_channels; i++) {
         // pseudo-random channel enabled flag
@@ -86,8 +83,8 @@ int main() {
     // 
     // export results to file
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"num_channels = %u;\n", num_channels);
@@ -149,7 +146,7 @@ int main() {
     fprintf(fid,"  ylabel('Output PSD');\n");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

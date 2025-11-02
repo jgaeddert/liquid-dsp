@@ -1,37 +1,38 @@
-//
-// conversion_example.c
-//
-// This example demonstrates conversion from complex baseband to a real-valued
-// signal, and then down-conversion back to complex baseband while removing the
-// negative image.
-//
-//  STEP 1: A signal is generated at complex baseband consisting of narrow-band
-//          filtered noise and an offset tone (to show asymmetry in the transmit
-//          spectrum).
-//
-//  STEP 2: The signal is mixed up to a carrier 'fc' (relative to the sampling
-//          frequency) and the real-component of the result is retained. This is
-//          the DAC output. The spectrum of this signal has two images: one at
-//          +fc, the other at -fc.
-//
-//  STEP 3: The DAC output is mixed back down to complex baseband and the lower
-//          image is (mostly) filtered off. Reminants of the lower frequency
-//          component are still visible due to the wide-band and low-order
-//          filter on the receiver. The received complex baseband signal also
-//          has a reduction in power by 2 because half the signal's energy (the
-//          negative image) is filtered off.
-//
+char __docstr__[] =
+"This example demonstrates conversion from complex baseband to a real-valued"
+" signal, and then down-conversion back to complex baseband while removing the"
+" negative image."
+""
+" STEP 1: A signal is generated at complex baseband consisting of narrow-band"
+"         filtered noise and an offset tone (to show asymmetry in the transmit"
+"         spectrum)."
+""
+" STEP 2: The signal is mixed up to a carrier 'fc' (relative to the sampling"
+"         frequency) and the real-component of the result is retained. This is"
+"         the DAC output. The spectrum of this signal has two images: one at"
+"         +fc, the other at -fc."
+""
+" STEP 3: The DAC output is mixed back down to complex baseband and the lower"
+"         image is (mostly) filtered off. Reminants of the lower frequency"
+"         component are still visible due to the wide-band and low-order"
+"         filter on the receiver. The received complex baseband signal also"
+"         has a reduction in power by 2 because half the signal's energy (the"
+"         negative image) is filtered off.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "conversion_example.m"
-
-int main()
+int main(int argc, char* argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "conversion_example.m", 'o', "output filename", NULL);
+    liquid_argparse_parse(argc,argv);
+
     // spectral periodogram options
     unsigned int nfft        =   1200;  // spectral periodogram FFT size
     unsigned int num_samples =  64000;  // number of samples
@@ -101,8 +102,8 @@ int main()
     // 
     // export output file
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
 
@@ -131,7 +132,7 @@ int main()
     fprintf(fid,"legend('transmit (complex)','DAC output (real)','receive (complex)','location','northeast');\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     printf("done.\n");
     return 0;

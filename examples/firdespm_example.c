@@ -1,22 +1,22 @@
-//
-// firdespm_example.c
-//
-// This example demonstrates finite impulse response filter design
-// using the Parks-McClellan algorithm.
-//
-// SEE ALSO: firdes_kaiser_example.c
+char __docstr__[] =
+"This example demonstrates finite impulse response filter design"
+" using the Parks-McClellan algorithm.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "firdespm_example.m"
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename, "firdespm_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, h_len, 91, 'p', "filter length", NULL);
+    liquid_argparse_parse(argc,argv);
+
     // filter design parameters
-    unsigned int h_len = 91;
     liquid_firdespm_btype btype = LIQUID_FIRDESPM_BANDPASS;
     unsigned int num_bands = 4;
     float bands[8]   = {0.00f, 0.10f,
@@ -40,8 +40,8 @@ int main(int argc, char*argv[])
         printf("h(%4u) = %16.12f;\n", i+1, h[i]);
 
     // open output file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"h_len=%u;\n", h_len);
@@ -60,7 +60,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"axis([-0.5 0.5 -60 5]);\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     printf("done.\n");
     return 0;

@@ -1,52 +1,27 @@
-//
-// complementary_codes_example.c
-// 
-// This example demonstrates how to generate complementary binary
-// codes in liquid.  A pair of codes is generated using the bsequence
-// interface, their auto-correlations are computed, and the result is
-// summed and printed to the screen.  The results are also printed to an
-// output file, which plots the sequences and their auto-correlations.
-//
-// SEE ALSO: bsequence_example.c
-//           msequence_example.c
+char __docstr__[] =
+"This example demonstrates how to generate complementary binary"
+" codes in liquid.  A pair of codes is generated using the bsequence"
+" interface, their auto-correlations are computed, and the result is"
+" summed and printed to the screen.  The results are also printed to an"
+" output file, which plots the sequences and their auto-correlations.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "complementary_codes_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("complementary_codes_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  n     : sequence length, 8,16,32,64,... (default: 32)\n");
-}
-
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // options
-    unsigned int n = 32;
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"uhn:")) != EOF) {
-        switch (dopt) {
-        case 'u':
-        case 'h':   usage();                return 0;
-        case 'n':   n = atoi(optarg);       break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "complementary_codes_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, n,       32,    'n', "sequence length (must be a power of 2)", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if ( (1<<liquid_nextpow2(n)) != n ) {
-        fprintf(stderr,"error: %s, sequence length must be a power of 2\n", argv[0]);
-        exit(1);
-    }
+    if ( (1<<liquid_nextpow2(n)) != n )
+        return fprintf(stderr,"error: sequence length must be a power of 2\n");
 
     // create and initialize codes
     bsequence a = bsequence_create(n);
@@ -79,13 +54,13 @@ int main(int argc, char*argv[])
     }
 
     // print results to file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    FILE * fid = fopen(filename,"w");
     if (!fid) {
-        fprintf(stderr,"error: %s, cannot open output file '%s' for writing\n", argv[0], OUTPUT_FILENAME);
+        fprintf(stderr,"error: %s, cannot open output file '%s' for writing\n", argv[0], filename);
         exit(1);
     }
 
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"n = %u;\n", n);
@@ -122,7 +97,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"   ylabel('auto-correlation');\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     // clean up memory
     bsequence_destroy(a);

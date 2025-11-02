@@ -1,27 +1,28 @@
-// Direct digital synthesizer example.  This example demonstrates
-// the interface to the direct digital synthesizer.  A baseband
-// pulse is generated and then efficiently up-converted
-// (interpolated and mixed up) using the DDS object.  The resulting
-// signal is then down-converted (mixed down and decimated) using
-// the same DDS object.  Results are written to a file.
-// SEE ALSO: firinterp_crcf_example.c
-//           decim_crcf_example.c
-//           resamp2_crcf_example.c
-//           nco_example.c
+char __docstr__[] =
+"Direct digital synthesizer example.  This example demonstrates"
+" the interface to the direct digital synthesizer.  A baseband"
+" pulse is generated and then efficiently up-converted"
+" (interpolated and mixed up) using the DDS object.  The resulting"
+" signal is then down-converted (mixed down and decimated) using"
+" the same DDS object.  Results are written to a file.";
+
 #include <stdio.h>
 #include <complex.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "dds_cccf_example.m"
-
-int main() {
-    // options
-    float           fc          = -0.2f;    // input (output) decim (interp) frequency
-    unsigned int    num_stages  = 3;        // number of halfband interp/decim stages
-    unsigned int    num_samples = 64;       // number of input samples
-    float           As          = 60.0f;    // DDS stop-band attenuation [dB]
-    float           bw          = 0.25f;    // signal bandwidth
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "dds_cccf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(float,    fc,          -0.2f, 'f', "input (output) decim (interp) frequency", NULL);
+    liquid_argparse_add(unsigned, num_stages,  3,     's', "number of halfband interp/decim stages", NULL);
+    liquid_argparse_add(unsigned, num_samples, 64,    'n', "number of input samples", NULL);
+    liquid_argparse_add(float,    As,          60.0f, 'a', "DDS stop-band attenuation [dB]", NULL);
+    liquid_argparse_add(float,    bw,          0.25f, 'w', "signal bandwidth", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // derived values
     unsigned int r=1<<num_stages;   // resampling rate (output/input)
@@ -31,8 +32,8 @@ int main() {
     dds_cccf_print(q);
 
     // open/initialize output file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n",filename);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"n=%u;\n", num_samples);
     fprintf(fid,"r=%u;\n", r);
@@ -105,7 +106,7 @@ int main() {
     fprintf(fid,"  ylabel('down-converted');\n");
 
     fclose(fid);
-    printf("results written to %s\n",OUTPUT_FILENAME);
+    printf("results written to %s\n",filename);
 
     // clean up allocated objects
     dds_cccf_destroy(q);

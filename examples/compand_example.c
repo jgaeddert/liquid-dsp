@@ -1,69 +1,36 @@
-//
-// compand_example.c
-//
-// This example demonstrates the interface to the compand function
-// (compression, expansion).  The compander is typically used with the
-// quantizer to increase the dynamic range of the converter, particularly for
-// low-level signals.  The transfer function is computed (empirically) and
-// printed to the screen.
-//
+char __docstr__[] =
+"This example demonstrates the interface to the compand function"
+" (compression, expansion).  The compander is typically used with the"
+" quantizer to increase the dynamic range of the converter, particularly for"
+" low-level signals.  The transfer function is computed (empirically) and"
+" printed to the screen.";
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "compand_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char*argv[])
 {
-    printf("compand_example\n");
-    printf("  u/h   : print usage/help\n");
-    printf("  v/q   : verbose/quiet, default: verbose\n");
-    printf("  n     : number of samples, default: 31\n");
-    printf("  m     : companding parameter: mu > 0, default: 255\n");
-    printf("  r     : range > 0, default: 1.25\n");
-}
-
-
-int main(int argc, char*argv[]) {
-    // options
-    unsigned int n=31;
-    float mu=255.0f;
-    float range = 1.25f;
-    int verbose = 1;
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"uhvqn:m:r:")) != EOF) {
-        switch (dopt) {
-        case 'u':
-        case 'h': usage();              return 0;
-        case 'v': verbose = 1;          break;
-        case 'q': verbose = 0;          break;
-        case 'n': n = atoi(optarg);     break;
-        case 'm': mu = atof(optarg);    break;
-        case 'r': range = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "compand_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(int,   n,       31,    'n', "number of levels to test", NULL);
+    liquid_argparse_add(float, mu,      255.0f,'m', "compression factor", NULL);
+    liquid_argparse_add(float, range,   1.25f, 'r', "range of values to test", NULL);
+    liquid_argparse_add(bool,  verbose, 0,     'v', "enable verbose output", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (mu < 0) {
-        fprintf(stderr,"error: %s, mu must be positive\n", argv[0]);
-        usage();
-        exit(1);
-    } else if (range <= 0) {
-        fprintf(stderr,"error: %s, range must be greater than zero\n", argv[0]);
-        usage();
-        exit(1);
-    }
+    if (mu < 0)
+        return fprintf(stderr,"error: mu must be positive\n");
+    if (range <= 0)
+        return fprintf(stderr,"error: range must be greater than zero\n");
 
     // open debug file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
 
@@ -95,7 +62,7 @@ int main(int argc, char*argv[]) {
 
     // close debug file
     fclose(fid);
-    printf("results wrtten to %s\n", OUTPUT_FILENAME);
+    printf("results wrtten to %s\n", filename);
     printf("done.\n");
     return 0;
 }

@@ -1,16 +1,13 @@
-//
-// elliptest.c
-//
-// gcc -I. -I./include -lm libliquid.a elliptest.c -o elliptest
-//
+char __docstr__[] = "Test analog elliptic filter design";
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
-#include "include/liquid.h"
-#include "src/filter/src/ellip.c"
+#include "liquid.internal.h"
 
-int main() {
+int main()
+{
     // filter specifications
     float fp = 4.0f;
     float fs = 4.5f;

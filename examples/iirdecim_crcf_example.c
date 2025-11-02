@@ -1,55 +1,28 @@
-//
-// iirdecim_crcf_example.c
-//
-// This example demonstrates the interface to the iirdecim (infinite
-// impulse response decimator) family of objects.
-//
+char __docstr__[] =
+"This example demonstrates the interface to the iirdecim (infinite"
+" impulse response decimator) family of objects.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "iirdecim_crcf_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char*argv[])
 {
-    printf("iirdecim_crcf_example:\n");
-    printf("  u/h   : print usage/help\n");
-    printf("  M     : decimation factor, M > 1, default: 4\n");
-    printf("  n     : number of input samples, default: 400\n");
-}
-
-
-int main(int argc, char*argv[]) {
-    // options
-    unsigned int M=4;               // decimation rate
-    unsigned int num_samples=400;   // number of input samples
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"uhM:n:")) != EOF) {
-        switch (dopt) {
-        case 'u':
-        case 'h': usage();                      return 0;
-        case 'M': M = atoi(optarg);             break;
-        case 'n': num_samples = atoi(optarg);   break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "iirdecim_crcf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, M,             4, 'M', "decimation rate", NULL);
+    liquid_argparse_add(unsigned, num_samples, 400, 'n', "number of input samples", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate options
-    if (M < 2) {
-        fprintf(stderr,"error: %s, decim factor must be greater than 1\n", argv[0]);
-        exit(1);
-    } else if (num_samples < 1) {
-        fprintf(stderr,"error: %s, must have at least one sample\n", argv[0]);
-        usage();
-        return 1;
-    }
+    if (M < 2)
+        return fprintf(stderr,"error: decim factor must be greater than 1\n");
+    else if (num_samples < 1)
+        return fprintf(stderr,"error: must have at least one sample\n");
 
     // ensure number of samples is divisible by M
     num_samples += (num_samples % M);
@@ -68,7 +41,7 @@ int main(int argc, char*argv[]) {
     unsigned int w_len = num_samples > 4*delay ? num_samples - 4*delay : num_samples;
     for (i=0; i<num_samples; i++) {
         x[i] =  cexpf(_Complex_I*(2*M_PI*0.03*i - 0.3*i*i/(float)num_samples));
-        x[i] *= i < w_len ? liquid_hamming(i,w_len) : 0.0f;
+        x[i] *= i < w_len ? /*liquid_hamming(i,w_len)*/ 1.0f : 0.0f;
     }
 
     // decimate input
@@ -78,27 +51,9 @@ int main(int argc, char*argv[]) {
     // destroy decimator object
     iirdecim_crcf_destroy(q);
 
-#if 0
-    // print results to screen
-    printf("x(t) :\n");
-    for (i=0; i<num_samples; i++)
-        printf("  x(%4u) = %8.4f + j*%8.4f;\n", i, crealf(x[i]), cimagf(x[i]));
-
-    printf("y(t) :\n");
-    for (i=0; i<num_samples; i++) {
-        printf("  y(%4u) = %8.4f + j*%8.4f;", i, crealf(y[i]), cimagf(y[i]));
-        if ( (i >= M*m) && ((i%M)==0))
-            printf(" **\n");
-        else
-            printf("\n");
-    }
-#endif
-
-    // 
     // export output file
-    //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"M = %u;\n", M);
@@ -141,14 +96,14 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(fx,X,'-','Color',[0.5 0.5 0.5],...\n");
     fprintf(fid,"     fy,Y,'-','Color',[0.0 0.5 0.3],'LineWidth',2);\n");
-    fprintf(fid,"legend('input','interp','location','northeast');\n");
+    fprintf(fid,"legend('input','decim','location','northeast');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"xlabel('Normalized Frequency [f/Fs]');\n");
     fprintf(fid,"ylabel('PSD [dB]');\n");
     fprintf(fid,"axis([-0.5 0.5 -100 0]);\n");
 
     fclose(fid);
-    printf("results written to %s.\n",OUTPUT_FILENAME);
+    printf("results written to %s.\n",filename);
 
     printf("done.\n");
     return 0;

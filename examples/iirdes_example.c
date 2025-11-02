@@ -1,135 +1,68 @@
-// 
-// iirdes_example.c
-//
-// Tests infinite impulse response (IIR) digital filter design.
-// SEE ALSO: iirdes_analog_example.c
-//           iir_filter_crcf_example.c
-//
+char __docstr__[] =
+"Tests infinite impulse response (IIR) digital filter design.";
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <getopt.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "iirdes_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char*argv[])
 {
-    printf("iirdes_example -- infinite impulse response filter design\n");
-    printf("options (default values in []):\n");
-    printf("  u/h   : print usage/help\n");
-    printf("  t     : filter type: [butter], cheby1, cheby2, ellip, bessel\n");
-    printf("  b     : filter transformation: [LP], HP, BP, BS\n");
-    printf("  n     : filter order, n > 0 [5]\n");
-    printf("  r     : passband ripple in dB (cheby1, ellip), r > 0 [1.0]\n");
-    printf("  s     : stopband attenuation in dB (cheby2, ellip), s > 0 [60.0]\n");
-    printf("  f     : passband cut-off, 0 < f < 0.5 [0.2]\n");
-    printf("  c     : center frequency (BP, BS cases), 0 < c < 0.5 [0.25]\n");
-    printf("  o     : format [sos], tf\n");
-    printf("          sos   : second-order sections form\n");
-    printf("          tf    : regular transfer function form (potentially\n");
-    printf("                  unstable for large orders\n");
-}
-
-
-int main(int argc, char*argv[]) {
-    // options
-    unsigned int order=5;   // filter order
-    float fc = 0.20f;       // cutoff frequency (low-pass prototype)
-    float f0 = 0.25f;       // center frequency (band-pass, band-stop)
-    float As = 60.0f;       // stopband attenuation [dB]
-    float Ap = 1.0f;        // passband ripple [dB]
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "iirdes_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char*,ftype_str, "butter", 't', "filter type: butter, cheby1, cheby2, ellip, bessel", NULL);
+    liquid_argparse_add(char*,btype_str,     "LP", 'b', "filter transformation: LP, HP, BP, BS", NULL);
+    liquid_argparse_add(unsigned, order,        3, 'n', "filter order", NULL);
+    liquid_argparse_add(float,       fc,    0.20f, 'c', "pass-band cutoff frequency (low-pass prototype)", NULL);
+    liquid_argparse_add(float,       f0,    0.25f, 'f', "center frequency (band-pass, band-stop)", NULL);
+    liquid_argparse_add(float,       As,    60.0f, 's', "stopband attenuation [dB", NULL);
+    liquid_argparse_add(float,       Ap,     1.0f, 'p', "passband ripple [dB]", NULL);
+    liquid_argparse_add(bool,    use_tf,    false, 'T', "use direct transfer function rather than second-order sections", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // filter type
     liquid_iirdes_filtertype ftype = LIQUID_IIRDES_BUTTER;
+    if (strcmp(ftype_str,"butter")==0)
+        ftype = LIQUID_IIRDES_BUTTER;
+    else if (strcmp(ftype_str,"cheby1")==0)
+        ftype = LIQUID_IIRDES_CHEBY1;
+    else if (strcmp(ftype_str,"cheby2")==0)
+        ftype = LIQUID_IIRDES_CHEBY2;
+    else if (strcmp(ftype_str,"ellip")==0)
+        ftype = LIQUID_IIRDES_ELLIP;
+    else if (strcmp(ftype_str,"bessel")==0)
+        ftype = LIQUID_IIRDES_BESSEL;
+    else
+        return fprintf(stderr,"error: unknown filter type '%s'\n", ftype_str);
 
     // band type
     liquid_iirdes_bandtype btype = LIQUID_IIRDES_LOWPASS;
+    if (strcmp(btype_str,"LP")==0)
+        btype = LIQUID_IIRDES_LOWPASS;
+    else if (strcmp(btype_str,"HP")==0)
+        btype = LIQUID_IIRDES_HIGHPASS;
+    else if (strcmp(btype_str,"BP")==0)
+        btype = LIQUID_IIRDES_BANDPASS;
+    else if (strcmp(btype_str,"BS")==0)
+        btype = LIQUID_IIRDES_BANDSTOP;
+    else
+        return fprintf(stderr,"error: iirdes_example, unknown band type '%s'\n", btype_str);
 
     // output format: second-order sections or transfer function
-    liquid_iirdes_format format = LIQUID_IIRDES_SOS;
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"uht:b:n:r:s:f:c:o:")) != EOF) {
-        switch (dopt) {
-        case 'u':
-        case 'h':
-            usage();
-            return 0;
-        case 't':
-            if (strcmp(optarg,"butter")==0) {
-                ftype = LIQUID_IIRDES_BUTTER;
-            } else if (strcmp(optarg,"cheby1")==0) {
-                ftype = LIQUID_IIRDES_CHEBY1;
-            } else if (strcmp(optarg,"cheby2")==0) {
-                ftype = LIQUID_IIRDES_CHEBY2;
-            } else if (strcmp(optarg,"ellip")==0) {
-                ftype = LIQUID_IIRDES_ELLIP;
-            } else if (strcmp(optarg,"bessel")==0) {
-                ftype = LIQUID_IIRDES_BESSEL;
-            } else {
-                fprintf(stderr,"error: iirdes_example, unknown filter type \"%s\"\n", optarg);
-                usage();
-                exit(1);
-            }
-            break;
-        case 'b':
-            if (strcmp(optarg,"LP")==0) {
-                btype = LIQUID_IIRDES_LOWPASS;
-            } else if (strcmp(optarg,"HP")==0) {
-                btype = LIQUID_IIRDES_HIGHPASS;
-            } else if (strcmp(optarg,"BP")==0) {
-                btype = LIQUID_IIRDES_BANDPASS;
-            } else if (strcmp(optarg,"BS")==0) {
-                btype = LIQUID_IIRDES_BANDSTOP;
-            } else {
-                fprintf(stderr,"error: iirdes_example, unknown band type \"%s\"\n", optarg);
-                usage();
-                exit(1);
-            }
-            break;
-        case 'n': order = atoi(optarg); break;
-        case 'r': Ap = atof(optarg);    break;
-        case 's': As = atof(optarg);    break;
-        case 'f': fc = atof(optarg);    break;
-        case 'c': f0 = atof(optarg);    break;
-        case 'o':
-            if (strcmp(optarg,"sos")==0) {
-                format = LIQUID_IIRDES_SOS;
-            } else if (strcmp(optarg,"tf")==0) {
-                format = LIQUID_IIRDES_TF;
-            } else {
-                fprintf(stderr,"error: iirdes_example, unknown output format \"%s\"\n", optarg);
-                usage();
-                exit(1);
-            }
-            break;
-        default:
-            exit(1);
-        }
-    }
+    liquid_iirdes_format format = use_tf ? LIQUID_IIRDES_TF : LIQUID_IIRDES_SOS;
 
     // validate input
-    if (fc <= 0 || fc >= 0.5) {
-        fprintf(stderr,"error: %s, cutoff frequency out of range\n", argv[0]);
-        usage();
-        exit(1);
-    } else if (f0 < 0 || f0 > 0.5) {
-        fprintf(stderr,"error: %s, center frequency out of range\n", argv[0]);
-        usage();
-        exit(1);
-    } else if (Ap <= 0) {
-        fprintf(stderr,"error: %s, pass-band ripple out of range\n", argv[0]);
-        usage();
-        exit(1);
-    } else if (As <= 0) {
-        fprintf(stderr,"error: %s, stop-band ripple out of range\n", argv[0]);
-        usage();
-        exit(1);
-    }
+    if (fc <= 0 || fc >= 0.5)
+        fprintf(stderr,"error: cutoff frequency out of range\n");
+    if (f0 < 0 || f0 > 0.5)
+        fprintf(stderr,"error: center frequency out of range\n");
+    if (Ap <= 0)
+        return fprintf(stderr,"error: pass-band ripple out of range\n");
+    if (As <= 0)
+        return fprintf(stderr,"error: stop-band ripple out of range\n");
 
     // derived values : compute filter length
     unsigned int N = order; // effective order
@@ -153,8 +86,8 @@ int main(int argc, char*argv[]) {
     liquid_iirdes(ftype, btype, format, order, fc, f0, Ap, As, b, a);
 
     // open output file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
 
@@ -254,7 +187,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"  ylabel('Group delay [samples]');\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     printf("done.\n");
     return 0;

@@ -1,25 +1,25 @@
-//
-// wdelayf_example.c
-//
-// SEE ALSO: bufferf_example.c
-//           windowf_example.c
+char __docstr__[] = "Demonstration of wdelayf object";
 
 #include <stdio.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "wdelayf_example.m"
-
-int main() {
-    unsigned int delay = 10;
-    unsigned int num_samples = 64;
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "wdelayf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, delay,       10, 'm', "delay [samples]", NULL);
+    liquid_argparse_add(unsigned, num_samples, 64, 'n', "number of samples", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // create wdelay, all elements initialized to 0
     wdelayf w = wdelayf_create(delay);
     float y; // output
 
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"num_samples = %u;\n", num_samples);
@@ -45,7 +45,7 @@ int main() {
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(t,x,t,y);\n");
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     // clean it up
     wdelayf_destroy(w);

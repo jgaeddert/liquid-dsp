@@ -1,26 +1,25 @@
-//
-// kbd_window_example.c
-//
-// Kaiser-Bessel derived window example
-//
+char __docstr__[] = "Kaiser-Bessel derived window example.";
 
 #include <stdio.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "kbd_window_example.m"
-
-int main() {
-    // options
-    unsigned int n=64;      // window length
-    float beta = 20.0f;     // Kaiser beta factor
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "kbd_window_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned,    n,    64, 'n', "window length (samples)", NULL);
+    liquid_argparse_add(float,       beta, 20, 'b', "Kaiser beta factor)", NULL);
+    liquid_argparse_parse(argc,argv);
 
     unsigned int i;
     float w[n];
     liquid_kbd_window(n,beta,w);
 
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"n=%u;\n",n);
@@ -50,7 +49,7 @@ int main() {
     fprintf(fid,"title(['Kaiser-Bessel derived window']);\n");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

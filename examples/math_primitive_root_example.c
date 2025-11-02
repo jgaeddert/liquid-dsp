@@ -1,22 +1,21 @@
-//
-// math_primitive_root_example.c
-//
-// Demonstrates computing primitive root of a number using modular
-// arithmetic.
-//
+char __docstr__[] =
+"Demonstrates computing primitive root of a number using modular arithmetic.";
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // maximum number
-    unsigned int n = 140;
-    unsigned int i;
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(unsigned, n, 140, 'n', "maximum number", NULL);
+    liquid_argparse_parse(argc,argv);
 
     printf("primitive roots of prime numbers up to %u:\n", n);
+    unsigned int i;
     for (i=3; i<=n; i++) {
         if (!liquid_is_prime(i))
             continue;

@@ -1,16 +1,19 @@
-// Demonstrate pi/4 differential QPSK modem.
+char __docstr__[] = "Demonstrate pi/4 differential QPSK modem.";
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "modem_pi4dqpsk_example.m"
-
-int main()
+int main(int argc, char*argv[])
 {
-    // options
-    float        SNRdB       = 25.0f;
-    unsigned int num_symbols = 800;
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "modem_pi4dqpsk_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(float,    SNRdB,        25, 's', "signal-to-noise ratio", NULL);
+    liquid_argparse_add(unsigned, num_symbols, 800, 'n', "number of symbols", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // create the modem objects
     modemcf mod   = modemcf_create(LIQUID_MODEM_PI4DQPSK);
@@ -18,8 +21,8 @@ int main()
     modemcf_print(mod);
 
     // open output file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all; close all;\n");
     fprintf(fid,"n=%u; sym_rx=zeros(1,n); sym_rec=zeros(1,n);\n", num_symbols);
 
@@ -77,6 +80,6 @@ int main()
     fprintf(fid,"  ylabel('quadrature phase');\n");
     fprintf(fid,"  title('De-rotated');\n");
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
     return 0;
 }
