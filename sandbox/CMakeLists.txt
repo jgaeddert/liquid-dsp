@@ -5,6 +5,7 @@ set(SANDBOX
     am_demod_dsb_pll_carrier_test
     am_demod_dsb_pll_costas_test
     am_demod_ssb_pll_carrier_test
+    autotest_refactor_test
     bpresync_test
     chromosome_test
     cpmodem_test
