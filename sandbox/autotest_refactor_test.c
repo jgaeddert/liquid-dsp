@@ -22,17 +22,21 @@ struct liquid_autotest_s
     const char *      docstr;   // documentation string describing test
     const char *      keywords; // optional keywords (comma-separated) for searching
     float             cost;     // rough cost for test (helpful for parallelization)
-    int               line;     // line number where test is defined
+    //int               line;     // line number where test is defined
 
-    // result
-    //bool    pass;       // end results: pass/fail
-    //enum status
+    // status and results
+    enum {
+        LIQUID_AUTOTEST_INIT = 0,
+        LIQUID_AUTOTEST_PASS = 1,
+        LIQUID_AUTOTEST_FAIL = 2,
+        LIQUID_AUTOTEST_SKIP = 3
+    } status;
     int     num_tests;  // number of actual tests run
     int     num_pass;   // number of tests passsed
     int     num_fail;   // number of tests failed
 };
 
-#if 0
+typedef struct liquid_autotest_s * liquid_autotest;
 
 // initialize the package
 #define liquid_autotest_package_init(DOCSTR)                                    \
@@ -48,42 +52,22 @@ struct liquid_autotest_s
 
 // add autotest to package
 // define liquid_autotest(...) __liquid_autotest_internal( __VA_ARGS__ )
-#define liquid_autotest(FUNC, DOCSTR, KEYWORDS, COST)                           \
-    static void FUNC(void); /* forward declaration of function */               \
-    struct liquid_autotest_s _unique_name;
-    /* TODO: register autotest */                                               \
-    static void FUNC(void)  /* continue with function definition */             \
-
-// parse input
-#define liquid_autotest_parse(argc,argv)                                        \
-    int __dopt;                                                                 \
-    while ((__dopt = getopt(argc,argv,__parser.optstr)) != EOF) {               \
-        switch (__dopt) {                                                       \
-        case 'h':                                                               \
-            exit( liquid_autotest_print(&__parser, argv[0]) );                  \
-        case 'j':                                                               \
-            exit( liquid_autotest_print_json(&__parser, argv[0]) );             \
-        default:                                                                \
-            if (liquid_autotest_set(&__parser, __dopt, optarg))                 \
-                exit(-1);                                                       \
-        }                                                                       \
-    }                                                                           \
-
-//#include "liquid.autotest.h"
-
-
-
-liquid_autotest_init(__docstr__);
-
-liquid_autotest(firfilt_crcf_basic_0,
-    "finite impulse response filter basic functionality",
-    "FIR,filter,basic",
-    0.1)
-{
-}
-#endif
-
-typedef struct liquid_autotest_s * liquid_autotest;
+#define LIQUID_AUTOTEST(FUNC, DOCSTR, KEYWORDS, COST)                           \
+    /* forward declaration of test function                                 */  \
+    void FUNC##_autotest(void);                                                 \
+    /* define structure                                                     */  \
+    struct liquid_autotest_s FUNC##_s = {                                       \
+        #FUNC, /* test name */                                                  \
+        FUNC##_autotest, /* function pointer */                                 \
+        DOCSTR,                                                                 \
+        KEYWORDS,                                                               \
+        COST,                                                                   \
+        LIQUID_AUTOTEST_INIT, 0, 0, 0,                                          \
+    };                                                                          \
+    /* define pointer to struct */                                              \
+    static const liquid_autotest FUNC = &FUNC##_s;                              \
+    /* define function */                                                       \
+    void FUNC##_autotest(void)  /* continue with function definition */  \
 
 // forward declaration of test function
 void firfilt_crcf_basic_0_autotest(void);
@@ -94,8 +78,9 @@ struct liquid_autotest_s firfilt_crcf_basic_0_s = {
     "finite impulse response blah blah",
     "FIR,filter,basic",
     0.12,
-    88, //line
-    0, 0, 0};
+    //88, //line
+    LIQUID_AUTOTEST_INIT, 0, 0, 0 // status
+};
 // define pointer to struct
 static const liquid_autotest firfilt_crcf_basic_0 = &firfilt_crcf_basic_0_s;
 // define function
@@ -114,8 +99,9 @@ struct liquid_autotest_s firfilt_crcf_basic_1_s = {
     "another finite impulse response test",
     "FIR,filter,basic",
     0.12,
-    108, //line
-    0, 0, 0};
+    //108, //line
+    LIQUID_AUTOTEST_INIT, 0, 0, 0 // status
+};
 // define pointer to struct
 static const liquid_autotest firfilt_crcf_basic_1 = &firfilt_crcf_basic_1_s;
 // define function
@@ -123,6 +109,11 @@ void firfilt_crcf_basic_1_autotest(void)
 // user-defined info here
 {
     printf("firfilt_crcf_basic_1 test\n");
+}
+
+LIQUID_AUTOTEST(firfilt_crcf_basic_2, "basic filter test", "a,b,c", 0.1)
+{
+    printf("firfilt_crcf_basic_2 test\n");
 }
 
 //
@@ -133,6 +124,7 @@ liquid_autotest_list =
 {
     firfilt_crcf_basic_0,
     firfilt_crcf_basic_1,
+    firfilt_crcf_basic_2,
     NULL,
 };
 
