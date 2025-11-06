@@ -273,7 +273,7 @@ int FIRHILB(_c2r_execute)(FIRHILB() _q,
 //  _x      :   real-valued input array [size: 2 x 1]
 //  _y      :   complex-valued output sample
 int FIRHILB(_decim_execute)(FIRHILB()   _q,
-                            T *         _x,
+                            const T *   _x,
                             T complex * _y)
 {
     T * r;  // buffer read pointer
@@ -305,7 +305,7 @@ int FIRHILB(_decim_execute)(FIRHILB()   _q,
 //  _n      :   number of *output* samples
 //  _y      :   complex-valued output array [size: _n x 1]
 int FIRHILB(_decim_execute_block)(FIRHILB()    _q,
-                                  T *          _x,
+                                  const T *    _x,
                                   unsigned int _n,
                                   T complex *  _y)
 {
@@ -351,10 +351,10 @@ int FIRHILB(_interp_execute)(FIRHILB() _q,
 //  _x      :   complex-valued input array [size: _n x 1]
 //  _n      :   number of *input* samples
 //  _y      :   real-valued output array [size: 2*_n x 1]
-int FIRHILB(_interp_execute_block)(FIRHILB()    _q,
-                                   T complex *  _x,
-                                   unsigned int _n,
-                                   T *          _y)
+int FIRHILB(_interp_execute_block)(FIRHILB()          _q,
+                                   const T complex *  _x,
+                                   unsigned int       _n,
+                                   T *                _y)
 {
     unsigned int i;
     for (i=0; i<_n; i++) {

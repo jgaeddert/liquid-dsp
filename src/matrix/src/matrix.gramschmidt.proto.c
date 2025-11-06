@@ -52,7 +52,7 @@ int MATRIX(_proj)(T *          _u,
 }
 
 // Orthnormalization using the Gram-Schmidt algorithm
-int MATRIX(_gramschmidt)(T *          _x,
+int MATRIX(_gramschmidt)(const T *    _x,
                          unsigned int _rx,
                          unsigned int _cx,
                          T *          _v)

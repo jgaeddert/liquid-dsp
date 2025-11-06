@@ -34,7 +34,7 @@
 //  _theta  :   input primitive array [size: _n x 1]
 //  _n      :   array length
 //  _x      :   output array pointer [size: _n x 1]
-void VECTOR(_cexpj)(TP *         _theta,
+void VECTOR(_cexpj)(const TP *   _theta,
                     unsigned int _n,
                     T *          _x)
 {
@@ -71,7 +71,7 @@ void VECTOR(_cexpj)(TP *         _theta,
 //  _x      :   input array [size: _n x 1]
 //  _n      :   array length
 //  _theta  :   output primitive array [size: _n x 1]
-void VECTOR(_carg)(T *          _x,
+void VECTOR(_carg)(const T *    _x,
                    unsigned int _n,
                    TP *         _theta)
 {
@@ -108,7 +108,7 @@ void VECTOR(_carg)(T *          _x,
 //  _x      :   input array [size: _n x 1]
 //  _n      :   array length
 //  _y      :   output primitive array pointer [size: _n x 1]
-void VECTOR(_abs)(T *          _x,
+void VECTOR(_abs)(const T *    _x,
                   unsigned int _n,
                   TP *         _y)
 {
@@ -124,10 +124,10 @@ void VECTOR(_abs)(T *          _x,
         _y[i+2] = cabsf(_x[i+2]);
         _y[i+3] = cabsf(_x[i+3]);
 #else
-        _x[i  ] = fabsf(_x[i  ]);
-        _x[i+1] = fabsf(_x[i+1]);
-        _x[i+2] = fabsf(_x[i+2]);
-        _x[i+3] = fabsf(_x[i+3]);
+        _y[i  ] = fabsf(_x[i  ]);
+        _y[i+1] = fabsf(_x[i+1]);
+        _y[i+2] = fabsf(_x[i+2]);
+        _y[i+3] = fabsf(_x[i+3]);
 #endif
     }
 
@@ -136,7 +136,7 @@ void VECTOR(_abs)(T *          _x,
 #if T_COMPLEX
         _y[i] = cabsf(_x[i]);
 #else
-        _x[i] = fabsf(_x[i]);
+        _y[i] = fabsf(_x[i]);
 #endif
     }
 }

@@ -264,7 +264,7 @@ int dsssframesync_set_header_props(dsssframesync _q, dsssframegenprops_s * _prop
     return dsssframesync_set_header_len(_q, _q->header_user_len);
 }
 
-int dsssframesync_execute(dsssframesync _q, float complex * _x, unsigned int _n)
+int dsssframesync_execute(dsssframesync _q, const float complex * _x, unsigned int _n)
 {
     unsigned int i;
     for (i = 0; i < _n; i++) {

@@ -285,9 +285,9 @@ float DDS(_get_delay_decim)(DDS() _q)
 //  _q      :   dds object
 //  _x      :   input sample array [size: 2^num_stages x 1]
 //  _y      :   output sample
-int DDS(_decim_execute)(DDS() _q,
-                        T *   _x,
-                        T *   _y)
+int DDS(_decim_execute)(DDS()     _q,
+                        const T * _x,
+                        T *       _y)
 {
     // copy input data
     memmove(_q->buffer0, _x, (_q->rate)*sizeof(T));

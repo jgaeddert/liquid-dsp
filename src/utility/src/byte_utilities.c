@@ -98,8 +98,8 @@ unsigned int count_bit_errors(unsigned int _s1,
 //  _msg0   :   original message [size: _n x 1]
 //  _msg1   :   copy of original message [size: _n x 1]
 //  _n      :   message size
-unsigned int count_bit_errors_array(unsigned char * _msg0,
-                                    unsigned char * _msg1,
+unsigned int count_bit_errors_array(const unsigned char * _msg0,
+                                    const unsigned char * _msg1,
                                     unsigned int _n)
 {
     unsigned int num_bit_errors = 0;

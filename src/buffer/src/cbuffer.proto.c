@@ -94,7 +94,7 @@ CBUFFER() CBUFFER(_create_max)(unsigned int _max_size,
 }
 
 // copy object
-CBUFFER() CBUFFER(_copy)(CBUFFER() q_orig)
+CBUFFER() CBUFFER(_copy)(const CBUFFER() q_orig)
 {
     // validate input
     if (q_orig == NULL)
@@ -201,7 +201,7 @@ int CBUFFER(_push)(CBUFFER() _q,
 //  _v  : output array
 //  _n  : number of samples to write
 int CBUFFER(_write)(CBUFFER()    _q,
-                    T *          _v,
+                    const T *    _v,
                     unsigned int _n)
 {
     // ensure number of samples to write doesn't exceed space available

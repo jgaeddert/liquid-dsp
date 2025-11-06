@@ -264,10 +264,10 @@ int fec_golay2412_destroy(fec _q)
 //  _dec_msg_len    :   decoded message length (number of bytes)
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
 //  _msg_enc        :   encoded message [size: 1 x 2*_dec_msg_len]
-int fec_golay2412_encode(fec             _q,
-                         unsigned int    _dec_msg_len,
-                         unsigned char * _msg_dec,
-                         unsigned char * _msg_enc)
+int fec_golay2412_encode(fec                   _q,
+                         unsigned int          _dec_msg_len,
+                         const unsigned char * _msg_dec,
+                         unsigned char *       _msg_enc)
 {
     unsigned int i=0;           // decoded byte counter
     unsigned int j=0;           // encoded byte counter
@@ -337,10 +337,10 @@ int fec_golay2412_encode(fec             _q,
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
 //
 //unsigned int
-int fec_golay2412_decode(fec             _q,
-                         unsigned int    _dec_msg_len,
-                         unsigned char * _msg_enc,
-                         unsigned char * _msg_dec)
+int fec_golay2412_decode(fec                   _q,
+                         unsigned int          _dec_msg_len,
+                         const unsigned char * _msg_enc,
+                         unsigned char *       _msg_dec)
 {
     unsigned int i=0;                       // decoded byte counter
     unsigned int j=0;                       // encoded byte counter

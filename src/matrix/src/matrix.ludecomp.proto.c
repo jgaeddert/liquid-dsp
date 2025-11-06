@@ -27,7 +27,7 @@
 #include "liquid.internal.h"
 
 // L/U/P decomposition, Crout's method
-int MATRIX(_ludecomp_crout)(T *          _x,
+int MATRIX(_ludecomp_crout)(const T *    _x,
                             unsigned int _rx,
                             unsigned int _cx,
                             T *          _l,
@@ -82,7 +82,7 @@ int MATRIX(_ludecomp_crout)(T *          _x,
 }
 
 // L/U/P decomposition, Doolittle's method
-int MATRIX(_ludecomp_doolittle)(T *          _x,
+int MATRIX(_ludecomp_doolittle)(const T *    _x,
                                 unsigned int _rx,
                                 unsigned int _cx,
                                 T *          _l,

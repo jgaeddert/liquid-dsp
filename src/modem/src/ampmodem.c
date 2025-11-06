@@ -218,7 +218,7 @@ int ampmodem_modulate(ampmodem        _q,
 //  _n      :   number of input, output samples
 //  _s      :   complex baseband signal s(t) [size: _n x 1]
 int ampmodem_modulate_block(ampmodem        _q,
-                            float *         _m,
+                            const float *   _m,
                             unsigned int    _n,
                             float complex * _s)
 {
@@ -243,10 +243,10 @@ int ampmodem_demodulate(ampmodem      _q,
 //  _y      :   received signal r(t) [size: _n x 1]
 //  _n      :   number of input, output samples
 //  _x      :   message signal m(t), [size: _n x 1]
-int ampmodem_demodulate_block(ampmodem        _q,
-                              float complex * _y,
-                              unsigned int    _n,
-                              float *         _x)
+int ampmodem_demodulate_block(ampmodem              _q,
+                              const float complex * _y,
+                              unsigned int          _n,
+                              float *               _x)
 {
     unsigned int i;
     int rc;

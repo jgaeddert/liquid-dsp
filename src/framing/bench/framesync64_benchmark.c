@@ -32,13 +32,13 @@ typedef struct {
     unsigned int num_frames_valid;      // number of valid payloads
 } framedata;
 
-static int callback(unsigned char *  _header,
-                    int              _header_valid,
-                    unsigned char *  _payload,
-                    unsigned int     _payload_len,
-                    int              _payload_valid,
-                    framesyncstats_s _stats,
-                    void *           _userdata)
+static int callback(const unsigned char *  _header,
+                    int                    _header_valid,
+                    const unsigned char *  _payload,
+                    unsigned int           _payload_len,
+                    int                    _payload_valid,
+                    framesyncstats_s       _stats,
+                    void *                 _userdata)
 {
     framedata * fd = (framedata*) _userdata;
     fd->num_frames_detected += 1;

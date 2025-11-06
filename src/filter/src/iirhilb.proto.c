@@ -173,7 +173,7 @@ int IIRHILB(_r2c_execute)(IIRHILB()   _q,
 
 // Execute Hilbert transform (real to complex) on a block of samples
 int IIRHILB(_r2c_execute_block)(IIRHILB()    _q,
-                                T *          _x,
+                                const T *    _x,
                                 unsigned int _n,
                                 T complex *  _y)
 {
@@ -223,10 +223,10 @@ int IIRHILB(_c2r_execute)(IIRHILB() _q,
     return LIQUID_OK;
 }
 // Execute Hilbert transform (complex to real) on a block of samples
-int IIRHILB(_c2r_execute_block)(IIRHILB()    _q,
-                                T complex *  _x,
-                                unsigned int _n,
-                                T *          _y)
+int IIRHILB(_c2r_execute_block)(IIRHILB()         _q,
+                                const T complex * _x,
+                                unsigned int      _n,
+                                T *               _y)
 {
     unsigned int i;
     for (i=0; i<_n; i++)
@@ -239,7 +239,7 @@ int IIRHILB(_c2r_execute_block)(IIRHILB()    _q,
 //  _x      :   real-valued input array [size: 2 x 1]
 //  _y      :   complex-valued output sample
 int IIRHILB(_decim_execute)(IIRHILB()   _q,
-                            T *         _x,
+                            const T *   _x,
                             T complex * _y)
 {
     // mix down by Fs/4
@@ -271,7 +271,7 @@ int IIRHILB(_decim_execute)(IIRHILB()   _q,
 //  _n      :   number of *output* samples
 //  _y      :   complex-valued output array [size: _n x 1]
 int IIRHILB(_decim_execute_block)(IIRHILB()    _q,
-                                  T *          _x,
+                                  const T *    _x,
                                   unsigned int _n,
                                   T complex *  _y)
 {
@@ -318,10 +318,10 @@ int IIRHILB(_interp_execute)(IIRHILB() _q,
 //  _x      :   complex-valued input array [size: _n x 1]
 //  _n      :   number of *input* samples
 //  _y      :   real-valued output array [size: 2*_n x 1]
-int IIRHILB(_interp_execute_block)(IIRHILB()    _q,
-                                   T complex *  _x,
-                                   unsigned int _n,
-                                   T *          _y)
+int IIRHILB(_interp_execute_block)(IIRHILB()         _q,
+                                   const T complex * _x,
+                                   unsigned int      _n,
+                                   T *               _y)
 {
     unsigned int i;
 

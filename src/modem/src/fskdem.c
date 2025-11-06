@@ -212,8 +212,8 @@ int fskdem_reset(fskdem _q)
 // demodulate symbol, assuming perfect symbol timing
 //  _q      :   fskdem object
 //  _y      :   input sample array [size: _k x 1]
-unsigned int fskdem_demodulate(fskdem          _q,
-                               float complex * _y)
+unsigned int fskdem_demodulate(fskdem                _q,
+                               const float complex * _y)
 {
     // copy input to internal time buffer
     memmove(_q->buf_time, _y, _q->k*sizeof(float complex));

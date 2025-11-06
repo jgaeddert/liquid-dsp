@@ -184,7 +184,7 @@ int AGC(_execute)(AGC() _q,
 //  _n      : number of input, output samples
 //  _y      : output data array, [size: _n x 1]
 int AGC(_execute_block)(AGC()        _q,
-                        TC *         _x,
+                        const TC *   _x,
                         unsigned int _n,
                         TC *         _y)
 {
@@ -334,7 +334,7 @@ int AGC(_set_scale)(AGC() _q,
 //  _x      : input data array, [size: _n x 1]
 //  _n      : number of input, output samples
 int AGC(_init)(AGC()        _q,
-               TC *         _x,
+               const TC *   _x,
                unsigned int _n)
 {
     // ensure number of samples is greater than zero

@@ -48,7 +48,7 @@
 //  _p      :   polynomial array, ascending powers [size: _k x 1]
 //  _k      :   polynomials length (poly order = _k - 1)
 //  _roots  :   resulting complex roots [size: _k-1 x 1]
-int poly_findroots(double *         _p,
+int poly_findroots(const double *   _p,
                    unsigned int     _k,
                    double complex * _roots)
 {
