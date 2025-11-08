@@ -13,16 +13,19 @@ char __docstr__[] =
 #include "liquid.argparse.h"
 //#include "liquid.autotest.h"
 
+// forward declaration of pointer to test structure
+typedef struct liquid_autotest_s * liquid_autotest;
+
 // individual test
 struct liquid_autotest_s
 {
     // configuration
-    const char *      name;     // test name
-    void (*func)(void);         // pointer to function to run
-    const char *      docstr;   // documentation string describing test
-    const char *      keywords; // optional keywords (comma-separated) for searching
-    float             cost;     // rough cost for test (helpful for parallelization)
-    //int               line;     // line number where test is defined
+    const char *      name;         // test name
+    void (*func)(liquid_autotest);  // pointer to function to run (passes self)
+    const char *      docstr;       // documentation string describing test
+    const char *      keywords;     // optional keywords (comma-separated) for searching
+    float             cost;         // rough cost for test (helpful for parallelization)
+    //int               line;         // line number where test is defined
 
     // status and results
     enum {
@@ -37,15 +40,30 @@ struct liquid_autotest_s
     int     num_tests;  // number of actual evaluations run
     int     num_pass;   // number of tests passsed
     int     num_fail;   // number of tests failed
+    float   runtime;    // execution time [seconds]
 };
 
-typedef struct liquid_autotest_s * liquid_autotest;
+int liquid_autotest_print(liquid_autotest _q)
+{
+    printf("%s ", _q->name);
+    unsigned int j;
+    for (j=strlen(_q->name); j<60; j++)
+        printf(".");
+    printf("  ");
+    switch(_q->status) {
+    case LIQUID_AUTOTEST_PASS: printf("  pass  "); break;
+    case LIQUID_AUTOTEST_FAIL: printf("<<FAIL>>"); break;
+    case LIQUID_AUTOTEST_SKIP: printf(" (skip) "); break;
+    default: printf(" error! ");
+    }
+    printf(" %7.2f sec", _q->runtime);
+}
 
 // initialize autotest harness
 // define liquid_autotest(...) __liquid_autotest_internal( __VA_ARGS__ )
 #define LIQUID_AUTOTEST(FUNC, DOCSTR, KEYWORDS, COST)                           \
     /* forward declaration of test function                                 */  \
-    void FUNC##_autotest(void);                                                 \
+    void FUNC##_autotest(liquid_autotest);                                      \
     /* define structure                                                     */  \
     struct liquid_autotest_s FUNC##_s = {                                       \
         #FUNC,              /* test name                                    */  \
@@ -53,18 +71,18 @@ typedef struct liquid_autotest_s * liquid_autotest;
         DOCSTR,             /* user-defined documentation string            */  \
         KEYWORDS,           /* string representing comma-separated keywords */  \
         COST,               /* cost estimate (runtime) for executing test   */  \
-        LIQUID_AUTOTEST_INIT, 0, 0, 0,                                          \
+        LIQUID_AUTOTEST_INIT, 0, 0, 0, 0.0f,                                    \
     };                                                                          \
     /* define pointer to struct */                                              \
     static const liquid_autotest FUNC = &FUNC##_s;                              \
     /* define function */                                                       \
-    void FUNC##_autotest(void)  /* continue with function definition */  \
+    void FUNC##_autotest(liquid_autotest __q__)  /* function definition: */     \
 
 #if 0
 // this is how a test should get expanded by the macro
 
 // forward declaration of test function
-void firfilt_crcf_basic_0_autotest(void);
+void firfilt_crcf_basic_0_autotest(liquid_autotest);
 // definte struct
 struct liquid_autotest_s firfilt_crcf_basic_0_s = {
     "firfilt_crcf_basic_0", // test name
@@ -78,7 +96,7 @@ struct liquid_autotest_s firfilt_crcf_basic_0_s = {
 // define pointer to struct
 static const liquid_autotest firfilt_crcf_basic_0 = &firfilt_crcf_basic_0_s;
 // define function
-void firfilt_crcf_basic_0_autotest(void)
+void firfilt_crcf_basic_0_autotest(liquid_autotest __q__)
 // user-defined info here
 {
     printf("firfilt_crcf_basic_0 test\n");
@@ -141,10 +159,22 @@ int main(int argc, char* argv[])
         if (autotest->status == LIQUID_AUTOTEST_SCHED)
         {
             printf("running test '%s' [%s]\n", autotest->docstr, autotest->keywords);
-            autotest->func();
+            autotest->status = LIQUID_AUTOTEST_ACTIVE;
+            autotest->func(autotest);
+            autotest->status = autotest->num_fail > 0 ? LIQUID_AUTOTEST_FAIL : LIQUID_AUTOTEST_PASS;
         } else if (autotest->status == LIQUID_AUTOTEST_SKIP) {
             printf("skipping test '%s'\n", autotest->docstr);
         }
+        i++;
+    }
+
+    // print summary
+    i = 0;
+    while (liquid_registry[i] != NULL)
+    {
+        printf("%3u : ", i+1);
+        liquid_autotest_print(liquid_registry[i]);
+        printf("\n");
         i++;
     }
 
