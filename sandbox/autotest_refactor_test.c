@@ -26,42 +26,33 @@ struct liquid_autotest_s
 
     // status and results
     enum {
-        LIQUID_AUTOTEST_INIT = 0,
-        LIQUID_AUTOTEST_PASS = 1,
-        LIQUID_AUTOTEST_FAIL = 2,
-        LIQUID_AUTOTEST_SKIP = 3
+        LIQUID_AUTOTEST_INIT = 0,   // test has been initialized
+        // ...
+        LIQUID_AUTOTEST_SCHED= 1,   // test has been scheduled to run
+        LIQUID_AUTOTEST_ACTIVE=2,   // test is actively running
+        LIQUID_AUTOTEST_PASS = 3,   // test finished: result = passed
+        LIQUID_AUTOTEST_FAIL = 4,   // test finished: result = failed
+        LIQUID_AUTOTEST_SKIP = 5,   // test skipped
     } status;
-    int     num_tests;  // number of actual tests run
+    int     num_tests;  // number of actual evaluations run
     int     num_pass;   // number of tests passsed
     int     num_fail;   // number of tests failed
 };
 
 typedef struct liquid_autotest_s * liquid_autotest;
 
-// initialize the package
-#define liquid_autotest_package_init(DOCSTR)                                    \
-    /* declare package object and initialize with options */                    \
-    /* TODO: if we want to include this package in one global function, we  */  \
-    /*       will need to mangle its name so as to avoid linker errors;     */  \
-    /*       might consider using something like:                           */  \
-    /*          __COUNTER__ ## __LINE__                                     */  \
-    struct liquid_autotest_package_s __package;                                 \
-    __package.file   = __FILE__; /* store reference file */                     \
-    __package.docstr = DOCSTR;                                                  \
-    __package.num_autotests = 0;                                                \
-
-// add autotest to package
+// initialize autotest harness
 // define liquid_autotest(...) __liquid_autotest_internal( __VA_ARGS__ )
 #define LIQUID_AUTOTEST(FUNC, DOCSTR, KEYWORDS, COST)                           \
     /* forward declaration of test function                                 */  \
     void FUNC##_autotest(void);                                                 \
     /* define structure                                                     */  \
     struct liquid_autotest_s FUNC##_s = {                                       \
-        #FUNC, /* test name */                                                  \
-        FUNC##_autotest, /* function pointer */                                 \
-        DOCSTR,                                                                 \
-        KEYWORDS,                                                               \
-        COST,                                                                   \
+        #FUNC,              /* test name                                    */  \
+        FUNC##_autotest,    /* function pointer                             */  \
+        DOCSTR,             /* user-defined documentation string            */  \
+        KEYWORDS,           /* string representing comma-separated keywords */  \
+        COST,               /* cost estimate (runtime) for executing test   */  \
         LIQUID_AUTOTEST_INIT, 0, 0, 0,                                          \
     };                                                                          \
     /* define pointer to struct */                                              \
@@ -69,13 +60,16 @@ typedef struct liquid_autotest_s * liquid_autotest;
     /* define function */                                                       \
     void FUNC##_autotest(void)  /* continue with function definition */  \
 
+#if 0
+// this is how a test should get expanded by the macro
+
 // forward declaration of test function
 void firfilt_crcf_basic_0_autotest(void);
 // definte struct
 struct liquid_autotest_s firfilt_crcf_basic_0_s = {
     "firfilt_crcf_basic_0", // test name
     firfilt_crcf_basic_0_autotest,
-    "finite impulse response blah blah",
+    "basic filter test",
     "FIR,filter,basic",
     0.12,
     //88, //line
@@ -89,27 +83,19 @@ void firfilt_crcf_basic_0_autotest(void)
 {
     printf("firfilt_crcf_basic_0 test\n");
 }
+#else
+LIQUID_AUTOTEST(firfilt_crcf_basic_0, "basic filter test", "FIR,filter,basic", 0.1)
+{
+    printf("firfilt_crcf_basic_0 test\n");
+}
+#endif
 
-// forward declaration of test function
-void firfilt_crcf_basic_1_autotest(void);
-// definte struct
-struct liquid_autotest_s firfilt_crcf_basic_1_s = {
-    "firfilt_crcf_basic_1", // test name
-    firfilt_crcf_basic_1_autotest,
-    "another finite impulse response test",
-    "FIR,filter,basic",
-    0.12,
-    //108, //line
-    LIQUID_AUTOTEST_INIT, 0, 0, 0 // status
-};
-// define pointer to struct
-static const liquid_autotest firfilt_crcf_basic_1 = &firfilt_crcf_basic_1_s;
-// define function
-void firfilt_crcf_basic_1_autotest(void)
-// user-defined info here
+
+LIQUID_AUTOTEST(firfilt_crcf_basic_1, "basic filter test", "a,b,c", 0.1)
 {
     printf("firfilt_crcf_basic_1 test\n");
 }
+
 
 LIQUID_AUTOTEST(firfilt_crcf_basic_2, "basic filter test", "a,b,c", 0.1)
 {
@@ -142,14 +128,25 @@ int main(int argc, char* argv[])
     liquid_argparse_parse(argc,argv);
     */
 
-    // run all tests
+    // mark tests to run
+    liquid_registry[0]->status = LIQUID_AUTOTEST_SCHED;
+    liquid_registry[1]->status = LIQUID_AUTOTEST_SKIP;   // skip this test
+    liquid_registry[2]->status = LIQUID_AUTOTEST_SCHED;
+
+    // run all scheduled tests
     unsigned int i = 0;
-    liquid_autotest autotest = liquid_registry[i++];
-    do {
-        printf("running test '%s' [%s]\n", autotest->docstr, autotest->keywords);
-        autotest->func();
-        autotest = liquid_registry[i++];
-    } while (autotest != NULL);
+    while (liquid_registry[i] != NULL)
+    {
+        liquid_autotest autotest = liquid_registry[i];
+        if (autotest->status == LIQUID_AUTOTEST_SCHED)
+        {
+            printf("running test '%s' [%s]\n", autotest->docstr, autotest->keywords);
+            autotest->func();
+        } else if (autotest->status == LIQUID_AUTOTEST_SKIP) {
+            printf("skipping test '%s'\n", autotest->docstr);
+        }
+        i++;
+    }
 
     return 0;
 }
