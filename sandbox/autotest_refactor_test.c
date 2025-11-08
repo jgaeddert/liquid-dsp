@@ -37,7 +37,6 @@ struct liquid_autotest_s
         LIQUID_AUTOTEST_FAIL = 4,   // test finished: result = failed
         LIQUID_AUTOTEST_SKIP = 5,   // test skipped
     } status;
-    int     num_tests;  // number of actual evaluations run
     int     num_pass;   // number of tests passsed
     int     num_fail;   // number of tests failed
     float   runtime;    // execution time [seconds]
@@ -46,8 +45,9 @@ struct liquid_autotest_s
 int liquid_autotest_print(liquid_autotest _q)
 {
     printf("%s ", _q->name);
+    printf("[%5u/%5u] ", _q->num_fail, _q->num_pass + _q->num_fail);
     unsigned int j;
-    for (j=strlen(_q->name); j<60; j++)
+    for (j=strlen(_q->name); j<50; j++)
         printf(".");
     printf("  ");
     switch(_q->status) {
@@ -57,7 +57,33 @@ int liquid_autotest_print(liquid_autotest _q)
     default: printf(" error! ");
     }
     printf(" %7.2f sec", _q->runtime);
+    return LIQUID_OK;
 }
+
+void liquid_autotest_pass(liquid_autotest _q)
+{
+    _q->num_pass++;
+}
+
+void liquid_autotest_fail(liquid_autotest _q,
+                          const char *    _file,
+                          unsigned int    _line,
+                          const char *    _expression)
+{
+    printf("  TEST FAILED: %s:%u: %s\n", _file, _line, _expression);
+    _q->num_fail++;
+}
+
+// expand macro
+#define AUTOTEST__(F,L,X)                                           \
+{                                                                   \
+    if (!X)                                                         \
+        liquid_autotest_fail(__q__,F,L,#X);                         \
+    else                                                            \
+        liquid_autotest_pass(__q__);                                \
+}
+#define AUTOTEST_(F,L,X)        AUTOTEST__(F,L,(X))     
+#define AUTOTEST(X)             AUTOTEST_(__FILE__,__LINE__,X)
 
 // initialize autotest harness
 // define liquid_autotest(...) __liquid_autotest_internal( __VA_ARGS__ )
@@ -71,7 +97,7 @@ int liquid_autotest_print(liquid_autotest _q)
         DOCSTR,             /* user-defined documentation string            */  \
         KEYWORDS,           /* string representing comma-separated keywords */  \
         COST,               /* cost estimate (runtime) for executing test   */  \
-        LIQUID_AUTOTEST_INIT, 0, 0, 0, 0.0f,                                    \
+        LIQUID_AUTOTEST_INIT, 0, 0, 0.0f,                                       \
     };                                                                          \
     /* define pointer to struct */                                              \
     static const liquid_autotest FUNC = &FUNC##_s;                              \
@@ -105,6 +131,7 @@ void firfilt_crcf_basic_0_autotest(liquid_autotest __q__)
 LIQUID_AUTOTEST(firfilt_crcf_basic_0, "basic filter test", "FIR,filter,basic", 0.1)
 {
     printf("firfilt_crcf_basic_0 test\n");
+    AUTOTEST(2 < 7);
 }
 #endif
 
@@ -112,12 +139,17 @@ LIQUID_AUTOTEST(firfilt_crcf_basic_0, "basic filter test", "FIR,filter,basic", 0
 LIQUID_AUTOTEST(firfilt_crcf_basic_1, "basic filter test", "a,b,c", 0.1)
 {
     printf("firfilt_crcf_basic_1 test\n");
+    AUTOTEST(4 > 9);
 }
 
 
 LIQUID_AUTOTEST(firfilt_crcf_basic_2, "basic filter test", "a,b,c", 0.1)
 {
     printf("firfilt_crcf_basic_2 test\n");
+    AUTOTEST(4 > 6);
+    AUTOTEST(5 > 6);
+    AUTOTEST(6 > 6);
+    AUTOTEST(7 > 6);
 }
 
 //
