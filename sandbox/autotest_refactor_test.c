@@ -156,11 +156,14 @@ LIQUID_AUTOTEST(firfilt_crcf_basic_2, "basic filter test", "a,b,c", 0.1)
     AUTOTEST(7 > 6);
 }
 
-//
-#define liquid_autotest_list const liquid_autotest liquid_registry[]
+// define a registry as an array of tests. Note that we use the 'weak'
+// attribute in case we want to link this file against another program
+// to define a separate registry
+#define LIQUID_AUTOTEST_REGISTRY \
+    __attribute__((weak)) const liquid_autotest liquid_autotest_registry[]
 
 // test list
-liquid_autotest_list =
+LIQUID_AUTOTEST_REGISTRY =
 {
     firfilt_crcf_basic_0,
     firfilt_crcf_basic_1,
@@ -178,10 +181,10 @@ int main(int argc, char* argv[])
 
     if (list) {
         unsigned int i = 0;
-        while (liquid_registry[i] != NULL)
+        while (liquid_autotest_registry[i] != NULL)
         {
             printf("%3u : ", i+1);
-            liquid_autotest_print_info(liquid_registry[i]);
+            liquid_autotest_print_info(liquid_autotest_registry[i]);
             printf("\n");
             i++;
         }
@@ -189,15 +192,15 @@ int main(int argc, char* argv[])
     }
 
     // mark tests to run
-    liquid_registry[0]->status = LIQUID_AUTOTEST_SCHED;
-    liquid_registry[1]->status = LIQUID_AUTOTEST_SKIP;   // skip this test
-    liquid_registry[2]->status = LIQUID_AUTOTEST_SCHED;
+    liquid_autotest_registry[0]->status = LIQUID_AUTOTEST_SCHED;
+    liquid_autotest_registry[1]->status = LIQUID_AUTOTEST_SKIP;   // skip this test
+    liquid_autotest_registry[2]->status = LIQUID_AUTOTEST_SCHED;
 
     // run all scheduled tests
     unsigned int i = 0;
-    while (liquid_registry[i] != NULL)
+    while (liquid_autotest_registry[i] != NULL)
     {
-        liquid_autotest autotest = liquid_registry[i];
+        liquid_autotest autotest = liquid_autotest_registry[i];
         if (autotest->status == LIQUID_AUTOTEST_SCHED)
         {
             printf("running test '%s' [%s]\n", autotest->docstr, autotest->keywords);
@@ -212,10 +215,10 @@ int main(int argc, char* argv[])
 
     // print summary
     i = 0;
-    while (liquid_registry[i] != NULL)
+    while (liquid_autotest_registry[i] != NULL)
     {
         printf("%3u : ", i+1);
-        liquid_autotest_print_status(liquid_registry[i]);
+        liquid_autotest_print_status(liquid_autotest_registry[i]);
         printf("\n");
         i++;
     }
