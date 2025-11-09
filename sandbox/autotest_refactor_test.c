@@ -1,9 +1,4 @@
-char __docstr__[] =
-"Complex finite impulse response filter example. Demonstrates the"
-" functionality of firfilt by designing a low-order prototype and using it"
-" to filter a noisy signal.  The filter coefficients are real, but the"
-" input and output arrays are complex. The filter order and cutoff"
-" frequency are specified at the beginning.";
+char __docstr__[] = "Test demonstration of new autotest macros and functions";
 
 #include <stdio.h>
 #include <math.h>
@@ -42,7 +37,16 @@ struct liquid_autotest_s
     float   runtime;    // execution time [seconds]
 };
 
-int liquid_autotest_print(liquid_autotest _q)
+// print test info
+int liquid_autotest_print_info(liquid_autotest _q)
+{
+    printf("name=%s, description=%s, keywords=%s, cost=%g",
+        _q->name, _q->docstr, _q->keywords, _q->cost);
+    return LIQUID_OK;
+}
+
+// print test status
+int liquid_autotest_print_status(liquid_autotest _q)
 {
     printf("%s ", _q->name);
     printf("[%5u/%5u] ", _q->num_fail, _q->num_pass + _q->num_fail);
@@ -54,7 +58,7 @@ int liquid_autotest_print(liquid_autotest _q)
     case LIQUID_AUTOTEST_PASS: printf("  pass  "); break;
     case LIQUID_AUTOTEST_FAIL: printf("<<FAIL>>"); break;
     case LIQUID_AUTOTEST_SKIP: printf(" (skip) "); break;
-    default: printf(" error! ");
+    default: return liquid_error(LIQUID_EINT,"unexpected status");
     }
     printf(" %7.2f sec", _q->runtime);
     return LIQUID_OK;
@@ -168,15 +172,21 @@ liquid_autotest_list =
 int main(int argc, char* argv[])
 {
     // define variables and parse command-line options
-    /*
     liquid_argparse_init(__docstr__);
-    liquid_argparse_add(char*,    filename, "firfilt_crcf_example.m", 'o', "output filename", NULL);
-    liquid_argparse_add(unsigned, h_len,        65, 'H', "filter length", NULL);
-    liquid_argparse_add(float,    fc,          0.1, 'c', "filter cutoff frequency", NULL);
-    liquid_argparse_add(float,    As,           60, 's', "filter stop-band suppression", NULL);
-    liquid_argparse_add(unsigned, num_samples, 240, 'n', "number of samples", NULL);
+    liquid_argparse_add(bool, list, false, 'L', "list tests and exit", NULL);
     liquid_argparse_parse(argc,argv);
-    */
+
+    if (list) {
+        unsigned int i = 0;
+        while (liquid_registry[i] != NULL)
+        {
+            printf("%3u : ", i+1);
+            liquid_autotest_print_info(liquid_registry[i]);
+            printf("\n");
+            i++;
+        }
+        return 0;
+    }
 
     // mark tests to run
     liquid_registry[0]->status = LIQUID_AUTOTEST_SCHED;
@@ -205,7 +215,7 @@ int main(int argc, char* argv[])
     while (liquid_registry[i] != NULL)
     {
         printf("%3u : ", i+1);
-        liquid_autotest_print(liquid_registry[i]);
+        liquid_autotest_print_status(liquid_registry[i]);
         printf("\n");
         i++;
     }
