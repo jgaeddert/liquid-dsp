@@ -1,18 +1,22 @@
-// demonstrate windowing functions
+char __docstr__[] = "Demonstrate windowing functions.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "windowing_example.m"
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // options
-    liquid_window_type  wtype = LIQUID_WINDOW_KAISER;
-    unsigned int        wlen  = 51;     // window size
-    float               arg   = 10.0f;  // generic argument
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename,  "windowing_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char*,    wtype_str, "kaiser", 'w', "window type", liquid_argparse_window);
+    liquid_argparse_add(unsigned, wlen,       51,      'n', "window length", NULL);
+    liquid_argparse_add(float,    arg,       10,       'N', "window argument", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // compute window coefficients
+    liquid_window_type  wtype = liquid_getopt_str2window(wtype_str);
     float w[wlen];
     unsigned int i;
     for (i=0; i<wlen; i++) {
@@ -21,8 +25,8 @@ int main(int argc, char*argv[])
     }
 
     // export output file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"wlen=%u;\n",wlen);
@@ -45,7 +49,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  ylabel('PSD [dB]');\n");
     fprintf(fid,"  axis([-0.5 0.5 -140 20]);\n");
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

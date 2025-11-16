@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2024 Joseph Gaeddert
+# Copyright (c) 2007 - 2025 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -1107,6 +1107,7 @@ sequence_benchmarks :=						\
 utility_objects :=						\
 	src/utility/src/bshift_array.o				\
 	src/utility/src/byte_utilities.o			\
+	src/utility/src/count_ones.o				\
 	src/utility/src/memory.o				\
 	src/utility/src/msb_index.o				\
 	src/utility/src/pack_bytes.o				\
@@ -1135,27 +1136,31 @@ utility_benchmarks :=						\
 vector_objects :=						\
 	@MLIBS_VECTOR@						\
 
-# portable builds
-src/vector/src/vectorf_add.port.o   : %.o : %.c $(include_headers) src/vector/src/vector_add.proto.c
-src/vector/src/vectorf_norm.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_norm.proto.c
-src/vector/src/vectorf_mul.port.o   : %.o : %.c $(include_headers) src/vector/src/vector_mul.proto.c
-src/vector/src/vectorf_trig.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_trig.proto.c
-src/vector/src/vectorcf_add.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_add.proto.c
-src/vector/src/vectorcf_norm.port.o : %.o : %.c $(include_headers) src/vector/src/vector_norm.proto.c
-src/vector/src/vectorcf_mul.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_mul.proto.c
-src/vector/src/vectorcf_trig.port.o : %.o : %.c $(include_headers) src/vector/src/vector_trig.proto.c
+# vector prototypes (portable) - explicit dependencies
+vector_prototypes :=						\
+	src/vector/src/vector_add.proto.c			\
+	src/vector/src/vector_mul.proto.c			\
+	src/vector/src/vector_norm.proto.c			\
+	src/vector/src/vector_trig.proto.c			\
 
-# builds for specific architectures
+# targets: portable builds
+src/vector/src/vectorf.port.o   : %.o : %.c $(include_headers) ${vector_prototypes}
+src/vector/src/vectorcf.port.o  : %.o : %.c $(include_headers) ${vector_prototypes}
+
+# specific machine architectures
 # ...
 
 # vector autotest scripts
-vector_autotests :=
+vector_autotests :=						\
+	src/vector/tests/vectorcf_autotest.c			\
 
 # additional autotest objects
 autotest_extra_obj +=
 
 # vector benchmark scripts
-vector_benchmarks :=
+vector_benchmarks :=						\
+	src/vector/bench/vectorcf_benchmark.c			\
+	src/vector/bench/vectorf_benchmark.c			\
 
 
 
@@ -1714,7 +1719,6 @@ sandbox_programs =						\
 	sandbox/bpresync_test					\
 	sandbox/chromosome_test					\
 	sandbox/cpmodem_test					\
-	sandbox/count_ones_gentab				\
 	sandbox/crc_gentab					\
 	sandbox/ellip_func_test					\
 	sandbox/ellip_test					\

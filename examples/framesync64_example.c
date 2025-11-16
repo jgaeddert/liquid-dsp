@@ -1,19 +1,19 @@
-// This example demonstrates the interfaces to the framegen64 and
-// framesync64 objects used to completely encapsulate data for
-// over-the-air transmission.  A 64-byte payload is generated, and then
-// encoded, modulated, and interpolated using the framegen64 object.
-// The resulting complex baseband samples are corrupted with noise and
-// moderate carrier frequency and phase offsets before the framesync64
-// object attempts to decode the frame.  The resulting data are compared
-// to the original to validate correctness.
-//
-// SEE ALSO: flexframesync_example.c
+char __docstr__[] =
+"This example demonstrates the interfaces to the framegen64 and"
+" framesync64 objects used to completely encapsulate data for"
+" over-the-air transmission.  A 64-byte payload is generated, and then"
+" encoded, modulated, and interpolated using the framegen64 object."
+" The resulting complex baseband samples are corrupted with noise and"
+" moderate carrier frequency and phase offsets before the framesync64"
+" object attempts to decode the frame.  The resulting data are compared"
+" to the original to validate correctness.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
 #include "liquid.h"
-#define OUTPUT_FILENAME  "framesync64_example.m"
+#include "liquid.argparse.h"
 
 // static callback function
 static int callback(unsigned char *  _header,
@@ -31,6 +31,11 @@ static int callback(unsigned char *  _header,
 
 int main(int argc, char*argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "framesync64_example.m", 'o', "output filename", NULL);
+    liquid_argparse_parse(argc,argv);
+
     // create frame generator, synchronizer objects
     framegen64  fg = framegen64_create();
     framesync64 fs = framesync64_create(callback,NULL);
@@ -59,8 +64,8 @@ int main(int argc, char*argv[])
     framesync64_destroy(fs);
     
     // export results
-    FILE* fid = fopen(OUTPUT_FILENAME, "w");
-    fprintf(fid,"%% %s: auto-generated file\n", OUTPUT_FILENAME);
+    FILE* fid = fopen(filename, "w");
+    fprintf(fid,"%% %s: auto-generated file\n", filename);
     fprintf(fid,"clear all; close all;\n");
     fprintf(fid,"frame_len   = %u;\n", frame_len);
     for (i=0; i<frame_len; i++)
@@ -68,7 +73,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"t=0:(length(y)-1);\n");
     fprintf(fid,"plot(t,real(y),t,imag(y));\n");
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
     printf("done.\n");
     return 0;
 }

@@ -1,60 +1,28 @@
-// 
-// fskmodem_example.c
-//
-// This example demonstrates the M-ary frequency-shift keying
-// (MFSK) modem in liquid. A message signal is modulated and the
-// resulting signal is recovered using a demodulator object.
-//
+char __docstr__[] =
+"This example demonstrates the M-ary frequency-shift keying"
+" (MFSK) modem in liquid. A message signal is modulated and the"
+" resulting signal is recovered using a demodulator object.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <getopt.h>
 #include <math.h>
 
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "fskmodem_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("fskmodem_example -- frequency-shift keying example\n");
-    printf("options:\n");
-    printf("  h     : print help\n");
-    printf("  m     : bits/symbol,              default:  3\n");
-    printf("  k     : samples/symbol,           default:  2*2^m\n");
-    printf("  b     : signal bandwidth          default:  0.2\n");
-    printf("  n     : number of data symbols,   default: 80\n");
-    printf("  s     : SNR [dB],                 default: 40\n");
-}
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // options
-    unsigned int m           =   3;     // number of bits/symbol
-    unsigned int k           =   0;     // filter samples/symbol
-    unsigned int num_symbols = 8000;    // number of data symbols
-    float        SNRdB       = 40.0f;   // signal-to-noise ratio [dB]
-    float        bandwidth   = 0.20;    // frequency spacing
-    unsigned int nfft        = 1200;    // FFT size for compute spectrum
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hm:k:b:n:s:")) != EOF) {
-        switch (dopt) {
-        case 'h': usage();                      return 0;
-        case 'm': m           = atoi(optarg);   break;
-        case 'k': k           = atoi(optarg);   break;
-        case 'b': bandwidth   = atof(optarg);   break;
-        case 'n': num_symbols = atoi(optarg);   break;
-        case 's': SNRdB       = atof(optarg);   break;
-        default:
-            exit(1);
-        }
-    }
-
-    unsigned int i;
-    unsigned int j;
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "fskmodem_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, m,                3, 'm', "number of bits/symbol", NULL);
+    liquid_argparse_add(unsigned, k,                0, 'k', "filter samples/symbol ('0' converts to 2**m)", NULL);
+    liquid_argparse_add(unsigned, num_symbols,   8000, 'n', "number of symbols", NULL);
+    liquid_argparse_add(float,    SNRdB,        20.0f, 'S', "signal-to-noise ratio", NULL);
+    liquid_argparse_add(float,    bandwidth,     0.2f, 'w', "relative bandwidth", NULL);
+    liquid_argparse_add(unsigned, nfft,          1200, 'N', "FFT size", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // derived values
     if (k == 0)
@@ -63,19 +31,14 @@ int main(int argc, char*argv[])
     float        nstd = powf(10.0f, -SNRdB/20.0f);
 
     // validate input
-    if (k < M) {
-        fprintf(stderr,"errors: %s, samples/symbol must be at least modulation size (M=%u)\n", __FILE__,M);
-        exit(1);
-    } else if (k > 2048) {
-        fprintf(stderr,"errors: %s, samples/symbol exceeds maximum (2048)\n", __FILE__);
-        exit(1);
-    } else if (M > 1024) {
-        fprintf(stderr,"errors: %s, modulation size (M=%u) exceeds maximum (1024)\n", __FILE__, M);
-        exit(1);
-    } else if (bandwidth <= 0.0f || bandwidth >= 0.5f) {
-        fprintf(stderr,"errors: %s, bandwidth must be in (0,0.5)\n", __FILE__);
-        exit(1);
-    }
+    if (k < M)
+        return fprintf(stderr,"errors: samples/symbol must be at least modulation size (M=%u)\n", M);
+    if (k > 2048)
+        return fprintf(stderr,"errors: samples/symbol exceeds maximum (2048)\n");
+    if (M > 1024)
+        return fprintf(stderr,"errors: modulation size exceeds maximum (1024)\n");
+    if (bandwidth <= 0.0f || bandwidth >= 0.5f)
+        return fprintf(stderr,"errors: bandwidth must be in (0,0.5)\n");
 
     // create modulator/demodulator pair
     fskmod mod = fskmod_create(m,k,bandwidth);
@@ -91,6 +54,7 @@ int main(int argc, char*argv[])
 
     // modulate, demodulate, count errors
     unsigned int num_symbol_errors = 0;
+    unsigned int i, j;
     for (i=0; i<num_symbols; i++) {
         // generate random symbol
         unsigned int sym_in = rand() % M;
@@ -127,8 +91,8 @@ int main(int argc, char*argv[])
     // export results
     //
     
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"k = %u;\n", k);
@@ -151,7 +115,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"grid on;\n");
 
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     return 0;
 }

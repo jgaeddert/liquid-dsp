@@ -10,7 +10,7 @@ variables:
 
 before_script:
   - apt-get -qq update
-  - apt-get -qq install -y --no-install-recommends build-essential cmake valgrind time curl
+  - apt-get -qq install -y --no-install-recommends build-essential cmake time curl virtualenv
 
 # build main library and run test programs
 build:
@@ -21,8 +21,8 @@ build:
     - cd build
     - cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=ON -DBUILD_EXAMPLES=ON -DBUILD_SANDBOX=ON -DCOVERAGE=OFF ..
     - make -j4
-    - ./benchmark -q -o benchmark.json -f
-    - ./xautotest -q -o autotest.json
+    - ./benchmark -o benchmark.json -f -q
+    - ./xautotest -o autotest.json
     #- make check-doc # compile and run documenation checks (e.g. example code in README)
     - make install
     - ldconfig
@@ -42,9 +42,8 @@ coverage:
     - cd build
     - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=ON -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_SANDBOX=OFF ..
     - make -j4
-    - ./xautotest -q -o autotest.json
+    - ./xautotest -o autotest.json
     - cd ..
-    - apt-get -qq install -y --no-install-recommends virtualenv
     - virtualenv coverage
     - source coverage/bin/activate
     - pip install codecov-cli gcovr==7.0
@@ -75,30 +74,44 @@ legacy:
 platformio:
   stage: test
   script:
-    - apt-get -qq install -y --no-install-recommends virtualenv
     - virtualenv platformio
     - source platformio/bin/activate
     - pip install platformio
     - pio ci --lib="." --board=pico examples/platformio_example.c
 
 # compile and run all example programs, timing how long each takes to run
-.examples:
+examples:
   stage: test
   script:
-    - make -j4 examples
-    - echo '' > time.txt
-    - ls examples/*_example | sed -E "s#(.*)#echo '\1' >> time.txt; { time -p ./\1 ; } 2>> time.txt#g" > run_examples.sh
-    - /bin/sh run_examples.sh
+    - rm -rf build
+    - mkdir build
+    - cd build
+    - cmake -DBUILD_AUTOTESTS=OFF -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=ON -DBUILD_SANDBOX=OFF -DCOVERAGE=OFF ..
+    - make -j4
+    - ctest -j4 -L example
+    #- echo '' > time.txt
+    #- ls examples/*_example | sed -E "s#(.*)#echo '\1' >> time.txt; { time -p ./\1 ; } 2>> time.txt#g" > run_examples.sh
+    #- /bin/sh run_examples.sh
   artifacts:
-    paths: [run_examples.sh, time.txt]
+    paths:
+      - build/Testing/
 
-# compile and run all autotest programs with valgrind
-.autotest-memcheck:
+# compile and run autotest programs with valgrind
+# NOTE: running all tests on a single-core system can take well over an hour
+valgrind:
   stage: test
   script:
-    - make -j4 xautotest
-    - mkdir valgrind
-    - ./scripts/valgrind_eval.py -output valgrind -test 881
+    - rm -rf build
+    - mkdir build
+    - cd build
+    - apt-get -qq install -y --no-install-recommends valgrind
+    - virtualenv env
+    - source env/bin/activate
+    - cmake -DBUILD_AUTOTESTS=ON -DCOVERAGE=OFF -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_SANDBOX=OFF ..
+    - make -j4
+    - ../scripts/valgrind_eval.py -output valgrind -test 361 # run a single test initially
+    - ../scripts/valgrind_eval.py -output valgrind -summary
   artifacts:
-    paths: [valgrind/*]
+    paths:
+      - build/valgrind/*
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -392,7 +392,7 @@ int QDSYNC(_step)(QDSYNC() _q, TI _x)
 
     // increment counter to determine if sample is available
     _q->mf_counter++;
-    int sample_available = (_q->mf_counter >= _q->k-1) ? 1 : 0;
+    int sample_available = (_q->mf_counter >= (int)_q->k-1) ? 1 : 0;
 
     // set output sample if available
     if (sample_available) {

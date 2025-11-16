@@ -1,28 +1,41 @@
-// nco_pll_real_example.c : simulation of a real-valued phase-locked loop
+char __docstr__[] = "Simulation of a real-valued phase-locked loop";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
-#define OUTPUT_FILENAME "nco_pll_real_example.m"
+#include "liquid.argparse.h"
 
-int main() {
-    // parameters and simulation options
-    float        alpha  =  0.002f;  // PLL bandwidth
-    unsigned int n      =     500;  // number of samples
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename,"nco_pll_real_example.m",'o', "output filename", NULL);
+    liquid_argparse_add(char*,    type_str,         "nco", 't', "nco type, {nco, vco}", NULL);
+    liquid_argparse_add(float,    phase_offset,     3.000, 'p', "phase offset [radians]", NULL);
+    liquid_argparse_add(float,    frequency_offset, 0.100, 'f', "frequency offset [f/Fs]", NULL);
+    liquid_argparse_add(float,    pll_bandwidth,    0.002, 'w', "phase-locked loop bandwidth", NULL);
+    liquid_argparse_add(unsigned, n,                  512, 'n', "number of samples", NULL);
+    liquid_argparse_parse(argc,argv);
+
+    // validate input
+    if (strcmp(type_str,"nco") && strcmp(type_str,"vco"))
+        return fprintf(stderr,"error: invalid nco type '%s' (must be either 'nco' or 'vco')\n", type_str);
 
     // objects
-    nco_crcf nco_tx = nco_crcf_create(LIQUID_VCO);
-    nco_crcf nco_rx = nco_crcf_create(LIQUID_VCO);
+    int type = strcmp(type_str,"nco")==0 ? LIQUID_NCO : LIQUID_VCO;
+    nco_crcf nco_tx = nco_crcf_create(type);
+    nco_crcf nco_rx = nco_crcf_create(type);
 
     // initialize objects
-    nco_crcf_set_frequency(nco_tx, 0.40);
-    nco_crcf_set_frequency(nco_rx, 0.30);
-    nco_crcf_set_phase    (nco_rx, 3.00);
-    nco_crcf_pll_set_bandwidth(nco_rx, alpha);
+    nco_crcf_set_phase(nco_tx, phase_offset);
+    nco_crcf_set_frequency(nco_tx, 0.3);
+    nco_crcf_set_frequency(nco_rx, 0.3 + frequency_offset);
+    nco_crcf_pll_set_bandwidth(nco_rx, pll_bandwidth);
 
     // write output file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all; close all;\n");
     fprintf(fid,"n = %u; x = zeros(1,n); y = zeros(1,n); e = zeros(1,n);\n", n);
 
@@ -82,7 +95,7 @@ int main() {
     fprintf(fid,"  grid on;\n");
 
     fclose(fid);
-    printf("results written to %s.\n",OUTPUT_FILENAME);
+    printf("results written to %s.\n",filename);
 
     printf("done.\n");
     return 0;

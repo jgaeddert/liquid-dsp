@@ -1,17 +1,20 @@
-// This example demonstrates the a window interpolator.
+char __docstr__[] = "This example demonstrates the a window interpolator.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <getopt.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "firinterp_rrrf_window_example.m"
-
-int main(int argc, char*argv[]) {
-    // options
-    unsigned int M          =  8;   // interpolation factor
-    unsigned int m          =  1;   // filter semi-length
-    unsigned int num_symbols= 16;   // number of data symbols
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename, "firinterp_rrrf_window_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, M,            8, 'M', "interpolation factor", NULL);
+    liquid_argparse_add(unsigned, m,            1, 'm', "filter semi-length", NULL);
+    liquid_argparse_add(unsigned, num_symbols, 16, 'n', "number of samples", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // generate input signal and interpolate
     float x[  num_symbols];   // input symbols
@@ -35,8 +38,8 @@ int main(int argc, char*argv[]) {
         printf("  y[%4u] = %8.4f%s\n", i, y[i], (i >= M) && ((i%M)==0) ? " **" : "");
 
     // export output file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"M = %u;\n", M);
@@ -59,7 +62,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"grid on;\n");
 
     fclose(fid);
-    printf("results written to %s.\n",OUTPUT_FILENAME);
+    printf("results written to %s.\n",filename);
 
     printf("done.\n");
     return 0;

@@ -1,62 +1,24 @@
 // Demonstrate soft demodulation of linear modulation schemes.
+char __docstr__[] = "Demonstrate soft demodulation of linear modulation schemes.";
+
 #include <stdlib.h>
 #include <stdio.h>
-#include <getopt.h>
+
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "modem_soft_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("modem_soft_example [options]\n");
-    printf("  h     : print help\n");
-    printf("  m     : modulation scheme (qpsk default)\n");
-    liquid_print_modulation_schemes();
-}
-
-// print a string of bits to the standard output
-//  _x      :   input symbol
-//  _bps    :   bits/symbol
-//  _n      :   number of characters to print (zero-padding)
-void print_bitstring(unsigned int _x,
-                     unsigned int _bps,
-                     unsigned int _n)
-{
-    unsigned int i;
-    for (i=0; i<_bps; i++)
-        printf("%1u", (_x >> (_bps-i-1)) & 1);
-    for (i=_bps; i<_n; i++)
-        printf(" ");
-}
-
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // create mod/demod objects
-    modulation_scheme ms = LIQUID_MODEM_QPSK;
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    //liquid_argparse_add(char*, filename, "modem_soft_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char*, mod_str, "qam16", 'm', "modulation scheme", liquid_argparse_modem);
+    liquid_argparse_parse(argc,argv);
 
-    int dopt;
-    while ((dopt = getopt(argc,argv,"uhm:")) != EOF) {
-        switch (dopt) {
-        case 'h':
-            usage();
-            return 0;
-        case 'm':
-            ms = liquid_getopt_str2mod(optarg);
-            if (ms == LIQUID_MODEM_UNKNOWN) {
-                fprintf(stderr,"error: %s, unknown/unsupported modulation scheme '%s'\n", argv[0], optarg);
-                return 1;
-            }
-            break;
-        default:
-            exit(1);
-        }
-    }
-
-    // create the modem objects
-    modemcf mod   = modemcf_create(ms);
-    modemcf demod = modemcf_create(ms);
+    // create modem objects
+    int   ms  = liquid_getopt_str2mod(mod_str);
+    modem mod = modem_create(ms);   // modulator
+    modem dem = modem_create(ms);   // demodulator
 
     // ensure bits/symbol matches modem description (only
     // applicable to certain specific modems)
@@ -84,16 +46,16 @@ int main(int argc, char*argv[])
         modemcf_modulate(mod, i, &x);
 
         // demodulate, including soft decision
-        modemcf_demodulate_soft(demod, x, &s_hard, soft_bits);
+        modemcf_demodulate_soft(dem, x, &s_hard, soft_bits);
 
         // re-pack soft bits to hard decision
         liquid_pack_soft_bits(soft_bits, bps, &s_soft);
 
         // print results
         printf("  ");
-        print_bitstring(i,     bps,12);
-        print_bitstring(s_hard,bps,12);
-        print_bitstring(s_soft,bps,12);
+        liquid_print_bitstring(i,     bps); printf("%.*s", 12-bps, "            ");
+        liquid_print_bitstring(s_hard,bps); printf("%.*s", 12-bps, "            ");
+        liquid_print_bitstring(s_soft,bps); printf("%.*s", 12-bps, "            ");
         printf(" : ");
         unsigned int j;
         for (j=0; j<bps; j++)
@@ -107,6 +69,6 @@ int main(int argc, char*argv[])
     printf("num bit errors: %4u / %4u\n", num_bit_errors, num_symbols*bps);
 
     modemcf_destroy(mod);
-    modemcf_destroy(demod);
+    modemcf_destroy(dem);
     return 0;
 }

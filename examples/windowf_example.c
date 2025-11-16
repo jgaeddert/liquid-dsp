@@ -1,20 +1,20 @@
-//
-// windowf_example.c
-//
-// This example demonstrates the functionality of a window buffer (also
-// known as a circular or ring buffer) of floating-point values.  Values
-// are written to and read from the buffer using several different
-// methods.
-//
-// SEE ALSO: bufferf_example.c
-//           wdelayf_example.c
-//
+char __docstr__[] =
+"This example demonstrates the functionality of a window buffer (also"
+" known as a circular or ring buffer) of floating-point values.  Values"
+" are written to and read from the buffer using several different"
+" methods.";
 
 #include <stdio.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-int main() {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // initialize vector of data for testing
     float v[] = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
     float *r; // reader

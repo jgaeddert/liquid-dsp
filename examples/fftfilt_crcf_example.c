@@ -1,31 +1,27 @@
-//
-// fftfilt_crcf_example.c
-//
-// Complex FFT-based finite impulse response filter example. This example
-// demonstrates the functionality of firfilt by designing a low-order 
-// prototype and using it to filter a noisy signal.  The filter coefficients
-// are  real, but the input and output arrays are complex. The filter order
-// and cutoff frequency are specified at the beginning, and the result is
-// compared to the regular corresponding firfilt_crcf output.
-//
-// SEE ALSO: `firfilt_crcf_example.c`
-//
+char __docstr__[] =
+"Complex FFT-based finite impulse response filter example. This example"
+" demonstrates the functionality of firfilt by designing a low-order"
+" prototype and using it to filter a noisy signal.  The filter coefficients"
+" are real, but the input and output arrays are complex. The filter order"
+" and cutoff frequency are specified at the beginning, and the result is"
+" compared to the regular corresponding firfilt_crcf output.";
 
-#include <stdio.h>
 #include <math.h>
 #include <complex.h>
-
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "fftfilt_crcf_example.m"
-
-int main() {
-    // options
-    unsigned int h_len=57;      // filter length
-    float fc=0.10f;             // cutoff frequency
-    float As=60.0f;             // stop-band attenuation
-    unsigned int n=64;          // number of samples per block
-    unsigned int num_blocks=6;  // total number of blocks
+int main(int argc, char*argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,        filename, "fftfilt_crcf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned int, h_len,      57,    'h', "filter length", NULL);
+    liquid_argparse_add(float,        fc,         0.10f, 'f', "cutoff frequency", NULL);
+    liquid_argparse_add(float,        As,         60.0f, 'a', "stop-band attenuation", NULL);
+    liquid_argparse_add(unsigned int, n,          64,    'n', "number of samples per block", NULL);
+    liquid_argparse_add(unsigned int, num_blocks, 6,     'b', "total number of blocks", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // derived values
     unsigned int num_samples = n * num_blocks;
@@ -91,8 +87,8 @@ int main() {
     // 
     // plot results to output file
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"\n");
@@ -127,7 +123,7 @@ int main() {
     fprintf(fid,"  grid on;\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     printf("done.\n");
     return 0;

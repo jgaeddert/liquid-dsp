@@ -1,35 +1,21 @@
-// msequence_generator_example.c
-//
-// This example demonstrates finding maximal-length sequence
-// (m-sequence) generator polynomials of a certain length.
+char __docstr__[] =
+"This example demonstrates brute-force finding maximal-length sequence"
+" (m-sequence) generator polynomials of a certain length.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-void usage()
+int main(int argc, char* argv[])
 {
-    printf("msequence_generator_example [options]\n");
-    printf(" -h          : print usage\n");
-    printf(" -d <degree> : degree of polynomial, default: 2\n");
-}
-
-int main(int argc, char *argv[])
-{
-    unsigned int degree = 2;
-
-    // get options
-    int dopt;
-    while((dopt = getopt(argc,argv,"uhd:")) != EOF){
-        switch (dopt) {
-        case 'h': usage();               return 0;
-        case 'd': degree = atol(optarg); break;
-        default:
-            exit(-1);
-        }
-    }
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    //liquid_argparse_add(char*, filename, "msequence_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(int, degree, 8, 'd', "degree", NULL);
+    liquid_argparse_parse(argc,argv);
 
     unsigned int maxpoly = (1 << degree) - 1;
     unsigned int expected_sum = ((maxpoly + 1) / 2) * maxpoly;

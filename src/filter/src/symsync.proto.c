@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -436,7 +436,7 @@ int SYMSYNC(_step)(SYMSYNC()      _q,
     unsigned int n=0;
 
     // continue loop until filterbank index rolls over
-    while (_q->b < _q->npfb) {
+    while (_q->b < (int)_q->npfb) {
 
         // compute filterbank output
         FIRPFB(_execute)(_q->mf, _q->b, &mf);

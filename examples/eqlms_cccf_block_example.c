@@ -1,119 +1,79 @@
-// 
-// eqlms_cccf_block_example.c
-//
-// This example tests the least mean-squares (LMS) equalizer (EQ) on a
-// signal with an unknown modulation and carrier frequency offset.
-// Equalization is performed blind on a block of samples and the resulting
-// constellation is output to a file for plotting.
-//
+char __docstr__[] =
+"This example tests the least mean-squares (LMS) equalizer (EQ) on a"
+" signal with an unknown modulation and carrier frequency offset."
+" Equalization is performed blind on a block of samples and the resulting"
+" constellation is output to a file for plotting.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <complex.h>
-#include <getopt.h>
 #include <time.h>
+
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "eqlms_cccf_block_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("Usage: eqlms_cccf_block_example [OPTION]\n");
-    printf("  h     : print help\n");
-    printf("  n     : number of symbols, default: 500\n");
-    printf("  c     : number of channel filter taps (minimum: 1), default: 5\n");
-    printf("  k     : samples/symbol, default: 2\n");
-    printf("  m     : filter semi-length (symbols), default: 4\n");
-    printf("  b     : filter excess bandwidth factor, default: 0.3\n");
-    printf("  p     : equalizer semi-length (symbols), default: 3\n");
-    printf("  u     : equalizer learning rate, default; 0.05\n");
-}
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    //srand(time(NULL));
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "eqlms_cccf_block_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, num_samples, 2400,   'n', "number of symbols to observe", NULL);
+    liquid_argparse_add(float,    SNRdB,       30.0f,  's', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_add(float,    fc,          0.002f, 'f', "carrier offset", NULL);
+    liquid_argparse_add(unsigned, hc_len,      5,      'c', "channel filter length", NULL);
+    liquid_argparse_add(unsigned, k,           2,      'k', "matched filter samples/symbol", NULL);
+    liquid_argparse_add(unsigned, m,           3,      'm', "matched filter delay (symbols)", NULL);
+    liquid_argparse_add(float,    beta,        0.3f,   'b', "matched filter excess bandwidth factor", NULL);
+    liquid_argparse_add(unsigned, p,           3,      'p', "equalizer length (symbols, hp_len = 2*k*p+1)", NULL);
+    liquid_argparse_add(float,    mu,          0.08f,  'u', "equalizer learning rate", NULL);
+    liquid_argparse_add(char *,   mod_scheme,  "qpsk", 'M', "modulation scheme", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    // options
-    unsigned int    num_samples = 2400;     // number of symbols to observe
-    unsigned int    hc_len      = 5;        // channel filter length
-    unsigned int    k           = 2;        // matched filter samples/symbol
-    unsigned int    m           = 3;        // matched filter delay (symbols)
-    float           beta        = 0.3f;     // matched filter excess bandwidth factor
-    unsigned int    p           = 3;        // equalizer length (symbols, hp_len = 2*k*p+1)
-    float           mu          = 0.15f;    // equalizer learning rate
-    modulation_scheme ms        = LIQUID_MODEM_QPSK;
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hn:c:k:m:b:p:u:")) != EOF) {
-        switch (dopt) {
-        case 'h': usage();                      return 0;
-        case 'n': num_samples   = atoi(optarg); break;
-        case 'c': hc_len        = atoi(optarg); break;
-        case 'k': k             = atoi(optarg); break;
-        case 'm': m             = atoi(optarg); break;
-        case 'b': beta          = atof(optarg); break;
-        case 'p': p             = atoi(optarg); break;
-        case 'u': mu            = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
-    unsigned int i;
+    // modulation type/depth
+    modulation_scheme ms = liquid_getopt_str2mod(mod_scheme);
 
     // validate input
-    if (num_samples == 0) {
-        fprintf(stderr,"error: %s, number of symbols must be greater than zero\n", argv[0]);
-        exit(1);
-    } else if (hc_len == 0) {
-        fprintf(stderr,"error: %s, channel must have at least 1 tap\n", argv[0]);
-        exit(1);
-    } else if (k < 2) {
-        fprintf(stderr,"error: %s, samples/symbol must be at least 2\n", argv[0]);
-        exit(1);
-    } else if (m == 0) {
-        fprintf(stderr,"error: %s, filter semi-length must be at least 1 symbol\n", argv[0]);
-        exit(1);
-    } else if (beta < 0.0f || beta > 1.0f) {
-        fprintf(stderr,"error: %s, filter excess bandwidth must be in [0,1]\n", argv[0]);
-        exit(1);
-    } else if (p == 0) {
-        fprintf(stderr,"error: %s, equalizer semi-length must be at least 1 symbol\n", argv[0]);
-        exit(1);
-    } else if (mu < 0.0f || mu > 1.0f) {
-        fprintf(stderr,"error: %s, equalizer learning rate must be in [0,1]\n", argv[0]);
-        exit(1);
-    }
+    if (num_samples == 0)
+        return fprintf(stderr,"error: number of samples must be greater than zero\n");
+    if (hc_len == 0)
+        return fprintf(stderr,"error: channel must have at least 1 tap\n");
+    if (k < 2)
+        return fprintf(stderr,"error: samples/symbol must be at least 2\n");
+    if (m == 0)
+        return fprintf(stderr,"error: filter semi-length must be at least 1 symbol\n");
+    if (beta < 0.0f || beta > 1.0f)
+        return fprintf(stderr,"error: filter excess bandwidth must be in [0,1]\n");
+    if (p == 0)
+        return fprintf(stderr,"error: equalizer semi-length must be at least 1 symbol\n");
+    if (mu < 0.0f || mu > 1.0f)
+        return fprintf(stderr,"error: equalizer learning rate must be in [0,1]\n");
+    if (ms == LIQUID_MODEM_UNKNOWN)
+        return fprintf(stderr,"error: unknown modulation scheme '%s'\n", mod_scheme);
 
     // derived/fixed values
+    unsigned int    i;
     unsigned int    buf_len = 37;
     float complex   buf_input  [buf_len];
     float complex   buf_channel[buf_len];
     float complex   buf_output [buf_len];
 
-    // 
     // generate input sequence using symbol stream generator
-    //
     symstreamcf gen = symstreamcf_create_linear(LIQUID_FIRFILT_ARKAISER,k,m,beta,ms);
 
-    //
     // create multi-path channel filter
-    //
     float complex hc[hc_len];
     for (i=0; i<hc_len; i++)
         hc[i] = (i==0) ? 0.5f : (randnf() + _Complex_I*randnf())*0.2f;
     firfilt_cccf channel = firfilt_cccf_create(hc, hc_len);
 
-    //
     // create equalizer
-    //
     eqlms_cccf eq = eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_RRC, k, p, beta, 0.0f);
     eqlms_cccf_set_bw(eq, mu);
 
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n\n", filename);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"x = [];\n");
@@ -182,7 +142,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  ylabel('imag');\n");
 
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     return 0;
 }

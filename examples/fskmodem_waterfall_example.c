@@ -1,54 +1,26 @@
-// 
-// fskmodem_waterfall_example.c
-//
-// This example demonstrates the M-ary frequency-shift keying
-// (MFSK) modem in liquid by showing the resulting spectral
-// waterfall.
-//
+char __docstr__[] =
+"This example demonstrates the M-ary frequency-shift keying"
+" (MFSK) modem in liquid by showing the resulting spectral"
+" waterfall.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <getopt.h>
 #include <math.h>
 
 #include "liquid.h"
-
-// print usage/help message
-void usage()
-{
-    printf("fskmodem_waterfall_example -- frequency-shift keying waterfall example\n");
-    printf("options:\n");
-    printf("  -h       : print help\n");
-    printf("  -m <bps> : bits/symbol,            default:  2\n");
-    printf("  -b <bw>  : signal bandwidth        default:  0.2\n");
-    printf("  -n <num> : number of data symbols, default: 80\n");
-    printf("  -s <snr> : SNR [dB],               default: 40\n");
-}
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // options
-    unsigned int m           =     2;   // number of bits/symbol
-    unsigned int num_symbols =   400;   // number of data symbols
-    float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]
-    float        bandwidth   =  0.10;   // frequency spacing
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hm:b:n:s:")) != EOF) {
-        switch (dopt) {
-        case 'h': usage();                      return 0;
-        case 'm': m           = atoi(optarg);   break;
-        case 'b': bandwidth   = atof(optarg);   break;
-        case 'n': num_symbols = atoi(optarg);   break;
-        case 's': SNRdB       = atof(optarg);   break;
-        default:
-            exit(1);
-        }
-    }
-
-    unsigned int i;
-    unsigned int j;
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "fskmodem_waterfall_example", 'o', "output base filename", NULL);
+    liquid_argparse_add(unsigned, m,               2, 'm', "number of bits/symbol", NULL);
+    liquid_argparse_add(unsigned, num_symbols,   400, 'n', "number of symbols", NULL);
+    liquid_argparse_add(float,    SNRdB,       30.0f, 'S', "signal-to-noise ratio", NULL);
+    liquid_argparse_add(float,    bandwidth,    0.1f, 'w', "relative bandwidth", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // derived values
     unsigned int M    = 1 << m;     // constellation size
@@ -56,19 +28,14 @@ int main(int argc, char*argv[])
     float        nstd = powf(10.0f, -SNRdB/20.0f);  // noise std. dev.
 
     // validate input
-    if (k < M) {
-        fprintf(stderr,"errors: %s, samples/symbol must be at least modulation size (M=%u)\n", __FILE__,M);
-        exit(1);
-    } else if (k > 2048) {
-        fprintf(stderr,"errors: %s, samples/symbol exceeds maximum (2048)\n", __FILE__);
-        exit(1);
-    } else if (M > 1024) {
-        fprintf(stderr,"errors: %s, modulation size (M=%u) exceeds maximum (1024)\n", __FILE__, M);
-        exit(1);
-    } else if (bandwidth <= 0.0f || bandwidth >= 0.5f) {
-        fprintf(stderr,"errors: %s, bandwidth must be in (0,0.5)\n", __FILE__);
-        exit(1);
-    }
+    if (k < M)
+        return fprintf(stderr,"errors: samples/symbol must be at least modulation size\n");
+    if (k > 2048)
+        return fprintf(stderr,"errors: samples/symbol exceeds maximum (2048)\n");
+    if (M > 1024)
+        return fprintf(stderr,"errors: modulation size (M=%u) exceeds maximum (1024)\n", M);
+    if (bandwidth <= 0.0f || bandwidth >= 0.5f)
+        return fprintf(stderr,"errors: bandwidth must be in (0,0.5)\n");
 
     // create spectral waterfall object
     unsigned int nfft  = 1 << liquid_nextpow2(k);
@@ -84,8 +51,9 @@ int main(int argc, char*argv[])
 
     float complex buf_tx[k];    // transmit buffer
     float complex buf_rx[k];    // transmit buffer
-    
+
     // modulate, demodulate, count errors
+    unsigned int i, j;
     for (i=0; i<num_symbols; i++) {
         // generate random symbol
         unsigned int sym_in = rand() % M;
@@ -102,7 +70,7 @@ int main(int argc, char*argv[])
     }
 
     // export output files
-    spwaterfallcf_export(periodogram,"fskmodem_waterfall_example");
+    spwaterfallcf_export(periodogram,filename);
 
     // destroy objects
     spwaterfallcf_print(periodogram);

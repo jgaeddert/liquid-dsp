@@ -55,7 +55,7 @@ int main() {
     float tol = 1e-8;
 
     // internal variables
-    int i,j,k,l,l1;
+    unsigned int i,j,k,l,l1;
     float c,f,g,h,s,x,y,z;
     float e[n];
 
