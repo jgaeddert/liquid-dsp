@@ -245,7 +245,7 @@ QDETECTOR() QDETECTOR(_create_cpfsk)(unsigned char * _sequence,
     if (_beta < 0.0f || _beta > 1.0f)
         return liquid_error_config("QDETECTOR(_create_cpfsk)(), excess bandwidth factor must be in [0,1]");
 
-    // create time-domain template using GMSK modem
+    // create time-domain template using CPFSK modem
     unsigned int s_len = _k * (_sequence_len + 2*_m);
     TI *         s     = (TI*) malloc(s_len * sizeof(TI));
     cpfskmod mod = cpfskmod_create(_bps, _h, _k, _m, _beta, _type);
