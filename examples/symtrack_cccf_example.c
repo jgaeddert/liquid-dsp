@@ -67,9 +67,8 @@ int main(int argc, char* argv[])
     windowcf sym_buf = windowcf_create(buf_len);
 
     // create stream generator
-    int         ftype = liquid_getopt_str2firfilt(ftype_str);
     int         ms    = liquid_getopt_str2mod(mod_str);
-    symstreamcf gen   = symstreamcf_create_linear(ftype,k,m,beta,ms);
+    symstreamcf gen   = symstreamcf_create_linear(ftype_tx,k,m,beta,ms);
 
     // create channel emulator and add impairments
     channel_cccf channel = channel_cccf_create();
@@ -78,7 +77,7 @@ int main(int argc, char* argv[])
     channel_cccf_add_multipath     (channel, NULL, hc_len);
 
     // create symbol tracking synchronizer
-    symtrack_cccf symtrack = symtrack_cccf_create(ftype,k,m,beta,ms);
+    symtrack_cccf symtrack = symtrack_cccf_create(ftype_rx,k,m,beta,ms);
     symtrack_cccf_set_bandwidth(symtrack,bandwidth);
     //symtrack_cccf_set_eq_off(symtrack); // disable equalization
     symtrack_cccf_print(symtrack);
