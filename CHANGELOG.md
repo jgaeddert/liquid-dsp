@@ -9,6 +9,8 @@
     - added CMake rules to create exportable interface, option for building
       shared vs. static library, and simplified directory inclusion
       (thanks @burnbot-alt)
+    - fpm: adding new fixed-point math module to handle low-level math
+      operations using integer arithmetic.
 
 ## 1.7.0 - 2025-02-01
 
