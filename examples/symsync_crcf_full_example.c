@@ -45,21 +45,21 @@ int main(int argc, char* argv[])
 
     // validate input
     if (k < 2)
-        fprintf(stderr,"error: k (samples/symbol) must be at least 2\n");
+        return liquid_error(LIQUID_EICONFIG,"k (samples/symbol) must be at least 2");
     if (m < 1)
-        fprintf(stderr,"error: m (filter delay) must be greater than 0\n");
+        return liquid_error(LIQUID_EICONFIG,"m (filter delay) must be greater than 0");
     if (beta <= 0.0f || beta > 1.0f)
-        fprintf(stderr,"error: beta (excess bandwidth factor) must be in (0,1]\n");
+        return liquid_error(LIQUID_EICONFIG,"beta (excess bandwidth factor) must be in (0,1]");
     if (num_filters == 0)
-        fprintf(stderr,"error: number of polyphase filters must be greater than 0\n");
+        return liquid_error(LIQUID_EICONFIG,"number of polyphase filters must be greater than 0");
     if (bandwidth <= 0.0f)
-        fprintf(stderr,"error: timing PLL bandwidth must be greater than 0\n");
+        return liquid_error(LIQUID_EICONFIG,"timing PLL bandwidth must be greater than 0");
     if (num_symbols == 0)
-        fprintf(stderr,"error: number of symbols must be greater than 0\n");
+        return liquid_error(LIQUID_EICONFIG,"number of symbols must be greater than 0");
     if (tau < -1.0f || tau > 1.0f)
-        fprintf(stderr,"error: timing phase offset must be in [-1,1]\n");
+        return liquid_error(LIQUID_EICONFIG,"timing phase offset must be in [-1,1]");
     if (r < 0.5f || r > 2.0f)
-        fprintf(stderr,"error: timing frequency offset must be in [0.5,2]\n");
+        return liquid_error(LIQUID_EICONFIG,"timing frequency offset must be in [0.5,2]");
 
     // compute delay
     while (tau < 0) tau += 1.0f;    // ensure positive tau

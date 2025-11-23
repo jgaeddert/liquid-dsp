@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
  
     // close debug file
     fclose(fid);
-    printf("results wrtten to %s\n", filename);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

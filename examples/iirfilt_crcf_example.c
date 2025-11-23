@@ -42,7 +42,7 @@ int main(int argc, char*argv[])
     else if (strcmp(ftype_str,"bessel")==0)
         ftype = LIQUID_IIRDES_BESSEL;
     else
-        return fprintf(stderr,"error: unknown filter type '%s'\n", ftype_str);
+        return liquid_error(LIQUID_EICONFIG,"unknown filter type '%s'", ftype_str);
 
     // band type
     liquid_iirdes_bandtype btype = LIQUID_IIRDES_LOWPASS;
@@ -55,7 +55,7 @@ int main(int argc, char*argv[])
     else if (strcmp(btype_str,"BS")==0)
         btype = LIQUID_IIRDES_BANDSTOP;
     else
-        return fprintf(stderr,"error: iirdes_example, unknown band type '%s'\n", btype_str);
+        return liquid_error(LIQUID_EICONFIG,"iirdes_example, unknown band type '%s'", btype_str);
 
     // output format: second-order sections or transfer function
     liquid_iirdes_format format = use_tf ? LIQUID_IIRDES_TF : LIQUID_IIRDES_SOS;
@@ -66,9 +66,9 @@ int main(int argc, char*argv[])
     if (f0 < 0 || f0 > 0.5)
         fprintf(stderr,"error: center frequency out of range\n");
     if (Ap <= 0)
-        return fprintf(stderr,"error: pass-band ripple out of range\n");
+        return liquid_error(LIQUID_EICONFIG,"pass-band ripple out of range");
     if (As <= 0)
-        return fprintf(stderr,"error: stop-band ripple out of range\n");
+        return liquid_error(LIQUID_EICONFIG,"stop-band ripple out of range");
 
     // design filter from prototype
     iirfilt_crcf q = iirfilt_crcf_create_prototype(

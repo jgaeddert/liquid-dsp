@@ -28,7 +28,7 @@ int main(int argc, char*argv[])
 
     // validate input
     if (dt < -0.5f || dt > 0.5f)
-        return fprintf(stderr,"error: fractional sample offset must be in [-0.5,0.5]\n");
+        return liquid_error(LIQUID_EICONFIG,"fractional sample offset must be in [-0.5,0.5]");
 
     // derived values
     unsigned int num_samples = 3*n;

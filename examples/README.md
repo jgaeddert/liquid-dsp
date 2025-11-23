@@ -26,7 +26,7 @@ This directory contains all the examples for interfacing the liquid modules.
 
  * `asgramf_example.c`:
     ASCII spectrogram example for real-valued input. This example demonstrates
-    the functionality of the ASCII spectrogram for real-valued input siganls.
+    the functionality of the ASCII spectrogram for real-valued input signals.
     A cosine signal with time-varying frequency is generated and the resulting
     spectral periodogram is printed to the screen. Because the time signal has
     no complex component, its spectrum is symmetric.
@@ -150,7 +150,7 @@ This directory contains all the examples for interfacing the liquid modules.
  * `eqlms_cccf_block_example.c`:
     This example tests the least mean-squares (LMS) equalizer (EQ) on a
     signal with an unknown modulation and carrier frequency offset.
-    Equalization is performed blind on a block of samples and the reulting
+    Equalization is performed blind on a block of samples and the resulting
     constellation is output to a file for plotting.
 
  * `eqlms_cccf_decisiondirected_example.c`:

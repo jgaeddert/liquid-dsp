@@ -25,7 +25,7 @@ int main(int argc, char*argv[])
     else if (strcmp(function,"multimodal")==0) func = liquid_multimodal;
     else if (strcmp(function,"spiral")==0)     func = liquid_spiral;
     else {
-        return fprintf(stderr,"error: unknown/unsupported utility '%s'\n", function);
+        return liquid_error(LIQUID_EICONFIG,"unknown/unsupported utility '%s'", function);
     }
 
     float optimum_vect[num_parameters];

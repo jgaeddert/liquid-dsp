@@ -22,13 +22,13 @@ int main(int argc, char* argv[])
 
     // validate options
     if (M < 2)
-        return fprintf(stderr,"error: decim factor must be greater than 1\n");
-    else if (m < 1)
-        return fprintf(stderr,"error: filter delay must be greater than 0\n");
-    else if (As <= 0.0)
-        return fprintf(stderr,"error: stop-band attenuation must be greater than zero\n");
-    else if (num_samples < 1)
-        return fprintf(stderr,"error: must have at least one sample\n");
+        return liquid_error(LIQUID_EICONFIG,"decim factor must be greater than 1");
+    if (m < 1)
+        return liquid_error(LIQUID_EICONFIG,"filter delay must be greater than 0");
+    if (As <= 0.0)
+        return liquid_error(LIQUID_EICONFIG,"stop-band attenuation must be greater than zero");
+    if (num_samples < 1)
+        return liquid_error(LIQUID_EICONFIG,"must have at least one sample");
 
     // data arrays
     float complex x[M*num_samples]; // number of samples before decimation

@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 
     // validate input
     if (r <= 0.0f)
-        return fprintf(stderr,"error: resampling rate must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"resampling rate must be greater than zero");
 
     // buffers
     float complex buf_0[2*block_len];   // original

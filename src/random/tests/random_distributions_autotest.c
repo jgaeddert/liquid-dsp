@@ -23,7 +23,7 @@
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
-// compute emperical distributions and compare to theoretical
+// compute empirical distributions and compare to theoretical
 
 // add value to histogram
 unsigned int _support_histogram_add(float        _value,
@@ -42,7 +42,7 @@ unsigned int _support_histogram_add(float        _value,
     return index;
 }
 
-// noramlize histogram (area under curve)
+// normalize histogram (area under curve)
 float _support_histogram_normalize(float *      _bins,
                                    unsigned int _num_bins,
                                    float        _vmin,

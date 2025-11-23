@@ -42,13 +42,13 @@ int main(int argc, char*argv[])
 
     // validate input
     if (num_items == 0)
-        return fprintf(stderr,"error: knapsack must have at least 1 item\n");
+        return liquid_error(LIQUID_EICONFIG,"knapsack must have at least 1 item");
     if (capacity <= 0.0f)
-        return fprintf(stderr,"error: knapsack capacity must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"knapsack capacity must be greater than zero");
     if (population_size <= 0)
-        return fprintf(stderr,"error: population size must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"population size must be greater than zero");
     if (mutation_rate < 0.0f || mutation_rate > 1.0f)
-        return fprintf(stderr,"error: mutation rate must be in [0,1]\n");
+        return liquid_error(LIQUID_EICONFIG,"mutation rate must be in [0,1]");
 
     unsigned int i;
 

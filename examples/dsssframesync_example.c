@@ -40,7 +40,7 @@ int main(int argc, char * argv[])
     fec_scheme fec1 = liquid_getopt_str2fec(fec1_type);
 
     if (payload_len == 0)
-        return fprintf(stderr,"error: packet length must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"packet length must be greater than zero");
 
     // derived values
     unsigned int i;

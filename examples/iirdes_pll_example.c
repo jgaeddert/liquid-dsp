@@ -25,11 +25,11 @@ int main(int argc, char*argv[])
 
     // validate input
     if (pll_bandwidth <= 0.0f)
-        return fprintf(stderr,"error: bandwidth must be greater than 0\n");
+        return liquid_error(LIQUID_EICONFIG,"bandwidth must be greater than 0");
     if (zeta <= 0.0f)
-        return fprintf(stderr,"error: damping factor must be greater than 0\n");
+        return liquid_error(LIQUID_EICONFIG,"damping factor must be greater than 0");
     if (K <= 0.0f)
-        return fprintf(stderr,"error: loop gain must be greater than 0\n");
+        return liquid_error(LIQUID_EICONFIG,"loop gain must be greater than 0");
 
     // data arrays
     float complex x[n];         // input complex sinusoid

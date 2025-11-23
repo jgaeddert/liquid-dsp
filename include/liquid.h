@@ -54,7 +54,7 @@ extern "C" {
 #define LIQUID_VERSION_PATCH    0
 #define LIQUID_VERSION_DEV      0
 
-// final version string is constructed by concatenating inidividual string versions
+// final version string is constructed by concatenating individual string versions
 #define LIQUID_VERSION \
     LIQUID_VERSION_STR(LIQUID_VERSION_MAJOR) "." \
     LIQUID_VERSION_STR(LIQUID_VERSION_MINOR) "." \
@@ -83,6 +83,20 @@ int liquid_libversion_number(void);
     fprintf(stderr,"  library version : %d\n", liquid_libversion_number()); \
     exit(1);                                                                \
   }                                                                         \
+
+// report error
+int liquid_error_fl(int _code, const char * _file, int _line, const char * _format, ...);
+
+// report error specifically for invalid object configuration 
+void * liquid_error_config_fl(const char * _file, int _line, const char * _format, ...);
+
+// macro to get file name and line number for source of error
+#define liquid_error(code, format, ...) \
+    liquid_error_fl(code, __FILE__, __LINE__, format, ##__VA_ARGS__);
+
+// macro to get file name and line number for source of error (invalid object)
+#define liquid_error_config(format, ...) \
+    liquid_error_config_fl(__FILE__, __LINE__, format, ##__VA_ARGS__);
 
 // basic error types
 #define LIQUID_NUM_ERRORS 14

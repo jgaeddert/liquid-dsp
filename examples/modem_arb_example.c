@@ -24,7 +24,7 @@ int main(int argc, char*argv[])
 
     // validate input
     if (bps == 0)
-        return fprintf(stderr,"error: bits/symbol must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"bits/symbol must be greater than zero");
 
     // derived values
     unsigned int i;

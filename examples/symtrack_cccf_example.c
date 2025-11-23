@@ -48,15 +48,15 @@ int main(int argc, char* argv[])
 
     // validate input
     if (k < 2)
-        fprintf(stderr,"error: k (samples/symbol) must be at least 2\n");
+        return liquid_error(LIQUID_EICONFIG,"k (samples/symbol) must be at least 2");
     if (m < 1)
-        fprintf(stderr,"error: m (filter delay) must be greater than 0\n");
+        return liquid_error(LIQUID_EICONFIG,"m (filter delay) must be greater than 0");
     if (beta <= 0.0f || beta > 1.0f)
-        fprintf(stderr,"error: beta (excess bandwidth factor) must be in (0,1]\n");
+        return liquid_error(LIQUID_EICONFIG,"beta (excess bandwidth factor) must be in (0,1]");
     if (bandwidth <= 0.0f)
-        fprintf(stderr,"error: timing PLL bandwidth must be greater than 0\n");
+        return liquid_error(LIQUID_EICONFIG,"timing PLL bandwidth must be greater than 0");
     if (num_symbols == 0)
-        fprintf(stderr,"error: number of symbols must be greater than 0\n");
+        return liquid_error(LIQUID_EICONFIG,"number of symbols must be greater than 0");
 
     // buffers
     unsigned int    buf_len = 800;      // buffer size
@@ -67,9 +67,8 @@ int main(int argc, char* argv[])
     windowcf sym_buf = windowcf_create(buf_len);
 
     // create stream generator
-    int         ftype = liquid_getopt_str2firfilt(ftype_str);
     int         ms    = liquid_getopt_str2mod(mod_str);
-    symstreamcf gen   = symstreamcf_create_linear(ftype,k,m,beta,ms);
+    symstreamcf gen   = symstreamcf_create_linear(ftype_tx,k,m,beta,ms);
 
     // create channel emulator and add impairments
     channel_cccf channel = channel_cccf_create();
@@ -78,7 +77,7 @@ int main(int argc, char* argv[])
     channel_cccf_add_multipath     (channel, NULL, hc_len);
 
     // create symbol tracking synchronizer
-    symtrack_cccf symtrack = symtrack_cccf_create(ftype,k,m,beta,ms);
+    symtrack_cccf symtrack = symtrack_cccf_create(ftype_rx,k,m,beta,ms);
     symtrack_cccf_set_bandwidth(symtrack,bandwidth);
     //symtrack_cccf_set_eq_off(symtrack); // disable equalization
     symtrack_cccf_print(symtrack);

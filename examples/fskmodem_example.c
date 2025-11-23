@@ -32,13 +32,13 @@ int main(int argc, char*argv[])
 
     // validate input
     if (k < M)
-        return fprintf(stderr,"errors: samples/symbol must be at least modulation size (M=%u)\n", M);
+        return liquid_error(LIQUID_EICONFIG,"samples/symbol must be at least modulation size (M=%u)", M);
     if (k > 2048)
-        return fprintf(stderr,"errors: samples/symbol exceeds maximum (2048)\n");
+        return liquid_error(LIQUID_EICONFIG,"samples/symbol exceeds maximum (2048)");
     if (M > 1024)
-        return fprintf(stderr,"errors: modulation size exceeds maximum (1024)\n");
+        return liquid_error(LIQUID_EICONFIG,"modulation size exceeds maximum (1024)");
     if (bandwidth <= 0.0f || bandwidth >= 0.5f)
-        return fprintf(stderr,"errors: bandwidth must be in (0,0.5)\n");
+        return liquid_error(LIQUID_EICONFIG,"bandwidth must be in (0,0.5)");
 
     // create modulator/demodulator pair
     fskmod mod = fskmod_create(m,k,bandwidth);

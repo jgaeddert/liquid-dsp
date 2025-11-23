@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 
     // validate input
     if (rate >= 1.0f)
-        return fprintf(stderr,"error: input rate r must be less than 1\n");
+        return liquid_error(LIQUID_EICONFIG,"input rate r must be less than 1");
 
     // create resampler object
     msresamp_crcf q = msresamp_crcf_create(rate,As);

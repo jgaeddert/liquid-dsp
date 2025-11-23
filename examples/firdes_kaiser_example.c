@@ -18,9 +18,9 @@ int main(int argc, char*argv[])
 
     // validate input
     if ( fc <= 0.0f )
-        return fprintf(stderr,"error: filter cutoff frequency must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"filter cutoff frequency must be greater than zero");
     if ( h_len == 0 )
-        return fprintf(stderr,"error: filter length must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"filter length must be greater than zero");
 
     printf("filter design parameters\n");
     printf("    cutoff frequency            :   %8.4f\n", fc);

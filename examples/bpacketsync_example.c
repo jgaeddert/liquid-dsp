@@ -45,9 +45,9 @@ int main(int argc, char* argv[])
     fec_scheme fec1 = liquid_getopt_str2fec(fec1_type);
 
     if (msg_len_org == 0)
-        return fprintf(stderr,"error: packet length must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"packet length must be greater than zero");
     if (bit_error_rate < 0.0f || bit_error_rate > 1.0f)
-        return fprintf(stderr,"error: channel bit error rate must be in [0,1]\n");
+        return liquid_error(LIQUID_EICONFIG,"channel bit error rate must be in [0,1]");
 
     // create packet generator
     bpacketgen pg = bpacketgen_create(0, msg_len_org, crc, fec0, fec1);

@@ -1,6 +1,6 @@
 char __docstr__[] =
 "ASCII spectrogram example for real-valued input. This example demonstrates"
-" the functionality of the ASCII spectrogram for real-valued input siganls."
+" the functionality of the ASCII spectrogram for real-valued input signals."
 " A cosine signal with time-varying frequency is generated and the resulting"
 " spectral periodogram is printed to the screen. Because the time signal has"
 " no complex component, its spectrum is symmetric.";

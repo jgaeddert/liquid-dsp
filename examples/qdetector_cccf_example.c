@@ -33,7 +33,7 @@ int main(int argc, char*argv[])
 
     // validate input
     if (tau < -0.5f || tau > 0.5f)
-        return fprintf(stderr,"error: fractional sample offset must be in [-0.5,0.5]\n");
+        return liquid_error(LIQUID_EICONFIG,"fractional sample offset must be in [-0.5,0.5]");
 
     // derived values
     float nstd = powf(10.0f, noise_floor/20.0f);

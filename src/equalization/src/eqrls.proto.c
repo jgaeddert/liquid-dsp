@@ -387,7 +387,7 @@ int EQRLS(_train)(EQRLS()      _q,
 {
     unsigned int i;
     if (_n < _q->p)
-        return liquid_error(LIQUID_EIVAL,"eqrls_%s_train(), traning sequence less than filter order",EXTENSION_FULL);
+        return liquid_error(LIQUID_EIVAL,"eqrls_%s_train(), training sequence less than filter order",EXTENSION_FULL);
 
     // reset equalizer state
     EQRLS(_reset)(_q);

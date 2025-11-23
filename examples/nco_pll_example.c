@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 
     // validate input
     if (strcmp(type_str,"nco") && strcmp(type_str,"vco"))
-        return fprintf(stderr,"error: invalid nco type '%s' (must be either 'nco' or 'vco')\n", type_str);
+        return liquid_error(LIQUID_EICONFIG,"invalid nco type '%s' (must be either 'nco' or 'vco')", type_str);
 
     // objects
     int type = strcmp(type_str,"nco")==0 ? LIQUID_NCO : LIQUID_VCO;

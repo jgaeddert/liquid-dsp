@@ -22,11 +22,11 @@ int main(int argc, char*argv[])
 
     // validate input
     if (k < 2)
-        return fprintf(stderr,"error: k must be at least 2\n");
-    else if (m < 1)
-        return fprintf(stderr,"error: m must be at least 1\n");
-    else if (beta <= 0.0f || beta >= 1.0f)
-        return fprintf(stderr,"error: beta must be in (0,1)\n");
+        return liquid_error(LIQUID_EICONFIG,"k must be at least 2");
+    if (m < 1)
+        return liquid_error(LIQUID_EICONFIG,"m must be at least 1");
+    if (beta <= 0.0f || beta >= 1.0f)
+        return liquid_error(LIQUID_EICONFIG,"beta must be in (0,1)");
 
     // design the filter
     int ftype = liquid_getopt_str2firfilt(ftype_str);

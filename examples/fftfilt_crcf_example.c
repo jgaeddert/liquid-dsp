@@ -16,7 +16,7 @@ int main(int argc, char*argv[])
     // define variables and parse command-line arguments
     liquid_argparse_init(__docstr__);
     liquid_argparse_add(char*,        filename, "fftfilt_crcf_example.m", 'o', "output filename", NULL);
-    liquid_argparse_add(unsigned int, h_len,      57,    'h', "filter length", NULL);
+    liquid_argparse_add(unsigned int, h_len,      57,    'N', "filter length", NULL);
     liquid_argparse_add(float,        fc,         0.10f, 'f', "cutoff frequency", NULL);
     liquid_argparse_add(float,        As,         60.0f, 'a', "stop-band attenuation", NULL);
     liquid_argparse_add(unsigned int, n,          64,    'n', "number of samples per block", NULL);

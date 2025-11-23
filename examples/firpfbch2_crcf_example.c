@@ -24,11 +24,11 @@ int main(int argc, char*argv[])
 
     // validate input
     if (num_channels < 2 || num_channels % 2)
-        return fprintf(stderr,"error: number of channels must be greater than 2 and even\n");
+        return liquid_error(LIQUID_EICONFIG,"number of channels must be greater than 2 and even");
     if (m == 0)
-        return fprintf(stderr,"error: filter semi-length must be greater than zero\n");
+        return liquid_error(LIQUID_EICONFIG,"filter semi-length must be greater than zero");
     if (num_symbols == 0)
-        return fprintf(stderr,"error: number of symbols must be greater than zero");
+        return liquid_error(LIQUID_EICONFIG,"number of symbols must be greater than zero");
 
     // derived values
     unsigned int i;

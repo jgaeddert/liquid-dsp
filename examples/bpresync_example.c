@@ -31,9 +31,9 @@ int main(int argc, char*argv[])
 
     // validate input
     if (beta <= 0.0f || beta >= 1.0f)
-        return fprintf(stderr,"error: bandwidth-time product must be in (0,1)\n");
+        return liquid_error(LIQUID_EICONFIG,"bandwidth-time product must be in (0,1)");
     if (dt < -0.5f || dt > 0.5f)
-        return fprintf(stderr,"error: fractional sample offset must be in [-0.5,0.5]\n");
+        return liquid_error(LIQUID_EICONFIG,"fractional sample offset must be in [-0.5,0.5]");
 
     // derived values
     unsigned int num_symbols = num_sync_symbols + 2*m + 10;
