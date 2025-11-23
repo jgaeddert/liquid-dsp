@@ -9,6 +9,12 @@
     - added CMake rules to create exportable interface, option for building
       shared vs. static library, and simplified directory inclusion
       (thanks @burnbot-alt)
+    - adding C++ wrappers as installable header files, allowing for (most)
+      objects to called directly within C++, taking full advantage of RAIA
+      constructs.
+    - adding python bindings natively with source, taking advantage of the
+      excelled [pybind11](https://pybind11.readthedocs.io/en/stable/)
+      package to simplify this process.
 
 ## 1.7.0 - 2025-02-01
 
