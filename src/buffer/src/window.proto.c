@@ -108,7 +108,7 @@ WINDOW() WINDOW(_recreate)(WINDOW() _q, unsigned int _n)
 }
 
 // copy object
-WINDOW() WINDOW(_copy)(WINDOW() q_orig)
+WINDOW() WINDOW(_copy)(const WINDOW() q_orig)
 {
     // validate input
     if (q_orig == NULL)
@@ -238,7 +238,7 @@ int WINDOW(_push)(WINDOW() _q, T _v)
 //  _v      : input array of values to write
 //  _n      : number of input values to write
 int WINDOW(_write)(WINDOW()     _q,
-                   T *          _v,
+                   const T *    _v,
                    unsigned int _n)
 {
     // TODO make this more efficient

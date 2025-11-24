@@ -269,11 +269,11 @@ int ofdmframe_init_sctype_range(unsigned int    _M,
 //  _M_null     :   output number of null subcarriers
 //  _M_pilot    :   output number of pilot subcarriers
 //  _M_data     :   output number of data subcarriers
-int ofdmframe_validate_sctype(unsigned char * _p,
-                              unsigned int    _M,
-                              unsigned int *  _M_null,
-                              unsigned int *  _M_pilot,
-                              unsigned int *  _M_data)
+int ofdmframe_validate_sctype(const unsigned char * _p,
+                              unsigned int          _M,
+                              unsigned int *        _M_null,
+                              unsigned int *        _M_pilot,
+                              unsigned int *        _M_data)
 {
     // clear counters
     unsigned int M_null  = 0;
@@ -314,8 +314,8 @@ int ofdmframe_validate_sctype(unsigned char * _p,
 // key: '.' (null), 'P' (pilot), '+' (data)
 // .+++P+++++++P.........P+++++++P+++
 //
-int ofdmframe_print_sctype(unsigned char * _p,
-                           unsigned int    _M)
+int ofdmframe_print_sctype(const unsigned char * _p,
+                           unsigned int          _M)
 {
     unsigned int i;
 

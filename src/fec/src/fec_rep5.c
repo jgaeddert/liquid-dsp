@@ -64,10 +64,10 @@ int fec_rep5_print(fec _q)
 //  _dec_msg_len    :   decoded message length (number of bytes)
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
 //  _msg_enc        :   encoded message [size: 1 x 5*_dec_msg_len]
-int fec_rep5_encode(fec             _q,
-                    unsigned int    _dec_msg_len,
-                    unsigned char * _msg_dec,
-                    unsigned char * _msg_enc)
+int fec_rep5_encode(fec                   _q,
+                    unsigned int          _dec_msg_len,
+                    const unsigned char * _msg_dec,
+                    unsigned char *       _msg_enc)
 {
     unsigned int i;
     for (i=0; i<5; i++) {
@@ -82,10 +82,10 @@ int fec_rep5_encode(fec             _q,
 //  _dec_msg_len    :   decoded message length (number of bytes)
 //  _msg_enc        :   encoded message [size: 1 x 5*_dec_msg_len]
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
-int fec_rep5_decode(fec             _q,
-                    unsigned int    _dec_msg_len,
-                    unsigned char * _msg_enc,
-                    unsigned char * _msg_dec)
+int fec_rep5_decode(fec                   _q,
+                    unsigned int          _dec_msg_len,
+                    const unsigned char * _msg_enc,
+                    unsigned char *       _msg_dec)
 {
     unsigned char s0, s1, s2, s3, s4;
     unsigned int i;
@@ -121,10 +121,10 @@ int fec_rep5_decode(fec             _q,
 //  _dec_msg_len    :   decoded message length (number of bytes)
 //  _msg_enc        :   encoded message [size: 1 x 5*_dec_msg_len]
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
-int fec_rep5_decode_soft(fec             _q,
-                         unsigned int    _dec_msg_len,
-                         unsigned char * _msg_enc,
-                         unsigned char * _msg_dec)
+int fec_rep5_decode_soft(fec                   _q,
+                         unsigned int          _dec_msg_len,
+                         const unsigned char * _msg_enc,
+                         unsigned char *       _msg_dec)
 {
     unsigned char s0, s1, s2, s3, s4;
     unsigned int i;

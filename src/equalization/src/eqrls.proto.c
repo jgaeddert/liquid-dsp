@@ -54,7 +54,7 @@ struct EQRLS(_s) {
 // create recursive least-squares (RLS) equalizer object
 //  _h      :   initial coefficients [size: _p x 1], default if NULL
 //  _p      :   equalizer length (number of taps)
-EQRLS() EQRLS(_create)(T *          _h,
+EQRLS() EQRLS(_create)(const T *    _h,
                        unsigned int _p)
 {
     if (_p==0)
@@ -105,7 +105,7 @@ EQRLS() EQRLS(_create)(T *          _h,
 //  _h  : filter coefficients (NULL for {1,0,0...})
 //  _p  : equalizer length (number of taps)
 EQRLS() EQRLS(_recreate)(EQRLS()      _q,
-                         T *          _h,
+                         const T *    _h,
                          unsigned int _p)
 {
     if (_q->p == _p) {
@@ -381,8 +381,8 @@ int EQRLS(_get_weights)(EQRLS() _q,
 //  _n      :   vector length
 int EQRLS(_train)(EQRLS()      _q,
                   T *          _w,
-                  T *          _x,
-                  T *          _d,
+                  const T *    _x,
+                  const T *    _d,
                   unsigned int _n)
 {
     unsigned int i;

@@ -30,7 +30,7 @@
 #define DEBUG_MATRIX_QRDECOMP 1
 
 // Q/R decomposition using the Gram-Schmidt algorithm
-int MATRIX(_qrdecomp_gramschmidt)(T *          _x,
+int MATRIX(_qrdecomp_gramschmidt)(const T *    _x,
                                   unsigned int _m,
                                   unsigned int _n,
                                   T *          _q,

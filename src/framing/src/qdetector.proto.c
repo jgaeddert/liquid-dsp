@@ -81,7 +81,7 @@ struct QDETECTOR(_s) {
 // create detector with generic sequence
 //  _s      :   sample sequence
 //  _s_len  :   length of sample sequence
-QDETECTOR() QDETECTOR(_create)(TI *         _s,
+QDETECTOR() QDETECTOR(_create)(const TI *   _s,
                                unsigned int _s_len)
 {
     // validate input
@@ -140,7 +140,7 @@ QDETECTOR() QDETECTOR(_create)(TI *         _s,
 //  _k              :   samples/symbol
 //  _m              :   filter delay
 //  _beta           :   excess bandwidth factor
-QDETECTOR() QDETECTOR(_create_linear)(TI *         _sequence,
+QDETECTOR() QDETECTOR(_create_linear)(const TI *   _sequence,
                                       unsigned int _sequence_len,
                                       int          _ftype,
                                       unsigned int _k,
@@ -182,11 +182,11 @@ QDETECTOR() QDETECTOR(_create_linear)(TI *         _sequence,
 //  _k              :   samples/symbol
 //  _m              :   filter delay
 //  _beta           :   excess bandwidth factor
-QDETECTOR() QDETECTOR(_create_gmsk)(unsigned char * _sequence,
-                                    unsigned int    _sequence_len,
-                                    unsigned int    _k,
-                                    unsigned int    _m,
-                                    float           _beta)
+QDETECTOR() QDETECTOR(_create_gmsk)(const unsigned char * _sequence,
+                                    unsigned int          _sequence_len,
+                                    unsigned int          _k,
+                                    unsigned int          _m,
+                                    float                 _beta)
 {
     // validate input
     if (_sequence_len == 0)
@@ -226,14 +226,14 @@ QDETECTOR() QDETECTOR(_create_gmsk)(unsigned char * _sequence,
 //  _m              :   filter delay
 //  _beta           :   filter bandwidth parameter, _beta > 0
 //  _type           :   filter type (e.g. LIQUID_CPFSK_SQUARE)
-QDETECTOR() QDETECTOR(_create_cpfsk)(unsigned char * _sequence,
-                                     unsigned int    _sequence_len,
-                                     unsigned int    _bps,
-                                     float           _h,
-                                     unsigned int    _k,
-                                     unsigned int    _m,
-                                     float           _beta,
-                                     int             _type)
+QDETECTOR() QDETECTOR(_create_cpfsk)(const unsigned char * _sequence,
+                                     unsigned int          _sequence_len,
+                                     unsigned int          _bps,
+                                     float                 _h,
+                                     unsigned int          _k,
+                                     unsigned int          _m,
+                                     float                 _beta,
+                                     int                   _type)
 {
     // validate input
     if (_sequence_len == 0)

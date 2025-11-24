@@ -39,7 +39,7 @@ struct FIRINTERP(_s) {
 //  _h      :   filter coefficients array [size: _h_len x 1]
 //  _h_len  :   filter length
 FIRINTERP() FIRINTERP(_create)(unsigned int _interp,
-                               TC *         _h,
+                               const TC *   _h,
                                unsigned int _h_len)
 {
     // validate input
@@ -280,7 +280,7 @@ int FIRINTERP(_execute)(FIRINTERP() _q,
 //  _n      : size of input array
 //  _y      : output sample array [size: M*_n x 1]
 int FIRINTERP(_execute_block)(FIRINTERP()  _q,
-                              TI *         _x,
+                              const TI *   _x,
                               unsigned int _n,
                               TO *         _y)
 {

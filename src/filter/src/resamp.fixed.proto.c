@@ -312,7 +312,7 @@ int RESAMP(_execute)(RESAMP()       _q,
 //  _y              :   output sample array (pointer)
 //  _ny             :   number of samples written to _y
 int RESAMP(_execute_block)(RESAMP()       _q,
-                           TI *           _x,
+                           const TI *     _x,
                            unsigned int   _nx,
                            TO *           _y,
                            unsigned int * _ny)

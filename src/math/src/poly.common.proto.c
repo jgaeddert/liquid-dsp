@@ -31,7 +31,7 @@
 #include <string.h>
 #include <math.h>
 
-T POLY(_val)(T * _p, unsigned int _k, T _x)
+T POLY(_val)(const T * _p, unsigned int _k, T _x)
 {
     unsigned int i;
     T xk = 1;
@@ -43,8 +43,8 @@ T POLY(_val)(T * _p, unsigned int _k, T _x)
     return y;
 }
 
-int POLY(_fit)(T *          _x,
-               T *          _y,
+int POLY(_fit)(const T *    _x,
+               const T *    _y,
                unsigned int _n,
                T *          _p,
                unsigned int _k)

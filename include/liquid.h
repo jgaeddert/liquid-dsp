@@ -263,7 +263,7 @@ int AGC(_execute)(AGC() _q,                                                 \
 /*  _n      : number of input, output samples                           */  \
 /*  _y      : output data array, [size: _n x 1]                         */  \
 int AGC(_execute_block)(AGC()        _q,                                    \
-                        TC *         _x,                                    \
+                        const TC *   _x,                                    \
                         unsigned int _n,                                    \
                         TC *         _y);                                   \
                                                                             \
@@ -341,7 +341,7 @@ int AGC(_set_scale)(AGC() _q,                                               \
 /*  _x      : input data array, [size: _n x 1]                          */  \
 /*  _n      : number of input, output samples                           */  \
 int AGC(_init)(AGC()        _q,                                             \
-               TC *         _x,                                             \
+               const TC *   _x,                                             \
                unsigned int _n);                                            \
                                                                             \
 /* Enable squelch mode.                                                 */  \
@@ -407,7 +407,7 @@ unsigned char   cvsd_encode(cvsd _q, float _audio_sample);
 float           cvsd_decode(cvsd _q, unsigned char _bit);
 
 // encode/decode 8 samples at a time
-int cvsd_encode8(cvsd _q, float * _audio, unsigned char * _data);
+int cvsd_encode8(cvsd _q, const float * _audio, unsigned char * _data);
 int cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 
 
@@ -481,7 +481,7 @@ int CBUFFER(_push)(CBUFFER() _q,                                            \
 /*  _v  : array of samples to write to buffer                           */  \
 /*  _n  : number of samples to write                                    */  \
 int CBUFFER(_write)(CBUFFER()    _q,                                        \
-                    T *          _v,                                        \
+                    const T *    _v,                                        \
                     unsigned int _n);                                       \
                                                                             \
 /* Remove and return a single element from the buffer by setting the    */  \
@@ -599,7 +599,7 @@ int WINDOW(_push)(WINDOW() _q,                                              \
 /*  _v      : input array of values to write                            */  \
 /*  _n      : number of input values to write                           */  \
 int WINDOW(_write)(WINDOW()     _q,                                         \
-                   T *          _v,                                         \
+                   const T *    _v,                                         \
                    unsigned int _n);                                        \
 
 // Define window APIs
@@ -715,7 +715,7 @@ int CHANNEL(_add_carrier_offset)(CHANNEL() _q,                              \
 /*  _h          : channel coefficients (NULL for random)                */  \
 /*  _h_len      : number of channel coefficients                        */  \
 int CHANNEL(_add_multipath)(CHANNEL()    _q,                                \
-                            TC *         _h,                                \
+                            const TC *   _h,                                \
                             unsigned int _h_len);                           \
                                                                             \
 /* Include slowly-varying shadowing impairment                          */  \
@@ -740,7 +740,7 @@ int CHANNEL(_execute)(CHANNEL()      _q,                                    \
 /*  _n      : input array, length                                       */  \
 /*  _y      : output array, [size: _n x 1]                              */  \
 int CHANNEL(_execute_block)(CHANNEL()      _q,                              \
-                            TI *           _x,                              \
+                            const TI *     _x,                              \
                             unsigned int   _n,                              \
                             TO *           _y);                             \
 
@@ -815,7 +815,7 @@ int TVMPCH(_execute_one)(TVMPCH() _q,                                       \
 /*  _n      : input array length                                        */  \
 /*  _y      : output array, [size: _n x 1]                              */  \
 int TVMPCH(_execute_block)(TVMPCH()     _q,                                 \
-                           TI *         _x,                                 \
+                           const TI *   _x,                                 \
                            unsigned int _n,                                 \
                            TO *         _y);                                \
 
@@ -853,8 +853,8 @@ typedef struct DOTPROD(_s) * DOTPROD();                                     \
 /*  _x      : input array, [size: _n x 1]                               */  \
 /*  _n      : dotprod length, _n > 0                                    */  \
 /*  _y      : output sample pointer                                     */  \
-int DOTPROD(_run)( TC *         _v,                                         \
-                   TI *         _x,                                         \
+int DOTPROD(_run)( const TC *   _v,                                         \
+                   const TI *   _x,                                         \
                    unsigned int _n,                                         \
                    TO *         _y);                                        \
                                                                             \
@@ -865,21 +865,21 @@ int DOTPROD(_run)( TC *         _v,                                         \
 /*  _x      : input array, [size: _n x 1]                               */  \
 /*  _n      : dotprod length, _n > 0                                    */  \
 /*  _y      : output sample pointer                                     */  \
-int DOTPROD(_run4)(TC *         _v,                                         \
-                   TI *         _x,                                         \
+int DOTPROD(_run4)(const TC *   _v,                                         \
+                   const TI *   _x,                                         \
                    unsigned int _n,                                         \
                    TO *         _y);                                        \
                                                                             \
 /* Create vector dot product object                                     */  \
 /*  _v      : coefficients array, [size: _n x 1]                        */  \
 /*  _n      : dotprod length, _n > 0                                    */  \
-DOTPROD() DOTPROD(_create)(TC *         _v,                                 \
+DOTPROD() DOTPROD(_create)(const TC *   _v,                                 \
                            unsigned int _n);                                \
                                                                             \
 /* Create vector dot product object with time-reversed coefficients     */  \
 /*  _v      : time-reversed coefficients array, [size: _n x 1]          */  \
 /*  _n      : dotprod length, _n > 0                                    */  \
-DOTPROD() DOTPROD(_create_rev)(TC *         _v,                             \
+DOTPROD() DOTPROD(_create_rev)(const TC *   _v,                             \
                                unsigned int _n);                            \
                                                                             \
 /* Re-create dot product object of potentially a different length with  */  \
@@ -889,7 +889,7 @@ DOTPROD() DOTPROD(_create_rev)(TC *         _v,                             \
 /*  _v      : coefficients array, [size: _n x 1]                        */  \
 /*  _n      : dotprod length, _n > 0                                    */  \
 DOTPROD() DOTPROD(_recreate)(DOTPROD()    _q,                               \
-                             TC *         _v,                               \
+                             const TC *   _v,                               \
                              unsigned int _n);                              \
                                                                             \
 /* Re-create dot product object of potentially a different length with  */  \
@@ -900,7 +900,7 @@ DOTPROD() DOTPROD(_recreate)(DOTPROD()    _q,                               \
 /*  _v      : time-reversed coefficients array, [size: _n x 1]          */  \
 /*  _n      : dotprod length, _n > 0                                    */  \
 DOTPROD() DOTPROD(_recreate_rev)(DOTPROD()    _q,                           \
-                                 TC *         _v,                           \
+                                 const TC *   _v,                           \
                                  unsigned int _n);                          \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
@@ -917,7 +917,7 @@ int DOTPROD(_print)(DOTPROD() _q);                                          \
 /*  _x      : input array, [size: _n x 1]                               */  \
 /*  _y      : output sample pointer                                     */  \
 int DOTPROD(_execute)(DOTPROD() _q,                                         \
-                      TI *      _x,                                         \
+                      const TI * _x,                                        \
                       TO *      _y);                                        \
 
 LIQUID_DOTPROD_DEFINE_API(LIQUID_DOTPROD_MANGLE_RRRF,
@@ -939,11 +939,11 @@ LIQUID_DOTPROD_DEFINE_API(LIQUID_DOTPROD_MANGLE_CRCF,
 // sum squared methods
 //
 
-float liquid_sumsqf(float *      _v,
+float liquid_sumsqf(const float * _v,
                     unsigned int _n);
 
-float liquid_sumsqcf(liquid_float_complex * _v,
-                     unsigned int           _n);
+float liquid_sumsqcf(const liquid_float_complex * _v,
+                     unsigned int                 _n);
 
 
 //
@@ -965,7 +965,7 @@ typedef struct EQLMS(_s) * EQLMS();                                         \
 /* Create LMS EQ initialized with external coefficients                 */  \
 /*  _h : filter coefficients; set to NULL for {1,0,0...},[size: _n x 1] */  \
 /*  _n : filter length                                                  */  \
-EQLMS() EQLMS(_create)(T *          _h,                                     \
+EQLMS() EQLMS(_create)(const T *    _h,                                     \
                        unsigned int _n);                                    \
                                                                             \
 /* Create LMS EQ initialized with square-root Nyquist prototype filter  */  \
@@ -996,7 +996,7 @@ EQLMS() EQLMS(_create_lowpass)(unsigned int _n,                             \
 /*  _h : filter coefficients; set to NULL for {1,0,0...},[size: _n x 1] */  \
 /*  _n : filter length                                                  */  \
 EQLMS() EQLMS(_recreate)(EQLMS()      _q,                                   \
-                         T *          _h,                                   \
+                         const T *    _h,                                   \
                          unsigned int _n);                                  \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
@@ -1051,7 +1051,7 @@ int EQLMS(_push)(EQLMS() _q,                                                \
 /*  _x      :   input sample array, [size: _n x 1]                      */  \
 /*  _n      :   input sample array length                               */  \
 int EQLMS(_push_block)(EQLMS()      _q,                                     \
-                       T *          _x,                                     \
+                       const T *    _x,                                     \
                        unsigned int _n);                                    \
                                                                             \
 /* Execute internal dot product and return result                       */  \
@@ -1066,7 +1066,7 @@ int EQLMS(_execute)(EQLMS() _q,                                             \
 /*  _y      :   output sample                                           */  \
 /*  _k      :   down-sampling rate                                      */  \
 int EQLMS(_decim_execute)(EQLMS()      _q,                                  \
-                          T *          _x,                                  \
+                          const T *    _x,                                  \
                           T *          _y,                                  \
                           unsigned int _k);                                 \
                                                                             \
@@ -1080,7 +1080,7 @@ int EQLMS(_decim_execute)(EQLMS()      _q,                                  \
 /*  _y      :   output sample array, [size: _n x 1]                     */  \
 int EQLMS(_execute_block)(EQLMS()      _q,                                  \
                           unsigned int _k,                                  \
-                          T *          _x,                                  \
+                          const T *    _x,                                  \
                           unsigned int _n,                                  \
                           T *          _y);                                 \
                                                                             \
@@ -1107,8 +1107,8 @@ int EQLMS(_step_blind)(EQLMS() _q,                                          \
 DEPRECATED("method provides complexity with little benefit",                \
 int EQLMS(_train)(EQLMS()      _q,                                          \
                   T *          _w,                                          \
-                  T *          _x,                                          \
-                  T *          _d,                                          \
+                  const T *    _x,                                          \
+                  const T *    _d,                                          \
                   unsigned int _n);                                         \
 )                                                                           \
 
@@ -1131,7 +1131,7 @@ typedef struct EQRLS(_s) * EQRLS();                                         \
 /* Create RLS EQ initialized with external coefficients                 */  \
 /*  _h : filter coefficients; set to NULL for {1,0,0...},[size: _n x 1] */  \
 /*  _n : filter length                                                  */  \
-EQRLS() EQRLS(_create)(T *          _h,                                     \
+EQRLS() EQRLS(_create)(const T *    _h,                                     \
                        unsigned int _n);                                    \
                                                                             \
 /* Re-create EQ initialized with external coefficients                  */  \
@@ -1139,7 +1139,7 @@ EQRLS() EQRLS(_create)(T *          _h,                                     \
 /*  _h :   filter coefficients (NULL for {1,0,0...}), [size: _n x 1]    */  \
 /*  _n :   filter length                                                */  \
 EQRLS() EQRLS(_recreate)(EQRLS()      _q,                                   \
-                         T *          _h,                                   \
+                         const T *    _h,                                   \
                          unsigned int _n);                                  \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
@@ -1193,8 +1193,8 @@ int EQRLS(_get_weights)(EQRLS() _q,                                         \
 /*  _n      :   input, output vector length                             */  \
 int EQRLS(_train)(EQRLS()      _q,                                          \
                   T *          _w,                                          \
-                  T *          _x,                                          \
-                  T *          _d,                                          \
+                  const T *    _x,                                          \
+                  const T *    _d,                                          \
                   unsigned int _n);                                         \
 
 LIQUID_EQRLS_DEFINE_API(LIQUID_EQRLS_MANGLE_RRRF, float)
@@ -1240,9 +1240,9 @@ unsigned int crc_get_length(crc_scheme _scheme);
 //  _scheme     :   error-detection scheme
 //  _msg        :   input data message, [size: _n x 1]
 //  _n          :   input data message size
-unsigned int crc_generate_key(crc_scheme      _scheme,
-                              unsigned char * _msg,
-                              unsigned int    _n);
+unsigned int crc_generate_key(crc_scheme            _scheme,
+                              const unsigned char * _msg,
+                              unsigned int          _n);
 
 // generate error-detection key and append to end of message
 //  _scheme     :   error-detection scheme (resulting in 'p' bytes)
@@ -1257,18 +1257,18 @@ int crc_append_key(crc_scheme      _scheme,
 //  _msg        :   input data message, [size: _n x 1]
 //  _n          :   input data message size
 //  _key        :   error-detection key
-int crc_validate_message(crc_scheme      _scheme,
-                         unsigned char * _msg,
-                         unsigned int    _n,
-                         unsigned int    _key);
+int crc_validate_message(crc_scheme            _scheme,
+                         const unsigned char * _msg,
+                         unsigned int          _n,
+                         unsigned int          _key);
 
 // check message with key appended to end of array
 //  _scheme     :   error-detection scheme (resulting in 'p' bytes)
 //  _msg        :   input data message, [size: _n+p x 1]
 //  _n          :   input data message size (excluding key at end)
-int crc_check_key(crc_scheme      _scheme,
-                  unsigned char * _msg,
-                  unsigned int    _n);
+int crc_check_key(crc_scheme            _scheme,
+                  const unsigned char * _msg,
+                  unsigned int          _n);
 
 // get size of key (bytes)
 unsigned int crc_sizeof_key(crc_scheme _scheme);
@@ -1366,30 +1366,30 @@ int fec_print(fec _q);
 //  _dec_msg_len    :   decoded message length
 //  _msg_dec        :   decoded message
 //  _msg_enc        :   encoded message
-int fec_encode(fec _q,
-               unsigned int _dec_msg_len,
-               unsigned char * _msg_dec,
-               unsigned char * _msg_enc);
+int fec_encode(fec                     _q,
+               unsigned int           _dec_msg_len,
+               const unsigned char * _msg_dec,
+               unsigned char *       _msg_enc);
 
 // decode a block of data using a fec scheme
 //  _q              :   fec object
 //  _dec_msg_len    :   decoded message length
 //  _msg_enc        :   encoded message
 //  _msg_dec        :   decoded message
-int fec_decode(fec _q,
-               unsigned int _dec_msg_len,
-               unsigned char * _msg_enc,
-               unsigned char * _msg_dec);
+int fec_decode(fec                     _q,
+               unsigned int           _dec_msg_len,
+               const unsigned char * _msg_enc,
+               unsigned char *       _msg_dec);
 
 // decode a block of data using a fec scheme (soft decision)
 //  _q              :   fec object
 //  _dec_msg_len    :   decoded message length
 //  _msg_enc        :   encoded message (soft bits)
 //  _msg_dec        :   decoded message
-int fec_decode_soft(fec _q,
-                    unsigned int _dec_msg_len,
-                    unsigned char * _msg_enc,
-                    unsigned char * _msg_dec);
+int fec_decode_soft(fec                     _q,
+                    unsigned int           _dec_msg_len,
+                    const unsigned char * _msg_enc,
+                    unsigned char *       _msg_dec);
 
 //
 // Packetizer
@@ -1518,33 +1518,33 @@ int interleaver_set_depth(interleaver  _q,
 //  _q          :   interleaver object
 //  _msg_dec    :   decoded (un-interleaved) message
 //  _msg_enc    :   encoded (interleaved) message
-int interleaver_encode(interleaver     _q,
-                       unsigned char * _msg_dec,
-                       unsigned char * _msg_enc);
+int interleaver_encode(interleaver           _q,
+                       const unsigned char * _msg_dec,
+                       unsigned char *       _msg_enc);
 
 // execute forward interleaver (encoder) on soft bits
 //  _q          :   interleaver object
 //  _msg_dec    :   decoded (un-interleaved) message
 //  _msg_enc    :   encoded (interleaved) message
-int interleaver_encode_soft(interleaver     _q,
-                            unsigned char * _msg_dec,
-                            unsigned char * _msg_enc);
+int interleaver_encode_soft(interleaver           _q,
+                            const unsigned char * _msg_dec,
+                            unsigned char *       _msg_enc);
 
 // execute reverse interleaver (decoder)
 //  _q          :   interleaver object
 //  _msg_enc    :   encoded (interleaved) message
 //  _msg_dec    :   decoded (un-interleaved) message
-int interleaver_decode(interleaver     _q,
-                       unsigned char * _msg_enc,
-                       unsigned char * _msg_dec);
+int interleaver_decode(interleaver           _q,
+                       const unsigned char * _msg_enc,
+                       unsigned char *       _msg_dec);
 
 // execute reverse interleaver (decoder) on soft bits
 //  _q          :   interleaver object
 //  _msg_enc    :   encoded (interleaved) message
 //  _msg_dec    :   decoded (un-interleaved) message
-int interleaver_decode_soft(interleaver     _q,
-                            unsigned char * _msg_enc,
-                            unsigned char * _msg_dec);
+int interleaver_decode_soft(interleaver           _q,
+                            const unsigned char * _msg_enc,
+                            unsigned char *       _msg_dec);
 
 
 
@@ -1811,7 +1811,7 @@ int SPGRAM(_push)(SPGRAM() _q,                                              \
 /*  _x  : input buffer, [size: _n x 1]                                  */  \
 /*  _n  : input buffer length                                           */  \
 int SPGRAM(_write)(SPGRAM()     _q,                                         \
-                   TI *         _x,                                         \
+                   const TI *   _x,                                         \
                    unsigned int _n);                                        \
                                                                             \
 /* Compute spectral periodogram output (fft-shifted values, linear)     */  \
@@ -1842,7 +1842,7 @@ int SPGRAM(_export_gnuplot)(SPGRAM()     _q,                                \
 /*  _n      : input signal length                                       */  \
 /*  _psd    : output spectrum, [size: _nfft x 1]                        */  \
 int SPGRAM(_estimate_psd)(unsigned int _nfft,                               \
-                          TI *         _x,                                  \
+                          const TI *   _x,                                  \
                           unsigned int _n,                                  \
                           T *          _psd);                               \
 
@@ -1922,7 +1922,7 @@ int ASGRAM(_push)(ASGRAM() _q,                                              \
 /*  _x  : input buffer, [size: _n x 1]                                  */  \
 /*  _n  : input buffer length                                           */  \
 int ASGRAM(_write)(ASGRAM()     _q,                                         \
-                   TI *         _x,                                         \
+                   const TI *   _x,                                         \
                    unsigned int _n);                                        \
                                                                             \
 /* Compute spectral periodogram output from current buffer contents     */  \
@@ -2066,7 +2066,7 @@ int SPWATERFALL(_push)(SPWATERFALL() _q,                                    \
 /*  _x  : input buffer, [size: _n x 1]                                  */  \
 /*  _n  : input buffer length                                           */  \
 int SPWATERFALL(_write)(SPWATERFALL() _q,                                   \
-                        TI *          _x,                                   \
+                        const TI *    _x,                                   \
                         unsigned int  _n);                                  \
                                                                             \
 /* Export set of files for plotting                                     */  \
@@ -2190,14 +2190,14 @@ typedef enum {
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
 //  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 //  _h          :   output coefficients array, [size: _h_len x 1]
-int firdespm_run(unsigned int            _h_len,
-                 unsigned int            _num_bands,
-                 float *                 _bands,
-                 float *                 _des,
-                 float *                 _weights,
-                 liquid_firdespm_wtype * _wtype,
-                 liquid_firdespm_btype   _btype,
-                 float *                 _h);
+int firdespm_run(unsigned int                  _h_len,
+                 unsigned int                  _num_bands,
+                 const float *                 _bands,
+                 const float *                 _des,
+                 const float *                 _weights,
+                 const liquid_firdespm_wtype * _wtype,
+                 liquid_firdespm_btype         _btype,
+                 float *                       _h);
 
 // run filter design for basic low-pass filter
 //  _n      : filter length, _n > 0
@@ -2232,13 +2232,13 @@ typedef struct firdespm_s * firdespm;
 //  _weights    :   response weighting, [size: _num_bands x 1]
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
 //  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
-firdespm firdespm_create(unsigned int            _h_len,
-                         unsigned int            _num_bands,
-                         float *                 _bands,
-                         float *                 _des,
-                         float *                 _weights,
-                         liquid_firdespm_wtype * _wtype,
-                         liquid_firdespm_btype   _btype);
+firdespm firdespm_create(unsigned int                  _h_len,
+                         unsigned int                  _num_bands,
+                         const float *                 _bands,
+                         const float *                 _des,
+                         const float *                 _weights,
+                         const liquid_firdespm_wtype * _wtype,
+                         liquid_firdespm_btype         _btype);
 
 // create firdespm object with user-defined callback
 //  _h_len      :   length of filter (number of taps)
@@ -2249,7 +2249,7 @@ firdespm firdespm_create(unsigned int            _h_len,
 //  _userdata   :   user-defined data structure for callback function
 firdespm firdespm_create_callback(unsigned int          _h_len,
                                   unsigned int          _num_bands,
-                                  float *               _bands,
+                                  const float *         _bands,
                                   liquid_firdespm_btype _btype,
                                   firdespm_callback     _callback,
                                   void *                _userdata);
@@ -2375,7 +2375,7 @@ int liquid_firdes_rfarcsech(unsigned int _k, unsigned int _m, float _beta, float
 //  _h      : filter coefficients array
 //  _n      : filter length
 //  _fc     : frequency at which delay is evaluated (-0.5 < _fc < 0.5)
-float fir_group_delay(float * _h,
+float fir_group_delay(const float * _h,
                       unsigned int _n,
                       float _fc);
 
@@ -2385,9 +2385,9 @@ float fir_group_delay(float * _h,
 //  _a      : filter denominator coefficients
 //  _na     : filter denominator length
 //  _fc     : frequency at which delay is evaluated (-0.5 < _fc < 0.5)
-float iir_group_delay(float * _b,
+float iir_group_delay(const float * _b,
                       unsigned int _nb,
-                      float * _a,
+                      const float * _a,
                       unsigned int _na,
                       float _fc);
 
@@ -2399,9 +2399,9 @@ float iir_group_delay(float * _b,
 //  _h      :   filter coefficients, [size: _h_len x 1]
 //  _h_len  :   filter length
 //  _lag    :   auto-correlation lag (samples)
-float liquid_filter_autocorr(float *      _h,
-                             unsigned int _h_len,
-                             int          _lag);
+float liquid_filter_autocorr(const float * _h,
+                             unsigned int  _h_len,
+                             int           _lag);
 
 // liquid_filter_crosscorr()
 //
@@ -2412,11 +2412,11 @@ float liquid_filter_autocorr(float *      _h,
 //  _g      :   filter coefficients, [size: _g_len]
 //  _g_len  :   filter length
 //  _lag    :   cross-correlation lag (samples)
-float liquid_filter_crosscorr(float *      _h,
-                              unsigned int _h_len,
-                              float *      _g,
-                              unsigned int _g_len,
-                              int          _lag);
+float liquid_filter_crosscorr(const float * _h,
+                              unsigned int  _h_len,
+                              const float * _g,
+                              unsigned int  _g_len,
+                              int           _lag);
 
 // liquid_filter_isi()
 //
@@ -2428,11 +2428,11 @@ float liquid_filter_crosscorr(float *      _h,
 //  _m      :   filter delay (symbols)
 //  _rms    :   output root mean-squared ISI
 //  _max    :   maximum ISI
-void liquid_filter_isi(float *      _h,
-                       unsigned int _k,
-                       unsigned int _m,
-                       float *      _rms,
-                       float *      _max);
+void liquid_filter_isi(const float * _h,
+                       unsigned int  _k,
+                       unsigned int  _m,
+                       float *       _rms,
+                       float *       _max);
 
 // Compute relative out-of-band energy
 //
@@ -2440,10 +2440,10 @@ void liquid_filter_isi(float *      _h,
 //  _h_len  :   filter length
 //  _fc     :   analysis cut-off frequency
 //  _nfft   :   fft size
-float liquid_filter_energy(float *      _h,
-                           unsigned int _h_len,
-                           float        _fc,
-                           unsigned int _nfft);
+float liquid_filter_energy(const float * _h,
+                           unsigned int  _h_len,
+                           float         _fc,
+                           unsigned int  _nfft);
 
 // Get static frequency response from filter coefficients at particular
 // frequency with real-valued coefficients
@@ -2451,7 +2451,7 @@ float liquid_filter_energy(float *      _h,
 //  _h_len  : length of coefficients array
 //  _fc     : center frequency for analysis, -0.5 <= _fc <= 0.5
 //  _H      : pointer to output value
-int liquid_freqrespf(float *                _h,
+int liquid_freqrespf(const float *          _h,
                      unsigned int           _h_len,
                      float                  _fc,
                      liquid_float_complex * _H);
@@ -2462,10 +2462,10 @@ int liquid_freqrespf(float *                _h,
 //  _h_len  : length of coefficients array
 //  _fc     : center frequency for analysis, -0.5 <= _fc <= 0.5
 //  _H      : pointer to output value
-int liquid_freqrespcf(liquid_float_complex * _h,
-                      unsigned int           _h_len,
-                      float                  _fc,
-                      liquid_float_complex * _H);
+int liquid_freqrespcf(const liquid_float_complex * _h,
+                      unsigned int                 _h_len,
+                      float                        _fc,
+                      liquid_float_complex *       _H);
 
 
 //
@@ -2557,15 +2557,15 @@ float iirdes_freqprewarp(liquid_iirdes_bandtype _btype,
 //  _zd     :   output digital zeros [length: _npa]
 //  _pd     :   output digital poles [length: _npa]
 //  _kd     :   output digital gain (should actually be real-valued)
-int bilinear_zpkf(liquid_float_complex * _za,
-                  unsigned int           _nza,
-                  liquid_float_complex * _pa,
-                  unsigned int           _npa,
-                  liquid_float_complex   _ka,
-                  float                  _m,
-                  liquid_float_complex * _zd,
-                  liquid_float_complex * _pd,
-                  liquid_float_complex * _kd);
+int bilinear_zpkf(const liquid_float_complex * _za,
+                  unsigned int                 _nza,
+                  const liquid_float_complex * _pa,
+                  unsigned int                 _npa,
+                  liquid_float_complex         _ka,
+                  float                        _m,
+                  liquid_float_complex *       _zd,
+                  liquid_float_complex *       _pd,
+                  liquid_float_complex *       _kd);
 
 // compute bilinear z-transform using polynomial expansion in numerator and
 // denominator
@@ -2587,13 +2587,13 @@ int bilinear_zpkf(liquid_float_complex * _za,
 //  _m          : bilateral warping factor
 //  _bd         : output digital filter numerator, [size: _b_order+1]
 //  _ad         : output digital filter numerator, [size: _a_order+1]
-int bilinear_nd(liquid_float_complex * _b,
-                unsigned int           _b_order,
-                liquid_float_complex * _a,
-                unsigned int           _a_order,
-                float                  _m,
-                liquid_float_complex * _bd,
-                liquid_float_complex * _ad);
+int bilinear_nd(const liquid_float_complex * _b,
+                unsigned int                 _b_order,
+                const liquid_float_complex * _a,
+                unsigned int                 _a_order,
+                float                        _m,
+                liquid_float_complex *       _bd,
+                liquid_float_complex *       _ad);
 
 // digital z/p/k low-pass to high-pass
 //  _zd     :   digital zeros (low-pass prototype), [length: _n]
@@ -2601,11 +2601,11 @@ int bilinear_nd(liquid_float_complex * _b,
 //  _n      :   low-pass filter order
 //  _zdt    :   output digital zeros transformed [length: _n]
 //  _pdt    :   output digital poles transformed [length: _n]
-int iirdes_dzpk_lp2hp(liquid_float_complex * _zd,
-                      liquid_float_complex * _pd,
-                      unsigned int _n,
-                      liquid_float_complex * _zdt,
-                      liquid_float_complex * _pdt);
+int iirdes_dzpk_lp2hp(const liquid_float_complex * _zd,
+                      const liquid_float_complex * _pd,
+                      unsigned int                 _n,
+                      liquid_float_complex *       _zdt,
+                      liquid_float_complex *       _pdt);
 
 // digital z/p/k low-pass to band-pass
 //  _zd     :   digital zeros (low-pass prototype), [length: _n]
@@ -2614,12 +2614,12 @@ int iirdes_dzpk_lp2hp(liquid_float_complex * _zd,
 //  _f0     :   center frequency
 //  _zdt    :   output digital zeros transformed [length: 2*_n]
 //  _pdt    :   output digital poles transformed [length: 2*_n]
-int iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
-                      liquid_float_complex * _pd,
-                      unsigned int           _n,
-                      float                  _f0,
-                      liquid_float_complex * _zdt,
-                      liquid_float_complex * _pdt);
+int iirdes_dzpk_lp2bp(const liquid_float_complex * _zd,
+                      const liquid_float_complex * _pd,
+                      unsigned int                 _n,
+                      float                        _f0,
+                      liquid_float_complex *       _zdt,
+                      liquid_float_complex *       _pdt);
 
 // convert discrete z/p/k form to transfer function
 //  _zd     :   digital zeros [length: _n]
@@ -2628,12 +2628,12 @@ int iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
 //  _kd     :   digital gain
 //  _b      :   output numerator [length: _n+1]
 //  _a      :   output denominator [length: _n+1]
-int iirdes_dzpk2tff(liquid_float_complex * _zd,
-                    liquid_float_complex * _pd,
-                    unsigned int           _n,
-                    liquid_float_complex   _kd,
-                    float *                _b,
-                    float *                _a);
+int iirdes_dzpk2tff(const liquid_float_complex * _zd,
+                    const liquid_float_complex * _pd,
+                    unsigned int                 _n,
+                    liquid_float_complex         _kd,
+                    float *                      _b,
+                    float *                      _a);
 
 // convert discrete z/p/k form to second-order sections
 //  _zd     :   digital zeros [length: _n]
@@ -2643,12 +2643,12 @@ int iirdes_dzpk2tff(liquid_float_complex * _zd,
 //  _b      :   output numerator, [size: 3 x L+r]
 //  _a      :   output denominator, [size: 3 x L+r]
 //  where r = _n%2, L = (_n-r)/2
-int iirdes_dzpk2sosf(liquid_float_complex * _zd,
-                     liquid_float_complex * _pd,
-                     unsigned int           _n,
-                     liquid_float_complex   _kd,
-                     float *                _b,
-                     float *                _a);
+int iirdes_dzpk2sosf(const liquid_float_complex * _zd,
+                     const liquid_float_complex * _pd,
+                     unsigned int                 _n,
+                     liquid_float_complex         _kd,
+                     float *                      _b,
+                     float *                      _a);
 
 // additional IIR filter design templates
 
@@ -2688,8 +2688,8 @@ void iirdes_pll_active_PI(float _w,
 //  _b      :   feed-forward coefficients, [size: _n x 1]
 //  _a      :   feed-back coefficients, [size: _n x 1]
 //  _n      :   number of coefficients
-int iirdes_isstable(float * _b,
-                    float * _a,
+int iirdes_isstable(const float * _b,
+                    const float * _a,
                     unsigned int _n);
 
 //
@@ -2702,7 +2702,7 @@ int iirdes_isstable(float * _b,
 //  _p      :   prediction filter order
 //  _a      :   prediction filter, [size: _p+1 x 1]
 //  _e      :   prediction error variance, [size: _p+1 x 1]
-void liquid_lpc(float * _x,
+void liquid_lpc(const float * _x,
                 unsigned int _n,
                 unsigned int _p,
                 float * _a,
@@ -2717,7 +2717,7 @@ void liquid_lpc(float * _x,
 //
 // NOTES:
 //  By definition _a[0] = 1.0
-void liquid_levinson(float * _r,
+void liquid_levinson(const float * _r,
                      unsigned int _p,
                      float * _a,
                      float * _e);
@@ -2766,7 +2766,7 @@ int AUTOCORR(_push)(AUTOCORR() _q,                                          \
 /*  _x      :   input array, [size: _n x 1]                             */  \
 /*  _n      :   number of input samples                                 */  \
 int AUTOCORR(_write)(AUTOCORR()   _q,                                       \
-                     TI *         _x,                                       \
+                     const TI *   _x,                                       \
                      unsigned int _n);                                      \
                                                                             \
 /* Compute single auto-correlation output                               */  \
@@ -2782,7 +2782,7 @@ int AUTOCORR(_execute)(AUTOCORR() _q,                                       \
 /*  _n      :   number of input, output samples                         */  \
 /*  _rxx    :   input array, [size: _n x 1]                             */  \
 int AUTOCORR(_execute_block)(AUTOCORR()   _q,                               \
-                             TI *         _x,                               \
+                             const TI *   _x,                               \
                              unsigned int _n,                               \
                              TO *         _rxx);                            \
                                                                             \
@@ -2822,7 +2822,7 @@ typedef struct FIRFILT(_s) * FIRFILT();                                     \
 /* specifying the filter coefficients in an array                       */  \
 /*  _h      : filter coefficients, [size: _n x 1]                       */  \
 /*  _n      : number of filter coefficients, _n > 0                     */  \
-FIRFILT() FIRFILT(_create)(TC *         _h,                                 \
+FIRFILT() FIRFILT(_create)(const TC *   _h,                                 \
                            unsigned int _n);                                \
                                                                             \
 /* Create object using Kaiser-Bessel windowed sinc method               */  \
@@ -2883,7 +2883,7 @@ FIRFILT() FIRFILT(_create_notch)(unsigned int _m,                           \
 /*  _h      : pointer to filter coefficients, [size: _n x 1]            */  \
 /*  _n      : filter length, _n > 0                                     */  \
 FIRFILT() FIRFILT(_recreate)(FIRFILT()    _q,                               \
-                             TC *         _h,                               \
+                             const TC *   _h,                               \
                              unsigned int _n);                              \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
@@ -2921,7 +2921,7 @@ int FIRFILT(_push)(FIRFILT() _q,                                            \
 /*  _x      : buffer of input samples, [size: _n x 1]                   */  \
 /*  _n      : number of input samples                                   */  \
 int FIRFILT(_write)(FIRFILT()    _q,                                        \
-                    TI *         _x,                                        \
+                    const TI *   _x,                                        \
                     unsigned int _n);                                       \
                                                                             \
 /* Execute vector dot product on the filter's internal buffer and       */  \
@@ -2946,7 +2946,7 @@ int FIRFILT(_execute_one)(FIRFILT() _q,                                     \
 /*  _n      : number of input, output samples                           */  \
 /*  _y      : pointer to output array, [size: _n x 1]                   */  \
 int FIRFILT(_execute_block)(FIRFILT()    _q,                                \
-                            TI *         _x,                                \
+                            const TI *   _x,                                \
                             unsigned int _n,                                \
                             TO *         _y);                               \
                                                                             \
@@ -3047,7 +3047,7 @@ int FDELAY(_push)(FDELAY() _q,                                              \
 /*  _x      : buffer of input samples, [size: _n x 1]                   */  \
 /*  _n      : number of input samples                                   */  \
 int FDELAY(_write)(FDELAY()     _q,                                         \
-                   TI *         _x,                                         \
+                   const TI *   _x,                                         \
                    unsigned int _n);                                        \
                                                                             \
 /* Execute vector dot product on the filter's internal buffer and       */  \
@@ -3064,7 +3064,7 @@ int FDELAY(_execute)(FDELAY() _q,                                           \
 /*  _n      : number of input, output samples                           */  \
 /*  _y      : pointer to output array, [size: _n x 1]                   */  \
 int FDELAY(_execute_block)(FDELAY()     _q,                                 \
-                           TI *         _x,                                 \
+                           const TI *   _x,                                 \
                            unsigned int _n,                                 \
                            TO *         _y);                                \
 
@@ -3141,7 +3141,7 @@ int FIRHILB(_c2r_execute)(FIRHILB() _q,                                     \
 /*  _x      :   real-valued input array, [size: 2 x 1]                  */  \
 /*  _y      :   complex-valued output sample                            */  \
 int FIRHILB(_decim_execute)(FIRHILB() _q,                                   \
-                            T *       _x,                                   \
+                            const T * _x,                                   \
                             TC *      _y);                                  \
                                                                             \
 /* Execute Hilbert transform decimator (real to complex) on a block of  */  \
@@ -3151,7 +3151,7 @@ int FIRHILB(_decim_execute)(FIRHILB() _q,                                   \
 /*  _n      :   number of output samples                                */  \
 /*  _y      :   complex-valued output array, [size: _n x 1]             */  \
 int FIRHILB(_decim_execute_block)(FIRHILB()    _q,                          \
-                                  T *          _x,                          \
+                                  const T *    _x,                          \
                                   unsigned int _n,                          \
                                   TC *         _y);                         \
                                                                             \
@@ -3170,7 +3170,7 @@ int FIRHILB(_interp_execute)(FIRHILB() _q,                                  \
 /*  _n      :   number of *input* samples                               */  \
 /*  _y      :   real-valued output array, [size: 2*_n x 1]              */  \
 int FIRHILB(_interp_execute_block)(FIRHILB()    _q,                         \
-                                   TC *         _x,                         \
+                                   const TC *   _x,                         \
                                    unsigned int _n,                         \
                                    T *          _y);                        \
 
@@ -3237,7 +3237,7 @@ int IIRHILB(_r2c_execute)(IIRHILB() _q,                                     \
 /*  _n      : number of input,output samples                            */  \
 /*  _y      : complex-valued output sample array, [size: _n x 1]        */  \
 int IIRHILB(_r2c_execute_block)(IIRHILB()    _q,                            \
-                                T *          _x,                            \
+                                const T *    _x,                            \
                                 unsigned int _n,                            \
                                 TC *         _y);                           \
                                                                             \
@@ -3255,7 +3255,7 @@ int IIRHILB(_c2r_execute)(IIRHILB() _q,                                     \
 /*  _n      : number of input,output samples                            */  \
 /*  _y      : real-valued output sample array, [size: _n x 1]           */  \
 int IIRHILB(_c2r_execute_block)(IIRHILB()    _q,                            \
-                                TC *         _x,                            \
+                                const TC *   _x,                            \
                                 unsigned int _n,                            \
                                 T *          _y);                           \
                                                                             \
@@ -3264,7 +3264,7 @@ int IIRHILB(_c2r_execute_block)(IIRHILB()    _q,                            \
 /*  _x      : real-valued input array, [size: 2 x 1]                    */  \
 /*  _y      : complex-valued output sample                              */  \
 int IIRHILB(_decim_execute)(IIRHILB() _q,                                   \
-                            T *       _x,                                   \
+                            const T * _x,                                   \
                             TC *      _y);                                  \
                                                                             \
 /* Execute Hilbert transform decimator (real to complex) on a block of  */  \
@@ -3274,7 +3274,7 @@ int IIRHILB(_decim_execute)(IIRHILB() _q,                                   \
 /*  _n      : number of output samples                                  */  \
 /*  _y      : complex-valued output array, [size: _n x 1]               */  \
 int IIRHILB(_decim_execute_block)(IIRHILB()    _q,                          \
-                                  T *          _x,                          \
+                                  const T *    _x,                          \
                                   unsigned int _n,                          \
                                   TC *         _y);                         \
                                                                             \
@@ -3293,7 +3293,7 @@ int IIRHILB(_interp_execute)(IIRHILB() _q,                                  \
 /*  _n      : number of *input* samples                                 */  \
 /*  _y      : real-valued output array, [size: 2*_n x 1]                */  \
 int IIRHILB(_interp_execute_block)(IIRHILB()    _q,                         \
-                                   TC *         _x,                         \
+                                   const TC *   _x,                         \
                                    unsigned int _n,                         \
                                    T *          _y);                        \
 
@@ -3323,7 +3323,7 @@ typedef struct FFTFILT(_s) * FFTFILT();                                     \
 /*  _h      : filter coefficients, [size: _h_len x 1]                   */  \
 /*  _h_len  : filter length, _h_len > 0                                 */  \
 /*  _n      : block size = nfft/2, _n >= _h_len-1                       */  \
-FFTFILT() FFTFILT(_create)(TC *         _h,                                 \
+FFTFILT() FFTFILT(_create)(const TC *   _h,                                 \
                            unsigned int _h_len,                             \
                            unsigned int _n);                                \
                                                                             \
@@ -3354,7 +3354,7 @@ int FFTFILT(_get_scale)(FFTFILT() _q,                                       \
 /*  _x      : pointer to input data array,  [size: _n x 1]              */  \
 /*  _y      : pointer to output data array, [size: _n x 1]              */  \
 int FFTFILT(_execute)(FFTFILT() _q,                                         \
-                      TI *      _x,                                         \
+                      const TI * _x,                                        \
                       TO *      _y);                                        \
                                                                             \
 /* Get length of filter object's internal coefficients                  */  \
@@ -3406,9 +3406,9 @@ typedef struct IIRFILT(_s) * IIRFILT();                                     \
 /*  _nb     : number of feed-forward coefficients, _nb > 0              */  \
 /*  _a      : feed-back coefficients (denominator), [size: _na x 1]     */  \
 /*  _na     : number of feed-back coefficients, _na > 0                 */  \
-IIRFILT() IIRFILT(_create)(TC *         _b,                                 \
+IIRFILT() IIRFILT(_create)(const TC *   _b,                                 \
                            unsigned int _nb,                                \
-                           TC *         _a,                                 \
+                           const TC *   _a,                                 \
                            unsigned int _na);                               \
                                                                             \
 /* Create IIR filter using 2nd-order sections from external             */  \
@@ -3416,8 +3416,8 @@ IIRFILT() IIRFILT(_create)(TC *         _b,                                 \
 /*  _b      : feed-forward coefficients, [size: _nsos x 3]              */  \
 /*  _a      : feed-back coefficients,    [size: _nsos x 3]              */  \
 /*  _nsos   : number of second-order sections (sos), _nsos > 0          */  \
-IIRFILT() IIRFILT(_create_sos)(TC *         _b,                             \
-                               TC *         _a,                             \
+IIRFILT() IIRFILT(_create_sos)(const TC *   _b,                             \
+                               const TC *   _a,                             \
                                unsigned int _nsos);                         \
                                                                             \
 /* Create IIR filter from design template                               */  \
@@ -3503,7 +3503,7 @@ int IIRFILT(_execute)(IIRFILT() _q,                                         \
 /*  _n      : number of input, output samples, _n > 0                   */  \
 /*  _y      : pointer to output array, [size: _n x 1]                   */  \
 int IIRFILT(_execute_block)(IIRFILT()    _q,                                \
-                            TI *         _x,                                \
+                            const TI *   _x,                                \
                             unsigned int _n,                                \
                             TO *         _y);                               \
                                                                             \
@@ -3562,8 +3562,8 @@ typedef struct IIRFILTSOS(_s) * IIRFILTSOS();                               \
 /* create 2nd-order infinite impulse response filter                    */  \
 /*  _b      : feed-forward coefficients, [size: _3 x 1]                 */  \
 /*  _a      : feed-back coefficients,    [size: _3 x 1]                 */  \
-IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                                   \
-                                 TC * _a);                                  \
+IIRFILTSOS() IIRFILTSOS(_create)(const TC * _b,                             \
+                                 const TC * _a);                            \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
 IIRFILTSOS() IIRFILTSOS(_copy)(IIRFILTSOS() _q);                            \
@@ -3573,8 +3573,8 @@ IIRFILTSOS() IIRFILTSOS(_copy)(IIRFILTSOS() _q);                            \
 /*  _b      : feed-forward coefficients, [size: 3 x 1]                  */  \
 /*  _a      : feed-back coefficients, [size: 3 x 1]                     */  \
 int IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,                          \
-                                  TC *         _b,                          \
-                                  TC *         _a);                         \
+                                  const TC *   _b,                          \
+                                  const TC *   _a);                         \
                                                                             \
 /* destroy iirfiltsos object, freeing all internal memory               */  \
 int IIRFILTSOS(_destroy)(IIRFILTSOS() _q);                                  \
@@ -3655,7 +3655,7 @@ typedef struct FIRPFB(_s) * FIRPFB();                                       \
 /*  _h_len          : complete filter length (where _h_len is a         */  \
 /*                    multiple of _num_filters), _h_len >= _num_filters */  \
 FIRPFB() FIRPFB(_create)(unsigned int _num_filters,                         \
-                         TC *         _h,                                   \
+                         const TC *   _h,                                   \
                          unsigned int _h_len);                              \
                                                                             \
 /* Create firpfb object using Kaiser-Bessel windowed sinc filter design */  \
@@ -3713,7 +3713,7 @@ FIRPFB() FIRPFB(_create_drnyquist)(int          _type,                      \
 /*                    multiple of _num_filters), _h_len >= _num_filters */  \
 FIRPFB() FIRPFB(_recreate)(FIRPFB()     _q,                                 \
                            unsigned int _num_filters,                       \
-                           TC *         _h,                                 \
+                           const TC *   _h,                                 \
                            unsigned int _h_len);                            \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
@@ -3751,7 +3751,7 @@ int FIRPFB(_push)(FIRPFB() _q,                                              \
 /*  _q      : filter object                                             */  \
 /*  _x      : single input sample                                       */  \
 int FIRPFB(_write)(FIRPFB()     _q,                                         \
-                   TI *         _x,                                         \
+                   const TI *   _x,                                         \
                    unsigned int _n);                                        \
                                                                             \
 /* Execute vector dot product on the filter's internal buffer and       */  \
@@ -3773,7 +3773,7 @@ int FIRPFB(_execute)(FIRPFB()     _q,                                       \
 /*  _y      : pointer to output array, [size: _n x 1]                   */  \
 int FIRPFB(_execute_block)(FIRPFB()     _q,                                 \
                            unsigned int _i,                                 \
-                           TI *         _x,                                 \
+                           const TI *   _x,                                 \
                            unsigned int _n,                                 \
                            TO *         _y);                                \
 
@@ -3816,7 +3816,7 @@ typedef struct FIRINTERP(_s) * FIRINTERP();                                 \
 /*  _h      : filter coefficients, [size: _h_len x 1]                   */  \
 /*  _h_len  : filter length, _h_len >= _interp                          */  \
 FIRINTERP() FIRINTERP(_create)(unsigned int _interp,                        \
-                               TC *         _h,                             \
+                               const TC *   _h,                             \
                                unsigned int _h_len);                        \
                                                                             \
 /* Create interpolator from filter prototype prototype (Kaiser-Bessel   */  \
@@ -3896,7 +3896,7 @@ int FIRINTERP(_execute)(FIRINTERP() _q,                                     \
 /*  _n      : size of input array                                       */  \
 /*  _y      : output sample array, [size: M*_n x 1]                     */  \
 int FIRINTERP(_execute_block)(FIRINTERP()  _q,                              \
-                              TI *         _x,                              \
+                              const TI *   _x,                              \
                               unsigned int _n,                              \
                               TO *         _y);                             \
                                                                             \
@@ -3947,9 +3947,9 @@ typedef struct IIRINTERP(_s) * IIRINTERP();                                 \
 /*  _a      : feed-back coefficients (denominator), [size: _na x 1]     */  \
 /*  _na     : number of feed-back coefficients, _na > 0                 */  \
 IIRINTERP() IIRINTERP(_create)(unsigned int _M,                             \
-                               TC *         _b,                             \
+                               const TC *   _b,                             \
                                unsigned int _nb,                            \
-                               TC *         _a,                             \
+                               const TC *   _a,                             \
                                unsigned int _na);                           \
                                                                             \
 /* Create interpolator object with default Butterworth prototype        */  \
@@ -4006,7 +4006,7 @@ int IIRINTERP(_execute)(IIRINTERP() _q,                                     \
 /*  _n      : size of input array                                       */  \
 /*  _y      : output sample array, [size: _M*_n x 1]                    */  \
 int IIRINTERP(_execute_block)(IIRINTERP()  _q,                              \
-                              TI *         _x,                              \
+                              const TI *   _x,                              \
                               unsigned int _n,                              \
                               TO *         _y);                             \
                                                                             \
@@ -4050,7 +4050,7 @@ typedef struct FIRDECIM(_s) * FIRDECIM();                                   \
 /*  _h      : filter coefficients, [size: _h_len x 1]                   */  \
 /*  _h_len  : filter length, _h_len >= _M                               */  \
 FIRDECIM() FIRDECIM(_create)(unsigned int _M,                               \
-                             TC *         _h,                               \
+                             const TC *   _h,                               \
                              unsigned int _h_len);                          \
                                                                             \
 /* Create decimator from filter prototype prototype (Kaiser-Bessel      */  \
@@ -4115,7 +4115,7 @@ int FIRDECIM(_freqresp)(FIRDECIM()             _q,                          \
 /*  _x      : input samples, [size: _M x 1]                             */  \
 /*  _y      : output sample pointer                                     */  \
 int FIRDECIM(_execute)(FIRDECIM() _q,                                       \
-                       TI *       _x,                                       \
+                       const TI * _x,                                       \
                        TO *       _y);                                      \
                                                                             \
 /* Execute decimator on block of _n*_M input samples                    */  \
@@ -4124,7 +4124,7 @@ int FIRDECIM(_execute)(FIRDECIM() _q,                                       \
 /*  _n      : number of _output_ samples                                */  \
 /*  _y      : output array, [_size: _n x 1]                             */  \
 int FIRDECIM(_execute_block)(FIRDECIM()   _q,                               \
-                             TI *         _x,                               \
+                             const TI *   _x,                               \
                              unsigned int _n,                               \
                              TO *         _y);                              \
 
@@ -4169,9 +4169,9 @@ typedef struct IIRDECIM(_s) * IIRDECIM();                                   \
 /*  _a      : feed-back coefficients (denominator), [size: _na x 1]     */  \
 /*  _na     : number of feed-back coefficients, _na > 0                 */  \
 IIRDECIM() IIRDECIM(_create)(unsigned int _M,                               \
-                             TC *         _b,                               \
+                             const TC *   _b,                               \
                              unsigned int _nb,                              \
-                             TC *         _a,                               \
+                             const TC *   _a,                               \
                              unsigned int _na);                             \
                                                                             \
 /* Create decimator object with default Butterworth prototype           */  \
@@ -4218,7 +4218,7 @@ int IIRDECIM(_reset)(IIRDECIM() _q);                                        \
 /*  _x      : input samples, [size: _M x 1]                             */  \
 /*  _y      : output sample pointer                                     */  \
 int IIRDECIM(_execute)(IIRDECIM() _q,                                       \
-                       TI *       _x,                                       \
+                       const TI * _x,                                       \
                        TO *       _y);                                      \
                                                                             \
 /* Execute decimator on block of _n*_M input samples                    */  \
@@ -4227,7 +4227,7 @@ int IIRDECIM(_execute)(IIRDECIM() _q,                                       \
 /*  _n      : number of _output_ samples                                */  \
 /*  _y      : output array, [_sze: _n x 1]                              */  \
 int IIRDECIM(_execute_block)(IIRDECIM()   _q,                               \
-                             TI *         _x,                               \
+                             const TI *   _x,                               \
                              unsigned int _n,                               \
                              TO *         _y);                              \
                                                                             \
@@ -4403,7 +4403,7 @@ typedef struct RRESAMP(_s) * RRESAMP();                                     \
 RRESAMP() RRESAMP(_create)(unsigned int _interp,                            \
                            unsigned int _decim,                             \
                            unsigned int _m,                                 \
-                           TC *         _h);                                \
+                           const TC *   _h);                                \
                                                                             \
 /* Create rational-rate resampler object from filter prototype to       */  \
 /* resample at an exact rate \(P/Q\) = interp/decim.                    */  \
@@ -4513,8 +4513,8 @@ float RRESAMP(_get_rate)(RRESAMP() _q);                                     \
 /* internal state of the resampler.                                     */  \
 /*  _q      : resamp object                                             */  \
 /*  _buf    : input sample array, [size: decim x 1]                     */  \
-int RRESAMP(_write)(RRESAMP() _q,                                           \
-                    TI *      _buf);                                        \
+int RRESAMP(_write)(RRESAMP()   _q,                                         \
+                    const TI * _buf);                                       \
                                                                             \
 /* Execute rational-rate resampler on a block of input samples and      */  \
 /* store the resulting samples in the output array.                     */  \
@@ -4534,8 +4534,8 @@ int RRESAMP(_write)(RRESAMP() _q,                                           \
 /*  _q  : resamp object                                                 */  \
 /*  _x  : input sample array, [size: decim x 1]                         */  \
 /*  _y  : output sample array, [size: interp x 1]                       */  \
-int RRESAMP(_execute)(RRESAMP()       _q,                                   \
-                      TI *           _x,                                    \
+int RRESAMP(_execute)(RRESAMP()      _q,                                    \
+                      const TI *     _x,                                    \
                       TO *           _y);                                   \
                                                                             \
 /* Execute on a block of samples                                        */  \
@@ -4544,7 +4544,7 @@ int RRESAMP(_execute)(RRESAMP()       _q,                                   \
 /*  _n  : block size                                                    */  \
 /*  _y  : output sample array, [size: interp*n x 1]                     */  \
 int RRESAMP(_execute_block)(RRESAMP()      _q,                              \
-                            TI *           _x,                              \
+                            const TI *     _x,                              \
                             unsigned int   _n,                              \
                             TO *           _y);                             \
 
@@ -4684,7 +4684,7 @@ int RESAMP(_execute)(RESAMP()       _q,                                     \
 /*  _y              : output sample array (pointer)                     */  \
 /*  _ny             : number of samples written to _y                   */  \
 int RESAMP(_execute_block)(RESAMP()       _q,                               \
-                           TI *           _x,                               \
+                           const TI *     _x,                               \
                            unsigned int   _nx,                              \
                            TO *           _y,                               \
                            unsigned int * _ny);                             \
@@ -4844,7 +4844,7 @@ unsigned int MSRESAMP(_get_num_output)(MSRESAMP()   _q,                     \
 /*  _y  : pointer to output array for storing result                    */  \
 /*  _ny : number of samples written to _y                               */  \
 int MSRESAMP(_execute)(MSRESAMP()     _q,                                   \
-                       TI *           _x,                                   \
+                       const TI *     _x,                                   \
                        unsigned int   _nx,                                  \
                        TO *           _y,                                   \
                        unsigned int * _ny);                                 \
@@ -4922,9 +4922,9 @@ float        DDS(_get_delay_decim)(DDS() _q);                               \
 /*  _q      : synthesizer object                                        */  \
 /*  _x      : input data array, [size: (1<<_num_stages) x 1]            */  \
 /*  _y      : output sample                                             */  \
-int DDS(_decim_execute)(DDS() _q,                                           \
-                        TI *  _x,                                           \
-                        TO *  _y);                                          \
+int DDS(_decim_execute)(DDS()      _q,                                      \
+                        const TI * _x,                                      \
+                        TO *       _y);                                     \
                                                                             \
 /* Run DDS object as interpolator                                       */  \
 /*  _q      : synthesizer object                                        */  \
@@ -4958,7 +4958,7 @@ typedef struct SYMSYNC(_s) * SYMSYNC();                                     \
 /*  _h_len  : length of matched filter; \( h_{len} = 2 k m + 1 \)       */  \
 SYMSYNC() SYMSYNC(_create)(unsigned int _k,                                 \
                            unsigned int _M,                                 \
-                           TC *         _h,                                 \
+                           const TC *   _h,                                 \
                            unsigned int _h_len);                            \
                                                                             \
 /* Create square-root Nyquist symbol synchronizer from prototype        */  \
@@ -5028,7 +5028,7 @@ float SYMSYNC(_get_tau)(SYMSYNC() _q);                                      \
 /*  _y      : output data array                                         */  \
 /*  _ny     : number of samples written to output buffer                */  \
 int SYMSYNC(_execute)(SYMSYNC()      _q,                                    \
-                      TI *           _x,                                    \
+                      const TI *     _x,                                    \
                       unsigned int   _nx,                                   \
                       TO *           _y,                                    \
                       unsigned int * _ny);                                  \
@@ -5106,10 +5106,10 @@ int FIRFARROW(_execute)(FIRFARROW() _q,                                     \
 /*  _x      : input array, [size: _n x 1]                               */  \
 /*  _n      : input, output array size                                  */  \
 /*  _y      : output array, [size: _n x 1]                              */  \
-int FIRFARROW(_execute_block)(FIRFARROW()  _q,                              \
-                              TI *         _x,                              \
-                              unsigned int _n,                              \
-                              TO *         _y);                             \
+int FIRFARROW(_execute_block)(FIRFARROW()    _q,                            \
+                              const TI *     _x,                            \
+                              unsigned int   _n,                            \
+                              TO *           _y);                           \
                                                                             \
 /* Get length of firfarrow object (number of filter taps)               */  \
 unsigned int FIRFARROW(_get_length)(FIRFARROW() _q);                        \
@@ -5195,7 +5195,7 @@ int ORDFILT(_push)(ORDFILT() _q,                                            \
 /*  _x      : array of input samples, [size: _n x 1]                    */  \
 /*  _n      : number of input elements                                  */  \
 int ORDFILT(_write)(ORDFILT()    _q,                                        \
-                    TI *         _x,                                        \
+                    const TI *   _x,                                        \
                     unsigned int _n);                                       \
                                                                             \
 /* Execute on the filter's internal buffer                              */  \
@@ -5219,7 +5219,7 @@ int ORDFILT(_execute_one)(ORDFILT() _q,                                     \
 /*  _n      : number of input, output samples                           */  \
 /*  _y      : pointer to output array, [size: _n x 1]                   */  \
 int ORDFILT(_execute_block)(ORDFILT()    _q,                                \
-                            TI *         _x,                                \
+                            const TI *   _x,                                \
                             unsigned int _n,                                \
                             TO *         _y);                               \
 
@@ -5286,13 +5286,13 @@ int framedatastats_print(framedatastats_s * _stats);
 //  _payload_valid  :   is payload valid? (0:no, 1:yes)
 //  _stats          :   frame statistics object
 //  _userdata       :   pointer to userdata
-typedef int (*framesync_callback)(unsigned char *  _header,
-                                  int              _header_valid,
-                                  unsigned char *  _payload,
-                                  unsigned int     _payload_len,
-                                  int              _payload_valid,
-                                  framesyncstats_s _stats,
-                                  void *           _userdata);
+typedef int (*framesync_callback)(const unsigned char * _header,
+                                  int                   _header_valid,
+                                  const unsigned char * _payload,
+                                  unsigned int          _payload_len,
+                                  int                   _payload_valid,
+                                  framesyncstats_s      _stats,
+                                  void *                _userdata);
 
 // framesync csma callback functions invoked when signal levels is high or low
 //  _userdata       :   user-defined data pointer
@@ -5471,9 +5471,9 @@ int qpilotgen_print(  qpilotgen _q);
 unsigned int qpilotgen_get_frame_len(qpilotgen _q);
 
 // insert pilot symbols
-int qpilotgen_execute(qpilotgen              _q,
-                      liquid_float_complex * _payload,
-                      liquid_float_complex * _frame);
+int qpilotgen_execute(qpilotgen                    _q,
+                      const liquid_float_complex * _payload,
+                      liquid_float_complex *       _frame);
 
 //
 // pilot synchronizer for packet burst recovery
@@ -5536,8 +5536,8 @@ int framegen64_print(framegen64 _q);
 //  _payload    :   64-byte payload data, NULL for random
 //  _frame      :   output frame samples, [size: LIQUID_FRAME64_LEN x 1]
 int framegen64_execute(framegen64             _q,
-                       unsigned char *        _header,
-                       unsigned char *        _payload,
+                       const unsigned char *  _header,
+                       const unsigned char *  _payload,
                        liquid_float_complex * _frame);
 
 typedef struct framesync64_s * framesync64;
@@ -5787,19 +5787,19 @@ void bpacketgen_print(bpacketgen _q);
 unsigned int bpacketgen_get_packet_len(bpacketgen _q);
 
 // encode packet
-void bpacketgen_encode(bpacketgen _q,
-                       unsigned char * _msg_dec,
-                       unsigned char * _packet);
+void bpacketgen_encode(bpacketgen            _q,
+                       const unsigned char * _msg_dec,
+                       unsigned char *       _packet);
 
 //
 // bpacket synchronizer/decoder
 //
 typedef struct bpacketsync_s * bpacketsync;
-typedef int (*bpacketsync_callback)(unsigned char *  _payload,
-                                    int              _payload_valid,
-                                    unsigned int     _payload_len,
-                                    framesyncstats_s _stats,
-                                    void *           _userdata);
+typedef int (*bpacketsync_callback)(const unsigned char * _payload,
+                                    int                   _payload_valid,
+                                    unsigned int          _payload_len,
+                                    framesyncstats_s      _stats,
+                                    void *                _userdata);
 bpacketsync bpacketsync_create(unsigned int _m,
                                bpacketsync_callback _callback,
                                void * _userdata);
@@ -5844,13 +5844,13 @@ fskframegen fskframegen_create();
 int fskframegen_destroy (fskframegen     _fg);
 int fskframegen_print   (fskframegen     _fg);
 int fskframegen_reset   (fskframegen     _fg);
-int fskframegen_assemble(fskframegen     _fg,
-                         unsigned char * _header,
-                         unsigned char * _payload,
-                         unsigned int    _payload_len,
-                         crc_scheme      _check,
-                         fec_scheme      _fec0,
-                         fec_scheme      _fec1);
+int fskframegen_assemble(fskframegen           _fg,
+                         const unsigned char * _header,
+                         const unsigned char * _payload,
+                         unsigned int          _payload_len,
+                         crc_scheme            _check,
+                         fec_scheme            _fec0,
+                         fec_scheme            _fec1);
 unsigned int fskframegen_getframelen(fskframegen _q);
 int fskframegen_write_samples(fskframegen            _fg,
                               liquid_float_complex * _buf,
@@ -6028,7 +6028,7 @@ int dsssframesync_set_header_len      (dsssframesync _q, unsigned int  _len);
 int dsssframesync_decode_header_soft  (dsssframesync _q, int _soft);
 int dsssframesync_decode_payload_soft (dsssframesync _q, int _soft);
 int dsssframesync_set_header_props    (dsssframesync _q, dsssframegenprops_s * _props);
-int dsssframesync_execute             (dsssframesync _q, liquid_float_complex * _x, unsigned int _n);
+int dsssframesync_execute             (dsssframesync _q, const liquid_float_complex * _x, unsigned int _n);
 int dsssframesync_reset_framedatastats(dsssframesync _q);
 int dsssframesync_debug_enable        (dsssframesync _q);
 int dsssframesync_debug_disable       (dsssframesync _q);
@@ -6090,7 +6090,7 @@ int dsssframe64sync_set_context(dsssframe64sync _q,
 //  _q       : frame synchronizer object
 //  _buf     : input sample array, shape: (_buf_len,)
 //  _buf_len : number of input samples
-int dsssframe64sync_execute(dsssframe64sync _q, liquid_float_complex * _buf, unsigned int _buf_len);
+int dsssframe64sync_execute(dsssframe64sync _q, const liquid_float_complex * _buf, unsigned int _buf_len);
 
 // get detection threshold
 float dsssframe64sync_get_threshold(dsssframe64sync _q);
@@ -6277,7 +6277,7 @@ typedef struct BSYNC(_s) * BSYNC();                                         \
 /*  _n  : sequence length                                               */  \
 /*  _v  : correlation sequence, [size: _n x 1]                          */  \
 BSYNC() BSYNC(_create)(unsigned int _n,                                     \
-                       TC *         _v);                                    \
+                       const TC *   _v);                                    \
                                                                             \
 /* Create binary synchronizer from m-sequence                           */  \
 /*  _g  :   m-sequence generator polynomial                             */  \
@@ -6338,7 +6338,7 @@ typedef struct PRESYNC(_s) * PRESYNC();                                     \
 /*  _n          : baseband sequence length, _n > 0                      */  \
 /*  _dphi_max   : maximum absolute frequency deviation for detection    */  \
 /*  _m          : number of correlators, _m > 0                         */  \
-PRESYNC() PRESYNC(_create)(TC *         _v,                                 \
+PRESYNC() PRESYNC(_create)(const TC *   _v,                                 \
                            unsigned int _n,                                 \
                            float        _dphi_max,                          \
                            unsigned int _m);                                \
@@ -6395,7 +6395,7 @@ typedef struct QDETECTOR(_s) * QDETECTOR();                                 \
 /* Create detector with generic sequence                                */  \
 /*  _s      :   sample sequence                                         */  \
 /*  _s_len  :   length of sample sequence                               */  \
-QDETECTOR() QDETECTOR(_create)(TI *         _s,                             \
+QDETECTOR() QDETECTOR(_create)(const TI *   _s,                             \
                                unsigned int _s_len);                        \
                                                                             \
 /* Create detector from sequence of symbols using internal linear       */  \
@@ -6406,7 +6406,7 @@ QDETECTOR() QDETECTOR(_create)(TI *         _s,                             \
 /*  _k              :   samples/symbol                                  */  \
 /*  _m              :   filter delay                                    */  \
 /*  _beta           :   excess bandwidth factor                         */  \
-QDETECTOR() QDETECTOR(_create_linear)(TI *         _sequence,               \
+QDETECTOR() QDETECTOR(_create_linear)(const TI *   _sequence,               \
                                       unsigned int _sequence_len,           \
                                       int          _ftype,                  \
                                       unsigned int _k,                      \
@@ -6419,11 +6419,11 @@ QDETECTOR() QDETECTOR(_create_linear)(TI *         _sequence,               \
 /*  _k              :   samples/symbol                                  */  \
 /*  _m              :   filter delay                                    */  \
 /*  _beta           :   excess bandwidth factor                         */  \
-QDETECTOR() QDETECTOR(_create_gmsk)(unsigned char * _sequence,              \
-                                    unsigned int    _sequence_len,          \
-                                    unsigned int    _k,                     \
-                                    unsigned int    _m,                     \
-                                    float           _beta);                 \
+QDETECTOR() QDETECTOR(_create_gmsk)(const unsigned char * _sequence,        \
+                                    unsigned int          _sequence_len,    \
+                                    unsigned int          _k,               \
+                                    unsigned int          _m,               \
+                                    float                 _beta);           \
                                                                             \
 /* create detector from sequence of CP-FSK symbols (assuming one        */  \
 /* bit/symbol)                                                          */  \
@@ -6435,14 +6435,14 @@ QDETECTOR() QDETECTOR(_create_gmsk)(unsigned char * _sequence,              \
 /*  _m              :   filter delay                                    */  \
 /*  _beta           :   filter bandwidth parameter, _beta > 0           */  \
 /*  _type           :   filter type (e.g. LIQUID_CPFSK_SQUARE)          */  \
-QDETECTOR() QDETECTOR(_create_cpfsk)(unsigned char * _sequence,             \
-                                     unsigned int    _sequence_len,         \
-                                     unsigned int    _bps,                  \
-                                     float           _h,                    \
-                                     unsigned int    _k,                    \
-                                     unsigned int    _m,                    \
-                                     float           _beta,                 \
-                                     int             _type);                \
+QDETECTOR() QDETECTOR(_create_cpfsk)(const unsigned char * _sequence,       \
+                                     unsigned int          _sequence_len,   \
+                                     unsigned int          _bps,            \
+                                     float                 _h,              \
+                                     unsigned int          _k,              \
+                                     unsigned int          _m,              \
+                                     float                 _beta,           \
+                                     int                   _type);          \
                                                                             \
 /* Copy object including all internal objects and state                 */  \
 QDETECTOR() QDETECTOR(_copy)(QDETECTOR() _q);                               \
@@ -6547,7 +6547,7 @@ typedef int (*QDSYNC(_callback))(TO *         _buf,                         \
 /*  _beta       : filter excess bandwidth factor                        */  \
 /*  _callback   : user-defined callback                                 */  \
 /*  _context    : user-defined context                                  */  \
-QDSYNC() QDSYNC(_create_linear)(TI *              _s,                       \
+QDSYNC() QDSYNC(_create_linear)(const TI *        _s,                       \
                                 unsigned int      _s_len,                   \
                                 int               _ftype,                   \
                                 unsigned int      _k,                       \
@@ -6598,7 +6598,7 @@ int QDSYNC(_set_buf_len)(QDSYNC() _q, unsigned int _buf_len);               \
                                                                             \
 /* execute block of samples                                             */  \
 int QDSYNC(_execute)(QDSYNC()     _q,                                       \
-                     TI *         _buf,                                     \
+                     const TI *   _buf,                                     \
                      unsigned int _buf_len);                                \
                                                                             \
 /* Return flag indicating if synchronizer actively running.             */  \
@@ -6635,10 +6635,10 @@ typedef struct detector_cccf_s * detector_cccf;
 //  _n          :   sequence length
 //  _threshold  :   detection threshold (default: 0.7)
 //  _dphi_max   :   maximum carrier offset
-detector_cccf detector_cccf_create(liquid_float_complex * _s,
-                                   unsigned int           _n,
-                                   float                  _threshold,
-                                   float                  _dphi_max);
+detector_cccf detector_cccf_create(const liquid_float_complex * _s,
+                                   unsigned int                 _n,
+                                   float                        _threshold,
+                                   float                        _dphi_max);
 
 // destroy pre-demo detector object
 void detector_cccf_destroy(detector_cccf _q);
@@ -7351,7 +7351,7 @@ int   kbd_window(unsigned int _wlen,float _beta,float * _w);
 /*  _p      : polynomial coefficients, [size: _k x 1]                   */  \
 /*  _k      : polynomial coefficients length, order is _k - 1           */  \
 /*  _x      : input to evaluate polynomial                              */  \
-T POLY(_val)(T *          _p,                                               \
+T POLY(_val)(const T *    _p,                                               \
              unsigned int _k,                                               \
              T            _x);                                              \
                                                                             \
@@ -7361,8 +7361,8 @@ T POLY(_val)(T *          _p,                                               \
 /*  _n      : number of samples in _x and _y                            */  \
 /*  _p      : polynomial coefficients output, [size: _k x 1]            */  \
 /*  _k      : polynomial coefficients length, order is _k - 1           */  \
-int POLY(_fit)(T *          _x,                                             \
-               T *          _y,                                             \
+int POLY(_fit)(const T *    _x,                                             \
+               const T *    _y,                                             \
                unsigned int _n,                                             \
                T *          _p,                                             \
                unsigned int _k);                                            \
@@ -7372,8 +7372,8 @@ int POLY(_fit)(T *          _x,                                             \
 /*  _y      : y-value sample set, size [_n x 1]                         */  \
 /*  _n      : number of samples in _x and _y                            */  \
 /*  _p      : polynomial coefficients output, [size: _n x 1]            */  \
-int POLY(_fit_lagrange)(T *          _x,                                    \
-                        T *          _y,                                    \
+int POLY(_fit_lagrange)(const T *    _x,                                    \
+                        const T *    _y,                                    \
                         unsigned int _n,                                    \
                         T *          _p);                                   \
                                                                             \
@@ -7383,8 +7383,8 @@ int POLY(_fit_lagrange)(T *          _x,                                    \
 /*  _y      : y-value sample set, [size: _n x 1]                        */  \
 /*  _n      : number of samples in _x and _y                            */  \
 /*  _x0     : x-value to evaluate and compute interpolant               */  \
-T POLY(_interp_lagrange)(T *          _x,                                   \
-                         T *          _y,                                   \
+T POLY(_interp_lagrange)(const T *    _x,                                   \
+                         const T *    _y,                                   \
                          unsigned int _n,                                   \
                          T           _x0);                                  \
                                                                             \
@@ -7392,7 +7392,7 @@ T POLY(_interp_lagrange)(T *          _x,                                   \
 /*  _x      : x-value sample set, size [_n x 1]                         */  \
 /*  _n      : number of samples in _x                                   */  \
 /*  _w      : barycentric weights normalized so _w[0]=1, size [_n x 1]  */  \
-int POLY(_fit_lagrange_barycentric)(T *          _x,                        \
+int POLY(_fit_lagrange_barycentric)(const T *    _x,                        \
                                     unsigned int _n,                        \
                                     T *          _w);                       \
                                                                             \
@@ -7403,9 +7403,9 @@ int POLY(_fit_lagrange_barycentric)(T *          _x,                        \
 /*  _w      : barycentric weights, [size: _n x 1]                       */  \
 /*  _x0     : x-value to evaluate and compute interpolant               */  \
 /*  _n      : number of samples in _x, _y, and _w                       */  \
-T POLY(_val_lagrange_barycentric)(T *          _x,                          \
-                                  T *          _y,                          \
-                                  T *          _w,                          \
+T POLY(_val_lagrange_barycentric)(const T *    _x,                          \
+                                  const T *    _y,                          \
+                                  const T *    _w,                          \
                                   T            _x0,                         \
                                   unsigned int _n);                         \
                                                                             \
@@ -7440,7 +7440,7 @@ int POLY(_expandbinomial_pm)(unsigned int _m,                               \
 /*  _r      : roots of polynomial, [size: _n x 1]                       */  \
 /*  _n      : number of roots in polynomial                             */  \
 /*  _p      : polynomial coefficients, [size: _n+1 x 1]                 */  \
-int POLY(_expandroots)(T *          _r,                                     \
+int POLY(_expandroots)(const T *    _r,                                     \
                        unsigned int _n,                                     \
                        T *          _p);                                    \
                                                                             \
@@ -7453,8 +7453,8 @@ int POLY(_expandroots)(T *          _r,                                     \
 /*  _b      : multiplicant of polynomial roots, [size: _n x 1]          */  \
 /*  _n      : number of roots in polynomial                             */  \
 /*  _p      : polynomial coefficients, [size: _n+1 x 1]                 */  \
-int POLY(_expandroots2)(T *          _a,                                    \
-                        T *          _b,                                    \
+int POLY(_expandroots2)(const T *    _a,                                    \
+                        const T *    _b,                                    \
                         unsigned int _n,                                    \
                         T *          _p);                                   \
                                                                             \
@@ -7462,7 +7462,7 @@ int POLY(_expandroots2)(T *          _a,                                    \
 /*  _p      : polynomial coefficients, [size: _n x 1]                   */  \
 /*  _k      : polynomial length                                         */  \
 /*  _roots  : resulting complex roots, [size: _k-1 x 1]                 */  \
-int POLY(_findroots)(T *          _poly,                                    \
+int POLY(_findroots)(const T *    _poly,                                    \
                      unsigned int _n,                                       \
                      TC *         _roots);                                  \
                                                                             \
@@ -7471,7 +7471,7 @@ int POLY(_findroots)(T *          _poly,                                    \
 /*  _p      : polynomial coefficients, [size: _n x 1]                   */  \
 /*  _k      : polynomial length                                         */  \
 /*  _roots  : resulting complex roots, [size: _k-1 x 1]                 */  \
-int POLY(_findroots_durandkerner)(T *          _p,                          \
+int POLY(_findroots_durandkerner)(const T *    _p,                          \
                                   unsigned int _k,                          \
                                   TC *         _roots);                     \
                                                                             \
@@ -7479,7 +7479,7 @@ int POLY(_findroots_durandkerner)(T *          _p,                          \
 /*  _p      : polynomial coefficients, [size: _n x 1]                   */  \
 /*  _k      : polynomial length                                         */  \
 /*  _roots  : resulting complex roots, [size: _k-1 x 1]                 */  \
-int POLY(_findroots_bairstow)(T *          _p,                              \
+int POLY(_findroots_bairstow)(const T *    _p,                              \
                               unsigned int _k,                              \
                               TC *         _roots);                         \
                                                                             \
@@ -7494,9 +7494,9 @@ int POLY(_findroots_bairstow)(T *          _p,                              \
 /*  _b          : 2nd polynomial coefficients (length is _order_b+1)    */  \
 /*  _order_b    : 2nd polynomial order                                  */  \
 /*  _c          : output polynomial, [size: _order_a+_order_b+1 x 1]    */  \
-int POLY(_mul)(T *          _a,                                             \
+int POLY(_mul)(const T *    _a,                                             \
                unsigned int _order_a,                                       \
-               T *          _b,                                             \
+               const T *    _b,                                             \
                unsigned int _order_b,                                       \
                T *          _c);                                            \
 
@@ -7590,7 +7590,7 @@ unsigned int liquid_totient(unsigned int _n);
 /*  _x      : input matrix, [size: _r x _c]                             */  \
 /*  _r      : rows in matrix                                            */  \
 /*  _c      : columns in matrix                                         */  \
-int MATRIX(_print)(T *          _x,                                         \
+int MATRIX(_print)(const T *    _x,                                         \
                    unsigned int _r,                                         \
                    unsigned int _c);                                        \
                                                                             \
@@ -7603,8 +7603,8 @@ int MATRIX(_print)(T *          _x,                                         \
 /*  _z      : output matrix, [size: _r x _c]                            */  \
 /*  _r      : number of rows in each matrix                             */  \
 /*  _c      : number of columns in each matrix                          */  \
-int MATRIX(_add)(T *          _x,                                           \
-                 T *          _y,                                           \
+int MATRIX(_add)(const T *    _x,                                           \
+                 const T *    _y,                                           \
                  T *          _z,                                           \
                  unsigned int _r,                                           \
                  unsigned int _c);                                          \
@@ -7618,8 +7618,8 @@ int MATRIX(_add)(T *          _x,                                           \
 /*  _z      : output matrix, [size: _r x _c]                            */  \
 /*  _r      : number of rows in each matrix                             */  \
 /*  _c      : number of columns in each matrix                          */  \
-int MATRIX(_sub)(T *          _x,                                           \
-                 T *          _y,                                           \
+int MATRIX(_sub)(const T *    _x,                                           \
+                 const T *    _y,                                           \
                  T *          _z,                                           \
                  unsigned int _r,                                           \
                  unsigned int _c);                                          \
@@ -7633,8 +7633,8 @@ int MATRIX(_sub)(T *          _x,                                           \
 /*  _z      : output matrix, [size: _r x _c]                            */  \
 /*  _r      : number of rows in each matrix                             */  \
 /*  _c      : number of columns in each matrix                          */  \
-int MATRIX(_pmul)(T *          _x,                                          \
-                  T *          _y,                                          \
+int MATRIX(_pmul)(const T *    _x,                                          \
+                  const T *    _y,                                          \
                   T *          _z,                                          \
                   unsigned int _r,                                          \
                   unsigned int _c);                                         \
@@ -7648,8 +7648,8 @@ int MATRIX(_pmul)(T *          _x,                                          \
 /*  _z      : output matrix, [size: _r x _c]                            */  \
 /*  _r      : number of rows in each matrix                             */  \
 /*  _c      : number of columns in each matrix                          */  \
-int MATRIX(_pdiv)(T *          _x,                                          \
-                  T *          _y,                                          \
+int MATRIX(_pdiv)(const T *    _x,                                          \
+                  const T *    _y,                                          \
                   T *          _z,                                          \
                   unsigned int _r,                                          \
                   unsigned int _c);                                         \
@@ -7666,8 +7666,8 @@ int MATRIX(_pdiv)(T *          _x,                                          \
 /*  _z      : output matrix, [size: _rz x _cz]                          */  \
 /*  _rz     : number of rows in _z                                      */  \
 /*  _cz     : number of columns in _z                                   */  \
-int MATRIX(_mul)(T * _x, unsigned int _rx, unsigned int _cx,                \
-                 T * _y, unsigned int _ry, unsigned int _cy,                \
+int MATRIX(_mul)(const T * _x, unsigned int _rx, unsigned int _cx,          \
+                 const T * _y, unsigned int _ry, unsigned int _cy,          \
                  T * _z, unsigned int _rz, unsigned int _cz);               \
                                                                             \
 /* Solve \(\vec{X} = \vec{Y} \vec{Z}\) for \(\vec{Z}\) for square       */  \
@@ -7676,8 +7676,8 @@ int MATRIX(_mul)(T * _x, unsigned int _rx, unsigned int _cx,                \
 /*  _y      : input matrix,  [size: _n x _n]                            */  \
 /*  _z      : output matrix, [size: _n x _n]                            */  \
 /*  _n      : number of rows and columns in each matrix                 */  \
-int MATRIX(_div)(T *          _x,                                           \
-                 T *          _y,                                           \
+int MATRIX(_div)(const T *    _x,                                           \
+                 const T *    _y,                                           \
                  T *          _z,                                           \
                  unsigned int _n);                                          \
                                                                             \
@@ -7685,7 +7685,7 @@ int MATRIX(_div)(T *          _x,                                           \
 /*  _x      : input matrix, [size: _r x _c]                             */  \
 /*  _r      : rows                                                      */  \
 /*  _c      : columns                                                   */  \
-T MATRIX(_det)(T *          _x,                                             \
+T MATRIX(_det)(const T *    _x,                                             \
                unsigned int _r,                                             \
                unsigned int _c);                                            \
                                                                             \
@@ -7711,7 +7711,7 @@ int MATRIX(_hermitian)(T *          _x,                                     \
 /*  _m      : input rows                                                */  \
 /*  _n      : input columns                                             */  \
 /*  _xxT    : output matrix, [size: _m x _m]                            */  \
-int MATRIX(_mul_transpose)(T *          _x,                                 \
+int MATRIX(_mul_transpose)(const T *    _x,                                 \
                            unsigned int _m,                                 \
                            unsigned int _n,                                 \
                            T *          _xxT);                              \
@@ -7722,7 +7722,7 @@ int MATRIX(_mul_transpose)(T *          _x,                                 \
 /*  _m      : input rows                                                */  \
 /*  _n      : input columns                                             */  \
 /*  _xTx    : output matrix, [size: _n x _n]                            */  \
-int MATRIX(_transpose_mul)(T *          _x,                                 \
+int MATRIX(_transpose_mul)(const T *    _x,                                 \
                            unsigned int _m,                                 \
                            unsigned int _n,                                 \
                            T *          _xTx);                              \
@@ -7733,7 +7733,7 @@ int MATRIX(_transpose_mul)(T *          _x,                                 \
 /*  _m      : input rows                                                */  \
 /*  _n      : input columns                                             */  \
 /*  _xxH    : output matrix, [size: _m x _m]                            */  \
-int MATRIX(_mul_hermitian)(T *          _x,                                 \
+int MATRIX(_mul_hermitian)(const T *    _x,                                 \
                            unsigned int _m,                                 \
                            unsigned int _n,                                 \
                            T *          _xxH);                              \
@@ -7744,7 +7744,7 @@ int MATRIX(_mul_hermitian)(T *          _x,                                 \
 /*  _m      : input rows                                                */  \
 /*  _n      : input columns                                             */  \
 /*  _xHx    : output matrix, [size: _n x _n]                            */  \
-int MATRIX(_hermitian_mul)(T *          _x,                                 \
+int MATRIX(_hermitian_mul)(const T *    _x,                                 \
                            unsigned int _m,                                 \
                            unsigned int _n,                                 \
                            T *          _xHx);                              \
@@ -7762,8 +7762,8 @@ int MATRIX(_hermitian_mul)(T *          _x,                                 \
 /*  _z      : output matrix, [size: _rz x _cz]                          */  \
 /*  _rz     : number of rows in _z                                      */  \
 /*  _cz     : number of columns in _z                                   */  \
-int MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,                \
-                 T * _y, unsigned int _ry, unsigned int _cy,                \
+int MATRIX(_aug)(const T * _x, unsigned int _rx, unsigned int _cx,          \
+                 const T * _y, unsigned int _ry, unsigned int _cy,          \
                  T * _z, unsigned int _rz, unsigned int _cz);               \
                                                                             \
 /* Compute the inverse of a square matrix \(\vec{X}\)                   */  \
@@ -7834,9 +7834,9 @@ int MATRIX(_swaprows)(T *          _x,                                      \
 /*  _b      : equality vector, [size: _n x 1]                           */  \
 /*  _x      : solution vector, [size: _n x 1]                           */  \
 /*  _opts   : options (ignored for now)                                 */  \
-int MATRIX(_linsolve)(T *          _A,                                      \
+int MATRIX(_linsolve)(const T *    _A,                                      \
                       unsigned int _n,                                      \
-                      T *          _b,                                      \
+                      const T *    _b,                                      \
                       T *          _x,                                      \
                       void *       _opts);                                  \
                                                                             \
@@ -7846,9 +7846,9 @@ int MATRIX(_linsolve)(T *          _A,                                      \
 /*  _b      : equality, [size: _n x 1]                                  */  \
 /*  _x      : solution estimate, [size: _n x 1]                         */  \
 /*  _opts   : options (ignored for now)                                 */  \
-int MATRIX(_cgsolve)(T *          _A,                                       \
+int MATRIX(_cgsolve)(const T *    _A,                                       \
                      unsigned int _n,                                       \
-                     T *          _b,                                       \
+                     const T *    _b,                                       \
                      T *          _x,                                       \
                      void *       _opts);                                   \
                                                                             \
@@ -7859,7 +7859,7 @@ int MATRIX(_cgsolve)(T *          _A,                                       \
 /*  _l      : first row to swap                                         */  \
 /*  _u      : first row to swap                                         */  \
 /*  _p      : first row to swap                                         */  \
-int MATRIX(_ludecomp_crout)(T *          _x,                                \
+int MATRIX(_ludecomp_crout)(const T *    _x,                                \
                             unsigned int _rx,                               \
                             unsigned int _cx,                               \
                             T *          _l,                                \
@@ -7873,7 +7873,7 @@ int MATRIX(_ludecomp_crout)(T *          _x,                                \
 /*  _l      : first row to swap                                         */  \
 /*  _u      : first row to swap                                         */  \
 /*  _p      : first row to swap                                         */  \
-int MATRIX(_ludecomp_doolittle)(T *          _x,                            \
+int MATRIX(_ludecomp_doolittle)(const T *    _x,                            \
                                 unsigned int _rx,                           \
                                 unsigned int _cx,                           \
                                 T *          _l,                            \
@@ -7885,7 +7885,7 @@ int MATRIX(_ludecomp_doolittle)(T *          _x,                            \
 /*  _r      : rows                                                      */  \
 /*  _c      : columns                                                   */  \
 /*  _v      : output matrix                                             */  \
-int MATRIX(_gramschmidt)(T *          _A,                                   \
+int MATRIX(_gramschmidt)(const T *    _A,                                   \
                          unsigned int _r,                                   \
                          unsigned int _c,                                   \
                          T *          _v);                                  \
@@ -7900,7 +7900,7 @@ int MATRIX(_gramschmidt)(T *          _A,                                   \
 /*  _n      : columns (same as cols)                                    */  \
 /*  _q      : output matrix, [size: _m x _m]                            */  \
 /*  _r      : output matrix, [size: _m x _m]                            */  \
-int MATRIX(_qrdecomp_gramschmidt)(T *          _a,                          \
+int MATRIX(_qrdecomp_gramschmidt)(const T *    _a,                          \
                                   unsigned int _m,                          \
                                   unsigned int _n,                          \
                                   T *          _q,                          \
@@ -7911,7 +7911,7 @@ int MATRIX(_qrdecomp_gramschmidt)(T *          _a,                          \
 /*  _a      : input square matrix, [size: _n x _n]                      */  \
 /*  _n      : input matrix dimension                                    */  \
 /*  _l      : output lower-triangular matrix                            */  \
-int MATRIX(_chol)(T *          _a,                                          \
+int MATRIX(_chol)(const T *    _a,                                          \
                   unsigned int _n,                                          \
                   T *          _l);                                         \
 
@@ -7951,7 +7951,7 @@ SMATRIX() SMATRIX(_create)(unsigned int _m,                                 \
 /*  _x  : input matrix, [size: _m x _n]                                 */  \
 /*  _m  : number of rows in input matrix                                */  \
 /*  _n  : number of columns in input matrix                             */  \
-SMATRIX() SMATRIX(_create_array)(T *          _x,                           \
+SMATRIX() SMATRIX(_create_array)(const T *    _x,                           \
                                  unsigned int _m,                           \
                                  unsigned int _n);                          \
                                                                             \
@@ -8039,8 +8039,8 @@ int SMATRIX(_mul)(SMATRIX() _x,                                             \
 /*  _q  : sparse matrix                                                 */  \
 /*  _x  : input vector, [size: _n x 1]                                  */  \
 /*  _y  : output vector, [size: _m x 1]                                 */  \
-int SMATRIX(_vmul)(SMATRIX() _q,                                            \
-                   T *       _x,                                            \
+int SMATRIX(_vmul)(SMATRIX()  _q,                                           \
+                   const T * _x,                                            \
                    T *       _y);                                           \
 
 LIQUID_SMATRIX_DEFINE_API(LIQUID_SMATRIX_MANGLE_BOOL,  unsigned char)
@@ -8056,7 +8056,7 @@ LIQUID_SMATRIX_DEFINE_API(LIQUID_SMATRIX_MANGLE_INT,   short int)
 //  _x  :   input vector,  [size:  mx  x  nx ]
 //  _y  :   output vector, [size:  my  x  ny ]
 int smatrixb_mulf(smatrixb     _A,
-                  float *      _x,
+                  const float * _x,
                   unsigned int _mx,
                   unsigned int _nx,
                   float *      _y,
@@ -8067,9 +8067,9 @@ int smatrixb_mulf(smatrixb     _A,
 //  _q  :   sparse matrix
 //  _x  :   input vector, [size: _N x 1]
 //  _y  :   output vector, [size: _M x 1]
-int smatrixb_vmulf(smatrixb _q,
-                   float *  _x,
-                   float *  _y);
+int smatrixb_vmulf(smatrixb     _q,
+                   const float * _x,
+                   float *      _y);
 
 
 //
@@ -8167,8 +8167,8 @@ unsigned int count_bit_errors(unsigned int _s1, unsigned int _s2);
 //  _msg0   :   original message, [size: _n x 1]
 //  _msg1   :   copy of original message, [size: _n x 1]
 //  _n      :   message size
-unsigned int count_bit_errors_array(unsigned char * _msg0,
-                                    unsigned char * _msg1,
+unsigned int count_bit_errors_array(const unsigned char * _msg0,
+                                    const unsigned char * _msg1,
                                     unsigned int _n);
 
 // converts binary-coded decimal (BCD) to gray, ensuring successive values
@@ -8182,7 +8182,7 @@ unsigned int gray_decode(unsigned int symbol_in);
 //  _soft_bits  :   soft input bits, [size: _bps x 1]
 //  _bps        :   bits per symbol
 //  _sym_out    :   output symbol, value in [0,2^_bps)
-int liquid_pack_soft_bits(unsigned char * _soft_bits,
+int liquid_pack_soft_bits(const unsigned char * _soft_bits,
                           unsigned int _bps,
                           unsigned int * _sym_out);
 
@@ -8226,8 +8226,8 @@ MODEM() MODEM(_create)(modulation_scheme _scheme);                          \
 /* provided as complex float pairs and converted internally if needed.  */  \
 /*  _table  : array of complex constellation points, [size: _M x 1]     */  \
 /*  _M      : modulation order and table size, _M must be power of 2    */  \
-MODEM() MODEM(_create_arbitrary)(liquid_float_complex * _table,             \
-                                 unsigned int           _M);                \
+MODEM() MODEM(_create_arbitrary)(const liquid_float_complex * _table,       \
+                                 unsigned int                   _M);        \
                                                                             \
 /* Recreate modulation scheme, re-allocating memory as necessary        */  \
 /*  _q      : modem object                                              */  \
@@ -8514,7 +8514,7 @@ int CPFSKDEM(_get_type)(CPFSKDEM() _q);                                     \
 /*  _q      :   continuous-phase frequency demodulator object           */  \
 /*  _y      :   input sample array, [size: _k x 1]                      */  \
 unsigned int CPFSKDEM(_demodulate)(CPFSKDEM() _q,                           \
-                                   TC *       _y);                          \
+                                   const TC * _y);                          \
                                                                             \
 /* demodulate_block */                                                      \
 
@@ -8584,8 +8584,8 @@ int fskdem_reset(fskdem _q);
 // demodulate symbol, assuming perfect symbol timing
 //  _q      :   fskdem object
 //  _y      :   input sample array, [size: _k x 1]
-unsigned int fskdem_demodulate(fskdem                 _q,
-                               liquid_float_complex * _y);
+unsigned int fskdem_demodulate(fskdem                       _q,
+                               const liquid_float_complex * _y);
 
 // get demodulator frequency error
 float fskdem_get_frequency_error(fskdem _q);
@@ -8638,7 +8638,7 @@ int FREQMOD(_modulate)(FREQMOD() _q,                                        \
 /*  _n  : number of input, output samples                               */  \
 /*  _s  : complex baseband signal \( s(t) \),  [size: _n x 1]           */  \
 int FREQMOD(_modulate_block)(FREQMOD()    _q,                               \
-                             T *          _m,                               \
+                             const T *    _m,                               \
                              unsigned int _n,                               \
                              TC *         _s);                              \
 
@@ -8687,7 +8687,7 @@ int FREQDEM(_demodulate)(FREQDEM() _q,                                      \
 /*  _n      :   number of input, output samples                         */  \
 /*  _m      :   message signal m(t), [size: _n x 1]                     */  \
 int FREQDEM(_demodulate_block)(FREQDEM()    _q,                             \
-                               TC *         _r,                             \
+                               const TC *   _r,                             \
                                unsigned int _n,                             \
                                T *          _m);                            \
 
@@ -8732,7 +8732,7 @@ int ampmodem_modulate(ampmodem               _q,
                       liquid_float_complex * _y);
 
 int ampmodem_modulate_block(ampmodem               _q,
-                            float *                _m,
+                            const float *          _m,
                             unsigned int           _n,
                             liquid_float_complex * _s);
 
@@ -8741,10 +8741,10 @@ int ampmodem_demodulate(ampmodem             _q,
                         liquid_float_complex _y,
                         float *              _x);
 
-int ampmodem_demodulate_block(ampmodem               _q,
-                              liquid_float_complex * _r,
-                              unsigned int           _n,
-                              float *                _m);
+int ampmodem_demodulate_block(ampmodem                     _q,
+                              const liquid_float_complex * _r,
+                              unsigned int                 _n,
+                              float *                      _m);
 
 //
 // MODULE : multichannel
@@ -8784,7 +8784,7 @@ typedef struct FIRPFBCH(_s) * FIRPFBCH();                                   \
 FIRPFBCH() FIRPFBCH(_create)(int          _type,                            \
                              unsigned int _M,                               \
                              unsigned int _p,                               \
-                             TC *         _h);                              \
+                             const TC *   _h);                              \
                                                                             \
 /* Create FIR polyphase filterbank channelizer object with              */  \
 /* prototype filter based on windowed Kaiser design                     */  \
@@ -8824,7 +8824,7 @@ int FIRPFBCH(_print)(FIRPFBCH() _q);                                        \
 /*  _x      : channelized input, [size: num_channels x 1]               */  \
 /*  _y      : output time series, [size: num_channels x 1]              */  \
 int FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,                           \
-                                   TI *       _x,                           \
+                                   const TI * _x,                           \
                                    TO *       _y);                          \
                                                                             \
 /* Execute filterbank as analyzer on block of samples                   */  \
@@ -8832,7 +8832,7 @@ int FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,                           \
 /*  _x      : input time series, [size: num_channels x 1]               */  \
 /*  _y      : channelized output, [size: num_channels x 1]              */  \
 int FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,                              \
-                                TI *       _x,                              \
+                                const TI * _x,                              \
                                 TO *       _y);                             \
 
 
@@ -8874,7 +8874,7 @@ typedef struct FIRPFBCH2(_s) * FIRPFBCH2();                                 \
 FIRPFBCH2() FIRPFBCH2(_create)(int          _type,                          \
                                unsigned int _M,                             \
                                unsigned int _m,                             \
-                               TC *         _h);                            \
+                               const TC *   _h);                            \
                                                                             \
 /* Create firpfbch2 object using Kaiser window prototype                */  \
 /*  _type   : channelizer type (e.g. LIQUID_ANALYZER)                   */  \
@@ -8913,7 +8913,7 @@ unsigned int FIRPFBCH2(_get_m)(FIRPFBCH2() _q);                             \
 /*  _x      :   channelizer input                                       */  \
 /*  _y      :   channelizer output                                      */  \
 int FIRPFBCH2(_execute)(FIRPFBCH2() _q,                                     \
-                        TI *        _x,                                     \
+                        const TI *  _x,                                     \
                         TO *        _y);                                    \
 
 
@@ -8944,7 +8944,7 @@ typedef struct FIRPFBCHR(_s) * FIRPFBCHR();                                 \
 FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _chans,                         \
                                unsigned int _decim,                         \
                                unsigned int _m,                             \
-                               TC *         _h);                            \
+                               const TC *   _h);                            \
                                                                             \
 /* create rational rate resampling channelizer (firpfbchr) object by    */  \
 /* specifying filter design parameters for Kaiser prototype             */  \
@@ -8983,7 +8983,7 @@ unsigned int FIRPFBCHR(_get_m)(FIRPFBCHR() _q);                             \
 /*  _q      : channelizer object                                        */  \
 /*  _x      : channelizer input, [size: decim x 1]                      */  \
 int FIRPFBCHR(_push)(FIRPFBCHR() _q,                                        \
-                     TI *        _x);                                       \
+                     const TI *  _x);                                       \
                                                                             \
 /* execute filterbank channelizer, writing complex baseband samples for */  \
 /* each channel into output array                                       */  \
@@ -9027,7 +9027,7 @@ int ofdmframe_init_sctype_range(unsigned int    _M,
 //  _M_null     :   output number of null subcarriers
 //  _M_pilot    :   output number of pilot subcarriers
 //  _M_data     :   output number of data subcarriers
-int ofdmframe_validate_sctype(unsigned char * _p,
+int ofdmframe_validate_sctype(const unsigned char * _p,
                               unsigned int _M,
                               unsigned int * _M_null,
                               unsigned int * _M_pilot,
@@ -9036,8 +9036,8 @@ int ofdmframe_validate_sctype(unsigned char * _p,
 // print subcarrier allocation to screen
 //  _p      :   output subcarrier allocation array, [size: _M x 1]
 //  _M      :   number of subcarriers
-int ofdmframe_print_sctype(unsigned char * _p,
-                           unsigned int    _M);
+int ofdmframe_print_sctype(const unsigned char * _p,
+                           unsigned int          _M);
 
 
 //
@@ -9050,10 +9050,10 @@ typedef struct ofdmframegen_s * ofdmframegen;
 //  _cp_len     :   cyclic prefix length
 //  _taper_len  :   taper length (OFDM symbol overlap)
 //  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
-ofdmframegen ofdmframegen_create(unsigned int    _M,
-                                 unsigned int    _cp_len,
-                                 unsigned int    _taper_len,
-                                 unsigned char * _p);
+ofdmframegen ofdmframegen_create(unsigned int          _M,
+                                 unsigned int          _cp_len,
+                                 unsigned int          _taper_len,
+                                 const unsigned char * _p);
 
 int ofdmframegen_destroy(ofdmframegen _q);
 
@@ -9075,7 +9075,7 @@ int ofdmframegen_write_S1(ofdmframegen _q,
 
 // write data symbol
 int ofdmframegen_writesymbol(ofdmframegen _q,
-                             liquid_float_complex * _x,
+                             const liquid_float_complex * _x,
                              liquid_float_complex *_y);
 
 // write tail
@@ -9086,9 +9086,9 @@ int ofdmframegen_writetail(ofdmframegen _q,
 // OFDM frame (symbol) synchronizer
 //
 typedef int (*ofdmframesync_callback)(liquid_float_complex * _y,
-                                      unsigned char * _p,
-                                      unsigned int _M,
-                                      void * _userdata);
+                                      const unsigned char *  _p,
+                                      unsigned int           _M,
+                                      void *                 _userdata);
 typedef struct ofdmframesync_s * ofdmframesync;
 
 // create OFDM framing synchronizer object
@@ -9101,7 +9101,7 @@ typedef struct ofdmframesync_s * ofdmframesync;
 ofdmframesync ofdmframesync_create(unsigned int           _M,
                                    unsigned int           _cp_len,
                                    unsigned int           _taper_len,
-                                   unsigned char *        _p,
+                                   const unsigned char *  _p,
                                    ofdmframesync_callback _callback,
                                    void *                 _userdata);
 int ofdmframesync_destroy(ofdmframesync _q);
@@ -9109,7 +9109,7 @@ int ofdmframesync_print(ofdmframesync _q);
 int ofdmframesync_reset(ofdmframesync _q);
 int ofdmframesync_is_frame_open(ofdmframesync _q);
 int ofdmframesync_execute(ofdmframesync _q,
-                          liquid_float_complex * _x,
+                          const liquid_float_complex * _x,
                           unsigned int _n);
 
 // query methods
@@ -9282,7 +9282,7 @@ int NCO(_mix_down)(NCO() _q,                                                \
 /*  _y      : array of output samples, [size: _n x 1]                   */  \
 /*  _n      : number of input (and output) samples                      */  \
 int NCO(_mix_block_up)(NCO()        _q,                                     \
-                       TC *         _x,                                     \
+                       const TC *   _x,                                     \
                        TC *         _y,                                     \
                        unsigned int _n);                                    \
                                                                             \
@@ -9294,7 +9294,7 @@ int NCO(_mix_block_up)(NCO()        _q,                                     \
 /*  _y      : array of output samples, [size: _n x 1]                   */  \
 /*  _n      : number of input (and output) samples                      */  \
 int NCO(_mix_block_down)(NCO()        _q,                                   \
-                         TC *         _x,                                   \
+                         const TC *   _x,                                   \
                          TC *         _y,                                   \
                          unsigned int _n);                                  \
 
@@ -9354,13 +9354,13 @@ void SYNTH(_mix_down)(SYNTH() _q, TC _x, TC *_y);                           \
                                                                             \
 /* Rotate input vector up by SYNTH angle (stepping)       */                \
 void SYNTH(_mix_block_up)(SYNTH() _q,                                       \
-                          TC *_x,                                           \
+                          const TC *_x,                                     \
                           TC *_y,                                           \
                           unsigned int _n);                                 \
                                                                             \
 /* Rotate input vector down by SYNTH angle (stepping)     */                \
 void SYNTH(_mix_block_down)(SYNTH() _q,                                     \
-                            TC *_x,                                         \
+                            const TC *_x,                                   \
                             TC *_y,                                         \
                             unsigned int _n);                               \
                                                                             \
@@ -9369,11 +9369,11 @@ void SYNTH(_spread)(SYNTH() _q,                                             \
                     TC *_y);                                                \
                                                                             \
 void SYNTH(_despread)(SYNTH() _q,                                           \
-                      TC *_x,                                               \
+                      const TC *_x,                                         \
                       TC *_y);                                              \
                                                                             \
 void SYNTH(_despread_triple)(SYNTH() _q,                                    \
-                             TC *_x,                                        \
+                             const TC *_x,                                  \
                              TC *_early,                                    \
                              TC *_punctual,                                 \
                              TC *_late);                                    \
@@ -9388,9 +9388,9 @@ LIQUID_SYNTH_DEFINE_API(SYNTH_MANGLE_FLOAT, float, liquid_float_complex)
 //
 
 // utility function pointer definition
-typedef float (*utility_function)(void *       _userdata,
-                                  float *      _v,
-                                  unsigned int _n);
+typedef float (*utility_function)(void *        _userdata,
+                                  const float * _v,
+                                  unsigned int  _n);
 
 // One-dimensional utility function pointer definition
 typedef float (*liquid_utility_1d)(float  _v,
@@ -9400,33 +9400,33 @@ typedef float (*liquid_utility_1d)(float  _v,
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector, [size: _n x 1]
 //  _n          :   input vector size
-float liquid_rosenbrock(void *       _userdata,
-                        float *      _v,
-                        unsigned int _n);
+float liquid_rosenbrock(void *        _userdata,
+                        const float * _v,
+                        unsigned int  _n);
 
 // n-dimensional inverse Gauss utility function (minimum at _v = {0,0,0...}
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector, [size: _n x 1]
 //  _n          :   input vector size
-float liquid_invgauss(void *       _userdata,
-                      float *      _v,
-                      unsigned int _n);
+float liquid_invgauss(void *        _userdata,
+                      const float * _v,
+                      unsigned int  _n);
 
 // n-dimensional multimodal utility function (minimum at _v = {0,0,0...}
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector, [size: _n x 1]
 //  _n          :   input vector size
-float liquid_multimodal(void *       _userdata,
-                        float *      _v,
-                        unsigned int _n);
+float liquid_multimodal(void *        _userdata,
+                        const float * _v,
+                        unsigned int  _n);
 
 // n-dimensional spiral utility function (minimum at _v = {0,0,0...}
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector, [size: _n x 1]
 //  _n          :   input vector size
-float liquid_spiral(void *       _userdata,
-                    float *      _v,
-                    unsigned int _n);
+float liquid_spiral(void *        _userdata,
+                    const float * _v,
+                    unsigned int  _n);
 
 
 //
@@ -9531,7 +9531,7 @@ float qnsearch_execute(qnsearch _g,
 typedef struct chromosome_s * chromosome;
 
 // create a chromosome object, variable bits/trait
-chromosome chromosome_create(unsigned int * _bits_per_trait,
+chromosome chromosome_create(const unsigned int * _bits_per_trait,
                              unsigned int _num_traits);
 
 // create a chromosome object, all traits same resolution
@@ -9562,10 +9562,10 @@ int chromosome_reset(chromosome _c);
 
 // initialize chromosome on integer values
 int chromosome_init(chromosome _c,
-                     unsigned int * _v);
+                    const unsigned int * _v);
 
 // initialize chromosome on floating-point values
-int chromosome_initf(chromosome _c, float * _v);
+int chromosome_initf(chromosome _c, const float * _v);
 
 // Mutates chromosome _c at _index
 int chromosome_mutate(chromosome _c, unsigned int _index);
@@ -9842,8 +9842,8 @@ int bsequence_destroy(bsequence _bs);
 int bsequence_reset(bsequence _bs);
 
 // initialize sequence on external array
-int bsequence_init(bsequence       _bs,
-                   unsigned char * _v);
+int bsequence_init(bsequence             _bs,
+                   const unsigned char * _v);
 
 // Print sequence to the screen
 int bsequence_print(bsequence _bs);
@@ -9990,7 +9990,7 @@ unsigned int msequence_genpoly_period(unsigned int _g);
 //  _orig   : pointer to original memory array
 //  _num    : number of original elements
 //  _size   : size of each element
-void * liquid_malloc_copy(void * _orig, unsigned int _num, unsigned int _size);
+void * liquid_malloc_copy(const void * _orig, unsigned int _num, unsigned int _size);
 
 // pack binary array with symbol(s)
 //  _src        :   source array, [size: _n x 1]
@@ -10010,7 +10010,7 @@ int liquid_pack_array(unsigned char * _src,
 //  _k          :   bit index to write in _src
 //  _b          :   number of bits in output symbol
 //  _sym_out    :   output symbol
-int liquid_unpack_array(unsigned char * _src,
+int liquid_unpack_array(const unsigned char * _src,
                         unsigned int _n,
                         unsigned int _k,
                         unsigned int _b,
@@ -10022,7 +10022,7 @@ int liquid_unpack_array(unsigned char * _src,
 //  _sym_out            :   output symbols
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-int liquid_pack_bytes(unsigned char * _sym_in,
+int liquid_pack_bytes(const unsigned char * _sym_in,
                       unsigned int _sym_in_len,
                       unsigned char * _sym_out,
                       unsigned int _sym_out_len,
@@ -10034,7 +10034,7 @@ int liquid_pack_bytes(unsigned char * _sym_in,
 //  _sym_out            :   output symbols array
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-int liquid_unpack_bytes(unsigned char * _sym_in,
+int liquid_unpack_bytes(const unsigned char * _sym_in,
                         unsigned int _sym_in_len,
                         unsigned char * _sym_out,
                         unsigned int _sym_out_len,
@@ -10048,7 +10048,7 @@ int liquid_unpack_bytes(unsigned char * _sym_in,
 //  _sym_out_bps        :   number of bits per output symbol
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-int liquid_repack_bytes(unsigned char * _sym_in,
+int liquid_repack_bytes(const unsigned char * _sym_in,
                         unsigned int _sym_in_bps,
                         unsigned int _sym_in_len,
                         unsigned char * _sym_out,
@@ -10175,59 +10175,59 @@ void VECTOR(_init)(T            _c,                                         \
                    unsigned int _n);                                        \
                                                                             \
 /* Add each element pointwise: z[i] = x[i] + y[i]                       */  \
-void VECTOR(_add)(T *          _x,                                          \
-                  T *          _y,                                          \
+void VECTOR(_add)(const T *    _x,                                          \
+                  const T *    _y,                                          \
                   unsigned int _n,                                          \
                   T *          _z);                                         \
                                                                             \
 /* Add scalar to each element: y[i] = x[i] + c                          */  \
-void VECTOR(_addscalar)(T *          _x,                                    \
+void VECTOR(_addscalar)(const T *    _x,                                    \
                         unsigned int _n,                                    \
                         T            _c,                                    \
                         T *          _y);                                   \
                                                                             \
 /* Multiply each element pointwise: z[i] = x[i] * y[i]                  */  \
-void VECTOR(_mul)(T *          _x,                                          \
-                  T *          _y,                                          \
+void VECTOR(_mul)(const T *    _x,                                          \
+                  const T *    _y,                                          \
                   unsigned int _n,                                          \
                   T *          _z);                                         \
                                                                             \
 /* Multiply each element with scalar: y[i] = x[i] * c                   */  \
-void VECTOR(_mulscalar)(T *          _x,                                    \
+void VECTOR(_mulscalar)(const T *    _x,                                    \
                         unsigned int _n,                                    \
                         T            _c,                                    \
                         T *          _y);                                   \
                                                                             \
 /* Compute complex phase rotation: x[i] = exp{j theta[i]}               */  \
-void VECTOR(_cexpj)(TP *         _theta,                                    \
+void VECTOR(_cexpj)(const TP *   _theta,                                    \
                     unsigned int _n,                                        \
                     T *          _x);                                       \
                                                                             \
 /* Compute angle of each element: theta[i] = arg{ x[i] }                */  \
-void VECTOR(_carg)(T *          _x,                                         \
+void VECTOR(_carg)(const T *    _x,                                         \
                    unsigned int _n,                                         \
                    TP *         _theta);                                    \
                                                                             \
 /* Compute absolute value of each element: y[i] = |x[i]|                */  \
-void VECTOR(_abs)(T *          _x,                                          \
+void VECTOR(_abs)(const T *    _x,                                          \
                   unsigned int _n,                                          \
                   TP *         _y);                                         \
                                                                             \
 /* Compute sum of squares: sum{ |x|^2 }                                 */  \
-TP VECTOR(_sumsq)(T *          _x,                                          \
+TP VECTOR(_sumsq)(const T *    _x,                                          \
                   unsigned int _n);                                         \
                                                                             \
 /* Compute l-2 norm: sqrt{ sum{ |x|^2 } }                               */  \
-TP VECTOR(_norm)(T *          _x,                                           \
+TP VECTOR(_norm)(const T *    _x,                                           \
                  unsigned int _n);                                          \
                                                                             \
 /* Compute l-p norm: { sum{ |x|^p } }^(1/p)                             */  \
-TP VECTOR(_pnorm)(T *          _x,                                          \
+TP VECTOR(_pnorm)(const T *    _x,                                          \
                   unsigned int _n,                                          \
                   TP           _p);                                         \
                                                                             \
 /* Scale vector elements by l-2 norm: y[i] = x[i]/norm(x)               */  \
-void VECTOR(_normalize)(T *          _x,                                    \
+void VECTOR(_normalize)(const T *    _x,                                    \
                         unsigned int _n,                                    \
                         T *          _y);                                   \
 

@@ -99,7 +99,7 @@ struct SYMSYNC(_s) {
 //  _h_len  : length of matched filter
 SYMSYNC() SYMSYNC(_create)(unsigned int _k,
                            unsigned int _M,
-                           TC *         _h,
+                           const TC *   _h,
                            unsigned int _h_len)
 {
     // validate input
@@ -396,7 +396,7 @@ float SYMSYNC(_get_tau)(SYMSYNC() _q)
 //  _y      : output data array
 //  _ny     : number of samples written to output buffer
 int SYMSYNC(_execute)(SYMSYNC()      _q,
-                      TI *           _x,
+                      const TI *     _x,
                       unsigned int   _nx,
                       TO *           _y,
                       unsigned int * _ny)

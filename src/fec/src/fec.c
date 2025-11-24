@@ -663,10 +663,10 @@ int fec_print(fec _q)
 //  _dec_msg_len    :   decoded message length
 //  _msg_dec        :   decoded message
 //  _msg_enc        :   encoded message
-int fec_encode(fec _q,
-               unsigned int _dec_msg_len,
-               unsigned char * _msg_dec,
-               unsigned char * _msg_enc)
+int fec_encode(fec                    _q,
+               unsigned int           _dec_msg_len,
+               const unsigned char * _msg_dec,
+               unsigned char *       _msg_enc)
 {
     // call internal encoding method
     return _q->encode_func(_q, _dec_msg_len, _msg_dec, _msg_enc);
@@ -677,10 +677,10 @@ int fec_encode(fec _q,
 //  _dec_msg_len    :   decoded message length
 //  _msg_enc        :   encoded message
 //  _msg_dec        :   decoded message
-int fec_decode(fec _q,
-               unsigned int _dec_msg_len,
-               unsigned char * _msg_enc,
-               unsigned char * _msg_dec)
+int fec_decode(fec                    _q,
+               unsigned int           _dec_msg_len,
+               const unsigned char * _msg_enc,
+               unsigned char *       _msg_dec)
 {
     // call internal decoding method
     return _q->decode_func(_q, _dec_msg_len, _msg_enc, _msg_dec);
@@ -691,10 +691,10 @@ int fec_decode(fec _q,
 //  _dec_msg_len    :   decoded message length
 //  _msg_enc        :   encoded message
 //  _msg_dec        :   decoded message
-int fec_decode_soft(fec _q,
-                    unsigned int _dec_msg_len,
-                    unsigned char * _msg_enc,
-                    unsigned char * _msg_dec)
+int fec_decode_soft(fec                    _q,
+                    unsigned int           _dec_msg_len,
+                    const unsigned char * _msg_enc,
+                    unsigned char *       _msg_dec)
 {
     if (_q->decode_soft_func != NULL) {
         // call internal decoding method

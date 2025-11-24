@@ -34,8 +34,8 @@
 // create chromosome with varying bits/trait
 //  _bits_per_trait     :   array of bits/trait [size: _num_traits x 1]
 //  _num_traits         :   number of traits in this chromosome
-chromosome chromosome_create(unsigned int * _bits_per_trait,
-                             unsigned int   _num_traits)
+chromosome chromosome_create(const unsigned int * _bits_per_trait,
+                             unsigned int         _num_traits)
 {
     // validate input
     unsigned int i;
@@ -171,8 +171,8 @@ int chromosome_reset(chromosome _q)
 }
 
 // initialize chromosome on integer values
-int chromosome_init(chromosome     _c,
-                    unsigned int * _v)
+int chromosome_init(chromosome           _c,
+                    const unsigned int * _v)
 {
     unsigned int i;
     for (i=0; i<_c->num_traits; i++) {
@@ -186,8 +186,8 @@ int chromosome_init(chromosome     _c,
 }
 
 // initialize chromosome on floating-point values
-int chromosome_initf(chromosome _c,
-                     float *    _v)
+int chromosome_initf(chromosome    _c,
+                     const float * _v)
 {
     unsigned int i;
     for (i=0; i<_c->num_traits; i++) {

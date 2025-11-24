@@ -316,7 +316,7 @@ int SPWATERFALL(_push)(SPWATERFALL() _q,
 //  _x      :   input buffer [size: _n x 1]
 //  _n      :   input buffer length
 int SPWATERFALL(_write)(SPWATERFALL() _q,
-                        TI *          _x,
+                        const TI *    _x,
                         unsigned int  _n)
 {
     // TODO: be smarter about how to write and execute samples

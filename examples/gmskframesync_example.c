@@ -8,13 +8,13 @@ char __docstr__[] = "Example demonstrating the GMSK flexible frame synchronizer.
 #include "liquid.argparse.h"
 
 // callback function
-int callback(unsigned char *  _header,
-             int              _header_valid,
-             unsigned char *  _payload,
-             unsigned int     _payload_len,
-             int              _payload_valid,
-             framesyncstats_s _stats,
-             void *           _userdata)
+int callback(const unsigned char *  _header,
+             int                    _header_valid,
+             const unsigned char *  _payload,
+             unsigned int           _payload_len,
+             int                    _payload_valid,
+             framesyncstats_s       _stats,
+             void *                 _userdata)
 {
     printf("***** gmskframesync callback invoked *****\n");
     return 0;

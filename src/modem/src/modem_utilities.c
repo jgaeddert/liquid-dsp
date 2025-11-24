@@ -273,7 +273,7 @@ unsigned int gray_decode(unsigned int symbol_in)
 //  _soft_bits  :   soft input bits [size: _bps x 1]
 //  _bps        :   bits per symbol
 //  _sym_out    :   output symbol, value in [0,2^_bps)
-int liquid_pack_soft_bits(unsigned char * _soft_bits,
+int liquid_pack_soft_bits(const unsigned char * _soft_bits,
                           unsigned int _bps,
                           unsigned int * _sym_out)
 {
