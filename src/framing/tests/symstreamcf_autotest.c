@@ -45,11 +45,10 @@ void testbench_symstreamcf_psd(unsigned int _k,
 
     unsigned int buf_len = 1337;
     float complex buf[buf_len];
-    unsigned int n = 0;
-    while (n < num_samples) {
+    while (symstreamcf_get_num_samples_total(gen) < num_samples)
+    {
         // fill buffer
         symstreamcf_write_samples(gen, buf, buf_len);
-        n += buf_len;
 
         // run through spectral estimation object
         spgramcf_write(periodogram, buf, buf_len);
