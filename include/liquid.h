@@ -8699,6 +8699,10 @@ LIQUID_FREQDEM_DEFINE_API(LIQUID_FREQDEM_MANGLE_FLOAT,float,liquid_float_complex
 
 
 
+//
+// Analog amplitude modulator/demodulator
+//
+
 // amplitude modulation types
 typedef enum {
     LIQUID_AMPMODEM_DSB=0,  // double side-band
@@ -8706,48 +8710,62 @@ typedef enum {
     LIQUID_AMPMODEM_LSB     // single side-band (lower)
 } liquid_ampmodem_type;
 
-typedef struct ampmodem_s * ampmodem;
+#define LIQUID_AMPMODEM_MANGLE_FLOAT(name) LIQUID_CONCAT(ampmodem,name)
 
-// create ampmodem object
-//  _m                  :   modulation index
-//  _type               :   AM type (e.g. LIQUID_AMPMODEM_DSB)
-//  _suppressed_carrier :   carrier suppression flag
-ampmodem ampmodem_create(float                _mod_index,
-                         liquid_ampmodem_type _type,
-                         int                  _suppressed_carrier);
+// Macro     :   AMPMODEM (analog amploitude modem)
+//  AMPMODEM :   name-mangling macro
+//  T        :   primitive data type
+//  TC       :   primitive data type (complex)
+#define LIQUID_AMPMODEM_DEFINE_API(AMPMODEM,T,TC)                           \
+                                                                            \
+/* Analog amplitude modulator/demodulator                               */  \
+typedef struct AMPMODEM(_s) * AMPMODEM();                                   \
+                                                                            \
+/* create ampmodem object                                               */  \
+/*  _m                  :   modulation index                            */  \
+/*  _type               :   AM type (e.g. LIQUID_AMPMODEM_DSB)          */  \
+/*  _suppressed_carrier :   carrier suppression flag                    */  \
+AMPMODEM() AMPMODEM(_create)(float                _mod_index,               \
+                             liquid_ampmodem_type _type,                    \
+                             int                  _suppressed_carrier);     \
+                                                                            \
+/* destroy ampmodem object                                              */  \
+int AMPMODEM(_destroy)(AMPMODEM() _q);                                      \
+                                                                            \
+/* print ampmodem object internals                                      */  \
+int AMPMODEM(_print)(AMPMODEM() _q);                                        \
+                                                                            \
+/* reset ampmodem object state                                          */  \
+int AMPMODEM(_reset)(AMPMODEM() _q);                                        \
+                                                                            \
+/* get delay from modulation operation                                  */  \
+unsigned int AMPMODEM(_get_delay_mod)(AMPMODEM() _q);                       \
+                                                                            \
+/* get delay from demodulation operation                                */  \
+unsigned int AMPMODEM(_get_delay_demod)(AMPMODEM() _q);                     \
+                                                                            \
+/* modulate a single sample                                             */  \
+int AMPMODEM(_modulate)(AMPMODEM() _q, T _x, TC * _y);                      \
+                                                                            \
+/* modulate block of samples                                            */  \
+int AMPMODEM(_modulate_block)(AMPMODEM()   _q,                              \
+                              T *          _m,                              \
+                              unsigned int _n,                              \
+                              TC *         _s);                             \
+                                                                            \
+/* demodulate a single sample                                           */  \
+int AMPMODEM(_demodulate)(AMPMODEM() _q, TC _y, T * _x);                    \
+                                                                            \
+/* demodulate a block of samples                                        */  \
+int AMPMODEM(_demodulate_block)(AMPMODEM()   _q,                            \
+                                TC *         _r,                            \
+                                unsigned int _n,                            \
+                                T *          _m);                           \
 
-// destroy ampmodem object
-int ampmodem_destroy(ampmodem _q);
+// define freqdem APIs
+LIQUID_AMPMODEM_DEFINE_API(LIQUID_AMPMODEM_MANGLE_FLOAT,float,liquid_float_complex)
 
-// print ampmodem object internals
-int ampmodem_print(ampmodem _q);
 
-// reset ampmodem object state
-int ampmodem_reset(ampmodem _q);
-
-// accessor methods
-unsigned int ampmodem_get_delay_mod  (ampmodem _q);
-unsigned int ampmodem_get_delay_demod(ampmodem _q);
-
-// modulate sample
-int ampmodem_modulate(ampmodem               _q,
-                      float                  _x,
-                      liquid_float_complex * _y);
-
-int ampmodem_modulate_block(ampmodem               _q,
-                            float *                _m,
-                            unsigned int           _n,
-                            liquid_float_complex * _s);
-
-// demodulate sample
-int ampmodem_demodulate(ampmodem             _q,
-                        liquid_float_complex _y,
-                        float *              _x);
-
-int ampmodem_demodulate_block(ampmodem               _q,
-                              liquid_float_complex * _r,
-                              unsigned int           _n,
-                              float *                _m);
 
 //
 // MODULE : multichannel
