@@ -3018,6 +3018,9 @@ FDELAY() FDELAY(_create)(unsigned int _nmax,                                \
 /*  _nmax   : maximum integer sample offset                             */  \
 FDELAY() FDELAY(_create_default)(unsigned int _nmax);                       \
                                                                             \
+/* Copy a delay object including all internal objects and state         */  \
+FDELAY() FDELAY(_copy)(FDELAY() _q_orig);                                   \
+                                                                            \
 /* Destroy delay object and free all internal memory                    */  \
 int FDELAY(_destroy)(FDELAY() _q);                                          \
                                                                             \
