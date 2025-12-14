@@ -127,7 +127,7 @@ int qnsearch_print(qnsearch _q)
         printf("%.3f ", _q->v[i]);
     printf("\n");
 #else
-    printf("<liquid.gradsearch");
+    printf("<liquid.qnsearch");
     printf(", n=%u", _q->num_parameters);
     printf(", dir=\"%s\"", _q->minimize ? "min" : "max");
     printf(", gamma=%g", _q->gamma);
