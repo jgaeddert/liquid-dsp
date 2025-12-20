@@ -47,7 +47,7 @@ Installation and Dependencies
 
 liquid-dsp only relies on ``libc`` and ``libm`` (standard C and math)
 libraries to run; however liquid will take advantage of other libraries
-(such as `FFTW <http://www.fftw.org)>`_ if they are available.
+(such as `FFTW <http://www.fftw.org>`_) if they are available.
 Starting with version 1.7.0, liquid-dsp has moved to the
 `CMake <https://cmake.org>`_ build system which can be installed with
 ``brew install cmake`` on macOS,
