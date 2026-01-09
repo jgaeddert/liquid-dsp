@@ -90,9 +90,9 @@ void autotest_gradsearch_rosenbrock()
 //
 
 // test utility function
-float utility_max_autotest(void *       _userdata,
-                           float *      _v,
-                           unsigned int _n)
+float utility_max_autotest(void *        _userdata,
+                           const float * _v,
+                           unsigned int  _n)
 {
     if (_n == 0) {
         liquid_error(LIQUID_EICONFIG,"liquid_invgauss(), input vector length cannot be zero");

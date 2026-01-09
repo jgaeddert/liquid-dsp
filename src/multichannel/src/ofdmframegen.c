@@ -82,10 +82,10 @@ struct ofdmframegen_s {
 //  _cp_len     :   cyclic prefix length
 //  _taper_len  :   taper length (OFDM symbol overlap)
 //  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
-ofdmframegen ofdmframegen_create(unsigned int    _M,
-                                 unsigned int    _cp_len,
-                                 unsigned int    _taper_len,
-                                 unsigned char * _p)
+ofdmframegen ofdmframegen_create(unsigned int          _M,
+                                 unsigned int          _cp_len,
+                                 unsigned int          _taper_len,
+                                 const unsigned char * _p)
 {
     // validate input
     if (_M < 8)
@@ -266,9 +266,9 @@ int ofdmframegen_write_S1(ofdmframegen _q,
 //  _q      :   framing generator object
 //  _x      :   input symbols, [size: _M x 1]
 //  _y      :   output samples, [size: _M x 1]
-int ofdmframegen_writesymbol(ofdmframegen    _q,
-                             float complex * _x,
-                             float complex * _y)
+int ofdmframegen_writesymbol(ofdmframegen          _q,
+                             const float complex * _x,
+                             float complex *       _y)
 {
     // move frequency data to internal buffer
     unsigned int i;

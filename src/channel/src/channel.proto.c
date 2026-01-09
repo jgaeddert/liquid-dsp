@@ -179,7 +179,7 @@ int CHANNEL(_add_carrier_offset)(CHANNEL() _q,
 //  _h          : channel coefficients (NULL for random)
 //  _h_len      : number of channel coefficients
 int CHANNEL(_add_multipath)(CHANNEL()    _q,
-                            TC *         _h,
+                            const TC *   _h,
                             unsigned int _h_len)
 {
     if (_h_len == 0)
@@ -303,7 +303,7 @@ int CHANNEL(_execute)(CHANNEL() _q,
 //  _n      : input array length
 //  _y      : output array [size: _n x 1]
 int CHANNEL(_execute_block)(CHANNEL()    _q,
-                            TI *         _x,
+                            const TI *   _x,
                             unsigned int _n,
                             TO *         _y)
 {

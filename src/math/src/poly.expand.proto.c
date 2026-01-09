@@ -147,7 +147,7 @@ int POLY(_expandbinomial)(T *          _a,
 //  _r      : roots of polynomial [size: _n x 1]
 //  _n      : number of roots in polynomial
 //  _p      : polynomial coefficients [size: _n+1 x 1]
-int POLY(_expandroots)(T *          _r,
+int POLY(_expandroots)(const T *    _r,
                        unsigned int _n,
                        T *          _p)
 {
@@ -183,8 +183,8 @@ int POLY(_expandroots)(T *          _r,
 //  _b      : multiplicant of polynomial roots [size: _n x 1]
 //  _n      : number of roots in polynomial
 //  _p      : polynomial coefficients [size: _n+1 x 1]
-int POLY(_expandroots2)(T *          _a,
-                        T *          _b,
+int POLY(_expandroots2)(const T *    _a,
+                        const T *    _b,
                         unsigned int _n,
                         T *          _p)
 {
@@ -221,9 +221,9 @@ int POLY(_expandroots2)(T *          _a,
 //  _b          :   2nd polynomial coefficients (length is _order_b+1)
 //  _order_b    :   2nd polynomial order
 //  _c          :   output polynomial coefficients (length is _order_a + _order_b + 1)
-int POLY(_mul)(T *          _a,
+int POLY(_mul)(const T *    _a,
                unsigned int _order_a,
-               T *          _b,
+               const T *    _b,
                unsigned int _order_b,
                T *          _c)
 {

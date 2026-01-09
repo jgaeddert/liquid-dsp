@@ -34,18 +34,18 @@
 #define DEBUG_DOTPROD_CRCF_AVX   0
 
 // forward declaration of internal methods
-int dotprod_crcf_execute_avx(dotprod_crcf    _q,
-                             float complex * _x,
-                             float complex * _y);
-int dotprod_crcf_execute_avx4(dotprod_crcf    _q,
-                              float complex * _x,
-                              float complex * _y);
+int dotprod_crcf_execute_avx(dotprod_crcf          _q,
+                             const float complex * _x,
+                             float complex *       _y);
+int dotprod_crcf_execute_avx4(dotprod_crcf          _q,
+                              const float complex * _x,
+                              float complex *       _y);
 
 // basic dot product (ordinal calculation)
-int dotprod_crcf_run(float *         _h,
-                     float complex * _x,
-                     unsigned int    _n,
-                     float complex * _y)
+int dotprod_crcf_run(const float *         _h,
+                     const float complex * _x,
+                     unsigned int          _n,
+                     float complex *       _y)
 {
     float complex r = 0;
     unsigned int i;
@@ -56,10 +56,10 @@ int dotprod_crcf_run(float *         _h,
 }
 
 // basic dot product (ordinal calculation) with loop unrolled
-int dotprod_crcf_run4(float *         _h,
-                      float complex * _x,
-                      unsigned int    _n,
-                      float complex * _y)
+int dotprod_crcf_run4(const float *         _h,
+                      const float complex * _x,
+                      unsigned int          _n,
+                      float complex *       _y)
 {
     float complex r = 0;
 
@@ -93,9 +93,9 @@ struct dotprod_crcf_s {
     float * h;          // coefficients array
 };
 
-dotprod_crcf dotprod_crcf_create_opt(float *      _h,
-                                     unsigned int _n,
-                                     int          _rev)
+dotprod_crcf dotprod_crcf_create_opt(const float * _h,
+                                     unsigned int  _n,
+                                     int           _rev)
 {
     dotprod_crcf q = (dotprod_crcf)malloc(sizeof(struct dotprod_crcf_s));
     q->n = _n;
@@ -116,22 +116,22 @@ dotprod_crcf dotprod_crcf_create_opt(float *      _h,
     return q;
 }
 
-dotprod_crcf dotprod_crcf_create(float *      _h,
-                                 unsigned int _n)
+dotprod_crcf dotprod_crcf_create(const float * _h,
+                                 unsigned int  _n)
 {
     return dotprod_crcf_create_opt(_h, _n, 0);
 }
 
-dotprod_crcf dotprod_crcf_create_rev(float *      _h,
-                                     unsigned int _n)
+dotprod_crcf dotprod_crcf_create_rev(const float * _h,
+                                     unsigned int  _n)
 {
     return dotprod_crcf_create_opt(_h, _n, 1);
 }
 
 // re-create the structured dotprod object
-dotprod_crcf dotprod_crcf_recreate(dotprod_crcf _q,
-                                   float *      _h,
-                                   unsigned int _n)
+dotprod_crcf dotprod_crcf_recreate(dotprod_crcf  _q,
+                                   const float * _h,
+                                   unsigned int  _n)
 {
     // completely destroy and re-create dotprod object
     dotprod_crcf_destroy(_q);
@@ -139,9 +139,9 @@ dotprod_crcf dotprod_crcf_recreate(dotprod_crcf _q,
 }
 
 // re-create the structured dotprod object, coefficients reversed
-dotprod_crcf dotprod_crcf_recreate_rev(dotprod_crcf _q,
-                                       float *      _h,
-                                       unsigned int _n)
+dotprod_crcf dotprod_crcf_recreate_rev(dotprod_crcf  _q,
+                                       const float * _h,
+                                       unsigned int  _n)
 {
     // completely destroy and re-create dotprod object
     dotprod_crcf_destroy(_q);
@@ -188,9 +188,9 @@ int dotprod_crcf_print(dotprod_crcf _q)
 }
 
 // 
-int dotprod_crcf_execute(dotprod_crcf    _q,
-                         float complex * _x,
-                         float complex * _y)
+int dotprod_crcf_execute(dotprod_crcf          _q,
+                         const float complex * _x,
+                         float complex *       _y)
 {
     // switch based on size
     if (_q->n < 64) {
@@ -200,9 +200,9 @@ int dotprod_crcf_execute(dotprod_crcf    _q,
 }
 
 // use AVX extensions
-int dotprod_crcf_execute_avx(dotprod_crcf    _q,
-                             float complex * _x,
-                             float complex * _y)
+int dotprod_crcf_execute_avx(dotprod_crcf          _q,
+                             const float complex * _x,
+                             float complex *       _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;
@@ -257,9 +257,9 @@ int dotprod_crcf_execute_avx(dotprod_crcf    _q,
 }
 
 // use AVX extensions
-int dotprod_crcf_execute_avx4(dotprod_crcf    _q,
-                              float complex * _x,
-                              float complex * _y)
+int dotprod_crcf_execute_avx4(dotprod_crcf          _q,
+                              const float complex * _x,
+                              float complex *       _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;

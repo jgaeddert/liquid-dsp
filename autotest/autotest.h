@@ -323,13 +323,13 @@ int liquid_autotest_validate_psd_spgramcf(spgramcf _q,
 // callback function to simplify testing for framing objects
 #define FRAMING_AUTOTEST_SECRET 0x01234567
 int framing_autotest_callback(
-    unsigned char *  _header,
-    int              _header_valid,
-    unsigned char *  _payload,
-    unsigned int     _payload_len,
-    int              _payload_valid,
-    framesyncstats_s _stats,
-    void *           _context);
+    const unsigned char *  _header,
+    int                    _header_valid,
+    const unsigned char *  _payload,
+    unsigned int           _payload_len,
+    int                    _payload_valid,
+    framesyncstats_s       _stats,
+    void *                 _context);
 
 #endif // __LIQUID_AUTOTEST_H__
 

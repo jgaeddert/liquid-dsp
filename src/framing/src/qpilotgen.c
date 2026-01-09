@@ -158,9 +158,9 @@ unsigned int qpilotgen_get_frame_len(qpilotgen _q)
 // encode packet into modulated frame samples
 // TODO: include method with just symbol indices? would be useful for
 //       non-linear modulation types
-int qpilotgen_execute(qpilotgen       _q,
-                      float complex * _payload,
-                      float complex * _frame)
+int qpilotgen_execute(qpilotgen                    _q,
+                      const liquid_float_complex * _payload,
+                      liquid_float_complex *       _frame)
 {
     unsigned int i;
     unsigned int n = 0;

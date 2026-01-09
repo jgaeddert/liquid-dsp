@@ -106,10 +106,10 @@ struct detector_cccf_s {
 //  _n          :   sequence length
 //  _threshold  :   detection threshold (default: 0.7)
 //  _dphi_max   :   maximum carrier offset
-detector_cccf detector_cccf_create(float complex * _s,
-                                   unsigned int    _n,
-                                   float           _threshold,
-                                   float           _dphi_max)
+detector_cccf detector_cccf_create(const float complex * _s,
+                                   unsigned int          _n,
+                                   float                 _threshold,
+                                   float                 _dphi_max)
 {
     // validate input
     if (_n == 0)

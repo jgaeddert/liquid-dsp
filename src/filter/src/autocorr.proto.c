@@ -136,7 +136,7 @@ int AUTOCORR(_push)(AUTOCORR() _q, TI _x)
 //  _x      :   input array [size: _n x 1]
 //  _n      :   number of input samples
 int AUTOCORR(_write)(AUTOCORR()   _q,
-                     TI *         _x,
+                     const TI *   _x,
                      unsigned int _n)
 {
     unsigned int i;
@@ -168,7 +168,7 @@ int AUTOCORR(_execute)(AUTOCORR() _q, TO *_rxx)
 //  _n      :   number of input, output samples
 //  _rxx    :   input array [size: _n x 1]
 int AUTOCORR(_execute_block)(AUTOCORR()   _q,
-                             TI *         _x,
+                             const TI *   _x,
                              unsigned int _n,
                              TO *         _rxx)
 {

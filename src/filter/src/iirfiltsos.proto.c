@@ -54,8 +54,8 @@ struct IIRFILTSOS(_s) {
 };
 
 // create iirfiltsos object
-IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,
-                                 TC * _a)
+IIRFILTSOS() IIRFILTSOS(_create)(const TC * _b,
+                                 const TC * _a)
 {
     // create filter object
     IIRFILTSOS() q = (IIRFILTSOS()) malloc(sizeof(struct IIRFILTSOS(_s)));
@@ -76,8 +76,8 @@ IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,
 //  _b      : feed-forward coefficients [size: _3 x 1]
 //  _a      : feed-back coefficients    [size: _3 x 1]
 int IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,
-                                  TC *         _b,
-                                  TC *         _a)
+                                  const TC *   _b,
+                                  const TC *   _a)
 {
     // retain a0 coefficient for normalization
     TC a0 = _a[0];

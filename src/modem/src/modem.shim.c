@@ -30,7 +30,7 @@
 modem modem_create(modulation_scheme _scheme)
     { return modemcf_create(_scheme); }
 
-modem modem_create_arbitrary(float complex * _table, unsigned int _M)
+modem modem_create_arbitrary(const float complex * _table, unsigned int _M)
     { return modemcf_create_arbitrary(_table, _M); }
 
 modem modem_recreate(modem _q, modulation_scheme _scheme)

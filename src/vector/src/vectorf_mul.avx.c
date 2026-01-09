@@ -27,8 +27,8 @@
 #include <stdio.h>
 #include <immintrin.h>
 
-void liquid_vectorf_mul(float *      _v0,
-                        float *      _v1,
+void liquid_vectorf_mul(const float * _v0,
+                        const float * _v1,
                         unsigned int _n,
                         float *      _y)
 {
@@ -60,7 +60,7 @@ void liquid_vectorf_mul(float *      _v0,
 }
 
 // basic vector scalar multiplication, unrolling loop
-void liquid_vectorf_mulscalar(float *      _v,
+void liquid_vectorf_mulscalar(const float * _v,
                               unsigned int _n,
                               float        _s,
                               float *      _y)

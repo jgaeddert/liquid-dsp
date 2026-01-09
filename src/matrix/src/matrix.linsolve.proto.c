@@ -34,9 +34,9 @@
 //  _b      :   equality vector [size: _n x 1]
 //  _x      :   solution vector [size: _n x 1]
 //  _opts   :   options (ignored for now)
-int MATRIX(_linsolve)(T *          _A,
+int MATRIX(_linsolve)(const T *    _A,
                       unsigned int _n,
-                      T *          _b,
+                      const T *    _b,
                       T *          _x,
                       void *       _opts)
 {

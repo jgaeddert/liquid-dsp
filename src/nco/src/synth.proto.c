@@ -202,7 +202,7 @@ void SYNTH(_mix_down)(SYNTH() _q, TC _x, TC * _y)
     *_y = _x * conjf(_q->current);
 }
 
-void SYNTH(_mix_block_up)(SYNTH() _q, TC * _x, TC * _y, unsigned int _n)
+void SYNTH(_mix_block_up)(SYNTH() _q, const TC * _x, TC * _y, unsigned int _n)
 {
     unsigned int i;
     for (i = 0; i < _n; i++) {
@@ -214,7 +214,7 @@ void SYNTH(_mix_block_up)(SYNTH() _q, TC * _x, TC * _y, unsigned int _n)
     }
 }
 
-void SYNTH(_mix_block_down)(SYNTH() _q, TC * _x, TC * _y, unsigned int _n)
+void SYNTH(_mix_block_down)(SYNTH() _q, const TC * _x, TC * _y, unsigned int _n)
 {
     unsigned int i;
     for (i = 0; i < _n; i++) {
@@ -236,7 +236,7 @@ void SYNTH(_spread)(SYNTH() _q, TC _x, TC * _y)
     }
 }
 
-void SYNTH(_despread)(SYNTH() _q, TC * _x, TC * _y)
+void SYNTH(_despread)(SYNTH() _q, const TC * _x, TC * _y)
 {
     TC despread = 0;
     T  sum      = 0;
@@ -253,7 +253,7 @@ void SYNTH(_despread)(SYNTH() _q, TC * _x, TC * _y)
     *_y = despread / sum;
 }
 
-void SYNTH(_despread_triple)(SYNTH() _q, TC * _x, TC * _early, TC * _punctual, TC * _late)
+void SYNTH(_despread_triple)(SYNTH() _q, const TC * _x, TC * _early, TC * _punctual, TC * _late)
 {
     TC despread_early    = 0;
     TC despread_punctual = 0;

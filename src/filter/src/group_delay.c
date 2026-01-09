@@ -31,9 +31,9 @@
 //  _h      : filter coefficients array [size: _n x 1]
 //  _n      : filter length
 //  _fc     : frequency at which delay is evaluated (-0.5 < _fc < 0.5)
-float fir_group_delay(float *      _h,
-                      unsigned int _n,
-                      float        _fc)
+float fir_group_delay(const float * _h,
+                      unsigned int  _n,
+                      float         _fc)
 {
     // validate input
     if (_n == 0) {
@@ -61,11 +61,11 @@ float fir_group_delay(float *      _h,
 //  _a      : filter coefficients array (denominator), [size: _na x 1]
 //  _na     : filter length (denominator)
 //  _fc     : frequency at which delay is evaluated (-0.5 < _fc < 0.5)
-float iir_group_delay(float *      _b,
-                      unsigned int _nb,
-                      float *      _a,
-                      unsigned int _na,
-                      float        _fc)
+float iir_group_delay(const float * _b,
+                      unsigned int  _nb,
+                      const float * _a,
+                      unsigned int  _na,
+                      float         _fc)
 {
     // validate input
     if (_nb == 0) {

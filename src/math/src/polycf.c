@@ -48,9 +48,9 @@
 //  _p      :   polynomial array, ascending powers [size: _k x 1]
 //  _k      :   polynomials length (poly order = _k - 1)
 //  _roots  :   resulting complex roots [size: _k-1 x 1]
-int polycf_findroots(float complex * _p,
-                     unsigned int    _k,
-                     float complex * _roots)
+int polycf_findroots(const float complex * _p,
+                     unsigned int          _k,
+                     float complex *       _roots)
 {
     return liquid_error(LIQUID_ENOIMP,"polycf_findroots(), complex root-finding not yet supported");
 }

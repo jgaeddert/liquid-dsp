@@ -46,7 +46,7 @@ struct BSYNC(_s) {
     TO rxy;             // cross correlation
 };
 
-BSYNC() BSYNC(_create)(unsigned int _n, TC * _v)
+BSYNC() BSYNC(_create)(unsigned int _n, const TC * _v)
 {
     BSYNC() fs = (BSYNC()) malloc(sizeof(struct BSYNC(_s)));
     fs->n = _n;

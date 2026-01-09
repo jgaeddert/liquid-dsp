@@ -32,7 +32,7 @@
 // compute l2-norm on vector
 //  _x      :   input array [size: _n x 1]
 //  _n      :   array length
-TP VECTOR(_norm)(T *          _x,
+TP VECTOR(_norm)(const T *    _x,
                  unsigned int _n)
 {
     // t = 4*(floor(_n/4))
@@ -65,7 +65,7 @@ TP VECTOR(_norm)(T *          _x,
 //  _x      :   input array [size: _n x 1]
 //  _n      :   array length
 //  _y      :   output array [size: _n x 1]
-void VECTOR(_normalize)(T *          _x,
+void VECTOR(_normalize)(const T *    _x,
                         unsigned int _n,
                         T *          _y)
 {

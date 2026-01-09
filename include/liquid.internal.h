@@ -133,19 +133,19 @@ struct fec_s {
     // encode function pointer
     int (*encode_func)(fec _q,
                        unsigned int _dec_msg_len,
-                       unsigned char * _msg_dec,
+                       const unsigned char * _msg_dec,
                        unsigned char * _msg_enc);
 
     // decode function pointer
     int (*decode_func)(fec _q,
                        unsigned int _dec_msg_len,
-                       unsigned char * _msg_enc,
+                       const unsigned char * _msg_enc,
                        unsigned char * _msg_dec);
 
     // decode function pointer (soft decision)
     int (*decode_soft_func)(fec _q,
                             unsigned int _dec_msg_len,
-                            unsigned char * _msg_enc,
+                            const unsigned char * _msg_enc,
                             unsigned char * _msg_dec);
 };
 
@@ -162,11 +162,11 @@ int fec_pass_destroy(fec _q);
 int fec_pass_print(fec _q);
 int fec_pass_encode(fec _q,
                     unsigned int _dec_msg_len,
-                    unsigned char * _msg_dec,
+                    const unsigned char * _msg_dec,
                     unsigned char * _msg_enc);
 int fec_pass_decode(fec _q,
                     unsigned int _dec_msg_len,
-                    unsigned char * _msg_enc,
+                    const unsigned char * _msg_enc,
                     unsigned char * _msg_dec);
 
 // Repeat (3)
@@ -175,15 +175,15 @@ int fec_rep3_destroy(fec _q);
 int fec_rep3_print(fec _q);
 int fec_rep3_encode(fec _q,
                     unsigned int _dec_msg_len,
-                    unsigned char * _msg_dec,
+                    const unsigned char * _msg_dec,
                     unsigned char * _msg_enc);
 int fec_rep3_decode(fec _q,
                     unsigned int _dec_msg_len,
-                    unsigned char * _msg_enc,
+                    const unsigned char * _msg_enc,
                     unsigned char * _msg_dec);
 int fec_rep3_decode_soft(fec _q,
                          unsigned int _dec_msg_len,
-                         unsigned char * _msg_enc,
+                         const unsigned char * _msg_enc,
                          unsigned char * _msg_dec);
 
 // Repeat (5)
@@ -192,15 +192,15 @@ int fec_rep5_destroy(fec _q);
 int fec_rep5_print(fec _q);
 int fec_rep5_encode(fec _q,
                     unsigned int _dec_msg_len,
-                    unsigned char * _msg_dec,
+                    const unsigned char * _msg_dec,
                     unsigned char * _msg_enc);
 int fec_rep5_decode(fec _q,
                     unsigned int _dec_msg_len,
-                    unsigned char * _msg_enc,
+                    const unsigned char * _msg_enc,
                     unsigned char * _msg_dec);
 int fec_rep5_decode_soft(fec _q,
                          unsigned int _dec_msg_len,
-                         unsigned char * _msg_enc,
+                         const unsigned char * _msg_enc,
                          unsigned char * _msg_dec);
 
 // Hamming(7,4)
@@ -211,18 +211,18 @@ int fec_hamming74_destroy(fec _q);
 int fec_hamming74_print(fec _q);
 int fec_hamming74_encode(fec _q,
                          unsigned int _dec_msg_len,
-                         unsigned char * _msg_dec,
+                         const unsigned char * _msg_dec,
                          unsigned char * _msg_enc);
 int fec_hamming74_decode(fec _q,
                          unsigned int _dec_msg_len,
-                         unsigned char * _msg_enc,
+                         const unsigned char * _msg_enc,
                          unsigned char * _msg_dec);
 int fec_hamming74_decode_soft(fec _q,
                               unsigned int _dec_msg_len,
-                              unsigned char * _msg_enc,
+                              const unsigned char * _msg_enc,
                               unsigned char * _msg_dec);
 // soft decoding of one symbol
-unsigned char fecsoft_hamming74_decode(unsigned char * _soft_bits);
+unsigned char fecsoft_hamming74_decode(const unsigned char * _soft_bits);
 
 // Hamming(8,4)
 extern unsigned char hamming84_enc_gentab[16];
@@ -232,18 +232,18 @@ int fec_hamming84_destroy(fec _q);
 int fec_hamming84_print(fec _q);
 int fec_hamming84_encode(fec _q,
                          unsigned int _dec_msg_len,
-                         unsigned char * _msg_dec,
+                         const unsigned char * _msg_dec,
                          unsigned char * _msg_enc);
 int fec_hamming84_decode(fec _q,
                          unsigned int _dec_msg_len,
-                         unsigned char * _msg_enc,
+                         const unsigned char * _msg_enc,
                          unsigned char * _msg_dec);
 int fec_hamming84_decode_soft(fec _q,
                               unsigned int _dec_msg_len,
-                              unsigned char * _msg_enc,
+                              const unsigned char * _msg_enc,
                               unsigned char * _msg_dec);
 // soft decoding of one symbol
-unsigned char fecsoft_hamming84_decode(unsigned char * _soft_bits);
+unsigned char fecsoft_hamming84_decode(const unsigned char * _soft_bits);
 
 // Hamming(12,8)
 
@@ -256,20 +256,20 @@ int fec_hamming128_destroy(fec _q);
 int fec_hamming128_print(fec _q);
 int fec_hamming128_encode(fec _q,
                           unsigned int _dec_msg_len,
-                          unsigned char * _msg_dec,
+                          const unsigned char * _msg_dec,
                           unsigned char * _msg_enc);
 int fec_hamming128_decode(fec _q,
                           unsigned int _dec_msg_len,
-                          unsigned char * _msg_enc,
+                          const unsigned char * _msg_enc,
                           unsigned char * _msg_dec);
 int fec_hamming128_decode_soft(fec _q,
                                unsigned int _dec_msg_len,
-                               unsigned char * _msg_enc,
+                               const unsigned char * _msg_enc,
                                unsigned char * _msg_dec);
 // soft decoding of one symbol
-unsigned int fecsoft_hamming128_decode(unsigned char * _soft_bits);
+unsigned int fecsoft_hamming128_decode(const unsigned char * _soft_bits);
 extern unsigned char fecsoft_hamming128_n3[256][17];
-unsigned int fecsoft_hamming128_decode_n3(unsigned char * _soft_bits);
+unsigned int fecsoft_hamming128_decode_n3(const unsigned char * _soft_bits);
 
 
 // Hamming(15,11)
@@ -302,37 +302,37 @@ int fec_golay2412_destroy(fec _q);
 int fec_golay2412_print(fec _q);
 int fec_golay2412_encode(fec _q,
                          unsigned int _dec_msg_len,
-                         unsigned char * _msg_dec,
+                         const unsigned char * _msg_dec,
                          unsigned char * _msg_enc);
 int fec_golay2412_decode(fec _q,
                          unsigned int _dec_msg_len,
-                         unsigned char * _msg_enc,
+                         const unsigned char * _msg_enc,
                          unsigned char * _msg_dec);
 
 // SEC-DED (22,16)
 
 // compute parity on 16-bit input
-unsigned char fec_secded2216_compute_parity(unsigned char * _m);
+unsigned char fec_secded2216_compute_parity(const unsigned char * _m);
 
 // compute syndrome on 22-bit input
-unsigned char fec_secded2216_compute_syndrome(unsigned char * _v);
+unsigned char fec_secded2216_compute_syndrome(const unsigned char * _v);
 
 // encode symbol
 //  _sym_dec    :   decoded symbol, [size: 2 x 1]
 //  _sym_enc    :   encoded symbol, [size: 3 x 1], _sym_enc[0] has only 6 bits
-int fec_secded2216_encode_symbol(unsigned char * _sym_dec,
+int fec_secded2216_encode_symbol(const unsigned char * _sym_dec,
                                  unsigned char * _sym_enc);
 
 // decode symbol, returning 0/1/2 for zero/one/multiple errors detected
 //  _sym_enc    :   encoded symbol, [size: 3 x 1], _sym_enc[0] has only 6 bits
 //  _sym_dec    :   decoded symbol, [size: 2 x 1]
-int  fec_secded2216_decode_symbol(unsigned char * _sym_enc,
+int  fec_secded2216_decode_symbol(const unsigned char * _sym_enc,
                                   unsigned char * _sym_dec);
 
 // estimate error vector, returning 0/1/2 for zero/one/multiple errors detected
 //  _sym_enc    :   encoded symbol, [size: 3 x 1], _sym_enc[0] has only 6 bits
 //  _e_hat      :   estimated error vector, [size: 3 x 1]
-int  fec_secded2216_estimate_ehat(unsigned char * _sym_enc,
+int  fec_secded2216_estimate_ehat(const unsigned char * _sym_enc,
                                   unsigned char * _e_hat);
 
 // parity matrix [6 x 16 bits], [6 x 2 bytes]
@@ -346,37 +346,37 @@ int fec_secded2216_destroy(fec _q);
 int fec_secded2216_print(fec _q);
 int fec_secded2216_encode(fec _q,
                           unsigned int _dec_msg_len,
-                          unsigned char * _msg_dec,
+                          const unsigned char * _msg_dec,
                           unsigned char * _msg_enc);
 int fec_secded2216_decode(fec _q,
                           unsigned int _dec_msg_len,
-                          unsigned char * _msg_enc,
+                          const unsigned char * _msg_enc,
                           unsigned char * _msg_dec);
 
 // SEC-DED (39,32)
 
 // compute parity on 32-bit input
-unsigned char fec_secded3932_compute_parity(unsigned char * _m);
+unsigned char fec_secded3932_compute_parity(const unsigned char * _m);
 
 // compute syndrome on 39-bit input
-unsigned char fec_secded3932_compute_syndrome(unsigned char * _v);
+unsigned char fec_secded3932_compute_syndrome(const unsigned char * _v);
 
 // encode symbol
 //  _sym_dec    :   decoded symbol, [size: 4 x 1]
 //  _sym_enc    :   encoded symbol, [size: 5 x 1], _sym_enc[0] has only 7 bits
-int fec_secded3932_encode_symbol(unsigned char * _sym_dec,
+int fec_secded3932_encode_symbol(const unsigned char * _sym_dec,
                                  unsigned char * _sym_enc);
 
 // estimate error vector, returning 0/1/2 for zero/one/multiple errors detected
 //  _sym_enc    :   encoded symbol, [size: 5 x 1], _sym_enc[0] has only 7 bits
 //  _e_hat      :   estimated error vector, [size: 5 x 1]
-int  fec_secded3932_estimate_ehat(unsigned char * _sym_enc,
+int  fec_secded3932_estimate_ehat(const unsigned char * _sym_enc,
                                   unsigned char * _e_hat);
 
 // decode symbol, returning 0/1/2 for zero/one/multiple errors detected
 //  _sym_enc    :   encoded symbol (_sym_enc[0] has only 7 bits), [size: 5 x 1]
 //  _sym_dec    :   decoded symbol, [size: 4 x 1]
-int fec_secded3932_decode_symbol(unsigned char * _sym_enc,
+int fec_secded3932_decode_symbol(const unsigned char * _sym_enc,
                                 unsigned char * _sym_dec);
 
 // parity matrix [7 x 32 bits], [7 x 4 bytes]
@@ -390,37 +390,37 @@ int fec_secded3932_destroy(fec _q);
 int fec_secded3932_print(fec _q);
 int fec_secded3932_encode(fec _q,
                           unsigned int _dec_msg_len,
-                          unsigned char * _msg_dec,
+                          const unsigned char * _msg_dec,
                           unsigned char * _msg_enc);
 int fec_secded3932_decode(fec _q,
                           unsigned int _dec_msg_len,
-                          unsigned char * _msg_enc,
+                          const unsigned char * _msg_enc,
                           unsigned char * _msg_dec);
 
 // SEC-DED (72,64)
 
 // compute parity byte on 64-byte input
-unsigned char fec_secded7264_compute_parity(unsigned char * _v);
+unsigned char fec_secded7264_compute_parity(const unsigned char * _v);
 
 // compute syndrome on 72-bit input
-unsigned char fec_secded7264_compute_syndrome(unsigned char * _v);
+unsigned char fec_secded7264_compute_syndrome(const unsigned char * _v);
 
 // encode symbol
 //  _sym_dec    :   input symbol, [size: 8 x 1]
 //  _sym_enc    :   input symbol, [size: 9 x 1]
-int fec_secded7264_encode_symbol(unsigned char * _sym_dec,
+int fec_secded7264_encode_symbol(const unsigned char * _sym_dec,
                                  unsigned char * _sym_enc);
 
 // estimate error vector, returning 0/1/2 for zero/one/multiple errors detected
 //  _sym_enc    :   encoded symbol, [size: 9 x 1]
 //  _e_hat      :   estimated error vector, [size: 9 x 1]
-int fec_secded7264_estimate_ehat(unsigned char * _sym_enc,
+int fec_secded7264_estimate_ehat(const unsigned char * _sym_enc,
                                  unsigned char * _e_hat);
 
 // decode symbol, returning 0/1/2 for zero/one/multiple errors detected
 //  _sym_enc    :   input symbol, [size: 8 x 1]
 //  _sym_dec    :   input symbol, [size: 9 x 1]
-int fec_secded7264_decode_symbol(unsigned char * _sym_enc,
+int fec_secded7264_decode_symbol(const unsigned char * _sym_enc,
                                  unsigned char * _sym_dec);
 
 extern unsigned char secded7264_P[64];
@@ -431,11 +431,11 @@ int fec_secded7264_destroy(fec _q);
 int fec_secded7264_print(fec _q);
 int fec_secded7264_encode(fec _q,
                           unsigned int _dec_msg_len,
-                          unsigned char * _msg_dec,
+                          const unsigned char * _msg_dec,
                           unsigned char * _msg_enc);
 int fec_secded7264_decode(fec _q,
                           unsigned int _dec_msg_len,
-                          unsigned char * _msg_enc,
+                          const unsigned char * _msg_enc,
                           unsigned char * _msg_dec);
 
 
@@ -486,15 +486,15 @@ int fec_conv_destroy(fec _q);
 int fec_conv_print(fec _q);
 int fec_conv_encode(fec _q,
                     unsigned int _dec_msg_len,
-                    unsigned char * _msg_dec,
+                    const unsigned char * _msg_dec,
                     unsigned char * _msg_enc);
 int fec_conv_decode_hard(fec _q,
                          unsigned int _dec_msg_len,
-                         unsigned char * _msg_enc,
+                         const unsigned char * _msg_enc,
                          unsigned char * _msg_dec);
 int fec_conv_decode_soft(fec _q,
                          unsigned int _dec_msg_len,
-                         unsigned char * _msg_enc,
+                         const unsigned char * _msg_enc,
                          unsigned char * _msg_dec);
 int fec_conv_decode(fec _q, unsigned char * _msg_dec);
 int fec_conv_setlength(fec _q, unsigned int _dec_msg_len);
@@ -511,15 +511,15 @@ int fec_conv_punctured_destroy(fec _q);
 int fec_conv_punctured_print(fec _q);
 int fec_conv_punctured_encode(fec _q,
                                unsigned int _dec_msg_len,
-                               unsigned char * _msg_dec,
+                               const unsigned char * _msg_dec,
                                unsigned char * _msg_enc);
 int fec_conv_punctured_decode_hard(fec _q,
                                    unsigned int _dec_msg_len,
-                                   unsigned char * _msg_enc,
+                                   const unsigned char * _msg_enc,
                                    unsigned char * _msg_dec);
 int fec_conv_punctured_decode_soft(fec _q,
                                    unsigned int _dec_msg_len,
-                                   unsigned char * _msg_enc,
+                                   const unsigned char * _msg_enc,
                                    unsigned char * _msg_dec);
 int fec_conv_punctured_setlength(fec _q, unsigned int _dec_msg_len);
 
@@ -559,11 +559,11 @@ int fec_rs_setlength(fec _q,
                      unsigned int _dec_msg_len);
 int fec_rs_encode(fec _q,
                   unsigned int _dec_msg_len,
-                  unsigned char * _msg_dec,
+                  const unsigned char * _msg_dec,
                   unsigned char * _msg_enc);
 int fec_rs_decode(fec _q,
                   unsigned int _dec_msg_len,
-                  unsigned char * _msg_enc,
+                  const unsigned char * _msg_enc,
                   unsigned char * _msg_dec);
 
 // phi(x) = -logf( tanhf( x/2 ) )
@@ -844,10 +844,10 @@ int liquid_firdes_farcsech_freqresponse(unsigned int _k,
 //  _n      :   number of elements in _z
 //  _tol    :   tolerance for finding complex pairs
 //  _p      :   resulting pairs, pure real values of _z at end
-int liquid_cplxpair(float complex * _z,
-                    unsigned int    _n,
-                    float           _tol,
-                    float complex * _p);
+int liquid_cplxpair(const float complex * _z,
+                    unsigned int          _n,
+                    float                 _tol,
+                    float complex *       _p);
 
 // post-process cleanup used with liquid_cplxpair
 //
@@ -1123,7 +1123,7 @@ float complex liquid_catanf(float complex _z);
 //  _p      :   polynomial array, ascending powers, [size: _k x 1]
 //  _k      :   polynomials length (poly order = _k - 1)
 //  _roots  :   resulting complex roots, [size: _k-1 x 1]
-int liquid_poly_findroots_durandkerner(double *         _p,
+int liquid_poly_findroots_durandkerner(const double *   _p,
                                        unsigned int     _k,
                                        double complex * _roots);
 
@@ -1131,7 +1131,7 @@ int liquid_poly_findroots_durandkerner(double *         _p,
 //  _p      :   polynomial array, ascending powers, [size: _k x 1]
 //  _k      :   polynomials length (poly order = _k - 1)
 //  _roots  :   resulting complex roots, [size: _k-1 x 1]
-int liquid_poly_findroots_bairstow(double *         _p,
+int liquid_poly_findroots_bairstow(const double *   _p,
                                    unsigned int     _k,
                                    double complex * _roots);
 
@@ -1169,7 +1169,7 @@ int liquid_poly_sort_roots_compare(const void * _a,
 //   MATRIX : name-mangling macro
 //   T      : data type
 #define LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX,T)             \
-T    MATRIX(_det2x2)(T * _x,                                    \
+T    MATRIX(_det2x2)(const T *     _x,                          \
                      unsigned int _rx,                          \
                      unsigned int _cx);
 
@@ -1247,9 +1247,9 @@ MODEM() MODEM(_create_apsk)(unsigned int _bits_per_symbol);     \
 MODEM() MODEM(_create_arb)( unsigned int _bits_per_symbol);     \
                                                                 \
 /* Initialize arbitrary modem constellation */                  \
-int MODEM(_arb_init)(MODEM()         _q,                        \
-                      float complex * _symbol_map,              \
-                      unsigned int    _len);                    \
+int MODEM(_arb_init)(MODEM()                _q,                 \
+                      const float complex * _symbol_map,        \
+                      unsigned int          _len);              \
                                                                 \
 /* Initialize arb modem constellation from external file */     \
 int MODEM(_arb_init_file)(MODEM() _q, char * _filename);        \

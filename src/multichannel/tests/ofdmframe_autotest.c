@@ -36,9 +36,9 @@
 //  _p          :   subcarrier allocation
 //  _M          :   number of subcarriers
 //  _userdata   :   user-defined data structure
-int ofdmframesync_autotest_callback(float complex * _X,
-                                    unsigned char * _p,
-                                    unsigned int    _M,
+int ofdmframesync_autotest_callback(float complex *       _X,
+                                    const unsigned char * _p,
+                                    unsigned int          _M,
                                     void * _userdata)
 {
     if (liquid_autotest_verbose)

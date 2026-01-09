@@ -181,7 +181,7 @@ int TVMPCH(_execute_one)(TVMPCH() _q,
 //  _n      : number of input, output samples
 //  _y      : pointer to output array [size: _n x 1]
 int TVMPCH(_execute_block)(TVMPCH()     _q,
-                           TI *         _x,
+                           const TI *   _x,
                            unsigned int _n,
                            TO *         _y)
 {

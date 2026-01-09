@@ -62,7 +62,7 @@ int BPRESYNC(_correlatex)(BPRESYNC()      _q,
 //  _n          :   baseband sequence length
 //  _dphi_max   :   maximum absolute frequency deviation
 //  _m          :   number of correlators
-BPRESYNC() BPRESYNC(_create)(TC *         _v,
+BPRESYNC() BPRESYNC(_create)(const TC *   _v,
                              unsigned int _n,
                              float        _dphi_max,
                              unsigned int _m)

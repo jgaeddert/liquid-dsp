@@ -8,11 +8,11 @@ char __docstr__[] = "Demonstrate bpacketsync interface.";
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-int callback(unsigned char *  _payload,
-             int              _payload_valid,
-             unsigned int     _payload_len,
-             framesyncstats_s _stats,
-             void *           _userdata)
+int callback(const unsigned char *  _payload,
+             int                    _payload_valid,
+             unsigned int           _payload_len,
+             framesyncstats_s       _stats,
+             void *                 _userdata)
 {
     printf("callback invoked, payload (%u bytes) : %s\n",
             _payload_len,

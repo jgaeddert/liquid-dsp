@@ -243,10 +243,10 @@ int FIRFARROW(_execute)(FIRFARROW() _q,
 //  _x      : input array [size: _n x 1]
 //  _n      : input, output array size
 //  _y      : output array [size: _n x 1]
-int FIRFARROW(_execute_block)(FIRFARROW()  _q,
-                              TI *         _x,
-                              unsigned int _n,
-                              TO *         _y)
+int FIRFARROW(_execute_block)(FIRFARROW()    _q,
+                              const TI *     _x,
+                              unsigned int   _n,
+                              TO *           _y)
 {
     unsigned int i;
 

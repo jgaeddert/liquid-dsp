@@ -29,9 +29,9 @@
 #include "liquid.internal.h"
 
 // n-dimensional Rosenbrock utility function, minimum at _v = {1,1,1...}
-float liquid_rosenbrock(void *       _userdata,
-                        float *      _v,
-                        unsigned int _n)
+float liquid_rosenbrock(void *        _userdata,
+                        const float * _v,
+                        unsigned int  _n)
 {
     if (_n == 0) {
         liquid_error(LIQUID_EICONFIG,"liquid_rosenbrock(), input vector length cannot be zero");
@@ -52,9 +52,9 @@ float liquid_rosenbrock(void *       _userdata,
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector [size: _n x 1]
 //  _n          :   input vector size
-float liquid_invgauss(void *       _userdata,
-                      float *      _v,
-                      unsigned int _n)
+float liquid_invgauss(void *        _userdata,
+                      const float * _v,
+                      unsigned int  _n)
 {
     if (_n == 0) {
         liquid_error(LIQUID_EICONFIG,"liquid_invgauss(), input vector length cannot be zero");
@@ -78,9 +78,9 @@ float liquid_invgauss(void *       _userdata,
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector [size: _n x 1]
 //  _n          :   input vector size
-float liquid_multimodal(void *       _userdata,
-                        float *      _v,
-                        unsigned int _n)
+float liquid_multimodal(void *        _userdata,
+                        const float * _v,
+                        unsigned int  _n)
 {
     if (_n == 0) {
         liquid_error(LIQUID_EICONFIG,"liquid_multimodal(), input vector length cannot be zero");
@@ -105,9 +105,9 @@ float liquid_multimodal(void *       _userdata,
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector [size: _n x 1]
 //  _n          :   input vector size
-float liquid_spiral(void *       _userdata,
-                    float *      _v,
-                    unsigned int _n)
+float liquid_spiral(void *        _userdata,
+                    const float * _v,
+                    unsigned int  _n)
 {
     if (_n == 0) {
         liquid_error(LIQUID_EICONFIG,"liquid_rosenbrock(), input vector length cannot be zero");

@@ -33,7 +33,7 @@
 // sum squares, basic loop
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
-float liquid_sumsqf(float *      _v,
+float liquid_sumsqf(const float * _v,
                     unsigned int _n)
 {
     // initialize accumulator
@@ -62,12 +62,12 @@ float liquid_sumsqf(float *      _v,
 // sum squares, basic loop
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
-float liquid_sumsqcf(float complex * _v,
-                     unsigned int    _n)
+float liquid_sumsqcf(const float complex * _v,
+                     unsigned int           _n)
 {
     // simple method: type cast input as real pointer, run double
     // length sumsqf method
-    float * v = (float*) _v;
+    const float * v = (const float*) _v;
     return liquid_sumsqf(v, 2*_n);
 }
 

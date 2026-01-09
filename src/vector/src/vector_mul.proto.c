@@ -33,8 +33,8 @@
 //  _y      :   second array [size: _n x 1]
 //  _n      :   array lengths
 //  _z      :   output array pointer [size: _n x 1]
-void VECTOR(_mul)(T *          _x,
-                  T *          _y,
+void VECTOR(_mul)(const T *    _x,
+                  const T *    _y,
                   unsigned int _n,
                   T *          _z)
 {
@@ -60,7 +60,7 @@ void VECTOR(_mul)(T *          _x,
 //  _n      :   array length
 //  _v      :   scalar
 //  _y      :   output array pointer [size: _n x 1]
-void VECTOR(_mulscalar)(T *          _x,
+void VECTOR(_mulscalar)(const T *    _x,
                         unsigned int _n,
                         T            _v,
                         T *          _y)
