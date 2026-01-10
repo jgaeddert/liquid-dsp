@@ -828,7 +828,7 @@ int firdespm_iext_search(firdespm _q)
         }
 
         // Delete value in 'found_iext' at 'index imin'.  This
-        // is equivalent to shifing all values left one position
+        // is equivalent to shifting all values left one position
         // starting at index imin+1
         //printf("deleting found_iext[%3u] = %3u\n", imin, found_iext[imin]);
 #if 0

@@ -1,7 +1,7 @@
 char __docstr__[] =
 "This example tests the least mean-squares (LMS) equalizer (EQ) on a"
 " signal with an unknown modulation and carrier frequency offset."
-" Equalization is performed blind on a block of samples and the reulting"
+" Equalization is performed blind on a block of samples and the resulting"
 " constellation is output to a file for plotting.";
 
 #include <stdio.h>

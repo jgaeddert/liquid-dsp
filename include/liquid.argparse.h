@@ -155,7 +155,7 @@ int liquid_arg_set(struct liquid_arg_s * _arg, const char * _optarg)
     case TYPE_CHAR:   *(char*)         (_arg->ref) = _optarg[0];      break;
     case TYPE_STRING: *(char**)        (_arg->ref) = (char*)_optarg;  break;
     default:
-        return liquid_error(LIQUID_EICONFIG,"liquid_argparse_set('%s'), could not set from input '%s'",
+        return liquid_error(LIQUID_EICONFIG,"liquid_arg_set('%s'), could not set from input '%s'",
             _arg->varname, _optarg);
     }
     return LIQUID_OK;
