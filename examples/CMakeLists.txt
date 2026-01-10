@@ -61,6 +61,7 @@ set(EXAMPLES
     firhilb_filter_example
     firhilb_interp_example
     firinterp_crcf_example
+    firinterp_crcq16_example
     firinterp_firdecim_crcf_example
     firinterp_rrrf_linear_example
     firinterp_rrrf_window_example
