@@ -184,6 +184,8 @@ const char *        liquid_error_info(liquid_error_code _code);
 #define LIQUID_LOG_CONCISE (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_5    | LIQUID_LOG_FILENAME_20   | LIQUID_LOG_LINE)
 #define LIQUID_LOG_COMPACT (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_1    | LIQUID_LOG_FILENAME_12   | LIQUID_LOG_LINE)
 #define LIQUID_LOG_DEFAULT (LIQUID_LOG_FULL)
+// number of available logging levels
+#define LIQUID_LOG_NUM_LEVELS (6)
 
 typedef struct liquid_log_event_s * liquid_log_event;
 typedef struct liquid_logger_s    * liquid_logger;
@@ -260,9 +262,9 @@ unsigned int liquid_logger_get_num_callbacks(liquid_logger q);
 // append a log message
 int liquid_log(liquid_logger _q, int _level, const char * _file, int _line, const char * _format, ...);
 
-extern const char * liquid_log_colors[];
+extern const char * liquid_log_colors[LIQUID_LOG_NUM_LEVELS];
 
-extern const char * liquid_log_levels[];
+extern const char * liquid_log_levels[LIQUID_LOG_NUM_LEVELS];
 
 // logging levels
 enum {
