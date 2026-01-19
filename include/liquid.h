@@ -166,7 +166,7 @@ typedef enum {
 extern const char * liquid_error_str[LIQUID_NUM_ERRORS];
 const char *        liquid_error_info(liquid_error_code _code);
 
-// logging
+// logging format and options
 #define LIQUID_LOG_TIMESTAMP     (1U << 9)   // log the timestamp
 #define LIQUID_LOG_LEVEL_FULL    (1U << 8)   // log the full level, e.g. "warning", "info"
 #define LIQUID_LOG_LEVEL_5       (1U << 7)   // log the level truncated to 4 characters, e.g. "warn", "info"
@@ -177,13 +177,13 @@ const char *        liquid_error_info(liquid_error_code _code);
 #define LIQUID_LOG_FILENAME_12   (1U << 2)   // log the filename, trucated to 12 characters maximum
 #define LIQUID_LOG_LINE          (1U << 1)   // log the line number
 #define LIQUID_LOG_COLOR         (1U << 0)   // log in color
-#define LIQUID_LOG_LEVEL         LIQUID_LOG_LEVEL_FULL
-#define LIQUID_LOG_FILENAME      LIQUID_LOG_FILENAME_20
+//#define LIQUID_LOG_LEVEL         LIQUID_LOG_LEVEL_FULL
+//#define LIQUID_LOG_FILENAME      LIQUID_LOG_FILENAME_20
 // some default settings
 #define LIQUID_LOG_FULL    (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_FULL | LIQUID_LOG_FILENAME_FULL | LIQUID_LOG_LINE)
 #define LIQUID_LOG_CONCISE (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_5    | LIQUID_LOG_FILENAME_20   | LIQUID_LOG_LINE)
-#define LIQUID_LOG_COMPACT (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_1    | LIQUID_LOG_FILENAME_12   | LIQUID_LOG_LINE)
-#define LIQUID_LOG_DEFAULT (LIQUID_LOG_FULL)
+#define LIQUID_LOG_COMPACT (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_5)
+#define LIQUID_LOG_DEFAULT (LIQUID_LOG_COMPACT)
 // number of available logging levels
 #define LIQUID_LOG_NUM_LEVELS (6)
 
