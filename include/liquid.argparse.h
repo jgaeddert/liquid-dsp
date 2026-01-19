@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -179,6 +179,9 @@ int liquid_argparse_print(struct liquid_argparse_s * _q,
     unsigned int i;
     printf(" [-h print this help file and exit]\n");
     printf(" [-j print this help file as JSON and exit]\n");
+    printf(" [-G set logging level, number or: ");
+    for (i=0; i<LIQUID_LOG_NUM_LEVELS; i++)
+        printf("%s%s", liquid_log_levels[i], i==LIQUID_LOG_NUM_LEVELS-1 ? "\n" : ", ");
     for (i=0; i<_q->num_args; i++)
         liquid_arg_print(_q->args + i);
     return LIQUID_OK;
@@ -305,7 +308,7 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
     struct liquid_argparse_s __parser;                                          \
     __parser.docstr = DOCSTR;                                                   \
     __parser.num_args = 0;                                                      \
-    sprintf(__parser.optstr,"hj"); /* ensure 'h', 'j' are reserved for help */  \
+    sprintf(__parser.optstr,"hjG:"); /* ensure h, j, and L are reserved     */  \
 
 // add option to list of arguments
 #define liquid_argparse_add(TYPE, VAR, DEFAULT, KEY, HELP, FUNC)                \
@@ -325,11 +328,39 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
             exit( liquid_argparse_print(&__parser, argv[0]) );                  \
         case 'j':                                                               \
             exit( liquid_argparse_print_json(&__parser, argv[0]) );             \
+        case 'G':                                                               \
+            if (liquid_argparse_logging(optarg,NULL) != LIQUID_OK)              \
+                return LIQUID_EIVAL;                                            \
+            break;                                                              \
         default:                                                                \
             if (liquid_argparse_set(&__parser, __dopt, optarg))                 \
                 exit(-1);                                                       \
         }                                                                       \
     }                                                                           \
+
+// set logging level
+int liquid_argparse_logging(const char * _optarg, void * _logger)
+{
+    liquid_logger _q = (liquid_logger) _logger;
+    unsigned int i;
+    char strbuf[4];
+    for (i=0; i<LIQUID_LOG_NUM_LEVELS; i++)
+    {
+        // check for matching numeral
+        snprintf(strbuf,3,"%d",i);
+        if (strcmp(_optarg,strbuf)==0)
+            return liquid_logger_set_level(_q,i);
+
+        // check for (partial) string match, e.g. 'warn' instead of 'warning'
+        int n0 = strlen(_optarg);
+        int n1 = strlen(liquid_log_levels[i]);
+        if (n0 > n1)
+            continue;
+        if (strncmp(_optarg,liquid_log_levels[i],n0)==0)
+            return liquid_logger_set_level(_q,i);
+    }
+    return liquid_error(LIQUID_EIVAL,"could not set logging level to unknown value '%s'", _optarg);
+}
 
 // callback: crc scheme - handle invalid types
 int liquid_argparse_crc(const char * _optarg, void * _ref)
