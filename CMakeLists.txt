@@ -1,6 +1,8 @@
 # cmake build file for liquid-dsp
 cmake_minimum_required(VERSION 3.10)
 
+#set(CMAKE_C_STANDARD 11)
+
 # parse version number from include/liquid.h
 include(cmake/version.cmake)
 get_liquid_version("${CMAKE_CURRENT_SOURCE_DIR}/include/liquid.h" LIQUID_VERSION)
@@ -16,6 +18,7 @@ option(BUILD_BENCHMARKS  "Set to ON to build benchmark program"      ON)
 option(BUILD_SHARED_LIBS "Set to ON to build shared object library"  ON)
 option(ENABLE_SIMD       "Set to ON to build SIMD extensions"        ON)
 option(FIND_SIMD         "Set to ON to find SIMD extensions"         ON)
+option(FIND_THREADS      "Set to ON to find threading library"       ON)
 option(FIND_FFTW         "Set to ON to find FFTW library"            ON)
 option(BUILD_SANDBOX     "Set to ON to build sandbox programs"       OFF)
 option(BUILD_DOC         "Set to ON to build documentation"          OFF)
@@ -60,6 +63,15 @@ endif()
 #variable_watch(fftw3f_INCLUDE_DIR)
 if (FIND_FFTW)
     find_package(fftw3f)
+endif()
+
+# cross-platform threads (e.g. thread.h for C11
+# https://cmake.org/cmake/help/latest/module/FindThreads.html
+# https://en.cppreference.com/w/c/header/threads
+if (FIND_THREADS)
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    find_package(Threads)
 endif()
 
 # global flags
@@ -447,6 +459,9 @@ endif(COVERAGE)
 
 
 target_link_libraries(${LIBNAME} c m)
+if (threads_Found)
+    target_link_libraries(${LIBNAME} Threads::Threads)
+endif()
 if (fftw3f_FOUND)
     target_link_libraries(${LIBNAME} fftw3f)
 endif()
