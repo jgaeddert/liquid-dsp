@@ -82,7 +82,7 @@ void spc2216_unpack(unsigned char * _v,
 
 // transpose square message block (generic)
 //  _m  :   input message block [size: _n x _n bits, _n*_n/8 bytes]
-//  _n  :   matrix dimension (must be divisble by 8)
+//  _n  :   matrix dimension (must be divisible by 8)
 void spc2216_transpose_block(unsigned char * _m,
                              unsigned int    _n,
                              unsigned char * _mT);
@@ -662,7 +662,7 @@ void spc2216_transpose_col(unsigned char * _w,
 
 // transpose square message block (generic)
 //  _m  :   input message block [size: _n x _n bits, _n*_n/8 bytes]
-//  _n  :   matrix dimension (must be divisble by 8)
+//  _n  :   matrix dimension (must be divisible by 8)
 void spc2216_transpose_block(unsigned char * _m,
                              unsigned int    _n,
                              unsigned char * _mT)

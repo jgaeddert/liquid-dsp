@@ -302,7 +302,7 @@ int liquid_firdes_rkaiser_bisection(unsigned int _k,
     for (i=0; i<n; i++) e2 += _h[i]*_h[i];
     for (i=0; i<n; i++) _h[i] *= sqrtf(_k/e2);
 
-    // save trasition bandwidth adjustment
+    // save transition bandwidth adjustment
     *_rho = x_hat;
     return LIQUID_OK;
 }
@@ -438,7 +438,7 @@ int liquid_firdes_rkaiser_quadratic(unsigned int _k,
     for (i=0; i<n; i++) e2 += _h[i]*_h[i];
     for (i=0; i<n; i++) _h[i] *= sqrtf(_k/e2);
 
-    // save trasition bandwidth adjustment
+    // save transition bandwidth adjustment
     *_rho = rho_opt;
     return LIQUID_OK;
 }
