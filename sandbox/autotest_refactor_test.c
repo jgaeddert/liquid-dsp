@@ -77,19 +77,19 @@ void liquid_autotest_fail(liquid_autotest _q,
     _q->num_fail++;
 }
 
-// expand macro
-#define AUTOTEST__(Q,F,L,X)                                         \
+// expand macro to run test
+#define __LIQUID_TEST__(Q,F,L,X)                                    \
 {                                                                   \
-    if (!X)                                                         \
+    if (!(X))                                                       \
         liquid_autotest_fail(Q,F,L,#X);                             \
     else                                                            \
         liquid_autotest_pass(Q);                                    \
 }
-#define AUTOTEST_(Q,F,L,X)      AUTOTEST__(Q,F,L,(X))     
+#define LIQUID_CHECK_(Q,F,L,X)  __LIQUID_TEST__(Q,F,L,(X))     
 // implied autotest object '__q__'
-#define AUTOTEST(X)             AUTOTEST_(__q__,__FILE__,__LINE__,X)
+#define LIQUID_CHECK(X)         LIQUID_CHECK_(__q__,__FILE__,__LINE__,X)
 // explicit autotest object
-#define QAUTOTEST(Q,X)          AUTOTEST_(Q,__FILE__,__LINE__,X)
+#define LIQUID_XCHECK(Q,X)      LIQUID_CHECK_(Q,__FILE__,__LINE__,X)
 
 // initialize autotest harness
 // define liquid_autotest(...) __liquid_autotest_internal( __VA_ARGS__ )
@@ -137,7 +137,7 @@ void firfilt_crcf_basic_0_autotest(liquid_autotest __q__)
 LIQUID_AUTOTEST(firfilt_crcf_basic_0, "basic filter test", "FIR,filter,basic", 0.1)
 {
     printf("firfilt_crcf_basic_0 test\n");
-    AUTOTEST(2 < 7);
+    LIQUID_CHECK(2 < 7);
 }
 #endif
 
@@ -145,25 +145,26 @@ LIQUID_AUTOTEST(firfilt_crcf_basic_0, "basic filter test", "FIR,filter,basic", 0
 LIQUID_AUTOTEST(firfilt_crcf_basic_1, "basic filter test", "a,b,c", 0.1)
 {
     printf("firfilt_crcf_basic_1 test\n");
-    AUTOTEST(4 > 9);
+    LIQUID_CHECK(4 > 9);
 }
 
 
 LIQUID_AUTOTEST(firfilt_crcf_basic_2, "basic filter test", "a,b,c", 0.1)
 {
     printf("firfilt_crcf_basic_2 test\n");
-    AUTOTEST(4 > 6);
-    AUTOTEST(5 > 6);
-    AUTOTEST(6 > 6);
-    AUTOTEST(7 > 6);
+    LIQUID_CHECK(4 > 6);
+    LIQUID_CHECK(5 > 6);
+    LIQUID_CHECK(6 > 6);
+    LIQUID_CHECK(7 > 6);
 }
 
 // supporting function
 void test_support(liquid_autotest _q)
 {
+    // run checks with explicit reference to autotest variable
     unsigned int i;
     for (i=0; i<100; i++)
-        QAUTOTEST(_q, i < 100);
+        LIQUID_XCHECK(_q, i < 100);
 }
 
 LIQUID_AUTOTEST(firfilt_crcf_basic_3, "test calling supporting function", "a,b,c", 0.1)
