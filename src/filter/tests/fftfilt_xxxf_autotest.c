@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 //
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // autotest data definitions
 #include "src/filter/tests/fftfilt_autotest.h"
@@ -118,13 +118,7 @@ void autotest_fftfilt_cccf_data_h23x256()
 
 void autotest_fftfilt_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping fftfilt config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
     float h[9] = {0,1,2,3,4,5,6,7,8,};
     CONTEND_ISNULL(fftfilt_crcf_create(h,0,64)); // filter length too small
@@ -141,6 +135,7 @@ void autotest_fftfilt_config()
     CONTEND_EQUALITY(9, fftfilt_crcf_get_length(filt));
 
     fftfilt_crcf_destroy(filt);
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_fftfilt_copy()

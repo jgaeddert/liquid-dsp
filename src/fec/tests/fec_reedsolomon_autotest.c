@@ -55,8 +55,6 @@ void autotest_reedsolomon_223_255()
 
     // create object
     fec q = fec_create(LIQUID_FEC_RS_M8,NULL);
-    if (liquid_autotest_verbose)
-        fec_print(q);
 
     // encode message
     fec_encode(q, dec_msg_len, msg_org, msg_enc);
@@ -71,13 +69,6 @@ void autotest_reedsolomon_223_255()
 
     // validate data are the same
     CONTEND_SAME_DATA(msg_org, msg_dec, dec_msg_len);
-
-    if (liquid_autotest_verbose) {
-        printf("enc   dec\n");
-        printf("---   ---\n");
-        for (i=0; i<dec_msg_len; i++)
-            printf("%3u   %3u\n", msg_org[i], msg_dec[i]);
-    }
 
     // clean up objects
     fec_destroy(q);

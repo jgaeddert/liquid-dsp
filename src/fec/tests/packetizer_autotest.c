@@ -37,9 +37,6 @@ void packetizer_test_codec(unsigned int _n,
     // create object
     packetizer p = packetizer_create(_n,_crc,_fec0,_fec1);
 
-    if (liquid_autotest_verbose)
-        packetizer_print(p);
-
     // initialize data
     unsigned int i;
     for (i=0; i<_n; i++) {

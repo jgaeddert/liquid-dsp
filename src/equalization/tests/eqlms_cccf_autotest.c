@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,14 +21,14 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // static channel filter, run equalization with various update strategies on modulated data
 void testbench_eqlms(unsigned int k, unsigned int m, float beta, int init,
                      unsigned int p, float mu, unsigned int num_symbols,
                      int update, int ms)
 {
-    //float          tol    = 0.025f; // error tolerance
+    float          tol    = 0.025f; // error tolerance
     unsigned int   i;
     modemcf        mod    = modemcf_create(ms);
     firinterp_crcf interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER,k,m,beta,0);
@@ -104,17 +104,13 @@ void testbench_eqlms(unsigned int k, unsigned int m, float beta, int init,
         // observe error
         float error = cabsf(sym_in-sym_out);
         rmse += error * error;
-#if 0
-        if (liquid_autotest_verbose) {
-            printf("%3u : x = {%12.8f,%12.8f}, y = {%12.8f,%12.8f}, error=%12.8f %s\n",
-                    i, crealf(sym_in ), cimagf(sym_in ), crealf(sym_out), cimagf(sym_out),
-                    error, error > tol ? "*" : "");
-        }
-        //CONTEND_DELTA(error, 0.0f, tol);
-#endif
+
+        liquid_log_debug("%3u : x = {%12.8f,%12.8f}, y = {%12.8f,%12.8f}, error=%12.8f %s",
+            i, crealf(sym_in ), cimagf(sym_in ), crealf(sym_out), cimagf(sym_out),
+            error, error > tol ? "*" : "");
     }
     rmse = 10*log10f( rmse/num_symbols );
-    printf("rmse : %.3f dB\n", rmse);
+    liquid_log_debug("rmse : %.3f dB", rmse);
     CONTEND_LESS_THAN(rmse, -20.0f);
 
     // clean up objects
@@ -146,13 +142,7 @@ void autotest_eqlms_11() { testbench_eqlms(2,7, 0.3,   0,7,0.1,800,     0,LIQUID
 
 void autotest_eqlms_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping eqlms config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
     CONTEND_ISNULL(eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_ARKAISER, 0, 12, 0.3f, 0.0f));
     CONTEND_ISNULL(eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_ARKAISER, 2,  0, 0.3f, 0.0f));
@@ -188,6 +178,7 @@ void autotest_eqlms_config()
 
     // clean it up
     eqlms_cccf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_eqlms_cccf_copy()
@@ -195,7 +186,6 @@ void autotest_eqlms_cccf_copy()
     // create initial object
     eqlms_cccf q0 = eqlms_cccf_create_lowpass(21, 0.12345f);
     eqlms_cccf_set_bw(q0, 0.1f);
-    eqlms_cccf_print(q0);
 
     // run random samples through object
     unsigned int i;

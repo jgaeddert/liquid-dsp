@@ -33,13 +33,7 @@
 
 void autotest_optim_rosenbrock()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping rosenbrock config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
 
     // optimum
     float v_ones[8] = {1,1,1,1,1,1,1,1};
@@ -52,5 +46,6 @@ void autotest_optim_rosenbrock()
 
     // invalid configuration
     CONTEND_EQUALITY( liquid_rosenbrock(NULL, v_misc, 0), 0.0f )
+    _liquid_error_downgrade_disable();
 }
 

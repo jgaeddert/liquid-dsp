@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,10 +47,8 @@ void nco_crcf_phase_test(float _theta,
     float c = nco_crcf_cos(nco);
     float s = nco_crcf_sin(nco);
 
-    if (liquid_autotest_verbose) {
-        printf("cos(%8.5f) = %8.5f (%8.5f) e:%8.5f, sin(%8.5f) = %8.5f (%8.5f) e:%8.5f\n",
-                _theta, _cos, c, _cos-c, _theta, _sin, s, _sin-s);
-    }
+    liquid_log_debug("cos(%8.5f) = %8.5f (%8.5f) e:%8.5f, sin(%8.5f) = %8.5f (%8.5f) e:%8.5f",
+        _theta, _cos, c, _cos-c, _theta, _sin, s, _sin-s);
 
     // run tests
     CONTEND_DELTA( c, _cos, _tol );
@@ -170,7 +168,7 @@ void autotest_nco_mixing() {
         // assert mixer output is correct
         CONTEND_DELTA(crealf(nco_cplx_out), 1.0f, tol);
         CONTEND_DELTA(cimagf(nco_cplx_out), 0.0f, tol);
-        //printf("%3u : %12.8f + j*%12.8f\n", i, crealf(nco_cplx_out), cimagf(nco_cplx_out));
+        liquid_log_debug("%3u : %12.8f + j*%12.8f", i, crealf(nco_cplx_out), cimagf(nco_cplx_out));
 
         // step nco
         nco_crcf_step(p);

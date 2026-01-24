@@ -166,6 +166,140 @@ typedef enum {
 extern const char * liquid_error_str[LIQUID_NUM_ERRORS];
 const char *        liquid_error_info(liquid_error_code _code);
 
+// logging format and options
+#define LIQUID_LOG_TIMESTAMP     (1U << 9)   // log the timestamp
+#define LIQUID_LOG_LEVEL_FULL    (1U << 8)   // log the full level, e.g. "warning", "info"
+#define LIQUID_LOG_LEVEL_5       (1U << 7)   // log the level truncated to 4 characters, e.g. "warn", "info"
+#define LIQUID_LOG_LEVEL_1       (1U << 6)   // log the level truncated to a single character, e.g. "W", "I"
+#define LIQUID_LOG_FILENAME_FULL (1U << 5)   // log the full filename
+#define LIQUID_LOG_FILENAME_32   (1U << 4)   // log the filename, trucated to 32 characters maximum
+#define LIQUID_LOG_FILENAME_20   (1U << 3)   // log the filename, trucated to 20 characters maximum
+#define LIQUID_LOG_FILENAME_12   (1U << 2)   // log the filename, trucated to 12 characters maximum
+#define LIQUID_LOG_LINE          (1U << 1)   // log the line number
+#define LIQUID_LOG_COLOR         (1U << 0)   // log in color
+//#define LIQUID_LOG_LEVEL         LIQUID_LOG_LEVEL_FULL
+//#define LIQUID_LOG_FILENAME      LIQUID_LOG_FILENAME_20
+// some default settings
+#define LIQUID_LOG_FULL    (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_FULL | LIQUID_LOG_FILENAME_FULL | LIQUID_LOG_LINE)
+#define LIQUID_LOG_CONCISE (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_5    | LIQUID_LOG_FILENAME_20   | LIQUID_LOG_LINE)
+#define LIQUID_LOG_COMPACT (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_5)
+#define LIQUID_LOG_DEFAULT (LIQUID_LOG_COMPACT)
+// number of available logging levels
+#define LIQUID_LOG_NUM_LEVELS (6)
+
+typedef struct liquid_log_event_s * liquid_log_event;
+typedef struct liquid_logger_s    * liquid_logger;
+
+// logging callback function
+typedef int (*liquid_log_callback)(liquid_log_event event, void * context);
+
+// lock callback function
+typedef int (*liquid_lock_callback)(int _lock, void * context);
+
+struct liquid_log_event_s
+{
+    va_list      args;      // variadic function arguments
+    const char * format;    // message format
+    const char * file;      // source file name
+    unsigned int line;      // source line number
+    int          level;     // log level
+    struct tm *  timestamp; // timestamp of event
+    char         time_str[64];  // formatting time buffer
+};
+
+// create logger object with default parameters
+liquid_logger liquid_logger_create();
+
+// destroy logger object, freeing all internal memory
+int liquid_logger_destroy(liquid_logger _q);
+
+// reset internal logger object counters, reset level, clear callbacks
+int liquid_logger_reset(liquid_logger _q);
+
+// print logger information to stdout
+int liquid_logger_print(liquid_logger _q);
+
+// set log level; any value below this will not be logged
+int liquid_logger_set_level(liquid_logger q, int _level);
+
+// set the format for the timestamp (see system's `strftime` help for options)
+// setting to NULL or an empty string will disable timestamps
+int liquid_logger_set_time_fmt(liquid_logger q, const char * fmt);
+
+// set output configuration
+int liquid_logger_set_config(liquid_logger q, int _config);
+
+// add lock function with context
+//  _q          : logger object
+//  _callback   : user-defined lock callback function
+//  _context    : context passed when callback is invoked
+int liquid_logger_set_lock(liquid_logger        _q,
+                           liquid_lock_callback _callback,
+                           void *               _context);
+
+// add callback with context
+//  _q          : logger object
+//  _callback   : user-defined callback function
+//  _context    : context passed when callback is invoked
+//  _level      : minimum log level for which callback will be invoked
+int liquid_logger_add_callback(liquid_logger       _q,
+                               liquid_log_callback _callback,
+                               void *              _context,
+                               int                 _level);
+
+// add file pointer for which to append logs; when file is closed, the callback
+// will cease appending to the file
+//  _q      : logger object
+//  _fid    : file handle
+//  _level  : minimum log level for which callback will be invoked
+int liquid_logger_add_file(liquid_logger _q,
+                           FILE *        _fid,
+                           int           _level);
+
+// get the number of callbacks currently used
+unsigned int liquid_logger_get_num_callbacks(liquid_logger q);
+
+// append a log message
+int liquid_log(liquid_logger _q, int _level, const char * _file, int _line, const char * _format, ...);
+
+extern const char * liquid_log_colors[LIQUID_LOG_NUM_LEVELS];
+
+extern const char * liquid_log_levels[LIQUID_LOG_NUM_LEVELS];
+
+// logging levels
+enum {
+    // a union of all levels, allowing everything to be logged
+    LIQUID_TRACE=0,
+
+    // highly granular level allowing for performing low-level diagnostics
+    LIQUID_DEBUG,
+
+    // routine application operations
+    LIQUID_INFO,
+
+    // level to designate potentially harmful events, indicating something
+    // unexpected occurred and might require investigation
+    LIQUID_WARN,
+
+    // level to designate a serious event such as an invalid configuration
+    // for a new object, passing a NULL pointer to a method, or an algorithm
+    // failing to converge
+    LIQUID_ERROR,
+
+    // level indicating a catastrophic event has occurred, and the
+    // application should be aborted immediately
+    LIQUID_FATAL
+};
+
+#define liquid_log_trace(...) liquid_log(NULL,LIQUID_TRACE,__FILE__,__LINE__,__VA_ARGS__)
+#define liquid_log_debug(...) liquid_log(NULL,LIQUID_DEBUG,__FILE__,__LINE__,__VA_ARGS__)
+#define liquid_log_info(...)  liquid_log(NULL,LIQUID_INFO, __FILE__,__LINE__,__VA_ARGS__)
+#define liquid_log_warn(...)  liquid_log(NULL,LIQUID_WARN, __FILE__,__LINE__,__VA_ARGS__)
+#define liquid_log_error(...) liquid_log(NULL,LIQUID_ERROR,__FILE__,__LINE__,__VA_ARGS__)
+#define liquid_log_fatal(...) liquid_log(NULL,LIQUID_FATAL,__FILE__,__LINE__,__VA_ARGS__)
+
+
+// macro concatenation
 #define LIQUID_CONCAT(prefix, name) prefix ## name
 #define LIQUID_VALIDATE_INPUT
 
@@ -10138,6 +10272,9 @@ unsigned int liquid_msb_index(unsigned int _x);
 
 // Print string of bits to stdout
 int liquid_print_bitstring(unsigned int _x, unsigned int _n);
+
+// print bitstring to char array
+int liquid_sprintf_bitstring(char * _str, unsigned int _x, unsigned int _n);
 
 // reverse byte, word, etc.
 unsigned char liquid_reverse_byte(  unsigned char _x);

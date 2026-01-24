@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -80,17 +80,10 @@ void lpc_test_harness(unsigned int _n,
 
         // compute error
         rmse += (s0-s1)*(s0-s1);
-
-        //if (liquid_autotest_verbose) printf("%12.4e %12.4e %12.4e\n", v, s0, s1);
     }
     rmse = 10*log10f( rmse / (float)n_error );
-    if (liquid_autotest_verbose) {
-        printf("original lowpass filter:\n");
-        iirfilt_rrrf_print(lowpass);
-        printf("linear predictive filter:\n");
-        iirfilt_rrrf_print(lpc);
-        printf("lpc(n=%u,p=%u,fc=%.3f), rmse: %.2f (tol: %.2f) dB\n", _n, _p, _fc, rmse, _tol);
-    }
+    liquid_log_debug("lpc(n=%u,p=%u,fc=%.3f), rmse: %.2f (tol: %.2f) dB", _n, _p, _fc, rmse, _tol);
+
     CONTEND_LESS_THAN(rmse, _tol);
 
     // destroy objects

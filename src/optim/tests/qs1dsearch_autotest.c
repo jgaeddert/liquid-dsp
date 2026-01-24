@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,8 +56,7 @@ void test_qs1dsearch(liquid_utility_1d _utility,
     unsigned int i;
     for (i=0; i<32; i++) {
         qs1dsearch_step(q);
-        if (liquid_autotest_verbose)
-            qs1dsearch_print(q);
+        //qs1dsearch_print(q);
     }
 
     // check result
@@ -65,11 +64,9 @@ void test_qs1dsearch(liquid_utility_1d _utility,
     CONTEND_DELTA( qs1dsearch_get_opt_u(q), _utility(_v_opt, &_v_opt), 1e-3f );
 
     // print results
-    if (liquid_autotest_verbose) {
-        printf("%3u : u(%12.8f) = %12.4e, v_opt=%12.4e (error=%12.4e)\n",
-            i, qs1dsearch_get_opt_v(q), qs1dsearch_get_opt_u(q),
-            _v_opt, _v_opt - qs1dsearch_get_opt_v(q));
-    }
+    liquid_log_debug("%3u : u(%12.8f) = %12.4e, v_opt=%12.4e (error=%12.4e)",
+        i, qs1dsearch_get_opt_v(q), qs1dsearch_get_opt_u(q),
+        _v_opt, _v_opt - qs1dsearch_get_opt_v(q));
 
     // clean it upt
     qs1dsearch_destroy(q);
@@ -108,13 +105,7 @@ void autotest_qs1dsearch_max_13() { test_qs1dsearch(qs1dsearch_umax, 0, -.1, 15,
 // test configuration
 void autotest_qs1dsearch_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping qs1dsearch config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check invalid function calls
     CONTEND_ISNULL(qs1dsearch_create(NULL, NULL, LIQUID_OPTIM_MAXIMIZE)) // utility is NULL
     CONTEND_ISNULL(qs1dsearch_copy  (NULL))
@@ -139,5 +130,6 @@ void autotest_qs1dsearch_config()
 
     // destroy objects
     qs1dsearch_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,8 +42,7 @@ void autotest_quantize_float_n8() {
 
         x_hat = quantize_dac(q,num_bits);
 
-        if (liquid_autotest_verbose)
-            printf("%8.4f > 0x%2.2x > %8.4f\n", x, q, x_hat);
+        liquid_log_debug("%8.4f > 0x%2.2x > %8.4f", x, q, x_hat);
 
         // ensure original value is recovered within tolerance
         CONTEND_DELTA(x,x_hat,tol);

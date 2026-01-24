@@ -108,6 +108,8 @@ set(EXAMPLES
     kbd_window_example
     libliquid_example
     liquid_argparse_example
+    logging_example
+    logging_extensive_example
     lpc_example
     matched_filter_example
     math_lngamma_example

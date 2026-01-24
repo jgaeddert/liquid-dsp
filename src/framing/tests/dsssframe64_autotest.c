@@ -25,7 +25,7 @@
 #include <string.h>
 #include <math.h>
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 void autotest_dsssframe64sync()
 {
@@ -66,13 +66,8 @@ void autotest_dsssframe64sync()
 // test errors and invalid configuration
 void autotest_dsssframe64_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping dsssframe64 config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
+
     // test copying/creating invalid objects
     CONTEND_ISNULL( dsssframe64gen_copy(NULL) );
     CONTEND_ISNULL( dsssframe64sync_copy(NULL) );
@@ -96,6 +91,8 @@ void autotest_dsssframe64_config()
 
     dsssframe64gen_destroy(fg);
     dsssframe64sync_destroy(fs);
+
+    _liquid_error_downgrade_disable();
 }
 
 // test that the complete internal state of one generator can be copied to a new

@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // common structure for relaying information to/from callback
 typedef struct {
@@ -41,8 +41,7 @@ int autotest_qdsync_callback(float complex * _buf,
 {
     // save samples to buffer as appropriate
     autotest_qdsync_s * q = (autotest_qdsync_s *) _context;
-    if (liquid_autotest_verbose)
-        printf("[%d] qdsync callback got %u samples\n", q->id, _buf_len);
+    liquid_log_debug("[%d] qdsync callback got %u samples", q->id, _buf_len);
     unsigned int i;
     for (i=0; i<_buf_len; i++) {
         if (q->count == q->buf_len)
@@ -123,10 +122,8 @@ void testbench_qdsync_linear(unsigned int _k,
         rmse += e*e;
     }
     rmse = 10*log10f( rmse / (float)seq_len );
-    if (liquid_autotest_verbose) {
-        printf("qdsync: rxy:%5.3f, tau:%5.2f, gamma:%5.3f, dphi:%12.4e, phi:%8.5f, rmse:%5.2f\n",
-                rxy_hat, tau_hat, gamma_hat, dphi_hat, phi_hat, rmse);
-    }
+    liquid_log_debug("qdsync: rxy:%5.3f, tau:%5.2f, gamma:%5.3f, dphi:%12.4e, phi:%8.5f, rmse:%5.2f",
+            rxy_hat, tau_hat, gamma_hat, dphi_hat, phi_hat, rmse);
     CONTEND_LESS_THAN   ( rmse,              -30.0f )
     CONTEND_GREATER_THAN( rxy_hat,            0.75f )
     CONTEND_LESS_THAN   ( fabsf(tau_hat-tau), 0.10f )
@@ -208,8 +205,7 @@ void autotest_qdsync_set_buf_len()
         rmse += e*e;
     }
     rmse = 10*log10f( rmse / (float)seq_len );
-    if (liquid_autotest_verbose)
-        printf("qdsync: rmse: %12.3f\n", rmse);
+    liquid_log_debug("qdsync: rmse: %12.3f", rmse);
     CONTEND_LESS_THAN( rmse, -30.0f )
 
     // clean up objects
@@ -303,13 +299,7 @@ void autotest_qdsync_cccf_copy()
 
 void autotest_qdsync_cccf_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping qdsync_cccf config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check invalid function calls
     CONTEND_ISNULL(qdsync_cccf_copy(NULL));
     CONTEND_ISNULL(qdsync_cccf_create_linear(NULL,0,LIQUID_FIRFILT_ARKAISER,4,12,0.25f,NULL,NULL));
@@ -338,5 +328,6 @@ void autotest_qdsync_cccf_config()
 
     // destroy object
     qdsync_cccf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 

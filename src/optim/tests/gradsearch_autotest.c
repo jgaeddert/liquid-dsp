@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,26 +53,19 @@ void autotest_gradsearch_rosenbrock()
                                       liquid_rosenbrock,
                                       LIQUID_OPTIM_MINIMIZE);
 
-#if 0
-    // execute search
-    float u_opt = gradsearch_execute(gs, num_iterations, -1e-6f);
-#else
     // execute search one iteration at a time
     unsigned int d=1;
     for (i=0; i<num_iterations; i++) {
         gradsearch_step(gs);
 
         // periodically print updates
-        if (liquid_autotest_verbose) {
-            if (((i+1)%d)==0 || i==0 || i == num_iterations-1) {
-                printf("%5u: ", i+1);
-                gradsearch_print(gs);
+        if (((i+1)%d)==0 || i==0 || i == num_iterations-1) {
+            float u = liquid_rosenbrock(NULL, v_opt, num_parameters);
+            liquid_log_debug("%5u: u = %12.4e", i+1, u);
 
-                if ((i+1)==10*d) d*=10;
-            }
+            if ((i+1)==10*d) d*=10;
         }
     }
-#endif
 
     // destroy gradient descent search object
     gradsearch_destroy(gs);
@@ -137,13 +130,11 @@ void autotest_gradsearch_maxutility()
         gradsearch_step(gs);
 
         // periodically print updates
-        if (liquid_autotest_verbose) {
-            if (((i+1)%d)==0 || i==0 || i == num_iterations-1) {
-                printf("%5u: ", i+1);
-                gradsearch_print(gs);
+        if (((i+1)%d)==0 || i==0 || i == num_iterations-1) {
+            float u = utility_max_autotest(NULL, v_opt, num_parameters);
+            liquid_log_debug("%5u: u = %12.4e", i+1, u);
 
-                if ((i+1)==10*d) d*=10;
-            }
+            if ((i+1)==10*d) d*=10;
         }
     }
 

@@ -25,7 +25,7 @@
 #include <string.h>
 #include <math.h>
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // AUTOTEST : test simple recovery of frame in noise
 void autotest_framesync64()
@@ -125,15 +125,16 @@ void autotest_framesync64_copy()
     // parse statistics
     framedatastats_s stats_0 = framesync64_get_framedatastats(fs0);
     framedatastats_s stats_1 = framesync64_get_framedatastats(fs1);
-    framedatastats_print(&stats_0);
-    framedatastats_print(&stats_1);
+    liquid_log_debug(" detected:%u(%u), headers valid:%u(%u), payloads valid:%u(%u), bytes rx:%u(%u)",
+        stats_0.num_frames_detected, stats_1.num_frames_detected,
+        stats_0.num_headers_valid,   stats_1.num_headers_valid,
+        stats_0.num_payloads_valid,  stats_1.num_payloads_valid,
+        stats_0.num_bytes_received,  stats_1.num_bytes_received);
 
     CONTEND_EQUALITY(stats_0.num_frames_detected, stats_1.num_frames_detected);
     CONTEND_EQUALITY(stats_0.num_headers_valid  , stats_1.num_headers_valid  );
     CONTEND_EQUALITY(stats_0.num_payloads_valid , stats_1.num_payloads_valid );
     CONTEND_EQUALITY(stats_0.num_bytes_received , stats_1.num_bytes_received );
-    framesync64_print(fs0);
-    framesync64_print(fs1);
 
     // destroy objects
     framegen64_destroy(fg);
@@ -143,13 +144,7 @@ void autotest_framesync64_copy()
 
 void autotest_framesync64_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping framesync64 config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check invalid function calls
     CONTEND_ISNULL(framesync64_copy(NULL));
     CONTEND_ISNULL(framegen64_copy (NULL));
@@ -165,6 +160,7 @@ void autotest_framesync64_config()
     CONTEND_EQUALITY(0.654321f, framesync64_get_threshold(q))
 
     framesync64_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 static int callback_framesync64_autotest_debug(
@@ -220,7 +216,7 @@ void testbench_framesync64_debug(int _code)
     const char * fn = framesync64_get_filename(fs);
     char filename[256] = "";
     snprintf(filename,255,"%s",fn==NULL ? "" : fn);
-    printf("filename: %s\n", filename);
+    liquid_log_debug("filename: %s", filename);
 
     // destroy objects
     framegen64_destroy(fg);
@@ -239,7 +235,7 @@ void testbench_framesync64_debug(int _code)
     // load file
     FILE * fid = fopen(filename,"rb");
     if (fid == NULL) {
-        AUTOTEST_FAIL("could not open file for reading");
+        AUTOTEST_FAIL("could not open for reading");
         return;
     }
 
@@ -263,7 +259,8 @@ static int callback_framesync64_autotest_estimation(
     framesyncstats_s _stats,
     void *           _userdata)
 {
-    //printf("callback invoked, payload valid: %s\n", _payload_valid ? "yes" : "no");
+    liquid_log_debug("framesync64 estimation callback invoked, payload valid: %s",
+        _payload_valid ? "yes" : "no");
     memmove(_userdata, &_stats, sizeof(framesyncstats_s));
     return 0;
 }
@@ -306,10 +303,8 @@ void autotest_framesync64_estimation()
     // try to receive the frame
     framesync64_execute(fs, frame, LIQUID_FRAME64_LEN);
 
-    if (liquid_autotest_verbose)
-        framesyncstats_print(&stats);
-
     // check results (relatively high tolerance)
+    liquid_log_debug(" rssi:%.3f dB, SNRdB:%.3f dB, cfo:%.6f", stats.rssi, -stats.evm, stats.cfo);
     CONTEND_DELTA( stats.rssi, rssi,  1.0f );
     CONTEND_DELTA( -stats.evm, SNRdB, 3.0f ); // error biased negative
     CONTEND_DELTA( stats.cfo,  dphi,  4e-3f);

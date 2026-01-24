@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2024 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -80,14 +80,8 @@ void nco_crcf_pll_test(int          _type,
     while (freq_error <= -2*M_PI) freq_error += 2*M_PI;
     CONTEND_DELTA(freq_error, 0, _tol);
 
-    if (liquid_autotest_verbose) {
-        printf("  nco[bw:%6.4f,n=%6u], phase:%9.6f,e=%11.4e, freq:%9.6f,e=%11.4e\n",
-                _pll_bandwidth, _num_iterations,
-                _phase_offset,
-                phase_error,
-                _freq_offset,
-                freq_error);
-    }
+    liquid_log_debug("  nco[bw:%6.4f,n=%6u], phase:%9.6f,e=%11.4e, freq:%9.6f,e=%11.4e",
+        _pll_bandwidth, _num_iterations, _phase_offset, phase_error, _freq_offset, freq_error);
 
     // clean it up
     nco_crcf_destroy(nco_tx);

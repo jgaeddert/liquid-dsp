@@ -25,13 +25,7 @@
 
 void autotest_firdecim_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping firdecim config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // design filter
     unsigned int M     =  4;
     unsigned int m     = 12;
@@ -63,6 +57,7 @@ void autotest_firdecim_config()
     CONTEND_EQUALITY(scale, 8.0f);
 
     firdecim_crcf_destroy(decim);
+    _liquid_error_downgrade_disable();
 }
 
 // assert that block execution matches regular execute

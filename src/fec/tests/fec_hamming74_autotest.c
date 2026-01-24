@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,8 +39,6 @@ void autotest_hamming74_codec()
 
     // create object
     fec q = fec_create(fs,NULL);
-    if (liquid_autotest_verbose)
-        fec_print(q);
 
     // encode message
     fec_encode(q, n, msg, msg_enc);

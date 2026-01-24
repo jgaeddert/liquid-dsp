@@ -189,7 +189,11 @@ int framesync64_destroy(framesync64 _q)
 // print frame synchronizer object internals
 int framesync64_print(framesync64 _q)
 {
-    printf("<liquid.framesync64>\n");
+    printf("<liquid.framesync64, detected:%u, headers valid:%u, payloads valid:%u, bytes:%lu>\n",
+        _q->framedatastats.num_frames_detected,
+        _q->framedatastats.num_headers_valid,
+        _q->framedatastats.num_payloads_valid,
+        _q->framedatastats.num_bytes_received);
     return LIQUID_OK;
 }
 
@@ -439,7 +443,7 @@ int framesync64_debug_export(framesync64     _q,
 
     fclose(fid);
     _q->num_files_exported++;
-    printf("framesync64_debug_export(), results written to %s (%u total)\n",
+    liquid_log_debug("framesync64_debug_export(), results written to %s (%u total)",
         _q->filename, _q->num_files_exported);
     return LIQUID_OK;
 }

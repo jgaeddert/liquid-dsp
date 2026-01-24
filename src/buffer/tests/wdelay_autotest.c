@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ void autotest_wdelayf()
     for (i=0; i<10; i++) {
         wdelayf_push(w,  x0[i]);
         wdelayf_read(w, &y0[i]);
-        //printf("%3u : %6.2f (%6.2f)\n", i, y0[i], y0_test[i]);
+        liquid_log_debug("%3u : %6.2f (%6.2f)", i, y0[i], y0_test[i]);
     }
     // 6 7 8 9 10
     CONTEND_SAME_DATA(y0, y0_test, 10*sizeof(float));
@@ -58,7 +58,7 @@ void autotest_wdelayf()
     for (i=0; i<10; i++) {
         wdelayf_push(w,  x1[i]);
         wdelayf_read(w, &y1[i]);
-        //printf("%3u : %6.2f (%6.2f)\n", i, y1[i], y1_test[i]);
+        liquid_log_debug("%3u : %6.2f (%6.2f)", i, y1[i], y1_test[i]);
     }
     // wdelay: 6 7 8 9 2 2 2
     CONTEND_SAME_DATA(y1, y1_test, 10*sizeof(float));
@@ -74,7 +74,7 @@ void autotest_wdelayf()
     for (i=0; i<10; i++) {
         wdelayf_push(w,  x2[i]);
         wdelayf_read(w, &y2[i]);
-        //printf("%3u : %6.2f (%6.2f)\n", i, y1[i], y1_test[i]);
+        liquid_log_debug("%3u : %6.2f (%6.2f)", i, y1[i], y1_test[i]);
     }
     // wdelay: 1 1 1 2 3 4
     CONTEND_SAME_DATA(y2, y2_test, 10*sizeof(float));

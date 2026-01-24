@@ -43,6 +43,11 @@
 #  define LIBFEC_ENABLED 1
 #endif
 
+// downgrade errors to warnings; this is used _internally_ to test error handling without
+// explicitly exiting or erroring out
+void _liquid_error_downgrade_enable (void);
+void _liquid_error_downgrade_disable(void);
+
 //
 // Debugging macros
 //

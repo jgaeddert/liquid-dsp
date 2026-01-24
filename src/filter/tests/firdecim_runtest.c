@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // autotest helper function
 //  _M      :   decimation rate

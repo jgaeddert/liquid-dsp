@@ -139,17 +139,9 @@ void symsync_rrrf_test(const char * _method,
     // (initial filter + resampler + matched filter)
     unsigned int delay = m + 10 + m;
 
-    if (liquid_autotest_verbose) {
-        printf("symsync_rrrf_test(),\n");
-        printf("    k       :   %u\n",      k);
-        printf("    m       :   %u\n",      m);
-        printf("    beta    :   %-8.4f\n",   beta);
-        printf("    tau     :   %-8.4f\n",   tau);
-        printf("    rate    :   %-12.8f\n",  rate);
-        printf("output symbols:\n");
-    }
-
-    // compare (and print) results
+    // compare and log results
+    liquid_log_debug("symsync_rrrf_test, k:%u, m:%u, beta:%-8.4f, tau:%-8.4f, rate:%12.8f, syms:",
+        k,m,beta,tau,rate);
     for (i=nz-num_symbols_test; i<nz; i++) {
         // compute error
         float err = fabsf( z[i] - s[i-delay] );
@@ -157,16 +149,9 @@ void symsync_rrrf_test(const char * _method,
         // assert that error is below tolerance
         CONTEND_LESS_THAN( err, tol );
 
-        // print formatted results if desired
-        if (liquid_autotest_verbose) {
-            printf("  sym_out(%4u) = %8.4f; %% {%8.4f} e = %12.8f %s\n",
-                    i+1,
-                    z[i],
-                    s[i-delay],
-                    err, err < tol ? "" : "*");
-        }
+        liquid_log_debug("  sym_out(%4u) = %8.4f; %% {%8.4f} e = %12.8f %s",
+            i+1, z[i], s[i-delay], err, err < tol ? "" : "*");
     }
-
 }
 
 // autotest scenarios (root-Nyquist)

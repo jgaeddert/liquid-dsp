@@ -22,7 +22,7 @@
 
 #include <string.h>
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // test rational-rate resampler
 void test_rresamp_crcf(const char * _method,
@@ -165,13 +165,8 @@ void autotest_rresamp_copy()
 // test errors and invalid configuration
 void autotest_rresamp_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping rresamp config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
+
     // test copying/creating invalid objects
     CONTEND_ISNULL( rresamp_crcf_copy(NULL) );
     CONTEND_ISNULL( rresamp_crcf_create(0, 5, 20, NULL) ); // interp is 0
@@ -196,5 +191,7 @@ void autotest_rresamp_config()
     CONTEND_EQUALITY(  50,  rresamp_crcf_get_Q        (resamp) );
     CONTEND_EQUALITY(   5,  rresamp_crcf_get_decim    (resamp) );
     rresamp_crcf_destroy(resamp);
+
+    _liquid_error_downgrade_disable();
 }
 

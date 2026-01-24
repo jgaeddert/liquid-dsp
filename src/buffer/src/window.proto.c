@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@ WINDOW() WINDOW(_create)(unsigned int _n)
 {
     // validate input
     if (_n == 0)
-        return liquid_error_config("error: window%s_create(), window size must be greater than zero", EXTENSION);
+        return liquid_error_config("window%s_create(), window size must be greater than zero", EXTENSION);
 
     // create initial object
     WINDOW() q = (WINDOW()) malloc(sizeof(struct WINDOW(_s)));
@@ -112,7 +112,7 @@ WINDOW() WINDOW(_copy)(WINDOW() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("error: window%s_copy(), window object cannot be NULL", EXTENSION);
+        return liquid_error_config("window%s_copy(), window object cannot be NULL", EXTENSION);
 
     // create object, copy memory, create new elements as needed
     WINDOW() q_copy = (WINDOW()) malloc(sizeof(struct WINDOW(_s)));
@@ -206,7 +206,7 @@ int WINDOW(_index)(WINDOW()     _q,
 {
     // validate input
     if (_i >= _q->len)
-        return liquid_error(LIQUID_EIRANGE,"error: window_index(), index value out of range");
+        return liquid_error(LIQUID_EIRANGE,"window_index(), index value out of range");
 
     // return value at index
     *_v = _q->v[_q->read_index + _i];

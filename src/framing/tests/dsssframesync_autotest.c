@@ -56,10 +56,6 @@ void autotest_dsssframesync()
         dsssframesync_execute(fs, buf, buf_len);
     }
 
-    // get frame data statistics
-    if (liquid_autotest_verbose)
-        dsssframesync_print(fs);
-
     // check to see that frame was recovered
 #if 0
     framedatastats_s stats = dsssframesync_get_framedatastats(fs);

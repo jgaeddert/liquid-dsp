@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,6 +71,7 @@ void autotest_golay2412_codec()
     unsigned int i;
 
     for (num_errors=0; num_errors<=3; num_errors++) {
+        liquid_log_debug("Golay(24,12), testing %u error%s...", num_errors, num_errors==1 ? "" : "s");
         for (i=0; i<num_trials; i++) {
             // generate symbol
             unsigned int sym_org = rand() % (1<<12);
@@ -89,15 +90,14 @@ void autotest_golay2412_codec()
 
 #if 0
             printf("error index : %u\n", i);
-            // print results
             printf("    sym org     :   "); liquid_print_bitstring(sym_org, n); printf("\n");
             printf("    sym enc     :   "); liquid_print_bitstring(sym_enc, k); printf("\n");
             printf("    sym rec     :   "); liquid_print_bitstring(sym_rec, k); printf("\n");
             printf("    sym dec     :   "); liquid_print_bitstring(sym_dec, n); printf("\n");
-
-            // print number of bit errors
             printf("    bit errors  :   %u\n", count_bit_errors(sym_org, sym_dec));
 #endif
+            liquid_log_debug(" [trial %2u] org:0x%.3x, enc:0x%.6x, rec:0x%.6x, dec:0x%.3x, errors:%u",
+                i, sym_org, sym_enc, sym_rec, sym_dec, count_bit_errors(sym_org, sym_dec));
 
             // validate data are the same
             CONTEND_EQUALITY(sym_org, sym_dec);

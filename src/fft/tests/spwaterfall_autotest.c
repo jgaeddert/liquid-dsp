@@ -27,13 +27,10 @@
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
-void autotest_spwaterfall_invalid_config()
+void autotest_spwaterfall_config()
 {
-#ifdef LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("spwaterfall test not run with strict mode enabled");
-    return;
-#endif
-    AUTOTEST_WARN("testing spwaterfall invalid configurations; ignore printed errors");
+    _liquid_error_downgrade_enable();
+
     // default configurations
     unsigned int nfft  = 1200;
     int          wtype = LIQUID_WINDOW_HAMMING;
@@ -59,6 +56,7 @@ void autotest_spwaterfall_invalid_config()
     CONTEND_INEQUALITY(LIQUID_OK, spwaterfallcf_set_rate(q, -10e6))
 
     spwaterfallcf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 void testbench_spwaterfallcf_noise(unsigned int _nfft,
@@ -99,10 +97,8 @@ void testbench_spwaterfallcf_noise(unsigned int _nfft,
     memmove(v, psd, _nfft*time*sizeof(float));
     qsort(v, _nfft*time, sizeof(float), &liquid_compare_float);
     float median = v[_nfft*time/2];
-    if (liquid_autotest_verbose) {
-        printf("  spwaterfallcf_test(noise): nfft:%4u, wtype:%s, n0:%6.1f, est:%6.1f, tol:%5.2f\n",
-                _nfft, liquid_window_str[_wtype][1], _noise_floor, median, tol);
-    }
+    liquid_log_debug("  spwaterfallcf_test(noise): nfft:%4u, wtype:%s, n0:%6.1f, est:%6.1f, tol:%5.2f",
+            _nfft, liquid_window_str[_wtype][1], _noise_floor, median, tol);
     CONTEND_DELTA(median, _noise_floor, tol)
 
     // destroy objects and free memory
@@ -120,7 +116,7 @@ void autotest_spwaterfall_operation()
 {
     // create default object
     spwaterfallcf q = spwaterfallcf_create(1200, LIQUID_WINDOW_HAMMING, 800, 10, 960);
-    spwaterfallcf_print(q);
+    CONTEND_EQUALITY(spwaterfallcf_print(q), LIQUID_OK);
     CONTEND_EQUALITY(spwaterfallcf_get_num_freq(q), 1200);
     CONTEND_EQUALITY(spwaterfallcf_get_num_time(q),    0);
     CONTEND_EQUALITY(spwaterfallcf_get_window_len(q),800);

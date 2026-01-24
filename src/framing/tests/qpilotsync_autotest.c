@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 #define DEBUG_QPILOTSYNC_AUTOTEST 1
 
@@ -106,14 +106,12 @@ void qpilotsync_test(modulation_scheme _ms,
     float gamma_hat = qpilotsync_get_gain(ps);
     float evm_hat   = qpilotsync_get_evm (ps);
 
-    if (liquid_autotest_verbose) {
-        qpilotgen_print(pg);
-        printf("  received bit errors : %u / %u\n", bit_errors, _payload_len * modemcf_get_bps(mod));
-        printf("  dphi (carrier freq.): %12.8f (expected %12.8f, error=%12.8f)\n", dphi_hat,  _dphi, _dphi-dphi_hat);
-        printf("  phi  (carrier phase): %12.8f (expected %12.8f, error=%12.8f)\n", phi_hat,   _phi, _phi-phi_hat);
-        printf("  gamma (channel gain): %12.8f (expected %12.8f, error=%12.8f)\n", gamma_hat, _gamma, _gamma-gamma_hat);
-        printf("  error vector mag.   : %12.8f (expected %12.8f, error=%12.8f)\n", evm_hat,   -_SNRdB,_SNRdB+evm_hat);
-    }
+    liquid_log_debug("qpilotgen, payload:%u, spacing:%u", _payload_len, _pilot_spacing);
+    liquid_log_debug("  received bit errors : %u / %u", bit_errors, _payload_len * modemcf_get_bps(mod));
+    liquid_log_debug("  dphi (carrier freq.): %8.5f (expected %8.5f, error=%8.5f)", dphi_hat,  _dphi, _dphi-dphi_hat);
+    liquid_log_debug("  phi  (carrier phase): %8.5f (expected %8.5f, error=%8.5f)", phi_hat,   _phi, _phi-phi_hat);
+    liquid_log_debug("  gamma (channel gain): %8.5f (expected %8.5f, error=%8.5f)", gamma_hat, _gamma, _gamma-gamma_hat);
+    liquid_log_debug("  error vector mag.   : %8.3f (expected %8.3f, error=%8.3f)", evm_hat,   -_SNRdB,_SNRdB+evm_hat);
 
     // check to see that frame was recovered
     CONTEND_DELTA   (   dphi_hat,  _dphi, 0.010f );
@@ -186,13 +184,7 @@ void autotest_qpilotsync_500_32() { qpilotsync_test(LIQUID_MODEM_QPSK, 500, 32, 
 
 void autotest_qpilotgen_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping qpilotgen config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check invalid function calls
     CONTEND_ISNULL(qpilotgen_create(  0, 100));    // invalid payload length
     CONTEND_ISNULL(qpilotgen_create(512,   0));    // invalid pilot spacing
@@ -204,17 +196,12 @@ void autotest_qpilotgen_config()
     CONTEND_EQUALITY(LIQUID_OK, qpilotgen_print(q))
 
     qpilotgen_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_qpilotsync_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping qpilotsync config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check invalid function calls
     CONTEND_ISNULL(qpilotsync_create(  0, 100));    // invalid payload length
     CONTEND_ISNULL(qpilotsync_create(512,   0));    // invalid pilot spacing
@@ -226,5 +213,6 @@ void autotest_qpilotsync_config()
     CONTEND_EQUALITY(LIQUID_OK, qpilotsync_print(q))
 
     qpilotsync_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 

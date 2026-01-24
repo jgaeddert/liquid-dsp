@@ -58,10 +58,7 @@ void firfilt_cccf_notch_test_harness(unsigned int _m,
     // compare result
     x2 = sqrtf(x2 / (float)num_samples);
     y2 = sqrtf(y2 / (float)num_samples);
-    if (liquid_autotest_verbose) {
-        firfilt_cccf_print(q);
-        printf("f0 = %.8f, x2: %f, y2: %f\n", _f0, x2, y2);
-    }
+    liquid_log_debug("f0 = %.8f, x2: %f, y2: %f\n", _f0, x2, y2);
     float tol = 1e-3f;
     CONTEND_DELTA(x2, 1.0f, tol);
     CONTEND_DELTA(y2, 0.0f, tol);

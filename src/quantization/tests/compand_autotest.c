@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,8 +38,7 @@ void autotest_compand_float() {
         y = compress_mulaw(x,mu);
         x_hat = expand_mulaw(y,mu);
 
-        if (liquid_autotest_verbose)
-            printf("%8.4f -> %8.4f -> %8.4f\n", x, y, x_hat);
+        liquid_log_debug("%8.4f -> %8.4f -> %8.4f", x, y, x_hat);
 
         CONTEND_DELTA(x,x_hat,tol);
 
@@ -64,11 +63,10 @@ void autotest_compand_cfloat() {
         compress_cf_mulaw(x,mu,&y);
         expand_cf_mulaw(y,mu,&z);
 
-        if (liquid_autotest_verbose) {
-            printf("%8.4f +j%8.4f > ", crealf(x), cimagf(x));
-            printf("%8.4f +j%8.4f > ", crealf(y), cimagf(y));
-            printf("%8.4f +j%8.4f\n",  crealf(z), cimagf(z));
-        }
+        liquid_log_debug("%8.4f +j%8.4f > %8.4f +j%8.4f > %8.4f +j%8.4f",
+            crealf(x), cimagf(x),
+            crealf(y), cimagf(y),
+            crealf(z), cimagf(z));
 
         CONTEND_DELTA(crealf(x),crealf(z),tol);
         CONTEND_DELTA(cimagf(x),cimagf(z),tol);

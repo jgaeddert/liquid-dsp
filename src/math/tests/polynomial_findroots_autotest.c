@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// 
+//
 // AUTOTEST: polyf_findroots
 //
 
@@ -41,20 +41,18 @@ void polyf_findroots_testbench(float *         _p,
     polyf_findroots(_p,_order+1,roots);
 
     unsigned int i;
-    if (liquid_autotest_verbose) {
-        printf("poly:\n");
-        for (i=0; i<=_order; i++)
-            printf("  p[%3u] = %12.8f\n", i, _p[i]);
+    liquid_log_debug("poly:");
+    for (i=0; i<=_order; i++)
+        liquid_log_debug("  p[%3u] = %12.8f", i, _p[i]);
 
-        printf("roots:\n");
-        for (i=0; i<_order; i++) {
-            float e = cabsf(roots[i] - _r[i]);
-            printf("  r[%3u] = %12.8f + %12.8fj (%12.8f + %12.8fj) %12.4e%s\n",
-                    i,
-                    crealf(roots[i]), cimagf(roots[i]),
-                    crealf(   _r[i]), cimagf(   _r[i]),
-                    e, e < _tol ? "" : " *");
-        }
+    liquid_log_debug("roots:");
+    for (i=0; i<_order; i++) {
+        float e = cabsf(roots[i] - _r[i]);
+        liquid_log_debug(" r[%3u]=%10.5f+%10.5fj (%10.5f+%10.5fj) %12.4e%s",
+                i,
+                crealf(roots[i]), cimagf(roots[i]),
+                crealf(   _r[i]), cimagf(   _r[i]),
+                e, e < _tol ? "" : " *");
     }
 
     // check to see if roots match within relative tolerance
@@ -126,7 +124,7 @@ void autotest_polyf_findroots_mix2()
     polyf_findroots_testbench(p, r, 10, 4e-6f);
 }
 
-// 
+//
 // AUTOTEST: polycf_findroots (random roots)
 //
 void xautotest_polycf_findroots_rand()
@@ -152,19 +150,17 @@ void xautotest_polycf_findroots_rand()
 
     polycf_expandroots(roots_hat,n-1,p_hat);
 
-    if (liquid_autotest_verbose) {
-        printf("poly:\n");
-        for (i=0; i<n; i++)
-            printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
+    liquid_log_debug("poly:");
+    for (i=0; i<n; i++)
+        liquid_log_debug("  p[%3u] = %12.8f + j*%12.8f", i, crealf(p[i]), cimagf(p[i]));
 
-        printf("roots:\n");
-        for (i=0; i<n-1; i++)
-            printf("  r[%3u] = %12.8f + j*%12.8f\n", i, crealf(roots[i]), cimagf(roots[i]));
+    liquid_log_debug("roots:");
+    for (i=0; i<n-1; i++)
+        liquid_log_debug("  r[%3u] = %12.8f + j*%12.8f", i, crealf(roots[i]), cimagf(roots[i]));
 
-        printf("poly (expanded roots):\n");
-        for (i=0; i<n; i++)
-            printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(p_hat[i]), cimagf(p_hat[i]));
-    }
+    liquid_log_debug("poly (expanded roots):");
+    for (i=0; i<n; i++)
+        liquid_log_debug("  p[%3u] = %12.8f + j*%12.8f", i, crealf(p_hat[i]), cimagf(p_hat[i]));
 
     for (i=0; i<n; i++) {
         CONTEND_DELTA(crealf(p[i]), crealf(p_hat[i]), tol);

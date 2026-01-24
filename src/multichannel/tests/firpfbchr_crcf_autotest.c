@@ -22,7 +22,7 @@
 
 #include <assert.h>
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 void autotest_firpfbchr_crcf()
 {
@@ -117,13 +117,8 @@ void autotest_firpfbchr_crcf()
 
 void autotest_firpfbchr_crcf_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping firpfbchr_crcf config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
+
     // design prototype filter
     unsigned int h_len = 2*64*12+1;
     float h[2*64*12+1];
@@ -152,5 +147,7 @@ void autotest_firpfbchr_crcf_config()
     CONTEND_EQUALITY(12, firpfbchr_crcf_get_m(q))
 
     firpfbchr_crcf_destroy(q);
+
+    _liquid_error_downgrade_disable();
 }
 

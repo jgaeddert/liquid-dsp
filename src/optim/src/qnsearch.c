@@ -120,21 +120,19 @@ int qnsearch_destroy(qnsearch _q)
 
 int qnsearch_print(qnsearch _q)
 {
-#if 0
-    printf("[%.3f] ", _q->utility);
-    unsigned int i;
-    for (i=0; i<_q->num_parameters; i++)
-        printf("%.3f ", _q->v[i]);
-    printf("\n");
-#else
     printf("<liquid.gradsearch");
     printf(", n=%u", _q->num_parameters);
     printf(", dir=\"%s\"", _q->minimize ? "min" : "max");
     printf(", gamma=%g", _q->gamma);
-    printf(", delta=%g", _q->delta);   // delta
+    printf(", delta=%g", _q->delta);
     printf(", u=%g", _q->utility);
-    printf(">\n");
+#if 0
+    unsigned int i;
+    for (i=0; i<_q->num_parameters; i++)
+        printf("%g,", _q->v[i]);
+    printf("]");
 #endif
+    printf(">\n");
     return LIQUID_OK;
 }
 

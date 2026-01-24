@@ -21,7 +21,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // Help function to keep code base small
 void cpfskmodem_test_mod_demod(cpfskmod mod, cpfskdem dem)
@@ -55,11 +55,9 @@ void cpfskmodem_test_mod_demod(cpfskmod mod, cpfskdem dem)
     for (i=0; i<num_symbols; i++) {
         if (i >= delay) {
             // print results
-            if (liquid_autotest_verbose) {
-                printf("  %3u : input = %2u, output = %2u %s\n",
-                        i, sym_in[i-delay], sym_out[i],
-                        (sym_in[i-delay] == sym_out[i]) ? "" : "*");
-            }
+            liquid_log_debug("  %3u : input = %2u, output = %2u %s",
+                    i, sym_in[i-delay], sym_out[i],
+                    (sym_in[i-delay] == sym_out[i]) ? "" : "*");
 
             // check result
             CONTEND_EQUALITY(sym_in[i-delay], sym_out[i]);
@@ -195,13 +193,7 @@ void autotest_cpfskmodem_spectrum()
 // test errors and invalid configuration
 void autotest_cpfskmodem_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping modem config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // test copying/creating invalid objects
     //CONTEND_ISNULL( modemcf_copy(NULL) );
     CONTEND_ISNULL( cpfskmod_create(0, 0.5f, 4, 12, 0.25f, LIQUID_CPFSK_SQUARE) ); // _bps is less than 1
@@ -231,5 +223,6 @@ void autotest_cpfskmodem_config()
     cpfskdem dem = cpfskdem_create(1, 0.5f, 4, 12, 0.5f, LIQUID_CPFSK_SQUARE);
     CONTEND_EQUALITY( LIQUID_OK, cpfskdem_print(dem) );
     cpfskdem_destroy(dem);
+    _liquid_error_downgrade_disable();
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,12 +43,9 @@ void fft_r2r_test(float *      _x,
     fftplan q = fft_create_plan_r2r_1d(_n, _x, y, _kind, _flags);
     fft_execute(q);
 
-    // print results
-    if (liquid_autotest_verbose) {
-        printf("%12s %12s\n", "expected", "actual");
-        for (i=0; i<_n; i++)
-            printf("%12.8f %12.8f\n", _test[i], y[i]);
-    }
+    // log results
+    for (i=0; i<_n; i++)
+        liquid_log_debug("[%2u] input:%12.8f, output:%12.8f, expected:%12.8f", i, _x[i], _test[i], y[i]);
 
     // validate results
     for (i=0; i<_n; i++)

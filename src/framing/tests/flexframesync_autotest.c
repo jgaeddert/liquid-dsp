@@ -60,8 +60,6 @@ void autotest_flexframesync()
     
     // assemble the frame
     flexframegen_assemble(fg, header, payload, _payload_len);
-    if (liquid_autotest_verbose)
-        flexframegen_print(fg);
 
     // generate the frame
     int frame_complete = 0;
@@ -76,8 +74,6 @@ void autotest_flexframesync()
 
     // get frame data statistics
     framedatastats_s stats = flexframesync_get_framedatastats(fs);
-    if (liquid_autotest_verbose)
-        flexframesync_print(fs);
 
     // ensure callback was invoked
     CONTEND_EQUALITY(context, FRAMING_AUTOTEST_SECRET);

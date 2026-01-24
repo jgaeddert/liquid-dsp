@@ -57,10 +57,6 @@ void autotest_asgramcf_copy()
         asgramcf_push(q0, v);
         asgramcf_push(q1, v);
     }
-    if (liquid_autotest_verbose) {
-        printf("q0:"); asgramcf_print(q0);
-        printf("q1:"); asgramcf_print(q1);
-    }
 
     // get spectrum and compare outputs
     char a0[nfft], a1[nfft];

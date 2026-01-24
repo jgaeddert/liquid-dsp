@@ -25,15 +25,10 @@
 
 void autotest_window_config_errors()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping window config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     CONTEND_EXPRESSION(windowcf_create(0)==NULL);
     CONTEND_EXPRESSION(windowf_create (0)==NULL);
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_windowf()
@@ -97,7 +92,9 @@ void autotest_windowf()
     windowf_index(w, 7, &x);    CONTEND_EQUALITY(x, 3);
     windowf_index(w, 8, &x);    CONTEND_EQUALITY(x, 3);
     windowf_index(w, 9, &x);    CONTEND_EQUALITY(x, 3);
+    _liquid_error_downgrade_enable();
     CONTEND_INEQUALITY( windowf_index(w,999, &x), LIQUID_OK); // out of range
+    _liquid_error_downgrade_disable();
 
     // push 4 more elements
     // 7 6 3 3 3 3 5 5 5 5
@@ -108,8 +105,6 @@ void autotest_windowf()
 
     windowf_read(w, &r);
     CONTEND_SAME_DATA(r,test4,10*sizeof(float));
-    if (liquid_autotest_verbose)
-        windowf_debug_print(w);
 
     // recreate window (truncate to last 6 elements)
     // 3 3 5 5 5 5
@@ -136,6 +131,12 @@ void autotest_windowf()
 
     windowf_read(w, &r);
     CONTEND_SAME_DATA(r,test8,10*sizeof(float));
+
+    // manual print
+    liquid_log_debug("manual output");
+    unsigned int i;
+    for (i=0; i<10; i++)
+        liquid_log_debug("%6u : %f", i, r[i]);
 
     windowf_destroy(w);
 }

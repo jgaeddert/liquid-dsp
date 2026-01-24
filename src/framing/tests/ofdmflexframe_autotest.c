@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // AUTOTEST : test simple recovery of frame in noise
 void testbench_ofdmflexframe(unsigned int      _M,
@@ -33,6 +33,9 @@ void testbench_ofdmflexframe(unsigned int      _M,
                              unsigned int      _payload_len,
                              modulation_scheme _ms)
 {
+    liquid_log_debug("ofdmflexframe, M:%u, cp_len:%u, taper:%u, payload:%u, ms:%s",
+        _M,_cp_len,_taper_len,_payload_len,modulation_types[_ms].name);
+
     // create frame generator/synchronizer
     unsigned int context = 0;
     ofdmflexframegenprops_s fgprops;
@@ -52,8 +55,6 @@ void testbench_ofdmflexframe(unsigned int      _M,
 
     // assemble the frame
     ofdmflexframegen_assemble(fg, header, payload, _payload_len);
-    if (liquid_autotest_verbose)
-        ofdmflexframegen_print(fg);
 
     // generate the frame
     unsigned int  buf_len = 1024;
@@ -64,15 +65,13 @@ void testbench_ofdmflexframe(unsigned int      _M,
         ofdmflexframesync_execute(fs, buf, buf_len);
     }
 
-    // get frame data statistics
-    if (liquid_autotest_verbose)
-        ofdmflexframesync_print(fs);
-
     // verify callback was invoked
     CONTEND_EQUALITY( context, FRAMING_AUTOTEST_SECRET );
 
     // verify frame data statistics
     framedatastats_s stats = ofdmflexframesync_get_framedatastats(fs);
+    liquid_log_debug(" detected:%u, headers valid:%u, payloads valid:%u, bytes rx:%u",
+        stats.num_frames_detected, stats.num_headers_valid, stats.num_payloads_valid, stats.num_bytes_received);
     CONTEND_EQUALITY( stats.num_frames_detected, 1 );
     CONTEND_EQUALITY( stats.num_headers_valid,   1 );
     CONTEND_EQUALITY( stats.num_payloads_valid,  1 );
@@ -97,14 +96,8 @@ void autotest_ofdmflexframe_09() { testbench_ofdmflexframe(1200, 40, 20, 8217, L
 
 void autotest_ofdmflexframegen_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping ofdmflexframegen config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
     // check invalid function calls
+    _liquid_error_downgrade_enable();
     //CONTEND_ISNULL(ofdmflexframegen_copy(NULL));
     CONTEND_ISNULL(ofdmflexframegen_create( 0, 16, 4, NULL, NULL)) // too few subcarriers
     CONTEND_ISNULL(ofdmflexframegen_create( 7, 16, 4, NULL, NULL)) // too few subcarriers
@@ -117,18 +110,13 @@ void autotest_ofdmflexframegen_config()
     CONTEND_EQUALITY(LIQUID_OK, ofdmflexframegen_print(q))
 
     ofdmflexframegen_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 void autotest_ofdmflexframesync_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping ofdmflexframesync config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
     // check invalid function calls
+    _liquid_error_downgrade_enable();
     //CONTEND_ISNULL(ofdmflexframesync_copy(NULL));
     CONTEND_ISNULL(ofdmflexframesync_create( 0, 16, 4, NULL, NULL, NULL)) // too few subcarriers
     CONTEND_ISNULL(ofdmflexframesync_create( 7, 16, 4, NULL, NULL, NULL)) // too few subcarriers
@@ -141,5 +129,6 @@ void autotest_ofdmflexframesync_config()
     CONTEND_EQUALITY(LIQUID_OK, ofdmflexframesync_print(q))
 
     ofdmflexframesync_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 

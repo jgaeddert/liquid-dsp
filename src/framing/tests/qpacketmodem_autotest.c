@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,8 +41,6 @@ void qpacketmodem_modulated(unsigned int _payload_len,
     // create and configure packet encoder/decoder object
     qpacketmodem q = qpacketmodem_create();
     qpacketmodem_configure(q, _payload_len, _check, _fec0, _fec1, _ms);
-    if (liquid_autotest_verbose)
-        qpacketmodem_print(q);
 
     // initialize payload
     unsigned char payload_tx[_payload_len];
@@ -116,8 +114,7 @@ void autotest_qpacketmodem_evm()
     // decode frame and get EVM estimate
     qpacketmodem_decode_soft(q, frame, payload_rx);
     float evm = qpacketmodem_get_demodulator_evm(q);
-    if (liquid_autotest_verbose)
-        printf("  EVM: %.3f dB, SNR: %.3f dB\n", evm, SNRdB);
+    liquid_log_debug("  EVM: %.3f dB, SNR: %.3f dB", evm, SNRdB);
 
     // destroy object
     qpacketmodem_destroy(q);
@@ -146,8 +143,6 @@ void qpacketmodem_unmodulated(unsigned int _payload_len,
     // create and configure packet encoder/decoder object
     qpacketmodem q = qpacketmodem_create();
     qpacketmodem_configure(q, _payload_len, _check, _fec0, _fec1, _ms);
-    if (liquid_autotest_verbose)
-        qpacketmodem_print(q);
 
     // initialize payload
     unsigned char payload_tx[_payload_len];

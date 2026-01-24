@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -87,6 +87,13 @@ float liquid_MarcumQf(int _M,
 float liquid_MarcumQ1f(float _alpha,
                        float _beta)
 {
+    if (_alpha <= 0) {
+        liquid_error(LIQUID_EIVAL,"liquid_MarcumQ1f(), alpha must be >= 0");
+        return 0.0f;
+    } else if (_beta < 0) {
+        liquid_error(LIQUID_EIVAL,"liquid_MarcumQ1f(), beta must be >= 0");
+        return 0.0f;
+    }
 #if 1
     // expand as:                    infty
     // Q_1(a,b) = exp(-(a^2+b^2)/2) * sum { (a/b)^k I_k(a*b) }

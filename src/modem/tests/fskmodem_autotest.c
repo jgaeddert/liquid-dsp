@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,7 @@ void fskmodem_test_mod_demod(unsigned int _m,
                              unsigned int _k,
                              float        _bandwidth)
 {
-    if (liquid_autotest_verbose)
-        printf("fskmodem_test_mod_demod(m=%u, k=%u, bandwidth=%g)\n", _m, _k, _bandwidth);
+    liquid_log_debug("fskmodem_test_mod_demod(m=%u, k=%u, bandwidth=%g)", _m, _k, _bandwidth);
 
     // create modulator/demodulator pair
     fskmod mod = fskmod_create(_m,_k,_bandwidth);

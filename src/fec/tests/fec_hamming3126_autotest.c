@@ -48,17 +48,17 @@ void autotest_hamming3126_codec()
         // decoded symbol
         unsigned int sym_dec = fec_hamming3126_decode_symbol(sym_rec);
 
-        if (liquid_autotest_verbose) {
-            printf("error index : %u\n", i);
-            // print results
-            printf("    sym org     :   "); liquid_print_bitstring(sym_org, n); printf("\n");
-            printf("    sym enc     :   "); liquid_print_bitstring(sym_enc, k); printf("\n");
-            printf("    sym rec     :   "); liquid_print_bitstring(sym_rec, k); printf("\n");
-            printf("    sym dec     :   "); liquid_print_bitstring(sym_dec, n); printf("\n");
-
-            // print number of bit errors
-            printf("    bit errors  :   %u\n", count_bit_errors(sym_org, sym_dec));
-        }
+#if 0
+        // print results
+        printf("error index : %u\n", i);
+        printf("    sym org     :   "); liquid_print_bitstring(sym_org, n); printf("\n");
+        printf("    sym enc     :   "); liquid_print_bitstring(sym_enc, k); printf("\n");
+        printf("    sym rec     :   "); liquid_print_bitstring(sym_rec, k); printf("\n");
+        printf("    sym dec     :   "); liquid_print_bitstring(sym_dec, n); printf("\n");
+        printf("    bit errors  :   %u\n", count_bit_errors(sym_org, sym_dec));
+#endif
+        liquid_log_debug("[%2u] org:0x%.7x, enc:0x%.8x, rec:0x%.8x, dec:0x%.7x, errors:%u",
+            i, sym_org, sym_enc, sym_rec, sym_dec, count_bit_errors(sym_org, sym_dec));
 
         // validate data are the same
         CONTEND_EQUALITY(sym_org, sym_dec);

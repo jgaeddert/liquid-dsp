@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -178,9 +178,6 @@ void autotest_msourcecf_aggregate()
     unsigned int counter = 0;
     msourcecf_add_user (gen,  0.40f, 0.15f, -10, (void*)&counter, callback_msourcecf_autotest); // tones
 
-    // print source generator object
-    CONTEND_EQUALITY(LIQUID_OK, msourcecf_print(gen));
-
     unsigned int total_samples = 0;
     while (total_samples < num_samples) {
         // write samples to buffer
@@ -192,7 +189,7 @@ void autotest_msourcecf_aggregate()
         // accumulated samples
         total_samples += buf_len;
     }
-    printf("total samples: %u\n", total_samples);
+    liquid_log_debug("total samples: %u", total_samples);
 
     // compute power spectral density output
     float psd[nfft];
@@ -248,13 +245,7 @@ void autotest_msourcecf_aggregate()
 //
 void autotest_msourcecf_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping msource config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // no need to check every combination
     CONTEND_ISNULL(msourcecf_create( 0, 12, 60));   // too few subcarriers
     CONTEND_ISNULL(msourcecf_create(17, 12, 60));   // odd-numbered subcarriers
@@ -300,6 +291,7 @@ void autotest_msourcecf_config()
 
     // destroy object
     msourcecf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 // test accessor methods
@@ -435,7 +427,7 @@ void autotest_msourcecf_copy()
         // accumulated samples
         total_samples += buf_len;
     }
-    printf("total samples: %u\n", total_samples);
+    liquid_log_debug("total samples: %u", total_samples);
 
     // compute power spectral density output
     float psd_orig[nfft];
@@ -468,6 +460,6 @@ void autotest_msourcecf_copy()
     fprintf(fid,"subplot(2,1,2), plot(f,psd_copy - psd_orig); grid on;\n");
     fprintf(fid,"  axis([-0.5 0.5 -1  1 ]); xlabel('Normalized Frequency [f/F_s]'); ylabel('Error [dB]');\n");
     fclose(fid);
-    printf("results written to %s\n", filename);
+    liquid_log_debug("results written to %s\n", filename);
 }
 

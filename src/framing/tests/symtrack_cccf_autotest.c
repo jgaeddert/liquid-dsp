@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,8 +55,6 @@ void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int 
     symtrack_cccf symtrack = symtrack_cccf_create(ftype,_k,_m,_beta,_ms);
     symtrack_cccf_set_bandwidth(symtrack,bandwidth);
     //symtrack_cccf_set_eq_off(symtrack); // disable equalization
-    if (liquid_autotest_verbose)
-        symtrack_cccf_print(symtrack);
 
     unsigned int total_samples = 0;
     //unsigned int total_symbols = 0;
@@ -102,7 +100,7 @@ void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int 
 
     // verify output constellation EVM is reasonably high
     evm = 10*log10f(evm / (float)num_symbols_evm);
-    printf("EVM: %12.8f, %u\n", evm, num_symbols_evm);
+    liquid_log_debug("EVM: %12.8f, %u", evm, num_symbols_evm);
     CONTEND_LESS_THAN(evm, -15.0f);
 }
 
@@ -112,13 +110,7 @@ void autotest_symtrack_cccf_qpsk() { testbench_symtrack_cccf( 2,12,0.25f,LIQUID_
 // invalid configuration tests
 void autotest_symtrack_cccf_config_invalid()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping symtrack_cccf config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     //CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_UNKNOWN, 2, 12, 0.25f, LIQUID_MODEM_QPSK));
     CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   1, 12, 0.25f, LIQUID_MODEM_QPSK));
     CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   2,  0, 0.25f, LIQUID_MODEM_QPSK));
@@ -135,6 +127,7 @@ void autotest_symtrack_cccf_config_invalid()
 
     // destroy object
     symtrack_cccf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 // configuration tests

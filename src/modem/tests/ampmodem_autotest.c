@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2023 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,8 +41,6 @@ void ampmodem_test_harness(float                _mod_index,
     // create mod/demod objects
     ampmodem mod   = ampmodem_create(_mod_index, _type, _suppressed_carrier);
     ampmodem demod = ampmodem_create(_mod_index, _type, _suppressed_carrier);
-    if (liquid_autotest_verbose)
-        ampmodem_print(mod);
 
     // compute end-to-end delay
     unsigned int delay = ampmodem_get_delay_mod(mod) + ampmodem_get_delay_demod(demod);
@@ -108,8 +106,7 @@ void ampmodem_test_harness(float                _mod_index,
     rmse_0 = 10*log10f( rmse_0 / (float)num_samples_compare );  // in-phase
     rmse_1 = 10*log10f( rmse_1 / (float)num_samples_compare );  // 180-degree out of phase
     float rmse = (_type == LIQUID_AMPMODEM_DSB && _suppressed_carrier ) ? (rmse_0 < rmse_1 ? rmse_0 : rmse_1) : rmse_0;
-    if (liquid_autotest_verbose)
-        printf("rms error : %.3f (in-phase: %.3f, 180 phase: %.3f) dB\n", rmse, rmse_0, rmse_1);
+    liquid_log_debug("rms error : %.3f (in-phase: %.3f, 180 phase: %.3f) dB", rmse, rmse_0, rmse_1);
     CONTEND_LESS_THAN( rmse, -18.0f );
 }
 

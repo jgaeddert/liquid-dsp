@@ -1377,7 +1377,7 @@ $(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) autot
 
 # run the autotest program
 check: $(autotest_prog)
-	./$(autotest_prog) -v -o autotest.json
+	./$(autotest_prog) -o autotest.json -g autotest/logs/autotest.log
 
 # let 'make test' be an alias for 'make check'
 test: check
@@ -1611,6 +1611,7 @@ example_programs :=						\
 	examples/kbd_window_example				\
 	examples/lpc_example					\
 	examples/libliquid_example				\
+	examples/logging_example				\
 	examples/matched_filter_example				\
 	examples/math_lngamma_example				\
 	examples/math_primitive_root_example			\

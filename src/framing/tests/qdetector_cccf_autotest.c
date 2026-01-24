@@ -111,9 +111,6 @@ void qdetector_cccf_runtest_gmsk(unsigned int _sequence_len)
 // autotest helper function
 void qdetector_cccf_runtest(qdetector_cccf _q)
 {
-    if (liquid_autotest_verbose)
-        qdetector_cccf_print(_q);
-
     float gamma =  1.0f;    // channel gain
     float tau   =  0.0f;    // fractional sample timing offset
     float dphi  = -0.000f;  // carrier frequency offset (zero for now)
@@ -162,17 +159,13 @@ void qdetector_cccf_runtest(qdetector_cccf _q)
     unsigned int sample_index = i;
 
     unsigned int buf_len = qdetector_cccf_get_buf_len(_q);
-    if (liquid_autotest_verbose) {
-        // print results
-        printf("\n");
-        printf("frame detected  :   %s\n", frame_detected ? "yes" : "no");
-        printf("  sample index  : %8u, actual=%8u (error=%8d)\n", sample_index, buf_len, (int)sample_index - (int)buf_len);
-        printf("  gamma hat     : %8.3f, actual=%8.3f (error=%8.3f)\n",            gamma_hat, gamma, gamma_hat - gamma);
-        printf("  tau hat       : %8.3f, actual=%8.3f (error=%8.3f) samples\n",    tau_hat,   tau,   tau_hat   - tau  );
-        printf("  dphi hat      : %8.5f, actual=%8.5f (error=%8.5f) rad/sample\n", dphi_hat,  dphi,  dphi_hat  - dphi );
-        printf("  phi hat       : %8.5f, actual=%8.5f (error=%8.5f) radians\n",    phi_hat,   phi,   phi_hat   - phi  );
-        printf("\n");
-    }
+
+    liquid_log_debug("frame detected  :   %s", frame_detected ? "yes" : "no");
+    liquid_log_debug("  sample index  : %8u, actual=%8u (error=%8d)", sample_index, buf_len, (int)sample_index - (int)buf_len);
+    liquid_log_debug("  gamma hat     : %8.3f, actual=%8.3f (error=%8.3f)",            gamma_hat, gamma, gamma_hat - gamma);
+    liquid_log_debug("  tau hat       : %8.3f, actual=%8.3f (error=%8.3f) samples",    tau_hat,   tau,   tau_hat   - tau  );
+    liquid_log_debug("  dphi hat      : %8.5f, actual=%8.5f (error=%8.5f) rad/sample", dphi_hat,  dphi,  dphi_hat  - dphi );
+    liquid_log_debug("  phi hat       : %8.5f, actual=%8.5f (error=%8.5f) radians",    phi_hat,   phi,   phi_hat   - phi  );
 
     if (false_positive)
         AUTOTEST_FAIL("false positive detected");

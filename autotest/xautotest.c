@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,10 +73,6 @@ typedef struct {
 //   struct package_t packages[NUM_PACKAGES]
 #include "autotest_include.h"
 
-//
-// helper functions:
-//
-
 // execute a specific test
 void execute_autotest(autotest_t * _test, int _verbose);
 
@@ -120,8 +116,20 @@ int main(int argc, char *argv[])
     liquid_argparse_add(int,          hammer_id,     -1,         'H', "hammer on a specific test", NULL);
     liquid_argparse_add(unsigned int, hammer_count,  100,        'c', "", NULL);
     liquid_argparse_add(char *,       search_string, "",         's', "run all tests matching search string", NULL);
-    liquid_argparse_add(char *,       filename,      "",         'o', "", NULL);
+    liquid_argparse_add(char *,       filename_json, "",         'o', "output filename to store JSON results", NULL);
+    liquid_argparse_add(char *,       filename_log,  "",         'g', "output filename to store all logs", NULL);
+    liquid_argparse_add(int,          log_level,     LIQUID_INFO,'V', "log level", NULL);
     liquid_argparse_parse(argc,argv);
+
+    // configure logging
+    liquid_logger_set_level(NULL, log_level);
+    FILE * log = NULL;
+    if (strcmp(filename_log,"")!=0) {
+        log = fopen(filename_log,"w");
+        if (log == NULL)
+            return liquid_error(LIQUID_EIO,"could not open '%s' for writing", filename_log);
+        liquid_logger_add_file(NULL,log,log_level);
+    }
 
     if (list_tests)
         return print_test_list();
@@ -130,11 +138,11 @@ int main(int argc, char *argv[])
 
     // validate configuration
     if (autotest_id >= 0 && autotest_id >= NUM_AUTOSCRIPTS)
-        return fprintf(stderr,"error, cannot run autotest %u; maximum index (%u) exceeded\n", autotest_id, NUM_AUTOSCRIPTS-1);
+        return liquid_error(LIQUID_EIRANGE,"cannot run autotest %u; index exceeded", autotest_id);
     if (package_id >= 0 && package_id >= NUM_PACKAGES)
-        return fprintf(stderr,"error, cannot run package %u; maximum index (%u) exceeded\n", package_id, NUM_PACKAGES-1);
+        return liquid_error(LIQUID_EICONFIG,"cannot run package %u; maximum index (%u) exceeded", package_id, NUM_PACKAGES-1);
     if (hammer_id >= 0 && hammer_id >= NUM_AUTOSCRIPTS)
-        return fprintf(stderr,"error, cannot hammer autotest %u; maximum index (%u) exceeded\n", hammer_id, NUM_AUTOSCRIPTS-1);
+        return liquid_error(LIQUID_EICONFIG,"cannot hammer autotest %u; maximum index (%u) exceeded", hammer_id, NUM_AUTOSCRIPTS-1);
 
     // set random seed for repeatability
     srand(rseed);
@@ -185,7 +193,7 @@ int main(int argc, char *argv[])
                     i %= NUM_AUTOSCRIPTS;
             }
 
-            printf("executing test %4u (%4u / %4u)\n", i, n+1, NUM_AUTOSCRIPTS);
+            liquid_log_info("executing test %4u (%4u / %4u)", i, n+1, NUM_AUTOSCRIPTS);
             execute_autotest( &scripts[i], verbose );
 
             n++;
@@ -219,21 +227,24 @@ int main(int argc, char *argv[])
     if (liquid_autotest_verbose)
         print_unstable_tests();
 
-    printf("autotest seed: %u\n", rseed);
+    liquid_log_info("autotest seed: %u", rseed);
     autotest_print_results();
+
+    if (log != NULL) {
+        fclose(log);
+        liquid_log_info("autotest log file written to '%s'", filename_log);
+    }
 
     // program return value
     int rc = liquid_autotest_num_failed > 0 ? 1 : 0;
 
-    if (strcmp(filename,"")==0)
+    if (strcmp(filename_json,"")==0)
         return rc;
 
     // export results to output .json file; try to open file for writing
-    FILE * fid = fopen(filename,"w");
-    if (!fid) {
-        fprintf(stderr,"error: %s, could not open '%s' for writing\n", __FILE__, filename);
-        return -1;
-    }
+    FILE * fid = fopen(filename_json,"w");
+    if (!fid)
+        return liquid_log_error("could not open '%s' for writing", filename_json);
 
     // print header
     time_t now;
@@ -268,8 +279,8 @@ int main(int argc, char *argv[])
     fprintf(fid,"}\n");
     fclose(fid);
 
-    if (liquid_autotest_verbose)
-        printf("output JSON results written to %s\n", filename);
+    liquid_log_info("output JSON results written to %s", filename_json);
+    //liquid_logger_print(NULL);
 
     return rc;
 }
@@ -285,9 +296,8 @@ void execute_autotest(autotest_t * _test,
     unsigned long int autotest_num_warnings_init = liquid_autotest_num_warnings;
 
     // execute test
-    if (_verbose) {
-        printf("%s:\n", _test->name);
-    }
+    liquid_log_trace("running %u '%s'...", _test->id, _test->name);
+
     // start test and run timer
     struct rusage tic, toc;
     getrusage(RUSAGE_SELF, &tic);
@@ -307,8 +317,7 @@ void execute_autotest(autotest_t * _test,
     _test->executed = 1;
     _test->extime = calculate_execution_time(tic, toc);
 
-    //if (_verbose)
-    //    print_autotest_results(_test);
+    print_autotest_results(_test);
 }
 
 // execute a specific package
@@ -317,8 +326,7 @@ void execute_autotest(autotest_t * _test,
 void execute_package(package_t * _p,
                      int _verbose)
 {
-    if (_verbose)
-        printf("%u: %s\n", _p->id, _p->name);
+    liquid_log_trace("running package %u '%s'", _p->id, _p->name);
 
     unsigned int i;
     for (i=0; i<_p->num_scripts; i++) {
@@ -362,31 +370,25 @@ double calculate_execution_time(struct rusage _tic, struct rusage _toc)
 // print results of a particular test
 void print_autotest_results(autotest_t * _test)
 {
-    printf("  %4u", _test->id);
     if (!_test->executed) {
-        printf("[     -     ] IGNORED  ");
+        liquid_log_info(" %4u [     -     ]   --  %26s %s", _test->id,"",_test->name);
     } else {
-        printf("[%8.2f ms] %8s ", _test->extime*1e3f, _test->pass ? "  PASS  " : "<<FAIL>>");
-    }
-
-    printf("passed %4lu/%4lu checks (%5.1f%%) %s\n",
+        liquid_log_info(" %4u [%8.2f ms]%8s%4lu/%4lu checks (%5.1f%%) %s",
+            _test->id, _test->extime*1e3f, _test->pass ? "  pass  " : "<<FAIL>>",
             _test->num_passed,
             _test->num_checks,
             _test->percent_passed,
             _test->name);
+    }
 }
 
 // print results of a particular package
 void print_package_results(package_t * _p)
 {
     unsigned int i;
-    printf("%u: %s:\n", _p->id, _p->name);
-    for (i=_p->index; i<(_p->index+_p->num_scripts); i++) {
-        //if ( scripts[i].executed ) // only print scripts that were executed
+    liquid_log_info("%u: %s:", _p->id, _p->name);
+    for (i=_p->index; i<(_p->index+_p->num_scripts); i++)
         print_autotest_results( &scripts[i] );
-    }
-
-    printf("\n");
 }
 
 // print all unstable tests (those which failed or gave warnings)
@@ -398,18 +400,16 @@ void print_unstable_tests(void)
         return;
     }
 
-    printf("==================================\n");
-    printf(" UNSTABLE TESTS:\n");
+    liquid_log_info("==================================");
+    liquid_log_info(" UNSTABLE TESTS:");
     unsigned int t;
     for (t=0; t<NUM_AUTOSCRIPTS; t++) {
         if (scripts[t].executed) {
-            if (!scripts[t].pass) {
-                printf("    %3u : <<FAIL>> %s\n", scripts[t].id,
-                                                  scripts[t].name);
-            }
+            if (!scripts[t].pass)
+                liquid_log_info("    %3u : <<FAIL>> %s", scripts[t].id,scripts[t].name);
 
             if (scripts[t].num_warnings > 0) {
-                printf("    %3u : %4lu warnings %s\n", scripts[t].id,
+                liquid_log_info("    %3u : %4lu warnings %s", scripts[t].id,
                                                        scripts[t].num_warnings,
                                                        scripts[t].name);
             }

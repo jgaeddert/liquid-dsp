@@ -52,8 +52,7 @@ void autotest_cvsd_rmse_sine()
     }   
 
     rmse = 10*log10f(rmse/n);
-    if (liquid_autotest_verbose)
-        printf("cvsd rmse : %8.2f dB\n", rmse);
+    liquid_log_debug("cvsd rmse : %8.2f dB", rmse);
     CONTEND_LESS_THAN(rmse, -20.0f);
 
     // destroy cvsd codecs
@@ -95,8 +94,7 @@ void autotest_cvsd_rmse_sine8()
     }   
 
     rmse = 10*log10f(rmse/(n*8));
-    if (liquid_autotest_verbose)
-        printf("cvsd rmse : %8.2f dB\n", rmse);
+    liquid_log_debug("cvsd rmse : %8.2f dB", rmse);
     CONTEND_LESS_THAN(rmse, -20.0f);
 
     // destroy cvsd codecs
@@ -105,20 +103,15 @@ void autotest_cvsd_rmse_sine8()
 }
 
 // configuration
-void autotest_cvsd_invalid_config()
+void autotest_cvsd_config()
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping cvsd config test with strict exit enabled");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
     // test invalid configuration to create()
+    _liquid_error_downgrade_enable();
     CONTEND_ISNULL(cvsd_create(0, 2.0f, 0.5f)); // too few bits
     CONTEND_ISNULL(cvsd_create(2, 1.0f, 0.5f)); // zeta too small
     CONTEND_ISNULL(cvsd_create(2, 0.5f, 0.5f)); // zeta too small
     CONTEND_ISNULL(cvsd_create(2, 2.0f,-1.0f)); // alpha too small
     CONTEND_ISNULL(cvsd_create(2, 2.0f, 2.0f)); // alpha too large
+    _liquid_error_downgrade_disable();
 }
 
