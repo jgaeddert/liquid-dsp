@@ -172,6 +172,24 @@ LIQUID_AUTOTEST(firfilt_crcf_basic_3, "test calling supporting function", "a,b,c
     test_support(__q__);
 }
 
+// print registry, either info or full status
+int liquid_registry_print(const liquid_autotest * _registry,
+                          bool _info)
+{
+    unsigned int i = 0;
+    while (_registry[i] != NULL)
+    {
+        printf("%3u : ", i+1);
+        if (_info)
+            liquid_autotest_print_info(_registry[i]);
+        else
+            liquid_autotest_print_status(_registry[i]);
+        printf("\n");
+        i++;
+    }
+    return LIQUID_OK;
+}
+
 // define a registry as an array of tests. Note that we use the 'weak'
 // attribute in case we want to link this file against another program
 // to define a separate registry
@@ -196,17 +214,8 @@ int main(int argc, char* argv[])
     liquid_argparse_add(bool, list, false, 'L', "list tests and exit", NULL);
     liquid_argparse_parse(argc,argv);
 
-    if (list) {
-        unsigned int i = 0;
-        while (liquid_autotest_registry[i] != NULL)
-        {
-            printf("%3u : ", i+1);
-            liquid_autotest_print_info(liquid_autotest_registry[i]);
-            printf("\n");
-            i++;
-        }
-        return 0;
-    }
+    if (list)
+        return liquid_registry_print(liquid_autotest_registry, true);
 
     // mark tests to run
     liquid_autotest_registry[0]->status = LIQUID_AUTOTEST_SCHED;
@@ -232,14 +241,7 @@ int main(int argc, char* argv[])
     }
 
     // print summary
-    i = 0;
-    while (liquid_autotest_registry[i] != NULL)
-    {
-        printf("%3u : ", i+1);
-        liquid_autotest_print_status(liquid_autotest_registry[i]);
-        printf("\n");
-        i++;
-    }
+    liquid_registry_print(liquid_autotest_registry, false);
 
     return 0;
 }
