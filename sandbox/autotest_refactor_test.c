@@ -6,7 +6,6 @@ char __docstr__[] = "Test demonstration of new autotest macros and functions";
 
 #include "liquid.h"
 #include "liquid.argparse.h"
-//#include "liquid.autotest.h"
 
 // forward declaration of pointer to test structure
 typedef struct liquid_autotest_s * liquid_autotest;
@@ -115,13 +114,13 @@ void liquid_autotest_fail(liquid_autotest _q,
 void firfilt_crcf_basic_0_autotest(liquid_autotest);
 // definte struct
 struct liquid_autotest_s firfilt_crcf_basic_0_s = {
-    "firfilt_crcf_basic_0", // test name
-    firfilt_crcf_basic_0_autotest,
-    "basic filter test",
-    "FIR,filter,basic",
-    0.12,
-    //88, //line
-    LIQUID_AUTOTEST_INIT, 0, 0, 0 // status
+    "firfilt_crcf_basic_0",         // test name
+    firfilt_crcf_basic_0_autotest,  // function pointer
+    "basic filter test",            // description
+    "FIR,filter,basic",             // keywords
+    0.12,                           // cost (estimated runtime)
+    //88,                           // line number
+    LIQUID_AUTOTEST_INIT, 0, 0, 0   // status
 };
 // define pointer to struct
 static const liquid_autotest firfilt_crcf_basic_0 = &firfilt_crcf_basic_0_s;
