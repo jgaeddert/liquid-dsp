@@ -67,6 +67,10 @@ int liquid_autotest_print_info(liquid_autotest _q);
 // print test status
 int liquid_autotest_print_status(liquid_autotest _q);
 
+// execute test
+int liquid_autotest_execute(liquid_autotest _q);
+
+//
 void liquid_autotest_pass(liquid_autotest _q);
 
 // log that test failed given file name, line number, and expression/message

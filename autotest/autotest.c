@@ -58,6 +58,31 @@ int liquid_autotest_print_status(liquid_autotest _q)
     return LIQUID_OK;
 }
 
+int liquid_autotest_execute(liquid_autotest _q)
+{
+    if (_q->status != LIQUID_AUTOTEST_SCHED)
+        return liquid_error(LIQUID_EIMODE,"unexpected status mode for test '%s'", _q->name);
+
+    liquid_log_info("running test '%s' [%s]", _q->docstr, _q->keywords);
+    _q->status = LIQUID_AUTOTEST_ACTIVE;
+    // start timer
+    struct rusage tic, toc;
+    getrusage(RUSAGE_SELF, &tic);
+    // run test, passing reference to itself as argument
+    _q->func(_q);
+    getrusage(RUSAGE_SELF, &toc);
+    _q->status = _q->num_fail > 0 ? LIQUID_AUTOTEST_FAIL : LIQUID_AUTOTEST_PASS;
+
+    // update run time
+    float time_s  = toc.ru_utime.tv_sec - tic.ru_utime.tv_sec
+                  + toc.ru_stime.tv_sec - tic.ru_stime.tv_sec;
+    float time_us = toc.ru_utime.tv_usec - tic.ru_utime.tv_usec
+                  + toc.ru_stime.tv_usec - tic.ru_stime.tv_usec;
+    _q->runtime = time_s + 1e-6f*time_us;
+
+    return LIQUID_OK;
+}
+
 void liquid_autotest_pass(liquid_autotest _q)
 {
     _q->num_pass++;

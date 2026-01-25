@@ -41,12 +41,9 @@ int main(int argc, char* argv[])
         liquid_autotest autotest = liquid_autotest_registry[i];
         if (autotest->status == LIQUID_AUTOTEST_SCHED)
         {
-            printf("running test '%s' [%s]\n", autotest->docstr, autotest->keywords);
-            autotest->status = LIQUID_AUTOTEST_ACTIVE;
-            autotest->func(autotest);
-            autotest->status = autotest->num_fail > 0 ? LIQUID_AUTOTEST_FAIL : LIQUID_AUTOTEST_PASS;
+            liquid_autotest_execute(autotest);
         } else if (autotest->status == LIQUID_AUTOTEST_SKIP) {
-            printf("skipping test '%s'\n", autotest->docstr);
+            //liquid_log_trace("skipping test '%s'\n", autotest->docstr);
         }
         i++;
     }
