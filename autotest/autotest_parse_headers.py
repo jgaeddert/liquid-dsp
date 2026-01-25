@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-'''Parse autotest header files to generate registry'''
+'''Parse autotest header files to generate registry header file'''
 import argparse, functools, json, re, os, sys
 
 def main(argv=None):
@@ -56,8 +56,8 @@ def get_source_files(path:str = '.'):
         #print("dirs: ", dirs)
         #print("files:", files)
 
-        # look only in 'tests' directory
-        if os.path.split(root)[-1] in ('sandbox',):
+        # ignore certain directories
+        if os.path.split(root)[-1] in ('examples','sandbox',):
             pass
         else:
             # look only at source files (e.g. have '.c' extension)
