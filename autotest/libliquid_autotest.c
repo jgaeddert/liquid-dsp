@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,18 @@
  */
 
 #include <string.h>
-#include "autotest.h"
 #include "liquid.h"
+#include "liquid.autotest.h"
 
-void autotest_libliquid()
+LIQUID_AUTOTEST(libliquid_version,
+                "check library version numbering",
+                "library,version",
+                0.1)
 {
     // test liquid string version
-    CONTEND_EQUALITY(strcmp(LIQUID_VERSION,liquid_libversion()),0)
+    LIQUID_CHECK(strcmp(LIQUID_VERSION,liquid_libversion())==0)
 
     // test liquid integer version
-    CONTEND_EQUALITY(LIQUID_VERSION_NUMBER, liquid_libversion_number());
+    LIQUID_CHECK(LIQUID_VERSION_NUMBER == liquid_libversion_number());
 }
 

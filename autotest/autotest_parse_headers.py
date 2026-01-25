@@ -4,7 +4,7 @@ import argparse, functools, json, re, os, sys
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('-path',   default='src', type=str, help='input path to src')
+    p.add_argument('-path',   default='.', type=str, help='input path to src')
     p.add_argument('-output', default='autotest/liquid_autotest_registry.h', type=str, help='output file')
     args = p.parse_args()
 
@@ -21,11 +21,13 @@ def main(argv=None):
     fid.write('\n')
 
     # parse files
+    all_sources = []
     all_tests = []
     for file in source_files:
         tests = parse_source(file)
         all_tests.extend(tests)
         if len(tests) > 0:
+            all_sources.append(file)
             fid.write('// %s\n' % (file,))
             for test in tests:
                 fid.write('extern struct liquid_autotest_s %s_s;\n' % (test,))
@@ -44,6 +46,8 @@ def main(argv=None):
     fid.write('#endif // __LIQUID_AUTOTEST_REGISTRY_H__\n')
     fid.write('\n')
 
+    print('found %u tests across %u source files' % (len(all_tests),len(all_sources)))
+
 def get_source_files(path:str = '.'):
     '''get a list of autotest files with potential tests'''
     source_files = []
@@ -53,7 +57,9 @@ def get_source_files(path:str = '.'):
         #print("files:", files)
 
         # look only in 'tests' directory
-        if os.path.split(root)[-1] == 'tests':
+        if os.path.split(root)[-1] in ('sandbox',):
+            pass
+        else:
             # look only at source files (e.g. have '.c' extension)
             files = filter(lambda x: os.path.splitext(x)[-1]=='.c', files)
             # provide full path

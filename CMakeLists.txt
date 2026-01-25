@@ -805,7 +805,7 @@ if(BUILD_AUTOTESTS)
         autotest/liquid_autotest_registry.h
         autotest/autotest.h
         autotest/autotest.c
-        #autotest/libliquid_autotest.c
+        autotest/libliquid_autotest.c
         autotest/logs
         src/filter/tests/rresamp_crcf_autotest.c # specific test here
     )
