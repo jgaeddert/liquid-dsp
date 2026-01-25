@@ -135,6 +135,23 @@ int liquid_registry_print(const liquid_autotest * _registry,
 //    __attribute__((weak)) const liquid_autotest liquid_autotest_registry[]
 
 
+// Compute magnitude of (possibly) complex number
+#define LIQUID_AUTOTEST_VMAG(V) (sqrt(creal(V)*creal(V)+cimag(V)*cimag(V)))
+
+// Compute isnan on (possibly) complex number
+#define LIQUID_AUTOTEST_ISNAN(V) (isnan(crealf(V)) || isnan(cimagf(V)))
+
+
+// indicate pass
+// TODO: add optional message?
+#define LIQUID_PASS_(Q)             liquid_autotest_pass(Q);
+#define LIQUID_PASS()               liquid_autotest_pass(__q__);
+
+// indicate fail with message
+#define LIQUID_FAIL_(Q,MSG)         liquid_autotest_fail(Q,__FILE__,__LINE__,MSG)
+#define LIQUID_FAIL(MSG)            liquid_autotest_fail(__q__,__FILE__,__LINE__,MSG)
+
+
 // expand macro to run test
 #define __LIQUID_TEST__(Q,F,L,X,REQUIRE)                                        \
 {                                                                               \
@@ -147,30 +164,12 @@ int liquid_registry_print(const liquid_autotest * _registry,
 }
 
 // check if expression is true
-#define LIQUID_CHECK_(Q,F,L,X)      __LIQUID_TEST__(Q,F,L,(X),false)     
-// implied autotest object '__q__'
-#define LIQUID_CHECK(X)             LIQUID_CHECK_(__q__,__FILE__,__LINE__,X)
-// explicit autotest object
-#define LIQUID_XCHECK(Q,X)          LIQUID_CHECK_(Q,__FILE__,__LINE__,X)
+#define LIQUID_CHECK(X)             __LIQUID_TEST__(__q__,__FILE__,__LINE__,X,false)
+#define LIQUID_CHECK_(Q,X)          __LIQUID_TEST__(Q,__FILE__,__LINE__,X,false)
 
 // require that expression is true
-#define LIQUID_REQUIRE_(Q,F,L,X)    __LIQUID_TEST__(Q,F,L,(X),true)     
-// implied autotest object '__q__'
-#define LIQUID_REQUIRE(X)           LIQUID_REQUIRE_(__q__,__FILE__,__LINE__,X)
-// explicit autotest object
-#define LIQUID_XREQUIRE(Q,X)        LIQUID_REQUIRE_(Q,__FILE__,__LINE__,X)
-
-
-// indicate pass
-// TODO: add optional message?
-#define LIQUID_PASS_QFL(Q,F,L)      liquid_autotest_pass(Q)
-#define LIQUID_PASS_(Q)             LIQUID_PASS_QFL(Q,__FILE__,__LINE__)
-#define LIQUID_PASS()               LIQUID_PASS_QFL(__q__,__FILE__,__LINE__)
-
-// indicate fail with message
-#define LIQUID_FAIL_QFL(Q,F,L,MSG)  liquid_autotest_fail(Q,F,L,MSG)
-#define LIQUID_FAIL_(Q,MSG)         LIQUID_FAIL_QFL(Q,__FILE__,__LINE__,MSG)
-#define LIQUID_FAIL(MSG)            LIQUID_FAIL_QFL(__q__,__FILE__,__LINE__,MSG)
+#define LIQUID_REQUIRE(X)           __LIQUID_TEST__(__q__,__FILE__,__LINE__,X,true)
+#define LIQUID_REQUIRE_(Q,X)        __LIQUID_TEST__(Q,__FILE__,__LINE__,X,true)
 
 
 // test if the values in two arrays is identical
@@ -178,27 +177,20 @@ int liquid_registry_print(const liquid_autotest * _registry,
 {                                                                               \
     if (!liquid_autotest_same_data((uint8_t*)(X),(uint8_t*)(Y),(N)))            \
     {                                                                           \
-        liquid_autotest_fail(Q,F,L,#X);                                         \
+        liquid_autotest_fail(Q,F,L,"array[" #N "] " #X "==" #Y);                \
         if (REQUIRE) return;                                                    \
     } else {                                                                    \
         liquid_autotest_pass(Q);                                                \
     }                                                                           \
 }
 // check that arrays are identical
-#define LIQUID_CHECK_ARRAY_QFL(Q,F,L,X,Y,N)   __LIQUID_TEST_ARRAY__(Q,F,L,X,Y,N,false)
-#define LIQUID_CHECK_ARRAY_(Q,X,Y,N)          LIQUID_CHECK_ARRAY_QFL(Q,__FILE__,__LINE__,X,Y,N)
-#define LIQUID_CHECK_ARRAY(X,Y,N)             LIQUID_CHECK_ARRAY_QFL(__q__,__FILE__,__LINE__,X,Y,N)
+#define LIQUID_CHECK_ARRAY_(Q,X,Y,N)    __LIQUID_TEST_ARRAY__(Q,__FILE__,__LINE__,X,Y,N,false)
+#define LIQUID_CHECK_ARRAY(X,Y,N)       __LIQUID_TEST_ARRAY__(__q__,__FILE__,__LINE__,X,Y,N,false)
 
 // require that arrays are identical
-#define LIQUID_REQUIRE_ARRAY_QFL(Q,F,L,X,Y,N) __LIQUID_TEST_ARRAY__(Q,F,L,X,Y,N,true)
-#define LIQUID_REQUIRE_ARRAY_(Q,X,Y,N)        LIQUID_REQUIRE_ARRAY_QFL(Q,__FILE__,__LINE__,X,Y,N)
-#define LIQUID_REQUIRE_ARRAY(X,Y,N)           LIQUID_REQUIRE_ARRAY_QFL(__q__,__FILE__,__LINE__,X,Y,N)
+#define LIQUID_REQUIRE_ARRAY_(Q,X,Y,N)  __LIQUID_TEST_ARRAY__(Q,__FILE__,__LINE__,X,Y,N,true)
+#define LIQUID_REQUIRE_ARRAY(X,Y,N)     __LIQUID_TEST_ARRAY__(__q__,__FILE__,__LINE__,X,Y,N,true)
 
-// Compute magnitude of (possibly) complex number
-#define LIQUID_AUTOTEST_VMAG(V) (sqrt(creal(V)*creal(V)+cimag(V)*cimag(V)))
-
-// Compute isnan on (possibly) complex number
-#define LIQUID_AUTOTEST_ISNAN(V) (isnan(crealf(V)) || isnan(cimagf(V)))
 
 
 // Test delta between two (possibly complex numbers) is within tolerance. Use the
@@ -215,9 +207,8 @@ int liquid_registry_print(const liquid_autotest * _registry,
         liquid_autotest_pass(Q);                                                \
     }                                                                           \
 }
-#define LIQUID_CHECK_DELTA_QFL(Q,F,L,X,Y,D) __LIQUID_TEST_DELTA__(Q,F,L,X,Y,D,false)
-#define LIQUID_CHECK_DELTA_(Q,X,Y,D)        LIQUID_CHECK_DELTA_QFL(Q,__FILE__,__LINE__,X,Y,D)
-#define LIQUID_CHECK_DELTA(X,Y,D)           LIQUID_CHECK_DELTA_QFL(__q__,__FILE__,__LINE__,X,Y,D)
+#define LIQUID_CHECK_DELTA_(Q,X,Y,D)    __LIQUID_TEST_DELTA__(Q,__FILE__,__LINE__,X,Y,D,false)
+#define LIQUID_CHECK_DELTA(X,Y,D)       __LIQUID_TEST_DELTA__(__q__,__FILE__,__LINE__,X,Y,D,false)
 
 
 //
