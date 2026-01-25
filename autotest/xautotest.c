@@ -18,11 +18,13 @@ char __docstr__[] = "Run all autotest programs in liquid-dsp";
 // autotest main
 int main(int argc, char* argv[])
 {
-#if 1
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
     liquid_argparse_add(bool, list, false, 'L', "list tests and exit", NULL);
     liquid_argparse_parse(argc,argv);
+
+    // set default logging level
+    liquid_logger_set_level(NULL, LIQUID_INFO);
 
     if (list)
         return liquid_registry_print(liquid_autotest_registry, true);
@@ -50,11 +52,6 @@ int main(int argc, char* argv[])
 
     // print summary
     liquid_registry_print(liquid_autotest_registry, false);
-#else
-    unsigned int i = 0;
-    while (liquid_autotest_registry[i] != 0)
-        printf("%d\n", liquid_autotest_registry[i++]);
-#endif
     return 0;
 }
 
