@@ -39,18 +39,22 @@ int liquid_autotest_print_info(liquid_autotest _q)
 int liquid_autotest_print_status(liquid_autotest _q)
 {
     printf("%s ", _q->name);
-    printf("[%5u/%5u] ", _q->num_fail, _q->num_pass + _q->num_fail);
     unsigned int j;
     for (j=strlen(_q->name); j<50; j++)
         printf(".");
-    printf("  ");
     switch(_q->status) {
-    case LIQUID_AUTOTEST_PASS: printf("  pass  "); break;
-    case LIQUID_AUTOTEST_FAIL: printf("<<FAIL>>"); break;
-    case LIQUID_AUTOTEST_SKIP: printf(" (skip) "); break;
+    case LIQUID_AUTOTEST_PASS:
+        printf(" pass [      %5u]", _q->num_pass);
+        break;
+    case LIQUID_AUTOTEST_FAIL:
+        printf("*FAIL*[%5u/%5u]", _q->num_fail, _q->num_pass + _q->num_fail);
+        break;
+    case LIQUID_AUTOTEST_SKIP:
+        printf(" skip [           ]");
+        break;
     default: return liquid_error(LIQUID_EINT,"unexpected status");
     }
-    printf(" %7.2f sec", _q->runtime);
+    printf(" %9.6f sec", _q->runtime);
     return LIQUID_OK;
 }
 
