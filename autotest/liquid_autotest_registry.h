@@ -1,10 +1,9 @@
-
 #ifndef __LIQUID_AUTOTEST_REGISTRY_H__
 #define __LIQUID_AUTOTEST_REGISTRY_H__
 
 #include "liquid.autotest.h"
 
-// forward declarations
+// src/filter/tests/rresamp_crcf_autotest.c
 extern struct liquid_autotest_s rresamp_crcf_baseline_P1_Q5_s;
 extern struct liquid_autotest_s rresamp_crcf_baseline_P2_Q5_s;
 extern struct liquid_autotest_s rresamp_crcf_baseline_P3_Q5_s;

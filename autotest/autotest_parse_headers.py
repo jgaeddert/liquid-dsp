@@ -4,13 +4,50 @@ import argparse, functools, json, re, os, sys
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('-path',   default='src',        type=str, help='input path to src')
-    p.add_argument('-output', default='autotest_include.h', type=str, help='output file')
+    p.add_argument('-path',   default='src', type=str, help='input path to src')
+    p.add_argument('-output', default='autotest/liquid_autotest_registry.h', type=str, help='output file')
     args = p.parse_args()
 
     # get list of all potential source files by recursively parsing directories
+    source_files = get_source_files(args.path)
+    #print(json.dumps(source_files,indent=2))
+
+    # open output and print header
+    fid = open(args.output,'w')
+    fid.write('#ifndef __LIQUID_AUTOTEST_REGISTRY_H__\n')
+    fid.write('#define __LIQUID_AUTOTEST_REGISTRY_H__\n')
+    fid.write('\n')
+    fid.write('#include "liquid.autotest.h"\n')
+    fid.write('\n')
+
+    # parse files
+    all_tests = []
+    for file in source_files:
+        tests = parse_source(file)
+        all_tests.extend(tests)
+        if len(tests) > 0:
+            fid.write('// %s\n' % (file,))
+            for test in tests:
+                fid.write('extern struct liquid_autotest_s %s_s;\n' % (test,))
+
+    fid.write('\n')
+    fid.write('// compile test registry\n')
+    fid.write('liquid_autotest liquid_autotest_registry[] =\n')
+    fid.write('{\n')
+    for test in all_tests:
+        fid.write('    &%s_s,\n' % (test,))
+    fid.write('    NULL\n')
+    fid.write('};\n')
+
+    # finish output file
+    fid.write('\n')
+    fid.write('#endif // __LIQUID_AUTOTEST_REGISTRY_H__\n')
+    fid.write('\n')
+
+def get_source_files(path:str = '.'):
+    '''get a list of autotest files with potential tests'''
     source_files = []
-    for root, dirs, files in os.walk(args.path):
+    for root, dirs, files in os.walk(path):
         #print("root: ", root)
         #print("dirs: ", dirs)
         #print("files:", files)
@@ -21,19 +58,20 @@ def main(argv=None):
             files = filter(lambda x: os.path.splitext(x)[-1]=='.c', files)
             # provide full path
             source_files.extend([root + '/' + f for f in files])
+    return source_files
 
-    #print(json.dumps(source_files,indent=2))
-
-    for file in source_files:
-        tests = parse_source_legacy(file)
-        if len(tests) > 0:
-            print('//', file)
-            for test in tests:
-                print('%s;' % (test,))
-
-def get_source_files(path:str = '.'):
-    '''get a list of autotest files with potential tests'''
-    return ('src/filter/tests/rresamp_crcf_autotest.c')
+def parse_source(path:str):
+    '''parse source file and find test definitions'''
+    # look for "LIQUID_AUTOTEST(...)
+    # LIQUID_AUTOTEST(firfilt_crcf_basic_2, "basic filter test", "a,b,c", 0.1)
+    autotests = []
+    p = re.compile('LIQUID_AUTOTEST *\\( *([a-zA-Z0-9_]*)')
+    with open(path,'r') as fid:
+        for line in fid.readlines():
+            m = p.search(line)
+            if m is not None:
+                autotests.append(m.group(1))
+    return autotests
 
 def parse_source_legacy(path:str):
     '''parse source file and find test definitions (legacy method)'''
@@ -46,17 +84,6 @@ def parse_source_legacy(path:str):
             m = p.search(line)
             if m is not None:
                 autotests.append(m.group(1))
-    return autotests
-
-def parse_source(path:str):
-    '''parse source file and find test definitions'''
-    # look for "LIQUID_AUTOTEST(...)
-    # LIQUID_AUTOTEST(firfilt_crcf_basic_2, "basic filter test", "a,b,c", 0.1)
-    autotests = []
-    search = re.search(leak + ': *([0-9,]*) bytes',line)
-    with open(path,'r') as fid:
-        for line in fid.readlines():
-            pass
     return autotests
 
 if __name__ == '__main__':
