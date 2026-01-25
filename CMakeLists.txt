@@ -794,14 +794,6 @@ set(AUTOTEST_EXTRA
     )
 
 if(BUILD_AUTOTESTS)
-    add_custom_command(
-        OUTPUT  autotest_include.h
-        DEPENDS
-            ${PROJECT_BINARY_DIR}/autoscript
-            ${AUTOTESTS}
-        COMMAND ${PROJECT_BINARY_DIR}/autoscript / autotest ${AUTOTESTS} > autotest_include.h
-        )
-
     # create output logging directory
     add_custom_command(
         OUTPUT autotest/logs
@@ -810,14 +802,16 @@ if(BUILD_AUTOTESTS)
 
     add_executable(xautotest
         autotest/xautotest.c
-        ${PROJECT_BINARY_DIR}/autotest_include.h
+        autotest/liquid_autotest_registry.h
         autotest/autotest.h
         autotest/autotest.c
-        autotest/libliquid_autotest.c
+        #autotest/libliquid_autotest.c
         autotest/logs
-        ${AUTOTESTS}
-        ${AUTOTEST_EXTRA}
-        )
+        src/filter/tests/rresamp_crcf_autotest.c # specific test here
+    )
+    #   ${AUTOTESTS}
+    #   ${AUTOTEST_EXTRA}
+    #   )
     target_include_directories(xautotest PRIVATE include .)
 
     target_link_libraries(xautotest ${LIBNAME})

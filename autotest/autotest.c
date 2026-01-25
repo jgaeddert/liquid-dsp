@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,41 +23,70 @@
 // default include headers
 #include <stdio.h>
 #include <stdlib.h>
-#include "autotest/autotest.h"
+#include <string.h>
 
-// total number of checks invoked
-unsigned long int liquid_autotest_num_checks=0;
+#include "liquid.autotest.h"
 
-// total number of checks which passed
-unsigned long int liquid_autotest_num_passed=0;
-
-// total number of checks which failed
-unsigned long int liquid_autotest_num_failed=0;
-
-// total number of warnings
-unsigned long int liquid_autotest_num_warnings=0;
-
-// verbosity flag
-int liquid_autotest_verbose = 1;
-
-// fail test
-// increment liquid_autotest_num_checks
-// increment liquid_autotest_num_failed
-void liquid_autotest_failed()
+// print test info
+int liquid_autotest_print_info(liquid_autotest _q)
 {
-    liquid_autotest_num_checks++;
-    liquid_autotest_num_failed++;
+    printf("name=%s, description=%s, keywords=%s, cost=%g",
+        _q->name, _q->docstr, _q->keywords, _q->cost);
+    return LIQUID_OK;
 }
 
-// pass test
-// increment liquid_autotest_num_checks
-// increment liquid_autotest_num_passed
-void liquid_autotest_passed()
+// print test status
+int liquid_autotest_print_status(liquid_autotest _q)
 {
-    liquid_autotest_num_checks++;
-    liquid_autotest_num_passed++;
+    printf("%s ", _q->name);
+    printf("[%5u/%5u] ", _q->num_fail, _q->num_pass + _q->num_fail);
+    unsigned int j;
+    for (j=strlen(_q->name); j<50; j++)
+        printf(".");
+    printf("  ");
+    switch(_q->status) {
+    case LIQUID_AUTOTEST_PASS: printf("  pass  "); break;
+    case LIQUID_AUTOTEST_FAIL: printf("<<FAIL>>"); break;
+    case LIQUID_AUTOTEST_SKIP: printf(" (skip) "); break;
+    default: return liquid_error(LIQUID_EINT,"unexpected status");
+    }
+    printf(" %7.2f sec", _q->runtime);
+    return LIQUID_OK;
 }
 
+void liquid_autotest_pass(liquid_autotest _q)
+{
+    _q->num_pass++;
+}
+
+void liquid_autotest_fail(liquid_autotest _q,
+                          const char *    _file,
+                          unsigned int    _line,
+                          const char *    _expression)
+{
+    liquid_log(NULL,LIQUID_ERROR,_file,_line,"failed: \"%s\"", _expression);
+    _q->num_fail++;
+}
+
+// print registry, either info or full status
+int liquid_registry_print(const liquid_autotest * _registry,
+                          bool _info)
+{
+    unsigned int i = 0;
+    while (_registry[i] != NULL)
+    {
+        printf("%3u : ", i+1);
+        if (_info)
+            liquid_autotest_print_info(_registry[i]);
+        else
+            liquid_autotest_print_status(_registry[i]);
+        printf("\n");
+        i++;
+    }
+    return LIQUID_OK;
+}
+
+/*
 // fail test, given expression
 //  _file       :   filename (string)
 //  _line       :   line number of test
@@ -176,9 +205,10 @@ void liquid_autotest_print_array(unsigned char * _x,
     }
     printf("}\n");
 }
+*/
 
 // validate spectral content
-int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
+int liquid_autotest_validate_spectrum(liquid_autotest __q__, float * _psd, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int _num_regions, const char * _debug_filename)
 {
     unsigned int i, j;
@@ -197,8 +227,9 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
         else           { nc += snprintf(logstr+nc, sizeof(logstr)-nc, "   *   )"); }
         liquid_log_debug(logstr);
 
+        //LIQUID_REQUIRE( r.fmin >= -0.5 && r.fmax <= 0.5 && r.fmin <= r.fmax);
         if (r.fmin < -0.5 || r.fmax > 0.5 || r.fmin > r.fmax) {
-            AUTOTEST_FAIL("invalid frequency range");
+            LIQUID_FAIL("invalid frequency range");
             return -1;
         }
         for (j=0; j<_nfft; j++) {
@@ -210,18 +241,18 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
             // test lower bound
             if (r.test_lo && _psd[j] < r.pmin) {
                 //AUTOTEST_FAIL("region[%3u], %8.2f exceed minimum (%8.2f)", i, _psd[j], r.pmin);
-                AUTOTEST_FAIL("minimum value exceeded");
+                LIQUID_FAIL("minimum value exceeded");
                 fail[j] = 1;
             } else {
-                AUTOTEST_PASS();
+                LIQUID_PASS();
             }
 
             // test upper bound
             if (r.test_hi && _psd[j] > r.pmax) {
-                AUTOTEST_FAIL("maximum value exceeded");
+                LIQUID_FAIL("maximum value exceeded");
                 fail[j] = 1;
             } else {
-                AUTOTEST_PASS();
+                LIQUID_PASS();
             }
         }
     }
@@ -256,6 +287,7 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
     return 0;
 }
 
+/*
 // validate spectral content of a signal (complex)
 int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_len,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
@@ -381,3 +413,4 @@ int framing_autotest_callback(
     return 0;
 }
 
+*/
