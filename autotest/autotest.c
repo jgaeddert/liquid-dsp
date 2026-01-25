@@ -54,7 +54,7 @@ int liquid_autotest_print_status(liquid_autotest _q)
         break;
     default: return liquid_error(LIQUID_EINT,"unexpected status");
     }
-    printf(" %9.6f sec", _q->runtime);
+    printf(" %9.3f ms", _q->runtime*1e3);
     return LIQUID_OK;
 }
 
