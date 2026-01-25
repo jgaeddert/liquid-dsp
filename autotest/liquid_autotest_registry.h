@@ -5,6 +5,16 @@
 
 // ./autotest/libliquid_autotest.c
 extern struct liquid_autotest_s libliquid_version_s;
+// ./src/agc/tests/agc_crcf_autotest.c
+extern struct liquid_autotest_s agc_crcf_dc_gain_control_s;
+extern struct liquid_autotest_s agc_crcf_scale_s;
+extern struct liquid_autotest_s agc_crcf_ac_gain_control_s;
+extern struct liquid_autotest_s agc_crcf_rssi_sinusoid_s;
+extern struct liquid_autotest_s agc_crcf_rssi_noise_s;
+extern struct liquid_autotest_s agc_crcf_squelch_s;
+extern struct liquid_autotest_s agc_crcf_lock_s;
+extern struct liquid_autotest_s agc_crcf_config_s;
+extern struct liquid_autotest_s agc_crcf_copy_s;
 // ./src/filter/tests/rresamp_crcf_autotest.c
 extern struct liquid_autotest_s rresamp_crcf_baseline_P1_Q5_s;
 extern struct liquid_autotest_s rresamp_crcf_baseline_P2_Q5_s;
@@ -29,6 +39,15 @@ extern struct liquid_autotest_s rresamp_config_s;
 liquid_autotest liquid_autotest_registry[] =
 {
     &libliquid_version_s,
+    &agc_crcf_dc_gain_control_s,
+    &agc_crcf_scale_s,
+    &agc_crcf_ac_gain_control_s,
+    &agc_crcf_rssi_sinusoid_s,
+    &agc_crcf_rssi_noise_s,
+    &agc_crcf_squelch_s,
+    &agc_crcf_lock_s,
+    &agc_crcf_config_s,
+    &agc_crcf_copy_s,
     &rresamp_crcf_baseline_P1_Q5_s,
     &rresamp_crcf_baseline_P2_Q5_s,
     &rresamp_crcf_baseline_P3_Q5_s,

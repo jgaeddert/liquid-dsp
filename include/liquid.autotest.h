@@ -58,6 +58,7 @@ struct liquid_autotest_s
     } status;
     int     num_pass;   // number of tests passsed
     int     num_fail;   // number of tests failed
+    int     num_warn;   // number of warnings exhibited
     float   runtime;    // execution time [seconds]
 };
 
@@ -135,14 +136,14 @@ int liquid_registry_print(const liquid_autotest * _registry,
 
 
 // expand macro to run test
-#define __LIQUID_TEST__(Q,F,L,X,REQUIRE)                            \
-{                                                                   \
-    if (!(X)) {                                                     \
-        liquid_autotest_fail(Q,F,L,#X);                             \
-        if (REQUIRE) return;                                        \
-    } else {                                                        \
-        liquid_autotest_pass(Q);                                    \
-    }                                                               \
+#define __LIQUID_TEST__(Q,F,L,X,REQUIRE)                                        \
+{                                                                               \
+    if (!(X)) {                                                                 \
+        liquid_autotest_fail(Q,F,L,#X);                                         \
+        if (REQUIRE) return;                                                    \
+    } else {                                                                    \
+        liquid_autotest_pass(Q);                                                \
+    }                                                                           \
 }
 
 // check if expression is true
@@ -193,11 +194,38 @@ int liquid_registry_print(const liquid_autotest * _registry,
 #define LIQUID_REQUIRE_ARRAY_(Q,X,Y,N)        LIQUID_REQUIRE_ARRAY_QFL(Q,__FILE__,__LINE__,X,Y,N)
 #define LIQUID_REQUIRE_ARRAY(X,Y,N)           LIQUID_REQUIRE_ARRAY_QFL(__q__,__FILE__,__LINE__,X,Y,N)
 
+// Compute magnitude of (possibly) complex number
+#define LIQUID_AUTOTEST_VMAG(V) (sqrt(creal(V)*creal(V)+cimag(V)*cimag(V)))
+
+// Compute isnan on (possibly) complex number
+#define LIQUID_AUTOTEST_ISNAN(V) (isnan(crealf(V)) || isnan(cimagf(V)))
+
+
+// Test delta between two (possibly complex numbers) is within tolerance. Use the
+// expanded macro for computing magnitude of difference to account for both real
+// as well as complex numbers
+#define __LIQUID_TEST_DELTA__(Q,F,L,X,Y,D,REQUIRE)                              \
+{                                                                               \
+    if (LIQUID_AUTOTEST_VMAG((X)-(Y)) > (D) ||                                  \
+        LIQUID_AUTOTEST_ISNAN((X)) || LIQUID_AUTOTEST_ISNAN((Y)) )              \
+    {                                                                           \
+        liquid_autotest_fail(Q,F,L,"abs(" #X "-" #Y ") < " #D);                 \
+        if (REQUIRE) return;                                                    \
+    } else {                                                                    \
+        liquid_autotest_pass(Q);                                                \
+    }                                                                           \
+}
+#define LIQUID_CHECK_DELTA_QFL(Q,F,L,X,Y,D) __LIQUID_TEST_DELTA__(Q,F,L,X,Y,D,false)
+#define LIQUID_CHECK_DELTA_(Q,X,Y,D)        LIQUID_CHECK_DELTA_QFL(Q,__FILE__,__LINE__,X,Y,D)
+#define LIQUID_CHECK_DELTA(X,Y,D)           LIQUID_CHECK_DELTA_QFL(__q__,__FILE__,__LINE__,X,Y,D)
 
 
 //
 // --- LEGACY ---
 //
+
+// TODO: remove
+static int liquid_autotest_verbose = 1;
 
 // print warning to stderr
 // increment liquid_autotest_num_warnings
@@ -222,12 +250,6 @@ int liquid_autotest_same_data(unsigned char * _x,
 //  _n      :   input array size
 void liquid_autotest_print_array(unsigned char * _x,
                                  unsigned int _n);
-
-// Compute magnitude of (possibly) complex number
-#define LIQUID_AUTOTEST_VMAG(V) (sqrt(creal(V)*creal(V)+cimag(V)*cimag(V)))
-
-// Compute isnan on (possibly) complex number
-#define LIQUID_AUTOTEST_ISNAN(V) (isnan(crealf(V)) || isnan(cimagf(V)))
 
 // CONTEND_TRUE
 #define TEST_TRUE(F,L,EX,X)                                         \

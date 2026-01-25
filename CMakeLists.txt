@@ -807,11 +807,11 @@ if(BUILD_AUTOTESTS)
         autotest/autotest.c
         autotest/libliquid_autotest.c
         autotest/logs
-        src/filter/tests/rresamp_crcf_autotest.c # specific test here
-    )
-    #   ${AUTOTESTS}
-    #   ${AUTOTEST_EXTRA}
-    #   )
+        src/agc/tests/agc_crcf_autotest.c
+        src/filter/tests/rresamp_crcf_autotest.c
+        #${AUTOTESTS}
+        #${AUTOTEST_EXTRA}
+        )
     target_include_directories(xautotest PRIVATE include .)
 
     target_link_libraries(xautotest ${LIBNAME})
