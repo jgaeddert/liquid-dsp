@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,10 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-void autotest_firfilt_crcf_kaiser()
+LIQUID_AUTOTEST(firfilt_crcf_kaiser,"description","",0.1)
 {
     // design filter
     firfilt_crcf q = firfilt_crcf_create_kaiser(51, 0.2f, 60.0f, 0.0f);
@@ -35,12 +35,12 @@ void autotest_firfilt_crcf_kaiser()
       {.fmin=-0.15,  .fmax=+0.15,  .pmin=-0.1, .pmax=+0.1, .test_lo=1, .test_hi=1},
       {.fmin= 0.25,  .fmax=+0.5,   .pmin= 0,   .pmax=-60,  .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_firfilt_crcf(q, 1200, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/firfilt_crcf_kaiser.m" : NULL);
+    liquid_autotest_validate_psd_firfilt_crcf(__q__, q, 1200, regions, 3,
+        "autotest/logs/firfilt_crcf_kaiser.m");
     firfilt_crcf_destroy(q);
 }
 
-void autotest_firfilt_crcf_firdespm()
+LIQUID_AUTOTEST(firfilt_crcf_firdespm,"description","",0.1)
 {
     // design filter
     firfilt_crcf q = firfilt_crcf_create_firdespm(51, 0.2f, 60.0f);
@@ -52,12 +52,12 @@ void autotest_firfilt_crcf_firdespm()
       {.fmin=-0.15,  .fmax=+0.15,  .pmin=-0.1, .pmax=+0.1, .test_lo=1, .test_hi=1},
       {.fmin= 0.25,  .fmax=+0.5,   .pmin= 0,   .pmax=-60,  .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_firfilt_crcf(q, 1200, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/firfilt_crcf_firdespm.m" : NULL);
+    liquid_autotest_validate_psd_firfilt_crcf(__q__, q, 1200, regions, 3,
+        "autotest/logs/firfilt_crcf_firdespm.m");
     firfilt_crcf_destroy(q);
 }
 
-void autotest_firfilt_crcf_rect()
+LIQUID_AUTOTEST(firfilt_crcf_rect,"description","",0.1)
 {
     // design filter
     firfilt_crcf q = firfilt_crcf_create_rect(4);
@@ -69,12 +69,12 @@ void autotest_firfilt_crcf_rect()
       {.fmin=-0.12,  .fmax=+0.12,  .pmin=-5, .pmax= +1, .test_lo=1, .test_hi=1},
       {.fmin= 0.20,  .fmax=+0.5,   .pmin= 0, .pmax=-10, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_firfilt_crcf(q, 301, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/firfilt_crcf_rect.m" : NULL);
+    liquid_autotest_validate_psd_firfilt_crcf(__q__, q, 301, regions, 3,
+        "autotest/logs/firfilt_crcf_rect.m");
     firfilt_crcf_destroy(q);
 }
 
-void autotest_firfilt_crcf_notch()
+LIQUID_AUTOTEST(firfilt_crcf_notch,"description","",0.1)
 {
     // design filter and verify resulting spectrum
     firfilt_crcf q = firfilt_crcf_create_notch(20, 60.0f, 0.125f);
@@ -85,12 +85,12 @@ void autotest_firfilt_crcf_notch()
       {.fmin=+0.124, .fmax=+0.126, .pmin=   0, .pmax= -50, .test_lo=0, .test_hi=1},
       {.fmin= 0.20,  .fmax=+0.5,   .pmin=-0.1, .pmax=+0.1, .test_lo=1, .test_hi=1},
     };
-    liquid_autotest_validate_psd_firfilt_crcf(q, 1200, regions, 5,
-        liquid_autotest_verbose ? "autotest/logs/firfilt_crcf_notch.m" : NULL);
+    liquid_autotest_validate_psd_firfilt_crcf(__q__, q, 1200, regions, 5,
+        "autotest/logs/firfilt_crcf_notch.m");
     firfilt_crcf_destroy(q);
 }
 
-void autotest_firfilt_cccf_notch()
+LIQUID_AUTOTEST(firfilt_cccf_notch,"description","",0.1)
 {
     // design filter and verify resulting spectrum
     firfilt_cccf q = firfilt_cccf_create_notch(20, 60.0f, 0.125f);
@@ -99,41 +99,41 @@ void autotest_firfilt_cccf_notch()
       {.fmin=+0.124, .fmax=+0.126, .pmin=   0, .pmax= -50, .test_lo=0, .test_hi=1},
       {.fmin= 0.20,  .fmax=+0.5,   .pmin=-0.1, .pmax=+0.1, .test_lo=1, .test_hi=1},
     };
-    liquid_autotest_validate_psd_firfilt_cccf(q, 1200, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/firfilt_cccf_notch.m" : NULL);
+    liquid_autotest_validate_psd_firfilt_cccf(__q__, q, 1200, regions, 3,
+        "autotest/logs/firfilt_cccf_notch.m");
     firfilt_cccf_destroy(q);
 }
 
-void autotest_firfilt_config()
+LIQUID_AUTOTEST(firfilt_config,"description","",0.1)
 {
     _liquid_error_downgrade_enable();
     // no need to check every combination
-    CONTEND_ISNULL(firfilt_crcf_create(NULL, 0));
-    CONTEND_ISNULL(firfilt_crcf_create_kaiser(0, 0, 0, 0));
-    CONTEND_ISNULL(firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_UNKNOWN, 0, 0, 0, 4));
-    CONTEND_ISNULL(firfilt_crcf_create_firdespm(0, 0, 0));
-    CONTEND_ISNULL(firfilt_crcf_create_rect(0));
-    CONTEND_ISNULL(firfilt_crcf_create_dc_blocker(0, 0));
-    CONTEND_ISNULL(firfilt_crcf_create_notch(0, 0, 0));
-    CONTEND_ISNULL(firfilt_cccf_create_notch(0, 0, 0));
-    CONTEND_ISNULL(firfilt_crcf_copy(NULL));
+    LIQUID_CHECK(NULL ==firfilt_crcf_create(NULL, 0));
+    LIQUID_CHECK(NULL ==firfilt_crcf_create_kaiser(0, 0, 0, 0));
+    LIQUID_CHECK(NULL ==firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_UNKNOWN, 0, 0, 0, 4));
+    LIQUID_CHECK(NULL ==firfilt_crcf_create_firdespm(0, 0, 0));
+    LIQUID_CHECK(NULL ==firfilt_crcf_create_rect(0));
+    LIQUID_CHECK(NULL ==firfilt_crcf_create_dc_blocker(0, 0));
+    LIQUID_CHECK(NULL ==firfilt_crcf_create_notch(0, 0, 0));
+    LIQUID_CHECK(NULL ==firfilt_cccf_create_notch(0, 0, 0));
+    LIQUID_CHECK(NULL ==firfilt_crcf_copy(NULL));
 
     // create proper object and test configurations
     firfilt_crcf q = firfilt_crcf_create_kaiser(11, 0.2f, 60.0f, 0.0f);
 
-    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_print(q))
+    LIQUID_CHECK(LIQUID_OK ==  firfilt_crcf_print(q))
 
     float scale = 7.0f;
-    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_set_scale(q, 3.0f))
-    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_get_scale(q, &scale))
-    CONTEND_EQUALITY(scale, 3.0f)
-    CONTEND_EQUALITY(firfilt_crcf_get_length(q), 11)
+    LIQUID_CHECK(LIQUID_OK == firfilt_crcf_set_scale(q, 3.0f))
+    LIQUID_CHECK(LIQUID_OK == firfilt_crcf_get_scale(q, &scale))
+    LIQUID_CHECK(scale ==  3.0f)
+    LIQUID_CHECK(firfilt_crcf_get_length(q) ==  11)
 
     firfilt_crcf_destroy(q);
     _liquid_error_downgrade_disable();
 }
 
-void autotest_firfilt_recreate()
+LIQUID_AUTOTEST(firfilt_recreate,"description","",0.1)
 {
     // create random-ish coefficients
     unsigned int i, n = 21;
@@ -143,11 +143,11 @@ void autotest_firfilt_recreate()
 
     firfilt_crcf q = firfilt_crcf_create(h0, n);
 
-    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_print(q))
-    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_set_scale(q, 3.0f))
+    LIQUID_CHECK(LIQUID_OK == firfilt_crcf_print(q))
+    LIQUID_CHECK(LIQUID_OK == firfilt_crcf_set_scale(q, 3.0f))
 
     // copy coefficients to separate array
-    CONTEND_EQUALITY(LIQUID_OK, firfilt_crcf_copy_coefficients(q, h1))
+    LIQUID_CHECK(LIQUID_OK == firfilt_crcf_copy_coefficients(q, h1))
 
     // scale coefficients by a constant
     for (i=0; i<n; i++)
@@ -159,13 +159,13 @@ void autotest_firfilt_recreate()
     // assert the scale has not changed
     float scale;
     firfilt_crcf_get_scale(q, &scale);
-    CONTEND_EQUALITY(scale, 3.0f)
+    LIQUID_CHECK(scale ==  3.0f)
 
     // assert the coefficients are original scaled by 7.1
     // NOTE: need to account for time-reversal here
     const float * h = firfilt_crcf_get_coefficients(q);
     for (i=0; i<n; i++)
-        CONTEND_EQUALITY(h[n-i-1], h0[i]*7.1f);
+        LIQUID_CHECK(h[n-i-1] ==  h0[i]*7.1f);
 
     // re-create with longer coefficients array and test impulse response
     float h2[2*n+1]; // new random-ish coefficients
@@ -177,14 +177,13 @@ void autotest_firfilt_recreate()
         float complex v;
         firfilt_crcf_execute(q, &v);
         // output is same as input, subject to scaling factor
-        CONTEND_EQUALITY(v, h2[i]*scale);
+        LIQUID_CHECK(v ==  h2[i]*scale);
     }
 
     firfilt_crcf_destroy(q);
 }
 
-// compare push vs write methods
-void autotest_firfilt_push_write()
+LIQUID_AUTOTEST(firfilt_push_write,"compare push vs write methods", "", 0.1)
 {
     // create two identical objects
     firfilt_rrrf q0 = firfilt_rrrf_create_kaiser(51, 0.2f, 60.0f, 0.0f);
@@ -205,7 +204,7 @@ void autotest_firfilt_push_write()
         float v0, v1;
         firfilt_rrrf_execute(q0, &v0);
         firfilt_rrrf_execute(q1, &v1);
-        CONTEND_EQUALITY(v0, v1);
+        LIQUID_CHECK(v0 ==  v1);
     }
 
     // destroy objects

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,10 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-void autotest_firdecim_config()
+LIQUID_AUTOTEST(firdecim_config,"description","",0.1)
 {
     _liquid_error_downgrade_enable();
     // design filter
@@ -35,33 +35,32 @@ void autotest_firdecim_config()
     liquid_firdes_windowf(wtype, h_len, 0.2f, 0, h);
 
     // check that estimate methods return zero for invalid configs
-    CONTEND_ISNULL(firdecim_crcf_create(0, h, h_len)); // M cannot be 0
-    CONTEND_ISNULL(firdecim_crcf_create(M, h,     0)); // h_len cannot be 0
+    LIQUID_CHECK(NULL ==firdecim_crcf_create(0, h, h_len)); // M cannot be 0
+    LIQUID_CHECK(NULL ==firdecim_crcf_create(M, h,     0)); // h_len cannot be 0
 
-    CONTEND_ISNULL(firdecim_crcf_create_kaiser(1, 12, 60.0f)); // M too small
-    CONTEND_ISNULL(firdecim_crcf_create_kaiser(4,  0, 60.0f)); // m too small
-    CONTEND_ISNULL(firdecim_crcf_create_kaiser(4, 12, -2.0f)); // As too small
+    LIQUID_CHECK(NULL ==firdecim_crcf_create_kaiser(1, 12, 60.0f)); // M too small
+    LIQUID_CHECK(NULL ==firdecim_crcf_create_kaiser(4,  0, 60.0f)); // m too small
+    LIQUID_CHECK(NULL ==firdecim_crcf_create_kaiser(4, 12, -2.0f)); // As too small
 
-    CONTEND_ISNULL(firdecim_crcf_create_prototype(LIQUID_FIRFILT_UNKNOWN, 4, 12, 0.3f, 0.0f));
-    CONTEND_ISNULL(firdecim_crcf_create_prototype(LIQUID_FIRFILT_RCOS,    1, 12, 0.3f, 0.0f));
-    CONTEND_ISNULL(firdecim_crcf_create_prototype(LIQUID_FIRFILT_RCOS,    4,  0, 0.3f, 0.0f));
-    CONTEND_ISNULL(firdecim_crcf_create_prototype(LIQUID_FIRFILT_RCOS,    4, 12, 7.2f, 0.0f));
-    CONTEND_ISNULL(firdecim_crcf_create_prototype(LIQUID_FIRFILT_RCOS,    4, 12, 0.3f, 4.0f));
+    LIQUID_CHECK(NULL ==firdecim_crcf_create_prototype(LIQUID_FIRFILT_UNKNOWN, 4, 12, 0.3f, 0.0f));
+    LIQUID_CHECK(NULL ==firdecim_crcf_create_prototype(LIQUID_FIRFILT_RCOS,    1, 12, 0.3f, 0.0f));
+    LIQUID_CHECK(NULL ==firdecim_crcf_create_prototype(LIQUID_FIRFILT_RCOS,    4,  0, 0.3f, 0.0f));
+    LIQUID_CHECK(NULL ==firdecim_crcf_create_prototype(LIQUID_FIRFILT_RCOS,    4, 12, 7.2f, 0.0f));
+    LIQUID_CHECK(NULL ==firdecim_crcf_create_prototype(LIQUID_FIRFILT_RCOS,    4, 12, 0.3f, 4.0f));
 
     // create valid object and test configuration
     firdecim_crcf decim = firdecim_crcf_create_kaiser(M, m, 60.0f);
-    CONTEND_EQUALITY(firdecim_crcf_print(decim), LIQUID_OK);
-    CONTEND_EQUALITY(firdecim_crcf_set_scale(decim, 8.0f), LIQUID_OK);
+    LIQUID_CHECK(firdecim_crcf_print(decim) ==  LIQUID_OK);
+    LIQUID_CHECK(firdecim_crcf_set_scale(decim, 8.0f) ==  LIQUID_OK);
     float scale = 1.0f;
-    CONTEND_EQUALITY(firdecim_crcf_get_scale(decim, &scale), LIQUID_OK);
-    CONTEND_EQUALITY(scale, 8.0f);
+    LIQUID_CHECK(firdecim_crcf_get_scale(decim, &scale) ==  LIQUID_OK);
+    LIQUID_CHECK(scale ==  8.0f);
 
     firdecim_crcf_destroy(decim);
     _liquid_error_downgrade_disable();
 }
 
-// assert that block execution matches regular execute
-void autotest_firdecim_block()
+LIQUID_AUTOTEST(firdecim_block,"assert that block execution matches regular execute", "", 0.1)
 {
     unsigned int M =  4;
     unsigned int m = 12;
@@ -91,13 +90,12 @@ void autotest_firdecim_block()
     firdecim_crcf_execute_block(decim, buf_0, num_blocks, buf_2);
 
     // check results
-    CONTEND_SAME_DATA(buf_1, buf_2, num_blocks);
+    LIQUID_CHECK_ARRAY(buf_1, buf_2, num_blocks);
 
     firdecim_crcf_destroy(decim);
 }
 
-// test copy method
-void autotest_firdecim_copy()
+LIQUID_AUTOTEST(firdecim_copy,"test copy method", "", 0.1)
 {
     unsigned int M    =    4;
     unsigned int m    =   12;
@@ -124,9 +122,9 @@ void autotest_firdecim_copy()
     firdecim_crcf q1 = firdecim_crcf_copy(q0);
     float scale_0 = 1.0f;
     float scale_1 = 0.0f;
-    CONTEND_EQUALITY(firdecim_crcf_get_scale(q0, &scale_0), LIQUID_OK);
-    CONTEND_EQUALITY(firdecim_crcf_get_scale(q1, &scale_1), LIQUID_OK);
-    CONTEND_EQUALITY(scale_0, scale_1);
+    LIQUID_CHECK(firdecim_crcf_get_scale(q0, &scale_0) ==  LIQUID_OK);
+    LIQUID_CHECK(firdecim_crcf_get_scale(q1, &scale_1) ==  LIQUID_OK);
+    LIQUID_CHECK(scale_0 ==  scale_1);
 
     // generate new buffer of input samples
     for (i=0; i<M*num_blocks; i++)
@@ -137,7 +135,7 @@ void autotest_firdecim_copy()
     firdecim_crcf_execute_block(q1, buf, num_blocks, buf_1);
 
     // check results
-    CONTEND_SAME_DATA(buf_0, buf_1, num_blocks);
+    LIQUID_CHECK_ARRAY(buf_0, buf_1, num_blocks);
 
     // destroy objects
     firdecim_crcf_destroy(q0);

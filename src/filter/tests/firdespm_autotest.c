@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,10 +27,10 @@
 //      Digital Filters," IEEE Transactions on Audio and
 //      Electroacoustics, vol. AU-21, No. 6, December 1973.
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-void autotest_firdespm_bandpass_n24()
+LIQUID_AUTOTEST(firdespm_bandpass_n24,"description","",0.1)
 {
     // [McClellan:1973], Figure 7.
 
@@ -79,11 +79,11 @@ void autotest_firdespm_bandpass_n24()
     // Ensure data are equal
     unsigned int i;
     for (i=0; i<n; i++)
-        CONTEND_DELTA( h[i], h0[i], tol );
+        LIQUID_CHECK_DELTA( h[i], h0[i], tol );
 }
 
 
-void autotest_firdespm_bandpass_n32()
+LIQUID_AUTOTEST(firdespm_bandpass_n32,"description","",0.1)
 {
     // [McClellan:1973], Figure 9.
 
@@ -142,10 +142,10 @@ void autotest_firdespm_bandpass_n32()
     // Ensure data are equal
     unsigned int i;
     for (i=0; i<n; i++)
-        CONTEND_DELTA( h[i], h0[i], tol );
+        LIQUID_CHECK_DELTA( h[i], h0[i], tol );
 }
 
-void autotest_firdespm_lowpass()
+LIQUID_AUTOTEST(firdespm_lowpass,"description","",0.1)
 {
     // design filter
     unsigned int n  = 51;
@@ -161,8 +161,8 @@ void autotest_firdespm_lowpass()
       {.fmin=-0.15,  .fmax=+0.15,  .pmin=-0.02, .pmax=+0.02, .test_lo=1, .test_hi=1},
       {.fmin= 0.25,  .fmax=+0.5,   .pmin= 0,    .pmax=-60,   .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_signalf(h, n, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/firdespm_lowpass.m" : NULL);
+    liquid_autotest_validate_psd_signalf(__q__, h, n, regions, 3,
+        "autotest/logs/firdespm_lowpass.m");
 }
 
 // user-defined callback function defining response and weights
@@ -176,7 +176,7 @@ int callback_firdespm_autotest(double   _frequency,
     return 0;
 }
 
-void autotest_firdespm_callback()
+LIQUID_AUTOTEST(firdespm_callback,"description","",0.1)
 {
     // filter design parameters
     unsigned int h_len = 81;    // inverse sinc filter length
@@ -203,12 +203,13 @@ void autotest_firdespm_callback()
       {.fmin= 0.30,  .fmax= 0.36,  .pmin=52, .pmax= 62, .test_lo=1, .test_hi=1},
       {.fmin= 0.40,  .fmax= 0.50,  .pmin= 0, .pmax=-20, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_signalf(h, h_len, regions, 9,
-        liquid_autotest_verbose ? "autotest/logs/firdespm_callback.m" : NULL);
+    liquid_autotest_validate_psd_signalf(__q__, h, h_len, regions, 9,
+        "autotest/logs/firdespm_callback.m");
 }
 
 // test halfband filter design by specifying filter semi-length and transition bandwidth
-void testbench_firdespm_halfband_ft(unsigned int _m,
+void testbench_firdespm_halfband_ft(liquid_autotest __q__,
+                                    unsigned int _m,
                                     float        _ft)
 {
     unsigned int h_len = 4*_m + 1;
@@ -228,20 +229,20 @@ void testbench_firdespm_halfband_ft(unsigned int _m,
     };
     char filename[256];
     sprintf(filename,"autotest/logs/firdespm_halfband_m%u_ft%.3u.m", _m, (int)(_ft*1000));
-    liquid_autotest_validate_psd_signalf(h, h_len, regions, 3,
+    liquid_autotest_validate_psd_signalf(__q__, h, h_len, regions, 3,
         liquid_autotest_verbose ? filename : NULL);
 }
 
-void autotest_firdespm_halfband_m2_ft400()  { testbench_firdespm_halfband_ft( 3, 0.400f); }
-void autotest_firdespm_halfband_m4_ft400()  { testbench_firdespm_halfband_ft( 4, 0.400f); }
-void autotest_firdespm_halfband_m4_ft200()  { testbench_firdespm_halfband_ft( 4, 0.200f); }
-void autotest_firdespm_halfband_m10_ft200() { testbench_firdespm_halfband_ft(10, 0.200f); }
-void autotest_firdespm_halfband_m12_ft100() { testbench_firdespm_halfband_ft(12, 0.100f); }
-void autotest_firdespm_halfband_m20_ft050() { testbench_firdespm_halfband_ft(20, 0.050f); }
-void autotest_firdespm_halfband_m40_ft050() { testbench_firdespm_halfband_ft(40, 0.050f); }
-void autotest_firdespm_halfband_m80_ft010() { testbench_firdespm_halfband_ft(80, 0.010f); }
+LIQUID_AUTOTEST(firdespm_halfband_m2_ft400,"description","",0.1)  { testbench_firdespm_halfband_ft(__q__, 3, 0.400f); }
+LIQUID_AUTOTEST(firdespm_halfband_m4_ft400,"description","",0.1)  { testbench_firdespm_halfband_ft(__q__, 4, 0.400f); }
+LIQUID_AUTOTEST(firdespm_halfband_m4_ft200,"description","",0.1)  { testbench_firdespm_halfband_ft(__q__, 4, 0.200f); }
+LIQUID_AUTOTEST(firdespm_halfband_m10_ft200,"description","",0.1) { testbench_firdespm_halfband_ft(__q__,10, 0.200f); }
+LIQUID_AUTOTEST(firdespm_halfband_m12_ft100,"description","",0.1) { testbench_firdespm_halfband_ft(__q__,12, 0.100f); }
+LIQUID_AUTOTEST(firdespm_halfband_m20_ft050,"description","",0.1) { testbench_firdespm_halfband_ft(__q__,20, 0.050f); }
+LIQUID_AUTOTEST(firdespm_halfband_m40_ft050,"description","",0.1) { testbench_firdespm_halfband_ft(__q__,40, 0.050f); }
+LIQUID_AUTOTEST(firdespm_halfband_m80_ft010,"description","",0.1) { testbench_firdespm_halfband_ft(__q__,80, 0.010f); }
 
-void autotest_firdespm_copy()
+LIQUID_AUTOTEST(firdespm_copy,"description","",0.1)
 {
     // create valid object
     float bands[4] = {0.0, 0.2, 0.3, 0.5};  // regions
@@ -257,29 +258,29 @@ void autotest_firdespm_copy()
     float h0[51], h1[51];
     firdespm_execute(q0, h0);
     firdespm_execute(q1, h1);
-    CONTEND_SAME_DATA(h0, h1, 51*sizeof(float));
+    LIQUID_CHECK_ARRAY(h0, h1, 51*sizeof(float));
 
     // destroy objects
     firdespm_destroy(q0);
     firdespm_destroy(q1);
 }
 
-void autotest_firdespm_config()
+LIQUID_AUTOTEST(firdespm_config,"description","",0.1)
 {
     _liquid_error_downgrade_enable();
     float h[51];
-    CONTEND_EQUALITY(   LIQUID_OK, firdespm_lowpass(51, 0.2, 60, 0.0, h) ) // ok
-    CONTEND_INEQUALITY( LIQUID_OK, firdespm_lowpass( 0, 0.2, 60, 0.0, h) )
-    CONTEND_INEQUALITY( LIQUID_OK, firdespm_lowpass(51, 0.2, 60,-1.0, h) )
-    CONTEND_INEQUALITY( LIQUID_OK, firdespm_lowpass(51, 0.2, 60, 1.0, h) )
-    CONTEND_INEQUALITY( LIQUID_OK, firdespm_lowpass(51, 0.8, 60, 0.0, h) )
-    CONTEND_INEQUALITY( LIQUID_OK, firdespm_lowpass(51,-0.2, 60, 0.0, h) )
+    LIQUID_CHECK( LIQUID_OK == firdespm_lowpass(51, 0.2, 60, 0.0, h) ) // ok
+    LIQUID_CHECK( LIQUID_OK != firdespm_lowpass( 0, 0.2, 60, 0.0, h) )
+    LIQUID_CHECK( LIQUID_OK != firdespm_lowpass(51, 0.2, 60,-1.0, h) )
+    LIQUID_CHECK( LIQUID_OK != firdespm_lowpass(51, 0.2, 60, 1.0, h) )
+    LIQUID_CHECK( LIQUID_OK != firdespm_lowpass(51, 0.8, 60, 0.0, h) )
+    LIQUID_CHECK( LIQUID_OK != firdespm_lowpass(51,-0.2, 60, 0.0, h) )
 
     // try to create object with filter length 0
-    CONTEND_ISNULL( firdespm_create( 0, 3, NULL, NULL, NULL, NULL, LIQUID_FIRDESPM_BANDPASS) )
+    LIQUID_CHECK(NULL == firdespm_create( 0, 3, NULL, NULL, NULL, NULL, LIQUID_FIRDESPM_BANDPASS) )
 
     // try to create object with 0 bands
-    CONTEND_ISNULL( firdespm_create(71, 0, NULL, NULL, NULL, NULL, LIQUID_FIRDESPM_BANDPASS) )
+    LIQUID_CHECK(NULL == firdespm_create(71, 0, NULL, NULL, NULL, NULL, LIQUID_FIRDESPM_BANDPASS) )
 
     // create valid object
     float bands[4] = {0.0, 0.2, 0.3, 0.5};  // regions
@@ -287,7 +288,7 @@ void autotest_firdespm_config()
     float     w[2] = {1.0,      1.0};       // weights
     liquid_firdespm_wtype wtype[2] = {LIQUID_FIRDESPM_FLATWEIGHT, LIQUID_FIRDESPM_FLATWEIGHT};
     firdespm q = firdespm_create(51, 2, bands, des, w, wtype, LIQUID_FIRDESPM_BANDPASS);
-    CONTEND_EQUALITY(   LIQUID_OK, firdespm_print(q) )
+    LIQUID_CHECK(   LIQUID_OK ==  firdespm_print(q) )
     firdespm_destroy(q);
 
     // invalid bands & weights
@@ -296,21 +297,21 @@ void autotest_firdespm_config()
     float w_0    [2] = { 1.0,-1.0};           // weights out of range
 
     // try to create regular object with invalid configuration
-    CONTEND_ISNULL( firdespm_create( 0, 2, bands,   des, w  , wtype, LIQUID_FIRDESPM_BANDPASS) )
-    CONTEND_ISNULL( firdespm_create(51, 0, bands,   des, w  , wtype, LIQUID_FIRDESPM_BANDPASS) )
-    CONTEND_ISNULL( firdespm_create(51, 2, bands_0, des, w  , wtype, LIQUID_FIRDESPM_BANDPASS) )
-    CONTEND_ISNULL( firdespm_create(51, 2, bands_1, des, w  , wtype, LIQUID_FIRDESPM_BANDPASS) )
-    CONTEND_ISNULL( firdespm_create(51, 2, bands,   des, w_0, wtype, LIQUID_FIRDESPM_BANDPASS) )
+    LIQUID_CHECK(NULL == firdespm_create( 0, 2, bands,   des, w  , wtype, LIQUID_FIRDESPM_BANDPASS) )
+    LIQUID_CHECK(NULL == firdespm_create(51, 0, bands,   des, w  , wtype, LIQUID_FIRDESPM_BANDPASS) )
+    LIQUID_CHECK(NULL == firdespm_create(51, 2, bands_0, des, w  , wtype, LIQUID_FIRDESPM_BANDPASS) )
+    LIQUID_CHECK(NULL == firdespm_create(51, 2, bands_1, des, w  , wtype, LIQUID_FIRDESPM_BANDPASS) )
+    LIQUID_CHECK(NULL == firdespm_create(51, 2, bands,   des, w_0, wtype, LIQUID_FIRDESPM_BANDPASS) )
 
     // try to create callback object with invalid configuration
-    CONTEND_ISNULL( firdespm_create_callback( 0, 2, bands,   LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
-    CONTEND_ISNULL( firdespm_create_callback(51, 0, bands,   LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
-    CONTEND_ISNULL( firdespm_create_callback(51, 2, bands_0, LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
-    CONTEND_ISNULL( firdespm_create_callback(51, 2, bands_1, LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
+    LIQUID_CHECK(NULL == firdespm_create_callback( 0, 2, bands,   LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
+    LIQUID_CHECK(NULL == firdespm_create_callback(51, 0, bands,   LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
+    LIQUID_CHECK(NULL == firdespm_create_callback(51, 2, bands_0, LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
+    LIQUID_CHECK(NULL == firdespm_create_callback(51, 2, bands_1, LIQUID_FIRDESPM_BANDPASS, NULL, NULL) )
     _liquid_error_downgrade_disable();
 }
 
-void autotest_firdespm_differentiator()
+LIQUID_AUTOTEST(firdespm_differentiator,"description","",0.1)
 {
     _liquid_error_downgrade_enable();
     AUTOTEST_WARN("firdespm_differentiator(), unsupported configuration");
@@ -324,12 +325,12 @@ void autotest_firdespm_differentiator()
     liquid_firdespm_btype btype = LIQUID_FIRDESPM_DIFFERENTIATOR;
     firdespm q = firdespm_create(n, 2, bands, des, w, wtype, btype);
     // unsupported configuration
-    CONTEND_EQUALITY( LIQUID_EINT, firdespm_execute(q,h) )
+    LIQUID_CHECK( LIQUID_EINT == firdespm_execute(q, h) )
     firdespm_destroy(q);
     _liquid_error_downgrade_disable();
 }
 
-void autotest_firdespm_hilbert()
+LIQUID_AUTOTEST(firdespm_hilbert,"description","",0.1)
 {
     AUTOTEST_WARN("firdespm_hilbert(), unsupported configuration");
     _liquid_error_downgrade_enable();
@@ -343,7 +344,7 @@ void autotest_firdespm_hilbert()
     liquid_firdespm_btype btype = LIQUID_FIRDESPM_HILBERT;
     firdespm q = firdespm_create(n, 2, bands, des, w, wtype, btype);
     // unsupported configuration
-    CONTEND_EQUALITY( LIQUID_EINT, firdespm_execute(q,h) )
+    LIQUID_CHECK( LIQUID_EINT == firdespm_execute(q, h) )
     firdespm_destroy(q);
     _liquid_error_downgrade_disable();
 }

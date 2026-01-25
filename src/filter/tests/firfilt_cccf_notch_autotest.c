@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,12 @@
  */
 
 #include <math.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // Help function to keep code base small
-void firfilt_cccf_notch_test_harness(unsigned int _m,
+void firfilt_cccf_notch_test_harness(liquid_autotest __q__,
+                                     unsigned int _m,
                                      float        _as,
                                      float        _f0)
 {
@@ -60,18 +61,17 @@ void firfilt_cccf_notch_test_harness(unsigned int _m,
     y2 = sqrtf(y2 / (float)num_samples);
     liquid_log_debug("f0 = %.8f, x2: %f, y2: %f\n", _f0, x2, y2);
     float tol = 1e-3f;
-    CONTEND_DELTA(x2, 1.0f, tol);
-    CONTEND_DELTA(y2, 0.0f, tol);
+    LIQUID_CHECK_DELTA(x2, 1.0f, tol);
+    LIQUID_CHECK_DELTA(y2, 0.0f, tol);
 
     // destroy filter object
     firfilt_cccf_destroy(q);
 }
 
-// AUTOTESTS: 
-void autotest_firfilt_cccf_notch_0() { firfilt_cccf_notch_test_harness(20,60.0f, 0.000f); }
-void autotest_firfilt_cccf_notch_1() { firfilt_cccf_notch_test_harness(20,60.0f, 0.100f); }
-void autotest_firfilt_cccf_notch_2() { firfilt_cccf_notch_test_harness(20,60.0f, 0.456f); }
-void autotest_firfilt_cccf_notch_3() { firfilt_cccf_notch_test_harness(20,60.0f, 0.500f); }
-void autotest_firfilt_cccf_notch_4() { firfilt_cccf_notch_test_harness(20,60.0f,-0.250f); }
-void autotest_firfilt_cccf_notch_5() { firfilt_cccf_notch_test_harness(20,60.0f,-0.389f); }
+LIQUID_AUTOTEST(firfilt_cccf_notch_0,"description","",0.1) { firfilt_cccf_notch_test_harness(__q__, 20,60.0f, 0.000f); }
+LIQUID_AUTOTEST(firfilt_cccf_notch_1,"description","",0.1) { firfilt_cccf_notch_test_harness(__q__, 20,60.0f, 0.100f); }
+LIQUID_AUTOTEST(firfilt_cccf_notch_2,"description","",0.1) { firfilt_cccf_notch_test_harness(__q__, 20,60.0f, 0.456f); }
+LIQUID_AUTOTEST(firfilt_cccf_notch_3,"description","",0.1) { firfilt_cccf_notch_test_harness(__q__, 20,60.0f, 0.500f); }
+LIQUID_AUTOTEST(firfilt_cccf_notch_4,"description","",0.1) { firfilt_cccf_notch_test_harness(__q__, 20,60.0f,-0.250f); }
+LIQUID_AUTOTEST(firfilt_cccf_notch_5,"description","",0.1) { firfilt_cccf_notch_test_harness(__q__, 20,60.0f,-0.389f); }
 

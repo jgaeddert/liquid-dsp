@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,17 @@
 // symbol timing synchronizer tests
 
 #include <string.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 //
-void symsync_rrrf_test(const char * _method,
-                       unsigned int _k,
-                       unsigned int _m,
-                       float        _beta,
-                       float        _tau,
-                       float        _rate)
+void testbench_symsync_rrrf(liquid_autotest __q__,
+                            const char * _method,
+                            unsigned int _k,
+                            unsigned int _m,
+                            float        _beta,
+                            float        _tau,
+                            float        _rate)
 {
     // options
     float        tol        =  0.20f;   // error tolerance
@@ -147,7 +148,7 @@ void symsync_rrrf_test(const char * _method,
         float err = fabsf( z[i] - s[i-delay] );
         
         // assert that error is below tolerance
-        CONTEND_LESS_THAN( err, tol );
+        LIQUID_CHECK( err< tol );
 
         liquid_log_debug("  sym_out(%4u) = %8.4f; %% {%8.4f} e = %12.8f %s",
             i+1, z[i], s[i-delay], err, err < tol ? "" : "*");
@@ -155,14 +156,16 @@ void symsync_rrrf_test(const char * _method,
 }
 
 // autotest scenarios (root-Nyquist)
-void autotest_symsync_rrrf_scenario_0() { symsync_rrrf_test("rnyquist", 2, 7, 0.35,  0.00, 1.0f    ); }
-void autotest_symsync_rrrf_scenario_1() { symsync_rrrf_test("rnyquist", 2, 7, 0.35, -0.25, 1.0f    ); }
-void autotest_symsync_rrrf_scenario_2() { symsync_rrrf_test("rnyquist", 2, 7, 0.35, -0.25, 1.0001f ); }
-void autotest_symsync_rrrf_scenario_3() { symsync_rrrf_test("rnyquist", 2, 7, 0.35, -0.25, 0.9999f ); }
+
+LIQUID_AUTOTEST(symsync_rrrf_scenario_0,"description","",0.1) { testbench_symsync_rrrf(__q__,"rnyquist", 2, 7, 0.35,  0.00, 1.0f    ); }
+LIQUID_AUTOTEST(symsync_rrrf_scenario_1,"description","",0.1) { testbench_symsync_rrrf(__q__,"rnyquist", 2, 7, 0.35, -0.25, 1.0f    ); }
+LIQUID_AUTOTEST(symsync_rrrf_scenario_2,"description","",0.1) { testbench_symsync_rrrf(__q__,"rnyquist", 2, 7, 0.35, -0.25, 1.0001f ); }
+LIQUID_AUTOTEST(symsync_rrrf_scenario_3,"description","",0.1) { testbench_symsync_rrrf(__q__,"rnyquist", 2, 7, 0.35, -0.25, 0.9999f ); }
 
 // autotest scenarios (Nyquist)
-void autotest_symsync_rrrf_scenario_4() { symsync_rrrf_test("nyquist", 2, 7, 0.35,  0.00, 1.0f    ); }
-void autotest_symsync_rrrf_scenario_5() { symsync_rrrf_test("nyquist", 2, 7, 0.35, -0.25, 1.0f    ); }
-void autotest_symsync_rrrf_scenario_6() { symsync_rrrf_test("nyquist", 2, 7, 0.35, -0.25, 1.0001f ); }
-void autotest_symsync_rrrf_scenario_7() { symsync_rrrf_test("nyquist", 2, 7, 0.35, -0.25, 0.9999f ); }
+
+LIQUID_AUTOTEST(symsync_rrrf_scenario_4,"description","",0.1) { testbench_symsync_rrrf(__q__,"nyquist", 2, 7, 0.35,  0.00, 1.0f    ); }
+LIQUID_AUTOTEST(symsync_rrrf_scenario_5,"description","",0.1) { testbench_symsync_rrrf(__q__,"nyquist", 2, 7, 0.35, -0.25, 1.0f    ); }
+LIQUID_AUTOTEST(symsync_rrrf_scenario_6,"description","",0.1) { testbench_symsync_rrrf(__q__,"nyquist", 2, 7, 0.35, -0.25, 1.0001f ); }
+LIQUID_AUTOTEST(symsync_rrrf_scenario_7,"description","",0.1) { testbench_symsync_rrrf(__q__,"nyquist", 2, 7, 0.35, -0.25, 0.9999f ); }
 

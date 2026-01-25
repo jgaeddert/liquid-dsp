@@ -21,8 +21,6 @@
  */
 
 #include <string.h>
-//#include "autotest/autotest.h"
-
 #include "liquid.internal.h"
 #include "liquid.autotest.h"
 

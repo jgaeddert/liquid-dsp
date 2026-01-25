@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,10 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-void autotest_iirfiltsos_impulse_n2()
+LIQUID_AUTOTEST(iirfiltsos_impulse_n2,"description","",0.1)
 {
     // initialize filter with 2nd-order low-pass butterworth filter
     float a[3] = {
@@ -69,11 +69,11 @@ void autotest_iirfiltsos_impulse_n2()
 
         // run direct-form I
         iirfiltsos_rrrf_execute_df1(q0, v, &y);
-        CONTEND_DELTA(test[i], y, tol);
+        LIQUID_CHECK_DELTA(test[i], y, tol);
 
         // run direct-form II
         iirfiltsos_rrrf_execute_df2(q1, v, &y);
-        CONTEND_DELTA(test[i], y, tol);
+        LIQUID_CHECK_DELTA(test[i], y, tol);
     }
 
     iirfiltsos_rrrf_destroy(q0);
@@ -81,7 +81,7 @@ void autotest_iirfiltsos_impulse_n2()
 }
 
 
-void autotest_iirfiltsos_step_n2()
+LIQUID_AUTOTEST(iirfiltsos_step_n2,"description","",0.1)
 {
     // initialize filter with 2nd-order low-pass butterworth filter
     float a[3] = {
@@ -123,18 +123,18 @@ void autotest_iirfiltsos_step_n2()
     for (i=0; i<15; i++) {
         // run direct-form I
         iirfiltsos_rrrf_execute_df1(q0, 1, &y);
-        CONTEND_DELTA(test[i], y, tol);
+        LIQUID_CHECK_DELTA(test[i], y, tol);
 
         // run direct-form II
         iirfiltsos_rrrf_execute_df2(q1, 1, &y);
-        CONTEND_DELTA(test[i], y, tol);
+        LIQUID_CHECK_DELTA(test[i], y, tol);
     }
 
     iirfiltsos_rrrf_destroy(q0);
     iirfiltsos_rrrf_destroy(q1);
 }
 
-void autotest_iirfiltsos_copy()
+LIQUID_AUTOTEST(iirfiltsos_copy,"description","",0.1)
 {
     // initialize filter with 2nd-order low-pass butterworth filter
     float a[3] = {1.0000000000000000f, -0.942809041582063f, 0.3333333333333333f};
@@ -161,7 +161,7 @@ void autotest_iirfiltsos_copy()
         iirfiltsos_crcf_execute(q1, v, &y1);
 
         // compare result
-        CONTEND_EQUALITY(y0, y1);
+        LIQUID_CHECK(y0 ==  y1);
     }
 
     // destroy filter objects
@@ -169,12 +169,11 @@ void autotest_iirfiltsos_copy()
     iirfiltsos_crcf_destroy(q1);
 }
 
-// test errors and invalid configuration
-void autotest_iirfiltsos_config()
+LIQUID_AUTOTEST(iirfiltsos_config,"test errors and invalid configuration", "", 0.1)
 {
     _liquid_error_downgrade_enable();
     // test copying/creating invalid objects
-    CONTEND_ISNULL( iirfiltsos_crcf_copy(NULL) );
+    LIQUID_CHECK(NULL == iirfiltsos_crcf_copy(NULL) );
 
     // create valid object and test configuration
     //iirfiltsos_crcf filter = iirfiltsos_crcf_create(...);

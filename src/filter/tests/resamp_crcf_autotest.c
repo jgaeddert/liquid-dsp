@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,13 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // test single-stage arbitrary resampler
 //   r  : resampling rate (output/input)
 //   As : resampling filter stop-band attenuation [dB]
-void testbench_resamp_crcf(float r, float As, int _id)
+void testbench_resamp_crcf(liquid_autotest __q__, float r, float As, int _id)
 {
     // options
     float        bw   = 0.25f;  // target output signal bandwidth
@@ -66,28 +66,28 @@ void testbench_resamp_crcf(float r, float As, int _id)
     };
     char filename[256];
     sprintf(filename,"autotest/logs/resamp_crcf_%.2d.m", _id);
-    liquid_autotest_validate_psd_signal(buf_1, nw, regions, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_psd_signal(__q__, buf_1, nw, regions, 3, filename);
 
     // destroy objects
     resamp_crcf_destroy(resamp);
 }
 
-void autotest_resamp_crcf_00() { testbench_resamp_crcf(0.127115323f, 60.0f,  0); }
-void autotest_resamp_crcf_01() { testbench_resamp_crcf(0.373737373f, 60.0f,  1); }
-void autotest_resamp_crcf_02() { testbench_resamp_crcf(0.676543210f, 60.0f,  2); }
-void autotest_resamp_crcf_03() { testbench_resamp_crcf(0.973621947f, 60.0f,  3); }
+LIQUID_AUTOTEST(resamp_crcf_00,"description","",0.1) { testbench_resamp_crcf(__q__, 0.127115323f, 60.0f,  0); }
+LIQUID_AUTOTEST(resamp_crcf_01,"description","",0.1) { testbench_resamp_crcf(__q__, 0.373737373f, 60.0f,  1); }
+LIQUID_AUTOTEST(resamp_crcf_02,"description","",0.1) { testbench_resamp_crcf(__q__, 0.676543210f, 60.0f,  2); }
+LIQUID_AUTOTEST(resamp_crcf_03,"description","",0.1) { testbench_resamp_crcf(__q__, 0.973621947f, 60.0f,  3); }
 //void xautotest_resamp_crcf_04() { testbench_resamp_crcf(1.023832447f, 60.0f,  4); }
 //void xautotest_resamp_crcf_05() { testbench_resamp_crcf(2.182634827f, 60.0f,  5); }
 //void xautotest_resamp_crcf_06() { testbench_resamp_crcf(8.123980823f, 60.0f,  6); }
 
-void autotest_resamp_crcf_10() { testbench_resamp_crcf(0.127115323f, 80.0f, 10); }
-void autotest_resamp_crcf_11() { testbench_resamp_crcf(0.373737373f, 80.0f, 11); }
-void autotest_resamp_crcf_12() { testbench_resamp_crcf(0.676543210f, 80.0f, 12); }
-void autotest_resamp_crcf_13() { testbench_resamp_crcf(0.973621947f, 80.0f, 13); }
+LIQUID_AUTOTEST(resamp_crcf_10,"description","",0.1) { testbench_resamp_crcf(__q__, 0.127115323f, 80.0f, 10); }
+LIQUID_AUTOTEST(resamp_crcf_11,"description","",0.1) { testbench_resamp_crcf(__q__, 0.373737373f, 80.0f, 11); }
+LIQUID_AUTOTEST(resamp_crcf_12,"description","",0.1) { testbench_resamp_crcf(__q__, 0.676543210f, 80.0f, 12); }
+LIQUID_AUTOTEST(resamp_crcf_13,"description","",0.1) { testbench_resamp_crcf(__q__, 0.973621947f, 80.0f, 13); }
 
 // test arbitrary resampler output length calculation
-void testbench_resamp_crcf_num_output(float _rate, unsigned int _npfb)
+void testbench_resamp_crcf_num_output(liquid_autotest __q__,
+        float _rate, unsigned int _npfb)
 {
     liquid_log_debug("testing resamp_crcf_get_num_output() with r=%g, npfb=%u", _rate, _npfb);
 
@@ -120,7 +120,7 @@ void testbench_resamp_crcf_num_output(float _rate, unsigned int _npfb)
             resamp_crcf_execute_block(q, buf_0, num_input, buf_1, &num_written);
             liquid_log_debug(" b[%2u][%2u], num_input:%5u, num_output:%5u, num_written:%5u",
                     b, i, num_input, num_output, num_written);
-            CONTEND_EQUALITY(num_output, num_written)
+            LIQUID_CHECK(num_output ==  num_written)
         }
     }
 
@@ -128,17 +128,16 @@ void testbench_resamp_crcf_num_output(float _rate, unsigned int _npfb)
     resamp_crcf_destroy(q);
 }
 
-void autotest_resamp_crcf_num_output_0(){ testbench_resamp_crcf_num_output(1.00f,     64); }
-void autotest_resamp_crcf_num_output_1(){ testbench_resamp_crcf_num_output(1.00f,    256); }
-void autotest_resamp_crcf_num_output_2(){ testbench_resamp_crcf_num_output(0.50f,    256); }
-void autotest_resamp_crcf_num_output_3(){ testbench_resamp_crcf_num_output(sqrtf( 2),256); }
-void autotest_resamp_crcf_num_output_4(){ testbench_resamp_crcf_num_output(sqrtf(17), 16); }
-void autotest_resamp_crcf_num_output_5(){ testbench_resamp_crcf_num_output(1.0f/M_PI, 64); }
-void autotest_resamp_crcf_num_output_6(){ testbench_resamp_crcf_num_output(expf(5.0f),64); }
-void autotest_resamp_crcf_num_output_7(){ testbench_resamp_crcf_num_output(expf(-5.f),64); }
+LIQUID_AUTOTEST(resamp_crcf_num_output_0,"description","",0.1){ testbench_resamp_crcf_num_output(__q__, 1.00f,     64); }
+LIQUID_AUTOTEST(resamp_crcf_num_output_1,"description","",0.1){ testbench_resamp_crcf_num_output(__q__, 1.00f,    256); }
+LIQUID_AUTOTEST(resamp_crcf_num_output_2,"description","",0.1){ testbench_resamp_crcf_num_output(__q__, 0.50f,    256); }
+LIQUID_AUTOTEST(resamp_crcf_num_output_3,"description","",0.1){ testbench_resamp_crcf_num_output(__q__, sqrtf( 2),256); }
+LIQUID_AUTOTEST(resamp_crcf_num_output_4,"description","",0.1){ testbench_resamp_crcf_num_output(__q__, sqrtf(17), 16); }
+LIQUID_AUTOTEST(resamp_crcf_num_output_5,"description","",0.1){ testbench_resamp_crcf_num_output(__q__, 1.0f/M_PI, 64); }
+LIQUID_AUTOTEST(resamp_crcf_num_output_6,"description","",0.1){ testbench_resamp_crcf_num_output(__q__, expf(5.0f),64); }
+LIQUID_AUTOTEST(resamp_crcf_num_output_7,"description","",0.1){ testbench_resamp_crcf_num_output(__q__, expf(-5.f),64); }
 
-// test copy method
-void autotest_resamp_crcf_copy()
+LIQUID_AUTOTEST(resamp_crcf_copy,"test copy method", "", 0.1)
 {
     // create object with irregular parameters
     float rate = 0.71239213987520f;
@@ -162,15 +161,15 @@ void autotest_resamp_crcf_copy()
         resamp_crcf_execute(q1, v, &y1, &nw1);
 
         // check that either 0 or 1 samples were written
-        CONTEND_LESS_THAN(nw0, 2);
-        CONTEND_LESS_THAN(nw1, 2);
+        LIQUID_CHECK(nw0< 2);
+        LIQUID_CHECK(nw1< 2);
 
         // check that the same number of samples were written
-        CONTEND_EQUALITY(nw0, nw1);
+        LIQUID_CHECK(nw0 ==  nw1);
 
         // check output sample values
         if (nw0==1 && nw1==1)
-            CONTEND_EQUALITY(y0, y1);
+            LIQUID_CHECK(y0 ==  y1);
     }
 
     // destroy objects

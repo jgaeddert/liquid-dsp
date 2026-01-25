@@ -63,7 +63,7 @@ int liquid_autotest_execute(liquid_autotest _q)
     if (_q->status != LIQUID_AUTOTEST_SCHED)
         return liquid_error(LIQUID_EIMODE,"unexpected status mode for test '%s'", _q->name);
 
-    liquid_log_info("running test '%s' [%s]", _q->docstr, _q->keywords);
+    liquid_log_info("running test '%s' (%s)", _q->name, _q->docstr);
     _q->status = LIQUID_AUTOTEST_ACTIVE;
     // start timer
     struct rusage tic, toc;
@@ -189,6 +189,7 @@ void autotest_print_results(void)
     }
     liquid_log_info("==================================");
 }
+*/
 
 // print warning to stderr
 // increment liquid_autotest_num_warnings
@@ -200,9 +201,7 @@ void liquid_autotest_warn(const char * _file,
                           const char * _message)
 {
     liquid_log(NULL,LIQUID_WARN,_file,_line,_message);
-    liquid_autotest_num_warnings++;
 }
-*/
 
 // contend that data in two arrays are identical
 //  _x      :   input array [size: _n x 1]

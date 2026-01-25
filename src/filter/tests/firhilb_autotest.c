@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
 #define J _Complex_I
@@ -28,7 +28,7 @@
 //
 // AUTOTEST: Hilbert transform, 2:1 decimator
 //
-void autotest_firhilbf_decim()
+LIQUID_AUTOTEST(firhilbf_decim,"description","",0.1)
 {
     float x[32] = {
          1.0000,  0.7071,  0.0000, -0.7071, -1.0000, -0.7071, -0.0000,  0.7071,
@@ -60,8 +60,8 @@ void autotest_firhilbf_decim()
 
     // run validation
     for (i=0; i<16; i++) {
-        CONTEND_DELTA(crealf(y[i]), crealf(test[i]), tol);
-        CONTEND_DELTA(cimagf(y[i]), cimagf(test[i]), tol);
+        LIQUID_CHECK_DELTA(crealf(y[i]), crealf(test[i]), tol);
+        LIQUID_CHECK_DELTA(cimagf(y[i]), cimagf(test[i]), tol);
     }
 
     // clean up filter object
@@ -71,7 +71,7 @@ void autotest_firhilbf_decim()
 //
 // AUTOTEST: Hilbert transform, 1:2 interpolator
 //
-void autotest_firhilbf_interp()
+LIQUID_AUTOTEST(firhilbf_interp,"description","",0.1)
 {
     float complex x[16] = {
          1.0000+J* 0.0000, -0.0000+J*-1.0000, -1.0000+J* 0.0000,  0.0000+J* 1.0000,
@@ -100,15 +100,14 @@ void autotest_firhilbf_interp()
 
     // run validation
     for (i=0; i<32; i++) {
-        CONTEND_DELTA(y[i], test[i], tol);
+        LIQUID_CHECK_DELTA(y[i], test[i], tol);
     }
 
     // clean up filter object
     firhilbf_destroy(ht);
 }
 
-// test end-to-end power specral density
-void autotest_firhilbf_psd()
+LIQUID_AUTOTEST(firhilbf_psd,"test end-to-end power specral density", "", 0.1)
 {
     float        tol  = 1;  // error tolerance [dB]
     float        bw = 0.4f; // pulse bandwidth
@@ -149,8 +148,8 @@ void autotest_firhilbf_psd()
       {.fmin=-0.3*bw, .fmax=+0.3*bw, .pmin=-1, .pmax=+1,      .test_lo=1, .test_hi=1},
       {.fmin=+0.5*bw, .fmax=+0.5,    .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_signal(buf_0, num_samples, regions_orig, 3,
-        liquid_autotest_verbose ? "autotest/logs/firhilbf_orig.m" : NULL);
+    liquid_autotest_validate_psd_signal(__q__, buf_0, num_samples, regions_orig, 3,
+        "autotest/logs/firhilbf_orig.m");
 
     // verify interpolated spectrum
     autotest_psd_s regions_interp[] = {
@@ -160,23 +159,23 @@ void autotest_firhilbf_psd()
       {.fmin= 0.25-0.15*bw, .fmax= 0.25+0.15*bw, .pmin=-1, .pmax=+1,      .test_lo=1, .test_hi=1},
       {.fmin= 0.25+0.25*bw, .fmax= 0.5,          .pmin= 0, .pmax=-As+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_signalf(buf_1, 2*num_samples, regions_interp, 5,
-        liquid_autotest_verbose ? "autotest/logs/firhilbf_interp.m" : NULL);
+    liquid_autotest_validate_psd_signalf(__q__, buf_1, 2*num_samples, regions_interp, 5,
+        "autotest/logs/firhilbf_interp.m");
 
     // verify decimated spectrum (using same regions as original)
-    liquid_autotest_validate_psd_signal(buf_2, num_samples, regions_orig, 3,
-        liquid_autotest_verbose ? "autotest/logs/firhilbf_decim.m" : NULL);
+    liquid_autotest_validate_psd_signal(__q__, buf_2, num_samples, regions_orig, 3,
+        "autotest/logs/firhilbf_decim.m");
 
     // destroy filter object and free memory
     firhilbf_destroy(q);
 }
 
-void autotest_firhilbf_config()
+LIQUID_AUTOTEST(firhilbf_config,"description","",0.1)
 {
     _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
-    CONTEND_ISNULL(firhilbf_create( 0, 60.0f)); // m too small
-    CONTEND_ISNULL(firhilbf_create( 1, 60.0f)); // m too small
+    LIQUID_CHECK(NULL ==firhilbf_create( 0, 60.0f)); // m too small
+    LIQUID_CHECK(NULL ==firhilbf_create( 1, 60.0f)); // m too small
 
     // create proper object but test invalid internal configurations
     //firhilbf q = firhilbf_create(12,60.0f);
@@ -184,7 +183,7 @@ void autotest_firhilbf_config()
     _liquid_error_downgrade_disable();
 }
 
-void autotest_firhilbf_copy_interp()
+LIQUID_AUTOTEST(firhilbf_copy_interp,"description","",0.1)
 {
     firhilbf q0 = firhilbf_create(12,120.0f);
 
@@ -205,8 +204,8 @@ void autotest_firhilbf_copy_interp()
         firhilbf_interp_execute(q1, x, y1);
         liquid_log_debug("%3u : %12.8f +j%12.8f > {%12.8f, %12.8f}, {%12.8f, %12.8f}",
                 i, crealf(x), cimagf(x), y0[0], y0[1], y1[0], y1[1]);
-        CONTEND_EQUALITY(y0[0], y1[0]);
-        CONTEND_EQUALITY(y0[1], y1[1]);
+        LIQUID_CHECK(y0[0] ==  y1[0]);
+        LIQUID_CHECK(y0[1] ==  y1[1]);
     }
 
     // destroy objects
@@ -214,7 +213,7 @@ void autotest_firhilbf_copy_interp()
     firhilbf_destroy(q1);
 }
 
-void autotest_firhilbf_copy_decim()
+LIQUID_AUTOTEST(firhilbf_copy_decim,"description","",0.1)
 {
     firhilbf q0 = firhilbf_create(12,120.0f);
 
@@ -238,7 +237,7 @@ void autotest_firhilbf_copy_decim()
         firhilbf_decim_execute(q1, x, &y1);
         liquid_log_debug("%3u : {%12.8f %12.8f} > %12.8f +j%12.8f, %12.8f +j%12.8f",
                 i, x[0], x[1], crealf(y0), cimagf(y0), crealf(y1), cimagf(y1));
-        CONTEND_EQUALITY(y0, y1);
+        LIQUID_CHECK(y0 ==  y1);
     }
 
     // destroy objects

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,14 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // test multi-stage arbitrary resampler
 //   r  : resampling rate (output/input)
 //   As : resampling filter stop-band attenuation [dB]
-void testbench_msresamp2_crcf_interp(unsigned int _num_stages,
+void testbench_msresamp2_crcf_interp(liquid_autotest __q__,
+                                     unsigned int _num_stages,
                                      float        _fc,
                                      float        _as)
 {
@@ -70,30 +71,29 @@ void testbench_msresamp2_crcf_interp(unsigned int _num_stages,
     char filename[256];
     sprintf(filename,"autotest/logs/msresamp2_crcf_interp_M%u_f%.3u_a%u.m",
         M, (int)(_fc*1000), (int)_as);
-    liquid_autotest_validate_psd_signal(buf, buf_len, regions, 3,
+    liquid_autotest_validate_psd_signal(__q__, buf, buf_len, regions, 3,
         liquid_autotest_verbose ? filename : NULL);
 
     // destroy objects
     msresamp2_crcf_destroy(resamp);
 }
 
-void autotest_msresamp2_crcf_interp_01() { testbench_msresamp2_crcf_interp(1, 0.25f, 60.0f); }
-void autotest_msresamp2_crcf_interp_02() { testbench_msresamp2_crcf_interp(2, 0.25f, 60.0f); }
-void autotest_msresamp2_crcf_interp_03() { testbench_msresamp2_crcf_interp(3, 0.25f, 60.0f); }
-void autotest_msresamp2_crcf_interp_04() { testbench_msresamp2_crcf_interp(4, 0.25f, 60.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_01,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 1, 0.25f, 60.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_02,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 2, 0.25f, 60.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_03,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 3, 0.25f, 60.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_04,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 4, 0.25f, 60.0f); }
 
-void autotest_msresamp2_crcf_interp_05() { testbench_msresamp2_crcf_interp(1, 0.45f, 60.0f); }
-void autotest_msresamp2_crcf_interp_06() { testbench_msresamp2_crcf_interp(2, 0.45f, 60.0f); }
-void autotest_msresamp2_crcf_interp_07() { testbench_msresamp2_crcf_interp(3, 0.45f, 60.0f); }
-void autotest_msresamp2_crcf_interp_08() { testbench_msresamp2_crcf_interp(4, 0.45f, 60.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_05,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 1, 0.45f, 60.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_06,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 2, 0.45f, 60.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_07,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 3, 0.45f, 60.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_08,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 4, 0.45f, 60.0f); }
 
-void autotest_msresamp2_crcf_interp_09() { testbench_msresamp2_crcf_interp(3, 0.45f, 80.0f); }
-void autotest_msresamp2_crcf_interp_10() { testbench_msresamp2_crcf_interp(3, 0.45f, 90.0f); }
-void autotest_msresamp2_crcf_interp_11() { testbench_msresamp2_crcf_interp(3, 0.45f,100.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_09,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 3, 0.45f, 80.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_10,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 3, 0.45f, 90.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_11,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 3, 0.45f,100.0f); }
 //void xautotest_msresamp2_crcf_interp_12() { testbench_msresamp2_crcf_interp(3, 0.45f,120.0f); }
 
-// test copy method
-void autotest_msresamp2_copy()
+LIQUID_AUTOTEST(msresamp2_copy,"test copy method", "", 0.1)
 {
     // create original resampler
     unsigned int num_stages = 4;
@@ -119,7 +119,7 @@ void autotest_msresamp2_copy()
         v = randnf() + _Complex_I*randnf();
         msresamp2_crcf_execute(q0, &v, y0);
         msresamp2_crcf_execute(q1, &v, y1);
-        CONTEND_SAME_DATA(y0, y1, M*sizeof(float complex));
+        LIQUID_CHECK_ARRAY(y0, y1, M*sizeof(float complex));
     }
 
     // clean up allocated objects
