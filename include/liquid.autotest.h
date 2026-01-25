@@ -172,6 +172,29 @@ int liquid_registry_print(const liquid_autotest * _registry,
 #define LIQUID_FAIL(MSG)            LIQUID_FAIL_QFL(__q__,__FILE__,__LINE__,MSG)
 
 
+// test if the values in two arrays is identical
+#define __LIQUID_TEST_ARRAY__(Q,F,L,X,Y,N,REQUIRE)                              \
+{                                                                               \
+    if (!liquid_autotest_same_data((uint8_t*)(X),(uint8_t*)(Y),(N)))            \
+    {                                                                           \
+        liquid_autotest_fail(Q,F,L,#X);                                         \
+        if (REQUIRE) return;                                                    \
+    } else {                                                                    \
+        liquid_autotest_pass(Q);                                                \
+    }                                                                           \
+}
+// check that arrays are identical
+#define LIQUID_CHECK_ARRAY_QFL(Q,F,L,X,Y,N)   __LIQUID_TEST_ARRAY__(Q,F,L,X,Y,N,false)
+#define LIQUID_CHECK_ARRAY_(Q,X,Y,N)          LIQUID_CHECK_ARRAY_QFL(Q,__FILE__,__LINE__,X,Y,N)
+#define LIQUID_CHECK_ARRAY(X,Y,N)             LIQUID_CHECK_ARRAY_QFL(__q__,__FILE__,__LINE__,X,Y,N)
+
+// require that arrays are identical
+#define LIQUID_REQUIRE_ARRAY_QFL(Q,F,L,X,Y,N) __LIQUID_TEST_ARRAY__(Q,F,L,X,Y,N,true)
+#define LIQUID_REQUIRE_ARRAY_(Q,X,Y,N)        LIQUID_REQUIRE_ARRAY_QFL(Q,__FILE__,__LINE__,X,Y,N)
+#define LIQUID_REQUIRE_ARRAY(X,Y,N)           LIQUID_REQUIRE_ARRAY_QFL(__q__,__FILE__,__LINE__,X,Y,N)
+
+
+
 //
 // --- LEGACY ---
 //
@@ -327,25 +350,6 @@ void liquid_autotest_print_array(unsigned char * _x,
 }
 #define CONTEND_ISNULL_FL(F,L,X)          TEST_ISNULL(F,L,#X,(X))
 #define CONTEND_ISNULL(X)                 CONTEND_ISNULL_FL(__FILE__,__LINE__,X)
-
-// CONTEND_SAME_DATA
-#define TEST_SAME_DATA(F,L,EX,X,EY,Y,EN,N)                                      \
-{                                                                               \
-    if (!liquid_autotest_same_data((uint8_t*)(X),(uint8_t*)(Y),(N)))            \
-    {                                                                           \
-        liquid_autotest_failed_msg(F,L,EX "[] != " EY "[] for " EN " bytes");   \
-        if (liquid_autotest_verbose)                                            \
-        {                                                                       \
-            liquid_autotest_print_array((uint8_t*)(X),N);                       \
-            liquid_autotest_print_array((uint8_t*)(Y),N);                       \
-        }                                                                       \
-    } else {                                                                    \
-        liquid_autotest_passed();                                               \
-    }                                                                           \
-}
-#define CONTEND_SAME_DATA_FL(F,L,X,Y,N)  TEST_SAME_DATA(F,L,#X,(X),#Y,(Y),#N,(N))
-#define CONTEND_SAME_DATA(X,Y,N)         CONTEND_SAME_DATA_FL(__FILE__,__LINE__,X,Y,N)
-
 
 // AUTOTEST WARN
 #define AUTOTEST_WARN_FL(F,L,MSG)      liquid_autotest_warn(F,L,MSG)

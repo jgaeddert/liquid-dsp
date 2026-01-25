@@ -21,6 +21,7 @@ extern struct liquid_autotest_s rresamp_crcf_arkaiser_P3_Q5_s;
 extern struct liquid_autotest_s rresamp_crcf_arkaiser_P5_Q3_s;
 extern struct liquid_autotest_s rresamp_crcf_rrcos_P3_Q5_s;
 extern struct liquid_autotest_s rresamp_crcf_rrcos_P5_Q3_s;
+extern struct liquid_autotest_s rresamp_copy_s;
 extern struct liquid_autotest_s rresamp_config_s;
 
 // compile test registry
@@ -42,6 +43,7 @@ liquid_autotest liquid_autotest_registry[] =
     &rresamp_crcf_arkaiser_P5_Q3_s,
     &rresamp_crcf_rrcos_P3_Q5_s,
     &rresamp_crcf_rrcos_P5_Q3_s,
+    &rresamp_copy_s,
     &rresamp_config_s,
     NULL
 };

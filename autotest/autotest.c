@@ -202,6 +202,7 @@ void liquid_autotest_warn(const char * _file,
     liquid_log(NULL,LIQUID_WARN,_file,_line,_message);
     liquid_autotest_num_warnings++;
 }
+*/
 
 // contend that data in two arrays are identical
 //  _x      :   input array [size: _n x 1]
@@ -219,6 +220,7 @@ int liquid_autotest_same_data(unsigned char * _x,
     return 1;
 }
 
+/*
 // print array to standard out
 //  _x      :   input array [size: _n x 1]
 //  _n      :   input array size

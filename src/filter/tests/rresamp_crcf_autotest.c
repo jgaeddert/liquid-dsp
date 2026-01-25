@@ -146,7 +146,6 @@ LIQUID_AUTOTEST(rresamp_crcf_rrcos_P3_Q5, "description", "", 0.1)
 LIQUID_AUTOTEST(rresamp_crcf_rrcos_P5_Q3, "description", "", 0.1)
     { test_rresamp_crcf(__q__,"rrcos",    5, 3, 40, 0.2, 50.0f); }
 
-/*
 // test copy method
 LIQUID_AUTOTEST(rresamp_copy, "copy rational-rate resampler", "", 0)
 {
@@ -183,7 +182,7 @@ LIQUID_AUTOTEST(rresamp_copy, "copy rational-rate resampler", "", 0)
         rresamp_crcf_execute(q1, buf, buf_1);
 
         // compare output
-        CONTEND_SAME_DATA(buf_0, buf_1, P*sizeof(float complex));
+        LIQUID_CHECK_ARRAY(buf_0, buf_1, P*sizeof(float complex));
     }
 
     // destroy objects
@@ -191,7 +190,6 @@ LIQUID_AUTOTEST(rresamp_copy, "copy rational-rate resampler", "", 0)
     rresamp_crcf_destroy(q1);
     symstreamrcf_destroy(gen);
 }
-*/
 
 LIQUID_AUTOTEST(rresamp_config, "test errors and invalid configuration", "", 0)
 {
