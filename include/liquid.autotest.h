@@ -375,27 +375,27 @@ int liquid_autotest_validate_spectrum(liquid_autotest __q__, float * _psd, unsig
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
 
 // validate spectral content of a signal (complex)
-int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_len,
+int liquid_autotest_validate_psd_signal(liquid_autotest __q__, float complex * _buf, unsigned int _buf_len,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
 
 // validate spectral content of a signal (real)
-int liquid_autotest_validate_psd_signalf(float * _buf, unsigned int _buf_len,
+int liquid_autotest_validate_psd_signalf(liquid_autotest __q__, float * _buf, unsigned int _buf_len,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
 
 // validate spectral content of a filter (real coefficients)
-int liquid_autotest_validate_psd_firfilt_crcf(firfilt_crcf _q, unsigned int _nfft,
+int liquid_autotest_validate_psd_firfilt_crcf(liquid_autotest __q__, firfilt_crcf _q, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
 
 // validate spectral content of a filter (complex coefficients)
-int liquid_autotest_validate_psd_firfilt_cccf(firfilt_cccf _q, unsigned int _nfft,
+int liquid_autotest_validate_psd_firfilt_cccf(liquid_autotest __q__, firfilt_cccf _q, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
 
 // validate spectral content of an iir filter (real coefficients, input)
-int liquid_autotest_validate_psd_iirfilt_rrrf(iirfilt_rrrf _q, unsigned int _nfft,
+int liquid_autotest_validate_psd_iirfilt_rrrf(liquid_autotest __q__, iirfilt_rrrf _q, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
 
 // validate spectral content of a spectral periodogram object
-int liquid_autotest_validate_psd_spgramcf(spgramcf _q,
+int liquid_autotest_validate_psd_spgramcf(liquid_autotest __q__, spgramcf _q,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename);
 
 // callback function to simplify testing for framing objects

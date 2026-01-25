@@ -318,9 +318,8 @@ int liquid_autotest_validate_spectrum(liquid_autotest __q__, float * _psd, unsig
     return 0;
 }
 
-/*
 // validate spectral content of a signal (complex)
-int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_len,
+int liquid_autotest_validate_psd_signal(liquid_autotest __q__, float complex * _buf, unsigned int _buf_len,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
     // compute signal's power spectral density
@@ -329,7 +328,7 @@ int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_
     float complex * buf_freq = (float complex*) malloc(nfft*sizeof(float complex));
     float         * buf_psd  = (float *       ) malloc(nfft*sizeof(float        ));
     if (buf_time == NULL || buf_freq == NULL || buf_psd == NULL) {
-        AUTOTEST_FAIL("liquid_autotest_validate_psd_signal(), could not allocate appropriate memory for validating psd");
+        LIQUID_FAIL("liquid_autotest_validate_psd_signal(), could not allocate appropriate memory for validating psd");
         return -1;
     }
     unsigned int i;
@@ -340,7 +339,7 @@ int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_
         buf_psd[i] = 20*log10( cabsf( buf_freq[(i+nfft/2)%nfft] ) );
 
     // run test
-    int rc = liquid_autotest_validate_spectrum(buf_psd, nfft,
+    int rc = liquid_autotest_validate_spectrum(__q__, buf_psd, nfft,
             _regions, num_regions, debug_filename);
 
     // free memory and return
@@ -351,13 +350,13 @@ int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_
 }
 
 // validate spectral content of a signal (real)
-int liquid_autotest_validate_psd_signalf(float * _buf, unsigned int _buf_len,
+int liquid_autotest_validate_psd_signalf(liquid_autotest __q__, float * _buf, unsigned int _buf_len,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
     // copy to temporary complex array
     float complex * buf_cplx = (float complex*) malloc(_buf_len*sizeof(float complex));
     if (buf_cplx == NULL) {
-        AUTOTEST_FAIL("liquid_autotest_validate_psd_signalf(), could not allocate appropriate memory for validating psd");
+        LIQUID_FAIL("liquid_autotest_validate_psd_signalf(), could not allocate appropriate memory for validating psd");
         return -1;
     }
     unsigned int i;
@@ -365,7 +364,7 @@ int liquid_autotest_validate_psd_signalf(float * _buf, unsigned int _buf_len,
         buf_cplx[i] = _buf[i];
 
     // run test
-    int rc = liquid_autotest_validate_psd_signal(buf_cplx, _buf_len,
+    int rc = liquid_autotest_validate_psd_signal(__q__, buf_cplx, _buf_len,
             _regions, num_regions, debug_filename);
 
     // free memory and return
@@ -374,7 +373,7 @@ int liquid_autotest_validate_psd_signalf(float * _buf, unsigned int _buf_len,
 }
 
 // validate spectral content of a filter (real coefficients)
-int liquid_autotest_validate_psd_firfilt_crcf(firfilt_crcf _q, unsigned int _nfft,
+int liquid_autotest_validate_psd_firfilt_crcf(liquid_autotest __q__, firfilt_crcf _q, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
     float psd[_nfft];
@@ -385,11 +384,11 @@ int liquid_autotest_validate_psd_firfilt_crcf(firfilt_crcf _q, unsigned int _nff
         firfilt_crcf_freqresponse(_q, f, &H);
         psd[i] = 20*log10f(cabsf(H));
     }
-    return liquid_autotest_validate_spectrum(psd,_nfft,_regions,num_regions,debug_filename);
+    return liquid_autotest_validate_spectrum(__q__,psd,_nfft,_regions,num_regions,debug_filename);
 }
 
 // validate spectral content of a filter (complex coefficients)
-int liquid_autotest_validate_psd_firfilt_cccf(firfilt_cccf _q, unsigned int _nfft,
+int liquid_autotest_validate_psd_firfilt_cccf(liquid_autotest __q__, firfilt_cccf _q, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
     float psd[_nfft];
@@ -400,11 +399,11 @@ int liquid_autotest_validate_psd_firfilt_cccf(firfilt_cccf _q, unsigned int _nff
         firfilt_cccf_freqresponse(_q, f, &H);
         psd[i] = 20*log10f(cabsf(H));
     }
-    return liquid_autotest_validate_spectrum(psd,_nfft,_regions,num_regions,debug_filename);
+    return liquid_autotest_validate_spectrum(__q__,psd,_nfft,_regions,num_regions,debug_filename);
 }
 
 // validate spectral content of an iir filter (real coefficients, input)
-int liquid_autotest_validate_psd_iirfilt_rrrf(iirfilt_rrrf _q, unsigned int _nfft,
+int liquid_autotest_validate_psd_iirfilt_rrrf(liquid_autotest __q__, iirfilt_rrrf _q, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
     float psd[_nfft];
@@ -415,17 +414,17 @@ int liquid_autotest_validate_psd_iirfilt_rrrf(iirfilt_rrrf _q, unsigned int _nff
         iirfilt_rrrf_freqresponse(_q, f, &H);
         psd[i] = 20*log10f(cabsf(H));
     }
-    return liquid_autotest_validate_spectrum(psd,_nfft,_regions,num_regions,debug_filename);
+    return liquid_autotest_validate_spectrum(__q__,psd,_nfft,_regions,num_regions,debug_filename);
 }
 
 // validate spectral content of a spectral periodogram object
-int liquid_autotest_validate_psd_spgramcf(spgramcf _q,
+int liquid_autotest_validate_psd_spgramcf(liquid_autotest __q__, spgramcf _q,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
     unsigned int nfft = spgramcf_get_nfft(_q);
     float psd[nfft];
     spgramcf_get_psd(_q, psd);
-    return liquid_autotest_validate_spectrum(psd,nfft,_regions,num_regions,debug_filename);
+    return liquid_autotest_validate_spectrum(__q__,psd,nfft,_regions,num_regions,debug_filename);
 }
 
 // callback function to simplify testing for framing objects
@@ -444,4 +443,3 @@ int framing_autotest_callback(
     return 0;
 }
 
-*/
