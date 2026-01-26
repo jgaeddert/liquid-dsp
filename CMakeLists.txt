@@ -554,11 +554,8 @@ set(AUTOTESTS
     #${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_copy_autotest.c
     #${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_autotest.c
     #${PROJECT_SOURCE_DIR}/src/fft/tests/asgram_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/fft_small_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/fft_radix2_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/fft_composite_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/fft_prime_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/fft_r2r_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_r2r_autotest.c
     #${PROJECT_SOURCE_DIR}/src/fft/tests/fft_shift_autotest.c
     #${PROJECT_SOURCE_DIR}/src/fft/tests/spgram_autotest.c
     #${PROJECT_SOURCE_DIR}/src/fft/tests/spwaterfall_autotest.c
@@ -682,42 +679,42 @@ set(AUTOTESTS
 
 set(AUTOTEST_EXTRA
     #${PROJECT_SOURCE_DIR}/src/fft/tests/fft_runtest.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_2.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_3.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_4.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_5.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_6.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_7.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_8.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_9.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_10.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_16.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_17.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_20.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_21.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_22.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_24.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_26.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_30.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_32.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_35.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_36.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_43.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_48.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_63.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_64.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_79.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_92.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_96.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_120.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_130.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_157.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_192.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_317.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_509.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_8.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_27.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_32.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_2.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_3.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_4.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_5.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_6.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_7.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_8.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_9.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_10.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_16.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_17.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_20.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_21.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_22.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_24.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_26.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_30.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_32.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_35.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_36.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_43.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_48.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_63.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_64.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_79.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_92.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_96.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_120.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_130.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_157.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_192.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_317.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_509.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_8.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_27.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_32.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_rrrf_data_h4x256.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_crcf_data_h4x256.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_cccf_data_h4x256.c

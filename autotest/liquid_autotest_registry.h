@@ -17,6 +17,64 @@ extern struct liquid_autotest_s agc_crcf_squelch_s;
 extern struct liquid_autotest_s agc_crcf_lock_s;
 extern struct liquid_autotest_s agc_crcf_config_s;
 extern struct liquid_autotest_s agc_crcf_copy_s;
+// ./src/fft/tests/fft_r2r_autotest.c
+extern struct liquid_autotest_s fft_r2r_REDFT00_n8_s;
+extern struct liquid_autotest_s fft_r2r_REDFT10_n8_s;
+extern struct liquid_autotest_s fft_r2r_REDFT01_n8_s;
+extern struct liquid_autotest_s fft_r2r_REDFT11_n8_s;
+extern struct liquid_autotest_s fft_r2r_RODFT00_n8_s;
+extern struct liquid_autotest_s fft_r2r_RODFT10_n8_s;
+extern struct liquid_autotest_s fft_r2r_RODFT01_n8_s;
+extern struct liquid_autotest_s fft_r2r_RODFT11_n8_s;
+extern struct liquid_autotest_s fft_r2r_REDFT00_n27_s;
+extern struct liquid_autotest_s fft_r2r_REDFT10_n27_s;
+extern struct liquid_autotest_s fft_r2r_REDFT01_n27_s;
+extern struct liquid_autotest_s fft_r2r_REDFT11_n27_s;
+extern struct liquid_autotest_s fft_r2r_RODFT00_n27_s;
+extern struct liquid_autotest_s fft_r2r_RODFT10_n27_s;
+extern struct liquid_autotest_s fft_r2r_RODFT01_n27_s;
+extern struct liquid_autotest_s fft_r2r_RODFT11_n27_s;
+extern struct liquid_autotest_s fft_r2r_REDFT00_n32_s;
+extern struct liquid_autotest_s fft_r2r_REDFT10_n32_s;
+extern struct liquid_autotest_s fft_r2r_REDFT01_n32_s;
+extern struct liquid_autotest_s fft_r2r_REDFT11_n32_s;
+extern struct liquid_autotest_s fft_r2r_RODFT00_n32_s;
+extern struct liquid_autotest_s fft_r2r_RODFT10_n32_s;
+extern struct liquid_autotest_s fft_r2r_RODFT01_n32_s;
+extern struct liquid_autotest_s fft_r2r_RODFT11_n32_s;
+// ./src/fft/tests/fft_autotest.c
+extern struct liquid_autotest_s fft_3_s;
+extern struct liquid_autotest_s fft_5_s;
+extern struct liquid_autotest_s fft_6_s;
+extern struct liquid_autotest_s fft_7_s;
+extern struct liquid_autotest_s fft_9_s;
+extern struct liquid_autotest_s fft_2_s;
+extern struct liquid_autotest_s fft_4_s;
+extern struct liquid_autotest_s fft_8_s;
+extern struct liquid_autotest_s fft_16_s;
+extern struct liquid_autotest_s fft_32_s;
+extern struct liquid_autotest_s fft_64_s;
+extern struct liquid_autotest_s fft_10_s;
+extern struct liquid_autotest_s fft_21_s;
+extern struct liquid_autotest_s fft_22_s;
+extern struct liquid_autotest_s fft_24_s;
+extern struct liquid_autotest_s fft_26_s;
+extern struct liquid_autotest_s fft_30_s;
+extern struct liquid_autotest_s fft_35_s;
+extern struct liquid_autotest_s fft_36_s;
+extern struct liquid_autotest_s fft_48_s;
+extern struct liquid_autotest_s fft_63_s;
+extern struct liquid_autotest_s fft_92_s;
+extern struct liquid_autotest_s fft_96_s;
+extern struct liquid_autotest_s fft_120_s;
+extern struct liquid_autotest_s fft_130_s;
+extern struct liquid_autotest_s fft_192_s;
+extern struct liquid_autotest_s fft_17_s;
+extern struct liquid_autotest_s fft_43_s;
+extern struct liquid_autotest_s fft_79_s;
+extern struct liquid_autotest_s fft_157_s;
+extern struct liquid_autotest_s fft_317_s;
+extern struct liquid_autotest_s fft_509_s;
 // ./src/filter/tests/iirfilt_autotest.c
 extern struct liquid_autotest_s iirfilt_integrator_s;
 extern struct liquid_autotest_s iirfilt_differentiator_s;
@@ -389,6 +447,62 @@ liquid_autotest liquid_autotest_registry[] =
     &agc_crcf_lock_s,
     &agc_crcf_config_s,
     &agc_crcf_copy_s,
+    &fft_r2r_REDFT00_n8_s,
+    &fft_r2r_REDFT10_n8_s,
+    &fft_r2r_REDFT01_n8_s,
+    &fft_r2r_REDFT11_n8_s,
+    &fft_r2r_RODFT00_n8_s,
+    &fft_r2r_RODFT10_n8_s,
+    &fft_r2r_RODFT01_n8_s,
+    &fft_r2r_RODFT11_n8_s,
+    &fft_r2r_REDFT00_n27_s,
+    &fft_r2r_REDFT10_n27_s,
+    &fft_r2r_REDFT01_n27_s,
+    &fft_r2r_REDFT11_n27_s,
+    &fft_r2r_RODFT00_n27_s,
+    &fft_r2r_RODFT10_n27_s,
+    &fft_r2r_RODFT01_n27_s,
+    &fft_r2r_RODFT11_n27_s,
+    &fft_r2r_REDFT00_n32_s,
+    &fft_r2r_REDFT10_n32_s,
+    &fft_r2r_REDFT01_n32_s,
+    &fft_r2r_REDFT11_n32_s,
+    &fft_r2r_RODFT00_n32_s,
+    &fft_r2r_RODFT10_n32_s,
+    &fft_r2r_RODFT01_n32_s,
+    &fft_r2r_RODFT11_n32_s,
+    &fft_3_s,
+    &fft_5_s,
+    &fft_6_s,
+    &fft_7_s,
+    &fft_9_s,
+    &fft_2_s,
+    &fft_4_s,
+    &fft_8_s,
+    &fft_16_s,
+    &fft_32_s,
+    &fft_64_s,
+    &fft_10_s,
+    &fft_21_s,
+    &fft_22_s,
+    &fft_24_s,
+    &fft_26_s,
+    &fft_30_s,
+    &fft_35_s,
+    &fft_36_s,
+    &fft_48_s,
+    &fft_63_s,
+    &fft_92_s,
+    &fft_96_s,
+    &fft_120_s,
+    &fft_130_s,
+    &fft_192_s,
+    &fft_17_s,
+    &fft_43_s,
+    &fft_79_s,
+    &fft_157_s,
+    &fft_317_s,
+    &fft_509_s,
     &iirfilt_integrator_s,
     &iirfilt_differentiator_s,
     &iirfilt_dcblock_s,
