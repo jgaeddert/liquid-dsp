@@ -556,7 +556,7 @@ set(AUTOTESTS
     #${PROJECT_SOURCE_DIR}/src/fft/tests/asgram_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_r2r_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/fft_shift_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_transforms_autotest.c
     #${PROJECT_SOURCE_DIR}/src/fft/tests/spgram_autotest.c
     #${PROJECT_SOURCE_DIR}/src/fft/tests/spwaterfall_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/dds_cccf_autotest.c
