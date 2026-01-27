@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,10 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-void autotest_spwaterfall_config()
+LIQUID_AUTOTEST(spwaterfall_config,"","",0.1)
 {
     _liquid_error_downgrade_enable();
 
@@ -39,27 +39,28 @@ void autotest_spwaterfall_config()
     unsigned int time  =  960;
 
     // test invalid configurations, normal construction
-    CONTEND_ISNULL(spwaterfallcf_create(   1, wtype,   wlen, delay, time))
-    CONTEND_ISNULL(spwaterfallcf_create(nfft, wtype,      0, delay, time))
-    CONTEND_ISNULL(spwaterfallcf_create(nfft, wtype, nfft+1, delay, time))
-    CONTEND_ISNULL(spwaterfallcf_create(nfft, LIQUID_WINDOW_KBD, 801, delay, time))
-    CONTEND_ISNULL(spwaterfallcf_create(nfft, wtype,   wlen,     0, time))
-    CONTEND_ISNULL(spwaterfallcf_create(nfft, wtype,   wlen, delay,    0))
+    LIQUID_CHECK(NULL == spwaterfallcf_create(   1, wtype,   wlen, delay, time))
+    LIQUID_CHECK(NULL == spwaterfallcf_create(nfft, wtype,      0, delay, time))
+    LIQUID_CHECK(NULL == spwaterfallcf_create(nfft, wtype, nfft+1, delay, time))
+    LIQUID_CHECK(NULL == spwaterfallcf_create(nfft, LIQUID_WINDOW_KBD, 801, delay, time))
+    LIQUID_CHECK(NULL == spwaterfallcf_create(nfft, wtype,   wlen,     0, time))
+    LIQUID_CHECK(NULL == spwaterfallcf_create(nfft, wtype,   wlen, delay,    0))
 
     // test invalid configurations, default construction
-    CONTEND_ISNULL(spwaterfallcf_create_default(   0, time))
-    CONTEND_ISNULL(spwaterfallcf_create_default(nfft,    0))
+    LIQUID_CHECK(NULL == spwaterfallcf_create_default(   0, time))
+    LIQUID_CHECK(NULL == spwaterfallcf_create_default(nfft,    0))
 
     // create proper object but test invalid internal configurations
     spwaterfallcf q = spwaterfallcf_create_default(540, 320);
 
-    CONTEND_INEQUALITY(LIQUID_OK, spwaterfallcf_set_rate(q, -10e6))
+    LIQUID_CHECK(LIQUID_OK != spwaterfallcf_set_rate(q, -10e6))
 
     spwaterfallcf_destroy(q);
     _liquid_error_downgrade_disable();
 }
 
-void testbench_spwaterfallcf_noise(unsigned int _nfft,
+void testbench_spwaterfallcf_noise(liquid_autotest __q__,
+                                   unsigned int _nfft,
                                    unsigned int _window_len,
                                    unsigned int _delay,
                                    unsigned int _time,
@@ -78,7 +79,7 @@ void testbench_spwaterfallcf_noise(unsigned int _nfft,
         spwaterfallcf_push(q, nstd*( randnf() + _Complex_I*randnf() ) * M_SQRT1_2);
 
     // verify number of samples processed
-    CONTEND_EQUALITY(spwaterfallcf_get_num_samples_total(q), num_samples);
+    LIQUID_CHECK(spwaterfallcf_get_num_samples_total(q) ==  num_samples);
 
     // compute power spectral density output
     const float * psd = spwaterfallcf_get_psd(q);
@@ -99,7 +100,7 @@ void testbench_spwaterfallcf_noise(unsigned int _nfft,
     float median = v[_nfft*time/2];
     liquid_log_debug("  spwaterfallcf_test(noise): nfft:%4u, wtype:%s, n0:%6.1f, est:%6.1f, tol:%5.2f",
             _nfft, liquid_window_str[_wtype][1], _noise_floor, median, tol);
-    CONTEND_DELTA(median, _noise_floor, tol)
+    LIQUID_CHECK_DELTA(median, _noise_floor, tol)
 
     // destroy objects and free memory
     free(v);
@@ -107,31 +108,30 @@ void testbench_spwaterfallcf_noise(unsigned int _nfft,
 }
 
 // test different transform sizes
-void autotest_spwaterfallcf_noise_440()  { testbench_spwaterfallcf_noise( 440, 320, 100, 240, -80.0); }
-void autotest_spwaterfallcf_noise_1024() { testbench_spwaterfallcf_noise( 680, 480, 150, 640, -80.0); }
-void autotest_spwaterfallcf_noise_1200() { testbench_spwaterfallcf_noise(1200, 800, 400, 800, -80.0); }
+LIQUID_AUTOTEST(spwaterfallcf_noise_440, "","",0.1) { testbench_spwaterfallcf_noise(__q__,  440, 320, 100, 240, -80.0); }
+LIQUID_AUTOTEST(spwaterfallcf_noise_1024,"","",0.1) { testbench_spwaterfallcf_noise(__q__,  680, 480, 150, 640, -80.0); }
+LIQUID_AUTOTEST(spwaterfallcf_noise_1200,"","",0.1) { testbench_spwaterfallcf_noise(__q__, 1200, 800, 400, 800, -80.0); }
 
-// test normal operation
-void autotest_spwaterfall_operation()
+LIQUID_AUTOTEST(spwaterfall_operation,"test normal operation","",0.1)
 {
     // create default object
     spwaterfallcf q = spwaterfallcf_create(1200, LIQUID_WINDOW_HAMMING, 800, 10, 960);
-    CONTEND_EQUALITY(spwaterfallcf_print(q), LIQUID_OK);
-    CONTEND_EQUALITY(spwaterfallcf_get_num_freq(q), 1200);
-    CONTEND_EQUALITY(spwaterfallcf_get_num_time(q),    0);
-    CONTEND_EQUALITY(spwaterfallcf_get_window_len(q),800);
-    CONTEND_EQUALITY(spwaterfallcf_get_delay(q),      10);
-    CONTEND_EQUALITY(spwaterfallcf_get_wtype(q), LIQUID_WINDOW_HAMMING);
+    LIQUID_CHECK(spwaterfallcf_print(q) ==  LIQUID_OK);
+    LIQUID_CHECK(spwaterfallcf_get_num_freq(q) ==  1200);
+    LIQUID_CHECK(spwaterfallcf_get_num_time(q) ==     0);
+    LIQUID_CHECK(spwaterfallcf_get_window_len(q) == 800);
+    LIQUID_CHECK(spwaterfallcf_get_delay(q) ==       10);
+    LIQUID_CHECK(spwaterfallcf_get_wtype(q) ==  LIQUID_WINDOW_HAMMING);
 
     // push individual samples
     spwaterfallcf_push(q, randnf() + _Complex_I*randnf());
     spwaterfallcf_push(q, randnf() + _Complex_I*randnf());
 
-    CONTEND_EQUALITY(spwaterfallcf_get_num_samples_total(q), 2);
+    LIQUID_CHECK(spwaterfallcf_get_num_samples_total(q) ==  2);
     spwaterfallcf_clear(q);
-    CONTEND_EQUALITY(spwaterfallcf_get_num_samples_total(q), 2);
+    LIQUID_CHECK(spwaterfallcf_get_num_samples_total(q) ==  2);
     spwaterfallcf_reset(q);
-    CONTEND_EQUALITY(spwaterfallcf_get_num_samples_total(q), 0);
+    LIQUID_CHECK(spwaterfallcf_get_num_samples_total(q) ==  0);
 
     // write a block of samples
     float complex buf[12];
@@ -139,12 +139,12 @@ void autotest_spwaterfall_operation()
     for (i=0; i<12; i++)
         buf[i] = randnf() + _Complex_I*randnf();
     spwaterfallcf_write(q, buf, 12);
-    CONTEND_EQUALITY(spwaterfallcf_get_num_samples_total(q), 12);
+    LIQUID_CHECK(spwaterfallcf_get_num_samples_total(q) ==  12);
 
     spwaterfallcf_destroy(q);
 }
 
-void autotest_spwaterfall_copy()
+LIQUID_AUTOTEST(spwaterfall_copy,"","",0.1)
 {
     unsigned int nfft =  240;   // transform size
     unsigned int time =  192;   // time size
@@ -169,26 +169,25 @@ void autotest_spwaterfall_copy()
     }
 
     // check parameters
-    CONTEND_EQUALITY(spwaterfallcf_get_num_freq         (q0),spwaterfallcf_get_num_freq         (q1));
-    CONTEND_EQUALITY(spwaterfallcf_get_num_time         (q0),spwaterfallcf_get_num_time         (q1));
-    CONTEND_EQUALITY(spwaterfallcf_get_window_len       (q0),spwaterfallcf_get_window_len       (q1));
-    CONTEND_EQUALITY(spwaterfallcf_get_delay            (q0),spwaterfallcf_get_delay            (q1));
-    CONTEND_EQUALITY(spwaterfallcf_get_wtype            (q0),spwaterfallcf_get_wtype            (q1));
-    CONTEND_EQUALITY(spwaterfallcf_get_num_samples_total(q0),spwaterfallcf_get_num_samples_total(q1));
+    LIQUID_CHECK(spwaterfallcf_get_num_freq         (q0) == spwaterfallcf_get_num_freq         (q1));
+    LIQUID_CHECK(spwaterfallcf_get_num_time         (q0) == spwaterfallcf_get_num_time         (q1));
+    LIQUID_CHECK(spwaterfallcf_get_window_len       (q0) == spwaterfallcf_get_window_len       (q1));
+    LIQUID_CHECK(spwaterfallcf_get_delay            (q0) == spwaterfallcf_get_delay            (q1));
+    LIQUID_CHECK(spwaterfallcf_get_wtype            (q0) == spwaterfallcf_get_wtype            (q1));
+    LIQUID_CHECK(spwaterfallcf_get_num_samples_total(q0) == spwaterfallcf_get_num_samples_total(q1));
 
     // compute power spectral density output
     const float * psd_0 = spwaterfallcf_get_psd(q0);
     const float * psd_1 = spwaterfallcf_get_psd(q1);
     unsigned int nt = spwaterfallcf_get_num_time(q0);
-    CONTEND_SAME_DATA(psd_0, psd_1, nfft*nt*sizeof(float));
+    LIQUID_CHECK_ARRAY(psd_0, psd_1, nfft*nt*sizeof(float));
 
     // destroy objects and free memory
     spwaterfallcf_destroy(q0);
     spwaterfallcf_destroy(q1);
 }
 
-// test file export
-void autotest_spwaterfall_gnuplot()
+LIQUID_AUTOTEST(spwaterfall_gnuplot,"test file export","",0.1)
 {
     // create default object
     spwaterfallcf q = spwaterfallcf_create_default(540, 320);
@@ -197,15 +196,15 @@ void autotest_spwaterfall_gnuplot()
         spwaterfallcf_push(q, randnf() + _Complex_I*randnf());
 
     // export once before setting values
-    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_export(q,"autotest/logs/spwaterfall"))
+    LIQUID_CHECK(LIQUID_OK == spwaterfallcf_export(q,"autotest/logs/spwaterfall"))
 
     // set values and export again
-    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_freq(q, 100e6))
-    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_rate(q,  20e6))
-    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_dims(q, 640, 480))
-    CONTEND_EQUALITY(LIQUID_OK, spwaterfallcf_set_commands(q,NULL))
-    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_set_commands(q,"set title 'waterfall'"))
-    CONTEND_EQUALITY(LIQUID_OK,spwaterfallcf_export(q,"autotest/logs/spwaterfall"))
+    LIQUID_CHECK(LIQUID_OK == spwaterfallcf_set_freq(q, 100e6))
+    LIQUID_CHECK(LIQUID_OK == spwaterfallcf_set_rate(q,  20e6))
+    LIQUID_CHECK(LIQUID_OK == spwaterfallcf_set_dims(q, 640, 480))
+    LIQUID_CHECK(LIQUID_OK == spwaterfallcf_set_commands(q,NULL))
+    LIQUID_CHECK(LIQUID_OK == spwaterfallcf_set_commands(q,"set title 'waterfall'"))
+    LIQUID_CHECK(LIQUID_OK == spwaterfallcf_export(q,"autotest/logs/spwaterfall"))
 
     spwaterfallcf_destroy(q);
 }

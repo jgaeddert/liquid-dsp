@@ -17,6 +17,14 @@ extern struct liquid_autotest_s agc_crcf_squelch_s;
 extern struct liquid_autotest_s agc_crcf_lock_s;
 extern struct liquid_autotest_s agc_crcf_config_s;
 extern struct liquid_autotest_s agc_crcf_copy_s;
+// ./src/fft/tests/spwaterfall_autotest.c
+extern struct liquid_autotest_s spwaterfall_config_s;
+extern struct liquid_autotest_s spwaterfallcf_noise_440_s;
+extern struct liquid_autotest_s spwaterfallcf_noise_1024_s;
+extern struct liquid_autotest_s spwaterfallcf_noise_1200_s;
+extern struct liquid_autotest_s spwaterfall_operation_s;
+extern struct liquid_autotest_s spwaterfall_copy_s;
+extern struct liquid_autotest_s spwaterfall_gnuplot_s;
 // ./src/fft/tests/fft_transforms_autotest.c
 extern struct liquid_autotest_s fft_3_s;
 extern struct liquid_autotest_s fft_5_s;
@@ -78,6 +86,39 @@ extern struct liquid_autotest_s fft_r2r_RODFT11_n32_s;
 // ./src/fft/tests/fft_autotest.c
 extern struct liquid_autotest_s fft_shift_4_s;
 extern struct liquid_autotest_s fft_shift_8_s;
+// ./src/fft/tests/asgram_autotest.c
+extern struct liquid_autotest_s asgramcf_copy_s;
+extern struct liquid_autotest_s asgramcf_config_s;
+// ./src/fft/tests/spgram_autotest.c
+extern struct liquid_autotest_s spgramcf_noise_440_s;
+extern struct liquid_autotest_s spgramcf_noise_1024_s;
+extern struct liquid_autotest_s spgramcf_noise_1200_s;
+extern struct liquid_autotest_s spgramcf_noise_custom_0_s;
+extern struct liquid_autotest_s spgramcf_noise_custom_1_s;
+extern struct liquid_autotest_s spgramcf_noise_custom_2_s;
+extern struct liquid_autotest_s spgramcf_noise_custom_3_s;
+extern struct liquid_autotest_s spgramcf_noise_hamming_s;
+extern struct liquid_autotest_s spgramcf_noise_hann_s;
+extern struct liquid_autotest_s spgramcf_noise_blackmanharris_s;
+extern struct liquid_autotest_s spgramcf_noise_blackmanharris7_s;
+extern struct liquid_autotest_s spgramcf_noise_kaiser_s;
+extern struct liquid_autotest_s spgramcf_noise_flattop_s;
+extern struct liquid_autotest_s spgramcf_noise_triangular_s;
+extern struct liquid_autotest_s spgramcf_noise_rcostaper_s;
+extern struct liquid_autotest_s spgramcf_noise_kbd_s;
+extern struct liquid_autotest_s spgramcf_signal_00_s;
+extern struct liquid_autotest_s spgramcf_signal_01_s;
+extern struct liquid_autotest_s spgramcf_signal_02_s;
+extern struct liquid_autotest_s spgramcf_signal_03_s;
+extern struct liquid_autotest_s spgramcf_signal_04_s;
+extern struct liquid_autotest_s spgramcf_signal_05_s;
+extern struct liquid_autotest_s spgramcf_counters_s;
+extern struct liquid_autotest_s spgramcf_config_s;
+extern struct liquid_autotest_s spgramcf_standalone_s;
+extern struct liquid_autotest_s spgramcf_short_s;
+extern struct liquid_autotest_s spgramcf_copy_s;
+extern struct liquid_autotest_s spgramcf_null_s;
+extern struct liquid_autotest_s spgram_gnuplot_s;
 // ./src/filter/tests/iirfilt_autotest.c
 extern struct liquid_autotest_s iirfilt_integrator_s;
 extern struct liquid_autotest_s iirfilt_differentiator_s;
@@ -450,6 +491,13 @@ liquid_autotest liquid_autotest_registry[] =
     &agc_crcf_lock_s,
     &agc_crcf_config_s,
     &agc_crcf_copy_s,
+    &spwaterfall_config_s,
+    &spwaterfallcf_noise_440_s,
+    &spwaterfallcf_noise_1024_s,
+    &spwaterfallcf_noise_1200_s,
+    &spwaterfall_operation_s,
+    &spwaterfall_copy_s,
+    &spwaterfall_gnuplot_s,
     &fft_3_s,
     &fft_5_s,
     &fft_6_s,
@@ -508,6 +556,37 @@ liquid_autotest liquid_autotest_registry[] =
     &fft_r2r_RODFT11_n32_s,
     &fft_shift_4_s,
     &fft_shift_8_s,
+    &asgramcf_copy_s,
+    &asgramcf_config_s,
+    &spgramcf_noise_440_s,
+    &spgramcf_noise_1024_s,
+    &spgramcf_noise_1200_s,
+    &spgramcf_noise_custom_0_s,
+    &spgramcf_noise_custom_1_s,
+    &spgramcf_noise_custom_2_s,
+    &spgramcf_noise_custom_3_s,
+    &spgramcf_noise_hamming_s,
+    &spgramcf_noise_hann_s,
+    &spgramcf_noise_blackmanharris_s,
+    &spgramcf_noise_blackmanharris7_s,
+    &spgramcf_noise_kaiser_s,
+    &spgramcf_noise_flattop_s,
+    &spgramcf_noise_triangular_s,
+    &spgramcf_noise_rcostaper_s,
+    &spgramcf_noise_kbd_s,
+    &spgramcf_signal_00_s,
+    &spgramcf_signal_01_s,
+    &spgramcf_signal_02_s,
+    &spgramcf_signal_03_s,
+    &spgramcf_signal_04_s,
+    &spgramcf_signal_05_s,
+    &spgramcf_counters_s,
+    &spgramcf_config_s,
+    &spgramcf_standalone_s,
+    &spgramcf_short_s,
+    &spgramcf_copy_s,
+    &spgramcf_null_s,
+    &spgram_gnuplot_s,
     &iirfilt_integrator_s,
     &iirfilt_differentiator_s,
     &iirfilt_dcblock_s,

@@ -553,12 +553,12 @@ set(AUTOTESTS
     #${PROJECT_SOURCE_DIR}/src/fec/tests/interleaver_autotest.c
     #${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_copy_autotest.c
     #${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/asgram_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/asgram_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_r2r_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_transforms_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/spgram_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/spwaterfall_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/spgram_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/spwaterfall_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/dds_cccf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/fdelay_rrrf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/fftfilt_xxxf_autotest.c
@@ -678,7 +678,6 @@ set(AUTOTESTS
     )
 
 set(AUTOTEST_EXTRA
-    #${PROJECT_SOURCE_DIR}/src/fft/tests/fft_runtest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_2.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_3.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_4.c
