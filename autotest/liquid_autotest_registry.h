@@ -17,6 +17,58 @@ extern struct liquid_autotest_s agc_crcf_squelch_s;
 extern struct liquid_autotest_s agc_crcf_lock_s;
 extern struct liquid_autotest_s agc_crcf_config_s;
 extern struct liquid_autotest_s agc_crcf_copy_s;
+// ./src/modem/tests/modem_autotest.c
+extern struct liquid_autotest_s mod_demod_psk2_s;
+extern struct liquid_autotest_s mod_demod_psk4_s;
+extern struct liquid_autotest_s mod_demod_psk8_s;
+extern struct liquid_autotest_s mod_demod_psk16_s;
+extern struct liquid_autotest_s mod_demod_psk32_s;
+extern struct liquid_autotest_s mod_demod_psk64_s;
+extern struct liquid_autotest_s mod_demod_psk128_s;
+extern struct liquid_autotest_s mod_demod_psk256_s;
+extern struct liquid_autotest_s mod_demod_dpsk2_s;
+extern struct liquid_autotest_s mod_demod_dpsk4_s;
+extern struct liquid_autotest_s mod_demod_dpsk8_s;
+extern struct liquid_autotest_s mod_demod_dpsk16_s;
+extern struct liquid_autotest_s mod_demod_dpsk32_s;
+extern struct liquid_autotest_s mod_demod_dpsk64_s;
+extern struct liquid_autotest_s mod_demod_dpsk128_s;
+extern struct liquid_autotest_s mod_demod_dpsk256_s;
+extern struct liquid_autotest_s mod_demod_ask2_s;
+extern struct liquid_autotest_s mod_demod_ask4_s;
+extern struct liquid_autotest_s mod_demod_ask8_s;
+extern struct liquid_autotest_s mod_demod_ask16_s;
+extern struct liquid_autotest_s mod_demod_ask32_s;
+extern struct liquid_autotest_s mod_demod_ask64_s;
+extern struct liquid_autotest_s mod_demod_ask128_s;
+extern struct liquid_autotest_s mod_demod_ask256_s;
+extern struct liquid_autotest_s mod_demod_qam4_s;
+extern struct liquid_autotest_s mod_demod_qam8_s;
+extern struct liquid_autotest_s mod_demod_qam16_s;
+extern struct liquid_autotest_s mod_demod_qam32_s;
+extern struct liquid_autotest_s mod_demod_qam64_s;
+extern struct liquid_autotest_s mod_demod_qam128_s;
+extern struct liquid_autotest_s mod_demod_qam256_s;
+extern struct liquid_autotest_s mod_demod_apsk4_s;
+extern struct liquid_autotest_s mod_demod_apsk8_s;
+extern struct liquid_autotest_s mod_demod_apsk16_s;
+extern struct liquid_autotest_s mod_demod_apsk32_s;
+extern struct liquid_autotest_s mod_demod_apsk64_s;
+extern struct liquid_autotest_s mod_demod_apsk128_s;
+extern struct liquid_autotest_s mod_demod_apsk256_s;
+extern struct liquid_autotest_s mod_demod_bpsk_s;
+extern struct liquid_autotest_s mod_demod_qpsk_s;
+extern struct liquid_autotest_s mod_demod_ook_s;
+extern struct liquid_autotest_s mod_demod_sqam32_s;
+extern struct liquid_autotest_s mod_demod_sqam128_s;
+extern struct liquid_autotest_s mod_demod_V29_s;
+extern struct liquid_autotest_s mod_demod_arb16opt_s;
+extern struct liquid_autotest_s mod_demod_arb32opt_s;
+extern struct liquid_autotest_s mod_demod_arb64opt_s;
+extern struct liquid_autotest_s mod_demod_arb128opt_s;
+extern struct liquid_autotest_s mod_demod_arb256opt_s;
+extern struct liquid_autotest_s mod_demod_arb64vt_s;
+extern struct liquid_autotest_s mod_demod_pi4dqpsk_s;
 // ./src/modem/tests/modem_utilities_autotest.c
 extern struct liquid_autotest_s modemcf_print_schemes_s;
 extern struct liquid_autotest_s modemcf_str2mod_s;
@@ -495,6 +547,57 @@ liquid_autotest liquid_autotest_registry[] =
     &agc_crcf_lock_s,
     &agc_crcf_config_s,
     &agc_crcf_copy_s,
+    &mod_demod_psk2_s,
+    &mod_demod_psk4_s,
+    &mod_demod_psk8_s,
+    &mod_demod_psk16_s,
+    &mod_demod_psk32_s,
+    &mod_demod_psk64_s,
+    &mod_demod_psk128_s,
+    &mod_demod_psk256_s,
+    &mod_demod_dpsk2_s,
+    &mod_demod_dpsk4_s,
+    &mod_demod_dpsk8_s,
+    &mod_demod_dpsk16_s,
+    &mod_demod_dpsk32_s,
+    &mod_demod_dpsk64_s,
+    &mod_demod_dpsk128_s,
+    &mod_demod_dpsk256_s,
+    &mod_demod_ask2_s,
+    &mod_demod_ask4_s,
+    &mod_demod_ask8_s,
+    &mod_demod_ask16_s,
+    &mod_demod_ask32_s,
+    &mod_demod_ask64_s,
+    &mod_demod_ask128_s,
+    &mod_demod_ask256_s,
+    &mod_demod_qam4_s,
+    &mod_demod_qam8_s,
+    &mod_demod_qam16_s,
+    &mod_demod_qam32_s,
+    &mod_demod_qam64_s,
+    &mod_demod_qam128_s,
+    &mod_demod_qam256_s,
+    &mod_demod_apsk4_s,
+    &mod_demod_apsk8_s,
+    &mod_demod_apsk16_s,
+    &mod_demod_apsk32_s,
+    &mod_demod_apsk64_s,
+    &mod_demod_apsk128_s,
+    &mod_demod_apsk256_s,
+    &mod_demod_bpsk_s,
+    &mod_demod_qpsk_s,
+    &mod_demod_ook_s,
+    &mod_demod_sqam32_s,
+    &mod_demod_sqam128_s,
+    &mod_demod_V29_s,
+    &mod_demod_arb16opt_s,
+    &mod_demod_arb32opt_s,
+    &mod_demod_arb64opt_s,
+    &mod_demod_arb128opt_s,
+    &mod_demod_arb256opt_s,
+    &mod_demod_arb64vt_s,
+    &mod_demod_pi4dqpsk_s,
     &modemcf_print_schemes_s,
     &modemcf_str2mod_s,
     &modemcf_types_s,

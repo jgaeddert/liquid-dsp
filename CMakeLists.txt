@@ -638,7 +638,7 @@ set(AUTOTESTS
     #${PROJECT_SOURCE_DIR}/src/modem/tests/freqmodem_autotest.c
     #${PROJECT_SOURCE_DIR}/src/modem/tests/fskmodem_autotest.c
     #${PROJECT_SOURCE_DIR}/src/modem/tests/gmskmodem_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/modem/tests/modem_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_autotest.c
     #${PROJECT_SOURCE_DIR}/src/modem/tests/modem_config_autotest.c
     #${PROJECT_SOURCE_DIR}/src/modem/tests/modem_demodsoft_autotest.c
     #${PROJECT_SOURCE_DIR}/src/modem/tests/modem_demodstats_autotest.c
