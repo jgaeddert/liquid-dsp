@@ -17,6 +17,10 @@ extern struct liquid_autotest_s agc_crcf_squelch_s;
 extern struct liquid_autotest_s agc_crcf_lock_s;
 extern struct liquid_autotest_s agc_crcf_config_s;
 extern struct liquid_autotest_s agc_crcf_copy_s;
+// ./src/modem/tests/modem_utilities_autotest.c
+extern struct liquid_autotest_s modemcf_print_schemes_s;
+extern struct liquid_autotest_s modemcf_str2mod_s;
+extern struct liquid_autotest_s modemcf_types_s;
 // ./src/fft/tests/spwaterfall_autotest.c
 extern struct liquid_autotest_s spwaterfall_config_s;
 extern struct liquid_autotest_s spwaterfallcf_noise_440_s;
@@ -491,6 +495,9 @@ liquid_autotest liquid_autotest_registry[] =
     &agc_crcf_lock_s,
     &agc_crcf_config_s,
     &agc_crcf_copy_s,
+    &modemcf_print_schemes_s,
+    &modemcf_str2mod_s,
+    &modemcf_types_s,
     &spwaterfall_config_s,
     &spwaterfallcf_noise_440_s,
     &spwaterfallcf_noise_1024_s,

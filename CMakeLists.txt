@@ -642,7 +642,7 @@ set(AUTOTESTS
     #${PROJECT_SOURCE_DIR}/src/modem/tests/modem_config_autotest.c
     #${PROJECT_SOURCE_DIR}/src/modem/tests/modem_demodsoft_autotest.c
     #${PROJECT_SOURCE_DIR}/src/modem/tests/modem_demodstats_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/modem/tests/modem_utilities_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_utilities_autotest.c
     #${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch_crcf_synthesizer_autotest.c
     #${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch_crcf_analyzer_autotest.c
     #${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch_crcf_autotest.c
