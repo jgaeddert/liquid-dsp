@@ -123,6 +123,7 @@ int liquid_registry_print(const liquid_autotest * _registry,
     // accumulate number of checks
     unsigned int num_checks_pass = 0;
     unsigned int num_checks_fail = 0;
+    unsigned int num_checks_warn = 0;
 
     unsigned int i = 0;
     while (_registry[i] != NULL)
@@ -141,6 +142,7 @@ int liquid_registry_print(const liquid_autotest * _registry,
         // accumulate check statistics
         num_checks_pass += _registry[i]->num_pass;
         num_checks_fail += _registry[i]->num_fail;
+        num_checks_warn += _registry[i]->num_warn;
 
         i++;
     }
@@ -153,6 +155,9 @@ int liquid_registry_print(const liquid_autotest * _registry,
 
     liquid_log(NULL,log_level,__FILE__,__LINE__,"%u total checks (%u failed)",
         num_checks_pass + num_checks_fail, num_checks_fail);
+
+    if (num_checks_warn > 0)
+        liquid_log_warn("%u warnings", num_checks_warn);
 
     // TODO: return non-zero value upon failure?
     return num_tests_fail ? LIQUID_EINT : LIQUID_OK;
