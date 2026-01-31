@@ -51,7 +51,7 @@ LIQUID_AUTOTEST(fec_str2fec,"test converting string to FEC scheme","",0.1)
 {
     // start with invalid case
     _liquid_error_downgrade_enable();
-    LIQUID_CHECK(liquid_getopt_str2fec("invalid scheme") ==  LIQUID_MODEM_UNKNOWN);
+    LIQUID_CHECK(liquid_getopt_str2fec("invalid scheme") ==  LIQUID_FEC_UNKNOWN);
     _liquid_error_downgrade_disable();
 
     // check normal cases

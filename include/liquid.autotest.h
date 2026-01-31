@@ -136,8 +136,7 @@ int liquid_registry_print(const liquid_autotest * _registry);
 // define a registry as an array of tests. Note that we use the 'weak'
 // attribute in case we want to link this file against another program
 // to define a separate registry
-//#define LIQUID_AUTOTEST_REGISTRY \
-//    __attribute__((weak)) const liquid_autotest liquid_autotest_registry[]
+//#define LIQUID_AUTOTEST_REGISTRY __attribute__((weak)) const liquid_autotest liquid_autotest_registry[]
 
 
 // Compute magnitude of (possibly) complex number
