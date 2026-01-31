@@ -1409,6 +1409,15 @@ extern struct liquid_autotest_s eqlms_cccf_copy_s;
 // ./src/equalization/tests/eqrls_rrrf_autotest.c
 extern struct liquid_autotest_s eqrls_rrrf_01_s;
 extern struct liquid_autotest_s eqrls_rrrf_copy_s;
+// ./src/vector/tests/vectorf_autotest.c
+extern struct liquid_autotest_s vectorf_mul_4_s;
+extern struct liquid_autotest_s vectorf_mul_16_s;
+extern struct liquid_autotest_s vectorf_mul_35_s;
+extern struct liquid_autotest_s vectorf_mulscalar_4_s;
+extern struct liquid_autotest_s vectorf_mulscalar_35_s;
+// ./src/vector/tests/vectorcf_autotest.c
+extern struct liquid_autotest_s vectorcf_mul_16_s;
+extern struct liquid_autotest_s vectorcf_mul_35_s;
 // ./src/matrix/tests/smatrixb_autotest.c
 extern struct liquid_autotest_s smatrixb_vmul_s;
 extern struct liquid_autotest_s smatrixb_mul_s;
@@ -2751,6 +2760,13 @@ liquid_autotest liquid_autotest_registry[] =
     &eqlms_cccf_copy_s,
     &eqrls_rrrf_01_s,
     &eqrls_rrrf_copy_s,
+    &vectorf_mul_4_s,
+    &vectorf_mul_16_s,
+    &vectorf_mul_35_s,
+    &vectorf_mulscalar_4_s,
+    &vectorf_mulscalar_35_s,
+    &vectorcf_mul_16_s,
+    &vectorcf_mul_35_s,
     &smatrixb_vmul_s,
     &smatrixb_mul_s,
     &smatrixb_mulf_s,
