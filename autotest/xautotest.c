@@ -21,6 +21,7 @@ int main(int argc, char* argv[])
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
     liquid_argparse_add(bool, list, false, 'L', "list tests and exit", NULL);
+    liquid_argparse_add(int,  test,    -1, 't', "run a specific test", NULL);
     liquid_argparse_parse(argc,argv);
 
     // set default logging level
@@ -29,11 +30,15 @@ int main(int argc, char* argv[])
     if (list)
         return liquid_registry_print(liquid_autotest_registry, true);
 
-    // mark all to run
+    // mark tests to run
     unsigned int i = 0;
     while (liquid_autotest_registry[i] != NULL)
     {
-        liquid_autotest_registry[i++]->status = LIQUID_AUTOTEST_SCHED;
+        if (test < 0)
+            liquid_autotest_registry[i]->status = LIQUID_AUTOTEST_SCHED;
+        else
+            liquid_autotest_registry[i]->status = (i==test) ? LIQUID_AUTOTEST_SCHED : LIQUID_AUTOTEST_SKIP;
+        i++;
     }
 
     // run all scheduled tests

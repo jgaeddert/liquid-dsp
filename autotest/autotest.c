@@ -113,7 +113,7 @@ int liquid_registry_print(const liquid_autotest * _registry,
     unsigned int i = 0;
     while (_registry[i] != NULL)
     {
-        printf("%3u : ", i+1);
+        printf("%3u : ", i);
         if (_info)
             liquid_autotest_print_info(_registry[i]);
         else
