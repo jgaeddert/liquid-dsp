@@ -101,6 +101,15 @@ void liquid_autotest_fail(liquid_autotest _q,
 int liquid_registry_print(const liquid_autotest * _registry,
                           bool _info)
 {
+    // accumulate number of tests
+    unsigned int num_tests_pass = 0;
+    unsigned int num_tests_fail = 0;
+    unsigned int num_tests_skip = 0;
+
+    // accumulate number of checks
+    unsigned int num_checks_pass = 0;
+    unsigned int num_checks_fail = 0;
+
     unsigned int i = 0;
     while (_registry[i] != NULL)
     {
@@ -110,9 +119,29 @@ int liquid_registry_print(const liquid_autotest * _registry,
         else
             liquid_autotest_print_status(_registry[i]);
         printf("\n");
+
+        // accumulate test statistics
+        num_tests_pass  += _registry[i]->status == LIQUID_AUTOTEST_PASS;
+        num_tests_fail  += _registry[i]->status == LIQUID_AUTOTEST_FAIL;
+        num_tests_skip  += _registry[i]->status == LIQUID_AUTOTEST_SKIP;
+        // accumulate check statistics
+        num_checks_pass += _registry[i]->num_pass;
+        num_checks_fail += _registry[i]->num_fail;
+
         i++;
     }
-    return LIQUID_OK;
+
+    // log summary
+    int log_level = num_tests_fail ? LIQUID_ERROR : LIQUID_INFO;
+
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"%u tests run (%u failed) %u skipped",
+        num_tests_pass + num_tests_fail, num_tests_fail, num_tests_skip);
+
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"%u total checks (%u failed)",
+        num_checks_pass + num_checks_fail, num_checks_fail);
+
+    // TODO: return non-zero value upon failure?
+    return num_tests_fail ? LIQUID_EINT : LIQUID_OK;
 }
 
 /*

@@ -51,7 +51,6 @@ int main(int argc, char* argv[])
     }
 
     // print summary
-    liquid_registry_print(liquid_autotest_registry, false);
-    return 0;
+    return liquid_registry_print(liquid_autotest_registry, false);
 }
 
