@@ -24,9 +24,6 @@ int main(int argc, char* argv[])
     liquid_argparse_add(int,  test,    -1, 't', "run a specific test", NULL);
     liquid_argparse_parse(argc,argv);
 
-    // set default logging level
-    liquid_logger_set_level(NULL, LIQUID_INFO);
-
     if (list)
         return liquid_registry_print(liquid_autotest_registry, true);
 

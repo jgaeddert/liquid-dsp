@@ -1143,6 +1143,65 @@ extern struct liquid_autotest_s scramble_soft_n33_s;
 extern struct liquid_autotest_s scramble_soft_n277_s;
 // ./src/random/tests/random_distributions_autotest.c
 extern struct liquid_autotest_s distribution_randnf_s;
+extern struct liquid_autotest_s distribution_randexpf_s;
+// ./src/sequence/tests/bsequence_autotest.c
+extern struct liquid_autotest_s bsequence_init_s;
+extern struct liquid_autotest_s bsequence_correlate_s;
+extern struct liquid_autotest_s bsequence_add_s;
+extern struct liquid_autotest_s bsequence_mul_s;
+extern struct liquid_autotest_s bsequence_accumulate_s;
+// ./src/sequence/tests/complementary_codes_autotest.c
+extern struct liquid_autotest_s complementary_code_n8_s;
+extern struct liquid_autotest_s complementary_code_n16_s;
+extern struct liquid_autotest_s complementary_code_n32_s;
+extern struct liquid_autotest_s complementary_code_n64_s;
+extern struct liquid_autotest_s complementary_code_n128_s;
+extern struct liquid_autotest_s complementary_code_n256_s;
+extern struct liquid_autotest_s complementary_code_n512_s;
+// ./src/sequence/tests/msequence_autotest.c
+extern struct liquid_autotest_s bsequence_init_msequence_s;
+extern struct liquid_autotest_s msequence_xcorr_m2_s;
+extern struct liquid_autotest_s msequence_xcorr_m3_s;
+extern struct liquid_autotest_s msequence_xcorr_m4_s;
+extern struct liquid_autotest_s msequence_xcorr_m5_s;
+extern struct liquid_autotest_s msequence_xcorr_m6_s;
+extern struct liquid_autotest_s msequence_xcorr_m7_s;
+extern struct liquid_autotest_s msequence_xcorr_m8_s;
+extern struct liquid_autotest_s msequence_xcorr_m9_s;
+extern struct liquid_autotest_s msequence_xcorr_m10_s;
+extern struct liquid_autotest_s msequence_xcorr_m11_s;
+extern struct liquid_autotest_s msequence_xcorr_m12_s;
+extern struct liquid_autotest_s msequence_period_m2_s;
+extern struct liquid_autotest_s msequence_period_m3_s;
+extern struct liquid_autotest_s msequence_period_m4_s;
+extern struct liquid_autotest_s msequence_period_m5_s;
+extern struct liquid_autotest_s msequence_period_m6_s;
+extern struct liquid_autotest_s msequence_period_m7_s;
+extern struct liquid_autotest_s msequence_period_m8_s;
+extern struct liquid_autotest_s msequence_period_m9_s;
+extern struct liquid_autotest_s msequence_period_m10_s;
+extern struct liquid_autotest_s msequence_period_m11_s;
+extern struct liquid_autotest_s msequence_period_m12_s;
+extern struct liquid_autotest_s msequence_period_m13_s;
+extern struct liquid_autotest_s msequence_period_m14_s;
+extern struct liquid_autotest_s msequence_period_m15_s;
+extern struct liquid_autotest_s msequence_period_m16_s;
+extern struct liquid_autotest_s msequence_period_m17_s;
+extern struct liquid_autotest_s msequence_period_m18_s;
+extern struct liquid_autotest_s msequence_period_m19_s;
+extern struct liquid_autotest_s msequence_period_m20_s;
+extern struct liquid_autotest_s msequence_period_m21_s;
+extern struct liquid_autotest_s msequence_period_m22_s;
+extern struct liquid_autotest_s msequence_period_m23_s;
+extern struct liquid_autotest_s msequence_period_m24_s;
+extern struct liquid_autotest_s msequence_period_m25_s;
+extern struct liquid_autotest_s msequence_period_m26_s;
+extern struct liquid_autotest_s msequence_period_m27_s;
+extern struct liquid_autotest_s msequence_period_m28_s;
+extern struct liquid_autotest_s msequence_period_m29_s;
+extern struct liquid_autotest_s msequence_period_m30_s;
+extern struct liquid_autotest_s msequence_period_m31_s;
+extern struct liquid_autotest_s msequence_config_s;
 // ./src/framing/tests/qdetector_cccf_autotest.c
 extern struct liquid_autotest_s qdetector_cccf_linear_n64_s;
 extern struct liquid_autotest_s qdetector_cccf_linear_n83_s;
@@ -2427,6 +2486,62 @@ liquid_autotest liquid_autotest_registry[] =
     &scramble_soft_n33_s,
     &scramble_soft_n277_s,
     &distribution_randnf_s,
+    &distribution_randexpf_s,
+    &bsequence_init_s,
+    &bsequence_correlate_s,
+    &bsequence_add_s,
+    &bsequence_mul_s,
+    &bsequence_accumulate_s,
+    &complementary_code_n8_s,
+    &complementary_code_n16_s,
+    &complementary_code_n32_s,
+    &complementary_code_n64_s,
+    &complementary_code_n128_s,
+    &complementary_code_n256_s,
+    &complementary_code_n512_s,
+    &bsequence_init_msequence_s,
+    &msequence_xcorr_m2_s,
+    &msequence_xcorr_m3_s,
+    &msequence_xcorr_m4_s,
+    &msequence_xcorr_m5_s,
+    &msequence_xcorr_m6_s,
+    &msequence_xcorr_m7_s,
+    &msequence_xcorr_m8_s,
+    &msequence_xcorr_m9_s,
+    &msequence_xcorr_m10_s,
+    &msequence_xcorr_m11_s,
+    &msequence_xcorr_m12_s,
+    &msequence_period_m2_s,
+    &msequence_period_m3_s,
+    &msequence_period_m4_s,
+    &msequence_period_m5_s,
+    &msequence_period_m6_s,
+    &msequence_period_m7_s,
+    &msequence_period_m8_s,
+    &msequence_period_m9_s,
+    &msequence_period_m10_s,
+    &msequence_period_m11_s,
+    &msequence_period_m12_s,
+    &msequence_period_m13_s,
+    &msequence_period_m14_s,
+    &msequence_period_m15_s,
+    &msequence_period_m16_s,
+    &msequence_period_m17_s,
+    &msequence_period_m18_s,
+    &msequence_period_m19_s,
+    &msequence_period_m20_s,
+    &msequence_period_m21_s,
+    &msequence_period_m22_s,
+    &msequence_period_m23_s,
+    &msequence_period_m24_s,
+    &msequence_period_m25_s,
+    &msequence_period_m26_s,
+    &msequence_period_m27_s,
+    &msequence_period_m28_s,
+    &msequence_period_m29_s,
+    &msequence_period_m30_s,
+    &msequence_period_m31_s,
+    &msequence_config_s,
     &qdetector_cccf_linear_n64_s,
     &qdetector_cccf_linear_n83_s,
     &qdetector_cccf_linear_n128_s,
