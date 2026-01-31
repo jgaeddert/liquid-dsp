@@ -520,7 +520,7 @@ add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript
 set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/autotest/null_autotest.c
     ${PROJECT_SOURCE_DIR}/src/agc/tests/agc_crcf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/audio/tests/cvsd_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/audio/tests/cvsd_autotest.c
     #${PROJECT_SOURCE_DIR}/src/buffer/tests/cbuffer_autotest.c
     #${PROJECT_SOURCE_DIR}/src/buffer/tests/wdelay_autotest.c
     #${PROJECT_SOURCE_DIR}/src/buffer/tests/buffer_window_autotest.c

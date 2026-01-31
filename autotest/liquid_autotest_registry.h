@@ -17,6 +17,10 @@ extern struct liquid_autotest_s agc_crcf_squelch_s;
 extern struct liquid_autotest_s agc_crcf_lock_s;
 extern struct liquid_autotest_s agc_crcf_config_s;
 extern struct liquid_autotest_s agc_crcf_copy_s;
+// ./src/audio/tests/cvsd_autotest.c
+extern struct liquid_autotest_s cvsd_rmse_sine_s;
+extern struct liquid_autotest_s cvsd_rmse_sine8_s;
+extern struct liquid_autotest_s cvsd_config_s;
 // ./src/modem/tests/cpfskmodem_autotest.c
 extern struct liquid_autotest_s cpfskmodem_bps1_h0p5000_k4_m3_square_s;
 extern struct liquid_autotest_s cpfskmodem_bps1_h0p0250_k4_m3_square_s;
@@ -812,6 +816,9 @@ liquid_autotest liquid_autotest_registry[] =
     &agc_crcf_lock_s,
     &agc_crcf_config_s,
     &agc_crcf_copy_s,
+    &cvsd_rmse_sine_s,
+    &cvsd_rmse_sine8_s,
+    &cvsd_config_s,
     &cpfskmodem_bps1_h0p5000_k4_m3_square_s,
     &cpfskmodem_bps1_h0p0250_k4_m3_square_s,
     &cpfskmodem_bps1_h0p1250_k4_m3_square_s,
