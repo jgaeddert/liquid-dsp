@@ -1120,6 +1120,29 @@ extern struct liquid_autotest_s fir_groupdelay_n3_s;
 extern struct liquid_autotest_s iir_groupdelay_n3_s;
 extern struct liquid_autotest_s iir_groupdelay_n8_s;
 extern struct liquid_autotest_s iir_groupdelay_sos_n8_s;
+// ./src/random/tests/random_autotest.c
+extern struct liquid_autotest_s randf_s;
+extern struct liquid_autotest_s randnf_s;
+extern struct liquid_autotest_s crandnf_s;
+extern struct liquid_autotest_s randweibf_s;
+extern struct liquid_autotest_s randricekf_s;
+extern struct liquid_autotest_s randexpf_s;
+extern struct liquid_autotest_s random_config_s;
+// ./src/random/tests/scramble_autotest.c
+extern struct liquid_autotest_s scramble_n16_s;
+extern struct liquid_autotest_s scramble_n64_s;
+extern struct liquid_autotest_s scramble_n256_s;
+extern struct liquid_autotest_s scramble_n11_s;
+extern struct liquid_autotest_s scramble_n33_s;
+extern struct liquid_autotest_s scramble_n277_s;
+extern struct liquid_autotest_s scramble_soft_n16_s;
+extern struct liquid_autotest_s scramble_soft_n64_s;
+extern struct liquid_autotest_s scramble_soft_n256_s;
+extern struct liquid_autotest_s scramble_soft_n11_s;
+extern struct liquid_autotest_s scramble_soft_n33_s;
+extern struct liquid_autotest_s scramble_soft_n277_s;
+// ./src/random/tests/random_distributions_autotest.c
+extern struct liquid_autotest_s distribution_randnf_s;
 // ./src/framing/tests/qdetector_cccf_autotest.c
 extern struct liquid_autotest_s qdetector_cccf_linear_n64_s;
 extern struct liquid_autotest_s qdetector_cccf_linear_n83_s;
@@ -2384,6 +2407,26 @@ liquid_autotest liquid_autotest_registry[] =
     &iir_groupdelay_n3_s,
     &iir_groupdelay_n8_s,
     &iir_groupdelay_sos_n8_s,
+    &randf_s,
+    &randnf_s,
+    &crandnf_s,
+    &randweibf_s,
+    &randricekf_s,
+    &randexpf_s,
+    &random_config_s,
+    &scramble_n16_s,
+    &scramble_n64_s,
+    &scramble_n256_s,
+    &scramble_n11_s,
+    &scramble_n33_s,
+    &scramble_n277_s,
+    &scramble_soft_n16_s,
+    &scramble_soft_n64_s,
+    &scramble_soft_n256_s,
+    &scramble_soft_n11_s,
+    &scramble_soft_n33_s,
+    &scramble_soft_n277_s,
+    &distribution_randnf_s,
     &qdetector_cccf_linear_n64_s,
     &qdetector_cccf_linear_n83_s,
     &qdetector_cccf_linear_n128_s,

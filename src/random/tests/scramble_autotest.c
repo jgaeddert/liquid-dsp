@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
 // compute basic entropy metric
@@ -46,7 +46,7 @@ float liquid_scramble_test_entropy(unsigned char * _x,
 }
 
 // helper function to keep code base small
-void liquid_scramble_test(unsigned int _n)
+void testbench_scramble(liquid_autotest __q__, unsigned int _n)
 {
     unsigned char x[_n];    // input data
     unsigned char y[_n];    // scrambled data
@@ -67,16 +67,16 @@ void liquid_scramble_test(unsigned int _n)
     unscramble_data(z,_n);
 
     // ensure data are equivalent
-    CONTEND_SAME_DATA(x,z,_n*sizeof(unsigned char));
+    LIQUID_CHECK_ARRAY(x,z,_n*sizeof(unsigned char));
 
     // compute entropy metric
     float H = liquid_scramble_test_entropy(y,_n);
-    CONTEND_EXPRESSION( H > 0.8f );
+    LIQUID_CHECK( H > 0.8f );
 }
 
 
 // test unscrambling of soft bits (helper function to keep code base small)
-void liquid_scramble_soft_test(unsigned int _n)
+void testbench_scramble_soft(liquid_autotest __q__, unsigned int _n)
 {
     unsigned char msg_org[_n];      // input data
     unsigned char msg_enc[_n];      // scrambled data 
@@ -108,29 +108,25 @@ void liquid_scramble_soft_test(unsigned int _n)
     }
 
     // ensure data are equivalent
-    CONTEND_SAME_DATA(msg_org, msg_dec, _n);
+    LIQUID_CHECK_ARRAY(msg_org, msg_dec, _n);
 }
 
-//
-// AUTOTESTS : simple data scrambling
-//
-void autotest_scramble_n16()     { liquid_scramble_test(16);  };
-void autotest_scramble_n64()     { liquid_scramble_test(64);  };
-void autotest_scramble_n256()    { liquid_scramble_test(256); };
+// simple data scrambling
+LIQUID_AUTOTEST(scramble_n16,"","",0.1)     { testbench_scramble(__q__,16);  };
+LIQUID_AUTOTEST(scramble_n64,"","",0.1)     { testbench_scramble(__q__,64);  };
+LIQUID_AUTOTEST(scramble_n256,"","",0.1)    { testbench_scramble(__q__,256); };
 
-void autotest_scramble_n11()     { liquid_scramble_test(11);  };
-void autotest_scramble_n33()     { liquid_scramble_test(33);  };
-void autotest_scramble_n277()    { liquid_scramble_test(277); };
+LIQUID_AUTOTEST(scramble_n11,"","",0.1)     { testbench_scramble(__q__,11);  };
+LIQUID_AUTOTEST(scramble_n33,"","",0.1)     { testbench_scramble(__q__,33);  };
+LIQUID_AUTOTEST(scramble_n277,"","",0.1)    { testbench_scramble(__q__,277); };
 
-//
-// AUTOTESTS : soft data scrambling
-//
-void autotest_scramble_soft_n16()     { liquid_scramble_soft_test(16);  };
-void autotest_scramble_soft_n64()     { liquid_scramble_soft_test(64);  };
-void autotest_scramble_soft_n256()    { liquid_scramble_soft_test(256); };
+// soft data scrambling
+LIQUID_AUTOTEST(scramble_soft_n16,"","",0.1)     { testbench_scramble_soft(__q__,16);  };
+LIQUID_AUTOTEST(scramble_soft_n64,"","",0.1)     { testbench_scramble_soft(__q__,64);  };
+LIQUID_AUTOTEST(scramble_soft_n256,"","",0.1)    { testbench_scramble_soft(__q__,256); };
 
-void autotest_scramble_soft_n11()     { liquid_scramble_soft_test(11);  };
-void autotest_scramble_soft_n33()     { liquid_scramble_soft_test(33);  };
-void autotest_scramble_soft_n277()    { liquid_scramble_soft_test(277); };
+LIQUID_AUTOTEST(scramble_soft_n11,"","",0.1)     { testbench_scramble_soft(__q__,11);  };
+LIQUID_AUTOTEST(scramble_soft_n33,"","",0.1)     { testbench_scramble_soft(__q__,33);  };
+LIQUID_AUTOTEST(scramble_soft_n277,"","",0.1)    { testbench_scramble_soft(__q__,277); };
 
 

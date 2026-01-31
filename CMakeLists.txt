@@ -663,9 +663,9 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/optim/tests/utility_autotest.c
     ${PROJECT_SOURCE_DIR}/src/quantization/tests/compand_autotest.c
     ${PROJECT_SOURCE_DIR}/src/quantization/tests/quantize_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/random/tests/scramble_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/random/tests/random_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/random/tests/random_distributions_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/random/tests/scramble_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/random/tests/random_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/random/tests/random_distributions_autotest.c
     #${PROJECT_SOURCE_DIR}/src/sequence/tests/bsequence_autotest.c
     #${PROJECT_SOURCE_DIR}/src/sequence/tests/complementary_codes_autotest.c
     #${PROJECT_SOURCE_DIR}/src/sequence/tests/msequence_autotest.c

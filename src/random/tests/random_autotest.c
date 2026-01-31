@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +20,13 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
 #define LIQUID_RANDOM_AUTOTEST_NUM_TRIALS (250000)
 #define LIQUID_RANDOM_AUTOTEST_ERROR_TOL  (0.15)
 
-// uniform
-void autotest_randf()
+LIQUID_AUTOTEST(randf,"test generating uniform random variables","",0.1)
 {
     unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
     unsigned long int i;
@@ -43,12 +42,11 @@ void autotest_randf()
     m1 /= (float) N;
     m2 = (m2 / (float)N) - m1*m1;
 
-    CONTEND_DELTA(m1, 0.5f, tol);
-    CONTEND_DELTA(m2, 1/12.0f, tol);
+    LIQUID_CHECK_DELTA(m1, 0.5f, tol);
+    LIQUID_CHECK_DELTA(m2, 1/12.0f, tol);
 }
 
-// Gauss
-void autotest_randnf()
+LIQUID_AUTOTEST(randnf,"test generating normal random variables","",0.1)
 {
     unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS; // number of trials
     unsigned long int i;
@@ -64,12 +62,11 @@ void autotest_randnf()
     m1 /= (float) N;
     m2 = (m2 / (float)N) - m1*m1;
 
-    CONTEND_DELTA(m1, 0.0f, tol);
-    CONTEND_DELTA(m2, 1.0f, tol);
+    LIQUID_CHECK_DELTA(m1, 0.0f, tol);
+    LIQUID_CHECK_DELTA(m2, 1.0f, tol);
 }
 
-// complex Gauss
-void autotest_crandnf()
+LIQUID_AUTOTEST(crandnf,"test generating complex circular Gauss random variables","",0.1)
 {
     unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
     unsigned long int i;
@@ -87,12 +84,11 @@ void autotest_crandnf()
     m1 /= (float) N;
     m2 = (m2 / (float)N) - m1*m1;
 
-    CONTEND_DELTA(m1, 0.0f, tol);
-    CONTEND_DELTA(m2, 1.0f, tol);
+    LIQUID_CHECK_DELTA(m1, 0.0f, tol);
+    LIQUID_CHECK_DELTA(m2, 1.0f, tol);
 }
 
-// Weibull
-void autotest_randweibf()
+LIQUID_AUTOTEST(randweibf,"test generating Weibull random variables","",0.1)
 {
     unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
     unsigned long int i;
@@ -117,12 +113,11 @@ void autotest_randweibf()
     //printf("m1: %12.8f (expected %12.8f)\n", m1, m1_exp);
     //printf("m2: %12.8f (expected %12.8f)\n", m2, m2_exp);
 
-    CONTEND_DELTA(m1, m1_exp, tol);
-    CONTEND_DELTA(m2, m2_exp, tol);
+    LIQUID_CHECK_DELTA(m1, m1_exp, tol);
+    LIQUID_CHECK_DELTA(m2, m2_exp, tol);
 }
 
-// Rice-K
-void autotest_randricekf()
+LIQUID_AUTOTEST(randricekf,"test generating Rice-K random variables","",0.1)
 {
     unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
     unsigned long int i;
@@ -139,12 +134,11 @@ void autotest_randricekf()
     m1 /= (float) N;
     m2 = (m2 / (float)N);
 
-    CONTEND_DELTA(m1, 0.92749f, tol);
-    CONTEND_DELTA(m2, omega, tol);
+    LIQUID_CHECK_DELTA(m1, 0.92749f, tol);
+    LIQUID_CHECK_DELTA(m2, omega, tol);
 }
 
-// exponential
-void autotest_randexpf()
+LIQUID_AUTOTEST(randexpf,"test generating exponential random variables","",0.1)
 {
     unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
     unsigned long int i;
@@ -167,46 +161,46 @@ void autotest_randexpf()
     //printf("m1: %12.8f (expected %12.8f)\n", m1, m1_exp);
     //printf("m2: %12.8f (expected %12.8f)\n", m2, m2_exp);
 
-    CONTEND_DELTA(m1, m1_exp, tol);
-    CONTEND_DELTA(m2, m2_exp, tol);
+    LIQUID_CHECK_DELTA(m1, m1_exp, tol);
+    LIQUID_CHECK_DELTA(m2, m2_exp, tol);
 }
 
-void autotest_random_config()
+LIQUID_AUTOTEST(random_config,"test random configuration","",0.1)
 {
     _liquid_error_downgrade_enable();
     // exponential: lambda out of range
-    CONTEND_EQUALITY( randexpf    (       -1.0f), 0.0f );
-    CONTEND_EQUALITY( randexpf_pdf( 0.0f, -1.0f), 0.0f );
-    CONTEND_EQUALITY( randexpf_cdf( 0.0f, -1.0f), 0.0f );
+    LIQUID_CHECK( randexpf    (       -1.0f) ==  0.0f );
+    LIQUID_CHECK( randexpf_pdf( 0.0f, -1.0f) ==  0.0f );
+    LIQUID_CHECK( randexpf_cdf( 0.0f, -1.0f) ==  0.0f );
     // exponential: pdf, cdf with valid input, but negative variable
-    CONTEND_EQUALITY( randexpf_pdf(-2.0f,  2.3f), 0.0f );
-    CONTEND_EQUALITY( randexpf_cdf(-2.0f,  2.3f), 0.0f );
+    LIQUID_CHECK( randexpf_pdf(-2.0f,  2.3f) ==  0.0f );
+    LIQUID_CHECK( randexpf_cdf(-2.0f,  2.3f) ==  0.0f );
 
     // gamma: parameters out of range (alpha)
-    CONTEND_EQUALITY( randgammaf    (       -1.0f,  1.0f), 0.0f );
-    CONTEND_EQUALITY( randgammaf_pdf( 0.0f, -1.0f,  1.0f), 0.0f );
-    CONTEND_EQUALITY( randgammaf_cdf( 0.0f, -1.0f,  1.0f), 0.0f );
+    LIQUID_CHECK( randgammaf    (       -1.0f,  1.0f) ==  0.0f );
+    LIQUID_CHECK( randgammaf_pdf( 0.0f, -1.0f,  1.0f) ==  0.0f );
+    LIQUID_CHECK( randgammaf_cdf( 0.0f, -1.0f,  1.0f) ==  0.0f );
     // gamma: parameters out of range (beta)
-    CONTEND_EQUALITY( randgammaf    (        1.0f, -1.0f), 0.0f );
-    CONTEND_EQUALITY( randgammaf_pdf( 0.0f,  1.0f, -1.0f), 0.0f );
-    CONTEND_EQUALITY( randgammaf_cdf( 0.0f,  1.0f, -1.0f), 0.0f );
+    LIQUID_CHECK( randgammaf    (        1.0f, -1.0f) ==  0.0f );
+    LIQUID_CHECK( randgammaf_pdf( 0.0f,  1.0f, -1.0f) ==  0.0f );
+    LIQUID_CHECK( randgammaf_cdf( 0.0f,  1.0f, -1.0f) ==  0.0f );
     // gamma: delta function parameter out of range
-    CONTEND_EQUALITY( randgammaf_delta(-1.0f), 0.0f );
+    LIQUID_CHECK( randgammaf_delta(-1.0f) ==  0.0f );
     // gamma: pdf, cdf with valid input, but negative variable
-    CONTEND_EQUALITY( randgammaf_pdf(-2.0f, 1.2f, 2.3f), 0.0f );
-    CONTEND_EQUALITY( randgammaf_cdf(-2.0f, 1.2f, 2.3f), 0.0f );
+    LIQUID_CHECK( randgammaf_pdf(-2.0f, 1.2f, 2.3f) ==  0.0f );
+    LIQUID_CHECK( randgammaf_cdf(-2.0f, 1.2f, 2.3f) ==  0.0f );
 
     // nakagami-m: parameters out of range (m)
-    CONTEND_EQUALITY( randnakmf    (       0.2f,  1.0f), 0.0f );
-    CONTEND_EQUALITY( randnakmf_pdf( 0.0f, 0.2f,  1.0f), 0.0f );
-    CONTEND_EQUALITY( randnakmf_cdf( 0.0f, 0.2f,  1.0f), 0.0f );
+    LIQUID_CHECK( randnakmf    (       0.2f,  1.0f) ==  0.0f );
+    LIQUID_CHECK( randnakmf_pdf( 0.0f, 0.2f,  1.0f) ==  0.0f );
+    LIQUID_CHECK( randnakmf_cdf( 0.0f, 0.2f,  1.0f) ==  0.0f );
     // nakagami-m: parameters out of range (omega)
-    CONTEND_EQUALITY( randnakmf    (       1.0f, -1.0f), 0.0f );
-    CONTEND_EQUALITY( randnakmf_pdf( 0.0f, 1.0f, -1.0f), 0.0f );
-    CONTEND_EQUALITY( randnakmf_cdf( 0.0f, 1.0f, -1.0f), 0.0f );
+    LIQUID_CHECK( randnakmf    (       1.0f, -1.0f) ==  0.0f );
+    LIQUID_CHECK( randnakmf_pdf( 0.0f, 1.0f, -1.0f) ==  0.0f );
+    LIQUID_CHECK( randnakmf_cdf( 0.0f, 1.0f, -1.0f) ==  0.0f );
     // nakagami-m: pdf, cdf with valid input, but negative variable
-    CONTEND_EQUALITY( randnakmf_pdf(-2.0f, 1.2f, 2.3f), 0.0f );
-    CONTEND_EQUALITY( randnakmf_cdf(-2.0f, 1.2f, 2.3f), 0.0f );
+    LIQUID_CHECK( randnakmf_pdf(-2.0f, 1.2f, 2.3f) ==  0.0f );
+    LIQUID_CHECK( randnakmf_cdf(-2.0f, 1.2f, 2.3f) ==  0.0f );
     _liquid_error_downgrade_disable();
 }
 
