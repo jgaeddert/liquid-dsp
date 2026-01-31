@@ -180,6 +180,74 @@ extern struct liquid_autotest_s dotprod_rrrf_rand01_s;
 extern struct liquid_autotest_s dotprod_rrrf_rand02_s;
 extern struct liquid_autotest_s dotprod_rrrf_struct_lengths_s;
 extern struct liquid_autotest_s dotprod_rrrf_struct_vs_ordinal_s;
+// ./src/math/tests/prime_autotest.c
+extern struct liquid_autotest_s prime_small_s;
+extern struct liquid_autotest_s factors_s;
+extern struct liquid_autotest_s totient_s;
+// ./src/math/tests/math_gamma_autotest.c
+extern struct liquid_autotest_s gamma_s;
+extern struct liquid_autotest_s lngamma_s;
+extern struct liquid_autotest_s uppergamma_s;
+extern struct liquid_autotest_s factorial_s;
+extern struct liquid_autotest_s nchoosek_s;
+// ./src/math/tests/math_autotest.c
+extern struct liquid_autotest_s Q_s;
+extern struct liquid_autotest_s MarcumQf_s;
+extern struct liquid_autotest_s MarcumQ1f_s;
+extern struct liquid_autotest_s sincf_s;
+extern struct liquid_autotest_s nextpow2_s;
+extern struct liquid_autotest_s math_config_s;
+// ./src/math/tests/polynomial_findroots_autotest.c
+extern struct liquid_autotest_s polyf_findroots_real_s;
+extern struct liquid_autotest_s polyf_findroots_complex_s;
+extern struct liquid_autotest_s polyf_findroots_mix_s;
+extern struct liquid_autotest_s polyf_findroots_mix2_s;
+extern struct liquid_autotest_s polyf_findroots_rand_s;
+// ./src/math/tests/math_complex_autotest.c
+extern struct liquid_autotest_s cexpf_s;
+extern struct liquid_autotest_s clogf_s;
+extern struct liquid_autotest_s csqrtf_s;
+extern struct liquid_autotest_s casinf_s;
+extern struct liquid_autotest_s cacosf_s;
+extern struct liquid_autotest_s catanf_s;
+extern struct liquid_autotest_s cargf_s;
+// ./src/math/tests/gcd_autotest.c
+extern struct liquid_autotest_s gcd_one_s;
+extern struct liquid_autotest_s gcd_edge_cases_s;
+extern struct liquid_autotest_s gcd_base_s;
+// ./src/math/tests/polynomial_autotest.c
+extern struct liquid_autotest_s polyf_fit_q3n3_s;
+extern struct liquid_autotest_s polyf_lagrange_issue165_s;
+extern struct liquid_autotest_s polyf_lagrange_s;
+extern struct liquid_autotest_s polyf_expandbinomial_4_s;
+extern struct liquid_autotest_s polyf_expandroots_4_s;
+extern struct liquid_autotest_s polyf_expandroots_11_s;
+extern struct liquid_autotest_s polycf_expandroots_4_s;
+extern struct liquid_autotest_s polyf_expandroots2_3_s;
+extern struct liquid_autotest_s polyf_mul_2_3_s;
+extern struct liquid_autotest_s poly_expandbinomial_n6_s;
+extern struct liquid_autotest_s poly_binomial_expand_pm_m6_k1_s;
+extern struct liquid_autotest_s poly_expandbinomial_pm_m5_k2_s;
+// ./src/math/tests/math_bessel_autotest.c
+extern struct liquid_autotest_s lnbesselif_s;
+extern struct liquid_autotest_s besselif_s;
+extern struct liquid_autotest_s besseli0f_s;
+extern struct liquid_autotest_s besseljf_s;
+extern struct liquid_autotest_s besselj0f_s;
+// ./src/math/tests/math_window_autotest.c
+extern struct liquid_autotest_s window_hamming_s;
+extern struct liquid_autotest_s window_hann_s;
+extern struct liquid_autotest_s window_blackmanharris_s;
+extern struct liquid_autotest_s window_blackmanharris7_s;
+extern struct liquid_autotest_s window_kaiser_s;
+extern struct liquid_autotest_s window_flattop_s;
+extern struct liquid_autotest_s window_triangular_s;
+extern struct liquid_autotest_s window_rcostaper_s;
+extern struct liquid_autotest_s window_kbd_s;
+extern struct liquid_autotest_s kbd_n16_s;
+extern struct liquid_autotest_s kbd_n32_s;
+extern struct liquid_autotest_s kbd_n48_s;
+extern struct liquid_autotest_s window_config_s;
 // ./src/agc/tests/agc_crcf_autotest.c
 extern struct liquid_autotest_s agc_crcf_dc_gain_control_s;
 extern struct liquid_autotest_s agc_crcf_scale_s;
@@ -1159,6 +1227,65 @@ liquid_autotest liquid_autotest_registry[] =
     &dotprod_rrrf_rand02_s,
     &dotprod_rrrf_struct_lengths_s,
     &dotprod_rrrf_struct_vs_ordinal_s,
+    &prime_small_s,
+    &factors_s,
+    &totient_s,
+    &gamma_s,
+    &lngamma_s,
+    &uppergamma_s,
+    &factorial_s,
+    &nchoosek_s,
+    &Q_s,
+    &MarcumQf_s,
+    &MarcumQ1f_s,
+    &sincf_s,
+    &nextpow2_s,
+    &math_config_s,
+    &polyf_findroots_real_s,
+    &polyf_findroots_complex_s,
+    &polyf_findroots_mix_s,
+    &polyf_findroots_mix2_s,
+    &polyf_findroots_rand_s,
+    &cexpf_s,
+    &clogf_s,
+    &csqrtf_s,
+    &casinf_s,
+    &cacosf_s,
+    &catanf_s,
+    &cargf_s,
+    &gcd_one_s,
+    &gcd_edge_cases_s,
+    &gcd_base_s,
+    &polyf_fit_q3n3_s,
+    &polyf_lagrange_issue165_s,
+    &polyf_lagrange_s,
+    &polyf_expandbinomial_4_s,
+    &polyf_expandroots_4_s,
+    &polyf_expandroots_11_s,
+    &polycf_expandroots_4_s,
+    &polyf_expandroots2_3_s,
+    &polyf_mul_2_3_s,
+    &poly_expandbinomial_n6_s,
+    &poly_binomial_expand_pm_m6_k1_s,
+    &poly_expandbinomial_pm_m5_k2_s,
+    &lnbesselif_s,
+    &besselif_s,
+    &besseli0f_s,
+    &besseljf_s,
+    &besselj0f_s,
+    &window_hamming_s,
+    &window_hann_s,
+    &window_blackmanharris_s,
+    &window_blackmanharris7_s,
+    &window_kaiser_s,
+    &window_flattop_s,
+    &window_triangular_s,
+    &window_rcostaper_s,
+    &window_kbd_s,
+    &kbd_n16_s,
+    &kbd_n32_s,
+    &kbd_n48_s,
+    &window_config_s,
     &agc_crcf_dc_gain_control_s,
     &agc_crcf_scale_s,
     &agc_crcf_ac_gain_control_s,

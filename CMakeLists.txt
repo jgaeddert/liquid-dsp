@@ -619,15 +619,15 @@ set(AUTOTESTS
     #${PROJECT_SOURCE_DIR}/src/framing/tests/symstreamrcf_autotest.c
     #${PROJECT_SOURCE_DIR}/src/framing/tests/symstreamrcf_delay_autotest.c
     #${PROJECT_SOURCE_DIR}/src/framing/tests/symtrack_cccf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/math/tests/gcd_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/math/tests/math_window_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/math/tests/math_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/math/tests/math_bessel_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/math/tests/math_gamma_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/math/tests/math_complex_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/math/tests/polynomial_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/math/tests/polynomial_findroots_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/math/tests/prime_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/gcd_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/math_window_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/math_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/math_bessel_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/math_gamma_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/math_complex_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/polynomial_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/polynomial_findroots_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/math/tests/prime_autotest.c
     ${PROJECT_SOURCE_DIR}/src/matrix/tests/matrixcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/matrix/tests/matrixf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/matrix/tests/smatrixb_autotest.c
