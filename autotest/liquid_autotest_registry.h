@@ -308,6 +308,11 @@ extern struct liquid_autotest_s kbd_n16_s;
 extern struct liquid_autotest_s kbd_n32_s;
 extern struct liquid_autotest_s kbd_n48_s;
 extern struct liquid_autotest_s window_config_s;
+// ./src/quantization/tests/compand_autotest.c
+extern struct liquid_autotest_s compand_float_s;
+extern struct liquid_autotest_s compand_cfloat_s;
+// ./src/quantization/tests/quantize_autotest.c
+extern struct liquid_autotest_s quantize_float_n8_s;
 // ./src/agc/tests/agc_crcf_autotest.c
 extern struct liquid_autotest_s agc_crcf_dc_gain_control_s;
 extern struct liquid_autotest_s agc_crcf_scale_s;
@@ -1632,6 +1637,9 @@ liquid_autotest liquid_autotest_registry[] =
     &kbd_n32_s,
     &kbd_n48_s,
     &window_config_s,
+    &compand_float_s,
+    &compand_cfloat_s,
+    &quantize_float_n8_s,
     &agc_crcf_dc_gain_control_s,
     &agc_crcf_scale_s,
     &agc_crcf_ac_gain_control_s,

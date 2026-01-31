@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,10 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-void autotest_compand_float() {
+LIQUID_AUTOTEST(compand_float,"","",0.1) {
     float x = -1.0f;
     float mu=255.0f;
     unsigned int n=30;
@@ -40,7 +40,7 @@ void autotest_compand_float() {
 
         liquid_log_debug("%8.4f -> %8.4f -> %8.4f", x, y, x_hat);
 
-        CONTEND_DELTA(x,x_hat,tol);
+        LIQUID_CHECK_DELTA(x,x_hat,tol);
 
         x += dx;
         x = (x > 1.0f) ? 1.0f : x;
@@ -48,7 +48,7 @@ void autotest_compand_float() {
 }
 
 
-void autotest_compand_cfloat() {
+LIQUID_AUTOTEST(compand_cfloat,"","",0.1) {
     float complex x = -0.707f - 0.707f*_Complex_I;
     float mu=255.0f;
     unsigned int n=30;
@@ -68,8 +68,8 @@ void autotest_compand_cfloat() {
             crealf(y), cimagf(y),
             crealf(z), cimagf(z));
 
-        CONTEND_DELTA(crealf(x),crealf(z),tol);
-        CONTEND_DELTA(cimagf(x),cimagf(z),tol);
+        LIQUID_CHECK_DELTA(crealf(x),crealf(z),tol);
+        LIQUID_CHECK_DELTA(cimagf(x),cimagf(z),tol);
 
         x += dx;
         //x = (x > 1.0f) ? 1.0f : x;
