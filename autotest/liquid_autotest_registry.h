@@ -286,6 +286,54 @@ extern struct liquid_autotest_s agc_crcf_copy_s;
 extern struct liquid_autotest_s cvsd_rmse_sine_s;
 extern struct liquid_autotest_s cvsd_rmse_sine8_s;
 extern struct liquid_autotest_s cvsd_config_s;
+// ./src/nco/tests/nco_crcf_phase_autotest.c
+extern struct liquid_autotest_s nco_crcf_phase_s;
+extern struct liquid_autotest_s nco_basic_s;
+extern struct liquid_autotest_s nco_mixing_s;
+extern struct liquid_autotest_s nco_block_mixing_s;
+// ./src/nco/tests/nco_crcf_pll_autotest.c
+extern struct liquid_autotest_s nco_crcf_pll_phase_s;
+extern struct liquid_autotest_s nco_crcf_pll_freq_s;
+// ./src/nco/tests/unwrap_phase_autotest.c
+extern struct liquid_autotest_s nco_unwrap_phase_s;
+// ./src/nco/tests/nco_crcf_frequency_autotest.c
+extern struct liquid_autotest_s nco_crcf_frequency_s;
+// ./src/nco/tests/nco_crcf_autotest.c
+extern struct liquid_autotest_s nco_crcf_constrain_s;
+extern struct liquid_autotest_s nco_crcf_copy_s;
+extern struct liquid_autotest_s nco_config_s;
+// ./src/nco/tests/nco_crcf_spectrum_autotest.c
+extern struct liquid_autotest_s nco_crcf_spectrum_nco_f00_s;
+extern struct liquid_autotest_s nco_crcf_spectrum_nco_f01_s;
+extern struct liquid_autotest_s nco_crcf_spectrum_nco_f02_s;
+extern struct liquid_autotest_s nco_crcf_spectrum_nco_f03_s;
+extern struct liquid_autotest_s nco_crcf_spectrum_nco_f04_s;
+extern struct liquid_autotest_s nco_crcf_spectrum_vco_f00_s;
+extern struct liquid_autotest_s nco_crcf_spectrum_vco_f01_s;
+extern struct liquid_autotest_s nco_crcf_spectrum_vco_f02_s;
+extern struct liquid_autotest_s nco_crcf_spectrum_vco_f03_s;
+extern struct liquid_autotest_s nco_crcf_spectrum_vco_f04_s;
+// ./src/nco/tests/nco_crcf_mix_autotest.c
+extern struct liquid_autotest_s nco_crcf_mix_nco_0_s;
+extern struct liquid_autotest_s nco_crcf_mix_nco_1_s;
+extern struct liquid_autotest_s nco_crcf_mix_nco_2_s;
+extern struct liquid_autotest_s nco_crcf_mix_nco_3_s;
+extern struct liquid_autotest_s nco_crcf_mix_nco_4_s;
+extern struct liquid_autotest_s nco_crcf_mix_nco_5_s;
+extern struct liquid_autotest_s nco_crcf_mix_nco_6_s;
+extern struct liquid_autotest_s nco_crcf_mix_nco_7_s;
+extern struct liquid_autotest_s nco_crcf_mix_nco_8_s;
+extern struct liquid_autotest_s nco_crcf_mix_nco_9_s;
+extern struct liquid_autotest_s nco_crcf_mix_vco_0_s;
+extern struct liquid_autotest_s nco_crcf_mix_vco_1_s;
+extern struct liquid_autotest_s nco_crcf_mix_vco_2_s;
+extern struct liquid_autotest_s nco_crcf_mix_vco_3_s;
+extern struct liquid_autotest_s nco_crcf_mix_vco_4_s;
+extern struct liquid_autotest_s nco_crcf_mix_vco_5_s;
+extern struct liquid_autotest_s nco_crcf_mix_vco_6_s;
+extern struct liquid_autotest_s nco_crcf_mix_vco_7_s;
+extern struct liquid_autotest_s nco_crcf_mix_vco_8_s;
+extern struct liquid_autotest_s nco_crcf_mix_vco_9_s;
 // ./src/modem/tests/cpfskmodem_autotest.c
 extern struct liquid_autotest_s cpfskmodem_bps1_h0p5000_k4_m3_square_s;
 extern struct liquid_autotest_s cpfskmodem_bps1_h0p0250_k4_m3_square_s;
@@ -1529,6 +1577,47 @@ liquid_autotest liquid_autotest_registry[] =
     &cvsd_rmse_sine_s,
     &cvsd_rmse_sine8_s,
     &cvsd_config_s,
+    &nco_crcf_phase_s,
+    &nco_basic_s,
+    &nco_mixing_s,
+    &nco_block_mixing_s,
+    &nco_crcf_pll_phase_s,
+    &nco_crcf_pll_freq_s,
+    &nco_unwrap_phase_s,
+    &nco_crcf_frequency_s,
+    &nco_crcf_constrain_s,
+    &nco_crcf_copy_s,
+    &nco_config_s,
+    &nco_crcf_spectrum_nco_f00_s,
+    &nco_crcf_spectrum_nco_f01_s,
+    &nco_crcf_spectrum_nco_f02_s,
+    &nco_crcf_spectrum_nco_f03_s,
+    &nco_crcf_spectrum_nco_f04_s,
+    &nco_crcf_spectrum_vco_f00_s,
+    &nco_crcf_spectrum_vco_f01_s,
+    &nco_crcf_spectrum_vco_f02_s,
+    &nco_crcf_spectrum_vco_f03_s,
+    &nco_crcf_spectrum_vco_f04_s,
+    &nco_crcf_mix_nco_0_s,
+    &nco_crcf_mix_nco_1_s,
+    &nco_crcf_mix_nco_2_s,
+    &nco_crcf_mix_nco_3_s,
+    &nco_crcf_mix_nco_4_s,
+    &nco_crcf_mix_nco_5_s,
+    &nco_crcf_mix_nco_6_s,
+    &nco_crcf_mix_nco_7_s,
+    &nco_crcf_mix_nco_8_s,
+    &nco_crcf_mix_nco_9_s,
+    &nco_crcf_mix_vco_0_s,
+    &nco_crcf_mix_vco_1_s,
+    &nco_crcf_mix_vco_2_s,
+    &nco_crcf_mix_vco_3_s,
+    &nco_crcf_mix_vco_4_s,
+    &nco_crcf_mix_vco_5_s,
+    &nco_crcf_mix_vco_6_s,
+    &nco_crcf_mix_vco_7_s,
+    &nco_crcf_mix_vco_8_s,
+    &nco_crcf_mix_vco_9_s,
     &cpfskmodem_bps1_h0p5000_k4_m3_square_s,
     &cpfskmodem_bps1_h0p0250_k4_m3_square_s,
     &cpfskmodem_bps1_h0p1250_k4_m3_square_s,

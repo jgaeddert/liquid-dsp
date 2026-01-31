@@ -649,13 +649,13 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch2_crcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbchr_crcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/multichannel/tests/ofdmframe_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_frequency_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_mix_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_phase_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_pll_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_spectrum_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/nco/tests/unwrap_phase_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_frequency_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_mix_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_phase_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_pll_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_spectrum_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/unwrap_phase_autotest.c
     #${PROJECT_SOURCE_DIR}/src/optim/tests/gasearch_autotest.c
     #${PROJECT_SOURCE_DIR}/src/optim/tests/gradsearch_autotest.c
     #${PROJECT_SOURCE_DIR}/src/optim/tests/qnsearch_autotest.c
@@ -779,10 +779,10 @@ set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_mul.c
     ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_qrdecomp.c
     ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_transmul.c
-    #${PROJECT_SOURCE_DIR}/src/nco/tests/data/nco_sincos_fsqrt1_2.c
-    #${PROJECT_SOURCE_DIR}/src/nco/tests/data/nco_sincos_fsqrt1_3.c
-    #${PROJECT_SOURCE_DIR}/src/nco/tests/data/nco_sincos_fsqrt1_5.c
-    #${PROJECT_SOURCE_DIR}/src/nco/tests/data/nco_sincos_fsqrt1_7.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/data/nco_sincos_fsqrt1_2.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/data/nco_sincos_fsqrt1_3.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/data/nco_sincos_fsqrt1_5.c
+    ${PROJECT_SOURCE_DIR}/src/nco/tests/data/nco_sincos_fsqrt1_7.c
     )
 
 if(BUILD_AUTOTESTS)

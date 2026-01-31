@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,8 @@
 
 #include <stdlib.h>
 #include <complex.h>
-#include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.autotest.h"
+#include "liquid.internal.h"
 
 // forward declaration of internal method to constrain phase
 uint32_t nco_crcf_constrain(float _theta);
@@ -36,55 +36,53 @@ uint32_t nco_crcf_constrain_error(float _theta, uint32_t _expected)
     return error < 0x80000000 ? error : 0xffffffff - error;
 }
 
-// test phase constraint
-void autotest_nco_crcf_constrain()
+LIQUID_AUTOTEST(nco_crcf_constrain,"test phase constraint","",0.1)
 {
     uint32_t tol = 0x00001fff;
 
     // phase: 0 mod 2 pi
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(    0.0f, 0), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(  2*M_PI, 0), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(  4*M_PI, 0), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(  6*M_PI, 0), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error( 20*M_PI, 0), tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(    0.0f, 0)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(  2*M_PI, 0)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(  4*M_PI, 0)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(  6*M_PI, 0)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error( 20*M_PI, 0)< tol );
 
     // phase: 0 mod 2 pi (negative)
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(   -0.0f, 0), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error( -2*M_PI, 0), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error( -4*M_PI, 0), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error( -6*M_PI, 0), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(-20*M_PI, 0), tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(   -0.0f, 0)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error( -2*M_PI, 0)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error( -4*M_PI, 0)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error( -6*M_PI, 0)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(-20*M_PI, 0)< tol );
 
     // phase: pi mod 2 pi
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(    M_PI, 0x80000000), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(  3*M_PI, 0x80000000), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(  5*M_PI, 0x80000000), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(  7*M_PI, 0x80000000), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error( 27*M_PI, 0x80000000), tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(    M_PI, 0x80000000)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(  3*M_PI, 0x80000000)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(  5*M_PI, 0x80000000)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(  7*M_PI, 0x80000000)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error( 27*M_PI, 0x80000000)< tol );
 
     // phase: pi mod 2 pi (negative)
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(   -M_PI, 0x80000000), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error( -3*M_PI, 0x80000000), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error( -5*M_PI, 0x80000000), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error( -7*M_PI, 0x80000000), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(-27*M_PI, 0x80000000), tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(   -M_PI, 0x80000000)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error( -3*M_PI, 0x80000000)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error( -5*M_PI, 0x80000000)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error( -7*M_PI, 0x80000000)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(-27*M_PI, 0x80000000)< tol );
 
     // check other values
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(+0.500*M_PI, 0x40000000), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(+0.250*M_PI, 0x20000000), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(+0.125*M_PI, 0x10000000), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(+0.750*M_PI, 0x60000000), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(-0.500*M_PI, 0xc0000000), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(-0.250*M_PI, 0xe0000000), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(-0.125*M_PI, 0xf0000000), tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(+0.500*M_PI, 0x40000000)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(+0.250*M_PI, 0x20000000)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(+0.125*M_PI, 0x10000000)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(+0.750*M_PI, 0x60000000)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(-0.500*M_PI, 0xc0000000)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(-0.250*M_PI, 0xe0000000)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(-0.125*M_PI, 0xf0000000)< tol );
 
     // check phase near boundaries
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(+0.000001f, 0x00000000), tol );
-    CONTEND_LESS_THAN( nco_crcf_constrain_error(-0.000001f, 0x00000000), tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(+0.000001f, 0x00000000)< tol );
+    LIQUID_CHECK( nco_crcf_constrain_error(-0.000001f, 0x00000000)< tol );
 }
 
-// test copying object
-void autotest_nco_crcf_copy()
+LIQUID_AUTOTEST(nco_crcf_copy,"test copying object","",0.1)
 {
     // create and initialize object
     nco_crcf nco_0 = nco_crcf_create(LIQUID_VCO);
@@ -111,7 +109,7 @@ void autotest_nco_crcf_copy()
         nco_crcf_step(nco_1);
 
         // check output
-        CONTEND_EQUALITY(v0, v1);
+        LIQUID_CHECK(v0 ==  v1);
     }
 
     // clean it up
@@ -119,22 +117,19 @@ void autotest_nco_crcf_copy()
     nco_crcf_destroy(nco_1);
 }
 
-void autotest_nco_config()
+LIQUID_AUTOTEST(nco_config,"","",0.1)
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping nco config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
+
     //
-    CONTEND_INEQUALITY(LIQUID_OK, nco_crcf_destroy(NULL));
-    CONTEND_ISNULL(nco_crcf_copy(NULL));
+    LIQUID_CHECK(LIQUID_OK != nco_crcf_destroy(NULL));
+    LIQUID_CHECK(NULL ==nco_crcf_copy(NULL));
 
     // create proper NCO object and test configurations
     nco_crcf q_nco = nco_crcf_create(LIQUID_NCO);
-    CONTEND_EQUALITY(LIQUID_OK, nco_crcf_print(q_nco))
+    LIQUID_CHECK(LIQUID_OK == nco_crcf_print(q_nco))
     nco_crcf_destroy(q_nco);
+
+    _liquid_error_downgrade_disable();
 }
 
