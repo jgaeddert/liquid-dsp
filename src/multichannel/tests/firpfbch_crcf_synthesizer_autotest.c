@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,13 +21,10 @@
  */
 
 #include <assert.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-//
-// AUTOTEST: validate synthesis correctness
-//
-void autotest_firpfbch_crcf_synthesis()
+LIQUID_AUTOTEST(firpfbch_crcf_synthesis,"validate firpfbch synthesis correctness","",0.1)
 {
     // options
     float tol = 1e-4f;              // error tolerance
@@ -131,8 +128,8 @@ void autotest_firpfbch_crcf_synthesis()
             crealf(y1[i]),       cimagf(y1[i]),
             crealf(y1[i]-y0[i]), cimagf(y1[i]-y0[i]));
 
-        CONTEND_DELTA( crealf(y0[i]), crealf(y1[i]), tol );
-        CONTEND_DELTA( cimagf(y0[i]), cimagf(y1[i]), tol );
+        LIQUID_CHECK_DELTA( crealf(y0[i]), crealf(y1[i]), tol );
+        LIQUID_CHECK_DELTA( cimagf(y0[i]), cimagf(y1[i]), tol );
     }
 }
 

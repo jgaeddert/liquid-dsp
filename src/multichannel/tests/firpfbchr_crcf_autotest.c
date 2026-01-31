@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,10 +21,10 @@
  */
 
 #include <assert.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-void autotest_firpfbchr_crcf()
+LIQUID_AUTOTEST(firpfbchr_crcf,"","",0.1)
 {
     // options
     unsigned int M = 16;            // number of channels
@@ -86,8 +86,8 @@ void autotest_firpfbchr_crcf()
         {.fmin= 0.16f, .fmax= 0.21f, .pmin=-25, .pmax=-15, .test_lo=1, .test_hi=1},
         {.fmin= 0.25f, .fmax= 0.50f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
     };
-    liquid_autotest_validate_psd_spgramcf(p0, regions, 6,
-        liquid_autotest_verbose ? "autotest/logs/firpfbchr_crcf_psd.m" : NULL);
+    liquid_autotest_validate_psd_spgramcf(__q__, p0, regions, 6,
+        "autotest/logs/firpfbchr_crcf_psd.m");
 
     // verify results: channel 2
     autotest_psd_s regions_2[] = {
@@ -95,8 +95,8 @@ void autotest_firpfbchr_crcf()
         {.fmin= 0.08f, .fmax= 0.12f, .pmin=-35, .pmax=-25, .test_lo=1, .test_hi=1},
         {.fmin= 0.15f, .fmax= 0.47f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
     };
-    liquid_autotest_validate_psd_spgramcf(c1, regions_2, 3,
-        liquid_autotest_verbose ? "autotest/logs/firpfbchr_crcf_c1.m" : NULL);
+    liquid_autotest_validate_psd_spgramcf(__q__, c1, regions_2, 3,
+        "autotest/logs/firpfbchr_crcf_c1.m");
 
     // verify results: channel 3
     autotest_psd_s regions_3[] = {
@@ -104,8 +104,8 @@ void autotest_firpfbchr_crcf()
         {.fmin=-0.15f, .fmax=+0.15f, .pmin=-25, .pmax=-15, .test_lo=1, .test_hi=1},
         {.fmin= 0.28f, .fmax=+0.47f, .pmin=-65, .pmax=-55, .test_lo=1, .test_hi=1},
     };
-    liquid_autotest_validate_psd_spgramcf(c3, regions_3, 3,
-        liquid_autotest_verbose ? "autotest/logs/firpfbchr_crcf_c3.m" : NULL);
+    liquid_autotest_validate_psd_spgramcf(__q__, c3, regions_3, 3,
+        "autotest/logs/firpfbchr_crcf_c3.m");
 
     // destroy objects
     firpfbchr_crcf_destroy(qa);
@@ -115,7 +115,7 @@ void autotest_firpfbchr_crcf()
     spgramcf_destroy(c3);
 }
 
-void autotest_firpfbchr_crcf_config()
+LIQUID_AUTOTEST(firpfbchr_crcf_config,"","",0.1)
 {
     _liquid_error_downgrade_enable();
 
@@ -125,26 +125,26 @@ void autotest_firpfbchr_crcf_config()
     liquid_firdes_kaiser(h_len, 0.1f, 60.0f, 0.0f, h);
 
     // check invalid function calls
-    CONTEND_ISNULL(firpfbchr_crcf_create( 0, 76, 12,    h)) // too few channels
-    CONTEND_ISNULL(firpfbchr_crcf_create(64,  0, 12,    h)) // decimation rate too small
-    CONTEND_ISNULL(firpfbchr_crcf_create(64, 76,  0,    h)) // filter delay too small
-    CONTEND_ISNULL(firpfbchr_crcf_create(64, 76, 12, NULL)) // coefficients pointer set to NULL
+    LIQUID_CHECK(NULL ==firpfbchr_crcf_create( 0, 76, 12,    h)) // too few channels
+    LIQUID_CHECK(NULL ==firpfbchr_crcf_create(64,  0, 12,    h)) // decimation rate too small
+    LIQUID_CHECK(NULL ==firpfbchr_crcf_create(64, 76,  0,    h)) // filter delay too small
+    LIQUID_CHECK(NULL ==firpfbchr_crcf_create(64, 76, 12, NULL)) // coefficients pointer set to NULL
 
     // kaiser
-    CONTEND_ISNULL(firpfbchr_crcf_create_kaiser( 0, 76, 12, 60.0f)) // too few channels
-    CONTEND_ISNULL(firpfbchr_crcf_create_kaiser(64,  0, 12, 60.0f)) // decimation rate too small
-    CONTEND_ISNULL(firpfbchr_crcf_create_kaiser(64, 76,  0, 60.0f)) // filter delay too small
-    CONTEND_ISNULL(firpfbchr_crcf_create_kaiser(64, 76, 12, -1.0f)) // stop-band suppression out of range
+    LIQUID_CHECK(NULL ==firpfbchr_crcf_create_kaiser( 0, 76, 12, 60.0f)) // too few channels
+    LIQUID_CHECK(NULL ==firpfbchr_crcf_create_kaiser(64,  0, 12, 60.0f)) // decimation rate too small
+    LIQUID_CHECK(NULL ==firpfbchr_crcf_create_kaiser(64, 76,  0, 60.0f)) // filter delay too small
+    LIQUID_CHECK(NULL ==firpfbchr_crcf_create_kaiser(64, 76, 12, -1.0f)) // stop-band suppression out of range
 
-    //CONTEND_ISNULL(firpfbchr_crcf_copy(NULL))
+    //LIQUID_CHECK(NULL ==firpfbchr_crcf_copy(NULL))
 
     // create proper object and test configurations
     firpfbchr_crcf q = firpfbchr_crcf_create_kaiser(64, 76, 12, 60.0f);
 
-    CONTEND_EQUALITY(LIQUID_OK, firpfbchr_crcf_print(q))
-    CONTEND_EQUALITY(64, firpfbchr_crcf_get_num_channels(q))
-    CONTEND_EQUALITY(76, firpfbchr_crcf_get_decim_rate(q))
-    CONTEND_EQUALITY(12, firpfbchr_crcf_get_m(q))
+    LIQUID_CHECK(LIQUID_OK == firpfbchr_crcf_print(q))
+    LIQUID_CHECK(64 ==  firpfbchr_crcf_get_num_channels(q))
+    LIQUID_CHECK(76 ==  firpfbchr_crcf_get_decim_rate(q))
+    LIQUID_CHECK(12 ==  firpfbchr_crcf_get_m(q))
 
     firpfbchr_crcf_destroy(q);
 

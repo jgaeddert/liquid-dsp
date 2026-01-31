@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,13 +21,14 @@
  */
 
 #include <assert.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
 // Helper function to keep code base small
-void firpfbch2_crcf_runtest(unsigned int _M,
-                            unsigned int _m,
-                            float        _as)
+void testbench_firpfbch2_crcf(liquid_autotest __q__,
+                              unsigned int _M,
+                              unsigned int _m,
+                              float        _as)
 {
     float tol = 1e-3f;
     unsigned int i;
@@ -74,11 +75,11 @@ void firpfbch2_crcf_runtest(unsigned int _M,
     for (i=0; i<num_samples; i++) {
         liquid_log_debug("%3u : %12.8f + %12.8fj", i, crealf(y[i]), cimagf(y[i]));
         if (i < delay) {
-            CONTEND_DELTA( crealf(y[i]), 0.0f, tol );
-            CONTEND_DELTA( cimagf(y[i]), 0.0f, tol );
+            LIQUID_CHECK_DELTA( crealf(y[i]), 0.0f, tol );
+            LIQUID_CHECK_DELTA( cimagf(y[i]), 0.0f, tol );
         } else {
-            CONTEND_DELTA( crealf(y[i]), crealf(x[i-delay]), tol );
-            CONTEND_DELTA( cimagf(y[i]), cimagf(x[i-delay]), tol );
+            LIQUID_CHECK_DELTA( crealf(y[i]), crealf(x[i-delay]), tol );
+            LIQUID_CHECK_DELTA( cimagf(y[i]), cimagf(x[i-delay]), tol );
         }
 
         // compute rmse
@@ -91,12 +92,12 @@ void firpfbch2_crcf_runtest(unsigned int _M,
 }
 
 // analysis
-void autotest_firpfbch2_crcf_n8()    { firpfbch2_crcf_runtest(   8, 5, 60.0f); }
-void autotest_firpfbch2_crcf_n16()   { firpfbch2_crcf_runtest(  16, 5, 60.0f); }
-void autotest_firpfbch2_crcf_n32()   { firpfbch2_crcf_runtest(  32, 5, 60.0f); }
-void autotest_firpfbch2_crcf_n64()   { firpfbch2_crcf_runtest(  64, 5, 60.0f); }
+LIQUID_AUTOTEST(firpfbch2_crcf_n8,"","",0.1)    { testbench_firpfbch2_crcf(__q__,  8, 5, 60.0f); }
+LIQUID_AUTOTEST(firpfbch2_crcf_n16,"","",0.1)   { testbench_firpfbch2_crcf(__q__, 16, 5, 60.0f); }
+LIQUID_AUTOTEST(firpfbch2_crcf_n32,"","",0.1)   { testbench_firpfbch2_crcf(__q__, 32, 5, 60.0f); }
+LIQUID_AUTOTEST(firpfbch2_crcf_n64,"","",0.1)   { testbench_firpfbch2_crcf(__q__, 64, 5, 60.0f); }
 
-void autotest_firpfbch2_crcf_copy()
+LIQUID_AUTOTEST(firpfbch2_crcf_copy,"","",0.1)
 {
     // create channelizer
     unsigned int M  = 72;
@@ -130,7 +131,7 @@ void autotest_firpfbch2_crcf_copy()
         firpfbch2_crcf_execute(q_orig, buf_0, buf_1_orig);
         firpfbch2_crcf_execute(q_copy, buf_0, buf_1_copy);
 
-        CONTEND_SAME_DATA(buf_1_orig, buf_1_copy, M*sizeof(float complex));
+        LIQUID_CHECK_ARRAY(buf_1_orig, buf_1_copy, M*sizeof(float complex));
     }
 
     // destroy filter objects
@@ -138,29 +139,29 @@ void autotest_firpfbch2_crcf_copy()
     firpfbch2_crcf_destroy(q_copy);
 }
 
-void autotest_firpfbch2_crcf_config()
+LIQUID_AUTOTEST(firpfbch2_crcf_config,"","",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls
-    CONTEND_ISNULL(firpfbch2_crcf_create(             77, 76, 12, NULL)) // invalid type
-    CONTEND_ISNULL(firpfbch2_crcf_create(LIQUID_ANALYZER,  0, 12, NULL)) // invalid number of channels
-    CONTEND_ISNULL(firpfbch2_crcf_create(LIQUID_ANALYZER, 17, 12, NULL)) // invalid number of channels
-    CONTEND_ISNULL(firpfbch2_crcf_create(LIQUID_ANALYZER, 76,  0, NULL)) // invalid filter semi-length
+    LIQUID_CHECK(NULL ==firpfbch2_crcf_create(             77, 76, 12, NULL)) // invalid type
+    LIQUID_CHECK(NULL ==firpfbch2_crcf_create(LIQUID_ANALYZER,  0, 12, NULL)) // invalid number of channels
+    LIQUID_CHECK(NULL ==firpfbch2_crcf_create(LIQUID_ANALYZER, 17, 12, NULL)) // invalid number of channels
+    LIQUID_CHECK(NULL ==firpfbch2_crcf_create(LIQUID_ANALYZER, 76,  0, NULL)) // invalid filter semi-length
 
-    CONTEND_ISNULL(firpfbch2_crcf_create_kaiser(             77, 76, 12, 60.0f)) // invalid type
-    CONTEND_ISNULL(firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER,  0, 12, 60.0f)) // invalid number of channels
-    CONTEND_ISNULL(firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER, 17, 12, 60.0f)) // invalid number of channels
-    CONTEND_ISNULL(firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER, 76,  0, 60.0f)) // invalid filter semi-length
+    LIQUID_CHECK(NULL ==firpfbch2_crcf_create_kaiser(             77, 76, 12, 60.0f)) // invalid type
+    LIQUID_CHECK(NULL ==firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER,  0, 12, 60.0f)) // invalid number of channels
+    LIQUID_CHECK(NULL ==firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER, 17, 12, 60.0f)) // invalid number of channels
+    LIQUID_CHECK(NULL ==firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER, 76,  0, 60.0f)) // invalid filter semi-length
 
-    CONTEND_ISNULL(firpfbch2_crcf_copy(NULL))
+    LIQUID_CHECK(NULL ==firpfbch2_crcf_copy(NULL))
 
     // create proper object and test configurations
     firpfbch2_crcf q = firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER, 76, 12, 60.0f);
 
-    CONTEND_EQUALITY(LIQUID_OK,       firpfbch2_crcf_print(q))
-    CONTEND_EQUALITY(LIQUID_ANALYZER, firpfbch2_crcf_get_type(q))
-    CONTEND_EQUALITY(             76, firpfbch2_crcf_get_M(q))
-    CONTEND_EQUALITY(             12, firpfbch2_crcf_get_m(q))
+    LIQUID_CHECK(LIQUID_OK ==       firpfbch2_crcf_print(q))
+    LIQUID_CHECK(LIQUID_ANALYZER ==  firpfbch2_crcf_get_type(q))
+    LIQUID_CHECK(             76 ==  firpfbch2_crcf_get_M(q))
+    LIQUID_CHECK(             12 ==  firpfbch2_crcf_get_m(q))
 
     firpfbch2_crcf_destroy(q);
     _liquid_error_downgrade_disable();

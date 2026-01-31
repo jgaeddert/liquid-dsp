@@ -643,12 +643,12 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_demodsoft_autotest.c
     ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_demodstats_autotest.c
     ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_utilities_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch_crcf_synthesizer_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch_crcf_analyzer_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch_crcf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch2_crcf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbchr_crcf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/multichannel/tests/ofdmframe_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch_crcf_synthesizer_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch_crcf_analyzer_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch2_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbchr_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/multichannel/tests/ofdmframe_autotest.c
     #${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_autotest.c
     #${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_frequency_autotest.c
     #${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_mix_autotest.c

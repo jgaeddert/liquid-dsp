@@ -149,6 +149,30 @@ extern struct liquid_autotest_s interleaver_soft_8_s;
 extern struct liquid_autotest_s interleaver_soft_16_s;
 extern struct liquid_autotest_s interleaver_soft_64_s;
 extern struct liquid_autotest_s interleaver_soft_256_s;
+// ./src/multichannel/tests/firpfbchr_crcf_autotest.c
+extern struct liquid_autotest_s firpfbchr_crcf_s;
+extern struct liquid_autotest_s firpfbchr_crcf_config_s;
+// ./src/multichannel/tests/firpfbch_crcf_analyzer_autotest.c
+extern struct liquid_autotest_s firpfbch_crcf_analysis_s;
+// ./src/multichannel/tests/ofdmframe_autotest.c
+extern struct liquid_autotest_s ofdmframesync_acquire_n64_s;
+extern struct liquid_autotest_s ofdmframesync_acquire_n128_s;
+extern struct liquid_autotest_s ofdmframesync_acquire_n256_s;
+extern struct liquid_autotest_s ofdmframesync_acquire_n512_s;
+extern struct liquid_autotest_s ofdmframe_common_config_s;
+extern struct liquid_autotest_s ofdmframegen_config_s;
+extern struct liquid_autotest_s ofdmframesync_config_s;
+// ./src/multichannel/tests/firpfbch2_crcf_autotest.c
+extern struct liquid_autotest_s firpfbch2_crcf_n8_s;
+extern struct liquid_autotest_s firpfbch2_crcf_n16_s;
+extern struct liquid_autotest_s firpfbch2_crcf_n32_s;
+extern struct liquid_autotest_s firpfbch2_crcf_n64_s;
+extern struct liquid_autotest_s firpfbch2_crcf_copy_s;
+extern struct liquid_autotest_s firpfbch2_crcf_config_s;
+// ./src/multichannel/tests/firpfbch_crcf_autotest.c
+extern struct liquid_autotest_s firpfbch_crcf_config_s;
+// ./src/multichannel/tests/firpfbch_crcf_synthesizer_autotest.c
+extern struct liquid_autotest_s firpfbch_crcf_synthesis_s;
 // ./src/dotprod/tests/dotprod_crcf_autotest.c
 extern struct liquid_autotest_s dotprod_crcf_rand01_s;
 extern struct liquid_autotest_s dotprod_crcf_rand02_s;
@@ -1390,6 +1414,24 @@ liquid_autotest liquid_autotest_registry[] =
     &interleaver_soft_16_s,
     &interleaver_soft_64_s,
     &interleaver_soft_256_s,
+    &firpfbchr_crcf_s,
+    &firpfbchr_crcf_config_s,
+    &firpfbch_crcf_analysis_s,
+    &ofdmframesync_acquire_n64_s,
+    &ofdmframesync_acquire_n128_s,
+    &ofdmframesync_acquire_n256_s,
+    &ofdmframesync_acquire_n512_s,
+    &ofdmframe_common_config_s,
+    &ofdmframegen_config_s,
+    &ofdmframesync_config_s,
+    &firpfbch2_crcf_n8_s,
+    &firpfbch2_crcf_n16_s,
+    &firpfbch2_crcf_n32_s,
+    &firpfbch2_crcf_n64_s,
+    &firpfbch2_crcf_copy_s,
+    &firpfbch2_crcf_config_s,
+    &firpfbch_crcf_config_s,
+    &firpfbch_crcf_synthesis_s,
     &dotprod_crcf_rand01_s,
     &dotprod_crcf_rand02_s,
     &dotprod_crcf_struct_vs_ordinal_s,
