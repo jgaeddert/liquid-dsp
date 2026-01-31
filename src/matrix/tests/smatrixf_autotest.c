@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,15 +22,10 @@
 
 #include <stdlib.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-//
-// AUTOTESTS: basic sparse matrix functionality
-//
-
-// test sparse floating-point vector multiplication
-void autotest_smatrixf_vmul()
+LIQUID_AUTOTEST(smatrixf_vmul,"test sparse floating-point vector multiplication","",0.1)
 {
     float tol = 1e-6f;
 
@@ -58,15 +53,15 @@ void autotest_smatrixf_vmul()
     smatrixf_vmul(A,x,y);
 
     // check values
-    CONTEND_DELTA( y[0], y_test[0], tol );
-    CONTEND_DELTA( y[1], y_test[1], tol );
-    CONTEND_DELTA( y[2], y_test[2], tol );
-    CONTEND_DELTA( y[3], y_test[3], tol );
+    LIQUID_CHECK_DELTA( y[0], y_test[0], tol );
+    LIQUID_CHECK_DELTA( y[1], y_test[1], tol );
+    LIQUID_CHECK_DELTA( y[2], y_test[2], tol );
+    LIQUID_CHECK_DELTA( y[3], y_test[3], tol );
 
     smatrixf_destroy(A);
 }
-// test sparse floating-point matrix multiplication
-void autotest_smatrixf_mul()
+
+LIQUID_AUTOTEST(smatrixf_mul,"test sparse floating-point matrix multiplication","",0.1)
 {
     float tol = 1e-6f;
 
@@ -115,7 +110,7 @@ void autotest_smatrixf_mul()
     unsigned int j;
     for (i=0; i<4; i++) {
         for (j=0; j<3; j++) {
-            CONTEND_DELTA(smatrixf_get(c,i,j),
+            LIQUID_CHECK_DELTA(smatrixf_get(c,i,j),
                           matrixf_access(c_test,4,3,i,j),
                           tol);
         }

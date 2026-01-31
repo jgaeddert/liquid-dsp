@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,15 +22,10 @@
 
 #include <stdlib.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-//
-// AUTOTESTS: basic sparse matrix functionality
-//
-
-// test sparse integer vector multiplication
-void autotest_smatrixi_vmul()
+LIQUID_AUTOTEST(smatrixi_vmul,"test sparse integer vector multiplication","matrix",0.1)
 {
     // A = [
     //  0 0 0 0 4
@@ -56,16 +51,16 @@ void autotest_smatrixi_vmul()
     smatrixi_vmul(A,x,y);
 
     // check values
-    CONTEND_EQUALITY( y[0], y_test[0] );
-    CONTEND_EQUALITY( y[1], y_test[1] );
-    CONTEND_EQUALITY( y[2], y_test[2] );
-    CONTEND_EQUALITY( y[3], y_test[3] );
+    LIQUID_CHECK( y[0] ==  y_test[0] );
+    LIQUID_CHECK( y[1] ==  y_test[1] );
+    LIQUID_CHECK( y[2] ==  y_test[2] );
+    LIQUID_CHECK( y[3] ==  y_test[3] );
 
     smatrixi_destroy(A);
 }
 
-// test sparse integer matrix multiplication
-void autotest_smatrixi_mul()
+
+LIQUID_AUTOTEST(smatrixi_mul,"test sparse integer matrix multiplication","",0.1)
 {
     // initialize matrices
     smatrixi a = smatrixi_create(4, 5);
@@ -112,8 +107,7 @@ void autotest_smatrixi_mul()
     unsigned int j;
     for (i=0; i<4; i++) {
         for (j=0; j<3; j++) {
-            CONTEND_EQUALITY(smatrixi_get(c,i,j),
-                             matrixf_access(c_test,4,3,i,j))
+            LIQUID_CHECK(smatrixi_get(c,i,j) == matrixf_access(c_test,4,3,i,j))
         }
     }
 

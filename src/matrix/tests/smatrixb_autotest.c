@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,15 +22,10 @@
 
 #include <stdlib.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-//
-// AUTOTESTS: basic sparse matrix functionality
-//
-
-// test sparse binary matrix methods
-void autotest_smatrixb_vmul()
+LIQUID_AUTOTEST(smatrixb_vmul,"test sparse binary matrix methods","",0.1)
 {
     // A = [
     //  1   0   0   0   0   0   0   0   0   0   0   0
@@ -75,14 +70,14 @@ void autotest_smatrixb_vmul()
     // multiply and run test
     smatrixb_vmul(A,x,y);
 
-    CONTEND_EQUALITY( y[0], y_test[0] );
-    CONTEND_EQUALITY( y[1], y_test[1] );
-    CONTEND_EQUALITY( y[2], y_test[2] );
-    CONTEND_EQUALITY( y[3], y_test[3] );
-    CONTEND_EQUALITY( y[4], y_test[4] );
-    CONTEND_EQUALITY( y[5], y_test[5] );
-    CONTEND_EQUALITY( y[6], y_test[6] );
-    CONTEND_EQUALITY( y[7], y_test[7] );
+    LIQUID_CHECK( y[0] ==  y_test[0] );
+    LIQUID_CHECK( y[1] ==  y_test[1] );
+    LIQUID_CHECK( y[2] ==  y_test[2] );
+    LIQUID_CHECK( y[3] ==  y_test[3] );
+    LIQUID_CHECK( y[4] ==  y_test[4] );
+    LIQUID_CHECK( y[5] ==  y_test[5] );
+    LIQUID_CHECK( y[6] ==  y_test[6] );
+    LIQUID_CHECK( y[7] ==  y_test[7] );
 
 #if 0
     printf("\ncompact form:\n");
@@ -111,8 +106,7 @@ void autotest_smatrixb_vmul()
     smatrixb_destroy(A);
 }
 
-// test sparse binary matrix multiplication
-void autotest_smatrixb_mul()
+LIQUID_AUTOTEST(smatrixb_mul,"test sparse binary matrix multiplication","",0.1)
 {
     // a: [8 x 12]
     unsigned char a_test[96] = {
@@ -168,7 +162,7 @@ void autotest_smatrixb_mul()
     unsigned int j;
     for (i=0; i<8; i++) {
         for (j=0; j<5; j++) {
-            CONTEND_EQUALITY( smatrixb_get(c,i,j), c_test[i*5+j]);
+            LIQUID_CHECK( smatrixb_get(c,i,j) ==  c_test[i*5+j]);
         }
     }
 
@@ -179,7 +173,7 @@ void autotest_smatrixb_mul()
 }
 
 //
-void autotest_smatrixb_mulf()
+LIQUID_AUTOTEST(smatrixb_mulf,"","",0.1)
 {
     // A = [
     //  1   0   0   0   0   0   0   0   0   0   0   0
@@ -249,7 +243,7 @@ void autotest_smatrixb_mulf()
 
     unsigned int i;
     for (i=0; i<24; i++)
-        CONTEND_DELTA( y[i], y_test[i], tol );
+        LIQUID_CHECK_DELTA( y[i], y_test[i], tol );
 
 #if 0
     printf("A:\n");
@@ -273,7 +267,7 @@ void autotest_smatrixb_mulf()
 }
 
 //
-void autotest_smatrixb_vmulf()
+LIQUID_AUTOTEST(smatrixb_vmulf,"","",0.1)
 {
     // A = [
     //  1   0   0   0   0   0   0   0   0   0   0   0
@@ -325,14 +319,14 @@ void autotest_smatrixb_vmulf()
     // multiply and run test
     smatrixb_vmulf(A,x,y);
 
-    CONTEND_DELTA( y[0], y_test[0], tol );
-    CONTEND_DELTA( y[1], y_test[1], tol );
-    CONTEND_DELTA( y[2], y_test[2], tol );
-    CONTEND_DELTA( y[3], y_test[3], tol );
-    CONTEND_DELTA( y[4], y_test[4], tol );
-    CONTEND_DELTA( y[5], y_test[5], tol );
-    CONTEND_DELTA( y[6], y_test[6], tol );
-    CONTEND_DELTA( y[7], y_test[7], tol );
+    LIQUID_CHECK_DELTA( y[0], y_test[0], tol );
+    LIQUID_CHECK_DELTA( y[1], y_test[1], tol );
+    LIQUID_CHECK_DELTA( y[2], y_test[2], tol );
+    LIQUID_CHECK_DELTA( y[3], y_test[3], tol );
+    LIQUID_CHECK_DELTA( y[4], y_test[4], tol );
+    LIQUID_CHECK_DELTA( y[5], y_test[5], tol );
+    LIQUID_CHECK_DELTA( y[6], y_test[6], tol );
+    LIQUID_CHECK_DELTA( y[7], y_test[7], tol );
 
 #if 0
     printf("\ncompact form:\n");

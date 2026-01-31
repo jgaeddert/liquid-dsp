@@ -628,11 +628,11 @@ set(AUTOTESTS
     #${PROJECT_SOURCE_DIR}/src/math/tests/polynomial_autotest.c
     #${PROJECT_SOURCE_DIR}/src/math/tests/polynomial_findroots_autotest.c
     #${PROJECT_SOURCE_DIR}/src/math/tests/prime_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/matrixcf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/matrixf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/smatrixb_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/smatrixf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/smatrixi_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/matrixcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/matrixf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/smatrixb_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/smatrixf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/smatrixi_autotest.c
     ${PROJECT_SOURCE_DIR}/src/modem/tests/ampmodem_autotest.c
     ${PROJECT_SOURCE_DIR}/src/modem/tests/cpfskmodem_autotest.c
     ${PROJECT_SOURCE_DIR}/src/modem/tests/freqmodem_autotest.c
@@ -759,26 +759,26 @@ set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_rrrf_data_h7x64.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_crcf_data_h7x64.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_cccf_data_h7x64.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_add.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_aug.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_cgsolve.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_chol.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_gramschmidt.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_inv.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_linsolve.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_ludecomp.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_mul.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_qrdecomp.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_transmul.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_add.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_aug.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_chol.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_inv.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_linsolve.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_ludecomp.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_mul.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_qrdecomp.c
-    #${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_transmul.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_add.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_aug.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_cgsolve.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_chol.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_gramschmidt.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_inv.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_linsolve.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_ludecomp.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_mul.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_qrdecomp.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixf_data_transmul.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_add.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_aug.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_chol.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_inv.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_linsolve.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_ludecomp.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_mul.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_qrdecomp.c
+    ${PROJECT_SOURCE_DIR}/src/matrix/tests/data/matrixcf_data_transmul.c
     #${PROJECT_SOURCE_DIR}/src/nco/tests/data/nco_sincos_fsqrt1_2.c
     #${PROJECT_SOURCE_DIR}/src/nco/tests/data/nco_sincos_fsqrt1_3.c
     #${PROJECT_SOURCE_DIR}/src/nco/tests/data/nco_sincos_fsqrt1_5.c

@@ -762,6 +762,41 @@ extern struct liquid_autotest_s fir_groupdelay_n3_s;
 extern struct liquid_autotest_s iir_groupdelay_n3_s;
 extern struct liquid_autotest_s iir_groupdelay_n8_s;
 extern struct liquid_autotest_s iir_groupdelay_sos_n8_s;
+// ./src/matrix/tests/smatrixb_autotest.c
+extern struct liquid_autotest_s smatrixb_vmul_s;
+extern struct liquid_autotest_s smatrixb_mul_s;
+extern struct liquid_autotest_s smatrixb_mulf_s;
+extern struct liquid_autotest_s smatrixb_vmulf_s;
+// ./src/matrix/tests/matrixcf_autotest.c
+extern struct liquid_autotest_s matrixcf_add_s;
+extern struct liquid_autotest_s matrixcf_aug_s;
+extern struct liquid_autotest_s matrixcf_chol_s;
+extern struct liquid_autotest_s matrixcf_inv_s;
+extern struct liquid_autotest_s matrixcf_linsolve_s;
+extern struct liquid_autotest_s matrixcf_ludecomp_crout_s;
+extern struct liquid_autotest_s matrixcf_ludecomp_doolittle_s;
+extern struct liquid_autotest_s matrixcf_mul_s;
+extern struct liquid_autotest_s matrixcf_qrdecomp_s;
+extern struct liquid_autotest_s matrixcf_transmul_s;
+// ./src/matrix/tests/matrixf_autotest.c
+extern struct liquid_autotest_s matrixf_add_s;
+extern struct liquid_autotest_s matrixf_aug_s;
+extern struct liquid_autotest_s matrixf_cgsolve_s;
+extern struct liquid_autotest_s matrixf_chol_s;
+extern struct liquid_autotest_s matrixf_gramschmidt_s;
+extern struct liquid_autotest_s matrixf_inv_s;
+extern struct liquid_autotest_s matrixf_linsolve_s;
+extern struct liquid_autotest_s matrixf_ludecomp_crout_s;
+extern struct liquid_autotest_s matrixf_ludecomp_doolittle_s;
+extern struct liquid_autotest_s matrixf_mul_s;
+extern struct liquid_autotest_s matrixf_qrdecomp_s;
+extern struct liquid_autotest_s matrixf_transmul_s;
+// ./src/matrix/tests/smatrixf_autotest.c
+extern struct liquid_autotest_s smatrixf_vmul_s;
+extern struct liquid_autotest_s smatrixf_mul_s;
+// ./src/matrix/tests/smatrixi_autotest.c
+extern struct liquid_autotest_s smatrixi_vmul_s;
+extern struct liquid_autotest_s smatrixi_mul_s;
 
 // compile test registry
 liquid_autotest liquid_autotest_registry[] =
@@ -1468,6 +1503,36 @@ liquid_autotest liquid_autotest_registry[] =
     &iir_groupdelay_n3_s,
     &iir_groupdelay_n8_s,
     &iir_groupdelay_sos_n8_s,
+    &smatrixb_vmul_s,
+    &smatrixb_mul_s,
+    &smatrixb_mulf_s,
+    &smatrixb_vmulf_s,
+    &matrixcf_add_s,
+    &matrixcf_aug_s,
+    &matrixcf_chol_s,
+    &matrixcf_inv_s,
+    &matrixcf_linsolve_s,
+    &matrixcf_ludecomp_crout_s,
+    &matrixcf_ludecomp_doolittle_s,
+    &matrixcf_mul_s,
+    &matrixcf_qrdecomp_s,
+    &matrixcf_transmul_s,
+    &matrixf_add_s,
+    &matrixf_aug_s,
+    &matrixf_cgsolve_s,
+    &matrixf_chol_s,
+    &matrixf_gramschmidt_s,
+    &matrixf_inv_s,
+    &matrixf_linsolve_s,
+    &matrixf_ludecomp_crout_s,
+    &matrixf_ludecomp_doolittle_s,
+    &matrixf_mul_s,
+    &matrixf_qrdecomp_s,
+    &matrixf_transmul_s,
+    &smatrixf_vmul_s,
+    &smatrixf_mul_s,
+    &smatrixi_vmul_s,
+    &smatrixi_mul_s,
     NULL
 };
 
