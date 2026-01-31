@@ -526,11 +526,11 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/buffer/tests/buffer_window_autotest.c
     #${PROJECT_SOURCE_DIR}/src/channel/tests/channel_copy_autotest.c
     #${PROJECT_SOURCE_DIR}/src/channel/tests/tvmpch_copy_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_rrrf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_crcf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_cccf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/dotprod/tests/sumsqf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/dotprod/tests/sumsqcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_rrrf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_crcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_cccf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/tests/sumsqf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/dotprod/tests/sumsqcf_autotest.c
     #${PROJECT_SOURCE_DIR}/src/equalization/tests/eqlms_cccf_autotest.c
     #${PROJECT_SOURCE_DIR}/src/equalization/tests/eqrls_rrrf_autotest.c
     #${PROJECT_SOURCE_DIR}/src/fec/tests/crc_autotest.c

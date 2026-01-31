@@ -7,6 +7,37 @@
 extern struct liquid_autotest_s null_s;
 // ./autotest/libliquid_autotest.c
 extern struct liquid_autotest_s libliquid_version_s;
+// ./src/dotprod/tests/dotprod_crcf_autotest.c
+extern struct liquid_autotest_s dotprod_crcf_rand01_s;
+extern struct liquid_autotest_s dotprod_crcf_rand02_s;
+extern struct liquid_autotest_s dotprod_crcf_struct_vs_ordinal_s;
+// ./src/dotprod/tests/sumsqcf_autotest.c
+extern struct liquid_autotest_s sumsqcf_3_s;
+extern struct liquid_autotest_s sumsqcf_4_s;
+extern struct liquid_autotest_s sumsqcf_7_s;
+extern struct liquid_autotest_s sumsqcf_8_s;
+extern struct liquid_autotest_s sumsqcf_15_s;
+extern struct liquid_autotest_s sumsqcf_16_s;
+// ./src/dotprod/tests/sumsqf_autotest.c
+extern struct liquid_autotest_s sumsqf_3_s;
+extern struct liquid_autotest_s sumsqf_4_s;
+extern struct liquid_autotest_s sumsqf_7_s;
+extern struct liquid_autotest_s sumsqf_8_s;
+extern struct liquid_autotest_s sumsqf_15_s;
+extern struct liquid_autotest_s sumsqf_16_s;
+// ./src/dotprod/tests/dotprod_cccf_autotest.c
+extern struct liquid_autotest_s dotprod_cccf_rand16_s;
+extern struct liquid_autotest_s dotprod_cccf_struct_lengths_s;
+extern struct liquid_autotest_s dotprod_cccf_struct_vs_ordinal_s;
+// ./src/dotprod/tests/dotprod_rrrf_autotest.c
+extern struct liquid_autotest_s dotprod_rrrf_basic_s;
+extern struct liquid_autotest_s dotprod_rrrf_uneven_s;
+extern struct liquid_autotest_s dotprod_rrrf_struct_s;
+extern struct liquid_autotest_s dotprod_rrrf_struct_align_s;
+extern struct liquid_autotest_s dotprod_rrrf_rand01_s;
+extern struct liquid_autotest_s dotprod_rrrf_rand02_s;
+extern struct liquid_autotest_s dotprod_rrrf_struct_lengths_s;
+extern struct liquid_autotest_s dotprod_rrrf_struct_vs_ordinal_s;
 // ./src/agc/tests/agc_crcf_autotest.c
 extern struct liquid_autotest_s agc_crcf_dc_gain_control_s;
 extern struct liquid_autotest_s agc_crcf_scale_s;
@@ -820,6 +851,32 @@ liquid_autotest liquid_autotest_registry[] =
 {
     &null_s,
     &libliquid_version_s,
+    &dotprod_crcf_rand01_s,
+    &dotprod_crcf_rand02_s,
+    &dotprod_crcf_struct_vs_ordinal_s,
+    &sumsqcf_3_s,
+    &sumsqcf_4_s,
+    &sumsqcf_7_s,
+    &sumsqcf_8_s,
+    &sumsqcf_15_s,
+    &sumsqcf_16_s,
+    &sumsqf_3_s,
+    &sumsqf_4_s,
+    &sumsqf_7_s,
+    &sumsqf_8_s,
+    &sumsqf_15_s,
+    &sumsqf_16_s,
+    &dotprod_cccf_rand16_s,
+    &dotprod_cccf_struct_lengths_s,
+    &dotprod_cccf_struct_vs_ordinal_s,
+    &dotprod_rrrf_basic_s,
+    &dotprod_rrrf_uneven_s,
+    &dotprod_rrrf_struct_s,
+    &dotprod_rrrf_struct_align_s,
+    &dotprod_rrrf_rand01_s,
+    &dotprod_rrrf_rand02_s,
+    &dotprod_rrrf_struct_lengths_s,
+    &dotprod_rrrf_struct_vs_ordinal_s,
     &agc_crcf_dc_gain_control_s,
     &agc_crcf_scale_s,
     &agc_crcf_ac_gain_control_s,

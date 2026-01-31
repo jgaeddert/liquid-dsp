@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
 // test data
@@ -32,27 +32,26 @@ float sumsqf_test_x15[15];  float sumsqf_test_y15;
 float sumsqf_test_x16[16];  float sumsqf_test_y16;
 
 // helper function
-void sumsqf_runtest(float *      _x,
-                    unsigned int _n,
-                    float        _y)
+void testbench_sumsqf(liquid_autotest __q__,
+                      float *      _x,
+                      unsigned int _n,
+                      float        _y)
 {
     float tol = 1e-6;   // error tolerance
 
     // run test
     float y = liquid_sumsqf(_x, _n);
 
-    CONTEND_DELTA( y, _y, tol );
+    LIQUID_CHECK_DELTA( y, _y, tol );
 }
 
-// 
-// AUTOTESTS : run test with pre-determined data sets
-//
-void autotest_sumsqf_3()    {   sumsqf_runtest( sumsqf_test_x3,  3,  sumsqf_test_y3  ); }
-void autotest_sumsqf_4()    {   sumsqf_runtest( sumsqf_test_x4,  4,  sumsqf_test_y4  ); }
-void autotest_sumsqf_7()    {   sumsqf_runtest( sumsqf_test_x7,  7,  sumsqf_test_y7  ); }
-void autotest_sumsqf_8()    {   sumsqf_runtest( sumsqf_test_x8,  8,  sumsqf_test_y8  ); }
-void autotest_sumsqf_15()   {   sumsqf_runtest( sumsqf_test_x15, 15, sumsqf_test_y15 ); }
-void autotest_sumsqf_16()   {   sumsqf_runtest( sumsqf_test_x16, 16, sumsqf_test_y16 ); }
+// run test with pre-determined data sets
+LIQUID_AUTOTEST(sumsqf_3,"","",0.1)    {   testbench_sumsqf(__q__,  sumsqf_test_x3,  3,  sumsqf_test_y3  ); }
+LIQUID_AUTOTEST(sumsqf_4,"","",0.1)    {   testbench_sumsqf(__q__,  sumsqf_test_x4,  4,  sumsqf_test_y4  ); }
+LIQUID_AUTOTEST(sumsqf_7,"","",0.1)    {   testbench_sumsqf(__q__,  sumsqf_test_x7,  7,  sumsqf_test_y7  ); }
+LIQUID_AUTOTEST(sumsqf_8,"","",0.1)    {   testbench_sumsqf(__q__,  sumsqf_test_x8,  8,  sumsqf_test_y8  ); }
+LIQUID_AUTOTEST(sumsqf_15,"","",0.1)   {   testbench_sumsqf(__q__,  sumsqf_test_x15, 15, sumsqf_test_y15 ); }
+LIQUID_AUTOTEST(sumsqf_16,"","",0.1)   {   testbench_sumsqf(__q__,  sumsqf_test_x16, 16, sumsqf_test_y16 ); }
 
 float sumsqf_test_x3[3] = {
   -0.4546496371984978f,

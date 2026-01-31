@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-// 
-// AUTOTEST: compare structured result to ordinal computation
-//
-
-// 
-// AUTOTEST: dot product with floating-point data
-//
-void autotest_dotprod_cccf_rand16()
+LIQUID_AUTOTEST(dotprod_cccf_rand16,"dot product with floating-point data","",0.1)
 {
     float complex h[16] = {
       0.17702709 +   1.38978455*_Complex_I,  0.91294148 +   0.39217381*_Complex_I,
@@ -61,39 +54,36 @@ void autotest_dotprod_cccf_rand16()
     float tol = 1e-3f;
 
     dotprod_cccf_run(h,x,16,&y);
-    CONTEND_DELTA( crealf(y), crealf(test), tol);
-    CONTEND_DELTA( cimagf(y), cimagf(test), tol);
+    LIQUID_CHECK_DELTA( crealf(y), crealf(test), tol);
+    LIQUID_CHECK_DELTA( cimagf(y), cimagf(test), tol);
 
     dotprod_cccf_run4(h,x,16,&y);
-    CONTEND_DELTA( crealf(y), crealf(test), tol);
-    CONTEND_DELTA( cimagf(y), cimagf(test), tol);
+    LIQUID_CHECK_DELTA( crealf(y), crealf(test), tol);
+    LIQUID_CHECK_DELTA( cimagf(y), cimagf(test), tol);
 
     // test object
     dotprod_cccf q = dotprod_cccf_create(h,16);
     dotprod_cccf_execute(q,x,&y);
-    CONTEND_DELTA( crealf(y), crealf(test), tol);
-    CONTEND_DELTA( cimagf(y), cimagf(test), tol);
+    LIQUID_CHECK_DELTA( crealf(y), crealf(test), tol);
+    LIQUID_CHECK_DELTA( cimagf(y), cimagf(test), tol);
 
     // test running in reverse
     q = dotprod_cccf_recreate_rev(q,h,16);
     dotprod_cccf_execute(q,x,&y);
-    CONTEND_DELTA( crealf(y), crealf(test_rev), tol);
-    CONTEND_DELTA( cimagf(y), cimagf(test_rev), tol);
+    LIQUID_CHECK_DELTA( crealf(y), crealf(test_rev), tol);
+    LIQUID_CHECK_DELTA( cimagf(y), cimagf(test_rev), tol);
 
     // create original again
     q = dotprod_cccf_recreate(q,h,16);
     dotprod_cccf_execute(q,x,&y);
-    CONTEND_DELTA( crealf(y), crealf(test), tol);
-    CONTEND_DELTA( cimagf(y), cimagf(test), tol);
+    LIQUID_CHECK_DELTA( crealf(y), crealf(test), tol);
+    LIQUID_CHECK_DELTA( cimagf(y), cimagf(test), tol);
 
     // clean it up
     dotprod_cccf_destroy(q);
 }
 
-// 
-// AUTOTEST: structured dot product, odd lengths
-//
-void autotest_dotprod_cccf_struct_lengths()
+LIQUID_AUTOTEST(dotprod_cccf_struct_lengths,"structured dot product, odd lengths","",0.1)
 {
     float tol = 4e-6;
     float complex y;
@@ -149,34 +139,34 @@ void autotest_dotprod_cccf_struct_lengths()
     // n = 32
     dp = dotprod_cccf_create(h,32);
     dotprod_cccf_execute(dp, x, &y);
-    CONTEND_DELTA(y, v32, tol);
+    LIQUID_CHECK_DELTA(y, v32, tol);
     dotprod_cccf_destroy(dp);
     liquid_log_debug("  dotprod-cccf-32 : %12.8f + j%12.8f (expected %12.8f + j%12.8f)",crealf(y), cimagf(y), crealf(v32), cimagf(v32));
 
     // n = 33
     dp = dotprod_cccf_create(h,33);
     dotprod_cccf_execute(dp, x, &y);
-    CONTEND_DELTA(y, v33, tol);
+    LIQUID_CHECK_DELTA(y, v33, tol);
     dotprod_cccf_destroy(dp);
     liquid_log_debug("  dotprod-cccf-33 : %12.8f + j%12.8f (expected %12.8f + j%12.8f)",crealf(y), cimagf(y), crealf(v33), cimagf(v33));
 
     // n = 34
     dp = dotprod_cccf_create(h,34);
     dotprod_cccf_execute(dp, x, &y);
-    CONTEND_DELTA(y, v34, tol);
+    LIQUID_CHECK_DELTA(y, v34, tol);
     dotprod_cccf_destroy(dp);
     liquid_log_debug("  dotprod-cccf-34 : %12.8f + j%12.8f (expected %12.8f + j%12.8f)",crealf(y), cimagf(y), crealf(v34), cimagf(v34));
 
     // n = 35
     dp = dotprod_cccf_create(h,35);
     dotprod_cccf_execute(dp, x, &y);
-    CONTEND_DELTA(y, v35, tol);
+    LIQUID_CHECK_DELTA(y, v35, tol);
     dotprod_cccf_destroy(dp);
     liquid_log_debug("  dotprod-cccf-35 : %12.8f + j%12.8f (expected %12.8f + j%12.8f)",crealf(y), cimagf(y), crealf(v35), cimagf(v35));
 }
 
 // helper function (compare structured object to ordinal computation)
-void runtest_dotprod_cccf(unsigned int _n)
+void testbench_dotprod_cccf(liquid_autotest __q__, unsigned int _n)
 {
     float tol = 1e-3;
     float complex h[_n];
@@ -212,24 +202,23 @@ void runtest_dotprod_cccf(unsigned int _n)
     liquid_log_debug("  dotprod-cccf-%-4u(run4  ) : %12.8f + j%12.8f (expected %12.8f + j%12.8f)",_n, crealf(y_run4  ), cimagf(y_run4  ), crealf(y_test), cimagf(y_test));
 
     // validate result (structured object)
-    CONTEND_DELTA(crealf(y_struct), crealf(y_test), tol);
-    CONTEND_DELTA(cimagf(y_struct), cimagf(y_test), tol);
+    LIQUID_CHECK_DELTA(crealf(y_struct), crealf(y_test), tol);
+    LIQUID_CHECK_DELTA(cimagf(y_struct), cimagf(y_test), tol);
 
     // validate result (unstructured, run)
-    CONTEND_DELTA(crealf(y_run   ), crealf(y_test), tol);
-    CONTEND_DELTA(cimagf(y_run   ), cimagf(y_test), tol);
+    LIQUID_CHECK_DELTA(crealf(y_run   ), crealf(y_test), tol);
+    LIQUID_CHECK_DELTA(cimagf(y_run   ), cimagf(y_test), tol);
 
     // validate result (unstructured, run4)
-    CONTEND_DELTA(crealf(y_run4  ), crealf(y_test), tol);
-    CONTEND_DELTA(cimagf(y_run4  ), cimagf(y_test), tol);
+    LIQUID_CHECK_DELTA(crealf(y_run4  ), crealf(y_test), tol);
+    LIQUID_CHECK_DELTA(cimagf(y_run4  ), cimagf(y_test), tol);
 }
 
-// compare structured object to ordinal computation
-void autotest_dotprod_cccf_struct_vs_ordinal()
+LIQUID_AUTOTEST(dotprod_cccf_struct_vs_ordinal,"compare structured object to ordinal computation","",0.1)
 {
     // run many, many tests
     unsigned int i;
     for (i=1; i<=512; i++)
-        runtest_dotprod_cccf(i);
+        testbench_dotprod_cccf(__q__, i);
 }
 
