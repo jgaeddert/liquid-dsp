@@ -229,8 +229,7 @@ void testbench_firdespm_halfband_ft(liquid_autotest __q__,
     };
     char filename[256];
     sprintf(filename,"autotest/logs/firdespm_halfband_m%u_ft%.3u.m", _m, (int)(_ft*1000));
-    liquid_autotest_validate_psd_signalf(__q__, h, h_len, regions, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_psd_signalf(__q__, h, h_len, regions, 3, filename);
 }
 
 LIQUID_AUTOTEST(firdespm_halfband_m2_ft400,"description","",0.1)  { testbench_firdespm_halfband_ft(__q__, 3, 0.400f); }

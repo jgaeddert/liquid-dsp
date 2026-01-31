@@ -196,8 +196,7 @@ void testbench_resamp2_crcf_filter(liquid_autotest __q__,
     };
     char filename[256];
     sprintf(filename,"autotest/logs/resamp2_crcf_filter_lo_m%u_as%.0f.m", _m, _as);
-    liquid_autotest_validate_psd_signal(__q__, h_0, h_len, regions_h0, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_psd_signal(__q__, h_0, h_len, regions_h0, 3, filename);
 
     // verify high-pass frequency response
     autotest_psd_s regions_h1[] = {
@@ -206,8 +205,7 @@ void testbench_resamp2_crcf_filter(liquid_autotest __q__,
       {.fmin=+0.25+ft/2, .fmax=+0.5,       .pmin=-1, .pmax=+1,       .test_lo=1, .test_hi=1},
     };
     sprintf(filename,"autotest/logs/resamp2_crcf_filter_hi_m%u_as%.0f.m", _m, _as);
-    liquid_autotest_validate_psd_signal(__q__, h_1, h_len, regions_h1, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_psd_signal(__q__, h_1, h_len, regions_h1, 3, filename);
 }
 
 LIQUID_AUTOTEST(resamp2_crcf_filter_0,"description","",0.1){ testbench_resamp2_crcf_filter(__q__,  4, 60.0f); }

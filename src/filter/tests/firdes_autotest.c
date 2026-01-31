@@ -122,8 +122,7 @@ void test_harness_matched_filter(liquid_autotest __q__,
     };
     char filename[256];
     sprintf(filename,"autotest/logs/firdes_%s.m", liquid_firfilt_type_str[_type][0]);
-    liquid_autotest_validate_psd_signalf(__q__, h, h_len, regions, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_psd_signalf(__q__, h, h_len, regions, 3, filename);
 }
 
 // test matched filter responses for square-root nyquist filter prototypes
@@ -332,8 +331,7 @@ void testbench_firdes_prototype(liquid_autotest __q__,
     };
     char filename[256];
     sprintf(filename,"autotest/logs/firdes_prototype_%s.m", _type);
-    liquid_autotest_validate_psd_signalf(__q__, h, h_len, regions, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_psd_signalf(__q__, h, h_len, regions, 3, filename);
 }
 
 LIQUID_AUTOTEST(firdes_prototype_kaiser   ,"description","",0.1){ testbench_firdes_prototype(__q__,"kaiser",   4, 12, 0.3f, 60.0f); }

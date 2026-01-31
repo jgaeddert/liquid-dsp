@@ -71,8 +71,7 @@ void testbench_msresamp2_crcf_interp(liquid_autotest __q__,
     char filename[256];
     sprintf(filename,"autotest/logs/msresamp2_crcf_interp_M%u_f%.3u_a%u.m",
         M, (int)(_fc*1000), (int)_as);
-    liquid_autotest_validate_psd_signal(__q__, buf, buf_len, regions, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_psd_signal(__q__, buf, buf_len, regions, 3, filename);
 
     // destroy objects
     msresamp2_crcf_destroy(resamp);

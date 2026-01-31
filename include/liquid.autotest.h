@@ -221,13 +221,6 @@ int liquid_registry_print(const liquid_autotest * _registry,
 #define LIQUID_CHECK_DELTA(X,Y,D)       __LIQUID_TEST_DELTA__(__q__,__FILE__,__LINE__,X,Y,D,false)
 
 
-//
-// --- LEGACY ---
-//
-
-// TODO: remove
-static int liquid_autotest_verbose = 1;
-
 
 // contend that data in two arrays are identical
 //  _x      :   input array [size: _n x 1]
