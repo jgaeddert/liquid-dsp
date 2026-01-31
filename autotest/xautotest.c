@@ -24,11 +24,15 @@ int main(int argc, char* argv[])
     liquid_argparse_add(int,  test,    -1, 't', "run a specific test", NULL);
     liquid_argparse_parse(argc,argv);
 
-    if (list)
-        return liquid_registry_print(liquid_autotest_registry, true);
+    unsigned int i = 0;
+    if (list) {
+        while (liquid_autotest_registry[i] != NULL)
+            liquid_autotest_print_info(liquid_autotest_registry[i++]);
+        return LIQUID_OK;
+    }
 
     // mark tests to run
-    unsigned int i = 0;
+    i = 0;
     while (liquid_autotest_registry[i] != NULL)
     {
         if (test < 0)
@@ -53,6 +57,6 @@ int main(int argc, char* argv[])
     }
 
     // print summary
-    return liquid_registry_print(liquid_autotest_registry, false);
+    return liquid_registry_print(liquid_autotest_registry);
 }
 

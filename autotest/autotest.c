@@ -30,7 +30,7 @@
 // print test info
 int liquid_autotest_print_info(liquid_autotest _q)
 {
-    printf("name=%s, description=%s, keywords=%s, cost=%g",
+    liquid_log_info("name=%s, description=%s, keywords=%s, cost=%g",
         _q->name, _q->docstr, _q->keywords, _q->cost);
     return LIQUID_OK;
 }
@@ -38,23 +38,31 @@ int liquid_autotest_print_info(liquid_autotest _q)
 // print test status
 int liquid_autotest_print_status(liquid_autotest _q)
 {
-    printf("%s ", _q->name);
+    char strbuf[92];
+    char * s = strbuf;
+    int log_level = LIQUID_INFO;
+
+    s += sprintf(s,"%s ", _q->name);
     unsigned int j;
-    for (j=strlen(_q->name); j<50; j++)
-        printf(".");
+    for (j=strlen(_q->name); j<48; j++)
+        s += sprintf(s,".");
     switch(_q->status) {
     case LIQUID_AUTOTEST_PASS:
-        printf(" pass [      %5u]", _q->num_pass);
+        s += sprintf(s," pass [      %5u]", _q->num_pass);
+        if (_q->num_warn)
+            log_level = LIQUID_WARN;
         break;
     case LIQUID_AUTOTEST_FAIL:
-        printf("*FAIL*[%5u/%5u]", _q->num_fail, _q->num_pass + _q->num_fail);
+        s += sprintf(s,"*FAIL*[%5u/%5u]", _q->num_fail, _q->num_pass + _q->num_fail);
+        log_level = LIQUID_ERROR;
         break;
     case LIQUID_AUTOTEST_SKIP:
-        printf(" skip [           ]");
+        s += sprintf(s," skip [           ]");
         break;
     default: return liquid_error(LIQUID_EINT,"unexpected status");
     }
-    printf(" %9.3f ms", _q->runtime*1e3);
+    s += sprintf(s," %9.3f ms", _q->runtime*1e3);
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"%s",strbuf);
     return LIQUID_OK;
 }
 
@@ -112,8 +120,7 @@ void liquid_autotest_warn(liquid_autotest _q,
 }
 
 // print registry, either info or full status
-int liquid_registry_print(const liquid_autotest * _registry,
-                          bool _info)
+int liquid_registry_print(const liquid_autotest * _registry)
 {
     // accumulate number of tests
     unsigned int num_tests_pass = 0;
@@ -125,39 +132,39 @@ int liquid_registry_print(const liquid_autotest * _registry,
     unsigned int num_checks_fail = 0;
     unsigned int num_checks_warn = 0;
 
+    liquid_log_info("=========== autotest results ===========");
     unsigned int i = 0;
     while (_registry[i] != NULL)
     {
-        printf("%3u : ", i);
-        if (_info)
-            liquid_autotest_print_info(_registry[i]);
-        else
-            liquid_autotest_print_status(_registry[i]);
-        printf("\n");
+        // print status
+        liquid_autotest_print_status(_registry[i]);
 
         // accumulate test statistics
         num_tests_pass  += _registry[i]->status == LIQUID_AUTOTEST_PASS;
         num_tests_fail  += _registry[i]->status == LIQUID_AUTOTEST_FAIL;
         num_tests_skip  += _registry[i]->status == LIQUID_AUTOTEST_SKIP;
+
         // accumulate check statistics
         num_checks_pass += _registry[i]->num_pass;
         num_checks_fail += _registry[i]->num_fail;
         num_checks_warn += _registry[i]->num_warn;
 
+        // on to the next
         i++;
     }
+    liquid_log_info("=========== autotest summary ===========");
 
     // log summary
     int log_level = num_tests_fail ? LIQUID_ERROR : LIQUID_INFO;
 
-    liquid_log(NULL,log_level,__FILE__,__LINE__,"%u tests run (%u failed) %u skipped",
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"  %u tests run (%u failed) %u skipped",
         num_tests_pass + num_tests_fail, num_tests_fail, num_tests_skip);
 
-    liquid_log(NULL,log_level,__FILE__,__LINE__,"%u total checks (%u failed)",
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"  %u total checks (%u failed)",
         num_checks_pass + num_checks_fail, num_checks_fail);
 
     if (num_checks_warn > 0)
-        liquid_log_warn("%u warnings", num_checks_warn);
+        liquid_log_warn("  %u warnings", num_checks_warn);
 
     // TODO: return non-zero value upon failure?
     return num_tests_fail ? LIQUID_EINT : LIQUID_OK;
