@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,11 +22,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // autotest helper functions
-void testbench_symstreamcf_psd(unsigned int _k,
+void testbench_symstreamcf_psd(liquid_autotest __q__,
+                               unsigned int _k,
                                unsigned int _m,
                                float        _beta)
 {
@@ -73,17 +74,15 @@ void testbench_symstreamcf_psd(unsigned int _k,
     char filename[256];
     sprintf(filename,"autotest/logs/symstreamcf_psd_k%u_m%u_b%.3u_autotest.m",
             _k, _m, (int)(_beta*100));
-    liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_spectrum(__q__, psd, nfft, regions, 3, filename);
 }
 
-void autotest_symstreamcf_psd_k2_m12_b030() { testbench_symstreamcf_psd(2, 12, 0.30f); }
-void autotest_symstreamcf_psd_k4_m12_b030() { testbench_symstreamcf_psd(4, 12, 0.30f); }
-void autotest_symstreamcf_psd_k4_m25_b020() { testbench_symstreamcf_psd(4, 25, 0.20f); }
-void autotest_symstreamcf_psd_k7_m11_b035() { testbench_symstreamcf_psd(7, 11, 0.35f); }
+LIQUID_AUTOTEST(symstreamcf_psd_k2_m12_b030,"","",0.1) { testbench_symstreamcf_psd(__q__, 2, 12, 0.30f); }
+LIQUID_AUTOTEST(symstreamcf_psd_k4_m12_b030,"","",0.1) { testbench_symstreamcf_psd(__q__, 4, 12, 0.30f); }
+LIQUID_AUTOTEST(symstreamcf_psd_k4_m25_b020,"","",0.1) { testbench_symstreamcf_psd(__q__, 4, 25, 0.20f); }
+LIQUID_AUTOTEST(symstreamcf_psd_k7_m11_b035,"","",0.1) { testbench_symstreamcf_psd(__q__, 7, 11, 0.35f); }
 
-// test copying from one object to another
-void autotest_symstreamcf_copy()
+LIQUID_AUTOTEST(symstreamcf_copy,"test copying from one symstreamcf object to another","",0.1)
 {
     // create objects
     symstreamcf gen_orig = symstreamcf_create_linear(
@@ -106,8 +105,8 @@ void autotest_symstreamcf_copy()
 
     // compare result
     // NOTE: this will fail as they have different symbol generators
-    //CONTEND_SAME_DATA(buf_orig, buf_copy, buf_len*sizeof(float complex));
-    AUTOTEST_WARN("symstreamcf_copy results ignored until common PRNG is used");
+    //LIQUID_CHECK_ARRAY(buf_orig, buf_copy, buf_len*sizeof(float complex));
+    LIQUID_WARN("symstreamcf_copy results ignored until common PRNG is used");
 
     // destroy objects
     symstreamcf_destroy(gen_orig);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,44 +20,17 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // autotest helper function
 //  _n      :   sequence length
 //  _dt     :   fractional sample offset
 //  _dphi   :   carrier frequency offset
-//  _gamma  :   gain
-void detector_cccf_runtest(unsigned int _n,
-                           float        _dt,
-                           float        _dphi);
-
-//
-// AUTOTESTS
-//
-
-void autotest_detector_cccf_n64()   { detector_cccf_runtest(  64, 0.2f, 0.01f); }
-void autotest_detector_cccf_n83()   { detector_cccf_runtest(  83, 0.2f, 0.01f); }
-
-void autotest_detector_cccf_n128()  { detector_cccf_runtest( 128, 0.2f, 0.01f); }
-void autotest_detector_cccf_n167()  { detector_cccf_runtest( 167, 0.2f, 0.01f); }
-
-void autotest_detector_cccf_n256()  { detector_cccf_runtest( 256, 0.2f, 0.01f); }
-void autotest_detector_cccf_n335()  { detector_cccf_runtest( 335, 0.2f, 0.01f); }
-
-void autotest_detector_cccf_n512()  { detector_cccf_runtest( 512, 0.2f, 0.01f); }
-void autotest_detector_cccf_n671()  { detector_cccf_runtest( 671, 0.2f, 0.01f); }
-
-void autotest_detector_cccf_n1024() { detector_cccf_runtest(1024, 0.2f, 0.01f); }
-void autotest_detector_cccf_n1341() { detector_cccf_runtest(1341, 0.2f, 0.01f); }
-
-// autotest helper function
-//  _n      :   sequence length
-//  _dt     :   fractional sample offset
-//  _dphi   :   carrier frequency offset
-void detector_cccf_runtest(unsigned int _n,
-                           float        _dt,
-                           float        _dphi)
+void testbench_detector_cccf(liquid_autotest __q__,
+                             unsigned int _n,
+                             float        _dt,
+                             float        _dphi)
 {
     // TODO: validate input
 
@@ -155,16 +128,30 @@ void detector_cccf_runtest(unsigned int _n,
     liquid_log_debug("    gamma   :   estimate = %12.6f (expected %12.6f)", gamma_hat, gamma);
 
     // ensure signal was detected
-    CONTEND_EXPRESSION( signal_detected );
+    LIQUID_CHECK( signal_detected );
 
     // check carrier offset estimate
-    CONTEND_DELTA( dphi_hat, _dphi, 0.01f );
+    LIQUID_CHECK_DELTA( dphi_hat, _dphi, 0.01f );
     
     // check delay estimate
-    CONTEND_DELTA( delay_hat, delay, 0.2f );
+    LIQUID_CHECK_DELTA( delay_hat, delay, 0.2f );
     
     // check signal level estimate
-    CONTEND_DELTA( gamma_hat, gamma, 2.0f );
+    LIQUID_CHECK_DELTA( gamma_hat, gamma, 2.0f );
 }
 
+LIQUID_AUTOTEST(detector_cccf_n64,"","",0.1)   { testbench_detector_cccf(__q__,   64, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n83,"","",0.1)   { testbench_detector_cccf(__q__,   83, 0.2f, 0.01f); }
+
+LIQUID_AUTOTEST(detector_cccf_n128,"","",0.1)  { testbench_detector_cccf(__q__,  128, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n167,"","",0.1)  { testbench_detector_cccf(__q__,  167, 0.2f, 0.01f); }
+
+LIQUID_AUTOTEST(detector_cccf_n256,"","",0.1)  { testbench_detector_cccf(__q__,  256, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n335,"","",0.1)  { testbench_detector_cccf(__q__,  335, 0.2f, 0.01f); }
+
+LIQUID_AUTOTEST(detector_cccf_n512,"","",0.1)  { testbench_detector_cccf(__q__,  512, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n671,"","",0.1)  { testbench_detector_cccf(__q__,  671, 0.2f, 0.01f); }
+
+LIQUID_AUTOTEST(detector_cccf_n1024,"","",0.1) { testbench_detector_cccf(__q__, 1024, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n1341,"","",0.1) { testbench_detector_cccf(__q__, 1341, 0.2f, 0.01f); }
 

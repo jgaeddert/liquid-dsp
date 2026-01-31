@@ -597,28 +597,28 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/filter/tests/symsync_copy_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/symsync_crcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/symsync_rrrf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/bpacketsync_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/bsync_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/detector_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/dsssframe64_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/dsssframesync_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/flexframesync_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/framesync64_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/fskframesync_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/gmskframe_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/msource_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/ofdmflexframe_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/qdetector_cccf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/qdetector_cccf_copy_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/qdsync_cccf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/qpacketmodem_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/qpilotsync_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/qsource_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/symstreamcf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/symstreamcf_delay_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/symstreamrcf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/symstreamrcf_delay_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/framing/tests/symtrack_cccf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/bpacketsync_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/bsync_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/detector_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/dsssframe64_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/dsssframesync_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/flexframesync_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/framesync64_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/fskframesync_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/gmskframe_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/msource_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/ofdmflexframe_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/qdetector_cccf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/qdetector_cccf_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/qdsync_cccf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/qpacketmodem_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/qpilotsync_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/qsource_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/symstreamcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/symstreamcf_delay_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/symstreamrcf_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/symstreamrcf_delay_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/framing/tests/symtrack_cccf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/math/tests/gcd_autotest.c
     ${PROJECT_SOURCE_DIR}/src/math/tests/math_window_autotest.c
     ${PROJECT_SOURCE_DIR}/src/math/tests/math_autotest.c

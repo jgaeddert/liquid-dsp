@@ -1007,6 +1007,195 @@ extern struct liquid_autotest_s fir_groupdelay_n3_s;
 extern struct liquid_autotest_s iir_groupdelay_n3_s;
 extern struct liquid_autotest_s iir_groupdelay_n8_s;
 extern struct liquid_autotest_s iir_groupdelay_sos_n8_s;
+// ./src/framing/tests/qdetector_cccf_autotest.c
+extern struct liquid_autotest_s qdetector_cccf_linear_n64_s;
+extern struct liquid_autotest_s qdetector_cccf_linear_n83_s;
+extern struct liquid_autotest_s qdetector_cccf_linear_n128_s;
+extern struct liquid_autotest_s qdetector_cccf_linear_n167_s;
+extern struct liquid_autotest_s qdetector_cccf_linear_n256_s;
+extern struct liquid_autotest_s qdetector_cccf_linear_n335_s;
+extern struct liquid_autotest_s qdetector_cccf_linear_n512_s;
+extern struct liquid_autotest_s qdetector_cccf_linear_n671_s;
+extern struct liquid_autotest_s qdetector_cccf_linear_n1024_s;
+extern struct liquid_autotest_s qdetector_cccf_linear_n1341_s;
+extern struct liquid_autotest_s qdetector_cccf_gmsk_n64_s;
+extern struct liquid_autotest_s qdetector_cccf_gmsk_n83_s;
+extern struct liquid_autotest_s qdetector_cccf_gmsk_n128_s;
+extern struct liquid_autotest_s qdetector_cccf_gmsk_n167_s;
+extern struct liquid_autotest_s qdetector_cccf_gmsk_n256_s;
+extern struct liquid_autotest_s qdetector_cccf_gmsk_n335_s;
+extern struct liquid_autotest_s qdetector_cccf_gmsk_n512_s;
+extern struct liquid_autotest_s qdetector_cccf_gmsk_n671_s;
+extern struct liquid_autotest_s qdetector_cccf_gmsk_n1024_s;
+extern struct liquid_autotest_s qdetector_cccf_gmsk_n1341_s;
+// ./src/framing/tests/qpilotsync_autotest.c
+extern struct liquid_autotest_s qpilotsync_100_16_s;
+extern struct liquid_autotest_s qpilotsync_200_20_s;
+extern struct liquid_autotest_s qpilotsync_300_24_s;
+extern struct liquid_autotest_s qpilotsync_400_28_s;
+extern struct liquid_autotest_s qpilotsync_500_32_s;
+extern struct liquid_autotest_s qpilotgen_config_s;
+extern struct liquid_autotest_s qpilotsync_config_s;
+// ./src/framing/tests/symstreamcf_delay_autotest.c
+extern struct liquid_autotest_s symstreamcf_delay_00_s;
+extern struct liquid_autotest_s symstreamcf_delay_01_s;
+extern struct liquid_autotest_s symstreamcf_delay_02_s;
+extern struct liquid_autotest_s symstreamcf_delay_03_s;
+extern struct liquid_autotest_s symstreamcf_delay_04_s;
+extern struct liquid_autotest_s symstreamcf_delay_05_s;
+extern struct liquid_autotest_s symstreamcf_delay_06_s;
+extern struct liquid_autotest_s symstreamcf_delay_07_s;
+extern struct liquid_autotest_s symstreamcf_delay_08_s;
+extern struct liquid_autotest_s symstreamcf_delay_09_s;
+extern struct liquid_autotest_s symstreamcf_delay_10_s;
+extern struct liquid_autotest_s symstreamcf_delay_11_s;
+extern struct liquid_autotest_s symstreamcf_delay_12_s;
+extern struct liquid_autotest_s symstreamcf_delay_13_s;
+extern struct liquid_autotest_s symstreamcf_delay_14_s;
+extern struct liquid_autotest_s symstreamcf_delay_15_s;
+extern struct liquid_autotest_s symstreamcf_delay_16_s;
+extern struct liquid_autotest_s symstreamcf_delay_17_s;
+extern struct liquid_autotest_s symstreamcf_delay_18_s;
+extern struct liquid_autotest_s symstreamcf_delay_19_s;
+// ./src/framing/tests/qdetector_cccf_copy_autotest.c
+extern struct liquid_autotest_s qdetector_cccf_copy_s;
+// ./src/framing/tests/detector_autotest.c
+extern struct liquid_autotest_s detector_cccf_n64_s;
+extern struct liquid_autotest_s detector_cccf_n83_s;
+extern struct liquid_autotest_s detector_cccf_n128_s;
+extern struct liquid_autotest_s detector_cccf_n167_s;
+extern struct liquid_autotest_s detector_cccf_n256_s;
+extern struct liquid_autotest_s detector_cccf_n335_s;
+extern struct liquid_autotest_s detector_cccf_n512_s;
+extern struct liquid_autotest_s detector_cccf_n671_s;
+extern struct liquid_autotest_s detector_cccf_n1024_s;
+extern struct liquid_autotest_s detector_cccf_n1341_s;
+// ./src/framing/tests/dsssframesync_autotest.c
+extern struct liquid_autotest_s dsssframesync_s;
+// ./src/framing/tests/bpacketsync_autotest.c
+extern struct liquid_autotest_s bpacketsync_s;
+// ./src/framing/tests/bsync_autotest.c
+extern struct liquid_autotest_s bsync_rrrf_15_s;
+extern struct liquid_autotest_s bsync_crcf_15_s;
+extern struct liquid_autotest_s bsync_crcf_phase_15_s;
+// ./src/framing/tests/qsource_autotest.c
+extern struct liquid_autotest_s qsourcecf_config_s;
+// ./src/framing/tests/dsssframe64_autotest.c
+extern struct liquid_autotest_s dsssframe64sync_s;
+extern struct liquid_autotest_s dsssframe64_config_s;
+extern struct liquid_autotest_s dsssframe64gen_copy_s;
+extern struct liquid_autotest_s dsssframe64sync_copy_s;
+// ./src/framing/tests/qpacketmodem_autotest.c
+extern struct liquid_autotest_s qpacketmodem_bpsk_s;
+extern struct liquid_autotest_s qpacketmodem_qpsk_s;
+extern struct liquid_autotest_s qpacketmodem_psk8_s;
+extern struct liquid_autotest_s qpacketmodem_qam16_s;
+extern struct liquid_autotest_s qpacketmodem_sqam32_s;
+extern struct liquid_autotest_s qpacketmodem_qam64_s;
+extern struct liquid_autotest_s qpacketmodem_sqam128_s;
+extern struct liquid_autotest_s qpacketmodem_qam256_s;
+extern struct liquid_autotest_s qpacketmodem_evm_s;
+extern struct liquid_autotest_s qpacketmodem_unmod_bpsk_s;
+extern struct liquid_autotest_s qpacketmodem_unmod_qpsk_s;
+extern struct liquid_autotest_s qpacketmodem_unmod_psk8_s;
+extern struct liquid_autotest_s qpacketmodem_unmod_qam16_s;
+extern struct liquid_autotest_s qpacketmodem_unmod_sqam32_s;
+extern struct liquid_autotest_s qpacketmodem_unmod_qam64_s;
+extern struct liquid_autotest_s qpacketmodem_unmod_sqam128_s;
+extern struct liquid_autotest_s qpacketmodem_unmod_qam256_s;
+extern struct liquid_autotest_s qpacketmodem_copy_s;
+// ./src/framing/tests/symstreamrcf_delay_autotest.c
+extern struct liquid_autotest_s symstreamrcf_delay_00_s;
+extern struct liquid_autotest_s symstreamrcf_delay_01_s;
+extern struct liquid_autotest_s symstreamrcf_delay_02_s;
+extern struct liquid_autotest_s symstreamrcf_delay_03_s;
+extern struct liquid_autotest_s symstreamrcf_delay_04_s;
+extern struct liquid_autotest_s symstreamrcf_delay_05_s;
+extern struct liquid_autotest_s symstreamrcf_delay_06_s;
+extern struct liquid_autotest_s symstreamrcf_delay_07_s;
+extern struct liquid_autotest_s symstreamrcf_delay_08_s;
+extern struct liquid_autotest_s symstreamrcf_delay_09_s;
+extern struct liquid_autotest_s symstreamrcf_delay_10_s;
+extern struct liquid_autotest_s symstreamrcf_delay_11_s;
+extern struct liquid_autotest_s symstreamrcf_delay_12_s;
+extern struct liquid_autotest_s symstreamrcf_delay_13_s;
+extern struct liquid_autotest_s symstreamrcf_delay_14_s;
+extern struct liquid_autotest_s symstreamrcf_delay_15_s;
+extern struct liquid_autotest_s symstreamrcf_delay_16_s;
+extern struct liquid_autotest_s symstreamrcf_delay_17_s;
+extern struct liquid_autotest_s symstreamrcf_delay_18_s;
+extern struct liquid_autotest_s symstreamrcf_delay_19_s;
+// ./src/framing/tests/qdsync_cccf_autotest.c
+extern struct liquid_autotest_s qdsync_cccf_k2_s;
+extern struct liquid_autotest_s qdsync_cccf_k3_s;
+extern struct liquid_autotest_s qdsync_cccf_k4_s;
+extern struct liquid_autotest_s qdsync_set_buf_len_s;
+extern struct liquid_autotest_s qdsync_cccf_copy_s;
+extern struct liquid_autotest_s qdsync_cccf_config_s;
+// ./src/framing/tests/symtrack_cccf_autotest.c
+extern struct liquid_autotest_s symtrack_cccf_bpsk_s;
+extern struct liquid_autotest_s symtrack_cccf_qpsk_s;
+extern struct liquid_autotest_s symtrack_cccf_config_invalid_s;
+extern struct liquid_autotest_s symtrack_cccf_config_valid_s;
+// ./src/framing/tests/symstreamcf_autotest.c
+extern struct liquid_autotest_s symstreamcf_psd_k2_m12_b030_s;
+extern struct liquid_autotest_s symstreamcf_psd_k4_m12_b030_s;
+extern struct liquid_autotest_s symstreamcf_psd_k4_m25_b020_s;
+extern struct liquid_autotest_s symstreamcf_psd_k7_m11_b035_s;
+extern struct liquid_autotest_s symstreamcf_copy_s;
+// ./src/framing/tests/ofdmflexframe_autotest.c
+extern struct liquid_autotest_s ofdmflexframe_00_s;
+extern struct liquid_autotest_s ofdmflexframe_01_s;
+extern struct liquid_autotest_s ofdmflexframe_02_s;
+extern struct liquid_autotest_s ofdmflexframe_03_s;
+extern struct liquid_autotest_s ofdmflexframe_04_s;
+extern struct liquid_autotest_s ofdmflexframe_05_s;
+extern struct liquid_autotest_s ofdmflexframe_06_s;
+extern struct liquid_autotest_s ofdmflexframe_07_s;
+extern struct liquid_autotest_s ofdmflexframe_08_s;
+extern struct liquid_autotest_s ofdmflexframe_09_s;
+extern struct liquid_autotest_s ofdmflexframegen_config_s;
+extern struct liquid_autotest_s ofdmflexframesync_config_s;
+// ./src/framing/tests/fskframesync_autotest.c
+extern struct liquid_autotest_s fskframesync_s;
+// ./src/framing/tests/symstreamrcf_autotest.c
+extern struct liquid_autotest_s symstreamrcf_psd_bw200_m12_b030_s;
+extern struct liquid_autotest_s symstreamrcf_psd_bw400_m12_b030_s;
+extern struct liquid_autotest_s symstreamrcf_psd_bw400_m25_b020_s;
+extern struct liquid_autotest_s symstreamrcf_psd_bw700_m11_b035_s;
+extern struct liquid_autotest_s symstreamrcf_copy_s;
+// ./src/framing/tests/framesync64_autotest.c
+extern struct liquid_autotest_s framesync64_s;
+extern struct liquid_autotest_s framegen64_copy_s;
+extern struct liquid_autotest_s framesync64_copy_s;
+extern struct liquid_autotest_s framesync64_config_s;
+extern struct liquid_autotest_s framesync64_debug_none_s;
+extern struct liquid_autotest_s framesync64_debug_user_s;
+extern struct liquid_autotest_s framesync64_debug_ndet_s;
+extern struct liquid_autotest_s framesync64_debug_head_s;
+extern struct liquid_autotest_s framesync64_debug_rand_s;
+extern struct liquid_autotest_s framesync64_estimation_s;
+// ./src/framing/tests/flexframesync_autotest.c
+extern struct liquid_autotest_s flexframesync_s;
+// ./src/framing/tests/gmskframe_autotest.c
+extern struct liquid_autotest_s gmskframesync_process_s;
+extern struct liquid_autotest_s gmskframesync_multiple_s;
+extern struct liquid_autotest_s gmskframesync_k02_m05_bt20_s;
+extern struct liquid_autotest_s gmskframesync_k02_m05_bt30_s;
+extern struct liquid_autotest_s gmskframesync_k02_m05_bt40_s;
+extern struct liquid_autotest_s gmskframesync_k04_m05_bt20_s;
+extern struct liquid_autotest_s gmskframesync_k04_m05_bt30_s;
+extern struct liquid_autotest_s gmskframesync_k04_m05_bt40_s;
+extern struct liquid_autotest_s gmskframesync_k03_m07_bt20_s;
+extern struct liquid_autotest_s gmskframesync_k08_m20_bt15_s;
+extern struct liquid_autotest_s gmskframesync_k15_m02_bt40_s;
+// ./src/framing/tests/msource_autotest.c
+extern struct liquid_autotest_s msourcecf_tone_s;
+extern struct liquid_autotest_s msourcecf_chirp_s;
+extern struct liquid_autotest_s msourcecf_aggregate_s;
+extern struct liquid_autotest_s msourcecf_config_s;
+extern struct liquid_autotest_s msourcecf_accessor_s;
+extern struct liquid_autotest_s msourcecf_copy_s;
 // ./src/equalization/tests/eqlms_cccf_autotest.c
 extern struct liquid_autotest_s eqlms_00_s;
 extern struct liquid_autotest_s eqlms_01_s;
@@ -1989,6 +2178,173 @@ liquid_autotest liquid_autotest_registry[] =
     &iir_groupdelay_n3_s,
     &iir_groupdelay_n8_s,
     &iir_groupdelay_sos_n8_s,
+    &qdetector_cccf_linear_n64_s,
+    &qdetector_cccf_linear_n83_s,
+    &qdetector_cccf_linear_n128_s,
+    &qdetector_cccf_linear_n167_s,
+    &qdetector_cccf_linear_n256_s,
+    &qdetector_cccf_linear_n335_s,
+    &qdetector_cccf_linear_n512_s,
+    &qdetector_cccf_linear_n671_s,
+    &qdetector_cccf_linear_n1024_s,
+    &qdetector_cccf_linear_n1341_s,
+    &qdetector_cccf_gmsk_n64_s,
+    &qdetector_cccf_gmsk_n83_s,
+    &qdetector_cccf_gmsk_n128_s,
+    &qdetector_cccf_gmsk_n167_s,
+    &qdetector_cccf_gmsk_n256_s,
+    &qdetector_cccf_gmsk_n335_s,
+    &qdetector_cccf_gmsk_n512_s,
+    &qdetector_cccf_gmsk_n671_s,
+    &qdetector_cccf_gmsk_n1024_s,
+    &qdetector_cccf_gmsk_n1341_s,
+    &qpilotsync_100_16_s,
+    &qpilotsync_200_20_s,
+    &qpilotsync_300_24_s,
+    &qpilotsync_400_28_s,
+    &qpilotsync_500_32_s,
+    &qpilotgen_config_s,
+    &qpilotsync_config_s,
+    &symstreamcf_delay_00_s,
+    &symstreamcf_delay_01_s,
+    &symstreamcf_delay_02_s,
+    &symstreamcf_delay_03_s,
+    &symstreamcf_delay_04_s,
+    &symstreamcf_delay_05_s,
+    &symstreamcf_delay_06_s,
+    &symstreamcf_delay_07_s,
+    &symstreamcf_delay_08_s,
+    &symstreamcf_delay_09_s,
+    &symstreamcf_delay_10_s,
+    &symstreamcf_delay_11_s,
+    &symstreamcf_delay_12_s,
+    &symstreamcf_delay_13_s,
+    &symstreamcf_delay_14_s,
+    &symstreamcf_delay_15_s,
+    &symstreamcf_delay_16_s,
+    &symstreamcf_delay_17_s,
+    &symstreamcf_delay_18_s,
+    &symstreamcf_delay_19_s,
+    &qdetector_cccf_copy_s,
+    &detector_cccf_n64_s,
+    &detector_cccf_n83_s,
+    &detector_cccf_n128_s,
+    &detector_cccf_n167_s,
+    &detector_cccf_n256_s,
+    &detector_cccf_n335_s,
+    &detector_cccf_n512_s,
+    &detector_cccf_n671_s,
+    &detector_cccf_n1024_s,
+    &detector_cccf_n1341_s,
+    &dsssframesync_s,
+    &bpacketsync_s,
+    &bsync_rrrf_15_s,
+    &bsync_crcf_15_s,
+    &bsync_crcf_phase_15_s,
+    &qsourcecf_config_s,
+    &dsssframe64sync_s,
+    &dsssframe64_config_s,
+    &dsssframe64gen_copy_s,
+    &dsssframe64sync_copy_s,
+    &qpacketmodem_bpsk_s,
+    &qpacketmodem_qpsk_s,
+    &qpacketmodem_psk8_s,
+    &qpacketmodem_qam16_s,
+    &qpacketmodem_sqam32_s,
+    &qpacketmodem_qam64_s,
+    &qpacketmodem_sqam128_s,
+    &qpacketmodem_qam256_s,
+    &qpacketmodem_evm_s,
+    &qpacketmodem_unmod_bpsk_s,
+    &qpacketmodem_unmod_qpsk_s,
+    &qpacketmodem_unmod_psk8_s,
+    &qpacketmodem_unmod_qam16_s,
+    &qpacketmodem_unmod_sqam32_s,
+    &qpacketmodem_unmod_qam64_s,
+    &qpacketmodem_unmod_sqam128_s,
+    &qpacketmodem_unmod_qam256_s,
+    &qpacketmodem_copy_s,
+    &symstreamrcf_delay_00_s,
+    &symstreamrcf_delay_01_s,
+    &symstreamrcf_delay_02_s,
+    &symstreamrcf_delay_03_s,
+    &symstreamrcf_delay_04_s,
+    &symstreamrcf_delay_05_s,
+    &symstreamrcf_delay_06_s,
+    &symstreamrcf_delay_07_s,
+    &symstreamrcf_delay_08_s,
+    &symstreamrcf_delay_09_s,
+    &symstreamrcf_delay_10_s,
+    &symstreamrcf_delay_11_s,
+    &symstreamrcf_delay_12_s,
+    &symstreamrcf_delay_13_s,
+    &symstreamrcf_delay_14_s,
+    &symstreamrcf_delay_15_s,
+    &symstreamrcf_delay_16_s,
+    &symstreamrcf_delay_17_s,
+    &symstreamrcf_delay_18_s,
+    &symstreamrcf_delay_19_s,
+    &qdsync_cccf_k2_s,
+    &qdsync_cccf_k3_s,
+    &qdsync_cccf_k4_s,
+    &qdsync_set_buf_len_s,
+    &qdsync_cccf_copy_s,
+    &qdsync_cccf_config_s,
+    &symtrack_cccf_bpsk_s,
+    &symtrack_cccf_qpsk_s,
+    &symtrack_cccf_config_invalid_s,
+    &symtrack_cccf_config_valid_s,
+    &symstreamcf_psd_k2_m12_b030_s,
+    &symstreamcf_psd_k4_m12_b030_s,
+    &symstreamcf_psd_k4_m25_b020_s,
+    &symstreamcf_psd_k7_m11_b035_s,
+    &symstreamcf_copy_s,
+    &ofdmflexframe_00_s,
+    &ofdmflexframe_01_s,
+    &ofdmflexframe_02_s,
+    &ofdmflexframe_03_s,
+    &ofdmflexframe_04_s,
+    &ofdmflexframe_05_s,
+    &ofdmflexframe_06_s,
+    &ofdmflexframe_07_s,
+    &ofdmflexframe_08_s,
+    &ofdmflexframe_09_s,
+    &ofdmflexframegen_config_s,
+    &ofdmflexframesync_config_s,
+    &fskframesync_s,
+    &symstreamrcf_psd_bw200_m12_b030_s,
+    &symstreamrcf_psd_bw400_m12_b030_s,
+    &symstreamrcf_psd_bw400_m25_b020_s,
+    &symstreamrcf_psd_bw700_m11_b035_s,
+    &symstreamrcf_copy_s,
+    &framesync64_s,
+    &framegen64_copy_s,
+    &framesync64_copy_s,
+    &framesync64_config_s,
+    &framesync64_debug_none_s,
+    &framesync64_debug_user_s,
+    &framesync64_debug_ndet_s,
+    &framesync64_debug_head_s,
+    &framesync64_debug_rand_s,
+    &framesync64_estimation_s,
+    &flexframesync_s,
+    &gmskframesync_process_s,
+    &gmskframesync_multiple_s,
+    &gmskframesync_k02_m05_bt20_s,
+    &gmskframesync_k02_m05_bt30_s,
+    &gmskframesync_k02_m05_bt40_s,
+    &gmskframesync_k04_m05_bt20_s,
+    &gmskframesync_k04_m05_bt30_s,
+    &gmskframesync_k04_m05_bt40_s,
+    &gmskframesync_k03_m07_bt20_s,
+    &gmskframesync_k08_m20_bt15_s,
+    &gmskframesync_k15_m02_bt40_s,
+    &msourcecf_tone_s,
+    &msourcecf_chirp_s,
+    &msourcecf_aggregate_s,
+    &msourcecf_config_s,
+    &msourcecf_accessor_s,
+    &msourcecf_copy_s,
     &eqlms_00_s,
     &eqlms_01_s,
     &eqlms_02_s,

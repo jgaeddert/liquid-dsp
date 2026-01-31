@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,11 +22,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
 // autotest helper functions
-void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int _ms)
+void testbench_symtrack_cccf(liquid_autotest __q__,
+                             unsigned int    _k,
+                             unsigned int    _m,
+                             float           _beta,
+                             int             _ms)
 {
     int          ftype       = LIQUID_FIRFILT_ARKAISER;
     unsigned int num_symbols = 6000;    // number of data symbols
@@ -101,62 +105,60 @@ void testbench_symtrack_cccf(unsigned int _k, unsigned int _m, float _beta, int 
     // verify output constellation EVM is reasonably high
     evm = 10*log10f(evm / (float)num_symbols_evm);
     liquid_log_debug("EVM: %12.8f, %u", evm, num_symbols_evm);
-    CONTEND_LESS_THAN(evm, -15.0f);
+    LIQUID_CHECK(evm< -15.0f);
 }
 
-void autotest_symtrack_cccf_bpsk() { testbench_symtrack_cccf( 2,12,0.25f,LIQUID_MODEM_BPSK); }
-void autotest_symtrack_cccf_qpsk() { testbench_symtrack_cccf( 2,12,0.25f,LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(symtrack_cccf_bpsk,"","",0.1) { testbench_symtrack_cccf(__q__, 2,12,0.25f,LIQUID_MODEM_BPSK); }
+LIQUID_AUTOTEST(symtrack_cccf_qpsk,"","",0.1) { testbench_symtrack_cccf(__q__, 2,12,0.25f,LIQUID_MODEM_QPSK); }
 
-// invalid configuration tests
-void autotest_symtrack_cccf_config_invalid()
+LIQUID_AUTOTEST(symtrack_cccf_config_invalid,"invalid symtrack configurations","",0.1)
 {
     _liquid_error_downgrade_enable();
-    //CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_UNKNOWN, 2, 12, 0.25f, LIQUID_MODEM_QPSK));
-    CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   1, 12, 0.25f, LIQUID_MODEM_QPSK));
-    CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   2,  0, 0.25f, LIQUID_MODEM_QPSK));
-    CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   2, 12, 2.00f, LIQUID_MODEM_QPSK));
-    CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   2, 12, 0.25f, LIQUID_MODEM_UNKNOWN));
-    CONTEND_ISNULL(symtrack_cccf_create(LIQUID_FIRFILT_RRC,   2, 12, 0.25f, LIQUID_MODEM_NUM_SCHEMES));
+    //LIQUID_CHECK(NULL ==symtrack_cccf_create(LIQUID_FIRFILT_UNKNOWN, 2, 12, 0.25f, LIQUID_MODEM_QPSK));
+    LIQUID_CHECK(NULL ==symtrack_cccf_create(LIQUID_FIRFILT_RRC,   1, 12, 0.25f, LIQUID_MODEM_QPSK));
+    LIQUID_CHECK(NULL ==symtrack_cccf_create(LIQUID_FIRFILT_RRC,   2,  0, 0.25f, LIQUID_MODEM_QPSK));
+    LIQUID_CHECK(NULL ==symtrack_cccf_create(LIQUID_FIRFILT_RRC,   2, 12, 2.00f, LIQUID_MODEM_QPSK));
+    LIQUID_CHECK(NULL ==symtrack_cccf_create(LIQUID_FIRFILT_RRC,   2, 12, 0.25f, LIQUID_MODEM_UNKNOWN));
+    LIQUID_CHECK(NULL ==symtrack_cccf_create(LIQUID_FIRFILT_RRC,   2, 12, 0.25f, LIQUID_MODEM_NUM_SCHEMES));
 
     // create proper object but test invalid internal configurations
     symtrack_cccf q = symtrack_cccf_create_default();
 
-    //CONTEND_INEQUALITY(LIQUID_OK, symtrack_cccf_set_modscheme(q, LIQUID_MODEM_UNKNOWN))
-    CONTEND_INEQUALITY(LIQUID_OK, symtrack_cccf_set_modscheme(q, LIQUID_MODEM_NUM_SCHEMES))
-    CONTEND_INEQUALITY(LIQUID_OK, symtrack_cccf_set_bandwidth(q, -1.0f))
+    //LIQUID_CHECK(LIQUID_OK != symtrack_cccf_set_modscheme(q, LIQUID_MODEM_UNKNOWN))
+    LIQUID_CHECK(LIQUID_OK != symtrack_cccf_set_modscheme(q, LIQUID_MODEM_NUM_SCHEMES))
+    LIQUID_CHECK(LIQUID_OK != symtrack_cccf_set_bandwidth(q, -1.0f))
 
     // destroy object
     symtrack_cccf_destroy(q);
     _liquid_error_downgrade_disable();
 }
 
-// configuration tests
-void autotest_symtrack_cccf_config_valid()
+LIQUID_AUTOTEST(symtrack_cccf_config_valid,"valid symtrack configurations","",0.1)
 {
     // create proper object and test configuration methods
     symtrack_cccf q =
         symtrack_cccf_create(LIQUID_FIRFILT_ARKAISER, 4, 12, 0.25f, LIQUID_MODEM_QAM64);
 
     // test valid configurations
-    CONTEND_EQUALITY(LIQUID_OK, symtrack_cccf_adjust_phase(q, 0.1f) );
-    CONTEND_EQUALITY(LIQUID_OK, symtrack_cccf_set_eq_cm   (q      ) );
-    CONTEND_EQUALITY(LIQUID_OK, symtrack_cccf_set_eq_dd   (q      ) );
-    CONTEND_EQUALITY(LIQUID_OK, symtrack_cccf_set_eq_off  (q      ) );
+    LIQUID_CHECK(LIQUID_OK == symtrack_cccf_adjust_phase(q, 0.1f) );
+    LIQUID_CHECK(LIQUID_OK == symtrack_cccf_set_eq_cm   (q      ) );
+    LIQUID_CHECK(LIQUID_OK == symtrack_cccf_set_eq_dd   (q      ) );
+    LIQUID_CHECK(LIQUID_OK == symtrack_cccf_set_eq_off  (q      ) );
 
     // test access methods
-    CONTEND_EQUALITY(symtrack_cccf_get_k(q),    4);
-    CONTEND_EQUALITY(symtrack_cccf_get_m(q),    12);
-    CONTEND_EQUALITY(symtrack_cccf_get_beta(q), 0.25f);
-    CONTEND_EQUALITY(symtrack_cccf_get_ftype(q), LIQUID_FIRFILT_ARKAISER);
-    CONTEND_EQUALITY(symtrack_cccf_get_modscheme(q), LIQUID_MODEM_QAM64);
+    LIQUID_CHECK(symtrack_cccf_get_k(q) ==     4);
+    LIQUID_CHECK(symtrack_cccf_get_m(q) ==     12);
+    LIQUID_CHECK(symtrack_cccf_get_beta(q) ==  0.25f);
+    LIQUID_CHECK(symtrack_cccf_get_ftype(q) ==  LIQUID_FIRFILT_ARKAISER);
+    LIQUID_CHECK(symtrack_cccf_get_modscheme(q) ==  LIQUID_MODEM_QAM64);
 
     // test setting bandwidth
-    CONTEND_EQUALITY(symtrack_cccf_set_bandwidth(q,  0.1f), LIQUID_OK);
-    CONTEND_EQUALITY(symtrack_cccf_get_bandwidth(q), 0.1f);
+    LIQUID_CHECK(symtrack_cccf_set_bandwidth(q,  0.1f) ==  LIQUID_OK);
+    LIQUID_CHECK(symtrack_cccf_get_bandwidth(q) ==  0.1f);
 
     // test setting modulation scheme
-    CONTEND_EQUALITY(symtrack_cccf_set_modscheme(q, LIQUID_MODEM_APSK16), LIQUID_OK);
-    CONTEND_EQUALITY(symtrack_cccf_get_modscheme(q), LIQUID_MODEM_APSK16);
+    LIQUID_CHECK(symtrack_cccf_set_modscheme(q, LIQUID_MODEM_APSK16) ==  LIQUID_OK);
+    LIQUID_CHECK(symtrack_cccf_get_modscheme(q) ==  LIQUID_MODEM_APSK16);
 
     // destroy object
     symtrack_cccf_destroy(q);

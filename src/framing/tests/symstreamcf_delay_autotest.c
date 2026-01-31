@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +22,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-// autotest helper functions
-void testbench_symstreamcf_delay(unsigned int _k,
-                                 unsigned int _m)
+// autotest helper function
+void testbench_symstreamcf_delay(liquid_autotest __q__,
+                                 unsigned int    _k,
+                                 unsigned int    _m)
 {
     // create object and get expected delay
     int          ftype  = LIQUID_FIRFILT_ARKAISER;
@@ -51,32 +52,31 @@ void testbench_symstreamcf_delay(unsigned int _k,
     liquid_log_debug("expected delay: %u, approximate delay: %u, tol: %.0f", delay, i, tol);
 
     // verify delay is relatively close to expected
-    CONTEND_DELTA((float)delay, (float)i, tol);
+    LIQUID_CHECK_DELTA((float)delay, (float)i, tol);
 
     // destroy objects
     symstreamcf_destroy(gen);
 }
 
-void autotest_symstreamcf_delay_00() { testbench_symstreamcf_delay( 2, 4); }
-void autotest_symstreamcf_delay_01() { testbench_symstreamcf_delay( 2, 5); }
-void autotest_symstreamcf_delay_02() { testbench_symstreamcf_delay( 2, 6); }
-void autotest_symstreamcf_delay_03() { testbench_symstreamcf_delay( 2, 7); }
-void autotest_symstreamcf_delay_04() { testbench_symstreamcf_delay( 2, 8); }
-void autotest_symstreamcf_delay_05() { testbench_symstreamcf_delay( 2, 9); }
-void autotest_symstreamcf_delay_06() { testbench_symstreamcf_delay( 2,10); }
-void autotest_symstreamcf_delay_07() { testbench_symstreamcf_delay( 2,14); }
-void autotest_symstreamcf_delay_08() { testbench_symstreamcf_delay( 2,20); }
-void autotest_symstreamcf_delay_09() { testbench_symstreamcf_delay( 2,31); }
+LIQUID_AUTOTEST(symstreamcf_delay_00,"","",0.1) { testbench_symstreamcf_delay(__q__,  2, 4); }
+LIQUID_AUTOTEST(symstreamcf_delay_01,"","",0.1) { testbench_symstreamcf_delay(__q__,  2, 5); }
+LIQUID_AUTOTEST(symstreamcf_delay_02,"","",0.1) { testbench_symstreamcf_delay(__q__,  2, 6); }
+LIQUID_AUTOTEST(symstreamcf_delay_03,"","",0.1) { testbench_symstreamcf_delay(__q__,  2, 7); }
+LIQUID_AUTOTEST(symstreamcf_delay_04,"","",0.1) { testbench_symstreamcf_delay(__q__,  2, 8); }
+LIQUID_AUTOTEST(symstreamcf_delay_05,"","",0.1) { testbench_symstreamcf_delay(__q__,  2, 9); }
+LIQUID_AUTOTEST(symstreamcf_delay_06,"","",0.1) { testbench_symstreamcf_delay(__q__,  2,10); }
+LIQUID_AUTOTEST(symstreamcf_delay_07,"","",0.1) { testbench_symstreamcf_delay(__q__,  2,14); }
+LIQUID_AUTOTEST(symstreamcf_delay_08,"","",0.1) { testbench_symstreamcf_delay(__q__,  2,20); }
+LIQUID_AUTOTEST(symstreamcf_delay_09,"","",0.1) { testbench_symstreamcf_delay(__q__,  2,31); }
 
-void autotest_symstreamcf_delay_10() { testbench_symstreamcf_delay( 3,12); }
-void autotest_symstreamcf_delay_11() { testbench_symstreamcf_delay( 4,12); }
-void autotest_symstreamcf_delay_12() { testbench_symstreamcf_delay( 5,12); }
-void autotest_symstreamcf_delay_13() { testbench_symstreamcf_delay( 6,12); }
-void autotest_symstreamcf_delay_14() { testbench_symstreamcf_delay( 7,12); }
-void autotest_symstreamcf_delay_15() { testbench_symstreamcf_delay( 8,12); }
-void autotest_symstreamcf_delay_16() { testbench_symstreamcf_delay( 9,12); }
-void autotest_symstreamcf_delay_17() { testbench_symstreamcf_delay(10,12); }
-void autotest_symstreamcf_delay_18() { testbench_symstreamcf_delay(11,12); }
-void autotest_symstreamcf_delay_19() { testbench_symstreamcf_delay(12,12); }
-
+LIQUID_AUTOTEST(symstreamcf_delay_10,"","",0.1) { testbench_symstreamcf_delay(__q__,  3,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_11,"","",0.1) { testbench_symstreamcf_delay(__q__,  4,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_12,"","",0.1) { testbench_symstreamcf_delay(__q__,  5,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_13,"","",0.1) { testbench_symstreamcf_delay(__q__,  6,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_14,"","",0.1) { testbench_symstreamcf_delay(__q__,  7,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_15,"","",0.1) { testbench_symstreamcf_delay(__q__,  8,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_16,"","",0.1) { testbench_symstreamcf_delay(__q__,  9,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_17,"","",0.1) { testbench_symstreamcf_delay(__q__, 10,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_18,"","",0.1) { testbench_symstreamcf_delay(__q__, 11,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_19,"","",0.1) { testbench_symstreamcf_delay(__q__, 12,12); }
 

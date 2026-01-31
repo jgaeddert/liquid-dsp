@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-// 
-// AUTOTEST : test simple recovery of frame
-//
-void qpacketmodem_modulated(unsigned int _payload_len,
-                            int          _check,
-                            int          _fec0,
-                            int          _fec1,
-                            int          _ms)
+void testbench_qpacketmodem_modulated(liquid_autotest __q__,
+                                      unsigned int _payload_len,
+                                      int          _check,
+                                      int          _fec0,
+                                      int          _fec1,
+                                      int          _ms)
 {
     // derived values
     unsigned int i;
@@ -68,21 +66,21 @@ void qpacketmodem_modulated(unsigned int _payload_len,
     qpacketmodem_destroy(q);
 
     // check to see that frame was recovered
-    CONTEND_EQUALITY( crc_pass, 1 );
-    CONTEND_SAME_DATA( payload_tx, payload_rx, _payload_len );
+    LIQUID_CHECK( crc_pass ==  1 );
+    LIQUID_CHECK_ARRAY( payload_tx, payload_rx, _payload_len );
 }
 
-void autotest_qpacketmodem_bpsk()   { qpacketmodem_modulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QPSK);    }
-void autotest_qpacketmodem_qpsk()   { qpacketmodem_modulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QPSK);    }
-void autotest_qpacketmodem_psk8()   { qpacketmodem_modulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_PSK8);    }
-void autotest_qpacketmodem_qam16()  { qpacketmodem_modulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM16);   }
-void autotest_qpacketmodem_sqam32() { qpacketmodem_modulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM32);  }
-void autotest_qpacketmodem_qam64()  { qpacketmodem_modulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM64);   }
-void autotest_qpacketmodem_sqam128(){ qpacketmodem_modulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM128); }
-void autotest_qpacketmodem_qam256() { qpacketmodem_modulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM256);  }
+LIQUID_AUTOTEST(qpacketmodem_bpsk,"","",0.1)   { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QPSK);    }
+LIQUID_AUTOTEST(qpacketmodem_qpsk,"","",0.1)   { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QPSK);    }
+LIQUID_AUTOTEST(qpacketmodem_psk8,"","",0.1)   { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_PSK8);    }
+LIQUID_AUTOTEST(qpacketmodem_qam16,"","",0.1)  { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM16);   }
+LIQUID_AUTOTEST(qpacketmodem_sqam32,"","",0.1) { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM32);  }
+LIQUID_AUTOTEST(qpacketmodem_qam64,"","",0.1)  { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM64);   }
+LIQUID_AUTOTEST(qpacketmodem_sqam128,"","",0.1){ testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM128); }
+LIQUID_AUTOTEST(qpacketmodem_qam256,"","",0.1) { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM256);  }
 
 // test error vector magnitude estimation
-void autotest_qpacketmodem_evm()
+LIQUID_AUTOTEST(qpacketmodem_evm,"","",0.1)
 {
     unsigned int payload_len = 800;
     int          check       = LIQUID_CRC_32;
@@ -120,7 +118,7 @@ void autotest_qpacketmodem_evm()
     qpacketmodem_destroy(q);
 
     // check EVM estimate; don't bother to check to see that frame was recovered
-    CONTEND_DELTA( -evm, SNRdB, 0.5f );
+    LIQUID_CHECK_DELTA( -evm, SNRdB, 0.5f );
 #if 0
     FILE * fid = fopen("qpacketmodem_evm.txt","a");
     fprintf(fid,"%12.4e\n", SNRdB+evm);
@@ -128,14 +126,12 @@ void autotest_qpacketmodem_evm()
 #endif
 }
 
-// 
-// AUTOTEST : test un-modulated frame symbols (hard-decision demod)
-//
-void qpacketmodem_unmodulated(unsigned int _payload_len,
-                              int          _check,
-                              int          _fec0,
-                              int          _fec1,
-                              int          _ms)
+void testbench_qpacketmodem_unmodulated(liquid_autotest __q__,
+                                        unsigned int _payload_len,
+                                        int          _check,
+                                        int          _fec0,
+                                        int          _fec1,
+                                        int          _ms)
 {
     // derived values
     unsigned int i;
@@ -170,21 +166,20 @@ void qpacketmodem_unmodulated(unsigned int _payload_len,
     qpacketmodem_destroy(q);
 
     // check to see that frame was recovered
-    CONTEND_EQUALITY( crc_pass, 1 );
-    CONTEND_SAME_DATA( payload_tx, payload_rx, _payload_len );
+    LIQUID_CHECK( crc_pass ==  1 );
+    LIQUID_CHECK_ARRAY( payload_tx, payload_rx, _payload_len );
 }
 
-void autotest_qpacketmodem_unmod_bpsk()   { qpacketmodem_unmodulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QPSK);    }
-void autotest_qpacketmodem_unmod_qpsk()   { qpacketmodem_unmodulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QPSK);    }
-void autotest_qpacketmodem_unmod_psk8()   { qpacketmodem_unmodulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_PSK8);    }
-void autotest_qpacketmodem_unmod_qam16()  { qpacketmodem_unmodulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM16);   }
-void autotest_qpacketmodem_unmod_sqam32() { qpacketmodem_unmodulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM32);  }
-void autotest_qpacketmodem_unmod_qam64()  { qpacketmodem_unmodulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM64);   }
-void autotest_qpacketmodem_unmod_sqam128(){ qpacketmodem_unmodulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM128); }
-void autotest_qpacketmodem_unmod_qam256() { qpacketmodem_unmodulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM256);  }
+LIQUID_AUTOTEST(qpacketmodem_unmod_bpsk,"","",0.1)   { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QPSK);    }
+LIQUID_AUTOTEST(qpacketmodem_unmod_qpsk,"","",0.1)   { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QPSK);    }
+LIQUID_AUTOTEST(qpacketmodem_unmod_psk8,"","",0.1)   { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_PSK8);    }
+LIQUID_AUTOTEST(qpacketmodem_unmod_qam16,"","",0.1)  { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM16);   }
+LIQUID_AUTOTEST(qpacketmodem_unmod_sqam32,"","",0.1) { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM32);  }
+LIQUID_AUTOTEST(qpacketmodem_unmod_qam64,"","",0.1)  { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM64);   }
+LIQUID_AUTOTEST(qpacketmodem_unmod_sqam128,"","",0.1){ testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM128); }
+LIQUID_AUTOTEST(qpacketmodem_unmod_qam256,"","",0.1) { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM256);  }
 
-// test copy operation
-void autotest_qpacketmodem_copy()
+LIQUID_AUTOTEST(qpacketmodem_copy,"test qpacketmodem copy operation","",0.1)
 {
     // derived values
     unsigned int i;
@@ -216,7 +211,7 @@ void autotest_qpacketmodem_copy()
     // copy object, encode, and compare outputs
     qpacketmodem q1 = qpacketmodem_copy(q0);
     qpacketmodem_encode(q1, payload_tx, frame_syms_1);
-    CONTEND_SAME_DATA( frame_syms_0, frame_syms_1, frame_len );
+    LIQUID_CHECK_ARRAY( frame_syms_0, frame_syms_1, frame_len );
 
     // initialize received vector (can be random; just testing for equality with objects)
     for (i=0; i<payload_len; i++) {
@@ -229,8 +224,8 @@ void autotest_qpacketmodem_copy()
     int crc_pass_1 = qpacketmodem_decode(q1, frame_syms_1, payload_rx_1);
 
     // check to see that frame was recovered
-    CONTEND_SAME_DATA( payload_rx_0, payload_rx_1, payload_len );
-    CONTEND_EQUALITY( crc_pass_0, crc_pass_1 );
+    LIQUID_CHECK_ARRAY( payload_rx_0, payload_rx_1, payload_len );
+    LIQUID_CHECK( crc_pass_0 ==  crc_pass_1 );
 
     // destroy objects
     qpacketmodem_destroy(q0);

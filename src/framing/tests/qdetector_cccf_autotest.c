@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,44 +22,44 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // autotest helper functions
 //  _sequence_len   :   sequence length
-void qdetector_cccf_runtest_linear(unsigned int _sequence_len);
-void qdetector_cccf_runtest_gmsk  (unsigned int _sequence_len);
+void qdetector_cccf_runtest_linear(liquid_autotest __q__, unsigned int _sequence_len);
+void qdetector_cccf_runtest_gmsk  (liquid_autotest __q__, unsigned int _sequence_len);
 
 // run test given initialized object
-void qdetector_cccf_runtest(qdetector_cccf _q);
+void qdetector_cccf_runtest(liquid_autotest __q__, qdetector_cccf _q);
 
 // linear tests
-void autotest_qdetector_cccf_linear_n64()   { qdetector_cccf_runtest_linear(  64); }
-void autotest_qdetector_cccf_linear_n83()   { qdetector_cccf_runtest_linear(  83); }
-void autotest_qdetector_cccf_linear_n128()  { qdetector_cccf_runtest_linear( 128); }
-void autotest_qdetector_cccf_linear_n167()  { qdetector_cccf_runtest_linear( 167); }
-void autotest_qdetector_cccf_linear_n256()  { qdetector_cccf_runtest_linear( 256); }
-void autotest_qdetector_cccf_linear_n335()  { qdetector_cccf_runtest_linear( 335); }
-void autotest_qdetector_cccf_linear_n512()  { qdetector_cccf_runtest_linear( 512); }
-void autotest_qdetector_cccf_linear_n671()  { qdetector_cccf_runtest_linear( 671); }
-void autotest_qdetector_cccf_linear_n1024() { qdetector_cccf_runtest_linear(1024); }
-void autotest_qdetector_cccf_linear_n1341() { qdetector_cccf_runtest_linear(1341); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n64,"","",0.1)   { qdetector_cccf_runtest_linear(__q__,   64); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n83,"","",0.1)   { qdetector_cccf_runtest_linear(__q__,   83); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n128,"","",0.1)  { qdetector_cccf_runtest_linear(__q__,  128); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n167,"","",0.1)  { qdetector_cccf_runtest_linear(__q__,  167); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n256,"","",0.1)  { qdetector_cccf_runtest_linear(__q__,  256); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n335,"","",0.1)  { qdetector_cccf_runtest_linear(__q__,  335); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n512,"","",0.1)  { qdetector_cccf_runtest_linear(__q__,  512); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n671,"","",0.1)  { qdetector_cccf_runtest_linear(__q__,  671); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n1024,"","",0.1) { qdetector_cccf_runtest_linear(__q__, 1024); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n1341,"","",0.1) { qdetector_cccf_runtest_linear(__q__, 1341); }
 
 // gmsk tests
-void autotest_qdetector_cccf_gmsk_n64()     { qdetector_cccf_runtest_gmsk  (  64); }
-void autotest_qdetector_cccf_gmsk_n83()     { qdetector_cccf_runtest_gmsk  (  83); }
-void autotest_qdetector_cccf_gmsk_n128()    { qdetector_cccf_runtest_gmsk  ( 128); }
-void autotest_qdetector_cccf_gmsk_n167()    { qdetector_cccf_runtest_gmsk  ( 167); }
-void autotest_qdetector_cccf_gmsk_n256()    { qdetector_cccf_runtest_gmsk  ( 256); }
-void autotest_qdetector_cccf_gmsk_n335()    { qdetector_cccf_runtest_gmsk  ( 335); }
-void autotest_qdetector_cccf_gmsk_n512()    { qdetector_cccf_runtest_gmsk  ( 512); }
-void autotest_qdetector_cccf_gmsk_n671()    { qdetector_cccf_runtest_gmsk  ( 671); }
-void autotest_qdetector_cccf_gmsk_n1024()   { qdetector_cccf_runtest_gmsk  (1024); }
-void autotest_qdetector_cccf_gmsk_n1341()   { qdetector_cccf_runtest_gmsk  (1341); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n64,"","",0.1)     { qdetector_cccf_runtest_gmsk  (__q__,   64); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n83,"","",0.1)     { qdetector_cccf_runtest_gmsk  (__q__,   83); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n128,"","",0.1)    { qdetector_cccf_runtest_gmsk  (__q__,  128); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n167,"","",0.1)    { qdetector_cccf_runtest_gmsk  (__q__,  167); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n256,"","",0.1)    { qdetector_cccf_runtest_gmsk  (__q__,  256); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n335,"","",0.1)    { qdetector_cccf_runtest_gmsk  (__q__,  335); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n512,"","",0.1)    { qdetector_cccf_runtest_gmsk  (__q__,  512); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n671,"","",0.1)    { qdetector_cccf_runtest_gmsk  (__q__,  671); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n1024,"","",0.1)   { qdetector_cccf_runtest_gmsk  (__q__, 1024); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n1341,"","",0.1)   { qdetector_cccf_runtest_gmsk  (__q__, 1341); }
 
 // autotest helper function
 //  _sequence_len   :   sequence length
-void qdetector_cccf_runtest_linear(unsigned int _sequence_len)
+void qdetector_cccf_runtest_linear(liquid_autotest __q__, unsigned int _sequence_len)
 {
     unsigned int k     =     2;     // samples per symbol
     unsigned int m     =     7;     // filter delay [symbols]
@@ -75,18 +75,18 @@ void qdetector_cccf_runtest_linear(unsigned int _sequence_len)
     }
 
     // create detector
-    qdetector_cccf q = qdetector_cccf_create_linear(sequence, _sequence_len, ftype, k, m, beta);
+    qdetector_cccf detector = qdetector_cccf_create_linear(sequence, _sequence_len, ftype, k, m, beta);
 
     // run test
-    qdetector_cccf_runtest(q);
+    qdetector_cccf_runtest(__q__, detector);
 
     // destroy objects
-    qdetector_cccf_destroy(q);
+    qdetector_cccf_destroy(detector);
 }
 
 // autotest helper function
 //  _sequence_len   :   sequence length
-void qdetector_cccf_runtest_gmsk(unsigned int _sequence_len)
+void qdetector_cccf_runtest_gmsk(liquid_autotest __q__, unsigned int _sequence_len)
 {
     unsigned int k     =     2;     // samples per symbol
     unsigned int m     =     7;     // filter delay [symbols]
@@ -99,17 +99,17 @@ void qdetector_cccf_runtest_gmsk(unsigned int _sequence_len)
         sequence[i] = rand() & 0x01;
 
     // create detector
-    qdetector_cccf q = qdetector_cccf_create_gmsk(sequence, _sequence_len, k, m, beta);
+    qdetector_cccf detector = qdetector_cccf_create_gmsk(sequence, _sequence_len, k, m, beta);
 
     // run test
-    qdetector_cccf_runtest(q);
+    qdetector_cccf_runtest(__q__, detector);
 
     // destroy objects
-    qdetector_cccf_destroy(q);
+    qdetector_cccf_destroy(detector);
 }
 
 // autotest helper function
-void qdetector_cccf_runtest(qdetector_cccf _q)
+void qdetector_cccf_runtest(liquid_autotest __q__, qdetector_cccf _q)
 {
     float gamma =  1.0f;    // channel gain
     float tau   =  0.0f;    // fractional sample timing offset
@@ -168,22 +168,22 @@ void qdetector_cccf_runtest(qdetector_cccf _q)
     liquid_log_debug("  phi hat       : %8.5f, actual=%8.5f (error=%8.5f) radians",    phi_hat,   phi,   phi_hat   - phi  );
 
     if (false_positive)
-        AUTOTEST_FAIL("false positive detected");
+        LIQUID_FAIL("false positive detected");
     else if (!frame_detected)
-        AUTOTEST_FAIL("frame not detected");
+        LIQUID_FAIL("frame not detected");
     else {
         // check signal level estimate
         // TODO: check discrepancy with short sequences
-        //CONTEND_DELTA( gamma_hat, gamma, 0.05f );
+        //LIQUID_CHECK_DELTA( gamma_hat, gamma, 0.05f );
 
         // check timing offset estimate
-        CONTEND_DELTA( tau_hat, tau, 0.05f );
+        LIQUID_CHECK_DELTA( tau_hat, tau, 0.05f );
 
         // check carrier frequency offset estimate
-        CONTEND_DELTA( dphi_hat, dphi, 0.01f );
+        LIQUID_CHECK_DELTA( dphi_hat, dphi, 0.01f );
 
         // check carrier phase offset estimate
-        CONTEND_DELTA( phi_hat, phi, 0.1f );
+        LIQUID_CHECK_DELTA( phi_hat, phi, 0.1f );
     }
 }
 

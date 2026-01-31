@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
 // common structure for relaying information to/from callback
@@ -53,9 +53,10 @@ int autotest_qdsync_callback(float complex * _buf,
     return 0;
 }
 
-void testbench_qdsync_linear(unsigned int _k,
-                             unsigned int _m,
-                             float        _beta)
+void testbench_qdsync_linear(liquid_autotest __q__,
+                             unsigned int    _k,
+                             unsigned int    _m,
+                             float           _beta)
 {
     // options
     unsigned int seq_len      = 1200;   // total number of sync symbols
@@ -124,12 +125,12 @@ void testbench_qdsync_linear(unsigned int _k,
     rmse = 10*log10f( rmse / (float)seq_len );
     liquid_log_debug("qdsync: rxy:%5.3f, tau:%5.2f, gamma:%5.3f, dphi:%12.4e, phi:%8.5f, rmse:%5.2f",
             rxy_hat, tau_hat, gamma_hat, dphi_hat, phi_hat, rmse);
-    CONTEND_LESS_THAN   ( rmse,              -30.0f )
-    CONTEND_GREATER_THAN( rxy_hat,            0.75f )
-    CONTEND_LESS_THAN   ( fabsf(tau_hat-tau), 0.10f )
-    CONTEND_GREATER_THAN( gamma_hat,          0.75f )
-    CONTEND_LESS_THAN   ( fabsf(dphi_hat),    1e-3f )
-    CONTEND_LESS_THAN   ( fabsf( phi_hat),    0.4f  )
+    LIQUID_CHECK( rmse               < -30.0f );
+    LIQUID_CHECK( rxy_hat            > 0.75f  );
+    LIQUID_CHECK( fabsf(tau_hat-tau) < 0.10f  );
+    LIQUID_CHECK( gamma_hat          > 0.75f  );
+    LIQUID_CHECK( fabsf(dphi_hat)    < 1e-3f  );
+    LIQUID_CHECK( fabsf( phi_hat)    < 0.4f   );
 
     // clean up objects
     qdsync_cccf_destroy(q);
@@ -153,12 +154,11 @@ void testbench_qdsync_linear(unsigned int _k,
 }
 
 // test specific configurations
-void autotest_qdsync_cccf_k2() { testbench_qdsync_linear(2, 7, 0.3f); }
-void autotest_qdsync_cccf_k3() { testbench_qdsync_linear(3, 7, 0.3f); }
-void autotest_qdsync_cccf_k4() { testbench_qdsync_linear(4, 7, 0.3f); }
+LIQUID_AUTOTEST(qdsync_cccf_k2,"","",0.1) { testbench_qdsync_linear(__q__, 2, 7, 0.3f); }
+LIQUID_AUTOTEST(qdsync_cccf_k3,"","",0.1) { testbench_qdsync_linear(__q__, 3, 7, 0.3f); }
+LIQUID_AUTOTEST(qdsync_cccf_k4,"","",0.1) { testbench_qdsync_linear(__q__, 4, 7, 0.3f); }
 
-// test setting buffer length to different sizes throughout run
-void autotest_qdsync_set_buf_len()
+LIQUID_AUTOTEST(qdsync_set_buf_len,"test setting qdsync buffer length to different sizes throughout run","",0.1)
 {
     // options
     unsigned int seq_len      = 2400;   // total number of sync symbols
@@ -206,15 +206,14 @@ void autotest_qdsync_set_buf_len()
     }
     rmse = 10*log10f( rmse / (float)seq_len );
     liquid_log_debug("qdsync: rmse: %12.3f", rmse);
-    CONTEND_LESS_THAN( rmse, -30.0f )
+    LIQUID_CHECK( rmse< -30.0f )
 
     // clean up objects
     qdsync_cccf_destroy(q);
     firinterp_crcf_destroy(interp);
 }
 
-// test copying from one object to another
-void autotest_qdsync_cccf_copy()
+LIQUID_AUTOTEST(qdsync_cccf_copy,"test copying from one object to another","",0.1)
 {
     // options
     unsigned int seq_len= 2400; // total number of symbols in sequence
@@ -280,8 +279,8 @@ void autotest_qdsync_cccf_copy()
     }
 
     // compare output buffers
-    CONTEND_EQUALITY(c_orig.count, seq_len);
-    CONTEND_EQUALITY(c_copy.count, seq_len);
+    LIQUID_CHECK(c_orig.count ==  seq_len);
+    LIQUID_CHECK(c_copy.count ==  seq_len);
     // print values for visual comparison
     //for (i=0; i<seq_len; i++) {
     //    printf(" [%4u] orig={%12.8f,%12.8f}, copy={%12.8f,%12.8f}\n", i,
@@ -289,7 +288,7 @@ void autotest_qdsync_cccf_copy()
     //            crealf(c_copy.buf[i]), cimagf(c_copy.buf[i]));
     //}
     // data should be identical at this point
-    CONTEND_SAME_DATA(c_orig.buf, c_copy.buf, seq_len*sizeof(float complex));
+    LIQUID_CHECK_ARRAY(c_orig.buf, c_copy.buf, seq_len*sizeof(float complex));
 
     // destroy objects
     firinterp_crcf_destroy(interp);
@@ -297,34 +296,34 @@ void autotest_qdsync_cccf_copy()
     qdsync_cccf_destroy(q_copy);
 }
 
-void autotest_qdsync_cccf_config()
+LIQUID_AUTOTEST(qdsync_cccf_config,"qdsync config","",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls
-    CONTEND_ISNULL(qdsync_cccf_copy(NULL));
-    CONTEND_ISNULL(qdsync_cccf_create_linear(NULL,0,LIQUID_FIRFILT_ARKAISER,4,12,0.25f,NULL,NULL));
+    LIQUID_CHECK(NULL ==qdsync_cccf_copy(NULL));
+    LIQUID_CHECK(NULL ==qdsync_cccf_create_linear(NULL,0,LIQUID_FIRFILT_ARKAISER,4,12,0.25f,NULL,NULL));
 
     // create proper object and test configurations
     float complex seq[] = {+1,-1,+1,-1,-1,+1,-1,+1,-1,+1,-1,+1,+1,+1,-1,+1,-1,-1,-1,-1,};
     qdsync_cccf q = qdsync_cccf_create_linear(seq,20,LIQUID_FIRFILT_ARKAISER,4,12,0.25f,NULL,NULL);
 
-    CONTEND_EQUALITY(LIQUID_OK, qdsync_cccf_print(q))
-    CONTEND_EQUALITY(LIQUID_OK, qdsync_cccf_set_callback(q,autotest_qdsync_callback))
-    CONTEND_EQUALITY(LIQUID_OK, qdsync_cccf_set_context(q,NULL))
+    LIQUID_CHECK(LIQUID_OK == qdsync_cccf_print(q))
+    LIQUID_CHECK(LIQUID_OK == qdsync_cccf_set_callback(q,autotest_qdsync_callback))
+    LIQUID_CHECK(LIQUID_OK == qdsync_cccf_set_context(q,NULL))
 
     // set/get threshold
-    CONTEND_EQUALITY(LIQUID_OK, qdsync_cccf_set_threshold(q,0.654321f))
-    CONTEND_EQUALITY(0.654321f, qdsync_cccf_get_threshold(q))
+    LIQUID_CHECK(LIQUID_OK == qdsync_cccf_set_threshold(q,0.654321f))
+    LIQUID_CHECK(0.654321f ==  qdsync_cccf_get_threshold(q))
 
     // set/get range
-    CONTEND_EQUALITY(LIQUID_OK, qdsync_cccf_set_range(q,0.007220f))
-    CONTEND_EQUALITY(0.007220f, qdsync_cccf_get_range(q))
+    LIQUID_CHECK(LIQUID_OK == qdsync_cccf_set_range(q,0.007220f))
+    LIQUID_CHECK(0.007220f ==  qdsync_cccf_get_range(q))
 
     // set invalid buffer length
-    CONTEND_INEQUALITY(LIQUID_OK, qdsync_cccf_set_buf_len(q,0))
+    LIQUID_CHECK(LIQUID_OK != qdsync_cccf_set_buf_len(q,0))
 
     // query properties
-    CONTEND_EQUALITY(0, qdsync_cccf_is_open(q))
+    LIQUID_CHECK(0 ==  qdsync_cccf_is_open(q))
 
     // destroy object
     qdsync_cccf_destroy(q);

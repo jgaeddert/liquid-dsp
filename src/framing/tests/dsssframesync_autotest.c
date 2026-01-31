@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-void autotest_dsssframesync()
+LIQUID_AUTOTEST(dsssframesync,"full dsssframe synchronization","",0.1)
 {
     unsigned int _payload_len = 400;
 
@@ -59,12 +59,12 @@ void autotest_dsssframesync()
     // check to see that frame was recovered
 #if 0
     framedatastats_s stats = dsssframesync_get_framedatastats(fs);
-    CONTEND_EQUALITY( stats.num_frames_detected, 1 );
-    CONTEND_EQUALITY( stats.num_headers_valid,   1 );
-    CONTEND_EQUALITY( stats.num_payloads_valid,  1 );
-    CONTEND_EQUALITY( stats.num_bytes_received,  _payload_len );
+    LIQUID_CHECK( stats.num_frames_detected ==  1 );
+    LIQUID_CHECK( stats.num_headers_valid ==    1 );
+    LIQUID_CHECK( stats.num_payloads_valid ==   1 );
+    LIQUID_CHECK( stats.num_bytes_received ==   _payload_len );
 #endif
-    CONTEND_EQUALITY(context, FRAMING_AUTOTEST_SECRET);
+    LIQUID_CHECK(context ==  FRAMING_AUTOTEST_SECRET);
 
     // destroy objects
     dsssframegen_destroy(fg);

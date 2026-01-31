@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-void autotest_dsssframe64sync()
+LIQUID_AUTOTEST(dsssframe64sync,"","",0.1)
 {
     // create objects
     unsigned int context = 0;
@@ -48,14 +48,14 @@ void autotest_dsssframe64sync()
     dsssframe64sync_execute(fs, frame, frame_len);
 
     // ensure callback was invoked
-    CONTEND_EQUALITY(context, FRAMING_AUTOTEST_SECRET);
+    LIQUID_CHECK(context ==  FRAMING_AUTOTEST_SECRET);
 
     // parse statistics
     framedatastats_s stats = dsssframe64sync_get_framedatastats(fs);
-    CONTEND_EQUALITY(stats.num_frames_detected, 1);
-    CONTEND_EQUALITY(stats.num_headers_valid,   1);
-    CONTEND_EQUALITY(stats.num_payloads_valid,  1);
-    CONTEND_EQUALITY(stats.num_bytes_received, 64);
+    LIQUID_CHECK(stats.num_frames_detected ==  1);
+    LIQUID_CHECK(stats.num_headers_valid ==    1);
+    LIQUID_CHECK(stats.num_payloads_valid ==   1);
+    LIQUID_CHECK(stats.num_bytes_received ==  64);
 
     // destroy objects and free memory
     dsssframe64gen_destroy(fg);
@@ -63,31 +63,30 @@ void autotest_dsssframe64sync()
     free(frame);
 }
 
-// test errors and invalid configuration
-void autotest_dsssframe64_config()
+LIQUID_AUTOTEST(dsssframe64_config,"test errors and invalid configuration","",0.1)
 {
     _liquid_error_downgrade_enable();
 
     // test copying/creating invalid objects
-    CONTEND_ISNULL( dsssframe64gen_copy(NULL) );
-    CONTEND_ISNULL( dsssframe64sync_copy(NULL) );
+    LIQUID_CHECK(NULL == dsssframe64gen_copy(NULL) );
+    LIQUID_CHECK(NULL == dsssframe64sync_copy(NULL) );
 
     // create valid objects
     dsssframe64gen  fg = dsssframe64gen_create();
     dsssframe64sync fs = dsssframe64sync_create(NULL, NULL);
-    CONTEND_EQUALITY( LIQUID_OK, dsssframe64gen_print(fg) );
-    CONTEND_EQUALITY( LIQUID_OK, dsssframe64sync_print(fs) );
+    LIQUID_CHECK( LIQUID_OK == dsssframe64gen_print(fg) );
+    LIQUID_CHECK( LIQUID_OK == dsssframe64sync_print(fs) );
 
     // synchronizer parameters
-    CONTEND_EQUALITY( 0,         dsssframe64sync_is_frame_open(fs) );
-    CONTEND_EQUALITY( LIQUID_OK, dsssframe64sync_set_callback(fs, NULL) );
-    CONTEND_EQUALITY( LIQUID_OK, dsssframe64sync_set_context (fs, NULL) );
+    LIQUID_CHECK( 0 ==          dsssframe64sync_is_frame_open(fs) );
+    LIQUID_CHECK( LIQUID_OK == dsssframe64sync_set_callback(fs, NULL) );
+    LIQUID_CHECK( LIQUID_OK == dsssframe64sync_set_context (fs, NULL) );
     float threshold = 0.123f;
-    CONTEND_EQUALITY( LIQUID_OK, dsssframe64sync_set_threshold(fs, threshold) );
-    CONTEND_EQUALITY( threshold, dsssframe64sync_get_threshold(fs) );
+    LIQUID_CHECK( LIQUID_OK == dsssframe64sync_set_threshold(fs, threshold) );
+    LIQUID_CHECK( threshold ==  dsssframe64sync_get_threshold(fs) );
     float range = 0.00722f;
-    CONTEND_EQUALITY( LIQUID_OK, dsssframe64sync_set_range(fs, range) );
-    CONTEND_EQUALITY( range,     dsssframe64sync_get_range(fs) );
+    LIQUID_CHECK( LIQUID_OK == dsssframe64sync_set_range(fs, range) );
+    LIQUID_CHECK( range ==      dsssframe64sync_get_range(fs) );
 
     dsssframe64gen_destroy(fg);
     dsssframe64sync_destroy(fs);
@@ -95,9 +94,7 @@ void autotest_dsssframe64_config()
     _liquid_error_downgrade_disable();
 }
 
-// test that the complete internal state of one generator can be copied to a new
-// object
-void autotest_dsssframe64gen_copy()
+LIQUID_AUTOTEST(dsssframe64gen_copy,"copy dsssframe64gen object","",0.1)
 {
     // create object and copy
     dsssframe64gen q0 = dsssframe64gen_create();
@@ -117,7 +114,7 @@ void autotest_dsssframe64gen_copy()
     dsssframe64gen_execute(q1, header, payload, buf_1);
 
     // ensure identical outputs
-    CONTEND_SAME_DATA(buf_0, buf_1, frame_len*sizeof(float complex));
+    LIQUID_CHECK_ARRAY(buf_0, buf_1, frame_len*sizeof(float complex));
 
     // destroy objects and free memory
     dsssframe64gen_destroy(q0);
@@ -126,9 +123,7 @@ void autotest_dsssframe64gen_copy()
     free(buf_1);
 }
 
-// test that the complete internal state of one synchronizer can be copied to a new
-// object and it can maintain state
-void autotest_dsssframe64sync_copy()
+LIQUID_AUTOTEST(dsssframe64sync_copy,"copy dsssframe64sync object","",0.1)
 {
     // create object and generate frame
     dsssframe64gen fg = dsssframe64gen_create();
@@ -146,7 +141,7 @@ void autotest_dsssframe64sync_copy()
     // ensure frame was not yet decoded
     framedatastats_s s0, s1;
     s0 = dsssframe64sync_get_framedatastats(q0);
-    CONTEND_EQUALITY(s0.num_frames_detected, 0);
+    LIQUID_CHECK(s0.num_frames_detected ==  0);
 
     // copy object
     dsssframe64sync q1 = dsssframe64sync_copy(q0);
@@ -157,16 +152,16 @@ void autotest_dsssframe64sync_copy()
 
     // ensure frame was decoded by both synchronizers
     s0 = dsssframe64sync_get_framedatastats(q0);
-    CONTEND_EQUALITY(s0.num_frames_detected, 1);
-    CONTEND_EQUALITY(s0.num_headers_valid,   1);
-    CONTEND_EQUALITY(s0.num_payloads_valid,  1);
-    CONTEND_EQUALITY(s0.num_bytes_received, 64);
+    LIQUID_CHECK(s0.num_frames_detected ==  1);
+    LIQUID_CHECK(s0.num_headers_valid ==    1);
+    LIQUID_CHECK(s0.num_payloads_valid ==   1);
+    LIQUID_CHECK(s0.num_bytes_received ==  64);
 
     s1 = dsssframe64sync_get_framedatastats(q1);
-    CONTEND_EQUALITY(s1.num_frames_detected, 1);
-    CONTEND_EQUALITY(s1.num_headers_valid,   1);
-    CONTEND_EQUALITY(s1.num_payloads_valid,  1);
-    CONTEND_EQUALITY(s1.num_bytes_received, 64);
+    LIQUID_CHECK(s1.num_frames_detected ==  1);
+    LIQUID_CHECK(s1.num_headers_valid ==    1);
+    LIQUID_CHECK(s1.num_payloads_valid ==   1);
+    LIQUID_CHECK(s1.num_bytes_received ==  64);
 
     // destroy objects and free memory
     dsssframe64gen_destroy(fg);

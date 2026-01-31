@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
 // user-defined callback; generate tones
@@ -37,8 +37,7 @@ int callback_msourcecf_autotest(void *          _userdata,
     return 0;
 }
 
-// test tone source
-void autotest_msourcecf_tone()
+LIQUID_AUTOTEST(msourcecf_tone,"msource tone","",0.1)
 {
     // spectral periodogram options
     unsigned int nfft        =   2400;  // spectral periodogram FFT size
@@ -95,12 +94,11 @@ void autotest_msourcecf_tone()
       {.fmin=-0.001,.fmax= 0.001, .pmin=-30.0, .pmax=-18.0, .test_lo=1, .test_hi=1},
       {.fmin= 0.099,.fmax= 0.101, .pmin=-40.0, .pmax=-28.0, .test_lo=1, .test_hi=1},
     };
-    liquid_autotest_validate_spectrum(psd, nfft, regions, 13,
-        liquid_autotest_verbose ? "autotest/logs/msourcecf_tone_autotest.m" : NULL);
+    liquid_autotest_validate_spectrum(__q__, psd, nfft, regions, 13,
+        "autotest/logs/msourcecf_tone_autotest.m");
 }
 
-// test chirp source
-void autotest_msourcecf_chirp()
+LIQUID_AUTOTEST(msourcecf_chirp,"msource chirp","",0.1)
 {
     // spectral periodogram options
     unsigned int nfft        =   2400;  // spectral periodogram FFT size
@@ -141,12 +139,11 @@ void autotest_msourcecf_chirp()
       {.fmin=-0.295,.fmax= 0.295, .pmin= 15.0, .pmax= 22.0, .test_lo=1, .test_hi=1},
       {.fmin= 0.305,.fmax= 0.500, .pmin=-43.0, .pmax=-37.0, .test_lo=1, .test_hi=1},
     };
-    liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/msourcecf_chirp_autotest.m" : NULL);
+    liquid_autotest_validate_spectrum(__q__, psd, nfft, regions, 3,
+        "autotest/logs/msourcecf_chirp_autotest.m");
 }
 
-// test signals in aggregate
-void autotest_msourcecf_aggregate()
+LIQUID_AUTOTEST(msourcecf_aggregate,"msource signal aggregate","",0.1)
 {
     // msource parameters
     int          ms     = LIQUID_MODEM_QPSK;    // linear modulation scheme
@@ -238,64 +235,61 @@ void autotest_msourcecf_aggregate()
     };
     char filename[256];
     sprintf(filename,"autotest/logs/msourcecf_aggregate_autotest.m");
-    liquid_autotest_validate_spectrum(psd, nfft, regions, 7+7+1+6+8,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_spectrum(__q__, psd, nfft, regions, 7+7+1+6+8, filename);
 }
 
-//
-void autotest_msourcecf_config()
+LIQUID_AUTOTEST(msourcecf_config,"msource config","",0.1)
 {
     _liquid_error_downgrade_enable();
     // no need to check every combination
-    CONTEND_ISNULL(msourcecf_create( 0, 12, 60));   // too few subcarriers
-    CONTEND_ISNULL(msourcecf_create(17, 12, 60));   // odd-numbered subcarriers
-    CONTEND_ISNULL(msourcecf_create(64,  0, 60));   // filter semi-length too small
-    CONTEND_ISNULL(msourcecf_copy(NULL));
+    LIQUID_CHECK(NULL ==msourcecf_create( 0, 12, 60));   // too few subcarriers
+    LIQUID_CHECK(NULL ==msourcecf_create(17, 12, 60));   // odd-numbered subcarriers
+    LIQUID_CHECK(NULL ==msourcecf_create(64,  0, 60));   // filter semi-length too small
+    LIQUID_CHECK(NULL ==msourcecf_copy(NULL));
 
     // create proper object and test configurations
     msourcecf q = msourcecf_create(64, 12, 60);
 
     // try to configure signals with invalid IDs
     float rv;
-    CONTEND_INEQUALITY(LIQUID_OK, msourcecf_remove       (q, 12345));
-    CONTEND_INEQUALITY(LIQUID_OK, msourcecf_enable       (q, 12345));
-    CONTEND_INEQUALITY(LIQUID_OK, msourcecf_disable      (q, 12345));
-    CONTEND_INEQUALITY(LIQUID_OK, msourcecf_set_gain     (q, 12345, 0.0f));
-    CONTEND_INEQUALITY(LIQUID_OK, msourcecf_get_gain     (q, 12345, &rv));
-    CONTEND_INEQUALITY(LIQUID_OK, msourcecf_set_frequency(q, 12345, 0.0f));
-    CONTEND_INEQUALITY(LIQUID_OK, msourcecf_get_frequency(q, 12345, &rv));
+    LIQUID_CHECK(LIQUID_OK != msourcecf_remove       (q, 12345));
+    LIQUID_CHECK(LIQUID_OK != msourcecf_enable       (q, 12345));
+    LIQUID_CHECK(LIQUID_OK != msourcecf_disable      (q, 12345));
+    LIQUID_CHECK(LIQUID_OK != msourcecf_set_gain     (q, 12345, 0.0f));
+    LIQUID_CHECK(LIQUID_OK != msourcecf_get_gain     (q, 12345, &rv));
+    LIQUID_CHECK(LIQUID_OK != msourcecf_set_frequency(q, 12345, 0.0f));
+    LIQUID_CHECK(LIQUID_OK != msourcecf_get_frequency(q, 12345, &rv));
 
     // add signals and check setting values appropriately
     int id_tone = msourcecf_add_tone (q, -0.123456f, 0.00f, 20);
     int id_gmsk = msourcecf_add_gmsk (q,  0.220780f, 0.05f,  0, 4, 0.3f);
 
-    CONTEND_EQUALITY(LIQUID_OK, msourcecf_print(q));
+    LIQUID_CHECK(LIQUID_OK == msourcecf_print(q));
 
     // remove tone
-    CONTEND_EQUALITY  (LIQUID_OK, msourcecf_remove  (q, id_tone));
-    CONTEND_INEQUALITY(LIQUID_OK, msourcecf_set_gain(q, id_tone, 10.0f));
+    LIQUID_CHECK  (LIQUID_OK == msourcecf_remove  (q, id_tone));
+    LIQUID_CHECK(LIQUID_OK != msourcecf_set_gain(q, id_tone, 10.0f));
 
     // disable GMSK signal
-    CONTEND_EQUALITY(LIQUID_OK, msourcecf_disable(q, id_gmsk));
+    LIQUID_CHECK(LIQUID_OK == msourcecf_disable(q, id_gmsk));
 
     // assert buffer is zeros (only GMSK signal present and it's disabled)
     unsigned int buf_len = 1024;
     float complex buf[buf_len];
     msourcecf_write_samples(q, buf, buf_len);
-    CONTEND_EQUALITY(0.0f, liquid_sumsqcf(buf, buf_len));
+    LIQUID_CHECK(0.0f == liquid_sumsqcf(buf, buf_len));
 
     // enable GMSK signal
-    CONTEND_EQUALITY(LIQUID_OK, msourcecf_enable(q, id_gmsk));
+    LIQUID_CHECK(LIQUID_OK == msourcecf_enable(q, id_gmsk));
     msourcecf_write_samples(q, buf, buf_len);
-    CONTEND_GREATER_THAN(liquid_sumsqcf(buf, buf_len), 0.0f);
+    LIQUID_CHECK(liquid_sumsqcf(buf, buf_len)> 0.0f);
 
     // destroy object
     msourcecf_destroy(q);
     _liquid_error_downgrade_disable();
 }
 
-// test accessor methods
-void autotest_msourcecf_accessor()
+LIQUID_AUTOTEST(msourcecf_accessor,"msource accessor methods","",0.1)
 {
     // create object and add signals:(q,  fc,        bw,    gain
     msourcecf q = msourcecf_create(240, 12, 60);
@@ -305,19 +299,19 @@ void autotest_msourcecf_accessor()
 
     // check center frequency of tone
     msourcecf_get_frequency(q, id_tone, &rv);
-    CONTEND_EQUALITY(rv, -0.123456f);
+    LIQUID_CHECK(rv ==  -0.123456f);
 
     // check center frequency of noise signal
     msourcecf_get_frequency(q, id_noise, &rv);
-    CONTEND_EQUALITY(rv,  0.220780f);
+    LIQUID_CHECK(rv ==   0.220780f);
 
     // check gain of tone
     msourcecf_get_gain(q, id_tone, &rv);
-    CONTEND_EQUALITY(rv, 20.0f);
+    LIQUID_CHECK(rv ==  20.0f);
 
     // check gain of noise signal
     msourcecf_get_gain(q, id_noise, &rv);
-    CONTEND_EQUALITY(rv,  0.0f);
+    LIQUID_CHECK(rv ==   0.0f);
 
     // remove tone
     msourcecf_remove(q, id_tone);
@@ -328,18 +322,18 @@ void autotest_msourcecf_accessor()
     // set frequency of noise signal
     msourcecf_set_frequency(q, id_noise, 0.33333f);
     msourcecf_get_frequency(q, id_noise, &rv);
-    CONTEND_EQUALITY(rv, 0.33333f);
+    LIQUID_CHECK(rv ==  0.33333f);
 
     // set gain of noise signal
     msourcecf_set_gain(q, id_noise, 30.0f);
     msourcecf_get_gain(q, id_noise, &rv);
-    CONTEND_EQUALITY(rv, 30.0f);
+    LIQUID_CHECK(rv ==  30.0f);
 
     // assert buffer is zeros
     unsigned int buf_len = 1024;
     float complex buf[buf_len];
     msourcecf_write_samples(q, buf, buf_len);
-    CONTEND_EQUALITY(0.0f, liquid_sumsqcf(buf, buf_len));
+    LIQUID_CHECK(0.0f == liquid_sumsqcf(buf, buf_len));
 
     // enable noise signal and check power spectral density
     msourcecf_enable(q, id_noise);
@@ -369,12 +363,11 @@ void autotest_msourcecf_accessor()
       {.fmin= 0.285,.fmax= 0.375, .pmin= 28.0, .pmax= 32.0, .test_lo=1, .test_hi=1},
       {.fmin= 0.385,.fmax= 0.500, .pmin=-80.0, .pmax=-40.0, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/msourcecf_accessor_autotest.m" : NULL);
+    liquid_autotest_validate_spectrum(__q__, psd, nfft, regions, 3,
+        "autotest/logs/msourcecf_accessor_autotest.m");
 }
 
-// test copying object and ensure output spectrum aligns
-void autotest_msourcecf_copy()
+LIQUID_AUTOTEST(msourcecf_copy,"copy object and ensure output spectrum aligns","",0.1)
 {
     // test options
     float        tol    = 1.5f;                 // error tolerance
@@ -450,7 +443,7 @@ void autotest_msourcecf_copy()
     fprintf(fid,"clear all; close all;\n");
     fprintf(fid,"nfft=%u; psd_orig=zeros(1,nfft); psd_copy=zeros(1,nfft);\n", nfft);
     for (i=0; i<nfft; i++) {
-        CONTEND_DELTA(psd_orig[i], psd_copy[i], tol);
+        LIQUID_CHECK_DELTA(psd_orig[i], psd_copy[i], tol);
         fprintf(fid," psd_orig(%3u)=%12.4e; psd_copy(%3u)=%12.4e;\n",
                 i+1, psd_orig[i], i+1, psd_copy[i]);
     }

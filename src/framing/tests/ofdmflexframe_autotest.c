@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
 // AUTOTEST : test simple recovery of frame in noise
-void testbench_ofdmflexframe(unsigned int      _M,
+void testbench_ofdmflexframe(liquid_autotest   __q__,
+                             unsigned int      _M,
                              unsigned int      _cp_len,
                              unsigned int      _taper_len,
                              unsigned int      _payload_len,
@@ -66,16 +67,16 @@ void testbench_ofdmflexframe(unsigned int      _M,
     }
 
     // verify callback was invoked
-    CONTEND_EQUALITY( context, FRAMING_AUTOTEST_SECRET );
+    LIQUID_CHECK( context ==  FRAMING_AUTOTEST_SECRET );
 
     // verify frame data statistics
     framedatastats_s stats = ofdmflexframesync_get_framedatastats(fs);
     liquid_log_debug(" detected:%u, headers valid:%u, payloads valid:%u, bytes rx:%u",
         stats.num_frames_detected, stats.num_headers_valid, stats.num_payloads_valid, stats.num_bytes_received);
-    CONTEND_EQUALITY( stats.num_frames_detected, 1 );
-    CONTEND_EQUALITY( stats.num_headers_valid,   1 );
-    CONTEND_EQUALITY( stats.num_payloads_valid,  1 );
-    CONTEND_EQUALITY( stats.num_bytes_received,  _payload_len );
+    LIQUID_CHECK( stats.num_frames_detected ==  1 );
+    LIQUID_CHECK( stats.num_headers_valid ==    1 );
+    LIQUID_CHECK( stats.num_payloads_valid ==   1 );
+    LIQUID_CHECK( stats.num_bytes_received ==   _payload_len );
 
     // destroy objects
     ofdmflexframegen_destroy(fg);
@@ -83,50 +84,50 @@ void testbench_ofdmflexframe(unsigned int      _M,
 }
 
 //                          ID                                M  CP  TP  PAYL  modulation scheme
-void autotest_ofdmflexframe_00() { testbench_ofdmflexframe(  32,  8,  4,  800, LIQUID_MODEM_QPSK); }
-void autotest_ofdmflexframe_01() { testbench_ofdmflexframe(  64,  8,  4,  800, LIQUID_MODEM_QPSK); }
-void autotest_ofdmflexframe_02() { testbench_ofdmflexframe( 256,  8,  4,  800, LIQUID_MODEM_QPSK); }
-void autotest_ofdmflexframe_03() { testbench_ofdmflexframe(1024, 16,  8,  800, LIQUID_MODEM_QPSK); }
-void autotest_ofdmflexframe_04() { testbench_ofdmflexframe(2048, 32, 16,  800, LIQUID_MODEM_QPSK); }
-void autotest_ofdmflexframe_05() { testbench_ofdmflexframe(4096, 64, 32,  800, LIQUID_MODEM_QPSK); }
-void autotest_ofdmflexframe_06() { testbench_ofdmflexframe(8192, 80, 40,  800, LIQUID_MODEM_QPSK); }
-void autotest_ofdmflexframe_07() { testbench_ofdmflexframe(1200, 40, 20,    1, LIQUID_MODEM_QPSK); }
-void autotest_ofdmflexframe_08() { testbench_ofdmflexframe(1200,  0,  0,  800, LIQUID_MODEM_QPSK); }
-void autotest_ofdmflexframe_09() { testbench_ofdmflexframe(1200, 40, 20, 8217, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_00,"","",0.1) { testbench_ofdmflexframe(__q__,  32,  8,  4,  800, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_01,"","",0.1) { testbench_ofdmflexframe(__q__,  64,  8,  4,  800, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_02,"","",0.1) { testbench_ofdmflexframe(__q__, 256,  8,  4,  800, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_03,"","",0.1) { testbench_ofdmflexframe(__q__,1024, 16,  8,  800, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_04,"","",0.1) { testbench_ofdmflexframe(__q__,2048, 32, 16,  800, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_05,"","",0.1) { testbench_ofdmflexframe(__q__,4096, 64, 32,  800, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_06,"","",0.1) { testbench_ofdmflexframe(__q__,8192, 80, 40,  800, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_07,"","",0.1) { testbench_ofdmflexframe(__q__,1200, 40, 20,    1, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_08,"","",0.1) { testbench_ofdmflexframe(__q__,1200,  0,  0,  800, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_09,"","",0.1) { testbench_ofdmflexframe(__q__,1200, 40, 20, 8217, LIQUID_MODEM_QPSK); }
 
-void autotest_ofdmflexframegen_config()
+LIQUID_AUTOTEST(ofdmflexframegen_config,"ofdmflexframegen config","",0.1)
 {
     // check invalid function calls
     _liquid_error_downgrade_enable();
-    //CONTEND_ISNULL(ofdmflexframegen_copy(NULL));
-    CONTEND_ISNULL(ofdmflexframegen_create( 0, 16, 4, NULL, NULL)) // too few subcarriers
-    CONTEND_ISNULL(ofdmflexframegen_create( 7, 16, 4, NULL, NULL)) // too few subcarriers
-    CONTEND_ISNULL(ofdmflexframegen_create(65, 16, 4, NULL, NULL)) // odd-length subcarriers
-    CONTEND_ISNULL(ofdmflexframegen_create(64, 66, 4, NULL, NULL)) // cyclic prefix length too large
+    //LIQUID_CHECK(NULL ==ofdmflexframegen_copy(NULL));
+    LIQUID_CHECK(NULL ==ofdmflexframegen_create( 0, 16, 4, NULL, NULL)) // too few subcarriers
+    LIQUID_CHECK(NULL ==ofdmflexframegen_create( 7, 16, 4, NULL, NULL)) // too few subcarriers
+    LIQUID_CHECK(NULL ==ofdmflexframegen_create(65, 16, 4, NULL, NULL)) // odd-length subcarriers
+    LIQUID_CHECK(NULL ==ofdmflexframegen_create(64, 66, 4, NULL, NULL)) // cyclic prefix length too large
 
     // create proper object and test configurations
     ofdmflexframegen q = ofdmflexframegen_create(64, 16, 4, NULL, NULL);
 
-    CONTEND_EQUALITY(LIQUID_OK, ofdmflexframegen_print(q))
+    LIQUID_CHECK(LIQUID_OK == ofdmflexframegen_print(q))
 
     ofdmflexframegen_destroy(q);
     _liquid_error_downgrade_disable();
 }
 
-void autotest_ofdmflexframesync_config()
+LIQUID_AUTOTEST(ofdmflexframesync_config,"ofdmflexframesync config","",0.1)
 {
     // check invalid function calls
     _liquid_error_downgrade_enable();
-    //CONTEND_ISNULL(ofdmflexframesync_copy(NULL));
-    CONTEND_ISNULL(ofdmflexframesync_create( 0, 16, 4, NULL, NULL, NULL)) // too few subcarriers
-    CONTEND_ISNULL(ofdmflexframesync_create( 7, 16, 4, NULL, NULL, NULL)) // too few subcarriers
-    CONTEND_ISNULL(ofdmflexframesync_create(65, 16, 4, NULL, NULL, NULL)) // odd-length subcarriers
-    CONTEND_ISNULL(ofdmflexframesync_create(64, 66, 4, NULL, NULL, NULL)) // cyclic prefix length too large
+    //LIQUID_CHECK(NULL ==ofdmflexframesync_copy(NULL));
+    LIQUID_CHECK(NULL ==ofdmflexframesync_create( 0, 16, 4, NULL, NULL, NULL)) // too few subcarriers
+    LIQUID_CHECK(NULL ==ofdmflexframesync_create( 7, 16, 4, NULL, NULL, NULL)) // too few subcarriers
+    LIQUID_CHECK(NULL ==ofdmflexframesync_create(65, 16, 4, NULL, NULL, NULL)) // odd-length subcarriers
+    LIQUID_CHECK(NULL ==ofdmflexframesync_create(64, 66, 4, NULL, NULL, NULL)) // cyclic prefix length too large
 
     // create proper object and test configurations
     ofdmflexframesync q = ofdmflexframesync_create(64, 16, 4, NULL, NULL, NULL);
 
-    CONTEND_EQUALITY(LIQUID_OK, ofdmflexframesync_print(q))
+    LIQUID_CHECK(LIQUID_OK == ofdmflexframesync_print(q))
 
     ofdmflexframesync_destroy(q);
     _liquid_error_downgrade_disable();
