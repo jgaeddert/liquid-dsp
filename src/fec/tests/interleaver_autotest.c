@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,11 @@
 
 #include <stdlib.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-// 
-// AUTOTESTS: interleave/deinterleave
-//
-void interleaver_test_hard(unsigned int _n)
+// interleave/deinterleave
+void testbench_interleaver_hard(liquid_autotest __q__, unsigned int _n)
 {
     unsigned int i;
     unsigned char x[_n];
@@ -44,16 +42,14 @@ void interleaver_test_hard(unsigned int _n)
     interleaver_encode(q,x,y);
     interleaver_decode(q,y,z);
 
-    CONTEND_SAME_DATA(x, z, _n);
+    LIQUID_CHECK_ARRAY(x, z, _n);
 
     // destroy interleaver object
     interleaver_destroy(q);
 }
 
-// 
-// AUTOTESTS: interleave/deinterleave (soft)
-//
-void interleaver_test_soft(unsigned int _n)
+// interleave/deinterleave (soft)
+void testbench_interleaver_soft(liquid_autotest __q__, unsigned int _n)
 {
     unsigned int i;
     unsigned char x[8*_n];
@@ -69,19 +65,19 @@ void interleaver_test_soft(unsigned int _n)
     interleaver_encode_soft(q,x,y);
     interleaver_decode_soft(q,y,z);
 
-    CONTEND_SAME_DATA(x, z, 8*_n);
+    LIQUID_CHECK_ARRAY(x, z, 8*_n);
     
     // destroy interleaver object
     interleaver_destroy(q);
 }
 
-void autotest_interleaver_hard_8()      { interleaver_test_hard(8   ); }
-void autotest_interleaver_hard_16()     { interleaver_test_hard(16  ); }
-void autotest_interleaver_hard_64()     { interleaver_test_hard(64  ); }
-void autotest_interleaver_hard_256()    { interleaver_test_hard(256 ); }
+LIQUID_AUTOTEST(interleaver_hard_8,"","",0.1)      { testbench_interleaver_hard(__q__, 8   ); }
+LIQUID_AUTOTEST(interleaver_hard_16,"","",0.1)     { testbench_interleaver_hard(__q__, 16  ); }
+LIQUID_AUTOTEST(interleaver_hard_64,"","",0.1)     { testbench_interleaver_hard(__q__, 64  ); }
+LIQUID_AUTOTEST(interleaver_hard_256,"","",0.1)    { testbench_interleaver_hard(__q__, 256 ); }
 
-void autotest_interleaver_soft_8()      { interleaver_test_soft(8   ); }
-void autotest_interleaver_soft_16()     { interleaver_test_soft(16  ); }
-void autotest_interleaver_soft_64()     { interleaver_test_soft(64  ); }
-void autotest_interleaver_soft_256()    { interleaver_test_soft(256 ); }
+LIQUID_AUTOTEST(interleaver_soft_8,"","",0.1)      { testbench_interleaver_soft(__q__, 8   ); }
+LIQUID_AUTOTEST(interleaver_soft_16,"","",0.1)     { testbench_interleaver_soft(__q__, 16  ); }
+LIQUID_AUTOTEST(interleaver_soft_64,"","",0.1)     { testbench_interleaver_soft(__q__, 64  ); }
+LIQUID_AUTOTEST(interleaver_soft_256,"","",0.1)    { testbench_interleaver_soft(__q__, 256 ); }
 

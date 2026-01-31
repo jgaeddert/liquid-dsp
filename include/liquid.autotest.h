@@ -80,6 +80,12 @@ void liquid_autotest_fail(liquid_autotest _q,
                           unsigned int    _line,
                           const char *    _expression);
 
+// log that the test raised a warning
+void liquid_autotest_warn(liquid_autotest _q,
+                          const char *    _file,
+                          unsigned int    _line,
+                          const char *    _message);
+
 // initialize autotest harness
 // define liquid_autotest(...) __liquid_autotest_internal( __VA_ARGS__ )
 #define LIQUID_AUTOTEST(FUNC, DOCSTR, KEYWORDS, COST)                           \
@@ -151,6 +157,10 @@ int liquid_registry_print(const liquid_autotest * _registry,
 #define LIQUID_FAIL_(Q,MSG)         liquid_autotest_fail(Q,__FILE__,__LINE__,MSG)
 #define LIQUID_FAIL(MSG)            liquid_autotest_fail(__q__,__FILE__,__LINE__,MSG)
 
+// log a warning
+#define LIQUID_WARN_(Q,MSG)         liquid_autotest_warn(Q,__FILE__,__LINE__,MSG)
+#define LIQUID_WARN(MSG)            liquid_autotest_warn(__q__,__FILE__,__LINE__,MSG)
+
 
 // expand macro to run test
 #define __LIQUID_TEST__(Q,F,L,X,REQUIRE)                                        \
@@ -217,15 +227,6 @@ int liquid_registry_print(const liquid_autotest * _registry,
 
 // TODO: remove
 static int liquid_autotest_verbose = 1;
-
-// print warning to stderr
-// increment liquid_autotest_num_warnings
-//  _file       :   filename (string)
-//  _line       :   line number of test
-//  _message    :   message string
-void liquid_autotest_warn(const char * _file,
-                          unsigned int _line,
-                          const char * _message);
 
 
 // contend that data in two arrays are identical

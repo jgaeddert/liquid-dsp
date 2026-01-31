@@ -7,6 +7,148 @@
 extern struct liquid_autotest_s null_s;
 // ./autotest/libliquid_autotest.c
 extern struct liquid_autotest_s libliquid_version_s;
+// ./src/fec/tests/fec_hamming128_autotest.c
+extern struct liquid_autotest_s hamming128_codec_s;
+extern struct liquid_autotest_s hamming128_codec_soft_s;
+// ./src/fec/tests/fec_secded2216_autotest.c
+extern struct liquid_autotest_s secded2216_codec_e0_s;
+extern struct liquid_autotest_s secded2216_codec_e1_s;
+extern struct liquid_autotest_s secded2216_codec_e2_s;
+// ./src/fec/tests/fec_hamming3126_autotest.c
+extern struct liquid_autotest_s hamming3126_codec_s;
+// ./src/fec/tests/packetizer_autotest.c
+extern struct liquid_autotest_s packetizer_n16_0_0_s;
+extern struct liquid_autotest_s packetizer_n16_0_1_s;
+extern struct liquid_autotest_s packetizer_n16_0_2_s;
+// ./src/fec/tests/fec_copy_autotest.c
+extern struct liquid_autotest_s fec_copy_r3_s;
+extern struct liquid_autotest_s fec_copy_r5_s;
+extern struct liquid_autotest_s fec_copy_h74_s;
+extern struct liquid_autotest_s fec_copy_h84_s;
+extern struct liquid_autotest_s fec_copy_h128_s;
+extern struct liquid_autotest_s fec_copy_g2412_s;
+extern struct liquid_autotest_s fec_copy_secded2216_s;
+extern struct liquid_autotest_s fec_copy_secded3932_s;
+extern struct liquid_autotest_s fec_copy_secded7264_s;
+extern struct liquid_autotest_s fec_copy_v27_s;
+extern struct liquid_autotest_s fec_copy_v29_s;
+extern struct liquid_autotest_s fec_copy_v39_s;
+extern struct liquid_autotest_s fec_copy_v615_s;
+extern struct liquid_autotest_s fec_copy_v27p23_s;
+extern struct liquid_autotest_s fec_copy_v27p34_s;
+extern struct liquid_autotest_s fec_copy_v27p45_s;
+extern struct liquid_autotest_s fec_copy_v27p56_s;
+extern struct liquid_autotest_s fec_copy_v27p67_s;
+extern struct liquid_autotest_s fec_copy_v27p78_s;
+extern struct liquid_autotest_s fec_copy_v29p23_s;
+extern struct liquid_autotest_s fec_copy_v29p34_s;
+extern struct liquid_autotest_s fec_copy_v29p45_s;
+extern struct liquid_autotest_s fec_copy_v29p56_s;
+extern struct liquid_autotest_s fec_copy_v29p67_s;
+extern struct liquid_autotest_s fec_copy_v29p78_s;
+extern struct liquid_autotest_s fec_copy_rs8_s;
+// ./src/fec/tests/fec_hamming1511_autotest.c
+extern struct liquid_autotest_s hamming1511_codec_s;
+// ./src/fec/tests/fec_rep3_autotest.c
+extern struct liquid_autotest_s rep3_codec_s;
+// ./src/fec/tests/fec_reedsolomon_autotest.c
+extern struct liquid_autotest_s reedsolomon_223_255_s;
+// ./src/fec/tests/fec_secded7264_autotest.c
+extern struct liquid_autotest_s secded7264_codec_e0_s;
+extern struct liquid_autotest_s secded7264_codec_e1_s;
+extern struct liquid_autotest_s secded7264_codec_e2_s;
+// ./src/fec/tests/fec_hamming84_autotest.c
+extern struct liquid_autotest_s hamming84_codec_s;
+extern struct liquid_autotest_s hamming84_codec_soft_s;
+// ./src/fec/tests/packetizer_copy_autotest.c
+extern struct liquid_autotest_s packetizer_copy_s;
+// ./src/fec/tests/fec_autotest.c
+extern struct liquid_autotest_s fec_r3_s;
+extern struct liquid_autotest_s fec_r5_s;
+extern struct liquid_autotest_s fec_h74_s;
+extern struct liquid_autotest_s fec_h84_s;
+extern struct liquid_autotest_s fec_h128_s;
+extern struct liquid_autotest_s fec_g2412_s;
+extern struct liquid_autotest_s fec_secded2216_s;
+extern struct liquid_autotest_s fec_secded3932_s;
+extern struct liquid_autotest_s fec_secded7264_s;
+extern struct liquid_autotest_s fec_v27_s;
+extern struct liquid_autotest_s fec_v29_s;
+extern struct liquid_autotest_s fec_v39_s;
+extern struct liquid_autotest_s fec_v615_s;
+extern struct liquid_autotest_s fec_v27p23_s;
+extern struct liquid_autotest_s fec_v27p34_s;
+extern struct liquid_autotest_s fec_v27p45_s;
+extern struct liquid_autotest_s fec_v27p56_s;
+extern struct liquid_autotest_s fec_v27p67_s;
+extern struct liquid_autotest_s fec_v27p78_s;
+extern struct liquid_autotest_s fec_v29p23_s;
+extern struct liquid_autotest_s fec_v29p34_s;
+extern struct liquid_autotest_s fec_v29p45_s;
+extern struct liquid_autotest_s fec_v29p56_s;
+extern struct liquid_autotest_s fec_v29p67_s;
+extern struct liquid_autotest_s fec_v29p78_s;
+extern struct liquid_autotest_s fec_rs8_s;
+// ./src/fec/tests/fec_golay2412_autotest.c
+extern struct liquid_autotest_s golay2412_codec_s;
+// ./src/fec/tests/fec_soft_autotest.c
+extern struct liquid_autotest_s fecsoft_r3_s;
+extern struct liquid_autotest_s fecsoft_r5_s;
+extern struct liquid_autotest_s fecsoft_h74_s;
+extern struct liquid_autotest_s fecsoft_h84_s;
+extern struct liquid_autotest_s fecsoft_h128_s;
+extern struct liquid_autotest_s fecsoft_v27_s;
+extern struct liquid_autotest_s fecsoft_v29_s;
+extern struct liquid_autotest_s fecsoft_v39_s;
+extern struct liquid_autotest_s fecsoft_v615_s;
+extern struct liquid_autotest_s fecsoft_v27p23_s;
+extern struct liquid_autotest_s fecsoft_v27p34_s;
+extern struct liquid_autotest_s fecsoft_v27p45_s;
+extern struct liquid_autotest_s fecsoft_v27p56_s;
+extern struct liquid_autotest_s fecsoft_v27p67_s;
+extern struct liquid_autotest_s fecsoft_v27p78_s;
+extern struct liquid_autotest_s fecsoft_v29p23_s;
+extern struct liquid_autotest_s fecsoft_v29p34_s;
+extern struct liquid_autotest_s fecsoft_v29p45_s;
+extern struct liquid_autotest_s fecsoft_v29p56_s;
+extern struct liquid_autotest_s fecsoft_v29p67_s;
+extern struct liquid_autotest_s fecsoft_v29p78_s;
+extern struct liquid_autotest_s fecsoft_rs8_s;
+// ./src/fec/tests/fec_config_autotest.c
+extern struct liquid_autotest_s fec_config_s;
+extern struct liquid_autotest_s fec_str2fec_s;
+extern struct liquid_autotest_s fec_is_convolutional_s;
+extern struct liquid_autotest_s fec_is_punctured_s;
+extern struct liquid_autotest_s fec_is_reedsolomon_s;
+extern struct liquid_autotest_s fec_is_hamming_s;
+// ./src/fec/tests/fec_hamming74_autotest.c
+extern struct liquid_autotest_s hamming74_codec_s;
+extern struct liquid_autotest_s hamming74_codec_soft_s;
+// ./src/fec/tests/crc_autotest.c
+extern struct liquid_autotest_s reverse_byte_s;
+extern struct liquid_autotest_s reverse_uint16_s;
+extern struct liquid_autotest_s reverse_uint32_s;
+extern struct liquid_autotest_s checksum_s;
+extern struct liquid_autotest_s crc8_s;
+extern struct liquid_autotest_s crc16_s;
+extern struct liquid_autotest_s crc24_s;
+extern struct liquid_autotest_s crc32_s;
+extern struct liquid_autotest_s crc_config_s;
+// ./src/fec/tests/fec_rep5_autotest.c
+extern struct liquid_autotest_s rep5_codec_s;
+// ./src/fec/tests/fec_secded3932_autotest.c
+extern struct liquid_autotest_s secded3932_codec_e0_s;
+extern struct liquid_autotest_s secded3932_codec_e1_s;
+extern struct liquid_autotest_s secded3932_codec_e2_s;
+// ./src/fec/tests/interleaver_autotest.c
+extern struct liquid_autotest_s interleaver_hard_8_s;
+extern struct liquid_autotest_s interleaver_hard_16_s;
+extern struct liquid_autotest_s interleaver_hard_64_s;
+extern struct liquid_autotest_s interleaver_hard_256_s;
+extern struct liquid_autotest_s interleaver_soft_8_s;
+extern struct liquid_autotest_s interleaver_soft_16_s;
+extern struct liquid_autotest_s interleaver_soft_64_s;
+extern struct liquid_autotest_s interleaver_soft_256_s;
 // ./src/dotprod/tests/dotprod_crcf_autotest.c
 extern struct liquid_autotest_s dotprod_crcf_rand01_s;
 extern struct liquid_autotest_s dotprod_crcf_rand02_s;
@@ -869,6 +1011,128 @@ liquid_autotest liquid_autotest_registry[] =
 {
     &null_s,
     &libliquid_version_s,
+    &hamming128_codec_s,
+    &hamming128_codec_soft_s,
+    &secded2216_codec_e0_s,
+    &secded2216_codec_e1_s,
+    &secded2216_codec_e2_s,
+    &hamming3126_codec_s,
+    &packetizer_n16_0_0_s,
+    &packetizer_n16_0_1_s,
+    &packetizer_n16_0_2_s,
+    &fec_copy_r3_s,
+    &fec_copy_r5_s,
+    &fec_copy_h74_s,
+    &fec_copy_h84_s,
+    &fec_copy_h128_s,
+    &fec_copy_g2412_s,
+    &fec_copy_secded2216_s,
+    &fec_copy_secded3932_s,
+    &fec_copy_secded7264_s,
+    &fec_copy_v27_s,
+    &fec_copy_v29_s,
+    &fec_copy_v39_s,
+    &fec_copy_v615_s,
+    &fec_copy_v27p23_s,
+    &fec_copy_v27p34_s,
+    &fec_copy_v27p45_s,
+    &fec_copy_v27p56_s,
+    &fec_copy_v27p67_s,
+    &fec_copy_v27p78_s,
+    &fec_copy_v29p23_s,
+    &fec_copy_v29p34_s,
+    &fec_copy_v29p45_s,
+    &fec_copy_v29p56_s,
+    &fec_copy_v29p67_s,
+    &fec_copy_v29p78_s,
+    &fec_copy_rs8_s,
+    &hamming1511_codec_s,
+    &rep3_codec_s,
+    &reedsolomon_223_255_s,
+    &secded7264_codec_e0_s,
+    &secded7264_codec_e1_s,
+    &secded7264_codec_e2_s,
+    &hamming84_codec_s,
+    &hamming84_codec_soft_s,
+    &packetizer_copy_s,
+    &fec_r3_s,
+    &fec_r5_s,
+    &fec_h74_s,
+    &fec_h84_s,
+    &fec_h128_s,
+    &fec_g2412_s,
+    &fec_secded2216_s,
+    &fec_secded3932_s,
+    &fec_secded7264_s,
+    &fec_v27_s,
+    &fec_v29_s,
+    &fec_v39_s,
+    &fec_v615_s,
+    &fec_v27p23_s,
+    &fec_v27p34_s,
+    &fec_v27p45_s,
+    &fec_v27p56_s,
+    &fec_v27p67_s,
+    &fec_v27p78_s,
+    &fec_v29p23_s,
+    &fec_v29p34_s,
+    &fec_v29p45_s,
+    &fec_v29p56_s,
+    &fec_v29p67_s,
+    &fec_v29p78_s,
+    &fec_rs8_s,
+    &golay2412_codec_s,
+    &fecsoft_r3_s,
+    &fecsoft_r5_s,
+    &fecsoft_h74_s,
+    &fecsoft_h84_s,
+    &fecsoft_h128_s,
+    &fecsoft_v27_s,
+    &fecsoft_v29_s,
+    &fecsoft_v39_s,
+    &fecsoft_v615_s,
+    &fecsoft_v27p23_s,
+    &fecsoft_v27p34_s,
+    &fecsoft_v27p45_s,
+    &fecsoft_v27p56_s,
+    &fecsoft_v27p67_s,
+    &fecsoft_v27p78_s,
+    &fecsoft_v29p23_s,
+    &fecsoft_v29p34_s,
+    &fecsoft_v29p45_s,
+    &fecsoft_v29p56_s,
+    &fecsoft_v29p67_s,
+    &fecsoft_v29p78_s,
+    &fecsoft_rs8_s,
+    &fec_config_s,
+    &fec_str2fec_s,
+    &fec_is_convolutional_s,
+    &fec_is_punctured_s,
+    &fec_is_reedsolomon_s,
+    &fec_is_hamming_s,
+    &hamming74_codec_s,
+    &hamming74_codec_soft_s,
+    &reverse_byte_s,
+    &reverse_uint16_s,
+    &reverse_uint32_s,
+    &checksum_s,
+    &crc8_s,
+    &crc16_s,
+    &crc24_s,
+    &crc32_s,
+    &crc_config_s,
+    &rep5_codec_s,
+    &secded3932_codec_e0_s,
+    &secded3932_codec_e1_s,
+    &secded3932_codec_e2_s,
+    &interleaver_hard_8_s,
+    &interleaver_hard_16_s,
+    &interleaver_hard_64_s,
+    &interleaver_hard_256_s,
+    &interleaver_soft_8_s,
+    &interleaver_soft_16_s,
+    &interleaver_soft_64_s,
+    &interleaver_soft_256_s,
     &dotprod_crcf_rand01_s,
     &dotprod_crcf_rand02_s,
     &dotprod_crcf_struct_vs_ordinal_s,

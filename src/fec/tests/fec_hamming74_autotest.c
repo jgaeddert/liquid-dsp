@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-//
-// AUTOTEST: Hamming (7,4) codec
-//
-void autotest_hamming74_codec()
+LIQUID_AUTOTEST(hamming74_codec,"test Hamming (7,4) codec","",0.1)
 {
     unsigned int n=4;
     unsigned char msg[] = {0x25, 0x62, 0x3F, 0x52};
@@ -58,16 +55,13 @@ void autotest_hamming74_codec()
     fec_decode(q, n, msg_enc, msg_dec);
 
     // validate data are the same
-    CONTEND_SAME_DATA(msg, msg_dec, n);
+    LIQUID_CHECK_ARRAY(msg, msg_dec, n);
 
     // clean up objects
     fec_destroy(q);
 }
 
-//
-// AUTOTEST: Hamming (7,4) codec (soft decoding)
-//
-void autotest_hamming74_codec_soft()
+LIQUID_AUTOTEST(hamming74_codec_soft,"test Hamming (7,4) codec (soft decoding)","",0.1)
 {
     // generate each of the 2^4=16 symbols, encode, and decode
     // using soft decoding algorithm
@@ -93,7 +87,7 @@ void autotest_hamming74_codec_soft()
         s_hat = fecsoft_hamming74_decode(c_soft);
 
         // contend that data are the same
-        CONTEND_EQUALITY(s, s_hat);
+        LIQUID_CHECK(s ==  s_hat);
     }
 }
 

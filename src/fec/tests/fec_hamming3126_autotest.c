@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-//
-// AUTOTEST: Hamming (31,26) codec
-//
-void autotest_hamming3126_codec()
+LIQUID_AUTOTEST(hamming3126_codec,"test Hamming(31,26) codec","",0.1)
 {
     unsigned int n=26;  //
     unsigned int k=31;  //
@@ -61,7 +58,7 @@ void autotest_hamming3126_codec()
             i, sym_org, sym_enc, sym_rec, sym_dec, count_bit_errors(sym_org, sym_dec));
 
         // validate data are the same
-        CONTEND_EQUALITY(sym_org, sym_dec);
+        LIQUID_CHECK(sym_org ==  sym_dec);
     }
 }
 

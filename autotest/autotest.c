@@ -97,6 +97,20 @@ void liquid_autotest_fail(liquid_autotest _q,
     _q->num_fail++;
 }
 
+// print warning to stderr
+// increment liquid_autotest_num_warnings
+//  _file       :   filename (string)
+//  _line       :   line number of test
+//  _message    :   message string
+void liquid_autotest_warn(liquid_autotest _q,
+                          const char * _file,
+                          unsigned int _line,
+                          const char * _message)
+{
+    liquid_log(NULL,LIQUID_WARN,_file,_line,_message);
+    _q->num_warn++;
+}
+
 // print registry, either info or full status
 int liquid_registry_print(const liquid_autotest * _registry,
                           bool _info)
@@ -219,18 +233,6 @@ void autotest_print_results(void)
     liquid_log_info("==================================");
 }
 */
-
-// print warning to stderr
-// increment liquid_autotest_num_warnings
-//  _file       :   filename (string)
-//  _line       :   line number of test
-//  _message    :   message string
-void liquid_autotest_warn(const char * _file,
-                          unsigned int _line,
-                          const char * _message)
-{
-    liquid_log(NULL,LIQUID_WARN,_file,_line,_message);
-}
 
 // contend that data in two arrays are identical
 //  _x      :   input array [size: _n x 1]

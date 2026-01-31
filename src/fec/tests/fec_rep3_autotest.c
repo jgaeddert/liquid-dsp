@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-//
-// AUTOTEST: repeat/3 codec
-//
-void autotest_rep3_codec()
+LIQUID_AUTOTEST(rep3_codec,"test repeat/3 codec","",0.1)
 {
     unsigned int n=4;
     unsigned char msg[] = {0x25, 0x62, 0x3F, 0x52};
@@ -53,7 +50,7 @@ void autotest_rep3_codec()
     fec_decode(q, n, msg_enc, msg_dec);
 
     // validate data are the same
-    CONTEND_SAME_DATA(msg, msg_dec, n);
+    LIQUID_CHECK_ARRAY(msg, msg_dec, n);
 
     // clean up objects
     fec_destroy(q);

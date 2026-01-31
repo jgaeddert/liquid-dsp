@@ -314,7 +314,7 @@ LIQUID_AUTOTEST(firdespm_config,"description","",0.1)
 LIQUID_AUTOTEST(firdespm_differentiator,"description","",0.1)
 {
     _liquid_error_downgrade_enable();
-    AUTOTEST_WARN("firdespm_differentiator(), unsupported configuration");
+    LIQUID_WARN("firdespm_differentiator(), unsupported configuration");
     // create valid object
     unsigned int n = 51;
     float bands[4] = {0.0, 0.2, 0.3, 0.5};  // regions
@@ -332,7 +332,7 @@ LIQUID_AUTOTEST(firdespm_differentiator,"description","",0.1)
 
 LIQUID_AUTOTEST(firdespm_hilbert,"description","",0.1)
 {
-    AUTOTEST_WARN("firdespm_hilbert(), unsupported configuration");
+    LIQUID_WARN("firdespm_hilbert(), unsupported configuration");
     _liquid_error_downgrade_enable();
     // create valid object
     unsigned int n = 51;

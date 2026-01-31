@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,11 +22,11 @@
 
 #include <stdlib.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
 // Helper function to keep code base small
-void fec_test_copy(fec_scheme _fs)
+void testbench_fec_copy(liquid_autotest __q__, fec_scheme _fs)
 {
 #if !LIBFEC_ENABLED
     switch (_fs) {
@@ -47,7 +47,7 @@ void fec_test_copy(fec_scheme _fs)
     case LIQUID_FEC_CONV_V29P67:
     case LIQUID_FEC_CONV_V29P78:
     case LIQUID_FEC_RS_M8:
-        AUTOTEST_WARN("convolutional, Reed-Solomon codes unavailable (install libfec)");
+        LIQUID_WARN("convolutional, Reed-Solomon codes unavailable (install libfec)");
         return;
     default:;
     }
@@ -79,7 +79,7 @@ void fec_test_copy(fec_scheme _fs)
     fec_encode(q1,n_dec,msg_org,msg_enc_1);
 
     // validate output
-    CONTEND_SAME_DATA(msg_enc_0,msg_enc_1,n_enc);
+    LIQUID_CHECK_ARRAY(msg_enc_0,msg_enc_1,n_enc);
 
     // initialize random bits for decoding
     for (i=0; i<n_enc; i++) {
@@ -90,7 +90,7 @@ void fec_test_copy(fec_scheme _fs)
     // decode messages and compare
     fec_decode(q0,n_dec,msg_enc_0,msg_dec_0);
     fec_decode(q1,n_dec,msg_enc_1,msg_dec_1);
-    CONTEND_SAME_DATA(msg_dec_0,msg_dec_1,n_dec);
+    LIQUID_CHECK_ARRAY(msg_dec_0,msg_dec_1,n_dec);
 
     // clean up objects
     fec_destroy(q0);
@@ -98,43 +98,43 @@ void fec_test_copy(fec_scheme _fs)
 }
 
 // repeat codes
-void autotest_fec_copy_r3()      { fec_test_copy(LIQUID_FEC_REP3          ); }
-void autotest_fec_copy_r5()      { fec_test_copy(LIQUID_FEC_REP5          ); }
+LIQUID_AUTOTEST(fec_copy_r3,"","",0.1)      { testbench_fec_copy(__q__, LIQUID_FEC_REP3          ); }
+LIQUID_AUTOTEST(fec_copy_r5,"","",0.1)      { testbench_fec_copy(__q__, LIQUID_FEC_REP5          ); }
 
 // Hamming block codes
-void autotest_fec_copy_h74()     { fec_test_copy(LIQUID_FEC_HAMMING74     ); }
-void autotest_fec_copy_h84()     { fec_test_copy(LIQUID_FEC_HAMMING84     ); }
-void autotest_fec_copy_h128()    { fec_test_copy(LIQUID_FEC_HAMMING128    ); }
+LIQUID_AUTOTEST(fec_copy_h74,"","",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_HAMMING74     ); }
+LIQUID_AUTOTEST(fec_copy_h84,"","",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_HAMMING84     ); }
+LIQUID_AUTOTEST(fec_copy_h128,"","",0.1)    { testbench_fec_copy(__q__, LIQUID_FEC_HAMMING128    ); }
 
 // Golay block codes
-void autotest_fec_copy_g2412()   { fec_test_copy(LIQUID_FEC_GOLAY2412     ); }
+LIQUID_AUTOTEST(fec_copy_g2412,"","",0.1)   { testbench_fec_copy(__q__, LIQUID_FEC_GOLAY2412     ); }
 
 // SEC-DED block codecs
-void autotest_fec_copy_secded2216() { fec_test_copy(LIQUID_FEC_SECDED2216 ); }
-void autotest_fec_copy_secded3932() { fec_test_copy(LIQUID_FEC_SECDED3932 ); }
-void autotest_fec_copy_secded7264() { fec_test_copy(LIQUID_FEC_SECDED7264 ); }
+LIQUID_AUTOTEST(fec_copy_secded2216,"","",0.1) { testbench_fec_copy(__q__, LIQUID_FEC_SECDED2216 ); }
+LIQUID_AUTOTEST(fec_copy_secded3932,"","",0.1) { testbench_fec_copy(__q__, LIQUID_FEC_SECDED3932 ); }
+LIQUID_AUTOTEST(fec_copy_secded7264,"","",0.1) { testbench_fec_copy(__q__, LIQUID_FEC_SECDED7264 ); }
 
 // convolutional codes
-void autotest_fec_copy_v27()     { fec_test_copy(LIQUID_FEC_CONV_V27      ); }
-void autotest_fec_copy_v29()     { fec_test_copy(LIQUID_FEC_CONV_V29      ); }
-void autotest_fec_copy_v39()     { fec_test_copy(LIQUID_FEC_CONV_V39      ); }
-void autotest_fec_copy_v615()    { fec_test_copy(LIQUID_FEC_CONV_V615     ); }
+LIQUID_AUTOTEST(fec_copy_v27,"","",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27      ); }
+LIQUID_AUTOTEST(fec_copy_v29,"","",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29      ); }
+LIQUID_AUTOTEST(fec_copy_v39,"","",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V39      ); }
+LIQUID_AUTOTEST(fec_copy_v615,"","",0.1)    { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V615     ); }
 
 // convolutional codes (punctured)
-void autotest_fec_copy_v27p23()  { fec_test_copy(LIQUID_FEC_CONV_V27P23   ); }
-void autotest_fec_copy_v27p34()  { fec_test_copy(LIQUID_FEC_CONV_V27P34   ); }
-void autotest_fec_copy_v27p45()  { fec_test_copy(LIQUID_FEC_CONV_V27P45   ); }
-void autotest_fec_copy_v27p56()  { fec_test_copy(LIQUID_FEC_CONV_V27P56   ); }
-void autotest_fec_copy_v27p67()  { fec_test_copy(LIQUID_FEC_CONV_V27P67   ); }
-void autotest_fec_copy_v27p78()  { fec_test_copy(LIQUID_FEC_CONV_V27P78   ); }
+LIQUID_AUTOTEST(fec_copy_v27p23,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P23   ); }
+LIQUID_AUTOTEST(fec_copy_v27p34,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P34   ); }
+LIQUID_AUTOTEST(fec_copy_v27p45,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P45   ); }
+LIQUID_AUTOTEST(fec_copy_v27p56,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P56   ); }
+LIQUID_AUTOTEST(fec_copy_v27p67,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P67   ); }
+LIQUID_AUTOTEST(fec_copy_v27p78,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P78   ); }
 
-void autotest_fec_copy_v29p23()  { fec_test_copy(LIQUID_FEC_CONV_V29P23   ); }
-void autotest_fec_copy_v29p34()  { fec_test_copy(LIQUID_FEC_CONV_V29P34   ); }
-void autotest_fec_copy_v29p45()  { fec_test_copy(LIQUID_FEC_CONV_V29P45   ); }
-void autotest_fec_copy_v29p56()  { fec_test_copy(LIQUID_FEC_CONV_V29P56   ); }
-void autotest_fec_copy_v29p67()  { fec_test_copy(LIQUID_FEC_CONV_V29P67   ); }
-void autotest_fec_copy_v29p78()  { fec_test_copy(LIQUID_FEC_CONV_V29P78   ); }
+LIQUID_AUTOTEST(fec_copy_v29p23,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P23   ); }
+LIQUID_AUTOTEST(fec_copy_v29p34,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P34   ); }
+LIQUID_AUTOTEST(fec_copy_v29p45,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P45   ); }
+LIQUID_AUTOTEST(fec_copy_v29p56,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P56   ); }
+LIQUID_AUTOTEST(fec_copy_v29p67,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P67   ); }
+LIQUID_AUTOTEST(fec_copy_v29p78,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P78   ); }
 
 // Reed-Solomon block codes
-void autotest_fec_copy_rs8()     { fec_test_copy(LIQUID_FEC_RS_M8         ); }
+LIQUID_AUTOTEST(fec_copy_rs8,"","",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_RS_M8         ); }
 

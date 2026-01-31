@@ -533,26 +533,26 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/dotprod/tests/sumsqcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/equalization/tests/eqlms_cccf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/equalization/tests/eqrls_rrrf_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/crc_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/fec_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/fec_config_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/fec_copy_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/fec_soft_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/fec_golay2412_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/fec_hamming74_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/fec_hamming84_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/fec_hamming128_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/fec_hamming1511_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/fec_hamming3126_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/fec_reedsolomon_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/fec_rep3_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/fec_rep5_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/fec_secded2216_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/fec_secded3932_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/fec_secded7264_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/interleaver_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_copy_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/crc_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_config_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_soft_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_golay2412_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_hamming74_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_hamming84_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_hamming128_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_hamming1511_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_hamming3126_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_reedsolomon_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_rep3_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_rep5_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_secded2216_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_secded3932_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/fec_secded7264_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/interleaver_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/asgram_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_r2r_autotest.c

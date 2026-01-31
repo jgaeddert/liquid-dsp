@@ -59,7 +59,7 @@ void testbench_modemcf_demodstats(liquid_autotest __q__,
         // maps to appropriate symbol
         modemcf_demodulate(demod, x_hat, &s);
         if (s != i)
-            AUTOTEST_WARN("modem_test_demodstats(), output symbol does not match");
+            LIQUID_WARN("modem_test_demodstats(), output symbol does not match");
 
         demodstats = modemcf_get_demodulator_phase_error(demod);
         LIQUID_CHECK(demodstats > 0.0f);
@@ -85,7 +85,7 @@ void testbench_modemcf_demodstats(liquid_autotest __q__,
         // maps to appropriate symbol
         modemcf_demodulate(demod, x_hat, &s);
         if (s != i)
-            AUTOTEST_WARN("modem_test_demodstats(), output symbol does not match");
+            LIQUID_WARN("modem_test_demodstats(), output symbol does not match");
 
         demodstats = modemcf_get_demodulator_phase_error(demod);
         LIQUID_CHECK(demodstats < 0.0f);
