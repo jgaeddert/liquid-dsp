@@ -20,12 +20,21 @@ int main(int argc, char* argv[])
 {
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,logfile, "", 'g', "output logfile", NULL);
     liquid_argparse_add(bool, list, false, 'L', "list tests and exit", NULL);
     liquid_argparse_add(int,  test,    -1, 't', "run a specific test", NULL);
     liquid_argparse_parse(argc,argv);
 
+    FILE * fid = NULL;
+    if (strcmp(logfile,""))
+    {
+        fid = fopen(logfile,"w");
+        liquid_logger_add_file(NULL,fid,LIQUID_INFO);
+    }
+
     unsigned int i = 0;
     if (list) {
+        i = 0;
         while (liquid_autotest_registry[i] != NULL)
             liquid_autotest_print_info(liquid_autotest_registry[i++]);
         return LIQUID_OK;
