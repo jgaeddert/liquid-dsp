@@ -633,15 +633,15 @@ set(AUTOTESTS
     #${PROJECT_SOURCE_DIR}/src/matrix/tests/smatrixb_autotest.c
     #${PROJECT_SOURCE_DIR}/src/matrix/tests/smatrixf_autotest.c
     #${PROJECT_SOURCE_DIR}/src/matrix/tests/smatrixi_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/modem/tests/ampmodem_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/modem/tests/cpfskmodem_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/modem/tests/freqmodem_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/modem/tests/fskmodem_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/modem/tests/gmskmodem_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/ampmodem_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/cpfskmodem_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/freqmodem_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/fskmodem_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/gmskmodem_autotest.c
     ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/modem/tests/modem_config_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/modem/tests/modem_demodsoft_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/modem/tests/modem_demodstats_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_config_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_demodsoft_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_demodstats_autotest.c
     ${PROJECT_SOURCE_DIR}/src/modem/tests/modem_utilities_autotest.c
     #${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch_crcf_synthesizer_autotest.c
     #${PROJECT_SOURCE_DIR}/src/multichannel/tests/firpfbch_crcf_analyzer_autotest.c

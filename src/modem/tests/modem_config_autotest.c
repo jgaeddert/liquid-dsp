@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,11 @@
  */
 
 #include <stdlib.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
 // Helper function to keep code base small
-void modemcf_test_copy(modulation_scheme _ms)
+void testbench_modemcf_copy(liquid_autotest __q__, modulation_scheme _ms)
 {
     // create modem and randomize internal state
     modemcf modem_0 = modemcf_create(_ms);
@@ -53,13 +53,13 @@ void modemcf_test_copy(modulation_scheme _ms)
         unsigned int s = rand() % M;
         modemcf_modulate(modem_0, s, &x0);
         modemcf_modulate(modem_1, s, &x1);
-        CONTEND_EQUALITY(x0, x1);
+        LIQUID_CHECK(x0 ==  x1);
 
         // demodulate random sample
         float complex x = randnf() + _Complex_I*randnf();
         modemcf_demodulate(modem_0, x, &s0);
         modemcf_demodulate(modem_1, x, &s1);
-        CONTEND_EQUALITY(s0, s1)
+        LIQUID_CHECK(s0 ==  s1)
     }
 
     // clean it up
@@ -68,90 +68,90 @@ void modemcf_test_copy(modulation_scheme _ms)
 }
 
 // AUTOTESTS: generic PSK
-void autotest_modem_copy_psk2()      { modemcf_test_copy(LIQUID_MODEM_PSK2);      }
-void autotest_modem_copy_psk4()      { modemcf_test_copy(LIQUID_MODEM_PSK4);      }
-void autotest_modem_copy_psk8()      { modemcf_test_copy(LIQUID_MODEM_PSK8);      }
-void autotest_modem_copy_psk16()     { modemcf_test_copy(LIQUID_MODEM_PSK16);     }
-void autotest_modem_copy_psk32()     { modemcf_test_copy(LIQUID_MODEM_PSK32);     }
-void autotest_modem_copy_psk64()     { modemcf_test_copy(LIQUID_MODEM_PSK64);     }
-void autotest_modem_copy_psk128()    { modemcf_test_copy(LIQUID_MODEM_PSK128);    }
-void autotest_modem_copy_psk256()    { modemcf_test_copy(LIQUID_MODEM_PSK256);    }
+LIQUID_AUTOTEST(modem_copy_psk2,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK2);      }
+LIQUID_AUTOTEST(modem_copy_psk4,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK4);      }
+LIQUID_AUTOTEST(modem_copy_psk8,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK8);      }
+LIQUID_AUTOTEST(modem_copy_psk16,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK16);     }
+LIQUID_AUTOTEST(modem_copy_psk32,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK32);     }
+LIQUID_AUTOTEST(modem_copy_psk64,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK64);     }
+LIQUID_AUTOTEST(modem_copy_psk128,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK128);    }
+LIQUID_AUTOTEST(modem_copy_psk256,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK256);    }
 
 // AUTOTESTS: generic DPSK
-void autotest_modem_copy_dpsk2()     { modemcf_test_copy(LIQUID_MODEM_DPSK2);     }
-void autotest_modem_copy_dpsk4()     { modemcf_test_copy(LIQUID_MODEM_DPSK4);     }
-void autotest_modem_copy_dpsk8()     { modemcf_test_copy(LIQUID_MODEM_DPSK8);     }
-void autotest_modem_copy_dpsk16()    { modemcf_test_copy(LIQUID_MODEM_DPSK16);    }
-void autotest_modem_copy_dpsk32()    { modemcf_test_copy(LIQUID_MODEM_DPSK32);    }
-void autotest_modem_copy_dpsk64()    { modemcf_test_copy(LIQUID_MODEM_DPSK64);    }
-void autotest_modem_copy_dpsk128()   { modemcf_test_copy(LIQUID_MODEM_DPSK128);   }
-void autotest_modem_copy_dpsk256()   { modemcf_test_copy(LIQUID_MODEM_DPSK256);   }
+LIQUID_AUTOTEST(modem_copy_dpsk2,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK2);     }
+LIQUID_AUTOTEST(modem_copy_dpsk4,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK4);     }
+LIQUID_AUTOTEST(modem_copy_dpsk8,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK8);     }
+LIQUID_AUTOTEST(modem_copy_dpsk16,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK16);    }
+LIQUID_AUTOTEST(modem_copy_dpsk32,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK32);    }
+LIQUID_AUTOTEST(modem_copy_dpsk64,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK64);    }
+LIQUID_AUTOTEST(modem_copy_dpsk128,"","",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK128);   }
+LIQUID_AUTOTEST(modem_copy_dpsk256,"","",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK256);   }
 
 // AUTOTESTS: generic ASK
-void autotest_modem_copy_ask2()      { modemcf_test_copy(LIQUID_MODEM_ASK2);      }
-void autotest_modem_copy_ask4()      { modemcf_test_copy(LIQUID_MODEM_ASK4);      }
-void autotest_modem_copy_ask8()      { modemcf_test_copy(LIQUID_MODEM_ASK8);      }
-void autotest_modem_copy_ask16()     { modemcf_test_copy(LIQUID_MODEM_ASK16);     }
-void autotest_modem_copy_ask32()     { modemcf_test_copy(LIQUID_MODEM_ASK32);     }
-void autotest_modem_copy_ask64()     { modemcf_test_copy(LIQUID_MODEM_ASK64);     }
-void autotest_modem_copy_ask128()    { modemcf_test_copy(LIQUID_MODEM_ASK128);    }
-void autotest_modem_copy_ask256()    { modemcf_test_copy(LIQUID_MODEM_ASK256);    }
+LIQUID_AUTOTEST(modem_copy_ask2,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK2);      }
+LIQUID_AUTOTEST(modem_copy_ask4,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK4);      }
+LIQUID_AUTOTEST(modem_copy_ask8,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK8);      }
+LIQUID_AUTOTEST(modem_copy_ask16,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK16);     }
+LIQUID_AUTOTEST(modem_copy_ask32,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK32);     }
+LIQUID_AUTOTEST(modem_copy_ask64,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK64);     }
+LIQUID_AUTOTEST(modem_copy_ask128,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK128);    }
+LIQUID_AUTOTEST(modem_copy_ask256,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK256);    }
 
 // AUTOTESTS: generic QAM
-void autotest_modem_copy_qam4()      { modemcf_test_copy(LIQUID_MODEM_QAM4);      }
-void autotest_modem_copy_qam8()      { modemcf_test_copy(LIQUID_MODEM_QAM8);      }
-void autotest_modem_copy_qam16()     { modemcf_test_copy(LIQUID_MODEM_QAM16);     }
-void autotest_modem_copy_qam32()     { modemcf_test_copy(LIQUID_MODEM_QAM32);     }
-void autotest_modem_copy_qam64()     { modemcf_test_copy(LIQUID_MODEM_QAM64);     }
-void autotest_modem_copy_qam128()    { modemcf_test_copy(LIQUID_MODEM_QAM128);    }
-void autotest_modem_copy_qam256()    { modemcf_test_copy(LIQUID_MODEM_QAM256);    }
+LIQUID_AUTOTEST(modem_copy_qam4,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM4);      }
+LIQUID_AUTOTEST(modem_copy_qam8,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM8);      }
+LIQUID_AUTOTEST(modem_copy_qam16,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM16);     }
+LIQUID_AUTOTEST(modem_copy_qam32,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM32);     }
+LIQUID_AUTOTEST(modem_copy_qam64,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM64);     }
+LIQUID_AUTOTEST(modem_copy_qam128,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM128);    }
+LIQUID_AUTOTEST(modem_copy_qam256,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM256);    }
 
 // AUTOTESTS: generic APSK (maps to specific APSK modems internally)
-void autotest_modem_copy_apsk4()     { modemcf_test_copy(LIQUID_MODEM_APSK4);     }
-void autotest_modem_copy_apsk8()     { modemcf_test_copy(LIQUID_MODEM_APSK8);     }
-void autotest_modem_copy_apsk16()    { modemcf_test_copy(LIQUID_MODEM_APSK16);    }
-void autotest_modem_copy_apsk32()    { modemcf_test_copy(LIQUID_MODEM_APSK32);    }
-void autotest_modem_copy_apsk64()    { modemcf_test_copy(LIQUID_MODEM_APSK64);    }
-void autotest_modem_copy_apsk128()   { modemcf_test_copy(LIQUID_MODEM_APSK128);   }
-void autotest_modem_copy_apsk256()   { modemcf_test_copy(LIQUID_MODEM_APSK256);   }
+LIQUID_AUTOTEST(modem_copy_apsk4,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK4);     }
+LIQUID_AUTOTEST(modem_copy_apsk8,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK8);     }
+LIQUID_AUTOTEST(modem_copy_apsk16,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK16);    }
+LIQUID_AUTOTEST(modem_copy_apsk32,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK32);    }
+LIQUID_AUTOTEST(modem_copy_apsk64,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK64);    }
+LIQUID_AUTOTEST(modem_copy_apsk128,"","",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK128);   }
+LIQUID_AUTOTEST(modem_copy_apsk256,"","",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK256);   }
 
 // AUTOTESTS: Specific modems
-void autotest_modem_copy_bpsk()      { modemcf_test_copy(LIQUID_MODEM_BPSK);      }
-void autotest_modem_copy_qpsk()      { modemcf_test_copy(LIQUID_MODEM_QPSK);      }
-void autotest_modem_copy_ook()       { modemcf_test_copy(LIQUID_MODEM_OOK);       }
-void autotest_modem_copy_sqam32()    { modemcf_test_copy(LIQUID_MODEM_SQAM32);    }
-void autotest_modem_copy_sqam128()   { modemcf_test_copy(LIQUID_MODEM_SQAM128);   }
-void autotest_modem_copy_V29()       { modemcf_test_copy(LIQUID_MODEM_V29);       }
-void autotest_modem_copy_arb16opt()  { modemcf_test_copy(LIQUID_MODEM_ARB16OPT);  }
-void autotest_modem_copy_arb32opt()  { modemcf_test_copy(LIQUID_MODEM_ARB32OPT);  }
-void autotest_modem_copy_arb64opt()  { modemcf_test_copy(LIQUID_MODEM_ARB64OPT);  }
-void autotest_modem_copy_arb128opt() { modemcf_test_copy(LIQUID_MODEM_ARB128OPT); }
-void autotest_modem_copy_arb256opt() { modemcf_test_copy(LIQUID_MODEM_ARB256OPT); }
-void autotest_modem_copy_arb64vt()   { modemcf_test_copy(LIQUID_MODEM_ARB64VT);   }
-void autotest_modem_copy_pi4dqpsk()  { modemcf_test_copy(LIQUID_MODEM_PI4DQPSK);  }
+LIQUID_AUTOTEST(modem_copy_bpsk,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_BPSK);      }
+LIQUID_AUTOTEST(modem_copy_qpsk,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_QPSK);      }
+LIQUID_AUTOTEST(modem_copy_ook,"","",0.1)       { testbench_modemcf_copy(__q__,LIQUID_MODEM_OOK);       }
+LIQUID_AUTOTEST(modem_copy_sqam32,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_SQAM32);    }
+LIQUID_AUTOTEST(modem_copy_sqam128,"","",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_SQAM128);   }
+LIQUID_AUTOTEST(modem_copy_V29,"","",0.1)       { testbench_modemcf_copy(__q__,LIQUID_MODEM_V29);       }
+LIQUID_AUTOTEST(modem_copy_arb16opt,"","",0.1)  { testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB16OPT);  }
+LIQUID_AUTOTEST(modem_copy_arb32opt,"","",0.1)  { testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB32OPT);  }
+LIQUID_AUTOTEST(modem_copy_arb64opt,"","",0.1)  { testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB64OPT);  }
+LIQUID_AUTOTEST(modem_copy_arb128opt,"","",0.1) { testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB128OPT); }
+LIQUID_AUTOTEST(modem_copy_arb256opt,"","",0.1) { testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB256OPT); }
+LIQUID_AUTOTEST(modem_copy_arb64vt,"","",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB64VT);   }
+LIQUID_AUTOTEST(modem_copy_pi4dqpsk,"","",0.1)  { testbench_modemcf_copy(__q__,LIQUID_MODEM_PI4DQPSK);  }
 
 // test errors and invalid configuration
-void autotest_modem_config()
+LIQUID_AUTOTEST(modem_config,"","",0.1)
 {
     _liquid_error_downgrade_enable();
     // test copying/creating invalid objects
-    CONTEND_ISNULL( modemcf_copy(NULL) );
-    CONTEND_ISNULL( modemcf_create(LIQUID_MODEM_ARB) );
-    CONTEND_ISNULL( modemcf_create(-1) );
+    LIQUID_CHECK(NULL == modemcf_copy(NULL) );
+    LIQUID_CHECK(NULL == modemcf_create(LIQUID_MODEM_ARB) );
+    LIQUID_CHECK(NULL == modemcf_create(-1) );
 
     // create object and check configuration
     modemcf q = modemcf_create(LIQUID_MODEM_QAM64);
-    CONTEND_EQUALITY( LIQUID_OK, modemcf_print(q) );
+    LIQUID_CHECK( LIQUID_OK == modemcf_print(q) );
 
     // internal: try to initialize using invalid configuration
-    CONTEND_INEQUALITY( LIQUID_OK, modemcf_init(q,0) );
-    CONTEND_INEQUALITY( LIQUID_OK, modemcf_init(q,77) );
+    LIQUID_CHECK( LIQUID_OK != modemcf_init(q,0) );
+    LIQUID_CHECK( LIQUID_OK != modemcf_init(q,77) );
 
     // internal: try to modulate using invalid inputs
     float complex sym;
-    CONTEND_INEQUALITY( LIQUID_OK, modemcf_modulate    (q,8193,&sym) );
-    CONTEND_INEQUALITY( LIQUID_OK, modemcf_modulate_map(q,8193,&sym) );
-    CONTEND_INEQUALITY( LIQUID_OK, modemcf_demodsoft_gentab(q,227) );
+    LIQUID_CHECK( LIQUID_OK != modemcf_modulate    (q,8193,&sym) );
+    LIQUID_CHECK( LIQUID_OK != modemcf_modulate_map(q,8193,&sym) );
+    LIQUID_CHECK( LIQUID_OK != modemcf_demodsoft_gentab(q,227) );
 
     modemcf_destroy(q);
     _liquid_error_downgrade_disable();

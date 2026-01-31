@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,15 +20,16 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // Help function to keep code base small
-void fskmodem_test_mod_demod(unsigned int _m,
-                             unsigned int _k,
-                             float        _bandwidth)
+void testbench_fskmodem(liquid_autotest __q__,
+                        unsigned int _m,
+                        unsigned int _k,
+                        float        _bandwidth)
 {
-    liquid_log_debug("fskmodem_test_mod_demod(m=%u, k=%u, bandwidth=%g)", _m, _k, _bandwidth);
+    liquid_log_debug("testbench_fskmodem(__q__, m=%u, k=%u, bandwidth=%g)", _m, _k, _bandwidth);
 
     // create modulator/demodulator pair
     fskmod mod = fskmod_create(_m,_k,_bandwidth);
@@ -50,7 +51,7 @@ void fskmodem_test_mod_demod(unsigned int _m,
         unsigned int sym_out = fskdem_demodulate(dem, buf);
 
         // count errors
-        CONTEND_EQUALITY(sym_in, sym_out);
+        LIQUID_CHECK(sym_in ==  sym_out);
     }
 
     // clean it up
@@ -59,31 +60,31 @@ void fskmodem_test_mod_demod(unsigned int _m,
 }
 
 // AUTOTESTS: basic properties: M=2^m, k = 2*M, bandwidth = 0.25
-void autotest_fskmodem_norm_M2()    { fskmodem_test_mod_demod( 1,    4, 0.25f    ); }
-void autotest_fskmodem_norm_M4()    { fskmodem_test_mod_demod( 2,    8, 0.25f    ); }
-void autotest_fskmodem_norm_M8()    { fskmodem_test_mod_demod( 3,   16, 0.25f    ); }
-void autotest_fskmodem_norm_M16()   { fskmodem_test_mod_demod( 4,   32, 0.25f    ); }
-void autotest_fskmodem_norm_M32()   { fskmodem_test_mod_demod( 5,   64, 0.25f    ); }
-void autotest_fskmodem_norm_M64()   { fskmodem_test_mod_demod( 6,  128, 0.25f    ); }
-void autotest_fskmodem_norm_M128()  { fskmodem_test_mod_demod( 7,  256, 0.25f    ); }
-void autotest_fskmodem_norm_M256()  { fskmodem_test_mod_demod( 8,  512, 0.25f    ); }
-void autotest_fskmodem_norm_M512()  { fskmodem_test_mod_demod( 9, 1024, 0.25f    ); }
-void autotest_fskmodem_norm_M1024() { fskmodem_test_mod_demod(10, 2048, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M2,"","",0.1)    { testbench_fskmodem(__q__,  1,    4, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M4,"","",0.1)    { testbench_fskmodem(__q__,  2,    8, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M8,"","",0.1)    { testbench_fskmodem(__q__,  3,   16, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M16,"","",0.1)   { testbench_fskmodem(__q__,  4,   32, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M32,"","",0.1)   { testbench_fskmodem(__q__,  5,   64, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M64,"","",0.1)   { testbench_fskmodem(__q__,  6,  128, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M128,"","",0.1)  { testbench_fskmodem(__q__,  7,  256, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M256,"","",0.1)  { testbench_fskmodem(__q__,  8,  512, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M512,"","",0.1)  { testbench_fskmodem(__q__,  9, 1024, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M1024,"","",0.1) { testbench_fskmodem(__q__, 10, 2048, 0.25f    ); }
 
 // AUTOTESTS: obscure properties: M=2^m, k not relative to M, bandwidth basically irrational
-void autotest_fskmodem_misc_M2()    { fskmodem_test_mod_demod( 1,    5, 0.3721451); }
-void autotest_fskmodem_misc_M4()    { fskmodem_test_mod_demod( 2,   10, 0.3721451); }
-void autotest_fskmodem_misc_M8()    { fskmodem_test_mod_demod( 3,   20, 0.3721451); }
-void autotest_fskmodem_misc_M16()   { fskmodem_test_mod_demod( 4,   30, 0.3721451); }
-void autotest_fskmodem_misc_M32()   { fskmodem_test_mod_demod( 5,   60, 0.3721451); }
-void autotest_fskmodem_misc_M64()   { fskmodem_test_mod_demod( 6,  100, 0.3721451); }
-void autotest_fskmodem_misc_M128()  { fskmodem_test_mod_demod( 7,  200, 0.3721451); }
-void autotest_fskmodem_misc_M256()  { fskmodem_test_mod_demod( 8,  500, 0.3721451); }
-void autotest_fskmodem_misc_M512()  { fskmodem_test_mod_demod( 9, 1000, 0.3721451); }
-void autotest_fskmodem_misc_M1024() { fskmodem_test_mod_demod(10, 2000, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M2,"","",0.1)    { testbench_fskmodem(__q__,  1,    5, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M4,"","",0.1)    { testbench_fskmodem(__q__,  2,   10, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M8,"","",0.1)    { testbench_fskmodem(__q__,  3,   20, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M16,"","",0.1)   { testbench_fskmodem(__q__,  4,   30, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M32,"","",0.1)   { testbench_fskmodem(__q__,  5,   60, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M64,"","",0.1)   { testbench_fskmodem(__q__,  6,  100, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M128,"","",0.1)  { testbench_fskmodem(__q__,  7,  200, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M256,"","",0.1)  { testbench_fskmodem(__q__,  8,  500, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M512,"","",0.1)  { testbench_fskmodem(__q__,  9, 1000, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M1024,"","",0.1) { testbench_fskmodem(__q__, 10, 2000, 0.3721451); }
 
 // test modulator copy
-void autotest_fskmod_copy()
+LIQUID_AUTOTEST(fskmod_copy,"","",0.1)
 {
     // options
     unsigned int m  = 3;        // bits per symbol
@@ -116,7 +117,7 @@ void autotest_fskmod_copy()
         fskmod_modulate(mod_orig, s, buf_orig);
         fskmod_modulate(mod_copy, s, buf_copy);
         // check result
-        CONTEND_SAME_DATA(buf_orig, buf_copy, k*sizeof(float complex));
+        LIQUID_CHECK_ARRAY(buf_orig, buf_copy, k*sizeof(float complex));
     }
 
     // clean it up
@@ -126,7 +127,7 @@ void autotest_fskmod_copy()
 }
 
 // test demodulator copy
-void autotest_fskdem_copy()
+LIQUID_AUTOTEST(fskdem_copy,"","",0.1)
 {
     // options
     unsigned int m  = 3;        // bits per symbol
@@ -159,7 +160,7 @@ void autotest_fskdem_copy()
         unsigned int sym_orig = fskdem_demodulate(dem_orig, buf);
         unsigned int sym_copy = fskdem_demodulate(dem_copy, buf);
         // check result
-        CONTEND_EQUALITY(sym_orig, sym_copy);
+        LIQUID_CHECK(sym_orig ==  sym_copy);
     }
 
     // clean it up

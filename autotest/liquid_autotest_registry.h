@@ -17,6 +17,110 @@ extern struct liquid_autotest_s agc_crcf_squelch_s;
 extern struct liquid_autotest_s agc_crcf_lock_s;
 extern struct liquid_autotest_s agc_crcf_config_s;
 extern struct liquid_autotest_s agc_crcf_copy_s;
+// ./src/modem/tests/cpfskmodem_autotest.c
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p5000_k4_m3_square_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p0250_k4_m3_square_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p1250_k4_m3_square_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p0625_k4_m3_square_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p5000_k4_m3_rcosfull_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p0250_k4_m3_rcosfull_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p1250_k4_m3_rcosfull_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p0625_k4_m3_rcosfull_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p5000_k4_m3_rcospart_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p0250_k4_m3_rcospart_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p1250_k4_m3_rcospart_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p0625_k4_m3_rcospart_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p5000_k4_m3_gmsk_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p0250_k4_m3_gmsk_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p1250_k4_m3_gmsk_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p0625_k4_m3_gmsk_s;
+extern struct liquid_autotest_s cpfskmodem_bps2_h0p0250_k4_m3_square_s;
+extern struct liquid_autotest_s cpfskmodem_bps3_h0p1250_k4_m3_square_s;
+extern struct liquid_autotest_s cpfskmodem_bps4_h0p0625_k4_m3_square_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p5_k2_m7_gmsk_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p5_k4_m7_gmsk_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p5_k6_m7_gmsk_s;
+extern struct liquid_autotest_s cpfskmodem_bps1_h0p5_k8_m7_gmsk_s;
+extern struct liquid_autotest_s cpfskmodem_spectrum_s;
+extern struct liquid_autotest_s cpfskmodem_config_s;
+// ./src/modem/tests/freqmodem_autotest.c
+extern struct liquid_autotest_s freqmodem_kf_0_02_s;
+extern struct liquid_autotest_s freqmodem_kf_0_04_s;
+extern struct liquid_autotest_s freqmodem_kf_0_08_s;
+// ./src/modem/tests/gmskmodem_autotest.c
+extern struct liquid_autotest_s gmskmodem_k4_m3_b025_s;
+extern struct liquid_autotest_s gmskmodem_k2_m3_b025_s;
+extern struct liquid_autotest_s gmskmodem_k3_m3_b025_s;
+extern struct liquid_autotest_s gmskmodem_k5_m3_b025_s;
+extern struct liquid_autotest_s gmskmodem_k8_m3_b033_s;
+extern struct liquid_autotest_s gmskmodem_k4_m1_b025_s;
+extern struct liquid_autotest_s gmskmodem_k4_m2_b025_s;
+extern struct liquid_autotest_s gmskmodem_k4_m8_b025_s;
+extern struct liquid_autotest_s gmskmodem_k4_m3_b020_s;
+extern struct liquid_autotest_s gmskmodem_k4_m3_b033_s;
+extern struct liquid_autotest_s gmskmodem_k4_m3_b050_s;
+extern struct liquid_autotest_s gmskmod_copy_s;
+extern struct liquid_autotest_s gmskdem_copy_s;
+// ./src/modem/tests/modem_config_autotest.c
+extern struct liquid_autotest_s modem_copy_psk2_s;
+extern struct liquid_autotest_s modem_copy_psk4_s;
+extern struct liquid_autotest_s modem_copy_psk8_s;
+extern struct liquid_autotest_s modem_copy_psk16_s;
+extern struct liquid_autotest_s modem_copy_psk32_s;
+extern struct liquid_autotest_s modem_copy_psk64_s;
+extern struct liquid_autotest_s modem_copy_psk128_s;
+extern struct liquid_autotest_s modem_copy_psk256_s;
+extern struct liquid_autotest_s modem_copy_dpsk2_s;
+extern struct liquid_autotest_s modem_copy_dpsk4_s;
+extern struct liquid_autotest_s modem_copy_dpsk8_s;
+extern struct liquid_autotest_s modem_copy_dpsk16_s;
+extern struct liquid_autotest_s modem_copy_dpsk32_s;
+extern struct liquid_autotest_s modem_copy_dpsk64_s;
+extern struct liquid_autotest_s modem_copy_dpsk128_s;
+extern struct liquid_autotest_s modem_copy_dpsk256_s;
+extern struct liquid_autotest_s modem_copy_ask2_s;
+extern struct liquid_autotest_s modem_copy_ask4_s;
+extern struct liquid_autotest_s modem_copy_ask8_s;
+extern struct liquid_autotest_s modem_copy_ask16_s;
+extern struct liquid_autotest_s modem_copy_ask32_s;
+extern struct liquid_autotest_s modem_copy_ask64_s;
+extern struct liquid_autotest_s modem_copy_ask128_s;
+extern struct liquid_autotest_s modem_copy_ask256_s;
+extern struct liquid_autotest_s modem_copy_qam4_s;
+extern struct liquid_autotest_s modem_copy_qam8_s;
+extern struct liquid_autotest_s modem_copy_qam16_s;
+extern struct liquid_autotest_s modem_copy_qam32_s;
+extern struct liquid_autotest_s modem_copy_qam64_s;
+extern struct liquid_autotest_s modem_copy_qam128_s;
+extern struct liquid_autotest_s modem_copy_qam256_s;
+extern struct liquid_autotest_s modem_copy_apsk4_s;
+extern struct liquid_autotest_s modem_copy_apsk8_s;
+extern struct liquid_autotest_s modem_copy_apsk16_s;
+extern struct liquid_autotest_s modem_copy_apsk32_s;
+extern struct liquid_autotest_s modem_copy_apsk64_s;
+extern struct liquid_autotest_s modem_copy_apsk128_s;
+extern struct liquid_autotest_s modem_copy_apsk256_s;
+extern struct liquid_autotest_s modem_copy_bpsk_s;
+extern struct liquid_autotest_s modem_copy_qpsk_s;
+extern struct liquid_autotest_s modem_copy_ook_s;
+extern struct liquid_autotest_s modem_copy_sqam32_s;
+extern struct liquid_autotest_s modem_copy_sqam128_s;
+extern struct liquid_autotest_s modem_copy_V29_s;
+extern struct liquid_autotest_s modem_copy_arb16opt_s;
+extern struct liquid_autotest_s modem_copy_arb32opt_s;
+extern struct liquid_autotest_s modem_copy_arb64opt_s;
+extern struct liquid_autotest_s modem_copy_arb128opt_s;
+extern struct liquid_autotest_s modem_copy_arb256opt_s;
+extern struct liquid_autotest_s modem_copy_arb64vt_s;
+extern struct liquid_autotest_s modem_copy_pi4dqpsk_s;
+extern struct liquid_autotest_s modem_config_s;
+// ./src/modem/tests/ampmodem_autotest.c
+extern struct liquid_autotest_s ampmodem_dsb_carrier_on_s;
+extern struct liquid_autotest_s ampmodem_usb_carrier_on_s;
+extern struct liquid_autotest_s ampmodem_lsb_carrier_on_s;
+extern struct liquid_autotest_s ampmodem_dsb_carrier_off_s;
+extern struct liquid_autotest_s ampmodem_usb_carrier_off_s;
+extern struct liquid_autotest_s ampmodem_lsb_carrier_off_s;
 // ./src/modem/tests/modem_autotest.c
 extern struct liquid_autotest_s mod_demod_psk2_s;
 extern struct liquid_autotest_s mod_demod_psk4_s;
@@ -69,10 +173,136 @@ extern struct liquid_autotest_s mod_demod_arb128opt_s;
 extern struct liquid_autotest_s mod_demod_arb256opt_s;
 extern struct liquid_autotest_s mod_demod_arb64vt_s;
 extern struct liquid_autotest_s mod_demod_pi4dqpsk_s;
+// ./src/modem/tests/modem_demodsoft_autotest.c
+extern struct liquid_autotest_s demodsoft_psk2_s;
+extern struct liquid_autotest_s demodsoft_psk4_s;
+extern struct liquid_autotest_s demodsoft_psk8_s;
+extern struct liquid_autotest_s demodsoft_psk16_s;
+extern struct liquid_autotest_s demodsoft_psk32_s;
+extern struct liquid_autotest_s demodsoft_psk64_s;
+extern struct liquid_autotest_s demodsoft_psk128_s;
+extern struct liquid_autotest_s demodsoft_psk256_s;
+extern struct liquid_autotest_s demodsoft_dpsk2_s;
+extern struct liquid_autotest_s demodsoft_dpsk4_s;
+extern struct liquid_autotest_s demodsoft_dpsk8_s;
+extern struct liquid_autotest_s demodsoft_dpsk16_s;
+extern struct liquid_autotest_s demodsoft_dpsk32_s;
+extern struct liquid_autotest_s demodsoft_dpsk64_s;
+extern struct liquid_autotest_s demodsoft_dpsk128_s;
+extern struct liquid_autotest_s demodsoft_dpsk256_s;
+extern struct liquid_autotest_s demodsoft_ask2_s;
+extern struct liquid_autotest_s demodsoft_ask4_s;
+extern struct liquid_autotest_s demodsoft_ask8_s;
+extern struct liquid_autotest_s demodsoft_ask16_s;
+extern struct liquid_autotest_s demodsoft_ask32_s;
+extern struct liquid_autotest_s demodsoft_ask64_s;
+extern struct liquid_autotest_s demodsoft_ask128_s;
+extern struct liquid_autotest_s demodsoft_ask256_s;
+extern struct liquid_autotest_s demodsoft_qam4_s;
+extern struct liquid_autotest_s demodsoft_qam8_s;
+extern struct liquid_autotest_s demodsoft_qam16_s;
+extern struct liquid_autotest_s demodsoft_qam32_s;
+extern struct liquid_autotest_s demodsoft_qam64_s;
+extern struct liquid_autotest_s demodsoft_qam128_s;
+extern struct liquid_autotest_s demodsoft_qam256_s;
+extern struct liquid_autotest_s demodsoft_apsk4_s;
+extern struct liquid_autotest_s demodsoft_apsk8_s;
+extern struct liquid_autotest_s demodsoft_apsk16_s;
+extern struct liquid_autotest_s demodsoft_apsk32_s;
+extern struct liquid_autotest_s demodsoft_apsk64_s;
+extern struct liquid_autotest_s demodsoft_apsk128_s;
+extern struct liquid_autotest_s demodsoft_apsk256_s;
+extern struct liquid_autotest_s demodsoft_bpsk_s;
+extern struct liquid_autotest_s demodsoft_qpsk_s;
+extern struct liquid_autotest_s demodsoft_ook_s;
+extern struct liquid_autotest_s demodsoft_sqam32_s;
+extern struct liquid_autotest_s demodsoft_sqam128_s;
+extern struct liquid_autotest_s demodsoft_V29_s;
+extern struct liquid_autotest_s demodsoft_arb16opt_s;
+extern struct liquid_autotest_s demodsoft_arb32opt_s;
+extern struct liquid_autotest_s demodsoft_arb64opt_s;
+extern struct liquid_autotest_s demodsoft_arb128opt_s;
+extern struct liquid_autotest_s demodsoft_arb256opt_s;
+extern struct liquid_autotest_s demodsoft_arb64vt_s;
+extern struct liquid_autotest_s demodsoft_pi4dqpsk_s;
+// ./src/modem/tests/modem_demodstats_autotest.c
+extern struct liquid_autotest_s demodstats_psk2_s;
+extern struct liquid_autotest_s demodstats_psk4_s;
+extern struct liquid_autotest_s demodstats_psk8_s;
+extern struct liquid_autotest_s demodstats_psk16_s;
+extern struct liquid_autotest_s demodstats_psk32_s;
+extern struct liquid_autotest_s demodstats_psk64_s;
+extern struct liquid_autotest_s demodstats_psk128_s;
+extern struct liquid_autotest_s demodstats_psk256_s;
+extern struct liquid_autotest_s demodstats_dpsk2_s;
+extern struct liquid_autotest_s demodstats_dpsk4_s;
+extern struct liquid_autotest_s demodstats_dpsk8_s;
+extern struct liquid_autotest_s demodstats_dpsk16_s;
+extern struct liquid_autotest_s demodstats_dpsk32_s;
+extern struct liquid_autotest_s demodstats_dpsk64_s;
+extern struct liquid_autotest_s demodstats_dpsk128_s;
+extern struct liquid_autotest_s demodstats_dpsk256_s;
+extern struct liquid_autotest_s demodstats_ask2_s;
+extern struct liquid_autotest_s demodstats_ask4_s;
+extern struct liquid_autotest_s demodstats_ask8_s;
+extern struct liquid_autotest_s demodstats_ask16_s;
+extern struct liquid_autotest_s demodstats_ask32_s;
+extern struct liquid_autotest_s demodstats_ask64_s;
+extern struct liquid_autotest_s demodstats_ask128_s;
+extern struct liquid_autotest_s demodstats_ask256_s;
+extern struct liquid_autotest_s demodstats_qam4_s;
+extern struct liquid_autotest_s demodstats_qam8_s;
+extern struct liquid_autotest_s demodstats_qam16_s;
+extern struct liquid_autotest_s demodstats_qam32_s;
+extern struct liquid_autotest_s demodstats_qam64_s;
+extern struct liquid_autotest_s demodstats_qam128_s;
+extern struct liquid_autotest_s demodstats_qam256_s;
+extern struct liquid_autotest_s demodstats_apsk4_s;
+extern struct liquid_autotest_s demodstats_apsk8_s;
+extern struct liquid_autotest_s demodstats_apsk16_s;
+extern struct liquid_autotest_s demodstats_apsk32_s;
+extern struct liquid_autotest_s demodstats_apsk64_s;
+extern struct liquid_autotest_s demodstats_apsk128_s;
+extern struct liquid_autotest_s demodstats_apsk256_s;
+extern struct liquid_autotest_s demodstats_bpsk_s;
+extern struct liquid_autotest_s demodstats_qpsk_s;
+extern struct liquid_autotest_s demodstats_ook_s;
+extern struct liquid_autotest_s demodstats_sqam32_s;
+extern struct liquid_autotest_s demodstats_sqam128_s;
+extern struct liquid_autotest_s demodstats_V29_s;
+extern struct liquid_autotest_s demodstats_arb16opt_s;
+extern struct liquid_autotest_s demodstats_arb32opt_s;
+extern struct liquid_autotest_s demodstats_arb64opt_s;
+extern struct liquid_autotest_s demodstats_arb128opt_s;
+extern struct liquid_autotest_s demodstats_arb256opt_s;
+extern struct liquid_autotest_s demodstats_arb64vt_s;
 // ./src/modem/tests/modem_utilities_autotest.c
 extern struct liquid_autotest_s modemcf_print_schemes_s;
 extern struct liquid_autotest_s modemcf_str2mod_s;
 extern struct liquid_autotest_s modemcf_types_s;
+// ./src/modem/tests/fskmodem_autotest.c
+extern struct liquid_autotest_s fskmodem_norm_M2_s;
+extern struct liquid_autotest_s fskmodem_norm_M4_s;
+extern struct liquid_autotest_s fskmodem_norm_M8_s;
+extern struct liquid_autotest_s fskmodem_norm_M16_s;
+extern struct liquid_autotest_s fskmodem_norm_M32_s;
+extern struct liquid_autotest_s fskmodem_norm_M64_s;
+extern struct liquid_autotest_s fskmodem_norm_M128_s;
+extern struct liquid_autotest_s fskmodem_norm_M256_s;
+extern struct liquid_autotest_s fskmodem_norm_M512_s;
+extern struct liquid_autotest_s fskmodem_norm_M1024_s;
+extern struct liquid_autotest_s fskmodem_misc_M2_s;
+extern struct liquid_autotest_s fskmodem_misc_M4_s;
+extern struct liquid_autotest_s fskmodem_misc_M8_s;
+extern struct liquid_autotest_s fskmodem_misc_M16_s;
+extern struct liquid_autotest_s fskmodem_misc_M32_s;
+extern struct liquid_autotest_s fskmodem_misc_M64_s;
+extern struct liquid_autotest_s fskmodem_misc_M128_s;
+extern struct liquid_autotest_s fskmodem_misc_M256_s;
+extern struct liquid_autotest_s fskmodem_misc_M512_s;
+extern struct liquid_autotest_s fskmodem_misc_M1024_s;
+extern struct liquid_autotest_s fskmod_copy_s;
+extern struct liquid_autotest_s fskdem_copy_s;
 // ./src/fft/tests/spwaterfall_autotest.c
 extern struct liquid_autotest_s spwaterfall_config_s;
 extern struct liquid_autotest_s spwaterfallcf_noise_440_s;
@@ -547,6 +777,105 @@ liquid_autotest liquid_autotest_registry[] =
     &agc_crcf_lock_s,
     &agc_crcf_config_s,
     &agc_crcf_copy_s,
+    &cpfskmodem_bps1_h0p5000_k4_m3_square_s,
+    &cpfskmodem_bps1_h0p0250_k4_m3_square_s,
+    &cpfskmodem_bps1_h0p1250_k4_m3_square_s,
+    &cpfskmodem_bps1_h0p0625_k4_m3_square_s,
+    &cpfskmodem_bps1_h0p5000_k4_m3_rcosfull_s,
+    &cpfskmodem_bps1_h0p0250_k4_m3_rcosfull_s,
+    &cpfskmodem_bps1_h0p1250_k4_m3_rcosfull_s,
+    &cpfskmodem_bps1_h0p0625_k4_m3_rcosfull_s,
+    &cpfskmodem_bps1_h0p5000_k4_m3_rcospart_s,
+    &cpfskmodem_bps1_h0p0250_k4_m3_rcospart_s,
+    &cpfskmodem_bps1_h0p1250_k4_m3_rcospart_s,
+    &cpfskmodem_bps1_h0p0625_k4_m3_rcospart_s,
+    &cpfskmodem_bps1_h0p5000_k4_m3_gmsk_s,
+    &cpfskmodem_bps1_h0p0250_k4_m3_gmsk_s,
+    &cpfskmodem_bps1_h0p1250_k4_m3_gmsk_s,
+    &cpfskmodem_bps1_h0p0625_k4_m3_gmsk_s,
+    &cpfskmodem_bps2_h0p0250_k4_m3_square_s,
+    &cpfskmodem_bps3_h0p1250_k4_m3_square_s,
+    &cpfskmodem_bps4_h0p0625_k4_m3_square_s,
+    &cpfskmodem_bps1_h0p5_k2_m7_gmsk_s,
+    &cpfskmodem_bps1_h0p5_k4_m7_gmsk_s,
+    &cpfskmodem_bps1_h0p5_k6_m7_gmsk_s,
+    &cpfskmodem_bps1_h0p5_k8_m7_gmsk_s,
+    &cpfskmodem_spectrum_s,
+    &cpfskmodem_config_s,
+    &freqmodem_kf_0_02_s,
+    &freqmodem_kf_0_04_s,
+    &freqmodem_kf_0_08_s,
+    &gmskmodem_k4_m3_b025_s,
+    &gmskmodem_k2_m3_b025_s,
+    &gmskmodem_k3_m3_b025_s,
+    &gmskmodem_k5_m3_b025_s,
+    &gmskmodem_k8_m3_b033_s,
+    &gmskmodem_k4_m1_b025_s,
+    &gmskmodem_k4_m2_b025_s,
+    &gmskmodem_k4_m8_b025_s,
+    &gmskmodem_k4_m3_b020_s,
+    &gmskmodem_k4_m3_b033_s,
+    &gmskmodem_k4_m3_b050_s,
+    &gmskmod_copy_s,
+    &gmskdem_copy_s,
+    &modem_copy_psk2_s,
+    &modem_copy_psk4_s,
+    &modem_copy_psk8_s,
+    &modem_copy_psk16_s,
+    &modem_copy_psk32_s,
+    &modem_copy_psk64_s,
+    &modem_copy_psk128_s,
+    &modem_copy_psk256_s,
+    &modem_copy_dpsk2_s,
+    &modem_copy_dpsk4_s,
+    &modem_copy_dpsk8_s,
+    &modem_copy_dpsk16_s,
+    &modem_copy_dpsk32_s,
+    &modem_copy_dpsk64_s,
+    &modem_copy_dpsk128_s,
+    &modem_copy_dpsk256_s,
+    &modem_copy_ask2_s,
+    &modem_copy_ask4_s,
+    &modem_copy_ask8_s,
+    &modem_copy_ask16_s,
+    &modem_copy_ask32_s,
+    &modem_copy_ask64_s,
+    &modem_copy_ask128_s,
+    &modem_copy_ask256_s,
+    &modem_copy_qam4_s,
+    &modem_copy_qam8_s,
+    &modem_copy_qam16_s,
+    &modem_copy_qam32_s,
+    &modem_copy_qam64_s,
+    &modem_copy_qam128_s,
+    &modem_copy_qam256_s,
+    &modem_copy_apsk4_s,
+    &modem_copy_apsk8_s,
+    &modem_copy_apsk16_s,
+    &modem_copy_apsk32_s,
+    &modem_copy_apsk64_s,
+    &modem_copy_apsk128_s,
+    &modem_copy_apsk256_s,
+    &modem_copy_bpsk_s,
+    &modem_copy_qpsk_s,
+    &modem_copy_ook_s,
+    &modem_copy_sqam32_s,
+    &modem_copy_sqam128_s,
+    &modem_copy_V29_s,
+    &modem_copy_arb16opt_s,
+    &modem_copy_arb32opt_s,
+    &modem_copy_arb64opt_s,
+    &modem_copy_arb128opt_s,
+    &modem_copy_arb256opt_s,
+    &modem_copy_arb64vt_s,
+    &modem_copy_pi4dqpsk_s,
+    &modem_config_s,
+    &ampmodem_dsb_carrier_on_s,
+    &ampmodem_usb_carrier_on_s,
+    &ampmodem_lsb_carrier_on_s,
+    &ampmodem_dsb_carrier_off_s,
+    &ampmodem_usb_carrier_off_s,
+    &ampmodem_lsb_carrier_off_s,
     &mod_demod_psk2_s,
     &mod_demod_psk4_s,
     &mod_demod_psk8_s,
@@ -598,9 +927,132 @@ liquid_autotest liquid_autotest_registry[] =
     &mod_demod_arb256opt_s,
     &mod_demod_arb64vt_s,
     &mod_demod_pi4dqpsk_s,
+    &demodsoft_psk2_s,
+    &demodsoft_psk4_s,
+    &demodsoft_psk8_s,
+    &demodsoft_psk16_s,
+    &demodsoft_psk32_s,
+    &demodsoft_psk64_s,
+    &demodsoft_psk128_s,
+    &demodsoft_psk256_s,
+    &demodsoft_dpsk2_s,
+    &demodsoft_dpsk4_s,
+    &demodsoft_dpsk8_s,
+    &demodsoft_dpsk16_s,
+    &demodsoft_dpsk32_s,
+    &demodsoft_dpsk64_s,
+    &demodsoft_dpsk128_s,
+    &demodsoft_dpsk256_s,
+    &demodsoft_ask2_s,
+    &demodsoft_ask4_s,
+    &demodsoft_ask8_s,
+    &demodsoft_ask16_s,
+    &demodsoft_ask32_s,
+    &demodsoft_ask64_s,
+    &demodsoft_ask128_s,
+    &demodsoft_ask256_s,
+    &demodsoft_qam4_s,
+    &demodsoft_qam8_s,
+    &demodsoft_qam16_s,
+    &demodsoft_qam32_s,
+    &demodsoft_qam64_s,
+    &demodsoft_qam128_s,
+    &demodsoft_qam256_s,
+    &demodsoft_apsk4_s,
+    &demodsoft_apsk8_s,
+    &demodsoft_apsk16_s,
+    &demodsoft_apsk32_s,
+    &demodsoft_apsk64_s,
+    &demodsoft_apsk128_s,
+    &demodsoft_apsk256_s,
+    &demodsoft_bpsk_s,
+    &demodsoft_qpsk_s,
+    &demodsoft_ook_s,
+    &demodsoft_sqam32_s,
+    &demodsoft_sqam128_s,
+    &demodsoft_V29_s,
+    &demodsoft_arb16opt_s,
+    &demodsoft_arb32opt_s,
+    &demodsoft_arb64opt_s,
+    &demodsoft_arb128opt_s,
+    &demodsoft_arb256opt_s,
+    &demodsoft_arb64vt_s,
+    &demodsoft_pi4dqpsk_s,
+    &demodstats_psk2_s,
+    &demodstats_psk4_s,
+    &demodstats_psk8_s,
+    &demodstats_psk16_s,
+    &demodstats_psk32_s,
+    &demodstats_psk64_s,
+    &demodstats_psk128_s,
+    &demodstats_psk256_s,
+    &demodstats_dpsk2_s,
+    &demodstats_dpsk4_s,
+    &demodstats_dpsk8_s,
+    &demodstats_dpsk16_s,
+    &demodstats_dpsk32_s,
+    &demodstats_dpsk64_s,
+    &demodstats_dpsk128_s,
+    &demodstats_dpsk256_s,
+    &demodstats_ask2_s,
+    &demodstats_ask4_s,
+    &demodstats_ask8_s,
+    &demodstats_ask16_s,
+    &demodstats_ask32_s,
+    &demodstats_ask64_s,
+    &demodstats_ask128_s,
+    &demodstats_ask256_s,
+    &demodstats_qam4_s,
+    &demodstats_qam8_s,
+    &demodstats_qam16_s,
+    &demodstats_qam32_s,
+    &demodstats_qam64_s,
+    &demodstats_qam128_s,
+    &demodstats_qam256_s,
+    &demodstats_apsk4_s,
+    &demodstats_apsk8_s,
+    &demodstats_apsk16_s,
+    &demodstats_apsk32_s,
+    &demodstats_apsk64_s,
+    &demodstats_apsk128_s,
+    &demodstats_apsk256_s,
+    &demodstats_bpsk_s,
+    &demodstats_qpsk_s,
+    &demodstats_ook_s,
+    &demodstats_sqam32_s,
+    &demodstats_sqam128_s,
+    &demodstats_V29_s,
+    &demodstats_arb16opt_s,
+    &demodstats_arb32opt_s,
+    &demodstats_arb64opt_s,
+    &demodstats_arb128opt_s,
+    &demodstats_arb256opt_s,
+    &demodstats_arb64vt_s,
     &modemcf_print_schemes_s,
     &modemcf_str2mod_s,
     &modemcf_types_s,
+    &fskmodem_norm_M2_s,
+    &fskmodem_norm_M4_s,
+    &fskmodem_norm_M8_s,
+    &fskmodem_norm_M16_s,
+    &fskmodem_norm_M32_s,
+    &fskmodem_norm_M64_s,
+    &fskmodem_norm_M128_s,
+    &fskmodem_norm_M256_s,
+    &fskmodem_norm_M512_s,
+    &fskmodem_norm_M1024_s,
+    &fskmodem_misc_M2_s,
+    &fskmodem_misc_M4_s,
+    &fskmodem_misc_M8_s,
+    &fskmodem_misc_M16_s,
+    &fskmodem_misc_M32_s,
+    &fskmodem_misc_M64_s,
+    &fskmodem_misc_M128_s,
+    &fskmodem_misc_M256_s,
+    &fskmodem_misc_M512_s,
+    &fskmodem_misc_M1024_s,
+    &fskmod_copy_s,
+    &fskdem_copy_s,
     &spwaterfall_config_s,
     &spwaterfallcf_noise_440_s,
     &spwaterfallcf_noise_1024_s,

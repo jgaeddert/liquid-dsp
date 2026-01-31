@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,14 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // Help function to keep code base small
-void gmskmodem_test_mod_demod(unsigned int _k,
-                              unsigned int _m,
-                              float        _bt)
+void testbench_gmskmodem(liquid_autotest __q__,
+                         unsigned int _k,
+                         unsigned int _m,
+                         float        _bt)
 {
     // create modulator/demodulator pair
     gmskmod mod = gmskmod_create(_k, _m, _bt);
@@ -64,7 +65,7 @@ void gmskmodem_test_mod_demod(unsigned int _k,
                     (sym_in[i-delay] == sym_out[i]) ? "" : "*");
 
             // check result
-            CONTEND_EQUALITY(sym_in[i-delay], sym_out[i]);
+            LIQUID_CHECK(sym_in[i-delay] ==  sym_out[i]);
         }
     }
 
@@ -75,26 +76,26 @@ void gmskmodem_test_mod_demod(unsigned int _k,
 }
 
 // base configuration
-void autotest_gmskmodem_k4_m3_b025() { gmskmodem_test_mod_demod( 4, 3, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k4_m3_b025,"","",0.1) { testbench_gmskmodem(__q__, 4, 3, 0.25f); }
 
 // test different samples/symbol
-void autotest_gmskmodem_k2_m3_b025() { gmskmodem_test_mod_demod( 2, 3, 0.25f); }
-void autotest_gmskmodem_k3_m3_b025() { gmskmodem_test_mod_demod( 3, 3, 0.25f); }
-void autotest_gmskmodem_k5_m3_b025() { gmskmodem_test_mod_demod( 5, 3, 0.25f); }
-void autotest_gmskmodem_k8_m3_b033() { gmskmodem_test_mod_demod( 8, 3, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k2_m3_b025,"","",0.1) { testbench_gmskmodem(__q__, 2, 3, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k3_m3_b025,"","",0.1) { testbench_gmskmodem(__q__, 3, 3, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k5_m3_b025,"","",0.1) { testbench_gmskmodem(__q__, 5, 3, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k8_m3_b033,"","",0.1) { testbench_gmskmodem(__q__, 8, 3, 0.25f); }
 
 // test different filter semi-lengths
-void autotest_gmskmodem_k4_m1_b025() { gmskmodem_test_mod_demod( 4, 1, 0.25f); }
-void autotest_gmskmodem_k4_m2_b025() { gmskmodem_test_mod_demod( 4, 2, 0.25f); }
-void autotest_gmskmodem_k4_m8_b025() { gmskmodem_test_mod_demod( 4, 8, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k4_m1_b025,"","",0.1) { testbench_gmskmodem(__q__, 4, 1, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k4_m2_b025,"","",0.1) { testbench_gmskmodem(__q__, 4, 2, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k4_m8_b025,"","",0.1) { testbench_gmskmodem(__q__, 4, 8, 0.25f); }
 
 // test different filter bandwidth factors
-void autotest_gmskmodem_k4_m3_b020() { gmskmodem_test_mod_demod( 4, 3, 0.20f); }
-void autotest_gmskmodem_k4_m3_b033() { gmskmodem_test_mod_demod( 4, 3, 0.25f); }
-void autotest_gmskmodem_k4_m3_b050() { gmskmodem_test_mod_demod( 4, 3, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k4_m3_b020,"","",0.1) { testbench_gmskmodem(__q__, 4, 3, 0.20f); }
+LIQUID_AUTOTEST(gmskmodem_k4_m3_b033,"","",0.1) { testbench_gmskmodem(__q__, 4, 3, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k4_m3_b050,"","",0.1) { testbench_gmskmodem(__q__, 4, 3, 0.25f); }
 
 // test modulator copy
-void autotest_gmskmod_copy()
+LIQUID_AUTOTEST(gmskmod_copy,"","",0.1)
 {
     // options
     unsigned int k  = 5;
@@ -127,7 +128,7 @@ void autotest_gmskmod_copy()
         gmskmod_modulate(mod_orig, s, buf_orig);
         gmskmod_modulate(mod_copy, s, buf_copy);
         // check result
-        CONTEND_SAME_DATA(buf_orig, buf_copy, k*sizeof(float complex));
+        LIQUID_CHECK_ARRAY(buf_orig, buf_copy, k*sizeof(float complex));
     }
 
     // clean it up
@@ -137,7 +138,7 @@ void autotest_gmskmod_copy()
 }
 
 // test demodulator copy
-void autotest_gmskdem_copy()
+LIQUID_AUTOTEST(gmskdem_copy,"","",0.1)
 {
     // options
     unsigned int k  = 5;
@@ -172,7 +173,7 @@ void autotest_gmskdem_copy()
         gmskdem_demodulate(dem_orig, buf, &sym_orig);
         gmskdem_demodulate(dem_copy, buf, &sym_copy);
         // check result
-        CONTEND_EQUALITY(sym_orig, sym_copy);
+        LIQUID_CHECK(sym_orig ==  sym_copy);
     }
 
     // clean it up
