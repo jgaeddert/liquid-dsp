@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-// test basic wdelayf functionality
-void autotest_wdelayf()
+LIQUID_AUTOTEST(wdelayf,"test basic wdelayf functionality","",0.1)
 {
     float v;    // reader
     unsigned int i;
@@ -34,7 +33,7 @@ void autotest_wdelayf()
     wdelayf w = wdelayf_create(4);
 
     wdelayf_read(w, &v);
-    CONTEND_EQUALITY(v, 0);
+    LIQUID_CHECK(v ==  0);
 
     float x0     [10] = {1, 2, 3, 4, 5, 6, 7, 8, 9,10};
     float y0_test[10] = {0, 0, 0, 0, 1, 2, 3, 4, 5, 6};
@@ -46,7 +45,7 @@ void autotest_wdelayf()
         liquid_log_debug("%3u : %6.2f (%6.2f)", i, y0[i], y0_test[i]);
     }
     // 6 7 8 9 10
-    CONTEND_SAME_DATA(y0, y0_test, 10*sizeof(float));
+    LIQUID_CHECK_ARRAY(y0, y0_test, 10*sizeof(float));
 
     // re-create wdelay object
     // wdelay: 0 0 6 7 8 9 10
@@ -61,7 +60,7 @@ void autotest_wdelayf()
         liquid_log_debug("%3u : %6.2f (%6.2f)", i, y1[i], y1_test[i]);
     }
     // wdelay: 6 7 8 9 2 2 2
-    CONTEND_SAME_DATA(y1, y1_test, 10*sizeof(float));
+    LIQUID_CHECK_ARRAY(y1, y1_test, 10*sizeof(float));
 
     // re-create wdelay object
     // wdelay: 7 8 9 2 2 2
@@ -77,16 +76,15 @@ void autotest_wdelayf()
         liquid_log_debug("%3u : %6.2f (%6.2f)", i, y1[i], y1_test[i]);
     }
     // wdelay: 1 1 1 2 3 4
-    CONTEND_SAME_DATA(y2, y2_test, 10*sizeof(float));
+    LIQUID_CHECK_ARRAY(y2, y2_test, 10*sizeof(float));
 
-    CONTEND_EQUALITY(wdelayf_print(w), LIQUID_OK);
+    LIQUID_CHECK(wdelayf_print(w) ==  LIQUID_OK);
 
     // destroy object
     wdelayf_destroy(w);
 }
 
-// test copy method
-void autotest_wdelay_copy()
+LIQUID_AUTOTEST(wdelay_copy,"test wdelay copy method","",0.1)
 {
     // create base object
     unsigned int delay = 20;
@@ -111,7 +109,7 @@ void autotest_wdelay_copy()
         float complex y0, y1;
         wdelaycf_read(q0, &y0);
         wdelaycf_read(q1, &y1);
-        CONTEND_EQUALITY(y0, y1);
+        LIQUID_CHECK(y0 ==  y1);
     }
 
     // destroy objects

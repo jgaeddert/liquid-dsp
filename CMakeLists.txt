@@ -521,9 +521,9 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/autotest/null_autotest.c
     ${PROJECT_SOURCE_DIR}/src/agc/tests/agc_crcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/audio/tests/cvsd_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/buffer/tests/cbuffer_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/buffer/tests/wdelay_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/buffer/tests/buffer_window_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/buffer/tests/cbuffer_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/buffer/tests/wdelay_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/buffer/tests/buffer_window_autotest.c
     #${PROJECT_SOURCE_DIR}/src/channel/tests/channel_copy_autotest.c
     #${PROJECT_SOURCE_DIR}/src/channel/tests/tvmpch_copy_autotest.c
     #${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_rrrf_autotest.c

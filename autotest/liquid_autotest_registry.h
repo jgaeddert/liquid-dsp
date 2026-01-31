@@ -801,6 +801,19 @@ extern struct liquid_autotest_s smatrixf_mul_s;
 // ./src/matrix/tests/smatrixi_autotest.c
 extern struct liquid_autotest_s smatrixi_vmul_s;
 extern struct liquid_autotest_s smatrixi_mul_s;
+// ./src/buffer/tests/buffer_window_autotest.c
+extern struct liquid_autotest_s window_config_errors_s;
+extern struct liquid_autotest_s windowf_s;
+extern struct liquid_autotest_s window_copy_s;
+// ./src/buffer/tests/wdelay_autotest.c
+extern struct liquid_autotest_s wdelayf_s;
+extern struct liquid_autotest_s wdelay_copy_s;
+// ./src/buffer/tests/cbuffer_autotest.c
+extern struct liquid_autotest_s cbufferf_s;
+extern struct liquid_autotest_s cbuffercf_s;
+extern struct liquid_autotest_s cbufferf_flow_s;
+extern struct liquid_autotest_s cbufferf_config_s;
+extern struct liquid_autotest_s cbuffer_copy_s;
 
 // compile test registry
 liquid_autotest liquid_autotest_registry[] =
@@ -1540,6 +1553,16 @@ liquid_autotest liquid_autotest_registry[] =
     &smatrixf_mul_s,
     &smatrixi_vmul_s,
     &smatrixi_mul_s,
+    &window_config_errors_s,
+    &windowf_s,
+    &window_copy_s,
+    &wdelayf_s,
+    &wdelay_copy_s,
+    &cbufferf_s,
+    &cbuffercf_s,
+    &cbufferf_flow_s,
+    &cbufferf_config_s,
+    &cbuffer_copy_s,
     NULL
 };
 
