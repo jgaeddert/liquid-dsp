@@ -18,6 +18,9 @@ char __docstr__[] = "Run all autotest programs in liquid-dsp";
 // autotest main
 int main(int argc, char* argv[])
 {
+    // set default logging level
+    liquid_logger_set_level(NULL, LIQUID_INFO);
+
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
     liquid_argparse_add(char*,logfile, "", 'g', "output logfile", NULL);
