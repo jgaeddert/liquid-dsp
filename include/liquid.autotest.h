@@ -181,6 +181,10 @@ int liquid_registry_print(const liquid_autotest * _registry,
 #define LIQUID_REQUIRE(X)           __LIQUID_TEST__(__q__,__FILE__,__LINE__,X,true)
 #define LIQUID_REQUIRE_(Q,X)        __LIQUID_TEST__(Q,__FILE__,__LINE__,X,true)
 
+// check that data in two arrays are identical
+int liquid_autotest_same_data(unsigned char * _x,
+                              unsigned char * _y,
+                              unsigned int    _n);
 
 // test if the values in two arrays is identical
 #define __LIQUID_TEST_ARRAY__(Q,F,L,X,Y,N,REQUIRE)                              \
@@ -202,7 +206,6 @@ int liquid_registry_print(const liquid_autotest * _registry,
 #define LIQUID_REQUIRE_ARRAY(X,Y,N)     __LIQUID_TEST_ARRAY__(__q__,__FILE__,__LINE__,X,Y,N,true)
 
 
-
 // Test delta between two (possibly complex numbers) is within tolerance. Use the
 // expanded macro for computing magnitude of difference to account for both real
 // as well as complex numbers
@@ -219,156 +222,6 @@ int liquid_registry_print(const liquid_autotest * _registry,
 }
 #define LIQUID_CHECK_DELTA_(Q,X,Y,D)    __LIQUID_TEST_DELTA__(Q,__FILE__,__LINE__,X,Y,D,false)
 #define LIQUID_CHECK_DELTA(X,Y,D)       __LIQUID_TEST_DELTA__(__q__,__FILE__,__LINE__,X,Y,D,false)
-
-
-
-// contend that data in two arrays are identical
-//  _x      :   input array [size: _n x 1]
-//  _y      :   input array [size: _n x 1]
-//  _n      :   input array size
-int liquid_autotest_same_data(unsigned char * _x,
-                              unsigned char * _y,
-                              unsigned int _n);
-
-// print array to standard out
-//  _x      :   input array [size: _n x 1]
-//  _n      :   input array size
-void liquid_autotest_print_array(unsigned char * _x,
-                                 unsigned int _n);
-
-// CONTEND_TRUE
-#define TEST_TRUE(F,L,EX,X)                                         \
-{                                                                   \
-    if (!(X))                                                       \
-    {                                                               \
-        liquid_autotest_failed_bool(F,L,EX,X,1);                    \
-    } else {                                                        \
-         liquid_autotest_passed();                                  \
-    }                                                               \
-}
-#define CONTEND_TRUE_FL(F,L,X) TEST_TRUE(F,L,#X,(X))
-#define CONTEND_TRUE(X)        CONTEND_TRUE_FL(__FILE__,__LINE__,X)
-
-// CONTEND_FALSE
-#define TEST_FALSE(F,L,EX,X)                                        \
-{                                                                   \
-    if ((X))                                                        \
-    {                                                               \
-        liquid_autotest_failed_bool(F,L,EX,X,0);                    \
-    } else {                                                        \
-         liquid_autotest_passed();                                  \
-    }                                                               \
-}
-#define CONTEND_FALSE_FL(F,L,X) TEST_FALSE(F,L,#X,(X))
-#define CONTEND_FALSE(X)        CONTEND_FALSE_FL(__FILE__,__LINE__,X)
-
-// CONTEND_EQUALITY
-#define TEST_EQUALITY(F,L,EX,X,EY,Y)                                \
-{                                                                   \
-    if ((X)!=(Y))                                                   \
-    {                                                               \
-        liquid_autotest_failed_expr(F,L,EX,X,"==",EY,Y);            \
-    } else {                                                        \
-         liquid_autotest_passed();                                  \
-    }                                                               \
-}
-#define CONTEND_EQUALITY_FL(F,L,X,Y)      TEST_EQUALITY(F,L,#X,(X),#Y,(Y))
-#define CONTEND_EQUALITY(X,Y)             CONTEND_EQUALITY_FL(__FILE__,__LINE__,X,Y)
-
-// CONTEND_INEQUALITY
-#define TEST_INEQUALITY(F,L,EX,X,EY,Y)                              \
-{                                                                   \
-    if ((X)==(Y))                                                   \
-    {                                                               \
-        liquid_autotest_failed_expr(F,L,EX,X,"!=",EY,Y);            \
-    } else {                                                        \
-        liquid_autotest_passed();                                   \
-    }                                                               \
-}
-#define CONTEND_INEQUALITY_FL(F,L,X,Y)    TEST_INEQUALITY(F,L,#X,(X),#Y,(Y))
-#define CONTEND_INEQUALITY(X,Y)           CONTEND_INEQUALITY_FL(__FILE__,__LINE__,X,Y)
-
-// CONTEND_GREATER_THAN
-#define TEST_GREATER_THAN(F,L,EX,X,EY,Y)                            \
-{                                                                   \
-    if ((X)<=(Y))                                                   \
-    {                                                               \
-        liquid_autotest_failed_expr(F,L,EX,X,">",EY,Y);             \
-    } else {                                                        \
-        liquid_autotest_passed();                                   \
-    }                                                               \
-}
-#define CONTEND_GREATER_THAN_FL(F,L,X,Y)  TEST_GREATER_THAN(F,L,#X,(X),#Y,(Y))
-#define CONTEND_GREATER_THAN(X,Y)         CONTEND_GREATER_THAN_FL(__FILE__,__LINE__,X,Y)
-
-// CONTEND_LESS_THAN
-#define TEST_LESS_THAN(F,L,EX,X,EY,Y)                               \
-{                                                                   \
-    if ((X)>=(Y))                                                   \
-    {                                                               \
-        liquid_autotest_failed_expr(F,L,EX,X,"<",EY,Y);             \
-    } else {                                                        \
-        liquid_autotest_passed();                                   \
-    }                                                               \
-}
-#define CONTEND_LESS_THAN_FL(F,L,X,Y)     TEST_LESS_THAN(F,L,#X,(X),#Y,(Y))
-#define CONTEND_LESS_THAN(X,Y)            CONTEND_LESS_THAN_FL(__FILE__,__LINE__,X,Y)
-
-// CONTEND_DELTA
-// Test delta between two (possibly complex numbers) is within tolerance. Use the
-// expanded macro for computing magnitude of difference to account for both real
-// as well as complex numbers
-#define TEST_DELTA(F,L,EX,X,EY,Y,ED,D)                                          \
-{                                                                               \
-    if (LIQUID_AUTOTEST_VMAG((X)-(Y)) > (D) ||                                  \
-        LIQUID_AUTOTEST_ISNAN((X)) || LIQUID_AUTOTEST_ISNAN((Y)) )              \
-    {                                                                           \
-        liquid_autotest_failed_expr(F,L,"abs(" #X "-" #Y ")",                   \
-            LIQUID_AUTOTEST_VMAG((X)-(Y)),"<",ED,D);                            \
-    } else {                                                                    \
-        liquid_autotest_passed();                                               \
-    }                                                                           \
-}
-#define CONTEND_DELTA_FL(F,L,X,Y,D)       TEST_DELTA(F,L,#X,(X),#Y,(Y),#D,(D))
-#define CONTEND_DELTA(X,Y,D)              CONTEND_DELTA_FL(__FILE__,__LINE__,X,Y,D)
-
-// CONTEND_EXPRESSION
-#define TEST_EXPRESSION(F,L,EX,X)                                   \
-{                                                                   \
-    if (!X)                                                         \
-    {                                                               \
-        liquid_autotest_failed_expr(F,L,#X,(X),"is","1",1);         \
-    } else {                                                        \
-        liquid_autotest_passed();                                   \
-    }                                                               \
-}
-#define CONTEND_EXPRESSION_FL(F,L,X)      TEST_EXPRESSION(F,L,#X,(X))
-#define CONTEND_EXPRESSION(X)             CONTEND_EXPRESSION_FL(__FILE__,__LINE__,X)
-
-// CONTEND_ISNULL
-#define TEST_ISNULL(F,L,EX,X)                                       \
-{                                                                   \
-    if ((void*)(X)!=(NULL))                                         \
-    {                                                               \
-        liquid_autotest_failed_expr(F,L,EX,(long)X,"==","NULL",1);  \
-    } else {                                                        \
-         liquid_autotest_passed();                                  \
-    }                                                               \
-}
-#define CONTEND_ISNULL_FL(F,L,X)          TEST_ISNULL(F,L,#X,(X))
-#define CONTEND_ISNULL(X)                 CONTEND_ISNULL_FL(__FILE__,__LINE__,X)
-
-// AUTOTEST WARN
-#define AUTOTEST_WARN_FL(F,L,MSG)      liquid_autotest_warn(F,L,MSG)
-#define AUTOTEST_WARN(MSG)             AUTOTEST_WARN_FL(__FILE__,__LINE__,MSG)
-
-// AUTOTEST PASS
-#define AUTOTEST_PASS_FL(F,L)          liquid_autotest_passed()
-#define AUTOTEST_PASS()                AUTOTEST_PASS_FL(__FILE__,__LINE__)
-
-// AUTOTEST FAIL
-#define AUTOTEST_FAIL_FL(F,L,MSG)      liquid_autotest_failed_msg(F,L,MSG)
-#define AUTOTEST_FAIL(MSG)             AUTOTEST_FAIL_FL(__FILE__,__LINE__,MSG)
 
 // supporting methods
 typedef struct {

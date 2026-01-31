@@ -163,82 +163,6 @@ int liquid_registry_print(const liquid_autotest * _registry,
     return num_tests_fail ? LIQUID_EINT : LIQUID_OK;
 }
 
-/*
-// fail test, given expression
-//  _file       :   filename (string)
-//  _line       :   line number of test
-//  _exprL      :   left side of expression (string)
-//  _valueL     :   left side of expression (value)
-//  _qualifier  :   expression qualifier
-//  _exprR      :   right side of expression (string)
-//  _valueR     :   right side of expression (value)
-void liquid_autotest_failed_expr(const char * _file,
-                                 unsigned int _line,
-                                 const char * _exprL,
-                                 double       _valueL,
-                                 const char * _qualifier,
-                                 const char * _exprR,
-                                 double       _valueR)
-{
-    liquid_log(NULL,LIQUID_ERROR,_file,_line,"test failed: expected \"%s\" (%0.2E) %s %s (%0.2E)",
-            _exprL, _valueL, _qualifier, _exprR, _valueR);
-    liquid_autotest_failed();
-}
-
-// fail test, given true/false value
-//  _file       :   filename (string)
-//  _line       :   line number of test
-//  _exprL      :   left side of expression (string)
-//  _valueL     :   left side of expression (value)
-//  _qualifier  :   expression qualifier
-void liquid_autotest_failed_bool(const char * _file,
-                                 unsigned int _line,
-                                 const char * _exprL,
-                                 double       _valueL,
-                                 int          _qualifier)
-{
-    liquid_log(NULL,LIQUID_ERROR,_file,_line,"test failed: expected \"%s\" (%g) is %s",
-                _exprL, _valueL, _qualifier ? "true" : "false");
-    liquid_autotest_failed();
-}
-
-//  _file       :   filename (string)
-//  _line       :   line number of test
-//  _message    :   message string
-void liquid_autotest_failed_msg(const char * _file,
-                                unsigned int _line,
-                                const char * _message)
-{
-    liquid_log(NULL,LIQUID_ERROR,_file,_line,"test failed: %s", _message);
-    liquid_autotest_failed();
-}
-
-// print basic autotest results to stdout
-void autotest_print_results(void)
-{
-    if (liquid_autotest_num_warnings > 0) {
-        liquid_log_info("==================================");
-        liquid_log_info(" WARNINGS : %-lu", liquid_autotest_num_warnings);
-    }
-
-    liquid_log_info("==================================");
-    if (liquid_autotest_num_checks==0) {
-        liquid_log_info(" NO CHECKS RUN");
-    } else if (liquid_autotest_num_failed==0) {
-        liquid_log_info(" PASSED ALL %lu CHECKS", liquid_autotest_num_passed);
-    } else {
-        // compute and print percentage of failed tests
-        double percent_failed = (double) liquid_autotest_num_failed /
-                                (double) liquid_autotest_num_checks;
-        liquid_log_info(" FAILED %lu / %lu CHECKS (%7.2f%%)",
-                liquid_autotest_num_failed,
-                liquid_autotest_num_checks,
-                100.0*percent_failed);
-    }
-    liquid_log_info("==================================");
-}
-*/
-
 // contend that data in two arrays are identical
 //  _x      :   input array [size: _n x 1]
 //  _y      :   input array [size: _n x 1]
@@ -254,24 +178,6 @@ int liquid_autotest_same_data(unsigned char * _x,
     }
     return 1;
 }
-
-/*
-// print array to standard out
-//  _x      :   input array [size: _n x 1]
-//  _n      :   input array size
-void liquid_autotest_print_array(unsigned char * _x,
-                                 unsigned int _n)
-{
-    unsigned int i;
-    printf("   {");
-    for (i=0; i<_n; i++) {
-        printf("%.2x, ", (unsigned int)(_x[i]));
-        if ( ((i+1)%16 == 0) && (i != (_n-1)) )
-            printf("\n    ");
-    }
-    printf("}\n");
-}
-*/
 
 // validate spectral content
 int liquid_autotest_validate_spectrum(liquid_autotest __q__, float * _psd, unsigned int _nfft,
