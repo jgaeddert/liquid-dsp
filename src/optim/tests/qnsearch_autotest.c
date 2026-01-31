@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,6 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
-#include "liquid.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,8 +27,9 @@
 #include <getopt.h>
 
 #include "liquid.internal.h"
+#include "liquid.autotest.h"
 
-void autotest_qnsearch_rosenbrock()
+LIQUID_AUTOTEST(qnsearch_rosenbrock,"Use quasi-Newton search to find minimum of Rosenbrock function, should be [1 1 1 ...]","",0.1)
 {
     float tol = 1e-2f;                  // error tolerance
     unsigned int num_parameters = 6;    // dimensionality of search (minimum 2)
@@ -55,26 +53,25 @@ void autotest_qnsearch_rosenbrock()
 
     // test results, optimum at [1, 1, 1, ... 1];
     for (i=0; i<num_parameters; i++)
-        CONTEND_DELTA(v_opt[i], 1.0f, tol);
+        LIQUID_CHECK_DELTA(v_opt[i], 1.0f, tol);
 
     // test value of utility (should be nearly 0)
-    CONTEND_DELTA( liquid_rosenbrock(NULL, v_opt, num_parameters), 0.0f, tol );
-    CONTEND_LESS_THAN( u_opt, tol );
+    LIQUID_CHECK_DELTA( liquid_rosenbrock(NULL, v_opt, num_parameters), 0.0f, tol );
+    LIQUID_CHECK( u_opt< tol );
 }
 
-// test configuration
-void autotest_qnsearch_config()
+LIQUID_AUTOTEST(qnsearch_config,"qnsearch configuration","",0.1)
 {
     _liquid_error_downgrade_enable();
 
     // test configurations
     float v[8] = {0,0,0,0,0,0,0,0};
-    CONTEND_ISNULL(qnsearch_create(NULL, v, 0, liquid_rosenbrock, LIQUID_OPTIM_MINIMIZE)) // no parameters
-    CONTEND_ISNULL(qnsearch_create(NULL, v, 8,              NULL, LIQUID_OPTIM_MINIMIZE)) // utility is null
+    LIQUID_CHECK(NULL ==qnsearch_create(NULL, v, 0, liquid_rosenbrock, LIQUID_OPTIM_MINIMIZE)) // no parameters
+    LIQUID_CHECK(NULL ==qnsearch_create(NULL, v, 8,              NULL, LIQUID_OPTIM_MINIMIZE)) // utility is null
 
     // create proper object and test configurations
     qnsearch q = qnsearch_create(NULL, v, 8, liquid_rosenbrock, LIQUID_OPTIM_MINIMIZE);
-    CONTEND_EQUALITY(LIQUID_OK, qnsearch_print(q))
+    LIQUID_CHECK(LIQUID_OK == qnsearch_print(q))
 
     // destroy objects
     qnsearch_destroy(q);

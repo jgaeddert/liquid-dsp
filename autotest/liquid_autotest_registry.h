@@ -173,6 +173,42 @@ extern struct liquid_autotest_s firpfbch2_crcf_config_s;
 extern struct liquid_autotest_s firpfbch_crcf_config_s;
 // ./src/multichannel/tests/firpfbch_crcf_synthesizer_autotest.c
 extern struct liquid_autotest_s firpfbch_crcf_synthesis_s;
+// ./src/optim/tests/gasearch_autotest.c
+extern struct liquid_autotest_s gasearch_peak_s;
+extern struct liquid_autotest_s chromosome_config_s;
+extern struct liquid_autotest_s gasearch_config_s;
+// ./src/optim/tests/qs1dsearch_autotest.c
+extern struct liquid_autotest_s qs1dsearch_min_01_s;
+extern struct liquid_autotest_s qs1dsearch_min_02_s;
+extern struct liquid_autotest_s qs1dsearch_min_03_s;
+extern struct liquid_autotest_s qs1dsearch_min_05_s;
+extern struct liquid_autotest_s qs1dsearch_min_06_s;
+extern struct liquid_autotest_s qs1dsearch_min_07_s;
+extern struct liquid_autotest_s qs1dsearch_min_08_s;
+extern struct liquid_autotest_s qs1dsearch_min_10_s;
+extern struct liquid_autotest_s qs1dsearch_min_11_s;
+extern struct liquid_autotest_s qs1dsearch_min_12_s;
+extern struct liquid_autotest_s qs1dsearch_min_13_s;
+extern struct liquid_autotest_s qs1dsearch_max_01_s;
+extern struct liquid_autotest_s qs1dsearch_max_02_s;
+extern struct liquid_autotest_s qs1dsearch_max_03_s;
+extern struct liquid_autotest_s qs1dsearch_max_05_s;
+extern struct liquid_autotest_s qs1dsearch_max_06_s;
+extern struct liquid_autotest_s qs1dsearch_max_07_s;
+extern struct liquid_autotest_s qs1dsearch_max_08_s;
+extern struct liquid_autotest_s qs1dsearch_max_10_s;
+extern struct liquid_autotest_s qs1dsearch_max_11_s;
+extern struct liquid_autotest_s qs1dsearch_max_12_s;
+extern struct liquid_autotest_s qs1dsearch_max_13_s;
+extern struct liquid_autotest_s qs1dsearch_config_s;
+// ./src/optim/tests/gradsearch_autotest.c
+extern struct liquid_autotest_s gradsearch_rosenbrock_s;
+extern struct liquid_autotest_s gradsearch_maxutility_s;
+// ./src/optim/tests/utility_autotest.c
+extern struct liquid_autotest_s optim_rosenbrock_s;
+// ./src/optim/tests/qnsearch_autotest.c
+extern struct liquid_autotest_s qnsearch_rosenbrock_s;
+extern struct liquid_autotest_s qnsearch_config_s;
 // ./src/dotprod/tests/dotprod_crcf_autotest.c
 extern struct liquid_autotest_s dotprod_crcf_rand01_s;
 extern struct liquid_autotest_s dotprod_crcf_rand02_s;
@@ -1480,6 +1516,37 @@ liquid_autotest liquid_autotest_registry[] =
     &firpfbch2_crcf_config_s,
     &firpfbch_crcf_config_s,
     &firpfbch_crcf_synthesis_s,
+    &gasearch_peak_s,
+    &chromosome_config_s,
+    &gasearch_config_s,
+    &qs1dsearch_min_01_s,
+    &qs1dsearch_min_02_s,
+    &qs1dsearch_min_03_s,
+    &qs1dsearch_min_05_s,
+    &qs1dsearch_min_06_s,
+    &qs1dsearch_min_07_s,
+    &qs1dsearch_min_08_s,
+    &qs1dsearch_min_10_s,
+    &qs1dsearch_min_11_s,
+    &qs1dsearch_min_12_s,
+    &qs1dsearch_min_13_s,
+    &qs1dsearch_max_01_s,
+    &qs1dsearch_max_02_s,
+    &qs1dsearch_max_03_s,
+    &qs1dsearch_max_05_s,
+    &qs1dsearch_max_06_s,
+    &qs1dsearch_max_07_s,
+    &qs1dsearch_max_08_s,
+    &qs1dsearch_max_10_s,
+    &qs1dsearch_max_11_s,
+    &qs1dsearch_max_12_s,
+    &qs1dsearch_max_13_s,
+    &qs1dsearch_config_s,
+    &gradsearch_rosenbrock_s,
+    &gradsearch_maxutility_s,
+    &optim_rosenbrock_s,
+    &qnsearch_rosenbrock_s,
+    &qnsearch_config_s,
     &dotprod_crcf_rand01_s,
     &dotprod_crcf_rand02_s,
     &dotprod_crcf_struct_vs_ordinal_s,

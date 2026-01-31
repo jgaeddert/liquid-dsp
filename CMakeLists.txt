@@ -656,11 +656,11 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_pll_autotest.c
     ${PROJECT_SOURCE_DIR}/src/nco/tests/nco_crcf_spectrum_autotest.c
     ${PROJECT_SOURCE_DIR}/src/nco/tests/unwrap_phase_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/optim/tests/gasearch_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/optim/tests/gradsearch_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/optim/tests/qnsearch_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/optim/tests/qs1dsearch_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/optim/tests/utility_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/optim/tests/gasearch_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/optim/tests/gradsearch_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/optim/tests/qnsearch_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/optim/tests/qs1dsearch_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/optim/tests/utility_autotest.c
     #${PROJECT_SOURCE_DIR}/src/quantization/tests/compand_autotest.c
     #${PROJECT_SOURCE_DIR}/src/quantization/tests/quantize_autotest.c
     #${PROJECT_SOURCE_DIR}/src/random/tests/scramble_autotest.c
