@@ -669,10 +669,10 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/sequence/tests/bsequence_autotest.c
     ${PROJECT_SOURCE_DIR}/src/sequence/tests/complementary_codes_autotest.c
     ${PROJECT_SOURCE_DIR}/src/sequence/tests/msequence_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/utility/tests/bshift_array_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/utility/tests/count_bits_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/utility/tests/pack_bytes_autotest.c
-    #${PROJECT_SOURCE_DIR}/src/utility/tests/shift_array_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/utility/tests/bshift_array_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/utility/tests/count_bits_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/utility/tests/pack_bytes_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/utility/tests/shift_array_autotest.c
     #${PROJECT_SOURCE_DIR}/src/vector/tests/vectorcf_autotest.c
     #${PROJECT_SOURCE_DIR}/src/vector/tests/vectorf_autotest.c
     )

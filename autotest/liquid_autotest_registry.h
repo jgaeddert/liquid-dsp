@@ -1457,6 +1457,32 @@ extern struct liquid_autotest_s cbuffercf_s;
 extern struct liquid_autotest_s cbufferf_flow_s;
 extern struct liquid_autotest_s cbufferf_config_s;
 extern struct liquid_autotest_s cbuffer_copy_s;
+// ./src/utility/tests/pack_bytes_autotest.c
+extern struct liquid_autotest_s pack_array_s;
+extern struct liquid_autotest_s unpack_array_s;
+extern struct liquid_autotest_s repack_array_s;
+extern struct liquid_autotest_s pack_bytes_01_s;
+extern struct liquid_autotest_s unpack_bytes_01_s;
+extern struct liquid_autotest_s repack_bytes_01_s;
+extern struct liquid_autotest_s repack_bytes_02_s;
+extern struct liquid_autotest_s repack_bytes_03_s;
+extern struct liquid_autotest_s repack_bytes_04_uneven_s;
+// ./src/utility/tests/bshift_array_autotest.c
+extern struct liquid_autotest_s lbshift_s;
+extern struct liquid_autotest_s rbshift_s;
+extern struct liquid_autotest_s lbcircshift_s;
+extern struct liquid_autotest_s rbcircshift_s;
+// ./src/utility/tests/count_bits_autotest.c
+extern struct liquid_autotest_s count_ones_s;
+extern struct liquid_autotest_s count_ones_mod2_s;
+extern struct liquid_autotest_s bdotprod_s;
+extern struct liquid_autotest_s count_leading_zeros_s;
+extern struct liquid_autotest_s msb_index_s;
+// ./src/utility/tests/shift_array_autotest.c
+extern struct liquid_autotest_s lshift_s;
+extern struct liquid_autotest_s rshift_s;
+extern struct liquid_autotest_s lcircshift_s;
+extern struct liquid_autotest_s rcircshift_s;
 
 // compile test registry
 liquid_autotest liquid_autotest_registry[] =
@@ -2765,6 +2791,28 @@ liquid_autotest liquid_autotest_registry[] =
     &cbufferf_flow_s,
     &cbufferf_config_s,
     &cbuffer_copy_s,
+    &pack_array_s,
+    &unpack_array_s,
+    &repack_array_s,
+    &pack_bytes_01_s,
+    &unpack_bytes_01_s,
+    &repack_bytes_01_s,
+    &repack_bytes_02_s,
+    &repack_bytes_03_s,
+    &repack_bytes_04_uneven_s,
+    &lbshift_s,
+    &rbshift_s,
+    &lbcircshift_s,
+    &rbcircshift_s,
+    &count_ones_s,
+    &count_ones_mod2_s,
+    &bdotprod_s,
+    &count_leading_zeros_s,
+    &msb_index_s,
+    &lshift_s,
+    &rshift_s,
+    &lcircshift_s,
+    &rcircshift_s,
     NULL
 };
 
