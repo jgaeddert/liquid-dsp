@@ -797,6 +797,24 @@ extern struct liquid_autotest_s fir_groupdelay_n3_s;
 extern struct liquid_autotest_s iir_groupdelay_n3_s;
 extern struct liquid_autotest_s iir_groupdelay_n8_s;
 extern struct liquid_autotest_s iir_groupdelay_sos_n8_s;
+// ./src/equalization/tests/eqlms_cccf_autotest.c
+extern struct liquid_autotest_s eqlms_00_s;
+extern struct liquid_autotest_s eqlms_01_s;
+extern struct liquid_autotest_s eqlms_02_s;
+extern struct liquid_autotest_s eqlms_03_s;
+extern struct liquid_autotest_s eqlms_04_s;
+extern struct liquid_autotest_s eqlms_05_s;
+extern struct liquid_autotest_s eqlms_06_s;
+extern struct liquid_autotest_s eqlms_07_s;
+extern struct liquid_autotest_s eqlms_08_s;
+extern struct liquid_autotest_s eqlms_09_s;
+extern struct liquid_autotest_s eqlms_10_s;
+extern struct liquid_autotest_s eqlms_11_s;
+extern struct liquid_autotest_s eqlms_config_s;
+extern struct liquid_autotest_s eqlms_cccf_copy_s;
+// ./src/equalization/tests/eqrls_rrrf_autotest.c
+extern struct liquid_autotest_s eqrls_rrrf_01_s;
+extern struct liquid_autotest_s eqrls_rrrf_copy_s;
 // ./src/matrix/tests/smatrixb_autotest.c
 extern struct liquid_autotest_s smatrixb_vmul_s;
 extern struct liquid_autotest_s smatrixb_mul_s;
@@ -1580,6 +1598,22 @@ liquid_autotest liquid_autotest_registry[] =
     &iir_groupdelay_n3_s,
     &iir_groupdelay_n8_s,
     &iir_groupdelay_sos_n8_s,
+    &eqlms_00_s,
+    &eqlms_01_s,
+    &eqlms_02_s,
+    &eqlms_03_s,
+    &eqlms_04_s,
+    &eqlms_05_s,
+    &eqlms_06_s,
+    &eqlms_07_s,
+    &eqlms_08_s,
+    &eqlms_09_s,
+    &eqlms_10_s,
+    &eqlms_11_s,
+    &eqlms_config_s,
+    &eqlms_cccf_copy_s,
+    &eqrls_rrrf_01_s,
+    &eqrls_rrrf_copy_s,
     &smatrixb_vmul_s,
     &smatrixb_mul_s,
     &smatrixb_mulf_s,

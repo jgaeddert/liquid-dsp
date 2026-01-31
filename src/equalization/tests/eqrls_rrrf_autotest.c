@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // constant data sequence
@@ -35,8 +35,7 @@ const float eqrls_rrrf_autotest_data_sequence[64] = {
     -1.0,  1.0,  1.0, -1.0,  1.0, -1.0,  1.0, -1.0
 };
 
-// AUTOTEST: channel filter: delta with zero delay
-void autotest_eqrls_rrrf_01()
+LIQUID_AUTOTEST(eqrls_rrrf_01,"eqrls channel filter (delta with zero delay)","",0.1)
 {
     float tol=1e-2f;        // error tolerance
 
@@ -76,16 +75,16 @@ void autotest_eqrls_rrrf_01()
     eqrls_rrrf_train(eq, w, y, d, n);
 
     // compare filter taps
-    CONTEND_DELTA(w[0], 1.0f, tol);
+    LIQUID_CHECK_DELTA(w[0], 1.0f, tol);
     for (i=1; i<p; i++)
-        CONTEND_DELTA(w[i], 0.0f, tol);
+        LIQUID_CHECK_DELTA(w[i], 0.0f, tol);
 
     // clean up objects
     firfilt_rrrf_destroy(f);
     eqrls_rrrf_destroy(eq);
 }
 
-void autotest_eqrls_rrrf_copy()
+LIQUID_AUTOTEST(eqrls_rrrf_copy,"test copying eqrls object","",0.1)
 {
     // create initial object
     unsigned int i;
@@ -125,7 +124,7 @@ void autotest_eqrls_rrrf_copy()
         // compute output
         eqrls_rrrf_execute(q0, &y0);
         eqrls_rrrf_execute(q1, &y1);
-        CONTEND_EQUALITY(y0, y1);
+        LIQUID_CHECK(y0 ==  y1);
 
         // step equalization algorithm
         eqrls_rrrf_step(q0, d[i], y0);
@@ -133,7 +132,7 @@ void autotest_eqrls_rrrf_copy()
     }
 
     // get and compare coefficients
-    //CONTEND_SAME_DATA(eqrls_rrrf_get_coefficients(q0),
+    //LIQUID_CHECK_ARRAY(eqrls_rrrf_get_coefficients(q0),
     //                  eqrls_rrrf_get_coefficients(q1),
     //                  21 * sizeof(float));
 
