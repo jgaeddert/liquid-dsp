@@ -130,9 +130,29 @@ void firfilt_crcf_basic_0_autotest(liquid_autotest __q__)
 }
 #endif
 
+struct liquid_registry_info_s
+{
+    // total tests within registry
+    unsigned int num_tests;
+
+    // tests
+    unsigned int num_tests_pass;
+    unsigned int num_tests_fail;
+    unsigned int num_tests_skip;
+
+    // checks
+    unsigned int num_checks_pass;
+    unsigned int num_checks_fail;
+    unsigned int num_checks_warn;
+};
+
+// get total number of tests in a registry
+struct liquid_registry_info_s liquid_registry_info(const liquid_autotest * _registry);
+
 // print registry, either info or full status
 int liquid_registry_print(const liquid_autotest * _registry);
 
+// export registry to JSON file
 int liquid_registry_json(const liquid_autotest * _registry,
                          const char *            _filename);
 
