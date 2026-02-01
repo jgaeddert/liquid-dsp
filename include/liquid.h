@@ -256,6 +256,15 @@ int liquid_logger_add_file(liquid_logger _q,
                            FILE *        _fid,
                            int           _level);
 
+// open file for appending logs, returning pointer to file handle (or NULL upon
+// error); when file is closed, the callback will cease appending to the file
+//  _q      : logger object
+//  _fid    : file handle
+//  _level  : minimum log level for which callback will be invoked
+FILE * liquid_logger_add_filename(liquid_logger _q,
+                                  const char*   _filename,
+                                  int           _level);
+
 // get the number of callbacks currently used
 unsigned int liquid_logger_get_num_callbacks(liquid_logger q);
 
