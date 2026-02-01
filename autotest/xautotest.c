@@ -29,12 +29,8 @@ int main(int argc, char* argv[])
     liquid_argparse_add(int,  test,    -1, 't', "run a specific test", NULL);
     liquid_argparse_parse(argc,argv);
 
-    FILE * fid = NULL;
     if (strcmp(logfile,""))
-    {
-        fid = fopen(logfile,"w");
-        liquid_logger_add_file(NULL,fid,LIQUID_INFO);
-    }
+        liquid_logger_add_filename(NULL,logfile,LIQUID_INFO);
 
     unsigned int i = 0;
     if (list) {
