@@ -1,12 +1,14 @@
-// This example demonstrates logging capabilities with liquid,
-// heavily influenced by: https://github.com/rxi/log.c
+char __docstr__[] =
+"This example demonstrates logging capabilities with liquid,"
+" heavily influenced by: https://github.com/rxi/log.c";
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include "liquid.internal.h"
+#include "liquid.h"
+#include "liquid.argparse.h"
 
 // user-defined callback
 int test_callback(liquid_log_event event, void * context)
@@ -28,6 +30,10 @@ void sweep_levels(liquid_logger _q)
 
 int main(int argc, char*argv[])
 {
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     printf("\nsetting default logging (without color)\n");
     liquid_logger_set_config(NULL, LIQUID_LOG_DEFAULT);
     sweep_levels(NULL);
