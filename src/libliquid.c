@@ -165,7 +165,7 @@ struct liquid_logger_s {
     void *               lock_context;  // locking context
 };
 
-
+#ifdef LIQUID_LOGGING_ENABLE
 // global logger
 static struct liquid_logger_s qlog = {
     .level         = 0,
@@ -517,4 +517,95 @@ int liquid_exit()
         ? -1 : 0;
 }
 
+#else // LIQUID_LOGGING_ENABLE
 
+liquid_logger liquid_logger_create()
+{
+    liquid_error(LIQUID_EICONFIG,"compile-time logging disabled");
+    return NULL;
+}
+
+// destroy logger object, freeing all internal memory
+int liquid_logger_destroy(liquid_logger _q)
+    { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
+
+// reset internal logger object counters, reset level, clear callbacks
+int liquid_logger_reset(liquid_logger _q)
+    { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
+
+// print logger information to stdout
+int liquid_logger_print(liquid_logger _q)
+    { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
+
+// set log level; any value below this will not be logged
+int liquid_logger_set_level(liquid_logger q, int _level)
+    { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
+
+// set the format for the timestamp (see system's `strftime` help for options)
+// setting to NULL or an empty string will disable timestamps
+int liquid_logger_set_time_fmt(liquid_logger q, const char * fmt)
+    { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
+
+// set output configuration
+int liquid_logger_set_config(liquid_logger q, int _config)
+    { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
+
+// add lock function with context
+int liquid_logger_set_lock(liquid_logger        _q,
+                           liquid_lock_callback _callback,
+                           void *               _context)
+    { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
+
+// add callback with context
+int liquid_logger_add_callback(liquid_logger       _q,
+                               liquid_log_callback _callback,
+                               void *              _context,
+                               int                 _level)
+    { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
+
+// add file pointer for which to append logs; when file is closed, the callback
+int liquid_logger_add_file(liquid_logger _q,
+                           FILE *        _fid,
+                           int           _level)
+    { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
+
+// open file for appending logs, returning pointer to file handle (or NULL upon
+// error); when file is closed, the callback will cease appending to the file
+FILE * liquid_logger_add_filename(liquid_logger _q,
+                                  const char*   _filename,
+                                  int           _level)
+{
+    liquid_error(LIQUID_EICONFIG,"compile-time logging disabled");
+    return NULL;
+}
+
+// get the number of callbacks currently used
+unsigned int liquid_logger_get_num_callbacks(liquid_logger q)
+{
+    liquid_error(LIQUID_EICONFIG,"compile-time logging disabled");
+    return 0;
+}
+
+// append a log message
+int liquid_log(liquid_logger _q, int _level, const char * _file,
+               int _line, const char * _format, ...)
+{
+    if (_level < LIQUID_INFO)
+        return LIQUID_OK;
+    va_list ap;
+    va_start(ap, _format);
+    int rv = liquid_vlog(_q, _level, _file, _line, _format, ap);
+    va_end(ap);
+    return rv;
+}
+
+// append a log message with variable arguments
+int liquid_vlog(liquid_logger _q, int _level, const char * _file,
+                int _line, const char * _format, va_list _ap)
+{
+    vprintf(_format, _ap);
+    printf("\n");
+    return LIQUID_OK;
+}
+
+#endif
