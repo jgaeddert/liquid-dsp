@@ -311,6 +311,8 @@ enum {
 #define liquid_log_error(...) liquid_log(NULL,LIQUID_ERROR,__FILE__,__LINE__,__VA_ARGS__)
 #define liquid_log_fatal(...) liquid_log(NULL,LIQUID_FATAL,__FILE__,__LINE__,__VA_ARGS__)
 
+// provide exit value based on global logging
+int liquid_exit();
 
 // macro concatenation
 #define LIQUID_CONCAT(prefix, name) prefix ## name

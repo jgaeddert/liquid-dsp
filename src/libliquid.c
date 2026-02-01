@@ -39,14 +39,6 @@ void _liquid_error_downgrade_enable (void) { _liquid_error_downgrade = 1; }
 // disable downgrade errors to warnings
 void _liquid_error_downgrade_disable(void) { _liquid_error_downgrade = 0; }
 
-// forward declaration of logging function with variadic arguments list
-int liquid_vlog(liquid_logger _q,
-                int           _level,
-                const char *  _file,
-                int           _line,
-                const char *  _format,
-                va_list       _ap);
-
 const char liquid_version[] = LIQUID_VERSION;
 
 const char * liquid_libversion(void)
@@ -518,4 +510,11 @@ int liquid_vlog(liquid_logger _q,
 
     return LIQUID_OK;
 }
+
+int liquid_exit()
+{
+    return (qlog.count[LIQUID_LOG_NUM_LEVELS-1] + qlog.count[LIQUID_LOG_NUM_LEVELS-2])
+        ? -1 : 0;
+}
+
 
