@@ -59,8 +59,18 @@ int liquid_libversion_number(void)
     return LIQUID_VERSION_NUMBER;
 }
 
-const char * liquid_log_colors[LIQUID_LOG_NUM_LEVELS] =
-    {"\033[94m","\033[36m","\033[32m","\033[33m","\033[31m","\033[35m"};
+#ifdef LIQUID_COLOR_ENABLE
+// enable ANSI escape colors
+    const char * liquid_log_color_soft  = "\033[90m";
+    const char * liquid_log_color_clear = "\033[0m";
+    const char * liquid_log_colors[LIQUID_LOG_NUM_LEVELS] =
+        {"\033[94m","\033[36m","\033[32m","\033[33m","\033[31m","\033[35m"};
+#else
+// disable ANSI escape colors
+    const char * liquid_log_color_soft  = "";
+    const char * liquid_log_color_clear = "";
+    const char * liquid_log_colors[LIQUID_LOG_NUM_LEVELS] = {"","","","","","",};
+#endif
 
 const char * liquid_log_levels[LIQUID_LOG_NUM_LEVELS] =
     {"trace","debug","info", "warning","error","fatal"};
@@ -187,7 +197,7 @@ int liquid_logger_stream_file_line(liquid_log_event _event,
                                    int              _line)
 {
     if (_color)
-        fprintf(_stream,"\033[90m");
+        fprintf(_stream,"%s",liquid_log_color_soft);
 
     if (_smax < 0) {
         // print full file/line
@@ -209,7 +219,7 @@ int liquid_logger_stream_file_line(liquid_log_event _event,
         fprintf(_stream,"%-3d:",_event->line);
 
     if (_color)
-        fprintf(_stream,"\033[0m");
+        fprintf(_stream,"%s",liquid_log_color_clear);
 
     if (_smax != 0 || _line)
         fprintf(_stream," ");
@@ -235,7 +245,11 @@ int liquid_logger_callback_stream(liquid_log_event _event,
 
     // print timestamp
     if (_config & LIQUID_LOG_TIMESTAMP)
-        fprintf(_stream,"%s%s%s ",enable_color?"\033[90m":"",_event->time_str,enable_color?"\033[0m":"");
+    {
+        fprintf(_stream,"%s", enable_color ? liquid_log_color_soft : "");
+        fprintf(_stream,"%s", _event->time_str);
+        fprintf(_stream,"%s ", enable_color ? liquid_log_color_clear : "");
+    }
 
     // print log level
     if (_config & (LIQUID_LOG_LEVEL_FULL | LIQUID_LOG_LEVEL_5 | LIQUID_LOG_LEVEL_1) )
@@ -256,9 +270,7 @@ int liquid_logger_callback_stream(liquid_log_event _event,
             fprintf(_stream,"%c",liquid_log_levels[_event->level][0]-32);
         }
 
-        if (enable_color)
-            fprintf(_stream,"\033[0m");
-        fprintf(_stream,"] ");
+        fprintf(_stream,"%s] " , enable_color ? liquid_log_color_clear : "");
     }
 
     // print file/line
