@@ -24,6 +24,7 @@ int main(int argc, char* argv[])
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
     liquid_argparse_add(char*,logfile, "", 'g', "output logfile", NULL);
+    liquid_argparse_add(char*,json,    "", 'o', "output JSON file", NULL);
     liquid_argparse_add(bool, list, false, 'L', "list tests and exit", NULL);
     liquid_argparse_add(int,  test,    -1, 't', "run a specific test", NULL);
     liquid_argparse_parse(argc,argv);
@@ -69,6 +70,11 @@ int main(int argc, char* argv[])
     }
 
     // print summary
-    return liquid_registry_print(liquid_autotest_registry);
+    int rc = liquid_registry_print(liquid_autotest_registry);
+
+    if (strcmp(json,""))
+        liquid_registry_json(liquid_autotest_registry, json);
+
+    return rc;
 }
 

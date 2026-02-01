@@ -26,6 +26,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "liquid.autotest.h"
@@ -171,6 +172,83 @@ int liquid_registry_print(const liquid_autotest * _registry)
 
     // TODO: return non-zero value upon failure?
     return num_tests_fail ? LIQUID_EINT : LIQUID_OK;
+}
+
+// export results to JSON
+int liquid_registry_json(const liquid_autotest * _registry,
+                         const char *            _filename)
+{
+    FILE * fid = fopen(_filename,"w");
+    if (fid == NULL)
+        return liquid_error(LIQUID_EIO,"could not open '%s' for writing", _filename);
+
+    // accumulate number of tests
+    unsigned int num_tests_pass = 0;
+    unsigned int num_tests_fail = 0;
+    unsigned int num_tests_skip = 0;
+
+    // accumulate number of checks
+    unsigned int num_checks_pass = 0;
+    unsigned int num_checks_fail = 0;
+    unsigned int num_checks_warn = 0;
+
+    unsigned int i;
+    unsigned int num_tests = 0;
+    while (_registry[num_tests] != NULL)
+    {
+        // print status
+        liquid_autotest test = _registry[num_tests++];
+
+        // accumulate test statistics
+        num_tests_pass  += test->status == LIQUID_AUTOTEST_PASS;
+        num_tests_fail  += test->status == LIQUID_AUTOTEST_FAIL;
+        num_tests_skip  += test->status == LIQUID_AUTOTEST_SKIP;
+
+        // accumulate check statistics
+        num_checks_pass += test->num_pass;
+        num_checks_fail += test->num_fail;
+        num_checks_warn += test->num_warn;
+    }
+
+    // print header
+    time_t now;
+    time(&now);
+    char timestamp[80];
+    strftime(timestamp,80,"%c",localtime(&now));
+    fprintf(fid,"{\n");
+    fprintf(fid,"  \"build-info\" : {},\n");
+    fprintf(fid,"  \"timestamp\" : \"%s\",\n", timestamp);
+    fprintf(fid,"  \"pass\" : %s,\n", num_tests_fail==0 ? "true" : "false");
+    fprintf(fid,"  \"num_failed\" : %d,\n", num_checks_fail);
+    fprintf(fid,"  \"num_checks\" : %d,\n", num_checks_pass + num_checks_fail);
+    fprintf(fid,"  \"num_warnings\" : %d,\n", num_checks_warn);
+    fprintf(fid,"  \"command-line\" : \"");
+    //for (i=0; i<(unsigned int)argc; i++)
+    //    fprintf(fid," %s", argv[i]);
+    fprintf(fid,"\",\n");
+    fprintf(fid,"  \"rseed\" : %u,\n", 0); //rseed);
+    fprintf(fid,"  \"stop-on-fail\" : %s,\n", "false"); //stop_on_fail ? "true" : "false");
+    fprintf(fid,"  \"tests\" : [\n");
+    for (i=0; i<num_tests; i++)
+    {
+        // print status
+        liquid_autotest test = _registry[i];
+
+        fprintf(fid,"    {\"id\":%4u, \"pass\":%s \"num_checks\":%4lu, \"num_passed\":%4lu, \"extime\":%12.4e, \"name\":\"%s\"}%s\n",
+                i,
+                test->num_fail == 0 ? "true, " : "false,",
+                test->num_pass + test->num_fail,
+                test->num_pass,
+                test->runtime,
+                test->name,
+                (i == num_tests-1) ? "" : ",");
+    }
+    fprintf(fid,"  ]\n");
+    fprintf(fid,"}\n");
+    fclose(fid);
+
+    liquid_log_info("output JSON results written to %s", _filename);
+    return LIQUID_OK;
 }
 
 // contend that data in two arrays are identical

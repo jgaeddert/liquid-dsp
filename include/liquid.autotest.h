@@ -133,6 +133,9 @@ void firfilt_crcf_basic_0_autotest(liquid_autotest __q__)
 // print registry, either info or full status
 int liquid_registry_print(const liquid_autotest * _registry);
 
+int liquid_registry_json(const liquid_autotest * _registry,
+                         const char *            _filename);
+
 // define a registry as an array of tests. Note that we use the 'weak'
 // attribute in case we want to link this file against another program
 // to define a separate registry
