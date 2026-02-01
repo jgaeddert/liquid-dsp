@@ -21,6 +21,7 @@ option(BUILD_SANDBOX     "Set to ON to build sandbox programs"       OFF)
 option(BUILD_DOC         "Set to ON to build documentation"          OFF)
 option(COVERAGE          "Set to ON to build with code coverage"     OFF)
 #option(PROFILE           "Set to ON to build with profiling"         OFF)
+option(ENABLE_COLOR      "Set to ON to enable color terminal output" ON)
 
 if(COVERAGE)
     set(CMAKE_BUILD_TYPE "Debug")
@@ -384,6 +385,10 @@ add_library(${LIBNAME}
     $<TARGET_OBJECTS:utility>
     $<TARGET_OBJECTS:vector>)
 add_library(${NAMESPACE}::${LIBNAME} ALIAS ${LIBNAME})
+
+if(ENABLE_COLOR)
+    target_compile_definitions(${LIBNAME} PUBLIC LIQUID_COLOR_ENABLE)
+endif(ENABLE_COLOR)
 
 # TODO: build static library in addition to shared
 # https://alexreinking.com/blog/building-a-dual-shared-and-static-library-with-cmake.html
