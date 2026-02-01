@@ -173,14 +173,17 @@ int liquid_registry_print(const liquid_autotest * _registry)
 
     int log_level = info.num_tests_fail ? LIQUID_ERROR : LIQUID_INFO;
 
-    liquid_log(NULL,log_level,__FILE__,__LINE__,"  %u tests run (%u failed) %u skipped",
-        info.num_tests_pass + info.num_tests_fail, info.num_tests_fail, info.num_tests_skip);
-
-    liquid_log(NULL,log_level,__FILE__,__LINE__,"  %u total checks (%u failed)",
-        info.num_checks_pass + info.num_checks_fail, info.num_checks_fail);
-
-    if (info.num_checks_warn > 0)
-        liquid_log_warn("  %u warnings", info.num_checks_warn);
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"tests:");
+    //liquid_log(NULL,log_level,__FILE__,__LINE__,"  run      : %u", info.num_tests_pass + info.num_tests_fail);
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"  pass     : %u", info.num_tests_pass);
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"  fail     : %u", info.num_tests_fail);
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"  skip     : %u", info.num_tests_skip);
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"checks:");
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"  pass     : %u", info.num_checks_pass);
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"  fail     : %u", info.num_checks_fail);
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"overall:");
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"  warn     : %u", info.num_checks_warn);
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"  %s", info.num_tests_fail ? "FAIL" : "PASS");
 
     // return non-zero value upon failure
     return info.num_tests_fail ? LIQUID_EINT : LIQUID_OK;
