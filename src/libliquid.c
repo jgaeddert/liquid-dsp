@@ -408,6 +408,21 @@ int liquid_logger_add_file(liquid_logger _q,
     return liquid_logger_add_callback(_q, liquid_logger_callback_file, (void*)_fid, _level);
 }
 
+FILE * liquid_logger_add_filename(liquid_logger _q,
+                                  const char*   _filename,
+                                  int           _level)
+{
+    FILE * fid = fopen(_filename,"w");
+
+    if (fid == NULL)
+    {
+        liquid_error(LIQUID_EIO,"logger could not open '%s' for writing", _filename);
+    } else {
+        liquid_logger_add_file(_q, fid, _level);
+    }
+    return fid;
+}
+
 unsigned int liquid_logger_get_num_callbacks(liquid_logger _q)
 {
     _q = liquid_logger_safe_cast(_q);
