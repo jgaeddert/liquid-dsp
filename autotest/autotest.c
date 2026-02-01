@@ -21,6 +21,7 @@
  */
 
 // default include headers
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -84,6 +85,9 @@ int liquid_autotest_execute(liquid_autotest _q)
     _q->func(_q);
     getrusage(RUSAGE_SELF, &toc);
     _q->status = _q->num_fail > 0 ? LIQUID_AUTOTEST_FAIL : LIQUID_AUTOTEST_PASS;
+    //
+    //if (strlen(_q->docstr)==0)
+    //    LIQUID_WARN_(_q,"empty docstring for test %s", _q->name);
 
     // update run time
     float time_s  = toc.ru_utime.tv_sec - tic.ru_utime.tv_sec
@@ -115,12 +119,17 @@ void liquid_autotest_fail(liquid_autotest _q,
 //  _line       :   line number of test
 //  _message    :   message string
 void liquid_autotest_warn(liquid_autotest _q,
-                          const char * _file,
-                          unsigned int _line,
-                          const char * _message)
+                          const char *    _file,
+                          unsigned int    _line,
+                          const char *    _format,
+                          ...)
 {
-    liquid_log(NULL,LIQUID_WARN,_file,_line,_message);
     _q->num_warn++;
+
+    va_list ap;
+    va_start(ap, _format);
+    liquid_vlog(NULL, LIQUID_WARN, _file, _line, _format, ap);
+    va_end(ap);
 }
 
 // print registry, either info or full status

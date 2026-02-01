@@ -84,7 +84,8 @@ void liquid_autotest_fail(liquid_autotest _q,
 void liquid_autotest_warn(liquid_autotest _q,
                           const char *    _file,
                           unsigned int    _line,
-                          const char *    _message);
+                          const char *    _format,
+                          ...);
 
 // initialize autotest harness
 // define liquid_autotest(...) __liquid_autotest_internal( __VA_ARGS__ )
@@ -179,8 +180,8 @@ int liquid_registry_json(const liquid_autotest * _registry,
 #define LIQUID_FAIL(MSG)            liquid_autotest_fail(__q__,__FILE__,__LINE__,MSG)
 
 // log a warning
-#define LIQUID_WARN_(Q,MSG)         liquid_autotest_warn(Q,__FILE__,__LINE__,MSG)
-#define LIQUID_WARN(MSG)            liquid_autotest_warn(__q__,__FILE__,__LINE__,MSG)
+#define LIQUID_WARN_(Q,...)         liquid_autotest_warn(Q,__FILE__,__LINE__,__VA_ARGS__)
+#define LIQUID_WARN(...)            liquid_autotest_warn(__q__,__FILE__,__LINE__,__VA_ARGS__)
 
 
 // expand macro to run test
