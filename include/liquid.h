@@ -271,8 +271,7 @@ unsigned int liquid_logger_get_num_callbacks(liquid_logger q);
 // append a log message
 int liquid_log(liquid_logger _q, int _level, const char * _file, int _line, const char * _format, ...);
 
-extern const char * liquid_log_colors[LIQUID_LOG_NUM_LEVELS];
-
+// list of string representation of log levels
 extern const char * liquid_log_levels[LIQUID_LOG_NUM_LEVELS];
 
 // logging levels
