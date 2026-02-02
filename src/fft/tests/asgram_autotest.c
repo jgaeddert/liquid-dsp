@@ -73,13 +73,8 @@ LIQUID_AUTOTEST(asgramcf_copy,"check copy method","",0.1)
 
 LIQUID_AUTOTEST(asgramcf_config,"check both valid and invalid configurations","",0.1)
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping spgram config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
+
     // check that object returns NULL for invalid configurations
     LIQUID_CHECK( NULL == asgramcf_create(0)); // nfft too small
     LIQUID_CHECK( NULL == asgramcf_create(1)); // nfft too small
@@ -91,5 +86,6 @@ LIQUID_AUTOTEST(asgramcf_config,"check both valid and invalid configurations",""
     LIQUID_CHECK( LIQUID_OK == asgramcf_autoscale_disable(q));
 
     asgramcf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
