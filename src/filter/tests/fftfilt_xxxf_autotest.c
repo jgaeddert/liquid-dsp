@@ -227,28 +227,28 @@ void fftfilt_cccf_test(liquid_autotest __q__,
 // 
 // AUTOTEST: fftfilt_rrrf tests
 //
-LIQUID_AUTOTEST(fftfilt_rrrf_data_h4x256,"description","",0.1)
+LIQUID_AUTOTEST(fftfilt_rrrf_data_h4x256,"fftfilt testbench","",0.1)
 {
     fftfilt_rrrf_test(__q__,
                       fftfilt_rrrf_data_h4x256_h, 4,
                       fftfilt_rrrf_data_h4x256_x, 256,
                       fftfilt_rrrf_data_h4x256_y, 256);
 }
-LIQUID_AUTOTEST(fftfilt_rrrf_data_h7x256,"description","",0.1)
+LIQUID_AUTOTEST(fftfilt_rrrf_data_h7x256,"fftfilt testbench","",0.1)
 {
     fftfilt_rrrf_test(__q__,
                       fftfilt_rrrf_data_h7x256_h, 7,
                       fftfilt_rrrf_data_h7x256_x, 256,
                       fftfilt_rrrf_data_h7x256_y, 256);
 }
-LIQUID_AUTOTEST(fftfilt_rrrf_data_h13x256,"description","",0.1)
+LIQUID_AUTOTEST(fftfilt_rrrf_data_h13x256,"fftfilt testbench","",0.1)
 {
     fftfilt_rrrf_test(__q__,
                       fftfilt_rrrf_data_h13x256_h, 13,
                       fftfilt_rrrf_data_h13x256_x, 256,
                       fftfilt_rrrf_data_h13x256_y, 256);
 }
-LIQUID_AUTOTEST(fftfilt_rrrf_data_h23x256,"description","",0.1)
+LIQUID_AUTOTEST(fftfilt_rrrf_data_h23x256,"fftfilt testbench","",0.1)
 {
     fftfilt_rrrf_test(__q__,
                       fftfilt_rrrf_data_h23x256_h, 23,
@@ -260,28 +260,28 @@ LIQUID_AUTOTEST(fftfilt_rrrf_data_h23x256,"description","",0.1)
 // 
 // AUTOTEST: fftfilt_crcf tests
 //
-LIQUID_AUTOTEST(fftfilt_crcf_data_h4x256,"description","",0.1)
+LIQUID_AUTOTEST(fftfilt_crcf_data_h4x256,"fftfilt testbench","",0.1)
 {
     fftfilt_crcf_test(__q__,
                       fftfilt_crcf_data_h4x256_h, 4,
                       fftfilt_crcf_data_h4x256_x, 256,
                       fftfilt_crcf_data_h4x256_y, 256);
 }
-LIQUID_AUTOTEST(fftfilt_crcf_data_h7x256,"description","",0.1)
+LIQUID_AUTOTEST(fftfilt_crcf_data_h7x256,"fftfilt testbench","",0.1)
 {
     fftfilt_crcf_test(__q__,
                       fftfilt_crcf_data_h7x256_h, 7,
                       fftfilt_crcf_data_h7x256_x, 256,
                       fftfilt_crcf_data_h7x256_y, 256);
 }
-LIQUID_AUTOTEST(fftfilt_crcf_data_h13x256,"description","",0.1)
+LIQUID_AUTOTEST(fftfilt_crcf_data_h13x256,"fftfilt testbench","",0.1)
 {
     fftfilt_crcf_test(__q__,
                       fftfilt_crcf_data_h13x256_h, 13,
                       fftfilt_crcf_data_h13x256_x, 256,
                       fftfilt_crcf_data_h13x256_y, 256);
 }
-LIQUID_AUTOTEST(fftfilt_crcf_data_h23x256,"description","",0.1)
+LIQUID_AUTOTEST(fftfilt_crcf_data_h23x256,"fftfilt testbench","",0.1)
 {
     fftfilt_crcf_test(__q__,
                       fftfilt_crcf_data_h23x256_h, 23,
@@ -293,28 +293,28 @@ LIQUID_AUTOTEST(fftfilt_crcf_data_h23x256,"description","",0.1)
 // 
 // AUTOTEST: fftfilt_cccf tests
 //
-LIQUID_AUTOTEST(fftfilt_cccf_data_h4x256,"description","",0.1)
+LIQUID_AUTOTEST(fftfilt_cccf_data_h4x256,"fftfilt testbench","",0.1)
 {
     fftfilt_cccf_test(__q__,
                       fftfilt_cccf_data_h4x256_h, 4,
                       fftfilt_cccf_data_h4x256_x, 256,
                       fftfilt_cccf_data_h4x256_y, 256);
 }
-LIQUID_AUTOTEST(fftfilt_cccf_data_h7x256,"description","",0.1)
+LIQUID_AUTOTEST(fftfilt_cccf_data_h7x256,"fftfilt testbench","",0.1)
 {
     fftfilt_cccf_test(__q__,
                       fftfilt_cccf_data_h7x256_h, 7,
                       fftfilt_cccf_data_h7x256_x, 256,
                       fftfilt_cccf_data_h7x256_y, 256);
 }
-LIQUID_AUTOTEST(fftfilt_cccf_data_h13x256,"description","",0.1)
+LIQUID_AUTOTEST(fftfilt_cccf_data_h13x256,"fftfilt testbench","",0.1)
 {
     fftfilt_cccf_test(__q__,
                       fftfilt_cccf_data_h13x256_h, 13,
                       fftfilt_cccf_data_h13x256_x, 256,
                       fftfilt_cccf_data_h13x256_y, 256);
 }
-LIQUID_AUTOTEST(fftfilt_cccf_data_h23x256,"description","",0.1)
+LIQUID_AUTOTEST(fftfilt_cccf_data_h23x256,"fftfilt testbench","",0.1)
 {
     fftfilt_cccf_test(__q__,
                       fftfilt_cccf_data_h23x256_h, 23,
@@ -322,7 +322,7 @@ LIQUID_AUTOTEST(fftfilt_cccf_data_h23x256,"description","",0.1)
                       fftfilt_cccf_data_h23x256_y, 256);
 }
 
-LIQUID_AUTOTEST(fftfilt_config,"description","",0.1)
+LIQUID_AUTOTEST(fftfilt_config,"fftfilt testbench","",0.1)
 {
     _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
@@ -344,7 +344,7 @@ LIQUID_AUTOTEST(fftfilt_config,"description","",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(fftfilt_copy,"description","",0.1)
+LIQUID_AUTOTEST(fftfilt_copy,"fftfilt copy","",0.1)
 {
     // generate random filter coefficients
     unsigned int i, j, h_len = 31;

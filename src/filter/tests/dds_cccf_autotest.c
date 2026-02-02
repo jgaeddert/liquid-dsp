@@ -95,16 +95,16 @@ void testbench_dds_cccf(liquid_autotest __q__,      // autotest object
     free(buf_2);
 }
 
-LIQUID_AUTOTEST(dds_cccf_0,"description","",0.1){ testbench_dds_cccf(__q__, 1, +0.0f, 60.0f); }
-LIQUID_AUTOTEST(dds_cccf_1,"description","",0.1){ testbench_dds_cccf(__q__, 2, +0.0f, 60.0f); }
-LIQUID_AUTOTEST(dds_cccf_2,"description","",0.1){ testbench_dds_cccf(__q__, 3, +0.0f, 60.0f); }
+LIQUID_AUTOTEST(dds_cccf_0,"direct digital synthesis, stages=1","",0.1){ testbench_dds_cccf(__q__, 1, +0.0f, 60.0f); }
+LIQUID_AUTOTEST(dds_cccf_1,"direct digital synthesis, stages=2","",0.1){ testbench_dds_cccf(__q__, 2, +0.0f, 60.0f); }
+LIQUID_AUTOTEST(dds_cccf_2,"direct digital synthesis, stages=3","",0.1){ testbench_dds_cccf(__q__, 3, +0.0f, 60.0f); }
 
 // FIXME: adjust filter lengths appropriately
 //void xautotest_dds_cccf_4(){ testbench_dds_cccf( 2, +0.1f,      60.0f); }
 //void xautotest_dds_cccf_5(){ testbench_dds_cccf( 2, -0.213823f, 60.0f); }
 //void xautotest_dds_cccf_6(){ testbench_dds_cccf( 2, -0.318234f, 80.0f); }
 
-LIQUID_AUTOTEST(dds_config,"description","",0.1)
+LIQUID_AUTOTEST(dds_config,"direct digital synthesis config","",0.1)
 {
     _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
