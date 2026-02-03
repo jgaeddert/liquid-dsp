@@ -490,7 +490,7 @@ int liquid_vlog(liquid_logger _q,
     // output to stdout
     if (_level >= _q->level) {
         va_copy(event.args, _ap);
-        liquid_logger_callback_stream(&event, stderr, _q->config);
+        liquid_logger_callback_stream(&event, stdout, _q->config);
         va_end(event.args);
     }
 
