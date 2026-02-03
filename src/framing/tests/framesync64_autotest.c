@@ -70,6 +70,7 @@ LIQUID_AUTOTEST(framegen64_copy,"copying from one framegen64 object to another",
     LIQUID_REQUIRE( q_copy != NULL );
 
     framegen64_destroy(q_orig);
+    framegen64_destroy(q_copy);
 }
 
 LIQUID_AUTOTEST(framesync64_copy,"copying from one framesync64 object to another","",0.1)
