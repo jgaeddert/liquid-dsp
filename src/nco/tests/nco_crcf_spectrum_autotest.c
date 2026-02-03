@@ -40,8 +40,8 @@ void nco_crcf_spectrum_test(int _id, int _type, float _freq)
 
     // sample buffer
     unsigned int  buf_len = 3*nfft;
-    float complex buf_0[buf_len];
-    float complex buf_1[buf_len];
+    float complex * buf_0 = (float complex*)malloc(buf_len*sizeof(float complex));
+    float complex * buf_1 = (float complex*)malloc(buf_len*sizeof(float complex));
     unsigned int i;
     for (i=0; i<buf_len; i++)
         buf_0[i] = 1.0f / sqrtf((float)nfft);
@@ -77,6 +77,8 @@ void nco_crcf_spectrum_test(int _id, int _type, float _freq)
         liquid_autotest_verbose ? filename : NULL);
 
     // destroy object
+    free(buf_0);
+    free(buf_1);
     nco_crcf_destroy(nco);
     spgramcf_destroy(psd);
 }
