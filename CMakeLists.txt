@@ -805,7 +805,6 @@ if(BUILD_AUTOTESTS)
     add_executable(xautotest
         autotest/xautotest.c
         autotest/liquid_autotest_registry.h
-        autotest/autotest.h
         autotest/autotest.c
         autotest/libliquid_autotest.c
         autotest/logs
