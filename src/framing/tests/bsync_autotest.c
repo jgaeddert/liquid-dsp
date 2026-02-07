@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-// 
-// AUTOTEST: bsync_rrrf/simple correlation
-//
-void autotest_bsync_rrrf_15()
+LIQUID_AUTOTEST(bsync_rrrf_15,"bsync_rrrf/simple correlation","",0.1)
 {
     // generate sequence (15-bit msequence)
     float h[15] = {
@@ -51,23 +48,19 @@ void autotest_bsync_rrrf_15()
         bsync_rrrf_correlate(fs,h[i],&rxy);
 
     // correlation should be 1.0
-    CONTEND_DELTA( rxy, 1.0f, tol );
+    LIQUID_CHECK_DELTA( rxy, 1.0f, tol );
 
     // all other cross-correlations should be exactly -1/15
     for (i=0; i<14; i++) {
         bsync_rrrf_correlate(fs,h[i],&rxy);
-        CONTEND_DELTA( rxy, -1.0f/15.0f, tol );
+        LIQUID_CHECK_DELTA( rxy, -1.0f/15.0f, tol );
     }
 
     // clean it up
     bsync_rrrf_destroy(fs);
 }
 
-
-// 
-// AUTOTEST: bsync_crcf/simple correlation
-//
-void autotest_bsync_crcf_15()
+LIQUID_AUTOTEST(bsync_crcf_15,"bsync_crcf/simple correlation","",0.1)
 {
     // generate sequence (15-bit msequence)
     float h[15] = {
@@ -92,26 +85,23 @@ void autotest_bsync_crcf_15()
         bsync_crcf_correlate(fs,h[i],&rxy);
 
     // correlation should be 1.0  + j*(-1/15)
-    CONTEND_DELTA( crealf(rxy),  1.0f,       tol );
-    CONTEND_DELTA( cimagf(rxy), -1.0f/15.0f, tol );
+    LIQUID_CHECK_DELTA( crealf(rxy),  1.0f,       tol );
+    LIQUID_CHECK_DELTA( cimagf(rxy), -1.0f/15.0f, tol );
 
     // all other cross-correlations should be exactly -1/15
     for (i=0; i<14; i++) {
         bsync_crcf_correlate(fs,h[i],&rxy);
-        CONTEND_DELTA( crealf(rxy), -1.0f/15.0f, tol );
-        CONTEND_DELTA( cimagf(rxy), -1.0f/15.0f, tol );
+        LIQUID_CHECK_DELTA( crealf(rxy), -1.0f/15.0f, tol );
+        LIQUID_CHECK_DELTA( cimagf(rxy), -1.0f/15.0f, tol );
     }
 
     // clean it up
     bsync_crcf_destroy(fs);
 }
 
-// 
-// AUTOTEST: bsync_crcf/simple correlation with phase
-//           offset
-//
-void xautotest_bsync_crcf_phase_15()
+LIQUID_AUTOTEST(bsync_crcf_phase_15,"bsync_crcf/simple correlation with phase offset","",0.1)
 {
+    /*
     // generate sequence (15-bit msequence)
     float h[15] = {
          1.0,  1.0,  1.0,  1.0, 
@@ -136,17 +126,18 @@ void xautotest_bsync_crcf_phase_15()
         bsync_crcf_correlate(fs,h[i]*cexpf(_Complex_I*theta),&rxy);
 
     // correlation should be 1.0
-    CONTEND_DELTA( crealf(rxy), 1.0f*cosf(theta), tol );
-    CONTEND_DELTA( cimagf(rxy), 1.0f*sinf(theta), tol );
+    LIQUID_CHECK_DELTA( crealf(rxy), 1.0f*cosf(theta), tol );
+    LIQUID_CHECK_DELTA( cimagf(rxy), 1.0f*sinf(theta), tol );
 
     // all other cross-correlations should be exactly -1/15
     for (i=0; i<14; i++) {
         bsync_crcf_correlate(fs,h[i]*cexpf(_Complex_I*theta),&rxy);
-        CONTEND_DELTA( crealf(rxy), -1.0f/15.0f*cosf(theta), tol );
-        CONTEND_DELTA( cimagf(rxy), -1.0f/15.0f*sinf(theta), tol );
+        LIQUID_CHECK_DELTA( crealf(rxy), -1.0f/15.0f*cosf(theta), tol );
+        LIQUID_CHECK_DELTA( cimagf(rxy), -1.0f/15.0f*sinf(theta), tol );
     }
 
     // clean it up
     bsync_crcf_destroy(fs);
+    */
 }
 

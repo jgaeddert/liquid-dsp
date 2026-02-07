@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,10 @@
 
 // test filter copy operation
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-void autotest_firfilt_crcf_copy()
+LIQUID_AUTOTEST(firfilt_crcf_copy,"description","",0.1)
 {
     // design filter from prototype
     firfilt_crcf filt_orig = firfilt_crcf_create_kaiser(21, 0.345f, 60.0f, 0.0f);
@@ -56,7 +56,7 @@ void autotest_firfilt_crcf_copy()
                 crealf(y_orig), cimagf(y_orig),
                 crealf(y_copy), cimagf(y_copy),
                 error);
-        CONTEND_EQUALITY(y_orig, y_copy);
+        LIQUID_CHECK(y_orig ==  y_copy);
     }
 
     // destroy filter objects

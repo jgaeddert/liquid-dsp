@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,11 @@
 // test spectral periodogram (spgram) objects
 
 #include <stdlib.h>
-#include "autotest/autotest.h"
 #include "liquid.internal.h"
+#include "liquid.autotest.h"
 
-void testbench_spgramcf_noise(unsigned int _nfft,
+void testbench_spgramcf_noise(liquid_autotest __q__,
+                              unsigned int _nfft,
                               unsigned int _wlen,
                               unsigned int _delay,
                               int          _wtype,
@@ -50,8 +51,8 @@ void testbench_spgramcf_noise(unsigned int _nfft,
         spgramcf_push(q, nstd*( randnf() + _Complex_I*randnf() ) * M_SQRT1_2);
 
     // verify number of samples processed
-    CONTEND_EQUALITY(spgramcf_get_num_samples(q),       num_samples);
-    CONTEND_EQUALITY(spgramcf_get_num_samples_total(q), num_samples);
+    LIQUID_CHECK(spgramcf_get_num_samples(q) ==        num_samples);
+    LIQUID_CHECK(spgramcf_get_num_samples_total(q) ==  num_samples);
 
     // compute power spectral density output
     float psd[_nfft];
@@ -59,35 +60,36 @@ void testbench_spgramcf_noise(unsigned int _nfft,
 
     // verify result
     for (i=0; i<_nfft; i++)
-        CONTEND_DELTA(psd[i], _noise_floor, tol)
+        LIQUID_CHECK_DELTA(psd[i], _noise_floor, tol)
 
     // destroy objects
     spgramcf_destroy(q);
 }
 
 // test different transform sizes, default parameters
-void autotest_spgramcf_noise_440()  { testbench_spgramcf_noise( 440, 0, 0, 0, -80.0); }
-void autotest_spgramcf_noise_1024() { testbench_spgramcf_noise(1024, 0, 0, 0, -80.0); }
-void autotest_spgramcf_noise_1200() { testbench_spgramcf_noise(1200, 0, 0, 0, -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_440,"","",0.1)  { testbench_spgramcf_noise(__q__,  440, 0, 0, 0, -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_1024,"","",0.1) { testbench_spgramcf_noise(__q__, 1024, 0, 0, 0, -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_1200,"","",0.1) { testbench_spgramcf_noise(__q__, 1200, 0, 0, 0, -80.0); }
 
 // test different transform sizes, specific parameters
-void autotest_spgramcf_noise_custom_0() { testbench_spgramcf_noise(400, 400, 100, LIQUID_WINDOW_HAMMING, -80.0); }
-void autotest_spgramcf_noise_custom_1() { testbench_spgramcf_noise(512, 200, 120, LIQUID_WINDOW_HAMMING, -80.0); }
-void autotest_spgramcf_noise_custom_2() { testbench_spgramcf_noise(640, 100,  10, LIQUID_WINDOW_HAMMING, -80.0); }
-void autotest_spgramcf_noise_custom_3() { testbench_spgramcf_noise(960,  83,  17, LIQUID_WINDOW_HAMMING, -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_custom_0,"","",0.1) { testbench_spgramcf_noise(__q__, 400, 400, 100, LIQUID_WINDOW_HAMMING, -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_custom_1,"","",0.1) { testbench_spgramcf_noise(__q__, 512, 200, 120, LIQUID_WINDOW_HAMMING, -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_custom_2,"","",0.1) { testbench_spgramcf_noise(__q__, 640, 100,  10, LIQUID_WINDOW_HAMMING, -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_custom_3,"","",0.1) { testbench_spgramcf_noise(__q__, 960,  83,  17, LIQUID_WINDOW_HAMMING, -80.0); }
 
 // test different window types
-void autotest_spgramcf_noise_hamming        () { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_HAMMING,        -80.0); }
-void autotest_spgramcf_noise_hann           () { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_HANN,           -80.0); }
-void autotest_spgramcf_noise_blackmanharris () { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_BLACKMANHARRIS, -80.0); }
-void autotest_spgramcf_noise_blackmanharris7() { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_BLACKMANHARRIS7,-80.0); }
-void autotest_spgramcf_noise_kaiser         () { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_KAISER,         -80.0); }
-void autotest_spgramcf_noise_flattop        () { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_FLATTOP,        -80.0); }
-void autotest_spgramcf_noise_triangular     () { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_TRIANGULAR,     -80.0); }
-void autotest_spgramcf_noise_rcostaper      () { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_RCOSTAPER,      -80.0); }
-void autotest_spgramcf_noise_kbd            () { testbench_spgramcf_noise(800, 0, 0, LIQUID_WINDOW_KBD,            -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_hamming        ,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_HAMMING,        -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_hann           ,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_HANN,           -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_blackmanharris ,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_BLACKMANHARRIS, -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_blackmanharris7,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_BLACKMANHARRIS7,-80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_kaiser         ,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_KAISER,         -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_flattop        ,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_FLATTOP,        -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_triangular     ,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_TRIANGULAR,     -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_rcostaper      ,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_RCOSTAPER,      -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_kbd            ,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_KBD,            -80.0); }
 
-void testbench_spgramcf_signal(unsigned int _nfft, int _wtype, float _fc, float _SNRdB)
+void testbench_spgramcf_signal(liquid_autotest __q__,
+        unsigned int _nfft, int _wtype, float _fc, float _SNRdB)
 {
     float bw = 0.25f; // signal bandwidth (relative)
     unsigned int m = 25;
@@ -136,8 +138,7 @@ void testbench_spgramcf_signal(unsigned int _nfft, int _wtype, float _fc, float 
         liquid_window_str[_wtype][0], _nfft,
         _fc < 0 ? 'm' : 'p', fabsf(_fc*1000),
         _SNRdB < 0 ? 'm' : 'p', fabsf(_SNRdB*1000));
-    liquid_autotest_validate_spectrum(psd, _nfft, regions, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_spectrum(__q__, psd, _nfft, regions, 3, filename);
 
     // destroy objects
     spgramcf_destroy(q);
@@ -145,14 +146,14 @@ void testbench_spgramcf_signal(unsigned int _nfft, int _wtype, float _fc, float 
     nco_crcf_destroy(mixer);
 }
 
-void autotest_spgramcf_signal_00() { testbench_spgramcf_signal(800,LIQUID_WINDOW_HAMMING, 0.0f,30.0f); }
-void autotest_spgramcf_signal_01() { testbench_spgramcf_signal(800,LIQUID_WINDOW_HAMMING, 0.2f,10.0f); }
-void autotest_spgramcf_signal_02() { testbench_spgramcf_signal(800,LIQUID_WINDOW_HANN,    0.2f,10.0f); }
-void autotest_spgramcf_signal_03() { testbench_spgramcf_signal(400,LIQUID_WINDOW_KAISER, -0.3f,40.0f); }
-void autotest_spgramcf_signal_04() { testbench_spgramcf_signal(640,LIQUID_WINDOW_HAMMING,-0.2f, 0.0f); }
-void autotest_spgramcf_signal_05() { testbench_spgramcf_signal(640,LIQUID_WINDOW_HAMMING, 0.1f,-3.0f); }
+LIQUID_AUTOTEST(spgramcf_signal_00,"","",0.1) { testbench_spgramcf_signal(__q__, 800,LIQUID_WINDOW_HAMMING, 0.0f,30.0f); }
+LIQUID_AUTOTEST(spgramcf_signal_01,"","",0.1) { testbench_spgramcf_signal(__q__, 800,LIQUID_WINDOW_HAMMING, 0.2f,10.0f); }
+LIQUID_AUTOTEST(spgramcf_signal_02,"","",0.1) { testbench_spgramcf_signal(__q__, 800,LIQUID_WINDOW_HANN,    0.2f,10.0f); }
+LIQUID_AUTOTEST(spgramcf_signal_03,"","",0.1) { testbench_spgramcf_signal(__q__, 400,LIQUID_WINDOW_KAISER, -0.3f,40.0f); }
+LIQUID_AUTOTEST(spgramcf_signal_04,"","",0.1) { testbench_spgramcf_signal(__q__, 640,LIQUID_WINDOW_HAMMING,-0.2f, 0.0f); }
+LIQUID_AUTOTEST(spgramcf_signal_05,"","",0.1) { testbench_spgramcf_signal(__q__, 640,LIQUID_WINDOW_HAMMING, 0.1f,-3.0f); }
 
-void autotest_spgramcf_counters()
+LIQUID_AUTOTEST(spgramcf_counters,"","",0.1)
 {
     // create spectral periodogram with specific parameters
     unsigned int nfft=1200, wlen=400, delay=200;
@@ -160,9 +161,9 @@ void autotest_spgramcf_counters()
     spgramcf q = spgramcf_create(nfft, wtype, wlen, delay);
 
     // check parameters
-    CONTEND_EQUALITY( spgramcf_get_nfft(q),       nfft );
-    CONTEND_EQUALITY( spgramcf_get_window_len(q), wlen );
-    CONTEND_EQUALITY( spgramcf_get_delay(q),      delay);
+    LIQUID_CHECK( spgramcf_get_nfft(q) ==        nfft );
+    LIQUID_CHECK( spgramcf_get_window_len(q) ==  wlen );
+    LIQUID_CHECK( spgramcf_get_delay(q) ==       delay);
 
     unsigned int block_len = 1117, num_blocks = 1123;
     unsigned int i, num_samples = block_len * num_blocks;
@@ -171,10 +172,10 @@ void autotest_spgramcf_counters()
         spgramcf_push(q, randnf() + _Complex_I*randnf());
 
     // verify number of samples and transforms processed
-    CONTEND_EQUALITY(spgramcf_get_num_samples(q),          num_samples);
-    CONTEND_EQUALITY(spgramcf_get_num_samples_total(q),    num_samples);
-    CONTEND_EQUALITY(spgramcf_get_num_transforms(q),       num_transforms);
-    CONTEND_EQUALITY(spgramcf_get_num_transforms_total(q), num_transforms);
+    LIQUID_CHECK(spgramcf_get_num_samples(q) ==           num_samples);
+    LIQUID_CHECK(spgramcf_get_num_samples_total(q) ==     num_samples);
+    LIQUID_CHECK(spgramcf_get_num_transforms(q) ==        num_transforms);
+    LIQUID_CHECK(spgramcf_get_num_transforms_total(q) ==  num_transforms);
 
     // clear object and run in blocks
     spgramcf_clear(q);
@@ -185,60 +186,60 @@ void autotest_spgramcf_counters()
         spgramcf_write(q, block, block_len);
 
     // re-verify number of samples and transforms processed
-    CONTEND_EQUALITY(spgramcf_get_num_samples(q),          num_samples);
-    CONTEND_EQUALITY(spgramcf_get_num_samples_total(q),    num_samples * 2);
-    CONTEND_EQUALITY(spgramcf_get_num_transforms(q),       num_transforms);
-    CONTEND_EQUALITY(spgramcf_get_num_transforms_total(q), num_transforms * 2);
+    LIQUID_CHECK(spgramcf_get_num_samples(q) ==           num_samples);
+    LIQUID_CHECK(spgramcf_get_num_samples_total(q) ==     num_samples * 2);
+    LIQUID_CHECK(spgramcf_get_num_transforms(q) ==        num_transforms);
+    LIQUID_CHECK(spgramcf_get_num_transforms_total(q) ==  num_transforms * 2);
 
     // reset object and ensure counters are zero
     spgramcf_reset(q);
-    CONTEND_EQUALITY(spgramcf_get_num_samples(q),          0);
-    CONTEND_EQUALITY(spgramcf_get_num_samples_total(q),    0);
-    CONTEND_EQUALITY(spgramcf_get_num_transforms(q),       0);
-    CONTEND_EQUALITY(spgramcf_get_num_transforms_total(q), 0);
+    LIQUID_CHECK(spgramcf_get_num_samples(q) ==           0);
+    LIQUID_CHECK(spgramcf_get_num_samples_total(q) ==     0);
+    LIQUID_CHECK(spgramcf_get_num_transforms(q) ==        0);
+    LIQUID_CHECK(spgramcf_get_num_transforms_total(q) ==  0);
 
     // destroy object(s)
     spgramcf_destroy(q);
 }
 
-void autotest_spgramcf_config()
+LIQUID_AUTOTEST(spgramcf_config,"","",0.1)
 {
     _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
-    CONTEND_ISNULL(spgramcf_create(  0, LIQUID_WINDOW_HAMMING,       200, 200)); // nfft too small
-    CONTEND_ISNULL(spgramcf_create(  1, LIQUID_WINDOW_HAMMING,       200, 200)); // nfft too small
-    CONTEND_ISNULL(spgramcf_create(  2, LIQUID_WINDOW_HAMMING,       200, 200)); // window length too large
-    CONTEND_ISNULL(spgramcf_create(400, LIQUID_WINDOW_HAMMING,         0, 200)); // window length too small
-    CONTEND_ISNULL(spgramcf_create(400, LIQUID_WINDOW_UNKNOWN,       200, 200)); // invalid window type
-    CONTEND_ISNULL(spgramcf_create(400, LIQUID_WINDOW_NUM_FUNCTIONS, 200, 200)); // invalid window type
-    CONTEND_ISNULL(spgramcf_create(400, LIQUID_WINDOW_KBD,           201, 200)); // KBD must be even
-    CONTEND_ISNULL(spgramcf_create(400, LIQUID_WINDOW_HAMMING,       200,   0)); // delay too small
+    LIQUID_CHECK(NULL == spgramcf_create(  0, LIQUID_WINDOW_HAMMING,       200, 200)); // nfft too small
+    LIQUID_CHECK(NULL == spgramcf_create(  1, LIQUID_WINDOW_HAMMING,       200, 200)); // nfft too small
+    LIQUID_CHECK(NULL == spgramcf_create(  2, LIQUID_WINDOW_HAMMING,       200, 200)); // window length too large
+    LIQUID_CHECK(NULL == spgramcf_create(400, LIQUID_WINDOW_HAMMING,         0, 200)); // window length too small
+    LIQUID_CHECK(NULL == spgramcf_create(400, LIQUID_WINDOW_UNKNOWN,       200, 200)); // invalid window type
+    LIQUID_CHECK(NULL == spgramcf_create(400, LIQUID_WINDOW_NUM_FUNCTIONS, 200, 200)); // invalid window type
+    LIQUID_CHECK(NULL == spgramcf_create(400, LIQUID_WINDOW_KBD,           201, 200)); // KBD must be even
+    LIQUID_CHECK(NULL == spgramcf_create(400, LIQUID_WINDOW_HAMMING,       200,   0)); // delay too small
 
     // check that object returns NULL for invalid configurations (default)
-    CONTEND_ISNULL(spgramcf_create_default(0)); // nfft too small
-    CONTEND_ISNULL(spgramcf_create_default(1)); // nfft too small
+    LIQUID_CHECK(NULL == spgramcf_create_default(0)); // nfft too small
+    LIQUID_CHECK(NULL == spgramcf_create_default(1)); // nfft too small
 
     // create proper object but test invalid internal configurations
     spgramcf q = spgramcf_create_default(540);
 
     // check setting bandwidth
     float alpha = 0.0123456f;
-    CONTEND_EQUALITY ( spgramcf_set_alpha(q, 0.1),  0 ); // valid
-    CONTEND_DELTA    ( spgramcf_get_alpha(q), 0.1, 1e-6f);
-    CONTEND_EQUALITY ( spgramcf_set_alpha(q,-7.0), -1 ); // invalid
-    CONTEND_DELTA    ( spgramcf_get_alpha(q), 0.1, 1e-6f);
-    CONTEND_EQUALITY ( spgramcf_set_alpha(q,alpha),  0); // valid
-    CONTEND_DELTA    ( spgramcf_get_alpha(q), alpha, 1e-6f);
-    CONTEND_EQUALITY ( spgramcf_get_alpha(q),      alpha);
-    CONTEND_EQUALITY ( spgramcf_print(q), LIQUID_OK );
+    LIQUID_CHECK        ( spgramcf_set_alpha(q, 0.1) == 0 ); // valid
+    LIQUID_CHECK_DELTA  ( spgramcf_get_alpha(q), 0.1, 1e-6f);
+    LIQUID_CHECK        ( spgramcf_set_alpha(q,-7.0) == -1 ); // invalid
+    LIQUID_CHECK_DELTA  ( spgramcf_get_alpha(q), 0.1, 1e-6f);
+    LIQUID_CHECK        ( spgramcf_set_alpha(q,alpha) ==  0); // valid
+    LIQUID_CHECK_DELTA  ( spgramcf_get_alpha(q), alpha, 1e-6f);
+    LIQUID_CHECK        ( spgramcf_get_alpha(q) == alpha);
+    LIQUID_CHECK        ( spgramcf_print(q) == LIQUID_OK );
 
-    CONTEND_INEQUALITY(LIQUID_OK, spgramcf_set_rate(q, -10e6))
+    LIQUID_CHECK(LIQUID_OK != spgramcf_set_rate(q, -10e6))
 
     spgramcf_destroy(q);
     _liquid_error_downgrade_disable();
 }
 
-void autotest_spgramcf_standalone()
+LIQUID_AUTOTEST(spgramcf_standalone,"","",0.1)
 {
     unsigned int nfft        = 1200;
     unsigned int num_samples = 20*nfft; // number of samples to generate
@@ -260,8 +261,8 @@ void autotest_spgramcf_standalone()
         {.fmin=-0.001, .fmax=+0.001, .pmin=   2.0, .pmax=   8.0, .test_lo=1, .test_hi=1},
         {.fmin=+0.050, .fmax=+0.500, .pmin=n0-tol, .pmax=n0+tol, .test_lo=1, .test_hi=1},
     };
-    liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/spgramcf_standalone.m" : NULL);
+    liquid_autotest_validate_spectrum(__q__, psd, nfft, regions, 3,
+        "autotest/logs/spgramcf_standalone.m");
 
     // free memory
     free(buf);
@@ -269,7 +270,7 @@ void autotest_spgramcf_standalone()
 
 // check spectral periodogram operation where the input size is much shorter
 // than the transform size
-void autotest_spgramcf_short()
+LIQUID_AUTOTEST(spgramcf_short,"","",0.1)
 {
     unsigned int nfft        = 1200;    // transform size
     unsigned int num_samples =  200;    // number of samples to generate
@@ -289,20 +290,20 @@ void autotest_spgramcf_short()
         float f       = (float)i / (float)nfft - 0.5f;
         float mask_hi = fabsf(f) < 0.2f ? 15.0f - 30*fabsf(f)/0.2f : -15.0f;
         liquid_log_debug("%6u : f=%6.3f, %8.2f < %8.2f", i, f, psd[i], mask_hi);
-        CONTEND_LESS_THAN( psd[i], mask_hi );
+        LIQUID_CHECK( psd[i] < mask_hi );
     }
     // consider lower mask only for DC term
     float mask_lo = 0.0f;
     unsigned int nfft_2 = nfft/2;
     liquid_log_debug("DC : f=%6.3f, %8.2f > %8.2f", 0.0f, psd[nfft_2], mask_lo);
-    CONTEND_GREATER_THAN( psd[nfft_2], mask_lo );
+    LIQUID_CHECK( psd[nfft_2] > mask_lo );
 
     // free memory
     free(buf);
 }
 
 // check copy method
-void autotest_spgramcf_copy()
+LIQUID_AUTOTEST(spgramcf_copy,"","",0.1)
 {
     unsigned int nfft        = 1200;    // transform size
     unsigned int num_samples = 9600;    // number of samples to generate
@@ -331,17 +332,17 @@ void autotest_spgramcf_copy()
     float psd_1[nfft];
     spgramcf_get_psd(q0, psd_0);
     spgramcf_get_psd(q1, psd_1);
-    CONTEND_SAME_DATA(psd_0, psd_1, nfft*sizeof(float));
+    LIQUID_CHECK_ARRAY(psd_0, psd_1, nfft*sizeof(float));
 
     // check parameters
-    CONTEND_EQUALITY(spgramcf_get_nfft                (q0),spgramcf_get_nfft                (q1));
-    CONTEND_EQUALITY(spgramcf_get_window_len          (q0),spgramcf_get_window_len          (q1));
-    CONTEND_EQUALITY(spgramcf_get_delay               (q0),spgramcf_get_delay               (q1));
-    CONTEND_EQUALITY(spgramcf_get_wtype               (q0),spgramcf_get_wtype               (q1));
-    CONTEND_EQUALITY(spgramcf_get_num_samples         (q0),spgramcf_get_num_samples         (q1));
-    CONTEND_EQUALITY(spgramcf_get_num_samples_total   (q0),spgramcf_get_num_samples_total   (q1));
-    CONTEND_EQUALITY(spgramcf_get_num_transforms      (q0),spgramcf_get_num_transforms      (q1));
-    CONTEND_EQUALITY(spgramcf_get_num_transforms_total(q0),spgramcf_get_num_transforms_total(q1));
+    LIQUID_CHECK(spgramcf_get_nfft                (q0) == spgramcf_get_nfft                (q1));
+    LIQUID_CHECK(spgramcf_get_window_len          (q0) == spgramcf_get_window_len          (q1));
+    LIQUID_CHECK(spgramcf_get_delay               (q0) == spgramcf_get_delay               (q1));
+    LIQUID_CHECK(spgramcf_get_wtype               (q0) == spgramcf_get_wtype               (q1));
+    LIQUID_CHECK(spgramcf_get_num_samples         (q0) == spgramcf_get_num_samples         (q1));
+    LIQUID_CHECK(spgramcf_get_num_samples_total   (q0) == spgramcf_get_num_samples_total   (q1));
+    LIQUID_CHECK(spgramcf_get_num_transforms      (q0) == spgramcf_get_num_transforms      (q1));
+    LIQUID_CHECK(spgramcf_get_num_transforms_total(q0) == spgramcf_get_num_transforms_total(q1));
 
     // destroy objects
     spgramcf_destroy(q0);
@@ -349,7 +350,7 @@ void autotest_spgramcf_copy()
 }
 
 // check spectral periodogram behavior on null input (zero samples)
-void autotest_spgramcf_null()
+LIQUID_AUTOTEST(spgramcf_null,"","",0.1)
 {
     unsigned int nfft = 1200;   // transform size
     float psd[nfft];
@@ -359,11 +360,11 @@ void autotest_spgramcf_null()
     float psd_val = 10*log10f(LIQUID_SPGRAM_PSD_MIN);
     unsigned int i;
     for (i=0; i<nfft; i++)
-        CONTEND_EQUALITY(psd[i], psd_val);
+        LIQUID_CHECK(psd[i] == psd_val);
 }
 
 // test file export
-void autotest_spgram_gnuplot()
+LIQUID_AUTOTEST(spgram_gnuplot,"","",0.1)
 {
     // create default object
     spgramcf q = spgramcf_create_default(540);
@@ -372,12 +373,12 @@ void autotest_spgram_gnuplot()
         spgramcf_push(q, randnf() + _Complex_I*randnf());
 
     // export once before setting values
-    CONTEND_EQUALITY(LIQUID_OK,spgramcf_export_gnuplot(q,"autotest/logs/spgram.gnu"))
+    LIQUID_CHECK(LIQUID_OK == spgramcf_export_gnuplot(q,"autotest/logs/spgram.gnu"))
 
     // set values and export again
-    CONTEND_EQUALITY(LIQUID_OK,spgramcf_set_freq(q, 100e6))
-    CONTEND_EQUALITY(LIQUID_OK,spgramcf_set_rate(q,  20e6))
-    CONTEND_EQUALITY(LIQUID_OK,spgramcf_export_gnuplot(q,"autotest/logs/spgram.gnu"))
+    LIQUID_CHECK(LIQUID_OK == spgramcf_set_freq(q, 100e6))
+    LIQUID_CHECK(LIQUID_OK == spgramcf_set_rate(q,  20e6))
+    LIQUID_CHECK(LIQUID_OK == spgramcf_export_gnuplot(q,"autotest/logs/spgram.gnu"))
 
     spgramcf_destroy(q);
 }

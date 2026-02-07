@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
 
 #include <stdlib.h>
 #include <complex.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // declare external arrays
@@ -38,7 +38,8 @@ extern float complex nco_sincos_fsqrt1_7[];
 //  _sincos     :   external sin/cosine data
 //  _num_samples:   number of samples to test
 //  _tol        :   error tolerance
-void nco_crcf_frequency_test(int             _type,
+void testbench_nco_crcf_freq(liquid_autotest __q__,
+                             int             _type,
                              float           _phase,
                              float           _frequency,
                              float complex * _sincos,
@@ -63,8 +64,8 @@ void nco_crcf_frequency_test(int             _type,
         float complex y = _sincos[i];
 
         // run tests
-        CONTEND_DELTA( crealf(y_test), crealf(y), _tol );
-        CONTEND_DELTA( cimagf(y_test), cimagf(y), _tol );
+        LIQUID_CHECK_DELTA( crealf(y_test), crealf(y), _tol );
+        LIQUID_CHECK_DELTA( cimagf(y_test), cimagf(y), _tol );
 
         // step oscillator
         nco_crcf_step(nco);
@@ -74,17 +75,15 @@ void nco_crcf_frequency_test(int             _type,
     nco_crcf_destroy(nco);
 }
 
-
-// test floating point precision nco phase
-void autotest_nco_crcf_frequency()
+LIQUID_AUTOTEST(nco_crcf_frequency,"test floating point precision nco phase","",0.1)
 {
     // error tolerance (higher for NCO)
     float tol = 0.04f;
 
     // test frequencies with irrational values
-    nco_crcf_frequency_test(LIQUID_NCO, 0.0f, 0.707106781186547, nco_sincos_fsqrt1_2, 256, tol); // 1/sqrt(2)
-    nco_crcf_frequency_test(LIQUID_NCO, 0.0f, 0.577350269189626, nco_sincos_fsqrt1_3, 256, tol); // 1/sqrt(3)
-    nco_crcf_frequency_test(LIQUID_NCO, 0.0f, 0.447213595499958, nco_sincos_fsqrt1_5, 256, tol); // 1/sqrt(5)
-    nco_crcf_frequency_test(LIQUID_NCO, 0.0f, 0.377964473009227, nco_sincos_fsqrt1_7, 256, tol); // 1/sqrt(7)
+    testbench_nco_crcf_freq(__q__,LIQUID_NCO, 0.0f, 0.707106781186547, nco_sincos_fsqrt1_2, 256, tol); // 1/sqrt(2)
+    testbench_nco_crcf_freq(__q__,LIQUID_NCO, 0.0f, 0.577350269189626, nco_sincos_fsqrt1_3, 256, tol); // 1/sqrt(3)
+    testbench_nco_crcf_freq(__q__,LIQUID_NCO, 0.0f, 0.447213595499958, nco_sincos_fsqrt1_5, 256, tol); // 1/sqrt(5)
+    testbench_nco_crcf_freq(__q__,LIQUID_NCO, 0.0f, 0.377964473009227, nco_sincos_fsqrt1_7, 256, tol); // 1/sqrt(7)
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,10 @@
 
 #include <string.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-//
-// AUTOTEST: reverse byte
-//
-void autotest_reverse_byte()
+LIQUID_AUTOTEST(reverse_byte,"test byte reversal","",0.1)
 {
     // 0110 0010
     unsigned char b = 0x62;
@@ -37,13 +34,10 @@ void autotest_reverse_byte()
     unsigned char r = 0x46;
 
     // 
-    CONTEND_EQUALITY(liquid_reverse_byte(b),r);
+    LIQUID_CHECK(liquid_reverse_byte(b) == r);
 }
 
-//
-// AUTOTEST: reverse uint16_t
-//
-void autotest_reverse_uint16()
+LIQUID_AUTOTEST(reverse_uint16,"test reversing 16-bit word","",0.1)
 {
     // 1111 0111 0101 1001
     unsigned int b = 0xF759;
@@ -52,11 +46,10 @@ void autotest_reverse_uint16()
     unsigned int r = 0x9AEF;
 
     // 
-    CONTEND_EQUALITY(liquid_reverse_uint16(b),r);
+    LIQUID_CHECK(liquid_reverse_uint16(b) == r);
 }
 
-// AUTOTEST: reverse uint32_t
-void autotest_reverse_uint32()
+LIQUID_AUTOTEST(reverse_uint32,"test reversing 32-bit word","",0.1)
 {
     // 0110 0010 1101 1001 0011 1011 1111 0000
     unsigned int b = 0x62D93BF0;
@@ -65,12 +58,13 @@ void autotest_reverse_uint32()
     unsigned int r = 0x0FDC9B46;
 
     // 
-    CONTEND_EQUALITY(liquid_reverse_uint32(b),r);
+    LIQUID_CHECK(liquid_reverse_uint32(b) == r);
 }
 
 // autotest helper function
-void testbench_autotest_crc(crc_scheme _check,
-                            unsigned int _n)
+void testbench_crc(liquid_autotest __q__,
+                   crc_scheme _check,
+                   unsigned int _n)
 {
     unsigned int i;
 
@@ -85,7 +79,7 @@ void testbench_autotest_crc(crc_scheme _check,
     unsigned int key = crc_generate_key(_check, data, _n);
 
     // contend data/key are valid
-    CONTEND_EXPRESSION(crc_validate_message(_check, data, _n, key));
+    LIQUID_CHECK(crc_validate_message(_check, data, _n, key));
 
     // test flipping bit value at each location in message and confirm check fails
     unsigned char data_corrupt[_n];
@@ -99,41 +93,41 @@ void testbench_autotest_crc(crc_scheme _check,
             data[i] ^= (1 << j);
 
             // contend data/key are invalid
-            CONTEND_EXPRESSION(crc_validate_message(_check, data, _n, key)==0);
+            LIQUID_CHECK(crc_validate_message(_check, data, _n, key)==0);
         }
     }
 }
 
 // validate error-detection tests
-void autotest_checksum() { testbench_autotest_crc(LIQUID_CRC_CHECKSUM, 16); }
-void autotest_crc8()     { testbench_autotest_crc(LIQUID_CRC_8,        16); }
-void autotest_crc16()    { testbench_autotest_crc(LIQUID_CRC_16,       64); }
-void autotest_crc24()    { testbench_autotest_crc(LIQUID_CRC_24,       64); }
-void autotest_crc32()    { testbench_autotest_crc(LIQUID_CRC_32,       64); }
+LIQUID_AUTOTEST(checksum,"","",0.1) { testbench_crc(__q__, LIQUID_CRC_CHECKSUM, 16); }
+LIQUID_AUTOTEST(crc8,"","",0.1)     { testbench_crc(__q__, LIQUID_CRC_8,        16); }
+LIQUID_AUTOTEST(crc16,"","",0.1)    { testbench_crc(__q__, LIQUID_CRC_16,       64); }
+LIQUID_AUTOTEST(crc24,"","",0.1)    { testbench_crc(__q__, LIQUID_CRC_24,       64); }
+LIQUID_AUTOTEST(crc32,"","",0.1)    { testbench_crc(__q__, LIQUID_CRC_32,       64); }
 
-void autotest_crc_config()
+LIQUID_AUTOTEST(crc_config,"test CRC config","",0.1)
 {
     _liquid_error_downgrade_enable();
-    CONTEND_EQUALITY(LIQUID_OK, liquid_print_crc_schemes())
+    LIQUID_CHECK(LIQUID_OK == liquid_print_crc_schemes())
 
-    CONTEND_EQUALITY(LIQUID_CRC_UNKNOWN,    liquid_getopt_str2crc("unknown"))
-    CONTEND_EQUALITY(LIQUID_CRC_UNKNOWN,    liquid_getopt_str2crc("rosebud"))
-    CONTEND_EQUALITY(LIQUID_CRC_NONE,       liquid_getopt_str2crc("none"))
-    CONTEND_EQUALITY(LIQUID_CRC_CHECKSUM,   liquid_getopt_str2crc("checksum"))
-    CONTEND_EQUALITY(LIQUID_CRC_8,          liquid_getopt_str2crc("crc8"))
-    CONTEND_EQUALITY(LIQUID_CRC_16,         liquid_getopt_str2crc("crc16"))
-    CONTEND_EQUALITY(LIQUID_CRC_24,         liquid_getopt_str2crc("crc24"))
-    CONTEND_EQUALITY(LIQUID_CRC_32,         liquid_getopt_str2crc("crc32"))
+    LIQUID_CHECK(LIQUID_CRC_UNKNOWN ==     liquid_getopt_str2crc("unknown"))
+    LIQUID_CHECK(LIQUID_CRC_UNKNOWN ==     liquid_getopt_str2crc("rosebud"))
+    LIQUID_CHECK(LIQUID_CRC_NONE ==        liquid_getopt_str2crc("none"))
+    LIQUID_CHECK(LIQUID_CRC_CHECKSUM ==    liquid_getopt_str2crc("checksum"))
+    LIQUID_CHECK(LIQUID_CRC_8 ==           liquid_getopt_str2crc("crc8"))
+    LIQUID_CHECK(LIQUID_CRC_16 ==          liquid_getopt_str2crc("crc16"))
+    LIQUID_CHECK(LIQUID_CRC_24 ==          liquid_getopt_str2crc("crc24"))
+    LIQUID_CHECK(LIQUID_CRC_32 ==          liquid_getopt_str2crc("crc32"))
 
     // check length
-    CONTEND_EQUALITY(crc_get_length(LIQUID_CRC_UNKNOWN),  0);
-    CONTEND_EQUALITY(crc_get_length(LIQUID_CRC_NONE),     0);
-    CONTEND_EQUALITY(crc_get_length(LIQUID_CRC_CHECKSUM), 1);
-    CONTEND_EQUALITY(crc_get_length(LIQUID_CRC_8),        1);
-    CONTEND_EQUALITY(crc_get_length(LIQUID_CRC_16),       2);
-    CONTEND_EQUALITY(crc_get_length(LIQUID_CRC_24),       3);
-    CONTEND_EQUALITY(crc_get_length(LIQUID_CRC_32),       4);
-    CONTEND_EQUALITY(crc_get_length(-1),                  0);
+    LIQUID_CHECK(crc_get_length(LIQUID_CRC_UNKNOWN) ==   0);
+    LIQUID_CHECK(crc_get_length(LIQUID_CRC_NONE) ==      0);
+    LIQUID_CHECK(crc_get_length(LIQUID_CRC_CHECKSUM) ==  1);
+    LIQUID_CHECK(crc_get_length(LIQUID_CRC_8) ==         1);
+    LIQUID_CHECK(crc_get_length(LIQUID_CRC_16) ==        2);
+    LIQUID_CHECK(crc_get_length(LIQUID_CRC_24) ==        3);
+    LIQUID_CHECK(crc_get_length(LIQUID_CRC_32) ==        4);
+    LIQUID_CHECK(crc_get_length(-1) ==                   0);
     _liquid_error_downgrade_disable();
 }
 

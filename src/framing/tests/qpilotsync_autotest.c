@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-#define DEBUG_QPILOTSYNC_AUTOTEST 1
-
 // test simple recovery of frame in noise
-void qpilotsync_test(modulation_scheme _ms,
-                     unsigned int      _payload_len,
-                     unsigned int      _pilot_spacing,
-                     float             _dphi,
-                     float             _phi,
-                     float             _gamma,
-                     float             _SNRdB)
+void testbench_qpilotsync(liquid_autotest   __q__,
+                          modulation_scheme _ms,
+                          unsigned int      _payload_len,
+                          unsigned int      _pilot_spacing,
+                          float             _dphi,
+                          float             _phi,
+                          float             _gamma,
+                          float             _SNRdB)
 {
     unsigned int i;
     // derived values
@@ -47,7 +46,7 @@ void qpilotsync_test(modulation_scheme _ms,
 
     // get frame length
     unsigned int frame_len = qpilotgen_get_frame_len(pg);
-    CONTEND_EQUALITY(frame_len, qpilotsync_get_frame_len(ps));
+    LIQUID_CHECK(frame_len ==  qpilotsync_get_frame_len(ps));
 
     // allocate arrays
     unsigned char payload_sym_tx[_payload_len]; // transmitted payload symbols
@@ -114,11 +113,11 @@ void qpilotsync_test(modulation_scheme _ms,
     liquid_log_debug("  error vector mag.   : %8.3f (expected %8.3f, error=%8.3f)", evm_hat,   -_SNRdB,_SNRdB+evm_hat);
 
     // check to see that frame was recovered
-    CONTEND_DELTA   (   dphi_hat,  _dphi, 0.010f );
-    CONTEND_DELTA   (    phi_hat,   _phi, 0.087f );  // 0.087 radians is about 5 degrees
-    CONTEND_DELTA   (  gamma_hat, _gamma, 0.010f );
-    //CONTEND_DELTA   (    evm_hat,-_SNRdB, 6.000f ); // EVM estimate poor for few pilots (up to 10 dB off for 16)
-    CONTEND_EQUALITY( bit_errors, 0 );
+    LIQUID_CHECK_DELTA   (   dphi_hat,  _dphi, 0.010f );
+    LIQUID_CHECK_DELTA   (    phi_hat,   _phi, 0.087f );  // 0.087 radians is about 5 degrees
+    LIQUID_CHECK_DELTA   (  gamma_hat, _gamma, 0.010f );
+    //LIQUID_CHECK_DELTA   (    evm_hat,-_SNRdB, 6.000f ); // EVM estimate poor for few pilots (up to 10 dB off for 16)
+    LIQUID_CHECK( bit_errors ==  0 );
     
     // destroy allocated objects
     qpilotgen_destroy(pg);
@@ -132,7 +131,7 @@ void qpilotsync_test(modulation_scheme _ms,
     fprintf(fp,"%12.4e %12.4e %12.4e %12.4e\n",dphi_hat-_dphi,phi_hat-_phi,gamma_hat-_gamma,evm_hat+_SNRdB);
     fclose(fp);
 #endif
-#if 0 //DEBUG_QPILOTSYNC_AUTOTEST
+#if 0
     // write symbols to output file for plotting
     char filename[256];
     sprintf(filename,"autotest/logs/qpilotsync_autotest_%u_%u_debug.m", _payload_len, _pilot_spacing);
@@ -176,41 +175,41 @@ void qpilotsync_test(modulation_scheme _ms,
 }
 
 //                                                  ms                 pay  ps  dphi   phi   gamma  SNR
-void autotest_qpilotsync_100_16() { qpilotsync_test(LIQUID_MODEM_QPSK, 100, 16, 0.07f, 1.2f, 0.7f, 40.0f); }
-void autotest_qpilotsync_200_20() { qpilotsync_test(LIQUID_MODEM_QPSK, 200, 20, 0.07f, 1.2f, 0.7f, 40.0f); }
-void autotest_qpilotsync_300_24() { qpilotsync_test(LIQUID_MODEM_QPSK, 300, 24, 0.07f, 1.2f, 0.7f, 40.0f); }
-void autotest_qpilotsync_400_28() { qpilotsync_test(LIQUID_MODEM_QPSK, 400, 28, 0.07f, 1.2f, 0.7f, 40.0f); }
-void autotest_qpilotsync_500_32() { qpilotsync_test(LIQUID_MODEM_QPSK, 500, 32, 0.07f, 1.2f, 0.7f, 40.0f); }
+LIQUID_AUTOTEST(qpilotsync_100_16,"","",0.1) { testbench_qpilotsync(__q__, LIQUID_MODEM_QPSK, 100, 16, 0.07f, 1.2f, 0.7f, 40.0f); }
+LIQUID_AUTOTEST(qpilotsync_200_20,"","",0.1) { testbench_qpilotsync(__q__, LIQUID_MODEM_QPSK, 200, 20, 0.07f, 1.2f, 0.7f, 40.0f); }
+LIQUID_AUTOTEST(qpilotsync_300_24,"","",0.1) { testbench_qpilotsync(__q__, LIQUID_MODEM_QPSK, 300, 24, 0.07f, 1.2f, 0.7f, 40.0f); }
+LIQUID_AUTOTEST(qpilotsync_400_28,"","",0.1) { testbench_qpilotsync(__q__, LIQUID_MODEM_QPSK, 400, 28, 0.07f, 1.2f, 0.7f, 40.0f); }
+LIQUID_AUTOTEST(qpilotsync_500_32,"","",0.1) { testbench_qpilotsync(__q__, LIQUID_MODEM_QPSK, 500, 32, 0.07f, 1.2f, 0.7f, 40.0f); }
 
-void autotest_qpilotgen_config()
+LIQUID_AUTOTEST(qpilotgen_config,"qpilotgen config","",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls
-    CONTEND_ISNULL(qpilotgen_create(  0, 100));    // invalid payload length
-    CONTEND_ISNULL(qpilotgen_create(512,   0));    // invalid pilot spacing
-    CONTEND_ISNULL(qpilotgen_copy(NULL));
+    LIQUID_CHECK(NULL ==qpilotgen_create(  0, 100));    // invalid payload length
+    LIQUID_CHECK(NULL ==qpilotgen_create(512,   0));    // invalid pilot spacing
+    LIQUID_CHECK(NULL ==qpilotgen_copy(NULL));
 
     // create proper object and test configurations
     qpilotgen q = qpilotgen_create(512, 16);
 
-    CONTEND_EQUALITY(LIQUID_OK, qpilotgen_print(q))
+    LIQUID_CHECK(LIQUID_OK == qpilotgen_print(q))
 
     qpilotgen_destroy(q);
     _liquid_error_downgrade_disable();
 }
 
-void autotest_qpilotsync_config()
+LIQUID_AUTOTEST(qpilotsync_config,"qpilotsync config","",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls
-    CONTEND_ISNULL(qpilotsync_create(  0, 100));    // invalid payload length
-    CONTEND_ISNULL(qpilotsync_create(512,   0));    // invalid pilot spacing
-    CONTEND_ISNULL(qpilotsync_copy(NULL));
+    LIQUID_CHECK(NULL ==qpilotsync_create(  0, 100));    // invalid payload length
+    LIQUID_CHECK(NULL ==qpilotsync_create(512,   0));    // invalid pilot spacing
+    LIQUID_CHECK(NULL ==qpilotsync_copy(NULL));
 
     // create proper object and test configurations
     qpilotsync q = qpilotsync_create(512, 16);
 
-    CONTEND_EQUALITY(LIQUID_OK, qpilotsync_print(q))
+    LIQUID_CHECK(LIQUID_OK == qpilotsync_print(q))
 
     qpilotsync_destroy(q);
     _liquid_error_downgrade_disable();

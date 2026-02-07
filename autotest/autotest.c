@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,120 +20,97 @@
  * THE SOFTWARE.
  */
 
-//
-// autotestlib.c
-//
-
 // default include headers
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "autotest/autotest.h"
+#include <string.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <time.h>
+#include <unistd.h>
 
-// total number of checks invoked
-unsigned long int liquid_autotest_num_checks=0;
+#include "liquid.autotest.h"
 
-// total number of checks which passed
-unsigned long int liquid_autotest_num_passed=0;
-
-// total number of checks which failed
-unsigned long int liquid_autotest_num_failed=0;
-
-// total number of warnings
-unsigned long int liquid_autotest_num_warnings=0;
-
-// verbosity flag
-int liquid_autotest_verbose = 1;
-
-// fail test
-// increment liquid_autotest_num_checks
-// increment liquid_autotest_num_failed
-void liquid_autotest_failed()
+// print test info
+int liquid_autotest_print_info(liquid_autotest _q)
 {
-    liquid_autotest_num_checks++;
-    liquid_autotest_num_failed++;
+    liquid_log_info("name=%s, description=%s, keywords=%s, cost=%g",
+        _q->name, _q->docstr, _q->keywords, _q->cost);
+    return LIQUID_OK;
 }
 
-// pass test
-// increment liquid_autotest_num_checks
-// increment liquid_autotest_num_passed
-void liquid_autotest_passed()
+// print test status
+int liquid_autotest_print_status(liquid_autotest _q)
 {
-    liquid_autotest_num_checks++;
-    liquid_autotest_num_passed++;
-}
+    char strbuf[92];
+    char * s = strbuf;
+    int log_level = LIQUID_INFO;
 
-// fail test, given expression
-//  _file       :   filename (string)
-//  _line       :   line number of test
-//  _exprL      :   left side of expression (string)
-//  _valueL     :   left side of expression (value)
-//  _qualifier  :   expression qualifier
-//  _exprR      :   right side of expression (string)
-//  _valueR     :   right side of expression (value)
-void liquid_autotest_failed_expr(const char * _file,
-                                 unsigned int _line,
-                                 const char * _exprL,
-                                 double       _valueL,
-                                 const char * _qualifier,
-                                 const char * _exprR,
-                                 double       _valueR)
-{
-    liquid_log(NULL,LIQUID_ERROR,_file,_line,"test failed: expected \"%s\" (%0.2E) %s %s (%0.2E)",
-            _exprL, _valueL, _qualifier, _exprR, _valueR);
-    liquid_autotest_failed();
-}
-
-// fail test, given true/false value
-//  _file       :   filename (string)
-//  _line       :   line number of test
-//  _exprL      :   left side of expression (string)
-//  _valueL     :   left side of expression (value)
-//  _qualifier  :   expression qualifier
-void liquid_autotest_failed_bool(const char * _file,
-                                 unsigned int _line,
-                                 const char * _exprL,
-                                 double       _valueL,
-                                 int          _qualifier)
-{
-    liquid_log(NULL,LIQUID_ERROR,_file,_line,"test failed: expected \"%s\" (%g) is %s",
-                _exprL, _valueL, _qualifier ? "true" : "false");
-    liquid_autotest_failed();
-}
-
-//  _file       :   filename (string)
-//  _line       :   line number of test
-//  _message    :   message string
-void liquid_autotest_failed_msg(const char * _file,
-                                unsigned int _line,
-                                const char * _message)
-{
-    liquid_log(NULL,LIQUID_ERROR,_file,_line,"test failed: %s", _message);
-    liquid_autotest_failed();
-}
-
-// print basic autotest results to stdout
-void autotest_print_results(void)
-{
-    if (liquid_autotest_num_warnings > 0) {
-        liquid_log_info("==================================");
-        liquid_log_info(" WARNINGS : %-lu", liquid_autotest_num_warnings);
+    s += sprintf(s,"%s ", _q->name);
+    unsigned int j;
+    for (j=strlen(_q->name); j<48; j++)
+        s += sprintf(s,".");
+    switch(_q->status) {
+    case LIQUID_AUTOTEST_PASS:
+        s += sprintf(s," pass [      %5u]", _q->num_pass);
+        if (_q->num_warn)
+            log_level = LIQUID_WARN;
+        break;
+    case LIQUID_AUTOTEST_FAIL:
+        s += sprintf(s,"*FAIL*[%5u/%5u]", _q->num_fail, _q->num_pass + _q->num_fail);
+        log_level = LIQUID_ERROR;
+        break;
+    case LIQUID_AUTOTEST_SKIP:
+        s += sprintf(s," skip [           ]");
+        break;
+    default: return liquid_error(LIQUID_EINT,"unexpected status");
     }
+    s += sprintf(s," %9.3f ms", _q->runtime*1e3);
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"%s",strbuf);
+    return LIQUID_OK;
+}
 
-    liquid_log_info("==================================");
-    if (liquid_autotest_num_checks==0) {
-        liquid_log_info(" NO CHECKS RUN");
-    } else if (liquid_autotest_num_failed==0) {
-        liquid_log_info(" PASSED ALL %lu CHECKS", liquid_autotest_num_passed);
-    } else {
-        // compute and print percentage of failed tests
-        double percent_failed = (double) liquid_autotest_num_failed /
-                                (double) liquid_autotest_num_checks;
-        liquid_log_info(" FAILED %lu / %lu CHECKS (%7.2f%%)",
-                liquid_autotest_num_failed,
-                liquid_autotest_num_checks,
-                100.0*percent_failed);
-    }
-    liquid_log_info("==================================");
+int liquid_autotest_execute(liquid_autotest _q)
+{
+    if (_q->status != LIQUID_AUTOTEST_SCHED)
+        return liquid_error(LIQUID_EIMODE,"unexpected status mode for test '%s'", _q->name);
+
+    liquid_log_info("running test '%s' (%s)", _q->name, _q->docstr);
+    _q->status = LIQUID_AUTOTEST_ACTIVE;
+    // start timer
+    struct rusage tic, toc;
+    getrusage(RUSAGE_SELF, &tic);
+    // run test, passing reference to itself as argument
+    _q->func(_q);
+    getrusage(RUSAGE_SELF, &toc);
+    _q->status = _q->num_fail > 0 ? LIQUID_AUTOTEST_FAIL : LIQUID_AUTOTEST_PASS;
+    //
+    //if (strlen(_q->docstr)==0)
+    //    LIQUID_WARN_(_q,"empty docstring for test %s", _q->name);
+
+    // update run time
+    float time_s  = toc.ru_utime.tv_sec - tic.ru_utime.tv_sec
+                  + toc.ru_stime.tv_sec - tic.ru_stime.tv_sec;
+    float time_us = toc.ru_utime.tv_usec - tic.ru_utime.tv_usec
+                  + toc.ru_stime.tv_usec - tic.ru_stime.tv_usec;
+    _q->runtime = time_s + 1e-6f*time_us;
+
+    return LIQUID_OK;
+}
+
+void liquid_autotest_pass(liquid_autotest _q)
+{
+    _q->num_pass++;
+}
+
+void liquid_autotest_fail(liquid_autotest _q,
+                          const char *    _file,
+                          unsigned int    _line,
+                          const char *    _expression)
+{
+    liquid_log(NULL,LIQUID_ERROR,_file,_line,"failed: \"%s\"", _expression);
+    _q->num_fail++;
 }
 
 // print warning to stderr
@@ -141,12 +118,127 @@ void autotest_print_results(void)
 //  _file       :   filename (string)
 //  _line       :   line number of test
 //  _message    :   message string
-void liquid_autotest_warn(const char * _file,
-                          unsigned int _line,
-                          const char * _message)
+void liquid_autotest_warn(liquid_autotest _q,
+                          const char *    _file,
+                          unsigned int    _line,
+                          const char *    _format,
+                          ...)
 {
-    liquid_log(NULL,LIQUID_WARN,_file,_line,_message);
-    liquid_autotest_num_warnings++;
+    _q->num_warn++;
+
+    va_list ap;
+    va_start(ap, _format);
+    liquid_vlog(NULL, LIQUID_WARN, _file, _line, _format, ap);
+    va_end(ap);
+}
+
+// print registry, either info or full status
+struct liquid_registry_info_s liquid_registry_info(const liquid_autotest * _registry)
+{
+    struct liquid_registry_info_s info = {0U,0U,0U,0U,0U,0U,0U,};
+    unsigned int i = 0;
+    while (_registry[i] != NULL)
+    {
+        liquid_autotest test = _registry[i++];
+
+        // accumulate test statistics
+        info.num_tests_pass  += test->status == LIQUID_AUTOTEST_PASS;
+        info.num_tests_fail  += test->status == LIQUID_AUTOTEST_FAIL;
+        info.num_tests_skip  += test->status == LIQUID_AUTOTEST_SKIP;
+
+        // accumulate check statistics
+        info.num_checks_pass += test->num_pass;
+        info.num_checks_fail += test->num_fail;
+        info.num_checks_warn += test->num_warn;
+    }
+    info.num_tests = i;
+
+    return info;
+}
+
+// print registry, either info or full status
+int liquid_registry_print(const liquid_autotest * _registry)
+{
+    // retrive summary of runs
+    struct liquid_registry_info_s info = liquid_registry_info(_registry);
+
+    // log results
+    liquid_log_info("=========== autotest results ===========");
+    unsigned int i;
+    for (i=0; i<info.num_tests; i++)
+        liquid_autotest_print_status(_registry[i]);
+
+    // log summary
+    liquid_log_info("=========== autotest summary ===========");
+
+    int log_level = info.num_tests_fail ? LIQUID_ERROR : LIQUID_INFO;
+
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"tests:");
+    //liquid_log(NULL,log_level,__FILE__,__LINE__,"  run      : %u", info.num_tests_pass + info.num_tests_fail);
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"  pass     : %u", info.num_tests_pass);
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"  fail     : %u", info.num_tests_fail);
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"  skip     : %u", info.num_tests_skip);
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"checks:");
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"  pass     : %u", info.num_checks_pass);
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"  fail     : %u", info.num_checks_fail);
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"overall:");
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"  warn     : %u", info.num_checks_warn);
+    liquid_log(NULL,log_level,__FILE__,__LINE__,"  %s", info.num_tests_fail ? "FAIL" : "PASS");
+
+    // return non-zero value upon failure
+    return info.num_tests_fail ? LIQUID_EINT : LIQUID_OK;
+}
+
+// export results to JSON
+int liquid_registry_json(const liquid_autotest * _registry,
+                         const char *            _filename)
+{
+    // try to open output file for writing
+    FILE * fid = fopen(_filename,"w");
+    if (fid == NULL)
+        return liquid_error(LIQUID_EIO,"could not open '%s' for writing", _filename);
+
+    // retrive summary of runs
+    struct liquid_registry_info_s info = liquid_registry_info(_registry);
+
+    // print header
+    time_t now;
+    time(&now);
+    char timestamp[80];
+    strftime(timestamp,80,"%c",localtime(&now));
+    fprintf(fid,"{\n");
+    fprintf(fid,"  \"build-info\" : {},\n");
+    fprintf(fid,"  \"timestamp\" : \"%s\",\n", timestamp);
+    fprintf(fid,"  \"pass\" : %s,\n", info.num_tests_fail==0 ? "true" : "false");
+    fprintf(fid,"  \"num_failed\" : %d,\n", info.num_checks_fail);
+    fprintf(fid,"  \"num_checks\" : %d,\n", info.num_checks_pass + info.num_checks_fail);
+    fprintf(fid,"  \"num_warnings\" : %d,\n", info.num_checks_warn);
+    fprintf(fid,"  \"command-line\" : \"");
+    //for (i=0; i<(unsigned int)argc; i++)
+    //    fprintf(fid," %s", argv[i]);
+    fprintf(fid,"\",\n");
+    fprintf(fid,"  \"rseed\" : %u,\n", 0); //rseed);
+    fprintf(fid,"  \"stop-on-fail\" : %s,\n", "false"); //stop_on_fail ? "true" : "false");
+    fprintf(fid,"  \"tests\" : [\n");
+    // print status
+    unsigned int i;
+    for (i=0; i<info.num_tests; i++)
+    {
+        liquid_autotest test = _registry[i];
+        fprintf(fid,"    {\"id\":%4u, \"pass\":%s \"num_checks\":%4u, \"num_passed\":%4u, \"extime\":%12.4e, \"name\":\"%s\"}%s\n",
+                i,
+                test->num_fail == 0 ? "true, " : "false,",
+                test->num_pass + test->num_fail,
+                test->num_pass,
+                test->runtime,
+                test->name,
+                (i == info.num_tests-1) ? "" : ",");
+    }
+    fprintf(fid,"  ]\n");
+    fprintf(fid,"}\n");
+    fclose(fid);
+    liquid_log_info("output JSON results written to %s", _filename);
+    return LIQUID_OK;
 }
 
 // contend that data in two arrays are identical
@@ -165,24 +257,8 @@ int liquid_autotest_same_data(unsigned char * _x,
     return 1;
 }
 
-// print array to standard out
-//  _x      :   input array [size: _n x 1]
-//  _n      :   input array size
-void liquid_autotest_print_array(unsigned char * _x,
-                                 unsigned int _n)
-{
-    unsigned int i;
-    printf("   {");
-    for (i=0; i<_n; i++) {
-        printf("%.2x, ", (unsigned int)(_x[i]));
-        if ( ((i+1)%16 == 0) && (i != (_n-1)) )
-            printf("\n    ");
-    }
-    printf("}\n");
-}
-
 // validate spectral content
-int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
+int liquid_autotest_validate_spectrum(liquid_autotest __q__, float * _psd, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int _num_regions, const char * _debug_filename)
 {
     unsigned int i, j;
@@ -201,8 +277,9 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
         else           { nc += snprintf(logstr+nc, sizeof(logstr)-nc, "   *   )"); }
         liquid_log_debug(logstr);
 
+        //LIQUID_REQUIRE( r.fmin >= -0.5 && r.fmax <= 0.5 && r.fmin <= r.fmax);
         if (r.fmin < -0.5 || r.fmax > 0.5 || r.fmin > r.fmax) {
-            AUTOTEST_FAIL("invalid frequency range");
+            LIQUID_FAIL("invalid frequency range");
             return -1;
         }
         for (j=0; j<_nfft; j++) {
@@ -214,18 +291,18 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
             // test lower bound
             if (r.test_lo && _psd[j] < r.pmin) {
                 //AUTOTEST_FAIL("region[%3u], %8.2f exceed minimum (%8.2f)", i, _psd[j], r.pmin);
-                AUTOTEST_FAIL("minimum value exceeded");
+                LIQUID_FAIL("minimum value exceeded");
                 fail[j] = 1;
             } else {
-                AUTOTEST_PASS();
+                LIQUID_PASS();
             }
 
             // test upper bound
             if (r.test_hi && _psd[j] > r.pmax) {
-                AUTOTEST_FAIL("maximum value exceeded");
+                LIQUID_FAIL("maximum value exceeded");
                 fail[j] = 1;
             } else {
-                AUTOTEST_PASS();
+                LIQUID_PASS();
             }
         }
     }
@@ -261,7 +338,7 @@ int liquid_autotest_validate_spectrum(float * _psd, unsigned int _nfft,
 }
 
 // validate spectral content of a signal (complex)
-int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_len,
+int liquid_autotest_validate_psd_signal(liquid_autotest __q__, float complex * _buf, unsigned int _buf_len,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
     // compute signal's power spectral density
@@ -270,7 +347,7 @@ int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_
     float complex * buf_freq = (float complex*) malloc(nfft*sizeof(float complex));
     float         * buf_psd  = (float *       ) malloc(nfft*sizeof(float        ));
     if (buf_time == NULL || buf_freq == NULL || buf_psd == NULL) {
-        AUTOTEST_FAIL("liquid_autotest_validate_psd_signal(), could not allocate appropriate memory for validating psd");
+        LIQUID_FAIL("liquid_autotest_validate_psd_signal(), could not allocate appropriate memory for validating psd");
         return -1;
     }
     unsigned int i;
@@ -281,7 +358,7 @@ int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_
         buf_psd[i] = 20*log10( cabsf( buf_freq[(i+nfft/2)%nfft] ) );
 
     // run test
-    int rc = liquid_autotest_validate_spectrum(buf_psd, nfft,
+    int rc = liquid_autotest_validate_spectrum(__q__, buf_psd, nfft,
             _regions, num_regions, debug_filename);
 
     // free memory and return
@@ -292,13 +369,13 @@ int liquid_autotest_validate_psd_signal(float complex * _buf, unsigned int _buf_
 }
 
 // validate spectral content of a signal (real)
-int liquid_autotest_validate_psd_signalf(float * _buf, unsigned int _buf_len,
+int liquid_autotest_validate_psd_signalf(liquid_autotest __q__, float * _buf, unsigned int _buf_len,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
     // copy to temporary complex array
     float complex * buf_cplx = (float complex*) malloc(_buf_len*sizeof(float complex));
     if (buf_cplx == NULL) {
-        AUTOTEST_FAIL("liquid_autotest_validate_psd_signalf(), could not allocate appropriate memory for validating psd");
+        LIQUID_FAIL("liquid_autotest_validate_psd_signalf(), could not allocate appropriate memory for validating psd");
         return -1;
     }
     unsigned int i;
@@ -306,7 +383,7 @@ int liquid_autotest_validate_psd_signalf(float * _buf, unsigned int _buf_len,
         buf_cplx[i] = _buf[i];
 
     // run test
-    int rc = liquid_autotest_validate_psd_signal(buf_cplx, _buf_len,
+    int rc = liquid_autotest_validate_psd_signal(__q__, buf_cplx, _buf_len,
             _regions, num_regions, debug_filename);
 
     // free memory and return
@@ -315,7 +392,7 @@ int liquid_autotest_validate_psd_signalf(float * _buf, unsigned int _buf_len,
 }
 
 // validate spectral content of a filter (real coefficients)
-int liquid_autotest_validate_psd_firfilt_crcf(firfilt_crcf _q, unsigned int _nfft,
+int liquid_autotest_validate_psd_firfilt_crcf(liquid_autotest __q__, firfilt_crcf _q, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
     float psd[_nfft];
@@ -326,11 +403,11 @@ int liquid_autotest_validate_psd_firfilt_crcf(firfilt_crcf _q, unsigned int _nff
         firfilt_crcf_freqresponse(_q, f, &H);
         psd[i] = 20*log10f(cabsf(H));
     }
-    return liquid_autotest_validate_spectrum(psd,_nfft,_regions,num_regions,debug_filename);
+    return liquid_autotest_validate_spectrum(__q__,psd,_nfft,_regions,num_regions,debug_filename);
 }
 
 // validate spectral content of a filter (complex coefficients)
-int liquid_autotest_validate_psd_firfilt_cccf(firfilt_cccf _q, unsigned int _nfft,
+int liquid_autotest_validate_psd_firfilt_cccf(liquid_autotest __q__, firfilt_cccf _q, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
     float psd[_nfft];
@@ -341,11 +418,11 @@ int liquid_autotest_validate_psd_firfilt_cccf(firfilt_cccf _q, unsigned int _nff
         firfilt_cccf_freqresponse(_q, f, &H);
         psd[i] = 20*log10f(cabsf(H));
     }
-    return liquid_autotest_validate_spectrum(psd,_nfft,_regions,num_regions,debug_filename);
+    return liquid_autotest_validate_spectrum(__q__,psd,_nfft,_regions,num_regions,debug_filename);
 }
 
 // validate spectral content of an iir filter (real coefficients, input)
-int liquid_autotest_validate_psd_iirfilt_rrrf(iirfilt_rrrf _q, unsigned int _nfft,
+int liquid_autotest_validate_psd_iirfilt_rrrf(liquid_autotest __q__, iirfilt_rrrf _q, unsigned int _nfft,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
     float psd[_nfft];
@@ -356,17 +433,17 @@ int liquid_autotest_validate_psd_iirfilt_rrrf(iirfilt_rrrf _q, unsigned int _nff
         iirfilt_rrrf_freqresponse(_q, f, &H);
         psd[i] = 20*log10f(cabsf(H));
     }
-    return liquid_autotest_validate_spectrum(psd,_nfft,_regions,num_regions,debug_filename);
+    return liquid_autotest_validate_spectrum(__q__,psd,_nfft,_regions,num_regions,debug_filename);
 }
 
 // validate spectral content of a spectral periodogram object
-int liquid_autotest_validate_psd_spgramcf(spgramcf _q,
+int liquid_autotest_validate_psd_spgramcf(liquid_autotest __q__, spgramcf _q,
         autotest_psd_s * _regions, unsigned int num_regions, const char * debug_filename)
 {
     unsigned int nfft = spgramcf_get_nfft(_q);
     float psd[nfft];
     spgramcf_get_psd(_q, psd);
-    return liquid_autotest_validate_spectrum(psd,nfft,_regions,num_regions,debug_filename);
+    return liquid_autotest_validate_spectrum(__q__,psd,nfft,_regions,num_regions,debug_filename);
 }
 
 // callback function to simplify testing for framing objects

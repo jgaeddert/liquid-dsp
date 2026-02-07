@@ -1,4 +1,5 @@
-char __docstr__[] = "Demonstate soft demodulation of linear modulation schemes.";
+// Demonstrate soft demodulation of linear modulation schemes.
+char __docstr__[] = "Demonstrate soft demodulation of linear modulation schemes.";
 
 #include <stdlib.h>
 #include <stdio.h>

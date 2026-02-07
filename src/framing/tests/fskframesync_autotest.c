@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-// AUTOTEST : test simple recovery of frame in noise
-void autotest_fskframesync()
+LIQUID_AUTOTEST(fskframesync,"test simple recovery of frame in noise","",0.1)
 {
     // options
     float SNRdB       =  20.0f; // signal-to-noise ratio
@@ -80,15 +79,15 @@ void autotest_fskframesync()
     }
 
     // check to see that callback was invoked
-    CONTEND_EQUALITY(context, FRAMING_AUTOTEST_SECRET);
+    LIQUID_CHECK(context ==  FRAMING_AUTOTEST_SECRET);
 
 #if 0
     // parse statistics
     framedatastats_s stats = fskframesync_get_framedatastats(fs);
-    CONTEND_EQUALITY(stats.num_frames_detected, 1);
-    CONTEND_EQUALITY(stats.num_headers_valid,   1);
-    CONTEND_EQUALITY(stats.num_payloads_valid,  1);
-    CONTEND_EQUALITY(stats.num_bytes_received, 64);
+    LIQUID_CHECK(stats.num_frames_detected ==  1);
+    LIQUID_CHECK(stats.num_headers_valid ==    1);
+    LIQUID_CHECK(stats.num_payloads_valid ==   1);
+    LIQUID_CHECK(stats.num_bytes_received ==  64);
 #endif
 
     // destroy objects

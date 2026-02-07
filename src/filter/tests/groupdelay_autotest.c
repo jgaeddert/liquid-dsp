@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,13 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 //
 // AUTOTEST : fir group delay, n=3
 //
-void autotest_fir_groupdelay_n3()
+LIQUID_AUTOTEST(fir_groupdelay_n3,"description","",0.1)
 {
     // create coefficients array
     float h[3] = {0.1, 0.2, 0.4};
@@ -50,7 +50,7 @@ void autotest_fir_groupdelay_n3()
     float g;
     for (i=0; i<4; i++) {
         g = fir_group_delay(h, 3, fc[i]);
-        CONTEND_DELTA( g, g0[i], tol );
+        LIQUID_CHECK_DELTA( g, g0[i], tol );
     }
 
     // create filter
@@ -59,7 +59,7 @@ void autotest_fir_groupdelay_n3()
     // run tests again
     for (i=0; i<4; i++) {
         g = firfilt_rrrf_groupdelay(filter, fc[i]);
-        CONTEND_DELTA( g, g0[i], tol );
+        LIQUID_CHECK_DELTA( g, g0[i], tol );
     }
 
     // destroy filter
@@ -70,7 +70,7 @@ void autotest_fir_groupdelay_n3()
 //
 // AUTOTEST : iir group delay, n=3
 //
-void autotest_iir_groupdelay_n3()
+LIQUID_AUTOTEST(iir_groupdelay_n3,"description","",0.1)
 {
     // create coefficients array
     float b[3] = {0.20657210,  0.41314420, 0.20657210};
@@ -94,7 +94,7 @@ void autotest_iir_groupdelay_n3()
     float g;
     for (i=0; i<4; i++) {
         g = iir_group_delay(b, 3, a, 3, fc[i]);
-        CONTEND_DELTA( g, g0[i], tol );
+        LIQUID_CHECK_DELTA( g, g0[i], tol );
     }
 
     // create filter
@@ -103,7 +103,7 @@ void autotest_iir_groupdelay_n3()
     // run tests again
     for (i=0; i<4; i++) {
         g = iirfilt_rrrf_groupdelay(filter, fc[i]);
-        CONTEND_DELTA( g, g0[i], tol );
+        LIQUID_CHECK_DELTA( g, g0[i], tol );
     }
 
     // destroy filter
@@ -114,7 +114,7 @@ void autotest_iir_groupdelay_n3()
 //
 // AUTOTEST : iir group delay, n=8
 //
-void autotest_iir_groupdelay_n8()
+LIQUID_AUTOTEST(iir_groupdelay_n8,"description","",0.1)
 {
     // create coefficients arrays (7th-order Butterworth)
     float b[8];
@@ -161,7 +161,7 @@ void autotest_iir_groupdelay_n8()
     float g;
     for (i=0; i<7; i++) {
         g = iir_group_delay(b, 8, a, 8, fc[i]);
-        CONTEND_DELTA( g, g0[i], tol );
+        LIQUID_CHECK_DELTA( g, g0[i], tol );
     }
 
     //
@@ -174,7 +174,7 @@ void autotest_iir_groupdelay_n8()
     // run tests again
     for (i=0; i<7; i++) {
         g = iirfilt_rrrf_groupdelay(filter, fc[i]);
-        CONTEND_DELTA( g, g0[i], tol );
+        LIQUID_CHECK_DELTA( g, g0[i], tol );
     }
 
     // destroy filter
@@ -185,7 +185,7 @@ void autotest_iir_groupdelay_n8()
 //
 // AUTOTEST : iir group delay (second-order sections), n=8
 //
-void autotest_iir_groupdelay_sos_n8()
+LIQUID_AUTOTEST(iir_groupdelay_sos_n8,"description","",0.1)
 {
     // create coefficients arrays (7th-order Butterworth)
     float B[12] = {
@@ -231,7 +231,7 @@ void autotest_iir_groupdelay_sos_n8()
     float g;
     for (i=0; i<7; i++) {
         g = iirfilt_rrrf_groupdelay(filter, fc[i]);
-        CONTEND_DELTA( g, g0[i], tol );
+        LIQUID_CHECK_DELTA( g, g0[i], tol );
     }
 
     // destroy filter

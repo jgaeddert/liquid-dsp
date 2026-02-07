@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,12 @@
  */
 
 #include <stdlib.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
 // test setting filter delay
-void testbench_fdelay_rrrf(unsigned int _nmax,
+void testbench_fdelay_rrrf(liquid_autotest __q__,
+                           unsigned int _nmax,
                            unsigned int _m,
                            unsigned int _npfb,
                            float        _delay)
@@ -39,10 +40,10 @@ void testbench_fdelay_rrrf(unsigned int _nmax,
     fdelay_rrrf_adjust_delay(q, _delay*0.3f);
 
     // ensure object is configured properly
-    CONTEND_EQUALITY(fdelay_rrrf_get_nmax (q), _nmax);
-    CONTEND_EQUALITY(fdelay_rrrf_get_m    (q), _m);
-    CONTEND_EQUALITY(fdelay_rrrf_get_npfb (q), _npfb);
-    CONTEND_DELTA   (fdelay_rrrf_get_delay(q), _delay, 1e-6f);
+    LIQUID_CHECK(fdelay_rrrf_get_nmax (q) ==  _nmax);
+    LIQUID_CHECK(fdelay_rrrf_get_m    (q) ==  _m);
+    LIQUID_CHECK(fdelay_rrrf_get_npfb (q) ==  _npfb);
+    LIQUID_CHECK_DELTA   (fdelay_rrrf_get_delay(q), _delay, 1e-6f);
 
     // generate impulse and propagate through object
     float x[num_samples];
@@ -69,22 +70,21 @@ void testbench_fdelay_rrrf(unsigned int _nmax,
             delay_est, _delay, delay_est - _delay);
 
     // verify delay
-    CONTEND_DELTA(delay_est, _delay, tol);
+    LIQUID_CHECK_DELTA(delay_est, _delay, tol);
 }
 
-// nominal delays
-void autotest_fdelay_rrrf_0()  { testbench_fdelay_rrrf(200, 12, 64,   0.0f   ); }
-void autotest_fdelay_rrrf_1()  { testbench_fdelay_rrrf(200, 12, 64,   0.0001f); }
-void autotest_fdelay_rrrf_2()  { testbench_fdelay_rrrf(200, 12, 64,   0.1f   ); }
-void autotest_fdelay_rrrf_3()  { testbench_fdelay_rrrf(200, 12, 64,   0.9f   ); }
-void autotest_fdelay_rrrf_4()  { testbench_fdelay_rrrf(200, 12, 64,   0.9999f); }
-void autotest_fdelay_rrrf_5()  { testbench_fdelay_rrrf(200, 12, 64,  16.99f  ); }
-void autotest_fdelay_rrrf_6()  { testbench_fdelay_rrrf(200, 12, 64,  17.00f  ); }
-void autotest_fdelay_rrrf_7()  { testbench_fdelay_rrrf(200, 12, 64,  17.01f  ); }
-void autotest_fdelay_rrrf_8()  { testbench_fdelay_rrrf(200, 12, 64, 199.9f   ); }
-void autotest_fdelay_rrrf_9()  { testbench_fdelay_rrrf(200, 12, 64, 200.0f   ); }
+LIQUID_AUTOTEST(fdelay_rrrf_0,"fractional delay (  0.0)"   ,"",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,   0.0f   ); }
+LIQUID_AUTOTEST(fdelay_rrrf_1,"fractional delay (  0.0001)","",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,   0.0001f); }
+LIQUID_AUTOTEST(fdelay_rrrf_2,"fractional delay (  0.1)"   ,"",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,   0.1f   ); }
+LIQUID_AUTOTEST(fdelay_rrrf_3,"fractional delay (  0.9)"   ,"",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,   0.9f   ); }
+LIQUID_AUTOTEST(fdelay_rrrf_4,"fractional delay (  0.9999)","",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,   0.9999f); }
+LIQUID_AUTOTEST(fdelay_rrrf_5,"fractional delay ( 16.99)"  ,"",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,  16.99f  ); }
+LIQUID_AUTOTEST(fdelay_rrrf_6,"fractional delay ( 17.00)"  ,"",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,  17.00f  ); }
+LIQUID_AUTOTEST(fdelay_rrrf_7,"fractional delay ( 17.01)"  ,"",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,  17.01f  ); }
+LIQUID_AUTOTEST(fdelay_rrrf_8,"fractional delay (199.9)"   ,"",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64, 199.9f   ); }
+LIQUID_AUTOTEST(fdelay_rrrf_9,"fractional delay (200.0)"   ,"",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64, 200.0f   ); }
 
-void autotest_fdelay_rrrf_config()
+LIQUID_AUTOTEST(fdelay_rrrf_config,"fractional delay (fdelay) config","",0.1)
 {
     _liquid_error_downgrade_enable();
     // default configurations
@@ -93,30 +93,29 @@ void autotest_fdelay_rrrf_config()
     unsigned int npfb  =  64;
 
     // test invalid configurations, normal construction
-    CONTEND_ISNULL(fdelay_rrrf_create(   0, m, npfb))
-    CONTEND_ISNULL(fdelay_rrrf_create(nmax, 0, npfb))
-    CONTEND_ISNULL(fdelay_rrrf_create(nmax, m,    0))
+    LIQUID_CHECK(NULL ==fdelay_rrrf_create(   0, m, npfb))
+    LIQUID_CHECK(NULL ==fdelay_rrrf_create(nmax, 0, npfb))
+    LIQUID_CHECK(NULL ==fdelay_rrrf_create(nmax, m,    0))
 
     // test invalid configurations, default construction
-    CONTEND_ISNULL(fdelay_rrrf_create_default(   0))
+    LIQUID_CHECK(NULL ==fdelay_rrrf_create_default(   0))
 
     // create proper object but test invalid internal configurations
     fdelay_rrrf q = fdelay_rrrf_create_default(nmax);
 
-    CONTEND_INEQUALITY(LIQUID_OK, fdelay_rrrf_set_delay   (q, -1))
-    CONTEND_INEQUALITY(LIQUID_OK, fdelay_rrrf_set_delay   (q, nmax+1))
-    CONTEND_INEQUALITY(LIQUID_OK, fdelay_rrrf_adjust_delay(q, -1))
+    LIQUID_CHECK(LIQUID_OK != fdelay_rrrf_set_delay   (q, -1))
+    LIQUID_CHECK(LIQUID_OK != fdelay_rrrf_set_delay   (q, nmax+1))
+    LIQUID_CHECK(LIQUID_OK != fdelay_rrrf_adjust_delay(q, -1))
 
     // test valid configurations, methods
-    CONTEND_EQUALITY(LIQUID_OK, fdelay_rrrf_print(q))
+    LIQUID_CHECK(LIQUID_OK ==  fdelay_rrrf_print(q))
 
     // destroy object
     fdelay_rrrf_destroy(q);
     _liquid_error_downgrade_disable();
 }
 
-// compare push vs write methods
-void autotest_fdelay_rrrf_push_write()
+LIQUID_AUTOTEST(fdelay_rrrf_push_write,"compare push vs write methods", "", 0.1)
 {
     // create two identical objects
     fdelay_rrrf q0 = fdelay_rrrf_create_default(200);
@@ -141,7 +140,7 @@ void autotest_fdelay_rrrf_push_write()
         float v0, v1;
         fdelay_rrrf_execute(q0, &v0);
         fdelay_rrrf_execute(q1, &v1);
-        CONTEND_EQUALITY(v0, v1);
+        LIQUID_CHECK(v0 ==  v1);
     }
 
     // destroy objects

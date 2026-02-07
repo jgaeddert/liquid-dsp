@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-// SEC-DEC (22,16) codec (no errors)
-void autotest_secded2216_codec_e0()
+LIQUID_AUTOTEST(secded2216_codec_e0,"SEC-DEC (22,16) codec (no errors)","",0.1)
 {
     // generate symbol
     unsigned char sym_org[2];
@@ -43,12 +42,11 @@ void autotest_secded2216_codec_e0()
     fec_secded2216_decode_symbol(sym_enc, sym_dec);
 
     // validate data are the same
-    CONTEND_EQUALITY(sym_org[0], sym_dec[0]);
-    CONTEND_EQUALITY(sym_org[1], sym_dec[1]);
+    LIQUID_CHECK(sym_org[0] ==  sym_dec[0]);
+    LIQUID_CHECK(sym_org[1] ==  sym_dec[1]);
 }
 
-// SEC-DEC (22,16) codec (single error)
-void autotest_secded2216_codec_e1()
+LIQUID_AUTOTEST(secded2216_codec_e1,"SEC-DEC (22,16) codec (single error)","",0.1)
 {
     unsigned int k; // error location
 
@@ -78,13 +76,12 @@ void autotest_secded2216_codec_e1()
         fec_secded2216_decode_symbol(sym_rec, sym_dec);
 
         // validate data are the same
-        CONTEND_EQUALITY(sym_org[0], sym_dec[0]);
-        CONTEND_EQUALITY(sym_org[1], sym_dec[1]);
+        LIQUID_CHECK(sym_org[0] ==  sym_dec[0]);
+        LIQUID_CHECK(sym_org[1] ==  sym_dec[1]);
     }
 }
 
-// SEC-DEC (22,16) codec (double error detection)
-void autotest_secded2216_codec_e2()
+LIQUID_AUTOTEST(secded2216_codec_e2,"SEC-DEC (22,16) codec (double error detection)","",0.1)
 {
     // total combinations of double errors: nchoosek(22,2) = 231
 
@@ -135,7 +132,7 @@ void autotest_secded2216_codec_e2()
                 j, k, syndrome_flag);
 
             // validate syndrome flag is '2'
-            CONTEND_EQUALITY(syndrome_flag, 2);
+            LIQUID_CHECK(syndrome_flag ==  2);
         }
     }
 }

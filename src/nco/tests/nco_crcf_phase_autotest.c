@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
 
 #include <stdlib.h>
 #include <complex.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // autotest helper function
@@ -31,11 +31,12 @@
 //  _sin    :   expected output: sin(_theta)
 //  _type   :   NCO type (e.g. LIQUID_NCO)
 //  _tol    :   error tolerance
-void nco_crcf_phase_test(float _theta,
-                         float _cos,
-                         float _sin,
-                         int   _type,
-                         float _tol)
+void testbench_nco_crcf_phase(liquid_autotest __q__,
+                              float _theta,
+                              float _cos,
+                              float _sin,
+                              int   _type,
+                              float _tol)
 {
     // create object
     nco_crcf nco = nco_crcf_create(_type);
@@ -51,46 +52,41 @@ void nco_crcf_phase_test(float _theta,
         _theta, _cos, c, _cos-c, _theta, _sin, s, _sin-s);
 
     // run tests
-    CONTEND_DELTA( c, _cos, _tol );
-    CONTEND_DELTA( s, _sin, _tol );
+    LIQUID_CHECK_DELTA( c, _cos, _tol );
+    LIQUID_CHECK_DELTA( s, _sin, _tol );
 
     // destroy object
     nco_crcf_destroy(nco);
 }
 
-
-// test floating point precision nco phase
-void autotest_nco_crcf_phase()
+LIQUID_AUTOTEST(nco_crcf_phase,"test floating point precision nco phase","",0.1)
 {
     // error tolerance (higher for NCO)
     float tol = 0.02f;
 
-    nco_crcf_phase_test(-6.283185307f,  1.000000000f,  0.000000000f, LIQUID_NCO, tol);
-    nco_crcf_phase_test(-6.195739393f,  0.996179042f,  0.087334510f, LIQUID_NCO, tol);
-    nco_crcf_phase_test(-5.951041106f,  0.945345356f,  0.326070787f, LIQUID_NCO, tol);
-    nco_crcf_phase_test(-5.131745978f,  0.407173250f,  0.913350943f, LIQUID_NCO, tol);
-    nco_crcf_phase_test(-4.748043551f,  0.035647016f,  0.999364443f, LIQUID_NCO, tol);
-    nco_crcf_phase_test(-3.041191113f, -0.994963998f, -0.100232943f, LIQUID_NCO, tol);
-    nco_crcf_phase_test(-1.947799864f, -0.368136099f, -0.929771914f, LIQUID_NCO, tol);
-    nco_crcf_phase_test(-1.143752030f,  0.414182352f, -0.910193924f, LIQUID_NCO, tol);
-    nco_crcf_phase_test(-1.029377689f,  0.515352252f, -0.856978446f, LIQUID_NCO, tol);
-    nco_crcf_phase_test(-0.174356887f,  0.984838307f, -0.173474811f, LIQUID_NCO, tol);
-    nco_crcf_phase_test(-0.114520496f,  0.993449692f, -0.114270338f, LIQUID_NCO, tol);
-    nco_crcf_phase_test( 0.000000000f,  1.000000000f,  0.000000000f, LIQUID_NCO, tol);
-    nco_crcf_phase_test( 1.436080000f,  0.134309213f,  0.990939471f, LIQUID_NCO, tol);
-    nco_crcf_phase_test( 2.016119855f, -0.430749878f,  0.902471353f, LIQUID_NCO, tol);
-    nco_crcf_phase_test( 2.996498473f, -0.989492293f,  0.144585621f, LIQUID_NCO, tol);
-    nco_crcf_phase_test( 3.403689755f, -0.965848729f, -0.259106603f, LIQUID_NCO, tol);
-    nco_crcf_phase_test( 3.591162483f, -0.900634128f, -0.434578148f, LIQUID_NCO, tol);
-    nco_crcf_phase_test( 5.111428476f,  0.388533479f, -0.921434607f, LIQUID_NCO, tol);
-    nco_crcf_phase_test( 5.727585681f,  0.849584319f, -0.527452828f, LIQUID_NCO, tol);
-    nco_crcf_phase_test( 6.283185307f,  1.000000000f, -0.000000000f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__,-6.283185307f,  1.000000000f,  0.000000000f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__,-6.195739393f,  0.996179042f,  0.087334510f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__,-5.951041106f,  0.945345356f,  0.326070787f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__,-5.131745978f,  0.407173250f,  0.913350943f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__,-4.748043551f,  0.035647016f,  0.999364443f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__,-3.041191113f, -0.994963998f, -0.100232943f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__,-1.947799864f, -0.368136099f, -0.929771914f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__,-1.143752030f,  0.414182352f, -0.910193924f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__,-1.029377689f,  0.515352252f, -0.856978446f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__,-0.174356887f,  0.984838307f, -0.173474811f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__,-0.114520496f,  0.993449692f, -0.114270338f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__, 0.000000000f,  1.000000000f,  0.000000000f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__, 1.436080000f,  0.134309213f,  0.990939471f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__, 2.016119855f, -0.430749878f,  0.902471353f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__, 2.996498473f, -0.989492293f,  0.144585621f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__, 3.403689755f, -0.965848729f, -0.259106603f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__, 3.591162483f, -0.900634128f, -0.434578148f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__, 5.111428476f,  0.388533479f, -0.921434607f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__, 5.727585681f,  0.849584319f, -0.527452828f, LIQUID_NCO, tol);
+    testbench_nco_crcf_phase(__q__, 6.283185307f,  1.000000000f, -0.000000000f, LIQUID_NCO, tol);
 }
 
-//
-// test floating point precision nco
-//
-void autotest_nco_basic() {
+LIQUID_AUTOTEST(nco_basic,"test floating point precision nco","",0.1) {
     nco_crcf p = nco_crcf_create(LIQUID_NCO);
 
     unsigned int i;     // loop index
@@ -99,18 +95,18 @@ void autotest_nco_basic() {
     float f=0.0f;       // frequency to test
 
     nco_crcf_set_phase( p, 0.0f);
-    CONTEND_DELTA( nco_crcf_cos(p), 1.0f, tol );
-    CONTEND_DELTA( nco_crcf_sin(p), 0.0f, tol );
+    LIQUID_CHECK_DELTA( nco_crcf_cos(p), 1.0f, tol );
+    LIQUID_CHECK_DELTA( nco_crcf_sin(p), 0.0f, tol );
     nco_crcf_sincos(p, &s, &c);
-    CONTEND_DELTA( s, 0.0f, tol );
-    CONTEND_DELTA( c, 1.0f, tol );
+    LIQUID_CHECK_DELTA( s, 0.0f, tol );
+    LIQUID_CHECK_DELTA( c, 1.0f, tol );
 
     nco_crcf_set_phase(p, M_PI/2);
-    CONTEND_DELTA( nco_crcf_cos(p), 0.0f, tol );
-    CONTEND_DELTA( nco_crcf_sin(p), 1.0f, tol );
+    LIQUID_CHECK_DELTA( nco_crcf_cos(p), 0.0f, tol );
+    LIQUID_CHECK_DELTA( nco_crcf_sin(p), 1.0f, tol );
     nco_crcf_sincos(p, &s, &c);
-    CONTEND_DELTA( s, 1.0f, tol );
-    CONTEND_DELTA( c, 0.0f, tol );
+    LIQUID_CHECK_DELTA( s, 1.0f, tol );
+    LIQUID_CHECK_DELTA( c, 0.0f, tol );
 
     // cycle through one full period in 64 steps
     nco_crcf_set_phase(p, 0.0f);
@@ -118,8 +114,8 @@ void autotest_nco_basic() {
     nco_crcf_set_frequency(p, f);
     for (i=0; i<128; i++) {
         nco_crcf_sincos(p, &s, &c);
-        CONTEND_DELTA( s, sinf(i*f), tol );
-        CONTEND_DELTA( c, cosf(i*f), tol );
+        LIQUID_CHECK_DELTA( s, sinf(i*f), tol );
+        LIQUID_CHECK_DELTA( c, cosf(i*f), tol );
         nco_crcf_step(p);
     }
 
@@ -129,8 +125,8 @@ void autotest_nco_basic() {
     nco_crcf_set_frequency(p, f);
     for (i=0; i<128; i++) {
         nco_crcf_sincos(p, &s, &c);
-        CONTEND_DELTA( s, sinf(i*f), tol );
-        CONTEND_DELTA( c, cosf(i*f), tol );
+        LIQUID_CHECK_DELTA( s, sinf(i*f), tol );
+        LIQUID_CHECK_DELTA( c, cosf(i*f), tol );
         nco_crcf_step(p);
     }
 
@@ -138,10 +134,7 @@ void autotest_nco_basic() {
     nco_crcf_destroy(p);
 }
 
-//
-// test nco mixing
-//
-void autotest_nco_mixing() {
+LIQUID_AUTOTEST(nco_mixing,"test nco mixing","",0.1) {
     // frequency, phase
     float f = 0.1f;
     float phi = M_PI;
@@ -166,8 +159,8 @@ void autotest_nco_mixing() {
         nco_crcf_mix_down(p, nco_cplx_in, &nco_cplx_out);
 
         // assert mixer output is correct
-        CONTEND_DELTA(crealf(nco_cplx_out), 1.0f, tol);
-        CONTEND_DELTA(cimagf(nco_cplx_out), 0.0f, tol);
+        LIQUID_CHECK_DELTA(crealf(nco_cplx_out), 1.0f, tol);
+        LIQUID_CHECK_DELTA(cimagf(nco_cplx_out), 0.0f, tol);
         liquid_log_debug("%3u : %12.8f + j*%12.8f", i, crealf(nco_cplx_out), cimagf(nco_cplx_out));
 
         // step nco
@@ -178,10 +171,7 @@ void autotest_nco_mixing() {
     nco_crcf_destroy(p);
 }
 
-//
-// test nco block mixing
-//
-void autotest_nco_block_mixing()
+LIQUID_AUTOTEST(nco_block_mixing,"test nco block mixing","",0.1)
 {
     // frequency, phase
     float f = 0.1f;
@@ -221,8 +211,8 @@ void autotest_nco_block_mixing()
 
     // assert mixer output is correct
     for (i=0; i<num_samples; i++) {
-        CONTEND_DELTA( crealf(y[i]), 1.0f, tol );
-        CONTEND_DELTA( cimagf(y[i]), 0.0f, tol );
+        LIQUID_CHECK_DELTA( crealf(y[i]), 1.0f, tol );
+        LIQUID_CHECK_DELTA( cimagf(y[i]), 0.0f, tol );
     }
 
     // free those buffers

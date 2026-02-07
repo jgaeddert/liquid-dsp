@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,33 +21,33 @@
  */
 
 #include <assert.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-void autotest_firpfbch_crcf_config()
+LIQUID_AUTOTEST(firpfbch_crcf_config,"firpfbch config","",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls
-    CONTEND_ISNULL(firpfbch_crcf_create(             77, 76, 12, NULL)) // invalid type
-    CONTEND_ISNULL(firpfbch_crcf_create(LIQUID_ANALYZER,  0, 12, NULL)) // invalid number of channels
-    CONTEND_ISNULL(firpfbch_crcf_create(LIQUID_ANALYZER, 76,  0, NULL)) // invalid filter semi-length
+    LIQUID_CHECK(NULL ==firpfbch_crcf_create(             77, 76, 12, NULL)) // invalid type
+    LIQUID_CHECK(NULL ==firpfbch_crcf_create(LIQUID_ANALYZER,  0, 12, NULL)) // invalid number of channels
+    LIQUID_CHECK(NULL ==firpfbch_crcf_create(LIQUID_ANALYZER, 76,  0, NULL)) // invalid filter semi-length
 
-    CONTEND_ISNULL(firpfbch_crcf_create_kaiser(             77, 76, 12, 60.0f)) // invalid type
-    CONTEND_ISNULL(firpfbch_crcf_create_kaiser(LIQUID_ANALYZER,  0, 12, 60.0f)) // invalid number of channels
-    CONTEND_ISNULL(firpfbch_crcf_create_kaiser(LIQUID_ANALYZER, 76,  0, 60.0f)) // invalid filter semi-length
+    LIQUID_CHECK(NULL ==firpfbch_crcf_create_kaiser(             77, 76, 12, 60.0f)) // invalid type
+    LIQUID_CHECK(NULL ==firpfbch_crcf_create_kaiser(LIQUID_ANALYZER,  0, 12, 60.0f)) // invalid number of channels
+    LIQUID_CHECK(NULL ==firpfbch_crcf_create_kaiser(LIQUID_ANALYZER, 76,  0, 60.0f)) // invalid filter semi-length
 
-    CONTEND_ISNULL(firpfbch_crcf_create_rnyquist(             77, 76, 12, 0.2f, LIQUID_FIRFILT_ARKAISER)) // invalid type
-    CONTEND_ISNULL(firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER,  0, 12, 0.2f, LIQUID_FIRFILT_ARKAISER)) // invalid number of channels
-    CONTEND_ISNULL(firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER, 76,  0, 0.2f, LIQUID_FIRFILT_ARKAISER)) // invalid filter semi-length
-    CONTEND_ISNULL(firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER, 76, 12, 77.f, LIQUID_FIRFILT_ARKAISER)) // invalid filter excess bandwidth
-    CONTEND_ISNULL(firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER, 76, 12, 0.2f, LIQUID_FIRFILT_UNKNOWN )) // invalid filter type
+    LIQUID_CHECK(NULL ==firpfbch_crcf_create_rnyquist(             77, 76, 12, 0.2f, LIQUID_FIRFILT_ARKAISER)) // invalid type
+    LIQUID_CHECK(NULL ==firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER,  0, 12, 0.2f, LIQUID_FIRFILT_ARKAISER)) // invalid number of channels
+    LIQUID_CHECK(NULL ==firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER, 76,  0, 0.2f, LIQUID_FIRFILT_ARKAISER)) // invalid filter semi-length
+    LIQUID_CHECK(NULL ==firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER, 76, 12, 77.f, LIQUID_FIRFILT_ARKAISER)) // invalid filter excess bandwidth
+    LIQUID_CHECK(NULL ==firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER, 76, 12, 0.2f, LIQUID_FIRFILT_UNKNOWN )) // invalid filter type
 
-    //CONTEND_ISNULL(firpfbch_crcf_copy(NULL))
+    //LIQUID_CHECK(NULL ==firpfbch_crcf_copy(NULL))
 
     // create proper object and test configurations
     firpfbch_crcf q = firpfbch_crcf_create_kaiser(LIQUID_ANALYZER, 76, 12, 60.0f);
 
-    CONTEND_EQUALITY(LIQUID_OK, firpfbch_crcf_print(q))
+    LIQUID_CHECK(LIQUID_OK == firpfbch_crcf_print(q))
 
     firpfbch_crcf_destroy(q);
     _liquid_error_downgrade_disable();

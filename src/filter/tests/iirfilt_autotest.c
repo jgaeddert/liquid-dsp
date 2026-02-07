@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,10 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-void autotest_iirfilt_integrator()
+LIQUID_AUTOTEST(iirfilt_integrator,"description","",0.1)
 {
     // options
     unsigned int num_ones    = 10;
@@ -47,10 +47,10 @@ void autotest_iirfilt_integrator()
     //    printf("[%3u] %20.17f\n", i, buf_1[i]);
 
     // check that last value matches expected
-    CONTEND_DELTA(buf_1[num_samples-1], num_ones, 0.01f);
+    LIQUID_CHECK_DELTA(buf_1[num_samples-1], num_ones, 0.01f);
 }
 
-void autotest_iirfilt_differentiator()
+LIQUID_AUTOTEST(iirfilt_differentiator,"description","",0.1)
 {
     // options
     unsigned int num_samples = 400;
@@ -73,10 +73,10 @@ void autotest_iirfilt_differentiator()
     //    printf("[%3u] %20.17f\n", i, buf_1[i]);
 
     // check that derivative is equal to 1
-    CONTEND_DELTA(buf_1[num_samples-1], 1.0f, 0.01f);
+    LIQUID_CHECK_DELTA(buf_1[num_samples-1], 1.0f, 0.01f);
 }
 
-void autotest_iirfilt_dcblock()
+LIQUID_AUTOTEST(iirfilt_dcblock,"description","",0.1)
 {
     // options
     unsigned int n    = 400000; // number of output samples to analyze
@@ -112,15 +112,16 @@ void autotest_iirfilt_dcblock()
         {.fmin=-0.002f, .fmax=+0.002f, .pmin=-tol, .pmax=-20,  .test_lo=0, .test_hi=1},
         {.fmin=+0.200f, .fmax=+0.500f, .pmin=-tol, .pmax=+tol, .test_lo=1, .test_hi=1},
     };
-    liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/iirfilt_dcblock.m" : NULL);
+    liquid_autotest_validate_spectrum(__q__, psd, nfft, regions, 3,
+        "autotest/logs/iirfilt_dcblock.m");
 
     // destroy objects
     spgramcf_destroy(q);
     iirfilt_crcf_destroy(filter);
 }
 
-void testbench_iirfilt_copy(liquid_iirdes_format _format)
+void testbench_iirfilt_copy(liquid_autotest __q__,
+                            liquid_iirdes_format _format)
 {
     // create base object
     iirfilt_crcf q0 = iirfilt_crcf_create_prototype(
@@ -145,7 +146,7 @@ void testbench_iirfilt_copy(liquid_iirdes_format _format)
         iirfilt_crcf_execute(q1, v, &y1);
 
         // compare result
-        CONTEND_EQUALITY(y0, y1);
+        LIQUID_CHECK(y0 ==  y1);
     }
 
     // destroy filter objects
@@ -153,30 +154,29 @@ void testbench_iirfilt_copy(liquid_iirdes_format _format)
     iirfilt_crcf_destroy(q1);
 }
 
-void autotest_iirfilt_copy_tf () { testbench_iirfilt_copy(LIQUID_IIRDES_TF ); }
-void autotest_iirfilt_copy_sos() { testbench_iirfilt_copy(LIQUID_IIRDES_SOS); }
+LIQUID_AUTOTEST(iirfilt_copy_tf ,"description","",0.1) { testbench_iirfilt_copy(__q__, LIQUID_IIRDES_TF ); }
+LIQUID_AUTOTEST(iirfilt_copy_sos,"description","",0.1) { testbench_iirfilt_copy(__q__, LIQUID_IIRDES_SOS); }
 
-// test errors and invalid configuration
-void autotest_iirfilt_config()
+LIQUID_AUTOTEST(iirfilt_config,"test errors and invalid configuration", "", 0.1)
 {
     _liquid_error_downgrade_enable();
     // test copying/creating invalid objects
-    CONTEND_ISNULL( iirfilt_crcf_copy(NULL) );
-    CONTEND_ISNULL( iirfilt_crcf_create(NULL, 0, NULL, 5) ); // nb is 0
-    CONTEND_ISNULL( iirfilt_crcf_create(NULL, 5, NULL, 0) ); // nb is 0
-    CONTEND_ISNULL( iirfilt_crcf_create_sos(NULL, NULL, 0) ); // nsos is 0
-    CONTEND_ISNULL( iirfilt_crcf_create_prototype(LIQUID_IIRDES_BUTTER,LIQUID_IIRDES_LOWPASS,LIQUID_IIRDES_SOS,0,0,0,0,0) );
+    LIQUID_CHECK(NULL == iirfilt_crcf_copy(NULL) );
+    LIQUID_CHECK(NULL == iirfilt_crcf_create(NULL, 0, NULL, 5) ); // nb is 0
+    LIQUID_CHECK(NULL == iirfilt_crcf_create(NULL, 5, NULL, 0) ); // nb is 0
+    LIQUID_CHECK(NULL == iirfilt_crcf_create_sos(NULL, NULL, 0) ); // nsos is 0
+    LIQUID_CHECK(NULL == iirfilt_crcf_create_prototype(LIQUID_IIRDES_BUTTER,LIQUID_IIRDES_LOWPASS,LIQUID_IIRDES_SOS,0,0,0,0,0) );
 
     // create valid object
     iirfilt_crcf filter = iirfilt_crcf_create_lowpass(7, 0.1f);
-    CONTEND_EQUALITY( LIQUID_OK, iirfilt_crcf_print(filter) );
+    LIQUID_CHECK( LIQUID_OK ==  iirfilt_crcf_print(filter) );
 
     // check properties
-    CONTEND_EQUALITY( LIQUID_OK, iirfilt_crcf_set_scale(filter, 7.22f) );
+    LIQUID_CHECK( LIQUID_OK == iirfilt_crcf_set_scale(filter, 7.22f) );
     float scale;
-    CONTEND_EQUALITY( LIQUID_OK, iirfilt_crcf_get_scale(filter, &scale) );
-    CONTEND_EQUALITY( scale, 7.22f );
-    CONTEND_EQUALITY( 7+1, iirfilt_crcf_get_length(filter) );
+    LIQUID_CHECK( LIQUID_OK == iirfilt_crcf_get_scale(filter, &scale) );
+    LIQUID_CHECK( scale == 7.22f );
+    LIQUID_CHECK( (7+1) == iirfilt_crcf_get_length(filter) );
 
     // destroy object
     iirfilt_crcf_destroy(filter);

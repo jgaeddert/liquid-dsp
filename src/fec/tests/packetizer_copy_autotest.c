@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,10 +21,10 @@
  */
 
 #include <stdlib.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-void autotest_packetizer_copy()
+LIQUID_AUTOTEST(packetizer_copy,"copy packetizer object","",0.1)
 {
     unsigned int msg_len_dec = 57;
     crc_scheme   crc         = LIQUID_CRC_32;
@@ -55,7 +55,7 @@ void autotest_packetizer_copy()
     // copy object, encode, and compare result
     packetizer q1 = packetizer_copy(q0);
     packetizer_encode(q1, msg_org, msg_enc_1);
-    CONTEND_SAME_DATA(msg_enc_0, msg_enc_1, msg_len_enc);
+    LIQUID_CHECK_ARRAY(msg_enc_0, msg_enc_1, msg_len_enc);
 
     // initialize random data for decoder input
     for (i=0; i<msg_len_enc; i++) {
@@ -68,8 +68,8 @@ void autotest_packetizer_copy()
     int crc_pass_0 = packetizer_decode(q0, msg_enc_0, msg_dec_0);
     int crc_pass_1 = packetizer_decode(q1, msg_enc_1, msg_dec_1);
 
-    CONTEND_SAME_DATA(msg_dec_0, msg_dec_1, msg_len_dec);
-    CONTEND_EQUALITY(crc_pass_0, crc_pass_1);
+    LIQUID_CHECK_ARRAY(msg_dec_0, msg_dec_1, msg_len_dec);
+    LIQUID_CHECK(crc_pass_0 ==  crc_pass_1);
 
     // clean up objects
     packetizer_destroy(q0);

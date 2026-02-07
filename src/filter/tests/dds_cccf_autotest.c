@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,12 @@
  */
 
 #include <stdlib.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
 // check direct digital synthesis, both interpolator and decimator
-void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stages
+void testbench_dds_cccf(liquid_autotest __q__,      // autotest object
+                        unsigned int _num_stages,   // number of half-band stages
                         float        _fc,           // filter cut-off
                         float        _as)           // stop-band suppression
 {
@@ -73,8 +74,7 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
       {.fmin=-0.3*bw, .fmax=+0.3*bw, .pmin=-1, .pmax=+1,       .test_lo=1, .test_hi=1},
       {.fmin=+0.6*bw, .fmax=+0.5,    .pmin= 0, .pmax=-_as+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_signal(buf_0, num_samples, regions_orig, 3,
-        liquid_autotest_verbose ? "autotest/logs/dds_cccf_orig.m" : NULL);
+    liquid_autotest_validate_psd_signal(__q__, buf_0, num_samples, regions_orig, 3, "autotest/logs/dds_cccf_orig.m");
 
     // verify interpolated spectrum
     float f1 = _fc-0.6*bw/r, f2 = _fc-0.3*bw/r, f3 = _fc+0.3*bw/r, f4 = _fc+0.6*bw/r;
@@ -83,12 +83,10 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
       {.fmin= f2,  .fmax=f3,   .pmin=-1, .pmax=+1,       .test_lo=1, .test_hi=1},
       {.fmin= f4,  .fmax=+0.5, .pmin= 0, .pmax=-_as+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_signal(buf_1, r*num_samples, regions_interp, 3,
-        liquid_autotest_verbose ? "autotest/logs/dds_cccf_interp.m" : NULL);
+    liquid_autotest_validate_psd_signal(__q__, buf_1, r*num_samples, regions_interp, 3, "autotest/logs/dds_cccf_interp.m");
 
     // verify decimated spectrum (using same regions as original)
-    liquid_autotest_validate_psd_signal(buf_2, num_samples, regions_orig, 3,
-        liquid_autotest_verbose ? "autotest/logs/dds_cccf_decim.m" : NULL);
+    liquid_autotest_validate_psd_signal(__q__, buf_2, num_samples, regions_orig, 3, "autotest/logs/dds_cccf_decim.m");
 
     // destroy filter object and free memory
     dds_cccf_destroy(q);
@@ -97,44 +95,42 @@ void testbench_dds_cccf(unsigned int _num_stages,   // number of half-band stage
     free(buf_2);
 }
 
-// test different configurations
-void autotest_dds_cccf_0(){ testbench_dds_cccf( 1, +0.0f, 60.0f); }
-void autotest_dds_cccf_1(){ testbench_dds_cccf( 2, +0.0f, 60.0f); }
-void autotest_dds_cccf_2(){ testbench_dds_cccf( 3, +0.0f, 60.0f); }
+LIQUID_AUTOTEST(dds_cccf_0,"direct digital synthesis, stages=1","",0.1){ testbench_dds_cccf(__q__, 1, +0.0f, 60.0f); }
+LIQUID_AUTOTEST(dds_cccf_1,"direct digital synthesis, stages=2","",0.1){ testbench_dds_cccf(__q__, 2, +0.0f, 60.0f); }
+LIQUID_AUTOTEST(dds_cccf_2,"direct digital synthesis, stages=3","",0.1){ testbench_dds_cccf(__q__, 3, +0.0f, 60.0f); }
 
 // FIXME: adjust filter lengths appropriately
 //void xautotest_dds_cccf_4(){ testbench_dds_cccf( 2, +0.1f,      60.0f); }
 //void xautotest_dds_cccf_5(){ testbench_dds_cccf( 2, -0.213823f, 60.0f); }
 //void xautotest_dds_cccf_6(){ testbench_dds_cccf( 2, -0.318234f, 80.0f); }
 
-void autotest_dds_config()
+LIQUID_AUTOTEST(dds_config,"direct digital synthesis config","",0.1)
 {
     _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
-    CONTEND_ISNULL(dds_cccf_create( 50,  0.0f,  0.1f, 60.0f)); // num stages out of range
-    CONTEND_ISNULL(dds_cccf_create(  2,  0.7f,  0.1f, 60.0f)); // fc out of range
-    CONTEND_ISNULL(dds_cccf_create(  2, -0.7f,  0.1f, 60.0f)); // fc out of range
-    CONTEND_ISNULL(dds_cccf_create(  2,  0.2f,  1.4f, 60.0f)); // bw out of range
-    CONTEND_ISNULL(dds_cccf_create(  2,  0.2f, -1.4f, 60.0f)); // bw out of range
-    CONTEND_ISNULL(dds_cccf_create(  2,  0.2f,  0.1f, -1.0f)); // as out of range
+    LIQUID_CHECK(NULL == dds_cccf_create( 50,  0.0f,  0.1f, 60.0f)); // num stages out of range
+    LIQUID_CHECK(NULL == dds_cccf_create(  2,  0.7f,  0.1f, 60.0f)); // fc out of range
+    LIQUID_CHECK(NULL == dds_cccf_create(  2, -0.7f,  0.1f, 60.0f)); // fc out of range
+    LIQUID_CHECK(NULL == dds_cccf_create(  2,  0.2f,  1.4f, 60.0f)); // bw out of range
+    LIQUID_CHECK(NULL == dds_cccf_create(  2,  0.2f, -1.4f, 60.0f)); // bw out of range
+    LIQUID_CHECK(NULL == dds_cccf_create(  2,  0.2f,  0.1f, -1.0f)); // as out of range
 
     // create proper object and test configurations
     dds_cccf q = dds_cccf_create( 2, 0.0f, 0.2f, 60.0f);
-    CONTEND_EQUALITY(dds_cccf_print(q), LIQUID_OK);
+    LIQUID_CHECK(dds_cccf_print(q) == LIQUID_OK);
 
     // test setting/getting properties
     dds_cccf_set_scale(q, 2.0f - _Complex_I*3.0f);
     float complex scale = 0.0f;
     dds_cccf_get_scale(q, &scale);
-    CONTEND_EQUALITY(scale, 2.0f - _Complex_I*3.0f);
+    LIQUID_CHECK(scale == (2.0f - _Complex_I*3.0f));
 
     // destroy object
     dds_cccf_destroy(q);
     _liquid_error_downgrade_disable();
 }
 
-// copy object
-void autotest_dds_copy()
+LIQUID_AUTOTEST(dds_copy,"copy object", "", 0.1)
 {
     unsigned int num_stages = 3;    // number of half-band stages
     unsigned int r=1<<num_stages;   // resampling rate (input/output)
@@ -171,7 +167,7 @@ void autotest_dds_copy()
         dds_cccf_decim_execute(q1, buf, &y1);
 
         // compare output
-        CONTEND_EQUALITY(y0, y1);
+        LIQUID_CHECK(y0 == y1);
     }
 
     // destroy objects

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,6 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
-#include "liquid.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,11 +27,9 @@
 #include <getopt.h>
 
 #include "liquid.internal.h"
+#include "liquid.autotest.h"
 
-//
-// AUTOTEST: Find minimum of Rosenbrock function, should be [1 1 1 ...]
-//
-void autotest_gradsearch_rosenbrock()
+LIQUID_AUTOTEST(gradsearch_rosenbrock,"Use gradient descent search to find minimum of Rosenbrock function, should be [1 1 1 ...]","",0.1)
 {
     float tol = 1e-2f;                  // error tolerance
     unsigned int num_parameters = 6;    // dimensionality of search (minimum 2)
@@ -72,15 +67,11 @@ void autotest_gradsearch_rosenbrock()
 
     // test results, optimum at [1, 1, 1, ... 1];
     for (i=0; i<num_parameters; i++)
-        CONTEND_DELTA(v_opt[i], 1.0f, tol);
+        LIQUID_CHECK_DELTA(v_opt[i], 1.0f, tol);
 
     // test value of utility (should be nearly 0)
-    CONTEND_DELTA( liquid_rosenbrock(NULL, v_opt, num_parameters), 0.0f, tol );
+    LIQUID_CHECK_DELTA( liquid_rosenbrock(NULL, v_opt, num_parameters), 0.0f, tol );
 }
-
-//
-// AUTOTEST: Find maximum of: exp{ -sum{ (v[i]-1)^2/sigma_i^2 } }, should be [1 1 1 ...]
-//
 
 // test utility function
 float utility_max_autotest(void *       _userdata,
@@ -105,7 +96,7 @@ float utility_max_autotest(void *       _userdata,
     return expf(-t);
 }
 
-void autotest_gradsearch_maxutility()
+LIQUID_AUTOTEST(gradsearch_maxutility,"Find maximum of: exp{ -sum{ (v[i]-1)^2/sigma_i^2 } }, should be [1 1 1 ...]","",0.1)
 {
     float tol = 1e-2f;                  // error tolerance
     unsigned int num_parameters = 6;    // dimensionality of search (minimum 2)
@@ -143,9 +134,9 @@ void autotest_gradsearch_maxutility()
 
     // test results, optimum at [1, 1, 1, ... 1];
     for (i=0; i<num_parameters; i++)
-        CONTEND_DELTA(v_opt[i], 1.0f, tol);
+        LIQUID_CHECK_DELTA(v_opt[i], 1.0f, tol);
 
     // test value of utility (should be nearly 1)
-    CONTEND_DELTA( utility_max_autotest(NULL, v_opt, num_parameters), 1.0f, tol );
+    LIQUID_CHECK_DELTA( utility_max_autotest(NULL, v_opt, num_parameters), 1.0f, tol );
 }
 

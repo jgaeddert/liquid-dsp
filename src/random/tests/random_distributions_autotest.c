@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,10 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-// compute emperical distributions and compare to theoretical
+// compute empirical distributions and compare to theoretical
 
 // add value to histogram
 unsigned int _support_histogram_add(float        _value,
@@ -42,7 +42,7 @@ unsigned int _support_histogram_add(float        _value,
     return index;
 }
 
-// noramlize histogram (area under curve)
+// normalize histogram (area under curve)
 float _support_histogram_normalize(float *      _bins,
                                    unsigned int _num_bins,
                                    float        _vmin,
@@ -64,35 +64,40 @@ void _support_histogram_log(float *      _bins,
                             float        _vmin,
                             float        _vmax)
 {
+    // assemble string
+    unsigned int num_chars = 48;
+    char strbuf[num_chars + 32];
+
     // find max(hist)
     unsigned int i;
     float hist_max = 0;
     for (i=0; i<_num_bins; i++)
         hist_max = _bins[i] > hist_max ? _bins[i] : hist_max;
 
-    unsigned int num_chars = 72;
     float _vstep = (_vmax - _vmin) / (float)(_num_bins-1);
-    printf("%8s : [%12s]\n", "v", "bin value");
+    liquid_log_debug("%8s : [%12s]", "v", "bin value");
     for (i=0; i<_num_bins; i++) {
-        printf("%8.2f : [%12g]", _vmin + i*_vstep, _bins[i]);
+        char * s = strbuf + sprintf(strbuf,"%8.2f : [%12g]", _vmin + i*_vstep, _bins[i]);
+        //printf("%8.2f : [%12g]", _vmin + i*_vstep, _bins[i]);
 
         unsigned int k;
         unsigned int n = round(num_chars * _bins[i] / hist_max);
         for (k=0; k<n; k++)
-            printf("-");
-        printf("+");
-        printf("\n");
+            s += sprintf(s,"-");
+        s += sprintf(s,"+");
+        liquid_log_debug("%s", strbuf);
     }
 }
 
 // validate pdf and cdf
-void _support_histogram_validate(float *      _bins,
-                                 float *      _pdf,
-                                 float *      _cdf,
-                                 unsigned int _num_bins,
-                                 float        _vmin,
-                                 float        _vmax,
-                                 float        _tol)
+void _support_histogram_validate(liquid_autotest __q__,
+                                 float *         _bins,
+                                 float *         _pdf,
+                                 float *         _cdf,
+                                 unsigned int    _num_bins,
+                                 float           _vmin,
+                                 float           _vmax,
+                                 float           _tol)
 {
     // normalize histogram
     _support_histogram_normalize(_bins, _num_bins, _vmin, _vmax);
@@ -100,7 +105,8 @@ void _support_histogram_validate(float *      _bins,
     // compare pdf and cdf
     unsigned int i;
     for (i=0; i<_num_bins; i++) {
-        CONTEND_DELTA(_bins[i], _pdf[i], _tol);
+        liquid_log_debug("%f, %f, tol=%f", _bins[i], _pdf[i], _tol);
+        LIQUID_CHECK_DELTA(_bins[i], _pdf[i], _tol);
     }
 
     // accumulate and compare cdf
@@ -109,13 +115,12 @@ void _support_histogram_validate(float *      _bins,
     for (i=1; i<_num_bins; i++) {
         // trapezoidal integration
         accum += 0.5f * (_bins[i-1] + _bins[i]) * _vstep;
-        CONTEND_DELTA(accum, _cdf[i], _tol);
-        //printf("[%2u] : %12.8f (expected %12.8f), e:%12.8f\n", i, accum, _cdf[i], accum-_cdf[i]);
+        liquid_log_debug("%f, %f, tol=%f", accum, _cdf[i], _tol);
+        LIQUID_CHECK_DELTA(accum, _cdf[i], _tol);
     }
 }
 
-// normal distribution
-void autotest_distribution_randnf()
+LIQUID_AUTOTEST(distribution_randnf,"normal distribution","",0.1)
 {
     unsigned long int num_trials = 248000;
     float eta = 0.0f, sig = 1.0f;
@@ -150,12 +155,13 @@ void autotest_distribution_randnf()
     //_support_histogram_log(cdf,  num_bins, vmin, vmax);
 
     // validate distributions
-    _support_histogram_validate(bins, pdf, cdf, num_bins, vmin, vmax, tol);
+    _support_histogram_validate(__q__,bins, pdf, cdf, num_bins, vmin, vmax, tol);
 }
 
-// exponential distribution
-void xautotest_distribution_randexpf()
+LIQUID_AUTOTEST(distribution_randexpf,"exponential distribution","",0.1)
 {
+    // bypass test as sharp transition at x=0 makes evaluation difficult
+    /*
     unsigned long int num_trials = 248000;
     float lambda = 1.3f;
     float tol = 0.05f;
@@ -189,6 +195,7 @@ void xautotest_distribution_randexpf()
     //_support_histogram_log(cdf,  num_bins, vmin, vmax);
 
     // validate distributions
-    _support_histogram_validate(bins, pdf, cdf, num_bins, vmin, vmax, tol);
+    _support_histogram_validate(__q__,bins, pdf, cdf, num_bins, vmin, vmax, tol);
+    */
 }
 

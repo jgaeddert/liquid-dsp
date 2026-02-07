@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
 #include "liquid.internal.h"
+#include "liquid.autotest.h"
 
-// Test DC gain control
-void autotest_agc_crcf_dc_gain_control()
+LIQUID_AUTOTEST(agc_crcf_dc_gain_control,"Test DC gain control", "", 0.1)
 {
     // set parameters
     float gamma = 0.1f;     // nominal signal level
@@ -42,20 +41,19 @@ void autotest_agc_crcf_dc_gain_control()
         agc_crcf_execute(q, x, &y);
     
     // Check results
-    CONTEND_DELTA( crealf(y), 1.0f, tol );
-    CONTEND_DELTA( cimagf(y), 0.0f, tol );
-    CONTEND_DELTA( agc_crcf_get_gain(q), 1.0f/gamma, tol );
+    LIQUID_CHECK_DELTA( crealf(y), 1.0f, tol );
+    LIQUID_CHECK_DELTA( cimagf(y), 0.0f, tol );
+    LIQUID_CHECK_DELTA( agc_crcf_get_gain(q), 1.0f/gamma, tol );
 
     // explicitly set gain and check result
     agc_crcf_set_gain(q, 1.0f);
-    CONTEND_EQUALITY( agc_crcf_get_gain(q), 1.0f );
+    LIQUID_CHECK( agc_crcf_get_gain(q) == 1.0f );
 
     // destroy AGC object
     agc_crcf_destroy(q);
 }
 
-// test gain control on DC input with separate scale
-void autotest_agc_crcf_scale()
+LIQUID_AUTOTEST(agc_crcf_scale,"test gain control on DC input with separate scale", "", 0.1)
 {
     // set parameters
     float scale = 4.0f;     // output scale (independent of AGC loop)
@@ -65,7 +63,7 @@ void autotest_agc_crcf_scale()
     agc_crcf q = agc_crcf_create();
     agc_crcf_set_bandwidth(q, 0.1f);
     agc_crcf_set_scale    (q, scale);
-    CONTEND_EQUALITY(agc_crcf_get_scale(q), scale);
+    LIQUID_CHECK(agc_crcf_get_scale(q) == scale);
 
     unsigned int i;
     float complex x = 0.1f; // input sample
@@ -74,15 +72,14 @@ void autotest_agc_crcf_scale()
         agc_crcf_execute(q, x, &y);
     
     // Check results
-    CONTEND_DELTA( crealf(y), scale, tol );
-    CONTEND_DELTA( cimagf(y),  0.0f, tol );
+    LIQUID_CHECK_DELTA( crealf(y), scale, tol );
+    LIQUID_CHECK_DELTA( cimagf(y),  0.0f, tol );
 
     // destroy AGC object
     agc_crcf_destroy(q);
 }
 
-// Test AC gain control
-void autotest_agc_crcf_ac_gain_control()
+LIQUID_AUTOTEST(agc_crcf_ac_gain_control,"Test AC gain control", "", 0.1)
 {
     // set parameters
     float gamma = 0.1f;             // nominal signal level
@@ -105,14 +102,13 @@ void autotest_agc_crcf_ac_gain_control()
     liquid_log_debug("gamma : %12.8f, rssi : %12.8f", gamma, agc_crcf_get_signal_level(q));
 
     // Check results
-    CONTEND_DELTA( agc_crcf_get_gain(q), 1.0f/gamma, tol);
+    LIQUID_CHECK_DELTA( agc_crcf_get_gain(q), 1.0f/gamma, tol);
 
     // destroy AGC object
     agc_crcf_destroy(q);
 }
 
-// Test RSSI on sinusoidal input
-void autotest_agc_crcf_rssi_sinusoid()
+LIQUID_AUTOTEST(agc_crcf_rssi_sinusoid,"Test RSSI on sinusoidal input", "", 0.1)
 {
     // set parameters
     float gamma = 0.3f;         // nominal signal level
@@ -142,14 +138,13 @@ void autotest_agc_crcf_rssi_sinusoid()
     liquid_log_debug("gamma : %12.8f, rssi : %12.8f", gamma, rssi);
 
     // Check results
-    CONTEND_DELTA( rssi, gamma, tol );
+    LIQUID_CHECK_DELTA( rssi, gamma, tol );
 
     // destroy agc object
     agc_crcf_destroy(q);
 }
 
-// Test RSSI on noise input
-void autotest_agc_crcf_rssi_noise()
+LIQUID_AUTOTEST(agc_crcf_rssi_noise,"Test RSSI on noise input", "", 0.1)
 {
     // set parameters
     float gamma = -30.0f;   // nominal signal level [dB]
@@ -179,14 +174,13 @@ void autotest_agc_crcf_rssi_noise()
     liquid_log_debug("gamma : %12.8f, rssi : %12.8f", gamma, rssi);
 
     // Check results
-    CONTEND_DELTA( rssi, gamma, tol );
+    LIQUID_CHECK_DELTA( rssi, gamma, tol );
 
     // destroy agc object
     agc_crcf_destroy(q);
 }
 
-// Test squelch functionality
-void autotest_agc_crcf_squelch()
+LIQUID_AUTOTEST(agc_crcf_squelch,"Test squelch functionality", "", 0.1)
 {
     // create agc object, set loop bandwidth, and initialize parameters
     agc_crcf q = agc_crcf_create();
@@ -194,13 +188,13 @@ void autotest_agc_crcf_squelch()
     agc_crcf_set_signal_level(q,1e-3f);     // initial guess at starting signal level
 
     // initialize squelch functionality
-    CONTEND_FALSE(agc_crcf_squelch_is_enabled(q));
+    LIQUID_CHECK( !agc_crcf_squelch_is_enabled(q) );
     agc_crcf_squelch_enable(q);             // enable squelch
     agc_crcf_squelch_set_threshold(q, -50); // threshold for detection [dB]
     agc_crcf_squelch_set_timeout  (q, 100); // timeout for hysteresis
-    CONTEND_TRUE(agc_crcf_squelch_is_enabled(q));
-    CONTEND_EQUALITY(agc_crcf_squelch_get_threshold(q), -50);
-    CONTEND_EQUALITY(agc_crcf_squelch_get_timeout  (q), 100);
+    LIQUID_CHECK( agc_crcf_squelch_is_enabled(q) );
+    LIQUID_CHECK( agc_crcf_squelch_get_threshold(q) == -50 );
+    LIQUID_CHECK( agc_crcf_squelch_get_timeout  (q) == 100 );
 
     // run agc
     unsigned int num_samples = 2000; // total number of samples to run
@@ -227,13 +221,13 @@ void autotest_agc_crcf_squelch()
 
         // check certain conditions based on sample input (assuming 2000 samples)
         switch (i) {
-            case    0: CONTEND_EQUALITY(mode, LIQUID_AGC_SQUELCH_ENABLED);  break;
-            case  500: CONTEND_EQUALITY(mode, LIQUID_AGC_SQUELCH_ENABLED);  break;
-            case  600: CONTEND_EQUALITY(mode, LIQUID_AGC_SQUELCH_SIGNALHI); break;
-            case 1400: CONTEND_EQUALITY(mode, LIQUID_AGC_SQUELCH_SIGNALHI); break;
-            case 1500: CONTEND_EQUALITY(mode, LIQUID_AGC_SQUELCH_SIGNALLO); break;
-            case 1600: CONTEND_EQUALITY(mode, LIQUID_AGC_SQUELCH_ENABLED);  break;
-            case 1900: CONTEND_EQUALITY(mode, LIQUID_AGC_SQUELCH_ENABLED);  break;
+            case    0: LIQUID_CHECK(mode == LIQUID_AGC_SQUELCH_ENABLED);  break;
+            case  500: LIQUID_CHECK(mode == LIQUID_AGC_SQUELCH_ENABLED);  break;
+            case  600: LIQUID_CHECK(mode == LIQUID_AGC_SQUELCH_SIGNALHI); break;
+            case 1400: LIQUID_CHECK(mode == LIQUID_AGC_SQUELCH_SIGNALHI); break;
+            case 1500: LIQUID_CHECK(mode == LIQUID_AGC_SQUELCH_SIGNALLO); break;
+            case 1600: LIQUID_CHECK(mode == LIQUID_AGC_SQUELCH_ENABLED);  break;
+            case 1900: LIQUID_CHECK(mode == LIQUID_AGC_SQUELCH_ENABLED);  break;
             default:;
         }
     }
@@ -242,8 +236,7 @@ void autotest_agc_crcf_squelch()
     agc_crcf_destroy(q);
 }
 
-// test lock state control
-void autotest_agc_crcf_lock()
+LIQUID_AUTOTEST(agc_crcf_lock,"test lock state control", "", 0.1)
 {
     // set parameters
     float gamma = 0.1f;     // nominal signal level
@@ -257,63 +250,61 @@ void autotest_agc_crcf_lock()
     unsigned int i;
 
     // basic tests
-    CONTEND_EQUALITY(agc_crcf_get_bandwidth(q),0.1f);
-    CONTEND_EQUALITY(agc_crcf_print(q),        LIQUID_OK);
+    LIQUID_CHECK(agc_crcf_get_bandwidth(q) == 0.1f);
+    LIQUID_CHECK(agc_crcf_print(q)         == LIQUID_OK);
     agc_crcf_set_rssi(q, 0.0f);
 
     // lock AGC and show it is not tracking
-    CONTEND_DELTA( agc_crcf_get_rssi(q), 0, tol );  // base signal level is 0 dB
-    CONTEND_FALSE( agc_crcf_is_locked(q) );         // not locked
+    LIQUID_CHECK_DELTA( agc_crcf_get_rssi(q), 0, tol );  // base signal level is 0 dB
+    LIQUID_CHECK( !agc_crcf_is_locked(q) );         // not locked
     agc_crcf_lock(q);
-    CONTEND_TRUE( agc_crcf_is_locked(q) );          // locked
+    LIQUID_CHECK( agc_crcf_is_locked(q) );          // locked
     for (i=0; i<256; i++)
         agc_crcf_execute_block(q, buf_0, 4, buf_1);
-    CONTEND_DELTA( agc_crcf_get_rssi(q), 0, tol );  // signal level has not changed
+    LIQUID_CHECK_DELTA( agc_crcf_get_rssi(q), 0, tol );  // signal level has not changed
 
     // unlock AGC and show it is tracking
     agc_crcf_unlock(q);
-    CONTEND_FALSE( agc_crcf_is_locked(q) );         // unlocked
+    LIQUID_CHECK( !agc_crcf_is_locked(q) );         // unlocked
     agc_crcf_init(q, buf_0, 4);
     // agc tracks to signal level
-    CONTEND_DELTA( agc_crcf_get_rssi(q), 20*log10f(gamma), tol );
+    LIQUID_CHECK_DELTA( agc_crcf_get_rssi(q), 20*log10f(gamma), tol );
 
     // destroy AGC object
     agc_crcf_destroy(q);
 }
 
-// configuration
-void autotest_agc_crcf_config()
+LIQUID_AUTOTEST(agc_crcf_config,"configuration", "", 0.1)
 {
     _liquid_error_downgrade_enable();
     // create main object and check invalid configurations
     agc_crcf q = agc_crcf_create();
 
     // invalid bandwidths
-    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_bandwidth(q, -1))
-    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_bandwidth(q,  2))
+    LIQUID_CHECK( LIQUID_OK != agc_crcf_set_bandwidth(q, -1))
+    LIQUID_CHECK( LIQUID_OK != agc_crcf_set_bandwidth(q,  2))
 
     // invalid gains
-    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_gain(q,  0))
-    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_gain(q, -1))
+    LIQUID_CHECK( LIQUID_OK != agc_crcf_set_gain(q,  0))
+    LIQUID_CHECK( LIQUID_OK != agc_crcf_set_gain(q, -1))
 
     // invalid signal levels
-    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_signal_level(q,  0))
-    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_signal_level(q, -1))
+    LIQUID_CHECK( LIQUID_OK != agc_crcf_set_signal_level(q,  0))
+    LIQUID_CHECK( LIQUID_OK != agc_crcf_set_signal_level(q, -1))
 
     // invalid scale values
-    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_scale(q,  0))
-    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_set_scale(q, -1))
+    LIQUID_CHECK( LIQUID_OK != agc_crcf_set_scale(q,  0))
+    LIQUID_CHECK( LIQUID_OK != agc_crcf_set_scale(q, -1))
 
     // initialize gain on input array, but array has length 0
-    CONTEND_INEQUALITY(LIQUID_OK, agc_crcf_init(q, NULL, 0))
+    LIQUID_CHECK( LIQUID_OK != agc_crcf_init(q, NULL, 0))
 
     // destroy object
     agc_crcf_destroy(q);
     _liquid_error_downgrade_disable();
 }
 
-// copy test
-void autotest_agc_crcf_copy()
+LIQUID_AUTOTEST(agc_crcf_copy,"copy test", "", 0.1)
 {
     // create base object and initialize
     agc_crcf q0 = agc_crcf_create();
@@ -337,7 +328,7 @@ void autotest_agc_crcf_copy()
         x = randnf() + _Complex_I*randnf();
         agc_crcf_execute(q0, x, &y0);
         agc_crcf_execute(q1, x, &y1);
-        CONTEND_EQUALITY(y0, y1);
+        LIQUID_CHECK(y0 == y1);
     }
 
     // destroy AGC objects

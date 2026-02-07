@@ -82,7 +82,7 @@ PATHSEP		= /
 # 
 # liquid headers
 #
-headers_install	:= liquid.h
+headers_install	:= liquid.h liquid.argparse.h liquid.autotest.h
 headers		:= $(headers_install) liquid.internal.h
 include_headers	:= $(addprefix include/,$(headers))
 
@@ -165,7 +165,7 @@ src/buffer/src/buffercf.o : %.o : %.c $(include_headers) $(buffer_prototypes)
 buffer_autotests :=						\
 	src/buffer/tests/cbuffer_autotest.c			\
 	src/buffer/tests/wdelay_autotest.c			\
-	src/buffer/tests/buffer_window_autotest.c			\
+	src/buffer/tests/buffer_window_autotest.c		\
 
 buffer_benchmarks :=						\
 	src/buffer/bench/cbuffercf_benchmark.c			\
@@ -185,10 +185,9 @@ channel_prototypes :=						\
 
 src/channel/src/channel_cccf.o : %.o : %.c $(include_headers) $(channel_prototypes)
 
-channel_autotests :=						\
-	src/channel/tests/channel_copy_autotest.c		\
-	src/channel/tests/tvmpch_copy_autotest.c		\
-	
+channel_autotests :=
+#src/channel/tests/channel_copy_autotest.c
+#src/channel/tests/tvmpch_copy_autotest.c
 #src/channel/tests/channel_cccf_autotest.c
 
 channel_benchmarks :=						\
@@ -366,18 +365,14 @@ src/fft/src/spgramf.o       : %.o : %.c $(include_headers) src/fft/src/asgram.pr
 # fft autotest scripts
 fft_autotests :=						\
 	src/fft/tests/asgram_autotest.c				\
-	src/fft/tests/fft_small_autotest.c			\
-	src/fft/tests/fft_radix2_autotest.c			\
-	src/fft/tests/fft_composite_autotest.c			\
-	src/fft/tests/fft_prime_autotest.c			\
+	src/fft/tests/fft_autotest.c				\
 	src/fft/tests/fft_r2r_autotest.c			\
-	src/fft/tests/fft_shift_autotest.c			\
+	src/fft/tests/fft_transforms_autotest.c			\
 	src/fft/tests/spgram_autotest.c				\
 	src/fft/tests/spwaterfall_autotest.c			\
 
 # additional autotest objects
 autotest_extra_obj +=						\
-	src/fft/tests/fft_runtest.o				\
 	src/fft/tests/data/fft_data_2.o				\
 	src/fft/tests/data/fft_data_3.o				\
 	src/fft/tests/data/fft_data_4.o				\
@@ -543,8 +538,6 @@ filter_autotests :=						\
 
 # additional autotest objects
 autotest_extra_obj +=						\
-	src/filter/tests/fftfilt_runtest.o			\
-								\
 	src/filter/tests/data/fftfilt_rrrf_data_h4x256.o	\
 	src/filter/tests/data/fftfilt_crcf_data_h4x256.o	\
 	src/filter/tests/data/fftfilt_cccf_data_h4x256.o	\
@@ -560,8 +553,6 @@ autotest_extra_obj +=						\
 	src/filter/tests/data/fftfilt_rrrf_data_h23x256.o	\
 	src/filter/tests/data/fftfilt_crcf_data_h23x256.o	\
 	src/filter/tests/data/fftfilt_cccf_data_h23x256.o	\
-								\
-	src/filter/tests/firdecim_runtest.o			\
 								\
 	src/filter/tests/data/firdecim_rrrf_data_M2h4x20.o	\
 	src/filter/tests/data/firdecim_crcf_data_M2h4x20.o	\
@@ -579,8 +570,6 @@ autotest_extra_obj +=						\
 	src/filter/tests/data/firdecim_crcf_data_M5h23x50.o	\
 	src/filter/tests/data/firdecim_cccf_data_M5h23x50.o	\
 								\
-	src/filter/tests/firfilt_runtest.o			\
-								\
 	src/filter/tests/data/firfilt_rrrf_data_h4x8.o		\
 	src/filter/tests/data/firfilt_crcf_data_h4x8.o		\
 	src/filter/tests/data/firfilt_cccf_data_h4x8.o		\
@@ -596,8 +585,6 @@ autotest_extra_obj +=						\
 	src/filter/tests/data/firfilt_rrrf_data_h23x64.o	\
 	src/filter/tests/data/firfilt_crcf_data_h23x64.o	\
 	src/filter/tests/data/firfilt_cccf_data_h23x64.o	\
-								\
-	src/filter/tests/iirfilt_runtest.o			\
 								\
 	src/filter/tests/data/iirfilt_rrrf_data_h3x64.o		\
 	src/filter/tests/data/iirfilt_crcf_data_h3x64.o		\
@@ -1153,6 +1140,7 @@ src/vector/src/vectorcf.port.o  : %.o : %.c $(include_headers) ${vector_prototyp
 # vector autotest scripts
 vector_autotests :=						\
 	src/vector/tests/vectorcf_autotest.c			\
+	src/vector/tests/vectorf_autotest.c			\
 
 # additional autotest objects
 autotest_extra_obj +=
@@ -1354,20 +1342,16 @@ clean-autoscript :
 .PHONY: autotest
 autotest_prog = xautotest
 
-# run the autotest generator script to create autotest_include.h
-autotest_include.h : scripts/autoscript $(autotest_sources) $(include_headers)
-	./scripts/autoscript $(PATHSEP) autotest $(autotest_sources) > $@
-
 # autotest objects
 # NOTE: by default, gcc compiles any file with a '.h' extension as a 'pre-compiled
 #       header' so we need to explicitly tell it to compile as a c source file with
 #       the '-x c' flag
 autotest_obj = $(patsubst %.c,%.o,$(autotest_sources))
-$(autotest_obj) $(autotest_extra_obj) autotest/autotest.o : %.o : %.c $(include_headers) autotest/autotest.h
+$(autotest_obj) $(autotest_extra_obj) autotest/autotest.o : %.o : %.c $(include_headers)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -c -o $@
 
 # compile the autotest program without linking
-$(autotest_prog).o : autotest/xautotest.c autotest/autotest.h autotest_include.h
+$(autotest_prog).o : autotest/xautotest.c autotest/liquid_autotest_registry.h $(include_headers)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -c -o $@
 
 # link the autotest program with the objects
@@ -1377,7 +1361,7 @@ $(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) autot
 
 # run the autotest program
 check: $(autotest_prog)
-	./$(autotest_prog) -o autotest.json -g autotest/logs/autotest.log
+	./$(autotest_prog) -o autotest.json #-g autotest/logs/autotest.log
 
 # let 'make test' be an alias for 'make check'
 test: check

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
 // generate random error vector with 'n' ones;
@@ -61,10 +61,7 @@ unsigned int golay2412_generate_error_vector(unsigned int _n)
     return e;
 }
 
-//
-// AUTOTEST: Golay(24,12) codec
-//
-void autotest_golay2412_codec()
+LIQUID_AUTOTEST(golay2412_codec,"test Golay(24,12) codec","",0.1)
 {
     unsigned int num_trials=50; // number of symbol trials
     unsigned int num_errors;    // number of errors
@@ -100,7 +97,7 @@ void autotest_golay2412_codec()
                 i, sym_org, sym_enc, sym_rec, sym_dec, count_bit_errors(sym_org, sym_dec));
 
             // validate data are the same
-            CONTEND_EQUALITY(sym_org, sym_dec);
+            LIQUID_CHECK(sym_org ==  sym_dec);
         }
     }
 }

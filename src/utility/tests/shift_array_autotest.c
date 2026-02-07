@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,13 +21,10 @@
  */
 
 #include <string.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-//
-// AUTOTEST : lshift
-//
-void autotest_lshift() {
+LIQUID_AUTOTEST(lshift,"left byte shift","",0.1) {
     // input        : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [1]   : 1110 1111 0101 1111 1010 1010 0000 0000
@@ -52,21 +49,17 @@ void autotest_lshift() {
         memmove(output, input, 4);
         liquid_lshift( output, 4, i);
         switch (i) {
-        case 0: CONTEND_SAME_DATA( output, output_test_0, 4 ); break;
-        case 1: CONTEND_SAME_DATA( output, output_test_1, 4 ); break;
-        case 2: CONTEND_SAME_DATA( output, output_test_2, 4 ); break;
-        case 3: CONTEND_SAME_DATA( output, output_test_3, 4 ); break;
-        case 4: CONTEND_SAME_DATA( output, output_test_4, 4 ); break;
+        case 0: LIQUID_CHECK_ARRAY( output, output_test_0, 4 ); break;
+        case 1: LIQUID_CHECK_ARRAY( output, output_test_1, 4 ); break;
+        case 2: LIQUID_CHECK_ARRAY( output, output_test_2, 4 ); break;
+        case 3: LIQUID_CHECK_ARRAY( output, output_test_3, 4 ); break;
+        case 4: LIQUID_CHECK_ARRAY( output, output_test_4, 4 ); break;
         default:;
         }
     }
 }
 
-
-//
-// AUTOTEST : rshift
-//
-void autotest_rshift() {
+LIQUID_AUTOTEST(rshift,"right byte shift","",0.1) {
     // input        : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [1]   : 0000 0000 1000 0001 1110 1111 0101 1111
@@ -91,21 +84,17 @@ void autotest_rshift() {
         memmove(output, input, 4);
         liquid_rshift( output, 4, i);
         switch (i) {
-        case 0: CONTEND_SAME_DATA( output, output_test_0, 4 ); break;
-        case 1: CONTEND_SAME_DATA( output, output_test_1, 4 ); break;
-        case 2: CONTEND_SAME_DATA( output, output_test_2, 4 ); break;
-        case 3: CONTEND_SAME_DATA( output, output_test_3, 4 ); break;
-        case 4: CONTEND_SAME_DATA( output, output_test_4, 4 ); break;
+        case 0: LIQUID_CHECK_ARRAY( output, output_test_0, 4 ); break;
+        case 1: LIQUID_CHECK_ARRAY( output, output_test_1, 4 ); break;
+        case 2: LIQUID_CHECK_ARRAY( output, output_test_2, 4 ); break;
+        case 3: LIQUID_CHECK_ARRAY( output, output_test_3, 4 ); break;
+        case 4: LIQUID_CHECK_ARRAY( output, output_test_4, 4 ); break;
         default:;
         }
     }
 }
 
-
-//
-// AUTOTEST : lcircshift
-//
-void autotest_lcircshift() {
+LIQUID_AUTOTEST(lcircshift,"left byte circular shift","",0.1) {
     // input        : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [1]   : 1110 1111 0101 1111 1010 1010 1000 0001
@@ -130,21 +119,17 @@ void autotest_lcircshift() {
         memmove(output, input, 4);
         liquid_lcircshift( output, 4, i);
         switch (i) {
-        case 0: CONTEND_SAME_DATA( output, output_test_0, 4 ); break;
-        case 1: CONTEND_SAME_DATA( output, output_test_1, 4 ); break;
-        case 2: CONTEND_SAME_DATA( output, output_test_2, 4 ); break;
-        case 3: CONTEND_SAME_DATA( output, output_test_3, 4 ); break;
-        case 4: CONTEND_SAME_DATA( output, output_test_4, 4 ); break;
+        case 0: LIQUID_CHECK_ARRAY( output, output_test_0, 4 ); break;
+        case 1: LIQUID_CHECK_ARRAY( output, output_test_1, 4 ); break;
+        case 2: LIQUID_CHECK_ARRAY( output, output_test_2, 4 ); break;
+        case 3: LIQUID_CHECK_ARRAY( output, output_test_3, 4 ); break;
+        case 4: LIQUID_CHECK_ARRAY( output, output_test_4, 4 ); break;
         default:;
         }
     }
 }
 
-
-//
-// AUTOTEST : rcircshift
-//
-void autotest_rcircshift() {
+LIQUID_AUTOTEST(rcircshift,"right byte circular shift","",0.1) {
     // input        : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [1]   : 1010 1010 1000 0001 1110 1111 0101 1111
@@ -169,11 +154,11 @@ void autotest_rcircshift() {
         memmove(output, input, 4);
         liquid_rcircshift( output, 4, i);
         switch (i) {
-        case 0: CONTEND_SAME_DATA( output, output_test_0, 4 ); break;
-        case 1: CONTEND_SAME_DATA( output, output_test_1, 4 ); break;
-        case 2: CONTEND_SAME_DATA( output, output_test_2, 4 ); break;
-        case 3: CONTEND_SAME_DATA( output, output_test_3, 4 ); break;
-        case 4: CONTEND_SAME_DATA( output, output_test_4, 4 ); break;
+        case 0: LIQUID_CHECK_ARRAY( output, output_test_0, 4 ); break;
+        case 1: LIQUID_CHECK_ARRAY( output, output_test_1, 4 ); break;
+        case 2: LIQUID_CHECK_ARRAY( output, output_test_2, 4 ); break;
+        case 3: LIQUID_CHECK_ARRAY( output, output_test_3, 4 ); break;
+        case 4: LIQUID_CHECK_ARRAY( output, output_test_4, 4 ); break;
         default:;
         }
     }

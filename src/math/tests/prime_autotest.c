@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-// test for small primes
-void autotest_prime_small()
+LIQUID_AUTOTEST(prime_small,"test for small primes","",0.1)
 {
     const int is_prime_array[2500] = {
 		0,0,1,1,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,1,0,1,0,0,0,1,0,0,
@@ -80,11 +79,10 @@ void autotest_prime_small()
 
 	unsigned int n;
     for (n=0; n<2500; n++)
-        CONTEND_EQUALITY(is_prime_array[n], liquid_is_prime(n));
+        LIQUID_CHECK(is_prime_array[n] ==  liquid_is_prime(n));
 }
 
-// test factoring
-void autotest_factors()
+LIQUID_AUTOTEST(factors,"unique prime factors","",0.1)
 {
     const unsigned int factors_280[5] = {2,2,2,5,7};
     const unsigned int factors_280_unique[3] = {2,5,7};
@@ -94,24 +92,24 @@ void autotest_factors()
     unsigned int i;
 
     // check factors of 280
-    CONTEND_EQUALITY(liquid_factor(280,factors,&num_factors), LIQUID_OK);
-    CONTEND_EQUALITY(num_factors, 5);
+    LIQUID_CHECK(liquid_factor(280,factors,&num_factors) ==  LIQUID_OK);
+    LIQUID_CHECK(num_factors ==  5);
     for (i=0; i<5; i++)
-        CONTEND_EQUALITY(factors_280[i], factors[i]);
+        LIQUID_CHECK(factors_280[i] ==  factors[i]);
 
     // check unique factors of 280
-    CONTEND_EQUALITY(liquid_unique_factor(280,factors,&num_factors), LIQUID_OK);
-    CONTEND_EQUALITY(num_factors, 3);
+    LIQUID_CHECK(liquid_unique_factor(280,factors,&num_factors) ==  LIQUID_OK);
+    LIQUID_CHECK(num_factors ==  3);
     for (i=0; i<3; i++)
-        CONTEND_EQUALITY(factors_280_unique[i], factors[i]);
+        LIQUID_CHECK(factors_280_unique[i] ==  factors[i]);
 }
 
-// test Euler's totient function
-void autotest_totient()
+LIQUID_AUTOTEST(totient,"Euler's totient function","",0.1)
 {
-    CONTEND_EQUALITY(liquid_totient(   9),   6)
-    CONTEND_EQUALITY(liquid_totient(  20),   8)
-    CONTEND_EQUALITY(liquid_totient( 100),  40)
-    CONTEND_EQUALITY(liquid_totient(1200), 320)
-    CONTEND_EQUALITY(liquid_totient(1201),1200)
+    LIQUID_CHECK(liquid_totient(   9) ==    6)
+    LIQUID_CHECK(liquid_totient(  20) ==    8)
+    LIQUID_CHECK(liquid_totient( 100) ==   40)
+    LIQUID_CHECK(liquid_totient(1200) ==  320)
+    LIQUID_CHECK(liquid_totient(1201) == 1200)
 }
+

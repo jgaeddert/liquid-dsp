@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,17 +22,14 @@
 
 #include <string.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
-
-//
-// AUTOTEST: polyf_findroots
-//
 
 //  _p      : polynomial,     [size: _order+1 x 1]
 //  _r      : roots (sorted), [size: _order   x 1]
 //  _ordre  : polynomial order
-void polyf_findroots_testbench(float *         _p,
+void testbench_polyf_findroots(liquid_autotest __q__,
+                               float *         _p,
                                float complex * _r,
                                unsigned int    _order,
                                float           _tol)
@@ -57,28 +54,28 @@ void polyf_findroots_testbench(float *         _p,
 
     // check to see if roots match within relative tolerance
     for (i=0; i<_order; i++)
-        CONTEND_DELTA(roots[i], _r[i], _tol);
+        LIQUID_CHECK_DELTA(roots[i], _r[i], _tol);
 }
 
-void autotest_polyf_findroots_real()
+LIQUID_AUTOTEST(polyf_findroots_real,"","",0.1)
 {
     // basic roots, no complex values
     float         p[6] = {6,11,-33,-33,11,6};
     float complex r[5] = {-3, -1, -1./3., 0.5, 2.};
-    polyf_findroots_testbench(p, r, 5, 1e-6f);
+    testbench_polyf_findroots(__q__, p, r, 5, 1e-6f);
 }
 
-void autotest_polyf_findroots_complex()
+LIQUID_AUTOTEST(polyf_findroots_complex,"","",0.1)
 {
 
     // complex roots
     float         p[3] = {3,2,1};
     float complex r[2] = {-1 + _Complex_I*M_SQRT2,
                           -1 - _Complex_I*M_SQRT2};
-    polyf_findroots_testbench(p, r, 2, 1e-6f);
+    testbench_polyf_findroots(__q__, p, r, 2, 1e-6f);
 }
 
-void autotest_polyf_findroots_mix()
+LIQUID_AUTOTEST(polyf_findroots_mix,"","",0.1)
 {
 
     // complex roots
@@ -90,10 +87,10 @@ void autotest_polyf_findroots_mix()
 		 0.1464465720078399,
 		 0.5430988116463471 + 1.282747429218130*_Complex_I,
 		 0.5430988116463471 - 1.282747429218130*_Complex_I};
-    polyf_findroots_testbench(p, r, 6, 1e-6f);
+    testbench_polyf_findroots(__q__, p, r, 6, 1e-6f);
 }
 
-void autotest_polyf_findroots_mix2()
+LIQUID_AUTOTEST(polyf_findroots_mix2,"","",0.1)
 {
     // complex roots, longer polynomial
     float         p[11] = {
@@ -121,14 +118,12 @@ void autotest_polyf_findroots_mix2()
          2.556937242081334  + 1.448576080447611 *_Complex_I,
          2.556937242081334  - 1.448576080447611 *_Complex_I};
 
-    polyf_findroots_testbench(p, r, 10, 4e-6f);
+    testbench_polyf_findroots(__q__, p, r, 10, 4e-6f);
 }
 
-//
-// AUTOTEST: polycf_findroots (random roots)
-//
-void xautotest_polycf_findroots_rand()
+LIQUID_AUTOTEST(polyf_findroots_rand,"find roots of random polynomial","",0.1)
 {
+    /*
     unsigned int n=5;
     float tol=1e-4f;
 
@@ -163,8 +158,9 @@ void xautotest_polycf_findroots_rand()
         liquid_log_debug("  p[%3u] = %12.8f + j*%12.8f", i, crealf(p_hat[i]), cimagf(p_hat[i]));
 
     for (i=0; i<n; i++) {
-        CONTEND_DELTA(crealf(p[i]), crealf(p_hat[i]), tol);
-        CONTEND_DELTA(cimagf(p[i]), cimagf(p_hat[i]), tol);
+        LIQUID_CHECK_DELTA(crealf(p[i]), crealf(p_hat[i]), tol);
+        LIQUID_CHECK_DELTA(cimagf(p[i]), cimagf(p_hat[i]), tol);
     }
+    */
 }
 

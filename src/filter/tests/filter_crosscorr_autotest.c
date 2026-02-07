@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,10 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-void autotest_filter_crosscorr_rrrf()
+LIQUID_AUTOTEST(filter_crosscorr_rrrf,"description","",0.1)
 {
     // options
     float tol = 1e-3f;
@@ -64,7 +64,7 @@ void autotest_filter_crosscorr_rrrf()
         liquid_log_debug("  rxy(%3d) = %12.8f (expected %12.8f, e=%12.4e)", lag, rxy[i], rxy_test[i], rxy[i]-rxy_test[i]);
     }
     for (i=0; i<rxy_len; i++)
-        CONTEND_DELTA( rxy[i], rxy_test[i], tol );
+        LIQUID_CHECK_DELTA( rxy[i], rxy_test[i], tol );
 
 
     // derived values
@@ -87,6 +87,6 @@ void autotest_filter_crosscorr_rrrf()
         liquid_log_debug("  ryx(%3d) = %12.8f (expected %12.8f, e=%12.4e)", lag, ryx[i], ryx_test[i], ryx[i]-ryx_test[i]);
     }
     for (i=0; i<ryx_len; i++)
-        CONTEND_DELTA( ryx[i], ryx_test[i], tol );
+        LIQUID_CHECK_DELTA( ryx[i], ryx_test[i], tol );
 }
 

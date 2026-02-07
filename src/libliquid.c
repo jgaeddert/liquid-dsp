@@ -23,8 +23,8 @@
 // Run-time library version numbers, error handling, logging
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>

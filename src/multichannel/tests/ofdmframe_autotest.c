@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 #include <math.h>
 #include <assert.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
 
@@ -58,9 +58,10 @@ int ofdmframesync_autotest_callback(float complex * _X,
 //  _num_subcarriers    :   number of subcarriers
 //  _cp_len             :   cyclic prefix length
 //  _taper_len          :   taper length
-void ofdmframesync_acquire_test(unsigned int _num_subcarriers,
-                                unsigned int _cp_len,
-                                unsigned int _taper_len)
+void testbench_ofdmframesync_acquire(liquid_autotest __q__,
+                                     unsigned int _num_subcarriers,
+                                     unsigned int _cp_len,
+                                     unsigned int _taper_len)
 {
     // options
     unsigned int M         = _num_subcarriers;  // number of subcarriers
@@ -127,7 +128,7 @@ void ofdmframesync_acquire_test(unsigned int _num_subcarriers,
     for (i=0; i<M; i++) {
         if (p[i] == OFDMFRAME_SCTYPE_DATA) {
             float e = crealf( (X[i] - X_test[i])*conjf(X[i] - X_test[i]) );
-            CONTEND_DELTA( fabsf(e), 0.0f, tol );
+            LIQUID_CHECK_DELTA( fabsf(e), 0.0f, tol );
         }
     }
 
@@ -137,87 +138,87 @@ void ofdmframesync_acquire_test(unsigned int _num_subcarriers,
 }
 
 //
-void autotest_ofdmframesync_acquire_n64()   { ofdmframesync_acquire_test(64,  8,  0); }
-void autotest_ofdmframesync_acquire_n128()  { ofdmframesync_acquire_test(128, 16, 0); }
-void autotest_ofdmframesync_acquire_n256()  { ofdmframesync_acquire_test(256, 32, 0); }
-void autotest_ofdmframesync_acquire_n512()  { ofdmframesync_acquire_test(512, 64, 0); }
+LIQUID_AUTOTEST(ofdmframesync_acquire_n64,"","",0.1)   { testbench_ofdmframesync_acquire(__q__,64,  8,  0); }
+LIQUID_AUTOTEST(ofdmframesync_acquire_n128,"","",0.1)  { testbench_ofdmframesync_acquire(__q__,128, 16, 0); }
+LIQUID_AUTOTEST(ofdmframesync_acquire_n256,"","",0.1)  { testbench_ofdmframesync_acquire(__q__,256, 32, 0); }
+LIQUID_AUTOTEST(ofdmframesync_acquire_n512,"","",0.1)  { testbench_ofdmframesync_acquire(__q__,512, 64, 0); }
 
-void autotest_ofdmframe_common_config()
+LIQUID_AUTOTEST(ofdmframe_common_config,"","",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls
-    CONTEND_INEQUALITY(LIQUID_OK, ofdmframe_init_default_sctype(0, NULL)) // too few subcarriers
+    LIQUID_CHECK(LIQUID_OK != ofdmframe_init_default_sctype(0, NULL)) // too few subcarriers
 
-    CONTEND_INEQUALITY(LIQUID_OK, ofdmframe_init_sctype_range( 0, -0.4f, +0.4f, NULL)) // too few subcarriers
-    CONTEND_INEQUALITY(LIQUID_OK, ofdmframe_init_sctype_range(64, -0.7f, +0.4f, NULL)) // frequency out of range
-    CONTEND_INEQUALITY(LIQUID_OK, ofdmframe_init_sctype_range(64, -0.4f, +0.7f, NULL)) // frequency out of range
-    CONTEND_INEQUALITY(LIQUID_OK, ofdmframe_init_sctype_range(64, -0.2f, -0.3f, NULL)) // frequency out of range
-    CONTEND_INEQUALITY(LIQUID_OK, ofdmframe_init_sctype_range(64,  0.3f,  0.2f, NULL)) // frequency out of range
-    CONTEND_INEQUALITY(LIQUID_OK, ofdmframe_init_sctype_range(64, -0.02f,+0.02f,NULL)) // too few effective subcarriers
+    LIQUID_CHECK(LIQUID_OK != ofdmframe_init_sctype_range( 0, -0.4f, +0.4f, NULL)) // too few subcarriers
+    LIQUID_CHECK(LIQUID_OK != ofdmframe_init_sctype_range(64, -0.7f, +0.4f, NULL)) // frequency out of range
+    LIQUID_CHECK(LIQUID_OK != ofdmframe_init_sctype_range(64, -0.4f, +0.7f, NULL)) // frequency out of range
+    LIQUID_CHECK(LIQUID_OK != ofdmframe_init_sctype_range(64, -0.2f, -0.3f, NULL)) // frequency out of range
+    LIQUID_CHECK(LIQUID_OK != ofdmframe_init_sctype_range(64,  0.3f,  0.2f, NULL)) // frequency out of range
+    LIQUID_CHECK(LIQUID_OK != ofdmframe_init_sctype_range(64, -0.02f,+0.02f,NULL)) // too few effective subcarriers
 
     // generate valid subcarrier allocation
     unsigned int M = 120;
     unsigned char p[M];
 
     // default subcarrier allocation
-    CONTEND_EQUALITY(LIQUID_OK, ofdmframe_init_default_sctype(M, p))
-    CONTEND_EQUALITY(LIQUID_OK, ofdmframe_validate_sctype(p, M, NULL, NULL, NULL))
+    LIQUID_CHECK(LIQUID_OK == ofdmframe_init_default_sctype(M, p))
+    LIQUID_CHECK(LIQUID_OK == ofdmframe_validate_sctype(p, M, NULL, NULL, NULL))
 
     // subcarrier allocation within an occupied frequency range
-    CONTEND_EQUALITY(LIQUID_OK, ofdmframe_init_sctype_range(M, -0.4f,+0.4f,p))
-    CONTEND_EQUALITY(LIQUID_OK, ofdmframe_validate_sctype(p, M, NULL, NULL, NULL))
+    LIQUID_CHECK(LIQUID_OK == ofdmframe_init_sctype_range(M, -0.4f,+0.4f,p))
+    LIQUID_CHECK(LIQUID_OK == ofdmframe_validate_sctype(p, M, NULL, NULL, NULL))
 
     // invalid subcarrier allocations
     unsigned int i;
     for (i=0; i<M; i++)
         p[i] = OFDMFRAME_SCTYPE_NULL;
-    CONTEND_INEQUALITY(LIQUID_OK, ofdmframe_validate_sctype(p, M, NULL, NULL, NULL))
+    LIQUID_CHECK(LIQUID_OK != ofdmframe_validate_sctype(p, M, NULL, NULL, NULL))
 
     p[0] = OFDMFRAME_SCTYPE_PILOT;
-    CONTEND_INEQUALITY(LIQUID_OK, ofdmframe_validate_sctype(p, M, NULL, NULL, NULL))
+    LIQUID_CHECK(LIQUID_OK != ofdmframe_validate_sctype(p, M, NULL, NULL, NULL))
 
     p[1] = OFDMFRAME_SCTYPE_DATA;
-    CONTEND_INEQUALITY(LIQUID_OK, ofdmframe_validate_sctype(p, M, NULL, NULL, NULL))
+    LIQUID_CHECK(LIQUID_OK != ofdmframe_validate_sctype(p, M, NULL, NULL, NULL))
     _liquid_error_downgrade_disable();
 }
 
-void autotest_ofdmframegen_config()
+LIQUID_AUTOTEST(ofdmframegen_config,"","",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls
-    //CONTEND_ISNULL(ofdmframegen_copy(NULL));
-    CONTEND_ISNULL(ofdmframegen_create( 0, 16, 4, NULL)) // too few subcarriers
-    CONTEND_ISNULL(ofdmframegen_create( 7, 16, 4, NULL)) // too few subcarriers
-    CONTEND_ISNULL(ofdmframegen_create(65, 16, 4, NULL)) // odd-length subcarriers
-    CONTEND_ISNULL(ofdmframegen_create(64, 66, 4, NULL)) // cyclic prefix length too large
-    CONTEND_ISNULL(ofdmframegen_create(64, 16,24, NULL)) // taper length greater than cyclic prefix
+    //LIQUID_CHECK(NULL ==ofdmframegen_copy(NULL));
+    LIQUID_CHECK(NULL ==ofdmframegen_create( 0, 16, 4, NULL)) // too few subcarriers
+    LIQUID_CHECK(NULL ==ofdmframegen_create( 7, 16, 4, NULL)) // too few subcarriers
+    LIQUID_CHECK(NULL ==ofdmframegen_create(65, 16, 4, NULL)) // odd-length subcarriers
+    LIQUID_CHECK(NULL ==ofdmframegen_create(64, 66, 4, NULL)) // cyclic prefix length too large
+    LIQUID_CHECK(NULL ==ofdmframegen_create(64, 16,24, NULL)) // taper length greater than cyclic prefix
 
     // create proper object and test configurations
     ofdmframegen q = ofdmframegen_create(64, 16, 4, NULL);
 
-    CONTEND_EQUALITY(LIQUID_OK, ofdmframegen_print(q))
+    LIQUID_CHECK(LIQUID_OK == ofdmframegen_print(q))
 
     ofdmframegen_destroy(q);
     _liquid_error_downgrade_disable();
 }
 
-void autotest_ofdmframesync_config()
+LIQUID_AUTOTEST(ofdmframesync_config,"","",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls
-    //CONTEND_ISNULL(ofdmframesync_copy(NULL));
-    CONTEND_ISNULL(ofdmframesync_create( 0, 16, 4, NULL, NULL, NULL)) // too few subcarriers
-    CONTEND_ISNULL(ofdmframesync_create( 7, 16, 4, NULL, NULL, NULL)) // too few subcarriers
-    CONTEND_ISNULL(ofdmframesync_create(65, 16, 4, NULL, NULL, NULL)) // odd-length subcarriers
-    CONTEND_ISNULL(ofdmframesync_create(64, 66, 4, NULL, NULL, NULL)) // cyclic prefix length too large
-    CONTEND_ISNULL(ofdmframesync_create(64, 16,24, NULL, NULL, NULL)) // taper length greater than cyclic prefix
+    //LIQUID_CHECK(NULL ==ofdmframesync_copy(NULL));
+    LIQUID_CHECK(NULL ==ofdmframesync_create( 0, 16, 4, NULL, NULL, NULL)) // too few subcarriers
+    LIQUID_CHECK(NULL ==ofdmframesync_create( 7, 16, 4, NULL, NULL, NULL)) // too few subcarriers
+    LIQUID_CHECK(NULL ==ofdmframesync_create(65, 16, 4, NULL, NULL, NULL)) // odd-length subcarriers
+    LIQUID_CHECK(NULL ==ofdmframesync_create(64, 66, 4, NULL, NULL, NULL)) // cyclic prefix length too large
+    LIQUID_CHECK(NULL ==ofdmframesync_create(64, 16,24, NULL, NULL, NULL)) // taper length greater than cyclic prefix
 
     // create proper object and test configurations
     ofdmframesync q = ofdmframesync_create(64, 16, 4, NULL, NULL, NULL);
 
-    CONTEND_EQUALITY(LIQUID_OK, ofdmframesync_print(q))
-    CONTEND_EQUALITY(        0, ofdmframesync_is_frame_open(q))
-    CONTEND_EQUALITY(LIQUID_OK, ofdmframesync_set_cfo(q,0.0f))
+    LIQUID_CHECK(LIQUID_OK == ofdmframesync_print(q))
+    LIQUID_CHECK(        0 ==  ofdmframesync_is_frame_open(q))
+    LIQUID_CHECK(LIQUID_OK == ofdmframesync_set_cfo(q,0.0f))
 
     ofdmframesync_destroy(q);
     _liquid_error_downgrade_disable();

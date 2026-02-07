@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +25,10 @@
 //
 
 #include <stdlib.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-// floating point
-void autotest_cbufferf()
+LIQUID_AUTOTEST(cbufferf,"floating-point cbuffer","",0.1)
 {
     // input array of values
     float v[] = {1, 2, 3, 4, 5, 6, 7, 8};
@@ -46,18 +45,18 @@ void autotest_cbufferf()
     // create new circular buffer with 10 elements
     cbufferf q = cbufferf_create(10);
     // cbuffer: { <empty> }
-    CONTEND_TRUE( cbufferf_is_empty(q) );
+    LIQUID_CHECK( cbufferf_is_empty(q) );
 
     // part 1: write 4 elements to the buffer
     cbufferf_write(q, v, 4);
     // cbuffer: {1 2 3 4}
-    CONTEND_FALSE( cbufferf_is_empty(q) );
+    LIQUID_CHECK(! cbufferf_is_empty(q) );
 
     // part 2: try to read 4 elements
     num_requested = 4;
     cbufferf_read(q, num_requested, &r, &num_read);
-    CONTEND_EQUALITY(num_read,4);
-    CONTEND_SAME_DATA(r,test1,4*sizeof(float));
+    LIQUID_CHECK(num_read == 4);
+    LIQUID_CHECK_ARRAY(r,test1,4*sizeof(float));
 
     // part 3: release two elements, write 8 more, read 10
     cbufferf_release(q, 2);
@@ -66,23 +65,23 @@ void autotest_cbufferf()
     // cbuffer: {3 4 1 2 3 4 5 6 7 8}
     num_requested = 10;
     cbufferf_read(q, num_requested, &r, &num_read);
-    CONTEND_EQUALITY(num_read,10);
-    CONTEND_SAME_DATA(r,test2,10*sizeof(float));
+    LIQUID_CHECK(num_read == 10);
+    LIQUID_CHECK_ARRAY(r,test2,10*sizeof(float));
 
     // part 4: pop single element from buffer
-    CONTEND_EQUALITY( cbufferf_size(q), 10    );
+    LIQUID_CHECK( cbufferf_size(q) ==  10    );
     cbufferf_pop(q, r);
     // cbuffer: {4 1 2 3 4 5 6 7 8}
-    CONTEND_EQUALITY( cbufferf_size(q),  9    );
-    CONTEND_EQUALITY( *r,                3.0f );
+    LIQUID_CHECK( cbufferf_size(q) ==   9    );
+    LIQUID_CHECK( *r ==                 3.0f );
 
     // part 5: release three elements, and try reading 10
     cbufferf_release(q, 3);
     // cbuffer: {3 4 5 6 7 8}
     num_requested = 10;
     cbufferf_read(q, num_requested, &r, &num_read);
-    CONTEND_EQUALITY(num_read,6);
-    CONTEND_SAME_DATA(r,test3,6*sizeof(float));
+    LIQUID_CHECK(num_read == 6);
+    LIQUID_CHECK_ARRAY(r,test3,6*sizeof(float));
 
     // part 6: test pushing multiple elements
     cbufferf_push(q, 1);
@@ -91,22 +90,21 @@ void autotest_cbufferf()
     // cbuffer: {3 4 5 6 7 8 1 2 3}
     num_requested = 10;
     cbufferf_read(q, num_requested, &r, &num_read);
-    CONTEND_EQUALITY(num_read,9);
-    CONTEND_SAME_DATA(r,test4,9*sizeof(float));
+    LIQUID_CHECK(num_read == 9);
+    LIQUID_CHECK_ARRAY(r,test4,9*sizeof(float));
 
     // part 7: add one more element; buffer should be full
-    CONTEND_FALSE( cbufferf_is_full(q) );
+    LIQUID_CHECK(! cbufferf_is_full(q) );
     cbufferf_push(q, 1);
     // cbuffer: {3 4 5 6 7 8 1 2 3 1}
-    CONTEND_TRUE( cbufferf_is_full(q) );
+    LIQUID_CHECK( cbufferf_is_full(q) );
 
     // memory leaks are evil
     cbufferf_destroy(q);
 }
 
 
-// complex float complexing point
-void autotest_cbuffercf()
+LIQUID_AUTOTEST(cbuffercf,"complex float complexing point cbuffer","",0.1)
 {
     // input array of values
     float complex v[] = {1.0 - 1.0 * _Complex_I,
@@ -155,18 +153,18 @@ void autotest_cbuffercf()
     // create new circular buffer with 10 elements
     cbuffercf q = cbuffercf_create(10);
     // cbuffer: { <empty> }
-    CONTEND_TRUE( cbuffercf_is_empty(q) );
+    LIQUID_CHECK( cbuffercf_is_empty(q) );
 
     // part 1: write 4 elements to the buffer
     cbuffercf_write(q, v, 4);
     // cbuffer: {1 2 3 4}
-    CONTEND_FALSE( cbuffercf_is_empty(q) );
+    LIQUID_CHECK(! cbuffercf_is_empty(q) );
 
     // part 2: try to read 4 elements
     num_requested = 4;
     cbuffercf_read(q, num_requested, &r, &num_read);
-    CONTEND_EQUALITY(num_read,4);
-    CONTEND_SAME_DATA(r,test1,4*sizeof(float complex));
+    LIQUID_CHECK(num_read == 4);
+    LIQUID_CHECK_ARRAY(r,test1,4*sizeof(float complex));
 
     // part 3: release two elements, write 8 more, read 10
     cbuffercf_release(q, 2);
@@ -175,24 +173,24 @@ void autotest_cbuffercf()
     // cbuffer: {3 4 1 2 3 4 5 6 7 8}
     num_requested = 10;
     cbuffercf_read(q, num_requested, &r, &num_read);
-    CONTEND_EQUALITY(num_read,10);
-    CONTEND_SAME_DATA(r,test2,10*sizeof(float complex));
+    LIQUID_CHECK(num_read == 10);
+    LIQUID_CHECK_ARRAY(r,test2,10*sizeof(float complex));
 
     // part 4: pop single element from buffer
-    CONTEND_EQUALITY( cbuffercf_size(q), 10    );
+    LIQUID_CHECK( cbuffercf_size(q) ==  10    );
     cbuffercf_pop(q, r);
     // cbuffer: {4 1 2 3 4 5 6 7 8}
-    CONTEND_EQUALITY( cbuffercf_size(q),  9    );
-    CONTEND_EQUALITY( crealf(*r),         3.0f );
-    CONTEND_EQUALITY( cimagf(*r),        -3.0f );
+    LIQUID_CHECK( cbuffercf_size(q) ==   9    );
+    LIQUID_CHECK( crealf(*r) ==          3.0f );
+    LIQUID_CHECK( cimagf(*r) ==         -3.0f );
 
     // part 5: release three elements, and try reading 10
     cbuffercf_release(q, 3);
     // cbuffer: {3 4 5 6 7 8}
     num_requested = 10;
     cbuffercf_read(q, num_requested, &r, &num_read);
-    CONTEND_EQUALITY(num_read,6);
-    CONTEND_SAME_DATA(r,test3,6*sizeof(float complex));
+    LIQUID_CHECK(num_read == 6);
+    LIQUID_CHECK_ARRAY(r,test3,6*sizeof(float complex));
 
     // part 6: test pushing multiple elements
     cbuffercf_push(q, 1.0 - 1.0 * _Complex_I);
@@ -201,21 +199,20 @@ void autotest_cbuffercf()
     // cbuffer: {3 4 5 6 7 8 1 2 3}
     num_requested = 10;
     cbuffercf_read(q, num_requested, &r, &num_read);
-    CONTEND_EQUALITY(num_read,9);
-    CONTEND_SAME_DATA(r,test4,9*sizeof(float complex));
+    LIQUID_CHECK(num_read == 9);
+    LIQUID_CHECK_ARRAY(r,test4,9*sizeof(float complex));
 
     // part 7: add one more element; buffer should be full
-    CONTEND_FALSE( cbuffercf_is_full(q) );
+    LIQUID_CHECK(! cbuffercf_is_full(q) );
     cbuffercf_push(q, 1.0 - 1.0 * _Complex_I);
     // cbuffer: {3 4 5 6 7 8 1 2 3 1}
-    CONTEND_TRUE( cbuffercf_is_full(q) );
+    LIQUID_CHECK( cbuffercf_is_full(q) );
 
     // memory leaks are evil
     cbuffercf_destroy(q);
 }
 
-// test general flow
-void autotest_cbufferf_flow()
+LIQUID_AUTOTEST(cbufferf_flow,"test general cbuffer flow","",0.1)
 {
     // options
     unsigned int max_size     =   48; // maximum number of elements in buffer
@@ -288,14 +285,13 @@ void autotest_cbufferf_flow()
     }
     
     // ensure test was successful
-    CONTEND_EXPRESSION(success == 1);
+    LIQUID_CHECK(success == 1);
 
     // destroy object
     cbufferf_destroy(q);
 }
 
-// test invalid configurations, etc.
-void autotest_cbufferf_config()
+LIQUID_AUTOTEST(cbufferf_config,"test cbuffer configurations","",0.1)
 {
     _liquid_error_downgrade_enable();
     // options
@@ -307,33 +303,32 @@ void autotest_cbufferf_config()
     cbufferf q = cbufferf_create_max(max_size, max_read);
 
     // ensure test was successful
-    CONTEND_EQUALITY(cbufferf_max_size(q), max_size);
-    CONTEND_EQUALITY(cbufferf_max_read(q), max_read);
+    LIQUID_CHECK(cbufferf_max_size(q) ==  max_size);
+    LIQUID_CHECK(cbufferf_max_read(q) ==  max_read);
 
     // fill buffer with zeros
     while (cbufferf_space_available(q))
-        CONTEND_EQUALITY(cbufferf_push(q,0), LIQUID_OK);
+        LIQUID_CHECK(cbufferf_push(q,0) ==  LIQUID_OK);
 
     // ensure no errors with printing
-    CONTEND_EQUALITY(cbufferf_print(q), LIQUID_OK);
+    LIQUID_CHECK(cbufferf_print(q) ==  LIQUID_OK);
 
     // buffer full; cannot write more
-    CONTEND_INEQUALITY(cbufferf_push(q,0), LIQUID_OK);
+    LIQUID_CHECK(cbufferf_push(q,0) !=  LIQUID_OK);
 
     // reset
     cbufferf_reset(q);
 
     // buffer empty; cannot pop element or release any values
-    CONTEND_INEQUALITY(cbufferf_pop    (q,&value), LIQUID_OK);
-    CONTEND_INEQUALITY(cbufferf_release(q,1),      LIQUID_OK);
+    LIQUID_CHECK(cbufferf_pop    (q,&value) !=  LIQUID_OK);
+    LIQUID_CHECK(cbufferf_release(q,1) !=       LIQUID_OK);
 
     // destroy object
     cbufferf_destroy(q);
     _liquid_error_downgrade_disable();
 }
 
-// test copy
-void autotest_cbuffer_copy()
+LIQUID_AUTOTEST(cbuffer_copy,"test cbuffer copy","",0.1)
 {
     // create base object
     unsigned int wlen = 20;
@@ -360,7 +355,7 @@ void autotest_cbuffer_copy()
     cbuffercf_release(q1, 4);
 
     // check object values
-    CONTEND_EQUALITY(cbuffercf_space_available(q0),cbuffercf_space_available(q1));
+    LIQUID_CHECK(cbuffercf_space_available(q0) == cbuffercf_space_available(q1));
 
     // read buffers and compare
     unsigned int n = cbuffercf_space_available(q0), nr0, nr1;
@@ -368,9 +363,9 @@ void autotest_cbuffer_copy()
     cbuffercf_read(q0, n, &r0, &nr0);
     cbuffercf_read(q1, n, &r1, &nr1);
     // check that number of elements read is the same
-    CONTEND_EQUALITY(nr0, nr1);
+    LIQUID_CHECK(nr0 ==  nr1);
     // check that values are the same
-    CONTEND_SAME_DATA(r0, r1, nr0*sizeof(float complex));
+    LIQUID_CHECK_ARRAY(r0, r1, nr0*sizeof(float complex));
 
     // destroy objects
     cbuffercf_destroy(q0);

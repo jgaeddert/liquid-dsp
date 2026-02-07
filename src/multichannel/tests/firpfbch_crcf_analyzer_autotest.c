@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,13 +21,10 @@
  */
 
 #include <assert.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-//
-// AUTOTEST: validate analysis correctness
-//
-void autotest_firpfbch_crcf_analysis()
+LIQUID_AUTOTEST(firpfbch_crcf_analysis,"validate firpfbch analysis correctness","",0.1)
 {
     float tol = 1e-4f;              // error tolerance
     unsigned int num_channels=4;    // number of channels
@@ -130,11 +127,9 @@ void autotest_firpfbch_crcf_analysis()
     // compare results
     for (i=0; i<num_symbols; i++) {
         for (j=0; j<num_channels; j++) {
-            CONTEND_DELTA( crealf(Y0[i][j]), crealf(Y1[i][j]), tol );
-            CONTEND_DELTA( cimagf(Y0[i][j]), cimagf(Y1[i][j]), tol );
+            LIQUID_CHECK_DELTA( crealf(Y0[i][j]), crealf(Y1[i][j]), tol );
+            LIQUID_CHECK_DELTA( cimagf(Y0[i][j]), cimagf(Y1[i][j]), tol );
         }
     }
-
 }
-
 

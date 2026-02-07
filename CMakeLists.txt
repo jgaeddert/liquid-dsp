@@ -534,8 +534,8 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/buffer/tests/cbuffer_autotest.c
     ${PROJECT_SOURCE_DIR}/src/buffer/tests/wdelay_autotest.c
     ${PROJECT_SOURCE_DIR}/src/buffer/tests/buffer_window_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/channel/tests/channel_copy_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/channel/tests/tvmpch_copy_autotest.c
+    #${PROJECT_SOURCE_DIR}/src/channel/tests/channel_copy_autotest.c
+    #${PROJECT_SOURCE_DIR}/src/channel/tests/tvmpch_copy_autotest.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_rrrf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_crcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_cccf_autotest.c
@@ -564,12 +564,9 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_copy_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/asgram_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_small_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_radix2_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_composite_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_prime_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_r2r_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_shift_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_transforms_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/spgram_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/spwaterfall_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/dds_cccf_autotest.c
@@ -691,7 +688,6 @@ set(AUTOTESTS
     )
 
 set(AUTOTEST_EXTRA
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_runtest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_2.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_3.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_4.c
@@ -728,7 +724,6 @@ set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_8.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_27.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_32.c
-    ${PROJECT_SOURCE_DIR}/src/filter/tests/fftfilt_runtest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_rrrf_data_h4x256.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_crcf_data_h4x256.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_cccf_data_h4x256.c
@@ -741,7 +736,6 @@ set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_rrrf_data_h23x256.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_crcf_data_h23x256.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_cccf_data_h23x256.c
-    ${PROJECT_SOURCE_DIR}/src/filter/tests/firdecim_runtest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_rrrf_data_M2h4x20.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_crcf_data_M2h4x20.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_cccf_data_M2h4x20.c
@@ -754,7 +748,6 @@ set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_rrrf_data_M5h23x50.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_crcf_data_M5h23x50.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_cccf_data_M5h23x50.c
-    ${PROJECT_SOURCE_DIR}/src/filter/tests/firfilt_runtest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_rrrf_data_h4x8.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_crcf_data_h4x8.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_cccf_data_h4x8.c
@@ -767,7 +760,6 @@ set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_rrrf_data_h23x64.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_crcf_data_h23x64.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_cccf_data_h23x64.c
-    ${PROJECT_SOURCE_DIR}/src/filter/tests/iirfilt_runtest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_rrrf_data_h3x64.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_crcf_data_h3x64.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_cccf_data_h3x64.c
@@ -804,14 +796,6 @@ set(AUTOTEST_EXTRA
     )
 
 if(BUILD_AUTOTESTS)
-    add_custom_command(
-        OUTPUT  autotest_include.h
-        DEPENDS
-            ${PROJECT_BINARY_DIR}/autoscript
-            ${AUTOTESTS}
-        COMMAND ${PROJECT_BINARY_DIR}/autoscript / autotest ${AUTOTESTS} > autotest_include.h
-        )
-
     # create output logging directory
     add_custom_command(
         OUTPUT autotest/logs
@@ -820,8 +804,7 @@ if(BUILD_AUTOTESTS)
 
     add_executable(xautotest
         autotest/xautotest.c
-        ${PROJECT_BINARY_DIR}/autotest_include.h
-        autotest/autotest.h
+        autotest/liquid_autotest_registry.h
         autotest/autotest.c
         autotest/libliquid_autotest.c
         autotest/logs

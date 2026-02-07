@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,18 +20,18 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-void autotest_window_config_errors()
+LIQUID_AUTOTEST(window_config_errors,"","",0.1)
 {
     _liquid_error_downgrade_enable();
-    CONTEND_EXPRESSION(windowcf_create(0)==NULL);
-    CONTEND_EXPRESSION(windowf_create (0)==NULL);
+    LIQUID_CHECK(windowcf_create(0)==NULL);
+    LIQUID_CHECK(windowf_create (0)==NULL);
     _liquid_error_downgrade_disable();
 }
 
-void autotest_windowf()
+LIQUID_AUTOTEST(windowf,"","",0.1)
 {
     float v[] = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
     float *r;   // reader pointer
@@ -52,7 +52,7 @@ void autotest_windowf()
     windowf w = windowf_create(10);
 
     windowf_read(w, &r);
-    CONTEND_SAME_DATA(r,test0,10*sizeof(float));
+    LIQUID_CHECK_ARRAY(r,test0,10*sizeof(float));
 
     // push 4 elements
     // 0 0 0 0 0 0 1 1 1 1
@@ -62,14 +62,14 @@ void autotest_windowf()
     windowf_push(w, 1);
 
     windowf_read(w, &r);
-    CONTEND_SAME_DATA(r,test1,10*sizeof(float));
+    LIQUID_CHECK_ARRAY(r,test1,10*sizeof(float));
 
     // push 4 more elements
     // 0 0 1 1 1 1 9 8 7 6
     windowf_write(w, v, 4);
 
     windowf_read(w, &r);
-    CONTEND_SAME_DATA(r,test2,10*sizeof(float));
+    LIQUID_CHECK_ARRAY(r,test2,10*sizeof(float));
 
     // push 4 more elements
     // 1 1 9 8 7 6 3 3 3 3
@@ -79,21 +79,21 @@ void autotest_windowf()
     windowf_push(w, 3);
 
     windowf_read(w, &r);
-    CONTEND_SAME_DATA(r,test3,10*sizeof(float));
+    LIQUID_CHECK_ARRAY(r,test3,10*sizeof(float));
 
     // test indexing operation
-    windowf_index(w, 0, &x);    CONTEND_EQUALITY(x, 1);
-    windowf_index(w, 1, &x);    CONTEND_EQUALITY(x, 1);
-    windowf_index(w, 2, &x);    CONTEND_EQUALITY(x, 9);
-    windowf_index(w, 3, &x);    CONTEND_EQUALITY(x, 8);
-    windowf_index(w, 4, &x);    CONTEND_EQUALITY(x, 7);
-    windowf_index(w, 5, &x);    CONTEND_EQUALITY(x, 6);
-    windowf_index(w, 6, &x);    CONTEND_EQUALITY(x, 3);
-    windowf_index(w, 7, &x);    CONTEND_EQUALITY(x, 3);
-    windowf_index(w, 8, &x);    CONTEND_EQUALITY(x, 3);
-    windowf_index(w, 9, &x);    CONTEND_EQUALITY(x, 3);
+    windowf_index(w, 0, &x);    LIQUID_CHECK(x ==  1);
+    windowf_index(w, 1, &x);    LIQUID_CHECK(x ==  1);
+    windowf_index(w, 2, &x);    LIQUID_CHECK(x ==  9);
+    windowf_index(w, 3, &x);    LIQUID_CHECK(x ==  8);
+    windowf_index(w, 4, &x);    LIQUID_CHECK(x ==  7);
+    windowf_index(w, 5, &x);    LIQUID_CHECK(x ==  6);
+    windowf_index(w, 6, &x);    LIQUID_CHECK(x ==  3);
+    windowf_index(w, 7, &x);    LIQUID_CHECK(x ==  3);
+    windowf_index(w, 8, &x);    LIQUID_CHECK(x ==  3);
+    windowf_index(w, 9, &x);    LIQUID_CHECK(x ==  3);
     _liquid_error_downgrade_enable();
-    CONTEND_INEQUALITY( windowf_index(w,999, &x), LIQUID_OK); // out of range
+    LIQUID_CHECK( windowf_index(w,999, &x) !=  LIQUID_OK); // out of range
     _liquid_error_downgrade_disable();
 
     // push 4 more elements
@@ -104,33 +104,33 @@ void autotest_windowf()
     windowf_push(w, 5);
 
     windowf_read(w, &r);
-    CONTEND_SAME_DATA(r,test4,10*sizeof(float));
+    LIQUID_CHECK_ARRAY(r,test4,10*sizeof(float));
 
     // recreate window (truncate to last 6 elements)
     // 3 3 5 5 5 5
     w = windowf_recreate(w,6);
     windowf_read(w, &r);
-    CONTEND_SAME_DATA(r,test5,6*sizeof(float));
+    LIQUID_CHECK_ARRAY(r,test5,6*sizeof(float));
 
     // push 2 more elements
     // 5 5 5 5 6 7
     windowf_push(w, 6);
     windowf_push(w, 7);
     windowf_read(w, &r);
-    CONTEND_SAME_DATA(r,test6,6*sizeof(float));
+    LIQUID_CHECK_ARRAY(r,test6,6*sizeof(float));
 
     // recreate window (extend to 10 elements)
     // 0 0 0 0 5 5 5 5 6 7
     w = windowf_recreate(w,10);
     windowf_read(w,&r);
-    CONTEND_SAME_DATA(r,test7,10*sizeof(float));
+    LIQUID_CHECK_ARRAY(r,test7,10*sizeof(float));
 
     // reset
     // 0 0 0 0 0 0 0 0 0 0
     windowf_reset(w);
 
     windowf_read(w, &r);
-    CONTEND_SAME_DATA(r,test8,10*sizeof(float));
+    LIQUID_CHECK_ARRAY(r,test8,10*sizeof(float));
 
     // manual print
     liquid_log_debug("manual output");
@@ -141,7 +141,7 @@ void autotest_windowf()
     windowf_destroy(w);
 }
 
-void autotest_window_copy()
+LIQUID_AUTOTEST(window_copy,"","",0.1)
 {
     // create window
     unsigned int wlen = 20;
@@ -168,7 +168,7 @@ void autotest_window_copy()
     float complex * r0, * r1;
     windowcf_read(q0, &r0);
     windowcf_read(q1, &r1);
-    CONTEND_SAME_DATA(r0, r1, wlen*sizeof(float complex));
+    LIQUID_CHECK_ARRAY(r0, r1, wlen*sizeof(float complex));
 
     // destroy objects
     windowcf_destroy(q0);

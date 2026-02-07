@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,10 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-void autotest_liquid_firdes_rcos() {
+LIQUID_AUTOTEST(liquid_firdes_rcos,"description","",0.1) {
 
     // Initialize variables
     unsigned int k=2, m=3;
@@ -53,10 +53,10 @@ void autotest_liquid_firdes_rcos() {
     // Ensure data are equal
     unsigned int i;
     for (i=0; i<13; i++)
-        CONTEND_DELTA( h[i], h0[i], 0.00001f );
+        LIQUID_CHECK_DELTA( h[i], h0[i], 0.00001f );
 }
 
-void autotest_liquid_firdes_rrcos() {
+LIQUID_AUTOTEST(liquid_firdes_rrcos,"description","",0.1) {
 
     // Initialize variables
     unsigned int k=2, m=3;
@@ -86,10 +86,11 @@ void autotest_liquid_firdes_rrcos() {
     // Ensure data are equal
     unsigned int i;
     for (i=0; i<13; i++)
-        CONTEND_DELTA( h[i], h0[i], 0.00001f );
+        LIQUID_CHECK_DELTA( h[i], h0[i], 0.00001f );
 }
 
-void test_harness_matched_filter(int          _type,
+void test_harness_matched_filter(liquid_autotest __q__,
+                                 int          _type,
                                  unsigned int _k,
                                  unsigned int _m,
                                  float        _beta,
@@ -110,8 +111,8 @@ void test_harness_matched_filter(int          _type,
     liquid_filter_isi(h,_k,_m,&isi_rms,&isi_max);
 
     // ensure ISI is sufficiently small (log scale)
-    CONTEND_LESS_THAN(20*log10f(isi_max), _tol_isi);
-    CONTEND_LESS_THAN(20*log10f(isi_rms), _tol_isi);
+    LIQUID_CHECK(20*log10f(isi_max) < _tol_isi);
+    LIQUID_CHECK(20*log10f(isi_rms) < _tol_isi);
 
     // verify spectrum response
     autotest_psd_s regions[] = {
@@ -121,16 +122,21 @@ void test_harness_matched_filter(int          _type,
     };
     char filename[256];
     sprintf(filename,"autotest/logs/firdes_%s.m", liquid_firfilt_type_str[_type][0]);
-    liquid_autotest_validate_psd_signalf(h, h_len, regions, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_psd_signalf(__q__, h, h_len, regions, 3, filename);
 }
 
 // test matched filter responses for square-root nyquist filter prototypes
-void autotest_firdes_rrcos   () { test_harness_matched_filter(LIQUID_FIRFILT_RRC,     2, 10, 0.3f, -60.0f, -40.0f); }
-void autotest_firdes_rkaiser () { test_harness_matched_filter(LIQUID_FIRFILT_RKAISER, 2, 10, 0.3f, -60.0f, -70.0f); }
-void autotest_firdes_arkaiser() { test_harness_matched_filter(LIQUID_FIRFILT_ARKAISER,2, 10, 0.3f, -60.0f, -70.0f); }
 
-void autotest_liquid_firdes_dcblock()
+LIQUID_AUTOTEST(firdes_rrcos   ,"description","",0.1)
+    { test_harness_matched_filter(__q__,LIQUID_FIRFILT_RRC,     2, 10, 0.3f, -60.0f, -40.0f); }
+
+LIQUID_AUTOTEST(firdes_rkaiser ,"description","",0.1)
+    { test_harness_matched_filter(__q__,LIQUID_FIRFILT_RKAISER, 2, 10, 0.3f, -60.0f, -70.0f); }
+
+LIQUID_AUTOTEST(firdes_arkaiser,"description","",0.1)
+    { test_harness_matched_filter(__q__,LIQUID_FIRFILT_ARKAISER,2, 10, 0.3f, -60.0f, -70.0f); }
+
+LIQUID_AUTOTEST(liquid_firdes_dcblock,"description","",0.1)
 {
     // options
     unsigned int m   = 20;      // filter semi-length
@@ -152,13 +158,13 @@ void autotest_liquid_firdes_dcblock()
 
     // evaluate at several points
     float tol = 2*powf(10.0f, -as/20.0f); // generous
-    CONTEND_DELTA(cabsf(buf_freq[       0]), 0.0f, tol);   // notch at DC
-    CONTEND_DELTA(cabsf(buf_freq[  nfft/4]), 1.0f, tol);   // pass at  Fs/4
-    CONTEND_DELTA(cabsf(buf_freq[2*nfft/4]), 1.0f, tol);   // pass at  Fs/2
-    CONTEND_DELTA(cabsf(buf_freq[3*nfft/4]), 1.0f, tol);   // pass at -Fs/4
+    LIQUID_CHECK_DELTA(cabsf(buf_freq[       0]), 0.0f, tol);   // notch at DC
+    LIQUID_CHECK_DELTA(cabsf(buf_freq[  nfft/4]), 1.0f, tol);   // pass at  Fs/4
+    LIQUID_CHECK_DELTA(cabsf(buf_freq[2*nfft/4]), 1.0f, tol);   // pass at  Fs/2
+    LIQUID_CHECK_DELTA(cabsf(buf_freq[3*nfft/4]), 1.0f, tol);   // pass at -Fs/4
 }
 
-void autotest_liquid_firdes_notch()
+LIQUID_AUTOTEST(liquid_firdes_notch,"description","",0.1)
 {
     // options
     unsigned int m   = 20;      // filter semi-length
@@ -185,116 +191,117 @@ void autotest_liquid_firdes_notch()
 
     // evaluate at several points
     float tol = 2*powf(10.0f, -as/20.0f); // generous
-    CONTEND_DELTA(cabsf(buf_freq[    i0]), 0.0f, tol);   // notch at +f0
-    CONTEND_DELTA(cabsf(buf_freq[    i1]), 0.0f, tol);   // notch at -f0
-    CONTEND_DELTA(cabsf(buf_freq[     0]), 1.0f, tol);   // pass at  0
-    CONTEND_DELTA(cabsf(buf_freq[nfft/2]), 1.0f, tol);   // pass at  Fs/2
+    LIQUID_CHECK_DELTA(cabsf(buf_freq[    i0]), 0.0f, tol);   // notch at +f0
+    LIQUID_CHECK_DELTA(cabsf(buf_freq[    i1]), 0.0f, tol);   // notch at -f0
+    LIQUID_CHECK_DELTA(cabsf(buf_freq[     0]), 1.0f, tol);   // pass at  0
+    LIQUID_CHECK_DELTA(cabsf(buf_freq[nfft/2]), 1.0f, tol);   // pass at  Fs/2
 }
 
-void autotest_liquid_getopt_str2firfilt()
+LIQUID_AUTOTEST(liquid_getopt_str2firfilt,"description","",0.1)
 {
-    CONTEND_EQUALITY( liquid_getopt_str2firfilt("unknown"   ), LIQUID_FIRFILT_UNKNOWN   );
-    CONTEND_EQUALITY( liquid_getopt_str2firfilt("kaiser"    ), LIQUID_FIRFILT_KAISER    );
-    CONTEND_EQUALITY( liquid_getopt_str2firfilt("pm"        ), LIQUID_FIRFILT_PM        );
-    CONTEND_EQUALITY( liquid_getopt_str2firfilt("rcos"      ), LIQUID_FIRFILT_RCOS      );
-    CONTEND_EQUALITY( liquid_getopt_str2firfilt("fexp"      ), LIQUID_FIRFILT_FEXP      );
-    CONTEND_EQUALITY( liquid_getopt_str2firfilt("fsech"     ), LIQUID_FIRFILT_FSECH     );
-    CONTEND_EQUALITY( liquid_getopt_str2firfilt("farcsech"  ), LIQUID_FIRFILT_FARCSECH  );
-    CONTEND_EQUALITY( liquid_getopt_str2firfilt("arkaiser"  ), LIQUID_FIRFILT_ARKAISER  );
-    CONTEND_EQUALITY( liquid_getopt_str2firfilt("rkaiser"   ), LIQUID_FIRFILT_RKAISER   );
-    CONTEND_EQUALITY( liquid_getopt_str2firfilt("rrcos"     ), LIQUID_FIRFILT_RRC       );
-    CONTEND_EQUALITY( liquid_getopt_str2firfilt("hm3"       ), LIQUID_FIRFILT_hM3       );
-    CONTEND_EQUALITY( liquid_getopt_str2firfilt("gmsktx"    ), LIQUID_FIRFILT_GMSKTX    );
-    CONTEND_EQUALITY( liquid_getopt_str2firfilt("gmskrx"    ), LIQUID_FIRFILT_GMSKRX    );
-    CONTEND_EQUALITY( liquid_getopt_str2firfilt("rfexp"     ), LIQUID_FIRFILT_RFEXP     );
-    CONTEND_EQUALITY( liquid_getopt_str2firfilt("rfsech"    ), LIQUID_FIRFILT_RFSECH    );
-    CONTEND_EQUALITY( liquid_getopt_str2firfilt("rfarcsech" ), LIQUID_FIRFILT_RFARCSECH );
+    LIQUID_CHECK( liquid_getopt_str2firfilt("unknown"   ) ==  LIQUID_FIRFILT_UNKNOWN   );
+    LIQUID_CHECK( liquid_getopt_str2firfilt("kaiser"    ) ==  LIQUID_FIRFILT_KAISER    );
+    LIQUID_CHECK( liquid_getopt_str2firfilt("pm"        ) ==  LIQUID_FIRFILT_PM        );
+    LIQUID_CHECK( liquid_getopt_str2firfilt("rcos"      ) ==  LIQUID_FIRFILT_RCOS      );
+    LIQUID_CHECK( liquid_getopt_str2firfilt("fexp"      ) ==  LIQUID_FIRFILT_FEXP      );
+    LIQUID_CHECK( liquid_getopt_str2firfilt("fsech"     ) ==  LIQUID_FIRFILT_FSECH     );
+    LIQUID_CHECK( liquid_getopt_str2firfilt("farcsech"  ) ==  LIQUID_FIRFILT_FARCSECH  );
+    LIQUID_CHECK( liquid_getopt_str2firfilt("arkaiser"  ) ==  LIQUID_FIRFILT_ARKAISER  );
+    LIQUID_CHECK( liquid_getopt_str2firfilt("rkaiser"   ) ==  LIQUID_FIRFILT_RKAISER   );
+    LIQUID_CHECK( liquid_getopt_str2firfilt("rrcos"     ) ==  LIQUID_FIRFILT_RRC       );
+    LIQUID_CHECK( liquid_getopt_str2firfilt("hm3"       ) ==  LIQUID_FIRFILT_hM3       );
+    LIQUID_CHECK( liquid_getopt_str2firfilt("gmsktx"    ) ==  LIQUID_FIRFILT_GMSKTX    );
+    LIQUID_CHECK( liquid_getopt_str2firfilt("gmskrx"    ) ==  LIQUID_FIRFILT_GMSKRX    );
+    LIQUID_CHECK( liquid_getopt_str2firfilt("rfexp"     ) ==  LIQUID_FIRFILT_RFEXP     );
+    LIQUID_CHECK( liquid_getopt_str2firfilt("rfsech"    ) ==  LIQUID_FIRFILT_RFSECH    );
+    LIQUID_CHECK( liquid_getopt_str2firfilt("rfarcsech" ) ==  LIQUID_FIRFILT_RFARCSECH );
 }
 
-void autotest_liquid_firdes_config()
+LIQUID_AUTOTEST(liquid_firdes_config,"description","",0.1)
 {
     _liquid_error_downgrade_enable();
     // check that estimate methods return zero for invalid configs
-    CONTEND_EQUALITY( estimate_req_filter_len(-0.1f, 60.0f), 0 ); // invalid transition band
-    CONTEND_EQUALITY( estimate_req_filter_len( 0.0f, 60.0f), 0 ); // invalid transition band
-    CONTEND_EQUALITY( estimate_req_filter_len( 0.6f, 60.0f), 0 ); // invalid transition band
-    CONTEND_EQUALITY( estimate_req_filter_len( 0.2f, -1.0f), 0 ); // invalid stop-band suppression
-    CONTEND_EQUALITY( estimate_req_filter_len( 0.2f,  0.0f), 0 ); // invalid stop-band suppression
+    LIQUID_CHECK( estimate_req_filter_len(-0.1f, 60.0f) ==  0 ); // invalid transition band
+    LIQUID_CHECK( estimate_req_filter_len( 0.0f, 60.0f) ==  0 ); // invalid transition band
+    LIQUID_CHECK( estimate_req_filter_len( 0.6f, 60.0f) ==  0 ); // invalid transition band
+    LIQUID_CHECK( estimate_req_filter_len( 0.2f, -1.0f) ==  0 ); // invalid stop-band suppression
+    LIQUID_CHECK( estimate_req_filter_len( 0.2f,  0.0f) ==  0 ); // invalid stop-band suppression
 
-    CONTEND_EQUALITY( estimate_req_filter_len_Kaiser(-0.1f, 60.0f), 0 ); // invalid transition band
-    CONTEND_EQUALITY( estimate_req_filter_len_Kaiser( 0.0f, 60.0f), 0 ); // invalid transition band
-    CONTEND_EQUALITY( estimate_req_filter_len_Kaiser( 0.6f, 60.0f), 0 ); // invalid transition band
-    CONTEND_EQUALITY( estimate_req_filter_len_Kaiser( 0.2f, -1.0f), 0 ); // invalid stop-band suppression
-    CONTEND_EQUALITY( estimate_req_filter_len_Kaiser( 0.2f,  0.0f), 0 ); // invalid stop-band suppression
+    LIQUID_CHECK( estimate_req_filter_len_Kaiser(-0.1f, 60.0f) ==  0 ); // invalid transition band
+    LIQUID_CHECK( estimate_req_filter_len_Kaiser( 0.0f, 60.0f) ==  0 ); // invalid transition band
+    LIQUID_CHECK( estimate_req_filter_len_Kaiser( 0.6f, 60.0f) ==  0 ); // invalid transition band
+    LIQUID_CHECK( estimate_req_filter_len_Kaiser( 0.2f, -1.0f) ==  0 ); // invalid stop-band suppression
+    LIQUID_CHECK( estimate_req_filter_len_Kaiser( 0.2f,  0.0f) ==  0 ); // invalid stop-band suppression
 
-    CONTEND_EQUALITY( estimate_req_filter_len_Herrmann(-0.1f, 60.0f), 0 ); // invalid transition band
-    CONTEND_EQUALITY( estimate_req_filter_len_Herrmann( 0.0f, 60.0f), 0 ); // invalid transition band
-    CONTEND_EQUALITY( estimate_req_filter_len_Herrmann( 0.6f, 60.0f), 0 ); // invalid transition band
-    CONTEND_EQUALITY( estimate_req_filter_len_Herrmann( 0.2f, -1.0f), 0 ); // invalid stop-band suppression
-    CONTEND_EQUALITY( estimate_req_filter_len_Herrmann( 0.2f,  0.0f), 0 ); // invalid stop-band suppression
+    LIQUID_CHECK( estimate_req_filter_len_Herrmann(-0.1f, 60.0f) ==  0 ); // invalid transition band
+    LIQUID_CHECK( estimate_req_filter_len_Herrmann( 0.0f, 60.0f) ==  0 ); // invalid transition band
+    LIQUID_CHECK( estimate_req_filter_len_Herrmann( 0.6f, 60.0f) ==  0 ); // invalid transition band
+    LIQUID_CHECK( estimate_req_filter_len_Herrmann( 0.2f, -1.0f) ==  0 ); // invalid stop-band suppression
+    LIQUID_CHECK( estimate_req_filter_len_Herrmann( 0.2f,  0.0f) ==  0 ); // invalid stop-band suppression
 
     unsigned int m     =  4;
     unsigned int h_len = 2*m+1;
     float        h[h_len];
     int          wtype = LIQUID_WINDOW_HAMMING;
-    CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len, 0.2f, 0, h), LIQUID_OK      );
-    CONTEND_EQUALITY(liquid_firdes_windowf(wtype,     0, 0.2f, 0, h), LIQUID_EICONFIG);
-    CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len,-0.1f, 0, h), LIQUID_EICONFIG);
-    CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len, 0.0f, 0, h), LIQUID_EICONFIG);
-    CONTEND_EQUALITY(liquid_firdes_windowf(wtype, h_len, 0.6f, 0, h), LIQUID_EICONFIG);
+    LIQUID_CHECK(liquid_firdes_windowf(wtype, h_len, 0.2f, 0, h) ==  LIQUID_OK      );
+    LIQUID_CHECK(liquid_firdes_windowf(wtype,     0, 0.2f, 0, h) ==  LIQUID_EICONFIG);
+    LIQUID_CHECK(liquid_firdes_windowf(wtype, h_len,-0.1f, 0, h) ==  LIQUID_EICONFIG);
+    LIQUID_CHECK(liquid_firdes_windowf(wtype, h_len, 0.0f, 0, h) ==  LIQUID_EICONFIG);
+    LIQUID_CHECK(liquid_firdes_windowf(wtype, h_len, 0.6f, 0, h) ==  LIQUID_EICONFIG);
 
-    CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.2f, 60.0f, 0.0f, h), LIQUID_OK      );
-    CONTEND_EQUALITY(liquid_firdes_kaiser(    0, 0.2f, 60.0f, 0.0f, h), LIQUID_EICONFIG);
-    CONTEND_EQUALITY(liquid_firdes_kaiser(h_len,-0.1f, 60.0f, 0.0f, h), LIQUID_EICONFIG);
-    CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.0f, 60.0f, 0.0f, h), LIQUID_EICONFIG);
-    CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.6f, 60.0f, 0.0f, h), LIQUID_EICONFIG);
-    CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.2f, 60.0f,-0.7f, h), LIQUID_EICONFIG);
-    CONTEND_EQUALITY(liquid_firdes_kaiser(h_len, 0.2f, 60.0f, 0.7f, h), LIQUID_EICONFIG);
+    LIQUID_CHECK(liquid_firdes_kaiser(h_len, 0.2f, 60.0f, 0.0f, h) ==  LIQUID_OK      );
+    LIQUID_CHECK(liquid_firdes_kaiser(    0, 0.2f, 60.0f, 0.0f, h) ==  LIQUID_EICONFIG);
+    LIQUID_CHECK(liquid_firdes_kaiser(h_len,-0.1f, 60.0f, 0.0f, h) ==  LIQUID_EICONFIG);
+    LIQUID_CHECK(liquid_firdes_kaiser(h_len, 0.0f, 60.0f, 0.0f, h) ==  LIQUID_EICONFIG);
+    LIQUID_CHECK(liquid_firdes_kaiser(h_len, 0.6f, 60.0f, 0.0f, h) ==  LIQUID_EICONFIG);
+    LIQUID_CHECK(liquid_firdes_kaiser(h_len, 0.2f, 60.0f,-0.7f, h) ==  LIQUID_EICONFIG);
+    LIQUID_CHECK(liquid_firdes_kaiser(h_len, 0.2f, 60.0f, 0.7f, h) ==  LIQUID_EICONFIG);
 
-    CONTEND_EQUALITY(liquid_firdes_notch(m, 0.2f, 60.0f, h), LIQUID_OK);
-    CONTEND_EQUALITY(liquid_firdes_notch(0, 0.2f, 60.0f, h), LIQUID_EICONFIG);
-    CONTEND_EQUALITY(liquid_firdes_notch(m,-0.7f, 60.0f, h), LIQUID_EICONFIG);
-    CONTEND_EQUALITY(liquid_firdes_notch(m, 0.7f, 60.0f, h), LIQUID_EICONFIG);
-    CONTEND_EQUALITY(liquid_firdes_notch(m, 0.2f, -8.0f, h), LIQUID_EICONFIG);
+    LIQUID_CHECK(liquid_firdes_notch(m, 0.2f, 60.0f, h) ==  LIQUID_OK);
+    LIQUID_CHECK(liquid_firdes_notch(0, 0.2f, 60.0f, h) ==  LIQUID_EICONFIG);
+    LIQUID_CHECK(liquid_firdes_notch(m,-0.7f, 60.0f, h) ==  LIQUID_EICONFIG);
+    LIQUID_CHECK(liquid_firdes_notch(m, 0.7f, 60.0f, h) ==  LIQUID_EICONFIG);
+    LIQUID_CHECK(liquid_firdes_notch(m, 0.2f, -8.0f, h) ==  LIQUID_EICONFIG);
 
-    CONTEND_EQUALITY(liquid_firdes_prototype(LIQUID_FIRFILT_UNKNOWN,2,2,0.3f,0.0f,h),LIQUID_EICONFIG);
+    LIQUID_CHECK(liquid_firdes_prototype(LIQUID_FIRFILT_UNKNOWN,2,2,0.3f,0.0f,h) == LIQUID_EICONFIG);
 
     // test energy calculation configuration; design proper filter
     liquid_firdes_windowf(wtype, h_len, 0.2f, 0, h);
-    CONTEND_EQUALITY(liquid_filter_energy(h,h_len,-0.1f,1200), 0.0f);
-    CONTEND_EQUALITY(liquid_filter_energy(h,h_len, 0.7f,1200), 0.0f);
-    CONTEND_EQUALITY(liquid_filter_energy(h,h_len, 0.3f,   0), 0.0f);
+    LIQUID_CHECK(liquid_filter_energy(h,h_len,-0.1f,1200) ==  0.0f);
+    LIQUID_CHECK(liquid_filter_energy(h,h_len, 0.7f,1200) ==  0.0f);
+    LIQUID_CHECK(liquid_filter_energy(h,h_len, 0.3f,   0) ==  0.0f);
 
-    CONTEND_EQUALITY( liquid_getopt_str2firfilt("unknown-filter-type" ), LIQUID_FIRFILT_UNKNOWN);
+    LIQUID_CHECK( liquid_getopt_str2firfilt("unknown-filter-type" ) ==  LIQUID_FIRFILT_UNKNOWN);
     _liquid_error_downgrade_disable();
 }
 
-void autotest_liquid_firdes_estimate()
+LIQUID_AUTOTEST(liquid_firdes_estimate,"description","",0.1)
 {
     float tol = 0.05f; // dB
 
     // Kaiser's method
-    CONTEND_DELTA( estimate_req_filter_len_Kaiser( 0.05f, 60.0f), 73.00140381, tol);
-    CONTEND_DELTA( estimate_req_filter_len_Kaiser( 0.10f, 60.0f), 36.50070190, tol);
-    CONTEND_DELTA( estimate_req_filter_len_Kaiser( 0.20f, 60.0f), 18.25035095, tol);
-    CONTEND_DELTA( estimate_req_filter_len_Kaiser( 0.30f, 60.0f), 12.16689968, tol);
-    CONTEND_DELTA( estimate_req_filter_len_Kaiser( 0.40f, 60.0f),  9.12517548, tol);
-    CONTEND_DELTA( estimate_req_filter_len_Kaiser( 0.05f, 80.0f),101.05189514, tol);
-    CONTEND_DELTA( estimate_req_filter_len_Kaiser( 0.05f,100.0f),129.10238647, tol);
-    CONTEND_DELTA( estimate_req_filter_len_Kaiser( 0.05f,120.0f),157.15287781, tol);
+    LIQUID_CHECK_DELTA( estimate_req_filter_len_Kaiser( 0.05f, 60.0f), 73.00140381, tol);
+    LIQUID_CHECK_DELTA( estimate_req_filter_len_Kaiser( 0.10f, 60.0f), 36.50070190, tol);
+    LIQUID_CHECK_DELTA( estimate_req_filter_len_Kaiser( 0.20f, 60.0f), 18.25035095, tol);
+    LIQUID_CHECK_DELTA( estimate_req_filter_len_Kaiser( 0.30f, 60.0f), 12.16689968, tol);
+    LIQUID_CHECK_DELTA( estimate_req_filter_len_Kaiser( 0.40f, 60.0f),  9.12517548, tol);
+    LIQUID_CHECK_DELTA( estimate_req_filter_len_Kaiser( 0.05f, 80.0f),101.05189514, tol);
+    LIQUID_CHECK_DELTA( estimate_req_filter_len_Kaiser( 0.05f,100.0f),129.10238647, tol);
+    LIQUID_CHECK_DELTA( estimate_req_filter_len_Kaiser( 0.05f,120.0f),157.15287781, tol);
 
     // Herrmann's method
-    CONTEND_DELTA( estimate_req_filter_len_Herrmann( 0.05f, 60.0f), 75.51549530, tol);
-    CONTEND_DELTA( estimate_req_filter_len_Herrmann( 0.10f, 60.0f), 37.43184662, tol);
-    CONTEND_DELTA( estimate_req_filter_len_Herrmann( 0.20f, 60.0f), 17.56412315, tol);
-    CONTEND_DELTA( estimate_req_filter_len_Herrmann( 0.30f, 60.0f), 10.20741558, tol);
-    CONTEND_DELTA( estimate_req_filter_len_Herrmann( 0.40f, 60.0f),  5.97846174, tol);
-    CONTEND_DELTA( estimate_req_filter_len_Herrmann( 0.05f, 80.0f),102.72290039, tol);
-    CONTEND_DELTA( estimate_req_filter_len_Herrmann( 0.05f,100.0f),129.88548279, tol);
-    CONTEND_DELTA( estimate_req_filter_len_Herrmann( 0.05f,120.0f),157.15287781, tol);
+    LIQUID_CHECK_DELTA( estimate_req_filter_len_Herrmann( 0.05f, 60.0f), 75.51549530, tol);
+    LIQUID_CHECK_DELTA( estimate_req_filter_len_Herrmann( 0.10f, 60.0f), 37.43184662, tol);
+    LIQUID_CHECK_DELTA( estimate_req_filter_len_Herrmann( 0.20f, 60.0f), 17.56412315, tol);
+    LIQUID_CHECK_DELTA( estimate_req_filter_len_Herrmann( 0.30f, 60.0f), 10.20741558, tol);
+    LIQUID_CHECK_DELTA( estimate_req_filter_len_Herrmann( 0.40f, 60.0f),  5.97846174, tol);
+    LIQUID_CHECK_DELTA( estimate_req_filter_len_Herrmann( 0.05f, 80.0f),102.72290039, tol);
+    LIQUID_CHECK_DELTA( estimate_req_filter_len_Herrmann( 0.05f,100.0f),129.88548279, tol);
+    LIQUID_CHECK_DELTA( estimate_req_filter_len_Herrmann( 0.05f,120.0f),157.15287781, tol);
 }
 
-void testbench_firdes_prototype(const char * _type,
+void testbench_firdes_prototype(liquid_autotest __q__,
+                                const char * _type,
                                 unsigned int _k,
                                 unsigned int _m,
                                 float        _beta,
@@ -305,7 +312,7 @@ void testbench_firdes_prototype(const char * _type,
     float        h[h_len];
     liquid_firfilt_type type = liquid_getopt_str2firfilt(_type);
     if (type == LIQUID_FIRFILT_UNKNOWN) {
-        AUTOTEST_FAIL("invalid configuration");
+        LIQUID_FAIL("invalid configuration");
         return;
     }
     liquid_firdes_prototype(type, _k, _m, _beta, 0.0f, h);
@@ -324,28 +331,28 @@ void testbench_firdes_prototype(const char * _type,
     };
     char filename[256];
     sprintf(filename,"autotest/logs/firdes_prototype_%s.m", _type);
-    liquid_autotest_validate_psd_signalf(h, h_len, regions, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_psd_signalf(__q__, h, h_len, regions, 3, filename);
 }
 
-void autotest_firdes_prototype_kaiser   (){ testbench_firdes_prototype("kaiser",   4, 12, 0.3f, 60.0f); }
-void autotest_firdes_prototype_pm       (){ testbench_firdes_prototype("pm",       4, 12, 0.3f, 80.0f); }
-void autotest_firdes_prototype_rcos     (){ testbench_firdes_prototype("rcos",     4, 12, 0.3f, 60.0f); }
-void autotest_firdes_prototype_fexp     (){ testbench_firdes_prototype("fexp",     4, 12, 0.3f, 40.0f); }
-void autotest_firdes_prototype_fsech    (){ testbench_firdes_prototype("fsech",    4, 12, 0.3f, 60.0f); }
-void autotest_firdes_prototype_farcsech (){ testbench_firdes_prototype("farcsech", 4, 12, 0.3f, 40.0f); }
-void autotest_firdes_prototype_arkaiser (){ testbench_firdes_prototype("arkaiser", 4, 12, 0.3f, 90.0f); }
-void autotest_firdes_prototype_rkaiser  (){ testbench_firdes_prototype("rkaiser",  4, 12, 0.3f, 90.0f); }
-void autotest_firdes_prototype_rrcos    (){ testbench_firdes_prototype("rrcos",    4, 12, 0.3f, 45.0f); }
-void autotest_firdes_prototype_hm3      (){ testbench_firdes_prototype("hm3",      4, 12, 0.3f,100.0f); }
-void autotest_firdes_prototype_rfexp    (){ testbench_firdes_prototype("rfexp",    4, 12, 0.3f, 30.0f); }
-void autotest_firdes_prototype_rfsech   (){ testbench_firdes_prototype("rfsech",   4, 12, 0.3f, 40.0f); }
-void autotest_firdes_prototype_rfarcsech(){ testbench_firdes_prototype("rfarcsech",4, 12, 0.3f, 30.0f); }
-// ignore gmsk filters as these weren't designed for flat pass-band responses
-void xautotest_firdes_prototype_gmsktx   (){ testbench_firdes_prototype("gmsktx",   4, 12, 0.3f, 60.0f); }
-void xautotest_firdes_prototype_gmskrx   (){ testbench_firdes_prototype("gmskrx",   4, 12, 0.3f, 60.0f); }
+LIQUID_AUTOTEST(firdes_prototype_kaiser   ,"description","",0.1){ testbench_firdes_prototype(__q__,"kaiser",   4, 12, 0.3f, 60.0f); }
+LIQUID_AUTOTEST(firdes_prototype_pm       ,"description","",0.1){ testbench_firdes_prototype(__q__,"pm",       4, 12, 0.3f, 80.0f); }
+LIQUID_AUTOTEST(firdes_prototype_rcos     ,"description","",0.1){ testbench_firdes_prototype(__q__,"rcos",     4, 12, 0.3f, 60.0f); }
+LIQUID_AUTOTEST(firdes_prototype_fexp     ,"description","",0.1){ testbench_firdes_prototype(__q__,"fexp",     4, 12, 0.3f, 40.0f); }
+LIQUID_AUTOTEST(firdes_prototype_fsech    ,"description","",0.1){ testbench_firdes_prototype(__q__,"fsech",    4, 12, 0.3f, 60.0f); }
+LIQUID_AUTOTEST(firdes_prototype_farcsech ,"description","",0.1){ testbench_firdes_prototype(__q__,"farcsech", 4, 12, 0.3f, 40.0f); }
+LIQUID_AUTOTEST(firdes_prototype_arkaiser ,"description","",0.1){ testbench_firdes_prototype(__q__,"arkaiser", 4, 12, 0.3f, 90.0f); }
+LIQUID_AUTOTEST(firdes_prototype_rkaiser  ,"description","",0.1){ testbench_firdes_prototype(__q__,"rkaiser",  4, 12, 0.3f, 90.0f); }
+LIQUID_AUTOTEST(firdes_prototype_rrcos    ,"description","",0.1){ testbench_firdes_prototype(__q__,"rrcos",    4, 12, 0.3f, 45.0f); }
+LIQUID_AUTOTEST(firdes_prototype_hm3      ,"description","",0.1){ testbench_firdes_prototype(__q__,"hm3",      4, 12, 0.3f,100.0f); }
+LIQUID_AUTOTEST(firdes_prototype_rfexp    ,"description","",0.1){ testbench_firdes_prototype(__q__,"rfexp",    4, 12, 0.3f, 30.0f); }
+LIQUID_AUTOTEST(firdes_prototype_rfsech   ,"description","",0.1){ testbench_firdes_prototype(__q__,"rfsech",   4, 12, 0.3f, 40.0f); }
+LIQUID_AUTOTEST(firdes_prototype_rfarcsech,"description","",0.1){ testbench_firdes_prototype(__q__,"rfarcsech",4, 12, 0.3f, 30.0f); }
 
-void autotest_firdes_doppler()
+// ignore gmsk filters as these weren't designed for flat pass-band responses
+//void xautotest_firdes_prototype_gmsktx   (){ testbench_firdes_prototype(__q__, "gmsktx",   4, 12, 0.3f, 60.0f); }
+//void xautotest_firdes_prototype_gmskrx   (){ testbench_firdes_prototype(__q__, "gmskrx",   4, 12, 0.3f, 60.0f); }
+
+LIQUID_AUTOTEST(firdes_doppler,"description","",0.1)
 {
     // design filter
     float        fd     = 0.2f;  // Normalized Doppler frequency
@@ -363,12 +370,11 @@ void autotest_firdes_doppler()
       {.fmin=+0.195, .fmax=+0.205, .pmin=30, .pmax=40, .test_lo=1, .test_hi=1},
       {.fmin= 0.25,  .fmax=+0.5,   .pmin= 0, .pmax= 0, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_signalf(h, h_len, regions, 5,
-        liquid_autotest_verbose ? "autotest/logs/firdes_doppler.m" : NULL);
+    liquid_autotest_validate_psd_signalf(__q__, h, h_len, regions, 5,
+        "autotest/logs/firdes_doppler.m");
 }
 
-// check frequency response (real-valued coefficients)
-void autotest_liquid_freqrespf()
+LIQUID_AUTOTEST(liquid_freqrespf,"check frequency response (real-valued coefficients)", "", 0.1)
 {
     // design filter
     unsigned int h_len = 41;
@@ -389,13 +395,12 @@ void autotest_liquid_freqrespf()
         float complex H;
         liquid_freqrespf(h, h_len, fc, &H);
 
-        CONTEND_DELTA(crealf(buf_freq[i]), crealf(H), tol);
-        CONTEND_DELTA(cimagf(buf_freq[i]), cimagf(H), tol);
+        LIQUID_CHECK_DELTA(crealf(buf_freq[i]), crealf(H), tol);
+        LIQUID_CHECK_DELTA(cimagf(buf_freq[i]), cimagf(H), tol);
     }
 }
 
-// check frequency response (complex-valued coefficients)
-void autotest_liquid_freqrespcf()
+LIQUID_AUTOTEST(liquid_freqrespcf,"check frequency response (complex-valued coefficients)", "", 0.1)
 {
     // design filter and apply complex phasor
     unsigned int i, h_len = 41;
@@ -419,8 +424,8 @@ void autotest_liquid_freqrespcf()
         float complex H;
         liquid_freqrespcf(h, h_len, fc, &H);
 
-        CONTEND_DELTA(crealf(buf_freq[i]), crealf(H), tol);
-        CONTEND_DELTA(cimagf(buf_freq[i]), cimagf(H), tol);
+        LIQUID_CHECK_DELTA(crealf(buf_freq[i]), crealf(H), tol);
+        LIQUID_CHECK_DELTA(cimagf(buf_freq[i]), cimagf(H), tol);
     }
 }
 

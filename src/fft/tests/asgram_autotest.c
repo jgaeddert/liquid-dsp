@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,10 @@
 // test ASCII spectral periodogram (asgram) objects
 
 #include <stdlib.h>
-#include "autotest/autotest.h"
 #include "liquid.internal.h"
+#include "liquid.autotest.h"
 
-// check copy method
-void autotest_asgramcf_copy()
+LIQUID_AUTOTEST(asgramcf_copy,"check copy method","",0.1)
 {
     // options
     unsigned int nfft = 70; // transform size
@@ -63,34 +62,30 @@ void autotest_asgramcf_copy()
     float pv0, pv1, pf0, pf1;
     asgramcf_execute(q0, a0, &pv0, &pf0);
     asgramcf_execute(q1, a1, &pv1, &pf1);
-    CONTEND_SAME_DATA(a0, a1, nfft*sizeof(char));
-    CONTEND_EQUALITY (pv0, pv1);
-    CONTEND_EQUALITY (pf0, pf1);
+    LIQUID_CHECK_ARRAY(a0, a1, nfft*sizeof(char));
+    LIQUID_CHECK      (pv0 == pv1);
+    LIQUID_CHECK      (pf0 == pf1);
 
     // destroy objects
     asgramcf_destroy(q0);
     asgramcf_destroy(q1);
 }
 
-void autotest_asgramcf_config()
+LIQUID_AUTOTEST(asgramcf_config,"check both valid and invalid configurations","",0.1)
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping spgram config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
+
     // check that object returns NULL for invalid configurations
-    CONTEND_ISNULL(asgramcf_create(0)); // nfft too small
-    CONTEND_ISNULL(asgramcf_create(1)); // nfft too small
+    LIQUID_CHECK( NULL == asgramcf_create(0)); // nfft too small
+    LIQUID_CHECK( NULL == asgramcf_create(1)); // nfft too small
 
     // create proper object and test configuration
     asgramcf q = asgramcf_create(64);
 
-    CONTEND_EQUALITY(LIQUID_OK, asgramcf_autoscale_enable(q));
-    CONTEND_EQUALITY(LIQUID_OK, asgramcf_autoscale_disable(q));
+    LIQUID_CHECK( LIQUID_OK == asgramcf_autoscale_enable(q));
+    LIQUID_CHECK( LIQUID_OK == asgramcf_autoscale_disable(q));
 
     asgramcf_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 

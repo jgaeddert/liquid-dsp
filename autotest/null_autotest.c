@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest.h"
+#include "liquid.autotest.h"
 
-void autotest_null()
+LIQUID_AUTOTEST(null,"pass unconditionally","",0.1)
 {
-    // pass unconditionally
-    AUTOTEST_PASS();
+    LIQUID_PASS();
 }
 

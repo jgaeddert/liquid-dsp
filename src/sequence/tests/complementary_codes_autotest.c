@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,11 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // validate autocorrelation properties of complementary codes
-void complementary_codes_test(unsigned int _n)
+void testbench_ccodes(liquid_autotest __q__, unsigned int _n)
 {
     // create and initialize codes
     bsequence a = bsequence_create(_n);
@@ -43,8 +43,8 @@ void complementary_codes_test(unsigned int _n)
         raa = 2*bsequence_correlate(a,ax) - _n;
         rbb = 2*bsequence_correlate(b,bx) - _n;
 
-        if (i==0) { CONTEND_EQUALITY(raa+rbb,(int)(2*_n)); }
-        else      { CONTEND_EQUALITY(raa+rbb,0);           }
+        if (i==0) { LIQUID_CHECK(raa+rbb == (int)(2*_n)); }
+        else      { LIQUID_CHECK(raa+rbb == 0);           }
 
         bsequence_circshift(ax);
         bsequence_circshift(bx);
@@ -57,11 +57,11 @@ void complementary_codes_test(unsigned int _n)
     bsequence_destroy(bx);
 }
 
-void autotest_complementary_code_n8()       {   complementary_codes_test(8);    }
-void autotest_complementary_code_n16()      {   complementary_codes_test(16);   }
-void autotest_complementary_code_n32()      {   complementary_codes_test(32);   }
-void autotest_complementary_code_n64()      {   complementary_codes_test(64);   }
-void autotest_complementary_code_n128()     {   complementary_codes_test(128);  }
-void autotest_complementary_code_n256()     {   complementary_codes_test(256);  }
-void autotest_complementary_code_n512()     {   complementary_codes_test(512);  }
+LIQUID_AUTOTEST(complementary_code_n8,  "","",0.1) { testbench_ccodes(__q__,  8); }
+LIQUID_AUTOTEST(complementary_code_n16, "","",0.1) { testbench_ccodes(__q__, 16); }
+LIQUID_AUTOTEST(complementary_code_n32, "","",0.1) { testbench_ccodes(__q__, 32); }
+LIQUID_AUTOTEST(complementary_code_n64, "","",0.1) { testbench_ccodes(__q__, 64); }
+LIQUID_AUTOTEST(complementary_code_n128,"","",0.1) { testbench_ccodes(__q__,128); }
+LIQUID_AUTOTEST(complementary_code_n256,"","",0.1) { testbench_ccodes(__q__,256); }
+LIQUID_AUTOTEST(complementary_code_n512,"","",0.1) { testbench_ccodes(__q__,512); }
 

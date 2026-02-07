@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,14 +22,65 @@
 
 #include <string.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-// autotest data definitions
-#include "src/matrix/tests/matrix_data.h"
+// single-precision real floating-point data
 
-// test matrix addition
-void autotest_matrixf_add()
+// add
+extern float matrixf_data_add_x[];
+extern float matrixf_data_add_y[];
+extern float matrixf_data_add_z[];
+
+// aug
+extern float matrixf_data_aug_x[];
+extern float matrixf_data_aug_y[];
+extern float matrixf_data_aug_z[];
+
+// cgsolve
+extern float matrixf_data_cgsolve_A[];
+extern float matrixf_data_cgsolve_x[];
+extern float matrixf_data_cgsolve_b[];
+
+// chol
+extern float matrixf_data_chol_A[];
+extern float matrixf_data_chol_L[];
+
+// gramschmidt
+extern float matrixf_data_gramschmidt_A[];
+extern float matrixf_data_gramschmidt_V[];
+
+// inv
+extern float matrixf_data_inv_x[];
+extern float matrixf_data_inv_y[];
+
+// linsolve
+extern float matrixf_data_linsolve_A[];
+extern float matrixf_data_linsolve_x[];
+extern float matrixf_data_linsolve_b[];
+
+// ludecomp
+extern float matrixf_data_ludecomp_A[];
+
+// mul
+extern float matrixf_data_mul_x[];
+extern float matrixf_data_mul_y[];
+extern float matrixf_data_mul_z[];
+
+// qrdecomp
+extern float matrixf_data_qrdecomp_A[];
+extern float matrixf_data_qrdecomp_Q[];
+extern float matrixf_data_qrdecomp_R[];
+
+// transmul
+extern float matrixf_data_transmul_x[];
+extern float matrixf_data_transmul_xxT[];
+extern float matrixf_data_transmul_xxH[];
+extern float matrixf_data_transmul_xTx[];
+extern float matrixf_data_transmul_xHx[];
+
+
+LIQUID_AUTOTEST(matrixf_add,"test matrix addition","",0.1)
 {
     float tol = 1e-6f;
 
@@ -44,11 +95,10 @@ void autotest_matrixf_add()
 
     unsigned int i;
     for (i=0; i<20; i++)
-        CONTEND_DELTA( matrixf_data_add_z[i], z[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_add_z[i], z[i], tol );
 }
 
-// test matrix augmentation
-void autotest_matrixf_aug()
+LIQUID_AUTOTEST(matrixf_aug,"test matrix augmentation","",0.1)
 {
     float tol = 1e-6f;
 
@@ -70,11 +120,10 @@ void autotest_matrixf_aug()
 
     unsigned int i;
     for (i=0; i<35; i++)
-        CONTEND_DELTA( matrixf_data_aug_z[i], z[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_aug_z[i], z[i], tol );
 }
 
-// conjugate gradient solver
-void autotest_matrixf_cgsolve()
+LIQUID_AUTOTEST(matrixf_cgsolve,"conjugate gradient solver","",0.1)
 {
     float tol = 0.01;  // error tolerance
 
@@ -96,11 +145,10 @@ void autotest_matrixf_cgsolve()
 
     unsigned int i;
     for (i=0; i<8; i++)
-        CONTEND_DELTA( matrixf_data_cgsolve_x[i], x[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_cgsolve_x[i], x[i], tol );
 }
 
-// Cholesky decomposition
-void autotest_matrixf_chol()
+LIQUID_AUTOTEST(matrixf_chol,"Cholesky decomposition","",0.1)
 {
     float tol = 1e-4f;  // error tolerance
 
@@ -120,11 +168,10 @@ void autotest_matrixf_chol()
 
     unsigned int i;
     for (i=0; i<16; i++)
-        CONTEND_DELTA( matrixf_data_chol_L[i], L[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_chol_L[i], L[i], tol );
 }
 
-// Gram-Schmidt Orthonormalization
-void autotest_matrixf_gramschmidt()
+LIQUID_AUTOTEST(matrixf_gramschmidt,"Gram-Schmidt Orthonormalization","",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -142,12 +189,11 @@ void autotest_matrixf_gramschmidt()
 
     unsigned int i;
     for (i=0; i<12; i++)
-        CONTEND_DELTA( matrixf_data_gramschmidt_V[i], V[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_gramschmidt_V[i], V[i], tol );
 }
 
 
-// matrix inversion
-void autotest_matrixf_inv()
+LIQUID_AUTOTEST(matrixf_inv,"matrix inversion","",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -166,11 +212,10 @@ void autotest_matrixf_inv()
 
     unsigned int i;
     for (i=0; i<25; i++)
-        CONTEND_DELTA( matrixf_data_inv_y[i], y[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_inv_y[i], y[i], tol );
 }
 
-// linsolve (solve linear system of equations)
-void autotest_matrixf_linsolve()
+LIQUID_AUTOTEST(matrixf_linsolve,"linsolve (solve linear system of equations)","",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -194,12 +239,11 @@ void autotest_matrixf_linsolve()
 
     unsigned int i;
     for (i=0; i<5; i++)
-        CONTEND_DELTA( matrixf_data_linsolve_x[i], x[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_linsolve_x[i], x[i], tol );
 }
 
 
-// L/U decomp (Crout)
-void autotest_matrixf_ludecomp_crout()
+LIQUID_AUTOTEST(matrixf_ludecomp_crout,"L/U decomp (Crout)","",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -229,22 +273,21 @@ void autotest_matrixf_ludecomp_crout()
     for (r=0; r<8; r++) {
         for (c=0; c<8; c++) {
             if (r < c) {
-                CONTEND_DELTA( matrix_access(L,8,8,r,c), 0.0f, tol );
+                LIQUID_CHECK_DELTA( matrix_access(L,8,8,r,c), 0.0f, tol );
             } else if (r==c) {
-                CONTEND_DELTA( matrix_access(U,8,8,r,c), 1.0f, tol );
+                LIQUID_CHECK_DELTA( matrix_access(U,8,8,r,c), 1.0f, tol );
             } else {
-                CONTEND_DELTA( matrix_access(U,8,8,r,c), 0.0f, tol );
+                LIQUID_CHECK_DELTA( matrix_access(U,8,8,r,c), 0.0f, tol );
             }
         }
     }
 
     unsigned int i;
     for (i=0; i<64; i++)
-        CONTEND_DELTA( matrixf_data_ludecomp_A[i], LU_test[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_ludecomp_A[i], LU_test[i], tol );
 }
 
-// L/U decomp (Doolittle)
-void autotest_matrixf_ludecomp_doolittle()
+LIQUID_AUTOTEST(matrixf_ludecomp_doolittle,"L/U decomp (Doolittle)","",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -274,22 +317,21 @@ void autotest_matrixf_ludecomp_doolittle()
     for (r=0; r<8; r++) {
         for (c=0; c<8; c++) {
             if (r < c) {
-                CONTEND_DELTA( matrix_access(L,8,8,r,c), 0.0f, tol );
+                LIQUID_CHECK_DELTA( matrix_access(L,8,8,r,c), 0.0f, tol );
             } else if (r==c) {
-                CONTEND_DELTA( matrix_access(L,8,8,r,c), 1.0f, tol );
+                LIQUID_CHECK_DELTA( matrix_access(L,8,8,r,c), 1.0f, tol );
             } else {
-                CONTEND_DELTA( matrix_access(U,8,8,r,c), 0.0f, tol );
+                LIQUID_CHECK_DELTA( matrix_access(U,8,8,r,c), 0.0f, tol );
             }
         }
     }
 
     unsigned int i;
     for (i=0; i<64; i++)
-        CONTEND_DELTA( matrixf_data_ludecomp_A[i], LU_test[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_ludecomp_A[i], LU_test[i], tol );
 }
 
-// test matrix multiplication
-void autotest_matrixf_mul()
+LIQUID_AUTOTEST(matrixf_mul,"test matrix multiplication","",0.1)
 {
     float tol = 1e-6f;
 
@@ -311,11 +353,10 @@ void autotest_matrixf_mul()
 
     unsigned int i;
     for (i=0; i<15; i++)
-        CONTEND_DELTA( matrixf_data_mul_z[i], z[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_mul_z[i], z[i], tol );
 }
 
-// Q/R decomp (Gram-Schmidt)
-void autotest_matrixf_qrdecomp()
+LIQUID_AUTOTEST(matrixf_qrdecomp,"Q/R decomp (Gram-Schmidt)","",0.1)
 {
     float tol = 1e-4f;  // error tolerance
 
@@ -351,23 +392,22 @@ void autotest_matrixf_qrdecomp()
 
     // ensure Q*R = A
     for (i=0; i<16; i++)
-        CONTEND_DELTA( matrixf_data_qrdecomp_A[i], QR_test[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_qrdecomp_A[i], QR_test[i], tol );
 
     // ensure Q*Q = I(4)
     float I4[16];
     matrixf_eye(I4,4);
     for (i=0; i<16; i++)
-        CONTEND_DELTA( QQT_test[i], I4[i], tol );
+        LIQUID_CHECK_DELTA( QQT_test[i], I4[i], tol );
 
     // ensure Q and R are correct
     for (i=0; i<16; i++) {
-        CONTEND_DELTA( matrixf_data_qrdecomp_Q[i], Q[i], tol );
-        CONTEND_DELTA( matrixf_data_qrdecomp_R[i], R[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_qrdecomp_Q[i], Q[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_qrdecomp_R[i], R[i], tol );
     }
 }
 
-// transpose/multiply
-void autotest_matrixf_transmul()
+LIQUID_AUTOTEST(matrixf_transmul,"transpose/multiply","",0.1)
 {
     float tol = 1e-4f;  // error tolerance
 
@@ -404,16 +444,16 @@ void autotest_matrixf_transmul()
     unsigned int i;
 
     for (i=0; i<25; i++)
-        CONTEND_DELTA( matrixf_data_transmul_xxT[i], xxT[i], tol);
+        LIQUID_CHECK_DELTA( matrixf_data_transmul_xxT[i], xxT[i], tol);
 
     for (i=0; i<25; i++)
-        CONTEND_DELTA( matrixf_data_transmul_xxH[i], xxH[i], tol);
+        LIQUID_CHECK_DELTA( matrixf_data_transmul_xxH[i], xxH[i], tol);
 
     for (i=0; i<16; i++)
-        CONTEND_DELTA( matrixf_data_transmul_xTx[i], xTx[i], tol);
+        LIQUID_CHECK_DELTA( matrixf_data_transmul_xTx[i], xTx[i], tol);
 
     for (i=0; i<16; i++)
-        CONTEND_DELTA( matrixf_data_transmul_xHx[i], xHx[i], tol);
+        LIQUID_CHECK_DELTA( matrixf_data_transmul_xHx[i], xHx[i], tol);
 }
 
 

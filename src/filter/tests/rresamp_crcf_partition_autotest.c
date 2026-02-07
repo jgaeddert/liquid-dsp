@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,12 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // AUTOTEST : test partitioning rational-rate resampler
-void test_harness_rresamp_crcf_part(unsigned int _P, // output size
+void testbench_rresamp_crcf_part(liquid_autotest __q__,
+                                    unsigned int _P, // output size
                                     unsigned int _Q, // input size
                                     unsigned int _m, // filter semi-length
                                     unsigned int _n) // number of blocks
@@ -67,16 +68,15 @@ void test_harness_rresamp_crcf_part(unsigned int _P, // output size
 
     // compare output buffers between normal and partitioned operation
     for (i=0; i<2*_P*_n; i++) {
-        CONTEND_DELTA( crealf(buf_out_0[i]), crealf(buf_out_1[i]), tol );
-        CONTEND_DELTA( cimagf(buf_out_0[i]), cimagf(buf_out_1[i]), tol );
+        LIQUID_CHECK_DELTA( crealf(buf_out_0[i]), crealf(buf_out_1[i]), tol );
+        LIQUID_CHECK_DELTA( cimagf(buf_out_0[i]), cimagf(buf_out_1[i]), tol );
     }
 }
 
-// actual tests
-void autotest_rresamp_crcf_part_P1_Q5() { test_harness_rresamp_crcf_part( 1, 5, 15, 20); }
-void autotest_rresamp_crcf_part_P2_Q5() { test_harness_rresamp_crcf_part( 2, 5, 15, 20); }
-void autotest_rresamp_crcf_part_P3_Q5() { test_harness_rresamp_crcf_part( 3, 5, 15, 20); }
-void autotest_rresamp_crcf_part_P6_Q5() { test_harness_rresamp_crcf_part( 6, 5, 15, 20); }
-void autotest_rresamp_crcf_part_P8_Q5() { test_harness_rresamp_crcf_part( 8, 5, 15, 20); }
-void autotest_rresamp_crcf_part_P9_Q5() { test_harness_rresamp_crcf_part( 9, 5, 15, 20); }
+LIQUID_AUTOTEST(rresamp_crcf_part_P1_Q5,"description","",0.1) { testbench_rresamp_crcf_part(__q__, 1, 5, 15, 20); }
+LIQUID_AUTOTEST(rresamp_crcf_part_P2_Q5,"description","",0.1) { testbench_rresamp_crcf_part(__q__, 2, 5, 15, 20); }
+LIQUID_AUTOTEST(rresamp_crcf_part_P3_Q5,"description","",0.1) { testbench_rresamp_crcf_part(__q__, 3, 5, 15, 20); }
+LIQUID_AUTOTEST(rresamp_crcf_part_P6_Q5,"description","",0.1) { testbench_rresamp_crcf_part(__q__, 6, 5, 15, 20); }
+LIQUID_AUTOTEST(rresamp_crcf_part_P8_Q5,"description","",0.1) { testbench_rresamp_crcf_part(__q__, 8, 5, 15, 20); }
+LIQUID_AUTOTEST(rresamp_crcf_part_P9_Q5,"description","",0.1) { testbench_rresamp_crcf_part(__q__, 9, 5, 15, 20); }
 

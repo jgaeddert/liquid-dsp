@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +22,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-// test that the complete internal state of one detector can be copied to a new
-// object, and that both return identical results when provided the same input
-void autotest_qdetector_cccf_copy()
+LIQUID_AUTOTEST(qdetector_cccf_copy,
+    "test that the complete internal state of one detector can be copied to a new "
+    "object, and that both return identical results when provided the same input",
+    "",
+    0.1)
 {
     // generate random-ish sequence
     unsigned int  sequence_len = 64;
@@ -68,17 +70,17 @@ void autotest_qdetector_cccf_copy()
             frames_detected++;
 
             // get statistics
-            CONTEND_EQUALITY(qdetector_cccf_get_tau  (q0), qdetector_cccf_get_tau  (q1));
-            CONTEND_EQUALITY(qdetector_cccf_get_gamma(q0), qdetector_cccf_get_gamma(q1));
-            CONTEND_EQUALITY(qdetector_cccf_get_dphi (q0), qdetector_cccf_get_dphi (q1));
-            CONTEND_EQUALITY(qdetector_cccf_get_phi  (q0), qdetector_cccf_get_phi  (q1));
+            LIQUID_CHECK(qdetector_cccf_get_tau  (q0) ==  qdetector_cccf_get_tau  (q1));
+            LIQUID_CHECK(qdetector_cccf_get_gamma(q0) ==  qdetector_cccf_get_gamma(q1));
+            LIQUID_CHECK(qdetector_cccf_get_dphi (q0) ==  qdetector_cccf_get_dphi (q1));
+            LIQUID_CHECK(qdetector_cccf_get_phi  (q0) ==  qdetector_cccf_get_phi  (q1));
         } else if (v0 != NULL && v1 == NULL) {
-            AUTOTEST_FAIL("frame detected on detector 0 but not detector 1");
+            LIQUID_FAIL("frame detected on detector 0 but not detector 1");
         } else if (v0 == NULL && v1 != NULL) {
-            AUTOTEST_FAIL("frame detected on detector 1 but not detector 0");
+            LIQUID_FAIL("frame detected on detector 1 but not detector 0");
         }
     }
-    CONTEND_EQUALITY(frames_detected, 1);
+    LIQUID_CHECK(frames_detected ==  1);
 
     // destroy objects
     qdetector_cccf_destroy(q0);

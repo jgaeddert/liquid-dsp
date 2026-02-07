@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-// test initialization of binary sequence on m-sequence
-void autotest_bsequence_init_msequence() {
+LIQUID_AUTOTEST(bsequence_init_msequence,"test initialization of binary sequence on m-sequence","",0.1) {
     // create and initialize m-sequence
     msequence ms = msequence_create_default(4);
 
@@ -33,7 +32,7 @@ void autotest_bsequence_init_msequence() {
     bs = bsequence_create( msequence_get_length(ms) );
     bsequence_init_msequence(bs, ms);
 
-    CONTEND_EQUALITY( bsequence_get_length(bs), msequence_get_length(ms) )
+    LIQUID_CHECK( bsequence_get_length(bs) ==  msequence_get_length(ms) )
 
     // clean up memory
     bsequence_destroy(bs);
@@ -41,7 +40,7 @@ void autotest_bsequence_init_msequence() {
 }
 
 // helper function to test auto-correlation properties of m-sequence
-void msequence_test_autocorrelation(unsigned int _m)
+void testbench_msequence_autocorrelation(liquid_autotest __q__, unsigned int _m)
 {
     // create and initialize m-sequence
     msequence ms = msequence_create_default(_m);
@@ -56,20 +55,20 @@ void msequence_test_autocorrelation(unsigned int _m)
     bsequence_init_msequence(bs2, ms);
 
     // ensure sequences are the same length
-    CONTEND_EQUALITY( bsequence_get_length(bs1), n )
-    CONTEND_EQUALITY( bsequence_get_length(bs2), n )
+    LIQUID_CHECK( bsequence_get_length(bs1) ==  n )
+    LIQUID_CHECK( bsequence_get_length(bs2) ==  n )
 
     // when sequences are aligned, autocorrelation is equal to length
     int rxy;
     rxy = bsequence_correlate(bs1, bs2);
-    CONTEND_EQUALITY( rxy, (int)n )
+    LIQUID_CHECK( rxy ==  (int)n )
 
     // when sequences are misaligned, autocorrelation is equal to -1
     unsigned int i;
     for (i=0; i<n-1; i++) {
         bsequence_push(bs2, msequence_advance(ms));
         rxy = 2*bsequence_correlate(bs1, bs2) - n;
-        CONTEND_EQUALITY( rxy, -1 );
+        LIQUID_CHECK( rxy ==  -1 );
     }
 
     // clean up memory
@@ -78,20 +77,20 @@ void msequence_test_autocorrelation(unsigned int _m)
     msequence_destroy(ms);
 }
 
-void autotest_msequence_xcorr_m2()  { msequence_test_autocorrelation(2);  }   // n = 3
-void autotest_msequence_xcorr_m3()  { msequence_test_autocorrelation(3);  }   // n = 7
-void autotest_msequence_xcorr_m4()  { msequence_test_autocorrelation(4);  }   // n = 15
-void autotest_msequence_xcorr_m5()  { msequence_test_autocorrelation(5);  }   // n = 31
-void autotest_msequence_xcorr_m6()  { msequence_test_autocorrelation(6);  }   // n = 63
-void autotest_msequence_xcorr_m7()  { msequence_test_autocorrelation(7);  }   // n = 127
-void autotest_msequence_xcorr_m8()  { msequence_test_autocorrelation(8);  }   // n = 255
-void autotest_msequence_xcorr_m9()  { msequence_test_autocorrelation(9);  }   // n = 511
-void autotest_msequence_xcorr_m10() { msequence_test_autocorrelation(10); }   // n = 1023
-void autotest_msequence_xcorr_m11() { msequence_test_autocorrelation(11); }   // n = 2047
-void autotest_msequence_xcorr_m12() { msequence_test_autocorrelation(12); }   // n = 4095
+LIQUID_AUTOTEST(msequence_xcorr_m2,"","",0.1)  { testbench_msequence_autocorrelation(__q__,2);  }   // n = 3
+LIQUID_AUTOTEST(msequence_xcorr_m3,"","",0.1)  { testbench_msequence_autocorrelation(__q__,3);  }   // n = 7
+LIQUID_AUTOTEST(msequence_xcorr_m4,"","",0.1)  { testbench_msequence_autocorrelation(__q__,4);  }   // n = 15
+LIQUID_AUTOTEST(msequence_xcorr_m5,"","",0.1)  { testbench_msequence_autocorrelation(__q__,5);  }   // n = 31
+LIQUID_AUTOTEST(msequence_xcorr_m6,"","",0.1)  { testbench_msequence_autocorrelation(__q__,6);  }   // n = 63
+LIQUID_AUTOTEST(msequence_xcorr_m7,"","",0.1)  { testbench_msequence_autocorrelation(__q__,7);  }   // n = 127
+LIQUID_AUTOTEST(msequence_xcorr_m8,"","",0.1)  { testbench_msequence_autocorrelation(__q__,8);  }   // n = 255
+LIQUID_AUTOTEST(msequence_xcorr_m9,"","",0.1)  { testbench_msequence_autocorrelation(__q__,9);  }   // n = 511
+LIQUID_AUTOTEST(msequence_xcorr_m10,"","",0.1) { testbench_msequence_autocorrelation(__q__,10); }   // n = 1023
+LIQUID_AUTOTEST(msequence_xcorr_m11,"","",0.1) { testbench_msequence_autocorrelation(__q__,11); }   // n = 2047
+LIQUID_AUTOTEST(msequence_xcorr_m12,"","",0.1) { testbench_msequence_autocorrelation(__q__,12); }   // n = 4095
 
 // helper function to test cyclic period of sequences
-void msequence_test_period(unsigned int _m)
+void testbench_msequence_period(liquid_autotest __q__, unsigned int _m)
 {
     // create and initialize m-sequence
     msequence q = msequence_create_default(_m);
@@ -99,57 +98,58 @@ void msequence_test_period(unsigned int _m)
     // measure period and compare to expected
     unsigned int n = (1U << _m) - 1;
     unsigned int p = msequence_measure_period(q);
-    CONTEND_EQUALITY(p,n)
+    LIQUID_CHECK(p == n)
 
     // clean up objects
     msequence_destroy(q);
 }
-void autotest_msequence_period_m2()  { msequence_test_period(2);  }
-void autotest_msequence_period_m3()  { msequence_test_period(3);  }
-void autotest_msequence_period_m4()  { msequence_test_period(4);  }
-void autotest_msequence_period_m5()  { msequence_test_period(5);  }
-void autotest_msequence_period_m6()  { msequence_test_period(6);  }
-void autotest_msequence_period_m7()  { msequence_test_period(7);  }
-void autotest_msequence_period_m8()  { msequence_test_period(8);  }
-void autotest_msequence_period_m9()  { msequence_test_period(9);  }
-void autotest_msequence_period_m10() { msequence_test_period(10); }
-void autotest_msequence_period_m11() { msequence_test_period(11); }
-void autotest_msequence_period_m12() { msequence_test_period(12); }
-void autotest_msequence_period_m13() { msequence_test_period(13); }
-void autotest_msequence_period_m14() { msequence_test_period(14); }
-void autotest_msequence_period_m15() { msequence_test_period(15); }
-void autotest_msequence_period_m16() { msequence_test_period(16); }
-void autotest_msequence_period_m17() { msequence_test_period(17); }
-void autotest_msequence_period_m18() { msequence_test_period(18); }
-void autotest_msequence_period_m19() { msequence_test_period(19); }
-void autotest_msequence_period_m20() { msequence_test_period(20); }
-void autotest_msequence_period_m21() { msequence_test_period(21); }
-void autotest_msequence_period_m22() { msequence_test_period(22); }
-void autotest_msequence_period_m23() { msequence_test_period(23); }
-void autotest_msequence_period_m24() { msequence_test_period(24); }
-void autotest_msequence_period_m25() { msequence_test_period(25); }
-void autotest_msequence_period_m26() { msequence_test_period(26); }
-void autotest_msequence_period_m27() { msequence_test_period(27); }
-void autotest_msequence_period_m28() { msequence_test_period(28); }
-void autotest_msequence_period_m29() { msequence_test_period(29); }
-void autotest_msequence_period_m30() { msequence_test_period(30); }
-void autotest_msequence_period_m31() { msequence_test_period(31); }
 
-void autotest_msequence_config()
+LIQUID_AUTOTEST(msequence_period_m2, "","", 0.01) { testbench_msequence_period(__q__,2);  }
+LIQUID_AUTOTEST(msequence_period_m3, "","", 0.01) { testbench_msequence_period(__q__,3);  }
+LIQUID_AUTOTEST(msequence_period_m4, "","", 0.01) { testbench_msequence_period(__q__,4);  }
+LIQUID_AUTOTEST(msequence_period_m5, "","", 0.01) { testbench_msequence_period(__q__,5);  }
+LIQUID_AUTOTEST(msequence_period_m6, "","", 0.01) { testbench_msequence_period(__q__,6);  }
+LIQUID_AUTOTEST(msequence_period_m7, "","", 0.01) { testbench_msequence_period(__q__,7);  }
+LIQUID_AUTOTEST(msequence_period_m8, "","", 0.01) { testbench_msequence_period(__q__,8);  }
+LIQUID_AUTOTEST(msequence_period_m9, "","", 0.01) { testbench_msequence_period(__q__,9);  }
+LIQUID_AUTOTEST(msequence_period_m10,"","", 0.01) { testbench_msequence_period(__q__,10); }
+LIQUID_AUTOTEST(msequence_period_m11,"","", 0.01) { testbench_msequence_period(__q__,11); }
+LIQUID_AUTOTEST(msequence_period_m12,"","", 0.01) { testbench_msequence_period(__q__,12); }
+LIQUID_AUTOTEST(msequence_period_m13,"","", 0.01) { testbench_msequence_period(__q__,13); }
+LIQUID_AUTOTEST(msequence_period_m14,"","", 0.01) { testbench_msequence_period(__q__,14); }
+LIQUID_AUTOTEST(msequence_period_m15,"","", 0.01) { testbench_msequence_period(__q__,15); }
+LIQUID_AUTOTEST(msequence_period_m16,"","", 0.01) { testbench_msequence_period(__q__,16); }
+LIQUID_AUTOTEST(msequence_period_m17,"","", 0.01) { testbench_msequence_period(__q__,17); }
+LIQUID_AUTOTEST(msequence_period_m18,"","", 0.01) { testbench_msequence_period(__q__,18); }
+LIQUID_AUTOTEST(msequence_period_m19,"","", 0.01) { testbench_msequence_period(__q__,19); }
+LIQUID_AUTOTEST(msequence_period_m20,"","", 0.01) { testbench_msequence_period(__q__,20); }
+LIQUID_AUTOTEST(msequence_period_m21,"","", 0.01) { testbench_msequence_period(__q__,21); }
+LIQUID_AUTOTEST(msequence_period_m22,"","", 0.01) { testbench_msequence_period(__q__,22); }
+LIQUID_AUTOTEST(msequence_period_m23,"","", 0.03) { testbench_msequence_period(__q__,23); }
+LIQUID_AUTOTEST(msequence_period_m24,"","", 0.07) { testbench_msequence_period(__q__,24); }
+LIQUID_AUTOTEST(msequence_period_m25,"","", 0.16) { testbench_msequence_period(__q__,25); }
+LIQUID_AUTOTEST(msequence_period_m26,"","", 0.30) { testbench_msequence_period(__q__,26); }
+LIQUID_AUTOTEST(msequence_period_m27,"","", 0.60) { testbench_msequence_period(__q__,27); }
+LIQUID_AUTOTEST(msequence_period_m28,"","", 1.20) { testbench_msequence_period(__q__,28); }
+LIQUID_AUTOTEST(msequence_period_m29,"","", 2.42) { testbench_msequence_period(__q__,29); }
+LIQUID_AUTOTEST(msequence_period_m30,"","", 4.85) { testbench_msequence_period(__q__,30); }
+LIQUID_AUTOTEST(msequence_period_m31,"","", 9.68) { testbench_msequence_period(__q__,31); }
+
+LIQUID_AUTOTEST(msequence_config,"","",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid configurations
-    CONTEND_ISNULL(msequence_create        (100, 0, 0))
-    CONTEND_ISNULL(msequence_create_default( 32)) // too long
-    CONTEND_ISNULL(msequence_create_genpoly(  0))
+    LIQUID_CHECK(NULL ==msequence_create        (100, 0, 0))
+    LIQUID_CHECK(NULL ==msequence_create_default( 32)) // too long
+    LIQUID_CHECK(NULL ==msequence_create_genpoly(  0))
 
     // create proper object and test configurations
     msequence q = msequence_create_genpoly(LIQUID_MSEQUENCE_GENPOLY_M11);
 
-    CONTEND_EQUALITY(LIQUID_OK, msequence_print(q))
-    CONTEND_EQUALITY(1,         msequence_get_state(q))
-    CONTEND_EQUALITY(LIQUID_OK, msequence_set_state(q, 0x8a))
-    CONTEND_EQUALITY(0x8a,      msequence_get_state(q))
+    LIQUID_CHECK(LIQUID_OK == msequence_print(q))
+    LIQUID_CHECK(1 ==          msequence_get_state(q))
+    LIQUID_CHECK(LIQUID_OK == msequence_set_state(q, 0x8a))
+    LIQUID_CHECK(0x8a ==       msequence_get_state(q))
 
     msequence_destroy(q);
     _liquid_error_downgrade_disable();

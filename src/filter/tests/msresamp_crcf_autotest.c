@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,13 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // test multi-stage arbitrary resampler
 //   r  : resampling rate (output/input)
 //   As : resampling filter stop-band attenuation [dB]
-void testbench_msresamp_crcf(float r, float As)
+void testbench_msresamp_crcf(liquid_autotest __q__, float r, float As)
 {
     // options
     unsigned int n=800000;      // number of output samples to analyze
@@ -66,8 +66,7 @@ void testbench_msresamp_crcf(float r, float As)
     };
     char filename[256];
     sprintf(filename,"autotest/logs/msresamp_crcf_r%.3u_a%.2u_autotest.m", (int)(r*1000), (int)(As));
-    liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_spectrum(__q__, psd, nfft, regions, 3, filename);
 
     // destroy objects
     spgramcf_destroy(q);
@@ -75,13 +74,13 @@ void testbench_msresamp_crcf(float r, float As)
     msresamp_crcf_destroy(resamp);
 }
 
-void autotest_msresamp_crcf_01() { testbench_msresamp_crcf(0.127115323f, 60.0f); }
-void autotest_msresamp_crcf_02() { testbench_msresamp_crcf(0.373737373f, 60.0f); }
-void autotest_msresamp_crcf_03() { testbench_msresamp_crcf(0.676543210f, 60.0f); }
+LIQUID_AUTOTEST(msresamp_crcf_01,"description","",0.1) { testbench_msresamp_crcf(__q__, 0.127115323f, 60.0f); }
+LIQUID_AUTOTEST(msresamp_crcf_02,"description","",0.1) { testbench_msresamp_crcf(__q__, 0.373737373f, 60.0f); }
+LIQUID_AUTOTEST(msresamp_crcf_03,"description","",0.1) { testbench_msresamp_crcf(__q__, 0.676543210f, 60.0f); }
 //void xautotest_msresamp_crcf_04() { testbench_msresamp_crcf(0.127115323f,80.0f); }
 
 // test arbitrary resampler output length calculation
-void testbench_msresamp_crcf_num_output(float _rate)
+void testbench_msresamp_crcf_num_output(liquid_autotest __q__, float _rate)
 {
     liquid_log_debug("testing msresamp_crcf_get_num_output() with r=%g", _rate);
 
@@ -113,7 +112,7 @@ void testbench_msresamp_crcf_num_output(float _rate)
             msresamp_crcf_execute(q, buf_0, num_input, buf_1, &num_written);
             liquid_log_debug(" b[%2u][%2u], num_input:%5u, num_output:%5u, num_written:%5u",
                     b, i, num_input, num_output, num_written);
-            CONTEND_EQUALITY(num_output, num_written)
+            LIQUID_CHECK(num_output ==  num_written)
         }
     }
 
@@ -123,17 +122,16 @@ void testbench_msresamp_crcf_num_output(float _rate)
     msresamp_crcf_destroy(q);
 }
 
-void autotest_msresamp_crcf_num_output_0(){ testbench_msresamp_crcf_num_output(1.00f);      }
-void autotest_msresamp_crcf_num_output_1(){ testbench_msresamp_crcf_num_output(1e3f);       }
-void autotest_msresamp_crcf_num_output_2(){ testbench_msresamp_crcf_num_output(1e-3f);      }
-void autotest_msresamp_crcf_num_output_3(){ testbench_msresamp_crcf_num_output(sqrtf( 2));  }
-void autotest_msresamp_crcf_num_output_4(){ testbench_msresamp_crcf_num_output(sqrtf(17));  }
-void autotest_msresamp_crcf_num_output_5(){ testbench_msresamp_crcf_num_output(1.0f/M_PI);  }
-void autotest_msresamp_crcf_num_output_6(){ testbench_msresamp_crcf_num_output(expf(8.0f)); }
-void autotest_msresamp_crcf_num_output_7(){ testbench_msresamp_crcf_num_output(expf(-8.f)); }
+LIQUID_AUTOTEST(msresamp_crcf_num_output_0,"description","",0.1){ testbench_msresamp_crcf_num_output(__q__, 1.00f);      }
+LIQUID_AUTOTEST(msresamp_crcf_num_output_1,"description","",0.1){ testbench_msresamp_crcf_num_output(__q__, 1e3f);       }
+LIQUID_AUTOTEST(msresamp_crcf_num_output_2,"description","",0.1){ testbench_msresamp_crcf_num_output(__q__, 1e-3f);      }
+LIQUID_AUTOTEST(msresamp_crcf_num_output_3,"description","",0.1){ testbench_msresamp_crcf_num_output(__q__, sqrtf( 2));  }
+LIQUID_AUTOTEST(msresamp_crcf_num_output_4,"description","",0.1){ testbench_msresamp_crcf_num_output(__q__, sqrtf(17));  }
+LIQUID_AUTOTEST(msresamp_crcf_num_output_5,"description","",0.1){ testbench_msresamp_crcf_num_output(__q__, 1.0f/M_PI);  }
+LIQUID_AUTOTEST(msresamp_crcf_num_output_6,"description","",0.1){ testbench_msresamp_crcf_num_output(__q__, expf(8.0f)); }
+LIQUID_AUTOTEST(msresamp_crcf_num_output_7,"description","",0.1){ testbench_msresamp_crcf_num_output(__q__, expf(-8.f)); }
 
-// test copy method
-void autotest_msresamp_crcf_copy()
+LIQUID_AUTOTEST(msresamp_crcf_copy,"test copy method", "", 0.1)
 {
     // create initial object
     float rate = 0.071239213987520f;
@@ -159,10 +157,10 @@ void autotest_msresamp_crcf_copy()
     msresamp_crcf_execute(q1, buf, buf_len, buf_1, &nw_1);
 
     // check that the same number of samples were written
-    CONTEND_EQUALITY(nw_0, nw_1);
+    LIQUID_CHECK(nw_0 ==  nw_1);
 
     // check output sample values
-    CONTEND_SAME_DATA(buf_0, buf_1, nw_0*sizeof(float complex));
+    LIQUID_CHECK_ARRAY(buf_0, buf_1, nw_0*sizeof(float complex));
 
     // destroy objects
     msresamp_crcf_destroy(q0);

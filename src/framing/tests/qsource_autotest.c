@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,20 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-//
-void autotest_qsourcecf_config()
+LIQUID_AUTOTEST(qsourcecf_config,"qsource configurations","",0.1)
 {
     _liquid_error_downgrade_enable();
-    CONTEND_ISNULL(qsourcecf_create( 0, 12, 60, 0.0f, 0.2f, 10.0f)); // too few subcarriers
-    CONTEND_ISNULL(qsourcecf_create(17, 12, 60, 0.0f, 0.2f, 10.0f)); // odd-numbered subcarriers
-    CONTEND_ISNULL(qsourcecf_create(64,  0, 60, 0.0f, 0.2f, 10.0f)); // filter semi-length too small
-    CONTEND_ISNULL(qsourcecf_create(64, 12, 60,+0.6f, 0.2f, 10.0f)); // center frequency out of range
-    CONTEND_ISNULL(qsourcecf_create(64, 12, 60,-0.6f, 0.2f, 10.0f)); // center frequency out of range
-    CONTEND_ISNULL(qsourcecf_create(64, 12, 60, 0.0f,-0.1f, 10.0f)); // bandwidth out of range
-    CONTEND_ISNULL(qsourcecf_create(64, 12, 60, 0.0f, 1.1f, 10.0f)); // bandwidth out of range
-    CONTEND_ISNULL(qsourcecf_copy(NULL));
+    LIQUID_CHECK(NULL == qsourcecf_create( 0, 12, 60, 0.0f, 0.2f, 10.0f)); // too few subcarriers
+    LIQUID_CHECK(NULL == qsourcecf_create(17, 12, 60, 0.0f, 0.2f, 10.0f)); // odd-numbered subcarriers
+    LIQUID_CHECK(NULL == qsourcecf_create(64,  0, 60, 0.0f, 0.2f, 10.0f)); // filter semi-length too small
+    LIQUID_CHECK(NULL == qsourcecf_create(64, 12, 60,+0.6f, 0.2f, 10.0f)); // center frequency out of range
+    LIQUID_CHECK(NULL == qsourcecf_create(64, 12, 60,-0.6f, 0.2f, 10.0f)); // center frequency out of range
+    LIQUID_CHECK(NULL == qsourcecf_create(64, 12, 60, 0.0f,-0.1f, 10.0f)); // bandwidth out of range
+    LIQUID_CHECK(NULL == qsourcecf_create(64, 12, 60, 0.0f, 1.1f, 10.0f)); // bandwidth out of range
+    LIQUID_CHECK(NULL == qsourcecf_copy(NULL));
     _liquid_error_downgrade_disable();
 }
 

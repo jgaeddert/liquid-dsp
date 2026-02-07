@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-// Hamming (12,8) codec
-void autotest_hamming128_codec()
+LIQUID_AUTOTEST(hamming128_codec,"test Hamming (12,8) codec","",0.1)
 {
     unsigned int n=8;   //
     unsigned int k=12;  //
@@ -58,14 +57,11 @@ void autotest_hamming128_codec()
             str_org,str_enc,str_rec,str_dec,count_bit_errors(sym_org, sym_dec));
 
         // validate data are the same
-        CONTEND_EQUALITY(sym_org, sym_dec);
+        LIQUID_CHECK(sym_org ==  sym_dec);
     }
 }
 
-//
-// AUTOTEST: Hamming (12,8) codec (soft decoding)
-//
-void autotest_hamming128_codec_soft()
+LIQUID_AUTOTEST(hamming128_codec_soft,"test Hamming (12,8) codec (soft decoding)","",0.1)
 {
     // generate each of the 2^8=256 symbols, encode, and decode
     // using soft decoding algorithm
@@ -96,7 +92,7 @@ void autotest_hamming128_codec_soft()
         s_hat = fecsoft_hamming128_decode(c_soft);
 
         // contend that data are the same
-        CONTEND_EQUALITY(s, s_hat);
+        LIQUID_CHECK(s ==  s_hat);
     }
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-// test copying object
-void autotest_symsync_copy()
+LIQUID_AUTOTEST(symsync_copy,"test copying object", "", 0.1)
 {
     // create base object
     symsync_crcf q0 = symsync_crcf_create_rnyquist(
@@ -54,55 +53,54 @@ void autotest_symsync_copy()
     symsync_crcf_execute(q1, buf, buf_len, buf_1, &nw_1);
 
     // check that the same number of samples were written
-    CONTEND_EQUALITY(nw_0, nw_1);
+    LIQUID_CHECK(nw_0 ==  nw_1);
 
     // check output sample values
-    CONTEND_SAME_DATA(buf_0, buf_1, nw_0*sizeof(float complex));
+    LIQUID_CHECK_ARRAY(buf_0, buf_1, nw_0*sizeof(float complex));
 
     // check other internal properties
-    CONTEND_EQUALITY(symsync_crcf_get_tau(q0),symsync_crcf_get_tau(q1));
+    LIQUID_CHECK(symsync_crcf_get_tau(q0) == symsync_crcf_get_tau(q1));
 
     // destroy objects
     symsync_crcf_destroy(q0);
     symsync_crcf_destroy(q1);
 }
 
-// test errors and invalid configuration
-void autotest_symsync_config()
+LIQUID_AUTOTEST(symsync_config,"test errors and invalid configuration", "", 0.1)
 {
     _liquid_error_downgrade_enable();
 
     // test copying/creating invalid objects
-    CONTEND_ISNULL( symsync_crcf_copy(NULL) );
+    LIQUID_CHECK(NULL == symsync_crcf_copy(NULL) );
 
-    CONTEND_ISNULL( symsync_crcf_create(0, 12, NULL, 48) ); // k is too small
-    CONTEND_ISNULL( symsync_crcf_create(2,  0, NULL, 48) ); // M is too small
-    CONTEND_ISNULL( symsync_crcf_create(2, 12, NULL,  0) ); // h_len is too small
-    CONTEND_ISNULL( symsync_crcf_create(2, 12, NULL, 47) ); // h_len is not divisible by M
+    LIQUID_CHECK(NULL == symsync_crcf_create(0, 12, NULL, 48) ); // k is too small
+    LIQUID_CHECK(NULL == symsync_crcf_create(2,  0, NULL, 48) ); // M is too small
+    LIQUID_CHECK(NULL == symsync_crcf_create(2, 12, NULL,  0) ); // h_len is too small
+    LIQUID_CHECK(NULL == symsync_crcf_create(2, 12, NULL, 47) ); // h_len is not divisible by M
 
-    CONTEND_ISNULL( symsync_crcf_create_rnyquist(LIQUID_FIRFILT_RRC, 0, 12, 0.2, 48) ); // k is too small
-    CONTEND_ISNULL( symsync_crcf_create_rnyquist(LIQUID_FIRFILT_RRC, 2,  0, 0.2, 48) ); // m is too small
-    CONTEND_ISNULL( symsync_crcf_create_rnyquist(LIQUID_FIRFILT_RRC, 2, 12, 7.2, 48) ); // beta is too large
-    CONTEND_ISNULL( symsync_crcf_create_rnyquist(LIQUID_FIRFILT_RRC, 2, 12, 0.2,  0) ); // M is too small
+    LIQUID_CHECK(NULL == symsync_crcf_create_rnyquist(LIQUID_FIRFILT_RRC, 0, 12, 0.2, 48) ); // k is too small
+    LIQUID_CHECK(NULL == symsync_crcf_create_rnyquist(LIQUID_FIRFILT_RRC, 2,  0, 0.2, 48) ); // m is too small
+    LIQUID_CHECK(NULL == symsync_crcf_create_rnyquist(LIQUID_FIRFILT_RRC, 2, 12, 7.2, 48) ); // beta is too large
+    LIQUID_CHECK(NULL == symsync_crcf_create_rnyquist(LIQUID_FIRFILT_RRC, 2, 12, 0.2,  0) ); // M is too small
 
-    CONTEND_ISNULL( symsync_crcf_create_kaiser(0, 12, 0.2, 48) ); // k is too small
-    CONTEND_ISNULL( symsync_crcf_create_kaiser(2,  0, 0.2, 48) ); // m is too small
-    CONTEND_ISNULL( symsync_crcf_create_kaiser(2, 12, 7.2, 48) ); // beta is too large
-    CONTEND_ISNULL( symsync_crcf_create_kaiser(2, 12, 0.2,  0) ); // M is too small
+    LIQUID_CHECK(NULL == symsync_crcf_create_kaiser(0, 12, 0.2, 48) ); // k is too small
+    LIQUID_CHECK(NULL == symsync_crcf_create_kaiser(2,  0, 0.2, 48) ); // m is too small
+    LIQUID_CHECK(NULL == symsync_crcf_create_kaiser(2, 12, 7.2, 48) ); // beta is too large
+    LIQUID_CHECK(NULL == symsync_crcf_create_kaiser(2, 12, 0.2,  0) ); // M is too small
 
     // create valid object
     symsync_crcf q = symsync_crcf_create_kaiser(2, 12, 0.2, 48);
-    CONTEND_EQUALITY( LIQUID_OK, symsync_crcf_print(q) );
+    LIQUID_CHECK( LIQUID_OK ==  symsync_crcf_print(q) );
 
     // check lock state
-    CONTEND_EQUALITY( symsync_crcf_lock(q), LIQUID_OK );
-    CONTEND_TRUE    ( symsync_crcf_is_locked(q) );
-    CONTEND_EQUALITY( symsync_crcf_unlock(q), LIQUID_OK );
-    CONTEND_FALSE   ( symsync_crcf_is_locked(q) );
+    LIQUID_CHECK(  symsync_crcf_lock(q) ==  LIQUID_OK );
+    LIQUID_CHECK(  symsync_crcf_is_locked(q) );
+    LIQUID_CHECK(  symsync_crcf_unlock(q) ==  LIQUID_OK );
+    LIQUID_CHECK( !symsync_crcf_is_locked(q) );
 
     // check invalid properties
-    CONTEND_EQUALITY( LIQUID_EICONFIG, symsync_crcf_set_output_rate(q, 0) );
-    CONTEND_EQUALITY( LIQUID_EICONFIG, symsync_crcf_set_lf_bw(q, -1) );
+    LIQUID_CHECK( LIQUID_EICONFIG == symsync_crcf_set_output_rate(q, 0) );
+    LIQUID_CHECK( LIQUID_EICONFIG == symsync_crcf_set_lf_bw(q, -1) );
 
     // destroy object
     symsync_crcf_destroy(q);

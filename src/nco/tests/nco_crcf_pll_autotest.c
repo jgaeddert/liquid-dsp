@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 
 #include <complex.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 //
@@ -32,12 +32,13 @@
 //  _pll_bandwidth  :   bandwidth of phase-locked loop
 //  _num_iterations :   number of iterations to run
 //  _tol            :   error tolerance
-void nco_crcf_pll_test(int          _type,
-                       float        _phase_offset,
-                       float        _freq_offset,
-                       float        _pll_bandwidth,
-                       unsigned int _num_iterations,
-                       float        _tol)
+void testbench_nco_crcf_pll(liquid_autotest __q__,
+                            int             _type,
+                            float           _phase_offset,
+                            float           _freq_offset,
+                            float           _pll_bandwidth,
+                            unsigned int    _num_iterations,
+                            float           _tol)
 {
     // objects
     nco_crcf nco_tx = nco_crcf_create(_type);
@@ -72,13 +73,13 @@ void nco_crcf_pll_test(int          _type,
     phase_error = nco_crcf_get_phase(nco_tx) - nco_crcf_get_phase(nco_rx);
     while (phase_error >=  2*M_PI) phase_error -= 2*M_PI;
     while (phase_error <= -2*M_PI) phase_error += 2*M_PI;
-    CONTEND_DELTA(phase_error, 0, _tol);
+    LIQUID_CHECK_DELTA(phase_error, 0, _tol);
 
     // ensure frequency of oscillators is locked
     float freq_error = nco_crcf_get_frequency(nco_tx) - nco_crcf_get_frequency(nco_rx);
     while (freq_error >=  2*M_PI) freq_error -= 2*M_PI;
     while (freq_error <= -2*M_PI) freq_error += 2*M_PI;
-    CONTEND_DELTA(freq_error, 0, _tol);
+    LIQUID_CHECK_DELTA(freq_error, 0, _tol);
 
     liquid_log_debug("  nco[bw:%6.4f,n=%6u], phase:%9.6f,e=%11.4e, freq:%9.6f,e=%11.4e",
         _pll_bandwidth, _num_iterations, _phase_offset, phase_error, _freq_offset, freq_error);
@@ -88,8 +89,7 @@ void nco_crcf_pll_test(int          _type,
     nco_crcf_destroy(nco_rx);
 }
 
-// test phase offsets
-void autotest_nco_crcf_pll_phase()
+LIQUID_AUTOTEST(nco_crcf_pll_phase,"test nco pll with phase offsets","",0.1)
 {
     float bw[4] = {0.1f, 0.01f, 0.001f, 0.0001f};
     float tol   = 1e-2f;
@@ -100,19 +100,18 @@ void autotest_nco_crcf_pll_phase()
         unsigned int num_steps = (unsigned int)(32.0f / bw[i]);
 
         // test various phase offsets
-        nco_crcf_pll_test(LIQUID_NCO, -M_PI/1.1f,  0.0f, bw[i], num_steps, tol);
-        nco_crcf_pll_test(LIQUID_NCO, -M_PI/2.0f,  0.0f, bw[i], num_steps, tol);
-        nco_crcf_pll_test(LIQUID_NCO, -M_PI/4.0f,  0.0f, bw[i], num_steps, tol);
-        nco_crcf_pll_test(LIQUID_NCO, -M_PI/8.0f,  0.0f, bw[i], num_steps, tol);
-        nco_crcf_pll_test(LIQUID_NCO,  M_PI/8.0f,  0.0f, bw[i], num_steps, tol);
-        nco_crcf_pll_test(LIQUID_NCO,  M_PI/4.0f,  0.0f, bw[i], num_steps, tol);
-        nco_crcf_pll_test(LIQUID_NCO,  M_PI/2.0f,  0.0f, bw[i], num_steps, tol);
-        nco_crcf_pll_test(LIQUID_NCO,  M_PI/1.1f,  0.0f, bw[i], num_steps, tol);
+        testbench_nco_crcf_pll(__q__,LIQUID_NCO, -M_PI/1.1f,  0.0f, bw[i], num_steps, tol);
+        testbench_nco_crcf_pll(__q__,LIQUID_NCO, -M_PI/2.0f,  0.0f, bw[i], num_steps, tol);
+        testbench_nco_crcf_pll(__q__,LIQUID_NCO, -M_PI/4.0f,  0.0f, bw[i], num_steps, tol);
+        testbench_nco_crcf_pll(__q__,LIQUID_NCO, -M_PI/8.0f,  0.0f, bw[i], num_steps, tol);
+        testbench_nco_crcf_pll(__q__,LIQUID_NCO,  M_PI/8.0f,  0.0f, bw[i], num_steps, tol);
+        testbench_nco_crcf_pll(__q__,LIQUID_NCO,  M_PI/4.0f,  0.0f, bw[i], num_steps, tol);
+        testbench_nco_crcf_pll(__q__,LIQUID_NCO,  M_PI/2.0f,  0.0f, bw[i], num_steps, tol);
+        testbench_nco_crcf_pll(__q__,LIQUID_NCO,  M_PI/1.1f,  0.0f, bw[i], num_steps, tol);
     }
 }
 
-// test phase offsets
-void autotest_nco_crcf_pll_freq()
+LIQUID_AUTOTEST(nco_crcf_pll_freq,"test nco pll with frequency offsets","",0.1)
 {
     float bw[4] = {0.1f, 0.05f, 0.02f, 0.01f};
     float tol   = 1e-2f;
@@ -123,14 +122,14 @@ void autotest_nco_crcf_pll_freq()
         unsigned int num_steps = (unsigned int)(32.0f / bw[i]);
 
         // test various frequency offsets
-        nco_crcf_pll_test(LIQUID_NCO, 0.0f, -0.8f, bw[i], num_steps, tol);
-        nco_crcf_pll_test(LIQUID_NCO, 0.0f, -0.4f, bw[i], num_steps, tol);
-        nco_crcf_pll_test(LIQUID_NCO, 0.0f, -0.2f, bw[i], num_steps, tol);
-        nco_crcf_pll_test(LIQUID_NCO, 0.0f, -0.1f, bw[i], num_steps, tol);
-        nco_crcf_pll_test(LIQUID_NCO, 0.0f,  0.1f, bw[i], num_steps, tol);
-        nco_crcf_pll_test(LIQUID_NCO, 0.0f,  0.2f, bw[i], num_steps, tol);
-        nco_crcf_pll_test(LIQUID_NCO, 0.0f,  0.4f, bw[i], num_steps, tol);
-        nco_crcf_pll_test(LIQUID_NCO, 0.0f,  0.8f, bw[i], num_steps, tol);
+        testbench_nco_crcf_pll(__q__,LIQUID_NCO, 0.0f, -0.8f, bw[i], num_steps, tol);
+        testbench_nco_crcf_pll(__q__,LIQUID_NCO, 0.0f, -0.4f, bw[i], num_steps, tol);
+        testbench_nco_crcf_pll(__q__,LIQUID_NCO, 0.0f, -0.2f, bw[i], num_steps, tol);
+        testbench_nco_crcf_pll(__q__,LIQUID_NCO, 0.0f, -0.1f, bw[i], num_steps, tol);
+        testbench_nco_crcf_pll(__q__,LIQUID_NCO, 0.0f,  0.1f, bw[i], num_steps, tol);
+        testbench_nco_crcf_pll(__q__,LIQUID_NCO, 0.0f,  0.2f, bw[i], num_steps, tol);
+        testbench_nco_crcf_pll(__q__,LIQUID_NCO, 0.0f,  0.4f, bw[i], num_steps, tol);
+        testbench_nco_crcf_pll(__q__,LIQUID_NCO, 0.0f,  0.8f, bw[i], num_steps, tol);
     }
 }
 

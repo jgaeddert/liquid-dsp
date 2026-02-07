@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-//
-// test initialization of binary sequence
-//
-void autotest_bsequence_init()
+LIQUID_AUTOTEST(bsequence_init,"test initialization of binary sequence","",0.1)
 {
     // 1111 0000 1100 1010
     unsigned char v[2] = {0xf0, 0xca};
@@ -36,34 +33,31 @@ void autotest_bsequence_init()
     bsequence_init(q,v);
 
     // run tests
-    CONTEND_EQUALITY( bsequence_index(q,15), 1 );
-    CONTEND_EQUALITY( bsequence_index(q,14), 1 );
-    CONTEND_EQUALITY( bsequence_index(q,13), 1 );
-    CONTEND_EQUALITY( bsequence_index(q,12), 1 );
+    LIQUID_CHECK( bsequence_index(q,15) ==  1 );
+    LIQUID_CHECK( bsequence_index(q,14) ==  1 );
+    LIQUID_CHECK( bsequence_index(q,13) ==  1 );
+    LIQUID_CHECK( bsequence_index(q,12) ==  1 );
 
-    CONTEND_EQUALITY( bsequence_index(q,11), 0 );
-    CONTEND_EQUALITY( bsequence_index(q,10), 0 );
-    CONTEND_EQUALITY( bsequence_index(q, 9), 0 );
-    CONTEND_EQUALITY( bsequence_index(q, 8), 0 );
+    LIQUID_CHECK( bsequence_index(q,11) ==  0 );
+    LIQUID_CHECK( bsequence_index(q,10) ==  0 );
+    LIQUID_CHECK( bsequence_index(q, 9) ==  0 );
+    LIQUID_CHECK( bsequence_index(q, 8) ==  0 );
 
-    CONTEND_EQUALITY( bsequence_index(q, 7), 1 );
-    CONTEND_EQUALITY( bsequence_index(q, 6), 1 );
-    CONTEND_EQUALITY( bsequence_index(q, 5), 0 );
-    CONTEND_EQUALITY( bsequence_index(q, 4), 0 );
+    LIQUID_CHECK( bsequence_index(q, 7) ==  1 );
+    LIQUID_CHECK( bsequence_index(q, 6) ==  1 );
+    LIQUID_CHECK( bsequence_index(q, 5) ==  0 );
+    LIQUID_CHECK( bsequence_index(q, 4) ==  0 );
 
-    CONTEND_EQUALITY( bsequence_index(q, 3), 1 );
-    CONTEND_EQUALITY( bsequence_index(q, 2), 0 );
-    CONTEND_EQUALITY( bsequence_index(q, 1), 1 );
-    CONTEND_EQUALITY( bsequence_index(q, 0), 0 );
+    LIQUID_CHECK( bsequence_index(q, 3) ==  1 );
+    LIQUID_CHECK( bsequence_index(q, 2) ==  0 );
+    LIQUID_CHECK( bsequence_index(q, 1) ==  1 );
+    LIQUID_CHECK( bsequence_index(q, 0) ==  0 );
 
     // clean up memory
     bsequence_destroy(q);
 }
 
-//
-// test correlation between to sequences
-//
-void autotest_bsequence_correlate()
+LIQUID_AUTOTEST(bsequence_correlate,"test correlation between to sequences","",0.1)
 {
     // v0   :   1111 0000 1100 1010
     // v1   :   1100 1011 0001 1110
@@ -78,7 +72,7 @@ void autotest_bsequence_correlate()
     bsequence_init(q1,v1);
 
     // run tests
-    CONTEND_EQUALITY( bsequence_correlate(q0,q1), 7 );
+    LIQUID_CHECK( bsequence_correlate(q0,q1) ==  7 );
 
     // clean up memory
     bsequence_destroy(q0);
@@ -86,10 +80,7 @@ void autotest_bsequence_correlate()
 }
 
 
-//
-// test add operations on two sequences
-//
-void autotest_bsequence_add()
+LIQUID_AUTOTEST(bsequence_add,"test add operations on two sequences","",0.1)
 {
     // v0   :   1111 0000 1100 1010
     // v1   :   1100 1011 0001 1110
@@ -108,25 +99,25 @@ void autotest_bsequence_add()
     bsequence_add(q0, q1, r);
 
     // run tests
-    CONTEND_EQUALITY( bsequence_index(r,15), 0 );
-    CONTEND_EQUALITY( bsequence_index(r,14), 0 );
-    CONTEND_EQUALITY( bsequence_index(r,13), 1 );
-    CONTEND_EQUALITY( bsequence_index(r,12), 1 );
+    LIQUID_CHECK( bsequence_index(r,15) ==  0 );
+    LIQUID_CHECK( bsequence_index(r,14) ==  0 );
+    LIQUID_CHECK( bsequence_index(r,13) ==  1 );
+    LIQUID_CHECK( bsequence_index(r,12) ==  1 );
 
-    CONTEND_EQUALITY( bsequence_index(r,11), 1 );
-    CONTEND_EQUALITY( bsequence_index(r,10), 0 );
-    CONTEND_EQUALITY( bsequence_index(r, 9), 1 );
-    CONTEND_EQUALITY( bsequence_index(r, 8), 1 );
+    LIQUID_CHECK( bsequence_index(r,11) ==  1 );
+    LIQUID_CHECK( bsequence_index(r,10) ==  0 );
+    LIQUID_CHECK( bsequence_index(r, 9) ==  1 );
+    LIQUID_CHECK( bsequence_index(r, 8) ==  1 );
 
-    CONTEND_EQUALITY( bsequence_index(r, 7), 1 );
-    CONTEND_EQUALITY( bsequence_index(r, 6), 1 );
-    CONTEND_EQUALITY( bsequence_index(r, 5), 0 );
-    CONTEND_EQUALITY( bsequence_index(r, 4), 1 );
+    LIQUID_CHECK( bsequence_index(r, 7) ==  1 );
+    LIQUID_CHECK( bsequence_index(r, 6) ==  1 );
+    LIQUID_CHECK( bsequence_index(r, 5) ==  0 );
+    LIQUID_CHECK( bsequence_index(r, 4) ==  1 );
 
-    CONTEND_EQUALITY( bsequence_index(r, 3), 0 );
-    CONTEND_EQUALITY( bsequence_index(r, 2), 1 );
-    CONTEND_EQUALITY( bsequence_index(r, 1), 0 );
-    CONTEND_EQUALITY( bsequence_index(r, 0), 0 );
+    LIQUID_CHECK( bsequence_index(r, 3) ==  0 );
+    LIQUID_CHECK( bsequence_index(r, 2) ==  1 );
+    LIQUID_CHECK( bsequence_index(r, 1) ==  0 );
+    LIQUID_CHECK( bsequence_index(r, 0) ==  0 );
 
     // clean up memory
     bsequence_destroy(q0);
@@ -134,10 +125,7 @@ void autotest_bsequence_add()
     bsequence_destroy(r);
 }
 
-//
-// test multiply operations on two sequences
-//
-void autotest_bsequence_mul()
+LIQUID_AUTOTEST(bsequence_mul,"test multiply operations on two sequences","",0.1)
 {
     // v0   :   1111 0000 1100 1010
     // v1   :   1100 1011 0001 1110
@@ -156,25 +144,25 @@ void autotest_bsequence_mul()
     bsequence_mul(q0, q1, r);
 
     // run tests
-    CONTEND_EQUALITY( bsequence_index(r,15), 1 );
-    CONTEND_EQUALITY( bsequence_index(r,14), 1 );
-    CONTEND_EQUALITY( bsequence_index(r,13), 0 );
-    CONTEND_EQUALITY( bsequence_index(r,12), 0 );
+    LIQUID_CHECK( bsequence_index(r,15) ==  1 );
+    LIQUID_CHECK( bsequence_index(r,14) ==  1 );
+    LIQUID_CHECK( bsequence_index(r,13) ==  0 );
+    LIQUID_CHECK( bsequence_index(r,12) ==  0 );
 
-    CONTEND_EQUALITY( bsequence_index(r,11), 0 );
-    CONTEND_EQUALITY( bsequence_index(r,10), 0 );
-    CONTEND_EQUALITY( bsequence_index(r, 9), 0 );
-    CONTEND_EQUALITY( bsequence_index(r, 8), 0 );
+    LIQUID_CHECK( bsequence_index(r,11) ==  0 );
+    LIQUID_CHECK( bsequence_index(r,10) ==  0 );
+    LIQUID_CHECK( bsequence_index(r, 9) ==  0 );
+    LIQUID_CHECK( bsequence_index(r, 8) ==  0 );
 
-    CONTEND_EQUALITY( bsequence_index(r, 7), 0 );
-    CONTEND_EQUALITY( bsequence_index(r, 6), 0 );
-    CONTEND_EQUALITY( bsequence_index(r, 5), 0 );
-    CONTEND_EQUALITY( bsequence_index(r, 4), 0 );
+    LIQUID_CHECK( bsequence_index(r, 7) ==  0 );
+    LIQUID_CHECK( bsequence_index(r, 6) ==  0 );
+    LIQUID_CHECK( bsequence_index(r, 5) ==  0 );
+    LIQUID_CHECK( bsequence_index(r, 4) ==  0 );
 
-    CONTEND_EQUALITY( bsequence_index(r, 3), 1 );
-    CONTEND_EQUALITY( bsequence_index(r, 2), 0 );
-    CONTEND_EQUALITY( bsequence_index(r, 1), 1 );
-    CONTEND_EQUALITY( bsequence_index(r, 0), 0 );
+    LIQUID_CHECK( bsequence_index(r, 3) ==  1 );
+    LIQUID_CHECK( bsequence_index(r, 2) ==  0 );
+    LIQUID_CHECK( bsequence_index(r, 1) ==  1 );
+    LIQUID_CHECK( bsequence_index(r, 0) ==  0 );
 
     // clean up memory
     bsequence_destroy(q0);
@@ -182,10 +170,7 @@ void autotest_bsequence_mul()
     bsequence_destroy(r);
 }
 
-//
-// test accumulation of binary sequence
-//
-void autotest_bsequence_accumulate()
+LIQUID_AUTOTEST(bsequence_accumulate,"test accumulation of binary sequence","",0.1)
 {
     // 1111 0000 1100 1010 (8 total bits)
     unsigned char v[2] = {0xf0, 0xca};
@@ -195,10 +180,9 @@ void autotest_bsequence_accumulate()
     bsequence_init(q,v);
 
     // run tests
-    CONTEND_EQUALITY( bsequence_accumulate(q), 8 );
+    LIQUID_CHECK( bsequence_accumulate(q) ==  8 );
 
     // clean up memory
     bsequence_destroy(q);
 }
-
 

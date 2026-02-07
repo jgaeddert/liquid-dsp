@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,10 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
 #include "liquid.h"
+#include "liquid.autotest.h"
 
-void autotest_fft_shift_4()
+LIQUID_AUTOTEST(fft_shift_4,"fft shift for even-sized transform","fft",0.1)
 {
     float complex x[] = {
         0 + 0*_Complex_I,
@@ -41,10 +41,10 @@ void autotest_fft_shift_4()
 
     fft_shift(x,4);
 
-    CONTEND_SAME_DATA(x,test,4*sizeof(float complex));
+    LIQUID_CHECK_ARRAY(x,test,4*sizeof(float complex));
 }
 
-void autotest_fft_shift_8()
+LIQUID_AUTOTEST(fft_shift_8,"fft shift for odd-sized transform","fft",0.1)
 {
     float complex x[] = {
         0 + 0*_Complex_I,
@@ -70,6 +70,6 @@ void autotest_fft_shift_8()
 
     fft_shift(x,8);
 
-    CONTEND_SAME_DATA(x,test,8*sizeof(float complex));
+    LIQUID_CHECK_ARRAY(x,test,8*sizeof(float complex));
 }
 

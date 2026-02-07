@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,14 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
 // generic window testbench
-void liquid_window_testbench(int _wtype, unsigned int _n, float _arg)
+void testbench_window(liquid_autotest __q__,
+                      int _wtype,
+                      unsigned int _n,
+                      float _arg)
 {
     float w[_n];
     float wsum = 0.0f;
@@ -53,14 +56,14 @@ void liquid_window_testbench(int _wtype, unsigned int _n, float _arg)
     }
     float bw = (float)i / (float)nfft;
     liquid_log_debug("bw: %12.8f", bw);
-    CONTEND_GREATER_THAN(bw, 0.02f);
-    CONTEND_LESS_THAN   (bw, 0.08f);
+    LIQUID_CHECK(bw > 0.02f);
+    LIQUID_CHECK(bw < 0.08f);
 
     // check side lobes at band edges
     for (i=0; i<nfft; i++) {
         float f = (float)i/(float)nfft - 0.5f;
         if (fabsf(f) > 0.20f)
-            CONTEND_LESS_THAN(20*log10f(cabsf(buf_freq[i])), -40.0f);
+            LIQUID_CHECK(20*log10f(cabsf(buf_freq[i]))< -40.0f);
     }
 #if 0
     // DEBUG: export to file for testing
@@ -78,18 +81,18 @@ void liquid_window_testbench(int _wtype, unsigned int _n, float _arg)
 
 }
 
-void autotest_window_hamming        () { liquid_window_testbench(LIQUID_WINDOW_HAMMING,         71,  0.f); }
-void autotest_window_hann           () { liquid_window_testbench(LIQUID_WINDOW_HANN,            71,  0.f); }
-void autotest_window_blackmanharris () { liquid_window_testbench(LIQUID_WINDOW_BLACKMANHARRIS,  71,  0.f); }
-void autotest_window_blackmanharris7() { liquid_window_testbench(LIQUID_WINDOW_BLACKMANHARRIS7, 71,  0.f); }
-void autotest_window_kaiser         () { liquid_window_testbench(LIQUID_WINDOW_KAISER,          71, 10.f); }
-void autotest_window_flattop        () { liquid_window_testbench(LIQUID_WINDOW_FLATTOP,         71,  0.f); }
-void autotest_window_triangular     () { liquid_window_testbench(LIQUID_WINDOW_TRIANGULAR,      71, 71.f); }
-void autotest_window_rcostaper      () { liquid_window_testbench(LIQUID_WINDOW_RCOSTAPER,       71, 25.f); }
-void autotest_window_kbd            () { liquid_window_testbench(LIQUID_WINDOW_KBD,             72,  0.f); }
+LIQUID_AUTOTEST(window_hamming        ,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_HAMMING,         71,  0.f); }
+LIQUID_AUTOTEST(window_hann           ,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_HANN,            71,  0.f); }
+LIQUID_AUTOTEST(window_blackmanharris ,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_BLACKMANHARRIS,  71,  0.f); }
+LIQUID_AUTOTEST(window_blackmanharris7,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_BLACKMANHARRIS7, 71,  0.f); }
+LIQUID_AUTOTEST(window_kaiser         ,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_KAISER,          71, 10.f); }
+LIQUID_AUTOTEST(window_flattop        ,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_FLATTOP,         71,  0.f); }
+LIQUID_AUTOTEST(window_triangular     ,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_TRIANGULAR,      71, 71.f); }
+LIQUID_AUTOTEST(window_rcostaper      ,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_RCOSTAPER,       71, 25.f); }
+LIQUID_AUTOTEST(window_kbd            ,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_KBD,             72,  0.f); }
 
 // Kaiser-Bessel derived window
-void liquid_kbd_window_test(unsigned int _n, float _beta)
+void testbench_liquid_kbd_window(liquid_autotest __q__,unsigned int _n, float _beta)
 {
     unsigned int i;
     float tol = 1e-3f;
@@ -106,77 +109,77 @@ void liquid_kbd_window_test(unsigned int _n, float _beta)
     // ensure w[i]^2 + w[i+M]^2 == 1
     unsigned int M = _n/2;
     for (i=0; i<M; i++)
-        CONTEND_DELTA(w2[i]+w2[(i+M)%_n], 1.0f, tol);
+        LIQUID_CHECK_DELTA(w2[i]+w2[(i+M)%_n], 1.0f, tol);
 
     // ensure sum(w[i]^2) == _n/2
     float sum=0.0f;
     for (i=0; i<_n; i++)
         sum += w2[i];
-    CONTEND_DELTA(sum, 0.5f*_n, tol);
+    LIQUID_CHECK_DELTA(sum, 0.5f*_n, tol);
 }
 
-void autotest_kbd_n16() { liquid_kbd_window_test(16, 10.0f); }
-void autotest_kbd_n32() { liquid_kbd_window_test(32, 20.0f); }
-void autotest_kbd_n48() { liquid_kbd_window_test(48, 12.0f); }
+LIQUID_AUTOTEST(kbd_n16,"","",0.1) { testbench_liquid_kbd_window(__q__,16, 10.0f); }
+LIQUID_AUTOTEST(kbd_n32,"","",0.1) { testbench_liquid_kbd_window(__q__,32, 20.0f); }
+LIQUID_AUTOTEST(kbd_n48,"","",0.1) { testbench_liquid_kbd_window(__q__,48, 12.0f); }
 
 // test window configuration and error handling
-void autotest_window_config()
+LIQUID_AUTOTEST(window_config,"","",0.1)
 {
     _liquid_error_downgrade_enable();
 
-    CONTEND_EQUALITY(liquid_print_windows(), LIQUID_OK);
+    LIQUID_CHECK(liquid_print_windows() ==  LIQUID_OK);
 
     // check normal cases
-    CONTEND_EQUALITY(liquid_getopt_str2window("unknown"        ), LIQUID_WINDOW_UNKNOWN); // <- no error
-    CONTEND_EQUALITY(liquid_getopt_str2window("hamming"        ), LIQUID_WINDOW_HAMMING);
-    CONTEND_EQUALITY(liquid_getopt_str2window("hann"           ), LIQUID_WINDOW_HANN);
-    CONTEND_EQUALITY(liquid_getopt_str2window("blackmanharris" ), LIQUID_WINDOW_BLACKMANHARRIS);
-    CONTEND_EQUALITY(liquid_getopt_str2window("blackmanharris7"), LIQUID_WINDOW_BLACKMANHARRIS7);
-    CONTEND_EQUALITY(liquid_getopt_str2window("kaiser"         ), LIQUID_WINDOW_KAISER);
-    CONTEND_EQUALITY(liquid_getopt_str2window("flattop"        ), LIQUID_WINDOW_FLATTOP);
-    CONTEND_EQUALITY(liquid_getopt_str2window("triangular"     ), LIQUID_WINDOW_TRIANGULAR);
-    CONTEND_EQUALITY(liquid_getopt_str2window("rcostaper"      ), LIQUID_WINDOW_RCOSTAPER);
-    CONTEND_EQUALITY(liquid_getopt_str2window("kbd"            ), LIQUID_WINDOW_KBD);
+    LIQUID_CHECK(liquid_getopt_str2window("unknown"        ) ==  LIQUID_WINDOW_UNKNOWN); // <- no error
+    LIQUID_CHECK(liquid_getopt_str2window("hamming"        ) ==  LIQUID_WINDOW_HAMMING);
+    LIQUID_CHECK(liquid_getopt_str2window("hann"           ) ==  LIQUID_WINDOW_HANN);
+    LIQUID_CHECK(liquid_getopt_str2window("blackmanharris" ) ==  LIQUID_WINDOW_BLACKMANHARRIS);
+    LIQUID_CHECK(liquid_getopt_str2window("blackmanharris7") ==  LIQUID_WINDOW_BLACKMANHARRIS7);
+    LIQUID_CHECK(liquid_getopt_str2window("kaiser"         ) ==  LIQUID_WINDOW_KAISER);
+    LIQUID_CHECK(liquid_getopt_str2window("flattop"        ) ==  LIQUID_WINDOW_FLATTOP);
+    LIQUID_CHECK(liquid_getopt_str2window("triangular"     ) ==  LIQUID_WINDOW_TRIANGULAR);
+    LIQUID_CHECK(liquid_getopt_str2window("rcostaper"      ) ==  LIQUID_WINDOW_RCOSTAPER);
+    LIQUID_CHECK(liquid_getopt_str2window("kbd"            ) ==  LIQUID_WINDOW_KBD);
     // check invalid cases
-    CONTEND_EQUALITY(liquid_getopt_str2window("invalid window" ), LIQUID_WINDOW_UNKNOWN);
+    LIQUID_CHECK(liquid_getopt_str2window("invalid window" ) ==  LIQUID_WINDOW_UNKNOWN);
 
     // invalid KBD window parameters
-    CONTEND_EQUALITY(liquid_kbd(12, 10, 10.0f), 0.0f); // index exceeds maximum
-    CONTEND_EQUALITY(liquid_kbd( 0,  0, 10.0f), 0.0f); // window length is zero
-    CONTEND_EQUALITY(liquid_kbd(12, 27, 10.0f), 0.0f); // window length is odd
+    LIQUID_CHECK(liquid_kbd(12, 10, 10.0f) ==  0.0f); // index exceeds maximum
+    LIQUID_CHECK(liquid_kbd( 0,  0, 10.0f) ==  0.0f); // window length is zero
+    LIQUID_CHECK(liquid_kbd(12, 27, 10.0f) ==  0.0f); // window length is odd
 
     float w[20];
-    CONTEND_INEQUALITY(liquid_kbd_window( 0, 10.0f, w), LIQUID_OK); // length is zero
-    CONTEND_INEQUALITY(liquid_kbd_window( 7, 10.0f, w), LIQUID_OK); // length is odd
-    CONTEND_INEQUALITY(liquid_kbd_window(20, -1.0f, w), LIQUID_OK); // beta value is negative
+    LIQUID_CHECK(liquid_kbd_window( 0, 10.0f, w) !=  LIQUID_OK); // length is zero
+    LIQUID_CHECK(liquid_kbd_window( 7, 10.0f, w) !=  LIQUID_OK); // length is odd
+    LIQUID_CHECK(liquid_kbd_window(20, -1.0f, w) !=  LIQUID_OK); // beta value is negative
 
     // invalid Kaiser window parameters
-    CONTEND_EQUALITY(liquid_kaiser(12, 10, 10.0f), 0.0f); // index exceeds maximum
-    CONTEND_EQUALITY(liquid_kaiser(12, 20, -1.0f), 0.0f); // beta value is negative
+    LIQUID_CHECK(liquid_kaiser(12, 10, 10.0f) ==  0.0f); // index exceeds maximum
+    LIQUID_CHECK(liquid_kaiser(12, 20, -1.0f) ==  0.0f); // beta value is negative
 
     // Hamming
-    CONTEND_EQUALITY(liquid_hamming(12, 10), 0.0f); // index exceeds maximum
+    LIQUID_CHECK(liquid_hamming(12, 10) ==  0.0f); // index exceeds maximum
 
     // Hann
-    CONTEND_EQUALITY(liquid_hann(12, 10), 0.0f); // index exceeds maximum
+    LIQUID_CHECK(liquid_hann(12, 10) ==  0.0f); // index exceeds maximum
 
     // Blackman-harris
-    CONTEND_EQUALITY(liquid_blackmanharris(12, 10), 0.0f); // index exceeds maximum
+    LIQUID_CHECK(liquid_blackmanharris(12, 10) ==  0.0f); // index exceeds maximum
 
     // Blackman-harris 7
-    CONTEND_EQUALITY(liquid_blackmanharris7(12, 10), 0.0f); // index exceeds maximum
+    LIQUID_CHECK(liquid_blackmanharris7(12, 10) ==  0.0f); // index exceeds maximum
 
     // flat-top
-    CONTEND_EQUALITY(liquid_flattop(12, 10), 0.0f); // index exceeds maximum
+    LIQUID_CHECK(liquid_flattop(12, 10) ==  0.0f); // index exceeds maximum
 
     // triangular
-    CONTEND_EQUALITY(liquid_triangular(12, 10, 10), 0.0f); // index exceeds maximum
-    CONTEND_EQUALITY(liquid_triangular( 7, 10, 15), 0.0f); // sub-length is out of range
-    CONTEND_EQUALITY(liquid_triangular( 1,  1,  0), 0.0f); // sub-length is zero
+    LIQUID_CHECK(liquid_triangular(12, 10, 10) ==  0.0f); // index exceeds maximum
+    LIQUID_CHECK(liquid_triangular( 7, 10, 15) ==  0.0f); // sub-length is out of range
+    LIQUID_CHECK(liquid_triangular( 1,  1,  0) ==  0.0f); // sub-length is zero
 
     // raised-cosine taper
-    CONTEND_EQUALITY(liquid_rcostaper_window(12, 10,  4), 0.0f); // index exceeds maximum
-    CONTEND_EQUALITY(liquid_rcostaper_window( 7, 10,  8), 0.0f); // taper length exceeds maximum
+    LIQUID_CHECK(liquid_rcostaper_window(12, 10,  4) ==  0.0f); // index exceeds maximum
+    LIQUID_CHECK(liquid_rcostaper_window( 7, 10,  8) ==  0.0f); // taper length exceeds maximum
 
     _liquid_error_downgrade_disable();
 }

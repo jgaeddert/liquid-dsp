@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-// test half-band filterbank (analyzer)
-void autotest_resamp2_analysis()
+LIQUID_AUTOTEST(resamp2_analysis,"test half-band filterbank (analyzer)", "", 0.1)
 {
     unsigned int m=5;       // filter semi-length (actual length: 4*m+1)
     unsigned int n=37;      // number of input samples
@@ -61,11 +60,11 @@ void autotest_resamp2_analysis()
 
     // validate output
     for (i=m; i<n-m; i++) {
-        CONTEND_DELTA( crealf(y0[i+m]), cosf(2*f0*(i+0.5f)), tol );
-        CONTEND_DELTA( cimagf(y0[i+m]), sinf(2*f0*(i+0.5f)), tol );
+        LIQUID_CHECK_DELTA( crealf(y0[i+m]), cosf(2*f0*(i+0.5f)), tol );
+        LIQUID_CHECK_DELTA( cimagf(y0[i+m]), sinf(2*f0*(i+0.5f)), tol );
 
-        CONTEND_DELTA( crealf(y1[i+m]), cosf(2*f1*(i+0.5f)), tol );
-        CONTEND_DELTA( cimagf(y1[i+m]), sinf(2*f1*(i+0.5f)), tol );
+        LIQUID_CHECK_DELTA( crealf(y1[i+m]), cosf(2*f1*(i+0.5f)), tol );
+        LIQUID_CHECK_DELTA( cimagf(y1[i+m]), sinf(2*f1*(i+0.5f)), tol );
     }
 
 #if 0
@@ -95,8 +94,7 @@ void autotest_resamp2_analysis()
 #endif
 }
 
-// test half-band filterbank (synthesizer)
-void autotest_resamp2_synthesis()
+LIQUID_AUTOTEST(resamp2_synthesis,"test half-band filterbank (synthesizer)", "", 0.1)
 {
     unsigned int m=5;       // filter semi-length (actual length: 4*m+1)
     unsigned int n=37;      // number of input samples
@@ -135,8 +133,8 @@ void autotest_resamp2_synthesis()
 
     // validate output
     for (i=m; i<n-2*m; i++) {
-        CONTEND_DELTA( crealf(y[i+2*m]), cosf(0.5f*f0*i) + cosf((M_PI+0.5f*f1)*i), tol );
-        CONTEND_DELTA( cimagf(y[i+2*m]), sinf(0.5f*f0*i) + sinf((M_PI+0.5f*f1)*i), tol );
+        LIQUID_CHECK_DELTA( crealf(y[i+2*m]), cosf(0.5f*f0*i) + cosf((M_PI+0.5f*f1)*i), tol );
+        LIQUID_CHECK_DELTA( cimagf(y[i+2*m]), sinf(0.5f*f0*i) + sinf((M_PI+0.5f*f1)*i), tol );
     }
 
 #if 0
@@ -167,7 +165,8 @@ void autotest_resamp2_synthesis()
 }
 
 // test half-band resampler filter response
-void testbench_resamp2_crcf_filter(unsigned int _m, float _as)
+void testbench_resamp2_crcf_filter(liquid_autotest __q__,
+        unsigned int _m, float _as)
 {
     // error tolerance [dB]
     float tol = 0.5f;
@@ -197,8 +196,7 @@ void testbench_resamp2_crcf_filter(unsigned int _m, float _as)
     };
     char filename[256];
     sprintf(filename,"autotest/logs/resamp2_crcf_filter_lo_m%u_as%.0f.m", _m, _as);
-    liquid_autotest_validate_psd_signal(h_0, h_len, regions_h0, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_psd_signal(__q__, h_0, h_len, regions_h0, 3, filename);
 
     // verify high-pass frequency response
     autotest_psd_s regions_h1[] = {
@@ -207,54 +205,51 @@ void testbench_resamp2_crcf_filter(unsigned int _m, float _as)
       {.fmin=+0.25+ft/2, .fmax=+0.5,       .pmin=-1, .pmax=+1,       .test_lo=1, .test_hi=1},
     };
     sprintf(filename,"autotest/logs/resamp2_crcf_filter_hi_m%u_as%.0f.m", _m, _as);
-    liquid_autotest_validate_psd_signal(h_1, h_len, regions_h1, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_psd_signal(__q__, h_1, h_len, regions_h1, 3, filename);
 }
 
-// test different configurations
-void autotest_resamp2_crcf_filter_0(){ testbench_resamp2_crcf_filter( 4, 60.0f); }
-void autotest_resamp2_crcf_filter_1(){ testbench_resamp2_crcf_filter( 7, 60.0f); }
-void autotest_resamp2_crcf_filter_2(){ testbench_resamp2_crcf_filter(12, 60.0f); }
-void autotest_resamp2_crcf_filter_3(){ testbench_resamp2_crcf_filter(15, 80.0f); }
-void autotest_resamp2_crcf_filter_4(){ testbench_resamp2_crcf_filter(15,100.0f); }
-void autotest_resamp2_crcf_filter_5(){ testbench_resamp2_crcf_filter(15,120.0f); }
+LIQUID_AUTOTEST(resamp2_crcf_filter_0,"description","",0.1){ testbench_resamp2_crcf_filter(__q__,  4, 60.0f); }
+LIQUID_AUTOTEST(resamp2_crcf_filter_1,"description","",0.1){ testbench_resamp2_crcf_filter(__q__,  7, 60.0f); }
+LIQUID_AUTOTEST(resamp2_crcf_filter_2,"description","",0.1){ testbench_resamp2_crcf_filter(__q__, 12, 60.0f); }
+LIQUID_AUTOTEST(resamp2_crcf_filter_3,"description","",0.1){ testbench_resamp2_crcf_filter(__q__, 15, 80.0f); }
+LIQUID_AUTOTEST(resamp2_crcf_filter_4,"description","",0.1){ testbench_resamp2_crcf_filter(__q__, 15,100.0f); }
+LIQUID_AUTOTEST(resamp2_crcf_filter_5,"description","",0.1){ testbench_resamp2_crcf_filter(__q__, 15,120.0f); }
 
-void autotest_resamp2_config()
+LIQUID_AUTOTEST(resamp2_config,"description","",0.1)
 {
     _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
-    CONTEND_ISNULL(resamp2_crcf_create( 0,  0.0f, 60.0f)); // m out of range
-    CONTEND_ISNULL(resamp2_crcf_create( 1,  0.0f, 60.0f)); // m out of range
-    CONTEND_ISNULL(resamp2_crcf_create( 2,  0.7f, 60.0f)); // f0 out of range
-    CONTEND_ISNULL(resamp2_crcf_create( 2, -0.7f, 60.0f)); // f0 out of range
-    CONTEND_ISNULL(resamp2_crcf_create( 2,  0.0f, -1.0f)); // as out of range
+    LIQUID_CHECK(NULL ==resamp2_crcf_create( 0,  0.0f, 60.0f)); // m out of range
+    LIQUID_CHECK(NULL ==resamp2_crcf_create( 1,  0.0f, 60.0f)); // m out of range
+    LIQUID_CHECK(NULL ==resamp2_crcf_create( 2,  0.7f, 60.0f)); // f0 out of range
+    LIQUID_CHECK(NULL ==resamp2_crcf_create( 2, -0.7f, 60.0f)); // f0 out of range
+    LIQUID_CHECK(NULL ==resamp2_crcf_create( 2,  0.0f, -1.0f)); // as out of range
 
     // create proper object and test configurations
     resamp2_crcf q = resamp2_crcf_create( 4, 0.0f, 60.0f);
-    CONTEND_EQUALITY(resamp2_crcf_get_delay(q), 2*4-1);
-    CONTEND_EQUALITY(resamp2_crcf_print(q), LIQUID_OK);
+    LIQUID_CHECK(resamp2_crcf_get_delay(q) ==  2*4-1);
+    LIQUID_CHECK(resamp2_crcf_print(q) ==  LIQUID_OK);
 
     // redesign filter with new length
     q = resamp2_crcf_recreate(q, 8, 0.0f, 60.0f);
-    CONTEND_EQUALITY(resamp2_crcf_get_delay(q), 2*8-1);
+    LIQUID_CHECK(resamp2_crcf_get_delay(q) ==  2*8-1);
 
     // redesign filter with same length, but new stop-band suppression
     q = resamp2_crcf_recreate(q, 8, 0.0f, 80.0f);
-    CONTEND_EQUALITY(resamp2_crcf_get_delay(q), 2*8-1);
+    LIQUID_CHECK(resamp2_crcf_get_delay(q) ==  2*8-1);
 
     // test setting/getting properties
     resamp2_crcf_set_scale(q, 7.22f);
     float scale = 0.0f;
     resamp2_crcf_get_scale(q, &scale);
-    CONTEND_EQUALITY(scale, 7.22f);
+    LIQUID_CHECK(scale ==  7.22f);
 
     // destroy object
     resamp2_crcf_destroy(q);
     _liquid_error_downgrade_disable();
 }
 
-// test copy method
-void autotest_resamp2_copy()
+LIQUID_AUTOTEST(resamp2_copy,"test copy method", "", 0.1)
 {
     // create original half-band resampler
     resamp2_crcf qa = resamp2_crcf_create(12,0,60.0f);
@@ -276,8 +271,8 @@ void autotest_resamp2_copy()
         resamp2_crcf_filter_execute(qa, v, &ya0, &ya1);
         resamp2_crcf_filter_execute(qb, v, &yb0, &yb1);
 
-        CONTEND_EQUALITY(ya0, yb0);
-        CONTEND_EQUALITY(ya1, yb1);
+        LIQUID_CHECK(ya0 ==  yb0);
+        LIQUID_CHECK(ya1 ==  yb1);
     }
 
     // clean up allocated objects

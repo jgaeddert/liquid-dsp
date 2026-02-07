@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-// multiply two complex buffers (simple test with visual result)
-void autotest_vectorf_mul_4()
+LIQUID_AUTOTEST(vectorf_mul_4,"multiply two buffers (simple test with visual result)","",0.1)
 {
     float tol = 4e-6; // error tolerance
     float buf_0[4] = {1.0f, 2.0f, 3.0f, 4.0f};
@@ -34,14 +33,13 @@ void autotest_vectorf_mul_4()
     float buf_test[4];
     liquid_vectorf_mul(buf_0, buf_1, 4, buf_test);
 
-    CONTEND_DELTA(buf_test[0],  1.0f, tol);
-    CONTEND_DELTA(buf_test[1], -2.0f, tol);
-    CONTEND_DELTA(buf_test[2],  6.0f, tol);
-    CONTEND_DELTA(buf_test[3], -2.0f, tol);
+    LIQUID_CHECK_DELTA(buf_test[0],  1.0f, tol);
+    LIQUID_CHECK_DELTA(buf_test[1], -2.0f, tol);
+    LIQUID_CHECK_DELTA(buf_test[2],  6.0f, tol);
+    LIQUID_CHECK_DELTA(buf_test[3], -2.0f, tol);
 }
 
-// multiply two complex buffers
-void autotest_vectorf_mul_16()
+LIQUID_AUTOTEST(vectorf_mul_16,"multiply two buffers","",0.1)
 {
     // error tolerance
     float tol = 4e-6;
@@ -75,11 +73,10 @@ void autotest_vectorf_mul_16()
     //compare result
     unsigned int i;
     for (i=0; i<16; i++)
-        CONTEND_DELTA(buf_test[i], buf_2[i], tol);
+        LIQUID_CHECK_DELTA(buf_test[i], buf_2[i], tol);
 }
 
-//
-void autotest_vectorf_mul_35()
+LIQUID_AUTOTEST(vectorf_mul_35,"multiply two buffers","",0.1)
 {
     float tol = 4e-6;
 
@@ -123,11 +120,10 @@ void autotest_vectorf_mul_35()
     //compare result
     unsigned int i;
     for (i=0; i<35; i++)
-        CONTEND_DELTA(buf_test[i], buf_2[i], tol);
+        LIQUID_CHECK_DELTA(buf_test[i], buf_2[i], tol);
 }
 
-// multiply by scalar
-void autotest_vectorf_mulscalar_4()
+LIQUID_AUTOTEST(vectorf_mulscalar_4,"multiply by scalar","",0.1)
 {
     float tol = 4e-6; // error tolerance
     float buf_0[4] = {1.0f, 2.0f,-3.0f, 4.0f};
@@ -136,13 +132,13 @@ void autotest_vectorf_mulscalar_4()
     float buf_test[4];
     liquid_vectorf_mulscalar(buf_0, 4, 2.0f, buf_test);
 
-    CONTEND_DELTA(buf_test[0],  2.0f, tol);
-    CONTEND_DELTA(buf_test[1],  4.0f, tol);
-    CONTEND_DELTA(buf_test[2], -6.0f, tol);
-    CONTEND_DELTA(buf_test[3],  8.0f, tol);
+    LIQUID_CHECK_DELTA(buf_test[0],  2.0f, tol);
+    LIQUID_CHECK_DELTA(buf_test[1],  4.0f, tol);
+    LIQUID_CHECK_DELTA(buf_test[2], -6.0f, tol);
+    LIQUID_CHECK_DELTA(buf_test[3],  8.0f, tol);
 }
 
-void autotest_vectorf_mulscalar_35()
+LIQUID_AUTOTEST(vectorf_mulscalar_35,"multiply by scalar","",0.1)
 {
     float tol = 4e-6;
 
@@ -175,6 +171,6 @@ void autotest_vectorf_mulscalar_35()
     //compare result
     unsigned int i;
     for (i=0; i<35; i++)
-        CONTEND_DELTA(buf_test[i], buf_2[i], tol);
+        LIQUID_CHECK_DELTA(buf_test[i], buf_2[i], tol);
 }
 

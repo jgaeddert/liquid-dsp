@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-//
-// AUTOTEST: Reed-Solomon codecs
-//
-void autotest_reedsolomon_223_255()
+LIQUID_AUTOTEST(reedsolomon_223_255,"Reed-Solomon codecs","",0.1)
 {
 #if !LIBFEC_ENABLED
     liquid_error(LIQUID_EUMODE,"Reed-Solomon codes unavailable (install libfec)");
@@ -40,7 +37,7 @@ void autotest_reedsolomon_223_255()
 
     // compute and test encoded message length
     unsigned int enc_msg_len = fec_get_enc_msg_length(LIQUID_FEC_RS_M8,dec_msg_len);
-    CONTEND_EQUALITY( enc_msg_len, 255 );
+    LIQUID_CHECK( enc_msg_len ==  255 );
 
     // create arrays
     unsigned char msg_org[dec_msg_len]; // original message
@@ -68,7 +65,7 @@ void autotest_reedsolomon_223_255()
     fec_decode(q, dec_msg_len, msg_rec, msg_dec);
 
     // validate data are the same
-    CONTEND_SAME_DATA(msg_org, msg_dec, dec_msg_len);
+    LIQUID_CHECK_ARRAY(msg_org, msg_dec, dec_msg_len);
 
     // clean up objects
     fec_destroy(q);

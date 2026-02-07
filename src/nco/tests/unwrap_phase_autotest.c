@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,13 +21,10 @@
  */
 
 #include <complex.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-//
-// AUTOTEST: regular phase-unwrapping
-//
-void autotest_nco_unwrap_phase()
+LIQUID_AUTOTEST(nco_unwrap_phase,"regular phase-unwrapping","",0.1)
 {
     unsigned int n=32;  // number of steps
     float tol = 1e-6f;  // error tolerance
@@ -59,6 +56,6 @@ void autotest_nco_unwrap_phase()
 
     // compare input to output
     for (i=0; i<n; i++)
-        CONTEND_DELTA( phi[i], phi_hat[i], tol );
+        LIQUID_CHECK_DELTA( phi[i], phi_hat[i], tol );
 }
 
