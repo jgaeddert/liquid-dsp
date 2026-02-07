@@ -291,7 +291,7 @@ int fskframegen_assemble(fskframegen     _q,
                          fec_scheme      _fec1)
 {
 #if 1
-    liquid_error(LIQUID_ENOIMP,"fskframegen_assemble(), base functionality not implemented; ignoring input parameters for now");
+    liquid_log_warn("fskframegen_assemble(), base functionality not implemented; ignoring input parameters for now");
 #else
     // set properties
     _q->payload_dec_len = _payload_len;
