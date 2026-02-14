@@ -43,6 +43,10 @@ int liquid_autotest_print_info(liquid_autotest _q)
 // print test status
 int liquid_autotest_print_status(liquid_autotest _q)
 {
+    // don't print status for skipped tests
+    if (_q->status == LIQUID_AUTOTEST_SKIP)
+        return LIQUID_OK;
+
     char strbuf[92];
     char * s = strbuf;
     int log_level = LIQUID_INFO;
