@@ -9,6 +9,9 @@
       - color output for enhanced visibility (optionally disabled)
       - compile time configurations for enhanced customization
   * build
+    - performed a static memory analysis test to substantially reduce memory
+      used on the stack in favor of dynamically allocating it on the stack;
+      improves stability for multi-threaded processing
     - introduced new argument parsing header to simplify creating variables,
       parsing command-line options, printing help, and validating results;
       refactored examples and removed over 2,000 lines of redundant code.

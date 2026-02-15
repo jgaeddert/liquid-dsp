@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2025 Joseph Gaeddert
+# Copyright (c) 2007 - 2026 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -74,6 +74,7 @@ COVERAGE_FLAGS  = @COVERAGE_OPTION@ # dynamic library linker needs separate flag
 CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_MSG_OPTION@ @ARCH_OPTION@ ${COVERAGE_FLAGS}
 CPPFLAGS	= @CPPFLAGS@ $(INCLUDE_CFLAGS)
 CFLAGS		= $(CONFIG_CFLAGS) -Wall -fPIC -Wno-deprecated -Wno-deprecated-declarations
+CFLAGS		+= -D LIQUID_LOGGING_ENABLE -D LIQUID_COLOR_ENABLE
 CXXFLAGS	= $(CFLAGS) -std=c++14 -Wno-return-type-c-linkage
 LDFLAGS		= @LDFLAGS@
 LIBS		= @LIBS@
@@ -193,6 +194,21 @@ channel_autotests :=
 channel_benchmarks :=						\
 
 #src/channel/bench/channel_cccf_benchmark.c
+
+#
+# MODULE : core
+#
+
+core_objects :=							\
+	src/core/src/error.o					\
+	src/core/src/logging.o					\
+
+$(core_objects) : %.o : %.c $(include_headers)
+
+core_autotests :=						\
+
+core_benchmarks :=						\
+
 
 # 
 # MODULE : dotprod
@@ -1162,6 +1178,7 @@ objects :=							\
 	$(audio_objects)					\
 	$(buffer_objects)					\
 	$(channel_objects)					\
+	$(core_objects)						\
 	$(dotprod_objects)					\
 	$(equalization_objects)					\
 	$(fec_objects)						\
@@ -1596,6 +1613,7 @@ example_programs :=						\
 	examples/lpc_example					\
 	examples/libliquid_example				\
 	examples/logging_example				\
+	examples/logging_extensive_example			\
 	examples/matched_filter_example				\
 	examples/math_lngamma_example				\
 	examples/math_primitive_root_example			\

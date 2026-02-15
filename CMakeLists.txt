@@ -110,6 +110,10 @@ add_library(buffer OBJECT
 add_library(channel OBJECT
     src/channel/src/channel_cccf.c)
 
+add_library(core OBJECT
+    src/core/src/logging.c
+    src/core/src/error.c)
+
 add_library(dotprod OBJECT)
 
 add_library(equalization OBJECT
@@ -286,7 +290,7 @@ add_library(utility OBJECT
 add_library(vector OBJECT)
 
 foreach(lib
-    agc audio buffer channel dotprod equalization fec fft filter framing math
+    agc audio buffer channel core dotprod equalization fec fft filter framing math
     matrix modem multichannel nco optim quantization random sequence utility
     vector)
     target_include_directories(${lib}
@@ -380,6 +384,7 @@ add_library(${LIBNAME}
     $<TARGET_OBJECTS:audio>
     $<TARGET_OBJECTS:buffer>
     $<TARGET_OBJECTS:channel>
+    $<TARGET_OBJECTS:core>
     $<TARGET_OBJECTS:dotprod>
     $<TARGET_OBJECTS:equalization>
     $<TARGET_OBJECTS:fec>
@@ -400,11 +405,11 @@ add_library(${LIBNAME}
 add_library(${NAMESPACE}::${LIBNAME} ALIAS ${LIBNAME})
 
 if(ENABLE_LOGGING)
-    target_compile_definitions(${LIBNAME} PUBLIC LIQUID_LOGGING_ENABLE)
+    add_compile_definitions(LIQUID_LOGGING_ENABLE)
 endif(ENABLE_LOGGING)
 
 if(ENABLE_COLOR)
-    target_compile_definitions(${LIBNAME} PUBLIC LIQUID_COLOR_ENABLE)
+    add_compile_definitions(LIQUID_COLOR_ENABLE)
 endif(ENABLE_COLOR)
 
 # TODO: build static library in addition to shared
@@ -435,6 +440,7 @@ if(COVERAGE)
     target_compile_options(audio        PRIVATE -coverage -O0 -g)
     target_compile_options(buffer       PRIVATE -coverage -O0 -g)
     target_compile_options(channel      PRIVATE -coverage -O0 -g)
+    target_compile_options(core         PRIVATE -coverage -O0 -g)
     target_compile_options(dotprod      PRIVATE -coverage -O0 -g)
     target_compile_options(equalization PRIVATE -coverage -O0 -g)
     target_compile_options(fec          PRIVATE -coverage -O0 -g)
