@@ -1,6 +1,8 @@
 # cmake build file for liquid-dsp
 cmake_minimum_required(VERSION 3.10)
 
+#set(CMAKE_C_STANDARD 11)
+
 # parse version number from include/liquid.h
 include(cmake/version.cmake)
 get_liquid_version("${CMAKE_CURRENT_SOURCE_DIR}/include/liquid.h" LIQUID_VERSION)
@@ -16,6 +18,7 @@ option(BUILD_BENCHMARKS  "Set to ON to build benchmark program"      ON)
 option(BUILD_SHARED_LIBS "Set to ON to build shared object library"  ON)
 option(ENABLE_SIMD       "Set to ON to build SIMD extensions"        ON)
 option(FIND_SIMD         "Set to ON to find SIMD extensions"         ON)
+option(FIND_THREADS      "Set to ON to find threading library"       ON)
 option(FIND_FFTW         "Set to ON to find FFTW library"            ON)
 option(BUILD_SANDBOX     "Set to ON to build sandbox programs"       OFF)
 option(BUILD_DOC         "Set to ON to build documentation"          OFF)
@@ -62,6 +65,15 @@ if (FIND_FFTW)
     find_package(fftw3f)
 endif()
 
+# cross-platform threads (e.g. thread.h for C11
+# https://cmake.org/cmake/help/latest/module/FindThreads.html
+# https://en.cppreference.com/w/c/header/threads
+if (FIND_THREADS)
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    find_package(Threads)
+endif()
+
 # global flags
 if (MSVC)
     # warning level 4
@@ -97,6 +109,10 @@ add_library(buffer OBJECT
 
 add_library(channel OBJECT
     src/channel/src/channel_cccf.c)
+
+add_library(core OBJECT
+    src/core/src/logging.c
+    src/core/src/error.c)
 
 add_library(dotprod OBJECT)
 
@@ -274,7 +290,7 @@ add_library(utility OBJECT
 add_library(vector OBJECT)
 
 foreach(lib
-    agc audio buffer channel dotprod equalization fec fft filter framing math
+    agc audio buffer channel core dotprod equalization fec fft filter framing math
     matrix modem multichannel nco optim quantization random sequence utility
     vector)
     target_include_directories(${lib}
@@ -368,6 +384,7 @@ add_library(${LIBNAME}
     $<TARGET_OBJECTS:audio>
     $<TARGET_OBJECTS:buffer>
     $<TARGET_OBJECTS:channel>
+    $<TARGET_OBJECTS:core>
     $<TARGET_OBJECTS:dotprod>
     $<TARGET_OBJECTS:equalization>
     $<TARGET_OBJECTS:fec>
@@ -388,11 +405,11 @@ add_library(${LIBNAME}
 add_library(${NAMESPACE}::${LIBNAME} ALIAS ${LIBNAME})
 
 if(ENABLE_LOGGING)
-    target_compile_definitions(${LIBNAME} PUBLIC LIQUID_LOGGING_ENABLE)
+    add_compile_definitions(LIQUID_LOGGING_ENABLE)
 endif(ENABLE_LOGGING)
 
 if(ENABLE_COLOR)
-    target_compile_definitions(${LIBNAME} PUBLIC LIQUID_COLOR_ENABLE)
+    add_compile_definitions(LIQUID_COLOR_ENABLE)
 endif(ENABLE_COLOR)
 
 # TODO: build static library in addition to shared
@@ -423,6 +440,7 @@ if(COVERAGE)
     target_compile_options(audio        PRIVATE -coverage -O0 -g)
     target_compile_options(buffer       PRIVATE -coverage -O0 -g)
     target_compile_options(channel      PRIVATE -coverage -O0 -g)
+    target_compile_options(core         PRIVATE -coverage -O0 -g)
     target_compile_options(dotprod      PRIVATE -coverage -O0 -g)
     target_compile_options(equalization PRIVATE -coverage -O0 -g)
     target_compile_options(fec          PRIVATE -coverage -O0 -g)
@@ -447,6 +465,9 @@ endif(COVERAGE)
 
 
 target_link_libraries(${LIBNAME} c m)
+if (threads_Found)
+    target_link_libraries(${LIBNAME} Threads::Threads)
+endif()
 if (fftw3f_FOUND)
     target_link_libraries(${LIBNAME} fftw3f)
 endif()

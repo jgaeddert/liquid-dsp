@@ -263,7 +263,7 @@ FIRPFB() FIRPFB(_copy)(FIRPFB() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("firpfb_%s_create(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config("firpfb_%s_copy(), object cannot be NULL", EXTENSION_FULL);
 
     // create filter object and copy base parameters
     FIRPFB() q_copy     = (FIRPFB()) malloc(sizeof(struct FIRPFB(_s)));

@@ -336,6 +336,8 @@ Here is a table of CMake options available for configuring liquid:
 +------------------------+---------+--------------------------------------------------------------------+
 | ``FIND_SIMD``          | ON      | Try to find available SIMD instruction sets on host computer       |
 +------------------------+---------+--------------------------------------------------------------------+
+| ``FIND_THREADS``       | ON      | Try to find available threading library for concurrency            |
++------------------------+---------+--------------------------------------------------------------------+
 | ``FIND_FFTW``          | ON      | Try to find `FFTW <http://www.fftw.org)>`_ if available            |
 +------------------------+---------+--------------------------------------------------------------------+
 | ``BUILD_SANDBOX``      | OFF     | Compile sandbox (testing) programs                                 |
