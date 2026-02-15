@@ -113,6 +113,7 @@ set(SANDBOX
     symsync_crcf_test
     symsync_eqlms_test
     thiran_allpass_iir_test
+    timespec_test
     throttle_test
     vectorcf_test
     )
