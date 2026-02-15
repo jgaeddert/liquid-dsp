@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2025 Joseph Gaeddert
+# Copyright (c) 2007 - 2026 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -194,6 +194,20 @@ channel_autotests :=						\
 channel_benchmarks :=						\
 
 #src/channel/bench/channel_cccf_benchmark.c
+
+#
+# MODULE : core
+#
+
+core_objects :=							\
+	src/core/src/error.o					\
+
+$(core_objects) : %.o : %.c $(include_headers)
+
+core_autotests :=						\
+
+core_benchmarks :=						\
+
 
 # 
 # MODULE : dotprod
@@ -1174,6 +1188,7 @@ objects :=							\
 	$(audio_objects)					\
 	$(buffer_objects)					\
 	$(channel_objects)					\
+	$(core_objects)						\
 	$(dotprod_objects)					\
 	$(equalization_objects)					\
 	$(fec_objects)						\
