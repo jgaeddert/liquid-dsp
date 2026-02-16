@@ -371,17 +371,20 @@ int liquid_vlog(liquid_logger _q,
     _q->count[_level]++;
 
     // create event
-    time_t t = time(NULL);
     struct liquid_log_event_s event = {
         .format    = _format,
         .file      = _file,
         .line      = _line,
         .level     = _level,
-        .timestamp = localtime(&t),
     };
-    event.time_str[
-        strftime(event.time_str, sizeof(event.time_str), _q->time_fmt, event.timestamp)
-    ] = '\0';
+
+    // set formatted timestamp
+    // NOTE: the string format is hard-coded here
+    clock_gettime(CLOCK_REALTIME, &event.timestamp);
+    time_t time = event.timestamp.tv_sec;
+    struct tm * now = localtime(&time); // parse out time object into local time components
+    size_t n = strftime(event.time_str, sizeof(event.time_str), "%Y-%m-%d %T", now);
+    sprintf(event.time_str+n,".%.3ld", event.timestamp.tv_nsec / 1000000);
 
     // lock
     if (_q->lock_callback != NULL)

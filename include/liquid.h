@@ -33,6 +33,7 @@ extern "C" {
 #include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 //
 // Make sure the version and version number macros weren't defined by
@@ -198,13 +199,14 @@ typedef int (*liquid_lock_callback)(int _lock, void * context);
 
 struct liquid_log_event_s
 {
-    va_list      args;      // variadic function arguments
-    const char * format;    // message format
-    const char * file;      // source file name
-    unsigned int line;      // source line number
-    int          level;     // log level
-    struct tm *  timestamp; // timestamp of event
-    char         time_str[64];  // formatting time buffer
+    va_list         args;           // variadic function arguments
+    const char *    format;         // message format
+    const char *    file;           // source file name
+    unsigned int    line;           // source line number
+    int             level;          // log level
+    //struct tm *     timestamp;      // timestamp of event
+    struct timespec timestamp;      // timestamp of event
+    char            time_str[64];   // formatting time buffer
 };
 
 // create logger object with default parameters
