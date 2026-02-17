@@ -130,7 +130,7 @@ typedef enum {
     LIQUID_EIRANGE,
 
     // invalid mode; examples:
-    //  - try to create a modem of type 'LIQUID_MODEM_XXX' which does not exit
+    //  - try to create a modem of type 'LIQUID_MODEM_XXX' which does not exist
     LIQUID_EIMODE,
 
     // unsupported mode (e.g. LIQUID_FEC_CONV_V27 with 'libfec' not installed)

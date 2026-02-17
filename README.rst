@@ -362,6 +362,7 @@ Available Modules
 * **buffer**: internal buffering, circular/static, ports (threaded)
 * **channel**: additive noise, multi-path fading, carrier phase/frequency
   offsets, timing phase/rate offsets
+* **core**: core functionality (error handling)
 * **dotprod**: inner dot products (real, complex), vector sum of squares
 * **equalization**: adaptive equalizers: least mean-squares, recursive
   least squares, semi-blind
