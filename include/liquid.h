@@ -1037,8 +1037,8 @@ int EQLMS(_copy_coefficients)(EQLMS() _q,                                   \
 /*  _w      : pointer to output coefficients array, [size: _n x 1]      */  \
 DEPRECATED("use eqlms_xxxt_copy_coefficients(...) instead",                 \
 void EQLMS(_get_weights)(EQLMS() _q,                                        \
-                         T *     _w);                                       \
-)                                                                           \
+                         T *     _w)                                        \
+);                                                                          \
                                                                             \
 /* Push sample into equalizer internal buffer                           */  \
 /*  _q      :   equalizer object                                        */  \
@@ -1109,8 +1109,8 @@ int EQLMS(_train)(EQLMS()      _q,                                          \
                   T *          _w,                                          \
                   T *          _x,                                          \
                   T *          _d,                                          \
-                  unsigned int _n);                                         \
-)                                                                           \
+                  unsigned int _n)                                          \
+);                                                                          \
 
 LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_RRRF, float)
 LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_CCCF, liquid_float_complex)
@@ -5573,16 +5573,16 @@ int framesync64_execute(framesync64            _q,
                         unsigned int           _n);
 
 DEPRECATED("debugging enabled by default; return non-zero value to export file",
-int framesync64_debug_enable(framesync64 _q);
-)
+int framesync64_debug_enable(framesync64 _q)
+);
 
 DEPRECATED("debugging enabled by default; return non-zero value to export file",
-int framesync64_debug_disable(framesync64 _q);
-)
+int framesync64_debug_disable(framesync64 _q)
+);
 
 DEPRECATED("binary debugging file exported on non-zero return value",
-int framesync64_debug_print(framesync64 _q, const char * _filename);
-)
+int framesync64_debug_print(framesync64 _q, const char * _filename)
+);
 
 // set prefix for exporting debugging files, default: "framesync64"
 //  _q      : frame sync object
@@ -5928,8 +5928,8 @@ int gmskframegen_write(gmskframegen           _q,
 //  _buf        : output buffer, [size: k x 1]
 DEPRECATED("use gmskframegen_write(...) instead",
 int gmskframegen_write_samples(gmskframegen           _q,
-                               liquid_float_complex * _buf);
-)
+                               liquid_float_complex * _buf)
+);
 
 
 //
@@ -5968,11 +5968,11 @@ framedatastats_s gmskframesync_get_framedatastats  (gmskframesync _q);
 
 // debug methods
 DEPRECATED("debug methods add complexity and provide little value",
-  int gmskframesync_debug_enable(gmskframesync _q); )
+  int gmskframesync_debug_enable(gmskframesync _q) );
 DEPRECATED("debug methods add complexity and provide little value",
-  int gmskframesync_debug_disable(gmskframesync _q); )
+  int gmskframesync_debug_disable(gmskframesync _q) );
 DEPRECATED("debug methods add complexity and provide little value",
-  int gmskframesync_debug_print(gmskframesync _q, const char * _filename); )
+  int gmskframesync_debug_print(gmskframesync _q, const char * _filename) );
 
 
 //
@@ -8968,12 +8968,12 @@ int FIRPFBCHR(_print)(FIRPFBCHR() _q);                                      \
                                                                             \
 /* get number of output channels to channelizer                         */  \
 DEPRECATED("use firpfbchr_get_num_channels(...) instead",                   \
-unsigned int FIRPFBCHR(_get_M)(FIRPFBCHR() _q); )                           \
+unsigned int FIRPFBCHR(_get_M)(FIRPFBCHR() _q)  );                          \
 unsigned int FIRPFBCHR(_get_num_channels)(FIRPFBCHR() _q);                  \
                                                                             \
 /* get decimation factor for channelizer                                */  \
 DEPRECATED("use firpfbchr_get_decim_rate(...) instead",                     \
-unsigned int FIRPFBCHR(_get_P)(FIRPFBCHR() _q); )                           \
+unsigned int FIRPFBCHR(_get_P)(FIRPFBCHR() _q) );                           \
 unsigned int FIRPFBCHR(_get_decim_rate)(FIRPFBCHR() _q);                    \
                                                                             \
 /* get semi-length to channelizer filter prototype                      */  \
