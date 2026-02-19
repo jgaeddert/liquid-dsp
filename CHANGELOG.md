@@ -12,6 +12,7 @@
     - added CMake rules to create exportable interface, option for building
       shared vs. static library, and simplified directory inclusion
       (thanks @burnbot-alt)
+    - Fixed annoying deprecation warnings (thanks @AHSauge and @oe1rsa)
 
 ## 1.7.0 - 2025-02-01
 
