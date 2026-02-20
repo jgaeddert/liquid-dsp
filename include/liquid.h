@@ -5990,6 +5990,12 @@ typedef struct {
 
 typedef struct dsssframegen_s * dsssframegen;
 
+// create DSSS frame generator with specific parameter
+//  _n       :   spreading factor
+//  _props   :   frame properties (FEC, etc.)
+dsssframegen dsssframegen_create_set(unsigned int _n,
+                                     dsssframegenprops_s * _props);
+// create default DSSS frame generator (n = 64)
 dsssframegen dsssframegen_create(dsssframegenprops_s * _props);
 int dsssframegen_destroy(dsssframegen _q);
 int dsssframegen_reset(dsssframegen _q);
@@ -6022,6 +6028,14 @@ int dsssframegen_write_samples(dsssframegen           _q,
 
 typedef struct dsssframesync_s * dsssframesync;
 
+// create DSSS frame synchronizer
+//  _n          :   spreading factor
+//  _callback   :   callback function
+//  _userdata   :   user data pointer passed to callback function
+dsssframesync dsssframesync_create_set(unsigned int _n,
+                                       framesync_callback _callback,
+                                       void * _userdata);
+// create DSSS frame synchronizer with default parameter (n = 64)
 dsssframesync dsssframesync_create(framesync_callback _callback, void * _userdata);
 int dsssframesync_destroy             (dsssframesync _q);
 int dsssframesync_print               (dsssframesync _q);
