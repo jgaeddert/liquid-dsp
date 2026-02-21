@@ -10,4 +10,5 @@ The core module provides basic functionality that is fundamental to
     :maxdepth: 1
 
     error
+    logging
 
