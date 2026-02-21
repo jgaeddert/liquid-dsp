@@ -131,7 +131,7 @@ typedef enum {
     LIQUID_EIRANGE,
 
     // invalid mode; examples:
-    //  - try to create a modem of type 'LIQUID_MODEM_XXX' which does not exit
+    //  - try to create a modem of type 'LIQUID_MODEM_XXX' which does not exist
     LIQUID_EIMODE,
 
     // unsupported mode (e.g. LIQUID_FEC_CONV_V27 with 'libfec' not installed)
@@ -1191,8 +1191,8 @@ int EQLMS(_copy_coefficients)(EQLMS() _q,                                   \
 /*  _w      : pointer to output coefficients array, [size: _n x 1]      */  \
 DEPRECATED("use eqlms_xxxt_copy_coefficients(...) instead",                 \
 void EQLMS(_get_weights)(EQLMS() _q,                                        \
-                         T *     _w);                                       \
-)                                                                           \
+                         T *     _w)                                        \
+);                                                                          \
                                                                             \
 /* Push sample into equalizer internal buffer                           */  \
 /*  _q      :   equalizer object                                        */  \
@@ -1263,8 +1263,8 @@ int EQLMS(_train)(EQLMS()      _q,                                          \
                   T *          _w,                                          \
                   T *          _x,                                          \
                   T *          _d,                                          \
-                  unsigned int _n);                                         \
-)                                                                           \
+                  unsigned int _n)                                          \
+);                                                                          \
 
 LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_RRRF, float)
 LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_CCCF, liquid_float_complex)
@@ -5730,16 +5730,16 @@ int framesync64_execute(framesync64            _q,
                         unsigned int           _n);
 
 DEPRECATED("debugging enabled by default; return non-zero value to export file",
-int framesync64_debug_enable(framesync64 _q);
-)
+int framesync64_debug_enable(framesync64 _q)
+);
 
 DEPRECATED("debugging enabled by default; return non-zero value to export file",
-int framesync64_debug_disable(framesync64 _q);
-)
+int framesync64_debug_disable(framesync64 _q)
+);
 
 DEPRECATED("binary debugging file exported on non-zero return value",
-int framesync64_debug_print(framesync64 _q, const char * _filename);
-)
+int framesync64_debug_print(framesync64 _q, const char * _filename)
+);
 
 // set prefix for exporting debugging files, default: "framesync64"
 //  _q      : frame sync object
@@ -6085,8 +6085,8 @@ int gmskframegen_write(gmskframegen           _q,
 //  _buf        : output buffer, [size: k x 1]
 DEPRECATED("use gmskframegen_write(...) instead",
 int gmskframegen_write_samples(gmskframegen           _q,
-                               liquid_float_complex * _buf);
-)
+                               liquid_float_complex * _buf)
+);
 
 
 //
@@ -6125,11 +6125,11 @@ framedatastats_s gmskframesync_get_framedatastats  (gmskframesync _q);
 
 // debug methods
 DEPRECATED("debug methods add complexity and provide little value",
-  int gmskframesync_debug_enable(gmskframesync _q); )
+  int gmskframesync_debug_enable(gmskframesync _q) );
 DEPRECATED("debug methods add complexity and provide little value",
-  int gmskframesync_debug_disable(gmskframesync _q); )
+  int gmskframesync_debug_disable(gmskframesync _q) );
 DEPRECATED("debug methods add complexity and provide little value",
-  int gmskframesync_debug_print(gmskframesync _q, const char * _filename); )
+  int gmskframesync_debug_print(gmskframesync _q, const char * _filename) );
 
 
 //
@@ -6696,9 +6696,9 @@ typedef int (*QDSYNC(_callback))(TO *         _buf,                         \
                                  void *       _context);                    \
                                                                             \
 /* create detector with generic sequence                                */  \
-/*  _s          : sample sequence                                       */  \
-/*  _s_len      : length of sample sequence                             */  \
-/*  _ftype      : filter type                                           */  \
+/*  _s          : symbol sequence                                       */  \
+/*  _s_len      : length of symbol sequence                             */  \
+/*  _ftype      : Nyquist filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
 /*  _k          : samples per symbol                                    */  \
 /*  _m          : filter semi-length                                    */  \
 /*  _beta       : filter excess bandwidth factor                        */  \
@@ -6713,6 +6713,30 @@ QDSYNC() QDSYNC(_create_linear)(TI *              _s,                       \
                                 QDSYNC(_callback) _callback,                \
                                 void *            _context);                \
                                                                             \
+/* create detector with sequence of CP-FSK symbols                      */  \
+/*  _seq        : symbol sequence                                       */  \
+/*  _seq_len    : length of symbol sequence                             */  \
+/*  _ftype      : Nyquist filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
+/*  _bps        : bits per symbol, 0 < _bps <= 8                        */  \
+/*  _h          : modulation index, _h > 0                              */  \
+/*  _k          : samples per symbol                                    */  \
+/*  _m          : filter semi-length                                    */  \
+/*  _beta       : filter excess bandwidth factor                        */  \
+/*  _cpfsk_type : cpfsk filter type (e.g. LIQUID_CPFSK_SQUARE)          */  \
+/*  _callback   : user-defined callback                                 */  \
+/*  _context    : user-defined context                                  */  \
+QDSYNC() QDSYNC(_create_cpfsk)(unsigned char *   _seq,                      \
+                               unsigned int      _seq_len,                  \
+                               int               _ftype,                    \
+                               unsigned int      _bps,                      \
+                               float             _h,                        \
+                               unsigned int      _k,                        \
+                               unsigned int      _m,                        \
+                               float             _beta,                     \
+                               int               _cpfsk_type,               \
+                               QDSYNC(_callback) _callback,                 \
+                               void *            _context);                 \
+                                                                            \
 /* Copy object recursively including all internal objects and state     */  \
 QDSYNC() QDSYNC(_copy)(QDSYNC() _q);                                        \
                                                                             \
@@ -6726,7 +6750,7 @@ int QDSYNC(_reset)(QDSYNC() _q);                                            \
 int QDSYNC(_print)(QDSYNC() _q);                                            \
                                                                             \
 /* Get detection state                                                  */  \
-int QDSYNC(_is_detected)(QDSYNC() _q);                                  \
+int QDSYNC(_is_detected)(QDSYNC() _q);                                      \
                                                                             \
 /* Get detection threshold                                              */  \
 float QDSYNC(_get_threshold)(QDSYNC() _q);                                  \
@@ -9148,12 +9172,12 @@ int FIRPFBCHR(_print)(FIRPFBCHR() _q);                                      \
                                                                             \
 /* get number of output channels to channelizer                         */  \
 DEPRECATED("use firpfbchr_get_num_channels(...) instead",                   \
-unsigned int FIRPFBCHR(_get_M)(FIRPFBCHR() _q); )                           \
+unsigned int FIRPFBCHR(_get_M)(FIRPFBCHR() _q)  );                          \
 unsigned int FIRPFBCHR(_get_num_channels)(FIRPFBCHR() _q);                  \
                                                                             \
 /* get decimation factor for channelizer                                */  \
 DEPRECATED("use firpfbchr_get_decim_rate(...) instead",                     \
-unsigned int FIRPFBCHR(_get_P)(FIRPFBCHR() _q); )                           \
+unsigned int FIRPFBCHR(_get_P)(FIRPFBCHR() _q) );                           \
 unsigned int FIRPFBCHR(_get_decim_rate)(FIRPFBCHR() _q);                    \
                                                                             \
 /* get semi-length to channelizer filter prototype                      */  \

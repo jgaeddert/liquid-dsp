@@ -80,7 +80,7 @@ if (MSVC)
     add_compile_options(/W4)
 else()
     # additional warnings
-    add_compile_options(-Wall -fPIC -O3 -Wno-deprecated -Wno-deprecated-declarations)
+    add_compile_options(-Wall -fPIC -O3)
 endif()
 
 include (CheckTypeSize)
