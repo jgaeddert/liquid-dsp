@@ -167,10 +167,13 @@ typedef enum {
 extern const char * liquid_error_str[LIQUID_NUM_ERRORS];
 const char *        liquid_error_info(liquid_error_code _code);
 
-// logging format and options
+
+//
+// logging: format and options
+//
 #define LIQUID_LOG_TIMESTAMP     (1U << 9)   // log the timestamp
 #define LIQUID_LOG_LEVEL_FULL    (1U << 8)   // log the full level, e.g. "warning", "info"
-#define LIQUID_LOG_LEVEL_5       (1U << 7)   // log the level truncated to 4 characters, e.g. "warn", "info"
+#define LIQUID_LOG_LEVEL_5       (1U << 7)   // log the level truncated to 5 characters, e.g. "warn", "info"
 #define LIQUID_LOG_LEVEL_1       (1U << 6)   // log the level truncated to a single character, e.g. "W", "I"
 #define LIQUID_LOG_FILENAME_FULL (1U << 5)   // log the full filename
 #define LIQUID_LOG_FILENAME_32   (1U << 4)   // log the filename, trucated to 32 characters maximum
@@ -197,6 +200,7 @@ typedef int (*liquid_log_callback)(liquid_log_event event, void * context);
 // lock callback function
 typedef int (*liquid_lock_callback)(int _lock, void * context);
 
+// event to log
 struct liquid_log_event_s
 {
     va_list         args;           // variadic function arguments
@@ -204,8 +208,7 @@ struct liquid_log_event_s
     const char *    file;           // source file name
     unsigned int    line;           // source line number
     int             level;          // log level
-    //struct tm *     timestamp;      // timestamp of event
-    struct timespec timestamp;      // timestamp of event
+    struct timespec timestamp;      // timestamp of event with nanosecond precision
     char            time_str[64];   // formatting time buffer
 };
 
