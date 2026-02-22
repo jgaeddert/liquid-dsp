@@ -178,3 +178,39 @@ Some presets:
 
 ``LIQUID_LOG_DEFAULT`` : ...
 
+
+Logging to File
+---------------
+
+It is often convenient to log events to file simultaneously with logging
+to the standard output. You can conveniently add a callback to log to a
+file with a log level that might differ from the main logging level
+using the :c:`liquid_logger_add_file()` method:
+
+.. code-block:: c
+
+    // open a file for writing
+    FILE * fid = fopen("debug.log","w");
+    fid = liquid_logger_add_file(NULL,fid,LIQUID_DEBUG);
+
+    // ... run some code ...
+
+    fclose(fid); // closing the file here is fine
+
+    // ... run some more code ...
+
+Note that you may close the file at any point to stop logging. This will
+not cause an error as the logger will check if the file is open and return
+gracefully if not. This is convenient for checking only critical parts of
+the code.
+
+For convenience, you can use the :c:`liquid_logger_add_filename()` method:
+
+.. code-block:: c
+
+    // add logging to a file based on its filename alone
+    FILE * fid = liquid_logger_add_filename(NULL,filename,LIQUID_DEBUG);
+
+The formatting of the file will match the main object's format, but with
+color disabled.
+
