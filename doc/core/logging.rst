@@ -1,22 +1,30 @@
 
+.. _logging:
+
 Logging
 =======
 
-|liquid| includes a baseline logging capability
-that was heavily influenced by
+|liquid| includes a baseline logging capability to allow run-time control of
+terminal output (level, formatting, etc.).
+Logging functionality is heavily influenced by
 `https://github.com/rxi/log.c <https://github.com/rxi/log.c>`_
-
-Basline features:
+(including compile-time variadic arguments, callbacks, and file output),
+but includes the following extensions
 
 * Minimal overhead
 * Ability to write to files and/or custom callbacks
 * Level selectable dynamically at run-time
-* Compile-time ability to remove capability for speed improvements
-* Ability to create loggers separate from internal |liquid| logging
 * Customizable formatting (color, file, line number, date/timestamp, variadic arguments)
 * Thread-safe
 * Custom logging callbacks
+
+* Compile-time ability to remove capability for speed improvements
+* Internal static logger used for tracing specific to |liquid|
+* Integration with :ref:`error` to log errors with the library
 * Counters for tracking number of log events of each type
+* Customizable output formatting (time stamps
+* Ability to create loggers separate from internal |liquid| logging
+
 
 Log Levels
 ----------
