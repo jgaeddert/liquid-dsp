@@ -1,6 +1,5 @@
 char __docstr__[] =
-"This example demonstrates logging capabilities with liquid,"
-" heavily influenced by: https://github.com/rxi/log.c";
+"This example demonstrates logging capabilities with liquid.";
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>

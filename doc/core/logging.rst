@@ -2,7 +2,9 @@
 Logging
 =======
 
-|liquid| includes a baseline logging capability.
+|liquid| includes a baseline logging capability
+that was heavily influenced by
+`https://github.com/rxi/log.c <https://github.com/rxi/log.c>`_
 
 Basline features:
 
@@ -213,4 +215,34 @@ For convenience, you can use the :c:`liquid_logger_add_filename()` method:
 
 The formatting of the file will match the main object's format, but with
 color disabled.
+
+
+Custom Callbacks
+----------------
+
+Logging events to files are just callbacks that are invoked internally.
+You can create a custom callback that you can handle separately for
+additional filtering and granularity.
+
+.. code-block:: c
+
+    // user-defined callback
+    int test_callback(liquid_log_event event, void * context, int config)
+    {
+        printf("  custom callback invoked! timestamp=%s, context=%s\n",
+            event->time_str, (char*)context);
+        return 0;
+    }
+
+    int main(int argc, char*argv[])
+    {
+        // register the callback
+        char context[] = "custom context";
+        liquid_logger_add_callback(NULL, test_callback, context, LIQUID_LEVEL_INFO);
+
+        // log an event
+        liquid_log_warning("could not allocate memory for %u bytes", 1024);
+
+        return 0;
+    }
 
