@@ -254,3 +254,55 @@ additional filtering and granularity.
         return 0;
     }
 
+Thread-safe Operation
+---------------------
+
+The loggging object in |liquid| does not include mutual exclusions (mutexes)
+by default as it isn't certain if linking against
+`pthreads <https://www.man7.org/linux/man-pages/man7/pthreads.7.html>`_
+is possible;
+however supporting thread-safe operation can be enabled with the use of the
+:api:`liquid_logger_set_lock()` method.
+This allows you to pass a custom callback to lock/unlock a mutex whenever
+an event needs to be logged.
+For a single event, the callback is invoked once to lock the mutex, and again
+to unlock it.
+This follows the design pattern from the excellent
+`https://github.com/rxi/log.c <https://github.com/rxi/log.c>`_
+with a basic example shown below:
+
+.. code-block:: c
+
+    #include <liquid/liquid.h>
+    #include <stdbool.h>
+
+    // user-defined lock function; non-atomic spin lock for demonstration
+    // (replace with e.g. pthread_mutex)
+    int spinlock(int _lock, void * _flag)
+    {
+        if (_lock) {
+            // wait for unlock
+            while (*((bool*)_flag))
+                ; // burn your cpu to the ground
+            *((bool*)_flag) = true;
+        } else {
+            // unlock
+            *((bool*)_flag) = false;
+        }
+        return LIQUID_OK;
+    }
+
+    int main()
+    {
+        // set custom lock
+        locked = false;
+        liquid_logger_set_lock(NULL, spinlock, NULL);
+
+        // run as necesssary...
+        liquid_log_info("logging an event");
+    }
+
+
+An interactive extensive example can be found in
+:file:`examples/logging_spinlock_example.c`.
+

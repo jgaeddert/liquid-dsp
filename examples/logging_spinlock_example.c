@@ -22,14 +22,9 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // set custom lock
-    liquid_log_info("setting lock to false");
     locked = false;
-    liquid_log_info("setting lock callback");
     liquid_logger_set_lock(NULL, spinlock, NULL);
-    liquid_log_info("setting signal handler");
     signal(SIGINT, &signal_handler);
-
-    liquid_log_info("running loop");
     int i = 10;
     while (i--)
     {
