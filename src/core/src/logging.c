@@ -277,6 +277,7 @@ int liquid_logger_set_lock(liquid_logger        _q,
                            liquid_lock_callback _callback,
                            void *               _context)
 {
+    _q = liquid_logger_safe_cast(_q);
     _q->lock_callback = _callback;
     _q->lock_context  = _context;
     return LIQUID_OK;
