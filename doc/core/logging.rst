@@ -58,8 +58,123 @@ If your terminal does not support color output, you can explicity disable all AN
 color flags
 with the ``cmake`` flag ``-D ENABLE_COLOR=OFF``.
 
-Run-Time Options
-----------------
+Future options
 
-.. todo:: write up run-time options
+* File path delimiter, e.g. "/", for parsing paths
+* Truncte file path to local build directory. That is, instead of
+  ``/home/username/src/liquid-dsp/src/core/src/logging.c`` just use
+  ``liquid-dsp/src/core/logging.c``.
+  There is probably a way to do this on POSIX systems with CMake
+* Fixed logging format and level (no run-time decisions)
+
+
+Run-Time Formatting Options
+---------------------------
+
+Formatting for logging is typically configured at run time using a
+bit field.
+
+Date and time options
+
+.. code-block::
+
+    LIQUID_LOG_RAWTIME
+        Display the raw timestamp in terms of seconds from :c:`time(NULL);`
+        Example: "1771769351"
+
+    LIQUID_LOG_DATETIME
+        Standard datetime using strftime and "%Y-%m-%d %T" format.
+        Example: "2026-02-22 08:18:35"
+
+    LIQUID_LOG_DATE
+        Log just the date using strftime and "%Y-%m-%d" format.
+        Example: "2026-02-22"
+
+    LIQUID_LOG_TIME
+        Log just the time using strftime and "%T" format.
+        Example: "08:18:35"
+
+    LIQUID_LOG_DATETIME_UTC
+        TBD
+
+    LIQUID_LOG_DATE_UTC
+        TBD
+
+    LIQUID_LOG_MS
+        Include milliseconds to the end of a timestamp if requested.
+        Example: "08:18:35.123"
+
+    LIQUID_LOG_US
+        Include microseconds to the end of a timestamp if requested.
+        Example: "08:18:35.123456"
+
+    LIQUID_LOG_NS
+        Include nanoseconds to the end of a timestamp if requested.
+        Example: "08:18:35.123456789"
+
+These options can be used in conjuction with one another to customize formatting.
+For example:
+
+.. code-block:: c
+
+    liquid_logger_config(NULL, LIQUID_LOG_RAWTIME | LIQUID_LOG_MS);
+    liquid_log_info("custom timestamp");
+    // 1771769351.445 [info ] custom timestamp
+
+Color options
+
+.. code-block::
+
+    LIQUID_LOG_COLOR
+        Enable color output.
+
+Note that you can also set custom "colors" (ANSI formatting) within the object itself.
+
+Level options
+
+.. code-block::
+
+    LIQUID_LOG_LEVEL_BRACKETS
+        (TBD) Add brackets around the log level.
+        Example: "[trace]"
+
+    LIQUID_LOG_LEVEL_FULL
+        Log the full level string.
+        Example: "[warning]"
+
+    LIQUID_LOG_LEVEL_SHORT
+        Log a shortened version of the level, truncated to 5 characters.
+        Example: "[warn ]"
+
+    LIQUID_LOG_LEVEL_ONE
+        Log a one-character representation of the level.
+        Example: "[W]"
+
+    LIQUID_LOG_LEVEL_NUMBER
+        Log a numeral representation of the level.
+        Example: "[3]"
+
+File name and line number options
+
+.. code-block::
+
+    LIQUID_LOG_FILENAME
+        Log the full filename to the screen
+        Example: "/path/to/my/source/file.c"
+
+    LIQUID_LOG_FILENAME_SHORT
+        Log just the local file, assuming a "/" delimiter
+        Example: "file.c"
+
+    LIQUID_LOG_FILENAME_TRUNCATED
+        Log a truncated version of the file if the name extends
+        too long, e.g. "...source/file.c"
+
+    LIQUID_LOG_LINE
+        Include the line number.
+        Example: "/path/to/my/source/file.c:123"
+
+Some presets:
+
+``LIQUID_LOG_DEFAULT`` : ...
 
