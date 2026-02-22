@@ -195,7 +195,7 @@ typedef struct liquid_log_event_s * liquid_log_event;
 typedef struct liquid_logger_s    * liquid_logger;
 
 // logging callback function
-typedef int (*liquid_log_callback)(liquid_log_event event, void * context);
+typedef int (*liquid_log_callback)(liquid_log_event event, void * context, int config);
 
 // lock callback function
 typedef int (*liquid_lock_callback)(int _lock, void * context);

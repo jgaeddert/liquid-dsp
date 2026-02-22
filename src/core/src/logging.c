@@ -181,9 +181,11 @@ int liquid_logger_callback_stream(liquid_log_event _event,
 
 // log to file
 int liquid_logger_callback_file(liquid_log_event _event,
-                                void *           _fid)
+                                void *           _fid,
+                                int              _config)
 {
-    return liquid_logger_callback_stream(_event, (FILE*)_fid, LIQUID_LOG_DEFAULT);
+    // use same format, but explicitly disable color
+    return liquid_logger_callback_stream(_event, (FILE*)_fid, _config & ~LIQUID_LOG_COLOR);
 }
 
 
@@ -402,7 +404,7 @@ int liquid_vlog(liquid_logger _q,
     for (i=0; i<LIQUID_LOGGER_MAX_CALLBACKS && _q->cb_function[i] != NULL; i++) {
         if (_level >= _q->cb_level[i]) {
             va_copy(event.args, _ap);
-            _q->cb_function[i](&event, _q->cb_context[i]);
+            _q->cb_function[i](&event, _q->cb_context[i], _q->config);
             va_end(event.args);
         }
     }
