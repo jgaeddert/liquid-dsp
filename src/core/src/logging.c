@@ -360,12 +360,16 @@ int liquid_vlog(liquid_logger _q,
                 const char *  _format,
                 va_list       _ap)
 {
-    // set to global object if input is NULL (default)
-    _q = liquid_logger_safe_cast(_q);
-
     // validate level
     if (_level < 0 || _level >= 6)
         return liquid_error(LIQUID_EIRANGE,"log level (%d) out of range", _level);
+
+    // set to global object if input is NULL (default)
+    _q = liquid_logger_safe_cast(_q);
+
+    // lock
+    if (_q->lock_callback != NULL)
+        _q->lock_callback(1, _q->lock_context);
 
     // update count
     _q->count[_level]++;
@@ -385,10 +389,6 @@ int liquid_vlog(liquid_logger _q,
     struct tm * now = localtime(&time); // parse out time object into local time components
     size_t n = strftime(event.time_str, sizeof(event.time_str), "%Y-%m-%d %T", now);
     sprintf(event.time_str+n,".%.3ld", event.timestamp.tv_nsec / 1000000);
-
-    // lock
-    if (_q->lock_callback != NULL)
-        _q->lock_callback(1, _q->lock_context);
 
     // output to stdout
     if (_level >= _q->level) {
