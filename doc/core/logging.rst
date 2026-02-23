@@ -8,21 +8,22 @@ Logging
 terminal output (level, formatting, etc.).
 Logging functionality is heavily influenced by
 `https://github.com/rxi/log.c <https://github.com/rxi/log.c>`_
-(including compile-time variadic arguments, callbacks, and file output),
-but includes the following extensions
+and includes the following features:
 
 * Minimal overhead
 * Ability to write to files and/or custom callbacks
+* `variadic arguments <https://en.cppreference.com/w/c/language/variadic.html>`_
 * Level selectable dynamically at run-time
-* Customizable formatting (color, file, line number, date/timestamp, variadic arguments)
 * Thread-safe
 * Custom logging callbacks
 
+|liquid| logging includes the following additional features:
+
+* Customizable formatting (color, file, line number, date/timestamp)
 * Compile-time ability to remove capability for speed improvements
 * Internal static logger used for tracing specific to |liquid|
 * Integration with :ref:`error` to log errors with the library
 * Counters for tracking number of log events of each type
-* Customizable output formatting (time stamps
 * Ability to create loggers separate from internal |liquid| logging
 
 
@@ -296,7 +297,7 @@ with a basic example shown below:
     {
         // set custom lock
         locked = false;
-        liquid_logger_set_lock(NULL, spinlock, NULL);
+        liquid_logger_set_lock(NULL, spinlock, &locked);
 
         // run as necesssary...
         liquid_log_info("logging an event");
