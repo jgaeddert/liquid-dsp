@@ -348,6 +348,9 @@ Here is a table of CMake options available for configuring liquid:
 +------------------------+---------+--------------------------------------------------------------------+
 | ``ENABLE_LOGGING``     | ON      | Enable global logging capabilities                                 |
 +------------------------+---------+--------------------------------------------------------------------+
+| ``LOGGING_LEVEL``      | trace   | Set minimum logging level to compile;                              |
+|                        |         | select from "trace", "debug", "info", "warn", "error", or "fatal"  |
++------------------------+---------+--------------------------------------------------------------------+
 | ``ENABLE_COLOR``       | ON      | Enable use of color terminal output                                |
 +------------------------+---------+--------------------------------------------------------------------+
 

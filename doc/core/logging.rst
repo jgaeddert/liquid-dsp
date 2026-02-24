@@ -69,6 +69,11 @@ If your terminal does not support color output, you can explicity disable all AN
 color flags
 with the ``cmake`` flag ``-D ENABLE_COLOR=OFF``.
 
+If you don't want logging values below a certain threshold to even be compiled, you
+can specify the minimum level with the ``cmake`` flag ``LOGGING_LEVEL``.
+For example, if you want to remove code for logging "trace" and "debug" levels, you
+can run ``cmake -D LOGGING_LEVEL=info``.
+
 Future options
 
 * File path delimiter, e.g. "/", for parsing paths

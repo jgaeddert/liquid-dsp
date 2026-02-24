@@ -309,12 +309,42 @@ enum {
     LIQUID_FATAL
 };
 
-#define liquid_log_trace(...) liquid_log(NULL,LIQUID_TRACE,__FILE__,__LINE__,__VA_ARGS__)
-#define liquid_log_debug(...) liquid_log(NULL,LIQUID_DEBUG,__FILE__,__LINE__,__VA_ARGS__)
-#define liquid_log_info(...)  liquid_log(NULL,LIQUID_INFO, __FILE__,__LINE__,__VA_ARGS__)
-#define liquid_log_warn(...)  liquid_log(NULL,LIQUID_WARN, __FILE__,__LINE__,__VA_ARGS__)
-#define liquid_log_error(...) liquid_log(NULL,LIQUID_ERROR,__FILE__,__LINE__,__VA_ARGS__)
-#define liquid_log_fatal(...) liquid_log(NULL,LIQUID_FATAL,__FILE__,__LINE__,__VA_ARGS__)
+#ifdef LIQUID_LOG_TRACE
+#  define liquid_log_trace(...) liquid_log(NULL,LIQUID_TRACE,__FILE__,__LINE__,__VA_ARGS__)
+#else
+#  define liquid_log_trace(...) {}
+#endif
+
+#ifdef LIQUID_LOG_DEBUG
+#  define liquid_log_debug(...) liquid_log(NULL,LIQUID_DEBUG,__FILE__,__LINE__,__VA_ARGS__)
+#else
+#  define liquid_log_debug(...) {}
+#endif
+
+#ifdef LIQUID_LOG_INFO
+#  define liquid_log_info(...)  liquid_log(NULL,LIQUID_INFO, __FILE__,__LINE__,__VA_ARGS__)
+#else
+#  define liquid_log_info(...) {}
+#endif
+
+#ifdef LIQUID_LOG_WARN
+#  define liquid_log_warn(...)  liquid_log(NULL,LIQUID_WARN, __FILE__,__LINE__,__VA_ARGS__)
+#else
+#  define liquid_log_warn(...) {}
+#endif
+
+#ifdef LIQUID_LOG_ERROR
+#  define liquid_log_error(...) liquid_log(NULL,LIQUID_ERROR,__FILE__,__LINE__,__VA_ARGS__)
+#else
+#  define liquid_log_error(...) {}
+#endif
+
+#ifdef LIQUID_LOG_FATAL
+#  define liquid_log_fatal(...) liquid_log(NULL,LIQUID_FATAL,__FILE__,__LINE__,__VA_ARGS__)
+#else
+#  define liquid_log_fata(...) {}
+#endif
+
 
 // provide exit value based on global logging
 int liquid_exit();
