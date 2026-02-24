@@ -1,8 +1,6 @@
 # cmake build file for liquid-dsp
 cmake_minimum_required(VERSION 3.10)
 
-#set(CMAKE_C_STANDARD 11)
-
 # parse version number from include/liquid.h
 include(cmake/version.cmake)
 get_liquid_version("${CMAKE_CURRENT_SOURCE_DIR}/include/liquid.h" LIQUID_VERSION)
@@ -42,8 +40,8 @@ cmake_policy(SET CMP0076 NEW)
 set(LIBNAME liquid)
 set(NAMESPACE liquid)
 
-# require a C99 compiler for all targets
-set(CMAKE_C_STANDARD 99)
+# require a C11 compiler for all targets
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set(CMAKE_CXX_STANDARD 14 CACHE STRING "C++ version selection")  # or 11, 14, 17, 20
@@ -54,6 +52,11 @@ include (CheckIncludeFile)
 include (CheckFunctionExists)
 include (CheckLibraryExists)
 include (CheckSymbolExists)
+
+#check_symbol_exists(timespec_get "time.h" HAVE_TIMESPEC_GET)
+#if (HAVE_TIMESPEC_GET)
+#    add_compile_definitions(HAVE_TIMESPEC_GET)
+#endif()
 
 # check for hardware acceleration
 if (ENABLE_SIMD AND FIND_SIMD)
