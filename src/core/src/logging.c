@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -387,11 +388,21 @@ int liquid_vlog(liquid_logger _q,
 
     // set formatted timestamp
     // NOTE: the string format is hard-coded here
-    clock_gettime(CLOCK_REALTIME, &event.timestamp);
-    time_t time = event.timestamp.tv_sec;
-    struct tm * now = localtime(&time); // parse out time object into local time components
-    size_t n = strftime(event.time_str, sizeof(event.time_str), "%Y-%m-%d %T", now);
-    sprintf(event.time_str+n,".%.3ld", event.timestamp.tv_nsec / 1000000);
+    //clock_gettime(CLOCK_REALTIME, &event.timestamp);
+    timespec_get(&event.timestamp, TIME_UTC);
+    bool format_utc = false;
+    bool format_ms  = true;
+    size_t n;
+    if (format_utc)
+        n = strftime(event.time_str, sizeof(event.time_str), "%Y-%m-%dT%T", gmtime(&event.timestamp.tv_sec));
+    else
+        n = strftime(event.time_str, sizeof(event.time_str), "%Y-%m-%d %T", localtime(&event.timestamp.tv_sec));
+
+    if (format_ms)
+        sprintf(event.time_str+n,".%.3ld", event.timestamp.tv_nsec / 1000000);
+
+    if (format_utc)
+        strcat(event.time_str, "Z");
 
     // output to stdout
     if (_level >= _q->level) {
