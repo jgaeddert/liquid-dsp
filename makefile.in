@@ -201,10 +201,7 @@ channel_benchmarks :=						\
 
 core_objects :=							\
 	src/core/src/error.o					\
-<<<<<<< HEAD
 	src/core/src/logging.o					\
-=======
->>>>>>> master
 
 $(core_objects) : %.o : %.c $(include_headers)
 
