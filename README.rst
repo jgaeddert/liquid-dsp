@@ -348,6 +348,9 @@ Here is a table of CMake options available for configuring liquid:
 +------------------------+---------+--------------------------------------------------------------------+
 | ``ENABLE_LOGGING``     | ON      | Enable global logging capabilities                                 |
 +------------------------+---------+--------------------------------------------------------------------+
+| ``LOGGING_LEVEL``      | trace   | Set minimum logging level to compile;                              |
+|                        |         | select from "trace", "debug", "info", "warn", "error", or "fatal"  |
++------------------------+---------+--------------------------------------------------------------------+
 | ``ENABLE_COLOR``       | ON      | Enable use of color terminal output                                |
 +------------------------+---------+--------------------------------------------------------------------+
 
@@ -368,6 +371,7 @@ Available Modules
 * **buffer**: internal buffering, circular/static, ports (threaded)
 * **channel**: additive noise, multi-path fading, carrier phase/frequency
   offsets, timing phase/rate offsets
+* **core**: core functionality (error handling)
 * **dotprod**: inner dot products (real, complex), vector sum of squares
 * **equalization**: adaptive equalizers: least mean-squares, recursive
   least squares, semi-blind

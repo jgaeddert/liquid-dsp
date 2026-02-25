@@ -37,10 +37,22 @@ int main(int argc, char*argv[])
         gettimeofday(&tv, NULL);
         time_t t = tv.tv_sec; // time_t is really just a long int representing seconds
         printf("time_t t = %ld + %d\n", t, tv.tv_usec);
-        struct tm * now = localtime(&t); // parse out time object into local time components
         char time_str[64]; // string to hold formatted time
-        size_t n = strftime(time_str, sizeof(time_str), "%Y-%m-%d %T", now);
+        size_t n = strftime(time_str, sizeof(time_str), "%Y-%m-%d %T", localtime(&tv.tv_sec));
         sprintf(time_str+n,".%.3d", tv.tv_usec / 1000);
+        printf("parsed: %s\n\n", time_str);
+    }
+
+    // 3: get even higher resolution time
+    {
+        printf("method 3:\n");
+        struct timespec ts; // get both seconds & nanoseconds
+        timespec_get(&ts, TIME_UTC);
+        time_t t = ts.tv_sec; // time_t is really just a long int representing seconds
+        printf("time_t t = %ld + %ld\n", t, ts.tv_nsec);
+        char time_str[64]; // string to hold formatted time
+        size_t n = strftime(time_str, sizeof(time_str), "%Y-%m-%d %T", localtime(&ts.tv_sec));
+        sprintf(time_str+n,".%.9ld", ts.tv_nsec);
         printf("parsed: %s\n\n", time_str);
     }
 

@@ -1,8 +1,6 @@
 # cmake build file for liquid-dsp
 cmake_minimum_required(VERSION 3.10)
 
-#set(CMAKE_C_STANDARD 11)
-
 # parse version number from include/liquid.h
 include(cmake/version.cmake)
 get_liquid_version("${CMAKE_CURRENT_SOURCE_DIR}/include/liquid.h" LIQUID_VERSION)
@@ -25,6 +23,7 @@ option(BUILD_DOC         "Set to ON to build documentation"          OFF)
 option(COVERAGE          "Set to ON to build with code coverage"     OFF)
 #option(PROFILE           "Set to ON to build with profiling"         OFF)
 option(ENABLE_LOGGING    "Set to ON to enable full logging"          ON)
+set(LOGGING_LEVEL "trace" CACHE STRING "Set minimum logging level to compile")
 option(ENABLE_COLOR      "Set to ON to enable color terminal output" ON)
 
 if(COVERAGE)
@@ -41,8 +40,8 @@ cmake_policy(SET CMP0076 NEW)
 set(LIBNAME liquid)
 set(NAMESPACE liquid)
 
-# require a C99 compiler for all targets
-set(CMAKE_C_STANDARD 99)
+# require a C11 compiler for all targets
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set(CMAKE_CXX_STANDARD 14 CACHE STRING "C++ version selection")  # or 11, 14, 17, 20
@@ -53,6 +52,11 @@ include (CheckIncludeFile)
 include (CheckFunctionExists)
 include (CheckLibraryExists)
 include (CheckSymbolExists)
+
+#check_symbol_exists(timespec_get "time.h" HAVE_TIMESPEC_GET)
+#if (HAVE_TIMESPEC_GET)
+#    add_compile_definitions(HAVE_TIMESPEC_GET)
+#endif()
 
 # check for hardware acceleration
 if (ENABLE_SIMD AND FIND_SIMD)
@@ -80,7 +84,7 @@ if (MSVC)
     add_compile_options(/W4)
 else()
     # additional warnings
-    add_compile_options(-Wall -fPIC -O3 -Wno-deprecated -Wno-deprecated-declarations)
+    add_compile_options(-Wall -fPIC -O3)
 endif()
 
 include (CheckTypeSize)
@@ -407,6 +411,39 @@ add_library(${NAMESPACE}::${LIBNAME} ALIAS ${LIBNAME})
 if(ENABLE_LOGGING)
     add_compile_definitions(LIQUID_LOGGING_ENABLE)
 endif(ENABLE_LOGGING)
+
+# set minimum logging level for compilation
+set(LOGGING_LEVELS "trace;debug;info;warn;error;fatal")
+list(FIND LOGGING_LEVELS ${LOGGING_LEVEL} LOGGING_INDEX)
+#message("LOG: ${LOGGING_LEVEL} -> ${LOGGING_INDEX}")
+if (${LOGGING_INDEX} LESS 0)
+    message(FATAL_ERROR "Unsupported logging level '${LOGGING_LEVEL}', select one of: ${LOGGING_LEVELS}")
+endif()
+
+if(${LOGGING_INDEX} LESS_EQUAL 0)
+    add_compile_definitions(LIQUID_LOG_TRACE)
+endif()
+
+if(${LOGGING_INDEX} LESS_EQUAL 1)
+    add_compile_definitions(LIQUID_LOG_DEBUG)
+endif()
+
+if(${LOGGING_INDEX} LESS_EQUAL 2)
+    add_compile_definitions(LIQUID_LOG_INFO)
+endif()
+
+if(${LOGGING_INDEX} LESS_EQUAL 3)
+    add_compile_definitions(LIQUID_LOG_WARN)
+endif()
+
+if(${LOGGING_INDEX} LESS_EQUAL 4)
+    add_compile_definitions(LIQUID_LOG_ERROR)
+endif()
+
+if(${LOGGING_INDEX} LESS_EQUAL 5)
+    add_compile_definitions(LIQUID_LOG_FATAL)
+endif()
+
 
 if(ENABLE_COLOR)
     add_compile_definitions(LIQUID_COLOR_ENABLE)

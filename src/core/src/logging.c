@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -181,9 +182,11 @@ int liquid_logger_callback_stream(liquid_log_event _event,
 
 // log to file
 int liquid_logger_callback_file(liquid_log_event _event,
-                                void *           _fid)
+                                void *           _fid,
+                                int              _config)
 {
-    return liquid_logger_callback_stream(_event, (FILE*)_fid, LIQUID_LOG_DEFAULT);
+    // use same format, but explicitly disable color
+    return liquid_logger_callback_stream(_event, (FILE*)_fid, _config & ~LIQUID_LOG_COLOR);
 }
 
 
@@ -275,6 +278,7 @@ int liquid_logger_set_lock(liquid_logger        _q,
                            liquid_lock_callback _callback,
                            void *               _context)
 {
+    _q = liquid_logger_safe_cast(_q);
     _q->lock_callback = _callback;
     _q->lock_context  = _context;
     return LIQUID_OK;
@@ -360,32 +364,45 @@ int liquid_vlog(liquid_logger _q,
                 const char *  _format,
                 va_list       _ap)
 {
-    // set to global object if input is NULL (default)
-    _q = liquid_logger_safe_cast(_q);
-
     // validate level
     if (_level < 0 || _level >= 6)
         return liquid_error(LIQUID_EIRANGE,"log level (%d) out of range", _level);
+
+    // set to global object if input is NULL (default)
+    _q = liquid_logger_safe_cast(_q);
+
+    // lock
+    if (_q->lock_callback != NULL)
+        _q->lock_callback(1, _q->lock_context);
 
     // update count
     _q->count[_level]++;
 
     // create event
-    time_t t = time(NULL);
     struct liquid_log_event_s event = {
         .format    = _format,
         .file      = _file,
         .line      = _line,
         .level     = _level,
-        .timestamp = localtime(&t),
     };
-    event.time_str[
-        strftime(event.time_str, sizeof(event.time_str), _q->time_fmt, event.timestamp)
-    ] = '\0';
 
-    // lock
-    if (_q->lock_callback != NULL)
-        _q->lock_callback(1, _q->lock_context);
+    // set formatted timestamp
+    // NOTE: the string format is hard-coded here
+    //clock_gettime(CLOCK_REALTIME, &event.timestamp);
+    timespec_get(&event.timestamp, TIME_UTC);
+    bool format_utc = false;
+    bool format_ms  = true;
+    size_t n;
+    if (format_utc)
+        n = strftime(event.time_str, sizeof(event.time_str), "%Y-%m-%dT%T", gmtime(&event.timestamp.tv_sec));
+    else
+        n = strftime(event.time_str, sizeof(event.time_str), "%Y-%m-%d %T", localtime(&event.timestamp.tv_sec));
+
+    if (format_ms)
+        sprintf(event.time_str+n,".%.3ld", event.timestamp.tv_nsec / 1000000);
+
+    if (format_utc)
+        strcat(event.time_str, "Z");
 
     // output to stdout
     if (_level >= _q->level) {
@@ -399,7 +416,7 @@ int liquid_vlog(liquid_logger _q,
     for (i=0; i<LIQUID_LOGGER_MAX_CALLBACKS && _q->cb_function[i] != NULL; i++) {
         if (_level >= _q->cb_level[i]) {
             va_copy(event.args, _ap);
-            _q->cb_function[i](&event, _q->cb_context[i]);
+            _q->cb_function[i](&event, _q->cb_context[i], _q->config);
             va_end(event.args);
         }
     }
