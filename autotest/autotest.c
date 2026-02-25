@@ -53,7 +53,7 @@ int liquid_autotest_print_status(liquid_autotest _q)
 
     s += sprintf(s,"%s ", _q->name);
     unsigned int j;
-    for (j=strlen(_q->name); j<48; j++)
+    for (j=strlen(_q->name); j<40; j++)
         s += sprintf(s,".");
     switch(_q->status) {
     case LIQUID_AUTOTEST_PASS:
