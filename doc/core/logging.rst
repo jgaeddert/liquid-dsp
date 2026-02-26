@@ -279,35 +279,39 @@ with a basic example shown below:
 
 .. code-block:: c
 
-    #include <liquid/liquid.h>
+    #include <pthread.h>
     #include <stdbool.h>
+    #include <liquid/liquid.h>
 
-    // user-defined lock function; non-atomic spin lock for demonstration
-    // (replace with e.g. pthread_mutex)
-    int spinlock(int _lock, void * _flag)
+    // user-defined lock function
+    int lock_callback(int _lock, void * _context)
     {
-        if (_lock) {
-            // wait for unlock
-            while (*((bool*)_flag))
-                ; // burn your cpu to the ground
-            *((bool*)_flag) = true;
-        } else {
-            // unlock
-            *((bool*)_flag) = false;
-        }
+        pthread_mutex_t * mutex = (pthread_mutex_t*)_context;
+        if (_lock)
+            pthread_mutex_lock(mutex);
+        else
+            pthread_mutex_unlock(mutex);
         return LIQUID_OK;
     }
 
     int main()
     {
-        // set custom lock
-        locked = false;
-        liquid_logger_set_lock(NULL, spinlock, &locked);
+        // create mutex
+        pthread_mutex_t mutex;
+        pthread_mutex_init(&mutex,NULL);
 
-        // run as necesssary...
-        liquid_log_info("logging an event");
+        // set lock function callback
+        liquid_logger_set_lock(NULL, lock_callback, &mutex);
+
+        // run as necesssary across as many threads as needed
+        {
+            liquid_log_info("logging an event");
+        }
+
+        // clean it up
+        pthread_mutex_destroy(&mutex);
+        return 0;
     }
-
 
 An interactive extensive example can be found in
 :file:`examples/logging_spinlock_example.c`.
