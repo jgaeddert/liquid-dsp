@@ -171,23 +171,53 @@ const char *        liquid_error_info(liquid_error_code _code);
 //
 // logging: format and options
 //
-#define LIQUID_LOG_TIMESTAMP     (1U << 9)   // log the timestamp
-#define LIQUID_LOG_LEVEL_FULL    (1U << 8)   // log the full level, e.g. "warning", "info"
-#define LIQUID_LOG_LEVEL_5       (1U << 7)   // log the level truncated to 5 characters, e.g. "warn", "info"
-#define LIQUID_LOG_LEVEL_1       (1U << 6)   // log the level truncated to a single character, e.g. "W", "I"
-#define LIQUID_LOG_FILENAME_FULL (1U << 5)   // log the full filename
-#define LIQUID_LOG_FILENAME_32   (1U << 4)   // log the filename, trucated to 32 characters maximum
-#define LIQUID_LOG_FILENAME_20   (1U << 3)   // log the filename, trucated to 20 characters maximum
-#define LIQUID_LOG_FILENAME_12   (1U << 2)   // log the filename, trucated to 12 characters maximum
-#define LIQUID_LOG_LINE          (1U << 1)   // log the line number
-#define LIQUID_LOG_COLOR         (1U << 0)   // log in color
+
+// date and time (choose one)
+#define LIQUID_LOG_RAWTIME          (1U << 31) // log the raw timestamp, e.g. "1771769351"
+#define LIQUID_LOG_DATETIME         (1U << 30) // "2026-02-22 08:18:35"
+#define LIQUID_LOG_DATE             (1U << 29) // "2026-02-22"
+#define LIQUID_LOG_TIME             (1U << 28) // "08:18:35"
+// date options
+#define LIQUID_LOG_UTC              (1U << 26) // TBD
+// time options (choose one or none)
+#define LIQUID_LOG_MS               (1U << 24) // "08:18:35.123"
+#define LIQUID_LOG_US               (1U << 23) // "08:18:35.123456"
+#define LIQUID_LOG_NS               (1U << 22) // "08:18:35.123456789"
+// log level (choose one or none)
+#define LIQUID_LOG_LEVEL_FULL       (1U << 19) // "warning"
+#define LIQUID_LOG_LEVEL_SHORT      (1U << 18) // "warn "
+#define LIQUID_LOG_LEVEL_ONE        (1U << 17) // "W"
+#define LIQUID_LOG_LEVEL_NUMBER     (1U << 16) // "3"
+// log level options
+#define LIQUID_LOG_LEVEL_BRACKETS   (1U << 15) // "[trace]"
+// filename options (choose one or none)
+#define LIQUID_LOG_FILENAME         (1U << 12) // "/path/to/my/source/file.c"
+#define LIQUID_LOG_FILENAME_SHORT   (1U << 11) // "file.c"
+#define LIQUID_LOG_FILENAME_TRUNC   (1U << 10) // "...source/file.c"
+// line number options
+#define LIQUID_LOG_LINE             (1U <<  8) // "/path/to/my/source/file.c:123"
+// color options
+#define LIQUID_LOG_COLOR            (1U <<  4) // log in color
+
+//#define LIQUID_LOG_TIMESTAMP     (1U <<  9) // log the timestamp
+//#define LIQUID_LOG_LEVEL_FULL    (1U <<  8) // log the full level, e.g. "warning", "info"
+//#define LIQUID_LOG_LEVEL_5       (1U <<  7) // log the level truncated to 5 characters, e.g. "warn", "info"
+//#define LIQUID_LOG_LEVEL_1       (1U <<  6) // log the level truncated to a single character, e.g. "W", "I"
+//#define LIQUID_LOG_FILENAME_FULL (1U <<  5) // log the full filename
+//#define LIQUID_LOG_FILENAME_32   (1U <<  4) // log the filename, trucated to 32 characters maximum
+//#define LIQUID_LOG_FILENAME_20   (1U <<  3) // log the filename, trucated to 20 characters maximum
+//#define LIQUID_LOG_FILENAME_12   (1U <<  2) // log the filename, trucated to 12 characters maximum
+//#define LIQUID_LOG_LINE          (1U <<  1) // log the line number
+//#define LIQUID_LOG_COLOR         (1U <<  0) // log in color
 //#define LIQUID_LOG_LEVEL         LIQUID_LOG_LEVEL_FULL
 //#define LIQUID_LOG_FILENAME      LIQUID_LOG_FILENAME_20
-// some default settings
-#define LIQUID_LOG_FULL    (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_FULL | LIQUID_LOG_FILENAME_FULL | LIQUID_LOG_LINE)
-#define LIQUID_LOG_CONCISE (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_5    | LIQUID_LOG_FILENAME_20   | LIQUID_LOG_LINE)
-#define LIQUID_LOG_COMPACT (LIQUID_LOG_TIMESTAMP | LIQUID_LOG_LEVEL_5)
-#define LIQUID_LOG_DEFAULT (LIQUID_LOG_COMPACT)
+
+// presets
+#define LIQUID_LOG_FULL    (LIQUID_LOG_DATETIME)
+#define LIQUID_LOG_CONCISE (LIQUID_LOG_DATETIME)
+#define LIQUID_LOG_COMPACT (LIQUID_LOG_DATETIME)
+#define LIQUID_LOG_DEFAULT (LIQUID_LOG_DATETIME | LIQUID_LOG_LEVEL_BRACKETS | LIQUID_LOG_LEVEL_SHORT | LIQUID_LOG_FILENAME | LIQUID_LOG_LINE)
+
 // number of available logging levels
 #define LIQUID_LOG_NUM_LEVELS (6)
 

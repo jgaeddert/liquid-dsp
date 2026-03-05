@@ -1614,6 +1614,8 @@ example_programs :=						\
 	examples/libliquid_example				\
 	examples/logging_example				\
 	examples/logging_extensive_example			\
+	examples/logging_format_example				\
+	examples/logging_spinlock_example			\
 	examples/matched_filter_example				\
 	examples/math_lngamma_example				\
 	examples/math_primitive_root_example			\

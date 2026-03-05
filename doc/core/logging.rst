@@ -92,6 +92,8 @@ bit field.
 
 Date and time options
 
+.. todo:: include relative time from start?
+
 .. code-block::
 
     LIQUID_LOG_RAWTIME
