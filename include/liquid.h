@@ -8866,6 +8866,9 @@ int FIRPFBCH(_destroy)(FIRPFBCH() _q);                                      \
 /* Clear/reset firpfbch internal state                                  */  \
 int FIRPFBCH(_reset)(FIRPFBCH() _q);                                        \
                                                                             \
+/* Set the delay of channelizer decimator                               */  \
+int FIRPFBCH(_set_decimate_delay)(FIRPFBCH() _q, unsigned int _d);          \
+                                                                            \
 /* Print firpfbch internal parameters to stdout                         */  \
 int FIRPFBCH(_print)(FIRPFBCH() _q);                                        \
                                                                             \
