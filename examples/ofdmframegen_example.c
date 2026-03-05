@@ -1,32 +1,31 @@
-//
-//
-//
+char __docstr__[] = "Example demonstrating the OFDM frame generator.";
 
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "ofdmframegen_example.m"
-
-int main() {
-    // options
-    unsigned int num_subcarriers=64;// 
-    unsigned int cp_len=16;         // cyclic prefix length
-    //unsigned int num_symbols=2;     // number of ofdm symbols
+int main(int argc, char *argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "ofdmframegen_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, num_subcarriers,64, 'M', "number of subcarriers", NULL);
+    liquid_argparse_add(unsigned, cp_len,         16, 'C', "cyclic prefix length", NULL);
+    liquid_argparse_add(unsigned, taper_len,       4, 'T', "taper length", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // 
     unsigned int frame_len = num_subcarriers + cp_len;
 
-    //unsigned int num_samples = num_subcarriers * num_frames;
-
     // create synthesizer/analyzer objects
-    ofdmframegen fg = ofdmframegen_create(num_subcarriers, cp_len);
+    ofdmframegen fg = ofdmframegen_create(num_subcarriers, cp_len, taper_len, NULL);
     ofdmframegen_print(fg);
 
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"num_subcarriers=%u;\n", num_subcarriers);
     fprintf(fid,"cp_len=%u;\n", cp_len);
@@ -43,7 +42,7 @@ int main() {
         X[i] = i==4 ? 0.707f + _Complex_I*0.707f : 0.0f;
     }
 
-    ofdmframegen_execute(fg,X,x);
+    ofdmframegen_writesymbol(fg,X,x);
 
     //
     for (i=0; i<num_subcarriers; i++)
@@ -60,7 +59,7 @@ int main() {
     fprintf(fid,"plot(t,real(x),t,imag(x));\n");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     // destroy objects
     ofdmframegen_destroy(fg);

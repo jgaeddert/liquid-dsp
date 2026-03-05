@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -247,7 +247,7 @@ int liquid_poly_findroots_bairstow_recursion(double *     _p,
         num_iterations++;
 
         // update reduced polynomial coefficients
-        for (i=n-2; i>=0; i--) {
+        for (i=(int)n-2; i>=0; i--) {
             b[i] = _p[i+2] - u*b[i+1] - v*b[i+2];
             f[i] =  b[i+2] - u*f[i+1] - v*f[i+2];
         }

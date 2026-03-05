@@ -1,5 +1,19 @@
 # Changelog
 
+## Latest
+
+  * build
+    - performed a static memory analysis test to substantially reduce memory
+      used on the stack in favor of dynamically allocating it on the stack;
+      improves stability for multi-threaded processing
+    - introduced new argument parsing header to simplify creating variables,
+      parsing command-line options, printing help, and validating results;
+      refactored examples and removed over 2,000 lines of redundant code.
+    - added CMake rules to create exportable interface, option for building
+      shared vs. static library, and simplified directory inclusion
+      (thanks @burnbot-alt)
+    - Fixed annoying deprecation warnings (thanks @AHSauge and @oe1rsa)
+
 ## 1.7.0 - 2025-02-01
 
 Version 1.7.0 includes support for the [CMake](https://cmake.org) build
@@ -88,7 +102,7 @@ methods for nearly all objects, improved speed, and resolves a number of
 issues and pull requests.
 
   * build
-    - added support for PlatformIO (https://platformio.org) for embeedded
+    - added support for PlatformIO (https://platformio.org) for embedded
       development (thanks, @jcw!)
     - incorporated recursive copy() methods to objects to facilitate c++ copy
       constructors for bindings; now all objects can be deep copied to a new
@@ -200,7 +214,7 @@ issues and pull requests.
     - modem: adding type extension for more consistency: `modem` -> `modemcf`,
       supporting backwards compatibility with API shim
 
-## 1.3.1 - 2019-07-28
+## 1.3.2 - 2019-07-28
 
   * autotest
     - runs with random seeds (based on time) for diveristy
@@ -323,7 +337,7 @@ issues and pull requests.
       modulation, often with many samples per symbol (e.g. 256-FSK)
   * multicarrier
     - adding OFDM framing option for window tapering
-    - simplfying OFDM framing for generating preamble symbols (all
+    - simplifying OFDM framing for generating preamble symbols (all
       generated OFDM symbols are the same length)
     - adding run-time option for debugging ofdmframesync
     - adding method for initializing subcarriers with frequency range

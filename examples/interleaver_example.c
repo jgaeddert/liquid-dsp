@@ -1,24 +1,25 @@
-//
-// interleaver_example.c
-//
-// This example demonstrates the functionality of the liquid
-// interleaver object.  Interleavers serve to distribute 
-// grouped bit errors evenly throughout a block of data. This
-// aids certain forward error-correction codes in correcting
-// bit errors.  In this example, data bits are interleaved and
-// de-interleaved; the resulting sequence is validated to
-// match the original.
-// SEE ALSO: packetizer_example.c
-//
+char __docstr__[] =
+"This example demonstrates the functionality of the liquid"
+" interleaver object.  Interleavers serve to distribute"
+" grouped bit errors evenly throughout a block of data. This"
+" aids certain forward error-correction codes in correcting"
+" bit errors.  In this example, data bits are interleaved and"
+" de-interleaved; the resulting sequence is validated to"
+" match the original.";
 
 #include <stdio.h>
 #include <stdlib.h> // for rand()
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-int main() {
-    // options
-    unsigned int n=9; // message length
+int main(int argc, char*argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    //liquid_argparse_add(char*, filename, "interleaver_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, n,  64, 'n', "message length", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // create the interleaver
     interleaver q = interleaver_create(n);

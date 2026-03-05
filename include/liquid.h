@@ -36,7 +36,7 @@ extern "C" {
 
 //
 // Make sure the version and version number macros weren't defined by
-// some prevoiusly included header file.
+// some previously included header file.
 //
 #ifdef LIQUID_VERSION
 #  undef LIQUID_VERSION
@@ -56,7 +56,7 @@ extern "C" {
 #define LIQUID_VERSION_PATCH    0
 #define LIQUID_VERSION_DEV      0
 
-// final version string is constructed by concatenating inidividual string versions
+// final version string is constructed by concatenating individual string versions
 #define LIQUID_VERSION \
     LIQUID_VERSION_STR(LIQUID_VERSION_MAJOR) "." \
     LIQUID_VERSION_STR(LIQUID_VERSION_MINOR) "." \
@@ -85,6 +85,20 @@ int liquid_libversion_number(void);
     fprintf(stderr,"  library version : %d\n", liquid_libversion_number()); \
     exit(1);                                                                \
   }                                                                         \
+
+// report error
+int liquid_error_fl(int _code, const char * _file, int _line, const char * _format, ...);
+
+// report error specifically for invalid object configuration 
+void * liquid_error_config_fl(const char * _file, int _line, const char * _format, ...);
+
+// macro to get file name and line number for source of error
+#define liquid_error(code, format, ...) \
+    liquid_error_fl(code, __FILE__, __LINE__, format, ##__VA_ARGS__);
+
+// macro to get file name and line number for source of error (invalid object)
+#define liquid_error_config(format, ...) \
+    liquid_error_config_fl(__FILE__, __LINE__, format, ##__VA_ARGS__);
 
 // basic error types
 #define LIQUID_NUM_ERRORS 14
@@ -116,7 +130,7 @@ typedef enum {
     LIQUID_EIRANGE,
 
     // invalid mode; examples:
-    //  - try to create a modem of type 'LIQUID_MODEM_XXX' which does not exit
+    //  - try to create a modem of type 'LIQUID_MODEM_XXX' which does not exist
     LIQUID_EIMODE,
 
     // unsupported mode (e.g. LIQUID_FEC_CONV_V27 with 'libfec' not installed)
@@ -1023,8 +1037,8 @@ int EQLMS(_copy_coefficients)(EQLMS() _q,                                   \
 /*  _w      : pointer to output coefficients array, [size: _n x 1]      */  \
 DEPRECATED("use eqlms_xxxt_copy_coefficients(...) instead",                 \
 void EQLMS(_get_weights)(EQLMS() _q,                                        \
-                         T *     _w);                                       \
-)                                                                           \
+                         T *     _w)                                        \
+);                                                                          \
                                                                             \
 /* Push sample into equalizer internal buffer                           */  \
 /*  _q      :   equalizer object                                        */  \
@@ -1095,8 +1109,8 @@ int EQLMS(_train)(EQLMS()      _q,                                          \
                   T *          _w,                                          \
                   T *          _x,                                          \
                   T *          _d,                                          \
-                  unsigned int _n);                                         \
-)                                                                           \
+                  unsigned int _n)                                          \
+);                                                                          \
 
 LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_RRRF, float)
 LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_CCCF, liquid_float_complex)
@@ -1872,6 +1886,12 @@ int ASGRAM(_destroy)(ASGRAM() _q);                                          \
                                                                             \
 /* Reset the internal state of the asgram object                        */  \
 int ASGRAM(_reset)(ASGRAM() _q);                                            \
+                                                                            \
+/* Enable automatic display scaling based on noise floor estimation     */  \
+int ASGRAM(_autoscale_enable)(ASGRAM() _q);                                 \
+                                                                            \
+/* Disable automatic display scaling based on noise floor estimation    */  \
+int ASGRAM(_autoscale_disable)(ASGRAM() _q);                                \
                                                                             \
 /* Set the scale and offset for spectrogram in terms of dB for display  */  \
 /* purposes                                                             */  \
@@ -2997,6 +3017,9 @@ FDELAY() FDELAY(_create)(unsigned int _nmax,                                \
 /* parameters (_m = 8, _npfb = 64)                                      */  \
 /*  _nmax   : maximum integer sample offset                             */  \
 FDELAY() FDELAY(_create_default)(unsigned int _nmax);                       \
+                                                                            \
+/* Copy a delay object including all internal objects and state         */  \
+FDELAY() FDELAY(_copy)(FDELAY() _q_orig);                                   \
                                                                             \
 /* Destroy delay object and free all internal memory                    */  \
 int FDELAY(_destroy)(FDELAY() _q);                                          \
@@ -5553,16 +5576,16 @@ int framesync64_execute(framesync64            _q,
                         unsigned int           _n);
 
 DEPRECATED("debugging enabled by default; return non-zero value to export file",
-int framesync64_debug_enable(framesync64 _q);
-)
+int framesync64_debug_enable(framesync64 _q)
+);
 
 DEPRECATED("debugging enabled by default; return non-zero value to export file",
-int framesync64_debug_disable(framesync64 _q);
-)
+int framesync64_debug_disable(framesync64 _q)
+);
 
 DEPRECATED("binary debugging file exported on non-zero return value",
-int framesync64_debug_print(framesync64 _q, const char * _filename);
-)
+int framesync64_debug_print(framesync64 _q, const char * _filename)
+);
 
 // set prefix for exporting debugging files, default: "framesync64"
 //  _q      : frame sync object
@@ -5582,6 +5605,8 @@ const char * framesync64_get_filename(framesync64  _q);
 // get/set detection threshold
 float framesync64_get_threshold(framesync64 _q);
 int   framesync64_set_threshold(framesync64 _q, float _threshold);
+
+int   framesync64_set_range(framesync64 _q, float _threshold);
 
 // frame data statistics
 int              framesync64_reset_framedatastats(framesync64 _q);
@@ -5906,8 +5931,8 @@ int gmskframegen_write(gmskframegen           _q,
 //  _buf        : output buffer, [size: k x 1]
 DEPRECATED("use gmskframegen_write(...) instead",
 int gmskframegen_write_samples(gmskframegen           _q,
-                               liquid_float_complex * _buf);
-)
+                               liquid_float_complex * _buf)
+);
 
 
 //
@@ -5946,11 +5971,11 @@ framedatastats_s gmskframesync_get_framedatastats  (gmskframesync _q);
 
 // debug methods
 DEPRECATED("debug methods add complexity and provide little value",
-  int gmskframesync_debug_enable(gmskframesync _q); )
+  int gmskframesync_debug_enable(gmskframesync _q) );
 DEPRECATED("debug methods add complexity and provide little value",
-  int gmskframesync_debug_disable(gmskframesync _q); )
+  int gmskframesync_debug_disable(gmskframesync _q) );
 DEPRECATED("debug methods add complexity and provide little value",
-  int gmskframesync_debug_print(gmskframesync _q, const char * _filename); )
+  int gmskframesync_debug_print(gmskframesync _q, const char * _filename) );
 
 
 //
@@ -6449,9 +6474,21 @@ int QDETECTOR(_set_threshold)(QDETECTOR() _q,                               \
 /* Get carrier offset search range                                      */  \
 float QDETECTOR(_get_range)(QDETECTOR() _q);                                \
                                                                             \
-/* Set carrier offset search range                                      */  \
+/* Set carrier offset search range; note that the larger this value is, */  \
+/* the more clock cycles execute() will require. This value is actually */  \
+/* a percentage of the input sample rate: fmax = 2 * pi * _dphi_max/Fs  */  \
+/*  _q          : detector object                                       */  \
+/*  _dphi_max   : maximum carrier offset range over which to search,    */  \
+/*                relative to sample rate [radians/sample]              */  \
 int QDETECTOR(_set_range)(QDETECTOR() _q,                                   \
                           float       _dphi_max);                           \
+                                                                            \
+/* Set carrier offset search range based on the FFT offset index        */  \
+/*  _q          : detector object                                       */  \
+/*  _index_max  : maximum FFT bin search range,                         */  \
+/*                0 <= _index_max < sequence_len                        */  \
+int QDETECTOR(_set_range_index)(QDETECTOR() _q,                             \
+                                int         _index_max);                    \
                                                                             \
 /* Get sequence length                                                  */  \
 unsigned int QDETECTOR(_get_seq_len)(QDETECTOR() _q);                       \
@@ -6505,9 +6542,9 @@ typedef int (*QDSYNC(_callback))(TO *         _buf,                         \
                                  void *       _context);                    \
                                                                             \
 /* create detector with generic sequence                                */  \
-/*  _s          : sample sequence                                       */  \
-/*  _s_len      : length of sample sequence                             */  \
-/*  _ftype      : filter type                                           */  \
+/*  _s          : symbol sequence                                       */  \
+/*  _s_len      : length of symbol sequence                             */  \
+/*  _ftype      : Nyquist filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
 /*  _k          : samples per symbol                                    */  \
 /*  _m          : filter semi-length                                    */  \
 /*  _beta       : filter excess bandwidth factor                        */  \
@@ -6522,6 +6559,30 @@ QDSYNC() QDSYNC(_create_linear)(TI *              _s,                       \
                                 QDSYNC(_callback) _callback,                \
                                 void *            _context);                \
                                                                             \
+/* create detector with sequence of CP-FSK symbols                      */  \
+/*  _seq        : symbol sequence                                       */  \
+/*  _seq_len    : length of symbol sequence                             */  \
+/*  _ftype      : Nyquist filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
+/*  _bps        : bits per symbol, 0 < _bps <= 8                        */  \
+/*  _h          : modulation index, _h > 0                              */  \
+/*  _k          : samples per symbol                                    */  \
+/*  _m          : filter semi-length                                    */  \
+/*  _beta       : filter excess bandwidth factor                        */  \
+/*  _cpfsk_type : cpfsk filter type (e.g. LIQUID_CPFSK_SQUARE)          */  \
+/*  _callback   : user-defined callback                                 */  \
+/*  _context    : user-defined context                                  */  \
+QDSYNC() QDSYNC(_create_cpfsk)(unsigned char *   _seq,                      \
+                               unsigned int      _seq_len,                  \
+                               int               _ftype,                    \
+                               unsigned int      _bps,                      \
+                               float             _h,                        \
+                               unsigned int      _k,                        \
+                               unsigned int      _m,                        \
+                               float             _beta,                     \
+                               int               _cpfsk_type,               \
+                               QDSYNC(_callback) _callback,                 \
+                               void *            _context);                 \
+                                                                            \
 /* Copy object recursively including all internal objects and state     */  \
 QDSYNC() QDSYNC(_copy)(QDSYNC() _q);                                        \
                                                                             \
@@ -6535,7 +6596,7 @@ int QDSYNC(_reset)(QDSYNC() _q);                                            \
 int QDSYNC(_print)(QDSYNC() _q);                                            \
                                                                             \
 /* Get detection state                                                  */  \
-int QDSYNC(_is_detected)(QDSYNC() _q);                                  \
+int QDSYNC(_is_detected)(QDSYNC() _q);                                      \
                                                                             \
 /* Get detection threshold                                              */  \
 float QDSYNC(_get_threshold)(QDSYNC() _q);                                  \
@@ -6698,6 +6759,11 @@ float SYMSTREAM(_get_gain)(SYMSTREAM() _q);                                 \
                                                                             \
 /* Get delay in samples                                                 */  \
 unsigned int SYMSTREAM(_get_delay)(SYMSTREAM() _q);                         \
+                                                                            \
+/* Get number of samples generated by the object so far                 */  \
+/*  _q      : symstream object                                          */  \
+/*  _return : number of time-domain samples generated                   */  \
+unsigned long long SYMSTREAM(_get_num_samples_total)(SYMSTREAM() _q);       \
                                                                             \
 /* Write block of samples to output buffer                              */  \
 /*  _q      : synchronizer object                                       */  \
@@ -8662,6 +8728,10 @@ LIQUID_FREQDEM_DEFINE_API(LIQUID_FREQDEM_MANGLE_FLOAT,float,liquid_float_complex
 
 
 
+//
+// Analog amplitude modulator/demodulator
+//
+
 // amplitude modulation types
 typedef enum {
     LIQUID_AMPMODEM_DSB=0,  // double side-band
@@ -8669,48 +8739,62 @@ typedef enum {
     LIQUID_AMPMODEM_LSB     // single side-band (lower)
 } liquid_ampmodem_type;
 
-typedef struct ampmodem_s * ampmodem;
+#define LIQUID_AMPMODEM_MANGLE_FLOAT(name) LIQUID_CONCAT(ampmodem,name)
 
-// create ampmodem object
-//  _m                  :   modulation index
-//  _type               :   AM type (e.g. LIQUID_AMPMODEM_DSB)
-//  _suppressed_carrier :   carrier suppression flag
-ampmodem ampmodem_create(float                _mod_index,
-                         liquid_ampmodem_type _type,
-                         int                  _suppressed_carrier);
+// Macro     :   AMPMODEM (analog amploitude modem)
+//  AMPMODEM :   name-mangling macro
+//  T        :   primitive data type
+//  TC       :   primitive data type (complex)
+#define LIQUID_AMPMODEM_DEFINE_API(AMPMODEM,T,TC)                           \
+                                                                            \
+/* Analog amplitude modulator/demodulator                               */  \
+typedef struct AMPMODEM(_s) * AMPMODEM();                                   \
+                                                                            \
+/* create ampmodem object                                               */  \
+/*  _m                  :   modulation index                            */  \
+/*  _type               :   AM type (e.g. LIQUID_AMPMODEM_DSB)          */  \
+/*  _suppressed_carrier :   carrier suppression flag                    */  \
+AMPMODEM() AMPMODEM(_create)(float                _mod_index,               \
+                             liquid_ampmodem_type _type,                    \
+                             int                  _suppressed_carrier);     \
+                                                                            \
+/* destroy ampmodem object                                              */  \
+int AMPMODEM(_destroy)(AMPMODEM() _q);                                      \
+                                                                            \
+/* print ampmodem object internals                                      */  \
+int AMPMODEM(_print)(AMPMODEM() _q);                                        \
+                                                                            \
+/* reset ampmodem object state                                          */  \
+int AMPMODEM(_reset)(AMPMODEM() _q);                                        \
+                                                                            \
+/* get delay from modulation operation                                  */  \
+unsigned int AMPMODEM(_get_delay_mod)(AMPMODEM() _q);                       \
+                                                                            \
+/* get delay from demodulation operation                                */  \
+unsigned int AMPMODEM(_get_delay_demod)(AMPMODEM() _q);                     \
+                                                                            \
+/* modulate a single sample                                             */  \
+int AMPMODEM(_modulate)(AMPMODEM() _q, T _x, TC * _y);                      \
+                                                                            \
+/* modulate block of samples                                            */  \
+int AMPMODEM(_modulate_block)(AMPMODEM()   _q,                              \
+                              T *          _m,                              \
+                              unsigned int _n,                              \
+                              TC *         _s);                             \
+                                                                            \
+/* demodulate a single sample                                           */  \
+int AMPMODEM(_demodulate)(AMPMODEM() _q, TC _y, T * _x);                    \
+                                                                            \
+/* demodulate a block of samples                                        */  \
+int AMPMODEM(_demodulate_block)(AMPMODEM()   _q,                            \
+                                TC *         _r,                            \
+                                unsigned int _n,                            \
+                                T *          _m);                           \
 
-// destroy ampmodem object
-int ampmodem_destroy(ampmodem _q);
+// define freqdem APIs
+LIQUID_AMPMODEM_DEFINE_API(LIQUID_AMPMODEM_MANGLE_FLOAT,float,liquid_float_complex)
 
-// print ampmodem object internals
-int ampmodem_print(ampmodem _q);
 
-// reset ampmodem object state
-int ampmodem_reset(ampmodem _q);
-
-// accessor methods
-unsigned int ampmodem_get_delay_mod  (ampmodem _q);
-unsigned int ampmodem_get_delay_demod(ampmodem _q);
-
-// modulate sample
-int ampmodem_modulate(ampmodem               _q,
-                      float                  _x,
-                      liquid_float_complex * _y);
-
-int ampmodem_modulate_block(ampmodem               _q,
-                            float *                _m,
-                            unsigned int           _n,
-                            liquid_float_complex * _s);
-
-// demodulate sample
-int ampmodem_demodulate(ampmodem             _q,
-                        liquid_float_complex _y,
-                        float *              _x);
-
-int ampmodem_demodulate_block(ampmodem               _q,
-                              liquid_float_complex * _r,
-                              unsigned int           _n,
-                              float *                _m);
 
 //
 // MODULE : multichannel
@@ -8937,12 +9021,12 @@ int FIRPFBCHR(_print)(FIRPFBCHR() _q);                                      \
                                                                             \
 /* get number of output channels to channelizer                         */  \
 DEPRECATED("use firpfbchr_get_num_channels(...) instead",                   \
-unsigned int FIRPFBCHR(_get_M)(FIRPFBCHR() _q); )                           \
+unsigned int FIRPFBCHR(_get_M)(FIRPFBCHR() _q)  );                          \
 unsigned int FIRPFBCHR(_get_num_channels)(FIRPFBCHR() _q);                  \
                                                                             \
 /* get decimation factor for channelizer                                */  \
 DEPRECATED("use firpfbchr_get_decim_rate(...) instead",                     \
-unsigned int FIRPFBCHR(_get_P)(FIRPFBCHR() _q); )                           \
+unsigned int FIRPFBCHR(_get_P)(FIRPFBCHR() _q) );                           \
 unsigned int FIRPFBCHR(_get_decim_rate)(FIRPFBCHR() _q);                    \
                                                                             \
 /* get semi-length to channelizer filter prototype                      */  \
@@ -10121,6 +10205,9 @@ unsigned int  liquid_reverse_uint32(unsigned int  _x);
 int liquid_get_scale(float   _val,
                      char *  _unit,
                      float * _scale);
+
+// compare two values (e.g. qsort), single-precision float
+int liquid_compare_float(const void * _a, const void* _b);
 
 //
 // MODULE : vector

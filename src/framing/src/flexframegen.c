@@ -336,7 +336,7 @@ unsigned int flexframegen_getframelen(flexframegen _q)
     return num_frame_symbols*_q->k; // k samples/symbol
 }
 
-// exectue frame generator (create the frame)
+// execute frame generator (create the frame)
 //  _q              :   frame generator object
 //  _header         :   user-defined header
 //  _payload        :   variable payload buffer (configured by setprops method)

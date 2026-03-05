@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -183,10 +183,10 @@ packetizer packetizer_recreate(packetizer _p,
     }
 
     // check values
-    if (_p->msg_len     ==  _n      &&
-        _p->check       ==  _crc    &&
-        _p->plan[0].fs  ==  _fec0   &&
-        _p->plan[1].fs  ==  _fec1 )
+    if (_p->msg_len     ==  _n &&
+        _p->check       ==  (crc_scheme) _crc &&
+        _p->plan[0].fs  ==  (fec_scheme) _fec0 &&
+        _p->plan[1].fs  ==  (fec_scheme) _fec1 )
     {
         // no change; return input pointer
         return _p;

@@ -1,17 +1,22 @@
-// Demonstrate fdelay object to add arbitrary fractional delays.
+char __docstr__[] = "Demonstrate fdelay object to add arbitrary fractional delays.";
+
 #include <stdio.h>
 #include <math.h>
 #include <complex.h>
 #include "liquid.h"
-#define OUTPUT_FILENAME "fdelay_rrrf_example.m"
+#include "liquid.argparse.h"
 
-int main() {
-    // options
-    unsigned int nmax       = 200;  // maximum delay
-    unsigned int m          =  12;  // filter semi-length
-    unsigned int npfb       =  10;  // fractional delay resolution
-    unsigned int num_samples= 240;  // number of samples to run
-    float        delay      =27.8;  // requested delay
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "fdelay_rrrf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, nmax,         200, 'N', "maximum delay", NULL);
+    liquid_argparse_add(unsigned, m,             12, 'm', "filter semi-length", NULL);
+    liquid_argparse_add(unsigned, npfb,          10, 'b', "fractional delay resolution", NULL);
+    liquid_argparse_add(unsigned, num_samples,  240, 'n', "number of samples to run", NULL);
+    liquid_argparse_add(float,    delay,       27.8, 'd', "requested delay", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // create delay object and set delay
     fdelay_rrrf q = fdelay_rrrf_create(nmax, m, npfb);
@@ -44,8 +49,8 @@ int main() {
     printf("fdelay = %g (%g)\n", delay_est, delay);
 
     // plot results to output file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all; close all;\n");
     fprintf(fid,"delay=%f; m=%u; n=%u;\n",delay,m,num_samples);
     fprintf(fid,"x=zeros(1,n);\n");
@@ -70,7 +75,7 @@ int main() {
     fprintf(fid,"  xlim([-3 3]+delay); ylim([-0.2 1.2]);\n");
     fprintf(fid,"  grid on;\n");
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
     return 0;
 }
 

@@ -1,65 +1,37 @@
-//
-// qpacketmodem_example.c
-//
-// This example demonstrates the basic packet modem encoder/decoder
-// operation. A packet of data is encoded and modulated into symbols,
-// channel noise is added, and the resulting packet is demodulated
-// and decoded.
-//
+char __docstr__[] =
+"This example demonstrates the basic packet modem encoder/decoder"
+" operation. A packet of data is encoded and modulated into symbols,"
+" channel noise is added, and the resulting packet is demodulated"
+" and decoded.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include <getopt.h>
 #include <assert.h>
 
 #include "liquid.h"
-
-void usage()
-{
-    printf("ofdmflexframesync_example [options]\n");
-    printf("  h     : print usage\n");
-    printf("  n     : payload length [bytes], default: 400\n");
-    printf("  m     : modulation scheme (qpsk default)\n");
-    liquid_print_modulation_schemes();
-    printf("  v     : data integrity check: crc32 default\n");
-    liquid_print_crc_schemes();
-    printf("  c     : coding scheme (inner): g2412 default\n");
-    printf("  k     : coding scheme (outer): none default\n");
-    liquid_print_fec_schemes();
-    printf("  s     : signal-to-noise ratio [dB], default: 6\n");
-}
+#include "liquid.argparse.h"
 
 int main(int argc, char *argv[])
 {
-    //srand( time(NULL) );
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "qpacketmodem_example.m",'o', "output filename", NULL);
+    liquid_argparse_add(char*,    mod,      "qpsk", 'm', "FEC scheme", liquid_argparse_modem);
+    liquid_argparse_add(char*,    crc,     "crc32", 'v', "CRC scheme", liquid_argparse_crc);
+    liquid_argparse_add(char*,    fs0,      "none", 'c', "FEC scheme (inner)", liquid_argparse_fec);
+    liquid_argparse_add(char*,    fs1,      "none", 'k', "FEC scheme (outer)", liquid_argparse_fec);
+    liquid_argparse_add(unsigned, payload_len, 480, 'n', "data length (bytes)", NULL);
+    liquid_argparse_add(float,    SNRdB,        20, 's', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_parse(argc,argv);
 
-    // options
-    modulation_scheme ms     = LIQUID_MODEM_QPSK;        // mod. scheme
-    crc_scheme   check       = LIQUID_CRC_32;            // data validity check
-    fec_scheme   fec0        = LIQUID_FEC_GOLAY2412;     // fec (inner)
-    fec_scheme   fec1        = LIQUID_FEC_NONE;          // fec (outer)
-    unsigned int payload_len = 400;                      // payload length
-    float        SNRdB       = 6.0f;                     // SNR [dB]
-    const char   filename[]  = "qpacketmodem_example.m"; // output filename
+    modulation_scheme ms    = liquid_getopt_str2mod(mod);
+    crc_scheme        check = liquid_getopt_str2crc(crc);
+    fec_scheme        fec0  = liquid_getopt_str2fec(fs0);
+    fec_scheme        fec1  = liquid_getopt_str2fec(fs1);
 
-    // get options
-    int dopt;
-    while((dopt = getopt(argc,argv,"hn:m:v:c:k:s:")) != EOF){
-        switch (dopt) {
-        case 'h': usage();                                     return 0;
-        case 'n': payload_len = atol(optarg);                  break;
-        case 'm': ms          = liquid_getopt_str2mod(optarg); break;
-        case 'v': check       = liquid_getopt_str2crc(optarg); break;
-        case 'c': fec0        = liquid_getopt_str2fec(optarg); break;
-        case 'k': fec1        = liquid_getopt_str2fec(optarg); break;
-        case 's': SNRdB       = atof(optarg);                  break;
-        default:
-            exit(-1);
-        }
-    }
     unsigned int i;
 
     // derived values

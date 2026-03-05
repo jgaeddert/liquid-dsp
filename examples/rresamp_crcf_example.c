@@ -1,59 +1,32 @@
-// Demonstration of rresamp object whereby an input signal
-// is resampled at a rational rate P/Q = interp/decim.
+char __docstr__[] =
+"Demonstration of rresamp object whereby an input signal"
+" is resampled at a rational rate P/Q = interp/decim.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>
 #include <math.h>
-#include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "rresamp_crcf_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char* argv[])
 {
-    printf("Usage: %s [OPTION]\n", __FILE__);
-    printf("Resample a signal at a rate interp/decim\n");
-    printf("  -h            : print help\n");
-    printf("  -P <interp>   : interpolation rate,                default: 5\n");
-    printf("  -Q <decim>    : decimation rate,                   default: 3\n");
-    printf("  -m <len>      : filter semi-length (delay),        default: 12\n");
-    printf("  -w <bandwidth>: filter bandwidth,                  default: -1\n");
-    printf("  -s <atten>    : filter stop-band attenuation [dB], default: 60\n");
-}
-
-int main(int argc, char*argv[])
-{
-    // options
-    unsigned int interp = 3;        // output rate (interpolation factor)
-    unsigned int decim  = 5;        // input rate (decimation factor)
-    unsigned int m      = 20;       // resampling filter semi-length (filter delay)
-    float        bw     = -1.0f;    // resampling filter bandwidth
-    float        As     = 60.0f;    // resampling filter stop-band attenuation [dB]
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hP:Q:m:s:w:")) != EOF) {
-        switch (dopt) {
-        case 'h': usage();               return 0;
-        case 'P': interp = atoi(optarg); break;
-        case 'Q': decim  = atoi(optarg); break;
-        case 'm': m      = atoi(optarg); break;
-        case 'w': bw     = atof(optarg); break;
-        case 's': As     = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "rresamp_crcf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, interp,  3, 'i', "output rate (interpolation factor)", NULL);
+    liquid_argparse_add(unsigned, decim,   5, 'd', "input rate (decimation factor)", NULL);
+    liquid_argparse_add(unsigned, m,      20, 'm', "filter semi-length (actual length: 4*m+1)", NULL);
+    liquid_argparse_add(float,    bw,     -1, 'w', "filter bandwidth (normalized); negative for default", NULL);
+    liquid_argparse_add(float,    As,     60, 'a', "stop-band attenuation [dB]", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (interp == 0 || interp > 1000) {
-        fprintf(stderr,"error: %s, interpolation rate must be in [1,1000]\n", argv[0]);
-        exit(1);
-    } else if (decim == 0 || decim > 1000) {
-        fprintf(stderr,"error: %s, decimation rate must be in [1,1000]\n", argv[0]);
-        exit(1);
-    }
+    if (interp == 0 || interp > 1000)
+        return liquid_error(LIQUID_EICONFIG,"interpolation rate must be in [1,1000]");
+    if (decim == 0 || decim > 1000)
+        return liquid_error(LIQUID_EICONFIG,"decimation rate must be in [1,1000]");
 
     // create resampler object
     rresamp_crcf q = rresamp_crcf_create_kaiser(interp,decim,m,bw,As);
@@ -72,7 +45,7 @@ int main(int argc, char*argv[])
     float noise_bw = 0.7f * (rate > 1.0 ? 1.0 : rate);
     msourcecf gen = msourcecf_create_default();
     msourcecf_add_noise(gen, 0.0f, noise_bw,  0);
-    msourcecf_add_tone (gen, rate > 1.0 ? 0.4 : noise_bw, 0.00f, 20);
+    msourcecf_add_tone (gen, 0.45, 0.00f, 20);
 
     // create spectral periodogram objects
     unsigned int nfft = 2400;
@@ -105,8 +78,8 @@ int main(int argc, char*argv[])
     spgramcf_get_psd(py, Y);
 
     // export results to file for plotting
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n",filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"interp = %u;\n", interp);
@@ -134,6 +107,6 @@ int main(int argc, char*argv[])
     fprintf(fid,"axis([fmin fmax -100 20]);\n");
     fprintf(fid,"grid on;\n");
     fclose(fid);
-    printf("results written to %s\n",OUTPUT_FILENAME);
+    printf("results written to %s\n",filename);
     return 0;
 }

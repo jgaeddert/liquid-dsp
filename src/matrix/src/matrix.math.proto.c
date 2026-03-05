@@ -177,7 +177,10 @@ T MATRIX(_det2x2)(T *          _X,
 {
     // validate input
     if (_r != 2 || _c != 2)
-        return liquid_error(LIQUID_EIRANGE,"matrix_det2x2(), invalid dimensions");
+    {
+        liquid_error(LIQUID_EIRANGE,"%s_det2x2(), invalid dimensions", MATRIX_NAME);
+        return 0;
+    }
 
     return _X[0]*_X[3] - _X[1]*_X[2];
 }

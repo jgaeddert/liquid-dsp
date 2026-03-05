@@ -1,89 +1,52 @@
-//
-// channel_cccf_example.c
-//
-// This example demonstrates how the channel_cccf object can be used to
-// emulate a multi-path fading, log-normal shadowing, and AWGN channel.
-// A stream of modulated and interpolated symbols are generated using the
-// symstream object. The resulting samples are passed through a channel
-// to add various impairments. The symtrack object recovers timing,
-// carrier, and other information imparted by the channel and returns
-// data symbols ready for demodulation.
-//
+char __docstr__[] =
+"This example demonstrates how the channel_cccf object can be used to"
+" emulate a multi-path fading, log-normal shadowing, and AWGN channel."
+" A stream of modulated and interpolated symbols are generated using the"
+" symstream object. The resulting samples are passed through a channel"
+" to add various impairments. The symtrack object recovers timing,"
+" carrier, and other information imparted by the channel and returns"
+" data symbols ready for demodulation.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <getopt.h>
 #include <time.h>
 #include <assert.h>
 
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "channel_cccf_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("channel_cccf_example [options]\n");
-    printf("  h     : print this help file\n");
-    printf("  k     : filter samples/symbol,     default: 2\n");
-    printf("  m     : filter delay (symbols),    default: 3\n");
-    printf("  b     : filter excess bandwidth,   default: 0.5\n");
-    printf("  H     : multi-path channel length, default: 4000\n");
-    printf("  n     : number of symbols,         default: 4000\n");
-    printf("  s     : signal-to-noise ratio,     default: 30 dB\n");
-    printf("  w     : timing pll bandwidth,      default: 0.02\n");
-}
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // options
-    unsigned int k           = 2;       // samples per symbol
-    unsigned int m           = 7;       // filter delay (symbols)
-    float        beta        = 0.25f;   // filter excess bandwidth factor
-    unsigned int num_symbols = 4000;    // number of data symbols
-    unsigned int hc_len      = 5;       // channel filter length
-    float        noise_floor = -60.0f;  // noise floor [dB]
-    float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]
-    float        bandwidth   =  0.02f;  // loop filter bandwidth
-    float        dphi        =  0.00f;  // carrier frequency offset [radians/sample]
-    float        phi         =  2.1f;   // carrier phase offset [radians]
-    modulation_scheme ms     = LIQUID_MODEM_QPSK;
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hk:m:b:H:n:s:w:")) != EOF) {
-        switch (dopt) {
-        case 'h':   usage();                        return 0;
-        case 'k':   k           = atoi(optarg);     break;
-        case 'm':   m           = atoi(optarg);     break;
-        case 'b':   beta        = atof(optarg);     break;
-        case 'H':   hc_len      = atoi(optarg);     break;
-        case 'n':   num_symbols = atoi(optarg);     break;
-        case 's':   SNRdB       = atof(optarg);     break;
-        case 'w':   bandwidth   = atof(optarg);     break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "channel_cccf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, k,           2,      'k', "samples per symbol", NULL);
+    liquid_argparse_add(unsigned, m,           7,      'm', "filter delay (symbols)", NULL);
+    liquid_argparse_add(float,    beta,        0.25f,  'b', "filter excess bandwidth factor", NULL);
+    liquid_argparse_add(unsigned, num_symbols, 4000,   'n', "number of data symbols", NULL);
+    liquid_argparse_add(unsigned, hc_len,      5,      'H', "channel filter length", NULL);
+    liquid_argparse_add(float,    noise_floor, -60.0f, '0', "noise floor [dB]", NULL);
+    liquid_argparse_add(float,    SNRdB,       30.0f,  'S', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_add(float,    bandwidth,    0.25f, 'w', "loop filter bandwidth", NULL);
+    liquid_argparse_add(float,    dphi,         0.00f, 'F', "carrier frequency offset [radians/sample]", NULL);
+    liquid_argparse_add(float,    phi,          2.1f,  'P', "carrier phase offset [radians]", NULL);
+    liquid_argparse_add(char*,    mod_scheme, "qpsk",  'M', "modulation scheme", liquid_argparse_modem);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (k < 2) {
-        fprintf(stderr,"error: k (samples/symbol) must be greater than 1\n");
-        exit(1);
-    } else if (m < 1) {
-        fprintf(stderr,"error: m (filter delay) must be greater than 0\n");
-        exit(1);
-    } else if (beta <= 0.0f || beta > 1.0f) {
-        fprintf(stderr,"error: beta (excess bandwidth factor) must be in (0,1]\n");
-        exit(1);
-    } else if (bandwidth <= 0.0f) {
-        fprintf(stderr,"error: timing PLL bandwidth must be greater than 0\n");
-        exit(1);
-    } else if (num_symbols == 0) {
-        fprintf(stderr,"error: number of symbols must be greater than 0\n");
-        exit(1);
-    }
+    modulation_scheme ms = liquid_getopt_str2mod(mod_scheme);
+    if (k < 2)
+        return liquid_error(LIQUID_EICONFIG,"k (samples/symbol) must be greater than 1");
+    if (m < 1)
+        return liquid_error(LIQUID_EICONFIG,"m (filter delay) must be greater than 0");
+    if (beta <= 0.0f || beta > 1.0f)
+        return liquid_error(LIQUID_EICONFIG,"beta (excess bandwidth factor) must be in (0,1]");
+    if (num_symbols == 0)
+        return liquid_error(LIQUID_EICONFIG,"number of symbols must be greater than 0");
+    if (bandwidth <= 0.0f)
+        return liquid_error(LIQUID_EICONFIG,"timing PLL bandwidth must be greater than 0");
 
     unsigned int i;
 
@@ -125,7 +88,7 @@ int main(int argc, char*argv[])
     symtrack_cccf symtrack = symtrack_cccf_create(LIQUID_FIRFILT_RRC,k,m,beta,ms);
     
     // set tracking bandwidth
-    symtrack_cccf_set_bandwidth(symtrack,0.05f);
+    symtrack_cccf_set_bandwidth(symtrack,bandwidth);
 
     unsigned int num_symbols_sync = 0;
     symtrack_cccf_execute_block(symtrack, y, num_samples, sym_out, &num_symbols_sync);
@@ -143,8 +106,8 @@ int main(int argc, char*argv[])
     //
     // export output file
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s, auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s, auto-generated file\n\n", filename);
     fprintf(fid,"close all;\nclear all;\n\n");
     fprintf(fid,"num_symbols=%u;\n",num_symbols_sync);
 
@@ -165,7 +128,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"plot(real(z(iz0)),imag(z(iz0)),'x','MarkerSize',4);\n");
     fprintf(fid,"  axis square;\n");
     fprintf(fid,"  grid on;\n");
-    fprintf(fid,"  axis([-1 1 -1 1]*1.6);\n");
+    fprintf(fid,"  axis([-1 1 -1 1]*1.8);\n");
     fprintf(fid,"  xlabel('In-phase');\n");
     fprintf(fid,"  ylabel('Quadrature');\n");
     fprintf(fid,"  title('First 50%% of symbols');\n");
@@ -187,7 +150,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  ylabel('Power Spectral Density [dB]');\n");
 
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s.\n", filename);
 
     // clean it up
     printf("done.\n");

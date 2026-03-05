@@ -1,53 +1,27 @@
-// Demonstrate using qpilotsync for carrier recovery.
+char __docstr__[] = "Demonstrate using qpilotsync for carrier recovery.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include <getopt.h>
-#include <assert.h>
 
 #include "liquid.h"
-
-void usage()
-{
-    printf("%s [options]\n", __FILE__);
-    printf("  h     : print usage\n");
-    printf("  n     : payload length [symbols], default: 400\n");
-    printf("  p     : pilot spacing [symbols],  default: 20\n");
-    printf("  s     : SNR [dB],                 default: 20\n");
-    printf("  m     : modulation scheme,        default: qam16\n");
-    liquid_print_modulation_schemes();
-}
+#include "liquid.argparse.h"
 
 int main(int argc, char *argv[])
 {
-    //srand( time(NULL) );
-
-    // options
-    int          ms            = LIQUID_MODEM_QAM16;        // mod. scheme
-    unsigned int payload_len   = 400;                       // payload length
-    unsigned int pilot_spacing =  20;                       // pilot spacing
-    float        SNRdB         = 20.0f;                     // signal-to-noise ratio [dB]
-    const char   filename[]    = "qpilotsync_example.m";    // output filename
-    float        dphi          = -0.0075f;                   // carrier frequency offset
-    float        phi           = 2.1800f;                   // carrier phase offset
-    float        gain          = 0.5f;                      // channel gain
-
-    // get options
-    int dopt;
-    while((dopt = getopt(argc,argv,"hn:p:s:m:")) != EOF){
-        switch (dopt) {
-        case 'h': usage();                                       return 0;
-        case 'n': payload_len   = atoi(optarg);                  break;
-        case 'p': pilot_spacing = atoi(optarg);                  break;
-        case 's': SNRdB         = atof(optarg);                  break;
-        case 'm': ms            = liquid_getopt_str2mod(optarg); break;
-        default:
-            exit(-1);
-        }
-    }
-    unsigned int i;
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "qpilotsync_example.m",'o', "output filename", NULL);
+    liquid_argparse_add(char*,    mod_str,  "qpsk", 'm', "FEC scheme", liquid_argparse_modem);
+    liquid_argparse_add(unsigned, payload_len, 480, 'n', "data length [bytes]", NULL);
+    liquid_argparse_add(unsigned, pilot_spacing,20, 'p', "pilot spacing [symbols]", NULL);
+    liquid_argparse_add(float,    SNRdB,        20, 's', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_add(float,    dphi,     -0.007, 'F', "frequency offset [f/Fs]", NULL);
+    liquid_argparse_add(float,    phi,       2.180, 'P', "phase offset [radians]", NULL);
+    liquid_argparse_add(float,    gain,      0.500, 'g', "channel gain", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // derived values
     float nstd = powf(10.0f, -SNRdB/20.0f);
@@ -69,10 +43,12 @@ int main(int argc, char *argv[])
     unsigned char payload_sym_rx[payload_len];  // received payload symbols
 
     // create modem objects for payload
+    modulation_scheme ms = liquid_getopt_str2mod(mod_str);
     modemcf mod = modemcf_create(ms);
     modemcf dem = modemcf_create(ms);
 
     // assemble payload symbols
+    unsigned int i;
     for (i=0; i<payload_len; i++) {
         // generate random symbol
         payload_sym_tx[i] = modemcf_gen_rand_sym(mod);

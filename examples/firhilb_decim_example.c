@@ -1,29 +1,28 @@
-//
-// firhilb_decim_example.c
-//
-// Hilbert transform: 2:1 real-to-complex decimator.  This example
-// demonstrates the functionality of firhilb (finite impulse response
-// Hilbert transform) decimator which converts a real time series
-// into a complex one with half the number of samples.  The input
-// is a real-valued sinusoid of N samples. The output is a complex-
-// valued sinusoid of N/2 samples.
-//
-// SEE ALSO: firhilb_interp_example.c
-//
+char __docstr__[] =
+"Hilbert transform: 2:1 real-to-complex decimator.  This example"
+" demonstrates the functionality of firhilb (finite impulse response"
+" Hilbert transform) decimator which converts a real time series"
+" into a complex one with half the number of samples.  The input"
+" is a real-valued sinusoid of N samples. The output is a complex-"
+"valued sinusoid of N/2 samples.";
 
 #include <stdio.h>
 #include <complex.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "firhilb_decim_example.m"
-
-int main() {
-    unsigned int m=5;               // Hilbert filter semi-length
-    float As=60.0f;                 // stop-band attenuation [dB]
-    float fc=0.37f;                 // signal center frequency
-    unsigned int num_samples=128;   // number of samples
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename, "firhilb_decim_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, m,             5, 'm', "filter semi-length", NULL);
+    liquid_argparse_add(float,    As,           60, 's', "filter stop-band suppression", NULL);
+    liquid_argparse_add(float,    fc,          0.1, 'c', "signal center frequency", NULL);
+    liquid_argparse_add(unsigned, num_samples, 240, 'n', "number of samples", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // data arrays
     float x[2*num_samples];         // real input
@@ -46,11 +45,9 @@ int main() {
     printf("firhilb decimated %u real samples to %u complex samples\n",
             2*num_samples, num_samples);
 
-    // 
     // export results to file
-    //
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"h_len=%u;\n", 4*m+1);
@@ -80,7 +77,7 @@ int main() {
     fprintf(fid,"legend('original/real','transformed/decimated','location','northeast');");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

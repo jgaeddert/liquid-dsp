@@ -54,3 +54,9 @@ int liquid_get_scale(float   _val,
     return LIQUID_OK;
 }
 
+// compare two values (e.g. qsort), single-precision float
+int liquid_compare_float(const void * _a, const void* _b)
+{
+    return *(float*)_a > *(float*)_b ? 1 : -1;
+}
+

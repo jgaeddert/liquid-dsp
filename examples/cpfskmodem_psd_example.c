@@ -1,12 +1,9 @@
-// 
-// cpfsk_psd_example.c
-//
-// This example demonstrates the differences in power spectral
-// density (PSD) for different continuous-phase frequency-shift
-// keying (CP-FSK) modems in liquid. Identical bit streams are fed
-// into modulators with different pulse-shaping filters and the
-// resulting PSDs are computed and logged to a file.
-//
+char __docstr__[] =
+"This example demonstrates the differences in power spectral"
+" density (PSD) for different continuous-phase frequency-shift"
+" keying (CP-FSK) modems in liquid. Identical bit streams are fed"
+" into modulators with different pulse-shaping filters and the"
+" resulting PSDs are computed and logged to a file.";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,48 +11,22 @@
 #include <getopt.h>
 #include <math.h>
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "cpfsk_psd_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("cpfsk_psd_example -- continuous-phase frequency-shift keying example\n");
-    printf("options:\n");
-    printf("  h     : print help\n");
-    printf("  p     : bits/symbol,              default:  1\n");
-    printf("  H     : modulation index,         default:  0.5\n");
-    printf("  k     : samples/symbol,           default:  8\n");
-    printf("  m     : filter delay (symbols),   default:  3\n");
-    printf("  b     : filter roll-off,          default:  0.35\n");
-    printf("  n     : number of data symbols,   default: 80\n");
-}
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // options
-    unsigned int    bps         = 1;        // number of bits/symbol
-    float           h           = 0.5f;     // modulation index (h=1/2 for MSK)
-    unsigned int    k           = 8;        // filter samples/symbol
-    unsigned int    m           = 7;        // filter delay (symbols)
-    float           beta        = 0.35f;    // GMSK bandwidth-time factor
-    unsigned int    num_symbols = 48000;    // number of data symbols
-    unsigned int    nfft        = 2400;     // spectral periodogram FFT size
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hp:H:k:m:b:n:")) != EOF) {
-        switch (dopt) {
-        case 'h': usage();                    return 0;
-        case 'p': bps         = atoi(optarg); break;
-        case 'H': h           = atof(optarg); break;
-        case 'k': k           = atoi(optarg); break;
-        case 'm': m           = atoi(optarg); break;
-        case 'b': beta        = atof(optarg); break;
-        case 'n': num_symbols = atoi(optarg); break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "cpfskmodem_psd_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char *,   filter,      "square",'t', "filter type: square, rcos-full, rcos-half, gmsk", NULL);
+    liquid_argparse_add(unsigned, bps,         1,       'p', "number of bits/symbol", NULL);
+    liquid_argparse_add(float,    h,           0.5f,    'H', "modulation index (h=1/2 for MSK)", NULL);
+    liquid_argparse_add(unsigned, k,           4,       'k', "filter samples/symbol", NULL);
+    liquid_argparse_add(unsigned, m,           3,       'm', "filter delay (symbols)", NULL);
+    liquid_argparse_add(float,    beta,        0.35f,   'b', "GMSK bandwidth-time factor", NULL);
+    liquid_argparse_add(unsigned, num_symbols, 48000,   'n', "number of data symbols", NULL);
+    liquid_argparse_add(unsigned, nfft,        2400,    'N', "FFT size", NULL);
+    liquid_argparse_parse(argc,argv);
 
     unsigned int i;
 
@@ -123,8 +94,8 @@ int main(int argc, char*argv[])
     // 
     // export results
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"k = %u;\n", k);
@@ -159,7 +130,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"grid on;\n");
 
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     return 0;
 }

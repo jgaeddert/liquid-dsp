@@ -47,7 +47,7 @@ Installation and Dependencies
 
 liquid-dsp only relies on ``libc`` and ``libm`` (standard C and math)
 libraries to run; however liquid will take advantage of other libraries
-(such as `FFTW <http://www.fftw.org)>`_ if they are available.
+(such as `FFTW <http://www.fftw.org>`_) if they are available.
 Starting with version 1.7.0, liquid-dsp has moved to the
 `CMake <https://cmake.org>`_ build system which can be installed with
 ``brew install cmake`` on macOS,
@@ -89,7 +89,7 @@ processors and platforms. Packaged with liquid-dsp are a number of
 automatic test scripts to validate the correctness of the source code.
 The test scripts are located under each module's ``tests/`` directory and
 take the form of a C source file. When configured with ``BUILD_AUTOTESTS``
-enabled, these tests are parsed, compliled, and linked into an executable
+enabled, these tests are parsed, compiled, and linked into an executable
 which will run the tests.
 
 .. code-block:: bash
@@ -209,6 +209,80 @@ Here is the same example as the one above but in C++ instead of C:
         return 0;
     }
 
+Linking from External Project
+-----------------------------
+
+Installing with `CMake <https://cmake.org>`_ provides an
+`exportable interface <https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html>`_
+(``liquid::liquid``) that allows easy integration into external applications.
+For example, say you have a simple application in ``main.c`` that requires
+liquid-dsp as a dependency:
+
+.. code-block:: c
+
+    // main.c - test linking to liquid
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <liquid/liquid.h>
+
+    int main()
+    {
+        // create resampling object, print and return
+        printf("creating test object...\n");
+        resamp_crcf q = resamp_crcf_create(0.12345f, 12, 0.25f, 60.0f, 256);
+        resamp_crcf_print(q);
+        resamp_crcf_destroy(q);
+        return 0;
+    }
+
+You now have two options within your project ``CMakeLists.txt`` file:
+
+1. clone, build, and install using CMake, then use
+   `find_package <https://cmake.org/cmake/help/latest/command/find_package.html>`_
+2. dynamically fetch liquid-dsp with
+   `FetchContent <https://cmake.org/cmake/help/latest/module/FetchContent.html>`_
+   to pull down the source and build completely within your application
+
+Your ``CMakeLists.txt`` file might look something like this:
+
+.. code-block:: cmake
+
+    # CMakeLists.txt - test finding package and linking against it
+    cmake_minimum_required(VERSION 3.10)
+    project(liquid_test C)
+
+    # option 1: check for local installation
+    #find_package(liquid REQUIRED)
+
+    # option 2: dynamically fetch content
+    include(FetchContent)
+    FetchContent_Declare(
+        liquid
+        GIT_REPOSITORY https://github.com/jgaeddert/liquid-dsp.git
+        GIT_TAG        v1.7.0
+        )
+    set(BUILD_AUTOTESTS  OFF CACHE INTERNAL "Disable building liquid tests")
+    set(BUILD_BENCHMARKS OFF CACHE INTERNAL "Disable building liquid benchmarks")
+    set(BUILD_EXAMPLES   OFF CACHE INTERNAL "Disable building liquid examples")
+    FetchContent_MakeAvailable(liquid)
+    # FetchContent_Populate(liquid) <- older policy, see CMP0169
+
+    add_executable(main main.c)
+    target_link_libraries(main liquid)
+
+You can then compile and run your application the typical way:
+
+.. code-block:: bash
+
+    mkdir build
+    cd build
+    cmake ..
+    make
+    ./main
+    # creating test object...
+    # <liquid.resamp_crcf, rate=0.12345, m=12, as=60.000, fc=0.25, npfb=256>
+
+
 PlatformIO
 ----------
 
@@ -256,7 +330,13 @@ Here is a table of CMake options available for configuring liquid:
 +------------------------+---------+--------------------------------------------------------------------+
 | ``BUILD_BENCHMARKS``   | ON      | Parse and compile benchmarks into executable binary                |
 +------------------------+---------+--------------------------------------------------------------------+
+| ``BUILD_SHARED_LIBS``  | ON      | Build shared library instead of static library                     |
++------------------------+---------+--------------------------------------------------------------------+
 | ``ENABLE_SIMD``        | ON      | Enable use of single instruction, multiple data (SIMD) extensions  |
++------------------------+---------+--------------------------------------------------------------------+
+| ``FIND_SIMD``          | ON      | Try to find available SIMD instruction sets on host computer       |
++------------------------+---------+--------------------------------------------------------------------+
+| ``FIND_FFTW``          | ON      | Try to find `FFTW <http://www.fftw.org)>`_ if available            |
 +------------------------+---------+--------------------------------------------------------------------+
 | ``BUILD_SANDBOX``      | OFF     | Compile sandbox (testing) programs                                 |
 +------------------------+---------+--------------------------------------------------------------------+
@@ -282,6 +362,7 @@ Available Modules
 * **buffer**: internal buffering, circular/static, ports (threaded)
 * **channel**: additive noise, multi-path fading, carrier phase/frequency
   offsets, timing phase/rate offsets
+* **core**: core functionality (error handling)
 * **dotprod**: inner dot products (real, complex), vector sum of squares
 * **equalization**: adaptive equalizers: least mean-squares, recursive
   least squares, semi-blind
@@ -339,13 +420,13 @@ Finally, ``liquid-dsp`` makes extensive use of GNU
 `autoconf <https://www.gnu.org/software/autoconf/>`_,
 `automake <https://www.gnu.org/software/automake/>`_,
 and related tools.
-These are fantastic libraires with amazing functionality and their authors
+These are fantastic libraries with amazing functionality and their authors
 should be lauded for their efforts.
 In a similar vain, much the software I write for a living I give away for
 free;
 however I believe in more permissive licenses to allow individuals the
 flexibility to use software with fewer limitations.
-If these restrictions are not acceptible, ``liquid-dsp`` can be compiled and run
+If these restrictions are not acceptable, ``liquid-dsp`` can be compiled and run
 without use of these external libraries, albeit a bit slower and with limited
 functionality.
 

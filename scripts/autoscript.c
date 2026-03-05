@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -304,7 +304,7 @@ void autoscript_parsefile(autoscript _q,
     char basename[1024];    // base script name
     char * cptr = NULL;     // readline return value
     char * sptr = NULL;     // tag string pointer
-    int cterm;              // terminating character
+    unsigned int cterm;     // terminating character
     unsigned int n=0;       // line number
     do {
         // increment line number

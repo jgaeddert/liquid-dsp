@@ -1,38 +1,25 @@
-// This example runs a bit error rate simulation for GMSK modulation.
+char __docstr__[] = "This example runs a bit error rate simulation for GMSK modulation.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>
-#include <getopt.h>
 #include <math.h>
 #include "liquid.h"
-
-// print usage/help message
-void usage()
-{
-    printf("modem_example [options]\n");
-    printf(" -h          : print help\n");
-}
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // simulation parameters
-    unsigned int k          = 4;        // filter samples/symbol
-    unsigned int m          = 3;        // filter delay (symbols)
-    float BT                = 0.3f;     // bandwidth-time product
-    float SNRdB_min         = -5.0f;    // starting SNR value
-    float SNRdB_max         = 15.0f;    // maximum SNR value
-    float SNRdB_step        =  1.0f;    // step size
-    unsigned int num_trials = 1e6;      // number of symbols
-    char filename[]         = "gmskmodem_ber_example.m";
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"h")) != EOF) {
-        switch (dopt) {
-        case 'h':   usage();        return 0;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "gmskmodem_ber_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, k,           4,     'k', "filter samples/symbol", NULL);
+    liquid_argparse_add(unsigned, m,           3,     'm', "filter delay (symbols)", NULL);
+    liquid_argparse_add(float,    BT,          0.3f,  'b', "bandwidth-time product", NULL);
+    liquid_argparse_add(float,    SNRdB_min,   -5.0f, 's', "starting SNR value", NULL);
+    liquid_argparse_add(float,    SNRdB_max,   15.0f, 'x', "maximum SNR value", NULL);
+    liquid_argparse_add(float,    SNRdB_step,   1.0f, 'd', "step size", NULL);
+    liquid_argparse_add(unsigned, num_trials,  1e6,   'n', "number of symbols", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // create modem objects
     gmskmod mod = gmskmod_create(k, m, BT); // modulator

@@ -1,24 +1,21 @@
-//
-// spgramf_example.c
-//
-// Spectral periodogram example with real inputs.
-//
+char __docstr__[] = "Spectral periodogram example with real inputs.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "spgramf_example.m"
-
-int main() {
-    // spectral periodogram options
-    unsigned int nfft        =   1024;  // spectral periodogram FFT size
-    unsigned int num_samples =    1e6;  // number of samples
-    float        noise_floor = -60.0f;  // noise floor [dB]
-
-    unsigned int i;
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "spgramf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, nfft,           1024, 'm', "spectral periodogram FFT size", NULL);
+    liquid_argparse_add(unsigned, num_samples, 2000000, 'n', "number of samples", NULL);
+    liquid_argparse_add(float,    noise_floor,     -60, '0', "noise floor [dB]", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // derived values
     float nstd = powf(10.0f, noise_floor/20.0f);
@@ -34,6 +31,7 @@ int main() {
             LIQUID_IIRDES_SOS,
             9, 0.17f, 0.20f, 0.1f, 60.0f);
 
+    unsigned int i;
     for (i=0; i<num_samples; i++) {
         // filter input noise signal
         float y = 0;
@@ -57,8 +55,8 @@ int main() {
     // 
     // export output file
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"nfft = %u;\n", nfft);
@@ -77,11 +75,8 @@ int main() {
     fprintf(fid,"ymin = 10*floor([noise_floor-20]/10);\n");
     fprintf(fid,"ymax = 10*floor([noise_floor+80]/10);\n");
     fprintf(fid,"axis([-0.5 0.5 ymin ymax]);\n");
-
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
-
-    printf("done.\n");
+    printf("results written to %s.\n", filename);
     return 0;
 }
 

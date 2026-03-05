@@ -43,20 +43,6 @@
 #  define LIBFEC_ENABLED 1
 #endif
 
-// report error
-int liquid_error_fl(int _code, const char * _file, int _line, const char * _format, ...);
-
-// report error specifically for invalid object configuration 
-void * liquid_error_config_fl(const char * _file, int _line, const char * _format, ...);
-
-// macro to get file name and line number for source of error
-#define liquid_error(code, format, ...) \
-    liquid_error_fl(code, __FILE__, __LINE__, format, ##__VA_ARGS__);
-
-// macro to get file name and line number for source of error (invalid object)
-#define liquid_error_config(format, ...) \
-    liquid_error_config_fl(__FILE__, __LINE__, format, ##__VA_ARGS__);
-
 //
 // Debugging macros
 //
@@ -726,7 +712,7 @@ LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_comp
 
 // Use fftw library if installed (and not overridden with configuration),
 // otherwise use internal (less efficient) fft library.
-#if HAVE_FFTW3_H && !defined LIQUID_FFTOVERRIDE
+#if fftw3f_FOUND || (HAVE_FFTW3_H && !defined LIQUID_FFTOVERRIDE)
 #   include <fftw3.h>
 #   define FFT_PLAN             fftwf_plan
 #   define FFT_CREATE_PLAN      fftwf_plan_dft_1d

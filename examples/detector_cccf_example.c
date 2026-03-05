@@ -1,69 +1,34 @@
-// 
-// detector_example.c
-//
-// This example demonstrates the binary pre-demodulator synchronizer. A random
-// binary sequence is generated, modulated with BPSK, and then interpolated.
-// The resulting sequence is used to generate a detector object which in turn
-// is used to detect a signal in the presence of carrier frequency and timing
-// offsets and additive white Gauss noise.
-//
+char __docstr__[] =
+"This example demonstrates the binary pre-demodulator synchronizer. A random"
+" binary sequence is generated, modulated with BPSK, and then interpolated."
+" The resulting sequence is used to generate a detector object which in turn"
+" is used to detect a signal in the presence of carrier frequency and timing"
+" offsets and additive white Gauss noise.";
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <getopt.h>
 #include <math.h>
 #include <time.h>
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "detector_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("detector_example -- test binary pre-demodulation synchronization\n");
-    printf("options:\n");
-    printf("  h     : print usage/help\n");
-    printf("  n     : number of sync samples, default: 128\n");
-    printf("  F     : carrier frequency offset, default: 0.02\n");
-    printf("  T     : fractional sample offset dt in [-0.5, 0.5], default: 0\n");
-    printf("  S     : SNR [dB], default: 20\n");
-    printf("  t     : detection threshold, default: 0.3\n");
-}
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    //srand(time(NULL));
-
-    // options
-    unsigned int n    =  128;       // number of sync samples
-    float dt          =  0.0f;      // fractional sample timing offset
-    float noise_floor = -30.0f;     // noise floor [dB]
-    float SNRdB       =  20.0f;     // signal-to-noise ratio [dB]
-    float dphi        =  0.0f;      // carrier frequency offset
-    float phi         =  0.0f;      // carrier phase offset
-    float threshold   =  0.3f;      // detection threshold
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hn:T:F:S:t:")) != EOF) {
-        switch (dopt) {
-        case 'h': usage();              return 0;
-        case 'n': n         = atoi(optarg); break;
-        case 'F': dphi      = atof(optarg); break;
-        case 'T': dt        = atof(optarg); break;
-        case 'S': SNRdB     = atof(optarg); break;
-        case 't': threshold = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
-
-    unsigned int i;
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "dds_cccf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, n,            128,   'n', "number of sync samples", NULL);
+    liquid_argparse_add(float,    dt,           0.0f,  'T', "fractional sample timing offset", NULL);
+    liquid_argparse_add(float,    noise_floor, -30.0f, '0', "noise floor [dB]", NULL);
+    liquid_argparse_add(float,    SNRdB,        20.0f, 'S', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_add(float,    dphi,         0.0f,  'F', "carrier frequency offset", NULL);
+    liquid_argparse_add(float,    phi,          0.0f,  'P', "carrier phase offset", NULL);
+    liquid_argparse_add(float,    threshold,    0.3f,  't', "detection threshold", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (dt < -0.5f || dt > 0.5f) {
-        fprintf(stderr,"error: %s, fractional sample offset must be in [-0.5,0.5]\n", argv[0]);
-        exit(1);
-    }
+    if (dt < -0.5f || dt > 0.5f)
+        return liquid_error(LIQUID_EICONFIG,"fractional sample offset must be in [-0.5,0.5]");
 
     // derived values
     unsigned int num_samples = 3*n;
@@ -76,6 +41,7 @@ int main(int argc, char*argv[])
     float complex y[num_samples];   // received signal
 
     // generate synchronization pattern (OFDM symbol, slightly over-sampled)
+    unsigned int i;
     float complex S[n];
     for (i=0; i<n; i++)
         S[i] = (i < 0.4*n || i > 0.6*n) ? randnf() + _Complex_I*randnf() : 0.0f;
@@ -156,8 +122,8 @@ int main(int argc, char*argv[])
     // 
     // export results
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"n           = %u;\n", n);
@@ -188,7 +154,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  ylabel('received signal');\n");
 
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     return 0;
 }

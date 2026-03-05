@@ -1,20 +1,21 @@
-// 
-// cgsolve_example.c
-//
-// Solve linear system of equations A*x = b using the conjugate-
-// gradient method where A is a symmetric positive-definite matrix.
-// Compare speed to matrixf_linsolve() for same system.
-//
+char __docstr__[] =
+"Solve linear system of equations A*x = b using the conjugate-"
+" gradient method where A is a symmetric positive-definite matrix."
+" Compare speed to matrixf_linsolve() for same system.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-int main() {
-    // options
-    unsigned int n = 8;
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(unsigned, n, 8, 'n', "number of independent equations to solve", NULL);
+    liquid_argparse_parse(argc,argv);
 
     unsigned int i;
 

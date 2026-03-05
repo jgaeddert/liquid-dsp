@@ -1,25 +1,23 @@
-//
-// iirhilb_filter_example.c
-//
-// Hilbert transform example. This example demonstrates the
-// functionality of iirhilbf (infinite impulse response Hilbert transform)
-// as a filter to remove the negative half of the spectrum.
-//
-// SEE ALSO: iirhilb_interp_example.c
-//           iirhilb_example.c
-//
+char __docstr__[] =
+"Hilbert transform example. This example demonstrates the"
+" functionality of iirhilbf (infinite impulse response Hilbert transform)"
+" as a filter to remove the negative half of the spectrum.";
 
 #include <stdio.h>
 #include <complex.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "iirhilb_filter_example.m"
-
-int main() {
-    unsigned int    order   = 7;        // Hilbert filter order
-    unsigned int    n       = 128;      // number of input samples
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "iirhilb_filter_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, order,   7, 'O', "filter order", NULL);
+    liquid_argparse_add(unsigned,     n, 128, 'n', "number of samples", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // derived values
     unsigned int num_samples = n + 50;
@@ -57,8 +55,8 @@ int main() {
     // 
     // export results to file
     //
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"n=%u;\n", n);
@@ -110,7 +108,7 @@ int main() {
     fprintf(fid,"legend('original/cplx','transformed/real','regenerated/cplx','location','northeast');");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

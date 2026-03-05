@@ -1,25 +1,26 @@
-//
-// ordfilt_rrrf_example.c
-//
+char __docstr__[] = "Demonstration of filter based on order statistics";
 
 #include <stdio.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "ordfilt_rrrf_example.m"
-
-int main() {
-    // options
-    unsigned int num_samples = 2400; // number of random input samples
-    unsigned int n           =  101; // filter length
-    unsigned int k           =    5; // order statistic index
+int main(int argc, char *argv[])
+{
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "ordfilt_rrrf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, num_samples, 2400, 'N', "number of samples to generate", NULL);
+    liquid_argparse_add(unsigned, n,            101, 'n', "filter length", NULL);
+    liquid_argparse_add(unsigned, k,              5, 'k', "order statistic", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // arrays
     float x[num_samples];   // filter input
     float y[num_samples];   // filter output
 
-    // generate input tone with noise
+    // generate input tone with offset noise
     unsigned int i;
     for (i=0; i<num_samples; i++)
         x[i] = -cosf(2*M_PI*(float)i/(float)num_samples) + fabsf(randnf());
@@ -34,10 +35,8 @@ int main() {
     // destroy filter object
     ordfilt_rrrf_destroy(q);
 
-    // 
     // export results
-    //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    FILE * fid = fopen(filename,"w");
     fprintf(fid,"%% ordfilt_rrrf_example.m: auto-generated file\n\n");
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"num_samples=%u;\n", num_samples);
@@ -55,10 +54,10 @@ int main() {
     fprintf(fid,"xlabel('time');\n");
     fprintf(fid,"ylabel('signals');\n");
     fprintf(fid,"axis([0 num_samples -4 4]);\n");
-    fprintf(fid,"legend('noise','filtered noise',1);");
+    fprintf(fid,"legend('noise','filtered noise');");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

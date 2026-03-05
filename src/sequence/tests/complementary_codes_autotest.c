@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,14 +46,14 @@ void complementary_codes_test(unsigned int _n)
     bsequence_create_ccodes(ax, bx);
 
     unsigned int i;
-    signed int raa, rbb;
+    int raa, rbb;
     for (i=0; i<_n; i++) {
         // correlate like sequences
         raa = 2*bsequence_correlate(a,ax) - _n;
         rbb = 2*bsequence_correlate(b,bx) - _n;
 
-        if (i==0) { CONTEND_EQUALITY(raa+rbb,2*_n); }
-        else      { CONTEND_EQUALITY(raa+rbb,0);    }
+        if (i==0) { CONTEND_EQUALITY(raa+rbb,(int)(2*_n)); }
+        else      { CONTEND_EQUALITY(raa+rbb,0);           }
 
         bsequence_circshift(ax);
         bsequence_circshift(bx);

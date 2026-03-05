@@ -1,11 +1,14 @@
-// This example runs a bit error rate simulation for a specified modulation
-// scheme and saves the resulting data points to a file for plotting.
+char __docstr__[] =
+"This example runs a bit error rate simulation for a specified modulation"
+" scheme and saves the resulting data points to a file for plotting.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>
 #include <getopt.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 // print usage/help message
 void usage()
@@ -18,32 +21,18 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    // simulation parameters
-    modulation_scheme ms    = LIQUID_MODEM_QPSK; // modulation scheme
-    float SNRdB_min         = -5.0f;             // starting SNR value
-    float SNRdB_max         = 40.0f;             // maximum SNR value
-    float SNRdB_step        =  1.0f;             // step size
-    unsigned int num_trials = 1e6;               // number of symbols
-    char filename[]         = "modem_ber_example.m";
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hm:")) != EOF) {
-        switch (dopt) {
-        case 'h':   usage();        return 0;
-        case 'm':
-            ms = liquid_getopt_str2mod(optarg);
-            if (ms == LIQUID_MODEM_UNKNOWN) {
-                fprintf(stderr,"error: %s, unknown/unsupported modulation scheme '%s'\n",
-                    argv[0], optarg);
-                return 1;
-            }
-            break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "modem_ber_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char*, mod_str,  "qpsk", 'm', "modulation scheme", liquid_argparse_modem);
+    liquid_argparse_add(unsigned, num_trials, 1000000, 'n', "number of trials", NULL);
+    liquid_argparse_add(float,    SNRdB_min,  -5.0f,   's', "starting SNR value", NULL);
+    liquid_argparse_add(float,    SNRdB_max,  40.0f,   'x', "maximum SNR value", NULL);
+    liquid_argparse_add(float,    SNRdB_step,  1.0f,   'd', "step size", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // create modem objects
+    int   ms  = liquid_getopt_str2mod(mod_str);
     modem mod = modem_create(ms);   // modulator
     modem dem = modem_create(ms);   // demodulator
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -97,7 +97,7 @@ qpilotsync qpilotsync_create(unsigned int _payload_len,
     q->nfft = 1 << liquid_nextpow2(q->num_pilots + (q->num_pilots>>1));
     q->buf_time = (float complex*) FFT_MALLOC(q->nfft*sizeof(float complex));
     q->buf_freq = (float complex*) FFT_MALLOC(q->nfft*sizeof(float complex));
-    q->fft      = FFT_CREATE_PLAN(q->nfft, q->buf_time, q->buf_freq, FFT_DIR_FORWARD, 0);
+    q->fft      = FFT_CREATE_PLAN(q->nfft, q->buf_time, q->buf_freq, FFT_DIR_FORWARD, FFT_METHOD);
 
     // reset and return pointer to main object
     qpilotsync_reset(q);
