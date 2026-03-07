@@ -54,34 +54,49 @@ Log Levels
 |                       | the application should be aborted immediately                 |
 +-----------------------+---------------------------------------------------------------+
 
+
 Compile-Time Options
 --------------------
 
 You can control how logging works at compile time to ensure limited processing overhead.
+System logging in |liquid| works with a global internal :api:`liquid_logger` object
+that is instantiated as part of the shared library
+(see `ref:`thread_safe_logging` on how to ensure thread-safe operation).
+Functions within |liquid| use this to internally log status information,
+warnings, errors etc. as your program executes.
+At run time, you may specify the logging level for which these messages
+get logged.
+For example, setting a threshold of ``LIQUID_WARN`` means that messages
+with ``LIQUID_TRACE`` are not logged;
+however there is a small amount of overhead to perform this check which
+can be undesireable for applications where every ounce of performance
+from the processor is needed.
+To support this, there are several ``cmake`` options that enable disabling
+logging at compile time.
 
-If you want to disable logging completely
-(and just print values with levels no less than ``LIQUID_INFO``)
-with the ``cmake`` flag ``-D ENABLE_LOGGING=OFF``.
-
-.. todo:: ensure this cmake flag is used
-
-If your terminal does not support color output, you can explicity disable all ANSI
-color flags
-with the ``cmake`` flag ``-D ENABLE_COLOR=OFF``.
+If you want to disable the logging framework completely
+you cand do this with the ``cmake`` flag ``-D ENABLE_LOGGING=OFF``.
+Log events with levels below ``LIQUID_INFO`` are ignored.
+Log events with levels at ``LIQUID_INFO`` or higher are printed to ``stdout``
+without any formatting.
 
 If you don't want logging values below a certain threshold to even be compiled, you
 can specify the minimum level with the ``cmake`` flag ``LOGGING_LEVEL``.
 For example, if you want to remove code for logging "trace" and "debug" levels, you
 can run ``cmake -D LOGGING_LEVEL=info``.
+Log events below ``LIQUID_INFO`` are not even compiled as part of the library.
 
-Future options
+If your terminal does not support color output, you can explicity disable all ANSI
+color flags
+with the ``cmake`` flag ``-D ENABLE_COLOR=OFF``.
 
-* File path delimiter, e.g. "/", for parsing paths
-* Truncte file path to local build directory. That is, instead of
-  ``/home/username/src/liquid-dsp/src/core/src/logging.c`` just use
-  ``liquid-dsp/src/core/logging.c``.
-  There is probably a way to do this on POSIX systems with CMake
-* Fixed logging format and level (no run-time decisions)
+.. comment Future options
+
+    * File path delimiter, e.g. "/", for parsing paths
+    * Truncte file path to local build directory. That is, instead of
+      ``/home/username/src/liquid-dsp/src/core/src/logging.c`` just use
+      ``liquid-dsp/src/core/logging.c``.
+      There is probably a way to do this on POSIX systems with CMake
 
 
 Run-Time Formatting Options
@@ -289,6 +304,9 @@ additional filtering and granularity.
 
         return 0;
     }
+
+
+.. _thread_safe_logging:
 
 Thread-safe Operation
 ---------------------
