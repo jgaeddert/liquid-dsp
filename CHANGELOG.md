@@ -16,6 +16,8 @@
   * filter
     - rresamp: fixing aliasing issue with default operation (thanks @xerpi
       and @MatiasLopezING)
+    - symsync: adding methods to explicitly get/set rate and del values
+      (thanks @brian-armstrong)
   * framing
     - Added ability to initialize qdsync on cpfsk (thanks @asazernik)
 
