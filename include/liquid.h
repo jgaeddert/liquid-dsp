@@ -5024,6 +5024,18 @@ int SYMSYNC(_set_lf_bw)(SYMSYNC() _q,                                       \
 /* Return instantaneous fractional timing offset estimate               */  \
 float SYMSYNC(_get_tau)(SYMSYNC() _q);                                      \
                                                                             \
+/* Get synchronizer internal resampling rate                            */  \
+float SYMSYNC(_get_rate)(SYMSYNC() _q);                                     \
+                                                                            \
+/* Set synchronizer internal resampling rate                            */  \
+int SYMSYNC(_set_rate)(SYMSYNC() _q, float _rate);                          \
+                                                                            \
+/* Get synchronizer internal delta step size                            */  \
+float SYMSYNC(_get_del)(SYMSYNC() _q);                                      \
+                                                                            \
+/* Set synchronizer internal delta step size                            */  \
+int SYMSYNC(_set_del)(SYMSYNC() _q, float _del);                            \
+                                                                            \
 /* Execute synchronizer on input data array                             */  \
 /*  _q      : synchronizer object                                       */  \
 /*  _x      : input data array, [size: _nx x 1]                         */  \
