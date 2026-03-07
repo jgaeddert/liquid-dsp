@@ -106,8 +106,6 @@ Formatting for logging is typically configured at run time using a
 bit field. The output log includes four sections with custom
 formatting for each:
 
-.. todo:: include relative time from start?
-
 .. code-block::
 
     <date and time> <log level> <file and line> <custom message>
@@ -122,6 +120,8 @@ permit using the higher resolution
 `timespec <https://en.cppreference.com/w/c/chrono/timespec.html>`_
 object.
 Choose one of the base format options:
+
+.. todo:: include relative time from start?
 
 ``LIQUID_LOG_RAWTIME``
     Display the raw timestamp in terms of seconds from :c:`time(NULL);`
@@ -234,11 +234,23 @@ If you want to support color output, use the following:
 
 Note that you can also set custom "colors" (ANSI formatting) within the object itself.
 
+
 Presets
 ^^^^^^^
 
-``LIQUID_LOG_DEFAULT`` : ...
+``LIQUID_LOG_COMPACT``
+    Compact representation of
+    Example:
+    ``09:25:46 [I] message with (2) value``
 
+``LIQUID_LOG_DEFAULT``
+    Medium detail, default configuration.
+    Example:
+    ``2026-02-22 08:18:35.123 [info ] …les/logging_extensive_example.c:29: message with (2) value``
+
+``LIQUID_LOG_FULL``
+    Full detail with as much information as available
+    ``2026-02-22 08:18:35.123 [info] /path/to/liquid-dsp/logging-dev/examples/logging_extensive_example.c:29: message with (2) value``
 
 Logging to File
 ---------------
