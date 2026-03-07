@@ -38,28 +38,24 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     printf("\nsetting default logging (without color)\n");
-    liquid_logger_set_config(NULL, LIQUID_LOG_DEFAULT);
+    liquid_logger_set_config(NULL, LIQUID_LOG_DEFAULT & ~LIQUID_LOG_COLOR);
     sweep_levels(NULL);
 
     printf("\nsetting default logging (with color)\n");
-    liquid_logger_set_config(NULL, LIQUID_LOG_DEFAULT | LIQUID_LOG_COLOR);
+    liquid_logger_set_config(NULL, LIQUID_LOG_DEFAULT);
     sweep_levels(NULL);
 
     printf("\nsetting full logging\n");
-    liquid_logger_set_config(NULL, LIQUID_LOG_FULL | LIQUID_LOG_COLOR);
-    sweep_levels(NULL);
-
-    printf("\nsetting concise logging\n");
-    liquid_logger_set_config(NULL, LIQUID_LOG_CONCISE | LIQUID_LOG_COLOR);
+    liquid_logger_set_config(NULL, LIQUID_LOG_FULL);
     sweep_levels(NULL);
 
     printf("\nsetting compact logging\n");
-    liquid_logger_set_config(NULL, LIQUID_LOG_COMPACT | LIQUID_LOG_COLOR);
+    liquid_logger_set_config(NULL, LIQUID_LOG_COMPACT);
     sweep_levels(NULL);
 
-    //printf("\nsetting custom log format\n");
-    //liquid_logger_set_config(NULL, LIQUID_LOG_LEVEL_1 | LIQUID_LOG_COLOR);
-    //sweep_levels(NULL);
+    printf("\nsetting custom log format\n");
+    liquid_logger_set_config(NULL, LIQUID_LOG_LEVEL_SHORT | LIQUID_LOG_LEVEL_BRACKETS | LIQUID_LOG_COLOR);
+    sweep_levels(NULL);
 
     // test macro
     printf("\ntesting macro\n");
