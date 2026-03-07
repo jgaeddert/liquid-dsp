@@ -54,79 +54,112 @@ Log Levels
 |                       | the application should be aborted immediately                 |
 +-----------------------+---------------------------------------------------------------+
 
+
 Compile-Time Options
 --------------------
 
 You can control how logging works at compile time to ensure limited processing overhead.
+System logging in |liquid| works with a global internal :api:`liquid_logger` object
+that is instantiated as part of the shared library
+(see `ref:`thread_safe_logging` on how to ensure thread-safe operation).
+Functions within |liquid| use this to internally log status information,
+warnings, errors etc. as your program executes.
+At run time, you may specify the logging level for which these messages
+get logged.
+For example, setting a threshold of ``LIQUID_WARN`` means that messages
+with ``LIQUID_TRACE`` are not logged;
+however there is a small amount of overhead to perform this check which
+can be undesireable for applications where every ounce of performance
+from the processor is needed.
+To support this, there are several ``cmake`` options that enable disabling
+logging at compile time.
 
-If you want to disable logging completely
-(and just print values with levels no less than ``LIQUID_INFO``)
-with the ``cmake`` flag ``-D ENABLE_LOGGING=OFF``.
-
-.. todo:: ensure this cmake flag is used
-
-If your terminal does not support color output, you can explicity disable all ANSI
-color flags
-with the ``cmake`` flag ``-D ENABLE_COLOR=OFF``.
+If you want to disable the logging framework completely
+you cand do this with the ``cmake`` flag ``-D ENABLE_LOGGING=OFF``.
+Log events with levels below ``LIQUID_INFO`` are ignored.
+Log events with levels at ``LIQUID_INFO`` or higher are printed to ``stdout``
+without any formatting.
 
 If you don't want logging values below a certain threshold to even be compiled, you
 can specify the minimum level with the ``cmake`` flag ``LOGGING_LEVEL``.
 For example, if you want to remove code for logging "trace" and "debug" levels, you
 can run ``cmake -D LOGGING_LEVEL=info``.
+Log events below ``LIQUID_INFO`` are not even compiled as part of the library.
 
-Future options
+If your terminal does not support color output, you can explicity disable all ANSI
+color flags
+with the ``cmake`` flag ``-D ENABLE_COLOR=OFF``.
 
-* File path delimiter, e.g. "/", for parsing paths
-* Truncte file path to local build directory. That is, instead of
-  ``/home/username/src/liquid-dsp/src/core/src/logging.c`` just use
-  ``liquid-dsp/src/core/logging.c``.
-  There is probably a way to do this on POSIX systems with CMake
-* Fixed logging format and level (no run-time decisions)
+.. comment Future options
+
+    * File path delimiter, e.g. "/", for parsing paths
+    * Truncte file path to local build directory. That is, instead of
+      ``/home/username/src/liquid-dsp/src/core/src/logging.c`` just use
+      ``liquid-dsp/src/core/logging.c``.
+      There is probably a way to do this on POSIX systems with CMake
 
 
 Run-Time Formatting Options
 ---------------------------
 
 Formatting for logging is typically configured at run time using a
-bit field.
-
-Date and time options
+bit field. The output log includes four sections with custom
+formatting for each:
 
 .. code-block::
 
-    LIQUID_LOG_RAWTIME
-        Display the raw timestamp in terms of seconds from :c:`time(NULL);`
-        Example: "1771769351"
+    <date and time> <log level> <file and line> <custom message>
 
-    LIQUID_LOG_DATETIME
-        Standard datetime using strftime and "%Y-%m-%d %T" format.
-        Example: "2026-02-22 08:18:35"
 
-    LIQUID_LOG_DATE
-        Log just the date using strftime and "%Y-%m-%d" format.
-        Example: "2026-02-22"
+Date and Time Options
+^^^^^^^^^^^^^^^^^^^^^
 
-    LIQUID_LOG_TIME
-        Log just the time using strftime and "%T" format.
-        Example: "08:18:35"
+Timestamps are formatted based on absolute date and/or time values.
+Using the `C11 <https://en.cppreference.com/w/c/11.html>`_ standard
+permit using the higher resolution
+`timespec <https://en.cppreference.com/w/c/chrono/timespec.html>`_
+object.
+Choose one of the base format options:
 
-    LIQUID_LOG_DATETIME_UTC
-        TBD
+.. todo:: include relative time from start?
 
-    LIQUID_LOG_DATE_UTC
-        TBD
+``LIQUID_LOG_RAWTIME``
+    Display the raw timestamp in terms of seconds from :c:`time(NULL);`
+    Example: ``1771769351``
 
-    LIQUID_LOG_MS
-        Include milliseconds to the end of a timestamp if requested.
-        Example: "08:18:35.123"
+``LIQUID_LOG_DATETIME``
+    Standard datetime using strftime and "%Y-%m-%d %T" format.
+    Example: ``2026-02-22 08:18:35``
 
-    LIQUID_LOG_US
-        Include microseconds to the end of a timestamp if requested.
-        Example: "08:18:35.123456"
+``LIQUID_LOG_DATE``
+    Log just the date using strftime and "%Y-%m-%d" format.
+    Example: ``2026-02-22``
 
-    LIQUID_LOG_NS
-        Include nanoseconds to the end of a timestamp if requested.
-        Example: "08:18:35.123456789"
+``LIQUID_LOG_TIME``
+    Log just the time using strftime and "%T" format.
+    Example: ``08:18:35``
+
+
+Use any of the following options additional:
+
+``LIQUID_LOG_UTC``
+    Log using
+    `coordinated universal time <https://en.wikipedia.org/wiki/Coordinated_Universal_Time>`_
+    (UTC) for date and/or time stamps. For example,
+    ``LIQUID_LOG_DATETIME | LIQUID_LOG_UTC`` yields 
+    ``2026-02-22T13:18:35Z``.
+
+``LIQUID_LOG_MS``
+    Include milliseconds to the end of a timestamp if requested.
+    Example: ``08:18:35.123``
+
+``LIQUID_LOG_US``
+    Include microseconds to the end of a timestamp if requested.
+    Example: ``08:18:35.123456``
+
+``LIQUID_LOG_NS``
+    Include nanoseconds to the end of a timestamp if requested.
+    Example: ``08:18:35.123456789``
 
 These options can be used in conjuction with one another to customize formatting.
 For example:
@@ -137,63 +170,87 @@ For example:
     liquid_log_info("custom timestamp");
     // 1771769351.445 [info ] custom timestamp
 
-Color options
 
-.. code-block::
+Log Level Options
+^^^^^^^^^^^^^^^^^
 
-    LIQUID_LOG_COLOR
-        Enable color output.
+You can specify the formatting of the log level by choosing one of the
+following:
+
+``LIQUID_LOG_LEVEL_FULL``
+    Log the full level string.
+    Example: ``[warning]``
+
+``LIQUID_LOG_LEVEL_SHORT``
+    Log a shortened version of the level, truncated to 5 characters.
+    Example: ``[warn ]``
+
+``LIQUID_LOG_LEVEL_ONE``
+    Log a one-character representation of the level.
+    Example: ``[W]``
+
+``LIQUID_LOG_LEVEL_NUMBER``
+    Log a numeral representation of the level.
+    Example: ``[3]``
+
+Use any of the following options additional:
+
+``LIQUID_LOG_LEVEL_BRACKETS``
+    Add brackets around the log level.
+    Example: ``[trace]``
+
+
+File and Line Number Options
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can print the filename by choosing one of the following methods for truncation:
+
+``LIQUID_LOG_FILENAME``
+    Log the full filename to the screen
+    Example: ``/path/to/my/source/file.c``
+
+``LIQUID_LOG_FILENAME_SHORT``
+    Log just the local file, assuming a "/" delimiter
+    Example: ``file.c``
+
+``LIQUID_LOG_FILENAME_TRUNC``
+    Log a truncated version of the file if the name extends
+    too long, e.g. ``...source/file.c``
+
+Optionally you can enable displaying the line number:
+
+``LIQUID_LOG_LINE``
+    Include the line number.
+    Example: ``/path/to/my/source/file.c:123``
+
+
+Color Options
+^^^^^^^^^^^^^
+
+If you want to support color output, use the following:
+
+``LIQUID_LOG_COLOR``
+    Enable color output.
 
 Note that you can also set custom "colors" (ANSI formatting) within the object itself.
 
-Level options
 
-.. code-block::
+Presets
+^^^^^^^
 
-    LIQUID_LOG_LEVEL_BRACKETS
-        (TBD) Add brackets around the log level.
-        Example: "[trace]"
+``LIQUID_LOG_COMPACT``
+    Compact representation of
+    Example:
+    ``09:25:46 [I] message with (2) value``
 
-    LIQUID_LOG_LEVEL_FULL
-        Log the full level string.
-        Example: "[warning]"
+``LIQUID_LOG_DEFAULT``
+    Medium detail, default configuration.
+    Example:
+    ``2026-02-22 08:18:35.123 [info ] …les/logging_extensive_example.c:29: message with (2) value``
 
-    LIQUID_LOG_LEVEL_SHORT
-        Log a shortened version of the level, truncated to 5 characters.
-        Example: "[warn ]"
-
-    LIQUID_LOG_LEVEL_ONE
-        Log a one-character representation of the level.
-        Example: "[W]"
-
-    LIQUID_LOG_LEVEL_NUMBER
-        Log a numeral representation of the level.
-        Example: "[3]"
-
-File name and line number options
-
-.. code-block::
-
-    LIQUID_LOG_FILENAME
-        Log the full filename to the screen
-        Example: "/path/to/my/source/file.c"
-
-    LIQUID_LOG_FILENAME_SHORT
-        Log just the local file, assuming a "/" delimiter
-        Example: "file.c"
-
-    LIQUID_LOG_FILENAME_TRUNCATED
-        Log a truncated version of the file if the name extends
-        too long, e.g. "...source/file.c"
-
-    LIQUID_LOG_LINE
-        Include the line number.
-        Example: "/path/to/my/source/file.c:123"
-
-Some presets:
-
-``LIQUID_LOG_DEFAULT`` : ...
-
+``LIQUID_LOG_FULL``
+    Full detail with as much information as available
+    ``2026-02-22 08:18:35.123 [info] /path/to/liquid-dsp/logging-dev/examples/logging_extensive_example.c:29: message with (2) value``
 
 Logging to File
 ---------------
@@ -260,6 +317,9 @@ additional filtering and granularity.
         return 0;
     }
 
+
+.. _thread_safe_logging:
+
 Thread-safe Operation
 ---------------------
 
@@ -279,36 +339,45 @@ with a basic example shown below:
 
 .. code-block:: c
 
-    #include <liquid/liquid.h>
+    #include <pthread.h>
     #include <stdbool.h>
+    #include <liquid/liquid.h>
 
-    // user-defined lock function; non-atomic spin lock for demonstration
-    // (replace with e.g. pthread_mutex)
-    int spinlock(int _lock, void * _flag)
+    // user-defined lock function
+    int lock_callback(int _lock, void * _context)
     {
-        if (_lock) {
-            // wait for unlock
-            while (*((bool*)_flag))
-                ; // burn your cpu to the ground
-            *((bool*)_flag) = true;
-        } else {
-            // unlock
-            *((bool*)_flag) = false;
-        }
+        pthread_mutex_t * mutex = (pthread_mutex_t*)_context;
+        if (_lock)
+            pthread_mutex_lock(mutex);
+        else
+            pthread_mutex_unlock(mutex);
         return LIQUID_OK;
     }
 
     int main()
     {
-        // set custom lock
-        locked = false;
-        liquid_logger_set_lock(NULL, spinlock, &locked);
+        // create mutex
+        pthread_mutex_t mutex;
+        pthread_mutex_init(&mutex,NULL);
 
-        // run as necesssary...
-        liquid_log_info("logging an event");
+        // set lock function callback
+        liquid_logger_set_lock(NULL, lock_callback, &mutex);
+
+        // run as necesssary across as many threads as needed
+        {
+            liquid_log_info("logging an event");
+        }
+
+        // clean it up
+        pthread_mutex_destroy(&mutex);
+        return 0;
     }
-
 
 An interactive extensive example can be found in
 :file:`examples/logging_spinlock_example.c`.
+
+Interface
+---------
+
+.. todo:: import public logging interface
 

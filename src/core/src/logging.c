@@ -109,7 +109,7 @@ int liquid_logger_stream_file_line(liquid_log_event _event,
     }
 
     if (_line)
-        fprintf(_stream,"%-3d:",_event->line);
+        fprintf(_stream,"%d:",_event->line);
 
     if (_color)
         fprintf(_stream,"%s",liquid_log_color_clear);
@@ -127,51 +127,54 @@ int liquid_logger_callback_stream(liquid_log_event _event,
     if (_stream != stdout && _stream != stderr && ftell(_stream) < 0)
         return 0; // file/stream is not open
 
-    // compactness levels:
-    // <=0:  [09:17:53] warning: src/multichannel/src/firpfbch2.proto.c:183: firfilt_crcf_copy(), object cannot be NULL (code 3: invalid parameter or configuration)
-    //   1:  [09:17:53] warn:…c/firpfbch2.proto.c:183:firfilt_crcf_copy(), object cannot be NULL (code 3: invalid parameter or configuration)
-    //   2:  W:…bch2.proto.c:183:firfilt_crcf_copy(), object cannot be NULL (code 3: invalid parameter or configuration)
-    // >=3:  W:firfilt_crcf_copy(), object cannot be NULL (code 3: invalid parameter or configuration)
-
     // parse configuration
-    unsigned int enable_color = _config & LIQUID_LOG_COLOR;
+    bool enable_color = _config & LIQUID_LOG_COLOR;
 
     // print timestamp
-    if (_config & LIQUID_LOG_TIMESTAMP)
-    {
-        fprintf(_stream,"%s", enable_color ? liquid_log_color_soft : "");
-        fprintf(_stream,"%s", _event->time_str);
-        fprintf(_stream,"%s ", enable_color ? liquid_log_color_clear : "");
+    fprintf(_stream,"%s", enable_color ? liquid_log_color_soft : "");
+    fprintf(_stream,"%s", _event->time_str);
+    fprintf(_stream,"%s", enable_color ? liquid_log_color_clear : "");
+    if (strlen(_event->time_str) > 0)
+        fprintf(_stream," ");
+
+    if (_config & LIQUID_LOG_LEVEL_BRACKETS)
+        fprintf(_stream,"[");
+
+    if (enable_color)
+        fprintf(_stream,"%s",liquid_log_colors[_event->level]);
+
+    // print log level string, e.g. "warning", "warn ", "W", or "3"
+    if (_config & LIQUID_LOG_LEVEL_FULL) {
+        // e.g. "warning"
+        fprintf(_stream,"%s",liquid_log_levels[_event->level]);
+    } else if (_config & LIQUID_LOG_LEVEL_SHORT) {
+        // e.g. "warn "
+        fprintf(_stream,"%s", liquid_log_levels_concise[_event->level]);
+    } else if (_config & LIQUID_LOG_LEVEL_ONE) {
+        // e.g. "W"
+        fprintf(_stream,"%c",liquid_log_levels[_event->level][0]-32);
+    } else if (_config & LIQUID_LOG_LEVEL_NUMBER) {
+        // e.g. "3"
+        fprintf(_stream,"%d",_event->level);
     }
 
-    // print log level
-    if (_config & (LIQUID_LOG_LEVEL_FULL | LIQUID_LOG_LEVEL_5 | LIQUID_LOG_LEVEL_1) )
+    if (enable_color)
+        fprintf(_stream,"%s",liquid_log_color_clear);
+
+    if (_config & LIQUID_LOG_LEVEL_BRACKETS)
+        fprintf(_stream,"]");
+    if (_config & (LIQUID_LOG_LEVEL_FULL | LIQUID_LOG_LEVEL_SHORT |
+                   LIQUID_LOG_LEVEL_ONE  |LIQUID_LOG_LEVEL_NUMBER |
+                   LIQUID_LOG_LEVEL_BRACKETS))
     {
-        fprintf(_stream,"[");
-        if (enable_color)
-            fprintf(_stream,"%s",liquid_log_colors[_event->level]);
-
-        // print log level string, e.g. "warning" or "warn " or "W"
-        if (_config & (LIQUID_LOG_LEVEL_FULL)) {
-            // e.g. "warning"
-            fprintf(_stream,"%s",liquid_log_levels[_event->level]);
-        } else if (_config & (LIQUID_LOG_LEVEL_5)) {
-            // e.g. "warn "
-            fprintf(_stream,"%s", liquid_log_levels_concise[_event->level]);
-        } else if (_config & (LIQUID_LOG_LEVEL_1)) {
-            // e.g. "W"
-            fprintf(_stream,"%c",liquid_log_levels[_event->level][0]-32);
-        }
-
-        fprintf(_stream,"%s] " , enable_color ? liquid_log_color_clear : "");
+        fprintf(_stream," ");
     }
 
     // print file/line
     int smax = 0;
-    if      (_config & LIQUID_LOG_FILENAME_FULL) { smax = -1; }
-    else if (_config & LIQUID_LOG_FILENAME_32  ) { smax = 32; }
-    else if (_config & LIQUID_LOG_FILENAME_20  ) { smax = 20; }
-    else if (_config & LIQUID_LOG_FILENAME_12  ) { smax = 12; }
+    if      (_config & LIQUID_LOG_FILENAME      ) { smax = -1; }
+    else if (_config & LIQUID_LOG_FILENAME_SHORT) { smax = 32; } // TODO: clip filename
+    else if (_config & LIQUID_LOG_FILENAME_TRUNC) { smax = 20; }
     liquid_logger_stream_file_line(_event, _stream, enable_color, smax, _config & LIQUID_LOG_LINE);
 
     // parse variadic function arguments
@@ -189,6 +192,54 @@ int liquid_logger_callback_file(liquid_log_event _event,
     return liquid_logger_callback_stream(_event, (FILE*)_fid, _config & ~LIQUID_LOG_COLOR);
 }
 
+// log timestamp and format string
+// TODO: pass timespec, string, and config rather than full event
+int liquid_event_timestamp(struct liquid_log_event_s * _q, int _config)
+{
+    // set formatted timestamp
+    // NOTE: the string format is hard-coded here
+#if 0
+    clock_gettime(CLOCK_REALTIME, &(_q->timestamp));
+#else
+    timespec_get(&(_q->timestamp), TIME_UTC);
+#endif
+    bool format_utc = _config & LIQUID_LOG_UTC;
+    size_t n=0;
+    _q->time_str[0] = '\0';
+    if (_config & LIQUID_LOG_RAWTIME) {
+        n += snprintf(_q->time_str, 64, "%ld", _q->timestamp.tv_sec);
+    } else if (_config & LIQUID_LOG_DATETIME) {
+        if (format_utc)
+            n += strftime(_q->time_str, sizeof(_q->time_str), "%Y-%m-%dT%T", gmtime(&_q->timestamp.tv_sec));
+        else
+            n += strftime(_q->time_str, sizeof(_q->time_str), "%Y-%m-%d %T", localtime(&_q->timestamp.tv_sec));
+    } else if (_config & LIQUID_LOG_DATE) {
+        if (format_utc)
+            n += strftime(_q->time_str, sizeof(_q->time_str), "%Y-%m-%d", gmtime(&_q->timestamp.tv_sec));
+        else
+            n += strftime(_q->time_str, sizeof(_q->time_str), "%Y-%m-%d", localtime(&_q->timestamp.tv_sec));
+    } else if (_config & LIQUID_LOG_TIME) {
+        if (format_utc)
+            n += strftime(_q->time_str, sizeof(_q->time_str), "%T", gmtime(&_q->timestamp.tv_sec));
+        else
+            n += strftime(_q->time_str, sizeof(_q->time_str), "%T", localtime(&_q->timestamp.tv_sec));
+    }
+
+    // print fractional seconds if time is used and ms, ns, or us is requested
+    bool print_time = _config & (LIQUID_LOG_RAWTIME | LIQUID_LOG_DATETIME | LIQUID_LOG_TIME);
+
+    if (print_time && (_config & LIQUID_LOG_MS))
+        sprintf(_q->time_str+n,".%.3ld", _q->timestamp.tv_nsec / 1000000);
+    else if (print_time && (_config & LIQUID_LOG_US))
+        sprintf(_q->time_str+n,".%.6ld", _q->timestamp.tv_nsec /    1000);
+    else if (print_time && (_config & LIQUID_LOG_NS))
+        sprintf(_q->time_str+n,".%.9ld", _q->timestamp.tv_nsec          );
+
+    if (format_utc)
+        strcat(_q->time_str, "Z");
+
+    return LIQUID_OK;
+}
 
 liquid_logger liquid_logger_create()
 {
@@ -387,6 +438,7 @@ int liquid_vlog(liquid_logger _q,
     };
 
     // set formatted timestamp
+#if 0
     // NOTE: the string format is hard-coded here
     //clock_gettime(CLOCK_REALTIME, &event.timestamp);
     timespec_get(&event.timestamp, TIME_UTC);
@@ -403,6 +455,9 @@ int liquid_vlog(liquid_logger _q,
 
     if (format_utc)
         strcat(event.time_str, "Z");
+#else
+    liquid_event_timestamp(&event, _q->config);
+#endif
 
     // output to stdout
     if (_level >= _q->level) {
