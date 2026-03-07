@@ -140,7 +140,7 @@ Choose one of the base format options:
     Example: ``08:18:35``
 
 
-Use any of the following options additional:
+Use any of the following additional options in conjunction with those above:
 
 ``LIQUID_LOG_UTC``
     Log using
@@ -193,7 +193,7 @@ following:
     Log a numeral representation of the level.
     Example: ``[3]``
 
-Use any of the following options additional:
+Use any of the following additional options in conjunction with those above:
 
 ``LIQUID_LOG_LEVEL_BRACKETS``
     Add brackets around the log level.
