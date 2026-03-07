@@ -116,8 +116,9 @@ dotprod_rrrf dotprod_rrrf_create_opt(float *      _h,
     unsigned int i,j;
     for (i=0; i<4; i++) {
         q->h[i] = calloc(1+(q->n+i-1)/4,sizeof(vector float));
-        for (j=0; j<q->n; j++)
-            e->h[i][j+i] = _h[_rev ? q->n-j-1 : j];
+        for (j=0; j<q->n; j++) {
+            q->h[i][j+i] = _h[_rev ? q->n-j-1 : j];
+        }
     }
 
     return q;
@@ -153,6 +154,30 @@ dotprod_rrrf dotprod_rrrf_recreate_rev(dotprod_rrrf _q,
     // completely destroy and re-create dotprod object
     dotprod_rrrf_destroy(_q);
     return dotprod_rrrf_create_rev(_h,_n);
+}
+
+// copy object
+dotprod_rrrf dotprod_rrrf_destroy(dotprod_rrrf q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("dotprod_rrrf_copy().av, object cannot be NULL");
+
+    // create new base object and copy parameters
+    dotprod_rrrf q_copy = (dotprod_rrrf) malloc(sizeof(struct dotprod_rrrf_s));
+    q_copy->n = q_orig->n;
+
+    // allocate memory and copy coefficients
+    unsigned int i,j;
+    for (i=0; i<4; i++) {
+        q_copy->h[i] = calloc(1+(q_copy->n+i-1)/4,sizeof(vector float));
+        for (j=0; j<q_copy->n; j++) {
+            q_copy->h[i][j+i] = q_orig->h[i][j+i];
+        }
+    }
+
+    // return new object
+    return q_copy;
 }
 
 // destroy the structured dotprod object

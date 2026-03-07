@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -158,6 +158,31 @@ dotprod_crcf dotprod_crcf_recreate_rev(dotprod_crcf _q,
     // completely destroy and re-create dotprod object
     dotprod_crcf_destroy(_q);
     return dotprod_crcf_create_rev(_h,_n);
+}
+
+// copy object
+dotprod_crcf dotprod_crcf_destroy(dotprod_crcf q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("dotprod_crcf_copy().av, object cannot be NULL");
+
+    // create new base object and copy parameters
+    dotprod_crcf q_copy = (dotprod_crcf) malloc(sizeof(struct dotprod_crcf_s));
+    q_copy->n = q_orig->n;
+
+    // allocate memory and copy coefficients
+    unsigned int i,j;
+    for (i=0; i<4; i++) {
+        q_copy->h[i] = calloc(1+(2*q_copy->n+i-1)/4,2*sizeof(vector float));
+        for (j=0; j<q_copy->n; j++) {
+            q_copy->h[i][2*j+0+i] = q_orig->h[i][2*j+0+i];
+            q_copy->h[i][2*j+1+i] = q_orig->h[i][2*j+1+i];
+        }
+    }
+
+    // return new object
+    return q_copy;
 }
 
 // destroy the structured dotprod object
