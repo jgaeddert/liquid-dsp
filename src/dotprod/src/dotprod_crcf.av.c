@@ -24,6 +24,7 @@
 // Complex floating-point dot product (altivec velocity engine)
 //
 
+#include <altivec.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -161,7 +162,7 @@ dotprod_crcf dotprod_crcf_recreate_rev(dotprod_crcf _q,
 }
 
 // copy object
-dotprod_crcf dotprod_crcf_destroy(dotprod_crcf q_orig)
+dotprod_crcf dotprod_crcf_copy(dotprod_crcf q_orig)
 {
     // validate input
     if (q_orig == NULL)
@@ -220,8 +221,8 @@ int dotprod_crcf_execute(dotprod_crcf    _q,
     union { vector float v; float w[4];} s;
     unsigned int nblocks;
 
-    ar = (vector float*)( (int)_x & ~15);
-    al = ((int)_x & 15)/sizeof(float);
+    ar = (vector float*)( (uintptr_t)_x & ~15);
+    al = ((uintptr_t)_x & 15)/sizeof(float);
 
     d = (vector float*)_q->h[al];
 
@@ -231,7 +232,7 @@ int dotprod_crcf_execute(dotprod_crcf    _q,
     // split into four vectors each with four 32-bit
     // partial sums.  Effectively each loop iteration
     // operates on 16 input samples at a time.
-    s0 = s1 = s2 = s3 = (vector float)(0);
+    s0 = s1 = s2 = s3 = (vector float){0,0,0,0};
     while (nblocks >= 4) {
         s0 = vec_madd(ar[nblocks-1],d[nblocks-1],s0);
         s1 = vec_madd(ar[nblocks-2],d[nblocks-2],s1);
@@ -252,7 +253,7 @@ int dotprod_crcf_execute(dotprod_crcf    _q,
     // move the result into the union s (effetively,
     // this loads the four 32-bit values in s0 into
     // the array w).
-    s.v = vec_add(s0,(vector float)(0));
+    s.v = vec_add(s0,(vector float){0,0,0,0});
 
     // sum the resulting array
     //*_r = s.w[0] + s.w[1] + s.w[2] + s.w[3];
