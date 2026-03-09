@@ -440,8 +440,9 @@ if(COVERAGE)
     target_link_options(${LIBNAME} PRIVATE -coverage)
 endif(COVERAGE)
 
-
+if(NOT WIN32)
 target_link_libraries(${LIBNAME} c m)
+endif()
 if (fftw3f_FOUND)
     target_link_libraries(${LIBNAME} fftw3f)
 endif()
