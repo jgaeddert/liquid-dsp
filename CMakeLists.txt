@@ -13,7 +13,8 @@ project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
 option(BUILD_EXAMPLES    "Set to ON to build examples"               ON)
 option(BUILD_AUTOTESTS   "Set to ON to build autotest program"       ON)
 option(BUILD_BENCHMARKS  "Set to ON to build benchmark program"      ON)
-option(BUILD_SHARED_LIBS "Set to ON to build shared object library"  ON)
+option(BUILD_SHARED_LIBS "Set to ON to build shared library"  ON)
+option(BUILD_STATIC_LIBS "Set to ON to build static library"  OFF)
 option(ENABLE_SIMD       "Set to ON to build SIMD extensions"        ON)
 option(FIND_SIMD         "Set to ON to find SIMD extensions"         ON)
 option(FIND_FFTW         "Set to ON to find FFTW library"            ON)
@@ -363,8 +364,8 @@ endif()
 
 # ---------------------------------------- main library ----------------------------------------
 
-add_library(${LIBNAME}
-    src/libliquid.c
+# Define object sources list
+set(LIQUID_OBJECTS
     $<TARGET_OBJECTS:agc>
     $<TARGET_OBJECTS:audio>
     $<TARGET_OBJECTS:buffer>
@@ -387,30 +388,52 @@ add_library(${LIBNAME}
     $<TARGET_OBJECTS:sequence>
     $<TARGET_OBJECTS:utility>
     $<TARGET_OBJECTS:vector>)
-add_library(${NAMESPACE}::${LIBNAME} ALIAS ${LIBNAME})
 
-# TODO: build static library in addition to shared
-# https://alexreinking.com/blog/building-a-dual-shared-and-static-library-with-cmake.html
+# Build shared library
+if(BUILD_SHARED_LIBS)
+    add_library(${LIBNAME} SHARED src/libliquid.c ${LIQUID_OBJECTS})
+    add_library(${NAMESPACE}::${LIBNAME} ALIAS ${LIBNAME})
+    set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
+    set(LIQUID_TARGETS ${LIBNAME})
+endif()
+
+# Build static library
+if(BUILD_STATIC_LIBS)
+    add_library(${LIBNAME}-static STATIC src/libliquid.c ${LIQUID_OBJECTS})
+    add_library(${NAMESPACE}::${LIBNAME}-static ALIAS ${LIBNAME}-static)
+    set_target_properties(${LIBNAME}-static PROPERTIES OUTPUT_NAME ${LIBNAME})
+    list(APPEND LIQUID_TARGETS ${LIBNAME}-static)
+    if(NOT BUILD_SHARED_LIBS)
+        set(LIBNAME ${LIBNAME}-static)
+    endif()
+endif()
+
+
 
 include(GNUInstallDirs)
 
-target_include_directories(${LIBNAME}
-    PUBLIC
-        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include;${CMAKE_CURRENT_BINARY_DIR}>"
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+# Apply common configuration to all library targets
+foreach(target ${LIQUID_TARGETS})
+    target_include_directories(${target}
+        PUBLIC
+            "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include;${CMAKE_CURRENT_BINARY_DIR}>"
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+    target_sources(${target}
+        PUBLIC
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/liquid.h>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/liquid/liquid.h>
+        INTERFACE
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/liquid/liquid.h>)
+    set_target_properties(${target}
+        PROPERTIES
+            PUBLIC_HEADER include/liquid.h)
+    target_link_libraries(${target} c m)
+    if (fftw3f_FOUND)
+        target_link_libraries(${target} fftw3f)
+    endif()
+endforeach()
+
 configure_file(include/liquid.h ${CMAKE_CURRENT_BINARY_DIR}/liquid/liquid.h COPYONLY)
-target_sources(${LIBNAME}
-    PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/liquid.h>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/liquid/liquid.h>
-    INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/liquid/liquid.h>)
-# Use set_target_properties() instead of defining a FILE_SET in
-# target_sources() because the feature was introduced in CMake 3.23, and is new
-# enough that various distros (e.g. Ubuntu 22.04) ship older versions.
-set_target_properties(${LIBNAME}
-    PROPERTIES
-        PUBLIC_HEADER include/liquid.h)
 
 if(COVERAGE)
     target_compile_options(agc          PRIVATE -coverage -O0 -g)
@@ -436,23 +459,16 @@ if(COVERAGE)
     target_compile_options(utility      PRIVATE -coverage -O0 -g)
     target_compile_options(vector       PRIVATE -coverage -O0 -g)
 
-    target_compile_options(${LIBNAME} PRIVATE -coverage -O0 -g)
-    target_link_options(${LIBNAME} PRIVATE -coverage)
+    foreach(target ${LIQUID_TARGETS})
+        target_compile_options(${target} PRIVATE -coverage -O0 -g)
+        target_link_options(${target} PRIVATE -coverage)
+    endforeach()
 endif(COVERAGE)
 
 
-target_link_libraries(${LIBNAME} c m)
-if (fftw3f_FOUND)
-    target_link_libraries(${LIBNAME} fftw3f)
-endif()
-
-if(BUILD_SHARED_LIBS)
-  set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
-endif()
-
 # see: https://cmake.org/cmake/help/latest/command/install.html#examples
 # TODO: uninstall?
-install(TARGETS ${LIBNAME}
+install(TARGETS ${LIQUID_TARGETS}
     EXPORT
         ${LIBNAME}Targets
     RUNTIME
@@ -825,7 +841,7 @@ if(BUILD_AUTOTESTS)
         )
     target_include_directories(xautotest PRIVATE include .)
 
-    target_link_libraries(xautotest ${LIBNAME})
+    target_link_libraries(xautotest ${LIQUID_TARGETS})
     if(COVERAGE)
         target_compile_options(xautotest PRIVATE -coverage -O0 -g)
         target_link_options(xautotest PRIVATE -coverage)
@@ -942,7 +958,7 @@ if(BUILD_BENCHMARKS)
         ${BENCHMARKS_EXTRA}
         )
     target_include_directories(benchmark PRIVATE include .)
-    target_link_libraries(benchmark ${LIBNAME})
+    target_link_libraries(benchmark ${LIQUID_TARGETS})
 endif(BUILD_BENCHMARKS)
 
 
