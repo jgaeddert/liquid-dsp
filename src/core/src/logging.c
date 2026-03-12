@@ -55,7 +55,6 @@ const char * liquid_log_levels_concise[LIQUID_LOG_NUM_LEVELS] =
 struct liquid_logger_s {
     int     level;
     //int timezone;
-    char time_fmt[16];  // format of time to pass to strftime, default:"%T"
     int  config;        // display configuration
     liquid_log_callback cb_function[LIQUID_LOGGER_MAX_CALLBACKS]; // callback function
     void *              cb_context [LIQUID_LOGGER_MAX_CALLBACKS]; // callback context
@@ -70,7 +69,6 @@ struct liquid_logger_s {
 // global logger
 static struct liquid_logger_s qlog = {
     .level         = 0,
-    .time_fmt      = "%Y-%m-%d %T",
     .config        = (LIQUID_LOG_DEFAULT | LIQUID_LOG_COLOR),
     .cb_function   = {NULL,},
     .count         = {0,0,0,0,0,0,},
@@ -268,11 +266,10 @@ int liquid_logger_reset(liquid_logger _q)
 int liquid_logger_print(liquid_logger _q)
 {
     _q = liquid_logger_safe_cast(_q);
-    printf("<liquid_logger, level:%s, callbacks:%u, fmt:%s, count:",
-        // TODO: validate
+    printf("<liquid_logger, level:%s, callbacks:%u, config:0x%.8x, count:",
         liquid_log_levels[_q->level],
         liquid_logger_get_num_callbacks(_q),
-        _q->time_fmt);
+        _q->config);
 
     // print event counts
     printf("(");
@@ -416,27 +413,8 @@ int liquid_vlog(liquid_logger _q,
         .level     = _level,
     };
 
-    // set formatted timestamp
-#if 0
-    // NOTE: the string format is hard-coded here
-    //clock_gettime(CLOCK_REALTIME, &event.timestamp);
-    timespec_get(&event.timestamp, TIME_UTC);
-    bool format_utc = false;
-    bool format_ms  = true;
-    size_t n;
-    if (format_utc)
-        n = strftime(event.time_str, sizeof(event.time_str), "%Y-%m-%dT%T", gmtime(&event.timestamp.tv_sec));
-    else
-        n = strftime(event.time_str, sizeof(event.time_str), "%Y-%m-%d %T", localtime(&event.timestamp.tv_sec));
-
-    if (format_ms)
-        sprintf(event.time_str+n,".%.3ld", event.timestamp.tv_nsec / 1000000);
-
-    if (format_utc)
-        strcat(event.time_str, "Z");
-#else
+    // format timestamp
     liquid_event_timestamp(&event, _q->config);
-#endif
 
     // output to stdout
     if (_level >= _q->level) {
