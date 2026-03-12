@@ -253,10 +253,6 @@ int liquid_logger_print(liquid_logger _q);
 // set log level; any value below this will not be logged
 int liquid_logger_set_level(liquid_logger q, int _level);
 
-// set the format for the timestamp (see system's `strftime` help for options)
-// setting to NULL or an empty string will disable timestamps
-int liquid_logger_set_time_fmt(liquid_logger q, const char * fmt);
-
 // set output configuration
 int liquid_logger_set_config(liquid_logger q, int _config);
 

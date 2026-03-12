@@ -258,7 +258,6 @@ int liquid_logger_reset(liquid_logger _q)
 {
     _q = liquid_logger_safe_cast(_q);
     _q->level = LIQUID_WARN;
-    liquid_logger_set_time_fmt(_q, "[%T]");
     _q->cb_function[0] = NULL; // effectively reset all callbacks
     int i;
     for (i=0; i<6; i++)
@@ -289,26 +288,6 @@ int liquid_logger_set_level(liquid_logger _q,
 {
     _q = liquid_logger_safe_cast(_q);
     _q->level = _level;
-    return LIQUID_OK;
-}
-
-int liquid_logger_set_time_fmt(liquid_logger _q,
-                               const char * _fmt)
-{
-    _q = liquid_logger_safe_cast(_q);
-
-    // handle special case if input is empty
-    if (_fmt == NULL || strlen(_fmt)==0) {
-        _q->time_fmt[0] = '\0';
-        return LIQUID_OK;
-    }
-
-    // set format and validate copy operation was successful
-    int rc = snprintf(_q->time_fmt, sizeof(_q->time_fmt), "%s ", _fmt);
-    if (rc >= sizeof(_q->time_fmt)) {
-        _q->time_fmt[0] = '\0';
-        return liquid_error(LIQUID_EIMEM,"liquid_logger_set_time_fmt(), format \"%s\" length exceeds maximum", _fmt);
-    }
     return LIQUID_OK;
 }
 
@@ -511,11 +490,6 @@ int liquid_logger_print(liquid_logger _q)
 
 // set log level; any value below this will not be logged
 int liquid_logger_set_level(liquid_logger q, int _level)
-    { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
-
-// set the format for the timestamp (see system's `strftime` help for options)
-// setting to NULL or an empty string will disable timestamps
-int liquid_logger_set_time_fmt(liquid_logger q, const char * fmt)
     { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
 
 // set output configuration
