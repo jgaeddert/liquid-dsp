@@ -7,6 +7,8 @@
 extern struct liquid_autotest_s null_s;
 // ./autotest/libliquid_autotest.c
 extern struct liquid_autotest_s libliquid_version_s;
+// ./src/core/tests/logging_autotest.c
+extern struct liquid_autotest_s logging_s;
 // ./src/fec/tests/fec_hamming128_autotest.c
 extern struct liquid_autotest_s hamming128_codec_s;
 extern struct liquid_autotest_s hamming128_codec_soft_s;
@@ -1498,6 +1500,7 @@ liquid_autotest liquid_autotest_registry[] =
 {
     &null_s,
     &libliquid_version_s,
+    &logging_s,
     &hamming128_codec_s,
     &hamming128_codec_soft_s,
     &secded2216_codec_e0_s,

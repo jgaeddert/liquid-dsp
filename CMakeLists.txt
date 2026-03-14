@@ -594,6 +594,7 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/buffer/tests/buffer_window_autotest.c
     #${PROJECT_SOURCE_DIR}/src/channel/tests/channel_copy_autotest.c
     #${PROJECT_SOURCE_DIR}/src/channel/tests/tvmpch_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/core/tests/logging_autotest.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_rrrf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_crcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_cccf_autotest.c
