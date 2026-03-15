@@ -3,11 +3,11 @@
 ## Latest
 
   * logging: introduced embedded logging functionality
-      - supports global and custom logs with minimal computational overhead
-      - selectable level at run-time to increase/decrease verbosity as needed
-      - support for logging to files
-      - color output for enhanced visibility (optionally disabled)
-      - compile time configurations for enhanced customization
+    - supports global and custom logs with minimal computational overhead
+    - selectable level at run-time to increase/decrease verbosity as needed
+    - support for logging to files
+    - color output for enhanced visibility (optionally disabled)
+    - compile time configurations for enhanced customization
   * build
     - performed a static memory analysis test to substantially reduce memory
       used on the stack in favor of dynamically allocating it on the stack;
