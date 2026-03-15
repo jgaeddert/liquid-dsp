@@ -295,6 +295,15 @@ FILE * liquid_logger_add_filename(liquid_logger _q,
 // get the number of callbacks currently used
 unsigned int liquid_logger_get_num_callbacks(liquid_logger q);
 
+// get the number of log events
+unsigned int liquid_logger_get_num_events(liquid_logger q);
+unsigned int liquid_logger_get_num_trace (liquid_logger q);
+unsigned int liquid_logger_get_num_debug (liquid_logger q);
+unsigned int liquid_logger_get_num_info  (liquid_logger q);
+unsigned int liquid_logger_get_num_warn  (liquid_logger q);
+unsigned int liquid_logger_get_num_error (liquid_logger q);
+unsigned int liquid_logger_get_num_fatal (liquid_logger q);
+
 // append a log message
 int liquid_log(liquid_logger _q, int _level, const char * _file,
                int _line, const char * _format, ...);

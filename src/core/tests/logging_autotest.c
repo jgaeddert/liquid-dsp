@@ -73,7 +73,14 @@ LIQUID_AUTOTEST(logging,"test basic logging functionality","",0.1)
     LIQUID_CHECK( callback_invoked );
     LIQUID_CHECK( lock_invoked );
 
-    // TODO: check counts
+    // check counts
+    LIQUID_CHECK( liquid_logger_get_num_events(custom_log)==2 );
+    LIQUID_CHECK( liquid_logger_get_num_trace (custom_log)==0 );
+    LIQUID_CHECK( liquid_logger_get_num_debug (custom_log)==1 );
+    LIQUID_CHECK( liquid_logger_get_num_info  (custom_log)==1 );
+    LIQUID_CHECK( liquid_logger_get_num_warn  (custom_log)==0 );
+    LIQUID_CHECK( liquid_logger_get_num_error (custom_log)==0 );
+    LIQUID_CHECK( liquid_logger_get_num_fatal (custom_log)==0 );
 
     // clean it up
     liquid_logger_destroy(custom_log);

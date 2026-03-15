@@ -370,6 +370,44 @@ unsigned int liquid_logger_get_num_callbacks(liquid_logger _q)
     return i;
 }
 
+unsigned int liquid_logger_get_num_events(liquid_logger _q)
+{
+    int i, total = 0;
+    for (i=0; i<LIQUID_LOG_NUM_LEVELS; i++)
+        total += _q->count[i];
+    return total;
+}
+
+unsigned int liquid_logger_get_num_trace(liquid_logger _q)
+{
+    return _q->count[0];
+}
+
+unsigned int liquid_logger_get_num_debug(liquid_logger _q)
+{
+    return _q->count[1];
+}
+
+unsigned int liquid_logger_get_num_info(liquid_logger _q)
+{
+    return _q->count[2];
+}
+
+unsigned int liquid_logger_get_num_warn(liquid_logger _q)
+{
+    return _q->count[3];
+}
+
+unsigned int liquid_logger_get_num_error(liquid_logger _q)
+{
+    return _q->count[4];
+}
+
+unsigned int liquid_logger_get_num_fatal(liquid_logger _q)
+{
+    return _q->count[5];
+}
+
 int liquid_log(liquid_logger _q,
                int           _level,
                const char *  _file,
@@ -467,11 +505,11 @@ int liquid_logger_print(liquid_logger _q)
     { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
 
 // set log level; any value below this will not be logged
-int liquid_logger_set_level(liquid_logger q, int _level)
+int liquid_logger_set_level(liquid_logger _q, int _level)
     { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
 
 // set output configuration
-int liquid_logger_set_config(liquid_logger q, int _config)
+int liquid_logger_set_config(liquid_logger _q, int _config)
     { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
 
 // add lock function with context
@@ -504,7 +542,7 @@ FILE * liquid_logger_add_filename(liquid_logger _q,
 }
 
 // get the number of callbacks currently used
-unsigned int liquid_logger_get_num_callbacks(liquid_logger q)
+unsigned int liquid_logger_get_num_callbacks(liquid_logger _q)
 {
     liquid_error(LIQUID_EICONFIG,"compile-time logging disabled");
     return 0;
