@@ -33,7 +33,7 @@ void benchmark_logging(struct rusage *_start,
     getrusage(RUSAGE_SELF, _start);
     unsigned int i;
     liquid_logger_set_level(NULL, LIQUID_WARN);
-    //liquid_logger_add_filename(NULL, "test.log", LIQUID_LOG_TRACE);
+    //liquid_logger_add_filename(NULL, "test.log", LIQUID_TRACE);
     for (i=0; i<(*_num_iterations); i++) {
         liquid_log_info("log event %i:0", i);
         liquid_log_info("log event %i:1", i);
