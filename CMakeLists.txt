@@ -892,6 +892,7 @@ set(BENCHMARKS
     ${PROJECT_SOURCE_DIR}/src/buffer/bench/cbuffercf_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/buffer/bench/window_push_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/buffer/bench/window_read_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/core/bench/logging_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/bench/dotprod_cccf_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/bench/dotprod_crcf_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/bench/dotprod_rrrf_benchmark.c
