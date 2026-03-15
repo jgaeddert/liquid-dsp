@@ -24,15 +24,19 @@ int test_lock(int _lock, void * _context)
 // sweep log levels
 void sweep_levels(liquid_logger _q)
 {
-    int level;
-    for (level=0; level<=LIQUID_FATAL; level++) {
-        liquid_log(_q,level,__FILE__,__LINE__,"message with (%d) value", level);
-        usleep(100000); // sleep to exercise different timestamps
-    }
+    unsigned int sleeptime = 100000;
+    usleep(sleeptime); liquid_log_trace("message at the level trace");
+    usleep(sleeptime); liquid_log_debug("message at the level debug");
+    usleep(sleeptime); liquid_log_info ("message at the level info");
+    usleep(sleeptime); liquid_log_warn ("message at the level warn");
+    usleep(sleeptime); liquid_log_error("message at the level error");
+    usleep(sleeptime); liquid_log_fatal("message at the level fatal");
 }
 
 int main(int argc, char*argv[])
 {
+    liquid_logger_set_level(NULL,0);
+
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
     liquid_argparse_parse(argc,argv);
