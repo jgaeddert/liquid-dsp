@@ -6,8 +6,8 @@ Error Handling
 
 |liquid| includes basic methods for handling errors in software processing
 as they propagate through the library. Unlike C++ which has exceptions natively
-as part of the language``, C typically relies on integer-based return values for
-tracking issues as they arise. To facilitate this``, |liquid| includes a set of
+as part of the language, C typically relies on integer-based return values for
+tracking issues as they arise. To facilitate this, |liquid| includes a set of
 common error codes for determining if algorithms and methods have run properly.
 
 Error Codes

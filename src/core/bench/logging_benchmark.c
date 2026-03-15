@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,18 +20,27 @@
  * THE SOFTWARE.
  */
 
-// vector operations
+#include <sys/resource.h>
+#include "liquid.h"
 
-#include "liquid.internal.h"
-
-#define VECTOR(name)    LIQUID_CONCAT(liquid_vectorf,name)
-#define T               float           // input/output type
-#define TP              float           // primitive type
-
-#define T_COMPLEX       0               // is input type complex
-
-#include "vector_add.proto.c"
-#include "vectorf_mul.avx.c"            // AVX version
-#include "vector_norm.proto.c"
-#include "vector_trig.proto.c"
+// test overhead for basic logging
+void benchmark_logging(struct rusage *_start,
+                       struct rusage *_finish,
+                       unsigned long int *_num_iterations,
+                       unsigned int _n)
+{
+    // start trials
+    getrusage(RUSAGE_SELF, _start);
+    unsigned int i;
+    liquid_logger_set_level(NULL, LIQUID_WARN);
+    //liquid_logger_add_filename(NULL, "test.log", LIQUID_TRACE);
+    for (i=0; i<(*_num_iterations); i++) {
+        liquid_log_info("log event %i:0", i);
+        liquid_log_info("log event %i:1", i);
+        liquid_log_info("log event %i:2", i);
+        liquid_log_info("log event %i:3", i);
+    }
+    getrusage(RUSAGE_SELF, _finish);
+    *_num_iterations *= 4;
+}
 

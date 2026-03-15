@@ -403,7 +403,7 @@ int SPWATERFALL(_export_bin)(SPWATERFALL() _q,
     sprintf(filename,"%s.bin", _base);
 
     // open output file for writing
-    FILE * fid = fopen(filename,"w");
+    FILE * fid = fopen(filename,"wb");
     if (fid == NULL) {
         liquid_error(LIQUID_EICONFIG,"spwaterfall%s_export_bin(), could not open '%s' for writing",
                 EXTENSION, filename);

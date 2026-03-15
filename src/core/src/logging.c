@@ -52,25 +52,45 @@ const char * liquid_log_levels_concise[LIQUID_LOG_NUM_LEVELS] =
 
 #define LIQUID_LOGGER_MAX_CALLBACKS (32)
 
-struct liquid_logger_s {
-    int     level;
-    //int timezone;
-    char time_fmt[16];  // format of time to pass to strftime, default:"%T"
-    int  config;        // display configuration
-    liquid_log_callback cb_function[LIQUID_LOGGER_MAX_CALLBACKS]; // callback function
-    void *              cb_context [LIQUID_LOGGER_MAX_CALLBACKS]; // callback context
-    int                 cb_level   [LIQUID_LOGGER_MAX_CALLBACKS]; // callback level
-    int count[6];       // counters showing number of events of each type
-    liquid_lock_callback lock_callback; // locking callback function
-    void *               lock_context;  // locking context
+// logger object
+struct liquid_logger_s
+{
+    // current logging level for this object
+    int level;
+
+    // minimum level across this object and all callbacks; this is used to
+    // determine if a timestamp should be formatted or not since doing so
+    // takes a significant amount of computation
+    int min_level;
+
+    // display configuration
+    int config;
+
+    // callback function
+    liquid_log_callback cb_function[LIQUID_LOGGER_MAX_CALLBACKS];
+
+    // callback context
+    void * cb_context [LIQUID_LOGGER_MAX_CALLBACKS];
+
+    // callback level
+    int cb_level[LIQUID_LOGGER_MAX_CALLBACKS];
+
+    // counters showing number of events of each type
+    int count[LIQUID_LOG_NUM_LEVELS];
+
+    // locking callback function
+    liquid_lock_callback lock_callback;
+
+    // locking context
+    void * lock_context;
 };
 
 #ifdef LIQUID_LOGGING_ENABLE
 
 // global logger
 static struct liquid_logger_s qlog = {
-    .level         = 0,
-    .time_fmt      = "%Y-%m-%d %T",
+    .level         = LIQUID_INFO,
+    .min_level     = LIQUID_INFO,
     .config        = (LIQUID_LOG_DEFAULT | LIQUID_LOG_COLOR),
     .cb_function   = {NULL,},
     .count         = {0,0,0,0,0,0,},
@@ -205,7 +225,6 @@ int liquid_event_timestamp(struct liquid_log_event_s * _q, int _config)
 #endif
     bool format_utc = _config & LIQUID_LOG_UTC;
     size_t n=0;
-    _q->time_str[0] = '\0';
     if (_config & LIQUID_LOG_RAWTIME) {
         n += snprintf(_q->time_str, 64, "%ld", _q->timestamp.tv_sec);
     } else if (_config & LIQUID_LOG_DATETIME) {
@@ -258,7 +277,6 @@ int liquid_logger_reset(liquid_logger _q)
 {
     _q = liquid_logger_safe_cast(_q);
     _q->level = LIQUID_WARN;
-    liquid_logger_set_time_fmt(_q, "[%T]");
     _q->cb_function[0] = NULL; // effectively reset all callbacks
     int i;
     for (i=0; i<6; i++)
@@ -269,11 +287,10 @@ int liquid_logger_reset(liquid_logger _q)
 int liquid_logger_print(liquid_logger _q)
 {
     _q = liquid_logger_safe_cast(_q);
-    printf("<liquid_logger, level:%s, callbacks:%u, fmt:%s, count:",
-        // TODO: validate
+    printf("<liquid_logger, level:%s, callbacks:%u, config:0x%.8x, count:",
         liquid_log_levels[_q->level],
         liquid_logger_get_num_callbacks(_q),
-        _q->time_fmt);
+        _q->config);
 
     // print event counts
     printf("(");
@@ -289,26 +306,12 @@ int liquid_logger_set_level(liquid_logger _q,
 {
     _q = liquid_logger_safe_cast(_q);
     _q->level = _level;
-    return LIQUID_OK;
-}
 
-int liquid_logger_set_time_fmt(liquid_logger _q,
-                               const char * _fmt)
-{
-    _q = liquid_logger_safe_cast(_q);
-
-    // handle special case if input is empty
-    if (_fmt == NULL || strlen(_fmt)==0) {
-        _q->time_fmt[0] = '\0';
-        return LIQUID_OK;
-    }
-
-    // set format and validate copy operation was successful
-    int rc = snprintf(_q->time_fmt, sizeof(_q->time_fmt), "%s ", _fmt);
-    if (rc >= sizeof(_q->time_fmt)) {
-        _q->time_fmt[0] = '\0';
-        return liquid_error(LIQUID_EIMEM,"liquid_logger_set_time_fmt(), format \"%s\" length exceeds maximum", _fmt);
-    }
+    // reset minimum level
+    _q->min_level = _level;
+    int i;
+    for (i=0; i<LIQUID_LOGGER_MAX_CALLBACKS && _q->cb_function[i] != NULL; i++)
+        _q->min_level = (_q->cb_level[i] < _q->min_level) ? _q->cb_level[i] : _q->min_level;
     return LIQUID_OK;
 }
 
@@ -348,13 +351,16 @@ int liquid_logger_add_callback(liquid_logger       _q,
         return liquid_error(LIQUID_EICONFIG,"maximum number of callbacks (%u) reached", LIQUID_LOGGER_MAX_CALLBACKS);
 
     // set callback, context, and level at this index
-    _q->cb_function [index] = _callback;
-    _q->cb_context[index] = _context;
-    _q->cb_level  [index] = _level;
+    _q->cb_function[index] = _callback;
+    _q->cb_context [index] = _context;
+    _q->cb_level   [index] = _level;
 
     // assign next position NULL pointer, assuming not already full
     if (index < LIQUID_LOGGER_MAX_CALLBACKS-1)
         _q->cb_function[index+1] = NULL;
+
+    // reset minimum level
+    _q->min_level = (_level < _q->min_level) ? _level : _q->min_level;
 
     return LIQUID_OK;
 }
@@ -392,6 +398,44 @@ unsigned int liquid_logger_get_num_callbacks(liquid_logger _q)
             break;
     }
     return i;
+}
+
+unsigned int liquid_logger_get_num_events(liquid_logger _q)
+{
+    int i, total = 0;
+    for (i=0; i<LIQUID_LOG_NUM_LEVELS; i++)
+        total += _q->count[i];
+    return total;
+}
+
+unsigned int liquid_logger_get_num_trace(liquid_logger _q)
+{
+    return _q->count[0];
+}
+
+unsigned int liquid_logger_get_num_debug(liquid_logger _q)
+{
+    return _q->count[1];
+}
+
+unsigned int liquid_logger_get_num_info(liquid_logger _q)
+{
+    return _q->count[2];
+}
+
+unsigned int liquid_logger_get_num_warn(liquid_logger _q)
+{
+    return _q->count[3];
+}
+
+unsigned int liquid_logger_get_num_error(liquid_logger _q)
+{
+    return _q->count[4];
+}
+
+unsigned int liquid_logger_get_num_fatal(liquid_logger _q)
+{
+    return _q->count[5];
 }
 
 int liquid_log(liquid_logger _q,
@@ -437,27 +481,10 @@ int liquid_vlog(liquid_logger _q,
         .level     = _level,
     };
 
-    // set formatted timestamp
-#if 0
-    // NOTE: the string format is hard-coded here
-    //clock_gettime(CLOCK_REALTIME, &event.timestamp);
-    timespec_get(&event.timestamp, TIME_UTC);
-    bool format_utc = false;
-    bool format_ms  = true;
-    size_t n;
-    if (format_utc)
-        n = strftime(event.time_str, sizeof(event.time_str), "%Y-%m-%dT%T", gmtime(&event.timestamp.tv_sec));
-    else
-        n = strftime(event.time_str, sizeof(event.time_str), "%Y-%m-%d %T", localtime(&event.timestamp.tv_sec));
-
-    if (format_ms)
-        sprintf(event.time_str+n,".%.3ld", event.timestamp.tv_nsec / 1000000);
-
-    if (format_utc)
-        strcat(event.time_str, "Z");
-#else
-    liquid_event_timestamp(&event, _q->config);
-#endif
+    // format timestamp, only if needed
+    event.time_str[0] = '\0';
+    if (_level >= _q->min_level)
+        liquid_event_timestamp(&event, _q->config);
 
     // output to stdout
     if (_level >= _q->level) {
@@ -510,16 +537,11 @@ int liquid_logger_print(liquid_logger _q)
     { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
 
 // set log level; any value below this will not be logged
-int liquid_logger_set_level(liquid_logger q, int _level)
-    { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
-
-// set the format for the timestamp (see system's `strftime` help for options)
-// setting to NULL or an empty string will disable timestamps
-int liquid_logger_set_time_fmt(liquid_logger q, const char * fmt)
+int liquid_logger_set_level(liquid_logger _q, int _level)
     { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
 
 // set output configuration
-int liquid_logger_set_config(liquid_logger q, int _config)
+int liquid_logger_set_config(liquid_logger _q, int _config)
     { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
 
 // add lock function with context
@@ -552,7 +574,7 @@ FILE * liquid_logger_add_filename(liquid_logger _q,
 }
 
 // get the number of callbacks currently used
-unsigned int liquid_logger_get_num_callbacks(liquid_logger q)
+unsigned int liquid_logger_get_num_callbacks(liquid_logger _q)
 {
     liquid_error(LIQUID_EICONFIG,"compile-time logging disabled");
     return 0;

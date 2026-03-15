@@ -91,12 +91,98 @@ struct liquid_arg_s
     liquid_argparse_callback callback;
 };
 
+// print documentation line
+//  s           documentation string
+//  linewidth   full line width
+//  indent      indentation; number of spaces to indent with new lines
+//  state       current indentation value
+//  linebreak   break lines if state already exceeds indentation
+//  return      final state
+int liquid_print_doc(const char * s, int linewidth, int indent, int state, bool linebreak)
+{
+    // check if state already exceeds indentation
+    if (state > indent-1)
+    {
+        if (linebreak)
+        {
+            state = 0;
+            printf("\n");
+        } else {
+            state++;
+            printf(" ");
+        }
+    }
+
+    // make initial alignment
+    if (true) {
+        while (state++ < indent)
+            printf(" ");
+    }
+
+    int i=0, j, k;
+    // strip any leading whitespace
+    while (s[i] == ' ') { i++; }
+    // s[i] is not a space;
+    // look ahead until s[j] is a space and s[k] is not a space, i < j < k
+    // "here is a  description   of the argument"
+    //             ^          ^  ^
+    //             i          j  k
+    while (s[i] != '\0')
+    {
+        j = i+1;
+        while (s[j] != '\0' && s[j] != ' ')
+            j++;
+        k = s[j] == '\0' ? j : j+1;
+        while (s[k] != '\0' && s[k] == ' ')
+            k++;
+        if (j-i + state > linewidth) {
+            printf("\n");
+            for (state=0; state<indent; state++)
+                printf(" ");
+        }
+        while (i < k) {
+            printf("%c", s[i++]);
+            state++;
+        }
+    }
+    return state;
+}
+
 // print help for argument
 int liquid_arg_print(struct liquid_arg_s * _arg)
 {
-    printf(" [-%c ", _arg->opt);
-    if (_arg->type != TYPE_BOOL)
-        printf("<%s:", _arg->varname); // requires argument
+    int linewidth  = 92;
+    int indent     = 20;
+    int state      =  4;
+    printf(" -%c ", _arg->opt);
+    if (_arg->type != TYPE_BOOL) {
+        printf("%s", _arg->varname); // requires argument
+        state += strlen(_arg->varname);
+    }
+    state = liquid_print_doc(_arg->help, linewidth, indent, state, false);
+
+    // preemptively get char array reference
+    const char * ref = (_arg->type==TYPE_STRING) ? *((const char**)_arg->ref) : NULL;
+
+    // estimate number of characters in variable
+    int varlen = 0;
+    switch (_arg->type) {
+    case TYPE_BOOL:   varlen = 5; break;
+    case TYPE_CHAR:   varlen = 1; break;
+    case TYPE_STRING: varlen = (ref==NULL) ? 0 : strlen(ref); break;
+    default:          varlen = 9; break; // all numbers
+    }
+    if (state + varlen + 2 <= linewidth)
+    {
+        printf(" ");
+    } else {
+        printf("\n");
+        for (state=0; state<indent; state++)
+            printf(" ");
+    }
+
+    // print current/default value
+    printf("(");
     switch (_arg->type) {
     case TYPE_BOOL:   printf("%s", *(bool*)         (_arg->ref) ? "true": "false" ); break;
     case TYPE_INT:    printf("%d", *(int*)          (_arg->ref)); break;
@@ -106,13 +192,11 @@ int liquid_arg_print(struct liquid_arg_s * _arg)
     case TYPE_FLOAT:  printf("%g", *(float*)        (_arg->ref)); break;
     case TYPE_DOUBLE: printf("%g", *(double*)       (_arg->ref)); break;
     case TYPE_CHAR:   printf("%c", *(char*)         (_arg->ref)); break;
-    case TYPE_STRING: printf("%s", *(char**)        (_arg->ref)); break;
+    case TYPE_STRING: printf("%s", (ref==NULL) ? "" : ref); break;
     default:
         return liquid_error(LIQUID_EINT,"unexpected argument type: %d", _arg->type);
     }
-    if (_arg->type != TYPE_BOOL)
-        printf(">"); // requires argument
-    printf("] %s\n", _arg->help);
+    printf(")\n");
     return LIQUID_OK;
 }
 
@@ -165,23 +249,47 @@ struct liquid_argparse_s
 {
     // documentation string
     const char * docstr;
+
+    // array of arguments
     struct liquid_arg_s args[LIQUID_ARGPARSE_MAX_ARGS];
+
+    // number of arguments passed
     int num_args;
+
+    // option string for getopt, e.g. "hjn:o:i:r:"
     char optstr[2*LIQUID_ARGPARSE_MAX_ARGS+1];
+
+    // variables for internal objects
+    bool help;  // print help (not actually used)
+    bool json;  // print help as JSON (not actually used)
+    const char * logfmt; // user-specified custom logging format
 };
 
 // print formatted help
+// ./examples/firfilt_crcf_example - Complex finite impulse response filter example. 
+//   Demonstrates the functionality of firfilt by designing a low-order prototype and using it 
+//   to filter a noisy signal.  The filter coefficients are real, but the input and output 
+//   arrays are complex. The filter order and cutoff frequency are specified at the beginning.
+// 
+// options:
+//  -h                 print this help file and exit (false)
+//  -j                 print this help file as JSON and exit (false)
+//  -o filename        output filename (firfilt_crcf_example.m)
+//  -H h_len           filter length (65)
+//  -c fc              filter cutoff frequency (0.1)
+//  -s As              filter stop-band suppression (60)
+//  -n num_samples     number of samples (240)
 int liquid_argparse_print(struct liquid_argparse_s * _q,
                           const char *               _argv0)
 {
-    // TODO: wrap docstring across multiple lines
-    printf("%s - %s\n", _argv0, _q->docstr);
+    printf("%s -", _argv0);
+    int linewidth  = 92;
+    int indent     =  2;
+    int state      =  strlen(_argv0) + 2;
+    liquid_print_doc(_q->docstr, linewidth, indent, state, false);
+    printf("\n\n");
+    printf("options:\n");
     unsigned int i;
-    printf(" [-h print this help file and exit]\n");
-    printf(" [-j print this help file as JSON and exit]\n");
-    printf(" [-G set logging level, number or: ");
-    for (i=0; i<LIQUID_LOG_NUM_LEVELS; i++)
-        printf("%s%s", liquid_log_levels[i], i==LIQUID_LOG_NUM_LEVELS-1 ? "\n" : ", ");
     for (i=0; i<_q->num_args; i++)
         liquid_arg_print(_q->args + i);
     return LIQUID_OK;
@@ -222,12 +330,6 @@ int liquid_argparse_append(struct liquid_argparse_s * _q,
         return liquid_error(LIQUID_EIMEM,"liquid_argparse_append(), cannot create more than %u arguments",
             LIQUID_ARGPARSE_MAX_ARGS);
     }
-
-    // check for reserved keys
-    if (_opt == 'h')
-        return liquid_error(LIQUID_EICONFIG,"liquid_argparse_append('%s'), key 'h' is reserved for help", _varname);
-    if (_opt == 'j')
-        return liquid_error(LIQUID_EICONFIG,"liquid_argparse_append('%s'), key 'j' is reserved for help", _varname);
 
     // check for duplicate entries
     int i;
@@ -308,7 +410,18 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
     struct liquid_argparse_s __parser;                                          \
     __parser.docstr = DOCSTR;                                                   \
     __parser.num_args = 0;                                                      \
-    sprintf(__parser.optstr,"hjG:"); /* ensure h, j, and L are reserved     */  \
+    __parser.num_args = 0;                                                      \
+    sprintf(__parser.optstr,"");                                                \
+    /* ensure 'h', 'j' are reserved for help */                                 \
+    __parser.help = false;                                                      \
+    __parser.json = false;                                                      \
+    __parser.logfmt = NULL;                                                     \
+    liquid_argparse_append(&__parser, "bool", (void*)&__parser.help, "help",    \
+        'h', "print this help file and exit", NULL);                            \
+    liquid_argparse_append(&__parser, "bool", (void*)&__parser.json, "json",    \
+        'j', "print this help file as JSON and exit", NULL);                    \
+    liquid_argparse_append(&__parser, "char*",(void*)&__parser.logfmt,"logfmt", \
+        'G', "custom logging configuration", liquid_argparse_logging);          \
 
 // add option to list of arguments
 #define liquid_argparse_add(TYPE, VAR, DEFAULT, KEY, HELP, FUNC)                \
@@ -328,10 +441,10 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
             exit( liquid_argparse_print(&__parser, argv[0]) );                  \
         case 'j':                                                               \
             exit( liquid_argparse_print_json(&__parser, argv[0]) );             \
-        case 'G':                                                               \
-            if (liquid_argparse_logging(optarg,NULL) != LIQUID_OK)              \
-                return LIQUID_EIVAL;                                            \
-            break;                                                              \
+        /* case 'G':                                                       */   \
+        /*     if (liquid_argparse_logging(optarg,NULL) != LIQUID_OK)      */   \
+        /*         return LIQUID_EIVAL;                                    */   \
+        /*     break;                                                      */   \
         default:                                                                \
             if (liquid_argparse_set(&__parser, __dopt, optarg))                 \
                 exit(-1);                                                       \
@@ -339,9 +452,14 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
     }                                                                           \
 
 // set logging level
-int liquid_argparse_logging(const char * _optarg, void * _logger)
+int liquid_argparse_logging(const char * _optarg, void * _ref)
 {
-    liquid_logger _q = (liquid_logger) _logger;
+    // set internal pointer
+    *((const char**)_ref) = _optarg;
+
+    // set logger as NULL pointer; will safe cast internally
+    liquid_logger _q = NULL;
+
     unsigned int i;
     char strbuf[4];
     for (i=0; i<LIQUID_LOG_NUM_LEVELS; i++)

@@ -163,7 +163,7 @@ struct liquid_registry_info_s liquid_registry_info(const liquid_autotest * _regi
 // print registry, either info or full status
 int liquid_registry_print(const liquid_autotest * _registry)
 {
-    // retrive summary of runs
+    // retrieve summary of runs
     struct liquid_registry_info_s info = liquid_registry_info(_registry);
 
     // log results
@@ -202,7 +202,7 @@ int liquid_registry_json(const liquid_autotest * _registry,
     if (fid == NULL)
         return liquid_error(LIQUID_EIO,"could not open '%s' for writing", _filename);
 
-    // retrive summary of runs
+    // retrieve summary of runs
     struct liquid_registry_info_s info = liquid_registry_info(_registry);
 
     // print header

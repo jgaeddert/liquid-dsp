@@ -91,6 +91,11 @@ RRESAMP() RRESAMP(_create_kaiser)(unsigned int _interp,
                                   float        _bw,
                                   float        _as)
 {
+    if (_interp == 0)
+        return liquid_error_config("rresamp_%s_create_kaiser(), interpolation rate must be greater than zero", EXTENSION_FULL);
+    if (_decim == 0)
+        return liquid_error_config("rresamp_%s_create_kaiser(), decimation rate must be greater than zero", EXTENSION_FULL);
+
     // scale interpolation and decimation factors by their greatest common divisor
     unsigned int gcd = liquid_gcd(_interp, _decim);
     _interp /= gcd;
@@ -102,11 +107,15 @@ RRESAMP() RRESAMP(_create_kaiser)(unsigned int _interp,
     else if (_bw > 0.5f)
         return liquid_error_config("rresamp_%s_create_kaiser(), invalid bandwidth (%g), must be less than 0.5", EXTENSION_FULL, _bw);
 
+    // Clamp bandwidth to tighter Nyquist limit to prevent aliasing when decim > interp
+    float bw_guard = 0.5f * fminf(1.0f, (float)_interp / (float)_decim);
+    float bw_eff   = fminf(_bw, bw_guard);
+
     // design filter
     unsigned int h_len = 2*_interp*_m + 1;
     float * hf = (float*) malloc(h_len*sizeof(float));
     TC    * h  = (TC*)    malloc(h_len*sizeof(TC)   );
-    liquid_firdes_kaiser(h_len, _bw/(float)_interp, _as, 0.0f, hf);
+    liquid_firdes_kaiser(h_len, bw_eff/(float)_interp, _as, 0.0f, hf);
 
     // convert to type-specific coefficients
     unsigned int i;
@@ -115,7 +124,7 @@ RRESAMP() RRESAMP(_create_kaiser)(unsigned int _interp,
 
     // create object and set parameters
     RRESAMP() q = RRESAMP(_create)(_interp, _decim, _m, h);
-    RRESAMP(_set_scale)(q, 2.0f*_bw*sqrtf((float)(q->Q)/(float)(q->P)));
+    RRESAMP(_set_scale)(q, 2.0f*bw_eff*sqrtf((float)(q->Q)/(float)(q->P)));
     q->block_len = gcd;
 
     // free allocated memory and return object

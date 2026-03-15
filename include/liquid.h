@@ -253,10 +253,6 @@ int liquid_logger_print(liquid_logger _q);
 // set log level; any value below this will not be logged
 int liquid_logger_set_level(liquid_logger q, int _level);
 
-// set the format for the timestamp (see system's `strftime` help for options)
-// setting to NULL or an empty string will disable timestamps
-int liquid_logger_set_time_fmt(liquid_logger q, const char * fmt);
-
 // set output configuration
 int liquid_logger_set_config(liquid_logger q, int _config);
 
@@ -298,6 +294,15 @@ FILE * liquid_logger_add_filename(liquid_logger _q,
 
 // get the number of callbacks currently used
 unsigned int liquid_logger_get_num_callbacks(liquid_logger q);
+
+// get the number of log events
+unsigned int liquid_logger_get_num_events(liquid_logger q);
+unsigned int liquid_logger_get_num_trace (liquid_logger q);
+unsigned int liquid_logger_get_num_debug (liquid_logger q);
+unsigned int liquid_logger_get_num_info  (liquid_logger q);
+unsigned int liquid_logger_get_num_warn  (liquid_logger q);
+unsigned int liquid_logger_get_num_error (liquid_logger q);
+unsigned int liquid_logger_get_num_fatal (liquid_logger q);
 
 // append a log message
 int liquid_log(liquid_logger _q, int _level, const char * _file,
@@ -368,7 +373,7 @@ enum {
 #ifdef LIQUID_LOG_FATAL
 #  define liquid_log_fatal(...) liquid_log(NULL,LIQUID_FATAL,__FILE__,__LINE__,__VA_ARGS__)
 #else
-#  define liquid_log_fata(...) {}
+#  define liquid_log_fatal(...) {}
 #endif
 
 
@@ -5233,6 +5238,18 @@ int SYMSYNC(_set_lf_bw)(SYMSYNC() _q,                                       \
                                                                             \
 /* Return instantaneous fractional timing offset estimate               */  \
 float SYMSYNC(_get_tau)(SYMSYNC() _q);                                      \
+                                                                            \
+/* Get synchronizer internal resampling rate                            */  \
+float SYMSYNC(_get_rate)(SYMSYNC() _q);                                     \
+                                                                            \
+/* Set synchronizer internal resampling rate                            */  \
+int SYMSYNC(_set_rate)(SYMSYNC() _q, float _rate);                          \
+                                                                            \
+/* Get synchronizer internal delta step size                            */  \
+float SYMSYNC(_get_del)(SYMSYNC() _q);                                      \
+                                                                            \
+/* Set synchronizer internal delta step size                            */  \
+int SYMSYNC(_set_del)(SYMSYNC() _q, float _del);                            \
                                                                             \
 /* Execute synchronizer on input data array                             */  \
 /*  _q      : synchronizer object                                       */  \

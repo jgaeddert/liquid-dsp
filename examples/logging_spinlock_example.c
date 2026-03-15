@@ -13,7 +13,7 @@ bool locked;
 // user-defined lock function; non-atomic spin lock for demonstration
 int spinlock(int _lock, void * _context);
 
-// user interrrupt
+// user interrupt
 void signal_handler(int _signal);
 
 int main(int argc, char*argv[])
