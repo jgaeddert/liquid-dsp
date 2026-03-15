@@ -69,7 +69,7 @@ get logged.
 For example, setting a threshold of ``LIQUID_WARN`` means that messages
 with ``LIQUID_TRACE`` are not logged;
 however there is a small amount of overhead to perform this check which
-can be undesireable for applications where every ounce of performance
+can be undesirable for applications where every ounce of performance
 from the processor is needed.
 To support this, there are several ``cmake`` options that enable disabling
 logging at compile time.
@@ -86,14 +86,14 @@ For example, if you want to remove code for logging "trace" and "debug" levels, 
 can run ``cmake -D LOGGING_LEVEL=info``.
 Log events below ``LIQUID_INFO`` are not even compiled as part of the library.
 
-If your terminal does not support color output, you can explicity disable all ANSI
+If your terminal does not support color output, you can explicitly disable all ANSI
 color flags
 with the ``cmake`` flag ``-D ENABLE_COLOR=OFF``.
 
 .. comment Future options
 
     * File path delimiter, e.g. "/", for parsing paths
-    * Truncte file path to local build directory. That is, instead of
+    * Truncate file path to local build directory. That is, instead of
       ``/home/username/src/liquid-dsp/src/core/src/logging.c`` just use
       ``liquid-dsp/src/core/logging.c``.
       There is probably a way to do this on POSIX systems with CMake
@@ -161,7 +161,7 @@ Use any of the following additional options in conjunction with those above:
     Include nanoseconds to the end of a timestamp if requested.
     Example: ``08:18:35.123456789``
 
-These options can be used in conjuction with one another to customize formatting.
+These options can be used in conjunction with one another to customize formatting.
 For example:
 
 .. code-block:: c
@@ -323,7 +323,7 @@ additional filtering and granularity.
 Thread-safe Operation
 ---------------------
 
-The loggging object in |liquid| does not include mutual exclusions (mutexes)
+The logging object in |liquid| does not include mutual exclusions (mutexes)
 by default as it isn't certain if linking against
 `pthreads <https://www.man7.org/linux/man-pages/man7/pthreads.7.html>`_
 is possible;
@@ -363,7 +363,7 @@ with a basic example shown below:
         // set lock function callback
         liquid_logger_set_lock(NULL, lock_callback, &mutex);
 
-        // run as necesssary across as many threads as needed
+        // run as necessary across as many threads as needed
         {
             liquid_log_info("logging an event");
         }
