@@ -206,8 +206,10 @@ core_objects :=							\
 $(core_objects) : %.o : %.c $(include_headers)
 
 core_autotests :=						\
+	src/core/tests/logging_autotest.c			\
 
 core_benchmarks :=						\
+	src/core/bench/logging_benchmark.c			\
 
 
 # 
@@ -1206,6 +1208,7 @@ autotest_sources :=						\
 	$(audio_autotests)					\
 	$(buffer_autotests)					\
 	$(channel_autotests)					\
+	$(core_autotests)					\
 	$(dotprod_autotests)					\
 	$(equalization_autotests)				\
 	$(fec_autotests)					\
@@ -1231,6 +1234,7 @@ benchmark_sources :=						\
 	$(audio_benchmarks)					\
 	$(buffer_benchmarks)					\
 	$(channel_benchmarks)					\
+	$(core_benchmarks)					\
 	$(dotprod_benchmarks)					\
 	$(equalization_benchmarks)				\
 	$(fec_benchmarks)					\
