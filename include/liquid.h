@@ -373,7 +373,7 @@ enum {
 #ifdef LIQUID_LOG_FATAL
 #  define liquid_log_fatal(...) liquid_log(NULL,LIQUID_FATAL,__FILE__,__LINE__,__VA_ARGS__)
 #else
-#  define liquid_log_fata(...) {}
+#  define liquid_log_fatal(...) {}
 #endif
 
 
