@@ -34,7 +34,6 @@ void testbench_eqlms(liquid_autotest __q__,
                      int update,
                      int ms)
 {
-    float          tol    = 0.025f; // error tolerance
     unsigned int   i;
     modemcf        mod    = modemcf_create(ms);
     firinterp_crcf interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER,k,m,beta,0);
@@ -111,9 +110,8 @@ void testbench_eqlms(liquid_autotest __q__,
         float error = cabsf(sym_in-sym_out);
         rmse += error * error;
 
-        liquid_log_debug("%3u : x = {%12.8f,%12.8f}, y = {%12.8f,%12.8f}, error=%12.8f %s",
-            i, crealf(sym_in ), cimagf(sym_in ), crealf(sym_out), cimagf(sym_out),
-            error, error > tol ? "*" : "");
+        liquid_log_debug("%3u : x = {%12.8f,%12.8f}, y = {%12.8f,%12.8f}, error=%12.8f",
+            i, crealf(sym_in ), cimagf(sym_in ), crealf(sym_out), cimagf(sym_out), error);
     }
     rmse = 10*log10f( rmse/num_symbols );
     liquid_log_debug("rmse : %.3f dB", rmse);
