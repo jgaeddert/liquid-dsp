@@ -114,7 +114,7 @@ FIRPFB() FIRPFB(_create_kaiser)(unsigned int _num_filters,
     if (_m == 0)
         return liquid_error_config("firpfb_%s_create_kaiser(), filter delay must be greater than 0", EXTENSION_FULL);
     if (_fc < 0.0f || _fc > 0.5f)
-        return liquid_error_config("firpfb_%s_create_kaiser(), filter cut-off frequence must be in (0,0.5)", EXTENSION_FULL);
+        return liquid_error_config("firpfb_%s_create_kaiser(), filter cut-off frequency must be in (0,0.5)", EXTENSION_FULL);
     if (_as < 0.0f)
         return liquid_error_config("firpfb_%s_create_kaiser(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
 

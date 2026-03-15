@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-// vector operatios
+// vector operations
 
 #include "liquid.internal.h"
 

@@ -48,8 +48,8 @@ struct QDETECTOR(_s) {
     float           s2_sum;         // sum{ s^2 }
 
     TI *            buf_time_0;     // time-domain buffer (FFT)
-    TI *            buf_freq_0;     // frequence-domain buffer (FFT)
-    TI *            buf_freq_1;     // frequence-domain buffer (IFFT)
+    TI *            buf_freq_0;     // frequency-domain buffer (FFT)
+    TI *            buf_freq_1;     // frequency-domain buffer (IFFT)
     TI *            buf_time_1;     // time-domain buffer (IFFT)
     unsigned int    nfft;           // fft size
     FFT_PLAN        fft;            // FFT object:  buf_time_0 > buf_freq_0

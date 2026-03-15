@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
         liquid_version_major = (LIQUID_VERSION_NUMBER >> 16) & 0xff;
         liquid_version_minor = (LIQUID_VERSION_NUMBER >>  8) & 0xff;
         liquid_version_patch = (LIQUID_VERSION_NUMBER      ) & 0xff;
-        // alterantively we could check for the existence of these macros
+        // alternatively we could check for the existence of these macros
         //liquid_version_major = LIQUID_VERSION_MAJOR;
         //liquid_version_minor = LIQUID_VERSION_MINOR;
         //liquid_version_patch = LIQUID_VERSION_PATCH;
