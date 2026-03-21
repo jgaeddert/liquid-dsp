@@ -256,6 +256,9 @@ int liquid_logger_set_level(liquid_logger q, int _level);
 // set output configuration
 int liquid_logger_set_config(liquid_logger q, int _config);
 
+// set output configuration based on string formatting
+int liquid_logger_set_config_str(liquid_logger q, const char * _config);
+
 // get output configuration
 int liquid_logger_get_config(liquid_logger q);
 

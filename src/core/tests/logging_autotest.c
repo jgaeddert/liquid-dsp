@@ -99,6 +99,19 @@ LIQUID_AUTOTEST(logging_config,"test setting custom logging configuration","",0.
     // check configuration
     LIQUID_CHECK( liquid_logger_get_config(custom_log) == config );
 
+    // set configuration based on string
+
+    // build up from scratch
+    liquid_logger_set_config_str(custom_log, "rawtime,level_number,filename,line");
+    LIQUID_CHECK( liquid_logger_get_config(custom_log) ==
+      (LIQUID_LOG_RAWTIME | LIQUID_LOG_LEVEL_NUMBER | LIQUID_LOG_FILENAME | LIQUID_LOG_LINE));
+
+    // start with default but disable color and use ns precision
+    liquid_logger_set_config_str(custom_log, "default,~color,ns");
+    LIQUID_CHECK( liquid_logger_get_config(custom_log) ==
+      (LIQUID_LOG_DEFAULT & ~LIQUID_LOG_COLOR | LIQUID_LOG_NS));
+
     // clean it up
     liquid_logger_destroy(custom_log);
 }
+
