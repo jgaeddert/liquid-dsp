@@ -253,14 +253,16 @@ int liquid_logger_print(liquid_logger _q);
 // set log level; any value below this will not be logged
 int liquid_logger_set_level(liquid_logger q, int _level);
 
-// set output configuration
+// set output display configuration
 int liquid_logger_set_config(liquid_logger q, int _config);
-
-// set output configuration based on string formatting
-int liquid_logger_set_config_str(liquid_logger q, const char * _config);
 
 // get output configuration
 int liquid_logger_get_config(liquid_logger q);
+
+// Configure the logging object based on string. This sets both the
+// output display as well as the level to allow for easy command-line
+// parsing.
+int liquid_logger_set_config_str(liquid_logger q, const char * _config);
 
 // add lock function with context
 //  _q          : logger object
