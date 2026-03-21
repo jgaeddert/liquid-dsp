@@ -324,6 +324,13 @@ int liquid_logger_set_config(liquid_logger _q,
     return LIQUID_OK;
 }
 
+// get output configuration
+int liquid_logger_get_config(liquid_logger _q)
+{
+    _q = liquid_logger_safe_cast(_q);
+    return _q->config;
+}
+
 // add lock function with context
 //  _q          : logger object
 //  _callback   : user-defined lock callback function

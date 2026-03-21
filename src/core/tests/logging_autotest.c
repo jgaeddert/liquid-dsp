@@ -86,3 +86,19 @@ LIQUID_AUTOTEST(logging,"test basic logging functionality","",0.1)
     liquid_logger_destroy(custom_log);
 }
 
+LIQUID_AUTOTEST(logging_config,"test setting custom logging configuration","",0.1)
+{
+    // config based on macros
+    int config = LIQUID_LOG_COMPACT | LIQUID_LOG_COLOR;
+
+    // create custom logging object
+    liquid_logger custom_log = liquid_logger_create();
+    liquid_logger_set_level(custom_log, LIQUID_INFO);
+    liquid_logger_set_config(custom_log, config);
+
+    // check configuration
+    LIQUID_CHECK( liquid_logger_get_config(custom_log) == config );
+
+    // clean it up
+    liquid_logger_destroy(custom_log);
+}

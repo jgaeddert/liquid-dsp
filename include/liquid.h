@@ -256,6 +256,9 @@ int liquid_logger_set_level(liquid_logger q, int _level);
 // set output configuration
 int liquid_logger_set_config(liquid_logger q, int _config);
 
+// get output configuration
+int liquid_logger_get_config(liquid_logger q);
+
 // add lock function with context
 //  _q          : logger object
 //  _callback   : user-defined lock callback function
