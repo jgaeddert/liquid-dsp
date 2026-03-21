@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -118,9 +118,9 @@ int main(int argc, char *argv[])
     liquid_argparse_add(bool,         randomize,     false,      'r', "run all tests, random order", NULL);
     liquid_argparse_add(unsigned int, rseed,         time(NULL), 'R', "specify random seed value", NULL);
     liquid_argparse_add(int,          hammer_id,     -1,         'H', "hammer on a specific test", NULL);
-    liquid_argparse_add(unsigned int, hammer_count,  100,        'c', "", NULL);
+    liquid_argparse_add(unsigned int, hammer_count,  100,        'c', "number of times to run a hammer test", NULL);
     liquid_argparse_add(char *,       search_string, "",         's', "run all tests matching search string", NULL);
-    liquid_argparse_add(char *,       filename,      "",         'o', "", NULL);
+    liquid_argparse_add(char *,       filename,      "",         'o', "output JSON file", NULL);
     liquid_argparse_parse(argc,argv);
 
     if (list_tests)
