@@ -253,6 +253,9 @@ int liquid_logger_print(liquid_logger _q);
 // set log level; any value below this will not be logged
 int liquid_logger_set_level(liquid_logger q, int _level);
 
+// get logging level for main display
+int liquid_logger_get_level(liquid_logger q);
+
 // set output display configuration
 int liquid_logger_set_config(liquid_logger q, int _config);
 

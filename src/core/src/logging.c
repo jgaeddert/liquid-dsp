@@ -315,6 +315,12 @@ int liquid_logger_set_level(liquid_logger _q,
     return LIQUID_OK;
 }
 
+int liquid_logger_get_level(liquid_logger _q)
+{
+    _q = liquid_logger_safe_cast(_q);
+    return _q->level;
+}
+
 // set output configuration
 int liquid_logger_set_config(liquid_logger _q,
                              int           _config)
@@ -340,7 +346,7 @@ int liquid_logger_set_config_str(liquid_logger _q, const char * _config)
         return LIQUID_OK;
 
     // parse string and assemble config bitfield
-    int config = -1;
+    int config = 0;
     int level  = -1;
     int n = strlen(_config);
     if (n >= 1024) // sanity check
@@ -393,7 +399,6 @@ int liquid_logger_set_config_str(liquid_logger _q, const char * _config)
             free(tofree);
             return liquid_error(LIQUID_EICONFIG,"liquid_logger_set_config_str(), unexpected token: '%s%s'", unset?"~":"", token);
         }
-        if (config < 0) { config = 0; }
         // set/unset flag
         if (unset) { config &= ~flag; }
         else       { config |= flag;  }
@@ -402,7 +407,7 @@ int liquid_logger_set_config_str(liquid_logger _q, const char * _config)
     free(tofree);
     if (level >= 0)
         liquid_logger_set_level(_q, level);
-    if (config >= 0)
+    if (config != 0)
         liquid_logger_set_config(_q, config);
     return LIQUID_OK;
 }
