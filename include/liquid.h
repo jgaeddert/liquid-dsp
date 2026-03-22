@@ -387,7 +387,7 @@ LIQUID_AGC_DEFINE_API(LIQUID_AGC_MANGLE_RRRF, float, float)
 // CVSD: continuously variable slope delta
 typedef struct cvsd_s * cvsd;
 
-// create cvsd object
+// Create cvsd object for encoding/decoding audio signal
 //  _num_bits   :   number of adjacent bits to observe (4 recommended)
 //  _zeta       :   slope adjustment multiplier (1.5 recommended)
 //  _alpha      :   pre-/post-emphasis filter coefficient (0.9 recommended)
@@ -396,19 +396,33 @@ cvsd cvsd_create(unsigned int _num_bits,
                  float _zeta,
                  float _alpha);
 
-// destroy cvsd object
+// Destroy cvsd object, freeing all internal memory
 int cvsd_destroy(cvsd _q);
 
-// print cvsd object parameters
+// Print cvsd object parameters to stdout
 int cvsd_print(cvsd _q);
 
-// encode/decode single sample
-unsigned char   cvsd_encode(cvsd _q, float _audio_sample);
-float           cvsd_decode(cvsd _q, unsigned char _bit);
+// Encode a single sample, returning a single bit for encoding
+unsigned char cvsd_encode(cvsd _q, float _audio_sample);
 
-// encode/decode 8 samples at a time
-int cvsd_encode8(cvsd _q, float * _audio, unsigned char * _data);
-int cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
+// Decode a single sample from input bit, returning the output sample value
+float cvsd_decode(cvsd _q, unsigned char _bit);
+
+// Encode eight samples at a time
+//  _q      : encoder object
+//  _audio  : input buffer pointer, size: (8,)
+//  _data   : pointer to single output byte with packed bits, size: (1,)
+int cvsd_encode8(cvsd            _q,
+                 float *         _audio,
+                 unsigned char * _data);
+
+// Decode eight samples at a time
+//  _q      : encoder object
+//  _data   : input byte with packed bits
+//  _audio  : output buffer pointer, size: (8,)
+int cvsd_decode8(cvsd          _q,
+                 unsigned char _data,
+                 float *       _audio);
 
 
 //
@@ -643,7 +657,7 @@ int WDELAY(_destroy)(WDELAY() _q);                                          \
 /* Print delay buffer object's state to stdout                          */  \
 int WDELAY(_print)(WDELAY() _q);                                            \
                                                                             \
-/* Clear/reset state of object                                          */  \
+/* Reset object's internal state                                        */  \
 int WDELAY(_reset)(WDELAY() _q);                                            \
                                                                             \
 /* Read delayed sample at the head of the buffer and store it to the    */  \
@@ -1329,24 +1343,25 @@ fec_scheme liquid_getopt_str2fec(const char * _str);
 // fec object (pointer to fec structure)
 typedef struct fec_s * fec;
 
-// return the encoded message length using a particular error-
+// Return the encoded message length using a particular error-
 // correction scheme (object-independent method)
 //  _scheme     :   forward error-correction scheme
 //  _msg_len    :   raw, uncoded message length
 unsigned int fec_get_enc_msg_length(fec_scheme _scheme,
                                     unsigned int _msg_len);
 
-// get the theoretical rate of a particular forward error-
+// Get the theoretical rate of a particular forward error-
 // correction scheme (object-independent method)
 float fec_get_rate(fec_scheme _scheme);
 
-// create a fec object of a particular scheme
+// Create a fec object of a particular scheme
 //  _scheme     :   error-correction scheme
 //  _opts       :   (ignored)
 fec fec_create(fec_scheme _scheme,
                void *_opts);
 
-// recreate fec object
+// Recreate fec object with new scheme, handling internal memory allocation
+// and re-allocation appropriately
 //  _q          :   old fec object
 //  _scheme     :   new error-correction scheme
 //  _opts       :   (ignored)
@@ -1357,13 +1372,13 @@ fec fec_recreate(fec _q,
 // Copy object including all internal objects and state
 fec fec_copy(fec _q);
 
-// destroy fec object
+// Destroy fec object, freeing all internal memory
 int fec_destroy(fec _q);
 
-// print fec object internals
+// Print fec object internals to stdout
 int fec_print(fec _q);
 
-// encode a block of data using a fec scheme
+// Encode a block of data using a fec scheme
 //  _q              :   fec object
 //  _dec_msg_len    :   decoded message length
 //  _msg_dec        :   decoded message
@@ -1373,7 +1388,7 @@ int fec_encode(fec _q,
                unsigned char * _msg_dec,
                unsigned char * _msg_enc);
 
-// decode a block of data using a fec scheme
+// Decode a block of data using a fec scheme
 //  _q              :   fec object
 //  _dec_msg_len    :   decoded message length
 //  _msg_enc        :   encoded message
@@ -1383,7 +1398,7 @@ int fec_decode(fec _q,
                unsigned char * _msg_enc,
                unsigned char * _msg_dec);
 
-// decode a block of data using a fec scheme (soft decision)
+// Decode a block of data using a fec scheme (soft decision)
 //  _q              :   fec object
 //  _dec_msg_len    :   decoded message length
 //  _msg_enc        :   encoded message (soft bits)
@@ -1636,7 +1651,8 @@ int FFT(_destroy_plan)(FFT(plan) _p);                                       \
 /* prime factors or with large prime factors.                           */  \
 int FFT(_print_plan)(FFT(plan) _p);                                         \
                                                                             \
-/* Run the transform                                                    */  \
+/* Run the transform on the assigned input buffer and write the result  */  \
+/* to the assigned output buffer.                                       */  \
 int FFT(_execute)(FFT(plan) _p);                                            \
                                                                             \
 /* Perform n-point FFT allocating plan internally                       */  \
@@ -2223,7 +2239,7 @@ typedef int (*firdespm_callback)(double   _frequency,
                                  double * _desired,
                                  double * _weight);
 
-// structured object
+// Structured object to design FIR filters using the Parks-McClellan algorithm
 typedef struct firdespm_s * firdespm;
 
 // create firdespm object
@@ -4104,7 +4120,7 @@ int FIRDECIM(_print)(FIRDECIM() _q);                                        \
 /* Reset decimator object internal state                                */  \
 int FIRDECIM(_reset)(FIRDECIM() _q);                                        \
                                                                             \
-/* Get decimation rate                                                  */  \
+/* Get decimation rate as an integer value                              */  \
 unsigned int FIRDECIM(_get_decim_rate)(FIRDECIM() _q);                      \
                                                                             \
 /* Set output scaling for decimator                                     */  \
@@ -8508,7 +8524,8 @@ float CPFSKMOD(_get_beta)(CPFSKMOD() _q);                                   \
 /* Get modulator's filter type                                          */  \
 int CPFSKMOD(_get_type)(CPFSKMOD() _q);                                     \
                                                                             \
-/* modulate sample                                                      */  \
+/* Modulate an input symbol into a series of output samples, taking     */  \
+/* into account the current state of the modulator's internal filter    */  \
 /*  _q      :   frequency modulator object                              */  \
 /*  _s      :   input symbol                                            */  \
 /*  _y      :   output sample array, [size: _k x 1]                     */  \
@@ -8564,7 +8581,7 @@ int CPFSKDEM(_destroy)(CPFSKDEM() _q);                                      \
 /* Print demodulator object internals                                   */  \
 int CPFSKDEM(_print)(CPFSKDEM() _q);                                        \
                                                                             \
-/* Reset state                                                          */  \
+/* Reset object's internal state                                        */  \
 int CPFSKDEM(_reset)(CPFSKDEM() _q);                                        \
                                                                             \
 /* Get demodulator's number of bits per symbol                          */  \
@@ -8620,7 +8637,7 @@ int fskmod_destroy(fskmod _q);
 // print fskmod object internals
 int fskmod_print(fskmod _q);
 
-// reset state
+// Reset object's internal state
 int fskmod_reset(fskmod _q);
 
 // modulate sample
@@ -8653,7 +8670,7 @@ int fskdem_destroy(fskdem _q);
 // print fskdem object internals
 int fskdem_print(fskdem _q);
 
-// reset state
+// Reset object's internal state
 int fskdem_reset(fskdem _q);
 
 // demodulate symbol, assuming perfect symbol timing
@@ -8695,7 +8712,7 @@ int FREQMOD(_destroy)(FREQMOD() _q);                                        \
 /* Print freqmod object internals to stdout                             */  \
 int FREQMOD(_print)(FREQMOD() _q);                                          \
                                                                             \
-/* Reset state                                                          */  \
+/* Reset object's internal state                                        */  \
 int FREQMOD(_reset)(FREQMOD() _q);                                          \
                                                                             \
 /* Modulate single sample, producing single output sample at complex    */  \
@@ -8745,7 +8762,7 @@ int FREQDEM(_destroy)(FREQDEM() _q);                                        \
 /* Print freqdem object internals                                       */  \
 int FREQDEM(_print)(FREQDEM() _q);                                          \
                                                                             \
-/* Reset state                                                          */  \
+/* Reset object's internal state                                        */  \
 int FREQDEM(_reset)(FREQDEM() _q);                                          \
                                                                             \
 /* Demodulate sample                                                    */  \
@@ -9028,7 +9045,7 @@ LIQUID_FIRPFBCH2_DEFINE_API(LIQUID_FIRPFBCH2_MANGLE_CRCF,
 /* with output rational output rate \( P / M \)                         */  \
 typedef struct FIRPFBCHR(_s) * FIRPFBCHR();                                 \
                                                                             \
-/* create rational rate resampling channelizer (firpfbchr) object by    */  \
+/* Create rational rate resampling channelizer (firpfbchr) object by    */  \
 /* specifying filter coefficients directly                              */  \
 /*  _chans  : number of output channels in chanelizer                   */  \
 /*  _decim  : output decimation factor (output rate is 1/decim input)   */  \
@@ -9039,7 +9056,7 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _chans,                         \
                                unsigned int _m,                             \
                                TC *         _h);                            \
                                                                             \
-/* create rational rate resampling channelizer (firpfbchr) object by    */  \
+/* Create rational rate resampling channelizer (firpfbchr) object by    */  \
 /* specifying filter design parameters for Kaiser prototype             */  \
 /*  _chans  : number of output channels in chanelizer                   */  \
 /*  _decim  : output decimation factor (output rate is 1/decim input)   */  \
@@ -9050,35 +9067,39 @@ FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _chans,                  \
                                       unsigned int _m,                      \
                                       float        _as);                    \
                                                                             \
-/* destroy firpfbchr object, freeing internal memory                    */  \
+/* Destroy firpfbchr object, freeing internal memory                    */  \
 int FIRPFBCHR(_destroy)(FIRPFBCHR() _q);                                    \
                                                                             \
-/* reset firpfbchr object internal state and buffers                    */  \
+/* Reset firpfbchr object internal state and buffers                    */  \
 int FIRPFBCHR(_reset)(FIRPFBCHR() _q);                                      \
                                                                             \
-/* print firpfbchr object internals to stdout                           */  \
+/* Print firpfbchr object internals to stdout                           */  \
 int FIRPFBCHR(_print)(FIRPFBCHR() _q);                                      \
                                                                             \
-/* get number of output channels to channelizer                         */  \
+/* Get number of output channels to channelizer                         */  \
 DEPRECATED("use firpfbchr_get_num_channels(...) instead",                   \
 unsigned int FIRPFBCHR(_get_M)(FIRPFBCHR() _q)  );                          \
+                                                                            \
+/* Get number of output channels to channelizer                         */  \
 unsigned int FIRPFBCHR(_get_num_channels)(FIRPFBCHR() _q);                  \
                                                                             \
-/* get decimation factor for channelizer                                */  \
+/* Get decimation factor for channelizer                                */  \
 DEPRECATED("use firpfbchr_get_decim_rate(...) instead",                     \
 unsigned int FIRPFBCHR(_get_P)(FIRPFBCHR() _q) );                           \
+                                                                            \
+/* Get decimation factor for channelizer                                */  \
 unsigned int FIRPFBCHR(_get_decim_rate)(FIRPFBCHR() _q);                    \
                                                                             \
 /* get semi-length to channelizer filter prototype                      */  \
 unsigned int FIRPFBCHR(_get_m)(FIRPFBCHR() _q);                             \
                                                                             \
-/* push buffer of samples into filter bank                              */  \
+/* Push buffer of samples into filter bank                              */  \
 /*  _q      : channelizer object                                        */  \
 /*  _x      : channelizer input, [size: decim x 1]                      */  \
 int FIRPFBCHR(_push)(FIRPFBCHR() _q,                                        \
                      TI *        _x);                                       \
                                                                             \
-/* execute filterbank channelizer, writing complex baseband samples for */  \
+/* Execute filterbank channelizer, writing complex baseband samples for */  \
 /* each channel into output array                                       */  \
 /*  _q      : channelizer object                                        */  \
 /*  _y      : channelizer output, [size: chans x 1]                     */  \
