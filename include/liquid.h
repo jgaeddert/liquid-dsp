@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -3030,13 +3030,26 @@ int FDELAY(_reset)(FDELAY() _q);                                            \
 /* Print delay object internals                                         */  \
 int FDELAY(_print)(FDELAY() _q);                                            \
                                                                             \
-/* Get current delay (accounting for _m?)                               */  \
+/* Get current delay from object (number of samples), ignoring nominal  */  \
+/* filter delay                                                         */  \
 float FDELAY(_get_delay)(FDELAY() _q);                                      \
-int   FDELAY(_set_delay)(FDELAY() _q, float _delay);                        \
-int   FDELAY(_adjust_delay)(FDELAY() _q, float _delta);                     \
                                                                             \
+/* Set the absolute delay in object (number of samples), ignoring       */  \
+/* nominal filter delay.                                                */  \
+/*  _delay  : sample delay, 0 <= _delay <= nmax                         */  \
+int FDELAY(_set_delay)(FDELAY() _q, float _delay);                          \
+                                                                            \
+/* Adjust the absolute delay in object (number of samples) by _delta,   */  \
+/* ignoring nominal filter delay                                        */  \
+int FDELAY(_adjust_delay)(FDELAY() _q, float _delta);                       \
+                                                                            \
+/* Get maximum delay allowable by object (number of samples)            */  \
 unsigned int FDELAY(_get_nmax)(FDELAY() _q);                                \
-unsigned int FDELAY(_get_m)   (FDELAY() _q);                                \
+                                                                            \
+/* Get nominal filter delay (number of samples)                         */  \
+unsigned int FDELAY(_get_m)(FDELAY() _q);                                   \
+                                                                            \
+/* Get number of filters in the polyphase filterbank                    */  \
 unsigned int FDELAY(_get_npfb)(FDELAY() _q);                                \
                                                                             \
 /* Push sample into filter object's internal buffer                     */  \
