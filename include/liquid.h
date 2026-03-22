@@ -679,7 +679,9 @@ LIQUID_WDELAY_DEFINE_API(LIQUID_WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 //   TI         : input data type
 #define LIQUID_CHANNEL_DEFINE_API(CHANNEL,TO,TC,TI)                         \
                                                                             \
-/* Channel emulation                                                    */  \
+/* Channel object to emulate distortion effects between a transmitter   */  \
+/* and receiver, including additive noise, carrier frequency/phase      */  \
+/* offsets, multi-path fading, and time-varying shadowing.              */  \
 typedef struct CHANNEL(_s) * CHANNEL();                                     \
                                                                             \
 /* Create channel object with default parameters                        */  \
