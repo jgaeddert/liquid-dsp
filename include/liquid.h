@@ -9958,8 +9958,10 @@ int bsequence_mul(bsequence _bs1, bsequence _bs2, bsequence _bs3);
 // accumulate the 1's in a binary sequence
 unsigned int bsequence_accumulate(bsequence _bs);
 
-// accessor functions
+// Gen length of binary sequence object (number of bits)
 unsigned int bsequence_get_length(bsequence _bs);
+
+// Gen bit value of binary sequence indexed a particular bit
 unsigned int bsequence_index(bsequence _bs, unsigned int _i);
 
 // Complementary codes
