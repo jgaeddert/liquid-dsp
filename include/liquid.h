@@ -6317,7 +6317,7 @@ int ofdmflexframesync_debug_print(ofdmflexframesync _q,
 /* Binary P/N synchronizer                                              */  \
 typedef struct BSYNC(_s) * BSYNC();                                         \
                                                                             \
-/* Create bsync object                                                  */  \
+/* Create bsync object given an input correlation sequence              */  \
 /*  _n  : sequence length                                               */  \
 /*  _v  : correlation sequence, [size: _n x 1]                          */  \
 BSYNC() BSYNC(_create)(unsigned int _n,                                     \
