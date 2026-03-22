@@ -5808,31 +5808,47 @@ bpacketgen bpacketgen_recreate(bpacketgen _q,
 // destroy bpacketgen object, freeing all internally-allocated memory
 void bpacketgen_destroy(bpacketgen _q);
 
-// print bpacketgen internals
+// print bpacketgen internals to stdout
 void bpacketgen_print(bpacketgen _q);
 
 // return length of full packet
 unsigned int bpacketgen_get_packet_len(bpacketgen _q);
 
-// encode packet
-void bpacketgen_encode(bpacketgen _q,
+// Encode a raw message into a packet suitable for transmission
+//  _q          : generator object
+//  _msg_dec    : decoded message, shape: (_dec_msg_len,)
+//  _packet     : encoded packet, the shape is (n,) where n=bpacketgen_get_packet_len(_q)
+void bpacketgen_encode(bpacketgen      _q,
                        unsigned char * _msg_dec,
                        unsigned char * _packet);
 
 //
 // bpacket synchronizer/decoder
 //
+
 typedef struct bpacketsync_s * bpacketsync;
+
 typedef int (*bpacketsync_callback)(unsigned char *  _payload,
                                     int              _payload_valid,
                                     unsigned int     _payload_len,
                                     framesyncstats_s _stats,
                                     void *           _userdata);
+
+// Create bpacketsync object, suitable for recovering data from a bpacketgen object
+//  _m          : p/n sequence length (ignored)
+//  _callback   : user-defined callback function
+//  _userdata   : user-defined context
 bpacketsync bpacketsync_create(unsigned int _m,
                                bpacketsync_callback _callback,
                                void * _userdata);
+
+// destroy bpacketsync object, freeing all internally-allocated memory
 int bpacketsync_destroy(bpacketsync _q);
+
+// print bpacketsync internals to stdout
 int bpacketsync_print(bpacketsync _q);
+
+// reset bpacketsync internal state
 int bpacketsync_reset(bpacketsync _q);
 
 // run synchronizer on array of input bytes
