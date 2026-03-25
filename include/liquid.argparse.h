@@ -441,43 +441,16 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
             exit( liquid_argparse_print(&__parser, argv[0]) );                  \
         case 'j':                                                               \
             exit( liquid_argparse_print_json(&__parser, argv[0]) );             \
-        /* case 'G':                                                       */   \
-        /*     if (liquid_argparse_logging(optarg,NULL) != LIQUID_OK)      */   \
-        /*         return LIQUID_EIVAL;                                    */   \
-        /*     break;                                                      */   \
         default:                                                                \
             if (liquid_argparse_set(&__parser, __dopt, optarg))                 \
                 exit(-1);                                                       \
         }                                                                       \
     }                                                                           \
 
-// set logging level
+// configure logging output and level based on string formatting
 int liquid_argparse_logging(const char * _optarg, void * _ref)
 {
-    // set internal pointer
-    *((const char**)_ref) = _optarg;
-
-    // set logger as NULL pointer; will safe cast internally
-    liquid_logger _q = NULL;
-
-    unsigned int i;
-    char strbuf[4];
-    for (i=0; i<LIQUID_LOG_NUM_LEVELS; i++)
-    {
-        // check for matching numeral
-        snprintf(strbuf,3,"%d",i);
-        if (strcmp(_optarg,strbuf)==0)
-            return liquid_logger_set_level(_q,i);
-
-        // check for (partial) string match, e.g. 'warn' instead of 'warning'
-        int n0 = strlen(_optarg);
-        int n1 = strlen(liquid_log_levels[i]);
-        if (n0 > n1)
-            continue;
-        if (strncmp(_optarg,liquid_log_levels[i],n0)==0)
-            return liquid_logger_set_level(_q,i);
-    }
-    return liquid_error(LIQUID_EIVAL,"could not set logging level to unknown value '%s'", _optarg);
+    return liquid_logger_set_config_str(NULL, _optarg);
 }
 
 // callback: crc scheme - handle invalid types

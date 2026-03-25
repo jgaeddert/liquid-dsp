@@ -50,6 +50,7 @@ LIQUID_AUTOTEST(logging,"test basic logging functionality","",0.1)
     // both flags should be false
     LIQUID_CHECK( !callback_invoked );
     LIQUID_CHECK( !lock_invoked );
+    LIQUID_CHECK( liquid_logger_get_level(custom_log) == LIQUID_INFO );
 
     //
     liquid_logger_add_callback(custom_log, autotest_logging_callback, (void*)&callback_invoked, LIQUID_INFO);
@@ -81,6 +82,44 @@ LIQUID_AUTOTEST(logging,"test basic logging functionality","",0.1)
     LIQUID_CHECK( liquid_logger_get_num_warn  (custom_log)==0 );
     LIQUID_CHECK( liquid_logger_get_num_error (custom_log)==0 );
     LIQUID_CHECK( liquid_logger_get_num_fatal (custom_log)==0 );
+
+    // clean it up
+    liquid_logger_destroy(custom_log);
+}
+
+LIQUID_AUTOTEST(logging_config,"test setting custom logging configuration","",0.1)
+{
+    // config based on macros
+    int config = LIQUID_LOG_COMPACT | LIQUID_LOG_COLOR;
+
+    // create custom logging object
+    liquid_logger custom_log = liquid_logger_create();
+    liquid_logger_set_level(custom_log, LIQUID_INFO);
+    liquid_logger_set_config(custom_log, config);
+
+    // check configuration
+    LIQUID_CHECK( liquid_logger_get_config(custom_log) == config );
+    LIQUID_CHECK( liquid_logger_get_level(custom_log) == LIQUID_INFO );
+
+    // set configuration based on string
+
+    // build up from scratch
+    liquid_logger_set_config_str(custom_log, "rawtime,level_number,filename,line");
+    LIQUID_CHECK( liquid_logger_get_config(custom_log) ==
+      (LIQUID_LOG_RAWTIME | LIQUID_LOG_LEVEL_NUMBER | LIQUID_LOG_FILENAME | LIQUID_LOG_LINE));
+    LIQUID_CHECK( liquid_logger_get_level(custom_log) == LIQUID_INFO );
+
+    // start with default but disable color and use ns precision
+    liquid_logger_set_config_str(custom_log, "default,~color,ns");
+    LIQUID_CHECK( liquid_logger_get_config(custom_log) ==
+      (LIQUID_LOG_DEFAULT & ~LIQUID_LOG_COLOR | LIQUID_LOG_NS));
+    LIQUID_CHECK( liquid_logger_get_level(custom_log) == LIQUID_INFO );
+
+    // also configure logging level
+    liquid_logger_set_config_str(custom_log, "compact,~color,trace");
+    LIQUID_CHECK( liquid_logger_get_config(custom_log) ==
+      (LIQUID_LOG_COMPACT & ~LIQUID_LOG_COLOR));
+    LIQUID_CHECK( liquid_logger_get_level(custom_log) == LIQUID_TRACE );
 
     // clean it up
     liquid_logger_destroy(custom_log);

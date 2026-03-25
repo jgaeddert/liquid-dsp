@@ -315,12 +315,100 @@ int liquid_logger_set_level(liquid_logger _q,
     return LIQUID_OK;
 }
 
+int liquid_logger_get_level(liquid_logger _q)
+{
+    _q = liquid_logger_safe_cast(_q);
+    return _q->level;
+}
+
 // set output configuration
 int liquid_logger_set_config(liquid_logger _q,
                              int           _config)
 {
     _q = liquid_logger_safe_cast(_q);
     _q->config = _config;
+    return LIQUID_OK;
+}
+
+// get output configuration
+int liquid_logger_get_config(liquid_logger _q)
+{
+    _q = liquid_logger_safe_cast(_q);
+    return _q->config;
+}
+
+// configure object based on string formatting
+int liquid_logger_set_config_str(liquid_logger _q, const char * _config)
+{
+    if (_config == NULL) // do nothing
+        return LIQUID_OK;
+    if (strlen(_config)==0)
+        return LIQUID_OK;
+
+    // parse string and assemble config bitfield
+    int config = 0;
+    int level  = -1;
+    int n = strlen(_config);
+    if (n >= 1024) // sanity check
+        return liquid_error(LIQUID_EICONFIG,"liquid_logger_set_config_str(), input string exceeds maximum allowable size");
+    // temporary string for modifications
+    char * s = strdup(_config);
+    char * tofree = s;
+    strncpy(s, _config, 1024);
+    char * token = NULL;
+    while ((token = strsep(&s, ",")) != NULL)
+    {
+        // presets
+        if      (strcmp(token,"compact")==0) { config = LIQUID_LOG_COMPACT; continue; }
+        else if (strcmp(token,"default")==0) { config = LIQUID_LOG_DEFAULT; continue; }
+        else if (strcmp(token,"full"   )==0) { config = LIQUID_LOG_FULL;    continue; }
+        // logging levels
+        else if (strcmp(token,"trace"  )==0) { level = LIQUID_TRACE; continue; }
+        else if (strcmp(token,"debug"  )==0) { level = LIQUID_DEBUG; continue; }
+        else if (strcmp(token,"info"   )==0) { level = LIQUID_INFO;  continue; }
+        else if (strcmp(token,"warn"   )==0) { level = LIQUID_WARN;  continue; }
+        else if (strcmp(token,"error"  )==0) { level = LIQUID_ERROR; continue; }
+        else if (strcmp(token,"fatal"  )==0) { level = LIQUID_FATAL; continue; }
+        // TODO: check for numerical logging values
+
+        // check for unset flag
+        bool unset = token[0] == '~';
+        if (unset)
+            token++;
+        int flag = 0;
+        // determine which flag was requested
+        if      (strcmp(token,"rawtime"       )==0) { flag = LIQUID_LOG_RAWTIME;       }
+        else if (strcmp(token,"datetime"      )==0) { flag = LIQUID_LOG_DATETIME;      }
+        else if (strcmp(token,"date"          )==0) { flag = LIQUID_LOG_DATE;          }
+        else if (strcmp(token,"time"          )==0) { flag = LIQUID_LOG_TIME;          }
+        else if (strcmp(token,"utc"           )==0) { flag = LIQUID_LOG_UTC;           }
+        else if (strcmp(token,"ms"            )==0) { flag = LIQUID_LOG_MS;            }
+        else if (strcmp(token,"us"            )==0) { flag = LIQUID_LOG_US;            }
+        else if (strcmp(token,"ns"            )==0) { flag = LIQUID_LOG_NS;            }
+        else if (strcmp(token,"level_full"    )==0) { flag = LIQUID_LOG_LEVEL_FULL;    }
+        else if (strcmp(token,"level_short"   )==0) { flag = LIQUID_LOG_LEVEL_SHORT;   }
+        else if (strcmp(token,"level_one"     )==0) { flag = LIQUID_LOG_LEVEL_ONE;     }
+        else if (strcmp(token,"level_number"  )==0) { flag = LIQUID_LOG_LEVEL_NUMBER;  }
+        else if (strcmp(token,"level_brackets")==0) { flag = LIQUID_LOG_LEVEL_BRACKETS;}
+        else if (strcmp(token,"filename"      )==0) { flag = LIQUID_LOG_FILENAME;      }
+        else if (strcmp(token,"filename_short")==0) { flag = LIQUID_LOG_FILENAME_SHORT;}
+        else if (strcmp(token,"filename_trunc")==0) { flag = LIQUID_LOG_FILENAME_TRUNC;}
+        else if (strcmp(token,"line"          )==0) { flag = LIQUID_LOG_LINE;          }
+        else if (strcmp(token,"color"         )==0) { flag = LIQUID_LOG_COLOR;         }
+        else {
+            free(tofree);
+            return liquid_error(LIQUID_EICONFIG,"liquid_logger_set_config_str(), unexpected token: '%s%s'", unset?"~":"", token);
+        }
+        // set/unset flag
+        if (unset) { config &= ~flag; }
+        else       { config |= flag;  }
+    }
+    // free temporary string and set the config
+    free(tofree);
+    if (level >= 0)
+        liquid_logger_set_level(_q, level);
+    if (config != 0)
+        liquid_logger_set_config(_q, config);
     return LIQUID_OK;
 }
 
