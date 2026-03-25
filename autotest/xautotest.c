@@ -20,13 +20,15 @@ int main(int argc, char* argv[])
 {
     // set default logging level
     liquid_logger_set_level(NULL, LIQUID_INFO);
+    //liquid_logger_set_config(NULL, LIQUID_LOG_FULL | LIQUID_LOG_COLOR);
 
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
     liquid_argparse_add(char*,logfile, "", 'g', "output logfile", NULL);
     liquid_argparse_add(char*,json,    "", 'o', "output JSON file", NULL);
     liquid_argparse_add(bool, list, false, 'L', "list tests and exit", NULL);
-    liquid_argparse_add(int,  test,    -1, 't', "run a specific test", NULL);
+    liquid_argparse_add(int,  test_id, -1, 't', "run a specific test", NULL);
+    liquid_argparse_add(char*,search,  "", 's', "run tests with search string in name", NULL);
     liquid_argparse_parse(argc,argv);
 
     if (strcmp(logfile,""))
@@ -44,10 +46,15 @@ int main(int argc, char* argv[])
     i = 0;
     while (liquid_autotest_registry[i] != NULL)
     {
-        if (test < 0)
-            liquid_autotest_registry[i]->status = LIQUID_AUTOTEST_SCHED;
-        else
-            liquid_autotest_registry[i]->status = (i==test) ? LIQUID_AUTOTEST_SCHED : LIQUID_AUTOTEST_SKIP;
+        struct liquid_autotest_s * test = liquid_autotest_registry[i];
+
+        if (test_id >= 0) {
+            test->status = (test_id == i) ? LIQUID_AUTOTEST_SCHED : LIQUID_AUTOTEST_SKIP;
+        } else if (strlen(search) > 0) {
+            test->status = (strstr(test->name,search)) != NULL ? LIQUID_AUTOTEST_SCHED : LIQUID_AUTOTEST_SKIP;
+        } else {
+            test->status = LIQUID_AUTOTEST_SCHED;
+        }
         i++;
     }
 
