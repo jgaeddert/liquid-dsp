@@ -406,7 +406,7 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
     struct liquid_argparse_s __parser;                                          \
     __parser.docstr = DOCSTR;                                                   \
     __parser.num_args = 0;                                                      \
-    sprintf(__parser.optstr,"");                                                \
+    __parser.optstr[0] = '\0';                                                  \
     /* ensure 'h', 'j' are reserved for help */                                 \
     __parser.help = false;                                                      \
     __parser.json = false;                                                      \
