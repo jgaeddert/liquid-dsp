@@ -354,7 +354,6 @@ int liquid_logger_set_config_str(liquid_logger _q, const char * _config)
     // temporary string for modifications
     char * s = strdup(_config);
     char * tofree = s;
-    strncpy(s, _config, 1024);
     char * token = NULL;
     while ((token = strsep(&s, ",")) != NULL)
     {
