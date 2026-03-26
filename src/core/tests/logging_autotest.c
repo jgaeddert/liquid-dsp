@@ -112,7 +112,7 @@ LIQUID_AUTOTEST(logging_config,"test setting custom logging configuration","",0.
     // start with default but disable color and use ns precision
     liquid_logger_set_config_str(custom_log, "default,~color,ns");
     LIQUID_CHECK( liquid_logger_get_config(custom_log) ==
-      (LIQUID_LOG_DEFAULT & ~LIQUID_LOG_COLOR | LIQUID_LOG_NS));
+      ((LIQUID_LOG_DEFAULT & ~LIQUID_LOG_COLOR) | LIQUID_LOG_NS));
     LIQUID_CHECK( liquid_logger_get_level(custom_log) == LIQUID_INFO );
 
     // also configure logging level
