@@ -80,7 +80,7 @@ int liquid_libversion_number(void);
 // run-time library validation
 #define LIQUID_VALIDATE_LIBVERSION                                          \
   if (LIQUID_VERSION_NUMBER != liquid_libversion_number()) {                \
-    fprintf(stderr,"%s:%u: ", __FILE__,__LINE__);                           \
+    fprintf(stderr,"%s:%u: ", LIQUID_FILENAME,__LINE__);                    \
     fprintf(stderr,"error: invalid liquid runtime library\n");              \
     fprintf(stderr,"  header version  : %d\n", LIQUID_VERSION_NUMBER);      \
     fprintf(stderr,"  library version : %d\n", liquid_libversion_number()); \
@@ -95,11 +95,11 @@ void * liquid_error_config_fl(const char * _file, int _line, const char * _forma
 
 // macro to get file name and line number for source of error
 #define liquid_error(code, format, ...) \
-    liquid_error_fl(code, __FILE__, __LINE__, format, ##__VA_ARGS__);
+    liquid_error_fl(code, LIQUID_FILENAME, __LINE__, format, ##__VA_ARGS__);
 
 // macro to get file name and line number for source of error (invalid object)
 #define liquid_error_config(format, ...) \
-    liquid_error_config_fl(__FILE__, __LINE__, format, ##__VA_ARGS__);
+    liquid_error_config_fl(LIQUID_FILENAME, __LINE__, format, ##__VA_ARGS__);
 
 // basic error types
 #define LIQUID_NUM_ERRORS 14
@@ -352,37 +352,37 @@ enum {
 };
 
 #ifdef LIQUID_LOG_TRACE
-#  define liquid_log_trace(...) liquid_log(NULL,LIQUID_TRACE,__FILE__,__LINE__,__VA_ARGS__)
+#  define liquid_log_trace(...) liquid_log(NULL,LIQUID_TRACE,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_trace(...) {}
 #endif
 
 #ifdef LIQUID_LOG_DEBUG
-#  define liquid_log_debug(...) liquid_log(NULL,LIQUID_DEBUG,__FILE__,__LINE__,__VA_ARGS__)
+#  define liquid_log_debug(...) liquid_log(NULL,LIQUID_DEBUG,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_debug(...) {}
 #endif
 
 #ifdef LIQUID_LOG_INFO
-#  define liquid_log_info(...)  liquid_log(NULL,LIQUID_INFO, __FILE__,__LINE__,__VA_ARGS__)
+#  define liquid_log_info(...)  liquid_log(NULL,LIQUID_INFO, LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_info(...) {}
 #endif
 
 #ifdef LIQUID_LOG_WARN
-#  define liquid_log_warn(...)  liquid_log(NULL,LIQUID_WARN, __FILE__,__LINE__,__VA_ARGS__)
+#  define liquid_log_warn(...)  liquid_log(NULL,LIQUID_WARN, LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_warn(...) {}
 #endif
 
 #ifdef LIQUID_LOG_ERROR
-#  define liquid_log_error(...) liquid_log(NULL,LIQUID_ERROR,__FILE__,__LINE__,__VA_ARGS__)
+#  define liquid_log_error(...) liquid_log(NULL,LIQUID_ERROR,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_error(...) {}
 #endif
 
 #ifdef LIQUID_LOG_FATAL
-#  define liquid_log_fatal(...) liquid_log(NULL,LIQUID_FATAL,__FILE__,__LINE__,__VA_ARGS__)
+#  define liquid_log_fatal(...) liquid_log(NULL,LIQUID_FATAL,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_fatal(...) {}
 #endif
@@ -390,6 +390,13 @@ enum {
 
 // provide exit value based on global logging
 int liquid_exit();
+
+// compile-time relative file path: strip source root prefix from __FILE__
+#ifdef LIQUID_SOURCE_ROOT
+#  define LIQUID_FILENAME &(__FILE__[sizeof(LIQUID_SOURCE_ROOT) - 1])
+#else
+#  define LIQUID_FILENAME __FILE__
+#endif
 
 // macro concatenation
 #define LIQUID_CONCAT(prefix, name) prefix ## name
