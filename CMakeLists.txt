@@ -503,6 +503,22 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${LIBNAME}
 )
 
+# ---------------------------------------- pkg-config ----------------------------------------
+
+set(LIQUID_PC_LIBS_PRIVATE "")
+if (fftw3f_FOUND)
+    string(APPEND LIQUID_PC_LIBS_PRIVATE " -lfftw3f")
+endif()
+
+configure_file(
+    cmake/liquid-dsp.pc.in
+    ${CMAKE_CURRENT_BINARY_DIR}/liquid-dsp.pc
+    @ONLY
+)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/liquid-dsp.pc
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+)
+
 # ---------------------------------------- examples ----------------------------------------
 
 # enable examples
