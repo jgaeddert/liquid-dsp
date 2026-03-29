@@ -81,7 +81,7 @@ SET(ALTIVEC_CODE "
   {
     vector float v = {1.0f, 2.0f, 3.0f, 4.0f};
     vector float h = {2.0f, 4.0f, 6.0f, 8.0f};
-    vector float z = (vector float)(0);
+    vector float z = vec_splats(0.0f);
     union { vector float r; float w[4]; } s;
     s.r = vec_madd(v, h, z);
 

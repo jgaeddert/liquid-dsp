@@ -27,6 +27,7 @@
 #include <altivec.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <altivec.h>
 
 #include "liquid.internal.h"
 
@@ -226,7 +227,8 @@ int dotprod_rrrf_execute(dotprod_rrrf _q,
     // split into four vectors each with four 32-bit
     // partial sums.  Effectively each loop iteration
     // operates on 16 input samples at a time.
-    s0 = s1 = s2 = s3 = (vector float){0,0,0,0};
+    //s0 = s1 = s2 = s3 = (vector float){0,0,0,0};
+    s0 = s1 = s2 = s3 = vec_splats(0.0f);
     while (nblocks >= 4) {
         s0 = vec_madd(ar[nblocks-1],d[nblocks-1],s0);
         s1 = vec_madd(ar[nblocks-2],d[nblocks-2],s1);
@@ -247,7 +249,8 @@ int dotprod_rrrf_execute(dotprod_rrrf _q,
     // move the result into the union s (effetively,
     // this loads the four 32-bit values in s0 into
     // the array w).
-    s.v = vec_add(s0,(vector float){0,0,0,0});
+    //s.v = vec_add(s0,(vector float){0,0,0,0});
+    s.v = vec_add(s0,vec_splats(0.0f));
 
     // sum the resulting array
     *_r = s.w[0] + s.w[1] + s.w[2] + s.w[3];
