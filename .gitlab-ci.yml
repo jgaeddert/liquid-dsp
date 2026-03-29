@@ -4,6 +4,7 @@ image: debian
 stages:
   - build
   - test
+  - emulation
 
 variables:
   DEBIAN_FRONTEND: noninteractive
@@ -114,4 +115,17 @@ valgrind:
   artifacts:
     paths:
       - build/valgrind/*
+
+# compile and run tests in emulation
+ppc-qemu:
+  stage: emulation
+  script:
+    - rm -rf build
+    - mkdir build
+    - cd build
+    - apt-get -qq install -y --no-install-recommends gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu qemu-user-static binfmt-support
+    - cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain_ppc64le.cmake -DENABLE_SIMD=ON -DFIND_SIMD=OFF -DC_ALTIVEC_FOUND=TRUE -DC_ALTIVEC_FLAGS="-maltivec" -DFIND_FFTW=OFF -DBUILD_EXAMPLES=OFF -DBUILD_BENCHMARKS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_EXE_LINKER_FLAGS="-static" ..
+    - make -j2
+    - file xautotest # assert this is for PowerPC
+    - ./xautotest -v -t 0
 
