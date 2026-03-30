@@ -417,37 +417,14 @@ add_compile_definitions(LIQUID_SOURCE_ROOT="${CMAKE_SOURCE_DIR}/")
 
 # set minimum logging level for compilation
 set(LOGGING_LEVELS "trace;debug;info;warn;error;fatal")
-list(FIND LOGGING_LEVELS ${LOGGING_LEVEL} LOGGING_INDEX)
+list(FIND LOGGING_LEVELS ${LOGGING_LEVEL} LIQUID_LOG_LEVEL_COMPILE)
 #message("LOG: ${LOGGING_LEVEL} -> ${LOGGING_INDEX}")
-if (${LOGGING_INDEX} LESS 0)
+if (${LIQUID_LOG_LEVEL_COMPILE} LESS 0)
     message(FATAL_ERROR "Unsupported logging level '${LOGGING_LEVEL}', select one of: ${LOGGING_LEVELS}")
 endif()
+add_compile_definitions(LIQUID_LOG_LEVEL_COMPILE=${LIQUID_LOG_LEVEL_COMPILE})
 
-if(${LOGGING_INDEX} LESS_EQUAL 0)
-    add_compile_definitions(LIQUID_LOG_TRACE)
-endif()
-
-if(${LOGGING_INDEX} LESS_EQUAL 1)
-    add_compile_definitions(LIQUID_LOG_DEBUG)
-endif()
-
-if(${LOGGING_INDEX} LESS_EQUAL 2)
-    add_compile_definitions(LIQUID_LOG_INFO)
-endif()
-
-if(${LOGGING_INDEX} LESS_EQUAL 3)
-    add_compile_definitions(LIQUID_LOG_WARN)
-endif()
-
-if(${LOGGING_INDEX} LESS_EQUAL 4)
-    add_compile_definitions(LIQUID_LOG_ERROR)
-endif()
-
-if(${LOGGING_INDEX} LESS_EQUAL 5)
-    add_compile_definitions(LIQUID_LOG_FATAL)
-endif()
-
-
+# enable color if requested
 if(ENABLE_COLOR)
     add_compile_definitions(LIQUID_COLOR_ENABLE)
 endif(ENABLE_COLOR)

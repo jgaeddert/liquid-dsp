@@ -351,37 +351,41 @@ enum {
     LIQUID_FATAL
 };
 
-#ifdef LIQUID_LOG_TRACE
+#ifndef LIQUID_LOG_LEVEL_COMPILE
+#  define LIQUID_LOG_LEVEL_COMPILE 0
+#endif
+
+#if LIQUID_LOG_LEVEL_COMPILE <= 0
 #  define liquid_log_trace(...) liquid_log(NULL,LIQUID_TRACE,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_trace(...) {}
 #endif
 
-#ifdef LIQUID_LOG_DEBUG
+#if LIQUID_LOG_LEVEL_COMPILE <= 1
 #  define liquid_log_debug(...) liquid_log(NULL,LIQUID_DEBUG,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_debug(...) {}
 #endif
 
-#ifdef LIQUID_LOG_INFO
+#if LIQUID_LOG_LEVEL_COMPILE <= 2
 #  define liquid_log_info(...)  liquid_log(NULL,LIQUID_INFO, LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_info(...) {}
 #endif
 
-#ifdef LIQUID_LOG_WARN
+#if LIQUID_LOG_LEVEL_COMPILE <= 3
 #  define liquid_log_warn(...)  liquid_log(NULL,LIQUID_WARN, LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_warn(...) {}
 #endif
 
-#ifdef LIQUID_LOG_ERROR
+#if LIQUID_LOG_LEVEL_COMPILE <= 4
 #  define liquid_log_error(...) liquid_log(NULL,LIQUID_ERROR,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_error(...) {}
 #endif
 
-#ifdef LIQUID_LOG_FATAL
+#if LIQUID_LOG_LEVEL_COMPILE <= 5
 #  define liquid_log_fatal(...) liquid_log(NULL,LIQUID_FATAL,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_fatal(...) {}
