@@ -67,7 +67,7 @@ int liquid_autotest_print_status(liquid_autotest _q)
     default: return liquid_error(LIQUID_EINT,"unexpected status");
     }
     s += sprintf(s," %9.3f ms", _q->runtime*1e3);
-    liquid_log(NULL,log_level,__FILE__,__LINE__,"%s",strbuf);
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"%s",strbuf);
     return LIQUID_OK;
 }
 
@@ -173,17 +173,17 @@ int liquid_registry_print(const liquid_autotest * _registry)
 
     int log_level = info.num_tests_fail ? LIQUID_ERROR : LIQUID_INFO;
 
-    liquid_log(NULL,log_level,__FILE__,__LINE__,"tests:");
-    //liquid_log(NULL,log_level,__FILE__,__LINE__,"  run      : %u", info.num_tests_pass + info.num_tests_fail);
-    liquid_log(NULL,log_level,__FILE__,__LINE__,"  pass     : %u", info.num_tests_pass);
-    liquid_log(NULL,log_level,__FILE__,__LINE__,"  fail     : %u", info.num_tests_fail);
-    liquid_log(NULL,log_level,__FILE__,__LINE__,"  skip     : %u", info.num_tests_skip);
-    liquid_log(NULL,log_level,__FILE__,__LINE__,"checks:");
-    liquid_log(NULL,log_level,__FILE__,__LINE__,"  pass     : %u", info.num_checks_pass);
-    liquid_log(NULL,log_level,__FILE__,__LINE__,"  fail     : %u", info.num_checks_fail);
-    liquid_log(NULL,log_level,__FILE__,__LINE__,"overall:");
-    liquid_log(NULL,log_level,__FILE__,__LINE__,"  warn     : %u", info.num_checks_warn);
-    liquid_log(NULL,log_level,__FILE__,__LINE__,"  %s", info.num_tests_fail ? "FAIL" : "PASS");
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"tests:");
+    //liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  run      : %u", info.num_tests_pass + info.num_tests_fail);
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  pass     : %u", info.num_tests_pass);
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  fail     : %u", info.num_tests_fail);
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  skip     : %u", info.num_tests_skip);
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"checks:");
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  pass     : %u", info.num_checks_pass);
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  fail     : %u", info.num_checks_fail);
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"overall:");
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  warn     : %u", info.num_checks_warn);
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  %s", info.num_tests_fail ? "FAIL" : "PASS");
 
     // return non-zero value upon failure
     return info.num_tests_fail ? LIQUID_EINT : LIQUID_OK;

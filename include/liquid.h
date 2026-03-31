@@ -395,9 +395,9 @@ enum {
 // provide exit value based on global logging
 int liquid_exit();
 
-// compile-time relative file path: strip source root prefix from __FILE__
-#ifdef LIQUID_SOURCE_ROOT
-#  define LIQUID_FILENAME &(__FILE__[sizeof(LIQUID_SOURCE_ROOT) - 1])
+// compile-time short file path: use __FILE_NAME__ if available (Clang 9+, GCC 12+)
+#ifdef __FILE_NAME__
+#  define LIQUID_FILENAME __FILE_NAME__
 #else
 #  define LIQUID_FILENAME __FILE__
 #endif

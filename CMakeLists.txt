@@ -412,9 +412,6 @@ if(ENABLE_LOGGING)
     add_compile_definitions(LIQUID_LOGGING_ENABLE)
 endif(ENABLE_LOGGING)
 
-# define source root for relative file paths in logging output
-add_compile_definitions(LIQUID_SOURCE_ROOT="${CMAKE_SOURCE_DIR}/")
-
 # set minimum logging level for compilation
 set(LOGGING_LEVELS "trace;debug;info;warn;error;fatal")
 list(FIND LOGGING_LEVELS ${LOGGING_LEVEL} LIQUID_LOG_LEVEL_COMPILE)

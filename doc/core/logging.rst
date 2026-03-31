@@ -90,14 +90,6 @@ If your terminal does not support color output, you can explicitly disable all A
 color flags
 with the ``cmake`` flag ``-D ENABLE_COLOR=OFF``.
 
-.. comment Future options
-
-    * File path delimiter, e.g. "/", for parsing paths
-    * Truncate file path to local build directory. That is, instead of
-      ``/home/username/src/liquid-dsp/src/core/src/logging.c`` just use
-      ``liquid-dsp/src/core/logging.c``.
-      There is probably a way to do this on POSIX systems with CMake
-
 
 Run-Time Formatting Options
 ---------------------------

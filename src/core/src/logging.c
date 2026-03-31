@@ -193,8 +193,8 @@ int liquid_logger_callback_stream(liquid_log_event _event,
     // print file/line
     int smax = 0;
     if      (_config & LIQUID_LOG_FILENAME      ) { smax = -1; }
-    else if (_config & LIQUID_LOG_FILENAME_SHORT) { smax = 32; } // TODO: clip filename
-    else if (_config & LIQUID_LOG_FILENAME_TRUNC) { smax = 20; }
+    else if (_config & LIQUID_LOG_FILENAME_SHORT) { smax = 20; } // TODO: clip filename
+    else if (_config & LIQUID_LOG_FILENAME_TRUNC) { smax = 12; }
     liquid_logger_stream_file_line(_event, _stream, enable_color, smax, _config & LIQUID_LOG_LINE);
 
     // parse variadic function arguments
