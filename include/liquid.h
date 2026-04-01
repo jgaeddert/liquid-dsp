@@ -10373,10 +10373,22 @@ int liquid_rcircshift(unsigned char * _src,
                       unsigned int _n,
                       unsigned int _b);
 
-// Count the number of ones in an integer
+// Count the number of ones in a 16-bit integer
+unsigned int liquid_count_ones_uint16(uint16_t _x);
+
+// Count the number of ones in a 32-bit integer
+unsigned int liquid_count_ones_uint32(uint32_t _x);
+
+// Count the number of ones in an integer (native length)
 unsigned int liquid_count_ones(unsigned int _x);
 
-// count number of ones in an integer, modulo 2
+// Count the number of ones in a 16-bit integer, modulo 2
+unsigned int liquid_count_ones_mod2_uint16(uint16_t _x);
+
+// Count the number of ones in a 32-bit integer, modulo 2
+unsigned int liquid_count_ones_mod2_uint32(uint32_t _x);
+
+// Count number of ones in an integer (native length), modulo 2
 unsigned int liquid_count_ones_mod2(unsigned int _x);
 
 // compute bindary dot-product between two integers
@@ -10385,6 +10397,86 @@ unsigned int liquid_bdotprod(unsigned int _x,
 
 // Count leading zeros in an integer
 unsigned int liquid_count_leading_zeros(unsigned int _x);
+
+// number of ones in a byte
+//  0   0000 0000   :   0
+//  1   0000 0001   :   1
+//  2   0000 0010   :   1
+//  3   0000 0011   :   2
+//  4   0000 0100   :   1
+//  ...
+//  126 0111 1110   :   6
+//  127 0111 1111   :   7
+//  128 1000 0000   :   1
+//  129 1000 0001   :   2
+//  ...
+//  253 1111 1101   :   7
+//  254 1111 1110   :   7
+//  255 1111 1111   :   8
+extern const unsigned char liquid_c_ones[256];
+
+// number of ones in a byte, modulo 2
+//  0   0000 0000   :   0
+//  1   0000 0001   :   1
+//  2   0000 0010   :   1
+//  3   0000 0011   :   0
+//  4   0000 0100   :   1
+//  ...
+//  126 0111 1110   :   0
+//  127 0111 1111   :   1
+//  128 1000 0000   :   1
+//  129 1000 0001   :   0
+//  ...
+//  253 1111 1101   :   1
+//  254 1111 1110   :   1
+//  255 1111 1111   :   0
+extern const unsigned char liquid_c_ones_mod2[256];
+
+// compute binary dot products on 8-bit words
+inline unsigned int liquid_bdotprod_uint8(uint8_t _x, uint8_t _y)
+    { return liquid_c_ones_mod2[_x & _y]; }
+
+// compute binary dot products on 16-bit words
+inline unsigned int liquid_bdotprod_uint16(uint16_t _x, uint16_t _y)
+    { return liquid_count_ones_mod2_uint16(_x & _y); }
+
+// compute binary dot products on 32-bit words
+inline unsigned int liquid_bdotprod_uint32(uint32_t _x, uint32_t _y)
+    { return liquid_count_ones_mod2_uint32(_x & _y); }
+
+// number of leading zeros in byte
+//  0   0000 0000   :   8
+//  1   0000 0001   :   7
+//  2   0000 0010   :   6
+//  3   0000 0011   :   6
+//  4   0000 0100   :   5
+//  ...
+//  126 0111 1110   :   1
+//  127 0111 1111   :   1
+//  128 1000 0000   :   0
+//  129 1000 0001   :   0
+//  ...
+//  253 1111 1101   :   0
+//  254 1111 1110   :   0
+//  255 1111 1111   :   0
+extern unsigned int liquid_c_leading_zeros[256];
+
+// byte reversal and manipulation
+//  0   0000 0000   :   0000 0000
+//  1   0000 0001   :   1000 0000
+//  2   0000 0010   :   0100 0000
+//  3   0000 0011   :   1100 0000
+//  4   0000 0100   :   0010 0000
+//  ...
+//  126 0111 1110   :   0111 1110
+//  127 0111 1111   :   1111 1110
+//  128 1000 0000   :   0000 0001
+//  129 1000 0001   :   1000 0001
+//  ...
+//  253 1111 1101   :   1011 1111
+//  254 1111 1110   :   0111 1111
+//  255 1111 1111   :   1111 1111
+extern const unsigned char liquid_reverse_byte_gentab[256];
 
 // Most-significant bit index
 unsigned int liquid_msb_index(unsigned int _x);
