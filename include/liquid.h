@@ -9634,6 +9634,28 @@ LIQUID_SYNTH_DEFINE_API(SYNTH_MANGLE_FLOAT, float, liquid_float_complex)
 // MODULE : optimization
 //
 
+// optimization threshold switch
+//  _u0         :   first utility
+//  _u1         :   second utility
+//  _minimize   :   minimize flag
+//
+// returns:
+//  (_u0 > _u1) if (_minimize == 1)
+//  (_u0 < _u1) otherwise
+int optim_threshold_switch(float _u0,
+                           float _u1,
+                           int _minimize);
+
+// sort candidate values by index
+//  _v          :   input values, [size: _len x 1]
+//  _rank       :   output rank array (indices) [size: _len x 1]
+//  _len        :   length of input array
+//  _descending :   descending/ascending
+void optim_sort(float *_v,
+                unsigned int * _rank,
+                unsigned int _len,
+                int _descending);
+
 // utility function pointer definition
 typedef float (*utility_function)(void *       _userdata,
                                   float *      _v,

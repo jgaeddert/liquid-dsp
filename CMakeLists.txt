@@ -234,7 +234,6 @@ add_library(nco OBJECT
     src/nco/src/nco.utilities.c)
 
 add_library(optim OBJECT
-    src/optim/src/chromosome.c
     src/optim/src/gasearch.c
     src/optim/src/gradsearch.c
     src/optim/src/optim.common.c
