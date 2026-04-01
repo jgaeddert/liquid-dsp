@@ -359,8 +359,10 @@ int liquid_logger_set_config_str(liquid_logger _q, const char * _config)
     {
         // presets
         if      (strcmp(token,"compact")==0) { config = LIQUID_LOG_COMPACT; continue; }
-        else if (strcmp(token,"default")==0) { config = LIQUID_LOG_DEFAULT; continue; }
+        else if (strcmp(token,"short"  )==0) { config = LIQUID_LOG_SHORT;   continue; }
+        else if (strcmp(token,"medium" )==0) { config = LIQUID_LOG_MEDIUM;  continue; }
         else if (strcmp(token,"full"   )==0) { config = LIQUID_LOG_FULL;    continue; }
+        else if (strcmp(token,"default")==0) { config = LIQUID_LOG_DEFAULT; continue; }
         // logging levels
         else if (strcmp(token,"trace"  )==0) { level = LIQUID_TRACE; continue; }
         else if (strcmp(token,"debug"  )==0) { level = LIQUID_DEBUG; continue; }

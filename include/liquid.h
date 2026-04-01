@@ -190,9 +190,9 @@ const char *        liquid_error_info(liquid_error_code _code);
 // log level options
 #define LIQUID_LOG_LEVEL_BRACKETS   (1U << 15) // "[trace]"
 // filename options (choose one or none)
-#define LIQUID_LOG_FILENAME         (1U << 12) // "/path/to/my/source/file.c"
-#define LIQUID_LOG_FILENAME_SHORT   (1U << 11) // "file.c"
-#define LIQUID_LOG_FILENAME_TRUNC   (1U << 10) // "...source/file.c"
+#define LIQUID_LOG_FILENAME         (1U << 12) // "source_file.c"
+#define LIQUID_LOG_FILENAME_SHORT   (1U << 11) // "       source_file.c"
+#define LIQUID_LOG_FILENAME_TRUNC   (1U << 10) // "…urce_file.c"
 // line number options
 #define LIQUID_LOG_LINE             (1U <<  8) // "/path/to/my/source/file.c:123"
 // color options
@@ -200,11 +200,19 @@ const char *        liquid_error_info(liquid_error_code _code);
 
 // preset: compact detail
 #define LIQUID_LOG_COMPACT \
-  (LIQUID_LOG_TIME | LIQUID_LOG_LEVEL_ONE | LIQUID_LOG_LEVEL_BRACKETS | LIQUID_LOG_COLOR)
+  (LIQUID_LOG_TIME | \
+   LIQUID_LOG_LEVEL_BRACKETS | LIQUID_LOG_LEVEL_ONE | \
+   LIQUID_LOG_COLOR)
 
-// preset: medium detail (default)
-#define LIQUID_LOG_DEFAULT \
-  (LIQUID_LOG_DATETIME | LIQUID_LOG_MS | \
+// preset: short detail
+#define LIQUID_LOG_SHORT \
+  (LIQUID_LOG_TIME | \
+   LIQUID_LOG_LEVEL_BRACKETS | LIQUID_LOG_LEVEL_SHORT | \
+   LIQUID_LOG_COLOR)
+
+// preset: medium detail
+#define LIQUID_LOG_MEDIUM \
+  (LIQUID_LOG_DATETIME | \
    LIQUID_LOG_LEVEL_BRACKETS | LIQUID_LOG_LEVEL_SHORT | \
    LIQUID_LOG_FILENAME_SHORT | LIQUID_LOG_LINE | LIQUID_LOG_COLOR)
 
@@ -213,6 +221,9 @@ const char *        liquid_error_info(liquid_error_code _code);
   (LIQUID_LOG_DATETIME | LIQUID_LOG_MS | \
    LIQUID_LOG_LEVEL_BRACKETS | LIQUID_LOG_LEVEL_FULL | \
    LIQUID_LOG_FILENAME | LIQUID_LOG_LINE | LIQUID_LOG_COLOR)
+
+// default preset
+#define LIQUID_LOG_DEFAULT LIQUID_LOG_SHORT
 
 // number of available logging levels
 #define LIQUID_LOG_NUM_LEVELS (6)

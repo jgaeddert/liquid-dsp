@@ -113,8 +113,6 @@ permit using the higher resolution
 object.
 Choose one of the base format options:
 
-.. todo:: include relative time from start?
-
 ``LIQUID_LOG_RAWTIME``
     Display the raw timestamp in terms of seconds from :c:`time(NULL);`
     Example: ``1771769351``
@@ -198,16 +196,16 @@ File and Line Number Options
 You can print the filename by choosing one of the following methods for truncation:
 
 ``LIQUID_LOG_FILENAME``
-    Log the full filename to the screen
-    Example: ``/path/to/my/source/file.c``
+    Log the full local filename to the screen, regardless of its length.
+    Example: ``source_file.c``
 
 ``LIQUID_LOG_FILENAME_SHORT``
-    Log just the local file, assuming a "/" delimiter
-    Example: ``file.c``
+    Log just the local file ensuring a 20-character width (truncated and/or padded).
+    Example: ``       source_file.c``
 
 ``LIQUID_LOG_FILENAME_TRUNC``
-    Log a truncated version of the file if the name extends
-    too long, e.g. ``...source/file.c``
+    Log just the local file ensuring a 12-character width (truncated and/or padded).
+    ``…urce_file.c``
 
 Optionally you can enable displaying the line number:
 
@@ -231,14 +229,19 @@ Presets
 ^^^^^^^
 
 ``LIQUID_LOG_COMPACT``
-    Compact representation of
+    Compact representation with minimal detail.
     Example:
     ``09:25:46 [I] message with (2) value``
 
-``LIQUID_LOG_DEFAULT``
-    Medium detail, default configuration.
+``LIQUID_LOG_SHORT``
+    Short detail (default configuration). ``LIQUID_LOG_DEFAULT`` maps to this.
     Example:
-    ``2026-02-22 08:18:35.123 [info ] …les/logging_extensive_example.c:29: message with (2) value``
+    ``08:18:35 [info ] message with (2) value``
+
+``LIQUID_LOG_MEDIUM``
+    Medium detail, showing date, time, filename, and line.
+    Example:
+    ``2026-02-22 08:18:35 [info ] …les/logging_extensive_example.c:29: message with (2) value``
 
 ``LIQUID_LOG_FULL``
     Full detail with as much information as available
