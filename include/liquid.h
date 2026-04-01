@@ -228,11 +228,17 @@ const char *        liquid_error_info(liquid_error_code _code);
 // number of available logging levels
 #define LIQUID_LOG_NUM_LEVELS (6)
 
+// logging event struct pointer
 typedef struct liquid_log_event_s * liquid_log_event;
-typedef struct liquid_logger_s    * liquid_logger;
+
+// custom logging object capable of handling output to stdout or file,
+// custom callback functions, custom formatting, and run-time level selection
+typedef struct liquid_logger_s * liquid_logger;
 
 // logging callback function
-typedef int (*liquid_log_callback)(liquid_log_event event, void * context, int config);
+typedef int (*liquid_log_callback)(liquid_log_event event,
+                                   void * context,
+                                   int config);
 
 // lock callback function
 typedef int (*liquid_lock_callback)(int _lock, void * context);
@@ -317,20 +323,43 @@ FILE * liquid_logger_add_filename(liquid_logger _q,
 // get the number of callbacks currently used
 unsigned int liquid_logger_get_num_callbacks(liquid_logger q);
 
-// get the number of log events
+// get the total number of log events
 unsigned int liquid_logger_get_num_events(liquid_logger q);
-unsigned int liquid_logger_get_num_trace (liquid_logger q);
-unsigned int liquid_logger_get_num_debug (liquid_logger q);
-unsigned int liquid_logger_get_num_info  (liquid_logger q);
-unsigned int liquid_logger_get_num_warn  (liquid_logger q);
-unsigned int liquid_logger_get_num_error (liquid_logger q);
-unsigned int liquid_logger_get_num_fatal (liquid_logger q);
 
-// append a log message
+// get the number of "trace" log events
+unsigned int liquid_logger_get_num_trace(liquid_logger q);
+
+// get the number of "debug" log events
+unsigned int liquid_logger_get_num_debug(liquid_logger q);
+
+// get the number of "info" log events
+unsigned int liquid_logger_get_num_info(liquid_logger q);
+
+// get the number of "warning" log events
+unsigned int liquid_logger_get_num_warn(liquid_logger q);
+
+// get the number of "error" log events
+unsigned int liquid_logger_get_num_error(liquid_logger q);
+
+// get the number of "fatal" log events
+unsigned int liquid_logger_get_num_fatal(liquid_logger q);
+
+// append a log message to the logger
+//  _q      : logging object
+//  _level  : priority of the event
+//  _file   : name of the file which is calling this event
+//  _line   : the line number within the file where this event is called
+//  _format : string format (see "printf") for the variadic arguments
 int liquid_log(liquid_logger _q, int _level, const char * _file,
                int _line, const char * _format, ...);
 
-// append a log message with variable arguments
+// append a log message to the logger with variable arguments
+//  _q      : logging object
+//  _level  : priority of the event
+//  _file   : name of the file which is calling this event
+//  _line   : the line number within the file where this event is called
+//  _format : string format (see "printf") for the variadic arguments
+//  _ap     : variadic arguments (see "vprintf") for output formatting
 int liquid_vlog(liquid_logger _q, int _level, const char * _file,
                 int _line, const char * _format, va_list _ap);
 
@@ -362,40 +391,47 @@ enum {
     LIQUID_FATAL
 };
 
+// compile-time logging level
 #ifndef LIQUID_LOG_LEVEL_COMPILE
 #  define LIQUID_LOG_LEVEL_COMPILE 0
 #endif
 
+// convenience method for logging "trace"
 #if LIQUID_LOG_LEVEL_COMPILE <= 0
 #  define liquid_log_trace(...) liquid_log(NULL,LIQUID_TRACE,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_trace(...) {}
 #endif
 
+// convenience method for logging "debug"
 #if LIQUID_LOG_LEVEL_COMPILE <= 1
 #  define liquid_log_debug(...) liquid_log(NULL,LIQUID_DEBUG,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_debug(...) {}
 #endif
 
+// convenience method for logging "info"
 #if LIQUID_LOG_LEVEL_COMPILE <= 2
 #  define liquid_log_info(...)  liquid_log(NULL,LIQUID_INFO, LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_info(...) {}
 #endif
 
+// convenience method for logging "warn"
 #if LIQUID_LOG_LEVEL_COMPILE <= 3
 #  define liquid_log_warn(...)  liquid_log(NULL,LIQUID_WARN, LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_warn(...) {}
 #endif
 
+// convenience method for logging "error"
 #if LIQUID_LOG_LEVEL_COMPILE <= 4
 #  define liquid_log_error(...) liquid_log(NULL,LIQUID_ERROR,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_error(...) {}
 #endif
 
+// convenience method for logging "fatal"
 #if LIQUID_LOG_LEVEL_COMPILE <= 5
 #  define liquid_log_fatal(...) liquid_log(NULL,LIQUID_FATAL,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
