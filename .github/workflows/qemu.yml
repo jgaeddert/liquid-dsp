@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest] #, macos-latest] #, windows-latest]
-        example: [examples/platformio_example.c]
+        processor: [ppc64le]
 
     steps:
     - uses: actions/checkout@v2
@@ -28,7 +28,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain_ppc64le.cmake -DENABLE_SIMD=ON -DFIND_SIMD=OFF -DC_ALTIVEC_FOUND=TRUE -DC_ALTIVEC_FLAGS="-maltivec" -DFIND_FFTW=OFF -DBUILD_EXAMPLES=OFF -DBUILD_BENCHMARKS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_EXE_LINKER_FLAGS="-static" ..
+        cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain_${{ matrix.processor }}.cmake -DENABLE_SIMD=ON -DFIND_SIMD=OFF -DC_ALTIVEC_FOUND=TRUE -DC_ALTIVEC_FLAGS="-maltivec" -DFIND_FFTW=OFF -DBUILD_EXAMPLES=OFF -DBUILD_BENCHMARKS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_EXE_LINKER_FLAGS="-static" ..
         make -j4
         file xautotest # assert this is for PowerPC
 
