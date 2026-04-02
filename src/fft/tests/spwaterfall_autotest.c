@@ -86,6 +86,15 @@ void testbench_spwaterfallcf_noise(unsigned int _nfft,
     const float * psd = spwaterfallcf_get_psd(q);
     unsigned int time = spwaterfallcf_get_num_time(q);
 
+    // check for nan
+    for (i=0; i<_nfft*time; i++) {
+        if (isnan(psd[i])) {
+            AUTOTEST_FAIL("testbench_spwaterfallcf_noise(), encountered 'nan' in psd");
+            spwaterfallcf_destroy(q);
+            return;
+        }
+    }
+
 #if 0
     // export results for testing
     FILE * fid = fopen("spwaterfallcf_testbench.m", "w");
