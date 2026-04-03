@@ -116,6 +116,24 @@ unsigned int liquid_bdotprod(unsigned int _x,
 #endif
 }
 
+// compute binary dot products on 8-bit words
+unsigned int liquid_bdotprod_uint8(uint8_t _x, uint8_t _y)
+{
+    return liquid_c_ones_mod2[_x & _y];
+}
+
+// compute binary dot products on 16-bit words
+unsigned int liquid_bdotprod_uint16(uint16_t _x, uint16_t _y)
+{
+    return liquid_count_ones_mod2_uint16(_x & _y);
+}
+
+// compute binary dot products on 32-bit words
+unsigned int liquid_bdotprod_uint32(uint32_t _x, uint32_t _y)
+{
+    return liquid_count_ones_mod2_uint32(_x & _y);
+}
+
 
 // counts the number of different bits between two symbols
 unsigned int count_bit_errors(unsigned int _s1,

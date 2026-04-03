@@ -10701,6 +10701,15 @@ unsigned int liquid_count_ones_mod2(unsigned int _x);
 unsigned int liquid_bdotprod(unsigned int _x,
                              unsigned int _y);
 
+// compute binary dot products on 8-bit words
+unsigned int liquid_bdotprod_uint8(uint8_t _x, uint8_t _y);
+
+// compute binary dot products on 16-bit words
+unsigned int liquid_bdotprod_uint16(uint16_t _x, uint16_t _y);
+
+// compute binary dot products on 32-bit words
+unsigned int liquid_bdotprod_uint32(uint32_t _x, uint32_t _y);
+
 // Count leading zeros in an integer
 unsigned int liquid_count_leading_zeros(unsigned int _x);
 
@@ -10737,18 +10746,6 @@ extern const unsigned char liquid_c_ones[256];
 //  254 1111 1110   :   1
 //  255 1111 1111   :   0
 extern const unsigned char liquid_c_ones_mod2[256];
-
-// compute binary dot products on 8-bit words
-inline unsigned int liquid_bdotprod_uint8(uint8_t _x, uint8_t _y)
-    { return liquid_c_ones_mod2[_x & _y]; }
-
-// compute binary dot products on 16-bit words
-inline unsigned int liquid_bdotprod_uint16(uint16_t _x, uint16_t _y)
-    { return liquid_count_ones_mod2_uint16(_x & _y); }
-
-// compute binary dot products on 32-bit words
-inline unsigned int liquid_bdotprod_uint32(uint32_t _x, uint32_t _y)
-    { return liquid_count_ones_mod2_uint32(_x & _y); }
 
 // number of leading zeros in byte
 //  0   0000 0000   :   8
