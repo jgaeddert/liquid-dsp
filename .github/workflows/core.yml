@@ -43,7 +43,7 @@ jobs:
     - name: check
       run: |
         cd build
-        ./xautotest -v -o autotest.json
+        ./xautotest -o autotest.json
 
     - name: install
       run: |
