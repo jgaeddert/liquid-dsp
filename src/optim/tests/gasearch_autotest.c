@@ -184,7 +184,8 @@ LIQUID_AUTOTEST(gasearch_config,"gasearch configuration","",0.1)
     _liquid_error_downgrade_disable();
 }
 
-void autotest_chromosome()
+// baseline tests using create_kaiser() method
+LIQUID_AUTOTEST(chromosome, "baseline chromosome test", "", 0.1)
 {
 #if 0
     unsigned int bits_per_trait[] = {4, 8, 8, 4};
@@ -261,7 +262,7 @@ void autotest_chromosome()
     chromosome_destroy(p2);
     chromosome_destroy(c);
 #else
-    AUTOTEST_PASS();
+    LIQUID_PASS();
 #endif
 }
 
