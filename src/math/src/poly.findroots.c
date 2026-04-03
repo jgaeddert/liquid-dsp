@@ -294,7 +294,7 @@ int liquid_poly_findroots_bairstow_recursion(double *     _p,
     }
 
     // set resulting reduced polynomial
-    for (i=0; i<_k-2; i++)
+    for (i=0; i<(int)_k-2; i++)
         _p1[i] = b[i];
 
     // set output pairs

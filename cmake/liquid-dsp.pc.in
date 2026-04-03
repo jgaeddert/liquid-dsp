@@ -1,0 +1,14 @@
+# pkg-config file for liquid-dsp
+
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: liquid-dsp
+Description: Software-defined radio digital signal processing library
+Version: @PROJECT_VERSION@
+URL: https://liquidsdr.org
+Libs: -L${libdir} -l@LIBNAME@
+Libs.private: -lm@LIQUID_PC_LIBS_PRIVATE@
+Cflags: -I${includedir}
