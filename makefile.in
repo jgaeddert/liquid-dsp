@@ -1011,7 +1011,6 @@ nco_benchmarks :=						\
 #
 
 optim_objects :=						\
-	src/optim/src/chromosome.o				\
 	src/optim/src/gasearch.o				\
 	src/optim/src/gradsearch.o				\
 	src/optim/src/optim.common.o				\
@@ -1732,7 +1731,6 @@ sandbox_programs =						\
 	sandbox/am_demod_dsb_pll_costas_test			\
 	sandbox/am_demod_ssb_pll_carrier_test			\
 	sandbox/bpresync_test					\
-	sandbox/chromosome_test					\
 	sandbox/cpmodem_test					\
 	sandbox/crc_gentab					\
 	sandbox/ellip_func_test					\
