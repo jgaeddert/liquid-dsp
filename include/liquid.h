@@ -35,6 +35,13 @@ extern "C" {
 #include <stdio.h>
 #include <time.h>
 
+// compile-time short file path: use __FILE_NAME__ if available (Clang 9+, GCC 12+)
+#ifdef __FILE_NAME__
+#  define LIQUID_FILENAME __FILE_NAME__
+#else
+#  define LIQUID_FILENAME __FILE__
+#endif
+
 //
 // Make sure the version and version number macros weren't defined by
 // some previously included header file.
@@ -441,13 +448,6 @@ enum {
 
 // provide exit value based on global logging
 //int liquid_exit();
-
-// compile-time short file path: use __FILE_NAME__ if available (Clang 9+, GCC 12+)
-#ifdef __FILE_NAME__
-#  define LIQUID_FILENAME __FILE_NAME__
-#else
-#  define LIQUID_FILENAME __FILE__
-#endif
 
 // macro concatenation
 #define LIQUID_CONCAT(prefix, name) prefix ## name
