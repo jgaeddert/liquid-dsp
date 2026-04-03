@@ -421,7 +421,8 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
     liquid_argparse_append(&__parser, "bool", (void*)&__parser.json, "json",    \
         'j', "print this help file as JSON and exit", NULL);                    \
     liquid_argparse_append(&__parser, "char*",(void*)&__parser.logfmt,"logfmt", \
-        'G', "custom logging configuration", liquid_argparse_logging);          \
+        'L', "custom logging configuration, example: full,debug,~line",         \
+        liquid_argparse_logging);                                               \
 
 // add option to list of arguments
 #define liquid_argparse_add(TYPE, VAR, DEFAULT, KEY, HELP, FUNC)                \
