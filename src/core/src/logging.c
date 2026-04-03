@@ -601,8 +601,8 @@ int liquid_vlog(liquid_logger _q,
 
 int liquid_exit()
 {
-    return (qlog.count[LIQUID_LOG_NUM_LEVELS-1] + qlog.count[LIQUID_LOG_NUM_LEVELS-2])
-        ? -1 : 0;
+    return liquid_logger_get_num_warn(NULL) +
+           liquid_logger_get_num_error(NULL);
 }
 
 #else // LIQUID_LOGGING_ENABLE
@@ -689,6 +689,11 @@ int liquid_vlog(liquid_logger _q, int _level, const char * _file,
     vprintf(_format, _ap);
     printf("\n");
     return LIQUID_OK;
+}
+
+int liquid_exit()
+{
+    return 0;
 }
 
 #endif

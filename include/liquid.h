@@ -440,7 +440,7 @@ enum {
 
 
 // provide exit value based on global logging
-int liquid_exit();
+//int liquid_exit();
 
 // compile-time short file path: use __FILE_NAME__ if available (Clang 9+, GCC 12+)
 #ifdef __FILE_NAME__
