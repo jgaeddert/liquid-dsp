@@ -248,6 +248,8 @@ Presets
     ``2026-02-22 08:18:35.123 [info] logging_extensive_example.c:29: message with (2) value``
 
 
+.. _logging_command_line:
+
 Run-time Command-line Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -256,13 +258,13 @@ it is convenient to specify logging levels and options from the command line
 rather than having to re-compile the program.
 When used in conjunction with liquid's **argparse** functionality,
 you can completely define how logging works using the command line alone
-using comma-separated options with the ``-G`` flag.
+using comma-separated options with the ``-L`` flag.
 For example to run the autotest program with full logging down to the
 ``debug`` level but not showing the line numbers, run the following:
 
 .. code-block:: bash
 
-    ./xautotest -G full,debug,~line
+    ./xautotest -L full,debug,~line
 
 Here is the full list of options:
 
