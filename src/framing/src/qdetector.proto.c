@@ -48,8 +48,8 @@ struct QDETECTOR(_s) {
     float           s2_sum;         // sum{ s^2 }
 
     TI *            buf_time_0;     // time-domain buffer (FFT)
-    TI *            buf_freq_0;     // frequence-domain buffer (FFT)
-    TI *            buf_freq_1;     // frequence-domain buffer (IFFT)
+    TI *            buf_freq_0;     // frequency-domain buffer (FFT)
+    TI *            buf_freq_1;     // frequency-domain buffer (IFFT)
     TI *            buf_time_1;     // time-domain buffer (IFFT)
     unsigned int    nfft;           // fft size
     FFT_PLAN        fft;            // FFT object:  buf_time_0 > buf_freq_0
@@ -245,7 +245,7 @@ QDETECTOR() QDETECTOR(_create_cpfsk)(unsigned char * _sequence,
     if (_beta < 0.0f || _beta > 1.0f)
         return liquid_error_config("QDETECTOR(_create_cpfsk)(), excess bandwidth factor must be in [0,1]");
 
-    // create time-domain template using GMSK modem
+    // create time-domain template using CPFSK modem
     unsigned int s_len = _k * (_sequence_len + 2*_m);
     TI *         s     = (TI*) malloc(s_len * sizeof(TI));
     cpfskmod mod = cpfskmod_create(_bps, _h, _k, _m, _beta, _type);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,14 +21,10 @@
  */
 
 #include <string.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-
-//
-// AUTOTEST : lbshift
-//
-void autotest_lbshift() {
+LIQUID_AUTOTEST(lbshift,"left binary shift","",0.1) {
     // input        : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [1]   : 0000 0011 1101 1110 1011 1111 0101 0100
@@ -59,24 +55,20 @@ void autotest_lbshift() {
         memmove(output, input, 4);
         liquid_lbshift( output, 4, i);
         switch (i) {
-        case 0: CONTEND_SAME_DATA( output, output_test_0, 4 ); break;
-        case 1: CONTEND_SAME_DATA( output, output_test_1, 4 ); break;
-        case 2: CONTEND_SAME_DATA( output, output_test_2, 4 ); break;
-        case 3: CONTEND_SAME_DATA( output, output_test_3, 4 ); break;
-        case 4: CONTEND_SAME_DATA( output, output_test_4, 4 ); break;
-        case 5: CONTEND_SAME_DATA( output, output_test_5, 4 ); break;
-        case 6: CONTEND_SAME_DATA( output, output_test_6, 4 ); break;
-        case 7: CONTEND_SAME_DATA( output, output_test_7, 4 ); break;
+        case 0: LIQUID_CHECK_ARRAY( output, output_test_0, 4 ); break;
+        case 1: LIQUID_CHECK_ARRAY( output, output_test_1, 4 ); break;
+        case 2: LIQUID_CHECK_ARRAY( output, output_test_2, 4 ); break;
+        case 3: LIQUID_CHECK_ARRAY( output, output_test_3, 4 ); break;
+        case 4: LIQUID_CHECK_ARRAY( output, output_test_4, 4 ); break;
+        case 5: LIQUID_CHECK_ARRAY( output, output_test_5, 4 ); break;
+        case 6: LIQUID_CHECK_ARRAY( output, output_test_6, 4 ); break;
+        case 7: LIQUID_CHECK_ARRAY( output, output_test_7, 4 ); break;
         default:;
         }
     }
 }
 
-
-//
-// AUTOTEST : rbshift
-//
-void autotest_rbshift() {
+LIQUID_AUTOTEST(rbshift,"right binary shift","",0.1) {
     // input        : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [1]   : 0100 0000 1111 0111 1010 1111 1101 0101
@@ -107,24 +99,20 @@ void autotest_rbshift() {
         memmove(output, input, 4);
         liquid_rbshift( output, 4, i);
         switch (i) {
-        case 0: CONTEND_SAME_DATA( output, output_test_0, 4 ); break;
-        case 1: CONTEND_SAME_DATA( output, output_test_1, 4 ); break;
-        case 2: CONTEND_SAME_DATA( output, output_test_2, 4 ); break;
-        case 3: CONTEND_SAME_DATA( output, output_test_3, 4 ); break;
-        case 4: CONTEND_SAME_DATA( output, output_test_4, 4 ); break;
-        case 5: CONTEND_SAME_DATA( output, output_test_5, 4 ); break;
-        case 6: CONTEND_SAME_DATA( output, output_test_6, 4 ); break;
-        case 7: CONTEND_SAME_DATA( output, output_test_7, 4 ); break;
+        case 0: LIQUID_CHECK_ARRAY( output, output_test_0, 4 ); break;
+        case 1: LIQUID_CHECK_ARRAY( output, output_test_1, 4 ); break;
+        case 2: LIQUID_CHECK_ARRAY( output, output_test_2, 4 ); break;
+        case 3: LIQUID_CHECK_ARRAY( output, output_test_3, 4 ); break;
+        case 4: LIQUID_CHECK_ARRAY( output, output_test_4, 4 ); break;
+        case 5: LIQUID_CHECK_ARRAY( output, output_test_5, 4 ); break;
+        case 6: LIQUID_CHECK_ARRAY( output, output_test_6, 4 ); break;
+        case 7: LIQUID_CHECK_ARRAY( output, output_test_7, 4 ); break;
         default:;
         }
     }
 }
 
-
-//
-// AUTOTEST : lbcircshift
-//
-void autotest_lbcircshift() {
+LIQUID_AUTOTEST(lbcircshift,"left binary circular shift","",0.1) {
     // input        : 1001 0001 1110 1111 0101 1111 1010 1010
     // output [0]   : 1001 0001 1110 1111 0101 1111 1010 1010
     // output [1]   : 0010 0011 1101 1110 1011 1111 0101 0101
@@ -155,24 +143,21 @@ void autotest_lbcircshift() {
         memmove(output, input, 4);
         liquid_lbcircshift( output, 4, i);
         switch (i) {
-        case 0: CONTEND_SAME_DATA( output, output_test_0, 4 ); break;
-        case 1: CONTEND_SAME_DATA( output, output_test_1, 4 ); break;
-        case 2: CONTEND_SAME_DATA( output, output_test_2, 4 ); break;
-        case 3: CONTEND_SAME_DATA( output, output_test_3, 4 ); break;
-        case 4: CONTEND_SAME_DATA( output, output_test_4, 4 ); break;
-        case 5: CONTEND_SAME_DATA( output, output_test_5, 4 ); break;
-        case 6: CONTEND_SAME_DATA( output, output_test_6, 4 ); break;
-        case 7: CONTEND_SAME_DATA( output, output_test_7, 4 ); break;
+        case 0: LIQUID_CHECK_ARRAY( output, output_test_0, 4 ); break;
+        case 1: LIQUID_CHECK_ARRAY( output, output_test_1, 4 ); break;
+        case 2: LIQUID_CHECK_ARRAY( output, output_test_2, 4 ); break;
+        case 3: LIQUID_CHECK_ARRAY( output, output_test_3, 4 ); break;
+        case 4: LIQUID_CHECK_ARRAY( output, output_test_4, 4 ); break;
+        case 5: LIQUID_CHECK_ARRAY( output, output_test_5, 4 ); break;
+        case 6: LIQUID_CHECK_ARRAY( output, output_test_6, 4 ); break;
+        case 7: LIQUID_CHECK_ARRAY( output, output_test_7, 4 ); break;
         default:;
         }
     }
 }
 
 
-//
-// AUTOTEST : rbcircshift
-//
-void autotest_rbcircshift() {
+LIQUID_AUTOTEST(rbcircshift,"right binary circular shift","",0.1) {
     // input        : 1001 0001 1110 1111 0101 1111 1010 1010
     // output [0]   : 1001 0001 1110 1111 0101 1111 1010 1010
     // output [1]   : 0100 1000 1111 0111 1010 1111 1101 0101
@@ -203,14 +188,14 @@ void autotest_rbcircshift() {
         memmove(output, input, 4);
         liquid_rbcircshift( output, 4, i);
         switch (i) {
-        case 0: CONTEND_SAME_DATA( output, output_test_0, 4 ); break;
-        case 1: CONTEND_SAME_DATA( output, output_test_1, 4 ); break;
-        case 2: CONTEND_SAME_DATA( output, output_test_2, 4 ); break;
-        case 3: CONTEND_SAME_DATA( output, output_test_3, 4 ); break;
-        case 4: CONTEND_SAME_DATA( output, output_test_4, 4 ); break;
-        case 5: CONTEND_SAME_DATA( output, output_test_5, 4 ); break;
-        case 6: CONTEND_SAME_DATA( output, output_test_6, 4 ); break;
-        case 7: CONTEND_SAME_DATA( output, output_test_7, 4 ); break;
+        case 0: LIQUID_CHECK_ARRAY( output, output_test_0, 4 ); break;
+        case 1: LIQUID_CHECK_ARRAY( output, output_test_1, 4 ); break;
+        case 2: LIQUID_CHECK_ARRAY( output, output_test_2, 4 ); break;
+        case 3: LIQUID_CHECK_ARRAY( output, output_test_3, 4 ); break;
+        case 4: LIQUID_CHECK_ARRAY( output, output_test_4, 4 ); break;
+        case 5: LIQUID_CHECK_ARRAY( output, output_test_5, 4 ); break;
+        case 6: LIQUID_CHECK_ARRAY( output, output_test_6, 4 ); break;
+        case 7: LIQUID_CHECK_ARRAY( output, output_test_7, 4 ); break;
         default:;
         }
     }

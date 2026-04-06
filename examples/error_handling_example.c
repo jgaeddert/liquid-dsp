@@ -22,6 +22,9 @@ int main(int argc, char*argv[])
     // destroy object
     agc_crcf_destroy(q);
 
+    // set custom error
+    liquid_error(LIQUID_EICONFIG,"configuration (%s), invalid code %u > %u", "hello", 4, 2);
+
     //
     printf("done.\n");
     return 0;

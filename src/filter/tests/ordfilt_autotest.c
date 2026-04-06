@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-// test copy method
-void autotest_ordfilt_copy()
+LIQUID_AUTOTEST(ordfilt_copy,"test copy method", "", 0.1)
 {
     // create base object
     ordfilt_rrrf q0 = ordfilt_rrrf_create(17, 5);
@@ -46,7 +45,7 @@ void autotest_ordfilt_copy()
         ordfilt_rrrf_execute_one(q0, v, &y0);
         ordfilt_rrrf_execute_one(q1, v, &y1);
 
-        CONTEND_EQUALITY(y0, y1);
+        LIQUID_CHECK(y0 ==  y1);
     }
 
     // destroy objects

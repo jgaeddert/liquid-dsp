@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,10 @@
 
 #include <math.h>
 #include <stdlib.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-void autotest_firfilt_cccf_coefficients_test()
+LIQUID_AUTOTEST(firfilt_cccf_coefficients_test,"description","",0.1)
 {
     // create filter coefficients (semi-random)
     unsigned int h_len = 71;
@@ -49,11 +49,11 @@ void autotest_firfilt_cccf_coefficients_test()
 
     // ensure values are equal; no need for tolerance as values should be exact
     for (i=0; i<h_len; i++) {
-        CONTEND_EQUALITY(crealf(h0[i]), crealf(h1[i]));
-        CONTEND_EQUALITY(cimagf(h0[i]), cimagf(h1[i]));
+        LIQUID_CHECK(crealf(h0[i]) ==  crealf(h1[i]));
+        LIQUID_CHECK(cimagf(h0[i]) ==  cimagf(h1[i]));
 
-        CONTEND_EQUALITY(crealf(h0[i]), crealf(h2[i]));
-        CONTEND_EQUALITY(cimagf(h0[i]), cimagf(h2[i]));
+        LIQUID_CHECK(crealf(h0[i]) ==  crealf(h2[i]));
+        LIQUID_CHECK(cimagf(h0[i]) ==  cimagf(h2[i]));
     }
 
     // destroy filter object and free memory

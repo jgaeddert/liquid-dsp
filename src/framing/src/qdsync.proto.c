@@ -46,7 +46,6 @@ int QDSYNC(_buf_append)(QDSYNC() _q, float complex _x);
 
 // main object definition
 struct QDSYNC(_s) {
-    unsigned int    seq_len;    // preamble sequence length
     int             ftype;      // filter type
     unsigned int    k;          // samples per symbol
     unsigned int    m;          // filter semi-length
@@ -77,30 +76,22 @@ struct QDSYNC(_s) {
     unsigned int    buf_out_counter; // output counter
 };
 
-// create detector with generic sequence
-QDSYNC() QDSYNC(_create_linear)(TI *              _seq,
-                                unsigned int      _seq_len,
-                                int               _ftype,
-                                unsigned int      _k,
-                                unsigned int      _m,
-                                float             _beta,
-                                QDSYNC(_callback) _callback,
-                                void *            _context)
+// internal use only - create synchronizer with generic detector
+QDSYNC() QDSYNC(_create)(QDETECTOR()       _detector,
+                         int               _ftype,
+                         unsigned int      _k,
+                         unsigned int      _m,
+                         float             _beta,
+                         QDSYNC(_callback) _callback,
+                         void *            _context)
 {
-    // validate input
-    if (_seq_len == 0)
-        return liquid_error_config("QDSYNC(_create)(), sequence length cannot be zero");
-
     // allocate memory for main object and set internal properties
     QDSYNC() q = (QDSYNC()) malloc(sizeof(struct QDSYNC(_s)));
-    q->seq_len = _seq_len;
-    q->ftype   = _ftype;
-    q->k       = _k;
-    q->m       = _m;
-    q->beta    = _beta;
-
-    // create detector
-    q->detector = QDETECTOR(_create_linear)(_seq, _seq_len, _ftype, _k, _m, _beta);
+    q->ftype    = _ftype;
+    q->k        = _k;
+    q->m        = _m;
+    q->beta     = _beta;
+    q->detector = _detector;
 
     // create down-coverters for carrier phase tracking
     q->mixer = nco_crcf_create(LIQUID_NCO);
@@ -120,6 +111,48 @@ QDSYNC() QDSYNC(_create_linear)(TI *              _seq,
     // reset and return object
     QDSYNC(_reset)(q);
     return q;
+}
+
+// create detector from sequence of symbols using internal linear interpolator
+QDSYNC() QDSYNC(_create_linear)(TI *              _seq,
+                                unsigned int      _seq_len,
+                                int               _ftype,
+                                unsigned int      _k,
+                                unsigned int      _m,
+                                float             _beta,
+                                QDSYNC(_callback) _callback,
+                                void *            _context)
+{
+    // validate input
+    if (_seq_len == 0)
+        return liquid_error_config("QDSYNC(_create_linear)(), sequence length cannot be zero");
+
+    // create detector
+    QDETECTOR() _detector = QDETECTOR(_create_linear)(_seq, _seq_len, _ftype, _k, _m, _beta);
+
+    return QDSYNC(_create)(_detector, _ftype, _k, _m, _beta, _callback, _context);
+}
+
+QDSYNC() QDSYNC(_create_cpfsk)(unsigned char *   _seq,
+                               unsigned int      _seq_len,
+                               int               _ftype,
+                               unsigned int      _bps,
+                               float             _h,
+                               unsigned int      _k,
+                               unsigned int      _m,
+                               float             _beta,
+                               int               _cpfsk_type,
+                               QDSYNC(_callback) _callback,
+                               void *            _context)
+{
+    // validate input
+    if (_seq_len == 0)
+        return liquid_error_config("QDSYNC(_create_cpfsk)(), sequence length cannot be zero");
+
+    // create detector
+    QDETECTOR() _detector = QDETECTOR(_create_cpfsk)(_seq, _seq_len, _bps, _h, _k, _m, _beta, _cpfsk_type);
+
+    return QDSYNC(_create)(_detector, _ftype, _k, _m, _beta, _callback, _context);
 }
 
 // copy object
@@ -176,7 +209,8 @@ int QDSYNC(_reset)(QDSYNC() _q)
 
 int QDSYNC(_print)(QDSYNC() _q)
 {
-    printf("<liquid.qdsync, n=%u>\n", _q->seq_len);
+    unsigned int _seq_len = QDETECTOR(_get_seq_len)(_q->detector);
+    printf("<liquid.qdsync, n=%u>\n", _seq_len);
     return LIQUID_OK;
 }
 

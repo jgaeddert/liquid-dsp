@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,14 +22,65 @@
 
 #include <string.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-// autotest data definitions
-#include "src/matrix/tests/matrix_data.h"
+// single-precision real floating-point data
 
-// test matrix addition
-void autotest_matrixf_add()
+// add
+extern float matrixf_data_add_x[];
+extern float matrixf_data_add_y[];
+extern float matrixf_data_add_z[];
+
+// aug
+extern float matrixf_data_aug_x[];
+extern float matrixf_data_aug_y[];
+extern float matrixf_data_aug_z[];
+
+// cgsolve
+extern float matrixf_data_cgsolve_A[];
+extern float matrixf_data_cgsolve_x[];
+extern float matrixf_data_cgsolve_b[];
+
+// chol
+extern float matrixf_data_chol_A[];
+extern float matrixf_data_chol_L[];
+
+// gramschmidt
+extern float matrixf_data_gramschmidt_A[];
+extern float matrixf_data_gramschmidt_V[];
+
+// inv
+extern float matrixf_data_inv_x[];
+extern float matrixf_data_inv_y[];
+
+// linsolve
+extern float matrixf_data_linsolve_A[];
+extern float matrixf_data_linsolve_x[];
+extern float matrixf_data_linsolve_b[];
+
+// ludecomp
+extern float matrixf_data_ludecomp_A[];
+
+// mul
+extern float matrixf_data_mul_x[];
+extern float matrixf_data_mul_y[];
+extern float matrixf_data_mul_z[];
+
+// qrdecomp
+extern float matrixf_data_qrdecomp_A[];
+extern float matrixf_data_qrdecomp_Q[];
+extern float matrixf_data_qrdecomp_R[];
+
+// transmul
+extern float matrixf_data_transmul_x[];
+extern float matrixf_data_transmul_xxT[];
+extern float matrixf_data_transmul_xxH[];
+extern float matrixf_data_transmul_xTx[];
+extern float matrixf_data_transmul_xHx[];
+
+
+LIQUID_AUTOTEST(matrixf_add,"test matrix addition","",0.1)
 {
     float tol = 1e-6f;
 
@@ -44,11 +95,10 @@ void autotest_matrixf_add()
 
     unsigned int i;
     for (i=0; i<20; i++)
-        CONTEND_DELTA( matrixf_data_add_z[i], z[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_add_z[i], z[i], tol );
 }
 
-// test matrix augmentation
-void autotest_matrixf_aug()
+LIQUID_AUTOTEST(matrixf_aug,"test matrix augmentation","",0.1)
 {
     float tol = 1e-6f;
 
@@ -59,23 +109,21 @@ void autotest_matrixf_aug()
     matrixf_aug(matrixf_data_aug_x, 5, 4,
                 matrixf_data_aug_y, 5, 3,
                 z,                  5, 7);
-    
-    // print result
-    if (liquid_autotest_verbose) {
-        printf("augment:\n");
-        printf("  x: ");        matrixf_print(matrixf_data_aug_x,5,4);
-        printf("  y: ");        matrixf_print(matrixf_data_aug_y,5,3);
-        printf("  expected: "); matrixf_print(matrixf_data_aug_z,5,7);
-        printf("  z: ");        matrixf_print(z,5,3);
-    }
+
+#if 0
+    printf("augment:\n");
+    printf("  x: ");        matrixf_print(matrixf_data_aug_x,5,4);
+    printf("  y: ");        matrixf_print(matrixf_data_aug_y,5,3);
+    printf("  expected: "); matrixf_print(matrixf_data_aug_z,5,7);
+    printf("  z: ");        matrixf_print(z,5,3);
+#endif
 
     unsigned int i;
     for (i=0; i<35; i++)
-        CONTEND_DELTA( matrixf_data_aug_z[i], z[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_aug_z[i], z[i], tol );
 }
 
-// conjugate gradient solver
-void autotest_matrixf_cgsolve()
+LIQUID_AUTOTEST(matrixf_cgsolve,"conjugate gradient solver","",0.1)
 {
     float tol = 0.01;  // error tolerance
 
@@ -87,21 +135,20 @@ void autotest_matrixf_cgsolve()
                     matrixf_data_cgsolve_b,
                     x, NULL);
 
-    if (liquid_autotest_verbose) {
-        printf("cgsolve:\n");
-        printf("  A: ");        matrixf_print(matrixf_data_cgsolve_A, 8, 8);
-        printf("  b: ");        matrixf_print(matrixf_data_cgsolve_b, 8, 1);
-        printf("  expected: "); matrixf_print(matrixf_data_cgsolve_x, 8, 1);
-        printf("  x: ");        matrixf_print(x,                      8, 1);
-    }
+#if 0
+    printf("cgsolve:\n");
+    printf("  A: ");        matrixf_print(matrixf_data_cgsolve_A, 8, 8);
+    printf("  b: ");        matrixf_print(matrixf_data_cgsolve_b, 8, 1);
+    printf("  expected: "); matrixf_print(matrixf_data_cgsolve_x, 8, 1);
+    printf("  x: ");        matrixf_print(x,                      8, 1);
+#endif
 
     unsigned int i;
     for (i=0; i<8; i++)
-        CONTEND_DELTA( matrixf_data_cgsolve_x[i], x[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_cgsolve_x[i], x[i], tol );
 }
 
-// Cholesky decomposition
-void autotest_matrixf_chol()
+LIQUID_AUTOTEST(matrixf_chol,"Cholesky decomposition","",0.1)
 {
     float tol = 1e-4f;  // error tolerance
 
@@ -112,20 +159,19 @@ void autotest_matrixf_chol()
     // run decomposition
     matrixf_chol(matrixf_data_chol_A, 4, L);
 
-    if (liquid_autotest_verbose) {
-        printf("chol:\n");
-        printf("  A: ");        matrixf_print(matrixf_data_chol_A, 4, 4);
-        printf("  expected: "); matrixf_print(matrixf_data_chol_L, 4, 4);
-        printf("  L: ");        matrixf_print(L,                   4, 4);
-    }
+#if 0
+    printf("chol:\n");
+    printf("  A: ");        matrixf_print(matrixf_data_chol_A, 4, 4);
+    printf("  expected: "); matrixf_print(matrixf_data_chol_L, 4, 4);
+    printf("  L: ");        matrixf_print(L,                   4, 4);
+#endif
 
     unsigned int i;
     for (i=0; i<16; i++)
-        CONTEND_DELTA( matrixf_data_chol_L[i], L[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_chol_L[i], L[i], tol );
 }
 
-// Gram-Schmidt Orthonormalization
-void autotest_matrixf_gramschmidt()
+LIQUID_AUTOTEST(matrixf_gramschmidt,"Gram-Schmidt Orthonormalization","",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -134,21 +180,20 @@ void autotest_matrixf_gramschmidt()
     float V[12];
     matrixf_gramschmidt(matrixf_data_gramschmidt_A, 4, 3, V);
 
-    if (liquid_autotest_verbose) {
-        printf("gramschmidt:\n");
-        printf("  A: ");        matrixf_print(matrixf_data_gramschmidt_A, 4, 3);
-        printf("  expected: "); matrixf_print(matrixf_data_gramschmidt_V, 4, 3);
-        printf("  V: ");        matrixf_print(V,                          4, 3);
-    }
+#if 0
+    printf("gramschmidt:\n");
+    printf("  A: ");        matrixf_print(matrixf_data_gramschmidt_A, 4, 3);
+    printf("  expected: "); matrixf_print(matrixf_data_gramschmidt_V, 4, 3);
+    printf("  V: ");        matrixf_print(V,                          4, 3);
+#endif
 
     unsigned int i;
     for (i=0; i<12; i++)
-        CONTEND_DELTA( matrixf_data_gramschmidt_V[i], V[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_gramschmidt_V[i], V[i], tol );
 }
 
 
-// matrix inversion
-void autotest_matrixf_inv()
+LIQUID_AUTOTEST(matrixf_inv,"matrix inversion","",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -158,20 +203,19 @@ void autotest_matrixf_inv()
     memmove(y, matrixf_data_inv_x, 5*5*sizeof(float));
     matrixf_inv(y, 5, 5);
 
-    if (liquid_autotest_verbose) {
-        printf("inv:\n");
-        printf("  x: ");        matrixf_print(matrixf_data_inv_x, 5, 5);
-        printf("  expected: "); matrixf_print(matrixf_data_inv_y, 5, 5);
-        printf("  y: ");        matrixf_print(y,                  5, 5);
-    }
+#if 0
+    printf("inv:\n");
+    printf("  x: ");        matrixf_print(matrixf_data_inv_x, 5, 5);
+    printf("  expected: "); matrixf_print(matrixf_data_inv_y, 5, 5);
+    printf("  y: ");        matrixf_print(y,                  5, 5);
+#endif
 
     unsigned int i;
     for (i=0; i<25; i++)
-        CONTEND_DELTA( matrixf_data_inv_y[i], y[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_inv_y[i], y[i], tol );
 }
 
-// linsolve (solve linear system of equations)
-void autotest_matrixf_linsolve()
+LIQUID_AUTOTEST(matrixf_linsolve,"linsolve (solve linear system of equations)","",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -179,28 +223,27 @@ void autotest_matrixf_linsolve()
     // x [size: 5 x 1]
     // b [size: 5 x 1]
     float x[5];
-    
+
     // run solver
     matrixf_linsolve(matrixf_data_linsolve_A, 5,
                      matrixf_data_linsolve_b,
                      x, NULL);
 
-    if (liquid_autotest_verbose) {
-        printf("linsolve:\n");
-        printf("  A: ");        matrixf_print(matrixf_data_linsolve_A, 5, 5);
-        printf("  b: ");        matrixf_print(matrixf_data_linsolve_b, 5, 1);
-        printf("  expected: "); matrixf_print(matrixf_data_linsolve_x, 5, 1);
-        printf("  x: ");        matrixf_print(x,                       5, 1);
-    }
+#if 0
+    printf("linsolve:\n");
+    printf("  A: ");        matrixf_print(matrixf_data_linsolve_A, 5, 5);
+    printf("  b: ");        matrixf_print(matrixf_data_linsolve_b, 5, 1);
+    printf("  expected: "); matrixf_print(matrixf_data_linsolve_x, 5, 1);
+    printf("  x: ");        matrixf_print(x,                       5, 1);
+#endif
 
     unsigned int i;
     for (i=0; i<5; i++)
-        CONTEND_DELTA( matrixf_data_linsolve_x[i], x[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_linsolve_x[i], x[i], tol );
 }
 
 
-// L/U decomp (Crout)
-void autotest_matrixf_ludecomp_crout()
+LIQUID_AUTOTEST(matrixf_ludecomp_crout,"L/U decomp (Crout)","",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -218,34 +261,33 @@ void autotest_matrixf_ludecomp_crout()
                 U,       8, 8,
                 LU_test, 8, 8);
 
-    if (liquid_autotest_verbose) {
-        printf("ludecomp_crout:\n");
-        printf("  A: ");        matrixf_print(matrixf_data_ludecomp_A,8,8);
-        printf("  L: ");        matrixf_print(L,                      8,8);
-        printf("  U: ");        matrixf_print(U,                      8,8);
-        printf("  LU: ");       matrixf_print(LU_test,                8,8);
-    }
+#if 0
+    printf("ludecomp_crout:\n");
+    printf("  A: ");        matrixf_print(matrixf_data_ludecomp_A,8,8);
+    printf("  L: ");        matrixf_print(L,                      8,8);
+    printf("  U: ");        matrixf_print(U,                      8,8);
+    printf("  LU: ");       matrixf_print(LU_test,                8,8);
+#endif
 
     unsigned int r,c;
     for (r=0; r<8; r++) {
         for (c=0; c<8; c++) {
             if (r < c) {
-                CONTEND_DELTA( matrix_access(L,8,8,r,c), 0.0f, tol );
+                LIQUID_CHECK_DELTA( matrix_access(L,8,8,r,c), 0.0f, tol );
             } else if (r==c) {
-                CONTEND_DELTA( matrix_access(U,8,8,r,c), 1.0f, tol );
+                LIQUID_CHECK_DELTA( matrix_access(U,8,8,r,c), 1.0f, tol );
             } else {
-                CONTEND_DELTA( matrix_access(U,8,8,r,c), 0.0f, tol );
+                LIQUID_CHECK_DELTA( matrix_access(U,8,8,r,c), 0.0f, tol );
             }
         }
     }
 
     unsigned int i;
     for (i=0; i<64; i++)
-        CONTEND_DELTA( matrixf_data_ludecomp_A[i], LU_test[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_ludecomp_A[i], LU_test[i], tol );
 }
 
-// L/U decomp (Doolittle)
-void autotest_matrixf_ludecomp_doolittle()
+LIQUID_AUTOTEST(matrixf_ludecomp_doolittle,"L/U decomp (Doolittle)","",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -263,34 +305,33 @@ void autotest_matrixf_ludecomp_doolittle()
                 U,       8, 8,
                 LU_test, 8, 8);
 
-    if (liquid_autotest_verbose) {
-        printf("ludecomp_doolittle:\n");
-        printf("  A: ");        matrixf_print(matrixf_data_ludecomp_A,8,8);
-        printf("  L: ");        matrixf_print(L,                      8,8);
-        printf("  U: ");        matrixf_print(U,                      8,8);
-        printf("  LU: ");       matrixf_print(LU_test,                8,8);
-    }
+#if 0
+    printf("ludecomp_doolittle:\n");
+    printf("  A: ");        matrixf_print(matrixf_data_ludecomp_A,8,8);
+    printf("  L: ");        matrixf_print(L,                      8,8);
+    printf("  U: ");        matrixf_print(U,                      8,8);
+    printf("  LU: ");       matrixf_print(LU_test,                8,8);
+#endif
 
     unsigned int r,c;
     for (r=0; r<8; r++) {
         for (c=0; c<8; c++) {
             if (r < c) {
-                CONTEND_DELTA( matrix_access(L,8,8,r,c), 0.0f, tol );
+                LIQUID_CHECK_DELTA( matrix_access(L,8,8,r,c), 0.0f, tol );
             } else if (r==c) {
-                CONTEND_DELTA( matrix_access(L,8,8,r,c), 1.0f, tol );
+                LIQUID_CHECK_DELTA( matrix_access(L,8,8,r,c), 1.0f, tol );
             } else {
-                CONTEND_DELTA( matrix_access(U,8,8,r,c), 0.0f, tol );
+                LIQUID_CHECK_DELTA( matrix_access(U,8,8,r,c), 0.0f, tol );
             }
         }
     }
 
     unsigned int i;
     for (i=0; i<64; i++)
-        CONTEND_DELTA( matrixf_data_ludecomp_A[i], LU_test[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_ludecomp_A[i], LU_test[i], tol );
 }
 
-// test matrix multiplication
-void autotest_matrixf_mul()
+LIQUID_AUTOTEST(matrixf_mul,"test matrix multiplication","",0.1)
 {
     float tol = 1e-6f;
 
@@ -302,22 +343,20 @@ void autotest_matrixf_mul()
                 matrixf_data_mul_y, 4, 3,
                 z,                  5, 3);
 
-    // print result
-    if (liquid_autotest_verbose) {
-        printf("multiplication:\n");
-        printf("  x: ");        matrixf_print(matrixf_data_mul_x,5,4);
-        printf("  y: ");        matrixf_print(matrixf_data_mul_y,4,3);
-        printf("  expected: "); matrixf_print(matrixf_data_mul_z,5,3);
-        printf("  z: ");        matrixf_print(z,5,3);
-    }
+#if 0
+    printf("multiplication:\n");
+    printf("  x: ");        matrixf_print(matrixf_data_mul_x,5,4);
+    printf("  y: ");        matrixf_print(matrixf_data_mul_y,4,3);
+    printf("  expected: "); matrixf_print(matrixf_data_mul_z,5,3);
+    printf("  z: ");        matrixf_print(z,5,3);
+#endif
 
     unsigned int i;
     for (i=0; i<15; i++)
-        CONTEND_DELTA( matrixf_data_mul_z[i], z[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_mul_z[i], z[i], tol );
 }
 
-// Q/R decomp (Gram-Schmidt)
-void autotest_matrixf_qrdecomp()
+LIQUID_AUTOTEST(matrixf_qrdecomp,"Q/R decomp (Gram-Schmidt)","",0.1)
 {
     float tol = 1e-4f;  // error tolerance
 
@@ -338,38 +377,37 @@ void autotest_matrixf_qrdecomp()
     // compute Q*Q^T
     matrixf_mul_transpose(Q, 4, 4, QQT_test);
 
-    if (liquid_autotest_verbose) {
-        printf("qrdecomp_gramschmidt:\n");
-        printf("  A: ");          matrixf_print(matrixf_data_qrdecomp_A,4,4);
-        printf("  Q: ");          matrixf_print(Q,                      4,4);
-        printf("  R: ");          matrixf_print(R,                      4,4);
-        printf("  Q expected: "); matrixf_print(matrixf_data_qrdecomp_Q,4,4);
-        printf("  R expected: "); matrixf_print(matrixf_data_qrdecomp_R,4,4);
-        printf("  QR: ");         matrixf_print(QR_test,                4,4);
-        printf("  QQ: ");         matrixf_print(QQT_test,               4,4);
-    }
+#if 0
+    printf("qrdecomp_gramschmidt:\n");
+    printf("  A: ");          matrixf_print(matrixf_data_qrdecomp_A,4,4);
+    printf("  Q: ");          matrixf_print(Q,                      4,4);
+    printf("  R: ");          matrixf_print(R,                      4,4);
+    printf("  Q expected: "); matrixf_print(matrixf_data_qrdecomp_Q,4,4);
+    printf("  R expected: "); matrixf_print(matrixf_data_qrdecomp_R,4,4);
+    printf("  QR: ");         matrixf_print(QR_test,                4,4);
+    printf("  QQ: ");         matrixf_print(QQT_test,               4,4);
+#endif
 
     unsigned int i;
 
     // ensure Q*R = A
     for (i=0; i<16; i++)
-        CONTEND_DELTA( matrixf_data_qrdecomp_A[i], QR_test[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_qrdecomp_A[i], QR_test[i], tol );
 
     // ensure Q*Q = I(4)
     float I4[16];
     matrixf_eye(I4,4);
     for (i=0; i<16; i++)
-        CONTEND_DELTA( QQT_test[i], I4[i], tol );
+        LIQUID_CHECK_DELTA( QQT_test[i], I4[i], tol );
 
     // ensure Q and R are correct
     for (i=0; i<16; i++) {
-        CONTEND_DELTA( matrixf_data_qrdecomp_Q[i], Q[i], tol );
-        CONTEND_DELTA( matrixf_data_qrdecomp_R[i], R[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_qrdecomp_Q[i], Q[i], tol );
+        LIQUID_CHECK_DELTA( matrixf_data_qrdecomp_R[i], R[i], tol );
     }
 }
 
-// transpose/multiply
-void autotest_matrixf_transmul()
+LIQUID_AUTOTEST(matrixf_transmul,"transpose/multiply","",0.1)
 {
     float tol = 1e-4f;  // error tolerance
 
@@ -384,38 +422,38 @@ void autotest_matrixf_transmul()
     matrixf_transpose_mul(matrixf_data_transmul_x, 5, 4, xTx);
     matrixf_hermitian_mul(matrixf_data_transmul_x, 5, 4, xHx);
 
-    if (liquid_autotest_verbose) {
-        printf("transmul:\n");
-        printf("  x: ");            matrixf_print(matrixf_data_transmul_x,  5,4);
-        printf("\n");
-        printf("  xxT: ");          matrixf_print(xxT,                      5,5);
-        printf("  xxT expected: "); matrixf_print(matrixf_data_transmul_xxT,5,5);
-        printf("\n");
-        printf("  xxH: ");          matrixf_print(xxH,                      5,5);
-        printf("  xxH expected: "); matrixf_print(matrixf_data_transmul_xxH,5,5);
-        printf("\n");
-        printf("  xTx: ");          matrixf_print(xTx,                      4,4);
-        printf("  xTx expected: "); matrixf_print(matrixf_data_transmul_xTx,4,4);
-        printf("\n");
-        printf("  xHx: ");          matrixf_print(xHx,                      4,4);
-        printf("  xHx expected: "); matrixf_print(matrixf_data_transmul_xHx,4,4);
-        printf("\n");
-    }
+#if 0
+    printf("transmul:\n");
+    printf("  x: ");            matrixf_print(matrixf_data_transmul_x,  5,4);
+    printf("\n");
+    printf("  xxT: ");          matrixf_print(xxT,                      5,5);
+    printf("  xxT expected: "); matrixf_print(matrixf_data_transmul_xxT,5,5);
+    printf("\n");
+    printf("  xxH: ");          matrixf_print(xxH,                      5,5);
+    printf("  xxH expected: "); matrixf_print(matrixf_data_transmul_xxH,5,5);
+    printf("\n");
+    printf("  xTx: ");          matrixf_print(xTx,                      4,4);
+    printf("  xTx expected: "); matrixf_print(matrixf_data_transmul_xTx,4,4);
+    printf("\n");
+    printf("  xHx: ");          matrixf_print(xHx,                      4,4);
+    printf("  xHx expected: "); matrixf_print(matrixf_data_transmul_xHx,4,4);
+    printf("\n");
+#endif
 
     // run tests
     unsigned int i;
 
     for (i=0; i<25; i++)
-        CONTEND_DELTA( matrixf_data_transmul_xxT[i], xxT[i], tol);
+        LIQUID_CHECK_DELTA( matrixf_data_transmul_xxT[i], xxT[i], tol);
 
     for (i=0; i<25; i++)
-        CONTEND_DELTA( matrixf_data_transmul_xxH[i], xxH[i], tol);
+        LIQUID_CHECK_DELTA( matrixf_data_transmul_xxH[i], xxH[i], tol);
 
     for (i=0; i<16; i++)
-        CONTEND_DELTA( matrixf_data_transmul_xTx[i], xTx[i], tol);
+        LIQUID_CHECK_DELTA( matrixf_data_transmul_xTx[i], xTx[i], tol);
 
     for (i=0; i<16; i++)
-        CONTEND_DELTA( matrixf_data_transmul_xHx[i], xHx[i], tol);
+        LIQUID_CHECK_DELTA( matrixf_data_transmul_xHx[i], xHx[i], tol);
 }
 
 

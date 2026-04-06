@@ -16,12 +16,16 @@ option(BUILD_BENCHMARKS  "Set to ON to build benchmark program"      ON)
 option(BUILD_SHARED_LIBS "Set to ON to build shared object library"  ON)
 option(ENABLE_SIMD       "Set to ON to build SIMD extensions"        ON)
 option(FIND_SIMD         "Set to ON to find SIMD extensions"         ON)
+option(FIND_THREADS      "Set to ON to find threading library"       ON)
 option(FIND_FFTW         "Set to ON to find FFTW library"            ON)
 option(BUILD_SANDBOX     "Set to ON to build sandbox programs"       OFF)
 option(BUILD_DOC         "Set to ON to build documentation"          OFF)
 option(BUILD_PYTHON      "Set to ON to build python bindings"        OFF)
 option(COVERAGE          "Set to ON to build with code coverage"     OFF)
 #option(PROFILE           "Set to ON to build with profiling"         OFF)
+option(ENABLE_LOGGING    "Set to ON to enable full logging"          ON)
+set(LOGGING_LEVEL "trace" CACHE STRING "Set minimum logging level to compile")
+option(ENABLE_COLOR      "Set to ON to enable color terminal output" ON)
 
 if(COVERAGE)
     set(CMAKE_BUILD_TYPE "Debug")
@@ -37,8 +41,8 @@ cmake_policy(SET CMP0076 NEW)
 set(LIBNAME liquid)
 set(NAMESPACE liquid)
 
-# require a C99 compiler for all targets
-set(CMAKE_C_STANDARD 99)
+# require a C11 compiler for all targets
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set(CMAKE_CXX_STANDARD 14 CACHE STRING "C++ version selection")  # or 11, 14, 17, 20
@@ -49,6 +53,11 @@ include (CheckIncludeFile)
 include (CheckFunctionExists)
 include (CheckLibraryExists)
 include (CheckSymbolExists)
+
+#check_symbol_exists(timespec_get "time.h" HAVE_TIMESPEC_GET)
+#if (HAVE_TIMESPEC_GET)
+#    add_compile_definitions(HAVE_TIMESPEC_GET)
+#endif()
 
 # check for hardware acceleration
 if (ENABLE_SIMD AND FIND_SIMD)
@@ -61,13 +70,22 @@ if (FIND_FFTW)
     find_package(fftw3f)
 endif()
 
+# cross-platform threads (e.g. thread.h for C11
+# https://cmake.org/cmake/help/latest/module/FindThreads.html
+# https://en.cppreference.com/w/c/header/threads
+if (FIND_THREADS)
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    find_package(Threads)
+endif()
+
 # global flags
 if (MSVC)
     # warning level 4
     add_compile_options(/W4)
 else()
     # additional warnings
-    add_compile_options(-Wall -fPIC -O3 -Wno-deprecated -Wno-deprecated-declarations)
+    add_compile_options(-Wall -fPIC -O3)
 endif()
 
 include (CheckTypeSize)
@@ -96,6 +114,10 @@ add_library(buffer OBJECT
 
 add_library(channel OBJECT
     src/channel/src/channel_cccf.c)
+
+add_library(core OBJECT
+    src/core/src/logging.c
+    src/core/src/error.c)
 
 add_library(dotprod OBJECT)
 
@@ -232,7 +254,6 @@ add_library(nco OBJECT
     src/nco/src/nco.utilities.c)
 
 add_library(optim OBJECT
-    src/optim/src/chromosome.c
     src/optim/src/gasearch.c
     src/optim/src/gradsearch.c
     src/optim/src/optim.common.c
@@ -273,7 +294,7 @@ add_library(utility OBJECT
 add_library(vector OBJECT)
 
 foreach(lib
-    agc audio buffer channel dotprod equalization fec fft filter framing math
+    agc audio buffer channel core dotprod equalization fec fft filter framing math
     matrix modem multichannel nco optim quantization random sequence utility
     vector)
     target_include_directories(${lib}
@@ -367,6 +388,7 @@ add_library(${LIBNAME}
     $<TARGET_OBJECTS:audio>
     $<TARGET_OBJECTS:buffer>
     $<TARGET_OBJECTS:channel>
+    $<TARGET_OBJECTS:core>
     $<TARGET_OBJECTS:dotprod>
     $<TARGET_OBJECTS:equalization>
     $<TARGET_OBJECTS:fec>
@@ -385,6 +407,24 @@ add_library(${LIBNAME}
     $<TARGET_OBJECTS:utility>
     $<TARGET_OBJECTS:vector>)
 add_library(${NAMESPACE}::${LIBNAME} ALIAS ${LIBNAME})
+
+if(ENABLE_LOGGING)
+    add_compile_definitions(LIQUID_LOGGING_ENABLE)
+endif(ENABLE_LOGGING)
+
+# set minimum logging level for compilation
+set(LOGGING_LEVELS "trace;debug;info;warn;error;fatal")
+list(FIND LOGGING_LEVELS ${LOGGING_LEVEL} LIQUID_LOG_LEVEL_COMPILE)
+#message("LOG: ${LOGGING_LEVEL} -> ${LOGGING_INDEX}")
+if (${LIQUID_LOG_LEVEL_COMPILE} LESS 0)
+    message(FATAL_ERROR "Unsupported logging level '${LOGGING_LEVEL}', select one of: ${LOGGING_LEVELS}")
+endif()
+add_compile_definitions(LIQUID_LOG_LEVEL_COMPILE=${LIQUID_LOG_LEVEL_COMPILE})
+
+# enable color if requested
+if(ENABLE_COLOR)
+    add_compile_definitions(LIQUID_COLOR_ENABLE)
+endif(ENABLE_COLOR)
 
 # TODO: build static library in addition to shared
 # https://alexreinking.com/blog/building-a-dual-shared-and-static-library-with-cmake.html
@@ -414,6 +454,7 @@ if(COVERAGE)
     target_compile_options(audio        PRIVATE -coverage -O0 -g)
     target_compile_options(buffer       PRIVATE -coverage -O0 -g)
     target_compile_options(channel      PRIVATE -coverage -O0 -g)
+    target_compile_options(core         PRIVATE -coverage -O0 -g)
     target_compile_options(dotprod      PRIVATE -coverage -O0 -g)
     target_compile_options(equalization PRIVATE -coverage -O0 -g)
     target_compile_options(fec          PRIVATE -coverage -O0 -g)
@@ -438,6 +479,9 @@ endif(COVERAGE)
 
 
 target_link_libraries(${LIBNAME} c m)
+if (threads_Found)
+    target_link_libraries(${LIBNAME} Threads::Threads)
+endif()
 if (fftw3f_FOUND)
     target_link_libraries(${LIBNAME} fftw3f)
 endif()
@@ -499,6 +543,22 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${LIBNAME}
 )
 
+# ---------------------------------------- pkg-config ----------------------------------------
+
+set(LIQUID_PC_LIBS_PRIVATE "")
+if (fftw3f_FOUND)
+    string(APPEND LIQUID_PC_LIBS_PRIVATE " -lfftw3f")
+endif()
+
+configure_file(
+    cmake/liquid-dsp.pc.in
+    ${CMAKE_CURRENT_BINARY_DIR}/liquid-dsp.pc
+    @ONLY
+)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/liquid-dsp.pc
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+)
+
 # ---------------------------------------- examples ----------------------------------------
 
 # enable examples
@@ -525,8 +585,9 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/buffer/tests/cbuffer_autotest.c
     ${PROJECT_SOURCE_DIR}/src/buffer/tests/wdelay_autotest.c
     ${PROJECT_SOURCE_DIR}/src/buffer/tests/buffer_window_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/channel/tests/channel_copy_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/channel/tests/tvmpch_copy_autotest.c
+    #${PROJECT_SOURCE_DIR}/src/channel/tests/channel_copy_autotest.c
+    #${PROJECT_SOURCE_DIR}/src/channel/tests/tvmpch_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/core/tests/logging_autotest.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_rrrf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_crcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_cccf_autotest.c
@@ -555,12 +616,9 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_copy_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/asgram_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_small_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_radix2_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_composite_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_prime_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_r2r_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_shift_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_transforms_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/spgram_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/spwaterfall_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/dds_cccf_autotest.c
@@ -682,7 +740,6 @@ set(AUTOTESTS
     )
 
 set(AUTOTEST_EXTRA
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_runtest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_2.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_3.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_4.c
@@ -719,7 +776,6 @@ set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_8.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_27.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_32.c
-    ${PROJECT_SOURCE_DIR}/src/filter/tests/fftfilt_runtest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_rrrf_data_h4x256.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_crcf_data_h4x256.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_cccf_data_h4x256.c
@@ -732,7 +788,6 @@ set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_rrrf_data_h23x256.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_crcf_data_h23x256.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_cccf_data_h23x256.c
-    ${PROJECT_SOURCE_DIR}/src/filter/tests/firdecim_runtest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_rrrf_data_M2h4x20.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_crcf_data_M2h4x20.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_cccf_data_M2h4x20.c
@@ -745,7 +800,6 @@ set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_rrrf_data_M5h23x50.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_crcf_data_M5h23x50.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_cccf_data_M5h23x50.c
-    ${PROJECT_SOURCE_DIR}/src/filter/tests/firfilt_runtest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_rrrf_data_h4x8.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_crcf_data_h4x8.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_cccf_data_h4x8.c
@@ -758,7 +812,6 @@ set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_rrrf_data_h23x64.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_crcf_data_h23x64.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_cccf_data_h23x64.c
-    ${PROJECT_SOURCE_DIR}/src/filter/tests/iirfilt_runtest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_rrrf_data_h3x64.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_crcf_data_h3x64.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_cccf_data_h3x64.c
@@ -795,14 +848,6 @@ set(AUTOTEST_EXTRA
     )
 
 if(BUILD_AUTOTESTS)
-    add_custom_command(
-        OUTPUT  autotest_include.h
-        DEPENDS
-            ${PROJECT_BINARY_DIR}/autoscript
-            ${AUTOTESTS}
-        COMMAND ${PROJECT_BINARY_DIR}/autoscript / autotest ${AUTOTESTS} > autotest_include.h
-        )
-
     # create output logging directory
     add_custom_command(
         OUTPUT autotest/logs
@@ -811,8 +856,7 @@ if(BUILD_AUTOTESTS)
 
     add_executable(xautotest
         autotest/xautotest.c
-        ${PROJECT_BINARY_DIR}/autotest_include.h
-        autotest/autotest.h
+        autotest/liquid_autotest_registry.h
         autotest/autotest.c
         autotest/libliquid_autotest.c
         autotest/logs
@@ -841,6 +885,7 @@ set(BENCHMARKS
     ${PROJECT_SOURCE_DIR}/src/buffer/bench/cbuffercf_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/buffer/bench/window_push_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/buffer/bench/window_read_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/core/bench/logging_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/bench/dotprod_cccf_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/bench/dotprod_crcf_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/bench/dotprod_rrrf_benchmark.c

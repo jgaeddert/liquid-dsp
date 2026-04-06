@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-// test copy method
-void autotest_iirdecim_copy()
+LIQUID_AUTOTEST(iirdecim_copy,"test copy method", "", 0.1)
 {
     // create base object
     iirdecim_crcf q0 = iirdecim_crcf_create_default(3, 7);
@@ -48,7 +47,7 @@ void autotest_iirdecim_copy()
         iirdecim_crcf_execute(q0, buf, &y0);
         iirdecim_crcf_execute(q1, buf, &y1);
 
-        CONTEND_EQUALITY( y0, y1 );
+        LIQUID_CHECK( y0 ==  y1 );
     }
 
     // destroy objects

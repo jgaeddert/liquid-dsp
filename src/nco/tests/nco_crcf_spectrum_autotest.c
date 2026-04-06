@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,14 +22,15 @@
 
 #include <stdlib.h>
 #include <complex.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // autotest helper function
 //  _id     : test id for saving log file
 //  _type   : NCO type (e.g. LIQUID_NCO)
 //  _freq   : normalized frequency (f/Fs), _freq in [-0.5,0.5)
-void nco_crcf_spectrum_test(int _id, int _type, float _freq)
+void testbench_nco_crcf_spectrum(liquid_autotest __q__,
+        int _id, int _type, float _freq)
 {
     unsigned long int num_samples = 1UL<<16;
     unsigned int nfft = 9600;
@@ -40,8 +41,8 @@ void nco_crcf_spectrum_test(int _id, int _type, float _freq)
 
     // sample buffer
     unsigned int  buf_len = 3*nfft;
-    float complex buf_0[buf_len];
-    float complex buf_1[buf_len];
+    float complex * buf_0 = (float complex*)malloc(buf_len*sizeof(float complex));
+    float complex * buf_1 = (float complex*)malloc(buf_len*sizeof(float complex));
     unsigned int i;
     for (i=0; i<buf_len; i++)
         buf_0[i] = 1.0f / sqrtf((float)nfft);
@@ -73,25 +74,26 @@ void nco_crcf_spectrum_test(int _id, int _type, float _freq)
     };
     char filename[256];
     sprintf(filename,"autotest/logs/nco_crcf_spectrum_%s_f%.2d.m", _type==LIQUID_NCO ? "nco" : "vco", _id);
-    liquid_autotest_validate_psd_spgramcf(psd, regions, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_psd_spgramcf(__q__, psd, regions, 3, filename);
 
     // destroy object
+    free(buf_0);
+    free(buf_1);
     nco_crcf_destroy(nco);
     spgramcf_destroy(psd);
 }
 
 // test NCO
-void autotest_nco_crcf_spectrum_nco_f00() { nco_crcf_spectrum_test( 0, LIQUID_NCO, 0.    ); }
-void autotest_nco_crcf_spectrum_nco_f01() { nco_crcf_spectrum_test( 1, LIQUID_NCO, 0.1234); }
-void autotest_nco_crcf_spectrum_nco_f02() { nco_crcf_spectrum_test( 2, LIQUID_NCO,-0.1234); }
-void autotest_nco_crcf_spectrum_nco_f03() { nco_crcf_spectrum_test( 3, LIQUID_NCO, 0.25  ); }
-void autotest_nco_crcf_spectrum_nco_f04() { nco_crcf_spectrum_test( 4, LIQUID_NCO, 0.1   ); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_nco_f00,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 0, LIQUID_NCO, 0.    ); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_nco_f01,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 1, LIQUID_NCO, 0.1234); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_nco_f02,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 2, LIQUID_NCO,-0.1234); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_nco_f03,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 3, LIQUID_NCO, 0.25  ); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_nco_f04,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 4, LIQUID_NCO, 0.1   ); }
 
 // test VCO interp
-void autotest_nco_crcf_spectrum_vco_f00() { nco_crcf_spectrum_test( 0, LIQUID_VCO_INTERP, 0.    ); }
-void autotest_nco_crcf_spectrum_vco_f01() { nco_crcf_spectrum_test( 1, LIQUID_VCO_INTERP, 0.1234); }
-void autotest_nco_crcf_spectrum_vco_f02() { nco_crcf_spectrum_test( 2, LIQUID_VCO_INTERP,-0.1234); }
-void autotest_nco_crcf_spectrum_vco_f03() { nco_crcf_spectrum_test( 3, LIQUID_VCO_INTERP, 0.25  ); }
-void autotest_nco_crcf_spectrum_vco_f04() { nco_crcf_spectrum_test( 4, LIQUID_VCO_INTERP, 0.1   ); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_vco_f00,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 0, LIQUID_VCO_INTERP, 0.    ); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_vco_f01,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 1, LIQUID_VCO_INTERP, 0.1234); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_vco_f02,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 2, LIQUID_VCO_INTERP,-0.1234); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_vco_f03,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 3, LIQUID_VCO_INTERP, 0.25  ); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_vco_f04,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 4, LIQUID_VCO_INTERP, 0.1   ); }
 

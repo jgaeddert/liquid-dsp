@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-// check RMS error
-void autotest_cvsd_rmse_sine()
+LIQUID_AUTOTEST(cvsd_rmse_sine,"check CVSD RMS error","",0.1)
 {
     unsigned int n=256;
     unsigned int nbits=3;
@@ -34,7 +33,7 @@ void autotest_cvsd_rmse_sine()
     // create cvsd codecs
     cvsd cvsd_encoder = cvsd_create(nbits,zeta,alpha);
     cvsd cvsd_decoder = cvsd_create(nbits,zeta,alpha);
-    CONTEND_EQUALITY(cvsd_print(cvsd_encoder), LIQUID_OK);
+    LIQUID_CHECK(cvsd_print(cvsd_encoder) ==  LIQUID_OK);
 
     float phi=0.0f;
     float dphi=0.1f;
@@ -52,17 +51,15 @@ void autotest_cvsd_rmse_sine()
     }   
 
     rmse = 10*log10f(rmse/n);
-    if (liquid_autotest_verbose)
-        printf("cvsd rmse : %8.2f dB\n", rmse);
-    CONTEND_LESS_THAN(rmse, -20.0f);
+    liquid_log_debug("cvsd rmse : %8.2f dB", rmse);
+    LIQUID_CHECK(rmse< -20.0f);
 
     // destroy cvsd codecs
     cvsd_destroy(cvsd_encoder);
     cvsd_destroy(cvsd_decoder);
 }
 
-// check RMS error running in blocks of 8 samples
-void autotest_cvsd_rmse_sine8()
+LIQUID_AUTOTEST(cvsd_rmse_sine8,"check CVSD RMS error running in blocks of 8 samples","",0.1)
 {
     unsigned int n=256;
     unsigned int nbits=3;
@@ -72,7 +69,7 @@ void autotest_cvsd_rmse_sine8()
     // create cvsd codecs
     cvsd cvsd_encoder = cvsd_create(nbits,zeta,alpha);
     cvsd cvsd_decoder = cvsd_create(nbits,zeta,alpha);
-    CONTEND_EQUALITY(cvsd_print(cvsd_encoder), LIQUID_OK);
+    LIQUID_CHECK(cvsd_print(cvsd_encoder) ==  LIQUID_OK);
 
     float phi=0.0f, dphi=0.1f;
     float buf_0[8], buf_1[8];
@@ -95,30 +92,23 @@ void autotest_cvsd_rmse_sine8()
     }   
 
     rmse = 10*log10f(rmse/(n*8));
-    if (liquid_autotest_verbose)
-        printf("cvsd rmse : %8.2f dB\n", rmse);
-    CONTEND_LESS_THAN(rmse, -20.0f);
+    liquid_log_debug("cvsd rmse : %8.2f dB", rmse);
+    LIQUID_CHECK(rmse< -20.0f);
 
     // destroy cvsd codecs
     cvsd_destroy(cvsd_encoder);
     cvsd_destroy(cvsd_decoder);
 }
 
-// configuration
-void autotest_cvsd_invalid_config()
+LIQUID_AUTOTEST(cvsd_config,"check CVSD configuration","",0.1)
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping cvsd config test with strict exit enabled");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
     // test invalid configuration to create()
-    CONTEND_ISNULL(cvsd_create(0, 2.0f, 0.5f)); // too few bits
-    CONTEND_ISNULL(cvsd_create(2, 1.0f, 0.5f)); // zeta too small
-    CONTEND_ISNULL(cvsd_create(2, 0.5f, 0.5f)); // zeta too small
-    CONTEND_ISNULL(cvsd_create(2, 2.0f,-1.0f)); // alpha too small
-    CONTEND_ISNULL(cvsd_create(2, 2.0f, 2.0f)); // alpha too large
+    _liquid_error_downgrade_enable();
+    LIQUID_CHECK(NULL ==cvsd_create(0, 2.0f, 0.5f)); // too few bits
+    LIQUID_CHECK(NULL ==cvsd_create(2, 1.0f, 0.5f)); // zeta too small
+    LIQUID_CHECK(NULL ==cvsd_create(2, 0.5f, 0.5f)); // zeta too small
+    LIQUID_CHECK(NULL ==cvsd_create(2, 2.0f,-1.0f)); // alpha too small
+    LIQUID_CHECK(NULL ==cvsd_create(2, 2.0f, 2.0f)); // alpha too large
+    _liquid_error_downgrade_disable();
 }
 

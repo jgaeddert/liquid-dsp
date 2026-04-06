@@ -61,7 +61,7 @@ int main(int argc, char*argv[])
     // create gradsearch object
     gradsearch gs = gradsearch_create((void*)&q, v, 3, gserror, LIQUID_OPTIM_MINIMIZE);
 
-    float rmse;
+    float rmse = 0;
 
     // execute search
     //rmse = gradsearch_run(gs, num_iterations, -1e-6f);

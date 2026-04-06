@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,44 +20,17 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // autotest helper function
 //  _n      :   sequence length
 //  _dt     :   fractional sample offset
 //  _dphi   :   carrier frequency offset
-//  _gamma  :   gain
-void detector_cccf_runtest(unsigned int _n,
-                           float        _dt,
-                           float        _dphi);
-
-//
-// AUTOTESTS
-//
-
-void autotest_detector_cccf_n64()   { detector_cccf_runtest(  64, 0.2f, 0.01f); }
-void autotest_detector_cccf_n83()   { detector_cccf_runtest(  83, 0.2f, 0.01f); }
-
-void autotest_detector_cccf_n128()  { detector_cccf_runtest( 128, 0.2f, 0.01f); }
-void autotest_detector_cccf_n167()  { detector_cccf_runtest( 167, 0.2f, 0.01f); }
-
-void autotest_detector_cccf_n256()  { detector_cccf_runtest( 256, 0.2f, 0.01f); }
-void autotest_detector_cccf_n335()  { detector_cccf_runtest( 335, 0.2f, 0.01f); }
-
-void autotest_detector_cccf_n512()  { detector_cccf_runtest( 512, 0.2f, 0.01f); }
-void autotest_detector_cccf_n671()  { detector_cccf_runtest( 671, 0.2f, 0.01f); }
-
-void autotest_detector_cccf_n1024() { detector_cccf_runtest(1024, 0.2f, 0.01f); }
-void autotest_detector_cccf_n1341() { detector_cccf_runtest(1341, 0.2f, 0.01f); }
-
-// autotest helper function
-//  _n      :   sequence length
-//  _dt     :   fractional sample offset
-//  _dphi   :   carrier frequency offset
-void detector_cccf_runtest(unsigned int _n,
-                           float        _dt,
-                           float        _dphi)
+void testbench_detector_cccf(liquid_autotest __q__,
+                             unsigned int _n,
+                             float        _dt,
+                             float        _dphi)
 {
     // TODO: validate input
 
@@ -133,10 +106,8 @@ void detector_cccf_runtest(unsigned int _n,
         if (detected) {
             signal_detected = 1;
             delay_hat = (float)i + (float)tau_hat;
-            if (liquid_autotest_verbose) {
-                printf("****** preamble found, tau_hat=%8.6f, dphi_hat=%8.6f, gamma_hat=%8.6f\n",
-                        tau_hat, dphi_hat, gamma_hat);
-            }
+            liquid_log_debug("****** preamble found, tau_hat=%8.6f, dphi_hat=%8.6f, gamma_hat=%8.6f",
+                    tau_hat, dphi_hat, gamma_hat);
         }
     }
     
@@ -151,24 +122,36 @@ void detector_cccf_runtest(unsigned int _n,
     gamma     = 20*log10f(gamma);
     gamma_hat = 20*log10f(gamma_hat);
 
-    if (liquid_autotest_verbose) {
-        printf("detector autotest [%3u]: signal detected? %s\n", _n, signal_detected ? "yes" : "no");
-        printf("    dphi    :   estimate = %12.6f (expected %12.6f)\n", dphi_hat,  _dphi);
-        printf("    delay   :   estimate = %12.6f (expected %12.6f)\n", delay_hat, delay);
-        printf("    gamma   :   estimate = %12.6f (expected %12.6f)\n", gamma_hat, gamma);
-    }
+    liquid_log_debug("detector autotest [%3u]: signal detected? %s", _n, signal_detected ? "yes" : "no");
+    liquid_log_debug("    dphi    :   estimate = %12.6f (expected %12.6f)", dphi_hat,  _dphi);
+    liquid_log_debug("    delay   :   estimate = %12.6f (expected %12.6f)", delay_hat, delay);
+    liquid_log_debug("    gamma   :   estimate = %12.6f (expected %12.6f)", gamma_hat, gamma);
 
     // ensure signal was detected
-    CONTEND_EXPRESSION( signal_detected );
+    LIQUID_CHECK( signal_detected );
 
     // check carrier offset estimate
-    CONTEND_DELTA( dphi_hat, _dphi, 0.01f );
+    LIQUID_CHECK_DELTA( dphi_hat, _dphi, 0.01f );
     
     // check delay estimate
-    CONTEND_DELTA( delay_hat, delay, 0.2f );
+    LIQUID_CHECK_DELTA( delay_hat, delay, 0.2f );
     
     // check signal level estimate
-    CONTEND_DELTA( gamma_hat, gamma, 2.0f );
+    LIQUID_CHECK_DELTA( gamma_hat, gamma, 2.0f );
 }
 
+LIQUID_AUTOTEST(detector_cccf_n64,"","",0.1)   { testbench_detector_cccf(__q__,   64, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n83,"","",0.1)   { testbench_detector_cccf(__q__,   83, 0.2f, 0.01f); }
+
+LIQUID_AUTOTEST(detector_cccf_n128,"","",0.1)  { testbench_detector_cccf(__q__,  128, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n167,"","",0.1)  { testbench_detector_cccf(__q__,  167, 0.2f, 0.01f); }
+
+LIQUID_AUTOTEST(detector_cccf_n256,"","",0.1)  { testbench_detector_cccf(__q__,  256, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n335,"","",0.1)  { testbench_detector_cccf(__q__,  335, 0.2f, 0.01f); }
+
+LIQUID_AUTOTEST(detector_cccf_n512,"","",0.1)  { testbench_detector_cccf(__q__,  512, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n671,"","",0.1)  { testbench_detector_cccf(__q__,  671, 0.2f, 0.01f); }
+
+LIQUID_AUTOTEST(detector_cccf_n1024,"","",0.1) { testbench_detector_cccf(__q__, 1024, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n1341,"","",0.1) { testbench_detector_cccf(__q__, 1341, 0.2f, 0.01f); }
 

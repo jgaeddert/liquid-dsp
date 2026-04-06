@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,12 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // Help function to keep code base small
 //  _kf     :   modulation factor
-void freqmodem_test(float _kf)
+void testbench_freqmodem(liquid_autotest __q__, float _kf)
 {
     // options
     unsigned int num_samples = 1024;
@@ -61,11 +61,11 @@ void freqmodem_test(float _kf)
 
     // compare demodulated signal to original, skipping first sample
     for (i=1; i<num_samples; i++)
-        CONTEND_DELTA( y[i], m[i], tol );
+        LIQUID_CHECK_DELTA( y[i], m[i], tol );
 }
 
 // AUTOTESTS: generic PSK
-void autotest_freqmodem_kf_0_02() { freqmodem_test(0.02f); }
-void autotest_freqmodem_kf_0_04() { freqmodem_test(0.04f); }
-void autotest_freqmodem_kf_0_08() { freqmodem_test(0.08f); }
+LIQUID_AUTOTEST(freqmodem_kf_0_02,"","",0.1) { testbench_freqmodem(__q__, 0.02f); }
+LIQUID_AUTOTEST(freqmodem_kf_0_04,"","",0.1) { testbench_freqmodem(__q__, 0.04f); }
+LIQUID_AUTOTEST(freqmodem_kf_0_08,"","",0.1) { testbench_freqmodem(__q__, 0.08f); }
 

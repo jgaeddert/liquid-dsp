@@ -2,7 +2,16 @@
 
 ## Latest
 
+  * logging: introduced embedded logging functionality
+    - supports global and custom logs with minimal computational overhead
+    - selectable level at run-time to increase/decrease verbosity as needed
+    - support for logging to files
+    - color output for enhanced visibility (optionally disabled)
+    - compile time configurations for enhanced customization
   * build
+    - performed a static memory analysis test to substantially reduce memory
+      used on the stack in favor of dynamically allocating it on the stack;
+      improves stability for multi-threaded processing
     - introduced new argument parsing header to simplify creating variables,
       parsing command-line options, printing help, and validating results;
       refactored examples and removed over 2,000 lines of redundant code.
@@ -13,8 +22,17 @@
       objects to called directly within C++, taking full advantage of RAIA
       constructs.
     - adding python bindings natively with source, taking advantage of the
-      excelled [pybind11](https://pybind11.readthedocs.io/en/stable/)
+      excellent [pybind11](https://pybind11.readthedocs.io/en/stable/)
       package to simplify this process.
+    - Fixed annoying deprecation warnings (thanks @AHSauge and @oe1rsa)
+    - Adding generated pkg-config file
+  * filter
+    - rresamp: fixing aliasing issue with default operation (thanks @xerpi
+      and @MatiasLopezING)
+    - symsync: adding methods to explicitly get/set rate and del values
+      (thanks @brian-armstrong)
+  * framing
+    - Added ability to initialize qdsync on cpfsk (thanks @asazernik)
 
 ## 1.7.0 - 2025-02-01
 

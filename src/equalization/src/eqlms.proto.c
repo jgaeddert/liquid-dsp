@@ -506,7 +506,7 @@ int EQLMS(_train)(EQLMS()      _q,
     }
 
     // copy output weight vector
-    EQLMS(_get_weights)(_q, _w);
+    EQLMS(_copy_coefficients)(_q, _w);
     return LIQUID_OK;
 }
 

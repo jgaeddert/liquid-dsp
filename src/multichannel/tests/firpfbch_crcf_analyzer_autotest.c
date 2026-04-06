@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,13 +21,10 @@
  */
 
 #include <assert.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-//
-// AUTOTEST: validate analysis correctness
-//
-void autotest_firpfbch_crcf_analysis()
+LIQUID_AUTOTEST(firpfbch_crcf_analysis,"validate firpfbch analysis correctness","",0.1)
 {
     float tol = 1e-4f;              // error tolerance
     unsigned int num_channels=4;    // number of channels
@@ -115,38 +112,24 @@ void autotest_firpfbch_crcf_analysis()
     firfilt_crcf_destroy(f);
     firpfbch_crcf_destroy(q);
 
-    if (liquid_autotest_verbose) {
-        // print filterbank channelizer
-        printf("\n");
-        printf("filterbank channelizer:\n");
-        for (i=0; i<num_symbols; i++) {
-            printf("%3u: ", i);
-            for (j=0; j<num_channels; j++) {
-                printf("  %8.5f+j%8.5f, ", crealf(Y0[i][j]), cimagf(Y0[i][j]));
-            }
-            printf("\n");
-        }
-
-        // print traditional channelizer
-        printf("\n");
-        printf("traditional channelizer:\n");
-        for (i=0; i<num_symbols; i++) {
-            printf("%3u: ", i);
-            for (j=0; j<num_channels; j++) {
-                printf("  %8.5f+j%8.5f, ", crealf(Y1[i][j]), cimagf(Y1[i][j]));
-            }
-            printf("\n");
+    // log difference
+    liquid_log_debug("filterbank channelizer:");
+    for (i=0; i<num_symbols; i++) {
+        liquid_log_debug("%3u: ", i);
+        for (j=0; j<num_channels; j++) {
+            liquid_log_debug(" ch:%8.5f+j%8.5f, naive:%8.5f+j%8.5f, err:%8.6f",
+                    crealf(Y0[i][j]), cimagf(Y0[i][j]),
+                    crealf(Y1[i][j]), cimagf(Y1[i][j]),
+                    cabsf(Y0[i][j] -Y1[i][j]) );
         }
     }
 
     // compare results
     for (i=0; i<num_symbols; i++) {
         for (j=0; j<num_channels; j++) {
-            CONTEND_DELTA( crealf(Y0[i][j]), crealf(Y1[i][j]), tol );
-            CONTEND_DELTA( cimagf(Y0[i][j]), cimagf(Y1[i][j]), tol );
+            LIQUID_CHECK_DELTA( crealf(Y0[i][j]), crealf(Y1[i][j]), tol );
+            LIQUID_CHECK_DELTA( cimagf(Y0[i][j]), cimagf(Y1[i][j]), tol );
         }
     }
-
 }
-
 

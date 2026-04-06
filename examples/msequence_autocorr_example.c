@@ -36,9 +36,6 @@ int main(int argc, char* argv[])
     bsequence bs2 = bsequence_create(n);
     bsequence_init_msequence(bs2, ms);
 
-    // when sequences are aligned, autocorrelation is equal to length
-    rxx[0] = 2*bsequence_correlate(bs1, bs2) - n;
-
     // when sequences are misaligned, autocorrelation is equal to -1
     unsigned int i;
     for (i=0; i<n; i++) {

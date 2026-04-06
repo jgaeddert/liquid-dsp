@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -80,6 +80,23 @@ FDELAY() FDELAY(_create)(unsigned int _nmax,
 FDELAY() FDELAY(_create_default)(unsigned int _nmax)
 {
     return FDELAY(_create)(_nmax, 8, 64);
+}
+
+// Copy a delay object including all internal objects and state
+FDELAY() FDELAY(_copy)(FDELAY() q_orig)
+{
+    // validate input
+    if (q_orig == NULL)
+        return liquid_error_config("fdelay_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+
+    // create filter object and copy base parameters
+    FDELAY() q_copy = (FDELAY()) malloc(sizeof(struct FDELAY(_s)));
+    memmove(q_copy, q_orig, sizeof(struct FDELAY(_s)));
+
+    // copy internal objects
+    q_copy->w   = WINDOW(_copy)(q_orig->w);
+    q_copy->pfb = FIRPFB(_copy)(q_orig->pfb);
+    return q_copy;
 }
 
 // Destroy delay object and free all internal memory

@@ -62,7 +62,8 @@ int SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
                                     TO        _dmf);
 
 // internal structure
-struct SYMSYNC(_s) {
+struct SYMSYNC(_s)
+{
     unsigned int h_len;         // matched filter length
     unsigned int k;             // samples/symbol (input)
     unsigned int k_out;         // samples/symbol (output)
@@ -387,6 +388,36 @@ int SYMSYNC(_set_lf_bw)(SYMSYNC() _q,
 float SYMSYNC(_get_tau)(SYMSYNC() _q)
 {
     return _q->tau_decim;
+}
+
+// Get synchronizer internal resampling rate
+float SYMSYNC(_get_rate)(SYMSYNC() _q)
+{
+    return _q->rate;
+}
+
+// Set synchronizer internal resampling rate
+int SYMSYNC(_set_rate)(SYMSYNC() _q, float _rate)
+{
+    if (_rate <= 0)
+        return liquid_error(LIQUID_EIRANGE,"symsync_%s_set_rate(), rate must be greater than 0", EXTENSION_FULL);
+    _q->rate = _rate;
+    return LIQUID_OK;
+}
+
+// Get synchronizer internal delta step size
+float SYMSYNC(_get_del)(SYMSYNC() _q)
+{
+    return _q->del;
+}
+
+// Set synchronizer internal delta step size
+int SYMSYNC(_set_del)(SYMSYNC() _q, float _del)
+{
+    if (_del<= 0)
+        return liquid_error(LIQUID_EIRANGE,"symsync_%s_set_del(), del must be greater than 0", EXTENSION_FULL);
+    _q->del = _del;
+    return LIQUID_OK;
 }
 
 // execute synchronizer on input data array
