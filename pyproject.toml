@@ -11,7 +11,7 @@ requires-python = ">= 3.7"
 authors = [{name = "Joseph D. Gaeddert", email = "joseph@liquidsdr.org"}]
 dependencies = []
 readme = "README.rst"
-license = "MIT" # {file = "LICENSE"}
+license = {file = "LICENSE"}
 keywords = ["digital","signal","processing","DSP","software-defined radio","SDR"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -35,6 +35,7 @@ Changelog = "https://github.com/jgaeddert/liquid-dsp/blob/master/CHANGELOG.md"
 [tool.scikit-build]
 cmake.verbose = true
 logging.level = "INFO"
+cmake.args = ["-DBUILD_PYTHON=ON", "-DBUILD_EXAMPLES=OFF", "-DBUILD_AUTOTESTS=OFF", "-DBUILD_BENCHMARKS=OFF"]
 #metadata.version.provider = "scikit_build_core.metadata.setuptools_scm"
 #sdist.include = ["_version.py"]
 

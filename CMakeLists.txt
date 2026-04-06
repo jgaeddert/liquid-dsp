@@ -1,5 +1,5 @@
 # cmake build file for liquid-dsp
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
 # parse version number from include/liquid.h
 include(cmake/version.cmake)
@@ -1017,6 +1017,7 @@ if(BUILD_PYTHON)
         $<TARGET_OBJECTS:audio>
         $<TARGET_OBJECTS:buffer>
         $<TARGET_OBJECTS:channel>
+        $<TARGET_OBJECTS:core>
         $<TARGET_OBJECTS:dotprod>
         $<TARGET_OBJECTS:equalization>
         $<TARGET_OBJECTS:fec>
