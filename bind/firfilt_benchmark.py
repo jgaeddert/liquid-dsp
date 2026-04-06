@@ -2,6 +2,8 @@
 '''benchmark firfilt object'''
 import argparse, time
 import liquid as dsp, numpy as np, matplotlib.pyplot as plt
+
+# parse command-line arguments
 p = argparse.ArgumentParser(description=__doc__)
 p.add_argument('-nodisplay', action='store_true', help='disable display')
 args = p.parse_args()
