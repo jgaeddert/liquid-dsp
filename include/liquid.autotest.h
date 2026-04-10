@@ -155,7 +155,7 @@ int liquid_registry_print(const liquid_autotest * _registry);
 
 // export registry to JSON file
 int liquid_registry_json(const liquid_autotest * _registry,
-                         const char *            _filename);
+                         FILE *                  _fid);
 
 // define a registry as an array of tests. Note that we use the 'weak'
 // attribute in case we want to link this file against another program

@@ -205,41 +205,22 @@ int liquid_registry_print(const liquid_autotest * _registry)
 
 // export results to JSON
 int liquid_registry_json(const liquid_autotest * _registry,
-                         const char *            _filename)
+                         FILE *                  _fid)
 {
-    // try to open output file for writing
-    FILE * fid = fopen(_filename,"w");
-    if (fid == NULL)
-        return liquid_error(LIQUID_EIO,"could not open '%s' for writing", _filename);
-
     // retrieve summary of runs
     struct liquid_registry_info_s info = liquid_registry_info(_registry);
 
-    // print header
-    time_t now;
-    time(&now);
-    char timestamp[80];
-    strftime(timestamp,80,"%c",localtime(&now));
-    fprintf(fid,"{\n");
-    fprintf(fid,"  \"build-info\" : {},\n");
-    fprintf(fid,"  \"timestamp\" : \"%s\",\n", timestamp);
-    fprintf(fid,"  \"pass\" : %s,\n", info.num_tests_fail==0 ? "true" : "false");
-    fprintf(fid,"  \"num_failed\" : %d,\n", info.num_checks_fail);
-    fprintf(fid,"  \"num_checks\" : %d,\n", info.num_checks_pass + info.num_checks_fail);
-    fprintf(fid,"  \"num_warnings\" : %d,\n", info.num_checks_warn);
-    fprintf(fid,"  \"command-line\" : \"");
-    //for (i=0; i<(unsigned int)argc; i++)
-    //    fprintf(fid," %s", argv[i]);
-    fprintf(fid,"\",\n");
-    fprintf(fid,"  \"rseed\" : %u,\n", 0); //rseed);
-    fprintf(fid,"  \"stop-on-fail\" : %s,\n", "false"); //stop_on_fail ? "true" : "false");
-    fprintf(fid,"  \"tests\" : [\n");
     // print status
+    fprintf(_fid,"  \"pass\" : %s,\n", info.num_tests_fail==0 ? "true" : "false");
+    fprintf(_fid,"  \"num_failed\" : %d,\n", info.num_checks_fail);
+    fprintf(_fid,"  \"num_checks\" : %d,\n", info.num_checks_pass + info.num_checks_fail);
+    fprintf(_fid,"  \"num_warnings\" : %d,\n", info.num_checks_warn);
+    fprintf(_fid,"  \"tests\" : [\n");
     unsigned int i;
     for (i=0; i<info.num_tests; i++)
     {
         liquid_autotest test = _registry[i];
-        fprintf(fid,"    {\"id\":%4u, \"pass\":%s \"num_checks\":%4u, \"num_passed\":%4u, \"extime\":%12.4e, \"name\":\"%s\"}%s\n",
+        fprintf(_fid,"    {\"id\":%4u, \"pass\":%s \"num_checks\":%4u, \"num_passed\":%4u, \"extime\":%12.4e, \"name\":\"%s\"}%s\n",
                 i,
                 test->num_fail == 0 ? "true, " : "false,",
                 test->num_pass + test->num_fail,
@@ -248,10 +229,7 @@ int liquid_registry_json(const liquid_autotest * _registry,
                 test->name,
                 (i == info.num_tests-1) ? "" : ",");
     }
-    fprintf(fid,"  ]\n");
-    fprintf(fid,"}\n");
-    fclose(fid);
-    liquid_log_info("output JSON results written to %s", _filename);
+    fprintf(_fid,"  ]\n");
     return LIQUID_OK;
 }
 

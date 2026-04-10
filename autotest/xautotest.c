@@ -82,8 +82,37 @@ int main(int argc, char* argv[])
     // print summary
     int rc = liquid_registry_print(liquid_autotest_registry);
 
+    // export JSON if requested
     if (strcmp(json,""))
-        liquid_registry_json(liquid_autotest_registry, json);
+    {
+        // try to open output file for writing
+        FILE * fid = fopen(json,"w");
+        if (fid == NULL)
+            return liquid_error(LIQUID_EIO,"could not open '%s' for writing", json);
+
+        // print header
+        time_t now;
+        time(&now);
+        char timestamp[80];
+        strftime(timestamp,80,"%c",localtime(&now));
+        fprintf(fid,"{\n");
+        fprintf(fid,"  \"build-info\" : {},\n");
+        fprintf(fid,"  \"timestamp\" : \"%s\",\n", timestamp);
+        fprintf(fid,"  \"command-line\" : \"");
+        for (i=0; i<(unsigned int)argc; i++)
+            fprintf(fid," %s", argv[i]);
+        fprintf(fid,"\",\n");
+        fprintf(fid,"  \"rseed\" : %u,\n", 0); //random_seed);
+        fprintf(fid,"  \"stop-on-fail\" : %s,\n", stop_fail ? "true" : "false");
+
+        // print registry results
+        liquid_registry_json(liquid_autotest_registry, fid);
+
+        // finalize JSON output
+        fprintf(fid,"}\n");
+        fclose(fid);
+        liquid_log_info("output JSON results written to %s", json);
+    }
 
     return rc;
 }
