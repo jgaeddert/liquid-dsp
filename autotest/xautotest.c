@@ -24,11 +24,12 @@ int main(int argc, char* argv[])
 
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    liquid_argparse_add(char*,logfile, "", 'g', "output logfile", NULL);
-    liquid_argparse_add(char*,json,    "", 'o', "output JSON file", NULL);
-    liquid_argparse_add(bool, list, false, 'l', "list tests and exit", NULL);
-    liquid_argparse_add(int,  test_id, -1, 't', "run a specific test", NULL);
-    liquid_argparse_add(char*,search,  "", 's', "run tests with search string in name", NULL);
+    liquid_argparse_add(int,  test_id,       -1, 't', "run a specific test", NULL);
+    liquid_argparse_add(bool, list,       false, 'l', "list tests and exit", NULL);
+    liquid_argparse_add(bool, stop_fail,  false, 'x', "stop on fail", NULL);
+    liquid_argparse_add(char*,search,        "", 's', "run tests with search string in name", NULL);
+    liquid_argparse_add(char*,json,          "", 'o', "output JSON file", NULL);
+    liquid_argparse_add(char*,logfile,       "", 'g', "output logfile", NULL);
     liquid_argparse_parse(argc,argv);
 
     if (strcmp(logfile,""))
@@ -60,12 +61,18 @@ int main(int argc, char* argv[])
 
     // run all scheduled tests
     i = 0;
+    bool continue_running = true;
     while (liquid_autotest_registry[i] != NULL)
     {
         liquid_autotest autotest = liquid_autotest_registry[i];
-        if (autotest->status == LIQUID_AUTOTEST_SCHED)
+        if (!continue_running) {
+            // skip remaining tests
+            autotest->status = LIQUID_AUTOTEST_SKIP;
+        } else if (autotest->status == LIQUID_AUTOTEST_SCHED)
         {
             liquid_autotest_execute(autotest);
+            if (autotest->num_fail && stop_fail)
+                continue_running = false;
         } else if (autotest->status == LIQUID_AUTOTEST_SKIP) {
             //liquid_log_trace("skipping test '%s'\n", autotest->docstr);
         }
