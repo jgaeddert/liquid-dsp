@@ -289,7 +289,7 @@ int liquid_argparse_print(struct liquid_argparse_s * _q,
     liquid_print_doc(_q->docstr, linewidth, indent, state, false);
     printf("\n\n");
     printf("options:\n");
-    unsigned int i;
+    int i;
     for (i=0; i<_q->num_args; i++)
         liquid_arg_print(_q->args + i);
     return LIQUID_OK;
@@ -304,7 +304,7 @@ int liquid_argparse_print_json(struct liquid_argparse_s * _q,
     printf("  \"description\":\"%s\",\n",_q->docstr);
     printf("  \"options\":\n");
     printf("  [\n");
-    unsigned int i;
+    int i;
     for (i=0; i<_q->num_args; i++) {
         printf("    ");
         liquid_arg_print_json(_q->args + i);
@@ -410,7 +410,6 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
     struct liquid_argparse_s __parser;                                          \
     __parser.docstr = DOCSTR;                                                   \
     __parser.num_args = 0;                                                      \
-    __parser.num_args = 0;                                                      \
     __parser.optstr[0] = '\0';                                                  \
     /* ensure 'h', 'j' are reserved for help */                                 \
     __parser.help = false;                                                      \
@@ -421,7 +420,8 @@ int liquid_argparse_set(struct liquid_argparse_s * _q,
     liquid_argparse_append(&__parser, "bool", (void*)&__parser.json, "json",    \
         'j', "print this help file as JSON and exit", NULL);                    \
     liquid_argparse_append(&__parser, "char*",(void*)&__parser.logfmt,"logfmt", \
-        'G', "custom logging configuration", liquid_argparse_logging);          \
+        'L', "custom logging configuration, example: full,debug,~line",         \
+        liquid_argparse_logging);                                               \
 
 // add option to list of arguments
 #define liquid_argparse_add(TYPE, VAR, DEFAULT, KEY, HELP, FUNC)                \

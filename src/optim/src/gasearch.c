@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,12 +29,358 @@
 #include <string.h>
 #include <math.h>
 
-#include "liquid.internal.h"
+#include "liquid.h"
 
 #define LIQUID_GA_SEARCH_MAX_POPULATION_SIZE (1024)
 #define LIQUID_GA_SEARCH_MAX_CHROMOSOME_SIZE (32)
 
 #define LIQUID_DEBUG_GA_SEARCH 0
+
+#define LIQUID_CHROMOSOME_MAX_SIZE (32)
+
+// forward declaration of internal methods
+
+// evaluate fitness of entire population
+int gasearch_evaluate(gasearch _q);
+
+// crossover population
+int gasearch_crossover(gasearch _q);
+
+// mutate population
+int gasearch_mutate(gasearch _q);
+
+// rank population by fitness
+int gasearch_rank(gasearch _q);
+
+// Chromosome structure used in genetic algorithm searches
+struct chromosome_s {
+    unsigned int num_traits;            // number of represented traits
+    unsigned int * bits_per_trait;      // bits to represent each trait
+    unsigned long * max_value;          // maximum representable integer value
+    unsigned long * traits;             // chromosome data
+
+    unsigned int num_bits;              // total number of bits
+};
+
+// genetic algorithm search object
+struct gasearch_s
+{
+    chromosome * population;            // population of chromosomes
+    unsigned int population_size;       // size of the population
+    unsigned int selection_size;        // number of 
+    float mutation_rate;                // rate of mutation
+
+    unsigned int num_parameters;        // number of parameters to optimize
+    unsigned int bits_per_chromosome;   // total number of bits in each chromosome
+
+    float *utility;                     // utility array
+    unsigned int *rank;                 // rank indices of chromosomes (best to worst)
+
+    chromosome c;                       // copy of best chromosome, optimal solution
+    float utility_opt;                  // optimum utility (fitness of best solution)
+
+    // External utility function.
+    //
+    // The success of a GA search algorithm is contingent upon the
+    // design of a good utility function.  It should meet the following
+    // criteria:
+    //   - monotonically increasing (never flat)
+    //   - efficient to compute
+    //   - maps the [0,1] bounded output vector to desired range
+    //   - for multiple objectives, utility should be high \em only when
+    //         all objectives are met (multiplicative, not additive)
+    gasearch_utility get_utility;       // utility function pointer
+    void * userdata;                    // object to optimize
+    int minimize;                       // minimize/maximize utility (search direction)
+};
+
+
+// create chromosome with varying bits/trait
+//  _bits_per_trait     :   array of bits/trait [size: _num_traits x 1]
+//  _num_traits         :   number of traits in this chromosome
+chromosome chromosome_create(unsigned int * _bits_per_trait,
+                             unsigned int   _num_traits)
+{
+    // validate input
+    unsigned int i;
+    if (_num_traits < 1)
+        return liquid_error_config("chromosome_create(), must have at least one trait");
+    for (i=0; i<_num_traits; i++) {
+        if (_bits_per_trait[i] > LIQUID_CHROMOSOME_MAX_SIZE)
+            return liquid_error_config("chromosome_create(), bits/trait cannot exceed %u", LIQUID_CHROMOSOME_MAX_SIZE);
+    }
+
+    chromosome q;
+    q = (chromosome) malloc( sizeof(struct chromosome_s) );
+    q->num_traits = _num_traits;
+
+    // initialize internal arrays
+    q->bits_per_trait = (unsigned int *) malloc(q->num_traits*sizeof(unsigned int));
+    q->max_value =      (unsigned long*) malloc(q->num_traits*sizeof(unsigned long));
+    q->traits =         (unsigned long*) malloc(q->num_traits*sizeof(unsigned long));
+
+    // copy/initialize values
+    q->num_bits = 0;
+    for (i=0; i<q->num_traits; i++) {
+        q->bits_per_trait[i] = _bits_per_trait[i];
+
+        q->max_value[i] = 1LU << q->bits_per_trait[i];
+        q->traits[i] = 0LU;
+
+        q->num_bits += q->bits_per_trait[i];
+    }
+
+    return q;
+}
+
+// create basic chromosome
+//  _num_traits         :   number of traits in this chromosome
+//  _bits_per_trait     :   number of bits/trait for all traits
+chromosome chromosome_create_basic(unsigned int _num_traits,
+                                   unsigned int _bits_per_trait)
+{
+    // validate input
+    if (_num_traits == 0)
+        return liquid_error_config("chromosome_create_basic(), must have at least one trait");
+    if (_bits_per_trait == 0 || _bits_per_trait > 64)
+        return liquid_error_config("chromosome_create_basic(), bits per trait out of range");
+
+    unsigned int * bpt = (unsigned int *) malloc(_num_traits*sizeof(unsigned int));
+    unsigned int i;
+    for (i=0; i<_num_traits; i++)
+        bpt[i] = _bits_per_trait;
+
+    // create chromosome
+    chromosome q = chromosome_create(bpt, _num_traits);
+
+    // free bits/trait array
+    free(bpt);
+
+    return q;
+}
+
+// create chromosome cloning a parent
+chromosome chromosome_create_clone(chromosome _parent)
+{
+    // create chromosome
+    chromosome q = chromosome_create(_parent->bits_per_trait,
+                                     _parent->num_traits);
+
+    // copy internal values
+    chromosome_copy(_parent, q);
+
+    return q;
+}
+
+// copy chromosome
+int chromosome_copy(chromosome _parent,
+                    chromosome _child)
+{
+    // copy internal values
+    unsigned int i;
+    for (i=0; i<_parent->num_traits; i++)
+        _child->traits[i] = _parent->traits[i];
+    return LIQUID_OK;
+}
+
+int chromosome_destroy(chromosome _q)
+{
+    free(_q->bits_per_trait);
+    free(_q->max_value);
+    free(_q->traits);
+    free(_q);
+    return LIQUID_OK;
+}
+
+unsigned int chromosome_get_num_traits(chromosome _q)
+{
+    return _q->num_traits;
+}
+
+int chromosome_print(chromosome _q)
+{
+    unsigned int i,j;
+    printf("<liquid.chromosome, ");
+    // print one bit at a time
+    for (i=0; i<_q->num_traits; i++) {
+        for (j=0; j<_q->bits_per_trait[i]; j++) {
+            unsigned int bit = (_q->traits[i] >> (_q->bits_per_trait[i]-j-1) ) & 1;
+            printf("%c", bit ? '1' : '0');
+        }
+        
+        if (i != _q->num_traits-1)
+            printf(".");
+    }
+    printf(">\n");
+    return LIQUID_OK;
+}
+
+int chromosome_printf(chromosome _q)
+{
+    unsigned int i;
+    printf("<liquid.chromosome, ");
+    for (i=0; i<_q->num_traits; i++)
+        printf("%6.3f", chromosome_valuef(_q,i));
+    printf(">\n");
+    return LIQUID_OK;
+}
+
+// clear chromosome (set traits to zero)
+int chromosome_reset(chromosome _q)
+{
+    unsigned int i;
+    for (i=0; i<_q->num_traits; i++)
+        _q->traits[i] = 0;
+    return LIQUID_OK;
+}
+
+// initialize chromosome on integer values
+int chromosome_init(chromosome     _c,
+                    unsigned int * _v)
+{
+    unsigned int i;
+    for (i=0; i<_c->num_traits; i++) {
+        //printf("===> [%3u] bits:%3u, max:%12lu, value:%12lu\n", i, _c->bits_per_trait[i], _c->max_value[i], _v[i]);
+        if (_v[i] >= _c->max_value[i])
+            return liquid_error(LIQUID_EIRANGE,"chromosome_init(), value exceeds maximum");
+
+        _c->traits[i] = _v[i];
+    }
+    return LIQUID_OK;
+}
+
+// initialize chromosome on floating-point values
+int chromosome_initf(chromosome _c,
+                     float *    _v)
+{
+    unsigned int i;
+    for (i=0; i<_c->num_traits; i++) {
+        if (_v[i] < 0.0f || _v[i] > 1.0f)
+            return liquid_error(LIQUID_EIRANGE,"chromosome_initf(), value must be in [0,1]");
+
+        // quantize sample
+        unsigned long N = 1LU << _c->bits_per_trait[i];
+        _c->traits[i] = (unsigned long) floorf( _v[i] * N );
+        //printf("===> [%3u] quantizing %8.2f, bits:%3u, N:%12lu, trait:%12lu/%12lu => %12.8f\n",
+        //    i, _v[i], _c->bits_per_trait[i], N, _c->traits[i], _c->max_value[i], chromosome_valuef(_c,i));
+    }
+    return LIQUID_OK;
+}
+
+// mutate bit at _index
+int chromosome_mutate(chromosome   _q,
+                      unsigned int _index)
+{
+    if (_index >= _q->num_bits)
+        return liquid_error(LIQUID_EIRANGE,"chromosome_mutate(), maximum index exceeded");
+
+    // search for
+    unsigned int i;
+    unsigned int t=0;
+    for (i=0; i<_q->num_traits; i++) {
+        unsigned int b = _q->bits_per_trait[i];
+        if (t == _index) {
+            _q->traits[i] ^= (unsigned long)(1LU << (b-1));
+            return LIQUID_OK;
+        } else if (t > _index) {
+            _q->traits[i-1] ^= (unsigned long)(1LU << (t-_index-1));
+            return LIQUID_OK;
+        } else {
+            t += b;
+        }
+    }
+
+    _q->traits[i-1] ^= (unsigned long)(1 << (t-_index-1));
+    return LIQUID_OK;
+}
+
+// crossover parent chromosomes and store in child
+//  _p1         :   first parent chromosome
+//  _p2         :   second parent chromosome
+//  _q          :   child chromosome
+//  _threshold  :   crossover point
+int chromosome_crossover(chromosome   _p1,
+                         chromosome   _p2,
+                         chromosome   _q,
+                         unsigned int _threshold)
+{
+    if (_threshold > _q->num_bits)
+        return liquid_error(LIQUID_EIRANGE,"chromosome_crossover(), maximum index exceeded");
+
+    // TODO : validate input on all properties of _p1, _p2, and _q
+
+    // find crossover point
+    unsigned int i;
+    unsigned int t=0;
+    for (i=0; i<_q->num_traits; i++) {
+        if (t >= _threshold)
+            break;
+        else
+            t += _q->bits_per_trait[i];
+
+        // child gets first parent's traits up until
+        // threshold is reached
+        _q->traits[i] = _p1->traits[i];
+    }
+
+#if 0
+    printf("  crossover point   : %u\n", i);
+    printf("  accumulator       : %u\n", t);
+    printf("  remainder         : %u\n", t - _threshold);
+#endif
+
+    // determine if trait is split
+    unsigned int rem = t - _threshold;
+    if (rem > 0) {
+        // split trait on remainder
+        unsigned int b = _q->bits_per_trait[i-1];
+        unsigned int mask1 = ((1 << (b-rem)) - 1) << rem;
+        unsigned int mask2 = ((1 << rem    ) - 1);
+        _q->traits[i-1] = (_p1->traits[i-1] & mask1) |
+                          (_p2->traits[i-1] & mask2);
+#if 0
+        printf("  b                 : %u\n", b);
+        printf("  mask1             : %.8x\n", mask1);
+        printf("  mask2             : %.8x\n", mask2);
+#endif
+    }
+
+    // finish crossover
+    for ( ; i<_q->num_traits; i++) {
+        // child gets second parent's traits beyond threshold
+        _q->traits[i] = _p2->traits[i];
+    }
+    return LIQUID_OK;
+}
+    
+int chromosome_init_random(chromosome _q)
+{
+    unsigned int i;
+    for (i=0; i<_q->num_traits; i++)
+        _q->traits[i] = rand() & (_q->max_value[i]-1LU);
+    return LIQUID_OK;
+}
+
+float chromosome_valuef(chromosome   _q,
+                        unsigned int _index)
+{
+    if (_index > _q->num_traits) {
+        liquid_error(LIQUID_EIRANGE,"chromosome_valuef(), trait index exceeded");
+        return 0.0f;
+    }
+    return (float) (_q->traits[_index]) / (float)(_q->max_value[_index]-1LU);
+}
+
+unsigned int chromosome_value(chromosome   _q,
+                              unsigned int _index)
+{
+    if (_index > _q->num_traits) {
+        liquid_error(LIQUID_EIRANGE,"chromosome_value(), trait index exceeded");
+        return 0.0f;
+    }
+    return _q->traits[_index];
+}
+
 
 // Create a simple gasearch object; parameters are specified internally
 //  _utility            :   chromosome fitness utility function

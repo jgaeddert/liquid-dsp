@@ -110,7 +110,7 @@ const char * liquid_error_str[LIQUID_NUM_ERRORS] = {
 // get error string given code
 const char * liquid_error_info(liquid_error_code _code)
 {
-    if (_code < 0 || _code >= LIQUID_NUM_ERRORS) {
+    if (_code >= LIQUID_NUM_ERRORS) {
         liquid_error(LIQUID_EIMODE,"error code %d is out of range", _code);
         return NULL;
     }

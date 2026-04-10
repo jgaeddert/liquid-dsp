@@ -35,6 +35,13 @@ extern "C" {
 #include <stdio.h>
 #include <time.h>
 
+// compile-time short file path: use __FILE_NAME__ if available (Clang 9+, GCC 12+)
+#ifdef __FILE_NAME__
+#  define LIQUID_FILENAME __FILE_NAME__
+#else
+#  define LIQUID_FILENAME __FILE__
+#endif
+
 //
 // Make sure the version and version number macros weren't defined by
 // some previously included header file.
@@ -80,7 +87,7 @@ int liquid_libversion_number(void);
 // run-time library validation
 #define LIQUID_VALIDATE_LIBVERSION                                          \
   if (LIQUID_VERSION_NUMBER != liquid_libversion_number()) {                \
-    fprintf(stderr,"%s:%u: ", __FILE__,__LINE__);                           \
+    fprintf(stderr,"%s:%u: ", LIQUID_FILENAME,__LINE__);                    \
     fprintf(stderr,"error: invalid liquid runtime library\n");              \
     fprintf(stderr,"  header version  : %d\n", LIQUID_VERSION_NUMBER);      \
     fprintf(stderr,"  library version : %d\n", liquid_libversion_number()); \
@@ -95,11 +102,11 @@ void * liquid_error_config_fl(const char * _file, int _line, const char * _forma
 
 // macro to get file name and line number for source of error
 #define liquid_error(code, format, ...) \
-    liquid_error_fl(code, __FILE__, __LINE__, format, ##__VA_ARGS__);
+    liquid_error_fl(code, LIQUID_FILENAME, __LINE__, format, ##__VA_ARGS__);
 
 // macro to get file name and line number for source of error (invalid object)
 #define liquid_error_config(format, ...) \
-    liquid_error_config_fl(__FILE__, __LINE__, format, ##__VA_ARGS__);
+    liquid_error_config_fl(LIQUID_FILENAME, __LINE__, format, ##__VA_ARGS__);
 
 // basic error types
 #define LIQUID_NUM_ERRORS 14
@@ -190,9 +197,9 @@ const char *        liquid_error_info(liquid_error_code _code);
 // log level options
 #define LIQUID_LOG_LEVEL_BRACKETS   (1U << 15) // "[trace]"
 // filename options (choose one or none)
-#define LIQUID_LOG_FILENAME         (1U << 12) // "/path/to/my/source/file.c"
-#define LIQUID_LOG_FILENAME_SHORT   (1U << 11) // "file.c"
-#define LIQUID_LOG_FILENAME_TRUNC   (1U << 10) // "...source/file.c"
+#define LIQUID_LOG_FILENAME         (1U << 12) // "source_file.c"
+#define LIQUID_LOG_FILENAME_SHORT   (1U << 11) // "       source_file.c"
+#define LIQUID_LOG_FILENAME_TRUNC   (1U << 10) // "…urce_file.c"
 // line number options
 #define LIQUID_LOG_LINE             (1U <<  8) // "/path/to/my/source/file.c:123"
 // color options
@@ -200,11 +207,19 @@ const char *        liquid_error_info(liquid_error_code _code);
 
 // preset: compact detail
 #define LIQUID_LOG_COMPACT \
-  (LIQUID_LOG_TIME | LIQUID_LOG_LEVEL_ONE | LIQUID_LOG_LEVEL_BRACKETS | LIQUID_LOG_COLOR)
+  (LIQUID_LOG_TIME | \
+   LIQUID_LOG_LEVEL_BRACKETS | LIQUID_LOG_LEVEL_ONE | \
+   LIQUID_LOG_COLOR)
 
-// preset: medium detail (default)
-#define LIQUID_LOG_DEFAULT \
-  (LIQUID_LOG_DATETIME | LIQUID_LOG_MS | \
+// preset: short detail
+#define LIQUID_LOG_SHORT \
+  (LIQUID_LOG_TIME | \
+   LIQUID_LOG_LEVEL_BRACKETS | LIQUID_LOG_LEVEL_SHORT | \
+   LIQUID_LOG_COLOR)
+
+// preset: medium detail
+#define LIQUID_LOG_MEDIUM \
+  (LIQUID_LOG_DATETIME | \
    LIQUID_LOG_LEVEL_BRACKETS | LIQUID_LOG_LEVEL_SHORT | \
    LIQUID_LOG_FILENAME_SHORT | LIQUID_LOG_LINE | LIQUID_LOG_COLOR)
 
@@ -214,14 +229,23 @@ const char *        liquid_error_info(liquid_error_code _code);
    LIQUID_LOG_LEVEL_BRACKETS | LIQUID_LOG_LEVEL_FULL | \
    LIQUID_LOG_FILENAME | LIQUID_LOG_LINE | LIQUID_LOG_COLOR)
 
+// default preset
+#define LIQUID_LOG_DEFAULT LIQUID_LOG_SHORT
+
 // number of available logging levels
 #define LIQUID_LOG_NUM_LEVELS (6)
 
+// logging event struct pointer
 typedef struct liquid_log_event_s * liquid_log_event;
-typedef struct liquid_logger_s    * liquid_logger;
+
+// custom logging object capable of handling output to stdout or file,
+// custom callback functions, custom formatting, and run-time level selection
+typedef struct liquid_logger_s * liquid_logger;
 
 // logging callback function
-typedef int (*liquid_log_callback)(liquid_log_event event, void * context, int config);
+typedef int (*liquid_log_callback)(liquid_log_event event,
+                                   void * context,
+                                   int config);
 
 // lock callback function
 typedef int (*liquid_lock_callback)(int _lock, void * context);
@@ -306,20 +330,43 @@ FILE * liquid_logger_add_filename(liquid_logger _q,
 // get the number of callbacks currently used
 unsigned int liquid_logger_get_num_callbacks(liquid_logger q);
 
-// get the number of log events
+// get the total number of log events
 unsigned int liquid_logger_get_num_events(liquid_logger q);
-unsigned int liquid_logger_get_num_trace (liquid_logger q);
-unsigned int liquid_logger_get_num_debug (liquid_logger q);
-unsigned int liquid_logger_get_num_info  (liquid_logger q);
-unsigned int liquid_logger_get_num_warn  (liquid_logger q);
-unsigned int liquid_logger_get_num_error (liquid_logger q);
-unsigned int liquid_logger_get_num_fatal (liquid_logger q);
 
-// append a log message
+// get the number of "trace" log events
+unsigned int liquid_logger_get_num_trace(liquid_logger q);
+
+// get the number of "debug" log events
+unsigned int liquid_logger_get_num_debug(liquid_logger q);
+
+// get the number of "info" log events
+unsigned int liquid_logger_get_num_info(liquid_logger q);
+
+// get the number of "warning" log events
+unsigned int liquid_logger_get_num_warn(liquid_logger q);
+
+// get the number of "error" log events
+unsigned int liquid_logger_get_num_error(liquid_logger q);
+
+// get the number of "fatal" log events
+unsigned int liquid_logger_get_num_fatal(liquid_logger q);
+
+// append a log message to the logger
+//  _q      : logging object
+//  _level  : priority of the event
+//  _file   : name of the file which is calling this event
+//  _line   : the line number within the file where this event is called
+//  _format : string format (see "printf") for the variadic arguments
 int liquid_log(liquid_logger _q, int _level, const char * _file,
                int _line, const char * _format, ...);
 
-// append a log message with variable arguments
+// append a log message to the logger with variable arguments
+//  _q      : logging object
+//  _level  : priority of the event
+//  _file   : name of the file which is calling this event
+//  _line   : the line number within the file where this event is called
+//  _format : string format (see "printf") for the variadic arguments
+//  _ap     : variadic arguments (see "vprintf") for output formatting
 int liquid_vlog(liquid_logger _q, int _level, const char * _file,
                 int _line, const char * _format, va_list _ap);
 
@@ -351,45 +398,56 @@ enum {
     LIQUID_FATAL
 };
 
-#ifdef LIQUID_LOG_TRACE
-#  define liquid_log_trace(...) liquid_log(NULL,LIQUID_TRACE,__FILE__,__LINE__,__VA_ARGS__)
+// compile-time logging level
+#ifndef LIQUID_LOG_LEVEL_COMPILE
+#  define LIQUID_LOG_LEVEL_COMPILE 0
+#endif
+
+// convenience method for logging "trace"
+#if LIQUID_LOG_LEVEL_COMPILE <= 0
+#  define liquid_log_trace(...) liquid_log(NULL,LIQUID_TRACE,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_trace(...) {}
 #endif
 
-#ifdef LIQUID_LOG_DEBUG
-#  define liquid_log_debug(...) liquid_log(NULL,LIQUID_DEBUG,__FILE__,__LINE__,__VA_ARGS__)
+// convenience method for logging "debug"
+#if LIQUID_LOG_LEVEL_COMPILE <= 1
+#  define liquid_log_debug(...) liquid_log(NULL,LIQUID_DEBUG,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_debug(...) {}
 #endif
 
-#ifdef LIQUID_LOG_INFO
-#  define liquid_log_info(...)  liquid_log(NULL,LIQUID_INFO, __FILE__,__LINE__,__VA_ARGS__)
+// convenience method for logging "info"
+#if LIQUID_LOG_LEVEL_COMPILE <= 2
+#  define liquid_log_info(...)  liquid_log(NULL,LIQUID_INFO, LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_info(...) {}
 #endif
 
-#ifdef LIQUID_LOG_WARN
-#  define liquid_log_warn(...)  liquid_log(NULL,LIQUID_WARN, __FILE__,__LINE__,__VA_ARGS__)
+// convenience method for logging "warn"
+#if LIQUID_LOG_LEVEL_COMPILE <= 3
+#  define liquid_log_warn(...)  liquid_log(NULL,LIQUID_WARN, LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_warn(...) {}
 #endif
 
-#ifdef LIQUID_LOG_ERROR
-#  define liquid_log_error(...) liquid_log(NULL,LIQUID_ERROR,__FILE__,__LINE__,__VA_ARGS__)
+// convenience method for logging "error"
+#if LIQUID_LOG_LEVEL_COMPILE <= 4
+#  define liquid_log_error(...) liquid_log(NULL,LIQUID_ERROR,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_error(...) {}
 #endif
 
-#ifdef LIQUID_LOG_FATAL
-#  define liquid_log_fatal(...) liquid_log(NULL,LIQUID_FATAL,__FILE__,__LINE__,__VA_ARGS__)
+// convenience method for logging "fatal"
+#if LIQUID_LOG_LEVEL_COMPILE <= 5
+#  define liquid_log_fatal(...) liquid_log(NULL,LIQUID_FATAL,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
 #else
 #  define liquid_log_fatal(...) {}
 #endif
 
 
 // provide exit value based on global logging
-int liquid_exit();
+//int liquid_exit();
 
 // macro concatenation
 #define LIQUID_CONCAT(prefix, name) prefix ## name
@@ -9860,6 +9918,28 @@ LIQUID_SYNTH_DEFINE_API(SYNTH_MANGLE_FLOAT, float, liquid_float_complex)
 // MODULE : optimization
 //
 
+// optimization threshold switch
+//  _u0         :   first utility
+//  _u1         :   second utility
+//  _minimize   :   minimize flag
+//
+// returns:
+//  (_u0 > _u1) if (_minimize == 1)
+//  (_u0 < _u1) otherwise
+int optim_threshold_switch(float _u0,
+                           float _u1,
+                           int _minimize);
+
+// sort candidate values by index
+//  _v          :   input values, [size: _len x 1]
+//  _rank       :   output rank array (indices) [size: _len x 1]
+//  _len        :   length of input array
+//  _descending :   descending/ascending
+void optim_sort(float *_v,
+                unsigned int * _rank,
+                unsigned int _len,
+                int _descending);
+
 // utility function pointer definition
 typedef float (*utility_function)(void *       _userdata,
                                   float *      _v,
@@ -10599,18 +10679,107 @@ int liquid_rcircshift(unsigned char * _src,
                       unsigned int _n,
                       unsigned int _b);
 
-// Count the number of ones in an integer
+// Count the number of ones in a 16-bit integer
+unsigned int liquid_count_ones_uint16(uint16_t _x);
+
+// Count the number of ones in a 32-bit integer
+unsigned int liquid_count_ones_uint32(uint32_t _x);
+
+// Count the number of ones in an integer (native length)
 unsigned int liquid_count_ones(unsigned int _x);
 
-// count number of ones in an integer, modulo 2
+// Count the number of ones in a 16-bit integer, modulo 2
+unsigned int liquid_count_ones_mod2_uint16(uint16_t _x);
+
+// Count the number of ones in a 32-bit integer, modulo 2
+unsigned int liquid_count_ones_mod2_uint32(uint32_t _x);
+
+// Count number of ones in an integer (native length), modulo 2
 unsigned int liquid_count_ones_mod2(unsigned int _x);
 
 // compute bindary dot-product between two integers
 unsigned int liquid_bdotprod(unsigned int _x,
                              unsigned int _y);
 
+// compute binary dot products on 8-bit words
+unsigned int liquid_bdotprod_uint8(uint8_t _x, uint8_t _y);
+
+// compute binary dot products on 16-bit words
+unsigned int liquid_bdotprod_uint16(uint16_t _x, uint16_t _y);
+
+// compute binary dot products on 32-bit words
+unsigned int liquid_bdotprod_uint32(uint32_t _x, uint32_t _y);
+
 // Count leading zeros in an integer
 unsigned int liquid_count_leading_zeros(unsigned int _x);
+
+// number of ones in a byte
+//  0   0000 0000   :   0
+//  1   0000 0001   :   1
+//  2   0000 0010   :   1
+//  3   0000 0011   :   2
+//  4   0000 0100   :   1
+//  ...
+//  126 0111 1110   :   6
+//  127 0111 1111   :   7
+//  128 1000 0000   :   1
+//  129 1000 0001   :   2
+//  ...
+//  253 1111 1101   :   7
+//  254 1111 1110   :   7
+//  255 1111 1111   :   8
+extern const unsigned char liquid_c_ones[256];
+
+// number of ones in a byte, modulo 2
+//  0   0000 0000   :   0
+//  1   0000 0001   :   1
+//  2   0000 0010   :   1
+//  3   0000 0011   :   0
+//  4   0000 0100   :   1
+//  ...
+//  126 0111 1110   :   0
+//  127 0111 1111   :   1
+//  128 1000 0000   :   1
+//  129 1000 0001   :   0
+//  ...
+//  253 1111 1101   :   1
+//  254 1111 1110   :   1
+//  255 1111 1111   :   0
+extern const unsigned char liquid_c_ones_mod2[256];
+
+// number of leading zeros in byte
+//  0   0000 0000   :   8
+//  1   0000 0001   :   7
+//  2   0000 0010   :   6
+//  3   0000 0011   :   6
+//  4   0000 0100   :   5
+//  ...
+//  126 0111 1110   :   1
+//  127 0111 1111   :   1
+//  128 1000 0000   :   0
+//  129 1000 0001   :   0
+//  ...
+//  253 1111 1101   :   0
+//  254 1111 1110   :   0
+//  255 1111 1111   :   0
+extern unsigned int liquid_c_leading_zeros[256];
+
+// byte reversal and manipulation
+//  0   0000 0000   :   0000 0000
+//  1   0000 0001   :   1000 0000
+//  2   0000 0010   :   0100 0000
+//  3   0000 0011   :   1100 0000
+//  4   0000 0100   :   0010 0000
+//  ...
+//  126 0111 1110   :   0111 1110
+//  127 0111 1111   :   1111 1110
+//  128 1000 0000   :   0000 0001
+//  129 1000 0001   :   1000 0001
+//  ...
+//  253 1111 1101   :   1011 1111
+//  254 1111 1110   :   0111 1111
+//  255 1111 1111   :   1111 1111
+extern const unsigned char liquid_reverse_byte_gentab[256];
 
 // Most-significant bit index
 unsigned int liquid_msb_index(unsigned int _x);

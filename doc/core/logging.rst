@@ -90,14 +90,6 @@ If your terminal does not support color output, you can explicitly disable all A
 color flags
 with the ``cmake`` flag ``-D ENABLE_COLOR=OFF``.
 
-.. comment Future options
-
-    * File path delimiter, e.g. "/", for parsing paths
-    * Truncate file path to local build directory. That is, instead of
-      ``/home/username/src/liquid-dsp/src/core/src/logging.c`` just use
-      ``liquid-dsp/src/core/logging.c``.
-      There is probably a way to do this on POSIX systems with CMake
-
 
 Run-Time Formatting Options
 ---------------------------
@@ -120,8 +112,6 @@ permit using the higher resolution
 `timespec <https://en.cppreference.com/w/c/chrono/timespec.html>`_
 object.
 Choose one of the base format options:
-
-.. todo:: include relative time from start?
 
 ``LIQUID_LOG_RAWTIME``
     Display the raw timestamp in terms of seconds from :c:`time(NULL);`
@@ -206,22 +196,22 @@ File and Line Number Options
 You can print the filename by choosing one of the following methods for truncation:
 
 ``LIQUID_LOG_FILENAME``
-    Log the full filename to the screen
-    Example: ``/path/to/my/source/file.c``
+    Log the full local filename to the screen, regardless of its length.
+    Example: ``source_file.c``
 
 ``LIQUID_LOG_FILENAME_SHORT``
-    Log just the local file, assuming a "/" delimiter
-    Example: ``file.c``
+    Log just the local file ensuring a 20-character width (truncated and/or padded).
+    Example: ``       source_file.c``
 
 ``LIQUID_LOG_FILENAME_TRUNC``
-    Log a truncated version of the file if the name extends
-    too long, e.g. ``...source/file.c``
+    Log just the local file ensuring a 12-character width (truncated and/or padded).
+    ``…urce_file.c``
 
 Optionally you can enable displaying the line number:
 
 ``LIQUID_LOG_LINE``
     Include the line number.
-    Example: ``/path/to/my/source/file.c:123``
+    Example: ``source_file.c:123``
 
 
 Color Options
@@ -239,18 +229,106 @@ Presets
 ^^^^^^^
 
 ``LIQUID_LOG_COMPACT``
-    Compact representation of
+    Compact representation with minimal detail.
     Example:
     ``09:25:46 [I] message with (2) value``
 
-``LIQUID_LOG_DEFAULT``
-    Medium detail, default configuration.
+``LIQUID_LOG_SHORT``
+    Short detail (default configuration). ``LIQUID_LOG_DEFAULT`` maps to this.
     Example:
-    ``2026-02-22 08:18:35.123 [info ] …les/logging_extensive_example.c:29: message with (2) value``
+    ``08:18:35 [info ] message with (2) value``
+
+``LIQUID_LOG_MEDIUM``
+    Medium detail, showing date, time, filename, and line.
+    Example:
+    ``2026-02-22 08:18:35 [info ] …extensive_example.c:29: message with (2) value``
 
 ``LIQUID_LOG_FULL``
     Full detail with as much information as available
-    ``2026-02-22 08:18:35.123 [info] /path/to/liquid-dsp/logging-dev/examples/logging_extensive_example.c:29: message with (2) value``
+    ``2026-02-22 08:18:35.123 [info] logging_extensive_example.c:29: message with (2) value``
+
+
+.. _logging_command_line:
+
+Run-time Command-line Configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+While |liquid| provides granularity for how logging works using,
+it is convenient to specify logging levels and options from the command line
+rather than having to re-compile the program.
+When used in conjunction with liquid's **argparse** functionality,
+you can completely define how logging works using the command line alone
+using comma-separated options with the ``-L`` flag.
+For example to run the autotest program with full logging down to the
+``debug`` level but not showing the line numbers, run the following:
+
+.. code-block:: bash
+
+    ./xautotest -L full,debug,~line
+
+Here is the full list of options:
+
++-------------------+-----------------------------------+
+| String value      | Enumeration                       |
++===================+===================================+
+| "compact"         | ``LIQUID_LOG_COMPACT``            |   
++-------------------+-----------------------------------+
+| "short"           | ``LIQUID_LOG_SHORT``              |
++-------------------+-----------------------------------+
+| "medium"          | ``LIQUID_LOG_MEDIUM``             |
++-------------------+-----------------------------------+
+| "full"            | ``LIQUID_LOG_FULL``               |
++-------------------+-----------------------------------+
+| "default"         | ``LIQUID_LOG_DEFAULT``            |
++-------------------+-----------------------------------+
+| "trace"           | ``LIQUID_TRACE``                  |
++-------------------+-----------------------------------+
+| "debug"           | ``LIQUID_DEBUG``                  |
++-------------------+-----------------------------------+
+| "info"            | ``LIQUID_INFO``                   |
++-------------------+-----------------------------------+
+| "warn"            | ``LIQUID_WARN``                   |
++-------------------+-----------------------------------+
+| "error"           | ``LIQUID_ERROR``                  |
++-------------------+-----------------------------------+
+| "fatal"           | ``LIQUID_FATAL``                  |
++-------------------+-----------------------------------+
+| "rawtime"         | ``LIQUID_LOG_RAWTIME``            |
++-------------------+-----------------------------------+
+| "datetime"        | ``LIQUID_LOG_DATETIME``           |
++-------------------+-----------------------------------+
+| "date"            | ``LIQUID_LOG_DATE``               |
++-------------------+-----------------------------------+
+| "time"            | ``LIQUID_LOG_TIME``               |
++-------------------+-----------------------------------+
+| "utc"             | ``LIQUID_LOG_UTC``                |
++-------------------+-----------------------------------+
+| "ms"              | ``LIQUID_LOG_MS``                 |
++-------------------+-----------------------------------+
+| "us"              | ``LIQUID_LOG_US``                 |
++-------------------+-----------------------------------+
+| "ns"              | ``LIQUID_LOG_NS``                 |
++-------------------+-----------------------------------+
+| "level_full"      | ``LIQUID_LOG_LEVEL_FULL``         |
++-------------------+-----------------------------------+
+| "level_short"     | ``LIQUID_LOG_LEVEL_SHORT``        |
++-------------------+-----------------------------------+
+| "level_one"       | ``LIQUID_LOG_LEVEL_ONE``          |
++-------------------+-----------------------------------+
+| "level_number"    | ``LIQUID_LOG_LEVEL_NUMBER``       |
++-------------------+-----------------------------------+
+| "level_brackets"  | ``LIQUID_LOG_LEVEL_BRACKETS``     |
++-------------------+-----------------------------------+
+| "filename"        | ``LIQUID_LOG_FILENAME``           |
++-------------------+-----------------------------------+
+| "filename_short"  | ``LIQUID_LOG_FILENAME_SHORT``     |
++-------------------+-----------------------------------+
+| "filename_trunc"  | ``LIQUID_LOG_FILENAME_TRUNC``     |
++-------------------+-----------------------------------+
+| "line"            | ``LIQUID_LOG_LINE``               |
++-------------------+-----------------------------------+
+| "color"           | ``LIQUID_LOG_COLOR``              |
++-------------------+-----------------------------------+
 
 Logging to File
 ---------------

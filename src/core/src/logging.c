@@ -193,8 +193,8 @@ int liquid_logger_callback_stream(liquid_log_event _event,
     // print file/line
     int smax = 0;
     if      (_config & LIQUID_LOG_FILENAME      ) { smax = -1; }
-    else if (_config & LIQUID_LOG_FILENAME_SHORT) { smax = 32; } // TODO: clip filename
-    else if (_config & LIQUID_LOG_FILENAME_TRUNC) { smax = 20; }
+    else if (_config & LIQUID_LOG_FILENAME_SHORT) { smax = 20; } // TODO: clip filename
+    else if (_config & LIQUID_LOG_FILENAME_TRUNC) { smax = 12; }
     liquid_logger_stream_file_line(_event, _stream, enable_color, smax, _config & LIQUID_LOG_LINE);
 
     // parse variadic function arguments
@@ -359,8 +359,10 @@ int liquid_logger_set_config_str(liquid_logger _q, const char * _config)
     {
         // presets
         if      (strcmp(token,"compact")==0) { config = LIQUID_LOG_COMPACT; continue; }
-        else if (strcmp(token,"default")==0) { config = LIQUID_LOG_DEFAULT; continue; }
+        else if (strcmp(token,"short"  )==0) { config = LIQUID_LOG_SHORT;   continue; }
+        else if (strcmp(token,"medium" )==0) { config = LIQUID_LOG_MEDIUM;  continue; }
         else if (strcmp(token,"full"   )==0) { config = LIQUID_LOG_FULL;    continue; }
+        else if (strcmp(token,"default")==0) { config = LIQUID_LOG_DEFAULT; continue; }
         // logging levels
         else if (strcmp(token,"trace"  )==0) { level = LIQUID_TRACE; continue; }
         else if (strcmp(token,"debug"  )==0) { level = LIQUID_DEBUG; continue; }
@@ -599,8 +601,8 @@ int liquid_vlog(liquid_logger _q,
 
 int liquid_exit()
 {
-    return (qlog.count[LIQUID_LOG_NUM_LEVELS-1] + qlog.count[LIQUID_LOG_NUM_LEVELS-2])
-        ? -1 : 0;
+    return liquid_logger_get_num_warn(NULL) +
+           liquid_logger_get_num_error(NULL);
 }
 
 #else // LIQUID_LOGGING_ENABLE
@@ -687,6 +689,11 @@ int liquid_vlog(liquid_logger _q, int _level, const char * _file,
     vprintf(_format, _ap);
     printf("\n");
     return LIQUID_OK;
+}
+
+int liquid_exit()
+{
+    return 0;
 }
 
 #endif

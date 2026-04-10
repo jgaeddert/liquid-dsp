@@ -26,7 +26,7 @@ int main(int argc, char*argv[])
     liquid_argparse_add(bool, filename,  false, 'F', "LIQUID_LOG_FILENAME",       NULL);
     liquid_argparse_add(bool, filename_s,false, 'S', "LIQUID_LOG_FILENAME_SHORT", NULL);
     liquid_argparse_add(bool, filename_t,false, 'T', "LIQUID_LOG_FILENAME_TRUNC", NULL);
-    liquid_argparse_add(bool, line,      false, 'L', "LIQUID_LOG_LINE",           NULL);
+    liquid_argparse_add(bool, line,      false, 'l', "LIQUID_LOG_LINE",           NULL);
     liquid_argparse_add(bool, color,     false, 'C', "LIQUID_LOG_COLOR",          NULL);
     liquid_argparse_parse(argc,argv);
 

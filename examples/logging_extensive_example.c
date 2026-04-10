@@ -45,16 +45,20 @@ int main(int argc, char*argv[])
     liquid_logger_set_config(NULL, LIQUID_LOG_DEFAULT & ~LIQUID_LOG_COLOR);
     sweep_levels(NULL);
 
-    printf("\nsetting default logging (with color)\n");
-    liquid_logger_set_config(NULL, LIQUID_LOG_DEFAULT);
+    printf("\nsetting compact logging\n");
+    liquid_logger_set_config(NULL, LIQUID_LOG_COMPACT);
+    sweep_levels(NULL);
+
+    printf("\nsetting short logging (default)\n");
+    liquid_logger_set_config(NULL, LIQUID_LOG_SHORT);
+    sweep_levels(NULL);
+
+    printf("\nsetting medium logging\n");
+    liquid_logger_set_config(NULL, LIQUID_LOG_MEDIUM);
     sweep_levels(NULL);
 
     printf("\nsetting full logging\n");
     liquid_logger_set_config(NULL, LIQUID_LOG_FULL);
-    sweep_levels(NULL);
-
-    printf("\nsetting compact logging\n");
-    liquid_logger_set_config(NULL, LIQUID_LOG_COMPACT);
     sweep_levels(NULL);
 
     printf("\nsetting custom log format\n");

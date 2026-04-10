@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,52 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "liquid.internal.h"
+#include "liquid.h"
 
 #define DEBUG_GRADSEARCH 0
+
+// forward declaration of internal methods
+
+// compute the gradient of a function at a particular point
+//  _utility    :   user-defined function
+//  _userdata   :   user-defined data object
+//  _x          :   operating point, [size: _n x 1]
+//  _n          :   dimensionality of search
+//  _delta      :   step value for which to compute gradient
+//  _gradient   :   resulting gradient
+int gradsearch_gradient(utility_function _utility,
+                        void  *          _userdata,
+                        float *          _x,
+                        unsigned int     _n,
+                        float            _delta,
+                        float *          _gradient);
+
+// execute line search; loosely solve:
+//
+//    min|max phi(alpha) := f(_x - alpha*_p)
+//
+// and return best guess at alpha that achieves this
+//
+//  _utility    :   user-defined function
+//  _userdata   :   user-defined data object
+//  _direction  :   search direction (e.g. LIQUID_OPTIM_MINIMIZE)
+//  _n          :   dimensionality of search
+//  _x          :   operating point, [size: _n x 1]
+//  _p          :   normalized gradient, [size: _n x 1]
+//  _alpha      :   initial step size
+float gradsearch_linesearch(utility_function _utility,
+                            void  *          _userdata,
+                            int              _direction,
+                            unsigned int     _n,
+                            float *          _x,
+                            float *          _p,
+                            float            _alpha);
+
+// normalize vector, returning its l2-norm
+float gradsearch_norm(float *      _v,
+                      unsigned int _n);
+
+
 
 // gradient search algorithm (steepest descent) object
 struct gradsearch_s {
@@ -216,12 +259,12 @@ float gradsearch_execute(gradsearch   _q,
 //  _n          :   dimensionality of search
 //  _delta      :   step value for which to compute gradient
 //  _gradient   :   resulting gradient
-void gradsearch_gradient(utility_function _utility,
-                         void  *          _userdata,
-                         float *          _x,
-                         unsigned int     _n,
-                         float            _delta,
-                         float *          _gradient)
+int gradsearch_gradient(utility_function _utility,
+                        void  *          _userdata,
+                        float *          _x,
+                        unsigned int     _n,
+                        float            _delta,
+                        float *          _gradient)
 {
     // operating point for evaluation
     float x_prime[_n];
@@ -244,6 +287,7 @@ void gradsearch_gradient(utility_function _utility,
         // compute gradient estimate
         _gradient[i] = (u_prime - u0) / _delta;
     }
+    return LIQUID_OK;
 }
 
 // execute line search; loosely solve:

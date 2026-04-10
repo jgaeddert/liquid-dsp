@@ -180,6 +180,7 @@ extern struct liquid_autotest_s firpfbch_crcf_synthesis_s;
 extern struct liquid_autotest_s gasearch_peak_s;
 extern struct liquid_autotest_s chromosome_config_s;
 extern struct liquid_autotest_s gasearch_config_s;
+extern struct liquid_autotest_s chromosome_s;
 // ./src/optim/tests/qs1dsearch_autotest.c
 extern struct liquid_autotest_s qs1dsearch_min_01_s;
 extern struct liquid_autotest_s qs1dsearch_min_02_s;
@@ -1646,6 +1647,7 @@ liquid_autotest liquid_autotest_registry[] =
     &gasearch_peak_s,
     &chromosome_config_s,
     &gasearch_config_s,
+    &chromosome_s,
     &qs1dsearch_min_01_s,
     &qs1dsearch_min_02_s,
     &qs1dsearch_min_03_s,
