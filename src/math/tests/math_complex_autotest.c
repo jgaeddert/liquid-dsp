@@ -28,7 +28,7 @@ LIQUID_AUTOTEST(cexpf,"complex exponential","",0.1)
     float tol = 1e-3f;
 
     unsigned int n = 32;
-    float complex z[32] = {
+    liquid_float_complex z[32] = {
         2.721502e+00+_Complex_I* -8.449366e-01,   2.264794e+00+_Complex_I*  2.387520e+00,
         3.293179e+00+_Complex_I* -2.419589e+00,  -1.318218e+00+_Complex_I*  2.145837e+00,
        -1.777802e+00+_Complex_I*  4.317598e-01,  -1.808236e-01+_Complex_I*  1.030967e+00,
@@ -46,7 +46,7 @@ LIQUID_AUTOTEST(cexpf,"complex exponential","",0.1)
        -3.486629e+00+_Complex_I* -3.839816e+00,  -3.383861e-01+_Complex_I* -3.495233e+00,
        -2.093760e+00+_Complex_I*  3.765073e+00,   3.217665e+00+_Complex_I*  2.807358e+00 };
 
-    float complex test[32] = {
+    liquid_float_complex test[32] = {
         1.009152e+01+_Complex_I* -1.137087e+01,  -7.018747e+00+_Complex_I*  6.592232e+00,
        -2.020926e+01+_Complex_I* -1.779666e+01,  -1.455457e-01+_Complex_I*  2.245718e-01,
         1.534993e-01+_Complex_I*  7.072523e-02,   4.289666e-01+_Complex_I*  7.159020e-01,
@@ -66,7 +66,7 @@ LIQUID_AUTOTEST(cexpf,"complex exponential","",0.1)
 
     unsigned int i;
     for (i=0; i<n; i++) {
-        float complex t = liquid_cexpf(z[i]);
+        liquid_float_complex t = liquid_cexpf(z[i]);
 
         LIQUID_CHECK_DELTA(crealf(t), crealf(test[i]), tol);
         LIQUID_CHECK_DELTA(cimagf(t), cimagf(test[i]), tol);
@@ -79,7 +79,7 @@ LIQUID_AUTOTEST(clogf,"complex log","",0.1)
     float tol = 1e-3f;
 
     unsigned int n = 32;
-    float complex z[32] = {
+    liquid_float_complex z[32] = {
         2.7215e+00+_Complex_I* -8.4494e-01,   2.2648e+00+_Complex_I*  2.3875e+00,
         3.2932e+00+_Complex_I* -2.4196e+00,  -1.3182e+00+_Complex_I*  2.1458e+00,
        -1.7778e+00+_Complex_I*  4.3176e-01,  -1.8082e-01+_Complex_I*  1.0310e+00,
@@ -97,7 +97,7 @@ LIQUID_AUTOTEST(clogf,"complex log","",0.1)
        -3.4866e+00+_Complex_I* -3.8398e+00,  -3.3839e-01+_Complex_I* -3.4952e+00,
        -2.0938e+00+_Complex_I*  3.7651e+00,   3.2177e+00+_Complex_I*  2.8074e+00};
 
-    float complex test[32] = {
+    liquid_float_complex test[32] = {
         1.0472e+00+_Complex_I* -3.0103e-01,   1.1911e+00+_Complex_I*  8.1177e-01,
         1.4077e+00+_Complex_I* -6.3365e-01,   9.2362e-01+_Complex_I*  2.1217e+00,
         6.0403e-01+_Complex_I*  2.9033e+00,   4.5647e-02+_Complex_I*  1.7444e+00,
@@ -117,7 +117,7 @@ LIQUID_AUTOTEST(clogf,"complex log","",0.1)
 
     unsigned int i;
     for (i=0; i<n; i++) {
-        float complex t = liquid_clogf(z[i]);
+        liquid_float_complex t = liquid_clogf(z[i]);
 
         LIQUID_CHECK_DELTA(crealf(t), crealf(test[i]), tol);
         LIQUID_CHECK_DELTA(cimagf(t), cimagf(test[i]), tol);
@@ -129,7 +129,7 @@ LIQUID_AUTOTEST(csqrtf,"complex square root","",0.1)
     float tol = 1e-3f;
 
     unsigned int n = 32;
-    float complex z[32] = {
+    liquid_float_complex z[32] = {
         1.3608e+00+_Complex_I* -4.2247e-01,   1.1324e+00+_Complex_I*  1.1938e+00,
         1.6466e+00+_Complex_I* -1.2098e+00,  -6.5911e-01+_Complex_I*  1.0729e+00,
        -8.8890e-01+_Complex_I*  2.1588e-01,  -9.0412e-02+_Complex_I*  5.1548e-01,
@@ -147,7 +147,7 @@ LIQUID_AUTOTEST(csqrtf,"complex square root","",0.1)
        -1.7433e+00+_Complex_I* -1.9199e+00,  -1.6919e-01+_Complex_I* -1.7476e+00,
        -1.0469e+00+_Complex_I*  1.8825e+00,   1.6088e+00+_Complex_I*  1.4037e+00};
 
-    float complex test[32] = {
+    liquid_float_complex test[32] = {
         1.1802e+00+_Complex_I* -1.7899e-01,   1.1785e+00+_Complex_I*  5.0647e-01,
         1.3583e+00+_Complex_I* -4.4534e-01,   5.4776e-01+_Complex_I*  9.7936e-01,
         1.1366e-01+_Complex_I*  9.4964e-01,   4.6526e-01+_Complex_I*  5.5397e-01,
@@ -167,7 +167,7 @@ LIQUID_AUTOTEST(csqrtf,"complex square root","",0.1)
 
     unsigned int i;
     for (i=0; i<n; i++) {
-        float complex t = liquid_csqrtf(z[i]);
+        liquid_float_complex t = liquid_csqrtf(z[i]);
 
         LIQUID_CHECK_DELTA(crealf(t), crealf(test[i]), tol);
         LIQUID_CHECK_DELTA(cimagf(t), cimagf(test[i]), tol);
@@ -180,7 +180,7 @@ LIQUID_AUTOTEST(casinf,"complex arc-sine","",0.1)
 
     unsigned int n = 32;
 
-    float complex z[32] = {
+    liquid_float_complex z[32] = {
         1.3608e+00+_Complex_I* -4.2247e-01,   1.1324e+00+_Complex_I*  1.1938e+00,
         1.6466e+00+_Complex_I* -1.2098e+00,  -6.5911e-01+_Complex_I*  1.0729e+00,
        -8.8890e-01+_Complex_I*  2.1588e-01,  -9.0412e-02+_Complex_I*  5.1548e-01,
@@ -198,7 +198,7 @@ LIQUID_AUTOTEST(casinf,"complex arc-sine","",0.1)
        -1.7433e+00+_Complex_I* -1.9199e+00,  -1.6919e-01+_Complex_I* -1.7476e+00,
        -1.0469e+00+_Complex_I*  1.8825e+00,   1.6088e+00+_Complex_I*  1.4037e+00 };
 
-    float complex test[32] = {
+    liquid_float_complex test[32] = {
         1.1716e+00+_Complex_I* -9.4147e-01,   6.7048e-01+_Complex_I*  1.2078e+00,
         8.7747e-01+_Complex_I* -1.3947e+00,  -4.3898e-01+_Complex_I*  1.0065e+00,
        -9.7768e-01+_Complex_I*  3.7722e-01,  -8.0395e-02+_Complex_I*  4.9650e-01,
@@ -218,7 +218,7 @@ LIQUID_AUTOTEST(casinf,"complex arc-sine","",0.1)
 
     unsigned int i;
     for (i=0; i<n; i++) {
-        float complex t = liquid_casinf(z[i]);
+        liquid_float_complex t = liquid_casinf(z[i]);
 
         LIQUID_CHECK_DELTA(crealf(t), crealf(test[i]), tol);
         LIQUID_CHECK_DELTA(cimagf(t), cimagf(test[i]), tol);
@@ -231,7 +231,7 @@ LIQUID_AUTOTEST(cacosf,"complex arc-cosine","",0.1)
 
     unsigned int n = 32;
 
-    float complex z[32] = {
+    liquid_float_complex z[32] = {
         1.3608e+00+_Complex_I* -4.2247e-01,   1.1324e+00+_Complex_I*  1.1938e+00,
         1.6466e+00+_Complex_I* -1.2098e+00,  -6.5911e-01+_Complex_I*  1.0729e+00,
        -8.8890e-01+_Complex_I*  2.1588e-01,  -9.0412e-02+_Complex_I*  5.1548e-01,
@@ -250,7 +250,7 @@ LIQUID_AUTOTEST(cacosf,"complex arc-cosine","",0.1)
        -1.0469e+00+_Complex_I*  1.8825e+00,   1.6088e+00+_Complex_I*  1.4037e+00,
       };
 
-    float complex test[32] = {
+    liquid_float_complex test[32] = {
         3.9923e-01+_Complex_I*  9.4147e-01,   9.0032e-01+_Complex_I* -1.2078e+00,
         6.9333e-01+_Complex_I*  1.3947e+00,   2.0098e+00+_Complex_I* -1.0065e+00,
         2.5485e+00+_Complex_I* -3.7722e-01,   1.6512e+00+_Complex_I* -4.9650e-01,
@@ -270,7 +270,7 @@ LIQUID_AUTOTEST(cacosf,"complex arc-cosine","",0.1)
 
     unsigned int i;
     for (i=0; i<n; i++) {
-        float complex t = liquid_cacosf(z[i]);
+        liquid_float_complex t = liquid_cacosf(z[i]);
 
         LIQUID_CHECK_DELTA(crealf(t), crealf(test[i]), tol);
         LIQUID_CHECK_DELTA(cimagf(t), cimagf(test[i]), tol);
@@ -283,7 +283,7 @@ LIQUID_AUTOTEST(catanf,"complex arc-tangent","",0.1)
 
     unsigned int n = 32;
 
-    float complex z[32] = {
+    liquid_float_complex z[32] = {
         1.3608e+00+_Complex_I* -4.2247e-01,   1.1324e+00+_Complex_I*  1.1938e+00,
         1.6466e+00+_Complex_I* -1.2098e+00,  -6.5911e-01+_Complex_I*  1.0729e+00,
        -8.8890e-01+_Complex_I*  2.1588e-01,  -9.0412e-02+_Complex_I*  5.1548e-01,
@@ -301,7 +301,7 @@ LIQUID_AUTOTEST(catanf,"complex arc-tangent","",0.1)
        -1.7433e+00+_Complex_I* -1.9199e+00,  -1.6919e-01+_Complex_I* -1.7476e+00,
        -1.0469e+00+_Complex_I*  1.8825e+00,   1.6088e+00+_Complex_I*  1.4037e+00 };
 
-    float complex test[32] = {
+    liquid_float_complex test[32] = {
         9.6632e-01+_Complex_I* -1.4321e-01,   1.1084e+00+_Complex_I*  3.8248e-01,
         1.1690e+00+_Complex_I* -2.5348e-01,  -9.9442e-01+_Complex_I*  5.9395e-01,
        -7.3961e-01+_Complex_I*  1.1977e-01,  -1.2203e-01+_Complex_I*  5.6250e-01,
@@ -321,7 +321,7 @@ LIQUID_AUTOTEST(catanf,"complex arc-tangent","",0.1)
 
     unsigned int i;
     for (i=0; i<n; i++) {
-        float complex t = liquid_catanf(z[i]);
+        liquid_float_complex t = liquid_catanf(z[i]);
 
         LIQUID_CHECK_DELTA(crealf(t), crealf(test[i]), tol);
         LIQUID_CHECK_DELTA(cimagf(t), cimagf(test[i]), tol);

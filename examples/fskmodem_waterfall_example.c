@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the M-ary frequency-shift keying"
 " (MFSK) modem in liquid by showing the resulting spectral"
 " waterfall.";
@@ -9,6 +9,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -49,8 +50,8 @@ int main(int argc, char*argv[])
     // create modulator/demodulator pair
     fskmod mod = fskmod_create(m,k,bandwidth);
 
-    float complex buf_tx[k];    // transmit buffer
-    float complex buf_rx[k];    // transmit buffer
+    LIQUID_VLA(liquid_float_complex, buf_tx, k);    // transmit buffer
+    LIQUID_VLA(liquid_float_complex, buf_rx, k);    // transmit buffer
 
     // modulate, demodulate, count errors
     unsigned int i, j;

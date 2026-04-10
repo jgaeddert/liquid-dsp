@@ -24,7 +24,9 @@
 // Complex floating-point channel
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.internal.h"
 
 // naming extensions (useful for print statements)
@@ -40,9 +42,9 @@
 #define TVMPCH(name)    LIQUID_CONCAT(tvmpch_cccf,name)
 #define WINDOW(name)    LIQUID_CONCAT(windowcf,name)
 
-#define TO              float complex   // output type
-#define TC              float complex   // coefficients type
-#define TI              float complex   // input type
+#define TO              liquid_float_complex   // output type
+#define TC              liquid_float_complex   // coefficients type
+#define TI              liquid_float_complex   // input type
 #define T               float           // primitive type
 
 #define PRINTVAL_TC(X,F) PRINTVAL_CFLOAT(X,F)

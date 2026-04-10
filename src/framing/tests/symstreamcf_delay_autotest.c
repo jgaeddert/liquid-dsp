@@ -41,7 +41,7 @@ void testbench_symstreamcf_delay(liquid_autotest __q__,
     unsigned int i;
     for (i=0; i<1000 + delay; i++) {
         // generate a single sample
-        float complex sample;
+        liquid_float_complex sample;
         symstreamcf_write_samples(gen, &sample, 1);
 
         // check to see if value exceeds 1

@@ -1,8 +1,9 @@
-char __docstr__[] = "Demonstration of wdelayf object";
+const char __docstr__[] = "Demonstration of wdelayf object";
 
 #include <stdio.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])

@@ -46,18 +46,18 @@ IIRHILB() IIRHILB(_create)(liquid_iirdes_filtertype _ftype,
 {
     // validate iirhilb inputs
     if (_n == 0)
-        return liquid_error_config("iirhilb_create(), filter order must be greater than zero");
+        return liquid_error_config_ptr(IIRHILB(), "iirhilb_create(), filter order must be greater than zero");
 
     // allocate memory for main object
     IIRHILB() q = (IIRHILB()) malloc(sizeof(struct IIRHILB(_s)));
 
     // design filters
-    int     btype  = LIQUID_IIRDES_LOWPASS; // filter band type
-    int     format = LIQUID_IIRDES_SOS;     // filter coefficients format
+    liquid_iirdes_bandtype btype  = LIQUID_IIRDES_LOWPASS; // filter band type
+    liquid_iirdes_format   format = LIQUID_IIRDES_SOS;     // filter coefficients format
     float   fc     =   0.25f;               // cutoff frequency [normalized]
     float   f0     =   0.0f;                // center frequency [normalized]
-    q->filt_0 = IIRFILT(_create_prototype)(_ftype,btype,format,_n,fc,f0,_ap,_as);
-    q->filt_1 = IIRFILT(_create_prototype)(_ftype,btype,format,_n,fc,f0,_ap,_as);
+    q->filt_0 = IIRFILT(_create_prototype)((liquid_iirdes_filtertype)_ftype,btype,format,_n,fc,f0,_ap,_as);
+    q->filt_1 = IIRFILT(_create_prototype)((liquid_iirdes_filtertype)_ftype,btype,format,_n,fc,f0,_ap,_as);
 
     // reset internal state and return object
     IIRHILB(_reset)(q);
@@ -70,9 +70,9 @@ IIRHILB() IIRHILB(_create_default)(unsigned int _n)
 {
     // validate iirhilb inputs
     if (_n == 0)
-        return liquid_error_config("iirhilb_create_default(), filter order must be greater than zero");
+        return liquid_error_config_ptr(IIRHILB(), "iirhilb_create_default(), filter order must be greater than zero");
 
-    int     ftype  = LIQUID_IIRDES_BUTTER;  // filter design type
+    liquid_iirdes_filtertype ftype = LIQUID_IIRDES_BUTTER;  // filter design type
     float   Ap     =   0.1f;                // pass-band ripple [dB]
     float   as     =   60.0f;               // stop-band attenuation [dB]
     return IIRHILB(_create)(ftype,_n,Ap,as);
@@ -82,7 +82,7 @@ IIRHILB() IIRHILB(_copy)(IIRHILB() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("iirhilb%s_copy(), object cannot be NULL", EXTENSION_SHORT);
+        return liquid_error_config_ptr(IIRHILB(), "iirhilb%s_copy(), object cannot be NULL", EXTENSION_SHORT);
 
     // create filter object and copy base parameters
     IIRHILB() q_copy = (IIRHILB()) malloc(sizeof(struct IIRHILB(_s)));
@@ -113,6 +113,7 @@ int IIRHILB(_destroy)(IIRHILB() _q)
 // print iirhilb object internals
 int IIRHILB(_print)(IIRHILB() _q)
 {
+    (void)_q;
     printf("<liquid.iirhilb>\n");
     return LIQUID_OK;
 }
@@ -137,7 +138,7 @@ int IIRHILB(_reset)(IIRHILB() _q)
 //  _y      :   complex-valued output sample
 int IIRHILB(_r2c_execute)(IIRHILB()   _q,
                           T           _x,
-                          T complex * _y)
+                          TCOMPLEX * _y)
 {
     // compute relevant output depending on state
     T yi = 0;
@@ -175,7 +176,7 @@ int IIRHILB(_r2c_execute)(IIRHILB()   _q,
 int IIRHILB(_r2c_execute_block)(IIRHILB()    _q,
                                 T *          _x,
                                 unsigned int _n,
-                                T complex *  _y)
+                                TCOMPLEX *  _y)
 {
     unsigned int i;
     for (i=0; i<_n; i++)
@@ -188,7 +189,7 @@ int IIRHILB(_r2c_execute_block)(IIRHILB()    _q,
 //  _y      :   complex-valued input sample
 //  _x      :   real-valued output sample
 int IIRHILB(_c2r_execute)(IIRHILB() _q,
-                          T complex _x,
+                          TCOMPLEX _x,
                           T *       _y)
 {
     // compute relevant output depending on state
@@ -224,7 +225,7 @@ int IIRHILB(_c2r_execute)(IIRHILB() _q,
 }
 // Execute Hilbert transform (complex to real) on a block of samples
 int IIRHILB(_c2r_execute_block)(IIRHILB()    _q,
-                                T complex *  _x,
+                                TCOMPLEX *  _x,
                                 unsigned int _n,
                                 T *          _y)
 {
@@ -240,7 +241,7 @@ int IIRHILB(_c2r_execute_block)(IIRHILB()    _q,
 //  _y      :   complex-valued output sample
 int IIRHILB(_decim_execute)(IIRHILB()   _q,
                             T *         _x,
-                            T complex * _y)
+                            TCOMPLEX * _y)
 {
     // mix down by Fs/4
     T xi = _q->state ? -_x[0] :  _x[0];
@@ -273,7 +274,7 @@ int IIRHILB(_decim_execute)(IIRHILB()   _q,
 int IIRHILB(_decim_execute_block)(IIRHILB()    _q,
                                   T *          _x,
                                   unsigned int _n,
-                                  T complex *  _y)
+                                  TCOMPLEX *  _y)
 {
     unsigned int i;
 
@@ -287,7 +288,7 @@ int IIRHILB(_decim_execute_block)(IIRHILB()    _q,
 //  _y      :   complex-valued input sample
 //  _x      :   real-valued output array [size: 2 x 1]
 int IIRHILB(_interp_execute)(IIRHILB() _q,
-                             T complex _x,
+                             TCOMPLEX _x,
                              T *       _y)
 {
     // upper branch
@@ -319,7 +320,7 @@ int IIRHILB(_interp_execute)(IIRHILB() _q,
 //  _n      :   number of *input* samples
 //  _y      :   real-valued output array [size: 2*_n x 1]
 int IIRHILB(_interp_execute_block)(IIRHILB()    _q,
-                                   T complex *  _x,
+                                   TCOMPLEX *  _x,
                                    unsigned int _n,
                                    T *          _y)
 {

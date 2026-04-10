@@ -1,8 +1,9 @@
-char __docstr__[] = "Test polynomial root-finding algorithm";
+const char __docstr__[] = "Test polynomial root-finding algorithm";
 
 #include <stdio.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -16,7 +17,7 @@ int main(int argc, char* argv[])
 
     // generate polynomial
     float p[6] = {6,11,-33,-33,11,6};
-    float complex roots[n-1];
+    LIQUID_VLA(liquid_float_complex, roots, n-1);
 
     // print polynomial
     printf("polynomial:\n");

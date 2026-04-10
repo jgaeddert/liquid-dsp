@@ -65,7 +65,7 @@ LIQUID_AUTOTEST(smatrixb_vmul,"test sparse binary matrix methods","",0.1)
     // generate vectors
     unsigned char x[12]     = {1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1};
     unsigned char y_test[8] = {1, 0, 1, 1, 0, 1, 0, 0};
-    unsigned char y[8];
+    LIQUID_VLA(unsigned char, y, 8);
 
     // multiply and run test
     smatrixb_vmul(A,x,y);
@@ -234,7 +234,7 @@ LIQUID_AUTOTEST(smatrixb_mulf,"","",0.1)
       -13.0,   -0.9,    5.3,
         8.2,   -1.4,    0.6};
 
-    float y[24];
+    LIQUID_VLA(float, y, 24);
 
     // multiply and run test
     smatrixb_mulf(A,
@@ -314,7 +314,7 @@ LIQUID_AUTOTEST(smatrixb_vmulf,"","",0.1)
     float y_test[8] = {
         3.4,   2.3,   4.4,  -1.4,   0.0,   1.2,   2.1,   6.5};
 
-    float y[8];
+    LIQUID_VLA(float, y, 8);
 
     // multiply and run test
     smatrixb_vmulf(A,x,y);

@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Direct digital synthesizer example.  This example demonstrates"
 " the interface to the direct digital synthesizer.  A baseband"
 " pulse is generated and then efficiently up-converted"
@@ -7,9 +7,12 @@ char __docstr__[] =
 " the same DDS object.  Results are written to a file.";
 
 #include <stdio.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -38,16 +41,16 @@ int main(int argc, char* argv[])
     fprintf(fid,"n=%u;\n", num_samples);
     fprintf(fid,"r=%u;\n", r);
 
-    float complex x[num_samples];
-    float complex y[r*num_samples];
-    float complex z[num_samples];
+    LIQUID_VLA(liquid_float_complex, x, num_samples);
+    LIQUID_VLA(liquid_float_complex, y, r*num_samples);
+    LIQUID_VLA(liquid_float_complex, z, num_samples);
 
     unsigned int i;
 
     // generate the baseband signal (filter pulse)
     unsigned int h_len = num_samples/2;
     h_len += num_samples % 2 ? 0 : 1;
-    float h[h_len];
+    LIQUID_VLA(float, h, h_len);
     liquid_firdes_kaiser(h_len,bw,60.0f,0.0f,h);
     for (i=0; i<num_samples; i++)
         x[i] = i < h_len ? 2*h[i]*bw : 0.0f;

@@ -56,11 +56,11 @@ RRESAMP() RRESAMP(_create)(unsigned int _interp,
 {
     // validate input
     if (_interp == 0)
-        return liquid_error_config("rresamp_%s_create(), interpolation rate must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(RRESAMP(), "rresamp_%s_create(), interpolation rate must be greater than zero", EXTENSION_FULL);
     if (_decim == 0)
-        return liquid_error_config("rresamp_%s_create(), decimation rate must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(RRESAMP(), "rresamp_%s_create(), decimation rate must be greater than zero", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("rresamp_%s_create(), filter semi-length must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(RRESAMP(), "rresamp_%s_create(), filter semi-length must be greater than zero", EXTENSION_FULL);
 
     // allocate memory for resampler
     RRESAMP() q = (RRESAMP()) malloc(sizeof(struct RRESAMP(_s)));
@@ -92,9 +92,9 @@ RRESAMP() RRESAMP(_create_kaiser)(unsigned int _interp,
                                   float        _as)
 {
     if (_interp == 0)
-        return liquid_error_config("rresamp_%s_create_kaiser(), interpolation rate must be greater than zero", EXTENSION_FULL);
+        return (RRESAMP())liquid_error_config("rresamp_%s_create_kaiser(), interpolation rate must be greater than zero", EXTENSION_FULL);
     if (_decim == 0)
-        return liquid_error_config("rresamp_%s_create_kaiser(), decimation rate must be greater than zero", EXTENSION_FULL);
+        return (RRESAMP())liquid_error_config("rresamp_%s_create_kaiser(), decimation rate must be greater than zero", EXTENSION_FULL);
 
     // scale interpolation and decimation factors by their greatest common divisor
     unsigned int gcd = liquid_gcd(_interp, _decim);
@@ -105,7 +105,7 @@ RRESAMP() RRESAMP(_create_kaiser)(unsigned int _interp,
     if (_bw < 0)
         _bw = _interp > _decim ? 0.5f : 0.5f * (float)_interp / (float)_decim;
     else if (_bw > 0.5f)
-        return liquid_error_config("rresamp_%s_create_kaiser(), invalid bandwidth (%g), must be less than 0.5", EXTENSION_FULL, _bw);
+        return liquid_error_config_ptr(RRESAMP(), "rresamp_%s_create_kaiser(), invalid bandwidth (%g), must be less than 0.5", EXTENSION_FULL, _bw);
 
     // Clamp bandwidth to tighter Nyquist limit to prevent aliasing when decim > interp
     float bw_guard = 0.5f * fminf(1.0f, (float)_interp / (float)_decim);
@@ -151,7 +151,7 @@ RRESAMP() RRESAMP(_create_prototype)(int          _type,
     unsigned int h_len = 2*k*_m + 1;                // filter length
     float * hf = (float*) malloc(h_len*sizeof(float));
     TC    * h  = (TC*)    malloc(h_len*sizeof(TC)   );
-    liquid_firdes_prototype(_type, k, _m, _beta, 0, hf);
+    liquid_firdes_prototype((liquid_firfilt_type)_type, k, _m, _beta, 0, hf);
 
     // convert to type-specific coefficients
     unsigned int i;
@@ -193,7 +193,7 @@ RRESAMP() RRESAMP(_copy)(RRESAMP() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("rresamp_%s_create(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(RRESAMP(), "rresamp_%s_create(), object cannot be NULL", EXTENSION_FULL);
 
     // create filter object and copy internal memory
     RRESAMP() q_copy = (RRESAMP()) malloc(sizeof(struct RRESAMP(_s)));

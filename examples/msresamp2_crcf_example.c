@@ -1,11 +1,14 @@
-char __docstr__[] = "Demonstration of the multi-stage half-band resampler";
+const char __docstr__[] = "Demonstration of the multi-stage half-band resampler";
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -52,8 +55,8 @@ int main(int argc, char* argv[])
     unsigned int wlen = round(0.75 * nx);
 
     // allocate memory for arrays
-    float complex x[nx];
-    float complex y[ny];
+    LIQUID_VLA(liquid_float_complex, x, nx);
+    LIQUID_VLA(liquid_float_complex, y, ny);
 
     // generate input signal: tone just before the edge of filter band
     float ftone = 0.95 * fc * ((type == LIQUID_RESAMP_DECIM) ? r : 1);
@@ -89,8 +92,8 @@ int main(int argc, char* argv[])
     // run FFT and ensure that carrier has moved and that image
     // frequencies and distortion have been adequately suppressed
     unsigned int nfft = 4 << liquid_nextpow2(n*M);
-    float complex yfft[nfft];   // fft input
-    float complex Yfft[nfft];   // fft output
+    LIQUID_VLA(liquid_float_complex, yfft, nfft);   // fft input
+    LIQUID_VLA(liquid_float_complex, Yfft, nfft);   // fft output
     for (i=0; i<nfft; i++)
         yfft[i] = i < ny ? y[i] : 0.0f;
     fft_run(nfft, yfft, Yfft, LIQUID_FFT_FORWARD, 0);

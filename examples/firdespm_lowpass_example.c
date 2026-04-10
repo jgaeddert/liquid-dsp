@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates a low-pass finite impulse response filter"
 " design using the Parks-McClellan algorithm.";
 
@@ -7,6 +7,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -26,7 +27,7 @@ int main(int argc, char* argv[])
     printf("  stop-band attenuation : %12.3f dB\n", As);
 
     // design the filter
-    float h[n];
+    LIQUID_VLA(float, h, n);
     firdespm_lowpass(n,fc,As,0,h);
 
     // open output file

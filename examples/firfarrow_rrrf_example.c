@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Demonstrates the functionality of the finite impulse response Farrow"
 " filter for arbitrary fractional sample group delay.";
 
@@ -7,6 +7,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -23,8 +24,8 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // data arrays
-    float x[num_samples];   // input data array
-    float y[num_samples];   // output data array
+    LIQUID_VLA(float, x, num_samples);   // input data array
+    LIQUID_VLA(float, y, num_samples);   // output data array
 
     // create and initialize Farrow filter object
     firfarrow_rrrf f = firfarrow_rrrf_create(h_len, p, fc, As);

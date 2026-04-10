@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the firinterp object (interpolator) interface."
 " Data symbols are generated and then interpolated according to a"
 " finite impulse response Nyquist filter.";
@@ -8,6 +8,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -37,8 +38,8 @@ int main(int argc, char* argv[])
     firinterp_crcf q = firinterp_crcf_create_kaiser(M,m,As);
 
     // generate input signal and interpolate
-    float complex x[num_syms_total];   // input symbols
-    float complex y[num_samples];   // output samples
+    LIQUID_VLA(liquid_float_complex, x, num_syms_total);   // input symbols
+    LIQUID_VLA(liquid_float_complex, y, num_samples);   // output samples
     unsigned int i;
     for (i=0; i<num_syms; i++) {
         x[i] = (rand() % 2 ? 1.0f : -1.0f) +

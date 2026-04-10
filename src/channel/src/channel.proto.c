@@ -85,7 +85,7 @@ CHANNEL() CHANNEL(_copy)(CHANNEL() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("channel_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(CHANNEL(), "channel_%s_copy(), object cannot be NULL", EXTENSION_FULL);
 
     // create filter object and copy base parameters
     CHANNEL() q_copy = (CHANNEL()) malloc(sizeof(struct CHANNEL(_s)));
@@ -191,7 +191,7 @@ int CHANNEL(_add_multipath)(CHANNEL()    _q,
     _q->enabled_multipath = 1;
 
     // set values appropriately
-    // TODO: test for types other than float complex
+    // TODO: test for types other than liquid_float_complex
     if (_q->h_len != _h_len)
         _q->h = (TC*) realloc(_q->h, _h_len*sizeof(TC));
 
@@ -261,7 +261,7 @@ int CHANNEL(_execute)(CHANNEL() _q,
                       TI        _x,
                       TO *      _y)
 {
-    float complex r;
+    liquid_float_complex r;
     // apply filter
     if (_q->enabled_multipath) {
         FIRFILT(_push)(   _q->channel_filter, _x);

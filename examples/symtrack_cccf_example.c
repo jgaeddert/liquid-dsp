@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates how to recover data symbols using the symtrack"
 " object. A stream of modulated and interpolated symbols are generated using"
 " the symstream object. The resulting samples are passed through a channel"
@@ -14,6 +14,7 @@ char __docstr__[] =
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -60,9 +61,9 @@ int main(int argc, char* argv[])
 
     // buffers
     unsigned int    buf_len = 800;      // buffer size
-    float complex   x   [buf_len];      // original signal
-    float complex   y   [buf_len];      // channel output
-    float complex   syms[buf_len];      // recovered symbols
+    LIQUID_VLA(liquid_float_complex, x, buf_len);      // original signal
+    LIQUID_VLA(liquid_float_complex, y, buf_len);      // channel output
+    LIQUID_VLA(liquid_float_complex, syms, buf_len);      // recovered symbols
     // window for saving last few symbols
     windowcf sym_buf = windowcf_create(buf_len);
 
@@ -113,7 +114,7 @@ int main(int argc, char* argv[])
     printf("total symbols: %u\n", total_symbols);
 
     // write accumulated power spectral density estimate
-    float psd[nfft];
+    LIQUID_VLA(float, psd, nfft);
     spgramcf_get_psd(periodogram, psd);
 
     //
@@ -126,7 +127,7 @@ int main(int argc, char* argv[])
     fprintf(fid,"close all;\n");
 
     // read buffer and write last symbols to file
-    float complex * rc;
+    liquid_float_complex * rc;
     windowcf_read(sym_buf, &rc);
     fprintf(fid,"syms = zeros(1,%u);\n", buf_len);
     unsigned int i;

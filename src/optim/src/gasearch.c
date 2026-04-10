@@ -104,10 +104,10 @@ chromosome chromosome_create(unsigned int * _bits_per_trait,
     // validate input
     unsigned int i;
     if (_num_traits < 1)
-        return liquid_error_config("chromosome_create(), must have at least one trait");
+        return (chromosome)liquid_error_config("chromosome_create(), must have at least one trait");
     for (i=0; i<_num_traits; i++) {
         if (_bits_per_trait[i] > LIQUID_CHROMOSOME_MAX_SIZE)
-            return liquid_error_config("chromosome_create(), bits/trait cannot exceed %u", LIQUID_CHROMOSOME_MAX_SIZE);
+            return (chromosome)liquid_error_config("chromosome_create(), bits/trait cannot exceed %u", LIQUID_CHROMOSOME_MAX_SIZE);
     }
 
     chromosome q;
@@ -141,9 +141,9 @@ chromosome chromosome_create_basic(unsigned int _num_traits,
 {
     // validate input
     if (_num_traits == 0)
-        return liquid_error_config("chromosome_create_basic(), must have at least one trait");
+        return (chromosome)liquid_error_config("chromosome_create_basic(), must have at least one trait");
     if (_bits_per_trait == 0 || _bits_per_trait > 64)
-        return liquid_error_config("chromosome_create_basic(), bits per trait out of range");
+        return (chromosome)liquid_error_config("chromosome_create_basic(), bits per trait out of range");
 
     unsigned int * bpt = (unsigned int *) malloc(_num_traits*sizeof(unsigned int));
     unsigned int i;
@@ -411,15 +411,15 @@ gasearch gasearch_create_advanced(gasearch_utility _utility,
 {
     // validate input
     if (_utility == NULL)
-        return liquid_error_config("gasearch_create(), utility function cannot be NULL")
+        return liquid_error_config_ptr(gasearch, "gasearch_create(), utility function cannot be NULL");
     if (_parent == NULL)
-        return liquid_error_config("gasearch_create(), parent cannot be NULL")
+        return liquid_error_config_ptr(gasearch, "gasearch_create(), parent cannot be NULL");
     if (_population_size < 2)
-        return liquid_error_config("gasearch_create(), population size exceeds minimum");
+        return liquid_error_config_ptr(gasearch, "gasearch_create(), population size exceeds minimum");
     if (_population_size > LIQUID_GA_SEARCH_MAX_POPULATION_SIZE)
-        return liquid_error_config("gasearch_create(), population size exceeds maximum (%u)",LIQUID_GA_SEARCH_MAX_POPULATION_SIZE);
+        return liquid_error_config_ptr(gasearch, "gasearch_create(), population size exceeds maximum (%u)",LIQUID_GA_SEARCH_MAX_POPULATION_SIZE);
     if (_mutation_rate < 0.0f || _mutation_rate > 1.0f)
-        return liquid_error_config("gasearch_create(), mutation rate must be in [0,1]");
+        return liquid_error_config_ptr(gasearch, "gasearch_create(), mutation rate must be in [0,1]");
 
     // create object and initialize values
     gasearch ga = (gasearch) malloc( sizeof(struct gasearch_s) );

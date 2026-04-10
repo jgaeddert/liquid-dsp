@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-// complex floating-point synchronization and supporting objects
+// liquid_float_complexing-point synchronization and supporting objects
 
 #include "liquid.internal.h"
 
@@ -31,9 +31,9 @@
 #define PRINTVAL(x)         printf("%12.4e + j%12.4e", crealf(x), cimagf(x))
 
 #define T                   float
-#define TO                  float complex
-#define TC                  float complex
-#define TI                  float complex
+#define TO                  liquid_float_complex
+#define TC                  liquid_float_complex
+#define TI                  liquid_float_complex
 #define ABS(X)              cabsf(X)
 #define REAL(X)             crealf(X)
 #define IMAG(X)             cimagf(X)

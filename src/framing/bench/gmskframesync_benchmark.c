@@ -51,7 +51,7 @@ void benchmark_gmskframesync(struct rusage *     _start,
     gmskframegen_assemble(fg, NULL, NULL, payload_len,
             LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE);
     unsigned int frame_len = gmskframegen_getframelen(fg);
-    float complex frame[frame_len];
+    LIQUID_VLA(liquid_float_complex, frame, frame_len);
     gmskframegen_write(fg, frame, frame_len);
     // add some noise
     for (i=0; i<frame_len; i++)
@@ -86,7 +86,7 @@ void benchmark_gmskframesync_noise(struct rusage *     _start,
 
     // allocate memory for noise buffer and initialize
     unsigned int num_samples = 1024;
-    float complex y[num_samples];
+    LIQUID_VLA(liquid_float_complex, y, num_samples);
     for (i=0; i<num_samples; i++)
         y[i] = 0.01f*(randnf() + randnf()*_Complex_I)*M_SQRT1_2;
 

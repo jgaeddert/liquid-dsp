@@ -30,7 +30,9 @@
 #include <math.h>
 #include <assert.h>
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.internal.h"
 
 #define min(a,b) ((a)<(b)?(a):(b))
@@ -85,15 +87,15 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
 {
     // validate input
     if (_nfft < 2)
-        return liquid_error_config("spgram%s_create(), fft size must be at least 2", EXTENSION);
+        return liquid_error_config_ptr(SPGRAM(), "spgram%s_create(), fft size must be at least 2", EXTENSION);
     if (_window_len > _nfft)
-        return liquid_error_config("spgram%s_create(), window size cannot exceed fft size", EXTENSION);
+        return liquid_error_config_ptr(SPGRAM(), "spgram%s_create(), window size cannot exceed fft size", EXTENSION);
     if (_window_len == 0)
-        return liquid_error_config("spgram%s_create(), window size must be greater than zero", EXTENSION);
+        return liquid_error_config_ptr(SPGRAM(), "spgram%s_create(), window size must be greater than zero", EXTENSION);
     if (_wtype == LIQUID_WINDOW_KBD && _window_len % 2)
-        return liquid_error_config("spgram%s_create(), KBD window length must be even", EXTENSION);
+        return liquid_error_config_ptr(SPGRAM(), "spgram%s_create(), KBD window length must be even", EXTENSION);
     if (_delay == 0)
-        return liquid_error_config("spgram%s_create(), delay must be greater than 0", EXTENSION);
+        return liquid_error_config_ptr(SPGRAM(), "spgram%s_create(), delay must be greater than 0", EXTENSION);
 
     // allocate memory for main object
     SPGRAM() q = (SPGRAM()) malloc(sizeof(struct SPGRAM(_s)));
@@ -164,7 +166,7 @@ SPGRAM() SPGRAM(_create_default)(unsigned int _nfft)
 {
     // validate input
     if (_nfft < 2)
-        return liquid_error_config("spgram%s_create_default(), fft size must be at least 2", EXTENSION);
+        return liquid_error_config_ptr(SPGRAM(), "spgram%s_create_default(), fft size must be at least 2", EXTENSION);
 
     return SPGRAM(_create)(_nfft, LIQUID_WINDOW_KAISER, _nfft/2, _nfft/4);
 }
@@ -174,7 +176,7 @@ SPGRAM() SPGRAM(_copy)(SPGRAM() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("spgram%s_copy(), object cannot be NULL", EXTENSION);
+        return liquid_error_config_ptr(SPGRAM(), "spgram%s_copy(), object cannot be NULL", EXTENSION);
 
     // allocate memory for main object
     SPGRAM() q_copy = (SPGRAM()) malloc(sizeof(struct SPGRAM(_s)));

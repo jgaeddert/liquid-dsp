@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the functionality of the arbitrary"
 " modem, a digital modulator/demodulator object with signal"
 " constellation points chosen arbitrarily.  A simple bit-error"
@@ -11,6 +11,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -31,7 +32,7 @@ int main(int argc, char*argv[])
     unsigned int M = 1<<bps;    // constellation size
 
     // initialize constellation table
-    float complex constellation[M];
+    LIQUID_VLA(liquid_float_complex, constellation, M);
     // initialize constellation (golden spiral)
     float phi = (3 - sqrtf(5))/2.0f;
     for (i=0; i<M; i++) {
@@ -47,7 +48,7 @@ int main(int argc, char*argv[])
     modemcf_print(mod);
 
     // run simulation
-    float complex x[n];
+    LIQUID_VLA(liquid_float_complex, x, n);
     unsigned int num_errors = 0;
 
     // run simple BER simulation

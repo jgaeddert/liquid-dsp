@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Compare spgram between accumulation methods (infinite vs. real-time integration).";
 
 #include <stdio.h>
@@ -6,6 +6,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -40,7 +41,7 @@ int main(int argc, char* argv[])
     // generate samples
     unsigned int i;
     unsigned int  buf_len = 1024;
-    float complex buf[buf_len];
+    LIQUID_VLA(liquid_float_complex, buf, buf_len);
     while (num_samples > 0)
     {
         // write samples to buffer
@@ -53,8 +54,8 @@ int main(int argc, char* argv[])
     }
 
     // compute power spectral density outputs
-    float psd_0[nfft];
-    float psd_1[nfft];
+    LIQUID_VLA(float, psd_0, nfft);
+    LIQUID_VLA(float, psd_1, nfft);
     spgramcf_get_psd(q0, psd_0);
     spgramcf_get_psd(q1, psd_1);
 

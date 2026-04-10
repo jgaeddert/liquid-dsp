@@ -24,13 +24,16 @@
 // autotest fft data for 2-point transform
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
+#include "liquid.h"
 
-float complex fft_test_x2[] = {
+liquid_float_complex fft_test_x2[] = {
    -0.442695266914 +  -1.176601139920*_Complex_I,
     0.164300702210 +   0.941269951205*_Complex_I};
 
-float complex fft_test_y2[] = {
+liquid_float_complex fft_test_y2[] = {
    -0.278394564704 +  -0.235331188715*_Complex_I,
    -0.606995969123 +  -2.117871091124*_Complex_I};
 

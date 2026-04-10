@@ -1,9 +1,10 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates using a poly-phase filter-bank as interpolator";
 
 #include <stdlib.h>
 #include <stdio.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -21,8 +22,8 @@ int main(int argc, char* argv[])
     firpfb_rrrf_print(pfb);
 
     // generate and interpolate signal (windowed sinc pulse)
-    float buf_0[  num_samples];
-    float buf_1[M*num_samples];
+    LIQUID_VLA(float, buf_0, num_samples);
+    LIQUID_VLA(float, buf_1, M*num_samples);
     unsigned int i, j;
     for (i=0; i<num_samples; i++) {
         // generate input random +1/-1 sequence

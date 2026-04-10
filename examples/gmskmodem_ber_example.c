@@ -1,10 +1,13 @@
-char __docstr__[] = "This example runs a bit error rate simulation for GMSK modulation.";
+const char __docstr__[] = "This example runs a bit error rate simulation for GMSK modulation.";
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -27,9 +30,9 @@ int main(int argc, char*argv[])
 
     // derived values and buffers
     unsigned int delay = 2*m;
-    unsigned int symbol_buffer[delay];      // delay between tx/rx
+    LIQUID_VLA(unsigned int, symbol_buffer, delay);      // delay between tx/rx
     unsigned int symbol_index = 0;
-    float complex buf[k];   // sample buffer
+    LIQUID_VLA(liquid_float_complex, buf, k);   // sample buffer
     unsigned int  i, j, sym_in, sym_out, sym_buf;
 
     // iterate through SNR values

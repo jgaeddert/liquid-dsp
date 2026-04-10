@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the digital modulator/demodulator"
 " (modem) object.  Data symbols are modulated into complex"
 " samples which are then demodulated without noise or phase"
@@ -6,8 +6,11 @@ char __docstr__[] =
 " the command-line interface.";
 
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -19,7 +22,7 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // create the modem objects
-    modulation_scheme ms = liquid_getopt_str2mod(mod_scheme);
+    modulation_scheme ms = (modulation_scheme)liquid_getopt_str2mod(mod_scheme);
     modemcf mod   = modemcf_create(ms);
     modemcf demod = modemcf_create(ms);
 
@@ -42,7 +45,7 @@ int main(int argc, char*argv[])
     unsigned int i; // modulated symbol
     unsigned int s; // demodulated symbol
     unsigned int num_symbols = 1<<bps;
-    float complex x;
+    liquid_float_complex x;
     unsigned int num_sym_errors = 0;
     unsigned int num_bit_errors = 0;
 

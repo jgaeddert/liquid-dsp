@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the binary pre-demodulator synchronizer. A random"
 " binary sequence is generated, modulated with BPSK, and then interpolated."
 " The resulting sequence is used to generate a bpresync object which in turn"
@@ -10,6 +10,7 @@ char __docstr__[] =
 #include <math.h>
 #include <time.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -41,19 +42,19 @@ int main(int argc, char*argv[])
     float nstd = powf(10.0f, -SNRdB/20.0f);
 
     // arrays
-    float complex seq[num_sync_symbols];    // synchronization pattern (symbols)
-    float complex s0[k*num_sync_symbols];   // synchronization pattern (samples)
-    float complex x[num_samples];           // transmitted signal
-    float complex y[num_samples];           // received signal
-    float complex rxy[num_samples];         // pre-demod correlation output
-    float dphi_hat[num_samples];            // carrier offset estimate
+    LIQUID_VLA(liquid_float_complex, seq, num_sync_symbols);    // synchronization pattern (symbols)
+    LIQUID_VLA(liquid_float_complex, s0, k*num_sync_symbols);   // synchronization pattern (samples)
+    LIQUID_VLA(liquid_float_complex, x, num_samples);           // transmitted signal
+    LIQUID_VLA(liquid_float_complex, y, num_samples);           // received signal
+    LIQUID_VLA(liquid_float_complex, rxy, num_samples);         // pre-demod correlation output
+    LIQUID_VLA(float, dphi_hat, num_samples);            // carrier offset estimate
 
     // create transmit/receive interpolator/decimator
     firinterp_crcf interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_RRC,k,m,beta,dt);
 
     // generate synchronization pattern (BPSK) and interpolate
     for (i=0; i<num_sync_symbols + 2*m; i++) {
-        float complex sym = 0.0f;
+        liquid_float_complex sym = 0.0f;
     
         if (i < num_sync_symbols) {
             sym = rand() % 2 ? -1.0f : 1.0f;
@@ -69,7 +70,7 @@ int main(int argc, char*argv[])
 
     // interpolate input
     for (i=0; i<num_symbols; i++) {
-        float complex sym = i < num_sync_symbols ? seq[i] : 0.0f;
+        liquid_float_complex sym = i < num_sync_symbols ? seq[i] : 0.0f;
 
         firinterp_crcf_execute(interp, sym, &x[k*i]);
     }

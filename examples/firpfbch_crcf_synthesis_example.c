@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Example of the synthesis channelizer filterbank. The input signal is"
 " comprised of several signals spanning different frequency bands. The"
 " channelizer downconverts each to baseband (maximally decimated), and"
@@ -6,9 +6,12 @@ char __docstr__[] =
 
 #include <stdio.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -26,18 +29,20 @@ int main(int argc, char* argv[])
     unsigned int num_samples = num_frames * num_channels;
 
     // data arrays
-    float complex x[num_channels][num_frames];  // channelized input
-    float complex y[num_samples];               // time-domain output [size: num_samples  x 1]
+    LIQUID_VLA(liquid_float_complex, x, num_channels*num_frames);  // channelized input [flattened 2D]
+    LIQUID_VLA(liquid_float_complex, y, num_samples);               // time-domain output [size: num_samples  x 1]
+    // Macro for 2D indexing: x[i][k] -> X_2D(i,k)
+    #define X_2D(i,k) x[(i)*num_frames + (k)]
 
     // create narrow-band pulse
     unsigned int pulse_len = 17;        // pulse length [samples]
     float        bw        = 0.30f;     // pulse width (bandwidth)
-    float        pulse[pulse_len];      // buffer
+    LIQUID_VLA(float, pulse, pulse_len);      // buffer
     liquid_firdes_kaiser(pulse_len, bw, 50.0f, 0.0f, pulse);
 
     // generate input signal(s)
     unsigned int i, k;
-    int enabled[num_channels];  // signal enabled?
+    LIQUID_VLA(int, enabled, num_channels);  // signal enabled?
     for (i=0; i<num_channels; i++) {
         // pseudo-random channel enabled flag
         enabled[i] = ((i*37)%101)%2;
@@ -45,17 +50,17 @@ int main(int argc, char* argv[])
         if (enabled[i]) {
             // move pulse to input buffer
             for (k=0; k<num_frames; k++)
-                x[i][k] = k < pulse_len ? bw*pulse[k] : 0.0f;
+                X_2D(i,k) = k < pulse_len ? bw*pulse[k] : 0.0f;
         } else {
             // channel disabled; set as nearly zero (-100 dB impulse)
             for (k=0; k<num_frames; k++)
-                x[i][k] = (k == 0) ? 1e-5f : 0.0f;
+                X_2D(i,k) = (k == 0) ? 1e-5f : 0.0f;
         }
     }
 
     // create prototype filter
     unsigned int h_len = 2*num_channels*m + 1;
-    float h[h_len];
+    LIQUID_VLA(float, h, h_len);
     liquid_firdes_kaiser(h_len, 0.5f/(float)num_channels, As, 0.0f, h);
 
 #if 0
@@ -67,11 +72,11 @@ int main(int argc, char* argv[])
 #endif
 
     // channelize input data
-    float complex v[num_channels];
+    LIQUID_VLA(liquid_float_complex, v, num_channels);
     for (i=0; i<num_frames; i++) {
         // assemble input vector
         for (k=0; k<num_channels; k++)
-            v[k] = x[k][i];
+            v[k] = X_2D(k,i);
 
         // execute synthesis filter bank
         firpfbch_crcf_synthesizer_execute(q, v, &y[i*num_channels]);
@@ -104,8 +109,8 @@ int main(int argc, char* argv[])
     // save channelized input signals
     for (i=0; i<num_frames; i++) {
         for (k=0; k<num_channels; k++) {
-            float complex v = x[k][i];
-            fprintf(fid,"  x(%3u,%6u) = %12.4e + 1i*%12.4e;\n", k+1, i+1, crealf(v), cimagf(v));
+            liquid_float_complex val = X_2D(k,i);
+            fprintf(fid,"  x(%3u,%6u) = %12.4e + 1i*%12.4e;\n", k+1, i+1, crealf(val), cimagf(val));
         }
     }
 

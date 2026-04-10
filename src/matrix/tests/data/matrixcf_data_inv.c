@@ -24,10 +24,12 @@
 // data for testing matrix inversion
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
-
+#endif
+#include "liquid.h"
 // matrixcf_data_inv_x [size: 5 x 5]
-float complex matrixcf_data_inv_x[] = {
+liquid_float_complex matrixcf_data_inv_x[] = {
    -0.911099433899 +  -0.436777323484*_Complex_I /* ( 0, 0) */,
     0.598295390606 +  -0.283340752125*_Complex_I /* ( 0, 1) */,
    -0.264758616686 +  -0.421906232834*_Complex_I /* ( 0, 2) */,
@@ -55,7 +57,7 @@ float complex matrixcf_data_inv_x[] = {
     0.200873896480 +  -0.036809749901*_Complex_I /* ( 4, 4) */};
 
 // matrixcf_data_inv_y [size: 5 x 5]
-float complex matrixcf_data_inv_y[] = {
+liquid_float_complex matrixcf_data_inv_y[] = {
    -0.127852678827 +  -0.009178191835*_Complex_I /* ( 0, 0) */,
    -0.199905444866 +   0.033789259175*_Complex_I /* ( 0, 1) */,
     0.168465876479 +  -0.059607902071*_Complex_I /* ( 0, 2) */,

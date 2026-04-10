@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the halfband resampler running as both an"
 " interpolator and a decimator. A narrow-band signal is first"
 " interpolated by a factor of 2, and then decimated. The resulting RMS"
@@ -6,10 +6,13 @@ char __docstr__[] =
 " to the screen.";
 
 #include <stdio.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -28,12 +31,12 @@ int main(int argc, char* argv[])
     unsigned int n = num_samples + 2*m + 1; // adjusted input sequence length
 
     // allocate memory for data arrays
-    float complex x[  n];
-    float complex y[2*n];
-    float complex z[  n];
+    LIQUID_VLA(liquid_float_complex, x, n);
+    LIQUID_VLA(liquid_float_complex, y, 2*n);
+    LIQUID_VLA(liquid_float_complex, z, n);
 
     // generate the baseband signal (filter pulse)
-    float h[num_samples];
+    LIQUID_VLA(float, h, num_samples);
     liquid_firdes_kaiser(num_samples,bw,60.0f,0.0f,h);
     unsigned int i;
     for (i=0; i<n; i++)

@@ -34,10 +34,10 @@
 //    for (i=0; i<_n; i++)
 //        _y[i] = _v0[i] * _v1[i];
 // }
-void liquid_vectorcf_mul(float complex * _v0,
-                         float complex * _v1,
+void liquid_vectorcf_mul(liquid_float_complex * _v0,
+                         liquid_float_complex * _v1,
                          unsigned int    _n,
-                         float complex * _y)
+                         liquid_float_complex * _y)
 {
     // type cast input as floating point array
     float * v0 = (float*) _v0;
@@ -48,8 +48,8 @@ void liquid_vectorcf_mul(float complex * _v0,
     unsigned int n = 2*_n;
 
     // output accumulators
-    float w0[4];
-    float w1[4];
+    LIQUID_VLA(float, w0, 4);
+    LIQUID_VLA(float, w1, 4);
 
     // t = 4*(floor(_n/4))
     unsigned int t = (n >> 2) << 2;
@@ -83,10 +83,10 @@ void liquid_vectorcf_mul(float complex * _v0,
 }
 
 // vector scalar multiplication
-void liquid_vectorcf_mulscalar(float complex * _v,
+void liquid_vectorcf_mulscalar(liquid_float_complex * _v,
                                unsigned int    _n,
-                               float complex   _s,
-                               float complex * _y)
+                               liquid_float_complex   _s,
+                               liquid_float_complex * _y)
 {
     unsigned int i;
     for (i=0; i<_n; i++)

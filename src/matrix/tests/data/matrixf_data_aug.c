@@ -24,7 +24,9 @@
 // data for testing matrix augmentation
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 // matrixf_data_aug_x [size: 5 x 4]
 float matrixf_data_aug_x[] = {

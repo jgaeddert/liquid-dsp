@@ -1,10 +1,11 @@
 // Demonstrate soft demodulation of linear modulation schemes.
-char __docstr__[] = "Demonstrate soft demodulation of linear modulation schemes.";
+const char __docstr__[] = "Demonstrate soft demodulation of linear modulation schemes.";
 
 #include <stdlib.h>
 #include <stdio.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -16,7 +17,7 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // create modem objects
-    int   ms  = liquid_getopt_str2mod(mod_str);
+    modulation_scheme ms = (modulation_scheme)liquid_getopt_str2mod(mod_str);
     modem mod = modem_create(ms);   // modulator
     modem dem = modem_create(ms);   // demodulator
 
@@ -28,10 +29,10 @@ int main(int argc, char*argv[])
 
     unsigned int i;         // modulated symbol
     unsigned int s_hard;    // demodulated symbol (hard)
-    unsigned char soft_bits[bps];
+    LIQUID_VLA(unsigned char, soft_bits, bps);
     unsigned int s_soft;    // demodulated symbol (soft, compacted)
     unsigned int num_symbols = 1<<bps;
-    float complex x;
+    liquid_float_complex x;
     unsigned int num_sym_errors = 0;
     unsigned int num_bit_errors = 0;
 

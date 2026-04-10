@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Example of the analysis channelizer filterbank. The input signal is"
 " comprised of several signals spanning different frequency bands. The"
 " channelizer downconverts each to baseband (maximally decimated), and"
@@ -6,9 +6,12 @@ char __docstr__[] =
 
 #include <stdio.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -30,8 +33,8 @@ int main(int argc, char* argv[])
     unsigned int num_samples = num_frames * num_channels;
 
     // data arrays
-    float complex x[num_samples];  // time-domain input  [size: num_samples  x 1         ]
-    float complex y[num_samples];  // channelized output [size: num_channels x num_frames]
+    LIQUID_VLA(liquid_float_complex, x, num_samples);  // time-domain input  [size: num_samples  x 1         ]
+    LIQUID_VLA(liquid_float_complex, y, num_samples);  // channelized output [size: num_channels x num_frames]
 
     // initialize input with zeros
     for (i=0; i<num_samples; i++)
@@ -42,7 +45,7 @@ int main(int argc, char* argv[])
     float fc[4] = {0.0f,   0.25f,  0.375f, -0.375f}; // center frequencies
     float bw[4] = {0.035f, 0.035f, 0.035f,  0.035f}; // bandwidths
     unsigned int pulse_len = 137;
-    float pulse[pulse_len];
+    LIQUID_VLA(float, pulse, pulse_len);
     for (i=0; i<num_signals; i++) {
         // create pulse
         liquid_firdes_kaiser(pulse_len, bw[i], 50.0f, 0.0f, pulse);
@@ -54,7 +57,7 @@ int main(int argc, char* argv[])
 
     // create prototype filter
     unsigned int h_len = 2*num_channels*m + 1;
-    float h[h_len];
+    LIQUID_VLA(float, h, h_len);
     liquid_firdes_kaiser(h_len, 0.5f/(float)num_channels, As, 0.0f, h);
 
 #if 0
@@ -102,7 +105,7 @@ int main(int argc, char* argv[])
     // save channelized output signals
     for (i=0; i<num_frames; i++) {
         for (k=0; k<num_channels; k++) {
-            float complex v = y[i*num_channels + k];
+            liquid_float_complex v = y[i*num_channels + k];
             fprintf(fid,"  y(%3u,%6u) = %12.4e + 1i*%12.4e;\n", k+1, i+1, crealf(v), cimagf(v));
         }
     }

@@ -1,10 +1,11 @@
-char __docstr__[] = "Spectrum waterfall example.";
+const char __docstr__[] = "Spectrum waterfall example.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -44,7 +45,7 @@ int main(int argc, char* argv[])
 
     // create buffers
     unsigned int  buf_len = 64;
-    float complex buf[buf_len];
+    LIQUID_VLA(liquid_float_complex, buf, buf_len);
 
     // generate signals and push through spwaterfall object
     unsigned int total_samples   = 0;

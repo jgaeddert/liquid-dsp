@@ -63,12 +63,12 @@ SYMSTREAMR() SYMSTREAMR(_create_linear)(int          _ftype,
     float bw_max = 1.000f;
     // validate input
     if (_bw < bw_min || _bw > bw_max)
-        return liquid_error_config("symstreamr%s_create(), symbol bandwidth (%g) must be in [%g,%g]", EXTENSION, _bw, bw_min, bw_max);
+        return liquid_error_config_ptr(SYMSTREAMR(), "symstreamr%s_create(), symbol bandwidth (%g) must be in [%g,%g]", EXTENSION, _bw, bw_min, bw_max);
 
     // create base streaming object
     symstreamcf s = SYMSTREAM(_create_linear)(_ftype, 2, _m, _beta, _ms);
     if (s == NULL)
-        return liquid_error_config("symstreamr%s_create(), could not create streaming object", EXTENSION);
+        return liquid_error_config_ptr(SYMSTREAMR(), "symstreamr%s_create(), could not create streaming object", EXTENSION);
 
     // allocate memory for main object
     SYMSTREAMR() q = (SYMSTREAMR()) malloc( sizeof(struct SYMSTREAMR(_s)) );
@@ -93,7 +93,7 @@ SYMSTREAMR() SYMSTREAMR(_copy)(SYMSTREAMR() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("symstreamr%s_copy(), object cannot be NULL", EXTENSION);
+        return liquid_error_config_ptr(SYMSTREAMR(), "symstreamr%s_copy(), object cannot be NULL", EXTENSION);
 
     // create filter object and copy base parameters
     SYMSTREAMR() q_copy = (SYMSTREAMR()) malloc(sizeof(struct SYMSTREAMR(_s)));

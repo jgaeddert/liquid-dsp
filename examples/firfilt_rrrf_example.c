@@ -1,8 +1,9 @@
-char __docstr__[] = "Demonstrate firfilt_rrrf object.";
+const char __docstr__[] = "Demonstrate firfilt_rrrf object.";
 
 #include <stdio.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -21,8 +22,8 @@ int main(int argc, char* argv[])
     firfilt_rrrf_set_scale(q, 2.0f*fc);
 
     // generate input signal (sine wave with decaying amplitude)
-    float x[num_samples];
-    float y[num_samples];
+    LIQUID_VLA(float, x, num_samples);
+    LIQUID_VLA(float, y, num_samples);
     unsigned int wlen = (unsigned int)roundf(0.75*num_samples);
     unsigned int i;
     for (i=0; i<num_samples; i++) {
@@ -40,7 +41,7 @@ int main(int argc, char* argv[])
 
     // compute response
     unsigned int nfft = 1024;
-    float complex H[nfft];
+    LIQUID_VLA(liquid_float_complex, H, nfft);
     for (i=0; i<nfft; i++) {
         float freq = ((float)i - 0.5f*(float)nfft) / (float)nfft;
         firfilt_rrrf_freqresponse(q, freq, &H[i]);

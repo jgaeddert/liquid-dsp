@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Example of the finite impulse response (FIR) polyphase filterbank"
 " (PFB) channelizer with an output rate independent of channel spacing.";
 
@@ -8,6 +8,7 @@ char __docstr__[] =
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -51,8 +52,8 @@ int main(int argc, char*argv[])
     spgramcf     p1   = spgramcf_create_default(nfft);
 
     // run channelizer
-    float complex buf_0[P];
-    float complex buf_1[M];
+    LIQUID_VLA(liquid_float_complex, buf_0, P);
+    LIQUID_VLA(liquid_float_complex, buf_1, M);
     for (i=0; i<num_blocks; i++) {
         // write samples to buffer
         msourcecf_write_samples(gen, buf_0, P);
@@ -69,8 +70,8 @@ int main(int argc, char*argv[])
     spgramcf_print(p1);
 
     // compute power spectral density output
-    float psd_0[nfft];
-    float psd_1[nfft];
+    LIQUID_VLA(float, psd_0, nfft);
+    LIQUID_VLA(float, psd_1, nfft);
     spgramcf_get_psd(p0, psd_0);
     spgramcf_get_psd(p1, psd_1);
 

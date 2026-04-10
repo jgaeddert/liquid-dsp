@@ -46,11 +46,11 @@ void benchmark_flexframesync(
 
     // generate the frame
     unsigned int payload_len = 8;
-    unsigned char header[14];
-    unsigned char payload[payload_len];
+    LIQUID_VLA(unsigned char, header, 14);
+    LIQUID_VLA(unsigned char, payload, payload_len);
     flexframegen_assemble(fg, header, payload, payload_len);
     unsigned int frame_len = flexframegen_getframelen(fg);
-    float complex frame[frame_len];
+    LIQUID_VLA(liquid_float_complex, frame, frame_len);
     flexframegen_write_samples(fg, frame, frame_len);
 
     // add some noise

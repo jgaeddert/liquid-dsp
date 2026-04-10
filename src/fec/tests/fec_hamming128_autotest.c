@@ -67,7 +67,7 @@ LIQUID_AUTOTEST(hamming128_codec_soft,"test Hamming (12,8) codec (soft decoding)
     // using soft decoding algorithm
     unsigned int s;             // original 8-bit symbol
     unsigned int c;             // encoded 8-bit symbol
-    unsigned char c_soft[12];   // soft bits
+    LIQUID_VLA(unsigned char, c_soft, 12);   // soft bits
     unsigned int s_hat;         // decoded symbol
 
     for (s=0; s<256; s++) {

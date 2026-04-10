@@ -22,6 +22,7 @@
 
 #include "liquid.autotest.h"
 #include "liquid.h"
+#include "liquid_vla.h"
 
 // AUTOTEST : test partitioning rational-rate resampler
 void testbench_rresamp_crcf_part(liquid_autotest __q__,
@@ -40,9 +41,9 @@ void testbench_rresamp_crcf_part(liquid_autotest __q__,
     rresamp_crcf q1 = rresamp_crcf_create_kaiser(_P,_Q,_m,bw,As);
 
     // full input, output buffers
-    float complex buf_in   [2*_Q*_n]; // input buffer
-    float complex buf_out_0[2*_P*_n]; // output, normal resampling operation
-    float complex buf_out_1[2*_P*_n]; // output, partitioned into 2 blocks
+    LIQUID_VLA(liquid_float_complex, buf_in, 2*_Q*_n); // input buffer
+    LIQUID_VLA(liquid_float_complex, buf_out_0, 2*_P*_n); // output, normal resampling operation
+    LIQUID_VLA(liquid_float_complex, buf_out_1, 2*_P*_n); // output, partitioned into 2 blocks
 
     // generate input signal (pulse, but can really be anything)
     unsigned int i;

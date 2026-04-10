@@ -73,6 +73,7 @@ unsigned char hamming84_dec_gentab[256] = {
 // create Hamming(8,4) codec object
 fec fec_hamming84_create(void * _opts)
 {
+    (void)_opts;
     fec q = (fec) malloc(sizeof(struct fec_s));
 
     // set scheme
@@ -105,6 +106,7 @@ int fec_hamming84_encode(fec              _q,
                           unsigned char * _msg_dec,
                           unsigned char * _msg_enc)
 {
+    (void)_q;
     unsigned int i, j=0;
     unsigned char s0, s1;
     for (i=0; i<_dec_msg_len; i++) {
@@ -130,6 +132,7 @@ int fec_hamming84_decode(fec             _q,
                          unsigned char * _msg_enc,
                          unsigned char * _msg_dec)
 {
+    (void)_q;
     unsigned int i;
     unsigned char r0, r1;   // received 8-bit symbols
     unsigned char s0, s1;   // decoded 4-bit symbols
@@ -159,10 +162,11 @@ int fec_hamming84_decode_soft(fec             _q,
                               unsigned char * _msg_enc,
                               unsigned char * _msg_dec)
 {
+    (void)_q;
     unsigned int i;
     unsigned int k=0;       // array bit index
 
-    // compute encoded message length
+    // compute encoded message length for validation
     unsigned int enc_msg_len = fec_block_get_enc_msg_len(_dec_msg_len,4,8);
 
     // decoded 4-bit symbols
@@ -181,6 +185,7 @@ int fec_hamming84_decode_soft(fec             _q,
         //printf("  %3u : 0x%.2x > 0x%.2x,  0x%.2x > 0x%.2x (k=%u)\n", i, r0, s0, r1, s1, k);
     }
     assert(k == 8*enc_msg_len);
+    (void)enc_msg_len;
     return LIQUID_OK;
 }
 

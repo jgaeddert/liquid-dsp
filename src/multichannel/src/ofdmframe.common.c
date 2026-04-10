@@ -40,8 +40,8 @@
 //  _M_S0   :   total number of enabled subcarriers in S0
 int ofdmframe_init_S0(unsigned char * _p,
                       unsigned int    _M,
-                      float complex * _S0,
-                      float complex * _s0,
+                      liquid_float_complex * _S0,
+                      liquid_float_complex * _s0,
                       unsigned int *  _M_S0)
 {
     unsigned int i;
@@ -107,8 +107,8 @@ int ofdmframe_init_S0(unsigned char * _p,
 //  _M_S1   :   total number of enabled subcarriers in S1
 int ofdmframe_init_S1(unsigned char * _p,
                       unsigned int    _M,
-                      float complex * _S1,
-                      float complex * _s1,
+                      liquid_float_complex * _S1,
+                      liquid_float_complex * _s1,
                       unsigned int *  _M_S1)
 {
     unsigned int i;

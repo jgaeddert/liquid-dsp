@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the interface to the firdecim (finite"
 " impulse response decimator) family of objects.";
 
@@ -7,6 +7,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -31,8 +32,8 @@ int main(int argc, char* argv[])
         return liquid_error(LIQUID_EICONFIG,"must have at least one sample");
 
     // data arrays
-    float complex x[M*num_samples]; // number of samples before decimation
-    float complex y[  num_samples]; // number of samples after decimation
+    LIQUID_VLA(liquid_float_complex, x, M*num_samples); // number of samples before decimation
+    LIQUID_VLA(liquid_float_complex, y, num_samples); // number of samples after decimation
 
     // initialize input array
     unsigned int i;

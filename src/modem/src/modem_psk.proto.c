@@ -39,7 +39,7 @@ MODEM() MODEM(_create_psk)(unsigned int _bits_per_symbol)
     case 7: q->scheme = LIQUID_MODEM_PSK128; break;
     case 8: q->scheme = LIQUID_MODEM_PSK256; break;
     default:
-        return liquid_error_config("modem%s_create_psk(), cannot support PSK with m > 8",EXTENSION);
+        return liquid_error_config_ptr(MODEM(), "modem%s_create_psk(), cannot support PSK with m > 8",EXTENSION);
     }
 
     // initialize basic modem structure

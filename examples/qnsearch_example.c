@@ -1,10 +1,11 @@
-char __docstr__[] = "Demonstrate quasi-Newton search method.";
+const char __docstr__[] = "Demonstrate quasi-Newton search method.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -16,7 +17,7 @@ int main(int argc, char* argv[])
     liquid_argparse_add(unsigned, num_iterations, 4000, 'n', "number of iterations to run", NULL);
     liquid_argparse_parse(argc,argv);
 
-    float optimum_vect[num_parameters];
+    LIQUID_VLA(float, optimum_vect, num_parameters);
     unsigned int i;
     for (i=0; i<num_parameters; i++)
         optimum_vect[i] = 0.0f;

@@ -34,18 +34,25 @@
 #include "liquid.internal.h"
 
 // push samples through detection stage
-int QDSYNC(_execute_detect)(QDSYNC() _q, float complex _x);
+int QDSYNC(_execute_detect)(QDSYNC() _q, liquid_float_complex _x);
 
 // step receiver mixer, matched filter, decimator
 //  _q      :   frame synchronizer
 //  _x      :   input sample
-int QDSYNC(_step)(QDSYNC() _q, float complex _x);
+int QDSYNC(_step)(QDSYNC() _q, liquid_float_complex _x);
 
 // append sample to output buffer
-int QDSYNC(_buf_append)(QDSYNC() _q, float complex _x);
+int QDSYNC(_buf_append)(QDSYNC() _q, liquid_float_complex _x);
+
+// frame synchronization state (moved outside struct for C++ compatibility)
+enum qdsync_state_e {
+    QDSYNC_STATE_DETECT=0,  // detect frame
+    QDSYNC_STATE_SYNC,      // apply carrier offset correction and matched filter
+};
 
 // main object definition
 struct QDSYNC(_s) {
+    unsigned int    seq_len;    // preamble sequence length
     int             ftype;      // filter type
     unsigned int    k;          // samples per symbol
     unsigned int    m;          // filter semi-length
@@ -56,10 +63,7 @@ struct QDSYNC(_s) {
     QDETECTOR()     detector;   // detector
 
     // status variables
-    enum {
-        QDSYNC_STATE_DETECT=0,  // detect frame
-        QDSYNC_STATE_SYNC,      // apply carrier offset correction and matched filter
-    }               state;      // frame synchronization state
+    enum qdsync_state_e state;  // frame synchronization state
     unsigned int symbol_counter;// counter: total number of symbols received including preamble sequence
 
     nco_crcf        mixer;      // coarse carrier frequency recovery
@@ -72,48 +76,11 @@ struct QDSYNC(_s) {
 
     // symbol buffer
     unsigned int    buf_out_len;// output buffer length
-    float complex * buf_out;    // output buffer
+    liquid_float_complex * buf_out;    // output buffer
     unsigned int    buf_out_counter; // output counter
 };
 
-// internal use only - create synchronizer with generic detector
-QDSYNC() QDSYNC(_create)(QDETECTOR()       _detector,
-                         int               _ftype,
-                         unsigned int      _k,
-                         unsigned int      _m,
-                         float             _beta,
-                         QDSYNC(_callback) _callback,
-                         void *            _context)
-{
-    // allocate memory for main object and set internal properties
-    QDSYNC() q = (QDSYNC()) malloc(sizeof(struct QDSYNC(_s)));
-    q->ftype    = _ftype;
-    q->k        = _k;
-    q->m        = _m;
-    q->beta     = _beta;
-    q->detector = _detector;
-
-    // create down-coverters for carrier phase tracking
-    q->mixer = nco_crcf_create(LIQUID_NCO);
-
-    // create symbol timing recovery filters
-    q->npfb = 256;   // number of filters in the bank
-    q->mf   = firpfb_crcf_create_rnyquist(q->ftype, q->npfb, q->k, q->m, q->beta);
-
-    // allocate buffer for storing output samples
-    q->buf_out_len = 64; // user can re-size this later
-    q->buf_out     = (float complex*) malloc(q->buf_out_len*sizeof(float complex));
-
-    // set callback and context values
-    QDSYNC(_set_callback)(q, _callback);
-    QDSYNC(_set_context )(q, _context );
-
-    // reset and return object
-    QDSYNC(_reset)(q);
-    return q;
-}
-
-// create detector from sequence of symbols using internal linear interpolator
+// create detector with generic sequence
 QDSYNC() QDSYNC(_create_linear)(TI *              _seq,
                                 unsigned int      _seq_len,
                                 int               _ftype,
@@ -125,34 +92,37 @@ QDSYNC() QDSYNC(_create_linear)(TI *              _seq,
 {
     // validate input
     if (_seq_len == 0)
-        return liquid_error_config("QDSYNC(_create_linear)(), sequence length cannot be zero");
+        return liquid_error_config_ptr(QDSYNC(), "QDSYNC(_create)(), sequence length cannot be zero");
+
+    // allocate memory for main object and set internal properties
+    QDSYNC() q = (QDSYNC()) malloc(sizeof(struct QDSYNC(_s)));
+    q->seq_len = _seq_len;
+    q->ftype   = _ftype;
+    q->k       = _k;
+    q->m       = _m;
+    q->beta    = _beta;
 
     // create detector
-    QDETECTOR() _detector = QDETECTOR(_create_linear)(_seq, _seq_len, _ftype, _k, _m, _beta);
+    q->detector = QDETECTOR(_create_linear)(_seq, _seq_len, _ftype, _k, _m, _beta);
 
-    return QDSYNC(_create)(_detector, _ftype, _k, _m, _beta, _callback, _context);
-}
+    // create down-coverters for carrier phase tracking
+    q->mixer = nco_crcf_create(LIQUID_NCO);
 
-QDSYNC() QDSYNC(_create_cpfsk)(unsigned char *   _seq,
-                               unsigned int      _seq_len,
-                               int               _ftype,
-                               unsigned int      _bps,
-                               float             _h,
-                               unsigned int      _k,
-                               unsigned int      _m,
-                               float             _beta,
-                               int               _cpfsk_type,
-                               QDSYNC(_callback) _callback,
-                               void *            _context)
-{
-    // validate input
-    if (_seq_len == 0)
-        return liquid_error_config("QDSYNC(_create_cpfsk)(), sequence length cannot be zero");
+    // create symbol timing recovery filters
+    q->npfb = 256;   // number of filters in the bank
+    q->mf   = firpfb_crcf_create_rnyquist(q->ftype, q->npfb, q->k, q->m, q->beta);
 
-    // create detector
-    QDETECTOR() _detector = QDETECTOR(_create_cpfsk)(_seq, _seq_len, _bps, _h, _k, _m, _beta, _cpfsk_type);
+    // allocate buffer for storing output samples
+    q->buf_out_len = 64; // user can re-size this later
+    q->buf_out     = (liquid_float_complex*) malloc(q->buf_out_len*sizeof(liquid_float_complex));
 
-    return QDSYNC(_create)(_detector, _ftype, _k, _m, _beta, _callback, _context);
+    // set callback and context values
+    QDSYNC(_set_callback)(q, _callback);
+    QDSYNC(_set_context )(q, _context );
+
+    // reset and return object
+    QDSYNC(_reset)(q);
+    return q;
 }
 
 // copy object
@@ -160,7 +130,7 @@ QDSYNC() QDSYNC(_copy)(QDSYNC() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("qdetector_%s_copy(), object cannot be NULL", "cccf");
+        return liquid_error_config_ptr(QDSYNC(), "qdetector_%s_copy(), object cannot be NULL", "cccf");
 
     // create new object and copy base parameters
     QDSYNC() q_copy = (QDSYNC())malloc(sizeof(struct QDSYNC(_s)));
@@ -176,7 +146,7 @@ QDSYNC() QDSYNC(_copy)(QDSYNC() q_orig)
     q_copy->mf       = firpfb_crcf_copy   (q_orig->mf);
 
     // copy memory in new allocation
-    q_copy->buf_out = (float complex*)liquid_malloc_copy(q_orig->buf_out, q_orig->buf_out_len, sizeof(float complex));
+    q_copy->buf_out = (TO*)liquid_malloc_copy(q_orig->buf_out, q_orig->buf_out_len, sizeof(TO));
 
     // return new object
     return q_copy;
@@ -209,8 +179,7 @@ int QDSYNC(_reset)(QDSYNC() _q)
 
 int QDSYNC(_print)(QDSYNC() _q)
 {
-    unsigned int _seq_len = QDETECTOR(_get_seq_len)(_q->detector);
-    printf("<liquid.qdsync, n=%u>\n", _seq_len);
+    printf("<liquid.qdsync, n=%u>\n", _q->seq_len);
     return LIQUID_OK;
 }
 
@@ -270,7 +239,7 @@ int QDSYNC(_set_buf_len)(QDSYNC() _q, unsigned int _buf_len)
         // buffer might not be empty, but we aren't resizing within this space;
         // ok to resize so long as old samples are copied
         _q->buf_out_len = _buf_len;
-        float complex * buf_new = (float complex*)realloc(_q->buf_out, _q->buf_out_len*sizeof(float complex));
+        liquid_float_complex * buf_new = (liquid_float_complex*)realloc(_q->buf_out, _q->buf_out_len*sizeof(liquid_float_complex));
         if (buf_new == NULL)
             return liquid_error(LIQUID_EIMEM,"QDSYNC(_set_buf_len)(), could not allocate %u samples", _buf_len);
         _q->buf_out = buf_new;
@@ -288,11 +257,11 @@ int QDSYNC(_set_buf_len)(QDSYNC() _q, unsigned int _buf_len)
         }
 
         // copy old values to front of buffer
-        memmove(_q->buf_out, _q->buf_out + index, _q->buf_out_counter*sizeof(float complex));
+        memmove(_q->buf_out, _q->buf_out + index, _q->buf_out_counter*sizeof(liquid_float_complex));
 
         // now resize the buffer appropriately
         _q->buf_out_len = _buf_len;
-        float complex * buf_new = (float complex*)realloc(_q->buf_out, _q->buf_out_len*sizeof(float complex));
+        liquid_float_complex * buf_new = (liquid_float_complex*)realloc(_q->buf_out, _q->buf_out_len*sizeof(liquid_float_complex));
         if (buf_new == NULL)
             return liquid_error(LIQUID_EIMEM,"QDSYNC(_set_buf_len)(), could not allocate %u samples", _buf_len);
         _q->buf_out = buf_new;
@@ -370,7 +339,7 @@ int QDSYNC(_execute_detect)(QDSYNC() _q,
                             TI       _x)
 {
     // push through pre-demod synchronizer
-    float complex * v = QDETECTOR(_execute)(_q->detector, _x);
+    TI * v = (TI *)QDETECTOR(_execute)(_q->detector, _x);
 
     // check if frame has been detected
     if (v != NULL) {
@@ -416,7 +385,7 @@ int QDSYNC(_execute_detect)(QDSYNC() _q,
 int QDSYNC(_step)(QDSYNC() _q, TI _x)
 {
     // mix sample down
-    float complex v;
+    liquid_float_complex v;
     nco_crcf_mix_down(_q->mixer, _x, &v);
     nco_crcf_step    (_q->mixer);
 

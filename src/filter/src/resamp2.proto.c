@@ -58,11 +58,11 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
 {
     // validate input
     if (_m < 2)
-        return liquid_error_config("resamp2_%s_create(), filter semi-length must be at least 2", EXTENSION_FULL);
+        return liquid_error_config_ptr(RESAMP2(), "resamp2_%s_create(), filter semi-length must be at least 2", EXTENSION_FULL);
     if (_f0 < -0.5f || _f0 > 0.5f)
-        return liquid_error_config("resamp2_%s_create(), f0 (%12.4e) must be in [-0.5,0.5]", EXTENSION_FULL, _f0);
+        return liquid_error_config_ptr(RESAMP2(), "resamp2_%s_create(), f0 (%12.4e) must be in [-0.5,0.5]", EXTENSION_FULL, _f0);
     if (_as < 0.0f)
-        return liquid_error_config("resamp2_%s_create(), as (%12.4e) must be greater than zero", EXTENSION_FULL, _as);
+        return liquid_error_config_ptr(RESAMP2(), "resamp2_%s_create(), as (%12.4e) must be greater than zero", EXTENSION_FULL, _as);
 
     RESAMP2() q = (RESAMP2()) malloc(sizeof(struct RESAMP2(_s)));
     q->m  = _m;
@@ -78,7 +78,7 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
 
     // design filter prototype
     unsigned int i;
-    float hf[q->h_len];
+    LIQUID_VLA(float, hf, q->h_len);
     liquid_firdespm_halfband_as(q->m, q->as, hf);
     for (i=0; i<q->h_len; i++) {
         float t = (float)i - (float)(q->h_len-1)/2.0f;
@@ -157,7 +157,7 @@ RESAMP2() RESAMP2(_copy)(RESAMP2() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("resamp2_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(RESAMP2(), "resamp2_%s_copy(), object cannot be NULL", EXTENSION_FULL);
 
     // create object, copy internal memory, overwrite with specific values
     RESAMP2() q_copy = (RESAMP2()) malloc(sizeof(struct RESAMP2(_s)));

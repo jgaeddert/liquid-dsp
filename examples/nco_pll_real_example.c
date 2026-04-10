@@ -1,9 +1,10 @@
-char __docstr__[] = "Simulation of a real-valued phase-locked loop";
+const char __docstr__[] = "Simulation of a real-valued phase-locked loop";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -23,7 +24,7 @@ int main(int argc, char* argv[])
         return liquid_error(LIQUID_EICONFIG,"invalid nco type '%s' (must be either 'nco' or 'vco')", type_str);
 
     // objects
-    int type = strcmp(type_str,"nco")==0 ? LIQUID_NCO : LIQUID_VCO;
+    liquid_ncotype type = strcmp(type_str,"nco")==0 ? LIQUID_NCO : LIQUID_VCO;
     nco_crcf nco_tx = nco_crcf_create(type);
     nco_crcf nco_rx = nco_crcf_create(type);
 

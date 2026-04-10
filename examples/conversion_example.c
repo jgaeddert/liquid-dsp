@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates conversion from complex baseband to a real-valued"
 " signal, and then down-conversion back to complex baseband while removing the"
 " negative image."
@@ -24,6 +24,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -57,7 +58,7 @@ int main(int argc, char* argv[])
     unsigned int i;
     for (i=0; i<num_samples; i++) {
         // STEP 1: generate input signal (filtered noise with offset tone)
-        float complex v1 = (randnf() + randnf()*_Complex_I) + 3.0f*cexpf(-_Complex_I*0.2f*i);
+        liquid_float_complex v1 = (randnf() + randnf()*_Complex_I) + 3.0f*cexpf(-_Complex_I*0.2f*i);
         iirfilt_crcf_execute(filter_tx, v1, &v1);
 
         // save spectrum
@@ -72,7 +73,7 @@ int main(int argc, char* argv[])
         spgramf_push(spgram_dac, v2);
 
         // STEP 3: mix signal down and filter off image
-        float complex v3;
+        liquid_float_complex v3;
         nco_crcf_mix_down(mixer_rx, v2, &v3);
         iirfilt_crcf_execute(filter_rx, v3, &v3);
         nco_crcf_step(mixer_rx);
@@ -82,9 +83,9 @@ int main(int argc, char* argv[])
     }
 
     // compute power spectral density output
-    float   psd_tx  [nfft];
-    float   psd_dac [nfft];
-    float   psd_rx  [nfft];
+    LIQUID_VLA(float, psd_tx, nfft);
+    LIQUID_VLA(float, psd_dac, nfft);
+    LIQUID_VLA(float, psd_rx, nfft);
     spgramcf_get_psd(spgram_tx,  psd_tx);
     spgramf_get_psd( spgram_dac, psd_dac);
     spgramcf_get_psd(spgram_rx,  psd_rx);

@@ -1,8 +1,9 @@
-char __docstr__[] = "Kaiser-Bessel derived window example.";
+const char __docstr__[] = "Kaiser-Bessel derived window example.";
 
 #include <stdio.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -15,7 +16,7 @@ int main(int argc, char* argv[])
     liquid_argparse_parse(argc,argv);
 
     unsigned int i;
-    float w[n];
+    LIQUID_VLA(float, w, n);
     liquid_kbd_window(n,beta,w);
 
     FILE*fid = fopen(filename,"w");

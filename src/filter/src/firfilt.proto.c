@@ -58,7 +58,7 @@ FIRFILT() FIRFILT(_create)(TC * _h,
 {
     // validate input
     if (_n == 0)
-        return liquid_error_config("firfilt_%s_create(), filter length must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRFILT(), "firfilt_%s_create(), filter length must be greater than zero", EXTENSION_FULL);
 
     // create filter object and initialize
     FIRFILT() q = (FIRFILT()) malloc(sizeof(struct FIRFILT(_s)));
@@ -103,12 +103,12 @@ FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,
 {
 
     // compute temporary array for holding coefficients
-    float hf[_n];
+    LIQUID_VLA(float, hf, _n);
     if (liquid_firdes_kaiser(_n, _fc, _as, _mu, hf) != LIQUID_OK)
-        return liquid_error_config("firfilt_%s_create_kaiser(), invalid config", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRFILT(), "firfilt_%s_create_kaiser(), invalid config", EXTENSION_FULL);
 
     // copy coefficients to type-specific array
-    TC h[_n];
+    LIQUID_VLA(TC, h, _n);
     unsigned int i;
     for (i=0; i<_n; i++)
         h[i] = (TC) hf[i];
@@ -131,13 +131,13 @@ FIRFILT() FIRFILT(_create_rnyquist)(int          _type,
 {
     // generate square-root Nyquist filter
     unsigned int h_len = 2*_k*_m + 1;
-    float hf[h_len];
-    if (liquid_firdes_prototype(_type,_k,_m,_beta,_mu,hf) != LIQUID_OK)
-        return liquid_error_config("firfilt_%s_create_rnyquist(), invalid configuration", EXTENSION_FULL);
+    LIQUID_VLA(float, hf, h_len);
+    if (liquid_firdes_prototype((liquid_firfilt_type)_type,_k,_m,_beta,_mu,hf) != LIQUID_OK)
+        return liquid_error_config_ptr(FIRFILT(), "firfilt_%s_create_rnyquist(), invalid configuration", EXTENSION_FULL);
 
-    // copy coefficients to type-specific array (e.g. float complex)
+    // copy coefficients to type-specific array (e.g. liquid_float_complex)
     unsigned int i;
-    TC hc[h_len];
+    LIQUID_VLA(TC, hc, h_len);
     for (i=0; i<h_len; i++)
         hc[i] = hf[i];
 
@@ -154,14 +154,14 @@ FIRFILT() FIRFILT(_create_firdespm)(unsigned int _h_len,
                                     float        _as)
 {
     // generate square-root Nyquist filter
-    float hf[_h_len];
+    LIQUID_VLA(float, hf, _h_len);
     if (firdespm_lowpass(_h_len,_fc,_as,0,hf) != LIQUID_OK)
-        return liquid_error_config("firfilt_%s_create_firdespm(), invalid config", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRFILT(), "firfilt_%s_create_firdespm(), invalid config", EXTENSION_FULL);
 
-    // copy coefficients to type-specific array (e.g. float complex)
+    // copy coefficients to type-specific array (e.g. liquid_float_complex)
     // and scale by filter bandwidth to be consistent with other lowpass prototypes
     unsigned int i;
-    TC hc[_h_len];
+    LIQUID_VLA(TC, hc, _h_len);
     for (i=0; i<_h_len; i++)
         hc[i] = hf[i] * 0.5f / _fc;
 
@@ -174,16 +174,16 @@ FIRFILT() FIRFILT(_create_rect)(unsigned int _n)
 {
     // validate input
     if (_n == 0 || _n > 1024)
-        return liquid_error_config("firfilt_%s_create_rect(), filter length must be in [1,1024]", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRFILT(), "firfilt_%s_create_rect(), filter length must be in [1,1024]", EXTENSION_FULL);
 
     // create float array coefficients
-    float hf[_n];
+    LIQUID_VLA(float, hf, _n);
     unsigned int i;
     for (i=0; i<_n; i++)
         hf[i] = 1.0f;
 
     // copy coefficients to type-specific array
-    TC h[_n];
+    LIQUID_VLA(TC, h, _n);
     for (i=0; i<_n; i++)
         h[i] = (TC) hf[i];
 
@@ -197,12 +197,12 @@ FIRFILT() FIRFILT(_create_dc_blocker)(unsigned int _m,
 {
     // create float array coefficients and design filter
     unsigned int h_len = 2*_m+1;
-    float        hf[h_len];
+    LIQUID_VLA(float, hf, h_len);
     if (liquid_firdes_notch(_m, 0, _as, hf) != LIQUID_OK)
-        return liquid_error_config("firfilt_%s_create_dc_blocker(), invalid config",EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRFILT(), "firfilt_%s_create_dc_blocker(), invalid config",EXTENSION_FULL);
 
     // copy coefficients to type-specific array
-    TC h[h_len];
+    LIQUID_VLA(TC, h, h_len);
     unsigned int i;
     for (i=0; i<h_len; i++)
         h[i] = (TC) hf[i];
@@ -219,12 +219,12 @@ FIRFILT() FIRFILT(_create_notch)(unsigned int _m,
     // create float array coefficients and design filter
     unsigned int i;
     unsigned int h_len = 2*_m+1;    // filter length
-    float        hf[h_len];         // prototype filter with float coefficients
-    TC           h [h_len];         // output filter with type-specific coefficients
+    LIQUID_VLA(float, hf, h_len);         // prototype filter with float coefficients
+    LIQUID_VLA(TC, h, h_len);       // output filter with type-specific coefficients
 #if TC_COMPLEX
     // design notch filter as DC blocker, then mix to appropriate frequency
     if (liquid_firdes_notch(_m, 0, _as, hf) != LIQUID_OK)
-        return liquid_error_config("firfilt_%s_create_notch(), invalid config",EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRFILT(), "firfilt_%s_create_notch(), invalid config",EXTENSION_FULL);
     for (i=0; i<h_len; i++) {
         float phi = 2.0f * M_PI * _f0 * ((float)i - (float)_m);
         h[i] = cexpf(_Complex_I*phi) * (TC) hf[i];
@@ -232,7 +232,7 @@ FIRFILT() FIRFILT(_create_notch)(unsigned int _m,
 #else
     // design notch filter for real-valued coefficients directly
     if (liquid_firdes_notch(_m, _f0, _as, hf) != LIQUID_OK)
-        return liquid_error_config("firfilt_%s_create_notch(), invalid config",EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRFILT(), "firfilt_%s_create_notch(), invalid config",EXTENSION_FULL);
     for (i=0; i<h_len; i++)
         h[i] = hf[i];
 #endif
@@ -288,7 +288,7 @@ FIRFILT() FIRFILT(_copy)(FIRFILT() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("firfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRFILT(), "firfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
 
     // create filter object and copy base parameters
     FIRFILT() q_copy = (FIRFILT()) malloc(sizeof(struct FIRFILT(_s)));
@@ -492,7 +492,7 @@ int FIRFILT(_copy_coefficients)(FIRFILT() _q,
 //  _H      :   output frequency response
 int FIRFILT(_freqresponse)(FIRFILT()       _q,
                            float           _fc,
-                           float complex * _H)
+                           liquid_float_complex * _H)
 {
 #if TC_COMPLEX==0
     int rc = liquid_freqrespf(_q->h, _q->h_len, _fc, _H);
@@ -514,7 +514,7 @@ float FIRFILT(_groupdelay)(FIRFILT() _q,
                            float     _fc)
 {
     // copy coefficients
-    float h[_q->h_len];
+    LIQUID_VLA(float, h, _q->h_len);
     unsigned int i;
     for (i=0; i<_q->h_len; i++)
         h[i] = crealf(_q->h[i]);

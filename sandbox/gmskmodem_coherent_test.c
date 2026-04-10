@@ -59,9 +59,9 @@ int main(int argc, char*argv[])
 
     // arrays
     unsigned int  sym_in [num_symbols];     // input symbols
-    float complex x      [num_samples];     // transmitted signal
-    float complex y      [num_samples];     // received signal
-    float complex z      [num_samples];     // received signal
+    liquid_float_complex x      [num_samples];     // transmitted signal
+    liquid_float_complex y      [num_samples];     // received signal
+    liquid_float_complex z      [num_samples];     // received signal
 
     // create modem objects
     gmskmod mod = gmskmod_create(k, m, beta);

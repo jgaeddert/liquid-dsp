@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example tests the least mean-squares (LMS) equalizer (EQ) on a"
 " signal with an unknown modulation and carrier frequency offset."
 " Equalization is performed blind on a block of samples and the resulting"
@@ -8,10 +8,13 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <time.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -32,7 +35,7 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // modulation type/depth
-    modulation_scheme ms = liquid_getopt_str2mod(mod_scheme);
+    modulation_scheme ms = (modulation_scheme)liquid_getopt_str2mod(mod_scheme);
 
     // validate input
     if (num_samples == 0)
@@ -55,15 +58,15 @@ int main(int argc, char*argv[])
     // derived/fixed values
     unsigned int    i;
     unsigned int    buf_len = 37;
-    float complex   buf_input  [buf_len];
-    float complex   buf_channel[buf_len];
-    float complex   buf_output [buf_len];
+    LIQUID_VLA(liquid_float_complex, buf_input, buf_len);
+    LIQUID_VLA(liquid_float_complex, buf_channel, buf_len);
+    LIQUID_VLA(liquid_float_complex, buf_output, buf_len);
 
     // generate input sequence using symbol stream generator
     symstreamcf gen = symstreamcf_create_linear(LIQUID_FIRFILT_ARKAISER,k,m,beta,ms);
 
     // create multi-path channel filter
-    float complex hc[hc_len];
+    LIQUID_VLA(liquid_float_complex, hc, hc_len);
     for (i=0; i<hc_len; i++)
         hc[i] = (i==0) ? 0.5f : (randnf() + _Complex_I*randnf())*0.2f;
     firfilt_cccf channel = firfilt_cccf_create(hc, hc_len);

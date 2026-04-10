@@ -30,7 +30,7 @@
 modem modem_create(modulation_scheme _scheme)
     { return modemcf_create(_scheme); }
 
-modem modem_create_arbitrary(float complex * _table, unsigned int _M)
+modem modem_create_arbitrary(liquid_float_complex * _table, unsigned int _M)
     { return modemcf_create_arbitrary(_table, _M); }
 
 modem modem_recreate(modem _q, modulation_scheme _scheme)
@@ -54,17 +54,17 @@ unsigned int modem_get_bps(modem _q)
 modulation_scheme modem_get_scheme(modem _q)
     { return modemcf_get_scheme(_q); }
 
-int modem_modulate(modem _q, unsigned int _s, float complex * _y)
+int modem_modulate(modem _q, unsigned int _s, liquid_float_complex * _y)
     { return modemcf_modulate(_q, _s, _y); }
 
-int modem_demodulate(modem _q, float complex _x, unsigned int * _s)
+int modem_demodulate(modem _q, liquid_float_complex _x, unsigned int * _s)
     { return modemcf_demodulate(_q, _x, _s); }
 
-int modem_demodulate_soft(modem _q, float complex _x,
+int modem_demodulate_soft(modem _q, liquid_float_complex _x,
         unsigned int * _s, unsigned char * _soft_bits)
     { return modemcf_demodulate_soft(_q, _x, _s, _soft_bits); }
 
-int modem_get_demodulator_sample(modem _q, float complex * _x_hat)
+int modem_get_demodulator_sample(modem _q, liquid_float_complex * _x_hat)
     { return modemcf_get_demodulator_sample(_q, _x_hat); }
 
 float modem_get_demodulator_phase_error(modem _q)

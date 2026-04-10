@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the functionality of the packetizer object"
 " for soft-decision decoding."
 " Data are encoded using two forward error-correction schemes"
@@ -11,6 +11,7 @@ char __docstr__[] =
 #include <string.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // print usage/help message
@@ -25,18 +26,18 @@ int main(int argc, char *argv[])
     liquid_argparse_parse(argc,argv);
 
     // create packetizer object
-    crc_scheme check = liquid_getopt_str2crc(crc);
-    fec_scheme fec0  = liquid_getopt_str2fec(fs0);
-    fec_scheme fec1  = liquid_getopt_str2fec(fs1);
+    crc_scheme check = (crc_scheme)liquid_getopt_str2crc(crc);
+    fec_scheme fec0  = (fec_scheme)liquid_getopt_str2fec(fs0);
+    fec_scheme fec1  = (fec_scheme)liquid_getopt_str2fec(fs1);
     unsigned int msg_len_enc = packetizer_compute_enc_msg_len(msg_len_org,check,fec0,fec1);
     packetizer p = packetizer_create(msg_len_org,check,fec0,fec1);
     packetizer_print(p);
 
     // initialize arrays
-    unsigned char msg_org[msg_len_org];   // original message
-    unsigned char msg_enc[msg_len_enc];   // encoded message
-    unsigned char msg_rec[msg_len_enc*8]; // received message (soft bits)
-    unsigned char msg_dec[msg_len_org];   // decoded message
+    LIQUID_VLA(unsigned char, msg_org, msg_len_org);   // original message
+    LIQUID_VLA(unsigned char, msg_enc, msg_len_enc);   // encoded message
+    LIQUID_VLA(unsigned char, msg_rec, msg_len_enc*8); // received message (soft bits)
+    LIQUID_VLA(unsigned char, msg_dec, msg_len_org);   // decoded message
     int crc_pass;
 
     // initialize original data message

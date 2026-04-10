@@ -193,14 +193,17 @@ set(EXAMPLES
     )
 
 foreach(example IN LISTS EXAMPLES)
-
     add_executable(${example} ${example}.c)
     target_include_directories(${example} PRIVATE ${INCLUDE})
     target_link_libraries(${example} ${LIBNAME})
+
+    # MSVC: Compile C files as C++ for std::complex support
+    if(MSVC)
+        set_source_files_properties(${example}.c PROPERTIES LANGUAGE CXX)
+        target_compile_definitions(${example} PRIVATE LIQUID_MSVC_AS_CPP)
+    endif()
 
     # add example program as a test
     add_test(NAME ${example} COMMAND ${example})
     set_tests_properties(${example} PROPERTIES LABELS "example")
 endforeach()
-
-

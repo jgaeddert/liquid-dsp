@@ -23,6 +23,7 @@
 #include <assert.h>
 #include "liquid.autotest.h"
 #include "liquid.h"
+#include "liquid_vla.h"
 
 LIQUID_AUTOTEST(firpfbch_crcf_synthesis,"validate firpfbch synthesis correctness","",0.1)
 {
@@ -44,7 +45,7 @@ LIQUID_AUTOTEST(firpfbch_crcf_synthesis,"validate firpfbch synthesis correctness
     //        For the sake of consistency, use pseudo-random values
     //        chosen from m-sequences
     unsigned int h_len = p*num_channels;
-    float h[h_len];
+    LIQUID_VLA(float, h, h_len);
     msequence ms = msequence_create_default(6);
     for (i=0; i<h_len; i++)
         h[i] = (float)msequence_generate_symbol(ms, 2) - 1.5f; // (-1.5, -0.5, 0.5, 1.5)
@@ -56,15 +57,15 @@ LIQUID_AUTOTEST(firpfbch_crcf_synthesis,"validate firpfbch synthesis correctness
     // create filterbank channelizer object
     firpfbch_crcf q = firpfbch_crcf_create(LIQUID_SYNTHESIZER, num_channels, p, h);
 
-    float complex Y[num_symbols][num_channels];     // channelized input
-    float complex y0[num_samples];                  // time-domain output
-    float complex y1[num_samples];                  // time-domain output
+    LIQUID_VLA(liquid_float_complex, Y, num_symbols * num_channels);    // channelized input (flattened)
+    LIQUID_VLA(liquid_float_complex, y0, num_samples);                  // time-domain output
+    LIQUID_VLA(liquid_float_complex, y1, num_samples);                  // time-domain output
 
     // generate input sequence (complex noise)
     ms = msequence_create_default(7);
     for (i=0; i<num_symbols; i++) {
         for (j=0; j<num_channels; j++) {
-            Y[i][j] = 0.1f * M_SQRT1_2 * ((float)msequence_generate_symbol(ms,2) - 1.5f) +
+            Y[i*num_channels + j] = 0.1f * M_SQRT1_2 * ((float)msequence_generate_symbol(ms,2) - 1.5f) +
                       0.1f * M_SQRT1_2 * ((float)msequence_generate_symbol(ms,2) - 1.5f)*_Complex_I;
         }
     }
@@ -75,7 +76,7 @@ LIQUID_AUTOTEST(firpfbch_crcf_synthesis,"validate firpfbch synthesis correctness
     //
 
     for (i=0; i<num_symbols; i++)
-        firpfbch_crcf_synthesizer_execute(q, &Y[i][0], &y0[i*num_channels]);
+        firpfbch_crcf_synthesizer_execute(q, &Y[i*num_channels], &y0[i*num_channels]);
 
     // 
     // run traditional up-converter (inefficient)
@@ -87,7 +88,7 @@ LIQUID_AUTOTEST(firpfbch_crcf_synthesis,"validate firpfbch synthesis correctness
 
     unsigned int n;
     float dphi; // carrier frequency
-    float complex y_hat;
+    liquid_float_complex y_hat;
     for (i=0; i<num_channels; i++) {
         // reset filter
         firfilt_crcf_reset(f);
@@ -103,7 +104,7 @@ LIQUID_AUTOTEST(firpfbch_crcf_synthesis,"validate firpfbch synthesis correctness
             // interpolate sequence
             if ( (j%num_channels)==0 ) {
                 assert(n<num_symbols);
-                firfilt_crcf_push(f, Y[n][i]);
+                firfilt_crcf_push(f, Y[n*num_channels + i]);
                 n++;
             } else {
                 firfilt_crcf_push(f, 0);

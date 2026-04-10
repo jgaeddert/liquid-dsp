@@ -53,8 +53,8 @@ void benchmark_nco_mix_up(struct rusage *_start,
                           struct rusage *_finish,
                           unsigned long int *_num_iterations)
 {
-    float complex x[16],  y[16];
-    memset(x, 0, 16*sizeof(float complex));
+    liquid_float_complex x[16],  y[16];
+    memset(x, 0, 16*sizeof(liquid_float_complex));
 
     nco_crcf p = nco_crcf_create(LIQUID_NCO);
     nco_crcf_set_phase(p, 0.0f);
@@ -80,8 +80,8 @@ void benchmark_nco_mix_block_up(struct rusage *_start,
                                 struct rusage *_finish,
                                 unsigned long int *_num_iterations)
 {
-    float complex x[16], y[16];
-    memset(x, 0, 16*sizeof(float complex));
+    liquid_float_complex x[16], y[16];
+    memset(x, 0, 16*sizeof(liquid_float_complex));
 
     nco_crcf p = nco_crcf_create(LIQUID_NCO);
     nco_crcf_set_phase(p, 0.0f);

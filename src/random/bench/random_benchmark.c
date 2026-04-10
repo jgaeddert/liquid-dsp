@@ -85,7 +85,7 @@ void benchmark_random_complex_normal(struct rusage *_start,
     // normalize number of iterations
     *_num_iterations /= 2;
 
-    float complex x = 0.0f;
+    liquid_float_complex x = 0.0f;
     unsigned long int i;
 
     // start trials

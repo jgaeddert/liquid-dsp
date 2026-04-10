@@ -27,7 +27,9 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.internal.h"
 
@@ -41,6 +43,14 @@ int fskframegen_generate_preamble(fskframegen _q);
 int fskframegen_generate_header  (fskframegen _q);
 int fskframegen_generate_payload (fskframegen _q);
 
+// generator state (moved outside struct for C++ compatibility)
+enum fskframegen_state_e {
+    FSKFRAMEGEN_STATE_OFF,          // unassembled
+    FSKFRAMEGEN_STATE_PREAMBLE,     // preamble
+    FSKFRAMEGEN_STATE_HEADER,       // header
+    FSKFRAMEGEN_STATE_PAYLOAD,      // payload (frame)
+};
+
 // fskframe object structure
 struct fskframegen_s {
     unsigned int    m;                  // modulator bits/symbol
@@ -49,7 +59,7 @@ struct fskframegen_s {
     unsigned int    M;                  // modulator constellation size, M=2^m
     fskmod          mod_header;         // modulator object for the header (BFSK)
     fskmod          mod;                // modulator object (M-FSK)
-    float complex * buf;                // modulator transmit buffer [size: k x 1]
+    liquid_float_complex * buf;                // modulator transmit buffer [size: k x 1]
 
     // preamble
     unsigned int    preamble_sym_len;   // preamble symbols length
@@ -95,12 +105,7 @@ struct fskframegen_s {
 #endif
 
     // framing state
-    enum {
-                    STATE_OFF,          // unassembled
-                    STATE_PREAMBLE,     // preamble
-                    STATE_HEADER,       // header
-                    STATE_PAYLOAD,      // payload (frame)
-    }               state;
+    enum fskframegen_state_e state;
     int             frame_assembled;    // frame assembled flag
     int             frame_complete;     // frame completed flag
     unsigned int    symbol_counter;     // output symbol counter
@@ -121,7 +126,7 @@ fskframegen fskframegen_create()
     // create modulators
     q->mod_header = fskmod_create(   1, q->k, q->bandwidth);
     q->mod        = fskmod_create(q->m, q->k, q->bandwidth);
-    q->buf        = (float complex*) malloc( q->k * sizeof(float complex) );
+    q->buf        = (liquid_float_complex*) malloc( q->k * sizeof(liquid_float_complex) );
 
     // preamble symbols (over-sampled by 2)
     msequence preamble_ms = msequence_create(6, 0x6d, 1);
@@ -242,7 +247,7 @@ int fskframegen_reset(fskframegen _q)
     fskmod_reset(_q->mod);
 
     // reset states
-    _q->state = STATE_OFF;
+    _q->state = FSKFRAMEGEN_STATE_OFF;
     _q->frame_assembled = 0;
     _q->frame_complete  = 0;
     _q->symbol_counter  = 0;
@@ -253,6 +258,7 @@ int fskframegen_reset(fskframegen _q)
 // print fskframegen object internals
 int fskframegen_print(fskframegen _q)
 {
+    (void)_q;
 #if 0
     printf("fskframegen:\n");
     printf("  physical properties\n");
@@ -290,6 +296,10 @@ int fskframegen_assemble(fskframegen     _q,
                          fec_scheme      _fec0,
                          fec_scheme      _fec1)
 {
+    (void)_payload_len;
+    (void)_check;
+    (void)_fec0;
+    (void)_fec1;
 #if 1
     liquid_error(LIQUID_ENOIMP,"fskframegen_assemble(), base functionality not implemented; ignoring input parameters for now");
 #else
@@ -332,7 +342,7 @@ int fskframegen_assemble(fskframegen     _q,
 #endif
 
     // set state appropriately
-    _q->state = STATE_PREAMBLE;
+    _q->state = FSKFRAMEGEN_STATE_PREAMBLE;
     return LIQUID_OK;
 }
 
@@ -354,7 +364,7 @@ unsigned int fskframegen_getframelen(fskframegen _q)
 
 // write sample to output buffer
 int fskframegen_write_samples(fskframegen     _q,
-                              float complex * _buf,
+                              liquid_float_complex * _buf,
                               unsigned int    _buf_len)
 {
     unsigned int i;
@@ -427,10 +437,10 @@ int fskframegen_encode_header(fskframegen     _q,
 int fskframegen_generate_symbol(fskframegen _q)
 {
     switch (_q->state) {
-    case STATE_OFF:      return fskframegen_generate_zeros(_q);
-    case STATE_PREAMBLE: return fskframegen_generate_preamble(_q);
-    case STATE_HEADER:   return fskframegen_generate_header(_q);
-    case STATE_PAYLOAD:  return fskframegen_generate_payload(_q);
+    case FSKFRAMEGEN_STATE_OFF:      return fskframegen_generate_zeros(_q);
+    case FSKFRAMEGEN_STATE_PREAMBLE: return fskframegen_generate_preamble(_q);
+    case FSKFRAMEGEN_STATE_HEADER:   return fskframegen_generate_header(_q);
+    case FSKFRAMEGEN_STATE_PAYLOAD:  return fskframegen_generate_payload(_q);
     default:;
     }
     return liquid_error(LIQUID_EINT,"fskframegen_writesymbol(), unknown/unsupported internal state");
@@ -456,7 +466,7 @@ int fskframegen_generate_preamble(fskframegen _q)
     // NOTE: preamble is over-sampled by 2
     if (_q->symbol_counter == 2*_q->preamble_sym_len) {
         _q->symbol_counter = 0;
-        _q->state = STATE_HEADER;
+        _q->state = FSKFRAMEGEN_STATE_HEADER;
     }
     return LIQUID_OK;
 }
@@ -471,7 +481,7 @@ int fskframegen_generate_header(fskframegen _q)
     
     if (_q->symbol_counter == _q->header_sym_len) {
         _q->symbol_counter = 0;
-        _q->state = STATE_PAYLOAD;
+        _q->state = FSKFRAMEGEN_STATE_PAYLOAD;
     }
     return LIQUID_OK;
 }
@@ -487,7 +497,7 @@ int fskframegen_generate_payload(fskframegen _q)
     if (_q->symbol_counter == _q->payload_sym_len) {
         _q->symbol_counter = 0;
         _q->frame_assembled = 0;
-        _q->state = STATE_OFF;
+        _q->state = FSKFRAMEGEN_STATE_OFF;
     }
     return LIQUID_OK;
 }

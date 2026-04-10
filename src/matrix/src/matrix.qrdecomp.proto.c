@@ -44,7 +44,7 @@ int MATRIX(_qrdecomp_gramschmidt)(T *          _x,
     unsigned int i,j,k;
 
     // generate and initialize matrices
-    T e[n*n];   // normalized...
+    LIQUID_VLA(T, e, n*n);   // normalized...
     for (i=0; i<n*n; i++)
         e[i] = 0.0f;
 

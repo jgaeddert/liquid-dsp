@@ -38,7 +38,7 @@ void bsync_cccf_bench(struct rusage *     _start,
     *_num_iterations /= _n;
 
     // generate sequence (random)
-    float complex h[_n];
+    LIQUID_VLA(liquid_float_complex, h, _n);
     unsigned long int i;
     for (i=0; i<_n; i++) {
         h[i] = (rand() % 2 ? 1.0f : -1.0f) +
@@ -49,13 +49,13 @@ void bsync_cccf_bench(struct rusage *     _start,
     bsync_cccf q = bsync_cccf_create(_n,h);
 
     // input sequence (random)
-    float complex x[7];
+    LIQUID_VLA(liquid_float_complex, x, 7);
     for (i=0; i<7; i++) {
         x[i] = (rand() % 2 ? 1.0f : -1.0f) +
                (rand() % 2 ? 1.0f : -1.0f)*_Complex_I;
     }
 
-    float complex rxy;
+    liquid_float_complex rxy;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);

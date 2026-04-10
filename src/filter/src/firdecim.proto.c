@@ -47,9 +47,9 @@ FIRDECIM() FIRDECIM(_create)(unsigned int _M,
 {
     // validate input
     if (_h_len == 0)
-        return liquid_error_config("decim_%s_create(), filter length must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRDECIM(), "decim_%s_create(), filter length must be greater than zero", EXTENSION_FULL);
     if (_M == 0)
-        return liquid_error_config("decim_%s_create(), decimation factor must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRDECIM(), "decim_%s_create(), decimation factor must be greater than zero", EXTENSION_FULL);
 
     FIRDECIM() q = (FIRDECIM()) malloc(sizeof(struct FIRDECIM(_s)));
     q->h_len = _h_len;
@@ -88,20 +88,20 @@ FIRDECIM() FIRDECIM(_create_kaiser)(unsigned int _M,
 {
     // validate input
     if (_M < 2)
-        return liquid_error_config("decim_%s_create_kaiser(), decim factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRDECIM(), "decim_%s_create_kaiser(), decim factor must be greater than 1", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("decim_%s_create_kaiser(), filter delay must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRDECIM(), "decim_%s_create_kaiser(), filter delay must be greater than 0", EXTENSION_FULL);
     if (_as < 0.0f)
-        return liquid_error_config("decim_%s_create_kaiser(), stop-band attenuation must be positive", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRDECIM(), "decim_%s_create_kaiser(), stop-band attenuation must be positive", EXTENSION_FULL);
 
     // compute filter coefficients (floating point precision)
     unsigned int h_len = 2*_M*_m + 1;
-    float hf[h_len];
+    LIQUID_VLA(float, hf, h_len);
     float fc = 0.5f / (float) (_M);
     liquid_firdes_kaiser(h_len, fc, _as, 0.0f, hf);
 
-    // copy coefficients to type-specific array (e.g. float complex)
-    TC hc[h_len];
+    // copy coefficients to type-specific array (e.g. liquid_float_complex)
+    LIQUID_VLA(TC, hc, h_len);
     unsigned int i;
     for (i=0; i<h_len; i++)
         hc[i] = hf[i];
@@ -124,23 +124,23 @@ FIRDECIM() FIRDECIM(_create_prototype)(int          _type,
 {
     // validate input
     if (_M < 2)
-        return liquid_error_config("decim_%s_create_prototype(), decimation factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRDECIM(), "decim_%s_create_prototype(), decimation factor must be greater than 1", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("decim_%s_create_prototype(), filter delay must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRDECIM(), "decim_%s_create_prototype(), filter delay must be greater than 0", EXTENSION_FULL);
     if (_beta < 0.0f || _beta > 1.0f)
-        return liquid_error_config("decim_%s_create_prototype(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRDECIM(), "decim_%s_create_prototype(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
     if (_dt < -1.0f || _dt > 1.0f)
-        return liquid_error_config("decim_%s_create_prototype(), filter fractional sample delay must be in [-1,1]", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRDECIM(), "decim_%s_create_prototype(), filter fractional sample delay must be in [-1,1]", EXTENSION_FULL);
 
     // generate square-root Nyquist filter
     unsigned int h_len = 2*_M*_m + 1;
-    float h[h_len];
-    if (liquid_firdes_prototype(_type,_M,_m,_beta,_dt,h) != LIQUID_OK)
-        return liquid_error_config("decim_%s_create_prototype(), could not design internal filter", EXTENSION_FULL);
+    LIQUID_VLA(float, h, h_len);
+    if (liquid_firdes_prototype((liquid_firfilt_type)_type,_M,_m,_beta,_dt,h) != LIQUID_OK)
+        return liquid_error_config_ptr(FIRDECIM(), "decim_%s_create_prototype(), could not design internal filter", EXTENSION_FULL);
 
-    // copy coefficients to type-specific array (e.g. float complex)
+    // copy coefficients to type-specific array (e.g. liquid_float_complex)
     unsigned int i;
-    TC hc[h_len];
+    LIQUID_VLA(TC, hc, h_len);
     for (i=0; i<h_len; i++)
         hc[i] = h[i];
 
@@ -153,7 +153,7 @@ FIRDECIM() FIRDECIM(_copy)(FIRDECIM() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("firfilt_%s_create(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRDECIM(), "firfilt_%s_create(), object cannot be NULL", EXTENSION_FULL);
 
     // create filter object and copy base parameters
     FIRDECIM() q_copy = (FIRDECIM()) malloc(sizeof(struct FIRDECIM(_s)));

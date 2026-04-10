@@ -26,13 +26,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <assert.h>
 
 #include "liquid.internal.h"
 
 // synchronization callback, return 0:continue, 1:reset
-int framesync64_callback_internal(float complex * _buf,
+int framesync64_callback_internal(liquid_float_complex * _buf,
                                   unsigned int    _buf_len,
                                   void *          _context);
 
@@ -42,7 +44,7 @@ int framesync64_callback_internal(float complex * _buf,
 //  -1  : number of packets detected
 //  -2  : id using first 4 bytes of header
 //  -3  : write with random extension
-int framesync64_debug_export(framesync64 _q, int _code, float complex * _payload_rx);
+int framesync64_debug_export(framesync64 _q, int _code, liquid_float_complex * _payload_rx);
 
 // framesync64 object structure
 struct framesync64_s {
@@ -58,12 +60,12 @@ struct framesync64_s {
     qdsync_cccf         sync;           // sequence detector
 
     // preamble
-    float complex preamble_pn[64];      // known 64-symbol p/n sequence
-    float complex preamble_rx[64];      // received p/n symbols
+    LIQUID_VLA(liquid_float_complex, preamble_pn, 64);      // known 64-symbol p/n sequence
+    LIQUID_VLA(liquid_float_complex, preamble_rx, 64);      // received p/n symbols
 
     // payload decoder
-    float complex payload_sym[600];     // received payload symbols
-    unsigned char payload_dec[ 72];     // decoded payload bytes
+    LIQUID_VLA(liquid_float_complex, payload_sym, 600);     // received payload symbols
+    LIQUID_VLA(unsigned char, payload_dec,  72);     // decoded payload bytes
     qpacketmodem  dec;                  // packet demodulator/decoder
     qpilotsync    pilotsync;            // pilot extraction, carrier recovery
     int           payload_valid;        // did payload pass crc?
@@ -107,7 +109,7 @@ framesync64 framesync64_create(framesync_callback _callback,
     int fec1       = LIQUID_FEC_GOLAY2412;
     int mod_scheme = LIQUID_MODEM_QPSK;
     q->dec         = qpacketmodem_create();
-    qpacketmodem_configure(q->dec, 72, check, fec0, fec1, mod_scheme);
+    qpacketmodem_configure(q->dec, 72, (crc_scheme)check, (fec_scheme)fec0, (fec_scheme)fec1, mod_scheme);
     assert( qpacketmodem_get_frame_len(q->dec)==600 );
 
     // create pilot synchronizer
@@ -138,7 +140,7 @@ framesync64 framesync64_copy(framesync64 q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("framesync64_copy(), object cannot be NULL");
+        return (framesync64)liquid_error_config("framesync64_copy(), object cannot be NULL");
 
     // allocate memory for new object
     framesync64 q_copy = (framesync64) malloc(sizeof(struct framesync64_s));
@@ -226,7 +228,7 @@ int framesync64_set_userdata(framesync64 _q,
 //  _x      :   input sample array [size: _n x 1]
 //  _n      :   number of input samples
 int framesync64_execute(framesync64     _q,
-                        float complex * _x,
+                        liquid_float_complex * _x,
                         unsigned int    _n)
 {
     return qdsync_cccf_execute(_q->sync, _x, _n);
@@ -237,10 +239,11 @@ int framesync64_execute(framesync64     _q,
 //
 
 // synchronization callback, return 0:continue, 1:reset
-int framesync64_callback_internal(float complex * _buf,
+int framesync64_callback_internal(liquid_float_complex * _buf,
                                   unsigned int    _buf_len,
                                   void *          _context)
 {
+    (void)_buf_len;
     // type cast context input as frame synchronizer object
     framesync64 _q = (framesync64)_context;
 
@@ -292,12 +295,14 @@ int framesync64_callback_internal(float complex * _buf,
 // DEPRECATED: enable debugging
 int framesync64_debug_enable(framesync64 _q)
 {
+    (void)_q;
     return LIQUID_OK;
 }
 
 // DEPRECATED: disable debugging
 int framesync64_debug_disable(framesync64 _q)
 {
+    (void)_q;
     return LIQUID_OK;
 }
 
@@ -305,6 +310,8 @@ int framesync64_debug_disable(framesync64 _q)
 int framesync64_debug_print(framesync64   _q,
                              const char * _filename)
 {
+    (void)_q;
+    (void)_filename;
     return LIQUID_OK;
 }
 
@@ -384,7 +391,7 @@ framedatastats_s framesync64_get_framedatastats(framesync64 _q)
 // export debugging samples to file
 int framesync64_debug_export(framesync64     _q,
                              int             _code,
-                             float complex * _payload_rx)
+                             liquid_float_complex * _payload_rx)
 {
     // determine what to do based on callback return code
     if (_code == 0) {
@@ -420,9 +427,9 @@ int framesync64_debug_export(framesync64     _q,
     // TODO: write file header?
 
     // write debug buffer
-    float complex * rc;
+    liquid_float_complex * rc;
     windowcf_read(_q->buf_debug, &rc);
-    fwrite(rc, sizeof(float complex), LIQUID_FRAME64_LEN, fid);
+    fwrite(rc, sizeof(liquid_float_complex), LIQUID_FRAME64_LEN, fid);
 
     // export framesync stats
     //framesyncstats_export(_q->framesyncstats, fid);
@@ -437,8 +444,8 @@ int framesync64_debug_export(framesync64     _q,
     fwrite(&(_q->framesyncstats.evm),      sizeof(float), 1, fid);
 
     // export payload values
-    fwrite(_payload_rx,     sizeof(float complex), 630, fid);
-    fwrite(_q->payload_sym, sizeof(float complex), 600, fid);
+    fwrite(_payload_rx,     sizeof(liquid_float_complex), 630, fid);
+    fwrite(_q->payload_sym, sizeof(liquid_float_complex), 600, fid);
     fwrite(_q->payload_dec, sizeof(unsigned char),  72, fid);
 
     fclose(fid);

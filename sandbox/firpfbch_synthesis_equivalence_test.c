@@ -69,8 +69,8 @@ int main() {
     }
 
     // generate inverse DFT object
-    float complex x[num_channels];  // time-domain buffer
-    float complex X[num_channels];  // freq-domain buffer
+    liquid_float_complex x[num_channels];  // time-domain buffer
+    liquid_float_complex X[num_channels];  // freq-domain buffer
 #if 1
     fftplan ifft = fft_create_plan(num_channels, X, x, LIQUID_FFT_BACKWARD, 0);
 #else
@@ -80,9 +80,9 @@ int main() {
     // generate filter object
     firfilt_crcf f = firfilt_crcf_create(h, h_len);
 
-    float complex Y[num_symbols][num_channels];     // channelized input
-    float complex y0[num_samples];                  // time-domain output
-    float complex y1[num_samples];                  // time-domain output
+    liquid_float_complex Y[num_symbols][num_channels];     // channelized input
+    liquid_float_complex y0[num_samples];                  // time-domain output
+    liquid_float_complex y1[num_samples];                  // time-domain output
 
     // generate input sequence (complex noise)
     for (i=0; i<num_symbols; i++) {
@@ -99,7 +99,7 @@ int main() {
     // run synthesis filter bank
     //
 
-    float complex * r;      // read pointer
+    liquid_float_complex * r;      // read pointer
     for (i=0; i<num_symbols; i++) {
 
         // load buffers
@@ -131,7 +131,7 @@ int main() {
 
     unsigned int n;
     float dphi; // carrier frequency
-    float complex y_hat;
+    liquid_float_complex y_hat;
     for (i=0; i<num_channels; i++) {
         // reset filter
         firfilt_crcf_reset(f);
@@ -187,7 +187,7 @@ int main() {
     // compare results
     // 
     float mse = 0.0f;
-    float complex d;
+    liquid_float_complex d;
     for (i=0; i<num_samples; i++) {
         d = y0[i] - y1[i];
         mse += crealf(d*conjf(d));

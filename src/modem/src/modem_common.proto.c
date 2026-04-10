@@ -53,7 +53,7 @@ struct MODEM(_s)
     // By storing these values in an array they do not need to be
     // calculated during run-time.  This speeds up the demodulation by
     // approximately 8%.
-    T ref[MAX_MOD_BITS_PER_SYMBOL];
+    LIQUID_VLA(T, ref, MAX_MOD_BITS_PER_SYMBOL);
 
     // modulation
     TC * symbol_map;     // complete symbol map
@@ -95,10 +95,10 @@ struct MODEM(_s)
         // APSK modem
         struct {
             unsigned int num_levels;    // number of levels
-            unsigned int p[8];          // number of symbols per level
-            T r[8];                     // radii of levels
-            T r_slicer[8];              // slicer radii of levels
-            T phi[8];                   // phase offset of levels
+            LIQUID_VLA(unsigned int, p, 8);          // number of symbols per level
+            LIQUID_VLA(T, r, 8);                     // radii of levels
+            LIQUID_VLA(T, r_slicer, 8);              // slicer radii of levels
+            LIQUID_VLA(T, phi, 8);                   // phase offset of levels
             unsigned char * map;        // symbol mapping (allocated)
         } apsk;
 
@@ -205,11 +205,11 @@ MODEM() MODEM(_create)(modulation_scheme _scheme)
     
     // arbitrary modem
     case LIQUID_MODEM_ARB:
-        return liquid_error_config("modem%s_create(), cannot create arbitrary modem (LIQUID_MODEM_ARB) without specifying constellation", EXTENSION);
+        return liquid_error_config_ptr(MODEM(), "modem%s_create(), cannot create arbitrary modem (LIQUID_MODEM_ARB) without specifying constellation", EXTENSION);
 
     // unknown modulation scheme
     default:
-        return liquid_error_config("modem%s_create(), unknown/unsupported modulation scheme : %u",EXTENSION,_scheme);
+        return liquid_error_config_ptr(MODEM(), "modem%s_create(), unknown/unsupported modulation scheme : %u",EXTENSION,_scheme);
     }
 
     return NULL;
@@ -235,7 +235,7 @@ MODEM() MODEM(_copy)(MODEM() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("modem%s_copy(), object cannot be NULL", EXTENSION);
+        return liquid_error_config_ptr(MODEM(), "modem%s_copy(), object cannot be NULL", EXTENSION);
 
     // handle special case for arbitrary modem types
     if (q_orig->scheme == LIQUID_MODEM_ARB) {
@@ -493,8 +493,8 @@ int MODEM(_demodulate_soft_table)(MODEM() _q,
     // set and initialize minimum bit values
     unsigned int i;
     unsigned int k;
-    T dmin_0[bps];
-    T dmin_1[bps];
+    LIQUID_VLA(T, dmin_0, bps);
+    LIQUID_VLA(T, dmin_1, bps);
     for (k=0; k<bps; k++) {
         dmin_0[k] = 8.0f;
         dmin_1[k] = 8.0f;
@@ -531,7 +531,7 @@ int MODEM(_demodulate_soft_table)(MODEM() _q,
         // look at each bit in 'nearest neighbor' and update minimum
         for (k=0; k<bps; k++) {
             // strip bit
-            unsigned int bit = (softab[s*p+i] >> (bps-k-1)) & 0x01;
+            bit = (softab[s*p+i] >> (bps-k-1)) & 0x01;
             if ( bit ) {
                 if (d < dmin_1[k]) dmin_1[k] = d;
             } else {
@@ -617,10 +617,10 @@ int MODEM(_demodulate_linear_array_ref)(T              _v,
                                         T *            _res)
 {
     // initialize loop counter
-    register unsigned int i;
+    unsigned int i;
 
     // initialize demodulated symbol
-    register unsigned int s=0;
+    unsigned int s=0;
 
     for (i=0; i<_m; i++) {
         // prepare symbol for next demodulated bit
@@ -665,7 +665,7 @@ int MODEM(_demodsoft_gentab)(MODEM()      _q,
     // generate constellation
     // TODO : enforce full constellation for modulation
     unsigned int M = _q->M;  // constellation size
-    TC c[M];         // constellation
+    LIQUID_VLA(TC, c, M);         // constellation
     for (i=0; i<M; i++)
         MODEM(_modulate)(_q, i, &c[i]);
 

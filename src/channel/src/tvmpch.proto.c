@@ -52,11 +52,11 @@ TVMPCH() TVMPCH(_create)(unsigned int _n,
 {
     // validate input
     if (_n < 1)
-        return liquid_error_config("tvmpch_%s_create(), filter length must be greater than one", EXTENSION_FULL);
+        return liquid_error_config_ptr(TVMPCH(), "tvmpch_%s_create(), filter length must be greater than one", EXTENSION_FULL);
     if (_std < 0.0f)
-        return liquid_error_config("tvmpch_%s_create(), standard deviation must be positive", EXTENSION_FULL);
+        return liquid_error_config_ptr(TVMPCH(), "tvmpch_%s_create(), standard deviation must be positive", EXTENSION_FULL);
     if (_tau < 0.0f || _tau > 1.0f)
-        return liquid_error_config("tvmpch_%s_create(), coherence time must be in [0,1]", EXTENSION_FULL);
+        return liquid_error_config_ptr(TVMPCH(), "tvmpch_%s_create(), coherence time must be in [0,1]", EXTENSION_FULL);
 
     // create filter object and initialize
     TVMPCH() q = (TVMPCH()) malloc(sizeof(struct TVMPCH(_s)));
@@ -87,7 +87,7 @@ TVMPCH() TVMPCH(_copy)(TVMPCH() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("tvmpch_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(TVMPCH(), "tvmpch_%s_copy(), object cannot be NULL", EXTENSION_FULL);
 
     // create filter object and copy base parameters
     TVMPCH() q_copy = (TVMPCH()) malloc(sizeof(struct TVMPCH(_s)));
@@ -209,10 +209,10 @@ unsigned int TVMPCH(_get_length)(TVMPCH() _q)
 //  _H      :   output frequency response
 int TVMPCH(_freqresponse)(TVMPCH()        _q,
                           float           _fc,
-                          float complex * _H)
+                          liquid_float_complex * _H)
 {
     unsigned int i;
-    float complex H = 0.0f;
+    liquid_float_complex H = 0.0f;
 
     // compute dot product between coefficients and exp{ 2 pi fc {0..n-1} }
     for (i=0; i<_q->h_len; i++)
@@ -234,7 +234,7 @@ float TVMPCH(_groupdelay)(TVMPCH() _q,
                           float    _fc)
 {
     // copy coefficients to be in correct order
-    float h[_q->h_len];
+    LIQUID_VLA(float, h, _q->h_len);
     unsigned int i;
     unsigned int n = _q->h_len;
     for (i=0; i<n; i++)

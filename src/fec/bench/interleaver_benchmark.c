@@ -45,8 +45,8 @@ void interleaver_bench(struct rusage *_start,
     interleaver q = interleaver_create(_n);
     interleaver_set_depth(q, 4);
 
-    unsigned char x[_n];
-    unsigned char y[_n];
+    LIQUID_VLA(unsigned char, x, _n);
+    LIQUID_VLA(unsigned char, y, _n);
     
     unsigned long int i;
     for (i=0; i<_n; i++)

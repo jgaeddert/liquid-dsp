@@ -40,6 +40,11 @@ static int callback(unsigned char *  _header,
                     framesyncstats_s _stats,
                     void *           _userdata)
 {
+    (void)_header;
+    (void)_header_valid;
+    (void)_payload;
+    (void)_payload_len;
+    (void)_stats;
     framedata * fd = (framedata*) _userdata;
     fd->num_frames_detected += 1;
     fd->num_frames_valid    += _payload_valid ? 1 : 0;
@@ -59,7 +64,7 @@ void benchmark_framesync64(
 
     // frame data
     unsigned char header[8] = {0, 1, 2, 3, 4, 5, 6, 7};
-    unsigned char payload[64];
+    LIQUID_VLA(unsigned char, payload, 64);
     // initialize payload
     for (i=0; i<64; i++)
         payload[i] = rand() & 0xff;
@@ -71,7 +76,7 @@ void benchmark_framesync64(
     // generate the frame
     //unsigned int frame_len = framegen64_getframelen(fg);
     unsigned int frame_len = LIQUID_FRAME64_LEN;
-    float complex frame[frame_len];
+    LIQUID_VLA(liquid_float_complex, frame, frame_len);
     framegen64_execute(fg, header, payload, frame);
 
     // add some noise

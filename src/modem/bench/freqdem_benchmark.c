@@ -35,14 +35,14 @@ void benchmark_freqdem(struct rusage *     _start,
     float   kf  = 0.05f; // modulation index
     freqdem dem = freqdem_create(kf);
 
-    float complex r[20];    // modulated signal
-    float         m[20];    // message signal
+    LIQUID_VLA(liquid_float_complex, r, 20);    // modulated signal
+    LIQUID_VLA(float, m, 20);    // message signal
 
     unsigned long int i;
 
     // generate modulated signal
     for (i=0; i<20; i++)
-        r[i] = 0.3f*cexpf(_Complex_I*2*M_PI*i/20.0f);
+        r[i] = 0.3f*cexpf(_Complex_I*2.0f*(float)M_PI*(float)i/20.0f);
 
     // start trials
     getrusage(RUSAGE_SELF, _start);

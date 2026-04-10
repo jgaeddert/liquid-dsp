@@ -24,10 +24,12 @@
 // data for testing matrix multiplication
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
-
+#endif
+#include "liquid.h"
 // matrixcf_data_mul_x [size: 5 x 4]
-float complex matrixcf_data_mul_x[] = {
+liquid_float_complex matrixcf_data_mul_x[] = {
     1.131277322769 +  -2.908640623093*_Complex_I /* ( 0, 0) */,
     0.847201466560 +  -1.637244105339*_Complex_I /* ( 0, 1) */,
    -2.173580169678 +   0.096817605197*_Complex_I /* ( 0, 2) */,
@@ -50,7 +52,7 @@ float complex matrixcf_data_mul_x[] = {
     2.234328985214 +   0.855401337147*_Complex_I /* ( 4, 3) */};
 
 // matrixcf_data_mul_y [size: 4 x 3]
-float complex matrixcf_data_mul_y[] = {
+liquid_float_complex matrixcf_data_mul_y[] = {
     0.122429788113 +  -1.041572093964*_Complex_I /* ( 0, 0) */,
    -1.123313307762 +  -1.396123170853*_Complex_I /* ( 0, 1) */,
    -0.318034142256 +  -0.537796914577*_Complex_I /* ( 0, 2) */,
@@ -65,7 +67,7 @@ float complex matrixcf_data_mul_y[] = {
     0.562124013901 +   0.047597970814*_Complex_I /* ( 3, 2) */};
 
 // matrixcf_data_mul_z [size: 5 x 3]
-float complex matrixcf_data_mul_z[] = {
+liquid_float_complex matrixcf_data_mul_z[] = {
    -3.015598273252 +  -3.823225604286*_Complex_I /* ( 0, 0) */,
    -6.503138041472 +   2.522251659946*_Complex_I /* ( 0, 1) */,
    -3.033435877267 +  -2.533375977709*_Complex_I /* ( 0, 2) */,

@@ -30,7 +30,7 @@
 MODEM() MODEM(_create_qam)(unsigned int _bits_per_symbol)
 {
     if (_bits_per_symbol < 1 )
-        return liquid_error_config("modem%s_create_qam(), modem must have at least 2 bits/symbol",EXTENSION);
+        return liquid_error_config_ptr(MODEM(), "modem%s_create_qam(), modem must have at least 2 bits/symbol",EXTENSION);
 
     MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
 
@@ -71,7 +71,7 @@ MODEM() MODEM(_create_qam)(unsigned int _bits_per_symbol)
         q->data.qam.alpha = sqrtf(2.0f / (T)(q->M) );
 #else
     default:
-        return liquid_error_config("modem%s_create_qam(), cannot support QAM with m > 8",EXTENSION);
+        return liquid_error_config_ptr(MODEM(), "modem%s_create_qam(), cannot support QAM with m > 8",EXTENSION);
 #endif
     }
 

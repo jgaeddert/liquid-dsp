@@ -34,7 +34,7 @@
 #define AGC(name)           LIQUID_CONCAT(agc_crcf,name)
 
 #define T                   float           // general
-#define TC                  float complex   // input/output
+#define TC                  liquid_float_complex   // input/output
 
 #define TC_COMPLEX          1
 

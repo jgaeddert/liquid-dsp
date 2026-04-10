@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Complex infinite impulse response filter example. Demonstrates the"
 " functionality of iirfilt with complex coefficients by designing a"
 " filter with specified parameters and then filters noise.";
@@ -7,9 +7,12 @@ char __docstr__[] =
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -76,8 +79,8 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // allocate memory for data arrays
-    float complex x[n];
-    float complex y[n];
+    LIQUID_VLA(liquid_float_complex, x, n);
+    LIQUID_VLA(liquid_float_complex, y, n);
 
     // generate input signal (noisy sine wave with decaying amplitude)
     unsigned int wlen = (3*n)/4;
@@ -92,7 +95,7 @@ int main(int argc, char*argv[])
 
     // compute two-sided frequency response
     unsigned int nfft=512;
-    float complex H[nfft];
+    LIQUID_VLA(liquid_float_complex, H, nfft);
     for (i=0; i<nfft; i++) {
         float freq = (float)i / (float)nfft - 0.5f;
         iirfilt_cccf_freqresponse(q, freq, &H[i]);

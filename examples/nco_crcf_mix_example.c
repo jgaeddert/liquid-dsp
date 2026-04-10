@@ -1,9 +1,10 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates how to mix a signal down to complex baseband.";
 
 #include <stdio.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -39,7 +40,7 @@ int main(int argc, char* argv[])
 
     //
     unsigned int  buf_len = 1024;
-    float complex buf[buf_len];
+    LIQUID_VLA(liquid_float_complex, buf, buf_len);
     unsigned int  total_samples = 0;
     while (total_samples < num_samples) {
         // write samples to buffer
@@ -60,8 +61,8 @@ int main(int argc, char* argv[])
     printf("total samples: %u\n", total_samples);
 
     // compute power spectral density output
-    float psd0[nfft];
-    float psd1[nfft];
+    LIQUID_VLA(float, psd0, nfft);
+    LIQUID_VLA(float, psd1, nfft);
     spgramcf_get_psd(p0, psd0);
     spgramcf_get_psd(p1, psd1);
 

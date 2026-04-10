@@ -24,10 +24,12 @@
 // data for testing L/U decomposition
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
-
+#endif
+#include "liquid.h"
 // matrixcf_data_ludecomp_A [size: 8 x 8]
-float complex matrixcf_data_ludecomp_A[] = {
+liquid_float_complex matrixcf_data_ludecomp_A[] = {
     0.455808967352 +   0.239869371057*_Complex_I /* ( 0, 0) */,
     1.076113820076 +   0.303303003311*_Complex_I /* ( 0, 1) */,
    -1.174549579620 +  -1.593330740929*_Complex_I /* ( 0, 2) */,

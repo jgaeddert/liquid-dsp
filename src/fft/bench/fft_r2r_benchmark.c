@@ -28,6 +28,7 @@
 
 #include <sys/resource.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 
 #define LIQUID_FFT_R2R_BENCH_API(N,K)   \
 (   struct rusage *_start,              \
@@ -43,7 +44,8 @@ void fft_r2r_bench(struct rusage *_start,
                    int _kind)
 {
     // initialize arrays, plan
-    float x[_n], y[_n];
+    LIQUID_VLA(float, x, _n);
+    LIQUID_VLA(float, y, _n);
     int _flags = 0;
     fftplan p = fft_create_plan_r2r_1d(_n, x, y, _kind, _flags);
     

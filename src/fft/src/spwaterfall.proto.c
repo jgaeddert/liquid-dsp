@@ -30,7 +30,9 @@
 #include <math.h>
 #include <assert.h>
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.internal.h"
 
 struct SPWATERFALL(_s) {
@@ -79,17 +81,17 @@ SPWATERFALL() SPWATERFALL(_create)(unsigned int _nfft,
 {
     // validate input
     if (_nfft < 2)
-        return liquid_error_config("spwaterfall%s_create(), fft size must be at least 2", EXTENSION);
+        return liquid_error_config_ptr(SPWATERFALL(), "spwaterfall%s_create(), fft size must be at least 2", EXTENSION);
     if (_window_len > _nfft)
-        return liquid_error_config("spwaterfall%s_create(), window size cannot exceed fft size", EXTENSION);
+        return liquid_error_config_ptr(SPWATERFALL(), "spwaterfall%s_create(), window size cannot exceed fft size", EXTENSION);
     if (_window_len == 0)
-        return liquid_error_config("spwaterfall%s_create(), window size must be greater than zero", EXTENSION);
+        return liquid_error_config_ptr(SPWATERFALL(), "spwaterfall%s_create(), window size must be greater than zero", EXTENSION);
     if (_wtype == LIQUID_WINDOW_KBD && _window_len % 2)
-        return liquid_error_config("spwaterfall%s_create(), KBD window length must be even", EXTENSION);
+        return liquid_error_config_ptr(SPWATERFALL(), "spwaterfall%s_create(), KBD window length must be even", EXTENSION);
     if (_delay == 0)
-        return liquid_error_config("spwaterfall%s_create(), delay must be greater than 0", EXTENSION);
+        return liquid_error_config_ptr(SPWATERFALL(), "spwaterfall%s_create(), delay must be greater than 0", EXTENSION);
     if (_time == 0)
-        return liquid_error_config("spwaterfall%s_create(), time must be greater than 0", EXTENSION);
+        return liquid_error_config_ptr(SPWATERFALL(), "spwaterfall%s_create(), time must be greater than 0", EXTENSION);
 
     // allocate memory for main object
     SPWATERFALL() q = (SPWATERFALL()) malloc(sizeof(struct SPWATERFALL(_s)));
@@ -125,9 +127,9 @@ SPWATERFALL() SPWATERFALL(_create_default)(unsigned int _nfft,
 {
     // validate input
     if (_nfft < 2)
-        return liquid_error_config("spwaterfall%s_create_default(), fft size must be at least 2", EXTENSION);
+        return liquid_error_config_ptr(SPWATERFALL(), "spwaterfall%s_create_default(), fft size must be at least 2", EXTENSION);
     if (_time < 2)
-        return liquid_error_config("spwaterfall%s_create_default(), fft size must be at least 2", EXTENSION);
+        return liquid_error_config_ptr(SPWATERFALL(), "spwaterfall%s_create_default(), fft size must be at least 2", EXTENSION);
 
     return SPWATERFALL(_create)(_nfft, LIQUID_WINDOW_KAISER, _nfft/2, _nfft/4, _time);
 }
@@ -136,7 +138,7 @@ SPWATERFALL() SPWATERFALL(_copy)(SPWATERFALL() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("spwaterfall%s_copy(), object cannot be NULL", EXTENSION);
+        return liquid_error_config_ptr(SPWATERFALL(), "spwaterfall%s_copy(), object cannot be NULL", EXTENSION);
 
     // allocate memory for main object
     SPWATERFALL() q_copy = (SPWATERFALL()) malloc(sizeof(struct SPWATERFALL(_s)));
@@ -397,9 +399,9 @@ int SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q)
 int SPWATERFALL(_export_bin)(SPWATERFALL() _q,
                              const char *  _base)
 {
-    // add '.bin' extension to base
+    // add '.bin' extension to base (use LIQUID_VLA for MSVC compatibility)
     int n = strlen(_base);
-    char filename[n+5];
+    LIQUID_VLA(char, filename, n+5);
     sprintf(filename,"%s.bin", _base);
 
     // open output file for writing
@@ -424,8 +426,8 @@ int SPWATERFALL(_export_bin)(SPWATERFALL() _q,
     // TODO: force conversion from type 'T' to type 'float'
     uint64_t total_samples = SPGRAM(_get_num_samples_total)(_q->periodogram);
     for (i=0; i<_q->index_time; i++) {
-        float n = (float)i / (float)(_q->index_time) * (float)total_samples;
-        fwrite(&n, sizeof(float), 1, fid);
+        float sample_pos = (float)i / (float)(_q->index_time) * (float)total_samples;
+        fwrite(&sample_pos, sizeof(float), 1, fid);
         fwrite(&_q->psd[i*_q->nfft], sizeof(float), _q->nfft, fid);
     }
 
@@ -441,9 +443,9 @@ int SPWATERFALL(_export_bin)(SPWATERFALL() _q,
 int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
                              const char *  _base)
 {
-    // add '.bin' extension to base
+    // add '.gnu' extension to base (use LIQUID_VLA for MSVC compatibility)
     int n = strlen(_base);
-    char filename[n+5];
+    LIQUID_VLA(char, filename, n+5);
     sprintf(filename,"%s.gnu", _base);
 
     // open output file for writing

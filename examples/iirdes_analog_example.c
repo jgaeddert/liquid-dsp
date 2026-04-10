@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Tests infinite impulse response (IIR) analog filter design."
 " While this example seems purely academic as IIR filters"
 " used in liquid are all digital, it is important to realize"
@@ -11,9 +11,12 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -56,9 +59,9 @@ int main(int argc, char*argv[])
     unsigned int nza = 0;
 
     // complex analog zeros, poles, gain
-    float complex za[order];
-    float complex pa[order];
-    float complex ka;
+    LIQUID_VLA(liquid_float_complex, za, order);
+    LIQUID_VLA(liquid_float_complex, pa, order);
+    liquid_float_complex ka;
 
     unsigned int i;
     
@@ -80,12 +83,13 @@ int main(int argc, char*argv[])
         nza = 0;
         cheby1_azpkf(order,ep,za,pa,&ka);
         break;
-    case LIQUID_IIRDES_CHEBY2:
+    case LIQUID_IIRDES_CHEBY2: {
         printf("Cheby-II filter design:\n");
         nza = 2*L;
         float epsilon = powf(10.0f, -As/20.0f);
         cheby2_azpkf(order,epsilon,za,pa,&ka);
         break;
+    }
     case LIQUID_IIRDES_ELLIP:
         printf("elliptic filter design:\n");
         nza = 2*L;

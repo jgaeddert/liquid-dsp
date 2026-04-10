@@ -117,7 +117,7 @@ LIQUID_AUTOTEST(iir_groupdelay_n3,"description","",0.1)
 LIQUID_AUTOTEST(iir_groupdelay_n8,"description","",0.1)
 {
     // create coefficients arrays (7th-order Butterworth)
-    float b[8];
+    LIQUID_VLA(float, b, 8);
     b[  0] =   0.00484212;
     b[  1] =   0.03389481;
     b[  2] =   0.10168444;
@@ -127,7 +127,7 @@ LIQUID_AUTOTEST(iir_groupdelay_n8,"description","",0.1)
     b[  6] =   0.03389481;
     b[  7] =   0.00484212;
 
-    float a[8];
+    LIQUID_VLA(float, a, 8);
     a[  0] =   1.00000000;
     a[  1] =  -1.38928008;
     a[  2] =   1.67502367;

@@ -22,6 +22,7 @@
 
 #include <sys/resource.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 
 // Helper function to keep code base small
 void dotprod_rrrf_bench(struct rusage *_start,
@@ -33,7 +34,9 @@ void dotprod_rrrf_bench(struct rusage *_start,
     *_num_iterations = *_num_iterations * 20 / _n;
     if (*_num_iterations < 1) *_num_iterations = 1;
 
-    float x[_n], h[_n], y;
+    LIQUID_VLA(float, x, _n);
+    LIQUID_VLA(float, h, _n);
+    float y;
     unsigned int i;
     for (i=0; i<_n; i++) {
         x[i] = 1.0f;

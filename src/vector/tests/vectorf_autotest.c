@@ -30,7 +30,7 @@ LIQUID_AUTOTEST(vectorf_mul_4,"multiply two buffers (simple test with visual res
     float buf_1[4] = {1.0f,-1.0f, 2.0f,-0.5f};
 
     // run vector multiplication and check result
-    float buf_test[4];
+    LIQUID_VLA(float, buf_test, 4);
     liquid_vectorf_mul(buf_0, buf_1, 4, buf_test);
 
     LIQUID_CHECK_DELTA(buf_test[0],  1.0f, tol);
@@ -67,7 +67,7 @@ LIQUID_AUTOTEST(vectorf_mul_16,"multiply two buffers","",0.1)
     };
 
     // run vector multiplication
-    float buf_test[16];
+    LIQUID_VLA(float, buf_test, 16);
     liquid_vectorf_mul(buf_0, buf_1, 16, buf_test);
 
     //compare result
@@ -114,7 +114,7 @@ LIQUID_AUTOTEST(vectorf_mul_35,"multiply two buffers","",0.1)
       0.67009974, -0.66476804,  0.16794813, };
 
     // run vector multiplication
-    float buf_test[35];
+    LIQUID_VLA(float, buf_test, 35);
     liquid_vectorf_mul(buf_0, buf_1, 35, buf_test);
 
     //compare result
@@ -129,7 +129,7 @@ LIQUID_AUTOTEST(vectorf_mulscalar_4,"multiply by scalar","",0.1)
     float buf_0[4] = {1.0f, 2.0f,-3.0f, 4.0f};
 
     // run vector multiplication and check result
-    float buf_test[4];
+    LIQUID_VLA(float, buf_test, 4);
     liquid_vectorf_mulscalar(buf_0, 4, 2.0f, buf_test);
 
     LIQUID_CHECK_DELTA(buf_test[0],  2.0f, tol);
@@ -165,7 +165,7 @@ LIQUID_AUTOTEST(vectorf_mulscalar_35,"multiply by scalar","",0.1)
       0.84538329,  1.00741816,  0.76528233, };
 
     // run vector multiplication
-    float buf_test[35];
+    LIQUID_VLA(float, buf_test, 35);
     liquid_vectorf_mulscalar(buf_0, 35, 0.707f, buf_test);
 
     //compare result

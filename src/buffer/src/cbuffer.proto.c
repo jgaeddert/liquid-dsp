@@ -96,7 +96,7 @@ CBUFFER() CBUFFER(_copy)(CBUFFER() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("error: cbuffer%s_copy(), window object cannot be NULL", EXTENSION);
+        return liquid_error_config_ptr(CBUFFER(), "error: cbuffer%s_copy(), window object cannot be NULL", EXTENSION);
 
     // create initial object
     CBUFFER() q_copy = (CBUFFER()) malloc(sizeof(struct CBUFFER(_s)));

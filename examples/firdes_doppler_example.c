@@ -1,9 +1,10 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates finite impulse response Doppler filter design";
 
 #include <stdlib.h>
 #include <stdio.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -18,7 +19,7 @@ int main(int argc, char* argv[])
     liquid_argparse_parse(argc,argv);
 
     // generate the filter
-    float h[h_len];
+    LIQUID_VLA(float, h, h_len);
     liquid_firdes_doppler(h_len,fd,K,theta,h);
 
     // output to file

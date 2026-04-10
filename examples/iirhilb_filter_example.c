@@ -1,13 +1,16 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Hilbert transform example. This example demonstrates the"
 " functionality of iirhilbf (infinite impulse response Hilbert transform)"
 " as a filter to remove the negative half of the spectrum.";
 
 #include <stdio.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -28,9 +31,9 @@ int main(int argc, char* argv[])
     iirhilbf_print(q0);
 
     // data arrays
-    float complex x[num_samples];     // complex input
-    float         y[num_samples];     // real output
-    float complex z[num_samples];     // complex output
+    LIQUID_VLA(liquid_float_complex, x, num_samples);     // complex input
+    LIQUID_VLA(float, y, num_samples);     // real output
+    LIQUID_VLA(liquid_float_complex, z, num_samples);     // complex output
 
     // run transform
     unsigned int i;

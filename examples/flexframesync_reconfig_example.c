@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Demonstrates the reconfigurability of the flexframegen and"
 " flexframesync objects.";
 
@@ -9,6 +9,7 @@ char __docstr__[] =
 #include <time.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -27,7 +28,7 @@ int main(int argc, char* argv[])
     flexframegen fg = flexframegen_create(NULL);
 
     // frame data
-    unsigned char   header[14];
+    LIQUID_VLA(unsigned char, header, 14);
     unsigned char * payload = NULL;
 
     // create flexframesync object with default properties
@@ -44,7 +45,7 @@ int main(int argc, char* argv[])
 
     // frame buffers, properties
     unsigned int  buf_len = 256;
-    float complex buf[buf_len];
+    LIQUID_VLA(liquid_float_complex, buf, buf_len);
 
     unsigned int j;
     for (j=0; j<num_frames; j++) {
@@ -56,7 +57,7 @@ int main(int argc, char* argv[])
         fgprops.mod_scheme       = (rand() % 2) ? LIQUID_MODEM_QPSK : LIQUID_MODEM_QAM16;
 
         // reallocate memory for payload
-        payload = realloc(payload, payload_len*sizeof(unsigned char));
+        payload = (unsigned char*)realloc(payload, payload_len*sizeof(unsigned char));
 
         // initialize payload
         for (i=0; i<payload_len; i++)

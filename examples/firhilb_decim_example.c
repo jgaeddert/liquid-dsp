@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Hilbert transform: 2:1 real-to-complex decimator.  This example"
 " demonstrates the functionality of firhilb (finite impulse response"
 " Hilbert transform) decimator which converts a real time series"
@@ -7,10 +7,13 @@ char __docstr__[] =
 "valued sinusoid of N/2 samples.";
 
 #include <stdio.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -25,8 +28,8 @@ int main(int argc, char* argv[])
     liquid_argparse_parse(argc,argv);
 
     // data arrays
-    float x[2*num_samples];         // real input
-    float complex y[num_samples];   // complex output
+    LIQUID_VLA(float, x, 2*num_samples);         // real input
+    LIQUID_VLA(liquid_float_complex, y, num_samples);   // complex output
 
     // initialize input array
     unsigned int i;

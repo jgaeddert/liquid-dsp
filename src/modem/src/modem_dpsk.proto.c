@@ -39,7 +39,7 @@ MODEM() MODEM(_create_dpsk)(unsigned int _bits_per_symbol)
     case 7: q->scheme = LIQUID_MODEM_DPSK128; break;
     case 8: q->scheme = LIQUID_MODEM_DPSK256; break;
     default:
-        return liquid_error_config("modem%s_create_dpsk(), cannot support DPSK with m > 8",EXTENSION);
+        return liquid_error_config_ptr(MODEM(), "modem%s_create_dpsk(), cannot support DPSK with m > 8",EXTENSION);
     }
 
     MODEM(_init)(q, _bits_per_symbol);

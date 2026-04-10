@@ -31,7 +31,9 @@
 #include <getopt.h>
 #include <string.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <sys/resource.h>
 
 #include <fftw3.h>
@@ -435,8 +437,8 @@ void benchmark_fft(struct rusage *      _start,
                    struct benchmark_s * _benchmark)
 {
     // initialize arrays, plan
-    float complex * x = (float complex *) malloc((_benchmark->nfft)*sizeof(float complex));
-    float complex * y = (float complex *) malloc((_benchmark->nfft)*sizeof(float complex));
+    liquid_float_complex * x = (liquid_float_complex *) malloc((_benchmark->nfft)*sizeof(liquid_float_complex));
+    liquid_float_complex * y = (liquid_float_complex *) malloc((_benchmark->nfft)*sizeof(liquid_float_complex));
     fftplan q = fft_create_plan(_benchmark->nfft,
                                 x, y,
                                 _benchmark->direction,
@@ -476,8 +478,8 @@ void benchmark_fftw(struct rusage *      _start,
                     struct benchmark_s * _benchmark)
 {
     // initialize arrays, plan
-    float complex * x = (float complex *) fftwf_malloc((_benchmark->nfft)*sizeof(float complex));
-    float complex * y = (float complex *) fftwf_malloc((_benchmark->nfft)*sizeof(float complex));
+    liquid_float_complex * x = (liquid_float_complex *) fftwf_malloc((_benchmark->nfft)*sizeof(liquid_float_complex));
+    liquid_float_complex * y = (liquid_float_complex *) fftwf_malloc((_benchmark->nfft)*sizeof(liquid_float_complex));
     fftwf_plan q = fftwf_plan_dft_1d(_benchmark->nfft,
                                      x, y,
                                      //_benchmark->direction,

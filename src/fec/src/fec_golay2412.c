@@ -237,6 +237,7 @@ unsigned int fec_golay2412_decode_symbol(unsigned int _sym_enc)
 // create Golay(24,12) codec object
 fec fec_golay2412_create(void * _opts)
 {
+    (void)_opts;
     fec q = (fec) malloc(sizeof(struct fec_s));
 
     // set scheme
@@ -269,6 +270,7 @@ int fec_golay2412_encode(fec             _q,
                          unsigned char * _msg_dec,
                          unsigned char * _msg_enc)
 {
+    (void)_q;
     unsigned int i=0;           // decoded byte counter
     unsigned int j=0;           // encoded byte counter
     unsigned int s0, s1, s2;    // three 8-bit symbols
@@ -342,6 +344,7 @@ int fec_golay2412_decode(fec             _q,
                          unsigned char * _msg_enc,
                          unsigned char * _msg_dec)
 {
+    (void)_q;
     unsigned int i=0;                       // decoded byte counter
     unsigned int j=0;                       // encoded byte counter
     unsigned int r0, r1, r2, r3, r4, r5;    // six 8-bit bytes

@@ -40,10 +40,10 @@ LIQUID_AUTOTEST(reedsolomon_223_255,"Reed-Solomon codecs","",0.1)
     LIQUID_CHECK( enc_msg_len ==  255 );
 
     // create arrays
-    unsigned char msg_org[dec_msg_len]; // original message
-    unsigned char msg_enc[enc_msg_len]; // encoded message
-    unsigned char msg_rec[enc_msg_len]; // received message
-    unsigned char msg_dec[dec_msg_len]; // decoded message
+    LIQUID_VLA(unsigned char, msg_org, dec_msg_len); // original message
+    LIQUID_VLA(unsigned char, msg_enc, enc_msg_len); // encoded message
+    LIQUID_VLA(unsigned char, msg_rec, enc_msg_len); // received message
+    LIQUID_VLA(unsigned char, msg_dec, dec_msg_len); // decoded message
 
     // initialize original message
     unsigned int i;

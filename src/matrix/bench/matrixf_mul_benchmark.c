@@ -34,9 +34,9 @@ void matrixf_mul_bench(struct rusage *_start,
     *_num_iterations /= _n * _n;
     if (*_num_iterations < 1) *_num_iterations = 1;
 
-    float a[_n*_n];
-    float b[_n*_n];
-    float c[_n*_n];
+    LIQUID_VLA(float, a, _n*_n);
+    LIQUID_VLA(float, b, _n*_n);
+    LIQUID_VLA(float, c, _n*_n);
     unsigned int i;
     for (i=0; i<_n*_n; i++) {
         a[i] = randnf();

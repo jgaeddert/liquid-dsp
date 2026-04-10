@@ -24,9 +24,12 @@
 // firfilt_cccf_data_h13x32.c: autotest firfilt data
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
+#include "liquid.h"
 
-float complex firfilt_cccf_data_h13x32_h[] = {
+liquid_float_complex firfilt_cccf_data_h13x32_h[] = {
    -0.016900612660 +  -0.094711890552*_Complex_I,
     0.021604417271 +   0.142776429157*_Complex_I,
    -0.115236149764 +  -0.169153952067*_Complex_I,
@@ -41,7 +44,7 @@ float complex firfilt_cccf_data_h13x32_h[] = {
     0.073260028098 +   0.102435049392*_Complex_I,
    -0.064585416482 +   0.016491998619*_Complex_I};
 
-float complex firfilt_cccf_data_h13x32_x[] = {
+liquid_float_complex firfilt_cccf_data_h13x32_x[] = {
    -0.230394652772 +  -0.084902186709*_Complex_I,
     0.116521954181 +  -0.075921100646*_Complex_I,
    -0.037505572140 +   0.050295775262*_Complex_I,
@@ -75,7 +78,7 @@ float complex firfilt_cccf_data_h13x32_x[] = {
    -0.166213598571 +   0.030726287248*_Complex_I,
    -0.276903984324 +  -0.003789664941*_Complex_I};
 
-float complex firfilt_cccf_data_h13x32_y[] = {
+liquid_float_complex firfilt_cccf_data_h13x32_y[] = {
    -0.004147435830 +   0.023256012109*_Complex_I,
    -0.002015434559 +  -0.044482089545*_Complex_I,
     0.030942859967 +   0.066454518780*_Complex_I,

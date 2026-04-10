@@ -1,11 +1,14 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Tests recursive least-squares (RLS) equalizer (EQ) on a QPSK"
 " signal at the symbol level.";
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -20,11 +23,11 @@ int main(int argc, char* argv[])
     liquid_argparse_parse(argc,argv);
 
     // bookkeeping variables
-    float complex d     [num_symbols];  // data sequence
-    float complex y     [num_symbols];  // received data sequence (filtered by channel)
-    float complex d_hat [num_symbols];  // recovered data sequence
-    float complex h     [hc_len];       // channel filter coefficients
-    float complex w     [p];            // equalizer filter coefficients
+    LIQUID_VLA(liquid_float_complex, d, num_symbols);  // data sequence
+    LIQUID_VLA(liquid_float_complex, y, num_symbols);  // received data sequence (filtered by channel)
+    LIQUID_VLA(liquid_float_complex, d_hat, num_symbols);  // recovered data sequence
+    LIQUID_VLA(liquid_float_complex, h, hc_len);       // channel filter coefficients
+    LIQUID_VLA(liquid_float_complex, w, p);            // equalizer filter coefficients
     unsigned int i;
 
     // create equalizer (default initial coefficients)
@@ -73,7 +76,7 @@ int main(int argc, char* argv[])
         printf("  w(%3u) = %12.8f + j*%12.8f\n", i, crealf(w[i]), cimagf(w[i]));
 
     // compute MSE
-    float complex e;
+    liquid_float_complex e;
     float mse=0.0f;
     for (i=0; i<num_symbols; i++) {
         // compute mse

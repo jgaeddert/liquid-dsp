@@ -9,7 +9,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.h"
 
@@ -36,8 +38,8 @@ int main() {
     // create filter prototype
     unsigned int h_len = 2*num_channels*m + 1;
     float h[h_len];
-    float complex hc[h_len];
-    float complex gc[h_len];
+    liquid_float_complex hc[h_len];
+    liquid_float_complex gc[h_len];
     liquid_firdes_rkaiser(num_channels, m, beta, 0.0f, h);
     unsigned int g_len = 2*num_channels*m;
     for (i=0; i<g_len; i++) {
@@ -46,10 +48,10 @@ int main() {
     }
 
     // data arrays
-    float complex s[num_channels];                  // input symbols
-    float complex y[num_samples];                   // time-domain samples
-    float complex Y0[num_frames][num_channels];     // channelized output
-    float complex Y1[num_frames][num_channels];     // channelized output
+    liquid_float_complex s[num_channels];                  // input symbols
+    liquid_float_complex y[num_samples];                   // time-domain samples
+    liquid_float_complex Y0[num_frames][num_channels];     // channelized output
+    liquid_float_complex Y1[num_frames][num_channels];     // channelized output
 
     // create ofdm/oqam generator object and generate data
     ofdmoqam qs = ofdmoqam_create(num_channels, m, beta, 0.0f, LIQUID_SYNTHESIZER, 0);
@@ -98,7 +100,7 @@ int main() {
 
     // create objects
     unsigned int gc_sub_len = 2*m;
-    float complex gc_sub[gc_sub_len];
+    liquid_float_complex gc_sub[gc_sub_len];
     for (i=0; i<num_channels; i++) {
         // sub-sample prototype filter, loading coefficients in
         // reverse order
@@ -122,8 +124,8 @@ int main() {
     }
 
     // generate DFT object
-    float complex x[num_channels];  // time-domain buffer
-    float complex X[num_channels];  // freq-domain buffer
+    liquid_float_complex x[num_channels];  // time-domain buffer
+    liquid_float_complex X[num_channels];  // freq-domain buffer
 #if 0
     fftplan fft = fft_create_plan(num_channels, X, x, LIQUID_FFT_BACKWARD, 0);
 #else
@@ -138,8 +140,8 @@ int main() {
 #else
     unsigned int filter_index = num_channels-1;
 #endif
-    float complex y_hat;    // input sample
-    float complex * r;      // read pointer
+    liquid_float_complex y_hat;    // input sample
+    liquid_float_complex * r;      // read pointer
     for (i=0; i<num_frames; i++) {
 
         // load buffers

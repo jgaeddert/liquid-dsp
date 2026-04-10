@@ -159,6 +159,7 @@ unsigned int liquid_modpow(unsigned int _base,
 // find smallest primitive root of _n
 unsigned int liquid_primitive_root(unsigned int _n)
 {
+    (void)_n;
     // TODO : flesh out this function
     return 1;
 }
@@ -167,7 +168,7 @@ unsigned int liquid_primitive_root(unsigned int _n)
 unsigned int liquid_primitive_root_prime(unsigned int _n)
 {
     // find unique factors of _n-1
-    unsigned int unique_factors[LIQUID_MAX_FACTORS];
+    LIQUID_VLA(unsigned int, unique_factors, LIQUID_MAX_FACTORS);
     unsigned int num_unique_factors = 0;
     unsigned int n = _n-1;
     unsigned int k;

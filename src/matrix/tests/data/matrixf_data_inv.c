@@ -24,7 +24,9 @@
 // data for testing matrix inversion
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 // matrixf_data_inv_x [size: 5 x 5]
 float matrixf_data_inv_x[] = {

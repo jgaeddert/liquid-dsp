@@ -46,7 +46,7 @@ qs1dsearch qs1dsearch_create(liquid_utility_1d _utility,
 {
     // validate input
     if (_utility == NULL)
-        return liquid_error_config("qs1dsearch_create(), utility callback cannot be NULL");
+        return (qs1dsearch)liquid_error_config("qs1dsearch_create(), utility callback cannot be NULL");
 
     // allocate main object memory and initialize
     qs1dsearch q = (qs1dsearch) malloc( sizeof(struct qs1dsearch_s) );
@@ -61,6 +61,7 @@ qs1dsearch qs1dsearch_create(liquid_utility_1d _utility,
 
 qs1dsearch qs1dsearch_copy(qs1dsearch _q)
 {
+    (void)_q;
     liquid_error(LIQUID_ENOIMP,"qs1dsearch_copy(), method not yet implemented");
     return NULL;
 }
@@ -239,6 +240,7 @@ int qs1dsearch_step(qs1dsearch _q)
 
 int qs1dsearch_execute(qs1dsearch _q)
 {
+    (void)_q;
     return LIQUID_OK;
 }
 

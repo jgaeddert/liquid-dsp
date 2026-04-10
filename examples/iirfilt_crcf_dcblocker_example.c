@@ -1,12 +1,15 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates how to create a DC-blocking recursive"
 " (infinite impulse response) filter.";
 
 #include <stdio.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -23,9 +26,9 @@ int main(int argc, char*argv[])
     iirfilt_crcf_print(q);
 
     // allocate memory for data arrays
-    float complex x[num_samples];   // original input
-    float complex y[num_samples];   // input with DC offset
-    float complex z[num_samples];   // DC-blocked result
+    LIQUID_VLA(liquid_float_complex, x, num_samples);   // original input
+    LIQUID_VLA(liquid_float_complex, y, num_samples);   // input with DC offset
+    LIQUID_VLA(liquid_float_complex, z, num_samples);   // DC-blocked result
 
     // generate signals
     unsigned int i;

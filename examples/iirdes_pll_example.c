@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates 2nd-order IIR phase-locked loop filter"
 " design with a practical simulation.";
 
@@ -8,6 +8,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -32,13 +33,13 @@ int main(int argc, char*argv[])
         return liquid_error(LIQUID_EICONFIG,"loop gain must be greater than 0");
 
     // data arrays
-    float complex x[n];         // input complex sinusoid
-    float complex y[n];         // output complex sinusoid
-    float phase_error[n];       // output phase error
+    LIQUID_VLA(liquid_float_complex, x, n);         // input complex sinusoid
+    LIQUID_VLA(liquid_float_complex, y, n);         // output complex sinusoid
+    LIQUID_VLA(float, phase_error, n);       // output phase error
 
     // generate PLL filter
-    float b[3];
-    float a[3];
+    LIQUID_VLA(float, b, 3);
+    LIQUID_VLA(float, a, 3);
     iirdes_pll_active_lag(pll_bandwidth, zeta, K, b, a);
     iirfilt_rrrf pll = iirfilt_rrrf_create(b,3,a,3);
     iirfilt_rrrf_print(pll);

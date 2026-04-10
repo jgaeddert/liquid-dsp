@@ -24,7 +24,9 @@
 // data for testing multiply/transpose
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 // matrixf_data_transmul_x [size: 5 x 4]
 float matrixf_data_transmul_x[] = {

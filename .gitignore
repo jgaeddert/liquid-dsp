@@ -39,6 +39,12 @@ autotest/logs/*.log
 readme.*
 liquid_linker_test
 
+# local build files (not public)
+BUILD_LOCAL.md
+build_*/
+*.diff
+run_tests_wsl.sh
+
 # miscellany
 octave-core
 *.tar

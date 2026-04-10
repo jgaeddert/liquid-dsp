@@ -7,7 +7,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 #include <time.h>
 
@@ -27,9 +29,9 @@ int main() {
 
     //
     float theta[n];         // input phase
-    float complex x[n];     // input sinusoid
+    liquid_float_complex x[n];     // input sinusoid
     float phi[n];           // output phase
-    float complex y[n];     // output sinusoid
+    liquid_float_complex y[n];     // output sinusoid
 
     // generate iir loop filter(s)
     float a[3];

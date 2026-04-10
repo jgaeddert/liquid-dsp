@@ -159,7 +159,7 @@ int MATRIX(_div)(T *          _X,
                  unsigned int _n)
 {
     // compute inv(_Y)
-    T Y_inv[_n*_n];
+    LIQUID_VLA(T, Y_inv, _n*_n);
     memmove(Y_inv, _Y, _n*_n*sizeof(T));
     MATRIX(_inv)(Y_inv,_n,_n);
 
@@ -198,9 +198,9 @@ T MATRIX(_det)(T *          _X,
     if (n==2) return MATRIX(_det2x2)(_X,2,2);
 
     // compute L/U decomposition (Doolittle's method)
-    T L[n*n]; // lower
-    T U[n*n]; // upper
-    T P[n*n]; // permutation
+    LIQUID_VLA(T, L, n*n); // lower
+    LIQUID_VLA(T, U, n*n); // upper
+    LIQUID_VLA(T, P, n*n); // permutation
     MATRIX(_ludecomp_doolittle)(_X,n,n,L,U,P);
 
     // evaluate along the diagonal of U
@@ -232,7 +232,7 @@ int MATRIX(_hermitian)(T *          _X,
                        unsigned int _XR,
                        unsigned int _XC)
 {
-    T y[_XR*_XC];
+    LIQUID_VLA(T, y, _XR*_XC);
     memmove(y,_X,_XR*_XC*sizeof(T));
 
     unsigned int r,c;

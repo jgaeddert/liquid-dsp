@@ -1,10 +1,13 @@
-char __docstr__[] = "Halfband filter example.";
+const char __docstr__[] = "Halfband filter example.";
 
 #include <stdio.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -22,9 +25,9 @@ int main(int argc, char* argv[])
     unsigned int N = num_samples + h_len;
 
     // arrays
-    float complex x[N];             // input time series
-    float complex y0[N];            // output time series (lower band)
-    float complex y1[N];            // output time series (upper band)
+    LIQUID_VLA(liquid_float_complex, x, N);             // input time series
+    LIQUID_VLA(liquid_float_complex, y0, N);            // output time series (lower band)
+    LIQUID_VLA(liquid_float_complex, y1, N);            // output time series (upper band)
 
     // generate input sequence
     unsigned int i;

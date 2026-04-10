@@ -27,6 +27,8 @@
 #include <stdio.h>
 #include <immintrin.h>
 
+#include "liquid_vla.h"
+
 void liquid_vectorf_mul(float *      _v0,
                         float *      _v1,
                         unsigned int _n,
@@ -74,7 +76,8 @@ void liquid_vectorf_mulscalar(float *      _v,
     unsigned int t = (_n >> 3) << 3;
 
     // aligned scalar array
-    float s[8] __attribute__((aligned(32))) = {_s,_s,_s,_s,_s,_s,_s,_s,};
+    LIQUID_DEFINE_ALIGNED_ARRAY(float, s, 8, 32);
+    s[0] = s[1] = s[2] = s[3] = s[4] = s[5] = s[6] = s[7] = _s;
     v1 = _mm256_load_ps(s);
 
     // operate in blocks of 8 samples (register size)

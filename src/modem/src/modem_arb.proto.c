@@ -25,13 +25,13 @@
 //
 
 // create arbitrary digital modem object
-MODEM() MODEM(_create_arbitrary)(float complex * _table,
+MODEM() MODEM(_create_arbitrary)(liquid_float_complex * _table,
                                  unsigned int    _M)
 {
     // strip out bits/symbol
     unsigned int m = liquid_nextpow2(_M);
-    if ( (1U<<m) != _M )
-        return liquid_error_config("modem%s_create_arbitrary(), input constellation size must be power of 2", EXTENSION);
+    if ( (unsigned int)(1<<m) != _M )
+        return liquid_error_config_ptr(MODEM(), "modem%s_create_arbitrary(), input constellation size must be power of 2", EXTENSION);
 
     // create arbitrary modem object, not initialized
     MODEM() q = MODEM(_create_arb)(m);
@@ -55,10 +55,10 @@ MODEM() MODEM(_create_arb)(unsigned int _bits_per_symbol)
 {
     MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
     q->scheme = LIQUID_MODEM_ARB;
+    q->M = 0;
 
     MODEM(_init)(q, _bits_per_symbol);
 
-    q->M = q->M;
     q->symbol_map = (TC*) calloc( q->M, sizeof(TC) );
 
     q->modulate_func   = &MODEM(_modulate_arb);
@@ -115,9 +115,8 @@ int MODEM(_demodulate_arb)(MODEM()        _q,
 MODEM() MODEM(_create_V29)()
 {
     MODEM() q = MODEM(_create_arb)(4);
-#if T == float
+    // arbitrary modems are only defined for float type
     MODEM(_arb_init)(q,(TC*)modem_arb_V29,16);
-#endif
     return q;
 }
 
@@ -125,9 +124,7 @@ MODEM() MODEM(_create_V29)()
 MODEM() MODEM(_create_arb16opt)()
 {
     MODEM() q = MODEM(_create_arb)(4);
-#if T == float
     MODEM(_arb_init)(q,(TC*)modem_arb16opt,16);
-#endif
     return q;
 }
 
@@ -135,9 +132,7 @@ MODEM() MODEM(_create_arb16opt)()
 MODEM() MODEM(_create_arb32opt)()
 {
     MODEM() q = MODEM(_create_arb)(5);
-#if T == float
     MODEM(_arb_init)(q,(TC*)modem_arb32opt,32);
-#endif
     return q;
 }
 
@@ -145,9 +140,7 @@ MODEM() MODEM(_create_arb32opt)()
 MODEM() MODEM(_create_arb64opt)()
 {
     MODEM() q = MODEM(_create_arb)(6);
-#if T == float
     MODEM(_arb_init)(q,(TC*)modem_arb64opt,64);
-#endif
     return q;
 }
 
@@ -155,9 +148,7 @@ MODEM() MODEM(_create_arb64opt)()
 MODEM() MODEM(_create_arb128opt)()
 {
     MODEM() q = MODEM(_create_arb)(7);
-#if T == float
     MODEM(_arb_init)(q,(TC*)modem_arb128opt,128);
-#endif
     return q;
 }
 
@@ -165,9 +156,7 @@ MODEM() MODEM(_create_arb128opt)()
 MODEM() MODEM(_create_arb256opt)()
 {
     MODEM() q = MODEM(_create_arb)(8);
-#if T == float
     MODEM(_arb_init)(q,(TC*)modem_arb256opt,256);
-#endif
     return q;
 }
 
@@ -175,9 +164,7 @@ MODEM() MODEM(_create_arb256opt)()
 MODEM() MODEM(_create_arb64vt)()
 {
     MODEM() q = MODEM(_create_arb)(6);
-#if T == float
     MODEM(_arb_init)(q,(TC*)modem_arb_vt64,64);
-#endif
     return q;
 }
 
@@ -186,7 +173,7 @@ MODEM() MODEM(_create_arb64vt)()
 //  _symbol_map :   arbitrary modem symbol map
 //  _len        :   number of symbols in the map
 int MODEM(_arb_init)(MODEM()         _q,
-                     float complex * _symbol_map,
+                     liquid_float_complex * _symbol_map,
                      unsigned int    _len)
 {
 #ifdef LIQUID_VALIDATE_INPUT
@@ -300,8 +287,8 @@ int MODEM(_demodulate_soft_arb)(MODEM()         _q,
     T d;                // distance for this symbol
     TC x_hat;    // re-modulated symbol
 
-    T dmin_0[bps];
-    T dmin_1[bps];
+    LIQUID_VLA(T, dmin_0, bps);
+    LIQUID_VLA(T, dmin_1, bps);
     for (k=0; k<bps; k++) {
         dmin_0[k] = 4.0f;
         dmin_1[k] = 4.0f;

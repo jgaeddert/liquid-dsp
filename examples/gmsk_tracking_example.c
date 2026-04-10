@@ -1,9 +1,10 @@
-char __docstr__[] = "Demonstrate symbol tracking of GMSK signal.";
+const char __docstr__[] = "Demonstrate symbol tracking of GMSK signal.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -46,10 +47,10 @@ int main(int argc, char*argv[])
     fprintf(fid,"k = %u; v = [];\n", k);
 
     // run in blocks
-    float complex buf_0[k*Q]; // original GMSK input
-    float complex buf_1[k*P]; // resample output at a rate P/Q
-    float         buf_2[k*P]; // freqdem output & matched filter output
-    float         buf_3[k*P]; // symbol timing recovery output
+    LIQUID_VLA(liquid_float_complex, buf_0, k*Q); // original GMSK input
+    LIQUID_VLA(liquid_float_complex, buf_1, k*P); // resample output at a rate P/Q
+    LIQUID_VLA(float, buf_2, k*P); // freqdem output & matched filter output
+    LIQUID_VLA(float, buf_3, k*P); // symbol timing recovery output
     unsigned int i, j;
     for (i=0; i<num_blocks; i++)
     {

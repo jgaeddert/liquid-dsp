@@ -7,7 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <time.h>
 #include <getopt.h>
 
@@ -74,7 +76,7 @@ int main(int argc, char *argv[]) {
     float rate = (float)n / (float)n_enc;
     unsigned char msg_org[n];            // original data message
     unsigned char msg_enc[n_enc];        // encoded data message
-    float complex sym_rec[8*n_enc];      // received BPSK symbols
+    liquid_float_complex sym_rec[8*n_enc];      // received BPSK symbols
     unsigned char msg_cor_soft[8*n_enc]; // corrupted data message (soft bits)
     unsigned char msg_cor_hard[n_enc];   // corrupted data message (hard bits)
     unsigned char msg_dec_soft[n];       // decoded data message (soft bits)

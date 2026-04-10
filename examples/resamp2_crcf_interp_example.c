@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Halfband interpolator.  This example demonstrates the interface to the"
 " interpolating halfband resampler.  A low-frequency input sinusoid is"
 " generated and fed into the interpolator one sample at a time,"
@@ -7,10 +7,13 @@ char __docstr__[] =
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -26,11 +29,11 @@ int main(int argc, char* argv[])
     // allocate arrays
     unsigned int w_len = 37; // pulse length
     unsigned int num_samples = w_len + 2*m;
-    float complex x[  num_samples]; // input array
-    float complex y[2*num_samples]; // output array
+    LIQUID_VLA(liquid_float_complex, x, num_samples); // input array
+    LIQUID_VLA(liquid_float_complex, y, 2*num_samples); // output array
 
     // generate input
-    float w[w_len];
+    LIQUID_VLA(float, w, w_len);
     liquid_firdes_kaiser(w_len,bw,60.0f,0.0f,w);
     unsigned int i;
     for (i=0; i<num_samples; i++)

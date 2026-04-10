@@ -24,9 +24,12 @@
 // autotest fft data for 130-point transform
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
+#include "liquid.h"
 
-float complex fft_test_x130[] = {
+liquid_float_complex fft_test_x130[] = {
     2.295593731681 +   0.411874155977*_Complex_I,
     0.867233010936 +   2.391238924231*_Complex_I,
    -0.979511815183 +   0.113140414722*_Complex_I,
@@ -158,7 +161,7 @@ float complex fft_test_x130[] = {
    -0.281958991560 +  -0.356378430727*_Complex_I,
     1.134108928078 +  -2.092860871008*_Complex_I};
 
-float complex fft_test_y130[] = {
+liquid_float_complex fft_test_y130[] = {
    14.378246546427 +  16.821529859589*_Complex_I,
    27.857066272618 +  13.571899136472*_Complex_I,
   -15.456704775735 +  12.690273582209*_Complex_I,

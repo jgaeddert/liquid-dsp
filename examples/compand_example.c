@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the interface to the compand function"
 " (compression, expansion).  The compander is typically used with the"
 " quantizer to increase the dynamic range of the converter, particularly for"
@@ -9,6 +9,7 @@ char __docstr__[] =
 #include <stdlib.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])

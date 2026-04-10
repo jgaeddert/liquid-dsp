@@ -28,7 +28,7 @@ LIQUID_AUTOTEST(vectorcf_mul_16,"multiply two complex buffers","",0.1)
     // error tolerance
     float tol = 4e-6;
 
-    float complex buf_0[16] = {
+    liquid_float_complex buf_0[16] = {
       0.17702709 +   1.38978455*_Complex_I,  0.91294148 +   0.39217381*_Complex_I,
      -0.80607338 +   0.76477512*_Complex_I,  0.05099755 +  -0.87350051*_Complex_I,
       0.44513826 +  -0.49490569*_Complex_I,  0.14754967 +   2.04349962*_Complex_I,
@@ -39,7 +39,7 @@ LIQUID_AUTOTEST(vectorcf_mul_16,"multiply two complex buffers","",0.1)
       0.55524695 +  -1.94931519*_Complex_I, -0.87191170 +   0.91693119*_Complex_I,
     };
 
-    float complex buf_1[16] = {
+    liquid_float_complex buf_1[16] = {
      -2.19591953 +  -0.93229692*_Complex_I,  0.17150376 +   0.56165114*_Complex_I,
       1.58354529 +  -0.50696037*_Complex_I,  1.40929619 +   0.87868803*_Complex_I,
      -0.75505072 +  -0.30867372*_Complex_I, -0.09821367 +  -0.73949106*_Complex_I,
@@ -51,7 +51,7 @@ LIQUID_AUTOTEST(vectorcf_mul_16,"multiply two complex buffers","",0.1)
     };
 
     // expected output
-    float complex buf_2[16] = {
+    liquid_float_complex buf_2[16] = {
       0.90695465 +  -3.21689701*_Complex_I, -0.06369196 +   0.58001387*_Complex_I,
      -0.88874304 +   1.61970329*_Complex_I,  0.83940506 +  -1.18621004*_Complex_I,
      -0.48886633 +   0.23627642*_Complex_I,  1.49665833 +  -0.30981126*_Complex_I,
@@ -63,7 +63,7 @@ LIQUID_AUTOTEST(vectorcf_mul_16,"multiply two complex buffers","",0.1)
     };
 
     // run vector multiplication
-    float complex buf_test[16];
+    LIQUID_VLA(liquid_float_complex, buf_test, 16);
     liquid_vectorcf_mul(buf_0, buf_1, 16, buf_test);
 
     //compare result
@@ -78,7 +78,7 @@ LIQUID_AUTOTEST(vectorcf_mul_35,"multiply two complex buffers","",0.1)
 {
     float tol = 4e-6;
 
-    float complex buf_0[35] = {
+    liquid_float_complex buf_0[35] = {
       1.11555653 +   2.30658043*_Complex_I, -0.36133676 +  -0.10917327*_Complex_I,
       0.17714505 +  -2.14631440*_Complex_I,  2.20424609 +   0.59063608*_Complex_I,
      -0.44699194 +   0.23369318*_Complex_I,  0.60613931 +   0.21868288*_Complex_I,
@@ -98,7 +98,7 @@ LIQUID_AUTOTEST(vectorcf_mul_35,"multiply two complex buffers","",0.1)
       1.19573306 +   0.98449546*_Complex_I,  1.42491943 +  -0.55426305*_Complex_I,
       1.08243614 +   0.35774368*_Complex_I, };
 
-    float complex buf_1[35] = {
+    liquid_float_complex buf_1[35] = {
      -0.82466736 +  -1.39329228*_Complex_I, -1.46176052 +  -1.96218827*_Complex_I,
      -1.28388174 +  -0.07152934*_Complex_I, -0.51910014 +  -0.37915971*_Complex_I,
      -0.65964708 +  -0.98417534*_Complex_I, -1.40213479 +  -0.82198463*_Complex_I,
@@ -118,7 +118,7 @@ LIQUID_AUTOTEST(vectorcf_mul_35,"multiply two complex buffers","",0.1)
       0.56040910 +  -0.12713027*_Complex_I, -0.46653022 +  -0.65450499*_Complex_I,
       0.15515755 +   1.58944030*_Complex_I, };
 
-    float complex buf_2[35] = {
+    liquid_float_complex buf_2[35] = {
       2.29377794 +  -3.45645785*_Complex_I,  0.31396931 +   0.86859596*_Complex_I,
      -0.38095775 +   2.74294305*_Complex_I, -0.92027903 +  -1.14236057*_Complex_I,
       0.52485198 +   0.28576344*_Complex_I, -0.67013502 +  -0.80486012*_Complex_I,
@@ -139,7 +139,7 @@ LIQUID_AUTOTEST(vectorcf_mul_35,"multiply two complex buffers","",0.1)
      -0.40066409 +   1.77597415*_Complex_I, };
 
     // run vector multiplication
-    float complex buf_test[35];
+    LIQUID_VLA(liquid_float_complex, buf_test, 35);
     liquid_vectorcf_mul(buf_0, buf_1, 35, buf_test);
 
     //compare result

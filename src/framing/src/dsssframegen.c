@@ -38,11 +38,11 @@
 // reconfigure internal properties
 int           dsssframegen_reconfigure       (dsssframegen _q);
 int           dsssframegen_reconfigure_header(dsssframegen _q);
-float complex dsssframegen_generate_symbol   (dsssframegen _q);
-float complex dsssframegen_generate_preamble (dsssframegen _q);
-float complex dsssframegen_generate_header   (dsssframegen _q);
-float complex dsssframegen_generate_payload  (dsssframegen _q);
-float complex dsssframegen_generate_tail     (dsssframegen _q);
+liquid_float_complex dsssframegen_generate_symbol   (dsssframegen _q);
+liquid_float_complex dsssframegen_generate_preamble (dsssframegen _q);
+liquid_float_complex dsssframegen_generate_header   (dsssframegen _q);
+liquid_float_complex dsssframegen_generate_payload  (dsssframegen _q);
+liquid_float_complex dsssframegen_generate_tail     (dsssframegen _q);
 
 // default dsssframegen properties
 static dsssframegenprops_s dsssframegenprops_default = {
@@ -70,13 +70,13 @@ struct dsssframegen_s {
     unsigned int        m;             // interp filter delay (symbols)
     float               beta;          // excess bandwidth factor
     firinterp_crcf      interp;        // interpolator object
-    float complex       buf_interp[2]; // output interpolator buffer [size: k x 1]
+    LIQUID_VLA(liquid_float_complex, buf_interp, 2); // output interpolator buffer [size: k x 1]
 
     dsssframegenprops_s props;        // payload properties
     dsssframegenprops_s header_props; // header properties
 
     // preamble
-    float complex *     preamble_pn; // p/n sequence
+    liquid_float_complex *     preamble_pn; // p/n sequence
     synth_crcf          header_synth;
     synth_crcf          payload_synth;
 
@@ -86,20 +86,20 @@ struct dsssframegen_s {
     unsigned int        header_dec_len;  // header length (decoded)
     qpacketmodem        header_encoder;  // header encoder/modulator
     unsigned int        header_mod_len;  // header length
-    float complex *     header_mod;
+    liquid_float_complex *     header_mod;
 
     // payload
     unsigned int        payload_dec_len; // length of decoded
     qpacketmodem        payload_encoder;
     unsigned int        payload_mod_len;
-    float complex *     payload_mod;
+    liquid_float_complex *     payload_mod;
 
     // counters/states
     unsigned int        symbol_counter; // output symbol number
     unsigned int        sample_counter; // output sample number
     unsigned int        bit_counter;    // output bit number
     int                 bit_high;       // current bit is 1
-    float complex       sym;
+    liquid_float_complex       sym;
     int                 frame_assembled; // frame assembled flag
     int                 frame_complete;  // frame completed flag
     enum state          state;           // write state
@@ -117,7 +117,7 @@ dsssframegen dsssframegen_create(dsssframegenprops_s * _fgprops)
     q->interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER, q->k, q->m, q->beta, 0);
 
     // generate pn sequence
-    q->preamble_pn = (float complex *)malloc(64 * sizeof(float complex));
+    q->preamble_pn = (liquid_float_complex *)malloc(64 * sizeof(liquid_float_complex));
     msequence ms   = msequence_create(7, 0x0089, 1);
     for (i = 0; i < 64; i++) {
         q->preamble_pn[i] = (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2);
@@ -125,7 +125,7 @@ dsssframegen dsssframegen_create(dsssframegenprops_s * _fgprops)
     }
     msequence_destroy(ms);
 
-    float complex * pn = (float complex *)malloc(64 * sizeof(float complex));
+    liquid_float_complex * pn = (liquid_float_complex *)malloc(64 * sizeof(liquid_float_complex));
     ms                        = msequence_create(7, 0x00cb, 0x53);
     for (i = 0; i < 64; i++) {
         pn[i] = (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2);
@@ -301,13 +301,13 @@ int dsssframegen_assemble(dsssframegen           _q,
 }
 
 int dsssframegen_write_samples(dsssframegen           _q,
-                               float complex * _buffer,
+                               liquid_float_complex * _buffer,
                                unsigned int           _buffer_len)
 {
     unsigned int i;
     for (i = 0; i < _buffer_len; ++i) {
         if (_q->sample_counter == 0) {
-            float complex sym = dsssframegen_generate_symbol(_q);
+            liquid_float_complex sym = dsssframegen_generate_symbol(_q);
 
             firinterp_crcf_execute(_q->interp, sym, _q->buf_interp);
         }
@@ -330,13 +330,13 @@ int dsssframegen_reconfigure(dsssframegen _q)
 {
     qpacketmodem_configure(_q->payload_encoder,
                            _q->payload_dec_len,
-                           _q->props.check,
-                           _q->props.fec0,
-                           _q->props.fec1,
+                           (crc_scheme)_q->props.check,
+                           (fec_scheme)_q->props.fec0,
+                           (fec_scheme)_q->props.fec1,
                            LIQUID_MODEM_BPSK);
     _q->payload_mod_len = qpacketmodem_get_frame_len(_q->payload_encoder);
-    _q->payload_mod     = (float complex *)realloc(
-        _q->payload_mod, _q->payload_mod_len * sizeof(float complex));
+    _q->payload_mod     = (liquid_float_complex *)realloc(
+        _q->payload_mod, _q->payload_mod_len * sizeof(liquid_float_complex));
     return LIQUID_OK;
 }
 
@@ -344,17 +344,17 @@ int dsssframegen_reconfigure_header(dsssframegen _q)
 {
     qpacketmodem_configure(_q->header_encoder,
                            _q->header_dec_len,
-                           _q->header_props.check,
-                           _q->header_props.fec0,
-                           _q->header_props.fec1,
+                           (crc_scheme)_q->header_props.check,
+                           (fec_scheme)_q->header_props.fec0,
+                           (fec_scheme)_q->header_props.fec1,
                            LIQUID_MODEM_BPSK);
     _q->header_mod_len = qpacketmodem_get_frame_len(_q->header_encoder);
-    _q->header_mod     = (float complex *)realloc(
-        _q->header_mod, _q->header_mod_len * sizeof(float complex));
+    _q->header_mod     = (liquid_float_complex *)realloc(
+        _q->header_mod, _q->header_mod_len * sizeof(liquid_float_complex));
     return LIQUID_OK;
 }
 
-float complex dsssframegen_generate_symbol(dsssframegen _q)
+liquid_float_complex dsssframegen_generate_symbol(dsssframegen _q)
 {
     if (!_q->frame_assembled) {
         return 0.f;
@@ -372,9 +372,9 @@ float complex dsssframegen_generate_symbol(dsssframegen _q)
     return 0.f;
 }
 
-float complex dsssframegen_generate_preamble(dsssframegen _q)
+liquid_float_complex dsssframegen_generate_preamble(dsssframegen _q)
 {
-    float complex symbol = _q->preamble_pn[_q->symbol_counter];
+    liquid_float_complex symbol = _q->preamble_pn[_q->symbol_counter];
     ++_q->symbol_counter;
 
     if (_q->symbol_counter == 64) {
@@ -385,13 +385,13 @@ float complex dsssframegen_generate_preamble(dsssframegen _q)
     return symbol;
 }
 
-float complex dsssframegen_generate_header(dsssframegen _q)
+liquid_float_complex dsssframegen_generate_header(dsssframegen _q)
 {
     if (_q->symbol_counter == 0) {
         _q->sym = _q->header_mod[_q->bit_counter];
     }
 
-    float complex symbol;
+    liquid_float_complex symbol;
     synth_crcf_mix_up(_q->header_synth, _q->sym, &symbol);
     synth_crcf_step(_q->header_synth);
 
@@ -408,13 +408,13 @@ float complex dsssframegen_generate_header(dsssframegen _q)
     return symbol;
 }
 
-float complex dsssframegen_generate_payload(dsssframegen _q)
+liquid_float_complex dsssframegen_generate_payload(dsssframegen _q)
 {
     if (_q->symbol_counter == 0) {
         _q->sym = _q->payload_mod[_q->bit_counter];
     }
 
-    float complex symbol;
+    liquid_float_complex symbol;
     synth_crcf_mix_up(_q->payload_synth, _q->sym, &symbol);
     synth_crcf_step(_q->payload_synth);
 
@@ -431,7 +431,7 @@ float complex dsssframegen_generate_payload(dsssframegen _q)
     return symbol;
 }
 
-float complex dsssframegen_generate_tail(dsssframegen _q)
+liquid_float_complex dsssframegen_generate_tail(dsssframegen _q)
 {
     ++_q->symbol_counter;
 

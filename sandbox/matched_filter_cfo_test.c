@@ -7,7 +7,9 @@
 #include <string.h>
 #include <getopt.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.h"
 
@@ -114,7 +116,7 @@ int main(int argc, char*argv[]) {
     unsigned int num_samples = num_symbols*k;
 
     // generate receive filter coefficients (reverse of transmit)
-    float complex gc[h_len];
+    liquid_float_complex gc[h_len];
     unsigned int i;
     for (i=0; i<h_len; i++)
         gc[i] = h[h_len-i-1];
@@ -129,9 +131,9 @@ int main(int argc, char*argv[]) {
     firdecim_cccf  decim  = firdecim_cccf_create(k,gc,h_len);
 
     // generate signal
-    float complex sym_in[num_symbols];
-    float complex y[num_samples];
-    float complex sym_out[num_symbols];
+    liquid_float_complex sym_in[num_symbols];
+    liquid_float_complex y[num_samples];
+    liquid_float_complex sym_out[num_symbols];
 
     for (i=0; i<h_len; i++)
         printf("h(%3u) = %12.8f;\n", i+1, h[i]);

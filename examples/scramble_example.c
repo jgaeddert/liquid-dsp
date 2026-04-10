@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Data-scrambling example.  Physical layer synchronization of"
 " received waveforms relies on independent and identically"
 " distributed underlying data symbols.  If the message sequence,"
@@ -14,6 +14,7 @@ char __docstr__[] =
 #include <string.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 float compute_entropy(unsigned char * _x,
@@ -26,9 +27,9 @@ int main(int argc, char* argv[])
     liquid_argparse_add(unsigned, n, 32, 'm', "number of data bytes", NULL);
     liquid_argparse_parse(argc,argv);
 
-    unsigned char x[n]; // input data
-    unsigned char y[n]; // scrambled data
-    unsigned char z[n]; // unscrambled data
+    LIQUID_VLA(unsigned char, x, n); // input data
+    LIQUID_VLA(unsigned char, y, n); // scrambled data
+    LIQUID_VLA(unsigned char, z, n); // unscrambled data
 
     // generate data
     unsigned int i;
@@ -67,10 +68,10 @@ float compute_entropy(unsigned char * _x,
     unsigned int j;
 
     // initialize counter arrays
-    unsigned int c1[2];     // 1-bit symbols
-    unsigned int c2[4];     // 2-bit symbols
-    unsigned int c4[16];    // 4-bit symbols
-    unsigned int c8[256];   // 8-bit symbols
+    LIQUID_VLA(unsigned int, c1, 2);     // 1-bit symbols
+    LIQUID_VLA(unsigned int, c2, 4);     // 2-bit symbols
+    LIQUID_VLA(unsigned int, c4, 16);    // 4-bit symbols
+    LIQUID_VLA(unsigned int, c8, 256);   // 8-bit symbols
 
     for (i=0; i<2;   i++) c1[i] = 0;
     for (i=0; i<4;   i++) c2[i] = 0;

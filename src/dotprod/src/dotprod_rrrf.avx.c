@@ -29,15 +29,17 @@
 #include <string.h>
 #include <assert.h>
 #include <immintrin.h>
+#include "liquid_simd_rename.h"
 #include "liquid.internal.h"
+#include "liquid_vla.h"
 
 #define DEBUG_DOTPROD_RRRF_AVX     0
 
 // internal methods
-int dotprod_rrrf_execute_avx(dotprod_rrrf _q,
+static int dotprod_rrrf_execute_avx(dotprod_rrrf _q,
                               float *      _x,
                               float *      _y);
-int dotprod_rrrf_execute_avxu(dotprod_rrrf _q,
+static int dotprod_rrrf_execute_avxu(dotprod_rrrf _q,
                                float *      _x,
                                float *      _y);
 
@@ -148,7 +150,7 @@ dotprod_rrrf dotprod_rrrf_copy(dotprod_rrrf q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("dotprod_rrrf_copy().avx, object cannot be NULL");
+        return (dotprod_rrrf)liquid_error_config("dotprod_rrrf_copy().avx, object cannot be NULL");
 
     dotprod_rrrf q_copy = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
     q_copy->n = q_orig->n;
@@ -192,7 +194,7 @@ int dotprod_rrrf_execute(dotprod_rrrf _q,
 }
 
 // use AVX extensions
-int dotprod_rrrf_execute_avx(dotprod_rrrf _q,
+static int dotprod_rrrf_execute_avx(dotprod_rrrf _q,
                              float *      _x,
                              float *      _y)
 {
@@ -226,7 +228,7 @@ int dotprod_rrrf_execute_avx(dotprod_rrrf _q,
     sum = _mm256_hadd_ps(sum, z);
 
     // aligned output array
-    float w[8] __attribute__((aligned(32)));
+    LIQUID_DEFINE_ALIGNED_ARRAY(float, w, 8, 32);
 
     // unload packed array
     _mm256_store_ps(w, sum);
@@ -242,7 +244,7 @@ int dotprod_rrrf_execute_avx(dotprod_rrrf _q,
 }
 
 // use AVX extensions (unrolled)
-int dotprod_rrrf_execute_avxu(dotprod_rrrf _q,
+static int dotprod_rrrf_execute_avxu(dotprod_rrrf _q,
                                float *      _x,
                                float *      _y)
 {
@@ -288,7 +290,7 @@ int dotprod_rrrf_execute_avxu(dotprod_rrrf _q,
     sum = _mm256_hadd_ps(sum, z);
 
     // aligned output array
-    float w[8] __attribute__((aligned(32)));
+    LIQUID_DEFINE_ALIGNED_ARRAY(float, w, 8, 32);
 
     // unload packed array
     _mm256_store_ps(w, sum);

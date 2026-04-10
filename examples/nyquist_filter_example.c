@@ -1,4 +1,4 @@
-char __docstr__[] = "Demonstrate Nyquist filter operation.";
+const char __docstr__[] = "Demonstrate Nyquist filter operation.";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,6 +6,7 @@ char __docstr__[] = "Demonstrate Nyquist filter operation.";
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -29,9 +30,9 @@ int main(int argc, char*argv[])
         return liquid_error(LIQUID_EICONFIG,"beta must be in (0,1)");
 
     // design the filter
-    int ftype = liquid_getopt_str2firfilt(ftype_str);
+    liquid_firfilt_type ftype = (liquid_firfilt_type)liquid_getopt_str2firfilt(ftype_str);
     unsigned int h_len = 2*k*m+1;
-    float h[h_len];
+    LIQUID_VLA(float, h, h_len);
     liquid_firdes_prototype(ftype,k,m,beta,0,h);
 
     // print the coefficients to the screen

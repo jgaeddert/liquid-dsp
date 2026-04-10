@@ -24,8 +24,10 @@
 // iirfilt_crcf_data_h5x64.c: autotest iirfilt data
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
-
+#endif
+#include "liquid.h"
 float iirfilt_crcf_data_h5x64_b[] = {
     0.004824343358,
     0.019297373431,
@@ -40,7 +42,7 @@ float iirfilt_crcf_data_h5x64_a[] = {
    -1.054665405879,
     0.187379492368};
 
-float complex iirfilt_crcf_data_h5x64_x[] = {
+liquid_float_complex iirfilt_crcf_data_h5x64_x[] = {
     0.034816486087 +  -0.057435933225*_Complex_I,
    -0.138922686034 +   0.002487157060*_Complex_I,
     0.002168200782 +   0.075752631688*_Complex_I,
@@ -106,7 +108,7 @@ float complex iirfilt_crcf_data_h5x64_x[] = {
     0.066507006426 +   0.153027239112*_Complex_I,
    -0.093381553000 +   0.004333390574*_Complex_I};
 
-float complex iirfilt_crcf_data_h5x64_y[] = {
+liquid_float_complex iirfilt_crcf_data_h5x64_y[] = {
     0.000167966683 +  -0.000277090663*_Complex_I,
     0.000399655237 +  -0.001752933682*_Complex_I,
    -0.001104267382 +  -0.004761506250*_Complex_I,

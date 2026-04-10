@@ -42,8 +42,8 @@ void testbench_symtrack_cccf(liquid_autotest __q__,
 
     // buffers
     unsigned int    buf_len = 800;  // buffer size
-    float complex   buf_0[buf_len]; // sample buffer
-    float complex   buf_1[buf_len]; // recovered symbols buffer
+    LIQUID_VLA(liquid_float_complex, buf_0, buf_len); // sample buffer
+    LIQUID_VLA(liquid_float_complex, buf_1, buf_len); // recovered symbols buffer
 
     // create stream generator
     symstreamcf gen = symstreamcf_create_linear(ftype,_k,2*_m,_beta,_ms);
@@ -52,7 +52,7 @@ void testbench_symtrack_cccf(liquid_autotest __q__,
     channel_cccf channel = channel_cccf_create();
     channel_cccf_add_awgn          (channel, noise_floor, SNRdB);
     channel_cccf_add_carrier_offset(channel, dphi, phi);
-    //float complex h[4] = {1.0f, 0, 0, 0.2f*cexpf(_Complex_I*1.4f)};
+    //liquid_float_complex h[4] = {1.0f, 0, 0, 0.2f*cexpf(_Complex_I*1.4f)};
     //channel_cccf_add_multipath     (channel, h, 4);
 
     // create symbol tracking synchronizer
@@ -64,7 +64,7 @@ void testbench_symtrack_cccf(liquid_autotest __q__,
     //unsigned int total_symbols = 0;
     unsigned int num_symbols_evm = 0;
     float        evm = 0.0f;
-    modemcf demod = modemcf_create(_ms); // for checking output EVM
+    modemcf demod = modemcf_create((modulation_scheme)_ms); // for checking output EVM
     //FILE * fid = fopen("symtrack_test.dat","w");
     //fprintf(fid,"#v=load('symtrack_test.dat'); v=v(:,1)+j*v(:,2); plot(v,'x');\n");
     //fprintf(fid,"#axis([-1 1 -1 1]*1.5); axis square; grid on;\n");

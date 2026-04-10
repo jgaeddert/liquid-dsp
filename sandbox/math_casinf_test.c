@@ -28,12 +28,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 #define sandbox_randf() ((float) rand() / (float) RAND_MAX)
 
-float complex sandbox_cacosf(float complex _z)
+liquid_float_complex sandbox_cacosf(liquid_float_complex _z)
 {
     // return based on quadrant
     int sign_i = crealf(_z) > 0;
@@ -49,7 +51,7 @@ float complex sandbox_cacosf(float complex _z)
     return 0.0f;
 }
 
-float complex sandbox_casinf(float complex _z)
+liquid_float_complex sandbox_casinf(liquid_float_complex _z)
 {
     return 0.5f*M_PI - sandbox_cacosf(_z);
 }
@@ -59,10 +61,10 @@ int main() {
     unsigned int d=2;   // number items per line
 
     // data arrays
-    float complex z[n];
-    float complex test[n];
+    liquid_float_complex z[n];
+    liquid_float_complex test[n];
 
-    float complex err_max = 0.0f;
+    liquid_float_complex err_max = 0.0f;
     unsigned int i;
     for (i=0; i<n; i++) {
         // generate random complex number
@@ -70,9 +72,9 @@ int main() {
                2.0f*(2.0f*sandbox_randf() - 1.0f) * _Complex_I;
 
         test[i] = casinf(z[i]);
-        float complex asinz_hat = sandbox_casinf(z[i]);
+        liquid_float_complex asinz_hat = sandbox_casinf(z[i]);
 
-        float complex err = test[i] - asinz_hat;
+        liquid_float_complex err = test[i] - asinz_hat;
 
         printf("%3u: z=%6.2f+j%6.2f, asin(z)=%6.2f+j%6.2f (%6.2f+j%6.2f) e=%12.4e\n",
                 i,
@@ -92,7 +94,7 @@ int main() {
     //
 
     printf("\n");
-    printf("    float complex z[%u] = {\n      ", n);
+    printf("    liquid_float_complex z[%u] = {\n      ", n);
     for (i=0; i<n; i++) {
         printf("%12.4e+_Complex_I*%12.4e", crealf(z[i]), cimagf(z[i]));
 
@@ -106,7 +108,7 @@ int main() {
     printf("};\n");
 
     printf("\n");
-    printf("    float complex test[%u] = {\n      ", n);
+    printf("    liquid_float_complex test[%u] = {\n      ", n);
     for (i=0; i<n; i++) {
         printf("%12.4e+_Complex_I*%12.4e", crealf(test[i]), cimagf(test[i]));
 

@@ -1,10 +1,11 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Demonstrate partial-band reconstruction using firpfbch2_crcf object.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -52,10 +53,10 @@ int main(int argc, char*argv[])
     spgramcf     p1   = spgramcf_create_default(nfft); // reconstructed spectrum
 
     // run channelizer
-    float complex buf_a_time[M2];   // analysis, time
-    float complex buf_a_freq[M];    // analysis, frequency
-    float complex buf_s_freq[P];    // synthesis, frequency
-    float complex buf_s_time[P2];   // synthesis, time
+    LIQUID_VLA(liquid_float_complex, buf_a_time, M2);   // analysis, time
+    LIQUID_VLA(liquid_float_complex, buf_a_freq, M);    // analysis, frequency
+    LIQUID_VLA(liquid_float_complex, buf_s_freq, P);    // synthesis, frequency
+    LIQUID_VLA(liquid_float_complex, buf_s_time, P2);   // synthesis, time
     for (i=0; i<num_blocks; i++) {
         // write samples to buffer
         msourcecf_write_samples(gen, buf_a_time, M2);
@@ -79,8 +80,8 @@ int main(int argc, char*argv[])
     spgramcf_print(p1);
 
     // compute power spectral density output
-    float psd_0[nfft];
-    float psd_1[nfft];
+    LIQUID_VLA(float, psd_0, nfft);
+    LIQUID_VLA(float, psd_1, nfft);
     spgramcf_get_psd(p0, psd_0);
     spgramcf_get_psd(p1, psd_1);
 

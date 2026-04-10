@@ -30,6 +30,10 @@
 
 #define DEBUG_CPFSKDEM()  0
 
+// demodulator type constants (defined as macros for C++ template compatibility)
+#define CPFSKDEM_COHERENT     0
+#define CPFSKDEM_NONCOHERENT  1
+
 // initialize coherent demodulator
 int CPFSKDEM(_init_coherent)(CPFSKDEM() _q);
 
@@ -54,11 +58,8 @@ struct CPFSKDEM(_s) {
     unsigned int M;             // constellation size
     unsigned int symbol_delay;  // receiver filter delay [symbols]
 
-    // demodulator type
-    enum {
-        CPFSKDEM_COHERENT=0,    // coherent demodulator
-        CPFSKDEM_NONCOHERENT    // non-coherent demodulator
-    } demod_type;
+    // demodulator type (uses macros defined above)
+    int demod_type;
 
     // demodulation function pointer
 #if 0
@@ -90,7 +91,7 @@ struct CPFSKDEM(_s) {
     // state variables
     unsigned int  index;    // debug
     unsigned int  counter;  // sample counter
-    float complex z_prime;  // (coherent only)
+    liquid_float_complex z_prime;  // (coherent only)
 };
 
 // create CPFSKDEM() object (frequency demodulator)
@@ -109,15 +110,15 @@ CPFSKDEM() CPFSKDEM(_create)(unsigned int _bps,
 {
     // validate input
     if (_bps == 0)
-        return liquid_error_config("cpfskdem_create(), bits/symbol must be greater than 0");
+        return liquid_error_config_ptr(CPFSKDEM(), "cpfskdem_create(), bits/symbol must be greater than 0");
     if (_h <= 0.0f)
-        return liquid_error_config("cpfskdem_create(), modulation index must be greater than 0");
+        return liquid_error_config_ptr(CPFSKDEM(), "cpfskdem_create(), modulation index must be greater than 0");
     if (_k < 2 || (_k%2))
-        return liquid_error_config("cpfskdem_create(), samples/symbol must be greater than 2 and even");
+        return liquid_error_config_ptr(CPFSKDEM(), "cpfskdem_create(), samples/symbol must be greater than 2 and even");
     if (_m == 0)
-        return liquid_error_config("cpfskdem_create(), filter delay must be greater than 0");
+        return liquid_error_config_ptr(CPFSKDEM(), "cpfskdem_create(), filter delay must be greater than 0");
     if (_beta <= 0.0f || _beta > 1.0f)
-        return liquid_error_config("cpfskdem_create(), filter roll-off must be in (0,1]");
+        return liquid_error_config_ptr(CPFSKDEM(), "cpfskdem_create(), filter roll-off must be in (0,1]");
 
     switch(_type) {
     case LIQUID_CPFSK_SQUARE:
@@ -126,7 +127,7 @@ CPFSKDEM() CPFSKDEM(_create)(unsigned int _bps,
     case LIQUID_CPFSK_GMSK:
         break;
     default:
-        return liquid_error_config("cpfskdem_create(), invalid filter type '%d'", _type);
+        return liquid_error_config_ptr(CPFSKDEM(), "cpfskdem_create(), invalid filter type '%d'", _type);
     }
 
     // create main object memory
@@ -164,7 +165,7 @@ CPFSKDEM() CPFSKDEM(_copy)(CPFSKDEM() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("cpfskdem_copy(), object cannot be NULL");
+        return liquid_error_config_ptr(CPFSKDEM(), "cpfskdem_copy(), object cannot be NULL");
 
     // create filter object and copy base parameters
     CPFSKDEM() q_copy = (CPFSKDEM()) malloc(sizeof(struct CPFSKDEM(_s)));
@@ -172,7 +173,7 @@ CPFSKDEM() CPFSKDEM(_copy)(CPFSKDEM() q_orig)
 
     // copy objects
     if (q_orig->demod_type == CPFSKDEM_COHERENT) {
-        //return liquid_error_config("cpfskdem_copy(), coherent mode not supported");
+        //return liquid_error_config_ptr(CPFSKDEM(), "cpfskdem_copy(), coherent mode not supported");
         liquid_error(LIQUID_EINT,"cpfskdem_copy(), coherent mode not supported");
         return NULL;
     } else {
@@ -205,6 +206,7 @@ CPFSKDEM() CPFSKDEM(_create_gmsk)(unsigned int _k,
 // initialize non-coherent demodulator
 int CPFSKDEM(_init_coherent)(CPFSKDEM() _q)
 {
+    (void)_q;
     return liquid_error(LIQUID_EUMODE,"cpfskdem_init_coherent(), unsupported mode");
 }
 
@@ -402,7 +404,7 @@ int CPFSKDEM(_demodulate_coherent)(CPFSKDEM()     _q,
 
 #if DEBUG_CPFSKDEM
     // compute output sample
-    float complex zp;
+    liquid_float_complex zp;
     firfilt_crcf_execute(_q->demod.noncoherent.mf, &zp);
     printf("y(end+1) = %12.8f + 1i*%12.8f;\n", crealf(_y), cimagf(_y));
     printf("z(end+1) = %12.8f + 1i*%12.8f;\n", crealf(zp), cimagf(zp));
@@ -415,7 +417,7 @@ int CPFSKDEM(_demodulate_coherent)(CPFSKDEM()     _q,
         _q->counter = 0;
 
         // compute output sample
-        float complex z;
+        liquid_float_complex z;
         firfilt_crcf_execute(_q->demod.noncoherent.mf, &z);
 
         // compute instantaneous frequency scaled by modulation index
@@ -444,7 +446,7 @@ int CPFSKDEM(_demodulate_coherent)(CPFSKDEM()     _q,
 
 // demodulate array of samples (non-coherent)
 int CPFSKDEM(_demodulate_noncoherent)(CPFSKDEM()        _q,
-                                    float complex   _y,
+                                    liquid_float_complex   _y,
                                     unsigned int  * _s,
                                     unsigned int  * _nw)
 {
@@ -467,6 +469,8 @@ unsigned int CPFSKDEM(_demodulate)(CPFSKDEM() _q,
 unsigned int CPFSKDEM(_demodulate_coherent)(CPFSKDEM() _q,
                                             TC *       _y)
 {
+    (void)_q;
+    (void)_y;
     liquid_error(LIQUID_EINT,"cpfskdem_demodulate_coherent(), coherent mode not supported");
     return 0;
 }
@@ -484,7 +488,7 @@ unsigned int CPFSKDEM(_demodulate_noncoherent)(CPFSKDEM() _q,
 
 #if DEBUG_CPFSKDEM
         // compute output sample
-        float complex zp;
+        liquid_float_complex zp;
         firfilt_crcf_execute(_q->demod.noncoherent.mf, &zp);
         printf("y(end+1) = %12.8f + %12.8fj;\n", crealf(_y[i]), cimagf(_y[i]));
         printf("z(end+1) = %12.8f + %12.8fj;\n", crealf(   zp), cimagf(   zp));
@@ -493,7 +497,7 @@ unsigned int CPFSKDEM(_demodulate_noncoherent)(CPFSKDEM() _q,
         // decimate output
         if ( i == 0 ) {
             // compute output sample
-            float complex z;
+            liquid_float_complex z;
             firfilt_crcf_execute(_q->demod.noncoherent.mf, &z);
 
             // compute instantaneous frequency scaled by modulation index

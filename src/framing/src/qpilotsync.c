@@ -27,7 +27,9 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <assert.h>
 
 #include "liquid.internal.h"
@@ -40,11 +42,11 @@ struct qpilotsync_s {
     unsigned int    pilot_spacing;  // spacing between pilot symbols
     unsigned int    num_pilots;     // total number of pilot symbols
     unsigned int    frame_len;      // total number of frame symbols
-    float complex * pilots;         // pilot sequence
+    liquid_float_complex * pilots;         // pilot sequence
 
     unsigned int    nfft;           // FFT size
-    float complex * buf_time;       // FFT time buffer
-    float complex * buf_freq;       // FFT freq buffer
+    liquid_float_complex * buf_time;       // FFT time buffer
+    liquid_float_complex * buf_freq;       // FFT freq buffer
     FFT_PLAN        fft;            // transform object
 
     float           dphi_hat;       // carrier frequency offset estimate
@@ -59,9 +61,9 @@ qpilotsync qpilotsync_create(unsigned int _payload_len,
 {
     // validate input
     if (_payload_len == 0)
-        return liquid_error_config("qpilotsync_create(), frame length must be at least 1 symbol");
+        return (qpilotsync)liquid_error_config("qpilotsync_create(), frame length must be at least 1 symbol");
     if (_pilot_spacing < 2)
-        return liquid_error_config("qpilotsync_create(), pilot spacing must be at least 2 symbols");
+        return (qpilotsync)liquid_error_config("qpilotsync_create(), pilot spacing must be at least 2 symbols");
 
     // allocate memory for main object
     qpilotsync q = (qpilotsync) malloc(sizeof(struct qpilotsync_s));
@@ -75,7 +77,7 @@ qpilotsync qpilotsync_create(unsigned int _payload_len,
     q->frame_len  = q->payload_len + q->num_pilots;
 
     // allocate memory for pilots
-    q->pilots = (float complex*) malloc(q->num_pilots*sizeof(float complex));
+    q->pilots = (liquid_float_complex*) malloc(q->num_pilots*sizeof(liquid_float_complex));
 
     // find appropriate sequence size
     unsigned int m = liquid_nextpow2(q->num_pilots);
@@ -95,8 +97,8 @@ qpilotsync qpilotsync_create(unsigned int _payload_len,
 
     // compute fft size and create transform objects
     q->nfft = 1 << liquid_nextpow2(q->num_pilots + (q->num_pilots>>1));
-    q->buf_time = (float complex*) FFT_MALLOC(q->nfft*sizeof(float complex));
-    q->buf_freq = (float complex*) FFT_MALLOC(q->nfft*sizeof(float complex));
+    q->buf_time = (liquid_float_complex*) FFT_MALLOC(q->nfft*sizeof(liquid_float_complex));
+    q->buf_freq = (liquid_float_complex*) FFT_MALLOC(q->nfft*sizeof(liquid_float_complex));
     q->fft      = FFT_CREATE_PLAN(q->nfft, q->buf_time, q->buf_freq, FFT_DIR_FORWARD, FFT_METHOD);
 
     // reset and return pointer to main object
@@ -124,7 +126,7 @@ qpilotsync qpilotsync_copy(qpilotsync q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("qpilotsync_copy(), object cannot be NULL");
+        return (qpilotsync)liquid_error_config("qpilotsync_copy(), object cannot be NULL");
 
     // create new object from parameters
     return qpilotsync_create(q_orig->payload_len, q_orig->pilot_spacing);
@@ -176,8 +178,8 @@ unsigned int qpilotsync_get_frame_len(qpilotsync _q)
 // TODO: include method with just symbol indices? would be useful for
 //       non-linear modulation types
 int qpilotsync_execute(qpilotsync      _q,
-                       float complex * _frame,
-                       float complex * _payload)
+                       liquid_float_complex * _frame,
+                       liquid_float_complex * _payload)
 {
     unsigned int i;
     unsigned int n = 0;
@@ -250,7 +252,7 @@ int qpilotsync_execute(qpilotsync      _q,
     // METHOD 2: compute metric by de-rotating pilots and measuring resulting phase
     // NOTE: this is possibly more accurate than the above method but might also
     //       be more computationally complex
-    float complex metric = 0;
+    liquid_float_complex metric = 0;
     for (i=0; i<_q->num_pilots; i++)
         metric += _q->buf_time[i] * cexpf(-_Complex_I*_q->dphi_hat*i*(float)(_q->pilot_spacing));
     //printf("metric : %12.8f <%12.8f>\n", cabsf(metric), cargf(metric));
@@ -264,10 +266,10 @@ int qpilotsync_execute(qpilotsync      _q,
     // recover frame symbols
     _q->evm_hat = 0.0f;
     for (i=0; i<_q->frame_len; i++) {
-        float complex v = g * _frame[i] * cexpf(-_Complex_I*(_q->dphi_hat*i + _q->phi_hat));
+        liquid_float_complex v = g * _frame[i] * cexpf(-_Complex_I*(_q->dphi_hat*i + _q->phi_hat));
         if ( (i % _q->pilot_spacing)==0 ) {
             // pilot symbol
-            float complex e = _q->pilots[p] - v;
+            liquid_float_complex e = _q->pilots[p] - v;
             _q->evm_hat += crealf( e * conjf(e) );
             p++;
         } else {

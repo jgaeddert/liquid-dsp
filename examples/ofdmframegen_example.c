@@ -1,10 +1,11 @@
-char __docstr__[] = "Example demonstrating the OFDM frame generator.";
+const char __docstr__[] = "Example demonstrating the OFDM frame generator.";
 
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char *argv[])
@@ -35,8 +36,8 @@ int main(int argc, char *argv[])
     fprintf(fid,"x = zeros(1,frame_len);\n");
 
     unsigned int i;
-    float complex X[num_subcarriers];   // channelized symbols
-    float complex x[frame_len];         // time-domain samples
+    LIQUID_VLA(liquid_float_complex, X, num_subcarriers);   // channelized symbols
+    LIQUID_VLA(liquid_float_complex, x, frame_len);         // time-domain samples
 
     for (i=0; i<num_subcarriers; i++) {
         X[i] = i==4 ? 0.707f + _Complex_I*0.707f : 0.0f;

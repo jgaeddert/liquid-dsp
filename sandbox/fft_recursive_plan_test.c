@@ -29,7 +29,9 @@
 #include <getopt.h>
 #include <math.h>
 #include <getopt.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.internal.h"
 

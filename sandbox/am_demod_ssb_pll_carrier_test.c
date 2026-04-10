@@ -5,7 +5,9 @@
 #include <string.h>
 #include <math.h>
 #include <getopt.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.h"
 
 int main(int argc, char*argv[])
@@ -24,7 +26,7 @@ int main(int argc, char*argv[])
     // buffers
     unsigned int i;
     float         x[num_samples];
-    float complex y[num_samples];
+    liquid_float_complex y[num_samples];
     float         z[num_samples];
 
     // generate 'audio' signal (simple windowed sum of tones)
@@ -39,7 +41,7 @@ int main(int argc, char*argv[])
     // modulate signal (SSB with carrier)
     firhilbf hilbert = firhilbf_create(m, As);
     for (i=0; i<num_samples; i++) {
-        float complex mp;
+        liquid_float_complex mp;
         firhilbf_r2c_execute(hilbert, mod_index*x[i], &mp);
         y[i] = 1.0f + (usb ? mp : conjf(mp));
 
@@ -68,7 +70,7 @@ int main(int argc, char*argv[])
     firhilbf_reset(hilbert);
     for (i=0; i<num_samples; i++) {
         // mix signal down
-        float complex v;
+        liquid_float_complex v;
         nco_crcf_mix_down(mixer, y[i], &v);
 
         // compute phase error

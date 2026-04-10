@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Cyclic redundancy check (CRC) example.  This example demonstrates"
 " how a CRC can be used to validate data received through un-reliable"
 " means (e.g. a noisy channel).  A CRC is, in essence, a strong"
@@ -9,6 +9,7 @@ char __docstr__[] =
 #include <stdlib.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -20,12 +21,12 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // validate options
-    crc_scheme crc  = liquid_getopt_str2crc(crc_type);
+    crc_scheme crc  = (crc_scheme)liquid_getopt_str2crc(crc_type);
 
     unsigned int i;
 
     // initialize data array, leaving space for key at the end
-    unsigned char data[n+4];
+    LIQUID_VLA(unsigned char, data, n+4);
     for (i=0; i<n; i++)
         data[i] = rand() & 0xff;
 

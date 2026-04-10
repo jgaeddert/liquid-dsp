@@ -39,11 +39,11 @@
 //  _n      :   input lengths
 //  _y      :   output dot product
 int dotprod_crcf_run(float *         _h,
-                     float complex * _x,
+                     liquid_float_complex * _x,
                      unsigned int    _n,
-                     float complex * _y)
+                     liquid_float_complex * _y)
 {
-    float complex r=0;
+    liquid_float_complex r=0;
     unsigned int i;
     for (i=0; i<_n; i++)
         r += _h[i] * _x[i];
@@ -57,11 +57,11 @@ int dotprod_crcf_run(float *         _h,
 //  _n      :   input lengths
 //  _y      :   output dot product
 int dotprod_crcf_run4(float *         _h,
-                      float complex * _x,
+                      liquid_float_complex * _x,
                       unsigned int    _n,
-                      float complex * _y)
+                      liquid_float_complex * _y)
 {
-    float complex r=0;
+    liquid_float_complex r=0;
 
     // t = 4*(floor(_n/4))
     unsigned int t=(_n>>2)<<2; 
@@ -185,8 +185,8 @@ int dotprod_crcf_print(dotprod_crcf _q)
 
 // execute vectorized structured inner dot product
 int dotprod_crcf_execute(dotprod_crcf    _q,
-                         float complex * _x,
-                         float complex * _r)
+                         liquid_float_complex * _x,
+                         liquid_float_complex * _r)
 {
     int al; // input data alignment
 

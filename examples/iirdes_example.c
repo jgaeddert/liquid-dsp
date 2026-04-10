@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Tests infinite impulse response (IIR) digital filter design.";
 
 #include <stdlib.h>
@@ -6,6 +6,7 @@ char __docstr__[] =
 #include <string.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -79,8 +80,8 @@ int main(int argc, char*argv[])
 
     // allocate memory for filter coefficients
     unsigned int h_len = (format == LIQUID_IIRDES_SOS) ? 3*(L+r) : N+1;
-    float b[h_len];
-    float a[h_len];
+    LIQUID_VLA(float, b, h_len);
+    LIQUID_VLA(float, a, h_len);
 
     // design filter
     liquid_iirdes(ftype, btype, format, order, fc, f0, Ap, As, b, a);

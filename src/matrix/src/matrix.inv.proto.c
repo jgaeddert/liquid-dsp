@@ -38,8 +38,8 @@ int MATRIX(_inv)(T * _X, unsigned int _XR, unsigned int _XC)
     //  ...
     //  xn1 xn2 ... xnn
 
-    // allocate temporary memory
-    T x[2*_XR*_XC];
+    // allocate temporary memory (use LIQUID_VLA for MSVC compatibility)
+    LIQUID_VLA(T, x, 2*_XR*_XC);
     unsigned int xr = _XR;
     unsigned int xc = _XC*2;
 
@@ -114,7 +114,7 @@ int MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC)
     // scale by diagonal
     T g;
     for (r=0; r<_XR; r++) {
-        g = 1 / matrix_access(_X,_XR,_XC,r,r);
+        g = (T)1.0 / matrix_access(_X,_XR,_XC,r,r);
         for (c=0; c<_XC; c++)
             matrix_access(_X,_XR,_XC,r,c) *= g;
     }
@@ -125,7 +125,7 @@ int MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC)
 int MATRIX(_pivot)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r, unsigned int _c)
 {
     T v = matrix_access(_X,_XR,_XC,_r,_c);
-    if (v==0)
+    if (T_ABS(v) < 1.0e-12f)
         return liquid_error(LIQUID_EICONFIG,"matrix_pivot(), pivoting on zero");
 
     unsigned int r,c;
@@ -152,6 +152,7 @@ int MATRIX(_pivot)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r, 
 
 int MATRIX(_swaprows)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r1, unsigned int _r2)
 {
+    (void)_XR;
     if (_r1 == _r2)
         return LIQUID_OK;
 

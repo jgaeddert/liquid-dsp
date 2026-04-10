@@ -38,9 +38,9 @@ void testbench_freqmodem(liquid_autotest __q__, float _kf)
     freqdem dem = freqdem_create(_kf);  // demodulator
 
     // allocate arrays
-    float         m[num_samples];       // message signal
-    float complex r[num_samples];       // received signal (complex baseband)
-    float         y[num_samples];       // demodulator output
+    LIQUID_VLA(float, m, num_samples);       // message signal
+    LIQUID_VLA(liquid_float_complex, r, num_samples);       // received signal (complex baseband)
+    LIQUID_VLA(float, y, num_samples);       // demodulator output
 
     // generate message signal (sum of sines)
     for (i=0; i<num_samples; i++) {

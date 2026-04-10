@@ -24,7 +24,9 @@
 // data for testing L/U decomposition
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 // matrixf_data_ludecomp_A [size: 8 x 8]
 float matrixf_data_ludecomp_A[] = {

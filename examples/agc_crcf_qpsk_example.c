@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Automatic gain control test for data signals with fluctuating signal"
 " levels.  QPSK modulation introduces periodic random zero-crossings"
 " which gives instantaneous amplitude levels near zero.  This example"
@@ -9,6 +9,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -32,9 +33,9 @@ int main(int argc, char*argv[])
     float nstd = powf(10.0f, noise_floor / 20.0f);
 
     // arrays
-    float complex x[num_samples];
-    float complex y[num_samples];
-    float rssi[num_samples];
+    LIQUID_VLA(liquid_float_complex, x, num_samples);
+    LIQUID_VLA(liquid_float_complex, y, num_samples);
+    LIQUID_VLA(float, rssi, num_samples);
 
     // create objects
     modemcf mod = modemcf_create(LIQUID_MODEM_QPSK);
@@ -48,7 +49,7 @@ int main(int argc, char*argv[])
     printf("automatic gain control // loop bandwidth: %4.2e\n",bt);
 
     unsigned int sym;
-    float complex s;
+    liquid_float_complex s;
     for (i=0; i<num_symbols; i++) {
         // generate random symbol
         sym = modemcf_gen_rand_sym(mod);

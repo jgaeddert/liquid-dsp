@@ -42,9 +42,9 @@
 
 int fpoly_bessel(unsigned int _n, float * _p);
 
-int fpoly_bessel_roots(unsigned int _n, float complex * _roots);
+int fpoly_bessel_roots(unsigned int _n, liquid_float_complex * _roots);
 
-int fpoly_bessel_roots_orchard(unsigned int _n, float complex * _roots);
+int fpoly_bessel_roots_orchard(unsigned int _n, liquid_float_complex * _roots);
 
 int fpoly_bessel_roots_orchard_recursion(unsigned int _n,
                                           float _x,
@@ -64,13 +64,14 @@ int fpoly_bessel_roots_orchard_recursion(unsigned int _n,
 //  _p      :   output analog poles [length: _n]
 //  _k      :   output analog gain
 int bessel_azpkf(unsigned int    _n,
-                 float complex * _za,
-                 float complex * _pa,
-                 float complex * _ka)
+                 liquid_float_complex * _za,
+                 liquid_float_complex * _pa,
+                 liquid_float_complex * _ka)
 {
+    (void)_za;
     // roots are computed with order _n+1 so we must use a longer array to
     // prevent out-of-bounds write on the provided _pa array
-    float complex _tmp_pa[_n+1];
+    LIQUID_VLA(liquid_float_complex, _tmp_pa, _n+1);
 
     // compute poles (roots to Bessel polynomial)
     if (fpoly_bessel_roots(_n+1,_tmp_pa) != LIQUID_OK)
@@ -131,7 +132,7 @@ int fpoly_bessel(unsigned int _n, float * _p)
 }
 
 int fpoly_bessel_roots(unsigned int    _n,
-                       float complex * _roots)
+                       liquid_float_complex * _roots)
 {
     return fpoly_bessel_roots_orchard(_n, _roots);
 }
@@ -142,12 +143,12 @@ int fpoly_bessel_roots(unsigned int    _n,
 // The resulting root is near enough the true root such that
 // Orchard's recursion will find it.
 int fpoly_bessel_roots_orchard(unsigned int    _n,
-                               float complex * _roots)
+                               liquid_float_complex * _roots)
 {
-    // initialize arrays
-    float complex r0[_n];       // roots of L_{k-2}
-    float complex r1[_n];       // roots of L_{k-1}
-    float complex r_hat[_n];    // roots of L_{k}
+    // initialize arrays (use LIQUID_VLA for MSVC compatibility)
+    LIQUID_VLA(liquid_float_complex, r0, _n);       // roots of L_{k-2}
+    LIQUID_VLA(liquid_float_complex, r1, _n);       // roots of L_{k-1}
+    LIQUID_VLA(liquid_float_complex, r_hat, _n);    // roots of L_{k}
 
     unsigned int i, j;
     unsigned int p, L;
@@ -189,17 +190,17 @@ int fpoly_bessel_roots_orchard(unsigned int    _n,
 
         // copy roots:  roots(L_{k+1}) -> roots(L_{k+2))
         //              roots(L_{k})   -> roots(L_{k+1))
-        memmove(r0, r1,    (L-p)*sizeof(float complex));
-        memmove(r1, r_hat,     L*sizeof(float complex));
+        memmove(r0, r1,    (L-p)*sizeof(liquid_float_complex));
+        memmove(r1, r_hat,     L*sizeof(liquid_float_complex));
     }
 
     // copy results to output
     p = _n % 2;
     L = (_n-p)/2;
     for (i=0; i<L; i++) {
-        unsigned int p = L-i-1;
-        _roots[2*i+0] =       r_hat[p];
-        _roots[2*i+1] = conjf(r_hat[p]);
+        unsigned int idx = L-i-1;
+        _roots[2*i+0] =       r_hat[idx];
+        _roots[2*i+1] = conjf(r_hat[idx]);
     }
 
     // if order is odd, copy single real root last

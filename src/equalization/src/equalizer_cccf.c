@@ -38,7 +38,7 @@
 #define MATRIX(name)    LIQUID_CONCAT(matrixcf,name)
 
 #define T_COMPLEX       1
-#define T               float complex
+#define T               liquid_float_complex
 
 #define PRINTVAL(V)     printf("%5.2f+j%5.2f ", crealf(V), cimagf(V));
 

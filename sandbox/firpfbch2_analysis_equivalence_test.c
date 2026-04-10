@@ -99,17 +99,17 @@ int main(int argc, char*argv[])
     }
 
     // generate DFT object
-    float complex x[num_channels];  // time-domain buffer
-    float complex X[num_channels];  // freq-domain buffer
+    liquid_float_complex x[num_channels];  // time-domain buffer
+    liquid_float_complex X[num_channels];  // freq-domain buffer
 #if 1
     fftplan fft = fft_create_plan(num_channels, X, x, LIQUID_FFT_BACKWARD, 0);
 #else
     fftplan fft = fft_create_plan(num_channels, X, x, LIQUID_FFT_FORWARD, 0);
 #endif
 
-    float complex y[num_samples];                   // time-domain input
-    float complex Y0[2*num_symbols][num_channels];  // channelizer output
-    float complex Y1[2*num_symbols][num_channels];  // conventional output
+    liquid_float_complex y[num_samples];                   // time-domain input
+    liquid_float_complex Y0[2*num_symbols][num_channels];  // channelizer output
+    liquid_float_complex Y1[2*num_symbols][num_channels];  // conventional output
 
     // generate input sequence
     for (i=0; i<num_samples; i++) {
@@ -127,8 +127,8 @@ int main(int argc, char*argv[])
 #else
     unsigned int filter_index = num_channels/2-1;
 #endif
-    float complex y_hat;    // input sample
-    float complex * r;      // buffer read pointer
+    liquid_float_complex y_hat;    // input sample
+    liquid_float_complex * r;      // buffer read pointer
     int toggle = 0;         // flag indicating buffer/filter alignment
 
     //
@@ -243,7 +243,7 @@ int main(int argc, char*argv[])
     // compare results
     // 
     float mse[num_channels];
-    float complex d;
+    liquid_float_complex d;
     for (i=0; i<num_channels; i++) {
         mse[i] = 0.0f;
         for (j=0; j<2*num_symbols; j++) {

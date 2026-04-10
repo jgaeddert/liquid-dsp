@@ -1,7 +1,8 @@
-char __docstr__[] = "Test polynomial fit to sample data.";
+const char __docstr__[] = "Test polynomial fit to sample data.";
 
 #include <stdio.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -14,8 +15,8 @@ int main(int argc, char* argv[])
     liquid_argparse_parse(argc,argv);
 
     // initialize data vectors
-    float x[n];
-    float y[n];
+    LIQUID_VLA(float, x, n);
+    LIQUID_VLA(float, y, n);
     unsigned int i;
     for (i=0; i<n; i++) {
         x[i] = 14*randf()-7;
@@ -23,7 +24,7 @@ int main(int argc, char* argv[])
     }
 
     // compute coefficients
-    float p[order+1];
+    LIQUID_VLA(float, p, order+1);
     polyf_fit(x,y,n,p,order+1);
 
     // evaluate polynomial and print results

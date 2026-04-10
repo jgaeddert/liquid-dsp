@@ -1,10 +1,11 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Demonstrates computing primitive root of a number using modular arithmetic.";
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])

@@ -53,6 +53,7 @@ int MODEM(_modulate_bpsk)(MODEM()      _q,
                           unsigned int _sym_in,
                           TC *         _y)
 {
+    (void)_q;
     // compute output sample directly from input
     *_y = _sym_in ? -1.0f : 1.0f;
     return LIQUID_OK;

@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the functionality of the qdetector object"
 " to detect an arbitrary signal in time in the presence of noise,"
 " carrier frequency/phase offsets, and fractional-sample timing"
@@ -10,6 +10,7 @@ char __docstr__[] =
 #include <math.h>
 #include <time.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -40,7 +41,7 @@ int main(int argc, char*argv[])
     float gamma = powf(10.0f, (SNRdB + noise_floor)/20.0f);
 
     // generate synchronization sequence (QPSK symbols)
-    float complex sequence[sequence_len];
+    LIQUID_VLA(liquid_float_complex, sequence, sequence_len);
     unsigned int i;
     for (i=0; i<sequence_len; i++) {
         sequence[i] = (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 +
@@ -69,11 +70,11 @@ int main(int argc, char*argv[])
     unsigned int num_symbols = buf_len;
 
     // arrays
-    float complex y[num_samples];       // received signal
-    float complex syms_rx[num_symbols]; // recovered symbols
+    LIQUID_VLA(liquid_float_complex, y, num_samples);       // received signal
+    LIQUID_VLA(liquid_float_complex, syms_rx, num_symbols); // recovered symbols
 
     // get pointer to sequence and generate full sequence
-    float complex * v = (float complex*) qdetector_cccf_get_sequence(q);
+    liquid_float_complex * v = (liquid_float_complex*) qdetector_cccf_get_sequence(q);
     unsigned int filter_delay = 15;
     firfilt_crcf filter = firfilt_crcf_create_kaiser(2*filter_delay+1, 0.4f, 60.0f, -tau);
     for (i=0; i<num_samples; i++) {
@@ -94,7 +95,7 @@ int main(int argc, char*argv[])
 
     // run detection on sequence
     for (i=0; i<num_samples; i++) {
-        v = qdetector_cccf_execute(q,y[i]);
+        v = (liquid_float_complex*)qdetector_cccf_execute(q,y[i]);
 
         if (v != NULL) {
             printf("\nframe detected!\n");
@@ -122,7 +123,7 @@ int main(int argc, char*argv[])
 
         for (i=0; i<buf_len; i++) {
             //
-            float complex sample;
+            liquid_float_complex sample;
             nco_crcf_mix_down(nco, v[i], &sample);
             nco_crcf_step(nco);
 

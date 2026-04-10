@@ -1,9 +1,10 @@
-char __docstr__[] = "This example demonstrates the a window interpolator.";
+const char __docstr__[] = "This example demonstrates the a window interpolator.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -17,8 +18,8 @@ int main(int argc, char* argv[])
     liquid_argparse_parse(argc,argv);
 
     // generate input signal and interpolate
-    float x[  num_symbols];   // input symbols
-    float y[M*num_symbols];   // output samples
+    LIQUID_VLA(float, x, num_symbols);   // input symbols
+    LIQUID_VLA(float, y, M*num_symbols);   // output samples
     unsigned int i;
     for (i=0; i<num_symbols; i++)
         x[i] = randnf();

@@ -35,7 +35,7 @@ void testbench_fft_r2r(liquid_autotest __q__,
 
     unsigned int i;
 
-    float y[_n];
+    LIQUID_VLA(float, y, _n);
 
     // compute real even/odd FFT
     fftplan q = fft_create_plan_r2r_1d(_n, _x, y, _kind, _flags);

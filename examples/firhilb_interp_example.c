@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Hilbert transform: 1:2 complex-to-real interpolator.  This"
 " example demonstrates the functionality of firhilb (finite"
 " impulse response Hilbert transform) interpolator which converts"
@@ -7,10 +7,13 @@ char __docstr__[] =
 " The output is a real-valued sinusoid of 2*N samples.";
 
 #include <stdio.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -25,8 +28,8 @@ int main(int argc, char* argv[])
     liquid_argparse_parse(argc,argv);
 
     // data arrays
-    float complex x[num_samples];   // complex input
-    float y[2*num_samples];         // real output
+    LIQUID_VLA(liquid_float_complex, x, num_samples);   // complex input
+    LIQUID_VLA(float, y, 2*num_samples);         // real output
 
     // initialize input array
     unsigned int i;

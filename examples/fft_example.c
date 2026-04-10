@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the interface to the fast discrete Fourier"
 " transform (FFT).";
 
@@ -6,6 +6,7 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // print usage/help message
@@ -27,9 +28,9 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // allocate memory arrays
-    float complex * x = (float complex*) fft_malloc(nfft*sizeof(float complex));
-    float complex * y = (float complex*) fft_malloc(nfft*sizeof(float complex));
-    float complex * z = (float complex*) fft_malloc(nfft*sizeof(float complex));
+    liquid_float_complex * x = (liquid_float_complex*) fft_malloc(nfft*sizeof(liquid_float_complex));
+    liquid_float_complex * y = (liquid_float_complex*) fft_malloc(nfft*sizeof(liquid_float_complex));
+    liquid_float_complex * z = (liquid_float_complex*) fft_malloc(nfft*sizeof(liquid_float_complex));
 
     // initialize input
     unsigned int i;
@@ -72,7 +73,7 @@ int main(int argc, char*argv[])
     // compute RMSE between original and result
     float rmse = 0.0f;
     for (i=0; i<nfft; i++) {
-        float complex d = x[i] - z[i];
+        liquid_float_complex d = x[i] - z[i];
         rmse += crealf(d * conjf(d));
     }
     rmse = sqrtf( rmse / (float)nfft );

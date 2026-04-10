@@ -113,17 +113,17 @@ int main(int argc, char*argv[])
     }
 
     // generate DFT object
-    float complex x[num_channels];  // time-domain buffer
-    float complex X[num_channels];  // freq-domain buffer
+    liquid_float_complex x[num_channels];  // time-domain buffer
+    liquid_float_complex X[num_channels];  // freq-domain buffer
 #if 1
     fftplan fft = fft_create_plan(num_channels, X, x, LIQUID_FFT_BACKWARD, 0);
 #else
     fftplan fft = fft_create_plan(num_channels, X, x, LIQUID_FFT_FORWARD, 0);
 #endif
 
-    float complex y[num_samples];                   // time-domain input
-    float complex Y0[2*num_symbols][num_channels];  // channelizer output
-    float complex z[num_samples];                   // time-domain output
+    liquid_float_complex y[num_samples];                   // time-domain input
+    liquid_float_complex Y0[2*num_symbols][num_channels];  // channelizer output
+    liquid_float_complex z[num_samples];                   // time-domain output
 
     // generate input sequence
     for (i=0; i<num_samples; i++) {
@@ -137,8 +137,8 @@ int main(int argc, char*argv[])
     // 
     // run analysis filter bank
     //
-    float complex y_hat;    // input sample
-    float complex * r;      // buffer read pointer
+    liquid_float_complex y_hat;    // input sample
+    liquid_float_complex * r;      // buffer read pointer
     int toggle = 0;         // flag indicating buffer/filter alignment
 
     //
@@ -317,10 +317,10 @@ int main(int argc, char*argv[])
             windowcf_push(buffer[j], x[j]);
 
         // compute filter outputs
-        float complex * r0;
-        float complex * r1;
-        float complex z0;
-        float complex z1;
+        liquid_float_complex * r0;
+        liquid_float_complex * r1;
+        liquid_float_complex z0;
+        liquid_float_complex z1;
         for (j=0; j<num_channels/2; j++) {
             // buffer index
             unsigned int b = (toggle == 0) ? j : j+num_channels/2;
@@ -329,8 +329,8 @@ int main(int argc, char*argv[])
             windowcf_read(w1[b], &r1);
 
             // buffer pointers
-            float complex * p0 = toggle ? r0 : r1;
-            float complex * p1 = toggle ? r1 : r0;
+            liquid_float_complex * p0 = toggle ? r0 : r1;
+            liquid_float_complex * p1 = toggle ? r1 : r0;
 
 #if DEBUG
             // plot registers

@@ -31,7 +31,7 @@
 #define POLY_NAME       "polyf"
 #define EXTENSION       "f"
 #define T               float
-#define TC              float complex
+#define TC              liquid_float_complex
 
 #define T_COMPLEX       0
 #define TI_COMPLEX      1
@@ -50,7 +50,7 @@
 //  _roots  :   resulting complex roots [size: _k-1 x 1]
 int polyf_findroots(float *         _p,
                     unsigned int    _k,
-                    float complex * _roots)
+                    liquid_float_complex * _roots)
 {
     unsigned int i;
 
@@ -61,15 +61,15 @@ int polyf_findroots(float *         _p,
 
     // find roots of polynomial using Bairstow's method (more
     // accurate and reliable than Durand-Kerner)
-    double complex * roots = (double complex*)malloc((_k-1)*sizeof(double complex));
+    liquid_double_complex * roots = (liquid_double_complex*)malloc((_k-1)*sizeof(liquid_double_complex));
     int rc = liquid_poly_findroots_bairstow(p,_k,roots);
 
     // sort roots for consistent ordering
-    qsort(roots, _k-1, sizeof(double complex), &liquid_poly_sort_roots_compare);
+    qsort(roots, _k-1, sizeof(liquid_double_complex), &liquid_poly_sort_roots_compare);
 
     // copy back to original
     for (i=0; i<_k-1; i++)
-        _roots[i] = (float complex)roots[i];
+        _roots[i] = (liquid_float_complex)roots[i];
 
     // free memory and return
     free(p);

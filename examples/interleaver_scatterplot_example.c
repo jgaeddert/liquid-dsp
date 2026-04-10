@@ -1,4 +1,4 @@
-char __docstr__[] = "Generate interleaver scatterplot figure.";
+const char __docstr__[] = "Generate interleaver scatterplot figure.";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,6 +6,7 @@ char __docstr__[] = "Generate interleaver scatterplot figure.";
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // find most significant bit in array (starting from left)
@@ -26,10 +27,10 @@ int main(int argc, char*argv[])
     interleaver_set_depth(q, depth);
 
     // create arrays
-    unsigned char x[n]; // original message data
-    unsigned char y[n]; // interleaved data
+    LIQUID_VLA(unsigned char, x, n); // original message data
+    LIQUID_VLA(unsigned char, y, n); // interleaved data
 
-    unsigned int index[8*n];
+    LIQUID_VLA(unsigned int, index, 8*n);
 
     unsigned int i;
     unsigned int j;

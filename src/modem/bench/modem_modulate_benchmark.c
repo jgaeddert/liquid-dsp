@@ -41,7 +41,7 @@ void modemcf_modulate_bench(struct rusage *_start,
     modemcf mod = modemcf_create(_ms);
 
     unsigned long int i;
-    float complex x;
+    liquid_float_complex x;
     unsigned int symbol_in = 0;
     
     // start trials

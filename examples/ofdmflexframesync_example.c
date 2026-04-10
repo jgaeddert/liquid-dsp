@@ -1,4 +1,4 @@
-char __docstr__[] = "Example demonstrating the OFDM flexible frame synchronizer.";
+const char __docstr__[] = "Example demonstrating the OFDM flexible frame synchronizer.";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +7,7 @@ char __docstr__[] = "Example demonstrating the OFDM flexible frame synchronizer.
 #include <time.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // callback function
@@ -36,18 +37,18 @@ int main(int argc, char *argv[])
     liquid_argparse_add(bool,     debug,     false, 'd', "enable debugging", NULL);
     liquid_argparse_parse(argc,argv);
 
-    modulation_scheme ms    = liquid_getopt_str2mod(mod);
-    crc_scheme        check = liquid_getopt_str2crc(crc);
-    fec_scheme        fec0  = liquid_getopt_str2fec(fs0);
-    fec_scheme        fec1  = liquid_getopt_str2fec(fs1);
+    modulation_scheme ms    = (modulation_scheme)liquid_getopt_str2mod(mod);
+    crc_scheme        check = (crc_scheme)liquid_getopt_str2crc(crc);
+    fec_scheme        fec0  = (fec_scheme)liquid_getopt_str2fec(fs0);
+    fec_scheme        fec1  = (fec_scheme)liquid_getopt_str2fec(fs1);
 
     // derived values
     unsigned int  buf_len = 256;
-    float complex buf[buf_len]; // time-domain buffer
+    LIQUID_VLA(liquid_float_complex, buf, buf_len); // time-domain buffer
 
     // allocate memory for header, payload
-    unsigned char header[8];
-    unsigned char payload[payload_len];
+    LIQUID_VLA(unsigned char, header, 8);
+    LIQUID_VLA(unsigned char, payload, payload_len);
 
     // create frame generator
     ofdmflexframegenprops_s fgprops;
@@ -114,6 +115,8 @@ int callback(unsigned char *  _header,
              framesyncstats_s _stats,
              void *           _userdata)
 {
+    (void)_header_valid;
+    (void)_payload_valid;
     printf("**** callback invoked : rssi = %8.3f dB, evm = %8.3f dB, cfo = %8.5f\n", _stats.rssi, _stats.evm, _stats.cfo);
 
     unsigned int i;

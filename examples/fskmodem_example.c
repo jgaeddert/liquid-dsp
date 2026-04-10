@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the M-ary frequency-shift keying"
 " (MFSK) modem in liquid. A message signal is modulated and the"
 " resulting signal is recovered using a demodulator object.";
@@ -9,6 +9,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -46,8 +47,8 @@ int main(int argc, char*argv[])
     fskdem_print(dem);
 
     // 
-    float complex buf_tx[k];    // transmit buffer
-    float complex buf_rx[k];    // transmit buffer
+    LIQUID_VLA(liquid_float_complex, buf_tx, k);    // transmit buffer
+    LIQUID_VLA(liquid_float_complex, buf_rx, k);    // transmit buffer
     
     // spectral periodogram
     spgramcf periodogram = spgramcf_create_default(nfft);
@@ -83,7 +84,7 @@ int main(int argc, char*argv[])
     printf("symbol errors: %u / %u\n", num_symbol_errors, num_symbols);
 
     // compute power spectral density of received signal
-    float psd[nfft];
+    LIQUID_VLA(float, psd, nfft);
     spgramcf_get_psd(periodogram, psd);
     spgramcf_destroy(periodogram);
 

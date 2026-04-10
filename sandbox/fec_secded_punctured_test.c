@@ -105,7 +105,7 @@ int main(int argc, char*argv[])
     // arrays
     unsigned char m[p];     // original message [64 x 1]
     unsigned char v[p+1];   // encoded/transmitted message
-    float complex y[k];     // received message with noise
+    liquid_float_complex y[k];     // received message with noise
     unsigned char r[p+1];   // received vector (hard decision)
     unsigned char m_hat[p]; // estimated original message
 

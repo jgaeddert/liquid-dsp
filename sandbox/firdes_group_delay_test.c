@@ -12,8 +12,8 @@ void apply_delay(float *      _h,
 {
     unsigned int L = _h_len % 2;
     unsigned int m = (_h_len - L)/2;
-    float complex buf_time[_h_len];
-    float complex buf_freq[_h_len];
+    liquid_float_complex buf_time[_h_len];
+    liquid_float_complex buf_freq[_h_len];
     unsigned int i;
     // copy to buffer, applying appropriate shift
     for (i=0; i<_h_len; i++)

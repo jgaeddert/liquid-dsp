@@ -54,6 +54,7 @@
 #define SYMSYNC(name)       LIQUID_CONCAT(symsync_rrrf,name)
 
 #define T                   float   // general
+#define TCOMPLEX            liquid_float_complex  // T complex for C++ compat
 #define TO                  float   // output
 #define TC                  float   // coefficients
 #define TI                  float   // input

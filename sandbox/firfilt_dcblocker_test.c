@@ -1,7 +1,9 @@
 // firfilt DC blocker filter design test
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 #include <time.h>
 

@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the interface for forward error-correction"
 " (FEC) codes with soft-decision decoding.  A buffer of data bytes is"
 " encoded before the data are corrupted with at least one error and"
@@ -11,6 +11,7 @@ char __docstr__[] =
 #include <string.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -23,7 +24,7 @@ int main(int argc, char*argv[])
     liquid_argparse_add(bool,     verbose,     0, 'v', "enable verbose output", NULL);
     liquid_argparse_parse(argc,argv);
 
-    fec_scheme fs = liquid_getopt_str2fec(fec0);
+    fec_scheme fs = (fec_scheme)liquid_getopt_str2fec(fec0);
 
     // ensure proper data length
     n = (n > nmax) ? nmax : n;
@@ -32,11 +33,11 @@ int main(int argc, char*argv[])
     unsigned int n_enc = fec_get_enc_msg_length(fs,n);
     printf("dec msg len : %u\n", n);
     printf("enc msg len : %u\n", n_enc);
-    unsigned char data[n];               // original data message
-    unsigned char msg_enc[n_enc];        // encoded data message
-    unsigned char msg_cor_soft[8*n_enc]; // corrupted data message (soft bits)
-    unsigned char msg_cor_hard[n_enc];   // corrupted data message (hard bits)
-    unsigned char msg_dec[n];            // decoded data message
+    LIQUID_VLA(unsigned char, data, n);               // original data message
+    LIQUID_VLA(unsigned char, msg_enc, n_enc);        // encoded data message
+    LIQUID_VLA(unsigned char, msg_cor_soft, 8*n_enc); // corrupted data message (soft bits)
+    LIQUID_VLA(unsigned char, msg_cor_hard, n_enc);   // corrupted data message (hard bits)
+    LIQUID_VLA(unsigned char, msg_dec, n);            // decoded data message
 
     // create object
     fec q = fec_create(fs,NULL);

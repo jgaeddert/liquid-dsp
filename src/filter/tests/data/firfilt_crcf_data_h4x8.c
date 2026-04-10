@@ -24,15 +24,17 @@
 // firfilt_crcf_data_h4x8.c: autotest firfilt data
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
-
+#endif
+#include "liquid.h"
 float firfilt_crcf_data_h4x8_h[] = {
     0.081125556518,
    -0.048097526791,
     0.083945750272,
     0.016820374297};
 
-float complex firfilt_crcf_data_h4x8_x[] = {
+liquid_float_complex firfilt_crcf_data_h4x8_x[] = {
     0.212556497097 +  -0.062593316778*_Complex_I,
     0.074632428892 +  -0.155168218555*_Complex_I,
    -0.139928836211 +  -0.151937330426*_Complex_I,
@@ -42,7 +44,7 @@ float complex firfilt_crcf_data_h4x8_x[] = {
    -0.134588116658 +  -0.011633439603*_Complex_I,
     0.035369414992 +  -0.047878728319*_Complex_I};
 
-float complex firfilt_crcf_data_h4x8_y[] = {
+liquid_float_complex firfilt_crcf_data_h4x8_y[] = {
     0.017243764119 +  -0.005077917658*_Complex_I,
    -0.004168844485 +  -0.009577524353*_Complex_I,
     0.002901774665 +  -0.010117235877*_Complex_I,

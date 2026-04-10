@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the interfaces to the fskframegen and"
 " fskframesync objects used to completely encapsulate data for"
 " over-the-air transmission.";
@@ -9,6 +9,7 @@ char __docstr__[] =
 #include <time.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // static callback function
@@ -42,9 +43,9 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // validate input
-    crc_scheme check = liquid_getopt_str2crc(crc);
-    fec_scheme fec0  = liquid_getopt_str2fec(fs0);
-    fec_scheme fec1  = liquid_getopt_str2fec(fs1);
+    crc_scheme check = (crc_scheme)liquid_getopt_str2crc(crc);
+    fec_scheme fec0  = (fec_scheme)liquid_getopt_str2fec(fs0);
+    fec_scheme fec1  = (fec_scheme)liquid_getopt_str2fec(fs1);
 
     printf("channel offsets: dt=%.3f, dphi=%.3f, theta=%.3f\n", dt, dphi, theta);
 
@@ -72,8 +73,8 @@ int main(int argc, char*argv[])
 
     // allocate memory for the frame samples
     unsigned int  buf_len = 64;
-    float complex buf_tx[buf_len];  // receive buffer
-    float complex buf_rx[buf_len];  // transmit buffer
+    LIQUID_VLA(liquid_float_complex, buf_tx, buf_len);  // receive buffer
+    LIQUID_VLA(liquid_float_complex, buf_rx, buf_len);  // transmit buffer
     
     // assemble the frame
     fskframegen_assemble(fg, header, payload, payload_len, check, fec0, fec1);
@@ -100,7 +101,7 @@ int main(int argc, char*argv[])
     }
 
     // compute power spectral density of received signal
-    float psd[nfft];
+    LIQUID_VLA(float, psd, nfft);
     spgramcf_get_psd(periodogram, psd);
 
     // clean up allocated objects
@@ -147,6 +148,8 @@ static int callback(unsigned char *  _header,
                     framesyncstats_s _stats,
                     void *           _userdata)
 {
+    (void)_payload_len;
+    (void)_userdata;
     printf("*** callback invoked ***\n");
     printf("    error vector mag.   : %12.8f dB\n", _stats.evm);
     printf("    rssi                : %12.8f dB\n", _stats.rssi);

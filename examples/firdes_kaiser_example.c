@@ -1,8 +1,9 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates finite impulse response filter design"
 " using a Kaiser window.";
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -30,7 +31,7 @@ int main(int argc, char*argv[])
 
     // generate the filter
     unsigned int i;
-    float h[h_len];
+    LIQUID_VLA(float, h, h_len);
     liquid_firdes_kaiser(h_len,fc,As,mu,h);
 
     // print coefficients

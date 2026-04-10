@@ -43,8 +43,8 @@ void firpfbch2_crcf_execute_bench(struct rusage *     _start,
 
     unsigned long int i;
 
-    float complex x[_num_channels];
-    float complex y[_num_channels];
+    LIQUID_VLA(liquid_float_complex, x, _num_channels);
+    LIQUID_VLA(liquid_float_complex, y, _num_channels);
     for (i=0; i<_num_channels; i++)
         x[i] = 1.0f + _Complex_I*1.0f;
 

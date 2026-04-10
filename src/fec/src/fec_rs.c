@@ -49,7 +49,7 @@ fec fec_rs_create(fec_scheme _fs)
 
     switch (q->scheme) {
     case LIQUID_FEC_RS_M8: fec_rs_init_p8(q); break;
-    default: return liquid_error_config("fec_rs_create(), invalid type");
+    default: return liquid_error_config_ptr(fec, "fec_rs_create(), invalid type");
     }
 
     // initialize basic parameters
@@ -288,11 +288,13 @@ int fec_rs_init_p8(fec _q)
 
 fec fec_rs_create(fec_scheme _fs)
 {
-    return liquid_error_config("fec_rs_create(), libfec not installed");
+    (void)_fs;
+    return liquid_error_config_ptr(fec, "fec_rs_create(), libfec not installed");
 }
 
 int fec_rs_destroy(fec _q)
 {
+    (void)_q;
     return liquid_error(LIQUID_EUMODE,"fec_rs_destroy(), libfec not installed");
 }
 
@@ -301,6 +303,10 @@ int fec_rs_encode(fec _q,
                    unsigned char *_msg_dec,
                    unsigned char *_msg_enc)
 {
+    (void)_q;
+    (void)_dec_msg_len;
+    (void)_msg_dec;
+    (void)_msg_enc;
     return liquid_error(LIQUID_EUMODE,"fec_rs_encode(), libfec not installed");
 }
 
@@ -310,6 +316,10 @@ int fec_rs_decode(fec _q,
                    unsigned char *_msg_enc,
                    unsigned char *_msg_dec)
 {
+    (void)_q;
+    (void)_dec_msg_len;
+    (void)_msg_enc;
+    (void)_msg_dec;
     return liquid_error(LIQUID_EUMODE,"fec_rs_decode(), libfec not installed");
 }
 

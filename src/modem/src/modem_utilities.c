@@ -112,7 +112,7 @@ modulation_scheme liquid_getopt_str2mod(const char * _str)
     unsigned int i;
     for (i=0; i<LIQUID_MODEM_NUM_SCHEMES; i++) {
         if (strcmp(_str,modulation_types[i].name)==0)
-            return i;
+            return (modulation_scheme)i;
     }
     liquid_error(LIQUID_EICONFIG,"liquid_getopt_str2mod(), unknown/unsupported mod scheme: %s", _str);
     return LIQUID_MODEM_UNKNOWN;
@@ -159,8 +159,6 @@ int liquid_modem_is_psk(modulation_scheme _ms)
     default:
         return 0;
     }
-
-    return 0;
 }
 
 int liquid_modem_is_dpsk(modulation_scheme _ms)
@@ -179,8 +177,6 @@ int liquid_modem_is_dpsk(modulation_scheme _ms)
     default:
         return 0;
     }
-
-    return 0;
 }
 
 int liquid_modem_is_ask(modulation_scheme _ms)
@@ -199,8 +195,6 @@ int liquid_modem_is_ask(modulation_scheme _ms)
     default:
         return 0;
     }
-
-    return 0;
 }
 
 int liquid_modem_is_qam(modulation_scheme _ms)
@@ -218,8 +212,6 @@ int liquid_modem_is_qam(modulation_scheme _ms)
     default:
         return 0;
     }
-
-    return 0;
 }
 
 int liquid_modem_is_apsk(modulation_scheme _ms)
@@ -237,8 +229,6 @@ int liquid_modem_is_apsk(modulation_scheme _ms)
     default:
         return 0;
     }
-
-    return 0;
 }
 
 

@@ -97,7 +97,7 @@ interleaver interleaver_copy(interleaver q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("interleaver_copy(), object cannot be NULL");
+        return liquid_error_config_ptr(interleaver, "interleaver_copy(), object cannot be NULL");
 
     return interleaver_create(q_orig->n);
 }
@@ -251,7 +251,7 @@ int interleaver_permute_soft(unsigned char * _x,
     unsigned int m=0;
     unsigned int n=_n/3;
     unsigned int n2=_n/2;
-    unsigned char tmp[8];
+    LIQUID_VLA(unsigned char, tmp, 8);
     for (i=0; i<n2; i++) {
         //j = m*N + n; // input
         do {

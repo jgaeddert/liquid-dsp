@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the basic interface to the flexframegen and"
 " flexframesync objects used to completely encapsulate raw data bytes"
 " into frame samples (nearly) ready for over-the-air transmission. A"
@@ -17,6 +17,7 @@ char __docstr__[] =
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // flexframesync callback function
@@ -43,10 +44,10 @@ int main(int argc, char *argv[])
     liquid_argparse_add(bool,     debug,     false, 'd', "enable debugging", NULL);
     liquid_argparse_parse(argc,argv);
 
-    modulation_scheme ms    = liquid_getopt_str2mod(mod);
-    crc_scheme        check = liquid_getopt_str2crc(crc);
-    fec_scheme        fec0  = liquid_getopt_str2fec(fs0);
-    fec_scheme        fec1  = liquid_getopt_str2fec(fs1);
+    modulation_scheme ms    = (modulation_scheme)liquid_getopt_str2mod(mod);
+    crc_scheme        check = (crc_scheme)liquid_getopt_str2crc(crc);
+    fec_scheme        fec0  = (fec_scheme)liquid_getopt_str2fec(fs0);
+    fec_scheme        fec1  = (fec_scheme)liquid_getopt_str2fec(fs1);
 
     // derived values
     unsigned int i;
@@ -73,8 +74,8 @@ int main(int argc, char *argv[])
 
     // generate the frame in blocks
     unsigned int  buf_len = 256;
-    float complex x[buf_len];
-    float complex y[buf_len];
+    LIQUID_VLA(liquid_float_complex, x, buf_len);
+    LIQUID_VLA(liquid_float_complex, y, buf_len);
 
     int frame_complete = 0;
     float phi = 0.0f;
@@ -117,6 +118,8 @@ static int callback(unsigned char *  _header,
                     framesyncstats_s _stats,
                     void *           _userdata)
 {
+    (void)_header;
+    (void)_userdata;
     printf("******** callback invoked\n");
 
     // count bit errors (assuming all-zero message)

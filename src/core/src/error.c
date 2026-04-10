@@ -46,10 +46,10 @@ int liquid_error_fl(int          _code,
 {
 #if !LIQUID_SUPPRESS_ERROR_OUTPUT
     // generate extended format
-    int  format_len = strlen(_format) + 20 + strlen(liquid_error_info(_code));
-    char format_ext[format_len];
+    int  format_len = (int)strlen(_format) + 20 + (int)strlen(liquid_error_info((liquid_error_code)_code));
+    LIQUID_VLA(char, format_ext, format_len);
     snprintf(format_ext,format_len,"%s (code %u: %s)",
-        _format, _code, liquid_error_info(_code));
+        _format, _code, liquid_error_info((liquid_error_code)_code));
 
     // log error
     va_list argptr;
@@ -73,10 +73,10 @@ void * liquid_error_config_fl(const char * _file,
     int code = LIQUID_EICONFIG;
 #if !LIQUID_SUPPRESS_ERROR_OUTPUT
     // generate extended format
-    int  format_len = strlen(_format) + 20 + strlen(liquid_error_info(code));
-    char format_ext[format_len];
+    int  format_len = (int)strlen(_format) + 20 + (int)strlen(liquid_error_info((liquid_error_code)code));
+    LIQUID_VLA(char, format_ext, format_len);
     snprintf(format_ext,format_len,"%s (code %u: %s)",
-        _format, code, liquid_error_info(code));
+        _format, code, liquid_error_info((liquid_error_code)code));
 
     // log error
     va_list argptr;

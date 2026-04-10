@@ -58,7 +58,7 @@ EQRLS() EQRLS(_create)(T *          _h,
                        unsigned int _p)
 {
     if (_p==0)
-        return liquid_error_config("eqrls_%s_create(), equalier length must be greater than 0",EXTENSION_FULL);
+        return liquid_error_config_ptr(EQRLS(), "eqrls_%s_create(), equalier length must be greater than 0",EXTENSION_FULL);
 
     EQRLS() q = (EQRLS()) malloc(sizeof(struct EQRLS(_s)));
 
@@ -129,7 +129,7 @@ EQRLS() EQRLS(_copy)(EQRLS() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("firfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(EQRLS(), "firfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
 
     // create filter object and copy base parameters
     EQRLS() q_copy = (EQRLS()) malloc(sizeof(struct EQRLS(_s)));

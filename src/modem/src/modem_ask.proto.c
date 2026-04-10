@@ -45,7 +45,7 @@ MODEM() MODEM(_create_ask)(unsigned int _bits_per_symbol)
         // calculate alpha dynamically
         q->data.ask.alpha = expf(-0.70735 + 0.63653*q->m);
 #else
-        return liquid_error_config("modem%s_create_ask(), cannot support ASK with m > 8", EXTENSION);
+        return liquid_error_config_ptr(MODEM(), "modem%s_create_ask(), cannot support ASK with m > 8", EXTENSION);
 #endif
     }
 

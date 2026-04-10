@@ -1,10 +1,13 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Generate continuous signals, decompose with analysis channelizer, show spectra.";
 
 #include <stdio.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -20,8 +23,8 @@ int main(int argc, char* argv[])
 
     // data arrays
     unsigned int i;
-    float complex buf_0[num_channels]; // time-domain input
-    float complex buf_1[num_channels]; // channelized output
+    LIQUID_VLA(liquid_float_complex, buf_0, num_channels); // time-domain input
+    LIQUID_VLA(liquid_float_complex, buf_1, num_channels); // channelized output
 
     // create filterbank channelizer object using external filter coefficients
     firpfbch_crcf q = firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER, num_channels, m, 0.5f,
@@ -38,7 +41,7 @@ int main(int argc, char* argv[])
 
     // create objects for computing spectra
     spgramcf psd_0 = spgramcf_create_default(nfft);
-    spgramcf psd_1[num_channels];
+    LIQUID_VLA(spgramcf, psd_1, num_channels);
     for (i=0; i<num_channels; i++)
         psd_1[i] = spgramcf_create_default(nfft);
 
@@ -65,7 +68,7 @@ int main(int argc, char* argv[])
     fprintf(fid,"nfft = %u;\n", nfft);
     fprintf(fid,"%% input signal spectrum\n");
     fprintf(fid,"X = zeros(1,nfft);\n");
-    float psd[nfft];
+    LIQUID_VLA(float, psd, nfft);
     spgramcf_get_psd(psd_0, psd);
     for (i=0; i<nfft; i++)
         fprintf(fid,"  X(%6u) = %12.4e;\n", i+1, psd[i]);

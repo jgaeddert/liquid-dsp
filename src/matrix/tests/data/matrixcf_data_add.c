@@ -24,10 +24,12 @@
 // data for testing matrix addition
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
-
+#endif
+#include "liquid.h"
 // matrixcf_data_add_x [size: 5 x 4]
-float complex matrixcf_data_add_x[] = {
+liquid_float_complex matrixcf_data_add_x[] = {
     1.366575479507 +  -1.463535666466*_Complex_I /* ( 0, 0) */,
     1.982354640961 +   0.090445250273*_Complex_I /* ( 0, 1) */,
     0.913504719734 +  -0.689249753952*_Complex_I /* ( 0, 2) */,
@@ -50,7 +52,7 @@ float complex matrixcf_data_add_x[] = {
    -0.176615595818 +  -0.414863616228*_Complex_I /* ( 4, 3) */};
 
 // matrixcf_data_add_y [size: 5 x 4]
-float complex matrixcf_data_add_y[] = {
+liquid_float_complex matrixcf_data_add_y[] = {
    -0.345586329699 +   0.240964725614*_Complex_I /* ( 0, 0) */,
    -0.025732314214 +   1.212726473808*_Complex_I /* ( 0, 1) */,
     0.907316803932 +   1.614625453949*_Complex_I /* ( 0, 2) */,
@@ -73,7 +75,7 @@ float complex matrixcf_data_add_y[] = {
    -0.290932357311 +   0.302335798740*_Complex_I /* ( 4, 3) */};
 
 // matrixcf_data_add_z [size: 5 x 4]
-float complex matrixcf_data_add_z[] = {
+liquid_float_complex matrixcf_data_add_z[] = {
     1.020989149809 +  -1.222570940852*_Complex_I /* ( 0, 0) */,
     1.956622326747 +   1.303171724081*_Complex_I /* ( 0, 1) */,
     1.820821523666 +   0.925375699997*_Complex_I /* ( 0, 2) */,

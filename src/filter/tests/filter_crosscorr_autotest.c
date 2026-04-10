@@ -44,7 +44,7 @@ LIQUID_AUTOTEST(filter_crosscorr_rrrf,"description","",0.1)
 
     // derived values
     unsigned int rxy_len = x_len + y_len - 1;
-    float rxy[23];
+    LIQUID_VLA(float, rxy, 23);
     float rxy_test[23] = {
          -0.28013000,  -0.32455000,  -0.56685000,   0.45660000, 
          -0.39008000,  -1.95950000,   1.25850000,  -3.35780000, 
@@ -69,7 +69,7 @@ LIQUID_AUTOTEST(filter_crosscorr_rrrf,"description","",0.1)
 
     // derived values
     unsigned int ryx_len = x_len + y_len - 1;
-    float ryx[23];
+    LIQUID_VLA(float, ryx, 23);
     float ryx_test[23] = {
          -1.83370000,  -2.13700000,   1.96850000,  -1.76270000, 
          -5.13670000,  -1.09920000,  -4.17770000,  -4.55350000, 

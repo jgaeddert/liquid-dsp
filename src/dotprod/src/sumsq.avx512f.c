@@ -28,6 +28,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "liquid_simd_rename.h"
 #include "liquid.internal.h"
 
 // include proper SIMD extensions for x86 platforms
@@ -36,7 +37,7 @@
 // sum squares, basic loop
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
-float liquid_sumsqf_avx(float *      _v,
+static float liquid_sumsqf_avx(float *      _v,
                         unsigned int _n)
 {
     // first cut: ...
@@ -74,7 +75,7 @@ float liquid_sumsqf_avx(float *      _v,
 // sum squares, unrolled loop
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
-float liquid_sumsqf_avxu(float *      _v,
+static float liquid_sumsqf_avxu(float *      _v,
                          unsigned int _n)
 {
     // first cut: ...
@@ -134,7 +135,7 @@ float liquid_sumsqf(float *      _v,
 // sum squares, complex
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
-float liquid_sumsqcf(float complex * _v,
+float liquid_sumsqcf(liquid_float_complex * _v,
                      unsigned int    _n)
 {
     // simple method: type cast input as real pointer, run double

@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "ASCII spectrogram example for real-valued input. This example demonstrates"
 " the functionality of the ASCII spectrogram for real-valued input signals."
 " A cosine signal with time-varying frequency is generated and the resulting"
@@ -10,6 +10,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])

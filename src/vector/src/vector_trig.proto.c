@@ -28,7 +28,12 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
+#if !defined(_MSC_VER) && !defined(LIQUID_MSVC_AS_CPP)
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
+#endif
+#include "liquid.internal.h"
 
 // compute complex phase rotation: x[i] = exp{ j theta[i] }
 //  _theta  :   input primitive array [size: _n x 1]
@@ -45,24 +50,24 @@ void VECTOR(_cexpj)(TP *         _theta,
     unsigned int i;
     for (i=0; i<t; i+=4) {
 #if T_COMPLEX
-        _x[i  ] = cexpf(_Complex_I*_theta[i  ]);
-        _x[i+1] = cexpf(_Complex_I*_theta[i+1]);
-        _x[i+2] = cexpf(_Complex_I*_theta[i+2]);
-        _x[i+3] = cexpf(_Complex_I*_theta[i+3]);
+        _x[i  ] = liquid_cexpjf(_theta[i  ]);
+        _x[i+1] = liquid_cexpjf(_theta[i+1]);
+        _x[i+2] = liquid_cexpjf(_theta[i+2]);
+        _x[i+3] = liquid_cexpjf(_theta[i+3]);
 #else
-        _x[i  ] = _theta[i  ] > 0 ? 1.0 : -1.0;
-        _x[i+1] = _theta[i+1] > 0 ? 1.0 : -1.0;
-        _x[i+2] = _theta[i+2] > 0 ? 1.0 : -1.0;
-        _x[i+3] = _theta[i+3] > 0 ? 1.0 : -1.0;
+        _x[i  ] = _theta[i  ] > 0 ? 1.0f : -1.0f;
+        _x[i+1] = _theta[i+1] > 0 ? 1.0f : -1.0f;
+        _x[i+2] = _theta[i+2] > 0 ? 1.0f : -1.0f;
+        _x[i+3] = _theta[i+3] > 0 ? 1.0f : -1.0f;
 #endif
     }
 
     // clean up remaining
     for ( ; i<_n; i++) {
 #if T_COMPLEX
-        _x[i] = cexpf(_Complex_I*_theta[i]);
+        _x[i] = liquid_cexpjf(_theta[i]);
 #else
-        _x[i] = _theta[i] > 0 ? 1.0 : -1.0;
+        _x[i] = _theta[i] > 0 ? 1.0f : -1.0f;
 #endif
     }
 }
@@ -112,6 +117,7 @@ void VECTOR(_abs)(T *          _x,
                   unsigned int _n,
                   TP *         _y)
 {
+    (void)_y;
     // t = 4*(floor(_n/4))
     unsigned int t=(_n>>2)<<2; 
 

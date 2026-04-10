@@ -23,13 +23,13 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-// test data
-float sumsqf_test_x3[3];    float sumsqf_test_y3;
-float sumsqf_test_x4[4];    float sumsqf_test_y4;
-float sumsqf_test_x7[7];    float sumsqf_test_y7;
-float sumsqf_test_x8[8];    float sumsqf_test_y8;
-float sumsqf_test_x15[15];  float sumsqf_test_y15;
-float sumsqf_test_x16[16];  float sumsqf_test_y16;
+// test data (forward declarations)
+extern float sumsqf_test_x3[3];   extern float sumsqf_test_y3;
+extern float sumsqf_test_x4[4];   extern float sumsqf_test_y4;
+extern float sumsqf_test_x7[7];   extern float sumsqf_test_y7;
+extern float sumsqf_test_x8[8];   extern float sumsqf_test_y8;
+extern float sumsqf_test_x15[15]; extern float sumsqf_test_y15;
+extern float sumsqf_test_x16[16]; extern float sumsqf_test_y16;
 
 // helper function
 void testbench_sumsqf(liquid_autotest __q__,

@@ -1,10 +1,11 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the most basic functionality of the"
 " numerically-controlled oscillator (NCO) object.";
 
 #include <stdio.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -33,7 +34,7 @@ int main(int argc, char* argv[])
 
     unsigned int i;
     for (i=0; i<num_samples; i++) {
-        float complex y;
+        liquid_float_complex y;
         nco_crcf_cexpf(q, &y);
         nco_crcf_step(q);
         
@@ -42,7 +43,7 @@ int main(int argc, char* argv[])
     }
 
     // compute power spectral density output
-    float psd[nfft];
+    LIQUID_VLA(float, psd, nfft);
     spgramcf_get_psd(periodogram, psd);
 
     // destroy objects

@@ -24,9 +24,12 @@
 // autotest fft data for 8-point transform
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
+#include "liquid.h"
 
-float complex fft_test_x8[] = {
+liquid_float_complex fft_test_x8[] = {
     1.143832659273 +   0.058730029889*_Complex_I,
    -0.094390429919 +   0.229144161540*_Complex_I,
    -0.231936945111 +   0.250418514706*_Complex_I,
@@ -36,7 +39,7 @@ float complex fft_test_x8[] = {
     0.928035714223 +   0.647778401795*_Complex_I,
     0.441211141066 +  -1.176622015089*_Complex_I};
 
-float complex fft_test_y8[] = {
+liquid_float_complex fft_test_y8[] = {
     2.566466439667 +  -0.294719550271*_Complex_I,
     1.635071437815 +   1.055386414782*_Complex_I,
     1.767442826430 +   0.508277941207*_Complex_I,

@@ -1,9 +1,10 @@
-char __docstr__[] = "Demonstrate GMSK modem interface.";
+const char __docstr__[] = "Demonstrate GMSK modem interface.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -39,10 +40,10 @@ int main(int argc, char*argv[])
     gmskdem_print(demod);
 
     unsigned int i;
-    unsigned int s[num_symbols];
-    float complex x[num_samples];
-    float complex y[num_samples];
-    unsigned int sym_out[num_symbols];
+    LIQUID_VLA(unsigned int, s, num_symbols);
+    LIQUID_VLA(liquid_float_complex, x, num_samples);
+    LIQUID_VLA(liquid_float_complex, y, num_samples);
+    LIQUID_VLA(unsigned int, sym_out, num_symbols);
 
     // generate random data sequence
     for (i=0; i<num_symbols; i++)
@@ -97,7 +98,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"plot(t,real(y),t,imag(y));\n");
 
     // artificially demodulate (generate receive filter, etc.)
-    float hr[2*k*m+1];
+    LIQUID_VLA(float, hr, 2*k*m+1);
     liquid_firdes_gmskrx(k,m,BT,0,hr);
     for (i=0; i<2*k*m+1; i++)
         fprintf(fid,"hr(%3u) = %12.8f;\n", i+1, hr[i]);

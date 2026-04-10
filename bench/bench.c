@@ -31,11 +31,18 @@
 // default include headers
 #include <stdio.h>
 #include <stdlib.h>
-#include <getopt.h>
 #include <string.h>
 #include <math.h>
 #include <time.h>
+
+// Windows compatibility for sys/resource.h and getopt.h
+#ifdef _WIN32
+#include "liquid_win32_compat.h"
+#include <windows.h>
+#else
 #include <sys/resource.h>
+#endif
+#include <getopt.h>
 
 // define benchmark function pointer
 typedef void(benchmark_function_t) (

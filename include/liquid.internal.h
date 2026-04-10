@@ -36,8 +36,12 @@
 #include "config.h"
 
 #include <stdarg.h>
+#include <string.h>  // for memset in VLA macros
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.h"
+#include "liquid_vla.h"  // MSVC VLA compatibility
 
 #if defined HAVE_FEC_H && defined HAVE_LIBFEC
 #  define LIBFEC_ENABLED 1
@@ -209,7 +213,7 @@ int fec_rep5_decode_soft(fec _q,
                          unsigned char * _msg_dec);
 
 // Hamming(7,4)
-extern unsigned char hamming74_enc_gentab[16];
+LIQUID_API extern unsigned char hamming74_enc_gentab[16];
 extern unsigned char hamming74_dec_gentab[128];
 fec fec_hamming74_create(void *_opts);
 int fec_hamming74_destroy(fec _q);
@@ -230,7 +234,7 @@ int fec_hamming74_decode_soft(fec _q,
 unsigned char fecsoft_hamming74_decode(unsigned char * _soft_bits);
 
 // Hamming(8,4)
-extern unsigned char hamming84_enc_gentab[16];
+LIQUID_API extern unsigned char hamming84_enc_gentab[16];
 extern unsigned char hamming84_dec_gentab[256];
 fec fec_hamming84_create(void *_opts);
 int fec_hamming84_destroy(fec _q);
@@ -849,10 +853,10 @@ int liquid_firdes_farcsech_freqresponse(unsigned int _k,
 //  _n      :   number of elements in _z
 //  _tol    :   tolerance for finding complex pairs
 //  _p      :   resulting pairs, pure real values of _z at end
-int liquid_cplxpair(float complex * _z,
+int liquid_cplxpair(liquid_float_complex * _z,
                     unsigned int    _n,
                     float           _tol,
-                    float complex * _p);
+                    liquid_float_complex * _p);
 
 // post-process cleanup used with liquid_cplxpair
 //
@@ -866,7 +870,7 @@ int liquid_cplxpair(float complex * _z,
 //  _p          :   pre-processed complex array, [size: _n x 1]
 //  _n          :   array length
 //  _num_pairs  :   number of complex conjugate pairs
-int liquid_cplxpair_cleanup(float complex * _p,
+int liquid_cplxpair_cleanup(liquid_float_complex * _p,
                             unsigned int    _n,
                             unsigned int    _num_pairs);
 
@@ -889,22 +893,22 @@ float ellipdegf(float _N,
                 unsigned int _n);
 
 // elliptic cd() function (_n recursions)
-float complex ellip_cdf(float complex _u,
+liquid_float_complex ellip_cdf(liquid_float_complex _u,
                         float _k,
                         unsigned int _n);
 
 // elliptic inverse cd() function (_n recursions)
-float complex ellip_acdf(float complex _u,
+liquid_float_complex ellip_acdf(liquid_float_complex _u,
                          float _k,
                          unsigned int _n);
 
 // elliptic sn() function (_n recursions)
-float complex ellip_snf(float complex _u,
+liquid_float_complex ellip_snf(liquid_float_complex _u,
                         float _k,
                         unsigned int _n);
 
 // elliptic inverse sn() function (_n recursions)
-float complex ellip_asnf(float complex _u,
+liquid_float_complex ellip_asnf(liquid_float_complex _u,
                          float _k,
                          unsigned int _n);
 
@@ -1102,19 +1106,20 @@ float liquid_logf(float _x);
 //
 
 // complex square root
-float complex liquid_csqrtf(float complex _z);
+liquid_float_complex liquid_csqrtf(liquid_float_complex _z);
 
 // complex exponent, logarithm
-float complex liquid_cexpf(float complex _z);
-float complex liquid_clogf(float complex _z);
+liquid_float_complex liquid_cexpf(liquid_float_complex _z);
+liquid_double_complex liquid_cexp(liquid_double_complex _z);
+liquid_float_complex liquid_clogf(liquid_float_complex _z);
 
 // complex arcsin, arccos, arctan
-float complex liquid_casinf(float complex _z);
-float complex liquid_cacosf(float complex _z);
-float complex liquid_catanf(float complex _z);
+liquid_float_complex liquid_casinf(liquid_float_complex _z);
+liquid_float_complex liquid_cacosf(liquid_float_complex _z);
+liquid_float_complex liquid_catanf(liquid_float_complex _z);
 
 // faster approximation to arg{*}
-//float liquid_cargf_approx(float complex _z);
+//float liquid_cargf_approx(liquid_float_complex _z);
 
 
 // internal trig helper functions
@@ -1130,7 +1135,7 @@ float complex liquid_catanf(float complex _z);
 //  _roots  :   resulting complex roots, [size: _k-1 x 1]
 int liquid_poly_findroots_durandkerner(double *         _p,
                                        unsigned int     _k,
-                                       double complex * _roots);
+                                       liquid_double_complex * _roots);
 
 // finds the complex roots of the polynomial using Bairstow's method
 //  _p      :   polynomial array, ascending powers, [size: _k x 1]
@@ -1138,7 +1143,7 @@ int liquid_poly_findroots_durandkerner(double *         _p,
 //  _roots  :   resulting complex roots, [size: _k-1 x 1]
 int liquid_poly_findroots_bairstow(double *         _p,
                                    unsigned int     _k,
-                                   double complex * _roots);
+                                   liquid_double_complex * _roots);
 
 // iterate over Bairstow's method, finding quadratic factor x^2 + u*x + v
 //  _p      :   polynomial array, ascending powers, [size: _k x 1]
@@ -1253,7 +1258,7 @@ MODEM() MODEM(_create_arb)( unsigned int _bits_per_symbol);     \
                                                                 \
 /* Initialize arbitrary modem constellation */                  \
 int MODEM(_arb_init)(MODEM()         _q,                        \
-                      float complex * _symbol_map,              \
+                      liquid_float_complex * _symbol_map,              \
                       unsigned int    _len);                    \
                                                                 \
 /* Initialize arb modem constellation from external file */     \
@@ -1358,7 +1363,7 @@ int MODEM(_demodulate_linear_array_ref)(T              _v,      \
 
 
 // define internal modem APIs
-LIQUID_MODEM_DEFINE_INTERNAL_API(LIQUID_MODEM_MANGLE_FLOAT,float,float complex)
+LIQUID_MODEM_DEFINE_INTERNAL_API(LIQUID_MODEM_MANGLE_FLOAT,float,liquid_float_complex)
 
 // APSK constants (container for apsk structure definitions)
 struct liquid_apsk_s {
@@ -1381,23 +1386,23 @@ extern struct liquid_apsk_s liquid_apsk256;
 
 
 // 'square' 32-QAM (first quadrant)
-extern const float complex modem_arb_sqam32[8];
+extern const liquid_float_complex modem_arb_sqam32[8];
 
 // 'square' 128-QAM (first quadrant)
-extern const float complex modem_arb_sqam128[32];
+extern const liquid_float_complex modem_arb_sqam128[32];
 
 // V.29 star constellation
-extern const float complex modem_arb_V29[16];
+extern const liquid_float_complex modem_arb_V29[16];
 
 // Virginia Tech logo
-extern const float complex modem_arb_vt64[64];
+extern const liquid_float_complex modem_arb_vt64[64];
 
 // optimal QAM constellations
-extern const float complex modem_arb16opt[16];
-extern const float complex modem_arb32opt[32];
-extern const float complex modem_arb64opt[64];
-extern const float complex modem_arb128opt[128];
-extern const float complex modem_arb256opt[256];
+extern const liquid_float_complex modem_arb16opt[16];
+extern const liquid_float_complex modem_arb32opt[32];
+extern const liquid_float_complex modem_arb64opt[64];
+extern const liquid_float_complex modem_arb128opt[128];
+extern const liquid_float_complex modem_arb256opt[256];
 
 
 //
@@ -1414,8 +1419,8 @@ extern const float complex modem_arb256opt[256];
 //  _M_S0   :   total number of enabled subcarriers in S0
 int ofdmframe_init_S0(unsigned char * _p,
                       unsigned int    _M,
-                      float complex * _S0,
-                      float complex * _s0,
+                      liquid_float_complex * _S0,
+                      liquid_float_complex * _s0,
                       unsigned int *  _M_S0);
 
 // generate long sequence symbols
@@ -1426,8 +1431,8 @@ int ofdmframe_init_S0(unsigned char * _p,
 //  _M_S1   :   total number of enabled subcarriers in S1
 int ofdmframe_init_S1(unsigned char * _p,
                       unsigned int    _M,
-                      float complex * _S1,
-                      float complex * _s1,
+                      liquid_float_complex * _S1,
+                      liquid_float_complex * _s1,
                       unsigned int *  _M_S1);
 
 // 
@@ -1461,7 +1466,7 @@ LIQUID_SYNTH_DEFINE_INTERNAL_API(SYNTH_MANGLE_FLOAT,
 
 #define randf_inline() ((float) rand() / (float) RAND_MAX)
 
-float complex icrandnf();
+liquid_float_complex icrandnf();
 
 // generate x ~ Gamma(delta,1)
 float randgammaf_delta(float _delta);

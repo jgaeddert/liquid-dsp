@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This is a simplified example of the symync family of objects to show how"
 " symbol timing can be recovered after the matched filter output.";
 
@@ -10,6 +10,7 @@ char __docstr__[] =
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -47,18 +48,18 @@ int main(int argc, char* argv[])
 
     // derived values
     unsigned int num_samples = k*num_symbols;
-    float complex x      [num_samples];     // interpolated samples
-    float complex y      [num_samples];     // received signal (with noise)
-    float         tau_hat[num_samples];     // instantaneous timing offset estimate
-    float complex sym_out[num_symbols+64];  // synchronized symbols
+    LIQUID_VLA(liquid_float_complex, x, num_samples);     // interpolated samples
+    LIQUID_VLA(liquid_float_complex, y, num_samples);     // received signal (with noise)
+    LIQUID_VLA(float, tau_hat, num_samples);     // instantaneous timing offset estimate
+    LIQUID_VLA(liquid_float_complex, sym_out, num_symbols+64);  // synchronized symbols
 
     // create sequence of Nyquist-interpolated QPSK symbols
-    liquid_firfilt_type ftype = liquid_getopt_str2firfilt(ftype_str);
+    liquid_firfilt_type ftype = (liquid_firfilt_type)liquid_getopt_str2firfilt(ftype_str);
     firinterp_crcf interp = firinterp_crcf_create_prototype(ftype,k,m,beta,tau);
     unsigned int i;
     for (i=0; i<num_symbols; i++) {
         // generate random QPSK symbol
-        float complex s = ( rand() % 2 ? M_SQRT1_2 : -M_SQRT1_2 ) +
+        liquid_float_complex s = ( rand() % 2 ? M_SQRT1_2 : -M_SQRT1_2 ) +
                           ( rand() % 2 ? M_SQRT1_2 : -M_SQRT1_2 ) * _Complex_I;
 
         // interpolate symbol

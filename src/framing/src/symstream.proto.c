@@ -66,13 +66,13 @@ SYMSTREAM() SYMSTREAM(_create_linear)(int          _ftype,
 {
     // validate input
     if (_k < 2)
-        return liquid_error_config("symstream%s_create(), samples/symbol must be at least 2", EXTENSION);
+        return liquid_error_config_ptr(SYMSTREAM(), "symstream%s_create(), samples/symbol must be at least 2", EXTENSION);
     if (_m == 0)
-        return liquid_error_config("symstream%s_create(), filter delay must be greater than zero", EXTENSION);
+        return liquid_error_config_ptr(SYMSTREAM(), "symstream%s_create(), filter delay must be greater than zero", EXTENSION);
     if (_beta <= 0.0f || _beta > 1.0f)
-        return liquid_error_config("symstream%s_create(), filter excess bandwidth must be in (0,1]", EXTENSION);
+        return liquid_error_config_ptr(SYMSTREAM(), "symstream%s_create(), filter excess bandwidth must be in (0,1]", EXTENSION);
     if (_ms == LIQUID_MODEM_UNKNOWN || _ms >= LIQUID_MODEM_NUM_SCHEMES)
-        return liquid_error_config("symstream%s_create(), invalid modulation scheme", EXTENSION);
+        return liquid_error_config_ptr(SYMSTREAM(), "symstream%s_create(), invalid modulation scheme", EXTENSION);
 
     // allocate memory for main object
     SYMSTREAM() q = (SYMSTREAM()) malloc( sizeof(struct SYMSTREAM(_s)) );
@@ -86,7 +86,7 @@ SYMSTREAM() SYMSTREAM(_create_linear)(int          _ftype,
     q->gain        = 1.0f;
 
     // modulator
-    q->mod = MODEM(_create)(q->mod_scheme);
+    q->mod = MODEM(_create)((modulation_scheme)q->mod_scheme);
 
     // interpolator
     q->interp = FIRINTERP(_create_prototype)(q->filter_type, q->k, q->m, q->beta, 0);
@@ -104,7 +104,7 @@ SYMSTREAM() SYMSTREAM(_copy)(SYMSTREAM() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("symstream%s_copy(), object cannot be NULL", EXTENSION);
+        return liquid_error_config_ptr(SYMSTREAM(), "symstream%s_copy(), object cannot be NULL", EXTENSION);
 
     // create object and copy base parameters
     SYMSTREAM() q_copy = (SYMSTREAM()) malloc(sizeof(struct SYMSTREAM(_s)));
@@ -187,7 +187,7 @@ float SYMSTREAM(_get_beta)(SYMSTREAM() _q)
 int SYMSTREAM(_set_scheme)(SYMSTREAM() _q,
                             int         _ms)
 {
-    _q->mod = MODEM(_recreate)(_q->mod, _ms);
+    _q->mod = MODEM(_recreate)(_q->mod, (modulation_scheme)_ms);
     return LIQUID_OK;
 }
 

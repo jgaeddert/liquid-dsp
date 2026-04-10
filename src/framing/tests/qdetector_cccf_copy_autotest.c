@@ -33,7 +33,7 @@ LIQUID_AUTOTEST(qdetector_cccf_copy,
 {
     // generate random-ish sequence
     unsigned int  sequence_len = 64;
-    float complex sequence[sequence_len];
+    LIQUID_VLA(liquid_float_complex, sequence, sequence_len);
     unsigned int i;
     for (i=0; i<sequence_len; i++) {
         float r = (float)i - 0.5f*(float)sequence_len;
@@ -51,14 +51,14 @@ LIQUID_AUTOTEST(qdetector_cccf_copy,
     qdetector_cccf q1 = qdetector_cccf_copy(q0);
 
     // try to detect frame
-    float complex * v0 = NULL;
-    float complex * v1 = NULL;
+    liquid_float_complex * v0 = NULL;
+    liquid_float_complex * v1 = NULL;
     unsigned int frames_detected = 0;
     for (i=0; i<sequence_len + 80; i++) {
         // pull sample and run through both detectors
-        float complex s = i < sequence_len ? sequence[i] : cexpf(_Complex_I*i);
-        v0 = qdetector_cccf_execute(q0,s);
-        v1 = qdetector_cccf_execute(q1,s);
+        liquid_float_complex s = i < sequence_len ? sequence[i] : cexpf(_Complex_I*i);
+        v0 = (liquid_float_complex *)qdetector_cccf_execute(q0,s);
+        v1 = (liquid_float_complex *)qdetector_cccf_execute(q1,s);
 
         // debugging
         if (v0 != NULL) liquid_log_debug(" [%3u] frame detected on detector 0", i);

@@ -24,7 +24,9 @@
 // data for testing Q/R decomposition
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 // matrixf_data_qrdecomp_A [size: 4 x 4]
 float matrixf_data_qrdecomp_A[] = {

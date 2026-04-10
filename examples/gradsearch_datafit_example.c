@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Fit 3-parameter curve to sampled data set in the minimum"
 " mean-squared error sense.";
 
@@ -7,6 +7,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // gradient search data set
@@ -50,8 +51,8 @@ int main(int argc, char*argv[])
     float dx = (xmax - xmin) / (num_samples-1);
 
     // generate data set
-    float x[num_samples];
-    float y[num_samples];
+    LIQUID_VLA(float, x, num_samples);
+    LIQUID_VLA(float, y, num_samples);
     for (i=0; i<num_samples; i++) {
         x[i] = xmin + i*dx;
         y[i] = sincf(x[i]) + randnf()*nstd;
@@ -126,6 +127,7 @@ float gserror(void * _dataset,
               float * _v,
               unsigned int _n)
 {
+    (void)_n;
     struct gsdataset * p = (struct gsdataset *) _dataset;
 
     float rmse = 0.0f; // mean-squared error

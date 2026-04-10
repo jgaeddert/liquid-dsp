@@ -24,10 +24,12 @@
 // data for testing matrix augmentation
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
-
+#endif
+#include "liquid.h"
 // matrixcf_data_aug_x [size: 5 x 4]
-float complex matrixcf_data_aug_x[] = {
+liquid_float_complex matrixcf_data_aug_x[] = {
    -1.383545994759 +   0.803655147552*_Complex_I /* ( 0, 0) */,
    -0.918114125729 +  -1.194809913635*_Complex_I /* ( 0, 1) */,
     0.090901032090 +   0.484884619713*_Complex_I /* ( 0, 2) */,
@@ -50,7 +52,7 @@ float complex matrixcf_data_aug_x[] = {
     1.450994849205 +  -0.595933079720*_Complex_I /* ( 4, 3) */};
 
 // matrixcf_data_aug_y [size: 5 x 3]
-float complex matrixcf_data_aug_y[] = {
+liquid_float_complex matrixcf_data_aug_y[] = {
     0.301848381758 +   0.353115469217*_Complex_I /* ( 0, 0) */,
     0.703616917133 +   0.044240720570*_Complex_I /* ( 0, 1) */,
     0.268176555634 +   1.071476221085*_Complex_I /* ( 0, 2) */,
@@ -68,7 +70,7 @@ float complex matrixcf_data_aug_y[] = {
     0.204153224826 +  -0.616621196270*_Complex_I /* ( 4, 2) */};
 
 // matrixcf_data_aug_z [size: 5 x 7]
-float complex matrixcf_data_aug_z[] = {
+liquid_float_complex matrixcf_data_aug_z[] = {
    -1.383545994759 +   0.803655147552*_Complex_I /* ( 0, 0) */,
    -0.918114125729 +  -1.194809913635*_Complex_I /* ( 0, 1) */,
     0.090901032090 +   0.484884619713*_Complex_I /* ( 0, 2) */,

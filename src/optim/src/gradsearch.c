@@ -266,8 +266,8 @@ int gradsearch_gradient(utility_function _utility,
                         float            _delta,
                         float *          _gradient)
 {
-    // operating point for evaluation
-    float x_prime[_n];
+    // operating point for evaluation (use LIQUID_VLA for MSVC compatibility)
+    LIQUID_VLA(float, x_prime, _n);
     float u_prime;
 
     // evaluate function at current operating point
@@ -333,8 +333,8 @@ float gradsearch_linesearch(utility_function _utility,
     // step direction
     float dir = _direction == LIQUID_OPTIM_MINIMIZE ? 1.0f : -1.0f;
 
-    // test vector, TODO : dynamic allocation?
-    float x_prime[_n];
+    // test vector (use LIQUID_VLA for MSVC compatibility)
+    LIQUID_VLA(float, x_prime, _n);
 
     // run line search
     int continue_running = 1;

@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Example demonstrating the base OFDM frame synchronizer with different"
 " parameters and options.";
 
@@ -9,6 +9,7 @@ char __docstr__[] =
 #include <time.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // forward declaration of callback function; this will be invoked for every
@@ -18,15 +19,15 @@ char __docstr__[] =
 //  _p          : subcarrier allocation array [size: _M x 1]
 //  _M          : number of subcarriers
 //  _userdata   : user-defined data pointer
-static int callback(float complex * _X,
+static int callback(liquid_float_complex * _X,
                     unsigned char * _p,
                     unsigned int    _M,
                     void *          _userdata);
 
 // custom data type to pass to callback function
 struct rx_symbols {
-    float complex syms_bpsk[2000];  // even subcarrier symbols
-    float complex syms_qpsk[2000];  // odd subcarrier symbols
+    LIQUID_VLA(liquid_float_complex, syms_bpsk, 2000);  // even subcarrier symbols
+    LIQUID_VLA(liquid_float_complex, syms_qpsk, 2000);  // odd subcarrier symbols
     unsigned int  num_bpsk;         // counter
     unsigned int  num_qpsk;         // counter
 };
@@ -50,9 +51,9 @@ int main(int argc, char *argv[])
     float        nstd        = powf(10.0f, noise_floor/20.0f);
     float        gamma       = powf(10.0f, (SNRdB + noise_floor)/20.0f);
 
-    unsigned char p[M];
-    float complex X[M];             // channelized symbols
-    float complex y[num_samples];   // output time series
+    LIQUID_VLA(unsigned char, p, M);
+    LIQUID_VLA(liquid_float_complex, X, M);             // channelized symbols
+    LIQUID_VLA(liquid_float_complex, y, num_samples);   // output time series
 
     // initialize subcarrier allocation
     ofdmframe_init_default_sctype(M, p);
@@ -136,7 +137,7 @@ int main(int argc, char *argv[])
 
     // estimate power spectral density of received signal
     unsigned int nfft = 1024;   // FFT size
-    float        psd[nfft];     // PSD estimate output array
+    LIQUID_VLA(float, psd, nfft);     // PSD estimate output array
     spgramcf_estimate_psd(nfft, y, num_samples, psd);
 
     // 
@@ -211,7 +212,7 @@ int main(int argc, char *argv[])
 //  _p          : subcarrier allocation array [size: _M x 1]
 //  _M          : number of subcarriers
 //  _userdata   : user-defined data pointer
-static int callback(float complex * _X,
+static int callback(liquid_float_complex * _X,
                     unsigned char * _p,
                     unsigned int    _M,
                     void *          _userdata)

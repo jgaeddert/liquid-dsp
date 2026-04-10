@@ -1,9 +1,10 @@
-char __docstr__[] = "Demonstrate pi/4 differential QPSK modem.";
+const char __docstr__[] = "Demonstrate pi/4 differential QPSK modem.";
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -27,11 +28,11 @@ int main(int argc, char*argv[])
     fprintf(fid,"n=%u; sym_rx=zeros(1,n); sym_rec=zeros(1,n);\n", num_symbols);
 
     unsigned int i, index, s;
-    float complex sym_tx, sym_rx;
+    liquid_float_complex sym_tx, sym_rx;
     unsigned int num_sym_errors = 0, num_bit_errors = 0;
     float nstd = powf(10.0f, -SNRdB/20.0f);
     float r_prime = 0.0f;
-    float complex s_prime;
+    liquid_float_complex s_prime;
     for (i=0; i<num_symbols; i++) {
         // modulate symbol
         index = rand() & 3;

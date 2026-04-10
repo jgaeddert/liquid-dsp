@@ -30,15 +30,17 @@
 #include <assert.h>
 #include <immintrin.h>
 
+#include "liquid_simd_rename.h"
 #include "liquid.internal.h"
+#include "liquid_vla.h"
 
 #define DEBUG_DOTPROD_RRRF_SSE   0
 
 // internal methods
-int dotprod_rrrf_execute_sse(dotprod_rrrf _q,
+static int dotprod_rrrf_execute_sse(dotprod_rrrf _q,
                              float *      _x,
                              float *      _y);
-int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
+static int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
                               float *      _x,
                               float *      _y);
 
@@ -149,7 +151,7 @@ dotprod_rrrf dotprod_rrrf_copy(dotprod_rrrf q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("dotprod_rrrf_copy().sse, object cannot be NULL");
+        return (dotprod_rrrf)liquid_error_config("dotprod_rrrf_copy().sse, object cannot be NULL");
 
     dotprod_rrrf q_copy = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
     q_copy->n = q_orig->n;
@@ -193,7 +195,7 @@ int dotprod_rrrf_execute(dotprod_rrrf _q,
 }
 
 // use SSE extensions
-int dotprod_rrrf_execute_sse(dotprod_rrrf _q,
+static int dotprod_rrrf_execute_sse(dotprod_rrrf _q,
                              float *      _x,
                              float *      _y)
 {
@@ -223,7 +225,7 @@ int dotprod_rrrf_execute_sse(dotprod_rrrf _q,
     }
 
     // aligned output array
-    float w[4] __attribute__((aligned(16)));
+    LIQUID_DEFINE_ALIGNED_ARRAY(float, w, 4, 16);
 
 #if HAVE_SSE3
     // fold down into single value
@@ -250,7 +252,7 @@ int dotprod_rrrf_execute_sse(dotprod_rrrf _q,
 }
 
 // use SSE extensions, unrolled loop
-int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
+static int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
                               float *      _x,
                               float *      _y)
 {
@@ -294,7 +296,7 @@ int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
     }
 
     // aligned output array
-    float w[4] __attribute__((aligned(16)));
+    LIQUID_DEFINE_ALIGNED_ARRAY(float, w, 4, 16);
 
 #if HAVE_SSE3
     // SSE3: fold down to single value using _mm_hadd_ps()

@@ -56,7 +56,7 @@ bsequence bsequence_create(unsigned int _num_bits)
     bs->num_bits = _num_bits;
     
     // initialize array length
-    div_t d = div( bs->num_bits, sizeof(unsigned int)*8 );
+    div_t d = div( (int)bs->num_bits, (int)(sizeof(unsigned int)*8) );
     bs->s_len = d.quot;
     bs->s_len += (d.rem > 0) ? 1 : 0;
 
@@ -279,7 +279,7 @@ unsigned int bsequence_index(bsequence _bs,
         liquid_error(LIQUID_EICONFIG,"bsequence_index(), invalid index %u", _i);
         return 0;
     }
-    div_t d = div( _i, 8*sizeof(unsigned int) );
+    div_t d = div( (int)_i, (int)(8*sizeof(unsigned int)) );
 
     // compute byte index
     unsigned int k = _bs->s_len - d.quot - 1;
@@ -300,10 +300,10 @@ int bsequence_create_ccodes(bsequence _qa, bsequence _qb)
     if ( (_qa->num_bits)%8 != 0 )
         return liquid_error(LIQUID_EICONFIG,"bsequence_create_ccodes(), sequence must be multiple of 8");
 
-    // generate two temporary arrays
+    // generate two temporary arrays (use LIQUID_VLA for MSVC compatibility)
     unsigned int num_bytes = _qa->num_bits / 8;
-    unsigned char a[num_bytes];
-    unsigned char b[num_bytes];
+    LIQUID_VLA(unsigned char, a, num_bytes);
+    LIQUID_VLA(unsigned char, b, num_bytes);
 
     memset(a, 0x00, num_bytes);
     memset(b, 0x00, num_bytes);

@@ -71,7 +71,7 @@ SMATRIX() SMATRIX(_create)(unsigned int _m,
                            unsigned int _n)
 {
     if (_m==0 || _n==0)
-        return liquid_error_config("smatrix%s_create(), dimensions must be greater than zero",EXTENSION);
+        return liquid_error_config_ptr(SMATRIX(), "smatrix%s_create(), dimensions must be greater than zero",EXTENSION);
 
     // create object and allocate memory
     SMATRIX() q = (SMATRIX()) malloc(sizeof(struct SMATRIX(_s)));

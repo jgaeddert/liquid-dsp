@@ -46,12 +46,12 @@ void asgramcf_runbench(struct rusage *     _start,
     // initialize buffer with random values
     unsigned long int i;
     unsigned int buf_len = 2400;
-    float complex * buf = (float complex*) malloc(buf_len*sizeof(float complex));
+    liquid_float_complex * buf = (liquid_float_complex*) malloc(buf_len*sizeof(liquid_float_complex));
     for (i=0; i<buf_len; i++)
         buf[i] = randnf() + randnf()*_Complex_I;
 
     // buffer for holding ASCII PSD output
-    char psd[_nfft];
+    LIQUID_VLA(char, psd, _nfft);
     float peakval, peakfreq;
 
     // start trials

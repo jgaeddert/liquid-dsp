@@ -38,6 +38,13 @@
 // forward declaration of internal methods
 //
 
+// equalizer strategy (moved outside struct for C++ compatibility)
+enum symtrack_eq_strategy_e {
+    SYMTRACK_EQ_CM,     // equalizer strategy: constant modulus
+    SYMTRACK_EQ_DD,     // equalizer strategy: decision directed
+    SYMTRACK_EQ_OFF,    // equalizer strategy: disabled
+};
+
 // internal structure
 struct SYMTRACK(_s) {
     // parameters
@@ -55,18 +62,14 @@ struct SYMTRACK(_s) {
     // symbol timing recovery
     SYMSYNC()       symsync;            // symbol timing recovery object
     float           symsync_bandwidth;  // symsync loop bandwidth
-    TO              symsync_buf[8];     // symsync output buffer
+    LIQUID_VLA(TO, symsync_buf, 8);     // symsync output buffer
     unsigned int    symsync_index;      // symsync output sample index
 
     // equalizer/decimator
     EQLMS()         eq;                 // equalizer (LMS)
     unsigned int    eq_len;             // equalizer length
     float           eq_bandwidth;       // equalizer bandwidth
-    enum {
-                    SYMTRACK_EQ_CM,     // equalizer strategy: constant modulus
-                    SYMTRACK_EQ_DD,     // equalizer strategy: decision directed
-                    SYMTRACK_EQ_OFF,    // equalizer strategy: disabled
-    }               eq_strategy;
+    enum symtrack_eq_strategy_e eq_strategy;
 
     // nco/phase-locked loop
     NCO()           nco;                // nco (carrier recovery)
@@ -93,13 +96,13 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,
 {
     // validate input
     if (_k < 2)
-        return liquid_error_config("symtrack_%s_create(), filter samples/symbol must be at least 2", EXTENSION_FULL);
+        return liquid_error_config_ptr(SYMTRACK(), "symtrack_%s_create(), filter samples/symbol must be at least 2", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("symtrack_%s_create(), filter delay must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(SYMTRACK(), "symtrack_%s_create(), filter delay must be greater than zero", EXTENSION_FULL);
     if (_beta <= 0.0f || _beta > 1.0f)
-        return liquid_error_config("symtrack_%s_create(), filter excess bandwidth must be in (0,1]", EXTENSION_FULL);
+        return liquid_error_config_ptr(SYMTRACK(), "symtrack_%s_create(), filter excess bandwidth must be in (0,1]", EXTENSION_FULL);
     if (_ms == LIQUID_MODEM_UNKNOWN || _ms >= LIQUID_MODEM_NUM_SCHEMES)
-        return liquid_error_config("symtrack_%s_create(), invalid modulation scheme", EXTENSION_FULL);
+        return liquid_error_config_ptr(SYMTRACK(), "symtrack_%s_create(), invalid modulation scheme", EXTENSION_FULL);
 
     // allocate memory for main object
     SYMTRACK() q = (SYMTRACK()) malloc( sizeof(struct SYMTRACK(_s)) );
@@ -130,7 +133,7 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,
     q->nco = NCO(_create)(LIQUID_VCO);
 
     // demodulator
-    q->demod = MODEM(_create)(q->mod_scheme);
+    q->demod = MODEM(_create)((modulation_scheme)q->mod_scheme);
 
     // set default bandwidth
     SYMTRACK(_set_bandwidth)(q, 0.9f);
@@ -248,7 +251,7 @@ int SYMTRACK(_set_modscheme)(SYMTRACK() _q,
     _q->mod_scheme = _ms == LIQUID_MODEM_UNKNOWN ? LIQUID_MODEM_BPSK : _ms;
 
     // re-create modem
-    _q->demod = MODEM(_recreate)(_q->demod, _q->mod_scheme);
+    _q->demod = MODEM(_recreate)(_q->demod, (modulation_scheme)_q->mod_scheme);
     return LIQUID_OK;
 }
 
@@ -376,7 +379,7 @@ int SYMTRACK(_execute)(SYMTRACK()     _q,
         // update equalizer independent of the signal: estimate error
         // assuming constant modulus signal
         // TODO: check lock conditions of previous object to determine when to run equalizer
-        float complex d_prime = 0.0f;
+        liquid_float_complex d_prime = 0.0f;
         if (_q->num_syms_rx > 200 && _q->eq_strategy != SYMTRACK_EQ_OFF) {
             switch (_q->eq_strategy) {
             case SYMTRACK_EQ_CM: d_prime = d_hat/cabsf(d_hat); break;

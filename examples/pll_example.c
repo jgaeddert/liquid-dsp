@@ -1,14 +1,17 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Demonstrates a basic phase-locked loop to track the phase of a"
 " complex sinusoid.";
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 #include <time.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -25,11 +28,11 @@ int main(int argc, char* argv[])
     liquid_argparse_parse(argc,argv);
 
     // buffers for storing sample data
-    float         theta [num_samples]; // input phase
-    float complex x     [num_samples]; // input sinusoid
-    float         phi   [num_samples]; // output phase
-    float complex y     [num_samples]; // output sinusoid
-    float         err   [num_samples]; // phase error
+    LIQUID_VLA(float, theta, num_samples); // input phase
+    LIQUID_VLA(liquid_float_complex, x, num_samples); // input sinusoid
+    LIQUID_VLA(float, phi, num_samples); // output phase
+    LIQUID_VLA(liquid_float_complex, y, num_samples); // output sinusoid
+    LIQUID_VLA(float, err, num_samples); // phase error
 
     // generate iir loop filter object
     iirfilt_rrrf H = iirfilt_rrrf_create_pll(wn, zeta, K);

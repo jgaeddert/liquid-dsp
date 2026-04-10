@@ -51,11 +51,11 @@ fskmod fskmod_create(unsigned int _m,
 {
     // validate input
     if (_m == 0)
-        return liquid_error_config("fskmod_create(), bits/symbol must be greater than 0");
+        return (fskmod)liquid_error_config("fskmod_create(), bits/symbol must be greater than 0");
     if (_k < 2 || _k > 2048)
-        return liquid_error_config("fskmod_create(), samples/symbol must be in [2^_m, 2048]");
+        return (fskmod)liquid_error_config("fskmod_create(), samples/symbol must be in [2^_m, 2048]");
     if (_bandwidth <= 0.0f || _bandwidth >= 0.5f)
-        return liquid_error_config("fskmod_create(), bandwidth must be in (0,0.5)");
+        return (fskmod)liquid_error_config("fskmod_create(), bandwidth must be in (0,0.5)");
 
     // create main object memory
     fskmod q = (fskmod) malloc(sizeof(struct fskmod_s));
@@ -83,7 +83,7 @@ fskmod fskmod_copy(fskmod q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("fskmod_copy(), object cannot be NULL");
+        return (fskmod)liquid_error_config("fskmod_copy(), object cannot be NULL");
 
     // create object and copy base parameters
     fskmod q_copy = (fskmod) malloc(sizeof(struct fskmod_s));
@@ -132,7 +132,7 @@ int fskmod_reset(fskmod _q)
 //  _y      :   output sample array [size: _k x 1]
 int fskmod_modulate(fskmod          _q,
                     unsigned int    _s,
-                    float complex * _y)
+                    liquid_float_complex * _y)
 {
     // validate input
     if (_s >= _q->M)

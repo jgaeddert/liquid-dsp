@@ -60,11 +60,11 @@ void testbench_fec_copy(liquid_autotest __q__, fec_scheme _fs)
 
     // create arrays
     unsigned int n_enc = fec_get_enc_msg_length(_fs,n_dec);
-    unsigned char msg_org[n_dec];   // original message
-    unsigned char msg_enc_0[n_enc]; // encoded message (orig)
-    unsigned char msg_enc_1[n_enc]; // encoded message (copy)
-    unsigned char msg_dec_0[n_dec]; // decoded message (orig)
-    unsigned char msg_dec_1[n_dec]; // decoded message (copy)
+    LIQUID_VLA(unsigned char, msg_org, n_dec);   // original message
+    LIQUID_VLA(unsigned char, msg_enc_0, n_enc); // encoded message (orig)
+    LIQUID_VLA(unsigned char, msg_enc_1, n_enc); // encoded message (copy)
+    LIQUID_VLA(unsigned char, msg_dec_0, n_dec); // decoded message (orig)
+    LIQUID_VLA(unsigned char, msg_dec_1, n_dec); // decoded message (copy)
 
     // initialize random message bits
     unsigned int i;

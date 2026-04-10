@@ -1,9 +1,10 @@
-char __docstr__[] = "Compare polyfit and polyfit_lagrange.";
+const char __docstr__[] = "Compare polyfit and polyfit_lagrange.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -24,7 +25,9 @@ int main(int argc, char* argv[])
     polyf_fit_lagrange(x,y,3,p1);
 
     // evaluate
-    float x_eval[n], y0[n], y1[n];
+    LIQUID_VLA(float, x_eval, n);
+    LIQUID_VLA(float, y0, n);
+    LIQUID_VLA(float, y1, n);
     unsigned int i;
     for (i=0; i<n; i++) {
         x_eval[i] = 2.2f * ((float)i/(float)(n-1) - 0.5f);

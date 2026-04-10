@@ -14,11 +14,11 @@
 // forward declaration of internal methods
 
 void firpfbch_crcf_analyzer_push(firpfbch_crcf _q,
-                                 float complex _x);
+                                 liquid_float_complex _x);
 
 void firpfbch_crcf_analyzer_run(firpfbch_crcf   _q,
                                 unsigned int    _k,
-                                float complex * _X);
+                                liquid_float_complex * _X);
 
 int main() {
     // options
@@ -34,9 +34,9 @@ int main() {
     unsigned int num_samples = num_channels * num_frames;   // total number of samples
 
     // data arrays
-    float complex x[num_samples];
-    float complex Y0[num_frames][num_channels];
-    float complex Y1[num_frames][num_channels];
+    liquid_float_complex x[num_samples];
+    liquid_float_complex Y0[num_frames][num_channels];
+    liquid_float_complex Y1[num_frames][num_channels];
 
     // create analyzer objects
     firpfbch_crcf ca0 = firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER, num_channels, m, beta, ftype);
@@ -51,7 +51,7 @@ int main() {
 
     // push several dummy samples into first analyzer (emulates
     // timing offset)
-    float complex x_hat;
+    liquid_float_complex x_hat;
     for (i=0; i<delay; i++) {
         x_hat = randnf()*cexpf(_Complex_I*2*M_PI*randf());
 
@@ -107,7 +107,7 @@ int main() {
     //
 
     float mse[num_channels];
-    float complex d;
+    liquid_float_complex d;
     for (i=0; i<num_channels; i++) {
         mse[i] = 0.0f;
 

@@ -21,7 +21,7 @@
  */
 
 //
-// Filter API: complex floating-point
+// Filter API: liquid_float_complexing-point
 //
 
 #include "liquid.internal.h"
@@ -51,10 +51,10 @@
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_cccf,name)
 //#define SYMSYNC(name)       LIQUID_CONCAT(symsync_cccf,name)
 
-#define T                   float complex   // general
-#define TO                  float complex   // output
-#define TC                  float complex   // coefficients
-#define TI                  float complex   // input
+#define T                   liquid_float_complex   // general
+#define TO                  liquid_float_complex   // output
+#define TC                  liquid_float_complex   // coefficients
+#define TI                  liquid_float_complex   // input
 #define WINDOW(name)        LIQUID_CONCAT(windowcf,name)
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_cccf,name)
 #define POLY(name)          LIQUID_CONCAT(polyf,name)

@@ -37,7 +37,7 @@ LIQUID_AUTOTEST(framesync64,"simple recovery of frame64 in noise","",0.1)
     framesync64 fs = framesync64_create(framing_autotest_callback, (void*)&context);
 
     // generate the frame
-    float complex frame[LIQUID_FRAME64_LEN];
+    LIQUID_VLA(liquid_float_complex, frame, LIQUID_FRAME64_LEN);
     framegen64_execute(fg, NULL, NULL, frame);
 
     // add some noise
@@ -84,7 +84,7 @@ LIQUID_AUTOTEST(framesync64_copy,"copying from one framesync64 object to another
     framesync64 fs0 = framesync64_create(framing_autotest_callback, (void*)&context_0);
 
     // feed random samples into synchronizer
-    float complex buf[LIQUID_FRAME64_LEN];
+    LIQUID_VLA(liquid_float_complex, buf, LIQUID_FRAME64_LEN);
     for (i=0; i<LIQUID_FRAME64_LEN; i++)
         buf[i] = 0.01f*(randnf() + _Complex_I*randnf()) * M_SQRT1_2;
     framesync64_execute(fs0, buf, LIQUID_FRAME64_LEN);
@@ -183,9 +183,9 @@ void testbench_framesync64_debug(liquid_autotest __q__, int _code)
     LIQUID_CHECK_ARRAY(framesync64_get_prefix(fs), prefix, strlen(prefix));
 
     // generate the frame
-    float complex frame[LIQUID_FRAME64_LEN];
+    LIQUID_VLA(liquid_float_complex, frame, LIQUID_FRAME64_LEN);
     unsigned char header [ 8] = {80,81,82,83,84,85,86,87};
-    unsigned char payload[64];
+    LIQUID_VLA(unsigned char, payload, 64);
     unsigned int i;
     for (i=0; i<64; i++)
         payload[i] = rand() & 0xff;
@@ -260,7 +260,7 @@ static int callback_framesync64_autotest_estimation(
 }
 
 // add channel offsets to frame
-void framesync64_channel(float complex * _frame,
+void framesync64_channel(liquid_float_complex * _frame,
                          float           _rssi,
                          float           _SNRdB,
                          float           _dphi)
@@ -272,7 +272,7 @@ void framesync64_channel(float complex * _frame,
 
     unsigned int i;
     for (i=0; i<LIQUID_FRAME64_LEN; i++)
-        _frame[i] = _frame[i]*cexp(_Complex_I*_dphi*i)*gain + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+        _frame[i] = _frame[i]*cexpf(_Complex_I*_dphi*(float)i)*gain + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 }
 
 LIQUID_AUTOTEST(framesync64_estimation,"simple recovery of frame64 in noise","",0.1)
@@ -284,7 +284,7 @@ LIQUID_AUTOTEST(framesync64_estimation,"simple recovery of frame64 in noise","",
             (void*)&stats);
 
     // generate the frame
-    float complex frame[LIQUID_FRAME64_LEN];
+    LIQUID_VLA(liquid_float_complex, frame, LIQUID_FRAME64_LEN);
     framegen64_execute(fg, NULL, NULL, frame);
 
     // add offsets
@@ -318,7 +318,7 @@ LIQUID_AUTOTEST(framesync64_estimation,"simple recovery of frame64 in noise","",
     unsigned int nfft=240;
     spgramcf q = spgramcf_create_default(nfft);
     spgramcf_write(q, frame, LIQUID_FRAME64_LEN);
-    float psd[nfft];
+    LIQUID_VLA(float, psd, nfft);
     spgramcf_get_psd(q, psd);
     spgramcf_destroy(q);
     unsigned int i;

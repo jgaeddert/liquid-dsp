@@ -14,7 +14,9 @@
 //
 
 #include <stdio.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 #include "liquid.h"
@@ -35,9 +37,9 @@ int main() {
     unsigned int n = N/2;
 
     // arrays
-    float complex x[N];             // input time series
-    float complex y[n][2];          // output time series (channelized)
-    float complex z[N];             // output time series
+    liquid_float_complex x[N];             // input time series
+    liquid_float_complex y[n][2];          // output time series (channelized)
+    liquid_float_complex z[N];             // output time series
 
     // generate input sequence
     unsigned int i;

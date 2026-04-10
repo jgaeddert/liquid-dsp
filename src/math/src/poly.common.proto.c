@@ -50,8 +50,8 @@ int POLY(_fit)(T *          _x,
                unsigned int _k)
 {
 
-    // ...
-    T X[_n*_k];
+    // (use LIQUID_VLA for MSVC compatibility)
+    LIQUID_VLA(T, X, _n*_k);
     unsigned int r,c;
     T v;
     for (r=0; r<_n; r++) {
@@ -63,24 +63,24 @@ int POLY(_fit)(T *          _x,
     }
 
     // compute transpose of X
-    T Xt[_k*_n];
+    LIQUID_VLA(T, Xt, _k*_n);
     memmove(Xt,X,_k*_n*sizeof(T));
     MATRIX(_trans)(Xt,_n,_k);
 
     // compute [X']*y
-    T Xty[_k];
+    LIQUID_VLA(T, Xty, _k);
     MATRIX(_mul)(Xt, _k, _n,
                  _y, _n, 1,
                  Xty,_k, 1);
 
     // compute [X']*X
-    T X2[_k*_k];
+    LIQUID_VLA(T, X2, _k*_k);
     MATRIX(_mul)(Xt, _k, _n,
                  X,  _n, _k,
                  X2, _k, _k);
 
     // compute inv([X']*X)
-    T G[_k*_k];
+    LIQUID_VLA(T, G, _k*_k);
     memmove(G,X2,_k*_k*sizeof(T));
     MATRIX(_inv)(G,_k,_k);
 

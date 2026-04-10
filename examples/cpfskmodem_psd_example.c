@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the differences in power spectral"
 " density (PSD) for different continuous-phase frequency-shift"
 " keying (CP-FSK) modems in liquid. Identical bit streams are fed"
@@ -11,6 +11,7 @@ char __docstr__[] =
 #include <getopt.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -40,10 +41,10 @@ int main(int argc, char*argv[])
     cpfskmod mod_3 = cpfskmod_create(bps, h, k, m, beta, LIQUID_CPFSK_GMSK);
 
     // buffers
-    float complex buf_0[k];
-    float complex buf_1[k];
-    float complex buf_2[k];
-    float complex buf_3[k];
+    LIQUID_VLA(liquid_float_complex, buf_0, k);
+    LIQUID_VLA(liquid_float_complex, buf_1, k);
+    LIQUID_VLA(liquid_float_complex, buf_2, k);
+    LIQUID_VLA(liquid_float_complex, buf_3, k);
 
     // create PSD estimators
     // spectral periodogram options
@@ -74,10 +75,10 @@ int main(int argc, char*argv[])
     }
     
     // compute power spectral density estimate output
-    float psd_0[nfft]; spgramcf_get_psd(spgram_0, psd_0);
-    float psd_1[nfft]; spgramcf_get_psd(spgram_1, psd_1);
-    float psd_2[nfft]; spgramcf_get_psd(spgram_2, psd_2);
-    float psd_3[nfft]; spgramcf_get_psd(spgram_3, psd_3);
+    LIQUID_VLA(float, psd_0, nfft); spgramcf_get_psd(spgram_0, psd_0);
+    LIQUID_VLA(float, psd_1, nfft); spgramcf_get_psd(spgram_1, psd_1);
+    LIQUID_VLA(float, psd_2, nfft); spgramcf_get_psd(spgram_2, psd_2);
+    LIQUID_VLA(float, psd_3, nfft); spgramcf_get_psd(spgram_3, psd_3);
 
     // destroy modulators
     cpfskmod_destroy(mod_0);

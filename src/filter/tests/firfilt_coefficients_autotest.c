@@ -29,8 +29,8 @@ LIQUID_AUTOTEST(firfilt_cccf_coefficients_test,"description","",0.1)
 {
     // create filter coefficients (semi-random)
     unsigned int h_len = 71;
-    float complex * h0 = (float complex*) malloc(h_len*sizeof(float complex));
-    float complex * h1 = (float complex*) malloc(h_len*sizeof(float complex));
+    liquid_float_complex * h0 = (liquid_float_complex*) malloc(h_len*sizeof(liquid_float_complex));
+    liquid_float_complex * h1 = (liquid_float_complex*) malloc(h_len*sizeof(liquid_float_complex));
     unsigned int i;
     for (i=0; i<h_len; i++)
         h0[i] = cexpf(_Complex_I*0.2f*i) * liquid_hamming(i,h_len);
@@ -45,7 +45,7 @@ LIQUID_AUTOTEST(firfilt_cccf_coefficients_test,"description","",0.1)
     firfilt_cccf_copy_coefficients(q, h1);
 
     // copy coefficients from filter object
-    const float complex * h2 = firfilt_cccf_get_coefficients(q);
+    const liquid_float_complex * h2 = firfilt_cccf_get_coefficients(q);
 
     // ensure values are equal; no need for tolerance as values should be exact
     for (i=0; i<h_len; i++) {

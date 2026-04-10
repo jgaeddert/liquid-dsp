@@ -31,6 +31,7 @@
 
 fec fec_pass_create(void * _opts)
 {
+    (void)_opts;
     fec q = (fec) malloc(sizeof(struct fec_s));
 
     q->scheme = LIQUID_FEC_NONE;
@@ -57,12 +58,14 @@ int fec_pass_print(fec _q)
 
 int fec_pass_encode(fec _q, unsigned int _dec_msg_len, unsigned char *_msg_dec, unsigned char *_msg_enc)
 {
+    (void)_q;
     memmove(_msg_enc, _msg_dec, _dec_msg_len);
     return LIQUID_OK;
 }
 
 int fec_pass_decode(fec _q, unsigned int _dec_msg_len, unsigned char *_msg_enc, unsigned char *_msg_dec)
 {
+    (void)_q;
     memmove(_msg_dec, _msg_enc, _dec_msg_len);
     return LIQUID_OK;
 }

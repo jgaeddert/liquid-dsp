@@ -39,7 +39,7 @@ MODEM() MODEM(_create_apsk)(unsigned int _bits_per_symbol)
     case 7: apskdef = &liquid_apsk128;  break;
     case 8: apskdef = &liquid_apsk256;  break;
     default:
-        return liquid_error_config("modem%s_create_apsk(), unsupported modulation level (%u)",
+        return liquid_error_config_ptr(MODEM(), "modem%s_create_apsk(), unsupported modulation level (%u)",
                 EXTENSION, _bits_per_symbol);
     }
 

@@ -63,8 +63,8 @@ int main(int argc, char*argv[]) {
 
     // generate input
     float dphi[num_samples];        // transmitted instantaneous frequency
-    float complex x[num_samples];   // transmitted signal
-    float complex y[num_samples];   // received signal
+    liquid_float_complex x[num_samples];   // transmitted signal
+    liquid_float_complex y[num_samples];   // received signal
     float dphi_hat[num_samples];    // received instantaneous frequency
 
     unsigned int n=0;               // sample counter
@@ -99,9 +99,9 @@ int main(int argc, char*argv[]) {
     }
 
     // run loop
-    float complex yn = 0.0f;
+    liquid_float_complex yn = 0.0f;
     for (i=0; i<num_samples; i++) {
-        float complex r = y[i] * conjf(yn);
+        liquid_float_complex r = y[i] * conjf(yn);
 
         dphi_hat[i] = cargf(r);
 

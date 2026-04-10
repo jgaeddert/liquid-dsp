@@ -127,7 +127,7 @@ LIQUID_AUTOTEST(distribution_randnf,"normal distribution","",0.1)
     float tol = 0.05f;
 
     unsigned int num_bins = 31;
-    float bins[num_bins];
+    LIQUID_VLA(float, bins, num_bins);
     unsigned long int i;
     for (i=0; i<num_bins; i++)
         bins[i] = 0.0f;
@@ -141,8 +141,8 @@ LIQUID_AUTOTEST(distribution_randnf,"normal distribution","",0.1)
 
     // compute ideal pdf and cdf
     float vstep = (vmax - vmin) / (float)(num_bins-1);
-    float pdf[num_bins];
-    float cdf[num_bins];
+    LIQUID_VLA(float, pdf, num_bins);
+    LIQUID_VLA(float, cdf, num_bins);
     for (i=0; i<num_bins; i++) {
         float v = vmin + i*vstep;
         pdf[i] = randnf_pdf(v, eta, sig);
@@ -167,7 +167,7 @@ LIQUID_AUTOTEST(distribution_randexpf,"exponential distribution","",0.1)
     float tol = 0.05f;
 
     unsigned int num_bins = 21;
-    float bins[num_bins];
+    LIQUID_VLA(float, bins, num_bins);
     unsigned long int i;
     for (i=0; i<num_bins; i++)
         bins[i] = 0.0f;
@@ -181,8 +181,8 @@ LIQUID_AUTOTEST(distribution_randexpf,"exponential distribution","",0.1)
 
     // compute ideal pdf and cdf
     float vstep = (vmax - vmin) / (float)(num_bins-1);
-    float pdf[num_bins];
-    float cdf[num_bins];
+    LIQUID_VLA(float, pdf, num_bins);
+    LIQUID_VLA(float, cdf, num_bins);
     for (i=0; i<num_bins; i++) {
         float v = vmin + i*vstep;
         pdf[i] = randexpf_pdf(v, lambda);

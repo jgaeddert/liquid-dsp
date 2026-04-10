@@ -1,9 +1,10 @@
-char __docstr__[] = "Demonstrate interleaving on soft-decision bit values";
+const char __docstr__[] = "Demonstrate interleaving on soft-decision bit values";
 
 #include <stdio.h>
 #include <stdlib.h> // for rand()
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -18,11 +19,11 @@ int main(int argc, char*argv[])
     interleaver_print(q);
 
     // create arrays
-    unsigned char msg_org[n];   // original message data (bytes)
-    unsigned char msg_int[n];   // interleaved data (bytes)
-    unsigned char msg_rec[8*n]; // interleaved data (soft bits)
-    unsigned char msg_dec[8*n]; // de-interleaved data (soft bits)
-    unsigned char msg_ppp[n];   // de-interleaved data (bytes)
+    LIQUID_VLA(unsigned char, msg_org, n);   // original message data (bytes)
+    LIQUID_VLA(unsigned char, msg_int, n);   // interleaved data (bytes)
+    LIQUID_VLA(unsigned char, msg_rec, 8*n); // interleaved data (soft bits)
+    LIQUID_VLA(unsigned char, msg_dec, 8*n); // de-interleaved data (soft bits)
+    LIQUID_VLA(unsigned char, msg_ppp, n);   // de-interleaved data (bytes)
 
     // generate random data sequence
     unsigned int i;

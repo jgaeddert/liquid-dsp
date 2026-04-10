@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example tests the random number generators for different"
 " distributions.";
 
@@ -9,6 +9,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -90,7 +91,7 @@ int main(int argc, char* argv[])
     float bin_width = (xmax - xmin) / (num_bins);
 
     // initialize histogram
-    unsigned int hist[num_bins];
+    LIQUID_VLA(unsigned int, hist, num_bins);
     for (i=0; i<num_bins; i++)
         hist[i] = 0;
 
@@ -137,8 +138,8 @@ int main(int argc, char* argv[])
     // compute expected distribution
     unsigned int num_steps = 100;
     float xstep = (xmax - xmin) / (num_steps - 1);
-    float f[num_steps];
-    float F[num_steps];
+    LIQUID_VLA(float, f, num_steps);
+    LIQUID_VLA(float, F, num_steps);
     for (i=0; i<num_steps; i++) {
         x = xmin + i*xstep;
         switch (distribution) {

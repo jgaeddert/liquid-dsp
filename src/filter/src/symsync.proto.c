@@ -83,8 +83,8 @@ struct SYMSYNC(_s)
     // loop filter
     float q;                    // instantaneous timing error
     float q_hat;                // filtered timing error
-    float B[3];                 // loop filter feed-forward coefficients
-    float A[3];                 // loop filter feed-back coefficients
+    LIQUID_VLA(float, B, 3);                 // loop filter feed-forward coefficients
+    LIQUID_VLA(float, A, 3);                 // loop filter feed-back coefficients
     iirfiltsos_rrrf pll;        // loop filter object (iir filter)
     float rate_adjustment;      // internal rate adjustment factor
 
@@ -105,13 +105,13 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
 {
     // validate input
     if (_k < 2)
-        return liquid_error_config("symsync_%s_create(), input sample rate must be at least 2", EXTENSION_FULL);
+        return liquid_error_config_ptr(SYMSYNC(), "symsync_%s_create(), input sample rate must be at least 2", EXTENSION_FULL);
     if (_M == 0)
-        return liquid_error_config("symsync_%s_create(), number of filter banks must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(SYMSYNC(), "symsync_%s_create(), number of filter banks must be greater than zero", EXTENSION_FULL);
     if (_h_len == 0)
-        return liquid_error_config("symsync_%s_create(), filter length must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(SYMSYNC(), "symsync_%s_create(), filter length must be greater than zero", EXTENSION_FULL);
     if ( (_h_len-1) % _M )
-        return liquid_error_config("symsync_%s_create(), filter length must be of the form: h_len = m*_k*_M + 1 ", EXTENSION_FULL);
+        return liquid_error_config_ptr(SYMSYNC(), "symsync_%s_create(), filter length must be of the form: h_len = m*_k*_M + 1 ", EXTENSION_FULL);
 
     // create main object
     SYMSYNC() q = (SYMSYNC()) malloc(sizeof(struct SYMSYNC(_s)));
@@ -127,7 +127,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
     q->h_len = (_h_len-1)/q->npfb;
 
     // compute derivative filter
-    TC dh[_h_len];
+    LIQUID_VLA(TC, dh, _h_len);
     float hdh_max = 0.0f;
     unsigned int i;
     for (i=0; i<_h_len; i++) {
@@ -180,23 +180,23 @@ SYMSYNC() SYMSYNC(_create_rnyquist)(int          _type,
 {
     // validate input
     if (_k < 2)
-        return liquid_error_config("symsync_%s_create_rnyquist(), samples/symbol must be at least 2", EXTENSION_FULL);
+        return liquid_error_config_ptr(SYMSYNC(), "symsync_%s_create_rnyquist(), samples/symbol must be at least 2", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("symsync_%s_create_rnyquist(), filter delay (m) must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(SYMSYNC(), "symsync_%s_create_rnyquist(), filter delay (m) must be greater than zero", EXTENSION_FULL);
     if (_beta < 0.0f || _beta > 1.0f)
-        return liquid_error_config("symsync_%s_create_rnyquist(), filter excess bandwidth must be in [0,1]", EXTENSION_FULL);
+        return liquid_error_config_ptr(SYMSYNC(), "symsync_%s_create_rnyquist(), filter excess bandwidth must be in [0,1]", EXTENSION_FULL);
     if (_M == 0)
-        return liquid_error_config("symsync_%s_create_rnyquist(), number of filters in bnak must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(SYMSYNC(), "symsync_%s_create_rnyquist(), number of filters in bnak must be greater than zero", EXTENSION_FULL);
 
     // allocate memory for filter coefficients
     unsigned int H_len = 2*_M*_k*_m + 1;
-    float Hf[H_len];
+    LIQUID_VLA(float, Hf, H_len);
 
     // design square-root Nyquist pulse-shaping filter
-    liquid_firdes_prototype(_type, _k*_M, _m, _beta, 0, Hf);
+    liquid_firdes_prototype((liquid_firfilt_type)_type, _k*_M, _m, _beta, 0, Hf);
 
     // copy coefficients to type-specific array
-    TC H[H_len];
+    LIQUID_VLA(TC, H, H_len);
     unsigned int i;
     for (i=0; i<H_len; i++)
         H[i] = Hf[i];
@@ -218,17 +218,17 @@ SYMSYNC() SYMSYNC(_create_kaiser)(unsigned int _k,
 {
     // validate input
     if (_k < 2)
-        return liquid_error_config("symsync_%s_create_kaiser(), samples/symbol must be at least 2", EXTENSION_FULL);
+        return liquid_error_config_ptr(SYMSYNC(), "symsync_%s_create_kaiser(), samples/symbol must be at least 2", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("symsync_%s_create_kaiser(), filter delay (m) must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(SYMSYNC(), "symsync_%s_create_kaiser(), filter delay (m) must be greater than zero", EXTENSION_FULL);
     if (_beta < 0.0f || _beta > 1.0f)
-        return liquid_error_config("symsync_%s_create_kaiser(), filter excess bandwidth must be in [0,1]", EXTENSION_FULL);
+        return liquid_error_config_ptr(SYMSYNC(), "symsync_%s_create_kaiser(), filter excess bandwidth must be in [0,1]", EXTENSION_FULL);
     if (_M == 0)
-        return liquid_error_config("symsync_%s_create_kaiser(), number of filters in bnak must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(SYMSYNC(), "symsync_%s_create_kaiser(), number of filters in bnak must be greater than zero", EXTENSION_FULL);
 
     // allocate memory for filter coefficients
     unsigned int H_len = 2*_M*_k*_m + 1;
-    float Hf[H_len];
+    LIQUID_VLA(float, Hf, H_len);
 
     // design interpolating filter whose bandwidth is outside the cut-off
     // frequency of input signal
@@ -240,7 +240,7 @@ SYMSYNC() SYMSYNC(_create_kaiser)(unsigned int _k,
     // copy coefficients to type-specific array, adjusting to relative
     // filter gain
     unsigned int i;
-    TC H[H_len];
+    LIQUID_VLA(TC, H, H_len);
     for (i=0; i<H_len; i++)
         H[i] = Hf[i] * 2.0f * fc;
 
@@ -253,7 +253,7 @@ SYMSYNC() SYMSYNC(_copy)(SYMSYNC() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("symsync_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(SYMSYNC(), "symsync_%s_copy(), object cannot be NULL", EXTENSION_FULL);
 
     // create object, copy internal memory, overwrite with specific values
     SYMSYNC() q_copy = (SYMSYNC()) malloc(sizeof(struct SYMSYNC(_s)));

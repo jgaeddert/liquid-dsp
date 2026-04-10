@@ -1,11 +1,14 @@
-char __docstr__[] = "Fading generator example";
+const char __docstr__[] = "Fading generator example";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -23,7 +26,7 @@ int main(int argc, char* argv[])
 
     // generate filter
     unsigned int i;
-    float h[h_len];
+    LIQUID_VLA(float, h, h_len);
     liquid_firdes_doppler(h_len,fd,K,theta,h);
     firfilt_rrrf fi = firfilt_rrrf_create(h,h_len);
     firfilt_rrrf fq = firfilt_rrrf_create(h,h_len);
@@ -36,7 +39,7 @@ int main(int argc, char* argv[])
         fprintf(fid,"h(%3u) = %12.8e;\n", i+1, h[i]);
 
     // generate complex fading envelope
-    float complex x, y;
+    liquid_float_complex x, y;
     float yi, yq;
     float s = sqrtf((omega*K)/(K+1));
     float sig = sqrtf(0.5f*omega/(K+1));

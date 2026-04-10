@@ -43,8 +43,8 @@ void resamp_crcf_bench(struct rusage *     _start,
     resamp_crcf q = resamp_crcf_create(rate,m,bw,As,npfb);
 
     // buffering
-    float complex buf_0[_P];
-    float complex buf_1[_Q*4];
+    LIQUID_VLA(liquid_float_complex, buf_0, _P);
+    LIQUID_VLA(liquid_float_complex, buf_1, _Q*4);
     unsigned int num_written;
     
     unsigned long int i;

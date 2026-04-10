@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the functionality of the qdsync object to"
 " detect and synchronize an arbitrary signal in time in the presence of noise,"
 " carrier frequency/phase offsets, and fractional-sample timing offsets."
@@ -11,10 +11,11 @@ char __docstr__[] =
 #include <math.h>
 #include <time.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // synchronization callback, return 0:continue, 1:reset
-int callback(float complex * _buf,
+int callback(liquid_float_complex * _buf,
              unsigned int    _buf_len,
              void *          _context)
 {
@@ -42,7 +43,7 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // generate synchronization sequence (QPSK symbols)
-    float complex seq[sequence_len];
+    LIQUID_VLA(liquid_float_complex, seq, sequence_len);
     unsigned int i;
     for (i=0; i<sequence_len ; i++) {
         seq[i] = (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 +
@@ -63,10 +64,10 @@ int main(int argc, char*argv[])
     firinterp_crcf interp = firinterp_crcf_create_prototype(ftype,k,m,beta,0);
 
     // run signal through sync object
-    float complex buf[k];
+    LIQUID_VLA(liquid_float_complex, buf, k);
     for (i=0; i<10*sequence_len; i++) {
         // generate random symbol
-        float complex s = i < sequence_len ? seq[i] : (rand() & 1 ? 1.0f : -1.0f);
+        liquid_float_complex s = i < sequence_len ? seq[i] : (rand() & 1 ? 1.0f : -1.0f);
 
         // interpolate symbol
         firinterp_crcf_execute(interp, s, buf);

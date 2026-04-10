@@ -53,11 +53,11 @@ gmskmod gmskmod_create(unsigned int _k,
                        float        _BT)
 {
     if (_k < 2)
-        return liquid_error_config("gmskmod_create(), samples/symbol must be at least 2");
+        return (gmskmod)liquid_error_config("gmskmod_create(), samples/symbol must be at least 2");
     if (_m < 1)
-        return liquid_error_config("gmskmod_create(), symbol delay must be at least 1");
+        return (gmskmod)liquid_error_config("gmskmod_create(), symbol delay must be at least 1");
     if (_BT <= 0.0f || _BT >= 1.0f)
-        return liquid_error_config("gmskmod_create(), bandwidth/time product must be in (0,1)");
+        return (gmskmod)liquid_error_config("gmskmod_create(), bandwidth/time product must be in (0,1)");
 
     gmskmod q = (gmskmod)malloc(sizeof(struct gmskmod_s));
 
@@ -91,7 +91,7 @@ gmskmod gmskmod_copy(gmskmod q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("gmskmod_copy(), object cannot be NULL");
+        return (gmskmod)liquid_error_config("gmskmod_copy(), object cannot be NULL");
 
     // create object and copy base parameters
     gmskmod q_copy = (gmskmod) malloc(sizeof(struct gmskmod_s));
@@ -143,13 +143,13 @@ int gmskmod_reset(gmskmod _q)
 
 int gmskmod_modulate(gmskmod         _q,
                      unsigned int    _s,
-                     float complex * _y)
+                     liquid_float_complex * _y)
 {
     // generate sample from symbol
     float x = _s==0 ? -_q->k_inv : _q->k_inv;
 
     // run interpolator
-    float phi[_q->k];
+    LIQUID_VLA(float, phi, _q->k);
     firinterp_rrrf_execute(_q->interp_tx, x, phi);
 
     // integrate phase state

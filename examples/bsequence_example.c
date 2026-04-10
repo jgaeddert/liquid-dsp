@@ -1,13 +1,16 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the interface to the bsequence (binary"
 " sequence) object.  The bsequence object acts like a buffer of bits"
 " which are stored and manipulated efficiently in memory.";
 
 #include <stdio.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])

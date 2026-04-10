@@ -1,9 +1,12 @@
-char __docstr__[] = "Generate tone at low frequency and test phase response";
+const char __docstr__[] = "Generate tone at low frequency and test phase response";
 
 #include <stdio.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -26,7 +29,7 @@ int main(int argc, char* argv[])
     nco_crcf_print(q);
 
     unsigned int i;
-    float complex x[num_samples];
+    LIQUID_VLA(liquid_float_complex, x, num_samples);
     for (i=0; i<num_samples; i++) {
         nco_crcf_cexpf(q, &x[i]);
         nco_crcf_step(q);

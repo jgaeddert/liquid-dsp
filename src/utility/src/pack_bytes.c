@@ -271,7 +271,7 @@ int liquid_repack_bytes(unsigned char * _sym_in,
 {
     // compute number of output symbols and determine if output array
     // is sufficiently sized
-    div_t d = div(_sym_in_len*_sym_in_bps,_sym_out_bps);
+    div_t d = div((int)(_sym_in_len*_sym_in_bps),(int)_sym_out_bps);
     unsigned int req__sym_out_len = d.quot;
     req__sym_out_len += ( d.rem > 0 ) ? 1 : 0;
     if ( _sym_out_len < req__sym_out_len ) {

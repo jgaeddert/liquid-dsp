@@ -33,9 +33,9 @@ void dotprod_cccf_bench(struct rusage *_start,
     *_num_iterations = *_num_iterations * 20 / _n;
     if (*_num_iterations < 1) *_num_iterations = 1;
 
-    float complex x[_n];
-    float complex h[_n];
-    float complex y[8];
+    LIQUID_VLA(liquid_float_complex, x, _n);
+    LIQUID_VLA(liquid_float_complex, h, _n);
+    LIQUID_VLA(liquid_float_complex, y, 8);
     unsigned int i;
     for (i=0; i<_n; i++) {
         x[i] = randnf() + _Complex_I*randnf();

@@ -259,7 +259,7 @@ int main(int argc, char*argv[])
     unsigned int num_trials=10000;          // number of trials
 
     // arrays
-    float complex sym_rec[8*61];            // received BPSK symbols
+    liquid_float_complex sym_rec[8*61];            // received BPSK symbols
     unsigned int bit_errors_hard[num_snr];
     unsigned int bit_errors_soft[num_snr];
 

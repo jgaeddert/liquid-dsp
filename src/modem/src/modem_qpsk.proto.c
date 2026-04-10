@@ -54,6 +54,7 @@ int MODEM(_modulate_qpsk)(MODEM()      _q,
                            unsigned int _sym_in,
                            TC *         _y)
 {
+    (void)_q;
     // compute output sample directly from input
     *_y  = (_sym_in & 0x01 ? -M_SQRT1_2 : M_SQRT1_2) +
            (_sym_in & 0x02 ? -M_SQRT1_2 : M_SQRT1_2)*_Complex_I;

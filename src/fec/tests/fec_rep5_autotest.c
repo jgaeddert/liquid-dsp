@@ -31,8 +31,8 @@ LIQUID_AUTOTEST(rep5_codec,"test repeat/5 codec","",0.1)
 
     // create arrays
     unsigned int n_enc = fec_get_enc_msg_length(fs,n);
-    unsigned char msg_dec[n];
-    unsigned char msg_enc[n_enc];
+    LIQUID_VLA(unsigned char, msg_dec, n);
+    LIQUID_VLA(unsigned char, msg_enc, n_enc);
 
     // create object
     fec q = fec_create(fs,NULL);

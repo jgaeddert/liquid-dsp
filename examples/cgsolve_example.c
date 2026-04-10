@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Solve linear system of equations A*x = b using the conjugate-"
 " gradient method where A is a symmetric positive-definite matrix."
 " Compare speed to matrixf_linsolve() for same system.";
@@ -8,6 +8,7 @@ char __docstr__[] =
 #include <string.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -20,14 +21,14 @@ int main(int argc, char* argv[])
     unsigned int i;
 
     // allocate memory for arrays
-    float A[n*n];
-    float b[n];
-    float x[n];
-    float x_hat[n];
+    LIQUID_VLA(float, A, n*n);
+    LIQUID_VLA(float, b, n);
+    LIQUID_VLA(float, x, n);
+    LIQUID_VLA(float, x_hat, n);
 
     // generate symmetric positive-definite matrix by first generating
     // lower triangular matrix L and computing A = L*L'
-    float L[n*n];
+    LIQUID_VLA(float, L, n*n);
     unsigned int j;
     for (i=0; i<n; i++) {
         for (j=0; j<n; j++) {

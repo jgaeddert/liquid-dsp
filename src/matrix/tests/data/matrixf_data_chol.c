@@ -24,7 +24,9 @@
 // data for testing Cholesky decomposition
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 // matrixf_data_chol_L [size: 4 x 4]
 float matrixf_data_chol_L[] = {

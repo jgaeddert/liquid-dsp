@@ -1,14 +1,17 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the property of maximal-length sequence"
 " (m-sequence) linear feedback shift registers (LFSR) where the state"
 " cycles through all permutations of integers from 1 to 2^m-1.";
 
 #include <stdlib.h>
 #include <stdio.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])

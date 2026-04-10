@@ -123,11 +123,11 @@ int main(int argc, char*argv[]) {
     unsigned int i;
 
     unsigned int num_samples = k*num_symbols;
-    float complex s[num_symbols];               // data symbols
-    float complex x[num_samples];               // interpolated samples
-    float complex y[num_samples];               // channel output
-    float complex z[k*num_symbols + 64];        // synchronized samples
-    float complex sym_out[num_symbols + 64];    // synchronized symbols
+    liquid_float_complex s[num_symbols];               // data symbols
+    liquid_float_complex x[num_samples];               // interpolated samples
+    liquid_float_complex y[num_samples];               // channel output
+    liquid_float_complex z[k*num_symbols + 64];        // synchronized samples
+    liquid_float_complex sym_out[num_symbols + 64];    // synchronized symbols
 
     for (i=0; i<num_symbols; i++) {
         s[i] = (rand() % 2 ? M_SQRT1_2 : -M_SQRT1_2) +
@@ -152,7 +152,7 @@ int main(int argc, char*argv[]) {
     //
 
     // generate channel impulse response, filter
-    float complex hc[hc_len];
+    liquid_float_complex hc[hc_len];
     hc[0] = 1.0f;
     for (i=1; i<hc_len; i++)
         hc[i] = 0.07f*(randnf() + randnf()*_Complex_I);
@@ -193,13 +193,13 @@ int main(int argc, char*argv[]) {
     //
 
     // create equalizer as low-pass filter
-    float complex hp[hp_len];
+    liquid_float_complex hp[hp_len];
     eqlms_cccf eq = eqlms_cccf_create_lowpass(hp_len, 0.4f);
     eqlms_cccf_set_bw(eq, mu);
 
     // push through equalizer and decimate
     unsigned int num_symbols_sync = 0;
-    float complex d_hat = 0.0f;
+    liquid_float_complex d_hat = 0.0f;
     for (i=0; i<num_samples_sync; i++) {
         // push sample into equalizer
         eqlms_cccf_push(eq, z[i]);
@@ -215,7 +215,7 @@ int main(int argc, char*argv[]) {
         if ( i < hp_len ) continue;
 
         // estimate transmitted signal
-        float complex d_prime = (crealf(d_hat) > 0.0f ? M_SQRT1_2 : -M_SQRT1_2) +
+        liquid_float_complex d_prime = (crealf(d_hat) > 0.0f ? M_SQRT1_2 : -M_SQRT1_2) +
                                 (cimagf(d_hat) > 0.0f ? M_SQRT1_2 : -M_SQRT1_2) * _Complex_I;
 
         // update equalizer

@@ -1,10 +1,11 @@
-char __docstr__[] = "Demonstrate quad-section search in one dimension.";
+const char __docstr__[] = "Demonstrate quad-section search in one dimension.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 float utility(float _v, void * _context)

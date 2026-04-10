@@ -24,9 +24,12 @@
 // autotest fft data for 157-point transform
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
+#include "liquid.h"
 
-float complex fft_test_x157[] = {
+liquid_float_complex fft_test_x157[] = {
     0.257182749425 +   0.221924222343*_Complex_I,
     1.678933476985 +   1.690438801569*_Complex_I,
    -0.370453539748 +  -0.279443271284*_Complex_I,
@@ -185,7 +188,7 @@ float complex fft_test_x157[] = {
     1.388787822068 +  -2.267147899079*_Complex_I,
     0.939124099904 +  -0.563609820499*_Complex_I};
 
-float complex fft_test_y157[] = {
+liquid_float_complex fft_test_y157[] = {
   -13.721520175468 +  -9.568907767571*_Complex_I,
     8.721468524756 + -10.198063416643*_Complex_I,
    15.060716782723 + -14.846901712846*_Complex_I,

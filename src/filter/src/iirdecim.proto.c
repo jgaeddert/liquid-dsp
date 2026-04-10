@@ -52,7 +52,7 @@ IIRDECIM() IIRDECIM(_create)(unsigned int _M,
 {
     // validate input
     if (_M < 2)
-        return liquid_error_config("iirinterp_%s_create(), interp factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(IIRDECIM(), "iirinterp_%s_create(), interp factor must be greater than 1", EXTENSION_FULL);
 
     // allocate main object memory and set internal parameters
     IIRDECIM() q = (IIRDECIM()) malloc(sizeof(struct IIRDECIM(_s)));
@@ -96,7 +96,7 @@ IIRDECIM() IIRDECIM(_create_prototype)(unsigned int             _M,
 {
     // validate input
     if (_M < 2)
-        return liquid_error_config("iirinterp_%s_create_prototype(), interp factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(IIRDECIM(), "iirinterp_%s_create_prototype(), interp factor must be greater than 1", EXTENSION_FULL);
 
     // allocate main object memory and set internal parameters
     IIRDECIM() q = (IIRDECIM()) malloc(sizeof(struct IIRDECIM(_s)));
@@ -114,7 +114,7 @@ IIRDECIM() IIRDECIM(_copy)(IIRDECIM() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("iirdecim%s_create(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(IIRDECIM(), "iirdecim%s_create(), object cannot be NULL", EXTENSION_FULL);
 
     // create filter object and copy internal memory
     IIRDECIM() q_copy = (IIRDECIM()) malloc(sizeof(struct IIRDECIM(_s)));

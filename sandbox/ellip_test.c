@@ -54,28 +54,28 @@ int main()
         u[i] = (2.0f*t - 1.0f)/N;
         printf("u[%3u]      : %12.8f\n", i, u[i]);
     }
-    float complex zeta[L];
+    liquid_float_complex zeta[L];
     for (i=0; i<L; i++) {
         zeta[i] = ellip_cdf(u[i],k,n);
         printf("zeta[%3u]   : %12.8f + j*%12.8f\n", i, crealf(zeta[i]), cimagf(zeta[i]));
     }
 
     // compute filter zeros
-    float complex za[L];
+    liquid_float_complex za[L];
     for (i=0; i<L; i++) {
         za[i] = _Complex_I * Wp / (k*zeta[i]);
         printf("za[%3u]     : %12.8f + j*%12.8f\n", i, crealf(za[i]), cimagf(za[i]));
     }
 
-    float complex v0 = -_Complex_I*ellip_asnf(_Complex_I/ep, k1, n)/N;
+    liquid_float_complex v0 = -_Complex_I*ellip_asnf(_Complex_I/ep, k1, n)/N;
     printf("v0          : %12.8f + j*%12.8f\n", crealf(v0), cimagf(v0));
 
-    float complex pa[L];
+    liquid_float_complex pa[L];
     for (i=0; i<L; i++) {
         pa[i] = Wp*_Complex_I*ellip_cdf(u[i]-_Complex_I*v0, k, n);
         printf("pa[%3u]     : %12.8f + j*%12.8f\n", i, crealf(pa[i]), cimagf(pa[i]));
     }
-    float complex pa0 = Wp * _Complex_I*ellip_snf(_Complex_I*v0, k, n);
+    liquid_float_complex pa0 = Wp * _Complex_I*ellip_snf(_Complex_I*v0, k, n);
     printf("pa0         : %12.8f + j*%12.8f\n", crealf(pa0), cimagf(pa0));
 
 

@@ -7,7 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <time.h>
 #include <getopt.h>
 
@@ -79,12 +81,12 @@ int main(int argc, char *argv[]) {
     //
 #if 0
     unsigned int sym_org;       // original symbol
-    float complex sym_enc[7];   // encoded symbol
-    float complex sym_rec[7];   // received symbol
+    liquid_float_complex sym_enc[7];   // encoded symbol
+    liquid_float_complex sym_rec[7];   // received symbol
 #endif
     unsigned char msg_org[n];           // original message
     unsigned char msg_enc[k];           // encoded message
-    float complex mod_sym[8*k];         // modulated symbols
+    liquid_float_complex mod_sym[8*k];         // modulated symbols
     unsigned char msg_rec_soft[8*k];    // received 'soft' bits
     unsigned char msg_rec_hard[8*k];    // received 'hard' bits
     unsigned char msg_dec_soft[n];      // soft-decision decoding

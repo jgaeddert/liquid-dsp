@@ -59,18 +59,18 @@ RESAMP() RESAMP(_create)(float        _rate,
 {
     // validate input
     if (_rate <= 0)
-        return liquid_error_config("resamp_%s_create(), resampling rate must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(RESAMP(), "resamp_%s_create(), resampling rate must be greater than zero", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("resamp_%s_create(), filter semi-length must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(RESAMP(), "resamp_%s_create(), filter semi-length must be greater than zero", EXTENSION_FULL);
     if (_fc <= 0.0f || _fc >= 0.5f)
-        return liquid_error_config("resamp_%s_create(), filter cutoff must be in (0,0.5)", EXTENSION_FULL);
+        return liquid_error_config_ptr(RESAMP(), "resamp_%s_create(), filter cutoff must be in (0,0.5)", EXTENSION_FULL);
     if (_as <= 0.0f)
-        return liquid_error_config("resamp_%s_create(), filter stop-band suppression must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(RESAMP(), "resamp_%s_create(), filter stop-band suppression must be greater than zero", EXTENSION_FULL);
 
     // check number of bits representing filter bank resolution
     unsigned int bits = liquid_nextpow2(_npfb);
     if (bits < 1 || bits > 16)
-        return liquid_error_config("resamp_%s_create(), number of filter banks must be in (2^0,2^16)", EXTENSION_FULL);
+        return liquid_error_config_ptr(RESAMP(), "resamp_%s_create(), number of filter banks must be in (2^0,2^16)", EXTENSION_FULL);
 
     // allocate memory for resampler
     RESAMP() q = (RESAMP()) malloc(sizeof(struct RESAMP(_s)));
@@ -88,8 +88,8 @@ RESAMP() RESAMP(_create)(float        _rate,
 
     // design filter
     unsigned int n = 2*q->m*q->npfb+1;
-    float * hf = (float*) malloc(n*sizeof(float));
-    TC    * h  = (TC *  ) malloc(n*sizeof(TC   ));
+    LIQUID_VLA(float, hf, n);
+    LIQUID_VLA(TC, h, n);
     liquid_firdes_kaiser(n,q->fc/((float)(q->npfb)),q->as,0.0f,hf);
 
     // normalize filter coefficients by DC gain
@@ -103,10 +103,6 @@ RESAMP() RESAMP(_create)(float        _rate,
     for (i=0; i<n; i++)
         h[i] = hf[i]*gain;
     q->pfb = FIRPFB(_create)(q->npfb,h,n-1);
-
-    // free allocated arrays
-    free(hf);
-    free(h);
 
     // reset object and return
     RESAMP(_reset)(q);
@@ -123,7 +119,7 @@ RESAMP() RESAMP(_create_default)(float _rate)
 {
     // validate input
     if (_rate <= 0)
-        return liquid_error_config("resamp_%s_create_default(), resampling rate must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(RESAMP(), "resamp_%s_create_default(), resampling rate must be greater than zero", EXTENSION_FULL);
 
     // det default parameters
     unsigned int m    = 7;
@@ -140,7 +136,7 @@ RESAMP() RESAMP(_copy)(RESAMP() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("resamp_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(RESAMP(), "resamp_%s_copy(), object cannot be NULL", EXTENSION_FULL);
 
     // create object, copy internal memory, overwrite with specific values
     RESAMP() q_copy = (RESAMP()) malloc(sizeof(struct RESAMP(_s)));
@@ -235,15 +231,11 @@ int RESAMP(_adjust_rate)(RESAMP() _q,
 int RESAMP(_set_timing_phase)(RESAMP() _q,
                               float    _tau)
 {
-    return liquid_error(LIQUID_EICONFIG,"resamp_%s_set_timing_phase(), method not implemented",EXTENSION_FULL);
-    if (_tau < -1.0f || _tau > 1.0f) {
-        return liquid_error(LIQUID_EICONFIG,"resamp_%s_set_timing_phase(), timing phase must be in [-1,1], is %f.",EXTENSION_FULL,_tau);
-    }
-
+    (void)_q;
+    (void)_tau;
     // TODO: set internal timing phase (quantized)
     //_q->tau = _tau;
-
-    return LIQUID_OK;
+    return liquid_error(LIQUID_EICONFIG,"resamp_%s_set_timing_phase(), method not implemented",EXTENSION_FULL);
 }
 
 // adjust resampling timing phase
@@ -252,14 +244,11 @@ int RESAMP(_set_timing_phase)(RESAMP() _q,
 int RESAMP(_adjust_timing_phase)(RESAMP() _q,
                                  float    _delta)
 {
-    return liquid_error(LIQUID_EICONFIG,"resamp_%s_adjust_timing_phase(), method not implemented",EXTENSION_FULL);
-    if (_delta < -1.0f || _delta > 1.0f) {
-        return liquid_error(LIQUID_EICONFIG,"resamp_%s_adjust_timing_phase(), timing phase adjustment must be in [-1,1], is %f.",EXTENSION_FULL,_delta);
-    }
-
+    (void)_q;
+    (void)_delta;
     // TODO: adjust internal timing phase (quantized)
     //_q->tau += _delta;
-    return LIQUID_OK;
+    return liquid_error(LIQUID_EICONFIG,"resamp_%s_adjust_timing_phase(), method not implemented",EXTENSION_FULL);
 }
 
 // Get the number of output samples given current state and input buffer size.

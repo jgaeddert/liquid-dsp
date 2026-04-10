@@ -37,7 +37,7 @@ unsigned int golay2412_generate_error_vector(unsigned int _n)
 
     unsigned int i;
 
-    unsigned int error_locations[24];
+    LIQUID_VLA(unsigned int, error_locations, 24);
     for (i=0; i<24; i++)
         error_locations[i] = 0;
 

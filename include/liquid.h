@@ -22,12 +22,62 @@
 #ifndef __LIQUID_H__
 #define __LIQUID_H__
 
-#ifdef __cplusplus
-extern "C" {
+// MSVC: Suppress C4190 warning for functions with C-linkage returning C++ complex types
+// This is expected when using std::complex with extern "C" declarations
+#ifdef _MSC_VER
+#pragma warning(disable: 4190)
+#endif
+
+// C++ complex support - must be included BEFORE extern "C"
+// LIQUID_MSVC_AS_CPP is defined when MSVC compiles .c files as C++ with /TP
+#if defined(__cplusplus) || defined(LIQUID_MSVC_AS_CPP)
+#   include <complex>
+#   include <cmath>
 #   define LIQUID_USE_COMPLEX_H 0
+#   define LIQUID_USE_STDCOMPLEX 1
+    // Prevent Windows SDK complex.h from being included - it conflicts with our std::complex usage
+#   ifdef _MSC_VER
+#       define _INC_COMPLEX
+#       define _COMPLEX_H
+#   endif
+#elif defined(_MSC_VER)
+// MSVC does not support C99 _Complex, use struct-based complex
+#   define LIQUID_USE_COMPLEX_H 0
+#   define LIQUID_USE_STDCOMPLEX 0
 #else
 #   define LIQUID_USE_COMPLEX_H 1
-#endif // __cplusplus
+#   define LIQUID_USE_STDCOMPLEX 0
+#endif
+
+// Math constants for MSVC
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+#ifndef M_SQRT2
+#define M_SQRT2 1.41421356237309504880
+#endif
+#ifndef M_SQRT1_2
+#define M_SQRT1_2 0.70710678118654752440
+#endif
+#ifndef M_E
+#define M_E 2.71828182845904523536
+#endif
+#ifndef M_LN2
+#define M_LN2 0.69314718055994530942
+#endif
+#ifndef M_LN10
+#define M_LN10 2.30258509299404568402
+#endif
+#ifndef M_PI_2
+#define M_PI_2 1.57079632679489661923  // pi/2
+#endif
+#ifndef M_2_PI
+#define M_2_PI 0.63661977236758134308  // 2/pi
+#endif
+
+#if defined(__cplusplus) || defined(LIQUID_MSVC_AS_CPP)
+extern "C" {
+#endif
 
 // common headers
 #include <inttypes.h>
@@ -40,6 +90,23 @@ extern "C" {
 #  define LIQUID_FILENAME __FILE_NAME__
 #else
 #  define LIQUID_FILENAME __FILE__
+#endif
+
+// MSVC VLA (Variable Length Array) compatibility
+#include "liquid_vla.h"
+
+// Runtime CPU detection and SIMD dispatch
+#include "liquid_cpuid.h"
+
+// DLL export/import macro for MSVC
+#ifdef _MSC_VER
+#   ifdef LIQUID_BUILD_DLL
+#       define LIQUID_API __declspec(dllexport)
+#   else
+#       define LIQUID_API __declspec(dllimport)
+#   endif
+#else
+#   define LIQUID_API
 #endif
 
 //
@@ -80,7 +147,7 @@ extern "C" {
 //
 // Run-time library version numbers
 //
-extern const char liquid_version[];
+LIQUID_API extern const char liquid_version[];
 const char * liquid_libversion(void);
 int liquid_libversion_number(void);
 
@@ -107,6 +174,16 @@ void * liquid_error_config_fl(const char * _file, int _line, const char * _forma
 // macro to get file name and line number for source of error (invalid object)
 #define liquid_error_config(format, ...) \
     liquid_error_config_fl(LIQUID_FILENAME, __LINE__, format, ##__VA_ARGS__);
+
+// MSVC C++ compatibility: typed version of liquid_error_config for return statements
+// Use: return liquid_error_config_ptr(type, format, ...)
+#if defined(__cplusplus) || defined(_MSC_VER)
+#define liquid_error_config_ptr(type, format, ...) \
+    ((type)liquid_error_config_fl(__FILE__, __LINE__, format, ##__VA_ARGS__))
+#else
+#define liquid_error_config_ptr(type, format, ...) \
+    liquid_error_config_fl(__FILE__, __LINE__, format, ##__VA_ARGS__)
+#endif
 
 // basic error types
 #define LIQUID_NUM_ERRORS 14
@@ -463,7 +540,8 @@ enum {
 #if LIQUID_USE_COMPLEX_H==1
 #   include <complex.h>
 #   define LIQUID_DEFINE_COMPLEX(R,C) typedef R _Complex C
-#elif defined _GLIBCXX_COMPLEX || defined _LIBCPP_COMPLEX
+#elif LIQUID_USE_STDCOMPLEX==1
+// C++ mode: <complex> already included before extern "C"
 #   define LIQUID_DEFINE_COMPLEX(R,C) typedef std::complex<R> C
 #else
 #   define LIQUID_DEFINE_COMPLEX(R,C) typedef struct {R real; R imag;} C;
@@ -472,6 +550,204 @@ enum {
 
 LIQUID_DEFINE_COMPLEX(float,  liquid_float_complex);
 LIQUID_DEFINE_COMPLEX(double, liquid_double_complex);
+
+// Imaginary unit definition for C++ / MSVC
+#if LIQUID_USE_STDCOMPLEX==1
+#   ifndef _Complex_I
+#       define _Complex_I (std::complex<float>(0.0f, 1.0f))
+#   endif
+
+} // temporarily close extern "C" for C++ inline functions
+
+// C99 complex function compatibility for C++ using inline functions
+// Using inline functions avoids conflicts with <complex.h> header
+inline float  liquid_crealf(std::complex<float>  z) { return std::real(z); }
+inline float  liquid_cimagf(std::complex<float>  z) { return std::imag(z); }
+inline std::complex<float>  liquid_conjf(std::complex<float>  z) { return std::conj(z); }
+inline float  liquid_cabsf(std::complex<float>  z) { return std::abs(z); }
+inline float  liquid_cargf(std::complex<float>  z) { return std::arg(z); }
+inline std::complex<float>  liquid_cexpf(std::complex<float>  z) { return std::exp(z); }
+inline std::complex<float>  liquid_csqrtf(std::complex<float>  z) { return std::sqrt(z); }
+inline double liquid_creal(std::complex<double> z) { return std::real(z); }
+inline double liquid_cimag(std::complex<double> z) { return std::imag(z); }
+inline std::complex<double> liquid_conj(std::complex<double> z) { return std::conj(z); }
+inline double liquid_cabs(std::complex<double> z) { return std::abs(z); }
+inline double liquid_carg(std::complex<double> z) { return std::arg(z); }
+inline std::complex<double> liquid_cexp(std::complex<double> z) { return std::exp(z); }
+inline std::complex<double> liquid_csqrt(std::complex<double> z) { return std::sqrt(z); }
+
+extern "C" { // reopen extern "C" after inline functions
+
+// Map C99 function names to our inline functions (only if not already defined)
+#   ifndef crealf
+#       define crealf liquid_crealf
+#   endif
+#   ifndef cimagf
+#       define cimagf liquid_cimagf
+#   endif
+#   ifndef conjf
+#       define conjf liquid_conjf
+#   endif
+#   ifndef cabsf
+#       define cabsf liquid_cabsf
+#   endif
+#   ifndef cargf
+#       define cargf liquid_cargf
+#   endif
+#   ifndef cexpf
+#       define cexpf liquid_cexpf
+#   endif
+#   ifndef csqrtf
+#       define csqrtf liquid_csqrtf
+#   endif
+#   ifndef creal
+#       define creal liquid_creal
+#   endif
+#   ifndef cimag
+#       define cimag liquid_cimag
+#   endif
+#   ifndef conj
+#       define conj liquid_conj
+#   endif
+#   ifndef cabs
+#       define cabs liquid_cabs
+#   endif
+#   ifndef carg
+#       define carg liquid_carg
+#   endif
+#   ifndef cexp
+#       define cexp liquid_cexp
+#   endif
+#   ifndef csqrt
+#       define csqrt liquid_csqrt
+#   endif
+
+} // temporarily close extern "C" for C++ operator overloads
+
+// Mixed-type arithmetic operators for std::complex<float>
+// These are needed because std::complex<T> only provides operators for T, not other types
+inline std::complex<float> operator*(std::complex<float> c, int n) { return c * static_cast<float>(n); }
+inline std::complex<float> operator*(int n, std::complex<float> c) { return static_cast<float>(n) * c; }
+inline std::complex<float> operator*(std::complex<float> c, unsigned int n) { return c * static_cast<float>(n); }
+inline std::complex<float> operator*(unsigned int n, std::complex<float> c) { return static_cast<float>(n) * c; }
+inline std::complex<float> operator*(std::complex<float> c, double d) { return c * static_cast<float>(d); }
+inline std::complex<float> operator*(double d, std::complex<float> c) { return static_cast<float>(d) * c; }
+inline std::complex<float> operator/(std::complex<float> c, int n) { return c / static_cast<float>(n); }
+inline std::complex<float> operator/(std::complex<float> c, unsigned int n) { return c / static_cast<float>(n); }
+inline std::complex<float> operator/(std::complex<float> c, double d) { return c / static_cast<float>(d); }
+inline std::complex<float> operator+(std::complex<float> c, int n) { return c + static_cast<float>(n); }
+inline std::complex<float> operator+(int n, std::complex<float> c) { return static_cast<float>(n) + c; }
+inline std::complex<float> operator+(std::complex<float> c, double d) { return c + static_cast<float>(d); }
+inline std::complex<float> operator+(double d, std::complex<float> c) { return static_cast<float>(d) + c; }
+inline std::complex<float> operator-(std::complex<float> c, int n) { return c - static_cast<float>(n); }
+inline std::complex<float> operator-(int n, std::complex<float> c) { return static_cast<float>(n) - c; }
+inline std::complex<float> operator-(std::complex<float> c, double d) { return c - static_cast<float>(d); }
+inline std::complex<float> operator-(double d, std::complex<float> c) { return static_cast<float>(d) - c; }
+
+// Mixed-type arithmetic operators for std::complex<double>
+inline std::complex<double> operator*(std::complex<double> c, int n) { return c * static_cast<double>(n); }
+inline std::complex<double> operator*(int n, std::complex<double> c) { return static_cast<double>(n) * c; }
+inline std::complex<double> operator*(std::complex<double> c, unsigned int n) { return c * static_cast<double>(n); }
+inline std::complex<double> operator*(unsigned int n, std::complex<double> c) { return static_cast<double>(n) * c; }
+inline std::complex<double> operator*(std::complex<double> c, float f) { return c * static_cast<double>(f); }
+inline std::complex<double> operator*(float f, std::complex<double> c) { return static_cast<double>(f) * c; }
+inline std::complex<double> operator/(std::complex<double> c, int n) { return c / static_cast<double>(n); }
+inline std::complex<double> operator/(std::complex<double> c, unsigned int n) { return c / static_cast<double>(n); }
+inline std::complex<double> operator/(std::complex<double> c, float f) { return c / static_cast<double>(f); }
+inline std::complex<double> operator+(std::complex<double> c, int n) { return c + static_cast<double>(n); }
+inline std::complex<double> operator+(int n, std::complex<double> c) { return static_cast<double>(n) + c; }
+inline std::complex<double> operator+(std::complex<double> c, float f) { return c + static_cast<double>(f); }
+inline std::complex<double> operator+(float f, std::complex<double> c) { return static_cast<double>(f) + c; }
+inline std::complex<double> operator-(std::complex<double> c, int n) { return c - static_cast<double>(n); }
+inline std::complex<double> operator-(int n, std::complex<double> c) { return static_cast<double>(n) - c; }
+inline std::complex<double> operator-(std::complex<double> c, float f) { return c - static_cast<double>(f); }
+inline std::complex<double> operator-(float f, std::complex<double> c) { return static_cast<double>(f) - c; }
+
+// Template overload functions that dispatch to correct type
+// These work with both real and complex types, fixing MSVC C++ compatibility
+// Note: std::conj is called using fully qualified name to avoid macro expansion issues
+namespace liquid_detail {
+    template<typename T> struct conj_impl {
+        static inline T call(T z) { return z; }  // for real types, conj is identity
+    };
+    template<> struct conj_impl<std::complex<float>> {
+        static inline std::complex<float> call(std::complex<float> z) {
+            return std::complex<float>(z.real(), -z.imag());
+        }
+    };
+    template<> struct conj_impl<std::complex<double>> {
+        static inline std::complex<double> call(std::complex<double> z) {
+            return std::complex<double>(z.real(), -z.imag());
+        }
+    };
+
+    template<typename T> struct creal_impl {
+        static inline T call(T z) { return z; }  // for real types, creal is identity
+    };
+    template<> struct creal_impl<std::complex<float>> {
+        static inline float call(std::complex<float> z) { return z.real(); }
+    };
+    template<> struct creal_impl<std::complex<double>> {
+        static inline double call(std::complex<double> z) { return z.real(); }
+    };
+
+    template<typename T> struct cimag_impl {
+        static inline T call(T z) { (void)z; return T(0); }  // for real types, cimag is 0
+    };
+    template<> struct cimag_impl<std::complex<float>> {
+        static inline float call(std::complex<float> z) { return z.imag(); }
+    };
+    template<> struct cimag_impl<std::complex<double>> {
+        static inline double call(std::complex<double> z) { return z.imag(); }
+    };
+}
+
+template<typename T> inline auto liquid_conj_t(T z) -> decltype(liquid_detail::conj_impl<T>::call(z)) {
+    return liquid_detail::conj_impl<T>::call(z);
+}
+
+template<typename T> inline auto liquid_creal_t(T z) -> decltype(liquid_detail::creal_impl<T>::call(z)) {
+    return liquid_detail::creal_impl<T>::call(z);
+}
+
+template<typename T> inline auto liquid_cimag_t(T z) -> decltype(liquid_detail::cimag_impl<T>::call(z)) {
+    return liquid_detail::cimag_impl<T>::call(z);
+}
+
+// Undefine the previous macros and redefine to use template versions
+#ifdef conj
+#undef conj
+#endif
+#define conj liquid_conj_t
+
+#ifdef conjf
+#undef conjf
+#endif
+#define conjf liquid_conj_t
+
+#ifdef creal
+#undef creal
+#endif
+#define creal liquid_creal_t
+
+#ifdef crealf
+#undef crealf
+#endif
+#define crealf liquid_creal_t
+
+#ifdef cimag
+#undef cimag
+#endif
+#define cimag liquid_cimag_t
+
+#ifdef cimagf
+#undef cimagf
+#endif
+#define cimagf liquid_cimag_t
+
+extern "C" { // reopen extern "C" after C++ operator overloads
+
+#endif
 
 // external compile-time deprecation warnings with messages
 #ifdef __GNUC__
@@ -1525,7 +1801,7 @@ typedef enum {
 } crc_scheme;
 
 // pretty names for crc schemes
-extern const char * crc_scheme_str[LIQUID_CRC_NUM_SCHEMES][2];
+LIQUID_API extern const char * crc_scheme_str[LIQUID_CRC_NUM_SCHEMES][2];
 
 // Print compact list of existing and available CRC schemes
 int liquid_print_crc_schemes();
@@ -1616,7 +1892,7 @@ typedef enum {
 } fec_scheme;
 
 // pretty names for fec schemes
-extern const char * fec_scheme_str[LIQUID_FEC_NUM_SCHEMES][2];
+LIQUID_API extern const char * fec_scheme_str[LIQUID_FEC_NUM_SCHEMES][2];
 
 // Print compact list of existing and available FEC schemes
 int liquid_print_fec_schemes();
@@ -2438,7 +2714,7 @@ int liquid_firdes_prototype(liquid_firfilt_type _type,
                             float *             _h);
 
 // pretty names for filter design types
-extern const char * liquid_firfilt_type_str[LIQUID_FIRFILT_NUM_TYPES][2];
+LIQUID_API extern const char * liquid_firfilt_type_str[LIQUID_FIRFILT_NUM_TYPES][2];
 
 // returns filter type based on input string
 int liquid_getopt_str2firfilt(const char * _str);
@@ -7698,7 +7974,7 @@ typedef enum {
 } liquid_window_type;
 
 // pretty names for window
-extern const char * liquid_window_str[LIQUID_WINDOW_NUM_FUNCTIONS][2];
+LIQUID_API extern const char * liquid_window_str[LIQUID_WINDOW_NUM_FUNCTIONS][2];
 
 // Print compact list of existing and available windowing functions
 int liquid_print_windows();
@@ -7975,6 +8251,13 @@ LIQUID_POLY_DEFINE_API(LIQUID_POLY_MANGLE_FLOAT,
                        float,
                        liquid_float_complex)
 
+// Complex polynomial APIs return std::complex in C++ mode, which is incompatible
+// with C-linkage. Suppress C4190 warning for these declarations.
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4190)
+#endif
+
 LIQUID_POLY_DEFINE_API(LIQUID_POLY_MANGLE_CDOUBLE,
                        liquid_double_complex,
                        liquid_double_complex)
@@ -7982,6 +8265,10 @@ LIQUID_POLY_DEFINE_API(LIQUID_POLY_MANGLE_CDOUBLE,
 LIQUID_POLY_DEFINE_API(LIQUID_POLY_MANGLE_CFLOAT,
                        liquid_float_complex,
                        liquid_float_complex)
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #if 0
 // expands the polynomial: (1+x)^n
@@ -8610,7 +8897,7 @@ struct modulation_type_s {
 };
 
 // full modulation type descriptor
-extern const struct modulation_type_s modulation_types[LIQUID_MODEM_NUM_SCHEMES];
+LIQUID_API extern const struct modulation_type_s modulation_types[LIQUID_MODEM_NUM_SCHEMES];
 
 // Print compact list of existing and available modulation schemes
 int liquid_print_modulation_schemes();
@@ -8690,7 +8977,7 @@ MODEM() MODEM(_create)(modulation_scheme _scheme);                          \
                                                                             \
 /* Create linear digital modem object with arbitrary constellation      */  \
 /* points defined by an external table of symbols. Sample points are    */  \
-/* provided as complex float pairs and converted internally if needed.  */  \
+/* provided as liquid_float_complex pairs and converted internally if needed.  */  \
 /*  _table  : array of complex constellation points, [size: _M x 1]     */  \
 /*  _M      : modulation order and table size, _M must be power of 2    */  \
 MODEM() MODEM(_create_arbitrary)(liquid_float_complex * _table,             \
@@ -9910,7 +10197,15 @@ void SYNTH(_despread_triple)(SYNTH() _q,                                    \
                              TC *_late);                                    \
 
 // Define synth APIs
+// Synth API functions return complex types, suppress C4190 warning
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4190)
+#endif
 LIQUID_SYNTH_DEFINE_API(SYNTH_MANGLE_FLOAT, float, liquid_float_complex)
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 
 
@@ -10895,9 +11190,9 @@ void liquid_vectorf_add(float *      _a,
                         float *      _c);
 #endif
 
-#ifdef __cplusplus
+#if defined(__cplusplus) || defined(LIQUID_MSVC_AS_CPP)
 } //extern "C"
-#endif // __cplusplus
+#endif // __cplusplus || LIQUID_MSVC_AS_CPP
 
 #endif // __LIQUID_H__
 

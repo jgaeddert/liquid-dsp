@@ -75,9 +75,9 @@ int main(int argc, char*argv[])
     // buffers
     unsigned int sym_in[M];             // input data symbols
     unsigned int sym_out[M];            // output data symbols
-    float complex x[M];                 // time-domain buffer
-    float complex X[M];                 // freq-domain buffer
-    float complex buffer[symbol_len];   // 
+    liquid_float_complex x[M];                 // time-domain buffer
+    liquid_float_complex X[M];                 // freq-domain buffer
+    liquid_float_complex buffer[symbol_len];   // 
 
     // create modulator/demodulator objects
     modemcf mod   = modemcf_create(ms);
@@ -85,7 +85,7 @@ int main(int argc, char*argv[])
     unsigned int bps = modemcf_get_bps(mod);  // modem bits/symbol
 
     // create channel filter (random taps)
-    float complex hc[hc_len];
+    liquid_float_complex hc[hc_len];
     hc[0] = 1.0f;
     for (i=1; i<hc_len; i++)
         hc[i] = 0.1f * (randnf() + _Complex_I*randnf());

@@ -1,10 +1,11 @@
-char __docstr__[] = "Demonstrate interface to compress/expand methods.";
+const char __docstr__[] = "Demonstrate interface to compress/expand methods.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -22,7 +23,7 @@ int main(int argc, char* argv[])
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
 
-    float complex x, y, z;
+    liquid_float_complex x, y, z;
     int i, j;
 
     for (i=0; i<n+1; i++) {

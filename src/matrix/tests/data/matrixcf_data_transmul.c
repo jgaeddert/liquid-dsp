@@ -24,10 +24,12 @@
 // data for testing multiply/transpose
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
-
+#endif
+#include "liquid.h"
 // matrixcf_data_transmul_x [size: 5 x 4]
-float complex matrixcf_data_transmul_x[] = {
+liquid_float_complex matrixcf_data_transmul_x[] = {
     0.897770464420 +  -1.137341141701*_Complex_I /* ( 0, 0) */,
     0.816529691219 +  -0.575469911098*_Complex_I /* ( 0, 1) */,
     2.407611131668 +   0.901603281498*_Complex_I /* ( 0, 2) */,
@@ -50,7 +52,7 @@ float complex matrixcf_data_transmul_x[] = {
     0.089408367872 +  -1.864659070969*_Complex_I /* ( 4, 3) */};
 
 // matrixcf_data_transmul_xxT [size: 5 x 5]
-float complex matrixcf_data_transmul_xxT[] = {
+liquid_float_complex matrixcf_data_transmul_xxT[] = {
    13.946043026996 +   0.000000000000*_Complex_I /* ( 0, 0) */,
     1.715635857916 +   6.831514803023*_Complex_I /* ( 0, 1) */,
    -0.628286275869 +   0.653261344190*_Complex_I /* ( 0, 2) */,
@@ -78,7 +80,7 @@ float complex matrixcf_data_transmul_xxT[] = {
     5.591988375464 +   0.000000000000*_Complex_I /* ( 4, 4) */};
 
 // matrixcf_data_transmul_xxH [size: 5 x 5]
-float complex matrixcf_data_transmul_xxH[] = {
+liquid_float_complex matrixcf_data_transmul_xxH[] = {
     2.693069394806 +   5.019630491560*_Complex_I /* ( 0, 0) */,
     1.208446246635 +  -4.757020341403*_Complex_I /* ( 0, 1) */,
     2.656451825557 +   2.224444954914*_Complex_I /* ( 0, 2) */,
@@ -106,7 +108,7 @@ float complex matrixcf_data_transmul_xxH[] = {
    -3.106642538055 +   1.664057265760*_Complex_I /* ( 4, 4) */};
 
 // matrixcf_data_transmul_xTx [size: 4 x 4]
-float complex matrixcf_data_transmul_xTx[] = {
+liquid_float_complex matrixcf_data_transmul_xTx[] = {
     9.323024431917 +   0.000000000000*_Complex_I /* ( 0, 0) */,
     0.563876592623 +   2.570030362211*_Complex_I /* ( 0, 1) */,
     3.226123027525 +   2.636644463529*_Complex_I /* ( 0, 2) */,
@@ -125,7 +127,7 @@ float complex matrixcf_data_transmul_xTx[] = {
    10.759653720678 +   0.000000000000*_Complex_I /* ( 3, 3) */};
 
 // matrixcf_data_transmul_xHx [size: 4 x 4]
-float complex matrixcf_data_transmul_xHx[] = {
+liquid_float_complex matrixcf_data_transmul_xHx[] = {
    -1.137085237839 +  -2.939337742229*_Complex_I /* ( 0, 0) */,
    -1.429264118470 +  -4.526184217761*_Complex_I /* ( 0, 1) */,
    -1.049795781222 +  -9.317515018345*_Complex_I /* ( 0, 2) */,

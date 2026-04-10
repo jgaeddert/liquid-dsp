@@ -45,7 +45,7 @@ void iirinterp_crcf_bench(struct rusage *_start,
     float As = 60.0f;
     iirinterp_crcf q = iirinterp_crcf_create_prototype(_M,ftype,btype,format,_order,fc,f0,Ap,As);
 
-    float complex y[_M];
+    LIQUID_VLA(liquid_float_complex, y, _M);
     // start trials
     getrusage(RUSAGE_SELF, _start);
     unsigned int i;

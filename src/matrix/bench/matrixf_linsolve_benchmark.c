@@ -37,9 +37,9 @@ void matrixf_linsolve_bench(struct rusage *     _start,
 
     unsigned long int i;
 
-    float A[_n*_n];
-    float b[_n];
-    float x[_n];
+    LIQUID_VLA(float, A, _n*_n);
+    LIQUID_VLA(float, b, _n);
+    LIQUID_VLA(float, x, _n);
     for (i=0; i<_n*_n; i++)
         A[i] = randnf();
     for (i=0; i<_n; i++)

@@ -38,7 +38,7 @@ void firhilbf_decim_bench(
     firhilbf q = firhilbf_create(_m,60.0f);
 
     float x[] = {1.0f, -1.0f};
-    float complex y;
+    liquid_float_complex y;
     unsigned long int i;
 
     // start trials

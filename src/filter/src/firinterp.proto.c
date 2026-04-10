@@ -44,9 +44,9 @@ FIRINTERP() FIRINTERP(_create)(unsigned int _interp,
 {
     // validate input
     if (_interp < 2)
-        return liquid_error_config("firinterp_%s_create(), interp factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRINTERP(), "firinterp_%s_create(), interp factor must be greater than 1", EXTENSION_FULL);
     if (_h_len < _interp)
-        return liquid_error_config("firinterp_%s_create(), filter length cannot be less than interp factor", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRINTERP(), "firinterp_%s_create(), filter length cannot be less than interp factor", EXTENSION_FULL);
 
     // allocate main object memory and set internal parameters
     FIRINTERP() q = (FIRINTERP()) malloc(sizeof(struct FIRINTERP(_s)));
@@ -84,20 +84,20 @@ FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _interp,
 {
     // validate input
     if (_interp < 2)
-        return liquid_error_config("firinterp_%s_create_kaiser(), interp factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRINTERP(), "firinterp_%s_create_kaiser(), interp factor must be greater than 1", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("firinterp_%s_create_kaiser(), filter delay must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRINTERP(), "firinterp_%s_create_kaiser(), filter delay must be greater than 0", EXTENSION_FULL);
     if (_as < 0.0f)
-        return liquid_error_config("firinterp_%s_create_kaiser(), stop-band attenuation must be positive", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRINTERP(), "firinterp_%s_create_kaiser(), stop-band attenuation must be positive", EXTENSION_FULL);
 
     // compute filter coefficients (floating point precision)
     unsigned int h_len = 2*_interp*_m + 1;
-    float hf[h_len];
+    LIQUID_VLA(float, hf, h_len);
     float fc = 0.5f / (float) (_interp);
     liquid_firdes_kaiser(h_len, fc, _as, 0.0f, hf);
 
-    // copy coefficients to type-specific array (e.g. float complex)
-    TC hc[h_len];
+    // copy coefficients to type-specific array (e.g. liquid_float_complex)
+    LIQUID_VLA(TC, hc, h_len);
     unsigned int i;
     for (i=0; i<h_len; i++)
         hc[i] = hf[i];
@@ -120,22 +120,22 @@ FIRINTERP() FIRINTERP(_create_prototype)(int          _type,
 {
     // validate input
     if (_interp < 2)
-        return liquid_error_config("firinterp_%s_create_prototype(), interp factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRINTERP(), "firinterp_%s_create_prototype(), interp factor must be greater than 1", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("firinterp_%s_create_prototype(), filter delay must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRINTERP(), "firinterp_%s_create_prototype(), filter delay must be greater than 0", EXTENSION_FULL);
     if (_beta < 0.0f || _beta > 1.0f)
-        return liquid_error_config("firinterp_%s_create_prototype(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRINTERP(), "firinterp_%s_create_prototype(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
     if (_dt < -1.0f || _dt > 1.0f)
-        return liquid_error_config("firinterp_%s_create_prototype(), filter fractional sample delay must be in [-1,1]", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRINTERP(), "firinterp_%s_create_prototype(), filter fractional sample delay must be in [-1,1]", EXTENSION_FULL);
 
     // generate Nyquist filter
     unsigned int h_len = 2*_interp*_m + 1;
-    float h[h_len];
-    liquid_firdes_prototype(_type,_interp,_m,_beta,_dt,h);
+    LIQUID_VLA(float, h, h_len);
+    liquid_firdes_prototype((liquid_firfilt_type)_type,_interp,_m,_beta,_dt,h);
 
-    // copy coefficients to type-specific array (e.g. float complex)
+    // copy coefficients to type-specific array (e.g. liquid_float_complex)
     unsigned int i;
-    TC hc[h_len];
+    LIQUID_VLA(TC, hc, h_len);
     for (i=0; i<h_len; i++)
         hc[i] = h[i];
 
@@ -149,11 +149,11 @@ FIRINTERP() FIRINTERP(_create_linear)(unsigned int _interp)
 {
     // validate input
     if (_interp < 1)
-        return liquid_error_config("firinterp_%s_create_linear(), interp factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRINTERP(), "firinterp_%s_create_linear(), interp factor must be greater than 1", EXTENSION_FULL);
 
     // generate coefficients
     unsigned int i;
-    TC hc[2*_interp];
+    LIQUID_VLA(TC, hc, 2*_interp);
     for (i=0; i<_interp; i++) hc[        i] = (float)i / (float)_interp;
     for (i=0; i<_interp; i++) hc[_interp+i] = 1.0f - (float)i / (float)_interp;
 
@@ -169,13 +169,13 @@ FIRINTERP() FIRINTERP(_create_window)(unsigned int _interp,
 {
     // validate input
     if (_interp < 1)
-        return liquid_error_config("firinterp_%s_create_spline(), interp factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRINTERP(), "firinterp_%s_create_spline(), interp factor must be greater than 1", EXTENSION_FULL);
     if (_m < 1)
-        return liquid_error_config("firinterp_%s_create_spline(), interp factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRINTERP(), "firinterp_%s_create_spline(), interp factor must be greater than 1", EXTENSION_FULL);
 
     // generate coefficients
     unsigned int i;
-    TC hc[2*_m*_interp];
+    LIQUID_VLA(TC, hc, 2*_m*_interp);
     for (i=0; i<2*_m*_interp; i++)
         hc[i] = powf(sinf(M_PI*(float)i/(float)(2*_m*_interp)), 2.0f);
 
@@ -188,7 +188,7 @@ FIRINTERP() FIRINTERP(_copy)(FIRINTERP() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("firinterp_%s_create(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRINTERP(), "firinterp_%s_create(), object cannot be NULL", EXTENSION_FULL);
 
     // create filter object and copy internal memory
     FIRINTERP() q_copy = (FIRINTERP()) malloc(sizeof(struct FIRINTERP(_s)));

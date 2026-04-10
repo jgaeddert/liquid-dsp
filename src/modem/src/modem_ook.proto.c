@@ -51,8 +51,9 @@ MODEM() MODEM(_create_ook)()
 // modulate symbol using on/off keying
 int MODEM(_modulate_ook)(MODEM()         _q,
                          unsigned int    _sym_in,
-                         float complex * _y)
+                         liquid_float_complex * _y)
 {
+    (void)_q;
     // compute output sample directly from input
     *_y = _sym_in ? 0.0f : M_SQRT2;
     return LIQUID_OK;
@@ -60,7 +61,7 @@ int MODEM(_modulate_ook)(MODEM()         _q,
 
 // demodulate OOK
 int MODEM(_demodulate_ook)(MODEM()        _q,
-                           float complex  _x,
+                           liquid_float_complex  _x,
                            unsigned int * _sym_out)
 {
     // slice directly to output symbol

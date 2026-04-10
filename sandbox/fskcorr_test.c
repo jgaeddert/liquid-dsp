@@ -57,10 +57,10 @@ int main(int argc, char*argv[])
     float xcorr_norm = liquid_sumsqf(buf_mf, p*n);
 
     // allocate memory arrays
-    float complex * buf_0 = (float complex*) fft_malloc(M*sizeof(float complex));
-    float complex * buf_1 = (float complex*) fft_malloc(M*sizeof(float complex));
-    float complex * buf_2 = (float complex*) fft_malloc(M*sizeof(float complex));
-    float complex * buf_3 = (float complex*) fft_malloc(M*sizeof(float complex));
+    liquid_float_complex * buf_0 = (liquid_float_complex*) fft_malloc(M*sizeof(liquid_float_complex));
+    liquid_float_complex * buf_1 = (liquid_float_complex*) fft_malloc(M*sizeof(liquid_float_complex));
+    liquid_float_complex * buf_2 = (liquid_float_complex*) fft_malloc(M*sizeof(liquid_float_complex));
+    liquid_float_complex * buf_3 = (liquid_float_complex*) fft_malloc(M*sizeof(liquid_float_complex));
     windowcf buf_rx = windowcf_create(M);
 
     // create fft plans
@@ -89,7 +89,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"llr = [];\n");
     for (i=0; i<n+200; i++) {
         // clear input, generate symbol
-        memset(buf_0, 0x0, M*sizeof(float complex));
+        memset(buf_0, 0x0, M*sizeof(liquid_float_complex));
         if (i < n)
             buf_0[ seq[i] ? i1 : i0 ] = gain;
         else
@@ -107,9 +107,9 @@ int main(int argc, char*argv[])
         for (j=0; j<M; j++) {
             if (!timer) {
                 timer = M/p;
-                float complex * r;
+                liquid_float_complex * r;
                 windowcf_read(buf_rx, &r);
-                memmove(buf_2, r, M*sizeof(float complex));
+                memmove(buf_2, r, M*sizeof(liquid_float_complex));
                 fft_execute(fft);
                 float r2 = liquid_sumsqcf(buf_3, M);
                 float g  = 1.0f / (sqrtf(r2) + 1e-6f);

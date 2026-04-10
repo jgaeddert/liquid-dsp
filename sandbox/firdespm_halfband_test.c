@@ -26,8 +26,8 @@ float firdespm_halfband_utility_as(unsigned int _m,
     while (nfft < 20*_m)
         nfft <<= 1;
 
-    float complex buf_time[nfft];
-    float complex buf_freq[nfft];
+    liquid_float_complex buf_time[nfft];
+    liquid_float_complex buf_freq[nfft];
     unsigned int i;
     unsigned int h_len = 4*_m+1;
     for (i=0; i<nfft; i++)

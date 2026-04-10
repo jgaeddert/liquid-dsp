@@ -25,7 +25,7 @@
 
 LIQUID_AUTOTEST(dotprod_cccf_rand16,"dot product with floating-point data","",0.1)
 {
-    float complex h[16] = {
+    liquid_float_complex h[16] = {
       0.17702709 +   1.38978455*_Complex_I,  0.91294148 +   0.39217381*_Complex_I,
      -0.80607338 +   0.76477512*_Complex_I,  0.05099755 +  -0.87350051*_Complex_I,
       0.44513826 +  -0.49490569*_Complex_I,  0.14754967 +   2.04349962*_Complex_I,
@@ -36,7 +36,7 @@ LIQUID_AUTOTEST(dotprod_cccf_rand16,"dot product with floating-point data","",0.
       0.55524695 +  -1.94931519*_Complex_I, -0.87191170 +   0.91693119*_Complex_I,
     };
 
-    float complex x[16] = {
+    liquid_float_complex x[16] = {
      -2.19591953 +  -0.93229692*_Complex_I,  0.17150376 +   0.56165114*_Complex_I,
       1.58354529 +  -0.50696037*_Complex_I,  1.40929619 +   0.87868803*_Complex_I,
      -0.75505072 +  -0.30867372*_Complex_I, -0.09821367 +  -0.73949106*_Complex_I,
@@ -47,9 +47,9 @@ LIQUID_AUTOTEST(dotprod_cccf_rand16,"dot product with floating-point data","",0.
       0.24852918 +  -0.62409860*_Complex_I, -0.87039907 +   0.90921212*_Complex_I,
     };
 
-    float complex y;
-    float complex test     = -0.604285042605890 - 12.390925785344704 * _Complex_I;
-    float complex test_rev =  3.412365881765360 + 6.1885320363931480 * _Complex_I;
+    liquid_float_complex y;
+    liquid_float_complex test     = -0.604285042605890 - 12.390925785344704 * _Complex_I;
+    liquid_float_complex test_rev =  3.412365881765360 + 6.1885320363931480 * _Complex_I;
 
     float tol = 1e-3f;
 
@@ -86,9 +86,9 @@ LIQUID_AUTOTEST(dotprod_cccf_rand16,"dot product with floating-point data","",0.
 LIQUID_AUTOTEST(dotprod_cccf_struct_lengths,"structured dot product, odd lengths","",0.1)
 {
     float tol = 4e-6;
-    float complex y;
+    liquid_float_complex y;
 
-    float complex h[35] = {
+    liquid_float_complex h[35] = {
       1.11555653 +   2.30658043*_Complex_I, -0.36133676 +  -0.10917327*_Complex_I,
       0.17714505 +  -2.14631440*_Complex_I,  2.20424609 +   0.59063608*_Complex_I,
      -0.44699194 +   0.23369318*_Complex_I,  0.60613931 +   0.21868288*_Complex_I,
@@ -108,7 +108,7 @@ LIQUID_AUTOTEST(dotprod_cccf_struct_lengths,"structured dot product, odd lengths
       1.19573306 +   0.98449546*_Complex_I,  1.42491943 +  -0.55426305*_Complex_I,
       1.08243614 +   0.35774368*_Complex_I, };
 
-    float complex x[35] = {
+    liquid_float_complex x[35] = {
      -0.82466736 +  -1.39329228*_Complex_I, -1.46176052 +  -1.96218827*_Complex_I,
      -1.28388174 +  -0.07152934*_Complex_I, -0.51910014 +  -0.37915971*_Complex_I,
      -0.65964708 +  -0.98417534*_Complex_I, -1.40213479 +  -0.82198463*_Complex_I,
@@ -128,10 +128,10 @@ LIQUID_AUTOTEST(dotprod_cccf_struct_lengths,"structured dot product, odd lengths
       0.56040910 +  -0.12713027*_Complex_I, -0.46653022 +  -0.65450499*_Complex_I,
       0.15515755 +   1.58944030*_Complex_I, };
 
-    float complex v32 = -11.5100903519506 - 15.3575526884014*_Complex_I;
-    float complex v33 = -10.7148314918614 - 14.9578463360225*_Complex_I;
-    float complex v34 = -11.7423673921916 - 15.6318827515320*_Complex_I;
-    float complex v35 = -12.1430314741466 - 13.8559085000689*_Complex_I;
+    liquid_float_complex v32 = -11.5100903519506 - 15.3575526884014*_Complex_I;
+    liquid_float_complex v33 = -10.7148314918614 - 14.9578463360225*_Complex_I;
+    liquid_float_complex v34 = -11.7423673921916 - 15.6318827515320*_Complex_I;
+    liquid_float_complex v35 = -12.1430314741466 - 13.8559085000689*_Complex_I;
 
     // 
     dotprod_cccf dp;
@@ -169,8 +169,8 @@ LIQUID_AUTOTEST(dotprod_cccf_struct_lengths,"structured dot product, odd lengths
 void testbench_dotprod_cccf(liquid_autotest __q__, unsigned int _n)
 {
     float tol = 1e-3;
-    float complex h[_n];
-    float complex x[_n];
+    LIQUID_VLA(liquid_float_complex, h, _n);
+    LIQUID_VLA(liquid_float_complex, x, _n);
 
     // generate random coefficients
     unsigned int i;
@@ -180,19 +180,19 @@ void testbench_dotprod_cccf(liquid_autotest __q__, unsigned int _n)
     }
     
     // compute expected value (ordinal computation)
-    float complex y_test=0;
+    liquid_float_complex y_test=0;
     for (i=0; i<_n; i++)
         y_test += h[i] * x[i];
 
     // create and run dot product object
-    float complex y_struct;
+    liquid_float_complex y_struct;
     dotprod_cccf dp;
     dp = dotprod_cccf_create(h,_n);
     dotprod_cccf_execute(dp, x, &y_struct);
     dotprod_cccf_destroy(dp);
 
     // run unstructured
-    float complex y_run, y_run4;
+    liquid_float_complex y_run, y_run4;
     dotprod_cccf_run (h,x,_n,&y_run );
     dotprod_cccf_run4(h,x,_n,&y_run4);
 

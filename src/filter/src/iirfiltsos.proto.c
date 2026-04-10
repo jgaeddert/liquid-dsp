@@ -39,13 +39,13 @@
 #define LIQUID_IIRFILTSOS_USE_DOTPROD   (0)
 
 struct IIRFILTSOS(_s) {
-    TC b[3];    // feed-forward coefficients
-    TC a[3];    // feed-back coefficients
+    LIQUID_VLA(TC, b, 3);    // feed-forward coefficients
+    LIQUID_VLA(TC, a, 3);    // feed-back coefficients
 
     // internal buffering
-    TI x[3];    // Direct form I  buffer (input)
-    TO y[3];    // Direct form I  buffer (output)
-    TO v[3];    // Direct form II buffer
+    LIQUID_VLA(TI, x, 3);    // Direct form I  buffer (input)
+    LIQUID_VLA(TO, y, 3);    // Direct form I  buffer (output)
+    LIQUID_VLA(TO, v, 3);    // Direct form II buffer
 
 #if LIQUID_IIRFILTSOS_USE_DOTPROD
     DOTPROD() dpb;  // numerator dot product
@@ -104,7 +104,7 @@ IIRFILTSOS() IIRFILTSOS(_copy)(IIRFILTSOS() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("iirfiltsos_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(IIRFILTSOS(), "iirfiltsos_%s_copy(), object cannot be NULL", EXTENSION_FULL);
 
     // create object, copy internal memory, overwrite with specific values
     IIRFILTSOS() q_copy = (IIRFILTSOS()) malloc(sizeof(struct IIRFILTSOS(_s)));
@@ -268,8 +268,8 @@ float IIRFILTSOS(_groupdelay)(IIRFILTSOS() _q,
                               float        _fc)
 {
     // copy coefficients
-    float b[3];
-    float a[3];
+    LIQUID_VLA(float, b, 3);
+    LIQUID_VLA(float, a, 3);
     unsigned int i;
     for (i=0; i<3; i++) {
         b[i] = crealf(_q->b[i]);

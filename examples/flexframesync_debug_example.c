@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example exports the output constellation to file for debugging.";
 
 #include <stdio.h>
@@ -9,6 +9,7 @@ char __docstr__[] =
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // flexframesync callback function
@@ -20,6 +21,11 @@ static int callback(unsigned char *  _header,
                     framesyncstats_s _stats,
                     void *           _userdata)
 {
+    (void)_header;
+    (void)_header_valid;
+    (void)_payload;
+    (void)_payload_len;
+    (void)_payload_valid;
     const char * filename = (const char*)_userdata;
     FILE * fid = fopen(filename,"w");
     if (fid == NULL) {
@@ -45,10 +51,10 @@ int main(int argc, char *argv[])
     liquid_argparse_add(unsigned, payload_len, 480, 'n', "data length (bytes)", NULL);
     liquid_argparse_parse(argc,argv);
 
-    modulation_scheme ms    = liquid_getopt_str2mod(mod);
-    crc_scheme        check = liquid_getopt_str2crc(crc);
-    fec_scheme        fec0  = liquid_getopt_str2fec(fs0);
-    fec_scheme        fec1  = liquid_getopt_str2fec(fs1);
+    modulation_scheme ms    = (modulation_scheme)liquid_getopt_str2mod(mod);
+    crc_scheme        check = (crc_scheme)liquid_getopt_str2crc(crc);
+    fec_scheme        fec0  = (fec_scheme)liquid_getopt_str2fec(fs0);
+    fec_scheme        fec1  = (fec_scheme)liquid_getopt_str2fec(fs1);
 
     // create flexframegen object
     flexframegenprops_s fgprops;
@@ -67,7 +73,7 @@ int main(int argc, char *argv[])
 
     // generate the frame in blocks
     unsigned int  buf_len = 256;
-    float complex buf[buf_len];
+    LIQUID_VLA(liquid_float_complex, buf, buf_len);
 
     int frame_complete = 0;
     while (!frame_complete) {

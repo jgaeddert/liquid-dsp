@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "iirdes_gradsearch_test.m"
@@ -18,7 +20,7 @@ typedef struct gs_s * gs;
 struct gs_s {
     unsigned int n, L, r, nsos; // filter order, etc.
     unsigned int vlen;          // search vector length
-    float complex * zd, * pd;   // digital zeros/poles [size: L x 1]
+    liquid_float_complex * zd, * pd;   // digital zeros/poles [size: L x 1]
     float           kd, z0, p0; // gain, additional zero/pole for odd-length order
     float * A, * B;             // second-order sections, [size: L+r x 3]
     // fft object, buffers
@@ -133,8 +135,8 @@ gs gs_create(unsigned int _order)
     q->vlen = 4*q->L + 2*q->r + 1; // optimum vector length
     q->nsos = q->L + q->r;
     q->nfft = 1024;
-    q->zd   = (float complex*)malloc(q->n*sizeof(float complex));
-    q->pd   = (float complex*)malloc(q->n*sizeof(float complex));
+    q->zd   = (liquid_float_complex*)malloc(q->n*sizeof(liquid_float_complex));
+    q->pd   = (liquid_float_complex*)malloc(q->n*sizeof(liquid_float_complex));
     q->B    = (float        *)malloc(3*q->nsos*sizeof(float));
     q->A    = (float        *)malloc(3*q->nsos*sizeof(float));
     q->H    = (float        *)malloc(q->nfft*sizeof(float));
@@ -227,14 +229,14 @@ float gs_evaluate(gs _q, int _debug)
         }
 
         // compute 3-point DFT for each second-order section
-        float complex H = 1.0f;
+        liquid_float_complex H = 1.0f;
         unsigned int i;
         for (i=0; i<_q->nsos; i++) {
-            float complex Hb =  _q->B[3*i+0] * cexpf(_Complex_I*2*M_PI*f*0) +
+            liquid_float_complex Hb =  _q->B[3*i+0] * cexpf(_Complex_I*2*M_PI*f*0) +
                                 _q->B[3*i+1] * cexpf(_Complex_I*2*M_PI*f*1) +
                                 _q->B[3*i+2] * cexpf(_Complex_I*2*M_PI*f*2);
 
-            float complex Ha =  _q->A[3*i+0] * cexpf(_Complex_I*2*M_PI*f*0) +
+            liquid_float_complex Ha =  _q->A[3*i+0] * cexpf(_Complex_I*2*M_PI*f*0) +
                                 _q->A[3*i+1] * cexpf(_Complex_I*2*M_PI*f*1) +
                                 _q->A[3*i+2] * cexpf(_Complex_I*2*M_PI*f*2);
 

@@ -35,14 +35,14 @@ void firinterp_crcf_bench(struct rusage *_start,
     *_num_iterations /= _h_len;
     if (*_num_iterations < 1) *_num_iterations = 1;
 
-    float h[_h_len];
+    LIQUID_VLA(float, h, _h_len);
     unsigned int i;
     for (i=0; i<_h_len; i++)
         h[i] = 1.0f;
 
     firinterp_crcf q = firinterp_crcf_create(_M,h,_h_len);
 
-    float complex y[_M];
+    LIQUID_VLA(liquid_float_complex, y, _M);
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {

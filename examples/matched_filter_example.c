@@ -1,4 +1,4 @@
-char __docstr__[] = "Demonstrate how to run a matched filter.";
+const char __docstr__[] = "Demonstrate how to run a matched filter.";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,6 +6,7 @@ char __docstr__[] = "Demonstrate how to run a matched filter.";
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -28,8 +29,8 @@ int main(int argc, char*argv[])
         return liquid_error(LIQUID_EICONFIG,"beta must be in (0,1)");
 
     // set filter types
-    int ftype_tx = liquid_getopt_str2firfilt(ftype_str);
-    int ftype_rx = liquid_getopt_str2firfilt(ftype_str);
+    liquid_firfilt_type ftype_tx = (liquid_firfilt_type)liquid_getopt_str2firfilt(ftype_str);
+    liquid_firfilt_type ftype_rx = (liquid_firfilt_type)liquid_getopt_str2firfilt(ftype_str);
     // ensure appropriate GMSK filter pairs are used if either tx or rx is specified
     if (strcmp(ftype_str,"gmsktx")==0)
         ftype_rx = LIQUID_FIRFILT_GMSKRX;
@@ -44,9 +45,9 @@ int main(int argc, char*argv[])
     unsigned int hc_len = 4*k*m+1;               // composite filter length
 
     // arrays
-    float ht[h_len];    // transmit filter
-    float hr[h_len];    // receive filter
-    float hc[hc_len];   // composite filter
+    LIQUID_VLA(float, ht, h_len);    // transmit filter
+    LIQUID_VLA(float, hr, h_len);    // receive filter
+    LIQUID_VLA(float, hc, hc_len);   // composite filter
 
     // design the filter(s)
     liquid_firdes_prototype(ftype_tx, k, m, beta, 0, ht);
@@ -77,9 +78,9 @@ int main(int argc, char*argv[])
     printf("  As        : %12.8f dB\n", 20*log10f(As));
 
     // generate signal
-    float sym_in[num_symbols];
-    float y[num_samples];
-    float sym_out[num_symbols];
+    LIQUID_VLA(float, sym_in, num_symbols);
+    LIQUID_VLA(float, y, num_samples);
+    LIQUID_VLA(float, sym_out, num_symbols);
 
     // create interpolator and decimator
     firinterp_rrrf interp = firinterp_rrrf_create(k, ht, h_len);

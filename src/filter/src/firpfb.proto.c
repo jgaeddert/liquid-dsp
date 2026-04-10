@@ -48,9 +48,9 @@ FIRPFB() FIRPFB(_create)(unsigned int _num_filters,
 {
     // validate input
     if (_num_filters == 0)
-        return liquid_error_config("firpfb_%s_create(), number of filters must be greater than zero",EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFB(), "firpfb_%s_create(), number of filters must be greater than zero",EXTENSION_FULL);
     if (_h_len == 0)
-        return liquid_error_config("firpfb_%s_create(), filter length must be greater than zero",EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFB(), "firpfb_%s_create(), filter length must be greater than zero",EXTENSION_FULL);
 
     // create main filter object
     FIRPFB() q = (FIRPFB()) malloc(sizeof(struct FIRPFB(_s)));
@@ -65,7 +65,7 @@ FIRPFB() FIRPFB(_create)(unsigned int _num_filters,
     // generate bank of sub-samped filters
     // length of each sub-sampled filter
     unsigned int h_sub_len = _h_len / q->num_filters;
-    TC h_sub[h_sub_len];
+    LIQUID_VLA(TC, h_sub, h_sub_len);
     unsigned int i, n;
     for (i=0; i<q->num_filters; i++) {
         for (n=0; n<h_sub_len; n++) {
@@ -110,22 +110,22 @@ FIRPFB() FIRPFB(_create_kaiser)(unsigned int _num_filters,
 {
     // validate input
     if (_num_filters == 0)
-        return liquid_error_config("firpfb_%s_create_kaiser(), number of filters must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFB(), "firpfb_%s_create_kaiser(), number of filters must be greater than zero", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("firpfb_%s_create_kaiser(), filter delay must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFB(), "firpfb_%s_create_kaiser(), filter delay must be greater than 0", EXTENSION_FULL);
     if (_fc < 0.0f || _fc > 0.5f)
-        return liquid_error_config("firpfb_%s_create_kaiser(), filter cut-off frequency must be in (0,0.5)", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFB(), "firpfb_%s_create_kaiser(), filter cut-off frequence must be in (0,0.5)", EXTENSION_FULL);
     if (_as < 0.0f)
-        return liquid_error_config("firpfb_%s_create_kaiser(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFB(), "firpfb_%s_create_kaiser(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
 
     // design filter using kaiser window
     unsigned int H_len = 2*_num_filters*_m + 1;
-    float Hf[H_len];
+    LIQUID_VLA(float, Hf, H_len);
     liquid_firdes_kaiser(H_len, _fc/(float)_num_filters, _as, 0.0f, Hf);
 
-    // copy coefficients to type-specific array (e.g. float complex)
+    // copy coefficients to type-specific array (e.g. liquid_float_complex)
     unsigned int i;
-    TC Hc[H_len];
+    LIQUID_VLA(TC, Hc, H_len);
     for (i=0; i<H_len; i++)
         Hc[i] = Hf[i];
 
@@ -147,22 +147,22 @@ FIRPFB() FIRPFB(_create_rnyquist)(int          _type,
 {
     // validate input
     if (_num_filters == 0)
-        return liquid_error_config("firpfb_%s_create_rnyquist(), number of filters must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFB(), "firpfb_%s_create_rnyquist(), number of filters must be greater than zero", EXTENSION_FULL);
     if (_k < 2)
-        return liquid_error_config("firpfb_%s_create_rnyquist(), filter samples/symbol must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFB(), "firpfb_%s_create_rnyquist(), filter samples/symbol must be greater than 1", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("firpfb_%s_create_rnyquist(), filter delay must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFB(), "firpfb_%s_create_rnyquist(), filter delay must be greater than 0", EXTENSION_FULL);
     if (_beta < 0.0f || _beta > 1.0f)
-        return liquid_error_config("firpfb_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFB(), "firpfb_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
 
     // generate square-root Nyquist filter
     unsigned int H_len = 2*_num_filters*_k*_m + 1;
-    float Hf[H_len];
-    liquid_firdes_prototype(_type,_num_filters*_k,_m,_beta,0,Hf);
+    LIQUID_VLA(float, Hf, H_len);
+    liquid_firdes_prototype((liquid_firfilt_type)_type,_num_filters*_k,_m,_beta,0,Hf);
 
-    // copy coefficients to type-specific array (e.g. float complex)
+    // copy coefficients to type-specific array (e.g. liquid_float_complex)
     unsigned int i;
-    TC Hc[H_len];
+    LIQUID_VLA(TC, Hc, H_len);
     for (i=0; i<H_len; i++)
         Hc[i] = Hf[i];
 
@@ -184,21 +184,21 @@ FIRPFB() FIRPFB(_create_drnyquist)(int          _type,
 {
     // validate input
     if (_num_filters == 0)
-        return liquid_error_config("firpfb_%s_create_drnyquist(), number of filters must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFB(), "firpfb_%s_create_drnyquist(), number of filters must be greater than zero", EXTENSION_FULL);
     if (_k < 2)
-        return liquid_error_config("firpfb_%s_create_drnyquist(), filter samples/symbol must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFB(), "firpfb_%s_create_drnyquist(), filter samples/symbol must be greater than 1", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("firpfb_%s_create_drnyquist(), filter delay must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFB(), "firpfb_%s_create_drnyquist(), filter delay must be greater than 0", EXTENSION_FULL);
     if (_beta < 0.0f || _beta > 1.0f)
-        return liquid_error_config("firpfb_%s_create_drnyquist(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFB(), "firpfb_%s_create_drnyquist(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
 
     // generate square-root Nyquist filter
     unsigned int H_len = 2*_num_filters*_k*_m + 1;
-    float Hf[H_len];
-    liquid_firdes_prototype(_type,_num_filters*_k,_m,_beta,0,Hf);
+    LIQUID_VLA(float, Hf, H_len);
+    liquid_firdes_prototype((liquid_firfilt_type)_type,_num_filters*_k,_m,_beta,0,Hf);
     
     // compute derivative filter
-    float dHf[H_len];
+    LIQUID_VLA(float, dHf, H_len);
     float HdH_max = 0.0f;
     unsigned int i;
     for (i=0; i<H_len; i++) {
@@ -215,9 +215,9 @@ FIRPFB() FIRPFB(_create_drnyquist)(int          _type,
             HdH_max = fabsf(Hf[i]*dHf[i]);
     }
 
-    // copy coefficients to type-specific array (e.g. float complex)
+    // copy coefficients to type-specific array (e.g. liquid_float_complex)
     // and apply scaling factor for normalized response
-    TC Hc[H_len];
+    LIQUID_VLA(TC, Hc, H_len);
     for (i=0; i<H_len; i++)
         Hc[i] = dHf[i] * 0.06f / HdH_max;
 
@@ -245,7 +245,7 @@ FIRPFB() FIRPFB(_recreate)(FIRPFB()     _q,
     }
 
     // re-create each dotprod object
-    TC h_sub[_q->h_sub_len];
+    LIQUID_VLA(TC, h_sub, _q->h_sub_len);
     unsigned int i, n;
     for (i=0; i<_q->num_filters; i++) {
         for (n=0; n<_q->h_sub_len; n++) {
@@ -263,7 +263,7 @@ FIRPFB() FIRPFB(_copy)(FIRPFB() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("firpfb_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFB(), "firpfb_%s_create(), object cannot be NULL", EXTENSION_FULL);
 
     // create filter object and copy base parameters
     FIRPFB() q_copy     = (FIRPFB()) malloc(sizeof(struct FIRPFB(_s)));

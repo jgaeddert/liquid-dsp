@@ -1,7 +1,8 @@
-char __docstr__[] = "Kaiser-Bessel window example.";
+const char __docstr__[] = "Kaiser-Bessel window example.";
 
 #include <stdio.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -13,7 +14,7 @@ int main(int argc, char* argv[])
     liquid_argparse_add(float,       beta, 10, 'b', "Kaiser beta factor)", NULL);
     liquid_argparse_parse(argc,argv);
 
-    float w[n];
+    LIQUID_VLA(float, w, n);
     unsigned int i;
     for (i=0; i<n; i++)
         w[i] = liquid_kaiser(i,n,beta);

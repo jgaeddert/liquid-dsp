@@ -24,10 +24,12 @@
 // data for testing Cholesky decomposition
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
-
+#endif
+#include "liquid.h"
 // matrixcf_data_chol_L [size: 4 x 4]
-float complex matrixcf_data_chol_L[] = {
+liquid_float_complex matrixcf_data_chol_L[] = {
     1.010000000000 +   0.000000000000*_Complex_I /* ( 0, 0) */,
     0.000000000000 +   0.000000000000*_Complex_I /* ( 0, 1) */,
     0.000000000000 +   0.000000000000*_Complex_I /* ( 0, 2) */,
@@ -46,7 +48,7 @@ float complex matrixcf_data_chol_L[] = {
     1.070000000000 +   0.000000000000*_Complex_I /* ( 3, 3) */};
 
 // matrixcf_data_chol_A [size: 4 x 4]
-float complex matrixcf_data_chol_A[] = {
+liquid_float_complex matrixcf_data_chol_A[] = {
     1.020100000000 +   0.000000000000*_Complex_I /* ( 0, 0) */,
    -1.434200000000 +  -0.252500000000*_Complex_I /* ( 0, 1) */,
     0.323200000000 +   1.242300000000*_Complex_I /* ( 0, 2) */,

@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example tests the performance for detecting and decoding frames"
 " with the qdsync_cccf object.";
 
@@ -6,6 +6,7 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -26,7 +27,7 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // generate synchronization sequence (QPSK symbols)
-    float complex seq[sequence_len];
+    LIQUID_VLA(liquid_float_complex, seq, sequence_len);
     unsigned int i;
     for (i=0; i<sequence_len ; i++) {
         seq[i] = (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 +
@@ -38,11 +39,11 @@ int main(int argc, char*argv[])
     firinterp_crcf interp = firinterp_crcf_create_prototype(ftype,k,m,beta,0);
     unsigned int num_symbols = sequence_len + 2*m + 3*sequence_len;
     unsigned int buf_len = num_symbols * k;
-    float complex buf_0[buf_len];
-    float complex buf_1[buf_len];
+    LIQUID_VLA(liquid_float_complex, buf_0, buf_len);
+    LIQUID_VLA(liquid_float_complex, buf_1, buf_len);
     for (i=0; i<num_symbols; i++) {
         // generate random symbol
-        float complex s = i < sequence_len ? seq[i] : 0;
+        liquid_float_complex s = i < sequence_len ? seq[i] : 0;
 
         // interpolate symbol
         firinterp_crcf_execute(interp, s, buf_0 + i*k);

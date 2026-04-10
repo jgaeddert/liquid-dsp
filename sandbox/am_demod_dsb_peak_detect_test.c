@@ -5,7 +5,9 @@
 #include <string.h>
 #include <math.h>
 #include <getopt.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.h"
 
 int main(int argc, char*argv[])
@@ -21,7 +23,7 @@ int main(int argc, char*argv[])
     // buffers
     unsigned int i;
     float         x[num_samples];
-    float complex y[num_samples];
+    liquid_float_complex y[num_samples];
     float         z[num_samples];
 
     // generate 'audio' signal (simple windowed sum of tones)

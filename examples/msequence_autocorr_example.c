@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the auto-correlation properties of a"
 " maximal-length sequence (m-sequence).  An m-sequence of a"
 " certain length is used to generate two binary sequences"
@@ -8,10 +8,13 @@ char __docstr__[] =
 
 #include <stdlib.h>
 #include <stdio.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -26,7 +29,7 @@ int main(int argc, char* argv[])
     msequence ms = msequence_create_default(m);
     msequence_print(ms);
     unsigned int n = msequence_get_length(ms);
-    signed int rxx[n];  // auto-correlation
+    LIQUID_VLA(signed int, rxx, n);  // auto-correlation
 
     // create and initialize first binary sequence on m-sequence
     bsequence bs1 = bsequence_create(n);
@@ -47,7 +50,7 @@ int main(int argc, char* argv[])
     }
     
     // p/n sequence
-    signed int x[n];
+    LIQUID_VLA(signed int, x, n);
     for (i=0; i<n; i++)
         x[i] = bsequence_index(bs1, i);
 

@@ -29,9 +29,9 @@
 void testbench_interleaver_hard(liquid_autotest __q__, unsigned int _n)
 {
     unsigned int i;
-    unsigned char x[_n];
-    unsigned char y[_n];
-    unsigned char z[_n];
+    LIQUID_VLA(unsigned char, x, _n);
+    LIQUID_VLA(unsigned char, y, _n);
+    LIQUID_VLA(unsigned char, z, _n);
 
     for (i=0; i<_n; i++)
         x[i] = rand() & 0xFF;
@@ -52,9 +52,9 @@ void testbench_interleaver_hard(liquid_autotest __q__, unsigned int _n)
 void testbench_interleaver_soft(liquid_autotest __q__, unsigned int _n)
 {
     unsigned int i;
-    unsigned char x[8*_n];
-    unsigned char y[8*_n];
-    unsigned char z[8*_n];
+    LIQUID_VLA(unsigned char, x, 8*_n);
+    LIQUID_VLA(unsigned char, y, 8*_n);
+    LIQUID_VLA(unsigned char, z, 8*_n);
 
     for (i=0; i<8*_n; i++)
         x[i] = rand() & 0xFF;

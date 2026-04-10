@@ -134,10 +134,10 @@ int main(int argc, char*argv[]) {
     unsigned int nza;
 
     // analog poles/zeros/gain
-    float complex pa[n];
-    float complex za[n];
-    float complex ka;
-    float complex k0;
+    liquid_float_complex pa[n];
+    liquid_float_complex za[n];
+    liquid_float_complex ka;
+    liquid_float_complex k0;
 
     unsigned int r = n%2;
     unsigned int L = (n-r)/2;
@@ -204,9 +204,9 @@ int main(int argc, char*argv[]) {
 
     // complex digital poles/zeros/gain
     // NOTE: allocated double the filter order to cover band-pass, band-stop cases
-    float complex zd[2*n];
-    float complex pd[2*n];
-    float complex kd;
+    liquid_float_complex zd[2*n];
+    liquid_float_complex pd[2*n];
+    liquid_float_complex kd;
     float m = iirdes_freqprewarp(btype,fc,f0);
     printf("m : %12.8f\n", m);
     bilinear_zpkf(za,    nza,
@@ -256,8 +256,8 @@ int main(int argc, char*argv[]) {
         btype == LIQUID_IIRDES_BANDSTOP)
     {
         // allocate memory for transformed zeros, poles
-        float complex zd1[2*n];
-        float complex pd1[2*n];
+        liquid_float_complex zd1[2*n];
+        liquid_float_complex pd1[2*n];
 
         // run zeros, poles transform
         iirdes_dzpk_lp2bp(zd, pd,   // low-pass prototype zeros, poles
@@ -266,8 +266,8 @@ int main(int argc, char*argv[]) {
                           zd1,pd1); // transformed zeros, poles (length: 2*n)
 
         // copy transformed zeros, poles
-        memmove(zd, zd1, 2*n*sizeof(float complex));
-        memmove(pd, pd1, 2*n*sizeof(float complex));
+        memmove(zd, zd1, 2*n*sizeof(liquid_float_complex));
+        memmove(pd, pd1, 2*n*sizeof(liquid_float_complex));
 
         // update parameters : n -> 2*n
         r = 0;

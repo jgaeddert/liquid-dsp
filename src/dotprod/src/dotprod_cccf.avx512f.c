@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "liquid_simd_rename.h"
 #include "liquid.internal.h"
 
 // include proper SIMD extensions for x86 platforms
@@ -36,21 +37,21 @@
 #define DEBUG_DOTPROD_CCCF_AVX   0
 
 // forward declaration of internal methods
-int dotprod_cccf_execute_avx512f(dotprod_cccf    _q,
-                             float complex * _x,
-                             float complex * _y);
+static int dotprod_cccf_execute_avx512f(dotprod_cccf    _q,
+                             liquid_float_complex * _x,
+                             liquid_float_complex * _y);
 
-int dotprod_cccf_execute_avx512f4(dotprod_cccf    _q,
-                              float complex * _x,
-                              float complex * _y);
+static int dotprod_cccf_execute_avx512f4(dotprod_cccf    _q,
+                              liquid_float_complex * _x,
+                              liquid_float_complex * _y);
 
 // basic dot product (ordinal calculation)
-int dotprod_cccf_run(float complex * _h,
-                     float complex * _x,
+int dotprod_cccf_run(liquid_float_complex * _h,
+                     liquid_float_complex * _x,
                      unsigned int    _n,
-                     float complex * _y)
+                     liquid_float_complex * _y)
 {
-    float complex r = 0;
+    liquid_float_complex r = 0;
     unsigned int i;
     for (i=0; i<_n; i++)
         r += _h[i] * _x[i];
@@ -59,12 +60,12 @@ int dotprod_cccf_run(float complex * _h,
 }
 
 // basic dot product (ordinal calculation) with loop unrolled
-int dotprod_cccf_run4(float complex * _h,
-                      float complex * _x,
+int dotprod_cccf_run4(liquid_float_complex * _h,
+                      liquid_float_complex * _x,
                       unsigned int    _n,
-                      float complex * _y)
+                      liquid_float_complex * _y)
 {
-    float complex r = 0;
+    liquid_float_complex r = 0;
 
     // t = 4*(floor(_n/4))
     unsigned int t=(_n>>2)<<2; 
@@ -97,7 +98,7 @@ struct dotprod_cccf_s {
     float * hq;         // quadrature
 };
 
-dotprod_cccf dotprod_cccf_create_opt(float complex * _h,
+dotprod_cccf dotprod_cccf_create_opt(liquid_float_complex * _h,
                                      unsigned int    _n,
                                      int             _rev)
 {
@@ -125,13 +126,13 @@ dotprod_cccf dotprod_cccf_create_opt(float complex * _h,
     return q;
 }
 
-dotprod_cccf dotprod_cccf_create(float complex * _h,
+dotprod_cccf dotprod_cccf_create(liquid_float_complex * _h,
                                  unsigned int    _n)
 {
     return dotprod_cccf_create_opt(_h, _n, 0);
 }
 
-dotprod_cccf dotprod_cccf_create_rev(float complex * _h,
+dotprod_cccf dotprod_cccf_create_rev(liquid_float_complex * _h,
                                      unsigned int    _n)
 {
     return dotprod_cccf_create_opt(_h, _n, 1);
@@ -139,7 +140,7 @@ dotprod_cccf dotprod_cccf_create_rev(float complex * _h,
 
 // re-create the structured dotprod object
 dotprod_cccf dotprod_cccf_recreate(dotprod_cccf    _q,
-                                   float complex * _h,
+                                   liquid_float_complex * _h,
                                    unsigned int    _n)
 {
     // completely destroy and re-create dotprod object
@@ -149,7 +150,7 @@ dotprod_cccf dotprod_cccf_recreate(dotprod_cccf    _q,
 
 // re-create the structured dotprod object, coefficients reversed
 dotprod_cccf dotprod_cccf_recreate_rev(dotprod_cccf    _q,
-                                       float complex * _h,
+                                       liquid_float_complex * _h,
                                        unsigned int    _n)
 {
     // completely destroy and re-create dotprod object
@@ -161,7 +162,7 @@ dotprod_cccf dotprod_cccf_copy(dotprod_cccf q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("dotprod_cccf_copy().avx512f, object cannot be NULL");
+        return liquid_error_config_ptr(dotprod_cccf, "dotprod_cccf_copy().avx512f, object cannot be NULL");
 
     dotprod_cccf q_copy = (dotprod_cccf)malloc(sizeof(struct dotprod_cccf_s));
     q_copy->n = q_orig->n;
@@ -202,8 +203,8 @@ int dotprod_cccf_print(dotprod_cccf _q)
 //  _x      :   input array
 //  _y      :   output sample
 int dotprod_cccf_execute(dotprod_cccf    _q,
-                         float complex * _x,
-                         float complex * _y)
+                         liquid_float_complex * _x,
+                         liquid_float_complex * _y)
 {
     // switch based on size
     if (_q->n < 128) {
@@ -240,9 +241,9 @@ int dotprod_cccf_execute(dotprod_cccf    _q,
 //           x[3].real * h[3].imag,
 //           x[3].imag * h[3].imag };
 //
-int dotprod_cccf_execute_avx512f(dotprod_cccf    _q,
-                             float complex * _x,
-                             float complex * _y)
+static int dotprod_cccf_execute_avx512f(dotprod_cccf    _q,
+                             liquid_float_complex * _x,
+                             liquid_float_complex * _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;
@@ -290,14 +291,14 @@ int dotprod_cccf_execute_avx512f(dotprod_cccf    _q,
     }
 
     // output array
-    float w[2];
+    LIQUID_VLA(float, w, 2);
 
     // fold down I/Q components into single value
     w[0] = _mm512_mask_reduce_add_ps(0x5555, sum);
     w[1] = _mm512_mask_reduce_add_ps(0xAAAA, sum);
 
-    //float complex total = *((float complex*)w);
-    float complex total = w[0] + w[1] * _Complex_I;
+    //liquid_float_complex total = *((liquid_float_complex*)w);
+    liquid_float_complex total = w[0] + w[1] * _Complex_I;
 
     // cleanup
     for (i=t/2; i<_q->n; i++)
@@ -309,9 +310,9 @@ int dotprod_cccf_execute_avx512f(dotprod_cccf    _q,
 }
 
 // use AVX512-F extensions
-int dotprod_cccf_execute_avx512f4(dotprod_cccf    _q,
-                              float complex * _x,
-                              float complex * _y)
+static int dotprod_cccf_execute_avx512f4(dotprod_cccf    _q,
+                              liquid_float_complex * _x,
+                              liquid_float_complex * _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;
@@ -383,13 +384,13 @@ int dotprod_cccf_execute_avx512f4(dotprod_cccf    _q,
     sumi = _mm512_fmaddsub_ps( sumi, one, sumq );
 
     // output array
-    float w[2];
+    LIQUID_VLA(float, w, 2);
 
     // fold down I/Q components into single value
     w[0] = _mm512_mask_reduce_add_ps(0x5555, sumi);
     w[1] = _mm512_mask_reduce_add_ps(0xAAAA, sumi);
 
-    float complex total = w[0] + w[1] * _Complex_I;
+    liquid_float_complex total = w[0] + w[1] * _Complex_I;
 
     // cleanup (note: n _must_ be even)
     // TODO : clean this method up

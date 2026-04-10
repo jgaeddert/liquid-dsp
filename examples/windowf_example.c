@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the functionality of a window buffer (also"
 " known as a circular or ring buffer) of floating-point values.  Values"
 " are written to and read from the buffer using several different"
@@ -7,6 +7,7 @@ char __docstr__[] =
 #include <stdio.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])

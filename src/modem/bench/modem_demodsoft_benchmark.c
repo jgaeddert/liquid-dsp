@@ -63,12 +63,12 @@ void modemcf_demodulate_soft_bench(struct rusage *_start,
 
     // generate input vector to demodulate (spiral)
     unsigned long int i;
-    float complex x[20];
+    LIQUID_VLA(liquid_float_complex, x, 20);
     for (i=0; i<20; i++)
-        x[i] = 0.07 * i * cexpf(_Complex_I*2*M_PI*0.1*i);
+        x[i] = 0.07f * (float)i * cexpf(_Complex_I*2.0f*(float)M_PI*0.1f*(float)i);
 
     unsigned int symbol_out;
-    unsigned char soft_bits[bps];
+    LIQUID_VLA(unsigned char, soft_bits, bps);
 
     // start trials
     getrusage(RUSAGE_SELF, _start);

@@ -1,10 +1,11 @@
-char __docstr__[] = "Spectral periodogram example with complex inputs.";
+const char __docstr__[] = "Spectral periodogram example with complex inputs.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -39,7 +40,7 @@ int main(int argc, char* argv[])
         iirfilt_rrrf_execute(filter, randnf(), &v);
 
         // filter off negative image (gain of 2)
-        float complex y = 0;
+        liquid_float_complex y = 0;
         firhilbf_r2c_execute(ht, v, &y);
 
         // scale and add noise
@@ -54,7 +55,7 @@ int main(int argc, char* argv[])
     spgramcf_export_gnuplot(q,"spgramcf_example.gnu");
 
     // compute power spectral density output
-    float psd[nfft];
+    LIQUID_VLA(float, psd, nfft);
     spgramcf_get_psd(q, psd);
 
     // destroy objects

@@ -1,9 +1,10 @@
-char __docstr__[] = "Create halfband filter using firdespm";
+const char __docstr__[] = "Create halfband filter using firdespm";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -17,7 +18,7 @@ int main(int argc, char*argv[])
 
     // derived values
     unsigned int h_len = 4*m + 1;
-    float h[h_len];
+    LIQUID_VLA(float, h, h_len);
     liquid_firdespm_halfband_as(m, As, h);
 
     // print coefficients

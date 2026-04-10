@@ -29,9 +29,9 @@
 LIQUID_AUTOTEST(secded7264_codec_e0,"SEC-DED (72,64) codec (no errors)","",0.1)
 {
     // arrays
-    unsigned char sym_org[8];   // original symbol
-    unsigned char sym_enc[9];   // encoded symbol
-    unsigned char sym_dec[8];   // decoded symbol
+    LIQUID_VLA(unsigned char, sym_org, 8);   // original symbol
+    LIQUID_VLA(unsigned char, sym_enc, 9);   // encoded symbol
+    LIQUID_VLA(unsigned char, sym_dec, 8);   // decoded symbol
 
     // generate symbol
     sym_org[0] = rand() & 0xff;
@@ -63,11 +63,11 @@ LIQUID_AUTOTEST(secded7264_codec_e0,"SEC-DED (72,64) codec (no errors)","",0.1)
 LIQUID_AUTOTEST(secded7264_codec_e1,"SEC-DED (72,64) codec (single error)","",0.1)
 {
     // arrays
-    unsigned char sym_org[8];   // original symbol
-    unsigned char sym_enc[9];   // encoded symbol
-    unsigned char e[9];         // error vector
-    unsigned char sym_rec[9];   // received symbol
-    unsigned char sym_dec[8];   // decoded symbol
+    LIQUID_VLA(unsigned char, sym_org, 8);   // original symbol
+    LIQUID_VLA(unsigned char, sym_enc, 9);   // encoded symbol
+    LIQUID_VLA(unsigned char, e, 9);         // error vector
+    LIQUID_VLA(unsigned char, sym_rec, 9);   // received symbol
+    LIQUID_VLA(unsigned char, sym_dec, 8);   // decoded symbol
 
     unsigned int i;
     unsigned int k; // error location
@@ -104,11 +104,11 @@ LIQUID_AUTOTEST(secded7264_codec_e2,"SEC-DED (72,64) codec (double error detecti
     // total combinations of double errors: nchoosek(72,2) = 2556
 
     // arrays
-    unsigned char sym_org[8];   // original symbol
-    unsigned char sym_enc[9];   // encoded symbol
-    unsigned char e[9];         // error vector
-    unsigned char sym_rec[9];   // received symbol
-    unsigned char sym_dec[8];   // decoded symbol
+    LIQUID_VLA(unsigned char, sym_org, 8);   // original symbol
+    LIQUID_VLA(unsigned char, sym_enc, 9);   // encoded symbol
+    LIQUID_VLA(unsigned char, e, 9);         // error vector
+    LIQUID_VLA(unsigned char, sym_rec, 9);   // received symbol
+    LIQUID_VLA(unsigned char, sym_dec, 8);   // decoded symbol
 
     unsigned int i;
     unsigned int j;

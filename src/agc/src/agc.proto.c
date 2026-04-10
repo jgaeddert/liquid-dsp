@@ -93,7 +93,7 @@ AGC() AGC(_copy)(AGC() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("agc_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(AGC(), "agc_%s_copy(), object cannot be NULL", EXTENSION_FULL);
 
     // create filter object and copy memory
     AGC() q_copy = (AGC()) malloc(sizeof(struct AGC(_s)));

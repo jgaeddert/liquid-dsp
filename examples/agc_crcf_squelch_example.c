@@ -1,12 +1,15 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Automatic gain control example demonstrating its transient"
 " response with squelch control.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -35,10 +38,10 @@ int main(int argc, char*argv[])
 
     // initialize arrays
     unsigned int  num_samples = 2000;       // total number of samples to run
-    float complex x   [num_samples];        // input
-    float complex y   [num_samples];        // output
-    float         rssi[num_samples];        // received signal strength
-    int           mode[num_samples];        // squelch mode
+    LIQUID_VLA(liquid_float_complex, x, num_samples);        // input
+    LIQUID_VLA(liquid_float_complex, y, num_samples);        // output
+    LIQUID_VLA(float, rssi, num_samples);        // received signal strength
+    LIQUID_VLA(int, mode, num_samples);        // squelch mode
 
     // print info
     printf("automatic gain control // loop bandwidth: %4.2e\n",bt);

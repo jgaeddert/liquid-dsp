@@ -47,8 +47,8 @@ void firpfbchr_crcf_execute_bench(struct rusage *     _start,
 
     unsigned long int i;
 
-    float complex x[_P];
-    float complex y[_M];
+    LIQUID_VLA(liquid_float_complex, x, _P);
+    LIQUID_VLA(liquid_float_complex, y, _M);
     for (i=0; i<_P; i++)
         x[i] = randnf() + _Complex_I*randnf();
 

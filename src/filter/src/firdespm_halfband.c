@@ -37,11 +37,11 @@
 //   |           |<--->|
 //   |. . . . . . . . . . . . . . . . +Ap/2
 //   |/\/\/\/\/\/|
-//   |. . . . . . \ . . . . . . . . . -Ap/2
-//   |           | \:
+//   |. . . . . . .\. . . . . . . . . -Ap/2
 //   |           |  \.
-//   |           |  :\. . . . . . . . -As
-//   |           |  : \ /^\ /^\ /^\ /|
+//   |           |   \.
+//   |           |  : \. . . . . . . -As
+//   |           |  :  \/^\ /^\ /^\ /|
 //   |           |  :  |   |   |   | |
 //   0           :  :  :            1/2   ---> f/Fs
 //               :  :  f1 = 1/4 + ft/2
@@ -59,8 +59,8 @@ struct firdespm_halfband_s
 
     // utility calculation
     unsigned int    nfft;       // transform size for analysis
-    float complex * buf_time;   // time buffer
-    float complex * buf_freq;   // frequency buffer
+    liquid_float_complex * buf_time;   // time buffer
+    liquid_float_complex * buf_freq;   // frequency buffer
     fftplan         fft;        // transform object
 };
 
@@ -71,7 +71,7 @@ typedef struct firdespm_halfband_s * firdespm_halfband;
 firdespm_halfband firdespm_halfband_create(unsigned int _m, float _ft)
 {
     // create and initialize object
-    firdespm_halfband q = malloc(sizeof(struct firdespm_halfband_s));
+    firdespm_halfband q = (firdespm_halfband)malloc(sizeof(struct firdespm_halfband_s));
     q->m     = _m;
     q->h_len = 4*_m+1;
     q->ft    = _ft;
@@ -81,12 +81,12 @@ firdespm_halfband firdespm_halfband_create(unsigned int _m, float _ft)
     q->nfft = 1200;
     while (q->nfft < 120*q->m)
         q->nfft <<= 1;
-    q->buf_time = (float complex*) fft_malloc(q->nfft*sizeof(float complex));
-    q->buf_freq = (float complex*) fft_malloc(q->nfft*sizeof(float complex));
+    q->buf_time = (liquid_float_complex*) fft_malloc(q->nfft*sizeof(liquid_float_complex));
+    q->buf_freq = (liquid_float_complex*) fft_malloc(q->nfft*sizeof(liquid_float_complex));
     q->fft      = fft_create_plan(q->nfft, q->buf_time, q->buf_freq, LIQUID_FFT_FORWARD, 0);
 
     // ensure entire input buffer is empty
-    memset(q->buf_time, 0x00, q->nfft * sizeof(float complex));
+    memset(q->buf_time, 0x00, q->nfft * sizeof(liquid_float_complex));
 
     //
     return q;

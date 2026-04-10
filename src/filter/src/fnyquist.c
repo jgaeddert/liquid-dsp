@@ -51,6 +51,7 @@ int liquid_firdes_fnyquist(liquid_firfilt_type _type,
                            float               _dt,
                            float *             _h)
 {
+    (void)_dt;
     // validate input
     if ( _k < 1 )
         return liquid_error(LIQUID_EICONFIG,"liquid_firdes_fnyquist(): k must be greater than 0");
@@ -64,9 +65,9 @@ int liquid_firdes_fnyquist(liquid_firfilt_type _type,
     // derived values
     unsigned int h_len = 2*_k*_m+1;   // filter length
 
-    float H_prime[h_len];   // frequency response of Nyquist filter (real)
-    float complex H[h_len]; // frequency response of Nyquist filter
-    float complex h[h_len]; // impulse response of Nyquist filter
+    LIQUID_VLA(float, H_prime, h_len);   // frequency response of Nyquist filter (real)
+    LIQUID_VLA(liquid_float_complex, H, h_len); // frequency response of Nyquist filter
+    LIQUID_VLA(liquid_float_complex, h, h_len); // impulse response of Nyquist filter
 
     // compute Nyquist filter frequency response
     switch (_type) {

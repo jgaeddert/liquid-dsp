@@ -43,7 +43,7 @@ void window_read_bench(struct rusage *_start,
 
     unsigned long int i;
 
-    float complex * r;
+    liquid_float_complex * r;
 
     // start trials:
     //   write to buffer, read from buffer

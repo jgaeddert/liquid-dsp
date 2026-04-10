@@ -219,9 +219,9 @@ firdespm firdespm_create(unsigned int            _h_len,
 {
     // basic validation
     if (_h_len==0)
-        return liquid_error_config("firdespm_create(), filter length cannot be 0");
+        return liquid_error_config_ptr(firdespm, "firdespm_create(), filter length cannot be 0");
     if (_num_bands==0)
-        return liquid_error_config("firdespm_create(), number of bands cannot be 0");
+        return liquid_error_config_ptr(firdespm, "firdespm_create(), number of bands cannot be 0");
 
     // validate filter specification
     unsigned int i;
@@ -239,9 +239,9 @@ firdespm firdespm_create(unsigned int            _h_len,
         weights_valid &= _weights[i] > 0;
 
     if (!bands_valid)
-        return liquid_error_config("firdespm_create(), invalid bands");
+        return liquid_error_config_ptr(firdespm, "firdespm_create(), invalid bands");
     if (!weights_valid)
-        return liquid_error_config("firdespm_create(), invalid weights (must be positive)");
+        return liquid_error_config_ptr(firdespm, "firdespm_create(), invalid weights (must be positive)");
 
     // create object
     firdespm q = (firdespm) malloc(sizeof(struct firdespm_s));
@@ -326,9 +326,9 @@ firdespm firdespm_create_callback(unsigned int          _h_len,
 {
     // basic validation
     if (_h_len==0)
-        return liquid_error_config("firdespm_create_callback(), filter length cannot be 0");
+        return liquid_error_config_ptr(firdespm, "firdespm_create_callback(), filter length cannot be 0");
     if (_num_bands==0)
-        return liquid_error_config("firdespm_create_callback(), number of bands cannot be 0");
+        return liquid_error_config_ptr(firdespm, "firdespm_create_callback(), number of bands cannot be 0");
 
 
     // validate input
@@ -342,7 +342,7 @@ firdespm firdespm_create_callback(unsigned int          _h_len,
         bands_valid &= _bands[i] >= _bands[i-1];
 
     if (!bands_valid)
-        return liquid_error_config("firdespm_create(), invalid bands");
+        return liquid_error_config_ptr(firdespm, "firdespm_create(), invalid bands");
 
     // create object
     firdespm q = (firdespm) malloc(sizeof(struct firdespm_s));
@@ -405,7 +405,7 @@ firdespm firdespm_copy(firdespm q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("firdespm_copy(), object cannot be NULL");
+        return liquid_error_config_ptr(firdespm, "firdespm_copy(), object cannot be NULL");
 
     // create filter object and copy base parameters
     firdespm q_copy = (firdespm) malloc(sizeof(struct firdespm_s));
@@ -723,7 +723,7 @@ int firdespm_iext_search(firdespm _q)
 
     // found extremal frequency indices
     unsigned int nmax = 2*_q->r + 2*_q->num_bands; // max number of extremals
-    unsigned int found_iext[nmax];
+    LIQUID_VLA(unsigned int, found_iext, nmax);
     unsigned int num_found=0;
 
 #if 0
@@ -900,7 +900,7 @@ int firdespm_compute_taps(firdespm _q, float * _h)
 
     // evaluate Lagrange polynomial on evenly spaced points
     unsigned int p = _q->r - _q->s + 1;
-    double G[p];
+    LIQUID_VLA(double, G, p);
     for (i=0; i<p; i++) {
         double f = (double)(i) / (double)(_q->h_len);
         double xf = cos(2*M_PI*f);

@@ -22,10 +22,10 @@ int main() {
     idct(y,z,n);
 
     // run equivalent ffts
-    float complex x0[2*n];
-    float complex y0[2*n];
-    float complex y1[2*n];
-    float complex z0[2*n];
+    liquid_float_complex x0[2*n];
+    liquid_float_complex y0[2*n];
+    liquid_float_complex y1[2*n];
+    liquid_float_complex z0[2*n];
 
     // create the plan
     int method = 0;

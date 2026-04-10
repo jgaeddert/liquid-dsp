@@ -101,23 +101,23 @@ EQLMS() EQLMS(_create_rnyquist)(int          _type,
 {
     // validate input
     if (_k < 2)
-        return liquid_error_config("eqlms_%s_create_rnyquist(), samples/symbol must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(EQLMS(), "eqlms_%s_create_rnyquist(), samples/symbol must be greater than 1", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("eqlms_%s_create_rnyquist(), filter delay must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config_ptr(EQLMS(), "eqlms_%s_create_rnyquist(), filter delay must be greater than 0", EXTENSION_FULL);
     if (_beta < 0.0f || _beta > 1.0f)
-        return liquid_error_config("eqlms_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
+        return liquid_error_config_ptr(EQLMS(), "eqlms_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
     if (_dt < -1.0f || _dt > 1.0f)
-        return liquid_error_config("eqlms_%s_create_rnyquist(), filter fractional sample delay must be in [-1,1]", EXTENSION_FULL);
+        return liquid_error_config_ptr(EQLMS(), "eqlms_%s_create_rnyquist(), filter fractional sample delay must be in [-1,1]", EXTENSION_FULL);
 
-    // generate square-root Nyquist filter
+    // generate square-root Nyquist filter (use LIQUID_VLA for MSVC compatibility)
     unsigned int h_len = 2*_k*_m + 1;
-    float h[h_len];
-    liquid_firdes_prototype(_type,_k,_m,_beta,_dt,h);
+    LIQUID_VLA(float, h, h_len);
+    liquid_firdes_prototype((liquid_firfilt_type)_type,_k,_m,_beta,_dt,h);
 
-    // copy coefficients to type-specific array (e.g. float complex)
+    // copy coefficients to type-specific array (e.g. liquid_float_complex)
     // and scale by samples/symbol
     unsigned int i;
-    T hc[h_len];
+    LIQUID_VLA(T, hc, h_len);
     for (i=0; i<h_len; i++)
         hc[i] = h[i] / (float)_k;
 
@@ -133,17 +133,17 @@ EQLMS() EQLMS(_create_lowpass)(unsigned int _h_len,
 {
     // validate input
     if (_h_len == 0)
-        return liquid_error_config("eqlms_%s_create_lowpass(), filter length must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config_ptr(EQLMS(), "eqlms_%s_create_lowpass(), filter length must be greater than 0", EXTENSION_FULL);
     if (_fc <= 0.0f || _fc > 0.5f)
-        return liquid_error_config("eqlms_%s_create_rnyquist(), filter cutoff must be in (0,0.5]", EXTENSION_FULL);
+        return liquid_error_config_ptr(EQLMS(), "eqlms_%s_create_rnyquist(), filter cutoff must be in (0,0.5]", EXTENSION_FULL);
 
-    // generate low-pass filter prototype
-    float h[_h_len];
+    // generate low-pass filter prototype (use LIQUID_VLA for MSVC compatibility)
+    LIQUID_VLA(float, h, _h_len);
     liquid_firdes_kaiser(_h_len, _fc, 40.0f, 0.0f, h);
 
-    // copy coefficients to type-specific array (e.g. float complex), scaling by bandwidth
+    // copy coefficients to type-specific array (e.g. liquid_float_complex), scaling by bandwidth
     unsigned int i;
-    T hc[_h_len];
+    LIQUID_VLA(T, hc, _h_len);
     for (i=0; i<_h_len; i++)
         hc[i] = h[i] * 2 * _fc;
 
@@ -180,7 +180,7 @@ EQLMS() EQLMS(_copy)(EQLMS() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("firfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(EQLMS(), "firfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
 
     // create filter object and copy base parameters
     EQLMS() q_copy = (EQLMS()) malloc(sizeof(struct EQLMS(_s)));

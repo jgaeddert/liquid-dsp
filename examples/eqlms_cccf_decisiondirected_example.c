@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Tests least mean-squares (LMS) equalizer (EQ) on a signal with a known"
 " linear modulation scheme, but unknown data. The equalizer is updated"
 " using decision-directed demodulator output samples.";
@@ -7,9 +7,12 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <time.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -30,7 +33,7 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // modulation type/depth
-    modulation_scheme ms = liquid_getopt_str2mod(mod_scheme);
+    modulation_scheme ms = (modulation_scheme)liquid_getopt_str2mod(mod_scheme);
 
     // validate input
     if (num_symbols == 0)
@@ -57,14 +60,14 @@ int main(int argc, char*argv[])
     unsigned int num_samples = k*num_symbols;
 
     // bookkeeping variables
-    float complex sym_tx[num_symbols];  // transmitted data sequence
-    float complex x[num_samples];       // interpolated time series
-    float complex y[num_samples];       // channel output
-    float complex z[num_samples];       // equalized output
+    LIQUID_VLA(liquid_float_complex, sym_tx, num_symbols);  // transmitted data sequence
+    LIQUID_VLA(liquid_float_complex, x, num_samples);       // interpolated time series
+    LIQUID_VLA(liquid_float_complex, y, num_samples);       // channel output
+    LIQUID_VLA(liquid_float_complex, z, num_samples);       // equalized output
 
-    float hm[hm_len];                   // matched filter response
-    float complex hc[hc_len];           // channel filter coefficients
-    float complex hp[hp_len];           // equalizer filter coefficients
+    LIQUID_VLA(float, hm, hm_len);                   // matched filter response
+    LIQUID_VLA(liquid_float_complex, hc, hc_len);           // channel filter coefficients
+    LIQUID_VLA(liquid_float_complex, hp, hp_len);           // equalizer filter coefficients
 
     unsigned int i;
 
@@ -112,7 +115,7 @@ int main(int argc, char*argv[])
     // filtered error vector magnitude (empirical RMS error)
     float evm_hat = 0.03f;
 
-    float complex d_hat = 0.0f;
+    liquid_float_complex d_hat = 0.0f;
     for (i=0; i<num_samples; i++) {
         // print filtered evm (empirical rms error)
         if ( ((i+1)%50)==0 )
@@ -129,7 +132,7 @@ int main(int argc, char*argv[])
 
         // estimate transmitted signal
         unsigned int sym_out;   // output symbol
-        float complex d_prime;  // estimated input sample
+        liquid_float_complex d_prime;  // estimated input sample
         modemcf_demodulate(demod, d_hat, &sym_out);
         modemcf_get_demodulator_sample(demod, &d_prime);
 

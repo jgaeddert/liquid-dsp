@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include "liquid.autotest.h"
 #include "liquid.h"
+#include "liquid_vla.h"
 
 LIQUID_AUTOTEST(packetizer_copy,"copy packetizer object","",0.1)
 {
@@ -35,11 +36,11 @@ LIQUID_AUTOTEST(packetizer_copy,"copy packetizer object","",0.1)
     unsigned int  msg_len_enc = packetizer_compute_enc_msg_len(msg_len_dec,crc,fec0,fec1);
 
     // allocate arrays for testing
-    unsigned char msg_org  [msg_len_dec];   // original message
-    unsigned char msg_enc_0[msg_len_enc];   // encoded (original object)
-    unsigned char msg_enc_1[msg_len_enc];   // encoded (copy object)
-    unsigned char msg_dec_0[msg_len_dec];   // decoded (original object)
-    unsigned char msg_dec_1[msg_len_dec];   // encoded (copy object)
+    LIQUID_VLA(unsigned char, msg_org, msg_len_dec);   // original message
+    LIQUID_VLA(unsigned char, msg_enc_0, msg_len_enc);   // encoded (original object)
+    LIQUID_VLA(unsigned char, msg_enc_1, msg_len_enc);   // encoded (copy object)
+    LIQUID_VLA(unsigned char, msg_dec_0, msg_len_dec);   // decoded (original object)
+    LIQUID_VLA(unsigned char, msg_dec_1, msg_len_dec);   // encoded (copy object)
 
     // create object
     packetizer q0 = packetizer_create(msg_len_dec,crc,fec0,fec1);

@@ -1,4 +1,4 @@
-char __docstr__[] = "Demonstrate bpacketsync interface.";
+const char __docstr__[] = "Demonstrate bpacketsync interface.";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,6 +6,7 @@ char __docstr__[] = "Demonstrate bpacketsync interface.";
 #include <time.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int callback(unsigned char *  _payload,
@@ -14,6 +15,7 @@ int callback(unsigned char *  _payload,
              framesyncstats_s _stats,
              void *           _userdata)
 {
+    (void)_stats;
     printf("callback invoked, payload (%u bytes) : %s\n",
             _payload_len,
             _payload_valid ? "valid" : "INVALID!");
@@ -40,9 +42,9 @@ int main(int argc, char* argv[])
     liquid_argparse_parse(argc,argv);
 
     // validate options
-    crc_scheme crc  = liquid_getopt_str2crc(crc_type);
-    fec_scheme fec0 = liquid_getopt_str2fec(fec0_type);
-    fec_scheme fec1 = liquid_getopt_str2fec(fec1_type);
+    crc_scheme crc  = (crc_scheme)liquid_getopt_str2crc(crc_type);
+    fec_scheme fec0 = (fec_scheme)liquid_getopt_str2fec(fec0_type);
+    fec_scheme fec1 = (fec_scheme)liquid_getopt_str2fec(fec1_type);
 
     if (msg_len_org == 0)
         return liquid_error(LIQUID_EICONFIG,"packet length must be greater than zero");
@@ -59,10 +61,10 @@ int main(int argc, char* argv[])
     unsigned int msg_len_enc = bpacketgen_get_packet_len(pg);
 
     // initialize arrays
-    unsigned char msg_org[msg_len_org  ];   // original message
-    unsigned char msg_enc[msg_len_enc  ];   // encoded message
-    unsigned char msg_rec[msg_len_enc+1];   // received message
-    unsigned char msg_dec[msg_len_org  ];   // decoded message
+    LIQUID_VLA(unsigned char, msg_org, msg_len_org);   // original message
+    LIQUID_VLA(unsigned char, msg_enc, msg_len_enc);   // encoded message
+    LIQUID_VLA(unsigned char, msg_rec, msg_len_enc+1);   // received message
+    LIQUID_VLA(unsigned char, msg_dec, msg_len_org);   // decoded message
 
     // create packet synchronizer
     bpacketsync ps = bpacketsync_create(0, callback, (void*)msg_dec);

@@ -19,7 +19,7 @@ int main(int argc, char*argv[]) {
     // create spectral periodogram
     spgramcf q = spgramcf_create_default(nfft);
 
-    float complex buf[k];
+    liquid_float_complex buf[k];
     unsigned int i;
     for (i=0; i<num_symbols; i++)
     {

@@ -45,8 +45,8 @@ void symsync_crcf_bench(struct rusage *     _start,
     *_num_iterations /= num_samples;
 
     unsigned int num_written;
-    float complex x[num_samples];
-    float complex y[num_samples];
+    LIQUID_VLA(liquid_float_complex, x, num_samples);
+    LIQUID_VLA(liquid_float_complex, y, num_samples);
 
     // generate pseudo-random data
     msequence ms = msequence_create_default(6);

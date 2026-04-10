@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Automatic gain control example demonstrating its transient"
 " response on real-valued inputs";
 
@@ -7,6 +7,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -31,9 +32,9 @@ int main(int argc, char*argv[])
     agc_rrrf q = agc_rrrf_create();
     agc_rrrf_set_bandwidth(q, bt);
 
-    float x[num_samples];       // input
-    float y[num_samples];       // output
-    float rssi[num_samples];    // received signal strength
+    LIQUID_VLA(float, x, num_samples);       // input
+    LIQUID_VLA(float, y, num_samples);       // output
+    LIQUID_VLA(float, rssi, num_samples);    // received signal strength
 
     // print info
     printf("automatic gain control // loop bandwidth: %4.2e\n",bt);

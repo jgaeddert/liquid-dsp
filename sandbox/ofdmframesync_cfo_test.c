@@ -25,7 +25,7 @@ void usage()
     printf("  s     : number of steps, default: 21\n");
 }
 
-static int callback(float complex * _X,
+static int callback(liquid_float_complex * _X,
                     unsigned char * _p,
                     unsigned int    _M,
                     void *          _userdata);
@@ -82,9 +82,9 @@ int main(int argc, char*argv[])
     ofdmframesync fs = ofdmframesync_create(M, cp_len, taper_len, p, callback, (int*)&frame_detected);
     ofdmframesync_print(fs);
 
-    float complex X[M];                 // channelized symbols
-    float complex frame[num_samples];   // initial frame
-    float complex y[num_samples];       // output time series
+    liquid_float_complex X[M];                 // channelized symbols
+    liquid_float_complex frame[num_samples];   // initial frame
+    liquid_float_complex y[num_samples];       // output time series
 
     unsigned int n=0;
 
@@ -194,7 +194,7 @@ int main(int argc, char*argv[])
     return 0;
 }
 
-static int callback(float complex * _X,
+static int callback(liquid_float_complex * _X,
                     unsigned char * _p,
                     unsigned int    _M,
                     void *          _userdata)

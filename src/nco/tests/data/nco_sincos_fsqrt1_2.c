@@ -24,9 +24,12 @@
 // autotest nco sincos data for f=0.707106781187
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
+#include "liquid.h"
 
-float complex nco_sincos_fsqrt1_2[256] = {
+liquid_float_complex nco_sincos_fsqrt1_2[256] = {
     1.000000000000 + _Complex_I*  0.000000000000,
     0.760244597076 + _Complex_I*  0.649636939080,
     0.155943694765 + _Complex_I*  0.987765945993,

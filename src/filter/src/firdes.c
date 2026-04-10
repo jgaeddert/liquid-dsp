@@ -288,7 +288,7 @@ int liquid_firdes_windowf(int          _wtype,
         h1 = sincf(2.0f*_fc*t);
 
         // window
-        h2 = liquid_windowf(_wtype,i,_n,_arg);
+        h2 = liquid_windowf((liquid_window_type)_wtype,i,_n,_arg);
 
         // composite
         _h[i] = h1*h2;
@@ -441,7 +441,6 @@ int liquid_firdes_prototype(liquid_firfilt_type _type,
     default:
         return liquid_error(LIQUID_EICONFIG,"liquid_firdes_prototype(), filter type '%d'", _type);
     }
-    return LIQUID_OK;
 }
 
 
@@ -631,7 +630,7 @@ float liquid_filter_energy(float *      _h,
     }
 
     // allocate memory for complex phasor
-    float complex expjwt[_h_len];
+    LIQUID_VLA(liquid_float_complex, expjwt, _h_len);
 
     // initialize accumulators
     float e_total = 0.0f;       // total energy
@@ -650,7 +649,7 @@ float liquid_filter_energy(float *      _h,
             expjwt[k] = cexpf(_Complex_I*2*M_PI*f*k);
 
         // compute vector dot product
-        float complex v;
+        liquid_float_complex v;
         dotprod_crcf_execute(dp, expjwt, &v);
 
         // accumulate output
@@ -675,10 +674,10 @@ float liquid_filter_energy(float *      _h,
 int liquid_freqrespf(float *         _h,
                      unsigned int    _h_len,
                      float           _fc,
-                     float complex * _H)
+                     liquid_float_complex * _H)
 {
     // compute dot product between coefficients and exp{ 2 pi fc {0..n-1} }
-    float complex H = 0.0f;
+    liquid_float_complex H = 0.0f;
     unsigned int i;
     for (i=0; i<_h_len; i++)
         H += _h[i] * cexpf(-_Complex_I*2*M_PI*_fc*i);
@@ -694,13 +693,13 @@ int liquid_freqrespf(float *         _h,
 //  _h_len  : length of coefficients array
 //  _fc     : center frequency for analysis, -0.5 <= _fc <= 0.5
 //  _H      : pointer to output value
-int liquid_freqrespcf(float complex * _h,
+int liquid_freqrespcf(liquid_float_complex * _h,
                       unsigned int    _h_len,
                       float           _fc,
-                      float complex * _H)
+                      liquid_float_complex * _H)
 {
     // compute dot product between coefficients and exp{ 2 pi fc {0..n-1} }
-    float complex H = 0.0f;
+    liquid_float_complex H = 0.0f;
     unsigned int i;
     for (i=0; i<_h_len; i++)
         H += _h[i] * cexpf(-_Complex_I*2*M_PI*_fc*i);

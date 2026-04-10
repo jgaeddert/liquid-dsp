@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates linear prediction in liquid. An input signal"
 " is generated which exhibits a strong temporal correlation. The linear"
 " predictor generates an approximating all-pole filter which minimizes"
@@ -6,9 +6,12 @@ char __docstr__[] =
 
 #include <stdio.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -27,9 +30,9 @@ int main(int argc, char* argv[])
     unsigned int i;
 
     // allocate memory for data arrays
-    float y[n];         // input signal (filtered noise)
-    float a_hat[p+1];   // lpc output
-    float g_hat[p+1];   // lpc output
+    LIQUID_VLA(float, y, n);         // input signal (filtered noise)
+    LIQUID_VLA(float, a_hat, p+1);   // lpc output
+    LIQUID_VLA(float, g_hat, p+1);   // lpc output
 
     // generate input signal (filtered noise)
     for (i=0; i<n; i++)
@@ -42,27 +45,27 @@ int main(int argc, char* argv[])
     liquid_lpc(y,n,p,a_hat,g_hat);
 
     // run prediction filter
-    float a_lpc[p+1];
-    float b_lpc[p+1];
+    LIQUID_VLA(float, a_lpc, p+1);
+    LIQUID_VLA(float, b_lpc, p+1);
     for (i=0; i<p+1; i++) {
         a_lpc[i] = (i==0) ? 1.0f : 0.0f;
         b_lpc[i] = (i==0) ? 0.0f : -a_hat[i];
     }
     f = iirfilt_rrrf_create(b_lpc,p+1, a_lpc,p+1);
     iirfilt_rrrf_print(f);
-    float y_hat[n];
+    LIQUID_VLA(float, y_hat, n);
     for (i=0; i<n; i++)
         iirfilt_rrrf_execute(f, y[i], &y_hat[i]);
     iirfilt_rrrf_destroy(f);
 
     // compute prediction error
-    float err[n];
+    LIQUID_VLA(float, err, n);
     for (i=0; i<n; i++)
         err[i] = y[i] - y_hat[i];
 
     // compute autocorrelation of prediction error
-    float lag[n];
-    float rxx[n];
+    LIQUID_VLA(float, lag, n);
+    LIQUID_VLA(float, rxx, n);
     for (i=0; i<n; i++) {
         lag[i] = (float)i;
         rxx[i] = 0.0f;

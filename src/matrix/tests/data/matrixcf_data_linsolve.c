@@ -24,10 +24,12 @@
 // data for testing linear solver
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
-
+#endif
+#include "liquid.h"
 // matrixcf_data_linsolve_A [size: 5 x 5]
-float complex matrixcf_data_linsolve_A[] = {
+liquid_float_complex matrixcf_data_linsolve_A[] = {
    -0.482884645462 +  -0.221723198891*_Complex_I /* ( 0, 0) */,
    -0.387645065784 +   0.086682170630*_Complex_I /* ( 0, 1) */,
     1.580931067467 +   0.883717715740*_Complex_I /* ( 0, 2) */,
@@ -55,7 +57,7 @@ float complex matrixcf_data_linsolve_A[] = {
    -0.241452947259 +   1.540177464485*_Complex_I /* ( 4, 4) */};
 
 // matrixcf_data_linsolve_x [size: 5 x 1]
-float complex matrixcf_data_linsolve_x[] = {
+liquid_float_complex matrixcf_data_linsolve_x[] = {
    -0.686784207821 +   0.516409814358*_Complex_I /* ( 0, 0) */,
     0.725918948650 +  -0.725804686546*_Complex_I /* ( 1, 0) */,
     0.048043362796 +   1.415739893913*_Complex_I /* ( 2, 0) */,
@@ -63,7 +65,7 @@ float complex matrixcf_data_linsolve_x[] = {
     1.000079274178 +   0.117630988359*_Complex_I /* ( 4, 0) */};
 
 // matrixcf_data_linsolve_b [size: 5 x 1]
-float complex matrixcf_data_linsolve_b[] = {
+liquid_float_complex matrixcf_data_linsolve_b[] = {
     1.889372086452 +   2.079795053851*_Complex_I /* ( 0, 0) */,
     4.099006087145 +   0.093571115573*_Complex_I /* ( 1, 0) */,
    -0.465385431770 +  -0.201195243205*_Complex_I /* ( 2, 0) */,

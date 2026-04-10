@@ -40,8 +40,9 @@ int MATRIX(_linsolve)(T *          _A,
                       T *          _x,
                       void *       _opts)
 {
+    (void)_opts;
 #if 0
-    T A_inv[_n*_n];
+    LIQUID_VLA(T, A_inv, _n*_n);
     memmove(A_inv, _A, _n*_n*sizeof(T));
     MATRIX(_inv)(A_inv,_n,_n);
 
@@ -59,7 +60,7 @@ int MATRIX(_linsolve)(T *          _A,
     //  A31 A32 A33 ... A3n b3
     //  ...
     //  An1 An2 An3 ... Ann bn
-    T M[_n*_n + _n];    // allocate array
+    LIQUID_VLA(T, M, _n*_n + _n);    // allocate array
     unsigned int m=0;   // output matrix index counter
     unsigned int a=0;   // input matrix index counter
     for (r=0; r<_n; r++) {

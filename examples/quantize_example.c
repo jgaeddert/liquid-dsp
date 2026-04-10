@@ -1,4 +1,4 @@
-char __docstr__[] = "Demonstrates the quantizer/compander combination.";
+const char __docstr__[] = "Demonstrates the quantizer/compander combination.";
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -6,6 +6,7 @@ char __docstr__[] = "Demonstrates the quantizer/compander combination.";
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char *argv[])
@@ -25,8 +26,8 @@ int main(int argc, char *argv[])
         fprintf(stderr,"error: mu must be greater than 0\n");
 
     unsigned int i;
-    float x[num_samples];
-    float y[num_samples];
+    LIQUID_VLA(float, x, num_samples);
+    LIQUID_VLA(float, y, num_samples);
 
     float v;        // compressed sample
     unsigned int q; // quantized sample

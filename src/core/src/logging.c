@@ -28,8 +28,26 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
+#ifdef _WIN32
+#  include <windows.h>
+#else
+#  include <unistd.h>
+#endif
 #include "liquid.internal.h"
+
+// MinGW does not provide strsep; provide a simple implementation
+#if defined(__MINGW32__) || defined(__MINGW64__) || defined(_MSC_VER)
+static char * liquid_strsep(char **stringp, const char *delim)
+{
+    char *s = *stringp;
+    if (s == NULL) return NULL;
+    char *e = strpbrk(s, delim);
+    if (e) { *e++ = '\0'; }
+    *stringp = e;
+    return s;
+}
+#define strsep liquid_strsep
+#endif
 
 #ifdef LIQUID_COLOR_ENABLE
     // enable ANSI escape colors
@@ -104,7 +122,7 @@ liquid_logger liquid_logger_safe_cast(liquid_logger _q)
 
 // log filename and line number to stream output
 int liquid_logger_stream_file_line(liquid_log_event _event,
-                                   FILE * restrict  _stream,
+                                   FILE *           _stream,
                                    int              _color,
                                    int              _smax,
                                    int              _line)
@@ -141,7 +159,7 @@ int liquid_logger_stream_file_line(liquid_log_event _event,
 
 // log to file stream
 int liquid_logger_callback_stream(liquid_log_event _event,
-                                  FILE * restrict  _stream,
+                                  FILE *           _stream,
                                   int              _config)
 {
     if (_stream != stdout && _stream != stderr && ftell(_stream) < 0)
@@ -218,7 +236,20 @@ int liquid_event_timestamp(struct liquid_log_event_s * _q, int _config)
 {
     // set formatted timestamp
     // NOTE: the string format is hard-coded here
-#if 0
+#if defined(_WIN32)
+    // Windows: use GetSystemTimeAsFileTime for high-resolution time
+    {
+        FILETIME ft;
+        ULARGE_INTEGER uli;
+        GetSystemTimeAsFileTime(&ft);
+        uli.LowPart  = ft.dwLowDateTime;
+        uli.HighPart = ft.dwHighDateTime;
+        // Convert from 100-ns intervals since 1601-01-01 to Unix epoch
+        uli.QuadPart -= 116444736000000000ULL;
+        _q->timestamp.tv_sec  = (time_t)(uli.QuadPart / 10000000ULL);
+        _q->timestamp.tv_nsec = (long)((uli.QuadPart % 10000000ULL) * 100);
+    }
+#elif defined(__APPLE__) || defined(__linux__)
     clock_gettime(CLOCK_REALTIME, &(_q->timestamp));
 #else
     timespec_get(&(_q->timestamp), TIME_UTC);
@@ -226,12 +257,12 @@ int liquid_event_timestamp(struct liquid_log_event_s * _q, int _config)
     bool format_utc = _config & LIQUID_LOG_UTC;
     size_t n=0;
     if (_config & LIQUID_LOG_RAWTIME) {
-        n += snprintf(_q->time_str, 64, "%ld", _q->timestamp.tv_sec);
+        n += snprintf(_q->time_str, 64, "%lld", (long long)_q->timestamp.tv_sec);
     } else if (_config & LIQUID_LOG_DATETIME) {
         if (format_utc)
-            n += strftime(_q->time_str, sizeof(_q->time_str), "%Y-%m-%dT%T", gmtime(&_q->timestamp.tv_sec));
+            n += strftime(_q->time_str, sizeof(_q->time_str), "%Y-%m-%dT%H:%M:%S", gmtime(&_q->timestamp.tv_sec));
         else
-            n += strftime(_q->time_str, sizeof(_q->time_str), "%Y-%m-%d %T", localtime(&_q->timestamp.tv_sec));
+            n += strftime(_q->time_str, sizeof(_q->time_str), "%Y-%m-%d %H:%M:%S", localtime(&_q->timestamp.tv_sec));
     } else if (_config & LIQUID_LOG_DATE) {
         if (format_utc)
             n += strftime(_q->time_str, sizeof(_q->time_str), "%Y-%m-%d", gmtime(&_q->timestamp.tv_sec));
@@ -239,20 +270,20 @@ int liquid_event_timestamp(struct liquid_log_event_s * _q, int _config)
             n += strftime(_q->time_str, sizeof(_q->time_str), "%Y-%m-%d", localtime(&_q->timestamp.tv_sec));
     } else if (_config & LIQUID_LOG_TIME) {
         if (format_utc)
-            n += strftime(_q->time_str, sizeof(_q->time_str), "%T", gmtime(&_q->timestamp.tv_sec));
+            n += strftime(_q->time_str, sizeof(_q->time_str), "%H:%M:%S", gmtime(&_q->timestamp.tv_sec));
         else
-            n += strftime(_q->time_str, sizeof(_q->time_str), "%T", localtime(&_q->timestamp.tv_sec));
+            n += strftime(_q->time_str, sizeof(_q->time_str), "%H:%M:%S", localtime(&_q->timestamp.tv_sec));
     }
 
     // print fractional seconds if time is used and ms, ns, or us is requested
     bool print_time = _config & (LIQUID_LOG_RAWTIME | LIQUID_LOG_DATETIME | LIQUID_LOG_TIME);
 
     if (print_time && (_config & LIQUID_LOG_MS))
-        sprintf(_q->time_str+n,".%.3ld", _q->timestamp.tv_nsec / 1000000);
+        sprintf(_q->time_str+n,".%.3ld", (long)(_q->timestamp.tv_nsec / 1000000));
     else if (print_time && (_config & LIQUID_LOG_US))
-        sprintf(_q->time_str+n,".%.6ld", _q->timestamp.tv_nsec /    1000);
+        sprintf(_q->time_str+n,".%.6ld", (long)(_q->timestamp.tv_nsec /    1000));
     else if (print_time && (_config & LIQUID_LOG_NS))
-        sprintf(_q->time_str+n,".%.9ld", _q->timestamp.tv_nsec          );
+        sprintf(_q->time_str+n,".%.9ld", (long)(_q->timestamp.tv_nsec          ));
 
     if (format_utc)
         strcat(_q->time_str, "Z");
@@ -397,8 +428,9 @@ int liquid_logger_set_config_str(liquid_logger _q, const char * _config)
         else if (strcmp(token,"line"          )==0) { flag = LIQUID_LOG_LINE;          }
         else if (strcmp(token,"color"         )==0) { flag = LIQUID_LOG_COLOR;         }
         else {
+            int rc = liquid_error(LIQUID_EICONFIG,"liquid_logger_set_config_str(), unexpected token: '%s%s'", unset?"~":"", token);
             free(tofree);
-            return liquid_error(LIQUID_EICONFIG,"liquid_logger_set_config_str(), unexpected token: '%s%s'", unset?"~":"", token);
+            return rc;
         }
         // set/unset flag
         if (unset) { config &= ~flag; }
@@ -566,7 +598,7 @@ int liquid_vlog(liquid_logger _q,
     struct liquid_log_event_s event = {
         .format    = _format,
         .file      = _file,
-        .line      = _line,
+        .line      = (unsigned int)_line,
         .level     = _level,
     };
 

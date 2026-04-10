@@ -1,10 +1,13 @@
-char __docstr__[] = "Demonstrate partitioning rresamp work in separate blocks";
+const char __docstr__[] = "Demonstrate partitioning rresamp work in separate blocks";
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -25,9 +28,9 @@ int main(int argc, char* argv[])
     rresamp_crcf q1 = rresamp_crcf_create_kaiser(interp,decim,m,bw,As);
 
     // full input, output buffers
-    float complex buf_in   [2*decim*n]; // input buffer
-    float complex buf_out_0[2*interp*n]; // output, normal resampling operation
-    float complex buf_out_1[2*interp*n]; // output, partitioned into 2 blocks
+    LIQUID_VLA(liquid_float_complex, buf_in, 2*decim*n); // input buffer
+    LIQUID_VLA(liquid_float_complex, buf_out_0, 2*interp*n); // output, normal resampling operation
+    LIQUID_VLA(liquid_float_complex, buf_out_1, 2*interp*n); // output, partitioned into 2 blocks
 
     // generate input signal (pulse)
     unsigned int i;
@@ -54,7 +57,7 @@ int main(int argc, char* argv[])
     // compute RMS error between output buffers
     float rmse = 0.0f;
     for (i=0; i<2*interp*n; i++) {
-        float complex err = buf_out_0[i] - buf_out_1[i];
+        liquid_float_complex err = buf_out_0[i] - buf_out_1[i];
         rmse += crealf( err * conjf(err) );
     }
     rmse = sqrtf( rmse / (float)(2*interp*n) );

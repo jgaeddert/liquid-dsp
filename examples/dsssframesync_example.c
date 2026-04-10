@@ -1,4 +1,4 @@
-char __docstr__[] = "Demonstrate the interface to dsssframesync";
+const char __docstr__[] = "Demonstrate the interface to dsssframesync";
 
 #include <assert.h>
 #include <getopt.h>
@@ -9,6 +9,7 @@ char __docstr__[] = "Demonstrate the interface to dsssframesync";
 #include <time.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // dsssframesync callback function
@@ -35,9 +36,9 @@ int main(int argc, char * argv[])
     liquid_argparse_parse(argc,argv);
 
     // validate options
-    crc_scheme check= liquid_getopt_str2crc(crc_type);
-    fec_scheme fec0 = liquid_getopt_str2fec(fec0_type);
-    fec_scheme fec1 = liquid_getopt_str2fec(fec1_type);
+    crc_scheme check= (crc_scheme)liquid_getopt_str2crc(crc_type);
+    fec_scheme fec0 = (fec_scheme)liquid_getopt_str2fec(fec0_type);
+    fec_scheme fec1 = (fec_scheme)liquid_getopt_str2fec(fec1_type);
 
     if (payload_len == 0)
         return liquid_error(LIQUID_EICONFIG,"packet length must be greater than zero");
@@ -66,8 +67,8 @@ int main(int argc, char * argv[])
 
     // generate the frame in blocks
     unsigned int buf_len  = 256;
-    float complex x[buf_len];
-    float complex y[buf_len];
+    LIQUID_VLA(liquid_float_complex, x, buf_len);
+    LIQUID_VLA(liquid_float_complex, y, buf_len);
 
     int   frame_complete = 0;
     float phi            = 0.0f;
@@ -111,6 +112,8 @@ static int callback(unsigned char *  _header,
                     framesyncstats_s _stats,
                     void *           _userdata)
 {
+    (void)_header;
+    (void)_userdata;
     printf("******** callback invoked\n");
 
     // count bit errors (assuming all-zero message)

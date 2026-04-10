@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example extends that of `symsync_crcf_example.c` by including options"
 " for simulating a timing rate offset in addition to just a timing phase"
 " error. The resulting output file shows not just the constellation but the"
@@ -12,6 +12,7 @@ char __docstr__[] =
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -35,8 +36,8 @@ int main(int argc, char* argv[])
     liquid_argparse_parse(argc,argv);
 
     // set filter types
-    int ftype_tx = liquid_getopt_str2firfilt(ftype_str);
-    int ftype_rx = liquid_getopt_str2firfilt(ftype_str);
+    liquid_firfilt_type ftype_tx = (liquid_firfilt_type)liquid_getopt_str2firfilt(ftype_str);
+    liquid_firfilt_type ftype_rx = (liquid_firfilt_type)liquid_getopt_str2firfilt(ftype_str);
     // ensure appropriate GMSK filter pairs are used if either tx or rx is specified
     if (strcmp(ftype_str,"gmsktx")==0)
         ftype_rx = LIQUID_FIRFILT_GMSKRX;
@@ -75,14 +76,14 @@ int main(int argc, char* argv[])
 
     unsigned int num_samples = k*num_symbols;
     unsigned int num_samples_resamp = (unsigned int) ceilf(num_samples*r*1.1f) + 4;
-    float complex s[num_symbols];           // data symbols
-    float complex x[num_samples];           // interpolated samples
-    float complex y[num_samples_resamp];    // resampled data (resamp_crcf)
-    float complex z[k_out*num_symbols + 64];// synchronized samples
-    float complex sym_out[num_symbols + 64];// synchronized symbols
+    LIQUID_VLA(liquid_float_complex, s, num_symbols);           // data symbols
+    LIQUID_VLA(liquid_float_complex, x, num_samples);           // interpolated samples
+    LIQUID_VLA(liquid_float_complex, y, num_samples_resamp);    // resampled data (resamp_crcf)
+    LIQUID_VLA(liquid_float_complex, z, k_out*num_symbols + 64);// synchronized samples
+    LIQUID_VLA(liquid_float_complex, sym_out, num_symbols + 64);// synchronized symbols
 
     // generate symbols
-    modemcf mod = modemcf_create(liquid_getopt_str2mod(mod_str));
+    modemcf mod = modemcf_create((modulation_scheme)liquid_getopt_str2mod(mod_str));
     for (i=0; i<num_symbols; i++) {
         if (sequence) {
             s[i] = (i%2) ? 1.0f : -1.0f;  // 101010 phasing pattern
@@ -100,7 +101,7 @@ int main(int argc, char* argv[])
 
     // design interpolating filter
     unsigned int h_len = 2*k*m+1;
-    float h[h_len];
+    LIQUID_VLA(float, h, h_len);
     liquid_firdes_prototype(ftype_tx,k,m,beta,dt,h);
     firinterp_crcf q = firinterp_crcf_create(k,h,h_len);
     for (i=0; i<num_symbols; i++) {
@@ -152,7 +153,7 @@ int main(int argc, char* argv[])
     unsigned int num_samples_sync=0;
     unsigned int nn;
     unsigned int num_symbols_sync = 0;
-    float tau_hat[num_samples];
+    LIQUID_VLA(float, tau_hat, num_samples);
     for (i=ds; i<num_samples_resampled; i++) {
         tau_hat[num_samples_sync] = symsync_crcf_get_tau(d);
         symsync_crcf_execute(d, &y[i], 1, &z[num_samples_sync], &nn);

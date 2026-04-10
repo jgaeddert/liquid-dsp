@@ -24,7 +24,9 @@
 // data for testing Gram-Schmidt orthonormalization
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 // matrixf_data_gramschmidt_A [size: 4 x 3]
 float matrixf_data_gramschmidt_A[] = {

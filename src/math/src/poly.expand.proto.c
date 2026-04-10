@@ -190,9 +190,9 @@ int POLY(_expandroots2)(T *          _a,
 {
     unsigned int i;
 
-    // factor _b[i] from each root : (x*b - a) = (x - a/b)*b
+    // factor _b[i] from each root : (x*b - a) = (x - a/b)*b (use LIQUID_VLA for MSVC)
     T g = 1.0;
-    T r[_n];
+    LIQUID_VLA(T, r, _n);
     for (i=0; i<_n; i++) {
         g *= -_b[i];
         r[i] = _a[i] / _b[i];

@@ -45,12 +45,12 @@ void iirdecim_crcf_bench(struct rusage *     _start,
     iirdecim_crcf q = iirdecim_crcf_create_prototype(_M,ftype,btype,format,_order,fc,f0,Ap,As);
 
     // initialize input
-    float complex x[_M];
+    LIQUID_VLA(liquid_float_complex, x, _M);
     unsigned int i;
     for (i=0; i<_M; i++)
         x[i] = (i%2) ? 1.0f : -1.0f;
 
-    float complex y;
+    liquid_float_complex y;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);

@@ -74,9 +74,9 @@ qnsearch qnsearch_create(void *           _userdata,
 {
     // validate input
     if (_u == NULL)
-        return liquid_error_config("qnsearch_create(), utility function cannot be NULL")
+        return liquid_error_config_ptr(qnsearch, "qnsearch_create(), utility function cannot be NULL");
     if (_num_parameters == 0)
-        return liquid_error_config("qnsearch_create(), number of parameters must be greater than zero");
+        return liquid_error_config_ptr(qnsearch, "qnsearch_create(), number of parameters must be greater than zero");
 
     // create object and initialize public values
     qnsearch q = (qnsearch) malloc( sizeof(struct qnsearch_s) );

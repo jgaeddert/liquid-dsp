@@ -33,7 +33,7 @@ void sumsqf_bench(struct rusage *     _start,
     *_num_iterations = *_num_iterations * 20 / _n;
     if (*_num_iterations < 1) *_num_iterations = 1;
 
-    float x[_n];
+    LIQUID_VLA(float, x, _n);
     float y = 0.0f;
     unsigned int long i;
     for (i=0; i<_n; i++)

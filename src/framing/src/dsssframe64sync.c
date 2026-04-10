@@ -29,21 +29,23 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <assert.h>
 
 #include "liquid.internal.h"
 
 // internal update
 int dsssframe64sync_step(dsssframe64sync _q,
-                         float complex * _buf,
+                         liquid_float_complex * _buf,
                          unsigned int    _buf_len);
 
 // internal decode received frame, update statistics, invoke callback
 int dsssframe64sync_decode(dsssframe64sync _q);
 
 // internal synchronization callback, return 0:continue, 1:reset
-int dsssframe64sync_callback_internal(float complex * _buf,
+int dsssframe64sync_callback_internal(liquid_float_complex * _buf,
                                       unsigned int    _buf_len,
                                       void *          _context)
 { return dsssframe64sync_step((dsssframe64sync) _context, _buf, _buf_len); }
@@ -61,17 +63,17 @@ struct dsssframe64sync_s {
     framedatastats_s framedatastats;// frame statistic object (packet statistics)
 
     // preamble
-    float complex preamble_pn[1024];// known 1024-symbol p/n sequence
-    float complex preamble_rx[1024];// received p/n symbols
+    LIQUID_VLA(liquid_float_complex, preamble_pn, 1024);// known 1024-symbol p/n sequence
+    LIQUID_VLA(liquid_float_complex, preamble_rx, 1024);// received p/n symbols
 
     // payload decoder
-    float complex payload_rx [650]; // received payload symbols with pilots
-    float complex payload_sym[600]; // received payload symbols
-    unsigned char payload_dec[ 72]; // decoded payload bytes
+    liquid_float_complex payload_rx [650]; // received payload symbols with pilots
+    LIQUID_VLA(liquid_float_complex, payload_sym, 600); // received payload symbols
+    LIQUID_VLA(unsigned char, payload_dec,  72); // decoded payload bytes
 
     qdsync_cccf   detector;         // frame detector
     msequence     ms;               // spreading sequence generator
-    float complex sym_despread;     // despread symbol
+    liquid_float_complex sym_despread;     // despread symbol
 
     qpacketmodem  dec;              // packet demodulator/decoder
     qpilotsync    pilotsync;        // pilot extraction, carrier recovery
@@ -117,7 +119,7 @@ dsssframe64sync dsssframe64sync_create(framesync_callback _callback,
     int fec1       = LIQUID_FEC_GOLAY2412;
     int mod_scheme = LIQUID_MODEM_QPSK;
     q->dec         = qpacketmodem_create();
-    qpacketmodem_configure(q->dec, 72, check, fec0, fec1, mod_scheme);
+    qpacketmodem_configure(q->dec, 72, (crc_scheme)check, (fec_scheme)fec0, (fec_scheme)fec1, mod_scheme);
     //qpacketmodem_print(q->dec);
     assert( qpacketmodem_get_frame_len(q->dec)==600 );
 
@@ -138,7 +140,7 @@ dsssframe64sync dsssframe64sync_copy(dsssframe64sync q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("dsssframe64sync_copy(), object cannot be NULL");
+        return (dsssframe64sync)liquid_error_config("dsssframe64sync_copy(), object cannot be NULL");
 
     // allocate memory for new object
     dsssframe64sync q_copy = (dsssframe64sync) malloc(sizeof(struct dsssframe64sync_s));
@@ -227,7 +229,7 @@ int dsssframe64sync_set_context(dsssframe64sync _q,
 //  _buf     : input sample array, shape: (_buf_len,)
 //  _buf_len : number of input samples
 int dsssframe64sync_execute(dsssframe64sync _q,
-                            float complex * _buf,
+                            liquid_float_complex * _buf,
                             unsigned int    _buf_len)
 {
     // run detector/synchronizer, invoking internal callback as needed
@@ -274,7 +276,7 @@ framedatastats_s dsssframe64sync_get_framedatastats(dsssframe64sync _q)
 
 // internal update
 int dsssframe64sync_step(dsssframe64sync _q,
-                         float complex * _buf,
+                         liquid_float_complex * _buf,
                          unsigned int    _buf_len)
 {
     unsigned int i;
@@ -287,7 +289,7 @@ int dsssframe64sync_step(dsssframe64sync _q,
 
         // generate pseudo-random spreading symbol and de-spread chip
         unsigned int  p = msequence_generate_symbol(_q->ms, 2);
-        float complex s = cexpf(_Complex_I*2*M_PI*(float)p/(float)4);
+        liquid_float_complex s = cexpf(_Complex_I*2*M_PI*(float)p/(float)4);
         _q->sym_despread += _buf[i] * conjf(s);
         _q->chip_counter++;
 

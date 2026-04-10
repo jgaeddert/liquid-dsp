@@ -23,7 +23,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 #include <assert.h>
 
@@ -36,18 +38,18 @@
 //  _p          :   subcarrier allocation
 //  _M          :   number of subcarriers
 //  _userdata   :   user-defined data structure
-int ofdmframesync_autotest_callback(float complex * _X,
+int ofdmframesync_autotest_callback(liquid_float_complex * _X,
                                     unsigned char * _p,
                                     unsigned int    _M,
                                     void * _userdata)
 {
     liquid_log_debug("*** ofdmframesync, callback invoked! ***");
 
-    // type cast _userdata as complex float array
-    float complex * X = (float complex *)_userdata;
+    // type cast _userdata as liquid_float_complex array
+    liquid_float_complex * X = (liquid_float_complex *)_userdata;
 
     // copy values and return
-    memmove(X, _X, _M*sizeof(float complex));
+    memmove(X, _X, _M*sizeof(liquid_float_complex));
 
     // return
     return 0;
@@ -73,7 +75,7 @@ void testbench_ofdmframesync_acquire(liquid_autotest __q__,
     float dphi = 1.0f / (float)M;       // carrier frequency offset
 
     // subcarrier allocation (initialize to default)
-    unsigned char p[M];
+    LIQUID_VLA(unsigned char, p, M);
     ofdmframe_init_default_sctype(M, p);
 
     // derived values
@@ -82,12 +84,12 @@ void testbench_ofdmframesync_acquire(liquid_autotest __q__,
     // create synthesizer/analyzer objects
     ofdmframegen fg = ofdmframegen_create(M, cp_len, taper_len, p);
 
-    float complex X[M];         // original data sequence
-    float complex X_test[M];    // recovered data sequence
+    LIQUID_VLA(liquid_float_complex, X, M);         // original data sequence
+    LIQUID_VLA(liquid_float_complex, X_test, M);    // recovered data sequence
     ofdmframesync fs = ofdmframesync_create(M,cp_len,taper_len,p,ofdmframesync_autotest_callback,(void*)X_test);
 
     unsigned int i;
-    float complex y[num_samples];   // frame samples
+    LIQUID_VLA(liquid_float_complex, y, num_samples);   // frame samples
 
     // assemble full frame
     unsigned int n=0;
@@ -158,7 +160,7 @@ LIQUID_AUTOTEST(ofdmframe_common_config,"","",0.1)
 
     // generate valid subcarrier allocation
     unsigned int M = 120;
-    unsigned char p[M];
+    LIQUID_VLA(unsigned char, p, M);
 
     // default subcarrier allocation
     LIQUID_CHECK(LIQUID_OK == ofdmframe_init_default_sctype(M, p))

@@ -62,8 +62,8 @@ void sumproduct_bench(struct rusage *     _start,
     unsigned int _n = 2*_m;
 
     // create arrays
-    unsigned char Gs[_m*_n]; // generator matrix [m x n]
-    unsigned char Hs[_m*_n]; // parity check matrix [m x n]
+    LIQUID_VLA(unsigned char, Gs, _m*_n); // generator matrix [m x n]
+    LIQUID_VLA(unsigned char, Hs, _m*_n); // parity check matrix [m x n]
     sumproduct_generate(_m, Gs, Hs);
 
     // generate sparse binary matrices
@@ -74,10 +74,10 @@ void sumproduct_bench(struct rusage *     _start,
     //printf("G:\n"); smatrixb_print_expanded(G);
     //printf("H:\n"); smatrixb_print_expanded(H);
 
-    unsigned char x[_m];     // original message signal
-    unsigned char c[_n];     // transmitted codeword
-    float LLR[_n];           // log-likelihood ratio
-    unsigned char c_hat[_n]; // estimated codeword
+    unsigned char *x     = (unsigned char *)malloc(_m * sizeof(unsigned char));
+    unsigned char *c     = (unsigned char *)malloc(_n * sizeof(unsigned char));
+    float         *LLR   = (float *)        malloc(_n * sizeof(float));
+    unsigned char *c_hat = (unsigned char *)malloc(_n * sizeof(unsigned char));
 
     // initialize message array
     for (i=0; i<_m; i++)
@@ -105,6 +105,11 @@ void sumproduct_bench(struct rusage *     _start,
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
+
+    free(x);
+    free(c);
+    free(LLR);
+    free(c_hat);
 }
 
 //
@@ -127,7 +132,7 @@ void sumproduct_generate(unsigned int    _m,
     unsigned int _n = 2*_m;
 
     // initial generator polynomial [1 x m]
-    unsigned char p[_m];
+    LIQUID_VLA(unsigned char, p, _m);
 
     // initialize generator polynomial (systematic)
     for (i=0; i<_m; i++)

@@ -74,15 +74,15 @@ CPFSKMOD() CPFSKMOD(_create)(unsigned int _bps,
 {
     // validate input
     if (_bps == 0)
-        return liquid_error_config("cpfskmod_create(), bits/symbol must be greater than 0");
+        return liquid_error_config_ptr(CPFSKMOD(), "cpfskmod_create(), bits/symbol must be greater than 0");
     if (_h <= 0.0f)
-        return liquid_error_config("cpfskmod_create(), modulation index must be greater than 0");
+        return liquid_error_config_ptr(CPFSKMOD(), "cpfskmod_create(), modulation index must be greater than 0");
     if (_k < 2 || (_k%2))
-        return liquid_error_config("cpfskmod_create(), samples/symbol must be greater than 2 and even");
+        return liquid_error_config_ptr(CPFSKMOD(), "cpfskmod_create(), samples/symbol must be greater than 2 and even");
     if (_m == 0)
-        return liquid_error_config("cpfskmod_create(), filter delay must be greater than 0");
+        return liquid_error_config_ptr(CPFSKMOD(), "cpfskmod_create(), filter delay must be greater than 0");
     if (_beta <= 0.0f || _beta > 1.0f)
-        return liquid_error_config("cpfskmod_create(), filter roll-off must be in (0,1]");
+        return liquid_error_config_ptr(CPFSKMOD(), "cpfskmod_create(), filter roll-off must be in (0,1]");
 
     switch(_type) {
     case LIQUID_CPFSK_SQUARE:
@@ -91,7 +91,7 @@ CPFSKMOD() CPFSKMOD(_create)(unsigned int _bps,
     case LIQUID_CPFSK_GMSK:
         break;
     default:
-        return liquid_error_config("cpfskmod_create(), invalid filter type '%d'", _type);
+        return liquid_error_config_ptr(CPFSKMOD(), "cpfskmod_create(), invalid filter type '%d'", _type);
     }
 
     // create main object memory
@@ -137,7 +137,7 @@ CPFSKMOD() CPFSKMOD(_create)(unsigned int _bps,
         q->ht_len = 2*(q->k)*(q->m) + (q->k) + 1;
         break;
     default:
-        return liquid_error_config("cpfskmod_create(), invalid filter type '%d'", q->type);
+        return liquid_error_config_ptr(CPFSKMOD(), "cpfskmod_create(), invalid filter type '%d'", q->type);
     }
 
     // create pulse-shaping filter and scale by modulation index
@@ -179,7 +179,7 @@ CPFSKMOD() CPFSKMOD(_copy)(CPFSKMOD() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("cpfskmod_copy(), object cannot be NULL");
+        return liquid_error_config_ptr(CPFSKMOD(), "cpfskmod_copy(), object cannot be NULL");
 
     // create filter object and copy base parameters
     CPFSKMOD() q_copy = (CPFSKMOD()) malloc(sizeof(struct CPFSKMOD(_s)));

@@ -32,6 +32,7 @@
 // create rep3 codec object
 fec fec_rep3_create(void * _opts)
 {
+    (void)_opts;
     fec q = (fec) malloc(sizeof(struct fec_s));
 
     q->scheme = LIQUID_FEC_REP3;
@@ -69,6 +70,7 @@ int fec_rep3_encode(fec             _q,
                     unsigned char * _msg_dec,
                     unsigned char * _msg_enc)
 {
+    (void)_q;
     unsigned int i;
     for (i=0; i<3; i++) {
         memcpy(&_msg_enc[i*_dec_msg_len], _msg_dec, _dec_msg_len);
@@ -87,6 +89,7 @@ int fec_rep3_decode(fec             _q,
                     unsigned char * _msg_enc,
                     unsigned char * _msg_dec)
 {
+    (void)_q;
     unsigned char s0, s1, s2;
     unsigned int i;
     //unsigned int num_errors=0;
@@ -125,6 +128,7 @@ int fec_rep3_decode_soft(fec             _q,
                          unsigned char * _msg_enc,
                          unsigned char * _msg_dec)
 {
+    (void)_q;
     unsigned char s0, s1, s2;
     unsigned int i;
     unsigned int j;

@@ -54,7 +54,7 @@ msequence msequence_create(unsigned int _m,
 {
     // validate input
     if (_m > LIQUID_MAX_MSEQUENCE_M || _m < LIQUID_MIN_MSEQUENCE_M)
-        return liquid_error_config("msequence_create(), m (%u) not in range", _m);
+        return (msequence)liquid_error_config("msequence_create(), m (%u) not in range", _m);
     //if (_a == 0)
     //    return liquid_error_config("msequence_create(), state 'a' cannot be 0");
     
@@ -76,7 +76,7 @@ msequence msequence_copy(msequence q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("msequence_copy(), object cannot be NULL");
+        return (msequence)liquid_error_config("msequence_copy(), object cannot be NULL");
 
     // create filter object and copy base parameters
     msequence q_copy = (msequence) malloc(sizeof(struct msequence_s));
@@ -91,7 +91,7 @@ msequence msequence_create_genpoly(unsigned int _g)
 
     // validate input
     if (t < 2)
-        return liquid_error_config("msequence_create_genpoly(), invalid generator polynomial: 0x%x", _g);
+        return (msequence)liquid_error_config("msequence_create_genpoly(), invalid generator polynomial: 0x%x", _g);
 
     // compute derived values
     unsigned int m = t; // m-sequence shift register length
@@ -137,7 +137,7 @@ msequence msequence_create_default(unsigned int _m)
     case 30: g = LIQUID_MSEQUENCE_GENPOLY_M30; break;
     case 31: g = LIQUID_MSEQUENCE_GENPOLY_M31; break;
     default:
-        return liquid_error_config("msequence_create_default(), m (%u) not in range", _m);
+        return (msequence)liquid_error_config("msequence_create_default(), m (%u) not in range", _m);
     }
 
     // return

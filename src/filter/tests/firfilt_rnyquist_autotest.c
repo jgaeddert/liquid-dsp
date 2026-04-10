@@ -38,12 +38,12 @@ void testbench_firfilt_rnyquist(liquid_autotest __q__,
     unsigned int hc_len = 4*_k*_m+1;  // composite filter length
 
     // arrays
-    float ht[h_len];    // transmit filter
-    float hr[h_len];    // receive filter (different for GMSK)
-    float hc[hc_len];   // composite filter
+    LIQUID_VLA(float, ht, h_len);    // transmit filter
+    LIQUID_VLA(float, hr, h_len);    // receive filter (different for GMSK)
+    LIQUID_VLA(float, hc, hc_len);   // composite filter
 
     // design the filter(s)
-    liquid_firdes_prototype(_ftype, _k, _m, _beta, _dt, ht);
+    liquid_firdes_prototype((liquid_firfilt_type)_ftype, _k, _m, _beta, _dt, ht);
 
     // special case for GMSK
     if (_ftype == LIQUID_FIRFILT_GMSKTX)

@@ -49,14 +49,14 @@ void testbench_detector_cccf(liquid_autotest __q__,
     float delay = (float)(_n + m) + _dt;    // expected delay
 
     // arrays
-    float complex s[_n];            // synchronization pattern (samples)
-    float complex x[num_samples];   // resampled signal with noise and offsets
+    LIQUID_VLA(liquid_float_complex, s, _n);            // synchronization pattern (samples)
+    LIQUID_VLA(liquid_float_complex, x, num_samples);   // resampled signal with noise and offsets
 
     // generate synchronization pattern (two samples per symbol)
     unsigned int n2 = (_n - (_n%2)) / 2;    // n2 = floor(n/2)
     unsigned int mm = liquid_nextpow2(n2);  // mm = ceil( log2(n2) )
     msequence ms = msequence_create_default(mm);
-    float complex v = 0.0f;
+    liquid_float_complex v = 0.0f;
     for (i=0; i<_n; i++) {
         if ( (i%2)==0 )
             v = msequence_advance(ms) ? 1.0f : -1.0f;

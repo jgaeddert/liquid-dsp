@@ -116,8 +116,8 @@ int main(int argc, char*argv[])
 
     // arrays
     unsigned int  sym_in[num_symbols];      // input symbols
-    float complex x[num_samples];           // transmitted signal
-    float complex y[num_samples];           // received signal
+    liquid_float_complex x[num_samples];           // transmitted signal
+    liquid_float_complex y[num_samples];           // received signal
     unsigned int  sym_out[num_symbols];     // output symbols
 
     // determine demodulation mapping between tones and frequency bins
@@ -163,7 +163,7 @@ int main(int argc, char*argv[])
 
 #if 0
     // demodulate signal: high SNR method
-    float complex buf_time[k];
+    liquid_float_complex buf_time[k];
     unsigned int n = 0;
     j = 0;
     for (i=0; i<num_samples; i++) {
@@ -176,7 +176,7 @@ int main(int argc, char*argv[])
             n = 0;
 
             // estimate frequency
-            float complex metric = 0;
+            liquid_float_complex metric = 0;
             unsigned int s;
             for (s=1; s<k; s++)
                 metric += buf_time[s] * conjf(buf_time[s-1]);
@@ -188,8 +188,8 @@ int main(int argc, char*argv[])
     }
 #else
     // demodulate signal: least-squares method
-    float complex buf_time[K];
-    float complex buf_freq[K];
+    liquid_float_complex buf_time[K];
+    liquid_float_complex buf_freq[K];
     fftplan fft = fft_create_plan(K, buf_time, buf_freq, LIQUID_FFT_FORWARD, 0);
 
     for (i=0; i<K; i++)

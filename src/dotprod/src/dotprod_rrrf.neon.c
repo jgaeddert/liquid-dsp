@@ -29,6 +29,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "liquid_simd_rename.h"
 #include "liquid.internal.h"
 
 // include proper SIMD extensions for ARM Neon
@@ -70,7 +71,7 @@ int dotprod_rrrf_run(float *      _h,
     }
 
     // unload packed array
-    float w[4];
+    LIQUID_VLA(float, w, 4);
     vst1q_f32(w, sum);
     float total = w[0] + w[1] + w[2] + w[3];
 
@@ -219,7 +220,7 @@ dotprod_rrrf dotprod_rrrf_copy(dotprod_rrrf q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("dotprod_rrrf_copy().neon, object cannot be NULL");
+        return (dotprod_rrrf)liquid_error_config("dotprod_rrrf_copy().neon, object cannot be NULL");
 
     dotprod_rrrf q_copy = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
     q_copy->n = q_orig->n;

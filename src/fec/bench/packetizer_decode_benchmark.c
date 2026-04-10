@@ -53,8 +53,8 @@ void packetizer_decode_bench(struct rusage *     _start,
     *_num_iterations *= 1000;
     *_num_iterations /= 221 + 1.6125*msg_dec_len;
 
-    unsigned char msg_rec[msg_enc_len];
-    unsigned char msg_dec[msg_dec_len];
+    LIQUID_VLA(unsigned char, msg_rec, msg_enc_len);
+    LIQUID_VLA(unsigned char, msg_dec, msg_dec_len);
 
     // initialize data
     unsigned long int i;

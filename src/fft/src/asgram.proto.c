@@ -29,7 +29,9 @@
 #include <string.h>
 #include <math.h>
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.internal.h"
 
 struct ASGRAM(_s) {
@@ -55,7 +57,7 @@ ASGRAM() ASGRAM(_create)(unsigned int _nfft)
 {
     // validate input
     if (_nfft < 2)
-        return liquid_error_config("asgram%s_create(), fft size must be at least 2", EXTENSION);
+        return liquid_error_config_ptr(ASGRAM(), "asgram%s_create(), fft size must be at least 2", EXTENSION);
 
     // create main object
     ASGRAM() q = (ASGRAM()) malloc(sizeof(struct ASGRAM(_s)));
@@ -86,7 +88,7 @@ ASGRAM() ASGRAM(_copy)(ASGRAM() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("spgram%s_copy(), object cannot be NULL", EXTENSION);
+        return liquid_error_config_ptr(ASGRAM(), "spgram%s_copy(), object cannot be NULL", EXTENSION);
 
     // allocate memory for main object
     ASGRAM() q_copy = (ASGRAM()) malloc(sizeof(struct ASGRAM(_s)));
@@ -98,8 +100,8 @@ ASGRAM() ASGRAM(_copy)(ASGRAM() q_orig)
     q_copy->periodogram = SPGRAM(_copy)(q_orig->periodogram);
 
     // allocate and copy memory arrays
-    q_copy->psd        = liquid_malloc_copy(q_orig->psd,        q_orig->nfft, sizeof(float));
-    q_copy->psd_sorted = liquid_malloc_copy(q_orig->psd_sorted, q_orig->nfft, sizeof(float));
+    q_copy->psd        = (float*)liquid_malloc_copy(q_orig->psd,        q_orig->nfft, sizeof(float));
+    q_copy->psd_sorted = (float*)liquid_malloc_copy(q_orig->psd_sorted, q_orig->nfft, sizeof(float));
 
     // return copied object
     return q_copy;
@@ -279,7 +281,7 @@ int ASGRAM(_print)(ASGRAM() _q)
 {
     float maxval;
     float maxfreq;
-    char ascii[_q->nfft+1];
+    LIQUID_VLA(char, ascii, _q->nfft+1);
     memset(ascii, '\0', _q->nfft+1); // fill buffer with null characters
         
     // execute the spectrogram

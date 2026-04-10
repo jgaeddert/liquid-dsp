@@ -1,10 +1,11 @@
-char __docstr__[] = "Tests simple frequency modulation/demodulation";
+const char __docstr__[] = "Tests simple frequency modulation/demodulation";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -23,9 +24,9 @@ int main(int argc, char*argv[])
     freqmod_print(mod);
 
     unsigned int i;
-    float         m[num_samples];       // message signal
-    float complex r[num_samples];       // received signal (complex baseband)
-    float         y[num_samples];       // demodulator output
+    LIQUID_VLA(float, m, num_samples);       // message signal
+    LIQUID_VLA(liquid_float_complex, r, num_samples);       // received signal (complex baseband)
+    LIQUID_VLA(float, y, num_samples);       // demodulator output
 
     // generate message signal (sum of sines)
     for (i=0; i<num_samples; i++) {

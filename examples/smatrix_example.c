@@ -1,10 +1,11 @@
-char __docstr__[] = "Test sparse matrix operations.";
+const char __docstr__[] = "Test sparse matrix operations.";
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -40,8 +41,8 @@ int main(int argc, char*argv[])
     printf("  A[%2u,%2u] = %1u\n", 1, 2, smatrixb_get(q,1,2));
 
     // generate vectors
-    unsigned char x[N];
-    unsigned char y[M];
+    LIQUID_VLA(unsigned char, x, N);
+    LIQUID_VLA(unsigned char, y, M);
     unsigned int i;
     unsigned int j;
     for (j=0; j<N; j++)

@@ -78,7 +78,7 @@ LIQUID_AUTOTEST(bsync_crcf_15,"bsync_crcf/simple correlation","",0.1)
     // run tests
     //
     unsigned int i;
-    float complex rxy;
+    liquid_float_complex rxy;
 
     // fill buffer with sequence
     for (i=0; i<15; i++)
@@ -119,7 +119,7 @@ LIQUID_AUTOTEST(bsync_crcf_phase_15,"bsync_crcf/simple correlation with phase of
     // run tests
     //
     unsigned int i;
-    float complex rxy;
+    liquid_float_complex rxy;
 
     // fill buffer with sequence
     for (i=0; i<15; i++)

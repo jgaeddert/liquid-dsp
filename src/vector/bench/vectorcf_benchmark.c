@@ -34,9 +34,9 @@ void vectorcf_bench(struct rusage *_start,
     if (*_num_iterations < 1) *_num_iterations = 1;
 
     // allocate buffers
-    float complex buf_0[_n];
-    float complex buf_1[_n];
-    float complex buf_2[_n];
+    LIQUID_VLA(liquid_float_complex, buf_0, _n);
+    LIQUID_VLA(liquid_float_complex, buf_1, _n);
+    LIQUID_VLA(liquid_float_complex, buf_2, _n);
     unsigned int i;
     for (i=0; i<_n; i++) {
         buf_0[i] = randnf() + _Complex_I*randnf();

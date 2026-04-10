@@ -31,11 +31,11 @@
 #include "liquid.internal.h"
 
 // internal methods for specific demodulation methods
-int ampmodem_demod_dsb_peak_detect(ampmodem _q, float complex _x, float * _m);
-int ampmodem_demod_dsb_pll_carrier(ampmodem _q, float complex _x, float * _m);
-int ampmodem_demod_dsb_pll_costas (ampmodem _q, float complex _x, float * _m);
-int ampmodem_demod_ssb_pll_carrier(ampmodem _q, float complex _x, float * _m);
-int ampmodem_demod_ssb            (ampmodem _q, float complex _x, float * _m);
+int ampmodem_demod_dsb_peak_detect(ampmodem _q, liquid_float_complex _x, float * _m);
+int ampmodem_demod_dsb_pll_carrier(ampmodem _q, liquid_float_complex _x, float * _m);
+int ampmodem_demod_dsb_pll_costas (ampmodem _q, liquid_float_complex _x, float * _m);
+int ampmodem_demod_ssb_pll_carrier(ampmodem _q, liquid_float_complex _x, float * _m);
+int ampmodem_demod_ssb            (ampmodem _q, liquid_float_complex _x, float * _m);
 
 struct ampmodem_s {
     // modulation index
@@ -56,7 +56,7 @@ struct ampmodem_s {
     wdelaycf        delay;      // delay buffer to align to low-pass filter delay
 
     // demodulation function pointer
-    int (*demod)(ampmodem _q, float complex _x, float * _m);
+    int (*demod)(ampmodem _q, liquid_float_complex _x, float * _m);
 };
 
 // create ampmodem object
@@ -74,7 +74,7 @@ ampmodem ampmodem_create(float                _mod_index,
     case LIQUID_AMPMODEM_LSB:
         break;
     default:
-        return liquid_error_config("ampmodem_create(), invalid modem type: %d", (int)_type);
+        return liquid_error_config_ptr(ampmodem, "ampmodem_create(), invalid modem type: %d", (int)_type);
     }
 
     // create main object
@@ -191,9 +191,9 @@ unsigned int ampmodem_get_delay_demod(ampmodem _q)
 
 int ampmodem_modulate(ampmodem        _q,
                       float           _x,
-                      float complex * _y)
+                      liquid_float_complex * _y)
 {
-    float complex x_hat = 0.0f;
+    liquid_float_complex x_hat = 0.0f;
 
     if (_q->type == LIQUID_AMPMODEM_DSB) {
         x_hat = _x;
@@ -220,7 +220,7 @@ int ampmodem_modulate(ampmodem        _q,
 int ampmodem_modulate_block(ampmodem        _q,
                             float *         _m,
                             unsigned int    _n,
-                            float complex * _s)
+                            liquid_float_complex * _s)
 {
     // TODO: implement more efficient method
     unsigned int i;
@@ -231,7 +231,7 @@ int ampmodem_modulate_block(ampmodem        _q,
 
 // demodulate
 int ampmodem_demodulate(ampmodem      _q,
-                        float complex _y,
+                        liquid_float_complex _y,
                         float *       _x)
 {
     // invoke internal type-specific method
@@ -244,7 +244,7 @@ int ampmodem_demodulate(ampmodem      _q,
 //  _n      :   number of input, output samples
 //  _x      :   message signal m(t), [size: _n x 1]
 int ampmodem_demodulate_block(ampmodem        _q,
-                              float complex * _y,
+                              liquid_float_complex * _y,
                               unsigned int    _n,
                               float *         _x)
 {
@@ -264,7 +264,7 @@ int ampmodem_demodulate_block(ampmodem        _q,
 //
 
 int ampmodem_demod_dsb_peak_detect(ampmodem      _q,
-                                   float complex _x,
+                                   liquid_float_complex _x,
                                    float *       _y)
 {
     // compute signal magnitude
@@ -280,20 +280,20 @@ int ampmodem_demod_dsb_peak_detect(ampmodem      _q,
 }
 
 int ampmodem_demod_dsb_pll_carrier(ampmodem      _q,
-                                   float complex _x,
+                                   liquid_float_complex _x,
                                    float *       _y)
 {
     // split signal into two branches:
     //   0. low-pass filter for carrier recovery and
     //   1. delay to align signal output
-    float complex x0, x1;
+    liquid_float_complex x0, x1;
     firfilt_crcf_push   (_q->lowpass, _x);
     firfilt_crcf_execute(_q->lowpass, &x0);
     wdelaycf_push       (_q->delay,   _x);
     wdelaycf_read       (_q->delay,   &x1);
 
     // mix each signal down
-    float complex v0, v1;
+    liquid_float_complex v0, v1;
     nco_crcf_mix_down(_q->mixer, x0, &v0);
     nco_crcf_mix_down(_q->mixer, x1, &v1);
 
@@ -316,11 +316,11 @@ int ampmodem_demod_dsb_pll_carrier(ampmodem      _q,
 }
 
 int ampmodem_demod_dsb_pll_costas(ampmodem      _q,
-                                  float complex _x,
+                                  liquid_float_complex _x,
                                   float *       _y)
 {
     // mix signal down
-    float complex v;
+    liquid_float_complex v;
     nco_crcf_mix_down(_q->mixer, _x, &v);
 
     // compute phase error
@@ -339,20 +339,20 @@ int ampmodem_demod_dsb_pll_costas(ampmodem      _q,
 }
 
 int ampmodem_demod_ssb_pll_carrier(ampmodem      _q,
-                                   float complex _x,
+                                   liquid_float_complex _x,
                                    float *       _y)
 {
     // split signal into two branches:
     //   0. low-pass filter for carrier recovery and
     //   1. delay to align signal output
-    float complex x0, x1;
+    liquid_float_complex x0, x1;
     firfilt_crcf_push   (_q->lowpass, _x);
     firfilt_crcf_execute(_q->lowpass, &x0);
     wdelaycf_push       (_q->delay,   _x);
     wdelaycf_read       (_q->delay,   &x1);
 
     // mix each signal down
-    float complex v0, v1;
+    liquid_float_complex v0, v1;
     nco_crcf_mix_down(_q->mixer, x0, &v0);
     nco_crcf_mix_down(_q->mixer, x1, &v1);
 
@@ -379,7 +379,7 @@ int ampmodem_demod_ssb_pll_carrier(ampmodem      _q,
 }
 
 int ampmodem_demod_ssb(ampmodem      _q,
-                       float complex _x,
+                       liquid_float_complex _x,
                        float *       _y)
 {
     // apply hilbert transform and retrieve both upper and lower side-bands

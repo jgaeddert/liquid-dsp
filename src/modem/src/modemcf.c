@@ -34,7 +34,7 @@
 #define FREQDEM(name)       LIQUID_CONCAT(freqdem,name)
 
 #define T                   float           /* primitive type */
-#define TC                  float complex   /* primitive type (complex) */
+#define TC                  liquid_float_complex   /* primitive type (complex) */
 
 #define PRINTVAL_T(X,F)     PRINTVAL_FLOAT(X,F)
 #define PRINTVAL_TC(X,F)    PRINTVAL_CFLOAT(X,F)

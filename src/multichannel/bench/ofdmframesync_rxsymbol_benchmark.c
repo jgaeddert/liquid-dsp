@@ -56,8 +56,8 @@ void ofdmframesync_rxsymbol_bench(struct rusage *_start,
     ofdmframesync fs = ofdmframesync_create(M,cp_len,taper_len,NULL,NULL,NULL);
 
     unsigned int i;
-    float complex X[M];         // channelized symbol
-    float complex x[M+cp_len];  // time-domain symbol
+    LIQUID_VLA(liquid_float_complex, X, M);         // channelized symbol
+    LIQUID_VLA(liquid_float_complex, x, M+cp_len);  // time-domain symbol
 
     // synchronize short sequence (first)
     ofdmframegen_write_S0a(fg, x);

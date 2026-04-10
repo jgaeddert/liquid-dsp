@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the basic interface to the dsssframe64gen and"
 " dsssframe64sync objects.";
 
@@ -10,6 +10,7 @@ char __docstr__[] =
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // static callback function
@@ -21,6 +22,10 @@ static int callback(unsigned char *  _header,
                     framesyncstats_s _stats,
                     void *           _context)
 {
+    (void)_header;
+    (void)_header_valid;
+    (void)_payload;
+    (void)_payload_len;
     printf("*** callback invoked (%s) ***\n", _payload_valid ? "pass" : "FAIL");
     framesyncstats_print(&_stats);
 
@@ -48,8 +53,8 @@ int main(int argc, char *argv[])
 
     // generate the frame in blocks
     unsigned int  buf_len = dsssframe64gen_get_frame_len(fg);
-    float complex * buf_tx = (float complex *)malloc(buf_len*sizeof(float complex));
-    float complex * buf_rx = (float complex *)malloc(buf_len*sizeof(float complex));
+    liquid_float_complex * buf_tx = (liquid_float_complex *)malloc(buf_len*sizeof(liquid_float_complex));
+    liquid_float_complex * buf_rx = (liquid_float_complex *)malloc(buf_len*sizeof(liquid_float_complex));
 
     // export results to file
     FILE * fid = fopen(filename,"w");
@@ -74,7 +79,7 @@ int main(int argc, char *argv[])
     // push resulting sample through periodogram
     spgramcf periodogram = spgramcf_create_default(nfft);
     spgramcf_write(periodogram, buf_rx, buf_len);
-    float psd[nfft];
+    LIQUID_VLA(float, psd, nfft);
     spgramcf_get_psd(periodogram, psd);
     spgramcf_destroy(periodogram);
 

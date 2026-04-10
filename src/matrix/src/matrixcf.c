@@ -29,7 +29,7 @@
 #define MATRIX(name)    LIQUID_CONCAT(matrixcf, name)
 #define MATRIX_NAME     "matrixcf"
 
-#define T               float complex   // general type
+#define T               liquid_float_complex   // general type
 #define TP              float           // primitive type
 #define T_COMPLEX       1               // is type complex?
 

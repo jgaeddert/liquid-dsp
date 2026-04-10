@@ -36,6 +36,12 @@
 
 #include "liquid.internal.h"
 
+// MSVC C++ mode: complex math functions
+#if defined(_MSC_VER) && defined(__cplusplus)
+#include <complex>
+#define csqrtf(z) std::sqrt(z)
+#endif
+
 #define LIQUID_IIRDES_DEBUG_PRINT 0
 
 // Sorts array _z of complex numbers into complex conjugate pairs to
@@ -56,17 +62,17 @@
 //  _n      :   number of elements in _z
 //  _tol    :   tolerance for finding complex pairs
 //  _p      :   resulting pairs, pure real values of _z at end
-int liquid_cplxpair(float complex * _z,
+int liquid_cplxpair(liquid_float_complex * _z,
                     unsigned int    _n,
                     float           _tol,
-                    float complex * _p)
+                    liquid_float_complex * _p)
 {
     // validate input
     if (_tol < 0)
         return liquid_error(LIQUID_EICONFIG,"liquid_cplxpair(), tolerance must be positive");
 
     // keep track of which elements have been paired
-    unsigned char paired[_n];
+    LIQUID_VLA(unsigned char, paired, _n);
     memset(paired,0,sizeof(paired));
     unsigned int num_pairs=0;
 
@@ -135,13 +141,13 @@ int liquid_cplxpair(float complex * _z,
 //  _p          :   pre-processed complex array [size: _n x 1]
 //  _n          :   array length
 //  _num_pairs  :   number of complex conjugate pairs
-int liquid_cplxpair_cleanup(float complex * _p,
+int liquid_cplxpair_cleanup(liquid_float_complex * _p,
                             unsigned int    _n,
                             unsigned int    _num_pairs)
 {
     unsigned int i;
     unsigned int j;
-    float complex tmp;
+    liquid_float_complex tmp;
 
     // ensure perfect conjugates, with negative imaginary
     // element coming first
@@ -227,32 +233,32 @@ float iirdes_freqprewarp(liquid_iirdes_bandtype _btype,
 // The filter order is characterized by the number of analog
 // poles.  The analog filter may have up to _npa zeros.
 // The number of digital zeros and poles is equal to _npa.
-int bilinear_zpkf(float complex * _za,
+int bilinear_zpkf(liquid_float_complex * _za,
                   unsigned int    _nza,
-                  float complex * _pa,
+                  liquid_float_complex * _pa,
                   unsigned int    _npa,
-                  float complex   _ka,
+                  liquid_float_complex   _ka,
                   float           _m,
-                  float complex * _zd,
-                  float complex * _pd,
-                  float complex * _kd)
+                  liquid_float_complex * _zd,
+                  liquid_float_complex * _pd,
+                  liquid_float_complex * _kd)
 {
     unsigned int i;
 
     // filter order is equal to number of analog poles
     unsigned int n = _npa;
-    float complex G = _ka;  // nominal gain
+    liquid_float_complex G = _ka;  // nominal gain
     for (i=0; i<n; i++) {
         // compute digital zeros (pad with -1s)
         if (i < _nza) {
-            float complex zm = _za[i] * _m;
+            liquid_float_complex zm = _za[i] * _m;
             _zd[i] = (1.0 + zm)/(1.0 - zm);
         } else {
             _zd[i] = -1.0;
         }
 
         // compute digital poles
-        float complex pm = _pa[i] * _m;
+        liquid_float_complex pm = _pa[i] * _m;
         _pd[i] = (1.0 + pm)/(1.0 - pm);
 
         // compute digital gain
@@ -294,13 +300,13 @@ int bilinear_zpkf(float complex * _za,
 //  _m          : bilateral warping factor
 //  _bd         : output digital filter numerator, [size: _b_order+1]
 //  _ad         : output digital filter numerator, [size: _a_order+1]
-int bilinear_nd(float complex * _b,
+int bilinear_nd(liquid_float_complex * _b,
                 unsigned int    _b_order,
-                float complex * _a,
+                liquid_float_complex * _a,
                 unsigned int    _a_order,
                 float           _m,
-                float complex * _bd,
-                float complex * _ad)
+                liquid_float_complex * _bd,
+                liquid_float_complex * _ad)
 {
     if (_b_order > _a_order)
         return liquid_error(LIQUID_EICONFIG,"bilinear_nd(), numerator order cannot be higher than denominator");
@@ -322,7 +328,7 @@ int bilinear_nd(float complex * _b,
     for (i=0; i<na; i++) _ad[i] = 0.;
 
     // temporary polynomial: (1 + 1/z)^(k) * (1 - 1/z)^(n-k)
-    float poly_1pz[na];
+    LIQUID_VLA(float, poly_1pz, na);
 
     float mk=1.0f;
 
@@ -365,7 +371,7 @@ int bilinear_nd(float complex * _b,
     }
 
     // normalize by a[0]
-    float complex a0_inv = 1.0f / _ad[0];
+    liquid_float_complex a0_inv = 1.0f / _ad[0];
     for (i=0; i<na; i++) {
         _bd[i] *= a0_inv;
         _ad[i] *= a0_inv;
@@ -380,15 +386,15 @@ int bilinear_nd(float complex * _b,
 //  _k      :   digital gain
 //  _b      :   output numerator (length: _n+1)
 //  _a      :   output denominator (length: _n+1)
-int iirdes_dzpk2tff(float complex * _zd,
-                    float complex * _pd,
+int iirdes_dzpk2tff(liquid_float_complex * _zd,
+                    liquid_float_complex * _pd,
                     unsigned int    _n,
-                    float complex   _k,
+                    liquid_float_complex   _k,
                     float *         _b,
                     float *         _a)
 {
     unsigned int i;
-    float complex q[_n+1];
+    LIQUID_VLA(liquid_float_complex, q, _n+1);
 
     // expand poles
     if (polycf_expandroots(_pd,_n,q) != LIQUID_OK)
@@ -419,10 +425,10 @@ int iirdes_dzpk2tff(float complex * _zd,
 //  L is the number of sections in the cascade:
 //      r = _n % 2
 //      L = (_n - r) / 2;
-int iirdes_dzpk2sosf(float complex * _zd,
-                     float complex * _pd,
+int iirdes_dzpk2sosf(liquid_float_complex * _zd,
+                     liquid_float_complex * _pd,
                      unsigned int    _n,
-                     float complex   _kd,
+                     liquid_float_complex   _kd,
                      float *         _b,
                      float *         _a)
 {
@@ -430,12 +436,12 @@ int iirdes_dzpk2sosf(float complex * _zd,
     float tol=1e-6f; // tolerance for conjuate pair computation
 
     // find/group complex conjugate pairs (poles)
-    float complex zp[_n];
+    LIQUID_VLA(liquid_float_complex, zp, _n);
     if (liquid_cplxpair(_zd,_n,tol,zp) != LIQUID_OK)
         return liquid_error(LIQUID_EINT,"iirdes_dzpk2sosf(), could not associate complex pairs (zeros)");
 
     // find/group complex conjugate pairs (zeros)
-    float complex pp[_n];
+    LIQUID_VLA(liquid_float_complex, pp, _n);
     if (liquid_cplxpair(_pd,_n,tol,pp) != LIQUID_OK)
         return liquid_error(LIQUID_EINT,"iirdes_dzpk2sosf(), could not associate complex pairs (poles)");
 
@@ -462,8 +468,8 @@ int iirdes_dzpk2sosf(float complex * _zd,
         printf("  z[%3u] = %12.8f + j*%12.8f\n", i, crealf(zp[i]), cimagf(zp[i]));
 #endif
 
-    float complex z0, z1;
-    float complex p0, p1;
+    liquid_float_complex z0, z1;
+    liquid_float_complex p0, p1;
     for (i=0; i<L; i++) {
         p0 = -pp[2*i+0];
         p1 = -pp[2*i+1];
@@ -493,11 +499,11 @@ int iirdes_dzpk2sosf(float complex * _zd,
         z0 = -zp[_n-1];
         
         _a[3*i+0] = 1.0;
-        _a[3*i+1] = p0;
+        _a[3*i+1] = crealf(p0);
         _a[3*i+2] = 0.0;
 
         _b[3*i+0] = 1.0;
-        _b[3*i+1] = z0;
+        _b[3*i+1] = crealf(z0);
         _b[3*i+2] = 0.0;
     }
 
@@ -567,7 +573,7 @@ int iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
 
     // transform zeros, poles using quadratic formula
     unsigned int i;
-    float complex t0;
+    liquid_float_complex t0;
     for (i=0; i<_n; i++) {
         t0 = 1 + _zd[i];
         _zdt[2*i+0] = 0.5f*(c0*t0 + csqrtf(c0*c0*t0*t0 - 4*_zd[i]));
@@ -619,10 +625,10 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
     unsigned int nza;
 
     // analog poles/zeros/gain
-    float complex pa[_n];
-    float complex za[_n];
-    float complex ka;
-    float complex k0 = 1.0f; // nominal digital gain
+    LIQUID_VLA(liquid_float_complex, pa, _n);
+    LIQUID_VLA(liquid_float_complex, za, _n);
+    liquid_float_complex ka;
+    liquid_float_complex k0 = 1.0f; // nominal digital gain
 
     // derived values
     unsigned int r = _n%2;      // odd/even filter order
@@ -693,9 +699,9 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
 
     // complex digital poles/zeros/gain
     // NOTE: allocated double the filter order to cover band-pass, band-stop cases
-    float complex zd[2*_n];
-    float complex pd[2*_n];
-    float complex kd;
+    LIQUID_VLA(liquid_float_complex, zd, 2*_n);
+    LIQUID_VLA(liquid_float_complex, pd, 2*_n);
+    liquid_float_complex kd;
     float m = iirdes_freqprewarp(_btype,_fc,_f0);
     //printf("m : %12.8f\n", m);
     if (bilinear_zpkf(za, nza, pa, npa, k0, m, zd, pd, &kd) != LIQUID_OK)
@@ -728,8 +734,8 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
         _btype == LIQUID_IIRDES_BANDSTOP)
     {
         // allocate memory for transformed zeros, poles
-        float complex zd1[2*_n];
-        float complex pd1[2*_n];
+        LIQUID_VLA(liquid_float_complex, zd1, 2*_n);
+        LIQUID_VLA(liquid_float_complex, pd1, 2*_n);
 
         // run zeros, poles low-pass -> band-pass transform
         iirdes_dzpk_lp2bp(zd, pd,   // low-pass prototype zeros, poles
@@ -738,8 +744,8 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
                           zd1,pd1); // transformed zeros, poles (length: 2*n)
 
         // copy transformed zeros, poles
-        memmove(zd, zd1, 2*_n*sizeof(float complex));
-        memmove(pd, pd1, 2*_n*sizeof(float complex));
+        memmove(zd, zd1, 2*_n*sizeof(liquid_float_complex));
+        memmove(pd, pd1, 2*_n*sizeof(liquid_float_complex));
 
         // update parameters; filter order doubles which changes the
         // number of second-order sections and forces there to never
@@ -793,6 +799,7 @@ int iirdes_isstable(float * _b,
                     float * _a,
                     unsigned int _n)
 {
+    (void)_b;
     // validate input
     if (_n < 2) {
         liquid_error(LIQUID_EICONFIG,"iirdes_isstable(), filter order too low");
@@ -801,12 +808,12 @@ int iirdes_isstable(float * _b,
     unsigned int i;
 
     // flip denominator, left to right
-    float a_hat[_n];
+    LIQUID_VLA(float, a_hat, _n);
     for (i=0; i<_n; i++)
         a_hat[i] = _a[_n-i-1];
 
     // compute poles (roots of denominator)
-    float complex roots[_n-1];
+    LIQUID_VLA(liquid_float_complex, roots, _n-1);
     polyf_findroots(a_hat, _n, roots);
 
 #if 0

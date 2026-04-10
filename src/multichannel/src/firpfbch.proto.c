@@ -73,11 +73,11 @@ FIRPFBCH() FIRPFBCH(_create)(int          _type,
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
-        return liquid_error_config("firpfbch_%s_create(), invalid type: %d", EXTENSION_FULL, _type);
+        return liquid_error_config_ptr(FIRPFBCH(), "firpfbch_%s_create(), invalid type: %d", EXTENSION_FULL, _type);
     if (_M == 0)
-        return liquid_error_config("firpfbch_%s_create(), number of channels must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCH(), "firpfbch_%s_create(), number of channels must be greater than 0", EXTENSION_FULL);
     if (_p == 0)
-        return liquid_error_config("firpfbch_%s_create(), invalid filter size (must be greater than 0)", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCH(), "firpfbch_%s_create(), invalid filter size (must be greater than 0)", EXTENSION_FULL);
 
     // create main object
     FIRPFBCH() q = (FIRPFBCH()) malloc(sizeof(struct FIRPFBCH(_s)));
@@ -100,10 +100,10 @@ FIRPFBCH() FIRPFBCH(_create)(int          _type,
     for (i=0; i<q->h_len; i++)
         q->h[i] = _h[i];
 
-    // generate bank of sub-samped filters
+    // generate bank of sub-samped filters (use LIQUID_VLA for MSVC compatibility)
     unsigned int n;
     unsigned int h_sub_len = q->p;
-    TC h_sub[h_sub_len];
+    LIQUID_VLA(TC, h_sub, h_sub_len);
     for (i=0; i<q->num_channels; i++) {
         // sub-sample prototype filter, loading coefficients in reverse order
         for (n=0; n<h_sub_len; n++) {
@@ -145,22 +145,22 @@ FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
-        return liquid_error_config("firpfbch_%s_create_kaiser(), invalid type: %d", EXTENSION_FULL, _type);
+        return liquid_error_config_ptr(FIRPFBCH(), "firpfbch_%s_create_kaiser(), invalid type: %d", EXTENSION_FULL, _type);
     if (_M == 0)
-        return liquid_error_config("firpfbch_%s_create_kaiser(), number of channels must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCH(), "firpfbch_%s_create_kaiser(), number of channels must be greater than 0", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("firpfbch_%s_create_kaiser(), invalid filter size (must be greater than 0)", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCH(), "firpfbch_%s_create_kaiser(), invalid filter size (must be greater than 0)", EXTENSION_FULL);
     
     _as = fabsf(_as);
 
-    // design filter
+    // design filter (use LIQUID_VLA for MSVC compatibility)
     unsigned int h_len = 2*_M*_m + 1;
-    float h[h_len];
+    LIQUID_VLA(float, h, h_len);
     float fc = 0.5f / (float)_M; // TODO : check this value
     liquid_firdes_kaiser(h_len, fc, _as, 0.0f, h);
 
     // copy coefficients to type-specfic array
-    TC hc[h_len];
+    LIQUID_VLA(TC, hc, h_len);
     unsigned int i;
     for (i=0; i<h_len; i++)
         hc[i] = h[i];
@@ -188,22 +188,22 @@ FIRPFBCH() FIRPFBCH(_create_rnyquist)(int          _type,
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
-        return liquid_error_config("firpfbch_%s_create_rnyquist(), invalid type: %d", EXTENSION_FULL, _type);
+        return liquid_error_config_ptr(FIRPFBCH(), "firpfbch_%s_create_rnyquist(), invalid type: %d", EXTENSION_FULL, _type);
     if (_M == 0)
-        return liquid_error_config("firpfbch_%s_create_rnyquist(), number of channels must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCH(), "firpfbch_%s_create_rnyquist(), number of channels must be greater than 0", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("firpfbch_%s_create_rnyquist(), invalid filter size (must be greater than 0)", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCH(), "firpfbch_%s_create_rnyquist(), invalid filter size (must be greater than 0)", EXTENSION_FULL);
     
-    // design filter based on requested prototype
+    // design filter based on requested prototype (use LIQUID_VLA for MSVC compatibility)
     unsigned int h_len = 2*_M*_m + 1;
-    float h[h_len];
-    if (liquid_firdes_prototype(_ftype, _M, _m, _beta, 0.0f, h) != LIQUID_OK)
-        return liquid_error_config("firpfbch_%s_create_rnyquist(), invalid filter type/configuration", EXTENSION_FULL);
+    LIQUID_VLA(float, h, h_len);
+    if (liquid_firdes_prototype((liquid_firfilt_type)_ftype, _M, _m, _beta, 0.0f, h) != LIQUID_OK)
+        return liquid_error_config_ptr(FIRPFBCH(), "firpfbch_%s_create_rnyquist(), invalid filter type/configuration", EXTENSION_FULL);
 
     // copy coefficients to type-specfic array, reversing order if
     // channelizer is an analyzer, matched filter: g(-t)
     unsigned int g_len = 2*_M*_m;
-    TC gc[g_len];
+    LIQUID_VLA(TC, gc, g_len);
     unsigned int i;
     if (_type == LIQUID_SYNTHESIZER) {
         for (i=0; i<g_len; i++)

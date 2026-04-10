@@ -44,8 +44,8 @@ struct MSOURCE(_s)
     firpfbch2_crcf  ch;             // analysis channelizer object
 
     // buffers
-    float complex * buf_freq;       // [size: M   x 1]
-    float complex * buf_time;       // [size: M/2 x 1]
+    liquid_float_complex * buf_freq;       // [size: M   x 1]
+    liquid_float_complex * buf_time;       // [size: M/2 x 1]
     unsigned int    read_index;     // output buffer read index
     unsigned int    num_blocks;     // output buffer read index
 
@@ -77,11 +77,11 @@ MSOURCE() MSOURCE(_create)(unsigned int _M,
 {
     // validate input
     if (_M < 2)
-        return liquid_error_config("msource%s_create(), number of subcarriers must be at least 2",EXTENSION);
+        return liquid_error_config_ptr(MSOURCE(), "msource%s_create(), number of subcarriers must be at least 2",EXTENSION);
     if (_M % 2)
-        return liquid_error_config("msource%s_create(), number of subcarriers must be even",EXTENSION);
+        return liquid_error_config_ptr(MSOURCE(), "msource%s_create(), number of subcarriers must be even",EXTENSION);
     if (_m==0)
-        return liquid_error_config("msource%s_create(), filter semi-length must be greater than zero",EXTENSION);
+        return liquid_error_config_ptr(MSOURCE(), "msource%s_create(), filter semi-length must be greater than zero",EXTENSION);
 
     // allocate memory for main object
     MSOURCE() q = (MSOURCE()) malloc( sizeof(struct MSOURCE(_s)) );
@@ -97,8 +97,8 @@ MSOURCE() MSOURCE(_create)(unsigned int _M,
 
     q->ch = firpfbch2_crcf_create_kaiser(LIQUID_SYNTHESIZER, q->M, q->m, q->as);
 
-    q->buf_freq = (float complex*) malloc(q->M   * sizeof(float complex)); 
-    q->buf_time = (float complex*) malloc(q->M/2 * sizeof(float complex)); 
+    q->buf_freq = (liquid_float_complex*) malloc(q->M   * sizeof(liquid_float_complex)); 
+    q->buf_time = (liquid_float_complex*) malloc(q->M/2 * sizeof(liquid_float_complex)); 
 
     q->read_index = q->M/2; // indicate buffer is empty
     q->num_blocks = 0;
@@ -119,7 +119,7 @@ MSOURCE() MSOURCE(_copy)(MSOURCE() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("msource%s_copy(), object cannot be NULL", EXTENSION);
+        return liquid_error_config_ptr(MSOURCE(), "msource%s_copy(), object cannot be NULL", EXTENSION);
 
     // create filter object and copy base parameters
     MSOURCE() q_copy = (MSOURCE()) malloc(sizeof(struct MSOURCE(_s)));
@@ -135,8 +135,8 @@ MSOURCE() MSOURCE(_copy)(MSOURCE() q_orig)
     q_copy->ch = firpfbch2_crcf_copy(q_orig->ch);
 
     // copy buffers
-    q_copy->buf_freq = (float complex *) liquid_malloc_copy(q_orig->buf_freq, q_orig->M,   sizeof(float complex));
-    q_copy->buf_time = (float complex *) liquid_malloc_copy(q_orig->buf_time, q_orig->M/2, sizeof(float complex));
+    q_copy->buf_freq = (liquid_float_complex *) liquid_malloc_copy(q_orig->buf_freq, q_orig->M,   sizeof(liquid_float_complex));
+    q_copy->buf_time = (liquid_float_complex *) liquid_malloc_copy(q_orig->buf_time, q_orig->M/2, sizeof(liquid_float_complex));
 
     return q_copy;
 }
@@ -458,7 +458,7 @@ QSOURCE() MSOURCE(_get_source)(MSOURCE() _q,
 {
     int index = MSOURCE(_find)(_q, _id);
     if (index < 0)
-        return liquid_error_config("msource%s_get_source(), could not find source with id %u",EXTENSION,_id);
+        return (QSOURCE())liquid_error_config("msource%s_get_source(), could not find source with id %u",EXTENSION,_id);
     return _q->sources[index];
 }
 
@@ -494,7 +494,7 @@ int MSOURCE(_add_source)(MSOURCE() _q,
 int MSOURCE(_generate)(MSOURCE() _q)
 {
     // clear buffer
-    memset(_q->buf_freq, 0, _q->M*sizeof(float complex));
+    memset(_q->buf_freq, 0, _q->M*sizeof(liquid_float_complex));
 
     // add sources into main frequency buffer
     unsigned int i;

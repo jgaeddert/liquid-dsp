@@ -32,6 +32,13 @@
 
 #define DEBUG_BPACKETSYNC   0
 
+// bpacketsync state (defined outside struct for C++ compatibility)
+enum bpacketsync_state_e {
+    BPACKETSYNC_STATE_SEEKPN=0,     // seek p/n sequence
+    BPACKETSYNC_STATE_RXHEADER,     // receive header data
+    BPACKETSYNC_STATE_RXPAYLOAD     // receive payload data
+};
+
 // bpacketsync object structure
 struct bpacketsync_s {
     // options
@@ -58,8 +65,8 @@ struct bpacketsync_s {
     //  2   :   fec0
     //  3   :   fec1
     //  4:5 :   payload length
-    unsigned char header_dec[6];    // uncoded bytes
-    unsigned char header_enc[12];   // 12 = 6 + crc16 at hamming(12,8)
+    LIQUID_VLA(unsigned char, header_dec, 6);    // uncoded bytes
+    LIQUID_VLA(unsigned char, header_enc, 12);   // 12 = 6 + crc16 at hamming(12,8)
 
     // objects
     msequence ms;
@@ -69,11 +76,7 @@ struct bpacketsync_s {
     bsequence brx;          // binary received sequence
 
     // status variables
-    enum {
-        BPACKETSYNC_STATE_SEEKPN=0,     // seek p/n sequence
-        BPACKETSYNC_STATE_RXHEADER,     // receive header data
-        BPACKETSYNC_STATE_RXPAYLOAD     // receive payload data
-    } state;
+    enum bpacketsync_state_e state;
 
     // counters
     unsigned int num_bytes_received;
@@ -104,6 +107,7 @@ bpacketsync bpacketsync_create(unsigned int _m,
                                bpacketsync_callback _callback,
                                void * _userdata)
 {
+    (void)_m;
     // create bpacketsync object
     bpacketsync q = (bpacketsync) malloc(sizeof(struct bpacketsync_s));
     q->callback = _callback;

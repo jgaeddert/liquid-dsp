@@ -66,8 +66,8 @@ void benchmark_firdecim_crcf(
         h[i] = 0.0f;
     firdecim_crcf decim = firdecim_crcf_create(opts->D,h,opts->n);
 
-    float complex x[opts->D];
-    float complex y;
+    liquid_float_complex x[opts->D];
+    liquid_float_complex y;
     for (i=0; i<opts->D; i++)
         x[i] = 1.0f;
     getrusage(RUSAGE_SELF, _start);

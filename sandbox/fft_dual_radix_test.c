@@ -29,7 +29,9 @@
 #include <getopt.h>
 #include <math.h>
 #include <getopt.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #define DEBUG 0
 #define DFT_FORWARD (-1)
@@ -47,8 +49,8 @@ void usage()
 
 // super slow DFT, but functionally correct
 void dft_run(unsigned int    _nfft,
-             float complex * _x,
-             float complex * _y,
+             liquid_float_complex * _x,
+             liquid_float_complex * _y,
              int             _dir,
              int             _flags);
 
@@ -82,9 +84,9 @@ int main(int argc, char*argv[]) {
     unsigned int k;
 
     // create and initialize data arrays
-    float complex x[n];
-    float complex y[n];
-    float complex y_test[n];
+    liquid_float_complex x[n];
+    liquid_float_complex y[n];
+    liquid_float_complex y_test[n];
     for (i=0; i<n; i++) {
         //x[i] = randnf() + _Complex_I*randnf();
         x[i] = (float)i + _Complex_I*(3 - (float)i);
@@ -98,12 +100,12 @@ int main(int argc, char*argv[]) {
     //
 
     // compute twiddle factors (roots of unity)
-    float complex twiddle[n];
+    liquid_float_complex twiddle[n];
     for (i=0; i<n; i++)
         twiddle[i] = cexpf(-_Complex_I*2*M_PI*(float)i / (float)n);
 
     // temporary buffer
-    float complex t[n];
+    liquid_float_complex t[n];
     for (i=0; i<n; i++)
         t[i] = x[i];
 
@@ -122,8 +124,8 @@ int main(int argc, char*argv[]) {
 #endif
 
         // for now, copy to temp buffer, compute FFT, and store result
-        float complex t0[p];
-        float complex t1[p];
+        liquid_float_complex t0[p];
+        liquid_float_complex t1[p];
         for (k=0; k<p; k++) t0[k] = t[q*k+i];
         dft_run(p, t0, t1, DFT_FORWARD, 0);
         for (k=0; k<p; k++) t[q*k+i] = t1[k];
@@ -162,8 +164,8 @@ int main(int argc, char*argv[]) {
 #endif
         
         // for now, copy to temp buffer, compute FFT, and store result
-        float complex t0[q];
-        float complex t1[q];
+        liquid_float_complex t0[q];
+        liquid_float_complex t1[q];
         for (k=0; k<q; k++) t0[k] = t[q*i+k];
         dft_run(q, t0, t1, DFT_FORWARD, 0);
         for (k=0; k<q; k++) t[q*i+k] = t1[k];
@@ -205,8 +207,8 @@ int main(int argc, char*argv[]) {
 
 // super slow DFT, but functionally correct
 void dft_run(unsigned int    _nfft,
-             float complex * _x,
-             float complex * _y,
+             liquid_float_complex * _x,
+             liquid_float_complex * _y,
              int             _dir,
              int             _flags)
 {

@@ -53,7 +53,7 @@ void awgn(float *_x, float _nstd)
 }
 
 // Complex Gauss
-void crandnf(float complex * _y)
+void crandnf(liquid_float_complex * _y)
 {
     // generate two uniform random numbers
     float u1, u2;
@@ -69,14 +69,14 @@ void crandnf(float complex * _y)
 }
 
 // Internal complex Gauss (inline)
-float complex icrandnf()
+liquid_float_complex icrandnf()
 {
-    float complex y;
+    liquid_float_complex y;
     crandnf(&y);
     return y;
 }
 
-void cawgn(float complex *_x, float _nstd)
+void cawgn(liquid_float_complex *_x, float _nstd)
 {
     *_x += icrandnf()*_nstd*0.707106781186547f;
 }

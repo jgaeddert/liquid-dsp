@@ -88,7 +88,7 @@ WDELAY() WDELAY(_copy)(WDELAY() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("error: cbuffer%s_copy(), window object cannot be NULL", EXTENSION);
+        return liquid_error_config_ptr(WDELAY(), "error: cbuffer%s_copy(), window object cannot be NULL", EXTENSION);
 
     // create initial object
     WDELAY() q_copy = (WDELAY()) malloc(sizeof(struct WDELAY(_s)));

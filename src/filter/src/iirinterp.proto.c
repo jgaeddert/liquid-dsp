@@ -50,7 +50,7 @@ IIRINTERP() IIRINTERP(_create)(unsigned int _M,
 {
     // validate input
     if (_M < 2)
-        return liquid_error_config("iirinterp_%s_create(), interp factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(IIRINTERP(), "iirinterp_%s_create(), interp factor must be greater than 1", EXTENSION_FULL);
 
     // allocate main object memory and set internal parameters
     IIRINTERP() q = (IIRINTERP()) malloc(sizeof(struct IIRINTERP(_s)));
@@ -94,7 +94,7 @@ IIRINTERP() IIRINTERP(_create_prototype)(unsigned int _M,
 {
     // validate input
     if (_M < 2)
-        return liquid_error_config("iirinterp_%s_create_prototype(), interp factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(IIRINTERP(), "iirinterp_%s_create_prototype(), interp factor must be greater than 1", EXTENSION_FULL);
 
     // allocate main object memory and set internal parameters
     IIRINTERP() q = (IIRINTERP()) malloc(sizeof(struct IIRINTERP(_s)));
@@ -116,7 +116,7 @@ IIRINTERP() IIRINTERP(_copy)(IIRINTERP() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("iirinterp_%s_create(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(IIRINTERP(), "iirinterp_%s_create(), object cannot be NULL", EXTENSION_FULL);
 
     // create filter object and copy internal memory
     IIRINTERP() q_copy = (IIRINTERP()) malloc(sizeof(struct IIRINTERP(_s)));

@@ -72,11 +72,11 @@ FIRPFBCH2() FIRPFBCH2(_create)(int          _type,
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
-        return liquid_error_config("firpfbch2_%s_create(), invalid type %d", EXTENSION_FULL, _type);
+        return liquid_error_config_ptr(FIRPFBCH2(), "firpfbch2_%s_create(), invalid type %d", EXTENSION_FULL, _type);
     if (_M < 2 || _M % 2)
-        return liquid_error_config("firpfbch2_%s_create(), number of channels must be greater than 2 and even", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCH2(), "firpfbch2_%s_create(), number of channels must be greater than 2 and even", EXTENSION_FULL);
     if (_m < 1)
-        return liquid_error_config("firpfbch2_%s_create(), filter semi-length must be at least 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCH2(), "firpfbch2_%s_create(), filter semi-length must be at least 1", EXTENSION_FULL);
 
     // create object
     FIRPFBCH2() q = (FIRPFBCH2()) malloc(sizeof(struct FIRPFBCH2(_s)));
@@ -95,7 +95,7 @@ FIRPFBCH2() FIRPFBCH2(_create)(int          _type,
     unsigned int i;
     unsigned int n;
     unsigned int h_sub_len = 2 * q->m;
-    TC h_sub[h_sub_len];
+    LIQUID_VLA(TC, h_sub, h_sub_len);
     for (i=0; i<q->M; i++) {
         // sub-sample prototype filter, loading coefficients
         // in reverse order
@@ -136,11 +136,11 @@ FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
-        return liquid_error_config("firpfbch2_%s_create_kaiser(), invalid type %d", EXTENSION_FULL, _type);
+        return liquid_error_config_ptr(FIRPFBCH2(), "firpfbch2_%s_create_kaiser(), invalid type %d", EXTENSION_FULL, _type);
     if (_M < 2 || _M % 2)
-        return liquid_error_config("firpfbch2_%s_create_kaiser(), number of channels must be greater than 2 and even", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCH2(), "firpfbch2_%s_create_kaiser(), number of channels must be greater than 2 and even", EXTENSION_FULL);
     if (_m < 1)
-        return liquid_error_config("firpfbch2_%s_create_kaiser(), filter semi-length must be at least 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCH2(), "firpfbch2_%s_create_kaiser(), filter semi-length must be at least 1", EXTENSION_FULL);
 
     // design prototype filter
     unsigned int h_len = 2*_M*_m+1;
@@ -180,7 +180,7 @@ FIRPFBCH2() FIRPFBCH2(_copy)(FIRPFBCH2() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("firfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCH2(), "firfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
 
     // create object and copy base parameters
     FIRPFBCH2() q_copy = (FIRPFBCH2()) malloc(sizeof(struct FIRPFBCH2(_s)));

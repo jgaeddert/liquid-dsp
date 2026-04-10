@@ -80,10 +80,10 @@ int main(int argc, char*argv[])
     float nstd = powf(10.0f, -SNRdB/20.0f);
 
     // arrays
-    float complex seq[num_sync_symbols];    // data sequence (symbols)
-    float complex s0[num_sync_samples];     // data sequence (interpolated samples)
-    float complex x[num_samples];           // transmitted signal
-    float complex y[num_samples];           // received signal
+    liquid_float_complex seq[num_sync_symbols];    // data sequence (symbols)
+    liquid_float_complex s0[num_sync_samples];     // data sequence (interpolated samples)
+    liquid_float_complex x[num_samples];           // transmitted signal
+    liquid_float_complex y[num_samples];           // received signal
     float rxy[num_dphi_hat][num_samples];   // pre-demod output matrix
 
     // generate sequence
@@ -130,13 +130,13 @@ int main(int argc, char*argv[])
         y[i] = x[i]*cexp(_Complex_I*(dphi*i + phi)) + nstd*( randnf() + _Complex_I*randnf() );
     }
 
-    float complex z;    // filter output sample
+    liquid_float_complex z;    // filter output sample
     for (n=0; n<num_dphi_hat; n++) {
         float dphi_hat = ((float)n - 0.5*(float)(num_dphi_hat-1)) * dphi_hat_step;
         printf("  dphi_hat : %12.8f\n", dphi_hat);
 
         // create flipped, conjugated coefficients
-        float complex s1[num_sync_samples];
+        liquid_float_complex s1[num_sync_samples];
         for (i=0; i<num_sync_samples; i++)
             s1[i] = conjf( s0[num_sync_samples-i-1]*cexpf(_Complex_I*(dphi_hat*i)) );
 

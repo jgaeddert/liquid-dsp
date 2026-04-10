@@ -34,6 +34,9 @@ static int bpacketsync_benchmark_callback(unsigned char *  _payload,
                                           framesyncstats_s _stats,
                                           void *           _userdata)
 {
+    (void)_payload;
+    (void)_payload_len;
+    (void)_stats;
     if (!_payload_valid)
         return 0;
 
@@ -63,8 +66,8 @@ void benchmark_bpacketsync(struct rusage *_start,
     unsigned int enc_msg_len = bpacketgen_get_packet_len(pg);
 
     // initialize arrays
-    unsigned char msg_org[dec_msg_len]; // original message
-    unsigned char msg_enc[enc_msg_len]; // encoded message
+    LIQUID_VLA(unsigned char, msg_org, dec_msg_len); // original message
+    LIQUID_VLA(unsigned char, msg_enc, enc_msg_len); // encoded message
 
     unsigned int num_packets_found=0;
 

@@ -25,7 +25,9 @@
 //
 
 #include <stdio.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 #include <assert.h>
 #include <string.h>

@@ -34,7 +34,9 @@
 #include <getopt.h>
 #include <math.h>
 #include <getopt.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #define DEBUG 0
 #define DFT_FORWARD (-1)
@@ -52,8 +54,8 @@ void usage()
 
 // super slow DFT, but functionally correct
 void dft_run(unsigned int    _nfft,
-             float complex * _x,
-             float complex * _y,
+             liquid_float_complex * _x,
+             liquid_float_complex * _y,
              int             _dir,
              int             _flags);
 
@@ -91,9 +93,9 @@ int main(int argc, char*argv[]) {
     unsigned int i;
 
     // create and initialize data arrays
-    float complex * x      = (float complex *) malloc(nfft * sizeof(float complex));
-    float complex * y      = (float complex *) malloc(nfft * sizeof(float complex));
-    float complex * y_test = (float complex *) malloc(nfft * sizeof(float complex));
+    liquid_float_complex * x      = (liquid_float_complex *) malloc(nfft * sizeof(liquid_float_complex));
+    liquid_float_complex * y      = (liquid_float_complex *) malloc(nfft * sizeof(liquid_float_complex));
+    liquid_float_complex * y_test = (liquid_float_complex *) malloc(nfft * sizeof(liquid_float_complex));
     if (x == NULL || y == NULL || y_test == NULL) {
         fprintf(stderr,"error: %s, not enough memory for allocation\n", argv[0]);
         exit(1);
@@ -131,15 +133,15 @@ int main(int argc, char*argv[]) {
     // compute DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft-1
     // NOTE: R[0] = -1, |R[k]| = sqrt(nfft) for k != 0
     // NOTE: R can be pre-computed
-    float complex * r = (float complex*)malloc((nfft-1)*sizeof(float complex));
-    float complex * R = (float complex*)malloc((nfft-1)*sizeof(float complex));
+    liquid_float_complex * r = (liquid_float_complex*)malloc((nfft-1)*sizeof(liquid_float_complex));
+    liquid_float_complex * R = (liquid_float_complex*)malloc((nfft-1)*sizeof(liquid_float_complex));
     for (i=0; i<nfft-1; i++)
         r[i] = cexpf(-_Complex_I*2*M_PI*s[i]/(float)(nfft));
     dft_run(nfft-1, r, R, DFT_FORWARD, 0);
 
     // compute DFT of permuted sequence, size: nfft-1
-    float complex * xp = (float complex*)malloc((nfft-1)*sizeof(float complex));
-    float complex * Xp = (float complex*)malloc((nfft-1)*sizeof(float complex));
+    liquid_float_complex * xp = (liquid_float_complex*)malloc((nfft-1)*sizeof(liquid_float_complex));
+    liquid_float_complex * Xp = (liquid_float_complex*)malloc((nfft-1)*sizeof(liquid_float_complex));
     for (i=0; i<nfft-1; i++) {
         // reverse sequence
         unsigned int k = s[nfft-1-i-1];
@@ -200,8 +202,8 @@ int main(int argc, char*argv[]) {
 
 // super slow DFT, but functionally correct
 void dft_run(unsigned int    _nfft,
-             float complex * _x,
-             float complex * _y,
+             liquid_float_complex * _x,
+             liquid_float_complex * _y,
              int             _dir,
              int             _flags)
 {

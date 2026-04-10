@@ -35,7 +35,7 @@
 #define WDELAY(name)    LIQUID_CONCAT(wdelaycf,  name)
 #define WINDOW(name)    LIQUID_CONCAT(windowcf,  name)
 
-#define T float complex
+#define T liquid_float_complex
 #define BUFFER_PRINT_LINE(B,I) \
     printf("  : %12.8f + %12.8f", crealf(B->v[I]), cimagf(B->v[I]));
 #define BUFFER_PRINT_VALUE(V) \

@@ -7,7 +7,9 @@
 
 #include <stdio.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <time.h>
 #include <unistd.h>
 #include <string.h>
@@ -22,9 +24,9 @@ int main() {
 
     // generate dummy buffers for processing
     unsigned int  buf_len = 1024;
-    float complex buf_0[buf_len];
-    float complex buf_1[buf_len];
-    memset(buf_0, 0x00, buf_len*sizeof(complex float));
+    liquid_float_complex buf_0[buf_len];
+    liquid_float_complex buf_1[buf_len];
+    memset(buf_0, 0x00, buf_len*sizeof(liquid_float_complex));
 
     // run with updates
     struct timespec t0, t1;

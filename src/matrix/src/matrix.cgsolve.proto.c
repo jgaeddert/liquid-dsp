@@ -48,6 +48,7 @@ int MATRIX(_cgsolve)(T *          _A,
                      T *          _x,
                      void *       _opts)
 {
+    (void)_opts;
     // validate input
     if (_n == 0)
         return liquid_error(LIQUID_EICONFIG,"matrix_cgsolve(), system dimension cannot be zero");
@@ -63,12 +64,15 @@ int MATRIX(_cgsolve)(T *          _A,
     //  2. max number of iterations
     //  3. residual tolerance
 
-    // allocate memory for arrays
-    T x0[_n], x1[_n];   // iterative vector x (solution estimate)
-    T d0[_n], d1[_n];   // iterative vector d
-    T r0[_n], r1[_n];   // iterative vector r (step direction)
-    T q[_n];            // A * d0
-    T Ax1[_n];          // A * x1
+    // allocate memory for arrays (use LIQUID_VLA for MSVC compatibility)
+    LIQUID_VLA(T, x0, _n);   // iterative vector x (solution estimate)
+    LIQUID_VLA(T, x1, _n);
+    LIQUID_VLA(T, d0, _n);   // iterative vector d
+    LIQUID_VLA(T, d1, _n);
+    LIQUID_VLA(T, r0, _n);   // iterative vector r (step direction)
+    LIQUID_VLA(T, r1, _n);
+    LIQUID_VLA(T, q, _n);    // A * d0
+    LIQUID_VLA(T, Ax1, _n);  // A * x1
 
     // scalars
     T delta_init;       // b^T * b0

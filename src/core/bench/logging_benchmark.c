@@ -29,6 +29,7 @@ void benchmark_logging(struct rusage *_start,
                        unsigned long int *_num_iterations,
                        unsigned int _n)
 {
+    (void)_n;
     // start trials
     getrusage(RUSAGE_SELF, _start);
     unsigned int i;

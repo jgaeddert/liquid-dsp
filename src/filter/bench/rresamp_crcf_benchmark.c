@@ -42,7 +42,7 @@ void rresamp_crcf_bench(struct rusage *     _start,
 
     // input/output buffers
     unsigned int buf_len = _P > _Q ? _P : _Q; // max(_P,_Q)
-    float complex * buf = (float complex*) malloc(buf_len*sizeof(float complex));
+    liquid_float_complex * buf = (liquid_float_complex*) malloc(buf_len*sizeof(liquid_float_complex));
 
     // initialize buffer
     unsigned long int i;

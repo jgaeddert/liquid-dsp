@@ -63,8 +63,8 @@ int main(int argc, char*argv[]) {
     // arrays
     unsigned char sym_in[num_symbols];      // input symbols
     float phi[num_samples];                 // transmitted phase
-    float complex x[num_samples];           // transmitted signal
-    float complex y[num_samples];           // received signal
+    liquid_float_complex x[num_samples];           // transmitted signal
+    liquid_float_complex y[num_samples];           // received signal
     float phi_hat[num_samples];             // received phase
     float phi_prime[num_samples];           // matched-filter output
     unsigned char sym_out[num_symbols];     // output symbols
@@ -102,7 +102,7 @@ int main(int argc, char*argv[]) {
         y[i] = x[i] + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
     
     // run receiver
-    float complex x_prime = 0.0f;
+    liquid_float_complex x_prime = 0.0f;
     unsigned int n=0;
     for (i=0; i<num_samples; i++) {
         phi_hat[i] = cargf( conjf(x_prime)*y[i] );

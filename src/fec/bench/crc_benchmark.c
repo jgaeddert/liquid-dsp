@@ -48,7 +48,7 @@ void crc_bench(struct rusage *_start,
     unsigned long int i;
 
     // create arrays
-    unsigned char msg[_n];
+    LIQUID_VLA(unsigned char, msg, _n);
     unsigned int key = 0;
 
     // initialize message

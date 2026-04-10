@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Finite impulse response (FIR) polyphase filter bank (PFB)"
 " channelizer example.  This example demonstrates the functionality"
 " of the polyphase filter bank channelizer and how its output"
@@ -12,6 +12,7 @@ char __docstr__[] =
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -34,12 +35,12 @@ int main(int argc, char* argv[])
     // NOTE : these coefficients can be random; the purpose of this
     //        exercise is to demonstrate mathematical equivalence
     unsigned int h_len = p*num_channels;
-    float h[h_len];
+    LIQUID_VLA(float, h, h_len);
     for (i=0; i<h_len; i++) h[i] = randnf();
 
     // generate analysis filter
     unsigned int g_len = p*num_channels;
-    float g[g_len];
+    LIQUID_VLA(float, g, g_len);
     for (i=0; i<g_len; i++)
         g[i] = h[g_len-i-1];
 
@@ -51,11 +52,14 @@ int main(int argc, char* argv[])
     firpfbch_crcf qs = firpfbch_crcf_create(LIQUID_SYNTHESIZER, num_channels, p, h);
     firpfbch_crcf qa = firpfbch_crcf_create(LIQUID_ANALYZER,    num_channels, p, g);
 
-    float complex x[num_samples];                   // random input (noise)
-    float complex Y0[num_symbols][num_channels];    // channelized output (filterbank)
-    float complex Y1[num_symbols][num_channels];    // channelized output
-    float complex z0[num_samples];                  // time-domain output (filterbank)
-    float complex z1[num_samples];                  // time-domain output
+    LIQUID_VLA(liquid_float_complex, x, num_samples);                   // random input (noise)
+    LIQUID_VLA(liquid_float_complex, Y0, num_symbols*num_channels);    // channelized output (filterbank)
+    LIQUID_VLA(liquid_float_complex, Y1, num_symbols*num_channels);    // channelized output
+    LIQUID_VLA(liquid_float_complex, z0, num_samples);                  // time-domain output (filterbank)
+    LIQUID_VLA(liquid_float_complex, z1, num_samples);                  // time-domain output
+    // Macros for 2D indexing: Y0[i][j] -> Y0_2D(i,j)
+    #define Y0_2D(i,j) Y0[(i)*num_channels + (j)]
+    #define Y1_2D(i,j) Y1[(i)*num_channels + (j)]
 
     // generate input sequence (complex noise)
     for (i=0; i<num_samples; i++)
@@ -69,7 +73,7 @@ int main(int argc, char* argv[])
     // run analysis filter bank
     //
     for (i=0; i<num_symbols; i++)
-        firpfbch_crcf_analyzer_execute(qa, &x[i*num_channels], &Y0[i][0]);
+        firpfbch_crcf_analyzer_execute(qa, &x[i*num_channels], &Y0[i*num_channels]);
 
 
     // 
@@ -95,7 +99,7 @@ int main(int argc, char* argv[])
             // compute output at the appropriate sample time
             assert(n<num_symbols);
             if ( ((j+1)%num_channels)==0 ) {
-                firfilt_crcf_execute(fa, &Y1[n][i]);
+                firfilt_crcf_execute(fa, &Y1_2D(n,i));
                 n++;
             }
         }
@@ -112,7 +116,7 @@ int main(int argc, char* argv[])
     // run synthesis filter bank
     //
     for (i=0; i<num_symbols; i++)
-        firpfbch_crcf_synthesizer_execute(qs, &Y0[i][0], &z0[i*num_channels]);
+        firpfbch_crcf_synthesizer_execute(qs, &Y0[i*num_channels], &z0[i*num_channels]);
 
     // 
     // run traditional up-converter (inefficient)
@@ -122,7 +126,7 @@ int main(int argc, char* argv[])
     for (i=0; i<num_samples; i++)
         z1[i] = 0.0f;
 
-    float complex y_hat;
+    liquid_float_complex y_hat;
     for (i=0; i<num_channels; i++) {
         // reset filter
         firfilt_crcf_reset(fs);
@@ -138,7 +142,7 @@ int main(int argc, char* argv[])
             // interpolate sequence
             if ( (j%num_channels)==0 ) {
                 assert(n<num_symbols);
-                firfilt_crcf_push(fs, Y1[n][i]);
+                firfilt_crcf_push(fs, Y1_2D(n,i));
                 n++;
             } else {
                 firfilt_crcf_push(fs, 0);
@@ -172,7 +176,7 @@ int main(int argc, char* argv[])
     for (i=0; i<num_symbols; i++) {
         printf("%3u: ", i);
         for (j=0; j<num_channels; j++) {
-            printf("  %8.5f+j%8.5f, ", crealf(Y0[i][j]), cimagf(Y0[i][j]));
+            printf("  %8.5f+j%8.5f, ", crealf(Y0_2D(i,j)), cimagf(Y0_2D(i,j)));
         }
         printf("\n");
     }
@@ -183,18 +187,18 @@ int main(int argc, char* argv[])
     for (i=0; i<num_symbols; i++) {
         printf("%3u: ", i);
         for (j=0; j<num_channels; j++) {
-            printf("  %8.5f+j%8.5f, ", crealf(Y1[i][j]), cimagf(Y1[i][j]));
+            printf("  %8.5f+j%8.5f, ", crealf(Y1_2D(i,j)), cimagf(Y1_2D(i,j)));
         }
         printf("\n");
     }
 
 
-    float mse_analyzer[num_channels];
-    float complex d;
+    LIQUID_VLA(float, mse_analyzer, num_channels);
+    liquid_float_complex d;
     for (i=0; i<num_channels; i++) {
         mse_analyzer[i] = 0.0f;
         for (j=0; j<num_symbols; j++) {
-            d = Y0[j][i] - Y1[j][i];
+            d = Y0_2D(j,i) - Y1_2D(j,i);
             mse_analyzer[i] += crealf(d*conjf(d));
         }
 
@@ -254,8 +258,8 @@ int main(int argc, char* argv[])
     // analysis
     for (i=0; i<num_symbols; i++) {
         for (j=0; j<num_channels; j++) {
-            fprintf(fid,"y0(%4u,%4u) = %12.4e + j*%12.4e;\n", i+1, j+1, crealf(Y0[i][j]), cimag(Y0[i][j]));
-            fprintf(fid,"y1(%4u,%4u) = %12.4e + j*%12.4e;\n", i+1, j+1, crealf(Y1[i][j]), cimag(Y1[i][j]));
+            fprintf(fid,"y0(%4u,%4u) = %12.4e + j*%12.4e;\n", i+1, j+1, crealf(Y0_2D(i,j)), cimag(Y0_2D(i,j)));
+            fprintf(fid,"y1(%4u,%4u) = %12.4e + j*%12.4e;\n", i+1, j+1, crealf(Y1_2D(i,j)), cimag(Y1_2D(i,j)));
         }
     }
 

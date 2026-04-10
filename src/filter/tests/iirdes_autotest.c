@@ -30,8 +30,8 @@
 LIQUID_AUTOTEST(iirdes_butter_2,"design specific 2nd-order butterworth filter and compare to known coefficients; design comes from [Ziemer:1998], Example 9-7, pp. 440--442", "", 0.1)
 {
     // design butterworth filter
-    float a[3];
-    float b[3];
+    LIQUID_VLA(float, a, 3);
+    LIQUID_VLA(float, b, 3);
     liquid_iirdes(LIQUID_IIRDES_BUTTER,
                   LIQUID_IIRDES_LOWPASS,
                   LIQUID_IIRDES_TF,
@@ -94,7 +94,7 @@ void testbench_iirdes_ellip_lowpass(liquid_autotest __q__,
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=0.0f, .fmax=_fc,   .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
-      {.fmin=_fs,  .fmax=+0.5f, .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
+      {.fmin=_fs,  .fmax=+0.5f, .pmin=0.0f,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_iirfilt_rrrf(__q__, filter, nfft, regions, 2,
         "autotest/logs/iirdes_ellip_lowpass.m");
@@ -132,7 +132,7 @@ void testbench_iirdes_cheby1_lowpass(liquid_autotest __q__,
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=0.0f, .fmax=_fc,   .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
-      {.fmin=_fs,  .fmax=+0.5f, .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
+      {.fmin=_fs,  .fmax=+0.5f, .pmin=0.0f,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_iirfilt_rrrf(__q__, filter, nfft, regions, 2,
         "autotest/logs/iirdes_cheby1_lowpass.m");
@@ -170,7 +170,7 @@ void testbench_iirdes_cheby2_lowpass(liquid_autotest __q__,
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=0.0f, .fmax=_fp,   .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
-      {.fmin=_fc,  .fmax=+0.5f, .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
+      {.fmin=_fc,  .fmax=+0.5f, .pmin=0.0f,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_iirfilt_rrrf(__q__, filter, nfft, regions, 2,
         "autotest/logs/iirdes_cheby2_lowpass.m");
@@ -202,12 +202,12 @@ void testbench_iirdes_butter_lowpass(liquid_autotest __q__,
         _n,_fc,0.0f,1,60);
 
     // compute regions for testing
-    float H0 = 0.0f, H1 = -3, H2 = -60.0f;
+    float H0 = 0.0f, H1 = -3.0f, H2 = -60.0f;
 
     // verify result
     autotest_psd_s regions[] = {
-      {.fmin=0.0f, .fmax=0.98*_fc, .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
-      {.fmin=_fs,  .fmax=+0.5f,    .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
+      {.fmin=0.0f, .fmax=0.98f*_fc, .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
+      {.fmin=_fs,  .fmax=+0.5f,    .pmin=0.0f,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_iirfilt_rrrf(__q__, filter, nfft, regions, 2,
         "autotest/logs/iirdes_butter_lowpass.m");
@@ -240,7 +240,7 @@ LIQUID_AUTOTEST(iirdes_ellip_highpass,"check elliptical filter design with high-
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=-0.5,   .fmax=-fc,   .pmin=-Ap-tol, .pmax=   +tol, .test_lo=1, .test_hi=1},
-      {.fmin=-0.184, .fmax=0.184, .pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
+      {.fmin=-0.184, .fmax=0.184, .pmin=0.0f,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
       {.fmin=fc,     .fmax=0.5,   .pmin=-Ap-tol, .pmax=   +tol, .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_psd_iirfilt_rrrf(__q__, filter, nfft, regions, 3,
@@ -266,11 +266,11 @@ LIQUID_AUTOTEST(iirdes_ellip_bandpass,"check elliptical filter design with band-
 
     // verify result
     autotest_psd_s regions[] = {
-      {.fmin=-0.5,   .fmax=-0.396,.pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
+      {.fmin=-0.5,   .fmax=-0.396,.pmin=0.0f,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
       {.fmin=-0.388, .fmax=-0.301,.pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
-      {.fmin=-0.293, .fmax=+0.293,.pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
+      {.fmin=-0.293, .fmax=+0.293,.pmin=0.0f,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
       {.fmin=+0.301, .fmax=+0.388,.pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
-      {.fmin=+0.396, .fmax=+0.5,  .pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
+      {.fmin=+0.396, .fmax=+0.5,  .pmin=0.0f,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_iirfilt_rrrf(__q__, filter, nfft, regions, 5,
         "autotest/logs/iirdes_ellip_bandpass.m");
@@ -296,9 +296,9 @@ LIQUID_AUTOTEST(iirdes_ellip_bandstop,"check elliptical filter design with band-
     // verify result
     autotest_psd_s regions[] = {
       {.fmin=-0.5,   .fmax=-0.391,.pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
-      {.fmin=-0.387, .fmax=-0.306,.pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
+      {.fmin=-0.387, .fmax=-0.306,.pmin=0.0f,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
       {.fmin=-0.298, .fmax=+0.298,.pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
-      {.fmin=+0.306, .fmax=+0.387,.pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
+      {.fmin=+0.306, .fmax=+0.387,.pmin=0.0f,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
       {.fmin=+0.391, .fmax=+0.5,  .pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
     };
     liquid_autotest_validate_psd_iirfilt_rrrf(__q__, filter, nfft, regions, 5,
@@ -319,9 +319,9 @@ LIQUID_AUTOTEST(iirdes_bessel,"check Bessel filter design", "", 0.1) {
 
     // verify result
     autotest_psd_s regions[] = {
-      {.fmin=-0.500, .fmax=-0.305,.pmin= 0, .pmax=-60,   .test_lo=0, .test_hi=1},
-      {.fmin=-0.095, .fmax=+0.095,.pmin=-3, .pmax=  0.1, .test_lo=1, .test_hi=1},
-      {.fmin=+0.305, .fmax=+0.500,.pmin= 0, .pmax=-60,   .test_lo=0, .test_hi=1},
+      {.fmin=-0.500, .fmax=-0.305,.pmin=0.0f, .pmax=-60.0f,   .test_lo=0, .test_hi=1},
+      {.fmin=-0.095, .fmax=+0.095,.pmin=-3.0f, .pmax=  0.1, .test_lo=1, .test_hi=1},
+      {.fmin=+0.305, .fmax=+0.500,.pmin=0.0f, .pmax=-60.0f,   .test_lo=0, .test_hi=1},
     };
     liquid_autotest_validate_psd_iirfilt_rrrf(__q__, filter, nfft, regions, 3,
         "autotest/logs/iirdes_bessel.m");

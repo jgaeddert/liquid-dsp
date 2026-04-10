@@ -111,8 +111,8 @@ void fec_encode_bench(
 
     // create arrays
     unsigned int n_enc = fec_get_enc_msg_length(_fs,_n);
-    unsigned char msg[_n];          // original message
-    unsigned char msg_enc[n_enc];   // encoded message
+    LIQUID_VLA(unsigned char, msg, _n);          // original message
+    LIQUID_VLA(unsigned char, msg_enc, n_enc);   // encoded message
 
     // initialize message
     unsigned long int i;

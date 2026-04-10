@@ -58,9 +58,9 @@ void testbench_fec_codec(liquid_autotest __q__, fec_scheme _fs, unsigned int _n,
 
     // create arrays
     unsigned int n_enc = fec_get_enc_msg_length(_fs,_n);
-    unsigned char msg[_n];          // original message
-    unsigned char msg_enc[n_enc];   // encoded message
-    unsigned char msg_dec[_n];      // decoded message
+    LIQUID_VLA(unsigned char, msg, _n);          // original message
+    LIQUID_VLA(unsigned char, msg_enc, n_enc);   // encoded message
+    LIQUID_VLA(unsigned char, msg_dec, _n);      // decoded message
 
     // initialize message
     unsigned int i;

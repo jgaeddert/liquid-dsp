@@ -29,7 +29,9 @@
 #include <getopt.h>
 #include <math.h>
 #include <getopt.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #define DEBUG 0
 #define DFT_FORWARD (-1)
@@ -47,8 +49,8 @@ void usage()
 
 // super slow DFT, but functionally correct
 void dft_run(unsigned int    _nfft,
-             float complex * _x,
-             float complex * _y,
+             liquid_float_complex * _x,
+             liquid_float_complex * _y,
              int             _dir,
              int             _flags);
 
@@ -62,8 +64,8 @@ void dft_run(unsigned int    _nfft,
 //
 // NOTES : the butterfly decimates in time, storing the output as
 //         contiguous samples in the same buffer.
-void fftmr_bfly(float complex * _x,
-                float complex * _twiddle,
+void fftmr_bfly(liquid_float_complex * _x,
+                liquid_float_complex * _twiddle,
                 unsigned int    _nfft,
                 unsigned int    _stride,
                 unsigned int    _m,
@@ -74,7 +76,7 @@ void fftmr_bfly(float complex * _x,
 #endif
 
     // create temporary buffer the size of the FFT
-    float complex * x_tmp = (float complex *) malloc(_p*sizeof(float complex));
+    liquid_float_complex * x_tmp = (liquid_float_complex *) malloc(_p*sizeof(liquid_float_complex));
 
     unsigned int i;
     unsigned int k;
@@ -95,7 +97,7 @@ void fftmr_bfly(float complex * _x,
 #if DEBUG
             printf("      ----\n");
 #endif
-            float complex y = x_tmp[0];
+            liquid_float_complex y = x_tmp[0];
             unsigned int twiddle_index = 0;
             for (k=1; k<_p; k++) {
                 twiddle_index = (twiddle_index + _stride*twiddle_base) % _nfft;
@@ -129,9 +131,9 @@ void fftmr_bfly(float complex * _x,
 //  _xstride    :   input buffer stride
 //  _m_vect     :   array of radix values [size: num_factors x 1]
 //  _p_vect     :   array of DFT values [size: num_factors x 1]
-void fftmr_cycle(float complex * _x,
-                 float complex * _y,
-                 float complex * _twiddle,
+void fftmr_cycle(liquid_float_complex * _x,
+                 liquid_float_complex * _y,
+                 liquid_float_complex * _twiddle,
                  unsigned int    _nfft,
                  unsigned int    _xoffset,
                  unsigned int    _xstride,
@@ -231,9 +233,9 @@ int main(int argc, char*argv[]) {
         printf("  p=%3u, m=%3u\n", p[i], m[i]);
 
     // create and initialize data arrays
-    float complex * x      = (float complex *) malloc(nfft * sizeof(float complex));
-    float complex * y      = (float complex *) malloc(nfft * sizeof(float complex));
-    float complex * y_test = (float complex *) malloc(nfft * sizeof(float complex));
+    liquid_float_complex * x      = (liquid_float_complex *) malloc(nfft * sizeof(liquid_float_complex));
+    liquid_float_complex * y      = (liquid_float_complex *) malloc(nfft * sizeof(liquid_float_complex));
+    liquid_float_complex * y_test = (liquid_float_complex *) malloc(nfft * sizeof(liquid_float_complex));
     if (x == NULL || y == NULL || y_test == NULL) {
         fprintf(stderr,"error: %s, not enough memory for allocation\n", argv[0]);
         exit(1);
@@ -248,7 +250,7 @@ int main(int argc, char*argv[]) {
     dft_run(nfft, x, y_test, DFT_FORWARD, 0);
 
     // compute twiddle factors (roots of unity)
-    float complex * twiddle = (float complex *) malloc(nfft * sizeof(float complex));
+    liquid_float_complex * twiddle = (liquid_float_complex *) malloc(nfft * sizeof(liquid_float_complex));
     if (x == NULL || y == NULL || y_test == NULL) {
         fprintf(stderr,"error: %s, not enough memory for twiddle factors\n", argv[0]);
         exit(1);
@@ -289,8 +291,8 @@ int main(int argc, char*argv[]) {
 
 // super slow DFT, but functionally correct
 void dft_run(unsigned int    _nfft,
-             float complex * _x,
-             float complex * _y,
+             liquid_float_complex * _x,
+             liquid_float_complex * _y,
              int             _dir,
              int             _flags)
 {

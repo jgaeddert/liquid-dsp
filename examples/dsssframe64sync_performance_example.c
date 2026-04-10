@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example tests the performance for detecting and decoding frames"
 " with the dsssframe64gen and dsssframe64sync objects.";
 
@@ -6,10 +6,11 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // add noise to channel
-void frame64_add_noise(float complex * _buf,
+void frame64_add_noise(liquid_float_complex * _buf,
         unsigned int _buf_len, float _SNRdB)
 {
     float nstd = powf(10.0f, -_SNRdB/20.0f);
@@ -36,7 +37,7 @@ int main(int argc, char*argv[])
 
     // create buffer for the frame samples
     unsigned int  frame_len = dsssframe64gen_get_frame_len(fg);
-    float complex * frame = (float complex *)malloc(frame_len*sizeof(float complex));
+    liquid_float_complex * frame = (liquid_float_complex *)malloc(frame_len*sizeof(liquid_float_complex));
     float SNRdB = -25.0f;
     FILE* fid = fopen(filename, "w");
     fprintf(fid,"%% %s: auto-generated file\n", filename);

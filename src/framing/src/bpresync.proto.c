@@ -54,8 +54,8 @@ struct BPRESYNC(_s) {
 //  _rxy1   : negative frequency correlation output (conjugated)
 int BPRESYNC(_correlatex)(BPRESYNC()      _q,
                           unsigned int    _id,
-                          float complex * _rxy0,
-                          float complex * _rxy1);
+                          liquid_float_complex * _rxy0,
+                          liquid_float_complex * _rxy1);
 
 // create binary pre-demod synchronizer
 //  _v          :   baseband sequence
@@ -69,9 +69,9 @@ BPRESYNC() BPRESYNC(_create)(TC *         _v,
 {
     // validate input
     if (_n < 1)
-        return liquid_error_config("bpresync_%s_create(), invalid input length", EXTENSION_FULL);
+        return liquid_error_config_ptr(BPRESYNC(), "bpresync_%s_create(), invalid input length", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("bpresync_%s_create(), number of correlators must be at least 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(BPRESYNC(), "bpresync_%s_create(), number of correlators must be at least 1", EXTENSION_FULL);
 
     // allocate main object memory and initialize
     BPRESYNC() _q = (BPRESYNC()) malloc(sizeof(struct BPRESYNC(_s)));
@@ -181,10 +181,10 @@ int BPRESYNC(_execute)(BPRESYNC() _q,
                        float *    _dphi_hat)
 {
     unsigned int i;
-    float complex rxy_max = 0;  // maximum cross-correlation
+    liquid_float_complex rxy_max = 0;  // maximum cross-correlation
     float abs_rxy_max = 0;      // absolute value of rxy_max
-    float complex rxy0;
-    float complex rxy1;
+    liquid_float_complex rxy0;
+    liquid_float_complex rxy1;
     float dphi_hat = 0.0f;
     for (i=0; i<_q->m; i++)  {
 
@@ -221,8 +221,8 @@ int BPRESYNC(_execute)(BPRESYNC() _q,
 //  _rxy1   : negative frequency correlation output (conjugated)
 int BPRESYNC(_correlatex)(BPRESYNC()      _q,
                           unsigned int    _id,
-                          float complex * _rxy0,
-                          float complex * _rxy1)
+                          liquid_float_complex * _rxy0,
+                          liquid_float_complex * _rxy1)
 {
     // validate input...
     if (_id >= _q->m)

@@ -96,8 +96,8 @@ int main(int argc, char*argv[]) {
     //
 
     float H_prime[h_len];           // frequency response of Nyquist filter
-    float complex h_tx[h_len];      // impulse response of square-root Nyquist filter
-    float complex H_tx[h_len];      // frequency response of square-root Nyquist filter
+    liquid_float_complex h_tx[h_len];      // impulse response of square-root Nyquist filter
+    liquid_float_complex H_tx[h_len];      // frequency response of square-root Nyquist filter
 
     // compute frequency response of Nyquist filter
     for (i=0; i<h_len; i++) {

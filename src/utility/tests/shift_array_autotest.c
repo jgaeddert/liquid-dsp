@@ -39,7 +39,7 @@ LIQUID_AUTOTEST(lshift,"left byte shift","",0.1) {
     unsigned char output_test_3[4] = {0xAA, 0x00, 0x00, 0x00};
     unsigned char output_test_4[4] = {0x00, 0x00, 0x00, 0x00};
 
-    unsigned char output[4];
+    LIQUID_VLA(unsigned char, output, 4);
 
     // 
     // run tests
@@ -74,7 +74,7 @@ LIQUID_AUTOTEST(rshift,"right byte shift","",0.1) {
     unsigned char output_test_3[4] = {0x00, 0x00, 0x00, 0x81};
     unsigned char output_test_4[4] = {0x00, 0x00, 0x00, 0x00};
 
-    unsigned char output[4];
+    LIQUID_VLA(unsigned char, output, 4);
 
     // 
     // run tests
@@ -109,7 +109,7 @@ LIQUID_AUTOTEST(lcircshift,"left byte circular shift","",0.1) {
     unsigned char output_test_3[4] = {0xAA, 0x81, 0xEF, 0x5F};
     unsigned char output_test_4[4] = {0x81, 0xEF, 0x5F, 0xAA};
 
-    unsigned char output[4];
+    LIQUID_VLA(unsigned char, output, 4);
 
     // 
     // run tests
@@ -144,7 +144,7 @@ LIQUID_AUTOTEST(rcircshift,"right byte circular shift","",0.1) {
     unsigned char output_test_3[4] = {0xEF, 0x5F, 0xAA, 0x81};
     unsigned char output_test_4[4] = {0x81, 0xEF, 0x5F, 0xAA};
 
-    unsigned char output[4];
+    LIQUID_VLA(unsigned char, output, 4);
 
     // 
     // run tests

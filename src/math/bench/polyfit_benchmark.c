@@ -35,10 +35,10 @@ void polyf_fit_bench(struct rusage *_start,
     *_num_iterations /= 0.2953 + 0.03381 * _N * 40;
     if (*_num_iterations < 1) *_num_iterations = 1;
 
-    float p[_Q+1];
+    LIQUID_VLA(float, p, _Q+1);
 
-    float x[_N];
-    float y[_N];
+    LIQUID_VLA(float, x, _N);
+    LIQUID_VLA(float, y, _N);
     unsigned int i;
     for (i=0; i<_N; i++) {
         x[i] = randnf();

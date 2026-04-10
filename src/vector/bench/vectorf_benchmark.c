@@ -34,9 +34,9 @@ void vectorf_bench(struct rusage *_start,
     if (*_num_iterations < 1) *_num_iterations = 1;
 
     // allocate buffers
-    float buf_0[_n];
-    float buf_1[_n];
-    float buf_2[_n];
+    LIQUID_VLA(float, buf_0, _n);
+    LIQUID_VLA(float, buf_1, _n);
+    LIQUID_VLA(float, buf_2, _n);
     unsigned int i;
     for (i=0; i<_n; i++) {
         buf_0[i] = randnf();

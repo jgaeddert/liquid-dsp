@@ -1,4 +1,4 @@
-char __docstr__[] = "Gradient descent search algorithm demonstration.";
+const char __docstr__[] = "Gradient descent search algorithm demonstration.";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,6 +6,7 @@ char __docstr__[] = "Gradient descent search algorithm demonstration.";
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -28,7 +29,7 @@ int main(int argc, char*argv[])
         return liquid_error(LIQUID_EICONFIG,"unknown/unsupported utility '%s'", function);
     }
 
-    float optimum_vect[num_parameters];
+    LIQUID_VLA(float, optimum_vect, num_parameters);
     unsigned int i;
     for (i=0; i<num_parameters; i++)
         optimum_vect[i] = 0.1f*(float)i;

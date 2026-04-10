@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Complex FFT-based finite impulse response filter example. This example"
 " demonstrates the functionality of firfilt by designing a low-order"
 " prototype and using it to filter a noisy signal.  The filter coefficients"
@@ -7,8 +7,11 @@ char __docstr__[] =
 " compared to the regular corresponding firfilt_crcf output.";
 
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -27,7 +30,7 @@ int main(int argc, char*argv[])
     unsigned int num_samples = n * num_blocks;
 
     // design filter
-    float h[h_len];
+    LIQUID_VLA(float, h, h_len);
     liquid_firdes_kaiser(h_len, fc, As, 0, h);
 
     // design FFT-based filter and scale to bandwidth
@@ -41,9 +44,9 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // allocate memory for data arrays
-    float complex x[num_samples];   // input
-    float complex y0[num_samples];  // output (fftfilt)
-    float complex y1[num_samples];  // output (firfilt)
+    LIQUID_VLA(liquid_float_complex, x, num_samples);   // input
+    LIQUID_VLA(liquid_float_complex, y0, num_samples);  // output (fftfilt)
+    LIQUID_VLA(liquid_float_complex, y1, num_samples);  // output (firfilt)
 
     // generate input signal (noise)
     for (i=0; i<num_samples; i++)
@@ -71,7 +74,7 @@ int main(int argc, char*argv[])
             "re{fir}", "re{fft}", "re{err}",
             "im{fir}", "im{fft}", "im{err}");
     for (i=0; i<num_samples; i++) {
-        float complex e = y0[i] - y1[i];
+        liquid_float_complex e = y0[i] - y1[i];
         printf("  %6u : %8.5f : %8.5f (%8.5f), %8.5f : %8.5f (%8.5f)\n",
                 i,
                 crealf(y0[i]), crealf(y1[i]), crealf(e),

@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the basic packet modem encoder/decoder"
 " operation. A packet of data is encoded and modulated into symbols,"
 " channel noise is added, and the resulting packet is demodulated"
@@ -12,6 +12,7 @@ char __docstr__[] =
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char *argv[])
@@ -27,10 +28,10 @@ int main(int argc, char *argv[])
     liquid_argparse_add(float,    SNRdB,        20, 's', "signal-to-noise ratio [dB]", NULL);
     liquid_argparse_parse(argc,argv);
 
-    modulation_scheme ms    = liquid_getopt_str2mod(mod);
-    crc_scheme        check = liquid_getopt_str2crc(crc);
-    fec_scheme        fec0  = liquid_getopt_str2fec(fs0);
-    fec_scheme        fec1  = liquid_getopt_str2fec(fs1);
+    modulation_scheme ms    = (modulation_scheme)liquid_getopt_str2mod(mod);
+    crc_scheme        check = (crc_scheme)liquid_getopt_str2crc(crc);
+    fec_scheme        fec0  = (fec_scheme)liquid_getopt_str2fec(fs0);
+    fec_scheme        fec1  = (fec_scheme)liquid_getopt_str2fec(fs1);
 
     unsigned int i;
 
@@ -43,8 +44,8 @@ int main(int argc, char *argv[])
     qpacketmodem_print(q);
 
     // initialize payload
-    unsigned char payload_tx[payload_len];
-    unsigned char payload_rx[payload_len];
+    LIQUID_VLA(unsigned char, payload_tx, payload_len);
+    LIQUID_VLA(unsigned char, payload_rx, payload_len);
 
     // initialize payload
     for (i=0; i<payload_len; i++) {
@@ -56,8 +57,8 @@ int main(int argc, char *argv[])
     unsigned int frame_len = qpacketmodem_get_frame_len(q);
 
     // allocate memory for frame samples
-    float complex frame_tx[frame_len];
-    float complex frame_rx[frame_len];
+    LIQUID_VLA(liquid_float_complex, frame_tx, frame_len);
+    LIQUID_VLA(liquid_float_complex, frame_rx, frame_len);
 
     // encode frame
     qpacketmodem_encode(q, payload_tx, frame_tx);

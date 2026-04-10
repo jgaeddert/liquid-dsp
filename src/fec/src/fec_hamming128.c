@@ -143,6 +143,7 @@ unsigned int fec_hamming128_decode_symbol(unsigned int _sym_enc)
 // create Hamming(12,8) codec object
 fec fec_hamming128_create(void * _opts)
 {
+    (void)_opts;
     fec q = (fec) malloc(sizeof(struct fec_s));
 
     // set scheme
@@ -175,6 +176,7 @@ int fec_hamming128_encode(fec             _q,
                           unsigned char * _msg_dec,
                           unsigned char * _msg_enc)
 {
+    (void)_q;
     unsigned int i, j=0;    // input/output symbol counters
     unsigned char s0, s1;   // input 8-bit symbols
     unsigned int m0, m1;    // output 12-bit symbols
@@ -241,6 +243,7 @@ int fec_hamming128_decode(fec             _q,
                           unsigned char * _msg_enc,
                           unsigned char * _msg_dec)
 {
+    (void)_q;
     unsigned int i=0,j=0;
     unsigned int r = _dec_msg_len % 2;
     unsigned char r0, r1, r2;
@@ -297,11 +300,12 @@ int fec_hamming128_decode_soft(fec             _q,
                                unsigned char * _msg_enc,
                                unsigned char * _msg_dec)
 {
+    (void)_q;
     unsigned int i;
     unsigned int k=0;       // array bit index
     unsigned int r = _dec_msg_len % 2;
 
-    // compute encoded message length
+    // compute encoded message length for validation
     unsigned int enc_msg_len = (3*_dec_msg_len)/2 + r;
 
     unsigned char s;    // decoded 8-bit symbol
@@ -325,6 +329,7 @@ int fec_hamming128_decode_soft(fec             _q,
     }
     k += r*4;   // for assert method
     assert(k == 8*enc_msg_len);
+    (void)enc_msg_len;
     return LIQUID_OK;
 }
 

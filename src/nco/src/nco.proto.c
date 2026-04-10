@@ -123,7 +123,6 @@ NCO() NCO(_create)(liquid_ncotype _type)
          */
         uint32_t theta = 0;
         const int32_t d_theta = (uint32_t)(UINT32_MAX)/NCO_STATIC_LUT_SIZE;
-        unsigned int i;
         for (i=0; i<NCO_STATIC_LUT_QSIZE; i++) {
             T value = NCO(_fp_sin)((uint32_t)(theta));
             T next_value = NCO(_fp_sin)((uint32_t)(theta + d_theta));
@@ -163,7 +162,7 @@ NCO() NCO(_create)(liquid_ncotype _type)
         break;
     }
     default:
-        return liquid_error_config("nco_%s_create(), unknown type : %u\n", EXTENSION, q->type);
+        return liquid_error_config_ptr(NCO(), "nco_%s_create(), unknown type : %u\n", EXTENSION, q->type);
     }
 
     // set default pll bandwidth
@@ -179,7 +178,7 @@ NCO() NCO(_copy)(NCO() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("nco_%s_copy(), object cannot be NULL", EXTENSION);
+        return liquid_error_config_ptr(NCO(), "nco_%s_copy(), object cannot be NULL", EXTENSION);
 
     // allocate new object, copy main component memory
     NCO() q_copy = (NCO()) malloc(sizeof(struct NCO(_s)));
@@ -196,7 +195,7 @@ NCO() NCO(_copy)(NCO() q_orig)
     case LIQUID_VCO_DIRECT:
         break;
     default:
-        return liquid_error_config("nco_%s_copy(), unknown type: %u", q_copy->type, EXTENSION);
+        return liquid_error_config_ptr(NCO(), "nco_%s_copy(), unknown type: %u", q_copy->type, EXTENSION);
     }
 
     return q_copy;
@@ -533,6 +532,7 @@ int NCO(_cexpf)(NCO() _q,
 // reset pll state, retaining base frequency
 int NCO(_pll_reset)(NCO() _q)
 {
+    (void)_q;
     return LIQUID_OK;
 }
 

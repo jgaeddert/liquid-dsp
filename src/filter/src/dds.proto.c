@@ -71,13 +71,13 @@ DDS() DDS(_create)(unsigned int _num_stages,
 {
     // error checking
     if (_num_stages > 20)
-        return liquid_error_config("dds_%s_create(), number of stages %u exceeds reasonable maximum (20)", EXTENSION_FULL, _num_stages);
+        return liquid_error_config_ptr(DDS(), "dds_%s_create(), number of stages %u exceeds reasonable maximum (20)", EXTENSION_FULL, _num_stages);
     if (_fc > 0.5f || _fc < -0.5f)
-        return liquid_error_config("dds_%s_create(), frequency %12.4e is out of range [-0.5,0.5]", EXTENSION_FULL, _fc);
+        return liquid_error_config_ptr(DDS(), "dds_%s_create(), frequency %12.4e is out of range [-0.5,0.5]", EXTENSION_FULL, _fc);
     if (_bw <= 0.0f || _bw >= 1.0f)
-        return liquid_error_config("dds_%s_create(), bandwidth %12.4e is out of range (0,1)", EXTENSION_FULL, _bw);
+        return liquid_error_config_ptr(DDS(), "dds_%s_create(), bandwidth %12.4e is out of range (0,1)", EXTENSION_FULL, _bw);
     if (_as < 0.0f)
-        return liquid_error_config("dds_%s_create(), stop-band suppression %12.4e must be greater than zero", EXTENSION_FULL, _as);
+        return liquid_error_config_ptr(DDS(), "dds_%s_create(), stop-band suppression %12.4e must be greater than zero", EXTENSION_FULL, _as);
 
     // create object
     DDS() q = (DDS()) malloc(sizeof(struct DDS(_s)));
@@ -146,7 +146,7 @@ DDS() DDS(_copy)(DDS() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("dds_%s_create(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(DDS(), "dds_%s_create(), object cannot be NULL", EXTENSION_FULL);
 
     // create filter object and copy internal memory
     DDS() q_copy = (DDS()) malloc(sizeof(struct DDS(_s)));

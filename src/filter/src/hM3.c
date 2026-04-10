@@ -52,6 +52,7 @@ int liquid_firdes_hM3(unsigned int _k,
                       float _dt,
                       float * _h)
 {
+    (void)_dt;
     if ( _k < 2 )
         return liquid_error(LIQUID_EICONFIG,"liquid_firdes_hM3(): k must be greater than 1");
     if ( _m < 1 )
@@ -78,7 +79,7 @@ int liquid_firdes_hM3(unsigned int _k,
                                       LIQUID_FIRDESPM_EXPWEIGHT};
 
     //unsigned int i;
-    float h[n];
+    LIQUID_VLA(float, h, n);
     firdespm_run(n,num_bands,bands,des,weights,wtype,btype,h);
     // copy results
     memmove(_h, h, n*sizeof(float));

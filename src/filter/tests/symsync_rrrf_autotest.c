@@ -71,10 +71,10 @@ void testbench_symsync_rrrf(liquid_autotest __q__,
     unsigned int i;
 
     // allocate arrays
-    float s[num_symbols];           // data symbols
-    float x[num_samples];           // interpolated samples
-    float y[num_samples_resamp];    // resampled data (resamp_rrrf)
-    float z[num_symbols + 64];      // synchronized symbols
+    LIQUID_VLA(float, s, num_symbols);           // data symbols
+    LIQUID_VLA(float, x, num_samples);           // interpolated samples
+    LIQUID_VLA(float, y, num_samples_resamp);    // resampled data (resamp_rrrf)
+    LIQUID_VLA(float, z, num_symbols + 64);      // synchronized symbols
 
     // generate pseudo-random BPSK symbols
     // NOTE: by using an m-sequence generator this sequence will be identical

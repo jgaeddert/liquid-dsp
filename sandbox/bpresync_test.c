@@ -32,7 +32,7 @@ void usage()
 }
 
 void bpresync_test(bpresync_cccf   _q,
-                   float complex * _x,
+                   liquid_float_complex * _x,
                    unsigned int    _n,
                    float           _SNRdB,
                    float           _dphi_max,
@@ -74,7 +74,7 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // arrays
-    float complex seq[k*num_sync_symbols];  // synchronization pattern (samples)
+    liquid_float_complex seq[k*num_sync_symbols];  // synchronization pattern (samples)
     float rxy_max[num_trials];
     float dphi_err[num_trials];
     float delay_err[num_trials];
@@ -155,7 +155,7 @@ int main(int argc, char*argv[])
 }
 
 void bpresync_test(bpresync_cccf   _q,
-                   float complex * _x,
+                   liquid_float_complex * _x,
                    unsigned int    _n,
                    float           _SNRdB,
                    float           _dphi_max,
@@ -177,7 +177,7 @@ void bpresync_test(bpresync_cccf   _q,
     firfarrow_crcf fdelay = firfarrow_crcf_create(h_len, order, fc, As);
 
     unsigned int num_samples = _n + max_delay + (h_len-1)/2;
-    float complex y[num_samples];
+    liquid_float_complex y[num_samples];
 
     unsigned int t;
     for (t=0; t<_num_trials; t++) {
@@ -227,7 +227,7 @@ void bpresync_test(bpresync_cccf   _q,
         _delay_err[t] = 0.0f;
         for (i=0; i<num_samples; i++) {
             // push through correlator
-            float complex rxy;
+            liquid_float_complex rxy;
             float         dphi_est;
             bpresync_cccf_push(_q, y[i]);
             bpresync_cccf_execute(_q, &rxy, &dphi_est);

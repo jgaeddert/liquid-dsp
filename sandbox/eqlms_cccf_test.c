@@ -8,7 +8,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "eqlms_cccf_test.m"
@@ -30,10 +32,10 @@ int main() {
     unsigned int num_samples = k*num_symbols;
 
     // data arrays
-    float complex s[num_symbols];   // original QPSK symbols
-    float complex x[num_samples];   // interpolated samples
-    float complex y[num_samples];   // received samples
-    float complex z[num_samples];   // recovered samples
+    liquid_float_complex s[num_symbols];   // original QPSK symbols
+    liquid_float_complex x[num_samples];   // interpolated samples
+    liquid_float_complex y[num_samples];   // received samples
+    liquid_float_complex z[num_samples];   // recovered samples
 
     // generate data sequence
     unsigned int i;
@@ -66,7 +68,7 @@ int main() {
     firinterp_crcf_destroy(interp);
 
     // generate channel filter
-    float complex hc[hc_len];
+    liquid_float_complex hc[hc_len];
     for (i=0; i<hc_len; i++)
         hc[i] = (i==0) ? 1.0f : 0.1f*randnf()*cexpf(_Complex_I*2*M_PI*randf());
 
@@ -81,7 +83,7 @@ int main() {
     // initialize equalizer
 #if 1
     // initialize with delta at center
-    float complex h[p]; // coefficients
+    liquid_float_complex h[p]; // coefficients
     unsigned int p0 = (p-1)/2;  // center index
     for (i=0; i<p; i++)
         h[i] = (i==p0) ? 1.0f : 0.0f;
@@ -89,24 +91,24 @@ int main() {
     // initialize with square-root raised cosine
     p = 2*k*m+1;
     float h_tmp[p];
-    float complex h[p];
+    liquid_float_complex h[p];
     design_rrc_filter(k,m,beta,0.0f,h_tmp);
     for (i=0; i<p; i++)
         h[i] = h_tmp[i] / k;
 #endif
     
     // run equalizer
-    float complex w0[p];
-    float complex w1[p];
-    memmove(w0, h, p*sizeof(float complex));
+    liquid_float_complex w0[p];
+    liquid_float_complex w1[p];
+    memmove(w0, h, p*sizeof(liquid_float_complex));
     windowcf buffer = windowcf_create(p);
     for (i=0; i<num_samples; i++) {
         // push value into buffer
         windowcf_push(buffer, y[i]);
 
         // compute d_hat
-        float complex d_hat = 0.0f;
-        float complex * r;
+        liquid_float_complex d_hat = 0.0f;
+        liquid_float_complex * r;
         windowcf_read(buffer, &r);
         unsigned int j;
         for (j=0; j<p; j++)
@@ -122,11 +124,11 @@ int main() {
         if ( (i%k) != 0 ) continue;
 
         // estimate transmitted QPSK symbol
-        float complex d_prime = (crealf(d_hat) > 0.0f ? 1.0f : -1.0f) +
+        liquid_float_complex d_prime = (crealf(d_hat) > 0.0f ? 1.0f : -1.0f) +
                                 (cimagf(d_hat) > 0.0f ? 1.0f : -1.0f) * _Complex_I;
 
         // compute error
-        float complex alpha = d_prime - d_hat;
+        liquid_float_complex alpha = d_prime - d_hat;
 
         // compute signal energy
         float ex2 = 1.414f;
@@ -136,7 +138,7 @@ int main() {
             w1[j] = w0[j] + mu*conjf(alpha)*r[j]/ex2;
 
         // copy new filter values
-        memmove(w0, w1, p*sizeof(complex float));
+        memmove(w0, w1, p*sizeof(liquid_float_complex));
     }
 
     // destroy additional objects

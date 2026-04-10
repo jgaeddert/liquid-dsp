@@ -24,6 +24,7 @@
 // Floating-point dot product
 //
 
+#include "liquid_simd_rename.h"
 #include "liquid.internal.h"
 
 #define DOTPROD(name)   LIQUID_CONCAT(dotprod_rrrf,name)

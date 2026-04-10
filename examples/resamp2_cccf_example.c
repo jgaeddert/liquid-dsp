@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the halfband resampler cenetered at the"
 " quarter sample rate to split the signal into positive and negative"
 " frequency bands. Two distinct narrow-band signals are generated; one"
@@ -7,10 +7,13 @@ char __docstr__[] =
 " center point.";
 
 #include <stdio.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -24,21 +27,21 @@ int main(int argc, char* argv[])
     liquid_argparse_parse(argc,argv);
 
     // allocate memory for data arrays
-    float complex x [num_samples];  // input signal
-    float complex y0[num_samples];  //
-    float complex y1[num_samples];  //
+    LIQUID_VLA(liquid_float_complex, x, num_samples);  // input signal
+    LIQUID_VLA(liquid_float_complex, y0, num_samples);  //
+    LIQUID_VLA(liquid_float_complex, y1, num_samples);  //
 
     // generate the two signals
     iirfilt_crcf lowpass = iirfilt_crcf_create_lowpass(6,0.02);
     unsigned int i;
     for (i=0; i<num_samples; i++) {
         // signal at negative frequency: tone
-        float complex x_neg = cexpf(-_Complex_I*2*M_PI*0.059f*i);
+        liquid_float_complex x_neg = cexpf(-_Complex_I*2*M_PI*0.059f*i);
 
         // signal at positive frequency: filtered noise
-        float complex v;
+        liquid_float_complex v;
         iirfilt_crcf_execute(lowpass, 4*randnf(), &v);
-        float complex x_pos = v * cexpf(_Complex_I*2*M_PI*0.073f*i);
+        liquid_float_complex x_pos = v * cexpf(_Complex_I*2*M_PI*0.073f*i);
 
         // composite
         x[i] = (x_neg + x_pos) * liquid_hamming(i,num_samples);

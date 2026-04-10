@@ -32,7 +32,7 @@ LIQUID_AUTOTEST(dotprod_crcf_rand01,"dot product with floating-point data","",0.
      -9.7835e-01,  -6.9512e-01,  -1.2958e+00,   1.1628e+00
     };
 
-    float complex x[16] = {
+    liquid_float_complex x[16] = {
       1.3164e+00+  5.4161e-01*_Complex_I,   1.8295e-01+ -9.0284e-02*_Complex_I, 
       1.3487e+00+ -1.8148e+00*_Complex_I,  -7.4696e-01+ -4.1792e-01*_Complex_I, 
      -9.0551e-01+ -4.4294e-01*_Complex_I,   6.0591e-01+ -1.5383e+00*_Complex_I, 
@@ -43,9 +43,9 @@ LIQUID_AUTOTEST(dotprod_crcf_rand01,"dot product with floating-point data","",0.
      -1.3932e+00+ -4.8491e-01*_Complex_I,  -1.4234e+00+  2.0333e-01*_Complex_I
     };
 
-    float complex y;
-    float complex test     = -3.35346556487224 + 11.78023318618137*_Complex_I;
-    float complex test_rev =  3.655541203500000 + 4.26531912591000*_Complex_I;
+    liquid_float_complex y;
+    liquid_float_complex test     = -3.35346556487224 + 11.78023318618137*_Complex_I;
+    liquid_float_complex test_rev =  3.655541203500000 + 4.26531912591000*_Complex_I;
     float tol = 1e-3f;
 
     dotprod_crcf_run(h,x,16,&y);
@@ -87,7 +87,7 @@ LIQUID_AUTOTEST(dotprod_crcf_rand02,"dot product with floating-point data","",0.
      -1.0403e+00,  -1.1424e-01,  -1.2371e+00,  -7.9723e-01
     };
 
-    float complex x[16] = {
+    liquid_float_complex x[16] = {
      -8.3558e-01+  3.0504e-01*_Complex_I,  -6.3004e-01+  2.4680e-01*_Complex_I, 
       9.6908e-01+  1.2978e+00*_Complex_I,  -2.0587e+00+  9.5385e-01*_Complex_I, 
       2.5692e-01+ -1.7314e+00*_Complex_I,  -1.2237e+00+ -6.2139e-02*_Complex_I, 
@@ -98,8 +98,8 @@ LIQUID_AUTOTEST(dotprod_crcf_rand02,"dot product with floating-point data","",0.
      -2.0892e+00+  2.7759e-02*_Complex_I,  -2.5188e-01+  2.5568e-01*_Complex_I
     };
 
-    float complex y;
-    float complex test = 2.11053363855085 - 2.04167493441477*_Complex_I;
+    liquid_float_complex y;
+    liquid_float_complex test = 2.11053363855085 - 2.04167493441477*_Complex_I;
     float tol = 1e-3f;
 
     dotprod_crcf_run(h,x,16,&y);
@@ -125,8 +125,8 @@ LIQUID_AUTOTEST(dotprod_crcf_rand02,"dot product with floating-point data","",0.
 void testbench_dotprod_crcf(liquid_autotest __q__, unsigned int _n)
 {
     float tol = 1e-4;
-    float h[_n];
-    float complex x[_n];
+    LIQUID_VLA(float, h, _n);
+    LIQUID_VLA(liquid_float_complex, x, _n);
 
     // generate random coefficients
     unsigned int i;
@@ -136,19 +136,19 @@ void testbench_dotprod_crcf(liquid_autotest __q__, unsigned int _n)
     }
     
     // compute expected value (ordinal computation)
-    float complex y_test=0;
+    liquid_float_complex y_test=0;
     for (i=0; i<_n; i++)
         y_test += h[i] * x[i];
 
     // create and run dot product object
-    float complex y_struct;
+    liquid_float_complex y_struct;
     dotprod_crcf dp;
     dp = dotprod_crcf_create(h,_n);
     dotprod_crcf_execute(dp, x, &y_struct);
     dotprod_crcf_destroy(dp);
 
     // run unstructured
-    float complex y_run, y_run4;
+    liquid_float_complex y_run, y_run4;
     dotprod_crcf_run (h,x,_n,&y_run );
     dotprod_crcf_run4(h,x,_n,&y_run4);
 

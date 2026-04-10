@@ -49,7 +49,7 @@ void liquid_lpc(float * _x,
     }
 
     // compute auto-correlation with lags
-    float r[_p+1];    // auto-correlation array
+    LIQUID_VLA(float, r, _p+1);    // auto-correlation array
 
     unsigned int i;
     for (i=0; i<_p+1; i++) {
@@ -87,10 +87,10 @@ void liquid_levinson(float * _r,
     }
 
     // allocate arrays
-    float a0[_p+1]; // temporary coefficients array, index [n]
-    float a1[_p+1]; // temporary coefficients array, index [n-1]
-    float e[_p+1];  // prediction error
-    float k[_p+1];  // reflection coefficients
+    LIQUID_VLA(float, a0, _p+1); // temporary coefficients array, index [n]
+    LIQUID_VLA(float, a1, _p+1); // temporary coefficients array, index [n-1]
+    LIQUID_VLA(float, e, _p+1);  // prediction error
+    LIQUID_VLA(float, k, _p+1);  // reflection coefficients
 
     // initialize
     k[0] = 1.0f;

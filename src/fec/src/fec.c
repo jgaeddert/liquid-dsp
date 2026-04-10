@@ -74,7 +74,7 @@ int liquid_print_fec_schemes()
     printf("          ");
     for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++) {
 #if !LIBFEC_ENABLED
-        if ( fec_scheme_is_convolutional(i) || fec_scheme_is_reedsolomon(i) )
+        if ( fec_scheme_is_convolutional((fec_scheme)i) || fec_scheme_is_reedsolomon((fec_scheme)i) )
             continue;
 #endif
         printf("%s", fec_scheme_str[i][0]);
@@ -99,7 +99,7 @@ fec_scheme liquid_getopt_str2fec(const char * _str)
     unsigned int i;
     for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++) {
         if (strcmp(_str,fec_scheme_str[i][0])==0) {
-            return i;
+            return (fec_scheme)i;
         }
     }
 
@@ -363,6 +363,7 @@ unsigned int fec_rs_get_enc_msg_len(unsigned int _dec_msg_len,
                                     unsigned int _nn,
                                     unsigned int _kk)
 {
+    (void)_nn;
     // validate input
     if (_dec_msg_len == 0) {
         liquid_error(LIQUID_EICONFIG,"fec_rs_get_enc_msg_len(), _dec_msg_len must be greater than 0");
@@ -372,11 +373,11 @@ unsigned int fec_rs_get_enc_msg_len(unsigned int _dec_msg_len,
     div_t d;
 
     // compute the number of blocks in the full message sequence
-    d = div(_dec_msg_len, _kk);
+    d = div((int)_dec_msg_len, (int)_kk);
     unsigned int num_blocks = d.quot + (d.rem==0 ? 0 : 1);
 
     // compute the length of each decoded block
-    d = div(_dec_msg_len, num_blocks);
+    d = div((int)_dec_msg_len, (int)num_blocks);
     unsigned int dec_block_len = d.quot + (d.rem == 0 ? 0 : 1);
 
     // compute the encoded block length
@@ -463,8 +464,6 @@ float fec_get_rate(fec_scheme _scheme)
         liquid_error(LIQUID_EIMODE,"fec_get_rate(), unknown/unsupported scheme: %d", _scheme);
         return 0.0f;
     }
-    return liquid_error(LIQUID_EINT,"internal error");
-    return 0.0f;
 }
 
 // create a fec object of a particular scheme
@@ -474,7 +473,7 @@ fec fec_create(fec_scheme _scheme, void *_opts)
 {
     switch (_scheme) {
     case LIQUID_FEC_UNKNOWN:
-        return liquid_error_config("fec_create(), cannot create fec object of unknown type\n");
+        return liquid_error_config_ptr(fec, "fec_create(), cannot create fec object of unknown type\n");
     case LIQUID_FEC_NONE:       return fec_pass_create(NULL);
     case LIQUID_FEC_REP3:       return fec_rep3_create(_opts);
     case LIQUID_FEC_REP5:       return fec_rep5_create(_opts);
@@ -544,11 +543,6 @@ fec fec_create(fec_scheme _scheme, void *_opts)
         liquid_error(LIQUID_EIMODE,"fec_create(), unknown/unsupported scheme: %d", _scheme);
         return NULL;
     }
-
-    // should never get to this point, but return NULL to keep
-    // compiler happy
-    liquid_error(LIQUID_EINT,"internal error");
-    return NULL;
 }
 
 // recreate a fec object
@@ -574,7 +568,7 @@ fec fec_copy(fec q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("fec_copy(), object cannot be NULL");
+        return liquid_error_config_ptr(fec, "fec_copy(), object cannot be NULL");
 
     // TODO: ensure state is retained
     return fec_create(q_orig->scheme, NULL);
@@ -648,7 +642,6 @@ int fec_destroy(fec _q)
     default:
         return liquid_error(LIQUID_EUMODE,"fec_destroy(), unknown/unsupported scheme: %d\n", _q->scheme);
     }
-    return liquid_error(LIQUID_EINT,"internal error");
 }
 
 // print basic fec object internals
@@ -704,7 +697,7 @@ int fec_decode_soft(fec _q,
     } else {
         // pack bytes and use hard-decision decoding
         unsigned enc_msg_len = fec_get_enc_msg_length(_q->scheme, _dec_msg_len);
-        unsigned char msg_enc_hard[enc_msg_len];
+        LIQUID_VLA(unsigned char, msg_enc_hard, enc_msg_len);
         unsigned int i;
         for (i=0; i<enc_msg_len; i++) {
             // TODO : use pack bytes

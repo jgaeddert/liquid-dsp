@@ -35,8 +35,8 @@ void benchmark_agc_crcf(struct rusage *     _start,
     agc_crcf q = agc_crcf_create();
     agc_crcf_set_bandwidth(q,0.05f);
 
-    float complex x = 1e-6f;    // input sample
-    float complex y;            // output sample
+    liquid_float_complex x = 1e-6f;    // input sample
+    liquid_float_complex y;            // output sample
 
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {

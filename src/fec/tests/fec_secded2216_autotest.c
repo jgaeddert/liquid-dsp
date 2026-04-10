@@ -29,16 +29,16 @@
 LIQUID_AUTOTEST(secded2216_codec_e0,"SEC-DEC (22,16) codec (no errors)","",0.1)
 {
     // generate symbol
-    unsigned char sym_org[2];
+    LIQUID_VLA(unsigned char, sym_org, 2);
     sym_org[0] = rand() & 0xffff;
     sym_org[1] = rand() & 0xffff;
 
     // encoded symbol
-    unsigned char sym_enc[3];
+    LIQUID_VLA(unsigned char, sym_enc, 3);
     fec_secded2216_encode_symbol(sym_org, sym_enc);
 
     // decoded symbol
-    unsigned char sym_dec[2];
+    LIQUID_VLA(unsigned char, sym_dec, 2);
     fec_secded2216_decode_symbol(sym_enc, sym_dec);
 
     // validate data are the same
@@ -52,12 +52,12 @@ LIQUID_AUTOTEST(secded2216_codec_e1,"SEC-DEC (22,16) codec (single error)","",0.
 
     for (k=0; k<22; k++) {
         // generate symbol
-        unsigned char sym_org[2];
+        LIQUID_VLA(unsigned char, sym_org, 2);
         sym_org[0] = rand() & 0xffff;
         sym_org[1] = rand() & 0xffff;
 
         // encoded symbol
-        unsigned char sym_enc[3];
+        LIQUID_VLA(unsigned char, sym_enc, 3);
         fec_secded2216_encode_symbol(sym_org, sym_enc);
 
         // generate error vector (single error)
@@ -66,13 +66,13 @@ LIQUID_AUTOTEST(secded2216_codec_e1,"SEC-DEC (22,16) codec (single error)","",0.
         e[3-d.quot-1] = 1 << d.rem;
 
         // received symbol
-        unsigned char sym_rec[3];
+        LIQUID_VLA(unsigned char, sym_rec, 3);
         sym_rec[0] = sym_enc[0] ^ e[0];
         sym_rec[1] = sym_enc[1] ^ e[1];
         sym_rec[2] = sym_enc[2] ^ e[2];
 
         // decoded symbol
-        unsigned char sym_dec[2];
+        LIQUID_VLA(unsigned char, sym_dec, 2);
         fec_secded2216_decode_symbol(sym_rec, sym_dec);
 
         // validate data are the same
@@ -93,12 +93,12 @@ LIQUID_AUTOTEST(secded2216_codec_e2,"SEC-DEC (22,16) codec (double error detecti
         for (k=0; k<22-j-1; k++) {
 
             // generate symbol
-            unsigned char sym_org[2];
+            LIQUID_VLA(unsigned char, sym_org, 2);
             sym_org[0] = rand() & 0xffff;
             sym_org[1] = rand() & 0xffff;
 
             // encoded symbol
-            unsigned char sym_enc[3];
+            LIQUID_VLA(unsigned char, sym_enc, 3);
             fec_secded2216_encode_symbol(sym_org, sym_enc);
 
             // generate error vector (single error)
@@ -111,13 +111,13 @@ LIQUID_AUTOTEST(secded2216_codec_e2,"SEC-DEC (22,16) codec (double error detecti
             e[3-dk.quot-1] |= 1 << dk.rem;
 
             // received symbol
-            unsigned char sym_rec[3];
+            LIQUID_VLA(unsigned char, sym_rec, 3);
             sym_rec[0] = sym_enc[0] ^ e[0];
             sym_rec[1] = sym_enc[1] ^ e[1];
             sym_rec[2] = sym_enc[2] ^ e[2];
 
             // decoded symbol
-            unsigned char sym_dec[2];
+            LIQUID_VLA(unsigned char, sym_dec, 2);
             int syndrome_flag = fec_secded2216_decode_symbol(sym_rec, sym_dec);
 
 #if 0

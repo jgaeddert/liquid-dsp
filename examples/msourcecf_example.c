@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates generating multiple signal sources simultaneously"
 " for testing using the msource (multi-source) family of objects.";
 
@@ -7,11 +7,12 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // user-defined callback; generate tones
 int callback(void *          _userdata,
-             float complex * _v,
+             liquid_float_complex * _v,
              unsigned int    _n)
 {
     unsigned int * counter = (unsigned int*)_userdata;
@@ -43,7 +44,7 @@ int main(int argc, char* argv[])
     spgramcf periodogram = spgramcf_create_default(nfft);
 
     unsigned int buf_len = 1024;
-    float complex buf[buf_len];
+    LIQUID_VLA(liquid_float_complex, buf, buf_len);
 
     // create multi-signal source generator
     msourcecf gen = msourcecf_create_default();
@@ -74,7 +75,7 @@ int main(int argc, char* argv[])
     printf("total samples: %u\n", total_samples);
 
     // compute power spectral density output
-    float psd[nfft];
+    LIQUID_VLA(float, psd, nfft);
     spgramcf_get_psd(periodogram, psd);
 
     // destroy objects

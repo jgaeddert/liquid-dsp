@@ -64,11 +64,11 @@ void testbench_ampmodem(liquid_autotest __q__,
         wdelayf_push(message_delay, msg_in);
 
         // modulate
-        float complex x;
+        liquid_float_complex x;
         ampmodem_modulate(mod, msg_in, &x);
 
         // add channel impairments
-        float complex y = x*cexpf(_Complex_I*_phi) +
+        liquid_float_complex y = x*cexpf(_Complex_I*_phi) +
             nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 
         // update phase

@@ -33,6 +33,13 @@
 #include <math.h>
 #include "liquid.internal.h"
 
+// MSVC C++ mode: ccosf/csinf are not defined, use std::cos/std::sin
+#if defined(_MSC_VER) && defined(__cplusplus)
+#include <complex>
+#define ccosf(z) std::cos(z)
+#define csinf(z) std::sin(z)
+#endif
+
 #define LIQUID_DEBUG_ELLIP_PRINT   0
 
 // landenf()
@@ -93,7 +100,7 @@ int ellipkf(float         _k,
         float L = -logf(0.25f*kp);
         K = L + 0.25f*(L-1)*kp*kp;
     } else {
-        float v[_n];
+        LIQUID_VLA(float, v, _n);
         landenf(_k,_n,v);
         K = M_PI * 0.5f;
         unsigned int i;
@@ -107,7 +114,7 @@ int ellipkf(float         _k,
         float L = -logf(_k*0.25f);
         Kp = L + 0.25f*(L-1)*_k*_k;
     } else {
-        float vp[_n];
+        LIQUID_VLA(float, vp, _n);
         landenf(kp,_n,vp);
         Kp = M_PI * 0.5f;
         unsigned int i;
@@ -172,12 +179,12 @@ float ellipdegf(float        _N,
 //  _u      :   vector in the complex u-plane
 //  _k      :   elliptic modulus (0 <= _k < 1)
 //  _n      :   number of Landen iterations (typically 5-6)
-float complex ellip_cdf(float complex _u,
+liquid_float_complex ellip_cdf(liquid_float_complex _u,
                         float         _k,
                         unsigned int  _n)
 {
-    float complex wn = ccosf(_u*M_PI*0.5f);
-    float v[_n];
+    liquid_float_complex wn = ccosf(_u*M_PI*0.5f);
+    LIQUID_VLA(float, v, _n);
     landenf(_k,_n,v);
     unsigned int i;
     for (i=_n; i>0; i--) {
@@ -193,12 +200,12 @@ float complex ellip_cdf(float complex _u,
 //  _u      :   vector in the complex u-plane
 //  _k      :   elliptic modulus (0 <= _k < 1)
 //  _n      :   number of Landen iterations (typically 5-6)
-float complex ellip_snf(float complex _u,
+liquid_float_complex ellip_snf(liquid_float_complex _u,
                         float         _k,
                         unsigned int  _n)
 {
-    float complex wn = csinf(_u*M_PI*0.5f);
-    float v[_n];
+    liquid_float_complex wn = csinf(_u*M_PI*0.5f);
+    LIQUID_VLA(float, v, _n);
     landenf(_k,_n,v);
     unsigned int i;
     for (i=_n; i>0; i--) {
@@ -215,15 +222,15 @@ float complex ellip_snf(float complex _u,
 //  _w      :   vector in the complex u-plane
 //  _k      :   elliptic modulus (0 <= _k < 1)
 //  _n      :   number of Landen iterations (typically 5-6)
-float complex ellip_acdf(float complex _w,
+liquid_float_complex ellip_acdf(liquid_float_complex _w,
                          float         _k,
                          unsigned int  _n)
 {
-    float v[_n];
+    LIQUID_VLA(float, v, _n);
     landenf(_k,_n,v);
     float v1;
 
-    float complex w = _w;
+    liquid_float_complex w = _w;
     unsigned int i;
     for (i=0; i<_n; i++) {
         v1 = (i==0) ? _k : v[i-1];
@@ -231,7 +238,7 @@ float complex ellip_acdf(float complex _w,
         //printf("  w[%3u] = %12.8f + j*%12.8f\n", i, crealf(w), cimagf(w));
     }
 
-    float complex u = liquid_cacosf(w) * 2.0 / M_PI;
+    liquid_float_complex u = liquid_cacosf(w) * 2.0 / M_PI;
     //printf("  u = %12.8f + j*%12.8f\n", crealf(u), cimagf(u));
 
 #if 0
@@ -250,7 +257,7 @@ float complex ellip_acdf(float complex _w,
 //  _w      :   vector in the complex u-plane
 //  _k      :   elliptic modulus (0 <= _k < 1)
 //  _n      :   number of Landen iterations (typically 5-6)
-float complex ellip_asnf(float complex _w,
+liquid_float_complex ellip_asnf(liquid_float_complex _w,
                          float         _k,
                          unsigned int  _n)
 {
@@ -272,9 +279,9 @@ float complex ellip_asnf(float complex _w,
 int ellip_azpkf(unsigned int    _n,
                 float           _ep,
                 float           _es,
-                float complex * _za,
-                float complex * _pa,
-                float complex * _ka)
+                liquid_float_complex * _za,
+                liquid_float_complex * _pa,
+                liquid_float_complex * _ka)
 {
     // filter specifications
     float fp = 1.0f / (2.0f * M_PI);    // pass-band cutoff
@@ -331,7 +338,7 @@ int ellip_azpkf(unsigned int    _n,
 
     unsigned int L = (unsigned int)(floorf(N/2.0f)); // 2
     unsigned int r = ((unsigned int)N) % 2;
-    float u[L];
+    LIQUID_VLA(float, u, L);
     unsigned int i;
     for (i=0; i<L; i++) {
         float t = (float)i + 1.0f;
@@ -340,7 +347,7 @@ int ellip_azpkf(unsigned int    _n,
         printf("u[%3u]      : %12.8f\n", i, u[i]);
 #endif
     }
-    float complex zeta[L];
+    LIQUID_VLA(liquid_float_complex, zeta, L);
     for (i=0; i<L; i++) {
         zeta[i] = ellip_cdf(u[i],k,n);
 #if LIQUID_DEBUG_ELLIP_PRINT
@@ -349,7 +356,7 @@ int ellip_azpkf(unsigned int    _n,
     }
 
     // compute filter zeros
-    float complex za[L];
+    LIQUID_VLA(liquid_float_complex, za, L);
     for (i=0; i<L; i++) {
         za[i] = _Complex_I * Wp / (k*zeta[i]);
 #if LIQUID_DEBUG_ELLIP_PRINT
@@ -357,19 +364,19 @@ int ellip_azpkf(unsigned int    _n,
 #endif
     }
 
-    float complex v0 = -_Complex_I*ellip_asnf(_Complex_I/ep, k1, n)/N;
+    liquid_float_complex v0 = -_Complex_I*ellip_asnf(_Complex_I/ep, k1, n)/N;
 #if LIQUID_DEBUG_ELLIP_PRINT
     printf("v0          : %12.8f + j*%12.8f\n", crealf(v0), cimagf(v0));
 #endif
 
-    float complex pa[L];
+    LIQUID_VLA(liquid_float_complex, pa, L);
     for (i=0; i<L; i++) {
         pa[i] = Wp*_Complex_I*ellip_cdf(u[i]-_Complex_I*v0, k, n);
 #if LIQUID_DEBUG_ELLIP_PRINT
         printf("pa[%3u]     : %12.8f + j*%12.8f\n", i, crealf(pa[i]), cimagf(pa[i]));
 #endif
     }
-    float complex pa0 = Wp * _Complex_I*ellip_snf(_Complex_I*v0, k, n);
+    liquid_float_complex pa0 = Wp * _Complex_I*ellip_snf(_Complex_I*v0, k, n);
 #if LIQUID_DEBUG_ELLIP_PRINT
     printf("pa0         : %12.8f + j*%12.8f\n", crealf(pa0), cimagf(pa0));
 #endif

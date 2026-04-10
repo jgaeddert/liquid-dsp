@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example tests the performance for detecting and decoding frames"
 " with the framegen64 and framesync64 objects.";
 
@@ -6,10 +6,11 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // add noise to channel
-void frame64_add_noise(float complex * _buf, float _SNRdB)
+void frame64_add_noise(liquid_float_complex * _buf, float _SNRdB)
 {
     float nstd = powf(10.0f, -_SNRdB/20.0f);
     nstd *= M_SQRT2; // scale noise to account for signal being over-sampled by 2
@@ -35,7 +36,7 @@ int main(int argc, char*argv[])
     framesync64 fs = framesync64_create(NULL,NULL);
 
     // create buffer for the frame samples
-    float complex frame[LIQUID_FRAME64_LEN];
+    LIQUID_VLA(liquid_float_complex, frame, LIQUID_FRAME64_LEN);
     float SNRdB = -3.0f;
     float per_0 =-1.0f, per_1 = -1.0f;
     float snr_0 = 0.0f, snr_1 =  0.0f;

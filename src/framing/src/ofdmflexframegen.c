@@ -67,6 +67,17 @@ static ofdmflexframegenprops_s ofdmflexframegenprops_header_default = {
     OFDMFLEXFRAME_H_MOD,
 };
 
+// generator state (moved outside struct for C++ compatibility)
+enum ofdmflexframegen_state_e {
+    OFDMFLEXFRAMEGEN_STATE_S0a=0,   // write S0 symbol (first)
+    OFDMFLEXFRAMEGEN_STATE_S0b,     // write S0 symbol (second)
+    OFDMFLEXFRAMEGEN_STATE_S1,      // write S1 symbol
+    OFDMFLEXFRAMEGEN_STATE_HEADER,  // write header symbols
+    OFDMFLEXFRAMEGEN_STATE_PAYLOAD, // write payload symbols
+    OFDMFLEXFRAMEGEN_STATE_TAIL,    // write tail of last symbol
+    OFDMFLEXFRAMEGEN_STATE_ZEROS    // write zeros
+};
+
 int ofdmflexframegenprops_init_default(ofdmflexframegenprops_s * _props)
 {
     memmove(_props, &ofdmflexframegenprops_default, sizeof(ofdmflexframegenprops_s));
@@ -88,8 +99,8 @@ struct ofdmflexframegen_s {
     unsigned int frame_len; // frame length (M + cp_len)
 
     // buffers
-    float complex * X;          // frequency-domain buffer
-    float complex * buf_tx;     // transmit buffer
+    liquid_float_complex * X;          // frequency-domain buffer
+    liquid_float_complex * buf_tx;     // transmit buffer
     unsigned int    buf_index;  // buffer index
 
     // internal low-level objects
@@ -121,15 +132,7 @@ struct ofdmflexframegen_s {
 
     // counters/states
     unsigned int symbol_number;         // output symbol number
-    enum {
-        OFDMFLEXFRAMEGEN_STATE_S0a=0,   // write S0 symbol (first)
-        OFDMFLEXFRAMEGEN_STATE_S0b,     // write S0 symbol (second)
-        OFDMFLEXFRAMEGEN_STATE_S1,      // write S1 symbol
-        OFDMFLEXFRAMEGEN_STATE_HEADER,  // write header symbols
-        OFDMFLEXFRAMEGEN_STATE_PAYLOAD, // write payload symbols
-        OFDMFLEXFRAMEGEN_STATE_TAIL,    // write tail of last symbol
-        OFDMFLEXFRAMEGEN_STATE_ZEROS    // write zeros
-    } state;
+    enum ofdmflexframegen_state_e state;
     int frame_assembled;                // frame assembled flag
     int frame_complete;                 // frame completed flag
     unsigned int header_symbol_index;   //
@@ -154,11 +157,11 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int              _M,
 {
     // validate input
     if (_M < 8)
-        return liquid_error_config("ofdmflexframegen_create(), number of subcarriers must be at least 8");
+        return (ofdmflexframegen)liquid_error_config("ofdmflexframegen_create(), number of subcarriers must be at least 8");
     if (_M % 2)
-        return liquid_error_config("ofdmflexframegen_create(), number of subcarriers must be even");
+        return (ofdmflexframegen)liquid_error_config("ofdmflexframegen_create(), number of subcarriers must be even");
     if (_cp_len > _M)
-        return liquid_error_config("ofdmflexframegen_create(), cyclic prefix length cannot exceed number of subcarriers");
+        return (ofdmflexframegen)liquid_error_config("ofdmflexframegen_create(), cyclic prefix length cannot exceed number of subcarriers");
 
     ofdmflexframegen q = (ofdmflexframegen) malloc(sizeof(struct ofdmflexframegen_s));
     q->M         = _M;          // number of subcarriers
@@ -167,8 +170,8 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int              _M,
 
     // allocate memory for transform buffers
     q->frame_len = q->M + q->cp_len;    // frame length
-    q->X         = (float complex*) malloc((q->M        )*sizeof(float complex));
-    q->buf_tx    = (float complex*) malloc((q->frame_len)*sizeof(float complex));
+    q->X         = (liquid_float_complex*) malloc((q->M        )*sizeof(liquid_float_complex));
+    q->buf_tx    = (liquid_float_complex*) malloc((q->frame_len)*sizeof(liquid_float_complex));
     q->buf_index = q->frame_len;
 
     // allocate memory for subcarrier allocation IDs
@@ -320,7 +323,7 @@ int ofdmflexframegen_set_header_len(ofdmflexframegen _q,
 {
     _q->header_user_len = _len;
     _q->header_dec_len = OFDMFLEXFRAME_H_DEC + _q->header_user_len;
-    _q->header = realloc(_q->header, _q->header_dec_len*sizeof(unsigned char));
+    _q->header = (unsigned char*)realloc(_q->header, _q->header_dec_len*sizeof(unsigned char));
 
     if (_q->p_header) {
         packetizer_destroy(_q->p_header);
@@ -330,20 +333,20 @@ int ofdmflexframegen_set_header_len(ofdmflexframegen _q,
                                      _q->header_props.fec0,
                                      _q->header_props.fec1);
     _q->header_enc_len = packetizer_get_enc_msg_len(_q->p_header);
-    _q->header_enc = realloc(_q->header_enc, _q->header_enc_len*sizeof(unsigned char));
+    _q->header_enc = (unsigned char*)realloc(_q->header_enc, _q->header_enc_len*sizeof(unsigned char));
 
     unsigned int bps = modulation_types[_q->header_props.mod_scheme].bps;
-    div_t bps_d = div(_q->header_enc_len*8, bps);
+    div_t bps_d = div((int)(_q->header_enc_len*8), (int)bps);
     _q->header_sym_len = bps_d.quot + (bps_d.rem ? 1 : 0);
-    _q->header_mod = realloc(_q->header_mod, _q->header_sym_len*sizeof(unsigned char));
+    _q->header_mod = (unsigned char*)realloc(_q->header_mod, _q->header_sym_len*sizeof(unsigned char));
     // create header objects
     if (_q->mod_header) {
         modemcf_destroy(_q->mod_header);
     }
-    _q->mod_header = modemcf_create(_q->header_props.mod_scheme);
+    _q->mod_header = modemcf_create((modulation_scheme)_q->header_props.mod_scheme);
 
     // compute number of header symbols
-    div_t d = div(_q->header_sym_len, _q->M_data);
+    div_t d = div((int)_q->header_sym_len, (int)_q->M_data);
     _q->num_symbols_header = d.quot + (d.rem ? 1 : 0);
     return LIQUID_OK;
 }
@@ -446,7 +449,7 @@ int ofdmflexframegen_assemble(ofdmflexframegen      _q,
 //  _buf            :   output buffer [size: _buf_len x 1]
 //  _buf_len        :   output buffer length
 int ofdmflexframegen_write(ofdmflexframegen _q,
-                           float complex *  _buf,
+                           liquid_float_complex *  _buf,
                            unsigned int     _buf_len)
 {
     unsigned int i;
@@ -487,17 +490,17 @@ int ofdmflexframegen_reconfigure(ofdmflexframegen _q)
 
     // re-create modem
     // TODO : only do this if necessary
-    _q->mod_payload = modemcf_recreate(_q->mod_payload, _q->props.mod_scheme);
+    _q->mod_payload = modemcf_recreate(_q->mod_payload, (modulation_scheme)_q->props.mod_scheme);
 
     // re-allocate memory for payload modem symbols
     unsigned int bps = modulation_types[_q->props.mod_scheme].bps;
-    div_t d = div(8*_q->payload_enc_len, bps);
+    div_t d = div((int)(8*_q->payload_enc_len), (int)bps);
     _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
     _q->payload_mod = (unsigned char*)realloc(_q->payload_mod,
                                               _q->payload_mod_len*sizeof(unsigned char));
 
     // re-compute number of payload OFDM symbols
-    d = div(_q->payload_mod_len, _q->M_data);
+    d = div((int)_q->payload_mod_len, (int)_q->M_data);
     _q->num_symbols_payload = d.quot + (d.rem ? 1 : 0);
     return LIQUID_OK;
 }
@@ -738,7 +741,7 @@ int ofdmflexframegen_gen_zeros(ofdmflexframegen _q)
 #if DEBUG_OFDMFLEXFRAMEGEN
     printf("writing zeros\n");
 #endif
-    memset(_q->buf_tx, 0x00, (_q->frame_len)*sizeof(float complex));
+    memset(_q->buf_tx, 0x00, (_q->frame_len)*sizeof(liquid_float_complex));
     return LIQUID_OK;
 }
 

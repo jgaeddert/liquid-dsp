@@ -42,10 +42,10 @@ void firfilt_cccf_notch_test_harness(liquid_autotest __q__,
     float y2 = 0.0f;
     for (i=0; i<num_samples+h_len; i++) {
         // compute input: tone at f0
-        float complex x = cexpf(_Complex_I*2*M_PI*_f0*i);
+        liquid_float_complex x = cexpf(_Complex_I*2*M_PI*_f0*i);
 
         // filter input
-        float complex y;
+        liquid_float_complex y;
         firfilt_cccf_push   (q,  x);
         firfilt_cccf_execute(q, &y);
 

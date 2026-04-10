@@ -30,9 +30,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "liquid.internal.h"
+
 // NOTE: this is defined in multiple places, but should be included here
 //       until an appropriate place for literals can be found
+#ifndef LIQUID_PI
 #define LIQUID_PI   (3.14159265358979323846264338327950288f)
+#endif
 
 // unwrap phase of array (basic)
 void liquid_unwrap_phase(float * _theta,

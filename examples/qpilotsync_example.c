@@ -1,4 +1,4 @@
-char __docstr__[] = "Demonstrate using qpilotsync for carrier recovery.";
+const char __docstr__[] = "Demonstrate using qpilotsync for carrier recovery.";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +7,7 @@ char __docstr__[] = "Demonstrate using qpilotsync for carrier recovery.";
 #include <time.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char *argv[])
@@ -35,15 +36,15 @@ int main(int argc, char *argv[])
     unsigned int frame_len = qpilotgen_get_frame_len(pg);
 
     // allocate arrays
-    unsigned char payload_sym_tx[payload_len];  // transmitted payload symbols
-    float complex payload_tx    [payload_len];  // transmitted payload samples
-    float complex frame_tx      [frame_len];    // transmitted frame samples
-    float complex frame_rx      [frame_len];    // received frame samples
-    float complex payload_rx    [payload_len];  // received payload samples
-    unsigned char payload_sym_rx[payload_len];  // received payload symbols
+    LIQUID_VLA(unsigned char, payload_sym_tx, payload_len);  // transmitted payload symbols
+    LIQUID_VLA(liquid_float_complex, payload_tx, payload_len);  // transmitted payload samples
+    LIQUID_VLA(liquid_float_complex, frame_tx, frame_len);    // transmitted frame samples
+    LIQUID_VLA(liquid_float_complex, frame_rx, frame_len);    // received frame samples
+    LIQUID_VLA(liquid_float_complex, payload_rx, payload_len);  // received payload samples
+    LIQUID_VLA(unsigned char, payload_sym_rx, payload_len);  // received payload symbols
 
     // create modem objects for payload
-    modulation_scheme ms = liquid_getopt_str2mod(mod_str);
+    modulation_scheme ms = (modulation_scheme)liquid_getopt_str2mod(mod_str);
     modemcf mod = modemcf_create(ms);
     modemcf dem = modemcf_create(ms);
 

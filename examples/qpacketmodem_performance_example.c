@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the performance of the qpacket modem"
 " object to combine forward error-correction and modulation in one"
 " simple interface.";
@@ -11,6 +11,7 @@ char __docstr__[] =
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
     
 int main(int argc, char *argv[])
@@ -31,10 +32,10 @@ int main(int argc, char *argv[])
     liquid_argparse_add(unsigned, max_trials,40000, 'T', "maximum number of packet trials to simulate", NULL);
     liquid_argparse_parse(argc,argv);
 
-    modulation_scheme ms    = liquid_getopt_str2mod(mod);
-    crc_scheme        check = liquid_getopt_str2crc(crc);
-    fec_scheme        fec0  = liquid_getopt_str2fec(fs0);
-    fec_scheme        fec1  = liquid_getopt_str2fec(fs1);
+    modulation_scheme ms    = (modulation_scheme)liquid_getopt_str2mod(mod);
+    crc_scheme        check = (crc_scheme)liquid_getopt_str2crc(crc);
+    fec_scheme        fec0  = (fec_scheme)liquid_getopt_str2fec(fs0);
+    fec_scheme        fec1  = (fec_scheme)liquid_getopt_str2fec(fs1);
 
     // create and configure packet encoder/decoder object
     qpacketmodem q = qpacketmodem_create();
@@ -45,10 +46,10 @@ int main(int argc, char *argv[])
     unsigned int frame_len = qpacketmodem_get_frame_len(q);
 
     // initialize payload
-    unsigned char payload_tx       [payload_len]; // payload (transmitted)
-    unsigned char payload_rx       [payload_len]; // payload (received)
-    float complex frame_tx         [frame_len];   // frame samples (transmitted)
-    float complex frame_rx         [frame_len];   // frame samples (received)
+    LIQUID_VLA(unsigned char, payload_tx, payload_len); // payload (transmitted)
+    LIQUID_VLA(unsigned char, payload_rx, payload_len); // payload (received)
+    LIQUID_VLA(liquid_float_complex, frame_tx, frame_len);   // frame samples (transmitted)
+    LIQUID_VLA(liquid_float_complex, frame_rx, frame_len);   // frame samples (received)
 
     // output file
     FILE* fid = fopen(filename, "w");

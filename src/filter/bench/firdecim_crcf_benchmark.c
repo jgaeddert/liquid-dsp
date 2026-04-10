@@ -34,7 +34,7 @@ void firdecim_crcf_bench(struct rusage *     _start,
     *_num_iterations /= _h_len;
     if (*_num_iterations < 1) *_num_iterations = 1;
 
-    float h[_h_len];
+    LIQUID_VLA(float, h, _h_len);
     unsigned int i;
     for (i=0; i<_h_len; i++)
         h[i] = 1.0f;
@@ -42,11 +42,11 @@ void firdecim_crcf_bench(struct rusage *     _start,
     firdecim_crcf q = firdecim_crcf_create(_M,h,_h_len);
 
     // initialize input
-    float complex x[_M];
+    LIQUID_VLA(liquid_float_complex, x, _M);
     for (i=0; i<_M; i++)
         x[i] = (i%2) ? 1.0f : -1.0f;
 
-    float complex y;
+    liquid_float_complex y;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);

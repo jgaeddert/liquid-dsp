@@ -29,7 +29,9 @@
 #include <getopt.h>
 #include <math.h>
 #include <getopt.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.h"
 
@@ -48,14 +50,14 @@ void usage()
 
 // recursive FFT algorithm
 void fft_recursion(unsigned int    _nfft,
-                   float complex * _x,
-                   float complex * _y,
+                   liquid_float_complex * _x,
+                   liquid_float_complex * _y,
                    int             _dir);
 
 // super slow DFT, but functionally correct
 void dft_run(unsigned int    _nfft,
-             float complex * _x,
-             float complex * _y,
+             liquid_float_complex * _x,
+             liquid_float_complex * _y,
              int             _dir);
 
 int main(int argc, char*argv[])
@@ -82,9 +84,9 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // create and initialize data arrays
-    float complex x[nfft];
-    float complex y[nfft];
-    float complex y_test[nfft];
+    liquid_float_complex x[nfft];
+    liquid_float_complex y[nfft];
+    liquid_float_complex y_test[nfft];
     for (i=0; i<nfft; i++) {
         //x[i] = randnf() + _Complex_I*randnf();
         x[i] = (float)i + _Complex_I*(3 - (float)i);
@@ -130,8 +132,8 @@ int main(int argc, char*argv[])
 
 // recursive...
 void fft_recursion(unsigned int    _nfft,
-                   float complex * _x,
-                   float complex * _y,
+                   liquid_float_complex * _x,
+                   liquid_float_complex * _y,
                    int             _dir)
 {
     // determine if _nfft is divisible by ...
@@ -158,7 +160,7 @@ void fft_recursion(unsigned int    _nfft,
     unsigned int k;
 
     // initialize twiddle factors
-    float complex twiddle[_nfft];
+    liquid_float_complex twiddle[_nfft];
     float d = _dir == DFT_FORWARD ? -1.0f : 1.0f;
     for (i=0; i<_nfft; i++)
         twiddle[i] = cexpf(d*_Complex_I*2*M_PI*(float)i/(float)_nfft);
@@ -169,8 +171,8 @@ void fft_recursion(unsigned int    _nfft,
 #endif
     for (i=0; i<q; i++) {
         // copy to temp buffer, compute FFT, return result
-        float complex t0[p];
-        float complex t1[p];
+        liquid_float_complex t0[p];
+        liquid_float_complex t1[p];
 
         // copy to temporary buffer
         for (k=0; k<p; k++)
@@ -196,8 +198,8 @@ void fft_recursion(unsigned int    _nfft,
 #endif
     for (i=0; i<p; i++) {
         // copy to temp buffer...
-        float complex t0[q];
-        float complex t1[q];
+        liquid_float_complex t0[q];
+        liquid_float_complex t1[q];
 
         for (k=0; k<q; k++)
             t0[k] = _x[q*i+k];
@@ -219,8 +221,8 @@ void fft_recursion(unsigned int    _nfft,
 
 // super slow DFT, but functionally correct
 void dft_run(unsigned int    _nfft,
-             float complex * _x,
-             float complex * _y,
+             liquid_float_complex * _x,
+             liquid_float_complex * _y,
              int             _dir)
 {
     unsigned int i;

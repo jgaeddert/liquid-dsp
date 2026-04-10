@@ -214,6 +214,7 @@ int fec_secded3932_estimate_ehat(unsigned char * _sym_enc,
 // create SEC-DED (39,32) codec object
 fec fec_secded3932_create(void * _opts)
 {
+    (void)_opts;
     fec q = (fec) malloc(sizeof(struct fec_s));
 
     // set scheme
@@ -246,6 +247,7 @@ int fec_secded3932_encode(fec             _q,
                           unsigned char * _msg_dec,
                           unsigned char * _msg_enc)
 {
+    (void)_q;
     unsigned int i=0;       // decoded byte counter
     unsigned int j=0;       // encoded byte counter
 
@@ -279,7 +281,7 @@ int fec_secded3932_encode(fec             _q,
             m[n] = _msg_dec[i+n];
 
         // one 39-bit symbol (encoded)
-        unsigned char v[5];
+        LIQUID_VLA(unsigned char, v, 5);
 
         // encode
         fec_secded3932_encode_symbol(m, v);
@@ -313,9 +315,10 @@ int fec_secded3932_decode(fec             _q,
                           unsigned char * _msg_enc,
                           unsigned char * _msg_dec)
 {
+    (void)_q;
     unsigned int i=0;       // decoded byte counter
     unsigned int j=0;       // encoded byte counter
-    
+
     // determine remainder of input length / 4
     unsigned int r = _dec_msg_len % 4;
 
@@ -335,7 +338,7 @@ int fec_secded3932_decode(fec             _q,
             v[n+1] = _msg_enc[j+n+1];
 
         // one 32-bit symbol (decoded)
-        unsigned char m_hat[4];
+        LIQUID_VLA(unsigned char, m_hat, 4);
 
         // decode symbol
         fec_secded3932_decode_symbol(v, m_hat);

@@ -30,7 +30,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.internal.h"
 

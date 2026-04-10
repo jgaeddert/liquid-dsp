@@ -217,6 +217,7 @@ int fec_secded7264_estimate_ehat(unsigned char * _sym_enc,
 // create SEC-DED (72,64) codec object
 fec fec_secded7264_create(void * _opts)
 {
+    (void)_opts;
     fec q = (fec) malloc(sizeof(struct fec_s));
 
     // set scheme
@@ -249,6 +250,7 @@ int fec_secded7264_encode(fec             _q,
                           unsigned char * _msg_dec,
                           unsigned char * _msg_enc)
 {
+    (void)_q;
     unsigned int i=0;       // decoded byte counter
     unsigned int j=0;       // encoded byte counter
     unsigned char parity;   // parity byte
@@ -303,9 +305,10 @@ int fec_secded7264_decode(fec             _q,
                           unsigned char * _msg_enc,
                           unsigned char * _msg_dec)
 {
+    (void)_q;
     unsigned int i=0;       // decoded byte counter
     unsigned int j=0;       // encoded byte counter
-    
+
     // determine remainder of input length / 8
     unsigned int r = _dec_msg_len % 8;
 

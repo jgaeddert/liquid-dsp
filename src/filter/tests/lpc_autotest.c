@@ -39,9 +39,9 @@ void lpc_test_harness(liquid_autotest __q__,
     iirfilt_rrrf lowpass = iirfilt_rrrf_create_lowpass(7,_fc);
 
     // allocate memory for data arrays
-    float y[_n];         // input signal (filtered noise)
-    float a_hat[_p+1];   // lpc output
-    float g_hat[_p+1];   // lpc output
+    LIQUID_VLA(float, y, _n);         // input signal (filtered noise)
+    LIQUID_VLA(float, a_hat, _p+1);   // lpc output
+    LIQUID_VLA(float, g_hat, _p+1);   // lpc output
 
     // generate input signal (filtered noise)
     unsigned int i;
@@ -58,8 +58,8 @@ void lpc_test_harness(liquid_autotest __q__,
     liquid_lpc(y,_n,_p,a_hat,g_hat);
 
     // create linear prediction filter
-    float a_lpc[_p+1];
-    float b_lpc[_p+1];
+    LIQUID_VLA(float, a_lpc, _p+1);
+    LIQUID_VLA(float, b_lpc, _p+1);
     for (i=0; i<_p+1; i++) {
         a_lpc[i] = (i==0) ? 1.0f : 0.0f;
         b_lpc[i] = (i==0) ? 0.0f : -a_hat[i];

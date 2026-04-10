@@ -50,13 +50,13 @@ void iirfilt_crcf_bench(struct rusage *     _start,
     float As    = 60.0f;    // filter stop-band attenuation
     iirfilt_crcf q = iirfilt_crcf_create_prototype(LIQUID_IIRDES_BUTTER,
                                                    LIQUID_IIRDES_LOWPASS,
-                                                   _format,
+                                                   (liquid_iirdes_format)_format,
                                                    _order,
                                                    fc, f0, Ap, As);
 
     // initialize input/output
-    float complex x[4];
-    float complex y[4];
+    LIQUID_VLA(liquid_float_complex, x, 4);
+    LIQUID_VLA(liquid_float_complex, y, 4);
     for (i=0; i<4; i++)
         x[i] = randnf() + _Complex_I*randnf();
 
@@ -106,7 +106,7 @@ void benchmark_irfilt_crcf_dcblock(struct rusage *     _start,
     iirfilt_crcf q = iirfilt_crcf_create_dc_blocker(0.1f);
 
     // initialize input/output
-    float complex x[4];
+    LIQUID_VLA(liquid_float_complex, x, 4);
     for (i=0; i<4; i++)
         x[i] = randnf() + _Complex_I*randnf();
 

@@ -29,17 +29,17 @@ void usage()
 }
 
 // search for nearest constellation points to reference points
-void modemcf_arbref_search(float complex * _c,
+void modemcf_arbref_search(liquid_float_complex * _c,
                          unsigned int _M,
-                         float complex * _cref,
+                         liquid_float_complex * _cref,
                          unsigned int _p,
                          unsigned char * _index,
                          unsigned int _s);
 
 // search for nearest constellation points to single reference point
-void modemcf_arbref_search_point(float complex * _c,
+void modemcf_arbref_search_point(liquid_float_complex * _c,
                                unsigned int _M,
-                               float complex _cref,
+                               liquid_float_complex _cref,
                                unsigned char * _index,
                                unsigned int _s);
 
@@ -91,7 +91,7 @@ int main(int argc, char*argv[])
     modemcf qref = modemcf_create(mref);
     unsigned int kref = modemcf_get_bps(qref);
     unsigned int p = 1 << kref;
-    float complex cref[p];
+    liquid_float_complex cref[p];
     for (i=0; i<p; i++) {
         modemcf_modulate(qref, i, &cref[i]);
         cref[i] *= alpha;
@@ -102,7 +102,7 @@ int main(int argc, char*argv[])
     modemcf q = modemcf_create(ms);
     unsigned int bps = modemcf_get_bps(q);
     unsigned int M = 1 << bps;
-    float complex constellation[M];
+    liquid_float_complex constellation[M];
     for (i=0; i<M; i++)
         modemcf_modulate(q, i, &constellation[i]);
     modemcf_destroy(q);
@@ -209,9 +209,9 @@ int main(int argc, char*argv[])
 //  _p      :   reference points size
 //  _index  :   indices of nearest constellation points [size: _p x _s]
 //  _s      :   number of nearest constellation points
-void modemcf_arbref_search(float complex * _c,
+void modemcf_arbref_search(liquid_float_complex * _c,
                          unsigned int _M,
-                         float complex * _cref,
+                         liquid_float_complex * _cref,
                          unsigned int _p,
                          unsigned char * _index,
                          unsigned int _s)
@@ -232,9 +232,9 @@ void modemcf_arbref_search(float complex * _c,
 }
 
 // search for nearest constellation points to single reference point
-void modemcf_arbref_search_point(float complex * _c,
+void modemcf_arbref_search_point(liquid_float_complex * _c,
                                unsigned int _M,
-                               float complex _cref,
+                               liquid_float_complex _cref,
                                unsigned char * _index,
                                unsigned int _s)
 {

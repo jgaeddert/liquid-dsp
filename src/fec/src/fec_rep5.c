@@ -32,6 +32,7 @@
 // create rep5 codec object
 fec fec_rep5_create(void * _opts)
 {
+    (void)_opts;
     fec q = (fec) malloc(sizeof(struct fec_s));
 
     q->scheme = LIQUID_FEC_REP5;
@@ -69,6 +70,7 @@ int fec_rep5_encode(fec             _q,
                     unsigned char * _msg_dec,
                     unsigned char * _msg_enc)
 {
+    (void)_q;
     unsigned int i;
     for (i=0; i<5; i++) {
         memcpy(&_msg_enc[i*_dec_msg_len], _msg_dec, _dec_msg_len);
@@ -87,6 +89,7 @@ int fec_rep5_decode(fec             _q,
                     unsigned char * _msg_enc,
                     unsigned char * _msg_dec)
 {
+    (void)_q;
     unsigned char s0, s1, s2, s3, s4;
     unsigned int i;
     //unsigned int num_errors=0;
@@ -126,6 +129,7 @@ int fec_rep5_decode_soft(fec             _q,
                          unsigned char * _msg_enc,
                          unsigned char * _msg_dec)
 {
+    (void)_q;
     unsigned char s0, s1, s2, s3, s4;
     unsigned int i;
     unsigned int j;

@@ -24,15 +24,18 @@
 // firdecim_cccf_data_M2h4x20.c: autotest firdecim data
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
+#include "liquid.h"
 
-float complex firdecim_cccf_data_M2h4x20_h[] = {
+liquid_float_complex firdecim_cccf_data_M2h4x20_h[] = {
    -0.010020822840 +   0.161896349165*_Complex_I,
    -0.160666600378 +  -0.002813281324*_Complex_I,
     0.074990149666 +  -0.043630565869*_Complex_I,
    -0.147489652317 +  -0.117556939153*_Complex_I};
 
-float complex firdecim_cccf_data_M2h4x20_x[] = {
+liquid_float_complex firdecim_cccf_data_M2h4x20_x[] = {
    -0.062219283216 +   0.083707729807*_Complex_I,
     0.142772365864 +  -0.155087351763*_Complex_I,
    -0.035707773590 +  -0.015572103950*_Complex_I,
@@ -54,7 +57,7 @@ float complex firdecim_cccf_data_M2h4x20_x[] = {
     0.008377427496 +  -0.015424316799*_Complex_I,
    -0.115074264949 +   0.025508983239*_Complex_I};
 
-float complex firdecim_cccf_data_M2h4x20_y[] = {
+liquid_float_complex firdecim_cccf_data_M2h4x20_y[] = {
    -0.012928487438 +  -0.010911895131*_Complex_I,
    -0.021509784691 +   0.027882703574*_Complex_I,
    -0.012073246090 +   0.010047339289*_Complex_I,

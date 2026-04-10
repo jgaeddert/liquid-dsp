@@ -69,7 +69,7 @@ int MATRIX(_gramschmidt)(T *          _x,
     memmove(_v, _x, _rx * _cx * sizeof(T));
 
     unsigned int n = _rx;   // dimensionality of each vector
-    T proj_ij[n];
+    LIQUID_VLA(T, proj_ij, n);
     for (j=0; j<_cx; j++) {
         for (i=0; i<j; i++) {
             // v_j  <-  v_j - proj(v_i, v_j)

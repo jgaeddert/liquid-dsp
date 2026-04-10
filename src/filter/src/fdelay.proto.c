@@ -50,11 +50,11 @@ FDELAY() FDELAY(_create)(unsigned int _nmax,
 {
     // validate input
     if (_nmax == 0)
-        return liquid_error_config("fdelay_%s_create(), max delay must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config_ptr(FDELAY(), "fdelay_%s_create(), max delay must be greater than 0", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("fdelay_%s_create(), filter semi-length must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config_ptr(FDELAY(), "fdelay_%s_create(), filter semi-length must be greater than 0", EXTENSION_FULL);
     if (_npfb == 0)
-        return liquid_error_config("fdelay_%s_create(), number of filters must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config_ptr(FDELAY(), "fdelay_%s_create(), number of filters must be greater than 0", EXTENSION_FULL);
 
     // create filter object and initialize
     FDELAY() q = (FDELAY()) malloc(sizeof(struct FDELAY(_s)));
@@ -87,7 +87,7 @@ FDELAY() FDELAY(_copy)(FDELAY() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("fdelay_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+        return (FDELAY())liquid_error_config("fdelay_%s_copy(), object cannot be NULL", EXTENSION_FULL);
 
     // create filter object and copy base parameters
     FDELAY() q_copy = (FDELAY()) malloc(sizeof(struct FDELAY(_s)));

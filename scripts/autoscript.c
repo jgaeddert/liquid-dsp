@@ -172,9 +172,11 @@ void autoscript_print(autoscript _q)
             max_len = str_len > max_len ? str_len : max_len;
         }
     }
-    char space[max_len+1];
-    memset(space, ' ', max_len);
-    space[max_len] = '\0';
+    // MSVC doesn't support VLAs - use fixed buffer with max reasonable size
+    char space[256];
+    unsigned int actual_len = max_len < 255 ? max_len : 255;
+    memset(space, ' ', actual_len);
+    space[actual_len] = '\0';
 
     printf("// array of scripts\n");
     printf("%s_t scripts[NUM_AUTOSCRIPTS] = {\n", _q->type);
@@ -240,10 +242,11 @@ void autoscript_parsefilename(autoscript _q,
     char pathsep = _q->delim;   // path separator character
 
     // generate tag (e.g. "_benchmark")
-    unsigned int tag_len = strlen(_q->type) + 2;
-    char tag[tag_len];
+    // MSVC doesn't support VLAs - use fixed buffer
+    char tag[64];
     tag[0] = '_';
     strcpy(tag+1, _q->type);
+    unsigned int tag_len = (unsigned int)strlen(_q->type) + 2;
     tag[tag_len-1] = '\0';
     //printf("// tag : '%s'\n", tag);
 
@@ -295,9 +298,9 @@ void autoscript_parsefile(autoscript _q,
         exit(1);
     }
     // generate tag (e.g. "void benchmark_");
-    unsigned int tag_len = 5 + strlen(_q->type) + 2;
-    char tag[tag_len];
-    sprintf(tag, "void %s_", _q->type);
+    // MSVC doesn't support VLAs - use fixed buffer (NAME_LEN + 7 for "void " + "_" + null)
+    char tag[270];
+    snprintf(tag, sizeof(tag), "void %s_", _q->type);
 
     // parse file, looking for key
     char buffer[1024];      // line buffer

@@ -78,7 +78,7 @@ BSYNC() BSYNC(_create_msequence)(unsigned int _g,
 {
     // validate input
     if (_k == 0)
-        return liquid_error_config("bsync_xxxt_create_msequence(), samples/symbol must be greater than zero");
+        return liquid_error_config_ptr(BSYNC(), "bsync_xxxt_create_msequence(), samples/symbol must be greater than zero");
 
     unsigned int m = liquid_msb_index(_g) - 1;
 

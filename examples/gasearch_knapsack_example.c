@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Demonstration of genetic algorithm search on the knapsack problem";
 
 #include <stdio.h>
@@ -6,6 +6,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // knapsack object structure definition

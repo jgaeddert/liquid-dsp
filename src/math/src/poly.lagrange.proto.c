@@ -40,9 +40,9 @@ int POLY(_fit_lagrange)(T *          _x,
     for (i=0; i<_n; i++)
         _p[i] = 0.;
 
-    // compute roots, gain
-    T roots[k];     // polynomial roots
-    T c[_n];        // expanded polynomial
+    // compute roots, gain (use LIQUID_VLA for MSVC compatibility)
+    LIQUID_VLA(T, roots, k);     // polynomial roots
+    LIQUID_VLA(T, c, _n);        // expanded polynomial
     T g;            // gain
     unsigned int j;
     unsigned int n;
@@ -114,8 +114,8 @@ int POLY(_fit_lagrange_barycentric)(T *         _x,
             else        _w[j] *= (_x[j] - _x[k]);
         }
 
-        if (_w[j] == 0.0f) _w[j] += 1.0e-9f;
-        _w[j] = 1. / _w[j];
+        if (T_ABS(_w[j]) < 1.0e-9f) _w[j] = (T)1.0e-9f;
+        _w[j] = (T)1.0 / _w[j];
     }
 
     // normalize by _w[0], add minuscule margin to avoid division by zero

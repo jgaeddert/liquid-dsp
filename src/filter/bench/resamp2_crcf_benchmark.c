@@ -45,8 +45,8 @@ void resamp2_crcf_bench(struct rusage *_start,
 
     resamp2_crcf q = resamp2_crcf_create(_m,0.0f,60.0f);
 
-    float complex x[] = {1.0f, -1.0f};
-    float complex y[] = {1.0f, -1.0f};
+    liquid_float_complex x[] = {1.0f, -1.0f};
+    liquid_float_complex y[] = {1.0f, -1.0f};
 
     // start trials
     getrusage(RUSAGE_SELF, _start);

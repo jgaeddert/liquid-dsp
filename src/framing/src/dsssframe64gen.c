@@ -27,12 +27,14 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.internal.h"
 
 // write samples to buffer
-int dsssframe64gen_write(dsssframe64gen _q, float complex * _buf);
+int dsssframe64gen_write(dsssframe64gen _q, liquid_float_complex * _buf);
 
 struct dsssframe64gen_s {
     unsigned int    m;                  // filter delay (symbols)
@@ -44,10 +46,10 @@ struct dsssframe64gen_s {
     msequence       ms;                 // spreading sequence generator
     firinterp_crcf  interp;             // pulse-shaping filter/interpolator
     // buffers
-    float complex   preamble_pn[1024];  // 1024-symbol p/n sequence
-    unsigned char   payload_dec[ 150];  // 600 = 150 bytes * 8 bits/bytes / 2 bits/symbol
-    float complex   payload_sym[ 600];  // modulated payload symbols
-    float complex   payload_tx [ 650];  // modulated payload symbols with pilots
+    LIQUID_VLA(liquid_float_complex, preamble_pn, 1024);  // 1024-symbol p/n sequence
+    LIQUID_VLA(unsigned char, payload_dec,  150);  // 600 = 150 bytes * 8 bits/bytes / 2 bits/symbol
+    LIQUID_VLA(liquid_float_complex, payload_sym,  600);  // modulated payload symbols
+    liquid_float_complex   payload_tx [ 650];  // modulated payload symbols with pilots
 };
 
 // create dsssframe64gen object
@@ -73,7 +75,7 @@ dsssframe64gen dsssframe64gen_create()
     int fec1       = LIQUID_FEC_GOLAY2412;
     int mod_scheme = LIQUID_MODEM_QPSK;
     q->enc         = qpacketmodem_create();
-    qpacketmodem_configure(q->enc, 72, check, fec0, fec1, mod_scheme);
+    qpacketmodem_configure(q->enc, 72, (crc_scheme)check, (fec_scheme)fec0, (fec_scheme)fec1, mod_scheme);
     //qpacketmodem_print(q->enc);
     assert( qpacketmodem_get_frame_len(q->enc)==600 );
 
@@ -93,7 +95,7 @@ dsssframe64gen dsssframe64gen_copy(dsssframe64gen q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("dsssframe64gen_copy(), object cannot be NULL");
+        return (dsssframe64gen)liquid_error_config("dsssframe64gen_copy(), object cannot be NULL");
 
     // create filter object and copy base parameters
     dsssframe64gen q_copy = (dsssframe64gen) malloc(sizeof(struct dsssframe64gen_s));
@@ -143,7 +145,7 @@ unsigned int dsssframe64gen_get_frame_len(dsssframe64gen _q)
 int dsssframe64gen_execute(dsssframe64gen        _q,
                            const unsigned char * _header,
                            const unsigned char * _payload,
-                           float complex *       _buf)
+                           liquid_float_complex *       _buf)
 {
     unsigned int i;
 
@@ -171,7 +173,7 @@ int dsssframe64gen_execute(dsssframe64gen        _q,
 //  _q      : frame generator object
 //  _buf    : output frame samples (full frame)
 int dsssframe64gen_write(dsssframe64gen  _q,
-                         float complex * _buf)
+                         liquid_float_complex * _buf)
 {
     unsigned int i, j, n=0;
 
@@ -183,11 +185,11 @@ int dsssframe64gen_write(dsssframe64gen  _q,
 
     // frame payload
     for (i=0; i<650; i++) {
-        float complex sym = _q->payload_tx[i]; // strip out raw payload symbol
+        liquid_float_complex sym = _q->payload_tx[i]; // strip out raw payload symbol
         for (j=0; j<_q->sf; j++) {
             // generate pseudo-random symbol
             unsigned int  p = msequence_generate_symbol(_q->ms, 2);
-            float complex s = cexpf(_Complex_I*2*M_PI*(float)p/(float)4);
+            liquid_float_complex s = cexpf(_Complex_I*2*M_PI*(float)p/(float)4);
             firinterp_crcf_execute(_q->interp, sym*s, &_buf[n]);
             n+=2;
         }

@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Example of the finite impulse response (FIR) polyphase filterbank"
 " (PFB) channelizer with an output rate of 2 Fs / M as an (almost)"
 " perfect reconstructive system.";
@@ -9,6 +9,7 @@ char __docstr__[] =
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -35,8 +36,8 @@ int main(int argc, char*argv[])
     unsigned int num_samples = num_channels * num_symbols;
 
     // allocate arrays
-    float complex x[num_samples];
-    float complex y[num_samples];
+    LIQUID_VLA(liquid_float_complex, x, num_samples);
+    LIQUID_VLA(liquid_float_complex, y, num_samples);
 
     // generate input signal
     for (i=0; i<num_samples; i++) {
@@ -51,7 +52,7 @@ int main(int argc, char*argv[])
     firpfbch2_crcf_print(qs);
 
     // run channelizer
-    float complex Y[num_channels];
+    LIQUID_VLA(liquid_float_complex, Y, num_channels);
     for (i=0; i<num_samples; i+=num_channels/2) {
         // run analysis filterbank
         firpfbch2_crcf_execute(qa, &x[i], Y);
@@ -72,7 +73,7 @@ int main(int argc, char*argv[])
     float rmse = 0.0f;
     unsigned int delay = 2*num_channels*m - num_channels/2 + 1;
     for (i=0; i<num_samples; i++) {
-        float complex err = y[i] - (i < delay ? 0.0f : x[i-delay]);
+        liquid_float_complex err = y[i] - (i < delay ? 0.0f : x[i-delay]);
         rmse += crealf( err*conjf(err) );
     }
     rmse = sqrtf( rmse/(float)num_samples );
@@ -101,7 +102,7 @@ int main(int argc, char*argv[])
 
     // save error vector
     for (i=delay; i<num_samples; i++) {
-        float complex e = y[i] - x[i-delay];
+        liquid_float_complex e = y[i] - x[i-delay];
         fprintf(fid,"e(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(e), cimag(e));
     }
 

@@ -37,8 +37,8 @@ void fft_runbench(struct rusage *     _start,
                   int                 _direction)
 {
     // initialize arrays, plan
-    float complex * x = (float complex *) fft_malloc(_nfft*sizeof(float complex));
-    float complex * y = (float complex *) fft_malloc(_nfft*sizeof(float complex));
+    liquid_float_complex * x = (liquid_float_complex *) fft_malloc(_nfft*sizeof(liquid_float_complex));
+    liquid_float_complex * y = (liquid_float_complex *) fft_malloc(_nfft*sizeof(liquid_float_complex));
     int _method = 0;
     fftplan q = fft_create_plan(_nfft, x, y, _direction, _method);
     

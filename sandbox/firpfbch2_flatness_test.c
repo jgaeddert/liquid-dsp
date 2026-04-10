@@ -22,9 +22,9 @@ int main(int argc, char*argv[])
 
     // derived values
     unsigned int M2 = M/2;
-    float complex buf_0[M2];
-    float complex buf_1[M ];
-    float complex buf_2[M2];
+    liquid_float_complex buf_0[M2];
+    liquid_float_complex buf_1[M ];
+    liquid_float_complex buf_2[M2];
 
     unsigned int i,j;
     float phi = 0.0f, dphi = 0.1*2*M_PI;

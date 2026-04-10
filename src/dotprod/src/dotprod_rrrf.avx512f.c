@@ -29,6 +29,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "liquid_simd_rename.h"
 #include "liquid.internal.h"
 
 // include proper SIMD extensions for x86 platforms
@@ -39,10 +40,10 @@
 #define DEBUG_DOTPROD_RRRF_AVX     0
 
 // internal methods
-int dotprod_rrrf_execute_avx512f(dotprod_rrrf _q,
+static int dotprod_rrrf_execute_avx512f(dotprod_rrrf _q,
                               float *      _x,
                               float *      _y);
-int dotprod_rrrf_execute_avx512fu(dotprod_rrrf _q,
+static int dotprod_rrrf_execute_avx512fu(dotprod_rrrf _q,
                                float *      _x,
                                float *      _y);
 
@@ -153,7 +154,7 @@ dotprod_rrrf dotprod_rrrf_copy(dotprod_rrrf q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("dotprod_rrrf_copy().avx512f, object cannot be NULL");
+        return liquid_error_config_ptr(dotprod_rrrf, "dotprod_rrrf_copy().avx512f, object cannot be NULL");
 
     dotprod_rrrf q_copy = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
     q_copy->n = q_orig->n;
@@ -197,7 +198,7 @@ int dotprod_rrrf_execute(dotprod_rrrf _q,
 }
 
 // use AVX512-F extensions
-int dotprod_rrrf_execute_avx512f(dotprod_rrrf _q,
+static int dotprod_rrrf_execute_avx512f(dotprod_rrrf _q,
                               float *      _x,
                               float *      _y)
 {
@@ -238,7 +239,7 @@ int dotprod_rrrf_execute_avx512f(dotprod_rrrf _q,
 }
 
 // use AVX512-F extensions (unrolled)
-int dotprod_rrrf_execute_avx512fu(dotprod_rrrf _q,
+static int dotprod_rrrf_execute_avx512fu(dotprod_rrrf _q,
                                float *      _x,
                                float *      _y)
 {

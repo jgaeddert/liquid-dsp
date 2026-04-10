@@ -1,9 +1,12 @@
-char __docstr__[] = "Demonstrate fdelay object to add arbitrary fractional delays.";
+const char __docstr__[] = "Demonstrate fdelay object to add arbitrary fractional delays.";
 
 #include <stdio.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -24,8 +27,8 @@ int main(int argc, char* argv[])
     fdelay_rrrf_print(q);
 
     // generate impulse and propagate through object
-    float x[num_samples];
-    float y[num_samples];
+    LIQUID_VLA(float, x, num_samples);
+    LIQUID_VLA(float, y, num_samples);
     unsigned int i;
     for (i=0; i<num_samples; i++) {
         // generate input
@@ -42,7 +45,7 @@ int main(int argc, char* argv[])
     // estimate delay; assumes input is impulse and uses phase at
     // single point of frequency estimate evaluation
     float fc = 0.1f / (float)num_samples; // sufficiently small
-    float complex v = 0.0f;
+    liquid_float_complex v = 0.0f;
     for (i=0; i<num_samples; i++)
         v += y[i] * cexpf(_Complex_I*2*M_PI*fc*i);
     float delay_est = cargf(v) / (2*M_PI*fc) - (float)m;

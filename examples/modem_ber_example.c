@@ -1,13 +1,16 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example runs a bit error rate simulation for a specified modulation"
 " scheme and saves the resulting data points to a file for plotting.";
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <getopt.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // print usage/help message
@@ -32,7 +35,7 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // create modem objects
-    int   ms  = liquid_getopt_str2mod(mod_str);
+    modulation_scheme ms = (modulation_scheme)liquid_getopt_str2mod(mod_str);
     modem mod = modem_create(ms);   // modulator
     modem dem = modem_create(ms);   // demodulator
 
@@ -40,7 +43,7 @@ int main(int argc, char*argv[])
     unsigned int  m = modem_get_bps(mod);       // modulation bits/symbol
     unsigned int  M = 1 << m;                   // constellation size: 2^m
     unsigned int  i, sym_in, sym_out;
-    float complex sample;
+    liquid_float_complex sample;
 
     // iterate through SNR values
     printf("# modulation scheme : %s\n", modulation_types[ms].name);

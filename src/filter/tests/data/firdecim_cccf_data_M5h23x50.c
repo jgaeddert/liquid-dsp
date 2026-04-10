@@ -24,9 +24,12 @@
 // firdecim_cccf_data_M5h23x50.c: autotest firdecim data
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
+#include "liquid.h"
 
-float complex firdecim_cccf_data_M5h23x50_h[] = {
+liquid_float_complex firdecim_cccf_data_M5h23x50_h[] = {
     0.105720400924 +   0.057437069192*_Complex_I,
    -0.028209083196 +  -0.004313504575*_Complex_I,
    -0.072874560021 +   0.042888303750*_Complex_I,
@@ -51,7 +54,7 @@ float complex firdecim_cccf_data_M5h23x50_h[] = {
     0.052374918456 +  -0.044109539660*_Complex_I,
     0.013011637257 +  -0.076892387668*_Complex_I};
 
-float complex firdecim_cccf_data_M5h23x50_x[] = {
+liquid_float_complex firdecim_cccf_data_M5h23x50_x[] = {
    -0.045706059285 +  -0.026925548272*_Complex_I,
     0.074640818692 +   0.020008220501*_Complex_I,
    -0.041286610033 +  -0.136882935267*_Complex_I,
@@ -103,7 +106,7 @@ float complex firdecim_cccf_data_M5h23x50_x[] = {
     0.126368745124 +   0.002307518720*_Complex_I,
     0.014850257877 +   0.006988676981*_Complex_I};
 
-float complex firdecim_cccf_data_M5h23x50_y[] = {
+liquid_float_complex firdecim_cccf_data_M5h23x50_y[] = {
    -0.003285538333 +  -0.005471801848*_Complex_I,
     0.007588480326 +   0.024542591101*_Complex_I,
    -0.057029837651 +   0.045181309977*_Complex_I,

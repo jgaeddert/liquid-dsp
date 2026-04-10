@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates how to create an integrating recursive"
 " (infinite impulse response) filter.";
 
@@ -6,6 +6,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -17,8 +18,8 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // allocate memory for data arrays
-    float buf_0[num_samples];   // filter input
-    float buf_1[num_samples];   // filter output
+    LIQUID_VLA(float, buf_0, num_samples);   // filter input
+    LIQUID_VLA(float, buf_1, num_samples);   // filter output
 
     // generate input signal
     unsigned int i;

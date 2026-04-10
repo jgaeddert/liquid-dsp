@@ -21,7 +21,7 @@
  */
 
 //
-// multichannel API: complex floating-point
+// multichannel API: liquid_float_complexing-point
 //
 
 #include "liquid.internal.h"
@@ -35,10 +35,10 @@
 #define FIRPFBCH2(name)     LIQUID_CONCAT(firpfbch2_crcf,name)
 #define FIRPFBCHR(name)     LIQUID_CONCAT(firpfbchr_crcf,name)
 
-#define T                   float complex   // general
-#define TO                  float complex   // output
+#define T                   liquid_float_complex   // general
+#define TO                  liquid_float_complex   // output
 #define TC                  float           // coefficients
-#define TI                  float complex   // input
+#define TI                  liquid_float_complex   // input
 #define WINDOW(name)        LIQUID_CONCAT(windowcf,name)
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_crcf,name)
 

@@ -85,7 +85,7 @@ MSRESAMP() MSRESAMP(_create)(float _r,
 {
     // validate input
     if (_r <= 0.0f)
-        return liquid_error_config("msresamp_%s_create(), resampling rate must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(MSRESAMP(), "msresamp_%s_create(), resampling rate must be greater than zero", EXTENSION_FULL);
 
     // create object
     MSRESAMP() q = (MSRESAMP()) malloc(sizeof(struct MSRESAMP(_s)));
@@ -149,7 +149,7 @@ MSRESAMP() MSRESAMP(_copy)(MSRESAMP() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("msresamp_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(MSRESAMP(), "msresamp_%s_copy(), object cannot be NULL", EXTENSION_FULL);
 
     // create object, copy internal memory, overwrite with specific values
     MSRESAMP() q_copy = (MSRESAMP()) malloc(sizeof(struct MSRESAMP(_s)));
@@ -271,13 +271,12 @@ float MSRESAMP(_get_delay)(MSRESAMP() _q)
     } else if (_q->type == LIQUID_RESAMP_INTERP) {
         // interpolation
         return delay_halfband / _q->rate_arbitrary + delay_arbitrary;
-    } else {
-        // decimation
+    }
+    // decimation
+    {
         unsigned int M = 1 << _q->num_halfband_stages;
         return delay_halfband + M*delay_arbitrary;
     }
-
-    return 0.0f;
 }
 
 // get resampling rate
@@ -303,7 +302,6 @@ unsigned int MSRESAMP(_get_num_output)(MSRESAMP()   _q,
 
         return RESAMP(_get_num_output)(_q->arbitrary_resamp,n);
     }
-    return 0; // should never occur
 }
 
 // execute multi-stage resampler

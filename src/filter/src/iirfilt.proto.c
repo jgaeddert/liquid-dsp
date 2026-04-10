@@ -46,6 +46,12 @@
 // use structured dot product? 0:no, 1:yes
 #define LIQUID_IIRFILT_USE_DOTPROD   (1)
 
+// filter structure type (defined outside struct for C++ compatibility)
+enum iirfilt_type_e {
+    IIRFILT_TYPE_NORM=0,
+    IIRFILT_TYPE_SOS
+};
+
 struct IIRFILT(_s) {
     TC * b;             // numerator (feed-forward coefficients)
     TC * a;             // denominator (feed-back coefficients)
@@ -56,10 +62,7 @@ struct IIRFILT(_s) {
     unsigned int na;    // denominator length
 
     // filter structure type
-    enum {
-        IIRFILT_TYPE_NORM=0,
-        IIRFILT_TYPE_SOS
-    } type;
+    enum iirfilt_type_e type;
 
 #if LIQUID_IIRFILT_USE_DOTPROD
     DOTPROD() dpb;      // numerator dot product
@@ -99,9 +102,9 @@ IIRFILT() IIRFILT(_create)(TC *         _b,
 {
     // validate input
     if (_nb == 0)
-        return liquid_error_config("iirfilt_%s_create(), numerator length cannot be zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(IIRFILT(), "iirfilt_%s_create(), numerator length cannot be zero", EXTENSION_FULL);
     if (_na == 0)
-        return liquid_error_config("iirfilt_%s_create(), denominator length cannot be zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(IIRFILT(), "iirfilt_%s_create(), denominator length cannot be zero", EXTENSION_FULL);
 
     // create structure and initialize
     IIRFILT() q = (IIRFILT()) malloc(sizeof(struct IIRFILT(_s)));
@@ -167,7 +170,7 @@ IIRFILT() IIRFILT(_create_sos)(TC *         _B,
 {
     // validate input
     if (_nsos == 0)
-        return liquid_error_config("iirfilt_%s_create_sos(), filter must have at least one 2nd-order section", EXTENSION_FULL);
+        return liquid_error_config_ptr(IIRFILT(), "iirfilt_%s_create_sos(), filter must have at least one 2nd-order section", EXTENSION_FULL);
 
     // create structure and initialize
     IIRFILT() q = (IIRFILT()) malloc(sizeof(struct IIRFILT(_s)));
@@ -183,8 +186,8 @@ IIRFILT() IIRFILT(_create_sos)(TC *         _B,
     memmove(q->b, _B, 3*(q->nsos)*sizeof(TC));
     memmove(q->a, _A, 3*(q->nsos)*sizeof(TC));
 
-    TC at[3];
-    TC bt[3];
+    LIQUID_VLA(TC, at, 3);
+    LIQUID_VLA(TC, bt, 3);
     unsigned int i,k;
     for (i=0; i<q->nsos; i++) {
         for (k=0; k<3; k++) {
@@ -234,16 +237,16 @@ IIRFILT() IIRFILT(_create_prototype)(liquid_iirdes_filtertype _ftype,
 
     // allocate memory for filter coefficients
     unsigned int h_len = (_format == LIQUID_IIRDES_SOS) ? 3*(L+r) : N+1;
-    float B[h_len];
-    float A[h_len];
+    LIQUID_VLA(float, B, h_len);
+    LIQUID_VLA(float, A, h_len);
 
     // design filter (compute coefficients)
     if (liquid_iirdes(_ftype, _btype, _format, _order, _fc, _f0, _ap, _as, B, A) != LIQUID_OK)
-        return liquid_error_config("iirfilt_%s_create_prototype(), could not design filter", EXTENSION_FULL);
+        return liquid_error_config_ptr(IIRFILT(), "iirfilt_%s_create_prototype(), could not design filter", EXTENSION_FULL);
 
-    // move coefficients to type-specific arrays (e.g. float complex)
-    TC Bc[h_len];
-    TC Ac[h_len];
+    // move coefficients to type-specific arrays (e.g. liquid_float_complex)
+    LIQUID_VLA(TC, Bc, h_len);
+    LIQUID_VLA(TC, Ac, h_len);
     unsigned int i;
     for (i=0; i<h_len; i++) {
         Bc[i] = B[i];
@@ -283,7 +286,7 @@ IIRFILT() IIRFILT(_create_integrator)()
     // integrator digital zeros/poles/gain, [Pintelon:1990] Table II
     //
     // zeros, digital, integrator
-    float complex zdi[8] = {
+    liquid_float_complex zdi[8] = {
         1.175839 * -1.0f,
         3.371020 * cexpf(_Complex_I * M_PI / 180.0f * -125.1125f),
         3.371020 * cexpf(_Complex_I * M_PI / 180.0f *  125.1125f),
@@ -293,7 +296,7 @@ IIRFILT() IIRFILT(_create_integrator)()
         5.223966 * cexpf(_Complex_I * M_PI / 180.0f *   40.09347f),
         5.443743,};
     // poles, digital, integrator
-    float complex pdi[8] = {
+    liquid_float_complex pdi[8] = {
         0.5805235f * -1.0f,
         0.2332021f * cexpf(_Complex_I * M_PI / 180.0f * -114.0968f),
         0.2332021f * cexpf(_Complex_I * M_PI / 180.0f *  114.0968f),
@@ -303,18 +306,18 @@ IIRFILT() IIRFILT(_create_integrator)()
         0.1641457f * cexpf(_Complex_I * M_PI / 180.0f *   21.89539f),
         1.0f,};
     // gain, digital, integrator (slight adjustment added for proper gain)
-    float complex kdi = -1.89213380759321e-05f / 0.9695401191711425781f;
+    liquid_float_complex kdi = -1.89213380759321e-05f / 0.9695401191711425781f;
 
     // second-order sections
     // allocate 12 values for 4 second-order sections each with
     // 2 roots (order 8), e.g. (1 + r0 z^-1)(1 + r1 z^-1)
-    float Bi[12];
-    float Ai[12];
+    LIQUID_VLA(float, Bi, 12);
+    LIQUID_VLA(float, Ai, 12);
     iirdes_dzpk2sosf(zdi, pdi, 8, kdi, Bi, Ai);
 
     // copy to type-specific array
-    TC B[12];
-    TC A[12];
+    LIQUID_VLA(TC, B, 12);
+    LIQUID_VLA(TC, A, 12);
     unsigned int i;
     for (i=0; i<12; i++) {
         B[i] = (TC) (Bi[i]);
@@ -332,7 +335,7 @@ IIRFILT() IIRFILT(_create_differentiator)()
     // differentiator digital zeros/poles/gain, [Pintelon:1990] Table IV
     //
     // zeros, digital, differentiator
-    float complex zdd[8] = {
+    liquid_float_complex zdd[8] = {
         1.702575f * -1.0f,
         5.877385f * cexpf(_Complex_I * M_PI / 180.0f * -221.4063f),
         5.877385f * cexpf(_Complex_I * M_PI / 180.0f *  221.4063f),
@@ -342,7 +345,7 @@ IIRFILT() IIRFILT(_create_differentiator)()
         5.350284f * cexpf(_Complex_I * M_PI / 180.0f *   66.88802f),
         1.0f,};
     // poles, digital, differentiator
-    float complex pdd[8] = {
+    liquid_float_complex pdd[8] = {
         0.8476936f * -1.0f,
         0.2990781f * cexpf(_Complex_I * M_PI / 180.0f * -125.5188f),
         0.2990781f * cexpf(_Complex_I * M_PI / 180.0f *  125.5188f),
@@ -352,18 +355,18 @@ IIRFILT() IIRFILT(_create_differentiator)()
         0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *   40.51510f),
         0.1886088f,};
     // gain, digital, differentiator (slight adjustment added for proper gain)
-    float complex kdd = 2.09049284907492e-05f / 1.033477783203125000f;
+    liquid_float_complex kdd = 2.09049284907492e-05f / 1.033477783203125000f;
 
     // second-order sections
     // allocate 12 values for 4 second-order sections each with
     // 2 roots (order 8), e.g. (1 + r0 z^-1)(1 + r1 z^-1)
-    float Bd[12];
-    float Ad[12];
+    LIQUID_VLA(float, Bd, 12);
+    LIQUID_VLA(float, Ad, 12);
     iirdes_dzpk2sosf(zdd, pdd, 8, kdd, Bd, Ad);
 
     // copy to type-specific array
-    TC B[12];
-    TC A[12];
+    LIQUID_VLA(TC, B, 12);
+    LIQUID_VLA(TC, A, 12);
     unsigned int i;
     for (i=0; i<12; i++) {
         B[i] = (TC) (Bd[i]);
@@ -383,7 +386,7 @@ IIRFILT() IIRFILT(_create_dc_blocker)(float _alpha)
 {
     // validate input
     if (_alpha <= 0.0f)
-        return liquid_error_config("iirfilt_%s_create_dc_blocker(), filter bandwidth must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(IIRFILT(), "iirfilt_%s_create_dc_blocker(), filter bandwidth must be greater than zero", EXTENSION_FULL);
 
     // compute DC-blocking filter coefficients
     float bf[2] = {1.0f, -1.0f  };
@@ -409,20 +412,20 @@ IIRFILT() IIRFILT(_create_pll)(float _w,
 {
     // validate input
     if (_w <= 0.0f || _w >= 1.0f)
-        return liquid_error_config("iirfilt_%s_create_pll(), bandwidth must be in (0,1)", EXTENSION_FULL);
+        return liquid_error_config_ptr(IIRFILT(), "iirfilt_%s_create_pll(), bandwidth must be in (0,1)", EXTENSION_FULL);
     if (_zeta <= 0.0f || _zeta >= 1.0f)
-        return liquid_error_config("iirfilt_%s_create_pll(), damping factor must be in (0,1)", EXTENSION_FULL);
+        return liquid_error_config_ptr(IIRFILT(), "iirfilt_%s_create_pll(), damping factor must be in (0,1)", EXTENSION_FULL);
     if (_K <= 0.0f)
-        return liquid_error_config("iirfilt_%s_create_pll(), loop gain must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(IIRFILT(), "iirfilt_%s_create_pll(), loop gain must be greater than zero", EXTENSION_FULL);
 
     // compute loop filter coefficients
-    float bf[3];
-    float af[3];
+    LIQUID_VLA(float, bf, 3);
+    LIQUID_VLA(float, af, 3);
     iirdes_pll_active_lag(_w, _zeta, _K, bf, af);
 
     // copy to type-specific array
-    TC b[3];
-    TC a[3];
+    LIQUID_VLA(TC, b, 3);
+    LIQUID_VLA(TC, a, 3);
     b[0] = bf[0];   b[1] = bf[1];   b[2] = bf[2];
     a[0] = af[0];   a[1] = af[1];   a[2] = af[2];
 
@@ -435,7 +438,7 @@ IIRFILT() IIRFILT(_copy)(IIRFILT() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("iirfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(IIRFILT(), "iirfilt_%s_copy(), object cannot be NULL", EXTENSION_FULL);
 
     // create object, copy internal memory, overwrite with specific values
     IIRFILT() q_copy = (IIRFILT()) malloc(sizeof(struct IIRFILT(_s)));
@@ -470,7 +473,7 @@ IIRFILT() IIRFILT(_copy)(IIRFILT() q_orig)
         for (i=0; i<q_copy->nsos; i++)
             q_copy->qsos[i] = IIRFILTSOS(_copy)(q_orig->qsos[i]);
     } else {
-        return liquid_error_config("iirfilt_%s_copy(), invalid internal type", EXTENSION_FULL);
+        return liquid_error_config_ptr(IIRFILT(), "iirfilt_%s_copy(), invalid internal type", EXTENSION_FULL);
     }
 
     // return object
@@ -639,10 +642,8 @@ int IIRFILT(_execute)(IIRFILT() _q,
 {
     if (_q->type == IIRFILT_TYPE_NORM) {
         return IIRFILT(_execute_norm)(_q,_x,_y);
-    } else {
-        return IIRFILT(_execute_sos)(_q,_x,_y);
     }
-    return liquid_error(LIQUID_EINT,"iirfilt_%s_execute(), invalid internal type", EXTENSION_FULL);
+    return IIRFILT(_execute_sos)(_q,_x,_y);
 }
 
 // execute the filter on a block of input samples; the
@@ -677,15 +678,15 @@ unsigned int IIRFILT(_get_length)(IIRFILT() _q)
 //  _H      :   output frequency response
 int IIRFILT(_freqresponse)(IIRFILT()       _q,
                            float           _fc,
-                           float complex * _H)
+                           liquid_float_complex * _H)
 {
     unsigned int i;
-    float complex H = 0.0f;
+    liquid_float_complex H = 0.0f;
 
     if (_q->type == IIRFILT_TYPE_NORM) {
         // 
-        float complex Ha = 0.0f;
-        float complex Hb = 0.0f;
+        liquid_float_complex Ha = 0.0f;
+        liquid_float_complex Hb = 0.0f;
 
         for (i=0; i<_q->nb; i++)
             Hb += _q->b[i] * cexpf(_Complex_I*2*M_PI*_fc*i);
@@ -701,11 +702,11 @@ int IIRFILT(_freqresponse)(IIRFILT()       _q,
 
         // compute 3-point DFT for each second-order section
         for (i=0; i<_q->nsos; i++) {
-            float complex Hb =  _q->b[3*i+0] * cexpf(_Complex_I*2*M_PI*_fc*0) +
+            liquid_float_complex Hb =  _q->b[3*i+0] * cexpf(_Complex_I*2*M_PI*_fc*0) +
                                 _q->b[3*i+1] * cexpf(_Complex_I*2*M_PI*_fc*1) +
                                 _q->b[3*i+2] * cexpf(_Complex_I*2*M_PI*_fc*2);
 
-            float complex Ha =  _q->a[3*i+0] * cexpf(_Complex_I*2*M_PI*_fc*0) +
+            liquid_float_complex Ha =  _q->a[3*i+0] * cexpf(_Complex_I*2*M_PI*_fc*0) +
                                 _q->a[3*i+1] * cexpf(_Complex_I*2*M_PI*_fc*1) +
                                 _q->a[3*i+2] * cexpf(_Complex_I*2*M_PI*_fc*2);
 
@@ -722,7 +723,7 @@ int IIRFILT(_freqresponse)(IIRFILT()       _q,
 // Compute power spectral density response of filter object in dB
 float IIRFILT(_get_psd)(IIRFILT() _q, float _fc)
 {
-    float complex H;
+    liquid_float_complex H;
     IIRFILT(_freqresponse)(_q, _fc, &H);
     return 10*log10f( crealf(H * conjf(H)) );
 }
@@ -740,8 +741,8 @@ float IIRFILT(_groupdelay)(IIRFILT() _q,
         // compute group delay from regular transfer function form
 
         // copy coefficients
-        float b[_q->nb];
-        float a[_q->na];
+        LIQUID_VLA(float, b, _q->nb);
+        LIQUID_VLA(float, a, _q->na);
         for (i=0; i<_q->nb; i++) b[i] = crealf(_q->b[i]);
         for (i=0; i<_q->na; i++) a[i] = crealf(_q->a[i]);
         groupdelay = iir_group_delay(b, _q->nb, a, _q->na, _fc);

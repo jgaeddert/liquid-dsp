@@ -25,7 +25,9 @@
 //
 
 #include <stdio.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 #include <assert.h>
 #include <string.h>
@@ -50,6 +52,7 @@ int cheby1_azpkf(unsigned int           _n,
                  liquid_float_complex * _pa,
                  liquid_float_complex * _ka)
 {
+    (void)_za;
     // temporary values
     float t0 = sqrt(1.0 + 1.0/(_ep*_ep));
     float tp = powf( t0 + 1.0/_ep, 1.0/(float)(_n) );

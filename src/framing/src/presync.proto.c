@@ -54,8 +54,8 @@ struct PRESYNC(_s) {
 //  _rxy1   : negative frequency correlation output (conjugated)
 int PRESYNC(_correlate)(PRESYNC()       _q,
                         unsigned int    _id,
-                        float complex * _rxy0,
-                        float complex * _rxy1);
+                        liquid_float_complex * _rxy0,
+                        liquid_float_complex * _rxy1);
 
 /* create binary pre-demod synchronizer                     */
 /*  _v          :   baseband sequence                       */
@@ -69,9 +69,9 @@ PRESYNC() PRESYNC(_create)(TC *         _v,
 {
     // validate input
     if (_n < 1)
-        return liquid_error_config("bpresync_%s_create(), invalid input length", EXTENSION_FULL);
+        return liquid_error_config_ptr(PRESYNC(), "bpresync_%s_create(), invalid input length", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("bpresync_%s_create(), number of correlators must be at least 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(PRESYNC(), "bpresync_%s_create(), number of correlators must be at least 1", EXTENSION_FULL);
 
     // allocate main object memory and initialize
     PRESYNC() _q = (PRESYNC()) malloc(sizeof(struct PRESYNC(_s)));
@@ -94,8 +94,8 @@ PRESYNC() PRESYNC(_create)(TC *         _v,
     _q->sync_q = (DOTPROD()*) malloc( _q->m*sizeof(DOTPROD()) );
 
     // buffer
-    T vi_prime[_n];
-    T vq_prime[_n];
+    LIQUID_VLA(T, vi_prime, _n);
+    LIQUID_VLA(T, vq_prime, _n);
     for (i=0; i<_q->m; i++) {
 
         // generate signal with frequency offset
@@ -180,10 +180,10 @@ int PRESYNC(_execute)(PRESYNC() _q,
                       float *   _dphi_hat)
 {
     unsigned int i;
-    float complex rxy_max = 0;  // maximum cross-correlation
+    liquid_float_complex rxy_max = 0;  // maximum cross-correlation
     float abs_rxy_max = 0;      // absolute value of rxy_max
-    float complex rxy0;
-    float complex rxy1;
+    liquid_float_complex rxy0;
+    liquid_float_complex rxy1;
     float dphi_hat = 0.0f;
     for (i=0; i<_q->m; i++)  {
 
@@ -220,8 +220,8 @@ int PRESYNC(_execute)(PRESYNC() _q,
 //  _rxy1   : negative frequency correlation output (conjugated)
 int PRESYNC(_correlate)(PRESYNC()       _q,
                         unsigned int    _id,
-                        float complex * _rxy0,
-                        float complex * _rxy1)
+                        liquid_float_complex * _rxy0,
+                        liquid_float_complex * _rxy1)
 {
     // validate input...
     if (_id >= _q->m)

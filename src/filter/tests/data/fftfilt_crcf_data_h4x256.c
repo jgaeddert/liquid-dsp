@@ -24,15 +24,17 @@
 // fftfilt_crcf_data_h4x256.c: autotest fftfilt data
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
-
+#endif
+#include "liquid.h"
 float fftfilt_crcf_data_h4x256_h[] = {
     0.155624401569,
     0.118511450291,
    -0.168462336063,
     0.090250796080};
 
-float complex fftfilt_crcf_data_h4x256_x[] = {
+liquid_float_complex fftfilt_crcf_data_h4x256_x[] = {
     0.038939061761 +   0.066255682707*_Complex_I,
     0.119283056259 +   0.056196963787*_Complex_I,
    -0.040920588374 +  -0.079775565863*_Complex_I,
@@ -290,7 +292,7 @@ float complex fftfilt_crcf_data_h4x256_x[] = {
    -0.118900668621 +  -0.002717586420*_Complex_I,
    -0.069598269463 +  -0.110835444927*_Complex_I};
 
-float complex fftfilt_crcf_data_h4x256_y[] = {
+liquid_float_complex fftfilt_crcf_data_h4x256_y[] = {
     0.006059868184 +   0.010311000972*_Complex_I,
     0.023178078930 +   0.016597675907*_Complex_I,
     0.001208400606 +  -0.016916628103*_Complex_I,

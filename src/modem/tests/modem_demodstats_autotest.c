@@ -35,8 +35,8 @@ void testbench_modemcf_demodstats(liquid_autotest __q__,
 
     // run the test
     unsigned int i, s, M = 1 << modemcf_get_bps(mod);
-    float complex x;
-    float complex x_hat;    // rotated symbol
+    liquid_float_complex x;
+    liquid_float_complex x_hat;    // rotated symbol
     float demodstats;
     float phi = 0.01f;
 

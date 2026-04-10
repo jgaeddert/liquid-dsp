@@ -1,13 +1,16 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Demonstration of mulsti-stage resamp object whereby an input noise signal"
 " is resampled at a rate 'r'.";
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -30,8 +33,8 @@ int main(int argc, char* argv[])
 
     // arrays
     unsigned int  buf_len = 1024;
-    float complex buf_x[  buf_len];
-    float complex buf_y[2*buf_len];
+    LIQUID_VLA(liquid_float_complex, buf_x, buf_len);
+    LIQUID_VLA(liquid_float_complex, buf_y, 2*buf_len);
 
     // create multi-signal source generator
     msourcecf gen = msourcecf_create_default();
@@ -71,8 +74,8 @@ int main(int argc, char* argv[])
     msresamp_crcf_destroy(q);
 
     // compute power spectral density output
-    float X[nfft];
-    float Y[nfft];
+    LIQUID_VLA(float, X, nfft);
+    LIQUID_VLA(float, Y, nfft);
     spgramcf_get_psd(px, X);
     spgramcf_get_psd(py, Y);
 

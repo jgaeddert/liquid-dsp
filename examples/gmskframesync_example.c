@@ -1,10 +1,11 @@
-char __docstr__[] = "Example demonstrating the GMSK flexible frame synchronizer.";
+const char __docstr__[] = "Example demonstrating the GMSK flexible frame synchronizer.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // callback function
@@ -16,6 +17,13 @@ int callback(unsigned char *  _header,
              framesyncstats_s _stats,
              void *           _userdata)
 {
+    (void)_header;
+    (void)_header_valid;
+    (void)_payload;
+    (void)_payload_len;
+    (void)_payload_valid;
+    (void)_stats;
+    (void)_userdata;
     printf("***** gmskframesync callback invoked *****\n");
     return 0;
 }
@@ -35,15 +43,15 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // validate input
-    crc_scheme        check = liquid_getopt_str2crc(crc);
-    fec_scheme        fec0  = liquid_getopt_str2fec(fs0);
-    fec_scheme        fec1  = liquid_getopt_str2fec(fs1);
+    crc_scheme        check = (crc_scheme)liquid_getopt_str2crc(crc);
+    fec_scheme        fec0  = (fec_scheme)liquid_getopt_str2fec(fs0);
+    fec_scheme        fec1  = (fec_scheme)liquid_getopt_str2fec(fs1);
 
     unsigned int i;
 
     // allocate memory for payload and initialize
     unsigned char header[8] = {0,1,2,3,4,5,6,7};
-    unsigned char payload[payload_len];
+    LIQUID_VLA(unsigned char, payload, payload_len);
     memset(payload, 0x00, payload_len);
 
     // create frame generator and assemble
@@ -55,8 +63,8 @@ int main(int argc, char*argv[])
 
     // allocate buffer for storing entire frame
     unsigned int num_samples = gmskframegen_getframelen(fg) + 800;
-    float complex buf[num_samples];
-    memset(buf, 0x00, num_samples*sizeof(float complex));
+    LIQUID_VLA(liquid_float_complex, buf, num_samples);
+    memset(buf, 0x00, num_samples*sizeof(liquid_float_complex));
 
     // generate frame in one shot with sample offset
     gmskframegen_write(fg, buf+250, num_samples-250);

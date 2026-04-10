@@ -24,9 +24,12 @@
 // autotest fft data for 509-point transform
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
+#include "liquid.h"
 
-float complex fft_test_x509[] = {
+liquid_float_complex fft_test_x509[] = {
     0.359331995889 +  -1.085301108776*_Complex_I,
    -1.932383412518 +   0.116856180907*_Complex_I,
     0.496271262268 +   0.731796541816*_Complex_I,
@@ -537,7 +540,7 @@ float complex fft_test_x509[] = {
    -0.186548224004 +   0.410695725270*_Complex_I,
    -0.138866088362 +  -0.530179759052*_Complex_I};
 
-float complex fft_test_y509[] = {
+liquid_float_complex fft_test_y509[] = {
    15.695701816574 +  18.430646076972*_Complex_I,
    17.496535538521 +   6.323908273548*_Complex_I,
   -15.330535795607 + -16.826373817993*_Complex_I,

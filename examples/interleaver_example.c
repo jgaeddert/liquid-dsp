@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the functionality of the liquid"
 " interleaver object.  Interleavers serve to distribute"
 " grouped bit errors evenly throughout a block of data. This"
@@ -11,6 +11,7 @@ char __docstr__[] =
 #include <stdlib.h> // for rand()
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -27,9 +28,9 @@ int main(int argc, char*argv[])
     interleaver_print(q);
 
     // create arrays
-    unsigned char x[n]; // original message data
-    unsigned char y[n]; // interleaved data
-    unsigned char z[n]; // de-interleaved data
+    LIQUID_VLA(unsigned char, x, n); // original message data
+    LIQUID_VLA(unsigned char, y, n); // interleaved data
+    LIQUID_VLA(unsigned char, z, n); // de-interleaved data
 
     // generate random data sequence
     unsigned int i;

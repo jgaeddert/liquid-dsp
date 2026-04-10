@@ -66,13 +66,13 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _chans,
 {
     // validate input
     if (_chans < 2)
-        return liquid_error_config("firpfbchr_%s_create(), number of channels must be at least 2", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCHR(), "firpfbchr_%s_create(), number of channels must be at least 2", EXTENSION_FULL);
     if (_decim < 1)
-        return liquid_error_config("firpfbchr_%s_create(), decimation rate must be at least 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCHR(), "firpfbchr_%s_create(), decimation rate must be at least 1", EXTENSION_FULL);
     if (_m < 1)
-        return liquid_error_config("firpfbchr_%s_create(), filter semi-length must be at least 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCHR(), "firpfbchr_%s_create(), filter semi-length must be at least 1", EXTENSION_FULL);
     if (_h == NULL)
-        return liquid_error_config("firpfbchr_%s_create(), filter coefficients cannot be null", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCHR(), "firpfbchr_%s_create(), filter coefficients cannot be null", EXTENSION_FULL);
 
     // create object
     FIRPFBCHR() q = (FIRPFBCHR()) malloc(sizeof(struct FIRPFBCHR(_s)));
@@ -90,7 +90,7 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _chans,
     unsigned int i;
     unsigned int n;
     unsigned int h_sub_len = 2 * q->m;
-    TC h_sub[h_sub_len];
+    LIQUID_VLA(TC, h_sub, h_sub_len);
     for (i=0; i<q->M; i++) {
         // sub-sample prototype filter, loading coefficients
         // in reverse order
@@ -129,13 +129,13 @@ FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _chans,
 {
     // validate input
     if (_chans < 2)
-        return liquid_error_config("firpfbchr_%s_create_kaiser(), number of channels must be at least 2", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCHR(), "firpfbchr_%s_create_kaiser(), number of channels must be at least 2", EXTENSION_FULL);
     if (_decim < 1)
-        return liquid_error_config("firpfbchr_%s_create_kaiser(), decimation rate must be at least 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCHR(), "firpfbchr_%s_create_kaiser(), decimation rate must be at least 1", EXTENSION_FULL);
     if (_m < 1)
-        return liquid_error_config("firpfbchr_%s_create_kaiser(), filter semi-length must be at least 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCHR(), "firpfbchr_%s_create_kaiser(), filter semi-length must be at least 1", EXTENSION_FULL);
     if (_as <= 0.0f)
-        return liquid_error_config("firpfbchr_%s_create_kaiser(), stop-band suppression out of range", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRPFBCHR(), "firpfbchr_%s_create_kaiser(), stop-band suppression out of range", EXTENSION_FULL);
 
     // design prototype filter
     unsigned int h_len = 2*_chans*_m+1;

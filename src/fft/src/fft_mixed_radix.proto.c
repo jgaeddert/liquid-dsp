@@ -62,9 +62,9 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
     unsigned int i;
     unsigned int Q = FFT(_estimate_mixed_radix)(_nfft);
     if (Q==0)
-        return liquid_error_config("fft_create_plan_mixed_radix(), _nfft=%u is prime", _nfft);
+        return liquid_error_config_ptr(FFT(plan), "fft_create_plan_mixed_radix(), _nfft=%u is prime", _nfft);
     if ( (_nfft % Q) != 0 )
-        return liquid_error_config("fft_create_plan_mixed_radix(), _nfft=%u is not divisible by Q=%u", _nfft, Q);
+        return liquid_error_config_ptr(FFT(plan), "fft_create_plan_mixed_radix(), _nfft=%u is not divisible by Q=%u", _nfft, Q);
 
     // set mixed-radix data
     unsigned int P = q->nfft / Q;
@@ -193,7 +193,7 @@ int FFT(_execute_mixed_radix)(FFT(plan) _q)
 unsigned int FFT(_estimate_mixed_radix)(unsigned int _nfft)
 {
     // compute factors of _nfft
-    unsigned int factors[LIQUID_MAX_FACTORS];
+    LIQUID_VLA(unsigned int, factors, LIQUID_MAX_FACTORS);
     unsigned int num_factors;
     liquid_factor(_nfft, factors, &num_factors);
 

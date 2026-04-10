@@ -29,7 +29,7 @@ int main(int argc, char*argv[]) {
     // integrator digital zeros/poles/gain, [Pintelon:1990] Table II
     //
     // zeros, digital, integrator
-    float complex zdi[8] = {
+    liquid_float_complex zdi[8] = {
         1.175839 * -1.0f,
         3.371020 * cexpf(_Complex_I * M_PI / 180.0f * -125.1125f),
         3.371020 * cexpf(_Complex_I * M_PI / 180.0f *  125.1125f),
@@ -39,7 +39,7 @@ int main(int argc, char*argv[]) {
         5.223966 * cexpf(_Complex_I * M_PI / 180.0f *   40.09347f),
         5.443743,};
     // poles, digital, integrator
-    float complex pdi[8] = {
+    liquid_float_complex pdi[8] = {
         0.5805235f * -1.0f,
         0.2332021f * cexpf(_Complex_I * M_PI / 180.0f * -114.0968f),
         0.2332021f * cexpf(_Complex_I * M_PI / 180.0f *  114.0968f),
@@ -49,7 +49,7 @@ int main(int argc, char*argv[]) {
         0.1641457f * cexpf(_Complex_I * M_PI / 180.0f *   21.89539f),
         1.0f,};
     // gain, digital, integrator
-    float complex kdi = -1.89213380759321e-05f;
+    liquid_float_complex kdi = -1.89213380759321e-05f;
 
 #if 1
     // second-order sections
@@ -74,7 +74,7 @@ int main(int argc, char*argv[]) {
     // differentiator digital zeros/poles/gain, [Pintelon:1990] Table IV
     //
     // zeros, digital, differentiator
-    float complex zdd[8] = {
+    liquid_float_complex zdd[8] = {
         1.702575f * -1.0f,
         5.877385f * cexpf(_Complex_I * M_PI / 180.0f * -221.4063f),
         5.877385f * cexpf(_Complex_I * M_PI / 180.0f *  221.4063f),
@@ -84,7 +84,7 @@ int main(int argc, char*argv[]) {
         5.350284f * cexpf(_Complex_I * M_PI / 180.0f *   66.88802f),
         1.0f,};
     // poles, digital, differentiator
-    float complex pdd[8] = {
+    liquid_float_complex pdd[8] = {
         0.8476936f * -1.0f,
         0.2990781f * cexpf(_Complex_I * M_PI / 180.0f * -125.5188f),
         0.2990781f * cexpf(_Complex_I * M_PI / 180.0f *  125.5188f),
@@ -94,7 +94,7 @@ int main(int argc, char*argv[]) {
         0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *   40.51510f),
         0.1886088f,};
     // gain, digital, differentiator
-    float complex kdd = 2.09049284907492e-05f;
+    liquid_float_complex kdd = 2.09049284907492e-05f;
 
 #if 1
     // second-order sections
@@ -115,9 +115,9 @@ int main(int argc, char*argv[]) {
 #endif
 
     // allocate arrays
-    float complex x[num_samples];
-    float complex y[num_samples];
-    float complex z[num_samples];
+    liquid_float_complex x[num_samples];
+    liquid_float_complex y[num_samples];
+    liquid_float_complex z[num_samples];
 
     float tmin = 0.0f;
     float tmax = 1.0f;
@@ -186,7 +186,7 @@ int main(int argc, char*argv[]) {
 
     // compute frequency response
     unsigned int nfft = 256;
-    float complex Hi[nfft], Hd[nfft];
+    liquid_float_complex Hi[nfft], Hd[nfft];
     float gdi[nfft], gdd[nfft];
     for (i=0; i<nfft; i++) {
         float f = 1e-4f + 0.5f * (float)i / (float)nfft;

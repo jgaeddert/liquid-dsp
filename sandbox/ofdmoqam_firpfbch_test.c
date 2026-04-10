@@ -47,24 +47,24 @@ int main() {
 
     unsigned int i, j, n=0;
     unsigned int k2 = num_channels/2;
-    float complex X[num_channels];  // channelized symbols
-    float complex y[num_channels];  // interpolated time-domain samples
-    float complex Y[num_channels];  // received symbols
+    liquid_float_complex X[num_channels];  // channelized symbols
+    liquid_float_complex y[num_channels];  // interpolated time-domain samples
+    liquid_float_complex Y[num_channels];  // received symbols
 
     // temporary buffers
-    float complex X0[num_channels];
-    float complex X1[num_channels];
-    float complex y0[num_channels];
-    float complex y1[num_channels];
-    float complex y1_prime[num_channels];
+    liquid_float_complex X0[num_channels];
+    liquid_float_complex X1[num_channels];
+    liquid_float_complex y0[num_channels];
+    liquid_float_complex y1[num_channels];
+    liquid_float_complex y1_prime[num_channels];
     for (i=0; i<num_channels; i++) y1_prime[i] = 0.0f;
 
-    float complex Z0[num_channels];
-    float complex Z1[num_channels];
-    float complex z0[num_channels];
-    float complex z1[num_channels];
-    //float complex z0_prime[num_channels];
-    //float complex z1_prime[num_channels];
+    liquid_float_complex Z0[num_channels];
+    liquid_float_complex Z1[num_channels];
+    liquid_float_complex z0[num_channels];
+    liquid_float_complex z1[num_channels];
+    //liquid_float_complex z0_prime[num_channels];
+    //liquid_float_complex z1_prime[num_channels];
     for (i=0; i<num_channels; i++) z0[i] = 0.0f;
     for (i=0; i<num_channels; i++) z1[i] = 0.0f;
 
@@ -99,13 +99,13 @@ int main() {
         firpfbch_crcf_synthesizer_execute(cs1, X1, y1);
         // delay lower branch by half a symbol:
         // copy first half of symbol from lower branch
-        memmove(&y1_prime[k2], &y1[0], k2*sizeof(float complex));
+        memmove(&y1_prime[k2], &y1[0], k2*sizeof(liquid_float_complex));
         // add symbols
         for (j=0; j<num_channels; j++)
             y[j] = y0[j] + y1_prime[j];
         // finish delay
         // copy last half of symbol from lower branch
-        memmove(&y1_prime[0], &y1[k2], k2*sizeof(float complex));
+        memmove(&y1_prime[0], &y1[k2], k2*sizeof(liquid_float_complex));
 
         // channel
 
@@ -113,15 +113,15 @@ int main() {
         //ofdmoqam_execute(ca, y, Y);
         // delay lower branch by half a symbol
         // copy first half of symbol to lower branch
-        memmove(&z1[k2], &y[0], k2*sizeof(float complex));
+        memmove(&z1[k2], &y[0], k2*sizeof(liquid_float_complex));
         // run analyzer
         firpfbch_crcf_analyzer_execute(ca0, z0, Z0);
         firpfbch_crcf_analyzer_execute(ca1, z1, Z1);
         // finish delay
         // copy last half of symbol to lower branch
-        memmove(&z1[0], &y[k2], k2*sizeof(float complex));
+        memmove(&z1[0], &y[k2], k2*sizeof(liquid_float_complex));
         // copy full symbol on upper branch
-        memmove(z0,y,num_channels*sizeof(float complex));
+        memmove(z0,y,num_channels*sizeof(liquid_float_complex));
         for (j=0; j<num_channels; j+=2) {
             // even channels
             Y[j+0] = crealf(Z0[j+0]) + cimagf(Z1[j+0])*_Complex_I;

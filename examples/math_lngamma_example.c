@@ -1,10 +1,11 @@
-char __docstr__[] = "Demonstrates accuracy of lngamma function";
+const char __docstr__[] = "Demonstrates accuracy of lngamma function";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])

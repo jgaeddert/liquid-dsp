@@ -189,7 +189,7 @@ DOTPROD() DOTPROD(_copy)(DOTPROD() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("dotprod_%s_copy(), window object cannot be NULL", "xxxt");
+        return liquid_error_config_ptr(DOTPROD(), "dotprod_%s_copy(), window object cannot be NULL", "xxxt");
 
     // create new base object and copy parameters
     DOTPROD() q_copy = (DOTPROD()) malloc(sizeof(struct DOTPROD(_s)));

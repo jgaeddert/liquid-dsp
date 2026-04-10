@@ -14,7 +14,7 @@ int main() {
 
     // options
     modulation_scheme ms = LIQUID_MODEM_QAM16;  // modulation scheme
-    float complex e = 0.1f + _Complex_I*0.2f;   // error
+    liquid_float_complex e = 0.1f + _Complex_I*0.2f;   // error
 
     unsigned int i;
 
@@ -25,14 +25,14 @@ int main() {
     modemcf q = modemcf_create(ms);
     unsigned int bps = modemcf_get_bps(q);
     unsigned int M = 1 << bps;  // constellation size
-    float complex c[M];         // constellation
+    liquid_float_complex c[M];         // constellation
     for (i=0; i<M; i++)
         modemcf_modulate(q, i, &c[i]);
     modemcf_destroy(q);
 
     // select input symbol and compute received symbol
     unsigned int sym_in = rand() % M;
-    float complex r = c[sym_in] + e;
+    liquid_float_complex r = c[sym_in] + e;
 
     // run soft demodulation for each bit
     float soft_bits[bps];

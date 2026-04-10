@@ -1,9 +1,10 @@
-char __docstr__[] = "Test GMSK equalization.";
+const char __docstr__[] = "Test GMSK equalization.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -41,7 +42,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"syms = zeros(1,num_symbols);\n");
     fprintf(fid,"psd  = zeros(1,nfft);\n");
 
-    float complex buf[k];
+    LIQUID_VLA(liquid_float_complex, buf, k);
     unsigned int i;
     for (i=0; i<num_symbols; i++)
     {
@@ -52,7 +53,7 @@ int main(int argc, char*argv[])
         eqlms_cccf_push_block(eq, buf, k);
 
         // compute equalizer output
-        float complex d_hat;
+        liquid_float_complex d_hat;
         eqlms_cccf_execute(eq, &d_hat);
 
         spgramcf_write(q, buf, k);
@@ -62,18 +63,18 @@ int main(int argc, char*argv[])
 
         // update equalizer appropriately
         if (i < p) continue;
-        float complex d_prime = (crealf(d_hat) > 0 ? 1 : -1) * M_SQRT1_2 +
+        liquid_float_complex d_prime = (crealf(d_hat) > 0 ? 1 : -1) * M_SQRT1_2 +
                                 (cimagf(d_hat) > 0 ? 1 : -1) * M_SQRT1_2 * _Complex_I;
         eqlms_cccf_step(eq, d_prime, d_hat);
     }
     // get equalizer weights
     unsigned int hp_len = 2*k*p+1;   // equalizer filter length
-    float complex hp[hp_len];           // equalizer filter coefficients
+    LIQUID_VLA(liquid_float_complex, hp, hp_len);           // equalizer filter coefficients
     eqlms_cccf_copy_coefficients(eq, hp);
     fprintf(fid,"hp = zeros(1,%u);\n", hp_len);
     for (i=0; i<hp_len; i++)
         fprintf(fid,"hp(%3u) = %12.4e + %12.4ej;\n", i+1, crealf(hp[i]), cimagf(hp[i]));
-    float psd[nfft];
+    LIQUID_VLA(float, psd, nfft);
     spgramcf_get_psd(q, psd);
     for (i=0; i<nfft; i++)
         fprintf(fid,"psd(%6u) = %12.4e;\n", i+1, psd[i]);

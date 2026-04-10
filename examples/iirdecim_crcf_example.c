@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the interface to the iirdecim (infinite"
 " impulse response decimator) family of objects.";
 
@@ -7,6 +7,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -35,8 +36,8 @@ int main(int argc, char*argv[])
     float delay = iirdecim_crcf_groupdelay(q,0.0f);
 
     // generate input signal and decimate
-    float complex x[num_samples];   // input samples
-    float complex y[num_samples/M]; // output samples
+    LIQUID_VLA(liquid_float_complex, x, num_samples);   // input samples
+    LIQUID_VLA(liquid_float_complex, y, num_samples/M); // output samples
     unsigned int i;
     unsigned int w_len = num_samples > 4*delay ? num_samples - 4*delay : num_samples;
     for (i=0; i<num_samples; i++) {

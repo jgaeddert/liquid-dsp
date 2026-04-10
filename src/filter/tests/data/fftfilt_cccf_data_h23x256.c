@@ -24,9 +24,12 @@
 // fftfilt_cccf_data_h23x256.c: autotest fftfilt data
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
+#include "liquid.h"
 
-float complex fftfilt_cccf_data_h23x256_h[] = {
+liquid_float_complex fftfilt_cccf_data_h23x256_h[] = {
    -0.113265895844 +  -0.022710527480*_Complex_I,
     0.017113091052 +  -0.012686794996*_Complex_I,
    -0.115593445301 +  -0.088176310062*_Complex_I,
@@ -51,7 +54,7 @@ float complex fftfilt_cccf_data_h23x256_h[] = {
     0.048448944092 +   0.068329632282*_Complex_I,
     0.053360801935 +   0.035232502222*_Complex_I};
 
-float complex fftfilt_cccf_data_h23x256_x[] = {
+liquid_float_complex fftfilt_cccf_data_h23x256_x[] = {
     0.045492258668 +   0.087591451406*_Complex_I,
    -0.360275936127 +  -0.244660735130*_Complex_I,
    -0.076566338539 +   0.085396862030*_Complex_I,
@@ -309,7 +312,7 @@ float complex fftfilt_cccf_data_h23x256_x[] = {
    -0.111178684235 +   0.004780802876*_Complex_I,
    -0.256052374840 +  -0.011545106769*_Complex_I};
 
-float complex fftfilt_cccf_data_h23x256_y[] = {
+liquid_float_complex fftfilt_cccf_data_h23x256_y[] = {
    -0.003163473368 +  -0.010954277402*_Complex_I,
     0.037140370260 +   0.036815583414*_Complex_I,
     0.003807251283 +  -0.021686181791*_Complex_I,

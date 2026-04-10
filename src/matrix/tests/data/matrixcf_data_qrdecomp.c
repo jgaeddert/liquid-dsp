@@ -24,10 +24,12 @@
 // data for testing Q/R decomposition
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
-
+#endif
+#include "liquid.h"
 // matrixcf_data_qrdecomp_A [size: 4 x 4]
-float complex matrixcf_data_qrdecomp_A[] = {
+liquid_float_complex matrixcf_data_qrdecomp_A[] = {
     2.114020000000 +  -0.576040000000*_Complex_I /* ( 0, 0) */,
     0.417500000000 +   1.008330000000*_Complex_I /* ( 0, 1) */,
    -0.962640000000 +  -3.621960000000*_Complex_I /* ( 0, 2) */,
@@ -46,7 +48,7 @@ float complex matrixcf_data_qrdecomp_A[] = {
    -0.127670000000 +  -0.539970000000*_Complex_I /* ( 3, 3) */};
 
 // matrixcf_data_qrdecomp_Q [size: 4 x 4]
-float complex matrixcf_data_qrdecomp_Q[] = {
+liquid_float_complex matrixcf_data_qrdecomp_Q[] = {
     0.491706158979 +  -0.133982845866*_Complex_I /* ( 0, 0) */,
     0.429660711419 +   0.559833033911*_Complex_I /* ( 0, 1) */,
    -0.309333641162 +  -0.278321211351*_Complex_I /* ( 0, 2) */,
@@ -65,7 +67,7 @@ float complex matrixcf_data_qrdecomp_Q[] = {
    -0.173581995183 +  -0.293616086507*_Complex_I /* ( 3, 3) */};
 
 // matrixcf_data_qrdecomp_R [size: 4 x 4]
-float complex matrixcf_data_qrdecomp_R[] = {
+liquid_float_complex matrixcf_data_qrdecomp_R[] = {
     4.299356356224 +   0.000000000000*_Complex_I /* ( 0, 0) */,
    -0.922616273377 +  -0.789487259898*_Complex_I /* ( 0, 1) */,
    -1.025768821795 +  -1.040664085433*_Complex_I /* ( 0, 2) */,

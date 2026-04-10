@@ -41,9 +41,10 @@ QUANTIZER() QUANTIZER(_create)(liquid_compander_type _ctype,
                                float                 _range,
                                unsigned int          _num_bits)
 {
+    (void)_range;
     // validate input
     if (_num_bits == 0)
-        return liquid_error_config("quantizer_create(), must have at least one bit/sample");
+        return liquid_error_config_ptr(QUANTIZER(), "quantizer_create(), must have at least one bit/sample");
 
     // create quantizer object
     QUANTIZER() q = (QUANTIZER()) malloc(sizeof(struct QUANTIZER(_s)));
@@ -83,6 +84,8 @@ int QUANTIZER(_execute_adc)(QUANTIZER() _q,
                              T _x,
                              unsigned int * _sample)
 {
+    (void)_q;
+    (void)_x;
 #if T_COMPLEX
 #else
 #endif
@@ -94,6 +97,8 @@ int QUANTIZER(_execute_dac)(QUANTIZER() _q,
                              unsigned int _sample,
                              T * _x)
 {
+    (void)_q;
+    (void)_sample;
 #if T_COMPLEX
 #else
 #endif

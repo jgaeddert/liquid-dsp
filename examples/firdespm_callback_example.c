@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates finite impulse response filter design"
 " using the Parks-McClellan algorithm with callback function for"
 " arbitrary response and weighting function.";
@@ -7,6 +7,7 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // user-defined callback function defining response and weights
@@ -47,7 +48,7 @@ int main(int argc, char*argv[])
                               1.05f/(float)n, 0.5f}; // stop-band
 
     // design filter
-    float h[h_len];
+    LIQUID_VLA(float, h, h_len);
     firdespm q = firdespm_create_callback(h_len,num_bands,bands,btype,callback,&n);
     firdespm_execute(q,h);
     firdespm_destroy(q);

@@ -75,13 +75,13 @@ FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,
 {
     // validate input
     if (_h_len < 2)
-        return liquid_error_config("firfarrow_%s_create(), filter length must be > 2", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRFARROW(), "firfarrow_%s_create(), filter length must be > 2", EXTENSION_FULL);
     if (_p < 1)
-        return liquid_error_config("firfarrow_%s_create(), polynomial order must be at least 1", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRFARROW(), "firfarrow_%s_create(), polynomial order must be at least 1", EXTENSION_FULL);
     if (_fc < 0.0f || _fc > 0.5f)
-        return liquid_error_config("firfarrow_%s_create(), filter cutoff must be in [0,0.5]", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRFARROW(), "firfarrow_%s_create(), filter cutoff must be in [0,0.5]", EXTENSION_FULL);
     if (_as < 0.0f)
-        return liquid_error_config("firfarrow_%s_create(), filter stop-band attenuation must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config_ptr(FIRFARROW(), "firfarrow_%s_create(), filter stop-band attenuation must be greater than zero", EXTENSION_FULL);
 
     // create main object
     FIRFARROW() q = (FIRFARROW()) malloc(sizeof(struct FIRFARROW(_s)));
@@ -282,10 +282,10 @@ int FIRFARROW(_get_coefficients)(FIRFARROW() _q,
 //  _H      : output frequency response
 int FIRFARROW(_freqresponse)(FIRFARROW() _q,
                              float _fc,
-                             float complex * _H)
+                             liquid_float_complex * _H)
 {
     unsigned int i;
-    float complex H = 0.0f;
+    liquid_float_complex H = 0.0f;
 
     for (i=0; i<_q->h_len; i++)
         H += _q->h[i] * cexpf(_Complex_I*2*M_PI*_fc*i);
@@ -302,7 +302,7 @@ float FIRFARROW(_groupdelay)(FIRFARROW() _q,
                              float _fc)
 {
     // copy coefficients to be in correct order
-    float h[_q->h_len];
+    LIQUID_VLA(float, h, _q->h_len);
     unsigned int i;
     unsigned int n = _q->h_len;
     for (i=0; i<n; i++)
@@ -323,9 +323,9 @@ int FIRFARROW(_genpoly)(FIRFARROW() _q)
     // TODO : shy away from 'float' and use 'TC' types
     unsigned int i, j, n=0;
     float x, mu, h0, h1;
-    float mu_vect[_q->Q+1];
-    float hp_vect[_q->Q+1];
-    float p[_q->Q+1];
+    LIQUID_VLA(float, mu_vect, _q->Q+1);
+    LIQUID_VLA(float, hp_vect, _q->Q+1);
+    LIQUID_VLA(float, p, _q->Q+1);
     float beta = kaiser_beta_As(_q->as);
     for (i=0; i<_q->h_len; i++) {
 #if FIRFARROW_DEBUG

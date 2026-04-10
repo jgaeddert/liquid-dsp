@@ -29,6 +29,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "liquid_simd_rename.h"
 #include "liquid.internal.h"
 
 // include proper SIMD extensions for ARM Neon
@@ -38,20 +39,20 @@
 
 // forward declaration of internal methods
 int dotprod_crcf_execute_neon(dotprod_crcf    _q,
-                              float complex * _x,
-                              float complex * _y);
+                              liquid_float_complex * _x,
+                              liquid_float_complex * _y);
 int dotprod_crcf_execute_neon4(dotprod_crcf    _q,
-                               float complex * _x,
-                               float complex * _y);
+                               liquid_float_complex * _x,
+                               liquid_float_complex * _y);
 
 // basic dot product (ordinal calculation) using neon extensions
 int dotprod_crcf_run(float *         _h,
-                     float complex * _x,
+                     liquid_float_complex * _x,
                      unsigned int    _n,
-                     float complex * _y)
+                     liquid_float_complex * _y)
 {
     // initialize accumulator
-    float complex r=0;
+    liquid_float_complex r=0;
 
     unsigned int i;
     for (i=0; i<_n; i++)
@@ -65,11 +66,11 @@ int dotprod_crcf_run(float *         _h,
 
 // basic dot product (ordinal calculation) with loop unrolled
 int dotprod_crcf_run4(float *         _h,
-                      float complex * _x,
+                      liquid_float_complex * _x,
                       unsigned int    _n,
-                      float complex * _y)
+                      liquid_float_complex * _y)
 {
-    float complex r = 0;
+    liquid_float_complex r = 0;
 
     // t = 4*(floor(_n/4))
     unsigned int t=(_n>>2)<<2; 
@@ -160,7 +161,7 @@ dotprod_crcf dotprod_crcf_copy(dotprod_crcf q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("dotprod_crcf_copy().neon, object cannot be NULL");
+        return (dotprod_crcf)liquid_error_config("dotprod_crcf_copy().neon, object cannot be NULL");
 
     dotprod_crcf q_copy = (dotprod_crcf)malloc(sizeof(struct dotprod_crcf_s));
     q_copy->n = q_orig->n;
@@ -196,8 +197,8 @@ int dotprod_crcf_print(dotprod_crcf _q)
 
 // 
 int dotprod_crcf_execute(dotprod_crcf    _q,
-                         float complex * _x,
-                         float complex * _y)
+                         liquid_float_complex * _x,
+                         liquid_float_complex * _y)
 {
     // switch based on size
     if (_q->n < 32) {
@@ -208,8 +209,8 @@ int dotprod_crcf_execute(dotprod_crcf    _q,
 
 // use ARM Neon extensions
 int dotprod_crcf_execute_neon(dotprod_crcf    _q,
-                              float complex * _x,
-                              float complex * _y)
+                              liquid_float_complex * _x,
+                              liquid_float_complex * _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;
@@ -246,7 +247,7 @@ int dotprod_crcf_execute_neon(dotprod_crcf    _q,
     }
 
     // unload packed array
-    float w[4];
+    LIQUID_VLA(float, w, 4);
     vst1q_f32(w, sum);
 
     // add in-phase and quadrature components
@@ -266,8 +267,8 @@ int dotprod_crcf_execute_neon(dotprod_crcf    _q,
 
 // use ARM Neon extensions
 int dotprod_crcf_execute_neon4(dotprod_crcf    _q,
-                               float complex * _x,
-                               float complex * _y)
+                               liquid_float_complex * _x,
+                               liquid_float_complex * _y)
 {
 #if 1
     // type cast input as floating point array
@@ -325,7 +326,7 @@ int dotprod_crcf_execute_neon4(dotprod_crcf    _q,
     sum0 = vaddq_f32( sum0, sum2 );
 
     // unload packed array
-    float w[4];
+    LIQUID_VLA(float, w, 4);
     vst1q_f32(w, sum0);
 
     // add in-phase and quadrature components

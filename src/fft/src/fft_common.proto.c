@@ -155,7 +155,7 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
     case LIQUID_FFT_METHOD_UNKNOWN:
     default:;
     }
-    return liquid_error_config("fft_create_plan(), unknown/invalid fft method (%u)", method);
+    return liquid_error_config_ptr(FFT(plan), "fft_create_plan(), unknown/invalid fft method (%u)", method);
 }
 
 // destroy FFT plan

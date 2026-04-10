@@ -28,10 +28,10 @@ void print_bitstring(unsigned int _x,
 //  _s          :   hard demodulator output
 //  _soft_bits  :   soft bit output (approximate log-likelihood ratio)
 void modemcf_demodulate_soft_tab(modemcf _q,
-                               float complex * _c,
+                               liquid_float_complex * _c,
                                unsigned int * _cp,
                                unsigned int _p,
-                               float complex _r,
+                               liquid_float_complex _r,
                                unsigned int * _s,
                                float * _soft_bits);
 
@@ -42,7 +42,7 @@ int main(int argc, char*argv[])
     // options
     modulation_scheme ms = LIQUID_MODEM_QAM16;  // modulation scheme
     unsigned int p = 4;                         // number of 'nearest symbols'
-    float complex e = 0.1f + _Complex_I*0.15f;  // error
+    liquid_float_complex e = 0.1f + _Complex_I*0.15f;  // error
 
     // validate input
     if (ms == LIQUID_MODEM_UNKNOWN || ms >= LIQUID_MODEM_NUM_SCHEMES) {
@@ -66,7 +66,7 @@ int main(int argc, char*argv[])
 
     // generate constellation
     modemcf q = modemcf_create(ms);
-    float complex c[M];         // constellation
+    liquid_float_complex c[M];         // constellation
     for (i=0; i<M; i++)
         modemcf_modulate(q, i, &c[i]);
     modemcf_destroy(q);
@@ -177,7 +177,7 @@ int main(int argc, char*argv[])
     unsigned int sym_in = rand() % M;
     if (ms == LIQUID_MODEM_QAM16)
         sym_in = 13;
-    float complex r = c[sym_in] + e;
+    liquid_float_complex r = c[sym_in] + e;
 
     // run soft demodulation for each bit
     float soft_bits[bps];
@@ -287,7 +287,7 @@ int main(int argc, char*argv[])
     // print lines to 'nearest neighbor' points
     fprintf(fid,"plot(");
     for (i=0; i<p; i++) {
-        float complex x_hat = c[ cp[sym_out_tab*p+i] ];
+        liquid_float_complex x_hat = c[ cp[sym_out_tab*p+i] ];
         fprintf(fid,"[%12.8f %12.8f],[%12.8f %12.8f],'Color',[1 1 1]*0.8",
                 crealf(r), crealf(x_hat),
                 cimagf(r), cimagf(x_hat));
@@ -318,10 +318,10 @@ int main(int argc, char*argv[])
 //  _s          :   hard demodulator output
 //  _soft_bits  :   soft bit output (approximate log-likelihood ratio)
 void modemcf_demodulate_soft_tab(modemcf _q,
-                               float complex * _c,
+                               liquid_float_complex * _c,
                                unsigned int * _cp,
                                unsigned int _p,
-                               float complex _r,
+                               liquid_float_complex _r,
                                unsigned int * _s,
                                float * _soft_bits)
 {
@@ -369,7 +369,7 @@ void modemcf_demodulate_soft_tab(modemcf _q,
 #endif
 
             // compute distance
-            float complex x_hat = _c[ _cp[(*_s)*_p + i] ];
+            liquid_float_complex x_hat = _c[ _cp[(*_s)*_p + i] ];
             d = crealf( (_r-x_hat)*conjf(_r-x_hat) );
 #if DEBUG
             printf("(%8.6f) ", d);

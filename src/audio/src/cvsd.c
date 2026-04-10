@@ -61,11 +61,11 @@ cvsd cvsd_create(unsigned int _num_bits,
                  float        _alpha)
 {
     if (_num_bits == 0)
-        return liquid_error_config("cvsd_create(), _num_bits must be positive");
+        return liquid_error_config_ptr(cvsd, "cvsd_create(), _num_bits must be positive");
     if (_zeta <= 1.0f)
-        return liquid_error_config("cvsd_create(), zeta must be greater than 1");
+        return liquid_error_config_ptr(cvsd, "cvsd_create(), zeta must be greater than 1");
     if (_alpha < 0.0f || _alpha > 1.0f)
-        return liquid_error_config("cvsd_create(), alpha must be in [0,1]");
+        return liquid_error_config_ptr(cvsd, "cvsd_create(), alpha must be in [0,1]");
 
     cvsd q = (cvsd) malloc(sizeof(struct cvsd_s));
     q->num_bits = _num_bits;

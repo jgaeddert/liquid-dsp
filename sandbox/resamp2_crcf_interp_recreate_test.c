@@ -5,7 +5,9 @@
 //
 
 #include <stdio.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 #include "liquid.h"
@@ -35,7 +37,7 @@ int main() {
     unsigned int i;
     float theta=0.0f, dtheta=2*M_PI*fc;
     unsigned int ix=0, iy=0;
-    float complex x, y[2];
+    liquid_float_complex x, y[2];
     for (i=0; i<N/2; i++) {
         x = cexpf(_Complex_I*theta);
         theta += dtheta;

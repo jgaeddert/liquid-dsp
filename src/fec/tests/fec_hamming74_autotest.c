@@ -31,8 +31,8 @@ LIQUID_AUTOTEST(hamming74_codec,"test Hamming (7,4) codec","",0.1)
 
     // create arrays
     unsigned int n_enc = fec_get_enc_msg_length(fs,n);
-    unsigned char msg_dec[n];
-    unsigned char msg_enc[n_enc];
+    LIQUID_VLA(unsigned char, msg_dec, n);
+    LIQUID_VLA(unsigned char, msg_enc, n_enc);
 
     // create object
     fec q = fec_create(fs,NULL);
@@ -67,7 +67,7 @@ LIQUID_AUTOTEST(hamming74_codec_soft,"test Hamming (7,4) codec (soft decoding)",
     // using soft decoding algorithm
     unsigned char s;            // original 4-bit symbol
     unsigned char c;            // encoded 7-bit symbol
-    unsigned char c_soft[7];    // soft bits
+    LIQUID_VLA(unsigned char, c_soft, 7);    // soft bits
     unsigned char s_hat;        // decoded symbol
 
     for (s=0; s<16; s++) {

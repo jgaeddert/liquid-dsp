@@ -1,11 +1,14 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Demonstrates least mean-squares (LMS) equalizer (EQ) on a QPSK signal";
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 #define OUTPUT_FILENAME "eqlms_cccf_example.m"
 
@@ -22,13 +25,13 @@ int main(int argc, char* argv[])
     liquid_argparse_parse(argc,argv);
 
     // modulation type/depth
-    modulation_scheme ms = liquid_getopt_str2mod(mod_scheme);
+    modulation_scheme ms = (modulation_scheme)liquid_getopt_str2mod(mod_scheme);
 
     // modem
     modemcf mod = modemcf_create(ms);
 
     // create channel filter (random coefficients)
-    float complex h[hc_len];
+    LIQUID_VLA(liquid_float_complex, h, hc_len);
     h[0] = 1.0f;
     unsigned int i;
     for (i=1; i<hc_len; i++)
@@ -36,13 +39,13 @@ int main(int argc, char* argv[])
     firfilt_cccf fchannel = firfilt_cccf_create(h,hc_len);
 
     // create equalizer (default initial coefficients)
-    float complex w[w_len];
+    LIQUID_VLA(liquid_float_complex, w, w_len);
     for (i=0; i<w_len; i++) w[i] = i==0 ? 1 : 0;
     eqlms_cccf eq = eqlms_cccf_create(w,w_len);
     eqlms_cccf_set_bw(eq, mu);
 
     // run equalization
-    float complex sym_in, sym_channel, sym_out;  // modulated/recovered symbols
+    liquid_float_complex sym_in, sym_channel, sym_out;  // modulated/recovered symbols
     float rmse = 0.0f;
     for (i=0; i<2*num_symbols; i++) {
         // generate modulated input symbol

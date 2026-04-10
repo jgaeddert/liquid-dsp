@@ -116,9 +116,9 @@ int main(int argc, char*argv[]) {
     // arrays
     unsigned char sym_in[num_symbols];      // input symbols
     float phi[num_samples];                 // transmitted phase
-    float complex x[num_samples];           // transmitted signal
-    float complex y[num_samples];           // received signal
-    float complex z[num_samples];           // output...
+    liquid_float_complex x[num_samples];           // transmitted signal
+    liquid_float_complex y[num_samples];           // received signal
+    liquid_float_complex z[num_samples];           // output...
     //unsigned char sym_out[num_symbols];     // output symbols
 
     unsigned int ht_len = 0;
@@ -255,7 +255,7 @@ int main(int argc, char*argv[]) {
     unsigned int n=0;
     unsigned int num_errors = 0;
     unsigned int num_symbols_checked = 0;
-    float complex z_prime = 0.0f;
+    liquid_float_complex z_prime = 0.0f;
     for (i=0; i<num_samples; i++) {
         // push through filter
         firfilt_crcf_push(decim_rx, y[i]);

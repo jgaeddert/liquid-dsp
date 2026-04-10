@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates how to generate complementary binary"
 " codes in liquid.  A pair of codes is generated using the bsequence"
 " interface, their auto-correlations are computed, and the result is"
@@ -9,6 +9,7 @@ char __docstr__[] =
 #include <stdlib.h>
 #include <getopt.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -39,8 +40,8 @@ int main(int argc, char*argv[])
 
     // compute auto-correlations
     unsigned int i;
-    int raa[n];
-    int rbb[n];
+    LIQUID_VLA(int, raa, n);
+    LIQUID_VLA(int, rbb, n);
     for (i=0; i<n; i++) {
         raa[i] = 2*bsequence_correlate(a,ax) - n;
         rbb[i] = 2*bsequence_correlate(b,bx) - n;

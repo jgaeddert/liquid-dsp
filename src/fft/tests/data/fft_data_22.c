@@ -24,9 +24,12 @@
 // autotest fft data for 22-point transform
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
+#include "liquid.h"
 
-float complex fft_test_x22[] = {
+liquid_float_complex fft_test_x22[] = {
     1.005393906711 +   1.012308570546*_Complex_I,
     1.688071880070 +   1.150240841419*_Complex_I,
     0.683345289428 +  -0.062623351865*_Complex_I,
@@ -50,7 +53,7 @@ float complex fft_test_x22[] = {
     0.405414441208 +   0.272172965895*_Complex_I,
     0.522244149054 +   0.024648904750*_Complex_I};
 
-float complex fft_test_y22[] = {
+liquid_float_complex fft_test_y22[] = {
     3.812584769431 +   6.167167051279*_Complex_I,
    -2.048551145080 +   1.920025824226*_Complex_I,
     6.865239600362 +  -6.254294174522*_Complex_I,

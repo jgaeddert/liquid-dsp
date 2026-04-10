@@ -48,9 +48,9 @@ float liquid_scramble_test_entropy(unsigned char * _x,
 // helper function to keep code base small
 void testbench_scramble(liquid_autotest __q__, unsigned int _n)
 {
-    unsigned char x[_n];    // input data
-    unsigned char y[_n];    // scrambled data
-    unsigned char z[_n];    // unscrambled data
+    LIQUID_VLA(unsigned char, x, _n);    // input data
+    LIQUID_VLA(unsigned char, y, _n);    // scrambled data
+    LIQUID_VLA(unsigned char, z, _n);    // unscrambled data
 
     unsigned int i;
 
@@ -78,10 +78,10 @@ void testbench_scramble(liquid_autotest __q__, unsigned int _n)
 // test unscrambling of soft bits (helper function to keep code base small)
 void testbench_scramble_soft(liquid_autotest __q__, unsigned int _n)
 {
-    unsigned char msg_org[_n];      // input data
-    unsigned char msg_enc[_n];      // scrambled data 
-    unsigned char msg_soft[8*_n];   // scrambled data (soft bits)
-    unsigned char msg_dec[_n];      // unscrambled data
+    LIQUID_VLA(unsigned char, msg_org, _n);      // input data
+    LIQUID_VLA(unsigned char, msg_enc, _n);      // scrambled data 
+    LIQUID_VLA(unsigned char, msg_soft, 8*_n);   // scrambled data (soft bits)
+    LIQUID_VLA(unsigned char, msg_dec, _n);      // unscrambled data
 
     unsigned int i;
 

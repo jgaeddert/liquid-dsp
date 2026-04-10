@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the binary pre-demodulator synchronizer. A random"
 " binary sequence is generated, modulated with BPSK, and then interpolated."
 " The resulting sequence is used to generate a detector object which in turn"
@@ -10,6 +10,7 @@ char __docstr__[] =
 #include <math.h>
 #include <time.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -36,13 +37,13 @@ int main(int argc, char*argv[])
     float gamma = powf(10.0f, (SNRdB + noise_floor)/20.0f);
 
     // arrays
-    float complex s[n];             // synchronization pattern (samples)
-    float complex x[num_samples];   // transmitted signal
-    float complex y[num_samples];   // received signal
+    LIQUID_VLA(liquid_float_complex, s, n);             // synchronization pattern (samples)
+    LIQUID_VLA(liquid_float_complex, x, num_samples);   // transmitted signal
+    LIQUID_VLA(liquid_float_complex, y, num_samples);   // received signal
 
     // generate synchronization pattern (OFDM symbol, slightly over-sampled)
     unsigned int i;
-    float complex S[n];
+    LIQUID_VLA(liquid_float_complex, S, n);
     for (i=0; i<n; i++)
         S[i] = (i < 0.4*n || i > 0.6*n) ? randnf() + _Complex_I*randnf() : 0.0f;
     fft_run(n, S, s, LIQUID_FFT_BACKWARD, 0);

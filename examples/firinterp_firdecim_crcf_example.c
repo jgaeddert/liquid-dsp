@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates interpolation and decimation of a"
 " signal with a square-root Nyquist filter."
 " Data symbols are generated and then interpolated according to a"
@@ -11,6 +11,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -41,8 +42,8 @@ int main(int argc, char* argv[])
     unsigned int num_samples    = M*num_syms_total; // number of samples
 
     // design filter and create interpolator and decimator objects
-    float h[h_len];     // transmit filter
-    float g[h_len];     // receive filter (reverse of h)
+    LIQUID_VLA(float, h, h_len);     // transmit filter
+    LIQUID_VLA(float, g, h_len);     // receive filter (reverse of h)
     liquid_firdes_rrcos(M,m,beta,dt,h);
     unsigned int i;
     for (i=0; i<h_len; i++)
@@ -52,13 +53,13 @@ int main(int argc, char* argv[])
     firdecim_crcf_set_scale(decim, 1.0f/(float)M);
 
     // allocate memory for buffers
-    float complex x[num_syms_total];   // input symbols
-    float complex y[num_samples];   // interpolated sequence
-    float complex z[num_syms_total];   // decimated (received) symbols
+    LIQUID_VLA(liquid_float_complex, x, num_syms_total);   // input symbols
+    LIQUID_VLA(liquid_float_complex, y, num_samples);   // interpolated sequence
+    LIQUID_VLA(liquid_float_complex, z, num_syms_total);   // decimated (received) symbols
 
     // generate input symbols, padded with zeros at the end
     for (i=0; i<num_syms_total; i++) {
-        float complex s = (rand() % 2 ? 1.0f : -1.0f) +
+        liquid_float_complex s = (rand() % 2 ? 1.0f : -1.0f) +
                           (rand() % 2 ? 1.0f : -1.0f) * _Complex_I;
         x[i] = i < num_syms ? s : 0;
     }

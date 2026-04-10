@@ -48,7 +48,7 @@ FREQMOD() FREQMOD(_create)(float _kf)
 {
     // validate input
     if (_kf <= 0.0f)
-        return liquid_error_config("freqmod%s_create(), modulation factor %12.4e must be greater than 0", EXTENSION, _kf);
+        return liquid_error_config_ptr(FREQMOD(), "freqmod%s_create(), modulation factor %12.4e must be greater than 0", EXTENSION, _kf);
 
     // create main object memory
     FREQMOD() q = (freqmod) malloc(sizeof(struct FREQMOD(_s)));

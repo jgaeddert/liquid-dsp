@@ -33,7 +33,7 @@
 // Rice-K
 float randricekf(float _K, float _omega)
 {
-    float complex x, y;
+    liquid_float_complex x, y;
     float s = sqrtf((_omega*_K)/(_K+1));
     float sig = sqrtf(0.5f*_omega/(_K+1));
     crandnf(&x);

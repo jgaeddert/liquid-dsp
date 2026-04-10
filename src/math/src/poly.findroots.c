@@ -31,13 +31,27 @@
 #include <assert.h>
 #include "liquid.internal.h"
 
+// debug polynomial root-finding methods?
+#define LIQUID_POLY_FINDROOTS_DEBUG     0
+
+// Helper function: evaluate real polynomial at complex point using Horner's method
+static liquid_double_complex poly_val_at_complex(double *_p, unsigned int _k, liquid_double_complex _z)
+{
+    liquid_double_complex result = 0;
+    int i;
+    for (i = (int)_k - 1; i >= 0; i--) {
+        result = result * _z + _p[i];
+    }
+    return result;
+}
+
 // finds the complex roots of the polynomial using the Durand-Kerner method
 //  _p      :   polynomial array, ascending powers [size: _k x 1]
 //  _k      :   polynomials length (poly order = _k - 1)
 //  _roots  :   resulting complex roots [size: _k-1 x 1]
 int liquid_poly_findroots_durandkerner(double *         _p,
                                        unsigned int     _k,
-                                       double complex * _roots)
+                                       liquid_double_complex * _roots)
 {
     if (_k < 2)
         return liquid_error(LIQUID_EICONFIG,"liquid_poly_findroots_durandkerner(), order must be greater than 0");
@@ -46,8 +60,8 @@ int liquid_poly_findroots_durandkerner(double *         _p,
 
     unsigned int i;
     unsigned int num_roots = _k-1;
-    double r0[num_roots];
-    double r1[num_roots];
+    LIQUID_VLA(liquid_double_complex, r0, num_roots);
+    LIQUID_VLA(liquid_double_complex, r1, num_roots);
 
     // find initial magnitude
     float g     = 0.0f;
@@ -59,8 +73,8 @@ int liquid_poly_findroots_durandkerner(double *         _p,
     }
 
     // initialize roots
-    double t0 = 0.9f * (1 + gmax) * cexpf(_Complex_I*1.1526f);
-    double t  = 1.0f;
+    liquid_double_complex t0 = 0.9 * (1 + gmax) * liquid_cexp(_Complex_I*(double)1.1526);
+    liquid_double_complex t  = 1.0;
     for (i=0; i<num_roots; i++) {
         r0[i] = t;
         t *= t0;
@@ -69,39 +83,42 @@ int liquid_poly_findroots_durandkerner(double *         _p,
     unsigned int max_num_iterations = 50;
     int continue_iterating = 1;
     unsigned int j, k;
-    double f;
-    double fp;
+    liquid_double_complex f;
+    liquid_double_complex fp;
     //for (i=0; i<num_iterations; i++) {
     i = 0;
     while (continue_iterating) {
-        liquid_log_trace("liquid_poly_findroots(), i=%3u :", i);
+#if LIQUID_POLY_FINDROOTS_DEBUG
+        printf("liquid_poly_findroots(), i=%3u :\n", i);
         for (j=0; j<num_roots; j++)
-            liquid_log_trace("  r[%3u] = %12.8f + j*%12.8f", j, creal(r0[j]), cimag(r0[j]));
-
+            printf("  r[%3u] = %12.8f + j*%12.8f\n", j, creal(r0[j]), cimag(r0[j]));
+#endif
         for (j=0; j<num_roots; j++) {
-            f = poly_val(_p,_k,r0[j]);
-            fp = 1;
+            f = poly_val_at_complex(_p,_k,r0[j]);
+            fp = 1.0;
             for (k=0; k<num_roots; k++) {
                 if (k==j) continue;
-                fp *= r0[j] - r0[k];
+                fp = fp * (r0[j] - r0[k]);
             }
             r1[j] = r0[j] - f / fp;
         }
 
         // stop iterating if roots have settled
         float delta=0.0f;
-        double e;
+        liquid_double_complex e;
         for (j=0; j<num_roots; j++) {
             e = r0[j] - r1[j];
-            delta += creal(e*conjf(e));
+            delta += (float)creal(e*conj(e));
         }
         delta /= num_roots * gmax;
-        liquid_log_trace("delta[%3u] = %12.4e", i, delta);
+#if LIQUID_POLY_FINDROOTS_DEBUG
+        printf("delta[%3u] = %12.4e\n", i, delta);
+#endif
 
         if (delta < 1e-6f || i == max_num_iterations)
             continue_iterating = 0;
 
-        memmove(r0, r1, num_roots*sizeof(double));
+        memmove(r0, r1, num_roots*sizeof(liquid_double_complex));
         i++;
     }
 
@@ -116,10 +133,10 @@ int liquid_poly_findroots_durandkerner(double *         _p,
 //  _roots  :   resulting complex roots [size: _k-1 x 1]
 int liquid_poly_findroots_bairstow(double *         _p,
                                    unsigned int     _k,
-                                   double complex * _roots)
+                                   liquid_double_complex * _roots)
 {
-    double p0[_k];       // buffer 0
-    double p1[_k];       // buffer 1
+    LIQUID_VLA(double, p0, _k);       // buffer 0
+    LIQUID_VLA(double, p1, _k);       // buffer 1
     double * p   = NULL; // input polynomial
     double * pr  = NULL; // output (reduced) polynomial
 
@@ -150,36 +167,45 @@ int liquid_poly_findroots_bairstow(double *         _p,
             liquid_poly_findroots_bairstow_persistent(p,n,pr,&u,&v);
 
         // compute complex roots of x^2 + u*x + v
-        double complex r0 = 0.5f*(-u + csqrtf(u*u - 4.0*v));
-        double complex r1 = 0.5f*(-u - csqrtf(u*u - 4.0*v));
-        liquid_log_trace("roots: r0=%12.8f + j*%12.8f, r1=%12.8f + j*%12.8f",
-                creal(r0), cimag(r0), creal(r1), cimag(r1));
+        liquid_double_complex disc = u*u - 4.0*v;
+        liquid_double_complex sqrt_disc = csqrt(disc);
+        liquid_double_complex r0 = 0.5*(-u + sqrt_disc);
+        liquid_double_complex r1 = 0.5*(-u - sqrt_disc);
+        //printf("roots: r0=%12.8f + j*%12.8f, r1=%12.8f + j*%12.8f\n\n",
+        //        creal(r0), cimag(r0), creal(r1), cimag(r1));
 
         // append result to output
         _roots[k++] = r0;
         _roots[k++] = r1;
 
-        // log debugging info
+#if LIQUID_POLY_FINDROOTS_DEBUG
+        // print debugging info
         unsigned int j;
-        liquid_log_trace("initial polynomial:");
+        printf("initial polynomial:\n");
         for (j=0; j<n; j++)
-            liquid_log_trace("  p[%3u]  = %12.8f + j*%12.8f", j, creal(p[j]), cimag(p[j]));
-        liquid_log_trace("polynomial factor: x^2 + u*x + v");
-        liquid_log_trace("  u : %12.8f + j*%12.8f", creal(u), cimag(u));
-        liquid_log_trace("  v : %12.8f + j*%12.8f", creal(v), cimag(v));
-        liquid_log_trace("roots:");
-        liquid_log_trace("  r0 : %12.8f + j*%12.8f", creal(r0), cimag(r0));
-        liquid_log_trace("  r1 : %12.8f + j*%12.8f", creal(r1), cimag(r1));
-        liquid_log_trace("reduced polynomial:");
+            printf("  p[%3u]  = %12.8f + j*%12.8f\n", j, creal(p[j]), cimag(p[j]));
+
+        printf("polynomial factor: x^2 + u*x + v\n");
+        printf("  u : %12.8f + j*%12.8f\n", creal(u), cimag(u));
+        printf("  v : %12.8f + j*%12.8f\n", creal(v), cimag(v));
+
+        printf("roots:\n");
+        printf("  r0 : %12.8f + j*%12.8f\n", creal(r0), cimag(r0));
+        printf("  r1 : %12.8f + j*%12.8f\n", creal(r1), cimag(r1));
+
+        printf("reduced polynomial:\n");
         for (j=0; j<n-2; j++)
-            liquid_log_trace("  pr[%3u] = %12.8f + j*%12.8f", j, creal(pr[j]), cimag(pr[j]));
+            printf("  pr[%3u] = %12.8f + j*%12.8f\n", j, creal(pr[j]), cimag(pr[j]));
+#endif
 
         // decrement new (reduced) polynomial size by 2
         n -= 2;
     }
 
     if (r==0) {
-        //assert(n==2);
+#if LIQUID_POLY_FINDROOTS_DEBUG
+        assert(n==2);
+#endif
         _roots[k++] = -pr[0]/pr[1];
     }
     return LIQUID_OK;
@@ -207,8 +233,8 @@ int liquid_poly_findroots_bairstow_recursion(double *     _p,
     // initial estimates for u, v
     double u = *_u;
     double v = *_v;
-    liquid_log_trace("bairstow recursion, u=%12.4e + j*%12.4e, v=%12.4e + j*%12.4e",
-        creal(u), cimag(u), creal(v), cimag(v));
+    //printf("bairstow recursion, u=%12.4e + j*%12.4e, v=%12.4e + j*%12.4e\n",
+    //        creal(u), cimag(u), creal(v), cimag(v));
     
     unsigned int n = _k-1;
     double c,d,g,h;
@@ -216,8 +242,8 @@ int liquid_poly_findroots_bairstow_recursion(double *     _p,
     double du, dv;
 
     // reduced polynomials
-    double b[_k];
-    double f[_k];
+    LIQUID_VLA(double, b, _k);
+    LIQUID_VLA(double, f, _k);
     b[n] = b[n-1] = 0;
     f[n] = f[n-1] = 0;
 
@@ -261,29 +287,34 @@ int liquid_poly_findroots_bairstow_recursion(double *     _p,
 
         double step = fabs(du)+fabs(dv);
 
-        // log debugging info
-        liquid_log_trace(" %3u:q0=%12.4e,q1=%12.4e,q=%12.4e",
-                num_iterations, fabs(q0), fabs(q1), fabs(q));
-        liquid_log_trace(" metric=%12.4e,u=%8.3f,v=%8.3f,step=%12.4e",
-            metric,creal(u), creal(v),step);
-        liquid_log_trace("bairstow [%u] :", num_iterations);
-        liquid_log_trace("  u     : %12.4e + j*%12.4e", creal(u), cimag(u));
-        liquid_log_trace("  v     : %12.4e + j*%12.4e", creal(v), cimag(v));
-        liquid_log_trace("  b     : ");
-        for (i=0; i<n-2; i++)
-            liquid_log_trace("      %12.4e + j*%12.4e", creal(b[i]), cimag(b[i]));
-        liquid_log_trace("  fb    : ");
-        for (i=0; i<n-2; i++)
-            liquid_log_trace("      %12.4e + j*%12.4e", creal(f[i]), cimag(f[i]));
-        liquid_log_trace("  c     : %12.4e + j*%12.4e", creal(c), cimag(c));
-        liquid_log_trace("  g     : %12.4e + j*%12.4e", creal(g), cimag(g));
-        liquid_log_trace("  d     : %12.4e + j*%12.4e", creal(d), cimag(d));
-        liquid_log_trace("  h     : %12.4e + j*%12.4e", creal(h), cimag(h));
-        liquid_log_trace("  q     : %12.4e + j*%12.4e", creal(q), cimag(q));
-        liquid_log_trace("  du    : %12.4e + j*%12.4e", creal(du), cimag(du));
-        liquid_log_trace("  dv    : %12.4e + j*%12.4e", creal(dv), cimag(dv));
-        liquid_log_trace("  step : %12.4e + j*%12.4e", creal(du+dv), cimag(du+dv));
+#if 0
+        printf(" %3u : q0=%12.4e, q1=%12.4e, q=%12.4e, metric=%12.4e, u=%8.3f, v=%8.3f, step=%12.4e\n",
+                num_iterations, fabs(q0), fabs(q1), fabs(q), metric,
+                creal(u), creal(v),
+                step);
+#endif
 
+#if LIQUID_POLY_FINDROOTS_DEBUG
+        // print debugging info
+        printf("bairstow [%u] :\n", num_iterations);
+        printf("  u     : %12.4e + j*%12.4e\n", creal(u), cimag(u));
+        printf("  v     : %12.4e + j*%12.4e\n", creal(v), cimag(v));
+        printf("  b     : \n");
+        for (i=0; i<n-2; i++)
+            printf("      %12.4e + j*%12.4e\n", creal(b[i]), cimag(b[i]));
+        printf("  fb    : \n");
+        for (i=0; i<n-2; i++)
+            printf("      %12.4e + j*%12.4e\n", creal(f[i]), cimag(f[i]));
+        printf("  c     : %12.4e + j*%12.4e\n", creal(c), cimag(c));
+        printf("  g     : %12.4e + j*%12.4e\n", creal(g), cimag(g));
+        printf("  d     : %12.4e + j*%12.4e\n", creal(d), cimag(d));
+        printf("  h     : %12.4e + j*%12.4e\n", creal(h), cimag(h));
+        printf("  q     : %12.4e + j*%12.4e\n", creal(q), cimag(q));
+        printf("  du    : %12.4e + j*%12.4e\n", creal(du), cimag(du));
+        printf("  dv    : %12.4e + j*%12.4e\n", creal(dv), cimag(dv));
+
+        printf("  step : %12.4e + j*%12.4e\n", creal(du+dv), cimag(du+dv));
+#endif
         // adjust u, v by step size
         u += du;
         v += dv;
@@ -294,16 +325,15 @@ int liquid_poly_findroots_bairstow_recursion(double *     _p,
     }
 
     // set resulting reduced polynomial
-    for (i=0; i<(int)_k-2; i++)
+    for (i=0; i<_k-2; i++)
         _p1[i] = b[i];
 
     // set output pairs
     *_u = u;
     *_v = v;
     if (rc) {
-        // don't error out here; running externally as persistent
-        //return liquid_error(LIQUID_ENOCONV,"liquid_poly_findroots_bairstow_recursion(), failed to converge");
-        return LIQUID_ENOCONV;
+        printf("liquid_poly_findroots_bairstow_recursion(), failed to converge\n");
+        return LIQUID_EINT;
     }
 
     return LIQUID_OK;
@@ -319,7 +349,7 @@ int liquid_poly_findroots_bairstow_persistent(double *     _p,
 {
     unsigned int i, num_iterations_max = 10;
     for (i=0; i<num_iterations_max; i++) {
-        liquid_log_trace("## liquid_poly_findroots_bairstow_persistent(), iteration=%u ##", i);
+        //printf("#\n# persistence %u\n#\n", i);
         if (liquid_poly_findroots_bairstow_recursion(_p, _k, _p1, _u, _v)==0) {
             // success
             return LIQUID_OK;
@@ -332,19 +362,20 @@ int liquid_poly_findroots_bairstow_persistent(double *     _p,
     }
 
     // could not converge
-    return liquid_error(LIQUID_ENOCONV,"liquid_poly_findroots_bairstow_persistent(), failed to converge, u=%12.8f, v=%12.8f",
-        creal(*_u), cimag(*_v));
+    printf("liquid_poly_findroots_bairstow_persistence(), failed to converge, u=%12.8f, v=%12.8f\n",
+            creal(*_u), cimag(*_v));
+    return LIQUID_EINT;
 }
 
 // compare roots for sorting
 int liquid_poly_sort_roots_compare(const void * _a,
                                    const void * _b)
 {
-    double ar = (double) creal( *((double complex*)_a) );
-    double br = (double) creal( *((double complex*)_b) );
+    double ar = (double) creal( *((liquid_double_complex*)_a) );
+    double br = (double) creal( *((liquid_double_complex*)_b) );
 
-    double ai = (double) cimag( *((double complex*)_a) );
-    double bi = (double) cimag( *((double complex*)_b) );
+    double ai = (double) cimag( *((liquid_double_complex*)_a) );
+    double bi = (double) cimag( *((liquid_double_complex*)_b) );
 
     return ar == br ? (ai > bi ? -1 : 1) : (ar > br ? 1 : -1);
 }

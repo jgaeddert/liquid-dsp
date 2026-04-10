@@ -31,17 +31,19 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.internal.h"
 
 struct framegen64_s {
     qpacketmodem    enc;                // packet encoder/modulator
     qpilotgen       pilotgen;           // pilot symbol generator
-    float complex   pn_sequence[64];    // 64-symbol p/n sequence
-    unsigned char   payload_dec[150];   // 600 = 150 bytes * 8 bits/bytes / 2 bits/symbol
-    float complex   payload_sym[600];   // modulated payload symbols
-    float complex   payload_tx[630];    // modulated payload symbols with pilots
+    LIQUID_VLA(liquid_float_complex, pn_sequence, 64);    // 64-symbol p/n sequence
+    LIQUID_VLA(unsigned char, payload_dec, 150);   // 600 = 150 bytes * 8 bits/bytes / 2 bits/symbol
+    LIQUID_VLA(liquid_float_complex, payload_sym, 600);   // modulated payload symbols
+    LIQUID_VLA(liquid_float_complex, payload_tx, 630);    // modulated payload symbols with pilots
     unsigned int    m;                  // filter delay (symbols)
     float           beta;               // filter excess bandwidth factor
     firinterp_crcf  interp;             // pulse-shaping filter/interpolator
@@ -70,7 +72,7 @@ framegen64 framegen64_create()
     int fec1       = LIQUID_FEC_GOLAY2412;
     int mod_scheme = LIQUID_MODEM_QPSK;
     q->enc         = qpacketmodem_create();
-    qpacketmodem_configure(q->enc, 72, check, fec0, fec1, mod_scheme);
+    qpacketmodem_configure(q->enc, 72, (crc_scheme)check, (fec_scheme)fec0, (fec_scheme)fec1, mod_scheme);
     //qpacketmodem_print(q->enc);
     assert( qpacketmodem_get_frame_len(q->enc)==600 );
 
@@ -90,7 +92,7 @@ framegen64 framegen64_copy(framegen64 q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("framegen64_copy(), object cannot be NULL");
+        return (framegen64)liquid_error_config("framegen64_copy(), object cannot be NULL");
 
     // as this object is stateless, we can really create a new one
     return framegen64_create();
@@ -148,7 +150,7 @@ int framegen64_print(framegen64 _q)
 int framegen64_execute(framegen64      _q,
                        unsigned char * _header,
                        unsigned char * _payload,
-                       float complex * _frame)
+                       liquid_float_complex * _frame)
 {
     unsigned int i;
 

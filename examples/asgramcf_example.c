@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "ASCII spectrogram example for complex inputs. This example demonstrates"
 " the functionality of the ASCII spectrogram. A sweeping complex sinusoid"
 " is generated and the resulting spectral periodogram is printed to the"
@@ -10,6 +10,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -36,7 +37,7 @@ int main(int argc, char* argv[])
     float phi    = 0.0f;    // phase of sinusoidal frequency drift
     float dphi   = 0.003f;  // frequency of sinusoidal frequency drift
 
-    float complex x[nfft];
+    LIQUID_VLA(liquid_float_complex, x, nfft);
     float nstd = powf(10.0f,noise_floor/20.0f);  // noise standard deviation
     for (n=0; n<num_frames; n++) {
         // generate a frame of data samples

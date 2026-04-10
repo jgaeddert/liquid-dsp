@@ -69,9 +69,9 @@ unsigned int packetizer_compute_enc_msg_len(unsigned int _n,
                                             int _fec0,
                                             int _fec1)
 {
-    unsigned int k = _n + crc_get_length(_crc);
-    unsigned int n0 = fec_get_enc_msg_length(_fec0, k);
-    unsigned int n1 = fec_get_enc_msg_length(_fec1, n0);
+    unsigned int k = _n + crc_get_length((crc_scheme)_crc);
+    unsigned int n0 = fec_get_enc_msg_length((fec_scheme)_fec0, k);
+    unsigned int n1 = fec_get_enc_msg_length((fec_scheme)_fec1, n0);
 
     return n1;
 }
@@ -124,7 +124,7 @@ packetizer packetizer_create(unsigned int _n,
 
     p->msg_len      = _n;
     p->packet_len   = packetizer_compute_enc_msg_len(_n, _crc, _fec0, _fec1);
-    p->check        = _crc;
+    p->check        = (crc_scheme)_crc;
     p->crc_length   = crc_get_length(p->check);
 
     // allocate memory for buffers (scale by 8 for soft decoding)
@@ -141,7 +141,7 @@ packetizer packetizer_create(unsigned int _n,
     unsigned int n0 = _n + p->crc_length;
     for (i=0; i<p->plan_len; i++) {
         // set schemes
-        p->plan[i].fs = (i==0) ? _fec0 : _fec1;
+        p->plan[i].fs = (fec_scheme)((i==0) ? _fec0 : _fec1);
 
         // compute lengths
         p->plan[i].dec_msg_len = n0;
@@ -203,7 +203,7 @@ packetizer packetizer_copy(packetizer q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("packetizer_copy(), object cannot be NULL");
+        return liquid_error_config_ptr(packetizer, "packetizer_copy(), object cannot be NULL");
 
     // strip parameters and create new object from them
     // TODO: handle case where plan_len != 2

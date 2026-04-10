@@ -69,7 +69,7 @@ LIQUID_AUTOTEST(gasearch_peak,"find values which maximize function","",0.1)
 
     // get optimum utility
     gasearch_getopt(ga, prototype, &optimum_utility);
-    float v_opt[num_parameters];
+    LIQUID_VLA(float, v_opt, num_parameters);
     for (i=0; i<num_parameters; i++)
         v_opt[i] = chromosome_valuef(prototype, i);
 

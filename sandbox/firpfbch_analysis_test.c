@@ -19,13 +19,13 @@ int main() {
     firpfbch ca1 = firpfbch_create(num_channels, m, As, 0, FIRPFBCH_NYQUIST, 0);
 
     unsigned int i, j;
-    float complex x[num_channels];  // time-domain input
-    float complex y0[num_channels]; // channelized output
-    float complex y1[num_channels]; // channelized output
+    liquid_float_complex x[num_channels];  // time-domain input
+    liquid_float_complex y0[num_channels]; // channelized output
+    liquid_float_complex y1[num_channels]; // channelized output
 
 #if 0
     // push samples channelizer 1
-    float complex x_hat;
+    liquid_float_complex x_hat;
     for (i=0; i<delay; i++) {
         // generate random sample
         x_hat = randnf() * cexpf(_Complex_I*randf()*2*M_PI);
@@ -87,7 +87,7 @@ int main() {
         // 
         float mse = 0.0f;
         for (j=0; j<num_channels; j++) {
-            float complex d = y0[j] - y1[j];
+            liquid_float_complex d = y0[j] - y1[j];
             mse += crealf( d*conjf(d) );
         }
         mse /= num_channels;

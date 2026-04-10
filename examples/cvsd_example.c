@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Continuously-variable slope delta example, sinusoidal input."
 " This example demonstrates the CVSD audio encoder interface, and"
 " its response to a sinusoidal input.  The output distortion"
@@ -10,6 +10,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -27,9 +28,9 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // data arrays
-    float x[n];             // input time series
-    unsigned char b[n];     // encoded bit pattern
-    float y[n];             // reconstructed time series
+    LIQUID_VLA(float, x, n);             // input time series
+    LIQUID_VLA(unsigned char, b, n);     // encoded bit pattern
+    LIQUID_VLA(float, y, n);             // reconstructed time series
 
     // create cvsd codecs
     cvsd cvsd_encoder = cvsd_create(nbits, zeta, alpha);

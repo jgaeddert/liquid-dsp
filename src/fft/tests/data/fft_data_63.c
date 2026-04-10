@@ -24,9 +24,12 @@
 // autotest fft data for 63-point transform
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
+#include "liquid.h"
 
-float complex fft_test_x63[] = {
+liquid_float_complex fft_test_x63[] = {
    -0.165065089334 +   1.102101871091*_Complex_I,
    -0.981973148546 +   0.541468656777*_Complex_I,
    -0.253554650102 +  -0.121332795252*_Complex_I,
@@ -91,7 +94,7 @@ float complex fft_test_x63[] = {
     0.135839855058 +  -0.627341937358*_Complex_I,
    -0.335848209970 +  -2.547865701465*_Complex_I};
 
-float complex fft_test_y63[] = {
+liquid_float_complex fft_test_y63[] = {
    -7.089662066859 +   9.296545614813*_Complex_I,
    -8.501752827269 +   5.888942352564*_Complex_I,
     3.278359396134 +   3.509899786067*_Complex_I,

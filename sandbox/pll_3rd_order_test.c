@@ -1,7 +1,9 @@
 // Demonstrates a 3rd-order PLL design to track to drifting carrier offset.
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 void export_octave();
@@ -29,8 +31,8 @@ int main()
             "x-freq","y-freq","x-dfreq","y-dfreq","phase err");
     for (i=0; i<n; i++) {
         // compute input and output signals
-        float complex signal_in  = cexpf(_Complex_I * phase_in);
-        float complex signal_out = cexpf(_Complex_I * phase_out);
+        liquid_float_complex signal_in  = cexpf(_Complex_I * phase_in);
+        liquid_float_complex signal_out = cexpf(_Complex_I * phase_out);
 
         // compute phase error estimate
         float phase_error = cargf( signal_in * conjf(signal_out) );

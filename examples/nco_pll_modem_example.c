@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates how the nco/pll object (numerically-controlled"
 " oscillator with phase-locked loop) can be used for carrier frequency"
 " recovery in digital modems.  The modem type, SNR, and other parameters are"
@@ -10,6 +10,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -31,11 +32,11 @@ int main(int argc, char* argv[])
         return liquid_error(LIQUID_EICONFIG,"invalid nco type '%s' (must be either 'nco' or 'vco')", type_str);
 
     // objects
-    int type = strcmp(type_str,"nco")==0 ? LIQUID_NCO : LIQUID_VCO;
+    liquid_ncotype type = strcmp(type_str,"nco")==0 ? LIQUID_NCO : LIQUID_VCO;
     nco_crcf nco_tx = nco_crcf_create(type);
     nco_crcf nco_rx = nco_crcf_create(type);
 
-    modulation_scheme ms = liquid_getopt_str2mod(mod_str);
+    modulation_scheme ms = (modulation_scheme)liquid_getopt_str2mod(mod_str);
     modemcf mod   = modemcf_create(ms);
     modemcf demod = modemcf_create(ms);
 
@@ -65,7 +66,7 @@ int main(int argc, char* argv[])
     // run loop
     unsigned int i, M=1<<bps, sym_in, sym_out, num_errors=0;
     float phase_error;
-    float complex x, r, v, noise;
+    liquid_float_complex x, r, v, noise;
     for (i=0; i<num_symbols; i++) {
         // generate random symbol
         sym_in = rand() % M;

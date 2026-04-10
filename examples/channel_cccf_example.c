@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates how the channel_cccf object can be used to"
 " emulate a multi-path fading, log-normal shadowing, and AWGN channel."
 " A stream of modulated and interpolated symbols are generated using the"
@@ -15,6 +15,7 @@ char __docstr__[] =
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -36,7 +37,7 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // validate input
-    modulation_scheme ms = liquid_getopt_str2mod(mod_scheme);
+    modulation_scheme ms = (modulation_scheme)liquid_getopt_str2mod(mod_scheme);
     if (k < 2)
         return liquid_error(LIQUID_EICONFIG,"k (samples/symbol) must be greater than 1");
     if (m < 1)
@@ -53,9 +54,9 @@ int main(int argc, char*argv[])
     // derived/fixed values
     unsigned int num_samples = num_symbols*k;
 
-    float complex x[num_samples];    // input (interpolated) samples
-    float complex y[num_samples];    // channel output samples
-    float complex sym_out[num_symbols + 64];// synchronized symbols
+    LIQUID_VLA(liquid_float_complex, x, num_samples);    // input (interpolated) samples
+    LIQUID_VLA(liquid_float_complex, y, num_samples);    // channel output samples
+    LIQUID_VLA(liquid_float_complex, sym_out, num_symbols + 64);// synchronized symbols
 
     // 
     // generate input sequence using symbol stream generator
@@ -100,7 +101,7 @@ int main(int argc, char*argv[])
 
     // estimate spectrum
     unsigned int nfft = 1200;
-    float        psd[nfft];
+    LIQUID_VLA(float, psd, nfft);
     spgramcf_estimate_psd(nfft, y, num_samples, psd);
 
     //

@@ -1,11 +1,14 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Automatic gain control example demonstrating its transient response.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -31,9 +34,9 @@ int main(int argc, char*argv[])
     agc_crcf_set_bandwidth(q, bt);
     //agc_crcf_set_scale(q, 0.5f);
 
-    float complex x[num_samples];   // input
-    float complex y[num_samples];   // output
-    float rssi[num_samples];        // received signal strength
+    LIQUID_VLA(liquid_float_complex, x, num_samples);   // input
+    LIQUID_VLA(liquid_float_complex, y, num_samples);   // output
+    LIQUID_VLA(float, rssi, num_samples);        // received signal strength
 
     // print info
     agc_crcf_print(q);

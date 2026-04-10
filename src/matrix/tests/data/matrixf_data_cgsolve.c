@@ -24,7 +24,9 @@
 // data for testing conjugate gradient solver
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 // matrixf_data_cgsolve_A [size: 8 x 8]
 float matrixf_data_cgsolve_A[] = {

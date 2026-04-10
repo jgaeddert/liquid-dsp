@@ -27,7 +27,9 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.internal.h"
 
@@ -70,7 +72,7 @@ QPACKETMODEM() QPACKETMODEM(_create)()
     q->payload_bit_len = 8*q->payload_enc_len;
 
     // number of symbols in encoded payload
-    div_t d = div(q->payload_bit_len, q->bits_per_symbol);
+    div_t d = div((int)q->payload_bit_len, (int)q->bits_per_symbol);
     q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
 
     // soft demodulator uses one byte to represent each soft bit
@@ -91,7 +93,7 @@ QPACKETMODEM() QPACKETMODEM(_copy)(QPACKETMODEM() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("qpacketmodem_copy(), object cannot be NULL");
+        return liquid_error_config_ptr(QPACKETMODEM(), "qpacketmodem_copy(), object cannot be NULL");
 
     // create new object
     QPACKETMODEM() q_copy = QPACKETMODEM(_create)();
@@ -158,7 +160,7 @@ int QPACKETMODEM(_configure)(QPACKETMODEM() _q,
     _q->payload_dec_len = _payload_len;
 
     // recreate modem object and get new bits per symbol
-    _q->mod_payload = MODEM(_recreate)(_q->mod_payload, _ms);
+    _q->mod_payload = MODEM(_recreate)(_q->mod_payload, (modulation_scheme)_ms);
     _q->bits_per_symbol = MODEM(_get_bps)(_q->mod_payload);
 
     // recreate packetizer object and compute new encoded payload length
@@ -169,7 +171,7 @@ int QPACKETMODEM(_configure)(QPACKETMODEM() _q,
     _q->payload_bit_len = 8*_q->payload_enc_len;
 
     // number of symbols in encoded payload
-    div_t d = div(_q->payload_bit_len, _q->bits_per_symbol);
+    div_t d = div((int)_q->payload_bit_len, (int)_q->bits_per_symbol);
     _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
 
     // encoded payload array (leave room for soft-decision decoding)

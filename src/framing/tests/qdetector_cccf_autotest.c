@@ -68,7 +68,7 @@ void qdetector_cccf_runtest_linear(liquid_autotest __q__, unsigned int _sequence
 
     // generate synchronization sequence (QPSK symbols)
     unsigned int i;
-    float complex sequence[_sequence_len];
+    LIQUID_VLA(liquid_float_complex, sequence, _sequence_len);
     for (i=0; i<_sequence_len; i++) {
         sequence[i] = (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 +
                       (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 * _Complex_I;
@@ -93,7 +93,7 @@ void qdetector_cccf_runtest_gmsk(liquid_autotest __q__, unsigned int _sequence_l
     float        beta  =  0.3f;     // excess bandwidth factor
 
     // generate synchronization sequence (QPSK symbols)
-    unsigned char sequence[_sequence_len];
+    LIQUID_VLA(unsigned char, sequence, _sequence_len);
     unsigned int i;
     for (i=0; i<_sequence_len; i++)
         sequence[i] = rand() & 0x01;
@@ -116,10 +116,10 @@ void qdetector_cccf_runtest(liquid_autotest __q__, qdetector_cccf _q)
     float dphi  = -0.000f;  // carrier frequency offset (zero for now)
     float phi   =  0.5f;    // carrier phase offset
 
-    float complex * seq = (float complex*)qdetector_cccf_get_sequence(_q);
+    liquid_float_complex * seq = (liquid_float_complex*)qdetector_cccf_get_sequence(_q);
     unsigned int sequence_len = qdetector_cccf_get_seq_len(_q);
     unsigned int num_samples = 8*sequence_len;
-    float complex buf_rx[num_samples];
+    LIQUID_VLA(liquid_float_complex, buf_rx, num_samples);
 
     // add channel impairments
     unsigned int i;
@@ -138,12 +138,12 @@ void qdetector_cccf_runtest(liquid_autotest __q__, qdetector_cccf _q)
     int   false_positive = 0;
 
     // try to detect frame
-    float complex * v = NULL;
+    liquid_float_complex * v = NULL;
     for (i=0; i<num_samples; i++) {
         if (frame_detected)
             break;
 
-        v = qdetector_cccf_execute(_q,buf_rx[i]);
+        v = (liquid_float_complex *)qdetector_cccf_execute(_q,buf_rx[i]);
 
         if (v != NULL) {
             frame_detected = 1;

@@ -1,9 +1,10 @@
-char __docstr__[] = "Show delay in symstreamr object.";
+const char __docstr__[] = "Show delay in symstreamr object.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -26,7 +27,7 @@ int main(int argc, char* argv[])
     float delay = symstreamrcf_get_delay(gen);
 
     // write samples to buffer
-    float complex buf[2*buf_len];
+    LIQUID_VLA(liquid_float_complex, buf, 2*buf_len);
     symstreamrcf_write_samples(gen, buf, buf_len);
     symstreamrcf_set_gain(gen, 0.0f);
     symstreamrcf_write_samples(gen, buf+buf_len, buf_len);

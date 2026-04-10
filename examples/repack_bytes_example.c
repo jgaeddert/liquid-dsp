@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the repack_bytes() interface by packing a"
 " sequence of three 3-bit symbols into five 2-bit symbols.  The results"
 " are printed to the screen.  Because the total number of bits in the"
@@ -8,6 +8,7 @@ char __docstr__[] =
 #include <stdio.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 // print symbol to screen, one bit at a time
@@ -49,7 +50,7 @@ int main(int argc, char* argv[])
     };
     
     // allocate memory for output array
-    unsigned char output[5];
+    LIQUID_VLA(unsigned char, output, 5);
     unsigned int N;
 
     // print input symbol array

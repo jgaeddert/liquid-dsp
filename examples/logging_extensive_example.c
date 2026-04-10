@@ -19,11 +19,12 @@ int test_callback(liquid_log_event event, void * context, int config)
 
 // user-defined lock function
 int test_lock(int _lock, void * _context)
-    { printf("%s\n", _lock ? "locking" : "unlocking"); return 0; }
+    { (void)_context; printf("%s\n", _lock ? "locking" : "unlocking"); return 0; }
 
 // sweep log levels
 void sweep_levels(liquid_logger _q)
 {
+    (void)_q;
     unsigned int sleeptime = 100000;
     usleep(sleeptime); liquid_log_trace("message at the level trace");
     usleep(sleeptime); liquid_log_debug("message at the level debug");

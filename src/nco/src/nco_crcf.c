@@ -30,7 +30,7 @@
 #define SYNTH(name) LIQUID_CONCAT(synth_crcf,name)
 #define EXTENSION   "crcf"
 #define T           float
-#define TC          float complex
+#define TC          liquid_float_complex
 #define TIL_(l)     l ## .0f
 #define TFL_(l)     l ## f
 #define TIL(l)      TIL_(l)

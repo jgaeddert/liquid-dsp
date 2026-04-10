@@ -24,19 +24,22 @@
 // iirfilt_cccf_data_h3x64.c: autotest iirfilt data
 //
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
+#include "liquid.h"
 
-float complex iirfilt_cccf_data_h3x64_b[] = {
+liquid_float_complex iirfilt_cccf_data_h3x64_b[] = {
     0.054572462936 +   0.039649215181*_Complex_I,
     0.041689651984 +   0.128307555581*_Complex_I,
    -0.020844825992 +   0.064153777791*_Complex_I};
 
-float complex iirfilt_cccf_data_h3x64_a[] = {
+liquid_float_complex iirfilt_cccf_data_h3x64_a[] = {
     0.809016994375 +   0.587785252292*_Complex_I,
    -0.353200399524 +  -1.087039054939*_Complex_I,
    -0.127562709117 +   0.392597649806*_Complex_I};
 
-float complex iirfilt_cccf_data_h3x64_x[] = {
+liquid_float_complex iirfilt_cccf_data_h3x64_x[] = {
    -0.024833213118 +  -0.034917156419*_Complex_I,
    -0.203303753453 +  -0.146194321825*_Complex_I,
     0.046955837790 +  -0.018522626941*_Complex_I,
@@ -102,7 +105,7 @@ float complex iirfilt_cccf_data_h3x64_x[] = {
    -0.115073955933 +  -0.091807014377*_Complex_I,
     0.153344859386 +  -0.062742865142*_Complex_I};
 
-float complex iirfilt_cccf_data_h3x64_y[] = {
+liquid_float_complex iirfilt_cccf_data_h3x64_y[] = {
    -0.001675131192 +  -0.002355346350*_Complex_I,
    -0.013622046565 +  -0.018945208542*_Complex_I,
    -0.006286044544 +  -0.061360482408*_Complex_I,

@@ -1,8 +1,9 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates some modular arithmetic functions.";
 
 #include <stdio.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -12,7 +13,7 @@ int main(int argc, char* argv[])
     liquid_argparse_add(unsigned, n, 280, 'n', "number to evaluate", NULL);
     liquid_argparse_parse(argc,argv);
 
-    unsigned int factors[LIQUID_MAX_FACTORS];
+    LIQUID_VLA(unsigned int, factors, LIQUID_MAX_FACTORS);
     unsigned int num_factors=0;
 
     // compute factors of n

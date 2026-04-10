@@ -113,10 +113,10 @@ int main(int argc, char*argv[]) {
     unsigned int i;
 
     unsigned int num_samples = k*num_symbols;
-    float complex sym_in[num_symbols];          // data symbols
-    float complex x[num_samples];               // interpolated samples
-    float complex y[num_samples];               // noisy samples
-    float complex sym_out[num_symbols + 64];    // synchronized symbols
+    liquid_float_complex sym_in[num_symbols];          // data symbols
+    liquid_float_complex x[num_samples];               // interpolated samples
+    liquid_float_complex y[num_samples];               // noisy samples
+    liquid_float_complex sym_out[num_symbols + 64];    // synchronized symbols
 
     // generate random QPSK symbols
     for (i=0; i<num_symbols; i++) {
@@ -166,8 +166,8 @@ int main(int argc, char*argv[]) {
             pfb_timer = 2;  // k samples/symbol
 
             // compute filterbank outputs
-            float complex v  = 0.0f;
-            float complex dv = 0.0f;
+            liquid_float_complex v  = 0.0f;
+            liquid_float_complex dv = 0.0f;
             firpfb_crcf_execute(mf,  pfb_index, &v);
             firpfb_crcf_execute(dmf, pfb_index, &dv);
 

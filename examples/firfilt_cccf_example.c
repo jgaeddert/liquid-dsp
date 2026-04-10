@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the finite impulse response (FIR) filter"
 " with complex coefficients as a cross-correlator between transmitted"
 " and received sequences.";
@@ -8,6 +8,7 @@ char __docstr__[] =
 #include <string.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -25,9 +26,9 @@ int main(int argc, char* argv[])
     unsigned int num_samples = 3*sequence_len;
 
     // data arrays
-    float complex sequence[sequence_len];   // sequence
-    float complex x[num_samples];           // input sequence
-    float complex rxy[num_samples];         // correlator output
+    LIQUID_VLA(liquid_float_complex, sequence, sequence_len);   // sequence
+    LIQUID_VLA(liquid_float_complex, x, num_samples);           // input sequence
+    LIQUID_VLA(liquid_float_complex, rxy, num_samples);         // correlator output
 
     // generate random sequence
     for (i=0; i<sequence_len; i++) {
@@ -60,7 +61,7 @@ int main(int argc, char* argv[])
     }
 
     // find peak
-    float complex rxy_peak = 0;
+    liquid_float_complex rxy_peak = 0;
     for (i=0; i<num_samples; i++) {
         if (i==0 || cabsf(rxy[i]) > cabsf(rxy_peak))
             rxy_peak = rxy[i];

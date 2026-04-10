@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the basic principles of the symbol timing"
 " recovery family of objects, specifically symsync_crcf. A set of random"
 " QPSK symbols are generated and interpolated with a timing offset. The"
@@ -13,6 +13,7 @@ char __docstr__[] =
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -44,18 +45,18 @@ int main(int argc, char* argv[])
         return liquid_error(LIQUID_EICONFIG,"number of symbols must be greater than 0");
 
     // static values
-    liquid_firfilt_type ftype = liquid_getopt_str2firfilt(ftype_str);
+    liquid_firfilt_type ftype = (liquid_firfilt_type)liquid_getopt_str2firfilt(ftype_str);
 
     // derived values
     unsigned int num_samples = k*num_symbols;
 
-    float complex s[num_symbols];       // data symbols
-    float complex x[num_samples];       // interpolated samples
-    float complex y[num_symbols + 64];  // synchronized symbols
+    LIQUID_VLA(liquid_float_complex, s, num_symbols);       // data symbols
+    LIQUID_VLA(liquid_float_complex, x, num_samples);       // interpolated samples
+    LIQUID_VLA(liquid_float_complex, y, num_symbols + 64);  // synchronized symbols
 
     // generate random symbols
     unsigned int i;
-    modemcf mod = modemcf_create(liquid_getopt_str2mod(mod_str));
+    modemcf mod = modemcf_create((modulation_scheme)liquid_getopt_str2mod(mod_str));
     modemcf_print(mod);
     for (i=0; i<num_symbols; i++) {
         unsigned int sym = modemcf_gen_rand_sym(mod);

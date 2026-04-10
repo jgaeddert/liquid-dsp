@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates how the use the nco/pll object"
 " (numerically-controlled oscillator with phase-locked loop) interface for"
 " tracking to a complex sinusoid.  The loop bandwidth, phase offset, and"
@@ -10,6 +10,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -29,7 +30,7 @@ int main(int argc, char* argv[])
         return liquid_error(LIQUID_EICONFIG,"invalid nco type '%s' (must be either 'nco' or 'vco')", type_str);
 
     // objects
-    int type = strcmp(type_str,"nco")==0 ? LIQUID_NCO : LIQUID_VCO;
+    liquid_ncotype type = strcmp(type_str,"nco")==0 ? LIQUID_NCO : LIQUID_VCO;
     nco_crcf nco_tx = nco_crcf_create(type);
     nco_crcf nco_rx = nco_crcf_create(type);
 
@@ -39,9 +40,9 @@ int main(int argc, char* argv[])
     nco_crcf_pll_set_bandwidth(nco_rx, pll_bandwidth);
 
     // generate input
-    float complex   x[num_samples];
-    float complex   y[num_samples];
-    float phase_error[num_samples];
+    LIQUID_VLA(liquid_float_complex, x, num_samples);
+    LIQUID_VLA(liquid_float_complex, y, num_samples);
+    LIQUID_VLA(float, phase_error, num_samples);
 
     unsigned int i;
     for (i=0; i<num_samples; i++) {

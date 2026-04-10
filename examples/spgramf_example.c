@@ -1,10 +1,11 @@
-char __docstr__[] = "Spectral periodogram example with real inputs.";
+const char __docstr__[] = "Spectral periodogram example with real inputs.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -45,7 +46,7 @@ int main(int argc, char* argv[])
     }
 
     // compute power spectral density output
-    float psd[nfft];
+    LIQUID_VLA(float, psd, nfft);
     spgramf_get_psd(q, psd);
 
     // destroy objects

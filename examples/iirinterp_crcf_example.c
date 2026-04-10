@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the iirinterp object (IIR interpolator) interface.";
 
 #include <stdio.h>
@@ -6,6 +6,7 @@ char __docstr__[] =
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -25,8 +26,8 @@ int main(int argc, char*argv[])
     float delay = iirinterp_crcf_groupdelay(q,0.0f);
 
     // generate input signal and interpolate
-    float complex x[  num_samples]; // input samples
-    float complex y[M*num_samples]; // output samples
+    LIQUID_VLA(liquid_float_complex, x, num_samples); // input samples
+    LIQUID_VLA(liquid_float_complex, y, M*num_samples); // output samples
     unsigned int i;
     for (i=0; i<num_samples; i++) {
         // input signal (sinusoidal chirp)

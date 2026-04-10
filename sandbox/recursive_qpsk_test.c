@@ -37,7 +37,7 @@ int main(int argc, char*argv[])
 
     unsigned int i;
 
-    float complex map_qpsk[4] = {
+    liquid_float_complex map_qpsk[4] = {
         M_SQRT1_2 + _Complex_I*M_SQRT1_2,   // 00
        -M_SQRT1_2 + _Complex_I*M_SQRT1_2,   // 01
         M_SQRT1_2 - _Complex_I*M_SQRT1_2,   // 10
@@ -45,7 +45,7 @@ int main(int argc, char*argv[])
     };
 
     // generate composite constellation
-    float complex map[16];
+    liquid_float_complex map[16];
     for (i=0; i<4; i++) {
         map[4*i+0] = map_qpsk[i] + beta*map_qpsk[0];
         map[4*i+1] = map_qpsk[i] + beta*map_qpsk[1];
@@ -65,7 +65,7 @@ int main(int argc, char*argv[])
     unsigned int    sym_tx_0;
     unsigned int    sym_tx_1;
     unsigned int    sym_tx;
-    float complex   s;
+    liquid_float_complex   s;
     unsigned int    sym_rx;
     unsigned int    sym_rx_0;
     unsigned int    sym_rx_1;
@@ -80,7 +80,7 @@ int main(int argc, char*argv[])
     }
 
     unsigned int n;
-    float complex SNRdB_step = (SNRdB_max - SNRdB_min) / (num_snr - 1);
+    liquid_float_complex SNRdB_step = (SNRdB_max - SNRdB_min) / (num_snr - 1);
     for (n=0; n<num_snr; n++) {
         float SNRdB = SNRdB_min + n*SNRdB_step;
         float nstd  = powf(10.0f, -SNRdB/20.0f);

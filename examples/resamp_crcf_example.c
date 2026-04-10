@@ -1,13 +1,16 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Demonstration of arbitrary resampler object whereby an input signal"
 " is resampled at an arbitrary rate.";
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -47,8 +50,8 @@ int main(int argc, char* argv[])
     unsigned int y_len = (unsigned int) ceilf(1.1 * nx * r) + 4;
 
     // arrays
-    float complex x[nx];
-    float complex y[y_len];
+    LIQUID_VLA(liquid_float_complex, x, nx);
+    LIQUID_VLA(liquid_float_complex, y, y_len);
 
     // create resampler
     resamp_crcf q = resamp_crcf_create(r,m,bw,As,npfb);
@@ -86,8 +89,8 @@ int main(int argc, char* argv[])
     // run FFT and ensure that carrier has moved and that image
     // frequencies and distortion have been adequately suppressed
     unsigned int nfft = 1 << liquid_nextpow2(ny);
-    float complex yfft[nfft];   // fft input
-    float complex Yfft[nfft];   // fft output
+    LIQUID_VLA(liquid_float_complex, yfft, nfft);   // fft input
+    LIQUID_VLA(liquid_float_complex, Yfft, nfft);   // fft output
     for (i=0; i<nfft; i++)
         yfft[i] = i < ny ? y[i] : 0.0f;
     fft_run(nfft, yfft, Yfft, LIQUID_FFT_FORWARD, 0);

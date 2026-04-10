@@ -1,8 +1,9 @@
-char __docstr__[] = "Demonstrate windowing functions.";
+const char __docstr__[] = "Demonstrate windowing functions.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -16,8 +17,8 @@ int main(int argc, char*argv[])
     liquid_argparse_parse(argc,argv);
 
     // compute window coefficients
-    liquid_window_type  wtype = liquid_getopt_str2window(wtype_str);
-    float w[wlen];
+    liquid_window_type  wtype = (liquid_window_type)liquid_getopt_str2window(wtype_str);
+    LIQUID_VLA(float, w, wlen);
     unsigned int i;
     for (i=0; i<wlen; i++) {
         w[i] = liquid_windowf(wtype, i, wlen, arg);

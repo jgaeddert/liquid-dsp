@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Complex finite impulse response filter example. Demonstrates the"
 " functionality of firfilt by designing a low-order prototype and using it"
 " to filter a noisy signal.  The filter coefficients are real, but the"
@@ -7,9 +7,12 @@ char __docstr__[] =
 
 #include <stdio.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -31,8 +34,8 @@ int main(int argc, char* argv[])
     unsigned int i;
 
     // allocate memory for data arrays
-    float complex x[num_samples];
-    float complex y[num_samples];
+    LIQUID_VLA(liquid_float_complex, x, num_samples);
+    LIQUID_VLA(liquid_float_complex, y, num_samples);
 
     // generate input signal (sine wave with decaying amplitude)
     unsigned int wlen = (unsigned int)roundf(0.75*num_samples);
@@ -51,7 +54,7 @@ int main(int argc, char* argv[])
 
     // compute response
     unsigned int nfft = 1024;
-    float complex H[nfft];
+    LIQUID_VLA(liquid_float_complex, H, nfft);
     for (i=0; i<nfft; i++) {
         float freq = ((float)i - 0.5f*(float)nfft) / (float)nfft;
         firfilt_crcf_freqresponse(q, freq, &H[i]);

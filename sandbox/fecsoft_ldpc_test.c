@@ -72,7 +72,7 @@ int main(int argc, char*argv[])
     // arrays
     unsigned char x[m];     // original message signal
     unsigned char c[n];     // transmitted codeword
-    float complex y[n];     // received message with noise
+    liquid_float_complex y[n];     // received message with noise
     float LLR[n];           // log-likelihood ratio
     unsigned char c_hat[n]; // estimated codeword
     unsigned char x_hat[n]; // estimated message signal

@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Tests simple modulation/demodulation of the ampmodem (analog"
 " amplitude modulator/demodulator) with noise, carrier phase,"
 " and carrier frequency offsets.";
@@ -7,9 +7,12 @@ char __docstr__[] =
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -45,9 +48,9 @@ int main(int argc, char*argv[])
     ampmodem_print(mod);
 
     unsigned int i;
-    float         x[num_samples];
-    float complex y[num_samples];
-    float         z[num_samples];
+    LIQUID_VLA(float, x, num_samples);
+    LIQUID_VLA(liquid_float_complex, y, num_samples);
+    LIQUID_VLA(float, z, num_samples);
 
     // generate 'audio' signal (simple windowed sum of tones)
     unsigned int nw = (unsigned int)(0.90*num_samples); // window length

@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "This example demonstrates the continuous phase frequency-shift keying"
 " (CP-FSK) modem in liquid. A message signal is modulated and the"
 " resulting signal is recovered using a demodulator object.";
@@ -9,6 +9,7 @@ char __docstr__[] =
 #include <getopt.h>
 #include <math.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
@@ -47,10 +48,10 @@ int main(int argc, char*argv[])
     float         nstd        = powf(10.0f, -SNRdB/20.0f);
 
     // arrays
-    unsigned int  sym_in [num_symbols]; // input symbols
-    float complex x      [num_samples]; // transmitted signal
-    float complex y      [num_samples]; // received signal
-    unsigned int  sym_out[num_symbols]; // output symbols
+    LIQUID_VLA(unsigned int, sym_in, num_symbols); // input symbols
+    LIQUID_VLA(liquid_float_complex, x, num_samples); // transmitted signal
+    LIQUID_VLA(liquid_float_complex, y, num_samples); // received signal
+    LIQUID_VLA(unsigned int, sym_out, num_symbols); // output symbols
 
     // create modem objects
     cpfskmod mod = cpfskmod_create(bps, h, k, m, beta, filter_type);
@@ -95,7 +96,7 @@ int main(int argc, char*argv[])
 
     // compute power spectral density of transmitted signal
     unsigned int nfft = 1024;
-    float psd[nfft];
+    LIQUID_VLA(float, psd, nfft);
     spgramcf_estimate_psd(nfft, x, num_samples, psd);
 
     // 

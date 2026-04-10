@@ -1,11 +1,14 @@
-char __docstr__[] = "Demonstration of rate matching with the arbitrary resampler";
+const char __docstr__[] = "Demonstration of rate matching with the arbitrary resampler";
 
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -24,10 +27,10 @@ int main(int argc, char* argv[])
         return liquid_error(LIQUID_EICONFIG,"resampling rate must be greater than zero");
 
     // buffers
-    float complex buf_0[2*block_len];   // original
-    float complex buf_1[2*block_len];   // resampled
-    float complex buf_2[2*block_len];   // recovered
-    memset(buf_0, 0x00, block_len*sizeof(float complex));
+    LIQUID_VLA(liquid_float_complex, buf_0, 2*block_len);   // original
+    LIQUID_VLA(liquid_float_complex, buf_1, 2*block_len);   // resampled
+    LIQUID_VLA(liquid_float_complex, buf_2, 2*block_len);   // recovered
+    memset(buf_0, 0x00, block_len*sizeof(liquid_float_complex));
 
     // create resamplers
     resamp_crcf resamp_0 = resamp_crcf_create_default(r);

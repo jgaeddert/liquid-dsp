@@ -161,6 +161,7 @@ TC SYNTH(_get_half_next)(SYNTH() _q)
 // reset pll state, retaining base frequency
 void SYNTH(_pll_reset)(SYNTH() _q)
 {
+    (void)_q;
 }
 
 // set pll bandwidth

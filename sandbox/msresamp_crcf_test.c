@@ -6,7 +6,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 #include <getopt.h>
 
@@ -62,8 +64,8 @@ int main(int argc, char*argv[])
     unsigned int ny_alloc = (unsigned int) (2*(float)nx * r);  // allocation for output
 
     // allocate memory for arrays
-    float complex x[nx];
-    float complex y[ny_alloc];
+    liquid_float_complex x[nx];
+    liquid_float_complex y[ny_alloc];
 
     // generate input
     unsigned int window_len = (3*nx)/4;

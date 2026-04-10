@@ -1,9 +1,10 @@
-char __docstr__[] = "Demonstration of filter based on order statistics";
+const char __docstr__[] = "Demonstration of filter based on order statistics";
 
 #include <stdio.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char *argv[])
@@ -17,8 +18,8 @@ int main(int argc, char *argv[])
     liquid_argparse_parse(argc,argv);
 
     // arrays
-    float x[num_samples];   // filter input
-    float y[num_samples];   // filter output
+    LIQUID_VLA(float, x, num_samples);   // filter input
+    LIQUID_VLA(float, y, num_samples);   // filter output
 
     // generate input tone with offset noise
     unsigned int i;

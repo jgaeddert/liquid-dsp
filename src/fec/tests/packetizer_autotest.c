@@ -30,10 +30,10 @@ void testbench_packetizer(liquid_autotest __q__,
                           fec_scheme _fec0,
                           fec_scheme _fec1)
 {
-    unsigned char msg_tx[_n];
-    unsigned char msg_rx[_n];
+    LIQUID_VLA(unsigned char, msg_tx, _n);
+    LIQUID_VLA(unsigned char, msg_rx, _n);
     unsigned int pkt_len = packetizer_compute_enc_msg_len(_n,_crc,_fec0,_fec1);
-    unsigned char packet[pkt_len];
+    LIQUID_VLA(unsigned char, packet, pkt_len);
 
     // create object
     packetizer p = packetizer_create(_n,_crc,_fec0,_fec1);

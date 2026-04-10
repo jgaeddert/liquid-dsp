@@ -25,7 +25,7 @@
 #include "liquid.internal.h"
 
 #define VECTOR(name)    LIQUID_CONCAT(liquid_vectorcf,name)
-#define T               float complex   // input/output type
+#define T               liquid_float_complex   // input/output type
 #define TP              float           // primitive type
 
 #define T_COMPLEX       1               // is input type complex

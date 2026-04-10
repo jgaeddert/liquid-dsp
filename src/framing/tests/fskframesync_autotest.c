@@ -53,15 +53,15 @@ LIQUID_AUTOTEST(fskframesync,"test simple recovery of frame in noise","",0.1)
 
     // assemble the frame
     unsigned char header [  8];
-    unsigned char payload[200];
+    LIQUID_VLA(unsigned char, payload, 200);
     for (i=0; i<  8; i++) header [i] = i;
     for (i=0; i<200; i++) payload[i] = rand() & 0xff;
-    fskframegen_assemble(fg, header, payload, 200, check, fec0, fec1);
+    fskframegen_assemble(fg, header, payload, 200, (crc_scheme)check, (fec_scheme)fec0, fec1);
 
     // allocate memory for the frame samples
     unsigned int  buf_len = 256;
-    float complex buf_tx[buf_len];  // receive buffer
-    float complex buf_rx[buf_len];  // transmit buffer
+    LIQUID_VLA(liquid_float_complex, buf_tx, buf_len);  // receive buffer
+    LIQUID_VLA(liquid_float_complex, buf_rx, buf_len);  // transmit buffer
     
     // try to receive the frame (operate in blocks)
     int frame_complete = 0;

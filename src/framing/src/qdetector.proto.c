@@ -40,6 +40,12 @@ int QDETECTOR(_execute_seek)(QDETECTOR() _q, TI _x);
 // align signal in time, compute offset estimates
 int QDETECTOR(_execute_align)(QDETECTOR() _q, TI _x);
 
+// execution state (moved outside struct for C++ compatibility)
+enum qdetector_state_e {
+    QDETECTOR_STATE_SEEK,       // seek sequence
+    QDETECTOR_STATE_ALIGN,      // align sequence
+};
+
 // main object definition
 struct QDETECTOR(_s) {
     unsigned int    s_len;          // template (time) length: k * (sequence_len + 2*m)
@@ -71,10 +77,7 @@ struct QDETECTOR(_s) {
     float           dphi_hat;       // carrier frequency offset estimate
     float           phi_hat;        // carrier phase offset estimate
 
-    enum {
-        QDETECTOR_STATE_SEEK,       // seek sequence
-        QDETECTOR_STATE_ALIGN,      // align sequence
-    }               state;          // execution state
+    enum qdetector_state_e state;   // execution state
     int             frame_detected; // frame detected?
 };
 
@@ -86,7 +89,7 @@ QDETECTOR() QDETECTOR(_create)(TI *         _s,
 {
     // validate input
     if (_s_len == 0)
-        return liquid_error_config("QDETECTOR(_create)(), sequence length cannot be zero");
+        return liquid_error_config_ptr(QDETECTOR(), "QDETECTOR(_create)(), sequence length cannot be zero");
     
     // allocate memory for main object and set internal properties
     QDETECTOR() q = (QDETECTOR()) malloc(sizeof(struct QDETECTOR(_s)));
@@ -149,13 +152,13 @@ QDETECTOR() QDETECTOR(_create_linear)(TI *         _sequence,
 {
     // validate input
     if (_sequence_len == 0)
-        return liquid_error_config("QDETECTOR(_create_linear)(), sequence length cannot be zero");
+        return liquid_error_config_ptr(QDETECTOR(), "QDETECTOR(_create_linear)(), sequence length cannot be zero");
     if (_k < 2 || _k > 80)
-        return liquid_error_config("QDETECTOR(_create_linear)(), samples per symbol must be in [2,80]");
+        return liquid_error_config_ptr(QDETECTOR(), "QDETECTOR(_create_linear)(), samples per symbol must be in [2,80]");
     if (_m < 1 || _m > 100)
-        return liquid_error_config("QDETECTOR(_create_linear)(), filter delay must be in [1,100]");
+        return liquid_error_config_ptr(QDETECTOR(), "QDETECTOR(_create_linear)(), filter delay must be in [1,100]");
     if (_beta < 0.0f || _beta > 1.0f)
-        return liquid_error_config("QDETECTOR(_create_linear)(), excess bandwidth factor must be in [0,1]");
+        return liquid_error_config_ptr(QDETECTOR(), "QDETECTOR(_create_linear)(), excess bandwidth factor must be in [0,1]");
     
     // create time-domain template
     unsigned int    s_len = _k * (_sequence_len + 2*_m);
@@ -190,13 +193,13 @@ QDETECTOR() QDETECTOR(_create_gmsk)(unsigned char * _sequence,
 {
     // validate input
     if (_sequence_len == 0)
-        return liquid_error_config("QDETECTOR(_create_gmsk)(), sequence length cannot be zero");
+        return liquid_error_config_ptr(QDETECTOR(), "QDETECTOR(_create_gmsk)(), sequence length cannot be zero");
     if (_k < 2 || _k > 80)
-        return liquid_error_config("QDETECTOR(_create_gmsk)(), samples per symbol must be in [2,80]");
+        return liquid_error_config_ptr(QDETECTOR(), "QDETECTOR(_create_gmsk)(), samples per symbol must be in [2,80]");
     if (_m < 1 || _m > 100)
-        return liquid_error_config("QDETECTOR(_create_gmsk)(), filter delay must be in [1,100]");
+        return liquid_error_config_ptr(QDETECTOR(), "QDETECTOR(_create_gmsk)(), filter delay must be in [1,100]");
     if (_beta < 0.0f || _beta > 1.0f)
-        return liquid_error_config("QDETECTOR(_create_gmsk)(), excess bandwidth factor must be in [0,1]");
+        return liquid_error_config_ptr(QDETECTOR(), "QDETECTOR(_create_gmsk)(), excess bandwidth factor must be in [0,1]");
     
     // create time-domain template using GMSK modem
     unsigned int    s_len = _k * (_sequence_len + 2*_m);
@@ -237,13 +240,13 @@ QDETECTOR() QDETECTOR(_create_cpfsk)(unsigned char * _sequence,
 {
     // validate input
     if (_sequence_len == 0)
-        return liquid_error_config("QDETECTOR(_create_cpfsk)(), sequence length cannot be zero");
+        return liquid_error_config_ptr(QDETECTOR(), "QDETECTOR(_create_cpfsk)(), sequence length cannot be zero");
     if (_k < 2 || _k > 80)
-        return liquid_error_config("QDETECTOR(_create_cpfsk)(), samples per symbol must be in [2,80]");
+        return liquid_error_config_ptr(QDETECTOR(), "QDETECTOR(_create_cpfsk)(), samples per symbol must be in [2,80]");
     if (_m < 1 || _m > 100)
-        return liquid_error_config("QDETECTOR(_create_cpfsk)(), filter delay must be in [1,100]");
+        return liquid_error_config_ptr(QDETECTOR(), "QDETECTOR(_create_cpfsk)(), filter delay must be in [1,100]");
     if (_beta < 0.0f || _beta > 1.0f)
-        return liquid_error_config("QDETECTOR(_create_cpfsk)(), excess bandwidth factor must be in [0,1]");
+        return liquid_error_config_ptr(QDETECTOR(), "QDETECTOR(_create_cpfsk)(), excess bandwidth factor must be in [0,1]");
 
     // create time-domain template using CPFSK modem
     unsigned int s_len = _k * (_sequence_len + 2*_m);
@@ -269,7 +272,7 @@ QDETECTOR() QDETECTOR(_copy)(QDETECTOR() q_orig)
 {
     // validate input
     if (q_orig == NULL)
-        return liquid_error_config("qdetector_%s_copy(), object cannot be NULL", EXTENSION_FULL);
+        return liquid_error_config_ptr(QDETECTOR(), "qdetector_%s_copy(), object cannot be NULL", EXTENSION_FULL);
 
     // create new object from internal sequence
     QDETECTOR() q_copy = QDETECTOR(_create)(q_orig->s, q_orig->s_len);
@@ -556,7 +559,7 @@ int QDETECTOR(_execute_seek)(QDETECTOR() _q, TI _x)
 
 #if DEBUG_QDETECTOR
         // debug output
-        char filename[64];
+        LIQUID_VLA(char, filename, 64);
         sprintf(filename,"qdetector_out_%u_%d.m", _q->num_transforms, offset+2);
         FILE * fid = fopen(filename, "w");
         fprintf(fid,"clear all; close all;\n");
@@ -667,7 +670,7 @@ int QDETECTOR(_execute_align)(QDETECTOR() _q, TI _x)
     FFT_EXECUTE(_q->fft);
 #if DEBUG_QDETECTOR
     // debug output
-    char filename[64];
+    LIQUID_VLA(char, filename, 64);
     sprintf(filename,"qdetector_fft.m");
     FILE * fid = fopen(filename, "w");
     fprintf(fid,"clear all; close all;\n");

@@ -57,7 +57,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"nfft = %u;\n", nfft);
     fprintf(fid,"psd  = zeros(1,nfft);\n");
 
-    float complex buf[k];
+    liquid_float_complex buf[k];
     for (i=0; i<num_symbols; i++)
     {
         // generate input GMSK signal
@@ -70,7 +70,7 @@ int main(int argc, char*argv[]) {
         eqlms_cccf_push_block(eq, buf, k);
 
         // compute equalizer output
-        float complex d_hat;
+        liquid_float_complex d_hat;
         eqlms_cccf_execute(eq, &d_hat);
 
         spgramcf_write(q, buf, k);
@@ -80,7 +80,7 @@ int main(int argc, char*argv[]) {
 
         // update equalizer appropriately (decision-directed)
         if (i < p) continue;
-        float complex d_prime = (crealf(d_hat) > 0 ? 1 : -1) * M_SQRT1_2 +
+        liquid_float_complex d_prime = (crealf(d_hat) > 0 ? 1 : -1) * M_SQRT1_2 +
                                 (cimagf(d_hat) > 0 ? 1 : -1) * M_SQRT1_2 * _Complex_I;
         eqlms_cccf_step(eq, d_prime, d_hat);
 
@@ -90,7 +90,7 @@ int main(int argc, char*argv[]) {
     printf("mu = %12.4e\n", mu);
     // get equalizer weights
     unsigned int hp_len = 2*k*p+1;   // equalizer filter length
-    float complex hp[hp_len];           // equalizer filter coefficients
+    liquid_float_complex hp[hp_len];           // equalizer filter coefficients
     eqlms_cccf_copy_coefficients(eq, hp);
     fprintf(fid,"hp = zeros(1,%u);\n", hp_len);
     for (i=0; i<hp_len; i++)
@@ -100,7 +100,7 @@ int main(int argc, char*argv[]) {
     for (i=0; i<nfft; i++)
         fprintf(fid,"psd(%6u) = %12.4e;\n", i+1, psd[i]);
     // read buffer and write last symbols to file
-    float complex * rc;
+    liquid_float_complex * rc;
     windowcf_read(sym_buf, &rc);
     fprintf(fid,"syms = zeros(1,%u);\n", buf_len);
     for (i=0; i<buf_len; i++)

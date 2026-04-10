@@ -1,8 +1,9 @@
-char __docstr__[] = "Compute equivalent noise bandwidth of window functions.";
+const char __docstr__[] = "Compute equivalent noise bandwidth of window functions.";
 
 #include <stdio.h>
 #include <string.h>
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -20,7 +21,7 @@ int main(int argc, char* argv[])
     unsigned int i;
     unsigned int wlen = 2*m+1;  // window length
 
-    float w[wlen];
+    LIQUID_VLA(float, w, wlen);
     float w2 = 0.0f;
     for (i=0; i<wlen; i++) {
         w[i] = liquid_kaiser(i,wlen,beta);
@@ -28,9 +29,9 @@ int main(int argc, char* argv[])
     }
 
     // compute transform, ensuring symmetry
-    float complex buf_time[nfft];
-    float complex buf_freq[nfft];
-    memset(buf_time, 0x00, nfft*sizeof(float complex));
+    LIQUID_VLA(liquid_float_complex, buf_time, nfft);
+    LIQUID_VLA(liquid_float_complex, buf_freq, nfft);
+    memset(buf_time, 0x00, nfft*sizeof(liquid_float_complex));
     buf_time[0] = w[m];
     for (i=1; i<=m; i++) {
         buf_time[i]      = w[m+i];
@@ -40,7 +41,7 @@ int main(int argc, char* argv[])
 
     // integrate spectral energy starting from DC and moving evenly outward
     // in both directions
-    float energy_ratio[nfft];
+    LIQUID_VLA(float, energy_ratio, nfft);
     float e2_sum = 0.0f;
     unsigned int i_threshold = 0;
     for (i=0; i<nfft; i++) {

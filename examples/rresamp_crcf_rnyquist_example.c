@@ -1,4 +1,4 @@
-char __docstr__[] =
+const char __docstr__[] =
 "Demonstration of matched filter interpolator and decimator running at"
 " rational rate that is only slightly higher than occupied bandwidth."
 " The resulting constellation has minimal inter-symbol interference and"
@@ -6,10 +6,13 @@ char __docstr__[] =
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -38,9 +41,9 @@ int main(int argc, char* argv[])
     rresamp_crcf_print(q0);
 
     // input/output buffers
-    float complex buf_x[decim]; // input
-    float complex buf_y[interp]; // interp
-    float complex buf_z[decim]; // decim
+    LIQUID_VLA(liquid_float_complex, buf_x, decim); // input
+    LIQUID_VLA(liquid_float_complex, buf_y, interp); // interp
+    LIQUID_VLA(liquid_float_complex, buf_z, decim); // decim
 
     // generate input symbols
     unsigned int i, n = 0;

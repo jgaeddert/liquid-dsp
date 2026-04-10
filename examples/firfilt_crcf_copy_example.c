@@ -1,9 +1,12 @@
-char __docstr__[] = "Demonstrate filter copy operation";
+const char __docstr__[] = "Demonstrate filter copy operation";
 
 #include <stdio.h>
 #include <math.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
 #include "liquid.h"
+#include "liquid_vla.h"
 #include "liquid.argparse.h"
 
 int main(int argc, char* argv[])
@@ -20,7 +23,7 @@ int main(int argc, char* argv[])
     // start running input through filter
     unsigned int n = 32;
     unsigned int i;
-    float complex x, y_orig, y_copy;
+    liquid_float_complex x, y_orig, y_copy;
     for (i=0; i<n; i++) {
         // run filter
         x = randnf() + _Complex_I*randnf();

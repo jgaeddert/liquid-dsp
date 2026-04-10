@@ -46,6 +46,7 @@ int butter_azpkf(unsigned int           _n,
                  liquid_float_complex * _pa,
                  liquid_float_complex * _ka)
 {
+    (void)_za;
     unsigned int r = _n%2;
     unsigned int L = (_n - r)/2;
     
