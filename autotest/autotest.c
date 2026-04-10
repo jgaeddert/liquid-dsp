@@ -166,17 +166,27 @@ int liquid_registry_print(const liquid_autotest * _registry)
     // retrieve summary of runs
     struct liquid_registry_info_s info = liquid_registry_info(_registry);
 
-    // log results
-    liquid_log_info("=========== autotest results ===========");
     unsigned int i;
+#if 0
+    // log all results
+    liquid_log_info("=========== autotest results ===========");
     for (i=0; i<info.num_tests; i++)
         liquid_autotest_print_status(_registry[i]);
+#else
+    // log only failed tests
+    if (info.num_tests_fail)
+        liquid_log_error("=========== failed autotests ===========");
+
+    for (i=0; i<info.num_tests; i++)
+    {
+        if (_registry[i]->num_fail)
+            liquid_autotest_print_status(_registry[i]);
+    }
+#endif
 
     // log summary
-    liquid_log_info("=========== autotest summary ===========");
-
     int log_level = info.num_tests_fail ? LIQUID_ERROR : LIQUID_INFO;
-
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"=========== autotest summary ===========");
     liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"tests:");
     //liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  run      : %u", info.num_tests_pass + info.num_tests_fail);
     liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  pass     : %u", info.num_tests_pass);
