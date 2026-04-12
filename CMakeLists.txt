@@ -489,7 +489,7 @@ if (fftw3f_FOUND)
     target_link_libraries(${LIBNAME} fftw3f)
 endif()
 if (fec_FOUND)
-    target_link_libraries(${LIBNAME} fec)
+    target_link_libraries(${LIBNAME} fec::fec)
 endif()
 
 if(BUILD_SHARED_LIBS)

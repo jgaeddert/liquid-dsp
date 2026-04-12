@@ -1,4 +1,4 @@
-# find library and header instance of libfec
+# find library and header instance of libfec (forward error-correction codecs)
 
 include(FindPackageHandleStandardArgs)
 
