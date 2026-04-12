@@ -162,10 +162,9 @@ LIQUID_AUTOTEST(firfilt_recreate,"description","",0.1)
     LIQUID_CHECK(scale ==  3.0f)
 
     // assert the coefficients are original scaled by 7.1
-    // NOTE: need to account for time-reversal here
     const float * h = firfilt_crcf_get_coefficients(q);
     for (i=0; i<n; i++)
-        LIQUID_CHECK(h[n-i-1] ==  h0[i]*7.1f);
+        LIQUID_CHECK(h[i] ==  h0[i]*7.1f);
 
     // re-create with longer coefficients array and test impulse response
     float h2[2*n+1]; // new random-ish coefficients
