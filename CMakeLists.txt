@@ -18,6 +18,7 @@ option(ENABLE_SIMD       "Set to ON to build SIMD extensions"        ON)
 option(FIND_SIMD         "Set to ON to find SIMD extensions"         ON)
 option(FIND_THREADS      "Set to ON to find threading library"       ON)
 option(FIND_FFTW         "Set to ON to find FFTW library"            ON)
+option(FIND_FEC          "Set to ON to find FEC library"             ON)
 option(BUILD_SANDBOX     "Set to ON to build sandbox programs"       OFF)
 option(BUILD_DOC         "Set to ON to build documentation"          OFF)
 option(COVERAGE          "Set to ON to build with code coverage"     OFF)
@@ -67,6 +68,9 @@ endif()
 #variable_watch(fftw3f_INCLUDE_DIR)
 if (FIND_FFTW)
     find_package(fftw3f)
+endif()
+if (FIND_FEC)
+    find_package(fec)
 endif()
 
 # cross-platform threads (e.g. thread.h for C11
@@ -124,7 +128,7 @@ add_library(equalization OBJECT
     src/equalization/src/equalizer_cccf.c
     src/equalization/src/equalizer_rrrf.c)
 
-add_library(fec OBJECT
+add_library(fec_obj OBJECT
     src/fec/src/crc.c
     src/fec/src/fec.c
     src/fec/src/fec_conv.c
@@ -293,7 +297,7 @@ add_library(utility OBJECT
 add_library(vector OBJECT)
 
 foreach(lib
-    agc audio buffer channel core dotprod equalization fec fft filter framing math
+    agc audio buffer channel core dotprod equalization fec_obj fft filter framing math
     matrix modem multichannel nco optim quantization random sequence utility
     vector)
     target_include_directories(${lib}
@@ -390,7 +394,7 @@ add_library(${LIBNAME}
     $<TARGET_OBJECTS:core>
     $<TARGET_OBJECTS:dotprod>
     $<TARGET_OBJECTS:equalization>
-    $<TARGET_OBJECTS:fec>
+    $<TARGET_OBJECTS:fec_obj>
     $<TARGET_OBJECTS:fft>
     $<TARGET_OBJECTS:filter>
     $<TARGET_OBJECTS:framing>
@@ -456,7 +460,7 @@ if(COVERAGE)
     target_compile_options(core         PRIVATE -coverage -O0 -g)
     target_compile_options(dotprod      PRIVATE -coverage -O0 -g)
     target_compile_options(equalization PRIVATE -coverage -O0 -g)
-    target_compile_options(fec          PRIVATE -coverage -O0 -g)
+    target_compile_options(fec_obj      PRIVATE -coverage -O0 -g)
     target_compile_options(fft          PRIVATE -coverage -O0 -g)
     target_compile_options(filter       PRIVATE -coverage -O0 -g)
     target_compile_options(framing      PRIVATE -coverage -O0 -g)
@@ -483,6 +487,9 @@ if (threads_Found)
 endif()
 if (fftw3f_FOUND)
     target_link_libraries(${LIBNAME} fftw3f)
+endif()
+if (fec_FOUND)
+    target_link_libraries(${LIBNAME} fec)
 endif()
 
 if(BUILD_SHARED_LIBS)

@@ -340,6 +340,8 @@ Here is a table of CMake options available for configuring liquid:
 +------------------------+---------+--------------------------------------------------------------------+
 | ``FIND_FFTW``          | ON      | Try to find `FFTW <http://www.fftw.org)>`_ if available            |
 +------------------------+---------+--------------------------------------------------------------------+
+| ``FIND_FEC``           | ON      | Try to find `libfec <https://www.ka9q.net/code/fec/)>`_            |
++------------------------+---------+--------------------------------------------------------------------+
 | ``BUILD_SANDBOX``      | OFF     | Compile sandbox (testing) programs                                 |
 +------------------------+---------+--------------------------------------------------------------------+
 | ``BUILD_DOC``          | OFF     | Generate documentation                                             |
