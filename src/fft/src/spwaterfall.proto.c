@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,9 @@
 
 #include <complex.h>
 #include "liquid.internal.h"
+
+// run internal debugging of spwaterfall object, checking for nan values
+#define SPWATERFALL_DEBUG 1
 
 struct SPWATERFALL(_s) {
     // options
@@ -374,12 +377,30 @@ int SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q)
     unsigned int k; // freq index
     for (i=0; i<_q->time; i++) {
         for (k=0; k<_q->nfft; k++) {
+#if SPWATERFALL_DEBUG
+            unsigned int i0 = (2*i + 0)*_q->nfft + k;
+            unsigned int i1 = (2*i + 1)*_q->nfft + k;
+            if (isnan(_q->psd[i0]))
+                return liquid_error(LIQUID_EINT,"spwaterfall%s_consolidate_buffer(), rollover=%u with psd at i0=%u",EXTENSION,_q->rollover,i0);
+            if (isnan(_q->psd[i1]))
+                return liquid_error(LIQUID_EINT,"spwaterfall%s_consolidate_buffer(), rollover=%u with psd at i1=%u",EXTENSION,_q->rollover,i1);
+#endif
             // convert to linear, compute average, convert back to log
             T v0 = powf(10.0f, _q->psd[ (2*i + 0)*_q->nfft + k ]*0.1f);
             T v1 = powf(10.0f, _q->psd[ (2*i + 1)*_q->nfft + k ]*0.1f);
+#if SPWATERFALL_DEBUG
+            if (isnan(v0))
+                return liquid_error(LIQUID_EINT,"spwaterfall%s_consolidate_buffer(), rollover=%u with converting v0 at psd[%u]=%f",EXTENSION,_q->rollover,i0,_q->psd[i0]);
+            if (isnan(v1))
+                return liquid_error(LIQUID_EINT,"spwaterfall%s_consolidate_buffer(), rollover=%u with converting v1 at psd[%u]=%f",EXTENSION,_q->rollover,i1,_q->psd[i1]);
+#endif
 
             // save result
             _q->psd[ i*_q->nfft + k ] = 10.0f*log10f(0.5f*(v0+v1));
+#if SPWATERFALL_DEBUG
+            if (isnan(_q->psd[ i*_q->nfft + k ]))
+                return liquid_error(LIQUID_EINT,"spwaterfall%s_consolidate_buffer(), rollover=%u with converting v0(%f)+v1(%f) at psd[%u]",EXTENSION,_q->rollover,v0,v1,i*_q->nfft + k);
+#endif
         }
     }
 
