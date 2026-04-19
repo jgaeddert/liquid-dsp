@@ -33,6 +33,9 @@
 #include <complex.h>
 #include "liquid.internal.h"
 
+// run internal debugging of spgram object, checking for nan values
+#define SPGRAM_DEBUG 1
+
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
 
@@ -451,6 +454,10 @@ int SPGRAM(_get_psd_mag)(SPGRAM() _q,
 {
     // determine appropriate scaling factor
     T scale = _q->accumulate ? 1.0f / max(1,_q->num_transforms) : 1.0f;
+#if SPGRAM_DEBUG
+        if (isnan(scale))
+            return liquid_error(LIQUID_EINT,"spgram%s_get_psd_mag(), nan with scale, accumulate=%u, transforms=%u", EXTENSION, _q->accumulate, _q->num_transforms);
+#endif
 
     // compute magnitude (linear) and run FFT shift
     unsigned int i;
@@ -458,6 +465,10 @@ int SPGRAM(_get_psd_mag)(SPGRAM() _q,
     for (i=0; i<_q->nfft; i++) {
         unsigned int k = (i + nfft_2) % _q->nfft;
         _psd[i] = max(LIQUID_SPGRAM_PSD_MIN,_q->psd[k]) * scale;
+#if SPGRAM_DEBUG
+        if (isnan(_psd[i]))
+            return liquid_error(LIQUID_EINT,"spgram%s_get_psd_mag(), nan with _psd[%u]", EXTENSION, i);
+#endif
     }
     return LIQUID_OK;
 }
@@ -477,7 +488,13 @@ int SPGRAM(_get_psd)(SPGRAM() _q,
     // convert to dB
     unsigned int i;
     for (i=0; i<_q->nfft; i++)
+    {
         _psd[i] = 10*log10f(_psd[i]);
+#if SPGRAM_DEBUG
+        if (isnan(_psd[i]))
+            return liquid_error(LIQUID_EINT,"spgram%s_get_psd(), nan with converting to dB, _psd[%u]=%f", EXTENSION, i, _psd[i]);
+#endif
+    }
     return LIQUID_OK;
 }
 
