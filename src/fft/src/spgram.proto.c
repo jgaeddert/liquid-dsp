@@ -467,7 +467,10 @@ int SPGRAM(_get_psd_mag)(SPGRAM() _q,
         _psd[i] = max(LIQUID_SPGRAM_PSD_MIN,_q->psd[k]) * scale;
 #if SPGRAM_DEBUG
         if (isnan(_psd[i]))
-            return liquid_error(LIQUID_EINT,"spgram%s_get_psd_mag(), nan with _psd[%u]", EXTENSION, i);
+        {
+            return liquid_error(LIQUID_EINT,"spgram%s_get_psd_mag(), nan with _psd[i=%u,i=%u], nfft=%u, num transforms=%u",
+                EXTENSION, i, k, _q->nfft, _q->num_transforms);
+        }
 #endif
     }
     return LIQUID_OK;
