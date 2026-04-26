@@ -25,6 +25,7 @@ int main(int argc, char* argv[])
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
     liquid_argparse_add(int,  test_id,       -1, 't', "run a specific test", NULL);
+    liquid_argparse_add(int,  random_seed,   -1, 'R', "specify random seed value", NULL);
     liquid_argparse_add(bool, list,       false, 'l', "list tests and exit", NULL);
     liquid_argparse_add(bool, stop_fail,  false, 'x', "stop on fail", NULL);
     liquid_argparse_add(char*,search,        "", 's', "run tests with search string in name", NULL);
@@ -34,6 +35,10 @@ int main(int argc, char* argv[])
 
     if (strcmp(logfile,""))
         liquid_logger_add_filename(NULL,logfile,LIQUID_INFO);
+
+    if (random_seed < 0)
+        random_seed = time(NULL);
+    srand(random_seed);
 
     unsigned int i = 0;
     if (list) {
@@ -102,7 +107,7 @@ int main(int argc, char* argv[])
         for (i=0; i<(unsigned int)argc; i++)
             fprintf(fid," %s", argv[i]);
         fprintf(fid,"\",\n");
-        fprintf(fid,"  \"rseed\" : %u,\n", 0); //random_seed);
+        fprintf(fid,"  \"rseed\" : %u,\n", random_seed);
         fprintf(fid,"  \"stop-on-fail\" : %s,\n", stop_fail ? "true" : "false");
 
         // print registry results
