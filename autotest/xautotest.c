@@ -25,6 +25,8 @@ int main(int argc, char* argv[])
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
     liquid_argparse_add(int,  test_id,       -1, 't', "run a specific test", NULL);
+    //liquid_argparse_add(int,  hammer_id,     -1, 'H', "[TODO] hammer on a specific test", NULL);
+    //liquid_argparse_add(int,  hammer_count, 100, 'c', "[TODO] number of times to run hammer test", NULL);
     liquid_argparse_add(int,  random_seed,   -1, 'R', "specify random seed value", NULL);
     liquid_argparse_add(bool, list,       false, 'l', "list tests and exit", NULL);
     liquid_argparse_add(bool, stop_fail,  false, 'x', "stop on fail", NULL);

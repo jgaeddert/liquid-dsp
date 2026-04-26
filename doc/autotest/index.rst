@@ -53,7 +53,7 @@ help/usage information).
       -h            display this help and exit
       -t <id>       run specific test
       -H <id>       hammer on a specific test
-      -c <count>    number of time to run hammer test
+      -c <count>    number of times to run hammer test
       -p <id>       run specific package
       -r            run all tests, random order
       -R <seed>     specify random seed value
