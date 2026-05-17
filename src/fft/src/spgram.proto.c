@@ -439,7 +439,7 @@ int SPGRAM(_step)(SPGRAM() _q)
 #if SPGRAM_DEBUG
     for (i=0; i<_q->window_len; i++)
     {
-        if (isnan(rc[i]))
+        if (isnan(crealf(rc[i])) || isnan(cimagf(rc[i])))
             { return liquid_error(LIQUID_EINT,"spgram%s_step(), nan with rc[%u]", EXTENSION, i); }
     }
 #endif
@@ -450,7 +450,7 @@ int SPGRAM(_step)(SPGRAM() _q)
 #if SPGRAM_DEBUG
     for (i=0; i<_q->nfft; i++)
     {
-        if (isnan(_q->buf_freq[i]))
+        if (isnan(crealf(_q->buf_freq[i])) || isnan(cimagf(_q->buf_freq[i])))
             { return liquid_error(LIQUID_EINT,"spgram%s_step(), nan with buf_freq[%u]", EXTENSION, i); }
     }
 #endif
