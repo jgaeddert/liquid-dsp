@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,8 @@
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
 
-struct SPGRAM(_s) {
+struct SPGRAM(_s)
+{
     // options
     unsigned int    nfft;           // FFT length
     int             wtype;          // window type
@@ -154,6 +155,14 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
     // scale window and copy
     for (i=0; i<q->window_len; i++)
         q->w[i] = g * q->w[i];
+#if SPGRAM_DEBUG
+    for (i=0; i<q->window_len; i++)
+    {
+        liquid_log_debug("w[%4u] = %12.8f", i, q->w[i]);
+        if (isnan(q->w[i]))
+            { return liquid_error_config("spgram%s_create(), nan with w[%u]", EXTENSION, i); }
+    }
+#endif
 
     // reset the spgram object
     SPGRAM(_reset)(q);
@@ -427,8 +436,24 @@ int SPGRAM(_step)(SPGRAM() _q)
     for (i=0; i<_q->window_len; i++)
         _q->buf_time[i] = rc[i] * _q->w[i];
 
+#if SPGRAM_DEBUG
+    for (i=0; i<_q->window_len; i++)
+    {
+        if (isnan(rc[i]))
+            { return liquid_error(LIQUID_EINT,"spgram%s_step(), nan with rc[%u]", EXTENSION, i); }
+    }
+#endif
+
     // execute fft on _q->buf_time and store result in _q->buf_freq
     FFT_EXECUTE(_q->fft);
+
+#if SPGRAM_DEBUG
+    for (i=0; i<_q->nfft; i++)
+    {
+        if (isnan(_q->buf_freq[i]))
+            { return liquid_error(LIQUID_EINT,"spgram%s_step(), nan with buf_freq[%u]", EXTENSION, i); }
+    }
+#endif
 
     // accumulate output
     // TODO: vectorize this operation
@@ -439,6 +464,13 @@ int SPGRAM(_step)(SPGRAM() _q)
         else
             _q->psd[i] = _q->gamma*_q->psd[i] + _q->alpha*v;
     }
+#if SPGRAM_DEBUG
+    for (i=0; i<_q->nfft; i++)
+    {
+        if (isnan(_q->psd[i]))
+            { return liquid_error(LIQUID_EINT,"spgram%s_step(), nan with psd[%u]", EXTENSION, i); }
+    }
+#endif
 
     _q->num_transforms++;
     _q->num_transforms_total++;
@@ -452,6 +484,7 @@ int SPGRAM(_step)(SPGRAM() _q)
 int SPGRAM(_get_psd_mag)(SPGRAM() _q,
                          T *      _psd)
 {
+    liquid_log_trace("spgram%s_get_psd_mag(), accumulate=%u, transforms=%u", EXTENSION, _q->accumulate, _q->num_transforms);
     // determine appropriate scaling factor
     T scale = _q->accumulate ? 1.0f / max(1,_q->num_transforms) : 1.0f;
 #if SPGRAM_DEBUG
@@ -483,6 +516,7 @@ int SPGRAM(_get_psd_mag)(SPGRAM() _q,
 int SPGRAM(_get_psd)(SPGRAM() _q,
                      T *      _psd)
 {
+    liquid_log_trace("spgram%s_get_psd(), accumulate=%u, transforms=%u", EXTENSION, _q->accumulate, _q->num_transforms);
     // compute magnitude, linear
     int rc = SPGRAM(_get_psd_mag)(_q, _psd);
     if (rc != LIQUID_OK)
