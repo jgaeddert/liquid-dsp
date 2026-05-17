@@ -35,5 +35,5 @@ jobs:
     - name: check
       run: |
         cd build
-        ./xautotest -v -t 0
+        ./xautotest -t 0
 
