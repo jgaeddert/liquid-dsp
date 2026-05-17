@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,15 +22,10 @@
 
 #include <stdlib.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-// 
-// AUTOTESTS: basic sparse matrix functionality
-//
-
-// test sparse binary matrix methods
-void autotest_smatrixb_vmul()
+LIQUID_AUTOTEST(smatrixb_vmul,"test sparse binary matrix methods","",0.1)
 {
     // A = [
     //  1   0   0   0   0   0   0   0   0   0   0   0
@@ -45,7 +40,7 @@ void autotest_smatrixb_vmul()
     // x = [   1   1   0   0   1   0   0   1   1   1   0   1 ]
     // y = [   1   0   1   1   0   1   0   0 ]
     //
-    
+
     // create sparse matrix and set values
     smatrixb A = smatrixb_create(8,12);
     smatrixb_set(A,0,0,  1);
@@ -75,45 +70,43 @@ void autotest_smatrixb_vmul()
     // multiply and run test
     smatrixb_vmul(A,x,y);
 
-    CONTEND_EQUALITY( y[0], y_test[0] );
-    CONTEND_EQUALITY( y[1], y_test[1] );
-    CONTEND_EQUALITY( y[2], y_test[2] );
-    CONTEND_EQUALITY( y[3], y_test[3] );
-    CONTEND_EQUALITY( y[4], y_test[4] );
-    CONTEND_EQUALITY( y[5], y_test[5] );
-    CONTEND_EQUALITY( y[6], y_test[6] );
-    CONTEND_EQUALITY( y[7], y_test[7] );
+    LIQUID_CHECK( y[0] ==  y_test[0] );
+    LIQUID_CHECK( y[1] ==  y_test[1] );
+    LIQUID_CHECK( y[2] ==  y_test[2] );
+    LIQUID_CHECK( y[3] ==  y_test[3] );
+    LIQUID_CHECK( y[4] ==  y_test[4] );
+    LIQUID_CHECK( y[5] ==  y_test[5] );
+    LIQUID_CHECK( y[6] ==  y_test[6] );
+    LIQUID_CHECK( y[7] ==  y_test[7] );
 
-    // print results (verbose)
-    if (liquid_autotest_verbose) {
-        printf("\ncompact form:\n");
-        smatrixb_print(A);
+#if 0
+    printf("\ncompact form:\n");
+    smatrixb_print(A);
 
-        printf("\nexpanded form:\n");
-        smatrixb_print_expanded(A);
+    printf("\nexpanded form:\n");
+    smatrixb_print_expanded(A);
 
-        unsigned int i;
-        unsigned int j;
+    unsigned int i;
+    unsigned int j;
 
-        printf("x = [");
-        for (j=0; j<12; j++) printf("%2u", x[j]);
-        printf(" ];\n");
+    printf("x = [");
+    for (j=0; j<12; j++) printf("%2u", x[j]);
+    printf(" ];\n");
 
-        printf("y      = [");
-        for (i=0; i<8; i++) printf("%2u", y[i]);
-        printf(" ];\n");
+    printf("y      = [");
+    for (i=0; i<8; i++) printf("%2u", y[i]);
+    printf(" ];\n");
 
-        printf("y_test = [");
-        for (i=0; i<8; i++) printf("%2u", y_test[i]);
-        printf(" ];\n");
-    }
+    printf("y_test = [");
+    for (i=0; i<8; i++) printf("%2u", y_test[i]);
+    printf(" ];\n");
+#endif
 
     // destroy matrix object
     smatrixb_destroy(A);
 }
 
-// test sparse binary matrix multiplication
-void autotest_smatrixb_mul()
+LIQUID_AUTOTEST(smatrixb_mul,"test sparse binary matrix multiplication","",0.1)
 {
     // a: [8 x 12]
     unsigned char a_test[96] = {
@@ -159,29 +152,28 @@ void autotest_smatrixb_mul()
     // compute output
     smatrixb_mul(a,b,c);
 
-    // print results (verbose)
-    if (liquid_autotest_verbose) {
-        printf("a:\n"); smatrixb_print_expanded(a);
-        printf("b:\n"); smatrixb_print_expanded(b);
-        printf("c:\n"); smatrixb_print_expanded(c);
-    }
+#if 0
+    printf("a:\n"); smatrixb_print_expanded(a);
+    printf("b:\n"); smatrixb_print_expanded(b);
+    printf("c:\n"); smatrixb_print_expanded(c);
+#endif
 
     unsigned int i;
     unsigned int j;
     for (i=0; i<8; i++) {
         for (j=0; j<5; j++) {
-            CONTEND_EQUALITY( smatrixb_get(c,i,j), c_test[i*5+j]);
+            LIQUID_CHECK( smatrixb_get(c,i,j) ==  c_test[i*5+j]);
         }
     }
-    
+
     // destroy objects
     smatrixb_destroy(a);
     smatrixb_destroy(b);
     smatrixb_destroy(c);
 }
 
-// 
-void autotest_smatrixb_mulf()
+//
+LIQUID_AUTOTEST(smatrixb_mulf,"","",0.1)
 {
     // A = [
     //  1   0   0   0   0   0   0   0   0   0   0   0
@@ -193,7 +185,7 @@ void autotest_smatrixb_mulf()
     //  1   0   1   0   0   0   0   0   0   0   1   1
     //  0   0   1   0   0   1   1   0   0   0   0   0]
     //
-    
+
     float tol = 1e-6f;
 
     // create sparse matrix and set values
@@ -251,32 +243,31 @@ void autotest_smatrixb_mulf()
 
     unsigned int i;
     for (i=0; i<24; i++)
-        CONTEND_DELTA( y[i], y_test[i], tol );
+        LIQUID_CHECK_DELTA( y[i], y_test[i], tol );
 
-    // print results (verbose)
-    if (liquid_autotest_verbose) {
-        printf("A:\n");
-        smatrixb_print_expanded(A);
+#if 0
+    printf("A:\n");
+    smatrixb_print_expanded(A);
 
-        printf("x = [\n");
-        for (i=0; i<36; i++) printf("%6.2f%s", x[i], ((i+1)%3)==0 ? "\n" : "");
-        printf(" ];\n");
+    printf("x = [\n");
+    for (i=0; i<36; i++) printf("%6.2f%s", x[i], ((i+1)%3)==0 ? "\n" : "");
+    printf(" ];\n");
 
-        printf("y = [\n");
-        for (i=0; i<24; i++) printf("%6.2f%s", y[i], ((i+1)%3)==0 ? "\n" : "");
-        printf(" ];\n");
+    printf("y = [\n");
+    for (i=0; i<24; i++) printf("%6.2f%s", y[i], ((i+1)%3)==0 ? "\n" : "");
+    printf(" ];\n");
 
-        printf("y_test = [\n");
-        for (i=0; i<24; i++) printf("%6.2f%s", y_test[i], ((i+1)%3)==0 ? "\n" : "");
-        printf(" ];\n");
-    }
+    printf("y_test = [\n");
+    for (i=0; i<24; i++) printf("%6.2f%s", y_test[i], ((i+1)%3)==0 ? "\n" : "");
+    printf(" ];\n");
+#endif
 
     // destroy matrix object
     smatrixb_destroy(A);
 }
 
-// 
-void autotest_smatrixb_vmulf()
+//
+LIQUID_AUTOTEST(smatrixb_vmulf,"","",0.1)
 {
     // A = [
     //  1   0   0   0   0   0   0   0   0   0   0   0
@@ -291,7 +282,7 @@ void autotest_smatrixb_vmulf()
     // x = [3.4,-5.7, 0.3, 2.3, 1.9, 3.9, 2.3,-4.0,-0.5, 1.5,-0.6,-1.0]^T
     // y = [3.4, 2.3, 4.4,-1.4, 0.0, 1.2, 2.1, 6.5]^T
     //
-    
+
     float tol = 1e-6f;
 
     // create sparse matrix and set values
@@ -328,38 +319,37 @@ void autotest_smatrixb_vmulf()
     // multiply and run test
     smatrixb_vmulf(A,x,y);
 
-    CONTEND_DELTA( y[0], y_test[0], tol );
-    CONTEND_DELTA( y[1], y_test[1], tol );
-    CONTEND_DELTA( y[2], y_test[2], tol );
-    CONTEND_DELTA( y[3], y_test[3], tol );
-    CONTEND_DELTA( y[4], y_test[4], tol );
-    CONTEND_DELTA( y[5], y_test[5], tol );
-    CONTEND_DELTA( y[6], y_test[6], tol );
-    CONTEND_DELTA( y[7], y_test[7], tol );
+    LIQUID_CHECK_DELTA( y[0], y_test[0], tol );
+    LIQUID_CHECK_DELTA( y[1], y_test[1], tol );
+    LIQUID_CHECK_DELTA( y[2], y_test[2], tol );
+    LIQUID_CHECK_DELTA( y[3], y_test[3], tol );
+    LIQUID_CHECK_DELTA( y[4], y_test[4], tol );
+    LIQUID_CHECK_DELTA( y[5], y_test[5], tol );
+    LIQUID_CHECK_DELTA( y[6], y_test[6], tol );
+    LIQUID_CHECK_DELTA( y[7], y_test[7], tol );
 
-    // print results (verbose)
-    if (liquid_autotest_verbose) {
-        printf("\ncompact form:\n");
-        smatrixb_print(A);
+#if 0
+    printf("\ncompact form:\n");
+    smatrixb_print(A);
 
-        printf("\nexpanded form:\n");
-        smatrixb_print_expanded(A);
+    printf("\nexpanded form:\n");
+    smatrixb_print_expanded(A);
 
-        unsigned int i;
-        unsigned int j;
+    unsigned int i;
+    unsigned int j;
 
-        printf("x = [");
-        for (j=0; j<12; j++) printf("%8.4f", x[j]);
-        printf(" ];\n");
+    printf("x = [");
+    for (j=0; j<12; j++) printf("%8.4f", x[j]);
+    printf(" ];\n");
 
-        printf("y      = [");
-        for (i=0; i<8; i++) printf("%8.4f", y[i]);
-        printf(" ];\n");
+    printf("y      = [");
+    for (i=0; i<8; i++) printf("%8.4f", y[i]);
+    printf(" ];\n");
 
-        printf("y_test = [");
-        for (i=0; i<8; i++) printf("%8.4f", y_test[i]);
-        printf(" ];\n");
-    }
+    printf("y_test = [");
+    for (i=0; i<8; i++) printf("%8.4f", y_test[i]);
+    printf(" ];\n");
+#endif
 
     // destroy matrix object
     smatrixb_destroy(A);

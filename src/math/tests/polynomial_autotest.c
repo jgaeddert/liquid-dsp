@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,10 @@
 
 #include <string.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-// 
-// AUTOTEST: poly_fit 3rd order polynomial, critically sampled
-//
-void autotest_polyf_fit_q3n3()
+LIQUID_AUTOTEST(polyf_fit_q3n3,"poly_fit 3rd order polynomial, critically sampled","",0.1)
 {
     unsigned int Q=2;   // polynomial order
     unsigned int n=3;   // input vector size
@@ -42,21 +39,19 @@ void autotest_polyf_fit_q3n3()
     unsigned int k=Q+1;
     polyf_fit(x,y,n, p,k);
 
-    if (liquid_autotest_verbose) {
-        unsigned int i;
-        for (i=0; i<3; i++)
-            printf("%3u : %12.8f > %12.8f\n", i, x[i], y[i]);
-        for (i=0; i<3; i++)
-            printf("p[%3u] = %12.8f\n", i, p[i]);
-    }
-    
-    CONTEND_DELTA(p[0], p_test[0], tol);
-    CONTEND_DELTA(p[1], p_test[1], tol);
-    CONTEND_DELTA(p[2], p_test[2], tol);
-    //CONTEND_DELTA(p[3], p_test[3], tol);
+    unsigned int i;
+    for (i=0; i<3; i++)
+        liquid_log_debug("%3u : %12.8f > %12.8f", i, x[i], y[i]);
+    for (i=0; i<3; i++)
+        liquid_log_debug("p[%3u] = %12.8f", i, p[i]);
+
+    LIQUID_CHECK_DELTA(p[0], p_test[0], tol);
+    LIQUID_CHECK_DELTA(p[1], p_test[1], tol);
+    LIQUID_CHECK_DELTA(p[2], p_test[2], tol);
+    //LIQUID_CHECK_DELTA(p[3], p_test[3], tol);
 }
 
-void autotest_polyf_lagrange_issue165()
+LIQUID_AUTOTEST(polyf_lagrange_issue165,"lagrange polynomial","",0.1)
 {
     // Inputs taken from issue#165
     //unsigned int Q=2;   // polynomial order
@@ -69,33 +64,30 @@ void autotest_polyf_lagrange_issue165()
     polyf_fit_lagrange(x,y,n,p);
     unsigned int j;
     for (j=0; j<n; j++)
-        printf("%3u : %12.8f > %12.8f\n", j, x[j], y[j]);
+        liquid_log_debug("%3u : %12.8f > %12.8f", j, x[j], y[j]);
     for (j=0; j<n; j++)
-        printf("p[%3u] = %12.8f\n", j, p[j]);
+        liquid_log_debug("p[%3u] = %12.8f", j, p[j]);
 
     float y_out[3];
     for (j=0; j<n; j++) {
         y_out[j] = polyf_val(p, n, x[j]);
-        printf("y_out[%3u] = %12.8f exp=%12.8f\n", j, y_out[j], y[j]);
-        CONTEND_DELTA(y[j], y_out[j], tol);
+        liquid_log_debug("y_out[%3u] = %12.8f exp=%12.8f", j, y_out[j], y[j]);
+        LIQUID_CHECK_DELTA(y[j], y_out[j], tol);
     }
 
     polyf_fit(x,y,n,p,n);
     for (j=0; j<n; j++)
-        printf("p_least_sq[%3u] = %12.8f\n", j, p[j]);
+        liquid_log_debug("p_least_sq[%3u] = %12.8f", j, p[j]);
 
     float y_least_sq[3];
     for (j=0; j<n; j++) {
         y_least_sq[j] = polyf_val(p, n, x[j]);
-        printf("y_least_sq[%3u] = %12.8f exp=%12.8f\n", j, y_least_sq[j], y[j]);
-        CONTEND_DELTA(y_least_sq[j], y_out[j], tol);
+        liquid_log_debug("y_least_sq[%3u] = %12.8f exp=%12.8f", j, y_least_sq[j], y[j]);
+        LIQUID_CHECK_DELTA(y_least_sq[j], y_out[j], tol);
     }
 }
 
-
-// Taken from wiki page for lagrange polynomial
-// for y=x^3
-void autotest_polyf_lagrange()
+LIQUID_AUTOTEST(polyf_lagrange,"wikipedia page for lagrange polynomial for y=x^3","",0.1)
 {
 
     unsigned int n=3; // input vector size
@@ -107,20 +99,18 @@ void autotest_polyf_lagrange()
     polyf_fit_lagrange(x,y,n,p);
     unsigned int j;
     for (j=0; j<n; j++)
-        printf("p[%3u] = %12.8f\n", j, p[j]);
+        liquid_log_debug("p[%3u] = %12.8f", j, p[j]);
     float y_out[3];
     for (j=0; j<n; j++) {
         y_out[j] = polyf_val(p, n, x[j]);
-        printf("y_out[%3u] = %12.8f exp=%12.8f\n", j, y_out[j], y[j]);
-        CONTEND_DELTA(y[j], y_out[j], tol);
+        liquid_log_debug("y_out[%3u] = %12.8f exp=%12.8f", j, y_out[j], y[j]);
+        LIQUID_CHECK_DELTA(y[j], y_out[j], tol);
     }
 }
-#if 0
-// 
-// AUTOTEST: poly_expandbinomial
-//
-void xautotest_polyf_expandbinomial_4()
+
+LIQUID_AUTOTEST(polyf_expandbinomial_4,"test binomial expansion","",0.1)
 {
+    /*
     float a[4] = { 3, 2, -5, 1 };
     float c[5];
     float c_test[5] = { 1, 1, -19, -49, -30 };
@@ -128,26 +118,18 @@ void xautotest_polyf_expandbinomial_4()
 
     polyf_expandbinomial(a,4,c);
 
-    if (liquid_autotest_verbose) {
-        unsigned int i;
-        printf("c[5] = ");
-        for (i=0; i<5; i++)
-            printf("%8.2f", c[i]);
-        printf("\n");
-    }
-    
-    CONTEND_DELTA(c[0], c_test[0], tol);
-    CONTEND_DELTA(c[1], c_test[1], tol);
-    CONTEND_DELTA(c[2], c_test[2], tol);
-    CONTEND_DELTA(c[3], c_test[3], tol);
-    CONTEND_DELTA(c[4], c_test[4], tol);
-}
-#endif
+    liquid_log_debug("c[5] = {%8.2f,%8.2f,%8.2f,%8.2f,%8.2f}",
+        c[0],c[1],c[2],c[3],c[4]);
 
-// 
-// AUTOTEST: poly_expandroots
-//
-void autotest_polyf_expandroots_4()
+    LIQUID_CHECK_DELTA(c[0], c_test[0], tol);
+    LIQUID_CHECK_DELTA(c[1], c_test[1], tol);
+    LIQUID_CHECK_DELTA(c[2], c_test[2], tol);
+    LIQUID_CHECK_DELTA(c[3], c_test[3], tol);
+    LIQUID_CHECK_DELTA(c[4], c_test[4], tol);
+    */
+}
+
+LIQUID_AUTOTEST(polyf_expandroots_4,"polynomial root expansion","",0.1)
 {
     float roots[5] = { -2, -1, -4, 5, 3 };
     float c[6];
@@ -156,27 +138,19 @@ void autotest_polyf_expandroots_4()
 
     polyf_expandroots(roots,5,c);
 
-    if (liquid_autotest_verbose) {
-        unsigned int i;
-        printf("c[6] = ");
-        for (i=0; i<6; i++)
-            printf("%8.2f", c[i]);
-        printf("\n");
-    }
-    
-    CONTEND_DELTA(c[0], c_test[0], tol);
-    CONTEND_DELTA(c[1], c_test[1], tol);
-    CONTEND_DELTA(c[2], c_test[2], tol);
-    CONTEND_DELTA(c[3], c_test[3], tol);
-    CONTEND_DELTA(c[4], c_test[4], tol);
-    CONTEND_DELTA(c[5], c_test[5], tol);
+    liquid_log_debug("c[6] = {%8.2f,%8.2f,%8.2f,%8.2f,%8.2f,%8.2f}",
+        c[0],c[1],c[2],c[3],c[4],c[5]);
+
+    LIQUID_CHECK_DELTA(c[0], c_test[0], tol);
+    LIQUID_CHECK_DELTA(c[1], c_test[1], tol);
+    LIQUID_CHECK_DELTA(c[2], c_test[2], tol);
+    LIQUID_CHECK_DELTA(c[3], c_test[3], tol);
+    LIQUID_CHECK_DELTA(c[4], c_test[4], tol);
+    LIQUID_CHECK_DELTA(c[5], c_test[5], tol);
 }
 
 
-// 
-// AUTOTEST: poly_expandroots
-//
-void autotest_polyf_expandroots_11()
+LIQUID_AUTOTEST(polyf_expandroots_11,"polynomial root expansion","",0.1)
 {
     float roots[11] = { -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11 };
     float c[12];
@@ -198,17 +172,13 @@ void autotest_polyf_expandroots_11()
 
     unsigned int i;
     for (i=0; i<12; i++) {
-        if (liquid_autotest_verbose)
-            printf("  c[%3u] : %16.8e (expected %16.8e)\n", i, c[i], c_test[i]);
+        liquid_log_debug("  c[%3u] : %16.8e (expected %16.8e)", i, c[i], c_test[i]);
 
-        CONTEND_DELTA(c[i], c_test[i], fabsf(tol*c_test[i]));
+        LIQUID_CHECK_DELTA(c[i], c_test[i], fabsf(tol*c_test[i]));
     }
 }
 
-// 
-// AUTOTEST: polycf_expandroots
-//
-void autotest_polycf_expandroots_4()
+LIQUID_AUTOTEST(polycf_expandroots_4,"polynomial root expansion","",0.1)
 {
     // expand complex roots on conjugate pair
     float theta = 1.7f;
@@ -219,29 +189,22 @@ void autotest_polycf_expandroots_4()
 
     polycf_expandroots(a,2,c);
 
-    if (liquid_autotest_verbose) {
-        unsigned int i;
-        for (i=0; i<3; i++)
-            printf("c[%3u] = %12.8f + j*%12.8f\n", i, crealf(c[i]), cimagf(c[i]));
-    }
-    
-    CONTEND_DELTA(crealf(c[0]), crealf(c_test[0]), tol);
-    CONTEND_DELTA(cimagf(c[0]), cimagf(c_test[0]), tol);
+    unsigned int i;
+    for (i=0; i<3; i++)
+        liquid_log_debug("c[%3u] = %12.8f + j*%12.8f", i, crealf(c[i]), cimagf(c[i]));
 
-    CONTEND_DELTA(crealf(c[1]), crealf(c_test[1]), tol);
-    CONTEND_DELTA(cimagf(c[1]), cimagf(c_test[1]), tol);
+    LIQUID_CHECK_DELTA(crealf(c[0]), crealf(c_test[0]), tol);
+    LIQUID_CHECK_DELTA(cimagf(c[0]), cimagf(c_test[0]), tol);
 
-    CONTEND_DELTA(crealf(c[2]), crealf(c_test[2]), tol);
-    CONTEND_DELTA(cimagf(c[2]), cimagf(c_test[2]), tol);
+    LIQUID_CHECK_DELTA(crealf(c[1]), crealf(c_test[1]), tol);
+    LIQUID_CHECK_DELTA(cimagf(c[1]), cimagf(c_test[1]), tol);
+
+    LIQUID_CHECK_DELTA(crealf(c[2]), crealf(c_test[2]), tol);
+    LIQUID_CHECK_DELTA(cimagf(c[2]), cimagf(c_test[2]), tol);
 
 }
 
-// 
-// AUTOTEST: poly_expandroots2
-//
-// expand (2*x-5)*(3*x+2)*(-1*x+3)
-//
-void autotest_polyf_expandroots2_3()
+LIQUID_AUTOTEST(polyf_expandroots2_3,"expand (2*x-5)*(3*x+2)*(-1*x+3)","",0.1)
 {
     unsigned int n=3;
     float a[3] = {  2,  3, -1 };
@@ -252,25 +215,17 @@ void autotest_polyf_expandroots2_3()
 
     polyf_expandroots2(a,b,n,c);
 
-    if (liquid_autotest_verbose) {
-        unsigned int i;
-        printf("c[%u] = ", n+1);
-        for (i=0; i<n+1; i++)
-            printf("%8.2f", c[i]);
-        printf("\n");
-    }
-    
-    CONTEND_DELTA(c[0], c_test[0], tol);
-    CONTEND_DELTA(c[1], c_test[1], tol);
-    CONTEND_DELTA(c[2], c_test[2], tol);
-    CONTEND_DELTA(c[3], c_test[3], tol);
+    liquid_log_debug("c[4] = {%8.2f,%8.2f,%8.2f,%8.2f}",
+        c[0],c[1],c[2],c[3]);
+
+    LIQUID_CHECK_DELTA(c[0], c_test[0], tol);
+    LIQUID_CHECK_DELTA(c[1], c_test[1], tol);
+    LIQUID_CHECK_DELTA(c[2], c_test[2], tol);
+    LIQUID_CHECK_DELTA(c[3], c_test[3], tol);
 }
 
 
-// 
-// AUTOTEST: polyf_mul
-//
-void autotest_polyf_mul_2_3()
+LIQUID_AUTOTEST(polyf_mul_2_3,"multiply two polynomials","",0.1)
 {
     float a[3] = {  2, -4,  3 };
     float b[4] = { -9,  3, -2,  5};
@@ -280,26 +235,18 @@ void autotest_polyf_mul_2_3()
 
     polyf_mul(a,2,b,3,c);
 
-    if (liquid_autotest_verbose) {
-        unsigned int i;
-        printf("c[6] = ");
-        for (i=0; i<6; i++)
-            printf("%8.2f", c[i]);
-        printf("\n");
-    }
-    
-    CONTEND_DELTA(c[0], c_test[0], tol);
-    CONTEND_DELTA(c[1], c_test[1], tol);
-    CONTEND_DELTA(c[2], c_test[2], tol);
-    CONTEND_DELTA(c[3], c_test[3], tol);
-    CONTEND_DELTA(c[4], c_test[4], tol);
-    CONTEND_DELTA(c[5], c_test[5], tol);
+    liquid_log_debug("c[6] = {%8.2f,%8.2f,%8.2f,%8.2f,%8.2f,%8.2f}",
+        c[0],c[1],c[2],c[3],c[4],c[5]);
+
+    LIQUID_CHECK_DELTA(c[0], c_test[0], tol);
+    LIQUID_CHECK_DELTA(c[1], c_test[1], tol);
+    LIQUID_CHECK_DELTA(c[2], c_test[2], tol);
+    LIQUID_CHECK_DELTA(c[3], c_test[3], tol);
+    LIQUID_CHECK_DELTA(c[4], c_test[4], tol);
+    LIQUID_CHECK_DELTA(c[5], c_test[5], tol);
 }
 
-// 
-// AUTOTEST: poly_expandbinomial
-//
-void autotest_poly_expandbinomial_n6()
+LIQUID_AUTOTEST(poly_expandbinomial_n6,"expand binomial","",0.1)
 {
     unsigned int n=6;
     float c[7];
@@ -307,22 +254,13 @@ void autotest_poly_expandbinomial_n6()
 
     polyf_expandbinomial(n,c);
 
-    if (liquid_autotest_verbose) {
-        unsigned int i;
-        printf("c[%2u] = ", n+1);
-        for (i=0; i<=n; i++)
-            printf("%6.1f", c[i]);
-        printf("\n");
-    }
-    
-    CONTEND_SAME_DATA(c,c_test,sizeof(c));
+    liquid_log_debug("c[7] = {%8.2f,%8.2f,%8.2f,%8.2f,%8.2f,%8.2f,%8.2f}",
+        c[0],c[1],c[2],c[3],c[4],c[5],c[6]);
+
+    LIQUID_CHECK_ARRAY(c,c_test,sizeof(c));
 }
 
-
-// 
-// AUTOTEST: poly_binomial_expand_pm
-//
-void autotest_poly_binomial_expand_pm_m6_k1()
+LIQUID_AUTOTEST(poly_binomial_expand_pm_m6_k1,"expand +/- binomial","",0.1)
 {
     unsigned int m=5;
     unsigned int k=1;
@@ -332,22 +270,15 @@ void autotest_poly_binomial_expand_pm_m6_k1()
 
     polyf_expandbinomial_pm(m,k,c);
 
-    unsigned int i;
-    if (liquid_autotest_verbose) {
-        printf("c[%u] = ", m+1);
-        for (i=0; i<=n; i++)
-            printf("%6.1f", c[i]);
-        printf("\n");
-    }
+    liquid_log_debug("c[6] = {%8.2f,%8.2f,%8.2f,%8.2f,%8.2f,%8.2f}",
+        c[0],c[1],c[2],c[3],c[4],c[5]);
 
+    unsigned int i;
     for (i=0; i<=n; i++)
-        CONTEND_DELTA(c[i], c_test[i], 1e-3f);
+        LIQUID_CHECK_DELTA(c[i], c_test[i], 1e-3f);
 }
 
-// 
-// AUTOTEST: poly_expandbinomial_pm
-//
-void autotest_poly_expandbinomial_pm_m5_k2()
+LIQUID_AUTOTEST(poly_expandbinomial_pm_m5_k2,"expand +/- binomial","",0.1)
 {
     unsigned int m=5;
     unsigned int k=2;
@@ -358,16 +289,11 @@ void autotest_poly_expandbinomial_pm_m5_k2()
 
     polyf_expandbinomial_pm(m,k,c);
 
+    liquid_log_debug("c[8] = {%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f}",
+        c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7]);
+
     unsigned int i;
-    if (liquid_autotest_verbose) {
-        printf("c[%u] = ", n+1);
-        for (i=0; i<=n; i++)
-            printf("%6.2f", c[i]);
-        printf("\n");
-    }
-
     for (i=0; i<=n; i++)
-        CONTEND_DELTA(c[i], c_test[i], 1e-3f);
+        LIQUID_CHECK_DELTA(c[i], c_test[i], 1e-3f);
 }
-
 

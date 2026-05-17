@@ -28,13 +28,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-// defined:
-//  FIRFILT()       name-mangling macro
-//  T               coefficients type
-//  WINDOW()        window macro
-//  DOTPROD()       dotprod macro
-//  PRINTVAL()      print macro
-
 // NOTE: using the window is about 27% slower, but fixes a valgrind issue
 #define LIQUID_FIRFILT_USE_WINDOW   (1)
 
@@ -348,7 +341,7 @@ int FIRFILT(_reset)(FIRFILT() _q)
 // print filter object internals (taps, buffer)
 int FIRFILT(_print)(FIRFILT() _q)
 {
-    printf("<liquid.firfilt_%s, n=%u", EXTENSION_FULL, _q->h_len);
+    printf("<liquid.firfilt_%s, len=%un", EXTENSION_FULL, _q->h_len);
     printf(", scale=");
     PRINTVAL_TC(_q->scale,%12.8f);
     printf(">\n");

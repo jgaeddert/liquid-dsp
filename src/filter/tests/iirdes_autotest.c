@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,10 @@
 //  [Ziemer:1998] Ziemer, Tranter, Fannin, "Signals & Systems,
 //      Continuous and Discrete," 4th ed., Prentice Hall, Upper
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-// design specific 2nd-order butterworth filter and compare to known coefficients;
-// design comes from [Ziemer:1998], Example 9-7, pp. 440--442
-void autotest_iirdes_butter_2()
+LIQUID_AUTOTEST(iirdes_butter_2,"design specific 2nd-order butterworth filter and compare to known coefficients; design comes from [Ziemer:1998], Example 9-7, pp. 440--442", "", 0.1)
 {
     // design butterworth filter
     float a[3];
@@ -54,8 +52,8 @@ void autotest_iirdes_butter_2()
     float tol = 1e-6f;      // error tolerance
     unsigned int i;
     for (i=0; i<3; i++) {
-        CONTEND_DELTA( b[i], b_test[i], tol );
-        CONTEND_DELTA( a[i], a_test[i], tol );
+        LIQUID_CHECK_DELTA( b[i], b_test[i], tol );
+        LIQUID_CHECK_DELTA( a[i], a_test[i], tol );
     }
 }
 
@@ -75,7 +73,8 @@ void autotest_iirdes_butter_2()
 //   0           fc    fs            0.5
 
 // check low-pass elliptical filter design
-void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
+void testbench_iirdes_ellip_lowpass(liquid_autotest __q__,
+                                    unsigned int _n,    // filter order
                                     float        _fc,   // filter cut-off
                                     float        _fs,   // empirical stop-band frequency
                                     float        _ap,   // pass-band ripple
@@ -85,7 +84,7 @@ void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
     unsigned int nfft = 800;    // number of points to evaluate
 
     // design filter from prototype
-    iirfilt_rrrf q = iirfilt_rrrf_create_prototype(
+    iirfilt_rrrf filter = iirfilt_rrrf_create_prototype(
         LIQUID_IIRDES_ELLIP, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
         _n,_fc,0.0f,_ap,_as);
 
@@ -97,22 +96,24 @@ void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
       {.fmin=0.0f, .fmax=_fc,   .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
       {.fmin=_fs,  .fmax=+0.5f, .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_iirfilt_rrrf(q, nfft, regions, 2,
-        liquid_autotest_verbose ? "autotest/logs/iirdes_ellip_lowpass.m" : NULL);
+    liquid_autotest_validate_psd_iirfilt_rrrf(__q__, filter, nfft, regions, 2,
+        "autotest/logs/iirdes_ellip_lowpass.m");
 
     // destroy filter object
-    iirfilt_rrrf_destroy(q);
+    iirfilt_rrrf_destroy(filter);
 }
 
 // test different filter designs
-void autotest_iirdes_ellip_lowpass_0(){ testbench_iirdes_ellip_lowpass( 5,0.20f,0.30f,1.0f, 60.0f); }
-void autotest_iirdes_ellip_lowpass_1(){ testbench_iirdes_ellip_lowpass( 5,0.05f,0.09f,1.0f, 60.0f); }
-void autotest_iirdes_ellip_lowpass_2(){ testbench_iirdes_ellip_lowpass( 5,0.20f,0.43f,1.0f,100.0f); }
-void autotest_iirdes_ellip_lowpass_3(){ testbench_iirdes_ellip_lowpass( 5,0.20f,0.40f,0.1f, 60.0f); }
-void autotest_iirdes_ellip_lowpass_4(){ testbench_iirdes_ellip_lowpass(15,0.35f,0.37f,0.1f,120.0f); }
+
+LIQUID_AUTOTEST(iirdes_ellip_lowpass_0,"description","",0.1){ testbench_iirdes_ellip_lowpass(__q__,  5,0.20f,0.30f,1.0f, 60.0f); }
+LIQUID_AUTOTEST(iirdes_ellip_lowpass_1,"description","",0.1){ testbench_iirdes_ellip_lowpass(__q__,  5,0.05f,0.09f,1.0f, 60.0f); }
+LIQUID_AUTOTEST(iirdes_ellip_lowpass_2,"description","",0.1){ testbench_iirdes_ellip_lowpass(__q__,  5,0.20f,0.43f,1.0f,100.0f); }
+LIQUID_AUTOTEST(iirdes_ellip_lowpass_3,"description","",0.1){ testbench_iirdes_ellip_lowpass(__q__,  5,0.20f,0.40f,0.1f, 60.0f); }
+LIQUID_AUTOTEST(iirdes_ellip_lowpass_4,"description","",0.1){ testbench_iirdes_ellip_lowpass(__q__, 15,0.35f,0.37f,0.1f,120.0f); }
 
 // check low-pass Chebyshev filter design (type 1)
-void testbench_iirdes_cheby1_lowpass(unsigned int _n,  // filter order
+void testbench_iirdes_cheby1_lowpass(liquid_autotest __q__,
+                                     unsigned int _n,  // filter order
                                      float        _fc, // filter cut-off
                                      float        _fs, // empirical stop-band frequency at 60 dB
                                      float        _ap) // pass-band ripple
@@ -121,7 +122,7 @@ void testbench_iirdes_cheby1_lowpass(unsigned int _n,  // filter order
     unsigned int nfft = 800;    // number of points to evaluate
 
     // design filter from prototype
-    iirfilt_rrrf q = iirfilt_rrrf_create_prototype(
+    iirfilt_rrrf filter = iirfilt_rrrf_create_prototype(
         LIQUID_IIRDES_CHEBY1, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
         _n,_fc,0.0f,_ap,60.0f);
 
@@ -133,22 +134,24 @@ void testbench_iirdes_cheby1_lowpass(unsigned int _n,  // filter order
       {.fmin=0.0f, .fmax=_fc,   .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
       {.fmin=_fs,  .fmax=+0.5f, .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_iirfilt_rrrf(q, nfft, regions, 2,
-        liquid_autotest_verbose ? "autotest/logs/iirdes_cheby1_lowpass.m" : NULL);
+    liquid_autotest_validate_psd_iirfilt_rrrf(__q__, filter, nfft, regions, 2,
+        "autotest/logs/iirdes_cheby1_lowpass.m");
 
     // destroy filter object
-    iirfilt_rrrf_destroy(q);
+    iirfilt_rrrf_destroy(filter);
 }
 
 // test different filter designs
-void autotest_iirdes_cheby1_lowpass_0(){ testbench_iirdes_cheby1_lowpass( 5,0.20f,0.36f,1.0f); }
-void autotest_iirdes_cheby1_lowpass_1(){ testbench_iirdes_cheby1_lowpass( 5,0.05f,0.14f,1.0f); }
-void autotest_iirdes_cheby1_lowpass_2(){ testbench_iirdes_cheby1_lowpass( 5,0.20f,0.36f,1.0f); }
-void autotest_iirdes_cheby1_lowpass_3(){ testbench_iirdes_cheby1_lowpass( 5,0.20f,0.40f,0.1f); }
-void autotest_iirdes_cheby1_lowpass_4(){ testbench_iirdes_cheby1_lowpass(15,0.35f,0.38f,0.1f); }
+
+LIQUID_AUTOTEST(iirdes_cheby1_lowpass_0,"description","",0.1){ testbench_iirdes_cheby1_lowpass(__q__,  5,0.20f,0.36f,1.0f); }
+LIQUID_AUTOTEST(iirdes_cheby1_lowpass_1,"description","",0.1){ testbench_iirdes_cheby1_lowpass(__q__,  5,0.05f,0.14f,1.0f); }
+LIQUID_AUTOTEST(iirdes_cheby1_lowpass_2,"description","",0.1){ testbench_iirdes_cheby1_lowpass(__q__,  5,0.20f,0.36f,1.0f); }
+LIQUID_AUTOTEST(iirdes_cheby1_lowpass_3,"description","",0.1){ testbench_iirdes_cheby1_lowpass(__q__,  5,0.20f,0.40f,0.1f); }
+LIQUID_AUTOTEST(iirdes_cheby1_lowpass_4,"description","",0.1){ testbench_iirdes_cheby1_lowpass(__q__, 15,0.35f,0.38f,0.1f); }
 
 // check low-pass Chebyshev filter design (type 2)
-void testbench_iirdes_cheby2_lowpass(unsigned int _n,  // filter order
+void testbench_iirdes_cheby2_lowpass(liquid_autotest __q__,
+                                     unsigned int _n,  // filter order
                                      float        _fp, // empirical pass-band frequency at 3 dB
                                      float        _fc, // filter cut-off
                                      float        _as) // stop-band suppression
@@ -157,7 +160,7 @@ void testbench_iirdes_cheby2_lowpass(unsigned int _n,  // filter order
     unsigned int nfft = 800;    // number of points to evaluate
 
     // design filter from prototype
-    iirfilt_rrrf q = iirfilt_rrrf_create_prototype(
+    iirfilt_rrrf filter = iirfilt_rrrf_create_prototype(
         LIQUID_IIRDES_CHEBY2, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
         _n,_fc,0.0f,0.1,_as);
 
@@ -169,24 +172,24 @@ void testbench_iirdes_cheby2_lowpass(unsigned int _n,  // filter order
       {.fmin=0.0f, .fmax=_fp,   .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
       {.fmin=_fc,  .fmax=+0.5f, .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_iirfilt_rrrf(q, nfft, regions, 2,
-        liquid_autotest_verbose ? "autotest/logs/iirdes_cheby2_lowpass.m" : NULL);
+    liquid_autotest_validate_psd_iirfilt_rrrf(__q__, filter, nfft, regions, 2,
+        "autotest/logs/iirdes_cheby2_lowpass.m");
 
     // destroy filter object
-    iirfilt_rrrf_destroy(q);
+    iirfilt_rrrf_destroy(filter);
 }
 
 // test different filter designs
-void autotest_iirdes_cheby2_lowpass_0(){ testbench_iirdes_cheby2_lowpass( 5,0.08f,0.20f, 60.0f); }
-void autotest_iirdes_cheby2_lowpass_1(){ testbench_iirdes_cheby2_lowpass( 5,0.02f,0.05f, 60.0f); }
-// NOTE: stability problems in the pass band below 70 dB stop-band cut-off
-void autotest_iirdes_cheby2_lowpass_2(){ testbench_iirdes_cheby2_lowpass( 5,0.07f,0.20f, /*100.0f*/ 70.0f); }
-void autotest_iirdes_cheby2_lowpass_3(){ testbench_iirdes_cheby2_lowpass( 5,0.09f,0.20f, 60.0f); }
-// NOTE: stability problems in the pass band below 70 dB stop-band cut-off
-void autotest_iirdes_cheby2_lowpass_4(){ testbench_iirdes_cheby2_lowpass(15,0.30f,0.35f,/*120.0f*/ 70.0f); }
+
+LIQUID_AUTOTEST(iirdes_cheby2_lowpass_0,"description","",0.1){ testbench_iirdes_cheby2_lowpass(__q__, 5,0.08f,0.20f, 60.0f); }
+LIQUID_AUTOTEST(iirdes_cheby2_lowpass_1,"description","",0.1){ testbench_iirdes_cheby2_lowpass(__q__, 5,0.02f,0.05f, 60.0f); }
+LIQUID_AUTOTEST(iirdes_cheby2_lowpass_2,"description","",0.1){ testbench_iirdes_cheby2_lowpass(__q__, 5,0.07f,0.20f, /*100.0f*/ 70.0f); }
+LIQUID_AUTOTEST(iirdes_cheby2_lowpass_3,"description","",0.1){ testbench_iirdes_cheby2_lowpass(__q__, 5,0.09f,0.20f, 60.0f); }
+LIQUID_AUTOTEST(iirdes_cheby2_lowpass_4,"description","",0.1){ testbench_iirdes_cheby2_lowpass(__q__,15,0.30f,0.35f,/*120.0f*/ 70.0f); }
 
 // check low-pass Butterworth filter design
-void testbench_iirdes_butter_lowpass(unsigned int _n,  // filter order
+void testbench_iirdes_butter_lowpass(liquid_autotest __q__,
+                                     unsigned int _n,  // filter order
                                      float        _fc, // filter cut-off
                                      float        _fs) // empirical stop-band frequency at 60 dB
 {
@@ -194,7 +197,7 @@ void testbench_iirdes_butter_lowpass(unsigned int _n,  // filter order
     unsigned int nfft = 800;    // number of points to evaluate
 
     // design filter from prototype
-    iirfilt_rrrf q = iirfilt_rrrf_create_prototype(
+    iirfilt_rrrf filter = iirfilt_rrrf_create_prototype(
         LIQUID_IIRDES_BUTTER, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
         _n,_fc,0.0f,1,60);
 
@@ -206,22 +209,22 @@ void testbench_iirdes_butter_lowpass(unsigned int _n,  // filter order
       {.fmin=0.0f, .fmax=0.98*_fc, .pmin=H1-tol, .pmax=H0+tol, .test_lo=1, .test_hi=1},
       {.fmin=_fs,  .fmax=+0.5f,    .pmin=0,      .pmax=H2+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_iirfilt_rrrf(q, nfft, regions, 2,
-        liquid_autotest_verbose ? "autotest/logs/iirdes_butter_lowpass.m" : NULL);
+    liquid_autotest_validate_psd_iirfilt_rrrf(__q__, filter, nfft, regions, 2,
+        "autotest/logs/iirdes_butter_lowpass.m");
 
     // destroy filter object
-    iirfilt_rrrf_destroy(q);
+    iirfilt_rrrf_destroy(filter);
 }
 
 // test different filter designs
-void autotest_iirdes_butter_lowpass_0(){ testbench_iirdes_butter_lowpass( 5,0.20f,0.40f); }
-void autotest_iirdes_butter_lowpass_1(){ testbench_iirdes_butter_lowpass( 5,0.05f,0.19f); }
-void autotest_iirdes_butter_lowpass_2(){ testbench_iirdes_butter_lowpass( 5,0.20f,0.40f); }
-void autotest_iirdes_butter_lowpass_3(){ testbench_iirdes_butter_lowpass( 5,0.20f,0.40f); }
-void autotest_iirdes_butter_lowpass_4(){ testbench_iirdes_butter_lowpass(15,0.35f,0.41f); }
 
-// check elliptical filter design with high-pass transformation
-void autotest_iirdes_ellip_highpass() {
+LIQUID_AUTOTEST(iirdes_butter_lowpass_0,"description","",0.1){ testbench_iirdes_butter_lowpass(__q__, 5,0.20f,0.40f); }
+LIQUID_AUTOTEST(iirdes_butter_lowpass_1,"description","",0.1){ testbench_iirdes_butter_lowpass(__q__, 5,0.05f,0.19f); }
+LIQUID_AUTOTEST(iirdes_butter_lowpass_2,"description","",0.1){ testbench_iirdes_butter_lowpass(__q__, 5,0.20f,0.40f); }
+LIQUID_AUTOTEST(iirdes_butter_lowpass_3,"description","",0.1){ testbench_iirdes_butter_lowpass(__q__, 5,0.20f,0.40f); }
+LIQUID_AUTOTEST(iirdes_butter_lowpass_4,"description","",0.1){ testbench_iirdes_butter_lowpass(__q__,15,0.35f,0.41f); }
+
+LIQUID_AUTOTEST(iirdes_ellip_highpass,"check elliptical filter design with high-pass transformation", "", 0.1) {
     unsigned int n  =    9;   // filter order
     float        fc =  0.2;   // filter cut-off
     float        Ap =  0.1;   // pass-band ripple
@@ -231,7 +234,7 @@ void autotest_iirdes_ellip_highpass() {
     unsigned int nfft = 800;    // number of points to evaluate
 
     // design filter from prototype
-    iirfilt_rrrf q = iirfilt_rrrf_create_prototype(LIQUID_IIRDES_ELLIP,
+    iirfilt_rrrf filter = iirfilt_rrrf_create_prototype(LIQUID_IIRDES_ELLIP,
         LIQUID_IIRDES_HIGHPASS, LIQUID_IIRDES_SOS,n,fc,0.0f,Ap,as);
 
     // verify result
@@ -240,15 +243,14 @@ void autotest_iirdes_ellip_highpass() {
       {.fmin=-0.184, .fmax=0.184, .pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
       {.fmin=fc,     .fmax=0.5,   .pmin=-Ap-tol, .pmax=   +tol, .test_lo=1, .test_hi=1},
     };
-    liquid_autotest_validate_psd_iirfilt_rrrf(q, nfft, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/iirdes_ellip_highpass.m" : NULL);
+    liquid_autotest_validate_psd_iirfilt_rrrf(__q__, filter, nfft, regions, 3,
+        "autotest/logs/iirdes_ellip_highpass.m");
 
     // destroy filter object
-    iirfilt_rrrf_destroy(q);
+    iirfilt_rrrf_destroy(filter);
 }
 
-// check elliptical filter design with band-pass transformation
-void autotest_iirdes_ellip_bandpass() {
+LIQUID_AUTOTEST(iirdes_ellip_bandpass,"check elliptical filter design with band-pass transformation", "", 0.1) {
     unsigned int n  =    9;   // filter order
     float        fc =  0.3;   // filter cut-off
     float        f0 =  0.35;  // filter center frequency
@@ -259,7 +261,7 @@ void autotest_iirdes_ellip_bandpass() {
     unsigned int nfft = 2400;   // number of points to evaluate
 
     // design filter from prototype
-    iirfilt_rrrf q = iirfilt_rrrf_create_prototype(LIQUID_IIRDES_ELLIP,
+    iirfilt_rrrf filter = iirfilt_rrrf_create_prototype(LIQUID_IIRDES_ELLIP,
         LIQUID_IIRDES_BANDPASS, LIQUID_IIRDES_SOS,n,fc,f0,Ap,as);
 
     // verify result
@@ -270,15 +272,14 @@ void autotest_iirdes_ellip_bandpass() {
       {.fmin=+0.301, .fmax=+0.388,.pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
       {.fmin=+0.396, .fmax=+0.5,  .pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_iirfilt_rrrf(q, nfft, regions, 5,
-        liquid_autotest_verbose ? "autotest/logs/iirdes_ellip_bandpass.m" : NULL);
+    liquid_autotest_validate_psd_iirfilt_rrrf(__q__, filter, nfft, regions, 5,
+        "autotest/logs/iirdes_ellip_bandpass.m");
 
     // destroy filter object
-    iirfilt_rrrf_destroy(q);
+    iirfilt_rrrf_destroy(filter);
 }
 
-// check elliptical filter design with band-stop transformation
-void autotest_iirdes_ellip_bandstop() {
+LIQUID_AUTOTEST(iirdes_ellip_bandstop,"check elliptical filter design with band-stop transformation", "", 0.1) {
     unsigned int n  =    9;   // filter order
     float        fc =  0.3;   // filter cut-off
     float        f0 =  0.35;  // filter center frequency
@@ -289,7 +290,7 @@ void autotest_iirdes_ellip_bandstop() {
     unsigned int nfft = 2400;   // number of points to evaluate
 
     // design filter from prototype
-    iirfilt_rrrf q = iirfilt_rrrf_create_prototype(LIQUID_IIRDES_ELLIP,
+    iirfilt_rrrf filter = iirfilt_rrrf_create_prototype(LIQUID_IIRDES_ELLIP,
         LIQUID_IIRDES_BANDSTOP, LIQUID_IIRDES_SOS,n,fc,f0,Ap,as);
 
     // verify result
@@ -300,22 +301,20 @@ void autotest_iirdes_ellip_bandstop() {
       {.fmin=+0.306, .fmax=+0.387,.pmin=0,       .pmax=-as+tol, .test_lo=0, .test_hi=1},
       {.fmin=+0.391, .fmax=+0.5,  .pmin=-Ap-tol, .pmax=    tol, .test_lo=1, .test_hi=1},
     };
-    liquid_autotest_validate_psd_iirfilt_rrrf(q, nfft, regions, 5,
-        liquid_autotest_verbose ? "autotest/logs/iirdes_ellip_bandstop.m" : NULL);
+    liquid_autotest_validate_psd_iirfilt_rrrf(__q__, filter, nfft, regions, 5,
+        "autotest/logs/iirdes_ellip_bandstop.m");
 
     // destroy filter object
-    iirfilt_rrrf_destroy(q);
+    iirfilt_rrrf_destroy(filter);
 }
 
-// check Bessel filter design
-// TODO: check group delay
-void autotest_iirdes_bessel() {
+LIQUID_AUTOTEST(iirdes_bessel,"check Bessel filter design", "", 0.1) {
     unsigned int n  =    9;   // filter order
     float        fc =  0.1;   // filter cut-off
     unsigned int nfft = 960;  // number of points to evaluate
 
     // design filter from prototype
-    iirfilt_rrrf q = iirfilt_rrrf_create_prototype(LIQUID_IIRDES_BESSEL,
+    iirfilt_rrrf filter = iirfilt_rrrf_create_prototype(LIQUID_IIRDES_BESSEL,
         LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,n,fc,0,1,60);
 
     // verify result
@@ -324,10 +323,10 @@ void autotest_iirdes_bessel() {
       {.fmin=-0.095, .fmax=+0.095,.pmin=-3, .pmax=  0.1, .test_lo=1, .test_hi=1},
       {.fmin=+0.305, .fmax=+0.500,.pmin= 0, .pmax=-60,   .test_lo=0, .test_hi=1},
     };
-    liquid_autotest_validate_psd_iirfilt_rrrf(q, nfft, regions, 3,
-        liquid_autotest_verbose ? "autotest/logs/iirdes_bessel.m" : NULL);
+    liquid_autotest_validate_psd_iirfilt_rrrf(__q__, filter, nfft, regions, 3,
+        "autotest/logs/iirdes_bessel.m");
 
     // destroy filter object
-    iirfilt_rrrf_destroy(q);
+    iirfilt_rrrf_destroy(filter);
 }
 

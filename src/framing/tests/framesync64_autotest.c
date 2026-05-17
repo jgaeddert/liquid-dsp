@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.autotest.h"
+#include "liquid.internal.h"
 
-// AUTOTEST : test simple recovery of frame in noise
-void autotest_framesync64()
+LIQUID_AUTOTEST(framesync64,"simple recovery of frame64 in noise","",0.1)
 {
     unsigned int i;
 
@@ -49,37 +48,32 @@ void autotest_framesync64()
     framesync64_execute(fs, frame, LIQUID_FRAME64_LEN);
 
     // ensure callback was actually invoked
-    CONTEND_EQUALITY(context, FRAMING_AUTOTEST_SECRET);
+    LIQUID_CHECK(context ==  FRAMING_AUTOTEST_SECRET);
 
     // parse statistics
     framedatastats_s stats = framesync64_get_framedatastats(fs);
-    CONTEND_EQUALITY(stats.num_frames_detected, 1);
-    CONTEND_EQUALITY(stats.num_headers_valid,   1);
-    CONTEND_EQUALITY(stats.num_payloads_valid,  1);
-    CONTEND_EQUALITY(stats.num_bytes_received, 64);
+    LIQUID_CHECK(stats.num_frames_detected ==  1);
+    LIQUID_CHECK(stats.num_headers_valid ==    1);
+    LIQUID_CHECK(stats.num_payloads_valid ==   1);
+    LIQUID_CHECK(stats.num_bytes_received ==  64);
 
     // destroy objects
     framegen64_destroy(fg);
     framesync64_destroy(fs);
 }
 
-// test copying from one object to another
-void autotest_framegen64_copy()
+LIQUID_AUTOTEST(framegen64_copy,"copying from one framegen64 object to another","",0.1)
 {
     framegen64 q_orig = framegen64_create();
     framegen64 q_copy = framegen64_copy(q_orig);
 
-    if (q_copy == NULL) {
-        AUTOTEST_FAIL("could not copy framegen64 object");
-    } else {
-        AUTOTEST_PASS();
-        framegen64_destroy(q_copy);
-    }
+    LIQUID_REQUIRE( q_copy != NULL );
+
     framegen64_destroy(q_orig);
+    framegen64_destroy(q_copy);
 }
 
-// test copying from one object to another
-void autotest_framesync64_copy()
+LIQUID_AUTOTEST(framesync64_copy,"copying from one framesync64 object to another","",0.1)
 {
     unsigned int i;
     int context_0 = 0;
@@ -115,25 +109,26 @@ void autotest_framesync64_copy()
         framesync64_execute(fs1, buf+i, 1);
 
         // ensure that the frames are recovered at exactly the same time
-        CONTEND_EQUALITY( context_0, context_1 );
+        LIQUID_CHECK( context_0 ==  context_1 );
     }
 
     // check that frame was actually recovered by each object
-    CONTEND_EQUALITY( context_0, 0x01234567 );
-    CONTEND_EQUALITY( context_1, 0x01234567 );
+    LIQUID_CHECK( context_0 ==  0x01234567 );
+    LIQUID_CHECK( context_1 ==  0x01234567 );
 
     // parse statistics
     framedatastats_s stats_0 = framesync64_get_framedatastats(fs0);
     framedatastats_s stats_1 = framesync64_get_framedatastats(fs1);
-    framedatastats_print(&stats_0);
-    framedatastats_print(&stats_1);
+    liquid_log_debug(" detected:%u(%u), headers valid:%u(%u), payloads valid:%u(%u), bytes rx:%u(%u)",
+        stats_0.num_frames_detected, stats_1.num_frames_detected,
+        stats_0.num_headers_valid,   stats_1.num_headers_valid,
+        stats_0.num_payloads_valid,  stats_1.num_payloads_valid,
+        stats_0.num_bytes_received,  stats_1.num_bytes_received);
 
-    CONTEND_EQUALITY(stats_0.num_frames_detected, stats_1.num_frames_detected);
-    CONTEND_EQUALITY(stats_0.num_headers_valid  , stats_1.num_headers_valid  );
-    CONTEND_EQUALITY(stats_0.num_payloads_valid , stats_1.num_payloads_valid );
-    CONTEND_EQUALITY(stats_0.num_bytes_received , stats_1.num_bytes_received );
-    framesync64_print(fs0);
-    framesync64_print(fs1);
+    LIQUID_CHECK(stats_0.num_frames_detected ==  stats_1.num_frames_detected);
+    LIQUID_CHECK(stats_0.num_headers_valid   ==  stats_1.num_headers_valid  );
+    LIQUID_CHECK(stats_0.num_payloads_valid  ==  stats_1.num_payloads_valid );
+    LIQUID_CHECK(stats_0.num_bytes_received  ==  stats_1.num_bytes_received );
 
     // destroy objects
     framegen64_destroy(fg);
@@ -141,30 +136,25 @@ void autotest_framesync64_copy()
     framesync64_destroy(fs1);
 }
 
-void autotest_framesync64_config()
+LIQUID_AUTOTEST(framesync64_config,"","",0.1)
 {
-#if LIQUID_STRICT_EXIT
-    AUTOTEST_WARN("skipping framesync64 config test with strict exit enabled\n");
-    return;
-#endif
-#if !LIQUID_SUPPRESS_ERROR_OUTPUT
-    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
-#endif
+    _liquid_error_downgrade_enable();
     // check invalid function calls
-    CONTEND_ISNULL(framesync64_copy(NULL));
-    CONTEND_ISNULL(framegen64_copy (NULL));
+    LIQUID_CHECK(NULL ==framesync64_copy(NULL));
+    LIQUID_CHECK(NULL ==framegen64_copy (NULL));
 
     // create proper object and test configurations
     framesync64 q = framesync64_create(NULL, NULL);
 
-    CONTEND_EQUALITY(LIQUID_OK, framesync64_print(q))
-    CONTEND_EQUALITY(LIQUID_OK, framesync64_set_callback(q,NULL))
-    CONTEND_EQUALITY(LIQUID_OK, framesync64_set_userdata(q,NULL))
+    LIQUID_CHECK(LIQUID_OK == framesync64_print(q))
+    LIQUID_CHECK(LIQUID_OK == framesync64_set_callback(q,NULL))
+    LIQUID_CHECK(LIQUID_OK == framesync64_set_userdata(q,NULL))
 
-    CONTEND_EQUALITY(LIQUID_OK, framesync64_set_threshold(q,0.654321f))
-    CONTEND_EQUALITY(0.654321f, framesync64_get_threshold(q))
+    LIQUID_CHECK(LIQUID_OK == framesync64_set_threshold(q,0.654321f))
+    LIQUID_CHECK(0.654321f ==  framesync64_get_threshold(q))
 
     framesync64_destroy(q);
+    _liquid_error_downgrade_disable();
 }
 
 static int callback_framesync64_autotest_debug(
@@ -181,7 +171,7 @@ static int callback_framesync64_autotest_debug(
 }
 
 // test debug interface to write file
-void testbench_framesync64_debug(int _code)
+void testbench_framesync64_debug(liquid_autotest __q__, int _code)
 {
     // create objects
     framegen64  fg = framegen64_create();
@@ -190,7 +180,7 @@ void testbench_framesync64_debug(int _code)
     // set prefix for filename
     const char prefix[] = "autotest/logs/framesync64";
     framesync64_set_prefix(fs,prefix);
-    CONTEND_SAME_DATA(framesync64_get_prefix(fs), prefix, strlen(prefix));
+    LIQUID_CHECK_ARRAY(framesync64_get_prefix(fs), prefix, strlen(prefix));
 
     // generate the frame
     float complex frame[LIQUID_FRAME64_LEN];
@@ -210,36 +200,36 @@ void testbench_framesync64_debug(int _code)
 
     // parse statistics
     framedatastats_s stats = framesync64_get_framedatastats(fs);
-    CONTEND_EQUALITY(stats.num_frames_detected, 1);
-    CONTEND_EQUALITY(stats.num_headers_valid,   1);
-    CONTEND_EQUALITY(stats.num_payloads_valid,  1);
-    CONTEND_EQUALITY(stats.num_bytes_received, 64);
+    LIQUID_CHECK(stats.num_frames_detected ==  1);
+    LIQUID_CHECK(stats.num_headers_valid ==    1);
+    LIQUID_CHECK(stats.num_payloads_valid ==   1);
+    LIQUID_CHECK(stats.num_bytes_received ==  64);
 
     // get filename from the last file written and copy before destroying
     // objects
     const char * fn = framesync64_get_filename(fs);
     char filename[256] = "";
     snprintf(filename,255,"%s",fn==NULL ? "" : fn);
-    printf("filename: %s\n", filename);
+    liquid_log_debug("filename: %s", filename);
 
     // destroy objects
     framegen64_destroy(fg);
     framesync64_destroy(fs);
 
-    // check if output file should exist
-    if (strlen(filename) == 0) {
-        if (_code==0) {
-            AUTOTEST_PASS();
-        } else {
-            AUTOTEST_FAIL("no output file written when one was expected");
-        }
+    // for code '0' no output should be written
+    if (_code == 0)
+    {
+        LIQUID_REQUIRE( strlen(filename) == 0 );
         return;
     }
+
+    // check if output file should exist
+    LIQUID_REQUIRE( strlen(filename) > 0 );
 
     // load file
     FILE * fid = fopen(filename,"rb");
     if (fid == NULL) {
-        AUTOTEST_FAIL("could not open file for reading");
+        LIQUID_FAIL("could not open for reading");
         return;
     }
 
@@ -247,11 +237,11 @@ void testbench_framesync64_debug(int _code)
 }
 
 // test exporting debugging files with different return codes
-void autotest_framesync64_debug_none() { testbench_framesync64_debug( 0); }
-void autotest_framesync64_debug_user() { testbench_framesync64_debug( 1); }
-void autotest_framesync64_debug_ndet() { testbench_framesync64_debug(-1); }
-void autotest_framesync64_debug_head() { testbench_framesync64_debug(-2); }
-void autotest_framesync64_debug_rand() { testbench_framesync64_debug(-3); }
+LIQUID_AUTOTEST(framesync64_debug_none,"","",0.1) { testbench_framesync64_debug(__q__,  0); }
+LIQUID_AUTOTEST(framesync64_debug_user,"","",0.1) { testbench_framesync64_debug(__q__,  1); }
+LIQUID_AUTOTEST(framesync64_debug_ndet,"","",0.1) { testbench_framesync64_debug(__q__, -1); }
+LIQUID_AUTOTEST(framesync64_debug_head,"","",0.1) { testbench_framesync64_debug(__q__, -2); }
+LIQUID_AUTOTEST(framesync64_debug_rand,"","",0.1) { testbench_framesync64_debug(__q__, -3); }
 
 
 static int callback_framesync64_autotest_estimation(
@@ -263,7 +253,8 @@ static int callback_framesync64_autotest_estimation(
     framesyncstats_s _stats,
     void *           _userdata)
 {
-    //printf("callback invoked, payload valid: %s\n", _payload_valid ? "yes" : "no");
+    liquid_log_debug("framesync64 estimation callback invoked, payload valid: %s",
+        _payload_valid ? "yes" : "no");
     memmove(_userdata, &_stats, sizeof(framesyncstats_s));
     return 0;
 }
@@ -284,8 +275,7 @@ void framesync64_channel(float complex * _frame,
         _frame[i] = _frame[i]*cexp(_Complex_I*_dphi*i)*gain + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 }
 
-// AUTOTEST : test simple recovery of frame in noise
-void autotest_framesync64_estimation()
+LIQUID_AUTOTEST(framesync64_estimation,"simple recovery of frame64 in noise","",0.1)
 {
     // create objects
     framegen64 fg = framegen64_create();
@@ -306,13 +296,11 @@ void autotest_framesync64_estimation()
     // try to receive the frame
     framesync64_execute(fs, frame, LIQUID_FRAME64_LEN);
 
-    if (liquid_autotest_verbose)
-        framesyncstats_print(&stats);
-
     // check results (relatively high tolerance)
-    CONTEND_DELTA( stats.rssi, rssi,  1.0f );
-    CONTEND_DELTA( -stats.evm, SNRdB, 3.0f ); // error biased negative
-    CONTEND_DELTA( stats.cfo,  dphi,  4e-3f);
+    liquid_log_debug(" rssi:%.3f dB, SNRdB:%.3f dB, cfo:%.6f", stats.rssi, -stats.evm, stats.cfo);
+    LIQUID_CHECK_DELTA( stats.rssi, rssi,  1.0f );
+    LIQUID_CHECK_DELTA( -stats.evm, SNRdB, 3.0f ); // error biased negative
+    LIQUID_CHECK_DELTA( stats.cfo,  dphi,  4e-3f);
 
     // destroy objects
     framegen64_destroy(fg);

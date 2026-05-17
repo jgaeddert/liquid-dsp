@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,10 +21,10 @@
  */
 
 #include <stdlib.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-void autotest_firpfb_impulse_response()
+LIQUID_AUTOTEST(firpfb_impulse_response,"description","",0.1)
 {
     // Initialize variables
     float tol=1e-4f;
@@ -71,13 +71,13 @@ void autotest_firpfb_impulse_response()
     float y;
     for (i=0; i<4; i++) {
         firpfb_rrrf_execute(f,i,&y);
-        CONTEND_DELTA(test[i],y,tol);
+        LIQUID_CHECK_DELTA(test[i],y,tol);
     }
     
     firpfb_rrrf_destroy(f);
 }
 
-void autotest_firpfb_crcf_copy()
+LIQUID_AUTOTEST(firpfb_crcf_copy,"description","",0.1)
 {
     // create base object with irregular parameters
     unsigned int M = 13, m = 7;
@@ -107,7 +107,7 @@ void autotest_firpfb_crcf_copy()
         float complex y0, y1;
         firpfb_crcf_execute(q0, idx, &y0);
         firpfb_crcf_execute(q1, idx, &y1);
-        CONTEND_EQUALITY(y0, y1);
+        LIQUID_CHECK(y0 ==  y1);
     }
 
     // destroy objects

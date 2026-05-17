@@ -30,7 +30,7 @@ MODEM() MODEM(_create_arbitrary)(float complex * _table,
 {
     // strip out bits/symbol
     unsigned int m = liquid_nextpow2(_M);
-    if ( (1<<m) != _M )
+    if ( (1U<<m) != _M )
         return liquid_error_config("modem%s_create_arbitrary(), input constellation size must be power of 2", EXTENSION);
 
     // create arbitrary modem object, not initialized

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
 
 #include <stdlib.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 static int bpacketsync_autotest_callback(unsigned char *  _payload,
@@ -41,10 +41,7 @@ static int bpacketsync_autotest_callback(unsigned char *  _payload,
     return 0;
 }
 
-// 
-// AUTOTEST: bpacketsync
-//
-void autotest_bpacketsync()
+LIQUID_AUTOTEST(bpacketsync,"bpacketsync","",0.1)
 {
     // options
     unsigned int num_packets = 50;          // number of packets to encode
@@ -55,8 +52,6 @@ void autotest_bpacketsync()
 
     // create packet generator
     bpacketgen pg = bpacketgen_create(0, dec_msg_len, check, fec0, fec1);
-    if (liquid_autotest_verbose)
-        bpacketgen_print(pg);
 
     // compute packet length
     unsigned int enc_msg_len = bpacketgen_get_packet_len(pg);
@@ -85,10 +80,9 @@ void autotest_bpacketsync()
     }
 
     // count number of packets
-    if (liquid_autotest_verbose)
-        printf("found %u / %u packets\n", num_packets_found, num_packets);
+    liquid_log_debug("found %u / %u packets", num_packets_found, num_packets);
 
-    CONTEND_EQUALITY( num_packets_found, num_packets );
+    LIQUID_CHECK( num_packets_found ==  num_packets );
 
     // clean up allocated objects
     bpacketgen_destroy(pg);

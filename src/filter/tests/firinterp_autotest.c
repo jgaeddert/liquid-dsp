@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,27 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-void autotest_firinterp_rrrf_common()
+LIQUID_AUTOTEST(firinterp_rrrf_common,"description","",0.1)
 {
     firinterp_rrrf interp = firinterp_rrrf_create_kaiser(17, 4, 60.0f);
-    CONTEND_EQUALITY(firinterp_rrrf_get_interp_rate(interp), 17);
+    LIQUID_CHECK(firinterp_rrrf_get_interp_rate(interp) ==  17);
     firinterp_rrrf_destroy(interp);
 }
 
-void autotest_firinterp_crcf_common()
+LIQUID_AUTOTEST(firinterp_crcf_common,"description","",0.1)
 {
     firinterp_crcf interp = firinterp_crcf_create_kaiser(7, 4, 60.0f);
-    CONTEND_EQUALITY(firinterp_crcf_get_interp_rate(interp), 7);
+    LIQUID_CHECK(firinterp_crcf_get_interp_rate(interp) ==  7);
     firinterp_crcf_destroy(interp);
 }
 
 //
 // AUTOTEST: 
 //
-void autotest_firinterp_rrrf_generic()
+LIQUID_AUTOTEST(firinterp_rrrf_generic,"description","",0.1)
 {
     float h[9] = {
       -0.2762293319046737,
@@ -83,20 +83,15 @@ void autotest_firinterp_rrrf_generic()
         firinterp_rrrf_execute(q, x[i], &y[i*M]);
 
     for (i=0; i<16; i++) {
-        CONTEND_DELTA(y[i], test[i], tol);
-
-        if (liquid_autotest_verbose)
-            printf("  y(%u) = %8.4f;\n", i+1, y[i]);
+        liquid_log_debug("  y(%3u) = %8.4f;", i+1, y[i]);
+        LIQUID_CHECK_DELTA(y[i], test[i], tol);
     }
-
-    if (liquid_autotest_verbose)
-        firinterp_rrrf_print(q);
 
     // destroy interpolator object
     firinterp_rrrf_destroy(q);
 }
 
-void autotest_firinterp_crcf_generic()
+LIQUID_AUTOTEST(firinterp_crcf_generic,"description","",0.1)
 {
     // h = [0, 0.25, 0.5, 0.75, 1.0, 0.75, 0.5, 0.25, 0];
     float h[9] = {
@@ -150,22 +145,18 @@ void autotest_firinterp_crcf_generic()
         firinterp_crcf_execute(q, x[i], &y[i*M]);
 
     for (i=0; i<16; i++) {
-        CONTEND_DELTA( crealf(y[i]), crealf(test[i]), tol);
-        CONTEND_DELTA( cimagf(y[i]), cimagf(test[i]), tol);
-
-        if (liquid_autotest_verbose)
-            printf("  y(%u) = %8.4f + j%8.4f;\n", i+1, crealf(y[i]), cimagf(y[i]));
+        liquid_log_debug("  y(%3u) = %8.4f + j%8.4f;", i+1, crealf(y[i]), cimagf(y[i]));
+        LIQUID_CHECK_DELTA( crealf(y[i]), crealf(test[i]), tol);
+        LIQUID_CHECK_DELTA( cimagf(y[i]), cimagf(test[i]), tol);
     }
-
-    if (liquid_autotest_verbose)
-        firinterp_crcf_print(q);
 
     // destroy interpolator object
     firinterp_crcf_destroy(q);
 }
 
 // test Nyquist filter
-void testbench_firinterp_crcf_nyquist(int          _ftype,
+void testbench_firinterp_crcf_nyquist(liquid_autotest __q__,
+                                      int          _ftype,
                                       unsigned int _M,
                                       unsigned int _m,
                                       float        _beta)
@@ -189,14 +180,11 @@ void testbench_firinterp_crcf_nyquist(int          _ftype,
         // for a Nyquist filter, output should match input at
         // proper sampling time (compensating for delay)
         if (i >= _m) {
-            CONTEND_DELTA( crealf(x[i-_m]), crealf(y[0]), tol);
-            CONTEND_DELTA( cimagf(x[i-_m]), cimagf(y[0]), tol);
-
-            if (liquid_autotest_verbose) {
-                printf("%3u: x=%8.4f + j%8.4f, y=%8.4f + j%8.4f;\n", i+1,
-                        crealf(x[i-_m]), cimagf(x[i-_m]),
-                        crealf(y[   0]), cimagf(y[   0]));
-            }
+            liquid_log_debug("%3u: x=%8.4f + j%8.4f, y=%8.4f + j%8.4f;", i+1,
+                    crealf(x[i-_m]), cimagf(x[i-_m]),
+                    crealf(y[   0]), cimagf(y[   0]));
+            LIQUID_CHECK_DELTA( crealf(x[i-_m]), crealf(y[0]), tol);
+            LIQUID_CHECK_DELTA( cimagf(x[i-_m]), cimagf(y[0]), tol);
         }
     }
 
@@ -204,21 +192,19 @@ void testbench_firinterp_crcf_nyquist(int          _ftype,
     firinterp_crcf_destroy(q);
 }
 
-// add specific tests
-void autotest_firinterp_crcf_rnyquist_0() 
-    { testbench_firinterp_crcf_nyquist(LIQUID_FIRFILT_KAISER, 2, 9,0.3f); }
+LIQUID_AUTOTEST(firinterp_crcf_rnyquist_0,"add specific tests", "", 0.1) 
+    { testbench_firinterp_crcf_nyquist(__q__, LIQUID_FIRFILT_KAISER, 2, 9,0.3f); }
 
-void autotest_firinterp_crcf_rnyquist_1() 
-    { testbench_firinterp_crcf_nyquist(LIQUID_FIRFILT_KAISER, 3, 9,0.3f); }
+LIQUID_AUTOTEST(firinterp_crcf_rnyquist_1,"description","",0.1) 
+    { testbench_firinterp_crcf_nyquist(__q__, LIQUID_FIRFILT_KAISER, 3, 9,0.3f); }
 
-void autotest_firinterp_crcf_rnyquist_2() 
-    { testbench_firinterp_crcf_nyquist(LIQUID_FIRFILT_KAISER, 7, 9,0.3f); }
+LIQUID_AUTOTEST(firinterp_crcf_rnyquist_2,"description","",0.1) 
+    { testbench_firinterp_crcf_nyquist(__q__, LIQUID_FIRFILT_KAISER, 7, 9,0.3f); }
 
-void autotest_firinterp_crcf_rnyquist_3() 
-    { testbench_firinterp_crcf_nyquist(LIQUID_FIRFILT_RCOS,   2, 9,0.3f); }
+LIQUID_AUTOTEST(firinterp_crcf_rnyquist_3,"description","",0.1) 
+    { testbench_firinterp_crcf_nyquist(__q__, LIQUID_FIRFILT_RCOS,   2, 9,0.3f); }
 
-// test copy method
-void autotest_firinterp_copy()
+LIQUID_AUTOTEST(firinterp_copy,"test copy method", "", 0.1)
 {
     // create base object
     firinterp_crcf q0 = firinterp_crcf_create_kaiser(3, 7, 60.0f);
@@ -241,7 +227,7 @@ void autotest_firinterp_copy()
         firinterp_crcf_execute(q0, v, buf_0);
         firinterp_crcf_execute(q1, v, buf_1);
 
-        CONTEND_SAME_DATA( buf_0, buf_1, 3*sizeof(float complex) );
+        LIQUID_CHECK_ARRAY( buf_0, buf_1, 3*sizeof(float complex) );
     }
 
     // destroy objects
@@ -249,8 +235,7 @@ void autotest_firinterp_copy()
     firinterp_crcf_destroy(q1);
 }
 
-// test flush method(s)
-void autotest_firinterp_flush()
+LIQUID_AUTOTEST(firinterp_flush,"test flush method(s)", "", 0.1)
 {
     // create base object
     unsigned int m = 7;
@@ -265,14 +250,14 @@ void autotest_firinterp_flush()
     }
 
     // ensure buffer does not contain zeros
-    CONTEND_GREATER_THAN( liquid_sumsqcf(buf,3), 0.0f );
+    LIQUID_CHECK( liquid_sumsqcf(buf,3)> 0.0f );
 
     // flush buffer
     for (i=0; i<2*m; i++)
         firinterp_crcf_flush(q, buf);
 
     // ensure buffer contains only zeros
-    CONTEND_EQUALITY( liquid_sumsqcf(buf,3), 0.0f );
+    LIQUID_CHECK( liquid_sumsqcf(buf,3) ==  0.0f );
 
     // destroy objects
     firinterp_crcf_destroy(q);

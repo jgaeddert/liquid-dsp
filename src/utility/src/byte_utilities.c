@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,26 @@
 #include <stdio.h>
 #include "liquid.internal.h"
 
+// Count the number of ones in a 16-bit integer
+unsigned int liquid_count_ones_uint16(uint16_t _x)
+{
+    return
+        liquid_c_ones[ (_x   )  & 0xff ] +
+        liquid_c_ones[ (_x>>8)  & 0xff ];
+}
+
+unsigned int liquid_count_ones_uint32(uint32_t _x)
+{
+    return
+        liquid_c_ones[ (_x    ) & 0xff ] +
+        liquid_c_ones[ (_x>> 8) & 0xff ] +
+        liquid_c_ones[ (_x>>16) & 0xff ] +
+        liquid_c_ones[ (_x>>24) & 0xff ];
+}
+
 // count the number of ones in an integer
-unsigned int liquid_count_ones(unsigned int _x) {
+unsigned int liquid_count_ones(unsigned int _x)
+{
 #if SIZEOF_INT == 2
     return liquid_count_ones_uint16(_x);
 #elif SIZEOF_INT == 4
@@ -46,6 +64,18 @@ unsigned int liquid_count_ones(unsigned int _x) {
     }   
     return c;
 #endif
+}
+
+// Count the number of ones in a 16-bit integer, modulo 2
+unsigned int liquid_count_ones_mod2_uint16(uint16_t _x)
+{
+    return liquid_count_ones_uint16(_x) & 1;
+}
+
+// Count the number of ones in a 32-bit integer, modulo 2
+unsigned int liquid_count_ones_mod2_uint32(uint32_t _x)
+{
+    return liquid_count_ones_uint32(_x) & 1;
 }
 
 // count the number of ones in an integer, modulo 2
@@ -86,6 +116,24 @@ unsigned int liquid_bdotprod(unsigned int _x,
 #endif
 }
 
+// compute binary dot products on 8-bit words
+unsigned int liquid_bdotprod_uint8(uint8_t _x, uint8_t _y)
+{
+    return liquid_c_ones_mod2[_x & _y];
+}
+
+// compute binary dot products on 16-bit words
+unsigned int liquid_bdotprod_uint16(uint16_t _x, uint16_t _y)
+{
+    return liquid_count_ones_mod2_uint16(_x & _y);
+}
+
+// compute binary dot products on 32-bit words
+unsigned int liquid_bdotprod_uint32(uint32_t _x, uint32_t _y)
+{
+    return liquid_count_ones_mod2_uint32(_x & _y);
+}
+
 
 // counts the number of different bits between two symbols
 unsigned int count_bit_errors(unsigned int _s1,
@@ -117,6 +165,18 @@ int liquid_print_bitstring(unsigned int _x,
     unsigned int i;
     for (i=0; i<_n; i++)
         printf("%1u", (_x >> (_n-i-1)) & 1);
+    return LIQUID_OK;
+}
+
+// print bitstring to char array
+int liquid_sprintf_bitstring(char *       _str,
+                             unsigned int _x, 
+                             unsigned int _n) 
+{
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        _str[i] = ((_x >> (_n-i-1)) & 1) ? '1' : '0';
+    _str[i] = '\0';
     return LIQUID_OK;
 }
 

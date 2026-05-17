@@ -5,8 +5,8 @@ set(SANDBOX
     am_demod_dsb_pll_carrier_test
     am_demod_dsb_pll_costas_test
     am_demod_ssb_pll_carrier_test
+    autotest_refactor_test
     bpresync_test
-    chromosome_test
     cpmodem_test
     crc_gentab
     ellip_func_test
@@ -112,6 +112,7 @@ set(SANDBOX
     symsync_crcf_test
     symsync_eqlms_test
     thiran_allpass_iir_test
+    timespec_test
     throttle_test
     vectorcf_test
     )
