@@ -52,6 +52,8 @@ coverage.
     - symsync: added methods to explicitly get/set rate and del values
       (thanks @brian-armstrong)
     - firdespm: devising halfband filter design with desired stop band
+    - firfilt: fix recreate() storing coefficients in reverse order
+      (thanks @deekshaNVIDIA)
   * framing
     - added ability to initialize qdsync on cpfsk (thanks @asazernik)
     - framesync64: adding option to set detection range
