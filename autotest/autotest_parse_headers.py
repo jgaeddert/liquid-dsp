@@ -48,6 +48,14 @@ def main(argv=None):
 
     print('found %u tests across %u source files' % (len(all_tests),len(all_sources)))
 
+def _is_git_worktree(path):
+    '''Check if a directory is a git worktree by looking for a .git file (not directory)'''
+    git_path = os.path.join(path, '.git')
+    if os.path.isfile(git_path):
+        with open(git_path, 'r') as f:
+            return f.read().startswith('gitdir:')
+    return False
+
 def get_source_files(path:str = '.'):
     '''get a list of autotest files with potential tests'''
     source_files = []
@@ -55,6 +63,9 @@ def get_source_files(path:str = '.'):
         #print("root: ", root)
         #print("dirs: ", dirs)
         #print("files:", files)
+
+        # prune git worktrees from traversal
+        dirs[:] = [d for d in dirs if not _is_git_worktree(os.path.join(root, d))]
 
         # ignore certain directories
         if os.path.split(root)[-1] in ('examples','sandbox',):
