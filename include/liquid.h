@@ -5564,6 +5564,11 @@ LIQUID_ORDFILT_DEFINE_API(LIQUID_ORDFILT_MANGLE_RRRF,
 // MODULE : framing
 //
 
+// The maximum number of bytes a payload can have. Trying to generate values that
+// exceed this will result in a LIQUID_EICONFIG error. This number was chosen to
+// roughly match the maximum size of a jumbo frame in the IEEE 802.3 standard.
+#define LIQUID_MAX_PAYLOAD_LEN (9216)
+
 // framesyncstats : generic frame synchronizer statistic structure
 
 typedef struct {

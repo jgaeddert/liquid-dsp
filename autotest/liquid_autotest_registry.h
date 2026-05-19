@@ -1376,6 +1376,7 @@ extern struct liquid_autotest_s framesync64_debug_rand_s;
 extern struct liquid_autotest_s framesync64_estimation_s;
 // ./src/framing/tests/flexframesync_autotest.c
 extern struct liquid_autotest_s flexframesync_s;
+extern struct liquid_autotest_s flexframe_config_s;
 // ./src/framing/tests/gmskframe_autotest.c
 extern struct liquid_autotest_s gmskframesync_process_s;
 extern struct liquid_autotest_s gmskframesync_multiple_s;
@@ -2734,6 +2735,7 @@ liquid_autotest liquid_autotest_registry[] =
     &framesync64_debug_rand_s,
     &framesync64_estimation_s,
     &flexframesync_s,
+    &flexframe_config_s,
     &gmskframesync_process_s,
     &gmskframesync_multiple_s,
     &gmskframesync_k02_m05_bt20_s,

@@ -346,6 +346,10 @@ int flexframegen_assemble(flexframegen          _q,
                           const unsigned char * _payload,
                           unsigned int          _payload_dec_len)
 {
+    // validate input
+    if (_payload_dec_len == 0 || _payload_dec_len > LIQUID_MAX_PAYLOAD_LEN)
+        return liquid_error(LIQUID_EICONFIG,"flexframegen_assemble(), payload length (%u) is out of range", _payload_dec_len);
+
     // reset object
     flexframegen_reset(_q);
 

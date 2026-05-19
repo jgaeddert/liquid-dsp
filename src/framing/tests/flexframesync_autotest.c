@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 LIQUID_AUTOTEST(flexframesync,"simple recovery of flexframe in noise","",0.1)
 {
@@ -84,5 +84,28 @@ LIQUID_AUTOTEST(flexframesync,"simple recovery of flexframe in noise","",0.1)
     // destroy objects
     flexframegen_destroy(fg);
     flexframesync_destroy(fs);
+}
+
+LIQUID_AUTOTEST(flexframe_config,"check configuration validity","",0.1)
+{
+    _liquid_error_downgrade_enable();
+
+    // create flexframegen object
+    flexframegenprops_s fgprops;
+    flexframegenprops_init_default(&fgprops);
+    fgprops.mod_scheme  = LIQUID_MODEM_QPSK;
+    fgprops.check       = LIQUID_FEC_NONE;
+    fgprops.fec0        = LIQUID_FEC_NONE;
+    fgprops.fec1        = LIQUID_CRC_32;
+    flexframegen fg = flexframegen_create(&fgprops);
+
+    // assemble the frame
+    LIQUID_CHECK(flexframegen_assemble(fg,NULL,NULL,                       0)==LIQUID_EICONFIG);
+    LIQUID_CHECK(flexframegen_assemble(fg,NULL,NULL,                       1)==LIQUID_OK      );
+    LIQUID_CHECK(flexframegen_assemble(fg,NULL,NULL,LIQUID_MAX_PAYLOAD_LEN  )==LIQUID_OK      );
+    LIQUID_CHECK(flexframegen_assemble(fg,NULL,NULL,LIQUID_MAX_PAYLOAD_LEN+1)==LIQUID_EICONFIG);
+
+    flexframegen_destroy(fg);
+    _liquid_error_downgrade_disable();
 }
 
