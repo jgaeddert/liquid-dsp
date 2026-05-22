@@ -46,7 +46,8 @@ int main(int argc, char* argv[])
         y = 0.5f*y + nstd * ( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
 
         // push resulting sample through periodogram
-        spgramcf_push(q, y);
+        if (spgramcf_push(q, y))
+            break; // check for non-zero error code
     }
 
     // explort to gnuplot

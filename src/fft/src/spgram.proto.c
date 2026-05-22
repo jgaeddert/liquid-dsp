@@ -448,10 +448,24 @@ int SPGRAM(_step)(SPGRAM() _q)
     FFT_EXECUTE(_q->fft);
 
 #if SPGRAM_DEBUG
+    int valid = 1;
     for (i=0; i<_q->nfft; i++)
     {
+        if (isnan(crealf(_q->buf_time[i])) || isnan(cimagf(_q->buf_time[i])))
+            valid = 0;
         if (isnan(crealf(_q->buf_freq[i])) || isnan(cimagf(_q->buf_freq[i])))
-            { return liquid_error(LIQUID_EINT,"spgram%s_step(), nan with buf_freq[%u]", EXTENSION, i); }
+            valid = 0;
+    }
+    if (valid==0)
+    {
+        liquid_log_error("spgram%s_step(), nan encountered, num transforms=%u", EXTENSION, _q->num_transforms);
+        for (i=0; i<_q->nfft; i++)
+        {
+            liquid_log_error("[%5u] %12.6f + j%12.6f : %12.6f + j%12.6f", i,
+                crealf(_q->buf_time[i]), cimagf(_q->buf_time[i]),
+                crealf(_q->buf_freq[i]), cimagf(_q->buf_freq[i]));
+        }
+        return liquid_error(LIQUID_EINT,"spgram%s_step(), nan with buf_freq[%u]", EXTENSION, i);
     }
 #endif
 
