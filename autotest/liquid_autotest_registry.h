@@ -1274,6 +1274,7 @@ extern struct liquid_autotest_s dsssframesync_s;
 extern struct liquid_autotest_s dsssframe_config_s;
 // ./src/framing/tests/bpacketsync_autotest.c
 extern struct liquid_autotest_s bpacketsync_s;
+extern struct liquid_autotest_s bpacketsync_config_s;
 // ./src/framing/tests/bsync_autotest.c
 extern struct liquid_autotest_s bsync_rrrf_15_s;
 extern struct liquid_autotest_s bsync_crcf_15_s;
@@ -2648,6 +2649,7 @@ liquid_autotest liquid_autotest_registry[] =
     &dsssframesync_s,
     &dsssframe_config_s,
     &bpacketsync_s,
+    &bpacketsync_config_s,
     &bsync_rrrf_15_s,
     &bsync_crcf_15_s,
     &bsync_crcf_phase_15_s,
