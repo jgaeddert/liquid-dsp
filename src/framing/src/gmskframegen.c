@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -268,6 +268,10 @@ int gmskframegen_assemble(gmskframegen          _q,
                           fec_scheme            _fec0,
                           fec_scheme            _fec1)
 {
+    // validate payload length
+    if (_payload_len == 0 || _payload_len > LIQUID_MAX_PAYLOAD_LEN)
+        return liquid_error(LIQUID_EICONFIG,"gmskframegen_assemble(), invalid payload length %u", _payload_len);
+
     // reset frame generator state
     gmskframegen_reset(_q);
 
