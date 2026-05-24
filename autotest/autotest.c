@@ -45,7 +45,7 @@ int liquid_autotest_print_status(liquid_autotest _q)
 {
     char strbuf[92];
     char * s = strbuf;
-    int log_level = LIQUID_INFO;
+    int log_level = LIQUID_DEBUG;
 
     s += sprintf(s,"%s ", _q->name);
     unsigned int j;
@@ -163,7 +163,7 @@ int liquid_registry_print(const liquid_autotest * _registry)
     struct liquid_registry_info_s info = liquid_registry_info(_registry);
 
     // log results
-    liquid_log_info("=========== autotest results ===========");
+    liquid_log_debug("=========== autotest results ===========");
     unsigned int i;
     for (i=0; i<info.num_tests; i++)
         liquid_autotest_print_status(_registry[i]);
