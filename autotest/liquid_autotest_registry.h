@@ -1359,6 +1359,7 @@ extern struct liquid_autotest_s ofdmflexframegen_config_s;
 extern struct liquid_autotest_s ofdmflexframesync_config_s;
 // ./src/framing/tests/fskframesync_autotest.c
 extern struct liquid_autotest_s fskframesync_s;
+extern struct liquid_autotest_s fskframe_config_s;
 // ./src/framing/tests/symstreamrcf_autotest.c
 extern struct liquid_autotest_s symstreamrcf_psd_bw200_m12_b030_s;
 extern struct liquid_autotest_s symstreamrcf_psd_bw400_m12_b030_s;
@@ -2724,6 +2725,7 @@ liquid_autotest liquid_autotest_registry[] =
     &ofdmflexframegen_config_s,
     &ofdmflexframesync_config_s,
     &fskframesync_s,
+    &fskframe_config_s,
     &symstreamrcf_psd_bw200_m12_b030_s,
     &symstreamrcf_psd_bw400_m12_b030_s,
     &symstreamrcf_psd_bw400_m25_b020_s,

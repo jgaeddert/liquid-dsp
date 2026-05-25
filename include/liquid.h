@@ -6247,16 +6247,10 @@ int fskframegen_reset(fskframegen _q);
 //  _header         : frame header
 //  _payload        : payload data, [size: _payload_len x 1]
 //  _payload_len    : payload data length
-//  _check          : data integrity check, e.g LIQUID_CRC_32
-//  _fec0           : forward error-correction scheme (inner), e.g. LIQUID_FEC_GOLAY2412
-//  _fec1           : forward error-correction scheme (outer)
 int fskframegen_assemble(fskframegen     _q,
                          unsigned char * _header,
                          unsigned char * _payload,
-                         unsigned int    _payload_len,
-                         crc_scheme      _check,
-                         fec_scheme      _fec0,
-                         fec_scheme      _fec1);
+                         unsigned int    _payload_len);
 
 // Get length of assembled frame (number of samples)
 unsigned int fskframegen_getframelen(fskframegen _q);
