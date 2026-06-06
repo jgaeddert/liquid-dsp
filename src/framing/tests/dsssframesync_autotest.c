@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 LIQUID_AUTOTEST(dsssframesync,"full dsssframe synchronization","",0.1)
 {
@@ -69,5 +69,26 @@ LIQUID_AUTOTEST(dsssframesync,"full dsssframe synchronization","",0.1)
     // destroy objects
     dsssframegen_destroy(fg);
     dsssframesync_destroy(fs);
+}
+
+LIQUID_AUTOTEST(dsssframe_config,"check configuration validity","",0.1)
+{
+    _liquid_error_downgrade_enable();
+
+    // create dsssframegen object
+    dsssframegenprops_s fgprops;
+    fgprops.check = LIQUID_CRC_32;
+    fgprops.fec0  = LIQUID_FEC_NONE;
+    fgprops.fec1  = LIQUID_FEC_NONE;
+    dsssframegen fg = dsssframegen_create(&fgprops);
+
+    // assemble the frame
+    LIQUID_CHECK(dsssframegen_assemble(fg,NULL,NULL,                       0)==LIQUID_EICONFIG);
+    LIQUID_CHECK(dsssframegen_assemble(fg,NULL,NULL,                       1)==LIQUID_OK      );
+    LIQUID_CHECK(dsssframegen_assemble(fg,NULL,NULL,LIQUID_MAX_PAYLOAD_LEN  )==LIQUID_OK      );
+    LIQUID_CHECK(dsssframegen_assemble(fg,NULL,NULL,LIQUID_MAX_PAYLOAD_LEN+1)==LIQUID_EICONFIG);
+
+    dsssframegen_destroy(fg);
+    _liquid_error_downgrade_disable();
 }
 

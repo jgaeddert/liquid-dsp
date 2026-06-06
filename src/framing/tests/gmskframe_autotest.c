@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 LIQUID_AUTOTEST(gmskframesync_process,"simple recovery of GMSK frame","",0.1)
 {
@@ -166,5 +166,22 @@ LIQUID_AUTOTEST(gmskframesync_k04_m05_bt40,"","",0.1) { testbench_gmskframesync(
 // test odd configurations
 LIQUID_AUTOTEST(gmskframesync_k03_m07_bt20,"","",0.1) { testbench_gmskframesync(__q__,  3, 7, 0.20f); }
 LIQUID_AUTOTEST(gmskframesync_k08_m20_bt15,"","",0.1) { testbench_gmskframesync(__q__,  8,20, 0.15f); }
-LIQUID_AUTOTEST(gmskframesync_k15_m02_bt40,"","",0.1) { testbench_gmskframesync(__q__, 15, 2, 0.40f); }
+LIQUID_AUTOTEST(gmskframesync_k15_m02_bt40_s,"gmskframesync_k15_m02_bt40_s","",0.1) { testbench_gmskframesync(__q__, 15, 2, 0.40f); }
+
+LIQUID_AUTOTEST(gmskframe_config,"check configuration validity","",0.1)
+{
+    _liquid_error_downgrade_enable();
+
+    // create gmskframegen object
+    gmskframegen fg = gmskframegen_create();
+
+    // assemble the frame
+    LIQUID_CHECK(gmskframegen_assemble(fg,NULL,NULL,                       0, LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE)==LIQUID_EICONFIG);
+    LIQUID_CHECK(gmskframegen_assemble(fg,NULL,NULL,                       1, LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE)==LIQUID_OK      );
+    LIQUID_CHECK(gmskframegen_assemble(fg,NULL,NULL,LIQUID_MAX_PAYLOAD_LEN  , LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE)==LIQUID_OK      );
+    LIQUID_CHECK(gmskframegen_assemble(fg,NULL,NULL,LIQUID_MAX_PAYLOAD_LEN+1, LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE)==LIQUID_EICONFIG);
+
+    gmskframegen_destroy(fg);
+    _liquid_error_downgrade_disable();
+}
 

@@ -110,6 +110,12 @@ LIQUID_AUTOTEST(ofdmflexframegen_config,"ofdmflexframegen config","",0.1)
 
     LIQUID_CHECK(LIQUID_OK == ofdmflexframegen_print(q))
 
+    // assemble the frame: check payload length boundaries
+    LIQUID_CHECK(ofdmflexframegen_assemble(q,NULL,NULL,                       0)==LIQUID_EICONFIG);
+    LIQUID_CHECK(ofdmflexframegen_assemble(q,NULL,NULL,                       1)==LIQUID_OK      );
+    LIQUID_CHECK(ofdmflexframegen_assemble(q,NULL,NULL,LIQUID_MAX_PAYLOAD_LEN  )==LIQUID_OK      );
+    LIQUID_CHECK(ofdmflexframegen_assemble(q,NULL,NULL,LIQUID_MAX_PAYLOAD_LEN+1)==LIQUID_EICONFIG);
+
     ofdmflexframegen_destroy(q);
     _liquid_error_downgrade_disable();
 }

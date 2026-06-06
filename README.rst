@@ -396,7 +396,9 @@ Here is a table of CMake options available for configuring liquid:
 +------------------------+---------+--------------------------------------------------------------------+
 | ``BUILD_BENCHMARKS``   | ON      | Parse and compile benchmarks into executable binary                |
 +------------------------+---------+--------------------------------------------------------------------+
-| ``BUILD_SHARED_LIBS``  | ON      | Build shared library instead of static library                     |
+| ``BUILD_SHARED_LIBS``  | ON      | Build shared library                                               |
++------------------------+---------+--------------------------------------------------------------------+
+| ``BUILD_STATIC_LIBS``  | OFF     | Build static library                                               |
 +------------------------+---------+--------------------------------------------------------------------+
 | ``ENABLE_SIMD``        | ON      | Enable use of single instruction, multiple data (SIMD) extensions  |
 +------------------------+---------+--------------------------------------------------------------------+

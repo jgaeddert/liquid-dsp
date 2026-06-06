@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -472,6 +472,11 @@ int dsssframesync_configure_payload(dsssframesync _q)
     }
 
     unsigned int payload_dec_len = (_q->header_dec[n + 1] << 8) | (_q->header_dec[n + 2]);
+    if (payload_dec_len == 0 || payload_dec_len > LIQUID_MAX_PAYLOAD_LEN)
+    {
+        _q->header_valid = 0;
+        return liquid_error(LIQUID_EICONFIG,"dsssframesync_configure_payload(), maximum payload length exceeded");
+    }
     _q->payload_dec_len          = payload_dec_len;
 
     unsigned int check = (_q->header_dec[n + 3] >> 5) & 0x07;
@@ -490,10 +495,16 @@ int dsssframesync_configure_payload(dsssframesync _q)
         return liquid_error(LIQUID_EIMODE,"dsssframesync_decode_header(), decoded FEC (outer) exceeds available\n");
     }
 
+    // reallocate payload buffer and configure object to recover data
     _q->payload_dec
         = (unsigned char *)realloc(_q->payload_dec, (_q->payload_dec_len) * sizeof(unsigned char));
-    qpacketmodem_configure(
+    int rc = qpacketmodem_configure(
         _q->payload_decoder, _q->payload_dec_len, check, fec0, fec1, LIQUID_MODEM_BPSK);
+
+    if (_q->payload_dec == NULL || rc != LIQUID_OK) {
+        _q->header_valid = 0;
+        return liquid_error(LIQUID_EIMEM,"dsssframesync_configure_payload(), could not re-allocate payload arrays");
+    }
 
     synth_crcf_set_frequency(_q->payload_synth, synth_crcf_get_frequency(_q->header_synth));
     return LIQUID_OK;

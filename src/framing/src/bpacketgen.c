@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,7 +79,9 @@ bpacketgen bpacketgen_create(unsigned int _m,
                              int _fec0,
                              int _fec1)
 {
-    // validate input
+    // validate payload length
+    if (_dec_msg_len == 0 || _dec_msg_len > LIQUID_MAX_PAYLOAD_LEN)
+        return NULL;
 
     // create bpacketgen object
     bpacketgen q = (bpacketgen) malloc(sizeof(struct bpacketgen_s));

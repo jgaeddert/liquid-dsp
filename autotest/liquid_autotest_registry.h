@@ -1271,8 +1271,10 @@ extern struct liquid_autotest_s detector_cccf_n1024_s;
 extern struct liquid_autotest_s detector_cccf_n1341_s;
 // ./src/framing/tests/dsssframesync_autotest.c
 extern struct liquid_autotest_s dsssframesync_s;
+extern struct liquid_autotest_s dsssframe_config_s;
 // ./src/framing/tests/bpacketsync_autotest.c
 extern struct liquid_autotest_s bpacketsync_s;
+extern struct liquid_autotest_s bpacketsync_config_s;
 // ./src/framing/tests/bsync_autotest.c
 extern struct liquid_autotest_s bsync_rrrf_15_s;
 extern struct liquid_autotest_s bsync_crcf_15_s;
@@ -1357,6 +1359,7 @@ extern struct liquid_autotest_s ofdmflexframegen_config_s;
 extern struct liquid_autotest_s ofdmflexframesync_config_s;
 // ./src/framing/tests/fskframesync_autotest.c
 extern struct liquid_autotest_s fskframesync_s;
+extern struct liquid_autotest_s fskframe_config_s;
 // ./src/framing/tests/symstreamrcf_autotest.c
 extern struct liquid_autotest_s symstreamrcf_psd_bw200_m12_b030_s;
 extern struct liquid_autotest_s symstreamrcf_psd_bw400_m12_b030_s;
@@ -1376,6 +1379,7 @@ extern struct liquid_autotest_s framesync64_debug_rand_s;
 extern struct liquid_autotest_s framesync64_estimation_s;
 // ./src/framing/tests/flexframesync_autotest.c
 extern struct liquid_autotest_s flexframesync_s;
+extern struct liquid_autotest_s flexframe_config_s;
 // ./src/framing/tests/gmskframe_autotest.c
 extern struct liquid_autotest_s gmskframesync_process_s;
 extern struct liquid_autotest_s gmskframesync_multiple_s;
@@ -1387,7 +1391,8 @@ extern struct liquid_autotest_s gmskframesync_k04_m05_bt30_s;
 extern struct liquid_autotest_s gmskframesync_k04_m05_bt40_s;
 extern struct liquid_autotest_s gmskframesync_k03_m07_bt20_s;
 extern struct liquid_autotest_s gmskframesync_k08_m20_bt15_s;
-extern struct liquid_autotest_s gmskframesync_k15_m02_bt40_s;
+extern struct liquid_autotest_s gmskframesync_k15_m02_bt40_s_s;
+extern struct liquid_autotest_s gmskframe_config_s;
 // ./src/framing/tests/msource_autotest.c
 extern struct liquid_autotest_s msourcecf_tone_s;
 extern struct liquid_autotest_s msourcecf_chirp_s;
@@ -2643,7 +2648,9 @@ liquid_autotest liquid_autotest_registry[] =
     &detector_cccf_n1024_s,
     &detector_cccf_n1341_s,
     &dsssframesync_s,
+    &dsssframe_config_s,
     &bpacketsync_s,
+    &bpacketsync_config_s,
     &bsync_rrrf_15_s,
     &bsync_crcf_15_s,
     &bsync_crcf_phase_15_s,
@@ -2718,6 +2725,7 @@ liquid_autotest liquid_autotest_registry[] =
     &ofdmflexframegen_config_s,
     &ofdmflexframesync_config_s,
     &fskframesync_s,
+    &fskframe_config_s,
     &symstreamrcf_psd_bw200_m12_b030_s,
     &symstreamrcf_psd_bw400_m12_b030_s,
     &symstreamrcf_psd_bw400_m25_b020_s,
@@ -2734,6 +2742,7 @@ liquid_autotest liquid_autotest_registry[] =
     &framesync64_debug_rand_s,
     &framesync64_estimation_s,
     &flexframesync_s,
+    &flexframe_config_s,
     &gmskframesync_process_s,
     &gmskframesync_multiple_s,
     &gmskframesync_k02_m05_bt20_s,
@@ -2744,7 +2753,8 @@ liquid_autotest liquid_autotest_registry[] =
     &gmskframesync_k04_m05_bt40_s,
     &gmskframesync_k03_m07_bt20_s,
     &gmskframesync_k08_m20_bt15_s,
-    &gmskframesync_k15_m02_bt40_s,
+    &gmskframesync_k15_m02_bt40_s_s,
+    &gmskframe_config_s,
     &msourcecf_tone_s,
     &msourcecf_chirp_s,
     &msourcecf_aggregate_s,

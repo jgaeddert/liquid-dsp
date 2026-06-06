@@ -23,7 +23,7 @@
 #include <stdlib.h>
 
 #include "liquid.autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 static int bpacketsync_autotest_callback(unsigned char *  _payload,
                                          int              _payload_valid,
@@ -87,5 +87,18 @@ LIQUID_AUTOTEST(bpacketsync,"bpacketsync","",0.1)
     // clean up allocated objects
     bpacketgen_destroy(pg);
     bpacketsync_destroy(ps);
+}
+
+LIQUID_AUTOTEST(bpacketsync_config,"check configuration validity","",0.1)
+{
+    _liquid_error_downgrade_enable();
+
+    // test payload length boundaries
+    LIQUID_CHECK(bpacketgen_create(0,                       0, LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE)==NULL);
+    LIQUID_CHECK(bpacketgen_create(0,                       1, LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE)!=NULL);
+    LIQUID_CHECK(bpacketgen_create(0, LIQUID_MAX_PAYLOAD_LEN  , LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE)!=NULL);
+    LIQUID_CHECK(bpacketgen_create(0, LIQUID_MAX_PAYLOAD_LEN+1, LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE)==NULL);
+
+    _liquid_error_downgrade_disable();
 }
 

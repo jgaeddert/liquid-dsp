@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -415,13 +415,10 @@ int bpacketsync_execute_rxpayload(bpacketsync   _q,
 
 int bpacketsync_decode_header(bpacketsync _q)
 {
-    // decode header array
-    _q->header_valid = packetizer_decode(_q->p_header,
-                                         _q->header_enc,
-                                         _q->header_dec);
+    _q->header_valid = 0;
 
-    // return unconditionally if header failed
-    if (!_q->header_valid)
+    // decode header array and return unconditionally if header failed to decode
+    if (!packetizer_decode(_q->p_header,_q->header_enc,_q->header_dec))
         return LIQUID_OK;
 
     // strip header info
@@ -431,6 +428,10 @@ int bpacketsync_decode_header(bpacketsync _q)
     _q->fec1 = (fec_scheme) _q->header_dec[3];
     _q->dec_msg_len = (_q->header_dec[4] << 8) |
                       (_q->header_dec[5]     );
+
+    // validate payload length
+    if (_q->dec_msg_len == 0 || _q->dec_msg_len > LIQUID_MAX_PAYLOAD_LEN)
+        return liquid_error(LIQUID_EICONFIG,"bpacketsync_decode_header(), invalid payload length %u", _q->dec_msg_len);
 
     // check version number
     if (version != BPACKET_VERSION)
@@ -442,6 +443,7 @@ int bpacketsync_decode_header(bpacketsync _q)
     if (_q->fec1 == LIQUID_FEC_UNKNOWN || _q->fec1 >= LIQUID_FEC_NUM_SCHEMES)
         return liquid_error(LIQUID_EICONFIG,"bpacketsync, invalid/unsupported fec (outer): %u", _q->fec1);
 
+    _q->header_valid = 1;
     return LIQUID_OK;
 }
 
@@ -469,10 +471,13 @@ int bpacketsync_reconfig(bpacketsync _q)
     // re-allocate memory for encoded packet
     _q->payload_enc = (unsigned char*) realloc(_q->payload_enc,
                                                _q->enc_msg_len*sizeof(unsigned char));
-
     // re-allocate memory for decoded packet
     _q->payload_dec = (unsigned char*) realloc(_q->payload_dec,
                                                _q->dec_msg_len*sizeof(unsigned char));
+
+    if (_q->payload_dec == NULL || _q->payload_enc == NULL)
+        return liquid_error(LIQUID_EIMEM,"bpacketsync_reconfig(), insufficient memory for payload");
+
     return LIQUID_OK;
 }
 
