@@ -60,7 +60,7 @@ extern "C" {
 #define LIQUID_VERSION_STR(num) LIQUID_VERSION_STR_EX(num)
 
 #define LIQUID_VERSION_MAJOR    1
-#define LIQUID_VERSION_MINOR    7
+#define LIQUID_VERSION_MINOR    8
 #define LIQUID_VERSION_PATCH    0
 #define LIQUID_VERSION_DEV      0
 

@@ -19,8 +19,8 @@ int main(int argc, char* argv[])
     printf("liquid libversion        : %s\n", liquid_libversion());
     printf("liquid libversion number : 0x%.6x\n", liquid_libversion_number());
 
-    // consistent check for library versions given than starting with 1.7.0 version number
-    // representation changed
+    // consistent check for library versions given that starting with 1.7.0 version
+    // number representation changed
     int liquid_version_major = 0;
     int liquid_version_minor = 0;
     int liquid_version_patch = 0;
