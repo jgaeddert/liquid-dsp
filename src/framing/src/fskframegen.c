@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,35 +56,13 @@ struct fskframegen_s {
     unsigned char * preamble_sym;       // preamble symbol sequence
 
     // header
-#if 0
-    unsigned int    header_dec_len;     // header decoded message length
-    crc_scheme      header_crc;         // header validity check
-    fec_scheme      header_fec0;        // header inner code
-    fec_scheme      header_fec1;        // header outer code
-    packetizer      header_encoder;     // header encoder
-    unsigned int    header_enc_len;     // header encoded message length
-    unsigned char * header_dec;         // header uncoded [size: header_dec_len x 1]
-    unsigned char * header_enc;         // header encoded [size: header_enc_len x 1]
-    unsigned int    header_sym_len;     // header symbols length
-#else
     unsigned int    header_dec_len;     //
     unsigned int    header_sym_len;     //
     unsigned char * header_dec;         // header uncoded [size: header_dec_len x 1]
     unsigned char * header_sym;         // header: unmodulated symbols
     qpacketmodem    header_encoder;     //
-#endif
 
     // payload
-#if 0
-    unsigned int    payload_dec_len;    // payload decoded message length
-    crc_scheme      payload_crc;        // payload validity check
-    fec_scheme      payload_fec0;       // payload inner code
-    fec_scheme      payload_fec1;       // payload outer code
-    packetizer      payload_encoder;    // payload encoder
-    unsigned int    payload_enc_len;    // payload encoded message length
-    unsigned char * payload_enc;        // paylaod encoded [size: payload_enc_len x 1]
-    unsigned int    payload_sym_len;    // payload symbols length
-#else
     unsigned int    payload_dec_len;    //
     crc_scheme      payload_crc;        // payload validity check
     fec_scheme      payload_fec0;       // payload inner code
@@ -92,7 +70,6 @@ struct fskframegen_s {
     unsigned int    payload_sym_len;    //
     unsigned char * payload_sym;        //
     qpacketmodem    payload_encoder;    //
-#endif
 
     // framing state
     enum {
@@ -135,21 +112,7 @@ fskframegen fskframegen_create()
     msequence_destroy(preamble_ms);
 
     // header objects/arrays
-#if 0
-    q->header_dec_len   = 10;
-    q->header_crc       = LIQUID_CRC_32;
-    q->header_fec0      = LIQUID_FEC_NONE;
-    q->header_fec1      = LIQUID_FEC_GOLAY2412;
-    q->header_encoder   = packetizer_create(q->header_dec_len,
-                                            q->header_crc,
-                                            q->header_fec0,
-                                            q->header_fec1);
-    q->header_enc_len   = packetizer_get_dec_msg_len(q->header_encoder);
-    q->header_dec       = (unsigned char*)malloc(q->header_dec_len*sizeof(unsigned char));
-    q->header_enc       = (unsigned char*)malloc(q->header_enc_len*sizeof(unsigned char));
-    q->header_sym_len   = q->header_enc_len * 8 / q->m;
-#else
-    q->header_dec_len   = 10;
+    q->header_dec_len   = 12;
     q->header_dec       = (unsigned char*)malloc(q->header_dec_len*sizeof(unsigned char));
     q->header_encoder   = qpacketmodem_create();
     qpacketmodem_configure(q->header_encoder,
@@ -160,22 +123,8 @@ fskframegen fskframegen_create()
                            LIQUID_MODEM_BPSK);
     q->header_sym_len   = qpacketmodem_get_frame_len(q->header_encoder);
     q->header_sym       = (unsigned char*)malloc(q->header_sym_len*sizeof(unsigned char));
-#endif
 
     // payload objects/arrays
-#if 0
-    q->payload_dec_len  = 10;
-    q->payload_crc      = LIQUID_CRC_32;
-    q->payload_fec0     = LIQUID_FEC_NONE;
-    q->payload_fec1     = LIQUID_FEC_GOLAY2412;
-    q->payload_encoder  = packetizer_create(q->payload_dec_len,
-                                            q->payload_crc,
-                                            q->payload_fec0,
-                                            q->payload_fec1);
-    q->payload_enc_len  = packetizer_get_dec_msg_len(q->payload_encoder);
-    q->payload_enc      = (unsigned char*)malloc(q->payload_enc_len*sizeof(unsigned char));
-    q->payload_sym_len  = 0;    // TODO: set this appropriately
-#else
     q->payload_dec_len  = 200;
     q->payload_crc      = LIQUID_CRC_32;
     q->payload_fec0     = LIQUID_FEC_NONE;
@@ -189,7 +138,6 @@ fskframegen fskframegen_create()
                            LIQUID_MODEM_QAM16);  // TODO: set bits/sym appropriately
     q->payload_sym_len  = qpacketmodem_get_frame_len(q->payload_encoder);
     q->payload_sym      = (unsigned char*)malloc(q->payload_sym_len*sizeof(unsigned char));
-#endif
 
     // reset framing object
     fskframegen_reset(q);
@@ -210,24 +158,13 @@ int fskframegen_destroy(fskframegen _q)
     free(_q->preamble_sym);
 
     // destroy/free header objects/arrays
-#if 0
-    free(_q->header_dec);
-    free(_q->header_enc);
-    packetizer_destroy(_q->header_encoder);
-#else
     free(_q->header_dec);
     free(_q->header_sym);
     qpacketmodem_destroy(_q->header_encoder);
-#endif
 
     // destroy/free payload objects/arrays
-#if 0
-    free(_q->payload_enc);
-    packetizer_destroy(_q->payload_encoder);
-#else
     free(_q->payload_sym);
     qpacketmodem_destroy(_q->payload_encoder);
-#endif
 
     // free main object memory
     free(_q);
@@ -285,54 +222,47 @@ int fskframegen_print(fskframegen _q)
 int fskframegen_assemble(fskframegen     _q,
                          unsigned char * _header,
                          unsigned char * _payload,
-                         unsigned int    _payload_len,
-                         crc_scheme      _check,
-                         fec_scheme      _fec0,
-                         fec_scheme      _fec1)
+                         unsigned int    _payload_len)
 {
-#if 1
-    liquid_error(LIQUID_ENOIMP,"fskframegen_assemble(), base functionality not implemented; ignoring input parameters for now");
-#else
+    liquid_log_trace("fskframegen, assembling...");
     // set properties
-    _q->payload_dec_len = _payload_len;
-    _q->payload_crc     = _check;
-    _q->payload_fec0    = _fec0;
-    _q->payload_fec1    = _fec1;
+    if (_payload_len == 0 || _payload_len > LIQUID_MAX_PAYLOAD_LEN)
+        return liquid_error(LIQUID_EICONFIG,"fskframegen_assemble(), payload length (%u) is out of range", _payload_len);
 
     // re-create payload packetizer
-    //int rc =
-    qpacketmodem_configure(_q->payload_encoder,
-                           _q->payload_dec_len,
-                           _q->payload_crc,
-                           _q->payload_fec0,
-                           _q->payload_fec1,
-                           LIQUID_MODEM_QPSK);
-#endif
-    
-    // get packet length
-    _q->payload_sym_len = qpacketmodem_get_frame_len(_q->payload_encoder);
+    liquid_log_trace("fskframegen, configuring qpacketmodem");
+    _q->payload_dec_len = _payload_len;
+    int rc = qpacketmodem_configure(_q->payload_encoder,
+                                    _q->payload_dec_len,
+                                    _q->payload_crc,
+                                    _q->payload_fec0,
+                                    _q->payload_fec1,
+                                    LIQUID_MODEM_QAM16);
+    //printf("encoder: "); qpacketmodem_print(_q->payload_encoder);
+    if (rc != LIQUID_OK)
+        return liquid_error(LIQUID_EINT,"fskframegen_assemble(), could not create payload packetizer");
 
-    // re-allocate memory
+    // get packet length and re-allocate memory
+    liquid_log_trace("fskframegen, reallocating memory");
+    _q->payload_sym_len = qpacketmodem_get_frame_len(_q->payload_encoder);
     _q->payload_sym = (unsigned char*) realloc(_q->payload_sym, _q->payload_sym_len*sizeof(unsigned char));
-    
+    if (_q->payload_sym == NULL)
+        return liquid_error(LIQUID_EINT,"fskframegen_assemble(), could not allocate memory for symbols");
+
     // set assembled flag
     _q->frame_assembled = 1;
 
     // encode header
+    liquid_log_trace("encoding header");
     fskframegen_encode_header(_q, _header);
 
     // encode payload symbols
+    liquid_log_trace("modulating header");
     qpacketmodem_encode_syms(_q->payload_encoder, _payload, _q->payload_sym);
-#if 0
-    printf("tx payload symbols (%u)\n", _q->payload_sym_len);
-    unsigned int i;
-    for (i=0; i<_q->payload_sym_len; i++)
-        printf("%1x%s", _q->payload_sym[i], ((i+1)%64)==0 ? "\n" : "");
-    printf("\n");
-#endif
 
     // set state appropriately
     _q->state = STATE_PREAMBLE;
+    liquid_log_debug("fskframegen_assemble(), payload=%u, symbols=%u", _q->payload_dec_len, _q->payload_sym_len);
     return LIQUID_OK;
 }
 
@@ -377,49 +307,30 @@ int fskframegen_write_samples(fskframegen     _q,
 //
 
 int fskframegen_encode_header(fskframegen     _q,
-                               unsigned char * _header)
+                              unsigned char * _header)
 {
     // first 8 bytes user data
-    memmove(_q->header_dec, _header, 8);
     unsigned int n = 8;
+    if (_header == NULL)
+        memset(_q->header_dec, 0x00, 8);
+    else
+        memmove(_q->header_dec, _header, 8);
 
-#if 0
     // first byte is for expansion/version validation
-    _q->header_dec[n+0] = 0;    // version
+    _q->header_dec[n++] = 0;    // version
 
     // add payload length
-    _q->header_dec[n+1] = (_q->payload_dec_len >> 8) & 0xff;
-    _q->header_dec[n+2] = (_q->payload_dec_len     ) & 0xff;
+    _q->header_dec[n++] = (_q->payload_dec_len >> 8) & 0xff;
+    _q->header_dec[n++] = (_q->payload_dec_len     ) & 0xff;
 
-    // add CRC, forward error-correction schemes
-    //  CRC     : most-significant 3 bits of [n+4]
-    //  fec0    : least-significant 5 bits of [n+4]
-    //  fec1    : least-significant 5 bits of [n+5]
-    _q->header_dec[n+3]  = (_q->payload_crc & 0x07) << 5;
-    _q->header_dec[n+3] |= (_q->payload_fec0      ) & 0x1f;
-    _q->header_dec[n+4]  = (_q->payload_fec1      ) & 0x1f;
-#else
+    // expansion
     while (n < _q->header_dec_len)
         _q->header_dec[n++] = 0xff;
-#endif
 
     // run packet encoder, encoding into symbols
     qpacketmodem_encode_syms(_q->header_encoder, _q->header_dec, _q->header_sym);
 
-#if 0
-    printf("tx header symbols (%u):\n", _q->header_sym_len);
-    unsigned int i;
-    for (i=0; i<_q->header_sym_len; i++)
-        printf("%1x", _q->header_sym[i]);
-    printf("\n");
-
-
-    printf("tx header decoded (%u):\n", _q->header_dec_len);
-    for (i=0; i<_q->header_dec_len; i++)
-        printf(" %2x", _q->header_dec[i]);
-    printf("\n");
-#endif
-    // TODO: scramble header
+    //
     return LIQUID_OK;
 }
 

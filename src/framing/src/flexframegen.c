@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -346,6 +346,10 @@ int flexframegen_assemble(flexframegen          _q,
                           const unsigned char * _payload,
                           unsigned int          _payload_dec_len)
 {
+    // validate input
+    if (_payload_dec_len == 0 || _payload_dec_len > LIQUID_MAX_PAYLOAD_LEN)
+        return liquid_error(LIQUID_EICONFIG,"flexframegen_assemble(), payload length (%u) is out of range", _payload_dec_len);
+
     // reset object
     flexframegen_reset(_q);
 
