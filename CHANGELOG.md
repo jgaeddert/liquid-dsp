@@ -1,6 +1,6 @@
 # Changelog
 
-## Latest
+## 1.8.0 - 2026-06-06
 
 Version 1.8.0 includes a new logging environment, macros for simplified
 argument parsing, enhancements for the [CMake](https://cmake.org) build
