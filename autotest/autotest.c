@@ -172,6 +172,8 @@ int liquid_registry_print_status(const liquid_autotest * _registry)
     unsigned int i;
     for (i=0; i<info.num_tests; i++)
         liquid_autotest_print_status(_registry[i]);
+
+    return LIQUID_OK;
 }
 
 // print summary of test run
