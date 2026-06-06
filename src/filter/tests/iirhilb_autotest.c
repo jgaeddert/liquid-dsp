@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(iirhilbf_interp_decim,"test end-to-end power specral density on interp/decim methods", "", 0.1)
+LIQUID_AUTOTEST(iirhilbf_interp_decim,"test end-to-end power spectral density on interp/decim methods", "", 0.1)
 {
     float        tol  = 1;  // error tolerance [dB]
     float        bw = 0.4f; // pulse bandwidth
@@ -87,7 +87,7 @@ LIQUID_AUTOTEST(iirhilbf_interp_decim,"test end-to-end power specral density on 
     iirhilbf_destroy(q);
 }
 
-LIQUID_AUTOTEST(iirhilbf_filter,"test end-to-end power specral density on filter methods", "", 0.1)
+LIQUID_AUTOTEST(iirhilbf_filter,"test end-to-end power spectral density on filter methods", "", 0.1)
 {
     float        tol  = 1;  // error tolerance [dB]
     float        bw = 0.2f; // pulse bandwidth
