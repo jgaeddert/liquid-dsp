@@ -150,8 +150,11 @@ struct liquid_registry_info_s
 // get total number of tests in a registry
 struct liquid_registry_info_s liquid_registry_info(const liquid_autotest * _registry);
 
-// print registry, either info or full status
-int liquid_registry_print(const liquid_autotest * _registry);
+// print status of tests
+int liquid_registry_print_status(const liquid_autotest * _registry);
+
+// print summary of test run
+int liquid_registry_print_summary(const liquid_autotest * _registry);
 
 // export registry to JSON file
 int liquid_registry_json(const liquid_autotest * _registry,

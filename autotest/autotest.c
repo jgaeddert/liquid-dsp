@@ -43,14 +43,19 @@ int liquid_autotest_print_info(liquid_autotest _q, unsigned int _index)
 // print test status
 int liquid_autotest_print_status(liquid_autotest _q)
 {
+    // too verbose running just one test; for now ignore skipped tests
+    if (_q->status == LIQUID_AUTOTEST_SKIP)
+        return LIQUID_OK;
+
     char strbuf[92];
     char * s = strbuf;
-    int log_level = LIQUID_DEBUG;
+    int log_level = LIQUID_INFO;
 
     s += sprintf(s,"%s ", _q->name);
     unsigned int j;
     for (j=strlen(_q->name); j<48; j++)
         s += sprintf(s,".");
+
     switch(_q->status) {
     case LIQUID_AUTOTEST_PASS:
         s += sprintf(s," pass [      %5u]", _q->num_pass);
@@ -156,20 +161,27 @@ struct liquid_registry_info_s liquid_registry_info(const liquid_autotest * _regi
     return info;
 }
 
-// print registry, either info or full status
-int liquid_registry_print(const liquid_autotest * _registry)
+// print status of tests
+int liquid_registry_print_status(const liquid_autotest * _registry)
 {
     // retrieve summary of runs
     struct liquid_registry_info_s info = liquid_registry_info(_registry);
 
     // log results
-    liquid_log_debug("=========== autotest results ===========");
+    liquid_log_info("=========== autotest results ===========");
     unsigned int i;
     for (i=0; i<info.num_tests; i++)
         liquid_autotest_print_status(_registry[i]);
+}
 
+// print summary of test run
+int liquid_registry_print_summary(const liquid_autotest * _registry)
+{
     // log summary
     liquid_log_info("=========== autotest summary ===========");
+
+    // retrieve summary of runs
+    struct liquid_registry_info_s info = liquid_registry_info(_registry);
 
     int log_level = info.num_tests_fail ? LIQUID_ERROR : LIQUID_INFO;
 
