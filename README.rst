@@ -325,11 +325,17 @@ Here is a table of CMake options available for configuring liquid:
 +------------------------+---------+--------------------------------------------------------------------+
 | ``ENABLE_SIMD``        | ON      | Enable use of single instruction, multiple data (SIMD) extensions  |
 +------------------------+---------+--------------------------------------------------------------------+
+| ``FIND_SIMD``          | ON      | Try to find available SIMD instruction sets on host computer       |
++------------------------+---------+--------------------------------------------------------------------+
+| ``FIND_FFTW``          | ON      | Try to find `FFTW <http://www.fftw.org)>`_ if available            |
++------------------------+---------+--------------------------------------------------------------------+
 | ``BUILD_SANDBOX``      | OFF     | Compile sandbox (testing) programs                                 |
 +------------------------+---------+--------------------------------------------------------------------+
 | ``BUILD_DOC``          | OFF     | Generate documentation                                             |
 +------------------------+---------+--------------------------------------------------------------------+
 | ``COVERAGE``           | OFF     | Set flags to enable code coverage testing                          |
++------------------------+---------+--------------------------------------------------------------------+
+| ``PYTHON``             | OFF     | Set flags to enable building python bindings                       |
 +------------------------+---------+--------------------------------------------------------------------+
 
 For example, if you want to benchmark how fast a vector dot product

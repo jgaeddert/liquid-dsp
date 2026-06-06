@@ -18,7 +18,7 @@ int main(int argc, char*argv[])
 
     // derived values
     unsigned int M2=M/2, P2=P/2;    // channelizer half sizes, for convenience
-    int channel_id = (int)(roundf(fc*M)) % M; // index corresponding to fc
+    unsigned int channel_id = (unsigned int)(roundf(fc*M)) % M; // index corresponding to fc
     unsigned int i;
 
     // create filterbank objects from prototype

@@ -502,7 +502,7 @@ float liquid_filter_autocorr(float *      _h,
     _lag = abs(_lag);
 
     // lag outside of filter length is zero
-    if (_lag >= _h_len) return 0.0f;
+    if (_lag >= (int)_h_len) return 0.0f;
 
     // compute auto-correlation
     float rxx=0.0f; // initialize auto-correlation to zero
@@ -553,7 +553,7 @@ float liquid_filter_crosscorr(float *      _h,
     int n;
     if (_lag < 0)
         n = (int)_g_len + _lag;
-    else if (_lag < (_h_len-_g_len))
+    else if (_lag < (int)(_h_len-_g_len))
         n = _g_len;
     else
         n = _h_len - _lag;

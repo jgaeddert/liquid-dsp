@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2025 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,18 +33,21 @@
 #include "liquid.internal.h"
 
 struct ASGRAM(_s) {
-    unsigned int nfft;          // transform size (display)
-    unsigned int nfftp;         // transform size (processing)
-    unsigned int p;             // over-sampling rate
-    SPGRAM()     periodogram;   // spectral periodogram object
-    TC *         X;             // spectral periodogram output
-    float *      psd;           // power spectral density
+    unsigned int    nfft;           // transform size (display)
+    SPGRAM()        periodogram;    // spectral periodogram object
+    float *         psd;            // power spectral density
+    float *         psd_sorted;     // power spectral density (sorted)
 
-    float        levels[10];    // threshold for signal levels
-    char         levelchar[10]; // characters representing levels
-    unsigned int num_levels;    // number of levels
-    float        div;           // dB per division
-    float        ref;           // dB reference value
+    float           levels[10];     // threshold for signal levels
+    char            levelchar[10];  // characters representing levels
+    unsigned int    num_levels;     // number of levels
+    float           div;            // dB per division
+    float           ref;            // dB reference value
+
+    // autoscale
+    int             autoscale;      // enable automatic level-setting?
+    int             autoscale_index;// index in sorted buffer (percentile) for noise floor estimate
+    float           n0_est;         // noise floor estimate
 };
 
 // create asgram object with size _nfft
@@ -56,24 +59,24 @@ ASGRAM() ASGRAM(_create)(unsigned int _nfft)
 
     // create main object
     ASGRAM() q = (ASGRAM()) malloc(sizeof(struct ASGRAM(_s)));
-
     q->nfft  = _nfft;
 
-    // derived values
-    q->p     = 4;   // over-sampling rate
-    q->nfftp = q->nfft * q->p;
-
     // allocate memory for PSD estimate
-    q->X   = (TC *   ) malloc((q->nfftp)*sizeof(TC)   );
-    q->psd = (float *) malloc((q->nfftp)*sizeof(float));
+    q->psd        = (float *) malloc((q->nfft)*sizeof(float));
+    q->psd_sorted = (float *) malloc((q->nfft)*sizeof(float));
 
     // create spectral periodogram object
-    q->periodogram = SPGRAM(_create)(q->nfftp,LIQUID_WINDOW_HANN,q->nfft,q->nfft/2);
+    q->periodogram = SPGRAM(_create)(q->nfft,LIQUID_WINDOW_HANN,q->nfft,q->nfft/2);
 
     // power spectral density levels
     q->num_levels = 10;
     ASGRAM(_set_display)(q," .,-+*&NM#");
     ASGRAM(_set_scale)(q, 0.0f, 10.0f);
+
+    // set autoscale parameters
+    q->autoscale = 1;
+    q->autoscale_index = q->nfft / 4; // 25th percentile
+    q->n0_est = 0.0f;
 
     return q;
 }
@@ -95,10 +98,8 @@ ASGRAM() ASGRAM(_copy)(ASGRAM() q_orig)
     q_copy->periodogram = SPGRAM(_copy)(q_orig->periodogram);
 
     // allocate and copy memory arrays
-    q_copy->X   = (TC *   ) malloc((q_copy->nfftp)*sizeof(TC)   );
-    q_copy->psd = (float *) malloc((q_copy->nfftp)*sizeof(float));
-    memmove(q_copy->X,   q_orig->X,   q_copy->nfftp*sizeof(TC));
-    memmove(q_copy->psd, q_orig->psd, q_copy->nfftp*sizeof(float));
+    q_copy->psd        = liquid_malloc_copy(q_orig->psd,        q_orig->nfft, sizeof(float));
+    q_copy->psd_sorted = liquid_malloc_copy(q_orig->psd_sorted, q_orig->nfft, sizeof(float));
 
     // return copied object
     return q_copy;
@@ -110,9 +111,9 @@ int ASGRAM(_destroy)(ASGRAM() _q)
     // destroy spectral periodogram object
     SPGRAM(_destroy)(_q->periodogram);
 
-    // free PSD estimate array
-    free(_q->X);
+    // free arrays
     free(_q->psd);
+    free(_q->psd_sorted);
 
     // free main object memory
     free(_q);
@@ -123,6 +124,20 @@ int ASGRAM(_destroy)(ASGRAM() _q)
 int ASGRAM(_reset)(ASGRAM() _q)
 {
     return SPGRAM(_reset)(_q->periodogram);
+}
+
+// Enable automatic display scaling based on noise floor estimation
+int ASGRAM(_autoscale_enable)(ASGRAM() _q)
+{
+    _q->autoscale = 1;
+    return LIQUID_OK;
+}
+
+// Disable automatic display scaling based on noise floor estimation
+int ASGRAM(_autoscale_disable)(ASGRAM() _q)
+{
+    _q->autoscale = 0;
+    return LIQUID_OK;
 }
 
 // set scale and offset for spectrogram
@@ -208,33 +223,42 @@ int ASGRAM(_execute)(ASGRAM() _q,
     SPGRAM(_get_psd)(_q->periodogram, _q->psd);
     SPGRAM(_reset)(_q->periodogram);
 
+    // set autoscale parameters
+    if (_q->autoscale) {
+        // estimate noise floor for this step: sort psd and find percentile
+        memmove(_q->psd_sorted, _q->psd, _q->nfft*sizeof(float));
+        qsort(_q->psd_sorted, _q->nfft, sizeof(float), liquid_compare_float);
+        float n0_est = _q->psd_sorted[_q->autoscale_index];
+
+        // check if this is the first run of the spectrum
+        if (!SPGRAM(_get_num_transforms)(_q->periodogram)) {
+            _q->n0_est = n0_est;
+        } else {
+            float alpha = 0.1f;
+            _q->n0_est = (1.0f-alpha)*n0_est + alpha*_q->n0_est;
+        }
+
+        // set reference based on noise floor, adjusting offset based
+        // on dB per division
+        float offset = _q->div; //(_q->div < 1.0f) ? 0 : 1.0*_q->div;
+        ASGRAM(_set_scale)(_q, _q->n0_est - offset, _q->div);
+    }
+
     unsigned int i;
     unsigned int j;
     // find peak
-    for (i=0; i<_q->nfftp; i++) {
+    for (i=0; i<_q->nfft; i++) {
         if (i==0 || _q->psd[i] > *_peakval) {
             *_peakval = _q->psd[i];
-            *_peakfreq = (float)(i) / (float)(_q->nfftp) - 0.5f;
+            *_peakfreq = (float)(i) / (float)(_q->nfft) - 0.5f;
         }
     }
 
     // down-sample from nfft*p frequency bins to just nfft by retaining
     // one value (e.g. maximum or average) over range.
     for (i=0; i<_q->nfft; i++) {
-#if 0
-        // find maximum within 'p' samples
-        float psd_val = 0.0f;
-        for (j=0; j<_q->p; j++) {
-            unsigned int index = (_q->p*i) + j;
-            psd_val = (j==0 || _q->psd[index] > psd_val) ? _q->psd[index] : psd_val;
-        }
-#else
         // find average over 'p' samples
-        float psd_val = 0.0f;
-        for (j=0; j<_q->p; j++)
-            psd_val += _q->psd[(_q->p*i) + j];
-        psd_val /= (float)(_q->p);
-#endif
+        float psd_val = _q->psd[i];
 
         // determine ascii level (which character to use)
         _ascii[i] = _q->levelchar[0];

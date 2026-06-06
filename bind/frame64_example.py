@@ -10,10 +10,14 @@ args = p.parse_args()
 fg      = dsp.fg64()
 header  = np.random.randint(256, size=fg.header_len,  dtype=np.uint8)
 payload = np.random.randint(256, size=fg.payload_len, dtype=np.uint8)
+#payload = np.arange(16, dtype=np.uint8)
+#payload = 'hello, world!'
 frame   = fg.execute(header, payload)
 
 def callback(context,header,payload,stats):
     print('frame detected!')
+    print(payload)
+    #print(''.join([chr(c) for c in payload]))
     context.update(stats)
 
 # create frame synchronizer and receive frame

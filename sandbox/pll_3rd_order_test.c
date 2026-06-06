@@ -22,7 +22,7 @@ int main()
     float df_out        = 0.0f;                 // output signal frequency drift
 
     // run basic simulation
-    int i;
+    unsigned int i;
     FILE * fid= fopen("pll_3rd_order_test.dat","w");
     fprintf(fid,"# %6s %6s %6s %6s %9s %9s %12s %12s %12s %12s %12s\n",
             "x-real","x-imag","y-real","y-imag","x-phase","y-phase",

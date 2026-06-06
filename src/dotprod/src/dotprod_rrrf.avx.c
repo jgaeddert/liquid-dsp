@@ -193,8 +193,8 @@ int dotprod_rrrf_execute(dotprod_rrrf _q,
 
 // use AVX extensions
 int dotprod_rrrf_execute_avx(dotprod_rrrf _q,
-                              float *      _x,
-                              float *      _y)
+                             float *      _x,
+                             float *      _y)
 {
     __m256 v;   // input vector
     __m256 h;   // coefficients vector

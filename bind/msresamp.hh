@@ -38,10 +38,9 @@ class msresamp : public object
     // get overall sample rate
     float get_rate() const { return msresamp_crcf_get_rate(q); }
 
-    // get overall sample rate
-    // TODO: do a proper job of computing this value
+    // get number of output samples given input buffer size and current state
     unsigned int compute_output_length(unsigned int _nx)
-        { return 1+(unsigned int)(get_rate() * _nx); }
+        { return msresamp_crcf_get_num_output(q,_nx); }
 
     // execute on a block of samples
     void execute(std::complex<float> * _x,
@@ -82,7 +81,8 @@ class msresamp : public object
         execute((std::complex<float>*) info.ptr, nx,
                 (std::complex<float>*) buf_out.request().ptr, &num_written);
         if (num_written != num_output)
-            throw std::runtime_error("output length did not match expected");
+            throw std::runtime_error("output length did not match expected, got " +
+                    std::to_string(num_written) + ", expected " + std::to_string(num_output));
         return buf_out;
     }
 #endif
