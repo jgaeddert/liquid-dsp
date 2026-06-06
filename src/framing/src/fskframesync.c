@@ -465,7 +465,7 @@ int fskframesync_execute_rxheader(fskframesync  _q,
     {
         // decode header
         int rc = fskframesync_decode_header(_q);
-        // TODO: check return code
+        if (rc) return rc;
 
         // update statistics
         //_q->framedatastats.num_frames_detected++;
