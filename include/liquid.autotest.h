@@ -63,7 +63,7 @@ struct liquid_autotest_s
 };
 
 // print test info
-int liquid_autotest_print_info(liquid_autotest _q);
+int liquid_autotest_print_info(liquid_autotest _q, unsigned int _index);
 
 // print test status
 int liquid_autotest_print_status(liquid_autotest _q);

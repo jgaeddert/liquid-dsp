@@ -36,9 +36,11 @@ int main(int argc, char* argv[])
 
     unsigned int i = 0;
     if (list) {
-        i = 0;
         while (liquid_autotest_registry[i] != NULL)
-            liquid_autotest_print_info(liquid_autotest_registry[i++]);
+        {
+            liquid_autotest_print_info(liquid_autotest_registry[i],i);
+            i++;
+        }
         return LIQUID_OK;
     }
 

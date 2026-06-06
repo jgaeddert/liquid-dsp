@@ -33,10 +33,10 @@
 #include "liquid.autotest.h"
 
 // print test info
-int liquid_autotest_print_info(liquid_autotest _q)
+int liquid_autotest_print_info(liquid_autotest _q, unsigned int _index)
 {
-    liquid_log_info("name=%s, description=%s, keywords=%s, cost=%g",
-        _q->name, _q->docstr, _q->keywords, _q->cost);
+    liquid_log_info("index=%4u, name=%s, description=%s, keywords=%s, cost=%g",
+        _index, _q->name, _q->docstr, _q->keywords, _q->cost);
     return LIQUID_OK;
 }
 
