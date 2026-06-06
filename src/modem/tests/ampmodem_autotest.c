@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,15 +20,16 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // Help function to keep code base small
-void ampmodem_test_harness(float                _mod_index,
-                           liquid_ampmodem_type _type,
-                           int                  _suppressed_carrier,
-                           float                _dphi,
-                           float                _phi)
+void testbench_ampmodem(liquid_autotest __q__,
+                        float                _mod_index,
+                        liquid_ampmodem_type _type,
+                        int                  _suppressed_carrier,
+                        float                _dphi,
+                        float                _phi)
 {
     // options
     float   SNRdB   = 40.0f;    // signal-to-noise ratio (set very high for testing)
@@ -41,8 +42,6 @@ void ampmodem_test_harness(float                _mod_index,
     // create mod/demod objects
     ampmodem mod   = ampmodem_create(_mod_index, _type, _suppressed_carrier);
     ampmodem demod = ampmodem_create(_mod_index, _type, _suppressed_carrier);
-    if (liquid_autotest_verbose)
-        ampmodem_print(mod);
 
     // compute end-to-end delay
     unsigned int delay = ampmodem_get_delay_mod(mod) + ampmodem_get_delay_demod(demod);
@@ -108,18 +107,17 @@ void ampmodem_test_harness(float                _mod_index,
     rmse_0 = 10*log10f( rmse_0 / (float)num_samples_compare );  // in-phase
     rmse_1 = 10*log10f( rmse_1 / (float)num_samples_compare );  // 180-degree out of phase
     float rmse = (_type == LIQUID_AMPMODEM_DSB && _suppressed_carrier ) ? (rmse_0 < rmse_1 ? rmse_0 : rmse_1) : rmse_0;
-    if (liquid_autotest_verbose)
-        printf("rms error : %.3f (in-phase: %.3f, 180 phase: %.3f) dB\n", rmse, rmse_0, rmse_1);
-    CONTEND_LESS_THAN( rmse, -18.0f );
+    liquid_log_debug("rms error : %.3f (in-phase: %.3f, 180 phase: %.3f) dB", rmse, rmse_0, rmse_1);
+    LIQUID_CHECK( rmse< -18.0f );
 }
 
 // AUTOTESTS: basic properties: M=2^m, k = 2*M, bandwidth = 0.25
-void autotest_ampmodem_dsb_carrier_on () { ampmodem_test_harness(0.8f,LIQUID_AMPMODEM_DSB,0,0.02,0.0); }
-void autotest_ampmodem_usb_carrier_on () { ampmodem_test_harness(0.8f,LIQUID_AMPMODEM_USB,0,0.02,0.0); }
-void autotest_ampmodem_lsb_carrier_on () { ampmodem_test_harness(0.8f,LIQUID_AMPMODEM_LSB,0,0.02,0.0); }
+LIQUID_AUTOTEST(ampmodem_dsb_carrier_on ,"","",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_DSB,0,0.02,0.0); }
+LIQUID_AUTOTEST(ampmodem_usb_carrier_on ,"","",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_USB,0,0.02,0.0); }
+LIQUID_AUTOTEST(ampmodem_lsb_carrier_on ,"","",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_LSB,0,0.02,0.0); }
 
-void autotest_ampmodem_dsb_carrier_off() { ampmodem_test_harness(0.8f,LIQUID_AMPMODEM_DSB,1,0.02,0.0); }
-void autotest_ampmodem_usb_carrier_off() { ampmodem_test_harness(0.8f,LIQUID_AMPMODEM_USB,1,0.00,0.0); }
-void autotest_ampmodem_lsb_carrier_off() { ampmodem_test_harness(0.8f,LIQUID_AMPMODEM_LSB,1,0.00,0.0); }
+LIQUID_AUTOTEST(ampmodem_dsb_carrier_off,"","",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_DSB,1,0.02,0.0); }
+LIQUID_AUTOTEST(ampmodem_usb_carrier_off,"","",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_USB,1,0.00,0.0); }
+LIQUID_AUTOTEST(ampmodem_lsb_carrier_off,"","",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_LSB,1,0.00,0.0); }
 
 

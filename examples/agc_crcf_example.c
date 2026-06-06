@@ -1,55 +1,28 @@
-//
-// agc_crcf_example.c
-//
-// Automatic gain control example demonstrating its transient
-// response.
-//
+char __docstr__[] =
+"Automatic gain control example demonstrating its transient response.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <complex.h>
-#include <getopt.h>
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "agc_crcf_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("agc_example [options]\n");
-    printf("  h     : print usage\n");
-    printf("  n     : number of samples, n >=100, default: 2000\n");
-    printf("  b     : AGC bandwidth,     b >=  0, default: 0.01\n");
-}
-
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // options
-    float        bt          = 0.01f;   // agc loop bandwidth
-    float        gamma       = 0.001f;  // initial signal level
-    unsigned int num_samples = 2000;    // number of samples
-
-    int dopt;
-    while((dopt = getopt(argc,argv,"hn:N:s:b:")) != EOF){
-        switch (dopt) {
-        case 'h': usage();                      return 0;
-        case 'n': num_samples = atoi(optarg);   break;
-        case 'b': bt          = atof(optarg);   break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char *,   filename,    "agc_crcf_example.m",'o', "output filename",NULL);
+    liquid_argparse_add(float,    bt,          0.01f,               'b', "agc loop bandwidth", NULL);
+    liquid_argparse_add(float,    gamma,       0.001f,              'g', "initial signal level", NULL);
+    liquid_argparse_add(unsigned, num_samples, 2000,                'n', "number of samples", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (bt < 0.0f) {
-        fprintf(stderr,"error: %s, bandwidth must be positive\n", argv[0]);
-        exit(1);
-    } else if (num_samples == 0) {
-        fprintf(stderr,"error: %s, number of samples must be greater than zero\n", argv[0]);
-        exit(1);
-    }
+    if (bt < 0.0f)
+        return liquid_error(LIQUID_EICONFIG,"bandwidth must be positive");
+    if (num_samples == 0)
+        return liquid_error(LIQUID_EICONFIG,"number of samples must be greater than zero");
     
     unsigned int i;
 
@@ -84,12 +57,12 @@ int main(int argc, char*argv[])
     // 
     // export results
     //
-    FILE* fid = fopen(OUTPUT_FILENAME,"w");
+    FILE* fid = fopen(filename,"w");
     if (!fid) {
-        fprintf(stderr,"error: %s, could not open '%s' for writing\n", argv[0], OUTPUT_FILENAME);
+        fprintf(stderr,"error: %s, could not open '%s' for writing\n", argv[0], filename);
         exit(1);
     }
-    fprintf(fid,"%% %s: auto-generated file\n\n",OUTPUT_FILENAME);
+    fprintf(fid,"%% %s: auto-generated file\n\n",filename);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"n = %u;\n", num_samples);
 
@@ -122,7 +95,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  ylabel('rssi [dB]');\n");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;

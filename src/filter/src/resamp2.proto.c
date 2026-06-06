@@ -27,15 +27,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-// defined:
-//  RESAMP2()       name-mangling macro
-//  TO              output data type
-//  TC              coefficient data type
-//  TI              input data type
-//  WINDOW()        window macro
-//  DOTPROD()       dotprod macro
-//  PRINTVAL()      print macro
-
 struct RESAMP2(_s) {
     TC *            h;      // filter prototype
     unsigned int    m;      // primitive filter length

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -666,6 +666,11 @@ int flexframesync_decode_header(flexframesync _q)
 
     // strip off payload length
     unsigned int payload_dec_len = (_q->header_dec[n+1] << 8) | (_q->header_dec[n+2]);
+    if (payload_dec_len == 0 || payload_dec_len > LIQUID_MAX_PAYLOAD_LEN)
+    {
+        _q->header_valid = 0;
+        return liquid_error(LIQUID_EICONFIG,"flexframesync_decode_header(), maximum payload length exceeded");
+    }
     _q->payload_dec_len = payload_dec_len;
 
     // strip off modulation scheme/depth

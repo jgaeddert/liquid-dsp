@@ -370,7 +370,7 @@ void detector_cccf_compute_dotprods(detector_cccf _q)
     printf("  rxy : ");
 #endif
     float rxy_max = 0;
-    // TODO: peridically re-compute scaling factor)
+    // TODO: periodically re-compute scaling factor)
     for (k=0; k<_q->m; k++) {
         // execute vector dot product
         dotprod_cccf_execute(_q->dp[k], r, &rxy);

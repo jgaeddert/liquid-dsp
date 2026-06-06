@@ -1,41 +1,21 @@
-// Tests simple frequency modulation/demodulation
+char __docstr__[] = "Tests simple frequency modulation/demodulation";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <getopt.h>
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "freqmodem_example.m"
-
-// print usage/help message
-void usage()
-{
-    printf("freqmodem_example [options]\n");
-    printf("  h     : print usage\n");
-    printf("  n     : number of samples, default: 1024\n");
-    printf("  S     : SNR [dB], default: 30\n");
-    printf("  k     : FM modulation factor, default: 0.1\n");
-}
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // options
-    float        kf          = 0.1f;    // modulation factor
-    unsigned int num_samples = 1024;    // number of samples
-    float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hn:S:k:")) != EOF) {
-        switch (dopt) {
-        case 'h':   usage();                    return 0;
-        case 'n':   num_samples = atoi(optarg); break;
-        case 'S':   SNRdB       = atof(optarg); break;
-        case 'k':   kf          = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "freqmodem_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, num_samples, 1024, 'n', "modulation factor", NULL);
+    liquid_argparse_add(float,    kf,          0.1f, 'k', "number of samples", NULL);
+    liquid_argparse_add(float,    SNRdB,         30, 's', "signal-to-noise ratio [dB]", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // create mod/demod objects
     freqmod mod = freqmod_create(kf);   // modulator
@@ -81,8 +61,8 @@ int main(int argc, char*argv[])
     // 
     // write results to output file
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"n=%u;\n",num_samples);
@@ -125,7 +105,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
     fprintf(fid,"  ylabel('RF PSD [dB]');\n");
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     return 0;
 }

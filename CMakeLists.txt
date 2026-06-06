@@ -10,17 +10,27 @@ project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
 
 # ---------------------------------------- options ----------------------------------------
 
-option(BUILD_EXAMPLES   "Set to ON to build examples"           ON)
-option(BUILD_AUTOTESTS  "Set to ON to build autotest program"   ON)
-option(BUILD_BENCHMARKS "Set to ON to build benchmark program"  ON)
-option(ENABLE_SIMD      "Set to ON to build SIMD extensions"    ON)
-option(FIND_SIMD        "Set to ON to find SIMD extensions"     ON)
-option(FIND_FFTW        "Set to ON to find FFTW library"        ON)
-option(BUILD_SANDBOX    "Set to ON to build sandbox programs"   OFF)
-option(BUILD_DOC        "Set to ON to build documentation"      OFF)
-option(COVERAGE         "Set to ON to build with code coverage" OFF)
-#option(PROFILE        "Set to ON to build with profiling"     OFF)
-option(PYTHON           "Set to ON to build python bindings"   OFF)
+option(BUILD_EXAMPLES    "Set to ON to build examples"               ON)
+option(BUILD_AUTOTESTS   "Set to ON to build autotest program"       ON)
+option(BUILD_BENCHMARKS  "Set to ON to build benchmark program"      ON)
+option(BUILD_SHARED_LIBS "Set to ON to build shared library"         ON)
+option(BUILD_STATIC_LIBS "Set to ON to build static library"         OFF)
+option(ENABLE_SIMD       "Set to ON to build SIMD extensions"        ON)
+option(FIND_SIMD         "Set to ON to find SIMD extensions"         ON)
+option(FIND_THREADS      "Set to ON to find threading library"       ON)
+option(FIND_FFTW         "Set to ON to find FFTW library"            ON)
+option(BUILD_SANDBOX     "Set to ON to build sandbox programs"       OFF)
+option(BUILD_DOC         "Set to ON to build documentation"          OFF)
+option(PYTHON           "Set to ON to build python bindings"         OFF)
+option(COVERAGE          "Set to ON to build with code coverage"     OFF)
+#option(PROFILE           "Set to ON to build with profiling"         OFF)
+option(ENABLE_LOGGING    "Set to ON to enable full logging"          ON)
+set(LOGGING_LEVEL "trace" CACHE STRING "Set minimum logging level to compile")
+option(ENABLE_COLOR      "Set to ON to enable color terminal output" ON)
+
+if(NOT BUILD_SHARED_LIBS AND NOT BUILD_STATIC_LIBS)
+    message(FATAL_ERROR "At least one of BUILD_SHARED_LIBS or BUILD_STATIC_LIBS must be ON")
+endif()
 
 if(COVERAGE)
     set(CMAKE_BUILD_TYPE "Debug")
@@ -34,9 +44,10 @@ cmake_policy(SET CMP0076 NEW)
 
 # main library name
 set(LIBNAME liquid)
+set(NAMESPACE liquid)
 
-# require a C99 compiler for all targets
-set(CMAKE_C_STANDARD 99)
+# require a C11 compiler for all targets
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set(CMAKE_CXX_STANDARD 14 CACHE STRING "C++ version selection")  # or 11, 14, 17, 20
@@ -47,6 +58,11 @@ include (CheckIncludeFile)
 include (CheckFunctionExists)
 include (CheckLibraryExists)
 include (CheckSymbolExists)
+
+#check_symbol_exists(timespec_get "time.h" HAVE_TIMESPEC_GET)
+#if (HAVE_TIMESPEC_GET)
+#    add_compile_definitions(HAVE_TIMESPEC_GET)
+#endif()
 
 # check for hardware acceleration
 if (ENABLE_SIMD AND FIND_SIMD)
@@ -59,25 +75,34 @@ if (FIND_FFTW)
     find_package(fftw3f)
 endif()
 
+# cross-platform threads (e.g. thread.h for C11
+# https://cmake.org/cmake/help/latest/module/FindThreads.html
+# https://en.cppreference.com/w/c/header/threads
+if (FIND_THREADS)
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    find_package(Threads)
+endif()
+
 # global flags
 if (MSVC)
     # warning level 4
     add_compile_options(/W4)
 else()
     # additional warnings
-    add_compile_options(-Wall -fPIC -O3 -Wno-deprecated -Wno-deprecated-declarations)
+    add_compile_options(-Wall -fPIC -O3)
 endif()
 
 include (CheckTypeSize)
 check_type_size(int SIZEOF_INT LANGUAGE C)
 
-configure_file(cmake/config.h.cmake config.h)
+configure_file(cmake/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 # this file can only use the @VARIABLE@ syntax
 #configure_file(cmake/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 
-#target_include_directories(test PRIVATE include)
-include_directories(include .)
+# enable testing always
+enable_testing()
 
 # ---------------------------------------- main sources ----------------------------------------
 
@@ -94,6 +119,10 @@ add_library(buffer OBJECT
 
 add_library(channel OBJECT
     src/channel/src/channel_cccf.c)
+
+add_library(core OBJECT
+    src/core/src/logging.c
+    src/core/src/error.c)
 
 add_library(dotprod OBJECT)
 
@@ -230,7 +259,6 @@ add_library(nco OBJECT
     src/nco/src/nco.utilities.c)
 
 add_library(optim OBJECT
-    src/optim/src/chromosome.c
     src/optim/src/gasearch.c
     src/optim/src/gradsearch.c
     src/optim/src/optim.common.c
@@ -270,6 +298,15 @@ add_library(utility OBJECT
 
 add_library(vector OBJECT)
 
+foreach(lib
+    agc audio buffer channel core dotprod equalization fec fft filter framing math
+    matrix modem multichannel nco optim quantization random sequence utility
+    vector)
+    target_include_directories(${lib}
+        PUBLIC
+            "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include;${CMAKE_CURRENT_BINARY_DIR}>"
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+endforeach()
 
 # ---------------------------------------- SIMD extensions ----------------------------------------
 if (C_NEON_FOUND AND ENABLE_SIMD)
@@ -350,15 +387,13 @@ endif()
 
 # ---------------------------------------- main library ----------------------------------------
 
-# necessary to include this for the generated "config.h" header
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-add_library(${LIBNAME} SHARED
-    src/libliquid.c
+# Define object sources list
+set(LIQUID_OBJECTS
     $<TARGET_OBJECTS:agc>
     $<TARGET_OBJECTS:audio>
     $<TARGET_OBJECTS:buffer>
     $<TARGET_OBJECTS:channel>
+    $<TARGET_OBJECTS:core>
     $<TARGET_OBJECTS:dotprod>
     $<TARGET_OBJECTS:equalization>
     $<TARGET_OBJECTS:fec>
@@ -377,17 +412,74 @@ add_library(${LIBNAME} SHARED
     $<TARGET_OBJECTS:utility>
     $<TARGET_OBJECTS:vector>)
 
-# TODO: build static library in addition to shared
-# https://alexreinking.com/blog/building-a-dual-shared-and-static-library-with-cmake.html
+if(ENABLE_LOGGING)
+    add_compile_definitions(LIQUID_LOGGING_ENABLE)
+endif(ENABLE_LOGGING)
 
-target_include_directories(${LIBNAME} PRIVATE ${INCLUDE})
-#target_sources(${LIBNAME} PUBLIC FILE_SET HEADERS FILES include/liquid.h)
+# set minimum logging level for compilation
+set(LOGGING_LEVELS "trace;debug;info;warn;error;fatal")
+list(FIND LOGGING_LEVELS ${LOGGING_LEVEL} LIQUID_LOG_LEVEL_COMPILE)
+#message("LOG: ${LOGGING_LEVEL} -> ${LOGGING_INDEX}")
+if (${LIQUID_LOG_LEVEL_COMPILE} LESS 0)
+    message(FATAL_ERROR "Unsupported logging level '${LOGGING_LEVEL}', select one of: ${LOGGING_LEVELS}")
+endif()
+add_compile_definitions(LIQUID_LOG_LEVEL_COMPILE=${LIQUID_LOG_LEVEL_COMPILE})
+
+# enable color if requested
+if(ENABLE_COLOR)
+    add_compile_definitions(LIQUID_COLOR_ENABLE)
+endif(ENABLE_COLOR)
+
+# Build shared library
+if(BUILD_SHARED_LIBS)
+    add_library(${LIBNAME} SHARED src/libliquid.c ${LIQUID_OBJECTS})
+    add_library(${NAMESPACE}::${LIBNAME} ALIAS ${LIBNAME})
+    set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
+    set(LIQUID_TARGETS ${LIBNAME})
+endif()
+
+# Build static library
+if(BUILD_STATIC_LIBS)
+    add_library(${LIBNAME}-static STATIC src/libliquid.c ${LIQUID_OBJECTS})
+    add_library(${NAMESPACE}::${LIBNAME}-static ALIAS ${LIBNAME}-static)
+    set_target_properties(${LIBNAME}-static PROPERTIES OUTPUT_NAME ${LIBNAME})
+    list(APPEND LIQUID_TARGETS ${LIBNAME}-static)
+    if(NOT BUILD_SHARED_LIBS)
+        set(LIBNAME ${LIBNAME}-static)
+    endif()
+endif()
+
+include(GNUInstallDirs)
+
+# Apply common configuration to all library targets
+foreach(target ${LIQUID_TARGETS})
+    target_include_directories(${target}
+        PUBLIC
+            "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include;${CMAKE_CURRENT_BINARY_DIR}>"
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+    target_sources(${target}
+        PUBLIC
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/liquid.h>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/liquid/liquid.h>
+        INTERFACE
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/liquid/liquid.h>)
+    set_target_properties(${target}
+        PROPERTIES
+            PUBLIC_HEADER include/liquid.h)
+    target_link_libraries(${target} c m)
+    if (fftw3f_FOUND)
+        target_link_libraries(${target} fftw3f)
+    endif()
+endforeach()
+
+configure_file(include/liquid.h ${CMAKE_CURRENT_BINARY_DIR}/liquid/liquid.h COPYONLY)
 
 if(COVERAGE)
     target_compile_options(agc          PRIVATE -coverage -O0 -g)
     target_compile_options(audio        PRIVATE -coverage -O0 -g)
     target_compile_options(buffer       PRIVATE -coverage -O0 -g)
     target_compile_options(channel      PRIVATE -coverage -O0 -g)
+    target_compile_options(core         PRIVATE -coverage -O0 -g)
     target_compile_options(dotprod      PRIVATE -coverage -O0 -g)
     target_compile_options(equalization PRIVATE -coverage -O0 -g)
     target_compile_options(fec          PRIVATE -coverage -O0 -g)
@@ -406,35 +498,81 @@ if(COVERAGE)
     target_compile_options(utility      PRIVATE -coverage -O0 -g)
     target_compile_options(vector       PRIVATE -coverage -O0 -g)
 
-    target_compile_options(${LIBNAME} PRIVATE -coverage -O0 -g)
-    target_link_options(${LIBNAME} PRIVATE -coverage)
+    foreach(target ${LIQUID_TARGETS})
+        target_compile_options(${target} PRIVATE -coverage -O0 -g)
+        target_link_options(${target} PRIVATE -coverage)
+    endforeach()
 endif(COVERAGE)
 
 
-target_link_libraries(${LIBNAME} c m)
-if (fftw3f_FOUND)
-    target_link_libraries(${LIBNAME} fftw3f)
-endif()
-
-set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
-
 # see: https://cmake.org/cmake/help/latest/command/install.html#examples
 # TODO: uninstall?
-install(TARGETS
-          ${LIBNAME}
-        RUNTIME           # Following options apply to runtime artifacts.
-          COMPONENT Runtime
-        LIBRARY           # Following options apply to library artifacts.
-          COMPONENT Runtime
-          NAMELINK_COMPONENT Development
-        ARCHIVE           # Following options apply to archive artifacts.
-          COMPONENT Development
-          DESTINATION lib/static
-        #FILE_SET HEADERS  # Following options apply to file set HEADERS.
-          #COMPONENT Development
-        )
+install(TARGETS ${LIQUID_TARGETS}
+    EXPORT
+        ${LIBNAME}Targets
+    RUNTIME
+        COMPONENT Runtime
+        DESTINATION bin
+    LIBRARY
+        COMPONENT Runtime
+        NAMELINK_COMPONENT Development
+        DESTINATION lib
+    ARCHIVE
+        COMPONENT Runtime
+        DESTINATION lib
+    PUBLIC_HEADER
+        COMPONENT Development
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/liquid
+)
 
-install(FILES include/liquid.h DESTINATION include/liquid)
+export(EXPORT ${LIBNAME}Targets
+    FILE ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME}Targets.cmake
+    NAMESPACE ${NAMESPACE}::
+)
+
+install(EXPORT ${LIBNAME}Targets
+    FILE ${LIBNAME}Targets.cmake
+    NAMESPACE ${NAMESPACE}::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${LIBNAME}
+)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME}ConfigVersion.cmake
+    COMPATIBILITY SameMinorVersion
+)
+
+set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/${LIBNAME})
+configure_package_config_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME}Config.cmake
+    INSTALL_DESTINATION
+        ${CMAKE_INSTALL_LIBDIR}/cmake/${LIBNAME}
+    PATH_VARS
+        INCLUDE_INSTALL_DIR
+)
+
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME}Config.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME}ConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${LIBNAME}
+)
+
+# ---------------------------------------- pkg-config ----------------------------------------
+
+set(LIQUID_PC_LIBS_PRIVATE "")
+if (fftw3f_FOUND)
+    string(APPEND LIQUID_PC_LIBS_PRIVATE " -lfftw3f")
+endif()
+
+configure_file(
+    cmake/liquid-dsp.pc.in
+    ${CMAKE_CURRENT_BINARY_DIR}/liquid-dsp.pc
+    @ONLY
+)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/liquid-dsp.pc
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+)
 
 # ---------------------------------------- examples ----------------------------------------
 
@@ -452,6 +590,9 @@ endif(BUILD_SANDBOX)
 
 # ---------------------------------------- autotest ----------------------------------------
 
+# build autoscript executable for both autotests and benchmarks
+add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
+
 set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/autotest/null_autotest.c
     ${PROJECT_SOURCE_DIR}/src/agc/tests/agc_crcf_autotest.c
@@ -459,8 +600,9 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/buffer/tests/cbuffer_autotest.c
     ${PROJECT_SOURCE_DIR}/src/buffer/tests/wdelay_autotest.c
     ${PROJECT_SOURCE_DIR}/src/buffer/tests/buffer_window_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/channel/tests/channel_copy_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/channel/tests/tvmpch_copy_autotest.c
+    #${PROJECT_SOURCE_DIR}/src/channel/tests/channel_copy_autotest.c
+    #${PROJECT_SOURCE_DIR}/src/channel/tests/tvmpch_copy_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/core/tests/logging_autotest.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_rrrf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_crcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/tests/dotprod_cccf_autotest.c
@@ -489,12 +631,9 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_copy_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/asgram_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_small_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_radix2_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_composite_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_prime_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_r2r_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_shift_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_transforms_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/spgram_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/spwaterfall_autotest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/dds_cccf_autotest.c
@@ -616,7 +755,6 @@ set(AUTOTESTS
     )
 
 set(AUTOTEST_EXTRA
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_runtest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_2.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_3.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_data_4.c
@@ -653,7 +791,6 @@ set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_8.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_27.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/data/fft_r2rdata_32.c
-    ${PROJECT_SOURCE_DIR}/src/filter/tests/fftfilt_runtest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_rrrf_data_h4x256.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_crcf_data_h4x256.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_cccf_data_h4x256.c
@@ -666,7 +803,6 @@ set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_rrrf_data_h23x256.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_crcf_data_h23x256.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/fftfilt_cccf_data_h23x256.c
-    ${PROJECT_SOURCE_DIR}/src/filter/tests/firdecim_runtest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_rrrf_data_M2h4x20.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_crcf_data_M2h4x20.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_cccf_data_M2h4x20.c
@@ -679,7 +815,6 @@ set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_rrrf_data_M5h23x50.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_crcf_data_M5h23x50.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firdecim_cccf_data_M5h23x50.c
-    ${PROJECT_SOURCE_DIR}/src/filter/tests/firfilt_runtest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_rrrf_data_h4x8.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_crcf_data_h4x8.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_cccf_data_h4x8.c
@@ -692,7 +827,6 @@ set(AUTOTEST_EXTRA
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_rrrf_data_h23x64.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_crcf_data_h23x64.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/firfilt_cccf_data_h23x64.c
-    ${PROJECT_SOURCE_DIR}/src/filter/tests/iirfilt_runtest.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_rrrf_data_h3x64.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_crcf_data_h3x64.c
     ${PROJECT_SOURCE_DIR}/src/filter/tests/data/iirfilt_cccf_data_h3x64.c
@@ -729,15 +863,6 @@ set(AUTOTEST_EXTRA
     )
 
 if(BUILD_AUTOTESTS)
-    add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
-    add_custom_command(
-        OUTPUT  autotest_include.h
-        DEPENDS
-            ${PROJECT_BINARY_DIR}/autoscript
-            ${AUTOTESTS}
-        COMMAND ${PROJECT_BINARY_DIR}/autoscript / autotest ${AUTOTESTS} > autotest_include.h
-        )
-
     # create output logging directory
     add_custom_command(
         OUTPUT autotest/logs
@@ -746,25 +871,23 @@ if(BUILD_AUTOTESTS)
 
     add_executable(xautotest
         autotest/xautotest.c
-        ${PROJECT_BINARY_DIR}/autotest_include.h
-        autotest/autotest.h
+        autotest/liquid_autotest_registry.h
         autotest/autotest.c
         autotest/libliquid_autotest.c
         autotest/logs
         ${AUTOTESTS}
         ${AUTOTEST_EXTRA}
         )
-    target_include_directories(xautotest PRIVATE ${INCLUDE})
+    target_include_directories(xautotest PRIVATE include .)
 
-    target_link_libraries(xautotest ${LIBNAME})
+    target_link_libraries(xautotest ${LIQUID_TARGETS})
     if(COVERAGE)
         target_compile_options(xautotest PRIVATE -coverage -O0 -g)
         target_link_options(xautotest PRIVATE -coverage)
     endif(COVERAGE)
 
     # enable testing; might consider splitting these up for parallel execution
-    enable_testing()
-    add_test(NAME test COMMAND xautotest)
+    add_test(NAME autotest COMMAND xautotest)
 endif(BUILD_AUTOTESTS)
 
 
@@ -777,6 +900,7 @@ set(BENCHMARKS
     ${PROJECT_SOURCE_DIR}/src/buffer/bench/cbuffercf_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/buffer/bench/window_push_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/buffer/bench/window_read_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/core/bench/logging_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/bench/dotprod_cccf_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/bench/dotprod_crcf_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/dotprod/bench/dotprod_rrrf_benchmark.c
@@ -873,8 +997,8 @@ if(BUILD_BENCHMARKS)
         ${BENCHMARKS}
         ${BENCHMARKS_EXTRA}
         )
-    target_include_directories(benchmark PRIVATE ${INCLUDE})
-    target_link_libraries(benchmark ${LIBNAME})
+    target_include_directories(benchmark PRIVATE include .)
+    target_link_libraries(benchmark ${LIQUID_TARGETS})
 endif(BUILD_BENCHMARKS)
 
 

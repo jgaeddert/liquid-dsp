@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,12 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // test rational-rate resampler
-void test_iirinterp_crcf(const char * _method,
+void test_iirinterp_crcf(liquid_autotest __q__,
+                         const char * _method,
                          unsigned int _interp,
                          unsigned int _order)
 {
@@ -68,8 +69,7 @@ void test_iirinterp_crcf(const char * _method,
     };
     char filename[256];
     sprintf(filename,"autotest/logs/iirinterp_crcf_M%u_O%u.m", _interp, _order);
-    liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_spectrum(__q__, psd, nfft, regions, 3, filename);
 
     // destroy objects
     iirinterp_crcf_destroy(interp);
@@ -78,12 +78,12 @@ void test_iirinterp_crcf(const char * _method,
 }
 
 // baseline tests using create_kaiser() method
-void autotest_iirinterp_crcf_M2_O9() { test_iirinterp_crcf("baseline", 2, 9); }
-void autotest_iirinterp_crcf_M3_O9() { test_iirinterp_crcf("baseline", 3, 9); }
-void autotest_iirinterp_crcf_M4_O9() { test_iirinterp_crcf("baseline", 4, 9); }
 
-// test copy method
-void autotest_iirinterp_copy()
+LIQUID_AUTOTEST(iirinterp_crcf_M2_O9,"description","",0.1) { test_iirinterp_crcf(__q__, "baseline", 2, 9); }
+LIQUID_AUTOTEST(iirinterp_crcf_M3_O9,"description","",0.1) { test_iirinterp_crcf(__q__, "baseline", 3, 9); }
+LIQUID_AUTOTEST(iirinterp_crcf_M4_O9,"description","",0.1) { test_iirinterp_crcf(__q__, "baseline", 4, 9); }
+
+LIQUID_AUTOTEST(iirinterp_copy,"test copy method", "", 0.1)
 {
     // create base object
     iirinterp_crcf q0 = iirinterp_crcf_create_default(3, 7);
@@ -106,7 +106,7 @@ void autotest_iirinterp_copy()
         iirinterp_crcf_execute(q0, v, buf_0);
         iirinterp_crcf_execute(q1, v, buf_1);
 
-        CONTEND_SAME_DATA( buf_0, buf_1, 3*sizeof(float complex) );
+        LIQUID_CHECK_ARRAY( buf_0, buf_1, 3*sizeof(float complex) );
     }
 
     // destroy objects

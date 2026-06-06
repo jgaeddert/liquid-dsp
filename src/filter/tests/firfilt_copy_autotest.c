@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,15 +22,14 @@
 
 // test filter copy operation
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-void autotest_firfilt_crcf_copy()
+LIQUID_AUTOTEST(firfilt_crcf_copy,"description","",0.1)
 {
     // design filter from prototype
     firfilt_crcf filt_orig = firfilt_crcf_create_kaiser(21, 0.345f, 60.0f, 0.0f);
     firfilt_crcf_set_scale(filt_orig, 2.0f);
-    firfilt_crcf_print(filt_orig);
 
     // start running input through filter
     unsigned int n = 32;
@@ -51,15 +50,13 @@ void autotest_firfilt_crcf_copy()
         firfilt_crcf_execute_one(filt_orig, x, &y_orig);
         firfilt_crcf_execute_one(filt_copy, x, &y_copy);
 
-        if (liquid_autotest_verbose) {
-            float error = cabsf( y_orig - y_copy );
-            printf(" [%3u] orig: %12.8f + j%12.8f, copy: %12.8f + j%12.8f, err: %8g\n",
-                    i+n,
-                    crealf(y_orig), cimagf(y_orig),
-                    crealf(y_copy), cimagf(y_copy),
-                    error);
-        }
-        CONTEND_EQUALITY(y_orig, y_copy);
+        float error = cabsf( y_orig - y_copy );
+        liquid_log_debug(" [%3u] orig:%8.5f+j%8.5f, copy:%8.5f+j%8.5f, error:%8g",
+                i+n,
+                crealf(y_orig), cimagf(y_orig),
+                crealf(y_copy), cimagf(y_copy),
+                error);
+        LIQUID_CHECK(y_orig ==  y_copy);
     }
 
     // destroy filter objects

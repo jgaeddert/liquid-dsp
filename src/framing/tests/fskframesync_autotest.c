@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.autotest.h"
+#include "liquid.internal.h"
 
-// AUTOTEST : test simple recovery of frame in noise
-void autotest_fskframesync()
+LIQUID_AUTOTEST(fskframesync,"test simple recovery of frame in noise","",0.1)
 {
     // options
     float SNRdB       =  20.0f; // signal-to-noise ratio
@@ -36,10 +35,6 @@ void autotest_fskframesync()
     //float dphi        =  0.01f; // carrier frequency offset
     //float theta       =  0.0f;  // carrier phase offset
     //float dt          =  -0.2f;  // fractional sample timing offset
-
-    crc_scheme check         = LIQUID_CRC_32;   // data validity check
-    fec_scheme fec0          = LIQUID_FEC_NONE; // fec (inner)
-    fec_scheme fec1          = LIQUID_FEC_NONE; // fec (outer)
 
     // derived values
     float nstd  = powf(10.0f, noise_floor/20.0f);         // noise std. dev.
@@ -57,7 +52,7 @@ void autotest_fskframesync()
     unsigned char payload[200];
     for (i=0; i<  8; i++) header [i] = i;
     for (i=0; i<200; i++) payload[i] = rand() & 0xff;
-    fskframegen_assemble(fg, header, payload, 200, check, fec0, fec1);
+    fskframegen_assemble(fg, header, payload, 200);
 
     // allocate memory for the frame samples
     unsigned int  buf_len = 256;
@@ -80,19 +75,37 @@ void autotest_fskframesync()
     }
 
     // check to see that callback was invoked
-    CONTEND_EQUALITY(context, FRAMING_AUTOTEST_SECRET);
+    LIQUID_CHECK(context == FRAMING_AUTOTEST_SECRET);
 
 #if 0
     // parse statistics
     framedatastats_s stats = fskframesync_get_framedatastats(fs);
-    CONTEND_EQUALITY(stats.num_frames_detected, 1);
-    CONTEND_EQUALITY(stats.num_headers_valid,   1);
-    CONTEND_EQUALITY(stats.num_payloads_valid,  1);
-    CONTEND_EQUALITY(stats.num_bytes_received, 64);
+    LIQUID_CHECK(stats.num_frames_detected ==  1);
+    LIQUID_CHECK(stats.num_headers_valid ==    1);
+    LIQUID_CHECK(stats.num_payloads_valid ==   1);
+    LIQUID_CHECK(stats.num_bytes_received ==  64);
 #endif
 
     // destroy objects
     fskframegen_destroy(fg);
     fskframesync_destroy(fs);
+}
+
+LIQUID_AUTOTEST(fskframe_config,"check configuration validity","",0.1)
+{
+    _liquid_error_downgrade_enable();
+
+    // create fskframegen object
+    fskframegen fg = fskframegen_create();
+
+    // assemble the frame
+    LIQUID_CHECK(fskframegen_assemble(fg,NULL,NULL,                       0)==LIQUID_EICONFIG);
+    LIQUID_CHECK(fskframegen_assemble(fg,NULL,NULL,                       1)==LIQUID_OK      );
+    LIQUID_CHECK(fskframegen_assemble(fg,NULL,NULL,LIQUID_MAX_PAYLOAD_LEN  )==LIQUID_OK      );
+    LIQUID_CHECK(fskframegen_assemble(fg,NULL,NULL,LIQUID_MAX_PAYLOAD_LEN+1)==LIQUID_EICONFIG);
+
+    // clean it up
+    fskframegen_destroy(fg);
+    _liquid_error_downgrade_disable();
 }
 

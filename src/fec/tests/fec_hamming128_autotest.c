@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-//
-// AUTOTEST: Hamming (12,8) codec
-//
-void autotest_hamming128_codec()
+LIQUID_AUTOTEST(hamming128_codec,"test Hamming (12,8) codec","",0.1)
 {
     unsigned int n=8;   //
     unsigned int k=12;  //
     unsigned int i;     // index of bit to corrupt
+
+    // string arrays for debugging
+    char str_org[9], str_enc[13], str_rec[13], str_dec[9];
 
     for (i=0; i<k; i++) {
         // generate symbol
@@ -42,33 +42,26 @@ void autotest_hamming128_codec()
         // encoded symbol
         unsigned int sym_enc = fec_hamming128_encode_symbol(sym_org);
 
-        // received symbol
+        // received symbol (corrupt a bit)
         unsigned int sym_rec = sym_enc ^ (1<<(k-i-1));
 
         // decoded symbol
         unsigned int sym_dec = fec_hamming128_decode_symbol(sym_rec);
 
-        if (liquid_autotest_verbose) {
-            printf("error index : %u\n", i);
-            // print results
-            printf("    sym org     :   "); liquid_print_bitstring(sym_org, n); printf("\n");
-            printf("    sym enc     :   "); liquid_print_bitstring(sym_enc, k); printf("\n");
-            printf("    sym rec     :   "); liquid_print_bitstring(sym_rec, k); printf("\n");
-            printf("    sym dec     :   "); liquid_print_bitstring(sym_dec, n); printf("\n");
-
-            // print number of bit errors
-            printf("    bit errors  :   %u\n", count_bit_errors(sym_org, sym_dec));
-        }
+        // log results
+        liquid_sprintf_bitstring(str_org, sym_org, n);
+        liquid_sprintf_bitstring(str_enc, sym_enc, n);
+        liquid_sprintf_bitstring(str_rec, sym_rec, n);
+        liquid_sprintf_bitstring(str_dec, sym_dec, n);
+        liquid_log_debug("[%2u] org:%s, enc:%s, rec:%s, dec:%s, errors:%u", i,
+            str_org,str_enc,str_rec,str_dec,count_bit_errors(sym_org, sym_dec));
 
         // validate data are the same
-        CONTEND_EQUALITY(sym_org, sym_dec);
+        LIQUID_CHECK(sym_org ==  sym_dec);
     }
 }
 
-//
-// AUTOTEST: Hamming (12,8) codec (soft decoding)
-//
-void autotest_hamming128_codec_soft()
+LIQUID_AUTOTEST(hamming128_codec_soft,"test Hamming (12,8) codec (soft decoding)","",0.1)
 {
     // generate each of the 2^8=256 symbols, encode, and decode
     // using soft decoding algorithm
@@ -99,7 +92,7 @@ void autotest_hamming128_codec_soft()
         s_hat = fecsoft_hamming128_decode(c_soft);
 
         // contend that data are the same
-        CONTEND_EQUALITY(s, s_hat);
+        LIQUID_CHECK(s ==  s_hat);
     }
 }
 

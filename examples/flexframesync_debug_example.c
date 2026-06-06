@@ -1,14 +1,15 @@
-// This example exports the output constellation to file for debugging.
+char __docstr__[] =
+"This example exports the output constellation to file for debugging.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include <getopt.h>
 #include <assert.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 // flexframesync callback function
 static int callback(unsigned char *  _header,
@@ -34,13 +35,20 @@ static int callback(unsigned char *  _header,
 
 int main(int argc, char *argv[])
 {
-    // options
-    modulation_scheme ms     =  LIQUID_MODEM_QPSK; // mod. scheme
-    crc_scheme check         =  LIQUID_CRC_32;     // data validity check
-    fec_scheme fec0          =  LIQUID_FEC_NONE;   // fec (inner)
-    fec_scheme fec1          =  LIQUID_FEC_NONE;   // fec (outer)
-    unsigned int payload_len =  480;               // payload length
-    const char * filename    = "flexframesync_debug_example.dat";
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename, "flexframesync_debug_example.dat", 'o', "output filename", NULL);
+    liquid_argparse_add(char*,    mod,      "qpsk", 'm', "FEC scheme", liquid_argparse_modem);
+    liquid_argparse_add(char*,    crc,     "crc32", 'v', "FEC scheme", liquid_argparse_crc);
+    liquid_argparse_add(char*,    fs0,      "none", 'c', "FEC scheme", liquid_argparse_fec);
+    liquid_argparse_add(char*,    fs1,      "none", 'k', "FEC scheme", liquid_argparse_fec);
+    liquid_argparse_add(unsigned, payload_len, 480, 'n', "data length (bytes)", NULL);
+    liquid_argparse_parse(argc,argv);
+
+    modulation_scheme ms    = liquid_getopt_str2mod(mod);
+    crc_scheme        check = liquid_getopt_str2crc(crc);
+    fec_scheme        fec0  = liquid_getopt_str2fec(fs0);
+    fec_scheme        fec1  = liquid_getopt_str2fec(fs1);
 
     // create flexframegen object
     flexframegenprops_s fgprops;

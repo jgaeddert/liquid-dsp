@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,35 +71,14 @@ struct fskframesync_s {
     float           rxy[3];             // detector output for timing recovery
 
     // header
-#if 0
-    unsigned int    header_dec_len;     // header decoded message length
-    crc_scheme      header_crc;         // header validity check
-    fec_scheme      header_fec0;        // header inner code
-    fec_scheme      header_fec1;        // header outer code
-    packetizer      header_decoder;     // header encoder
-    unsigned int    header_enc_len;     // header encoded message length
-    unsigned char * header_dec;         // header uncoded [size: header_dec_len x 1]
-    unsigned char * header_enc;         // header encoded [size: header_enc_len x 1]
-    unsigned int    header_sym_len;     // header symbols length
-#else
     unsigned int    header_dec_len;     // header length (decoded bytes)
     unsigned int    header_sym_len;     // header length (number of modulated symbols)
     unsigned char * header_dec;         // header uncoded [size: header_dec_len x 1]
     unsigned char * header_sym;         // header: unmodulated symbols
     qpacketmodem    header_decoder;     //
-#endif
+    int             header_valid;       // header: flag indicating validity of header data
 
     // payload
-#if 0
-    unsigned int    payload_dec_len;    // payload decoded message length
-    crc_scheme      payload_crc;        // payload validity check
-    fec_scheme      payload_fec0;       // payload inner code
-    fec_scheme      payload_fec1;       // payload outer code
-    packetizer      payload_decoder;    // payload encoder
-    unsigned int    payload_enc_len;    // payload encoded message length
-    unsigned char * payload_enc;        // paylaod encoded [size: payload_enc_len x 1]
-    unsigned int    payload_sym_len;    // payload symbols length
-#else
     unsigned int    payload_dec_len;    // payload decoded message length
     crc_scheme      payload_crc;        // payload validity check
     fec_scheme      payload_fec0;       // payload inner code
@@ -108,7 +87,6 @@ struct fskframesync_s {
     unsigned char * payload_sym;        //
     unsigned char * payload_dec;        // payload decoded [size: payload_dec_len x 1]
     qpacketmodem    payload_decoder;    //
-#endif
 
     // framing state
     enum {
@@ -180,21 +158,7 @@ fskframesync fskframesync_create(framesync_callback _callback,
     q->buf_LLR2 = windowf_create(2*preamble_sym_len);
 
     // header objects/arrays
-#if 0
-    q->header_dec_len   = 10;
-    q->header_crc       = LIQUID_CRC_32;
-    q->header_fec0      = LIQUID_FEC_NONE;
-    q->header_fec1      = LIQUID_FEC_GOLAY2412;
-    q->header_decoder   = packetizer_create(q->header_dec_len,
-                                            q->header_crc,
-                                            q->header_fec0,
-                                            q->header_fec1);
-    q->header_enc_len   = packetizer_get_dec_msg_len(q->header_decoder);
-    q->header_dec       = (unsigned char*)malloc(q->header_dec_len*sizeof(unsigned char));
-    q->header_enc       = (unsigned char*)malloc(q->header_enc_len*sizeof(unsigned char));
-    q->header_sym_len   = q->header_enc_len * 8 / q->m;
-#else
-    q->header_dec_len   = 10;
+    q->header_dec_len   = 12;
     q->header_dec       = (unsigned char*)malloc(q->header_dec_len*sizeof(unsigned char));
     q->header_decoder   = qpacketmodem_create();
     qpacketmodem_configure(q->header_decoder,
@@ -205,22 +169,8 @@ fskframesync fskframesync_create(framesync_callback _callback,
                            LIQUID_MODEM_BPSK);
     q->header_sym_len   = qpacketmodem_get_frame_len(q->header_decoder);
     q->header_sym       = (unsigned char*)malloc(q->header_sym_len*sizeof(unsigned char));
-#endif
 
     // payload objects/arrays
-#if 0
-    q->payload_dec_len  = 10;
-    q->payload_crc      = LIQUID_CRC_32;
-    q->payload_fec0     = LIQUID_FEC_NONE;
-    q->payload_fec1     = LIQUID_FEC_GOLAY2412;
-    q->payload_decoder  = packetizer_create(q->payload_dec_len,
-                                            q->payload_crc,
-                                            q->payload_fec0,
-                                            q->payload_fec1);
-    q->payload_enc_len  = packetizer_get_dec_msg_len(q->payload_decoder);
-    q->payload_enc      = (unsigned char*)malloc(q->payload_enc_len*sizeof(unsigned char));
-    q->payload_sym_len  = 0;    // TODO: set this appropriately
-#else
     q->payload_dec_len  = 200;
     q->payload_crc      = LIQUID_CRC_32;
     q->payload_fec0     = LIQUID_FEC_NONE;
@@ -235,7 +185,6 @@ fskframesync fskframesync_create(framesync_callback _callback,
     q->payload_sym_len  = qpacketmodem_get_frame_len(q->payload_decoder);
     q->payload_sym      = (unsigned char*)malloc(q->payload_sym_len*sizeof(unsigned char));
     q->payload_dec      = (unsigned char*)malloc(q->payload_dec_len*sizeof(unsigned char));
-#endif
 
 #if DEBUG_FSKFRAMESYNC
     // debugging structures
@@ -281,25 +230,14 @@ int fskframesync_destroy(fskframesync _q)
     windowf_destroy(_q->buf_LLR2);
 
     // destroy/free header objects/arrays
-#if 0
-    free(_q->header_dec);
-    free(_q->header_enc);
-    packetizer_destroy(_q->header_decoder);
-#else
     free(_q->header_dec);
     free(_q->header_sym);
     qpacketmodem_destroy(_q->header_decoder);
-#endif
 
     // destroy/free payload objects/arrays
-#if 0
-    free(_q->payload_enc);
-    packetizer_destroy(_q->payload_decoder);
-#else
     free(_q->payload_sym);
     free(_q->payload_dec);
     qpacketmodem_destroy(_q->payload_decoder);
-#endif
 
     // free main object memory
     free(_q);
@@ -466,10 +404,9 @@ int fskframesync_execute_detectframe(fskframesync  _q,
     } else {
         // frame has already been detected; wait for signal to peak
         if (_q->rxy[1] > _q->rxy[2]) {
-            //printf("signal peaked! %12.8f %12.8f %12.8f\n",
-            //        _q->rxy[0], _q->rxy[1], _q->rxy[2]);
+            liquid_log_trace("fskframesync, signal peaked! %12.8f %12.8f %12.8f", _q->rxy[0], _q->rxy[1], _q->rxy[2]);
 
-#if 0
+#if 1
             // compute estimate, apply bias compensation
             float gamma = (_q->rxy[2] - _q->rxy[0]) / _q->rxy[1];
             float p2 = 9.54907046918287e-01f;
@@ -477,8 +414,7 @@ int fskframesync_execute_detectframe(fskframesync  _q,
             float xf      = fabsf(gamma);
             float tau_hat = copysignf(p2*xf*xf + p1*xf, gamma);
             int   num_samples = round(tau_hat * _q->k);
-            printf("timing offset estimate  : %12.8f -> %12.8f (%d samples)\n",
-                    gamma, tau_hat, num_samples);
+            liquid_log_trace("fskframesync, timing offset estimate  : %12.8f -> %12.8f (%d samples)", gamma, tau_hat, num_samples);
 #endif
 
             // TODO: set timer and filterbank index accordingly
@@ -525,37 +461,23 @@ int fskframesync_execute_rxheader(fskframesync  _q,
     _q->header_sym[_q->symbol_counter++] = sym;
 
     // decode header if appropriate
-    if (_q->symbol_counter == _q->header_sym_len) {
+    if (_q->symbol_counter == _q->header_sym_len)
+    {
         // decode header
-        int header_valid = qpacketmodem_decode_syms(_q->header_decoder,
-                                                    _q->header_sym,
-                                                    _q->header_dec);
-#if 0
-        printf("rx header symbols (%u):\n", _q->header_sym_len);
-        unsigned int i;
-        for (i=0; i<_q->header_sym_len; i++)
-            printf("%1x", _q->header_sym[i]);
-        printf("\n");
+        int rc = fskframesync_decode_header(_q);
+        if (rc) return rc;
 
-        printf("rx header decoded (%u):\n", _q->header_dec_len);
-        for (i=0; i<_q->header_dec_len; i++)
-            printf(" %.2x", _q->header_dec[i]);
-        printf("\n");
+        // update statistics
+        //_q->framedatastats.num_frames_detected++;
 
-        printf("header: %s\n", header_valid ? "valid" : "INVALID");
-#endif
-
-        if (header_valid) {
+        if (_q->header_valid) {
             // continue on to decoding payload
             _q->symbol_counter = 0;
             _q->state = STATE_RXPAYLOAD;
             return LIQUID_OK;
         }
 
-        // update statistics
-        //_q->framedatastats.num_frames_detected++;
-
-        // header invalid: invoke callback
+        // header invalid: invoke callback if provided
         if (_q->callback != NULL) {
             // set framestats internals
             _q->framestats.evm           = 0.0f; //20*log10f(sqrtf(_q->framestats.evm / 600));
@@ -664,6 +586,48 @@ int fskframesync_execute_rxpayload(fskframesync  _q,
 // decode header and re-configure payload decoder
 int fskframesync_decode_header(fskframesync _q)
 {
+    // decode header
+    _q->header_valid = qpacketmodem_decode_syms(_q->header_decoder,
+                                                _q->header_sym,
+                                                _q->header_dec);
+
+    liquid_log_debug("fskframesync header: %s",_q->header_valid ? "valid" : "INVALID");
+    if (!_q->header_valid)
+        return LIQUID_OK;
+
+    // unpack header
+    unsigned int n = 8; // first 8 bytes user data
+    n++;                // version
+    _q->payload_dec_len = _q->header_dec[n++];
+    _q->payload_dec_len <<= 8;
+    _q->payload_dec_len |= _q->header_dec[n++];
+    liquid_log_trace("fskframesync header: [%.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x][%.2x:%.2x %.2x]",
+        _q->header_dec[0],_q->header_dec[1],_q->header_dec[2],_q->header_dec[3],_q->header_dec[4],_q->header_dec[5],_q->header_dec[6],_q->header_dec[7],
+        _q->header_dec[8],
+        _q->header_dec[9],_q->header_dec[10]);
+    liquid_log_debug("fskframesync header: payload_dec_len=%u", _q->payload_dec_len);
+    // expansion
+    if (_q->payload_dec_len == 0 || _q->payload_dec_len > LIQUID_MAX_PAYLOAD_LEN)
+        return liquid_error(LIQUID_EICONFIG,"fskframesync_decode_header(), payload length (%u) exceeds maximum (%u)", _q->payload_dec_len, LIQUID_MAX_PAYLOAD_LEN);
+
+    // configure decoder appropriately
+    int rc = qpacketmodem_configure(_q->payload_decoder,
+                                    _q->payload_dec_len,
+                                    _q->payload_crc,
+                                    _q->payload_fec0,
+                                    _q->payload_fec1,
+                                    LIQUID_MODEM_QAM16);  // TODO: set bits/sym appropriately
+    //printf("decoder: "); qpacketmodem_print(_q->payload_decoder);
+    if (rc != LIQUID_OK)
+        return liquid_error(LIQUID_EICONFIG,"fskframesync_decode_header(), could not configure qpacketmodem");
+
+    // get packet length and re-allocate memory
+    _q->payload_sym_len = qpacketmodem_get_frame_len(_q->payload_decoder);
+    _q->payload_sym = (unsigned char*) realloc(_q->payload_sym, _q->payload_sym_len*sizeof(unsigned char));
+    if (_q->payload_sym == NULL)
+        return liquid_error(LIQUID_EINT,"fskframesync_assemble(), could not allocate memory for symbols");
+
+    _q->header_valid = 1;
     return LIQUID_OK;
 }
 

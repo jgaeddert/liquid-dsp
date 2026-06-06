@@ -183,7 +183,7 @@ int dotprod_crcf_print(dotprod_crcf _q)
     return LIQUID_OK;
 }
 
-// exectue vectorized structured inner dot product
+// execute vectorized structured inner dot product
 int dotprod_crcf_execute(dotprod_crcf    _q,
                          float complex * _x,
                          float complex * _r)

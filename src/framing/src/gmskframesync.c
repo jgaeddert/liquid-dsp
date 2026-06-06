@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -778,21 +778,24 @@ int gmskframesync_decode_header(gmskframesync _q)
     // run packet decoder
     _q->header_valid = packetizer_decode(_q->p_header, _q->header_enc, _q->header_dec);
 
+    // could not decode header
     if (!_q->header_valid)
         return LIQUID_OK;
 
+    // header decoded properly but assume invalid until values are checked
+    _q->header_valid = 0;
     unsigned int n = _q->header_user_len;
 
     // first byte is for expansion/version validation
-    if (_q->header_dec[n+0] != GMSKFRAME_VERSION) {
-        liquid_error(LIQUID_EICONFIG,"gmskframesync_decode_header(), invalid framing version (received %u, expected %u)",
-            _q->header_dec[n+0], GMSKFRAME_VERSION);
-        _q->header_valid = 0;
-        return LIQUID_OK;
-    }
+    if (_q->header_dec[n+0] != GMSKFRAME_VERSION)
+        return liquid_error(LIQUID_EICONFIG,"gmskframesync_decode_header(), invalid framing version (received %u, expected %u)",_q->header_dec[n+0], GMSKFRAME_VERSION);
 
     // strip off payload length
     unsigned int payload_dec_len = (_q->header_dec[n+1] << 8) | (_q->header_dec[n+2]);
+
+    // validate payload length
+    if (payload_dec_len == 0 || payload_dec_len > LIQUID_MAX_PAYLOAD_LEN)
+        return liquid_error(LIQUID_EICONFIG,"gmskframesync_decode_header(), invalid payload length %u", payload_dec_len);
 
     // strip off CRC, forward error-correction schemes
     //  CRC     : most-significant 3 bits of [n+3]
@@ -803,45 +806,39 @@ int gmskframesync_decode_header(gmskframesync _q)
     unsigned int fec1  = (_q->header_dec[n+4]      ) & 0x1f;
 
     // validate properties
-    if (check == LIQUID_CRC_UNKNOWN || check >= LIQUID_CRC_NUM_SCHEMES) {
-        liquid_error(LIQUID_EICONFIG,"gmskframesync_decode_header(), invalid/unsupported crc: %u", check);
-        check = LIQUID_CRC_UNKNOWN;
-        _q->header_valid = 0;
-    }
-    if (fec0 >= LIQUID_FEC_NUM_SCHEMES) {
+    if (check == LIQUID_CRC_UNKNOWN || check >= LIQUID_CRC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"gmskframesync_decode_header(), invalid/unsupported crc: %u", check);
+
+    if (fec0 >= LIQUID_FEC_NUM_SCHEMES)
         liquid_error(LIQUID_EICONFIG,"gmskframesync_decode_header(), invalid/unsupported fec (inner): %u", fec0);
-        fec0 = LIQUID_FEC_UNKNOWN;
-        _q->header_valid = 0;
-    }
-    if (fec1 >= LIQUID_FEC_NUM_SCHEMES) {
-        liquid_error(LIQUID_EICONFIG,"gmskframesync_decode_header(), invalid/unsupported fec (outer): %u", fec1);
-        fec1 = LIQUID_FEC_UNKNOWN;
-        _q->header_valid = 0;
-    }
 
-    // configure payload receiver
-    if (_q->header_valid) {
-        // set new packetizer properties
-        _q->payload_dec_len = payload_dec_len;
-        _q->check           = check;
-        _q->fec0            = fec0;
-        _q->fec1            = fec1;
-        
-        // recreate packetizer object
-        _q->p_payload = packetizer_recreate(_q->p_payload,
-                                            _q->payload_dec_len,
-                                            _q->check,
-                                            _q->fec0,
-                                            _q->fec1);
+    if (fec1 >= LIQUID_FEC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"gmskframesync_decode_header(), invalid/unsupported fec (outer): %u", fec1);
 
-        // re-compute payload encoded message length
-        _q->payload_enc_len = packetizer_get_enc_msg_len(_q->p_payload);
+    // set new packetizer properties
+    _q->payload_dec_len = payload_dec_len;
+    _q->check           = check;
+    _q->fec0            = fec0;
+    _q->fec1            = fec1;
 
-        // re-allocate buffers accordingly
-        _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->payload_enc_len*sizeof(unsigned char));
-        _q->payload_dec = (unsigned char*) realloc(_q->payload_dec, _q->payload_dec_len*sizeof(unsigned char));
-    }
+    // recreate packetizer object
+    _q->p_payload = packetizer_recreate(_q->p_payload,
+                                        _q->payload_dec_len,
+                                        _q->check,
+                                        _q->fec0,
+                                        _q->fec1);
+
+    // re-compute payload encoded message length
+    _q->payload_enc_len = packetizer_get_enc_msg_len(_q->p_payload);
+
+    // re-allocate buffers accordingly
+    _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->payload_enc_len*sizeof(unsigned char));
+    _q->payload_dec = (unsigned char*) realloc(_q->payload_dec, _q->payload_dec_len*sizeof(unsigned char));
+    if (_q->payload_enc == NULL || _q->payload_dec == NULL)
+        return liquid_error(LIQUID_EIMEM,"gmskframesync_decode_header(), could not allocate memory for payload");
+
     //
+    _q->header_valid = 1;
     return LIQUID_OK;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-//
-// AUTOTEST: SEC-DEC (72,64) codec (no errors)
-//
-void autotest_secded7264_codec_e0()
+LIQUID_AUTOTEST(secded7264_codec_e0,"SEC-DED (72,64) codec (no errors)","",0.1)
 {
     // arrays
     unsigned char sym_org[8];   // original symbol
@@ -53,20 +50,17 @@ void autotest_secded7264_codec_e0()
     fec_secded7264_decode_symbol(sym_enc, sym_dec);
 
     // validate data are the same
-    CONTEND_EQUALITY(sym_org[0], sym_dec[0]);
-    CONTEND_EQUALITY(sym_org[1], sym_dec[1]);
-    CONTEND_EQUALITY(sym_org[2], sym_dec[2]);
-    CONTEND_EQUALITY(sym_org[3], sym_dec[3]);
-    CONTEND_EQUALITY(sym_org[4], sym_dec[4]);
-    CONTEND_EQUALITY(sym_org[5], sym_dec[5]);
-    CONTEND_EQUALITY(sym_org[6], sym_dec[6]);
-    CONTEND_EQUALITY(sym_org[7], sym_dec[7]);
+    LIQUID_CHECK(sym_org[0] ==  sym_dec[0]);
+    LIQUID_CHECK(sym_org[1] ==  sym_dec[1]);
+    LIQUID_CHECK(sym_org[2] ==  sym_dec[2]);
+    LIQUID_CHECK(sym_org[3] ==  sym_dec[3]);
+    LIQUID_CHECK(sym_org[4] ==  sym_dec[4]);
+    LIQUID_CHECK(sym_org[5] ==  sym_dec[5]);
+    LIQUID_CHECK(sym_org[6] ==  sym_dec[6]);
+    LIQUID_CHECK(sym_org[7] ==  sym_dec[7]);
 }
 
-//
-// AUTOTEST: SEC-DEC (72,64) codec (single error)
-//
-void autotest_secded7264_codec_e1()
+LIQUID_AUTOTEST(secded7264_codec_e1,"SEC-DED (72,64) codec (single error)","",0.1)
 {
     // arrays
     unsigned char sym_org[8];   // original symbol
@@ -101,14 +95,11 @@ void autotest_secded7264_codec_e1()
 
         // validate data are the same
         for (i=0; i<8; i++)
-            CONTEND_EQUALITY(sym_org[i], sym_dec[i]);
+            LIQUID_CHECK(sym_org[i] ==  sym_dec[i]);
     }
 }
 
-//
-// AUTOTEST: SEC-DEC (72,64) codec (double error detection)
-//
-void autotest_secded7264_codec_e2()
+LIQUID_AUTOTEST(secded7264_codec_e2,"SEC-DED (72,64) codec (double error detection)","",0.1)
 {
     // total combinations of double errors: nchoosek(72,2) = 2556
 
@@ -125,8 +116,7 @@ void autotest_secded7264_codec_e2()
 
     for (j=0; j<72-1; j++) {
 #if 0
-        if (liquid_autotest_verbose)
-            printf("***** %2u *****\n", j);
+        printf("***** %2u *****\n", j);
 #endif
         
         for (k=0; k<72-1-j; k++) {
@@ -155,24 +145,21 @@ void autotest_secded7264_codec_e2()
             int syndrome_flag = fec_secded7264_decode_symbol(sym_rec, sym_dec);
 
 #if 0
-            if (liquid_autotest_verbose) {
-                // print error vector
-                printf("%3u, e = ", k);
-                liquid_print_bitstring(e[0], 8);
-                liquid_print_bitstring(e[1], 8);
-                liquid_print_bitstring(e[2], 8);
-                liquid_print_bitstring(e[3], 8);
-                liquid_print_bitstring(e[4], 8);
-                liquid_print_bitstring(e[5], 8);
-                liquid_print_bitstring(e[6], 8);
-                liquid_print_bitstring(e[7], 8);
-                liquid_print_bitstring(e[8], 8);
-                printf(" flag=%2d\n", syndrome_flag);
-            }
+            printf("%3u, e = ", k);
+            liquid_print_bitstring(e[0], 8);
+            liquid_print_bitstring(e[1], 8);
+            liquid_print_bitstring(e[2], 8);
+            liquid_print_bitstring(e[3], 8);
+            liquid_print_bitstring(e[4], 8);
+            liquid_print_bitstring(e[5], 8);
+            liquid_print_bitstring(e[6], 8);
+            liquid_print_bitstring(e[7], 8);
+            liquid_print_bitstring(e[8], 8);
+            printf(" flag=%2d\n", syndrome_flag);
 #endif
 
             // validate syndrome flag is '2'
-            CONTEND_EQUALITY(syndrome_flag, 2);
+            LIQUID_CHECK(syndrome_flag ==  2);
         }
     }
 }

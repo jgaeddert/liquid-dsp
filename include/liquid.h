@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,9 +33,17 @@ extern "C" {
 #include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
+
+// compile-time short file path: use __FILE_NAME__ if available (Clang 9+, GCC 12+)
+#ifdef __FILE_NAME__
+#  define LIQUID_FILENAME __FILE_NAME__
+#else
+#  define LIQUID_FILENAME __FILE__
+#endif
 
 // Make sure the version and version number macros weren't defined by
-// some prevoiusly included header file.
+// some previously included header file.
 #ifdef LIQUID_VERSION
 #  undef LIQUID_VERSION
 #endif
@@ -50,11 +58,11 @@ extern "C" {
 #define LIQUID_VERSION_STR(num) LIQUID_VERSION_STR_EX(num)
 
 #define LIQUID_VERSION_MAJOR    1
-#define LIQUID_VERSION_MINOR    7
+#define LIQUID_VERSION_MINOR    8
 #define LIQUID_VERSION_PATCH    0
 #define LIQUID_VERSION_DEV      0
 
-// final version string is constructed by concatenating inidividual string versions
+// final version string is constructed by concatenating individual string versions
 #define LIQUID_VERSION \
     LIQUID_VERSION_STR(LIQUID_VERSION_MAJOR) "." \
     LIQUID_VERSION_STR(LIQUID_VERSION_MINOR) "." \
@@ -77,12 +85,26 @@ int liquid_libversion_number(void);
 // run-time library validation
 #define LIQUID_VALIDATE_LIBVERSION                                          \
   if (LIQUID_VERSION_NUMBER != liquid_libversion_number()) {                \
-    fprintf(stderr,"%s:%u: ", __FILE__,__LINE__);                           \
+    fprintf(stderr,"%s:%u: ", LIQUID_FILENAME,__LINE__);                    \
     fprintf(stderr,"error: invalid liquid runtime library\n");              \
     fprintf(stderr,"  header version  : %d\n", LIQUID_VERSION_NUMBER);      \
     fprintf(stderr,"  library version : %d\n", liquid_libversion_number()); \
     exit(1);                                                                \
   }                                                                         \
+
+// report error
+int liquid_error_fl(int _code, const char * _file, int _line, const char * _format, ...);
+
+// report error specifically for invalid object configuration 
+void * liquid_error_config_fl(const char * _file, int _line, const char * _format, ...);
+
+// macro to get file name and line number for source of error
+#define liquid_error(code, format, ...) \
+    liquid_error_fl(code, LIQUID_FILENAME, __LINE__, format, ##__VA_ARGS__);
+
+// macro to get file name and line number for source of error (invalid object)
+#define liquid_error_config(format, ...) \
+    liquid_error_config_fl(LIQUID_FILENAME, __LINE__, format, ##__VA_ARGS__);
 
 // basic error types
 #define LIQUID_NUM_ERRORS 14
@@ -114,7 +136,7 @@ typedef enum {
     LIQUID_EIRANGE,
 
     // invalid mode; examples:
-    //  - try to create a modem of type 'LIQUID_MODEM_XXX' which does not exit
+    //  - try to create a modem of type 'LIQUID_MODEM_XXX' which does not exist
     LIQUID_EIMODE,
 
     // unsupported mode (e.g. LIQUID_FEC_CONV_V27 with 'libfec' not installed)
@@ -150,6 +172,282 @@ typedef enum {
 extern const char * liquid_error_str[LIQUID_NUM_ERRORS];
 const char *        liquid_error_info(liquid_error_code _code);
 
+
+//
+// logging: format and options
+//
+
+// date and time (choose one)
+#define LIQUID_LOG_RAWTIME          (1U << 31) // log the raw timestamp, e.g. "1771769351"
+#define LIQUID_LOG_DATETIME         (1U << 30) // "2026-02-22 08:18:35"
+#define LIQUID_LOG_DATE             (1U << 29) // "2026-02-22"
+#define LIQUID_LOG_TIME             (1U << 28) // "08:18:35"
+// time options (choose one or none)
+#define LIQUID_LOG_UTC              (1U << 26) // use coordinated universal time
+#define LIQUID_LOG_MS               (1U << 24) // "08:18:35.123"
+#define LIQUID_LOG_US               (1U << 23) // "08:18:35.123456"
+#define LIQUID_LOG_NS               (1U << 22) // "08:18:35.123456789"
+// log level (choose one or none)
+#define LIQUID_LOG_LEVEL_FULL       (1U << 19) // "warning"
+#define LIQUID_LOG_LEVEL_SHORT      (1U << 18) // "warn "
+#define LIQUID_LOG_LEVEL_ONE        (1U << 17) // "W"
+#define LIQUID_LOG_LEVEL_NUMBER     (1U << 16) // "3"
+// log level options
+#define LIQUID_LOG_LEVEL_BRACKETS   (1U << 15) // "[trace]"
+// filename options (choose one or none)
+#define LIQUID_LOG_FILENAME         (1U << 12) // "source_file.c"
+#define LIQUID_LOG_FILENAME_SHORT   (1U << 11) // "       source_file.c"
+#define LIQUID_LOG_FILENAME_TRUNC   (1U << 10) // "…urce_file.c"
+// line number options
+#define LIQUID_LOG_LINE             (1U <<  8) // "/path/to/my/source/file.c:123"
+// color options
+#define LIQUID_LOG_COLOR            (1U <<  4) // log in color
+
+// preset: compact detail
+#define LIQUID_LOG_COMPACT \
+  (LIQUID_LOG_TIME | \
+   LIQUID_LOG_LEVEL_BRACKETS | LIQUID_LOG_LEVEL_ONE | \
+   LIQUID_LOG_COLOR)
+
+// preset: short detail
+#define LIQUID_LOG_SHORT \
+  (LIQUID_LOG_TIME | \
+   LIQUID_LOG_LEVEL_BRACKETS | LIQUID_LOG_LEVEL_SHORT | \
+   LIQUID_LOG_COLOR)
+
+// preset: medium detail
+#define LIQUID_LOG_MEDIUM \
+  (LIQUID_LOG_DATETIME | \
+   LIQUID_LOG_LEVEL_BRACKETS | LIQUID_LOG_LEVEL_SHORT | \
+   LIQUID_LOG_FILENAME_SHORT | LIQUID_LOG_LINE | LIQUID_LOG_COLOR)
+
+// preset: full detail
+#define LIQUID_LOG_FULL \
+  (LIQUID_LOG_DATETIME | LIQUID_LOG_MS | \
+   LIQUID_LOG_LEVEL_BRACKETS | LIQUID_LOG_LEVEL_FULL | \
+   LIQUID_LOG_FILENAME | LIQUID_LOG_LINE | LIQUID_LOG_COLOR)
+
+// default preset
+#define LIQUID_LOG_DEFAULT LIQUID_LOG_SHORT
+
+// number of available logging levels
+#define LIQUID_LOG_NUM_LEVELS (6)
+
+// logging event struct pointer
+typedef struct liquid_log_event_s * liquid_log_event;
+
+// custom logging object capable of handling output to stdout or file,
+// custom callback functions, custom formatting, and run-time level selection
+typedef struct liquid_logger_s * liquid_logger;
+
+// logging callback function
+typedef int (*liquid_log_callback)(liquid_log_event event,
+                                   void * context,
+                                   int config);
+
+// lock callback function
+typedef int (*liquid_lock_callback)(int _lock, void * context);
+
+// event to log
+struct liquid_log_event_s
+{
+    va_list         args;           // variadic function arguments
+    const char *    format;         // message format
+    const char *    file;           // source file name
+    unsigned int    line;           // source line number
+    int             level;          // log level
+    struct timespec timestamp;      // timestamp of event with nanosecond precision
+    char            time_str[64];   // formatting time buffer
+};
+
+// create logger object with default parameters
+liquid_logger liquid_logger_create();
+
+// destroy logger object, freeing all internal memory
+int liquid_logger_destroy(liquid_logger _q);
+
+// reset internal logger object counters, reset level, clear callbacks
+int liquid_logger_reset(liquid_logger _q);
+
+// print logger information to stdout
+int liquid_logger_print(liquid_logger _q);
+
+// set log level; any value below this will not be logged
+int liquid_logger_set_level(liquid_logger q, int _level);
+
+// get logging level for main display
+int liquid_logger_get_level(liquid_logger q);
+
+// set output display configuration
+int liquid_logger_set_config(liquid_logger q, int _config);
+
+// get output configuration
+int liquid_logger_get_config(liquid_logger q);
+
+// Configure the logging object based on string. This sets both the
+// output display as well as the level to allow for easy command-line
+// parsing.
+int liquid_logger_set_config_str(liquid_logger q, const char * _config);
+
+// add lock function with context
+//  _q          : logger object
+//  _callback   : user-defined lock callback function
+//  _context    : context passed when callback is invoked
+int liquid_logger_set_lock(liquid_logger        _q,
+                           liquid_lock_callback _callback,
+                           void *               _context);
+
+// add callback with context
+//  _q          : logger object
+//  _callback   : user-defined callback function
+//  _context    : context passed when callback is invoked
+//  _level      : minimum log level for which callback will be invoked
+int liquid_logger_add_callback(liquid_logger       _q,
+                               liquid_log_callback _callback,
+                               void *              _context,
+                               int                 _level);
+
+// add file pointer for which to append logs; when file is closed, the callback
+// will cease appending to the file
+//  _q      : logger object
+//  _fid    : file handle
+//  _level  : minimum log level for which callback will be invoked
+int liquid_logger_add_file(liquid_logger _q,
+                           FILE *        _fid,
+                           int           _level);
+
+// open file for appending logs, returning pointer to file handle (or NULL upon
+// error); when file is closed, the callback will cease appending to the file
+//  _q      : logger object
+//  _fid    : file handle
+//  _level  : minimum log level for which callback will be invoked
+FILE * liquid_logger_add_filename(liquid_logger _q,
+                                  const char*   _filename,
+                                  int           _level);
+
+// get the number of callbacks currently used
+unsigned int liquid_logger_get_num_callbacks(liquid_logger q);
+
+// get the total number of log events
+unsigned int liquid_logger_get_num_events(liquid_logger q);
+
+// get the number of "trace" log events
+unsigned int liquid_logger_get_num_trace(liquid_logger q);
+
+// get the number of "debug" log events
+unsigned int liquid_logger_get_num_debug(liquid_logger q);
+
+// get the number of "info" log events
+unsigned int liquid_logger_get_num_info(liquid_logger q);
+
+// get the number of "warning" log events
+unsigned int liquid_logger_get_num_warn(liquid_logger q);
+
+// get the number of "error" log events
+unsigned int liquid_logger_get_num_error(liquid_logger q);
+
+// get the number of "fatal" log events
+unsigned int liquid_logger_get_num_fatal(liquid_logger q);
+
+// append a log message to the logger
+//  _q      : logging object
+//  _level  : priority of the event
+//  _file   : name of the file which is calling this event
+//  _line   : the line number within the file where this event is called
+//  _format : string format (see "printf") for the variadic arguments
+int liquid_log(liquid_logger _q, int _level, const char * _file,
+               int _line, const char * _format, ...);
+
+// append a log message to the logger with variable arguments
+//  _q      : logging object
+//  _level  : priority of the event
+//  _file   : name of the file which is calling this event
+//  _line   : the line number within the file where this event is called
+//  _format : string format (see "printf") for the variadic arguments
+//  _ap     : variadic arguments (see "vprintf") for output formatting
+int liquid_vlog(liquid_logger _q, int _level, const char * _file,
+                int _line, const char * _format, va_list _ap);
+
+// list of string representation of log levels
+extern const char * liquid_log_levels[LIQUID_LOG_NUM_LEVELS];
+
+// logging levels
+enum {
+    // a union of all levels, allowing everything to be logged
+    LIQUID_TRACE=0,
+
+    // highly granular level allowing for performing low-level diagnostics
+    LIQUID_DEBUG,
+
+    // routine application operations
+    LIQUID_INFO,
+
+    // level to designate potentially harmful events, indicating something
+    // unexpected occurred and might require investigation
+    LIQUID_WARN,
+
+    // level to designate a serious event such as an invalid configuration
+    // for a new object, passing a NULL pointer to a method, or an algorithm
+    // failing to converge
+    LIQUID_ERROR,
+
+    // level indicating a catastrophic event has occurred, and the
+    // application should be aborted immediately
+    LIQUID_FATAL
+};
+
+// compile-time logging level
+#ifndef LIQUID_LOG_LEVEL_COMPILE
+#  define LIQUID_LOG_LEVEL_COMPILE 0
+#endif
+
+// convenience method for logging "trace"
+#if LIQUID_LOG_LEVEL_COMPILE <= 0
+#  define liquid_log_trace(...) liquid_log(NULL,LIQUID_TRACE,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
+#else
+#  define liquid_log_trace(...) {}
+#endif
+
+// convenience method for logging "debug"
+#if LIQUID_LOG_LEVEL_COMPILE <= 1
+#  define liquid_log_debug(...) liquid_log(NULL,LIQUID_DEBUG,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
+#else
+#  define liquid_log_debug(...) {}
+#endif
+
+// convenience method for logging "info"
+#if LIQUID_LOG_LEVEL_COMPILE <= 2
+#  define liquid_log_info(...)  liquid_log(NULL,LIQUID_INFO, LIQUID_FILENAME,__LINE__,__VA_ARGS__)
+#else
+#  define liquid_log_info(...) {}
+#endif
+
+// convenience method for logging "warn"
+#if LIQUID_LOG_LEVEL_COMPILE <= 3
+#  define liquid_log_warn(...)  liquid_log(NULL,LIQUID_WARN, LIQUID_FILENAME,__LINE__,__VA_ARGS__)
+#else
+#  define liquid_log_warn(...) {}
+#endif
+
+// convenience method for logging "error"
+#if LIQUID_LOG_LEVEL_COMPILE <= 4
+#  define liquid_log_error(...) liquid_log(NULL,LIQUID_ERROR,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
+#else
+#  define liquid_log_error(...) {}
+#endif
+
+// convenience method for logging "fatal"
+#if LIQUID_LOG_LEVEL_COMPILE <= 5
+#  define liquid_log_fatal(...) liquid_log(NULL,LIQUID_FATAL,LIQUID_FILENAME,__LINE__,__VA_ARGS__)
+#else
+#  define liquid_log_fatal(...) {}
+#endif
+
+
+// provide exit value based on global logging
+//int liquid_exit();
+
+// macro concatenation
 #define LIQUID_CONCAT(prefix, name) prefix ## name
 #define LIQUID_VALIDATE_INPUT
 
@@ -371,7 +669,7 @@ LIQUID_AGC_DEFINE_API(LIQUID_AGC_MANGLE_RRRF, float, float)
 // CVSD: continuously variable slope delta
 typedef struct cvsd_s * cvsd;
 
-// create cvsd object
+// Create cvsd object for encoding/decoding audio signal
 //  _num_bits   :   number of adjacent bits to observe (4 recommended)
 //  _zeta       :   slope adjustment multiplier (1.5 recommended)
 //  _alpha      :   pre-/post-emphasis filter coefficient (0.9 recommended)
@@ -380,19 +678,33 @@ cvsd cvsd_create(unsigned int _num_bits,
                  float _zeta,
                  float _alpha);
 
-// destroy cvsd object
+// Destroy cvsd object, freeing all internal memory
 int cvsd_destroy(cvsd _q);
 
-// print cvsd object parameters
+// Print cvsd object parameters to stdout
 int cvsd_print(cvsd _q);
 
-// encode/decode single sample
-unsigned char   cvsd_encode(cvsd _q, float _audio_sample);
-float           cvsd_decode(cvsd _q, unsigned char _bit);
+// Encode a single sample, returning a single bit for encoding
+unsigned char cvsd_encode(cvsd _q, float _audio_sample);
 
-// encode/decode 8 samples at a time
-int cvsd_encode8(cvsd _q, float * _audio, unsigned char * _data);
-int cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
+// Decode a single sample from input bit, returning the output sample value
+float cvsd_decode(cvsd _q, unsigned char _bit);
+
+// Encode eight samples at a time
+//  _q      : encoder object
+//  _audio  : input buffer pointer, size: (8,)
+//  _data   : pointer to single output byte with packed bits, size: (1,)
+int cvsd_encode8(cvsd            _q,
+                 float *         _audio,
+                 unsigned char * _data);
+
+// Decode eight samples at a time
+//  _q      : encoder object
+//  _data   : input byte with packed bits
+//  _audio  : output buffer pointer, size: (8,)
+int cvsd_decode8(cvsd          _q,
+                 unsigned char _data,
+                 float *       _audio);
 
 
 //
@@ -627,7 +939,7 @@ int WDELAY(_destroy)(WDELAY() _q);                                          \
 /* Print delay buffer object's state to stdout                          */  \
 int WDELAY(_print)(WDELAY() _q);                                            \
                                                                             \
-/* Clear/reset state of object                                          */  \
+/* Reset object's internal state                                        */  \
 int WDELAY(_reset)(WDELAY() _q);                                            \
                                                                             \
 /* Read delayed sample at the head of the buffer and store it to the    */  \
@@ -663,7 +975,9 @@ LIQUID_WDELAY_DEFINE_API(LIQUID_WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 //   TI         : input data type
 #define LIQUID_CHANNEL_DEFINE_API(CHANNEL,TO,TC,TI)                         \
                                                                             \
-/* Channel emulation                                                    */  \
+/* Channel object to emulate distortion effects between a transmitter   */  \
+/* and receiver, including additive noise, carrier frequency/phase      */  \
+/* offsets, multi-path fading, and time-varying shadowing.              */  \
 typedef struct CHANNEL(_s) * CHANNEL();                                     \
                                                                             \
 /* Create channel object with default parameters                        */  \
@@ -767,7 +1081,7 @@ TVMPCH() TVMPCH(_copy)(TVMPCH() _q);                                        \
 /* Destroy channel object, freeing all internal memory                  */  \
 int TVMPCH(_destroy)(TVMPCH() _q);                                          \
                                                                             \
-/* Reset object                                                         */  \
+/* Reset channel object's state, clearing internal buffers              */  \
 int TVMPCH(_reset)(TVMPCH() _q);                                            \
                                                                             \
 /* Print channel object internals to standard output                    */  \
@@ -1021,8 +1335,8 @@ int EQLMS(_copy_coefficients)(EQLMS() _q,                                   \
 /*  _w      : pointer to output coefficients array, [size: _n x 1]      */  \
 DEPRECATED("use eqlms_xxxt_copy_coefficients(...) instead",                 \
 void EQLMS(_get_weights)(EQLMS() _q,                                        \
-                         T *     _w);                                       \
-)                                                                           \
+                         T *     _w)                                        \
+);                                                                          \
                                                                             \
 /* Push sample into equalizer internal buffer                           */  \
 /*  _q      :   equalizer object                                        */  \
@@ -1093,8 +1407,8 @@ int EQLMS(_train)(EQLMS()      _q,                                          \
                   T *          _w,                                          \
                   T *          _x,                                          \
                   T *          _d,                                          \
-                  unsigned int _n);                                         \
-)                                                                           \
+                  unsigned int _n)                                          \
+);                                                                          \
 
 LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_RRRF, float)
 LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_CCCF, liquid_float_complex)
@@ -1311,24 +1625,25 @@ fec_scheme liquid_getopt_str2fec(const char * _str);
 // fec object (pointer to fec structure)
 typedef struct fec_s * fec;
 
-// return the encoded message length using a particular error-
+// Return the encoded message length using a particular error-
 // correction scheme (object-independent method)
 //  _scheme     :   forward error-correction scheme
 //  _msg_len    :   raw, uncoded message length
 unsigned int fec_get_enc_msg_length(fec_scheme _scheme,
                                     unsigned int _msg_len);
 
-// get the theoretical rate of a particular forward error-
+// Get the theoretical rate of a particular forward error-
 // correction scheme (object-independent method)
 float fec_get_rate(fec_scheme _scheme);
 
-// create a fec object of a particular scheme
+// Create a fec object of a particular scheme
 //  _scheme     :   error-correction scheme
 //  _opts       :   (ignored)
 fec fec_create(fec_scheme _scheme,
                void *_opts);
 
-// recreate fec object
+// Recreate fec object with new scheme, handling internal memory allocation
+// and re-allocation appropriately
 //  _q          :   old fec object
 //  _scheme     :   new error-correction scheme
 //  _opts       :   (ignored)
@@ -1339,13 +1654,13 @@ fec fec_recreate(fec _q,
 // Copy object including all internal objects and state
 fec fec_copy(fec _q);
 
-// destroy fec object
+// Destroy fec object, freeing all internal memory
 int fec_destroy(fec _q);
 
-// print fec object internals
+// Print fec object internals to stdout
 int fec_print(fec _q);
 
-// encode a block of data using a fec scheme
+// Encode a block of data using a fec scheme
 //  _q              :   fec object
 //  _dec_msg_len    :   decoded message length
 //  _msg_dec        :   decoded message
@@ -1355,7 +1670,7 @@ int fec_encode(fec _q,
                unsigned char * _msg_dec,
                unsigned char * _msg_enc);
 
-// decode a block of data using a fec scheme
+// Decode a block of data using a fec scheme
 //  _q              :   fec object
 //  _dec_msg_len    :   decoded message length
 //  _msg_enc        :   encoded message
@@ -1365,7 +1680,7 @@ int fec_decode(fec _q,
                unsigned char * _msg_enc,
                unsigned char * _msg_dec);
 
-// decode a block of data using a fec scheme (soft decision)
+// Decode a block of data using a fec scheme (soft decision)
 //  _q              :   fec object
 //  _dec_msg_len    :   decoded message length
 //  _msg_enc        :   encoded message (soft bits)
@@ -1375,12 +1690,12 @@ int fec_decode_soft(fec _q,
                     unsigned char * _msg_enc,
                     unsigned char * _msg_dec);
 
-//
-// Packetizer
-//
 
-// computes the number of encoded bytes after packetizing
-//
+// Data packetizer, wrapping data integrity check and forward error-correction
+// into convenient interface
+typedef struct packetizer_s * packetizer;
+
+// Compute the number of encoded bytes after packetizing
 //  _n      :   number of uncoded input bytes
 //  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
@@ -1390,8 +1705,7 @@ unsigned int packetizer_compute_enc_msg_len(unsigned int _n,
                                             int _fec0,
                                             int _fec1);
 
-// computes the number of decoded bytes before packetizing
-//
+// Compute the number of decoded bytes before packetizing
 //  _k      :   number of encoded bytes
 //  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
@@ -1401,10 +1715,7 @@ unsigned int packetizer_compute_dec_msg_len(unsigned int _k,
                                             int _fec0,
                                             int _fec1);
 
-typedef struct packetizer_s * packetizer;
-
-// create packetizer object
-//
+// Create packetizer object
 //  _n      :   number of uncoded input bytes
 //  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
@@ -1414,8 +1725,7 @@ packetizer packetizer_create(unsigned int _dec_msg_len,
                              int _fec0,
                              int _fec1);
 
-// re-create packetizer object
-//
+// Re-create packetizer object
 //  _p      :   initialz packetizer object
 //  _n      :   number of uncoded input bytes
 //  _crc    :   error-detecting scheme
@@ -1430,18 +1740,26 @@ packetizer packetizer_recreate(packetizer _p,
 // Copy object including all internal objects and state
 packetizer packetizer_copy(packetizer _p);
 
-// destroy packetizer object
+// Destroy packetizer object
 int packetizer_destroy(packetizer _p);
 
-// print packetizer object internals
+// Print packetizer object internals
 int packetizer_print(packetizer _p);
 
-// access methods
+// Get the length of the decoded message
 unsigned int packetizer_get_dec_msg_len(packetizer _p);
+
+// Get the length of the encoded message
 unsigned int packetizer_get_enc_msg_len(packetizer _p);
-crc_scheme   packetizer_get_crc        (packetizer _p);
-fec_scheme   packetizer_get_fec0       (packetizer _p);
-fec_scheme   packetizer_get_fec1       (packetizer _p);
+
+// Get the specified data integrity check
+crc_scheme packetizer_get_crc(packetizer _p);
+
+// Get the specified inner forward error-correction scheme
+fec_scheme packetizer_get_fec0(packetizer _p);
+
+// Get the specified outer forward error-correction scheme
+fec_scheme packetizer_get_fec1(packetizer _p);
 
 
 // Execute the packetizer on an input message
@@ -1474,31 +1792,29 @@ int packetizer_decode_soft(packetizer            _p,
                            unsigned char *       _msg);
 
 
-//
-// interleaver
-//
+// Interleaver for spreading out bit errors in data packets
 typedef struct interleaver_s * interleaver;
 
-// create interleaver
+// Create interleaver for a specified number of input bytes
 //   _n     : number of bytes
 interleaver interleaver_create(unsigned int _n);
 
 // Copy object including all internal objects and state
 interleaver linterleaver_copy(interleaver _q);
 
-// destroy interleaver object
+// Destroy interleaver object
 int interleaver_destroy(interleaver _q);
 
-// print interleaver object internals
+// Print interleaver object internals
 int interleaver_print(interleaver _q);
 
-// set depth (number of internal iterations)
+// Set depth (number of internal iterations)
 //  _q      :   interleaver object
 //  _depth  :   depth
 int interleaver_set_depth(interleaver  _q,
                           unsigned int _depth);
 
-// execute forward interleaver (encoder)
+// Execute forward interleaver (encoder)
 //  _q          :   interleaver object
 //  _msg_dec    :   decoded (un-interleaved) message
 //  _msg_enc    :   encoded (interleaved) message
@@ -1506,7 +1822,7 @@ int interleaver_encode(interleaver     _q,
                        unsigned char * _msg_dec,
                        unsigned char * _msg_enc);
 
-// execute forward interleaver (encoder) on soft bits
+// Execute forward interleaver (encoder) on soft bits
 //  _q          :   interleaver object
 //  _msg_dec    :   decoded (un-interleaved) message
 //  _msg_enc    :   encoded (interleaved) message
@@ -1514,7 +1830,7 @@ int interleaver_encode_soft(interleaver     _q,
                             unsigned char * _msg_dec,
                             unsigned char * _msg_enc);
 
-// execute reverse interleaver (decoder)
+// Execute reverse interleaver (decoder)
 //  _q          :   interleaver object
 //  _msg_enc    :   encoded (interleaved) message
 //  _msg_dec    :   decoded (un-interleaved) message
@@ -1522,7 +1838,7 @@ int interleaver_decode(interleaver     _q,
                        unsigned char * _msg_enc,
                        unsigned char * _msg_dec);
 
-// execute reverse interleaver (decoder) on soft bits
+// Execute reverse interleaver (decoder) on soft bits
 //  _q          :   interleaver object
 //  _msg_enc    :   encoded (interleaved) message
 //  _msg_dec    :   decoded (un-interleaved) message
@@ -1618,7 +1934,8 @@ int FFT(_destroy_plan)(FFT(plan) _p);                                       \
 /* prime factors or with large prime factors.                           */  \
 int FFT(_print_plan)(FFT(plan) _p);                                         \
                                                                             \
-/* Run the transform                                                    */  \
+/* Run the transform on the assigned input buffer and write the result  */  \
+/* to the assigned output buffer.                                       */  \
 int FFT(_execute)(FFT(plan) _p);                                            \
                                                                             \
 /* Perform n-point FFT allocating plan internally                       */  \
@@ -1761,7 +2078,7 @@ int SPGRAM(_set_rate)(SPGRAM() _q,                                          \
 /* Get transform (FFT) size                                             */  \
 unsigned int SPGRAM(_get_nfft)(SPGRAM() _q);                                \
                                                                             \
-/* Get window length                                                    */  \
+/* Get length of input tapering window                                  */  \
 unsigned int SPGRAM(_get_window_len)(SPGRAM() _q);                          \
                                                                             \
 /* Get delay between transforms                                         */  \
@@ -2205,7 +2522,7 @@ typedef int (*firdespm_callback)(double   _frequency,
                                  double * _desired,
                                  double * _weight);
 
-// structured object
+// Structured object to design FIR filters using the Parks-McClellan algorithm
 typedef struct firdespm_s * firdespm;
 
 // create firdespm object
@@ -3002,6 +3319,9 @@ FDELAY() FDELAY(_create)(unsigned int _nmax,                                \
 /*  _nmax   : maximum integer sample offset                             */  \
 FDELAY() FDELAY(_create_default)(unsigned int _nmax);                       \
                                                                             \
+/* Copy a delay object including all internal objects and state         */  \
+FDELAY() FDELAY(_copy)(FDELAY() _q_orig);                                   \
+                                                                            \
 /* Destroy delay object and free all internal memory                    */  \
 int FDELAY(_destroy)(FDELAY() _q);                                          \
                                                                             \
@@ -3011,13 +3331,26 @@ int FDELAY(_reset)(FDELAY() _q);                                            \
 /* Print delay object internals                                         */  \
 int FDELAY(_print)(FDELAY() _q);                                            \
                                                                             \
-/* Get current delay (accounting for _m?)                               */  \
+/* Get current delay from object (number of samples), ignoring nominal  */  \
+/* filter delay                                                         */  \
 float FDELAY(_get_delay)(FDELAY() _q);                                      \
-int   FDELAY(_set_delay)(FDELAY() _q, float _delay);                        \
-int   FDELAY(_adjust_delay)(FDELAY() _q, float _delta);                     \
                                                                             \
+/* Set the absolute delay in object (number of samples), ignoring       */  \
+/* nominal filter delay.                                                */  \
+/*  _delay  : sample delay, 0 <= _delay <= nmax                         */  \
+int FDELAY(_set_delay)(FDELAY() _q, float _delay);                          \
+                                                                            \
+/* Adjust the absolute delay in object (number of samples) by _delta,   */  \
+/* ignoring nominal filter delay                                        */  \
+int FDELAY(_adjust_delay)(FDELAY() _q, float _delta);                       \
+                                                                            \
+/* Get maximum delay allowable by object (number of samples)            */  \
 unsigned int FDELAY(_get_nmax)(FDELAY() _q);                                \
-unsigned int FDELAY(_get_m)   (FDELAY() _q);                                \
+                                                                            \
+/* Get nominal filter delay (number of samples)                         */  \
+unsigned int FDELAY(_get_m)(FDELAY() _q);                                   \
+                                                                            \
+/* Get number of filters in the polyphase filterbank                    */  \
 unsigned int FDELAY(_get_npfb)(FDELAY() _q);                                \
                                                                             \
 /* Push sample into filter object's internal buffer                     */  \
@@ -4070,7 +4403,7 @@ int FIRDECIM(_print)(FIRDECIM() _q);                                        \
 /* Reset decimator object internal state                                */  \
 int FIRDECIM(_reset)(FIRDECIM() _q);                                        \
                                                                             \
-/* Get decimation rate                                                  */  \
+/* Get decimation rate as an integer value                              */  \
 unsigned int FIRDECIM(_get_decim_rate)(FIRDECIM() _q);                      \
                                                                             \
 /* Set output scaling for decimator                                     */  \
@@ -5005,6 +5338,18 @@ int SYMSYNC(_set_lf_bw)(SYMSYNC() _q,                                       \
 /* Return instantaneous fractional timing offset estimate               */  \
 float SYMSYNC(_get_tau)(SYMSYNC() _q);                                      \
                                                                             \
+/* Get synchronizer internal resampling rate                            */  \
+float SYMSYNC(_get_rate)(SYMSYNC() _q);                                     \
+                                                                            \
+/* Set synchronizer internal resampling rate                            */  \
+int SYMSYNC(_set_rate)(SYMSYNC() _q, float _rate);                          \
+                                                                            \
+/* Get synchronizer internal delta step size                            */  \
+float SYMSYNC(_get_del)(SYMSYNC() _q);                                      \
+                                                                            \
+/* Set synchronizer internal delta step size                            */  \
+int SYMSYNC(_set_del)(SYMSYNC() _q, float _del);                            \
+                                                                            \
 /* Execute synchronizer on input data array                             */  \
 /*  _q      : synchronizer object                                       */  \
 /*  _x      : input data array, [size: _nx x 1]                         */  \
@@ -5216,6 +5561,11 @@ LIQUID_ORDFILT_DEFINE_API(LIQUID_ORDFILT_MANGLE_RRRF,
 //
 // MODULE : framing
 //
+
+// The maximum number of bytes a payload can have. Trying to generate values that
+// exceed this will result in a LIQUID_EICONFIG error. This number was chosen to
+// roughly match the maximum size of a jumbo frame in the IEEE 802.3 standard.
+#define LIQUID_MAX_PAYLOAD_LEN (9216)
 
 // framesyncstats : generic frame synchronizer statistic structure
 
@@ -5431,16 +5781,16 @@ unsigned int qpilot_num_pilots(unsigned int _payload_len,
 unsigned int qpilot_frame_len(unsigned int _payload_len,
                               unsigned int _pilot_spacing);
 
-//
-// pilot generator for packet burst recovery
-//
 
+
+// pilot generator for packet burst recovery
 typedef struct qpilotgen_s * qpilotgen;
 
-// create packet encoder
+// Create packet encoder object
 qpilotgen qpilotgen_create(unsigned int _payload_len,
                            unsigned int _pilot_spacing);
 
+// Re-create packet encoder object
 qpilotgen qpilotgen_recreate(qpilotgen    _q,
                              unsigned int _payload_len,
                              unsigned int _pilot_spacing);
@@ -5448,26 +5798,35 @@ qpilotgen qpilotgen_recreate(qpilotgen    _q,
 // Copy object including all internal objects and state
 qpilotgen qpilotgen_copy(qpilotgen _q);
 
+// Destroy object, freeing all internal memory
 int qpilotgen_destroy(qpilotgen _q);
-int qpilotgen_reset(  qpilotgen _q);
-int qpilotgen_print(  qpilotgen _q);
 
+// Reset packet generator to original state
+int qpilotgen_reset(qpilotgen _q);
+
+// Print packet generator to stdout
+int qpilotgen_print(qpilotgen _q);
+
+// Get length of frame including pilots [symbols]
 unsigned int qpilotgen_get_frame_len(qpilotgen _q);
 
-// insert pilot symbols
+// Insert pilot symbols on input sequence
+//  _q          : packet generator
+//  _payload    : pointer to input payload, shape: (_payload_len,)
+//  _frame      : pointer to output frame, length is specified by qpilotgen_get_frame_len
 int qpilotgen_execute(qpilotgen              _q,
                       liquid_float_complex * _payload,
                       liquid_float_complex * _frame);
 
-//
+
 // pilot synchronizer for packet burst recovery
-//
 typedef struct qpilotsync_s * qpilotsync;
 
-// create packet encoder
+// Create packet synchronizer
 qpilotsync qpilotsync_create(unsigned int _payload_len,
                              unsigned int _pilot_spacing);
 
+// Re-create packet synchronizer
 qpilotsync qpilotsync_recreate(qpilotsync   _q,
                                unsigned int _payload_len,
                                unsigned int _pilot_spacing);
@@ -5475,22 +5834,37 @@ qpilotsync qpilotsync_recreate(qpilotsync   _q,
 // Copy object including all internal objects and state
 qpilotsync qpilotsync_copy(qpilotsync _q);
 
+// Destroy object, freeing all internal memory
 int qpilotsync_destroy(qpilotsync _q);
-int qpilotsync_reset(  qpilotsync _q);
-int qpilotsync_print(  qpilotsync _q);
 
+// Reset packet syncrhonizer to original state
+int qpilotsync_reset(qpilotsync _q);
+
+// Print packet generator to stdout
+int qpilotsync_print(qpilotsync _q);
+
+// Get length of frame including pilots [symbols]
 unsigned int qpilotsync_get_frame_len(qpilotsync _q);
 
-// recover frame symbols from received frame
+// Recover frame symbols from received frame
+//  _q          : packet generator
+//  _frame      : pointer to input frame, length is specified by qpilotgen_get_frame_len
+//  _payload    : pointer to output payload, shape: (_payload_len,)
 int qpilotsync_execute(qpilotsync             _q,
                        liquid_float_complex * _frame,
                        liquid_float_complex * _payload);
 
-// get estimates
+// Get estimate of carrier frequency offset [radians/sample]
 float qpilotsync_get_dphi(qpilotsync _q);
-float qpilotsync_get_phi (qpilotsync _q);
+
+// Get estimate of carrier phase offset [radians]
+float qpilotsync_get_phi(qpilotsync _q);
+
+// get estimate of signal gain (linear)
 float qpilotsync_get_gain(qpilotsync _q);
-float qpilotsync_get_evm (qpilotsync _q);
+
+// get estimate of error vector magnitude [dB]
+float qpilotsync_get_evm(qpilotsync _q);
 
 
 //
@@ -5500,21 +5874,23 @@ float qpilotsync_get_evm (qpilotsync _q);
 // frame length in samples
 #define LIQUID_FRAME64_LEN (1440)
 
+// Static frame generator object with fixed header, payload, modulation,
+// forward error correction and data integrity check
 typedef struct framegen64_s * framegen64;
 
-// create frame generator
+// Create frame generator
 framegen64 framegen64_create();
 
-// copy object
+// Copy frame generator object
 framegen64 framegen64_copy(framegen64 _q);
 
-// destroy frame generator
+// Destroy frame generator, freeing all internal memory
 int framegen64_destroy(framegen64 _q);
 
 // print frame generator internal properties
 int framegen64_print(framegen64 _q);
 
-// generate frame
+// Generate frame given input header and payload fields
 //  _q          :   frame generator object
 //  _header     :   8-byte header data, NULL for random
 //  _payload    :   64-byte payload data, NULL for random
@@ -5524,6 +5900,8 @@ int framegen64_execute(framegen64             _q,
                        unsigned char *        _payload,
                        liquid_float_complex * _frame);
 
+// Static frame synchronizer object with fixed header, payload, modulation,
+// forward error correction and data integrity check
 typedef struct framesync64_s * framesync64;
 
 // create framesync64 object
@@ -5532,23 +5910,25 @@ typedef struct framesync64_s * framesync64;
 framesync64 framesync64_create(framesync_callback _callback,
                                void *             _userdata);
 
-// copy object
+// Copy frame synchronizer object
 framesync64 framesync64_copy(framesync64 _q);
 
-// destroy frame synchronizer
+// Destroy frame synchronizer, freeing all internal memory
 int framesync64_destroy(framesync64 _q);
 
-// print frame synchronizer internal properties
+// Print frame synchronizer internal properties
 int framesync64_print(framesync64 _q);
 
-// reset frame synchronizer internal state
+// Reset frame synchronizer internal state
 int framesync64_reset(framesync64 _q);
 
-// set the callback and userdata fields
+// Set the callback function
 int framesync64_set_callback(framesync64 _q, framesync_callback _callback);
-int framesync64_set_userdata(framesync64 _q, void *             _userdata);
 
-// push samples through frame synchronizer
+// Set the user-defined data field
+int framesync64_set_userdata(framesync64 _q, void * _userdata);
+
+// Push samples through frame synchronizer
 //  _q      :   frame synchronizer object
 //  _x      :   input samples, [size: _n x 1]
 //  _n      :   number of input samples
@@ -5557,16 +5937,16 @@ int framesync64_execute(framesync64            _q,
                         unsigned int           _n);
 
 DEPRECATED("debugging enabled by default; return non-zero value to export file",
-int framesync64_debug_enable(framesync64 _q);
-)
+int framesync64_debug_enable(framesync64 _q)
+);
 
 DEPRECATED("debugging enabled by default; return non-zero value to export file",
-int framesync64_debug_disable(framesync64 _q);
-)
+int framesync64_debug_disable(framesync64 _q)
+);
 
 DEPRECATED("binary debugging file exported on non-zero return value",
-int framesync64_debug_print(framesync64 _q, const char * _filename);
-)
+int framesync64_debug_print(framesync64 _q, const char * _filename)
+);
 
 // set prefix for exporting debugging files, default: "framesync64"
 //  _q      : frame sync object
@@ -5583,15 +5963,27 @@ unsigned int framesync64_get_num_files_exported(framesync64  _q);
 // get name of last file written
 const char * framesync64_get_filename(framesync64  _q);
 
-// get/set detection threshold
+// Get frame detection threshold
 float framesync64_get_threshold(framesync64 _q);
-int   framesync64_set_threshold(framesync64 _q, float _threshold);
 
-int   framesync64_set_range(framesync64 _q, float _threshold);
+// Set frame detection threshold
+//  _q          : frame synchronizer object
+//  _threshold  : preamble correlation detection threshold
+int framesync64_set_threshold(framesync64 _q, float _threshold);
 
-// frame data statistics
-int              framesync64_reset_framedatastats(framesync64 _q);
-framedatastats_s framesync64_get_framedatastats  (framesync64 _q);
+// Set carrier frequency offset detection range. This allows detection and
+// acquisition of the frame over a wider or narrower range of frequency offsets.
+// Increasing this value allows for a larger offset, but with a higher
+// computational cost, and the potential for a larger false alarm rate.
+//  _q          : frame synchronizer object
+//  _range      : carrier frequency offset search range [radians/sample], _range >= 0
+int framesync64_set_range(framesync64 _q, float _range);
+
+// Reset frame data statistics
+int framesync64_reset_framedatastats(framesync64 _q);
+
+// Get frame data statistics
+framedatastats_s framesync64_get_framedatastats(framesync64 _q);
 
 #if 0
 // advanced modes
@@ -5602,8 +5994,7 @@ int framesync64_set_csma_callbacks(framesync64             _q,
 #endif
 
 //
-// Flexible frame : adjustable payload, mod scheme, etc., but bring
-//                  your own error correction, redundancy check
+// Flexible frame : adjustable payload, mod scheme, etc.,
 //
 
 // frame generator
@@ -5616,6 +6007,8 @@ typedef struct {
 
 int flexframegenprops_init_default(flexframegenprops_s * _fgprops);
 
+// Flexible frame generator object with adjustable payload, mod scheme,
+// forward error correction and data integrity check
 typedef struct flexframegen_s * flexframegen;
 
 // create flexframegen object
@@ -5631,7 +6024,7 @@ int flexframegen_print(flexframegen _q);
 // reset flexframegen object internals
 int flexframegen_reset(flexframegen _q);
 
-// is frame assembled?
+// Return flag indicating if frame is assembled or not
 int flexframegen_is_assembled(flexframegen _q);
 
 // get frame properties
@@ -5670,8 +6063,8 @@ int flexframegen_write_samples(flexframegen           _q,
                                liquid_float_complex * _buffer,
                                unsigned int           _buffer_len);
 
-// frame synchronizer
-
+// Flexible frame synchronizer object with adjustable payload, mod scheme,
+// forward error correction and data integrity check
 typedef struct flexframesync_s * flexframesync;
 
 // create flexframesync object
@@ -5716,23 +6109,24 @@ int flexframesync_execute(flexframesync          _q,
                           liquid_float_complex * _x,
                           unsigned int           _n);
 
-// frame data statistics
-int              flexframesync_reset_framedatastats(flexframesync _q);
+// Reset frame data statistics
+int flexframesync_reset_framedatastats(flexframesync _q);
+
+// Get frame data statistics
 framedatastats_s flexframesync_get_framedatastats  (flexframesync _q);
 
-// enable/disable debugging
+// Enable debugging capabilities
 int flexframesync_debug_enable(flexframesync _q);
+
+// Disable debugging capabilities
 int flexframesync_debug_disable(flexframesync _q);
+
+// Export debugging to particular file
 int flexframesync_debug_print(flexframesync _q,
                                const char *  _filename);
 
-//
-// bpacket : binary packet suitable for data streaming
-//
 
-//
-// bpacket generator/encoder
-//
+// binary packet generator suitable for data streaming
 typedef struct bpacketgen_s * bpacketgen;
 
 // create bpacketgen object
@@ -5764,31 +6158,45 @@ bpacketgen bpacketgen_recreate(bpacketgen _q,
 // destroy bpacketgen object, freeing all internally-allocated memory
 void bpacketgen_destroy(bpacketgen _q);
 
-// print bpacketgen internals
+// print bpacketgen internals to stdout
 void bpacketgen_print(bpacketgen _q);
 
 // return length of full packet
 unsigned int bpacketgen_get_packet_len(bpacketgen _q);
 
-// encode packet
-void bpacketgen_encode(bpacketgen _q,
+// Encode a raw message into a packet suitable for transmission
+//  _q          : generator object
+//  _msg_dec    : decoded message, shape: (_dec_msg_len,)
+//  _packet     : encoded packet, the shape is (n,) where n=bpacketgen_get_packet_len(_q)
+void bpacketgen_encode(bpacketgen      _q,
                        unsigned char * _msg_dec,
                        unsigned char * _packet);
 
-//
-// bpacket synchronizer/decoder
-//
+
+// binary packet synchronizer suitable for data streaming
 typedef struct bpacketsync_s * bpacketsync;
+
 typedef int (*bpacketsync_callback)(unsigned char *  _payload,
                                     int              _payload_valid,
                                     unsigned int     _payload_len,
                                     framesyncstats_s _stats,
                                     void *           _userdata);
+
+// Create bpacketsync object, suitable for recovering data from a bpacketgen object
+//  _m          : p/n sequence length (ignored)
+//  _callback   : user-defined callback function
+//  _userdata   : user-defined context
 bpacketsync bpacketsync_create(unsigned int _m,
                                bpacketsync_callback _callback,
                                void * _userdata);
+
+// destroy bpacketsync object, freeing all internally-allocated memory
 int bpacketsync_destroy(bpacketsync _q);
+
+// print bpacketsync internals to stdout
 int bpacketsync_print(bpacketsync _q);
+
+// reset bpacketsync internal state
 int bpacketsync_reset(bpacketsync _q);
 
 // run synchronizer on array of input bytes
@@ -5817,54 +6225,81 @@ int bpacketsync_execute_sym(bpacketsync   _q,
 int bpacketsync_execute_bit(bpacketsync   _q,
                             unsigned char _bit);
 
-//
 // M-FSK frame generator
-//
-
 typedef struct fskframegen_s * fskframegen;
 
-// create M-FSK frame generator
+// Create M-FSK frame generator
 fskframegen fskframegen_create();
-int fskframegen_destroy (fskframegen     _fg);
-int fskframegen_print   (fskframegen     _fg);
-int fskframegen_reset   (fskframegen     _fg);
-int fskframegen_assemble(fskframegen     _fg,
+
+// Destroy FSK frame generator, freeing all internal memory
+int fskframegen_destroy(fskframegen _q);
+
+// Print FSK frame generator internals to stdout
+int fskframegen_print(fskframegen _q);
+
+// Reset FSK frame generator
+int fskframegen_reset(fskframegen _q);
+
+// Assemble payload for FSK frame
+//  _q              : frame generator object
+//  _header         : frame header
+//  _payload        : payload data, [size: _payload_len x 1]
+//  _payload_len    : payload data length
+int fskframegen_assemble(fskframegen     _q,
                          unsigned char * _header,
                          unsigned char * _payload,
-                         unsigned int    _payload_len,
-                         crc_scheme      _check,
-                         fec_scheme      _fec0,
-                         fec_scheme      _fec1);
+                         unsigned int    _payload_len);
+
+// Get length of assembled frame (number of samples)
 unsigned int fskframegen_getframelen(fskframegen _q);
-int fskframegen_write_samples(fskframegen            _fg,
+
+// Write a block of samples to an output buffer
+//  _q          : frame generator object
+//  _buf        : output buffer, shape: (_buf_len,)
+//  _buf_len    : output buffer length
+int fskframegen_write_samples(fskframegen            _q,
                               liquid_float_complex * _buf,
                               unsigned int           _buf_len);
 
 
-//
 // M-FSK frame synchronizer
-//
-
 typedef struct fskframesync_s * fskframesync;
 
-// create M-FSK frame synchronizer
+// Create M-FSK frame synchronizer
 //  _callback   :   callback function
 //  _userdata   :   user data pointer passed to callback function
 fskframesync fskframesync_create(framesync_callback _callback,
                                  void *             _userdata);
+
+// Destroy frame synchronizer object, freeing all internal memory
 int fskframesync_destroy(fskframesync _q);
-int fskframesync_print  (fskframesync _q);
-int fskframesync_reset  (fskframesync _q);
+
+// Print frame synchronizer to stdout
+int fskframesync_print(fskframesync _q);
+
+// Reset FSK frame syncrhonizer
+int fskframesync_reset(fskframesync _q);
+
+// Run frame synchronizer on single input sample
 int fskframesync_execute(fskframesync         _q,
                          liquid_float_complex _x);
-int fskframesync_execute_block(fskframesync           _q,
-                               liquid_float_complex * _x,
-                               unsigned int           _n);
 
-// debugging
+// Run frame synchronizer on a block of samples
+//  _q          : frame synchronizer object
+//  _buf        : input buffer, shape: (_buf_len,)
+//  _buf_len    : input buffer length
+int fskframesync_execute_block(fskframesync           _q,
+                               liquid_float_complex * _buf,
+                               unsigned int           _buf_len);
+
+// Enable debugging for frame synchronizer object
 int fskframesync_debug_enable (fskframesync _q);
+
+// Disable debugging for frame synchronizer object
 int fskframesync_debug_disable(fskframesync _q);
-int fskframesync_debug_export (fskframesync _q, const char * _filename);
+
+// Export debugging info for frame synchronizer object to file
+int fskframesync_debug_export(fskframesync _q, const char * _filename);
 
 
 //
@@ -5912,8 +6347,8 @@ int gmskframegen_write(gmskframegen           _q,
 //  _buf        : output buffer, [size: k x 1]
 DEPRECATED("use gmskframegen_write(...) instead",
 int gmskframegen_write_samples(gmskframegen           _q,
-                               liquid_float_complex * _buf);
-)
+                               liquid_float_complex * _buf)
+);
 
 
 //
@@ -5952,11 +6387,11 @@ framedatastats_s gmskframesync_get_framedatastats  (gmskframesync _q);
 
 // debug methods
 DEPRECATED("debug methods add complexity and provide little value",
-  int gmskframesync_debug_enable(gmskframesync _q); )
+  int gmskframesync_debug_enable(gmskframesync _q) );
 DEPRECATED("debug methods add complexity and provide little value",
-  int gmskframesync_debug_disable(gmskframesync _q); )
+  int gmskframesync_debug_disable(gmskframesync _q) );
 DEPRECATED("debug methods add complexity and provide little value",
-  int gmskframesync_debug_print(gmskframesync _q, const char * _filename); )
+  int gmskframesync_debug_print(gmskframesync _q, const char * _filename) );
 
 
 //
@@ -6096,11 +6531,12 @@ int dsssframe64sync_reset_framedatastats(dsssframe64sync _q);
 // retrieve frame data statistics
 framedatastats_s dsssframe64sync_get_framedatastats(dsssframe64sync _q);
 
-//
-// OFDM flexframe generator
-//
 
-// ofdm frame generator properties
+
+// OFDM flexible frame generator
+typedef struct ofdmflexframegen_s * ofdmflexframegen;
+
+// OFDM frame generator properties
 typedef struct {
     unsigned int check;         // data validity check
     unsigned int fec0;          // forward error-correction scheme (inner)
@@ -6110,9 +6546,7 @@ typedef struct {
 } ofdmflexframegenprops_s;
 int ofdmflexframegenprops_init_default(ofdmflexframegenprops_s * _props);
 
-typedef struct ofdmflexframegen_s * ofdmflexframegen;
-
-// create OFDM flexible framing generator object
+// Create OFDM flexible framing generator object
 //  _M          :   number of subcarriers, >10 typical
 //  _cp_len     :   cyclic prefix length
 //  _taper_len  :   taper length (OFDM symbol overlap)
@@ -6124,38 +6558,38 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int              _M,
                                          unsigned char *           _p,
                                          ofdmflexframegenprops_s * _fgprops);
 
-// destroy ofdmflexframegen object
+// Destroy ofdmflexframegen object
 int ofdmflexframegen_destroy(ofdmflexframegen _q);
 
-// print parameters, properties, etc.
+// Print parameters, properties, etc.
 int ofdmflexframegen_print(ofdmflexframegen _q);
 
-// reset ofdmflexframegen object internals
+// Reset ofdmflexframegen object internals
 int ofdmflexframegen_reset(ofdmflexframegen _q);
 
-// is frame assembled?
+// Return flag indicating if frame is currently assembled
 int ofdmflexframegen_is_assembled(ofdmflexframegen _q);
 
-// get properties
+// Get frame generator properties
 int ofdmflexframegen_getprops(ofdmflexframegen _q,
                               ofdmflexframegenprops_s * _props);
 
-// set properties
+// Set frame generator properties
 int ofdmflexframegen_setprops(ofdmflexframegen _q,
                               ofdmflexframegenprops_s * _props);
 
-// set user-defined header length
+// Set user-defined header length
 int ofdmflexframegen_set_header_len(ofdmflexframegen _q,
                                     unsigned int     _len);
 
+// Set user-defined header properties
 int ofdmflexframegen_set_header_props(ofdmflexframegen _q,
                                       ofdmflexframegenprops_s * _props);
 
-// get length of frame (symbols)
-//  _q              :   OFDM frame generator object
+// Get length of frame (symbols)
 unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q);
 
-// assemble a frame from an array of data (NULL pointers will use random data)
+// Assemble a frame from an array of data (NULL pointers will use random data)
 //  _q              :   OFDM frame generator object
 //  _header         :   frame header [8 bytes]
 //  _payload        :   payload data, [size: _payload_len x 1]
@@ -6165,7 +6599,7 @@ int ofdmflexframegen_assemble(ofdmflexframegen      _q,
                               const unsigned char * _payload,
                               unsigned int          _payload_len);
 
-// write samples of assembled frame
+// Write samples of assembled frame
 //  _q              :   OFDM frame generator object
 //  _buf            :   output buffer, [size: _buf_len x 1]
 //  _buf_len        :   output buffer length
@@ -6173,10 +6607,8 @@ int ofdmflexframegen_write(ofdmflexframegen       _q,
                            liquid_float_complex * _buf,
                            unsigned int           _buf_len);
 
-//
-// OFDM flex frame synchronizer
-//
 
+// OFDM flexble frame synchronizer
 typedef struct ofdmflexframesync_s * ofdmflexframesync;
 
 // create OFDM flexible framing synchronizer object
@@ -6193,28 +6625,41 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
                                            framesync_callback _callback,
                                            void *             _userdata);
 
+// Destroy ofdmflexframesync object
 int ofdmflexframesync_destroy(ofdmflexframesync _q);
+
+// Print parameters, properties, etc.
 int ofdmflexframesync_print(ofdmflexframesync _q);
-// set user-defined header length
+
+// Set user-defined header length
 int ofdmflexframesync_set_header_len(ofdmflexframesync _q,
                                      unsigned int      _len);
 
+// Decode header field (soft-decision decoding)
 int ofdmflexframesync_decode_header_soft(ofdmflexframesync _q,
                                          int _soft);
 
+// Decode payload field (soft-decision decoding)
 int ofdmflexframesync_decode_payload_soft(ofdmflexframesync _q,
                                           int _soft);
 
+// Set user-defined header properties
 int ofdmflexframesync_set_header_props(ofdmflexframesync _q,
                                        ofdmflexframegenprops_s * _props);
 
+// Reset frame synchronizer object internal state
 int ofdmflexframesync_reset(ofdmflexframesync _q);
 
-// set the callback and userdata fields
+// Set the user-defined callback function
 int ofdmflexframesync_set_callback(ofdmflexframesync _q, framesync_callback _callback);
-int ofdmflexframesync_set_userdata(ofdmflexframesync _q, void *             _userdata);
 
-int  ofdmflexframesync_is_frame_open(ofdmflexframesync _q);
+// Set the user-defined data field
+int ofdmflexframesync_set_userdata(ofdmflexframesync _q, void * _userdata);
+
+// Return flag indicating if frame is "open" (actively being received)
+int ofdmflexframesync_is_frame_open(ofdmflexframesync _q);
+
+// Process a block of samples through the frame synchronizer
 int ofdmflexframesync_execute(ofdmflexframesync _q,
                               liquid_float_complex * _x,
                               unsigned int _n);
@@ -6225,16 +6670,22 @@ float ofdmflexframesync_get_rssi(ofdmflexframesync _q);
 // query the received carrier offset estimate
 float ofdmflexframesync_get_cfo(ofdmflexframesync _q);
 
-// frame data statistics
-int              ofdmflexframesync_reset_framedatastats(ofdmflexframesync _q);
-framedatastats_s ofdmflexframesync_get_framedatastats  (ofdmflexframesync _q);
+// Reset frame data statistics
+int ofdmflexframesync_reset_framedatastats(ofdmflexframesync _q);
+
+// Get frame data statistics
+framedatastats_s ofdmflexframesync_get_framedatastats(ofdmflexframesync _q);
 
 // set the received carrier offset estimate
 int ofdmflexframesync_set_cfo(ofdmflexframesync _q, float _cfo);
 
-// enable/disable debugging
+// Enable debugging of frame synchronizer object
 int ofdmflexframesync_debug_enable(ofdmflexframesync _q);
+
+// Disable debugging of frame synchronizer object
 int ofdmflexframesync_debug_disable(ofdmflexframesync _q);
+
+// Export debugging data to file
 int ofdmflexframesync_debug_print(ofdmflexframesync _q,
                                   const char *      _filename);
 
@@ -6257,7 +6708,7 @@ int ofdmflexframesync_debug_print(ofdmflexframesync _q,
 /* Binary P/N synchronizer                                              */  \
 typedef struct BSYNC(_s) * BSYNC();                                         \
                                                                             \
-/* Create bsync object                                                  */  \
+/* Create bsync object given an input correlation sequence              */  \
 /*  _n  : sequence length                                               */  \
 /*  _v  : correlation sequence, [size: _n x 1]                          */  \
 BSYNC() BSYNC(_create)(unsigned int _n,                                     \
@@ -6471,13 +6922,13 @@ int QDETECTOR(_set_range)(QDETECTOR() _q,                                   \
 int QDETECTOR(_set_range_index)(QDETECTOR() _q,                             \
                                 int         _index_max);                    \
                                                                             \
-/* Get sequence length                                                  */  \
+/* Get length of original sequence                                      */  \
 unsigned int QDETECTOR(_get_seq_len)(QDETECTOR() _q);                       \
                                                                             \
 /* Get pointer to original sequence                                     */  \
 const void * QDETECTOR(_get_sequence)(QDETECTOR() _q);                      \
                                                                             \
-/* Get buffer length                                                    */  \
+/* Get length of output buffer once detection occurs                    */  \
 unsigned int QDETECTOR(_get_buf_len)(QDETECTOR() _q);                       \
                                                                             \
 /* Get correlator output of detected frame                              */  \
@@ -6523,9 +6974,9 @@ typedef int (*QDSYNC(_callback))(TO *         _buf,                         \
                                  void *       _context);                    \
                                                                             \
 /* create detector with generic sequence                                */  \
-/*  _s          : sample sequence                                       */  \
-/*  _s_len      : length of sample sequence                             */  \
-/*  _ftype      : filter type                                           */  \
+/*  _s          : symbol sequence                                       */  \
+/*  _s_len      : length of symbol sequence                             */  \
+/*  _ftype      : Nyquist filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
 /*  _k          : samples per symbol                                    */  \
 /*  _m          : filter semi-length                                    */  \
 /*  _beta       : filter excess bandwidth factor                        */  \
@@ -6540,6 +6991,30 @@ QDSYNC() QDSYNC(_create_linear)(TI *              _s,                       \
                                 QDSYNC(_callback) _callback,                \
                                 void *            _context);                \
                                                                             \
+/* create detector with sequence of CP-FSK symbols                      */  \
+/*  _seq        : symbol sequence                                       */  \
+/*  _seq_len    : length of symbol sequence                             */  \
+/*  _ftype      : Nyquist filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
+/*  _bps        : bits per symbol, 0 < _bps <= 8                        */  \
+/*  _h          : modulation index, _h > 0                              */  \
+/*  _k          : samples per symbol                                    */  \
+/*  _m          : filter semi-length                                    */  \
+/*  _beta       : filter excess bandwidth factor                        */  \
+/*  _cpfsk_type : cpfsk filter type (e.g. LIQUID_CPFSK_SQUARE)          */  \
+/*  _callback   : user-defined callback                                 */  \
+/*  _context    : user-defined context                                  */  \
+QDSYNC() QDSYNC(_create_cpfsk)(unsigned char *   _seq,                      \
+                               unsigned int      _seq_len,                  \
+                               int               _ftype,                    \
+                               unsigned int      _bps,                      \
+                               float             _h,                        \
+                               unsigned int      _k,                        \
+                               unsigned int      _m,                        \
+                               float             _beta,                     \
+                               int               _cpfsk_type,               \
+                               QDSYNC(_callback) _callback,                 \
+                               void *            _context);                 \
+                                                                            \
 /* Copy object recursively including all internal objects and state     */  \
 QDSYNC() QDSYNC(_copy)(QDSYNC() _q);                                        \
                                                                             \
@@ -6552,8 +7027,8 @@ int QDSYNC(_reset)(QDSYNC() _q);                                            \
 /* Print synchronizer object information to stdout                      */  \
 int QDSYNC(_print)(QDSYNC() _q);                                            \
                                                                             \
-/* Get detection state                                                  */  \
-int QDSYNC(_is_detected)(QDSYNC() _q);                                  \
+/* Return flag indicating if sequence has been detected or not          */  \
+int QDSYNC(_is_detected)(QDSYNC() _q);                                      \
                                                                             \
 /* Get detection threshold                                              */  \
 float QDSYNC(_get_threshold)(QDSYNC() _q);                                  \
@@ -6569,11 +7044,11 @@ float QDSYNC(_get_range)(QDSYNC() _q);                                      \
 int QDSYNC(_set_range)(QDSYNC() _q,                                         \
                        float    _dphi_max);                                 \
                                                                             \
-/* Set callback method                                                  */  \
+/* Set user-defined callback method                                     */  \
 int QDSYNC(_set_callback)(QDSYNC()          _q,                             \
                           QDSYNC(_callback) _callback);                     \
                                                                             \
-/* Set context value                                                    */  \
+/* Set user-defined context value                                       */  \
 int QDSYNC(_set_context)(QDSYNC() _q, void * _context);                     \
                                                                             \
 /* Set callback buffer size (the number of symbol provided to the       */  \
@@ -6716,6 +7191,11 @@ float SYMSTREAM(_get_gain)(SYMSTREAM() _q);                                 \
                                                                             \
 /* Get delay in samples                                                 */  \
 unsigned int SYMSTREAM(_get_delay)(SYMSTREAM() _q);                         \
+                                                                            \
+/* Get number of samples generated by the object so far                 */  \
+/*  _q      : symstream object                                          */  \
+/*  _return : number of time-domain samples generated                   */  \
+unsigned long long SYMSTREAM(_get_num_samples_total)(SYMSTREAM() _q);       \
                                                                             \
 /* Write block of samples to output buffer                              */  \
 /*  _q      : synchronizer object                                       */  \
@@ -8302,28 +8782,41 @@ float MODEM(_get_demodulator_evm)(MODEM() _q);                              \
 LIQUID_MODEM_DEFINE_API(LIQUID_MODEM_MANGLE_FLOAT,float,liquid_float_complex)
 LIQUID_MODEM_DEFINE_API(LIQUID_MODEM_MANGLE_FLOAT_SHIM,float,liquid_float_complex)
 
+
 //
 // continuous-phase modulation
 //
 
-// gmskmod : GMSK modulator
+// Gauss minimum-shift keying (GMSK) modulator
 typedef struct gmskmod_s * gmskmod;
 
-// create gmskmod object
+// Create gmskmod object
 //  _k      :   samples/symbol
 //  _m      :   filter delay (symbols)
 //  _BT     :   excess bandwidth factor
 gmskmod gmskmod_create(unsigned int _k,
                        unsigned int _m,
                        float        _BT);
+
 // Copy object recursively including all internal objects and state
 gmskmod gmskmod_copy(gmskmod _q);
+
+// Destroy modulator, freeing all internal memory
 int gmskmod_destroy(gmskmod _q);
+
+// Print modulator object to stdout
 int gmskmod_print(gmskmod _q);
+
+// Reset modulator object's internal state
 int gmskmod_reset(gmskmod _q);
+
+// Modulate a single sample to an output buffer
+//  _q      :   modulator object
+//  _sym    :   input symbol
+//  _buf    :   output sample array, [size: _k x 1]
 int gmskmod_modulate(gmskmod                _q,
                      unsigned int           _sym,
-                     liquid_float_complex * _y);
+                     liquid_float_complex * _buf);
 
 
 // gmskdem : GMSK demodulator
@@ -8338,10 +8831,23 @@ gmskdem gmskdem_create(unsigned int _k,
                        float        _BT);
 // Copy object recursively including all internal objects and state
 gmskdem gmskdem_copy(gmskdem _q);
+
+// Destroy demodulator, freeing all internal memory
 int gmskdem_destroy(gmskdem _q);
+
+// Print demodulator object to stdout
 int gmskdem_print(gmskdem _q);
+
+// Reset demodulator object's internal state
 int gmskdem_reset(gmskdem _q);
+
+// Set demodulator equalization bandwidth
 int gmskdem_set_eq_bw(gmskdem _q, float _bw);
+
+// demodulate symbol, assuming perfect symbol timing
+//  _q      : fskdem object
+//  _buf    : input sample buffer, [size: _k x 1]
+//  _sym    : pointer to output symbol
 int gmskdem_demodulate(gmskdem                _q,
                        liquid_float_complex * _y,
                        unsigned int *         _sym);
@@ -8423,7 +8929,8 @@ float CPFSKMOD(_get_beta)(CPFSKMOD() _q);                                   \
 /* Get modulator's filter type                                          */  \
 int CPFSKMOD(_get_type)(CPFSKMOD() _q);                                     \
                                                                             \
-/* modulate sample                                                      */  \
+/* Modulate an input symbol into a series of output samples, taking     */  \
+/* into account the current state of the modulator's internal filter    */  \
 /*  _q      :   frequency modulator object                              */  \
 /*  _s      :   input symbol                                            */  \
 /*  _y      :   output sample array, [size: _k x 1]                     */  \
@@ -8479,7 +8986,7 @@ int CPFSKDEM(_destroy)(CPFSKDEM() _q);                                      \
 /* Print demodulator object internals                                   */  \
 int CPFSKDEM(_print)(CPFSKDEM() _q);                                        \
                                                                             \
-/* Reset state                                                          */  \
+/* Reset object's internal state                                        */  \
 int CPFSKDEM(_reset)(CPFSKDEM() _q);                                        \
                                                                             \
 /* Get demodulator's number of bits per symbol                          */  \
@@ -8511,14 +9018,11 @@ unsigned int CPFSKDEM(_demodulate)(CPFSKDEM() _q,                           \
 // define cpfskmod APIs
 LIQUID_CPFSKDEM_DEFINE_API(LIQUID_CPFSKDEM_MANGLE_FLOAT,float,liquid_float_complex)
 
-//
-// M-ary frequency-shift keying (MFSK) modems
-//
 
-// FSK modulator
+// M-ary frequency-shift keying (FSK) modulator
 typedef struct fskmod_s * fskmod;
 
-// create fskmod object (frequency modulator)
+// Create fskmod object (frequency modulator)
 //  _m          :   bits per symbol, _bps > 0
 //  _k          :   samples/symbol, _k >= 2^_m
 //  _bandwidth  :   total signal bandwidth, (0,0.5)
@@ -8529,26 +9033,26 @@ fskmod fskmod_create(unsigned int _m,
 // Copy object recursively including all internal objects and state
 fskmod fskmod_copy(fskmod _q);
 
-// destroy fskmod object
+// Destroy fskmod object
 int fskmod_destroy(fskmod _q);
 
-// print fskmod object internals
+// Print fskmod object internals to stdout
 int fskmod_print(fskmod _q);
 
-// reset state
+// Reset object's internal state
 int fskmod_reset(fskmod _q);
 
-// modulate sample
+// Modulate a single input sample to an output buffer
 //  _q      :   frequency modulator object
 //  _s      :   input symbol
-//  _y      :   output sample array, [size: _k x 1]
+//  _buf    :   output sample array, [size: _k x 1]
 int fskmod_modulate(fskmod                 _q,
                     unsigned int           _s,
-                    liquid_float_complex * _y);
+                    liquid_float_complex * _buf);
 
 
 
-// FSK demodulator
+// M-ary frequency-shift keying (FSK) demodulator
 typedef struct fskdem_s * fskdem;
 
 // create fskdem object (frequency demodulator)
@@ -8568,14 +9072,14 @@ int fskdem_destroy(fskdem _q);
 // print fskdem object internals
 int fskdem_print(fskdem _q);
 
-// reset state
+// Reset object's internal state
 int fskdem_reset(fskdem _q);
 
 // demodulate symbol, assuming perfect symbol timing
 //  _q      :   fskdem object
-//  _y      :   input sample array, [size: _k x 1]
+//  _buf    :   input sample buffer, [size: _k x 1]
 unsigned int fskdem_demodulate(fskdem                 _q,
-                               liquid_float_complex * _y);
+                               liquid_float_complex * _buf);
 
 // get demodulator frequency error
 float fskdem_get_frequency_error(fskdem _q);
@@ -8610,7 +9114,7 @@ int FREQMOD(_destroy)(FREQMOD() _q);                                        \
 /* Print freqmod object internals to stdout                             */  \
 int FREQMOD(_print)(FREQMOD() _q);                                          \
                                                                             \
-/* Reset state                                                          */  \
+/* Reset object's internal state                                        */  \
 int FREQMOD(_reset)(FREQMOD() _q);                                          \
                                                                             \
 /* Modulate single sample, producing single output sample at complex    */  \
@@ -8660,10 +9164,10 @@ int FREQDEM(_destroy)(FREQDEM() _q);                                        \
 /* Print freqdem object internals                                       */  \
 int FREQDEM(_print)(FREQDEM() _q);                                          \
                                                                             \
-/* Reset state                                                          */  \
+/* Reset object's internal state                                        */  \
 int FREQDEM(_reset)(FREQDEM() _q);                                          \
                                                                             \
-/* Demodulate sample                                                    */  \
+/* Demodulate complex input sample and resulting real-valued            */  \
 /*  _q      :   frequency modulator object                              */  \
 /*  _r      :   received signal r(t)                                    */  \
 /*  _m      :   output message signal m(t)                              */  \
@@ -8686,6 +9190,10 @@ LIQUID_FREQDEM_DEFINE_API(LIQUID_FREQDEM_MANGLE_FLOAT,float,liquid_float_complex
 
 
 
+//
+// Analog amplitude modulator/demodulator
+//
+
 // amplitude modulation types
 typedef enum {
     LIQUID_AMPMODEM_DSB=0,  // double side-band
@@ -8693,48 +9201,62 @@ typedef enum {
     LIQUID_AMPMODEM_LSB     // single side-band (lower)
 } liquid_ampmodem_type;
 
-typedef struct ampmodem_s * ampmodem;
+#define LIQUID_AMPMODEM_MANGLE_FLOAT(name) LIQUID_CONCAT(ampmodem,name)
 
-// create ampmodem object
-//  _m                  :   modulation index
-//  _type               :   AM type (e.g. LIQUID_AMPMODEM_DSB)
-//  _suppressed_carrier :   carrier suppression flag
-ampmodem ampmodem_create(float                _mod_index,
-                         liquid_ampmodem_type _type,
-                         int                  _suppressed_carrier);
+// Macro     :   AMPMODEM (analog amploitude modem)
+//  AMPMODEM :   name-mangling macro
+//  T        :   primitive data type
+//  TC       :   primitive data type (complex)
+#define LIQUID_AMPMODEM_DEFINE_API(AMPMODEM,T,TC)                           \
+                                                                            \
+/* Analog amplitude modulator/demodulator                               */  \
+typedef struct AMPMODEM(_s) * AMPMODEM();                                   \
+                                                                            \
+/* create ampmodem object                                               */  \
+/*  _m                  :   modulation index                            */  \
+/*  _type               :   AM type (e.g. LIQUID_AMPMODEM_DSB)          */  \
+/*  _suppressed_carrier :   carrier suppression flag                    */  \
+AMPMODEM() AMPMODEM(_create)(float                _mod_index,               \
+                             liquid_ampmodem_type _type,                    \
+                             int                  _suppressed_carrier);     \
+                                                                            \
+/* destroy ampmodem object                                              */  \
+int AMPMODEM(_destroy)(AMPMODEM() _q);                                      \
+                                                                            \
+/* print ampmodem object internals                                      */  \
+int AMPMODEM(_print)(AMPMODEM() _q);                                        \
+                                                                            \
+/* reset ampmodem object state                                          */  \
+int AMPMODEM(_reset)(AMPMODEM() _q);                                        \
+                                                                            \
+/* get delay from modulation operation                                  */  \
+unsigned int AMPMODEM(_get_delay_mod)(AMPMODEM() _q);                       \
+                                                                            \
+/* get delay from demodulation operation                                */  \
+unsigned int AMPMODEM(_get_delay_demod)(AMPMODEM() _q);                     \
+                                                                            \
+/* modulate a single sample                                             */  \
+int AMPMODEM(_modulate)(AMPMODEM() _q, T _x, TC * _y);                      \
+                                                                            \
+/* modulate block of samples                                            */  \
+int AMPMODEM(_modulate_block)(AMPMODEM()   _q,                              \
+                              T *          _m,                              \
+                              unsigned int _n,                              \
+                              TC *         _s);                             \
+                                                                            \
+/* demodulate a single sample                                           */  \
+int AMPMODEM(_demodulate)(AMPMODEM() _q, TC _y, T * _x);                    \
+                                                                            \
+/* demodulate a block of samples                                        */  \
+int AMPMODEM(_demodulate_block)(AMPMODEM()   _q,                            \
+                                TC *         _r,                            \
+                                unsigned int _n,                            \
+                                T *          _m);                           \
 
-// destroy ampmodem object
-int ampmodem_destroy(ampmodem _q);
+// define freqdem APIs
+LIQUID_AMPMODEM_DEFINE_API(LIQUID_AMPMODEM_MANGLE_FLOAT,float,liquid_float_complex)
 
-// print ampmodem object internals
-int ampmodem_print(ampmodem _q);
 
-// reset ampmodem object state
-int ampmodem_reset(ampmodem _q);
-
-// accessor methods
-unsigned int ampmodem_get_delay_mod  (ampmodem _q);
-unsigned int ampmodem_get_delay_demod(ampmodem _q);
-
-// modulate sample
-int ampmodem_modulate(ampmodem               _q,
-                      float                  _x,
-                      liquid_float_complex * _y);
-
-int ampmodem_modulate_block(ampmodem               _q,
-                            float *                _m,
-                            unsigned int           _n,
-                            liquid_float_complex * _s);
-
-// demodulate sample
-int ampmodem_demodulate(ampmodem             _q,
-                        liquid_float_complex _y,
-                        float *              _x);
-
-int ampmodem_demodulate_block(ampmodem               _q,
-                              liquid_float_complex * _r,
-                              unsigned int           _n,
-                              float *                _m);
 
 //
 // MODULE : multichannel
@@ -8925,7 +9447,7 @@ LIQUID_FIRPFBCH2_DEFINE_API(LIQUID_FIRPFBCH2_MANGLE_CRCF,
 /* with output rational output rate \( P / M \)                         */  \
 typedef struct FIRPFBCHR(_s) * FIRPFBCHR();                                 \
                                                                             \
-/* create rational rate resampling channelizer (firpfbchr) object by    */  \
+/* Create rational rate resampling channelizer (firpfbchr) object by    */  \
 /* specifying filter coefficients directly                              */  \
 /*  _chans  : number of output channels in chanelizer                   */  \
 /*  _decim  : output decimation factor (output rate is 1/decim input)   */  \
@@ -8936,7 +9458,7 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _chans,                         \
                                unsigned int _m,                             \
                                TC *         _h);                            \
                                                                             \
-/* create rational rate resampling channelizer (firpfbchr) object by    */  \
+/* Create rational rate resampling channelizer (firpfbchr) object by    */  \
 /* specifying filter design parameters for Kaiser prototype             */  \
 /*  _chans  : number of output channels in chanelizer                   */  \
 /*  _decim  : output decimation factor (output rate is 1/decim input)   */  \
@@ -8947,35 +9469,39 @@ FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _chans,                  \
                                       unsigned int _m,                      \
                                       float        _as);                    \
                                                                             \
-/* destroy firpfbchr object, freeing internal memory                    */  \
+/* Destroy firpfbchr object, freeing internal memory                    */  \
 int FIRPFBCHR(_destroy)(FIRPFBCHR() _q);                                    \
                                                                             \
-/* reset firpfbchr object internal state and buffers                    */  \
+/* Reset firpfbchr object internal state and buffers                    */  \
 int FIRPFBCHR(_reset)(FIRPFBCHR() _q);                                      \
                                                                             \
-/* print firpfbchr object internals to stdout                           */  \
+/* Print firpfbchr object internals to stdout                           */  \
 int FIRPFBCHR(_print)(FIRPFBCHR() _q);                                      \
                                                                             \
-/* get number of output channels to channelizer                         */  \
+/* Get number of output channels to channelizer                         */  \
 DEPRECATED("use firpfbchr_get_num_channels(...) instead",                   \
-unsigned int FIRPFBCHR(_get_M)(FIRPFBCHR() _q); )                           \
+unsigned int FIRPFBCHR(_get_M)(FIRPFBCHR() _q)  );                          \
+                                                                            \
+/* Get number of output channels to channelizer                         */  \
 unsigned int FIRPFBCHR(_get_num_channels)(FIRPFBCHR() _q);                  \
                                                                             \
-/* get decimation factor for channelizer                                */  \
+/* Get decimation factor for channelizer                                */  \
 DEPRECATED("use firpfbchr_get_decim_rate(...) instead",                     \
-unsigned int FIRPFBCHR(_get_P)(FIRPFBCHR() _q); )                           \
+unsigned int FIRPFBCHR(_get_P)(FIRPFBCHR() _q) );                           \
+                                                                            \
+/* Get decimation factor for channelizer                                */  \
 unsigned int FIRPFBCHR(_get_decim_rate)(FIRPFBCHR() _q);                    \
                                                                             \
 /* get semi-length to channelizer filter prototype                      */  \
 unsigned int FIRPFBCHR(_get_m)(FIRPFBCHR() _q);                             \
                                                                             \
-/* push buffer of samples into filter bank                              */  \
+/* Push buffer of samples into filter bank                              */  \
 /*  _q      : channelizer object                                        */  \
 /*  _x      : channelizer input, [size: decim x 1]                      */  \
 int FIRPFBCHR(_push)(FIRPFBCHR() _q,                                        \
                      TI *        _x);                                       \
                                                                             \
-/* execute filterbank channelizer, writing complex baseband samples for */  \
+/* Execute filterbank channelizer, writing complex baseband samples for */  \
 /* each channel into output array                                       */  \
 /*  _q      : channelizer object                                        */  \
 /*  _y      : channelizer output, [size: chans x 1]                     */  \
@@ -9030,12 +9556,10 @@ int ofdmframe_print_sctype(unsigned char * _p,
                            unsigned int    _M);
 
 
-//
 // OFDM frame (symbol) generator
-//
 typedef struct ofdmframegen_s * ofdmframegen;
 
-// create OFDM framing generator object
+// Create OFDM framing generator object
 //  _M          :   number of subcarriers, >10 typical
 //  _cp_len     :   cyclic prefix length
 //  _taper_len  :   taper length (OFDM symbol overlap)
@@ -9045,43 +9569,47 @@ ofdmframegen ofdmframegen_create(unsigned int    _M,
                                  unsigned int    _taper_len,
                                  unsigned char * _p);
 
+// Destroy OFDM framing generator object
 int ofdmframegen_destroy(ofdmframegen _q);
 
+// Print OFDM framing generator object to stdout
 int ofdmframegen_print(ofdmframegen _q);
 
+// Reset object internals
 int ofdmframegen_reset(ofdmframegen _q);
 
-// write first S0 symbol
+// Write first S0 symbol
 int ofdmframegen_write_S0a(ofdmframegen _q,
                            liquid_float_complex *_y);
 
-// write second S0 symbol
+// Write second S0 symbol to output buffer
 int ofdmframegen_write_S0b(ofdmframegen _q,
                            liquid_float_complex *_y);
 
-// write S1 symbol
+// Write S1 symbol to output buffer
 int ofdmframegen_write_S1(ofdmframegen _q,
                           liquid_float_complex *_y);
 
-// write data symbol
+// Write data symbol to output buffer
 int ofdmframegen_writesymbol(ofdmframegen _q,
                              liquid_float_complex * _x,
                              liquid_float_complex *_y);
 
-// write tail
+// Write tail to output buffer
 int ofdmframegen_writetail(ofdmframegen _q,
                            liquid_float_complex * _x);
 
-//
+
 // OFDM frame (symbol) synchronizer
-//
+typedef struct ofdmframesync_s * ofdmframesync;
+
+// OFDM frame synchronizer callback function
 typedef int (*ofdmframesync_callback)(liquid_float_complex * _y,
                                       unsigned char * _p,
                                       unsigned int _M,
                                       void * _userdata);
-typedef struct ofdmframesync_s * ofdmframesync;
 
-// create OFDM framing synchronizer object
+// Create OFDM framing synchronizer object
 //  _M          :   number of subcarriers, >10 typical
 //  _cp_len     :   cyclic prefix length
 //  _taper_len  :   taper length (OFDM symbol overlap)
@@ -9094,24 +9622,40 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
                                    unsigned char *        _p,
                                    ofdmframesync_callback _callback,
                                    void *                 _userdata);
+
+// Destroy OFDM framing synchronizer object, freeing all internal memory
 int ofdmframesync_destroy(ofdmframesync _q);
+
+// Print OFDM framing synchronizer object to stdout
 int ofdmframesync_print(ofdmframesync _q);
+
+// Reset OFDM framing synchronizer object
 int ofdmframesync_reset(ofdmframesync _q);
+
+// Return flag indicating if frame is "open" (actively being received)
 int ofdmframesync_is_frame_open(ofdmframesync _q);
+
+// Process sample in buffer (detect preamble, synchronize, etc.)
 int ofdmframesync_execute(ofdmframesync _q,
                           liquid_float_complex * _x,
                           unsigned int _n);
 
-// query methods
-float ofdmframesync_get_rssi(ofdmframesync _q); // received signal strength indication
-float ofdmframesync_get_cfo(ofdmframesync _q);  // carrier offset estimate
+// Get received signal strength indication (RSSI)
+float ofdmframesync_get_rssi(ofdmframesync _q);
 
-// set methods
-int ofdmframesync_set_cfo(ofdmframesync _q, float _cfo);  // set carrier offset estimate
+// Get current carrier offset estimate
+float ofdmframesync_get_cfo(ofdmframesync _q);
 
-// debugging
+// Set carrier offset estimate
+int ofdmframesync_set_cfo(ofdmframesync _q, float _cfo);
+
+// Enable debugging capabilities
 int ofdmframesync_debug_enable(ofdmframesync _q);
+
+// Disable debugging capabilities
 int ofdmframesync_debug_disable(ofdmframesync _q);
+
+// Export debugging to particular file
 int ofdmframesync_debug_print(ofdmframesync _q, const char * _filename);
 
 
@@ -9377,6 +9921,28 @@ LIQUID_SYNTH_DEFINE_API(SYNTH_MANGLE_FLOAT, float, liquid_float_complex)
 // MODULE : optimization
 //
 
+// optimization threshold switch
+//  _u0         :   first utility
+//  _u1         :   second utility
+//  _minimize   :   minimize flag
+//
+// returns:
+//  (_u0 > _u1) if (_minimize == 1)
+//  (_u0 < _u1) otherwise
+int optim_threshold_switch(float _u0,
+                           float _u1,
+                           int _minimize);
+
+// sort candidate values by index
+//  _v          :   input values, [size: _len x 1]
+//  _rank       :   output rank array (indices) [size: _len x 1]
+//  _len        :   length of input array
+//  _descending :   descending/ascending
+void optim_sort(float *_v,
+                unsigned int * _rank,
+                unsigned int _len,
+                int _descending);
+
 // utility function pointer definition
 typedef float (*utility_function)(void *       _userdata,
                                   float *      _v,
@@ -9419,14 +9985,11 @@ float liquid_spiral(void *       _userdata,
                     unsigned int _n);
 
 
-//
-// Gradient search
-//
+// Gradient search object
+typedef struct gradsearch_s * gradsearch;
 
 #define LIQUID_OPTIM_MINIMIZE (0)
 #define LIQUID_OPTIM_MAXIMIZE (1)
-
-typedef struct gradsearch_s * gradsearch;
 
 // Create a gradient search object
 //   _userdata          :   user data object pointer
@@ -9446,10 +10009,13 @@ void gradsearch_destroy(gradsearch _q);
 // Prints current status of search
 void gradsearch_print(gradsearch _q);
 
-// Iterate once
+// Iterate one single step, returning the current utility
 float gradsearch_step(gradsearch _q);
 
-// Execute the search
+// Execute the search for multiple iterations until stopping criteria are met
+//  _q              : gradsearch object
+//  _max_iterations : maximum number of iterations to run until stopping
+//  _target_utility : target utility to reach before stopping
 float gradsearch_execute(gradsearch   _q,
                          unsigned int _max_iterations,
                          float        _target_utility);
@@ -9483,7 +10049,8 @@ unsigned int qs1dsearch_get_num_steps (qs1dsearch _q);
 float        qs1dsearch_get_opt_v     (qs1dsearch _q);
 float        qs1dsearch_get_opt_u     (qs1dsearch _q);
 
-// quasi-Newton search
+
+// Quasi-Newton search optimization object
 typedef struct qnsearch_s * qnsearch;
 
 // Create a simple qnsearch object; parameters are specified internally
@@ -9507,13 +10074,16 @@ int qnsearch_print(qnsearch _g);
 // Resets internal state
 int qnsearch_reset(qnsearch _g);
 
-// Iterate once
+// Iterate one single step, returning the current utility
 int qnsearch_step(qnsearch _g);
 
-// Execute the search
-float qnsearch_execute(qnsearch _g,
+// Execute the search for multiple iterations until stopping criteria are met
+//  _q              : gradsearch object
+//  _max_iterations : maximum number of iterations to run until stopping
+//  _target_utility : target utility to reach before stopping
+float qnsearch_execute(qnsearch     _q,
                        unsigned int _max_iterations,
-                       float _target_utility);
+                       float        _target_utility);
 
 //
 // chromosome (for genetic algorithm search)
@@ -9577,11 +10147,10 @@ unsigned int chromosome_value(chromosome    _c,
 float chromosome_valuef(chromosome _c,
                         unsigned int _index);
 
-//
-// genetic algorithm search
-//
+// genetic algorithm optimization search
 typedef struct gasearch_s * gasearch;
 
+// user-defined callback function for genetic algorithm optimization search
 typedef float (*gasearch_utility)(void * _userdata, chromosome _c);
 
 // Create a simple gasearch object; parameters are specified internally
@@ -9612,14 +10181,14 @@ gasearch gasearch_create_advanced(gasearch_utility _utility,
 // Destroy a gasearch object
 int gasearch_destroy(gasearch _q);
 
-// print search parameter internals
+// Print search parameter internals
 int gasearch_print(gasearch _q);
 
-// set mutation rate
+// Set mutation rate for gasearch object
 int gasearch_set_mutation_rate(gasearch _q,
                                float    _mutation_rate);
 
-// set population/selection size
+// Set population/selection size
 //  _q                  :   ga search object
 //  _population_size    :   new population size (number of chromosomes)
 //  _selection_size     :   selection size (number of parents for new generation)
@@ -9627,18 +10196,18 @@ int gasearch_set_population_size(gasearch     _q,
                                  unsigned int _population_size,
                                  unsigned int _selection_size);
 
-// Execute the search
-//  _q              :   ga search object
-//  _max_iterations :   maximum number of iterations to run before bailing
-//  _target_utility :   target utility
+// Execute the search for a maximum number of iterations or target utility
+//  _q              : search object
+//  _max_iterations : maximum number of iterations to run
+//  _target_utility : target utility
 float gasearch_run(gasearch     _q,
                    unsigned int _max_iterations,
                    float        _target_utility);
 
-// iterate over one evolution of the search algorithm
+// Iterate over one evolution of the search algorithm
 int gasearch_evolve(gasearch _q);
 
-// get optimal chromosome
+// Get optimal chromosome
 //  _q              :   ga search object
 //  _c              :   output optimal chromosome
 //  _utility_opt    :   fitness of _c
@@ -9857,8 +10426,10 @@ int bsequence_mul(bsequence _bs1, bsequence _bs2, bsequence _bs3);
 // accumulate the 1's in a binary sequence
 unsigned int bsequence_accumulate(bsequence _bs);
 
-// accessor functions
+// Gen length of binary sequence object (number of bits)
 unsigned int bsequence_get_length(bsequence _bs);
+
+// Gen bit value of binary sequence indexed a particular bit
 unsigned int bsequence_index(bsequence _bs, unsigned int _i);
 
 // Complementary codes
@@ -9904,9 +10475,10 @@ int bsequence_create_ccodes(bsequence _a, bsequence _b);
 #define LIQUID_MSEQUENCE_GENPOLY_M30    0x20000029  // 30   1,073,741,823
 #define LIQUID_MSEQUENCE_GENPOLY_M31    0x40000004  // 31   2,147,483,647
 
+// Maximal-length sequence generator object
 typedef struct msequence_s * msequence;
 
-// create a maximal-length sequence (m-sequence) object with
+// Create a maximal-length sequence (m-sequence) object with
 // an internal shift register length of _m bits.
 //  _m      :   generator polynomial length, sequence length is (2^m)-1
 //  _g      :   generator polynomial, starting with most-significant bit
@@ -9921,54 +10493,54 @@ msequence msequence_copy(msequence q_orig);
 // create a maximal-length sequence (m-sequence) object from a generator polynomial
 msequence msequence_create_genpoly(unsigned int _g);
 
-// creates a default maximal-length sequence
+// Creates a default maximal-length sequence
 msequence msequence_create_default(unsigned int _m);
 
-// destroy an msequence object, freeing all internal memory
+// Destroy an msequence object, freeing all internal memory
 int msequence_destroy(msequence _m);
 
-// prints the sequence's internal state to the screen
+// Prints the sequence's internal state to the screen
 int msequence_print(msequence _m);
 
-// advance msequence on shift register, returning output bit
+// Advance msequence on shift register, returning output bit
 unsigned int msequence_advance(msequence _ms);
 
-// generate pseudo-random symbol from shift register by
+// Generate pseudo-random symbol from shift register by
 // advancing _bps bits and returning compacted symbol
 //  _ms     :   m-sequence object
 //  _bps    :   bits per symbol of output
 unsigned int msequence_generate_symbol(msequence    _ms,
                                        unsigned int _bps);
 
-// reset msequence shift register to original state, typically '1'
+// Reset msequence shift register to original state, typically '1'
 int msequence_reset(msequence _ms);
 
-// initialize a bsequence object on an msequence object
+// Initialize a bsequence object on an msequence object
 //  _bs     :   bsequence object
 //  _ms     :   msequence object
 int bsequence_init_msequence(bsequence _bs,
                              msequence _ms);
 
-// get the length of the generator polynomial, g (m)
+// Get the length of the generator polynomial, g (m)
 unsigned int msequence_get_genpoly_length(msequence _ms);
 
-// get the length of the sequence (n=2^m-1)
+// Get the length of the sequence (n=2^m-1)
 unsigned int msequence_get_length(msequence _ms);
 
-// get the generator polynomial, g
+// Get the generator polynomial, g
 unsigned int msequence_get_genpoly(msequence _ms);
 
-// get the internal state of the sequence
+// Get the internal state of the sequence
 unsigned int msequence_get_state(msequence _ms);
 
-// set the internal state of the sequence
+// Set the internal state of the sequence
 int msequence_set_state(msequence    _ms,
                         unsigned int _a);
 
-// measure the period the shift register (should be 2^m-1 with a proper generator polynomial)
+// Measure the period the shift register (should be 2^m-1 with a proper generator polynomial)
 unsigned int msequence_measure_period(msequence _ms);
 
-// measure the period of a generator polynomial
+// Measure the period of a generator polynomial
 unsigned int msequence_genpoly_period(unsigned int _g);
 
 
@@ -10110,24 +10682,116 @@ int liquid_rcircshift(unsigned char * _src,
                       unsigned int _n,
                       unsigned int _b);
 
-// Count the number of ones in an integer
+// Count the number of ones in a 16-bit integer
+unsigned int liquid_count_ones_uint16(uint16_t _x);
+
+// Count the number of ones in a 32-bit integer
+unsigned int liquid_count_ones_uint32(uint32_t _x);
+
+// Count the number of ones in an integer (native length)
 unsigned int liquid_count_ones(unsigned int _x);
 
-// count number of ones in an integer, modulo 2
+// Count the number of ones in a 16-bit integer, modulo 2
+unsigned int liquid_count_ones_mod2_uint16(uint16_t _x);
+
+// Count the number of ones in a 32-bit integer, modulo 2
+unsigned int liquid_count_ones_mod2_uint32(uint32_t _x);
+
+// Count number of ones in an integer (native length), modulo 2
 unsigned int liquid_count_ones_mod2(unsigned int _x);
 
 // compute bindary dot-product between two integers
 unsigned int liquid_bdotprod(unsigned int _x,
                              unsigned int _y);
 
+// compute binary dot products on 8-bit words
+unsigned int liquid_bdotprod_uint8(uint8_t _x, uint8_t _y);
+
+// compute binary dot products on 16-bit words
+unsigned int liquid_bdotprod_uint16(uint16_t _x, uint16_t _y);
+
+// compute binary dot products on 32-bit words
+unsigned int liquid_bdotprod_uint32(uint32_t _x, uint32_t _y);
+
 // Count leading zeros in an integer
 unsigned int liquid_count_leading_zeros(unsigned int _x);
+
+// number of ones in a byte
+//  0   0000 0000   :   0
+//  1   0000 0001   :   1
+//  2   0000 0010   :   1
+//  3   0000 0011   :   2
+//  4   0000 0100   :   1
+//  ...
+//  126 0111 1110   :   6
+//  127 0111 1111   :   7
+//  128 1000 0000   :   1
+//  129 1000 0001   :   2
+//  ...
+//  253 1111 1101   :   7
+//  254 1111 1110   :   7
+//  255 1111 1111   :   8
+extern const unsigned char liquid_c_ones[256];
+
+// number of ones in a byte, modulo 2
+//  0   0000 0000   :   0
+//  1   0000 0001   :   1
+//  2   0000 0010   :   1
+//  3   0000 0011   :   0
+//  4   0000 0100   :   1
+//  ...
+//  126 0111 1110   :   0
+//  127 0111 1111   :   1
+//  128 1000 0000   :   1
+//  129 1000 0001   :   0
+//  ...
+//  253 1111 1101   :   1
+//  254 1111 1110   :   1
+//  255 1111 1111   :   0
+extern const unsigned char liquid_c_ones_mod2[256];
+
+// number of leading zeros in byte
+//  0   0000 0000   :   8
+//  1   0000 0001   :   7
+//  2   0000 0010   :   6
+//  3   0000 0011   :   6
+//  4   0000 0100   :   5
+//  ...
+//  126 0111 1110   :   1
+//  127 0111 1111   :   1
+//  128 1000 0000   :   0
+//  129 1000 0001   :   0
+//  ...
+//  253 1111 1101   :   0
+//  254 1111 1110   :   0
+//  255 1111 1111   :   0
+extern unsigned int liquid_c_leading_zeros[256];
+
+// byte reversal and manipulation
+//  0   0000 0000   :   0000 0000
+//  1   0000 0001   :   1000 0000
+//  2   0000 0010   :   0100 0000
+//  3   0000 0011   :   1100 0000
+//  4   0000 0100   :   0010 0000
+//  ...
+//  126 0111 1110   :   0111 1110
+//  127 0111 1111   :   1111 1110
+//  128 1000 0000   :   0000 0001
+//  129 1000 0001   :   1000 0001
+//  ...
+//  253 1111 1101   :   1011 1111
+//  254 1111 1110   :   0111 1111
+//  255 1111 1111   :   1111 1111
+extern const unsigned char liquid_reverse_byte_gentab[256];
 
 // Most-significant bit index
 unsigned int liquid_msb_index(unsigned int _x);
 
 // Print string of bits to stdout
 int liquid_print_bitstring(unsigned int _x, unsigned int _n);
+
+// print bitstring to char array
+int liquid_sprintf_bitstring(char * _str, unsigned int _x, unsigned int _n);
 
 // reverse byte, word, etc.
 unsigned char liquid_reverse_byte(  unsigned char _x);

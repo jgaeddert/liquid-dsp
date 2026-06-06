@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.autotest.h"
+#include "liquid.internal.h"
 
-void autotest_dsssframesync()
+LIQUID_AUTOTEST(dsssframesync,"full dsssframe synchronization","",0.1)
 {
     unsigned int _payload_len = 400;
 
@@ -56,22 +56,39 @@ void autotest_dsssframesync()
         dsssframesync_execute(fs, buf, buf_len);
     }
 
-    // get frame data statistics
-    if (liquid_autotest_verbose)
-        dsssframesync_print(fs);
-
     // check to see that frame was recovered
 #if 0
     framedatastats_s stats = dsssframesync_get_framedatastats(fs);
-    CONTEND_EQUALITY( stats.num_frames_detected, 1 );
-    CONTEND_EQUALITY( stats.num_headers_valid,   1 );
-    CONTEND_EQUALITY( stats.num_payloads_valid,  1 );
-    CONTEND_EQUALITY( stats.num_bytes_received,  _payload_len );
+    LIQUID_CHECK( stats.num_frames_detected ==  1 );
+    LIQUID_CHECK( stats.num_headers_valid ==    1 );
+    LIQUID_CHECK( stats.num_payloads_valid ==   1 );
+    LIQUID_CHECK( stats.num_bytes_received ==   _payload_len );
 #endif
-    CONTEND_EQUALITY(context, FRAMING_AUTOTEST_SECRET);
+    LIQUID_CHECK(context ==  FRAMING_AUTOTEST_SECRET);
 
     // destroy objects
     dsssframegen_destroy(fg);
     dsssframesync_destroy(fs);
+}
+
+LIQUID_AUTOTEST(dsssframe_config,"check configuration validity","",0.1)
+{
+    _liquid_error_downgrade_enable();
+
+    // create dsssframegen object
+    dsssframegenprops_s fgprops;
+    fgprops.check = LIQUID_CRC_32;
+    fgprops.fec0  = LIQUID_FEC_NONE;
+    fgprops.fec1  = LIQUID_FEC_NONE;
+    dsssframegen fg = dsssframegen_create(&fgprops);
+
+    // assemble the frame
+    LIQUID_CHECK(dsssframegen_assemble(fg,NULL,NULL,                       0)==LIQUID_EICONFIG);
+    LIQUID_CHECK(dsssframegen_assemble(fg,NULL,NULL,                       1)==LIQUID_OK      );
+    LIQUID_CHECK(dsssframegen_assemble(fg,NULL,NULL,LIQUID_MAX_PAYLOAD_LEN  )==LIQUID_OK      );
+    LIQUID_CHECK(dsssframegen_assemble(fg,NULL,NULL,LIQUID_MAX_PAYLOAD_LEN+1)==LIQUID_EICONFIG);
+
+    dsssframegen_destroy(fg);
+    _liquid_error_downgrade_disable();
 }
 

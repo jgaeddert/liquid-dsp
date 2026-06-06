@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
 // test data
@@ -32,27 +32,26 @@ float complex sumsqcf_test_x15[15]; float sumsqcf_test_y15;
 float complex sumsqcf_test_x16[16]; float sumsqcf_test_y16;
 
 // helper function
-void sumsqcf_runtest(float complex * _x,
-                     unsigned int    _n,
-                     float           _y)
+void testbench_sumsqcf(liquid_autotest __q__,
+                       float complex * _x,
+                       unsigned int    _n,
+                       float           _y)
 {
     float tol = 1e-6;   // error tolerance
 
     // run test
     float y = liquid_sumsqcf(_x, _n);
 
-    CONTEND_DELTA( y, _y, tol );
+    LIQUID_CHECK_DELTA( y, _y, tol );
 }
 
-// 
-// AUTOTESTS : run test with pre-determined data sets
-//
-void autotest_sumsqcf_3()   {   sumsqcf_runtest( sumsqcf_test_x3,  3,  sumsqcf_test_y3  );  }
-void autotest_sumsqcf_4()   {   sumsqcf_runtest( sumsqcf_test_x4,  4,  sumsqcf_test_y4  );  }
-void autotest_sumsqcf_7()   {   sumsqcf_runtest( sumsqcf_test_x7,  7,  sumsqcf_test_y7  );  }
-void autotest_sumsqcf_8()   {   sumsqcf_runtest( sumsqcf_test_x8,  8,  sumsqcf_test_y8  );  }
-void autotest_sumsqcf_15()  {   sumsqcf_runtest( sumsqcf_test_x15, 15, sumsqcf_test_y15 );  }
-void autotest_sumsqcf_16()  {   sumsqcf_runtest( sumsqcf_test_x16, 16, sumsqcf_test_y16 );  }
+// run test with pre-determined data sets
+LIQUID_AUTOTEST(sumsqcf_3,"","",0.1)   {   testbench_sumsqcf(__q__,  sumsqcf_test_x3,  3,  sumsqcf_test_y3  );  }
+LIQUID_AUTOTEST(sumsqcf_4,"","",0.1)   {   testbench_sumsqcf(__q__,  sumsqcf_test_x4,  4,  sumsqcf_test_y4  );  }
+LIQUID_AUTOTEST(sumsqcf_7,"","",0.1)   {   testbench_sumsqcf(__q__,  sumsqcf_test_x7,  7,  sumsqcf_test_y7  );  }
+LIQUID_AUTOTEST(sumsqcf_8,"","",0.1)   {   testbench_sumsqcf(__q__,  sumsqcf_test_x8,  8,  sumsqcf_test_y8  );  }
+LIQUID_AUTOTEST(sumsqcf_15,"","",0.1)  {   testbench_sumsqcf(__q__,  sumsqcf_test_x15, 15, sumsqcf_test_y15 );  }
+LIQUID_AUTOTEST(sumsqcf_16,"","",0.1)  {   testbench_sumsqcf(__q__,  sumsqcf_test_x16, 16, sumsqcf_test_y16 );  }
 
 float complex sumsqcf_test_x3[3] = {
   -0.143606511525 +  -0.137405158308*_Complex_I,

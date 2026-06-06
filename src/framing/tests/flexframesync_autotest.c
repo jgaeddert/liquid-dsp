@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.autotest.h"
+#include "liquid.internal.h"
 
-// 
-// AUTOTEST : test simple recovery of frame in noise
-//
-void autotest_flexframesync()
+LIQUID_AUTOTEST(flexframesync,"simple recovery of flexframe in noise","",0.1)
 {
     unsigned int i;
 
@@ -60,8 +57,6 @@ void autotest_flexframesync()
     
     // assemble the frame
     flexframegen_assemble(fg, header, payload, _payload_len);
-    if (liquid_autotest_verbose)
-        flexframegen_print(fg);
 
     // generate the frame
     int frame_complete = 0;
@@ -76,20 +71,41 @@ void autotest_flexframesync()
 
     // get frame data statistics
     framedatastats_s stats = flexframesync_get_framedatastats(fs);
-    if (liquid_autotest_verbose)
-        flexframesync_print(fs);
 
     // ensure callback was invoked
-    CONTEND_EQUALITY(context, FRAMING_AUTOTEST_SECRET);
+    LIQUID_CHECK(context ==  FRAMING_AUTOTEST_SECRET);
 
     // check to see that frame was recovered
-    CONTEND_EQUALITY( stats.num_frames_detected, 1 );
-    CONTEND_EQUALITY( stats.num_headers_valid,   1 );
-    CONTEND_EQUALITY( stats.num_payloads_valid,  1 );
-    CONTEND_EQUALITY( stats.num_bytes_received,  _payload_len );
+    LIQUID_CHECK( stats.num_frames_detected ==  1 );
+    LIQUID_CHECK( stats.num_headers_valid ==    1 );
+    LIQUID_CHECK( stats.num_payloads_valid ==   1 );
+    LIQUID_CHECK( stats.num_bytes_received ==   _payload_len );
 
     // destroy objects
     flexframegen_destroy(fg);
     flexframesync_destroy(fs);
+}
+
+LIQUID_AUTOTEST(flexframe_config,"check configuration validity","",0.1)
+{
+    _liquid_error_downgrade_enable();
+
+    // create flexframegen object
+    flexframegenprops_s fgprops;
+    flexframegenprops_init_default(&fgprops);
+    fgprops.mod_scheme  = LIQUID_MODEM_QPSK;
+    fgprops.check       = LIQUID_FEC_NONE;
+    fgprops.fec0        = LIQUID_FEC_NONE;
+    fgprops.fec1        = LIQUID_CRC_32;
+    flexframegen fg = flexframegen_create(&fgprops);
+
+    // assemble the frame
+    LIQUID_CHECK(flexframegen_assemble(fg,NULL,NULL,                       0)==LIQUID_EICONFIG);
+    LIQUID_CHECK(flexframegen_assemble(fg,NULL,NULL,                       1)==LIQUID_OK      );
+    LIQUID_CHECK(flexframegen_assemble(fg,NULL,NULL,LIQUID_MAX_PAYLOAD_LEN  )==LIQUID_OK      );
+    LIQUID_CHECK(flexframegen_assemble(fg,NULL,NULL,LIQUID_MAX_PAYLOAD_LEN+1)==LIQUID_EICONFIG);
+
+    flexframegen_destroy(fg);
+    _liquid_error_downgrade_disable();
 }
 

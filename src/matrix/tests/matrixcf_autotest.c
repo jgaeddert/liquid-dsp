@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,14 +22,56 @@
 
 #include <string.h>
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
-// autotest data definitions
-#include "src/matrix/tests/matrix_data.h"
+// single-precision complex floating-point data
 
-// test matrix addition
-void autotest_matrixcf_add()
+// add
+extern float complex matrixcf_data_add_x[];
+extern float complex matrixcf_data_add_y[];
+extern float complex matrixcf_data_add_z[];
+
+// aug
+extern float complex matrixcf_data_aug_x[];
+extern float complex matrixcf_data_aug_y[];
+extern float complex matrixcf_data_aug_z[];
+
+// chol
+extern float complex matrixcf_data_chol_A[];
+extern float complex matrixcf_data_chol_L[];
+
+// inv
+extern float complex matrixcf_data_inv_x[];
+extern float complex matrixcf_data_inv_y[];
+
+// linsolve
+extern float complex matrixcf_data_linsolve_A[];
+extern float complex matrixcf_data_linsolve_x[];
+extern float complex matrixcf_data_linsolve_b[];
+
+// ludecomp
+extern float complex matrixcf_data_ludecomp_A[];
+
+// mul
+extern float complex matrixcf_data_mul_x[];
+extern float complex matrixcf_data_mul_y[];
+extern float complex matrixcf_data_mul_z[];
+
+// qrdecomp
+extern float complex matrixcf_data_qrdecomp_A[];
+extern float complex matrixcf_data_qrdecomp_Q[];
+extern float complex matrixcf_data_qrdecomp_R[];
+
+// transmul
+extern float complex matrixcf_data_transmul_x[];
+extern float complex matrixcf_data_transmul_xxT[];
+extern float complex matrixcf_data_transmul_xxH[];
+extern float complex matrixcf_data_transmul_xTx[];
+extern float complex matrixcf_data_transmul_xHx[];
+
+
+LIQUID_AUTOTEST(matrixcf_add,"test matrix addition","",0.1)
 {
     float tol = 1e-6f;
 
@@ -44,13 +86,12 @@ void autotest_matrixcf_add()
 
     unsigned int i;
     for (i=0; i<20; i++) {
-        CONTEND_DELTA( crealf(matrixcf_data_add_z[i]), crealf(z[i]), tol );
-        CONTEND_DELTA( cimagf(matrixcf_data_add_z[i]), cimagf(z[i]), tol );
+        LIQUID_CHECK_DELTA( crealf(matrixcf_data_add_z[i]), crealf(z[i]), tol );
+        LIQUID_CHECK_DELTA( cimagf(matrixcf_data_add_z[i]), cimagf(z[i]), tol );
     }
 }
 
-// test matrix augmentation
-void autotest_matrixcf_aug()
+LIQUID_AUTOTEST(matrixcf_aug,"test matrix augmentation","",0.1)
 {
     float tol = 1e-6f;
 
@@ -61,25 +102,23 @@ void autotest_matrixcf_aug()
     matrixcf_aug(matrixcf_data_aug_x, 5, 4,
                  matrixcf_data_aug_y, 5, 3,
                  z,                  5, 7);
-    
-    // print result
-    if (liquid_autotest_verbose) {
-        printf("augment:\n");
-        printf("  x: ");        matrixcf_print(matrixcf_data_aug_x, 5, 4);
-        printf("  y: ");        matrixcf_print(matrixcf_data_aug_y, 5, 3);
-        printf("  expected: "); matrixcf_print(matrixcf_data_aug_z, 5, 7);
-        printf("  z: ");        matrixcf_print(z,5,3);
-    }
+
+#if 0
+    printf("augment:\n");
+    printf("  x: ");        matrixcf_print(matrixcf_data_aug_x, 5, 4);
+    printf("  y: ");        matrixcf_print(matrixcf_data_aug_y, 5, 3);
+    printf("  expected: "); matrixcf_print(matrixcf_data_aug_z, 5, 7);
+    printf("  z: ");        matrixcf_print(z,5,3);
+#endif
 
     unsigned int i;
     for (i=0; i<35; i++) {
-        CONTEND_DELTA( crealf(matrixcf_data_aug_z[i]), crealf(z[i]), tol );
-        CONTEND_DELTA( cimagf(matrixcf_data_aug_z[i]), cimagf(z[i]), tol );
+        LIQUID_CHECK_DELTA( crealf(matrixcf_data_aug_z[i]), crealf(z[i]), tol );
+        LIQUID_CHECK_DELTA( cimagf(matrixcf_data_aug_z[i]), cimagf(z[i]), tol );
     }
 }
 
-// Cholesky decomposition
-void autotest_matrixcf_chol()
+LIQUID_AUTOTEST(matrixcf_chol,"Cholesky decomposition","",0.1)
 {
     float tol = 1e-3f;  // error tolerance
 
@@ -90,22 +129,21 @@ void autotest_matrixcf_chol()
     // run decomposition
     matrixcf_chol(matrixcf_data_chol_A, 4, L);
 
-    if (liquid_autotest_verbose) {
-        printf("chol:\n");
-        printf("  A: ");        matrixcf_print(matrixcf_data_chol_A, 4, 4);
-        printf("  expected: "); matrixcf_print(matrixcf_data_chol_L, 4, 4);
-        printf("  L: ");        matrixcf_print(L,                    4, 4);
-    }
+#if 0
+    printf("chol:\n");
+    printf("  A: ");        matrixcf_print(matrixcf_data_chol_A, 4, 4);
+    printf("  expected: "); matrixcf_print(matrixcf_data_chol_L, 4, 4);
+    printf("  L: ");        matrixcf_print(L,                    4, 4);
+#endif
 
     unsigned int i;
     for (i=0; i<16; i++) {
-        CONTEND_DELTA( crealf(matrixcf_data_chol_L[i]), crealf(L[i]), tol );
-        CONTEND_DELTA( cimagf(matrixcf_data_chol_L[i]), cimagf(L[i]), tol );
+        LIQUID_CHECK_DELTA( crealf(matrixcf_data_chol_L[i]), crealf(L[i]), tol );
+        LIQUID_CHECK_DELTA( cimagf(matrixcf_data_chol_L[i]), cimagf(L[i]), tol );
     }
 }
 
-// matrix inversion
-void autotest_matrixcf_inv()
+LIQUID_AUTOTEST(matrixcf_inv,"matrix inversion","",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -115,22 +153,21 @@ void autotest_matrixcf_inv()
     memmove(y, matrixcf_data_inv_x, 5*5*sizeof(float complex));
     matrixcf_inv(y, 5, 5);
 
-    if (liquid_autotest_verbose) {
-        printf("inv:\n");
-        printf("  x: ");        matrixcf_print(matrixcf_data_inv_x, 5, 5);
-        printf("  expected: "); matrixcf_print(matrixcf_data_inv_y, 5, 5);
-        printf("  y: ");        matrixcf_print(y,                   5, 5);
-    }
+#if 0
+    printf("inv:\n");
+    printf("  x: ");        matrixcf_print(matrixcf_data_inv_x, 5, 5);
+    printf("  expected: "); matrixcf_print(matrixcf_data_inv_y, 5, 5);
+    printf("  y: ");        matrixcf_print(y,                   5, 5);
+#endif
 
     unsigned int i;
     for (i=0; i<25; i++) {
-        CONTEND_DELTA( crealf(matrixcf_data_inv_y[i]), crealf(y[i]), tol );
-        CONTEND_DELTA( cimagf(matrixcf_data_inv_y[i]), cimagf(y[i]), tol );
+        LIQUID_CHECK_DELTA( crealf(matrixcf_data_inv_y[i]), crealf(y[i]), tol );
+        LIQUID_CHECK_DELTA( cimagf(matrixcf_data_inv_y[i]), cimagf(y[i]), tol );
     }
 }
 
-// linsolve (solve linear system of equations)
-void autotest_matrixcf_linsolve()
+LIQUID_AUTOTEST(matrixcf_linsolve,"linsolve (solve linear system of equations)","",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -138,29 +175,28 @@ void autotest_matrixcf_linsolve()
     // x [size: 5 x 1]
     // b [size: 5 x 1]
     float complex x[5];
-    
+
     // run solver
     matrixcf_linsolve(matrixcf_data_linsolve_A, 5,
                       matrixcf_data_linsolve_b,
                       x, NULL);
 
-    if (liquid_autotest_verbose) {
-        printf("linsolve:\n");
-        printf("  A: ");        matrixcf_print(matrixcf_data_linsolve_A, 5, 5);
-        printf("  b: ");        matrixcf_print(matrixcf_data_linsolve_b, 5, 1);
-        printf("  expected: "); matrixcf_print(matrixcf_data_linsolve_x, 5, 1);
-        printf("  x: ");        matrixcf_print(x,                        5, 1);
-    }
+#if 0
+    printf("linsolve:\n");
+    printf("  A: ");        matrixcf_print(matrixcf_data_linsolve_A, 5, 5);
+    printf("  b: ");        matrixcf_print(matrixcf_data_linsolve_b, 5, 1);
+    printf("  expected: "); matrixcf_print(matrixcf_data_linsolve_x, 5, 1);
+    printf("  x: ");        matrixcf_print(x,                        5, 1);
+#endif
 
     unsigned int i;
     for (i=0; i<5; i++) {
-        CONTEND_DELTA( crealf(matrixcf_data_linsolve_x[i]), crealf(x[i]), tol );
-        CONTEND_DELTA( cimagf(matrixcf_data_linsolve_x[i]), cimagf(x[i]), tol );
+        LIQUID_CHECK_DELTA( crealf(matrixcf_data_linsolve_x[i]), crealf(x[i]), tol );
+        LIQUID_CHECK_DELTA( cimagf(matrixcf_data_linsolve_x[i]), cimagf(x[i]), tol );
     }
 }
 
-// L/U decomp (Crout)
-void autotest_matrixcf_ludecomp_crout()
+LIQUID_AUTOTEST(matrixcf_ludecomp_crout,"L/U decomp (Crout's method)","",0.1)
 {
     float tol = 1e-5f;  // error tolerance
 
@@ -178,39 +214,38 @@ void autotest_matrixcf_ludecomp_crout()
                  U,       8, 8,
                  LU_test, 8, 8);
 
-    if (liquid_autotest_verbose) {
-        printf("ludecomp_crout:\n");
-        printf("  A: ");  matrixcf_print(matrixcf_data_ludecomp_A, 8, 8);
-        printf("  L: ");  matrixcf_print(L,                        8, 8);
-        printf("  U: ");  matrixcf_print(U,                        8, 8);
-        printf("  LU: "); matrixcf_print(LU_test,                  8, 8);
-    }
+#if 0
+    printf("ludecomp_crout:\n");
+    printf("  A: ");  matrixcf_print(matrixcf_data_ludecomp_A, 8, 8);
+    printf("  L: ");  matrixcf_print(L,                        8, 8);
+    printf("  U: ");  matrixcf_print(U,                        8, 8);
+    printf("  LU: "); matrixcf_print(LU_test,                  8, 8);
+#endif
 
     unsigned int r,c;
     for (r=0; r<8; r++) {
         for (c=0; c<8; c++) {
             if (r < c) {
-                CONTEND_DELTA( crealf(matrix_access(L,8,8,r,c)), 0.0f, tol );
-                CONTEND_DELTA( cimagf(matrix_access(L,8,8,r,c)), 0.0f, tol );
+                LIQUID_CHECK_DELTA( crealf(matrix_access(L,8,8,r,c)), 0.0f, tol );
+                LIQUID_CHECK_DELTA( cimagf(matrix_access(L,8,8,r,c)), 0.0f, tol );
             } else if (r==c) {
-                CONTEND_DELTA( crealf(matrix_access(U,8,8,r,c)), 1.0f, tol );
-                CONTEND_DELTA( cimagf(matrix_access(U,8,8,r,c)), 0.0f, tol );
+                LIQUID_CHECK_DELTA( crealf(matrix_access(U,8,8,r,c)), 1.0f, tol );
+                LIQUID_CHECK_DELTA( cimagf(matrix_access(U,8,8,r,c)), 0.0f, tol );
             } else {
-                CONTEND_DELTA( crealf(matrix_access(U,8,8,r,c)), 0.0f, tol );
-                CONTEND_DELTA( cimagf(matrix_access(U,8,8,r,c)), 0.0f, tol );
+                LIQUID_CHECK_DELTA( crealf(matrix_access(U,8,8,r,c)), 0.0f, tol );
+                LIQUID_CHECK_DELTA( cimagf(matrix_access(U,8,8,r,c)), 0.0f, tol );
             }
         }
     }
 
     unsigned int i;
     for (i=0; i<64; i++) {
-        CONTEND_DELTA( crealf(matrixcf_data_ludecomp_A[i]), crealf(LU_test[i]), tol );
-        CONTEND_DELTA( cimagf(matrixcf_data_ludecomp_A[i]), cimagf(LU_test[i]), tol );
+        LIQUID_CHECK_DELTA( crealf(matrixcf_data_ludecomp_A[i]), crealf(LU_test[i]), tol );
+        LIQUID_CHECK_DELTA( cimagf(matrixcf_data_ludecomp_A[i]), cimagf(LU_test[i]), tol );
     }
 }
 
-// L/U decomp (Doolittle)
-void autotest_matrixcf_ludecomp_doolittle()
+LIQUID_AUTOTEST(matrixcf_ludecomp_doolittle,"L/U decomp (Doolittle's method)","",0.1)
 {
     float tol = 1e-5f;  // error tolerance
 
@@ -228,39 +263,38 @@ void autotest_matrixcf_ludecomp_doolittle()
                  U,       8, 8,
                  LU_test, 8, 8);
 
-    if (liquid_autotest_verbose) {
-        printf("ludecomp_doolittle:\n");
-        printf("  A: ");  matrixcf_print(matrixcf_data_ludecomp_A, 8, 8);
-        printf("  L: ");  matrixcf_print(L,                        8, 8);
-        printf("  U: ");  matrixcf_print(U,                        8, 8);
-        printf("  LU: "); matrixcf_print(LU_test,                  8, 8);
-    }
+#if 0
+    printf("ludecomp_doolittle:\n");
+    printf("  A: ");  matrixcf_print(matrixcf_data_ludecomp_A, 8, 8);
+    printf("  L: ");  matrixcf_print(L,                        8, 8);
+    printf("  U: ");  matrixcf_print(U,                        8, 8);
+    printf("  LU: "); matrixcf_print(LU_test,                  8, 8);
+#endif
 
     unsigned int r,c;
     for (r=0; r<8; r++) {
         for (c=0; c<8; c++) {
             if (r < c) {
-                CONTEND_DELTA( crealf(matrix_access(L,8,8,r,c)), 0.0f, tol );
-                CONTEND_DELTA( cimagf(matrix_access(L,8,8,r,c)), 0.0f, tol );
+                LIQUID_CHECK_DELTA( crealf(matrix_access(L,8,8,r,c)), 0.0f, tol );
+                LIQUID_CHECK_DELTA( cimagf(matrix_access(L,8,8,r,c)), 0.0f, tol );
             } else if (r==c) {
-                CONTEND_DELTA( crealf(matrix_access(L,8,8,r,c)), 1.0f, tol );
-                CONTEND_DELTA( cimagf(matrix_access(L,8,8,r,c)), 0.0f, tol );
+                LIQUID_CHECK_DELTA( crealf(matrix_access(L,8,8,r,c)), 1.0f, tol );
+                LIQUID_CHECK_DELTA( cimagf(matrix_access(L,8,8,r,c)), 0.0f, tol );
             } else {
-                CONTEND_DELTA( crealf(matrix_access(U,8,8,r,c)), 0.0f, tol );
-                CONTEND_DELTA( cimagf(matrix_access(U,8,8,r,c)), 0.0f, tol );
+                LIQUID_CHECK_DELTA( crealf(matrix_access(U,8,8,r,c)), 0.0f, tol );
+                LIQUID_CHECK_DELTA( cimagf(matrix_access(U,8,8,r,c)), 0.0f, tol );
             }
         }
     }
 
     unsigned int i;
     for (i=0; i<64; i++) {
-        CONTEND_DELTA( crealf(matrixcf_data_ludecomp_A[i]), crealf(LU_test[i]), tol );
-        CONTEND_DELTA( cimagf(matrixcf_data_ludecomp_A[i]), cimagf(LU_test[i]), tol );
+        LIQUID_CHECK_DELTA( crealf(matrixcf_data_ludecomp_A[i]), crealf(LU_test[i]), tol );
+        LIQUID_CHECK_DELTA( cimagf(matrixcf_data_ludecomp_A[i]), cimagf(LU_test[i]), tol );
     }
 }
 
-// test matrix multiplication
-void autotest_matrixcf_mul()
+LIQUID_AUTOTEST(matrixcf_mul,"test matrix multiplication","",0.1)
 {
     float tol = 1e-6f;
 
@@ -272,24 +306,22 @@ void autotest_matrixcf_mul()
                  matrixcf_data_mul_y, 4, 3,
                  z,                   5, 3);
 
-    // print result
-    if (liquid_autotest_verbose) {
-        printf("multiplication:\n");
-        printf("  x: ");        matrixcf_print(matrixcf_data_mul_x,5,4);
-        printf("  y: ");        matrixcf_print(matrixcf_data_mul_y,4,3);
-        printf("  expected: "); matrixcf_print(matrixcf_data_mul_z,5,3);
-        printf("  z: ");        matrixcf_print(z,5,3);
-    }
+#if 0
+    printf("multiplication:\n");
+    printf("  x: ");        matrixcf_print(matrixcf_data_mul_x,5,4);
+    printf("  y: ");        matrixcf_print(matrixcf_data_mul_y,4,3);
+    printf("  expected: "); matrixcf_print(matrixcf_data_mul_z,5,3);
+    printf("  z: ");        matrixcf_print(z,5,3);
+#endif
 
     unsigned int i;
     for (i=0; i<15; i++) {
-        CONTEND_DELTA( crealf(matrixcf_data_mul_z[i]), crealf(z[i]), tol );
-        CONTEND_DELTA( cimagf(matrixcf_data_mul_z[i]), cimagf(z[i]), tol );
+        LIQUID_CHECK_DELTA( crealf(matrixcf_data_mul_z[i]), crealf(z[i]), tol );
+        LIQUID_CHECK_DELTA( cimagf(matrixcf_data_mul_z[i]), cimagf(z[i]), tol );
     }
 }
 
-// Q/R decomp (Gram-Schmidt)
-void autotest_matrixcf_qrdecomp()
+LIQUID_AUTOTEST(matrixcf_qrdecomp,"Q/R decomp (Gram-Schmidt's method)","",0.1)
 {
     float tol = 1e-4f;  // error tolerance
 
@@ -310,43 +342,42 @@ void autotest_matrixcf_qrdecomp()
     // compute Q*Q^T
     matrixcf_mul_transpose(Q, 4, 4, QQT_test);
 
-    if (liquid_autotest_verbose) {
-        printf("qrdecomp_gramschmidt:\n");
-        printf("  A: ");          matrixcf_print(matrixcf_data_qrdecomp_A, 4, 4);
-        printf("  Q: ");          matrixcf_print(Q,                        4, 4);
-        printf("  R: ");          matrixcf_print(R,                        4, 4);
-        printf("  Q expected: "); matrixcf_print(matrixcf_data_qrdecomp_Q, 4, 4);
-        printf("  R expected: "); matrixcf_print(matrixcf_data_qrdecomp_R, 4, 4);
-        printf("  QR: ");         matrixcf_print(QR_test,                  4, 4);
-        printf("  QQ: ");         matrixcf_print(QQT_test,                 4, 4);
-    }
+#if 0
+    printf("qrdecomp_gramschmidt:\n");
+    printf("  A: ");          matrixcf_print(matrixcf_data_qrdecomp_A, 4, 4);
+    printf("  Q: ");          matrixcf_print(Q,                        4, 4);
+    printf("  R: ");          matrixcf_print(R,                        4, 4);
+    printf("  Q expected: "); matrixcf_print(matrixcf_data_qrdecomp_Q, 4, 4);
+    printf("  R expected: "); matrixcf_print(matrixcf_data_qrdecomp_R, 4, 4);
+    printf("  QR: ");         matrixcf_print(QR_test,                  4, 4);
+    printf("  QQ: ");         matrixcf_print(QQT_test,                 4, 4);
+#endif
 
     unsigned int i;
 
     // ensure Q*R = A
     for (i=0; i<16; i++) {
-        CONTEND_DELTA( crealf(matrixcf_data_qrdecomp_A[i]), crealf(QR_test[i]), tol );
-        CONTEND_DELTA( cimagf(matrixcf_data_qrdecomp_A[i]), cimagf(QR_test[i]), tol );
+        LIQUID_CHECK_DELTA( crealf(matrixcf_data_qrdecomp_A[i]), crealf(QR_test[i]), tol );
+        LIQUID_CHECK_DELTA( cimagf(matrixcf_data_qrdecomp_A[i]), cimagf(QR_test[i]), tol );
     }
 
     // ensure Q*Q^T = I(4)
     float complex I4[16];
     matrixcf_eye(I4,4);
     for (i=0; i<16; i++)
-        CONTEND_DELTA( QQT_test[i], I4[i], tol );
+        LIQUID_CHECK_DELTA( QQT_test[i], I4[i], tol );
 
     // ensure Q and R are correct
     for (i=0; i<16; i++) {
-        CONTEND_DELTA( crealf(matrixcf_data_qrdecomp_Q[i]), crealf(Q[i]), tol );
-        CONTEND_DELTA( cimagf(matrixcf_data_qrdecomp_Q[i]), cimagf(Q[i]), tol );
+        LIQUID_CHECK_DELTA( crealf(matrixcf_data_qrdecomp_Q[i]), crealf(Q[i]), tol );
+        LIQUID_CHECK_DELTA( cimagf(matrixcf_data_qrdecomp_Q[i]), cimagf(Q[i]), tol );
 
-        CONTEND_DELTA( crealf(matrixcf_data_qrdecomp_R[i]), crealf(R[i]), tol );
-        CONTEND_DELTA( cimagf(matrixcf_data_qrdecomp_R[i]), cimagf(R[i]), tol );
+        LIQUID_CHECK_DELTA( crealf(matrixcf_data_qrdecomp_R[i]), crealf(R[i]), tol );
+        LIQUID_CHECK_DELTA( cimagf(matrixcf_data_qrdecomp_R[i]), cimagf(R[i]), tol );
     }
 }
 
-// transpose/multiply
-void autotest_matrixcf_transmul()
+LIQUID_AUTOTEST(matrixcf_transmul,"transpose/multiply","",0.1)
 {
     float tol = 1e-4f;  // error tolerance
 
@@ -361,45 +392,45 @@ void autotest_matrixcf_transmul()
     matrixcf_transpose_mul(matrixcf_data_transmul_x, 5, 4, xTx);
     matrixcf_hermitian_mul(matrixcf_data_transmul_x, 5, 4, xHx);
 
-    if (liquid_autotest_verbose) {
-        printf("transmul:\n");
-        printf("  x: ");            matrixcf_print(matrixcf_data_transmul_x,  5,4);
-        printf("\n");
-        printf("  xxT: ");          matrixcf_print(xxT,                      5,5);
-        printf("  xxT expected: "); matrixcf_print(matrixcf_data_transmul_xxT,5,5);
-        printf("\n");
-        printf("  xxH: ");          matrixcf_print(xxH,                      5,5);
-        printf("  xxH expected: "); matrixcf_print(matrixcf_data_transmul_xxH,5,5);
-        printf("\n");
-        printf("  xTx: ");          matrixcf_print(xTx,                      4,4);
-        printf("  xTx expected: "); matrixcf_print(matrixcf_data_transmul_xTx,4,4);
-        printf("\n");
-        printf("  xHx: ");          matrixcf_print(xHx,                      4,4);
-        printf("  xHx expected: "); matrixcf_print(matrixcf_data_transmul_xHx,4,4);
-        printf("\n");
-    }
+#if 0
+    printf("transmul:\n");
+    printf("  x: ");            matrixcf_print(matrixcf_data_transmul_x,  5,4);
+    printf("\n");
+    printf("  xxT: ");          matrixcf_print(xxT,                      5,5);
+    printf("  xxT expected: "); matrixcf_print(matrixcf_data_transmul_xxT,5,5);
+    printf("\n");
+    printf("  xxH: ");          matrixcf_print(xxH,                      5,5);
+    printf("  xxH expected: "); matrixcf_print(matrixcf_data_transmul_xxH,5,5);
+    printf("\n");
+    printf("  xTx: ");          matrixcf_print(xTx,                      4,4);
+    printf("  xTx expected: "); matrixcf_print(matrixcf_data_transmul_xTx,4,4);
+    printf("\n");
+    printf("  xHx: ");          matrixcf_print(xHx,                      4,4);
+    printf("  xHx expected: "); matrixcf_print(matrixcf_data_transmul_xHx,4,4);
+    printf("\n");
+#endif
 
     // run tests
     unsigned int i;
 
     for (i=0; i<25; i++) {
-        CONTEND_DELTA( crealf(matrixcf_data_transmul_xxT[i]), crealf(xxT[i]), tol);
-        CONTEND_DELTA( cimagf(matrixcf_data_transmul_xxT[i]), cimagf(xxT[i]), tol);
+        LIQUID_CHECK_DELTA( crealf(matrixcf_data_transmul_xxT[i]), crealf(xxT[i]), tol);
+        LIQUID_CHECK_DELTA( cimagf(matrixcf_data_transmul_xxT[i]), cimagf(xxT[i]), tol);
     }
 
     for (i=0; i<25; i++) {
-        CONTEND_DELTA( crealf(matrixcf_data_transmul_xxH[i]), crealf(xxH[i]), tol);
-        CONTEND_DELTA( cimagf(matrixcf_data_transmul_xxH[i]), cimagf(xxH[i]), tol);
+        LIQUID_CHECK_DELTA( crealf(matrixcf_data_transmul_xxH[i]), crealf(xxH[i]), tol);
+        LIQUID_CHECK_DELTA( cimagf(matrixcf_data_transmul_xxH[i]), cimagf(xxH[i]), tol);
     }
 
     for (i=0; i<16; i++) {
-        CONTEND_DELTA( crealf(matrixcf_data_transmul_xTx[i]), crealf(xTx[i]), tol);
-        CONTEND_DELTA( cimagf(matrixcf_data_transmul_xTx[i]), cimagf(xTx[i]), tol);
+        LIQUID_CHECK_DELTA( crealf(matrixcf_data_transmul_xTx[i]), crealf(xTx[i]), tol);
+        LIQUID_CHECK_DELTA( cimagf(matrixcf_data_transmul_xTx[i]), cimagf(xTx[i]), tol);
     }
 
     for (i=0; i<16; i++) {
-        CONTEND_DELTA( crealf(matrixcf_data_transmul_xHx[i]), crealf(xHx[i]), tol);
-        CONTEND_DELTA( cimagf(matrixcf_data_transmul_xHx[i]), cimagf(xHx[i]), tol);
+        LIQUID_CHECK_DELTA( crealf(matrixcf_data_transmul_xHx[i]), crealf(xHx[i]), tol);
+        LIQUID_CHECK_DELTA( cimagf(matrixcf_data_transmul_xHx[i]), cimagf(xHx[i]), tol);
     }
 }
 

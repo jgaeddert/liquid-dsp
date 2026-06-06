@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-// multiply two complex buffers
-void autotest_vectorcf_mul_16()
+LIQUID_AUTOTEST(vectorcf_mul_16,"multiply two complex buffers","",0.1)
 {
     // error tolerance
     float tol = 4e-6;
@@ -70,13 +69,12 @@ void autotest_vectorcf_mul_16()
     //compare result
     unsigned int i;
     for (i=0; i<16; i++) {
-        CONTEND_DELTA(crealf(buf_test[i]), crealf(buf_2[i]), tol);
-        CONTEND_DELTA(cimagf(buf_test[i]), cimagf(buf_2[i]), tol);
+        LIQUID_CHECK_DELTA(crealf(buf_test[i]), crealf(buf_2[i]), tol);
+        LIQUID_CHECK_DELTA(cimagf(buf_test[i]), cimagf(buf_2[i]), tol);
     }
 }
 
-//
-void autotest_vectorcf_mul_35()
+LIQUID_AUTOTEST(vectorcf_mul_35,"multiply two complex buffers","",0.1)
 {
     float tol = 4e-6;
 
@@ -147,8 +145,8 @@ void autotest_vectorcf_mul_35()
     //compare result
     unsigned int i;
     for (i=0; i<35; i++) {
-        CONTEND_DELTA(crealf(buf_test[i]), crealf(buf_2[i]), tol);
-        CONTEND_DELTA(cimagf(buf_test[i]), cimagf(buf_2[i]), tol);
+        LIQUID_CHECK_DELTA(crealf(buf_test[i]), crealf(buf_2[i]), tol);
+        LIQUID_CHECK_DELTA(cimagf(buf_test[i]), cimagf(buf_2[i]), tol);
     }
 }
 

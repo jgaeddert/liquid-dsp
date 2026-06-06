@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -336,7 +336,7 @@ unsigned int flexframegen_getframelen(flexframegen _q)
     return num_frame_symbols*_q->k; // k samples/symbol
 }
 
-// exectue frame generator (create the frame)
+// execute frame generator (create the frame)
 //  _q              :   frame generator object
 //  _header         :   user-defined header
 //  _payload        :   variable payload buffer (configured by setprops method)
@@ -346,6 +346,10 @@ int flexframegen_assemble(flexframegen          _q,
                           const unsigned char * _payload,
                           unsigned int          _payload_dec_len)
 {
+    // validate input
+    if (_payload_dec_len == 0 || _payload_dec_len > LIQUID_MAX_PAYLOAD_LEN)
+        return liquid_error(LIQUID_EICONFIG,"flexframegen_assemble(), payload length (%u) is out of range", _payload_dec_len);
+
     // reset object
     flexframegen_reset(_q);
 

@@ -1,10 +1,16 @@
-// demonstrate error handling in liquid
+char __docstr__[] = "Demonstrate error handling in liquid";
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // create agc object
     agc_crcf q = agc_crcf_create();
 
@@ -15,6 +21,9 @@ int main(int argc, char*argv[])
 
     // destroy object
     agc_crcf_destroy(q);
+
+    // set custom error
+    liquid_error(LIQUID_EICONFIG,"configuration (%s), invalid code %u > %u", "hello", 4, 2);
 
     //
     printf("done.\n");

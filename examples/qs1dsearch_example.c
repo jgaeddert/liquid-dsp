@@ -1,9 +1,11 @@
-// quad-section search in one dimension
+char __docstr__[] = "Demonstrate quad-section search in one dimension.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 float utility(float _v, void * _context)
 {
@@ -12,8 +14,12 @@ float utility(float _v, void * _context)
     return tanhf(v)*tanhf(v);
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // create qs1dsearch object
     float v_opt  = 0.0f;
     qs1dsearch q = qs1dsearch_create(utility, &v_opt, LIQUID_OPTIM_MINIMIZE);

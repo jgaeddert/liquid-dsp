@@ -1,29 +1,33 @@
-// demonstrate arbitrary rate symstreamrcf object
+char __docstr__[] = "Demonstrate arbitrary rate symstreamrcf object.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "symstreamrcf_example.m"
-
-int main()
+int main(int argc, char* argv[])
 {
-    // symstream parameters
-    int          ftype       = LIQUID_FIRFILT_ARKAISER;
-    float        bw          =     0.23456789f;
-    unsigned int m           =     9;
-    float        beta        = 0.30f;
-    int          ms          = LIQUID_MODEM_QPSK;
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "symstreamrcf_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(char*, ftype_str, "arkaiser", 'f', "filter type", liquid_argparse_firfilt);
+    liquid_argparse_add(float,    bw, 0.234567,  'w', "filter bandwidth", NULL);
+    liquid_argparse_add(unsigned, m,         9,  'm', "filter semi-length", NULL);
+    liquid_argparse_add(float,    beta,    0.3,  'b', "filter excess bandwidth factor", NULL);
+    liquid_argparse_add(char*,    mod_str,"qpsk",'M', "modulation scheme", liquid_argparse_modem);
+    liquid_argparse_add(unsigned, nfft,   2400,  'n', "FFT size", NULL);
+    liquid_argparse_add(unsigned, num_samples, 80000,'N', "number of samples to simulate", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // spectral periodogram options
-    unsigned int nfft        =   2400;  // spectral periodogram FFT size
-    unsigned int num_samples =  80000;  // number of samples
     spgramcf periodogram = spgramcf_create_default(nfft);
 
     // create stream generator
+    int ftype = liquid_getopt_str2firfilt(ftype_str);
+    int ms    = liquid_getopt_str2mod(mod_str);
     symstreamrcf gen = symstreamrcf_create_linear(ftype,bw,m,beta,ms);
-    symstreamrcf_set_gain(gen, sqrtf(bw));
     symstreamrcf_print(gen);
 
     // create buffer for storing output
@@ -53,8 +57,8 @@ int main()
     spgramcf_destroy(periodogram);
 
     // export output file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"nfft = %u;\n", nfft);
@@ -70,11 +74,8 @@ int main()
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([-0.5 0.5 -120 20]);\n");
-
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
-
-    printf("done.\n");
+    printf("results written to %s.\n", filename);
     return 0;
 }
 

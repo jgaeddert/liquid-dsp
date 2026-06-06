@@ -1,14 +1,18 @@
-// This example demonstrates the circular buffer object on
-// floating-point data.
-//
-// SEE ALSO: wdelayf_example.c
-//           windowf_example.c
+char __docstr__[] =
+"This example demonstrates the circular buffer object on"
+" floating-point data.";
 
 #include <stdio.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-int main() {
+int main(int argc, char* argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     float v[] = {1, 2, 3, 4, 5, 6, 7, 8};
     float *r; // reader
     unsigned int num_requested = 3;

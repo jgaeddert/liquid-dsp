@@ -28,13 +28,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-// defined:
-//  FIRFILT()       name-mangling macro
-//  T               coefficients type
-//  WINDOW()        window macro
-//  DOTPROD()       dotprod macro
-//  PRINTVAL()      print macro
-
 // NOTE: using the window is about 27% slower, but fixes a valgrind issue
 #define LIQUID_FIRFILT_USE_WINDOW   (1)
 
@@ -256,8 +249,6 @@ FIRFILT() FIRFILT(_recreate)(FIRFILT() _q,
                              TC * _h,
                              unsigned int _n)
 {
-    unsigned int i;
-
     // reallocate memory array if filter length has changed
     if (_n != _q->h_len) {
         // reallocate memory
@@ -280,12 +271,11 @@ FIRFILT() FIRFILT(_recreate)(FIRFILT() _q,
 #endif
     }
 
-    // load filter in reverse order
-    for (i=_n; i>0; i--)
-        _q->h[i-1] = _h[_n-i];
+    // move coefficients
+    memmove(_q->h, _h, (_q->h_len)*sizeof(TC));
 
-    // re-create internal dot product object
-    _q->dp = DOTPROD(_recreate)(_q->dp, _q->h, _q->h_len);
+    // re-create dot product object with coefficients in reverse order
+    _q->dp = DOTPROD(_recreate_rev)(_q->dp, _q->h, _q->h_len);
 
     return _q;
 }
@@ -348,7 +338,7 @@ int FIRFILT(_reset)(FIRFILT() _q)
 // print filter object internals (taps, buffer)
 int FIRFILT(_print)(FIRFILT() _q)
 {
-    printf("<liquid.firfilt_%s, n=%u", EXTENSION_FULL, _q->h_len);
+    printf("<liquid.firfilt_%s, len=%un", EXTENSION_FULL, _q->h_len);
     printf(", scale=");
     PRINTVAL_TC(_q->scale,%12.8f);
     printf(">\n");

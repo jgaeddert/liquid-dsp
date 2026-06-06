@@ -1,78 +1,45 @@
-//
-// Rice-K fading generator example.
-//
-// This example generates correlated circular complex Gauss random variables
-// using an approximation to the ideal Doppler filter. The resulting Gauss
-// random variables are converted to Rice-K random variables using a simple
-// transformation. The resulting output file plots the filter's power
-// spectral density, the fading power envelope as a function of time, and the
-// distribution of Rice-K random variables alongside the theoretical PDF to
-// demonstrate that the technique is valid.
-//
+char __docstr__[] =
+"Rice-K fading generator example."
+" This example generates correlated circular complex Gauss random variables"
+" using an approximation to the ideal Doppler filter. The resulting Gauss"
+" random variables are converted to Rice-K random variables using a simple"
+" transformation. The resulting output file plots the filter's power"
+" spectral density, the fading power envelope as a function of time, and the"
+" distribution of Rice-K random variables alongside the theoretical PDF to"
+" demonstrate that the technique is valid.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <complex.h>
-#include <getopt.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "ricek_channel_example.m"
-
-// print usage/help message
-void usage()
+int main(int argc, char* argv[])
 {
-    printf("%s [options]\n", __FILE__);
-    printf("  h     : print help\n");
-    printf("  n     : number of samples\n");
-    printf("  f     : maximum doppler frequency (0,0.5)\n");
-    printf("  K     : Rice K factor, linear, greater than zero\n");
-    printf("  O     : mean power, linear (Rice-K distribution 'omega')\n");
-}
-
-int main(int argc, char*argv[])
-{
-    // options
-    unsigned int h_len = 51;        // doppler filter length
-    float fd           = 0.1f;      // maximum doppler frequency
-    float K            = 2.0f;      // Rice fading factor
-    float omega        = 1.0f;      // mean power
-    float theta        = 0.0f;      // angle of arrival
-    unsigned int num_samples=1200;  // number of samples
-
-    int dopt;
-    while ((dopt = getopt(argc,argv,"hn:f:K:O:")) != EOF) {
-        switch (dopt) {
-        case 'h':   usage();                    return 0;
-        case 'n':   num_samples = atoi(optarg); break;
-        case 'f':   fd          = atof(optarg); break;
-        case 'K':   K           = atof(optarg); break;
-        case 'O':   omega       = atof(optarg); break;
-        default:
-            exit(1);
-        }
-    }
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*, filename, "ricek_channel_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, h_len,        51, 'D', "Doppler filter length", NULL);
+    liquid_argparse_add(float,    fd,          0.1, 'f', "maximum Doppler frequency", NULL);
+    liquid_argparse_add(float,    K,             2, 'K', "Rice fading factor", NULL);
+    liquid_argparse_add(float,    omega,         1, 'O', "mean power", NULL);
+    liquid_argparse_add(float,    theta,         0, 't', "angle of arrival", NULL);
+    liquid_argparse_add(unsigned, num_samples, 400, 'n', "number of samples", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // validate input
-    if (K < 0.0f) {
-        fprintf(stderr,"error: %s, fading factor K must be greater than zero\n", argv[0]);
-        exit(1);
-    } else if (omega < 0.0f) {
-        fprintf(stderr,"error: %s, signal power Omega must be greater than zero\n", argv[0]);
-        exit(1);
-    } else if (fd <= 0.0f || fd >= 0.5f) {
-        fprintf(stderr,"error: %s, Doppler frequency must be in (0,0.5)\n", argv[0]);
-        exit(1);
-    } else if (h_len < 4) {
-        fprintf(stderr,"error: %s, Doppler filter length too small\n", argv[0]);
-        exit(1);
-    } else if (num_samples == 0) {
-        fprintf(stderr,"error: %s, number of samples must be greater than zero\n", argv[0]);
-        exit(1);
-    }
-
-    unsigned int i;
+    if (K < 0.0f)
+        return liquid_error(LIQUID_EICONFIG,"fading factor K must be greater than zero");
+    if (omega < 0.0f)
+        return liquid_error(LIQUID_EICONFIG,"signal power Omega must be greater than zero");
+    if (fd <= 0.0f || fd >= 0.5f)
+        return liquid_error(LIQUID_EICONFIG,"Doppler frequency must be in (0,0.5)");
+    if (h_len < 4)
+        return liquid_error(LIQUID_EICONFIG,"Doppler filter length too small");
+    if (num_samples == 0)
+        return liquid_error(LIQUID_EICONFIG,"number of samples must be greater than zero");
 
     // allocate array for output samples
     float complex * y = (float complex*) malloc(num_samples*sizeof(float complex));
@@ -84,6 +51,7 @@ int main(int argc, char*argv[])
     // normalize filter coefficients such that output Gauss random
     // variables have unity variance
     float std = 0.0f;
+    unsigned int i;
     for (i=0; i<h_len; i++)
         std += h[i]*h[i];
     std = sqrtf(std);
@@ -115,8 +83,8 @@ int main(int argc, char*argv[])
     firfilt_crcf_destroy(fdoppler);
 
     // export results to file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s, auto-generated file\n\n",OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s, auto-generated file\n\n",filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"\n");
@@ -167,12 +135,10 @@ int main(int argc, char*argv[])
 
     // close output file
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     // clean up allocated arrays
     free(y);
-
-    printf("done.\n");
     return 0;
 }
 

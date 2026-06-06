@@ -1,20 +1,24 @@
-// Demonstrate partial-band reconstruction using firpfbch2_crcf
+char __docstr__[] =
+"Demonstrate partial-band reconstruction using firpfbch2_crcf object.";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
-
-#define OUTPUT_FILENAME "firpfbch2_crcf_reconstruct_example.m"
+#include "liquid.argparse.h"
 
 int main(int argc, char*argv[])
 {
-    // options
-    unsigned int M  = 64;           // number of channels in analysis filterbank
-    unsigned int P  = 22;           // number of channels in synthesis filterbank
-    unsigned int m  =  5;           // filter semi-length (symbols)
-    float        As = 60.0f;        // filter stop-band attenuation
-    float        fc = 0.23;         // frequency in band to center synthesis bank
-    unsigned int num_blocks=1<<14;  // number of blocks to generate
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename, "firpfbch2_crcf_reconstruct_example.m", 'o', "output filename", NULL);
+    liquid_argparse_add(unsigned, M,            64, 'M', "number of channels in analysis filterbank", NULL);
+    liquid_argparse_add(unsigned, P,            22, 'P', "number of channels in synthesis filterbank", NULL);
+    liquid_argparse_add(unsigned, m,             5, 'm', "filter length [symbols]", NULL);
+    liquid_argparse_add(float,    As,           60, 'a', "filter stop-band attenuation", NULL);
+    liquid_argparse_add(float,    fc,         0.23, 'f', "frequency in band to center synthesis bank", NULL);
+    liquid_argparse_add(unsigned, num_blocks,1<<14, 'n', "number of symbols", NULL);
+    liquid_argparse_parse(argc,argv);
 
     // derived values
     unsigned int M2=M/2, P2=P/2;    // channelizer half sizes, for convenience
@@ -90,8 +94,8 @@ int main(int argc, char*argv[])
     //
     // EXPORT DATA TO FILE
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"nfft = %u;\n", nfft);
@@ -128,7 +132,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  ylabel('Power Spectral Density [dB]');\n");
 
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", filename);
 
     printf("done.\n");
     return 0;

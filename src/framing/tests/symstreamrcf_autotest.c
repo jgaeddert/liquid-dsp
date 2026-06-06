@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "autotest/autotest.h"
+#include "liquid.autotest.h"
 #include "liquid.h"
 
 // autotest helper functions
-void testbench_symstreamrcf_psd(float        _bw,
-                                unsigned int _m,
-                                float        _beta)
+void testbench_symstreamrcf_psd(liquid_autotest __q__,
+                                float           _bw,
+                                unsigned int    _m,
+                                float           _beta)
 {
     // create object
     int ftype = LIQUID_FIRFILT_ARKAISER;
@@ -75,17 +76,15 @@ void testbench_symstreamrcf_psd(float        _bw,
     char filename[256];
     sprintf(filename,"autotest/logs/symstreamrcf_psd_bw%u_m%u_b%.3u_autotest.m",
             (int)(_bw*1000), _m, (int)(_beta*100));
-    liquid_autotest_validate_spectrum(psd, nfft, regions, 3,
-        liquid_autotest_verbose ? filename : NULL);
+    liquid_autotest_validate_spectrum(__q__, psd, nfft, regions, 3, filename);
 }
 
-void autotest_symstreamrcf_psd_bw200_m12_b030() { testbench_symstreamrcf_psd(0.2f, 12, 0.30f); }
-void autotest_symstreamrcf_psd_bw400_m12_b030() { testbench_symstreamrcf_psd(0.4f, 12, 0.30f); }
-void autotest_symstreamrcf_psd_bw400_m25_b020() { testbench_symstreamrcf_psd(0.4f, 25, 0.20f); }
-void autotest_symstreamrcf_psd_bw700_m11_b035() { testbench_symstreamrcf_psd(0.7f, 11, 0.35f); }
+LIQUID_AUTOTEST(symstreamrcf_psd_bw200_m12_b030,"","",0.1) { testbench_symstreamrcf_psd(__q__, 0.2f, 12, 0.30f); }
+LIQUID_AUTOTEST(symstreamrcf_psd_bw400_m12_b030,"","",0.1) { testbench_symstreamrcf_psd(__q__, 0.4f, 12, 0.30f); }
+LIQUID_AUTOTEST(symstreamrcf_psd_bw400_m25_b020,"","",0.1) { testbench_symstreamrcf_psd(__q__, 0.4f, 25, 0.20f); }
+LIQUID_AUTOTEST(symstreamrcf_psd_bw700_m11_b035,"","",0.1) { testbench_symstreamrcf_psd(__q__, 0.7f, 11, 0.35f); }
 
-// test copying from one object to another
-void autotest_symstreamrcf_copy()
+LIQUID_AUTOTEST(symstreamrcf_copy,"test copying from one symstreamrcf object to another","",0.1)
 {
     // create objects
     symstreamrcf gen_orig = symstreamrcf_create_linear(
@@ -108,8 +107,8 @@ void autotest_symstreamrcf_copy()
 
     // compare result
     // NOTE: this will fail as they have different symbol generators
-    //CONTEND_SAME_DATA(buf_orig, buf_copy, buf_len*sizeof(float complex));
-    AUTOTEST_WARN("symstreamrcf_copy results ignored until common PRNG is used");
+    //LIQUID_CHECK_ARRAY(buf_orig, buf_copy, buf_len*sizeof(float complex));
+    LIQUID_WARN("symstreamrcf_copy results ignored until common PRNG is used");
 
     // destroy objects
     symstreamrcf_destroy(gen_orig);
