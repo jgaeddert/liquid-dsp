@@ -41,9 +41,9 @@ jobs:
         python -m pip install pybind11 numpy matplotlib
         mkdir build
         cd build
-        cmake ..
+        cmake -D BUILD_PYTHON=ON ..
         make -j4
-        ./xautotest -q -o autotest.json
+        ./xautotest -o autotest.json
         python3 -c "import liquid as dsp; print('liquid-dsp python version:',dsp.__version__)"
         #make install
         #ldconfig
