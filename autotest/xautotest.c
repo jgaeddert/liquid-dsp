@@ -24,11 +24,12 @@ int main(int argc, char* argv[])
 
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
-    liquid_argparse_add(char*,logfile, "", 'g', "output logfile", NULL);
-    liquid_argparse_add(char*,json,    "", 'o', "output JSON file", NULL);
-    liquid_argparse_add(bool, list, false, 'l', "list tests and exit", NULL);
-    liquid_argparse_add(int,  test_id, -1, 't', "run a specific test", NULL);
-    liquid_argparse_add(char*,search,  "", 's', "run tests with search string in name", NULL);
+    liquid_argparse_add(char*,logfile,    "", 'g', "output logfile", NULL);
+    liquid_argparse_add(char*,json,       "", 'o', "output JSON file", NULL);
+    liquid_argparse_add(bool, list,    false, 'l', "list tests and exit", NULL);
+    liquid_argparse_add(bool, status,  false, 'P', "print full status of all at the end", NULL);
+    liquid_argparse_add(int,  test_id,    -1, 't', "run a specific test", NULL);
+    liquid_argparse_add(char*,search,     "", 's', "run tests with search string in name", NULL);
     liquid_argparse_parse(argc,argv);
 
     if (strcmp(logfile,""))
@@ -36,9 +37,11 @@ int main(int argc, char* argv[])
 
     unsigned int i = 0;
     if (list) {
-        i = 0;
         while (liquid_autotest_registry[i] != NULL)
-            liquid_autotest_print_info(liquid_autotest_registry[i++]);
+        {
+            liquid_autotest_print_info(liquid_autotest_registry[i],i);
+            i++;
+        }
         return LIQUID_OK;
     }
 
@@ -72,9 +75,14 @@ int main(int argc, char* argv[])
         i++;
     }
 
-    // print summary
-    int rc = liquid_registry_print(liquid_autotest_registry);
+    // print status of executed tests
+    if (status)
+        liquid_registry_print_status(liquid_autotest_registry);
 
+    // print summary
+    int rc = liquid_registry_print_summary(liquid_autotest_registry);
+
+    // export output file
     if (strcmp(json,""))
         liquid_registry_json(liquid_autotest_registry, json);
 

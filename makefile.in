@@ -1498,7 +1498,7 @@ readme.c.example : % : %.o ${ARCHIVE_LIB}
 
 # C++ link example
 readme.link.example.cc : README.rst
-	${SED} -n '190,211p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+	${SED} -n '243,264p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
 readme.link.example.o : %.o : %.cc ${include_headers}
 	${CXX} ${CPPFLAGS} ${CXXFLAGS} -c -o $@ $<
@@ -1508,7 +1508,7 @@ readme.link.example : % : %.o ${ARCHIVE_LIB}
 
 # C++ bind example
 readme.bind.example.cc : README.rst
-	${SED} -n '227,244p' $< | ${SED} "s/<liquid\/liquid.hh>/\"liquid.hh\"/g" > $@
+	${SED} -n '354,371p' $< | ${SED} "s/<liquid\/liquid.hh>/\"liquid.hh\"/g" > $@
 
 readme.bind.example.o : %.o : %.cc ${include_headers} bind/firinterp.hh
 	${CXX} ${CPPFLAGS} ${CXXFLAGS} -I ./bind -c -o $@ $<

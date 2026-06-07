@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest
+## 1.8.0 - 2026-06-06
+
+Version 1.8.0 includes a new logging environment, macros for simplified
+argument parsing, enhancements for the [CMake](https://cmake.org) build
+system, static and shared libraries, improved packaging, and increased test
+coverage.
 
   * logging: introduced embedded logging functionality
     - supports global and custom logs with minimal computational overhead
@@ -8,6 +13,13 @@
     - support for logging to files
     - color output for enhanced visibility (optionally disabled)
     - compile time configurations for enhanced customization
+  * autotest
+    - refactored testing infrastructure to include test-specific metadata,
+      estimated 'cost' (execution time), description, and keywords
+    - overhauled all tests to use new harness; tests now thread-safe and
+      statically defined
+    - increased testing: 1,300+ tests, 716,000+ checks, covering 82% of entire
+      project
   * build
     - performed a static memory analysis test to substantially reduce memory
       used on the stack in favor of dynamically allocating it on the stack;
@@ -24,17 +36,34 @@
     - adding python bindings natively with source, taking advantage of the
       excellent [pybind11](https://pybind11.readthedocs.io/en/stable/)
       package to simplify this process.
-    - Fixed annoying deprecation warnings (thanks @AHSauge and @oe1rsa)
-    - Adding generated pkg-config file
-    - Adding support for building either/both static and shared libraries
       (thanks @noonafter)
+    - adding separate option to find SIMD vs. use it with explicit options
+    - cleaned up descriptions for most interfaces in header file
+    - removed gentab (generated tables) from build environment; added
+      pre-generated source to version control
+    - fixed cmake x86 SIMD detection (thanks @stefantalpalaru)
+    - fixed many typos via codespell (thanks @luzpaz)
+  * core
+    - new module to include core functionality to liquid-dsp including logging
+      and error-handling
+    - error-handling macros moved to global header to allow global use
+  * fft
+    - asgram: adding option for auto-scaling output
   * filter
-    - rresamp: fixing aliasing issue with default operation (thanks @xerpi
+    - rresamp: fixed aliasing issue with default operation (thanks @xerpi
       and @MatiasLopezING)
-    - symsync: adding methods to explicitly get/set rate and del values
+    - symsync: added methods to explicitly get/set rate and del values
       (thanks @brian-armstrong)
+    - firdespm: devising halfband filter design with desired stop band
+    - firfilt: fix recreate() storing coefficients in reverse order
+      (thanks @deekshaNVIDIA)
   * framing
-    - Added ability to initialize qdsync on cpfsk (thanks @asazernik)
+    - added ability to initialize qdsync on cpfsk (thanks @asazernik)
+    - framesync64: adding option to set detection range
+    - qdetector: improved reliability, speed, interface
+  * vector
+    - added more SIMD methods for AVX, NEON extensions
+    - added more benchmarks to identify areas for speed improvement
 
 ## 1.7.0 - 2025-02-01
 

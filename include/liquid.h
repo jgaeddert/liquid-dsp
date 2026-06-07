@@ -43,7 +43,7 @@ extern "C" {
 #endif
 
 // Make sure the version and version number macros weren't defined by
-// some prevoiusly included header file.
+// some previously included header file.
 #ifdef LIQUID_VERSION
 #  undef LIQUID_VERSION
 #endif
@@ -58,7 +58,7 @@ extern "C" {
 #define LIQUID_VERSION_STR(num) LIQUID_VERSION_STR_EX(num)
 
 #define LIQUID_VERSION_MAJOR    1
-#define LIQUID_VERSION_MINOR    7
+#define LIQUID_VERSION_MINOR    8
 #define LIQUID_VERSION_PATCH    0
 #define LIQUID_VERSION_DEV      0
 

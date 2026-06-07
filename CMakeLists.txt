@@ -1062,9 +1062,9 @@ if(BUILD_PYTHON)
     # see: https://stackoverflow.com/questions/67212833/python-library-and-cmake-target-with-the-same-name#67226146
     set_target_properties(${LIBNAME_PYTHON} PROPERTIES OUTPUT_NAME liquid)
 
-    if (fftw3f_FOUND)
-        target_link_libraries(${LIBNAME_PYTHON} PUBLIC fftw3f)
-    endif()
+    target_include_directories(${LIBNAME_PYTHON} PRIVATE include .)
+
+    target_link_libraries(${LIBNAME_PYTHON} PUBLIC ${LIQUID_TARGETS})
 
     # enable python extensions to C++ classes
     target_compile_definitions(${LIBNAME_PYTHON} PUBLIC LIQUID_PYTHONLIB)
