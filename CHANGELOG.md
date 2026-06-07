@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.8.0 - 2026-06-06
+## 1.8.0 - 2026-06-07
 
 Version 1.8.0 includes a new logging environment, macros for simplified
 argument parsing, enhancements for the [CMake](https://cmake.org) build
@@ -58,6 +58,8 @@ coverage.
     - firfilt: fix recreate() storing coefficients in reverse order
       (thanks @deekshaNVIDIA)
   * framing
+    - fskframe: refactored object to allow for dynamically-sized payload, but
+      removed ability to specify CRC and FEC for now
     - added ability to initialize qdsync on cpfsk (thanks @asazernik)
     - framesync64: adding option to set detection range
     - qdetector: improved reliability, speed, interface

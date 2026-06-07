@@ -1498,7 +1498,7 @@ readme.c.example : % : %.o ${ARCHIVE_LIB}
 
 # C++ link example
 readme.link.example.cc : README.rst
-	${SED} -n '243,264p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+	${SED} -n '244,265p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
 readme.link.example.o : %.o : %.cc ${include_headers}
 	${CXX} ${CPPFLAGS} ${CXXFLAGS} -c -o $@ $<
@@ -1518,7 +1518,7 @@ readme.bind.example : % : %.o ${ARCHIVE_LIB}
 
 # Python bind example
 readme.bind.py : README.rst
-	${SED} -n '269,276p' $< | ${SED} "s/    //g" > $@
+	${SED} -n '396,403p' $< | ${SED} "s/    //g" > $@
 
 check-doc : readme.c.example readme.link.example readme.bind.example readme.bind.py ${pythonlib}
 	./readme.c.example && ./readme.link.example && ./readme.bind.example && python3 readme.bind.py
