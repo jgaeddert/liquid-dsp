@@ -24,7 +24,7 @@ jobs:
       if: runner.os == 'macos'
       run: |
         brew update
-        brew install cmake virtualenv
+        brew install cmake virtualenv pybind11
 
     - name: Setup environment (Linux)
       if: runner.os == 'Linux'
