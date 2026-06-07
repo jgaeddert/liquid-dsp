@@ -29,7 +29,7 @@ jobs:
     - name: Setup environment (Linux)
       if: runner.os == 'Linux'
       run: |
-        sudo apt-get install -y --no-install-recommends build-essential virtualenv python3-dev
+        sudo apt-get install -y --no-install-recommends build-essential virtualenv python3-dev pybind11-dev
 
     #- name: Setup libfec
     #  run: git clone https://github.com/jgaeddert/libfec.git && cd libfec && ./configure && make && sudo make install
