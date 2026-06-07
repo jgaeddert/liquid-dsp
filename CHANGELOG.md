@@ -28,6 +28,8 @@
     - symsync: adding methods to explicitly get/set rate and del values
       (thanks @brian-armstrong)
   * framing
+    - fskframe: refactored object to allow for dynamically-sized payload, but
+      removed ability to specify CRC and FEC for now
     - Added ability to initialize qdsync on cpfsk (thanks @asazernik)
 
 ## 1.7.0 - 2025-02-01
