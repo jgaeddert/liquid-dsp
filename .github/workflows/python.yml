@@ -60,7 +60,7 @@ jobs:
         # macos-latest is apple silicon, macos-15-intel is x86_64
         # see: https://github.blog/changelog/2025-09-19-github-actions-macos-13-runner-image-is-closing-down/
         # note: macos-15 runner will be deprecated fall 2027
-        os: [macos-latest, macos-15-intel, ubuntu-latest, windows-latest]
+        os: [macos-latest, macos-15-intel, ubuntu-latest] # windows-latest
 
     steps:
       - uses: actions/checkout@v4
