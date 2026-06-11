@@ -58,9 +58,9 @@ remove = "dev0"
 #liquid = "liquid:main_cli"
 
 [tool.cibuildwheel]
-build = "*"
-#test-command = "python {project}/tests/test.py"
-#test-skip = "*universal2:arm64"
+build = "cp39-* cp310-* cp311-* cp312-* cp313-*"
+test-command = "python -c \"import liquid as dsp; print('liquid-dsp version:', dsp.__version__)\""
+build-verbosity = 1
 
 [tool.cibuildwheel.linux]
 before-all = "uname -a"
