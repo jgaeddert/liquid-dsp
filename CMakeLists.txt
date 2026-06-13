@@ -115,8 +115,9 @@ add_library(channel OBJECT
     src/channel/src/channel_cccf.c)
 
 add_library(core OBJECT
+    src/core/src/error.c
     src/core/src/logging.c
-    src/core/src/error.c)
+    src/core/src/timer.c)
 
 add_library(dotprod OBJECT)
 
