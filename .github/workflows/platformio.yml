@@ -12,10 +12,10 @@ jobs:
         example: [examples/platformio_example.c]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
 
     - name: Install PlatformIO
       run: |

@@ -249,8 +249,6 @@ FIRFILT() FIRFILT(_recreate)(FIRFILT() _q,
                              TC * _h,
                              unsigned int _n)
 {
-    unsigned int i;
-
     // reallocate memory array if filter length has changed
     if (_n != _q->h_len) {
         // reallocate memory
@@ -273,12 +271,11 @@ FIRFILT() FIRFILT(_recreate)(FIRFILT() _q,
 #endif
     }
 
-    // load filter in reverse order
-    for (i=_n; i>0; i--)
-        _q->h[i-1] = _h[_n-i];
+    // move coefficients
+    memmove(_q->h, _h, (_q->h_len)*sizeof(TC));
 
-    // re-create internal dot product object
-    _q->dp = DOTPROD(_recreate)(_q->dp, _q->h, _q->h_len);
+    // re-create dot product object with coefficients in reverse order
+    _q->dp = DOTPROD(_recreate_rev)(_q->dp, _q->h, _q->h_len);
 
     return _q;
 }

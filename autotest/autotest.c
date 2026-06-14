@@ -33,10 +33,10 @@
 #include "liquid.autotest.h"
 
 // print test info
-int liquid_autotest_print_info(liquid_autotest _q)
+int liquid_autotest_print_info(liquid_autotest _q, unsigned int _index)
 {
-    liquid_log_info("name=%s, description=%s, keywords=%s, cost=%g",
-        _q->name, _q->docstr, _q->keywords, _q->cost);
+    liquid_log_info("index=%4u, name=%s, description=%s, keywords=%s, cost=%g",
+        _index, _q->name, _q->docstr, _q->keywords, _q->cost);
     return LIQUID_OK;
 }
 
@@ -55,6 +55,7 @@ int liquid_autotest_print_status(liquid_autotest _q)
     unsigned int j;
     for (j=strlen(_q->name); j<40; j++)
         s += sprintf(s,".");
+
     switch(_q->status) {
     case LIQUID_AUTOTEST_PASS:
         s += sprintf(s," pass [      %5u]", _q->num_pass);
@@ -88,7 +89,7 @@ int liquid_autotest_execute(liquid_autotest _q)
     _q->func(_q);
     // update runtime and destroy timer
     _q->runtime = liquid_timer_toc(timer);
-    liquid_timer_desroy(timer);
+    liquid_timer_destroy(timer);
     _q->status = _q->num_fail > 0 ? LIQUID_AUTOTEST_FAIL : LIQUID_AUTOTEST_PASS;
     //
     //if (strlen(_q->docstr)==0)
@@ -153,31 +154,27 @@ struct liquid_registry_info_s liquid_registry_info(const liquid_autotest * _regi
     return info;
 }
 
-// print registry, either info or full status
-int liquid_registry_print(const liquid_autotest * _registry)
+// print status of tests
+int liquid_registry_print_status(const liquid_autotest * _registry)
 {
     // retrieve summary of runs
     struct liquid_registry_info_s info = liquid_registry_info(_registry);
 
-    unsigned int i;
-#if 0
-    // log all results
+    // log results
     liquid_log_info("=========== autotest results ===========");
+    unsigned int i;
     for (i=0; i<info.num_tests; i++)
         liquid_autotest_print_status(_registry[i]);
-#else
-    // log only failed tests
-    if (info.num_tests_fail)
-        liquid_log_error("=========== failed autotests ===========");
 
-    for (i=0; i<info.num_tests; i++)
-    {
-        if (_registry[i]->num_fail)
-            liquid_autotest_print_status(_registry[i]);
-    }
-#endif
+    return LIQUID_OK;
+}
 
-    // log summary
+// print summary of test run
+int liquid_registry_print_summary(const liquid_autotest * _registry)
+{
+    // retrieve summary of runs
+    struct liquid_registry_info_s info = liquid_registry_info(_registry);
+
     int log_level = info.num_tests_fail ? LIQUID_ERROR : LIQUID_INFO;
     liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"=========== autotest summary ===========");
     liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"tests:");

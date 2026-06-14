@@ -107,7 +107,7 @@ LIQUID_AUTOTEST(firhilbf_interp,"description","",0.1)
     firhilbf_destroy(ht);
 }
 
-LIQUID_AUTOTEST(firhilbf_psd,"test end-to-end power specral density", "", 0.1)
+LIQUID_AUTOTEST(firhilbf_psd,"test end-to-end power spectral density", "", 0.1)
 {
     float        tol  = 1;  // error tolerance [dB]
     float        bw = 0.4f; // pulse bandwidth

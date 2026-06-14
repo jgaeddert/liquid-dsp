@@ -22,7 +22,7 @@ static int callback(unsigned char *  _header,
 
 // global arrays
 unsigned char header[8];
-unsigned char payload[200];
+unsigned char * payload = NULL;
 
 int main(int argc, char*argv[])
 {
@@ -34,17 +34,9 @@ int main(int argc, char*argv[])
     liquid_argparse_add(float,    dphi,         0.01f, 'F', "carrier frequency offset", NULL);
     liquid_argparse_add(float,    theta,         0.0f, 'P', "carrier phase offset", NULL);
     liquid_argparse_add(float,    dt,           -0.2f, 'T', "fractional sample timing offset", NULL);
-    liquid_argparse_add(char*,    crc,        "crc32", 'v', "FEC scheme", liquid_argparse_crc);
-    liquid_argparse_add(char*,    fs0,         "none", 'c', "FEC scheme", liquid_argparse_fec);
-    liquid_argparse_add(char*,    fs1,         "none", 'k', "FEC scheme", liquid_argparse_fec);
-    liquid_argparse_add(unsigned, payload_len,    480, 'n', "payload length (bytes)", NULL);
+    liquid_argparse_add(unsigned, payload_len,    200, 'n', "payload length (bytes)", NULL);
     liquid_argparse_add(bool,  debug_enabled,   false, 'D', "enable debugging", NULL);
     liquid_argparse_parse(argc,argv);
-
-    // validate input
-    crc_scheme check = liquid_getopt_str2crc(crc);
-    fec_scheme fec0  = liquid_getopt_str2fec(fs0);
-    fec_scheme fec1  = liquid_getopt_str2fec(fs1);
 
     printf("channel offsets: dt=%.3f, dphi=%.3f, theta=%.3f\n", dt, dphi, theta);
 
@@ -67,7 +59,10 @@ int main(int argc, char*argv[])
     // initialize header and payload data
     for (i=0; i<8; i++)
         header[i] = i;
-    for (i=0; i<200; i++)
+    payload = malloc(payload_len*sizeof(unsigned char));
+    if (payload == NULL)
+        return liquid_error(LIQUID_EIMEM,"could not allocate %u bytes for payload", payload_len);
+    for (i=0; i<payload_len; i++)
         payload[i] = rand() & 0xff;
 
     // allocate memory for the frame samples
@@ -76,7 +71,7 @@ int main(int argc, char*argv[])
     float complex buf_rx[buf_len];  // transmit buffer
     
     // assemble the frame
-    fskframegen_assemble(fg, header, payload, payload_len, check, fec0, fec1);
+    fskframegen_assemble(fg, header, payload, payload_len);
 
     // spectral periodogram
     unsigned int nfft  = 4200;
@@ -107,6 +102,7 @@ int main(int argc, char*argv[])
     spgramcf_destroy(periodogram);
     fskframegen_destroy(fg);
     fskframesync_destroy(fs);
+    free(payload);
 
     // 
     // export results
@@ -165,8 +161,8 @@ static int callback(unsigned char *  _header,
             8*8);
     printf("    payload crc         : %s\n", _payload_valid ? "pass" : "FAIL");
     printf("    num payload errors  : %u / %u\n",
-            count_bit_errors_array(_payload, payload, 64),
-            64*8);
+            count_bit_errors_array(_payload,payload,_payload_len),
+            _payload_len*8);
 
     return 0;
 }

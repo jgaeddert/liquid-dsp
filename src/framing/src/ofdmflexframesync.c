@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -611,6 +611,8 @@ int ofdmflexframesync_decode_header(ofdmflexframesync _q)
 
     // strip off payload length
     unsigned int payload_len = (_q->header[n+1] << 8) | (_q->header[n+2]);
+    if (payload_len == 0 || payload_len > LIQUID_MAX_PAYLOAD_LEN)
+        return liquid_error(LIQUID_EICONFIG,"ofdmflexframesync_decode_header(), maximum payload length exceeded");
 
     // strip off modulation scheme/depth
     unsigned int mod_scheme = _q->header[n+3];
@@ -690,6 +692,10 @@ int ofdmflexframesync_decode_header(ofdmflexframesync _q)
     _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->payload_enc_len*sizeof(unsigned char));
     _q->payload_dec = (unsigned char*) realloc(_q->payload_dec, _q->payload_len*sizeof(unsigned char));
     _q->payload_syms = (float complex*) realloc(_q->payload_syms, _q->payload_mod_len*sizeof(float complex));
+    if (_q->payload_enc == NULL || _q->payload_dec == NULL || _q->payload_syms == NULL) {
+        _q->header_valid = 0;
+        return liquid_error(LIQUID_EIMEM,"ofdmflexframesync_decode_header(), could not re-allocate payload arrays");
+    }
 #if DEBUG_OFDMFLEXFRAMESYNC
     printf("      * payload mod syms:   %u symbols\n", _q->payload_mod_len);
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -271,6 +271,10 @@ int dsssframegen_assemble(dsssframegen           _q,
                            const unsigned char * _payload,
                            unsigned int          _payload_dec_len)
 {
+    // validate input
+    if (_payload_dec_len == 0 || _payload_dec_len > LIQUID_MAX_PAYLOAD_LEN)
+        return liquid_error(LIQUID_EICONFIG,"dsssframegen_assemble(), payload length (%u) is out of range", _payload_dec_len);
+
     dsssframegen_reset(_q);
 
     _q->payload_dec_len = _payload_dec_len;
