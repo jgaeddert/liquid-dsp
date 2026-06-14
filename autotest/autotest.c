@@ -130,6 +130,47 @@ void liquid_autotest_warn(liquid_autotest _q,
     va_end(ap);
 }
 
+// create registry from pointer to tests
+liquid_registry liquid_registry_create(liquid_autotest * _autotests)
+{
+    // count tests
+    unsigned int max_tests = 8000; // safeguard
+    unsigned int num_tests = 0;
+    while (_autotests[num_tests] != NULL && num_tests < max_tests)
+        num_tests++;
+    if (num_tests >= max_tests)
+        return liquid_error_config("liquid_registry_create(), number of tests exceeds maximum");
+
+    //
+    liquid_registry q = (liquid_registry)malloc(sizeof(struct liquid_registry_s));
+
+    q->num_tests        = num_tests;
+    q->num_tests_pass   = 0;
+    q->num_tests_fail   = 0;
+    q->num_tests_skip   = 0;
+    q->num_checks_pass  = 0;
+    q->num_checks_fail  = 0;
+    q->num_checks_warn  = 0;
+    q->autotests        = _autotests;
+
+    //
+    q->timer = liquid_timer_create(LIQUID_TIMER_CLOCK);
+
+    // schedule all tests to run by default
+    liquid_registry_schedule_all(q);
+
+    return q;
+}
+
+// destroy registry
+int liquid_registry_destroy(liquid_registry _q)
+{
+    liquid_timer_destroy(_q->timer);
+    free(_q);
+    return LIQUID_OK;
+}
+
+#if 0
 // print registry, either info or full status
 struct liquid_registry_info_s liquid_registry_info(const liquid_autotest * _registry)
 {
@@ -153,63 +194,142 @@ struct liquid_registry_info_s liquid_registry_info(const liquid_autotest * _regi
 
     return info;
 }
+#endif
+
+// schedule all tests to run
+int liquid_registry_schedule_all(liquid_registry _q)
+{
+    unsigned int i;
+    for (i=0; i<_q->num_tests; i++)
+        _q->autotests[i]->status = LIQUID_AUTOTEST_SCHED;
+    return LIQUID_OK;
+}
+
+// schedule one specific test to run
+int liquid_registry_schedule_one(liquid_registry _q, unsigned int _id)
+{
+    unsigned int i;
+    for (i=0; i<_q->num_tests; i++)
+        _q->autotests[i]->status = (i == _id) ? LIQUID_AUTOTEST_SCHED : LIQUID_AUTOTEST_SKIP;
+
+    if (_id >= _q->num_tests)
+        return liquid_error(LIQUID_EIRANGE,"liquid_registry_schedule_one(), id (%u) exceeds maximum (%u)", _id, _q->num_tests);
+
+    return LIQUID_OK;
+}
+
+// schedule only tests that match search string
+int liquid_registry_schedule_search(liquid_registry _q, const char * _query)
+{
+    unsigned int i;
+    unsigned int num_found = 0;
+    for (i=0; i<_q->num_tests; i++)
+    {
+        if (strstr(_q->autotests[i]->name,_query) != NULL) {
+            _q->autotests[i]->status = LIQUID_AUTOTEST_SCHED;
+            num_found++;
+        } else {
+            _q->autotests[i]->status = LIQUID_AUTOTEST_SKIP;
+        }
+    }
+    if (num_found == 0)
+        liquid_log_warn("liquid_registry_schedule_search(), no tests matched query '%s'", _query);
+
+    return LIQUID_OK;
+}
+
+// run all scheduled tests
+int liquid_registry_execute(liquid_registry _q, bool _halt_on_fail)
+{
+    // reset test statistics
+    _q->num_tests_pass  = 0;
+    _q->num_tests_fail  = 0;
+    _q->num_tests_skip  = 0;
+
+    // reset check statistics
+    _q->num_checks_pass = 0;
+    _q->num_checks_fail = 0;
+    _q->num_checks_warn = 0;
+
+    // run all scheduled tests
+    unsigned int i;
+    bool continue_running = true;
+    for (i=0; i<_q->num_tests; i++)
+    {
+        liquid_autotest autotest = _q->autotests[i];
+        if (!continue_running) {
+            // skip remaining tests
+            autotest->status = LIQUID_AUTOTEST_SKIP;
+        } else if (autotest->status == LIQUID_AUTOTEST_SCHED)
+        {
+            liquid_autotest_execute(autotest);
+            if (autotest->num_fail && _halt_on_fail)
+                continue_running = false;
+        } else if (autotest->status == LIQUID_AUTOTEST_SKIP) {
+            //liquid_log_trace("skipping test '%s'\n", autotest->docstr);
+        }
+
+        // accumulate test statistics
+        _q->num_tests_pass  += autotest->status == LIQUID_AUTOTEST_PASS;
+        _q->num_tests_fail  += autotest->status == LIQUID_AUTOTEST_FAIL;
+        _q->num_tests_skip  += autotest->status == LIQUID_AUTOTEST_SKIP;
+
+        // accumulate check statistics
+        _q->num_checks_pass += autotest->num_pass;
+        _q->num_checks_fail += autotest->num_fail;
+        _q->num_checks_warn += autotest->num_warn;
+    }
+
+    // return 'ok' even if tests failed, indicating that function executed properly
+    return LIQUID_OK;
+}
 
 // print status of tests
-int liquid_registry_print_status(const liquid_autotest * _registry)
+int liquid_registry_print_status(liquid_registry _q)
 {
-    // retrieve summary of runs
-    struct liquid_registry_info_s info = liquid_registry_info(_registry);
-
     // log results
     liquid_log_info("=========== autotest results ===========");
     unsigned int i;
-    for (i=0; i<info.num_tests; i++)
-        liquid_autotest_print_status(_registry[i]);
+    for (i=0; i<_q->num_tests; i++)
+        liquid_autotest_print_status(_q->autotests[i]);
 
     return LIQUID_OK;
 }
 
 // print summary of test run
-int liquid_registry_print_summary(const liquid_autotest * _registry)
+int liquid_registry_print_summary(liquid_registry _q)
 {
-    // retrieve summary of runs
-    struct liquid_registry_info_s info = liquid_registry_info(_registry);
-
-    int log_level = info.num_tests_fail ? LIQUID_ERROR : LIQUID_INFO;
+    int log_level = _q->num_tests_fail ? LIQUID_ERROR : LIQUID_INFO;
     liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"=========== autotest summary ===========");
     liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"tests:");
-    //liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  run      : %u", info.num_tests_pass + info.num_tests_fail);
-    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  pass     : %u", info.num_tests_pass);
-    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  fail     : %u", info.num_tests_fail);
-    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  skip     : %u", info.num_tests_skip);
+    //liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  run      : %u", _q->num_tests_pass + _q->num_tests_fail);
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  pass     : %u", _q->num_tests_pass);
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  fail     : %u", _q->num_tests_fail);
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  skip     : %u", _q->num_tests_skip);
     liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"checks:");
-    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  pass     : %u", info.num_checks_pass);
-    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  fail     : %u", info.num_checks_fail);
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  pass     : %u", _q->num_checks_pass);
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  fail     : %u", _q->num_checks_fail);
     liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"overall:");
-    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  warn     : %u", info.num_checks_warn);
-    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  %s", info.num_tests_fail ? "FAIL" : "PASS");
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  warn     : %u", _q->num_checks_warn);
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  %s", _q->num_tests_fail ? "FAIL" : "PASS");
 
     // return non-zero value upon failure
-    return info.num_tests_fail ? LIQUID_EINT : LIQUID_OK;
+    return _q->num_tests_fail ? LIQUID_EINT : LIQUID_OK;
 }
 
 // export results to JSON
-int liquid_registry_json(const liquid_autotest * _registry,
-                         FILE *                  _fid)
+int liquid_registry_json(liquid_registry _q, FILE * _fid)
 {
-    // retrieve summary of runs
-    struct liquid_registry_info_s info = liquid_registry_info(_registry);
-
     // print status
-    fprintf(_fid,"  \"pass\" : %s,\n", info.num_tests_fail==0 ? "true" : "false");
-    fprintf(_fid,"  \"num_failed\" : %d,\n", info.num_checks_fail);
-    fprintf(_fid,"  \"num_checks\" : %d,\n", info.num_checks_pass + info.num_checks_fail);
-    fprintf(_fid,"  \"num_warnings\" : %d,\n", info.num_checks_warn);
+    fprintf(_fid,"  \"pass\" : %s,\n", _q->num_tests_fail==0 ? "true" : "false");
+    fprintf(_fid,"  \"num_failed\" : %d,\n", _q->num_checks_fail);
+    fprintf(_fid,"  \"num_checks\" : %d,\n", _q->num_checks_pass + _q->num_checks_fail);
+    fprintf(_fid,"  \"num_warnings\" : %d,\n", _q->num_checks_warn);
     fprintf(_fid,"  \"tests\" : [\n");
     unsigned int i;
-    for (i=0; i<info.num_tests; i++)
+    for (i=0; i<_q->num_tests; i++)
     {
-        liquid_autotest test = _registry[i];
+        liquid_autotest test = _q->autotests[i];
         fprintf(_fid,"    {\"id\":%4u, \"pass\":%s \"num_checks\":%4u, \"num_passed\":%4u, \"extime\":%12.4e, \"name\":\"%s\"}%s\n",
                 i,
                 test->num_fail == 0 ? "true, " : "false,",
@@ -217,7 +337,7 @@ int liquid_registry_json(const liquid_autotest * _registry,
                 test->num_pass,
                 test->runtime,
                 test->name,
-                (i == info.num_tests-1) ? "" : ",");
+                (i == _q->num_tests-1) ? "" : ",");
     }
     fprintf(_fid,"  ]\n");
     return LIQUID_OK;

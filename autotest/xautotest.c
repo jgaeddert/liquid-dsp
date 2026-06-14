@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
         random_seed = time(NULL);
     srand(random_seed);
 
-    unsigned int i = 0;
+    int i = 0;
     if (list) {
         while (liquid_autotest_registry[i] != NULL)
         {
@@ -53,48 +53,28 @@ int main(int argc, char* argv[])
         return LIQUID_OK;
     }
 
-    // mark tests to run
-    i = 0;
-    while (liquid_autotest_registry[i] != NULL)
-    {
-        struct liquid_autotest_s * test = liquid_autotest_registry[i];
+    // create autotest registry object
+    liquid_registry registry = liquid_registry_create(liquid_autotest_registry);
 
-        if (test_id >= 0) {
-            test->status = (test_id == i) ? LIQUID_AUTOTEST_SCHED : LIQUID_AUTOTEST_SKIP;
-        } else if (strlen(search) > 0) {
-            test->status = (strstr(test->name,search)) != NULL ? LIQUID_AUTOTEST_SCHED : LIQUID_AUTOTEST_SKIP;
-        } else {
-            test->status = LIQUID_AUTOTEST_SCHED;
-        }
-        i++;
+    // schedule tests to run (default: all)
+    if (test_id >= 0) {
+        liquid_registry_schedule_one(registry, test_id);
+    } else if (strlen(search) > 0) {
+        liquid_registry_schedule_search(registry, search);
     }
 
-    // run all scheduled tests
-    i = 0;
-    bool continue_running = true;
-    while (liquid_autotest_registry[i] != NULL)
-    {
-        liquid_autotest autotest = liquid_autotest_registry[i];
-        if (!continue_running) {
-            // skip remaining tests
-            autotest->status = LIQUID_AUTOTEST_SKIP;
-        } else if (autotest->status == LIQUID_AUTOTEST_SCHED)
-        {
-            liquid_autotest_execute(autotest);
-            if (autotest->num_fail && stop_fail)
-                continue_running = false;
-        } else if (autotest->status == LIQUID_AUTOTEST_SKIP) {
-            //liquid_log_trace("skipping test '%s'\n", autotest->docstr);
-        }
-        i++;
-    }
+    // run tests, stopping on failure if requested
+    liquid_registry_execute(registry, stop_fail);
+
+    // print summary
+    liquid_registry_print_status(registry);
 
     // print status of executed tests
     if (status)
-        liquid_registry_print_status(liquid_autotest_registry);
+        liquid_registry_print_status(registry);
 
     // print summary
-    int rc = liquid_registry_print_summary(liquid_autotest_registry);
+    int rc = liquid_registry_print_summary(registry);
 
     // export JSON if requested
     if (strcmp(json,""))
@@ -113,20 +93,23 @@ int main(int argc, char* argv[])
         fprintf(fid,"  \"build-info\" : {},\n");
         fprintf(fid,"  \"timestamp\" : \"%s\",\n", timestamp);
         fprintf(fid,"  \"command-line\" : \"");
-        for (i=0; i<(unsigned int)argc; i++)
+        for (i=0; i<argc; i++)
             fprintf(fid," %s", argv[i]);
         fprintf(fid,"\",\n");
         fprintf(fid,"  \"rseed\" : %u,\n", random_seed);
         fprintf(fid,"  \"stop-on-fail\" : %s,\n", stop_fail ? "true" : "false");
 
         // print registry results
-        liquid_registry_json(liquid_autotest_registry, fid);
+        liquid_registry_json(registry, fid);
 
         // finalize JSON output
         fprintf(fid,"}\n");
         fclose(fid);
         liquid_log_info("output JSON results written to %s", json);
     }
+
+    // destroy registry
+    liquid_registry_destroy(registry);
 
     return rc;
 }

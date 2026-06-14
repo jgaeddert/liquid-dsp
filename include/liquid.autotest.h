@@ -131,7 +131,8 @@ void firfilt_crcf_basic_0_autotest(liquid_autotest __q__)
 }
 #endif
 
-struct liquid_registry_info_s
+// structured registry to simplify testing
+struct liquid_registry_s
 {
     // total tests within registry
     unsigned int num_tests;
@@ -145,20 +146,44 @@ struct liquid_registry_info_s
     unsigned int num_checks_pass;
     unsigned int num_checks_fail;
     unsigned int num_checks_warn;
+
+    // pointer to list of tests
+    liquid_autotest * autotests;
+
+    // keep track of runtime
+    liquid_timer timer;
+    // threadpool
 };
 
-// get total number of tests in a registry
-struct liquid_registry_info_s liquid_registry_info(const liquid_autotest * _registry);
+// pointer to struct
+typedef struct liquid_registry_s * liquid_registry;
+
+// create registry from pointer to tests
+liquid_registry liquid_registry_create(liquid_autotest * _autotests);
+
+// destroy registry
+int liquid_registry_destroy(liquid_registry _q);
+
+// schedule all tests to run
+int liquid_registry_schedule_all(liquid_registry _q);
+
+// schedule one specific test to run
+int liquid_registry_schedule_one(liquid_registry _q, unsigned int _id);
+
+// schedule only tests that match search string
+int liquid_registry_schedule_search(liquid_registry _q, const char * _query);
+
+// run all scheduled tests
+int liquid_registry_execute(liquid_registry _q, bool _halt_on_fail);
 
 // print status of tests
-int liquid_registry_print_status(const liquid_autotest * _registry);
+int liquid_registry_print_status(liquid_registry _q);
 
 // print summary of test run
-int liquid_registry_print_summary(const liquid_autotest * _registry);
+int liquid_registry_print_summary(liquid_registry _q);
 
 // export registry to JSON file
-int liquid_registry_json(const liquid_autotest * _registry,
-                         FILE *                  _fid);
+int liquid_registry_json(liquid_registry _q, FILE * _fid);
 
 // define a registry as an array of tests. Note that we use the 'weak'
 // attribute in case we want to link this file against another program
