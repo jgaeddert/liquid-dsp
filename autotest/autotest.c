@@ -82,24 +82,17 @@ int liquid_autotest_execute(liquid_autotest _q)
 
     liquid_log_info("running test '%s' (%s)", _q->name, _q->docstr);
     _q->status = LIQUID_AUTOTEST_ACTIVE;
-    // start timer
-    struct rusage tic, toc;
-    getrusage(RUSAGE_SELF, &tic);
+    // create and start timer
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
     // run test, passing reference to itself as argument
     _q->func(_q);
-    getrusage(RUSAGE_SELF, &toc);
+    // update runtime and destroy timer
+    _q->runtime = liquid_timer_toc(timer);
+    liquid_timer_desroy(timer);
     _q->status = _q->num_fail > 0 ? LIQUID_AUTOTEST_FAIL : LIQUID_AUTOTEST_PASS;
     //
     //if (strlen(_q->docstr)==0)
     //    LIQUID_WARN_(_q,"empty docstring for test %s", _q->name);
-
-    // update run time
-    float time_s  = toc.ru_utime.tv_sec - tic.ru_utime.tv_sec
-                  + toc.ru_stime.tv_sec - tic.ru_stime.tv_sec;
-    float time_us = toc.ru_utime.tv_usec - tic.ru_utime.tv_usec
-                  + toc.ru_stime.tv_usec - tic.ru_stime.tv_usec;
-    _q->runtime = time_s + 1e-6f*time_us;
-
     return LIQUID_OK;
 }
 
