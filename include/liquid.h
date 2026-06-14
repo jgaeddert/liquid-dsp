@@ -449,8 +449,14 @@ enum {
 // basic time object for estimating wall clock time
 typedef struct liquid_timer_s * liquid_timer;
 
+// timer based on system clock time
+#define LIQUID_TIMER_CLOCK (1)
+
+// timer based on resource usage
+#define LIQUID_TIMER_RUSAGE (2)
+
 // create and start timer
-liquid_timer liquid_timer_create(void);
+liquid_timer liquid_timer_create(int _type);
 
 // destroy timer
 int liquid_timer_destroy(liquid_timer _q);
