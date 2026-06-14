@@ -2,9 +2,10 @@ char __docstr__[] =
 "Test throttling down processor to reach target rate by inserting sleep"
 " statements in between processing blocks";
 
-#include <stdio.h>
-#include <math.h>
 #include <complex.h>
+#include <math.h>
+#include <stdio.h>
+#include <unistd.h>
 
 #include "liquid.h"
 #include "liquid.argparse.h"
