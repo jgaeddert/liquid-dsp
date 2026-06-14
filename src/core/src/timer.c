@@ -35,15 +35,31 @@ struct liquid_timer_s
 };
 
 // create liquid_timer object
-liquid_timer liquid_timer_tic()
+liquid_timer liquid_timer_create(void)
 {
     liquid_timer q = (liquid_timer) malloc(sizeof(struct liquid_timer_s));
-    if (gettimeofday(&q->tic, NULL))
+    if (liquid_timer_tic(q))
     {
         free(q);
-        return liquid_error_config("liquid_timer_tic(), gettimeofday() returned invalid flag");
+        return liquid_error_config("liquid_create(), could not reset timer");
     }
     return q;
+}
+
+// create liquid_timer object
+int liquid_timer_destroy(liquid_timer _q)
+{
+    free(_q);
+    return LIQUID_OK;
+}
+
+// create liquid_timer object
+int liquid_timer_tic(liquid_timer _q)
+{
+    if (gettimeofday(&_q->tic, NULL))
+        return liquid_error(LIQUID_EINT,"liquid_timer_tic(), gettimeofday() returned invalid flag");
+
+    return LIQUID_OK;
 }
 
 // get elapsed time since 'tic' in seconds
@@ -52,7 +68,6 @@ float liquid_timer_toc(liquid_timer _q)
     struct timeval toc;
     if (gettimeofday(&toc, NULL))
     {
-        free(_q);
         liquid_error(LIQUID_EINT,"liquid_timer_toc(), gettimeofday() returned invalid flag");
         return -1;
     }
@@ -60,7 +75,20 @@ float liquid_timer_toc(liquid_timer _q)
     // compute execution time (in seconds)
     float s  = (float)(toc.tv_sec  - _q->tic.tv_sec);
     float us = (float)(toc.tv_usec - _q->tic.tv_usec);
-    free(_q);
     return s + us*1e-6f;
+}
+
+// compact: create and start timer
+liquid_timer liquid_tic(void)
+{
+    return liquid_timer_create();
+}
+
+// compact: destroy timer and retrieve runtime in seconds
+float liquid_toc(liquid_timer _q)
+{
+    float toc = liquid_timer_toc(_q);
+    liquid_timer_destroy(_q);
+    return toc;
 }
 

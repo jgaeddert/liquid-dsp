@@ -445,15 +445,28 @@ enum {
 #  define liquid_log_fatal(...) {}
 #endif
 
+
 // basic time object for estimating wall clock time
 typedef struct liquid_timer_s * liquid_timer;
 
 // create and start timer
-liquid_timer liquid_timer_tic(void);
+liquid_timer liquid_timer_create(void);
 
-// destroy timer and retrieve runtime in seconds
+// destroy timer
+int liquid_timer_destroy(liquid_timer _q);
+
+// reset timer
+int liquid_timer_tic(liquid_timer _q);
+
+// retrieve runtime in seconds since last tic
 float liquid_timer_toc(liquid_timer _q);
 
+
+// compact: create and start timer
+liquid_timer liquid_tic(void);
+
+// compact: destroy timer and retrieve runtime in seconds
+float liquid_toc(liquid_timer _q);
 
 // provide exit value based on global logging
 //int liquid_exit();
