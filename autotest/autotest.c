@@ -299,6 +299,10 @@ int liquid_registry_print_status(liquid_registry _q)
 // print summary of test run
 int liquid_registry_print_summary(liquid_registry _q)
 {
+    // get runtime since object was created (assuming minimal overhead)
+    float runtime = liquid_timer_toc(_q->timer);
+
+    //
     int log_level = _q->num_tests_fail ? LIQUID_ERROR : LIQUID_INFO;
     liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"=========== autotest summary ===========");
     liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"tests:");
@@ -311,6 +315,7 @@ int liquid_registry_print_summary(liquid_registry _q)
     liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  fail     : %u", _q->num_checks_fail);
     liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"overall:");
     liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  warn     : %u", _q->num_checks_warn);
+    liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  runtime  : %.3f s", runtime);
     liquid_log(NULL,log_level,LIQUID_FILENAME,__LINE__,"  %s", _q->num_tests_fail ? "FAIL" : "PASS");
 
     // return non-zero value upon failure
