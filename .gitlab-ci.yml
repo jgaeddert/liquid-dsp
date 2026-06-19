@@ -119,6 +119,20 @@ valgrind:
     paths:
       - build/valgrind/*
 
+# generate source distribution (sdist)
+sdist:
+  stage: bind
+  script:
+    - virtualenv env
+    - source env/bin/activate
+    - pip install build
+    - python -m build --sdist # build distribution tarball
+    - pip install dist/liquid_dsp-1.8.0.tar.gz --no-binary :all: --verbose # test in environment
+    - python3 -c "import liquid as dsp; print(dsp.__version__)"
+  artifacts:
+    paths:
+      - dist/
+
 # cibuildwheel (linux)
 linux:
   stage: bind
