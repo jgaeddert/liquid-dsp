@@ -121,7 +121,7 @@ valgrind:
 
 # generate source distribution (sdist)
 sdist:
-  stage: build #bind
+  stage: bind
   script:
     - apt-get install -y python3-dev build-essential cmake
     - virtualenv env
