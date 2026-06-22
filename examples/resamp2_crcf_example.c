@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
     // compute RMS error
     float rmse = 0.0f;
     for (i=2*m; i<n; i++) {
-        float e = cabsf(x[i-2*m] - z[i]);
+        float e = cabsf(x[i-2*m] - 0.5*z[i]);
         rmse += e*e;
     }
     rmse = sqrtf( rmse / (float)(n-2*m) );
@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
         fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
 
     for (i=0; i<n; i++)
-        fprintf(fid,"z(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(z[i]), cimagf(z[i]));
+        fprintf(fid,"z(%3u) = %12.4e + j*%12.4e;\n", i+1, 0.5*crealf(z[i]), 0.5*cimagf(z[i]));
 
     // print results
     fprintf(fid,"\n\n");
