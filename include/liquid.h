@@ -323,32 +323,41 @@ int liquid_logger_add_file(liquid_logger _q,
 //  _q      : logger object
 //  _fid    : file handle
 //  _level  : minimum log level for which callback will be invoked
+//  _return : FILE pointer if file was successfully opened for writing, otherwise NULL
 FILE * liquid_logger_add_filename(liquid_logger _q,
                                   const char*   _filename,
                                   int           _level);
 
 // get the number of callbacks currently used
+//  _return : the number of callbacks currently used
 unsigned int liquid_logger_get_num_callbacks(liquid_logger q);
 
 // get the total number of log events
+//  _return : the total number of log events
 unsigned int liquid_logger_get_num_events(liquid_logger q);
 
 // get the number of "trace" log events
+//  _return : the number of "trace" events logged
 unsigned int liquid_logger_get_num_trace(liquid_logger q);
 
 // get the number of "debug" log events
+//  _return : the number of "debug" events logged
 unsigned int liquid_logger_get_num_debug(liquid_logger q);
 
 // get the number of "info" log events
+//  _return : the number of "info" events logged
 unsigned int liquid_logger_get_num_info(liquid_logger q);
 
 // get the number of "warning" log events
+//  _return : the number of "warning" events logged
 unsigned int liquid_logger_get_num_warn(liquid_logger q);
 
 // get the number of "error" log events
+//  _return : the number of "error" events logged
 unsigned int liquid_logger_get_num_error(liquid_logger q);
 
 // get the number of "fatal" log events
+//  _return : the number of "fatal" events logged
 unsigned int liquid_logger_get_num_fatal(liquid_logger q);
 
 // append a log message to the logger
