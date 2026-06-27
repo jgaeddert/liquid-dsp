@@ -139,6 +139,16 @@ int liquid_runtime_supported_x86(liquid_cpuinfo _q)
     return LIQUID_OK;
 }
 
+int liquid_runtime_supported_ppc(liquid_cpuinfo _q)
+{
+#if defined(__ALTIVEC__) || defined(__VEC__)
+    _q->altivec = true;
+#else
+    _q->altivec = false;
+#endif
+    return LIQUID_OK;
+}
+
 // check which instruction extensions are supported on this system
 int liquid_runtime_supported(liquid_cpuinfo _q)
 {
@@ -146,9 +156,10 @@ int liquid_runtime_supported(liquid_cpuinfo _q)
         return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get ARM flags");
 
     if (liquid_runtime_supported_x86(_q))
-        return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get ARM flags");
+        return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get x86 flags");
 
-    // TODO: add PowerPC AltiVec checks
+    if (liquid_runtime_supported_ppc(_q))
+        return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get PPC flags");
 
     return LIQUID_OK;
 }

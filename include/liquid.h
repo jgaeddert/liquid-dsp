@@ -446,7 +446,7 @@ enum {
 #  define liquid_log_fatal(...) {}
 #endif
 
-// structure 
+// structure to define instruction set architecture options at runtime
 struct liquid_cpuinfo_s
 {
     // ARM architecture
@@ -459,6 +459,9 @@ struct liquid_cpuinfo_s
     bool avx;
     bool avx2;
     bool avx512f;
+
+    // PPC architecture
+    bool altivec;
 };
 typedef struct liquid_cpuinfo_s * liquid_cpuinfo;
 
