@@ -591,7 +591,9 @@ endif(BUILD_SANDBOX)
 # ---------------------------------------- autotest ----------------------------------------
 
 # build autoscript executable for both autotests and benchmarks
-add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
+if(BUILD_AUTOTESTS OR BUILD_BENCHMARKS)
+    add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
+endif()
 
 set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/autotest/null_autotest.c
