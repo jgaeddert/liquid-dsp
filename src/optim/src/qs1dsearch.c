@@ -120,7 +120,7 @@ int qs1dsearch_init(qs1dsearch _q,
     }
 
     // TODO: be more persistent?
-    return LIQUID_EIVAL;// FIXME: return proper error here, e.g. LIQUID_ENOCONV
+    return LIQUID_ENOCONV;
 }
 
 // perform initial search along a particular direction
@@ -168,7 +168,7 @@ int qs1dsearch_init_direction(qs1dsearch _q,
     }
 
     // did not converge; return non-zero value
-    return LIQUID_EIVAL;// FIXME: return proper error here, e.g. LIQUID_ENOCONV
+    return LIQUID_ENOCONV;
 }
 
 int qs1dsearch_init_bounds(qs1dsearch _q,
