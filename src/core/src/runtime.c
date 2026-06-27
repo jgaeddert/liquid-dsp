@@ -61,6 +61,34 @@ uint64_t liquid_runtime_xgetbv_x86(uint32_t _xcr)
 #endif
 }
 
+int liquid_runtime_supported_arm(liquid_cpuinfo _q)
+{
+//#include <sys/auxv.h>
+//#ifdef HWCAP_NEON
+//    // HWCAP flags (ARM). NEON presence depends on platform/toolchain.
+//    // If your libc headers define HWCAP_NEON, use it
+//    unsigned long hwcap = getauxval(AT_HWCAP);
+//    if (hwcap & HWCAP_NEON)
+//        _q->neon = true;
+//#endif
+
+#if defined(__aarch64__)
+    // AArch64 requires NEON (Advanced SIMD) by architectural definition.
+    _q->neon = true;
+#elif defined(__arm__)
+    // 32-bit ARM: NEON is optional.
+# if defined(__ARM_NEON)
+    _q->neon = true;
+# else
+    _q->neon = false;
+# endif
+    }
+#else
+    _q->neon = false;
+#endif
+    return LIQUID_OK;
+}
+
 // check which x86 instruction extensions are supported on this system
 int liquid_runtime_supported_x86(liquid_cpuinfo _q)
 {
@@ -114,5 +142,14 @@ int liquid_runtime_supported_x86(liquid_cpuinfo _q)
 // check which instruction extensions are supported on this system
 int liquid_runtime_supported(liquid_cpuinfo _q)
 {
-    return liquid_runtime_supported_x86(_q);
+    if (liquid_runtime_supported_arm(_q))
+        return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get ARM flags");
+
+    if (liquid_runtime_supported_x86(_q))
+        return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get ARM flags");
+
+    // TODO: add PowerPC AltiVec checks
+
+    return LIQUID_OK;
 }
+

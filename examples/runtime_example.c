@@ -14,6 +14,7 @@ int main(int argc, char* argv[])
     struct liquid_cpuinfo_s info;
     liquid_runtime_supported(&info);
 
+    printf("Neon        : %u\n", info.neon);
     printf("SSE         : %u\n", info.sse);
     printf("SSE2        : %u\n", info.sse2);
     printf("MMX         : %u\n", info.mmx);

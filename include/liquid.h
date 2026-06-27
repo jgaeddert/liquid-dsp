@@ -449,6 +449,9 @@ enum {
 // structure 
 struct liquid_cpuinfo_s
 {
+    // ARM architecture
+    bool neon;
+
     // x86 architecture
     bool sse;
     bool sse2;
