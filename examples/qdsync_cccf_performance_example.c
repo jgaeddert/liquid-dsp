@@ -36,23 +36,19 @@ int main(int argc, char*argv[])
 
     // interpolate sequence
     int ftype = liquid_getopt_str2firfilt(ftype_str);
-    firinterp_crcf interp = firinterp_crcf_create_prototype(ftype,k,m,beta,0);
-    unsigned int num_symbols = sequence_len + 2*m + 3*sequence_len;
-    unsigned int buf_len = num_symbols*k + tmax + 40; // pad to account for delay
-    float complex buf_0[buf_len];
-    float complex buf_1[buf_len];
-    for (i=0; i<num_symbols; i++) {
-        // generate random symbol
-        float complex s = i < sequence_len ? seq[i] : 0;
-
-        // interpolate symbol
-        firinterp_crcf_execute(interp, s, buf_0 + i*k);
-    }
-    firinterp_crcf_destroy(interp);
 
     // create sync object and run signal through
     qdsync_cccf q = qdsync_cccf_create_linear(seq, sequence_len, ftype, k, m, beta, NULL, NULL);
     qdsync_cccf_set_threshold(q, threshold);
+
+    // copy signal to buffer, extended and padded to account for delay
+    unsigned int buf_len = 3*sequence_len*k + tmax + 40;
+    float complex buf_0[buf_len];
+    float complex buf_1[buf_len];
+    float complex * s = (float complex*) qdsync_cccf_get_sequence(q);
+    unsigned int s_len = qdsync_cccf_get_seq_len(q);
+    for (i=0; i<buf_len; i++)
+        buf_0[i] = i < s_len ? s[i] : 0.0f;
 
     // create fractional delay generator
     fdelay_crcf fdelay = fdelay_crcf_create(tmax, 20, 64); // nmax, m, npfb
