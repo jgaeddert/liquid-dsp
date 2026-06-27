@@ -31,6 +31,7 @@ extern "C" {
 
 // common headers
 #include <inttypes.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -453,6 +454,28 @@ enum {
 #else
 #  define liquid_log_fatal(...) {}
 #endif
+
+// structure to define instruction set architecture options at runtime
+struct liquid_cpuinfo_s
+{
+    // ARM architecture
+    bool neon;
+
+    // x86 architecture
+    bool sse;
+    bool sse2;
+    bool mmx;
+    bool avx;
+    bool avx2;
+    bool avx512f;
+
+    // PPC architecture
+    bool altivec;
+};
+typedef struct liquid_cpuinfo_s * liquid_cpuinfo;
+
+// check which instruction extensions are supported on this system
+int liquid_runtime_supported(liquid_cpuinfo _q);
 
 
 // basic time object for estimating wall clock time

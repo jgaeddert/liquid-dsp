@@ -122,6 +122,7 @@ add_library(channel OBJECT
 add_library(core OBJECT
     src/core/src/error.c
     src/core/src/logging.c
+    src/core/src/runtime.c
     src/core/src/timer.c)
 
 add_library(dotprod OBJECT)

@@ -172,6 +172,7 @@ set(EXAMPLES
     rresamp_crcf_partition_example
     rresamp_crcf_rnyquist_example
     rresamp_rrrf_example
+    runtime_example
     scramble_example
     smatrix_example
     spgramcf_compare_example
