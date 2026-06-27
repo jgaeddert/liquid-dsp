@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -395,6 +395,10 @@ int ofdmflexframegen_assemble(ofdmflexframegen      _q,
                               const unsigned char * _payload,
                               unsigned int          _payload_len)
 {
+    // validate input
+    if (_payload_len == 0 || _payload_len > LIQUID_MAX_PAYLOAD_LEN)
+        return liquid_error(LIQUID_EICONFIG,"ofdmflexframegen_assemble(), payload length (%u) is out of range", _payload_len);
+
     // reset state
     ofdmflexframegen_reset(_q);
 

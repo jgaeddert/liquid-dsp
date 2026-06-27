@@ -23,6 +23,7 @@ int main(int argc, char*argv[])
     liquid_argparse_add(unsigned, min_trials,   20, 't', "minimum number of packet trials to simulate", NULL);
     liquid_argparse_add(unsigned, max_trials,  800, 'T', "maximum number of packet trials to simulate", NULL);
     liquid_argparse_add(float,    SNRdB,       -25, 's', "noise standard deviation", NULL);
+    liquid_argparse_add(unsigned, tmax,        800, 'd', "maximum fractional delay supported", NULL);
     liquid_argparse_parse(argc,argv);
 
     // generate synchronization sequence (QPSK symbols)
@@ -35,23 +36,22 @@ int main(int argc, char*argv[])
 
     // interpolate sequence
     int ftype = liquid_getopt_str2firfilt(ftype_str);
-    firinterp_crcf interp = firinterp_crcf_create_prototype(ftype,k,m,beta,0);
-    unsigned int num_symbols = sequence_len + 2*m + 3*sequence_len;
-    unsigned int buf_len = num_symbols * k;
-    float complex buf_0[buf_len];
-    float complex buf_1[buf_len];
-    for (i=0; i<num_symbols; i++) {
-        // generate random symbol
-        float complex s = i < sequence_len ? seq[i] : 0;
-
-        // interpolate symbol
-        firinterp_crcf_execute(interp, s, buf_0 + i*k);
-    }
-    firinterp_crcf_destroy(interp);
 
     // create sync object and run signal through
     qdsync_cccf q = qdsync_cccf_create_linear(seq, sequence_len, ftype, k, m, beta, NULL, NULL);
     qdsync_cccf_set_threshold(q, threshold);
+
+    // copy signal to buffer, extended and padded to account for delay
+    unsigned int buf_len = 3*sequence_len*k + tmax + 40;
+    float complex buf_0[buf_len];
+    float complex buf_1[buf_len];
+    float complex * s = (float complex*) qdsync_cccf_get_sequence(q);
+    unsigned int s_len = qdsync_cccf_get_seq_len(q);
+    for (i=0; i<buf_len; i++)
+        buf_0[i] = i < s_len ? s[i] : 0.0f;
+
+    // create fractional delay generator
+    fdelay_crcf fdelay = fdelay_crcf_create(tmax, 20, 64); // nmax, m, npfb
 
     // open file for storing results
     FILE * fid = fopen(filename,"w");
@@ -65,9 +65,12 @@ int main(int argc, char*argv[])
         unsigned int num_missed = 0;
         while (1) {
             for (t=0; t<min_trials; t++) {
-                // copy buffer and add noise
+                // delay buffer and add noise
+                fdelay_crcf_reset(fdelay);
+                fdelay_crcf_set_delay(fdelay, randf()*tmax);
+                fdelay_crcf_execute_block(fdelay, buf_0, buf_len, buf_1);
                 for (i=0; i<buf_len; i++)
-                    buf_1[i] = buf_0[i] + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+                    buf_1[i] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 
                 // run through synchronizer
                 qdsync_cccf_reset(q);
@@ -81,13 +84,14 @@ int main(int argc, char*argv[])
                 break;
         }
         float pmd = (float)num_missed / (float)num_trials;
-        printf("SNR: %8.3f dB, missed %3u / %3u (%5.1f%%)\n", SNRdB, num_missed, num_trials, pmd*100);
+        printf("SNR: %8.3f dB, missed %4u / %4u (%5.1f%%)\n", SNRdB, num_missed, num_trials, pmd*100);
         if (num_missed < min_missed)
             break;
         fprintf(fid,"SNR(end+1)=%12g; Pmd(end+1)=%12g;\n", SNRdB, pmd);
         SNRdB += 1.0f;
     }
     qdsync_cccf_destroy(q);
+    fdelay_crcf_destroy(fdelay);
 
     fprintf(fid,"sequence_len = %u;\n", sequence_len);
     fprintf(fid,"figure('color','white','position',[100 100 640 640]);\n");

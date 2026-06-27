@@ -60,7 +60,7 @@ extern "C" {
 #define LIQUID_VERSION_STR(num) LIQUID_VERSION_STR_EX(num)
 
 #define LIQUID_VERSION_MAJOR    1
-#define LIQUID_VERSION_MINOR    7
+#define LIQUID_VERSION_MINOR    8
 #define LIQUID_VERSION_PATCH    0
 #define LIQUID_VERSION_DEV      0
 
@@ -323,32 +323,41 @@ int liquid_logger_add_file(liquid_logger _q,
 //  _q      : logger object
 //  _fid    : file handle
 //  _level  : minimum log level for which callback will be invoked
+//  _return : FILE pointer if file was successfully opened for writing, otherwise NULL
 FILE * liquid_logger_add_filename(liquid_logger _q,
                                   const char*   _filename,
                                   int           _level);
 
 // get the number of callbacks currently used
+//  _return : the number of callbacks currently used
 unsigned int liquid_logger_get_num_callbacks(liquid_logger q);
 
 // get the total number of log events
+//  _return : the total number of log events
 unsigned int liquid_logger_get_num_events(liquid_logger q);
 
 // get the number of "trace" log events
+//  _return : the number of "trace" events logged
 unsigned int liquid_logger_get_num_trace(liquid_logger q);
 
 // get the number of "debug" log events
+//  _return : the number of "debug" events logged
 unsigned int liquid_logger_get_num_debug(liquid_logger q);
 
 // get the number of "info" log events
+//  _return : the number of "info" events logged
 unsigned int liquid_logger_get_num_info(liquid_logger q);
 
 // get the number of "warning" log events
+//  _return : the number of "warning" events logged
 unsigned int liquid_logger_get_num_warn(liquid_logger q);
 
 // get the number of "error" log events
+//  _return : the number of "error" events logged
 unsigned int liquid_logger_get_num_error(liquid_logger q);
 
 // get the number of "fatal" log events
+//  _return : the number of "fatal" events logged
 unsigned int liquid_logger_get_num_fatal(liquid_logger q);
 
 // append a log message to the logger
@@ -445,6 +454,34 @@ enum {
 #  define liquid_log_fatal(...) {}
 #endif
 
+
+// basic time object for estimating wall clock time
+typedef struct liquid_timer_s * liquid_timer;
+
+// timer based on system clock time
+#define LIQUID_TIMER_CLOCK (1)
+
+// timer based on resource usage
+#define LIQUID_TIMER_RUSAGE (2)
+
+// create and start timer
+liquid_timer liquid_timer_create(int _type);
+
+// destroy timer
+int liquid_timer_destroy(liquid_timer _q);
+
+// reset timer
+int liquid_timer_tic(liquid_timer _q);
+
+// retrieve runtime in seconds since last tic
+float liquid_timer_toc(liquid_timer _q);
+
+
+// compact: create and start timer
+liquid_timer liquid_tic(void);
+
+// compact: destroy timer and retrieve runtime in seconds
+float liquid_toc(liquid_timer _q);
 
 // provide exit value based on global logging
 //int liquid_exit();
@@ -5564,6 +5601,11 @@ LIQUID_ORDFILT_DEFINE_API(LIQUID_ORDFILT_MANGLE_RRRF,
 // MODULE : framing
 //
 
+// The maximum number of bytes a payload can have. Trying to generate values that
+// exceed this will result in a LIQUID_EICONFIG error. This number was chosen to
+// roughly match the maximum size of a jumbo frame in the IEEE 802.3 standard.
+#define LIQUID_MAX_PAYLOAD_LEN (9216)
+
 // framesyncstats : generic frame synchronizer statistic structure
 
 typedef struct {
@@ -6242,16 +6284,10 @@ int fskframegen_reset(fskframegen _q);
 //  _header         : frame header
 //  _payload        : payload data, [size: _payload_len x 1]
 //  _payload_len    : payload data length
-//  _check          : data integrity check, e.g LIQUID_CRC_32
-//  _fec0           : forward error-correction scheme (inner), e.g. LIQUID_FEC_GOLAY2412
-//  _fec1           : forward error-correction scheme (outer)
 int fskframegen_assemble(fskframegen     _q,
                          unsigned char * _header,
                          unsigned char * _payload,
-                         unsigned int    _payload_len,
-                         crc_scheme      _check,
-                         fec_scheme      _fec0,
-                         fec_scheme      _fec1);
+                         unsigned int    _payload_len);
 
 // Get length of assembled frame (number of samples)
 unsigned int fskframegen_getframelen(fskframegen _q);
@@ -7065,6 +7101,12 @@ int QDSYNC(_execute)(QDSYNC()     _q,                                       \
                                                                             \
 /* Return flag indicating if synchronizer actively running.             */  \
 int QDSYNC(_is_open)(QDSYNC() _q);                                          \
+                                                                            \
+/* Get length of original sequence                                      */  \
+unsigned int QDSYNC(_get_seq_len)(QDSYNC() _q);                             \
+                                                                            \
+/* Get pointer to original sequence                                     */  \
+const void * QDSYNC(_get_sequence)(QDSYNC() _q);                            \
                                                                             \
 /* Get synchronizer correlator output after frame was detected          */  \
 float QDSYNC(_get_rxy)  (QDSYNC() _q);                                      \

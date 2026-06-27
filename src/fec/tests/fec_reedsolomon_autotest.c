@@ -29,7 +29,7 @@
 LIQUID_AUTOTEST(reedsolomon_223_255,"Reed-Solomon codecs","",0.1)
 {
 #if !LIBFEC_ENABLED
-    liquid_error(LIQUID_EUMODE,"Reed-Solomon codes unavailable (install libfec)");
+    LIQUID_WARN("convolutional, Reed-Solomon codes unavailable (install libfec)");
     return;
 #endif
 

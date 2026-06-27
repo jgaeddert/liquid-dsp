@@ -27,6 +27,10 @@ option(ENABLE_LOGGING    "Set to ON to enable full logging"          ON)
 set(LOGGING_LEVEL "trace" CACHE STRING "Set minimum logging level to compile")
 option(ENABLE_COLOR      "Set to ON to enable color terminal output" ON)
 
+if(NOT BUILD_SHARED_LIBS AND NOT BUILD_STATIC_LIBS)
+    message(FATAL_ERROR "At least one of BUILD_SHARED_LIBS or BUILD_STATIC_LIBS must be ON")
+endif()
+
 if(COVERAGE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif(COVERAGE)
@@ -116,8 +120,9 @@ add_library(channel OBJECT
     src/channel/src/channel_cccf.c)
 
 add_library(core OBJECT
+    src/core/src/error.c
     src/core/src/logging.c
-    src/core/src/error.c)
+    src/core/src/timer.c)
 
 add_library(dotprod OBJECT)
 
@@ -511,10 +516,10 @@ install(TARGETS ${LIQUID_TARGETS}
     LIBRARY
         COMPONENT Runtime
         NAMELINK_COMPONENT Development
-        DESTINATION lib
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE
         COMPONENT Runtime
-        DESTINATION lib
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER
         COMPONENT Development
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/liquid
@@ -586,7 +591,9 @@ endif(BUILD_SANDBOX)
 # ---------------------------------------- autotest ----------------------------------------
 
 # build autoscript executable for both autotests and benchmarks
-add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
+if(BUILD_AUTOTESTS OR BUILD_BENCHMARKS)
+    add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
+endif()
 
 set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/autotest/null_autotest.c

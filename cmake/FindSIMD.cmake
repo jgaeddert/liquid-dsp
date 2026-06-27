@@ -34,9 +34,23 @@ SET(AVX_CODE "
   }
 ")
 
-# TODO: distinguish between AVX and AVX2 if, at some point, AVX2-specific code
-# needs to be added.
-SET(AVX2_CODE ${AVX_CODE})
+SET(AVX2_CODE "
+  #include <immintrin.h>
+  int main()
+  {
+    //Use integer multiplication to test for AVX2 specifically
+    int _v[8] = { 0, 1, 2, 3, 4, 5, 6, 7,};
+    int _h[8] = { 1,-1, 1,-1, 1,-1, 1,-1,};
+    __m256i v = _mm256_loadu_si256((const __m256i *)_v);
+    __m256i h = _mm256_loadu_si256((const __m256i *)_h);
+    __m256i s = _mm256_mullo_epi32(v, h);
+    // unload packed array
+    volatile int w[8];
+    _mm256_storeu_si256((__m256i *)w, s);
+    return (w[ 0]== 0 && w[ 1]== -1 && w[ 2]== 2 && w[ 3]== -3 &&
+            w[ 4]== 4 && w[ 5]== -5 && w[ 6]== 6 && w[ 7]== -7) ? 0 : 1;
+  }
+")
 
 SET(AVX512_CODE "
   #include <immintrin.h>

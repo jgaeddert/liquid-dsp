@@ -79,9 +79,58 @@ to rebind your dynamic libraries with ``sudo ldconfig`` to make the
 shared object available.
 This is not necessary on macOS.
 
+Build Options
+-------------
 
-Run all test scripts
---------------------
+Here is a table of CMake options available for configuring liquid:
+
++------------------------+---------+--------------------------------------------------------------------+
+| Option                 | Default | Description                                                        |
++========================+=========+====================================================================+
+| ``BUILD_EXAMPLES``     | ON      | Compile example programs                                           |
++------------------------+---------+--------------------------------------------------------------------+
+| ``BUILD_AUTOTESTS``    | ON      | Parse and compile autotests into executable binary                 |
++------------------------+---------+--------------------------------------------------------------------+
+| ``BUILD_BENCHMARKS``   | ON      | Parse and compile benchmarks into executable binary                |
++------------------------+---------+--------------------------------------------------------------------+
+| ``BUILD_SHARED_LIBS``  | ON      | Build shared library                                               |
++------------------------+---------+--------------------------------------------------------------------+
+| ``BUILD_STATIC_LIBS``  | OFF     | Build static library                                               |
++------------------------+---------+--------------------------------------------------------------------+
+| ``ENABLE_SIMD``        | ON      | Enable use of single instruction, multiple data (SIMD) extensions  |
++------------------------+---------+--------------------------------------------------------------------+
+| ``FIND_SIMD``          | ON      | Try to find available SIMD instruction sets on host computer       |
++------------------------+---------+--------------------------------------------------------------------+
+| ``FIND_THREADS``       | ON      | Try to find available threading library for concurrency            |
++------------------------+---------+--------------------------------------------------------------------+
+| ``FIND_FFTW``          | ON      | Try to find `FFTW <http://www.fftw.org)>`_ if available            |
++------------------------+---------+--------------------------------------------------------------------+
+| ``BUILD_SANDBOX``      | OFF     | Compile sandbox (testing) programs                                 |
++------------------------+---------+--------------------------------------------------------------------+
+| ``BUILD_DOC``          | OFF     | Generate documentation                                             |
++------------------------+---------+--------------------------------------------------------------------+
+| ``COVERAGE``           | OFF     | Set flags to enable code coverage testing                          |
++------------------------+---------+--------------------------------------------------------------------+
+| ``ENABLE_LOGGING``     | ON      | Enable global logging capabilities                                 |
++------------------------+---------+--------------------------------------------------------------------+
+| ``LOGGING_LEVEL``      | trace   | Set minimum logging level to compile;                              |
+|                        |         | select from "trace", "debug", "info", "warn", "error", or "fatal"  |
++------------------------+---------+--------------------------------------------------------------------+
+| ``ENABLE_COLOR``       | ON      | Enable use of color terminal output                                |
++------------------------+---------+--------------------------------------------------------------------+
+
+For example, if you want to benchmark how fast a vector dot product
+runs without SIMD extensions, you could run the following:
+
+.. code-block:: bash
+
+    cmake -DENABLE_SIMD=OFF -DBUILD_BENCHMARKS=ON ..
+    make
+    ./benchmark -s dotprod_rrrf
+
+
+Running Autotests
+-----------------
 
 Source code validation is a critical step in any software library,
 particularly for verifying the portability of code to different
@@ -96,10 +145,17 @@ which will run the tests.
 
     ./xautotest
     # ...
-    # autotest seed: 1773004345
-    # ==================================
-    #  PASSED ALL 716651 CHECKS
-    # ==================================
+    # 13:31:14 [info ] =========== autotest summary ===========
+    # 13:31:14 [info ] tests:
+    # 13:31:14 [info ]   pass     : 1341
+    # 13:31:14 [info ]   fail     : 0
+    # 13:31:14 [info ]   skip     : 0
+    # 13:31:14 [info ] checks:
+    # 13:31:14 [info ]   pass     : 716520
+    # 13:31:14 [info ]   fail     : 0
+    # 13:31:14 [info ] overall:
+    # 13:31:14 [info ]   warn     : 55
+    # 13:31:14 [info ]   PASS
 
 There are currently more than 700,000 checks across 1,316 tests to verify
 functional correctness. Drop me a line if these aren't running on your platform.
@@ -134,8 +190,8 @@ A coverage report can be generated by running the autotests and running
     # functions: 63.9% (1787 out of 2798)
     # branches: 64.8% (5762 out of 8896)
 
-Examples
---------
+Running Example Programs
+------------------------
 
 Nearly all signal processing elements have a corresponding example in
 the ``examples/`` directory.  Most example scripts generate an output
@@ -157,10 +213,6 @@ the ``BUILD_EXAMPLES`` CMake flag:
     # num bit errors:    0 /    8
     # results written to modem_example.m.
 
-Sometimes, however, it is useful to build one example individually.
-This can be accomplished by directly targeting its binary
-(e.g. ``make examples/modem_example``). The example then can be run at the
-command line, viz. ``./examples/modem_example``.
 
 Benchmarking Tool
 -----------------
@@ -316,54 +368,6 @@ To test this, compile the example program for a
     # Building .pio/build/pico/firmware.bin
     # ===================== [SUCCESS] Took 23.63 seconds =====================
 
-Build
------
-
-Here is a table of CMake options available for configuring liquid:
-
-+------------------------+---------+--------------------------------------------------------------------+
-| Option                 | Default | Description                                                        |
-+========================+=========+====================================================================+
-| ``BUILD_EXAMPLES``     | ON      | Compile example programs                                           |
-+------------------------+---------+--------------------------------------------------------------------+
-| ``BUILD_AUTOTESTS``    | ON      | Parse and compile autotests into executable binary                 |
-+------------------------+---------+--------------------------------------------------------------------+
-| ``BUILD_BENCHMARKS``   | ON      | Parse and compile benchmarks into executable binary                |
-+------------------------+---------+--------------------------------------------------------------------+
-| ``BUILD_SHARED_LIBS``  | ON      | Build shared library                                               |
-+------------------------+---------+--------------------------------------------------------------------+
-| ``BUILD_STATIC_LIBS``  | OFF     | Build static library                                               |
-+------------------------+---------+--------------------------------------------------------------------+
-| ``ENABLE_SIMD``        | ON      | Enable use of single instruction, multiple data (SIMD) extensions  |
-+------------------------+---------+--------------------------------------------------------------------+
-| ``FIND_SIMD``          | ON      | Try to find available SIMD instruction sets on host computer       |
-+------------------------+---------+--------------------------------------------------------------------+
-| ``FIND_THREADS``       | ON      | Try to find available threading library for concurrency            |
-+------------------------+---------+--------------------------------------------------------------------+
-| ``FIND_FFTW``          | ON      | Try to find `FFTW <http://www.fftw.org)>`_ if available            |
-+------------------------+---------+--------------------------------------------------------------------+
-| ``BUILD_SANDBOX``      | OFF     | Compile sandbox (testing) programs                                 |
-+------------------------+---------+--------------------------------------------------------------------+
-| ``BUILD_DOC``          | OFF     | Generate documentation                                             |
-+------------------------+---------+--------------------------------------------------------------------+
-| ``COVERAGE``           | OFF     | Set flags to enable code coverage testing                          |
-+------------------------+---------+--------------------------------------------------------------------+
-| ``ENABLE_LOGGING``     | ON      | Enable global logging capabilities                                 |
-+------------------------+---------+--------------------------------------------------------------------+
-| ``LOGGING_LEVEL``      | trace   | Set minimum logging level to compile;                              |
-|                        |         | select from "trace", "debug", "info", "warn", "error", or "fatal"  |
-+------------------------+---------+--------------------------------------------------------------------+
-| ``ENABLE_COLOR``       | ON      | Enable use of color terminal output                                |
-+------------------------+---------+--------------------------------------------------------------------+
-
-For example, if you want to benchmark how fast a vector dot product
-runs without SIMD extensions, you could run the following:
-
-.. code-block:: bash
-
-    cmake -DENABLE_SIMD=OFF -DBUILD_BENCHMARKS=ON ..
-    make
-    ./benchmark -s dotprod_rrrf
 
 Available Modules
 -----------------
@@ -373,7 +377,7 @@ Available Modules
 * **buffer**: internal buffering, circular/static, ports (threaded)
 * **channel**: additive noise, multi-path fading, carrier phase/frequency
   offsets, timing phase/rate offsets
-* **core**: core functionality (error handling)
+* **core**: core functionality (error handling, logging)
 * **dotprod**: inner dot products (real, complex), vector sum of squares
 * **equalization**: adaptive equalizers: least mean-squares, recursive
   least squares, semi-blind
