@@ -99,6 +99,10 @@ int liquid_runtime_supported_x86(liquid_cpuinfo _q)
 
     bool has_sse   = (d & (1u << 25)) != 0; // SSE
     bool has_sse2  = (d & (1u << 26)) != 0; // SSE2
+    //bool has_sse3  = (c & (1u << 0 )) != 0; // SSE3
+    //bool has_ssse3 = (c & (1u << 9 )) != 0; // SSSE3
+    //bool has_sse41 = (c & (1u << 19)) != 0; // SSE4.1
+    //bool has_sse42 = (c & (1u << 20)) != 0; // SSE4.2
     bool has_mmx   = (d & (1u << 23)) != 0; // MMX
     bool has_avx   = (c & (1u << 28)) != 0; // AVX
     //bool has_fma   = (c & (1u << 12)) != 0; // FMA (not asked, but often tied to AVX2/AVX)
