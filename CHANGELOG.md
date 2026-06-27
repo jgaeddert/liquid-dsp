@@ -5,6 +5,8 @@
   * build
     - fixing issues with 32-bit architectures with optim module
       (thanks aeb@debian.org, @andreasbombe, @dawkagaming)
+    - fixing issues with 'autoscript' target breaking cross-compilation
+      and library install directory (thanks @dawkagaming)
 
 ## 1.8.0 - 2026-06-07
 
