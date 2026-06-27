@@ -289,7 +289,6 @@ int dotprod_cccf_execute_sse(dotprod_cccf    _q,
         sum = _mm_add_ps(sum, s);
 #else
         // no SSE3: combine using slow method
-        // FIXME: implement slow method
         // unload values
         _mm_store_ps(wi, ci);
         _mm_store_ps(wq, cq);
