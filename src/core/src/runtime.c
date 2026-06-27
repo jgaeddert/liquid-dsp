@@ -75,14 +75,9 @@ int liquid_runtime_supported_arm(liquid_cpuinfo _q)
 #if defined(__aarch64__)
     // AArch64 requires NEON (Advanced SIMD) by architectural definition.
     _q->neon = true;
-#elif defined(__arm__)
+#elif defined(__ARM_NEON)
     // 32-bit ARM: NEON is optional.
-# if defined(__ARM_NEON)
     _q->neon = true;
-# else
-    _q->neon = false;
-# endif
-    }
 #else
     _q->neon = false;
 #endif
