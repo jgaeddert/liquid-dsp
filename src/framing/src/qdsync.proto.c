@@ -328,6 +328,18 @@ int QDSYNC(_is_open)(QDSYNC() _q)
     return _q->state == QDSYNC_STATE_DETECT ? 0 : 1;
 }
 
+// Get length of original sequence
+unsigned int QDSYNC(_get_seq_len)(QDSYNC() _q)
+{
+    return QDETECTOR(_get_seq_len)(_q->detector);
+}
+
+// Get pointer to original sequence
+const void * QDSYNC(_get_sequence)(QDSYNC() _q)
+{
+    return QDETECTOR(_get_sequence)(_q->detector);
+}
+
 // correlator output
 float QDSYNC(_get_rxy)(QDSYNC() _q)
 {
@@ -389,8 +401,8 @@ int QDSYNC(_execute_detect)(QDSYNC() _q,
             index += _q->npfb;
         }
         _q->pfb_index = index;
-        //printf("* qdsync detected! tau:%6.3f, dphi:%12.4e, phi:%6.3f, gamma:%6.2f dB, mf:%u, pfb idx:%u\n",
-        //        tau_hat, dphi_hat, phi_hat, 20*log10f(gamma_hat), _q->mf_counter, _q->pfb_index);
+        liquid_log_debug("qdsync detected! tau:%6.3f, dphi:%10.3e, phi:%6.3f, gamma:%5.1f dB, mf:%u, pfb:%3u",
+            tau_hat, dphi_hat, phi_hat, 20*log10f(gamma_hat), _q->mf_counter, _q->pfb_index);
 
         // output filter scale
         firpfb_crcf_set_scale(_q->mf, 1.0f / (_q->k * gamma_hat));

@@ -7093,6 +7093,12 @@ int QDSYNC(_execute)(QDSYNC()     _q,                                       \
 /* Return flag indicating if synchronizer actively running.             */  \
 int QDSYNC(_is_open)(QDSYNC() _q);                                          \
                                                                             \
+/* Get length of original sequence                                      */  \
+unsigned int QDSYNC(_get_seq_len)(QDSYNC() _q);                             \
+                                                                            \
+/* Get pointer to original sequence                                     */  \
+const void * QDSYNC(_get_sequence)(QDSYNC() _q);                            \
+                                                                            \
 /* Get synchronizer correlator output after frame was detected          */  \
 float QDSYNC(_get_rxy)  (QDSYNC() _q);                                      \
                                                                             \
