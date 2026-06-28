@@ -140,6 +140,8 @@ if (NOT BUILD_GITHASH)
     set(BUILD_GITHASH "unknown")
 endif()
 
+set(BUILD_ENV "cmake")
+
 # this file can only use the @VARIABLE@ syntax
 configure_file(cmake/build_info.c.in ${CMAKE_CURRENT_BINARY_DIR}/build_info.c @ONLY)
 

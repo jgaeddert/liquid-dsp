@@ -64,6 +64,7 @@ int liquid_build_info_print(void)
     printf("build_arch      = %s\n", liquid_build_info.build_arch);
     printf("build_toolchain = %s\n", liquid_build_info.build_toolchain);
     printf("build_type      = %s\n", liquid_build_info.build_type);
+    printf("build_env       = %s\n", liquid_build_info.build_env);
 
     // target options
     printf("target_os       = %s\n", liquid_build_info.target_os);

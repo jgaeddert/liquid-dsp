@@ -116,6 +116,7 @@ extern const struct liquid_build_info_s
     const char build_arch[64];      // the architecture of the OS that performed the build, e.g. "arm64"
     const char build_toolchain[64]; // the exact version of the compiler that performed the build, e.g. "gcc 11.2.0"
     const char build_type[64];      // debug, release, etc.
+    const char build_env[64];       // cmake, autotoools, etc.
 
     // target options
     const char target_os[64];       //
