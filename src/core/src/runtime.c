@@ -25,7 +25,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include <unistd.h>
+
+// include OS-specific headers
+#ifdef _WIN32
+#  include <windows.h>
+#else
+#  include <unistd.h>
+#endif
 
 #include "liquid.h"
 
@@ -158,7 +164,12 @@ int liquid_runtime_cores(liquid_cpuinfo _q)
     long cores = sysconf(_SC_NPROCESSORS_ONLN);
     if (cores < 1)
         return liquid_error(LIQUID_EICONFIG,"liquid_runtime_cores(), error getting POSIX core count with sysconf()");
-    _q->cores = cores;
+    _q->cores = (int)cores;
+#elif defined _WIN32
+    // Windows
+    SYSTEM_INFO sysinfo;
+    GetSystemInfo(&sysinfo);
+    _q->cores = (int)sysinfo.dwNumberOfProcessors;
 #else
     liquid_log_warn("liquid_runtime_cores(), could not get core count; unknown/unsupported OS");
 #endif
