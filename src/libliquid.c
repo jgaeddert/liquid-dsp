@@ -47,11 +47,11 @@ int liquid_libversion_number(void)
 int liquid_build_info_print(void)
 {
     // version information
-    printf("author          = %s\n", liquid_build_info.author);
-    printf("license         = %s\n", liquid_build_info.license);
     printf("copyright       = %s\n", liquid_build_info.copyright);
-    printf("homepage        = %s\n", liquid_build_info.homepage);
-    printf("description     = %s\n", liquid_build_info.description);
+    printf("license         = %s\n", liquid_build_info.license);
+    //printf("author          = %s\n", liquid_build_info.author);
+    //printf("homepage        = %s\n", liquid_build_info.homepage);
+    //printf("description     = %s\n", liquid_build_info.description);
 
     // version information
     printf("version         = %s\n", liquid_build_info.version);

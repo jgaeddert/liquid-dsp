@@ -12,7 +12,7 @@ project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
 # later versions of cmake
 set(PROJECT_AUTHOR      "Joseph D. Gaeddert <joseph@liquidsdr.org>")
 set(PROJECT_LICENSE     "MIT")
-set(PROJECT_COPYRIGHT   "Copyright (c) 2007 - 2026 Joseph Gaeddert")
+set(PROJECT_COPYRIGHT   "Copyright (c) 2007 - 2026 Joseph D. Gaeddert <joseph@liquidsdr.org>")
 set(PROJECT_HOMEPAGE    "https://liquidsdr.org")
 set(PROJECT_DESCRIPTION "Software-defined radio digital signal processing library")
 

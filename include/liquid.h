@@ -99,11 +99,11 @@ int liquid_libversion_number(void);
 extern const struct liquid_build_info_s
 {
     // version information
-    const char author[64];          // project author
-    const char license[64];         // project license
-    const char copyright[64];       // project copyright
-    const char homepage[64];        // project homepage URL
-    const char description[64];     // project description, brief
+    const char copyright[96];       // project copyright
+    const char license[16];         // project license
+    //const char author[64];          // project author
+    //const char homepage[64];        // project homepage URL
+    //const char description[64];     // project description, brief
 
     // version information
     const char version[16];         // base, e.g. 1.8.0

@@ -33,11 +33,11 @@
 const struct liquid_build_info_s liquid_build_info =
 {
     // library metadata
-    .author             = "@PROJECT_AUTHOR@",
-    .license            = "@PROJECT_LICENSE@",
     .copyright          = "@PROJECT_COPYRIGHT@",
-    .homepage           = "@PROJECT_HOMEPAGE@",
-    .description        = "@PROJECT_DESCRIPTION@",
+    .license            = "@PROJECT_LICENSE@",
+    //.author             = "@PROJECT_AUTHOR@",
+    //.homepage           = "@PROJECT_HOMEPAGE@",
+    //.description        = "@PROJECT_DESCRIPTION@",
 
     // version information
     .version            = LIQUID_VERSION, // "@PROJECT_VERSION@"
