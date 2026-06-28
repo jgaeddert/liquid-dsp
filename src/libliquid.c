@@ -42,3 +42,53 @@ int liquid_libversion_number(void)
     return LIQUID_VERSION_NUMBER;
 }
 
+const struct liquid_build_info_s liquid_build_info =
+{
+    // version information
+    .version            = LIQUID_VERSION,
+    .githash            = "unknown",
+    .tag                = false,
+
+    // date/time of build
+    .build_datetime     = "unknown",
+    .build_hostname     = "unknown",
+    .build_os           = "unknown",
+    .build_arch         = "unknown",
+    .build_toolchain    = "unknown",
+
+    //
+    .target_os          = "unknown",
+    .target_arch        = "unknown",
+
+    //
+    .build_type         = "unknown",
+
+    // library metadata
+    .author             = "Joseph D. Gaeddert <joseph@liquidsdr.org>",
+    .license            = "MIT/X11",
+    .url                = "https://liquidsdr.org",
+
+    // SIMD support
+};
+
+int liquid_build_info_print(void)
+{
+    printf("version         = %s\n", liquid_build_info.version);
+    printf("githash         = %s\n", liquid_build_info.githash);
+    printf("tag             = %s\n", liquid_build_info.tag ? "true" : "false");
+    printf("build_datetime  = %s\n", liquid_build_info.build_datetime);
+    printf("build_hostname  = %s\n", liquid_build_info.build_hostname);
+    printf("build_os        = %s\n", liquid_build_info.build_os);
+    printf("build_arch      = %s\n", liquid_build_info.build_arch);
+    printf("build_toolchain = %s\n", liquid_build_info.build_toolchain);
+    printf("target_os       = %s\n", liquid_build_info.target_os);
+    printf("target_arch     = %s\n", liquid_build_info.target_arch);
+    printf("build_type      = %s\n", liquid_build_info.build_type);
+    printf("author          = %s\n", liquid_build_info.author);
+    printf("license         = %s\n", liquid_build_info.license);
+    printf("url             = %s\n", liquid_build_info.url);
+
+    // SIMD support
+    return LIQUID_OK;
+}
+

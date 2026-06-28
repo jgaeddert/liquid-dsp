@@ -42,5 +42,9 @@ int main(int argc, char* argv[])
     printf("major = %d, minor = %d, patch = %d\n",
         liquid_version_major, liquid_version_minor, liquid_version_patch);
 
+    // print full build information
+    printf("\nbuild info:\n");
+    liquid_build_info_print();
+
     return 0;
 }

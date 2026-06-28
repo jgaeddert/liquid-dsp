@@ -31,6 +31,7 @@ extern "C" {
 
 // common headers
 #include <inttypes.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -93,6 +94,40 @@ int liquid_libversion_number(void);
     fprintf(stderr,"  library version : %d\n", liquid_libversion_number()); \
     exit(1);                                                                \
   }                                                                         \
+
+// get build info
+extern const struct liquid_build_info_s
+{
+    // version information
+    const char version[16];         // base, e.g. 1.8.0
+    const char githash[16];         //
+    bool  tag;
+
+    // date/time of build
+    const char build_datetime[24];  // UTC ISO 8601 format, e.g. "2026-06-28T14:32:00Z"
+    const char build_hostname[64];  // machine or CI that performed the build
+    const char build_os[64];        // the OS that performed the build, e.g. "macOS"
+    const char build_arch[64];      // the architecture of the OS that performed the build, e.g. "arm64"
+    const char build_toolchain[64]; // the exact version of the compiler that performed the build, e.g. "gcc 11.2.0"
+
+    //
+    const char target_os[64];       //
+    const char target_arch[64];     //
+
+    //
+    const char build_type[64];      // debug, release, etc.
+
+    // library metadata
+    const char author[64];          // author/maintainer
+    const char license[64];         //
+    const char url[64];             //
+
+    // SIMD support
+} liquid_build_info;
+
+// print build information
+int liquid_build_info_print(void);
+
 
 // report error
 int liquid_error_fl(int _code, const char * _file, int _line, const char * _format, ...);
