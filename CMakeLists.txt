@@ -140,6 +140,8 @@ if (NOT BUILD_GITHASH)
     set(BUILD_GITHASH "unknown")
 endif()
 
+set(CMAKE_C_COMPILER_INFO "${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}")
+
 set(BUILD_ENV "cmake")
 
 # this file can only use the @VARIABLE@ syntax

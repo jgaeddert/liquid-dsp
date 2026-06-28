@@ -48,7 +48,7 @@ const struct liquid_build_info_s liquid_build_info =
     .build_hostname     = "@BUILD_HOSTNAME@",
     .build_os           = "@CMAKE_HOST_SYSTEM_NAME@",
     .build_arch         = "@CMAKE_HOST_SYSTEM_PROCESSOR@",
-    .build_toolchain    = "@CMAKE_C_COMPILER_ID@ @CMAKE_C_COMPILER_VERSION@",
+    .build_toolchain    = "@CMAKE_C_COMPILER_INFO@",
     .build_type         = "@CMAKE_BUILD_TYPE@",
     .build_env          = "@BUILD_ENV@", // cmake, autotools, etc.
 
