@@ -128,5 +128,5 @@ ppc-qemu:
     - make -j2
     - ./examples/runtime_example # show AltiVec is enabled at runtime
     - file xautotest # assert this is for PowerPC
-    - ./xautotest -v -t 0
+    - ./xautotest -t 0
 
