@@ -149,6 +149,7 @@ set(EXAMPLES
     polyfit_example
     polyfit_lagrange_example
     qdetector_cccf_example
+    qdsync_cccf_cpfsk_example
     qdsync_cccf_example
     qdsync_cccf_performance_example
     qnsearch_example
