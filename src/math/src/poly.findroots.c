@@ -263,17 +263,17 @@ int liquid_poly_findroots_bairstow_recursion(double *     _p,
 
         // log debugging info
         liquid_log_trace(" %3u:q0=%12.4e,q1=%12.4e,q=%12.4e",
-                num_iterations, fabs(q0), fabs(q1), fabs(q));
+            num_iterations, fabs(q0), fabs(q1), fabs(q));
         liquid_log_trace(" metric=%12.4e,u=%8.3f,v=%8.3f,step=%12.4e",
             metric,creal(u), creal(v),step);
         liquid_log_trace("bairstow [%u] :", num_iterations);
         liquid_log_trace("  u     : %12.4e + j*%12.4e", creal(u), cimag(u));
         liquid_log_trace("  v     : %12.4e + j*%12.4e", creal(v), cimag(v));
         liquid_log_trace("  b     : ");
-        for (i=0; i<n-2; i++)
+        for (i=0; i<(int)n-2; i++)
             liquid_log_trace("      %12.4e + j*%12.4e", creal(b[i]), cimag(b[i]));
         liquid_log_trace("  fb    : ");
-        for (i=0; i<n-2; i++)
+        for (i=0; i<(int)n-2; i++)
             liquid_log_trace("      %12.4e + j*%12.4e", creal(f[i]), cimag(f[i]));
         liquid_log_trace("  c     : %12.4e + j*%12.4e", creal(c), cimag(c));
         liquid_log_trace("  g     : %12.4e + j*%12.4e", creal(g), cimag(g));
