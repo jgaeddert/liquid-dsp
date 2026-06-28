@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-// Run-time library version numbers
+// Compile-time library version numbers
 
 #include <stdlib.h>
 #include <stdarg.h>
@@ -42,53 +42,35 @@ int liquid_libversion_number(void)
     return LIQUID_VERSION_NUMBER;
 }
 
-const struct liquid_build_info_s liquid_build_info =
-{
-    // version information
-    .version            = LIQUID_VERSION,
-    .githash            = "unknown",
-    .tag                = false,
-
-    // date/time of build
-    .build_datetime     = "unknown",
-    .build_hostname     = "unknown",
-    .build_os           = "unknown",
-    .build_arch         = "unknown",
-    .build_toolchain    = "unknown",
-
-    //
-    .target_os          = "unknown",
-    .target_arch        = "unknown",
-
-    //
-    .build_type         = "unknown",
-
-    // library metadata
-    .author             = "Joseph D. Gaeddert <joseph@liquidsdr.org>",
-    .license            = "MIT/X11",
-    .url                = "https://liquidsdr.org",
-
-    // SIMD support
-};
-
+// 'liquid_build_info' is templated in cmake/build_info.c.in and populated
+// into 'build_info.c' by cmake when the command is invoked.
 int liquid_build_info_print(void)
 {
+    // version information
+    printf("author          = %s\n", liquid_build_info.author);
+    printf("license         = %s\n", liquid_build_info.license);
+    printf("copyright       = %s\n", liquid_build_info.copyright);
+    printf("homepage        = %s\n", liquid_build_info.homepage);
+    printf("description     = %s\n", liquid_build_info.description);
+
+    // version information
     printf("version         = %s\n", liquid_build_info.version);
     printf("githash         = %s\n", liquid_build_info.githash);
-    printf("tag             = %s\n", liquid_build_info.tag ? "true" : "false");
+
+    // date/time of build
     printf("build_datetime  = %s\n", liquid_build_info.build_datetime);
     printf("build_hostname  = %s\n", liquid_build_info.build_hostname);
     printf("build_os        = %s\n", liquid_build_info.build_os);
     printf("build_arch      = %s\n", liquid_build_info.build_arch);
     printf("build_toolchain = %s\n", liquid_build_info.build_toolchain);
+    printf("build_type      = %s\n", liquid_build_info.build_type);
+
+    // target options
     printf("target_os       = %s\n", liquid_build_info.target_os);
     printf("target_arch     = %s\n", liquid_build_info.target_arch);
-    printf("build_type      = %s\n", liquid_build_info.build_type);
-    printf("author          = %s\n", liquid_build_info.author);
-    printf("license         = %s\n", liquid_build_info.license);
-    printf("url             = %s\n", liquid_build_info.url);
 
-    // SIMD support
+    // TODO: other compile-time options (logging, SIMD, etc.)
+
     return LIQUID_OK;
 }
 

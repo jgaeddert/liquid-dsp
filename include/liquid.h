@@ -99,9 +99,15 @@ int liquid_libversion_number(void);
 extern const struct liquid_build_info_s
 {
     // version information
+    const char author[64];          // project author
+    const char license[64];         // project license
+    const char copyright[64];       // project copyright
+    const char homepage[64];        // project homepage URL
+    const char description[64];     // project description, brief
+
+    // version information
     const char version[16];         // base, e.g. 1.8.0
-    const char githash[16];         //
-    bool  tag;
+    const char githash[24];         // specific Git hash if available
 
     // date/time of build
     const char build_datetime[24];  // UTC ISO 8601 format, e.g. "2026-06-28T14:32:00Z"
@@ -109,20 +115,14 @@ extern const struct liquid_build_info_s
     const char build_os[64];        // the OS that performed the build, e.g. "macOS"
     const char build_arch[64];      // the architecture of the OS that performed the build, e.g. "arm64"
     const char build_toolchain[64]; // the exact version of the compiler that performed the build, e.g. "gcc 11.2.0"
+    const char build_type[64];      // debug, release, etc.
 
-    //
+    // target options
     const char target_os[64];       //
     const char target_arch[64];     //
 
-    //
-    const char build_type[64];      // debug, release, etc.
+    // TODO: other compile-time options (logging, SIMD, etc.)
 
-    // library metadata
-    const char author[64];          // author/maintainer
-    const char license[64];         //
-    const char url[64];             //
-
-    // SIMD support
 } liquid_build_info;
 
 // print build information
