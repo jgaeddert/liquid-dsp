@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 #include "liquid.h"
 
@@ -148,6 +149,22 @@ int liquid_runtime_supported_ppc(liquid_cpuinfo _q)
     return LIQUID_OK;
 }
 
+// get number of cores available
+int liquid_runtime_cores(liquid_cpuinfo _q)
+{
+    _q->cores = 1;
+#if defined __APPLE__ || defined __linux__  || defined __unix__
+    // POSIX (Linux, macOS, BSD) implementation
+    long cores = sysconf(_SC_NPROCESSORS_ONLN);
+    if (cores < 1)
+        return liquid_error(LIQUID_EICONFIG,"liquid_runtime_cores(), error getting POSIX core count with sysconf()");
+    _q->cores = cores;
+#else
+    liquid_log_warn("liquid_runtime_cores(), could not get core count; unknown/unsupported OS");
+#endif
+    return LIQUID_OK;
+}
+
 // check which instruction extensions are supported on this system
 int liquid_runtime_supported(liquid_cpuinfo _q)
 {
@@ -159,6 +176,9 @@ int liquid_runtime_supported(liquid_cpuinfo _q)
 
     if (liquid_runtime_supported_ppc(_q))
         return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get PPC flags");
+
+    if (liquid_runtime_cores(_q))
+        return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get number of CPU cores");
 
     return LIQUID_OK;
 }

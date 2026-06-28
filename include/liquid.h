@@ -462,6 +462,9 @@ struct liquid_cpuinfo_s
 
     // PPC architecture
     bool altivec;
+
+    // number of cores
+    int cores;
 };
 typedef struct liquid_cpuinfo_s * liquid_cpuinfo;
 

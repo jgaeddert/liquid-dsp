@@ -22,6 +22,7 @@ int main(int argc, char* argv[])
     printf("AVX2        : %u\n", info.avx2);
     printf("AVX512f     : %u\n", info.avx512f);
     printf("AltiVec     : %u\n", info.altivec);
+    printf("cores       : %u\n", info.cores);
 
     return 0;
 }
