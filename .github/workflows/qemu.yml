@@ -28,8 +28,9 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain_${{ matrix.processor }}.cmake -DENABLE_SIMD=ON -DFIND_SIMD=OFF -DC_ALTIVEC_FOUND=TRUE -DC_ALTIVEC_FLAGS="-maltivec" -DFIND_FFTW=OFF -DBUILD_EXAMPLES=OFF -DBUILD_BENCHMARKS=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON -DCMAKE_EXE_LINKER_FLAGS="-static" ..
+        cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain_${{ matrix.processor }}.cmake -DENABLE_SIMD=ON -DFIND_SIMD=OFF -DC_ALTIVEC_FOUND=TRUE -DC_ALTIVEC_FLAGS="-maltivec" -DFIND_FFTW=OFF -DBUILD_EXAMPLES=ON -DBUILD_BENCHMARKS=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON -DCMAKE_EXE_LINKER_FLAGS="-static" ..
         make -j4
+        ./examples/runtime_example # show AltiVec is enabled at runtime
         file xautotest # assert this is for PowerPC
 
     - name: check
