@@ -11,6 +11,9 @@ int main()
     printf("  library : 0x%.6x\n", liquid_libversion_number());
     LIQUID_VALIDATE_LIBVERSION;
 
+    // print build information
+    liquid_build_info_print();
+
     // create object, print and return
     printf("creating test object...\n");
     resamp_crcf q = resamp_crcf_create(0.12345f, 12, 0.25f, 60.0f, 256);
