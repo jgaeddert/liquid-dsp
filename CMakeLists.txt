@@ -115,6 +115,27 @@ configure_file(cmake/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 # enable testing always
 enable_testing()
 
+if (ENABLE_LOGGING)
+    add_compile_definitions(LIQUID_LOGGING_ENABLE)
+    set(ENABLE_LOGGING 1) # ensure integer
+else()
+    set(ENABLE_LOGGING 0) # ensure integer
+endif()
+
+# set minimum logging level for compilation
+set(LOGGING_LEVELS "trace;debug;info;warn;error;fatal")
+list(FIND LOGGING_LEVELS ${LOGGING_LEVEL} LIQUID_LOG_LEVEL_COMPILE)
+#message("LOG: ${LOGGING_LEVEL} -> ${LOGGING_INDEX}")
+if (${LIQUID_LOG_LEVEL_COMPILE} LESS 0)
+    message(FATAL_ERROR "Unsupported logging level '${LOGGING_LEVEL}', select one of: ${LOGGING_LEVELS}")
+endif()
+add_compile_definitions(LIQUID_LOG_LEVEL_COMPILE=${LIQUID_LOG_LEVEL_COMPILE})
+
+# enable color if requested
+if(ENABLE_COLOR)
+    add_compile_definitions(LIQUID_COLOR_ENABLE)
+endif(ENABLE_COLOR)
+
 # ---------------------------------------- build info ----------------------------------------
 
 # Date/Time (UTC ISO 8601)
@@ -455,24 +476,6 @@ set(LIQUID_OBJECTS
     $<TARGET_OBJECTS:sequence>
     $<TARGET_OBJECTS:utility>
     $<TARGET_OBJECTS:vector>)
-
-if(ENABLE_LOGGING)
-    add_compile_definitions(LIQUID_LOGGING_ENABLE)
-endif(ENABLE_LOGGING)
-
-# set minimum logging level for compilation
-set(LOGGING_LEVELS "trace;debug;info;warn;error;fatal")
-list(FIND LOGGING_LEVELS ${LOGGING_LEVEL} LIQUID_LOG_LEVEL_COMPILE)
-#message("LOG: ${LOGGING_LEVEL} -> ${LOGGING_INDEX}")
-if (${LIQUID_LOG_LEVEL_COMPILE} LESS 0)
-    message(FATAL_ERROR "Unsupported logging level '${LOGGING_LEVEL}', select one of: ${LOGGING_LEVELS}")
-endif()
-add_compile_definitions(LIQUID_LOG_LEVEL_COMPILE=${LIQUID_LOG_LEVEL_COMPILE})
-
-# enable color if requested
-if(ENABLE_COLOR)
-    add_compile_definitions(LIQUID_COLOR_ENABLE)
-endif(ENABLE_COLOR)
 
 # Build shared library
 if (BUILD_SHARED_LIBS)

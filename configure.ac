@@ -389,7 +389,14 @@ AC_SUBST([CMAKE_SYSTEM_NAME])
 CMAKE_SYSTEM_PROCESSOR="${target_cpu}"
 AC_SUBST([CMAKE_SYSTEM_PROCESSOR])
 
-# TODO: other compile-time options (logging, SIMD, etc.)
+# logging enabled or not
+ENABLE_LOGGING="1"
+AC_SUBST([ENABLE_LOGGING])
+
+# logging level threshold
+LIQUID_LOG_LEVEL_COMPILE="0"
+AC_SUBST([LIQUID_LOG_LEVEL_COMPILE])
+
 
 AC_CONFIG_FILES([cmake/build_info.c])
 AC_CONFIG_FILES([makefile])

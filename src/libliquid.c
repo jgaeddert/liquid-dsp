@@ -70,7 +70,9 @@ int liquid_build_info_print(void)
     printf("target_os       = %s\n", liquid_build_info.target_os);
     printf("target_arch     = %s\n", liquid_build_info.target_arch);
 
-    // TODO: other compile-time options (logging, SIMD, etc.)
+    // other compile-time options
+    printf("logging_enabled = %d\n", liquid_build_info.logging_enabled);
+    printf("logging_level   = %d\n", liquid_build_info.logging_level);
 
     return LIQUID_OK;
 }

@@ -122,7 +122,9 @@ extern const struct liquid_build_info_s
     const char target_os[64];       //
     const char target_arch[64];     //
 
-    // TODO: other compile-time options (logging, SIMD, etc.)
+    // other compile-time options
+    const bool logging_enabled;     // logging enabled or not
+    const int  logging_level;       // logging level threshold set at compile time
 
 } liquid_build_info;
 
