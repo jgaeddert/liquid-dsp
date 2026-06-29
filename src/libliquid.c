@@ -75,6 +75,16 @@ int liquid_build_info_print(void)
     printf("logging_level   = %d\n", liquid_build_info.logging_level);
     printf("color_enabled   = %d\n", liquid_build_info.color_enabled);
 
+    // vector extensions
+    printf("neon            = %d\n", liquid_build_info.neon);
+    printf("sse             = %d\n", liquid_build_info.sse);
+    printf("sse2            = %d\n", liquid_build_info.sse2);
+    printf("mmx             = %d\n", liquid_build_info.mmx);
+    printf("avx             = %d\n", liquid_build_info.avx);
+    printf("avx2            = %d\n", liquid_build_info.avx2);
+    printf("avx512f         = %d\n", liquid_build_info.avx512f);
+    printf("altivec         = %d\n", liquid_build_info.altivec);
+
     return LIQUID_OK;
 }
 

@@ -127,6 +127,16 @@ extern const struct liquid_build_info_s
     const int  logging_level;       // logging level threshold set at compile time
     const bool color_enabled;       // color output enabled or not
 
+    // vector extensions
+    const bool neon;
+    const bool sse;
+    const bool sse2;
+    const bool mmx;
+    const bool avx;
+    const bool avx2;
+    const bool avx512f;
+    const bool altivec;
+
 } liquid_build_info;
 
 // print build information

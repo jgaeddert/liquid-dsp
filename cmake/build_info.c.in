@@ -60,5 +60,16 @@ const struct liquid_build_info_s liquid_build_info =
     .logging_enabled    = @ENABLE_LOGGING@+0,
     .logging_level      = @LIQUID_LOG_LEVEL_COMPILE@+0,
     .color_enabled      = @ENABLE_COLOR@+0,
+
+    // vector extensions
+    // TODO: set these appropriately
+    .neon               = +0,
+    .sse                = +0,
+    .sse2               = +0,
+    .mmx                = +0,
+    .avx                = +0,
+    .avx2               = +0,
+    .avx512f            = +0,
+    .altivec            = +0,
 };
 
