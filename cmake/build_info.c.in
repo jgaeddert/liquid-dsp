@@ -59,5 +59,6 @@ const struct liquid_build_info_s liquid_build_info =
     // other compile-time options
     .logging_enabled    = @ENABLE_LOGGING@+0,
     .logging_level      = @LIQUID_LOG_LEVEL_COMPILE@+0,
+    .color_enabled      = @ENABLE_COLOR@+0,
 };
 

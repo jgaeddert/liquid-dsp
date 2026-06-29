@@ -73,6 +73,7 @@ int liquid_build_info_print(void)
     // other compile-time options
     printf("logging_enabled = %d\n", liquid_build_info.logging_enabled);
     printf("logging_level   = %d\n", liquid_build_info.logging_level);
+    printf("color_enabled   = %d\n", liquid_build_info.color_enabled);
 
     return LIQUID_OK;
 }

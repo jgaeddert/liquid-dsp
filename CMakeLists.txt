@@ -132,9 +132,12 @@ endif()
 add_compile_definitions(LIQUID_LOG_LEVEL_COMPILE=${LIQUID_LOG_LEVEL_COMPILE})
 
 # enable color if requested
-if(ENABLE_COLOR)
+if (ENABLE_COLOR)
     add_compile_definitions(LIQUID_COLOR_ENABLE)
-endif(ENABLE_COLOR)
+    set(ENABLE_COLOR 1) # ensure integer
+else()
+    set(ENABLE_COLOR 0) # ensure integer
+endif()
 
 # ---------------------------------------- build info ----------------------------------------
 

@@ -125,6 +125,7 @@ extern const struct liquid_build_info_s
     // other compile-time options
     const bool logging_enabled;     // logging enabled or not
     const int  logging_level;       // logging level threshold set at compile time
+    const bool color_enabled;       // color output enabled or not
 
 } liquid_build_info;
 
