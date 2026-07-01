@@ -3,6 +3,7 @@
 ## Latest
 
   * build
+    - bumping required cmake version to 3.21 to support newer features
     - fixing issues with 32-bit architectures with optim module
       (thanks aeb@debian.org, @andreasbombe, @dawkagaming)
     - fixing issues with 'autoscript' target breaking cross-compilation
