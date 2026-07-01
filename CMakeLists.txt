@@ -1,5 +1,5 @@
 # cmake build file for liquid-dsp
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.21)
 
 # parse version number from include/liquid.h
 include(cmake/version.cmake)
@@ -61,11 +61,11 @@ include (CheckSymbolExists)
 # macro to simplify setting variables based on conditions; also allows for
 # flattening variables to integers, e.g. convert 'TRUE' 'ON' 'YES' to 1
 macro(set_condition VAR CONDITION VALUE_TRUE VALUE_FALSE)
-    if(${CONDITION})
+    cmake_language(EVAL CODE "if(${CONDITION})
         set(${VAR} ${VALUE_TRUE})
     else()
         set(${VAR} ${VALUE_FALSE})
-    endif()
+    endif()")
 endmacro()
 
 #check_symbol_exists(timespec_get "time.h" HAVE_TIMESPEC_GET)
