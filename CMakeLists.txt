@@ -68,6 +68,7 @@ macro(set_condition VAR CONDITION VALUE_TRUE VALUE_FALSE)
     endif()")
 endmacro()
 
+
 #check_symbol_exists(timespec_get "time.h" HAVE_TIMESPEC_GET)
 #if (HAVE_TIMESPEC_GET)
 #    add_compile_definitions(HAVE_TIMESPEC_GET)
@@ -112,6 +113,16 @@ configure_file(cmake/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 # enable testing always
 enable_testing()
+
+# ---------------------------------------- SIMD extensions ----------------------------------------
+
+set_condition(BUILD_NEON    "ENABLE_SIMD AND C_NEON_FOUND"    1 0)
+set_condition(BUILD_AVX512  "ENABLE_SIMD AND C_AVX512_FOUND"  1 0)
+set_condition(BUILD_AVX2    "ENABLE_SIMD AND C_AVX2_FOUND"    1 0)
+set_condition(BUILD_AVX     "ENABLE_SIMD AND C_AVX_FOUND"     1 0)
+set_condition(BUILD_SSE4    "ENABLE_SIMD AND C_SSE4_FOUND"    1 0)
+set_condition(BUILD_ALTIVEC "ENABLE_SIMD AND C_ALTIVEC_FOUND" 1 0)
+
 
 # ---------------------------------------- main sources ----------------------------------------
 
