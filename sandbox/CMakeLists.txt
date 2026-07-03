@@ -105,6 +105,7 @@ set(SANDBOX
     reverse_byte_gentab
     rhamming_test
     rkaiser2_test
+    runtime_test
     shadowing_test
     simplex_test
     svd_test
