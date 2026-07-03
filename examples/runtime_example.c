@@ -17,6 +17,10 @@ int main(int argc, char* argv[])
     printf("Neon        : %u\n", info.neon);
     printf("SSE         : %u\n", info.sse);
     printf("SSE2        : %u\n", info.sse2);
+    printf("SSE3        : %u\n", info.sse3);
+    printf("SSSE3       : %u\n", info.ssse3);
+    printf("SSE4.1      : %u\n", info.sse41);
+    printf("SSE4.2      : %u\n", info.sse42);
     printf("MMX         : %u\n", info.mmx);
     printf("AVX         : %u\n", info.avx);
     printf("AVX2        : %u\n", info.avx2);

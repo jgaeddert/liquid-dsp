@@ -464,6 +464,10 @@ struct liquid_cpuinfo_s
     // x86 architecture
     bool sse;
     bool sse2;
+    bool sse3;
+    bool ssse3;
+    bool sse41;
+    bool sse42;
     bool mmx;
     bool avx;
     bool avx2;

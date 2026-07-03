@@ -101,10 +101,10 @@ int liquid_runtime_supported_x86(liquid_cpuinfo _q)
 
     bool has_sse   = (d & (1u << 25)) != 0; // SSE
     bool has_sse2  = (d & (1u << 26)) != 0; // SSE2
-    //bool has_sse3  = (c & (1u << 0 )) != 0; // SSE3
-    //bool has_ssse3 = (c & (1u << 9 )) != 0; // SSSE3
-    //bool has_sse41 = (c & (1u << 19)) != 0; // SSE4.1
-    //bool has_sse42 = (c & (1u << 20)) != 0; // SSE4.2
+    bool has_sse3  = (c & (1u << 0 )) != 0; // SSE3
+    bool has_ssse3 = (c & (1u << 9 )) != 0; // SSSE3
+    bool has_sse41 = (c & (1u << 19)) != 0; // SSE4.1
+    bool has_sse42 = (c & (1u << 20)) != 0; // SSE4.2
     bool has_mmx   = (d & (1u << 23)) != 0; // MMX
     bool has_avx   = (c & (1u << 28)) != 0; // AVX
     //bool has_fma   = (c & (1u << 12)) != 0; // FMA (not asked, but often tied to AVX2/AVX)
@@ -130,6 +130,10 @@ int liquid_runtime_supported_x86(liquid_cpuinfo _q)
     _q->mmx     = has_mmx;
     _q->sse     = has_sse;
     _q->sse2    = has_sse2;
+    _q->sse3    = has_sse3;
+    _q->ssse3   = has_ssse3;
+    _q->sse41   = has_sse41;
+    _q->sse42   = has_sse42;
     _q->avx     = avx_ok;
     _q->avx2    = avx_ok && has_avx2;
     _q->avx512f = has_avx512f;
@@ -137,6 +141,10 @@ int liquid_runtime_supported_x86(liquid_cpuinfo _q)
     // not x86; none are supported
     _q->sse     = false;
     _q->sse2    = false;
+    _q->sse3    = false;
+    _q->ssse3   = false;
+    _q->sse41   = false;
+    _q->sse42   = false;
     _q->mmx     = false;
     _q->avx     = false;
     _q->avx2    = false;
