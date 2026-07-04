@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,24 @@
 #include <string.h>
 #include <stdio.h>
 
+// forward declaration of internal methods
+
+// select runtime execution method
+int DOTPROD(_runtime_select)(DOTPROD() _q);
+
+// execution methods
+int DOTPROD(_execute_port)(DOTPROD() _q, TI * _x, TO * _y);
+
 // portable structured dot product object
 struct DOTPROD(_s) {
-    TC * h;             // coefficients array
-    unsigned int n;     // length
+    // coefficients array
+    TC * h;
+
+    // number of coefficients
+    unsigned int n;
+
+    // runtime execution method
+    int (*execute)(DOTPROD() _q, TI * _x, TO * _y);
 };
 
 // basic dot product
@@ -109,6 +123,9 @@ DOTPROD() DOTPROD(_create)(TC *         _h,
     // move coefficients
     memmove(q->h, _h, (q->n)*sizeof(TC));
 
+    // select runtime method
+    DOTPROD(_runtime_select)(q);
+
     // return object
     return q;
 }
@@ -129,6 +146,9 @@ DOTPROD() DOTPROD(_create_rev)(TC *         _h,
     unsigned int i;
     for (i=0; i<_n; i++)
         q->h[i] = _h[_n-i-1];
+
+    // select runtime method
+    DOTPROD(_runtime_select)(q);
 
     // return object
     return q;
@@ -199,6 +219,9 @@ DOTPROD() DOTPROD(_copy)(DOTPROD() q_orig)
     q_copy->h = (TC*) malloc((q_copy->n)*sizeof(TC));
     memmove(q_copy->h, q_orig->h, (q_copy->n)*sizeof(TC));
 
+    // copy execution method
+    q_copy->execute = q_orig->execute;
+
     // return new object
     return q_copy;
 }
@@ -233,6 +256,42 @@ int DOTPROD(_print)(DOTPROD() _q)
 int DOTPROD(_execute)(DOTPROD() _q,
                       TI *      _x,
                       TO *      _y)
+{
+    // invoke runtime-specific method
+    return _q->execute(_q, _x, _y);
+}
+
+//
+// internal
+//
+
+// select runtime execution method
+int DOTPROD(_runtime_select)(DOTPROD() _q)
+{
+    // set execute function pointer based on run-time availability
+    struct liquid_cpuinfo_s info;
+    liquid_runtime_supported(&info);
+    // TODO: replace port method with arch-specific methods
+    if      (info.neon)    { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
+    else if (info.avx512f) { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
+    else if (info.avx2)    { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
+    else if (info.avx)     { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
+    else if (info.mmx)     { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
+    else if (info.sse2)    { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
+    else if (info.sse)     { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
+    else if (info.altivec) { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
+    else                   { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
+
+    return LIQUID_OK;
+}
+
+// execute structured dot product (portable version)
+//  _q      :   dot product object
+//  _x      :   input array [size: 1 x _n]
+//  _y      :   output dot product
+int DOTPROD(_execute_port)(DOTPROD() _q,
+                           TI *      _x,
+                           TO *      _y)
 {
     // run basic dot product with unrolled loops
     DOTPROD(_run4)(_q->h, _x, _q->n, _y);
