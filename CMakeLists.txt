@@ -1,5 +1,5 @@
 # cmake build file for liquid-dsp
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.10)
 
 # parse version number from include/liquid.h
 include(cmake/version.cmake)
@@ -58,17 +58,6 @@ include (CheckFunctionExists)
 include (CheckLibraryExists)
 include (CheckSymbolExists)
 
-# macro to simplify setting variables based on conditions; also allows for
-# flattening variables to integers, e.g. convert 'TRUE' 'ON' 'YES' to 1
-macro(set_condition VAR CONDITION VALUE_TRUE VALUE_FALSE)
-    cmake_language(EVAL CODE "if(${CONDITION})
-        set(${VAR} ${VALUE_TRUE})
-    else()
-        set(${VAR} ${VALUE_FALSE})
-    endif()")
-endmacro()
-
-
 #check_symbol_exists(timespec_get "time.h" HAVE_TIMESPEC_GET)
 #if (HAVE_TIMESPEC_GET)
 #    add_compile_definitions(HAVE_TIMESPEC_GET)
@@ -111,12 +100,41 @@ enable_testing()
 
 # ---------------------------------------- SIMD extensions ----------------------------------------
 
-set_condition(BUILD_NEON    "ENABLE_SIMD AND C_NEON_FOUND"    1 0)
-set_condition(BUILD_AVX512  "ENABLE_SIMD AND C_AVX512_FOUND"  1 0)
-set_condition(BUILD_AVX2    "ENABLE_SIMD AND C_AVX2_FOUND"    1 0)
-set_condition(BUILD_AVX     "ENABLE_SIMD AND C_AVX_FOUND"     1 0)
-set_condition(BUILD_SSE4    "ENABLE_SIMD AND C_SSE4_FOUND"    1 0)
-set_condition(BUILD_ALTIVEC "ENABLE_SIMD AND C_ALTIVEC_FOUND" 1 0)
+if (ENABLE_SIMD AND C_NEON_FOUND)
+    set(BUILD_NEON 1)
+else()
+    set(BUILD_NEON 0)
+endif()
+
+if (ENABLE_SIMD AND C_AVX512_FOUND)
+    set(BUILD_AVX512 1)
+else()
+    set(BUILD_AVX512 0)
+endif()
+
+if (ENABLE_SIMD AND C_AVX2_FOUND)
+    set(BUILD_AVX2 1)
+else()
+    set(BUILD_AVX2 0)
+endif()
+
+if (ENABLE_SIMD AND C_AVX_FOUND)
+    set(BUILD_AVX 1)
+else()
+    set(BUILD_AVX 0)
+endif()
+
+if (ENABLE_SIMD AND C_SSE4_FOUND)
+    set(BUILD_SSE4 1)
+else()
+    set(BUILD_SSE4 0)
+endif()
+
+if (ENABLE_SIMD AND C_ALTIVEC_FOUND)
+    set(BUILD_ALTIVEC 1)
+else()
+    set(BUILD_ALTIVEC 0)
+endif()
 
 configure_file(cmake/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
