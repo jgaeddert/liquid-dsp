@@ -106,11 +106,6 @@ endif()
 include (CheckTypeSize)
 check_type_size(int SIZEOF_INT LANGUAGE C)
 
-configure_file(cmake/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
-
-# this file can only use the @VARIABLE@ syntax
-#configure_file(cmake/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
-
 # enable testing always
 enable_testing()
 
@@ -123,6 +118,10 @@ set_condition(BUILD_AVX     "ENABLE_SIMD AND C_AVX_FOUND"     1 0)
 set_condition(BUILD_SSE4    "ENABLE_SIMD AND C_SSE4_FOUND"    1 0)
 set_condition(BUILD_ALTIVEC "ENABLE_SIMD AND C_ALTIVEC_FOUND" 1 0)
 
+configure_file(cmake/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+
+# this file can only use the @VARIABLE@ syntax
+#configure_file(cmake/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 
 # ---------------------------------------- main sources ----------------------------------------
 
