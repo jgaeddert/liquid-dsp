@@ -272,17 +272,76 @@ int DOTPROD(_runtime_select)(DOTPROD() _q)
     struct liquid_cpuinfo_s info;
     liquid_runtime_supported(&info);
     // TODO: replace port method with arch-specific methods
-    if      (info.neon)    { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
-    else if (info.avx512f) { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
-    else if (info.avx2)    { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
-    else if (info.avx)     { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
-    else if (info.mmx)     { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
-    else if (info.sse2)    { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
-    else if (info.sse)     { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
-    else if (info.altivec) { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
-    else                   { liquid_log_trace("dotprod_%s_create(), runtime: portable", "xxxt"); _q->execute = &DOTPROD(_execute_port); }
+    int selection = 0;
+#if BUILD_NEON
+    if (info.neon) selection = 1;
+#endif
+#if BUILD_AVX512
+    if (info.neon) {
+        liquid_log_trace("dotprod_%s_create(), runtime: portable", EXTENSION_FULL);
+        _q->execute = &DOTPROD(_execute_port);
+    }
+#endif
+    if (info.neon)    { selection =  1; }
 
-    return LIQUID_OK;
+    // x86 options ordered in progressively optimal
+#if 0
+    if (info.mmx)     { selection =  2; }
+    if (info.sse)     { selection =  3; }
+    if (info.sse2)    { selection =  4; }
+    if (info.sse3)    { selection =  5; }
+    if (info.ssse3)   { selection =  6; }
+    if (info.sse41)   { selection =  7; }
+#endif
+#if BUILD_SSE4
+    if (info.sse42)   { selection =  8; }
+#endif
+#if BUILD_AVX
+    if (info.avx)     { selection =  9; }
+#endif
+#if 0
+    if (info.avx2)    { selection = 10; }
+#endif
+#if BUILD_AVX512
+    if (info.avx512f) { selection = 11; }
+#endif
+
+#if BUILD_ALTIVEC
+    if (info.altivec) { selection = 12; }
+#endif
+
+    //
+    _q->execute = &DOTPROD(_execute_port);
+    switch (selection) {
+    case 0:
+        liquid_log_trace("dotprod_%s_create(), runtime: portable", EXTENSION_FULL);
+        _q->execute = &DOTPROD(_execute_port);
+        return LIQUID_OK;
+    case 1:
+        liquid_log_trace("dotprod_%s_create(), runtime: neon", EXTENSION_FULL);
+        _q->execute = &DOTPROD(_execute_port); // FIXME: link to neon
+        return LIQUID_OK;
+    case 8:
+        liquid_log_trace("dotprod_%s_create(), runtime: sse", EXTENSION_FULL);
+        _q->execute = &DOTPROD(_execute_port); // FIXME: link to SSE
+        return LIQUID_OK;
+    case 9:
+        liquid_log_trace("dotprod_%s_create(), runtime: avx", EXTENSION_FULL);
+        _q->execute = &DOTPROD(_execute_port); // FIXME: link to SSE
+        return LIQUID_OK;
+    case 11:
+        liquid_log_trace("dotprod_%s_create(), runtime: avx512", EXTENSION_FULL);
+        _q->execute = &DOTPROD(_execute_port); // FIXME: link to SSE
+        return LIQUID_OK;
+    case 12:
+        liquid_log_trace("dotprod_%s_create(), runtime: altivec", EXTENSION_FULL);
+        _q->execute = &DOTPROD(_execute_port); // FIXME: link to SSE
+        return LIQUID_OK;
+    default:;
+    }
+
+    return liquid_error(LIQUID_EINT,"dotprod_%s_runtime_select(), invalid selection (%d)",
+        EXTENSION_FULL, selection);
 }
 
 // execute structured dot product (portable version)
