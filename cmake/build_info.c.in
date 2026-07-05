@@ -63,13 +63,13 @@ const struct liquid_build_info_s liquid_build_info =
 
     // vector extensions
     // TODO: set these appropriately
-    .neon               = +0,
-    .sse                = +0,
+    .neon               = @BUILD_NEON@+0,
+    .sse                = @BUILD_SSE4@+0,
     .sse2               = +0,
     .mmx                = +0,
-    .avx                = +0,
-    .avx2               = +0,
-    .avx512f            = +0,
-    .altivec            = +0,
+    .avx                = @BUILD_AVX@+0,
+    .avx2               = @BUILD_AVX2@+0,
+    .avx512f            = @BUILD_AVX512@+0,
+    .altivec            = @BUILD_ALTIVEC@+0,
 };
 
