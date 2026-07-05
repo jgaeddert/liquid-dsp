@@ -48,4 +48,5 @@
 #include "dotprod_crcf.neon.c"
 #include "dotprod_crcf.sse.c"
 #include "dotprod_crcf.avx.c"
+#include "dotprod_crcf.avx512f.c"
 

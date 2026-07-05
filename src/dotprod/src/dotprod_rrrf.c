@@ -47,4 +47,5 @@
 #include "dotprod_rrrf.neon.c"
 #include "dotprod_rrrf.sse.c"
 #include "dotprod_rrrf.avx.c"
+#include "dotprod_rrrf.avx512f.c"
 

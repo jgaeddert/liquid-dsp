@@ -39,6 +39,7 @@ int DOTPROD(_execute_port)(DOTPROD() _q, TI * _x, TO * _y);
 int DOTPROD(_execute_neon)(DOTPROD() _q, TI * _x, TO * _y);
 int DOTPROD(_execute_sse)(DOTPROD() _q, TI * _x, TO * _y);
 int DOTPROD(_execute_avx)(DOTPROD() _q, TI * _x, TO * _y);
+int DOTPROD(_execute_avx512f)(DOTPROD() _q, TI * _x, TO * _y);
 
 // portable structured dot product object
 struct DOTPROD(_s) {
@@ -352,7 +353,7 @@ int DOTPROD(_runtime_select)(DOTPROD() _q)
         return LIQUID_OK;
     case 11:
         liquid_log_trace("dotprod_%s_create(), runtime: avx512", EXTENSION_FULL);
-        _q->execute = &DOTPROD(_execute_port); // FIXME: link to SSE
+        _q->execute = &DOTPROD(_execute_avx512f);
         return LIQUID_OK;
     case 12:
         liquid_log_trace("dotprod_%s_create(), runtime: altivec", EXTENSION_FULL);
