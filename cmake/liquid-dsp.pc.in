@@ -6,9 +6,10 @@ libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
 includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 
 Name: liquid-dsp
-Description: Software-defined radio digital signal processing library
+Description: @PROJECT_DESCRIPTION@
 Version: @PROJECT_VERSION@
-URL: https://liquidsdr.org
+URL: @PROJECT_HOMEPAGE@
+License: @PROJECT_LICENSE@
 Libs: -L${libdir} -l@LIBNAME@
 Libs.private: -lm@LIQUID_PC_LIBS_PRIVATE@
 Cflags: -I${includedir}

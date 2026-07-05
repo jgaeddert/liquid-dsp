@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-// Run-time library version numbers
+// Compile-time library version numbers
 
 #include <stdlib.h>
 #include <stdarg.h>
@@ -40,5 +40,51 @@ const char * liquid_libversion(void)
 int liquid_libversion_number(void)
 {
     return LIQUID_VERSION_NUMBER;
+}
+
+// 'liquid_build_info' is templated in cmake/build_info.c.in and populated
+// into 'build_info.c' by cmake when the command is invoked.
+int liquid_build_info_print(void)
+{
+    // version information
+    printf("copyright       = %s\n", liquid_build_info.copyright);
+    printf("license         = %s\n", liquid_build_info.license);
+    //printf("author          = %s\n", liquid_build_info.author);
+    //printf("homepage        = %s\n", liquid_build_info.homepage);
+    //printf("description     = %s\n", liquid_build_info.description);
+
+    // version information
+    printf("version         = %s\n", liquid_build_info.version);
+    printf("githash         = %s\n", liquid_build_info.githash);
+
+    // date/time of build
+    printf("build_datetime  = %s\n", liquid_build_info.build_datetime);
+    printf("build_hostname  = %s\n", liquid_build_info.build_hostname);
+    printf("build_os        = %s\n", liquid_build_info.build_os);
+    printf("build_arch      = %s\n", liquid_build_info.build_arch);
+    printf("build_toolchain = %s\n", liquid_build_info.build_toolchain);
+    printf("build_type      = %s\n", liquid_build_info.build_type);
+    printf("build_env       = %s\n", liquid_build_info.build_env);
+
+    // target options
+    printf("target_os       = %s\n", liquid_build_info.target_os);
+    printf("target_arch     = %s\n", liquid_build_info.target_arch);
+
+    // other compile-time options
+    printf("logging_enabled = %d\n", liquid_build_info.logging_enabled);
+    printf("logging_level   = %d\n", liquid_build_info.logging_level);
+    printf("color_enabled   = %d\n", liquid_build_info.color_enabled);
+
+    // vector extensions
+    printf("neon            = %d\n", liquid_build_info.neon);
+    printf("sse             = %d\n", liquid_build_info.sse);
+    printf("sse2            = %d\n", liquid_build_info.sse2);
+    printf("mmx             = %d\n", liquid_build_info.mmx);
+    printf("avx             = %d\n", liquid_build_info.avx);
+    printf("avx2            = %d\n", liquid_build_info.avx2);
+    printf("avx512f         = %d\n", liquid_build_info.avx512f);
+    printf("altivec         = %d\n", liquid_build_info.altivec);
+
+    return LIQUID_OK;
 }
 

@@ -95,6 +95,54 @@ int liquid_libversion_number(void);
     exit(1);                                                                \
   }                                                                         \
 
+// get build info
+extern const struct liquid_build_info_s
+{
+    // version information
+    const char copyright[96];       // project copyright
+    const char license[16];         // project license
+    //const char author[64];          // project author
+    //const char homepage[64];        // project homepage URL
+    //const char description[64];     // project description, brief
+
+    // version information
+    const char version[16];         // base, e.g. 1.8.0
+    const char githash[24];         // specific Git hash if available
+
+    // date/time of build
+    const char build_datetime[24];  // UTC ISO 8601 format, e.g. "2026-06-28T14:32:00Z"
+    const char build_hostname[64];  // machine or CI that performed the build
+    const char build_os[64];        // the OS that performed the build, e.g. "macOS"
+    const char build_arch[64];      // the architecture of the OS that performed the build, e.g. "arm64"
+    const char build_toolchain[64]; // the exact version of the compiler that performed the build, e.g. "gcc 11.2.0"
+    const char build_type[64];      // debug, release, etc.
+    const char build_env[64];       // cmake, autotoools, etc.
+
+    // target options
+    const char target_os[64];       //
+    const char target_arch[64];     //
+
+    // other compile-time options
+    const bool logging_enabled;     // logging enabled or not
+    const int  logging_level;       // logging level threshold set at compile time
+    const bool color_enabled;       // color output enabled or not
+
+    // vector extensions
+    const bool neon;
+    const bool sse;
+    const bool sse2;
+    const bool mmx;
+    const bool avx;
+    const bool avx2;
+    const bool avx512f;
+    const bool altivec;
+
+} liquid_build_info;
+
+// print build information
+int liquid_build_info_print(void);
+
+
 // report error
 int liquid_error_fl(int _code, const char * _file, int _line, const char * _format, ...);
 

@@ -8,6 +8,14 @@ get_liquid_version("${CMAKE_CURRENT_SOURCE_DIR}/include/liquid.h" LIQUID_VERSION
 # project definition
 project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
 
+# project metadata; note that some of these are included with the project() directive in
+# later versions of cmake
+set(PROJECT_AUTHOR      "Joseph D. Gaeddert <joseph@liquidsdr.org>")
+set(PROJECT_LICENSE     "MIT")
+set(PROJECT_COPYRIGHT   "Copyright (c) 2007 - 2026 Joseph D. Gaeddert <joseph@liquidsdr.org>")
+set(PROJECT_HOMEPAGE    "https://liquidsdr.org")
+set(PROJECT_DESCRIPTION "Software-defined radio digital signal processing library")
+
 # ---------------------------------------- options ----------------------------------------
 
 option(BUILD_EXAMPLES    "Set to ON to build examples"               ON)
@@ -27,13 +35,20 @@ option(ENABLE_LOGGING    "Set to ON to enable full logging"          ON)
 set(LOGGING_LEVEL "trace" CACHE STRING "Set minimum logging level to compile")
 option(ENABLE_COLOR      "Set to ON to enable color terminal output" ON)
 
-if(NOT BUILD_SHARED_LIBS AND NOT BUILD_STATIC_LIBS)
+if (NOT BUILD_SHARED_LIBS AND NOT BUILD_STATIC_LIBS)
     message(FATAL_ERROR "At least one of BUILD_SHARED_LIBS or BUILD_STATIC_LIBS must be ON")
 endif()
 
-if(COVERAGE)
+# force build type as debug if coverage is enabled
+if (COVERAGE)
     set(CMAKE_BUILD_TYPE "Debug")
-endif(COVERAGE)
+endif()
+
+# default build type if none provided
+if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+endif()
+
 
 # add 'cmake' subdirectory available for custom scripts
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
@@ -98,6 +113,32 @@ check_type_size(int SIZEOF_INT LANGUAGE C)
 # enable testing always
 enable_testing()
 
+# ---------------------------------------- logging ----------------------------------------
+
+if (ENABLE_LOGGING)
+    add_compile_definitions(LIQUID_LOGGING_ENABLE)
+    set(ENABLE_LOGGING 1) # ensure integer
+else()
+    set(ENABLE_LOGGING 0) # ensure integer
+endif()
+
+# set minimum logging level for compilation
+set(LOGGING_LEVELS "trace;debug;info;warn;error;fatal")
+list(FIND LOGGING_LEVELS ${LOGGING_LEVEL} LIQUID_LOG_LEVEL_COMPILE)
+#message("LOG: ${LOGGING_LEVEL} -> ${LOGGING_INDEX}")
+if (${LIQUID_LOG_LEVEL_COMPILE} LESS 0)
+    message(FATAL_ERROR "Unsupported logging level '${LOGGING_LEVEL}', select one of: ${LOGGING_LEVELS}")
+endif()
+add_compile_definitions(LIQUID_LOG_LEVEL_COMPILE=${LIQUID_LOG_LEVEL_COMPILE})
+
+# enable color if requested
+if (ENABLE_COLOR)
+    add_compile_definitions(LIQUID_COLOR_ENABLE)
+    set(ENABLE_COLOR 1) # ensure integer
+else()
+    set(ENABLE_COLOR 0) # ensure integer
+endif()
+
 # ---------------------------------------- SIMD extensions ----------------------------------------
 
 if (ENABLE_SIMD AND C_NEON_FOUND)
@@ -136,10 +177,42 @@ else()
     set(BUILD_ALTIVEC 0)
 endif()
 
-configure_file(cmake/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+# ---------------------------------------- build info ----------------------------------------
+
+# Date/Time (UTC ISO 8601)
+string(TIMESTAMP BUILD_DATETIME "%Y-%m-%dT%H:%M:%SZ" UTC)
+
+# get the hostname
+cmake_host_system_information(RESULT BUILD_HOSTNAME QUERY HOSTNAME)
+
+# git commit hash
+find_package(Git QUIET)
+if (GIT_FOUND)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-parse --short=16 HEAD
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE BUILD_GITHASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+endif()
+
+# fallback string if git fails or isn't installed
+if (NOT BUILD_GITHASH)
+    set(BUILD_GITHASH "unknown")
+endif()
+
+set(CMAKE_C_COMPILER_INFO "${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}")
+
+set(BUILD_ENV "cmake")
 
 # this file can only use the @VARIABLE@ syntax
 #configure_file(cmake/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
+
+# this file can only use the @VARIABLE@ syntax
+configure_file(cmake/build_info.c.in ${CMAKE_CURRENT_BINARY_DIR}/build_info.c @ONLY)
+
+configure_file(cmake/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 # ---------------------------------------- main sources ----------------------------------------
 
@@ -477,27 +550,13 @@ set(LIQUID_OBJECTS
     $<TARGET_OBJECTS:utility>
     $<TARGET_OBJECTS:vector>)
 
-if(ENABLE_LOGGING)
-    add_compile_definitions(LIQUID_LOGGING_ENABLE)
-endif(ENABLE_LOGGING)
-
-# set minimum logging level for compilation
-set(LOGGING_LEVELS "trace;debug;info;warn;error;fatal")
-list(FIND LOGGING_LEVELS ${LOGGING_LEVEL} LIQUID_LOG_LEVEL_COMPILE)
-#message("LOG: ${LOGGING_LEVEL} -> ${LOGGING_INDEX}")
-if (${LIQUID_LOG_LEVEL_COMPILE} LESS 0)
-    message(FATAL_ERROR "Unsupported logging level '${LOGGING_LEVEL}', select one of: ${LOGGING_LEVELS}")
-endif()
-add_compile_definitions(LIQUID_LOG_LEVEL_COMPILE=${LIQUID_LOG_LEVEL_COMPILE})
-
-# enable color if requested
-if(ENABLE_COLOR)
-    add_compile_definitions(LIQUID_COLOR_ENABLE)
-endif(ENABLE_COLOR)
-
 # Build shared library
-if(BUILD_SHARED_LIBS)
-    add_library(${LIBNAME} SHARED src/libliquid.c ${LIQUID_OBJECTS})
+if (BUILD_SHARED_LIBS)
+    add_library(${LIBNAME} SHARED
+        src/libliquid.c
+        ${CMAKE_CURRENT_BINARY_DIR}/build_info.c
+        ${LIQUID_OBJECTS}
+    )
     add_library(${NAMESPACE}::${LIBNAME} ALIAS ${LIBNAME})
     set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
     set(LIQUID_TARGETS ${LIBNAME})
@@ -505,7 +564,11 @@ endif()
 
 # Build static library
 if(BUILD_STATIC_LIBS)
-    add_library(${LIBNAME}-static STATIC src/libliquid.c ${LIQUID_OBJECTS})
+    add_library(${LIBNAME}-static STATIC
+        src/libliquid.c
+        ${CMAKE_CURRENT_BINARY_DIR}/build_info.c
+        ${LIQUID_OBJECTS}
+    )
     add_library(${NAMESPACE}::${LIBNAME}-static ALIAS ${LIBNAME}-static)
     set_target_properties(${LIBNAME}-static PROPERTIES OUTPUT_NAME ${LIBNAME})
     list(APPEND LIQUID_TARGETS ${LIBNAME}-static)

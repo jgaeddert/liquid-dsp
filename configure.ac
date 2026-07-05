@@ -27,6 +27,12 @@ AC_INIT([liquid-dsp],[1.8.0],[joseph@liquidsdr.org])
 AC_CONFIG_SRCDIR([src/libliquid.c])
 AC_CONFIG_MACRO_DIR([scripts])
 
+PROJECT_COPYRIGHT="Copyright (c) 2007 - 2026 Joseph D. Gaeddert <joseph@liquidsdr.org>"
+PROJECT_LICENSE="MIT"
+PROJECT_AUTHOR="Joseph D. Gaeddert <joseph@liquidsdr.org>"
+PROJECT_HOMEPAGE="https://liquidsdr.org"
+PROJECT_DESCRIPTION="Software-defined radio digital signal processing library"
+
 # permit auxiliary scripts directory (e.g. config.sub, config.guess, install-sh)
 AC_CONFIG_AUX_DIR(scripts/)
 
@@ -334,5 +340,70 @@ AC_SUBST(DEBUG_MSG_OPTION)          # debug messages option (.e.g -DDEBUG)
 AC_SUBST(COVERAGE_OPTION)           # source code coverage option (e.g. -fprofile-arcs -ftest-coverage)
 AC_SUBST(CLIB)                      # C library linkage (e.g. '-lc')
 
+# gather metadata
+# NOTE: many of these macros use a 'CMAKE' prefix so that a common build_info
+#       template file may be used between cmake and legacy autotools
+AC_SUBST([PROJECT_COPYRIGHT])
+AC_SUBST([PROJECT_LICENSE])
+AC_SUBST([PROJECT_AUTHOR])
+AC_SUBST([PROJECT_HOMEPAGE])
+AC_SUBST([PROJECT_DESCRIPTION])
+
+# git hash
+BUILD_GITHASH=$(git rev-parse --short=16 HEAD 2>/dev/null || echo "unknown")
+AC_SUBST([BUILD_GITHASH])
+
+# build_datetime
+BUILD_DATETIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+AC_SUBST([BUILD_DATETIME])
+
+# build_hostname
+BUILD_HOSTNAME=$(hostname)
+AC_SUBST([BUILD_HOSTNAME])
+
+# build_os
+CMAKE_HOST_SYSTEM_NAME=$(uname -s)
+AC_SUBST([CMAKE_HOST_SYSTEM_NAME])
+
+# build_arch
+CMAKE_HOST_SYSTEM_PROCESSOR=$(uname -m)
+AC_SUBST([CMAKE_HOST_SYSTEM_PROCESSOR])
+
+# build_toolchain
+CMAKE_C_COMPILER_INFO=$($CC --version | head -n1)
+AC_SUBST([CMAKE_C_COMPILER_INFO])
+
+# build_type
+CMAKE_BUILD_TYPE="Release"
+AC_SUBST([CMAKE_BUILD_TYPE])
+
+# build_env
+BUILD_ENV="autotools"
+AC_SUBST([BUILD_ENV])
+
+# target_os
+CMAKE_SYSTEM_NAME="${target_os}"
+AC_SUBST([CMAKE_SYSTEM_NAME])
+
+# target_arch
+CMAKE_SYSTEM_PROCESSOR="${target_cpu}"
+AC_SUBST([CMAKE_SYSTEM_PROCESSOR])
+
+# logging enabled or not
+ENABLE_LOGGING="1"
+AC_SUBST([ENABLE_LOGGING])
+
+# logging level threshold
+LIQUID_LOG_LEVEL_COMPILE="0"
+AC_SUBST([LIQUID_LOG_LEVEL_COMPILE])
+
+# color enabled or not
+ENABLE_COLOR="1"
+AC_SUBST([ENABLE_COLOR])
+
+
+AC_CONFIG_FILES([cmake/build_info.c])
 AC_CONFIG_FILES([makefile])
+
 AC_OUTPUT
+
