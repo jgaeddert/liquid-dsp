@@ -30,7 +30,7 @@
 #include <unistd.h>
 
 #include "liquid.h"
-#include "config.h"
+#include "liquid.config.h"
 
 const char liquid_version[] = LIQUID_VERSION;
 
