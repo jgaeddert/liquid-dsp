@@ -37,3 +37,27 @@ void * liquid_malloc_copy(void *       _orig,
     return copy;
 }
 
+// portable aligned memory allocation
+//  _alignment  : memory alignment [bytes]
+//  _size       : number of elements
+void * liquid_aligned_alloc(size_t _alignment, size_t _size)
+{
+#if defined _WIN32
+    // TODO: verify this
+    return _aligned_malloc(_size, _alignment);
+#else
+    void * ptr = NULL;
+    posix_memalign(&ptr, _alignment, _size);
+    return ptr;
+#endif
+}
+
+// portable aligned free
+int liquid_aligned_free(void * _p)
+{
+#if defined _WIN32
+    _aligned_free(_p);
+#else
+    free(_p);
+#endif
+}

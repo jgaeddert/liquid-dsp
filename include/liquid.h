@@ -10623,6 +10623,14 @@ unsigned int msequence_genpoly_period(unsigned int _g);
 //  _size   : size of each element
 void * liquid_malloc_copy(void * _orig, unsigned int _num, unsigned int _size);
 
+// portable aligned memory allocation
+//  _alignment  : memory alignment [bytes]
+//  _size       : number of elements
+void * liquid_aligned_alloc(size_t _alignment, size_t _size);
+
+// portable aligned free
+int liquid_aligned_free(void * _p);
+
 // pack binary array with symbol(s)
 //  _src        :   source array, [size: _n x 1]
 //  _n          :   input source array length
