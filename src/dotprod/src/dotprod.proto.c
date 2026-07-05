@@ -33,8 +33,10 @@
 // select runtime execution method
 int DOTPROD(_runtime_select)(DOTPROD() _q);
 
-// execution methods
+// execution methods: always defined but only really implemented on
+// specific architectures
 int DOTPROD(_execute_port)(DOTPROD() _q, TI * _x, TO * _y);
+int DOTPROD(_execute_neon)(DOTPROD() _q, TI * _x, TO * _y);
 
 // portable structured dot product object
 struct DOTPROD(_s) {
@@ -126,14 +128,24 @@ DOTPROD() DOTPROD(_create_opt)(TC *         _h,
     q->n = _n;
 
     // allocate memory for coefficients
-#if TC_COMPLEX==0
+    unsigned int i;
+#if TC_COMPLEX==0 && TI_COMPLEX==0
     // real-only coefficients
     q->h = (T*) liquid_aligned_alloc(64, (q->n)*sizeof(T));
 
     // copy coefficients
-    unsigned int i;
     for (i=0; i<q->n; i++)
         q->h[i] = _h[_rev ? q->n-i-1 : i];
+#elif TC_COMPLEX==0 && TI_COMPLEX==1
+    // real-only coefficients (double length for SIMD)
+    q->h = (T*) liquid_aligned_alloc(64, 2*(q->n)*sizeof(T));
+
+    // copy coefficients
+    for (i=0; i<q->n; i++) {
+        unsigned int k = _rev ? q->n-i-1 : i;
+        q->h[2*i+0] = _h[k];
+        q->h[2*i+1] = _h[k];
+    }
 #else
     // complex coefficients
     q->hi = (T*) liquid_aligned_alloc(64, 2*(q->n)*sizeof(T));
@@ -142,7 +154,6 @@ DOTPROD() DOTPROD(_create_opt)(TC *         _h,
     // set coefficients, repeated
     //  hi = { crealf(_h[0]), crealf(_h[0]), ... crealf(_h[n-1]), crealf(_h[n-1])}
     //  hq = { cimagf(_h[0]), cimagf(_h[0]), ... cimagf(_h[n-1]), cimagf(_h[n-1])}
-    unsigned int i;
     for (i=0; i<q->n; i++) {
         unsigned int k = _rev ? q->n-i-1 : i;
         q->hi[2*i+0] = crealf(_h[k]);
@@ -210,12 +221,14 @@ DOTPROD() DOTPROD(_copy)(DOTPROD() q_orig)
     q_copy->n = q_orig->n;
 
     // allocate memory and copy coefficients
-#if TC_COMPLEX==0
+#if TC_COMPLEX==0 && TI_COMPLEX==0
     // real-only coefficients
     q_copy->h = (T*) liquid_aligned_alloc(64, (q_copy->n)*sizeof(T));
-
-    // copy coefficients
     memmove(q_copy->h, q_orig->h, (q_copy->n)*sizeof(T));
+#elif TC_COMPLEX==0 && TI_COMPLEX==1
+    // real-only coefficients (double length)
+    q_copy->h = (T*) liquid_aligned_alloc(64, 2*(q_copy->n)*sizeof(T));
+    memmove(q_copy->h, q_orig->h, 2*(q_copy->n)*sizeof(T));
 #else
     // complex coefficients
     q_copy->hi = (T*) liquid_aligned_alloc(64, 2*(q_copy->n)*sizeof(T));
@@ -289,7 +302,6 @@ int DOTPROD(_runtime_select)(DOTPROD() _q)
         _q->execute = &DOTPROD(_execute_port);
     }
 #endif
-    if (info.neon)    { selection =  1; }
 
     // x86 options ordered in progressively optimal
 #if 0
@@ -326,7 +338,7 @@ int DOTPROD(_runtime_select)(DOTPROD() _q)
         return LIQUID_OK;
     case 1:
         liquid_log_trace("dotprod_%s_create(), runtime: neon", EXTENSION_FULL);
-        _q->execute = &DOTPROD(_execute_port); // FIXME: link to neon
+        _q->execute = &DOTPROD(_execute_neon);
         return LIQUID_OK;
     case 8:
         liquid_log_trace("dotprod_%s_create(), runtime: sse", EXTENSION_FULL);
@@ -359,13 +371,20 @@ int DOTPROD(_execute_port)(DOTPROD() _q,
                            TI *      _x,
                            TO *      _y)
 {
-#if TC_COMPLEX==0
-    // initialize accumulator
-    TO r=0;
-
     unsigned int i;
+#if TC_COMPLEX==0 && TI_COMPLEX==0
+    // accumulate
+    TO r=0;
     for (i=0; i<_q->n; i++)
         r += _q->h[i] * _x[i];
+
+    // return result
+    *_y = r;
+#elif TC_COMPLEX==0 && TI_COMPLEX==1
+    // accumulate (stride coefficients by 2)
+    TO r=0;
+    for (i=0; i<_q->n; i++)
+        r += _q->h[2*i+0] * _x[i];
 
     // return result
     *_y = r;
@@ -380,7 +399,6 @@ int DOTPROD(_execute_port)(DOTPROD() _q,
     // { x[0].real,  x[0].imag,  x[1].real,  x[1].imag, ...}
     // {hi[0].real, hi[0].real, hi[1].real, hi[1].real, ...}
     // {hq[0].imag, hq[0].imag, hq[1].imag, hq[1].imag, ...}
-    unsigned int i;
     for (i=0; i<_q->n; i++)
     {
         ci0 += _q->hi[2*i+0] * x[2*i+0];

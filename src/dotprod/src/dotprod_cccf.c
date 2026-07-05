@@ -41,4 +41,9 @@
 #define TC_COMPLEX      1
 #define TI_COMPLEX      1
 
+// main definition with portable functionality
 #include "dotprod.proto.c"
+
+// SIMD extensions
+#include "dotprod_cccf.neon.c"
+

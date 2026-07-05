@@ -163,7 +163,11 @@ add_library(core OBJECT
     src/core/src/runtime.c
     src/core/src/timer.c)
 
-add_library(dotprod OBJECT)
+add_library(dotprod OBJECT
+    src/dotprod/src/dotprod_cccf.c
+    src/dotprod/src/dotprod_crcf.c
+    src/dotprod/src/dotprod_rrrf.c
+    src/dotprod/src/sumsq.c)
 
 add_library(equalization OBJECT
     src/equalization/src/equalizer_cccf.c
@@ -335,7 +339,9 @@ add_library(utility OBJECT
     src/utility/src/shift_array.c
     src/utility/src/utility.c)
 
-add_library(vector OBJECT)
+add_library(vector OBJECT
+    src/vector/src/vectorf.port.c
+    src/vector/src/vectorcf.port.c)
 
 foreach(lib
     agc audio buffer channel core dotprod equalization fec fft filter framing math
@@ -348,81 +354,81 @@ foreach(lib
 endforeach()
 
 # ---------------------------------------- SIMD extensions ----------------------------------------
-if (C_NEON_FOUND AND ENABLE_SIMD)
-    target_sources(dotprod PUBLIC
-        src/dotprod/src/dotprod_cccf.neon.c
-        src/dotprod/src/dotprod_crcf.neon.c
-        src/dotprod/src/dotprod_rrrf.neon.c
-        src/dotprod/src/sumsq.c)
-    target_sources(vector PUBLIC
-        src/vector/src/vectorf.port.c
-        src/vector/src/vectorcf.neon.c)
-    target_compile_options(dotprod PUBLIC ${C_NEON_FLAGS})
-    target_compile_options(vector PUBLIC ${C_NEON_FLAGS})
-elseif (C_AVX512_FOUND AND ENABLE_SIMD)
-    target_sources(dotprod PUBLIC
-        src/dotprod/src/dotprod_cccf.avx512f.c
-        src/dotprod/src/dotprod_crcf.avx512f.c
-        src/dotprod/src/dotprod_rrrf.avx512f.c
-        src/dotprod/src/sumsq.avx512f.c)
-    target_sources(vector PUBLIC
-        src/vector/src/vectorf.port.c
-        src/vector/src/vectorcf.port.c)
-    target_compile_options(dotprod PUBLIC ${C_AVX512_FLAGS})
-    target_compile_options(vector PUBLIC ${C_AVX512_FLAGS})
-elseif (C_AVX2_FOUND AND ENABLE_SIMD)
-    target_sources(dotprod PUBLIC
-        src/dotprod/src/dotprod_cccf.avx.c
-        src/dotprod/src/dotprod_crcf.avx.c
-        src/dotprod/src/dotprod_rrrf.avx.c
-        src/dotprod/src/sumsq.avx.c)
-    target_sources(vector PUBLIC
-        src/vector/src/vectorf.avx.c
-        src/vector/src/vectorcf.port.c)
-    target_compile_options(dotprod PUBLIC ${C_AVX2_FLAGS})
-    target_compile_options(vector PUBLIC ${C_AVX2_FLAGS})
-elseif (C_AVX_FOUND AND ENABLE_SIMD)
-    target_sources(dotprod PUBLIC
-        src/dotprod/src/dotprod_cccf.avx.c
-        src/dotprod/src/dotprod_crcf.avx.c
-        src/dotprod/src/dotprod_rrrf.avx.c
-        src/dotprod/src/sumsq.avx.c)
-    target_sources(vector PUBLIC
-        src/vector/src/vectorf.port.c
-        src/vector/src/vectorcf.port.c)
-    target_compile_options(dotprod PUBLIC ${C_AVX_FLAGS})
-    target_compile_options(vector PUBLIC ${C_AVX_FLAGS})
-elseif (C_SSE4_FOUND AND ENABLE_SIMD)
-    target_sources(dotprod PUBLIC
-        src/dotprod/src/dotprod_cccf.sse.c
-        src/dotprod/src/dotprod_crcf.sse.c
-        src/dotprod/src/dotprod_rrrf.sse.c
-        src/dotprod/src/sumsq.sse.c)
-    target_sources(vector PUBLIC
-        src/vector/src/vectorf.port.c
-        src/vector/src/vectorcf.port.c)
-    target_compile_options(dotprod PUBLIC ${C_SSE4_FLAGS})
-    target_compile_options(vector PUBLIC ${C_SSE4_FLAGS})
-elseif (C_ALTIVEC_FOUND AND ENABLE_SIMD)
-    target_sources(dotprod PUBLIC
-        src/dotprod/src/dotprod_cccf.c
-        src/dotprod/src/dotprod_crcf.av.c
-        src/dotprod/src/dotprod_rrrf.av.c
-        src/dotprod/src/sumsq.c)
-    target_sources(vector PUBLIC
-        src/vector/src/vectorf.port.c
-        src/vector/src/vectorcf.port.c)
-else()
-    # portable C version
-    target_sources(dotprod PUBLIC
-        src/dotprod/src/dotprod_cccf.c
-        src/dotprod/src/dotprod_crcf.c
-        src/dotprod/src/dotprod_rrrf.c
-        src/dotprod/src/sumsq.c)
-    target_sources(vector PUBLIC
-        src/vector/src/vectorf.port.c
-        src/vector/src/vectorcf.port.c)
-endif()
+#if (C_NEON_FOUND AND ENABLE_SIMD)
+#    target_sources(dotprod PUBLIC
+#        src/dotprod/src/dotprod_cccf.neon.c
+#        src/dotprod/src/dotprod_crcf.neon.c
+#        src/dotprod/src/dotprod_rrrf.neon.c
+#        src/dotprod/src/sumsq.c)
+#    target_sources(vector PUBLIC
+#        src/vector/src/vectorf.port.c
+#        src/vector/src/vectorcf.neon.c)
+#    target_compile_options(dotprod PUBLIC ${C_NEON_FLAGS})
+#    target_compile_options(vector PUBLIC ${C_NEON_FLAGS})
+#elseif (C_AVX512_FOUND AND ENABLE_SIMD)
+#    target_sources(dotprod PUBLIC
+#        src/dotprod/src/dotprod_cccf.avx512f.c
+#        src/dotprod/src/dotprod_crcf.avx512f.c
+#        src/dotprod/src/dotprod_rrrf.avx512f.c
+#        src/dotprod/src/sumsq.avx512f.c)
+#    target_sources(vector PUBLIC
+#        src/vector/src/vectorf.port.c
+#        src/vector/src/vectorcf.port.c)
+#    target_compile_options(dotprod PUBLIC ${C_AVX512_FLAGS})
+#    target_compile_options(vector PUBLIC ${C_AVX512_FLAGS})
+#elseif (C_AVX2_FOUND AND ENABLE_SIMD)
+#    target_sources(dotprod PUBLIC
+#        src/dotprod/src/dotprod_cccf.avx.c
+#        src/dotprod/src/dotprod_crcf.avx.c
+#        src/dotprod/src/dotprod_rrrf.avx.c
+#        src/dotprod/src/sumsq.avx.c)
+#    target_sources(vector PUBLIC
+#        src/vector/src/vectorf.avx.c
+#        src/vector/src/vectorcf.port.c)
+#    target_compile_options(dotprod PUBLIC ${C_AVX2_FLAGS})
+#    target_compile_options(vector PUBLIC ${C_AVX2_FLAGS})
+#elseif (C_AVX_FOUND AND ENABLE_SIMD)
+#    target_sources(dotprod PUBLIC
+#        src/dotprod/src/dotprod_cccf.avx.c
+#        src/dotprod/src/dotprod_crcf.avx.c
+#        src/dotprod/src/dotprod_rrrf.avx.c
+#        src/dotprod/src/sumsq.avx.c)
+#    target_sources(vector PUBLIC
+#        src/vector/src/vectorf.port.c
+#        src/vector/src/vectorcf.port.c)
+#    target_compile_options(dotprod PUBLIC ${C_AVX_FLAGS})
+#    target_compile_options(vector PUBLIC ${C_AVX_FLAGS})
+#elseif (C_SSE4_FOUND AND ENABLE_SIMD)
+#    target_sources(dotprod PUBLIC
+#        src/dotprod/src/dotprod_cccf.sse.c
+#        src/dotprod/src/dotprod_crcf.sse.c
+#        src/dotprod/src/dotprod_rrrf.sse.c
+#        src/dotprod/src/sumsq.sse.c)
+#    target_sources(vector PUBLIC
+#        src/vector/src/vectorf.port.c
+#        src/vector/src/vectorcf.port.c)
+#    target_compile_options(dotprod PUBLIC ${C_SSE4_FLAGS})
+#    target_compile_options(vector PUBLIC ${C_SSE4_FLAGS})
+#elseif (C_ALTIVEC_FOUND AND ENABLE_SIMD)
+#    target_sources(dotprod PUBLIC
+#        src/dotprod/src/dotprod_cccf.c
+#        src/dotprod/src/dotprod_crcf.av.c
+#        src/dotprod/src/dotprod_rrrf.av.c
+#        src/dotprod/src/sumsq.c)
+#    target_sources(vector PUBLIC
+#        src/vector/src/vectorf.port.c
+#        src/vector/src/vectorcf.port.c)
+#else()
+#    # portable C version
+#    target_sources(dotprod PUBLIC
+#        src/dotprod/src/dotprod_cccf.c
+#        src/dotprod/src/dotprod_crcf.c
+#        src/dotprod/src/dotprod_rrrf.c
+#        src/dotprod/src/sumsq.c)
+#    target_sources(vector PUBLIC
+#        src/vector/src/vectorf.port.c
+#        src/vector/src/vectorcf.port.c)
+#endif()
 
 # ---------------------------------------- main library ----------------------------------------
 

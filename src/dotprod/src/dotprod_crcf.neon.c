@@ -31,185 +31,16 @@
 
 #include "liquid.internal.h"
 
+// build guard
+#if BUILD_NEON
+
 // include proper SIMD extensions for ARM Neon
 #include <arm_neon.h>
 
-#define DEBUG_DOTPROD_CRCF_NEON   0
-
-// forward declaration of internal methods
-int dotprod_crcf_execute_neon(dotprod_crcf    _q,
-                              float complex * _x,
-                              float complex * _y);
-int dotprod_crcf_execute_neon4(dotprod_crcf    _q,
-                               float complex * _x,
-                               float complex * _y);
-
-// basic dot product (ordinal calculation) using neon extensions
-int dotprod_crcf_run(float *         _h,
-                     float complex * _x,
-                     unsigned int    _n,
-                     float complex * _y)
-{
-    // initialize accumulator
-    float complex r=0;
-
-    unsigned int i;
-    for (i=0; i<_n; i++)
-        r += _h[i] * _x[i];
-
-    // return result
-    *_y = r;
-    return LIQUID_OK;
-}
-
-
-// basic dot product (ordinal calculation) with loop unrolled
-int dotprod_crcf_run4(float *         _h,
-                      float complex * _x,
-                      unsigned int    _n,
-                      float complex * _y)
-{
-    float complex r = 0;
-
-    // t = 4*(floor(_n/4))
-    unsigned int t=(_n>>2)<<2; 
-
-    // compute dotprod in groups of 4
-    unsigned int i;
-    for (i=0; i<t; i+=4) {
-        r += _h[i]   * _x[i];
-        r += _h[i+1] * _x[i+1];
-        r += _h[i+2] * _x[i+2];
-        r += _h[i+3] * _x[i+3];
-    }
-
-    // clean up remaining
-    for ( ; i<_n; i++)
-        r += _h[i] * _x[i];
-
-    *_y = r;
-    return LIQUID_OK;
-}
-
-
-//
-// structured ARM Neon dot product
-//
-
-struct dotprod_crcf_s {
-    unsigned int n;     // length
-    float * h;          // coefficients array
-};
-
-dotprod_crcf dotprod_crcf_create_opt(float *      _h,
-                                     unsigned int _n,
-                                     int          _rev)
-{
-    dotprod_crcf q = (dotprod_crcf)malloc(sizeof(struct dotprod_crcf_s));
-    q->n = _n;
-
-    // allocate memory for coefficients (double size)
-    q->h = (float*) malloc( 2*q->n*sizeof(float) );
-
-    // set coefficients, repeated
-    //  h = { _h[0], _h[0], _h[1], _h[1], ... _h[n-1], _h[n-1]}
-    unsigned int i;
-    for (i=0; i<q->n; i++) {
-        unsigned int k = _rev ? q->n-i-1 : i;
-        q->h[2*i+0] = _h[k];
-        q->h[2*i+1] = _h[k];
-    }
-
-    // return object
-    return q;
-}
-
-dotprod_crcf dotprod_crcf_create(float *      _h,
-                                 unsigned int _n)
-{
-    return dotprod_crcf_create_opt(_h,_n,0);
-}
-
-dotprod_crcf dotprod_crcf_create_rev(float *      _h,
-                                     unsigned int _n)
-{
-    return dotprod_crcf_create_opt(_h,_n,1);
-}
-
-// re-create the structured dotprod object
-dotprod_crcf dotprod_crcf_recreate(dotprod_crcf _q,
-                                   float *      _h,
-                                   unsigned int _n)
-{
-    // completely destroy and re-create dotprod object
-    dotprod_crcf_destroy(_q);
-    return dotprod_crcf_create(_h,_n);
-}
-
-// re-create the structured dotprod object, reversing coefficients
-dotprod_crcf dotprod_crcf_recreate_rev(dotprod_crcf _q,
-                                       float *      _h,
-                                       unsigned int _n)
-{
-    // completely destroy and re-create dotprod object
-    dotprod_crcf_destroy(_q);
-    return dotprod_crcf_create_rev(_h,_n);
-}
-
-dotprod_crcf dotprod_crcf_copy(dotprod_crcf q_orig)
-{
-    // validate input
-    if (q_orig == NULL)
-        return liquid_error_config("dotprod_crcf_copy().neon, object cannot be NULL");
-
-    dotprod_crcf q_copy = (dotprod_crcf)malloc(sizeof(struct dotprod_crcf_s));
-    q_copy->n = q_orig->n;
-
-    // allocate memory for coefficients (repeated)
-    q_copy->h = (float*) malloc( 2*q_copy->n*sizeof(float) );
-
-    // copy coefficients array (repeated)
-    //  h = { _h[0], _h[0], _h[1], _h[1], ... _h[n-1], _h[n-1]}
-    memmove(q_copy->h, q_orig->h, 2*q_orig->n*sizeof(float));
-
-    // return object
-    return q_copy;
-}
-
-int dotprod_crcf_destroy(dotprod_crcf _q)
-{
-    free(_q->h);
-    free(_q);
-    return LIQUID_OK;
-}
-
-int dotprod_crcf_print(dotprod_crcf _q)
-{
-    // print coefficients to screen, skipping odd entries (due
-    // to repeated coefficients)
-    printf("dotprod_crcf [arm-neon, %u coefficients]\n", _q->n);
-    unsigned int i;
-    for (i=0; i<_q->n; i++)
-        printf("  %3u : %12.9f\n", i, _q->h[2*i]);
-    return LIQUID_OK;
-}
-
-// 
-int dotprod_crcf_execute(dotprod_crcf    _q,
-                         float complex * _x,
-                         float complex * _y)
-{
-    // switch based on size
-    if (_q->n < 32) {
-        return dotprod_crcf_execute_neon(_q, _x, _y);
-    }
-    return dotprod_crcf_execute_neon4(_q, _x, _y);
-}
-
 // use ARM Neon extensions
-int dotprod_crcf_execute_neon(dotprod_crcf    _q,
-                              float complex * _x,
-                              float complex * _y)
+int dotprod_crcf_execute_neon1(dotprod_crcf    _q,
+                               float complex * _x,
+                               float complex * _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;
@@ -269,7 +100,6 @@ int dotprod_crcf_execute_neon4(dotprod_crcf    _q,
                                float complex * _x,
                                float complex * _y)
 {
-#if 1
     // type cast input as floating point array
     float * x = (float*) _x;
 
@@ -340,9 +170,33 @@ int dotprod_crcf_execute_neon4(dotprod_crcf    _q,
 
     // set return value
     *_y = w[0] + w[1]*_Complex_I;
-#else
-    dotprod_crcf_execute_neon(_q, _x, _y);
-#endif
     return LIQUID_OK;
 }
+
+// 
+int dotprod_crcf_execute_neon(dotprod_crcf    _q,
+                              float complex * _x,
+                              float complex * _y)
+{
+    liquid_log_trace("dotprod_crcf_execute_neon()");
+    // switch based on size
+    if (_q->n < 32) {
+        return dotprod_crcf_execute_neon1(_q, _x, _y);
+    }
+    return dotprod_crcf_execute_neon4(_q, _x, _y);
+}
+
+// build guard
+#else
+
+// invalidated
+int dotprod_crcf_execute_neon(dotprod_crcf    _q,
+                              float complex * _x,
+                              float complex * _y)
+{
+    return liquid_error(LIQUID_EICONFIG,"neon extensions not available");
+}
+
+// build guard
+#endif
 

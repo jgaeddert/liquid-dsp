@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,16 +31,17 @@
 
 #include "liquid.internal.h"
 
+// build guard
+#if BUILD_NEON
+
 // include proper SIMD extensions for ARM Neon
 #include <arm_neon.h>
 
-#define DEBUG_DOTPROD_RRRF_NEON   0
-
 // basic dot product (ordinal calculation) using neon extensions
-int dotprod_rrrf_run(float *      _h,
-                     float *      _x,
-                     unsigned int _n,
-                     float *      _y)
+int dotprod_rrrf_run_neon(float *      _h,
+                          float *      _x,
+                          unsigned int _n,
+                          float *      _y)
 {
     float32x4_t v;   // input vector
     float32x4_t h;   // coefficients vector
@@ -84,10 +85,10 @@ int dotprod_rrrf_run(float *      _h,
 }
 
 // basic dot product (ordinal calculation) with loop unrolled, neon extensions
-int dotprod_rrrf_run4(float *      _h,
-                      float *      _x,
-                      unsigned int _n,
-                      float *      _y)
+int dotprod_rrrf_run4_neon(float *      _h,
+                           float *      _x,
+                           unsigned int _n,
+                           float *      _y)
 {
     float32x4_t v0, v1, v2, v3;
     float32x4_t h0, h1, h2, h3;
@@ -153,114 +154,47 @@ int dotprod_rrrf_run4(float *      _h,
     return LIQUID_OK;
 }
 
-
-//
-// structured dot product
-//
-
-struct dotprod_rrrf_s {
-    unsigned int n;     // length
-    float * h;          // coefficients array
-};
-
-// create dotprod object
-dotprod_rrrf dotprod_rrrf_create_opt(float *      _h,
-                                     unsigned int _n,
-                                     int          _rev)
-{
-    dotprod_rrrf q = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
-    q->n = _n;
-
-    // allocate memory for coefficients
-    q->h = (float*) malloc( q->n*sizeof(float) );
-
-    // copy coefficients
-    unsigned int i;
-    for (i=0; i<q->n; i++)
-        q->h[i] = _h[_rev ? q->n-i-1 : i];
-
-    // return object
-    return q;
-}
-
-dotprod_rrrf dotprod_rrrf_create(float *      _h,
-                                 unsigned int _n)
-{
-    return dotprod_rrrf_create_opt(_h,_n,0);
-}
-
-dotprod_rrrf dotprod_rrrf_create_rev(float *      _h,
-                                     unsigned int _n)
-{
-    return dotprod_rrrf_create_opt(_h,_n,1);
-}
-
-// re-create the structured dotprod object
-dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _q,
-                                   float *      _h,
-                                   unsigned int _n)
-{
-    // completely destroy and re-create dotprod object
-    dotprod_rrrf_destroy(_q);
-    return dotprod_rrrf_create(_h,_n);
-}
-
-// re-create the structured dotprod object, reversing coefficients
-dotprod_rrrf dotprod_rrrf_recreate_rev(dotprod_rrrf _q,
-                                       float *      _h,
-                                        unsigned int _n)
-{
-    // completely destroy and re-create dotprod object
-    dotprod_rrrf_destroy(_q);
-    return dotprod_rrrf_create_rev(_h,_n);
-}
-
-dotprod_rrrf dotprod_rrrf_copy(dotprod_rrrf q_orig)
-{
-    // validate input
-    if (q_orig == NULL)
-        return liquid_error_config("dotprod_rrrf_copy().neon, object cannot be NULL");
-
-    dotprod_rrrf q_copy = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
-    q_copy->n = q_orig->n;
-
-    // allocate memory for coefficients
-    q_copy->h = (float*) malloc( q_copy->n*sizeof(float) );
-
-    // copy coefficients array
-    memmove(q_copy->h, q_orig->h, q_orig->n*sizeof(float));
-
-    // return object
-    return q_copy;
-}
-
-// destroy dotprod object, freeing internal memory
-int dotprod_rrrf_destroy(dotprod_rrrf _q)
-{
-    free(_q->h);
-    free(_q);
-    return LIQUID_OK;
-}
-
-// print dotprod internal state
-int dotprod_rrrf_print(dotprod_rrrf _q)
-{
-    printf("dotprod_rrrf [arm-neon, %u coefficients]\n", _q->n);
-    unsigned int i;
-    for (i=0; i<_q->n; i++)
-        printf("%3u : %12.9f\n", i, _q->h[i]);
-    return LIQUID_OK;
-}
-
 // execute dot product on input vector
-int dotprod_rrrf_execute(dotprod_rrrf _q,
-                         float *      _x,
-                         float *      _y)
+int dotprod_rrrf_execute_neon(dotprod_rrrf _q,
+                              float *      _x,
+                              float *      _y)
 {
+    liquid_log_trace("dotprod_rrrf_execute_neon()");
     // switch based on size
     if (_q->n < 16) {
-        return dotprod_rrrf_run(_q->h, _x, _q->n, _y);
+        return dotprod_rrrf_run_neon(_q->h, _x, _q->n, _y);
     }
-    return dotprod_rrrf_run4(_q->h, _x, _q->n, _y);
+    return dotprod_rrrf_run4_neon(_q->h, _x, _q->n, _y);
 }
 
+// build guard
+#else
+
+// invalidated
+int dotprod_rrrf_run_neon(float *      _h,
+                          float *      _x,
+                          unsigned int _n,
+                          float *      _y)
+{
+    return liquid_error(LIQUID_EICONFIG,"neon extensions not available");
+}
+
+// invalidated
+int dotprod_rrrf_run4_neon(float *      _h,
+                           float *      _x,
+                           unsigned int _n,
+                           float *      _y)
+{
+    return liquid_error(LIQUID_EICONFIG,"neon extensions not available");
+}
+
+// invalidated
+int dotprod_rrrf_execute_neon(dotprod_rrrf _q,
+                              float *      _x,
+                              float *      _y)
+{
+    return liquid_error(LIQUID_EICONFIG,"neon extensions not available");
+}
+
+// build guard
+#endif
