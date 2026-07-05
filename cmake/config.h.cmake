@@ -1,3 +1,50 @@
+// Compile-time library information
+
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
+
+// library metadata
+#define PROJECT_COPYRIGHT   "@PROJECT_COPYRIGHT@"
+#define PROJECT_LICENSE     "@PROJECT_LICENSE@"
+#define PROJECT_AUTHOR      "@PROJECT_AUTHOR@"
+#define PROJECT_HOMEPAGE    "@PROJECT_HOMEPAGE@"
+#define PROJECT_DESCRIPTION "@PROJECT_DESCRIPTION@"
+
+// version information
+// const char   version[]      = "@PROJECT_VERSION@";
+// unsigned int version_major  = @PROJECT_VERSION_MAJOR@;
+// unsigned int version_minor  = @PROJECT_VERSION_MINOR@+0;
+// unsigned int version_patch  = @PROJECT_VERSION_PATCH@+0;
+// unsigned int version_tweak  = @PROJECT_VERSION_TWEAK@+0;
+#define BUILD_GITHASH       "@BUILD_GITHASH@"
+
+// date/time of build
+#define BUILD_DATETIME      "@BUILD_DATETIME@"
+#define BUILD_HOSTNAME      "@BUILD_HOSTNAME@"
+#define BUILD_OS            "@CMAKE_HOST_SYSTEM_NAME@"
+#define BUILD_ARCH          "@CMAKE_HOST_SYSTEM_PROCESSOR@"
+#define BUILD_TOOLCHAIN     "@CMAKE_C_COMPILER_INFO@"
+#define BUILD_TYPE          "@CMAKE_BUILD_TYPE@"
+#define BUILD_ENV           "@BUILD_ENV@"
+
+// target platform
+#define TARGET_OS           "@CMAKE_SYSTEM_NAME@"
+#define TARGET_ARCH         "@CMAKE_SYSTEM_PROCESSOR@"
+
+// other compile-time options
+#define LOGGING_ENABLED     @ENABLE_LOGGING@
+#define LOGGING_LEVEL       @LIQUID_LOG_LEVEL_COMPILE@
+#define COLOR_ENABLED       @ENABLE_COLOR@
+
+// SIMD extensions
+#cmakedefine01 BUILD_NEON
+#cmakedefine01 BUILD_AVX512
+#cmakedefine01 BUILD_AVX2
+#cmakedefine01 BUILD_AVX
+#cmakedefine01 BUILD_SSE4
+#cmakedefine01 BUILD_ALTIVEC
+
+// other information
 #cmakedefine HAVE_GETOPT_LONG 1
 #cmakedefine HAVE_GETOPT_H
 #cmakedefine HAVE_MEMORY_H
@@ -7,10 +54,5 @@
 #cmakedefine SIZEOF_INT @SIZEOF_INT@
 #cmakedefine01 fftw3f_FOUND
 
-// SIMD extensions
-#cmakedefine01 BUILD_NEON
-#cmakedefine01 BUILD_AVX512
-#cmakedefine01 BUILD_AVX2
-#cmakedefine01 BUILD_AVX
-#cmakedefine01 BUILD_SSE4
-#cmakedefine01 BUILD_ALTIVEC
+#endif // __CONFIG_H__
+

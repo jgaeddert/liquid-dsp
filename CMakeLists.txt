@@ -209,9 +209,6 @@ set(BUILD_ENV "cmake")
 # this file can only use the @VARIABLE@ syntax
 #configure_file(cmake/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 
-# this file can only use the @VARIABLE@ syntax
-configure_file(cmake/build_info.c.in ${CMAKE_CURRENT_BINARY_DIR}/build_info.c @ONLY)
-
 configure_file(cmake/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 # ---------------------------------------- main sources ----------------------------------------
@@ -554,7 +551,6 @@ set(LIQUID_OBJECTS
 if (BUILD_SHARED_LIBS)
     add_library(${LIBNAME} SHARED
         src/libliquid.c
-        ${CMAKE_CURRENT_BINARY_DIR}/build_info.c
         ${LIQUID_OBJECTS}
     )
     add_library(${NAMESPACE}::${LIBNAME} ALIAS ${LIBNAME})
@@ -566,7 +562,6 @@ endif()
 if(BUILD_STATIC_LIBS)
     add_library(${LIBNAME}-static STATIC
         src/libliquid.c
-        ${CMAKE_CURRENT_BINARY_DIR}/build_info.c
         ${LIQUID_OBJECTS}
     )
     add_library(${NAMESPACE}::${LIBNAME}-static ALIAS ${LIBNAME}-static)

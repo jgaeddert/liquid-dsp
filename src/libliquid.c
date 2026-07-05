@@ -28,7 +28,9 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include "liquid.internal.h"
+
+#include "liquid.h"
+#include "config.h"
 
 const char liquid_version[] = LIQUID_VERSION;
 
@@ -42,8 +44,48 @@ int liquid_libversion_number(void)
     return LIQUID_VERSION_NUMBER;
 }
 
-// 'liquid_build_info' is templated in cmake/build_info.c.in and populated
-// into 'build_info.c' by cmake when the command is invoked.
+const struct liquid_build_info_s liquid_build_info =
+{
+    // library metadata
+    .copyright          = PROJECT_COPYRIGHT,
+    .license            = PROJECT_LICENSE,
+    //.author             = PROJECT_AUTHOR,
+    //.homepage           = PROJECT_HOMEPAGE,
+    //.description        = PROJECT_DESCRIPTION,
+
+    // version information
+    .version            = LIQUID_VERSION, // PROJECT_VERSION
+    .githash            = BUILD_GITHASH,
+
+    // date/time of build
+    .build_datetime     = BUILD_DATETIME,
+    .build_hostname     = BUILD_HOSTNAME,
+    .build_os           = BUILD_OS,
+    .build_arch         = BUILD_ARCH,
+    .build_toolchain    = BUILD_TOOLCHAIN,
+    .build_type         = BUILD_TYPE,
+    .build_env          = BUILD_ENV, // cmake, autotools, etc.
+
+    // target platform
+    .target_os          = TARGET_OS,
+    .target_arch        = TARGET_ARCH,
+
+    // other compile-time options
+    .logging_enabled    = LOGGING_ENABLED,
+    .logging_level      = LOGGING_LEVEL,
+    .color_enabled      = COLOR_ENABLED,
+
+    // vector extensions
+    .neon               = BUILD_NEON,
+    .sse                = BUILD_SSE4,
+    .sse2               = 0,
+    .mmx                = 0,
+    .avx                = BUILD_AVX,
+    .avx2               = BUILD_AVX2,
+    .avx512f            = BUILD_AVX512,
+    .altivec            = BUILD_ALTIVEC,
+};
+
 int liquid_build_info_print(void)
 {
     // version information
