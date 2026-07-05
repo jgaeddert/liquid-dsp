@@ -209,7 +209,7 @@ set(BUILD_ENV "cmake")
 # this file can only use the @VARIABLE@ syntax
 #configure_file(cmake/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 
-configure_file(cmake/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+configure_file(cmake/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 # ---------------------------------------- main sources ----------------------------------------
 
