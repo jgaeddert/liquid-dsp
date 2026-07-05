@@ -268,8 +268,8 @@ int dotprod_cccf_execute_neon(dotprod_cccf    _q,
         v = vld1q_f32(&x[i]);
 
         // load coefficients into register (aligned)
-        // {hi[0].real, hi[0].imag, hi[1].real, hi[1].imag}
-        // {hq[0].real, hq[0].imag, hq[1].real, hq[1].imag}
+        // {hi[0].real, hi[0].real, hi[1].real, hi[1].real}
+        // {hq[0].imag, hq[0].imag, hq[1].imag, hq[1].imag}
         hi = vld1q_f32(&_q->hi[i]);
         hq = vld1q_f32(&_q->hq[i]);
 

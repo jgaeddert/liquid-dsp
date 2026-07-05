@@ -32,9 +32,10 @@
 #define EXTENSION_FULL  "cccf"
 
 #define DOTPROD(name)   LIQUID_CONCAT(dotprod_cccf,name)
-#define TO              float complex
-#define TC              float complex
-#define TI              float complex
+#define T               float           // base type
+#define TO              float complex   // output type
+#define TC              float complex   // coefficients type
+#define TI              float complex   // input type
 
 #define TO_COMPLEX      1
 #define TC_COMPLEX      1
