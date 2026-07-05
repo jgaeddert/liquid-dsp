@@ -163,13 +163,17 @@ AC_CHECK_SIZEOF(long long int)
 # get canonical target architecture
 AC_CANONICAL_TARGET
 
+# SIMD build flags (set to 0 by default, may be set to 1 by architecture detection)
+BUILD_NEON="0"
+BUILD_AVX512="0"
+BUILD_AVX2="0"
+BUILD_AVX="0"
+BUILD_SSE4="0"
+BUILD_ALTIVEC="0"
+
 # override SIMD
 if test "${enable_simdoverride+set}" = set; then
-    # portable C version
-    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                   src/dotprod/src/dotprod_crcf.o \
-                   src/dotprod/src/dotprod_rrrf.o \
-                   src/dotprod/src/sumsq.o"
+    # portable C version (all BUILD_* remain 0)
     ARCH_OPTION=""
 else
     # Check canonical system
@@ -188,114 +192,45 @@ else
         AX_EXT
 
         if [ test "$ax_cv_have_avx512f_ext" = yes ]; then
-            # AVX512 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx512f.o \
-                           src/dotprod/src/dotprod_crcf.avx512f.o \
-                           src/dotprod/src/dotprod_rrrf.avx512f.o \
-                           src/dotprod/src/sumsq.avx512f.o"
-            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                          src/vector/src/vectorcf.port.o"
-            ARCH_OPTION='-mavx512f'
+            BUILD_SSE4="1"
+            BUILD_AVX="1"
+            BUILD_AVX2="1"
+            BUILD_AVX512="1"
+            ARCH_OPTION='-mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma'
         elif [ test "$ax_cv_have_avx2_ext" = yes ]; then
-            # AVX2 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx.o \
-                           src/dotprod/src/dotprod_crcf.avx.o \
-                           src/dotprod/src/dotprod_rrrf.avx.o \
-                           src/dotprod/src/sumsq.avx.o"
-            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                          src/vector/src/vectorcf.port.o"
-            ARCH_OPTION='-mavx2'
+            BUILD_SSE4="1"
+            BUILD_AVX="1"
+            BUILD_AVX2="1"
+            ARCH_OPTION='-mavx2 -mfma -mf16c'
         elif [ test "$ax_cv_have_avx_ext" = yes ]; then
-            # AVX extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx.o \
-                           src/dotprod/src/dotprod_crcf.avx.o \
-                           src/dotprod/src/dotprod_rrrf.avx.o \
-                           src/dotprod/src/sumsq.avx.o"
-            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                          src/vector/src/vectorcf.port.o"
+            BUILD_SSE4="1"
+            BUILD_AVX="1"
             ARCH_OPTION='-mavx'
         elif [ test "$ax_cv_have_sse41_ext" = yes ]; then
-            # SSE4.1/2 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.sse.o \
-                           src/dotprod/src/dotprod_crcf.sse.o \
-                           src/dotprod/src/dotprod_rrrf.sse.o \
-                           src/dotprod/src/sumsq.sse.o"
-            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                          src/vector/src/vectorcf.port.o"
+            BUILD_SSE4="1"
             ARCH_OPTION='-msse4.1'
-        elif [ test "$ax_cv_have_sse3_ext" = yes ]; then
-            # SSE3 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.sse.o \
-                           src/dotprod/src/dotprod_crcf.sse.o \
-                           src/dotprod/src/dotprod_rrrf.sse.o \
-                           src/dotprod/src/sumsq.sse.o"
-            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                          src/vector/src/vectorcf.port.o"
-            ARCH_OPTION='-msse3'
-        elif [ test "$ax_cv_have_sse2_ext" = yes ]; then
-            # SSE2 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.sse.o \
-                           src/dotprod/src/dotprod_crcf.sse.o \
-                           src/dotprod/src/dotprod_rrrf.sse.o \
-                           src/dotprod/src/sumsq.sse.o"
-            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                          src/vector/src/vectorcf.port.o"
-            ARCH_OPTION='-msse2'
         else
-            # portable C version
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                           src/dotprod/src/dotprod_crcf.o \
-                           src/dotprod/src/dotprod_rrrf.o \
-                           src/dotprod/src/sumsq.o"
-            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                          src/vector/src/vectorcf.port.o"
+            # portable C version (all BUILD_* remain 0)
+            ARCH_OPTION=""
         fi;;
     powerpc*)
-        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                       src/dotprod/src/dotprod_rrrf.av.o \
-                       src/dotprod/src/dotprod_crcf.av.o \
-                       src/dotprod/src/sumsq.o"
-        MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                      src/vector/src/vectorcf.port.o"
+        BUILD_ALTIVEC="1"
         ARCH_OPTION="-fno-common -faltivec";;
     armv1*|armv2*|armv3*|armv4*|armv5*|armv6*)
         # assume neon instructions are NOT available
-        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                       src/dotprod/src/dotprod_crcf.o \
-                       src/dotprod/src/dotprod_rrrf.o \
-                       src/dotprod/src/sumsq.o"
-        MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                      src/vector/src/vectorcf.port.o"
-        ARCH_OPTION="-ffast-math";;
+        ARCH_OPTION="";;
     arm|armv7*|armv8*|aarch64)
         # assume neon instructions are available
-        # TODO: check for Neon availability
-
-        # ARM architecture : use neon extensions
-        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.neon.o \
-                       src/dotprod/src/dotprod_crcf.neon.o \
-                       src/dotprod/src/dotprod_rrrf.neon.o \
-                       src/dotprod/src/sumsq.o"
-        MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                      src/vector/src/vectorcf.port.o"
+        BUILD_NEON="1"
         case $target_os in
         darwin*)
             # M1 mac, ARM architecture : use neon extensions
             ARCH_OPTION="-ffast-math";;
         *)
-            # TODO: check these flags
-            #ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
-            #ARCH_OPTION="-ffast-math -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4";;
             ARCH_OPTION="";; # -ffast-math causes tests to fail on pi4 due to imprecision
         esac;;
     *)
         # unknown architecture : use portable C version
-        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                       src/dotprod/src/dotprod_crcf.o \
-                       src/dotprod/src/dotprod_rrrf.o \
-                       src/dotprod/src/sumsq.o"
-        MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                      src/vector/src/vectorcf.port.o"
         ARCH_OPTION="";;
     esac
 fi
@@ -328,8 +263,6 @@ esac
 # autoconf variable substitutions
 #
 AC_SUBST(LIBS)                      # shared libraries (-lc, -lm, etc.)
-AC_SUBST(MLIBS_DOTPROD)             # 
-AC_SUBST(MLIBS_VECTOR)              #
 
 AC_SUBST(AR_LIB)                    # archive library
 AC_SUBST(SH_LIB)                    # output shared library target
@@ -401,23 +334,12 @@ AC_SUBST([LIQUID_LOG_LEVEL_COMPILE])
 ENABLE_COLOR="1"
 AC_SUBST([ENABLE_COLOR])
 
-# SIMD (placeholder)
-BUILD_NEON="0"
+# SIMD
 AC_SUBST([BUILD_NEON])
-
-BUILD_AVX512="0"
 AC_SUBST([BUILD_AVX512])
-
-BUILD_AVX2="0"
 AC_SUBST([BUILD_AVX2])
-
-BUILD_AVX="0"
 AC_SUBST([BUILD_AVX])
-
-BUILD_SSE4="0"
 AC_SUBST([BUILD_SSE4])
-
-BUILD_ALTIVEC="0"
 AC_SUBST([BUILD_ALTIVEC])
 
 
