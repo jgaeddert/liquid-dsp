@@ -1485,6 +1485,9 @@ extern struct liquid_autotest_s repack_bytes_01_s;
 extern struct liquid_autotest_s repack_bytes_02_s;
 extern struct liquid_autotest_s repack_bytes_03_s;
 extern struct liquid_autotest_s repack_bytes_04_uneven_s;
+// ./src/utility/tests/memory_autotest.c
+extern struct liquid_autotest_s liquid_malloc_copy_s;
+extern struct liquid_autotest_s liquid_aligned_alloc_s;
 // ./src/utility/tests/bshift_array_autotest.c
 extern struct liquid_autotest_s lbshift_s;
 extern struct liquid_autotest_s rbshift_s;
@@ -2833,6 +2836,8 @@ liquid_autotest liquid_autotest_registry[] =
     &repack_bytes_02_s,
     &repack_bytes_03_s,
     &repack_bytes_04_uneven_s,
+    &liquid_malloc_copy_s,
+    &liquid_aligned_alloc_s,
     &lbshift_s,
     &rbshift_s,
     &lbcircshift_s,
