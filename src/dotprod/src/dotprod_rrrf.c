@@ -45,4 +45,5 @@
 
 // SIMD extensions
 #include "dotprod_rrrf.neon.c"
+#include "dotprod_rrrf.avx.c"
 

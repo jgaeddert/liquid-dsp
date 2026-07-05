@@ -46,4 +46,5 @@
 
 // SIMD extensions
 #include "dotprod_crcf.neon.c"
+#include "dotprod_crcf.avx.c"
 
