@@ -2,5 +2,5 @@
 '''Generate (or copy) configuration header'''
 import os
 
-os.system('cp config.h ..')
+os.system('cp liquid.config.h ..')
 
