@@ -211,6 +211,31 @@ int liquid_runtime_supported(liquid_cpuinfo _q)
 // detect runtime hardware acceleration mode
 liquid_runtime_t liquid_runtime_detect(void)
 {
-    return LIQUID_RUNTIME_UNKNOWN;
+    struct liquid_cpuinfo_s info;
+    if (liquid_runtime_supported(&info))
+    {
+        liquid_error(LIQUID_EUMODE,"liquid_runtime_detect(), could not get supported runtime instructions");
+        return LIQUID_RUNTIME_UNKNOWN;
+    }
+
+    // reverse order from highest priority to lowest
+    if (info.amx102)    return LIQUID_RUNTIME_AMX102;
+    if (info.amx101)    return LIQUID_RUNTIME_AMX101;
+    if (info.avx512)    return LIQUID_RUNTIME_AVX512;
+    if (info.avx2)      return LIQUID_RUNTIME_AVX2;
+    if (info.fma3)      return LIQUID_RUNTIME_FMA3;
+    if (info.avx)       return LIQUID_RUNTIME_AVX;
+    if (info.sse42)     return LIQUID_RUNTIME_SSE42;
+    if (info.sse41)     return LIQUID_RUNTIME_SSE41;
+    if (info.ssse3)     return LIQUID_RUNTIME_SSSE3;
+    if (info.sse3)      return LIQUID_RUNTIME_SSE3;
+    if (info.sse2)      return LIQUID_RUNTIME_SSE2;
+    if (info.sse)       return LIQUID_RUNTIME_SSE;
+    if (info.mmx)       return LIQUID_RUNTIME_MMX;
+    if (info.altivec)   return LIQUID_RUNTIME_ALTIVEC;
+    if (info.neon)      return LIQUID_RUNTIME_NEON;
+
+    // fall back to portable
+    return LIQUID_RUNTIME_PORT;
 }
 
