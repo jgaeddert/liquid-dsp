@@ -202,3 +202,9 @@ int liquid_runtime_supported(liquid_cpuinfo _q)
     return LIQUID_OK;
 }
 
+// detect runtime hardware acceleration mode
+liquid_runtime_t liquid_runtime_detect(void)
+{
+    return LIQUID_RUNTIME_UNKNOWN;
+}
+

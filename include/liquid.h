@@ -532,6 +532,43 @@ typedef struct liquid_cpuinfo_s * liquid_cpuinfo;
 // check which instruction extensions are supported on this system
 int liquid_runtime_supported(liquid_cpuinfo _q);
 
+// runtime hardware acceleration options
+typedef enum
+{
+    // unknown
+    LIQUID_RUNTIME_UNKNOWN  =   0,
+
+    // default/automatic modes
+    LIQUID_RUNTIME_AUTO     =   1,
+    LIQUID_RUNTIME_PORT     =   2,
+
+    // PPC architecture
+    LIQUID_RUNTIME_ALTIVEC  =   4,
+
+    // ARM architecture
+    LIQUID_RUNTIME_NEON     =   8,
+
+    // x86 architecture
+    LIQUID_RUNTIME_MMX      =  16,  // multi-media extension (1997)
+    LIQUID_RUNTIME_SSE      =  17,  // streaming SIMD extensions (1999)
+    LIQUID_RUNTIME_SSE2     =  18,  // SSE version 2 (2000)
+    LIQUID_RUNTIME_SSE3     =  19,  // SSE version 3 (2004)
+    LIQUID_RUNTIME_SSSE3    =  20,  // Supplemental SSE3 (2006)
+    LIQUID_RUNTIME_SSE41    =  21,  // SSE version 4.1 (2007)
+    LIQUID_RUNTIME_SSE42    =  22,  // SSE version 4.2 (2008)
+    LIQUID_RUNTIME_AVX      =  23,  // advanced vector extensions (2011)
+    LIQUID_RUNTIME_FMA3     =  24,  // fused multiply-add (2013)
+    LIQUID_RUNTIME_AVX2     =  25,  // AVX version 2 (2013)
+    LIQUID_RUNTIME_AVX512   =  26,  // AVX-512 (2016)
+    LIQUID_RUNTIME_AMX      =  27,  // advanced matrix extensions (2023)
+    LIQUID_RUNTIME_AMX101   =  28,  // AMX version 10.1 (2024)
+    LIQUID_RUNTIME_AMX102   =  29,  // AMX version 10.2 (2026)
+
+} liquid_runtime_t;
+
+// detect runtime hardware acceleration mode
+liquid_runtime_t liquid_runtime_detect(void);
+
 
 // basic time object for estimating wall clock time
 typedef struct liquid_timer_s * liquid_timer;
