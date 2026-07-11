@@ -542,9 +542,8 @@ typedef enum
     // unknown
     LIQUID_RUNTIME_UNKNOWN  =   0,
 
-    // default/automatic modes
-    LIQUID_RUNTIME_AUTO     =   1,
-    LIQUID_RUNTIME_PORT     =   2,
+    // default modes
+    LIQUID_RUNTIME_PORT     =   1,
 
     // PPC architecture
     LIQUID_RUNTIME_ALTIVEC  =   4,
@@ -1367,6 +1366,15 @@ int DOTPROD(_destroy)(DOTPROD() _q);                                        \
                                                                             \
 /* Print dotprod object internals to standard output                    */  \
 int DOTPROD(_print)(DOTPROD() _q);                                          \
+                                                                            \
+/* Select runtime execution method. This is set automatically during    */  \
+/* object creation; however pulling this to a public method allows      */  \
+/* the user to override automatic selection and simplifies internal     */  \
+/* testing.                                                             */  \
+/*  _q      : dotprod object                                            */  \
+/*  _select : runtime preference                                        */  \
+int DOTPROD(_runtime_select)(DOTPROD()        _q,                           \
+                             liquid_runtime_t _select);                     \
                                                                             \
 /* Execute dot product on an input array                                */  \
 /*  _q      : dotprod object                                            */  \

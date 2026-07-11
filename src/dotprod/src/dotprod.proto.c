@@ -31,14 +31,14 @@
 // forward declaration of internal methods
 
 // select runtime execution method
-int DOTPROD(_runtime_select)(DOTPROD() _q);
+int DOTPROD(_runtime_detect)(DOTPROD() _q);
 
 // execution methods: always defined but only really implemented on
 // specific architectures
-int DOTPROD(_execute_port)(DOTPROD() _q, TI * _x, TO * _y);
-int DOTPROD(_execute_neon)(DOTPROD() _q, TI * _x, TO * _y);
-int DOTPROD(_execute_sse)(DOTPROD() _q, TI * _x, TO * _y);
-int DOTPROD(_execute_avx)(DOTPROD() _q, TI * _x, TO * _y);
+int DOTPROD(_execute_port)   (DOTPROD() _q, TI * _x, TO * _y);
+int DOTPROD(_execute_neon)   (DOTPROD() _q, TI * _x, TO * _y);
+int DOTPROD(_execute_sse)    (DOTPROD() _q, TI * _x, TO * _y);
+int DOTPROD(_execute_avx)    (DOTPROD() _q, TI * _x, TO * _y);
 int DOTPROD(_execute_avx512f)(DOTPROD() _q, TI * _x, TO * _y);
 
 // portable structured dot product object
@@ -48,8 +48,8 @@ struct DOTPROD(_s) {
 #if TC_COMPLEX==0
     T * h;      // real-only coefficients
 #else
-    T * hi;     // in-phase component
-    T * hq;     // quadrature component
+    T * hi;     // complex in-phase component
+    T * hq;     // complex quadrature component
 #endif
 
     // number of coefficients
@@ -167,8 +167,8 @@ DOTPROD() DOTPROD(_create_opt)(TC *         _h,
     }
 #endif
 
-    // select runtime method
-    DOTPROD(_runtime_select)(q);
+    // detect runtime method, defaulting to portable method
+    DOTPROD(_runtime_detect)(q);
 
     // return object
     return q;
@@ -272,6 +272,33 @@ int DOTPROD(_print)(DOTPROD() _q)
     return LIQUID_OK;
 }
 
+// select runtime execution method
+int DOTPROD(_runtime_select)(DOTPROD()        _q,
+                             liquid_runtime_t _select)
+{
+    switch (_select) {
+    case LIQUID_RUNTIME_PORT:
+        _q->execute = &DOTPROD(_execute_port);
+        return LIQUID_OK;
+    case LIQUID_RUNTIME_NEON:
+        _q->execute = &DOTPROD(_execute_neon);
+        return LIQUID_OK;
+    case LIQUID_RUNTIME_SSE:
+        _q->execute = &DOTPROD(_execute_sse);
+        return LIQUID_OK;
+    case LIQUID_RUNTIME_AVX:
+        _q->execute = &DOTPROD(_execute_avx);
+        return LIQUID_OK;
+    case LIQUID_RUNTIME_AVX512:
+        _q->execute = &DOTPROD(_execute_avx512f);
+        return LIQUID_OK;
+    default:;
+    }
+
+    return liquid_error(LIQUID_EINT,"dotprod_%s_runtime_select(), invalid selection or mode not available (%d)",
+        EXTENSION_FULL, _select);
+}
+
 // execute structured dot product
 //  _q      :   dot product object
 //  _x      :   input array [size: 1 x _n]
@@ -288,8 +315,8 @@ int DOTPROD(_execute)(DOTPROD() _q,
 // internal
 //
 
-// select runtime execution method
-int DOTPROD(_runtime_select)(DOTPROD() _q)
+// detect runtime execution method
+int DOTPROD(_runtime_detect)(DOTPROD() _q)
 {
     // set execute function pointer based on run-time availability
     struct liquid_cpuinfo_s info;
