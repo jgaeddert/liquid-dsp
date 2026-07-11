@@ -135,20 +135,26 @@ int liquid_runtime_supported_x86(liquid_cpuinfo _q)
     _q->sse41   = has_sse41;
     _q->sse42   = has_sse42;
     _q->avx     = avx_ok;
+    _q->fma3    = false;    // TODO: check for this
     _q->avx2    = avx_ok && has_avx2;
-    _q->avx512f = has_avx512f;
+    _q->avx512  = has_avx512f;
+    _q->amx101  = false;    // TODO: check for this
+    _q->amx102  = false;    // TODO: check for this
 #else
     // not x86; none are supported
+    _q->mmx     = false;
     _q->sse     = false;
     _q->sse2    = false;
     _q->sse3    = false;
     _q->ssse3   = false;
     _q->sse41   = false;
     _q->sse42   = false;
-    _q->mmx     = false;
     _q->avx     = false;
+    _q->fma3    = false;
     _q->avx2    = false;
-    _q->avx512f = false;
+    _q->avx512  = false;
+    _q->amx101  = false;
+    _q->amx102  = false;
 #endif
     return LIQUID_OK;
 }
@@ -190,11 +196,11 @@ int liquid_runtime_supported(liquid_cpuinfo _q)
     if (liquid_runtime_supported_arm(_q))
         return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get ARM flags");
 
-    if (liquid_runtime_supported_x86(_q))
-        return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get x86 flags");
-
     if (liquid_runtime_supported_ppc(_q))
         return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get PPC flags");
+
+    if (liquid_runtime_supported_x86(_q))
+        return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get x86 flags");
 
     if (liquid_runtime_cores(_q))
         return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get number of CPU cores");

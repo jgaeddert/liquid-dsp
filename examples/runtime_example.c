@@ -15,17 +15,20 @@ int main(int argc, char* argv[])
     liquid_runtime_supported(&info);
 
     printf("Neon        : %u\n", info.neon);
+    printf("AltiVec     : %u\n", info.altivec);
+    printf("MMX         : %u\n", info.mmx);
     printf("SSE         : %u\n", info.sse);
     printf("SSE2        : %u\n", info.sse2);
     printf("SSE3        : %u\n", info.sse3);
     printf("SSSE3       : %u\n", info.ssse3);
     printf("SSE4.1      : %u\n", info.sse41);
     printf("SSE4.2      : %u\n", info.sse42);
-    printf("MMX         : %u\n", info.mmx);
     printf("AVX         : %u\n", info.avx);
+    printf("FMA3        : %u\n", info.fma3);
     printf("AVX2        : %u\n", info.avx2);
-    printf("AVX512f     : %u\n", info.avx512f);
-    printf("AltiVec     : %u\n", info.altivec);
+    printf("AVX512      : %u\n", info.avx512);
+    printf("AMX10.1     : %u\n", info.amx101);
+    printf("AMX10.2     : %u\n", info.amx102);
     printf("cores       : %u\n", info.cores);
 
     return 0;

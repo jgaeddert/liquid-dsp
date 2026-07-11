@@ -129,9 +129,9 @@ extern const struct liquid_build_info_s
 
     // vector extensions
     const bool neon;
+    const bool mmx;
     const bool sse;
     const bool sse2;
-    const bool mmx;
     const bool avx;
     const bool avx2;
     const bool avx512f;
@@ -506,23 +506,27 @@ enum {
 // structure to define instruction set architecture options at runtime
 struct liquid_cpuinfo_s
 {
+    // PPC architecture
+    bool altivec;
+
     // ARM architecture
     bool neon;
 
     // x86 architecture
-    bool sse;
-    bool sse2;
-    bool sse3;
-    bool ssse3;
-    bool sse41;
-    bool sse42;
-    bool mmx;
-    bool avx;
-    bool avx2;
-    bool avx512f;
-
-    // PPC architecture
-    bool altivec;
+    bool mmx;       // multi-media extension (1997)
+    bool sse;       // streaming SIMD extensions (1999)
+    bool sse2;      // SSE version 2 (2000)
+    bool sse3;      // SSE version 3 (2004)
+    bool ssse3;     // Supplemental SSE3 (2006)
+    bool sse41;     // SSE version 4.1 (2007)
+    bool sse42;     // SSE version 4.2 (2008)
+    bool avx;       // advanced vector extensions (2011)
+    bool fma3;      // fused multiply-add (2013)
+    bool avx2;      // AVX version 2 (2013)
+    bool avx512;    // AVX-512 (2016)
+    bool amx;       // advanced matrix extensions (2023)
+    bool amx101;    // AMX version 10.1 (2024)
+    bool amx102;    // AMX version 10.2 (2026)
 
     // number of cores
     int cores;
