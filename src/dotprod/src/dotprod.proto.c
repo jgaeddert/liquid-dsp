@@ -278,18 +278,25 @@ int DOTPROD(_runtime_select)(DOTPROD()        _q,
 {
     switch (_select) {
     case LIQUID_RUNTIME_PORT:
+        liquid_log_trace("dotprod_%s_runtime_select(), port", EXTENSION_FULL);
         _q->execute = &DOTPROD(_execute_port);
         return LIQUID_OK;
     case LIQUID_RUNTIME_NEON:
+        liquid_log_trace("dotprod_%s_runtime_select(), neon", EXTENSION_FULL);
         _q->execute = &DOTPROD(_execute_neon);
         return LIQUID_OK;
     case LIQUID_RUNTIME_SSE:
+    case LIQUID_RUNTIME_SSE2:
+    case LIQUID_RUNTIME_SSE3:
+        liquid_log_trace("dotprod_%s_runtime_select(), sse/sse2/sse3", EXTENSION_FULL);
         _q->execute = &DOTPROD(_execute_sse);
         return LIQUID_OK;
     case LIQUID_RUNTIME_AVX:
+        liquid_log_trace("dotprod_%s_runtime_select(), avx", EXTENSION_FULL);
         _q->execute = &DOTPROD(_execute_avx);
         return LIQUID_OK;
     case LIQUID_RUNTIME_AVX512:
+        liquid_log_trace("dotprod_%s_runtime_select(), avx512", EXTENSION_FULL);
         _q->execute = &DOTPROD(_execute_avx512f);
         return LIQUID_OK;
     default:;
@@ -321,76 +328,36 @@ int DOTPROD(_runtime_detect)(DOTPROD() _q)
     // set execute function pointer based on run-time availability
     struct liquid_cpuinfo_s info;
     liquid_runtime_supported(&info);
-    // TODO: replace port method with arch-specific methods
-    int selection = 0;
-#if BUILD_NEON
-    if (info.neon) selection = 1;
-#endif
-#if BUILD_AVX512
-    if (info.neon) {
-        liquid_log_trace("dotprod_%s_create(), runtime: portable", EXTENSION_FULL);
-        _q->execute = &DOTPROD(_execute_port);
-    }
-#endif
+
+    // available
+
+    // default to portable version
+    liquid_runtime_t selection = LIQUID_RUNTIME_PORT;
+
+    // neon
+    if (info.neon   ) { selection = LIQUID_RUNTIME_NEON;    }
+
+    // altivec
+    //if (info.neon   ) { selection = LIQUID_RUNTIME_ALTIVEC; }
 
     // x86 options ordered in progressively optimal
-#if 0
-    if (info.mmx)     { selection =  2; }
-    if (info.sse)     { selection =  3; }
-    if (info.sse2)    { selection =  4; }
-    if (info.sse3)    { selection =  5; }
-    if (info.ssse3)   { selection =  6; }
-    if (info.sse41)   { selection =  7; }
-#endif
-#if BUILD_SSE4
-    if (info.sse42)   { selection =  8; }
-#endif
-#if BUILD_AVX
-    if (info.avx)     { selection =  9; }
-#endif
-#if 0
-    if (info.avx2)    { selection = 10; }
-#endif
-#if BUILD_AVX512
-    if (info.avx512f) { selection = 11; }
-#endif
+    //if (info.mmx    ) { selection = LIQUID_RUNTIME_MMX;     }
+    if (info.sse    ) { selection = LIQUID_RUNTIME_SSE;     }
+    if (info.sse2   ) { selection = LIQUID_RUNTIME_SSE2;    }
+    if (info.sse3   ) { selection = LIQUID_RUNTIME_SSE3;    }
+    if (info.ssse3  ) { selection = LIQUID_RUNTIME_SSSE3;   }
+    //if (info.sse41  ) { selection = LIQUID_RUNTIME_SSE41;   }
+    //if (info.sse42  ) { selection = LIQUID_RUNTIME_SSE42;   }
+    if (info.avx    ) { selection = LIQUID_RUNTIME_AVX;     }
+    //if (info.fma3   ) { selection = LIQUID_RUNTIME_FMA3;    }
+    if (info.avx2   ) { selection = LIQUID_RUNTIME_AVX2;    }
+    if (info.avx512 ) { selection = LIQUID_RUNTIME_AVX512;  }
+    //if (info.amx    ) { selection = LIQUID_RUNTIME_AMX;     }
+    //if (info.amx101 ) { selection = LIQUID_RUNTIME_AMX101;  }
+    //if (info.amx102 ) { selection = LIQUID_RUNTIME_AMX102;  }
 
-#if BUILD_ALTIVEC
-    if (info.altivec) { selection = 12; }
-#endif
-
-    //
-    _q->execute = &DOTPROD(_execute_port);
-    switch (selection) {
-    case 0:
-        liquid_log_trace("dotprod_%s_create(), runtime: portable", EXTENSION_FULL);
-        _q->execute = &DOTPROD(_execute_port);
-        return LIQUID_OK;
-    case 1:
-        liquid_log_trace("dotprod_%s_create(), runtime: neon", EXTENSION_FULL);
-        _q->execute = &DOTPROD(_execute_neon);
-        return LIQUID_OK;
-    case 8:
-        liquid_log_trace("dotprod_%s_create(), runtime: sse", EXTENSION_FULL);
-        _q->execute = &DOTPROD(_execute_sse);
-        return LIQUID_OK;
-    case 9:
-        liquid_log_trace("dotprod_%s_create(), runtime: avx", EXTENSION_FULL);
-        _q->execute = &DOTPROD(_execute_avx);
-        return LIQUID_OK;
-    case 11:
-        liquid_log_trace("dotprod_%s_create(), runtime: avx512", EXTENSION_FULL);
-        _q->execute = &DOTPROD(_execute_avx512f);
-        return LIQUID_OK;
-    case 12:
-        liquid_log_trace("dotprod_%s_create(), runtime: altivec", EXTENSION_FULL);
-        _q->execute = &DOTPROD(_execute_port); // FIXME: link to SSE
-        return LIQUID_OK;
-    default:;
-    }
-
-    return liquid_error(LIQUID_EINT,"dotprod_%s_runtime_select(), invalid selection (%d)",
-        EXTENSION_FULL, selection);
+    // invoke selection method
+    return DOTPROD(_runtime_select)(_q, selection);
 }
 
 // execute structured dot product (portable version)
