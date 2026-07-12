@@ -164,12 +164,25 @@ AC_CHECK_SIZEOF(long long int)
 AC_CANONICAL_TARGET
 
 # SIMD build flags (set to 0 by default, may be set to 1 by architecture detection)
-BUILD_NEON="0"
-BUILD_AVX512="0"
-BUILD_AVX2="0"
-BUILD_AVX="0"
-BUILD_SSE4="0"
 BUILD_ALTIVEC="0"
+BUILD_NEON="0"
+BUILD_MMX="0"
+BUILD_SSE="0"
+BUILD_SSE2="0"
+BUILD_SSE3="0"
+BUILD_SSSE3="0"
+BUILD_SSE41="0"
+BUILD_SSE42="0"
+BUILD_AVX="0"
+BUILD_FMA3="0"
+BUILD_AVX2="0"
+BUILD_AVX512="0"
+BUILD_AMX="0"
+BUILD_AMX101="0"
+BUILD_AMX102="0"
+
+# default portable version
+ARCH_OPTION=""
 
 # override SIMD
 if test "${enable_simdoverride+set}" = set; then
@@ -178,41 +191,6 @@ if test "${enable_simdoverride+set}" = set; then
 else
     # Check canonical system
     case $target_cpu in
-    i386|i486|i586|i686|x86|x86_64)
-        # check for MMX/SSE/AVX CPU extensions and intrinsics headers
-        #   MMX     :   mmintrin.h
-        #   SSE     :   xmmintrin.h
-        #   SSE2    :   emmintrin.h
-        #   SSE3    :   pmmintrin.h
-        #   SSSE3   :   tmmintrin.h
-        #   SSE4.1/2:   smmintrin.h
-        #   AVX     :   immintrin.h
-        #   AVX2    :   immintrin.h
-        #   AVX512  :   immintrin.h
-        AX_EXT
-
-        if [ test "$ax_cv_have_avx512f_ext" = yes ]; then
-            BUILD_SSE4="1"
-            BUILD_AVX="1"
-            BUILD_AVX2="1"
-            BUILD_AVX512="1"
-            ARCH_OPTION='-mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma'
-        elif [ test "$ax_cv_have_avx2_ext" = yes ]; then
-            BUILD_SSE4="1"
-            BUILD_AVX="1"
-            BUILD_AVX2="1"
-            ARCH_OPTION='-mavx2 -mfma -mf16c'
-        elif [ test "$ax_cv_have_avx_ext" = yes ]; then
-            BUILD_SSE4="1"
-            BUILD_AVX="1"
-            ARCH_OPTION='-mavx'
-        elif [ test "$ax_cv_have_sse41_ext" = yes ]; then
-            BUILD_SSE4="1"
-            ARCH_OPTION='-msse4.1'
-        else
-            # portable C version (all BUILD_* remain 0)
-            ARCH_OPTION=""
-        fi;;
     powerpc*)
         BUILD_ALTIVEC="1"
         ARCH_OPTION="-fno-common -faltivec";;
@@ -229,6 +207,47 @@ else
         *)
             ARCH_OPTION="";; # -ffast-math causes tests to fail on pi4 due to imprecision
         esac;;
+    i386|i486|i586|i686|x86|x86_64)
+        # check for MMX/SSE/AVX CPU extensions and intrinsics headers
+        #   MMX     :   mmintrin.h
+        #   SSE     :   xmmintrin.h
+        #   SSE2    :   emmintrin.h
+        #   SSE3    :   pmmintrin.h
+        #   SSSE3   :   tmmintrin.h
+        #   SSE4.1/2:   smmintrin.h
+        #   AVX     :   immintrin.h
+        #   AVX2    :   immintrin.h
+        #   AVX512  :   immintrin.h
+        AX_EXT
+
+        # check for SSE4.1
+        if [ test "$ax_cv_have_sse41_ext" = yes ]; then
+            BUILD_SSE="1"
+            BUILD_SSE2="1"
+            BUILD_SSE3="1"
+            BUILD_SSSE3="1"
+            BUILD_SSE41="1"
+            ARCH_OPTION='-msse4.1'
+        fi;
+
+        # check for AVX
+        if [ test "$ax_cv_have_avx_ext" = yes ]; then
+            BUILD_SSE42="1"
+            BUILD_AVX="1"
+            ARCH_OPTION='-mavx'
+        fi;
+
+        # check for AVX2
+        if [ test "$ax_cv_have_avx2_ext" = yes ]; then
+            BUILD_AVX2="1"
+            ARCH_OPTION='-mavx2 -mfma -mf16c'
+        fi;
+
+        # check for AVX512
+        if [ test "$ax_cv_have_avx512f_ext" = yes ]; then
+            BUILD_AVX512="1"
+            ARCH_OPTION='-mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma'
+        fi;;
     *)
         # unknown architecture : use portable C version
         ARCH_OPTION="";;
@@ -335,12 +354,22 @@ ENABLE_COLOR="1"
 AC_SUBST([ENABLE_COLOR])
 
 # SIMD
-AC_SUBST([BUILD_NEON])
-AC_SUBST([BUILD_AVX512])
-AC_SUBST([BUILD_AVX2])
-AC_SUBST([BUILD_AVX])
-AC_SUBST([BUILD_SSE4])
 AC_SUBST([BUILD_ALTIVEC])
+AC_SUBST([BUILD_NEON])
+AC_SUBST([BUILD_MMX])
+AC_SUBST([BUILD_SSE])
+AC_SUBST([BUILD_SSE2])
+AC_SUBST([BUILD_SSE3])
+AC_SUBST([BUILD_SSSE3])
+AC_SUBST([BUILD_SSE41])
+AC_SUBST([BUILD_SSE42])
+AC_SUBST([BUILD_AVX])
+AC_SUBST([BUILD_FMA3])
+AC_SUBST([BUILD_AVX2])
+AC_SUBST([BUILD_AVX512])
+AC_SUBST([BUILD_AMX])
+AC_SUBST([BUILD_AMX101])
+AC_SUBST([BUILD_AMX102])
 
 
 AC_CONFIG_FILES([liquid.config.h:cmake/liquid.config.h.in])
