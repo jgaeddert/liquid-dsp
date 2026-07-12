@@ -369,6 +369,30 @@ To test this, compile the example program for a
     # ===================== [SUCCESS] Took 23.63 seconds =====================
 
 
+Legacy Build Environment
+------------------------
+
+Before moving to `CMake <https://cmake.org>`_,
+|liquid| used `autotools <https://www.gnu.org/software/automake/>`_
+as a build environment.
+There is some backwards compatibility support (for now),
+and if you prefer that method you will need to install autotools
+for generating the ``configure.sh`` script (e.g.
+``brew install automake autoconf`` on macOS,
+``sudo apt-get install automake autoconf`` on Debian variants).
+
+.. code-block:: bash
+
+    ./bootstrap.sh
+    ./configure
+    make
+    sudo make install
+
+Keep in mind, however, that backwards compatibility will probably only
+be supported for a limited time.
+If you want long-term support, you should certainly move to CMake.
+
+
 Available Modules
 -----------------
 
