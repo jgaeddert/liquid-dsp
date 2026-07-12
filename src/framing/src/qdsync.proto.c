@@ -396,9 +396,17 @@ int QDSYNC(_execute_detect)(QDSYNC() _q,
         _q->mf_counter = _q->k - 2;
         _q->pfb_index =  0;
         int index = (int)(tau_hat * _q->npfb);
-        if (index < 0) {
-            _q->mf_counter++;
-            index += _q->npfb;
+        if (index < 0 || index >= _q->npfb) {
+            // weirdness to work around lack of real (negative-safe) mod operator in C
+            int modulus = index % _q->npfb; // at this point, actually remainder and not true modulus
+            int euclideanDiv = index / _q->npfb;
+            if (modulus < 0)
+            {
+                modulus += _q->npfb;
+                euclideanDiv--;
+            }
+            _q->mf_counter += euclideanDiv;
+            index = modulus;
         }
         _q->pfb_index = index;
         liquid_log_debug("qdsync detected! tau:%6.3f, dphi:%10.3e, phi:%6.3f, gamma:%5.1f dB, mf:%u, pfb:%3u",
