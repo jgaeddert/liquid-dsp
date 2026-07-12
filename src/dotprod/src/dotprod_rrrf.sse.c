@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,9 +37,9 @@
 #include <immintrin.h>
 
 // use SSE extensions
-int dotprod_rrrf_execute_sse1(dotprod_rrrf _q,
-                              float *      _x,
-                              float *      _y)
+int dotprod_rrrf_execute_sse_1(dotprod_rrrf _q,
+                               float *      _x,
+                               float *      _y)
 {
     // first cut: ...
     __m128 v;   // input vector
@@ -94,9 +94,9 @@ int dotprod_rrrf_execute_sse1(dotprod_rrrf _q,
 }
 
 // use SSE extensions (unrolled loop)
-int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
-                              float *      _x,
-                              float *      _y)
+int dotprod_rrrf_execute_sse_4(dotprod_rrrf _q,
+                               float *      _x,
+                               float *      _y)
 {
     // first cut: ...
     __m128 v0, v1, v2, v3;
@@ -175,9 +175,9 @@ int dotprod_rrrf_execute_sse(dotprod_rrrf _q,
     liquid_log_trace("dotprod_rrrf_execute_sse()");
     // switch based on size
     if (_q->n < 16) {
-        return dotprod_rrrf_execute_sse1(_q, _x, _y);
+        return dotprod_rrrf_execute_sse_1(_q, _x, _y);
     }
-    return dotprod_rrrf_execute_sse4(_q, _x, _y);
+    return dotprod_rrrf_execute_sse_4(_q, _x, _y);
 }
 
 // build guard
