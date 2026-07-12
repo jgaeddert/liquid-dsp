@@ -38,10 +38,10 @@
 #include <arm_neon.h>
 
 // basic dot product (ordinal calculation) using neon extensions
-int dotprod_rrrf_run_neon(float *      _h,
-                          float *      _x,
-                          unsigned int _n,
-                          float *      _y)
+int dotprod_rrrf_run_neon_1(float *      _h,
+                            float *      _x,
+                            unsigned int _n,
+                            float *      _y)
 {
     float32x4_t v;   // input vector
     float32x4_t h;   // coefficients vector
@@ -85,10 +85,10 @@ int dotprod_rrrf_run_neon(float *      _h,
 }
 
 // basic dot product (ordinal calculation) with loop unrolled, neon extensions
-int dotprod_rrrf_run4_neon(float *      _h,
-                           float *      _x,
-                           unsigned int _n,
-                           float *      _y)
+int dotprod_rrrf_run_neon_4(float *      _h,
+                            float *      _x,
+                            unsigned int _n,
+                            float *      _y)
 {
     float32x4_t v0, v1, v2, v3;
     float32x4_t h0, h1, h2, h3;
@@ -162,31 +162,13 @@ int dotprod_rrrf_execute_neon(dotprod_rrrf _q,
     liquid_log_trace("dotprod_rrrf_execute_neon()");
     // switch based on size
     if (_q->n < 16) {
-        return dotprod_rrrf_run_neon(_q->h, _x, _q->n, _y);
+        return dotprod_rrrf_run_neon_1(_q->h, _x, _q->n, _y);
     }
-    return dotprod_rrrf_run4_neon(_q->h, _x, _q->n, _y);
+    return dotprod_rrrf_run_neon_4(_q->h, _x, _q->n, _y);
 }
 
 // build guard
 #else
-
-// invalidated
-int dotprod_rrrf_run_neon(float *      _h,
-                          float *      _x,
-                          unsigned int _n,
-                          float *      _y)
-{
-    return liquid_error(LIQUID_EICONFIG,"neon extensions not available");
-}
-
-// invalidated
-int dotprod_rrrf_run4_neon(float *      _h,
-                           float *      _x,
-                           unsigned int _n,
-                           float *      _y)
-{
-    return liquid_error(LIQUID_EICONFIG,"neon extensions not available");
-}
 
 // invalidated
 int dotprod_rrrf_execute_neon(dotprod_rrrf _q,

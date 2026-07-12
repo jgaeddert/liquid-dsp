@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,9 +56,9 @@
 //           x[1].real * h[1].imag,
 //           x[1].imag * h[1].imag };
 //
-int dotprod_cccf_execute_neon1(dotprod_cccf    _q,
-                               float complex * _x,
-                               float complex * _y)
+int dotprod_cccf_execute_neon_1(dotprod_cccf    _q,
+                                float complex * _x,
+                                float complex * _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;
@@ -125,9 +125,9 @@ int dotprod_cccf_execute_neon1(dotprod_cccf    _q,
 
 // use ARM Neon extensions (unrolled loop)
 // NOTE: unrolling doesn't show any appreciable performance difference
-int dotprod_cccf_execute_neon4(dotprod_cccf    _q,
-                               float complex * _x,
-                               float complex * _y)
+int dotprod_cccf_execute_neon_4(dotprod_cccf    _q,
+                                float complex * _x,
+                                float complex * _y)
 {
     // type cast input as floating point array
     float * x = (float*) _x;
@@ -223,9 +223,9 @@ int dotprod_cccf_execute_neon(dotprod_cccf    _q,
     liquid_log_trace("dotprod_cccf_execute_neon()");
     // switch based on size
     if (_q->n < 32) {
-        return dotprod_cccf_execute_neon1(_q, _x, _y);
+        return dotprod_cccf_execute_neon_1(_q, _x, _y);
     }
-    return dotprod_cccf_execute_neon4(_q, _x, _y);
+    return dotprod_cccf_execute_neon_4(_q, _x, _y);
 }
 
 
