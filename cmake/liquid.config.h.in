@@ -37,12 +37,22 @@
 #define COLOR_ENABLED       @ENABLE_COLOR@
 
 // SIMD extensions
-#define BUILD_NEON          @BUILD_NEON@
-#define BUILD_AVX512        @BUILD_AVX512@
-#define BUILD_AVX2          @BUILD_AVX2@
-#define BUILD_AVX           @BUILD_AVX@
-#define BUILD_SSE4          @BUILD_SSE4@
 #define BUILD_ALTIVEC       @BUILD_ALTIVEC@
+#define BUILD_NEON          @BUILD_NEON@
+#define BUILD_MMX           @BUILD_MMX@
+#define BUILD_SSE           @BUILD_SSE@
+#define BUILD_SSE2          @BUILD_SSE2@
+#define BUILD_SSE3          @BUILD_SSE3@
+#define BUILD_SSSE3         @BUILD_SSSE3@
+#define BUILD_SSE41         @BUILD_SSE41@
+#define BUILD_SSE42         @BUILD_SSE42@
+#define BUILD_AVX           @BUILD_AVX@
+#define BUILD_FMA3          @BUILD_FMA3@
+#define BUILD_AVX2          @BUILD_AVX2@
+#define BUILD_AVX512        @BUILD_AVX512@
+#define BUILD_AMX           @BUILD_AMX@
+#define BUILD_AMX101        @BUILD_AMX101@
+#define BUILD_AMX102        @BUILD_AMX102@
 
 // other information
 //#cmakedefine HAVE_GETOPT_LONG 1

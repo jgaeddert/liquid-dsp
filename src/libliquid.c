@@ -76,14 +76,22 @@ const struct liquid_build_info_s liquid_build_info =
     .color_enabled      = COLOR_ENABLED,
 
     // vector extensions
-    .neon               = BUILD_NEON,
-    .sse                = BUILD_SSE4,
-    .sse2               = 0,
-    .mmx                = 0,
-    .avx                = BUILD_AVX,
-    .avx2               = BUILD_AVX2,
-    .avx512f            = BUILD_AVX512,
     .altivec            = BUILD_ALTIVEC,
+    .neon               = BUILD_NEON,
+    .mmx                = 0,
+    .sse                = BUILD_SSE,
+    .sse2               = BUILD_SSE2,
+    .sse3               = BUILD_SSE3,
+    .ssse3              = BUILD_SSSE3,
+    .sse41              = BUILD_SSE41,
+    .sse42              = BUILD_SSE42,
+    .avx                = BUILD_AVX,
+    .fma3               = 0,
+    .avx2               = BUILD_AVX2,
+    .avx512             = BUILD_AVX512,
+    .amx                = 0,
+    .amx101             = 0,
+    .amx102             = 0,
 };
 
 int liquid_build_info_print(void)
@@ -118,14 +126,22 @@ int liquid_build_info_print(void)
     printf("color_enabled   = %d\n", liquid_build_info.color_enabled);
 
     // vector extensions
+    printf("altivec         = %d\n", liquid_build_info.altivec);
     printf("neon            = %d\n", liquid_build_info.neon);
+    printf("mmx             = %d\n", liquid_build_info.mmx);
     printf("sse             = %d\n", liquid_build_info.sse);
     printf("sse2            = %d\n", liquid_build_info.sse2);
-    printf("mmx             = %d\n", liquid_build_info.mmx);
+    printf("sse3            = %d\n", liquid_build_info.sse3);
+    printf("ssse3           = %d\n", liquid_build_info.ssse3);
+    printf("sse4.1          = %d\n", liquid_build_info.sse41);
+    printf("sse4.2          = %d\n", liquid_build_info.sse42);
     printf("avx             = %d\n", liquid_build_info.avx);
+    printf("fma3            = %d\n", liquid_build_info.fma3);
     printf("avx2            = %d\n", liquid_build_info.avx2);
-    printf("avx512f         = %d\n", liquid_build_info.avx512f);
-    printf("altivec         = %d\n", liquid_build_info.altivec);
+    printf("avx512          = %d\n", liquid_build_info.avx512);
+    printf("amx             = %d\n", liquid_build_info.amx);
+    printf("amx10.1         = %d\n", liquid_build_info.amx101);
+    printf("amx10.2         = %d\n", liquid_build_info.amx102);
 
     return LIQUID_OK;
 }

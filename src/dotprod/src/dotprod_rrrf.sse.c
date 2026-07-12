@@ -31,7 +31,7 @@
 #include "liquid.internal.h"
 
 // build guard
-#if BUILD_SSE4
+#if BUILD_SSE
 
 // include proper SIMD extensions for x86 SSE
 #include <immintrin.h>

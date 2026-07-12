@@ -128,14 +128,22 @@ extern const struct liquid_build_info_s
     const bool color_enabled;       // color output enabled or not
 
     // vector extensions
-    const bool neon;
-    const bool mmx;
-    const bool sse;
-    const bool sse2;
-    const bool avx;
-    const bool avx2;
-    const bool avx512f;
-    const bool altivec;
+    const bool altivec;             // power PC
+    const bool neon;                // ARM
+    const bool mmx;                 // multi-media extension (1997)
+    const bool sse;                 // streaming SIMD extensions (1999)
+    const bool sse2;                // SSE version 2 (2000)
+    const bool sse3;                // SSE version 3 (2004)
+    const bool ssse3;               // Supplemental SSE3 (2006)
+    const bool sse41;               // SSE version 4.1 (2007)
+    const bool sse42;               // SSE version 4.2 (2008)
+    const bool avx;                 // advanced vector extensions (2011)
+    const bool fma3;                // fused multiply-add (2013)
+    const bool avx2;                // AVX version 2 (2013)
+    const bool avx512;              // AVX-512 (2016)
+    const bool amx;                 // advanced matrix extensions (2023)
+    const bool amx101;              // AMX version 10.1 (2024)
+    const bool amx102;              // AMX version 10.2 (2026)
 
 } liquid_build_info;
 
