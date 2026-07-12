@@ -37,12 +37,22 @@
 #define COLOR_ENABLED       1
 
 // SIMD extensions
-#define BUILD_NEON          0
-#define BUILD_AVX512        0
-#define BUILD_AVX2          0
-#define BUILD_AVX           0
-#define BUILD_SSE4          0
 #define BUILD_ALTIVEC       0
+#define BUILD_NEON          0
+#define BUILD_MMX           0
+#define BUILD_SSE           0
+#define BUILD_SSE2          0
+#define BUILD_SSE3          0
+#define BUILD_SSSE3         0
+#define BUILD_SSE41         0
+#define BUILD_SSE42         0
+#define BUILD_AVX           0
+#define BUILD_FMA3          0
+#define BUILD_AVX2          0
+#define BUILD_AVX512        0
+#define BUILD_AMX           0
+#define BUILD_AMX101        0
+#define BUILD_AMX102        0
 
 // other information
 /* #undef HAVE_GETOPT_LONG */
