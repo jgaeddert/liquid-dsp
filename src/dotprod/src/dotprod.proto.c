@@ -286,9 +286,7 @@ int DOTPROD(_runtime_select)(DOTPROD()        _q,
         _q->execute = &DOTPROD(_execute_neon);
         return LIQUID_OK;
     case LIQUID_RUNTIME_SSE:
-    case LIQUID_RUNTIME_SSE2:
-    case LIQUID_RUNTIME_SSE3:
-        liquid_log_trace("dotprod_%s_runtime_select(), sse/sse2/sse3", EXTENSION_FULL);
+        liquid_log_trace("dotprod_%s_runtime_select(), sse", EXTENSION_FULL);
         _q->execute = &DOTPROD(_execute_sse);
         return LIQUID_OK;
     case LIQUID_RUNTIME_AVX:
@@ -302,7 +300,9 @@ int DOTPROD(_runtime_select)(DOTPROD()        _q,
     default:;
     }
 
-    return liquid_error(LIQUID_EINT,"dotprod_%s_runtime_select(), invalid selection or mode not available (%d)",
+    _q->execute = &DOTPROD(_execute_port);
+    return liquid_error(LIQUID_EINT,
+        "dotprod_%s_runtime_select(), invalid selection or mode not available (%d), falling back to portable version",
         EXTENSION_FULL, _select);
 }
 
@@ -329,8 +329,6 @@ int DOTPROD(_runtime_detect)(DOTPROD() _q)
     struct liquid_cpuinfo_s info;
     liquid_runtime_supported(&info);
 
-    // available
-
     // default to portable version
     liquid_runtime_t selection = LIQUID_RUNTIME_PORT;
 
@@ -343,14 +341,14 @@ int DOTPROD(_runtime_detect)(DOTPROD() _q)
     // x86 options ordered in progressively optimal
     //if (info.mmx    ) { selection = LIQUID_RUNTIME_MMX;     }
     if (info.sse    ) { selection = LIQUID_RUNTIME_SSE;     }
-    if (info.sse2   ) { selection = LIQUID_RUNTIME_SSE2;    }
-    if (info.sse3   ) { selection = LIQUID_RUNTIME_SSE3;    }
-    if (info.ssse3  ) { selection = LIQUID_RUNTIME_SSSE3;   }
+    //if (info.sse2   ) { selection = LIQUID_RUNTIME_SSE2;    }
+    //if (info.sse3   ) { selection = LIQUID_RUNTIME_SSE3;    }
+    //if (info.ssse3  ) { selection = LIQUID_RUNTIME_SSSE3;   }
     //if (info.sse41  ) { selection = LIQUID_RUNTIME_SSE41;   }
     //if (info.sse42  ) { selection = LIQUID_RUNTIME_SSE42;   }
     if (info.avx    ) { selection = LIQUID_RUNTIME_AVX;     }
     //if (info.fma3   ) { selection = LIQUID_RUNTIME_FMA3;    }
-    if (info.avx2   ) { selection = LIQUID_RUNTIME_AVX2;    }
+    //if (info.avx2   ) { selection = LIQUID_RUNTIME_AVX2;    }
     if (info.avx512 ) { selection = LIQUID_RUNTIME_AVX512;  }
     //if (info.amx    ) { selection = LIQUID_RUNTIME_AMX;     }
     //if (info.amx101 ) { selection = LIQUID_RUNTIME_AMX101;  }
