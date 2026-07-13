@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,9 +37,9 @@
 #include <immintrin.h>
 
 // use AVX extensions
-int dotprod_rrrf_execute_avx1(dotprod_rrrf _q,
-                              float *      _x,
-                              float *      _y)
+int dotprod_rrrf_execute_avx_1(dotprod_rrrf _q,
+                               float *      _x,
+                               float *      _y)
 {
     __m256 v;   // input vector
     __m256 h;   // coefficients vector
@@ -87,9 +87,9 @@ int dotprod_rrrf_execute_avx1(dotprod_rrrf _q,
 }
 
 // use AVX extensions (unrolled)
-int dotprod_rrrf_execute_avx4(dotprod_rrrf _q,
-                              float *      _x,
-                              float *      _y)
+int dotprod_rrrf_execute_avx_4(dotprod_rrrf _q,
+                               float *      _x,
+                               float *      _y)
 {
     __m256 v0, v1, v2, v3;
     __m256 h0, h1, h2, h3;
@@ -159,9 +159,9 @@ int dotprod_rrrf_execute_avx(dotprod_rrrf _q,
     liquid_log_trace("dotprod_rrrf_execute_avx()");
     // switch based on size
     if (_q->n < 32) {
-        return dotprod_rrrf_execute_avx1(_q, _x, _y);
+        return dotprod_rrrf_execute_avx_1(_q, _x, _y);
     }
-    return dotprod_rrrf_execute_avx4(_q, _x, _y);
+    return dotprod_rrrf_execute_avx_4(_q, _x, _y);
 }
 
 // build guard
