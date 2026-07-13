@@ -24,6 +24,9 @@
 // Floating-point dot product (SSE)
 //
 
+// tell GCC to use SSE instructions for this file
+#pragma GCC target("sse")
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -76,7 +79,7 @@ int dotprod_cccf_execute_sse_1(dotprod_cccf    _q,
     // aligned output array
     float w[4] __attribute__((aligned(16))) = {0,0,0,0};
 
-#if HAVE_SSE3
+#if 0 // HAVE_SSE3
     // SSE3
     __m128 s;   // dot product
     __m128 sum = _mm_setzero_ps(); // load zeros into sum register

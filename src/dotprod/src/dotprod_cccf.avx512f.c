@@ -24,6 +24,9 @@
 // Floating-point dot product (AVX512-F)
 //
 
+// tell GCC to use AVX-512 instructions for this file
+#pragma GCC target("avx512f,avx512dq,avx512vl,avx512bw,fma")
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

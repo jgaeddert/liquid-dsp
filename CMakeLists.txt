@@ -495,25 +495,8 @@ foreach(lib
 endforeach()
 
 # ---------------------------------------- SIMD extensions ----------------------------------------
-# apply SIMD compiler flags
-if (C_ALTIVEC_FOUND AND ENABLE_SIMD)
-    target_compile_options(dotprod PUBLIC ${C_ALTIVEC_FLAGS})
-endif()
-if (C_SSE42_FOUND AND ENABLE_SIMD)
-    target_compile_options(dotprod PUBLIC ${C_SSE42_FLAGS})
-endif()
-if (C_NEON_FOUND AND ENABLE_SIMD)
-    target_compile_options(dotprod PUBLIC ${C_NEON_FLAGS})
-endif()
-if (C_AVX_FOUND AND ENABLE_SIMD)
-    target_compile_options(dotprod PUBLIC ${C_AVX_FLAGS})
-endif()
-if (C_AVX2_FOUND AND ENABLE_SIMD)
-    target_compile_options(dotprod PUBLIC ${C_AVX2_FLAGS})
-endif()
-if (C_AVX512_FOUND AND ENABLE_SIMD)
-    target_compile_options(dotprod PUBLIC ${C_AVX512_FLAGS})
-endif()
+# SIMD instruction sets are now controlled via #pragma GCC target in each SIMD source file
+# No global compile flags needed
 
 #if (C_NEON_FOUND AND ENABLE_SIMD)
 #    target_sources(dotprod PUBLIC

@@ -24,6 +24,9 @@
 // Floating-point dot product (AVX)
 //
 
+// tell GCC to use AVX instructions for this file
+#pragma GCC target("avx")
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
