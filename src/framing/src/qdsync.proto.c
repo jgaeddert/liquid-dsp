@@ -155,6 +155,25 @@ QDSYNC() QDSYNC(_create_cpfsk)(unsigned char *   _seq,
     return QDSYNC(_create)(_detector, _ftype, _k, _m, _beta, _callback, _context);
 }
 
+QDSYNC() QDSYNC(_create_gmsk)(unsigned char *   _seq,
+                              unsigned int      _seq_len,
+                              int               _ftype,
+                              unsigned int      _k,
+                              unsigned int      _m,
+                              float             _beta,
+                              QDSYNC(_callback) _callback,
+                              void *            _context)
+{
+    // validate input
+    if (_seq_len == 0)
+        return liquid_error_config("QDSYNC(_create_gmsk)(), sequence length cannot be zero");
+
+    // create detector
+    QDETECTOR() _detector = QDETECTOR(_create_gmsk)(_seq, _seq_len, _k, _m, _beta);
+
+    return QDSYNC(_create)(_detector, _ftype, _k, _m, _beta, _callback, _context);
+}
+
 // copy object
 QDSYNC() QDSYNC(_copy)(QDSYNC() q_orig)
 {
