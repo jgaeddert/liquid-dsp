@@ -35,11 +35,11 @@ int DOTPROD(_runtime_detect)(DOTPROD() _q);
 
 // execution methods: always defined but only really implemented on
 // specific architectures
-int DOTPROD(_execute_port)   (DOTPROD() _q, TI * _x, TO * _y);
-int DOTPROD(_execute_neon)   (DOTPROD() _q, TI * _x, TO * _y);
-int DOTPROD(_execute_sse)    (DOTPROD() _q, TI * _x, TO * _y);
-int DOTPROD(_execute_avx)    (DOTPROD() _q, TI * _x, TO * _y);
-int DOTPROD(_execute_avx512f)(DOTPROD() _q, TI * _x, TO * _y);
+int DOTPROD(_execute_port)  (DOTPROD() _q, TI * _x, TO * _y);
+int DOTPROD(_execute_neon)  (DOTPROD() _q, TI * _x, TO * _y);
+int DOTPROD(_execute_sse)   (DOTPROD() _q, TI * _x, TO * _y);
+int DOTPROD(_execute_avx)   (DOTPROD() _q, TI * _x, TO * _y);
+int DOTPROD(_execute_avx512)(DOTPROD() _q, TI * _x, TO * _y);
 
 // portable structured dot product object
 struct DOTPROD(_s) {
@@ -297,7 +297,7 @@ int DOTPROD(_runtime_select)(DOTPROD()        _q,
         return LIQUID_OK;
     case LIQUID_RUNTIME_AVX512:
         liquid_log_trace("dotprod_%s_runtime_select(), avx512", EXTENSION_FULL);
-        _q->execute = &DOTPROD(_execute_avx512f);
+        _q->execute = &DOTPROD(_execute_avx512);
         return LIQUID_OK;
     default:;
     }

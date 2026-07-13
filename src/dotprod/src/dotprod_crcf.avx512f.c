@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@
 #include <immintrin.h>
 
 // use AVX512-F extensions
-int dotprod_crcf_execute_avx512f1(dotprod_crcf    _q,
+int dotprod_crcf_execute_avx512_1(dotprod_crcf    _q,
                                   float complex * _x,
                                   float complex * _y)
 {
@@ -91,7 +91,7 @@ int dotprod_crcf_execute_avx512f1(dotprod_crcf    _q,
 }
 
 // use AVX512-F extensions (unrolled loop)
-int dotprod_crcf_execute_avx512f4(dotprod_crcf    _q,
+int dotprod_crcf_execute_avx512_4(dotprod_crcf    _q,
                                   float complex * _x,
                                   float complex * _y)
 {
@@ -162,27 +162,27 @@ int dotprod_crcf_execute_avx512f4(dotprod_crcf    _q,
 //  _q      :   dotprod object
 //  _x      :   input array
 //  _y      :   output sample
-int dotprod_crcf_execute_avx512f(dotprod_crcf    _q,
-                                 float complex * _x,
-                                 float complex * _y)
+int dotprod_crcf_execute_avx512(dotprod_crcf    _q,
+                                float complex * _x,
+                                float complex * _y)
 {
-    liquid_log_trace("dotprod_crcf_execute_avx512f()");
+    liquid_log_trace("dotprod_crcf_execute_avx512()");
     // switch based on size
     if (_q->n < 128) {
-        return dotprod_crcf_execute_avx512f1(_q, _x, _y);
+        return dotprod_crcf_execute_avx512_1(_q, _x, _y);
     }
-    return dotprod_crcf_execute_avx512f4(_q, _x, _y);
+    return dotprod_crcf_execute_avx512_4(_q, _x, _y);
 }
 
 // build guard
 #else
 
 // invalidated
-int dotprod_crcf_execute_avx512f(dotprod_crcf    _q,
-                                 float complex * _x,
-                                 float complex * _y)
+int dotprod_crcf_execute_avx512(dotprod_crcf    _q,
+                                float complex * _x,
+                                float complex * _y)
 {
-    return liquid_error(LIQUID_EICONFIG,"avx512f extensions not available");
+    return liquid_error(LIQUID_EICONFIG,"avx512 extensions not available");
 }
 
 // build guard
