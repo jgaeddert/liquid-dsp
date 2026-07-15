@@ -24,9 +24,6 @@
 // Floating-point dot product (AVX)
 //
 
-// tell GCC to use AVX instructions for this file
-#pragma GCC target("avx")
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,6 +32,9 @@
 
 // build guard
 #if BUILD_AVX
+
+// tell GCC to use AVX instructions for this file
+#pragma GCC target("avx")
 
 // include proper SIMD extensions for x86 AVX
 #include <immintrin.h>

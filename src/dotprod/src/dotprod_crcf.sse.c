@@ -24,9 +24,6 @@
 // Floating-point dot product (SSE)
 //
 
-// tell GCC to use SSE instructions for this file
-#pragma GCC target("sse")
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,6 +32,9 @@
 
 // build guard
 #if BUILD_SSE
+
+// tell GCC to use SSE instructions for this file
+#pragma GCC target("sse")
 
 // include proper SIMD extensions for x86 SSE
 #include <immintrin.h>
