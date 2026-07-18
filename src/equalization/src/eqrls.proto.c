@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -112,8 +112,13 @@ EQRLS() EQRLS(_recreate)(EQRLS()      _q,
         // length hasn't changed; copy default coefficients
         // and return object
         unsigned int i;
-        for (i=0; i<_q->p; i++)
-            _q->h0[i] = _h[i];
+        if (_h == NULL) {
+            for (i=0; i<_q->p; i++)
+                _q->h0[i] = (i==_q->p-1) ? 1.0 : 0.0;
+        } else {
+            for (i=0; i<_q->p; i++)
+                _q->h0[i] = _h[i];
+        }
         return _q;
     }
 
