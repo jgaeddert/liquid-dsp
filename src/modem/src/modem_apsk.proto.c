@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -147,20 +147,20 @@ int MODEM(_demodulate_apsk)(MODEM()        _q,
         }
     }
 
-    // find closest point in ring
+    // find index of closest point in ring
     T theta = cargf(_x);
     if (theta < 0.0f) theta += 2.0f*M_PI;
     T dphi = 2.0f*M_PI / (T) _q->data.apsk.p[p];
-    unsigned int s_hat=0;
     T i_hat = (theta - _q->data.apsk.phi[p]) / dphi;
-    s_hat = roundf(i_hat);      // compute symbol (closest angle)
-    s_hat %= _q->data.apsk.p[p];   // ensure symbol is in range
-    //printf("          i_hat : %12.8f (%3u)\n", i_hat, s_hat);
+    int s_hat = (int)roundf(i_hat);      // compute symbol (closest angle)
+    while (s_hat < 0)
+        s_hat += _q->data.apsk.p[p]; // ensure non-negative
+    // ensure within range
+    s_hat %= _q->data.apsk.p[p];
 
     // accumulate symbol points
     for (i=0; i<p; i++)
         s_hat += _q->data.apsk.p[i];
-    //assert(s_hat < _q->M);
 
     // reverse symbol mapping
     unsigned int s_prime=0;
@@ -171,13 +171,8 @@ int MODEM(_demodulate_apsk)(MODEM()        _q,
         }
     }
 
-#if 0
-    printf("              x : %12.8f + j*%12.8f\n", crealf(_x), cimagf(_x));
-    printf("              p : %3u\n", p);
-    printf("          theta : %12.8f\n", theta);
-    printf("           dmin : %12.8f\n", dmin);
-    printf("              s : %3u > %3u\n", s_hat, s_prime);
-#endif
+    liquid_log_trace("apsk: x=%12.8f,%12.8f,p=%3u,theta=%12.8f,s:%3u>%3u",
+        crealf(_x),cimagf(_x),p,theta,s_hat,s_prime);
 
     *_sym_out = s_prime;
 
