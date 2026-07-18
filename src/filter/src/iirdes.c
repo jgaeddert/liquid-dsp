@@ -482,11 +482,11 @@ int iirdes_dzpk2sosf(float complex * _zd,
         z0 = -zp[_n-1];
         
         _a[3*i+0] = 1.0;
-        _a[3*i+1] = p0;
+        _a[3*i+1] = crealf(p0);
         _a[3*i+2] = 0.0;
 
         _b[3*i+0] = 1.0;
-        _b[3*i+1] = z0;
+        _b[3*i+1] = crealf(z0);
         _b[3*i+2] = 0.0;
     }
 
