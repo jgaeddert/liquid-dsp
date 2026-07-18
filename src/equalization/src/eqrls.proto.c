@@ -26,8 +26,6 @@
 #include <string.h>
 #include <stdio.h>
 
-//#define DEBUG
-
 struct EQRLS(_s) {
     unsigned int p;     // filter order
     float lambda;       // RLS forgetting factor
@@ -283,21 +281,6 @@ int EQRLS(_step)(EQRLS() _q,
         }
     }
 
-#ifdef DEBUG
-    printf("x: ");
-    for (i=0; i<p; i++)
-        PRINTVAL(x[i]);
-    printf("\n");
-
-    DEBUG_PRINTF_CFLOAT(stdout,"    d",0,_d);
-    DEBUG_PRINTF_CFLOAT(stdout,"_d_hat",0,_d_hat);
-    DEBUG_PRINTF_CFLOAT(stdout,"error",0,alpha);
-
-    printf("xP0: ");
-    for (c=0; c<p; c++)
-        PRINTVAL(_q->xP0[c]);
-    printf("\n");
-#endif
     // zeta = lambda + [x.']*[P0]*[conj(x)]
     _q->zeta = 0;
     for (c=0; c<p; c++) {
@@ -305,11 +288,7 @@ int EQRLS(_step)(EQRLS() _q,
         _q->zeta += sum;
     }
     _q->zeta += _q->lambda;
-#ifdef DEBUG
-    printf("zeta : ");
-    PRINTVAL(_q->zeta);
-    printf("\n");
-#endif
+
     for (r=0; r<p; r++) {
         _q->g[r] = 0;
         for (c=0; c<p; c++) {
@@ -318,13 +297,6 @@ int EQRLS(_step)(EQRLS() _q,
         }
         _q->g[r] /= _q->zeta;
     }
-#ifdef DEBUG
-    printf("g: ");
-    for (i=0; i<p; i++)
-        PRINTVAL(_q->g[i]);
-        //printf("%6.3f ", _q->g[i]);
-    printf("\n");
-#endif
 
     // update recursion matrix
     for (r=0; r<p; r++) {
@@ -344,20 +316,6 @@ int EQRLS(_step)(EQRLS() _q,
     // update weighting vector
     for (i=0; i<p; i++)
         _q->w1[i] = _q->w0[i] + alpha*(_q->g[i]);
-
-#ifdef DEBUG
-    printf("w0: \n");
-    for (i=0; i<p; i++) {
-        PRINTVAL(_q->w0[i]);
-        printf("\n");
-    }
-    printf("w1: \n");
-    for (i=0; i<p; i++) {
-        PRINTVAL(_q->w1[i]);
-        printf("\n");
-    EQRLS(_print)(_q);
-    }
-#endif
 
     // copy old values
     memmove(_q->w0, _q->w1,   p*sizeof(T));
