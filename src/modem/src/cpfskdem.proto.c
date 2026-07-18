@@ -306,12 +306,13 @@ int CPFSKDEM(_reset)(CPFSKDEM() _q)
 {
     switch(_q->demod_type) {
     case CPFSKDEM_COHERENT:
-        firfilt_crcf_reset(_q->demod.noncoherent.mf);
+        //return liquid_error(LIQUID_EINT,"cpfskdem_reset(), coherent mode not supported");
         break;
     case CPFSKDEM_NONCOHERENT:
+        firfilt_crcf_reset(_q->demod.noncoherent.mf);
         break;
     default:
-        break;
+        return liquid_error(LIQUID_EINT,"cpfskdem_reset(), invalid/unsupported mode");
     }
 
     _q->index   = 0;
