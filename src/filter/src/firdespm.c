@@ -56,7 +56,6 @@
 #include "liquid.internal.h"
 
 #define LIQUID_FIRDESPM_DEBUG       0
-#define LIQUID_FIRDESPM_DEBUG_PRINT 0
 
 #define LIQUID_FIRDESPM_DEBUG_FILENAME "firdespm_internal_debug.m"
 #if LIQUID_FIRDESPM_DEBUG
@@ -497,9 +496,7 @@ int firdespm_execute(firdespm _q, float * _h)
     // TODO : guarantee at least one extremal frequency lies in each band
     for (i=0; i<_q->r+1; i++) {
         _q->iext[i] = (i * (_q->grid_size-1)) / _q->r;
-#if LIQUID_FIRDESPM_DEBUG_PRINT
-        printf("iext_guess[%3u] = %u\n", i, _q->iext[i]);
-#endif
+        liquid_log_debug("firdespm_execute(), iext_guess[%3u] = %u", i, _q->iext[i]);
     }
 
     // iterate over the Remez exchange algorithm
@@ -519,9 +516,7 @@ int firdespm_execute(firdespm _q, float * _h)
         if (firdespm_is_search_complete(_q))
             break;
     }
-#if LIQUID_FIRDESPM_DEBUG_PRINT
-    printf("search complete in %u iterations\n", p);
-#endif
+    liquid_log_debug("firdespm_execute(), search complete in %u iterations", p);
 
     // compute filter taps
     return firdespm_compute_taps(_q, _h);
@@ -549,9 +544,7 @@ int firdespm_init_grid(firdespm _q)
 
     // frequency step size
     double df = 0.5/(_q->grid_density*_q->r);
-#if LIQUID_FIRDESPM_DEBUG_PRINT
-    printf("df : %12.8f\n", df);
-#endif
+    liquid_log_debug("firdespm_init_grid(), df=%12.8f", df);
 
 #if 0
     firdespm_print(_q);
@@ -661,18 +654,14 @@ int firdespm_compute_interp(firdespm _q)
     // compute Chebyshev points on F[iext[]] : cos(2*pi*f)
     for (i=0; i<_q->r+1; i++) {
         _q->x[i] = cos(2*M_PI*_q->F[_q->iext[i]]);
-#if LIQUID_FIRDESPM_DEBUG_PRINT
-        printf("x[%3u] = %12.8f\n", i, _q->x[i]);
-#endif
+        liquid_log_debug("firdespm_compute_interp(), x[%3u] = %12.8f", i, _q->x[i]);
     }
     //printf("\n");
 
     // compute Lagrange interpolating polynomial
     poly_fit_lagrange_barycentric(_q->x,_q->r+1,_q->alpha);
-#if LIQUID_FIRDESPM_DEBUG_PRINT
     for (i=0; i<_q->r+1; i++)
-        printf("a[%3u] = %12.8f\n", i, _q->alpha[i]);
-#endif
+        { liquid_log_debug("firdespm_compute_interp(), a[%3u] = %12.8f", i, _q->alpha[i]); }
 
     // compute rho
     double t0 = 0.0;    // numerator
@@ -683,17 +672,12 @@ int firdespm_compute_interp(firdespm _q)
         t1 += _q->alpha[i] / _q->W[_q->iext[i]] * (i % 2 ? -1.0 : 1.0);
     }
     _q->rho = t0/t1;
-#if LIQUID_FIRDESPM_DEBUG_PRINT
-    printf("  rho   :   %12.4e\n", _q->rho);
-    printf("\n");
-#endif
+    liquid_log_debug("firdespm_compute_interp(), rho=%12.4e", _q->rho);
 
     // compute polynomial values (interpolants)
     for (i=0; i<_q->r+1; i++) {
         _q->c[i] = _q->D[_q->iext[i]] - (i % 2 ? -1 : 1) * _q->rho / _q->W[_q->iext[i]];
-#if LIQUID_FIRDESPM_DEBUG_PRINT
-        printf("c[%3u] = %16.8e\n", i, _q->c[i]);
-#endif
+        liquid_log_debug("firdespm_compute_interp(), c[%3u] = %16.8e", i, _q->c[i]);
     }
     return LIQUID_OK;
 }
@@ -733,9 +717,7 @@ int firdespm_iext_search(firdespm _q)
 #else
     // force f=0 into candidate set
     found_iext[num_found++] = 0;
-#if LIQUID_FIRDESPM_DEBUG_PRINT
-    printf("num_found : %4u [%4u / %4u]\n", num_found, 0, _q->grid_size);
-#endif
+    liquid_log_debug("firdespm_iext_search(), num_found : %4u [%4u / %4u]", num_found, 0, _q->grid_size);
 #endif
 
     // search inside grid
@@ -746,9 +728,7 @@ int firdespm_iext_search(firdespm _q)
             //assert(num_found < nmax);
             if (num_found < nmax)
                 found_iext[num_found++] = i;
-#if LIQUID_FIRDESPM_DEBUG_PRINT
-            printf("num_found : %4u [%4u / %4u]\n", num_found, i, _q->grid_size);
-#endif
+            liquid_log_debug("firdespm_iext_search(), num_found : %4u [%4u / %4u]", num_found, i, _q->grid_size);
         }
     }
 
@@ -784,10 +764,8 @@ int firdespm_iext_search(firdespm _q)
     unsigned int num_extra = num_found - _q->r - 1; // number of extra extremal frequencies
     unsigned int alternating_sign;
 
-#if LIQUID_FIRDESPM_DEBUG_PRINT
     for (i=0; i<_q->r+1; i++)
-        printf("iext[%4u] = %4u : %16.8e\n", i, found_iext[i], _q->E[found_iext[i]]);
-#endif
+        { liquid_log_debug("firdespm_iext_search(), iext[%4u] = %4u : %16.8e", i, found_iext[i], _q->E[found_iext[i]]); }
 
     while (num_extra) {
         // evaluate sign of first extrema
@@ -855,10 +833,8 @@ int firdespm_iext_search(firdespm _q)
     // copy new values
     memmove(_q->iext, found_iext, (_q->r+1)*sizeof(unsigned int));
 
-#if LIQUID_FIRDESPM_DEBUG_PRINT
     for (i=0; i<_q->r+1; i++)
-        printf("iext_new[%4u] = %4u : %16.8e\n", i, found_iext[i], _q->E[found_iext[i]]);
-#endif
+        { liquid_log_debug("firdespm_iext_search(), iext_new[%4u] = %4u : %16.8e", i, found_iext[i], _q->E[found_iext[i]]); }
     return LIQUID_OK;
 }
 
@@ -883,9 +859,8 @@ int firdespm_is_search_complete(firdespm _q)
         if (i==0 || e > emax) emax = e;
     }
 
-#if LIQUID_FIRDESPM_DEBUG_PRINT
-    printf("emin : %16.8e, emax : %16.8e, metric : %16.8e\n", emin, emax, (emax-emin)/emax);
-#endif
+    liquid_log_debug("firdespm_is_search_complete(), emin : %16.8e, emax : %16.8e, metric : %16.8e",
+            emin, emax, (emax-emin)/emax);
     return (emax-emin) / emax < tol ? 1 : 0;
 }
 
@@ -943,11 +918,8 @@ int firdespm_compute_taps(firdespm _q, float * _h)
         // even filter length, odd symmetry
         return liquid_error(LIQUID_EINT,"firdespm_compute_taps(), filter configuration not yet supported");
     }
-#if LIQUID_FIRDESPM_DEBUG_PRINT
-    printf("\n");
     for (i=0; i<_q->h_len; i++)
-        printf("h(%3u) = %12.8f;\n", i+1, _h[i]);
-#endif
+        { liquid_log_debug("firdespm_compute_taps(), h[%3u] = %12.8f;", i, _h[i]); }
     return LIQUID_OK;
 }
 
