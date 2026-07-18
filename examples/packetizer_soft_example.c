@@ -13,7 +13,6 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-// print usage/help message
 int main(int argc, char *argv[])
 {
     // define variables and parse command-line options
