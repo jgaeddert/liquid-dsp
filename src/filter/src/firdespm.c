@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -837,7 +837,7 @@ int firdespm_iext_search(firdespm _q)
                  (num_found-imin)*sizeof(unsigned int));
 #else
         // equivalent code:
-        for (i=imin; i<num_found; i++)
+        for (i=imin; i<num_found-1; i++)
             found_iext[i] = found_iext[i+1];
 #endif
 
