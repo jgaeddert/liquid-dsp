@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -137,7 +137,7 @@ float liquid_kbd(unsigned int _i,
         liquid_error(LIQUID_EICONFIG,"liquid_kbd(), window length must be greater than zero");
         return 0.0f;
     } else if ( _wlen % 2 ) {
-        liquid_error(LIQUID_EICONFIG,"liquid_kbd(), window length must be odd");
+        liquid_error(LIQUID_EICONFIG,"liquid_kbd(), window length must be even");
         return 0.0f;
     }
 
@@ -173,7 +173,7 @@ int liquid_kbd_window(unsigned int _i,
     if (_i == 0)
         return liquid_error(LIQUID_EICONFIG,"liquid_kbd_window(), window length must be greater than zero");
     if ( _i % 2 )
-        return liquid_error(LIQUID_EICONFIG,"liquid_kbd_window(), window length must be odd");
+        return liquid_error(LIQUID_EICONFIG,"liquid_kbd_window(), window length must be even");
     if ( _beta < 0.0f )
         return liquid_error(LIQUID_EICONFIG,"liquid_kbd_window(), _beta must be positive");
 
