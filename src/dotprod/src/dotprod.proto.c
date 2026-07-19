@@ -325,34 +325,29 @@ int DOTPROD(_execute)(DOTPROD() _q,
 // detect runtime execution method
 int DOTPROD(_runtime_detect)(DOTPROD() _q)
 {
-    // set execute function pointer based on run-time availability
-    struct liquid_cpuinfo_s info;
-    liquid_get_cpuinfo(&info);
+    // implementations
+    struct liquid_cpuinfo_s impl =
+    {
+        .altivec = 0,
+        .neon    = true,
+        .mmx     = 0,
+        .sse     = true,
+        .sse2    = 0,
+        .sse3    = 0,
+        .ssse3   = 0,
+        .sse41   = 0,
+        .sse42   = 0,
+        .avx     = true,
+        .fma3    = 0,
+        .avx2    = 0,
+        .avx512  = true,
+        .amx     = 0,
+        .amx101  = 0,
+        .amx102  = 0,
+    };
 
-    // default to portable version
-    liquid_runtime_t selection = LIQUID_RUNTIME_PORT;
-
-    // neon
-    if (info.neon   ) { selection = LIQUID_RUNTIME_NEON;    }
-
-    // altivec
-    //if (info.neon   ) { selection = LIQUID_RUNTIME_ALTIVEC; }
-
-    // x86 options ordered in progressively optimal
-    //if (info.mmx    ) { selection = LIQUID_RUNTIME_MMX;     }
-    if (info.sse    ) { selection = LIQUID_RUNTIME_SSE;     }
-    //if (info.sse2   ) { selection = LIQUID_RUNTIME_SSE2;    }
-    //if (info.sse3   ) { selection = LIQUID_RUNTIME_SSE3;    }
-    //if (info.ssse3  ) { selection = LIQUID_RUNTIME_SSSE3;   }
-    //if (info.sse41  ) { selection = LIQUID_RUNTIME_SSE41;   }
-    //if (info.sse42  ) { selection = LIQUID_RUNTIME_SSE42;   }
-    if (info.avx    ) { selection = LIQUID_RUNTIME_AVX;     }
-    //if (info.fma3   ) { selection = LIQUID_RUNTIME_FMA3;    }
-    //if (info.avx2   ) { selection = LIQUID_RUNTIME_AVX2;    }
-    if (info.avx512 ) { selection = LIQUID_RUNTIME_AVX512;  }
-    //if (info.amx    ) { selection = LIQUID_RUNTIME_AMX;     }
-    //if (info.amx101 ) { selection = LIQUID_RUNTIME_AMX101;  }
-    //if (info.amx102 ) { selection = LIQUID_RUNTIME_AMX102;  }
+    // given implementations, find best method
+    liquid_runtime_t selection = liquid_runtime_detect(&impl);
 
     // invoke selection method
     return DOTPROD(_runtime_select)(_q, selection);
