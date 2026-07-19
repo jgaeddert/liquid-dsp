@@ -180,6 +180,47 @@ extern const struct liquid_build_info_s
 // print build information
 int liquid_build_info_print(void);
 
+// runtime hardware acceleration options
+typedef enum
+{
+    // unknown
+    LIQUID_RUNTIME_UNKNOWN  =   0,
+
+    // default modes
+    LIQUID_RUNTIME_PORT     =   1,
+
+    // PPC architecture
+    LIQUID_RUNTIME_ALTIVEC  =   4,
+
+    // ARM architecture
+    LIQUID_RUNTIME_NEON     =   8,
+
+    // x86 architecture
+    LIQUID_RUNTIME_MMX      =  16,  // multi-media extension (1997)
+    LIQUID_RUNTIME_SSE      =  17,  // streaming SIMD extensions (1999)
+    LIQUID_RUNTIME_SSE2     =  18,  // SSE version 2 (2000)
+    LIQUID_RUNTIME_SSE3     =  19,  // SSE version 3 (2004)
+    LIQUID_RUNTIME_SSSE3    =  20,  // Supplemental SSE3 (2006)
+    LIQUID_RUNTIME_SSE41    =  21,  // SSE version 4.1 (2007)
+    LIQUID_RUNTIME_SSE42    =  22,  // SSE version 4.2 (2008)
+    LIQUID_RUNTIME_AVX      =  23,  // advanced vector extensions (2011)
+    LIQUID_RUNTIME_FMA3     =  24,  // fused multiply-add (2013)
+    LIQUID_RUNTIME_AVX2     =  25,  // AVX version 2 (2013)
+    LIQUID_RUNTIME_AVX512   =  26,  // AVX-512 (2016)
+    LIQUID_RUNTIME_AMX      =  27,  // advanced matrix extensions (2023)
+    LIQUID_RUNTIME_AMX101   =  28,  // AMX version 10.1 (2024)
+    LIQUID_RUNTIME_AMX102   =  29,  // AMX version 10.2 (2026)
+
+} liquid_runtime_t;
+
+// detect best runtime hardware acceleration mode
+//  _impl   : available implementations for algorithms (e.g. dotprod), set
+//            to NULL for generic build-time version. For example, the CPU
+//            might support AVX2, but the algorithm might not have an
+//            implementation for AVX2 in which case liquid_runtime_detect()
+//            would return the next best option.
+liquid_runtime_t liquid_runtime_detect(struct liquid_cpuinfo_s * _impl);
+
 
 // report error
 int liquid_error_fl(int _code, const char * _file, int _line, const char * _format, ...);
@@ -540,42 +581,6 @@ enum {
 #else
 #  define liquid_log_fatal(...) {}
 #endif
-
-// runtime hardware acceleration options
-typedef enum
-{
-    // unknown
-    LIQUID_RUNTIME_UNKNOWN  =   0,
-
-    // default modes
-    LIQUID_RUNTIME_PORT     =   1,
-
-    // PPC architecture
-    LIQUID_RUNTIME_ALTIVEC  =   4,
-
-    // ARM architecture
-    LIQUID_RUNTIME_NEON     =   8,
-
-    // x86 architecture
-    LIQUID_RUNTIME_MMX      =  16,  // multi-media extension (1997)
-    LIQUID_RUNTIME_SSE      =  17,  // streaming SIMD extensions (1999)
-    LIQUID_RUNTIME_SSE2     =  18,  // SSE version 2 (2000)
-    LIQUID_RUNTIME_SSE3     =  19,  // SSE version 3 (2004)
-    LIQUID_RUNTIME_SSSE3    =  20,  // Supplemental SSE3 (2006)
-    LIQUID_RUNTIME_SSE41    =  21,  // SSE version 4.1 (2007)
-    LIQUID_RUNTIME_SSE42    =  22,  // SSE version 4.2 (2008)
-    LIQUID_RUNTIME_AVX      =  23,  // advanced vector extensions (2011)
-    LIQUID_RUNTIME_FMA3     =  24,  // fused multiply-add (2013)
-    LIQUID_RUNTIME_AVX2     =  25,  // AVX version 2 (2013)
-    LIQUID_RUNTIME_AVX512   =  26,  // AVX-512 (2016)
-    LIQUID_RUNTIME_AMX      =  27,  // advanced matrix extensions (2023)
-    LIQUID_RUNTIME_AMX101   =  28,  // AMX version 10.1 (2024)
-    LIQUID_RUNTIME_AMX102   =  29,  // AMX version 10.2 (2026)
-
-} liquid_runtime_t;
-
-// detect runtime hardware acceleration mode
-liquid_runtime_t liquid_runtime_detect(void);
 
 
 // basic time object for estimating wall clock time
