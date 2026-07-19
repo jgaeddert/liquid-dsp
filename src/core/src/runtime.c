@@ -161,7 +161,7 @@ int liquid_runtime_supported_x86(liquid_cpuinfo _q)
 
 int liquid_runtime_supported_ppc(liquid_cpuinfo _q)
 {
-#if defined(__ALTIVEC__) || defined(__VEC__)
+#if defined __ALTIVEC__ || defined __VEC__
     _q->altivec = true;
 #else
     _q->altivec = false;
@@ -169,8 +169,23 @@ int liquid_runtime_supported_ppc(liquid_cpuinfo _q)
     return LIQUID_OK;
 }
 
+// check which instruction extensions are supported on this system
+int liquid_get_cpuinfo(liquid_cpuinfo _cpu)
+{
+    if (liquid_runtime_supported_arm(_cpu))
+        return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get ARM flags");
+
+    if (liquid_runtime_supported_ppc(_cpu))
+        return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get PPC flags");
+
+    if (liquid_runtime_supported_x86(_cpu))
+        return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get x86 flags");
+
+    return LIQUID_OK;
+}
+
 // get number of cores available
-int liquid_runtime_cores(liquid_cpuinfo _q)
+int liquid_runtime_cores(liquid_sysinfo _q)
 {
     _q->cores = 1;
 #if defined __APPLE__ || defined __linux__  || defined __unix__
@@ -191,16 +206,10 @@ int liquid_runtime_cores(liquid_cpuinfo _q)
 }
 
 // check which instruction extensions are supported on this system
-int liquid_runtime_supported(liquid_cpuinfo _q)
+int liquid_runtime_supported(liquid_sysinfo _q)
 {
-    if (liquid_runtime_supported_arm(_q))
-        return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get ARM flags");
-
-    if (liquid_runtime_supported_ppc(_q))
-        return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get PPC flags");
-
-    if (liquid_runtime_supported_x86(_q))
-        return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get x86 flags");
+    if (liquid_get_cpuinfo(&_q->cpuinfo))
+        return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get cpuinfo");
 
     if (liquid_runtime_cores(_q))
         return liquid_error(LIQUID_EUMODE,"liquid_runtime_supported(), could not get number of CPU cores");
@@ -212,7 +221,7 @@ int liquid_runtime_supported(liquid_cpuinfo _q)
 liquid_runtime_t liquid_runtime_detect(void)
 {
     struct liquid_cpuinfo_s info;
-    if (liquid_runtime_supported(&info))
+    if (liquid_get_cpuinfo(&info))
     {
         liquid_error(LIQUID_EUMODE,"liquid_runtime_detect(), could not get supported runtime instructions");
         return LIQUID_RUNTIME_UNKNOWN;

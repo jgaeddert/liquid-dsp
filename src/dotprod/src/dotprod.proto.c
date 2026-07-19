@@ -327,7 +327,7 @@ int DOTPROD(_runtime_detect)(DOTPROD() _q)
 {
     // set execute function pointer based on run-time availability
     struct liquid_cpuinfo_s info;
-    liquid_runtime_supported(&info);
+    liquid_get_cpuinfo(&info);
 
     // default to portable version
     liquid_runtime_t selection = LIQUID_RUNTIME_PORT;

@@ -95,6 +95,51 @@ int liquid_libversion_number(void);
     exit(1);                                                                \
   }                                                                         \
 
+// structure to define instruction set architecture options/availability
+struct liquid_cpuinfo_s
+{
+    // PPC architecture
+    bool altivec;
+
+    // ARM architecture
+    bool neon;
+
+    // x86 architecture
+    bool mmx;       // multi-media extension (1997)
+    bool sse;       // streaming SIMD extensions (1999)
+    bool sse2;      // SSE version 2 (2000)
+    bool sse3;      // SSE version 3 (2004)
+    bool ssse3;     // Supplemental SSE3 (2006)
+    bool sse41;     // SSE version 4.1 (2007)
+    bool sse42;     // SSE version 4.2 (2008)
+    bool avx;       // advanced vector extensions (2011)
+    bool fma3;      // fused multiply-add (2013)
+    bool avx2;      // AVX version 2 (2013)
+    bool avx512;    // AVX-512 (2016)
+    bool amx;       // advanced matrix extensions (2023)
+    bool amx101;    // AMX version 10.1 (2024)
+    bool amx102;    // AMX version 10.2 (2026)
+};
+typedef struct liquid_cpuinfo_s * liquid_cpuinfo;
+
+// check which instruction extensions are supported on this system
+int liquid_get_cpuinfo(liquid_cpuinfo _cpu);
+
+// structure to define system information
+struct liquid_sysinfo_s
+{
+    // instruction set architecture
+    struct liquid_cpuinfo_s cpuinfo;
+
+    // number of cores
+    int cores;
+};
+
+typedef struct liquid_sysinfo_s * liquid_sysinfo;
+
+// check which instruction extensions are supported on this system
+int liquid_runtime_supported(liquid_sysinfo _q);
+
 // get build info
 extern const struct liquid_build_info_s
 {
@@ -510,39 +555,6 @@ enum {
 #else
 #  define liquid_log_fatal(...) {}
 #endif
-
-// structure to define instruction set architecture options at runtime
-struct liquid_cpuinfo_s
-{
-    // PPC architecture
-    bool altivec;
-
-    // ARM architecture
-    bool neon;
-
-    // x86 architecture
-    bool mmx;       // multi-media extension (1997)
-    bool sse;       // streaming SIMD extensions (1999)
-    bool sse2;      // SSE version 2 (2000)
-    bool sse3;      // SSE version 3 (2004)
-    bool ssse3;     // Supplemental SSE3 (2006)
-    bool sse41;     // SSE version 4.1 (2007)
-    bool sse42;     // SSE version 4.2 (2008)
-    bool avx;       // advanced vector extensions (2011)
-    bool fma3;      // fused multiply-add (2013)
-    bool avx2;      // AVX version 2 (2013)
-    bool avx512;    // AVX-512 (2016)
-    bool amx;       // advanced matrix extensions (2023)
-    bool amx101;    // AMX version 10.1 (2024)
-    bool amx102;    // AMX version 10.2 (2026)
-
-    // number of cores
-    int cores;
-};
-typedef struct liquid_cpuinfo_s * liquid_cpuinfo;
-
-// check which instruction extensions are supported on this system
-int liquid_runtime_supported(liquid_cpuinfo _q);
 
 // runtime hardware acceleration options
 typedef enum
