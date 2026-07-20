@@ -837,7 +837,7 @@ int firdespm_iext_search(firdespm _q)
                  (num_found-imin)*sizeof(unsigned int));
 #else
         // equivalent code:
-        for (i=imin; i<num_found; i++)
+        for (i=imin; i<num_found-1; i++)
             found_iext[i] = found_iext[i+1];
 #endif
 
