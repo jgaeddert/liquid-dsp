@@ -75,7 +75,7 @@ def get_source_files(path:str = '.'):
             files = filter(lambda x: os.path.splitext(x)[-1]=='.c', files)
             # provide full path
             source_files.extend([root + '/' + f for f in files])
-    return source_files
+    return sorted(source_files)
 
 def parse_source(path:str):
     '''parse source file and find test definitions'''

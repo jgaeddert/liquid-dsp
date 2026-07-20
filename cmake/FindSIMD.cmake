@@ -1,7 +1,124 @@
 INCLUDE(CheckCSourceRuns)
 INCLUDE(CheckCXXSourceRuns)
 
-SET(SSE4_CODE "
+# NOTE: altivec is extremely old at this point; I'm not sure if this code is even correct
+SET(ALTIVEC_CODE "
+  int main()
+  {
+    vector float v = {1.0f, 2.0f, 3.0f, 4.0f};
+    vector float h = {2.0f, 4.0f, 6.0f, 8.0f};
+    vector float z = (vector float)(0);
+    union { vector float r; float w[4]; } s;
+    s.r = vec_madd(v, h, z);
+
+    // unload packed array
+    return (s.w[0]== 0.f && s.w[1]== -1.f && s.w[2]== 2.f && s.w[3]== -3.f) ? 0 : 1;
+  }
+")
+
+SET(NEON_CODE "
+  #include <arm_neon.h>
+  int main()
+  {
+    float _v[4] = {1.0f, 2.0f, 3.0f, 4.0f};
+    float _h[4] = {2.0f, 4.0f, 6.0f, 8.0f};
+    float32x4_t v = vld1q_f32(_v);
+    float32x4_t h = vld1q_f32(_h);
+    float32x4_t s = vmulq_f32(h,v);
+
+    // unload packed array
+    float w[4];
+    vst1q_f32(w, s);
+    return (w[0] == 2.0f && w[1] == 8.0f && w[2] == 18.0f && w[3] == 32.0f) ? 0 : -1;
+  }
+")
+
+SET(SSE_CODE "
+  #include <immintrin.h>
+  int main()
+  {
+    float _v[8] = { 0.f, 1.f, 2.f, 3.f,};
+    float _h[8] = { 1.f,-1.f, 1.f,-1.f,};
+    __m128 v = _mm_loadu_ps(_v);
+    __m128 h = _mm_loadu_ps(_h);
+    __m128 s = _mm_mul_ps(v, h);
+    // unload packed array
+    volatile float w[4];
+    _mm_storeu_ps((float*)w, s);
+    return (w[0]== 0.f && w[1]== -1.f && w[2]== 2.f && w[3]== -3.f) ? 0 : 1;
+  }
+")
+
+# note: this actually only tests for SSE
+SET(SSE2_CODE "
+  #include <immintrin.h>
+  int main()
+  {
+    float _v[8] = { 0.f, 1.f, 2.f, 3.f,};
+    float _h[8] = { 1.f,-1.f, 1.f,-1.f,};
+    __m128 v = _mm_loadu_ps(_v);
+    __m128 h = _mm_loadu_ps(_h);
+    __m128 s = _mm_mul_ps(v, h);
+    // unload packed array
+    volatile float w[4];
+    _mm_storeu_ps((float*)w, s);
+    return (w[0]== 0.f && w[1]== -1.f && w[2]== 2.f && w[3]== -3.f) ? 0 : 1;
+  }
+")
+
+# note: this actually only tests for SSE
+SET(SSE3_CODE "
+  #include <immintrin.h>
+  int main()
+  {
+    float _v[8] = { 0.f, 1.f, 2.f, 3.f,};
+    float _h[8] = { 1.f,-1.f, 1.f,-1.f,};
+    __m128 v = _mm_loadu_ps(_v);
+    __m128 h = _mm_loadu_ps(_h);
+    __m128 s = _mm_mul_ps(v, h);
+    // unload packed array
+    volatile float w[4];
+    _mm_storeu_ps((float*)w, s);
+    return (w[0]== 0.f && w[1]== -1.f && w[2]== 2.f && w[3]== -3.f) ? 0 : 1;
+  }
+")
+
+# note: this actually only tests for SSE
+SET(SSSE3_CODE "
+  #include <immintrin.h>
+  int main()
+  {
+    float _v[8] = { 0.f, 1.f, 2.f, 3.f,};
+    float _h[8] = { 1.f,-1.f, 1.f,-1.f,};
+    __m128 v = _mm_loadu_ps(_v);
+    __m128 h = _mm_loadu_ps(_h);
+    __m128 s = _mm_mul_ps(v, h);
+    // unload packed array
+    volatile float w[4];
+    _mm_storeu_ps((float*)w, s);
+    return (w[0]== 0.f && w[1]== -1.f && w[2]== 2.f && w[3]== -3.f) ? 0 : 1;
+  }
+")
+
+# note: this actually only tests for SSE
+SET(SSE41_CODE "
+  #include <immintrin.h>
+  int main()
+  {
+    float _v[8] = { 0.f, 1.f, 2.f, 3.f,};
+    float _h[8] = { 1.f,-1.f, 1.f,-1.f,};
+    __m128 v = _mm_loadu_ps(_v);
+    __m128 h = _mm_loadu_ps(_h);
+    __m128 s = _mm_mul_ps(v, h);
+    // unload packed array
+    volatile float w[4];
+    _mm_storeu_ps((float*)w, s);
+    return (w[0]== 0.f && w[1]== -1.f && w[2]== 2.f && w[3]== -3.f) ? 0 : 1;
+  }
+")
+
+# note: this actually only tests for SSE
+SET(SSE42_CODE "
   #include <immintrin.h>
   int main()
   {
@@ -71,38 +188,6 @@ SET(AVX512_CODE "
   }
 ")
 
-SET(NEON_CODE "
-  #include <arm_neon.h>
-  int main()
-  {
-    float _v[4] = {1.0f, 2.0f, 3.0f, 4.0f};
-    float _h[4] = {2.0f, 4.0f, 6.0f, 8.0f};
-    float32x4_t v = vld1q_f32(_v);
-    float32x4_t h = vld1q_f32(_h);
-    float32x4_t s = vmulq_f32(h,v);
-
-    // unload packed array
-    float w[4];
-    vst1q_f32(w, s);
-    return (w[0] == 2.0f && w[1] == 8.0f && w[2] == 18.0f && w[3] == 32.0f) ? 0 : -1;
-  }
-")
-
-# NOTE: altivec is extremely old at this point; I'm not sure if this code is even correct
-SET(ALTIVEC_CODE "
-  int main()
-  {
-    vector float v = {1.0f, 2.0f, 3.0f, 4.0f};
-    vector float h = {2.0f, 4.0f, 6.0f, 8.0f};
-    vector float z = (vector float)(0);
-    union { vector float r; float w[4]; } s;
-    s.r = vec_madd(v, h, z);
-
-    // unload packed array
-    return (s.w[0]== 0.f && s.w[1]== -1.f && s.w[2]== 2.f && s.w[3]== -3.f) ? 0 : 1;
-  }
-")
-
 MACRO(CHECK_SIMD lang type flags)
   SET(__FLAG_I 1)
   SET(CMAKE_REQUIRED_FLAGS_SAVE ${CMAKE_REQUIRED_FLAGS})
@@ -119,10 +204,10 @@ MACRO(CHECK_SIMD lang type flags)
         SET(${lang}_${type}_FOUND TRUE CACHE BOOL "${lang} ${type} support")
         SET(${lang}_${type}_FLAGS "${__FLAG}" CACHE STRING "${lang} ${type} flags")
       ENDIF()
-      MATH(EXPR __FLAG_I "${__FLAG_I}+1")
     ELSE()
       MESSAGE("-- Skipping   Test ${lang}_HAS_${type}_${__FLAG_I}: ${__FLAG}")
     ENDIF()
+    MATH(EXPR __FLAG_I "${__FLAG_I}+1")
   ENDFOREACH()
   SET(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS_SAVE})
 
@@ -138,16 +223,39 @@ ENDMACRO()
 
 # TODO: check msvc arch flags
 
-CHECK_SIMD(C "SSE4" " ;-msse4.2;/arch:SSE")
-CHECK_SIMD(C "AVX" " ;-mavx;/arch:AVX")
-CHECK_SIMD(C "AVX2" " ;-mavx2 -mfma -mf16c;/arch:AVX2")
-CHECK_SIMD(C "AVX512" " ;-mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma;/arch:AVX512")
-CHECK_SIMD(C "NEON" " ;-ffast-math;/arch:armv8.0;/arch:armv9.0")
-CHECK_SIMD(C "ALTIVEC" " ;-fno-common -faltivec;/arch:altivec")
+# C
+CHECK_SIMD(C "NEON"     " ;-ffast-math;/arch:armv8.0;/arch:armv9.0")
+CHECK_SIMD(C "ALTIVEC"  " ;-fno-common -faltivec;/arch:altivec")
+set(C_MMX_FOUND 0)
+CHECK_SIMD(C "SSE"      " ;-msse;/arch:SSE")
+CHECK_SIMD(C "SSE2"     " ;-msse2;/arch:SSE2")
+CHECK_SIMD(C "SSE3"     " ;-msse3;/arch:AVX")   # NOTE: MSVC probably invalid
+CHECK_SIMD(C "SSSE3"    " ;-mssse3;/arch:AVX")  # NOTE: MSVC probably invalid
+CHECK_SIMD(C "SSE41"    " ;-msse4.1;/arch:AVX") # NOTE: MSVC probably invalid
+CHECK_SIMD(C "SSE42"    " ;-msse4.2;/arch:AVX") # NOTE: MSVC probably invalid
+CHECK_SIMD(C "AVX"      " ;-mavx;/arch:AVX")
+set(C_FMA3_FOUND 0)
+CHECK_SIMD(C "AVX2"     " ;-mavx2 -mfma -mf16c;/arch:AVX2")
+CHECK_SIMD(C "AVX512"   " ;-mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma;/arch:AVX512")
+set(C_AMX_FOUND 0)
+set(C_AMX101_FOUND 0)
+set(C_AMX102_FOUND 0)
 
-CHECK_SIMD(CXX "SSE4" " ;-msse4.2;/arch:SSE")
-CHECK_SIMD(CXX "AVX" " ;-mavx;/arch:AVX")
-CHECK_SIMD(CXX "AVX2" " ;-mavx2 -mfma -mf16c;/arch:AVX2")
-CHECK_SIMD(CXX "AVX512" " ;-mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma;/arch:AVX512")
-CHECK_SIMD(CXX "NEON" " ;-ffast-math;/arch:armv8.0;/arch:armv9.0")
+# C++
+CHECK_SIMD(CXX "NEON"   " ;-ffast-math;/arch:armv8.0;/arch:armv9.0")
 CHECK_SIMD(CXX "ALTIVEC" " ;-fno-common -faltivec;/arch:altivec")
+set(CXX_MMX_FOUND 0)
+CHECK_SIMD(CXX "SSE"    " ;-msse;/arch:SSE")
+CHECK_SIMD(CXX "SSE2"   " ;-msse2;/arch:SSE2")
+CHECK_SIMD(CXX "SSE3"   " ;-msse3;/arch:AVX")   # NOTE: MSVC probably invalid
+CHECK_SIMD(CXX "SSSE3"  " ;-mssse3;/arch:AVX")  # NOTE: MSVC probably invalid
+CHECK_SIMD(CXX "SSE41"  " ;-msse4.1;/arch:AVX") # NOTE: MSVC probably invalid
+CHECK_SIMD(CXX "SSE42"  " ;-msse4.2;/arch:AVX") # NOTE: MSVC probably invalid
+CHECK_SIMD(CXX "AVX"    " ;-mavx;/arch:AVX")
+set(CXX_FMA3_FOUND 0)
+CHECK_SIMD(CXX "AVX2"   " ;-mavx2 -mfma -mf16c;/arch:AVX2")
+CHECK_SIMD(CXX "AVX512" " ;-mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma;/arch:AVX512")
+set(CXX_AMX_FOUND 0)
+set(CXX_AMX101_FOUND 0)
+set(CXX_AMX102_FOUND 0)
+

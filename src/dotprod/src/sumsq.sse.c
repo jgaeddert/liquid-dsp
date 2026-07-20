@@ -34,8 +34,8 @@
 // sum squares, basic loop
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
-float liquid_sumsqf_sse(float *      _v,
-                        unsigned int _n)
+float liquid_sumsqf_sse_1(float *      _v,
+                          unsigned int _n)
 {
     // first cut: ...
     __m128 v;   // input vector
@@ -87,8 +87,8 @@ float liquid_sumsqf_sse(float *      _v,
 // sum squares, unrolled loop
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
-float liquid_sumsqf_sseu(float *      _v,
-                         unsigned int _n)
+float liquid_sumsqf_sse_4(float *      _v,
+                          unsigned int _n)
 {
     // first cut: ...
     __m128 v0, v1, v2, v3;   // input vector
@@ -154,9 +154,9 @@ float liquid_sumsqf(float *      _v,
 {
     // switch based on size
     if (_n < 16) {
-        return liquid_sumsqf_sse(_v, _n);
+        return liquid_sumsqf_sse_1(_v, _n);
     }
-    return liquid_sumsqf_sseu(_v, _n);
+    return liquid_sumsqf_sse_4(_v, _n);
 }
 
 // sum squares, complex

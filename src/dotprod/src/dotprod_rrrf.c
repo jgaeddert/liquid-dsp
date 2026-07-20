@@ -31,12 +31,21 @@
 #define EXTENSION_FULL  "rrrf"
 
 #define DOTPROD(name)   LIQUID_CONCAT(dotprod_rrrf,name)
-#define TO              float
-#define TC              float
-#define TI              float
+#define T               float           // base type
+#define TO              float           // output type
+#define TC              float           // coefficients type
+#define TI              float           // input type
 
 #define TO_COMPLEX      0
 #define TC_COMPLEX      0
 #define TI_COMPLEX      0
 
+// main definition with portable functionality
 #include "dotprod.proto.c"
+
+// SIMD extensions
+#include "dotprod_rrrf.neon.c"
+#include "dotprod_rrrf.sse.c"
+#include "dotprod_rrrf.avx.c"
+#include "dotprod_rrrf.avx512f.c"
+

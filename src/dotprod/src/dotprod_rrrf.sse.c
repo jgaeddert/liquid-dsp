@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,175 +27,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-#include <immintrin.h>
 
 #include "liquid.internal.h"
 
-#define DEBUG_DOTPROD_RRRF_SSE   0
+// build guard
+#if BUILD_SSE
 
-// internal methods
-int dotprod_rrrf_execute_sse(dotprod_rrrf _q,
-                             float *      _x,
-                             float *      _y);
-int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
-                              float *      _x,
-                              float *      _y);
+// tell GCC to use SSE instructions for this file
+#pragma GCC target("sse")
 
-// basic dot product (ordinal calculation)
-int dotprod_rrrf_run(float *      _h,
-                     float *      _x,
-                     unsigned int _n,
-                     float *      _y)
-{
-    float r=0;
-    unsigned int i;
-    for (i=0; i<_n; i++)
-        r += _h[i] * _x[i];
-    *_y = r;
-    return LIQUID_OK;
-}
-
-// basic dot product (ordinal calculation) with loop unrolled
-int dotprod_rrrf_run4(float *      _h,
-                      float *      _x,
-                      unsigned int _n,
-                      float *      _y)
-{
-    float r=0;
-
-    // t = 4*(floor(_n/4))
-    unsigned int t=(_n>>2)<<2; 
-
-    // compute dotprod in groups of 4
-    unsigned int i;
-    for (i=0; i<t; i+=4) {
-        r += _h[i]   * _x[i];
-        r += _h[i+1] * _x[i+1];
-        r += _h[i+2] * _x[i+2];
-        r += _h[i+3] * _x[i+3];
-    }
-
-    // clean up remaining
-    for ( ; i<_n; i++)
-        r += _h[i] * _x[i];
-
-    *_y = r;
-    return LIQUID_OK;
-}
-
-
-//
-// structured SSE dot product
-//
-
-struct dotprod_rrrf_s {
-    unsigned int n;     // length
-    float * h;          // coefficients array
-};
-
-dotprod_rrrf dotprod_rrrf_create_opt(float *      _h,
-                                     unsigned int _n,
-                                     int          _rev)
-{
-    dotprod_rrrf q = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
-    q->n = _n;
-
-    // allocate memory for coefficients, 16-byte aligned
-    q->h = (float*) _mm_malloc( q->n*sizeof(float), 16);
-
-    // set coefficients
-    unsigned int i;
-    for (i=0; i<q->n; i++)
-        q->h[i] = _h[_rev ? q->n-i-1 : i];
-
-    // return object
-    return q;
-}
-
-dotprod_rrrf dotprod_rrrf_create(float *      _h,
-                                 unsigned int _n)
-{
-    return dotprod_rrrf_create_opt(_h, _n, 0);
-}
-
-dotprod_rrrf dotprod_rrrf_create_rev(float *      _h,
-                                     unsigned int _n)
-{
-    return dotprod_rrrf_create_opt(_h, _n, 1);
-}
-
-// re-create the structured dotprod object
-dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _q,
-                                   float *      _h,
-                                   unsigned int _n)
-{
-    // completely destroy and re-create dotprod object
-    dotprod_rrrf_destroy(_q);
-    return dotprod_rrrf_create(_h,_n);
-}
-
-// re-create the structured dotprod object, coefficients reversed
-dotprod_rrrf dotprod_rrrf_recreate_rev(dotprod_rrrf _q,
-                                       float *      _h,
-                                       unsigned int _n)
-{
-    // completely destroy and re-create dotprod object
-    dotprod_rrrf_destroy(_q);
-    return dotprod_rrrf_create_rev(_h,_n);
-}
-
-dotprod_rrrf dotprod_rrrf_copy(dotprod_rrrf q_orig)
-{
-    // validate input
-    if (q_orig == NULL)
-        return liquid_error_config("dotprod_rrrf_copy().sse, object cannot be NULL");
-
-    dotprod_rrrf q_copy = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
-    q_copy->n = q_orig->n;
-
-    // allocate memory for coefficients, 16-byte aligned
-    q_copy->h = (float*) _mm_malloc( q_copy->n*sizeof(float), 16 );
-
-    // copy coefficients array
-    memmove(q_copy->h, q_orig->h, q_orig->n*sizeof(float));
-
-    // return object
-    return q_copy;
-}
-
-int dotprod_rrrf_destroy(dotprod_rrrf _q)
-{
-    _mm_free(_q->h);
-    free(_q);
-    return LIQUID_OK;
-}
-
-int dotprod_rrrf_print(dotprod_rrrf _q)
-{
-    printf("dotprod_rrrf [sse, %u coefficients]\n", _q->n);
-    unsigned int i;
-    for (i=0; i<_q->n; i++)
-        printf("%3u : %12.9f\n", i, _q->h[i]);
-    return LIQUID_OK;
-}
-
-// 
-int dotprod_rrrf_execute(dotprod_rrrf _q,
-                          float *      _x,
-                          float *      _y)
-{
-    // switch based on size
-    if (_q->n < 16) {
-        return dotprod_rrrf_execute_sse(_q, _x, _y);
-    }
-    return dotprod_rrrf_execute_sse4(_q, _x, _y);
-}
+// include proper SIMD extensions for x86 SSE
+#include <immintrin.h>
 
 // use SSE extensions
-int dotprod_rrrf_execute_sse(dotprod_rrrf _q,
-                             float *      _x,
-                             float *      _y)
+int dotprod_rrrf_execute_sse_1(dotprod_rrrf _q,
+                               float *      _x,
+                               float *      _y)
 {
     // first cut: ...
     __m128 v;   // input vector
@@ -225,7 +72,7 @@ int dotprod_rrrf_execute_sse(dotprod_rrrf _q,
     // aligned output array
     float w[4] __attribute__((aligned(16)));
 
-#if HAVE_SSE3
+#if 0 // HAVE_SSE3
     // fold down into single value
     __m128 z = _mm_setzero_ps();
     sum = _mm_hadd_ps(sum, z);
@@ -249,10 +96,10 @@ int dotprod_rrrf_execute_sse(dotprod_rrrf _q,
     return LIQUID_OK;
 }
 
-// use SSE extensions, unrolled loop
-int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
-                              float *      _x,
-                              float *      _y)
+// use SSE extensions (unrolled loop)
+int dotprod_rrrf_execute_sse_4(dotprod_rrrf _q,
+                               float *      _x,
+                               float *      _y)
 {
     // first cut: ...
     __m128 v0, v1, v2, v3;
@@ -312,7 +159,6 @@ int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
 #endif
 
     // cleanup
-    // TODO : use intrinsics here as well
     for (i=4*r; i<_q->n; i++)
         total += _x[i] * _q->h[i];
 
@@ -320,4 +166,34 @@ int dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
     *_y = total;
     return LIQUID_OK;
 }
+
+// execute structured dot product
+//  _q      :   dotprod object
+//  _x      :   input array
+//  _y      :   output sample
+int dotprod_rrrf_execute_sse(dotprod_rrrf _q,
+                             float *      _x,
+                             float *      _y)
+{
+    liquid_log_trace("dotprod_rrrf_execute_sse()");
+    // switch based on size
+    if (_q->n < 16) {
+        return dotprod_rrrf_execute_sse_1(_q, _x, _y);
+    }
+    return dotprod_rrrf_execute_sse_4(_q, _x, _y);
+}
+
+// build guard
+#else
+
+// invalidated
+int dotprod_rrrf_execute_sse(dotprod_rrrf _q,
+                             float *      _x,
+                             float *      _y)
+{
+    return liquid_error(LIQUID_EICONFIG,"sse extensions not available");
+}
+
+// build guard
+#endif
 

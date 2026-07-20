@@ -3,7 +3,11 @@
 ## Latest
 
   * build
-    - bumping required cmake version to 3.21 to support newer features
+    - added compile-time build information (version, git hash, build OS,
+      etc.) to binary.
+    - added run-time mode selection for vector dot product, allowing for
+      distributed binary to operate across various architectures with
+      instruction sets for acceleration
     - fixing issues with 32-bit architectures with optim module
       (thanks aeb@debian.org, @andreasbombe, @dawkagaming)
     - fixing issues with 'autoscript' target breaking cross-compilation

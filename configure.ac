@@ -27,6 +27,12 @@ AC_INIT([liquid-dsp],[1.8.0],[joseph@liquidsdr.org])
 AC_CONFIG_SRCDIR([src/libliquid.c])
 AC_CONFIG_MACRO_DIR([scripts])
 
+PROJECT_COPYRIGHT="Copyright (c) 2007 - 2026 Joseph D. Gaeddert <joseph@liquidsdr.org>"
+PROJECT_LICENSE="MIT"
+PROJECT_AUTHOR="Joseph D. Gaeddert <joseph@liquidsdr.org>"
+PROJECT_HOMEPAGE="https://liquidsdr.org"
+PROJECT_DESCRIPTION="Software-defined radio digital signal processing library"
+
 # permit auxiliary scripts directory (e.g. config.sub, config.guess, install-sh)
 AC_CONFIG_AUX_DIR(scripts/)
 
@@ -157,17 +163,50 @@ AC_CHECK_SIZEOF(long long int)
 # get canonical target architecture
 AC_CANONICAL_TARGET
 
+# SIMD build flags (set to 0 by default, may be set to 1 by architecture detection)
+BUILD_ALTIVEC="0"
+BUILD_NEON="0"
+BUILD_MMX="0"
+BUILD_SSE="0"
+BUILD_SSE2="0"
+BUILD_SSE3="0"
+BUILD_SSSE3="0"
+BUILD_SSE41="0"
+BUILD_SSE42="0"
+BUILD_AVX="0"
+BUILD_FMA3="0"
+BUILD_AVX2="0"
+BUILD_AVX512="0"
+BUILD_AMX="0"
+BUILD_AMX101="0"
+BUILD_AMX102="0"
+
+# default portable version
+ARCH_OPTION=""
+
 # override SIMD
 if test "${enable_simdoverride+set}" = set; then
-    # portable C version
-    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                   src/dotprod/src/dotprod_crcf.o \
-                   src/dotprod/src/dotprod_rrrf.o \
-                   src/dotprod/src/sumsq.o"
+    # portable C version (all BUILD_* remain 0)
     ARCH_OPTION=""
 else
     # Check canonical system
     case $target_cpu in
+    powerpc*)
+        BUILD_ALTIVEC="1"
+        ARCH_OPTION="-fno-common -faltivec";;
+    armv1*|armv2*|armv3*|armv4*|armv5*|armv6*)
+        # assume neon instructions are NOT available
+        ARCH_OPTION="";;
+    arm|armv7*|armv8*|aarch64)
+        # assume neon instructions are available
+        BUILD_NEON="1"
+        case $target_os in
+        darwin*)
+            # M1 mac, ARM architecture : use neon extensions
+            ARCH_OPTION="-ffast-math";;
+        *)
+            ARCH_OPTION="";; # -ffast-math causes tests to fail on pi4 due to imprecision
+        esac;;
     i386|i486|i586|i686|x86|x86_64)
         # check for MMX/SSE/AVX CPU extensions and intrinsics headers
         #   MMX     :   mmintrin.h
@@ -181,115 +220,36 @@ else
         #   AVX512  :   immintrin.h
         AX_EXT
 
-        if [ test "$ax_cv_have_avx512f_ext" = yes ]; then
-            # AVX512 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx512f.o \
-                           src/dotprod/src/dotprod_crcf.avx512f.o \
-                           src/dotprod/src/dotprod_rrrf.avx512f.o \
-                           src/dotprod/src/sumsq.avx512f.o"
-            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                          src/vector/src/vectorcf.port.o"
-            ARCH_OPTION='-mavx512f'
-        elif [ test "$ax_cv_have_avx2_ext" = yes ]; then
-            # AVX2 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx.o \
-                           src/dotprod/src/dotprod_crcf.avx.o \
-                           src/dotprod/src/dotprod_rrrf.avx.o \
-                           src/dotprod/src/sumsq.avx.o"
-            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                          src/vector/src/vectorcf.port.o"
-            ARCH_OPTION='-mavx2'
-        elif [ test "$ax_cv_have_avx_ext" = yes ]; then
-            # AVX extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.avx.o \
-                           src/dotprod/src/dotprod_crcf.avx.o \
-                           src/dotprod/src/dotprod_rrrf.avx.o \
-                           src/dotprod/src/sumsq.avx.o"
-            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                          src/vector/src/vectorcf.port.o"
-            ARCH_OPTION='-mavx'
-        elif [ test "$ax_cv_have_sse41_ext" = yes ]; then
-            # SSE4.1/2 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.sse.o \
-                           src/dotprod/src/dotprod_crcf.sse.o \
-                           src/dotprod/src/dotprod_rrrf.sse.o \
-                           src/dotprod/src/sumsq.sse.o"
-            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                          src/vector/src/vectorcf.port.o"
+        # check for SSE4.1
+        if [ test "$ax_cv_have_sse41_ext" = yes ]; then
+            BUILD_SSE="1"
+            BUILD_SSE2="1"
+            BUILD_SSE3="1"
+            BUILD_SSSE3="1"
+            BUILD_SSE41="1"
             ARCH_OPTION='-msse4.1'
-        elif [ test "$ax_cv_have_sse3_ext" = yes ]; then
-            # SSE3 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.sse.o \
-                           src/dotprod/src/dotprod_crcf.sse.o \
-                           src/dotprod/src/dotprod_rrrf.sse.o \
-                           src/dotprod/src/sumsq.sse.o"
-            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                          src/vector/src/vectorcf.port.o"
-            ARCH_OPTION='-msse3'
-        elif [ test "$ax_cv_have_sse2_ext" = yes ]; then
-            # SSE2 extensions
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.sse.o \
-                           src/dotprod/src/dotprod_crcf.sse.o \
-                           src/dotprod/src/dotprod_rrrf.sse.o \
-                           src/dotprod/src/sumsq.sse.o"
-            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                          src/vector/src/vectorcf.port.o"
-            ARCH_OPTION='-msse2'
-        else
-            # portable C version
-            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                           src/dotprod/src/dotprod_crcf.o \
-                           src/dotprod/src/dotprod_rrrf.o \
-                           src/dotprod/src/sumsq.o"
-            MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                          src/vector/src/vectorcf.port.o"
-        fi;;
-    powerpc*)
-        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                       src/dotprod/src/dotprod_rrrf.av.o \
-                       src/dotprod/src/dotprod_crcf.av.o \
-                       src/dotprod/src/sumsq.o"
-        MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                      src/vector/src/vectorcf.port.o"
-        ARCH_OPTION="-fno-common -faltivec";;
-    armv1*|armv2*|armv3*|armv4*|armv5*|armv6*)
-        # assume neon instructions are NOT available
-        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                       src/dotprod/src/dotprod_crcf.o \
-                       src/dotprod/src/dotprod_rrrf.o \
-                       src/dotprod/src/sumsq.o"
-        MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                      src/vector/src/vectorcf.port.o"
-        ARCH_OPTION="-ffast-math";;
-    arm|armv7*|armv8*|aarch64)
-        # assume neon instructions are available
-        # TODO: check for Neon availability
+        fi;
 
-        # ARM architecture : use neon extensions
-        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.neon.o \
-                       src/dotprod/src/dotprod_crcf.neon.o \
-                       src/dotprod/src/dotprod_rrrf.neon.o \
-                       src/dotprod/src/sumsq.o"
-        MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                      src/vector/src/vectorcf.port.o"
-        case $target_os in
-        darwin*)
-            # M1 mac, ARM architecture : use neon extensions
-            ARCH_OPTION="-ffast-math";;
-        *)
-            # TODO: check these flags
-            #ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
-            #ARCH_OPTION="-ffast-math -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4";;
-            ARCH_OPTION="";; # -ffast-math causes tests to fail on pi4 due to imprecision
-        esac;;
+        # check for AVX
+        if [ test "$ax_cv_have_avx_ext" = yes ]; then
+            BUILD_SSE42="1"
+            BUILD_AVX="1"
+            ARCH_OPTION='-mavx'
+        fi;
+
+        # check for AVX2
+        if [ test "$ax_cv_have_avx2_ext" = yes ]; then
+            BUILD_AVX2="1"
+            ARCH_OPTION='-mavx2 -mfma -mf16c'
+        fi;
+
+        # check for AVX512
+        if [ test "$ax_cv_have_avx512f_ext" = yes ]; then
+            BUILD_AVX512="1"
+            ARCH_OPTION='-mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma'
+        fi;;
     *)
         # unknown architecture : use portable C version
-        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                       src/dotprod/src/dotprod_crcf.o \
-                       src/dotprod/src/dotprod_rrrf.o \
-                       src/dotprod/src/sumsq.o"
-        MLIBS_VECTOR="src/vector/src/vectorf.port.o \
-                      src/vector/src/vectorcf.port.o"
         ARCH_OPTION="";;
     esac
 fi
@@ -322,8 +282,6 @@ esac
 # autoconf variable substitutions
 #
 AC_SUBST(LIBS)                      # shared libraries (-lc, -lm, etc.)
-AC_SUBST(MLIBS_DOTPROD)             # 
-AC_SUBST(MLIBS_VECTOR)              #
 
 AC_SUBST(AR_LIB)                    # archive library
 AC_SUBST(SH_LIB)                    # output shared library target
@@ -334,5 +292,88 @@ AC_SUBST(DEBUG_MSG_OPTION)          # debug messages option (.e.g -DDEBUG)
 AC_SUBST(COVERAGE_OPTION)           # source code coverage option (e.g. -fprofile-arcs -ftest-coverage)
 AC_SUBST(CLIB)                      # C library linkage (e.g. '-lc')
 
+# gather metadata
+# NOTE: many of these macros use a 'CMAKE' prefix so that a common build_info
+#       template file may be used between cmake and legacy autotools
+AC_SUBST([PROJECT_COPYRIGHT])
+AC_SUBST([PROJECT_LICENSE])
+AC_SUBST([PROJECT_AUTHOR])
+AC_SUBST([PROJECT_HOMEPAGE])
+AC_SUBST([PROJECT_DESCRIPTION])
+
+# git hash
+BUILD_GITHASH=$(git rev-parse --short=16 HEAD 2>/dev/null || echo "unknown")
+AC_SUBST([BUILD_GITHASH])
+
+# build_datetime
+BUILD_DATETIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+AC_SUBST([BUILD_DATETIME])
+
+# build_hostname
+BUILD_HOSTNAME=$(hostname)
+AC_SUBST([BUILD_HOSTNAME])
+
+# build_os
+CMAKE_HOST_SYSTEM_NAME=$(uname -s)
+AC_SUBST([CMAKE_HOST_SYSTEM_NAME])
+
+# build_arch
+CMAKE_HOST_SYSTEM_PROCESSOR=$(uname -m)
+AC_SUBST([CMAKE_HOST_SYSTEM_PROCESSOR])
+
+# build_toolchain
+CMAKE_C_COMPILER_INFO=$($CC --version | head -n1)
+AC_SUBST([CMAKE_C_COMPILER_INFO])
+
+# build_type
+CMAKE_BUILD_TYPE="Release"
+AC_SUBST([CMAKE_BUILD_TYPE])
+
+# build_env
+BUILD_ENV="autotools"
+AC_SUBST([BUILD_ENV])
+
+# target_os
+CMAKE_SYSTEM_NAME="${target_os}"
+AC_SUBST([CMAKE_SYSTEM_NAME])
+
+# target_arch
+CMAKE_SYSTEM_PROCESSOR="${target_cpu}"
+AC_SUBST([CMAKE_SYSTEM_PROCESSOR])
+
+# logging enabled or not
+ENABLE_LOGGING="1"
+AC_SUBST([ENABLE_LOGGING])
+
+# logging level threshold
+LIQUID_LOG_LEVEL_COMPILE="0"
+AC_SUBST([LIQUID_LOG_LEVEL_COMPILE])
+
+# color enabled or not
+ENABLE_COLOR="1"
+AC_SUBST([ENABLE_COLOR])
+
+# SIMD
+AC_SUBST([BUILD_ALTIVEC])
+AC_SUBST([BUILD_NEON])
+AC_SUBST([BUILD_MMX])
+AC_SUBST([BUILD_SSE])
+AC_SUBST([BUILD_SSE2])
+AC_SUBST([BUILD_SSE3])
+AC_SUBST([BUILD_SSSE3])
+AC_SUBST([BUILD_SSE41])
+AC_SUBST([BUILD_SSE42])
+AC_SUBST([BUILD_AVX])
+AC_SUBST([BUILD_FMA3])
+AC_SUBST([BUILD_AVX2])
+AC_SUBST([BUILD_AVX512])
+AC_SUBST([BUILD_AMX])
+AC_SUBST([BUILD_AMX101])
+AC_SUBST([BUILD_AMX102])
+
+
+AC_CONFIG_FILES([liquid.config.h:cmake/liquid.config.h.in])
 AC_CONFIG_FILES([makefile])
+
 AC_OUTPUT
+
