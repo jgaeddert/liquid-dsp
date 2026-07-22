@@ -10,15 +10,6 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-// print usage/help message
-void usage()
-{
-    printf("modem_example [options]\n");
-    printf(" -h          : print help\n");
-    printf(" -m <scheme> : modulation scheme\n");
-    liquid_print_modulation_schemes();
-}
-
 int main(int argc, char*argv[])
 {
     // define variables and parse command-line options

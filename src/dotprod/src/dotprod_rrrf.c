@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,26 @@
 
 #include "liquid.internal.h"
 
+// naming extensions (useful for print statements)
+#define EXTENSION_SHORT "f"
+#define EXTENSION_FULL  "rrrf"
+
 #define DOTPROD(name)   LIQUID_CONCAT(dotprod_rrrf,name)
-#define TO              float
-#define TC              float
-#define TI              float
+#define T               float           // base type
+#define TO              float           // output type
+#define TC              float           // coefficients type
+#define TI              float           // input type
 
 #define TO_COMPLEX      0
 #define TC_COMPLEX      0
 #define TI_COMPLEX      0
 
+// main definition with portable functionality
 #include "dotprod.proto.c"
+
+// SIMD extensions
+#include "dotprod_rrrf.neon.c"
+#include "dotprod_rrrf.sse.c"
+#include "dotprod_rrrf.avx.c"
+#include "dotprod_rrrf.avx512f.c"
+

@@ -29,6 +29,7 @@ config.h.in
 config.h.in~
 config.log
 config.status
+liquid.config.h
 makefile
 xautotest
 *.m

@@ -56,9 +56,9 @@ int main(int argc, char*argv[])
 
     // validate input
     if (fc <= 0 || fc >= 0.5)
-        fprintf(stderr,"error: cutoff frequency out of range\n");
+        return liquid_error(LIQUID_EICONFIG,"cutoff frequency out of range");
     if (f0 < 0 || f0 > 0.5)
-        fprintf(stderr,"error: center frequency out of range\n");
+        return liquid_error(LIQUID_EICONFIG,"center frequency out of range");
     if (Ap <= 0)
         return liquid_error(LIQUID_EICONFIG,"pass-band ripple out of range");
     if (As <= 0)

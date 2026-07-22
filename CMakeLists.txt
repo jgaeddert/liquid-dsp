@@ -1,5 +1,5 @@
 # cmake build file for liquid-dsp
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21)
 
 # parse version number from include/liquid.h
 include(cmake/version.cmake)
@@ -7,6 +7,14 @@ get_liquid_version("${CMAKE_CURRENT_SOURCE_DIR}/include/liquid.h" LIQUID_VERSION
 
 # project definition
 project(liquid VERSION ${LIQUID_VERSION} LANGUAGES C CXX)
+
+# project metadata; note that some of these are included with the project() directive in
+# later versions of cmake
+set(PROJECT_AUTHOR      "Joseph D. Gaeddert <joseph@liquidsdr.org>")
+set(PROJECT_LICENSE     "MIT")
+set(PROJECT_COPYRIGHT   "Copyright (c) 2007 - 2026 Joseph D. Gaeddert <joseph@liquidsdr.org>")
+set(PROJECT_HOMEPAGE    "https://liquidsdr.org")
+set(PROJECT_DESCRIPTION "Software-defined radio digital signal processing library")
 
 # ---------------------------------------- options ----------------------------------------
 
@@ -28,13 +36,20 @@ option(ENABLE_LOGGING    "Set to ON to enable full logging"          ON)
 set(LOGGING_LEVEL "trace" CACHE STRING "Set minimum logging level to compile")
 option(ENABLE_COLOR      "Set to ON to enable color terminal output" ON)
 
-if(NOT BUILD_SHARED_LIBS AND NOT BUILD_STATIC_LIBS)
+if (NOT BUILD_SHARED_LIBS AND NOT BUILD_STATIC_LIBS)
     message(FATAL_ERROR "At least one of BUILD_SHARED_LIBS or BUILD_STATIC_LIBS must be ON")
 endif()
 
-if(COVERAGE)
+# force build type as debug if coverage is enabled
+if (COVERAGE)
     set(CMAKE_BUILD_TYPE "Debug")
-endif(COVERAGE)
+endif()
+
+# default build type if none provided
+if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+endif()
+
 
 # add 'cmake' subdirectory available for custom scripts
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
@@ -58,6 +73,16 @@ include (CheckIncludeFile)
 include (CheckFunctionExists)
 include (CheckLibraryExists)
 include (CheckSymbolExists)
+
+# macro to simplify setting variables based on conditions; also allows for
+# flattening variables to integers, e.g. convert 'TRUE' 'ON' 'YES' to 1
+macro(set_condition VAR CONDITION VALUE_TRUE VALUE_FALSE)
+    cmake_language(EVAL CODE "if(${CONDITION})
+        set(${VAR} ${VALUE_TRUE})
+    else()
+        set(${VAR} ${VALUE_FALSE})
+    endif()")
+endmacro()
 
 #check_symbol_exists(timespec_get "time.h" HAVE_TIMESPEC_GET)
 #if (HAVE_TIMESPEC_GET)
@@ -96,13 +121,167 @@ endif()
 include (CheckTypeSize)
 check_type_size(int SIZEOF_INT LANGUAGE C)
 
-configure_file(cmake/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+# enable testing always
+enable_testing()
+
+# ---------------------------------------- logging ----------------------------------------
+
+if (ENABLE_LOGGING)
+    add_compile_definitions(LIQUID_LOGGING_ENABLE)
+    set(ENABLE_LOGGING 1) # ensure integer
+else()
+    set(ENABLE_LOGGING 0) # ensure integer
+endif()
+
+# set minimum logging level for compilation
+set(LOGGING_LEVELS "trace;debug;info;warn;error;fatal")
+list(FIND LOGGING_LEVELS ${LOGGING_LEVEL} LIQUID_LOG_LEVEL_COMPILE)
+#message("LOG: ${LOGGING_LEVEL} -> ${LOGGING_INDEX}")
+if (${LIQUID_LOG_LEVEL_COMPILE} LESS 0)
+    message(FATAL_ERROR "Unsupported logging level '${LOGGING_LEVEL}', select one of: ${LOGGING_LEVELS}")
+endif()
+add_compile_definitions(LIQUID_LOG_LEVEL_COMPILE=${LIQUID_LOG_LEVEL_COMPILE})
+
+# enable color if requested
+if (ENABLE_COLOR)
+    add_compile_definitions(LIQUID_COLOR_ENABLE)
+    set(ENABLE_COLOR 1) # ensure integer
+else()
+    set(ENABLE_COLOR 0) # ensure integer
+endif()
+
+# ---------------------------------------- SIMD extensions ----------------------------------------
+
+if (ENABLE_SIMD AND C_NEON_FOUND)
+    set(BUILD_NEON 1)
+else()
+    set(BUILD_NEON 0)
+endif()
+
+if (ENABLE_SIMD AND C_ALTIVEC_FOUND)
+    set(BUILD_ALTIVEC 1)
+else()
+    set(BUILD_ALTIVEC 0)
+endif()
+
+if (ENABLE_SIMD AND C_MMX_FOUND)
+    set(BUILD_MMX 1)
+else()
+    set(BUILD_MMX 0)
+endif()
+
+if (ENABLE_SIMD AND C_SSE_FOUND)
+    set(BUILD_SSE 1)
+else()
+    set(BUILD_SSE 0)
+endif()
+
+if (ENABLE_SIMD AND C_SSE2_FOUND)
+    set(BUILD_SSE2 1)
+else()
+    set(BUILD_SSE2 0)
+endif()
+
+if (ENABLE_SIMD AND C_SSE3_FOUND)
+    set(BUILD_SSE3 1)
+else()
+    set(BUILD_SSE3 0)
+endif()
+
+if (ENABLE_SIMD AND C_SSSE3_FOUND)
+    set(BUILD_SSSE3 1)
+else()
+    set(BUILD_SSSE3 0)
+endif()
+
+if (ENABLE_SIMD AND C_SSE41_FOUND)
+    set(BUILD_SSE41 1)
+else()
+    set(BUILD_SSE41 0)
+endif()
+
+if (ENABLE_SIMD AND C_SSE42_FOUND)
+    set(BUILD_SSE42 1)
+else()
+    set(BUILD_SSE42 0)
+endif()
+
+if (ENABLE_SIMD AND C_AVX_FOUND)
+    set(BUILD_AVX 1)
+else()
+    set(BUILD_AVX 0)
+endif()
+
+if (ENABLE_SIMD AND C_FMA3_FOUND)
+    set(BUILD_FMA3 1)
+else()
+    set(BUILD_FMA3 0)
+endif()
+
+if (ENABLE_SIMD AND C_AVX2_FOUND)
+    set(BUILD_AVX2 1)
+else()
+    set(BUILD_AVX2 0)
+endif()
+
+if (ENABLE_SIMD AND C_AVX512_FOUND)
+    set(BUILD_AVX512 1)
+else()
+    set(BUILD_AVX512 0)
+endif()
+
+if (ENABLE_SIMD AND C_AMX_FOUND)
+    set(BUILD_AMX 1)
+else()
+    set(BUILD_AMX 0)
+endif()
+
+if (ENABLE_SIMD AND C_AMX101_FOUND)
+    set(BUILD_AMX101 1)
+else()
+    set(BUILD_AMX101 0)
+endif()
+
+if (ENABLE_SIMD AND C_AMX102_FOUND)
+    set(BUILD_AMX102 1)
+else()
+    set(BUILD_AMX102 0)
+endif()
+
+
+# ---------------------------------------- build info ----------------------------------------
+
+# Date/Time (UTC ISO 8601)
+string(TIMESTAMP BUILD_DATETIME "%Y-%m-%dT%H:%M:%SZ" UTC)
+
+# get the hostname
+cmake_host_system_information(RESULT BUILD_HOSTNAME QUERY HOSTNAME)
+
+# git commit hash
+find_package(Git QUIET)
+if (GIT_FOUND)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-parse --short=16 HEAD
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE BUILD_GITHASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+endif()
+
+# fallback string if git fails or isn't installed
+if (NOT BUILD_GITHASH)
+    set(BUILD_GITHASH "unknown")
+endif()
+
+set(CMAKE_C_COMPILER_INFO "${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}")
+
+set(BUILD_ENV "cmake")
 
 # this file can only use the @VARIABLE@ syntax
 #configure_file(cmake/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)
 
-# enable testing always
-enable_testing()
+configure_file(cmake/liquid.config.h.in ${CMAKE_CURRENT_BINARY_DIR}/liquid.config.h)
 
 # ---------------------------------------- main sources ----------------------------------------
 
@@ -121,10 +300,16 @@ add_library(channel OBJECT
     src/channel/src/channel_cccf.c)
 
 add_library(core OBJECT
+    src/core/src/error.c
     src/core/src/logging.c
-    src/core/src/error.c)
+    src/core/src/runtime.c
+    src/core/src/timer.c)
 
-add_library(dotprod OBJECT)
+add_library(dotprod OBJECT
+    src/dotprod/src/dotprod_cccf.c
+    src/dotprod/src/dotprod_crcf.c
+    src/dotprod/src/dotprod_rrrf.c
+    src/dotprod/src/sumsq.c)
 
 add_library(equalization OBJECT
     src/equalization/src/equalizer_cccf.c
@@ -296,7 +481,9 @@ add_library(utility OBJECT
     src/utility/src/shift_array.c
     src/utility/src/utility.c)
 
-add_library(vector OBJECT)
+add_library(vector OBJECT
+    src/vector/src/vectorf.port.c
+    src/vector/src/vectorcf.port.c)
 
 foreach(lib
     agc audio buffer channel core dotprod equalization fec fft filter framing math
@@ -309,81 +496,84 @@ foreach(lib
 endforeach()
 
 # ---------------------------------------- SIMD extensions ----------------------------------------
-if (C_NEON_FOUND AND ENABLE_SIMD)
-    target_sources(dotprod PUBLIC
-        src/dotprod/src/dotprod_cccf.neon.c
-        src/dotprod/src/dotprod_crcf.neon.c
-        src/dotprod/src/dotprod_rrrf.neon.c
-        src/dotprod/src/sumsq.c)
-    target_sources(vector PUBLIC
-        src/vector/src/vectorf.port.c
-        src/vector/src/vectorcf.neon.c)
-    target_compile_options(dotprod PUBLIC ${C_NEON_FLAGS})
-    target_compile_options(vector PUBLIC ${C_NEON_FLAGS})
-elseif (C_AVX512_FOUND AND ENABLE_SIMD)
-    target_sources(dotprod PUBLIC
-        src/dotprod/src/dotprod_cccf.avx512f.c
-        src/dotprod/src/dotprod_crcf.avx512f.c
-        src/dotprod/src/dotprod_rrrf.avx512f.c
-        src/dotprod/src/sumsq.avx512f.c)
-    target_sources(vector PUBLIC
-        src/vector/src/vectorf.port.c
-        src/vector/src/vectorcf.port.c)
-    target_compile_options(dotprod PUBLIC ${C_AVX512_FLAGS})
-    target_compile_options(vector PUBLIC ${C_AVX512_FLAGS})
-elseif (C_AVX2_FOUND AND ENABLE_SIMD)
-    target_sources(dotprod PUBLIC
-        src/dotprod/src/dotprod_cccf.avx.c
-        src/dotprod/src/dotprod_crcf.avx.c
-        src/dotprod/src/dotprod_rrrf.avx.c
-        src/dotprod/src/sumsq.avx.c)
-    target_sources(vector PUBLIC
-        src/vector/src/vectorf.avx.c
-        src/vector/src/vectorcf.port.c)
-    target_compile_options(dotprod PUBLIC ${C_AVX2_FLAGS})
-    target_compile_options(vector PUBLIC ${C_AVX2_FLAGS})
-elseif (C_AVX_FOUND AND ENABLE_SIMD)
-    target_sources(dotprod PUBLIC
-        src/dotprod/src/dotprod_cccf.avx.c
-        src/dotprod/src/dotprod_crcf.avx.c
-        src/dotprod/src/dotprod_rrrf.avx.c
-        src/dotprod/src/sumsq.avx.c)
-    target_sources(vector PUBLIC
-        src/vector/src/vectorf.port.c
-        src/vector/src/vectorcf.port.c)
-    target_compile_options(dotprod PUBLIC ${C_AVX_FLAGS})
-    target_compile_options(vector PUBLIC ${C_AVX_FLAGS})
-elseif (C_SSE4_FOUND AND ENABLE_SIMD)
-    target_sources(dotprod PUBLIC
-        src/dotprod/src/dotprod_cccf.sse.c
-        src/dotprod/src/dotprod_crcf.sse.c
-        src/dotprod/src/dotprod_rrrf.sse.c
-        src/dotprod/src/sumsq.sse.c)
-    target_sources(vector PUBLIC
-        src/vector/src/vectorf.port.c
-        src/vector/src/vectorcf.port.c)
-    target_compile_options(dotprod PUBLIC ${C_SSE4_FLAGS})
-    target_compile_options(vector PUBLIC ${C_SSE4_FLAGS})
-elseif (C_ALTIVEC_FOUND AND ENABLE_SIMD)
-    target_sources(dotprod PUBLIC
-        src/dotprod/src/dotprod_cccf.c
-        src/dotprod/src/dotprod_crcf.av.c
-        src/dotprod/src/dotprod_rrrf.av.c
-        src/dotprod/src/sumsq.c)
-    target_sources(vector PUBLIC
-        src/vector/src/vectorf.port.c
-        src/vector/src/vectorcf.port.c)
-else()
-    # portable C version
-    target_sources(dotprod PUBLIC
-        src/dotprod/src/dotprod_cccf.c
-        src/dotprod/src/dotprod_crcf.c
-        src/dotprod/src/dotprod_rrrf.c
-        src/dotprod/src/sumsq.c)
-    target_sources(vector PUBLIC
-        src/vector/src/vectorf.port.c
-        src/vector/src/vectorcf.port.c)
-endif()
+# SIMD instruction sets are now controlled via #pragma GCC target in each SIMD source file
+# No global compile flags needed
+
+#if (C_NEON_FOUND AND ENABLE_SIMD)
+#    target_sources(dotprod PUBLIC
+#        src/dotprod/src/dotprod_cccf.neon.c
+#        src/dotprod/src/dotprod_crcf.neon.c
+#        src/dotprod/src/dotprod_rrrf.neon.c
+#        src/dotprod/src/sumsq.c)
+#    target_sources(vector PUBLIC
+#        src/vector/src/vectorf.port.c
+#        src/vector/src/vectorcf.neon.c)
+#    target_compile_options(dotprod PUBLIC ${C_NEON_FLAGS})
+#    target_compile_options(vector PUBLIC ${C_NEON_FLAGS})
+#elseif (C_AVX512_FOUND AND ENABLE_SIMD)
+#    target_sources(dotprod PUBLIC
+#        src/dotprod/src/dotprod_cccf.avx512f.c
+#        src/dotprod/src/dotprod_crcf.avx512f.c
+#        src/dotprod/src/dotprod_rrrf.avx512f.c
+#        src/dotprod/src/sumsq.avx512f.c)
+#    target_sources(vector PUBLIC
+#        src/vector/src/vectorf.port.c
+#        src/vector/src/vectorcf.port.c)
+#    target_compile_options(dotprod PUBLIC ${C_AVX512_FLAGS})
+#    target_compile_options(vector PUBLIC ${C_AVX512_FLAGS})
+#elseif (C_AVX2_FOUND AND ENABLE_SIMD)
+#    target_sources(dotprod PUBLIC
+#        src/dotprod/src/dotprod_cccf.avx.c
+#        src/dotprod/src/dotprod_crcf.avx.c
+#        src/dotprod/src/dotprod_rrrf.avx.c
+#        src/dotprod/src/sumsq.avx.c)
+#    target_sources(vector PUBLIC
+#        src/vector/src/vectorf.avx.c
+#        src/vector/src/vectorcf.port.c)
+#    target_compile_options(dotprod PUBLIC ${C_AVX2_FLAGS})
+#    target_compile_options(vector PUBLIC ${C_AVX2_FLAGS})
+#elseif (C_AVX_FOUND AND ENABLE_SIMD)
+#    target_sources(dotprod PUBLIC
+#        src/dotprod/src/dotprod_cccf.avx.c
+#        src/dotprod/src/dotprod_crcf.avx.c
+#        src/dotprod/src/dotprod_rrrf.avx.c
+#        src/dotprod/src/sumsq.avx.c)
+#    target_sources(vector PUBLIC
+#        src/vector/src/vectorf.port.c
+#        src/vector/src/vectorcf.port.c)
+#    target_compile_options(dotprod PUBLIC ${C_AVX_FLAGS})
+#    target_compile_options(vector PUBLIC ${C_AVX_FLAGS})
+#elseif (C_SSE4_FOUND AND ENABLE_SIMD)
+#    target_sources(dotprod PUBLIC
+#        src/dotprod/src/dotprod_cccf.sse.c
+#        src/dotprod/src/dotprod_crcf.sse.c
+#        src/dotprod/src/dotprod_rrrf.sse.c
+#        src/dotprod/src/sumsq.sse.c)
+#    target_sources(vector PUBLIC
+#        src/vector/src/vectorf.port.c
+#        src/vector/src/vectorcf.port.c)
+#    target_compile_options(dotprod PUBLIC ${C_SSE4_FLAGS})
+#    target_compile_options(vector PUBLIC ${C_SSE4_FLAGS})
+#elseif (C_ALTIVEC_FOUND AND ENABLE_SIMD)
+#    target_sources(dotprod PUBLIC
+#        src/dotprod/src/dotprod_cccf.c
+#        src/dotprod/src/dotprod_crcf.av.c
+#        src/dotprod/src/dotprod_rrrf.av.c
+#        src/dotprod/src/sumsq.c)
+#    target_sources(vector PUBLIC
+#        src/vector/src/vectorf.port.c
+#        src/vector/src/vectorcf.port.c)
+#else()
+#    # portable C version
+#    target_sources(dotprod PUBLIC
+#        src/dotprod/src/dotprod_cccf.c
+#        src/dotprod/src/dotprod_crcf.c
+#        src/dotprod/src/dotprod_rrrf.c
+#        src/dotprod/src/sumsq.c)
+#    target_sources(vector PUBLIC
+#        src/vector/src/vectorf.port.c
+#        src/vector/src/vectorcf.port.c)
+#endif()
 
 # ---------------------------------------- main library ----------------------------------------
 
@@ -412,27 +602,12 @@ set(LIQUID_OBJECTS
     $<TARGET_OBJECTS:utility>
     $<TARGET_OBJECTS:vector>)
 
-if(ENABLE_LOGGING)
-    add_compile_definitions(LIQUID_LOGGING_ENABLE)
-endif(ENABLE_LOGGING)
-
-# set minimum logging level for compilation
-set(LOGGING_LEVELS "trace;debug;info;warn;error;fatal")
-list(FIND LOGGING_LEVELS ${LOGGING_LEVEL} LIQUID_LOG_LEVEL_COMPILE)
-#message("LOG: ${LOGGING_LEVEL} -> ${LOGGING_INDEX}")
-if (${LIQUID_LOG_LEVEL_COMPILE} LESS 0)
-    message(FATAL_ERROR "Unsupported logging level '${LOGGING_LEVEL}', select one of: ${LOGGING_LEVELS}")
-endif()
-add_compile_definitions(LIQUID_LOG_LEVEL_COMPILE=${LIQUID_LOG_LEVEL_COMPILE})
-
-# enable color if requested
-if(ENABLE_COLOR)
-    add_compile_definitions(LIQUID_COLOR_ENABLE)
-endif(ENABLE_COLOR)
-
 # Build shared library
-if(BUILD_SHARED_LIBS)
-    add_library(${LIBNAME} SHARED src/libliquid.c ${LIQUID_OBJECTS})
+if (BUILD_SHARED_LIBS)
+    add_library(${LIBNAME} SHARED
+        src/libliquid.c
+        ${LIQUID_OBJECTS}
+    )
     add_library(${NAMESPACE}::${LIBNAME} ALIAS ${LIBNAME})
     set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
     set(LIQUID_TARGETS ${LIBNAME})
@@ -440,7 +615,10 @@ endif()
 
 # Build static library
 if(BUILD_STATIC_LIBS)
-    add_library(${LIBNAME}-static STATIC src/libliquid.c ${LIQUID_OBJECTS})
+    add_library(${LIBNAME}-static STATIC
+        src/libliquid.c
+        ${LIQUID_OBJECTS}
+    )
     add_library(${NAMESPACE}::${LIBNAME}-static ALIAS ${LIBNAME}-static)
     set_target_properties(${LIBNAME}-static PROPERTIES OUTPUT_NAME ${LIBNAME})
     list(APPEND LIQUID_TARGETS ${LIBNAME}-static)
@@ -516,10 +694,10 @@ install(TARGETS ${LIQUID_TARGETS}
     LIBRARY
         COMPONENT Runtime
         NAMELINK_COMPONENT Development
-        DESTINATION lib
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE
         COMPONENT Runtime
-        DESTINATION lib
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER
         COMPONENT Development
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/liquid
@@ -591,7 +769,9 @@ endif(BUILD_SANDBOX)
 # ---------------------------------------- autotest ----------------------------------------
 
 # build autoscript executable for both autotests and benchmarks
-add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
+if(BUILD_AUTOTESTS OR BUILD_BENCHMARKS)
+    add_executable(autoscript scripts/autoscript.c scripts/main.c scripts/autoscript.h)
+endif()
 
 set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/autotest/null_autotest.c
@@ -748,6 +928,7 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/sequence/tests/msequence_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/bshift_array_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/count_bits_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/utility/tests/memory_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/pack_bytes_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/shift_array_autotest.c
     ${PROJECT_SOURCE_DIR}/src/vector/tests/vectorcf_autotest.c

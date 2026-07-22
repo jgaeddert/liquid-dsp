@@ -225,6 +225,7 @@ int fskframegen_assemble(fskframegen     _q,
                          unsigned int    _payload_len)
 {
     liquid_log_trace("fskframegen, assembling...");
+
     // set properties
     if (_payload_len == 0 || _payload_len > LIQUID_MAX_PAYLOAD_LEN)
         return liquid_error(LIQUID_EICONFIG,"fskframegen_assemble(), payload length (%u) is out of range", _payload_len);

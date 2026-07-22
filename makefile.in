@@ -203,6 +203,8 @@ channel_benchmarks :=						\
 core_objects :=							\
 	src/core/src/error.o					\
 	src/core/src/logging.o					\
+	src/core/src/runtime.o					\
+	src/core/src/timer.o					\
 
 $(core_objects) : %.o : %.c $(include_headers)
 
@@ -217,35 +219,38 @@ core_benchmarks :=						\
 # MODULE : dotprod
 #
 dotprod_objects :=						\
-	@MLIBS_DOTPROD@						\
+	src/dotprod/src/dotprod_cccf.o				\
+	src/dotprod/src/dotprod_crcf.o				\
+	src/dotprod/src/dotprod_rrrf.o				\
+	src/dotprod/src/sumsq.o					\
+
+# TODO: pull SIMD files as dependencies
 
 src/dotprod/src/dotprod_cccf.o : %.o : %.c $(include_headers) src/dotprod/src/dotprod.proto.c
 src/dotprod/src/dotprod_crcf.o : %.o : %.c $(include_headers) src/dotprod/src/dotprod.proto.c
 src/dotprod/src/dotprod_rrrf.o : %.o : %.c $(include_headers) src/dotprod/src/dotprod.proto.c
 src/dotprod/src/sumsq.o : %.o : %.c $(include_headers)
 
-# specific machine architectures
-
-# AltiVec
-src/dotprod/src/dotprod_rrrf.av.o : %.o : %.c $(include_headers)
-
-# MMX/SSE2
-src/dotprod/src/dotprod_rrrf.mmx.o : %.o : %.c $(include_headers)
-src/dotprod/src/dotprod_crcf.mmx.o : %.o : %.c $(include_headers)
-src/dotprod/src/dotprod_cccf.mmx.o : %.o : %.c $(include_headers)
-
-src/dotprod/src/sumsq.mmx.o : %.o : %.c $(include_headers)
-
-# SSE4.1/2
-src/dotprod/src/dotprod_rrrf.sse4.o : %.o : %.c $(include_headers)
-
-# AVX
-src/dotprod/src/sumsq.avx.o : %.o : %.c $(include_headers)
-
-# ARM Neon
-src/dotprod/src/dotprod_rrrf.neon.o : %.o : %.c $(include_headers)
-src/dotprod/src/dotprod_crcf.neon.o : %.o : %.c $(include_headers)
-src/dotprod/src/dotprod_cccf.neon.o : %.o : %.c $(include_headers)
+# # AltiVec
+# src/dotprod/src/dotprod_rrrf.av.o : %.o : %.c $(include_headers)
+# 
+# # MMX/SSE2
+# src/dotprod/src/dotprod_rrrf.mmx.o : %.o : %.c $(include_headers)
+# src/dotprod/src/dotprod_crcf.mmx.o : %.o : %.c $(include_headers)
+# src/dotprod/src/dotprod_cccf.mmx.o : %.o : %.c $(include_headers)
+# 
+# src/dotprod/src/sumsq.mmx.o : %.o : %.c $(include_headers)
+# 
+# # SSE4.1/2
+# src/dotprod/src/dotprod_rrrf.sse4.o : %.o : %.c $(include_headers)
+# 
+# # AVX
+# src/dotprod/src/sumsq.avx.o : %.o : %.c $(include_headers)
+# 
+# # ARM Neon
+# src/dotprod/src/dotprod_rrrf.neon.o : %.o : %.c $(include_headers)
+# src/dotprod/src/dotprod_crcf.neon.o : %.o : %.c $(include_headers)
+# src/dotprod/src/dotprod_cccf.neon.o : %.o : %.c $(include_headers)
 
 dotprod_autotests :=						\
 	src/dotprod/tests/dotprod_rrrf_autotest.c		\
@@ -1125,6 +1130,7 @@ $(utility_objects) : %.o : %.c $(include_headers)
 utility_autotests :=						\
 	src/utility/tests/bshift_array_autotest.c		\
 	src/utility/tests/count_bits_autotest.c			\
+	src/utility/tests/memory_autotest.c			\
 	src/utility/tests/pack_bytes_autotest.c			\
 	src/utility/tests/shift_array_autotest.c		\
 
@@ -1139,7 +1145,8 @@ utility_benchmarks :=						\
 
 # main objects list
 vector_objects :=						\
-	@MLIBS_VECTOR@						\
+	src/vector/src/vectorf.port.o				\
+	src/vector/src/vectorcf.port.o				\
 
 # vector prototypes (portable) - explicit dependencies
 vector_prototypes :=						\
@@ -1609,8 +1616,8 @@ clean-bench:
 .PHONY: examples
 example_programs :=						\
 	examples/agc_crcf_example				\
-	examples/agc_crcf_squelch_example			\
 	examples/agc_crcf_qpsk_example				\
+	examples/agc_crcf_squelch_example			\
 	examples/agc_rrrf_example				\
 	examples/ampmodem_example				\
 	examples/asgramcf_example				\
@@ -1622,62 +1629,63 @@ example_programs :=						\
 	examples/cbufferf_example				\
 	examples/cgsolve_example				\
 	examples/channel_cccf_example				\
-	examples/compand_example				\
 	examples/compand_cf_example				\
+	examples/compand_example				\
 	examples/complementary_codes_example			\
 	examples/conversion_example				\
-	examples/crc_example					\
 	examples/cpfskmodem_example				\
 	examples/cpfskmodem_psd_example				\
+	examples/crc_example					\
 	examples/cvsd_example					\
-	examples/detector_cccf_example				\
 	examples/dds_cccf_example				\
-	examples/dsssframe64sync_performance_example		\
-	examples/dsssframe64sync_example			\
-	examples/dsssframesync_example				\
-	examples/dotprod_rrrf_example				\
+	examples/detector_cccf_example				\
 	examples/dotprod_cccf_example				\
-	examples/eqlms_cccf_block_example			\
+	examples/dotprod_rrrf_example				\
+	examples/dsssframe64sync_example			\
+	examples/dsssframe64sync_performance_example		\
+	examples/dsssframesync_example				\
 	examples/eqlms_cccf_blind_example			\
+	examples/eqlms_cccf_block_example			\
 	examples/eqlms_cccf_decisiondirected_example		\
 	examples/eqlms_cccf_example				\
 	examples/eqrls_cccf_example				\
 	examples/error_handling_example				\
+	examples/fading_generator_example			\
+	examples/fdelay_rrrf_example				\
 	examples/fec_example					\
 	examples/fec_soft_example				\
-	examples/fdelay_rrrf_example				\
 	examples/fft_example					\
 	examples/fftfilt_crcf_example				\
 	examples/firdecim_crcf_example				\
+	examples/firdes_doppler_example				\
+	examples/firdes_kaiser_example				\
+	examples/firdespm_callback_example			\
+	examples/firdespm_example				\
+	examples/firdespm_halfband_example			\
+	examples/firdespm_lowpass_example			\
 	examples/firfarrow_rrrf_example				\
 	examples/firfilt_cccf_example				\
 	examples/firfilt_cccf_notch_example			\
 	examples/firfilt_crcf_copy_example			\
-	examples/firfilt_crcf_example				\
 	examples/firfilt_crcf_dcblocker_example			\
+	examples/firfilt_crcf_example				\
 	examples/firfilt_rrrf_example				\
-	examples/firdes_doppler_example				\
-	examples/firdes_kaiser_example				\
-	examples/firdespm_callback_example			\
-	examples/firdespm_halfband_example			\
-	examples/firdespm_example				\
-	examples/firdespm_lowpass_example			\
-	examples/firhilb_example				\
 	examples/firhilb_decim_example				\
+	examples/firhilb_example				\
 	examples/firhilb_filter_example				\
 	examples/firhilb_interp_example				\
-	examples/firpfb_rrrf_example				\
-	examples/firpfbch2_crcf_example				\
-	examples/firpfbch2_crcf_reconstruct_example		\
-	examples/firpfbchr_crcf_example				\
 	examples/firinterp_crcf_example				\
 	examples/firinterp_firdecim_crcf_example		\
 	examples/firinterp_rrrf_linear_example			\
 	examples/firinterp_rrrf_window_example			\
-	examples/firpfbch_crcf_example				\
+	examples/firpfb_rrrf_example				\
 	examples/firpfbch_crcf_analysis_example			\
+	examples/firpfbch_crcf_example				\
 	examples/firpfbch_crcf_msource_example			\
 	examples/firpfbch_crcf_synthesis_example		\
+	examples/firpfbch2_crcf_example				\
+	examples/firpfbch2_crcf_reconstruct_example		\
+	examples/firpfbchr_crcf_example				\
 	examples/flexframesync_debug_example			\
 	examples/flexframesync_example				\
 	examples/flexframesync_reconfig_example			\
@@ -1689,35 +1697,36 @@ example_programs :=						\
 	examples/fskmodem_waterfall_example			\
 	examples/gasearch_example				\
 	examples/gasearch_knapsack_example			\
-	examples/gmskframesync_example				\
-	examples/gmskmodem_example				\
-	examples/gmskmodem_ber_example				\
 	examples/gmsk_eqlms_example				\
 	examples/gmsk_tracking_example				\
+	examples/gmskframesync_example				\
+	examples/gmskmodem_ber_example				\
+	examples/gmskmodem_example				\
 	examples/gradsearch_datafit_example			\
 	examples/gradsearch_example				\
-	examples/interleaver_example				\
-	examples/interleaver_soft_example			\
-	examples/interleaver_scatterplot_example		\
-	examples/iirdes_example					\
-	examples/iirdes_analog_example				\
-	examples/iirdes_pll_example				\
 	examples/iirdecim_crcf_example				\
+	examples/iirdes_analog_example				\
+	examples/iirdes_example					\
+	examples/iirdes_pll_example				\
 	examples/iirfilt_cccf_example				\
-	examples/iirfilt_crcf_example				\
 	examples/iirfilt_crcf_dcblocker_example			\
+	examples/iirfilt_crcf_example				\
 	examples/iirfilt_rrrf_integrator_example		\
 	examples/iirhilb_example				\
 	examples/iirhilb_filter_example				\
 	examples/iirinterp_crcf_example				\
+	examples/interleaver_example				\
+	examples/interleaver_scatterplot_example		\
+	examples/interleaver_soft_example			\
 	examples/kaiser_window_example				\
 	examples/kbd_window_example				\
-	examples/lpc_example					\
 	examples/libliquid_example				\
+	examples/liquid_argparse_example			\
 	examples/logging_example				\
 	examples/logging_extensive_example			\
 	examples/logging_format_example				\
 	examples/logging_spinlock_example			\
+	examples/lpc_example					\
 	examples/matched_filter_example				\
 	examples/math_lngamma_example				\
 	examples/math_primitive_root_example			\
@@ -1738,59 +1747,64 @@ example_programs :=						\
 	examples/nco_crcf_tone_example				\
 	examples/nco_example					\
 	examples/nco_pll_example				\
-	examples/nco_pll_real_example				\
 	examples/nco_pll_modem_example				\
+	examples/nco_pll_real_example				\
 	examples/nyquist_filter_example				\
 	examples/ofdmflexframesync_example			\
+	examples/ofdmframegen_example				\
 	examples/ofdmframesync_example				\
 	examples/ordfilt_rrrf_example				\
 	examples/packetizer_example				\
 	examples/packetizer_soft_example			\
+	examples/platformio_example				\
 	examples/pll_example					\
+	examples/poly_findroots_example				\
 	examples/polyfit_comparison_example			\
 	examples/polyfit_example				\
 	examples/polyfit_lagrange_example			\
-	examples/poly_findroots_example				\
 	examples/qdetector_cccf_example				\
+	examples/qdsync_cccf_cpfsk_example			\
 	examples/qdsync_cccf_example				\
 	examples/qdsync_cccf_performance_example		\
-	examples/qpacketmodem_performance_example		\
-	examples/qpacketmodem_example				\
-	examples/qpilotsync_example				\
 	examples/qnsearch_example				\
+	examples/qpacketmodem_example				\
+	examples/qpacketmodem_performance_example		\
+	examples/qpilotsync_example				\
 	examples/qs1dsearch_example				\
 	examples/quantize_example				\
 	examples/random_histogram_example			\
 	examples/repack_bytes_example				\
-	examples/rresamp_crcf_example				\
-	examples/rresamp_crcf_partition_example			\
-	examples/rresamp_crcf_rnyquist_example			\
-	examples/rresamp_rrrf_example				\
 	examples/resamp_crcf_example				\
 	examples/resamp_crcf_noise_example			\
 	examples/resamp_crcf_rate_match_example			\
 	examples/resamp2_cccf_example				\
-	examples/resamp2_crcf_example				\
 	examples/resamp2_crcf_decim_example			\
+	examples/resamp2_crcf_example				\
 	examples/resamp2_crcf_filter_example			\
 	examples/resamp2_crcf_interp_example			\
 	examples/ricek_channel_example				\
+	examples/rresamp_crcf_example				\
+	examples/rresamp_crcf_partition_example			\
+	examples/rresamp_crcf_rnyquist_example			\
+	examples/rresamp_rrrf_example				\
+	examples/runtime_example				\
 	examples/scramble_example				\
 	examples/smatrix_example				\
+	examples/spgramcf_compare_example			\
 	examples/spgramcf_example				\
 	examples/spgramf_example				\
 	examples/spwaterfallcf_example				\
-	examples/symsync_crcf_example				\
-	examples/symsync_crcf_full_example			\
-	examples/symsync_crcf_kaiser_example			\
 	examples/symstreamcf_delay_example			\
 	examples/symstreamcf_example				\
 	examples/symstreamrcf_delay_example			\
 	examples/symstreamrcf_example				\
+	examples/symsync_crcf_example				\
+	examples/symsync_crcf_full_example			\
+	examples/symsync_crcf_kaiser_example			\
 	examples/symtrack_cccf_example				\
 	examples/wdelayf_example				\
-	examples/windowf_example				\
 	examples/window_enbw_example				\
+	examples/windowf_example				\
 	examples/windowing_example				\
 
 #	examples/metadata_example
@@ -1999,5 +2013,6 @@ distclean: clean
 	$(RM) configure config.h config.h.in config.h.in~ config.log config.status
 	$(RM) -r autom4te.cache
 	$(RM) aclocal.m4
+	$(RM) liquid.config.h
 	$(RM) makefile
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,26 @@
 #include <complex.h>
 #include "liquid.internal.h"
 
+// naming extensions (useful for print statements)
+#define EXTENSION_SHORT "f"
+#define EXTENSION_FULL  "cccf"
+
 #define DOTPROD(name)   LIQUID_CONCAT(dotprod_cccf,name)
-#define TO              float complex
-#define TC              float complex
-#define TI              float complex
+#define T               float           // base type
+#define TO              float complex   // output type
+#define TC              float complex   // coefficients type
+#define TI              float complex   // input type
 
 #define TO_COMPLEX      1
 #define TC_COMPLEX      1
 #define TI_COMPLEX      1
 
+// main definition with portable functionality
 #include "dotprod.proto.c"
+
+// SIMD extensions
+#include "dotprod_cccf.neon.c"
+#include "dotprod_cccf.sse.c"
+#include "dotprod_cccf.avx.c"
+#include "dotprod_cccf.avx512f.c"
+

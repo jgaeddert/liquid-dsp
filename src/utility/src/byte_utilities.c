@@ -51,19 +51,20 @@ unsigned int liquid_count_ones_uint32(uint32_t _x)
 // count the number of ones in an integer
 unsigned int liquid_count_ones(unsigned int _x)
 {
-#if SIZEOF_INT == 2
-    return liquid_count_ones_uint16(_x);
-#elif SIZEOF_INT == 4
-    return liquid_count_ones_uint32(_x);
-#else
+    size_t sizeof_int = sizeof(int);
+
+    if (sizeof_int==2)
+        return liquid_count_ones_uint16(_x);
+    else if (sizeof_int==4)
+        return liquid_count_ones_uint32(_x);
+
     unsigned int i;
     unsigned int c=0;
-    for (i=0; i<SIZEOF_INT; i++) {
+    for (i=0; i<sizeof_int; i++) {
         c += liquid_c_ones[ _x & 0xff ];
         _x >>= 8;
     }   
     return c;
-#endif
 }
 
 // Count the number of ones in a 16-bit integer, modulo 2
@@ -81,39 +82,27 @@ unsigned int liquid_count_ones_mod2_uint32(uint32_t _x)
 // count the number of ones in an integer, modulo 2
 unsigned int liquid_count_ones_mod2(unsigned int _x)
 {
-#if SIZEOF_INT == 2
-    return liquid_count_ones_mod2_uint16(_x);
-#elif SIZEOF_INT == 4
-    return liquid_count_ones_mod2_uint32(_x);
-#else
+    size_t sizeof_int = sizeof(int);
+
+    if (sizeof_int==2)
+        return liquid_count_ones_mod2_uint16(_x);
+    else if (sizeof_int==4)
+        return liquid_count_ones_mod2_uint32(_x);
+
     unsigned int i;
     unsigned int c=0;
-    for (i=0; i<SIZEOF_INT; i++) {
+    for (i=0; i<sizeof_int; i++) {
         c += liquid_c_ones_mod2[ _x & 0xff ];
         _x >>= 8;
     }   
     return c & 1;
-#endif
 }
 
 // count the binary dot-product between two integers
 unsigned int liquid_bdotprod(unsigned int _x,
                              unsigned int _y)
 {
-    unsigned int t = _x & _y;
-#if SIZEOF_INT == 2
-    return liquid_count_ones_mod2_uint16(t);
-#elif SIZEOF_INT == 4
-    return liquid_count_ones_mod2_uint32(t);
-#else
-    unsigned int i;
-    unsigned int c=0;
-    for (i=0; i<SIZEOF_INT; i++) {
-        c += liquid_c_ones_mod2[ t & 0xff ];
-        t >>= 8;
-    }   
-    return c & 1;
-#endif
+    return liquid_count_ones_mod2(_x & _y);
 }
 
 // compute binary dot products on 8-bit words

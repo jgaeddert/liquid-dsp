@@ -31,6 +31,7 @@ extern "C" {
 
 // common headers
 #include <inttypes.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -91,6 +92,62 @@ int liquid_libversion_number(void);
     fprintf(stderr,"  library version : %d\n", liquid_libversion_number()); \
     exit(1);                                                                \
   }                                                                         \
+
+// get build info
+extern const struct liquid_build_info_s
+{
+    // version information
+    const char copyright[96];       // project copyright
+    const char license[16];         // project license
+    //const char author[64];          // project author
+    //const char homepage[64];        // project homepage URL
+    //const char description[64];     // project description, brief
+
+    // version information
+    const char version[16];         // base, e.g. 1.8.0
+    const char githash[24];         // specific Git hash if available
+
+    // date/time of build
+    const char build_datetime[24];  // UTC ISO 8601 format, e.g. "2026-06-28T14:32:00Z"
+    const char build_hostname[64];  // machine or CI that performed the build
+    const char build_os[64];        // the OS that performed the build, e.g. "macOS"
+    const char build_arch[64];      // the architecture of the OS that performed the build, e.g. "arm64"
+    const char build_toolchain[64]; // the exact version of the compiler that performed the build, e.g. "gcc 11.2.0"
+    const char build_type[64];      // debug, release, etc.
+    const char build_env[64];       // cmake, autotoools, etc.
+
+    // target options
+    const char target_os[64];       //
+    const char target_arch[64];     //
+
+    // other compile-time options
+    const bool logging_enabled;     // logging enabled or not
+    const int  logging_level;       // logging level threshold set at compile time
+    const bool color_enabled;       // color output enabled or not
+
+    // vector extensions
+    const bool altivec;             // power PC
+    const bool neon;                // ARM
+    const bool mmx;                 // multi-media extension (1997)
+    const bool sse;                 // streaming SIMD extensions (1999)
+    const bool sse2;                // SSE version 2 (2000)
+    const bool sse3;                // SSE version 3 (2004)
+    const bool ssse3;               // Supplemental SSE3 (2006)
+    const bool sse41;               // SSE version 4.1 (2007)
+    const bool sse42;               // SSE version 4.2 (2008)
+    const bool avx;                 // advanced vector extensions (2011)
+    const bool fma3;                // fused multiply-add (2013)
+    const bool avx2;                // AVX version 2 (2013)
+    const bool avx512;              // AVX-512 (2016)
+    const bool amx;                 // advanced matrix extensions (2023)
+    const bool amx101;              // AMX version 10.1 (2024)
+    const bool amx102;              // AMX version 10.2 (2026)
+
+} liquid_build_info;
+
+// print build information
+int liquid_build_info_print(void);
+
 
 // report error
 int liquid_error_fl(int _code, const char * _file, int _line, const char * _format, ...);
@@ -321,32 +378,41 @@ int liquid_logger_add_file(liquid_logger _q,
 //  _q      : logger object
 //  _fid    : file handle
 //  _level  : minimum log level for which callback will be invoked
+//  _return : FILE pointer if file was successfully opened for writing, otherwise NULL
 FILE * liquid_logger_add_filename(liquid_logger _q,
                                   const char*   _filename,
                                   int           _level);
 
 // get the number of callbacks currently used
+//  _return : the number of callbacks currently used
 unsigned int liquid_logger_get_num_callbacks(liquid_logger q);
 
 // get the total number of log events
+//  _return : the total number of log events
 unsigned int liquid_logger_get_num_events(liquid_logger q);
 
 // get the number of "trace" log events
+//  _return : the number of "trace" events logged
 unsigned int liquid_logger_get_num_trace(liquid_logger q);
 
 // get the number of "debug" log events
+//  _return : the number of "debug" events logged
 unsigned int liquid_logger_get_num_debug(liquid_logger q);
 
 // get the number of "info" log events
+//  _return : the number of "info" events logged
 unsigned int liquid_logger_get_num_info(liquid_logger q);
 
 // get the number of "warning" log events
+//  _return : the number of "warning" events logged
 unsigned int liquid_logger_get_num_warn(liquid_logger q);
 
 // get the number of "error" log events
+//  _return : the number of "error" events logged
 unsigned int liquid_logger_get_num_error(liquid_logger q);
 
 // get the number of "fatal" log events
+//  _return : the number of "fatal" events logged
 unsigned int liquid_logger_get_num_fatal(liquid_logger q);
 
 // append a log message to the logger
@@ -443,6 +509,103 @@ enum {
 #  define liquid_log_fatal(...) {}
 #endif
 
+// structure to define instruction set architecture options at runtime
+struct liquid_cpuinfo_s
+{
+    // PPC architecture
+    bool altivec;
+
+    // ARM architecture
+    bool neon;
+
+    // x86 architecture
+    bool mmx;       // multi-media extension (1997)
+    bool sse;       // streaming SIMD extensions (1999)
+    bool sse2;      // SSE version 2 (2000)
+    bool sse3;      // SSE version 3 (2004)
+    bool ssse3;     // Supplemental SSE3 (2006)
+    bool sse41;     // SSE version 4.1 (2007)
+    bool sse42;     // SSE version 4.2 (2008)
+    bool avx;       // advanced vector extensions (2011)
+    bool fma3;      // fused multiply-add (2013)
+    bool avx2;      // AVX version 2 (2013)
+    bool avx512;    // AVX-512 (2016)
+    bool amx;       // advanced matrix extensions (2023)
+    bool amx101;    // AMX version 10.1 (2024)
+    bool amx102;    // AMX version 10.2 (2026)
+
+    // number of cores
+    int cores;
+};
+typedef struct liquid_cpuinfo_s * liquid_cpuinfo;
+
+// check which instruction extensions are supported on this system
+int liquid_runtime_supported(liquid_cpuinfo _q);
+
+// runtime hardware acceleration options
+typedef enum
+{
+    // unknown
+    LIQUID_RUNTIME_UNKNOWN  =   0,
+
+    // default modes
+    LIQUID_RUNTIME_PORT     =   1,
+
+    // PPC architecture
+    LIQUID_RUNTIME_ALTIVEC  =   4,
+
+    // ARM architecture
+    LIQUID_RUNTIME_NEON     =   8,
+
+    // x86 architecture
+    LIQUID_RUNTIME_MMX      =  16,  // multi-media extension (1997)
+    LIQUID_RUNTIME_SSE      =  17,  // streaming SIMD extensions (1999)
+    LIQUID_RUNTIME_SSE2     =  18,  // SSE version 2 (2000)
+    LIQUID_RUNTIME_SSE3     =  19,  // SSE version 3 (2004)
+    LIQUID_RUNTIME_SSSE3    =  20,  // Supplemental SSE3 (2006)
+    LIQUID_RUNTIME_SSE41    =  21,  // SSE version 4.1 (2007)
+    LIQUID_RUNTIME_SSE42    =  22,  // SSE version 4.2 (2008)
+    LIQUID_RUNTIME_AVX      =  23,  // advanced vector extensions (2011)
+    LIQUID_RUNTIME_FMA3     =  24,  // fused multiply-add (2013)
+    LIQUID_RUNTIME_AVX2     =  25,  // AVX version 2 (2013)
+    LIQUID_RUNTIME_AVX512   =  26,  // AVX-512 (2016)
+    LIQUID_RUNTIME_AMX      =  27,  // advanced matrix extensions (2023)
+    LIQUID_RUNTIME_AMX101   =  28,  // AMX version 10.1 (2024)
+    LIQUID_RUNTIME_AMX102   =  29,  // AMX version 10.2 (2026)
+
+} liquid_runtime_t;
+
+// detect runtime hardware acceleration mode
+liquid_runtime_t liquid_runtime_detect(void);
+
+
+// basic time object for estimating wall clock time
+typedef struct liquid_timer_s * liquid_timer;
+
+// timer based on system clock time
+#define LIQUID_TIMER_CLOCK (1)
+
+// timer based on resource usage
+#define LIQUID_TIMER_RUSAGE (2)
+
+// create and start timer
+liquid_timer liquid_timer_create(int _type);
+
+// destroy timer
+int liquid_timer_destroy(liquid_timer _q);
+
+// reset timer
+int liquid_timer_tic(liquid_timer _q);
+
+// retrieve runtime in seconds since last tic
+float liquid_timer_toc(liquid_timer _q);
+
+
+// compact: create and start timer
+liquid_timer liquid_tic(void);
+
+// compact: destroy timer and retrieve runtime in seconds
+float liquid_toc(liquid_timer _q);
 
 // provide exit value based on global logging
 //int liquid_exit();
@@ -1210,6 +1373,15 @@ int DOTPROD(_destroy)(DOTPROD() _q);                                        \
 /* Print dotprod object internals to standard output                    */  \
 int DOTPROD(_print)(DOTPROD() _q);                                          \
                                                                             \
+/* Select runtime execution method. This is set automatically during    */  \
+/* object creation; however pulling this to a public method allows      */  \
+/* the user to override automatic selection and simplifies internal     */  \
+/* testing.                                                             */  \
+/*  _q      : dotprod object                                            */  \
+/*  _select : runtime preference                                        */  \
+int DOTPROD(_runtime_select)(DOTPROD()        _q,                           \
+                             liquid_runtime_t _select);                     \
+                                                                            \
 /* Execute dot product on an input array                                */  \
 /*  _q      : dotprod object                                            */  \
 /*  _x      : input array, [size: _n x 1]                               */  \
@@ -1962,7 +2134,7 @@ int FFT(_r2r_1d_run)(unsigned int _n,                                       \
                      int          _type,                                    \
                      int          _flags);                                  \
                                                                             \
-/* Perform _n-point fft shift                                           */  \
+/* Perform _n-point FFT shift in O(n) time and O(1) memory              */  \
 /*  _x      : input array, [size: _n x 1]                               */  \
 /*  _n      : input array size                                          */  \
 int FFT(_shift)(TC *         _x,                                            \
@@ -7063,6 +7235,12 @@ int QDSYNC(_execute)(QDSYNC()     _q,                                       \
 /* Return flag indicating if synchronizer actively running.             */  \
 int QDSYNC(_is_open)(QDSYNC() _q);                                          \
                                                                             \
+/* Get length of original sequence                                      */  \
+unsigned int QDSYNC(_get_seq_len)(QDSYNC() _q);                             \
+                                                                            \
+/* Get pointer to original sequence                                     */  \
+const void * QDSYNC(_get_sequence)(QDSYNC() _q);                            \
+                                                                            \
 /* Get synchronizer correlator output after frame was detected          */  \
 float QDSYNC(_get_rxy)  (QDSYNC() _q);                                      \
                                                                             \
@@ -10553,6 +10731,14 @@ unsigned int msequence_genpoly_period(unsigned int _g);
 //  _num    : number of original elements
 //  _size   : size of each element
 void * liquid_malloc_copy(void * _orig, unsigned int _num, unsigned int _size);
+
+// portable aligned memory allocation
+//  _alignment  : memory alignment [bytes]
+//  _size       : number of elements
+void * liquid_aligned_alloc(size_t _alignment, size_t _size);
+
+// portable aligned free
+int liquid_aligned_free(void * _p);
 
 // pack binary array with symbol(s)
 //  _src        :   source array, [size: _n x 1]
