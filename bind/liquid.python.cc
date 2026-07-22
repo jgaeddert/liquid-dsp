@@ -135,6 +135,60 @@ py::dict framesyncstats_to_dict(framesyncstats_s _stats,
         "syms"_a = syms);
 }
 
+py::dict build_info(void)
+{
+    return py::dict(
+        // library metadata
+        "copyright"_a       = liquid_build_info.copyright,
+        "license"_a         = liquid_build_info.license,
+        //"author"_a          =
+        //"homepage"_a        =
+        //"description"_a     =
+
+        // version information
+        "version"_a         = liquid_build_info.version,
+        "githash"_a         = liquid_build_info.githash,
+
+        // date/time of build
+        "build_datetime"_a  = liquid_build_info.build_datetime,
+        "build_hostname"_a  = liquid_build_info.build_hostname,
+        "build_os"_a        = liquid_build_info.build_os,
+        "build_arch"_a      = liquid_build_info.build_arch,
+        "build_toolchain"_a = liquid_build_info.build_toolchain,
+        "build_type"_a      = liquid_build_info.build_type,
+        "build_env"_a       = liquid_build_info.build_env,
+
+        // target platform
+        "target_os"_a       = liquid_build_info.target_os,
+        "target_arch"_a     = liquid_build_info.target_arch,
+
+        // other compile-time options
+        "logging_enabled"_a = liquid_build_info.logging_enabled,
+        "logging_level"_a   = liquid_build_info.logging_level,
+        "color_enabled"_a   = liquid_build_info.color_enabled,
+
+        // vector extensions
+        "cpuinfo"_a = py::dict(
+            "altivec"_a     = liquid_build_info.cpuinfo.altivec,
+            "neon"_a        = liquid_build_info.cpuinfo.neon,
+            "mmx"_a         = liquid_build_info.cpuinfo.mmx,
+            "sse"_a         = liquid_build_info.cpuinfo.sse,
+            "sse2"_a        = liquid_build_info.cpuinfo.sse2,
+            "sse3"_a        = liquid_build_info.cpuinfo.sse3,
+            "ssse3"_a       = liquid_build_info.cpuinfo.ssse3,
+            "sse41"_a       = liquid_build_info.cpuinfo.sse41,
+            "sse42"_a       = liquid_build_info.cpuinfo.sse42,
+            "avx"_a         = liquid_build_info.cpuinfo.avx,
+            "fma3"_a        = liquid_build_info.cpuinfo.fma3,
+            "avx2"_a        = liquid_build_info.cpuinfo.avx2,
+            "avx512"_a      = liquid_build_info.cpuinfo.avx512,
+            "amx"_a         = liquid_build_info.cpuinfo.amx,
+            "amx101"_a      = liquid_build_info.cpuinfo.amx101,
+            "amx102"_a      = liquid_build_info.cpuinfo.amx102
+        )
+    );
+}
+
 
 PYBIND11_MODULE(liquid, m) {
     m.doc() =
@@ -168,6 +222,9 @@ PYBIND11_MODULE(liquid, m) {
 #else
     m.attr("__version__") = "dev";
 #endif
+
+    // helper functions
+    m.def("build_info", &liquid::build_info, "get a deictionary with build information");
 }
 
 } // namespace liquid
