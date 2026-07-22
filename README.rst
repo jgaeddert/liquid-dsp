@@ -300,7 +300,7 @@ Your ``CMakeLists.txt`` file might look something like this:
 .. code-block:: cmake
 
     # CMakeLists.txt - test finding package and linking against it
-    cmake_minimum_required(VERSION 3.10)
+    cmake_minimum_required(VERSION 3.20)
     project(liquid_test C)
 
     # option 1: check for local installation
