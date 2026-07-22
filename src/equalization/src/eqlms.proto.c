@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
-//#define DEBUG
 
 struct EQLMS(_s) {
     unsigned int h_len;     // filter length
@@ -165,10 +163,15 @@ EQLMS() EQLMS(_recreate)(EQLMS()      _q,
         return EQLMS(_create)(_h,_h_len);
     }
 
-    // filter is same length; copy user-defined initial coefficients
+    // filter is same length; copy user-defined initial coefficients or reset to default on NULL
     unsigned int i;
-    for (i=0; i<_q->h_len; i++)
-        _q->h0[i] = conj(_h[_q->h_len-i-1]);
+    if (_h == NULL) {
+        for (i=0; i<_q->h_len; i++)
+            _q->h0[i] = (i==_q->h_len/2) ? 1.0 : 0.0;
+    } else {
+        for (i=0; i<_q->h_len; i++)
+            _q->h0[i] = conj(_h[_q->h_len-i-1]);
+    }
 
     // reset equalizer object and return
     EQLMS(_reset)(_q);
@@ -430,10 +433,15 @@ int EQLMS(_step)(EQLMS() _q,
 
     // update weighting vector
     // w[n+1] = w[n] + mu*conj(d-d_hat)*x[n]/(x[n]' * conj(x[n]))
-    for (i=0; i<_q->h_len; i++)
-        _q->w1[i] = _q->w0[i] + (_q->mu)*conj(alpha)*r[i]/_q->x2_sum;
+    if (_q->x2_sum > 0.0f) {
+        for (i=0; i<_q->h_len; i++)
+            _q->w1[i] = _q->w0[i] + (_q->mu)*conj(alpha)*r[i]/_q->x2_sum;
+    } else {
+        // sum is zero; just copy old coefficients
+        memmove(_q->w1, _q->w0, _q->h_len*sizeof(T));
+    }
 
-#ifdef DEBUG
+#if 0
     printf("w0: \n");
     for (i=0; i<_q->h_len; i++) {
         PRINTVAL(_q->w0[i]);

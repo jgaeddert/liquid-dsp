@@ -23,7 +23,7 @@
 #include "liquid.h"
 #include "liquid.autotest.h"
 
-LIQUID_AUTOTEST(fft_shift_4,"fft shift for even-sized transform","fft",0.1)
+LIQUID_AUTOTEST(fft_shift_4,"fft shift for even-sized transform (4)","fft",0.1)
 {
     float complex x[] = {
         0 + 0*_Complex_I,
@@ -44,7 +44,7 @@ LIQUID_AUTOTEST(fft_shift_4,"fft shift for even-sized transform","fft",0.1)
     LIQUID_CHECK_ARRAY(x,test,4*sizeof(float complex));
 }
 
-LIQUID_AUTOTEST(fft_shift_8,"fft shift for odd-sized transform","fft",0.1)
+LIQUID_AUTOTEST(fft_shift_8,"fft shift for even-sized transform (8)","fft",0.1)
 {
     float complex x[] = {
         0 + 0*_Complex_I,
@@ -54,7 +54,7 @@ LIQUID_AUTOTEST(fft_shift_8,"fft shift for odd-sized transform","fft",0.1)
         4 + 4*_Complex_I,
         5 + 5*_Complex_I,
         6 + 6*_Complex_I,
-        7 + 7*_Complex_I
+        7 + 7*_Complex_I,
     };
 
     float complex test[] = {
@@ -65,11 +65,34 @@ LIQUID_AUTOTEST(fft_shift_8,"fft shift for odd-sized transform","fft",0.1)
         0 + 0*_Complex_I,
         1 + 1*_Complex_I,
         2 + 2*_Complex_I,
-        3 + 3*_Complex_I
+        3 + 3*_Complex_I,
     };
 
     fft_shift(x,8);
 
     LIQUID_CHECK_ARRAY(x,test,8*sizeof(float complex));
+}
+
+LIQUID_AUTOTEST(fft_shift_5,"fft shift for odd-sized transform (5)","fft",0.1)
+{
+    float complex x[] = {
+        0 + 0*_Complex_I,
+        1 + 1*_Complex_I,
+        2 + 2*_Complex_I,
+        3 + 3*_Complex_I,
+        4 + 4*_Complex_I,
+    };
+
+    float complex test[] = {
+        3 + 3*_Complex_I,
+        4 + 4*_Complex_I,
+        0 + 0*_Complex_I,
+        1 + 1*_Complex_I,
+        2 + 2*_Complex_I,
+    };
+
+    fft_shift(x,5);
+
+    LIQUID_CHECK_ARRAY(x,test,5*sizeof(float complex));
 }
 

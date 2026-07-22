@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -123,12 +123,9 @@ int fec_secded2216_encode_symbol(unsigned char * _sym_dec,
 int fec_secded2216_decode_symbol(unsigned char * _sym_enc,
                                  unsigned char * _sym_dec)
 {
-#if 0
     // validate input
-    if (_sym_enc[0] >= (1<<6)) {
-        fprintf(stderr,"warning, fec_secded2216_decode_symbol(), input symbol too large\n");
-    }
-#endif
+    if (_sym_enc[0] >= (1<<6))
+        { liquid_log_warn("warning, fec_secded2216_decode_symbol(), input symbol too large"); }
 
     // estimate error vector
     unsigned char e_hat[3] = {0,0,0};

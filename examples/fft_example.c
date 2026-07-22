@@ -8,15 +8,6 @@ char __docstr__[] =
 #include "liquid.h"
 #include "liquid.argparse.h"
 
-// print usage/help message
-void usage()
-{
-    printf("fft_example [options]\n");
-    printf("  h     : print help\n");
-    printf("  v/q   : verbose/quiet\n");
-    printf("  n     : fft size, default: 16\n");
-}
-
 int main(int argc, char*argv[])
 {
     // define variables and parse command-line options

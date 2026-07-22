@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -284,10 +284,10 @@ unsigned int fec_block_get_enc_msg_len(unsigned int _dec_msg_len,
 {
     // validate input
     if (_m == 0) {
-        fprintf(stderr,"fec_block_get_enc_msg_len(), input block size cannot be zero\n");
+        liquid_error(LIQUID_EIRANGE,"fec_block_get_enc_msg_len(), input block size cannot be zero");
         return 0;
     } else if (_k < _m) {
-        fprintf(stderr,"fec_block_get_enc_msg_len(), output block size cannot be smaller than input\n");
+        liquid_error(LIQUID_EIRANGE,"fec_block_get_enc_msg_len(), output block size cannot be smaller than input");
         return 0;
     }
 

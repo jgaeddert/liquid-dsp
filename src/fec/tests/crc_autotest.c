@@ -105,6 +105,58 @@ LIQUID_AUTOTEST(crc16,"","",0.1)    { testbench_crc(__q__, LIQUID_CRC_16,       
 LIQUID_AUTOTEST(crc24,"","",0.1)    { testbench_crc(__q__, LIQUID_CRC_24,       64); }
 LIQUID_AUTOTEST(crc32,"","",0.1)    { testbench_crc(__q__, LIQUID_CRC_32,       64); }
 
+LIQUID_AUTOTEST(crc8_testvector,"compare explicit 8-bit CRC with expected","",0.1)
+{
+    unsigned int i;
+
+    // generate fixed data stream
+    unsigned char data[256];
+    for (i=0; i<256; i++)
+        data[i] = i;
+
+    // check that key matches expected value
+    LIQUID_CHECK(crc_validate_message(LIQUID_CRC_8, data, 256, 0x53));
+}
+
+LIQUID_AUTOTEST(crc16_testvector,"compare explicit 16-bit CRC with expected","",0.1)
+{
+    unsigned int i;
+
+    // generate fixed data stream
+    unsigned char data[256];
+    for (i=0; i<256; i++)
+        data[i] = i;
+
+    // check that key matches expected value
+    LIQUID_CHECK(crc_validate_message(LIQUID_CRC_16, data, 256, 0x6fc6));
+}
+
+LIQUID_AUTOTEST(crc24_testvector,"compare explicit 24-bit CRC with expected","",0.1)
+{
+    unsigned int i;
+
+    // generate fixed data stream
+    unsigned char data[256];
+    for (i=0; i<256; i++)
+        data[i] = i;
+
+    // check that key matches expected value
+    LIQUID_CHECK(crc_validate_message(LIQUID_CRC_24, data, 256, 0x10c59b));
+}
+
+LIQUID_AUTOTEST(crc32_testvector,"compare explicit 32-bit CRC with expected","",0.1)
+{
+    unsigned int i;
+
+    // generate fixed data stream
+    unsigned char data[256];
+    for (i=0; i<256; i++)
+        data[i] = i;
+
+    // check that key matches expected value
+    LIQUID_CHECK(crc_validate_message(LIQUID_CRC_32, data, 256, 0x29058c73));
+}
+
 LIQUID_AUTOTEST(crc_config,"test CRC config","",0.1)
 {
     _liquid_error_downgrade_enable();

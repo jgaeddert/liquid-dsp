@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -105,7 +105,7 @@ int liquid_poly_findroots_durandkerner(double *         _p,
         i++;
     }
 
-    for (i=0; i<_k; i++)
+    for (i=0; i<num_roots; i++)
         _roots[i] = r1[i];
     return LIQUID_OK;
 }

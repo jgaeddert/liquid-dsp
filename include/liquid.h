@@ -2138,7 +2138,7 @@ int FFT(_r2r_1d_run)(unsigned int _n,                                       \
                      int          _type,                                    \
                      int          _flags);                                  \
                                                                             \
-/* Perform _n-point fft shift                                           */  \
+/* Perform _n-point FFT shift in O(n) time and O(1) memory              */  \
 /*  _x      : input array, [size: _n x 1]                               */  \
 /*  _n      : input array size                                          */  \
 int FFT(_shift)(TC *         _x,                                            \

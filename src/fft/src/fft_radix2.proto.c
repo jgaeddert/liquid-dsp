@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -99,12 +99,11 @@ int FFT(_execute_radix2)(FFT(plan) _q)
         _q->y[i+3] = _q->x[ _q->data.radix2.index_rev[i+3] ];
     }
 
-#if 0
     // clean up remaining
-    // NOTE : this only happens when _nfft=2 because we know (_nfft%4)==0 otherwise
+    // NOTE : this only happens when _nfft=2 because we know (_nfft%4)==0 otherwise,
+    //        and only happens when create_plan_radix2() is called directly
     for ( ; i<_q->nfft; i++)
         _q->y[i] = _q->x[ _q->data.radix2.index_rev[i] ];
-#endif
 
     TC yp;
     TC *y=_q->y;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,6 @@
 #include <string.h>
 
 #include "liquid.internal.h"
-
-#define DEBUG_FSKDEM 0
 
 // fskdem
 struct fskdem_s {
@@ -90,11 +88,8 @@ fskdem fskdem_create(unsigned int _m,
         // compute candidate FFT size
         float v     = 0.5f*df*(float)K_hat;         // bin spacing
         float err = fabsf( roundf(v) - v );         // fractional bin spacing
-
-#if DEBUG_FSKDEM
-        // print results
-        printf("  K_hat = %4u : v = %12.8f, err=%12.8f %s\n", K_hat, v, err, err < err_min ? "*" : "");
-#endif
+        liquid_log_debug("fskdem_create(), K_hat = %4u : v = %12.8f, err=%12.8f %s",
+            K_hat, v, err, err < err_min ? "*" : "");
 
         // save best result
         if (K_hat==K_min || err < err_min) {
@@ -117,9 +112,7 @@ fskdem fskdem_create(unsigned int _m,
         float idx  = freq * (float)(q->K);
         unsigned int index = (unsigned int) (idx < 0 ? roundf(idx + q->K) : roundf(idx));
         q->demod_map[i] = index;
-#if DEBUG_FSKDEM
-        printf("  s=%3u, f = %12.8f, index=%3u\n", i, freq, index);
-#endif
+        liquid_log_debug("fskdem_create(), s=%3u, f = %12.8f, index=%3u", i, freq, index);
     }
 
     // check for uniqueness
@@ -246,16 +239,20 @@ float fskdem_get_frequency_error(fskdem _q)
 {
     // get index of peak bin
     //unsigned int index = _q->buf_freq[ _q->s_demod ];
+    unsigned int index = _q->demod_map[_q->s_demod];
 
     // extract peak value of previous, post FFT index
-    float vm = cabsf(_q->buf_freq[(_q->s_demod+_q->K-1)%_q->K]);  // previous
-    float v0 = cabsf(_q->buf_freq[ _q->s_demod               ]);  // peak
-    float vp = cabsf(_q->buf_freq[(_q->s_demod+      1)%_q->K]);  // post
+    float vm = cabsf(_q->buf_freq[(index+_q->K-1)%_q->K]);  // previous
+    float v0 = cabsf(_q->buf_freq[(index        )      ]);  // peak
+    float vp = cabsf(_q->buf_freq[(index+      1)%_q->K]);  // next
 
-    // compute derivative
+    // compute approximate derivative
     // TODO: compensate for bin spacing
     // TODO: just find peak using polynomial interpolation
-    return (vp - vm) / v0;
+    float df = 1.40f * (vp-vm) / (2 * v0 * _q->K);
+    liquid_log_trace("fskdem_get_frequency_error(), index: map[%3u]=%5u, {%8.3f,%8.3f,%8.3f}: %8.4f",
+        _q->s_demod, index, vm, v0, vp, df);
+    return df;
 }
 
 // get energy for a particular symbol within a certain range

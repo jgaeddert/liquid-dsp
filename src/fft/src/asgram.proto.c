@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -221,6 +221,7 @@ int ASGRAM(_execute)(ASGRAM() _q,
 
     // execute spectral periodogram
     SPGRAM(_get_psd)(_q->periodogram, _q->psd);
+    unsigned int num_transforms_prev = SPGRAM(_get_num_transforms)(_q->periodogram);
     SPGRAM(_reset)(_q->periodogram);
 
     // set autoscale parameters
@@ -231,7 +232,7 @@ int ASGRAM(_execute)(ASGRAM() _q,
         float n0_est = _q->psd_sorted[_q->autoscale_index];
 
         // check if this is the first run of the spectrum
-        if (!SPGRAM(_get_num_transforms)(_q->periodogram)) {
+        if (num_transforms_prev == 0) {
             _q->n0_est = n0_est;
         } else {
             float alpha = 0.1f;

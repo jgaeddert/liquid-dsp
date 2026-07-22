@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,6 @@
 #include <math.h>
 
 #include "liquid.internal.h"
-
-#define LIQUID_IIRDES_DEBUG_PRINT 0
 
 // Sorts array _z of complex numbers into complex conjugate pairs to
 // within a tolerance. Conjugate pairs are ordered by increasing real
@@ -105,8 +103,8 @@ int liquid_cplxpair(float complex * _z,
         if (paired[i])
             continue;
 
-        if (cimagf(_z[i]) > _tol) {
-            fprintf(stderr,"warning, liquid_cplxpair(), complex numbers cannot be paired\n");
+        if (fabsf(cimagf(_z[i])) > _tol) {
+            return liquid_error(LIQUID_ENOCONV,"liquid_cplxpair(), complex numbers cannot be paired within tolerance");
         } else {
             _p[k++] = _z[i];
             paired[i] = 1;
@@ -260,17 +258,16 @@ int bilinear_zpkf(float complex * _za,
     }
     *_kd = G;
 
-#if LIQUID_IIRDES_DEBUG_PRINT
     // print poles and zeros
-    printf("zpk_a2df() poles (discrete):\n");
+    liquid_log_debug("zpk_a2df() poles (discrete):");
     for (i=0; i<n; i++)
-        printf("  pd[%3u] = %12.8f + j*%12.8f\n", i, crealf(_pd[i]), cimagf(_pd[i]));
-    printf("zpk_a2df() zeros (discrete):\n");
+        { liquid_log_debug("  pd[%3u] = %12.8f + j*%12.8f", i, crealf(_pd[i]), cimagf(_pd[i])); }
+    liquid_log_debug("zpk_a2df() zeros (discrete):");
     for (i=0; i<n; i++)
-        printf("  zd[%3u] = %12.8f + j*%12.8f\n", i, crealf(_zd[i]), cimagf(_zd[i]));
-    printf("zpk_a2df() gain (discrete):\n");
-    printf("  kd      = %12.8f + j*%12.8f\n", crealf(G), cimagf(G));
-#endif
+        { liquid_log_debug("  zd[%3u] = %12.8f + j*%12.8f", i, crealf(_zd[i]), cimagf(_zd[i])); }
+    liquid_log_debug("zpk_a2df() gain (discrete):");
+    liquid_log_debug("  kd      = %12.8f + j*%12.8f", crealf(G), cimagf(G));
+
     return LIQUID_OK;
 }
 
@@ -305,11 +302,7 @@ int bilinear_nd(float complex * _b,
     if (_b_order > _a_order)
         return liquid_error(LIQUID_EICONFIG,"bilinear_nd(), numerator order cannot be higher than denominator");
 
-#if LIQUID_IIRDES_DEBUG_PRINT
-    printf("***********************************\n");
-    printf("bilinear(nd), numerator order   : %u\n", _b_order);
-    printf("bilinear(nd), denominator order : %u\n", _a_order);
-#endif
+    liquid_log_debug("bilinear(nd), order: numerator=%u, denominator=%u", _b_order, _a_order);
 
     // ...
     unsigned int nb = _b_order+1;   // input numerator polynomial array length
@@ -333,12 +326,12 @@ int bilinear_nd(float complex * _b,
                                 _a_order-i,
                                 poly_1pz);
 
-#if LIQUID_IIRDES_DEBUG_PRINT
-        printf("  %-4u : a=%12.4e + j*%12.4e, mk=%12.8f\n", i, crealf(_a[i]), cimagf(_a[i]), mk);
+        liquid_log_debug("  %-4u : a=%12.4e + j*%12.4e, mk=%12.8f", i, crealf(_a[i]), cimagf(_a[i]), mk);
         for (j=0; j<na; j++)
-            printf("    poly_1pz[%3u] = %6f : %12.4f + j*%12.4f\n", j, poly_1pz[j], crealf(_a[i]*mk*poly_1pz[j]),
-                                                                                    cimagf(_a[i]*mk*poly_1pz[j]));
-#endif
+        {
+            liquid_log_debug("    poly_1pz[%3u] = %6f : %12.4f + j*%12.4f",
+                j, poly_1pz[j], crealf(_a[i]*mk*poly_1pz[j]), cimagf(_a[i]*mk*poly_1pz[j]));
+        }
 
         // accumulate polynomial coefficients
         for (j=0; j<na; j++)
@@ -445,22 +438,20 @@ int iirdes_dzpk2sosf(float complex * _zd,
     unsigned int r = _n % 2;        // odd/even order
     unsigned int L = (_n - r)/2;    // filter semi-length
 
-#if LIQUID_IIRDES_DEBUG_PRINT
-    printf("  n=%u, r=%u, L=%u\n", _n, r, L);
-    printf("poles :\n");
+    liquid_log_debug("  n=%u, r=%u, L=%u", _n, r, L);
+    liquid_log_debug("poles :");
     for (i=0; i<_n; i++)
-        printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(_pd[i]), cimagf(_pd[i]));
-    printf("zeros :\n");
+        { liquid_log_debug("  p[%3u] = %12.8f + j*%12.8f", i, crealf(_pd[i]), cimagf(_pd[i])); }
+    liquid_log_debug("zeros :");
     for (i=0; i<_n; i++)
-        printf("  z[%3u] = %12.8f + j*%12.8f\n", i, crealf(_zd[i]), cimagf(_zd[i]));
+        { liquid_log_debug("  z[%3u] = %12.8f + j*%12.8f", i, crealf(_zd[i]), cimagf(_zd[i])); }
 
-    printf("poles (conjugate pairs):\n");
+    liquid_log_debug("poles (conjugate pairs):");
     for (i=0; i<_n; i++)
-        printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(pp[i]), cimagf(pp[i]));
-    printf("zeros (conjugate pairs):\n");
+        { liquid_log_debug("  p[%3u] = %12.8f + j*%12.8f", i, crealf(pp[i]), cimagf(pp[i])); }
+    liquid_log_debug("zeros (conjugate pairs):");
     for (i=0; i<_n; i++)
-        printf("  z[%3u] = %12.8f + j*%12.8f\n", i, crealf(zp[i]), cimagf(zp[i]));
-#endif
+        { liquid_log_debug("  z[%3u] = %12.8f + j*%12.8f", i, crealf(zp[i]), cimagf(zp[i])); }
 
     float complex z0, z1;
     float complex p0, p1;
@@ -470,10 +461,8 @@ int iirdes_dzpk2sosf(float complex * _zd,
 
         z0 = -zp[2*i+0];
         z1 = -zp[2*i+1];
-#if LIQUID_IIRDES_DEBUG_PRINT
-        printf("[%3u] z0 = %12.8f + j%12.8f,  z1 = %12.8f + j%12.8f\n",
+        liquid_log_debug("[%3u] z0 = %12.8f + j%12.8f,  z1 = %12.8f + j%12.8f",
             i, crealf(z0), cimagf(z0), crealf(z1), cimagf(z1));
-#endif
 
         // expand complex pole pairs
         _a[3*i+0] = 1.0;
@@ -493,11 +482,11 @@ int iirdes_dzpk2sosf(float complex * _zd,
         z0 = -zp[_n-1];
         
         _a[3*i+0] = 1.0;
-        _a[3*i+1] = p0;
+        _a[3*i+1] = crealf(p0);
         _a[3*i+2] = 0.0;
 
         _b[3*i+0] = 1.0;
-        _b[3*i+1] = z0;
+        _b[3*i+1] = crealf(z0);
         _b[3*i+2] = 0.0;
     }
 
@@ -517,13 +506,11 @@ int iirdes_dzpk2sosf(float complex * _zd,
     _b[1] *= sgn;
     _b[2] *= sgn;
 
-#if LIQUID_IIRDES_DEBUG_PRINT
-    printf("sos:\n");
+    liquid_log_debug("sos:");
     for (i=0; i<L+r; i++)
-        printf("  b[%3u] = {%12.8f, %12.8f, %12.8f}\n", i, _b[3*i+0], _b[3*i+1], _b[3*i+2]);
+        { liquid_log_debug("  b[%3u] = {%12.8f, %12.8f, %12.8f}", i, _b[3*i+0], _b[3*i+1], _b[3*i+2]); }
     for (i=0; i<L+r; i++)
-        printf("  a[%3u] = {%12.8f, %12.8f, %12.8f}\n", i, _a[3*i+0], _a[3*i+1], _a[3*i+2]);
-#endif
+        { liquid_log_debug("  a[%3u] = {%12.8f, %12.8f, %12.8f}", i, _a[3*i+0], _a[3*i+1], _a[3*i+2]); }
 
     return LIQUID_OK;
 }
@@ -678,18 +665,16 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
         return liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), unknown filter type");
     }
 
-#if LIQUID_IIRDES_DEBUG_PRINT
     unsigned int i;
 
-    printf("poles (analog):\n");
+    liquid_log_debug("poles (analog):");
     for (i=0; i<npa; i++)
-        printf("  pa[%3u] = %12.8f + j*%12.8f\n", i, crealf(pa[i]), cimagf(pa[i]));
-    printf("zeros (analog):\n");
+        { liquid_log_debug("  pa[%3u] = %12.8f + j*%12.8f", i, crealf(pa[i]), cimagf(pa[i])); }
+    liquid_log_debug("zeros (analog):");
     for (i=0; i<nza; i++)
-        printf("  za[%3u] = %12.8f + j*%12.8f\n", i, crealf(za[i]), cimagf(za[i]));
-    printf("gain (analog):\n");
-    printf("  ka : %12.8f + j*%12.8f\n", crealf(ka), cimagf(ka));
-#endif
+        { liquid_log_debug("  za[%3u] = %12.8f + j*%12.8f", i, crealf(za[i]), cimagf(za[i])); }
+    liquid_log_debug("gain (analog):");
+    liquid_log_debug("  ka : %12.8f + j*%12.8f", crealf(ka), cimagf(ka));
 
     // complex digital poles/zeros/gain
     // NOTE: allocated double the filter order to cover band-pass, band-stop cases
@@ -697,20 +682,18 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
     float complex pd[2*_n];
     float complex kd;
     float m = iirdes_freqprewarp(_btype,_fc,_f0);
-    //printf("m : %12.8f\n", m);
+    //liquid_log_debug("m : %12.8f", m);
     if (bilinear_zpkf(za, nza, pa, npa, k0, m, zd, pd, &kd) != LIQUID_OK)
         return liquid_error(LIQUID_EINT,"liquid_iirdes(), could not perform bilinear z-transform");
 
-#if LIQUID_IIRDES_DEBUG_PRINT
-    printf("zeros (digital, low-pass prototype):\n");
+    liquid_log_debug("zeros (digital, low-pass prototype):");
     for (i=0; i<_n; i++)
-        printf("  zd[%3u] = %12.4e + j*%12.4e;\n", i, crealf(zd[i]), cimagf(zd[i]));
-    printf("poles (digital, low-pass prototype):\n");
+        { liquid_log_debug("  zd[%3u] = %12.4e + j*%12.4e;", i, crealf(zd[i]), cimagf(zd[i])); }
+    liquid_log_debug("poles (digital, low-pass prototype):");
     for (i=0; i<_n; i++)
-        printf("  pd[%3u] = %12.4e + j*%12.4e;\n", i, crealf(pd[i]), cimagf(pd[i]));
-    printf("gain (digital):\n");
-    printf("  kd : %12.8f + j*%12.8f\n", crealf(kd), cimagf(kd));
-#endif
+        { liquid_log_debug("  pd[%3u] = %12.4e + j*%12.4e;", i, crealf(pd[i]), cimagf(pd[i])); }
+    liquid_log_debug("gain (digital):");
+    liquid_log_debug("  kd : %12.8f + j*%12.8f", crealf(kd), cimagf(kd));
 
     // negate zeros, poles for high-pass and band-stop cases
     if (_btype == LIQUID_IIRDES_HIGHPASS ||
@@ -745,10 +728,8 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
         // number of second-order sections and forces there to never
         // be any remainder (r=0 always).
         _n =  2*_n;     // _n is now even
-#if LIQUID_IIRDES_DEBUG_PRINT
         r  = _n % 2;    //  r is now zero
         L  = (_n-r)/2;  //  L is now the original value of _n
-#endif
     }
 
     if (_format == LIQUID_IIRDES_TF) {
@@ -758,11 +739,9 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
         if (iirdes_dzpk2tff(zd,pd,_n,kd,_b,_a) != LIQUID_OK)
             return liquid_error(LIQUID_EINT,"liquid_iirdes(), could not perform transfer function expansion");
 
-#if LIQUID_IIRDES_DEBUG_PRINT
         // print coefficients
-        for (i=0; i<=_n; i++) printf("b[%3u] = %12.8f;\n", i, _b[i]);
-        for (i=0; i<=_n; i++) printf("a[%3u] = %12.8f;\n", i, _a[i]);
-#endif
+        for (i=0; i<=_n; i++) { liquid_log_debug("b[%3u] = %12.8f", i, _b[i]); }
+        for (i=0; i<=_n; i++) { liquid_log_debug("a[%3u] = %12.8f", i, _a[i]); }
     } else {
         // convert complex digital poles/zeros/gain into second-
         // order sections form :
@@ -772,15 +751,13 @@ int liquid_iirdes(liquid_iirdes_filtertype _ftype,
         if (iirdes_dzpk2sosf(zd,pd,_n,kd,_b,_a) != LIQUID_OK)
             return liquid_error(LIQUID_EINT,"liquid_iirdes(), could not perform second-order sections expansion");
 
-#if LIQUID_IIRDES_DEBUG_PRINT
         // print coefficients
-        printf("B [%u x 3] :\n", L+r);
+        liquid_log_debug("B [%u x 3] :", L+r);
         for (i=0; i<L+r; i++)
-            printf("  %12.8f %12.8f %12.8f\n", _b[3*i+0], _b[3*i+1], _b[3*i+2]);
-        printf("A [%u x 3] :\n", L+r);
+            { liquid_log_debug("  %12.8f %12.8f %12.8f", _b[3*i+0], _b[3*i+1], _b[3*i+2]); }
+        liquid_log_debug("A [%u x 3] :", L+r);
         for (i=0; i<L+r; i++)
-            printf("  %12.8f %12.8f %12.8f\n", _a[3*i+0], _a[3*i+1], _a[3*i+2]);
-#endif
+            { liquid_log_debug("  %12.8f %12.8f %12.8f", _a[3*i+0], _a[3*i+1], _a[3*i+2]); }
     }
     return LIQUID_OK;
 }
@@ -811,9 +788,9 @@ int iirdes_isstable(float * _b,
 
 #if 0
     // print roots
-    printf("\nroots:\n");
+    liquid_log_debug("roots:");
     for (i=0; i<_n-1; i++)
-        printf("  r[%3u] = %12.8f + j *%12.8f\n", i, crealf(roots[i]), cimagf(roots[i]));
+        liquid_log_debug("  r[%3u] = %12.8f + j *%12.8f", i, crealf(roots[i]), cimagf(roots[i]));
 #endif
 
     // compute magnitude of poles

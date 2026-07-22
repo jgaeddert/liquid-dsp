@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -340,20 +340,32 @@ int FFT(_r2r_1d_run)(unsigned int _nfft,
     return LIQUID_OK;
 }
 
-// perform _n-point FFT shift
+// Perform _n-point FFT shift in O(n) time and O(1) memory
 int FFT(_shift)(TC *_x, unsigned int _n)
 {
-    unsigned int i, n2;
-    if (_n%2)
-        n2 = (_n-1)/2;
-    else
-        n2 = _n/2;
-
-    TC tmp;
-    for (i=0; i<n2; i++) {
-        tmp = _x[i];
-        _x[i] = _x[i+n2];
-        _x[i+n2] = tmp;
+    unsigned int i;
+    unsigned int r = _n & 1;     // even/odd
+    unsigned int L = (_n - r)/2; // semi-length
+    if (r==0)
+    {
+        // _n is even; swap halves directly
+        for (i=0; i<L; i++) {
+            TC tmp  = _x[i];
+            _x[i]   = _x[i+L];
+            _x[i+L] = tmp;
+        }
+    } else {
+        // _n is odd; circular shift by L
+        int index = L;
+        TC  t0;
+        TC  t1  = _x[0];
+        for (i=0; i<_n; i++) {
+            liquid_log_trace("  index=%u", index);
+            t0 = _x[index];
+            _x[index] = t1;
+            t1 = t0;
+            index = (index + L) % _n;
+        }
     }
     return LIQUID_OK;
 }

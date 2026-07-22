@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -110,7 +110,7 @@ unsigned int fec_hamming1511_decode_symbol(unsigned int _sym_enc)
         if (z > 15) {
             // if this happens there are likely too many errors
             // to correct; just pass without trying to do anything
-            fprintf(stderr,"warning, fec_hamming1511_decode_symbol(), syndrome index exceeds maximum\n");
+            //liquid_log_warn("fec_hamming1511_decode_symbol(), syndrome index exceeds maximum");
         } else {
             //printf("error detected!\n");
             _sym_enc ^= 1 << (15-z);
