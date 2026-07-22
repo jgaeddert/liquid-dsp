@@ -93,6 +93,51 @@ int liquid_libversion_number(void);
     exit(1);                                                                \
   }                                                                         \
 
+// structure to define instruction set architecture options/availability
+struct liquid_cpuinfo_s
+{
+    // PPC architecture
+    bool altivec;
+
+    // ARM architecture
+    bool neon;
+
+    // x86 architecture
+    bool mmx;       // multi-media extension (1997)
+    bool sse;       // streaming SIMD extensions (1999)
+    bool sse2;      // SSE version 2 (2000)
+    bool sse3;      // SSE version 3 (2004)
+    bool ssse3;     // Supplemental SSE3 (2006)
+    bool sse41;     // SSE version 4.1 (2007)
+    bool sse42;     // SSE version 4.2 (2008)
+    bool avx;       // advanced vector extensions (2011)
+    bool fma3;      // fused multiply-add (2013)
+    bool avx2;      // AVX version 2 (2013)
+    bool avx512;    // AVX-512 (2016)
+    bool amx;       // advanced matrix extensions (2023)
+    bool amx101;    // AMX version 10.1 (2024)
+    bool amx102;    // AMX version 10.2 (2026)
+};
+typedef struct liquid_cpuinfo_s * liquid_cpuinfo;
+
+// check which instruction extensions are supported on this system
+int liquid_get_cpuinfo(liquid_cpuinfo _cpu);
+
+// structure to define system information
+struct liquid_sysinfo_s
+{
+    // instruction set architecture
+    struct liquid_cpuinfo_s cpuinfo;
+
+    // number of cores
+    int cores;
+};
+
+typedef struct liquid_sysinfo_s * liquid_sysinfo;
+
+// check which instruction extensions are supported on this system
+int liquid_runtime_supported(liquid_sysinfo _q);
+
 // get build info
 extern const struct liquid_build_info_s
 {
@@ -126,27 +171,53 @@ extern const struct liquid_build_info_s
     const bool color_enabled;       // color output enabled or not
 
     // vector extensions
-    const bool altivec;             // power PC
-    const bool neon;                // ARM
-    const bool mmx;                 // multi-media extension (1997)
-    const bool sse;                 // streaming SIMD extensions (1999)
-    const bool sse2;                // SSE version 2 (2000)
-    const bool sse3;                // SSE version 3 (2004)
-    const bool ssse3;               // Supplemental SSE3 (2006)
-    const bool sse41;               // SSE version 4.1 (2007)
-    const bool sse42;               // SSE version 4.2 (2008)
-    const bool avx;                 // advanced vector extensions (2011)
-    const bool fma3;                // fused multiply-add (2013)
-    const bool avx2;                // AVX version 2 (2013)
-    const bool avx512;              // AVX-512 (2016)
-    const bool amx;                 // advanced matrix extensions (2023)
-    const bool amx101;              // AMX version 10.1 (2024)
-    const bool amx102;              // AMX version 10.2 (2026)
+    struct liquid_cpuinfo_s cpuinfo;
 
 } liquid_build_info;
 
 // print build information
 int liquid_build_info_print(void);
+
+// runtime hardware acceleration options
+typedef enum
+{
+    // unknown
+    LIQUID_RUNTIME_UNKNOWN  =   0,
+
+    // default modes
+    LIQUID_RUNTIME_PORT     =   1,
+
+    // PPC architecture
+    LIQUID_RUNTIME_ALTIVEC  =   4,
+
+    // ARM architecture
+    LIQUID_RUNTIME_NEON     =   8,
+
+    // x86 architecture
+    LIQUID_RUNTIME_MMX      =  16,  // multi-media extension (1997)
+    LIQUID_RUNTIME_SSE      =  17,  // streaming SIMD extensions (1999)
+    LIQUID_RUNTIME_SSE2     =  18,  // SSE version 2 (2000)
+    LIQUID_RUNTIME_SSE3     =  19,  // SSE version 3 (2004)
+    LIQUID_RUNTIME_SSSE3    =  20,  // Supplemental SSE3 (2006)
+    LIQUID_RUNTIME_SSE41    =  21,  // SSE version 4.1 (2007)
+    LIQUID_RUNTIME_SSE42    =  22,  // SSE version 4.2 (2008)
+    LIQUID_RUNTIME_AVX      =  23,  // advanced vector extensions (2011)
+    LIQUID_RUNTIME_FMA3     =  24,  // fused multiply-add (2013)
+    LIQUID_RUNTIME_AVX2     =  25,  // AVX version 2 (2013)
+    LIQUID_RUNTIME_AVX512   =  26,  // AVX-512 (2016)
+    LIQUID_RUNTIME_AMX      =  27,  // advanced matrix extensions (2023)
+    LIQUID_RUNTIME_AMX101   =  28,  // AMX version 10.1 (2024)
+    LIQUID_RUNTIME_AMX102   =  29,  // AMX version 10.2 (2026)
+
+} liquid_runtime_t;
+
+// detect best runtime hardware acceleration mode
+//  _impl   : available implementations for algorithms (e.g. dotprod), set
+//            to NULL for generic build-time version. For example, the CPU
+//            might support AVX2, but the algorithm might not have an
+//            implementation for AVX2 in which case liquid_runtime_detect()
+//            would return the next best option.
+liquid_runtime_t liquid_runtime_detect(struct liquid_cpuinfo_s * _impl);
 
 
 // report error
@@ -508,75 +579,6 @@ enum {
 #else
 #  define liquid_log_fatal(...) {}
 #endif
-
-// structure to define instruction set architecture options at runtime
-struct liquid_cpuinfo_s
-{
-    // PPC architecture
-    bool altivec;
-
-    // ARM architecture
-    bool neon;
-
-    // x86 architecture
-    bool mmx;       // multi-media extension (1997)
-    bool sse;       // streaming SIMD extensions (1999)
-    bool sse2;      // SSE version 2 (2000)
-    bool sse3;      // SSE version 3 (2004)
-    bool ssse3;     // Supplemental SSE3 (2006)
-    bool sse41;     // SSE version 4.1 (2007)
-    bool sse42;     // SSE version 4.2 (2008)
-    bool avx;       // advanced vector extensions (2011)
-    bool fma3;      // fused multiply-add (2013)
-    bool avx2;      // AVX version 2 (2013)
-    bool avx512;    // AVX-512 (2016)
-    bool amx;       // advanced matrix extensions (2023)
-    bool amx101;    // AMX version 10.1 (2024)
-    bool amx102;    // AMX version 10.2 (2026)
-
-    // number of cores
-    int cores;
-};
-typedef struct liquid_cpuinfo_s * liquid_cpuinfo;
-
-// check which instruction extensions are supported on this system
-int liquid_runtime_supported(liquid_cpuinfo _q);
-
-// runtime hardware acceleration options
-typedef enum
-{
-    // unknown
-    LIQUID_RUNTIME_UNKNOWN  =   0,
-
-    // default modes
-    LIQUID_RUNTIME_PORT     =   1,
-
-    // PPC architecture
-    LIQUID_RUNTIME_ALTIVEC  =   4,
-
-    // ARM architecture
-    LIQUID_RUNTIME_NEON     =   8,
-
-    // x86 architecture
-    LIQUID_RUNTIME_MMX      =  16,  // multi-media extension (1997)
-    LIQUID_RUNTIME_SSE      =  17,  // streaming SIMD extensions (1999)
-    LIQUID_RUNTIME_SSE2     =  18,  // SSE version 2 (2000)
-    LIQUID_RUNTIME_SSE3     =  19,  // SSE version 3 (2004)
-    LIQUID_RUNTIME_SSSE3    =  20,  // Supplemental SSE3 (2006)
-    LIQUID_RUNTIME_SSE41    =  21,  // SSE version 4.1 (2007)
-    LIQUID_RUNTIME_SSE42    =  22,  // SSE version 4.2 (2008)
-    LIQUID_RUNTIME_AVX      =  23,  // advanced vector extensions (2011)
-    LIQUID_RUNTIME_FMA3     =  24,  // fused multiply-add (2013)
-    LIQUID_RUNTIME_AVX2     =  25,  // AVX version 2 (2013)
-    LIQUID_RUNTIME_AVX512   =  26,  // AVX-512 (2016)
-    LIQUID_RUNTIME_AMX      =  27,  // advanced matrix extensions (2023)
-    LIQUID_RUNTIME_AMX101   =  28,  // AMX version 10.1 (2024)
-    LIQUID_RUNTIME_AMX102   =  29,  // AMX version 10.2 (2026)
-
-} liquid_runtime_t;
-
-// detect runtime hardware acceleration mode
-liquid_runtime_t liquid_runtime_detect(void);
 
 
 // basic time object for estimating wall clock time
