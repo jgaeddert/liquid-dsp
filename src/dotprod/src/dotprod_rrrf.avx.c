@@ -33,14 +33,12 @@
 // build guard
 #if BUILD_AVX
 
-// tell GCC to use AVX instructions for this file
-#pragma GCC target("avx")
-
 // include proper SIMD extensions for x86 AVX
 #include <immintrin.h>
 
 // use AVX extensions
-int dotprod_rrrf_execute_avx_1(dotprod_rrrf _q,
+int __attribute__((target("avx")))
+dotprod_rrrf_execute_avx_1(dotprod_rrrf _q,
                                float *      _x,
                                float *      _y)
 {
@@ -90,7 +88,8 @@ int dotprod_rrrf_execute_avx_1(dotprod_rrrf _q,
 }
 
 // use AVX extensions (unrolled)
-int dotprod_rrrf_execute_avx_4(dotprod_rrrf _q,
+int __attribute__((target("avx")))
+dotprod_rrrf_execute_avx_4(dotprod_rrrf _q,
                                float *      _x,
                                float *      _y)
 {
@@ -155,9 +154,10 @@ int dotprod_rrrf_execute_avx_4(dotprod_rrrf _q,
 //  _q      :   dotprod object
 //  _x      :   input array
 //  _y      :   output sample
-int dotprod_rrrf_execute_avx(dotprod_rrrf _q,
-                             float *      _x,
-                             float *      _y)
+int __attribute__((target("avx")))
+dotprod_rrrf_execute_avx(dotprod_rrrf _q,
+                         float *      _x,
+                         float *      _y)
 {
     liquid_log_trace("dotprod_rrrf_execute_avx()");
     // switch based on size

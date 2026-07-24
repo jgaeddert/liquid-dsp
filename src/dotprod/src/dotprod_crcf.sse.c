@@ -33,14 +33,12 @@
 // build guard
 #if BUILD_SSE
 
-// tell GCC to use SSE instructions for this file
-#pragma GCC target("sse")
-
 // include proper SIMD extensions for x86 SSE
 #include <immintrin.h>
 
 // use SSE extensions
-int dotprod_crcf_execute_sse_1(dotprod_crcf    _q,
+int __attribute__((target("sse")))
+dotprod_crcf_execute_sse_1(dotprod_crcf    _q,
                                float complex * _x,
                                float complex * _y)
 {
@@ -97,7 +95,8 @@ int dotprod_crcf_execute_sse_1(dotprod_crcf    _q,
 }
 
 // use SSE extensions (unrolled loop)
-int dotprod_crcf_execute_sse_4(dotprod_crcf    _q,
+int __attribute__((target("sse")))
+dotprod_crcf_execute_sse_4(dotprod_crcf    _q,
                                float complex * _x,
                                float complex * _y)
 {
@@ -169,9 +168,10 @@ int dotprod_crcf_execute_sse_4(dotprod_crcf    _q,
 //  _q      :   dotprod object
 //  _x      :   input array
 //  _y      :   output sample
-int dotprod_crcf_execute_sse(dotprod_crcf    _q,
-                             float complex * _x,
-                             float complex * _y)
+int __attribute__((target("sse")))
+dotprod_crcf_execute_sse(dotprod_crcf    _q,
+                         float complex * _x,
+                         float complex * _y)
 {
     liquid_log_trace("dotprod_crcf_execute_sse()");
     // switch based on size
