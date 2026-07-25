@@ -1,17 +1,54 @@
 # Changelog
 
-## Latest
+## 1.8.1 - 2026-07-26
+
+Version 1.8.1 includes logic for runtime mode selection for distributing a
+generic binary for a particular platform and allowing selection of particular
+implementations based on the specific instruction set architecture available
+on the host system. For example a build server can create a shared object that
+support SSE, AVX, and AVX512 and deploy it to a system that only has SSE and
+AVX support. Autotools support continues with as of yet full feature support.
+This will likely be removed for version 2.0.0.
+Also included is a constant struct with build information such as version, Git
+hash, date, and other compile-time and hardware acceleration options.
+
+NOTE: AltiVec support is put on hold due to memory alignment specifics that do
+not allow only run-time execution selection.
 
   * build
     - added compile-time build information (version, git hash, build OS,
       etc.) to binary.
+    - fixed issues with 'autoscript' target breaking cross-compilation
+      and library install directory (thanks @dawkagaming)
+    - fixed issues with installation destination, 32-bit architectures, and
+      conditional autoscript builds (thanks again, @dawkagaming)
+    - consolidating configuration file to support both cmake and autotools
+      build environments.
+    - added option for strict compilation (treat warnings as errors)
+  * core
+    - added timer object for handling run-time execution testing
+    - added cpuinfo struct to support compile-time/run-time mode deconfliction
+    - added sysinfo struct to support run-time mode definition such as
+      hardware acceleration and core count. Would ideally include clock rate
+      or rough indication of processor capability.
+  * dotprod
     - added run-time mode selection for vector dot product, allowing for
       distributed binary to operate across various architectures with
       instruction sets for acceleration
-    - fixing issues with 32-bit architectures with optim module
+  * filter
+    - firdespm: fixed long-standing out-of-bounds read element
+    - firdespm: cleaning up debugging macros
+    - iirdes: fixing bug with complex pair resolution
+  * math
+    - fixed long-standing bug with poly/findroots out-of-bounds error
+  * modem
+    - apsk: fixed issue with negative modulo (C99)
+    - cpfskdem: properly resettting coherent demodulation
+    - fskdem: fixing frequency error estimate
+  * optim
+    - fixed issues with 32-bit architectures with optim module
       (thanks aeb@debian.org, @andreasbombe, @dawkagaming)
-    - fixing issues with 'autoscript' target breaking cross-compilation
-      and library install directory (thanks @dawkagaming)
+    - fixed qs1dsearch error code for non-convergence (thanks @lc)
 
 ## 1.8.0 - 2026-06-07
 
