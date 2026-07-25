@@ -33,14 +33,12 @@
 // build guard
 #if BUILD_SSE
 
-// tell GCC to use SSE instructions for this file
-#pragma GCC target("sse")
-
 // include proper SIMD extensions for x86 SSE
 #include <immintrin.h>
 
 // use SSE extensions
-int dotprod_rrrf_execute_sse_1(dotprod_rrrf _q,
+int __attribute__((target("sse")))
+dotprod_rrrf_execute_sse_1(dotprod_rrrf _q,
                                float *      _x,
                                float *      _y)
 {
@@ -97,7 +95,8 @@ int dotprod_rrrf_execute_sse_1(dotprod_rrrf _q,
 }
 
 // use SSE extensions (unrolled loop)
-int dotprod_rrrf_execute_sse_4(dotprod_rrrf _q,
+int __attribute__((target("sse")))
+dotprod_rrrf_execute_sse_4(dotprod_rrrf _q,
                                float *      _x,
                                float *      _y)
 {
@@ -171,9 +170,10 @@ int dotprod_rrrf_execute_sse_4(dotprod_rrrf _q,
 //  _q      :   dotprod object
 //  _x      :   input array
 //  _y      :   output sample
-int dotprod_rrrf_execute_sse(dotprod_rrrf _q,
-                             float *      _x,
-                             float *      _y)
+int __attribute__((target("sse")))
+dotprod_rrrf_execute_sse(dotprod_rrrf _q,
+                         float *      _x,
+                         float *      _y)
 {
     liquid_log_trace("dotprod_rrrf_execute_sse()");
     // switch based on size

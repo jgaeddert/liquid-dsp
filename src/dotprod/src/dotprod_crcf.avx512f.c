@@ -33,14 +33,12 @@
 // build guard
 #if BUILD_AVX512
 
-// tell GCC to use AVX-512 instructions for this file
-#pragma GCC target("avx512f,avx512dq,avx512vl,avx512bw,fma")
-
 // include proper SIMD extensions for x86 AVX-512
 #include <immintrin.h>
 
 // use AVX512-F extensions
-int dotprod_crcf_execute_avx512_1(dotprod_crcf    _q,
+int __attribute__((target("avx512f,avx512dq,avx512vl,avx512bw,fma")))
+dotprod_crcf_execute_avx512_1(dotprod_crcf    _q,
                                   float complex * _x,
                                   float complex * _y)
 {
@@ -94,7 +92,8 @@ int dotprod_crcf_execute_avx512_1(dotprod_crcf    _q,
 }
 
 // use AVX512-F extensions (unrolled loop)
-int dotprod_crcf_execute_avx512_4(dotprod_crcf    _q,
+int __attribute__((target("avx512f,avx512dq,avx512vl,avx512bw,fma")))
+dotprod_crcf_execute_avx512_4(dotprod_crcf    _q,
                                   float complex * _x,
                                   float complex * _y)
 {
@@ -165,9 +164,10 @@ int dotprod_crcf_execute_avx512_4(dotprod_crcf    _q,
 //  _q      :   dotprod object
 //  _x      :   input array
 //  _y      :   output sample
-int dotprod_crcf_execute_avx512(dotprod_crcf    _q,
-                                float complex * _x,
-                                float complex * _y)
+int __attribute__((target("avx512f,avx512dq,avx512vl,avx512bw,fma")))
+dotprod_crcf_execute_avx512(dotprod_crcf    _q,
+                            float complex * _x,
+                            float complex * _y)
 {
     liquid_log_trace("dotprod_crcf_execute_avx512()");
     // switch based on size
