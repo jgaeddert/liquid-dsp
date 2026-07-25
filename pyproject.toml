@@ -42,7 +42,7 @@ sdist.include = [
     "src/",           # C source files
     "bind/",          # C++/Python bindings
     "cmake/",         # Custom CMake modules/FindXXX.cmake
-    "scripts/",       # Build scripts (e.g. version.sh)
+    "scripts/version.sh",
     "pyproject.toml",
     "CMakeLists.txt",
     "LICENSE",
