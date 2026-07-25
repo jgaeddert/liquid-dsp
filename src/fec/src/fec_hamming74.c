@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -192,7 +191,8 @@ int fec_hamming74_decode_soft(fec             _q,
 
         //printf("  %3u : 0x%.2x > 0x%.2x,  0x%.2x > 0x%.2x (k=%u)\n", i, r0, s0, r1, s1, k);
     }
-    assert(k == 8*enc_msg_len);
+    if (k != 8*enc_msg_len)
+        return liquid_error(LIQUID_EINT,"fec_hamming74_decode_soft(), unexpected number of encoded bits");
     return LIQUID_OK;
 }
 
