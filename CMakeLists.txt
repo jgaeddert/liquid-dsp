@@ -34,6 +34,7 @@ option(COVERAGE          "Set to ON to build with code coverage"     OFF)
 option(ENABLE_LOGGING    "Set to ON to enable full logging"          ON)
 set(LOGGING_LEVEL "trace" CACHE STRING "Set minimum logging level to compile")
 option(ENABLE_COLOR      "Set to ON to enable color terminal output" ON)
+option(ENABLE_STRICT     "Set to ON to enable strict compilation"    OFF)
 
 if (NOT BUILD_SHARED_LIBS AND NOT BUILD_STATIC_LIBS)
     message(FATAL_ERROR "At least one of BUILD_SHARED_LIBS or BUILD_STATIC_LIBS must be ON")
@@ -115,6 +116,10 @@ if (MSVC)
 else()
     # additional warnings
     add_compile_options(-Wall -fPIC -O3)
+endif()
+
+if (ENABLE_STRICT)
+    add_compile_options(-Werror)
 endif()
 
 include (CheckTypeSize)
