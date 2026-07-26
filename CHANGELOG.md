@@ -1,17 +1,55 @@
 # Changelog
 
-## Latest
+## 1.8.1 - 2026-07-26
+
+Version 1.8.1 includes logic for runtime mode selection for distributing a
+generic binary for a particular platform and allowing selection of particular
+implementations based on the specific instruction set architecture available
+on the host system. For example a build server can create a shared object that
+supports SSE, AVX, and AVX512 and deploy it to a system that only has SSE and
+AVX support. Autotools support continues with as of yet full feature support.
+This will likely be removed for version 2.0.0.
+Also included is a constant struct with build information such as version, Git
+hash, date, and other compile-time and hardware acceleration options.
+
+NOTE: AltiVec support is temporarily put on hold due to memory alignment
+specifics that do not allow only run-time execution selection.
 
   * build
+    - fixed typos and inconsistent formatting
+    - consolidating configuration file to support both cmake and autotools
+      build environments.
+    - added option for strict compilation (treat warnings as errors)
     - added compile-time build information (version, git hash, build OS,
       etc.) to binary.
+    - fixed issues with 'autoscript' target breaking cross-compilation
+      and library install directory (thanks @dawkagaming)
+    - fixed issues with installation destination, 32-bit architectures, and
+      conditional autoscript builds (thanks again, @dawkagaming)
+  * core
+    - added timer object for handling run-time execution testing
+    - added cpuinfo struct to support compile-time/run-time mode deconfliction
+    - added sysinfo struct to support run-time mode definition such as
+      hardware acceleration and core count. Would ideally include clock rate
+      or rough indication of processor capability.
+  * dotprod
     - added run-time mode selection for vector dot product, allowing for
       distributed binary to operate across various architectures with
       instruction sets for acceleration
-    - fixing issues with 32-bit architectures with optim module
+  * filter
+    - firdespm: fixed long-standing out-of-bounds read element
+    - firdespm: cleaning up debugging macros
+    - iirdes: fixing bug with complex pair resolution
+  * math
+    - fixed long-standing bug with poly/findroots out-of-bounds error
+  * modem
+    - apsk: fixed issue with negative modulo (C99)
+    - cpfskdem: properly resetting coherent demodulation
+    - fskdem: fixing frequency error estimate
+  * optim
+    - fixed issues with 32-bit architectures with optim module
       (thanks aeb@debian.org, @andreasbombe, @dawkagaming)
-    - fixing issues with 'autoscript' target breaking cross-compilation
-      and library install directory (thanks @dawkagaming)
+    - fixed qs1dsearch error code for non-convergence (thanks @lc)
 
 ## 1.8.0 - 2026-06-07
 
@@ -147,7 +185,7 @@ methods for consistency.
     - framesync64: using new qdsync object for simplified operation
     - qdsync: new frame detector and synchronizer to much more easily
       support frame processing. The object not only detects the frame, but
-      also provides an initial carrier frequency, phase, and timign offset,
+      also provides an initial carrier frequency, phase, and timing offset,
       and also corrects for these impairments, passing the results to the
       user in a clean callback function.
   * modem
@@ -270,7 +308,7 @@ issues and pull requests.
     - symstream: adding convenience methods for getting properties
     - symtrack: adding convenience methods for getting/setting properties
   * math
-    - adding `liquid_` prefix to winodowing functions while supporting backwards
+    - adding `liquid_` prefix to windowing functions while supporting backwards
       compatibility with older methods
     - adding `liquid_` prefix to internal polynomial functions, using
       common double-precision method for finding polynomial roots
@@ -283,7 +321,7 @@ issues and pull requests.
 ## 1.3.2 - 2019-07-28
 
   * autotest
-    - runs with random seeds (based on time) for diveristy
+    - runs with random seeds (based on time) for diversity
     - output .json file for post-analysis
   * build
     - cleaned up compiler warnings across most platforms
@@ -350,13 +388,13 @@ issues and pull requests.
   * equalization
     - improved interface for LMS and RLS equalizers
     - simplified methods to support blind operation
-  * fec (forward error correctino)
+  * fec (forward error correction)
     - interleaver and packetizer moved from the framing to the fec module
     - packetizer now includes data whitening
   * fft (fast Fourier transform)
     - general speed improvements for one-dimensional FFTs
     - completely reimplemented spgram (spectral periodogram) objects to
-      include both complex and real-values amples with simpler interface
+      include both complex and real-valued samples with simpler interface
     - reimplemented asgram (ASCII spectral periodogram) objects
   * filter
     - additional prototype create methods, block execution
@@ -382,7 +420,7 @@ issues and pull requests.
     - framing objects: frame64, flexframe now use qpacketmodem, qpilotgen, and
       qpilotsync objects for unified interface and vastly improved performance
     - flexframe: vastly simplified interface
-    - qdetector: new family for pre-demodulator synchronizion and detection
+    - qdetector: new family for pre-demodulator synchronization and detection
     - moved interleaver and packetizer objects to `fec` module
     - symstream: new family for generating random stream of modulated samples
     - msource: new family for generating multiple signals for a single source,

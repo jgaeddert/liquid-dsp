@@ -33,7 +33,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -224,7 +223,8 @@ int fec_hamming128_encode(fec             _q,
         j += 2;
     }
 
-    assert(j== fec_get_enc_msg_length(LIQUID_FEC_HAMMING128,_dec_msg_len));
+    if (j != fec_get_enc_msg_length(LIQUID_FEC_HAMMING128,_dec_msg_len))
+        return liquid_error(LIQUID_EINT,"fec_hamming128_encode(), unexpected encoded message length");
     return LIQUID_OK;
 }
 
@@ -279,7 +279,8 @@ int fec_hamming128_decode(fec             _q,
         j += 2;
     }
 
-    assert(j== fec_get_enc_msg_length(LIQUID_FEC_HAMMING128,_dec_msg_len));
+    if (j != fec_get_enc_msg_length(LIQUID_FEC_HAMMING128,_dec_msg_len))
+        return liquid_error(LIQUID_EINT,"fec_hamming128_decode(), unexpected encoded message length");
     return LIQUID_OK;
 }
 
@@ -323,8 +324,9 @@ int fec_hamming128_decode_soft(fec             _q,
 
         //printf("  %3u : 0x%.2x > 0x%.2x,  0x%.2x > 0x%.2x (k=%u)\n", i, r0, s0, r1, s1, k);
     }
-    k += r*4;   // for assert method
-    assert(k == 8*enc_msg_len);
+    k += r*4;   // for check
+    if (k != 8*enc_msg_len)
+        return liquid_error(LIQUID_EINT,"fec_hamming128_decode_soft(), unexpected number of encoded bits");
     return LIQUID_OK;
 }
 

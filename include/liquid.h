@@ -162,8 +162,8 @@ extern const struct liquid_build_info_s
     const char build_env[64];       // cmake, autotoools, etc.
 
     // target options
-    const char target_os[64];       //
-    const char target_arch[64];     //
+    const char target_os[64];       // target operating system
+    const char target_arch[64];     // target architecture
 
     // other compile-time options
     const bool logging_enabled;     // logging enabled or not
@@ -1157,7 +1157,7 @@ int CHANNEL(_destroy)(CHANNEL() _q);                                        \
 /* Print channel object internals to standard output                    */  \
 int CHANNEL(_print)(CHANNEL() _q);                                          \
                                                                             \
-/* Include additive white Gausss noise impairment                       */  \
+/* Include additive white Gaussian noise impairment                     */  \
 /*  _q          : channel object                                        */  \
 /*  _noise_floor: noise floor power spectral density [dB]               */  \
 /*  _snr        : signal-to-noise ratio [dB]                            */  \
@@ -1232,7 +1232,7 @@ typedef struct TVMPCH(_s) * TVMPCH();                                       \
 /* the number of coefficients, the standard deviation of coefficients,  */  \
 /* and the coherence time. The larger the standard deviation, the more  */  \
 /* dramatic the frequency response of the channel. The shorter the      */  \
-/* coeherent time, the faster the channel effects.                      */  \
+/* coherent time, the faster the channel effects.                       */  \
 /*  _n      :   number of coefficients, _n > 0                          */  \
 /*  _std    :   standard deviation, _std >= 0                           */  \
 /*  _tau    :   normalized coherence time, 0 < _tau < 1                 */  \
@@ -1900,7 +1900,7 @@ packetizer packetizer_create(unsigned int _dec_msg_len,
                              int _fec1);
 
 // Re-create packetizer object
-//  _p      :   initialz packetizer object
+//  _p      :   initial packetizer object
 //  _n      :   number of uncoded input bytes
 //  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
@@ -1974,7 +1974,7 @@ typedef struct interleaver_s * interleaver;
 interleaver interleaver_create(unsigned int _n);
 
 // Copy object including all internal objects and state
-interleaver linterleaver_copy(interleaver _q);
+interleaver interleaver_copy(interleaver _q);
 
 // Destroy interleaver object
 int interleaver_destroy(interleaver _q);
@@ -2456,7 +2456,7 @@ SPWATERFALL() SPWATERFALL(_create)(unsigned int _nfft,                      \
                                    unsigned int _delay,                     \
                                    unsigned int _time);                     \
                                                                             \
-/* Create default spwatefall object (Kaiser-Bessel window)              */  \
+/* Create default spwaterfall object (Kaiser-Bessel window)             */  \
 /*  _nfft   : transform size, _nfft >= 2                                */  \
 /*  _time   : delay between transforms, _delay > 0                      */  \
 SPWATERFALL() SPWATERFALL(_create_default)(unsigned int _nfft,              \
@@ -2838,11 +2838,11 @@ int liquid_firdes_gmskrx(unsigned int _k, unsigned int _m, float _beta, float _d
 int liquid_firdes_fexp( unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 int liquid_firdes_rfexp(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
-// Design flipped hyperbolic secand Nyquist/root-Nyquist filters
+// Design flipped hyperbolic secant Nyquist/root-Nyquist filters
 int liquid_firdes_fsech( unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 int liquid_firdes_rfsech(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
-// Design flipped arc-hyperbolic secand Nyquist/root-Nyquist filters
+// Design flipped arc-hyperbolic secant Nyquist/root-Nyquist filters
 int liquid_firdes_farcsech( unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 int liquid_firdes_rfarcsech(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
@@ -3533,7 +3533,7 @@ unsigned int FDELAY(_get_npfb)(FDELAY() _q);                                \
 int FDELAY(_push)(FDELAY() _q,                                              \
                   TI       _x);                                             \
                                                                             \
-/* Write a block of samplex into filter object's internal buffer        */  \
+/* Write a block of samples into filter object's internal buffer        */  \
 /*  _q      : filter object                                             */  \
 /*  _x      : buffer of input samples, [size: _n x 1]                   */  \
 /*  _n      : number of input samples                                   */  \
@@ -3600,7 +3600,7 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,                                 \
 FIRHILB() FIRHILB(_copy)(FIRHILB() _q);                                     \
                                                                             \
 /* Destroy finite impulse response Hilbert transform, freeing all       */  \
-/* internally-allocted memory and objects.                              */  \
+/* internally-allocated memory and objects.                             */  \
 int FIRHILB(_destroy)(FIRHILB() _q);                                        \
                                                                             \
 /* Print firhilb object internals to stdout                             */  \
@@ -3705,7 +3705,7 @@ IIRHILB() IIRHILB(_copy)(IIRHILB() _q);                                     \
 IIRHILB() IIRHILB(_create_default)(unsigned int _n);                        \
                                                                             \
 /* Destroy finite impulse response Hilbert transform, freeing all       */  \
-/* internally-allocted memory and objects.                              */  \
+/* internally-allocated memory and objects.                             */  \
 int IIRHILB(_destroy)(IIRHILB() _q);                                        \
                                                                             \
 /* Print iirhilb object internals to stdout                             */  \
@@ -4716,7 +4716,7 @@ int IIRDECIM(_execute)(IIRDECIM() _q,                                       \
 /*  _q      : decimator object                                          */  \
 /*  _x      : input array, [size: _n*_M x 1]                            */  \
 /*  _n      : number of _output_ samples                                */  \
-/*  _y      : output array, [_sze: _n x 1]                              */  \
+/*  _y      : output array, [_size: _n x 1]                             */  \
 int IIRDECIM(_execute_block)(IIRDECIM()   _q,                               \
                              TI *         _x,                               \
                              unsigned int _n,                               \
@@ -6011,7 +6011,7 @@ qpilotsync qpilotsync_copy(qpilotsync _q);
 // Destroy object, freeing all internal memory
 int qpilotsync_destroy(qpilotsync _q);
 
-// Reset packet syncrhonizer to original state
+// Reset packet synchronizer to original state
 int qpilotsync_reset(qpilotsync _q);
 
 // Print packet generator to stdout
@@ -6451,7 +6451,7 @@ int fskframesync_destroy(fskframesync _q);
 // Print frame synchronizer to stdout
 int fskframesync_print(fskframesync _q);
 
-// Reset FSK frame syncrhonizer
+// Reset FSK frame synchronizer
 int fskframesync_reset(fskframesync _q);
 
 // Run frame synchronizer on single input sample
@@ -6782,7 +6782,7 @@ int ofdmflexframegen_write(ofdmflexframegen       _q,
                            unsigned int           _buf_len);
 
 
-// OFDM flexble frame synchronizer
+// OFDM flexible frame synchronizer
 typedef struct ofdmflexframesync_s * ofdmflexframesync;
 
 // create OFDM flexible framing synchronizer object
@@ -7114,7 +7114,7 @@ float QDETECTOR(_get_tau)(QDETECTOR() _q);                                  \
 /* Get channel gain of detected frame                                   */  \
 float QDETECTOR(_get_gamma)(QDETECTOR() _q);                                \
                                                                             \
-/* Get carrier frequency offset estimateof detected frame               */  \
+/* Get carrier frequency offset estimate of detected frame              */  \
 float QDETECTOR(_get_dphi)(QDETECTOR() _q);                                 \
                                                                             \
 /* Get carrier phase offset estimate of detected frame                  */  \
@@ -7279,7 +7279,7 @@ detector_cccf detector_cccf_create(liquid_float_complex * _s,
                                    float                  _threshold,
                                    float                  _dphi_max);
 
-// destroy pre-demo detector object
+// destroy pre-demod detector object
 void detector_cccf_destroy(detector_cccf _q);
 
 // print pre-demod detector internal state
@@ -8093,8 +8093,8 @@ int POLY(_expandroots)(T *          _r,                                     \
 /* as                                                                   */  \
 /*  \( P_n(x) = p[0] + p[1]x + ... + p[n]x^n \)                         */  \
 /* NOTE: _p has order _n (array is length _n+1)                         */  \
-/*  _a      : subtractant of polynomial rotos, [size: _n x 1]           */  \
-/*  _b      : multiplicant of polynomial roots, [size: _n x 1]          */  \
+/*  _a      : subtrahend of polynomial roots, [size: _n x 1]            */  \
+/*  _b      : multiplicand of polynomial roots, [size: _n x 1]          */  \
 /*  _n      : number of roots in polynomial                             */  \
 /*  _p      : polynomial coefficients, [size: _n+1 x 1]                 */  \
 int POLY(_expandroots2)(T *          _a,                                    \
@@ -8128,7 +8128,7 @@ int POLY(_findroots_bairstow)(T *          _p,                              \
                               TC *         _roots);                         \
                                                                             \
 /* Expand the multiplication of two polynomials                         */  \
-/*  \( ( a[0] + a[1]x + a[2]x^2 + ...) (b[0] + b[1]x + b[]x^2 + ...) \) */  \
+/*  \( (a[0] + a[1]x + a[2]x^2 + ...) (b[0] + b[1]x + b[2]x^2 + ...) \) */  \
 /* as                                                                   */  \
 /*  \( c[0] + c[1]x + c[2]x^2 + ... + c[n]x^n \)                        */  \
 /* where order(c)  = order(a)  + order(b) + 1                           */  \
@@ -8524,7 +8524,7 @@ int MATRIX(_ludecomp_doolittle)(T *          _x,                            \
                                 T *          _u,                            \
                                 T *          _p);                           \
                                                                             \
-/* Perform orthnormalization using the Gram-Schmidt algorithm           */  \
+/* Perform orthonormalization using the Gram-Schmidt algorithm          */  \
 /*  _A      : input matrix, [size: _r x _c]                             */  \
 /*  _r      : rows                                                      */  \
 /*  _c      : columns                                                   */  \
@@ -9025,7 +9025,7 @@ int gmskdem_reset(gmskdem _q);
 int gmskdem_set_eq_bw(gmskdem _q, float _bw);
 
 // demodulate symbol, assuming perfect symbol timing
-//  _q      : fskdem object
+//  _q      : gmskdem object
 //  _buf    : input sample buffer, [size: _k x 1]
 //  _sym    : pointer to output symbol
 int gmskdem_demodulate(gmskdem                _q,
@@ -9325,7 +9325,7 @@ LIQUID_FREQMOD_DEFINE_API(LIQUID_FREQMOD_MANGLE_FLOAT,float,liquid_float_complex
 
 #define LIQUID_FREQDEM_MANGLE_FLOAT(name) LIQUID_CONCAT(freqdem,name)
 
-// Macro    :   FREQDEM (analog frequency modulator)
+// Macro    :   FREQDEM (analog frequency demodulator)
 //  FREQDEM :   name-mangling macro
 //  T       :   primitive data type
 //  TC      :   primitive data type (complex)
@@ -9334,7 +9334,7 @@ LIQUID_FREQMOD_DEFINE_API(LIQUID_FREQMOD_MANGLE_FLOAT,float,liquid_float_complex
 /* Analog frequency demodulator                                         */  \
 typedef struct FREQDEM(_s) * FREQDEM();                                     \
                                                                             \
-/* Create freqdem object (frequency modulator)                          */  \
+/* Create freqdem object (frequency demodulator)                        */  \
 /*  _kf      :   modulation factor                                      */  \
 FREQDEM() FREQDEM(_create)(float _kf);                                      \
                                                                             \
@@ -9348,7 +9348,7 @@ int FREQDEM(_print)(FREQDEM() _q);                                          \
 int FREQDEM(_reset)(FREQDEM() _q);                                          \
                                                                             \
 /* Demodulate complex input sample and resulting real-valued            */  \
-/*  _q      :   frequency modulator object                              */  \
+/*  _q      :   frequency demodulator object                            */  \
 /*  _r      :   received signal r(t)                                    */  \
 /*  _m      :   output message signal m(t)                              */  \
 int FREQDEM(_demodulate)(FREQDEM() _q,                                      \
@@ -9383,7 +9383,7 @@ typedef enum {
 
 #define LIQUID_AMPMODEM_MANGLE_FLOAT(name) LIQUID_CONCAT(ampmodem,name)
 
-// Macro     :   AMPMODEM (analog amploitude modem)
+// Macro     :   AMPMODEM (analog amplitude modem)
 //  AMPMODEM :   name-mangling macro
 //  T        :   primitive data type
 //  TC       :   primitive data type (complex)
@@ -9596,7 +9596,7 @@ int FIRPFBCH2(_get_type)(FIRPFBCH2() _q);                                   \
 /* Get number of channels, M                                            */  \
 unsigned int FIRPFBCH2(_get_M)(FIRPFBCH2() _q);                             \
                                                                             \
-/* Get prototype filter sem-length, m                                   */  \
+/* Get prototype filter semi-length, m                                  */  \
 unsigned int FIRPFBCH2(_get_m)(FIRPFBCH2() _q);                             \
                                                                             \
 /* Execute filterbank channelizer                                       */  \
@@ -9629,7 +9629,7 @@ typedef struct FIRPFBCHR(_s) * FIRPFBCHR();                                 \
                                                                             \
 /* Create rational rate resampling channelizer (firpfbchr) object by    */  \
 /* specifying filter coefficients directly                              */  \
-/*  _chans  : number of output channels in chanelizer                   */  \
+/*  _chans  : number of output channels in channelizer                  */  \
 /*  _decim  : output decimation factor (output rate is 1/decim input)   */  \
 /*  _m      : prototype filter semi-length, length=2*chans*m            */  \
 /*  _h      : prototype filter coefficient array, [size: 2*chans*m x 1] */  \
@@ -9640,7 +9640,7 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _chans,                         \
                                                                             \
 /* Create rational rate resampling channelizer (firpfbchr) object by    */  \
 /* specifying filter design parameters for Kaiser prototype             */  \
-/*  _chans  : number of output channels in chanelizer                   */  \
+/*  _chans  : number of output channels in channelizer                  */  \
 /*  _decim  : output decimation factor (output rate is 1/decim input)   */  \
 /*  _m      : prototype filter semi-length, length=2*chans*m            */  \
 /*  _as     : filter stop-band attenuation [dB]                         */  \
@@ -10435,7 +10435,7 @@ typedef struct QUANTIZER(_s) * QUANTIZER();                                 \
 /* Create quantizer object given compander type, input range, and the   */  \
 /* number of bits to represent the output                               */  \
 /*  _ctype      : compander type (linear, mulaw, alaw)                  */  \
-/*  _range      : maximum abosolute input range (ignored for now)       */  \
+/*  _range      : maximum absolute input range (ignored for now)        */  \
 /*  _num_bits   : number of bits per sample                             */  \
 QUANTIZER() QUANTIZER(_create)(liquid_compander_type _ctype,                \
                                float                 _range,                \
@@ -10888,7 +10888,7 @@ unsigned int liquid_count_ones_mod2_uint32(uint32_t _x);
 // Count number of ones in an integer (native length), modulo 2
 unsigned int liquid_count_ones_mod2(unsigned int _x);
 
-// compute bindary dot-product between two integers
+// compute binary dot-product between two integers
 unsigned int liquid_bdotprod(unsigned int _x,
                              unsigned int _y);
 

@@ -64,7 +64,7 @@ The recommended way to obtain the source code is to clone the entire
 
     git clone git://github.com/jgaeddert/liquid-dsp.git
 
-Building and installing the main library is a simple as
+Building and installing the main library is as simple as
 
 .. code-block:: bash
 
@@ -103,7 +103,7 @@ Here is a table of CMake options available for configuring liquid:
 +------------------------+---------+--------------------------------------------------------------------+
 | ``FIND_THREADS``       | ON      | Try to find available threading library for concurrency            |
 +------------------------+---------+--------------------------------------------------------------------+
-| ``FIND_FFTW``          | ON      | Try to find `FFTW <http://www.fftw.org)>`_ if available            |
+| ``FIND_FFTW``          | ON      | Try to find `FFTW <http://www.fftw.org>`_ if available             |
 +------------------------+---------+--------------------------------------------------------------------+
 | ``BUILD_SANDBOX``      | OFF     | Compile sandbox (testing) programs                                 |
 +------------------------+---------+--------------------------------------------------------------------+
@@ -119,6 +119,8 @@ Here is a table of CMake options available for configuring liquid:
 |                        |         | select from "trace", "debug", "info", "warn", "error", or "fatal"  |
 +------------------------+---------+--------------------------------------------------------------------+
 | ``ENABLE_COLOR``       | ON      | Enable use of color terminal output                                |
++------------------------+---------+--------------------------------------------------------------------+
+| ``ENABLE_STRICT``      | OFF     | Enable strict compilation mode (treat warnings as errors)          |
 +------------------------+---------+--------------------------------------------------------------------+
 
 For example, if you want to benchmark how fast a vector dot product
@@ -406,7 +408,7 @@ in python3 as:
 PlatformIO
 ----------
 
-Cross-compling for embedded platforms is most easily achieved with
+Cross-compiling for embedded platforms is most easily achieved with
 `platformio <https://platformio.org>`_.
 Just add ``liquid-dsp`` to your ``platform.io`` list of dependencies:
 
@@ -492,11 +494,11 @@ Available Modules
   Gauss elimination, Gram-Schmidt decomposition, linear solver,
   sparse matrix representation
 * **modem**: modulate, demodulate, PSK, differential PSK, QAM, optimal
-  QAM, as well as analog and non-linear digital modulations GMSK)
+  QAM, as well as analog and non-linear digital modulations (GMSK)
 * **multichannel**: filterbank channelizers, OFDM
 * **nco**: numerically-controlled oscillator: mixing, frequency
   synthesis, phase-locked loops
-* **optim**: (non-linear optimization) Newton-Raphson, evoluationary
+* **optim**: (non-linear optimization) Newton-Raphson, evolutionary
   algorithms, gradient descent, line search
 * **quantization**: analog/digital converters, compression/expansion
 * **random**: (random number generators) uniform, exponential, gamma,
@@ -530,7 +532,7 @@ Finally, ``liquid-dsp`` makes extensive use of GNU
 and related tools.
 These are fantastic libraries with amazing functionality and their authors
 should be lauded for their efforts.
-In a similar vain, much the software I write for a living I give away for
+In a similar vein, much of the software I write for a living I give away for
 free;
 however I believe in more permissive licenses to allow individuals the
 flexibility to use software with fewer limitations.

@@ -1,5 +1,5 @@
 # cmake build file for liquid-dsp
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.10)
 
 # parse version number from include/liquid.h
 include(cmake/version.cmake)
@@ -35,6 +35,7 @@ option(COVERAGE          "Set to ON to build with code coverage"     OFF)
 option(ENABLE_LOGGING    "Set to ON to enable full logging"          ON)
 set(LOGGING_LEVEL "trace" CACHE STRING "Set minimum logging level to compile")
 option(ENABLE_COLOR      "Set to ON to enable color terminal output" ON)
+option(ENABLE_STRICT     "Set to ON to enable strict compilation"    OFF)
 
 if (NOT BUILD_SHARED_LIBS AND NOT BUILD_STATIC_LIBS)
     message(FATAL_ERROR "At least one of BUILD_SHARED_LIBS or BUILD_STATIC_LIBS must be ON")
@@ -76,13 +77,14 @@ include (CheckSymbolExists)
 
 # macro to simplify setting variables based on conditions; also allows for
 # flattening variables to integers, e.g. convert 'TRUE' 'ON' 'YES' to 1
-macro(set_condition VAR CONDITION VALUE_TRUE VALUE_FALSE)
-    cmake_language(EVAL CODE "if(${CONDITION})
-        set(${VAR} ${VALUE_TRUE})
-    else()
-        set(${VAR} ${VALUE_FALSE})
-    endif()")
-endmacro()
+# NOTE: this requires cmake 3.21
+# macro(set_condition VAR CONDITION VALUE_TRUE VALUE_FALSE)
+#     cmake_language(EVAL CODE "if(${CONDITION})
+#         set(${VAR} ${VALUE_TRUE})
+#     else()
+#         set(${VAR} ${VALUE_FALSE})
+#     endif()")
+# endmacro()
 
 #check_symbol_exists(timespec_get "time.h" HAVE_TIMESPEC_GET)
 #if (HAVE_TIMESPEC_GET)
@@ -116,6 +118,10 @@ if (MSVC)
 else()
     # additional warnings
     add_compile_options(-Wall -fPIC -O3)
+endif()
+
+if (ENABLE_STRICT)
+    add_compile_options(-Werror)
 endif()
 
 include (CheckTypeSize)
