@@ -15,6 +15,9 @@ using namespace pybind11::literals;
 
 namespace liquid {
 
+// static build information
+py::dict build_info(void);
+
 // validate keys ('dst' cannot contain any keys not in 'src')
 bool validate_dict(py::dict dst, py::dict src);
 
