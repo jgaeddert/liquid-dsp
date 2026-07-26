@@ -11,11 +11,11 @@
 #define PROJECT_DESCRIPTION "Software-defined radio digital signal processing library"
 
 // version information
-// const char   version[]      = "1.8.0";
-// unsigned int version_major  = 1;
-// unsigned int version_minor  = 8+0;
-// unsigned int version_patch  = 0+0;
-// unsigned int version_tweak  = +0;
+// const char   version[]      = "";
+// unsigned int version_major  = 0;
+// unsigned int version_minor  = 0;
+// unsigned int version_patch  = 0;
+// unsigned int version_tweak  = 0;
 #define BUILD_GITHASH       "dev"
 
 // date/time of build

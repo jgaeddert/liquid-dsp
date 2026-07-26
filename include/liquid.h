@@ -60,7 +60,7 @@ extern "C" {
 
 #define LIQUID_VERSION_MAJOR    1
 #define LIQUID_VERSION_MINOR    8
-#define LIQUID_VERSION_PATCH    0
+#define LIQUID_VERSION_PATCH    1
 #define LIQUID_VERSION_DEV      0
 
 // final version string is constructed by concatenating individual string versions
@@ -149,7 +149,7 @@ extern const struct liquid_build_info_s
     //const char description[64];     // project description, brief
 
     // version information
-    const char version[16];         // base, e.g. 1.8.0
+    const char version[16];         // base version
     const char githash[24];         // specific Git hash if available
 
     // date/time of build
