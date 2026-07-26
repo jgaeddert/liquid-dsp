@@ -443,7 +443,7 @@ Legacy Build Environment
 ------------------------
 
 Before moving to `CMake <https://cmake.org>`_,
-|liquid| used `autotools <https://www.gnu.org/software/automake/>`_
+``liquid-dsp`` used `autotools <https://www.gnu.org/software/automake/>`_
 as a build environment.
 There is some backwards compatibility support (for now),
 and if you prefer that method you will need to install autotools
