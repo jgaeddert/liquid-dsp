@@ -52,8 +52,9 @@ sdist.include = [
 # Exclude everything that isn't explicitly included
 sdist.exclude = ["*"]
 
-[tool.scikit-build.metadata.version]
+[[tool.dynamic-metadata]]
 provider = "scikit_build_core.metadata.regex"
+field = "version"
 input = "include/liquid.h"
 regex = '''(?sx)
 \#define \s+ LIQUID_VERSION_MAJOR \s+ (?P<major>\d+) .*?
