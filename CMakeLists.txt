@@ -275,6 +275,12 @@ if (GIT_FOUND)
     )
 endif()
 
+# fallback: read from file included in sdist
+if (NOT BUILD_GITHASH AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.githash")
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/.githash" BUILD_GITHASH)
+    string(STRIP "${BUILD_GITHASH}" BUILD_GITHASH)
+endif()
+
 # fallback string if git fails or isn't installed
 if (NOT BUILD_GITHASH)
     set(BUILD_GITHASH "unknown")

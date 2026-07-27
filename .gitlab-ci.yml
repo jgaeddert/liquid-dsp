@@ -127,6 +127,7 @@ sdist:
     - virtualenv env
     - source env/bin/activate
     - pip install build
+    - ./scripts/githash.sh # write .githash to include in tarball
     - python -m build --sdist # build distribution tarball
     - pip install dist/liquid_dsp*.tar.gz --no-binary ':all:' --verbose # test in environment
     - python3 -c "import liquid as dsp; print(dsp.__version__)"

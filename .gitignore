@@ -19,6 +19,7 @@ autom4te.cache
 aclocal.m4
 
 # ignore all auto-generated targets
+.githash
 autotest_include.h
 benchmark
 benchmark_include.h
