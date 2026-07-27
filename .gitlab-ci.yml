@@ -131,6 +131,7 @@ sdist:
     - python -m build --sdist # build distribution tarball
     - pip install dist/liquid_dsp*.tar.gz --no-binary ':all:' --verbose # test in environment
     - python3 -c "import liquid as dsp; print(dsp.__version__)"
+    - python3 -c "import json, liquid as dsp; print(json.dumps(dsp.build_info,indent=2))"
   artifacts:
     paths:
       - dist/
