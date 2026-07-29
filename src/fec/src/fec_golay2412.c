@@ -30,7 +30,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -105,8 +104,6 @@ unsigned int fec_golay2412_encode_symbol(unsigned int _sym_dec)
 // search for p[i] such that w(v+p[i]) <= 2, return -1 on fail
 int golay2412_parity_search(unsigned int _v)
 {
-    //assert( _v < (1<<12) );
-
     unsigned int i;
     for (i=0; i<12; i++) {
 #if 0
@@ -324,8 +321,10 @@ int fec_golay2412_encode(fec             _q,
         j += 3;
     }
 
-    assert( j == fec_get_enc_msg_length(LIQUID_FEC_GOLAY2412,_dec_msg_len) );
-    assert( i == _dec_msg_len);
+    if (j != fec_get_enc_msg_length(LIQUID_FEC_GOLAY2412,_dec_msg_len))
+        return liquid_error(LIQUID_EINT,"fec_golay2412_encode(), unexpected encoded message length");
+    if (i != _dec_msg_len)
+        return liquid_error(LIQUID_EINT,"fec_golay2412_encode(), unexpected decoded message length");
     return LIQUID_OK;
 }
 
@@ -395,8 +394,10 @@ int fec_golay2412_decode(fec             _q,
         j += 3;
     }
 
-    assert( j== fec_get_enc_msg_length(LIQUID_FEC_GOLAY2412,_dec_msg_len) );
-    assert( i == _dec_msg_len);
+    if (j != fec_get_enc_msg_length(LIQUID_FEC_GOLAY2412,_dec_msg_len))
+        return liquid_error(LIQUID_EINT,"fec_golay2412_decode(), unexpected encoded message length");
+    if (i != _dec_msg_len)
+        return liquid_error(LIQUID_EINT,"fec_golay2412_decode(), unexpected decoded message length");
     return LIQUID_OK;
 }
 
