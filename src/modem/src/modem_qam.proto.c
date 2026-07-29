@@ -24,7 +24,6 @@
 // modem_qam.c
 //
 
-#include <assert.h>
 
 // create a qam (quaternary amplitude-shift keying) modem object
 MODEM() MODEM(_create_qam)(unsigned int _bits_per_symbol)
@@ -49,8 +48,10 @@ MODEM() MODEM(_create_qam)(unsigned int _bits_per_symbol)
     q->data.qam.M_i = 1 << (q->data.qam.m_i);
     q->data.qam.M_q = 1 << (q->data.qam.m_q);
 
-    assert(q->data.qam.m_i + q->data.qam.m_q == q->m);
-    assert(q->data.qam.M_i * q->data.qam.M_q == q->M);
+    if (q->data.qam.m_i + q->data.qam.m_q != q->m)
+        return liquid_error_config("modem%s_create_qam(), internal bits/symbol mismatch",EXTENSION);
+    if (q->data.qam.M_i * q->data.qam.M_q != q->M)
+        return liquid_error_config("modem%s_create_qam(), internal constellation size mismatch",EXTENSION);
 
     switch (q->M) {
     case 4:    q->data.qam.alpha = RQAM4_ALPHA;    q->scheme = LIQUID_MODEM_QAM4;   break;
