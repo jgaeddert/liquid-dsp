@@ -27,7 +27,6 @@
 #include <string.h>
 #include <math.h>
 #include <complex.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -500,7 +499,8 @@ int gmskframesync_pushpn(gmskframesync _q)
     // compute delay and filterbank index
     //  tau_hat < 0 :   delay = 2*k*m-1, index = round(   tau_hat *npfb), flag = 0
     //  tau_hat > 0 :   delay = 2*k*m-2, index = round((1-tau_hat)*npfb), flag = 0
-    assert(_q->tau_hat < 0.5f && _q->tau_hat > -0.5f);
+    if (_q->tau_hat >= 0.5f || _q->tau_hat <= -0.5f)
+        return liquid_error(LIQUID_EINT,"gmskframesync_pushpn(), timing estimate out of bounds");
     unsigned int delay = 2*_q->k*_q->m - 1; // samples to buffer before computing output
     _q->pfb_soft       = -_q->tau_hat*_q->npfb;
     _q->pfb_index      = (int) roundf(_q->pfb_soft);
@@ -770,7 +770,8 @@ int gmskframesync_decode_header(gmskframesync _q)
     liquid_pack_bytes(_q->header_mod, _q->header_mod_len,
                       _q->header_enc, _q->header_enc_len,
                       &num_written);
-    assert(num_written==_q->header_enc_len);
+    if (num_written != _q->header_enc_len)
+        return liquid_error(LIQUID_EINT,"gmskframesync_decode_header(), unexpected header length");
 
     // unscramble data
     unscramble_data(_q->header_enc, _q->header_enc_len);

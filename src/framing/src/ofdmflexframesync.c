@@ -26,7 +26,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -574,7 +573,8 @@ int ofdmflexframesync_decode_header(ofdmflexframesync _q)
         liquid_repack_bytes(_q->header_mod, bps, _q->header_sym_len,
                             _q->header_enc, 8,   _q->header_enc_len,
                             &num_written);
-        assert(num_written==_q->header_enc_len);
+        if (num_written != _q->header_enc_len)
+            return liquid_error(LIQUID_EINT,"ofdmflexframesync_decode_header(), unexpected header length");
 
         // unscramble header
         unscramble_data(_q->header_enc, _q->header_enc_len);

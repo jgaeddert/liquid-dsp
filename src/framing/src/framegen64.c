@@ -30,7 +30,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <assert.h>
 #include <complex.h>
 
 #include "liquid.internal.h"
@@ -72,11 +71,13 @@ framegen64 framegen64_create()
     q->enc         = qpacketmodem_create();
     qpacketmodem_configure(q->enc, 72, check, fec0, fec1, mod_scheme);
     //qpacketmodem_print(q->enc);
-    assert( qpacketmodem_get_frame_len(q->enc)==600 );
+    if (qpacketmodem_get_frame_len(q->enc) != 600)
+        return liquid_error_config("framegen64_create(), unexpected frame length");
 
     // create pilot generator
     q->pilotgen = qpilotgen_create(600, 21);
-    assert( qpilotgen_get_frame_len(q->pilotgen)==630 );
+    if (qpilotgen_get_frame_len(q->pilotgen) != 630)
+        return liquid_error_config("framegen64_create(), unexpected pilot frame length");
 
     // create pulse-shaping filter (k=2)
     q->interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER,2,q->m,q->beta,0);
@@ -187,7 +188,8 @@ int framegen64_execute(framegen64      _q,
         n+=2;
     }
 
-    assert(n==LIQUID_FRAME64_LEN);
+    if (n != LIQUID_FRAME64_LEN)
+        return liquid_error(LIQUID_EINT,"framegen64_execute(), unexpected frame length");
     return LIQUID_OK;
 }
 
