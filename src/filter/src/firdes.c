@@ -536,7 +536,6 @@ float liquid_filter_crosscorr(float *      _h,
     }
 
     // at this point _h_len > _g_len
-    // assert(_h_len > _g_len);
 
     if (_lag <= -(int)_g_len) return 0.0f;
     if (_lag >=  (int)_h_len) return 0.0f;
