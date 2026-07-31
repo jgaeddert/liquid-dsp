@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@ int MATRIX(_chol)(T *          _a,
     TP t0;
     T  t1;
     for (j=0; j<_n; j++) {
-        // assert that a_jj is real, positive
+        // ensure that a_jj is real, positive
         a_jj = matrix_access(_a,_n,_n,j,j);
         if ( creal(a_jj) < 0.0 )
             return liquid_error(LIQUID_EICONFIG,"matrix_chol(), matrix is not positive definite (real{A[%u,%u]} = %12.4e < 0)",j,j,creal(a_jj));

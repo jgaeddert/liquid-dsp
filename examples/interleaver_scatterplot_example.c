@@ -3,7 +3,6 @@ char __docstr__[] = "Generate interleaver scatterplot figure.";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "liquid.h"
 #include "liquid.argparse.h"
@@ -53,7 +52,8 @@ int main(int argc, char*argv[])
         x[i] = 0;
     }
 
-    assert(k==8*n);
+    if (k != 8*n)
+        return liquid_error(LIQUID_EINT,"interleaver index count mismatch");
 
     // destroy the interleaver object
     interleaver_destroy(q);

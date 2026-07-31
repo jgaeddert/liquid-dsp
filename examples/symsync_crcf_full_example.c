@@ -9,7 +9,6 @@ char __docstr__[] =
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include <assert.h>
 
 #include "liquid.h"
 #include "liquid.argparse.h"
@@ -107,7 +106,8 @@ int main(int argc, char* argv[])
         firinterp_crcf_execute(q, s[i], &x[n]);
         n+=k;
     }
-    assert(n == num_samples);
+    if (n != num_samples)
+        return liquid_error(LIQUID_EINT,"interpolator output length mismatch");
     firinterp_crcf_destroy(q);
 
     // 
