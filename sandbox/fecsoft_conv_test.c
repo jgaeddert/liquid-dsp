@@ -1,70 +1,37 @@
-// 
-// sandbox/fecsoft_conv_test.c
-//
-// This script simulates soft vs. hard decoding of convolutional codes.
-//
+char __docstr__[] = "Simulates soft vs. hard decoding of convolutional codes.";
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <complex.h>
 #include <time.h>
-#include <getopt.h>
 
 #include "liquid.internal.h"
+#include "liquid.argparse.h"
 
-#define OUTPUT_FILENAME "fecsoft_conv_test.m"
-
-void usage()
+int main(int argc, char *argv[])
 {
-    printf("fecsoft_conv_test\n");
-    printf("  Simulates soft decoding of convoluational codes\n");
-    printf("options:\n");
-    printf("  u/h   : print usage/help\n");
-    printf("  s     : SNR start [dB], default: -5\n");
-    printf("  x     : SNR max [dB], default: 5\n");
-    printf("  n     : number of SNR steps, default: 21\n");
-    printf("  t     : number of trials, default: 1000\n");
-    printf("  c     : convoluational coding scheme: v27, v29, v39, v615, punctured\n");
-}
-
-int main(int argc, char *argv[]) {
     // set initial seed to random
     srand(time(NULL));
 
-    // options
-    fec_scheme fs = LIQUID_FEC_CONV_V27;    // convolutional FEC scheme
-    unsigned int n = 64;                    // original message length
-    float SNRdB_min = -5.0f;                // signal-to-noise ratio (minimum)
-    float SNRdB_max =  5.0f;                // signal-to-noise ratio (maximum)
-    unsigned int num_snr = 21;              // number of SNR steps
-    unsigned int num_trials=100;            // number of trials
+    // define variables and parse command-line options
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_add(char*,    filename, "fecsoft_conv_test.m", 'o', "output filename",         NULL);
+    liquid_argparse_add(float,    SNRdB_min,  -5.0f,  's', "SNR start [dB]",            NULL);
+    liquid_argparse_add(float,    SNRdB_max,   5.0f,  'x', "SNR max [dB]",              NULL);
+    liquid_argparse_add(unsigned, num_snr,     21,    'n', "number of SNR steps",        NULL);
+    liquid_argparse_add(unsigned, num_trials,  100,   't', "number of trials",           NULL);
+    liquid_argparse_add(char*,    fec0,     "v27",    'c', "convolutional FEC scheme",   liquid_argparse_fec);
+    liquid_argparse_parse(argc,argv);
 
-    // get command-line options
-    int dopt;
-    while((dopt = getopt(argc,argv,"uhs:x:n:t:c:")) != EOF){
-        switch (dopt) {
-        case 'h':
-        case 'u': usage(); return 0;
-        case 's': SNRdB_min = atof(optarg);     break;
-        case 'x': SNRdB_max = atof(optarg);     break;
-        case 'n': num_snr = atoi(optarg);       break;
-        case 't': num_trials = atoi(optarg);    break;
-        case 'c':
-            fs = liquid_getopt_str2fec(optarg);
-            if (fs == LIQUID_FEC_UNKNOWN ) {
-                fprintf(stderr,"error: %s, unknown/unsupported fec scheme \"%s\"\n\n",argv[0], optarg);
-                exit(1);
-            } else if ( !fec_scheme_is_convolutional(fs) ) {
-                fprintf(stderr,"error: %s, input fec scheme '%s' is not convolutional\n\n",argv[0], optarg);
-                exit(1);
-            }
-            break;
-        default:
-            exit(1);
-        }
-    }
+    fec_scheme fs = liquid_getopt_str2fec(fec0);
+    if (!fec_scheme_is_convolutional(fs))
+        return liquid_error(LIQUID_EICONFIG,"input fec scheme '%s' is not convolutional", fec0);
+#if !LIBFEC_ENABLED
+    return liquid_error(LIQUID_EICONFIG,"libfec not enabled");
+#endif
 
+    const unsigned int n = 64;  // original message length
     unsigned int i;
 
     // derived values
@@ -74,14 +41,7 @@ int main(int argc, char *argv[]) {
     fec q = fec_create(fs, NULL);
     fec_print(q);
 
-    // 
     // data arrays
-    //
-#if 0
-    unsigned int sym_org;       // original symbol
-    float complex sym_enc[7];   // encoded symbol
-    float complex sym_rec[7];   // received symbol
-#endif
     unsigned char msg_org[n];           // original message
     unsigned char msg_enc[k];           // encoded message
     float complex mod_sym[8*k];         // modulated symbols
@@ -93,22 +53,10 @@ int main(int argc, char *argv[]) {
     unsigned int bit_errors_soft[num_snr];
     unsigned int bit_errors_hard[num_snr];
 
-    //
     // set up parameters
-    //
     float SNRdB_step = (SNRdB_max - SNRdB_min) / (num_snr-1);
 
-    // 
     // start trials
-    //
-#if 0
-    // test
-    sym_org = 13;
-    fecsoft_hamming74_encode(sym_org, sym_enc);
-    fecsoft_hamming74_decode(sym_enc, &sym_dec_soft);
-    exit(1);
-#endif
-    
     printf("  %8s [%6s] %6s %6s\n", "SNR [dB]", "trials", "soft", "hard");
     unsigned int s;
     for (s=0; s<num_snr; s++) {
@@ -193,12 +141,9 @@ int main(int argc, char *argv[]) {
     // destroy forward error-correction object
     fec_destroy(q);
 
-
-    // 
     // export output file
-    //
-    FILE * fid = fopen(OUTPUT_FILENAME, "w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    FILE * fid = fopen(filename, "w");
+    fprintf(fid,"%% %s : auto-generated file\n", filename);
     fprintf(fid,"\n\n");
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
@@ -225,7 +170,7 @@ int main(int argc, char *argv[]) {
     fprintf(fid,"grid on;\n");
 
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", filename);
 
     printf("done.\n");
     return 0;
