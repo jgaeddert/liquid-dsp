@@ -126,7 +126,6 @@ FFT(plan) FFT(_create_plan_rader2)(unsigned int _nfft,
     q->data.rader2.nfft_prime = 1 << m;
 #endif
     //printf("nfft_prime = %u\n", q->data.rader2.nfft_prime);
-    // assert(nfft_prime > 2*nfft-4)
 
     // allocate memory for sub-transforms
     q->data.rader2.x_prime = (TC*) FFT_MALLOC((q->data.rader2.nfft_prime)*sizeof(TC));
