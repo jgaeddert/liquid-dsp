@@ -16,14 +16,30 @@
 // unsigned int version_minor  = @PROJECT_VERSION_MINOR@+0;
 // unsigned int version_patch  = @PROJECT_VERSION_PATCH@+0;
 // unsigned int version_tweak  = @PROJECT_VERSION_TWEAK@+0;
-#define BUILD_GITHASH       "@BUILD_GITHASH@"
 
-// date/time of build
-#define BUILD_DATETIME      "@BUILD_DATETIME@"
-#define BUILD_HOSTNAME      "@BUILD_HOSTNAME@"
-#define BUILD_OS            "@CMAKE_HOST_SYSTEM_NAME@"
-#define BUILD_ARCH          "@CMAKE_HOST_SYSTEM_PROCESSOR@"
-#define BUILD_TOOLCHAIN     "@CMAKE_C_COMPILER_INFO@"
+#ifdef ENABLE_TIMESTAMPS
+
+    #define BUILD_GITHASH       "@BUILD_GITHASH@"
+
+    // date/time of build
+    #define BUILD_DATETIME      "@BUILD_DATETIME@"
+    #define BUILD_HOSTNAME      "@BUILD_HOSTNAME@"
+    #define BUILD_OS            "@CMAKE_HOST_SYSTEM_NAME@"
+    #define BUILD_ARCH          "@CMAKE_HOST_SYSTEM_PROCESSOR@"
+    #define BUILD_TOOLCHAIN     "@CMAKE_C_COMPILER_INFO@"
+
+#else
+
+    #define BUILD_GITHASH       "---"
+
+    #define BUILD_DATETIME      "---"
+    #define BUILD_HOSTNAME      "---"
+    #define BUILD_OS            "---"
+    #define BUILD_ARCH          "---"
+    #define BUILD_TOOLCHAIN     "---"
+
+#endif
+
 #define BUILD_TYPE          "@CMAKE_BUILD_TYPE@"
 #define BUILD_ENV           "@BUILD_ENV@"
 
