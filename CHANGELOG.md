@@ -2,6 +2,9 @@
 
 ## Latest
 
+  * general
+    - cleaned up old instances of assert statements in code which would cause
+      the program to exit on failure; instead log error and gracefully return
   * build
     - added option to disable building timestamps etc. for reproducibility
       in automated builds (thanks, @dawkagaming)
