@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <math.h>
-#include <assert.h>
 #include <time.h>
 #include "liquid.h"
 
@@ -122,7 +121,8 @@ int main(int argc, char*argv[])
         firinterp_crcf_execute(interp_tx, 0, &x[k*n]);
         n++;
     }
-    assert(n==num_symbols);
+    if (n!=num_symbols)
+        return liquid_error(LIQUID_EINT,"symbol count mismatch after interpolation");
     firinterp_crcf_destroy(interp_tx);
 
     // add channel impairments

@@ -9,7 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -356,7 +355,8 @@ int main(int argc, char*argv[])
         }
         toggle = 1-toggle;
     }
-    assert( n == num_samples );
+    if ( n != num_samples )
+        return liquid_error(LIQUID_EINT,"synthesizer output length mismatch");
     
     // print output
     printf("\n");

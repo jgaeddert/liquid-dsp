@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <math.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -149,13 +148,15 @@ int main() {
             firfilt_crcf_push(f, y[j]*cexpf(-_Complex_I*j*dphi));
 
             // compute output at the appropriate sample time
-            assert(n<num_symbols);
+            if (n>=num_symbols)
+                return liquid_error(LIQUID_EINT,"symbol index exceeds num_symbols");
             if ( ((j+1)%num_channels)==0 ) {
                 firfilt_crcf_execute(f, &Y1[n][i]);
                 n++;
             }
         }
-        assert(n==num_symbols);
+        if (n!=num_symbols)
+            return liquid_error(LIQUID_EINT,"symbol count mismatch after analysis");
 
     }
 

@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <math.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -146,7 +145,8 @@ int main() {
 
             // interpolate sequence
             if ( (j%num_channels)==0 ) {
-                assert(n<num_symbols);
+                if (n>=num_symbols)
+                    return liquid_error(LIQUID_EINT,"symbol index exceeds num_symbols");
                 firfilt_crcf_push(f, Y[n][i]);
                 n++;
             } else {
@@ -157,7 +157,8 @@ int main() {
             // accumulate up-converted sample
             y1[j] += y_hat * cexpf(_Complex_I*j*dphi);
         }
-        assert(n==num_symbols);
+        if (n!=num_symbols)
+            return liquid_error(LIQUID_EINT,"symbol count mismatch after synthesis");
     }
 
     // destroy objects
