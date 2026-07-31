@@ -1,5 +1,11 @@
 # Changelog
 
+## Latest
+
+  * build
+    - added option to disable building timestamps etc. for reproducibility
+      in automated builds (thanks, @dawkagaming)
+
 ## 1.8.1 - 2026-07-26
 
 Version 1.8.1 includes logic for runtime mode selection for distributing a
