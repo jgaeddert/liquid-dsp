@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -54,7 +53,8 @@ int POLY(_expandbinomial)(unsigned int _n,
         for (j=i+1; j>0; j--)
             _c[j] = _c[j] + _c[j-1];
     }
-    // assert(_c[0]==1.0f);
+    if (_c[0] != 1.0f)
+        return liquid_error(LIQUID_EINT,"poly%s_expandbinomial(), internal computation error",EXTENSION);
     return LIQUID_OK;
 }
 
@@ -91,7 +91,8 @@ int POLY(_expandbinomial_pm)(unsigned int _m,
         for (j=i+1; j>0; j--)
             _c[j] = _c[j] - _c[j-1];
     }
-    // assert(_c[0]==1.0f);
+    if (_c[0] != 1.0f)
+        return liquid_error(LIQUID_EINT,"poly%s_expandbinomial_pm(), internal computation error",EXTENSION);
     return LIQUID_OK;
 }
 
@@ -133,7 +134,8 @@ int POLY(_expandbinomial)(T *          _a,
         _c[_n-i] = tmp;
     }
 
-    // assert(_c[0]==1.0f);
+    if (_c[0] != 1.0f)
+        return liquid_error(LIQUID_EINT,"poly%s_expandbinomial(), internal computation error",EXTENSION);
     return LIQUID_OK;
 }
 #endif
@@ -170,7 +172,8 @@ int POLY(_expandroots)(T *          _r,
         _p[j] *= -_r[i];
     }
 
-    // assert(c[_n]==1.0f)
+    if (_p[_n] != 1.0f)
+        return liquid_error(LIQUID_EINT,"poly%s_expandroots(), internal computation error",EXTENSION);
     return LIQUID_OK;
 }
 

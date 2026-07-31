@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <assert.h>
 #include "liquid.internal.h"
 
 // finds the complex roots of the polynomial using the Durand-Kerner method
@@ -179,7 +178,8 @@ int liquid_poly_findroots_bairstow(double *         _p,
     }
 
     if (r==0) {
-        //assert(n==2);
+        if (n != 2)
+            return liquid_error(LIQUID_EINT,"liquid_poly_findroots_bairstow(), internal polynomial reduction error");
         _roots[k++] = -pr[0]/pr[1];
     }
     return LIQUID_OK;
