@@ -235,21 +235,21 @@ liquid_runtime_t liquid_runtime_detect(struct liquid_cpuinfo_s * _impl)
     }
 
     // reverse order from highest priority to lowest
-    if (info.amx102  && _impl->amx102 ) return LIQUID_RUNTIME_AMX102;
-    if (info.amx101  && _impl->amx101 ) return LIQUID_RUNTIME_AMX101;
-    if (info.avx512  && _impl->avx512 ) return LIQUID_RUNTIME_AVX512;
-    if (info.avx2    && _impl->avx2   ) return LIQUID_RUNTIME_AVX2;
-    if (info.fma3    && _impl->fma3   ) return LIQUID_RUNTIME_FMA3;
-    if (info.avx     && _impl->avx    ) return LIQUID_RUNTIME_AVX;
-    if (info.sse42   && _impl->sse42  ) return LIQUID_RUNTIME_SSE42;
-    if (info.sse41   && _impl->sse41  ) return LIQUID_RUNTIME_SSE41;
-    if (info.ssse3   && _impl->ssse3  ) return LIQUID_RUNTIME_SSSE3;
-    if (info.sse3    && _impl->sse3   ) return LIQUID_RUNTIME_SSE3;
-    if (info.sse2    && _impl->sse2   ) return LIQUID_RUNTIME_SSE2;
-    if (info.sse     && _impl->sse    ) return LIQUID_RUNTIME_SSE;
-    if (info.mmx     && _impl->mmx    ) return LIQUID_RUNTIME_MMX;
-    if (info.altivec && _impl->altivec) return LIQUID_RUNTIME_ALTIVEC;
-    if (info.neon    && _impl->neon   ) return LIQUID_RUNTIME_NEON;
+    if (info.amx102  && liquid_build_info.cpuinfo.amx102  && _impl->amx102 ) return LIQUID_RUNTIME_AMX102;
+    if (info.amx101  && liquid_build_info.cpuinfo.amx101  && _impl->amx101 ) return LIQUID_RUNTIME_AMX101;
+    if (info.avx512  && liquid_build_info.cpuinfo.avx512  && _impl->avx512 ) return LIQUID_RUNTIME_AVX512;
+    if (info.avx2    && liquid_build_info.cpuinfo.avx2    && _impl->avx2   ) return LIQUID_RUNTIME_AVX2;
+    if (info.fma3    && liquid_build_info.cpuinfo.fma3    && _impl->fma3   ) return LIQUID_RUNTIME_FMA3;
+    if (info.avx     && liquid_build_info.cpuinfo.avx     && _impl->avx    ) return LIQUID_RUNTIME_AVX;
+    if (info.sse42   && liquid_build_info.cpuinfo.sse42   && _impl->sse42  ) return LIQUID_RUNTIME_SSE42;
+    if (info.sse41   && liquid_build_info.cpuinfo.sse41   && _impl->sse41  ) return LIQUID_RUNTIME_SSE41;
+    if (info.ssse3   && liquid_build_info.cpuinfo.ssse3   && _impl->ssse3  ) return LIQUID_RUNTIME_SSSE3;
+    if (info.sse3    && liquid_build_info.cpuinfo.sse3    && _impl->sse3   ) return LIQUID_RUNTIME_SSE3;
+    if (info.sse2    && liquid_build_info.cpuinfo.sse2    && _impl->sse2   ) return LIQUID_RUNTIME_SSE2;
+    if (info.sse     && liquid_build_info.cpuinfo.sse     && _impl->sse    ) return LIQUID_RUNTIME_SSE;
+    if (info.mmx     && liquid_build_info.cpuinfo.mmx     && _impl->mmx    ) return LIQUID_RUNTIME_MMX;
+    if (info.neon    && liquid_build_info.cpuinfo.neon    && _impl->neon   ) return LIQUID_RUNTIME_NEON;
+    if (info.altivec && liquid_build_info.cpuinfo.altivec && _impl->altivec) return LIQUID_RUNTIME_ALTIVEC;
 
     // fall back to portable
     return LIQUID_RUNTIME_PORT;
