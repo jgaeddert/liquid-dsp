@@ -1,6 +1,9 @@
 # Changelog
 
-## Latest
+## 1.8.2 - 2026-08-06
+
+Version 1.8.2 includes several small cleanup items to support reproducible
+and consistent builds.
 
   * general
     - cleaned up old instances of assert statements in code which would cause
