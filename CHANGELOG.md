@@ -8,6 +8,9 @@
   * build
     - added option to disable building timestamps etc. for reproducibility
       in automated builds (thanks, @dawkagaming)
+  * core
+    - fixed issue with resolving SIMD selection between build, runtime, and
+      implementation (thanks, @dawkagaming)
 
 ## 1.8.1 - 2026-07-26
 
