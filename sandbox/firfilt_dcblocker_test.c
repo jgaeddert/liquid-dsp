@@ -30,8 +30,6 @@ int main()
     float u0 = firfilt_dcblocker_init(m, 0.5f-g0, as, h);
     float u1 = firfilt_dcblocker_init(m, 0.5f-g1, as, h);
     float u2 = firfilt_dcblocker_init(m, 0.5f-g2, as, h);
-    // assert u0 > u1 > u2
-
     // open an initialize output file
     FILE * fid = fopen(filename,"w");
     fprintf(fid,"clear all;\n");
@@ -68,7 +66,6 @@ int main()
     // { (g0)    ..    (g1)    ..    (g2) }
     unsigned int i;
     for (i=0; i<10; i++) {
-        // assert u0 > u1 > u2
         float gm = 0.5f*(g0 + g1);
         float gp = 0.5f*(g1 + g2);
         float um = firfilt_dcblocker_init(m, 0.5f-gm, as, h);

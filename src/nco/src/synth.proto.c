@@ -25,7 +25,6 @@
 // with internal phase-locked loop (pll) implementation
 //
 
-#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -310,7 +309,10 @@ void SYNTH(_compute_synth)(SYNTH() _q)
     // compute index
     float index = _q->theta * (float)_q->length / (2 * M_PI) + 2.f * (float)_q->length;
     _q->index   = ((unsigned int)(index + 0.5f)) % _q->length;
-    assert(_q->index < _q->length);
+    if (_q->index >= _q->length) {
+        liquid_error(LIQUID_EINT,"synth%s_compute_synth(), internal index out of bounds", EXTENSION);
+        return;
+    }
 
     unsigned int prev_index = (_q->index + _q->length - 1) % _q->length;
     unsigned int next_index = (_q->index + 1) % _q->length;

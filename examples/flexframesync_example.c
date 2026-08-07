@@ -14,7 +14,6 @@ char __docstr__[] =
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include <assert.h>
 
 #include "liquid.h"
 #include "liquid.argparse.h"

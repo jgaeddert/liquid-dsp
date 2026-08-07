@@ -1,6 +1,5 @@
 char __docstr__[] = "Demonstrate the interface to dsssframesync";
 
-#include <assert.h>
 #include <getopt.h>
 #include <math.h>
 #include <stdio.h>

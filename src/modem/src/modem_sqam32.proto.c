@@ -94,8 +94,10 @@ int MODEM(_demodulate_sqam32)(MODEM()        _q,
     }
     //printf(" x = %12.8f +j*%12.8f, quad = %1u, r = %12.8f + j*%12.8f\n",
     //        crealf(_x), cimagf(_x), quad, crealf(r), cimagf(r));
-    assert(crealf(x_prime) >= 0.0f);
-    assert(cimagf(x_prime) >= 0.0f);
+    if (crealf(x_prime) < 0.0f)
+        return liquid_error(LIQUID_EINT,"modem%s_demodulate_sqam32(), real part negative after de-rotation",EXTENSION);
+    if (cimagf(x_prime) < 0.0f)
+        return liquid_error(LIQUID_EINT,"modem%s_demodulate_sqam32(), imag part negative after de-rotation",EXTENSION);
 
     // find symbol in map closest to x_prime
     T dmin = 0.0f;

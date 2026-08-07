@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -125,8 +124,10 @@ int fec_rs_encode(fec             _q,
     }
 
     // sanity check
-    assert( n0 == _q->num_dec_bytes );
-    assert( n1 == _q->num_enc_bytes );
+    if (n0 != _q->num_dec_bytes)
+        return liquid_error(LIQUID_EINT,"fec_rs_encode(), unexpected decoded byte count");
+    if (n1 != _q->num_enc_bytes)
+        return liquid_error(LIQUID_EINT,"fec_rs_encode(), unexpected encoded byte count");
     return LIQUID_OK;
 }
 
@@ -178,8 +179,10 @@ int fec_rs_decode(fec             _q,
     }
 
     // sanity check
-    assert( n0 == _q->num_enc_bytes );
-    assert( n1 == _q->num_dec_bytes );
+    if (n0 != _q->num_enc_bytes)
+        return liquid_error(LIQUID_EINT,"fec_rs_decode(), unexpected encoded byte count");
+    if (n1 != _q->num_dec_bytes)
+        return liquid_error(LIQUID_EINT,"fec_rs_decode(), unexpected decoded byte count");
     return LIQUID_OK;
 }
 

@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.8.2 - 2026-08-06
+
+Version 1.8.2 includes several small cleanup items to support reproducible
+and consistent builds.
+
+  * general
+    - cleaned up old instances of assert statements in code which would cause
+      the program to exit on failure; instead log error and gracefully return
+  * build
+    - added option to disable building timestamps etc. for reproducibility
+      in automated builds (thanks, @dawkagaming)
+  * core
+    - fixed issue with resolving SIMD selection between build, runtime, and
+      implementation (thanks, @dawkagaming)
+
 ## 1.8.1 - 2026-07-26
 
 Version 1.8.1 includes logic for runtime mode selection for distributing a

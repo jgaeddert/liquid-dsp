@@ -60,7 +60,7 @@ extern "C" {
 
 #define LIQUID_VERSION_MAJOR    1
 #define LIQUID_VERSION_MINOR    8
-#define LIQUID_VERSION_PATCH    1
+#define LIQUID_VERSION_PATCH    2
 #define LIQUID_VERSION_DEV      0
 
 // final version string is constructed by concatenating individual string versions

@@ -31,8 +31,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <assert.h>
-
 #include "liquid.internal.h"
 
 // reconfigure internal properties

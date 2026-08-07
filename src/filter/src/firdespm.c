@@ -51,7 +51,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -725,7 +724,6 @@ int firdespm_iext_search(firdespm _q)
         if ( ((_q->E[i]>=0.0) && (_q->E[i-1]<=_q->E[i]) && (_q->E[i+1]<=_q->E[i]) ) ||
              ((_q->E[i]< 0.0) && (_q->E[i-1]>=_q->E[i]) && (_q->E[i+1]>=_q->E[i]) ) )
         {
-            //assert(num_found < nmax);
             if (num_found < nmax)
                 found_iext[num_found++] = i;
             liquid_log_debug("firdespm_iext_search(), num_found : %4u [%4u / %4u]", num_found, i, _q->grid_size);
@@ -738,7 +736,6 @@ int firdespm_iext_search(firdespm _q)
         found_iext[num_found++] = _q->grid_size-1;
 #else
     // force f=0.5 into candidate set
-    //assert(num_found < nmax);
     if (num_found < nmax)
         found_iext[num_found++] = _q->grid_size-1;
     //printf("num_found : %4u [%4u / %4u]\n", num_found, _q->grid_size-1, _q->grid_size);
@@ -756,7 +753,8 @@ int firdespm_iext_search(firdespm _q)
         //_q->r+1, num_found);
     }
 
-    assert(num_found <= nmax);
+    if (num_found > nmax)
+        return liquid_error(LIQUID_EINT,"firdespm_iext_search(), too many extremal frequencies found");
 
     // search extrema and eliminate smallest
     unsigned int imin=0;    // index of found_iext where _E is a minimum extreme

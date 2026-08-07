@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include <complex.h>
 #include <math.h>
-#include <assert.h>
 #include <string.h>
 
 #include "liquid.internal.h"
@@ -82,7 +81,8 @@ int cheby1_azpkf(unsigned int           _n,
     if (r) _pa[k++] = -a;
 
     // ensure we have written exactly _n poles
-    assert(k==_n);
+    if (k != _n)
+        return liquid_error(LIQUID_EINT,"cheby1_azpkf(), unexpected number of poles");
 
     // compute analog gain (ignored in digital conversion)
     *_ka = r ? 1.0f : 1.0f / sqrtf(1.0f + _ep*_ep);

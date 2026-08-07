@@ -26,7 +26,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <assert.h>
 #include <complex.h>
 
 #include "liquid.internal.h"
@@ -267,7 +266,6 @@ int QPACKETMODEM(_decode_syms)(qpacketmodem    _q,
     liquid_repack_bytes(_syms,           bps, _q->payload_mod_len,
                         _q->payload_enc,   8, _q->payload_mod_len, // NOTE: payload_enc allocation is actually payload_mod_len bytes
                         &num_written);
-    //assert(num_written == _q->payload_enc_len); // NOTE: this will fail for bps in {3,5,6,7}
 
     // decode payload
     return packetizer_decode(_q->p, _q->payload_enc, _payload);
@@ -365,7 +363,8 @@ int QPACKETMODEM(_decode_soft)(qpacketmodem    _q,
         _q->evm += e*e;
     }
     //printf("received %u bits (expected %u)\n", n, _q->payload_mod_len * _q->bits_per_symbol);
-    assert( n == _q->payload_mod_len * _q->bits_per_symbol);
+    if (n != _q->payload_mod_len * _q->bits_per_symbol)
+        return liquid_error(LIQUID_EINT,"qpacketmodem_decode_soft(), unexpected number of bits received");
 
     // update internal error vector magnitude estimate
     _q->evm = 10*log10f(_q->evm / (float)(_q->payload_mod_len));

@@ -24,7 +24,6 @@
 // dsssframesync.c
 //
 
-#include <assert.h>
 #include <complex.h>
 #include <math.h>
 #include <stdio.h>

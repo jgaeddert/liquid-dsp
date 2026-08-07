@@ -36,6 +36,7 @@ option(ENABLE_LOGGING    "Set to ON to enable full logging"          ON)
 set(LOGGING_LEVEL "trace" CACHE STRING "Set minimum logging level to compile")
 option(ENABLE_COLOR      "Set to ON to enable color terminal output" ON)
 option(ENABLE_STRICT     "Set to ON to enable strict compilation"    OFF)
+option(ENABLE_TIMESTAMPS "Compile the build timestamps into binary"  ON)
 
 if (NOT BUILD_SHARED_LIBS AND NOT BUILD_STATIC_LIBS)
     message(FATAL_ERROR "At least one of BUILD_SHARED_LIBS or BUILD_STATIC_LIBS must be ON")
@@ -289,6 +290,10 @@ endif()
 set(CMAKE_C_COMPILER_INFO "${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}")
 
 set(BUILD_ENV "cmake")
+
+if(ENABLE_TIMESTAMPS)
+    add_compile_definitions(ENABLE_TIMESTAMPS)
+endif()
 
 # this file can only use the @VARIABLE@ syntax
 #configure_file(cmake/version.c.in ${PROJECT_BINARY_DIR}/src/version.c @ONLY)

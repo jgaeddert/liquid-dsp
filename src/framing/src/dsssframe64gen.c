@@ -26,7 +26,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <assert.h>
 #include <complex.h>
 
 #include "liquid.internal.h"
@@ -75,11 +74,13 @@ dsssframe64gen dsssframe64gen_create()
     q->enc         = qpacketmodem_create();
     qpacketmodem_configure(q->enc, 72, check, fec0, fec1, mod_scheme);
     //qpacketmodem_print(q->enc);
-    assert( qpacketmodem_get_frame_len(q->enc)==600 );
+    if (qpacketmodem_get_frame_len(q->enc) != 600)
+        return liquid_error_config("dsssframe64gen_create(), unexpected frame length");
 
     // create pilot generator
     q->pilotgen = qpilotgen_create(600, 13);
-    assert( qpilotgen_get_frame_len(q->pilotgen)==650 );
+    if (qpilotgen_get_frame_len(q->pilotgen) != 650)
+        return liquid_error_config("dsssframe64gen_create(), unexpected pilot frame length");
 
     // create pulse-shaping filter (k=2)
     q->interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER,2,q->m,q->beta,0);

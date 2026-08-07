@@ -8,7 +8,6 @@
 #include <math.h>
 #include <getopt.h>
 #include <time.h>
-#include <assert.h>
 
 #include "liquid.h"
 

@@ -26,7 +26,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -154,7 +153,8 @@ int fec_conv_punctured_encode(fec _q,
     }
 
     //printf("n = %u (expected %u)\n", n, 8*fec_get_enc_msg_length(LIQUID_FEC_CONV(_mode),_dec_msg_len));
-    assert(n == 8*fec_get_enc_msg_length(_q->scheme,_dec_msg_len));
+    if (n != 8*fec_get_enc_msg_length(_q->scheme,_dec_msg_len))
+        return liquid_error(LIQUID_EINT,"fec_conv_punctured_encode(), unexpected encoded message length");
     return LIQUID_OK;
 }
 

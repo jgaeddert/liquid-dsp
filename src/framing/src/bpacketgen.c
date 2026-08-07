@@ -29,7 +29,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -111,7 +110,8 @@ bpacketgen bpacketgen_create(unsigned int _m,
 
     // create header packet encoder
     q->p_header = packetizer_create(6, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
-    assert(q->header_len == packetizer_get_enc_msg_len(q->p_header));
+    if (q->header_len != packetizer_get_enc_msg_len(q->p_header))
+        return liquid_error_config("bpacketgen_create(), header length mismatch");
 
     // create payload packet encoder
     q->p_payload = packetizer_create(q->dec_msg_len,
@@ -240,7 +240,8 @@ void bpacketgen_encode(bpacketgen _q,
     n += _q->enc_msg_len;
 
     // verify length is correct
-    assert(n == _q->packet_len);
+    if (n != _q->packet_len)
+        liquid_error(LIQUID_EINT,"bpacketgen_encode(), unexpected packet length");
 }
 
 

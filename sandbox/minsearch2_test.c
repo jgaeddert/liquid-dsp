@@ -8,7 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <assert.h>
+
+#include "liquid.h"
 
 double function(double _x) {
 #if 0
@@ -59,8 +60,10 @@ int main() {
 #endif
 
         // ensure values are reasonable
-        assert(x2 > x1);
-        assert(x1 > x0);
+        if (x2 <= x1)
+            return liquid_error(LIQUID_EINT,"x2 must be greater than x1");
+        if (x1 <= x0)
+            return liquid_error(LIQUID_EINT,"x1 must be greater than x0");
 
         // compute minimum
         // TODO : exploit uniform spacing...

@@ -1,6 +1,4 @@
-// 
-// svd_test.c : test singular value decomposition
-// 
+char __docstr__[] = "test singular value decomposition";
 // References:
 //  [Golub:1970] G. H. Golub and C. Reinsch, "Singular Value
 //      Decomposition and Least Squares Solutions," Handbook Series
@@ -14,10 +12,16 @@
 //#include <complex.h>
 
 #include "liquid.h"
+#include "liquid.argparse.h"
 
 #define DEBUG 1
 
-int main() {
+int main(int argc, char*argv[])
+{
+    // define variables and parse command-line arguments
+    liquid_argparse_init(__docstr__);
+    liquid_argparse_parse(argc,argv);
+
     // problem definition
     //  sig1    =   sqrt(1248)
     //  sig2    =   20
@@ -45,6 +49,7 @@ int main() {
         a[ii] = randnf();
 #endif
 
+    liquid_log_trace("a");
     matrixf_print(a,m,n);
 
     // 
@@ -55,17 +60,19 @@ int main() {
     float tol = 1e-8;
 
     // internal variables
-    unsigned int i,j,k,l,l1;
+    int i,j,k,l,l1;
     float c,f,g,h,s,x,y,z;
     float e[n];
 
     // initialization
+    liquid_log_trace("initializing u");
     memmove(u,a,m*n*sizeof(float));
 
-    // Householder's reduction to bidiagonal form
+    liquid_log_trace("Householder's reduction to bidiagonal form");
     g=0.0;
     x=0.0;
     for (i=0; i<n; i++) {
+        liquid_log_trace("i = %d", i);
         e[i] = g;
         s    = 0;
         l    = i+1;
@@ -121,8 +128,9 @@ int main() {
             x = y;
     }
 
-    // accumulation of right-hand transformations
+    liquid_log_trace("accumulation of right-hand transformations");
     for (i=n-1; i>=0; i--) {
+        liquid_log_trace("i = %d", i);
         //if (g != 0) {
         if ( fabs(g) > 1e-3 ) {
             h = matrix_access(u,m,n,i,i+1)*g;
@@ -150,9 +158,10 @@ int main() {
     printf("V:\n"); matrixf_print(v,n,n);
 #endif
 
-    // accumulation of left-hand transformations
+    liquid_log_trace("accumulation of left-hand transformations");
     printf("q:\n"); matrixf_print(q,n,1);
     for (i=n-1; i>=0; i--) {
+        liquid_log_trace("i = %d", i);
         l = i+1;
         g = q[i];
         for (j=l; j<n; j++)
@@ -184,9 +193,7 @@ int main() {
     printf("e:\n"); matrixf_print(e,n,1);
 #endif
 
-    exit(1);
-
-    // diagonalization of the bidiagonal form
+    liquid_log_trace("diagonalization of the bidiagonal form");
     unsigned int t=10;
     eps *= x;
     for (k=n-1; k>=0; k--) {
@@ -325,7 +332,6 @@ int main() {
     printf("V:\n"); matrixf_print(v,n,n);
     printf("q:\n"); matrixf_print(q,n,1);
     printf("e:\n"); matrixf_print(e,n,1);
-
 
     printf("done.\n");
     return 0;

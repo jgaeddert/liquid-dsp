@@ -29,7 +29,6 @@
 #include <string.h>
 #include <math.h>
 #include <complex.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 

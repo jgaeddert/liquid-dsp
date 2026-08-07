@@ -31,7 +31,6 @@
 #include <string.h>
 #include <math.h>
 #include <complex.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -218,7 +217,6 @@ flexframesync flexframesync_create(framesync_callback _callback,
     q->payload_decoder = qpacketmodem_create();
     qpacketmodem_configure(q->payload_decoder, q->payload_dec_len, check, fec0, fec1, mod_scheme);
     //qpacketmodem_print(q->payload_decoder);
-    //assert( qpacketmodem_get_frame_len(q->payload_decoder)==600 );
     q->payload_sym_len = qpacketmodem_get_frame_len(q->payload_decoder);
 
     // allocate memory for payload symbols and recovered data bytes

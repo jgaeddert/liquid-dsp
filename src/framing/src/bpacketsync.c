@@ -26,7 +26,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -137,7 +136,8 @@ bpacketsync bpacketsync_create(unsigned int _m,
 
     // create header packet encoder
     q->p_header = packetizer_create(6, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
-    assert(q->header_len == packetizer_get_enc_msg_len(q->p_header));
+    if (q->header_len != packetizer_get_enc_msg_len(q->p_header))
+        return liquid_error_config("bpacketsync_create(), header length mismatch");
 
     // create payload packet encoder
     q->p_payload = packetizer_create(q->dec_msg_len,

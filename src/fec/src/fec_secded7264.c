@@ -31,7 +31,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -285,8 +284,10 @@ int fec_secded7264_encode(fec             _q,
         j += r+1;
     }
 
-    assert( j == fec_get_enc_msg_length(LIQUID_FEC_SECDED7264,_dec_msg_len) );
-    assert( i == _dec_msg_len);
+    if (j != fec_get_enc_msg_length(LIQUID_FEC_SECDED7264,_dec_msg_len))
+        return liquid_error(LIQUID_EINT,"fec_secded7264_encode(), unexpected encoded message length");
+    if (i != _dec_msg_len)
+        return liquid_error(LIQUID_EINT,"fec_secded7264_encode(), unexpected decoded message length");
     return LIQUID_OK;
 }
 
@@ -338,8 +339,10 @@ int fec_secded7264_decode(fec             _q,
         j += r+1;
     }
 
-    assert( j == fec_get_enc_msg_length(LIQUID_FEC_SECDED7264,_dec_msg_len) );
-    assert( i == _dec_msg_len);
+    if (j != fec_get_enc_msg_length(LIQUID_FEC_SECDED7264,_dec_msg_len))
+        return liquid_error(LIQUID_EINT,"fec_secded7264_decode(), unexpected encoded message length");
+    if (i != _dec_msg_len)
+        return liquid_error(LIQUID_EINT,"fec_secded7264_decode(), unexpected decoded message length");
     return LIQUID_OK;
 }
 

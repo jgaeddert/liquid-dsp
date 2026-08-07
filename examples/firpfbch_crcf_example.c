@@ -9,7 +9,6 @@ char __docstr__[] =
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <assert.h>
 
 #include "liquid.h"
 #include "liquid.argparse.h"
@@ -93,13 +92,15 @@ int main(int argc, char* argv[])
             firfilt_crcf_push(fa, x[j]*cexpf(-_Complex_I*j*dphi));
 
             // compute output at the appropriate sample time
-            assert(n<num_symbols);
+            if (n >= num_symbols)
+                return liquid_error(LIQUID_EINT,"symbol index exceeds num_symbols");
             if ( ((j+1)%num_channels)==0 ) {
                 firfilt_crcf_execute(fa, &Y1[n][i]);
                 n++;
             }
         }
-        assert(n==num_symbols);
+        if (n != num_symbols)
+            return liquid_error(LIQUID_EINT,"symbol count mismatch after analysis");
 
     }
 
@@ -137,7 +138,8 @@ int main(int argc, char* argv[])
 
             // interpolate sequence
             if ( (j%num_channels)==0 ) {
-                assert(n<num_symbols);
+                if (n >= num_symbols)
+                    return liquid_error(LIQUID_EINT,"symbol index exceeds num_symbols");
                 firfilt_crcf_push(fs, Y1[n][i]);
                 n++;
             } else {
@@ -148,7 +150,8 @@ int main(int argc, char* argv[])
             // accumulate up-converted sample
             z1[j] += y_hat * cexpf(_Complex_I*j*dphi);
         }
-        assert(n==num_symbols);
+        if (n != num_symbols)
+            return liquid_error(LIQUID_EINT,"symbol count mismatch after synthesis");
     }
 
     // destroy objects

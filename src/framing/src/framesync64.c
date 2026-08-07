@@ -27,7 +27,6 @@
 #include <string.h>
 #include <math.h>
 #include <complex.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -108,11 +107,13 @@ framesync64 framesync64_create(framesync_callback _callback,
     int mod_scheme = LIQUID_MODEM_QPSK;
     q->dec         = qpacketmodem_create();
     qpacketmodem_configure(q->dec, 72, check, fec0, fec1, mod_scheme);
-    assert( qpacketmodem_get_frame_len(q->dec)==600 );
+    if (qpacketmodem_get_frame_len(q->dec) != 600)
+        return liquid_error_config("framesync64_create(), unexpected frame length");
 
     // create pilot synchronizer
     q->pilotsync   = qpilotsync_create(600, 21);
-    assert( qpilotsync_get_frame_len(q->pilotsync)==630);
+    if (qpilotsync_get_frame_len(q->pilotsync) != 630)
+        return liquid_error_config("framesync64_create(), unexpected pilot frame length");
 
     // reset global data counters
     framesync64_reset_framedatastats(q);
