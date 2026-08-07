@@ -1407,8 +1407,14 @@ clean-check:
 ## TARGET : check-doc - build and run basic documentation checks
 ##
 
-readme.c.example.c : README.rst
-	${SED} -n '19,39p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+# Extract code blocks from README.rst using :name: directive options
+# (see scripts/extract_rst_code.py for details)
+# Use a stamp file so the script runs only once for all outputs
+.doc-extract-stamp : README.rst scripts/extract_rst_code.py
+	python3 scripts/extract_rst_code.py README.rst -o .
+	@touch $@
+
+readme.c.example.c readme.link.example.cc : .doc-extract-stamp
 
 readme.c.example.o : %.o : %.c ${include_headers}
 	${CC} ${CPPFLAGS} ${CFLAGS} $< -c -o $@
@@ -1416,23 +1422,19 @@ readme.c.example.o : %.o : %.c ${include_headers}
 readme.c.example : % : %.o ${ARCHIVE_LIB}
 	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
 
-readme.cc.example.cc : README.rst
-	${SED} -n '245,266p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+readme.link.example.o : %.o : %.cc ${include_headers}
+	${CXX} ${CPPFLAGS} ${CXXFLAGS} -c -o $@ $<
 
-readme.cc.example.o : %.o : %.cc ${include_headers}
-	${CXX} ${CPPFLAGS} ${CXXFLAGS} $< -c -o $@
-
-readme.cc.example : % : %.o ${ARCHIVE_LIB}
-	${CXX} ${CXXFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
+readme.link.example : % : %.o ${ARCHIVE_LIB}
+	${CXX} ${CXXFLAGS} ${LDFLAGS} -o $@ ${LIBS} $^
 
 check-doc-c : readme.c.example ; ./readme.c.example
 
-check-doc-cc : readme.cc.example ; ./readme.cc.example
-
-check-doc : check-doc-c check-doc-cc
+check-doc : readme.c.example readme.link.example
+	./readme.c.example && ./readme.link.example
 
 clean-check-doc:
-	${RM} readme.*.example*
+	${RM} readme.*.example* .doc-extract-stamp
 
 ##
 ## TARGET : coverage  - run coverage test and produce report

@@ -15,6 +15,7 @@ oscillators, modems, synchronizers, complex mathematical operations, and
 much more.
 
 .. code-block:: c
+   :name: readme.c.example.c
 
     // get in, process data, get out
     #include <liquid/liquid.h>
@@ -241,6 +242,7 @@ Just include ``<complex>`` before ``<liquid/liquid.h>`` and use
 Here is the same example as the one above but in C++ instead of C:
 
 .. code-block:: c++
+   :name: readme.link.example.cc
 
     // get in, process data, get out
     #include <complex>

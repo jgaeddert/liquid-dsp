@@ -45,6 +45,7 @@ octave-core
 *.tar
 *.gz
 .DS_Store
+.doc-extract-stamp
 
 # gentab programs
 src/fec/gentab/*_gentab
