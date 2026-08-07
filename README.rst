@@ -120,6 +120,8 @@ Here is a table of CMake options available for configuring liquid:
 +------------------------+---------+--------------------------------------------------------------------+
 | ``ENABLE_STRICT``      | OFF     | Enable strict compilation mode (treat warnings as errors)          |
 +------------------------+---------+--------------------------------------------------------------------+
+| ``ENABLE_TIMESTAMPS``  | ON      | Enable building library with dynamic info such as timestamps       |
++------------------------+---------+--------------------------------------------------------------------+
 
 For example, if you want to benchmark how fast a vector dot product
 runs without SIMD extensions, you could run the following:
