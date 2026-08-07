@@ -1525,7 +1525,7 @@ readme.bind.example : % : %.o ${ARCHIVE_LIB}
 
 # Python bind example
 readme.bind.py : README.rst
-	${SED} -n '398,405p' $< | ${SED} "s/    //g" > $@
+	${SED} -n '400,407p' $< | ${SED} "s/    //g" > $@
 
 check-doc : readme.c.example readme.link.example readme.bind.example readme.bind.py ${pythonlib}
 	./readme.c.example && ./readme.link.example && ./readme.bind.example && python3 readme.bind.py
