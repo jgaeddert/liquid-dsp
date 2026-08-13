@@ -62,6 +62,9 @@ legacy:
   stage: test
   script:
     - apt-get -qq install -y --no-install-recommends automake autoconf
+    - virtualenv docutils # for check-doc
+    - source docutils/bin/activate
+    - pip install docutils
     - ./bootstrap.sh
     - ./configure
     - make -j4
