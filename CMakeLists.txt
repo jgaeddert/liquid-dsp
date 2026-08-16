@@ -753,6 +753,9 @@ if (fftw3f_FOUND)
     string(APPEND LIQUID_PC_LIBS_PRIVATE " -lfftw3f")
 endif()
 
+cmake_path(APPEND libdir_for_pc_file "\${prefix}" "${CMAKE_INSTALL_LIBDIR}")
+cmake_path(APPEND includedir_for_pc_file "\${prefix}" "${CMAKE_INSTALL_INCLUDEDIR}")
+
 configure_file(
     cmake/liquid-dsp.pc.in
     ${CMAKE_CURRENT_BINARY_DIR}/liquid-dsp.pc
