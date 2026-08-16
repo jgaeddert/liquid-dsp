@@ -10,7 +10,7 @@ variables:
 
 before_script:
   - apt-get -qq update
-  - apt-get -qq install -y --no-install-recommends build-essential cmake time curl virtualenv
+  - apt-get -qq install -y --no-install-recommends build-essential cmake time curl pkg-config virtualenv
 
 # build main library and run test programs
 build:
