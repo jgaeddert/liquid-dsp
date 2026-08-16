@@ -1,7 +1,8 @@
 # simple makefile to test linking to liquid after library has been installed
 
-all: check
+all: check check-pkg-config
 
+# check using manual linking
 check: liquid_linker_test
 	./liquid_linker_test
 
