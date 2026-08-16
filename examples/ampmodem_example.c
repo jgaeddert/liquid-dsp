@@ -17,12 +17,13 @@ int main(int argc, char*argv[])
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
     liquid_argparse_add(char*,    filename, "ampmodem_example.m",'o', "output filename", NULL);
-    liquid_argparse_add(float,    mod_index,          0.8f,  'm', "modulation index (bandwidth)", NULL);
+    liquid_argparse_add(float,    mod_index,          0.8f,  'M', "modulation index (bandwidth)", NULL);
+    liquid_argparse_add(char*,    mod_type,           "usb", 't', "modulation type: dsb/usb/lsb", NULL);
+    liquid_argparse_add(unsigned, m,                    25,  'm', "filter semi-length", NULL);
     liquid_argparse_add(float,    dphi,               0.05f, 'f', "carrier frequency offset [radians/sample]", NULL);
     liquid_argparse_add(float,    phi,                2.8f,  'p', "carrier phase offset [radians]", NULL);
     liquid_argparse_add(float,    SNRdB,              30.0f, 'S', "signal-to-noise ratio (set very high for testing)", NULL);
     liquid_argparse_add(unsigned, num_samples,        2400,  'n', "number of samples", NULL);
-    liquid_argparse_add(char*,    mod_type,           "usb", 't', "modulation type: dsb/usb/lsb", NULL);
     liquid_argparse_add(bool,     suppressed_carrier, 0,     's', "enable carrier suppression", NULL);
     liquid_argparse_parse(argc,argv);
 
@@ -41,6 +42,8 @@ int main(int argc, char*argv[])
     // create mod/demod objects
     ampmodem mod   = ampmodem_create(mod_index, type, suppressed_carrier);
     ampmodem demod = ampmodem_create(mod_index, type, suppressed_carrier);
+    ampmodem_set_delay(mod,   m);
+    ampmodem_set_delay(demod, m);
     unsigned int delay = ampmodem_get_delay_mod(mod) + ampmodem_get_delay_demod(demod);
     ampmodem_print(mod);
 
@@ -53,8 +56,8 @@ int main(int argc, char*argv[])
     unsigned int nw = (unsigned int)(0.90*num_samples); // window length
     unsigned int nt = (unsigned int)(0.05*num_samples); // taper length
     for (i=0; i<num_samples; i++) {
-        x[i] =  0.6f*cos(2*M_PI*0.0202*i);
-        x[i] += 0.4f*cos(2*M_PI*0.0271*i);
+        x[i] =  0.6f*cos(2*M_PI*0.0102*i);
+        x[i] += 0.4f*cos(2*M_PI*0.0171*i);
         x[i] *= i < nw ? liquid_rcostaper_window(i,nw,nt) : 0;
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -145,6 +145,7 @@ int ampmodem_print(ampmodem _q)
     }
     printf(", carrier_suppressed=%s", _q->suppressed_carrier ? "true" : "false");
     printf(", mod_index=%g", _q->mod_index);
+    printf(", m=%u", _q->m);
     printf(">\n");
     return LIQUID_OK;
 }
@@ -187,6 +188,34 @@ unsigned int ampmodem_get_delay_demod(ampmodem _q)
         liquid_error(LIQUID_EINT,"ampmodem_get_delay_demod(), internal error, invalid mod type");
     }
     return 0;
+}
+
+// set delay in filters
+int ampmodem_set_delay(ampmodem     _q,
+                       unsigned int _m)
+{
+    if (_m == 0 || _m > 1024)
+        return liquid_error(LIQUID_EICONFIG,"ampmodem_set_delay(), delay must be in (1,1024]");
+
+    // set internal delay and re-create objects
+    _q->m = _m;
+
+    // DC-blocking filter
+    firfilt_rrrf_destroy(_q->dcblock);
+    _q->dcblock = firfilt_rrrf_create_dc_blocker(_q->m, 20.0f);
+
+    // Hilbert transform for single side-band recovery
+    firhilbf_destroy(_q->hilbert);
+    _q->hilbert = firhilbf_create(_q->m, 60.0f);
+
+    // carrier admittance filter for phase-locked loop
+    firfilt_crcf_destroy(_q->lowpass);
+    _q->lowpass = firfilt_crcf_create_kaiser(2*_q->m+1, 0.01f, 40.0f, 0.0f);
+
+    // delay buffer
+    _q->delay = wdelaycf_recreate(_q->delay, _q->m);
+
+    return LIQUID_OK;
 }
 
 int ampmodem_modulate(ampmodem        _q,

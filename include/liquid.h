@@ -9411,6 +9411,10 @@ unsigned int AMPMODEM(_get_delay_mod)(AMPMODEM() _q);                       \
 /* get delay from demodulation operation                                */  \
 unsigned int AMPMODEM(_get_delay_demod)(AMPMODEM() _q);                     \
                                                                             \
+/* set delay in filters                                                 */  \
+int AMPMODEM(_set_delay)(AMPMODEM()   _q,                                   \
+                         unsigned int _m);                                  \
+                                                                            \
 /* modulate a single sample                                             */  \
 int AMPMODEM(_modulate)(AMPMODEM() _q, T _x, TC * _y);                      \
                                                                             \
