@@ -1310,14 +1310,16 @@ install: all
 	@echo ""
 	mkdir -p $(DESTDIR)$(prefix)/include/liquid
 	mkdir -p $(DESTDIR)$(libdir)
+	mkdir -p $(DESTDIR)$(libdir)/pkgconfig
 	install -m 644 -p libliquid.${AR_LIB} $(DESTDIR)$(libdir)/libliquid.${AR_LIB}
 	install -m 644 -p libliquid.${SH_LIB} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${VERSION}
+	install -m 644 -p liquid-dsp.pc $(DESTDIR)$(libdir)/pkgconfig/liquid-dsp.pc
 	install -m 644 -p include/liquid.h $(DESTDIR)$(prefix)/include/liquid/liquid.h
 	ln -sf libliquid.${SH_LIB}.${VERSION} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
 	ln -sf libliquid.${SH_LIB}.${VERSION} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${SOVERSION}
 	@echo ""
 	@echo "---------------------------------------------------------"
-	@echo "  liquid-dsp was successfully installed.     "
+	@echo "  liquid-dsp was successfully installed."
 	@echo ""
 	@echo "  On some machines (e.g. Linux) you should rebind your"
 	@echo "  libraries by running 'ldconfig' to make the shared"
@@ -1341,6 +1343,7 @@ uninstall:
 	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${VERSION}
 	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${SOVERSION}
 	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
+	$(RM) $(DESTDIR)$(libdir)/pkgconfig/liquid-dsp.pc
 	@echo "done."
 
 ##
@@ -1916,6 +1919,6 @@ distclean: clean
 	$(RM) configure config.h config.h.in config.h.in~ config.log config.status
 	$(RM) -r autom4te.cache
 	$(RM) aclocal.m4
-	$(RM) liquid.config.h
+	$(RM) liquid.config.h liquid-dsp.pc
 	$(RM) makefile
 

@@ -288,6 +288,8 @@ AC_SUBST(SH_LIB)                    # output shared library target
 AC_SUBST(REBIND)                    # rebinding tool (e.g. ldconfig)
 AC_SUBST(ARCH_OPTION)               # compiler architecture option
 
+AC_SUBST([LIBNAME], [liquid])        # library name for pkg-config
+
 AC_SUBST(DEBUG_MSG_OPTION)          # debug messages option (.e.g -DDEBUG)
 AC_SUBST(COVERAGE_OPTION)           # source code coverage option (e.g. -fprofile-arcs -ftest-coverage)
 AC_SUBST(CLIB)                      # C library linkage (e.g. '-lc')
@@ -372,8 +374,30 @@ AC_SUBST([BUILD_AMX101])
 AC_SUBST([BUILD_AMX102])
 
 
+# pkg-config: map autotools variables to cmake-style placeholders in liquid-dsp.pc.in
+PROJECT_VERSION="${PACKAGE_VERSION}"
+AC_SUBST([PROJECT_VERSION])
+CMAKE_INSTALL_PREFIX='${prefix}'
+AC_SUBST([CMAKE_INSTALL_PREFIX])
+libdir_for_pc_file='${prefix}/lib'
+AC_SUBST([libdir_for_pc_file])
+includedir_for_pc_file='${prefix}/include'
+AC_SUBST([includedir_for_pc_file])
+
+# build private libraries list for pkg-config
+LIQUID_PC_LIBS_PRIVATE=""
+if test "${ac_cv_lib_fftw3f_fftwf_plan_dft_1d}" = "yes" ; then
+    LIQUID_PC_LIBS_PRIVATE="${LIQUID_PC_LIBS_PRIVATE} -lfftw3f"
+fi
+if test "${ac_cv_lib_fec_create_viterbi27}" = "yes" ; then
+    LIQUID_PC_LIBS_PRIVATE="${LIQUID_PC_LIBS_PRIVATE} -lfec"
+fi
+LIQUID_PC_LIBS_PRIVATE="${LIQUID_PC_LIBS_PRIVATE} -lm"
+AC_SUBST([LIQUID_PC_LIBS_PRIVATE])
+
 AC_CONFIG_FILES([liquid.config.h:cmake/liquid.config.h.in])
 AC_CONFIG_FILES([makefile])
+AC_CONFIG_FILES([liquid-dsp.pc:cmake/liquid-dsp.pc.in])
 
 AC_OUTPUT
 
