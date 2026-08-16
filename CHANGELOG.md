@@ -5,6 +5,7 @@
   * build
     - fixed pkg-config paths since `CMAKE_INSTALL_*` are not guaranteed to be
       relative (thanks, @iank)
+    - legacy: compiling and installing liquid-dsp.pc (pkg-config file)
 
 ## 1.8.2 - 2026-08-06
 
