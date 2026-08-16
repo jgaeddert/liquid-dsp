@@ -1,5 +1,11 @@
 # Changelog
 
+## Latest
+
+  * build
+    - fixed pkg-config paths since `CMAKE_INSTALL_*` are not guaranteed to be
+      relative (thanks, @iank)
+
 ## 1.8.2 - 2026-08-06
 
 Version 1.8.2 includes several small cleanup items to support reproducible
