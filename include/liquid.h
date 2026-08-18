@@ -7191,6 +7191,24 @@ QDSYNC() QDSYNC(_create_cpfsk)(unsigned char *   _seq,                      \
                                QDSYNC(_callback) _callback,                 \
                                void *            _context);                 \
                                                                             \
+/* create detector with sequence of GMSK symbols                        */  \
+/*  _seq        : symbol sequence                                       */  \
+/*  _seq_len    : length of symbol sequence                             */  \
+/*  _ftype      : Nyquist filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
+/*  _k          : samples per symbol                                    */  \
+/*  _m          : filter semi-length                                    */  \
+/*  _beta       : filter excess bandwidth factor                        */  \
+/*  _callback   : user-defined callback                                 */  \
+/*  _context    : user-defined context                                  */  \
+QDSYNC() QDSYNC(_create_gmsk)(unsigned char *   _seq,                       \
+                              unsigned int      _seq_len,                   \
+                              int               _ftype,                     \
+                              unsigned int      _k,                         \
+                              unsigned int      _m,                         \
+                              float             _beta,                      \
+                              QDSYNC(_callback) _callback,                  \
+                              void *            _context);                  \
+                                                                            \
 /* Copy object recursively including all internal objects and state     */  \
 QDSYNC() QDSYNC(_copy)(QDSYNC() _q);                                        \
                                                                             \
