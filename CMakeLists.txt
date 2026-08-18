@@ -1170,29 +1170,14 @@ set(BENCHMARKS_EXTRA
     )
 
 if(BUILD_BENCHMARKS)
-    add_custom_command(
-        OUTPUT  benchmark_include.h
-        DEPENDS
-            ${PROJECT_BINARY_DIR}/autoscript
-            ${BENCHMARKS}
-        COMMAND ${PROJECT_BINARY_DIR}/autoscript / benchmark ${BENCHMARKS} > benchmark_include.h
-        )
-
-    # create output logging directory
-    #add_custom_command(
-    #    OUTPUT benchmark/logs
-    #    COMMAND mkdir -p benchmark/logs
-    #    )
-
-    #benchmark/logs
-    add_executable(benchmark
-        bench/bench.c
-        ${PROJECT_BINARY_DIR}/benchmark_include.h
+    add_executable(xbenchmark
+        bench/benchmark.c
         ${BENCHMARKS}
         ${BENCHMARKS_EXTRA}
         )
-    target_include_directories(benchmark PRIVATE include .)
-    target_link_libraries(benchmark ${LIQUID_TARGETS})
+    target_include_directories(xbenchmark PRIVATE include .)
+
+    target_link_libraries(xbenchmark ${LIQUID_TARGETS})
 endif(BUILD_BENCHMARKS)
 
 

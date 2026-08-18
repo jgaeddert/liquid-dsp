@@ -40,11 +40,11 @@
 // forward declaration of pointer to benchmark structure
 typedef struct liquid_benchmark_s * liquid_benchmark;
 
-// benchmark function interface: the harness passes the instance (for results)
-// and the iteration count by value (the loop bound). The function times only
-// its inner loop via LIQUID_BENCH_TIC/TOC and reports work units via _q->num_trials.
-typedef void (liquid_benchmark_function_t)(liquid_benchmark  _q,
-                                           unsigned long int _num_iterations);
+// benchmark function interface: the harness passes the number of iterations
+// that the benchmark should run; the function times its own inner loop and
+// returns the runtime in seconds. The harness calls the function repeatedly
+// with a growing iteration count until the runtime meets the target.
+typedef float (liquid_benchmark_function_t)(unsigned long int _num_iterations);
 
 // individual benchmark
 struct liquid_benchmark_s
@@ -77,53 +77,46 @@ int liquid_benchmark_print_status(liquid_benchmark _q);
 
 // execute benchmark: repeatedly run with growing _num_iterations until extime
 // meets the harness target time, then compute rate and cycles_per_trial
-int liquid_benchmark_execute(liquid_benchmark _q);
-
-// start timing the inner loop (resource usage captured internally)
-int liquid_benchmark_tic(liquid_benchmark _q);
-
-// stop timing, store extime on the instance (returns seconds elapsed)
-float liquid_benchmark_toc(liquid_benchmark _q);
-
-// bracket the timed inner loop; these reference the _q instance in scope
-// inside a LIQUID_BENCHMARK body
-#define LIQUID_BENCH_TIC()  liquid_benchmark_tic(_q)
-#define LIQUID_BENCH_TOC()  liquid_benchmark_toc(_q)
+int liquid_benchmark_execute(liquid_benchmark  _q,
+                             unsigned long int _num_trials,
+                             float             _target_runtime);
 
 // Define a benchmark: forward-declares the function, emits the companion
 // status structure, and opens the function body. The block written
-// immediately after the macro is the function body; the instance is in scope
-// as "_q" and the iteration count as "_num_iterations" (by value).
+// immediately after the macro is the function body; the iteration count is in
+// scope as "num_iterations" (by value). The body times its own inner loop
+// (e.g. with liquid_timer) and returns the runtime in seconds.
 //
 //   LIQUID_BENCHMARK(firfilt_crcf_4, "firfilt_crcf execute, n=4", "FIR,filter")
 //   {
 //       firfilt_crcf f = firfilt_crcf_create(h, 4);   // setup (untimed)
-//       unsigned long int i, n = _num_iterations;
-//       LIQUID_BENCH_TIC();
-//       for (i=0; i<n; i++) { /* push/execute ... */ }
-//       LIQUID_BENCH_TOC();
-//       _q->num_trials = n * 4;   // 4 work units per loop iteration
-//       firfilt_crcf_destroy(f); // cleanup (untimed)
+//       liquid_timer q = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+//       unsigned long int i;
+//       liquid_timer_tic(q);
+//       for (i=0; i<num_iterations; i++) { /* push/execute ... */ }
+//       float extime = liquid_timer_toc(q);
+//       firfilt_crcf_destroy(f);    // cleanup (untimed)
+//       return extime;
 //   }
-#define LIQUID_BENCHMARK(FUNC, DOCSTR, KEYWORDS)                               \
-    /* forward declaration of benchmark function                              */ \
-    void FUNC##_benchmark(liquid_benchmark, unsigned long int);                \
-    /* define companion structure (results zero-initialized)                 */ \
-    struct liquid_benchmark_s FUNC##_s = {                                     \
-        #FUNC,                /* benchmark name                              */ \
-        FUNC##_benchmark,     /* function pointer                             */ \
-        DOCSTR,               /* user-defined documentation string            */ \
-        KEYWORDS,             /* string representing comma-separated keywords */ \
-        LIQUID_BENCH_INIT,    /* status                                       */ \
-    };                                                                         \
-    /* define function: the following { ... } is the body                    */ \
-    void FUNC##_benchmark(liquid_benchmark _q, unsigned long int _num_iterations)
+#define LIQUID_BENCHMARK(FUNC, DOCSTR, KEYWORDS)                                \
+    /* forward declaration of benchmark function                            */  \
+    float FUNC##_benchmark(unsigned long int);                                  \
+    /* define companion structure (results zero-initialized)                */  \
+    struct liquid_benchmark_s FUNC##_s = {                                      \
+        #FUNC,                /* benchmark name                             */  \
+        FUNC##_benchmark,     /* function pointer                           */  \
+        DOCSTR,               /* user-defined documentation string          */  \
+        KEYWORDS,             /* string with comma-separated keywords       */  \
+        LIQUID_BENCH_INIT,    /* status                                     */  \
+    };                                                                          \
+    /* define function: the following { ... } is the body                   */  \
+    float FUNC##_benchmark(unsigned long int num_iterations)
 
 #if 0
 // this is how a benchmark should get expanded by the macro
 
 // forward declaration of benchmark function
-void firfilt_crcf_4_benchmark(liquid_benchmark, unsigned long int);
+float firfilt_crcf_4_benchmark(unsigned long int);
 // define companion struct (results zero-initialized by partial initializer)
 struct liquid_benchmark_s firfilt_crcf_4_s = {
     "firfilt_crcf_4",               // name
@@ -134,13 +127,16 @@ struct liquid_benchmark_s firfilt_crcf_4_s = {
     // num_trials, extime, rate, cycles_per_trial all zero-initialized
 };
 // define function
-void firfilt_crcf_4_benchmark(liquid_benchmark _q, unsigned long int _num_iterations)
+float firfilt_crcf_4_benchmark(unsigned long int num_iterations)
 {
-    unsigned long int i, n = _num_iterations;
-    LIQUID_BENCH_TIC();
-    for (i=0; i<n; i++) { /* timed inner loop */ }
-    LIQUID_BENCH_TOC();
-    _q->num_trials = n * 4;
+    firfilt_crcf f = firfilt_crcf_create(h, 4);   // setup (untimed)
+    liquid_timer q = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    unsigned long int i;
+    liquid_timer_tic(q);
+    for (i=0; i<num_iterations; i++) { /* timed inner loop */ }
+    float extime = liquid_timer_toc(q);
+    firfilt_crcf_destroy(f);    // cleanup (untimed)
+    return extime;
 }
 #endif
 
