@@ -21,14 +21,6 @@
  */
 
 // Lightweight benchmark header, customized for liquid-dsp
-//
-// A benchmark function receives its companion instance (_q) and the iteration
-// count by value. The body loops _num_iterations times, brackets the timed
-// inner loop with LIQUID_BENCH_TIC/TOC, and writes the number of work units
-// processed to _q->num_trials. Run-level configuration (target time, CPU
-// clock, base trials) is owned by the harness, not the instance. The harness
-// grows the iteration count each attempt until _q->extime meets its target,
-// then computes throughput as _q->num_trials / _q->extime.
 
 #ifndef __LIQUID_BENCHMARK_H__
 #define __LIQUID_BENCHMARK_H__
@@ -57,16 +49,16 @@ struct liquid_benchmark_s
 
     // status and results
     enum {
-        LIQUID_BENCH_INIT   = 0,   // benchmark has been initialized
-        LIQUID_BENCH_SCHED  = 1,   // benchmark has been scheduled to run
-        LIQUID_BENCH_ACTIVE = 2,   // benchmark is actively running
-        LIQUID_BENCH_DONE   = 3,   // benchmark finished
-        LIQUID_BENCH_SKIP   = 4,   // benchmark skipped
+        LIQUID_BENCHMARK_INIT   = 0,// benchmark has been initialized
+        LIQUID_BENCHMARK_SCHED  = 1,// benchmark has been scheduled to run
+        LIQUID_BENCHMARK_ACTIVE = 2,// benchmark is actively running
+        LIQUID_BENCHMARK_DONE   = 3,// benchmark finished
+        LIQUID_BENCHMARK_SKIP   = 4,// benchmark skipped
     } status;
-    unsigned long int num_trials;       // work units processed (set by body)
-    float             extime;           // timed duration [seconds] (set by toc)
-    float             rate;             // throughput: num_trials / extime [work units/s]
-    float             cycles_per_trial; // processor efficiency estimate
+    unsigned long int num_trials;   // work units processed (set by body)
+    float             extime;       // timed duration [seconds] (set by toc)
+    float             rate;         // throughput: num_trials / extime [work units/s]
+    float             cycles_per_trial; // TBD
 };
 
 // print benchmark info
@@ -89,13 +81,12 @@ int liquid_benchmark_execute(liquid_benchmark  _q,
 //
 //   LIQUID_BENCHMARK(firfilt_crcf_4, "firfilt_crcf execute, n=4", "FIR,filter")
 //   {
-//       firfilt_crcf f = firfilt_crcf_create(h, 4);   // setup (untimed)
-//       liquid_timer q = liquid_timer_create(LIQUID_TIMER_RUSAGE);
-//       unsigned long int i;
-//       liquid_timer_tic(q);
-//       for (i=0; i<num_iterations; i++) { /* push/execute ... */ }
-//       float extime = liquid_timer_toc(q);
-//       firfilt_crcf_destroy(f);    // cleanup (untimed)
+//       firfilt_crcf f = firfilt_crcf_create(h, 4);          // setup (untimed)
+//       liquid_timer q = liquid_timer_create(LIQUID_TIMER_RUSAGE); // create + tic (after setup)
+//       unsigned long int i, n = num_iterations / 4;         // round down to multiple of 4
+//       for (i=0; i<n; i++) { /* push/execute ... (4 work units per iter) */ }
+//       float extime = liquid_toc(q);                       // toc + destroy (before cleanup)
+//       firfilt_crcf_destroy(f);                             // cleanup (untimed)
 //       return extime;
 //   }
 #define LIQUID_BENCHMARK(FUNC, DOCSTR, KEYWORDS)                                \
@@ -107,7 +98,7 @@ int liquid_benchmark_execute(liquid_benchmark  _q,
         FUNC##_benchmark,     /* function pointer                           */  \
         DOCSTR,               /* user-defined documentation string          */  \
         KEYWORDS,             /* string with comma-separated keywords       */  \
-        LIQUID_BENCH_INIT,    /* status                                     */  \
+        LIQUID_BENCHMARK_INIT,    /* status                                     */  \
     };                                                                          \
     /* define function: the following { ... } is the body                   */  \
     float FUNC##_benchmark(unsigned long int num_iterations)
@@ -123,25 +114,24 @@ struct liquid_benchmark_s firfilt_crcf_4_s = {
     firfilt_crcf_4_benchmark,       // function pointer
     "firfilt_crcf execute, n=4",    // description
     "FIR,filter",                   // keywords
-    LIQUID_BENCH_INIT,              // status
+    LIQUID_BENCHMARK_INIT,              // status
     // num_trials, extime, rate, cycles_per_trial all zero-initialized
 };
 // define function
 float firfilt_crcf_4_benchmark(unsigned long int num_iterations)
 {
-    firfilt_crcf f = firfilt_crcf_create(h, 4);   // setup (untimed)
-    liquid_timer q = liquid_timer_create(LIQUID_TIMER_RUSAGE);
-    unsigned long int i;
-    liquid_timer_tic(q);
-    for (i=0; i<num_iterations; i++) { /* timed inner loop */ }
-    float extime = liquid_timer_toc(q);
-    firfilt_crcf_destroy(f);    // cleanup (untimed)
+    firfilt_crcf f = firfilt_crcf_create(h, 4);          // setup (untimed)
+    liquid_timer q = liquid_timer_create(LIQUID_TIMER_RUSAGE); // create + tic (after setup)
+    unsigned long int i, n = num_iterations / 4;         // round down to multiple of 4
+    for (i=0; i<n; i++) { /* timed inner loop (4 work units per iter) */ }
+    float extime = liquid_toc(q);                       // toc + destroy (before cleanup)
+    firfilt_crcf_destroy(f);                             // cleanup (untimed)
     return extime;
 }
 #endif
 
 // structured registry to simplify benchmarking
-struct liquid_bench_registry_s
+struct liquid_benchmark_registry_s
 {
     // total benchmarks within registry
     unsigned int num_benchmarks;
@@ -154,33 +144,33 @@ struct liquid_bench_registry_s
 };
 
 // pointer to struct
-typedef struct liquid_bench_registry_s * liquid_bench_registry;
+typedef struct liquid_benchmark_registry_s * liquid_benchmark_registry;
 
 // create registry from pointer to benchmarks
-liquid_bench_registry liquid_bench_registry_create(liquid_benchmark * _benchmarks);
+liquid_benchmark_registry liquid_benchmark_registry_create(liquid_benchmark * _benchmarks);
 
 // destroy registry
-int liquid_bench_registry_destroy(liquid_bench_registry _q);
+int liquid_benchmark_registry_destroy(liquid_benchmark_registry _q);
 
 // schedule all benchmarks to run
-int liquid_bench_registry_schedule_all(liquid_bench_registry _q);
+int liquid_benchmark_registry_schedule_all(liquid_benchmark_registry _q);
 
 // schedule one specific benchmark to run
-int liquid_bench_registry_schedule_one(liquid_bench_registry _q, unsigned int _id);
+int liquid_benchmark_registry_schedule_one(liquid_benchmark_registry _q, unsigned int _id);
 
 // schedule only benchmarks that match search string
-int liquid_bench_registry_schedule_search(liquid_bench_registry _q, const char * _query);
+int liquid_benchmark_registry_schedule_search(liquid_benchmark_registry _q, const char * _query);
 
 // run all scheduled benchmarks
-int liquid_bench_registry_execute(liquid_bench_registry _q);
+int liquid_benchmark_registry_execute(liquid_benchmark_registry _q);
 
 // print status of benchmarks
-int liquid_bench_registry_print_status(liquid_bench_registry _q);
+int liquid_benchmark_registry_print_status(liquid_benchmark_registry _q);
 
 // print summary of benchmark run
-int liquid_bench_registry_print_summary(liquid_bench_registry _q);
+int liquid_benchmark_registry_print_summary(liquid_benchmark_registry _q);
 
 // export registry to JSON file
-int liquid_bench_registry_json(liquid_bench_registry _q, FILE * _fid);
+int liquid_benchmark_registry_json(liquid_benchmark_registry _q, FILE * _fid);
 
 #endif // __LIQUID_BENCHMARK_H__

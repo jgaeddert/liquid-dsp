@@ -21,14 +21,7 @@ char __docstr__[] = "Run benchmark programs in liquid-dsp";
  * THE SOFTWARE.
  */
 
-// bench/benchmark.c
-//
-// Benchmark harness for liquid-dsp. Implements the run/execute/tic/toc helpers
-// and the registry declared in liquid.benchmark.h. Benchmarks are registered
-// as companion structs (one per LIQUID_BENCHMARK invocation) and run through a
-// registry; the harness owns run-level configuration (target time, CPU clock,
-// base iteration count) and grows the iteration count each attempt until the
-// timed loop meets the target duration, then reports throughput.
+// Benchmark harness for liquid-dsp
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,7 +59,7 @@ int liquid_benchmark_print_info(liquid_benchmark _q, unsigned int _index)
 // print benchmark status
 int liquid_benchmark_print_status(liquid_benchmark _q)
 {
-    if (_q->status == LIQUID_BENCH_SKIP)
+    if (_q->status == LIQUID_BENCHMARK_SKIP)
         return LIQUID_OK;
 
     float trials_format = (float)(_q->num_trials);  char tu = convert_units(&trials_format);
@@ -87,7 +80,7 @@ int liquid_benchmark_execute(liquid_benchmark  _q,
                              unsigned long int _num_trials,
                              float             _target_runtime)
 {
-    _q->status = LIQUID_BENCH_ACTIVE;
+    _q->status = LIQUID_BENCHMARK_ACTIVE;
 
     unsigned int num_attempts = 0;
     float runtime = 0.0f;
@@ -104,13 +97,11 @@ int liquid_benchmark_execute(liquid_benchmark  _q,
             _num_trials *= 32;
         else if (_target_runtime / runtime > 256)
             _num_trials *= 256;
-        else if (_target_runtime / runtime > 16)
-            _num_trials *= 16;
         else
-            _num_trials *= 4;
+            _num_trials *= 1.2 * _target_runtime / runtime;
     }
     if (num_attempts >= 30) {
-        _q->status = LIQUID_BENCH_DONE;
+        _q->status = LIQUID_BENCHMARK_DONE;
         return liquid_error(LIQUID_ENOCONV, "benchmark '%s' could not reach target time after %u attempts",
             _q->name, num_attempts);
     }
@@ -119,17 +110,12 @@ int liquid_benchmark_execute(liquid_benchmark  _q,
     _q->num_trials       = _num_trials;
     _q->rate             = (float)(_q->num_trials) / _q->extime;
     _q->cycles_per_trial = 0; // TODO: bench_cpu_clock / _q->rate;
-    _q->status           = LIQUID_BENCH_DONE;
+    _q->status           = LIQUID_BENCHMARK_DONE;
     return LIQUID_OK;
 }
 
-#if 0 // pause on the registry for now; focus on running a particular benchmark
-// -------------------------------------------------------------------------
-// registry
-// -------------------------------------------------------------------------
-
 // create registry from a NULL-terminated list of benchmarks
-liquid_bench_registry liquid_bench_registry_create(liquid_benchmark * _benchmarks)
+liquid_benchmark_registry liquid_benchmark_registry_create(liquid_benchmark * _benchmarks)
 {
     unsigned int max_benchmarks = 8000;  // safeguard
     unsigned int num_benchmarks = 0;
@@ -140,18 +126,18 @@ liquid_bench_registry liquid_bench_registry_create(liquid_benchmark * _benchmark
         return NULL;
     }
 
-    liquid_bench_registry q = (liquid_bench_registry)malloc(sizeof(struct liquid_bench_registry_s));
+    liquid_benchmark_registry q = (liquid_benchmark_registry)malloc(sizeof(struct liquid_benchmark_registry_s));
     q->num_benchmarks = num_benchmarks;
     q->benchmarks     = _benchmarks;
     q->timer          = liquid_timer_create(LIQUID_TIMER_CLOCK);
 
     // schedule all benchmarks to run by default
-    liquid_bench_registry_schedule_all(q);
+    liquid_benchmark_registry_schedule_all(q);
     return q;
 }
 
 // destroy registry
-int liquid_bench_registry_destroy(liquid_bench_registry _q)
+int liquid_benchmark_registry_destroy(liquid_benchmark_registry _q)
 {
     liquid_timer_destroy(_q->timer);
     free(_q);
@@ -159,36 +145,36 @@ int liquid_bench_registry_destroy(liquid_bench_registry _q)
 }
 
 // schedule all benchmarks to run
-int liquid_bench_registry_schedule_all(liquid_bench_registry _q)
+int liquid_benchmark_registry_schedule_all(liquid_benchmark_registry _q)
 {
     unsigned int i;
     for (i=0; i<_q->num_benchmarks; i++)
-        _q->benchmarks[i]->status = LIQUID_BENCH_SCHED;
+        _q->benchmarks[i]->status = LIQUID_BENCHMARK_SCHED;
     return LIQUID_OK;
 }
 
 // schedule one specific benchmark to run (skip the rest)
-int liquid_bench_registry_schedule_one(liquid_bench_registry _q, unsigned int _id)
+int liquid_benchmark_registry_schedule_one(liquid_benchmark_registry _q, unsigned int _id)
 {
     unsigned int i;
     for (i=0; i<_q->num_benchmarks; i++)
-        _q->benchmarks[i]->status = (i == _id) ? LIQUID_BENCH_SCHED : LIQUID_BENCH_SKIP;
+        _q->benchmarks[i]->status = (i == _id) ? LIQUID_BENCHMARK_SCHED : LIQUID_BENCHMARK_SKIP;
     if (_id >= _q->num_benchmarks)
         fprintf(stderr, "error: id (%u) exceeds number of benchmarks (%u)\n", _id, _q->num_benchmarks);
     return LIQUID_OK;
 }
 
 // schedule only benchmarks whose name matches the search string
-int liquid_bench_registry_schedule_search(liquid_bench_registry _q, const char * _query)
+int liquid_benchmark_registry_schedule_search(liquid_benchmark_registry _q, const char * _query)
 {
     unsigned int i;
     unsigned int num_found = 0;
     for (i=0; i<_q->num_benchmarks; i++) {
         if (strstr(_q->benchmarks[i]->name, _query) != NULL) {
-            _q->benchmarks[i]->status = LIQUID_BENCH_SCHED;
+            _q->benchmarks[i]->status = LIQUID_BENCHMARK_SCHED;
             num_found++;
         } else {
-            _q->benchmarks[i]->status = LIQUID_BENCH_SKIP;
+            _q->benchmarks[i]->status = LIQUID_BENCHMARK_SKIP;
         }
     }
     if (num_found == 0)
@@ -197,19 +183,19 @@ int liquid_bench_registry_schedule_search(liquid_bench_registry _q, const char *
 }
 
 // run all scheduled benchmarks
-int liquid_bench_registry_execute(liquid_bench_registry _q)
+int liquid_benchmark_registry_execute(liquid_benchmark_registry _q)
 {
     unsigned int i;
     for (i=0; i<_q->num_benchmarks; i++) {
         liquid_benchmark b = _q->benchmarks[i];
-        if (b->status == LIQUID_BENCH_SCHED)
-            liquid_benchmark_execute(b);
+        if (b->status == LIQUID_BENCHMARK_SCHED)
+            liquid_benchmark_execute(b, 1LU, 0.1f);
     }
     return LIQUID_OK;
 }
 
 // print status of all benchmarks
-int liquid_bench_registry_print_status(liquid_bench_registry _q)
+int liquid_benchmark_registry_print_status(liquid_benchmark_registry _q)
 {
     printf("=========== benchmark results ===========\n");
     unsigned int i;
@@ -219,7 +205,7 @@ int liquid_bench_registry_print_status(liquid_bench_registry _q)
 }
 
 // print summary of benchmark run
-int liquid_bench_registry_print_summary(liquid_bench_registry _q)
+int liquid_benchmark_registry_print_summary(liquid_benchmark_registry _q)
 {
     float runtime = liquid_timer_toc(_q->timer);
     printf("=========== benchmark summary ===========\n");
@@ -229,7 +215,7 @@ int liquid_bench_registry_print_summary(liquid_bench_registry _q)
 }
 
 // export registry results to JSON
-int liquid_bench_registry_json(liquid_bench_registry _q, FILE * _fid)
+int liquid_benchmark_registry_json(liquid_benchmark_registry _q, FILE * _fid)
 {
     fprintf(_fid, "  \"benchmarks\" : [\n");
     unsigned int i;
@@ -248,7 +234,6 @@ int liquid_bench_registry_json(liquid_bench_registry _q, FILE * _fid)
     fprintf(_fid, "  ]\n");
     return LIQUID_OK;
 }
-#endif
 
 float dotprod(float * _h, float * _x, unsigned int _n)
 {
