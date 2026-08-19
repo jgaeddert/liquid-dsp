@@ -20,20 +20,11 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void firfilt_crcf_bench(struct rusage *_start,
-                        struct rusage *_finish,
-                        unsigned long int *_num_iterations,
-                        unsigned int _n)
+float firfilt_crcf_bench(unsigned long int num_iterations, unsigned int _n)
 {
-    // adjust number of iterations:
-    // cycles/trial ~ 107 + 4.3*_n
-    *_num_iterations *= 1000;
-    *_num_iterations /= (unsigned int)(107+4.3*_n);
-
     // generate coefficients
     float h[_n];
     unsigned long int i;
@@ -51,29 +42,33 @@ void firfilt_crcf_bench(struct rusage *_start,
     // output vector
     float complex y[4];
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 work units per iteration; round down to multiple of 4)
+    unsigned long int n = num_iterations / 4;
+    liquid_timer q = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         firfilt_crcf_push(f, x[0]); firfilt_crcf_execute(f, &y[0]);
         firfilt_crcf_push(f, x[1]); firfilt_crcf_execute(f, &y[1]);
         firfilt_crcf_push(f, x[2]); firfilt_crcf_execute(f, &y[2]);
         firfilt_crcf_push(f, x[3]); firfilt_crcf_execute(f, &y[3]);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(q);
 
     firfilt_crcf_destroy(f);
+    return extime;
 }
 
-#define FIRFILT_CRCF_BENCHMARK_API(N)   \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
-{ firfilt_crcf_bench(_start, _finish, _num_iterations, N); }
+LIQUID_BENCHMARK(firfilt_crcf_4, "firfilt_crcf execute, n=4", "FIR,filter")
+    { return firfilt_crcf_bench(num_iterations, 4); }
 
-void benchmark_firfilt_crcf_4    FIRFILT_CRCF_BENCHMARK_API(4)
-void benchmark_firfilt_crcf_8    FIRFILT_CRCF_BENCHMARK_API(8)
-void benchmark_firfilt_crcf_16   FIRFILT_CRCF_BENCHMARK_API(16)
-void benchmark_firfilt_crcf_32   FIRFILT_CRCF_BENCHMARK_API(32)
-void benchmark_firfilt_crcf_64   FIRFILT_CRCF_BENCHMARK_API(64)
+LIQUID_BENCHMARK(firfilt_crcf_8, "firfilt_crcf execute, n=8", "FIR,filter")
+    { return firfilt_crcf_bench(num_iterations, 8); }
+
+LIQUID_BENCHMARK(firfilt_crcf_16, "firfilt_crcf execute, n=16", "FIR,filter")
+    { return firfilt_crcf_bench(num_iterations, 16); }
+
+LIQUID_BENCHMARK(firfilt_crcf_32, "firfilt_crcf execute, n=32", "FIR,filter")
+    { return firfilt_crcf_bench(num_iterations, 32); }
+
+LIQUID_BENCHMARK(firfilt_crcf_64, "firfilt_crcf execute, n=64", "FIR,filter")
+    { return firfilt_crcf_bench(num_iterations, 64); }
 

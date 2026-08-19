@@ -1,27 +1,4 @@
 char __docstr__[] = "Run benchmark programs in liquid-dsp";
-/*
- * Copyright (c) 2007 - 2026 Joseph Gaeddert
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-
-// Benchmark harness for liquid-dsp
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +7,9 @@ char __docstr__[] = "Run benchmark programs in liquid-dsp";
 #include "liquid.h"
 #include "liquid.benchmark.h"
 #include "liquid.argparse.h"
+
+// benchmark registry (lists all LIQUID_BENCHMARK companion structs)
+#include "liquid_benchmark_registry.h"
 
 // convert a raw value into a metric-scaled magnitude and return the unit prefix
 // example: 0.01397 -> 13.97 with unit 'm'
@@ -235,31 +215,7 @@ int liquid_benchmark_registry_json(liquid_benchmark_registry _q, FILE * _fid)
     return LIQUID_OK;
 }
 
-float dotprod(float * _h, float * _x, unsigned int _n)
-{
-    float y = 0.0f;
-    unsigned int i;
-    for (i=0; i<_n; i++)
-        y += _h[i] * _x[i];
-    return y;
-}
-
-LIQUID_BENCHMARK(dummy, "dummy benchmark program", "dummy")
-{
-    float h[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-    float x[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-    float y;
-
-    unsigned long int i;
-    liquid_timer q = liquid_timer_create(LIQUID_TIMER_RUSAGE);
-    for (i = 0; i < num_iterations; i++) {
-        y = dotprod(h, x, 4);
-        h[0] = 0.9f * h[0] + 0.1 * y;
-    }
-    return liquid_toc(q);
-}
-
-// autotest main
+// benchmark main
 int main(int argc, char* argv[])
 {
     // set default logging level
@@ -270,18 +226,43 @@ int main(int argc, char* argv[])
     liquid_argparse_init(__docstr__);
     liquid_argparse_add(int,  num_trials,     1, 'T', "baseline trials", NULL);
     liquid_argparse_add(float,target_runtime,0.1,'r', "target runtime [seconds]", NULL);
-    //liquid_argparse_add(int,  test_id,       -1, 't', "run a specific test", NULL);
-    //liquid_argparse_add(int,  random_seed,   -1, 'R', "specify random seed value", NULL);
-    //liquid_argparse_add(bool, list,       false, 'l', "list tests and exit", NULL);
-    //liquid_argparse_add(bool, stop_fail,  false, 'x', "stop on fail", NULL);
-    //liquid_argparse_add(char*,search,        "", 's', "run tests with search string in name", NULL);
-    //liquid_argparse_add(char*,json,          "", 'o', "output JSON file", NULL);
-    //liquid_argparse_add(char*,logfile,       "", 'g', "output logfile", NULL);
-    //liquid_argparse_add(bool, status,  false, 'P', "print full status of all at the end", NULL);
+    liquid_argparse_add(int,  test_id,       -1, 't', "run a specific benchmark", NULL);
+    liquid_argparse_add(bool, list,       false, 'l', "list benchmarks and exit", NULL);
+    liquid_argparse_add(char*,search,        "", 's', "run benchmarks with search string in name", NULL);
     liquid_argparse_parse(argc,argv);
 
-    liquid_benchmark_execute(&dummy_s, num_trials, target_runtime);
-    liquid_benchmark_print_status(&dummy_s);
+    // list benchmarks and exit if requested
+    if (list) {
+        unsigned int i = 0;
+        while (liquid_benchmarks[i] != NULL) {
+            liquid_benchmark_print_info(liquid_benchmarks[i], i);
+            i++;
+        }
+        return LIQUID_OK;
+    }
 
+    // create registry from the NULL-terminated list of benchmarks
+    liquid_benchmark_registry registry =
+        liquid_benchmark_registry_create(liquid_benchmarks);
+
+    // schedule benchmarks to run (default: all)
+    if (test_id >= 0)
+        liquid_benchmark_registry_schedule_one(registry, test_id);
+    else if (strlen(search) > 0)
+        liquid_benchmark_registry_schedule_search(registry, search);
+
+    // run scheduled benchmarks, passing the base trial count and target runtime
+    unsigned int i;
+    for (i=0; i<registry->num_benchmarks; i++) {
+        liquid_benchmark b = registry->benchmarks[i];
+        if (b->status == LIQUID_BENCHMARK_SCHED)
+            liquid_benchmark_execute(b, num_trials, target_runtime);
+    }
+
+    // print results and summary
+    liquid_benchmark_registry_print_status(registry);
+    liquid_benchmark_registry_print_summary(registry);
+
+    liquid_benchmark_registry_destroy(registry);
     return LIQUID_OK;
 }
