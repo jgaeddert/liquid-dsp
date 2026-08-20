@@ -31,7 +31,7 @@ static char convert_units(float * _v)
 // print benchmark info
 int liquid_benchmark_print_info(liquid_benchmark _q, unsigned int _index)
 {
-    printf("index=%4u, name=%s, description=%s, keywords=%s\n",
+    liquid_log_info("index=%4u, name=%s, description=%s, keywords=%s",
         _index, _q->name, _q->docstr, _q->keywords);
     return LIQUID_OK;
 }
@@ -46,7 +46,7 @@ int liquid_benchmark_print_status(liquid_benchmark _q)
     float extime_format = _q->extime;               char eu = convert_units(&extime_format);
     float rate_format   = _q->rate;                 char ru = convert_units(&rate_format);
 
-    printf("  %-30s: %6.2f %c trials / %6.2f %cs (%6.2f %c t/s)\n",
+    liquid_log_info("%-30s: %6.2f %c trials / %6.2f %cs (%6.2f %c t/s)",
         _q->name,
         trials_format, tu,
         extime_format, eu,
@@ -177,7 +177,7 @@ int liquid_benchmark_registry_execute(liquid_benchmark_registry _q)
 // print status of all benchmarks
 int liquid_benchmark_registry_print_status(liquid_benchmark_registry _q)
 {
-    printf("=========== benchmark results ===========\n");
+    liquid_log_info("=========== benchmark results ===========");
     unsigned int i;
     for (i=0; i<_q->num_benchmarks; i++)
         liquid_benchmark_print_status(_q->benchmarks[i]);
@@ -188,9 +188,9 @@ int liquid_benchmark_registry_print_status(liquid_benchmark_registry _q)
 int liquid_benchmark_registry_print_summary(liquid_benchmark_registry _q)
 {
     float runtime = liquid_timer_toc(_q->timer);
-    printf("=========== benchmark summary ===========\n");
-    printf("benchmarks: %u\n", _q->num_benchmarks);
-    printf("runtime:    %.3f s\n", runtime);
+    liquid_log_info("=========== benchmark summary ===========");
+    liquid_log_info("benchmarks: %u", _q->num_benchmarks);
+    liquid_log_info("runtime:    %.3f s", runtime);
     return LIQUID_OK;
 }
 
@@ -251,16 +251,17 @@ int main(int argc, char* argv[])
     else if (strlen(search) > 0)
         liquid_benchmark_registry_schedule_search(registry, search);
 
-    // run scheduled benchmarks, passing the base trial count and target runtime
+    // run scheduled benchmarks, printing each result as it finishes
     unsigned int i;
     for (i=0; i<registry->num_benchmarks; i++) {
         liquid_benchmark b = registry->benchmarks[i];
-        if (b->status == LIQUID_BENCHMARK_SCHED)
+        if (b->status == LIQUID_BENCHMARK_SCHED) {
             liquid_benchmark_execute(b, num_trials, target_runtime);
+            liquid_benchmark_print_status(b);
+        }
     }
 
-    // print results and summary
-    liquid_benchmark_registry_print_status(registry);
+    // print summary
     liquid_benchmark_registry_print_summary(registry);
 
     liquid_benchmark_registry_destroy(registry);
