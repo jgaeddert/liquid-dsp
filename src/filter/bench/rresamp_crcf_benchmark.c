@@ -19,21 +19,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#include <sys/resource.h>
+#include "liquid.benchmark.h"
 #include <stdlib.h>
-#include "liquid.h"
 
 // Helper function to keep code base small
-void rresamp_crcf_bench(struct rusage *     _start,
-                        struct rusage *     _finish,
-                        unsigned long int * _num_iterations,
+float rresamp_crcf_bench(unsigned long int num_iterations,
                         unsigned int        _P,
                         unsigned int        _Q)
 {
-    // adjust number of iterations
-    *_num_iterations = *_num_iterations * liquid_nextpow2(_Q+1) / (4*_Q);
-
     // create resampling object
     unsigned int m  = 12;
     float        bw = 0.45f;
@@ -49,38 +42,50 @@ void rresamp_crcf_bench(struct rusage *     _start,
     for (i=0; i<buf_len; i++)
         buf[i] = i==0 ? 1.0 : 0.0;
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 executes of buf_len input samples each per iteration; round down)
+    unsigned long int n = num_iterations / (4 * buf_len);
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         rresamp_crcf_execute(q, buf, buf);
         rresamp_crcf_execute(q, buf, buf);
         rresamp_crcf_execute(q, buf, buf);
         rresamp_crcf_execute(q, buf, buf);
         buf[0] = 1.0f;
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
 
     free(buf);
     rresamp_crcf_destroy(q);
+    return extime;
 }
-
-#define RRESAMP_CRCF_BENCHMARK_API(P,Q) \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
-{ rresamp_crcf_bench(_start, _finish, _num_iterations, P, Q); }
 
 //
 // Rational-rate resampler benchmark prototypes; compare to arbitrary rate resampler
 //
-void benchmark_rresamp_crcf_P17_Q1   RRESAMP_CRCF_BENCHMARK_API(17,   1)
-void benchmark_rresamp_crcf_P17_Q2   RRESAMP_CRCF_BENCHMARK_API(17,   2)
-void benchmark_rresamp_crcf_P17_Q4   RRESAMP_CRCF_BENCHMARK_API(17,   4)
-void benchmark_rresamp_crcf_P17_Q8   RRESAMP_CRCF_BENCHMARK_API(17,   8)
-void benchmark_rresamp_crcf_P17_Q16  RRESAMP_CRCF_BENCHMARK_API(17,  16)
-void benchmark_rresamp_crcf_P17_Q32  RRESAMP_CRCF_BENCHMARK_API(17,  32)
-void benchmark_rresamp_crcf_P17_Q64  RRESAMP_CRCF_BENCHMARK_API(17,  64)
-void benchmark_rresamp_crcf_P17_Q128 RRESAMP_CRCF_BENCHMARK_API(17, 128)
-void benchmark_rresamp_crcf_P17_Q256 RRESAMP_CRCF_BENCHMARK_API(17, 256)
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q1,   "rresamp_crcf execute, P=17 Q=1",   "resampler,rational")
+    { return rresamp_crcf_bench(num_iterations, 17,   1); }
+
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q2,   "rresamp_crcf execute, P=17 Q=2",   "resampler,rational")
+    { return rresamp_crcf_bench(num_iterations, 17,   2); }
+
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q4,   "rresamp_crcf execute, P=17 Q=4",   "resampler,rational")
+    { return rresamp_crcf_bench(num_iterations, 17,   4); }
+
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q8,   "rresamp_crcf execute, P=17 Q=8",   "resampler,rational")
+    { return rresamp_crcf_bench(num_iterations, 17,   8); }
+
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q16,  "rresamp_crcf execute, P=17 Q=16",  "resampler,rational")
+    { return rresamp_crcf_bench(num_iterations, 17,  16); }
+
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q32,  "rresamp_crcf execute, P=17 Q=32",  "resampler,rational")
+    { return rresamp_crcf_bench(num_iterations, 17,  32); }
+
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q64,  "rresamp_crcf execute, P=17 Q=64",  "resampler,rational")
+    { return rresamp_crcf_bench(num_iterations, 17,  64); }
+
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q128, "rresamp_crcf execute, P=17 Q=128", "resampler,rational")
+    { return rresamp_crcf_bench(num_iterations, 17, 128); }
+
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q256, "rresamp_crcf execute, P=17 Q=256", "resampler,rational")
+    { return rresamp_crcf_bench(num_iterations, 17, 256); }
 

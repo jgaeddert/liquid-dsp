@@ -20,28 +20,14 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void iirfilt_crcf_bench(struct rusage *     _start,
-                        struct rusage *     _finish,
-                        unsigned long int * _num_iterations,
+float iirfilt_crcf_bench(unsigned long int num_iterations,
                         unsigned int        _order,
                         unsigned int        _format)
 {
     unsigned int i;
-
-    // scale number of iterations (trials)
-    if (_format == LIQUID_IIRDES_TF) {
-        // cycles/trial ~ 128 + 15.3*_order;
-        *_num_iterations *= 1000;
-        *_num_iterations /= (unsigned int)(128 + 15.3*_order);
-    } else {
-        // cycles/trial ~ 93 + 53.3*_order
-        *_num_iterations *= 800;
-        *_num_iterations /= (unsigned int)(93 + 53.3*_order);
-    }
 
     // create filter object from prototype
     float fc    =  0.2f;    // filter cut-off frequency
@@ -60,45 +46,56 @@ void iirfilt_crcf_bench(struct rusage *     _start,
     for (i=0; i<4; i++)
         x[i] = randnf() + _Complex_I*randnf();
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 single-sample executes per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         iirfilt_crcf_execute(q, x[0], &y[0]);
         iirfilt_crcf_execute(q, x[1], &y[1]);
         iirfilt_crcf_execute(q, x[2], &y[2]);
         iirfilt_crcf_execute(q, x[3], &y[3]);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
 
     // destroy filter object
     iirfilt_crcf_destroy(q);
+    return extime;
 }
 
-#define IIRFILT_CRCF_BENCHMARK_API(N,T)     \
-(   struct rusage *_start,                  \
-    struct rusage *_finish,                 \
-    unsigned long int *_num_iterations)     \
-{ iirfilt_crcf_bench(_start, _finish, _num_iterations, N, T); }
-
 // benchmark regular transfer function form
-void benchmark_iirfilt_crcf_4        IIRFILT_CRCF_BENCHMARK_API(4,    LIQUID_IIRDES_TF)
-void benchmark_iirfilt_crcf_8        IIRFILT_CRCF_BENCHMARK_API(8,    LIQUID_IIRDES_TF)
-void benchmark_iirfilt_crcf_16       IIRFILT_CRCF_BENCHMARK_API(16,   LIQUID_IIRDES_TF)
-void benchmark_iirfilt_crcf_32       IIRFILT_CRCF_BENCHMARK_API(32,   LIQUID_IIRDES_TF)
-void benchmark_iirfilt_crcf_64       IIRFILT_CRCF_BENCHMARK_API(64,   LIQUID_IIRDES_TF)
+LIQUID_BENCHMARK(iirfilt_crcf_4,      "iirfilt_crcf execute, order=4 (tf)",   "IIR,filter")
+    { return iirfilt_crcf_bench(num_iterations, 4,  LIQUID_IIRDES_TF); }
+
+LIQUID_BENCHMARK(iirfilt_crcf_8,      "iirfilt_crcf execute, order=8 (tf)",   "IIR,filter")
+    { return iirfilt_crcf_bench(num_iterations, 8,  LIQUID_IIRDES_TF); }
+
+LIQUID_BENCHMARK(iirfilt_crcf_16,     "iirfilt_crcf execute, order=16 (tf)",  "IIR,filter")
+    { return iirfilt_crcf_bench(num_iterations, 16, LIQUID_IIRDES_TF); }
+
+LIQUID_BENCHMARK(iirfilt_crcf_32,     "iirfilt_crcf execute, order=32 (tf)",  "IIR,filter")
+    { return iirfilt_crcf_bench(num_iterations, 32, LIQUID_IIRDES_TF); }
+
+LIQUID_BENCHMARK(iirfilt_crcf_64,     "iirfilt_crcf execute, order=64 (tf)",  "IIR,filter")
+    { return iirfilt_crcf_bench(num_iterations, 64, LIQUID_IIRDES_TF); }
 
 // benchmark second-order sections form
-void benchmark_iirfilt_crcf_sos_4    IIRFILT_CRCF_BENCHMARK_API(4,    LIQUID_IIRDES_SOS)
-void benchmark_iirfilt_crcf_sos_8    IIRFILT_CRCF_BENCHMARK_API(8,    LIQUID_IIRDES_SOS)
-void benchmark_iirfilt_crcf_sos_16   IIRFILT_CRCF_BENCHMARK_API(16,   LIQUID_IIRDES_SOS)
-void benchmark_iirfilt_crcf_sos_32   IIRFILT_CRCF_BENCHMARK_API(32,   LIQUID_IIRDES_SOS)
-void benchmark_iirfilt_crcf_sos_64   IIRFILT_CRCF_BENCHMARK_API(64,   LIQUID_IIRDES_SOS)
+LIQUID_BENCHMARK(iirfilt_crcf_sos_4,  "iirfilt_crcf execute, order=4 (sos)",  "IIR,filter,sos")
+    { return iirfilt_crcf_bench(num_iterations, 4,  LIQUID_IIRDES_SOS); }
+
+LIQUID_BENCHMARK(iirfilt_crcf_sos_8,  "iirfilt_crcf execute, order=8 (sos)",  "IIR,filter,sos")
+    { return iirfilt_crcf_bench(num_iterations, 8,  LIQUID_IIRDES_SOS); }
+
+LIQUID_BENCHMARK(iirfilt_crcf_sos_16, "iirfilt_crcf execute, order=16 (sos)", "IIR,filter,sos")
+    { return iirfilt_crcf_bench(num_iterations, 16, LIQUID_IIRDES_SOS); }
+
+LIQUID_BENCHMARK(iirfilt_crcf_sos_32, "iirfilt_crcf execute, order=32 (sos)", "IIR,filter,sos")
+    { return iirfilt_crcf_bench(num_iterations, 32, LIQUID_IIRDES_SOS); }
+
+LIQUID_BENCHMARK(iirfilt_crcf_sos_64, "iirfilt_crcf execute, order=64 (sos)", "IIR,filter,sos")
+    { return iirfilt_crcf_bench(num_iterations, 64, LIQUID_IIRDES_SOS); }
 
 // benchmark DC-blocking filter
-void benchmark_irfilt_crcf_dcblock(struct rusage *     _start,
-                                   struct rusage *     _finish,
-                                   unsigned long int * _num_iterations)
+float iirfilt_crcf_dcblock_bench(unsigned long int num_iterations)
 {
     unsigned long int i;
 
@@ -110,18 +107,22 @@ void benchmark_irfilt_crcf_dcblock(struct rusage *     _start,
     for (i=0; i<4; i++)
         x[i] = randnf() + _Complex_I*randnf();
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 single-sample executes per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         iirfilt_crcf_execute(q, x[0], &x[0]);
         iirfilt_crcf_execute(q, x[1], &x[1]);
         iirfilt_crcf_execute(q, x[2], &x[2]);
         iirfilt_crcf_execute(q, x[3], &x[3]);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
 
     // destroy filter object
     iirfilt_crcf_destroy(q);
+    return extime;
 }
+
+LIQUID_BENCHMARK(iirfilt_crcf_dcblock, "iirfilt_crcf dc-blocker execute", "IIR,filter,dcblock")
+    { return iirfilt_crcf_dcblock_bench(num_iterations); }
 

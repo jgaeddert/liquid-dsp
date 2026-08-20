@@ -20,13 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void symsync_crcf_bench(struct rusage *     _start,
-                        struct rusage *     _finish,
-                        unsigned long int * _num_iterations,
+float symsync_crcf_bench(unsigned long int num_iterations,
                         unsigned int        _k,
                         unsigned int        _m)
 {
@@ -42,8 +39,6 @@ void symsync_crcf_bench(struct rusage *     _start,
 
     //
     unsigned int num_samples = 64;
-    *_num_iterations /= num_samples;
-
     unsigned int num_written;
     float complex x[num_samples];
     float complex y[num_samples];
@@ -54,31 +49,32 @@ void symsync_crcf_bench(struct rusage *     _start,
         x[i] = ((float)msequence_generate_symbol(ms, 6) - 31.5) / 24.0f;
     msequence_destroy(ms);
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 executes of num_samples input samples each per iteration; round down)
+    unsigned long int n = num_iterations / (4 * num_samples);
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         symsync_crcf_execute(q, x, num_samples, y, &num_written);
         symsync_crcf_execute(q, x, num_samples, y, &num_written);
         symsync_crcf_execute(q, x, num_samples, y, &num_written);
         symsync_crcf_execute(q, x, num_samples, y, &num_written);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4 * num_samples;
-
+    float extime = liquid_toc(timer);
     symsync_crcf_destroy(q);
+    return extime;
 }
 
-#define SYMSYNC_CRCF_BENCHMARK_API(K,M)     \
-(   struct rusage *_start,                  \
-    struct rusage *_finish,                 \
-    unsigned long int *_num_iterations)     \
-{ symsync_crcf_bench(_start, _finish, _num_iterations, K, M); }
-
-// 
+//
 // BENCHMARKS
 //
-void benchmark_symsync_crcf_k2_m2   SYMSYNC_CRCF_BENCHMARK_API(2, 2)
-void benchmark_symsync_crcf_k2_m4   SYMSYNC_CRCF_BENCHMARK_API(2, 4)
-void benchmark_symsync_crcf_k2_m8   SYMSYNC_CRCF_BENCHMARK_API(2, 8)
-void benchmark_symsync_crcf_k2_m16  SYMSYNC_CRCF_BENCHMARK_API(2, 16)
+LIQUID_BENCHMARK(symsync_crcf_k2_m2,  "symsync_crcf execute, k=2 m=2",  "sym-sync")
+    { return symsync_crcf_bench(num_iterations, 2, 2); }
+
+LIQUID_BENCHMARK(symsync_crcf_k2_m4,  "symsync_crcf execute, k=2 m=4",  "sym-sync")
+    { return symsync_crcf_bench(num_iterations, 2, 4); }
+
+LIQUID_BENCHMARK(symsync_crcf_k2_m8,  "symsync_crcf execute, k=2 m=8",  "sym-sync")
+    { return symsync_crcf_bench(num_iterations, 2, 8); }
+
+LIQUID_BENCHMARK(symsync_crcf_k2_m16, "symsync_crcf execute, k=2 m=16", "sym-sync")
+    { return symsync_crcf_bench(num_iterations, 2, 16); }
 

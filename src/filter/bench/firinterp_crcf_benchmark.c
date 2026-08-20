@@ -20,21 +20,13 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void firinterp_crcf_bench(struct rusage *_start,
-                          struct rusage *_finish,
-                          unsigned long int *_num_iterations,
+float firinterp_crcf_bench(unsigned long int num_iterations,
                           unsigned int _M,
                           unsigned int _h_len)
 {
-    // normalize number of iterations
-    *_num_iterations *= 80;
-    *_num_iterations /= _h_len;
-    if (*_num_iterations < 1) *_num_iterations = 1;
-
     float h[_h_len];
     unsigned int i;
     for (i=0; i<_h_len; i++)
@@ -43,29 +35,33 @@ void firinterp_crcf_bench(struct rusage *_start,
     firinterp_crcf q = firinterp_crcf_create(_M,h,_h_len);
 
     float complex y[_M];
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 executes of 1 input sample each per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         firinterp_crcf_execute(q,1.0f,y);
         firinterp_crcf_execute(q,1.0f,y);
         firinterp_crcf_execute(q,1.0f,y);
         firinterp_crcf_execute(q,1.0f,y);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
 
     firinterp_crcf_destroy(q);
+    return extime;
 }
 
-#define FIRINTERP_CRCF_BENCHMARK_API(M,H_LEN)  \
-(   struct rusage *_start,                  \
-    struct rusage *_finish,                 \
-    unsigned long int *_num_iterations)     \
-{ firinterp_crcf_bench(_start, _finish, _num_iterations, M, H_LEN); }
+LIQUID_BENCHMARK(firinterp_crcf_m2_h8,    "firinterp_crcf execute, M=2 h_len=8",   "FIR,interpolator")
+    { return firinterp_crcf_bench(num_iterations, 2,   8); }
 
-void benchmark_firinterp_crcf_m2_h8    FIRINTERP_CRCF_BENCHMARK_API(2, 8)
-void benchmark_firinterp_crcf_m4_h16   FIRINTERP_CRCF_BENCHMARK_API(4, 16)
-void benchmark_firinterp_crcf_m8_h32   FIRINTERP_CRCF_BENCHMARK_API(8, 32)
-void benchmark_firinterp_crcf_m16_h64  FIRINTERP_CRCF_BENCHMARK_API(16,64)
-void benchmark_firinterp_crcf_m32_h128 FIRINTERP_CRCF_BENCHMARK_API(32,128)
+LIQUID_BENCHMARK(firinterp_crcf_m4_h16,   "firinterp_crcf execute, M=4 h_len=16",  "FIR,interpolator")
+    { return firinterp_crcf_bench(num_iterations, 4,  16); }
+
+LIQUID_BENCHMARK(firinterp_crcf_m8_h32,   "firinterp_crcf execute, M=8 h_len=32",  "FIR,interpolator")
+    { return firinterp_crcf_bench(num_iterations, 8,  32); }
+
+LIQUID_BENCHMARK(firinterp_crcf_m16_h64,  "firinterp_crcf execute, M=16 h_len=64", "FIR,interpolator")
+    { return firinterp_crcf_bench(num_iterations, 16, 64); }
+
+LIQUID_BENCHMARK(firinterp_crcf_m32_h128, "firinterp_crcf execute, M=32 h_len=128","FIR,interpolator")
+    { return firinterp_crcf_bench(num_iterations, 32, 128); }
 
