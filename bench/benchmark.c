@@ -188,9 +188,21 @@ int liquid_benchmark_registry_print_status(liquid_benchmark_registry _q)
 int liquid_benchmark_registry_print_summary(liquid_benchmark_registry _q)
 {
     float runtime = liquid_timer_toc(_q->timer);
+
+    // accumulate per-benchmark extime into total benchmark time
+    float total_extime = 0.0f;
+    unsigned int i;
+    for (i=0; i<_q->num_benchmarks; i++)
+        total_extime += _q->benchmarks[i]->extime;
+
+    // efficiency: fraction of wall-clock time spent running benchmarks
+    float efficiency = (runtime > 0.0f) ? total_extime / runtime : 0.0f;
+
     liquid_log_info("=========== benchmark summary ===========");
     liquid_log_info("benchmarks: %u", _q->num_benchmarks);
     liquid_log_info("runtime:    %.3f s", runtime);
+    liquid_log_info("bench time: %.3f s", total_extime);
+    liquid_log_info("efficiency: %.1f%%", efficiency * 100.0f);
     return LIQUID_OK;
 }
 
