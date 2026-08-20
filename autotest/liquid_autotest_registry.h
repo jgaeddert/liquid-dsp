@@ -1510,7 +1510,7 @@ extern struct liquid_autotest_s vectorf_mul_35_s;
 extern struct liquid_autotest_s vectorf_mulscalar_4_s;
 extern struct liquid_autotest_s vectorf_mulscalar_35_s;
 
-// compile test registry
+// compile autotest registry
 liquid_autotest liquid_autotest_registry[] =
 {
     &libliquid_version_s,
