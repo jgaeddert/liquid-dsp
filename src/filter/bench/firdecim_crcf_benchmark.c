@@ -20,20 +20,13 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void firdecim_crcf_bench(struct rusage *     _start,
-                         struct rusage *     _finish,
-                         unsigned long int * _num_iterations,
-                         unsigned int        _M,
-                         unsigned int        _h_len)
+float firdecim_crcf_bench(unsigned long int num_iterations,
+                          unsigned int        _M,
+                          unsigned int        _h_len)
 {
-    // normalize number of iterations
-    *_num_iterations /= _h_len;
-    if (*_num_iterations < 1) *_num_iterations = 1;
-
     float h[_h_len];
     unsigned int i;
     for (i=0; i<_h_len; i++)
@@ -48,29 +41,33 @@ void firdecim_crcf_bench(struct rusage *     _start,
 
     float complex y;
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 executes of _M samples each per iteration; round down)
+    unsigned long int n = num_iterations / (4 * _M);
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         firdecim_crcf_execute(q, x, &y);
         firdecim_crcf_execute(q, x, &y);
         firdecim_crcf_execute(q, x, &y);
         firdecim_crcf_execute(q, x, &y);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
 
     firdecim_crcf_destroy(q);
+    return extime;
 }
 
-#define FIRDECIM_CRCF_BENCHMARK_API(M,H_LEN)    \
-(   struct rusage *_start,                      \
-    struct rusage *_finish,                     \
-    unsigned long int *_num_iterations)         \
-{ firdecim_crcf_bench(_start, _finish, _num_iterations, M, H_LEN); }
+LIQUID_BENCHMARK(firdecim_crcf_m2_h8,    "firdecim_crcf execute, M=2 h_len=8",   "FIR,decimator")
+    { return firdecim_crcf_bench(num_iterations, 2,   8); }
 
-void benchmark_firdecim_crcf_m2_h8     FIRDECIM_CRCF_BENCHMARK_API(2, 8)
-void benchmark_firdecim_crcf_m4_h16    FIRDECIM_CRCF_BENCHMARK_API(4, 16)
-void benchmark_firdecim_crcf_m8_h32    FIRDECIM_CRCF_BENCHMARK_API(8, 32)
-void benchmark_firdecim_crcf_m16_h64   FIRDECIM_CRCF_BENCHMARK_API(16,64)
-void benchmark_firdecim_cccf_m32_h128  FIRDECIM_CRCF_BENCHMARK_API(32,128)
+LIQUID_BENCHMARK(firdecim_crcf_m4_h16,   "firdecim_crcf execute, M=4 h_len=16",  "FIR,decimator")
+    { return firdecim_crcf_bench(num_iterations, 4,  16); }
+
+LIQUID_BENCHMARK(firdecim_crcf_m8_h32,   "firdecim_crcf execute, M=8 h_len=32",  "FIR,decimator")
+    { return firdecim_crcf_bench(num_iterations, 8,  32); }
+
+LIQUID_BENCHMARK(firdecim_crcf_m16_h64,  "firdecim_crcf execute, M=16 h_len=64", "FIR,decimator")
+    { return firdecim_crcf_bench(num_iterations, 16, 64); }
+
+LIQUID_BENCHMARK(firdecim_crcf_m32_h128, "firdecim_crcf execute, M=32 h_len=128","FIR,decimator")
+    { return firdecim_crcf_bench(num_iterations, 32, 128); }
 
