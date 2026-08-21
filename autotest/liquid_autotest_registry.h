@@ -899,6 +899,7 @@ extern struct liquid_autotest_s nextpow2_s;
 extern struct liquid_autotest_s math_config_s;
 // ./src/math/tests/math_bessel_autotest.c
 extern struct liquid_autotest_s lnbesselif_s;
+extern struct liquid_autotest_s lnbesselif_large_z_s;
 extern struct liquid_autotest_s besselif_s;
 extern struct liquid_autotest_s besseli0f_s;
 extern struct liquid_autotest_s besseljf_s;
@@ -2305,6 +2306,7 @@ liquid_autotest liquid_autotest_registry[] =
     &nextpow2_s,
     &math_config_s,
     &lnbesselif_s,
+    &lnbesselif_large_z_s,
     &besselif_s,
     &besseli0f_s,
     &besseljf_s,
