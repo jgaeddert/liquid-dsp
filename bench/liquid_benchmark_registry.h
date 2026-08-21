@@ -30,6 +30,31 @@ extern struct liquid_benchmark_s windowcf_read_n128_s;
 extern struct liquid_benchmark_s windowcf_read_n256_s;
 // ./src/core/bench/logging_benchmark.c
 extern struct liquid_benchmark_s logging_s;
+// ./src/dotprod/bench/dotprod_cccf_benchmark.c
+extern struct liquid_benchmark_s dotprod_cccf_4_s;
+extern struct liquid_benchmark_s dotprod_cccf_16_s;
+extern struct liquid_benchmark_s dotprod_cccf_64_s;
+extern struct liquid_benchmark_s dotprod_cccf_256_s;
+// ./src/dotprod/bench/dotprod_crcf_benchmark.c
+extern struct liquid_benchmark_s dotprod_crcf_4_s;
+extern struct liquid_benchmark_s dotprod_crcf_16_s;
+extern struct liquid_benchmark_s dotprod_crcf_64_s;
+extern struct liquid_benchmark_s dotprod_crcf_256_s;
+// ./src/dotprod/bench/dotprod_rrrf_benchmark.c
+extern struct liquid_benchmark_s dotprod_rrrf_4_s;
+extern struct liquid_benchmark_s dotprod_rrrf_16_s;
+extern struct liquid_benchmark_s dotprod_rrrf_64_s;
+extern struct liquid_benchmark_s dotprod_rrrf_256_s;
+// ./src/dotprod/bench/sumsqcf_benchmark.c
+extern struct liquid_benchmark_s sumsqcf_4_s;
+extern struct liquid_benchmark_s sumsqcf_16_s;
+extern struct liquid_benchmark_s sumsqcf_64_s;
+extern struct liquid_benchmark_s sumsqcf_256_s;
+// ./src/dotprod/bench/sumsqf_benchmark.c
+extern struct liquid_benchmark_s sumsqf_4_s;
+extern struct liquid_benchmark_s sumsqf_16_s;
+extern struct liquid_benchmark_s sumsqf_64_s;
+extern struct liquid_benchmark_s sumsqf_256_s;
 // ./src/filter/bench/fftfilt_crcf_benchmark.c
 extern struct liquid_benchmark_s fftfilt_crcf_4_s;
 extern struct liquid_benchmark_s fftfilt_crcf_8_s;
@@ -150,6 +175,26 @@ liquid_benchmark liquid_benchmarks[] =
     &windowcf_read_n128_s,
     &windowcf_read_n256_s,
     &logging_s,
+    &dotprod_cccf_4_s,
+    &dotprod_cccf_16_s,
+    &dotprod_cccf_64_s,
+    &dotprod_cccf_256_s,
+    &dotprod_crcf_4_s,
+    &dotprod_crcf_16_s,
+    &dotprod_crcf_64_s,
+    &dotprod_crcf_256_s,
+    &dotprod_rrrf_4_s,
+    &dotprod_rrrf_16_s,
+    &dotprod_rrrf_64_s,
+    &dotprod_rrrf_256_s,
+    &sumsqcf_4_s,
+    &sumsqcf_16_s,
+    &sumsqcf_64_s,
+    &sumsqcf_256_s,
+    &sumsqf_4_s,
+    &sumsqf_16_s,
+    &sumsqf_64_s,
+    &sumsqf_256_s,
     &fftfilt_crcf_4_s,
     &fftfilt_crcf_8_s,
     &fftfilt_crcf_16_s,

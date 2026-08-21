@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,11 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void dotprod_rrrf_bench(struct rusage *_start,
-                        struct rusage *_finish,
-                        unsigned long int *_num_iterations,
-                        unsigned int _n)
+float dotprod_rrrf_bench(unsigned long int num_iterations, unsigned int _n)
 {
-    // normalize number of iterations
-    *_num_iterations = *_num_iterations * 20 / _n;
-    if (*_num_iterations < 1) *_num_iterations = 1;
-
     float x[_n], h[_n], y;
     unsigned int i;
     for (i=0; i<_n; i++) {
@@ -40,32 +32,33 @@ void dotprod_rrrf_bench(struct rusage *_start,
         h[i] = 1.0f;
     }
 
-    // create dotprod structure;
+    // create dotprod structure
     dotprod_rrrf dp = dotprod_rrrf_create(h,_n);
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 executes of _n samples each per iteration; round down)
+    unsigned long int n = num_iterations / (4 * _n);
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         dotprod_rrrf_execute(dp,x,&y);
         dotprod_rrrf_execute(dp,x,&y);
         dotprod_rrrf_execute(dp,x,&y);
         dotprod_rrrf_execute(dp,x,&y);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
-
+    float extime = liquid_toc(timer);
     // clean up objects
     dotprod_rrrf_destroy(dp);
+    return extime;
 }
 
-#define DOTPROD_RRRF_BENCHMARK_API(N)   \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
-{ dotprod_rrrf_bench(_start, _finish, _num_iterations, N); }
+LIQUID_BENCHMARK(dotprod_rrrf_4,   "dotprod_rrrf execute, n=4",   "dotprod")
+    { return dotprod_rrrf_bench(num_iterations, 4); }
 
-void benchmark_dotprod_rrrf_4       DOTPROD_RRRF_BENCHMARK_API(4)
-void benchmark_dotprod_rrrf_16      DOTPROD_RRRF_BENCHMARK_API(16)
-void benchmark_dotprod_rrrf_64      DOTPROD_RRRF_BENCHMARK_API(64)
-void benchmark_dotprod_rrrf_256     DOTPROD_RRRF_BENCHMARK_API(256)
+LIQUID_BENCHMARK(dotprod_rrrf_16,  "dotprod_rrrf execute, n=16",  "dotprod")
+    { return dotprod_rrrf_bench(num_iterations, 16); }
+
+LIQUID_BENCHMARK(dotprod_rrrf_64,  "dotprod_rrrf execute, n=64",  "dotprod")
+    { return dotprod_rrrf_bench(num_iterations, 64); }
+
+LIQUID_BENCHMARK(dotprod_rrrf_256, "dotprod_rrrf execute, n=256", "dotprod")
+    { return dotprod_rrrf_bench(num_iterations, 256); }
 
