@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,31 +20,24 @@
  * THE SOFTWARE.
  */
 
-//
-// fft_radix2_benchmark.c : benchmark FFTs of length 2^m
-//
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/resource.h>
-#include "liquid.h"
+// benchmark FFTs of length 2^m
 
 #include "src/fft/bench/fft_runbench.h"
 
 // power-of-two transforms
-void benchmark_fft_2      LIQUID_FFT_BENCHMARK_API(2,       LIQUID_FFT_FORWARD)
-void benchmark_fft_4      LIQUID_FFT_BENCHMARK_API(4,       LIQUID_FFT_FORWARD)
-void benchmark_fft_8      LIQUID_FFT_BENCHMARK_API(8,       LIQUID_FFT_FORWARD)
-void benchmark_fft_16     LIQUID_FFT_BENCHMARK_API(16,      LIQUID_FFT_FORWARD)
-void benchmark_fft_32     LIQUID_FFT_BENCHMARK_API(32,      LIQUID_FFT_FORWARD)
-void benchmark_fft_64     LIQUID_FFT_BENCHMARK_API(64,      LIQUID_FFT_FORWARD)
-void benchmark_fft_128    LIQUID_FFT_BENCHMARK_API(128,     LIQUID_FFT_FORWARD)
-void benchmark_fft_256    LIQUID_FFT_BENCHMARK_API(256,     LIQUID_FFT_FORWARD)
-void benchmark_fft_512    LIQUID_FFT_BENCHMARK_API(512,     LIQUID_FFT_FORWARD)
-void benchmark_fft_1024   LIQUID_FFT_BENCHMARK_API(1024,    LIQUID_FFT_FORWARD)
-void benchmark_fft_2048   LIQUID_FFT_BENCHMARK_API(2048,    LIQUID_FFT_FORWARD)
-void benchmark_fft_4096   LIQUID_FFT_BENCHMARK_API(4096,    LIQUID_FFT_FORWARD)
-void benchmark_fft_8192   LIQUID_FFT_BENCHMARK_API(8192,    LIQUID_FFT_FORWARD)
-void benchmark_fft_16384  LIQUID_FFT_BENCHMARK_API(16384,   LIQUID_FFT_FORWARD)
-void benchmark_fft_32768  LIQUID_FFT_BENCHMARK_API(32768,   LIQUID_FFT_FORWARD)
+LIQUID_BENCHMARK(fft_2,     "fft execute, nfft=2"    , "fft,radix2") {return fft_runbench(num_iterations, 2,     LIQUID_FFT_FORWARD); }
+LIQUID_BENCHMARK(fft_4,     "fft execute, nfft=4"    , "fft,radix2") {return fft_runbench(num_iterations, 4,     LIQUID_FFT_FORWARD); }
+LIQUID_BENCHMARK(fft_8,     "fft execute, nfft=8"    , "fft,radix2") {return fft_runbench(num_iterations, 8,     LIQUID_FFT_FORWARD); }
+LIQUID_BENCHMARK(fft_16,    "fft execute, nfft=16"   , "fft,radix2") {return fft_runbench(num_iterations, 16,    LIQUID_FFT_FORWARD); }
+LIQUID_BENCHMARK(fft_32,    "fft execute, nfft=32"   , "fft,radix2") {return fft_runbench(num_iterations, 32,    LIQUID_FFT_FORWARD); }
+LIQUID_BENCHMARK(fft_64,    "fft execute, nfft=64"   , "fft,radix2") {return fft_runbench(num_iterations, 64,    LIQUID_FFT_FORWARD); }
+LIQUID_BENCHMARK(fft_128,   "fft execute, nfft=128"  , "fft,radix2") {return fft_runbench(num_iterations, 128,   LIQUID_FFT_FORWARD); }
+LIQUID_BENCHMARK(fft_256,   "fft execute, nfft=256"  , "fft,radix2") {return fft_runbench(num_iterations, 256,   LIQUID_FFT_FORWARD); }
+LIQUID_BENCHMARK(fft_512,   "fft execute, nfft=512"  , "fft,radix2") {return fft_runbench(num_iterations, 512,   LIQUID_FFT_FORWARD); }
+LIQUID_BENCHMARK(fft_1024,  "fft execute, nfft=1024" , "fft,radix2") {return fft_runbench(num_iterations, 1024,  LIQUID_FFT_FORWARD); }
+LIQUID_BENCHMARK(fft_2048,  "fft execute, nfft=2048" , "fft,radix2") {return fft_runbench(num_iterations, 2048,  LIQUID_FFT_FORWARD); }
+LIQUID_BENCHMARK(fft_4096,  "fft execute, nfft=4096" , "fft,radix2") {return fft_runbench(num_iterations, 4096,  LIQUID_FFT_FORWARD); }
+LIQUID_BENCHMARK(fft_8192,  "fft execute, nfft=8192" , "fft,radix2") {return fft_runbench(num_iterations, 8192,  LIQUID_FFT_FORWARD); }
+LIQUID_BENCHMARK(fft_16384, "fft execute, nfft=16384", "fft,radix2") {return fft_runbench(num_iterations, 16384, LIQUID_FFT_FORWARD); }
+LIQUID_BENCHMARK(fft_32768, "fft execute, nfft=32768", "fft,radix2") {return fft_runbench(num_iterations, 32768, LIQUID_FFT_FORWARD); }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,17 @@
  * THE SOFTWARE.
  */
 
-//
-// fft_runbench.h : benchmark execution program declaration
-//
+// FFT benchmark execution program declaration
 
 #ifndef __FFT_RUNBENCH_H__
 #define __FFT_RUNBENCH_H__
 
-#include <sys/resource.h>
-
-#define LIQUID_FFT_BENCHMARK_API(NFFT,D)    \
-(   struct rusage *_start,                  \
-    struct rusage *_finish,                 \
-    unsigned long int *_num_iterations)     \
-{ fft_runbench(_start, _finish, _num_iterations, NFFT, D); }
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void fft_runbench(struct rusage *     _start,
-                  struct rusage *     _finish,
-                  unsigned long int * _num_iterations,
-                  unsigned int        _nfft,
-                  int                 _direction);
+float fft_runbench(unsigned long int _num_iterations,
+                   unsigned int      _nfft,
+                   int               _direction);
 
 #endif // __FFT_RUNBENCH_H__
 

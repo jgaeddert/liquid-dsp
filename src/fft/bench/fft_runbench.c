@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,15 @@
  * THE SOFTWARE.
  */
 
-//
-// fft_runbench.c : benchmark execution program
-//
+// FFT benchmark execution program
 
+#include "liquid.benchmark.h"
 #include <stdlib.h>
-#include <stdio.h>
-#include <sys/resource.h>
-#include "liquid.h"
 
 // Helper function to keep code base small
-void fft_runbench(struct rusage *     _start,
-                  struct rusage *     _finish,
-                  unsigned long int * _num_iterations,
-                  unsigned int        _nfft,
-                  int                 _direction)
+float fft_runbench(unsigned long int _num_iterations,
+                   unsigned int      _nfft,
+                   int               _direction)
 {
     // initialize arrays, plan
     float complex * x = (float complex *) fft_malloc(_nfft*sizeof(float complex));
@@ -48,23 +42,20 @@ void fft_runbench(struct rusage *     _start,
     for (i=0; i<_nfft; i++)
         x[i] = randnf() + randnf()*_Complex_I;
 
-    // scale number of iterations to keep execution time
-    // relatively linear
-    *_num_iterations /= _nfft;
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 executes of _nfft samples each per iteration; round down)
+    unsigned long int n = _num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         fft_execute(q);
         fft_execute(q);
         fft_execute(q);
         fft_execute(q);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
 
     fft_destroy_plan(q);
     fft_free(x);
     fft_free(y);
+    return extime;
 }
 
