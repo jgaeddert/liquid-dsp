@@ -133,9 +133,46 @@ float liquid_lnlowergammaf(float _z, float _alpha)
 }
 
 // ln( Gamma(z,alpha) ) : upper incomplete gamma function
+#define UPPERGAMMA_MAX_ITERATIONS 1000  // maximum number of iterations
 float liquid_lnuppergammaf(float _z, float _alpha)
 {
-    return logf( liquid_gammaf(_z) - liquid_lowergammaf(_z,_alpha) );
+    // taking the complement is only well conditioned while alpha < z+1; past
+    // that point Gamma(z) and gamma(z,alpha) agree to within single precision,
+    // the difference cancels down to zero and then goes negative, and the
+    // logarithm of it is nan
+    if (_alpha < _z + 1.0f)
+        return logf( liquid_gammaf(_z) - liquid_lowergammaf(_z,_alpha) );
+
+    // evaluate the Legendre continued fraction for Gamma(z,alpha) directly
+    // with the modified Lentz method and return its logarithm
+    float b = _alpha + 1.0f - _z;
+    float c = 1e30f;
+    float d = 1.0f / b;
+    float h = d;
+    float a = 0.0f;
+    float del = 0.0f;
+
+    unsigned int i;
+    for (i=1; i<=UPPERGAMMA_MAX_ITERATIONS; i++) {
+        a = -(float)i * ((float)i - _z);
+        b += 2.0f;
+
+        d = a*d + b;
+        if (fabsf(d) < 1e-30f) d = 1e-30f;
+
+        c = b + a/c;
+        if (fabsf(c) < 1e-30f) c = 1e-30f;
+
+        d = 1.0f/d;
+        del = d*c;
+        h *= del;
+
+        if (fabsf(del - 1.0f) < 1e-6f)
+            break;
+    }
+
+    // Gamma(z,alpha) = exp(-alpha) * alpha^z * h
+    return -_alpha + _z*logf(_alpha) + logf(h);
 }
 
 
