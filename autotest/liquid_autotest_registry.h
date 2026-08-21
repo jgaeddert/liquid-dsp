@@ -915,6 +915,7 @@ extern struct liquid_autotest_s cargf_s;
 extern struct liquid_autotest_s gamma_s;
 extern struct liquid_autotest_s lngamma_s;
 extern struct liquid_autotest_s uppergamma_s;
+extern struct liquid_autotest_s uppergamma_large_alpha_s;
 extern struct liquid_autotest_s factorial_s;
 extern struct liquid_autotest_s nchoosek_s;
 // ./src/math/tests/math_window_autotest.c
@@ -2319,6 +2320,7 @@ liquid_autotest liquid_autotest_registry[] =
     &gamma_s,
     &lngamma_s,
     &uppergamma_s,
+    &uppergamma_large_alpha_s,
     &factorial_s,
     &nchoosek_s,
     &window_hamming_s,
