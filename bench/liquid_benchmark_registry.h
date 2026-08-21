@@ -3,6 +3,8 @@
 
 #include "liquid.benchmark.h"
 
+// ./src/agc/bench/agc_crcf_benchmark.c
+extern struct liquid_benchmark_s agc_crcf_s;
 // ./src/filter/bench/fftfilt_crcf_benchmark.c
 extern struct liquid_benchmark_s fftfilt_crcf_4_s;
 extern struct liquid_benchmark_s fftfilt_crcf_8_s;
@@ -102,6 +104,7 @@ extern struct liquid_benchmark_s symsync_crcf_k2_m16_s;
 // compile benchmark registry
 liquid_benchmark liquid_benchmarks[] =
 {
+    &agc_crcf_s,
     &fftfilt_crcf_4_s,
     &fftfilt_crcf_8_s,
     &fftfilt_crcf_16_s,
