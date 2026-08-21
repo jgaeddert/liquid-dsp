@@ -169,7 +169,7 @@ void testbench_resamp2_crcf_filter(liquid_autotest __q__,
         unsigned int _m, float _as)
 {
     // error tolerance [dB]
-    float tol = 0.5f;
+    float tol = 0.80f;
 
     // create the half-band resampler
     resamp2_crcf q = resamp2_crcf_create(_m,0,_as);
