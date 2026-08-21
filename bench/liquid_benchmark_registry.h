@@ -8,6 +8,26 @@ extern struct liquid_benchmark_s agc_crcf_s;
 // ./src/audio/bench/cvsd_benchmark.c
 extern struct liquid_benchmark_s cvsd_encode_s;
 extern struct liquid_benchmark_s cvsd_decode_s;
+// ./src/buffer/bench/cbuffercf_benchmark.c
+extern struct liquid_benchmark_s cbuffercf_n16_s;
+extern struct liquid_benchmark_s cbuffercf_n32_s;
+extern struct liquid_benchmark_s cbuffercf_n64_s;
+extern struct liquid_benchmark_s cbuffercf_n128_s;
+extern struct liquid_benchmark_s cbuffercf_n256_s;
+extern struct liquid_benchmark_s cbuffercf_n512_s;
+extern struct liquid_benchmark_s cbuffercf_n1024_s;
+// ./src/buffer/bench/window_push_benchmark.c
+extern struct liquid_benchmark_s windowcf_push_n16_s;
+extern struct liquid_benchmark_s windowcf_push_n32_s;
+extern struct liquid_benchmark_s windowcf_push_n64_s;
+extern struct liquid_benchmark_s windowcf_push_n128_s;
+extern struct liquid_benchmark_s windowcf_push_n256_s;
+// ./src/buffer/bench/window_read_benchmark.c
+extern struct liquid_benchmark_s windowcf_read_n16_s;
+extern struct liquid_benchmark_s windowcf_read_n32_s;
+extern struct liquid_benchmark_s windowcf_read_n64_s;
+extern struct liquid_benchmark_s windowcf_read_n128_s;
+extern struct liquid_benchmark_s windowcf_read_n256_s;
 // ./src/filter/bench/fftfilt_crcf_benchmark.c
 extern struct liquid_benchmark_s fftfilt_crcf_4_s;
 extern struct liquid_benchmark_s fftfilt_crcf_8_s;
@@ -110,6 +130,23 @@ liquid_benchmark liquid_benchmarks[] =
     &agc_crcf_s,
     &cvsd_encode_s,
     &cvsd_decode_s,
+    &cbuffercf_n16_s,
+    &cbuffercf_n32_s,
+    &cbuffercf_n64_s,
+    &cbuffercf_n128_s,
+    &cbuffercf_n256_s,
+    &cbuffercf_n512_s,
+    &cbuffercf_n1024_s,
+    &windowcf_push_n16_s,
+    &windowcf_push_n32_s,
+    &windowcf_push_n64_s,
+    &windowcf_push_n128_s,
+    &windowcf_push_n256_s,
+    &windowcf_read_n16_s,
+    &windowcf_read_n32_s,
+    &windowcf_read_n64_s,
+    &windowcf_read_n128_s,
+    &windowcf_read_n256_s,
     &fftfilt_crcf_4_s,
     &fftfilt_crcf_8_s,
     &fftfilt_crcf_16_s,

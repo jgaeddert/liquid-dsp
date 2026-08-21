@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,36 +20,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/resource.h>
-#include "liquid.internal.h"
-
-#define CBUFFERCF_BENCH_API(N, W, R)        \
-(   struct rusage *     _start,             \
-    struct rusage *     _finish,            \
-    unsigned long int * _num_iterations)    \
-{ cbuffercf_bench(_start, _finish, _num_iterations, N, W, R); }
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-int cbuffercf_bench(struct rusage *     _start,
-                    struct rusage *     _finish,
-                    unsigned long int * _num_iterations,
+float cbuffercf_bench(unsigned long int num_iterations,
                     unsigned int        _n,
                     unsigned int        _write_size,
                     unsigned int        _read_size)
 {
-    // validate input
-    if (_n < 2)
-        return liquid_error(LIQUID_EICONFIG,"cbuffercf_bench(), number of elements must be at least 2");
-    if (_write_size > _n-1)
-        return liquid_error(LIQUID_EICONFIG,"cbuffercf_bench(), write size must be in (0,n)");
-    if (_read_size > _n-1)
-        return liquid_error(LIQUID_EICONFIG,"cbuffercf_bench(), read size must be in (0,n)");
-
-    // normalize number of iterations
-    *_num_iterations *= _n;
-
     // create object
     cbuffercf q = cbuffercf_create(_n);
 
@@ -64,12 +42,12 @@ int cbuffercf_bench(struct rusage *     _start,
     for (i=0; i<_write_size; i++)
         v[i] = 0.0f;
 
-    // accumulate total number of elements
+    // accumulate total number of elements (target = num_iterations)
     unsigned long int num_total_elements = 0;
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    while (num_total_elements < *_num_iterations) {
+    // start trials; loop until target number of elements have passed through
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    while (num_total_elements < num_iterations) {
         // write elements to buffer if space is available
         if (_n - cbuffercf_size(q) > _write_size)
             cbuffercf_write(q, v, _write_size);
@@ -84,23 +62,33 @@ int cbuffercf_bench(struct rusage *     _start,
         // increment counter by number of elements passing through
         num_total_elements += num_read;
     }
-    getrusage(RUSAGE_SELF, _finish);
+    float extime = liquid_toc(timer);
 
-    // total number of iterations equal to to total number of elements
-    // that have passed through the buffer
-    *_num_iterations = num_total_elements;
 
     // clean up allocated memory
     cbuffercf_destroy(q);
-    return LIQUID_OK;
+    return extime;
 }
 
-// 
-void benchmark_cbuffercf_n16     CBUFFERCF_BENCH_API(  16,  12,  11);
-void benchmark_cbuffercf_n32     CBUFFERCF_BENCH_API(  32,  24,  23);
-void benchmark_cbuffercf_n64     CBUFFERCF_BENCH_API(  64,  48,  47);
-void benchmark_cbuffercf_n128    CBUFFERCF_BENCH_API( 128,  96,  95);
-void benchmark_cbuffercf_n256    CBUFFERCF_BENCH_API( 256, 192, 191);
-void benchmark_cbuffercf_n512    CBUFFERCF_BENCH_API( 512, 384, 383);
-void benchmark_cbuffercf_n1024   CBUFFERCF_BENCH_API(1024, 768, 767);
+LIQUID_BENCHMARK(cbuffercf_n16,    "cbuffercf read/write, n=16",    "buffer,circular")
+    { return cbuffercf_bench(num_iterations,   16,  12,  11); }
+
+
+LIQUID_BENCHMARK(cbuffercf_n32,    "cbuffercf read/write, n=32",    "buffer,circular")
+    { return cbuffercf_bench(num_iterations,   32,  24,  23); }
+
+LIQUID_BENCHMARK(cbuffercf_n64,    "cbuffercf read/write, n=64",    "buffer,circular")
+    { return cbuffercf_bench(num_iterations,   64,  48,  47); }
+
+LIQUID_BENCHMARK(cbuffercf_n128,   "cbuffercf read/write, n=128",   "buffer,circular")
+    { return cbuffercf_bench(num_iterations,  128,  96,  95); }
+
+LIQUID_BENCHMARK(cbuffercf_n256,   "cbuffercf read/write, n=256",   "buffer,circular")
+    { return cbuffercf_bench(num_iterations,  256, 192, 191); }
+
+LIQUID_BENCHMARK(cbuffercf_n512,   "cbuffercf read/write, n=512",   "buffer,circular")
+    { return cbuffercf_bench(num_iterations,  512, 384, 383); }
+
+LIQUID_BENCHMARK(cbuffercf_n1024,  "cbuffercf read/write, n=1024",  "buffer,circular")
+    { return cbuffercf_bench(num_iterations, 1024, 768, 767); }
 
