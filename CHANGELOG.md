@@ -6,6 +6,9 @@
     - fixed pkg-config paths since `CMAKE_INSTALL_*` are not guaranteed to be
       relative (thanks, @iank)
     - legacy: compiling and installing liquid-dsp.pc (pkg-config file)
+  * filter
+    - resamp2: moving the default filter design to windowed Kaiser; firdespm
+      produces a good filter but takes prohibitively long on certain systems
 
 ## 1.8.2 - 2026-08-06
 
