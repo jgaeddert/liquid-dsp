@@ -55,6 +55,18 @@ extern struct liquid_benchmark_s sumsqf_4_s;
 extern struct liquid_benchmark_s sumsqf_16_s;
 extern struct liquid_benchmark_s sumsqf_64_s;
 extern struct liquid_benchmark_s sumsqf_256_s;
+// ./src/equalization/bench/eqlms_cccf_benchmark.c
+extern struct liquid_benchmark_s eqlms_cccf_n4_s;
+extern struct liquid_benchmark_s eqlms_cccf_n8_s;
+extern struct liquid_benchmark_s eqlms_cccf_n16_s;
+extern struct liquid_benchmark_s eqlms_cccf_n32_s;
+extern struct liquid_benchmark_s eqlms_cccf_n64_s;
+// ./src/equalization/bench/eqrls_cccf_benchmark.c
+extern struct liquid_benchmark_s eqrls_cccf_n4_s;
+extern struct liquid_benchmark_s eqrls_cccf_n8_s;
+extern struct liquid_benchmark_s eqrls_cccf_n16_s;
+extern struct liquid_benchmark_s eqrls_cccf_n32_s;
+extern struct liquid_benchmark_s eqrls_cccf_n64_s;
 // ./src/filter/bench/fftfilt_crcf_benchmark.c
 extern struct liquid_benchmark_s fftfilt_crcf_4_s;
 extern struct liquid_benchmark_s fftfilt_crcf_8_s;
@@ -195,6 +207,16 @@ liquid_benchmark liquid_benchmarks[] =
     &sumsqf_16_s,
     &sumsqf_64_s,
     &sumsqf_256_s,
+    &eqlms_cccf_n4_s,
+    &eqlms_cccf_n8_s,
+    &eqlms_cccf_n16_s,
+    &eqlms_cccf_n32_s,
+    &eqlms_cccf_n64_s,
+    &eqrls_cccf_n4_s,
+    &eqrls_cccf_n8_s,
+    &eqrls_cccf_n16_s,
+    &eqrls_cccf_n32_s,
+    &eqrls_cccf_n64_s,
     &fftfilt_crcf_4_s,
     &fftfilt_crcf_8_s,
     &fftfilt_crcf_16_s,

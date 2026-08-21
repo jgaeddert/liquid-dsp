@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <math.h>
-#include <sys/resource.h>
-#include "liquid.h"
-
-#define EQLMS_CCCF_TRAIN_BENCH_API(N)   \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
-{ eqlms_cccf_train_bench(_start, _finish, _num_iterations, N); }
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void eqlms_cccf_train_bench(struct rusage *_start,
-                            struct rusage *_finish,
-                            unsigned long int *_num_iterations,
-                            unsigned int _h_len)
+float eqlms_cccf_train_bench(unsigned long int num_iterations, unsigned int _h_len)
 {
-    // scale number of iterations appropriately
-    // log(cycles/trial) ~ 5.63 + 0.767*log(_h_len)
-    *_num_iterations *= 3200;
-    *_num_iterations /= (unsigned int) expf(5.63f + 0.767f*logf(_h_len));
-    *_num_iterations = (*_num_iterations < 4) ? 4 : *_num_iterations;
-
     eqlms_cccf eq = eqlms_cccf_create(NULL,_h_len);
     
     unsigned long int i;
@@ -61,9 +43,9 @@ void eqlms_cccf_train_bench(struct rusage *_start,
 
     float complex z;
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (1 push/execute/step per iteration)
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<num_iterations; i++) {
         eqlms_cccf_push(eq, y[iy]);     // push input into equalizer
         eqlms_cccf_execute(eq, &z);     // compute equalizer output
         eqlms_cccf_step(eq, d[id], z);  // step equalizer internals
@@ -72,15 +54,23 @@ void eqlms_cccf_train_bench(struct rusage *_start,
         iy = (iy+1)%11;
         id = (id+1)%13;
     }
-    getrusage(RUSAGE_SELF, _finish);
-
+    float extime = liquid_toc(timer);
     eqlms_cccf_destroy(eq);
+    return extime;
 }
 
-// 
-void benchmark_eqlms_cccf_n4    EQLMS_CCCF_TRAIN_BENCH_API(4)
-void benchmark_eqlms_cccf_n8    EQLMS_CCCF_TRAIN_BENCH_API(8)
-void benchmark_eqlms_cccf_n16   EQLMS_CCCF_TRAIN_BENCH_API(16)
-void benchmark_eqlms_cccf_n32   EQLMS_CCCF_TRAIN_BENCH_API(32)
-void benchmark_eqlms_cccf_n64   EQLMS_CCCF_TRAIN_BENCH_API(64)
+LIQUID_BENCHMARK(eqlms_cccf_n4,  "eqlms_cccf train, h_len=4",  "equalizer,lms")
+    { return eqlms_cccf_train_bench(num_iterations, 4); }
+
+LIQUID_BENCHMARK(eqlms_cccf_n8,  "eqlms_cccf train, h_len=8",  "equalizer,lms")
+    { return eqlms_cccf_train_bench(num_iterations, 8); }
+
+LIQUID_BENCHMARK(eqlms_cccf_n16, "eqlms_cccf train, h_len=16", "equalizer,lms")
+    { return eqlms_cccf_train_bench(num_iterations, 16); }
+
+LIQUID_BENCHMARK(eqlms_cccf_n32, "eqlms_cccf train, h_len=32", "equalizer,lms")
+    { return eqlms_cccf_train_bench(num_iterations, 32); }
+
+LIQUID_BENCHMARK(eqlms_cccf_n64, "eqlms_cccf train, h_len=64", "equalizer,lms")
+    { return eqlms_cccf_train_bench(num_iterations, 64); }
 
