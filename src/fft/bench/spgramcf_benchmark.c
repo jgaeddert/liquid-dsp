@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,24 +21,15 @@
  */
 
 // benchmark spgram objects
-
+#include "liquid.benchmark.h"
 #include <stdlib.h>
-#include <stdio.h>
-#include <sys/resource.h>
-#include "liquid.h"
 
 // Helper function to keep code base small
-void spgramcf_runbench(struct rusage *     _start,
-                       struct rusage *     _finish,
-                       unsigned long int * _num_iterations,
-                       unsigned int        _nfft)
+float spgramcf_runbench(unsigned long int num_iterations, unsigned int _nfft)
 {
-    // scale number of iterations to keep execution time
-    // relatively linear
-    *_num_iterations = (*_num_iterations) * liquid_nextpow2(1+_nfft) / _nfft;
-
     // create object
     spgramcf q = spgramcf_create_default(_nfft);
+
 
     // initialize buffer with random values
     unsigned long int i;
@@ -50,35 +41,30 @@ void spgramcf_runbench(struct rusage *     _start,
     // buffer for holding PSD output
     float psd[_nfft];
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (1 write+get_psd of buf_len samples each per iteration; round down)
+    unsigned long int n = num_iterations / buf_len;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         // process input
         spgramcf_write(q, buf, buf_len);
-
         // get spectrum and feed back to input
         spgramcf_get_psd(q, psd);
         buf[0] = psd[0];
     }
-    getrusage(RUSAGE_SELF, _finish);
-
-    // scale iterations by buffer size to provide inpute rate
-    *_num_iterations *= buf_len;
+    float extime = liquid_toc(timer);
 
     free(buf);
     spgramcf_destroy(q);
+    return extime;
 }
 
 // run several configurations
-void benchmark_spgramcf_1200(struct rusage * _s, struct rusage * _x,
-    unsigned long int * _n) { spgramcf_runbench(_s, _x, _n, 1200); }
-
-void benchmark_spgramcf_9600(struct rusage * _s, struct rusage * _x,
-    unsigned long int * _n) { spgramcf_runbench(_s, _x, _n, 9600); }
-
-void benchmark_spgramcf_76800(struct rusage * _s, struct rusage * _x,
-    unsigned long int * _n) { spgramcf_runbench(_s, _x, _n, 76800); }
-
-void benchmark_spgramcf_614400(struct rusage * _s, struct rusage * _x,
-    unsigned long int * _n) { spgramcf_runbench(_s, _x, _n, 614400); }
+LIQUID_BENCHMARK(spgramcf_1200,   "spgramcf execute, nfft=1200",   "fft,spgram")
+    { return spgramcf_runbench(num_iterations, 1200); }
+LIQUID_BENCHMARK(spgramcf_9600,   "spgramcf execute, nfft=9600",   "fft,spgram")
+    { return spgramcf_runbench(num_iterations, 9600); }
+LIQUID_BENCHMARK(spgramcf_76800,  "spgramcf execute, nfft=76800",  "fft,spgram")
+    { return spgramcf_runbench(num_iterations, 76800); }
+LIQUID_BENCHMARK(spgramcf_614400, "spgramcf execute, nfft=614400", "fft,spgram")
+    { return spgramcf_runbench(num_iterations, 614400); }
 

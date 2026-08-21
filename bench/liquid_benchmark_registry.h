@@ -67,6 +67,15 @@ extern struct liquid_benchmark_s eqrls_cccf_n8_s;
 extern struct liquid_benchmark_s eqrls_cccf_n16_s;
 extern struct liquid_benchmark_s eqrls_cccf_n32_s;
 extern struct liquid_benchmark_s eqrls_cccf_n64_s;
+// ./src/fft/bench/asgramcf_benchmark.c
+extern struct liquid_benchmark_s asgramcf_64_s;
+extern struct liquid_benchmark_s asgramcf_80_s;
+extern struct liquid_benchmark_s asgramcf_96_s;
+extern struct liquid_benchmark_s asgramcf_120_s;
+extern struct liquid_benchmark_s asgramcf_64_autoscale_s;
+extern struct liquid_benchmark_s asgramcf_80_autoscale_s;
+extern struct liquid_benchmark_s asgramcf_96_autoscale_s;
+extern struct liquid_benchmark_s asgramcf_120_autoscale_s;
 // ./src/fft/bench/fft_composite_benchmark.c
 extern struct liquid_benchmark_s fft_6_s;
 extern struct liquid_benchmark_s fft_9_s;
@@ -392,6 +401,11 @@ extern struct liquid_benchmark_s fft_4096_s;
 extern struct liquid_benchmark_s fft_8192_s;
 extern struct liquid_benchmark_s fft_16384_s;
 extern struct liquid_benchmark_s fft_32768_s;
+// ./src/fft/bench/spgramcf_benchmark.c
+extern struct liquid_benchmark_s spgramcf_1200_s;
+extern struct liquid_benchmark_s spgramcf_9600_s;
+extern struct liquid_benchmark_s spgramcf_76800_s;
+extern struct liquid_benchmark_s spgramcf_614400_s;
 // ./src/filter/bench/fftfilt_crcf_benchmark.c
 extern struct liquid_benchmark_s fftfilt_crcf_4_s;
 extern struct liquid_benchmark_s fftfilt_crcf_8_s;
@@ -542,6 +556,14 @@ liquid_benchmark liquid_benchmarks[] =
     &eqrls_cccf_n16_s,
     &eqrls_cccf_n32_s,
     &eqrls_cccf_n64_s,
+    &asgramcf_64_s,
+    &asgramcf_80_s,
+    &asgramcf_96_s,
+    &asgramcf_120_s,
+    &asgramcf_64_autoscale_s,
+    &asgramcf_80_autoscale_s,
+    &asgramcf_96_autoscale_s,
+    &asgramcf_120_autoscale_s,
     &fft_6_s,
     &fft_9_s,
     &fft_10_s,
@@ -863,6 +885,10 @@ liquid_benchmark liquid_benchmarks[] =
     &fft_8192_s,
     &fft_16384_s,
     &fft_32768_s,
+    &spgramcf_1200_s,
+    &spgramcf_9600_s,
+    &spgramcf_76800_s,
+    &spgramcf_614400_s,
     &fftfilt_crcf_4_s,
     &fftfilt_crcf_8_s,
     &fftfilt_crcf_16_s,
