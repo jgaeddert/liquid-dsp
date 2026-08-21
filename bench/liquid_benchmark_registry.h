@@ -28,6 +28,8 @@ extern struct liquid_benchmark_s windowcf_read_n32_s;
 extern struct liquid_benchmark_s windowcf_read_n64_s;
 extern struct liquid_benchmark_s windowcf_read_n128_s;
 extern struct liquid_benchmark_s windowcf_read_n256_s;
+// ./src/core/bench/logging_benchmark.c
+extern struct liquid_benchmark_s logging_s;
 // ./src/filter/bench/fftfilt_crcf_benchmark.c
 extern struct liquid_benchmark_s fftfilt_crcf_4_s;
 extern struct liquid_benchmark_s fftfilt_crcf_8_s;
@@ -147,6 +149,7 @@ liquid_benchmark liquid_benchmarks[] =
     &windowcf_read_n64_s,
     &windowcf_read_n128_s,
     &windowcf_read_n256_s,
+    &logging_s,
     &fftfilt_crcf_4_s,
     &fftfilt_crcf_8_s,
     &fftfilt_crcf_16_s,
