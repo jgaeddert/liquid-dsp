@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,31 +20,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/resource.h>
-
+#include "liquid.benchmark.h"
 #include "liquid.internal.h"
 
-#define CRC_BENCH_API(CRC,N)                \
-(   struct rusage *_start,                  \
-    struct rusage *_finish,                 \
-    unsigned long int *_num_iterations)     \
-{ crc_bench(_start, _finish, _num_iterations, CRC, N); }
-
 // Helper function to keep code base small
-void crc_bench(struct rusage *_start,
-               struct rusage *_finish,
-               unsigned long int *_num_iterations,
-               crc_scheme _crc,
-               unsigned int _n)
+float crc_bench(unsigned long int _num_iterations,
+               crc_scheme      _crc,
+               unsigned int      _n)
 {
-    // normalize number of iterations
-    if (_crc != LIQUID_CRC_CHECKSUM)
-        *_num_iterations /= 100;
-    if (*_num_iterations < 1) *_num_iterations = 1;
-
     unsigned long int i;
 
     // create arrays
@@ -55,9 +38,11 @@ void crc_bench(struct rusage *_start,
     for (i=0; i<_n; i++)
         msg[i] = rand() & 0xff;
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 key generations per iteration; round down)
+    unsigned long int n = _num_iterations / 4;
+    if (n < 1) n = 1;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         key ^= crc_generate_key(_crc, msg, _n);
         key ^= crc_generate_key(_crc, msg, _n);
         key ^= crc_generate_key(_crc, msg, _n);
@@ -66,17 +51,18 @@ void crc_bench(struct rusage *_start,
         // randomize input
         msg[0] ^= key & 0xff;
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
+    return extime;
 }
 
-//
-// BENCHMARKS
-//
-void benchmark_crc_checksum_n256    CRC_BENCH_API(LIQUID_CRC_CHECKSUM,  256)
-
-void benchmark_crc_crc8_n256        CRC_BENCH_API(LIQUID_CRC_8,         256)
-void benchmark_crc_crc16_n256       CRC_BENCH_API(LIQUID_CRC_16,        256)
-void benchmark_crc_crc24_n256       CRC_BENCH_API(LIQUID_CRC_24,        256)
-void benchmark_crc_crc32_n256       CRC_BENCH_API(LIQUID_CRC_32,        256)
+LIQUID_BENCHMARK(crc_checksum_n256, "crc_generate_key checksum, n=256", "fec,crc,checksum")
+    { return crc_bench(num_iterations, LIQUID_CRC_CHECKSUM, 256); }
+LIQUID_BENCHMARK(crc_crc8_n256,      "crc_generate_key crc8, n=256",      "fec,crc")
+    { return crc_bench(num_iterations, LIQUID_CRC_8,         256); }
+LIQUID_BENCHMARK(crc_crc16_n256,     "crc_generate_key crc16, n=256",     "fec,crc")
+    { return crc_bench(num_iterations, LIQUID_CRC_16,        256); }
+LIQUID_BENCHMARK(crc_crc24_n256,     "crc_generate_key crc24, n=256",     "fec,crc")
+    { return crc_bench(num_iterations, LIQUID_CRC_24,        256); }
+LIQUID_BENCHMARK(crc_crc32_n256,     "crc_generate_key crc32, n=256",     "fec,crc")
+    { return crc_bench(num_iterations, LIQUID_CRC_32,        256); }
 

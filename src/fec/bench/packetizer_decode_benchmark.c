@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,80 +19,57 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <sys/resource.h>
-
+#include "liquid.benchmark.h"
 #include "liquid.internal.h"
 
-#define PACKETIZER_DECODE_BENCH_API(N, CRC, FEC0, FEC1) \
-(   struct rusage *_start,                              \
-    struct rusage *_finish,                             \
-    unsigned long int *_num_iterations)                 \
-{ packetizer_decode_bench(_start, _finish, _num_iterations, N, CRC, FEC0, FEC1); }
-
 // Helper function to keep code base small
-void packetizer_decode_bench(struct rusage *     _start,
-                             struct rusage *     _finish,
-                             unsigned long int * _num_iterations,
-                             unsigned int        _n,
-                             crc_scheme          _crc,
-                             fec_scheme          _fec0,
-                             fec_scheme          _fec1)
+float packetizer_decode_bench(unsigned long int _num_iterations,
+                              unsigned int      _n,
+                              crc_scheme        _crc,
+                              fec_scheme        _fec0,
+                              fec_scheme        _fec1)
 {
-    //
     unsigned int msg_dec_len = _n;
     unsigned int msg_enc_len = packetizer_compute_enc_msg_len(_n,_crc,_fec0,_fec1);
-
-    // adjust number of iterations
-    //  k-cycles/trial ~ 221 + 1.6125*msg_dec_len;
-    // TODO: adjust iterations based on encoder types
-    *_num_iterations *= 1000;
-    *_num_iterations /= 221 + 1.6125*msg_dec_len;
-
     unsigned char msg_rec[msg_enc_len];
     unsigned char msg_dec[msg_dec_len];
-
     // initialize data
     unsigned long int i;
     for (i=0; i<msg_enc_len; i++) msg_rec[i] = rand() & 0xff;
     for (i=0; i<msg_dec_len; i++) msg_dec[i] = 0x00;
-
     // create packet generator
     packetizer q = packetizer_create(msg_dec_len, _crc, _fec0, _fec1);
     int crc_pass = 0;
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 packet decodes per iteration; round down)
+    unsigned long int n = _num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         // decode packet
         crc_pass |= packetizer_decode(q, msg_rec, msg_dec);
         crc_pass |= packetizer_decode(q, msg_rec, msg_dec);
         crc_pass |= packetizer_decode(q, msg_rec, msg_dec);
         crc_pass |= packetizer_decode(q, msg_rec, msg_dec);
-
         // randomize input
         msg_rec[0] ^= crc_pass ? 1 : 0;
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
-
+    float extime = liquid_toc(timer);
     // clean up allocated objects
     packetizer_destroy(q);
+    return extime;
 }
 
-
-//
-// BENCHMARKS
-//
-void benchmark_packetizer_n16   PACKETIZER_DECODE_BENCH_API(16,   LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE)
-void benchmark_packetizer_n32   PACKETIZER_DECODE_BENCH_API(32,   LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE)
-void benchmark_packetizer_n64   PACKETIZER_DECODE_BENCH_API(64,   LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE)
-void benchmark_packetizer_n128  PACKETIZER_DECODE_BENCH_API(128,  LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE)
-void benchmark_packetizer_n256  PACKETIZER_DECODE_BENCH_API(256,  LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE)
-void benchmark_packetizer_n512  PACKETIZER_DECODE_BENCH_API(512,  LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE)
-void benchmark_packetizer_n1024 PACKETIZER_DECODE_BENCH_API(1024, LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE)
+LIQUID_BENCHMARK(packetizer_n16,   "packetizer_decode, n=16",   "fec,packetizer")
+    { return packetizer_decode_bench(num_iterations, 16,   LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
+LIQUID_BENCHMARK(packetizer_n32,   "packetizer_decode, n=32",   "fec,packetizer")
+    { return packetizer_decode_bench(num_iterations, 32,   LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
+LIQUID_BENCHMARK(packetizer_n64,   "packetizer_decode, n=64",   "fec,packetizer")
+    { return packetizer_decode_bench(num_iterations, 64,   LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
+LIQUID_BENCHMARK(packetizer_n128,  "packetizer_decode, n=128",  "fec,packetizer")
+    { return packetizer_decode_bench(num_iterations, 128,  LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
+LIQUID_BENCHMARK(packetizer_n256,  "packetizer_decode, n=256",  "fec,packetizer")
+    { return packetizer_decode_bench(num_iterations, 256,  LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
+LIQUID_BENCHMARK(packetizer_n512,  "packetizer_decode, n=512",  "fec,packetizer")
+    { return packetizer_decode_bench(num_iterations, 512,  LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
+LIQUID_BENCHMARK(packetizer_n1024, "packetizer_decode, n=1024", "fec,packetizer")
+    { return packetizer_decode_bench(num_iterations, 1024, LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
 

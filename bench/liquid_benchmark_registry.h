@@ -67,6 +67,105 @@ extern struct liquid_benchmark_s eqrls_cccf_n8_s;
 extern struct liquid_benchmark_s eqrls_cccf_n16_s;
 extern struct liquid_benchmark_s eqrls_cccf_n32_s;
 extern struct liquid_benchmark_s eqrls_cccf_n64_s;
+// ./src/fec/bench/crc_benchmark.c
+extern struct liquid_benchmark_s crc_checksum_n256_s;
+extern struct liquid_benchmark_s crc_crc8_n256_s;
+extern struct liquid_benchmark_s crc_crc16_n256_s;
+extern struct liquid_benchmark_s crc_crc24_n256_s;
+extern struct liquid_benchmark_s crc_crc32_n256_s;
+// ./src/fec/bench/fec_decode_benchmark.c
+extern struct liquid_benchmark_s fec_dec_none_n64_s;
+extern struct liquid_benchmark_s fec_dec_rep3_n64_s;
+extern struct liquid_benchmark_s fec_dec_rep5_n64_s;
+extern struct liquid_benchmark_s fec_dec_hamming74_n64_s;
+extern struct liquid_benchmark_s fec_dec_hamming84_n64_s;
+extern struct liquid_benchmark_s fec_dec_hamming128_n64_s;
+extern struct liquid_benchmark_s fec_dec_secded2216_n64_s;
+extern struct liquid_benchmark_s fec_dec_secded3932_n64_s;
+extern struct liquid_benchmark_s fec_dec_secded7264_n64_s;
+extern struct liquid_benchmark_s fec_dec_golay2412_n64_s;
+extern struct liquid_benchmark_s fec_dec_conv27_n64_s;
+extern struct liquid_benchmark_s fec_dec_conv29_n64_s;
+extern struct liquid_benchmark_s fec_dec_conv39_n64_s;
+extern struct liquid_benchmark_s fec_dec_conv615_n64_s;
+extern struct liquid_benchmark_s fec_dec_conv27p23_n64_s;
+extern struct liquid_benchmark_s fec_dec_conv27p34_n64_s;
+extern struct liquid_benchmark_s fec_dec_conv27p45_n64_s;
+extern struct liquid_benchmark_s fec_dec_conv27p56_n64_s;
+extern struct liquid_benchmark_s fec_dec_conv27p67_n64_s;
+extern struct liquid_benchmark_s fec_dec_conv27p78_n64_s;
+extern struct liquid_benchmark_s fec_dec_conv29p23_n64_s;
+extern struct liquid_benchmark_s fec_dec_conv29p34_n64_s;
+extern struct liquid_benchmark_s fec_dec_conv29p45_n64_s;
+extern struct liquid_benchmark_s fec_dec_conv29p56_n64_s;
+extern struct liquid_benchmark_s fec_dec_conv29p67_n64_s;
+extern struct liquid_benchmark_s fec_dec_conv29p78_n64_s;
+extern struct liquid_benchmark_s fec_dec_rs8_n64_s;
+// ./src/fec/bench/fec_encode_benchmark.c
+extern struct liquid_benchmark_s fec_enc_none_n64_s;
+extern struct liquid_benchmark_s fec_enc_rep3_n64_s;
+extern struct liquid_benchmark_s fec_enc_rep5_n64_s;
+extern struct liquid_benchmark_s fec_enc_hamming74_n64_s;
+extern struct liquid_benchmark_s fec_enc_hamming84_n64_s;
+extern struct liquid_benchmark_s fec_enc_hamming128_n64_s;
+extern struct liquid_benchmark_s fec_enc_secded2216_n64_s;
+extern struct liquid_benchmark_s fec_enc_secded3932_n64_s;
+extern struct liquid_benchmark_s fec_enc_secded7264_n64_s;
+extern struct liquid_benchmark_s fec_enc_golay2412_n64_s;
+extern struct liquid_benchmark_s fec_enc_conv27_n64_s;
+extern struct liquid_benchmark_s fec_enc_conv29_n64_s;
+extern struct liquid_benchmark_s fec_enc_conv39_n64_s;
+extern struct liquid_benchmark_s fec_enc_conv615_n64_s;
+extern struct liquid_benchmark_s fec_enc_conv27p23_n64_s;
+extern struct liquid_benchmark_s fec_enc_conv27p34_n64_s;
+extern struct liquid_benchmark_s fec_enc_conv27p45_n64_s;
+extern struct liquid_benchmark_s fec_enc_rs8_n64_s;
+// ./src/fec/bench/fecsoft_decode_benchmark.c
+extern struct liquid_benchmark_s fecsoft_dec_none_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_rep3_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_rep5_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_hamming74_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_hamming84_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_hamming128_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_conv27_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_conv29_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_conv39_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_conv615_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_conv27p23_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_conv27p34_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_conv27p45_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_conv27p56_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_conv27p67_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_conv27p78_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_conv29p23_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_conv29p34_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_conv29p45_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_conv29p56_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_conv29p67_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_conv29p78_n64_s;
+extern struct liquid_benchmark_s fecsoft_dec_rs8_n64_s;
+// ./src/fec/bench/interleaver_benchmark.c
+extern struct liquid_benchmark_s interleaver_8_s;
+extern struct liquid_benchmark_s interleaver_16_s;
+extern struct liquid_benchmark_s interleaver_32_s;
+extern struct liquid_benchmark_s interleaver_64_s;
+extern struct liquid_benchmark_s interleaver_128_s;
+extern struct liquid_benchmark_s interleaver_256_s;
+extern struct liquid_benchmark_s interleaver_512_s;
+extern struct liquid_benchmark_s interleaver_1024_s;
+// ./src/fec/bench/packetizer_decode_benchmark.c
+extern struct liquid_benchmark_s packetizer_n16_s;
+extern struct liquid_benchmark_s packetizer_n32_s;
+extern struct liquid_benchmark_s packetizer_n64_s;
+extern struct liquid_benchmark_s packetizer_n128_s;
+extern struct liquid_benchmark_s packetizer_n256_s;
+extern struct liquid_benchmark_s packetizer_n512_s;
+extern struct liquid_benchmark_s packetizer_n1024_s;
+// ./src/fec/bench/sumproduct_benchmark.c
+extern struct liquid_benchmark_s sumproduct_m16_s;
+extern struct liquid_benchmark_s sumproduct_m32_s;
+extern struct liquid_benchmark_s sumproduct_m64_s;
+extern struct liquid_benchmark_s sumproduct_m128_s;
 // ./src/fft/bench/asgramcf_benchmark.c
 extern struct liquid_benchmark_s asgramcf_64_s;
 extern struct liquid_benchmark_s asgramcf_80_s;
@@ -889,6 +988,98 @@ liquid_benchmark liquid_benchmarks[] =
     &eqrls_cccf_n16_s,
     &eqrls_cccf_n32_s,
     &eqrls_cccf_n64_s,
+    &crc_checksum_n256_s,
+    &crc_crc8_n256_s,
+    &crc_crc16_n256_s,
+    &crc_crc24_n256_s,
+    &crc_crc32_n256_s,
+    &fec_dec_none_n64_s,
+    &fec_dec_rep3_n64_s,
+    &fec_dec_rep5_n64_s,
+    &fec_dec_hamming74_n64_s,
+    &fec_dec_hamming84_n64_s,
+    &fec_dec_hamming128_n64_s,
+    &fec_dec_secded2216_n64_s,
+    &fec_dec_secded3932_n64_s,
+    &fec_dec_secded7264_n64_s,
+    &fec_dec_golay2412_n64_s,
+    &fec_dec_conv27_n64_s,
+    &fec_dec_conv29_n64_s,
+    &fec_dec_conv39_n64_s,
+    &fec_dec_conv615_n64_s,
+    &fec_dec_conv27p23_n64_s,
+    &fec_dec_conv27p34_n64_s,
+    &fec_dec_conv27p45_n64_s,
+    &fec_dec_conv27p56_n64_s,
+    &fec_dec_conv27p67_n64_s,
+    &fec_dec_conv27p78_n64_s,
+    &fec_dec_conv29p23_n64_s,
+    &fec_dec_conv29p34_n64_s,
+    &fec_dec_conv29p45_n64_s,
+    &fec_dec_conv29p56_n64_s,
+    &fec_dec_conv29p67_n64_s,
+    &fec_dec_conv29p78_n64_s,
+    &fec_dec_rs8_n64_s,
+    &fec_enc_none_n64_s,
+    &fec_enc_rep3_n64_s,
+    &fec_enc_rep5_n64_s,
+    &fec_enc_hamming74_n64_s,
+    &fec_enc_hamming84_n64_s,
+    &fec_enc_hamming128_n64_s,
+    &fec_enc_secded2216_n64_s,
+    &fec_enc_secded3932_n64_s,
+    &fec_enc_secded7264_n64_s,
+    &fec_enc_golay2412_n64_s,
+    &fec_enc_conv27_n64_s,
+    &fec_enc_conv29_n64_s,
+    &fec_enc_conv39_n64_s,
+    &fec_enc_conv615_n64_s,
+    &fec_enc_conv27p23_n64_s,
+    &fec_enc_conv27p34_n64_s,
+    &fec_enc_conv27p45_n64_s,
+    &fec_enc_rs8_n64_s,
+    &fecsoft_dec_none_n64_s,
+    &fecsoft_dec_rep3_n64_s,
+    &fecsoft_dec_rep5_n64_s,
+    &fecsoft_dec_hamming74_n64_s,
+    &fecsoft_dec_hamming84_n64_s,
+    &fecsoft_dec_hamming128_n64_s,
+    &fecsoft_dec_conv27_n64_s,
+    &fecsoft_dec_conv29_n64_s,
+    &fecsoft_dec_conv39_n64_s,
+    &fecsoft_dec_conv615_n64_s,
+    &fecsoft_dec_conv27p23_n64_s,
+    &fecsoft_dec_conv27p34_n64_s,
+    &fecsoft_dec_conv27p45_n64_s,
+    &fecsoft_dec_conv27p56_n64_s,
+    &fecsoft_dec_conv27p67_n64_s,
+    &fecsoft_dec_conv27p78_n64_s,
+    &fecsoft_dec_conv29p23_n64_s,
+    &fecsoft_dec_conv29p34_n64_s,
+    &fecsoft_dec_conv29p45_n64_s,
+    &fecsoft_dec_conv29p56_n64_s,
+    &fecsoft_dec_conv29p67_n64_s,
+    &fecsoft_dec_conv29p78_n64_s,
+    &fecsoft_dec_rs8_n64_s,
+    &interleaver_8_s,
+    &interleaver_16_s,
+    &interleaver_32_s,
+    &interleaver_64_s,
+    &interleaver_128_s,
+    &interleaver_256_s,
+    &interleaver_512_s,
+    &interleaver_1024_s,
+    &packetizer_n16_s,
+    &packetizer_n32_s,
+    &packetizer_n64_s,
+    &packetizer_n128_s,
+    &packetizer_n256_s,
+    &packetizer_n512_s,
+    &packetizer_n1024_s,
+    &sumproduct_m16_s,
+    &sumproduct_m32_s,
+    &sumproduct_m64_s,
+    &sumproduct_m128_s,
     &asgramcf_64_s,
     &asgramcf_80_s,
     &asgramcf_96_s,
