@@ -82,7 +82,7 @@ LIQUID_BENCHMARK(bpacketsync, "bpacketsync execute", "framing,bpacketsync")
         bpacketsync_execute_byte(ps, msg_enc[(4*i+3)%enc_msg_len]);
     }
     float extime = liquid_toc(timer);
-    printf("found %u packets\n", num_packets_found);
+    liquid_log_debug("found %u packets", num_packets_found);
 
     // clean up allocated objects
     bpacketgen_destroy(pg);
