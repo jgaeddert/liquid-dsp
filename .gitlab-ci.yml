@@ -21,7 +21,7 @@ build:
     - cd build
     - cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=ON -DBUILD_EXAMPLES=ON -DBUILD_SANDBOX=ON -DCOVERAGE=OFF ..
     - make -j4
-    - ./xbenchmark -L debug # -o benchmark.json -f -q
+    - ./xbenchmark -r 0.005 # -o benchmark.json -f -q
     - ./xautotest -o autotest.json
     #- make check-doc # compile and run documenation checks (e.g. example code in README)
     - make install
