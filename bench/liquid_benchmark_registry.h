@@ -795,6 +795,14 @@ extern struct liquid_benchmark_s ofdmframesync_rxsymbol_n64_s;
 extern struct liquid_benchmark_s ofdmframesync_rxsymbol_n128_s;
 extern struct liquid_benchmark_s ofdmframesync_rxsymbol_n256_s;
 extern struct liquid_benchmark_s ofdmframesync_rxsymbol_n512_s;
+// ./src/nco/bench/nco_benchmark.c
+extern struct liquid_benchmark_s nco_sincos_s;
+extern struct liquid_benchmark_s nco_mix_up_s;
+extern struct liquid_benchmark_s nco_mix_block_up_s;
+// ./src/nco/bench/vco_benchmark.c
+extern struct liquid_benchmark_s vco_sincos_s;
+extern struct liquid_benchmark_s vco_mix_up_s;
+extern struct liquid_benchmark_s vco_mix_block_up_s;
 
 // compile benchmark registry
 liquid_benchmark liquid_benchmarks[] =
@@ -1533,6 +1541,12 @@ liquid_benchmark liquid_benchmarks[] =
     &ofdmframesync_rxsymbol_n128_s,
     &ofdmframesync_rxsymbol_n256_s,
     &ofdmframesync_rxsymbol_n512_s,
+    &nco_sincos_s,
+    &nco_mix_up_s,
+    &nco_mix_block_up_s,
+    &vco_sincos_s,
+    &vco_mix_up_s,
+    &vco_mix_block_up_s,
     NULL
 };
 
