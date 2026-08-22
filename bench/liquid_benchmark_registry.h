@@ -809,6 +809,12 @@ extern struct liquid_benchmark_s expand_mulaw_s;
 // ./src/quantization/bench/quantizer_benchmark.c
 extern struct liquid_benchmark_s quantize_adc_s;
 extern struct liquid_benchmark_s quantize_dac_s;
+// ./src/random/bench/random_benchmark.c
+extern struct liquid_benchmark_s random_uniform_s;
+extern struct liquid_benchmark_s random_normal_s;
+extern struct liquid_benchmark_s random_complex_normal_s;
+extern struct liquid_benchmark_s random_weibull_s;
+extern struct liquid_benchmark_s random_ricek_s;
 
 // compile benchmark registry
 liquid_benchmark liquid_benchmarks[] =
@@ -1557,6 +1563,11 @@ liquid_benchmark liquid_benchmarks[] =
     &expand_mulaw_s,
     &quantize_adc_s,
     &quantize_dac_s,
+    &random_uniform_s,
+    &random_normal_s,
+    &random_complex_normal_s,
+    &random_weibull_s,
+    &random_ricek_s,
     NULL
 };
 

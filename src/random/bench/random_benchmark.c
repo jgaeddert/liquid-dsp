@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,141 +20,100 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
-// 
 // BENCHMARK: uniform
-//
-void benchmark_random_uniform(struct rusage *_start,
-                              struct rusage *_finish,
-                              unsigned long int *_num_iterations)
+LIQUID_BENCHMARK(random_uniform, "randf (uniform)", "random,uniform")
 {
-    // normalize number of iterations
-    *_num_iterations *= 10;
-
     float x = 0.0f;
     unsigned long int i;
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 randf per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         x += randf();
         x += randf();
         x += randf();
         x += randf();
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
-    *_num_iterations += x > 0; // trivial use of variable
+    float extime = liquid_toc(timer);
+    return extime;
 }
 
-// 
 // BENCHMARK: normal
-//
-void benchmark_random_normal(struct rusage *_start,
-                             struct rusage *_finish,
-                             unsigned long int *_num_iterations)
+LIQUID_BENCHMARK(random_normal, "randnf (normal)", "random,normal")
 {
-    // normalize number of iterations
-    *_num_iterations *= 1;
-
     float x = 0.0f;
     unsigned long int i;
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 randnf per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         x += randnf();
         x += randnf();
         x += randnf();
         x += randnf();
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
-    *_num_iterations += x > 0; // trivial use of variable
+    float extime = liquid_toc(timer);
+    return extime;
 }
 
-// 
 // BENCHMARK: complex normal
-//
-void benchmark_random_complex_normal(struct rusage *_start,
-                                     struct rusage *_finish,
-                                     unsigned long int *_num_iterations)
+LIQUID_BENCHMARK(random_complex_normal, "crandnf (complex normal)", "random,complex,normal")
 {
-    // normalize number of iterations
-    *_num_iterations /= 2;
-
     float complex x = 0.0f;
     unsigned long int i;
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 crandnf per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         crandnf(&x);
         crandnf(&x);
         crandnf(&x);
         crandnf(&x);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
-    *_num_iterations += crealf(x) > 0; // trivial use of variable
+    float extime = liquid_toc(timer);
+    return extime;
 }
 
-// 
 // BENCHMARK: Weibull
-//
-void benchmark_random_weibull(struct rusage *_start,
-                              struct rusage *_finish,
-                              unsigned long int *_num_iterations)
+LIQUID_BENCHMARK(random_weibull, "randweibf (Weibull)", "random,weibull")
 {
-    // normalize number of iterations
-    *_num_iterations *= 2;
-
     float x=0.0f;
     float alpha=1.0f;
     float beta=2.0f;
     float gamma=6.0f;
     unsigned long int i;
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 randweibf per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         x += randweibf(alpha,beta,gamma);
         x += randweibf(alpha,beta,gamma);
         x += randweibf(alpha,beta,gamma);
         x += randweibf(alpha,beta,gamma);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
-    *_num_iterations += x > 0; // trivial use of variable
+    float extime = liquid_toc(timer);
+    return extime;
 }
 
-// 
 // BENCHMARK: Rice-K
-//
-void benchmark_random_ricek(struct rusage *_start,
-                            struct rusage *_finish,
-                            unsigned long int *_num_iterations)
+LIQUID_BENCHMARK(random_ricek, "randricekf (Rice-K)", "random,rice")
 {
-    // normalize number of iterations
-    *_num_iterations /= 3;
-
     float x = 0.0f;
     float K=2.0f;
     float omega=1.0f;
     unsigned long int i;
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 randricekf per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         x += randricekf(K,omega);
         x += randricekf(K,omega);
         x += randricekf(K,omega);
         x += randricekf(K,omega);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
-    *_num_iterations += x > 0; // trivial use of variable
+    float extime = liquid_toc(timer);
+    return extime;
 }
 
