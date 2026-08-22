@@ -820,6 +820,8 @@ extern struct liquid_benchmark_s bsequence_xcorr_n16_s;
 extern struct liquid_benchmark_s bsequence_xcorr_n64_s;
 extern struct liquid_benchmark_s bsequence_xcorr_n256_s;
 extern struct liquid_benchmark_s bsequence_xcorr_n1024_s;
+// ./src/utility/bench/byte_utilities_benchmark.c
+extern struct liquid_benchmark_s count_ones_s;
 
 // compile benchmark registry
 liquid_benchmark liquid_benchmarks[] =
@@ -1577,6 +1579,7 @@ liquid_benchmark liquid_benchmarks[] =
     &bsequence_xcorr_n64_s,
     &bsequence_xcorr_n256_s,
     &bsequence_xcorr_n1024_s,
+    &count_ones_s,
     NULL
 };
 

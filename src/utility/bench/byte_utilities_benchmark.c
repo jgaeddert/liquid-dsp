@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,10 @@
  * THE SOFTWARE.
  */
 
+#include "liquid.benchmark.h"
 #include <stdlib.h>
-#include <sys/resource.h>
-#include "liquid.h"
 
-void benchmark_count_ones(struct rusage     * _start,
-                          struct rusage     * _finish,
-                          unsigned long int * _num_iterations)
+LIQUID_BENCHMARK(count_ones, "liquid_count_ones over buffer", "utility")
 {
     // allocate buffer of bytes and initialize
     unsigned int i, j;
@@ -34,20 +31,18 @@ void benchmark_count_ones(struct rusage     * _start,
     unsigned int * buf     = (unsigned int *) malloc(buf_len*sizeof(unsigned int));
     for (i=0; i<buf_len; i++)
         buf[i] = i & 0xff;
-
-    // start trials
+    // start trials (4 iterations over buf_len bytes each; round down)
     unsigned int c = 0;
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    unsigned long int n = num_iterations / (4 * buf_len);
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         c &= 0xffff;
         for (j=0; j<buf_len; j++)
             c += liquid_count_ones(buf[j]);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4*buf_len;
-    *_num_iterations += c & 1; // trivial use of variable
-
+    float extime = liquid_toc(timer);
     // clean allocated memory
     free(buf);
+    return extime;
 }
 
