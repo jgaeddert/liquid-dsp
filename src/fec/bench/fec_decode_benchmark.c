@@ -48,8 +48,8 @@ float fec_decode_bench(unsigned long int _num_iterations,
          _fs == LIQUID_FEC_CONV_V29P78 ||
          _fs == LIQUID_FEC_RS_M8)
     {
-        liquid_error(LIQUID_EUMODE,"convolutional, Reed-Solomon codes unavailable (install libfec)");
-        return 0.0f;
+        liquid_log_warn("fec_decode_bench(), convolutional and Reed-Solomon codes unavailable (install libfec)");
+        return -1.0f;
     }
 #endif
     // generate fec object

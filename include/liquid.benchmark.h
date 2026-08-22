@@ -53,7 +53,8 @@ struct liquid_benchmark_s
         LIQUID_BENCHMARK_SCHED  = 1,// benchmark has been scheduled to run
         LIQUID_BENCHMARK_ACTIVE = 2,// benchmark is actively running
         LIQUID_BENCHMARK_DONE   = 3,// benchmark finished
-        LIQUID_BENCHMARK_SKIP   = 4,// benchmark skipped
+        LIQUID_BENCHMARK_NOTRUN = 4,// benchmark could not run (e.g. missing dependency)
+        LIQUID_BENCHMARK_SKIP   = 5,// benchmark skipped
     } status;
     unsigned long int num_trials;   // work units processed (set by body)
     float             extime;       // timed duration [seconds] (set by toc)

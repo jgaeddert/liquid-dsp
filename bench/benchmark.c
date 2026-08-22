@@ -42,6 +42,11 @@ int liquid_benchmark_print_status(liquid_benchmark _q)
     if (_q->status == LIQUID_BENCHMARK_SKIP)
         return LIQUID_OK;
 
+    if (_q->status == LIQUID_BENCHMARK_NOTRUN) {
+        liquid_log_warn("%-30s: could not run", _q->name);
+        return LIQUID_OK;
+    }
+
     float trials_format = (float)(_q->num_trials);  char tu = convert_units(&trials_format);
     float extime_format = _q->extime;               char eu = convert_units(&extime_format);
     float rate_format   = _q->rate;                 char ru = convert_units(&rate_format);
@@ -68,6 +73,14 @@ int liquid_benchmark_execute(liquid_benchmark  _q,
     {
         runtime = _q->func(_num_trials);
         liquid_log_debug("%s : runtime=%.6f s, trials=%lu", _q->name, runtime, _num_trials);
+
+        // negative runtime signals the benchmark cannot run (e.g. missing
+        // dependency); mark as not-run
+        if (runtime < 0.0f) {
+            _q->status = LIQUID_BENCHMARK_NOTRUN;
+            //liquid_log_warn("benchmark '%s' could not run", _q->name);
+            return LIQUID_OK;
+        }
 
         if (runtime > _target_runtime)
             break;
@@ -190,14 +203,17 @@ int liquid_benchmark_registry_print_summary(liquid_benchmark_registry _q)
     float runtime = liquid_timer_toc(_q->timer);
 
     // accumulate per-benchmark extime into total benchmark time, and count
-    // how many benchmarks actually ran (vs skipped)
+    // how many benchmarks actually ran (vs skipped/not-run)
     float total_extime = 0.0f;
     unsigned int num_run = 0;
+    unsigned int num_notrun = 0;
     unsigned int i;
     for (i=0; i<_q->num_benchmarks; i++) {
         if (_q->benchmarks[i]->status == LIQUID_BENCHMARK_DONE) {
             total_extime += _q->benchmarks[i]->extime;
             num_run++;
+        } else if (_q->benchmarks[i]->status == LIQUID_BENCHMARK_NOTRUN) {
+            num_notrun++;
         }
     }
 
@@ -205,7 +221,8 @@ int liquid_benchmark_registry_print_summary(liquid_benchmark_registry _q)
     float efficiency = (runtime > 0.0f) ? total_extime / runtime : 0.0f;
 
     liquid_log_info("=========== benchmark summary ===========");
-    liquid_log_info("benchmarks: %u / %u (run / total)", num_run, _q->num_benchmarks);
+    liquid_log_info("benchmarks: %u / %u / %u (run / not-run / total)",
+        num_run, num_notrun, _q->num_benchmarks);
     liquid_log_info("runtime:    %.3f s", runtime);
     liquid_log_info("bench time: %.3f s", total_extime);
     liquid_log_info("efficiency: %.1f%%", efficiency * 100.0f);
