@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void matrixf_linsolve_bench(struct rusage *     _start,
-                            struct rusage *     _finish,
-                            unsigned long int * _num_iterations,
-                            unsigned int        _n)
+float matrixf_linsolve_bench(unsigned long int num_iterations, unsigned int _n)
 {
-    // normalize number of iterations
-    // time ~ _n ^ 2
-    *_num_iterations /= _n * _n;
-    if (*_num_iterations < 1) *_num_iterations = 1;
-
     unsigned long int i;
 
     float A[_n*_n];
@@ -45,28 +35,30 @@ void matrixf_linsolve_bench(struct rusage *     _start,
     for (i=0; i<_n; i++)
         b[i] = randnf();
     
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 solves per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    if (n < 1) n = 1;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         matrixf_linsolve(A,_n,b,x,NULL);
         matrixf_linsolve(A,_n,b,x,NULL);
         matrixf_linsolve(A,_n,b,x,NULL);
         matrixf_linsolve(A,_n,b,x,NULL);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
+    return extime;
 }
 
-#define MATRIXF_LINSOLVE_BENCHMARK_API(N)   \
-(   struct rusage *_start,                  \
-    struct rusage *_finish,                 \
-    unsigned long int *_num_iterations)     \
-{ matrixf_linsolve_bench(_start, _finish, _num_iterations, N); }
-
-void benchmark_matrixf_linsolve_n2      MATRIXF_LINSOLVE_BENCHMARK_API(2)
-void benchmark_matrixf_linsolve_n4      MATRIXF_LINSOLVE_BENCHMARK_API(4)
-void benchmark_matrixf_linsolve_n8      MATRIXF_LINSOLVE_BENCHMARK_API(8)
-void benchmark_matrixf_linsolve_n16     MATRIXF_LINSOLVE_BENCHMARK_API(16)
-void benchmark_matrixf_linsolve_n32     MATRIXF_LINSOLVE_BENCHMARK_API(32)
-void benchmark_matrixf_linsolve_n64     MATRIXF_LINSOLVE_BENCHMARK_API(64)
+LIQUID_BENCHMARK(matrixf_linsolve_n2,  "matrixf_linsolve execute, n=2",  "matrix,linsolve")
+    { return matrixf_linsolve_bench(num_iterations, 2); }
+LIQUID_BENCHMARK(matrixf_linsolve_n4,  "matrixf_linsolve execute, n=4",  "matrix,linsolve")
+    { return matrixf_linsolve_bench(num_iterations, 4); }
+LIQUID_BENCHMARK(matrixf_linsolve_n8,  "matrixf_linsolve execute, n=8",  "matrix,linsolve")
+    { return matrixf_linsolve_bench(num_iterations, 8); }
+LIQUID_BENCHMARK(matrixf_linsolve_n16, "matrixf_linsolve execute, n=16", "matrix,linsolve")
+    { return matrixf_linsolve_bench(num_iterations, 16); }
+LIQUID_BENCHMARK(matrixf_linsolve_n32, "matrixf_linsolve execute, n=32", "matrix,linsolve")
+    { return matrixf_linsolve_bench(num_iterations, 32); }
+LIQUID_BENCHMARK(matrixf_linsolve_n64, "matrixf_linsolve execute, n=64", "matrix,linsolve")
+    { return matrixf_linsolve_bench(num_iterations, 64); }
 

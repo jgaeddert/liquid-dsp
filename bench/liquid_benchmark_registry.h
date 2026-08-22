@@ -552,6 +552,33 @@ extern struct liquid_benchmark_s polyfit_q3_n16_s;
 extern struct liquid_benchmark_s polyfit_q3_n32_s;
 extern struct liquid_benchmark_s polyfit_q3_n64_s;
 extern struct liquid_benchmark_s polyfit_q3_n128_s;
+// ./src/matrix/bench/matrixf_inv_benchmark.c
+extern struct liquid_benchmark_s matrixf_inv_n2_s;
+extern struct liquid_benchmark_s matrixf_inv_n4_s;
+extern struct liquid_benchmark_s matrixf_inv_n8_s;
+extern struct liquid_benchmark_s matrixf_inv_n16_s;
+extern struct liquid_benchmark_s matrixf_inv_n32_s;
+extern struct liquid_benchmark_s matrixf_inv_n64_s;
+// ./src/matrix/bench/matrixf_linsolve_benchmark.c
+extern struct liquid_benchmark_s matrixf_linsolve_n2_s;
+extern struct liquid_benchmark_s matrixf_linsolve_n4_s;
+extern struct liquid_benchmark_s matrixf_linsolve_n8_s;
+extern struct liquid_benchmark_s matrixf_linsolve_n16_s;
+extern struct liquid_benchmark_s matrixf_linsolve_n32_s;
+extern struct liquid_benchmark_s matrixf_linsolve_n64_s;
+// ./src/matrix/bench/matrixf_mul_benchmark.c
+extern struct liquid_benchmark_s matrixf_mul_n2_s;
+extern struct liquid_benchmark_s matrixf_mul_n4_s;
+extern struct liquid_benchmark_s matrixf_mul_n8_s;
+extern struct liquid_benchmark_s matrixf_mul_n16_s;
+extern struct liquid_benchmark_s matrixf_mul_n32_s;
+extern struct liquid_benchmark_s matrixf_mul_n64_s;
+// ./src/matrix/bench/smatrixf_mul_benchmark.c
+extern struct liquid_benchmark_s smatrixf_mul_n32_s;
+extern struct liquid_benchmark_s smatrixf_mul_n64_s;
+extern struct liquid_benchmark_s smatrixf_mul_n128_s;
+extern struct liquid_benchmark_s smatrixf_mul_n256_s;
+extern struct liquid_benchmark_s smatrixf_mul_n512_s;
 
 // compile benchmark registry
 liquid_benchmark liquid_benchmarks[] =
@@ -1064,6 +1091,29 @@ liquid_benchmark liquid_benchmarks[] =
     &polyfit_q3_n32_s,
     &polyfit_q3_n64_s,
     &polyfit_q3_n128_s,
+    &matrixf_inv_n2_s,
+    &matrixf_inv_n4_s,
+    &matrixf_inv_n8_s,
+    &matrixf_inv_n16_s,
+    &matrixf_inv_n32_s,
+    &matrixf_inv_n64_s,
+    &matrixf_linsolve_n2_s,
+    &matrixf_linsolve_n4_s,
+    &matrixf_linsolve_n8_s,
+    &matrixf_linsolve_n16_s,
+    &matrixf_linsolve_n32_s,
+    &matrixf_linsolve_n64_s,
+    &matrixf_mul_n2_s,
+    &matrixf_mul_n4_s,
+    &matrixf_mul_n8_s,
+    &matrixf_mul_n16_s,
+    &matrixf_mul_n32_s,
+    &matrixf_mul_n64_s,
+    &smatrixf_mul_n32_s,
+    &smatrixf_mul_n64_s,
+    &smatrixf_mul_n128_s,
+    &smatrixf_mul_n256_s,
+    &smatrixf_mul_n512_s,
     NULL
 };
 
