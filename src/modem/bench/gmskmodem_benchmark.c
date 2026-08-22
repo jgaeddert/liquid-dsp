@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "liquid.benchmark.h"
 #include <math.h>
-#include <sys/resource.h>
-#include "liquid.internal.h"
 
-// 
-void benchmark_gmskmodem_modulate(struct rusage *_start,
-                                  struct rusage *_finish,
-                                  unsigned long int *_num_iterations)
+// TODO: test different parameters
+LIQUID_BENCHMARK(gmskmodem_modulate, "gmskmod modulate", "modem,gmsk")
 {
     // options
     unsigned int k=2;   // filter samples/symbol
@@ -38,30 +33,26 @@ void benchmark_gmskmodem_modulate(struct rusage *_start,
 
     // create modem object
     gmskmod mod   = gmskmod_create(k, m, BT);
-
     float complex x[k];
     unsigned int symbol_in = 0;
-    
     unsigned long int i;
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 modulates per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         gmskmod_modulate(mod, symbol_in, x);
         gmskmod_modulate(mod, symbol_in, x);
         gmskmod_modulate(mod, symbol_in, x);
         gmskmod_modulate(mod, symbol_in, x);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
-
+    float extime = liquid_toc(timer);
     // destroy modem objects
     gmskmod_destroy(mod);
+    return extime;
 }
 
-// 
-void benchmark_gmskmodem_demodulate(struct rusage *_start,
-                                    struct rusage *_finish,
-                                    unsigned long int *_num_iterations)
+// TODO: test different parameters
+LIQUID_BENCHMARK(gmskmodem_demodulate, "gmskdem demodulate", "modem,gmsk")
 {
     // options
     unsigned int k=2;   // filter samples/symbol
@@ -70,26 +61,23 @@ void benchmark_gmskmodem_demodulate(struct rusage *_start,
 
     // create modem object
     gmskdem demod = gmskdem_create(k, m, BT);
-
     float complex x[k];
     unsigned int symbol_out = 0;
-    
     unsigned long int i;
     for (i=0; i<k; i++)
         x[i] = randnf()*cexpf(_Complex_I*2*M_PI*randf());
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 demodulates per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         gmskdem_demodulate(demod, x, &symbol_out);
         gmskdem_demodulate(demod, x, &symbol_out);
         gmskdem_demodulate(demod, x, &symbol_out);
         gmskdem_demodulate(demod, x, &symbol_out);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
-
+    float extime = liquid_toc(timer);
     // destroy modem objects
     gmskdem_destroy(demod);
+    return extime;
 }
 

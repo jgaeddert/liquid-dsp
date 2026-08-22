@@ -579,6 +579,184 @@ extern struct liquid_benchmark_s smatrixf_mul_n64_s;
 extern struct liquid_benchmark_s smatrixf_mul_n128_s;
 extern struct liquid_benchmark_s smatrixf_mul_n256_s;
 extern struct liquid_benchmark_s smatrixf_mul_n512_s;
+// ./src/modem/bench/freqdem_benchmark.c
+extern struct liquid_benchmark_s freqdem_s;
+// ./src/modem/bench/freqmod_benchmark.c
+extern struct liquid_benchmark_s freqmod_s;
+// ./src/modem/bench/fskdem_benchmark.c
+extern struct liquid_benchmark_s fskdem_norm_M2_s;
+extern struct liquid_benchmark_s fskdem_norm_M4_s;
+extern struct liquid_benchmark_s fskdem_norm_M8_s;
+extern struct liquid_benchmark_s fskdem_norm_M16_s;
+extern struct liquid_benchmark_s fskdem_norm_M32_s;
+extern struct liquid_benchmark_s fskdem_norm_M64_s;
+extern struct liquid_benchmark_s fskdem_norm_M128_s;
+extern struct liquid_benchmark_s fskdem_norm_M256_s;
+extern struct liquid_benchmark_s fskdem_norm_M512_s;
+extern struct liquid_benchmark_s fskdem_norm_M1024_s;
+extern struct liquid_benchmark_s fskdem_misc_M2_s;
+extern struct liquid_benchmark_s fskdem_misc_M4_s;
+extern struct liquid_benchmark_s fskdem_misc_M8_s;
+extern struct liquid_benchmark_s fskdem_misc_M16_s;
+extern struct liquid_benchmark_s fskdem_misc_M32_s;
+extern struct liquid_benchmark_s fskdem_misc_M64_s;
+extern struct liquid_benchmark_s fskdem_misc_M128_s;
+extern struct liquid_benchmark_s fskdem_misc_M256_s;
+extern struct liquid_benchmark_s fskdem_misc_M512_s;
+extern struct liquid_benchmark_s fskdem_misc_M1024_s;
+// ./src/modem/bench/fskmod_benchmark.c
+extern struct liquid_benchmark_s fskmod_norm_M2_s;
+extern struct liquid_benchmark_s fskmod_norm_M4_s;
+extern struct liquid_benchmark_s fskmod_norm_M8_s;
+extern struct liquid_benchmark_s fskmod_norm_M16_s;
+extern struct liquid_benchmark_s fskmod_norm_M32_s;
+extern struct liquid_benchmark_s fskmod_norm_M64_s;
+extern struct liquid_benchmark_s fskmod_norm_M128_s;
+extern struct liquid_benchmark_s fskmod_norm_M256_s;
+extern struct liquid_benchmark_s fskmod_norm_M512_s;
+extern struct liquid_benchmark_s fskmod_norm_M1024_s;
+extern struct liquid_benchmark_s fskmod_misc_M2_s;
+extern struct liquid_benchmark_s fskmod_misc_M4_s;
+extern struct liquid_benchmark_s fskmod_misc_M8_s;
+extern struct liquid_benchmark_s fskmod_misc_M16_s;
+extern struct liquid_benchmark_s fskmod_misc_M32_s;
+extern struct liquid_benchmark_s fskmod_misc_M64_s;
+extern struct liquid_benchmark_s fskmod_misc_M128_s;
+extern struct liquid_benchmark_s fskmod_misc_M256_s;
+extern struct liquid_benchmark_s fskmod_misc_M512_s;
+extern struct liquid_benchmark_s fskmod_misc_M1024_s;
+// ./src/modem/bench/gmskmodem_benchmark.c
+extern struct liquid_benchmark_s gmskmodem_modulate_s;
+extern struct liquid_benchmark_s gmskmodem_demodulate_s;
+// ./src/modem/bench/modem_demodsoft_benchmark.c
+extern struct liquid_benchmark_s modem_demodsoft_bpsk_s;
+extern struct liquid_benchmark_s modem_demodsoft_qpsk_s;
+extern struct liquid_benchmark_s modem_demodsoft_ook_s;
+extern struct liquid_benchmark_s modem_demodsoft_sqam32_s;
+extern struct liquid_benchmark_s modem_demodsoft_sqam128_s;
+extern struct liquid_benchmark_s modem_demodsoft_ask2_s;
+extern struct liquid_benchmark_s modem_demodsoft_ask4_s;
+extern struct liquid_benchmark_s modem_demodsoft_ask8_s;
+extern struct liquid_benchmark_s modem_demodsoft_ask16_s;
+extern struct liquid_benchmark_s modem_demodsoft_psk2_s;
+extern struct liquid_benchmark_s modem_demodsoft_psk4_s;
+extern struct liquid_benchmark_s modem_demodsoft_psk8_s;
+extern struct liquid_benchmark_s modem_demodsoft_psk16_s;
+extern struct liquid_benchmark_s modem_demodsoft_psk32_s;
+extern struct liquid_benchmark_s modem_demodsoft_psk64_s;
+extern struct liquid_benchmark_s modem_demodsoft_dpsk2_s;
+extern struct liquid_benchmark_s modem_demodsoft_dpsk4_s;
+extern struct liquid_benchmark_s modem_demodsoft_dpsk8_s;
+extern struct liquid_benchmark_s modem_demodsoft_dpsk16_s;
+extern struct liquid_benchmark_s modem_demodsoft_dpsk32_s;
+extern struct liquid_benchmark_s modem_demodsoft_dpsk64_s;
+extern struct liquid_benchmark_s modem_demodsoft_qam4_s;
+extern struct liquid_benchmark_s modem_demodsoft_qam8_s;
+extern struct liquid_benchmark_s modem_demodsoft_qam16_s;
+extern struct liquid_benchmark_s modem_demodsoft_qam32_s;
+extern struct liquid_benchmark_s modem_demodsoft_qam64_s;
+extern struct liquid_benchmark_s modem_demodsoft_qam128_s;
+extern struct liquid_benchmark_s modem_demodsoft_qam256_s;
+extern struct liquid_benchmark_s modem_demodsoft_apsk4_s;
+extern struct liquid_benchmark_s modem_demodsoft_apsk8_s;
+extern struct liquid_benchmark_s modem_demodsoft_apsk16_s;
+extern struct liquid_benchmark_s modem_demodsoft_apsk32_s;
+extern struct liquid_benchmark_s modem_demodsoft_apsk64_s;
+extern struct liquid_benchmark_s modem_demodsoft_apsk128_s;
+extern struct liquid_benchmark_s modem_demodsoft_apsk256_s;
+extern struct liquid_benchmark_s modem_demodsoft_arbV29_s;
+extern struct liquid_benchmark_s modem_demodsoft_arb16opt_s;
+extern struct liquid_benchmark_s modem_demodsoft_arb32opt_s;
+extern struct liquid_benchmark_s modem_demodsoft_arb64opt_s;
+extern struct liquid_benchmark_s modem_demodsoft_arb128opt_s;
+extern struct liquid_benchmark_s modem_demodsoft_arb256opt_s;
+extern struct liquid_benchmark_s modem_demodsoft_arb64vt_s;
+// ./src/modem/bench/modem_demodulate_benchmark.c
+extern struct liquid_benchmark_s modem_demodulate_bpsk_s;
+extern struct liquid_benchmark_s modem_demodulate_qpsk_s;
+extern struct liquid_benchmark_s modem_demodulate_ook_s;
+extern struct liquid_benchmark_s modem_demodulate_sqam32_s;
+extern struct liquid_benchmark_s modem_demodulate_sqam128_s;
+extern struct liquid_benchmark_s modem_demodulate_ask2_s;
+extern struct liquid_benchmark_s modem_demodulate_ask4_s;
+extern struct liquid_benchmark_s modem_demodulate_ask8_s;
+extern struct liquid_benchmark_s modem_demodulate_ask16_s;
+extern struct liquid_benchmark_s modem_demodulate_psk2_s;
+extern struct liquid_benchmark_s modem_demodulate_psk4_s;
+extern struct liquid_benchmark_s modem_demodulate_psk8_s;
+extern struct liquid_benchmark_s modem_demodulate_psk16_s;
+extern struct liquid_benchmark_s modem_demodulate_psk32_s;
+extern struct liquid_benchmark_s modem_demodulate_psk64_s;
+extern struct liquid_benchmark_s modem_demodulate_dpsk2_s;
+extern struct liquid_benchmark_s modem_demodulate_dpsk4_s;
+extern struct liquid_benchmark_s modem_demodulate_dpsk8_s;
+extern struct liquid_benchmark_s modem_demodulate_dpsk16_s;
+extern struct liquid_benchmark_s modem_demodulate_dpsk32_s;
+extern struct liquid_benchmark_s modem_demodulate_dpsk64_s;
+extern struct liquid_benchmark_s modem_demodulate_qam4_s;
+extern struct liquid_benchmark_s modem_demodulate_qam8_s;
+extern struct liquid_benchmark_s modem_demodulate_qam16_s;
+extern struct liquid_benchmark_s modem_demodulate_qam32_s;
+extern struct liquid_benchmark_s modem_demodulate_qam64_s;
+extern struct liquid_benchmark_s modem_demodulate_qam128_s;
+extern struct liquid_benchmark_s modem_demodulate_qam256_s;
+extern struct liquid_benchmark_s modem_demodulate_apsk4_s;
+extern struct liquid_benchmark_s modem_demodulate_apsk8_s;
+extern struct liquid_benchmark_s modem_demodulate_apsk16_s;
+extern struct liquid_benchmark_s modem_demodulate_apsk32_s;
+extern struct liquid_benchmark_s modem_demodulate_apsk64_s;
+extern struct liquid_benchmark_s modem_demodulate_apsk128_s;
+extern struct liquid_benchmark_s modem_demodulate_apsk256_s;
+extern struct liquid_benchmark_s modem_demodulate_arbV29_s;
+extern struct liquid_benchmark_s modem_demodulate_arb16opt_s;
+extern struct liquid_benchmark_s modem_demodulate_arb32opt_s;
+extern struct liquid_benchmark_s modem_demodulate_arb64opt_s;
+extern struct liquid_benchmark_s modem_demodulate_arb128opt_s;
+extern struct liquid_benchmark_s modem_demodulate_arb256opt_s;
+extern struct liquid_benchmark_s modem_demodulate_arb64vt_s;
+// ./src/modem/bench/modem_modulate_benchmark.c
+extern struct liquid_benchmark_s modem_modulate_bpsk_s;
+extern struct liquid_benchmark_s modem_modulate_qpsk_s;
+extern struct liquid_benchmark_s modem_modulate_ook_s;
+extern struct liquid_benchmark_s modem_modulate_sqam32_s;
+extern struct liquid_benchmark_s modem_modulate_sqam128_s;
+extern struct liquid_benchmark_s modem_modulate_ask2_s;
+extern struct liquid_benchmark_s modem_modulate_ask4_s;
+extern struct liquid_benchmark_s modem_modulate_ask8_s;
+extern struct liquid_benchmark_s modem_modulate_ask16_s;
+extern struct liquid_benchmark_s modem_modulate_psk2_s;
+extern struct liquid_benchmark_s modem_modulate_psk4_s;
+extern struct liquid_benchmark_s modem_modulate_psk8_s;
+extern struct liquid_benchmark_s modem_modulate_psk16_s;
+extern struct liquid_benchmark_s modem_modulate_psk32_s;
+extern struct liquid_benchmark_s modem_modulate_psk64_s;
+extern struct liquid_benchmark_s modem_modulate_dpsk2_s;
+extern struct liquid_benchmark_s modem_modulate_dpsk4_s;
+extern struct liquid_benchmark_s modem_modulate_dpsk8_s;
+extern struct liquid_benchmark_s modem_modulate_dpsk16_s;
+extern struct liquid_benchmark_s modem_modulate_dpsk32_s;
+extern struct liquid_benchmark_s modem_modulate_dpsk64_s;
+extern struct liquid_benchmark_s modem_modulate_qam4_s;
+extern struct liquid_benchmark_s modem_modulate_qam8_s;
+extern struct liquid_benchmark_s modem_modulate_qam16_s;
+extern struct liquid_benchmark_s modem_modulate_qam32_s;
+extern struct liquid_benchmark_s modem_modulate_qam64_s;
+extern struct liquid_benchmark_s modem_modulate_qam128_s;
+extern struct liquid_benchmark_s modem_modulate_qam256_s;
+extern struct liquid_benchmark_s modem_modulate_apsk4_s;
+extern struct liquid_benchmark_s modem_modulate_apsk8_s;
+extern struct liquid_benchmark_s modem_modulate_apsk16_s;
+extern struct liquid_benchmark_s modem_modulate_apsk32_s;
+extern struct liquid_benchmark_s modem_modulate_apsk64_s;
+extern struct liquid_benchmark_s modem_modulate_apsk128_s;
+extern struct liquid_benchmark_s modem_modulate_apsk256_s;
+extern struct liquid_benchmark_s modem_modulate_arbV29_s;
+extern struct liquid_benchmark_s modem_modulate_arb16opt_s;
+extern struct liquid_benchmark_s modem_modulate_arb32opt_s;
+extern struct liquid_benchmark_s modem_modulate_arb64opt_s;
+extern struct liquid_benchmark_s modem_modulate_arb128opt_s;
+extern struct liquid_benchmark_s modem_modulate_arb256opt_s;
+extern struct liquid_benchmark_s modem_modulate_arb64vt_s;
 
 // compile benchmark registry
 liquid_benchmark liquid_benchmarks[] =
@@ -1114,6 +1292,176 @@ liquid_benchmark liquid_benchmarks[] =
     &smatrixf_mul_n128_s,
     &smatrixf_mul_n256_s,
     &smatrixf_mul_n512_s,
+    &freqdem_s,
+    &freqmod_s,
+    &fskdem_norm_M2_s,
+    &fskdem_norm_M4_s,
+    &fskdem_norm_M8_s,
+    &fskdem_norm_M16_s,
+    &fskdem_norm_M32_s,
+    &fskdem_norm_M64_s,
+    &fskdem_norm_M128_s,
+    &fskdem_norm_M256_s,
+    &fskdem_norm_M512_s,
+    &fskdem_norm_M1024_s,
+    &fskdem_misc_M2_s,
+    &fskdem_misc_M4_s,
+    &fskdem_misc_M8_s,
+    &fskdem_misc_M16_s,
+    &fskdem_misc_M32_s,
+    &fskdem_misc_M64_s,
+    &fskdem_misc_M128_s,
+    &fskdem_misc_M256_s,
+    &fskdem_misc_M512_s,
+    &fskdem_misc_M1024_s,
+    &fskmod_norm_M2_s,
+    &fskmod_norm_M4_s,
+    &fskmod_norm_M8_s,
+    &fskmod_norm_M16_s,
+    &fskmod_norm_M32_s,
+    &fskmod_norm_M64_s,
+    &fskmod_norm_M128_s,
+    &fskmod_norm_M256_s,
+    &fskmod_norm_M512_s,
+    &fskmod_norm_M1024_s,
+    &fskmod_misc_M2_s,
+    &fskmod_misc_M4_s,
+    &fskmod_misc_M8_s,
+    &fskmod_misc_M16_s,
+    &fskmod_misc_M32_s,
+    &fskmod_misc_M64_s,
+    &fskmod_misc_M128_s,
+    &fskmod_misc_M256_s,
+    &fskmod_misc_M512_s,
+    &fskmod_misc_M1024_s,
+    &gmskmodem_modulate_s,
+    &gmskmodem_demodulate_s,
+    &modem_demodsoft_bpsk_s,
+    &modem_demodsoft_qpsk_s,
+    &modem_demodsoft_ook_s,
+    &modem_demodsoft_sqam32_s,
+    &modem_demodsoft_sqam128_s,
+    &modem_demodsoft_ask2_s,
+    &modem_demodsoft_ask4_s,
+    &modem_demodsoft_ask8_s,
+    &modem_demodsoft_ask16_s,
+    &modem_demodsoft_psk2_s,
+    &modem_demodsoft_psk4_s,
+    &modem_demodsoft_psk8_s,
+    &modem_demodsoft_psk16_s,
+    &modem_demodsoft_psk32_s,
+    &modem_demodsoft_psk64_s,
+    &modem_demodsoft_dpsk2_s,
+    &modem_demodsoft_dpsk4_s,
+    &modem_demodsoft_dpsk8_s,
+    &modem_demodsoft_dpsk16_s,
+    &modem_demodsoft_dpsk32_s,
+    &modem_demodsoft_dpsk64_s,
+    &modem_demodsoft_qam4_s,
+    &modem_demodsoft_qam8_s,
+    &modem_demodsoft_qam16_s,
+    &modem_demodsoft_qam32_s,
+    &modem_demodsoft_qam64_s,
+    &modem_demodsoft_qam128_s,
+    &modem_demodsoft_qam256_s,
+    &modem_demodsoft_apsk4_s,
+    &modem_demodsoft_apsk8_s,
+    &modem_demodsoft_apsk16_s,
+    &modem_demodsoft_apsk32_s,
+    &modem_demodsoft_apsk64_s,
+    &modem_demodsoft_apsk128_s,
+    &modem_demodsoft_apsk256_s,
+    &modem_demodsoft_arbV29_s,
+    &modem_demodsoft_arb16opt_s,
+    &modem_demodsoft_arb32opt_s,
+    &modem_demodsoft_arb64opt_s,
+    &modem_demodsoft_arb128opt_s,
+    &modem_demodsoft_arb256opt_s,
+    &modem_demodsoft_arb64vt_s,
+    &modem_demodulate_bpsk_s,
+    &modem_demodulate_qpsk_s,
+    &modem_demodulate_ook_s,
+    &modem_demodulate_sqam32_s,
+    &modem_demodulate_sqam128_s,
+    &modem_demodulate_ask2_s,
+    &modem_demodulate_ask4_s,
+    &modem_demodulate_ask8_s,
+    &modem_demodulate_ask16_s,
+    &modem_demodulate_psk2_s,
+    &modem_demodulate_psk4_s,
+    &modem_demodulate_psk8_s,
+    &modem_demodulate_psk16_s,
+    &modem_demodulate_psk32_s,
+    &modem_demodulate_psk64_s,
+    &modem_demodulate_dpsk2_s,
+    &modem_demodulate_dpsk4_s,
+    &modem_demodulate_dpsk8_s,
+    &modem_demodulate_dpsk16_s,
+    &modem_demodulate_dpsk32_s,
+    &modem_demodulate_dpsk64_s,
+    &modem_demodulate_qam4_s,
+    &modem_demodulate_qam8_s,
+    &modem_demodulate_qam16_s,
+    &modem_demodulate_qam32_s,
+    &modem_demodulate_qam64_s,
+    &modem_demodulate_qam128_s,
+    &modem_demodulate_qam256_s,
+    &modem_demodulate_apsk4_s,
+    &modem_demodulate_apsk8_s,
+    &modem_demodulate_apsk16_s,
+    &modem_demodulate_apsk32_s,
+    &modem_demodulate_apsk64_s,
+    &modem_demodulate_apsk128_s,
+    &modem_demodulate_apsk256_s,
+    &modem_demodulate_arbV29_s,
+    &modem_demodulate_arb16opt_s,
+    &modem_demodulate_arb32opt_s,
+    &modem_demodulate_arb64opt_s,
+    &modem_demodulate_arb128opt_s,
+    &modem_demodulate_arb256opt_s,
+    &modem_demodulate_arb64vt_s,
+    &modem_modulate_bpsk_s,
+    &modem_modulate_qpsk_s,
+    &modem_modulate_ook_s,
+    &modem_modulate_sqam32_s,
+    &modem_modulate_sqam128_s,
+    &modem_modulate_ask2_s,
+    &modem_modulate_ask4_s,
+    &modem_modulate_ask8_s,
+    &modem_modulate_ask16_s,
+    &modem_modulate_psk2_s,
+    &modem_modulate_psk4_s,
+    &modem_modulate_psk8_s,
+    &modem_modulate_psk16_s,
+    &modem_modulate_psk32_s,
+    &modem_modulate_psk64_s,
+    &modem_modulate_dpsk2_s,
+    &modem_modulate_dpsk4_s,
+    &modem_modulate_dpsk8_s,
+    &modem_modulate_dpsk16_s,
+    &modem_modulate_dpsk32_s,
+    &modem_modulate_dpsk64_s,
+    &modem_modulate_qam4_s,
+    &modem_modulate_qam8_s,
+    &modem_modulate_qam16_s,
+    &modem_modulate_qam32_s,
+    &modem_modulate_qam64_s,
+    &modem_modulate_qam128_s,
+    &modem_modulate_qam256_s,
+    &modem_modulate_apsk4_s,
+    &modem_modulate_apsk8_s,
+    &modem_modulate_apsk16_s,
+    &modem_modulate_apsk32_s,
+    &modem_modulate_apsk64_s,
+    &modem_modulate_apsk128_s,
+    &modem_modulate_apsk256_s,
+    &modem_modulate_arbV29_s,
+    &modem_modulate_arb16opt_s,
+    &modem_modulate_arb32opt_s,
+    &modem_modulate_arb64opt_s,
+    &modem_modulate_arb128opt_s,
+    &modem_modulate_arb256opt_s,
+    &modem_modulate_arb64vt_s,
     NULL
 };
 

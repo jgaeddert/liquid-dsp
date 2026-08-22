@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,46 +20,29 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "liquid.benchmark.h"
 #include <math.h>
-#include <sys/resource.h>
-#include "liquid.internal.h"
-
-#define FSKDEM_BENCH_API(m,k,bandwidth)     \
-(   struct rusage *     _start,             \
-    struct rusage *     _finish,            \
-    unsigned long int * _num_iterations)    \
-{ fskdem_bench(_start, _finish, _num_iterations, m, k, bandwidth); }
 
 // Helper function to keep code base small
-void fskdem_bench(struct rusage *     _start,
-                  struct rusage *     _finish,
-                  unsigned long int * _num_iterations,
-                  unsigned int        _m,
-                  unsigned int        _k,
-                  float               _bandwidth)
+float fskdem_bench(unsigned long int _num_iterations,
+                   unsigned int      _m,
+                   unsigned int      _k,
+                   float             _bandwidth)
 {
-    // normalize number of iterations
-    *_num_iterations /= _k;
-
-    if (*_num_iterations < 1) *_num_iterations = 1;
-
     // initialize demodulator
     fskdem dem = fskdem_create(_m,_k,_bandwidth);
-
     //unsigned int M = 1 << _m;   // constellation size
     
     unsigned long int i;
-
     // generate input vector to demodulate (spiral)
     float complex buf[_k+10];
     for (i=0; i<_k+10; i++)
         buf[i] = 0.07 * i * cexpf(_Complex_I*2*M_PI*0.1*i);
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (10 demodulates per iteration; round down)
+    unsigned long int n = _num_iterations / 10;
+    if (n < 1) n = 1;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         fskdem_demodulate(dem, &buf[0]);
         fskdem_demodulate(dem, &buf[1]);
         fskdem_demodulate(dem, &buf[2]);
@@ -71,33 +54,52 @@ void fskdem_bench(struct rusage *     _start,
         fskdem_demodulate(dem, &buf[8]);
         fskdem_demodulate(dem, &buf[9]);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 10;
-
+    float extime = liquid_toc(timer);
     fskdem_destroy(dem);
+    return extime;
 }
 
 // BENCHMARKS: basic properties: M=2^m, k = 2*M, bandwidth = 0.25
-void benchmark_fskdem_norm_M2      FSKDEM_BENCH_API( 1,    4, 0.25f    )
-void benchmark_fskdem_norm_M4      FSKDEM_BENCH_API( 2,    8, 0.25f    )
-void benchmark_fskdem_norm_M8      FSKDEM_BENCH_API( 3,   16, 0.25f    )
-void benchmark_fskdem_norm_M16     FSKDEM_BENCH_API( 4,   32, 0.25f    )
-void benchmark_fskdem_norm_M32     FSKDEM_BENCH_API( 5,   64, 0.25f    )
-void benchmark_fskdem_norm_M64     FSKDEM_BENCH_API( 6,  128, 0.25f    )
-void benchmark_fskdem_norm_M128    FSKDEM_BENCH_API( 7,  256, 0.25f    )
-void benchmark_fskdem_norm_M256    FSKDEM_BENCH_API( 8,  512, 0.25f    )
-void benchmark_fskdem_norm_M512    FSKDEM_BENCH_API( 9, 1024, 0.25f    )
-void benchmark_fskdem_norm_M1024   FSKDEM_BENCH_API(10, 2048, 0.25f    )
+LIQUID_BENCHMARK(fskdem_norm_M2,    "fskdem demodulate, M=2 k=4 bw=0.25",          "modem,fsk")
+    { return fskdem_bench(num_iterations, 1,    4, 0.25f    ); }
+LIQUID_BENCHMARK(fskdem_norm_M4,    "fskdem demodulate, M=4 k=8 bw=0.25",          "modem,fsk")
+    { return fskdem_bench(num_iterations, 2,    8, 0.25f    ); }
+LIQUID_BENCHMARK(fskdem_norm_M8,    "fskdem demodulate, M=8 k=16 bw=0.25",         "modem,fsk")
+    { return fskdem_bench(num_iterations, 3,   16, 0.25f    ); }
+LIQUID_BENCHMARK(fskdem_norm_M16,   "fskdem demodulate, M=16 k=32 bw=0.25",        "modem,fsk")
+    { return fskdem_bench(num_iterations, 4,   32, 0.25f    ); }
+LIQUID_BENCHMARK(fskdem_norm_M32,   "fskdem demodulate, M=32 k=64 bw=0.25",        "modem,fsk")
+    { return fskdem_bench(num_iterations, 5,   64, 0.25f    ); }
+LIQUID_BENCHMARK(fskdem_norm_M64,   "fskdem demodulate, M=64 k=128 bw=0.25",       "modem,fsk")
+    { return fskdem_bench(num_iterations, 6,  128, 0.25f    ); }
+LIQUID_BENCHMARK(fskdem_norm_M128,  "fskdem demodulate, M=128 k=256 bw=0.25",      "modem,fsk")
+    { return fskdem_bench(num_iterations, 7,  256, 0.25f    ); }
+LIQUID_BENCHMARK(fskdem_norm_M256,  "fskdem demodulate, M=256 k=512 bw=0.25",      "modem,fsk")
+    { return fskdem_bench(num_iterations, 8,  512, 0.25f    ); }
+LIQUID_BENCHMARK(fskdem_norm_M512,  "fskdem demodulate, M=512 k=1024 bw=0.25",     "modem,fsk")
+    { return fskdem_bench(num_iterations, 9, 1024, 0.25f    ); }
+LIQUID_BENCHMARK(fskdem_norm_M1024, "fskdem demodulate, M=1024 k=2048 bw=0.25",    "modem,fsk")
+    { return fskdem_bench(num_iterations, 10, 2048, 0.25f    ); }
 
 // BENCHMARKS: obscure properties: M=2^m, k not relative to M, bandwidth basically irrational
-void benchmark_fskdem_misc_M2      FSKDEM_BENCH_API( 1,    5, 0.3721451)
-void benchmark_fskdem_misc_M4      FSKDEM_BENCH_API( 2,   10, 0.3721451)
-void benchmark_fskdem_misc_M8      FSKDEM_BENCH_API( 3,   20, 0.3721451)
-void benchmark_fskdem_misc_M16     FSKDEM_BENCH_API( 4,   30, 0.3721451)
-void benchmark_fskdem_misc_M32     FSKDEM_BENCH_API( 5,   60, 0.3721451)
-void benchmark_fskdem_misc_M64     FSKDEM_BENCH_API( 6,  100, 0.3721451)
-void benchmark_fskdem_misc_M128    FSKDEM_BENCH_API( 7,  200, 0.3721451)
-void benchmark_fskdem_misc_M256    FSKDEM_BENCH_API( 8,  500, 0.3721451)
-void benchmark_fskdem_misc_M512    FSKDEM_BENCH_API( 9, 1000, 0.3721451)
-void benchmark_fskdem_misc_M1024   FSKDEM_BENCH_API(10, 2000, 0.3721451)
+LIQUID_BENCHMARK(fskdem_misc_M2,    "fskdem demodulate, M=2 k=5 bw=0.372",      "modem,fsk")
+    { return fskdem_bench(num_iterations, 1,    5, 0.3721451); }
+LIQUID_BENCHMARK(fskdem_misc_M4,    "fskdem demodulate, M=4 k=10 bw=0.372",     "modem,fsk")
+    { return fskdem_bench(num_iterations, 2,   10, 0.3721451); }
+LIQUID_BENCHMARK(fskdem_misc_M8,    "fskdem demodulate, M=8 k=20 bw=0.372",      "modem,fsk")
+    { return fskdem_bench(num_iterations, 3,   20, 0.3721451); }
+LIQUID_BENCHMARK(fskdem_misc_M16,   "fskdem demodulate, M=16 k=30 bw=0.372",     "modem,fsk")
+    { return fskdem_bench(num_iterations, 4,   30, 0.3721451); }
+LIQUID_BENCHMARK(fskdem_misc_M32,   "fskdem demodulate, M=32 k=60 bw=0.372",     "modem,fsk")
+    { return fskdem_bench(num_iterations, 5,   60, 0.3721451); }
+LIQUID_BENCHMARK(fskdem_misc_M64,   "fskdem demodulate, M=64 k=100 bw=0.372",    "modem,fsk")
+    { return fskdem_bench(num_iterations, 6,  100, 0.3721451); }
+LIQUID_BENCHMARK(fskdem_misc_M128,  "fskdem demodulate, M=128 k=200 bw=0.372",   "modem,fsk")
+    { return fskdem_bench(num_iterations, 7,  200, 0.3721451); }
+LIQUID_BENCHMARK(fskdem_misc_M256,  "fskdem demodulate, M=256 k=500 bw=0.372",   "modem,fsk")
+    { return fskdem_bench(num_iterations, 8,  500, 0.3721451); }
+LIQUID_BENCHMARK(fskdem_misc_M512,  "fskdem demodulate, M=512 k=1000 bw=0.372",  "modem,fsk")
+    { return fskdem_bench(num_iterations, 9, 1000, 0.3721451); }
+LIQUID_BENCHMARK(fskdem_misc_M1024, "fskdem demodulate, M=1024 k=2000 bw=0.372", "modem,fsk")
+    { return fskdem_bench(num_iterations, 10, 2000, 0.3721451); }
 

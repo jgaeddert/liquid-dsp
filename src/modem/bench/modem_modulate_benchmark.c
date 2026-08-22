@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,97 +20,127 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/resource.h>
+#include "liquid.benchmark.h"
 #include "liquid.internal.h"
 
-#define MODEM_MODULATE_BENCH_API(MS)    \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
-{ modemcf_modulate_bench(_start, _finish, _num_iterations, MS); }
-
 // Helper function to keep code base small
-void modemcf_modulate_bench(struct rusage *_start,
-                            struct rusage *_finish,
-                            unsigned long int *_num_iterations,
-                            modulation_scheme _ms)
+float modemcf_modulate_bench(unsigned long int _num_iterations,
+                             modulation_scheme _ms)
 {
     // initialize modulator
     modemcf mod = modemcf_create(_ms);
-
     unsigned long int i;
     float complex x;
     unsigned int symbol_in = 0;
-    
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 modulates per iteration; round down)
+    unsigned long int n = _num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         modemcf_modulate(mod, symbol_in, &x);
         modemcf_modulate(mod, symbol_in, &x);
         modemcf_modulate(mod, symbol_in, &x);
         modemcf_modulate(mod, symbol_in, &x);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
-
+    float extime = liquid_toc(timer);
     modemcf_destroy(mod);
+    return extime;
 }
 
 // specific modems
-void benchmark_modulate_bpsk    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_BPSK)
-void benchmark_modulate_qpsk    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QPSK)
-void benchmark_modulate_ook     MODEM_MODULATE_BENCH_API(LIQUID_MODEM_OOK)
-void benchmark_modulate_sqam32  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_SQAM32)
-void benchmark_modulate_sqam128 MODEM_MODULATE_BENCH_API(LIQUID_MODEM_SQAM128)
+LIQUID_BENCHMARK(modem_modulate_bpsk,    "modemcf modulate, bpsk",    "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_BPSK); }
+LIQUID_BENCHMARK(modem_modulate_qpsk,    "modemcf modulate, qpsk",    "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_QPSK); }
+LIQUID_BENCHMARK(modem_modulate_ook,     "modemcf modulate, ook",     "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_OOK); }
+LIQUID_BENCHMARK(modem_modulate_sqam32,  "modemcf modulate, sqam32",  "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_SQAM32); }
+LIQUID_BENCHMARK(modem_modulate_sqam128, "modemcf modulate, sqam128", "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_SQAM128); }
 
 // ASK
-void benchmark_modulate_ask2    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ASK2)
-void benchmark_modulate_ask4    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ASK4)
-void benchmark_modulate_ask8    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ASK8)
-void benchmark_modulate_ask16   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ASK16)
+LIQUID_BENCHMARK(modem_modulate_ask2,    "modemcf modulate, ask2",    "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_ASK2); }
+LIQUID_BENCHMARK(modem_modulate_ask4,    "modemcf modulate, ask4",    "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_ASK4); }
+LIQUID_BENCHMARK(modem_modulate_ask8,    "modemcf modulate, ask8",    "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_ASK8); }
+LIQUID_BENCHMARK(modem_modulate_ask16,   "modemcf modulate, ask16",   "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_ASK16); }
 
 // PSK
-void benchmark_modulate_psk2    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_PSK2)
-void benchmark_modulate_psk4    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_PSK4)
-void benchmark_modulate_psk8    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_PSK8)
-void benchmark_modulate_psk16   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_PSK16)
-void benchmark_modulate_psk32   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_PSK32)
-void benchmark_modulate_psk64   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_PSK64)
+LIQUID_BENCHMARK(modem_modulate_psk2,    "modemcf modulate, psk2",    "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_PSK2); }
+LIQUID_BENCHMARK(modem_modulate_psk4,    "modemcf modulate, psk4",    "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_PSK4); }
+LIQUID_BENCHMARK(modem_modulate_psk8,    "modemcf modulate, psk8",    "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_PSK8); }
+LIQUID_BENCHMARK(modem_modulate_psk16,   "modemcf modulate, psk16",   "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_PSK16); }
+LIQUID_BENCHMARK(modem_modulate_psk32,   "modemcf modulate, psk32",   "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_PSK32); }
+LIQUID_BENCHMARK(modem_modulate_psk64,   "modemcf modulate, psk64",   "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_PSK64); }
 
 // Differential PSK
-void benchmark_modulate_dpsk2   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_DPSK2)
-void benchmark_modulate_dpsk4   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_DPSK4)
-void benchmark_modulate_dpsk8   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_DPSK8)
-void benchmark_modulate_dpsk16  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_DPSK16)
-void benchmark_modulate_dpsk32  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_DPSK32)
-void benchmark_modulate_dpsk64  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_DPSK64)
+LIQUID_BENCHMARK(modem_modulate_dpsk2,   "modemcf modulate, dpsk2",   "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_DPSK2); }
+LIQUID_BENCHMARK(modem_modulate_dpsk4,   "modemcf modulate, dpsk4",   "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_DPSK4); }
+LIQUID_BENCHMARK(modem_modulate_dpsk8,   "modemcf modulate, dpsk8",   "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_DPSK8); }
+LIQUID_BENCHMARK(modem_modulate_dpsk16,  "modemcf modulate, dpsk16",  "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_DPSK16); }
+LIQUID_BENCHMARK(modem_modulate_dpsk32,  "modemcf modulate, dpsk32",  "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_DPSK32); }
+LIQUID_BENCHMARK(modem_modulate_dpsk64,  "modemcf modulate, dpsk64",  "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_DPSK64); }
 
 // QAM
-void benchmark_modulate_qam4    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM4)
-void benchmark_modulate_qam8    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM8)
-void benchmark_modulate_qam16   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM16)
-void benchmark_modulate_qam32   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM32)
-void benchmark_modulate_qam64   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM64)
-void benchmark_modulate_qam128  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM128)
-void benchmark_modulate_qam256  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM256)
+LIQUID_BENCHMARK(modem_modulate_qam4,    "modemcf modulate, qam4",    "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_QAM4); }
+LIQUID_BENCHMARK(modem_modulate_qam8,    "modemcf modulate, qam8",    "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_QAM8); }
+LIQUID_BENCHMARK(modem_modulate_qam16,   "modemcf modulate, qam16",   "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_QAM16); }
+LIQUID_BENCHMARK(modem_modulate_qam32,   "modemcf modulate, qam32",   "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_QAM32); }
+LIQUID_BENCHMARK(modem_modulate_qam64,   "modemcf modulate, qam64",   "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_QAM64); }
+LIQUID_BENCHMARK(modem_modulate_qam128,  "modemcf modulate, qam128",  "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_QAM128); }
+LIQUID_BENCHMARK(modem_modulate_qam256,  "modemcf modulate, qam256",  "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_QAM256); }
 
 // APSK
-void benchmark_modulate_apsk4   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK4)
-void benchmark_modulate_apsk8   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK8)
-void benchmark_modulate_apsk16  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK16)
-void benchmark_modulate_apsk32  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK32)
-void benchmark_modulate_apsk64  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK64)
-void benchmark_modulate_apsk128 MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK128)
-void benchmark_modulate_apsk256 MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK256)
+LIQUID_BENCHMARK(modem_modulate_apsk4,   "modemcf modulate, apsk4",   "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_APSK4); }
+LIQUID_BENCHMARK(modem_modulate_apsk8,   "modemcf modulate, apsk8",   "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_APSK8); }
+LIQUID_BENCHMARK(modem_modulate_apsk16,  "modemcf modulate, apsk16",  "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_APSK16); }
+LIQUID_BENCHMARK(modem_modulate_apsk32,  "modemcf modulate, apsk32",  "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_APSK32); }
+LIQUID_BENCHMARK(modem_modulate_apsk64,  "modemcf modulate, apsk64",  "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_APSK64); }
+LIQUID_BENCHMARK(modem_modulate_apsk128, "modemcf modulate, apsk128", "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_APSK128); }
+LIQUID_BENCHMARK(modem_modulate_apsk256, "modemcf modulate, apsk256", "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_APSK256); }
 
 // ARB
-void benchmark_modulate_arbV29    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_V29)
-void benchmark_modulate_arb16opt  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB16OPT)
-void benchmark_modulate_arb32opt  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB32OPT)
-void benchmark_modulate_arb64opt  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB64OPT)
-void benchmark_modulate_arb128opt MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB128OPT)
-void benchmark_modulate_arb256opt MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB256OPT)
-void benchmark_modulate_arb64vt   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB64VT)
+LIQUID_BENCHMARK(modem_modulate_arbV29,    "modemcf modulate, arbV29",    "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_V29); }
+LIQUID_BENCHMARK(modem_modulate_arb16opt,  "modemcf modulate, arb16opt",  "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_ARB16OPT); }
+LIQUID_BENCHMARK(modem_modulate_arb32opt,  "modemcf modulate, arb32opt",  "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_ARB32OPT); }
+LIQUID_BENCHMARK(modem_modulate_arb64opt,  "modemcf modulate, arb64opt",  "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_ARB64OPT); }
+LIQUID_BENCHMARK(modem_modulate_arb128opt, "modemcf modulate, arb128opt", "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_ARB128OPT); }
+LIQUID_BENCHMARK(modem_modulate_arb256opt, "modemcf modulate, arb256opt", "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_ARB256OPT); }
+LIQUID_BENCHMARK(modem_modulate_arb64vt,   "modemcf modulate, arb64vt",   "modem")
+    { return modemcf_modulate_bench(num_iterations, LIQUID_MODEM_ARB64VT); }
 

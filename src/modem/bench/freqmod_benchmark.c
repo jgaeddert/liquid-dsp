@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,36 +20,28 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "liquid.benchmark.h"
 #include <math.h>
-#include <sys/resource.h>
-#include "liquid.internal.h"
 
 // frequency modulator benchmark
-void benchmark_freqmod(struct rusage *     _start,
-                       struct rusage *     _finish,
-                       unsigned long int * _num_iterations)
+LIQUID_BENCHMARK(freqmod, "freqmod modulate", "modem,freqmod")
 {
     // create modulator
     float   kf  = 0.05f; // modulation index
     freqmod mod = freqmod_create(kf);
-
     float         m[20];    // message signal
     float complex r[20];    // modulated signal
-
     unsigned long int i;
-
     // generate message signal (sum of sines)
     for (i=0; i<20; i++) {
         m[i] = 0.3f*cosf(2*M_PI*1*i/20.0f + 0.0f) +
                0.2f*cosf(2*M_PI*2*i/20.0f + 0.4f) +
                0.4f*cosf(2*M_PI*3*i/20.0f + 1.7f);
     }
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (20 modulates per iteration; round down)
+    unsigned long int n = num_iterations / 20;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         freqmod_modulate(mod, m[ 0], &r[ 0]);
         freqmod_modulate(mod, m[ 1], &r[ 1]);
         freqmod_modulate(mod, m[ 2], &r[ 2]);
@@ -71,11 +63,10 @@ void benchmark_freqmod(struct rusage *     _start,
         freqmod_modulate(mod, m[18], &r[18]);
         freqmod_modulate(mod, m[19], &r[19]);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 20;
-
+    float extime = liquid_toc(timer);
     // destroy modulator
     freqmod_destroy(mod);
+    return extime;
 }
 
 
