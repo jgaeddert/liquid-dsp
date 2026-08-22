@@ -276,10 +276,18 @@ int liquid_logger_destroy(liquid_logger _q)
 int liquid_logger_reset(liquid_logger _q)
 {
     _q = liquid_logger_safe_cast(_q);
-    _q->level = LIQUID_WARN;
-    _q->cb_function[0] = NULL; // effectively reset all callbacks
-    int i;
-    for (i=0; i<6; i++)
+    _q->level         = LIQUID_WARN;
+    _q->min_level     = LIQUID_WARN;
+    _q->config        = LIQUID_LOG_DEFAULT;
+    _q->lock_callback = NULL;
+    _q->lock_context  = NULL;
+
+    for (int i = 0; i < LIQUID_LOGGER_MAX_CALLBACKS; i++) {
+        _q->cb_function[i] = NULL;
+        _q->cb_context [i] = NULL;
+        _q->cb_level   [i] = 0;
+    }
+    for (int i = 0; i < LIQUID_LOG_NUM_LEVELS; i++)
         _q->count[i] = 0;
     return LIQUID_OK;
 }
