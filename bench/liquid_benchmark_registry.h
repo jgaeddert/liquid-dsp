@@ -822,6 +822,18 @@ extern struct liquid_benchmark_s bsequence_xcorr_n256_s;
 extern struct liquid_benchmark_s bsequence_xcorr_n1024_s;
 // ./src/utility/bench/byte_utilities_benchmark.c
 extern struct liquid_benchmark_s count_ones_s;
+// ./src/vector/bench/vectorcf_benchmark.c
+extern struct liquid_benchmark_s vectorcf_4_s;
+extern struct liquid_benchmark_s vectorcf_16_s;
+extern struct liquid_benchmark_s vectorcf_64_s;
+extern struct liquid_benchmark_s vectorcf_256_s;
+extern struct liquid_benchmark_s vectorcf_1024_s;
+// ./src/vector/bench/vectorf_benchmark.c
+extern struct liquid_benchmark_s vectorf_4_s;
+extern struct liquid_benchmark_s vectorf_16_s;
+extern struct liquid_benchmark_s vectorf_64_s;
+extern struct liquid_benchmark_s vectorf_256_s;
+extern struct liquid_benchmark_s vectorf_1024_s;
 
 // compile benchmark registry
 liquid_benchmark liquid_benchmarks[] =
@@ -1580,6 +1592,16 @@ liquid_benchmark liquid_benchmarks[] =
     &bsequence_xcorr_n256_s,
     &bsequence_xcorr_n1024_s,
     &count_ones_s,
+    &vectorcf_4_s,
+    &vectorcf_16_s,
+    &vectorcf_64_s,
+    &vectorcf_256_s,
+    &vectorcf_1024_s,
+    &vectorf_4_s,
+    &vectorf_16_s,
+    &vectorf_64_s,
+    &vectorf_256_s,
+    &vectorf_1024_s,
     NULL
 };
 
