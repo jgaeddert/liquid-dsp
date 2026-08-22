@@ -501,6 +501,51 @@ extern struct liquid_benchmark_s symsync_crcf_k2_m2_s;
 extern struct liquid_benchmark_s symsync_crcf_k2_m4_s;
 extern struct liquid_benchmark_s symsync_crcf_k2_m8_s;
 extern struct liquid_benchmark_s symsync_crcf_k2_m16_s;
+// ./src/framing/bench/bpacketsync_benchmark.c
+extern struct liquid_benchmark_s bpacketsync_s;
+// ./src/framing/bench/bpresync_benchmark.c
+extern struct liquid_benchmark_s bpresync_cccf_16_s;
+extern struct liquid_benchmark_s bpresync_cccf_32_s;
+extern struct liquid_benchmark_s bpresync_cccf_64_s;
+extern struct liquid_benchmark_s bpresync_cccf_128_s;
+extern struct liquid_benchmark_s bpresync_cccf_256_s;
+// ./src/framing/bench/bsync_benchmark.c
+extern struct liquid_benchmark_s bsync_cccf_16_s;
+extern struct liquid_benchmark_s bsync_cccf_32_s;
+extern struct liquid_benchmark_s bsync_cccf_64_s;
+extern struct liquid_benchmark_s bsync_cccf_128_s;
+extern struct liquid_benchmark_s bsync_cccf_256_s;
+// ./src/framing/bench/detector_benchmark.c
+extern struct liquid_benchmark_s detector_cccf_16_s;
+extern struct liquid_benchmark_s detector_cccf_32_s;
+extern struct liquid_benchmark_s detector_cccf_64_s;
+extern struct liquid_benchmark_s detector_cccf_128_s;
+extern struct liquid_benchmark_s detector_cccf_256_s;
+// ./src/framing/bench/flexframesync_benchmark.c
+extern struct liquid_benchmark_s flexframesync_s;
+// ./src/framing/bench/framesync64_benchmark.c
+extern struct liquid_benchmark_s framesync64_s;
+// ./src/framing/bench/gmskframesync_benchmark.c
+extern struct liquid_benchmark_s gmskframesync_s;
+extern struct liquid_benchmark_s gmskframesync_noise_s;
+// ./src/framing/bench/presync_benchmark.c
+extern struct liquid_benchmark_s presync_cccf_16_s;
+extern struct liquid_benchmark_s presync_cccf_32_s;
+extern struct liquid_benchmark_s presync_cccf_64_s;
+extern struct liquid_benchmark_s presync_cccf_128_s;
+extern struct liquid_benchmark_s presync_cccf_256_s;
+// ./src/framing/bench/qdetector_benchmark.c
+extern struct liquid_benchmark_s qdetector_cccf_16_s;
+extern struct liquid_benchmark_s qdetector_cccf_32_s;
+extern struct liquid_benchmark_s qdetector_cccf_64_s;
+extern struct liquid_benchmark_s qdetector_cccf_128_s;
+extern struct liquid_benchmark_s qdetector_cccf_256_s;
+extern struct liquid_benchmark_s qdetector_cccf_512_s;
+extern struct liquid_benchmark_s qdetector_cccf_1024_s;
+extern struct liquid_benchmark_s qdetector_cccf_2048_s;
+extern struct liquid_benchmark_s qdetector_cccf_4096_s;
+extern struct liquid_benchmark_s qdetector_cccf_8192_s;
+extern struct liquid_benchmark_s qdetector_cccf_16384_s;
 
 // compile benchmark registry
 liquid_benchmark liquid_benchmarks[] =
@@ -972,6 +1017,42 @@ liquid_benchmark liquid_benchmarks[] =
     &symsync_crcf_k2_m4_s,
     &symsync_crcf_k2_m8_s,
     &symsync_crcf_k2_m16_s,
+    &bpacketsync_s,
+    &bpresync_cccf_16_s,
+    &bpresync_cccf_32_s,
+    &bpresync_cccf_64_s,
+    &bpresync_cccf_128_s,
+    &bpresync_cccf_256_s,
+    &bsync_cccf_16_s,
+    &bsync_cccf_32_s,
+    &bsync_cccf_64_s,
+    &bsync_cccf_128_s,
+    &bsync_cccf_256_s,
+    &detector_cccf_16_s,
+    &detector_cccf_32_s,
+    &detector_cccf_64_s,
+    &detector_cccf_128_s,
+    &detector_cccf_256_s,
+    &flexframesync_s,
+    &framesync64_s,
+    &gmskframesync_s,
+    &gmskframesync_noise_s,
+    &presync_cccf_16_s,
+    &presync_cccf_32_s,
+    &presync_cccf_64_s,
+    &presync_cccf_128_s,
+    &presync_cccf_256_s,
+    &qdetector_cccf_16_s,
+    &qdetector_cccf_32_s,
+    &qdetector_cccf_64_s,
+    &qdetector_cccf_128_s,
+    &qdetector_cccf_256_s,
+    &qdetector_cccf_512_s,
+    &qdetector_cccf_1024_s,
+    &qdetector_cccf_2048_s,
+    &qdetector_cccf_4096_s,
+    &qdetector_cccf_8192_s,
+    &qdetector_cccf_16384_s,
     NULL
 };
 

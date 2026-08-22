@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,22 +20,13 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/resource.h>
+#include "liquid.benchmark.h"
 #include <math.h>
-#include <assert.h>
-#include "liquid.h"
 
 // benchmark regular frame synchronizer with short frames; effectively
 // test acquisition complexity
-void benchmark_gmskframesync(struct rusage *     _start,
-                             struct rusage *     _finish,
-                             unsigned long int * _num_iterations)
+LIQUID_BENCHMARK(gmskframesync, "gmskframesync execute", "framing,gmskframe")
 {
-    *_num_iterations /= 128;
-    unsigned long int i;
-
     // options
     unsigned int k = 2;                 // samples/symbol
     unsigned int m = 3;                 // filter delay (symbols)
@@ -45,6 +36,8 @@ void benchmark_gmskframesync(struct rusage *     _start,
 
     // derived values
     float nstd  = powf(10.0f, -SNRdB/20.0f);
+
+    unsigned long int i;
 
     // create gmskframegen object and assemble the frame
     gmskframegen fg = gmskframegen_create_set(k, m, BT);
@@ -60,49 +53,39 @@ void benchmark_gmskframesync(struct rusage *     _start,
     // create gmskframesync object
     gmskframesync fs = gmskframesync_create_set(k, m, BT, NULL, NULL);
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (1 frame execute per iteration)
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<num_iterations; i++)
         gmskframesync_execute(fs, frame, frame_len);
-    }
-    getrusage(RUSAGE_SELF, _finish);
-
+    float extime = liquid_toc(timer);
     // destroy objects
     gmskframegen_destroy(fg);
     gmskframesync_destroy(fs);
+    return extime;
 }
 
 // benchmark regular frame synchronizer with noise; essentially test
 // complexity when no signal is present
-void benchmark_gmskframesync_noise(struct rusage *     _start,
-                                   struct rusage *     _finish,
-                                   unsigned long int * _num_iterations)
+LIQUID_BENCHMARK(gmskframesync_noise, "gmskframesync execute (noise only)", "framing,gmskframe,noise")
 {
-    *_num_iterations /= 2000;
-    unsigned long int i;
-
     // create frame synchronizer
     gmskframesync fs = gmskframesync_create_set(2, 3, 0.5f, NULL, NULL);
-
     // allocate memory for noise buffer and initialize
     unsigned int num_samples = 1024;
     float complex y[num_samples];
+    unsigned long int i;
     for (i=0; i<num_samples; i++)
         y[i] = 0.01f*(randnf() + randnf()*_Complex_I)*M_SQRT1_2;
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (num_samples samples per iteration; round down)
+    unsigned long int n = num_iterations / num_samples;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         // push samples through synchronizer
         gmskframesync_execute(fs, y, num_samples);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    //gmskframesync_print(fs);
-
-    // scale result by number of samples in buffer
-    *_num_iterations *= num_samples;
-
+    float extime = liquid_toc(timer);
     // destroy framing objects
     gmskframesync_destroy(fs);
+    return extime;
 }
 

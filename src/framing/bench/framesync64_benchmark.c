@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/resource.h>
+#include "liquid.benchmark.h"
 #include <math.h>
-#include "liquid.h"
 
 typedef struct {
     unsigned int num_frames_tx;         // number of transmitted frames
@@ -47,16 +44,10 @@ static int callback(unsigned char *  _header,
 }
 
 // Helper function to keep code base small
-void benchmark_framesync64(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations)
+LIQUID_BENCHMARK(framesync64, "framesync64 execute", "framing,frame64")
 {
-    *_num_iterations /= 128;
     unsigned long int i;
-
     framegen64 fg = framegen64_create();
-
     // frame data
     unsigned char header[8] = {0, 1, 2, 3, 4, 5, 6, 7};
     unsigned char payload[64];
@@ -64,35 +55,23 @@ void benchmark_framesync64(
     for (i=0; i<64; i++)
         payload[i] = rand() & 0xff;
     framedata fd = {0, 0, 0};
-
     // create framesync64 object
     framesync64 fs = framesync64_create(callback,(void*)&fd);
-
     // generate the frame
     //unsigned int frame_len = framegen64_getframelen(fg);
     unsigned int frame_len = LIQUID_FRAME64_LEN;
     float complex frame[frame_len];
     framegen64_execute(fg, header, payload, frame);
-
     // add some noise
     for (i=0; i<frame_len; i++)
         frame[i] += 0.01f*(randnf() + _Complex_I*randnf()) * M_SQRT1_2;
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (1 frame execute per iteration)
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<num_iterations; i++)
         framesync64_execute(fs, frame, frame_len);
-    }
-    getrusage(RUSAGE_SELF, _finish);
-
+    float extime = liquid_toc(timer);
     framegen64_destroy(fg);
     framesync64_destroy(fs);
-#if 0
-    fd.num_frames_tx = *_num_iterations;
-    printf("  frames detected/valid/transmitted  :   %6u / %6u / %6u\n",
-            fd.num_frames_detected,
-            fd.num_frames_valid,
-            fd.num_frames_tx);
-#endif
+    return extime;
 }
 

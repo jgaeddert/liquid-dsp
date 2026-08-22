@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,23 +20,12 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/resource.h>
-
+#include "liquid.benchmark.h"
 #include "liquid.internal.h"
 
 // Helper function to keep code base small
-void detector_cccf_bench(struct rusage *     _start,
-                         struct rusage *     _finish,
-                         unsigned long int * _num_iterations,
-                         unsigned int        _n)
+float detector_cccf_bench(unsigned long int num_iterations, unsigned int _n)
 {
-    // adjust number of iterations
-    *_num_iterations *= 4;
-    *_num_iterations /= _n;
-
     // generate sequence (random)
     float complex h[_n];
     unsigned long int i;
@@ -49,7 +38,6 @@ void detector_cccf_bench(struct rusage *     _start,
     float threshold = 0.5f;
     float dphi_max  = 0.07f;
     detector_cccf q = detector_cccf_create(h, _n, threshold, dphi_max);
-
     // input sequence (random)
     float complex x[7];
     for (i=0; i<7; i++) {
@@ -60,11 +48,11 @@ void detector_cccf_bench(struct rusage *     _start,
     float tau_hat;
     float dphi_hat;
     float gamma_hat;
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
+    // start trials (7 correlates per iteration; round down)
+    unsigned long int n = num_iterations / 7;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
     int detected = 0;
-    for (i=0; i<(*_num_iterations); i++) {
+    for (i=0; i<n; i++) {
         // push input sequence through synchronizer
         detected ^= detector_cccf_correlate(q, x[0], &tau_hat, & dphi_hat, &gamma_hat);
         detected ^= detector_cccf_correlate(q, x[1], &tau_hat, & dphi_hat, &gamma_hat);
@@ -77,22 +65,20 @@ void detector_cccf_bench(struct rusage *     _start,
         // randomize input
         x[0] += detected > 2 ? -1e-3f : 1e-3f;
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 7;
-
+    float extime = liquid_toc(timer);
     // clean up allocated objects
     detector_cccf_destroy(q);
+    return extime;
 }
 
-#define DETECTOR_CCCF_BENCHMARK_API(N)      \
-(   struct rusage *     _start,             \
-    struct rusage *     _finish,            \
-    unsigned long int * _num_iterations)    \
-{ detector_cccf_bench(_start, _finish, _num_iterations, N); }
-
-void benchmark_detector_cccf_16   DETECTOR_CCCF_BENCHMARK_API(16);
-void benchmark_detector_cccf_32   DETECTOR_CCCF_BENCHMARK_API(32);
-void benchmark_detector_cccf_64   DETECTOR_CCCF_BENCHMARK_API(64);
-void benchmark_detector_cccf_128  DETECTOR_CCCF_BENCHMARK_API(128);
-void benchmark_detector_cccf_256  DETECTOR_CCCF_BENCHMARK_API(256);
+LIQUID_BENCHMARK(detector_cccf_16,  "detector_cccf correlate, n=16",  "framing,detector")
+    { return detector_cccf_bench(num_iterations, 16); }
+LIQUID_BENCHMARK(detector_cccf_32,  "detector_cccf correlate, n=32",  "framing,detector")
+    { return detector_cccf_bench(num_iterations, 32); }
+LIQUID_BENCHMARK(detector_cccf_64,  "detector_cccf correlate, n=64",  "framing,detector")
+    { return detector_cccf_bench(num_iterations, 64); }
+LIQUID_BENCHMARK(detector_cccf_128, "detector_cccf correlate, n=128", "framing,detector")
+    { return detector_cccf_bench(num_iterations, 128); }
+LIQUID_BENCHMARK(detector_cccf_256, "detector_cccf correlate, n=256", "framing,detector")
+    { return detector_cccf_bench(num_iterations, 256); }
 

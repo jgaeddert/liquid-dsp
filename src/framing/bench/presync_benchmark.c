@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/resource.h>
-
+#include "liquid.benchmark.h"
 #include "liquid.internal.h"
 
 // Helper function to keep code base small
-void presync_cccf_bench(struct rusage *     _start,
-                        struct rusage *     _finish,
-                        unsigned long int * _num_iterations,
-                        unsigned int        _n,
-                        unsigned int        _m)
+float presync_cccf_bench(unsigned long int _num_iterations,
+                         unsigned int      _n,
+                         unsigned int      _m)
 {
-    // adjust number of iterations
-    *_num_iterations *= 4;
-    *_num_iterations /= _n;
-    *_num_iterations /= _m;
-
     // generate sequence (random)
     float complex h[_n];
     unsigned long int i;
@@ -49,7 +38,6 @@ void presync_cccf_bench(struct rusage *     _start,
 
     // generate synchronizer
     presync_cccf q = presync_cccf_create(h, _n, 0.1f, _m);
-
     // input sequence (random)
     float complex x[7];
     for (i=0; i<7; i++) {
@@ -59,10 +47,10 @@ void presync_cccf_bench(struct rusage *     _start,
 
     float complex rxy;
     float dphi_hat;
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (7 push+execute per iteration; round down)
+    unsigned long int n = _num_iterations / 7;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         // push input sequence through synchronizer
         presync_cccf_push(q, x[0]);  presync_cccf_execute(q, &rxy, &dphi_hat);
         presync_cccf_push(q, x[1]);  presync_cccf_execute(q, &rxy, &dphi_hat);
@@ -72,22 +60,20 @@ void presync_cccf_bench(struct rusage *     _start,
         presync_cccf_push(q, x[5]);  presync_cccf_execute(q, &rxy, &dphi_hat);
         presync_cccf_push(q, x[6]);  presync_cccf_execute(q, &rxy, &dphi_hat);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 7;
-
+    float extime = liquid_toc(timer);
     // clean up allocated objects
     presync_cccf_destroy(q);
+    return extime;
 }
 
-#define PRESYNC_CCCF_BENCHMARK_API(N,M)     \
-(   struct rusage *     _start,             \
-    struct rusage *     _finish,            \
-    unsigned long int * _num_iterations)    \
-{ presync_cccf_bench(_start, _finish, _num_iterations, N, M); }
-
-void benchmark_presync_cccf_16   PRESYNC_CCCF_BENCHMARK_API(16,   6);
-void benchmark_presync_cccf_32   PRESYNC_CCCF_BENCHMARK_API(32,   6);
-void benchmark_presync_cccf_64   PRESYNC_CCCF_BENCHMARK_API(64,   6);
-void benchmark_presync_cccf_128  PRESYNC_CCCF_BENCHMARK_API(128,  6);
-void benchmark_presync_cccf_256  PRESYNC_CCCF_BENCHMARK_API(256,  6);
+LIQUID_BENCHMARK(presync_cccf_16,  "presync_cccf execute, n=16 m=6",  "framing,presync")
+    { return presync_cccf_bench(num_iterations, 16,  6); }
+LIQUID_BENCHMARK(presync_cccf_32,  "presync_cccf execute, n=32 m=6",  "framing,presync")
+    { return presync_cccf_bench(num_iterations, 32,  6); }
+LIQUID_BENCHMARK(presync_cccf_64,  "presync_cccf execute, n=64 m=6",  "framing,presync")
+    { return presync_cccf_bench(num_iterations, 64,  6); }
+LIQUID_BENCHMARK(presync_cccf_128, "presync_cccf execute, n=128 m=6", "framing,presync")
+    { return presync_cccf_bench(num_iterations, 128, 6); }
+LIQUID_BENCHMARK(presync_cccf_256, "presync_cccf execute, n=256 m=6", "framing,presync")
+    { return presync_cccf_bench(num_iterations, 256, 6); }
 
