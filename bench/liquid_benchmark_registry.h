@@ -757,6 +757,44 @@ extern struct liquid_benchmark_s modem_modulate_arb64opt_s;
 extern struct liquid_benchmark_s modem_modulate_arb128opt_s;
 extern struct liquid_benchmark_s modem_modulate_arb256opt_s;
 extern struct liquid_benchmark_s modem_modulate_arb64vt_s;
+// ./src/multichannel/bench/firpfbch2_crcf_benchmark.c
+extern struct liquid_benchmark_s firpfbch2_crcf_a4_s;
+extern struct liquid_benchmark_s firpfbch2_crcf_a16_s;
+extern struct liquid_benchmark_s firpfbch2_crcf_a64_s;
+extern struct liquid_benchmark_s firpfbch2_crcf_a256_s;
+extern struct liquid_benchmark_s firpfbch2_crcf_a512_s;
+extern struct liquid_benchmark_s firpfbch2_crcf_a1024_s;
+extern struct liquid_benchmark_s firpfbch2_crcf_s4_s;
+extern struct liquid_benchmark_s firpfbch2_crcf_s16_s;
+extern struct liquid_benchmark_s firpfbch2_crcf_s64_s;
+extern struct liquid_benchmark_s firpfbch2_crcf_s256_s;
+extern struct liquid_benchmark_s firpfbch2_crcf_s512_s;
+extern struct liquid_benchmark_s firpfbch2_crcf_s1024_s;
+// ./src/multichannel/bench/firpfbch_crcf_benchmark.c
+extern struct liquid_benchmark_s firpfbch_crcf_a4_s;
+extern struct liquid_benchmark_s firpfbch_crcf_a16_s;
+extern struct liquid_benchmark_s firpfbch_crcf_a64_s;
+extern struct liquid_benchmark_s firpfbch_crcf_a256_s;
+extern struct liquid_benchmark_s firpfbch_crcf_a512_s;
+extern struct liquid_benchmark_s firpfbch_crcf_a1024_s;
+// ./src/multichannel/bench/firpfbchr_crcf_benchmark.c
+extern struct liquid_benchmark_s firpfbchr_crcf_M0064_P0063_s;
+extern struct liquid_benchmark_s firpfbchr_crcf_M0128_P0127_s;
+extern struct liquid_benchmark_s firpfbchr_crcf_M0256_P0255_s;
+extern struct liquid_benchmark_s firpfbchr_crcf_M0512_P0511_s;
+extern struct liquid_benchmark_s firpfbchr_crcf_M1024_P1023_s;
+extern struct liquid_benchmark_s firpfbchr_crcf_M2048_P2047_s;
+extern struct liquid_benchmark_s firpfbchr_crcf_M4096_P4095_s;
+// ./src/multichannel/bench/ofdmframesync_acquire_benchmark.c
+extern struct liquid_benchmark_s ofdmframesync_acquire_n64_s;
+extern struct liquid_benchmark_s ofdmframesync_acquire_n128_s;
+extern struct liquid_benchmark_s ofdmframesync_acquire_n256_s;
+extern struct liquid_benchmark_s ofdmframesync_acquire_n512_s;
+// ./src/multichannel/bench/ofdmframesync_rxsymbol_benchmark.c
+extern struct liquid_benchmark_s ofdmframesync_rxsymbol_n64_s;
+extern struct liquid_benchmark_s ofdmframesync_rxsymbol_n128_s;
+extern struct liquid_benchmark_s ofdmframesync_rxsymbol_n256_s;
+extern struct liquid_benchmark_s ofdmframesync_rxsymbol_n512_s;
 
 // compile benchmark registry
 liquid_benchmark liquid_benchmarks[] =
@@ -1462,6 +1500,39 @@ liquid_benchmark liquid_benchmarks[] =
     &modem_modulate_arb128opt_s,
     &modem_modulate_arb256opt_s,
     &modem_modulate_arb64vt_s,
+    &firpfbch2_crcf_a4_s,
+    &firpfbch2_crcf_a16_s,
+    &firpfbch2_crcf_a64_s,
+    &firpfbch2_crcf_a256_s,
+    &firpfbch2_crcf_a512_s,
+    &firpfbch2_crcf_a1024_s,
+    &firpfbch2_crcf_s4_s,
+    &firpfbch2_crcf_s16_s,
+    &firpfbch2_crcf_s64_s,
+    &firpfbch2_crcf_s256_s,
+    &firpfbch2_crcf_s512_s,
+    &firpfbch2_crcf_s1024_s,
+    &firpfbch_crcf_a4_s,
+    &firpfbch_crcf_a16_s,
+    &firpfbch_crcf_a64_s,
+    &firpfbch_crcf_a256_s,
+    &firpfbch_crcf_a512_s,
+    &firpfbch_crcf_a1024_s,
+    &firpfbchr_crcf_M0064_P0063_s,
+    &firpfbchr_crcf_M0128_P0127_s,
+    &firpfbchr_crcf_M0256_P0255_s,
+    &firpfbchr_crcf_M0512_P0511_s,
+    &firpfbchr_crcf_M1024_P1023_s,
+    &firpfbchr_crcf_M2048_P2047_s,
+    &firpfbchr_crcf_M4096_P4095_s,
+    &ofdmframesync_acquire_n64_s,
+    &ofdmframesync_acquire_n128_s,
+    &ofdmframesync_acquire_n256_s,
+    &ofdmframesync_acquire_n512_s,
+    &ofdmframesync_rxsymbol_n64_s,
+    &ofdmframesync_rxsymbol_n128_s,
+    &ofdmframesync_rxsymbol_n256_s,
+    &ofdmframesync_rxsymbol_n512_s,
     NULL
 };
 

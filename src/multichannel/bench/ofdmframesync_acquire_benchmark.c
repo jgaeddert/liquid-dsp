@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,26 +20,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "liquid.benchmark.h"
 #include <math.h>
 #include <assert.h>
-#include <sys/resource.h>
-#include "liquid.h"
-
-#define OFDMFRAMESYNC_ACQUIRE_BENCH_API(M,CP_LEN)   \
-(   struct rusage *_start,                          \
-    struct rusage *_finish,                         \
-    unsigned long int *_num_iterations)             \
-{ ofdmframesync_acquire_bench(_start, _finish, _num_iterations, M, CP_LEN); }
 
 // Helper function to keep code base small
-void ofdmframesync_acquire_bench(struct rusage *_start,
-                                 struct rusage *_finish,
-                                 unsigned long int *_num_iterations,
-                                 unsigned int _num_subcarriers,
-                                 unsigned int _cp_len)
+float ofdmframesync_acquire_bench(unsigned long int _num_iterations,
+                                  unsigned int      _num_subcarriers,
+                                  unsigned int      _cp_len)
 {
     // options
     unsigned int M         = _num_subcarriers;
@@ -52,54 +40,44 @@ void ofdmframesync_acquire_bench(struct rusage *_start,
     // create synthesizer/analyzer objects
     ofdmframegen fg = ofdmframegen_create(M, cp_len, taper_len, NULL);
     //ofdmframegen_print(fg);
-
     ofdmframesync fs = ofdmframesync_create(M,cp_len,taper_len,NULL,NULL,NULL);
-
     unsigned int i;
     float complex y[num_samples];   // frame samples
-
     // assemble full frame
     unsigned int n=0;
-
     // write first S0 symbol
     ofdmframegen_write_S0a(fg, &y[n]);
     n += M + cp_len;
-
     // write second S0 symbol
     ofdmframegen_write_S0b(fg, &y[n]);
     n += M + cp_len;
-
     // write S1 symbol
     ofdmframegen_write_S1( fg, &y[n]);
     n += M + cp_len;
-
     assert(n == num_samples);
-
     // add noise
     for (i=0; i<num_samples; i++)
         y[i] += 0.02f*randnf()*cexpf(_Complex_I*2*M_PI*randf());
-
-    // start trials
-    *_num_iterations /= M*sqrtf(M);
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
-        //
+    // start trials (1 execute of num_samples samples per iteration; round down)
+    unsigned long int iters = _num_iterations / num_samples;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<iters; i++) {
         ofdmframesync_execute(fs,y,num_samples);
-
-        //
         ofdmframesync_reset(fs);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    //*_num_iterations *= 4;
-
+    float extime = liquid_toc(timer);
     // destroy objects
     ofdmframegen_destroy(fg);
     ofdmframesync_destroy(fs);
+    return extime;
 }
 
-//
-void benchmark_ofdmframesync_acquire_n64    OFDMFRAMESYNC_ACQUIRE_BENCH_API(64, 8)
-void benchmark_ofdmframesync_acquire_n128   OFDMFRAMESYNC_ACQUIRE_BENCH_API(128,16)
-void benchmark_ofdmframesync_acquire_n256   OFDMFRAMESYNC_ACQUIRE_BENCH_API(256,32)
-void benchmark_ofdmframesync_acquire_n512   OFDMFRAMESYNC_ACQUIRE_BENCH_API(512,64)
+LIQUID_BENCHMARK(ofdmframesync_acquire_n64,  "ofdmframesync acquire, M=64 cp_len=8",  "framing,ofdmframe,acquire")
+    { return ofdmframesync_acquire_bench(num_iterations, 64, 8); }
+LIQUID_BENCHMARK(ofdmframesync_acquire_n128, "ofdmframesync acquire, M=128 cp_len=16", "framing,ofdmframe,acquire")
+    { return ofdmframesync_acquire_bench(num_iterations, 128, 16); }
+LIQUID_BENCHMARK(ofdmframesync_acquire_n256, "ofdmframesync acquire, M=256 cp_len=32", "framing,ofdmframe,acquire")
+    { return ofdmframesync_acquire_bench(num_iterations, 256, 32); }
+LIQUID_BENCHMARK(ofdmframesync_acquire_n512, "ofdmframesync acquire, M=512 cp_len=64", "framing,ofdmframe,acquire")
+    { return ofdmframesync_acquire_bench(num_iterations, 512, 64); }
 
