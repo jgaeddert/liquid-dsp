@@ -815,6 +815,11 @@ extern struct liquid_benchmark_s random_normal_s;
 extern struct liquid_benchmark_s random_complex_normal_s;
 extern struct liquid_benchmark_s random_weibull_s;
 extern struct liquid_benchmark_s random_ricek_s;
+// ./src/sequence/bench/bsequence_benchmark.c
+extern struct liquid_benchmark_s bsequence_xcorr_n16_s;
+extern struct liquid_benchmark_s bsequence_xcorr_n64_s;
+extern struct liquid_benchmark_s bsequence_xcorr_n256_s;
+extern struct liquid_benchmark_s bsequence_xcorr_n1024_s;
 
 // compile benchmark registry
 liquid_benchmark liquid_benchmarks[] =
@@ -1568,6 +1573,10 @@ liquid_benchmark liquid_benchmarks[] =
     &random_complex_normal_s,
     &random_weibull_s,
     &random_ricek_s,
+    &bsequence_xcorr_n16_s,
+    &bsequence_xcorr_n64_s,
+    &bsequence_xcorr_n256_s,
+    &bsequence_xcorr_n1024_s,
     NULL
 };
 
