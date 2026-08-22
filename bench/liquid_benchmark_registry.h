@@ -546,6 +546,12 @@ extern struct liquid_benchmark_s qdetector_cccf_2048_s;
 extern struct liquid_benchmark_s qdetector_cccf_4096_s;
 extern struct liquid_benchmark_s qdetector_cccf_8192_s;
 extern struct liquid_benchmark_s qdetector_cccf_16384_s;
+// ./src/math/bench/polyfit_benchmark.c
+extern struct liquid_benchmark_s polyfit_q3_n8_s;
+extern struct liquid_benchmark_s polyfit_q3_n16_s;
+extern struct liquid_benchmark_s polyfit_q3_n32_s;
+extern struct liquid_benchmark_s polyfit_q3_n64_s;
+extern struct liquid_benchmark_s polyfit_q3_n128_s;
 
 // compile benchmark registry
 liquid_benchmark liquid_benchmarks[] =
@@ -1053,6 +1059,11 @@ liquid_benchmark liquid_benchmarks[] =
     &qdetector_cccf_4096_s,
     &qdetector_cccf_8192_s,
     &qdetector_cccf_16384_s,
+    &polyfit_q3_n8_s,
+    &polyfit_q3_n16_s,
+    &polyfit_q3_n32_s,
+    &polyfit_q3_n64_s,
+    &polyfit_q3_n128_s,
     NULL
 };
 
