@@ -803,6 +803,12 @@ extern struct liquid_benchmark_s nco_mix_block_up_s;
 extern struct liquid_benchmark_s vco_sincos_s;
 extern struct liquid_benchmark_s vco_mix_up_s;
 extern struct liquid_benchmark_s vco_mix_block_up_s;
+// ./src/quantization/bench/compander_benchmark.c
+extern struct liquid_benchmark_s compress_mulaw_s;
+extern struct liquid_benchmark_s expand_mulaw_s;
+// ./src/quantization/bench/quantizer_benchmark.c
+extern struct liquid_benchmark_s quantize_adc_s;
+extern struct liquid_benchmark_s quantize_dac_s;
 
 // compile benchmark registry
 liquid_benchmark liquid_benchmarks[] =
@@ -1547,6 +1553,10 @@ liquid_benchmark liquid_benchmarks[] =
     &vco_sincos_s,
     &vco_mix_up_s,
     &vco_mix_block_up_s,
+    &compress_mulaw_s,
+    &expand_mulaw_s,
+    &quantize_adc_s,
+    &quantize_dac_s,
     NULL
 };
 
