@@ -1,5 +1,5 @@
 # cmake build file for liquid-dsp
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.10)
 
 # parse version number from include/liquid.h
 include(cmake/version.cmake)
@@ -753,8 +753,12 @@ if (fftw3f_FOUND)
     string(APPEND LIQUID_PC_LIBS_PRIVATE " -lfftw3f")
 endif()
 
-cmake_path(APPEND libdir_for_pc_file "\${prefix}" "${CMAKE_INSTALL_LIBDIR}")
-cmake_path(APPEND includedir_for_pc_file "\${prefix}" "${CMAKE_INSTALL_INCLUDEDIR}")
+# NOTE: cmake_path(APPEND ...) requires cmake >= 3.20; we can keep the version number
+#       at 3.10 by running an equivalent set() command
+#cmake_path(APPEND libdir_for_pc_file "\${prefix}" "${CMAKE_INSTALL_LIBDIR}")
+#cmake_path(APPEND includedir_for_pc_file "\${prefix}" "${CMAKE_INSTALL_INCLUDEDIR}")
+set(libdir_for_pc_file     "\${prefix}/${CMAKE_INSTALL_LIBDIR}")
+set(includedir_for_pc_file "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
 
 configure_file(
     cmake/liquid-dsp.pc.in
