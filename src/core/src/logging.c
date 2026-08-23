@@ -102,6 +102,28 @@ static struct liquid_logger_s qlog = {
 liquid_logger liquid_logger_safe_cast(liquid_logger _q)
     { return _q == NULL ? &qlog : _q; }
 
+// lock mutex-like object
+int liquid_logger_lock(liquid_logger _q)
+{
+    _q = liquid_logger_safe_cast(_q);
+
+    if (_q->lock_callback != NULL)
+        _q->lock_callback(1, _q->lock_context);
+
+    return LIQUID_OK;
+}
+
+// unlock mutex-like object
+int liquid_logger_unlock(liquid_logger _q)
+{
+    _q = liquid_logger_safe_cast(_q);
+
+    if (_q->lock_callback != NULL)
+        _q->lock_callback(0, _q->lock_context);
+
+    return LIQUID_OK;
+}
+
 // log filename and line number to stream output
 int liquid_logger_stream_file_line(liquid_log_event _event,
                                    FILE * restrict  _stream,
@@ -496,9 +518,8 @@ int liquid_logger_close_file(liquid_logger _q,
     if (_fid == NULL)
         return liquid_error(LIQUID_EIOBJ,"liquid_logger_close_file(), file handle is NULL");
 
-    // lock
-    if (_q->lock_callback != NULL)
-        _q->lock_callback(1, _q->lock_context);
+    // lock mutex if enabled
+    liquid_logger_lock(_q);
 
     // look for entry matching _fid in callback list
     unsigned int i;
@@ -535,9 +556,8 @@ int liquid_logger_close_file(liquid_logger _q,
         _q->min_level = (_q->cb_level[i] < _q->min_level) ? _q->cb_level[i] : _q->min_level;
     }
 
-    // unlock
-    if (_q->lock_callback != NULL)
-        _q->lock_callback(0, _q->lock_context);
+    // unlock mutex if enabled
+    liquid_logger_unlock(_q);
 
     if (!found)
         return liquid_error(LIQUID_EICONFIG,"liquid_logger_close_file(), file handle not registered with logger");
@@ -623,9 +643,8 @@ int liquid_vlog(liquid_logger _q,
     // set to global object if input is NULL (default)
     _q = liquid_logger_safe_cast(_q);
 
-    // lock
-    if (_q->lock_callback != NULL)
-        _q->lock_callback(1, _q->lock_context);
+    // unlock mutex if enabled
+    liquid_logger_lock(_q);
 
     // update count
     _q->count[_level]++;
@@ -660,9 +679,8 @@ int liquid_vlog(liquid_logger _q,
         }
     }
 
-    // unlock
-    if (_q->lock_callback != NULL)
-        _q->lock_callback(0, _q->lock_context);
+    // unlock mutex if enabled
+    liquid_logger_unlock(_q);
 
     return LIQUID_OK;
 }
