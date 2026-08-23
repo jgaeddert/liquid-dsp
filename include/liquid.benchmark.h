@@ -162,6 +162,13 @@ int liquid_benchmark_registry_schedule_one(liquid_benchmark_registry _q, unsigne
 // schedule only benchmarks that match search string
 int liquid_benchmark_registry_schedule_search(liquid_benchmark_registry _q, const char * _query);
 
+// filter benchmarks based on keywords; only benchmarks matching all requested
+// keywords will be marked to run
+//  _q          : benchmark registry
+//  _keywords   : string with comma-separated values, e.g. "fft,composite"
+int liquid_benchmark_registry_schedule_keywords(liquid_benchmark_registry _q,
+                                                const char * _keywords);
+
 // find specific benchmark that matches name
 liquid_benchmark liquid_benchmark_registry_find(liquid_benchmark_registry _q,
                                                 const char * _name);

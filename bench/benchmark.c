@@ -158,6 +158,22 @@ int liquid_benchmark_registry_schedule_search(liquid_benchmark_registry _q, cons
     return LIQUID_OK;
 }
 
+// filter benchmarks based on keywords; only benchmarks matching all requested
+// keywords will be marked to run
+//  _q          : benchmark registry
+//  _keywords   : string with comma-separated values, e.g. "fft,composite"
+int liquid_benchmark_registry_schedule_keywords(liquid_benchmark_registry _q,
+                                                const char * _keywords)
+{
+    if (_keywords == NULL || strlen(_keywords)==0)
+        return LIQUID_OK;
+
+    // TODO: parse all keywords, possibly using strtok, and only enable
+    //       benchmarks that match *all* keywords. The order does not matter.
+
+    return LIQUID_OK;
+}
+
 // find specific benchmark that matches name
 liquid_benchmark liquid_benchmark_registry_find(liquid_benchmark_registry _q,
                                                 const char * _name)
@@ -280,6 +296,7 @@ int main(int argc, char* argv[])
     liquid_argparse_add(int,  test_id,       -1, 't', "run a specific benchmark", NULL);
     liquid_argparse_add(bool, list,       false, 'l', "list benchmarks and exit", NULL);
     liquid_argparse_add(char*,search,        "", 's', "run benchmarks with search string in name", NULL);
+    liquid_argparse_add(char*,keywords,      "", 'k', "run benchmarks with matching keywords", NULL);
     liquid_argparse_add(bool, estimate_cpu,false,'c', "estimate CPU clock speed and exit", NULL);
     liquid_argparse_parse(argc,argv);
 
@@ -305,8 +322,10 @@ int main(int argc, char* argv[])
     // schedule benchmarks to run (default: all)
     if (test_id >= 0)
         liquid_benchmark_registry_schedule_one(registry, test_id);
-    else if (strlen(search) > 0)
+    if (strlen(search) > 0)
         liquid_benchmark_registry_schedule_search(registry, search);
+    if (strlen(keywords) > 0)
+        liquid_benchmark_registry_schedule_keywords(registry, keywords);
 
     // run scheduled benchmarks, printing each result as it finishes
     unsigned int i;
