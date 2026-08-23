@@ -11,23 +11,6 @@ char __docstr__[] = "Run benchmark programs in liquid-dsp";
 // benchmark registry (lists all LIQUID_BENCHMARK companion structs)
 #include "liquid_benchmark_registry.h"
 
-// convert a raw value into a metric-scaled magnitude and return the unit prefix
-// example: 0.01397 -> 13.97 with unit 'm'
-static char convert_units(float * _v)
-{
-    char unit;
-    if      (*_v < 1e-9)  { (*_v) *= 1e12;  unit = 'p'; }
-    else if (*_v < 1e-6)  { (*_v) *= 1e9;   unit = 'n'; }
-    else if (*_v < 1e-3)  { (*_v) *= 1e6;   unit = 'u'; }
-    else if (*_v < 1e+0)  { (*_v) *= 1e3;   unit = 'm'; }
-    else if (*_v < 1e3)   { (*_v) *= 1e+0;  unit = ' '; }
-    else if (*_v < 1e6)   { (*_v) *= 1e-3;  unit = 'k'; }
-    else if (*_v < 1e9)   { (*_v) *= 1e-6;  unit = 'M'; }
-    else if (*_v < 1e12)  { (*_v) *= 1e-9;  unit = 'G'; }
-    else                  { (*_v) *= 1e-12; unit = 'T'; }
-    return unit;
-}
-
 // print benchmark info
 int liquid_benchmark_print_info(liquid_benchmark _q, unsigned int _index)
 {
@@ -47,9 +30,9 @@ int liquid_benchmark_print_status(liquid_benchmark _q)
         return LIQUID_OK;
     }
 
-    float trials_format = (float)(_q->num_trials);  char tu = convert_units(&trials_format);
-    float extime_format = _q->extime;               char eu = convert_units(&extime_format);
-    float rate_format   = _q->rate;                 char ru = convert_units(&rate_format);
+    float trials_format = (float)(_q->num_trials);  char tu = liquid_convert_units(&trials_format);
+    float extime_format = _q->extime;               char eu = liquid_convert_units(&extime_format);
+    float rate_format   = _q->rate;                 char ru = liquid_convert_units(&rate_format);
 
     liquid_log_info("%-30s: %6.2f %c trials / %6.2f %cs (%6.2f %c t/s)",
         _q->name,
