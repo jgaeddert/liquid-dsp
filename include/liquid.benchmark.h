@@ -162,6 +162,10 @@ int liquid_benchmark_registry_schedule_one(liquid_benchmark_registry _q, unsigne
 // schedule only benchmarks that match search string
 int liquid_benchmark_registry_schedule_search(liquid_benchmark_registry _q, const char * _query);
 
+// find specific benchmark that matches name
+liquid_benchmark liquid_benchmark_registry_find(liquid_benchmark_registry _q,
+                                                const char * _name);
+
 // run all scheduled benchmarks
 int liquid_benchmark_registry_execute(liquid_benchmark_registry _q);
 

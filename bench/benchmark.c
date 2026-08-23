@@ -158,6 +158,19 @@ int liquid_benchmark_registry_schedule_search(liquid_benchmark_registry _q, cons
     return LIQUID_OK;
 }
 
+// find specific benchmark that matches name
+liquid_benchmark liquid_benchmark_registry_find(liquid_benchmark_registry _q,
+                                                const char * _name)
+{
+    unsigned int i;
+    for (i=0; i<_q->num_benchmarks; i++)
+    {
+        if (strcmp(_q->benchmarks[i]->name, _name) == 0)
+            return _q->benchmarks[i];
+    }
+    return liquid_error_config("could not find benchmark with name '%s'",_name);
+}
+
 // run all scheduled benchmarks
 int liquid_benchmark_registry_execute(liquid_benchmark_registry _q)
 {
