@@ -54,6 +54,17 @@ int liquid_get_scale(float   _val,
     return LIQUID_OK;
 }
 
+// convert a raw value into a metric-scaled magnitude and return the unit prefix
+// example: 0.01397 -> 13.97 with unit 'm'
+char liquid_convert_units(float * _v)
+{
+    float scale;
+    char  unit;
+    liquid_get_scale(*_v, &unit, &scale);
+    *_v *= scale;
+    return unit;
+}
+
 // compare two values (e.g. qsort), single-precision float
 int liquid_compare_float(const void * _a, const void* _b)
 {
