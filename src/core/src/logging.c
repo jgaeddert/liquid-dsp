@@ -108,7 +108,7 @@ int liquid_logger_lock(liquid_logger _q)
     _q = liquid_logger_safe_cast(_q);
 
     if (_q->lock_callback != NULL)
-        _q->lock_callback(1, _q->lock_context);
+        return _q->lock_callback(1, _q->lock_context);
 
     return LIQUID_OK;
 }
@@ -119,7 +119,7 @@ int liquid_logger_unlock(liquid_logger _q)
     _q = liquid_logger_safe_cast(_q);
 
     if (_q->lock_callback != NULL)
-        _q->lock_callback(0, _q->lock_context);
+        return _q->lock_callback(0, _q->lock_context);
 
     return LIQUID_OK;
 }
@@ -519,7 +519,9 @@ int liquid_logger_close_file(liquid_logger _q,
         return liquid_error(LIQUID_EIOBJ,"liquid_logger_close_file(), file handle is NULL");
 
     // lock mutex if enabled
-    liquid_logger_lock(_q);
+    int rv = liquid_logger_lock(_q);
+    if (rv != LIQUID_OK) // failed to lock
+        return rv;
 
     // look for entry matching _fid in callback list
     unsigned int i;
@@ -557,11 +559,12 @@ int liquid_logger_close_file(liquid_logger _q,
     }
 
     // unlock mutex if enabled
-    liquid_logger_unlock(_q);
+    rv = liquid_logger_unlock(_q);
 
+    if (rv != LIQUID_OK) // unlock failed; report regardless of found status
+        return rv;
     if (!found)
         return liquid_error(LIQUID_EICONFIG,"liquid_logger_close_file(), file handle not registered with logger");
-
     return LIQUID_OK;
 }
 
@@ -643,8 +646,10 @@ int liquid_vlog(liquid_logger _q,
     // set to global object if input is NULL (default)
     _q = liquid_logger_safe_cast(_q);
 
-    // unlock mutex if enabled
-    liquid_logger_lock(_q);
+    // lock mutex if enabled
+    int rv = liquid_logger_lock(_q);
+    if (rv != LIQUID_OK) // failed to lock
+        return rv;
 
     // update count
     _q->count[_level]++;
@@ -680,9 +685,7 @@ int liquid_vlog(liquid_logger _q,
     }
 
     // unlock mutex if enabled
-    liquid_logger_unlock(_q);
-
-    return LIQUID_OK;
+    return liquid_logger_unlock(_q);
 }
 
 int liquid_exit()
