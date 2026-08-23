@@ -54,7 +54,11 @@ void signal_handler(int _signal)
     if (_signal != SIGINT)
         return;
 
-    printf("%slocking... (hit CTRL-C to %slock)\n", locked ? "un" : "", locked ? "" : "un");
+    // print statements are fine, but invoking the logger here will
+    // cause it to, well, lock up
+    printf(" %slocking... (hit CTRL-C to %slock)\n",
+            locked ? "un" : "",
+            locked ? "" : "un");
 
     // toggle flag; this assumes user is much slower than log function
     locked = !locked;

@@ -6,6 +6,13 @@
     - fixed pkg-config paths since `CMAKE_INSTALL_*` are not guaranteed to be
       relative (thanks, @iank)
     - legacy: compiling and installing liquid-dsp.pc (pkg-config file)
+  * core
+    - logging: fixed issue with stale file handle when closed outside of
+      log environment; added new method to close file from within logging
+      object (thanks, @classabbyamp)
+    - logging: fixed initialization in reset() that was causing segfaults
+    - logging: added internal lock/unlock helpers to wrap user-defined
+      callbacks
   * filter
     - resamp2: moving the default filter design to windowed Kaiser; firdespm
       produces a good filter but takes prohibitively long on certain systems

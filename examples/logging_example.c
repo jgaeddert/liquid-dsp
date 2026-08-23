@@ -27,9 +27,9 @@ int main(int argc, char*argv[])
         if (i==4)
             fid = liquid_logger_add_filename(NULL,filename,LIQUID_INFO);
 
-        // close the file part-way through the program
+        // close the file part-way through the program and remove callback
         if (i==8)
-            fclose(fid);
+            liquid_logger_close_file(NULL,fid);
     }
 
     return 0;
