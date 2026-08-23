@@ -3,6 +3,8 @@
 
 #include "liquid.benchmark.h"
 
+// ./bench/null_benchmark.c
+extern struct liquid_benchmark_s null_s;
 // ./src/agc/bench/agc_crcf_benchmark.c
 extern struct liquid_benchmark_s agc_crcf_s;
 // ./src/audio/bench/cvsd_benchmark.c
@@ -937,6 +939,7 @@ extern struct liquid_benchmark_s vectorf_1024_s;
 // compile benchmark registry
 liquid_benchmark liquid_benchmarks[] =
 {
+    &null_s,
     &agc_crcf_s,
     &cvsd_encode_s,
     &cvsd_decode_s,

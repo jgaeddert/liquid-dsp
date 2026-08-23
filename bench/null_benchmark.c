@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,23 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <sys/resource.h>
+#include "liquid.benchmark.h"
 
-// null benchmark
-void benchmark_null(struct rusage *_start,
-                    struct rusage *_finish,
-                    unsigned long int *_num_iterations)
+LIQUID_BENCHMARK(null, "baseline benchmark for cpu clock speed estimation", "null")
 {
+    unsigned int k = 366001;    // large prime number
+    unsigned int g = 184903;    // another large prime number
+    unsigned int s = 1;
     unsigned long int i;
-    *_num_iterations *= 100;
-
-    getrusage(RUSAGE_SELF, _start);
-    unsigned int x = 0;
-    for (i=0; i<*_num_iterations; i++) {
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<num_iterations; i++)
+    {
         // perform mindless task
-        x <<= 1;
-        x |= 1;
-        x &= 0xff;
-        x ^= 0xff;
+        s = (s*k) % g;
     }
-    *_num_iterations += (x & 0x1234) ? 0 : 1;
-    getrusage(RUSAGE_SELF, _finish);
+
+    // return runtime with psuedo-random (yet neglible) offset to
+    // prevent compiler optimizing loop out
+    return liquid_toc(timer) + (s & 1 ? 0 : 1e-6f);
 }
 
