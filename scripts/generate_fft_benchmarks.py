@@ -25,7 +25,7 @@ for n in sorted(tuple(set(nfft))):
     elif isprime(n):  ntype = 'prime'
     else:             ntype = 'composite'
 
-    print('LIQUID_BENCHMARK(fft_%-5d,"fft execute, nfft=%-5u","fft,%s"%s)' % \
-        (n,n,ntype,' '*(len('composite')-len(ntype))))
+    print('LIQUID_BENCHMARK(fft_%-5d,"fft execute, nfft=%5u","fft,%s"%s)' % \
+        (n,n,ntype,' '*(len('composite')-len(ntype))), end='')
     print('  { return fft_runbench(num_iterations, %5d, LIQUID_FFT_FORWARD); }' % (n))
 

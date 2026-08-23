@@ -177,66 +177,95 @@ extern struct liquid_benchmark_s asgramcf_64_autoscale_s;
 extern struct liquid_benchmark_s asgramcf_80_autoscale_s;
 extern struct liquid_benchmark_s asgramcf_96_autoscale_s;
 extern struct liquid_benchmark_s asgramcf_120_autoscale_s;
-// ./src/fft/bench/fft_composite_benchmark.c
+// ./src/fft/bench/fft_benchmark.c
+extern struct liquid_benchmark_s fft_2_s;
+extern struct liquid_benchmark_s fft_3_s;
+extern struct liquid_benchmark_s fft_4_s;
+extern struct liquid_benchmark_s fft_5_s;
 extern struct liquid_benchmark_s fft_6_s;
+extern struct liquid_benchmark_s fft_7_s;
+extern struct liquid_benchmark_s fft_8_s;
 extern struct liquid_benchmark_s fft_9_s;
 extern struct liquid_benchmark_s fft_10_s;
+extern struct liquid_benchmark_s fft_11_s;
 extern struct liquid_benchmark_s fft_12_s;
+extern struct liquid_benchmark_s fft_13_s;
 extern struct liquid_benchmark_s fft_14_s;
 extern struct liquid_benchmark_s fft_15_s;
+extern struct liquid_benchmark_s fft_16_s;
+extern struct liquid_benchmark_s fft_17_s;
 extern struct liquid_benchmark_s fft_18_s;
+extern struct liquid_benchmark_s fft_19_s;
 extern struct liquid_benchmark_s fft_20_s;
 extern struct liquid_benchmark_s fft_21_s;
 extern struct liquid_benchmark_s fft_22_s;
+extern struct liquid_benchmark_s fft_23_s;
 extern struct liquid_benchmark_s fft_24_s;
 extern struct liquid_benchmark_s fft_25_s;
 extern struct liquid_benchmark_s fft_26_s;
 extern struct liquid_benchmark_s fft_27_s;
 extern struct liquid_benchmark_s fft_28_s;
+extern struct liquid_benchmark_s fft_29_s;
 extern struct liquid_benchmark_s fft_30_s;
+extern struct liquid_benchmark_s fft_31_s;
+extern struct liquid_benchmark_s fft_32_s;
 extern struct liquid_benchmark_s fft_33_s;
 extern struct liquid_benchmark_s fft_34_s;
 extern struct liquid_benchmark_s fft_35_s;
 extern struct liquid_benchmark_s fft_36_s;
+extern struct liquid_benchmark_s fft_37_s;
 extern struct liquid_benchmark_s fft_38_s;
 extern struct liquid_benchmark_s fft_39_s;
 extern struct liquid_benchmark_s fft_40_s;
+extern struct liquid_benchmark_s fft_41_s;
 extern struct liquid_benchmark_s fft_42_s;
+extern struct liquid_benchmark_s fft_43_s;
 extern struct liquid_benchmark_s fft_44_s;
 extern struct liquid_benchmark_s fft_45_s;
 extern struct liquid_benchmark_s fft_46_s;
+extern struct liquid_benchmark_s fft_47_s;
 extern struct liquid_benchmark_s fft_48_s;
 extern struct liquid_benchmark_s fft_49_s;
 extern struct liquid_benchmark_s fft_50_s;
 extern struct liquid_benchmark_s fft_51_s;
 extern struct liquid_benchmark_s fft_52_s;
+extern struct liquid_benchmark_s fft_53_s;
 extern struct liquid_benchmark_s fft_54_s;
 extern struct liquid_benchmark_s fft_55_s;
 extern struct liquid_benchmark_s fft_56_s;
 extern struct liquid_benchmark_s fft_57_s;
 extern struct liquid_benchmark_s fft_58_s;
+extern struct liquid_benchmark_s fft_59_s;
 extern struct liquid_benchmark_s fft_60_s;
+extern struct liquid_benchmark_s fft_61_s;
 extern struct liquid_benchmark_s fft_62_s;
 extern struct liquid_benchmark_s fft_63_s;
+extern struct liquid_benchmark_s fft_64_s;
 extern struct liquid_benchmark_s fft_65_s;
 extern struct liquid_benchmark_s fft_66_s;
+extern struct liquid_benchmark_s fft_67_s;
 extern struct liquid_benchmark_s fft_68_s;
 extern struct liquid_benchmark_s fft_69_s;
 extern struct liquid_benchmark_s fft_70_s;
+extern struct liquid_benchmark_s fft_71_s;
 extern struct liquid_benchmark_s fft_72_s;
+extern struct liquid_benchmark_s fft_73_s;
 extern struct liquid_benchmark_s fft_74_s;
 extern struct liquid_benchmark_s fft_75_s;
 extern struct liquid_benchmark_s fft_76_s;
 extern struct liquid_benchmark_s fft_77_s;
 extern struct liquid_benchmark_s fft_78_s;
+extern struct liquid_benchmark_s fft_79_s;
 extern struct liquid_benchmark_s fft_80_s;
 extern struct liquid_benchmark_s fft_81_s;
 extern struct liquid_benchmark_s fft_82_s;
+extern struct liquid_benchmark_s fft_83_s;
 extern struct liquid_benchmark_s fft_84_s;
 extern struct liquid_benchmark_s fft_85_s;
 extern struct liquid_benchmark_s fft_86_s;
 extern struct liquid_benchmark_s fft_87_s;
 extern struct liquid_benchmark_s fft_88_s;
+extern struct liquid_benchmark_s fft_89_s;
 extern struct liquid_benchmark_s fft_90_s;
 extern struct liquid_benchmark_s fft_91_s;
 extern struct liquid_benchmark_s fft_92_s;
@@ -244,17 +273,23 @@ extern struct liquid_benchmark_s fft_93_s;
 extern struct liquid_benchmark_s fft_94_s;
 extern struct liquid_benchmark_s fft_95_s;
 extern struct liquid_benchmark_s fft_96_s;
+extern struct liquid_benchmark_s fft_97_s;
 extern struct liquid_benchmark_s fft_98_s;
 extern struct liquid_benchmark_s fft_99_s;
 extern struct liquid_benchmark_s fft_100_s;
+extern struct liquid_benchmark_s fft_101_s;
 extern struct liquid_benchmark_s fft_102_s;
+extern struct liquid_benchmark_s fft_103_s;
 extern struct liquid_benchmark_s fft_104_s;
 extern struct liquid_benchmark_s fft_105_s;
 extern struct liquid_benchmark_s fft_106_s;
+extern struct liquid_benchmark_s fft_107_s;
 extern struct liquid_benchmark_s fft_108_s;
+extern struct liquid_benchmark_s fft_109_s;
 extern struct liquid_benchmark_s fft_110_s;
 extern struct liquid_benchmark_s fft_111_s;
 extern struct liquid_benchmark_s fft_112_s;
+extern struct liquid_benchmark_s fft_113_s;
 extern struct liquid_benchmark_s fft_114_s;
 extern struct liquid_benchmark_s fft_115_s;
 extern struct liquid_benchmark_s fft_116_s;
@@ -268,14 +303,19 @@ extern struct liquid_benchmark_s fft_123_s;
 extern struct liquid_benchmark_s fft_124_s;
 extern struct liquid_benchmark_s fft_125_s;
 extern struct liquid_benchmark_s fft_126_s;
+extern struct liquid_benchmark_s fft_127_s;
+extern struct liquid_benchmark_s fft_128_s;
 extern struct liquid_benchmark_s fft_129_s;
 extern struct liquid_benchmark_s fft_130_s;
+extern struct liquid_benchmark_s fft_131_s;
 extern struct liquid_benchmark_s fft_132_s;
 extern struct liquid_benchmark_s fft_133_s;
 extern struct liquid_benchmark_s fft_134_s;
 extern struct liquid_benchmark_s fft_135_s;
 extern struct liquid_benchmark_s fft_136_s;
+extern struct liquid_benchmark_s fft_137_s;
 extern struct liquid_benchmark_s fft_138_s;
+extern struct liquid_benchmark_s fft_139_s;
 extern struct liquid_benchmark_s fft_140_s;
 extern struct liquid_benchmark_s fft_141_s;
 extern struct liquid_benchmark_s fft_142_s;
@@ -285,31 +325,39 @@ extern struct liquid_benchmark_s fft_145_s;
 extern struct liquid_benchmark_s fft_146_s;
 extern struct liquid_benchmark_s fft_147_s;
 extern struct liquid_benchmark_s fft_148_s;
+extern struct liquid_benchmark_s fft_149_s;
 extern struct liquid_benchmark_s fft_150_s;
+extern struct liquid_benchmark_s fft_151_s;
 extern struct liquid_benchmark_s fft_152_s;
 extern struct liquid_benchmark_s fft_153_s;
 extern struct liquid_benchmark_s fft_154_s;
 extern struct liquid_benchmark_s fft_155_s;
 extern struct liquid_benchmark_s fft_156_s;
+extern struct liquid_benchmark_s fft_157_s;
 extern struct liquid_benchmark_s fft_158_s;
 extern struct liquid_benchmark_s fft_159_s;
 extern struct liquid_benchmark_s fft_160_s;
 extern struct liquid_benchmark_s fft_161_s;
 extern struct liquid_benchmark_s fft_162_s;
+extern struct liquid_benchmark_s fft_163_s;
 extern struct liquid_benchmark_s fft_164_s;
 extern struct liquid_benchmark_s fft_165_s;
 extern struct liquid_benchmark_s fft_166_s;
+extern struct liquid_benchmark_s fft_167_s;
 extern struct liquid_benchmark_s fft_168_s;
 extern struct liquid_benchmark_s fft_169_s;
 extern struct liquid_benchmark_s fft_170_s;
 extern struct liquid_benchmark_s fft_171_s;
 extern struct liquid_benchmark_s fft_172_s;
+extern struct liquid_benchmark_s fft_173_s;
 extern struct liquid_benchmark_s fft_174_s;
 extern struct liquid_benchmark_s fft_175_s;
 extern struct liquid_benchmark_s fft_176_s;
 extern struct liquid_benchmark_s fft_177_s;
 extern struct liquid_benchmark_s fft_178_s;
+extern struct liquid_benchmark_s fft_179_s;
 extern struct liquid_benchmark_s fft_180_s;
+extern struct liquid_benchmark_s fft_181_s;
 extern struct liquid_benchmark_s fft_182_s;
 extern struct liquid_benchmark_s fft_183_s;
 extern struct liquid_benchmark_s fft_184_s;
@@ -319,11 +367,15 @@ extern struct liquid_benchmark_s fft_187_s;
 extern struct liquid_benchmark_s fft_188_s;
 extern struct liquid_benchmark_s fft_189_s;
 extern struct liquid_benchmark_s fft_190_s;
+extern struct liquid_benchmark_s fft_191_s;
 extern struct liquid_benchmark_s fft_192_s;
+extern struct liquid_benchmark_s fft_193_s;
 extern struct liquid_benchmark_s fft_194_s;
 extern struct liquid_benchmark_s fft_195_s;
 extern struct liquid_benchmark_s fft_196_s;
+extern struct liquid_benchmark_s fft_197_s;
 extern struct liquid_benchmark_s fft_198_s;
+extern struct liquid_benchmark_s fft_199_s;
 extern struct liquid_benchmark_s fft_200_s;
 extern struct liquid_benchmark_s fft_201_s;
 extern struct liquid_benchmark_s fft_202_s;
@@ -335,6 +387,7 @@ extern struct liquid_benchmark_s fft_207_s;
 extern struct liquid_benchmark_s fft_208_s;
 extern struct liquid_benchmark_s fft_209_s;
 extern struct liquid_benchmark_s fft_210_s;
+extern struct liquid_benchmark_s fft_211_s;
 extern struct liquid_benchmark_s fft_212_s;
 extern struct liquid_benchmark_s fft_213_s;
 extern struct liquid_benchmark_s fft_214_s;
@@ -346,19 +399,25 @@ extern struct liquid_benchmark_s fft_219_s;
 extern struct liquid_benchmark_s fft_220_s;
 extern struct liquid_benchmark_s fft_221_s;
 extern struct liquid_benchmark_s fft_222_s;
+extern struct liquid_benchmark_s fft_223_s;
 extern struct liquid_benchmark_s fft_224_s;
 extern struct liquid_benchmark_s fft_225_s;
 extern struct liquid_benchmark_s fft_226_s;
+extern struct liquid_benchmark_s fft_227_s;
 extern struct liquid_benchmark_s fft_228_s;
+extern struct liquid_benchmark_s fft_229_s;
 extern struct liquid_benchmark_s fft_230_s;
 extern struct liquid_benchmark_s fft_231_s;
 extern struct liquid_benchmark_s fft_232_s;
+extern struct liquid_benchmark_s fft_233_s;
 extern struct liquid_benchmark_s fft_234_s;
 extern struct liquid_benchmark_s fft_235_s;
 extern struct liquid_benchmark_s fft_236_s;
 extern struct liquid_benchmark_s fft_237_s;
 extern struct liquid_benchmark_s fft_238_s;
+extern struct liquid_benchmark_s fft_239_s;
 extern struct liquid_benchmark_s fft_240_s;
+extern struct liquid_benchmark_s fft_241_s;
 extern struct liquid_benchmark_s fft_242_s;
 extern struct liquid_benchmark_s fft_243_s;
 extern struct liquid_benchmark_s fft_244_s;
@@ -368,107 +427,274 @@ extern struct liquid_benchmark_s fft_247_s;
 extern struct liquid_benchmark_s fft_248_s;
 extern struct liquid_benchmark_s fft_249_s;
 extern struct liquid_benchmark_s fft_250_s;
+extern struct liquid_benchmark_s fft_251_s;
 extern struct liquid_benchmark_s fft_252_s;
 extern struct liquid_benchmark_s fft_253_s;
 extern struct liquid_benchmark_s fft_254_s;
 extern struct liquid_benchmark_s fft_255_s;
-// ./src/fft/bench/fft_prime_benchmark.c
-extern struct liquid_benchmark_s fft_3_s;
-extern struct liquid_benchmark_s fft_5_s;
-extern struct liquid_benchmark_s fft_7_s;
-extern struct liquid_benchmark_s fft_11_s;
-extern struct liquid_benchmark_s fft_13_s;
-extern struct liquid_benchmark_s fft_17_s;
-extern struct liquid_benchmark_s fft_19_s;
-extern struct liquid_benchmark_s fft_23_s;
-extern struct liquid_benchmark_s fft_29_s;
-extern struct liquid_benchmark_s fft_31_s;
-extern struct liquid_benchmark_s fft_37_s;
-extern struct liquid_benchmark_s fft_41_s;
-extern struct liquid_benchmark_s fft_43_s;
-extern struct liquid_benchmark_s fft_47_s;
-extern struct liquid_benchmark_s fft_53_s;
-extern struct liquid_benchmark_s fft_59_s;
-extern struct liquid_benchmark_s fft_61_s;
-extern struct liquid_benchmark_s fft_67_s;
-extern struct liquid_benchmark_s fft_71_s;
-extern struct liquid_benchmark_s fft_73_s;
-extern struct liquid_benchmark_s fft_79_s;
-extern struct liquid_benchmark_s fft_83_s;
-extern struct liquid_benchmark_s fft_89_s;
-extern struct liquid_benchmark_s fft_97_s;
-extern struct liquid_benchmark_s fft_101_s;
-extern struct liquid_benchmark_s fft_103_s;
-extern struct liquid_benchmark_s fft_107_s;
-extern struct liquid_benchmark_s fft_109_s;
-extern struct liquid_benchmark_s fft_113_s;
-extern struct liquid_benchmark_s fft_127_s;
-extern struct liquid_benchmark_s fft_131_s;
-extern struct liquid_benchmark_s fft_137_s;
-extern struct liquid_benchmark_s fft_139_s;
-extern struct liquid_benchmark_s fft_149_s;
-extern struct liquid_benchmark_s fft_151_s;
-extern struct liquid_benchmark_s fft_157_s;
-extern struct liquid_benchmark_s fft_163_s;
-extern struct liquid_benchmark_s fft_167_s;
-extern struct liquid_benchmark_s fft_173_s;
-extern struct liquid_benchmark_s fft_179_s;
-extern struct liquid_benchmark_s fft_181_s;
-extern struct liquid_benchmark_s fft_191_s;
-extern struct liquid_benchmark_s fft_193_s;
-extern struct liquid_benchmark_s fft_197_s;
-extern struct liquid_benchmark_s fft_199_s;
-extern struct liquid_benchmark_s fft_211_s;
-extern struct liquid_benchmark_s fft_223_s;
-extern struct liquid_benchmark_s fft_227_s;
-extern struct liquid_benchmark_s fft_229_s;
-extern struct liquid_benchmark_s fft_233_s;
-extern struct liquid_benchmark_s fft_239_s;
-extern struct liquid_benchmark_s fft_241_s;
-extern struct liquid_benchmark_s fft_251_s;
+extern struct liquid_benchmark_s fft_256_s;
 extern struct liquid_benchmark_s fft_257_s;
+extern struct liquid_benchmark_s fft_258_s;
+extern struct liquid_benchmark_s fft_259_s;
+extern struct liquid_benchmark_s fft_260_s;
+extern struct liquid_benchmark_s fft_261_s;
+extern struct liquid_benchmark_s fft_262_s;
 extern struct liquid_benchmark_s fft_263_s;
+extern struct liquid_benchmark_s fft_264_s;
+extern struct liquid_benchmark_s fft_265_s;
+extern struct liquid_benchmark_s fft_266_s;
+extern struct liquid_benchmark_s fft_267_s;
+extern struct liquid_benchmark_s fft_268_s;
 extern struct liquid_benchmark_s fft_269_s;
+extern struct liquid_benchmark_s fft_270_s;
 extern struct liquid_benchmark_s fft_271_s;
+extern struct liquid_benchmark_s fft_272_s;
+extern struct liquid_benchmark_s fft_273_s;
+extern struct liquid_benchmark_s fft_274_s;
+extern struct liquid_benchmark_s fft_275_s;
+extern struct liquid_benchmark_s fft_276_s;
 extern struct liquid_benchmark_s fft_277_s;
+extern struct liquid_benchmark_s fft_278_s;
+extern struct liquid_benchmark_s fft_279_s;
+extern struct liquid_benchmark_s fft_280_s;
 extern struct liquid_benchmark_s fft_281_s;
+extern struct liquid_benchmark_s fft_282_s;
 extern struct liquid_benchmark_s fft_283_s;
+extern struct liquid_benchmark_s fft_284_s;
+extern struct liquid_benchmark_s fft_285_s;
+extern struct liquid_benchmark_s fft_286_s;
+extern struct liquid_benchmark_s fft_287_s;
+extern struct liquid_benchmark_s fft_288_s;
+extern struct liquid_benchmark_s fft_289_s;
+extern struct liquid_benchmark_s fft_290_s;
+extern struct liquid_benchmark_s fft_291_s;
+extern struct liquid_benchmark_s fft_292_s;
 extern struct liquid_benchmark_s fft_293_s;
+extern struct liquid_benchmark_s fft_294_s;
+extern struct liquid_benchmark_s fft_295_s;
+extern struct liquid_benchmark_s fft_296_s;
+extern struct liquid_benchmark_s fft_297_s;
+extern struct liquid_benchmark_s fft_298_s;
+extern struct liquid_benchmark_s fft_299_s;
+extern struct liquid_benchmark_s fft_300_s;
+extern struct liquid_benchmark_s fft_301_s;
+extern struct liquid_benchmark_s fft_302_s;
+extern struct liquid_benchmark_s fft_303_s;
+extern struct liquid_benchmark_s fft_304_s;
+extern struct liquid_benchmark_s fft_305_s;
+extern struct liquid_benchmark_s fft_306_s;
 extern struct liquid_benchmark_s fft_307_s;
+extern struct liquid_benchmark_s fft_308_s;
+extern struct liquid_benchmark_s fft_309_s;
+extern struct liquid_benchmark_s fft_310_s;
 extern struct liquid_benchmark_s fft_311_s;
+extern struct liquid_benchmark_s fft_312_s;
 extern struct liquid_benchmark_s fft_313_s;
+extern struct liquid_benchmark_s fft_314_s;
+extern struct liquid_benchmark_s fft_315_s;
+extern struct liquid_benchmark_s fft_316_s;
 extern struct liquid_benchmark_s fft_317_s;
+extern struct liquid_benchmark_s fft_318_s;
+extern struct liquid_benchmark_s fft_319_s;
+extern struct liquid_benchmark_s fft_320_s;
+extern struct liquid_benchmark_s fft_321_s;
+extern struct liquid_benchmark_s fft_322_s;
+extern struct liquid_benchmark_s fft_323_s;
+extern struct liquid_benchmark_s fft_324_s;
+extern struct liquid_benchmark_s fft_325_s;
+extern struct liquid_benchmark_s fft_326_s;
+extern struct liquid_benchmark_s fft_327_s;
+extern struct liquid_benchmark_s fft_328_s;
+extern struct liquid_benchmark_s fft_329_s;
+extern struct liquid_benchmark_s fft_330_s;
 extern struct liquid_benchmark_s fft_331_s;
+extern struct liquid_benchmark_s fft_332_s;
+extern struct liquid_benchmark_s fft_333_s;
+extern struct liquid_benchmark_s fft_334_s;
+extern struct liquid_benchmark_s fft_335_s;
+extern struct liquid_benchmark_s fft_336_s;
 extern struct liquid_benchmark_s fft_337_s;
+extern struct liquid_benchmark_s fft_338_s;
+extern struct liquid_benchmark_s fft_339_s;
+extern struct liquid_benchmark_s fft_340_s;
+extern struct liquid_benchmark_s fft_341_s;
+extern struct liquid_benchmark_s fft_342_s;
+extern struct liquid_benchmark_s fft_343_s;
+extern struct liquid_benchmark_s fft_344_s;
+extern struct liquid_benchmark_s fft_345_s;
+extern struct liquid_benchmark_s fft_346_s;
 extern struct liquid_benchmark_s fft_347_s;
+extern struct liquid_benchmark_s fft_348_s;
 extern struct liquid_benchmark_s fft_349_s;
+extern struct liquid_benchmark_s fft_350_s;
+extern struct liquid_benchmark_s fft_351_s;
+extern struct liquid_benchmark_s fft_352_s;
 extern struct liquid_benchmark_s fft_353_s;
+extern struct liquid_benchmark_s fft_354_s;
+extern struct liquid_benchmark_s fft_355_s;
+extern struct liquid_benchmark_s fft_356_s;
+extern struct liquid_benchmark_s fft_357_s;
+extern struct liquid_benchmark_s fft_358_s;
 extern struct liquid_benchmark_s fft_359_s;
+extern struct liquid_benchmark_s fft_360_s;
+extern struct liquid_benchmark_s fft_361_s;
+extern struct liquid_benchmark_s fft_362_s;
+extern struct liquid_benchmark_s fft_363_s;
+extern struct liquid_benchmark_s fft_364_s;
+extern struct liquid_benchmark_s fft_365_s;
+extern struct liquid_benchmark_s fft_366_s;
 extern struct liquid_benchmark_s fft_367_s;
+extern struct liquid_benchmark_s fft_368_s;
+extern struct liquid_benchmark_s fft_369_s;
+extern struct liquid_benchmark_s fft_370_s;
+extern struct liquid_benchmark_s fft_371_s;
+extern struct liquid_benchmark_s fft_372_s;
 extern struct liquid_benchmark_s fft_373_s;
+extern struct liquid_benchmark_s fft_374_s;
+extern struct liquid_benchmark_s fft_375_s;
+extern struct liquid_benchmark_s fft_376_s;
+extern struct liquid_benchmark_s fft_377_s;
+extern struct liquid_benchmark_s fft_378_s;
 extern struct liquid_benchmark_s fft_379_s;
+extern struct liquid_benchmark_s fft_380_s;
+extern struct liquid_benchmark_s fft_381_s;
+extern struct liquid_benchmark_s fft_382_s;
 extern struct liquid_benchmark_s fft_383_s;
+extern struct liquid_benchmark_s fft_384_s;
+extern struct liquid_benchmark_s fft_385_s;
+extern struct liquid_benchmark_s fft_386_s;
+extern struct liquid_benchmark_s fft_387_s;
+extern struct liquid_benchmark_s fft_388_s;
 extern struct liquid_benchmark_s fft_389_s;
+extern struct liquid_benchmark_s fft_390_s;
+extern struct liquid_benchmark_s fft_391_s;
+extern struct liquid_benchmark_s fft_392_s;
+extern struct liquid_benchmark_s fft_393_s;
+extern struct liquid_benchmark_s fft_394_s;
+extern struct liquid_benchmark_s fft_395_s;
+extern struct liquid_benchmark_s fft_396_s;
 extern struct liquid_benchmark_s fft_397_s;
+extern struct liquid_benchmark_s fft_398_s;
+extern struct liquid_benchmark_s fft_399_s;
+extern struct liquid_benchmark_s fft_400_s;
 extern struct liquid_benchmark_s fft_401_s;
+extern struct liquid_benchmark_s fft_402_s;
+extern struct liquid_benchmark_s fft_403_s;
+extern struct liquid_benchmark_s fft_404_s;
+extern struct liquid_benchmark_s fft_405_s;
+extern struct liquid_benchmark_s fft_406_s;
+extern struct liquid_benchmark_s fft_407_s;
+extern struct liquid_benchmark_s fft_408_s;
 extern struct liquid_benchmark_s fft_409_s;
+extern struct liquid_benchmark_s fft_410_s;
+extern struct liquid_benchmark_s fft_411_s;
+extern struct liquid_benchmark_s fft_412_s;
+extern struct liquid_benchmark_s fft_413_s;
+extern struct liquid_benchmark_s fft_414_s;
+extern struct liquid_benchmark_s fft_415_s;
+extern struct liquid_benchmark_s fft_416_s;
+extern struct liquid_benchmark_s fft_417_s;
+extern struct liquid_benchmark_s fft_418_s;
 extern struct liquid_benchmark_s fft_419_s;
+extern struct liquid_benchmark_s fft_420_s;
 extern struct liquid_benchmark_s fft_421_s;
+extern struct liquid_benchmark_s fft_422_s;
+extern struct liquid_benchmark_s fft_423_s;
+extern struct liquid_benchmark_s fft_424_s;
+extern struct liquid_benchmark_s fft_425_s;
+extern struct liquid_benchmark_s fft_426_s;
+extern struct liquid_benchmark_s fft_427_s;
+extern struct liquid_benchmark_s fft_428_s;
+extern struct liquid_benchmark_s fft_429_s;
+extern struct liquid_benchmark_s fft_430_s;
 extern struct liquid_benchmark_s fft_431_s;
+extern struct liquid_benchmark_s fft_432_s;
 extern struct liquid_benchmark_s fft_433_s;
+extern struct liquid_benchmark_s fft_434_s;
+extern struct liquid_benchmark_s fft_435_s;
+extern struct liquid_benchmark_s fft_436_s;
+extern struct liquid_benchmark_s fft_437_s;
+extern struct liquid_benchmark_s fft_438_s;
 extern struct liquid_benchmark_s fft_439_s;
+extern struct liquid_benchmark_s fft_440_s;
+extern struct liquid_benchmark_s fft_441_s;
+extern struct liquid_benchmark_s fft_442_s;
 extern struct liquid_benchmark_s fft_443_s;
+extern struct liquid_benchmark_s fft_444_s;
+extern struct liquid_benchmark_s fft_445_s;
+extern struct liquid_benchmark_s fft_446_s;
+extern struct liquid_benchmark_s fft_447_s;
+extern struct liquid_benchmark_s fft_448_s;
 extern struct liquid_benchmark_s fft_449_s;
+extern struct liquid_benchmark_s fft_450_s;
+extern struct liquid_benchmark_s fft_451_s;
+extern struct liquid_benchmark_s fft_452_s;
+extern struct liquid_benchmark_s fft_453_s;
+extern struct liquid_benchmark_s fft_454_s;
+extern struct liquid_benchmark_s fft_455_s;
+extern struct liquid_benchmark_s fft_456_s;
 extern struct liquid_benchmark_s fft_457_s;
+extern struct liquid_benchmark_s fft_458_s;
+extern struct liquid_benchmark_s fft_459_s;
+extern struct liquid_benchmark_s fft_460_s;
 extern struct liquid_benchmark_s fft_461_s;
+extern struct liquid_benchmark_s fft_462_s;
 extern struct liquid_benchmark_s fft_463_s;
+extern struct liquid_benchmark_s fft_464_s;
+extern struct liquid_benchmark_s fft_465_s;
+extern struct liquid_benchmark_s fft_466_s;
 extern struct liquid_benchmark_s fft_467_s;
+extern struct liquid_benchmark_s fft_468_s;
+extern struct liquid_benchmark_s fft_469_s;
+extern struct liquid_benchmark_s fft_470_s;
+extern struct liquid_benchmark_s fft_471_s;
+extern struct liquid_benchmark_s fft_472_s;
+extern struct liquid_benchmark_s fft_473_s;
+extern struct liquid_benchmark_s fft_474_s;
+extern struct liquid_benchmark_s fft_475_s;
+extern struct liquid_benchmark_s fft_476_s;
+extern struct liquid_benchmark_s fft_477_s;
+extern struct liquid_benchmark_s fft_478_s;
 extern struct liquid_benchmark_s fft_479_s;
+extern struct liquid_benchmark_s fft_480_s;
+extern struct liquid_benchmark_s fft_481_s;
+extern struct liquid_benchmark_s fft_482_s;
+extern struct liquid_benchmark_s fft_483_s;
+extern struct liquid_benchmark_s fft_484_s;
+extern struct liquid_benchmark_s fft_485_s;
+extern struct liquid_benchmark_s fft_486_s;
 extern struct liquid_benchmark_s fft_487_s;
+extern struct liquid_benchmark_s fft_488_s;
+extern struct liquid_benchmark_s fft_489_s;
+extern struct liquid_benchmark_s fft_490_s;
 extern struct liquid_benchmark_s fft_491_s;
+extern struct liquid_benchmark_s fft_492_s;
+extern struct liquid_benchmark_s fft_493_s;
+extern struct liquid_benchmark_s fft_494_s;
+extern struct liquid_benchmark_s fft_495_s;
+extern struct liquid_benchmark_s fft_496_s;
+extern struct liquid_benchmark_s fft_497_s;
+extern struct liquid_benchmark_s fft_498_s;
 extern struct liquid_benchmark_s fft_499_s;
+extern struct liquid_benchmark_s fft_500_s;
+extern struct liquid_benchmark_s fft_501_s;
+extern struct liquid_benchmark_s fft_502_s;
 extern struct liquid_benchmark_s fft_503_s;
+extern struct liquid_benchmark_s fft_504_s;
+extern struct liquid_benchmark_s fft_505_s;
+extern struct liquid_benchmark_s fft_506_s;
+extern struct liquid_benchmark_s fft_507_s;
+extern struct liquid_benchmark_s fft_508_s;
 extern struct liquid_benchmark_s fft_509_s;
+extern struct liquid_benchmark_s fft_510_s;
+extern struct liquid_benchmark_s fft_511_s;
+extern struct liquid_benchmark_s fft_512_s;
+extern struct liquid_benchmark_s fft_1024_s;
+extern struct liquid_benchmark_s fft_2048_s;
+extern struct liquid_benchmark_s fft_4096_s;
+extern struct liquid_benchmark_s fft_8192_s;
+extern struct liquid_benchmark_s fft_16384_s;
+extern struct liquid_benchmark_s fft_32768_s;
 // ./src/fft/bench/fft_r2r_benchmark.c
 extern struct liquid_benchmark_s fft_REDFT00_128_s;
 extern struct liquid_benchmark_s fft_REDFT01_128_s;
@@ -486,22 +712,6 @@ extern struct liquid_benchmark_s fft_RODFT00_127_s;
 extern struct liquid_benchmark_s fft_RODFT01_127_s;
 extern struct liquid_benchmark_s fft_RODFT10_127_s;
 extern struct liquid_benchmark_s fft_RODFT11_127_s;
-// ./src/fft/bench/fft_radix2_benchmark.c
-extern struct liquid_benchmark_s fft_2_s;
-extern struct liquid_benchmark_s fft_4_s;
-extern struct liquid_benchmark_s fft_8_s;
-extern struct liquid_benchmark_s fft_16_s;
-extern struct liquid_benchmark_s fft_32_s;
-extern struct liquid_benchmark_s fft_64_s;
-extern struct liquid_benchmark_s fft_128_s;
-extern struct liquid_benchmark_s fft_256_s;
-extern struct liquid_benchmark_s fft_512_s;
-extern struct liquid_benchmark_s fft_1024_s;
-extern struct liquid_benchmark_s fft_2048_s;
-extern struct liquid_benchmark_s fft_4096_s;
-extern struct liquid_benchmark_s fft_8192_s;
-extern struct liquid_benchmark_s fft_16384_s;
-extern struct liquid_benchmark_s fft_32768_s;
 // ./src/fft/bench/spgramcf_benchmark.c
 extern struct liquid_benchmark_s spgramcf_1200_s;
 extern struct liquid_benchmark_s spgramcf_9600_s;
@@ -1091,65 +1301,94 @@ liquid_benchmark liquid_benchmarks[] =
     &asgramcf_80_autoscale_s,
     &asgramcf_96_autoscale_s,
     &asgramcf_120_autoscale_s,
+    &fft_2_s,
+    &fft_3_s,
+    &fft_4_s,
+    &fft_5_s,
     &fft_6_s,
+    &fft_7_s,
+    &fft_8_s,
     &fft_9_s,
     &fft_10_s,
+    &fft_11_s,
     &fft_12_s,
+    &fft_13_s,
     &fft_14_s,
     &fft_15_s,
+    &fft_16_s,
+    &fft_17_s,
     &fft_18_s,
+    &fft_19_s,
     &fft_20_s,
     &fft_21_s,
     &fft_22_s,
+    &fft_23_s,
     &fft_24_s,
     &fft_25_s,
     &fft_26_s,
     &fft_27_s,
     &fft_28_s,
+    &fft_29_s,
     &fft_30_s,
+    &fft_31_s,
+    &fft_32_s,
     &fft_33_s,
     &fft_34_s,
     &fft_35_s,
     &fft_36_s,
+    &fft_37_s,
     &fft_38_s,
     &fft_39_s,
     &fft_40_s,
+    &fft_41_s,
     &fft_42_s,
+    &fft_43_s,
     &fft_44_s,
     &fft_45_s,
     &fft_46_s,
+    &fft_47_s,
     &fft_48_s,
     &fft_49_s,
     &fft_50_s,
     &fft_51_s,
     &fft_52_s,
+    &fft_53_s,
     &fft_54_s,
     &fft_55_s,
     &fft_56_s,
     &fft_57_s,
     &fft_58_s,
+    &fft_59_s,
     &fft_60_s,
+    &fft_61_s,
     &fft_62_s,
     &fft_63_s,
+    &fft_64_s,
     &fft_65_s,
     &fft_66_s,
+    &fft_67_s,
     &fft_68_s,
     &fft_69_s,
     &fft_70_s,
+    &fft_71_s,
     &fft_72_s,
+    &fft_73_s,
     &fft_74_s,
     &fft_75_s,
     &fft_76_s,
     &fft_77_s,
     &fft_78_s,
+    &fft_79_s,
     &fft_80_s,
     &fft_81_s,
     &fft_82_s,
+    &fft_83_s,
     &fft_84_s,
     &fft_85_s,
     &fft_86_s,
     &fft_87_s,
     &fft_88_s,
+    &fft_89_s,
     &fft_90_s,
     &fft_91_s,
     &fft_92_s,
@@ -1157,17 +1396,23 @@ liquid_benchmark liquid_benchmarks[] =
     &fft_94_s,
     &fft_95_s,
     &fft_96_s,
+    &fft_97_s,
     &fft_98_s,
     &fft_99_s,
     &fft_100_s,
+    &fft_101_s,
     &fft_102_s,
+    &fft_103_s,
     &fft_104_s,
     &fft_105_s,
     &fft_106_s,
+    &fft_107_s,
     &fft_108_s,
+    &fft_109_s,
     &fft_110_s,
     &fft_111_s,
     &fft_112_s,
+    &fft_113_s,
     &fft_114_s,
     &fft_115_s,
     &fft_116_s,
@@ -1181,14 +1426,19 @@ liquid_benchmark liquid_benchmarks[] =
     &fft_124_s,
     &fft_125_s,
     &fft_126_s,
+    &fft_127_s,
+    &fft_128_s,
     &fft_129_s,
     &fft_130_s,
+    &fft_131_s,
     &fft_132_s,
     &fft_133_s,
     &fft_134_s,
     &fft_135_s,
     &fft_136_s,
+    &fft_137_s,
     &fft_138_s,
+    &fft_139_s,
     &fft_140_s,
     &fft_141_s,
     &fft_142_s,
@@ -1198,31 +1448,39 @@ liquid_benchmark liquid_benchmarks[] =
     &fft_146_s,
     &fft_147_s,
     &fft_148_s,
+    &fft_149_s,
     &fft_150_s,
+    &fft_151_s,
     &fft_152_s,
     &fft_153_s,
     &fft_154_s,
     &fft_155_s,
     &fft_156_s,
+    &fft_157_s,
     &fft_158_s,
     &fft_159_s,
     &fft_160_s,
     &fft_161_s,
     &fft_162_s,
+    &fft_163_s,
     &fft_164_s,
     &fft_165_s,
     &fft_166_s,
+    &fft_167_s,
     &fft_168_s,
     &fft_169_s,
     &fft_170_s,
     &fft_171_s,
     &fft_172_s,
+    &fft_173_s,
     &fft_174_s,
     &fft_175_s,
     &fft_176_s,
     &fft_177_s,
     &fft_178_s,
+    &fft_179_s,
     &fft_180_s,
+    &fft_181_s,
     &fft_182_s,
     &fft_183_s,
     &fft_184_s,
@@ -1232,11 +1490,15 @@ liquid_benchmark liquid_benchmarks[] =
     &fft_188_s,
     &fft_189_s,
     &fft_190_s,
+    &fft_191_s,
     &fft_192_s,
+    &fft_193_s,
     &fft_194_s,
     &fft_195_s,
     &fft_196_s,
+    &fft_197_s,
     &fft_198_s,
+    &fft_199_s,
     &fft_200_s,
     &fft_201_s,
     &fft_202_s,
@@ -1248,6 +1510,7 @@ liquid_benchmark liquid_benchmarks[] =
     &fft_208_s,
     &fft_209_s,
     &fft_210_s,
+    &fft_211_s,
     &fft_212_s,
     &fft_213_s,
     &fft_214_s,
@@ -1259,19 +1522,25 @@ liquid_benchmark liquid_benchmarks[] =
     &fft_220_s,
     &fft_221_s,
     &fft_222_s,
+    &fft_223_s,
     &fft_224_s,
     &fft_225_s,
     &fft_226_s,
+    &fft_227_s,
     &fft_228_s,
+    &fft_229_s,
     &fft_230_s,
     &fft_231_s,
     &fft_232_s,
+    &fft_233_s,
     &fft_234_s,
     &fft_235_s,
     &fft_236_s,
     &fft_237_s,
     &fft_238_s,
+    &fft_239_s,
     &fft_240_s,
+    &fft_241_s,
     &fft_242_s,
     &fft_243_s,
     &fft_244_s,
@@ -1281,106 +1550,274 @@ liquid_benchmark liquid_benchmarks[] =
     &fft_248_s,
     &fft_249_s,
     &fft_250_s,
+    &fft_251_s,
     &fft_252_s,
     &fft_253_s,
     &fft_254_s,
     &fft_255_s,
-    &fft_3_s,
-    &fft_5_s,
-    &fft_7_s,
-    &fft_11_s,
-    &fft_13_s,
-    &fft_17_s,
-    &fft_19_s,
-    &fft_23_s,
-    &fft_29_s,
-    &fft_31_s,
-    &fft_37_s,
-    &fft_41_s,
-    &fft_43_s,
-    &fft_47_s,
-    &fft_53_s,
-    &fft_59_s,
-    &fft_61_s,
-    &fft_67_s,
-    &fft_71_s,
-    &fft_73_s,
-    &fft_79_s,
-    &fft_83_s,
-    &fft_89_s,
-    &fft_97_s,
-    &fft_101_s,
-    &fft_103_s,
-    &fft_107_s,
-    &fft_109_s,
-    &fft_113_s,
-    &fft_127_s,
-    &fft_131_s,
-    &fft_137_s,
-    &fft_139_s,
-    &fft_149_s,
-    &fft_151_s,
-    &fft_157_s,
-    &fft_163_s,
-    &fft_167_s,
-    &fft_173_s,
-    &fft_179_s,
-    &fft_181_s,
-    &fft_191_s,
-    &fft_193_s,
-    &fft_197_s,
-    &fft_199_s,
-    &fft_211_s,
-    &fft_223_s,
-    &fft_227_s,
-    &fft_229_s,
-    &fft_233_s,
-    &fft_239_s,
-    &fft_241_s,
-    &fft_251_s,
+    &fft_256_s,
     &fft_257_s,
+    &fft_258_s,
+    &fft_259_s,
+    &fft_260_s,
+    &fft_261_s,
+    &fft_262_s,
     &fft_263_s,
+    &fft_264_s,
+    &fft_265_s,
+    &fft_266_s,
+    &fft_267_s,
+    &fft_268_s,
     &fft_269_s,
+    &fft_270_s,
     &fft_271_s,
+    &fft_272_s,
+    &fft_273_s,
+    &fft_274_s,
+    &fft_275_s,
+    &fft_276_s,
     &fft_277_s,
+    &fft_278_s,
+    &fft_279_s,
+    &fft_280_s,
     &fft_281_s,
+    &fft_282_s,
     &fft_283_s,
+    &fft_284_s,
+    &fft_285_s,
+    &fft_286_s,
+    &fft_287_s,
+    &fft_288_s,
+    &fft_289_s,
+    &fft_290_s,
+    &fft_291_s,
+    &fft_292_s,
     &fft_293_s,
+    &fft_294_s,
+    &fft_295_s,
+    &fft_296_s,
+    &fft_297_s,
+    &fft_298_s,
+    &fft_299_s,
+    &fft_300_s,
+    &fft_301_s,
+    &fft_302_s,
+    &fft_303_s,
+    &fft_304_s,
+    &fft_305_s,
+    &fft_306_s,
     &fft_307_s,
+    &fft_308_s,
+    &fft_309_s,
+    &fft_310_s,
     &fft_311_s,
+    &fft_312_s,
     &fft_313_s,
+    &fft_314_s,
+    &fft_315_s,
+    &fft_316_s,
     &fft_317_s,
+    &fft_318_s,
+    &fft_319_s,
+    &fft_320_s,
+    &fft_321_s,
+    &fft_322_s,
+    &fft_323_s,
+    &fft_324_s,
+    &fft_325_s,
+    &fft_326_s,
+    &fft_327_s,
+    &fft_328_s,
+    &fft_329_s,
+    &fft_330_s,
     &fft_331_s,
+    &fft_332_s,
+    &fft_333_s,
+    &fft_334_s,
+    &fft_335_s,
+    &fft_336_s,
     &fft_337_s,
+    &fft_338_s,
+    &fft_339_s,
+    &fft_340_s,
+    &fft_341_s,
+    &fft_342_s,
+    &fft_343_s,
+    &fft_344_s,
+    &fft_345_s,
+    &fft_346_s,
     &fft_347_s,
+    &fft_348_s,
     &fft_349_s,
+    &fft_350_s,
+    &fft_351_s,
+    &fft_352_s,
     &fft_353_s,
+    &fft_354_s,
+    &fft_355_s,
+    &fft_356_s,
+    &fft_357_s,
+    &fft_358_s,
     &fft_359_s,
+    &fft_360_s,
+    &fft_361_s,
+    &fft_362_s,
+    &fft_363_s,
+    &fft_364_s,
+    &fft_365_s,
+    &fft_366_s,
     &fft_367_s,
+    &fft_368_s,
+    &fft_369_s,
+    &fft_370_s,
+    &fft_371_s,
+    &fft_372_s,
     &fft_373_s,
+    &fft_374_s,
+    &fft_375_s,
+    &fft_376_s,
+    &fft_377_s,
+    &fft_378_s,
     &fft_379_s,
+    &fft_380_s,
+    &fft_381_s,
+    &fft_382_s,
     &fft_383_s,
+    &fft_384_s,
+    &fft_385_s,
+    &fft_386_s,
+    &fft_387_s,
+    &fft_388_s,
     &fft_389_s,
+    &fft_390_s,
+    &fft_391_s,
+    &fft_392_s,
+    &fft_393_s,
+    &fft_394_s,
+    &fft_395_s,
+    &fft_396_s,
     &fft_397_s,
+    &fft_398_s,
+    &fft_399_s,
+    &fft_400_s,
     &fft_401_s,
+    &fft_402_s,
+    &fft_403_s,
+    &fft_404_s,
+    &fft_405_s,
+    &fft_406_s,
+    &fft_407_s,
+    &fft_408_s,
     &fft_409_s,
+    &fft_410_s,
+    &fft_411_s,
+    &fft_412_s,
+    &fft_413_s,
+    &fft_414_s,
+    &fft_415_s,
+    &fft_416_s,
+    &fft_417_s,
+    &fft_418_s,
     &fft_419_s,
+    &fft_420_s,
     &fft_421_s,
+    &fft_422_s,
+    &fft_423_s,
+    &fft_424_s,
+    &fft_425_s,
+    &fft_426_s,
+    &fft_427_s,
+    &fft_428_s,
+    &fft_429_s,
+    &fft_430_s,
     &fft_431_s,
+    &fft_432_s,
     &fft_433_s,
+    &fft_434_s,
+    &fft_435_s,
+    &fft_436_s,
+    &fft_437_s,
+    &fft_438_s,
     &fft_439_s,
+    &fft_440_s,
+    &fft_441_s,
+    &fft_442_s,
     &fft_443_s,
+    &fft_444_s,
+    &fft_445_s,
+    &fft_446_s,
+    &fft_447_s,
+    &fft_448_s,
     &fft_449_s,
+    &fft_450_s,
+    &fft_451_s,
+    &fft_452_s,
+    &fft_453_s,
+    &fft_454_s,
+    &fft_455_s,
+    &fft_456_s,
     &fft_457_s,
+    &fft_458_s,
+    &fft_459_s,
+    &fft_460_s,
     &fft_461_s,
+    &fft_462_s,
     &fft_463_s,
+    &fft_464_s,
+    &fft_465_s,
+    &fft_466_s,
     &fft_467_s,
+    &fft_468_s,
+    &fft_469_s,
+    &fft_470_s,
+    &fft_471_s,
+    &fft_472_s,
+    &fft_473_s,
+    &fft_474_s,
+    &fft_475_s,
+    &fft_476_s,
+    &fft_477_s,
+    &fft_478_s,
     &fft_479_s,
+    &fft_480_s,
+    &fft_481_s,
+    &fft_482_s,
+    &fft_483_s,
+    &fft_484_s,
+    &fft_485_s,
+    &fft_486_s,
     &fft_487_s,
+    &fft_488_s,
+    &fft_489_s,
+    &fft_490_s,
     &fft_491_s,
+    &fft_492_s,
+    &fft_493_s,
+    &fft_494_s,
+    &fft_495_s,
+    &fft_496_s,
+    &fft_497_s,
+    &fft_498_s,
     &fft_499_s,
+    &fft_500_s,
+    &fft_501_s,
+    &fft_502_s,
     &fft_503_s,
+    &fft_504_s,
+    &fft_505_s,
+    &fft_506_s,
+    &fft_507_s,
+    &fft_508_s,
     &fft_509_s,
+    &fft_510_s,
+    &fft_511_s,
+    &fft_512_s,
+    &fft_1024_s,
+    &fft_2048_s,
+    &fft_4096_s,
+    &fft_8192_s,
+    &fft_16384_s,
+    &fft_32768_s,
     &fft_REDFT00_128_s,
     &fft_REDFT01_128_s,
     &fft_REDFT10_128_s,
@@ -1397,21 +1834,6 @@ liquid_benchmark liquid_benchmarks[] =
     &fft_RODFT01_127_s,
     &fft_RODFT10_127_s,
     &fft_RODFT11_127_s,
-    &fft_2_s,
-    &fft_4_s,
-    &fft_8_s,
-    &fft_16_s,
-    &fft_32_s,
-    &fft_64_s,
-    &fft_128_s,
-    &fft_256_s,
-    &fft_512_s,
-    &fft_1024_s,
-    &fft_2048_s,
-    &fft_4096_s,
-    &fft_8192_s,
-    &fft_16384_s,
-    &fft_32768_s,
     &spgramcf_1200_s,
     &spgramcf_9600_s,
     &spgramcf_76800_s,

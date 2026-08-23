@@ -1114,9 +1114,7 @@ set(BENCHMARKS
     ${PROJECT_SOURCE_DIR}/src/fec/bench/interleaver_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fec/bench/packetizer_decode_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fft/bench/asgramcf_benchmark.c
-    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_composite_benchmark.c
-    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_prime_benchmark.c
-    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_radix2_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_r2r_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fft/bench/spgramcf_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/filter/bench/fftfilt_crcf_benchmark.c
@@ -1169,15 +1167,10 @@ set(BENCHMARKS
     ${PROJECT_SOURCE_DIR}/src/vector/bench/vectorf_benchmark.c
     )
 
-set(BENCHMARKS_EXTRA
-    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_runbench.c
-    )
-
 if(BUILD_BENCHMARKS)
     add_executable(xbenchmark
         bench/benchmark.c
         ${BENCHMARKS}
-        ${BENCHMARKS_EXTRA}
         )
     target_include_directories(xbenchmark PRIVATE include .)
 
