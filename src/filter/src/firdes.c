@@ -243,7 +243,7 @@ float estimate_req_filter_len_Herrmann(float _df,
 }
 
 // returns the Kaiser window beta factor give the filter's target
-// stop-band attenuation (as) [Vaidyanathan:1993]
+// stop-band attenuation (_as) [Vaidyanathan:1993]
 //  _as     :   target filter's stop-band attenuation [dB], _as > 0
 float kaiser_beta_As(float _as)
 {
@@ -255,6 +255,10 @@ float kaiser_beta_As(float _as)
         beta = 0.5842*powf(_as - 21, 0.4f) + 0.07886f*(_as - 21);
     else
         beta = 0.0f;
+
+    // adjustment for high stop-band designs
+    if (_as > 110.0f)
+        beta *= 1.02f;
 
     return beta;
 }
@@ -318,6 +322,8 @@ int liquid_firdes_kaiser(unsigned int _n,
 
     // choose kaiser beta parameter (approximate)
     float beta = kaiser_beta_As(_as);
+    liquid_log_debug("liquid_firdes_kaiser(n=%u,fc=%.3f,As=%.2f,mu=%.3f), beta=%f",
+        _n, _fc, _as, _mu, beta);
 
     // TODO: invoke liquid_firdes_windowf()
     float t, h1, h2; 
