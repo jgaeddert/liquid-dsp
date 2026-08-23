@@ -233,6 +233,61 @@ int liquid_benchmark_registry_json(liquid_benchmark_registry _q, FILE * _fid)
     return LIQUID_OK;
 }
 
+// run basic benchmark to estimate CPU clock frequency
+float estimate_cpu_clock(float _target_runtime)
+{
+    liquid_log_info("  estimating cpu clock frequency...");
+    unsigned long int num_trials = 1;
+    float runtime;
+    
+    // run trials until execution time threshold is exceeded
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    unsigned int num_attempts = 0;
+    for (num_attempts=1; num_attempts<30; num_attempts++)
+    {
+        // NOTE: Smart compilers will realize that this loop doesn't really do
+        //       anything, so they won't actually compute anything. We need to
+        //       actually do something interesting here to trick the compiler
+        //       into actually crunching these numbers, and then later display
+        //       the results, even if they're meaningless
+        unsigned int k = 366001;    // large prime number
+        unsigned int g = 184903;    // another large prime number
+        unsigned int s = 1;
+        unsigned long int i;
+        liquid_timer_tic(timer);
+        for (i=0; i<num_trials; i++) {
+            // perform mindless task
+            s = (s*k) % g;
+        }
+        runtime = liquid_timer_toc(timer);
+
+        // print results to screen
+        // NOTE: it is necessary to do something with the variable 's' so that
+        //       the compiler will actually run the above loop
+        liquid_log_info("%12lu trials in %8.3f ms, s = %6u", num_trials, runtime*1e3, s);
+        if (runtime > _target_runtime)
+            break;
+
+        // adjust iteration count and retry
+        if (runtime <= 0)
+            num_trials *= 32;
+        else if (_target_runtime / runtime > 256)
+            num_trials *= 256;
+        else
+            num_trials *= 1.2 * _target_runtime / runtime;
+    }
+
+    // estimate cpu clock frequency
+    float cpu_clock = 9.5 * num_trials / runtime;
+
+    liquid_log_info("  performed %ld trials in %5.1f ms", num_trials, runtime * 1e3);
+    
+    float clock_format = cpu_clock;
+    char clock_units = liquid_convert_units(&clock_format);
+    liquid_log_info("  estimated clock speed: %7.3f %cHz", clock_format, clock_units);
+    return cpu_clock;
+}
+
 // benchmark main
 int main(int argc, char* argv[])
 {
@@ -247,6 +302,7 @@ int main(int argc, char* argv[])
     liquid_argparse_add(int,  test_id,       -1, 't', "run a specific benchmark", NULL);
     liquid_argparse_add(bool, list,       false, 'l', "list benchmarks and exit", NULL);
     liquid_argparse_add(char*,search,        "", 's', "run benchmarks with search string in name", NULL);
+    liquid_argparse_add(bool, estimate_cpu,false,'c', "estimate CPU clock speed and exit", NULL);
     liquid_argparse_parse(argc,argv);
 
     // list benchmarks and exit if requested
@@ -256,6 +312,11 @@ int main(int argc, char* argv[])
             liquid_benchmark_print_info(liquid_benchmarks[i], i);
             i++;
         }
+        return LIQUID_OK;
+    }
+
+    if (estimate_cpu) {
+        estimate_cpu_clock(1.5f);
         return LIQUID_OK;
     }
 
