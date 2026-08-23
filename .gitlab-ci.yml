@@ -68,6 +68,8 @@ legacy:
     - ./bootstrap.sh
     - ./configure
     - make -j4
+    - make -j4 xbenchmark
+    - ./xbenchmark -s null
     - make check-doc
     - make install
     - ldconfig

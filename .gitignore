@@ -32,6 +32,7 @@ config.status
 liquid.config.h
 makefile
 xautotest
+xbenchmark
 *.m
 autotest.json
 autotest/logs/*.bin
