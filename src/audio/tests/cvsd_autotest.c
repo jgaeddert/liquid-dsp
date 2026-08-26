@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(cvsd_rmse_sine,"check CVSD RMS error","",0.1)
+LIQUID_AUTOTEST(cvsd_rmse_sine,"check CVSD RMS error","audio,cvsd",0.1)
 {
     unsigned int n=256;
     unsigned int nbits=3;
@@ -59,7 +59,7 @@ LIQUID_AUTOTEST(cvsd_rmse_sine,"check CVSD RMS error","",0.1)
     cvsd_destroy(cvsd_decoder);
 }
 
-LIQUID_AUTOTEST(cvsd_rmse_sine8,"check CVSD RMS error running in blocks of 8 samples","",0.1)
+LIQUID_AUTOTEST(cvsd_rmse_sine8,"check CVSD RMS error running in blocks of 8 samples","audio,cvsd",0.1)
 {
     unsigned int n=256;
     unsigned int nbits=3;
@@ -100,7 +100,7 @@ LIQUID_AUTOTEST(cvsd_rmse_sine8,"check CVSD RMS error running in blocks of 8 sam
     cvsd_destroy(cvsd_decoder);
 }
 
-LIQUID_AUTOTEST(cvsd_config,"check CVSD configuration","",0.1)
+LIQUID_AUTOTEST(cvsd_config,"check CVSD configuration","audio,cvsd",0.1)
 {
     // test invalid configuration to create()
     _liquid_error_downgrade_enable();
