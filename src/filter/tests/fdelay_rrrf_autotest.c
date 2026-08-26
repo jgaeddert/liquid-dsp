@@ -73,18 +73,18 @@ void testbench_fdelay_rrrf(liquid_autotest __q__,
     LIQUID_CHECK_DELTA(delay_est, _delay, tol);
 }
 
-LIQUID_AUTOTEST(fdelay_rrrf_0,"fractional delay (  0.0)"   ,"",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,   0.0f   ); }
-LIQUID_AUTOTEST(fdelay_rrrf_1,"fractional delay (  0.0001)","",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,   0.0001f); }
-LIQUID_AUTOTEST(fdelay_rrrf_2,"fractional delay (  0.1)"   ,"",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,   0.1f   ); }
-LIQUID_AUTOTEST(fdelay_rrrf_3,"fractional delay (  0.9)"   ,"",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,   0.9f   ); }
-LIQUID_AUTOTEST(fdelay_rrrf_4,"fractional delay (  0.9999)","",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,   0.9999f); }
-LIQUID_AUTOTEST(fdelay_rrrf_5,"fractional delay ( 16.99)"  ,"",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,  16.99f  ); }
-LIQUID_AUTOTEST(fdelay_rrrf_6,"fractional delay ( 17.00)"  ,"",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,  17.00f  ); }
-LIQUID_AUTOTEST(fdelay_rrrf_7,"fractional delay ( 17.01)"  ,"",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,  17.01f  ); }
-LIQUID_AUTOTEST(fdelay_rrrf_8,"fractional delay (199.9)"   ,"",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64, 199.9f   ); }
-LIQUID_AUTOTEST(fdelay_rrrf_9,"fractional delay (200.0)"   ,"",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64, 200.0f   ); }
+LIQUID_AUTOTEST(fdelay_rrrf_0,"fractional delay (  0.0)"   ,"filter,fdelay",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,   0.0f   ); }
+LIQUID_AUTOTEST(fdelay_rrrf_1,"fractional delay (  0.0001)","filter,fdelay",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,   0.0001f); }
+LIQUID_AUTOTEST(fdelay_rrrf_2,"fractional delay (  0.1)"   ,"filter,fdelay",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,   0.1f   ); }
+LIQUID_AUTOTEST(fdelay_rrrf_3,"fractional delay (  0.9)"   ,"filter,fdelay",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,   0.9f   ); }
+LIQUID_AUTOTEST(fdelay_rrrf_4,"fractional delay (  0.9999)","filter,fdelay",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,   0.9999f); }
+LIQUID_AUTOTEST(fdelay_rrrf_5,"fractional delay ( 16.99)"  ,"filter,fdelay",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,  16.99f  ); }
+LIQUID_AUTOTEST(fdelay_rrrf_6,"fractional delay ( 17.00)"  ,"filter,fdelay",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,  17.00f  ); }
+LIQUID_AUTOTEST(fdelay_rrrf_7,"fractional delay ( 17.01)"  ,"filter,fdelay",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64,  17.01f  ); }
+LIQUID_AUTOTEST(fdelay_rrrf_8,"fractional delay (199.9)"   ,"filter,fdelay",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64, 199.9f   ); }
+LIQUID_AUTOTEST(fdelay_rrrf_9,"fractional delay (200.0)"   ,"filter,fdelay",0.1) { testbench_fdelay_rrrf(__q__, 200, 12, 64, 200.0f   ); }
 
-LIQUID_AUTOTEST(fdelay_rrrf_config,"fractional delay (fdelay) config","",0.1)
+LIQUID_AUTOTEST(fdelay_rrrf_config,"fractional delay (fdelay) config","filter,fdelay",0.1)
 {
     _liquid_error_downgrade_enable();
     // default configurations
@@ -115,7 +115,7 @@ LIQUID_AUTOTEST(fdelay_rrrf_config,"fractional delay (fdelay) config","",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(fdelay_rrrf_push_write,"compare push vs write methods", "", 0.1)
+LIQUID_AUTOTEST(fdelay_rrrf_push_write,"compare push vs write methods", "filter,fdelay", 0.1)
 {
     // create two identical objects
     fdelay_rrrf q0 = fdelay_rrrf_create_default(200);

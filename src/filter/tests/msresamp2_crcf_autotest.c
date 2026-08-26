@@ -77,22 +77,22 @@ void testbench_msresamp2_crcf_interp(liquid_autotest __q__,
     msresamp2_crcf_destroy(resamp);
 }
 
-LIQUID_AUTOTEST(msresamp2_crcf_interp_01,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 1, 0.25f, 60.0f); }
-LIQUID_AUTOTEST(msresamp2_crcf_interp_02,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 2, 0.25f, 60.0f); }
-LIQUID_AUTOTEST(msresamp2_crcf_interp_03,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 3, 0.25f, 60.0f); }
-LIQUID_AUTOTEST(msresamp2_crcf_interp_04,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 4, 0.25f, 60.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_01,"description","filter,msresamp2",0.1) { testbench_msresamp2_crcf_interp(__q__, 1, 0.25f, 60.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_02,"description","filter,msresamp2",0.1) { testbench_msresamp2_crcf_interp(__q__, 2, 0.25f, 60.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_03,"description","filter,msresamp2",0.1) { testbench_msresamp2_crcf_interp(__q__, 3, 0.25f, 60.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_04,"description","filter,msresamp2",0.1) { testbench_msresamp2_crcf_interp(__q__, 4, 0.25f, 60.0f); }
 
-LIQUID_AUTOTEST(msresamp2_crcf_interp_05,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 1, 0.45f, 60.0f); }
-LIQUID_AUTOTEST(msresamp2_crcf_interp_06,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 2, 0.45f, 60.0f); }
-LIQUID_AUTOTEST(msresamp2_crcf_interp_07,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 3, 0.45f, 60.0f); }
-LIQUID_AUTOTEST(msresamp2_crcf_interp_08,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 4, 0.45f, 60.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_05,"description","filter,msresamp2",0.1) { testbench_msresamp2_crcf_interp(__q__, 1, 0.45f, 60.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_06,"description","filter,msresamp2",0.1) { testbench_msresamp2_crcf_interp(__q__, 2, 0.45f, 60.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_07,"description","filter,msresamp2",0.1) { testbench_msresamp2_crcf_interp(__q__, 3, 0.45f, 60.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_08,"description","filter,msresamp2",0.1) { testbench_msresamp2_crcf_interp(__q__, 4, 0.45f, 60.0f); }
 
-LIQUID_AUTOTEST(msresamp2_crcf_interp_09,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 3, 0.45f, 80.0f); }
-LIQUID_AUTOTEST(msresamp2_crcf_interp_10,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 3, 0.45f, 90.0f); }
-LIQUID_AUTOTEST(msresamp2_crcf_interp_11,"description","",0.1) { testbench_msresamp2_crcf_interp(__q__, 3, 0.45f,100.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_09,"description","filter,msresamp2",0.1) { testbench_msresamp2_crcf_interp(__q__, 3, 0.45f, 80.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_10,"description","filter,msresamp2",0.1) { testbench_msresamp2_crcf_interp(__q__, 3, 0.45f, 90.0f); }
+LIQUID_AUTOTEST(msresamp2_crcf_interp_11,"description","filter,msresamp2",0.1) { testbench_msresamp2_crcf_interp(__q__, 3, 0.45f,100.0f); }
 //void xautotest_msresamp2_crcf_interp_12() { testbench_msresamp2_crcf_interp(3, 0.45f,120.0f); }
 
-LIQUID_AUTOTEST(msresamp2_copy,"test copy method", "", 0.1)
+LIQUID_AUTOTEST(msresamp2_copy,"test copy method", "filter,msresamp2", 0.1)
 {
     // create original resampler
     unsigned int num_stages = 4;

@@ -192,14 +192,14 @@ void firdecim_cccf_test(liquid_autotest __q__,
 }
 
 
-LIQUID_AUTOTEST(firdecim_rrrf_common,"description","",0.1)
+LIQUID_AUTOTEST(firdecim_rrrf_common,"description","filter,firdecim",0.1)
 {
     firdecim_rrrf decim = firdecim_rrrf_create_kaiser(17, 4, 60.0f);
     LIQUID_CHECK(firdecim_rrrf_get_decim_rate(decim) ==  17);
     firdecim_rrrf_destroy(decim);
 }
 
-LIQUID_AUTOTEST(firdecim_crcf_common,"description","",0.1)
+LIQUID_AUTOTEST(firdecim_crcf_common,"description","filter,firdecim",0.1)
 {
     firdecim_crcf decim = firdecim_crcf_create_kaiser(7, 4, 60.0f);
     LIQUID_CHECK(firdecim_crcf_get_decim_rate(decim) ==  7);
@@ -209,7 +209,7 @@ LIQUID_AUTOTEST(firdecim_crcf_common,"description","",0.1)
 // 
 // AUTOTEST: firdecim_rrrf tests
 //
-LIQUID_AUTOTEST(firdecim_rrrf_data_M2h4x20,"description","",0.1)
+LIQUID_AUTOTEST(firdecim_rrrf_data_M2h4x20,"description","filter,firdecim",0.1)
 {
     firdecim_rrrf_test(__q__,
                        2,
@@ -217,7 +217,7 @@ LIQUID_AUTOTEST(firdecim_rrrf_data_M2h4x20,"description","",0.1)
                        firdecim_rrrf_data_M2h4x20_x, 20,
                        firdecim_rrrf_data_M2h4x20_y, 10);
 }
-LIQUID_AUTOTEST(firdecim_rrrf_data_M3h7x30,"description","",0.1)
+LIQUID_AUTOTEST(firdecim_rrrf_data_M3h7x30,"description","filter,firdecim",0.1)
 {
     firdecim_rrrf_test(__q__,
                        3,
@@ -225,7 +225,7 @@ LIQUID_AUTOTEST(firdecim_rrrf_data_M3h7x30,"description","",0.1)
                        firdecim_rrrf_data_M3h7x30_x, 30,
                        firdecim_rrrf_data_M3h7x30_y, 10);
 }
-LIQUID_AUTOTEST(firdecim_rrrf_data_M4h13x40,"description","",0.1)
+LIQUID_AUTOTEST(firdecim_rrrf_data_M4h13x40,"description","filter,firdecim",0.1)
 {
     firdecim_rrrf_test(__q__,
                        4,
@@ -233,7 +233,7 @@ LIQUID_AUTOTEST(firdecim_rrrf_data_M4h13x40,"description","",0.1)
                        firdecim_rrrf_data_M4h13x40_x, 40,
                        firdecim_rrrf_data_M4h13x40_y, 10);
 }
-LIQUID_AUTOTEST(firdecim_rrrf_data_M5h23x50,"description","",0.1)
+LIQUID_AUTOTEST(firdecim_rrrf_data_M5h23x50,"description","filter,firdecim",0.1)
 {
     firdecim_rrrf_test(__q__,
                        5,
@@ -246,7 +246,7 @@ LIQUID_AUTOTEST(firdecim_rrrf_data_M5h23x50,"description","",0.1)
 // 
 // AUTOTEST: firdecim_crcf tests
 //
-LIQUID_AUTOTEST(firdecim_crcf_data_M2h4x20,"description","",0.1)
+LIQUID_AUTOTEST(firdecim_crcf_data_M2h4x20,"description","filter,firdecim",0.1)
 {
     firdecim_crcf_test(__q__,
                        2,
@@ -254,7 +254,7 @@ LIQUID_AUTOTEST(firdecim_crcf_data_M2h4x20,"description","",0.1)
                        firdecim_crcf_data_M2h4x20_x, 20,
                        firdecim_crcf_data_M2h4x20_y, 8);
 }
-LIQUID_AUTOTEST(firdecim_crcf_data_M3h7x30,"description","",0.1)
+LIQUID_AUTOTEST(firdecim_crcf_data_M3h7x30,"description","filter,firdecim",0.1)
 {
     firdecim_crcf_test(__q__,
                        3,
@@ -262,7 +262,7 @@ LIQUID_AUTOTEST(firdecim_crcf_data_M3h7x30,"description","",0.1)
                        firdecim_crcf_data_M3h7x30_x, 30,
                        firdecim_crcf_data_M3h7x30_y, 10);
 }
-LIQUID_AUTOTEST(firdecim_crcf_data_M4h13x40,"description","",0.1)
+LIQUID_AUTOTEST(firdecim_crcf_data_M4h13x40,"description","filter,firdecim",0.1)
 {
     firdecim_crcf_test(__q__,
                        4,
@@ -270,7 +270,7 @@ LIQUID_AUTOTEST(firdecim_crcf_data_M4h13x40,"description","",0.1)
                        firdecim_crcf_data_M4h13x40_x, 40,
                        firdecim_crcf_data_M4h13x40_y, 10);
 }
-LIQUID_AUTOTEST(firdecim_crcf_data_M5h23x50,"description","",0.1)
+LIQUID_AUTOTEST(firdecim_crcf_data_M5h23x50,"description","filter,firdecim",0.1)
 {
     firdecim_crcf_test(__q__,
                        5,
@@ -283,7 +283,7 @@ LIQUID_AUTOTEST(firdecim_crcf_data_M5h23x50,"description","",0.1)
 // 
 // AUTOTEST: firdecim_cccf tests
 //
-LIQUID_AUTOTEST(firdecim_cccf_data_M2h4x20,"description","",0.1)
+LIQUID_AUTOTEST(firdecim_cccf_data_M2h4x20,"description","filter,firdecim",0.1)
 {
     firdecim_cccf_test(__q__,
                        2,
@@ -291,7 +291,7 @@ LIQUID_AUTOTEST(firdecim_cccf_data_M2h4x20,"description","",0.1)
                        firdecim_cccf_data_M2h4x20_x, 20,
                        firdecim_cccf_data_M2h4x20_y, 8);
 }
-LIQUID_AUTOTEST(firdecim_cccf_data_M3h7x30,"description","",0.1)
+LIQUID_AUTOTEST(firdecim_cccf_data_M3h7x30,"description","filter,firdecim",0.1)
 {
     firdecim_cccf_test(__q__,
                        3,
@@ -299,7 +299,7 @@ LIQUID_AUTOTEST(firdecim_cccf_data_M3h7x30,"description","",0.1)
                        firdecim_cccf_data_M3h7x30_x, 30,
                        firdecim_cccf_data_M3h7x30_y, 10);
 }
-LIQUID_AUTOTEST(firdecim_cccf_data_M4h13x40,"description","",0.1)
+LIQUID_AUTOTEST(firdecim_cccf_data_M4h13x40,"description","filter,firdecim",0.1)
 {
     firdecim_cccf_test(__q__,
                        4,
@@ -307,7 +307,7 @@ LIQUID_AUTOTEST(firdecim_cccf_data_M4h13x40,"description","",0.1)
                        firdecim_cccf_data_M4h13x40_x, 40,
                        firdecim_cccf_data_M4h13x40_y, 10);
 }
-LIQUID_AUTOTEST(firdecim_cccf_data_M5h23x50,"description","",0.1)
+LIQUID_AUTOTEST(firdecim_cccf_data_M5h23x50,"description","filter,firdecim",0.1)
 {
     firdecim_cccf_test(__q__,
                        5,

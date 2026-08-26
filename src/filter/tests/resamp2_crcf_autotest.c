@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(resamp2_analysis,"test half-band filterbank (analyzer)", "", 0.1)
+LIQUID_AUTOTEST(resamp2_analysis,"test half-band filterbank (analyzer)", "filter,resamp2", 0.1)
 {
     unsigned int m=5;       // filter semi-length (actual length: 4*m+1)
     unsigned int n=37;      // number of input samples
@@ -94,7 +94,7 @@ LIQUID_AUTOTEST(resamp2_analysis,"test half-band filterbank (analyzer)", "", 0.1
 #endif
 }
 
-LIQUID_AUTOTEST(resamp2_synthesis,"test half-band filterbank (synthesizer)", "", 0.1)
+LIQUID_AUTOTEST(resamp2_synthesis,"test half-band filterbank (synthesizer)", "filter,resamp2", 0.1)
 {
     unsigned int m=5;       // filter semi-length (actual length: 4*m+1)
     unsigned int n=37;      // number of input samples
@@ -208,14 +208,14 @@ void testbench_resamp2_crcf_filter(liquid_autotest __q__,
     liquid_autotest_validate_psd_signal(__q__, h_1, h_len, regions_h1, 3, filename);
 }
 
-LIQUID_AUTOTEST(resamp2_crcf_filter_0,"description","",0.1){ testbench_resamp2_crcf_filter(__q__,  4, 60.0f); }
-LIQUID_AUTOTEST(resamp2_crcf_filter_1,"description","",0.1){ testbench_resamp2_crcf_filter(__q__,  7, 60.0f); }
-LIQUID_AUTOTEST(resamp2_crcf_filter_2,"description","",0.1){ testbench_resamp2_crcf_filter(__q__, 12, 60.0f); }
-LIQUID_AUTOTEST(resamp2_crcf_filter_3,"description","",0.1){ testbench_resamp2_crcf_filter(__q__, 15, 80.0f); }
-LIQUID_AUTOTEST(resamp2_crcf_filter_4,"description","",0.1){ testbench_resamp2_crcf_filter(__q__, 15,100.0f); }
-LIQUID_AUTOTEST(resamp2_crcf_filter_5,"description","",0.1){ testbench_resamp2_crcf_filter(__q__, 15,120.0f); }
+LIQUID_AUTOTEST(resamp2_crcf_filter_0,"description","filter,resamp2",0.1){ testbench_resamp2_crcf_filter(__q__,  4, 60.0f); }
+LIQUID_AUTOTEST(resamp2_crcf_filter_1,"description","filter,resamp2",0.1){ testbench_resamp2_crcf_filter(__q__,  7, 60.0f); }
+LIQUID_AUTOTEST(resamp2_crcf_filter_2,"description","filter,resamp2",0.1){ testbench_resamp2_crcf_filter(__q__, 12, 60.0f); }
+LIQUID_AUTOTEST(resamp2_crcf_filter_3,"description","filter,resamp2",0.1){ testbench_resamp2_crcf_filter(__q__, 15, 80.0f); }
+LIQUID_AUTOTEST(resamp2_crcf_filter_4,"description","filter,resamp2",0.1){ testbench_resamp2_crcf_filter(__q__, 15,100.0f); }
+LIQUID_AUTOTEST(resamp2_crcf_filter_5,"description","filter,resamp2",0.1){ testbench_resamp2_crcf_filter(__q__, 15,120.0f); }
 
-LIQUID_AUTOTEST(resamp2_config,"description","",0.1)
+LIQUID_AUTOTEST(resamp2_config,"description","filter,resamp2",0.1)
 {
     _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
@@ -249,7 +249,7 @@ LIQUID_AUTOTEST(resamp2_config,"description","",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(resamp2_copy,"test copy method", "", 0.1)
+LIQUID_AUTOTEST(resamp2_copy,"test copy method", "filter,resamp2", 0.1)
 {
     // create original half-band resampler
     resamp2_crcf qa = resamp2_crcf_create(12,0,60.0f);

@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(iirfiltsos_impulse_n2,"description","",0.1)
+LIQUID_AUTOTEST(iirfiltsos_impulse_n2,"description","filter,iirfiltsos",0.1)
 {
     // initialize filter with 2nd-order low-pass butterworth filter
     float a[3] = {
@@ -81,7 +81,7 @@ LIQUID_AUTOTEST(iirfiltsos_impulse_n2,"description","",0.1)
 }
 
 
-LIQUID_AUTOTEST(iirfiltsos_step_n2,"description","",0.1)
+LIQUID_AUTOTEST(iirfiltsos_step_n2,"description","filter,iirfiltsos",0.1)
 {
     // initialize filter with 2nd-order low-pass butterworth filter
     float a[3] = {
@@ -134,7 +134,7 @@ LIQUID_AUTOTEST(iirfiltsos_step_n2,"description","",0.1)
     iirfiltsos_rrrf_destroy(q1);
 }
 
-LIQUID_AUTOTEST(iirfiltsos_copy,"description","",0.1)
+LIQUID_AUTOTEST(iirfiltsos_copy,"description","filter,iirfiltsos",0.1)
 {
     // initialize filter with 2nd-order low-pass butterworth filter
     float a[3] = {1.0000000000000000f, -0.942809041582063f, 0.3333333333333333f};
@@ -169,7 +169,7 @@ LIQUID_AUTOTEST(iirfiltsos_copy,"description","",0.1)
     iirfiltsos_crcf_destroy(q1);
 }
 
-LIQUID_AUTOTEST(iirfiltsos_config,"test errors and invalid configuration", "", 0.1)
+LIQUID_AUTOTEST(iirfiltsos_config,"test errors and invalid configuration", "filter,iirfiltsos", 0.1)
 {
     _liquid_error_downgrade_enable();
     // test copying/creating invalid objects

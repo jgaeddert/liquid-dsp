@@ -26,7 +26,7 @@
 //
 // AUTOTEST : fir group delay, n=3
 //
-LIQUID_AUTOTEST(fir_groupdelay_n3,"description","",0.1)
+LIQUID_AUTOTEST(fir_groupdelay_n3,"description","filter,groupdelay",0.1)
 {
     // create coefficients array
     float h[3] = {0.1, 0.2, 0.4};
@@ -70,7 +70,7 @@ LIQUID_AUTOTEST(fir_groupdelay_n3,"description","",0.1)
 //
 // AUTOTEST : iir group delay, n=3
 //
-LIQUID_AUTOTEST(iir_groupdelay_n3,"description","",0.1)
+LIQUID_AUTOTEST(iir_groupdelay_n3,"description","filter,groupdelay",0.1)
 {
     // create coefficients array
     float b[3] = {0.20657210,  0.41314420, 0.20657210};
@@ -114,7 +114,7 @@ LIQUID_AUTOTEST(iir_groupdelay_n3,"description","",0.1)
 //
 // AUTOTEST : iir group delay, n=8
 //
-LIQUID_AUTOTEST(iir_groupdelay_n8,"description","",0.1)
+LIQUID_AUTOTEST(iir_groupdelay_n8,"description","filter,groupdelay",0.1)
 {
     // create coefficients arrays (7th-order Butterworth)
     float b[8];
@@ -185,7 +185,7 @@ LIQUID_AUTOTEST(iir_groupdelay_n8,"description","",0.1)
 //
 // AUTOTEST : iir group delay (second-order sections), n=8
 //
-LIQUID_AUTOTEST(iir_groupdelay_sos_n8,"description","",0.1)
+LIQUID_AUTOTEST(iir_groupdelay_sos_n8,"description","filter,groupdelay",0.1)
 {
     // create coefficients arrays (7th-order Butterworth)
     float B[12] = {

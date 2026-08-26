@@ -96,10 +96,10 @@ void lpc_test_harness(liquid_autotest __q__,
 // AUTOTESTS: test linear prediction algorithm with various lengths, orders, and filters
 // NOTE: in most cases the RMSE is less than -50 dB, so we have plenty of margin here
 
-LIQUID_AUTOTEST(lpc_p4,"description","",0.1)  { lpc_test_harness(__q__,  200,  4, 0.020, -40.0f); }
-LIQUID_AUTOTEST(lpc_p6,"description","",0.1)  { lpc_test_harness(__q__,  400,  6, 0.028, -40.0f); }
-LIQUID_AUTOTEST(lpc_p8,"description","",0.1)  { lpc_test_harness(__q__,  600,  8, 0.035, -40.0f); }
-LIQUID_AUTOTEST(lpc_p10,"description","",0.1) { lpc_test_harness(__q__,  800, 10, 0.050, -40.0f); }
-LIQUID_AUTOTEST(lpc_p16,"description","",0.1) { lpc_test_harness(__q__, 1600, 16, 0.055, -40.0f); }
-LIQUID_AUTOTEST(lpc_p32,"description","",0.1) { lpc_test_harness(__q__, 3200, 24, 0.065, -40.0f); }
+LIQUID_AUTOTEST(lpc_p4,"description","filter,lpc",0.1)  { lpc_test_harness(__q__,  200,  4, 0.020, -40.0f); }
+LIQUID_AUTOTEST(lpc_p6,"description","filter,lpc",0.1)  { lpc_test_harness(__q__,  400,  6, 0.028, -40.0f); }
+LIQUID_AUTOTEST(lpc_p8,"description","filter,lpc",0.1)  { lpc_test_harness(__q__,  600,  8, 0.035, -40.0f); }
+LIQUID_AUTOTEST(lpc_p10,"description","filter,lpc",0.1) { lpc_test_harness(__q__,  800, 10, 0.050, -40.0f); }
+LIQUID_AUTOTEST(lpc_p16,"description","filter,lpc",0.1) { lpc_test_harness(__q__, 1600, 16, 0.055, -40.0f); }
+LIQUID_AUTOTEST(lpc_p32,"description","filter,lpc",0.1) { lpc_test_harness(__q__, 3200, 24, 0.065, -40.0f); }
 

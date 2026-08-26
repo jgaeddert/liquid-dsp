@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(liquid_rkaiser_config,"description","",0.1)
+LIQUID_AUTOTEST(liquid_rkaiser_config,"description","filter,rkaiser",0.1)
 {
     _liquid_error_downgrade_enable();
 

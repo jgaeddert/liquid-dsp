@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(firdecim_config,"description","",0.1)
+LIQUID_AUTOTEST(firdecim_config,"description","filter,firdecim",0.1)
 {
     _liquid_error_downgrade_enable();
     // design filter
@@ -60,7 +60,7 @@ LIQUID_AUTOTEST(firdecim_config,"description","",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(firdecim_block,"assert that block execution matches regular execute", "", 0.1)
+LIQUID_AUTOTEST(firdecim_block,"assert that block execution matches regular execute", "filter,firdecim", 0.1)
 {
     unsigned int M =  4;
     unsigned int m = 12;
@@ -95,7 +95,7 @@ LIQUID_AUTOTEST(firdecim_block,"assert that block execution matches regular exec
     firdecim_crcf_destroy(decim);
 }
 
-LIQUID_AUTOTEST(firdecim_copy,"test copy method", "", 0.1)
+LIQUID_AUTOTEST(firdecim_copy,"test copy method", "filter,firdecim", 0.1)
 {
     unsigned int M    =    4;
     unsigned int m    =   12;

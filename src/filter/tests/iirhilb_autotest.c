@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(iirhilbf_interp_decim,"test end-to-end power spectral density on interp/decim methods", "", 0.1)
+LIQUID_AUTOTEST(iirhilbf_interp_decim,"test end-to-end power spectral density on interp/decim methods", "filter,iirhilb", 0.1)
 {
     float        tol  = 1;  // error tolerance [dB]
     float        bw = 0.4f; // pulse bandwidth
@@ -87,7 +87,7 @@ LIQUID_AUTOTEST(iirhilbf_interp_decim,"test end-to-end power spectral density on
     iirhilbf_destroy(q);
 }
 
-LIQUID_AUTOTEST(iirhilbf_filter,"test end-to-end power spectral density on filter methods", "", 0.1)
+LIQUID_AUTOTEST(iirhilbf_filter,"test end-to-end power spectral density on filter methods", "filter,iirhilb", 0.1)
 {
     float        tol  = 1;  // error tolerance [dB]
     float        bw = 0.2f; // pulse bandwidth
@@ -168,7 +168,7 @@ LIQUID_AUTOTEST(iirhilbf_filter,"test end-to-end power spectral density on filte
     iirhilbf_destroy(q);
 }
 
-LIQUID_AUTOTEST(iirhilbf_config,"description","",0.1)
+LIQUID_AUTOTEST(iirhilbf_config,"description","filter,iirhilb",0.1)
 {
     _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
@@ -182,7 +182,7 @@ LIQUID_AUTOTEST(iirhilbf_config,"description","",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(iirhilbf_copy_interp,"description","",0.1)
+LIQUID_AUTOTEST(iirhilbf_copy_interp,"description","filter,iirhilb",0.1)
 {
     // create base object
     iirhilbf q0 = iirhilbf_create(LIQUID_IIRDES_ELLIP,7,0.1f,80.0f);
@@ -213,7 +213,7 @@ LIQUID_AUTOTEST(iirhilbf_copy_interp,"description","",0.1)
     iirhilbf_destroy(q1);
 }
 
-LIQUID_AUTOTEST(iirhilbf_copy_decim,"description","",0.1)
+LIQUID_AUTOTEST(iirhilbf_copy_decim,"description","filter,iirhilb",0.1)
 {
     // create base object
     iirhilbf q0 = iirhilbf_create(LIQUID_IIRDES_ELLIP,7,0.1f,80.0f);

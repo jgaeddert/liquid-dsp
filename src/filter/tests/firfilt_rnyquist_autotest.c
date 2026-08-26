@@ -92,25 +92,25 @@ void testbench_firfilt_rnyquist(liquid_autotest __q__,
 
 // test different filter designs, nominal parameters
 
-LIQUID_AUTOTEST(firfilt_rnyquist_baseline_arkaiser ,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2,9,0.3f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rkaiser  ,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RKAISER,  2,9,0.3f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rrc      ,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RRC,      2,9,0.3f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_baseline_hm3      ,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_hM3,      2,9,0.3f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_baseline_gmsktxrx ,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_GMSKTX,   2,9,0.3f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rfexp    ,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RFEXP,    2,9,0.3f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rfsech   ,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RFSECH,   2,9,0.3f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rfarcsech,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RFARCSECH,2,9,0.3f,0.0f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_baseline_arkaiser ,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2,9,0.3f,0.0f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rkaiser  ,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RKAISER,  2,9,0.3f,0.0f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rrc      ,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RRC,      2,9,0.3f,0.0f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_baseline_hm3      ,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_hM3,      2,9,0.3f,0.0f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_baseline_gmsktxrx ,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_GMSKTX,   2,9,0.3f,0.0f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rfexp    ,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RFEXP,    2,9,0.3f,0.0f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rfsech   ,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RFSECH,   2,9,0.3f,0.0f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rfarcsech,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RFARCSECH,2,9,0.3f,0.0f); }
 
 // test different parameters
 
-LIQUID_AUTOTEST(firfilt_rnyquist_0,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2, 4,0.33f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_1,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2,12,0.20f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_2,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2,40,0.20f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_3,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 3,12,0.20f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_4,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 4,12,0.20f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_5,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 5,12,0.20f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_6,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER,20,12,0.20f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_7,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2,12,0.80f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_8,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RKAISER,  2,12,0.20f,0.5f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_9,"description","",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RKAISER, 20,40,0.20f,0.5f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_0,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2, 4,0.33f,0.0f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_1,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2,12,0.20f,0.0f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_2,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2,40,0.20f,0.0f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_3,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 3,12,0.20f,0.0f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_4,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 4,12,0.20f,0.0f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_5,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 5,12,0.20f,0.0f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_6,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER,20,12,0.20f,0.0f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_7,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2,12,0.80f,0.0f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_8,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RKAISER,  2,12,0.20f,0.5f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_9,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RKAISER, 20,40,0.20f,0.5f); }
 

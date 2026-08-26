@@ -25,7 +25,7 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(firfilt_cccf_coefficients_test,"description","",0.1)
+LIQUID_AUTOTEST(firfilt_cccf_coefficients_test,"description","filter,firfilt",0.1)
 {
     // create filter coefficients (semi-random)
     unsigned int h_len = 71;

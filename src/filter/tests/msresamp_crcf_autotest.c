@@ -74,9 +74,9 @@ void testbench_msresamp_crcf(liquid_autotest __q__, float r, float As)
     msresamp_crcf_destroy(resamp);
 }
 
-LIQUID_AUTOTEST(msresamp_crcf_01,"description","",0.1) { testbench_msresamp_crcf(__q__, 0.127115323f, 60.0f); }
-LIQUID_AUTOTEST(msresamp_crcf_02,"description","",0.1) { testbench_msresamp_crcf(__q__, 0.373737373f, 60.0f); }
-LIQUID_AUTOTEST(msresamp_crcf_03,"description","",0.1) { testbench_msresamp_crcf(__q__, 0.676543210f, 60.0f); }
+LIQUID_AUTOTEST(msresamp_crcf_01,"description","filter,msresamp",0.1) { testbench_msresamp_crcf(__q__, 0.127115323f, 60.0f); }
+LIQUID_AUTOTEST(msresamp_crcf_02,"description","filter,msresamp",0.1) { testbench_msresamp_crcf(__q__, 0.373737373f, 60.0f); }
+LIQUID_AUTOTEST(msresamp_crcf_03,"description","filter,msresamp",0.1) { testbench_msresamp_crcf(__q__, 0.676543210f, 60.0f); }
 //void xautotest_msresamp_crcf_04() { testbench_msresamp_crcf(0.127115323f,80.0f); }
 
 // test arbitrary resampler output length calculation
@@ -122,16 +122,16 @@ void testbench_msresamp_crcf_num_output(liquid_autotest __q__, float _rate)
     msresamp_crcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(msresamp_crcf_num_output_0,"description","",0.1){ testbench_msresamp_crcf_num_output(__q__, 1.00f);      }
-LIQUID_AUTOTEST(msresamp_crcf_num_output_1,"description","",0.1){ testbench_msresamp_crcf_num_output(__q__, 1e3f);       }
-LIQUID_AUTOTEST(msresamp_crcf_num_output_2,"description","",0.1){ testbench_msresamp_crcf_num_output(__q__, 1e-3f);      }
-LIQUID_AUTOTEST(msresamp_crcf_num_output_3,"description","",0.1){ testbench_msresamp_crcf_num_output(__q__, sqrtf( 2));  }
-LIQUID_AUTOTEST(msresamp_crcf_num_output_4,"description","",0.1){ testbench_msresamp_crcf_num_output(__q__, sqrtf(17));  }
-LIQUID_AUTOTEST(msresamp_crcf_num_output_5,"description","",0.1){ testbench_msresamp_crcf_num_output(__q__, 1.0f/M_PI);  }
-LIQUID_AUTOTEST(msresamp_crcf_num_output_6,"description","",0.1){ testbench_msresamp_crcf_num_output(__q__, expf(8.0f)); }
-LIQUID_AUTOTEST(msresamp_crcf_num_output_7,"description","",0.1){ testbench_msresamp_crcf_num_output(__q__, expf(-8.f)); }
+LIQUID_AUTOTEST(msresamp_crcf_num_output_0,"description","filter,msresamp",0.1){ testbench_msresamp_crcf_num_output(__q__, 1.00f);      }
+LIQUID_AUTOTEST(msresamp_crcf_num_output_1,"description","filter,msresamp",0.1){ testbench_msresamp_crcf_num_output(__q__, 1e3f);       }
+LIQUID_AUTOTEST(msresamp_crcf_num_output_2,"description","filter,msresamp",0.1){ testbench_msresamp_crcf_num_output(__q__, 1e-3f);      }
+LIQUID_AUTOTEST(msresamp_crcf_num_output_3,"description","filter,msresamp",0.1){ testbench_msresamp_crcf_num_output(__q__, sqrtf( 2));  }
+LIQUID_AUTOTEST(msresamp_crcf_num_output_4,"description","filter,msresamp",0.1){ testbench_msresamp_crcf_num_output(__q__, sqrtf(17));  }
+LIQUID_AUTOTEST(msresamp_crcf_num_output_5,"description","filter,msresamp",0.1){ testbench_msresamp_crcf_num_output(__q__, 1.0f/M_PI);  }
+LIQUID_AUTOTEST(msresamp_crcf_num_output_6,"description","filter,msresamp",0.1){ testbench_msresamp_crcf_num_output(__q__, expf(8.0f)); }
+LIQUID_AUTOTEST(msresamp_crcf_num_output_7,"description","filter,msresamp",0.1){ testbench_msresamp_crcf_num_output(__q__, expf(-8.f)); }
 
-LIQUID_AUTOTEST(msresamp_crcf_copy,"test copy method", "", 0.1)
+LIQUID_AUTOTEST(msresamp_crcf_copy,"test copy method", "filter,msresamp", 0.1)
 {
     // create initial object
     float rate = 0.071239213987520f;

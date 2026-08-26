@@ -23,14 +23,14 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(firinterp_rrrf_common,"description","",0.1)
+LIQUID_AUTOTEST(firinterp_rrrf_common,"description","filter,firinterp",0.1)
 {
     firinterp_rrrf interp = firinterp_rrrf_create_kaiser(17, 4, 60.0f);
     LIQUID_CHECK(firinterp_rrrf_get_interp_rate(interp) ==  17);
     firinterp_rrrf_destroy(interp);
 }
 
-LIQUID_AUTOTEST(firinterp_crcf_common,"description","",0.1)
+LIQUID_AUTOTEST(firinterp_crcf_common,"description","filter,firinterp",0.1)
 {
     firinterp_crcf interp = firinterp_crcf_create_kaiser(7, 4, 60.0f);
     LIQUID_CHECK(firinterp_crcf_get_interp_rate(interp) ==  7);
@@ -40,7 +40,7 @@ LIQUID_AUTOTEST(firinterp_crcf_common,"description","",0.1)
 //
 // AUTOTEST: 
 //
-LIQUID_AUTOTEST(firinterp_rrrf_generic,"description","",0.1)
+LIQUID_AUTOTEST(firinterp_rrrf_generic,"description","filter,firinterp",0.1)
 {
     float h[9] = {
       -0.2762293319046737,
@@ -91,7 +91,7 @@ LIQUID_AUTOTEST(firinterp_rrrf_generic,"description","",0.1)
     firinterp_rrrf_destroy(q);
 }
 
-LIQUID_AUTOTEST(firinterp_crcf_generic,"description","",0.1)
+LIQUID_AUTOTEST(firinterp_crcf_generic,"description","filter,firinterp",0.1)
 {
     // h = [0, 0.25, 0.5, 0.75, 1.0, 0.75, 0.5, 0.25, 0];
     float h[9] = {
@@ -192,19 +192,19 @@ void testbench_firinterp_crcf_nyquist(liquid_autotest __q__,
     firinterp_crcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(firinterp_crcf_rnyquist_0,"add specific tests", "", 0.1) 
+LIQUID_AUTOTEST(firinterp_crcf_rnyquist_0,"add specific tests", "filter,firinterp", 0.1) 
     { testbench_firinterp_crcf_nyquist(__q__, LIQUID_FIRFILT_KAISER, 2, 9,0.3f); }
 
-LIQUID_AUTOTEST(firinterp_crcf_rnyquist_1,"description","",0.1) 
+LIQUID_AUTOTEST(firinterp_crcf_rnyquist_1,"description","filter,firinterp",0.1) 
     { testbench_firinterp_crcf_nyquist(__q__, LIQUID_FIRFILT_KAISER, 3, 9,0.3f); }
 
-LIQUID_AUTOTEST(firinterp_crcf_rnyquist_2,"description","",0.1) 
+LIQUID_AUTOTEST(firinterp_crcf_rnyquist_2,"description","filter,firinterp",0.1) 
     { testbench_firinterp_crcf_nyquist(__q__, LIQUID_FIRFILT_KAISER, 7, 9,0.3f); }
 
-LIQUID_AUTOTEST(firinterp_crcf_rnyquist_3,"description","",0.1) 
+LIQUID_AUTOTEST(firinterp_crcf_rnyquist_3,"description","filter,firinterp",0.1) 
     { testbench_firinterp_crcf_nyquist(__q__, LIQUID_FIRFILT_RCOS,   2, 9,0.3f); }
 
-LIQUID_AUTOTEST(firinterp_copy,"test copy method", "", 0.1)
+LIQUID_AUTOTEST(firinterp_copy,"test copy method", "filter,firinterp", 0.1)
 {
     // create base object
     firinterp_crcf q0 = firinterp_crcf_create_kaiser(3, 7, 60.0f);
@@ -235,7 +235,7 @@ LIQUID_AUTOTEST(firinterp_copy,"test copy method", "", 0.1)
     firinterp_crcf_destroy(q1);
 }
 
-LIQUID_AUTOTEST(firinterp_flush,"test flush method(s)", "", 0.1)
+LIQUID_AUTOTEST(firinterp_flush,"test flush method(s)", "filter,firinterp", 0.1)
 {
     // create base object
     unsigned int m = 7;

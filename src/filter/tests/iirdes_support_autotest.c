@@ -24,7 +24,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(iirdes_cplxpair_n6,"complex pair, n=6", "", 0.1)
+LIQUID_AUTOTEST(iirdes_cplxpair_n6,"complex pair, n=6", "filter,iirdes", 0.1)
 {
     float tol = 1e-8f;
 
@@ -70,7 +70,7 @@ LIQUID_AUTOTEST(iirdes_cplxpair_n6,"complex pair, n=6", "", 0.1)
 }
 
 
-LIQUID_AUTOTEST(iirdes_cplxpair_n20,"complex pair, n=20", "", 0.1)
+LIQUID_AUTOTEST(iirdes_cplxpair_n20,"complex pair, n=20", "filter,iirdes", 0.1)
 {
     float tol = 1e-8f;
 
@@ -143,7 +143,7 @@ LIQUID_AUTOTEST(iirdes_cplxpair_n20,"complex pair, n=20", "", 0.1)
     }
 }
 
-LIQUID_AUTOTEST(iirdes_dzpk2sosf,"digital zeros/poles/gain to second-order sections", "", 0.1)
+LIQUID_AUTOTEST(iirdes_dzpk2sosf,"digital zeros/poles/gain to second-order sections", "filter,iirdes", 0.1)
 {
     unsigned int n=4;
     float fc = 0.25f;
@@ -186,7 +186,7 @@ LIQUID_AUTOTEST(iirdes_dzpk2sosf,"digital zeros/poles/gain to second-order secti
         liquid_log_debug("  %12.8f %12.8f %12.8f", A[3*i+0], A[3*i+1], A[3*i+2]);
 }
 
-LIQUID_AUTOTEST(iirdes_isstable_n2_yes,"iirdes_isstable", "", 0.1)
+LIQUID_AUTOTEST(iirdes_isstable_n2_yes,"iirdes_isstable", "filter,iirdes", 0.1)
 {
     // initialize pre-determined coefficient array
     // for 2^nd-order low-pass Butterworth filter
@@ -205,7 +205,7 @@ LIQUID_AUTOTEST(iirdes_isstable_n2_yes,"iirdes_isstable", "", 0.1)
 }
 
 
-LIQUID_AUTOTEST(iirdes_isstable_n2_no,"iirdes_isstable", "", 0.1)
+LIQUID_AUTOTEST(iirdes_isstable_n2_no,"iirdes_isstable", "filter,iirdes", 0.1)
 {
     // initialize unstable filter
     float a[3] = {
