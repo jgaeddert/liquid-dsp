@@ -28,7 +28,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(cbufferf,"floating-point cbuffer","",0.1)
+LIQUID_AUTOTEST(cbufferf,"floating-point cbuffer","buffer,cbuffer",0.1)
 {
     // input array of values
     float v[] = {1, 2, 3, 4, 5, 6, 7, 8};
@@ -104,7 +104,7 @@ LIQUID_AUTOTEST(cbufferf,"floating-point cbuffer","",0.1)
 }
 
 
-LIQUID_AUTOTEST(cbuffercf,"complex float complexing point cbuffer","",0.1)
+LIQUID_AUTOTEST(cbuffercf,"complex float complexing point cbuffer","buffer,cbuffer",0.1)
 {
     // input array of values
     float complex v[] = {1.0 - 1.0 * _Complex_I,
@@ -212,7 +212,7 @@ LIQUID_AUTOTEST(cbuffercf,"complex float complexing point cbuffer","",0.1)
     cbuffercf_destroy(q);
 }
 
-LIQUID_AUTOTEST(cbufferf_flow,"test general cbuffer flow","",0.1)
+LIQUID_AUTOTEST(cbufferf_flow,"test general cbuffer flow","buffer,cbuffer",0.1)
 {
     // options
     unsigned int max_size     =   48; // maximum number of elements in buffer
@@ -291,7 +291,7 @@ LIQUID_AUTOTEST(cbufferf_flow,"test general cbuffer flow","",0.1)
     cbufferf_destroy(q);
 }
 
-LIQUID_AUTOTEST(cbufferf_config,"test cbuffer configurations","",0.1)
+LIQUID_AUTOTEST(cbufferf_config,"test cbuffer configurations","buffer,cbuffer",0.1)
 {
     _liquid_error_downgrade_enable();
     // options
@@ -328,7 +328,7 @@ LIQUID_AUTOTEST(cbufferf_config,"test cbuffer configurations","",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(cbuffer_copy,"test cbuffer copy","",0.1)
+LIQUID_AUTOTEST(cbuffer_copy,"test cbuffer copy","buffer,cbuffer",0.1)
 {
     // create base object
     unsigned int wlen = 20;
