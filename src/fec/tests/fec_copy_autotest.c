@@ -98,43 +98,43 @@ void testbench_fec_copy(liquid_autotest __q__, fec_scheme _fs)
 }
 
 // repeat codes
-LIQUID_AUTOTEST(fec_copy_r3,"","",0.1)      { testbench_fec_copy(__q__, LIQUID_FEC_REP3          ); }
-LIQUID_AUTOTEST(fec_copy_r5,"","",0.1)      { testbench_fec_copy(__q__, LIQUID_FEC_REP5          ); }
+LIQUID_AUTOTEST(fec_copy_r3,"","fec,copy",0.1)      { testbench_fec_copy(__q__, LIQUID_FEC_REP3          ); }
+LIQUID_AUTOTEST(fec_copy_r5,"","fec,copy",0.1)      { testbench_fec_copy(__q__, LIQUID_FEC_REP5          ); }
 
 // Hamming block codes
-LIQUID_AUTOTEST(fec_copy_h74,"","",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_HAMMING74     ); }
-LIQUID_AUTOTEST(fec_copy_h84,"","",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_HAMMING84     ); }
-LIQUID_AUTOTEST(fec_copy_h128,"","",0.1)    { testbench_fec_copy(__q__, LIQUID_FEC_HAMMING128    ); }
+LIQUID_AUTOTEST(fec_copy_h74,"","fec,copy",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_HAMMING74     ); }
+LIQUID_AUTOTEST(fec_copy_h84,"","fec,copy",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_HAMMING84     ); }
+LIQUID_AUTOTEST(fec_copy_h128,"","fec,copy",0.1)    { testbench_fec_copy(__q__, LIQUID_FEC_HAMMING128    ); }
 
 // Golay block codes
-LIQUID_AUTOTEST(fec_copy_g2412,"","",0.1)   { testbench_fec_copy(__q__, LIQUID_FEC_GOLAY2412     ); }
+LIQUID_AUTOTEST(fec_copy_g2412,"","fec,copy",0.1)   { testbench_fec_copy(__q__, LIQUID_FEC_GOLAY2412     ); }
 
 // SEC-DED block codecs
-LIQUID_AUTOTEST(fec_copy_secded2216,"","",0.1) { testbench_fec_copy(__q__, LIQUID_FEC_SECDED2216 ); }
-LIQUID_AUTOTEST(fec_copy_secded3932,"","",0.1) { testbench_fec_copy(__q__, LIQUID_FEC_SECDED3932 ); }
-LIQUID_AUTOTEST(fec_copy_secded7264,"","",0.1) { testbench_fec_copy(__q__, LIQUID_FEC_SECDED7264 ); }
+LIQUID_AUTOTEST(fec_copy_secded2216,"","fec,copy",0.1) { testbench_fec_copy(__q__, LIQUID_FEC_SECDED2216 ); }
+LIQUID_AUTOTEST(fec_copy_secded3932,"","fec,copy",0.1) { testbench_fec_copy(__q__, LIQUID_FEC_SECDED3932 ); }
+LIQUID_AUTOTEST(fec_copy_secded7264,"","fec,copy",0.1) { testbench_fec_copy(__q__, LIQUID_FEC_SECDED7264 ); }
 
 // convolutional codes
-LIQUID_AUTOTEST(fec_copy_v27,"","",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27      ); }
-LIQUID_AUTOTEST(fec_copy_v29,"","",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29      ); }
-LIQUID_AUTOTEST(fec_copy_v39,"","",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V39      ); }
-LIQUID_AUTOTEST(fec_copy_v615,"","",0.1)    { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V615     ); }
+LIQUID_AUTOTEST(fec_copy_v27,"","fec,copy",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27      ); }
+LIQUID_AUTOTEST(fec_copy_v29,"","fec,copy",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29      ); }
+LIQUID_AUTOTEST(fec_copy_v39,"","fec,copy",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V39      ); }
+LIQUID_AUTOTEST(fec_copy_v615,"","fec,copy",0.1)    { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V615     ); }
 
 // convolutional codes (punctured)
-LIQUID_AUTOTEST(fec_copy_v27p23,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P23   ); }
-LIQUID_AUTOTEST(fec_copy_v27p34,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P34   ); }
-LIQUID_AUTOTEST(fec_copy_v27p45,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P45   ); }
-LIQUID_AUTOTEST(fec_copy_v27p56,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P56   ); }
-LIQUID_AUTOTEST(fec_copy_v27p67,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P67   ); }
-LIQUID_AUTOTEST(fec_copy_v27p78,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P78   ); }
+LIQUID_AUTOTEST(fec_copy_v27p23,"","fec,copy",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P23   ); }
+LIQUID_AUTOTEST(fec_copy_v27p34,"","fec,copy",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P34   ); }
+LIQUID_AUTOTEST(fec_copy_v27p45,"","fec,copy",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P45   ); }
+LIQUID_AUTOTEST(fec_copy_v27p56,"","fec,copy",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P56   ); }
+LIQUID_AUTOTEST(fec_copy_v27p67,"","fec,copy",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P67   ); }
+LIQUID_AUTOTEST(fec_copy_v27p78,"","fec,copy",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V27P78   ); }
 
-LIQUID_AUTOTEST(fec_copy_v29p23,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P23   ); }
-LIQUID_AUTOTEST(fec_copy_v29p34,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P34   ); }
-LIQUID_AUTOTEST(fec_copy_v29p45,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P45   ); }
-LIQUID_AUTOTEST(fec_copy_v29p56,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P56   ); }
-LIQUID_AUTOTEST(fec_copy_v29p67,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P67   ); }
-LIQUID_AUTOTEST(fec_copy_v29p78,"","",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P78   ); }
+LIQUID_AUTOTEST(fec_copy_v29p23,"","fec,copy",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P23   ); }
+LIQUID_AUTOTEST(fec_copy_v29p34,"","fec,copy",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P34   ); }
+LIQUID_AUTOTEST(fec_copy_v29p45,"","fec,copy",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P45   ); }
+LIQUID_AUTOTEST(fec_copy_v29p56,"","fec,copy",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P56   ); }
+LIQUID_AUTOTEST(fec_copy_v29p67,"","fec,copy",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P67   ); }
+LIQUID_AUTOTEST(fec_copy_v29p78,"","fec,copy",0.1)  { testbench_fec_copy(__q__, LIQUID_FEC_CONV_V29P78   ); }
 
 // Reed-Solomon block codes
-LIQUID_AUTOTEST(fec_copy_rs8,"","",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_RS_M8         ); }
+LIQUID_AUTOTEST(fec_copy_rs8,"","fec,copy",0.1)     { testbench_fec_copy(__q__, LIQUID_FEC_RS_M8         ); }
 

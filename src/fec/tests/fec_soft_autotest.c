@@ -107,36 +107,36 @@ void testbench_fec_codec_soft(liquid_autotest __q__,
 //
 
 // repeat codes
-LIQUID_AUTOTEST(fecsoft_r3,"","",0.1)     { testbench_fec_codec_soft(__q__, LIQUID_FEC_REP3,        64, NULL); }
-LIQUID_AUTOTEST(fecsoft_r5,"","",0.1)     { testbench_fec_codec_soft(__q__, LIQUID_FEC_REP5,        64, NULL); }
+LIQUID_AUTOTEST(fecsoft_r3,"","fec,soft",0.1)     { testbench_fec_codec_soft(__q__, LIQUID_FEC_REP3,        64, NULL); }
+LIQUID_AUTOTEST(fecsoft_r5,"","fec,soft",0.1)     { testbench_fec_codec_soft(__q__, LIQUID_FEC_REP5,        64, NULL); }
 
 // Hamming block codes
-LIQUID_AUTOTEST(fecsoft_h74,"","",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_HAMMING74,   64, NULL); }
-LIQUID_AUTOTEST(fecsoft_h84,"","",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_HAMMING84,   64, NULL); }
-LIQUID_AUTOTEST(fecsoft_h128,"","",0.1)   { testbench_fec_codec_soft(__q__, LIQUID_FEC_HAMMING128,  64, NULL); }
+LIQUID_AUTOTEST(fecsoft_h74,"","fec,soft",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_HAMMING74,   64, NULL); }
+LIQUID_AUTOTEST(fecsoft_h84,"","fec,soft",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_HAMMING84,   64, NULL); }
+LIQUID_AUTOTEST(fecsoft_h128,"","fec,soft",0.1)   { testbench_fec_codec_soft(__q__, LIQUID_FEC_HAMMING128,  64, NULL); }
 
 // convolutional codes
-LIQUID_AUTOTEST(fecsoft_v27,"","",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27,    64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v29,"","",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29,    64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v39,"","",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V39,    64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v615,"","",0.1)   { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V615,   64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v27,"","fec,soft",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27,    64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v29,"","fec,soft",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29,    64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v39,"","fec,soft",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V39,    64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v615,"","fec,soft",0.1)   { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V615,   64, NULL); }
 
 // convolutional codes (punctured)
-LIQUID_AUTOTEST(fecsoft_v27p23,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P23, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v27p34,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P34, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v27p45,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P45, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v27p56,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P56, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v27p67,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P67, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v27p78,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P78, 64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v27p23,"","fec,soft",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P23, 64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v27p34,"","fec,soft",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P34, 64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v27p45,"","fec,soft",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P45, 64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v27p56,"","fec,soft",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P56, 64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v27p67,"","fec,soft",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P67, 64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v27p78,"","fec,soft",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P78, 64, NULL); }
 
-LIQUID_AUTOTEST(fecsoft_v29p23,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P23, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v29p34,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P34, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v29p45,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P45, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v29p56,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P56, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v29p67,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P67, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v29p78,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P78, 64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v29p23,"","fec,soft",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P23, 64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v29p34,"","fec,soft",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P34, 64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v29p45,"","fec,soft",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P45, 64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v29p56,"","fec,soft",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P56, 64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v29p67,"","fec,soft",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P67, 64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v29p78,"","fec,soft",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P78, 64, NULL); }
 
 // Reed-Solomon block codes
-LIQUID_AUTOTEST(fecsoft_rs8,"","",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_RS_M8,       64, NULL); }
+LIQUID_AUTOTEST(fecsoft_rs8,"","fec,soft",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_RS_M8,       64, NULL); }
 
 

@@ -26,7 +26,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(fec_config,"test FEC configuration","",0.1)
+LIQUID_AUTOTEST(fec_config,"test FEC configuration","fec,config",0.1)
 {
     _liquid_error_downgrade_enable();
     // symbols too large
@@ -47,7 +47,7 @@ LIQUID_AUTOTEST(fec_config,"test FEC configuration","",0.1)
     LIQUID_CHECK(liquid_print_fec_schemes() ==  LIQUID_OK);
 }
 
-LIQUID_AUTOTEST(fec_str2fec,"test converting string to FEC scheme","",0.1)
+LIQUID_AUTOTEST(fec_str2fec,"test converting string to FEC scheme","fec,config",0.1)
 {
     // start with invalid case
     _liquid_error_downgrade_enable();
@@ -84,7 +84,7 @@ LIQUID_AUTOTEST(fec_str2fec,"test converting string to FEC scheme","",0.1)
     LIQUID_CHECK( liquid_getopt_str2fec("rs8") ==         LIQUID_FEC_RS_M8);
 }
 
-LIQUID_AUTOTEST(fec_is_convolutional,"check that FEC scheme is convolutional","",0.1)
+LIQUID_AUTOTEST(fec_is_convolutional,"check that FEC scheme is convolutional","fec,config",0.1)
 {
     LIQUID_CHECK( fec_scheme_is_convolutional(LIQUID_FEC_NONE) ==         0 );
     LIQUID_CHECK( fec_scheme_is_convolutional(LIQUID_FEC_REP3) ==         0 );
@@ -115,7 +115,7 @@ LIQUID_AUTOTEST(fec_is_convolutional,"check that FEC scheme is convolutional",""
     LIQUID_CHECK( fec_scheme_is_convolutional(LIQUID_FEC_RS_M8) ==        0 );
 }
 
-LIQUID_AUTOTEST(fec_is_punctured,"check that FEC scheme is convolutional (punctured)","",0.1)
+LIQUID_AUTOTEST(fec_is_punctured,"check that FEC scheme is convolutional (punctured)","fec,config",0.1)
 {
     LIQUID_CHECK( fec_scheme_is_punctured(LIQUID_FEC_NONE) ==         0 );
     LIQUID_CHECK( fec_scheme_is_punctured(LIQUID_FEC_REP3) ==         0 );
@@ -146,7 +146,7 @@ LIQUID_AUTOTEST(fec_is_punctured,"check that FEC scheme is convolutional (punctu
     LIQUID_CHECK( fec_scheme_is_punctured(LIQUID_FEC_RS_M8) ==        0 );
 }
 
-LIQUID_AUTOTEST(fec_is_reedsolomon,"check that FEC scheme is Reed-Solomon","",0.1)
+LIQUID_AUTOTEST(fec_is_reedsolomon,"check that FEC scheme is Reed-Solomon","fec,config",0.1)
 {
     LIQUID_CHECK( fec_scheme_is_reedsolomon(LIQUID_FEC_NONE) ==         0 );
     LIQUID_CHECK( fec_scheme_is_reedsolomon(LIQUID_FEC_REP3) ==         0 );
@@ -157,7 +157,7 @@ LIQUID_AUTOTEST(fec_is_reedsolomon,"check that FEC scheme is Reed-Solomon","",0.
     LIQUID_CHECK( fec_scheme_is_reedsolomon(LIQUID_FEC_RS_M8) ==        1 );
 }
 
-LIQUID_AUTOTEST(fec_is_hamming,"check that FEC scheme is Hamming code","",0.1)
+LIQUID_AUTOTEST(fec_is_hamming,"check that FEC scheme is Hamming code","fec,config",0.1)
 {
     LIQUID_CHECK( fec_scheme_is_hamming(LIQUID_FEC_NONE) ==         0 );
     LIQUID_CHECK( fec_scheme_is_hamming(LIQUID_FEC_REP3) ==         0 );
