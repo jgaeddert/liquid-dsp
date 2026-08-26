@@ -46,12 +46,12 @@ void testbench_sumsqf(liquid_autotest __q__,
 }
 
 // run test with pre-determined data sets
-LIQUID_AUTOTEST(sumsqf_3,"","",0.1)    {   testbench_sumsqf(__q__,  sumsqf_test_x3,  3,  sumsqf_test_y3  ); }
-LIQUID_AUTOTEST(sumsqf_4,"","",0.1)    {   testbench_sumsqf(__q__,  sumsqf_test_x4,  4,  sumsqf_test_y4  ); }
-LIQUID_AUTOTEST(sumsqf_7,"","",0.1)    {   testbench_sumsqf(__q__,  sumsqf_test_x7,  7,  sumsqf_test_y7  ); }
-LIQUID_AUTOTEST(sumsqf_8,"","",0.1)    {   testbench_sumsqf(__q__,  sumsqf_test_x8,  8,  sumsqf_test_y8  ); }
-LIQUID_AUTOTEST(sumsqf_15,"","",0.1)   {   testbench_sumsqf(__q__,  sumsqf_test_x15, 15, sumsqf_test_y15 ); }
-LIQUID_AUTOTEST(sumsqf_16,"","",0.1)   {   testbench_sumsqf(__q__,  sumsqf_test_x16, 16, sumsqf_test_y16 ); }
+LIQUID_AUTOTEST(sumsqf_3, "","dotprod,sumsq",0.1) { testbench_sumsqf(__q__,  sumsqf_test_x3,  3,  sumsqf_test_y3  ); }
+LIQUID_AUTOTEST(sumsqf_4, "","dotprod,sumsq",0.1) { testbench_sumsqf(__q__,  sumsqf_test_x4,  4,  sumsqf_test_y4  ); }
+LIQUID_AUTOTEST(sumsqf_7, "","dotprod,sumsq",0.1) { testbench_sumsqf(__q__,  sumsqf_test_x7,  7,  sumsqf_test_y7  ); }
+LIQUID_AUTOTEST(sumsqf_8, "","dotprod,sumsq",0.1) { testbench_sumsqf(__q__,  sumsqf_test_x8,  8,  sumsqf_test_y8  ); }
+LIQUID_AUTOTEST(sumsqf_15,"","dotprod,sumsq",0.1) { testbench_sumsqf(__q__,  sumsqf_test_x15, 15, sumsqf_test_y15 ); }
+LIQUID_AUTOTEST(sumsqf_16,"","dotprod,sumsq",0.1) { testbench_sumsqf(__q__,  sumsqf_test_x16, 16, sumsqf_test_y16 ); }
 
 float sumsqf_test_x3[3] = {
   -0.4546496371984978f,

@@ -25,7 +25,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(dotprod_rrrf_basic,"basic dot product","",0.1)
+LIQUID_AUTOTEST(dotprod_rrrf_basic,"basic dot product","dotprod",0.1)
 {
     float tol = 1e-6;   // error tolerance
     float y;            // return value
@@ -70,7 +70,7 @@ LIQUID_AUTOTEST(dotprod_rrrf_basic,"basic dot product","",0.1)
 
 }
 
-LIQUID_AUTOTEST(dotprod_rrrf_uneven,"uneven dot product","",0.1)
+LIQUID_AUTOTEST(dotprod_rrrf_uneven,"uneven dot product","dotprod",0.1)
 {
     float tol = 1e-6;
     float y;
@@ -107,7 +107,7 @@ LIQUID_AUTOTEST(dotprod_rrrf_uneven,"uneven dot product","",0.1)
 
 }
 
-LIQUID_AUTOTEST(dotprod_rrrf_struct,"structured dot product","",0.1)
+LIQUID_AUTOTEST(dotprod_rrrf_struct,"structured dot product","dotprod",0.1)
 {
     float tol = 1e-6;
     float y;
@@ -143,7 +143,7 @@ LIQUID_AUTOTEST(dotprod_rrrf_struct,"structured dot product","",0.1)
     dotprod_rrrf_destroy(dp);
 }
 
-LIQUID_AUTOTEST(dotprod_rrrf_struct_align,"structured dot product with floating-point data","",0.1)
+LIQUID_AUTOTEST(dotprod_rrrf_struct_align,"structured dot product with floating-point data","dotprod",0.1)
 {
     float h[16] = {
     -0.050565, -0.952580,  0.274320,  1.232400, 
@@ -187,7 +187,7 @@ LIQUID_AUTOTEST(dotprod_rrrf_struct_align,"structured dot product with floating-
 }
 
 
-LIQUID_AUTOTEST(dotprod_rrrf_rand01,"dot product with floating-point data","",0.1)
+LIQUID_AUTOTEST(dotprod_rrrf_rand01,"dot product with floating-point data","dotprod",0.1)
 {
     float h[16] = {
     -0.050565, -0.952580,  0.274320,  1.232400, 
@@ -211,7 +211,7 @@ LIQUID_AUTOTEST(dotprod_rrrf_rand01,"dot product with floating-point data","",0.
     LIQUID_CHECK_DELTA(y,test,tol);
 }
 
-LIQUID_AUTOTEST(dotprod_rrrf_rand02,"dot product with floating-point data","",0.1)
+LIQUID_AUTOTEST(dotprod_rrrf_rand02,"dot product with floating-point data","dotprod",0.1)
 {
     float h[16] = {
      2.595300,  1.243600, -0.818550, -1.439800, 
@@ -254,7 +254,7 @@ LIQUID_AUTOTEST(dotprod_rrrf_rand02,"dot product with floating-point data","",0.
     dotprod_rrrf_destroy(q);
 }
 
-LIQUID_AUTOTEST(dotprod_rrrf_struct_lengths,"structured dot product, odd lengths","",0.1)
+LIQUID_AUTOTEST(dotprod_rrrf_struct_lengths,"structured dot product, odd lengths","dotprod",0.1)
 {
     float tol = 2e-6;
     float y;
@@ -367,7 +367,7 @@ void testbench_dotprod_rrrf(liquid_autotest __q__, unsigned int _n)
     LIQUID_CHECK_DELTA(y_run4, y_test, tol);
 }
 
-LIQUID_AUTOTEST(dotprod_rrrf_struct_vs_ordinal,"compare structured object to ordinal computation","",0.1)
+LIQUID_AUTOTEST(dotprod_rrrf_struct_vs_ordinal,"compare structured object to ordinal computation","dotprod",0.1)
 {
     // run many, many tests
     unsigned int i;
