@@ -126,25 +126,25 @@ void testbench_eqlms(liquid_autotest __q__,
 }
 
 // test different update strategies:       k,m,beta,init,p, mu,  n,update,mod scheme
-LIQUID_AUTOTEST(eqlms_00,"","",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   0,7,0.3,800,     0,LIQUID_MODEM_QPSK); }
-LIQUID_AUTOTEST(eqlms_01,"","",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   0,7,0.3,800,     1,LIQUID_MODEM_QPSK); }
-LIQUID_AUTOTEST(eqlms_02,"","",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   0,7,0.3,800,     2,LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(eqlms_00,"","equalization,eqlms",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   0,7,0.3,800,     0,LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(eqlms_01,"","equalization,eqlms",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   0,7,0.3,800,     1,LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(eqlms_02,"","equalization,eqlms",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   0,7,0.3,800,     2,LIQUID_MODEM_QPSK); }
 
 // test different initialization methods:  k,m,beta,init,p, mu,  n,update,mod scheme
-LIQUID_AUTOTEST(eqlms_03,"","",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   0,7,0.3,800,     0,LIQUID_MODEM_QAM16); }
-LIQUID_AUTOTEST(eqlms_04,"","",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   1,7,0.3,800,     0,LIQUID_MODEM_QAM16); }
-LIQUID_AUTOTEST(eqlms_05,"","",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   2,7,0.3,800,     0,LIQUID_MODEM_QAM16); }
-LIQUID_AUTOTEST(eqlms_06,"","",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   3,6,0.3,800,     0,LIQUID_MODEM_QAM16); }
+LIQUID_AUTOTEST(eqlms_03,"","equalization,eqlms",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   0,7,0.3,800,     0,LIQUID_MODEM_QAM16); }
+LIQUID_AUTOTEST(eqlms_04,"","equalization,eqlms",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   1,7,0.3,800,     0,LIQUID_MODEM_QAM16); }
+LIQUID_AUTOTEST(eqlms_05,"","equalization,eqlms",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   2,7,0.3,800,     0,LIQUID_MODEM_QAM16); }
+LIQUID_AUTOTEST(eqlms_06,"","equalization,eqlms",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   3,6,0.3,800,     0,LIQUID_MODEM_QAM16); }
 
 // test different configurations:          k,m,beta,init,p, mu,  n,update,mod scheme
-LIQUID_AUTOTEST(eqlms_07,"","",0.1) { testbench_eqlms(__q__, 2,9, 0.3,   0,7,0.3,800,     0,LIQUID_MODEM_QPSK); }
-LIQUID_AUTOTEST(eqlms_08,"","",0.1) { testbench_eqlms(__q__, 2,7, 0.2,   0,9,0.3,800,     0,LIQUID_MODEM_QPSK); }
-LIQUID_AUTOTEST(eqlms_09,"","",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   0,3,0.3,800,     0,LIQUID_MODEM_QPSK); }
-LIQUID_AUTOTEST(eqlms_10,"","",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   0,7,0.5,800,     0,LIQUID_MODEM_ARB64VT); }
-LIQUID_AUTOTEST(eqlms_11,"","",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   0,7,0.1,800,     0,LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(eqlms_07,"","equalization,eqlms",0.1) { testbench_eqlms(__q__, 2,9, 0.3,   0,7,0.3,800,     0,LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(eqlms_08,"","equalization,eqlms",0.1) { testbench_eqlms(__q__, 2,7, 0.2,   0,9,0.3,800,     0,LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(eqlms_09,"","equalization,eqlms",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   0,3,0.3,800,     0,LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(eqlms_10,"","equalization,eqlms",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   0,7,0.5,800,     0,LIQUID_MODEM_ARB64VT); }
+LIQUID_AUTOTEST(eqlms_11,"","equalization,eqlms",0.1) { testbench_eqlms(__q__, 2,7, 0.3,   0,7,0.1,800,     0,LIQUID_MODEM_QPSK); }
 //void xautotest_eqlms_12() { testbench_eqlms(__q__, 4,7, 0.3,   0,7,0.7,800,     0,LIQUID_MODEM_QPSK); }
 
-LIQUID_AUTOTEST(eqlms_config,"test eqlms configuration","",0.1)
+LIQUID_AUTOTEST(eqlms_config,"test eqlms configuration","equalization,eqlms",0.1)
 {
     _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
@@ -185,7 +185,7 @@ LIQUID_AUTOTEST(eqlms_config,"test eqlms configuration","",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(eqlms_cccf_copy,"test copying eqlms object","",0.1)
+LIQUID_AUTOTEST(eqlms_cccf_copy,"test copying eqlms object","equalization,eqlms",0.1)
 {
     // create initial object
     eqlms_cccf q0 = eqlms_cccf_create_lowpass(21, 0.12345f);

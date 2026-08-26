@@ -35,7 +35,7 @@ const float eqrls_rrrf_autotest_data_sequence[64] = {
     -1.0,  1.0,  1.0, -1.0,  1.0, -1.0,  1.0, -1.0
 };
 
-LIQUID_AUTOTEST(eqrls_rrrf_01,"eqrls channel filter (delta with zero delay)","",0.1)
+LIQUID_AUTOTEST(eqrls_rrrf_01,"eqrls channel filter (delta with zero delay)","equalization,eqrls",0.1)
 {
     float tol=1e-2f;        // error tolerance
 
@@ -84,7 +84,7 @@ LIQUID_AUTOTEST(eqrls_rrrf_01,"eqrls channel filter (delta with zero delay)","",
     eqrls_rrrf_destroy(eq);
 }
 
-LIQUID_AUTOTEST(eqrls_rrrf_copy,"test copying eqrls object","",0.1)
+LIQUID_AUTOTEST(eqrls_rrrf_copy,"test copying eqrls object","equalization,eqrls",0.1)
 {
     // create initial object
     unsigned int i;
