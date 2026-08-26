@@ -1482,6 +1482,8 @@ extern struct liquid_autotest_s count_ones_mod2_s;
 extern struct liquid_autotest_s bdotprod_s;
 extern struct liquid_autotest_s count_leading_zeros_s;
 extern struct liquid_autotest_s msb_index_s;
+// ./src/utility/tests/keywords_autotest.c
+extern struct liquid_autotest_s keywords_subset_s;
 // ./src/utility/tests/memory_autotest.c
 extern struct liquid_autotest_s liquid_malloc_copy_s;
 extern struct liquid_autotest_s liquid_aligned_alloc_s;
@@ -2839,6 +2841,7 @@ liquid_autotest liquid_autotest_registry[] =
     &bdotprod_s,
     &count_leading_zeros_s,
     &msb_index_s,
+    &keywords_subset_s,
     &liquid_malloc_copy_s,
     &liquid_aligned_alloc_s,
     &pack_array_s,

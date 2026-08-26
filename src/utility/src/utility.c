@@ -29,6 +29,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "liquid.h"
 
@@ -69,5 +70,51 @@ char liquid_convert_units(float * _v)
 int liquid_compare_float(const void * _a, const void* _b)
 {
     return *(float*)_a > *(float*)_b ? 1 : -1;
+}
+
+// determine if all requested keywords are present in the existing keywords
+//  _existing  : comma-separated list of existing keywords, e.g. "fir,filter"
+//  _requested : comma-separated list of requested keywords, e.g. "fir"
+// returns true if every non-empty keyword in _requested also appears in
+// _existing as an exact, comma-delimited token match; an empty _requested
+// is considered a subset of any _existing (returns true)
+bool liquid_keywords_subset(const char * _existing,
+                            const char * _requested)
+{
+    if (_requested == NULL)
+        return true;
+
+    const char * r = _requested;
+    for (;;) {
+        // extent of the current requested token (up to next comma or end)
+        const char * rcomma = strchr(r, ',');
+        size_t        rlen  = rcomma ? (size_t)(rcomma - r) : strlen(r);
+
+        // each non-empty requested token must appear verbatim in _existing
+        if (rlen > 0) {
+            bool found = false;
+            if (_existing != NULL) {
+                const char * e = _existing;
+                for (;;) {
+                    const char * ecomma = strchr(e, ',');
+                    size_t        elen  = ecomma ? (size_t)(ecomma - e) : strlen(e);
+                    if (elen == rlen && strncmp(e, r, elen) == 0) {
+                        found = true;
+                        break;
+                    }
+                    if (ecomma == NULL)
+                        break;
+                    e = ecomma + 1;
+                }
+            }
+            if (!found)
+                return false;
+        }
+
+        if (rcomma == NULL)
+            break;
+        r = rcomma + 1;
+    }
+    return true;
 }
 

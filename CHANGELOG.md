@@ -16,6 +16,9 @@
   * filter
     - resamp2: moving the default filter design to windowed Kaiser; firdespm
       produces a good filter but takes prohibitively long on certain systems
+  * utility
+    - added method to compute keyword matching for running autotests,
+      benchmarks
 
 ## 1.8.2 - 2026-08-06
 
