@@ -238,6 +238,28 @@ int liquid_registry_schedule_search(liquid_registry _q, const char * _query)
     return LIQUID_OK;
 }
 
+// schedule only tests whose keywords contain all requested keywords
+//  _q        : test registry
+//  _keywords : comma-separated list of requested keywords, e.g. "fft,composite"
+int liquid_registry_schedule_keywords(liquid_registry _q, const char * _keywords)
+{
+    unsigned int i;
+    unsigned int num_found = 0;
+    for (i=0; i<_q->num_tests; i++)
+    {
+        if (liquid_keywords_subset(_q->autotests[i]->keywords, _keywords)) {
+            _q->autotests[i]->status = LIQUID_AUTOTEST_SCHED;
+            num_found++;
+        } else {
+            _q->autotests[i]->status = LIQUID_AUTOTEST_SKIP;
+        }
+    }
+    if (num_found == 0)
+        liquid_log_warn("liquid_registry_schedule_keywords(), no tests matched keywords '%s'", _keywords);
+
+    return LIQUID_OK;
+}
+
 // run all scheduled tests
 int liquid_registry_execute(liquid_registry _q, bool _halt_on_fail)
 {

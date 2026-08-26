@@ -173,6 +173,11 @@ int liquid_registry_schedule_one(liquid_registry _q, unsigned int _id);
 // schedule only tests that match search string
 int liquid_registry_schedule_search(liquid_registry _q, const char * _query);
 
+// schedule only tests whose keywords contain all requested keywords
+//  _q        : test registry
+//  _keywords : comma-separated list of requested keywords, e.g. "fft,composite"
+int liquid_registry_schedule_keywords(liquid_registry _q, const char * _keywords);
+
 // run all scheduled tests
 int liquid_registry_execute(liquid_registry _q, bool _halt_on_fail);
 
