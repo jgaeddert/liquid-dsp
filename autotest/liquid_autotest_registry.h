@@ -235,10 +235,6 @@ extern struct liquid_autotest_s packetizer_copy_s;
 // ./src/fft/tests/asgram_autotest.c
 extern struct liquid_autotest_s asgramcf_copy_s;
 extern struct liquid_autotest_s asgramcf_config_s;
-// ./src/fft/tests/fft_autotest.c
-extern struct liquid_autotest_s fft_shift_4_s;
-extern struct liquid_autotest_s fft_shift_8_s;
-extern struct liquid_autotest_s fft_shift_5_s;
 // ./src/fft/tests/fft_r2r_autotest.c
 extern struct liquid_autotest_s fft_r2r_REDFT00_n8_s;
 extern struct liquid_autotest_s fft_r2r_REDFT10_n8_s;
@@ -264,6 +260,10 @@ extern struct liquid_autotest_s fft_r2r_RODFT00_n32_s;
 extern struct liquid_autotest_s fft_r2r_RODFT10_n32_s;
 extern struct liquid_autotest_s fft_r2r_RODFT01_n32_s;
 extern struct liquid_autotest_s fft_r2r_RODFT11_n32_s;
+// ./src/fft/tests/fft_shift_autotest.c
+extern struct liquid_autotest_s fft_shift_4_s;
+extern struct liquid_autotest_s fft_shift_8_s;
+extern struct liquid_autotest_s fft_shift_5_s;
 // ./src/fft/tests/fft_transforms_autotest.c
 extern struct liquid_autotest_s fft_3_s;
 extern struct liquid_autotest_s fft_5_s;
@@ -1711,9 +1711,6 @@ liquid_autotest liquid_autotest_registry[] =
     &packetizer_copy_s,
     &asgramcf_copy_s,
     &asgramcf_config_s,
-    &fft_shift_4_s,
-    &fft_shift_8_s,
-    &fft_shift_5_s,
     &fft_r2r_REDFT00_n8_s,
     &fft_r2r_REDFT10_n8_s,
     &fft_r2r_REDFT01_n8_s,
@@ -1738,6 +1735,9 @@ liquid_autotest liquid_autotest_registry[] =
     &fft_r2r_RODFT10_n32_s,
     &fft_r2r_RODFT01_n32_s,
     &fft_r2r_RODFT11_n32_s,
+    &fft_shift_4_s,
+    &fft_shift_8_s,
+    &fft_shift_5_s,
     &fft_3_s,
     &fft_5_s,
     &fft_6_s,

@@ -27,7 +27,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(spwaterfall_config,"","",0.1)
+LIQUID_AUTOTEST(spwaterfall_config,"","fft,spwaterfall",0.1)
 {
     _liquid_error_downgrade_enable();
 
@@ -108,11 +108,11 @@ void testbench_spwaterfallcf_noise(liquid_autotest __q__,
 }
 
 // test different transform sizes
-LIQUID_AUTOTEST(spwaterfallcf_noise_440, "","",0.1) { testbench_spwaterfallcf_noise(__q__,  440, 320, 100, 240, -80.0); }
-LIQUID_AUTOTEST(spwaterfallcf_noise_1024,"","",0.1) { testbench_spwaterfallcf_noise(__q__,  680, 480, 150, 640, -80.0); }
-LIQUID_AUTOTEST(spwaterfallcf_noise_1200,"","",0.1) { testbench_spwaterfallcf_noise(__q__, 1200, 800, 400, 800, -80.0); }
+LIQUID_AUTOTEST(spwaterfallcf_noise_440, "","fft,spwaterfall",0.1) { testbench_spwaterfallcf_noise(__q__,  440, 320, 100, 240, -80.0); }
+LIQUID_AUTOTEST(spwaterfallcf_noise_1024,"","fft,spwaterfall",0.1) { testbench_spwaterfallcf_noise(__q__,  680, 480, 150, 640, -80.0); }
+LIQUID_AUTOTEST(spwaterfallcf_noise_1200,"","fft,spwaterfall",0.1) { testbench_spwaterfallcf_noise(__q__, 1200, 800, 400, 800, -80.0); }
 
-LIQUID_AUTOTEST(spwaterfall_operation,"test normal operation","",0.1)
+LIQUID_AUTOTEST(spwaterfall_operation,"test normal operation","fft,spwaterfall",0.1)
 {
     // create default object
     spwaterfallcf q = spwaterfallcf_create(1200, LIQUID_WINDOW_HAMMING, 800, 10, 960);
@@ -144,7 +144,7 @@ LIQUID_AUTOTEST(spwaterfall_operation,"test normal operation","",0.1)
     spwaterfallcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(spwaterfall_copy,"","",0.1)
+LIQUID_AUTOTEST(spwaterfall_copy,"","fft,spwaterfall",0.1)
 {
     unsigned int nfft =  240;   // transform size
     unsigned int time =  192;   // time size
@@ -187,7 +187,7 @@ LIQUID_AUTOTEST(spwaterfall_copy,"","",0.1)
     spwaterfallcf_destroy(q1);
 }
 
-LIQUID_AUTOTEST(spwaterfall_gnuplot,"test file export","",0.1)
+LIQUID_AUTOTEST(spwaterfall_gnuplot,"test file export","fft,spwaterfall",0.1)
 {
     // create default object
     spwaterfallcf q = spwaterfallcf_create_default(540, 320);

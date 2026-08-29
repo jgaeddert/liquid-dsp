@@ -67,26 +67,26 @@ void testbench_spgramcf_noise(liquid_autotest __q__,
 }
 
 // test different transform sizes, default parameters
-LIQUID_AUTOTEST(spgramcf_noise_440,"","",0.1)  { testbench_spgramcf_noise(__q__,  440, 0, 0, 0, -80.0); }
-LIQUID_AUTOTEST(spgramcf_noise_1024,"","",0.1) { testbench_spgramcf_noise(__q__, 1024, 0, 0, 0, -80.0); }
-LIQUID_AUTOTEST(spgramcf_noise_1200,"","",0.1) { testbench_spgramcf_noise(__q__, 1200, 0, 0, 0, -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_440,"","fft,spgram",0.1)  { testbench_spgramcf_noise(__q__,  440, 0, 0, 0, -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_1024,"","fft,spgram",0.1) { testbench_spgramcf_noise(__q__, 1024, 0, 0, 0, -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_1200,"","fft,spgram",0.1) { testbench_spgramcf_noise(__q__, 1200, 0, 0, 0, -80.0); }
 
 // test different transform sizes, specific parameters
-LIQUID_AUTOTEST(spgramcf_noise_custom_0,"","",0.1) { testbench_spgramcf_noise(__q__, 400, 400, 100, LIQUID_WINDOW_HAMMING, -80.0); }
-LIQUID_AUTOTEST(spgramcf_noise_custom_1,"","",0.1) { testbench_spgramcf_noise(__q__, 512, 200, 120, LIQUID_WINDOW_HAMMING, -80.0); }
-LIQUID_AUTOTEST(spgramcf_noise_custom_2,"","",0.1) { testbench_spgramcf_noise(__q__, 640, 100,  10, LIQUID_WINDOW_HAMMING, -80.0); }
-LIQUID_AUTOTEST(spgramcf_noise_custom_3,"","",0.1) { testbench_spgramcf_noise(__q__, 960,  83,  17, LIQUID_WINDOW_HAMMING, -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_custom_0,"","fft,spgram",0.1) { testbench_spgramcf_noise(__q__, 400, 400, 100, LIQUID_WINDOW_HAMMING, -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_custom_1,"","fft,spgram",0.1) { testbench_spgramcf_noise(__q__, 512, 200, 120, LIQUID_WINDOW_HAMMING, -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_custom_2,"","fft,spgram",0.1) { testbench_spgramcf_noise(__q__, 640, 100,  10, LIQUID_WINDOW_HAMMING, -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_custom_3,"","fft,spgram",0.1) { testbench_spgramcf_noise(__q__, 960,  83,  17, LIQUID_WINDOW_HAMMING, -80.0); }
 
 // test different window types
-LIQUID_AUTOTEST(spgramcf_noise_hamming        ,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_HAMMING,        -80.0); }
-LIQUID_AUTOTEST(spgramcf_noise_hann           ,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_HANN,           -80.0); }
-LIQUID_AUTOTEST(spgramcf_noise_blackmanharris ,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_BLACKMANHARRIS, -80.0); }
-LIQUID_AUTOTEST(spgramcf_noise_blackmanharris7,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_BLACKMANHARRIS7,-80.0); }
-LIQUID_AUTOTEST(spgramcf_noise_kaiser         ,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_KAISER,         -80.0); }
-LIQUID_AUTOTEST(spgramcf_noise_flattop        ,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_FLATTOP,        -80.0); }
-LIQUID_AUTOTEST(spgramcf_noise_triangular     ,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_TRIANGULAR,     -80.0); }
-LIQUID_AUTOTEST(spgramcf_noise_rcostaper      ,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_RCOSTAPER,      -80.0); }
-LIQUID_AUTOTEST(spgramcf_noise_kbd            ,"","",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_KBD,            -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_hamming        ,"","fft,spgram",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_HAMMING,        -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_hann           ,"","fft,spgram",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_HANN,           -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_blackmanharris ,"","fft,spgram",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_BLACKMANHARRIS, -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_blackmanharris7,"","fft,spgram",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_BLACKMANHARRIS7,-80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_kaiser         ,"","fft,spgram",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_KAISER,         -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_flattop        ,"","fft,spgram",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_FLATTOP,        -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_triangular     ,"","fft,spgram",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_TRIANGULAR,     -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_rcostaper      ,"","fft,spgram",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_RCOSTAPER,      -80.0); }
+LIQUID_AUTOTEST(spgramcf_noise_kbd            ,"","fft,spgram",0.1) { testbench_spgramcf_noise(__q__, 800, 0, 0, LIQUID_WINDOW_KBD,            -80.0); }
 
 void testbench_spgramcf_signal(liquid_autotest __q__,
         unsigned int _nfft, int _wtype, float _fc, float _SNRdB)
@@ -146,14 +146,14 @@ void testbench_spgramcf_signal(liquid_autotest __q__,
     nco_crcf_destroy(mixer);
 }
 
-LIQUID_AUTOTEST(spgramcf_signal_00,"","",0.1) { testbench_spgramcf_signal(__q__, 800,LIQUID_WINDOW_HAMMING, 0.0f,30.0f); }
-LIQUID_AUTOTEST(spgramcf_signal_01,"","",0.1) { testbench_spgramcf_signal(__q__, 800,LIQUID_WINDOW_HAMMING, 0.2f,10.0f); }
-LIQUID_AUTOTEST(spgramcf_signal_02,"","",0.1) { testbench_spgramcf_signal(__q__, 800,LIQUID_WINDOW_HANN,    0.2f,10.0f); }
-LIQUID_AUTOTEST(spgramcf_signal_03,"","",0.1) { testbench_spgramcf_signal(__q__, 400,LIQUID_WINDOW_KAISER, -0.3f,40.0f); }
-LIQUID_AUTOTEST(spgramcf_signal_04,"","",0.1) { testbench_spgramcf_signal(__q__, 640,LIQUID_WINDOW_HAMMING,-0.2f, 0.0f); }
-LIQUID_AUTOTEST(spgramcf_signal_05,"","",0.1) { testbench_spgramcf_signal(__q__, 640,LIQUID_WINDOW_HAMMING, 0.1f,-3.0f); }
+LIQUID_AUTOTEST(spgramcf_signal_00,"","fft,spgram",0.1) { testbench_spgramcf_signal(__q__, 800,LIQUID_WINDOW_HAMMING, 0.0f,30.0f); }
+LIQUID_AUTOTEST(spgramcf_signal_01,"","fft,spgram",0.1) { testbench_spgramcf_signal(__q__, 800,LIQUID_WINDOW_HAMMING, 0.2f,10.0f); }
+LIQUID_AUTOTEST(spgramcf_signal_02,"","fft,spgram",0.1) { testbench_spgramcf_signal(__q__, 800,LIQUID_WINDOW_HANN,    0.2f,10.0f); }
+LIQUID_AUTOTEST(spgramcf_signal_03,"","fft,spgram",0.1) { testbench_spgramcf_signal(__q__, 400,LIQUID_WINDOW_KAISER, -0.3f,40.0f); }
+LIQUID_AUTOTEST(spgramcf_signal_04,"","fft,spgram",0.1) { testbench_spgramcf_signal(__q__, 640,LIQUID_WINDOW_HAMMING,-0.2f, 0.0f); }
+LIQUID_AUTOTEST(spgramcf_signal_05,"","fft,spgram",0.1) { testbench_spgramcf_signal(__q__, 640,LIQUID_WINDOW_HAMMING, 0.1f,-3.0f); }
 
-LIQUID_AUTOTEST(spgramcf_counters,"","",0.1)
+LIQUID_AUTOTEST(spgramcf_counters,"","fft,spgram",0.1)
 {
     // create spectral periodogram with specific parameters
     unsigned int nfft=1200, wlen=400, delay=200;
@@ -202,7 +202,7 @@ LIQUID_AUTOTEST(spgramcf_counters,"","",0.1)
     spgramcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(spgramcf_config,"","",0.1)
+LIQUID_AUTOTEST(spgramcf_config,"","fft,spgram",0.1)
 {
     _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
@@ -239,7 +239,7 @@ LIQUID_AUTOTEST(spgramcf_config,"","",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(spgramcf_standalone,"","",0.1)
+LIQUID_AUTOTEST(spgramcf_standalone,"","fft,spgram",0.1)
 {
     unsigned int nfft        = 1200;
     unsigned int num_samples = 20*nfft; // number of samples to generate
@@ -270,7 +270,7 @@ LIQUID_AUTOTEST(spgramcf_standalone,"","",0.1)
 
 // check spectral periodogram operation where the input size is much shorter
 // than the transform size
-LIQUID_AUTOTEST(spgramcf_short,"","",0.1)
+LIQUID_AUTOTEST(spgramcf_short,"","fft,spgram",0.1)
 {
     unsigned int nfft        = 1200;    // transform size
     unsigned int num_samples =  200;    // number of samples to generate
@@ -303,7 +303,7 @@ LIQUID_AUTOTEST(spgramcf_short,"","",0.1)
 }
 
 // check copy method
-LIQUID_AUTOTEST(spgramcf_copy,"","",0.1)
+LIQUID_AUTOTEST(spgramcf_copy,"","fft,spgram",0.1)
 {
     unsigned int nfft        = 1200;    // transform size
     unsigned int num_samples = 9600;    // number of samples to generate
@@ -350,7 +350,7 @@ LIQUID_AUTOTEST(spgramcf_copy,"","",0.1)
 }
 
 // check spectral periodogram behavior on null input (zero samples)
-LIQUID_AUTOTEST(spgramcf_null,"","",0.1)
+LIQUID_AUTOTEST(spgramcf_null,"","fft,spgram",0.1)
 {
     unsigned int nfft = 1200;   // transform size
     float psd[nfft];
@@ -364,7 +364,7 @@ LIQUID_AUTOTEST(spgramcf_null,"","",0.1)
 }
 
 // test file export
-LIQUID_AUTOTEST(spgram_gnuplot,"","",0.1)
+LIQUID_AUTOTEST(spgram_gnuplot,"","fft,spgram",0.1)
 {
     // create default object
     spgramcf q = spgramcf_create_default(540);
