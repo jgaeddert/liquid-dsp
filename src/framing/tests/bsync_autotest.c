@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(bsync_rrrf_15,"bsync_rrrf/simple correlation","",0.1)
+LIQUID_AUTOTEST(bsync_rrrf_15,"bsync_rrrf/simple correlation","framing,bsync",0.1)
 {
     // generate sequence (15-bit msequence)
     float h[15] = {
@@ -60,7 +60,7 @@ LIQUID_AUTOTEST(bsync_rrrf_15,"bsync_rrrf/simple correlation","",0.1)
     bsync_rrrf_destroy(fs);
 }
 
-LIQUID_AUTOTEST(bsync_crcf_15,"bsync_crcf/simple correlation","",0.1)
+LIQUID_AUTOTEST(bsync_crcf_15,"bsync_crcf/simple correlation","framing,bsync",0.1)
 {
     // generate sequence (15-bit msequence)
     float h[15] = {
@@ -99,7 +99,7 @@ LIQUID_AUTOTEST(bsync_crcf_15,"bsync_crcf/simple correlation","",0.1)
     bsync_crcf_destroy(fs);
 }
 
-LIQUID_AUTOTEST(bsync_crcf_phase_15,"bsync_crcf/simple correlation with phase offset","",0.1)
+LIQUID_AUTOTEST(bsync_crcf_phase_15,"bsync_crcf/simple correlation with phase offset","framing,bsync",0.1)
 {
     /*
     // generate sequence (15-bit msequence)

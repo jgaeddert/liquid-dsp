@@ -746,7 +746,7 @@ extern struct liquid_autotest_s gmskframesync_k04_m05_bt30_s;
 extern struct liquid_autotest_s gmskframesync_k04_m05_bt40_s;
 extern struct liquid_autotest_s gmskframesync_k03_m07_bt20_s;
 extern struct liquid_autotest_s gmskframesync_k08_m20_bt15_s;
-extern struct liquid_autotest_s gmskframesync_k15_m02_bt40_s_s;
+extern struct liquid_autotest_s gmskframesync_k15_m02_bt40_s;
 extern struct liquid_autotest_s gmskframe_config_s;
 // ./src/framing/tests/msource_autotest.c
 extern struct liquid_autotest_s msourcecf_tone_s;
@@ -2170,7 +2170,7 @@ liquid_autotest liquid_autotest_registry[] =
     &gmskframesync_k04_m05_bt40_s,
     &gmskframesync_k03_m07_bt20_s,
     &gmskframesync_k08_m20_bt15_s,
-    &gmskframesync_k15_m02_bt40_s_s,
+    &gmskframesync_k15_m02_bt40_s,
     &gmskframe_config_s,
     &msourcecf_tone_s,
     &msourcecf_chirp_s,

@@ -154,11 +154,12 @@ void testbench_qdsync_linear(liquid_autotest __q__,
 }
 
 // test specific configurations
-LIQUID_AUTOTEST(qdsync_cccf_k2,"","",0.1) { testbench_qdsync_linear(__q__, 2, 7, 0.3f); }
-LIQUID_AUTOTEST(qdsync_cccf_k3,"","",0.1) { testbench_qdsync_linear(__q__, 3, 7, 0.3f); }
-LIQUID_AUTOTEST(qdsync_cccf_k4,"","",0.1) { testbench_qdsync_linear(__q__, 4, 7, 0.3f); }
+LIQUID_AUTOTEST(qdsync_cccf_k2,"qdsync (linear), k=2","framing,qdsync",0.1) { testbench_qdsync_linear(__q__, 2, 7, 0.3f); }
+LIQUID_AUTOTEST(qdsync_cccf_k3,"qdsync (linear), k=3","framing,qdsync",0.1) { testbench_qdsync_linear(__q__, 3, 7, 0.3f); }
+LIQUID_AUTOTEST(qdsync_cccf_k4,"qdsync (linear), k=4","framing,qdsync",0.1) { testbench_qdsync_linear(__q__, 4, 7, 0.3f); }
 
-LIQUID_AUTOTEST(qdsync_set_buf_len,"test setting qdsync buffer length to different sizes throughout run","",0.1)
+LIQUID_AUTOTEST(qdsync_set_buf_len,"test setting qdsync buffer length to different sizes throughout run",
+    "framing,qdsync",0.1)
 {
     // options
     unsigned int seq_len      = 2400;   // total number of sync symbols
@@ -213,7 +214,8 @@ LIQUID_AUTOTEST(qdsync_set_buf_len,"test setting qdsync buffer length to differe
     firinterp_crcf_destroy(interp);
 }
 
-LIQUID_AUTOTEST(qdsync_cccf_copy,"test copying from one object to another","",0.1)
+LIQUID_AUTOTEST(qdsync_cccf_copy,"test copying from one object to another",
+    "framing,qdsync",0.1)
 {
     // options
     unsigned int seq_len= 2400; // total number of symbols in sequence
@@ -296,7 +298,7 @@ LIQUID_AUTOTEST(qdsync_cccf_copy,"test copying from one object to another","",0.
     qdsync_cccf_destroy(q_copy);
 }
 
-LIQUID_AUTOTEST(qdsync_cccf_config,"qdsync config","",0.1)
+LIQUID_AUTOTEST(qdsync_cccf_config,"qdsync config","framing,qdsync",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls

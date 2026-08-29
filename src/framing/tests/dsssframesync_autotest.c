@@ -26,7 +26,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(dsssframesync,"full dsssframe synchronization","",0.1)
+LIQUID_AUTOTEST(dsssframesync,"full dsssframe synchronization","framing,dsssframesync",0.1)
 {
     unsigned int _payload_len = 400;
 
@@ -71,7 +71,7 @@ LIQUID_AUTOTEST(dsssframesync,"full dsssframe synchronization","",0.1)
     dsssframesync_destroy(fs);
 }
 
-LIQUID_AUTOTEST(dsssframe_config,"check configuration validity","",0.1)
+LIQUID_AUTOTEST(dsssframe_config,"check dsssframe configuration validity","framing,dsssframesync",0.1)
 {
     _liquid_error_downgrade_enable();
 

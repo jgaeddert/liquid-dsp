@@ -27,7 +27,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(framesync64,"simple recovery of frame64 in noise","",0.1)
+LIQUID_AUTOTEST(framesync64,"simple recovery of frame64 in noise","framing,frame64,framesync64",0.1)
 {
     unsigned int i;
 
@@ -62,7 +62,7 @@ LIQUID_AUTOTEST(framesync64,"simple recovery of frame64 in noise","",0.1)
     framesync64_destroy(fs);
 }
 
-LIQUID_AUTOTEST(framegen64_copy,"copying from one framegen64 object to another","",0.1)
+LIQUID_AUTOTEST(framegen64_copy,"copying from one framegen64 object to another","framing,frame64,framesync64",0.1)
 {
     framegen64 q_orig = framegen64_create();
     framegen64 q_copy = framegen64_copy(q_orig);
@@ -73,7 +73,7 @@ LIQUID_AUTOTEST(framegen64_copy,"copying from one framegen64 object to another",
     framegen64_destroy(q_copy);
 }
 
-LIQUID_AUTOTEST(framesync64_copy,"copying from one framesync64 object to another","",0.1)
+LIQUID_AUTOTEST(framesync64_copy,"copying from one framesync64 object to another","framing,frame64,framesync64",0.1)
 {
     unsigned int i;
     int context_0 = 0;
@@ -136,7 +136,7 @@ LIQUID_AUTOTEST(framesync64_copy,"copying from one framesync64 object to another
     framesync64_destroy(fs1);
 }
 
-LIQUID_AUTOTEST(framesync64_config,"","",0.1)
+LIQUID_AUTOTEST(framesync64_config,"","framing,frame64,framesync64",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls
@@ -237,11 +237,11 @@ void testbench_framesync64_debug(liquid_autotest __q__, int _code)
 }
 
 // test exporting debugging files with different return codes
-LIQUID_AUTOTEST(framesync64_debug_none,"","",0.1) { testbench_framesync64_debug(__q__,  0); }
-LIQUID_AUTOTEST(framesync64_debug_user,"","",0.1) { testbench_framesync64_debug(__q__,  1); }
-LIQUID_AUTOTEST(framesync64_debug_ndet,"","",0.1) { testbench_framesync64_debug(__q__, -1); }
-LIQUID_AUTOTEST(framesync64_debug_head,"","",0.1) { testbench_framesync64_debug(__q__, -2); }
-LIQUID_AUTOTEST(framesync64_debug_rand,"","",0.1) { testbench_framesync64_debug(__q__, -3); }
+LIQUID_AUTOTEST(framesync64_debug_none,"","framing,frame64,framesync64",0.1) { testbench_framesync64_debug(__q__,  0); }
+LIQUID_AUTOTEST(framesync64_debug_user,"","framing,frame64,framesync64",0.1) { testbench_framesync64_debug(__q__,  1); }
+LIQUID_AUTOTEST(framesync64_debug_ndet,"","framing,frame64,framesync64",0.1) { testbench_framesync64_debug(__q__, -1); }
+LIQUID_AUTOTEST(framesync64_debug_head,"","framing,frame64,framesync64",0.1) { testbench_framesync64_debug(__q__, -2); }
+LIQUID_AUTOTEST(framesync64_debug_rand,"","framing,frame64,framesync64",0.1) { testbench_framesync64_debug(__q__, -3); }
 
 
 static int callback_framesync64_autotest_estimation(
@@ -275,7 +275,7 @@ void framesync64_channel(float complex * _frame,
         _frame[i] = _frame[i]*cexp(_Complex_I*_dphi*i)*gain + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 }
 
-LIQUID_AUTOTEST(framesync64_estimation,"simple recovery of frame64 in noise","",0.1)
+LIQUID_AUTOTEST(framesync64_estimation,"simple recovery of frame64 in noise","framing,frame64,framesync64",0.1)
 {
     // create objects
     framegen64 fg = framegen64_create();

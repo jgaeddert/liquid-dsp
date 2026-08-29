@@ -27,7 +27,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(dsssframe64sync,"","",0.1)
+LIQUID_AUTOTEST(dsssframe64sync,"","framing,dsssframe64",0.1)
 {
     // create objects
     unsigned int context = 0;
@@ -63,7 +63,7 @@ LIQUID_AUTOTEST(dsssframe64sync,"","",0.1)
     free(frame);
 }
 
-LIQUID_AUTOTEST(dsssframe64_config,"test errors and invalid configuration","",0.1)
+LIQUID_AUTOTEST(dsssframe64_config,"test errors and invalid configuration","framing,dsssframe64",0.1)
 {
     _liquid_error_downgrade_enable();
 
@@ -94,7 +94,7 @@ LIQUID_AUTOTEST(dsssframe64_config,"test errors and invalid configuration","",0.
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(dsssframe64gen_copy,"copy dsssframe64gen object","",0.1)
+LIQUID_AUTOTEST(dsssframe64gen_copy,"copy dsssframe64gen object","framing,dsssframe64",0.1)
 {
     // create object and copy
     dsssframe64gen q0 = dsssframe64gen_create();
@@ -123,7 +123,7 @@ LIQUID_AUTOTEST(dsssframe64gen_copy,"copy dsssframe64gen object","",0.1)
     free(buf_1);
 }
 
-LIQUID_AUTOTEST(dsssframe64sync_copy,"copy dsssframe64sync object","",0.1)
+LIQUID_AUTOTEST(dsssframe64sync_copy,"copy dsssframe64sync object","framing,dsssframe64",0.1)
 {
     // create object and generate frame
     dsssframe64gen fg = dsssframe64gen_create();

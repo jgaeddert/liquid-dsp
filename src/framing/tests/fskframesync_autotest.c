@@ -27,7 +27,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(fskframesync,"test simple recovery of frame in noise","",0.1)
+LIQUID_AUTOTEST(fskframesync,"test simple recovery of frame in noise","framing,fsk,fskframe,sync,fskframesync",0.1)
 {
     // options
     float SNRdB       =  20.0f; // signal-to-noise ratio
@@ -91,7 +91,7 @@ LIQUID_AUTOTEST(fskframesync,"test simple recovery of frame in noise","",0.1)
     fskframesync_destroy(fs);
 }
 
-LIQUID_AUTOTEST(fskframe_config,"check configuration validity","",0.1)
+LIQUID_AUTOTEST(fskframe_config,"check configuration validity","framing,fsk,fskframe,fskframesync",0.1)
 {
     _liquid_error_downgrade_enable();
 

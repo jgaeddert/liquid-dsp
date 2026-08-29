@@ -70,17 +70,17 @@ void testbench_qpacketmodem_modulated(liquid_autotest __q__,
     LIQUID_CHECK_ARRAY( payload_tx, payload_rx, _payload_len );
 }
 
-LIQUID_AUTOTEST(qpacketmodem_bpsk,"","",0.1)   { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QPSK);    }
-LIQUID_AUTOTEST(qpacketmodem_qpsk,"","",0.1)   { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QPSK);    }
-LIQUID_AUTOTEST(qpacketmodem_psk8,"","",0.1)   { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_PSK8);    }
-LIQUID_AUTOTEST(qpacketmodem_qam16,"","",0.1)  { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM16);   }
-LIQUID_AUTOTEST(qpacketmodem_sqam32,"","",0.1) { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM32);  }
-LIQUID_AUTOTEST(qpacketmodem_qam64,"","",0.1)  { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM64);   }
-LIQUID_AUTOTEST(qpacketmodem_sqam128,"","",0.1){ testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM128); }
-LIQUID_AUTOTEST(qpacketmodem_qam256,"","",0.1) { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM256);  }
+LIQUID_AUTOTEST(qpacketmodem_bpsk,   "qpacketmodem, bpsk",   "framing,qpacketmodem",0.1) { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QPSK);    }
+LIQUID_AUTOTEST(qpacketmodem_qpsk,   "qpacketmodem, qpsk",   "framing,qpacketmodem",0.1) { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QPSK);    }
+LIQUID_AUTOTEST(qpacketmodem_psk8,   "qpacketmodem, psk8",   "framing,qpacketmodem",0.1) { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_PSK8);    }
+LIQUID_AUTOTEST(qpacketmodem_qam16,  "qpacketmodem, qam16",  "framing,qpacketmodem",0.1) { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM16);   }
+LIQUID_AUTOTEST(qpacketmodem_sqam32, "qpacketmodem, sqam32", "framing,qpacketmodem",0.1) { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM32);  }
+LIQUID_AUTOTEST(qpacketmodem_qam64,  "qpacketmodem, qam64",  "framing,qpacketmodem",0.1) { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM64);   }
+LIQUID_AUTOTEST(qpacketmodem_sqam128,"qpacketmodem, sqam128","framing,qpacketmodem",0.1) { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM128); }
+LIQUID_AUTOTEST(qpacketmodem_qam256, "qpacketmodem, qam256", "framing,qpacketmodem",0.1) { testbench_qpacketmodem_modulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM256);  }
 
 // test error vector magnitude estimation
-LIQUID_AUTOTEST(qpacketmodem_evm,"","",0.1)
+LIQUID_AUTOTEST(qpacketmodem_evm,"qpacketmodem, error vector magnitude","framing,qpacketmodem",0.1)
 {
     unsigned int payload_len = 800;
     int          check       = LIQUID_CRC_32;
@@ -170,16 +170,16 @@ void testbench_qpacketmodem_unmodulated(liquid_autotest __q__,
     LIQUID_CHECK_ARRAY( payload_tx, payload_rx, _payload_len );
 }
 
-LIQUID_AUTOTEST(qpacketmodem_unmod_bpsk,"","",0.1)   { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QPSK);    }
-LIQUID_AUTOTEST(qpacketmodem_unmod_qpsk,"","",0.1)   { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QPSK);    }
-LIQUID_AUTOTEST(qpacketmodem_unmod_psk8,"","",0.1)   { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_PSK8);    }
-LIQUID_AUTOTEST(qpacketmodem_unmod_qam16,"","",0.1)  { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM16);   }
-LIQUID_AUTOTEST(qpacketmodem_unmod_sqam32,"","",0.1) { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM32);  }
-LIQUID_AUTOTEST(qpacketmodem_unmod_qam64,"","",0.1)  { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM64);   }
-LIQUID_AUTOTEST(qpacketmodem_unmod_sqam128,"","",0.1){ testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM128); }
-LIQUID_AUTOTEST(qpacketmodem_unmod_qam256,"","",0.1) { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM256);  }
+LIQUID_AUTOTEST(qpacketmodem_unmod_bpsk,   "qpacketmodem (unmodulated), bpsk",   "framing,qpacketmodem",0.1)   { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QPSK);    }
+LIQUID_AUTOTEST(qpacketmodem_unmod_qpsk,   "qpacketmodem (unmodulated), qpsk",   "framing,qpacketmodem",0.1)   { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QPSK);    }
+LIQUID_AUTOTEST(qpacketmodem_unmod_psk8,   "qpacketmodem (unmodulated), psk8",   "framing,qpacketmodem",0.1)   { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_PSK8);    }
+LIQUID_AUTOTEST(qpacketmodem_unmod_qam16,  "qpacketmodem (unmodulated), qam16",  "framing,qpacketmodem",0.1)  { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM16);   }
+LIQUID_AUTOTEST(qpacketmodem_unmod_sqam32, "qpacketmodem (unmodulated), sqam32", "framing,qpacketmodem",0.1) { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM32);  }
+LIQUID_AUTOTEST(qpacketmodem_unmod_qam64,  "qpacketmodem (unmodulated), qam64",  "framing,qpacketmodem",0.1)  { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM64);   }
+LIQUID_AUTOTEST(qpacketmodem_unmod_sqam128,"qpacketmodem (unmodulated), sqam128","framing,qpacketmodem",0.1){ testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM128); }
+LIQUID_AUTOTEST(qpacketmodem_unmod_qam256, "qpacketmodem (unmodulated), qam256", "framing,qpacketmodem",0.1) { testbench_qpacketmodem_unmodulated(__q__, 400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM256);  }
 
-LIQUID_AUTOTEST(qpacketmodem_copy,"test qpacketmodem copy operation","",0.1)
+LIQUID_AUTOTEST(qpacketmodem_copy,"test qpacketmodem copy operation","framing,qpacketmodem",0.1)
 {
     // derived values
     unsigned int i;

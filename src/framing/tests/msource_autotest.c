@@ -37,7 +37,7 @@ int callback_msourcecf_autotest(void *          _userdata,
     return 0;
 }
 
-LIQUID_AUTOTEST(msourcecf_tone,"msource tone","",0.1)
+LIQUID_AUTOTEST(msourcecf_tone,"msource tone","framing,msource",0.1)
 {
     // spectral periodogram options
     unsigned int nfft        =   2400;  // spectral periodogram FFT size
@@ -98,7 +98,7 @@ LIQUID_AUTOTEST(msourcecf_tone,"msource tone","",0.1)
         "autotest/logs/msourcecf_tone_autotest.m");
 }
 
-LIQUID_AUTOTEST(msourcecf_chirp,"msource chirp","",0.1)
+LIQUID_AUTOTEST(msourcecf_chirp,"msource chirp","framing,msource",0.1)
 {
     // spectral periodogram options
     unsigned int nfft        =   2400;  // spectral periodogram FFT size
@@ -143,7 +143,7 @@ LIQUID_AUTOTEST(msourcecf_chirp,"msource chirp","",0.1)
         "autotest/logs/msourcecf_chirp_autotest.m");
 }
 
-LIQUID_AUTOTEST(msourcecf_aggregate,"msource signal aggregate","",0.1)
+LIQUID_AUTOTEST(msourcecf_aggregate,"msource signal aggregate","framing,msource",0.1)
 {
     // msource parameters
     int          ms     = LIQUID_MODEM_QPSK;    // linear modulation scheme
@@ -238,7 +238,7 @@ LIQUID_AUTOTEST(msourcecf_aggregate,"msource signal aggregate","",0.1)
     liquid_autotest_validate_spectrum(__q__, psd, nfft, regions, 7+7+1+6+8, filename);
 }
 
-LIQUID_AUTOTEST(msourcecf_config,"msource config","",0.1)
+LIQUID_AUTOTEST(msourcecf_config,"msource config","framing,msource",0.1)
 {
     _liquid_error_downgrade_enable();
     // no need to check every combination
@@ -289,7 +289,7 @@ LIQUID_AUTOTEST(msourcecf_config,"msource config","",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(msourcecf_accessor,"msource accessor methods","",0.1)
+LIQUID_AUTOTEST(msourcecf_accessor,"msource accessor methods","framing,msource",0.1)
 {
     // create object and add signals:(q,  fc,        bw,    gain
     msourcecf q = msourcecf_create(240, 12, 60);
@@ -367,7 +367,7 @@ LIQUID_AUTOTEST(msourcecf_accessor,"msource accessor methods","",0.1)
         "autotest/logs/msourcecf_accessor_autotest.m");
 }
 
-LIQUID_AUTOTEST(msourcecf_copy,"copy object and ensure output spectrum aligns","",0.1)
+LIQUID_AUTOTEST(msourcecf_copy,"copy object and ensure output spectrum aligns","framing,msource",0.1)
 {
     // test options
     float        tol    = 1.5f;                 // error tolerance

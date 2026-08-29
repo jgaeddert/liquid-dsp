@@ -74,25 +74,25 @@ void testbench_symstreamrcf_delay(liquid_autotest __q__,
     LIQUID_CHECK_DELTA(delay, delay_meas, tol);
 }
 
-LIQUID_AUTOTEST(symstreamrcf_delay_00,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f, 4); }
-LIQUID_AUTOTEST(symstreamrcf_delay_01,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f, 5); }
-LIQUID_AUTOTEST(symstreamrcf_delay_02,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f, 6); }
-LIQUID_AUTOTEST(symstreamrcf_delay_03,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f, 7); }
-LIQUID_AUTOTEST(symstreamrcf_delay_04,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f, 8); }
-LIQUID_AUTOTEST(symstreamrcf_delay_05,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f, 9); }
-LIQUID_AUTOTEST(symstreamrcf_delay_06,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f,10); }
-LIQUID_AUTOTEST(symstreamrcf_delay_07,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f,14); }
-LIQUID_AUTOTEST(symstreamrcf_delay_08,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f,20); }
-LIQUID_AUTOTEST(symstreamrcf_delay_09,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f,31); }
+LIQUID_AUTOTEST(symstreamrcf_delay_00,"symstreamrcf, bw=0.500f, m= 4","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f, 4); }
+LIQUID_AUTOTEST(symstreamrcf_delay_01,"symstreamrcf, bw=0.500f, m= 5","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f, 5); }
+LIQUID_AUTOTEST(symstreamrcf_delay_02,"symstreamrcf, bw=0.500f, m= 6","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f, 6); }
+LIQUID_AUTOTEST(symstreamrcf_delay_03,"symstreamrcf, bw=0.500f, m= 7","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f, 7); }
+LIQUID_AUTOTEST(symstreamrcf_delay_04,"symstreamrcf, bw=0.500f, m= 8","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f, 8); }
+LIQUID_AUTOTEST(symstreamrcf_delay_05,"symstreamrcf, bw=0.500f, m= 9","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f, 9); }
+LIQUID_AUTOTEST(symstreamrcf_delay_06,"symstreamrcf, bw=0.500f, m=10","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f,10); }
+LIQUID_AUTOTEST(symstreamrcf_delay_07,"symstreamrcf, bw=0.500f, m=14","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f,14); }
+LIQUID_AUTOTEST(symstreamrcf_delay_08,"symstreamrcf, bw=0.500f, m=20","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f,20); }
+LIQUID_AUTOTEST(symstreamrcf_delay_09,"symstreamrcf, bw=0.500f, m=31","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f,31); }
 
-LIQUID_AUTOTEST(symstreamrcf_delay_10,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.800f,12); }
-LIQUID_AUTOTEST(symstreamrcf_delay_11,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.700f,12); }
-LIQUID_AUTOTEST(symstreamrcf_delay_12,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.600f,12); }
-LIQUID_AUTOTEST(symstreamrcf_delay_13,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f,12); }
-LIQUID_AUTOTEST(symstreamrcf_delay_14,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.400f,12); }
-LIQUID_AUTOTEST(symstreamrcf_delay_15,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.300f,12); }
-LIQUID_AUTOTEST(symstreamrcf_delay_16,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.200f,12); }
-LIQUID_AUTOTEST(symstreamrcf_delay_17,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.100f,12); }
-LIQUID_AUTOTEST(symstreamrcf_delay_18,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.050f,12); }
-LIQUID_AUTOTEST(symstreamrcf_delay_19,"","",0.1) { testbench_symstreamrcf_delay(__q__, 0.025f,12); }
+LIQUID_AUTOTEST(symstreamrcf_delay_10,"symstreamrcf, bw=0.800f, m=12","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.800f,12); }
+LIQUID_AUTOTEST(symstreamrcf_delay_11,"symstreamrcf, bw=0.700f, m=12","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.700f,12); }
+LIQUID_AUTOTEST(symstreamrcf_delay_12,"symstreamrcf, bw=0.600f, m=12","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.600f,12); }
+LIQUID_AUTOTEST(symstreamrcf_delay_13,"symstreamrcf, bw=0.500f, m=12","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.500f,12); }
+LIQUID_AUTOTEST(symstreamrcf_delay_14,"symstreamrcf, bw=0.400f, m=12","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.400f,12); }
+LIQUID_AUTOTEST(symstreamrcf_delay_15,"symstreamrcf, bw=0.300f, m=12","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.300f,12); }
+LIQUID_AUTOTEST(symstreamrcf_delay_16,"symstreamrcf, bw=0.200f, m=12","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.200f,12); }
+LIQUID_AUTOTEST(symstreamrcf_delay_17,"symstreamrcf, bw=0.100f, m=12","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.100f,12); }
+LIQUID_AUTOTEST(symstreamrcf_delay_18,"symstreamrcf, bw=0.050f, m=12","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.050f,12); }
+LIQUID_AUTOTEST(symstreamrcf_delay_19,"symstreamrcf, bw=0.025f, m=12","framing,symstreamrcf",0.1) { testbench_symstreamrcf_delay(__q__, 0.025f,12); }
 
