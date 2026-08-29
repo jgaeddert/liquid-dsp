@@ -35,7 +35,7 @@ void testbench_gcd(liquid_autotest __q__,
     LIQUID_CHECK(gcd_test ==  _gcd);
 }
 
-LIQUID_AUTOTEST(gcd_one,"gcd: no common roots (gcd = 1)","",0.1)
+LIQUID_AUTOTEST(gcd_one,"gcd: no common roots (gcd = 1)","math,gcd",0.1)
 {
     testbench_gcd(__q__, 1,  2,  3);
     testbench_gcd(__q__, 1,  2,  5);
@@ -46,7 +46,7 @@ LIQUID_AUTOTEST(gcd_one,"gcd: no common roots (gcd = 1)","",0.1)
     testbench_gcd(__q__, 1, 2*2*2*2*2, 3*5*7*19);
 }
 
-LIQUID_AUTOTEST(gcd_edge_cases,"gcd: edge cases","",0.1)
+LIQUID_AUTOTEST(gcd_edge_cases,"gcd: edge cases","math,gcd",0.1)
 {
     testbench_gcd(__q__, 1,         1, 1);
     testbench_gcd(__q__, 1,         1, 2);
@@ -55,7 +55,7 @@ LIQUID_AUTOTEST(gcd_edge_cases,"gcd: edge cases","",0.1)
     testbench_gcd(__q__, (1<<17)-1, 1, 1);    // P==Q
 }
 
-LIQUID_AUTOTEST(gcd_base,"gcd: base tests","",0.1)
+LIQUID_AUTOTEST(gcd_base,"gcd: base tests","math,gcd",0.1)
 {
     testbench_gcd(__q__, 2*2*3*5*7, 2*3, 17);
     testbench_gcd(__q__, 2*2*3*5*7, 2*3, 17*17);

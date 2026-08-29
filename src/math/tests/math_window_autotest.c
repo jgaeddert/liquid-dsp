@@ -81,15 +81,15 @@ void testbench_window(liquid_autotest __q__,
 
 }
 
-LIQUID_AUTOTEST(window_hamming        ,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_HAMMING,         71,  0.f); }
-LIQUID_AUTOTEST(window_hann           ,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_HANN,            71,  0.f); }
-LIQUID_AUTOTEST(window_blackmanharris ,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_BLACKMANHARRIS,  71,  0.f); }
-LIQUID_AUTOTEST(window_blackmanharris7,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_BLACKMANHARRIS7, 71,  0.f); }
-LIQUID_AUTOTEST(window_kaiser         ,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_KAISER,          71, 10.f); }
-LIQUID_AUTOTEST(window_flattop        ,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_FLATTOP,         71,  0.f); }
-LIQUID_AUTOTEST(window_triangular     ,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_TRIANGULAR,      71, 71.f); }
-LIQUID_AUTOTEST(window_rcostaper      ,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_RCOSTAPER,       71, 25.f); }
-LIQUID_AUTOTEST(window_kbd            ,"","",0.1) { testbench_window(__q__,LIQUID_WINDOW_KBD,             72,  0.f); }
+LIQUID_AUTOTEST(window_hamming        ,"window, hamming"        ,"math,window",0.1) { testbench_window(__q__,LIQUID_WINDOW_HAMMING,         71,  0.f); }
+LIQUID_AUTOTEST(window_hann           ,"window, hann"           ,"math,window",0.1) { testbench_window(__q__,LIQUID_WINDOW_HANN,            71,  0.f); }
+LIQUID_AUTOTEST(window_blackmanharris ,"window, blackmanharris" ,"math,window",0.1) { testbench_window(__q__,LIQUID_WINDOW_BLACKMANHARRIS,  71,  0.f); }
+LIQUID_AUTOTEST(window_blackmanharris7,"window, blackmanharris7","math,window",0.1) { testbench_window(__q__,LIQUID_WINDOW_BLACKMANHARRIS7, 71,  0.f); }
+LIQUID_AUTOTEST(window_kaiser         ,"window, kaiser"         ,"math,window",0.1) { testbench_window(__q__,LIQUID_WINDOW_KAISER,          71, 10.f); }
+LIQUID_AUTOTEST(window_flattop        ,"window, flattop"        ,"math,window",0.1) { testbench_window(__q__,LIQUID_WINDOW_FLATTOP,         71,  0.f); }
+LIQUID_AUTOTEST(window_triangular     ,"window, triangular"     ,"math,window",0.1) { testbench_window(__q__,LIQUID_WINDOW_TRIANGULAR,      71, 71.f); }
+LIQUID_AUTOTEST(window_rcostaper      ,"window, rcostaper"      ,"math,window",0.1) { testbench_window(__q__,LIQUID_WINDOW_RCOSTAPER,       71, 25.f); }
+LIQUID_AUTOTEST(window_kbd            ,"window, kbd"            ,"math,window",0.1) { testbench_window(__q__,LIQUID_WINDOW_KBD,             72,  0.f); }
 
 // Kaiser-Bessel derived window
 void testbench_liquid_kbd_window(liquid_autotest __q__,unsigned int _n, float _beta)
@@ -118,12 +118,12 @@ void testbench_liquid_kbd_window(liquid_autotest __q__,unsigned int _n, float _b
     LIQUID_CHECK_DELTA(sum, 0.5f*_n, tol);
 }
 
-LIQUID_AUTOTEST(kbd_n16,"","",0.1) { testbench_liquid_kbd_window(__q__,16, 10.0f); }
-LIQUID_AUTOTEST(kbd_n32,"","",0.1) { testbench_liquid_kbd_window(__q__,32, 20.0f); }
-LIQUID_AUTOTEST(kbd_n48,"","",0.1) { testbench_liquid_kbd_window(__q__,48, 12.0f); }
+LIQUID_AUTOTEST(kbd_n16,"Kaiser-Bessel derived, n=16","math,window",0.1) { testbench_liquid_kbd_window(__q__,16, 10.0f); }
+LIQUID_AUTOTEST(kbd_n32,"Kaiser-Bessel derived, n=32","math,window",0.1) { testbench_liquid_kbd_window(__q__,32, 20.0f); }
+LIQUID_AUTOTEST(kbd_n48,"Kaiser-Bessel derived, n=48","math,window",0.1) { testbench_liquid_kbd_window(__q__,48, 12.0f); }
 
 // test window configuration and error handling
-LIQUID_AUTOTEST(window_config,"","",0.1)
+LIQUID_AUTOTEST(window_config,"","math,window",0.1)
 {
     _liquid_error_downgrade_enable();
 
