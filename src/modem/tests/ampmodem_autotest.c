@@ -112,12 +112,12 @@ void testbench_ampmodem(liquid_autotest __q__,
 }
 
 // AUTOTESTS: basic properties: M=2^m, k = 2*M, bandwidth = 0.25
-LIQUID_AUTOTEST(ampmodem_dsb_carrier_on ,"","",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_DSB,0,0.02,0.0); }
-LIQUID_AUTOTEST(ampmodem_usb_carrier_on ,"","",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_USB,0,0.02,0.0); }
-LIQUID_AUTOTEST(ampmodem_lsb_carrier_on ,"","",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_LSB,0,0.02,0.0); }
+LIQUID_AUTOTEST(ampmodem_dsb_carrier_on ,"amplitude modulation, double side-band, carrier enabled","modem,ampmodem",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_DSB,0,0.02,0.0); }
+LIQUID_AUTOTEST(ampmodem_usb_carrier_on ,"amplitude modulation, upper side-band, carrier enabled", "modem,ampmodem",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_USB,0,0.02,0.0); }
+LIQUID_AUTOTEST(ampmodem_lsb_carrier_on ,"amplitude modulation, lower side-band, carrier enabled", "modem,ampmodem",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_LSB,0,0.02,0.0); }
 
-LIQUID_AUTOTEST(ampmodem_dsb_carrier_off,"","",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_DSB,1,0.02,0.0); }
-LIQUID_AUTOTEST(ampmodem_usb_carrier_off,"","",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_USB,1,0.00,0.0); }
-LIQUID_AUTOTEST(ampmodem_lsb_carrier_off,"","",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_LSB,1,0.00,0.0); }
+LIQUID_AUTOTEST(ampmodem_dsb_carrier_off,"amplitude modulation, double side-band, carrier disabled","modem,ampmodem",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_DSB,1,0.02,0.0); }
+LIQUID_AUTOTEST(ampmodem_usb_carrier_off,"amplitude modulation, upper side-band, carrier disabled", "modem,ampmodem",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_USB,1,0.00,0.0); }
+LIQUID_AUTOTEST(ampmodem_lsb_carrier_off,"amplitude modulation, lower side-band, carrier disabled", "modem,ampmodem",0.1) { testbench_ampmodem(__q__,0.8f,LIQUID_AMPMODEM_LSB,1,0.00,0.0); }
 
 

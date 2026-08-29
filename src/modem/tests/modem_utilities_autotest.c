@@ -24,13 +24,13 @@
 #include "liquid.internal.h"
 
 // test printing schemes
-LIQUID_AUTOTEST(modemcf_print_schemes,"","",0.1)
+LIQUID_AUTOTEST(modemcf_print_schemes,"","modem,utilities",0.1)
 {
     LIQUID_CHECK(liquid_print_modulation_schemes() ==  LIQUID_OK);
 }
 
 // test parsing string to modulation scheme
-LIQUID_AUTOTEST(modemcf_str2mod,"","",0.1)
+LIQUID_AUTOTEST(modemcf_str2mod,"modem string to modulation type","modem,utilities",0.1)
 {
     // start with invalid case
     _liquid_error_downgrade_enable();
@@ -91,7 +91,7 @@ LIQUID_AUTOTEST(modemcf_str2mod,"","",0.1)
 }
 
 // test basic types
-LIQUID_AUTOTEST(modemcf_types,"","",0.1)
+LIQUID_AUTOTEST(modemcf_types,"check modulation types, families","modem,utilities",0.1)
 {
     // Phase-shift keying (PSK)
     LIQUID_CHECK(liquid_modem_is_psk(LIQUID_MODEM_PSK2) ==      1);
