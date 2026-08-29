@@ -24,7 +24,7 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(firpfbch_crcf_synthesis,"validate firpfbch synthesis correctness","",0.1)
+LIQUID_AUTOTEST(firpfbch_crcf_synthesis,"validate firpfbch synthesis correctness","multichannel,firpfbch",0.1)
 {
     // options
     float tol = 1e-4f;              // error tolerance
