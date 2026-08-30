@@ -84,16 +84,16 @@ void testbench_nco_crcf_spectrum(liquid_autotest __q__,
 }
 
 // test NCO
-LIQUID_AUTOTEST(nco_crcf_spectrum_nco_f00,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 0, LIQUID_NCO, 0.    ); }
-LIQUID_AUTOTEST(nco_crcf_spectrum_nco_f01,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 1, LIQUID_NCO, 0.1234); }
-LIQUID_AUTOTEST(nco_crcf_spectrum_nco_f02,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 2, LIQUID_NCO,-0.1234); }
-LIQUID_AUTOTEST(nco_crcf_spectrum_nco_f03,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 3, LIQUID_NCO, 0.25  ); }
-LIQUID_AUTOTEST(nco_crcf_spectrum_nco_f04,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 4, LIQUID_NCO, 0.1   ); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_nco_f00,"nco spectrum test, f = 0.    ","nco",0.1) { testbench_nco_crcf_spectrum(__q__, 0, LIQUID_NCO, 0.    ); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_nco_f01,"nco spectrum test, f = 0.1234","nco",0.1) { testbench_nco_crcf_spectrum(__q__, 1, LIQUID_NCO, 0.1234); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_nco_f02,"nco spectrum test, f =-0.1234","nco",0.1) { testbench_nco_crcf_spectrum(__q__, 2, LIQUID_NCO,-0.1234); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_nco_f03,"nco spectrum test, f = 0.25  ","nco",0.1) { testbench_nco_crcf_spectrum(__q__, 3, LIQUID_NCO, 0.25  ); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_nco_f04,"nco spectrum test, f = 0.1   ","nco",0.1) { testbench_nco_crcf_spectrum(__q__, 4, LIQUID_NCO, 0.1   ); }
 
 // test VCO interp
-LIQUID_AUTOTEST(nco_crcf_spectrum_vco_f00,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 0, LIQUID_VCO_INTERP, 0.    ); }
-LIQUID_AUTOTEST(nco_crcf_spectrum_vco_f01,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 1, LIQUID_VCO_INTERP, 0.1234); }
-LIQUID_AUTOTEST(nco_crcf_spectrum_vco_f02,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 2, LIQUID_VCO_INTERP,-0.1234); }
-LIQUID_AUTOTEST(nco_crcf_spectrum_vco_f03,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 3, LIQUID_VCO_INTERP, 0.25  ); }
-LIQUID_AUTOTEST(nco_crcf_spectrum_vco_f04,"","",0.1) { testbench_nco_crcf_spectrum(__q__, 4, LIQUID_VCO_INTERP, 0.1   ); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_vco_f00,"vco spectrum test, f = 0.    ","nco,vco",0.1) { testbench_nco_crcf_spectrum(__q__, 0, LIQUID_VCO_INTERP, 0.    ); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_vco_f01,"vco spectrum test, f = 0.1234","nco,vco",0.1) { testbench_nco_crcf_spectrum(__q__, 1, LIQUID_VCO_INTERP, 0.1234); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_vco_f02,"vco spectrum test, f =-0.1234","nco,vco",0.1) { testbench_nco_crcf_spectrum(__q__, 2, LIQUID_VCO_INTERP,-0.1234); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_vco_f03,"vco spectrum test, f = 0.25  ","nco,vco",0.1) { testbench_nco_crcf_spectrum(__q__, 3, LIQUID_VCO_INTERP, 0.25  ); }
+LIQUID_AUTOTEST(nco_crcf_spectrum_vco_f04,"vco spectrum test, f = 0.1   ","nco,vco",0.1) { testbench_nco_crcf_spectrum(__q__, 4, LIQUID_VCO_INTERP, 0.1   ); }
 
