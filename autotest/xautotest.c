@@ -34,7 +34,6 @@ int main(int argc, char* argv[])
     liquid_argparse_add(char*,keywords,      "", 'k', "run tests matching keywords (comma-separated values)", NULL);
     liquid_argparse_add(char*,json,          "", 'o', "output JSON file", NULL);
     liquid_argparse_add(char*,logfile,       "", 'g', "output logfile", NULL);
-    liquid_argparse_add(bool, status,  false, 'P', "print full status of all at the end", NULL);
     liquid_argparse_parse(argc,argv);
 
     if (strcmp(logfile,""))
@@ -69,12 +68,8 @@ int main(int argc, char* argv[])
     // run tests, stopping on failure if requested
     liquid_registry_execute(registry, stop_fail);
 
-    // print summary
-    liquid_registry_print_status(registry);
-
     // print status of executed tests
-    if (status)
-        liquid_registry_print_status(registry);
+    liquid_registry_print_status(registry);
 
     // print summary
     int rc = liquid_registry_print_summary(registry);
