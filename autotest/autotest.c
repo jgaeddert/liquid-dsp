@@ -365,6 +365,10 @@ int liquid_registry_audit(liquid_registry _q)
         if (!strlen(autotest->docstr))
             liquid_log_warn("missing document string in %s", autotest->name);
 
+        // check document string
+        if (strcmp(autotest->docstr,"description")==0)
+            liquid_log_warn("missing description in %s", autotest->name);
+
         // check keywords
         if (!strlen(autotest->keywords))
             liquid_log_warn("missing keywords in %s", autotest->name);
