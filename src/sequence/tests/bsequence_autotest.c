@@ -23,7 +23,8 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(bsequence_init,"test initialization of binary sequence","",0.1)
+LIQUID_AUTOTEST(bsequence_init,
+    "test initialization of binary sequence","sequence,bsequence",0.1)
 {
     // 1111 0000 1100 1010
     unsigned char v[2] = {0xf0, 0xca};
@@ -57,7 +58,8 @@ LIQUID_AUTOTEST(bsequence_init,"test initialization of binary sequence","",0.1)
     bsequence_destroy(q);
 }
 
-LIQUID_AUTOTEST(bsequence_correlate,"test correlation between to sequences","",0.1)
+LIQUID_AUTOTEST(bsequence_correlate,
+    "test correlation between to sequences","sequence,bsequence",0.1)
 {
     // v0   :   1111 0000 1100 1010
     // v1   :   1100 1011 0001 1110
@@ -80,7 +82,8 @@ LIQUID_AUTOTEST(bsequence_correlate,"test correlation between to sequences","",0
 }
 
 
-LIQUID_AUTOTEST(bsequence_add,"test add operations on two sequences","",0.1)
+LIQUID_AUTOTEST(bsequence_add,
+    "test add operations on two sequences","sequence,bsequence",0.1)
 {
     // v0   :   1111 0000 1100 1010
     // v1   :   1100 1011 0001 1110
@@ -125,7 +128,8 @@ LIQUID_AUTOTEST(bsequence_add,"test add operations on two sequences","",0.1)
     bsequence_destroy(r);
 }
 
-LIQUID_AUTOTEST(bsequence_mul,"test multiply operations on two sequences","",0.1)
+LIQUID_AUTOTEST(bsequence_mul,
+    "test multiply operations on two sequences","sequence,bsequence",0.1)
 {
     // v0   :   1111 0000 1100 1010
     // v1   :   1100 1011 0001 1110
@@ -170,7 +174,8 @@ LIQUID_AUTOTEST(bsequence_mul,"test multiply operations on two sequences","",0.1
     bsequence_destroy(r);
 }
 
-LIQUID_AUTOTEST(bsequence_accumulate,"test accumulation of binary sequence","",0.1)
+LIQUID_AUTOTEST(bsequence_accumulate,
+    "test accumulation of binary sequence","sequence,bsequence",0.1)
 {
     // 1111 0000 1100 1010 (8 total bits)
     unsigned char v[2] = {0xf0, 0xca};
