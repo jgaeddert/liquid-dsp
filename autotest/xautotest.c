@@ -34,6 +34,7 @@ int main(int argc, char* argv[])
     liquid_argparse_add(char*,keywords,      "", 'k', "run tests matching keywords (comma-separated values)", NULL);
     liquid_argparse_add(char*,json,          "", 'o', "output JSON file", NULL);
     liquid_argparse_add(char*,logfile,       "", 'g', "output logfile", NULL);
+    liquid_argparse_add(bool, audit,      false, 'a', "audit tests: check for invalid configurations", NULL);
     liquid_argparse_parse(argc,argv);
 
     if (strcmp(logfile,""))
@@ -73,6 +74,10 @@ int main(int argc, char* argv[])
 
     // print summary
     int rc = liquid_registry_print_summary(registry);
+
+    // run audit if requested
+    if (audit)
+        liquid_registry_audit(registry);
 
     // export JSON if requested
     if (strcmp(json,""))

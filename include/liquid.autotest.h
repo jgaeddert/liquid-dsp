@@ -187,6 +187,9 @@ int liquid_registry_print_status(liquid_registry _q);
 // print summary of test run
 int liquid_registry_print_summary(liquid_registry _q);
 
+// check tests for invalid configurations
+int liquid_registry_audit(liquid_registry _q);
+
 // export registry to JSON file
 int liquid_registry_json(liquid_registry _q, FILE * _fid);
 

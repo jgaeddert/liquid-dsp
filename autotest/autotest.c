@@ -344,6 +344,36 @@ int liquid_registry_print_summary(liquid_registry _q)
     return _q->num_tests_fail ? LIQUID_EINT : LIQUID_OK;
 }
 
+// check tests for invalid configurations
+int liquid_registry_audit(liquid_registry _q)
+{
+    // iterate over all tests
+    unsigned int i;
+    for (i=0; i<_q->num_tests; i++)
+    {
+        liquid_autotest autotest = _q->autotests[i];
+
+        // only consider tests that were run
+        if (autotest->status != LIQUID_AUTOTEST_PASS && autotest->status != LIQUID_AUTOTEST_FAIL)
+            continue;
+
+        // test was run; ensure there was at least one check
+        if (autotest->num_pass==0 && autotest->num_fail==0)
+            liquid_log_warn("no checks run in %s", autotest->name);
+
+        // check document string
+        if (!strlen(autotest->docstr))
+            liquid_log_warn("missing document string in %s", autotest->name);
+
+        // check keywords
+        if (!strlen(autotest->keywords))
+            liquid_log_warn("missing keywords in %s", autotest->name);
+    }
+
+    return LIQUID_OK;
+}
+
+
 // export results to JSON
 int liquid_registry_json(liquid_registry _q, FILE * _fid)
 {
