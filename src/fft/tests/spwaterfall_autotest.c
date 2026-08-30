@@ -27,7 +27,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(spwaterfall_config,"","fft,spwaterfall",0.1)
+LIQUID_AUTOTEST(spwaterfall_config,"check spwaterfall configuration","fft,spwaterfall",0.1)
 {
     _liquid_error_downgrade_enable();
 
@@ -108,9 +108,9 @@ void testbench_spwaterfallcf_noise(liquid_autotest __q__,
 }
 
 // test different transform sizes
-LIQUID_AUTOTEST(spwaterfallcf_noise_440, "","fft,spwaterfall",0.1) { testbench_spwaterfallcf_noise(__q__,  440, 320, 100, 240, -80.0); }
-LIQUID_AUTOTEST(spwaterfallcf_noise_1024,"","fft,spwaterfall",0.1) { testbench_spwaterfallcf_noise(__q__,  680, 480, 150, 640, -80.0); }
-LIQUID_AUTOTEST(spwaterfallcf_noise_1200,"","fft,spwaterfall",0.1) { testbench_spwaterfallcf_noise(__q__, 1200, 800, 400, 800, -80.0); }
+LIQUID_AUTOTEST(spwaterfallcf_noise_440, "check spwaterfall on noise, nfft= 440, wlen=320, delay=100, time=240, n0=-80.0","fft,spwaterfall",0.1) { testbench_spwaterfallcf_noise(__q__,  440, 320, 100, 240, -80.0); }
+LIQUID_AUTOTEST(spwaterfallcf_noise_1024,"check spwaterfall on noise, nfft= 680, wlen=480, delay=150, time=640, n0=-80.0","fft,spwaterfall",0.1) { testbench_spwaterfallcf_noise(__q__,  680, 480, 150, 640, -80.0); }
+LIQUID_AUTOTEST(spwaterfallcf_noise_1200,"check spwaterfall on noise, nfft=1200, wlen=800, delay=400, time=800, n0=-80.0","fft,spwaterfall",0.1) { testbench_spwaterfallcf_noise(__q__, 1200, 800, 400, 800, -80.0); }
 
 LIQUID_AUTOTEST(spwaterfall_operation,"test normal operation","fft,spwaterfall",0.1)
 {
@@ -144,7 +144,7 @@ LIQUID_AUTOTEST(spwaterfall_operation,"test normal operation","fft,spwaterfall",
     spwaterfallcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(spwaterfall_copy,"","fft,spwaterfall",0.1)
+LIQUID_AUTOTEST(spwaterfall_copy,"check spwaterfall copy","fft,spwaterfall",0.1)
 {
     unsigned int nfft =  240;   // transform size
     unsigned int time =  192;   // time size
