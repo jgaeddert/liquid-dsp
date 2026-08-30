@@ -23,11 +23,11 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(liquid_malloc_copy,"check malloc copy method","",0.1)
+LIQUID_AUTOTEST(liquid_malloc_copy,"check malloc copy method","utility,memory",0.1)
 {
 }
 
-LIQUID_AUTOTEST(liquid_aligned_alloc,"check aligned alloc/free methods","",0.1)
+LIQUID_AUTOTEST(liquid_aligned_alloc,"check aligned alloc/free methods","utility,memory",0.1)
 {
 }
 

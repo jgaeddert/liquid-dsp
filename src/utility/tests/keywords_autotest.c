@@ -23,10 +23,11 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-// liquid_keywords_subset(_existing, _requested) returns true when every
-// non-empty keyword in _requested appears in _existing as an exact,
-// comma-delimited token match (case-sensitive, no whitespace trimming)
-LIQUID_AUTOTEST(keywords_subset,"keyword subset matching","",0.1)
+LIQUID_AUTOTEST(keywords_subset,
+    "test liquid_keywords_subset(_existing, _requested) that returns true when"
+    " every non-empty keyword in _requested appears in _existing as an exact,"
+    " comma-delimited token match (case-sensitive, no whitespace trimming)",
+    "utility,keywords",0.1)
 {
     // single keyword: exact match
     LIQUID_CHECK( liquid_keywords_subset("FIR,filter", "filter") );

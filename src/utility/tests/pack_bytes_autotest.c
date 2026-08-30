@@ -24,7 +24,8 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(pack_array,"pack array","",0.1) {
+LIQUID_AUTOTEST(pack_array,"pack array","utility,pack",0.1)
+{
     // input symbols
     unsigned int sym_size[9] = {8, 2, 3, 6, 1, 3, 3, 4, 3};
     unsigned char input[9] = {
@@ -54,7 +55,8 @@ LIQUID_AUTOTEST(pack_array,"pack array","",0.1) {
     LIQUID_CHECK_ARRAY( output, output_test, 4 );
 }
 
-LIQUID_AUTOTEST(unpack_array,"unpack array","",0.1) {
+LIQUID_AUTOTEST(unpack_array,"unpack array","utility,pack",0.1)
+{
     // input        : 1000 0001 1110 1111 0101 1111 1010 1010
     // symbol       : 0000 0000 1122 2333 3334 5556 6677 7788
     unsigned char input[4] = {0x81, 0xEF, 0x5F, 0xAA};
@@ -85,7 +87,8 @@ LIQUID_AUTOTEST(unpack_array,"unpack array","",0.1) {
     LIQUID_CHECK_ARRAY( output, output_test, 9 );
 }
 
-LIQUID_AUTOTEST(repack_array,"unpack/pack array","",0.1) {
+LIQUID_AUTOTEST(repack_array,"unpack/pack array","utility,pack",0.1)
+{
     unsigned int n=512;     // input/output array size
     unsigned char src[n];   // original data array
     unsigned char dst[n];   // repacked data array
@@ -117,7 +120,8 @@ LIQUID_AUTOTEST(repack_array,"unpack/pack array","",0.1) {
     LIQUID_CHECK_ARRAY( src, dst, n );
 }
 
-LIQUID_AUTOTEST(pack_bytes_01,"pack bytes","",0.1) {
+LIQUID_AUTOTEST(pack_bytes_01,"pack bytes","utility,pack",0.1)
+{
     unsigned char output[8];
     unsigned int N;
     
@@ -154,7 +158,8 @@ LIQUID_AUTOTEST(pack_bytes_01,"pack bytes","",0.1) {
 }
 
 
-LIQUID_AUTOTEST(unpack_bytes_01,"unpack bytes","",0.1) {
+LIQUID_AUTOTEST(unpack_bytes_01,"unpack bytes","utility,pack",0.1)
+{
     unsigned char input[5] = {0x00, 0x01, 0xFF, 0x0F, 0xAA};
     
     unsigned char output[64];
@@ -175,7 +180,8 @@ LIQUID_AUTOTEST(unpack_bytes_01,"unpack bytes","",0.1) {
 }
 
 
-LIQUID_AUTOTEST(repack_bytes_01,"repack bytes","",0.1) {
+LIQUID_AUTOTEST(repack_bytes_01,"repack bytes","utility,pack",0.1)
+{
     unsigned char input[] = {
         0x07,   // 111
         0x00,   // 000
@@ -201,7 +207,8 @@ LIQUID_AUTOTEST(repack_bytes_01,"repack bytes","",0.1) {
     LIQUID_CHECK_ARRAY( output, output_test, 6 );
 }
 
-LIQUID_AUTOTEST(repack_bytes_02,"repack bytes","",0.1) {
+LIQUID_AUTOTEST(repack_bytes_02,"repack bytes","utility,pack",0.1)
+{
     unsigned char input[] = {
         0x01,   // 00001
         0x02,   // 00010
@@ -225,7 +232,8 @@ LIQUID_AUTOTEST(repack_bytes_02,"repack bytes","",0.1) {
     LIQUID_CHECK_ARRAY( output, output_test, 5 );
 }
 
-LIQUID_AUTOTEST(repack_bytes_03,"repack bytes","",0.1) {
+LIQUID_AUTOTEST(repack_bytes_03,"repack bytes","utility,pack",0.1)
+{
     unsigned char input[] = {
         0x00,   // 000
         0x02,   // 010
@@ -249,7 +257,8 @@ LIQUID_AUTOTEST(repack_bytes_03,"repack bytes","",0.1) {
     LIQUID_CHECK_ARRAY( output, output_test, 3 );
 }
 
-LIQUID_AUTOTEST(repack_bytes_04_uneven,"repack bytes","",0.1) {
+LIQUID_AUTOTEST(repack_bytes_04_uneven,"repack bytes","utility,pack",0.1)
+{
     unsigned char input[3] = {
         0x07,   // 111
         0x07,   // 111
