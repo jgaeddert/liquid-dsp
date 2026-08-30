@@ -120,7 +120,7 @@ void _support_histogram_validate(liquid_autotest __q__,
     }
 }
 
-LIQUID_AUTOTEST(distribution_randnf,"normal distribution","",0.1)
+LIQUID_AUTOTEST(distribution_randnf,"normal distribution","random,distributions",0.1)
 {
     unsigned long int num_trials = 248000;
     float eta = 0.0f, sig = 1.0f;
@@ -158,7 +158,7 @@ LIQUID_AUTOTEST(distribution_randnf,"normal distribution","",0.1)
     _support_histogram_validate(__q__,bins, pdf, cdf, num_bins, vmin, vmax, tol);
 }
 
-LIQUID_AUTOTEST(distribution_randexpf,"exponential distribution","",0.1)
+LIQUID_AUTOTEST(distribution_randexpf,"exponential distribution","random,distributions",0.1)
 {
     // bypass test as sharp transition at x=0 makes evaluation difficult
     /*
