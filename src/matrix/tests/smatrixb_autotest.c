@@ -173,7 +173,8 @@ LIQUID_AUTOTEST(smatrixb_mul,"test sparse binary matrix multiplication","matrix,
 }
 
 //
-LIQUID_AUTOTEST(smatrixb_mulf,"","matrix,smatrixb",0.1)
+LIQUID_AUTOTEST(smatrixb_mulf,
+    "test multiplying sparse matrix with float matrix","matrix,smatrixb",0.1)
 {
     // A = [
     //  1   0   0   0   0   0   0   0   0   0   0   0
@@ -267,7 +268,8 @@ LIQUID_AUTOTEST(smatrixb_mulf,"","matrix,smatrixb",0.1)
 }
 
 //
-LIQUID_AUTOTEST(smatrixb_vmulf,"","matrix,smatrixb",0.1)
+LIQUID_AUTOTEST(smatrixb_vmulf,
+    "test multiplying sparse matrix with float vector","matrix,smatrixb",0.1)
 {
     // A = [
     //  1   0   0   0   0   0   0   0   0   0   0   0

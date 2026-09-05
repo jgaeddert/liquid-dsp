@@ -24,7 +24,8 @@
 #include "liquid.internal.h"
 
 // test printing schemes
-LIQUID_AUTOTEST(modemcf_print_schemes,"","modem,utilities",0.1)
+LIQUID_AUTOTEST(modemcf_print_schemes,
+    "print/return a list of available modulation schemes","modem,utilities",0.1)
 {
     LIQUID_CHECK(liquid_print_modulation_schemes() ==  LIQUID_OK);
 }
