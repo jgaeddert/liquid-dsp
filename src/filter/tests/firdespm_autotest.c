@@ -30,7 +30,8 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(firdespm_bandpass_n24,"description","filter,firdespm",0.1)
+LIQUID_AUTOTEST(firdespm_bandpass_n24,
+    "FIR design (Parks-McClellan), bandpass, n=24, 2 bands","filter,firdespm",0.1)
 {
     // [McClellan:1973], Figure 7.
 
@@ -83,7 +84,8 @@ LIQUID_AUTOTEST(firdespm_bandpass_n24,"description","filter,firdespm",0.1)
 }
 
 
-LIQUID_AUTOTEST(firdespm_bandpass_n32,"description","filter,firdespm",0.1)
+LIQUID_AUTOTEST(firdespm_bandpass_n32,
+    "FIR design (Parks-McClellan), bandpass, n=32, 3 bands","filter,firdespm",0.1)
 {
     // [McClellan:1973], Figure 9.
 
@@ -145,7 +147,8 @@ LIQUID_AUTOTEST(firdespm_bandpass_n32,"description","filter,firdespm",0.1)
         LIQUID_CHECK_DELTA( h[i], h0[i], tol );
 }
 
-LIQUID_AUTOTEST(firdespm_lowpass,"description","filter,firdespm",0.1)
+LIQUID_AUTOTEST(firdespm_lowpass,
+    "FIR design (Parks-McClellan), low-pass, n=51, fc=0.2, As=60","filter,firdespm",0.1)
 {
     // design filter
     unsigned int n  = 51;
@@ -176,7 +179,8 @@ int callback_firdespm_autotest(double   _frequency,
     return 0;
 }
 
-LIQUID_AUTOTEST(firdespm_callback,"description","filter,firdespm",0.1)
+LIQUID_AUTOTEST(firdespm_callback,
+    "FIR design (Parks-McClellan), callback, n=81, inverse sinc","filter,firdespm",0.1)
 {
     // filter design parameters
     unsigned int h_len = 81;    // inverse sinc filter length
@@ -232,16 +236,47 @@ void testbench_firdespm_halfband_ft(liquid_autotest __q__,
     liquid_autotest_validate_psd_signalf(__q__, h, h_len, regions, 3, filename);
 }
 
-LIQUID_AUTOTEST(firdespm_halfband_m2_ft400,"description","filter,firdespm",0.1)  { testbench_firdespm_halfband_ft(__q__, 3, 0.400f); }
-LIQUID_AUTOTEST(firdespm_halfband_m4_ft400,"description","filter,firdespm",0.1)  { testbench_firdespm_halfband_ft(__q__, 4, 0.400f); }
-LIQUID_AUTOTEST(firdespm_halfband_m4_ft200,"description","filter,firdespm",0.1)  { testbench_firdespm_halfband_ft(__q__, 4, 0.200f); }
-LIQUID_AUTOTEST(firdespm_halfband_m10_ft200,"description","filter,firdespm",0.1) { testbench_firdespm_halfband_ft(__q__,10, 0.200f); }
-LIQUID_AUTOTEST(firdespm_halfband_m12_ft100,"description","filter,firdespm",0.1) { testbench_firdespm_halfband_ft(__q__,12, 0.100f); }
-LIQUID_AUTOTEST(firdespm_halfband_m20_ft050,"description","filter,firdespm",0.1) { testbench_firdespm_halfband_ft(__q__,20, 0.050f); }
-LIQUID_AUTOTEST(firdespm_halfband_m40_ft050,"description","filter,firdespm",0.1) { testbench_firdespm_halfband_ft(__q__,40, 0.050f); }
-LIQUID_AUTOTEST(firdespm_halfband_m80_ft010,"description","filter,firdespm",0.1) { testbench_firdespm_halfband_ft(__q__,80, 0.010f); }
+LIQUID_AUTOTEST(firdespm_halfband_m2_ft400,
+    "FIR design (Parks-McClellan), half-band, m=3, ft=0.400",
+    "filter,firdespm",0.1)
+{ testbench_firdespm_halfband_ft(__q__, 3, 0.400f); }
 
-LIQUID_AUTOTEST(firdespm_copy,"description","filter,firdespm",0.1)
+LIQUID_AUTOTEST(firdespm_halfband_m4_ft400,
+    "FIR design (Parks-McClellan), half-band, m=4, ft=0.400",
+    "filter,firdespm",0.1)
+{ testbench_firdespm_halfband_ft(__q__, 4, 0.400f); }
+
+LIQUID_AUTOTEST(firdespm_halfband_m4_ft200,
+    "FIR design (Parks-McClellan), half-band, m=4, ft=0.200",
+    "filter,firdespm",0.1)
+{ testbench_firdespm_halfband_ft(__q__, 4, 0.200f); }
+
+LIQUID_AUTOTEST(firdespm_halfband_m10_ft200,
+    "FIR design (Parks-McClellan), half-band, m=10, ft=0.200",
+    "filter,firdespm",0.1)
+{ testbench_firdespm_halfband_ft(__q__,10, 0.200f); }
+
+LIQUID_AUTOTEST(firdespm_halfband_m12_ft100,
+    "FIR design (Parks-McClellan), half-band, m=12, ft=0.100",
+    "filter,firdespm",0.1)
+{ testbench_firdespm_halfband_ft(__q__,12, 0.100f); }
+
+LIQUID_AUTOTEST(firdespm_halfband_m20_ft050,
+    "FIR design (Parks-McClellan), half-band, m=20, ft=0.050",
+    "filter,firdespm",0.1)
+{ testbench_firdespm_halfband_ft(__q__,20, 0.050f); }
+
+LIQUID_AUTOTEST(firdespm_halfband_m40_ft050,
+    "FIR design (Parks-McClellan), half-band, m=40, ft=0.050",
+    "filter,firdespm",0.1)
+{ testbench_firdespm_halfband_ft(__q__,40, 0.050f); }
+
+LIQUID_AUTOTEST(firdespm_halfband_m80_ft010,
+    "FIR design (Parks-McClellan), half-band, m=80, ft=0.010",
+    "filter,firdespm",0.3)
+{ testbench_firdespm_halfband_ft(__q__,80, 0.010f); }
+
+LIQUID_AUTOTEST(firdespm_copy,"FIR design (Parks-McClellan), copy","filter,firdespm",0.1)
 {
     // create valid object
     float bands[4] = {0.0, 0.2, 0.3, 0.5};  // regions
@@ -264,7 +299,8 @@ LIQUID_AUTOTEST(firdespm_copy,"description","filter,firdespm",0.1)
     firdespm_destroy(q1);
 }
 
-LIQUID_AUTOTEST(firdespm_config,"description","filter,firdespm",0.1)
+LIQUID_AUTOTEST(firdespm_config,
+    "FIR design (Parks-McClellan), test errors and invalid configuration","filter,firdespm",0.1)
 {
     _liquid_error_downgrade_enable();
     float h[51];
@@ -310,7 +346,8 @@ LIQUID_AUTOTEST(firdespm_config,"description","filter,firdespm",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(firdespm_differentiator,"description","filter,firdespm",0.1)
+LIQUID_AUTOTEST(firdespm_differentiator,
+    "FIR design (Parks-McClellan), differentiator (unsupported)","filter,firdespm",0.1)
 {
     _liquid_error_downgrade_enable();
     LIQUID_WARN("firdespm_differentiator(), unsupported configuration");
@@ -329,7 +366,8 @@ LIQUID_AUTOTEST(firdespm_differentiator,"description","filter,firdespm",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(firdespm_hilbert,"description","filter,firdespm",0.1)
+LIQUID_AUTOTEST(firdespm_hilbert,
+    "FIR design (Parks-McClellan), Hilbert transform (unsupported)","filter,firdespm",0.1)
 {
     LIQUID_WARN("firdespm_hilbert(), unsupported configuration");
     _liquid_error_downgrade_enable();

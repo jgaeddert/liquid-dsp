@@ -23,7 +23,9 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(liquid_firdes_rcos,"description","filter,firdes",0.1) {
+LIQUID_AUTOTEST(liquid_firdes_rcos,
+    "FIR design, raised-cosine, k=2, m=3, beta=0.3","filter,firdes",0.1)
+{
 
     // Initialize variables
     unsigned int k=2, m=3;
@@ -56,8 +58,9 @@ LIQUID_AUTOTEST(liquid_firdes_rcos,"description","filter,firdes",0.1) {
         LIQUID_CHECK_DELTA( h[i], h0[i], 0.00001f );
 }
 
-LIQUID_AUTOTEST(liquid_firdes_rrcos,"description","filter,firdes",0.1) {
-
+LIQUID_AUTOTEST(liquid_firdes_rrcos,
+    "FIR design, root-raised-cosine, k=2, m=3, beta=0.3","filter,firdes",0.1)
+{
     // Initialize variables
     unsigned int k=2, m=3;
     float beta=0.3f;
@@ -127,16 +130,23 @@ void test_harness_matched_filter(liquid_autotest __q__,
 
 // test matched filter responses for square-root nyquist filter prototypes
 
-LIQUID_AUTOTEST(firdes_rrcos   ,"description","filter,firdes",0.1)
-    { test_harness_matched_filter(__q__,LIQUID_FIRFILT_RRC,     2, 10, 0.3f, -60.0f, -40.0f); }
+LIQUID_AUTOTEST(firdes_rrcos,
+    "FIR design, matched filter, rrc, k=2, m=10, beta=0.3",
+    "filter,firdes",0.1)
+{ test_harness_matched_filter(__q__,LIQUID_FIRFILT_RRC,     2, 10, 0.3f, -60.0f, -40.0f); }
 
-LIQUID_AUTOTEST(firdes_rkaiser ,"description","filter,firdes",0.1)
-    { test_harness_matched_filter(__q__,LIQUID_FIRFILT_RKAISER, 2, 10, 0.3f, -60.0f, -70.0f); }
+LIQUID_AUTOTEST(firdes_rkaiser,
+    "FIR design, matched filter, rkaiser, k=2, m=10, beta=0.3",
+    "filter,firdes",0.1)
+{ test_harness_matched_filter(__q__,LIQUID_FIRFILT_RKAISER, 2, 10, 0.3f, -60.0f, -70.0f); }
 
-LIQUID_AUTOTEST(firdes_arkaiser,"description","filter,firdes",0.1)
-    { test_harness_matched_filter(__q__,LIQUID_FIRFILT_ARKAISER,2, 10, 0.3f, -60.0f, -70.0f); }
+LIQUID_AUTOTEST(firdes_arkaiser,
+    "FIR design, matched filter, arkaiser, k=2, m=10, beta=0.3",
+    "filter,firdes",0.1)
+{ test_harness_matched_filter(__q__,LIQUID_FIRFILT_ARKAISER,2, 10, 0.3f, -60.0f, -70.0f); }
 
-LIQUID_AUTOTEST(liquid_firdes_dcblock,"description","filter,firdes",0.1)
+LIQUID_AUTOTEST(liquid_firdes_dcblock,
+    "FIR design, notch (DC blocker), m=20, As=60","filter,firdes",0.1)
 {
     // options
     unsigned int m   = 20;      // filter semi-length
@@ -164,7 +174,8 @@ LIQUID_AUTOTEST(liquid_firdes_dcblock,"description","filter,firdes",0.1)
     LIQUID_CHECK_DELTA(cabsf(buf_freq[3*nfft/4]), 1.0f, tol);   // pass at -Fs/4
 }
 
-LIQUID_AUTOTEST(liquid_firdes_notch,"description","filter,firdes",0.1)
+LIQUID_AUTOTEST(liquid_firdes_notch,
+    "FIR design, notch, m=20, f0=0.2, As=60","filter,firdes",0.1)
 {
     // options
     unsigned int m   = 20;      // filter semi-length
@@ -197,7 +208,8 @@ LIQUID_AUTOTEST(liquid_firdes_notch,"description","filter,firdes",0.1)
     LIQUID_CHECK_DELTA(cabsf(buf_freq[nfft/2]), 1.0f, tol);   // pass at  Fs/2
 }
 
-LIQUID_AUTOTEST(liquid_getopt_str2firfilt,"description","filter,firdes",0.1)
+LIQUID_AUTOTEST(liquid_getopt_str2firfilt,
+    "FIR design, validate string-to-type conversion","filter,firdes",0.1)
 {
     LIQUID_CHECK( liquid_getopt_str2firfilt("unknown"   ) ==  LIQUID_FIRFILT_UNKNOWN   );
     LIQUID_CHECK( liquid_getopt_str2firfilt("kaiser"    ) ==  LIQUID_FIRFILT_KAISER    );
@@ -217,7 +229,8 @@ LIQUID_AUTOTEST(liquid_getopt_str2firfilt,"description","filter,firdes",0.1)
     LIQUID_CHECK( liquid_getopt_str2firfilt("rfarcsech" ) ==  LIQUID_FIRFILT_RFARCSECH );
 }
 
-LIQUID_AUTOTEST(liquid_firdes_config,"description","filter,firdes",0.1)
+LIQUID_AUTOTEST(liquid_firdes_config,
+    "FIR design, test errors and invalid configuration","filter,firdes",0.1)
 {
     _liquid_error_downgrade_enable();
     // check that estimate methods return zero for invalid configs
@@ -275,7 +288,8 @@ LIQUID_AUTOTEST(liquid_firdes_config,"description","filter,firdes",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(liquid_firdes_estimate,"description","filter,firdes",0.1)
+LIQUID_AUTOTEST(liquid_firdes_estimate,
+    "FIR design, estimate required filter length","filter,firdes",0.1)
 {
     float tol = 0.05f; // dB
 
@@ -334,25 +348,77 @@ void testbench_firdes_prototype(liquid_autotest __q__,
     liquid_autotest_validate_psd_signalf(__q__, h, h_len, regions, 3, filename);
 }
 
-LIQUID_AUTOTEST(firdes_prototype_kaiser   ,"description","filter,firdes",0.1){ testbench_firdes_prototype(__q__,"kaiser",   4, 12, 0.3f, 60.0f); }
-LIQUID_AUTOTEST(firdes_prototype_pm       ,"description","filter,firdes",0.1){ testbench_firdes_prototype(__q__,"pm",       4, 12, 0.3f, 80.0f); }
-LIQUID_AUTOTEST(firdes_prototype_rcos     ,"description","filter,firdes",0.1){ testbench_firdes_prototype(__q__,"rcos",     4, 12, 0.3f, 60.0f); }
-LIQUID_AUTOTEST(firdes_prototype_fexp     ,"description","filter,firdes",0.1){ testbench_firdes_prototype(__q__,"fexp",     4, 12, 0.3f, 40.0f); }
-LIQUID_AUTOTEST(firdes_prototype_fsech    ,"description","filter,firdes",0.1){ testbench_firdes_prototype(__q__,"fsech",    4, 12, 0.3f, 60.0f); }
-LIQUID_AUTOTEST(firdes_prototype_farcsech ,"description","filter,firdes",0.1){ testbench_firdes_prototype(__q__,"farcsech", 4, 12, 0.3f, 40.0f); }
-LIQUID_AUTOTEST(firdes_prototype_arkaiser ,"description","filter,firdes",0.1){ testbench_firdes_prototype(__q__,"arkaiser", 4, 12, 0.3f, 90.0f); }
-LIQUID_AUTOTEST(firdes_prototype_rkaiser  ,"description","filter,firdes",0.1){ testbench_firdes_prototype(__q__,"rkaiser",  4, 12, 0.3f, 90.0f); }
-LIQUID_AUTOTEST(firdes_prototype_rrcos    ,"description","filter,firdes",0.1){ testbench_firdes_prototype(__q__,"rrcos",    4, 12, 0.3f, 45.0f); }
-LIQUID_AUTOTEST(firdes_prototype_hm3      ,"description","filter,firdes",0.1){ testbench_firdes_prototype(__q__,"hm3",      4, 12, 0.3f,100.0f); }
-LIQUID_AUTOTEST(firdes_prototype_rfexp    ,"description","filter,firdes",0.1){ testbench_firdes_prototype(__q__,"rfexp",    4, 12, 0.3f, 30.0f); }
-LIQUID_AUTOTEST(firdes_prototype_rfsech   ,"description","filter,firdes",0.1){ testbench_firdes_prototype(__q__,"rfsech",   4, 12, 0.3f, 40.0f); }
-LIQUID_AUTOTEST(firdes_prototype_rfarcsech,"description","filter,firdes",0.1){ testbench_firdes_prototype(__q__,"rfarcsech",4, 12, 0.3f, 30.0f); }
+LIQUID_AUTOTEST(firdes_prototype_kaiser,
+    "FIR design, prototype, kaiser, k=4, m=12, beta=0.3, As=60",
+    "filter,firdes",0.1)
+{ testbench_firdes_prototype(__q__,"kaiser",   4, 12, 0.3f, 60.0f); }
+
+LIQUID_AUTOTEST(firdes_prototype_pm,
+    "FIR design, prototype, pm, k=4, m=12, beta=0.3, As=80",
+    "filter,firdes",0.1)
+{ testbench_firdes_prototype(__q__,"pm",       4, 12, 0.3f, 80.0f); }
+
+LIQUID_AUTOTEST(firdes_prototype_rcos,
+    "FIR design, prototype, rcos, k=4, m=12, beta=0.3, As=60",
+    "filter,firdes",0.1)
+{ testbench_firdes_prototype(__q__,"rcos",     4, 12, 0.3f, 60.0f); }
+
+LIQUID_AUTOTEST(firdes_prototype_fexp,
+    "FIR design, prototype, fexp, k=4, m=12, beta=0.3, As=40",
+    "filter,firdes",0.1)
+{ testbench_firdes_prototype(__q__,"fexp",     4, 12, 0.3f, 40.0f); }
+
+LIQUID_AUTOTEST(firdes_prototype_fsech,
+    "FIR design, prototype, fsech, k=4, m=12, beta=0.3, As=60",
+    "filter,firdes",0.1)
+{ testbench_firdes_prototype(__q__,"fsech",    4, 12, 0.3f, 60.0f); }
+
+LIQUID_AUTOTEST(firdes_prototype_farcsech,
+    "FIR design, prototype, farcsech, k=4, m=12, beta=0.3, As=40",
+    "filter,firdes",0.1)
+{ testbench_firdes_prototype(__q__,"farcsech", 4, 12, 0.3f, 40.0f); }
+
+LIQUID_AUTOTEST(firdes_prototype_arkaiser,
+    "FIR design, prototype, arkaiser, k=4, m=12, beta=0.3, As=90",
+    "filter,firdes",0.1)
+{ testbench_firdes_prototype(__q__,"arkaiser", 4, 12, 0.3f, 90.0f); }
+
+LIQUID_AUTOTEST(firdes_prototype_rkaiser,
+    "FIR design, prototype, rkaiser, k=4, m=12, beta=0.3, As=90",
+    "filter,firdes",0.1)
+{ testbench_firdes_prototype(__q__,"rkaiser",  4, 12, 0.3f, 90.0f); }
+
+LIQUID_AUTOTEST(firdes_prototype_rrcos,
+    "FIR design, prototype, rrcos, k=4, m=12, beta=0.3, As=45",
+    "filter,firdes",0.1)
+{ testbench_firdes_prototype(__q__,"rrcos",    4, 12, 0.3f, 45.0f); }
+
+LIQUID_AUTOTEST(firdes_prototype_hm3,
+    "FIR design, prototype, hm3, k=4, m=12, beta=0.3, As=100",
+    "filter,firdes",0.1)
+{ testbench_firdes_prototype(__q__,"hm3",      4, 12, 0.3f,100.0f); }
+
+LIQUID_AUTOTEST(firdes_prototype_rfexp,
+    "FIR design, prototype, rfexp, k=4, m=12, beta=0.3, As=30",
+    "filter,firdes",0.1)
+{ testbench_firdes_prototype(__q__,"rfexp",    4, 12, 0.3f, 30.0f); }
+
+LIQUID_AUTOTEST(firdes_prototype_rfsech,
+    "FIR design, prototype, rfsech, k=4, m=12, beta=0.3, As=40",
+    "filter,firdes",0.1)
+{ testbench_firdes_prototype(__q__,"rfsech",   4, 12, 0.3f, 40.0f); }
+
+LIQUID_AUTOTEST(firdes_prototype_rfarcsech,
+    "FIR design, prototype, rfarcsech, k=4, m=12, beta=0.3, As=30",
+    "filter,firdes",0.1)
+{ testbench_firdes_prototype(__q__,"rfarcsech",4, 12, 0.3f, 30.0f); }
 
 // ignore gmsk filters as these weren't designed for flat pass-band responses
 //void xautotest_firdes_prototype_gmsktx   (){ testbench_firdes_prototype(__q__, "gmsktx",   4, 12, 0.3f, 60.0f); }
 //void xautotest_firdes_prototype_gmskrx   (){ testbench_firdes_prototype(__q__, "gmskrx",   4, 12, 0.3f, 60.0f); }
 
-LIQUID_AUTOTEST(firdes_doppler,"description","filter,firdes",0.1)
+LIQUID_AUTOTEST(firdes_doppler,
+    "FIR design, Doppler spectrum, fd=0.2, K=10","filter,firdes",0.1)
 {
     // design filter
     float        fd     = 0.2f;  // Normalized Doppler frequency
@@ -374,7 +440,8 @@ LIQUID_AUTOTEST(firdes_doppler,"description","filter,firdes",0.1)
         "autotest/logs/firdes_doppler.m");
 }
 
-LIQUID_AUTOTEST(liquid_freqrespf,"check frequency response (real-valued coefficients)", "filter,firdes", 0.1)
+LIQUID_AUTOTEST(liquid_freqrespf,
+    "check frequency response (real-valued coefficients)", "filter,firdes", 0.1)
 {
     // design filter
     unsigned int h_len = 41;
@@ -400,7 +467,8 @@ LIQUID_AUTOTEST(liquid_freqrespf,"check frequency response (real-valued coeffici
     }
 }
 
-LIQUID_AUTOTEST(liquid_freqrespcf,"check frequency response (complex-valued coefficients)", "filter,firdes", 0.1)
+LIQUID_AUTOTEST(liquid_freqrespcf,
+    "check frequency response (complex-valued coefficients)", "filter,firdes", 0.1)
 {
     // design filter and apply complex phasor
     unsigned int i, h_len = 41;
