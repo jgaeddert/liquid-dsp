@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(firdecim_config,"description","filter,firdecim",0.1)
+LIQUID_AUTOTEST(firdecim_config,"test firdecim config","filter,firdecim",0.1)
 {
     _liquid_error_downgrade_enable();
     // design filter
