@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(filter_crosscorr_rrrf,"description","filter,crosscorr",0.1)
+LIQUID_AUTOTEST(filter_crosscorr_rrrf,"filter cross-correlation (rrrf)","filter,crosscorr",0.1)
 {
     // options
     float tol = 1e-3f;
