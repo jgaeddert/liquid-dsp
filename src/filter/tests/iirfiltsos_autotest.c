@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(iirfiltsos_impulse_n2,"description","filter,iirfiltsos",0.1)
+LIQUID_AUTOTEST(iirfiltsos_impulse_n2,"IIR second-order sections filter, impulse response, 2nd-order Butterworth","filter,iirfiltsos",0.1)
 {
     // initialize filter with 2nd-order low-pass butterworth filter
     float a[3] = {
@@ -81,7 +81,7 @@ LIQUID_AUTOTEST(iirfiltsos_impulse_n2,"description","filter,iirfiltsos",0.1)
 }
 
 
-LIQUID_AUTOTEST(iirfiltsos_step_n2,"description","filter,iirfiltsos",0.1)
+LIQUID_AUTOTEST(iirfiltsos_step_n2,"IIR second-order sections filter, step response, 2nd-order Butterworth","filter,iirfiltsos",0.1)
 {
     // initialize filter with 2nd-order low-pass butterworth filter
     float a[3] = {
@@ -134,7 +134,7 @@ LIQUID_AUTOTEST(iirfiltsos_step_n2,"description","filter,iirfiltsos",0.1)
     iirfiltsos_rrrf_destroy(q1);
 }
 
-LIQUID_AUTOTEST(iirfiltsos_copy,"description","filter,iirfiltsos",0.1)
+LIQUID_AUTOTEST(iirfiltsos_copy,"IIR second-order sections filter copy","filter,iirfiltsos",0.1)
 {
     // initialize filter with 2nd-order low-pass butterworth filter
     float a[3] = {1.0000000000000000f, -0.942809041582063f, 0.3333333333333333f};
