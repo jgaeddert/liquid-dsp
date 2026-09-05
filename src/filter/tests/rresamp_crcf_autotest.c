@@ -94,54 +94,54 @@ void test_rresamp_crcf(liquid_autotest __q__,
 }
 
 // baseline tests using create_kaiser() method
-LIQUID_AUTOTEST(rresamp_crcf_baseline_P1_Q5, "baseline resampler", "filter,rresamp", 0.1)
+LIQUID_AUTOTEST(rresamp_crcf_baseline_P1_Q5, "rational resampler, baseline, interp=1, decim=5, m=15, bw=auto, As=60", "filter,rresamp", 0.1)
     { test_rresamp_crcf(__q__,"baseline", 1, 5, 15, -1, 60.0f); }
 
-LIQUID_AUTOTEST(rresamp_crcf_baseline_P2_Q5, "description", "filter,rresamp", 0.1)
+LIQUID_AUTOTEST(rresamp_crcf_baseline_P2_Q5, "rational resampler, baseline, interp=2, decim=5, m=15, bw=auto, As=60", "filter,rresamp", 0.1)
     { test_rresamp_crcf(__q__,"baseline", 2, 5, 15, -1, 60.0f); }
 
-LIQUID_AUTOTEST(rresamp_crcf_baseline_P3_Q5, "description", "filter,rresamp", 0.1)
+LIQUID_AUTOTEST(rresamp_crcf_baseline_P3_Q5, "rational resampler, baseline, interp=3, decim=5, m=15, bw=auto, As=60", "filter,rresamp", 0.1)
     { test_rresamp_crcf(__q__,"baseline", 3, 5, 15, -1, 60.0f); }
 
-LIQUID_AUTOTEST(rresamp_crcf_baseline_P6_Q5, "description", "filter,rresamp", 0.1)
+LIQUID_AUTOTEST(rresamp_crcf_baseline_P6_Q5, "rational resampler, baseline, interp=6, decim=5, m=15, bw=auto, As=60", "filter,rresamp", 0.1)
     { test_rresamp_crcf(__q__,"baseline", 6, 5, 15, -1, 60.0f); }
 
-LIQUID_AUTOTEST(rresamp_crcf_baseline_P8_Q5, "description", "filter,rresamp", 0.1)
+LIQUID_AUTOTEST(rresamp_crcf_baseline_P8_Q5, "rational resampler, baseline, interp=8, decim=5, m=15, bw=auto, As=60", "filter,rresamp", 0.1)
     { test_rresamp_crcf(__q__,"baseline", 8, 5, 15, -1, 60.0f); }
 
-LIQUID_AUTOTEST(rresamp_crcf_baseline_P9_Q5, "description", "filter,rresamp", 0.1)
+LIQUID_AUTOTEST(rresamp_crcf_baseline_P9_Q5, "rational resampler, baseline, interp=9, decim=5, m=15, bw=auto, As=60", "filter,rresamp", 0.1)
     { test_rresamp_crcf(__q__,"baseline", 9, 5, 15, -1, 60.0f); }
 
 // tests using create_default() method
-LIQUID_AUTOTEST(rresamp_crcf_default_P1_Q5, "description", "filter,rresamp", 0.1)
+LIQUID_AUTOTEST(rresamp_crcf_default_P1_Q5, "rational resampler, default, interp=1, decim=5, m=15, bw=auto, As=60", "filter,rresamp", 0.1)
     { test_rresamp_crcf(__q__,"default", 1, 5, 15, -1, 60.0f); }
 
-LIQUID_AUTOTEST(rresamp_crcf_default_P2_Q5, "description", "filter,rresamp", 0.1)
+LIQUID_AUTOTEST(rresamp_crcf_default_P2_Q5, "rational resampler, default, interp=2, decim=5, m=15, bw=auto, As=60", "filter,rresamp", 0.1)
     { test_rresamp_crcf(__q__,"default", 2, 5, 15, -1, 60.0f); }
 
-LIQUID_AUTOTEST(rresamp_crcf_default_P3_Q5, "description", "filter,rresamp", 0.1)
+LIQUID_AUTOTEST(rresamp_crcf_default_P3_Q5, "rational resampler, default, interp=3, decim=5, m=15, bw=auto, As=60", "filter,rresamp", 0.1)
     { test_rresamp_crcf(__q__,"default", 3, 5, 15, -1, 60.0f); }
 
-LIQUID_AUTOTEST(rresamp_crcf_default_P6_Q5, "description", "filter,rresamp", 0.1)
+LIQUID_AUTOTEST(rresamp_crcf_default_P6_Q5, "rational resampler, default, interp=6, decim=5, m=15, bw=auto, As=60", "filter,rresamp", 0.1)
     { test_rresamp_crcf(__q__,"default", 6, 5, 15, -1, 60.0f); }
 
-LIQUID_AUTOTEST(rresamp_crcf_default_P8_Q5, "description", "filter,rresamp", 0.1)
+LIQUID_AUTOTEST(rresamp_crcf_default_P8_Q5, "rational resampler, default, interp=8, decim=5, m=15, bw=auto, As=60", "filter,rresamp", 0.1)
     { test_rresamp_crcf(__q__,"default", 8, 5, 15, -1, 60.0f); }
 
-LIQUID_AUTOTEST(rresamp_crcf_default_P9_Q5, "description", "filter,rresamp", 0.1)
+LIQUID_AUTOTEST(rresamp_crcf_default_P9_Q5, "rational resampler, default, interp=9, decim=5, m=15, bw=auto, As=60", "filter,rresamp", 0.1)
     { test_rresamp_crcf(__q__,"default", 9, 5, 15, -1, 60.0f); }
 
 // tests using create_prototype() method
-LIQUID_AUTOTEST(rresamp_crcf_arkaiser_P3_Q5, "description", "filter,rresamp", 0.1)
+LIQUID_AUTOTEST(rresamp_crcf_arkaiser_P3_Q5, "rational resampler, arkaiser, interp=3, decim=5, m=40, bw=0.2, As=50", "filter,rresamp", 0.1)
     { test_rresamp_crcf(__q__,"arkaiser", 3, 5, 40, 0.2, 50.0f); }
 
-LIQUID_AUTOTEST(rresamp_crcf_arkaiser_P5_Q3, "description", "filter,rresamp", 0.1)
+LIQUID_AUTOTEST(rresamp_crcf_arkaiser_P5_Q3, "rational resampler, arkaiser, interp=5, decim=3, m=40, bw=0.2, As=50", "filter,rresamp", 0.1)
     { test_rresamp_crcf(__q__,"arkaiser", 5, 3, 40, 0.2, 50.0f); }
 
-LIQUID_AUTOTEST(rresamp_crcf_rrcos_P3_Q5, "description", "filter,rresamp", 0.1)
+LIQUID_AUTOTEST(rresamp_crcf_rrcos_P3_Q5, "rational resampler, rrcos, interp=3, decim=5, m=40, bw=0.2, As=50", "filter,rresamp", 0.1)
     { test_rresamp_crcf(__q__,"rrcos",    3, 5, 40, 0.2, 50.0f); }
 
-LIQUID_AUTOTEST(rresamp_crcf_rrcos_P5_Q3, "description", "filter,rresamp", 0.1)
+LIQUID_AUTOTEST(rresamp_crcf_rrcos_P5_Q3, "rational resampler, rrcos, interp=5, decim=3, m=40, bw=0.2, As=50", "filter,rresamp", 0.1)
     { test_rresamp_crcf(__q__,"rrcos",    5, 3, 40, 0.2, 50.0f); }
 
 // test copy method

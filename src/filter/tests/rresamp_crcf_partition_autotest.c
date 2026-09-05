@@ -73,10 +73,33 @@ void testbench_rresamp_crcf_part(liquid_autotest __q__,
     }
 }
 
-LIQUID_AUTOTEST(rresamp_crcf_part_P1_Q5,"description","filter,rresamp",0.1) { testbench_rresamp_crcf_part(__q__, 1, 5, 15, 20); }
-LIQUID_AUTOTEST(rresamp_crcf_part_P2_Q5,"description","filter,rresamp",0.1) { testbench_rresamp_crcf_part(__q__, 2, 5, 15, 20); }
-LIQUID_AUTOTEST(rresamp_crcf_part_P3_Q5,"description","filter,rresamp",0.1) { testbench_rresamp_crcf_part(__q__, 3, 5, 15, 20); }
-LIQUID_AUTOTEST(rresamp_crcf_part_P6_Q5,"description","filter,rresamp",0.1) { testbench_rresamp_crcf_part(__q__, 6, 5, 15, 20); }
-LIQUID_AUTOTEST(rresamp_crcf_part_P8_Q5,"description","filter,rresamp",0.1) { testbench_rresamp_crcf_part(__q__, 8, 5, 15, 20); }
-LIQUID_AUTOTEST(rresamp_crcf_part_P9_Q5,"description","filter,rresamp",0.1) { testbench_rresamp_crcf_part(__q__, 9, 5, 15, 20); }
+LIQUID_AUTOTEST(rresamp_crcf_part_P1_Q5,
+    "partitioned rational resampler, interp=1, decim=5, m=15, bw=0.5, As=60",
+    "filter,rresamp",0.1)
+{ testbench_rresamp_crcf_part(__q__, 1, 5, 15, 20); }
+
+LIQUID_AUTOTEST(rresamp_crcf_part_P2_Q5,
+    "partitioned rational resampler, interp=2, decim=5, m=15, bw=0.5, As=60",
+    "filter,rresamp",0.1)
+{ testbench_rresamp_crcf_part(__q__, 2, 5, 15, 20); }
+
+LIQUID_AUTOTEST(rresamp_crcf_part_P3_Q5,
+    "partitioned rational resampler, interp=3, decim=5, m=15, bw=0.5, As=60",
+    "filter,rresamp",0.1)
+{ testbench_rresamp_crcf_part(__q__, 3, 5, 15, 20); }
+
+LIQUID_AUTOTEST(rresamp_crcf_part_P6_Q5,
+    "partitioned rational resampler, interp=6, decim=5, m=15, bw=0.5, As=60",
+    "filter,rresamp",0.1)
+{ testbench_rresamp_crcf_part(__q__, 6, 5, 15, 20); }
+
+LIQUID_AUTOTEST(rresamp_crcf_part_P8_Q5,
+    "partitioned rational resampler, interp=8, decim=5, m=15, bw=0.5, As=60",
+    "filter,rresamp",0.1)
+{ testbench_rresamp_crcf_part(__q__, 8, 5, 15, 20); }
+
+LIQUID_AUTOTEST(rresamp_crcf_part_P9_Q5,
+    "partitioned rational resampler, interp=9, decim=5, m=15, bw=0.5, As=60",
+    "filter,rresamp",0.1)
+{ testbench_rresamp_crcf_part(__q__, 9, 5, 15, 20); }
 
