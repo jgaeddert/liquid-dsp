@@ -208,14 +208,37 @@ void testbench_resamp2_crcf_filter(liquid_autotest __q__,
     liquid_autotest_validate_psd_signal(__q__, h_1, h_len, regions_h1, 3, filename);
 }
 
-LIQUID_AUTOTEST(resamp2_crcf_filter_0,"description","filter,resamp2",0.1){ testbench_resamp2_crcf_filter(__q__,  4, 60.0f); }
-LIQUID_AUTOTEST(resamp2_crcf_filter_1,"description","filter,resamp2",0.1){ testbench_resamp2_crcf_filter(__q__,  7, 60.0f); }
-LIQUID_AUTOTEST(resamp2_crcf_filter_2,"description","filter,resamp2",0.1){ testbench_resamp2_crcf_filter(__q__, 12, 60.0f); }
-LIQUID_AUTOTEST(resamp2_crcf_filter_3,"description","filter,resamp2",0.1){ testbench_resamp2_crcf_filter(__q__, 15, 80.0f); }
-LIQUID_AUTOTEST(resamp2_crcf_filter_4,"description","filter,resamp2",0.1){ testbench_resamp2_crcf_filter(__q__, 15,100.0f); }
-LIQUID_AUTOTEST(resamp2_crcf_filter_5,"description","filter,resamp2",0.1){ testbench_resamp2_crcf_filter(__q__, 15,120.0f); }
+LIQUID_AUTOTEST(resamp2_crcf_filter_0,
+    "half-band resampler, filter response, m=4, As=60",
+    "filter,resamp2",0.1)
+{ testbench_resamp2_crcf_filter(__q__,  4, 60.0f); }
 
-LIQUID_AUTOTEST(resamp2_config,"description","filter,resamp2",0.1)
+LIQUID_AUTOTEST(resamp2_crcf_filter_1,
+    "half-band resampler, filter response, m=7, As=60",
+    "filter,resamp2",0.1)
+{ testbench_resamp2_crcf_filter(__q__,  7, 60.0f); }
+
+LIQUID_AUTOTEST(resamp2_crcf_filter_2,
+    "half-band resampler, filter response, m=12, As=60",
+    "filter,resamp2",0.1)
+{ testbench_resamp2_crcf_filter(__q__, 12, 60.0f); }
+
+LIQUID_AUTOTEST(resamp2_crcf_filter_3,
+    "half-band resampler, filter response, m=15, As=80",
+    "filter,resamp2",0.1)
+{ testbench_resamp2_crcf_filter(__q__, 15, 80.0f); }
+
+LIQUID_AUTOTEST(resamp2_crcf_filter_4,
+    "half-band resampler, filter response, m=15, As=100",
+    "filter,resamp2",0.1)
+{ testbench_resamp2_crcf_filter(__q__, 15,100.0f); }
+
+LIQUID_AUTOTEST(resamp2_crcf_filter_5,
+    "half-band resampler, filter response, m=15, As=120",
+    "filter,resamp2",0.1)
+{ testbench_resamp2_crcf_filter(__q__, 15,120.0f); }
+
+LIQUID_AUTOTEST(resamp2_config,"half-band resampler, test errors and invalid configuration","filter,resamp2",0.1)
 {
     _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
