@@ -92,25 +92,95 @@ void testbench_firfilt_rnyquist(liquid_autotest __q__,
 
 // test different filter designs, nominal parameters
 
-LIQUID_AUTOTEST(firfilt_rnyquist_baseline_arkaiser ,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2,9,0.3f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rkaiser  ,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RKAISER,  2,9,0.3f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rrc      ,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RRC,      2,9,0.3f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_baseline_hm3      ,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_hM3,      2,9,0.3f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_baseline_gmsktxrx ,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_GMSKTX,   2,9,0.3f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rfexp    ,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RFEXP,    2,9,0.3f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rfsech   ,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RFSECH,   2,9,0.3f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rfarcsech,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RFARCSECH,2,9,0.3f,0.0f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_baseline_arkaiser,
+    "root-Nyquist filter, arkaiser, k=2, m=9, beta=0.3, dt=0",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2,9,0.3f,0.0f); }
+
+LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rkaiser,
+    "root-Nyquist filter, rkaiser, k=2, m=9, beta=0.3, dt=0",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RKAISER,  2,9,0.3f,0.0f); }
+
+LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rrc,
+    "root-Nyquist filter, rrc, k=2, m=9, beta=0.3, dt=0",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RRC,      2,9,0.3f,0.0f); }
+
+LIQUID_AUTOTEST(firfilt_rnyquist_baseline_hm3,
+    "root-Nyquist filter, hM3, k=2, m=9, beta=0.3, dt=0",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_hM3,      2,9,0.3f,0.0f); }
+
+LIQUID_AUTOTEST(firfilt_rnyquist_baseline_gmsktxrx,
+    "root-Nyquist filter, gmsktx/rx, k=2, m=9, beta=0.3, dt=0",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_GMSKTX,   2,9,0.3f,0.0f); }
+
+LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rfexp,
+    "root-Nyquist filter, rfexp, k=2, m=9, beta=0.3, dt=0",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RFEXP,    2,9,0.3f,0.0f); }
+
+LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rfsech,
+    "root-Nyquist filter, rfsech, k=2, m=9, beta=0.3, dt=0",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RFSECH,   2,9,0.3f,0.0f); }
+
+LIQUID_AUTOTEST(firfilt_rnyquist_baseline_rfarcsech,
+    "root-Nyquist filter, rfarcsech, k=2, m=9, beta=0.3, dt=0",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RFARCSECH,2,9,0.3f,0.0f); }
 
 // test different parameters
 
-LIQUID_AUTOTEST(firfilt_rnyquist_0,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2, 4,0.33f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_1,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2,12,0.20f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_2,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2,40,0.20f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_3,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 3,12,0.20f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_4,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 4,12,0.20f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_5,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 5,12,0.20f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_6,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER,20,12,0.20f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_7,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2,12,0.80f,0.0f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_8,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RKAISER,  2,12,0.20f,0.5f); }
-LIQUID_AUTOTEST(firfilt_rnyquist_9,"description","filter,firfilt",0.1){ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RKAISER, 20,40,0.20f,0.5f); }
+LIQUID_AUTOTEST(firfilt_rnyquist_0,
+    "root-Nyquist filter, arkaiser, k=2, m=4, beta=0.33, dt=0",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2, 4,0.33f,0.0f); }
+
+LIQUID_AUTOTEST(firfilt_rnyquist_1,
+    "root-Nyquist filter, arkaiser, k=2, m=12, beta=0.20, dt=0",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2,12,0.20f,0.0f); }
+
+LIQUID_AUTOTEST(firfilt_rnyquist_2,
+    "root-Nyquist filter, arkaiser, k=2, m=40, beta=0.20, dt=0",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2,40,0.20f,0.0f); }
+
+LIQUID_AUTOTEST(firfilt_rnyquist_3,
+    "root-Nyquist filter, arkaiser, k=3, m=12, beta=0.20, dt=0",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 3,12,0.20f,0.0f); }
+
+LIQUID_AUTOTEST(firfilt_rnyquist_4,
+    "root-Nyquist filter, arkaiser, k=4, m=12, beta=0.20, dt=0",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 4,12,0.20f,0.0f); }
+
+LIQUID_AUTOTEST(firfilt_rnyquist_5,
+    "root-Nyquist filter, arkaiser, k=5, m=12, beta=0.20, dt=0",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 5,12,0.20f,0.0f); }
+
+LIQUID_AUTOTEST(firfilt_rnyquist_6,
+    "root-Nyquist filter, arkaiser, k=20, m=12, beta=0.20, dt=0",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER,20,12,0.20f,0.0f); }
+
+LIQUID_AUTOTEST(firfilt_rnyquist_7,
+    "root-Nyquist filter, arkaiser, k=2, m=12, beta=0.80, dt=0",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_ARKAISER, 2,12,0.80f,0.0f); }
+
+LIQUID_AUTOTEST(firfilt_rnyquist_8,
+    "root-Nyquist filter, rkaiser, k=2, m=12, beta=0.20, dt=0.5",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RKAISER,  2,12,0.20f,0.5f); }
+
+LIQUID_AUTOTEST(firfilt_rnyquist_9,
+    "root-Nyquist filter, rkaiser, k=20, m=40, beta=0.20, dt=0.5",
+    "filter,firfilt",0.1)
+{ testbench_firfilt_rnyquist(__q__, LIQUID_FIRFILT_RKAISER, 20,40,0.20f,0.5f); }
 

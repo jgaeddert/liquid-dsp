@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(firfilt_crcf_kaiser,"description","filter,firfilt",0.1)
+LIQUID_AUTOTEST(firfilt_crcf_kaiser,"FIR filter (crcf), Kaiser design, spectral response","filter,firfilt",0.1)
 {
     // design filter
     firfilt_crcf q = firfilt_crcf_create_kaiser(51, 0.2f, 60.0f, 0.0f);
@@ -40,7 +40,7 @@ LIQUID_AUTOTEST(firfilt_crcf_kaiser,"description","filter,firfilt",0.1)
     firfilt_crcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(firfilt_crcf_firdespm,"description","filter,firfilt",0.1)
+LIQUID_AUTOTEST(firfilt_crcf_firdespm,"FIR filter (crcf), Parks-McClellan design, spectral response","filter,firfilt",0.1)
 {
     // design filter
     firfilt_crcf q = firfilt_crcf_create_firdespm(51, 0.2f, 60.0f);
@@ -57,7 +57,7 @@ LIQUID_AUTOTEST(firfilt_crcf_firdespm,"description","filter,firfilt",0.1)
     firfilt_crcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(firfilt_crcf_rect,"description","filter,firfilt",0.1)
+LIQUID_AUTOTEST(firfilt_crcf_rect,"FIR filter (crcf), rectangular design, spectral response","filter,firfilt",0.1)
 {
     // design filter
     firfilt_crcf q = firfilt_crcf_create_rect(4);
@@ -74,7 +74,7 @@ LIQUID_AUTOTEST(firfilt_crcf_rect,"description","filter,firfilt",0.1)
     firfilt_crcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(firfilt_crcf_notch,"description","filter,firfilt",0.1)
+LIQUID_AUTOTEST(firfilt_crcf_notch,"FIR notch filter (crcf), spectral response","filter,firfilt",0.1)
 {
     // design filter and verify resulting spectrum
     firfilt_crcf q = firfilt_crcf_create_notch(20, 60.0f, 0.125f);
@@ -90,7 +90,7 @@ LIQUID_AUTOTEST(firfilt_crcf_notch,"description","filter,firfilt",0.1)
     firfilt_crcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(firfilt_cccf_notch,"description","filter,firfilt",0.1)
+LIQUID_AUTOTEST(firfilt_cccf_notch,"FIR notch filter (cccf), spectral response","filter,firfilt",0.1)
 {
     // design filter and verify resulting spectrum
     firfilt_cccf q = firfilt_cccf_create_notch(20, 60.0f, 0.125f);
@@ -104,7 +104,7 @@ LIQUID_AUTOTEST(firfilt_cccf_notch,"description","filter,firfilt",0.1)
     firfilt_cccf_destroy(q);
 }
 
-LIQUID_AUTOTEST(firfilt_config,"description","filter,firfilt",0.1)
+LIQUID_AUTOTEST(firfilt_config,"FIR filter, test errors and invalid configuration","filter,firfilt",0.1)
 {
     _liquid_error_downgrade_enable();
     // no need to check every combination
@@ -133,7 +133,7 @@ LIQUID_AUTOTEST(firfilt_config,"description","filter,firfilt",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(firfilt_recreate,"description","filter,firfilt",0.1)
+LIQUID_AUTOTEST(firfilt_recreate,"FIR filter, recreate with new coefficients","filter,firfilt",0.1)
 {
     // create random-ish coefficients
     unsigned int i, n = 21;
