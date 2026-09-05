@@ -154,19 +154,52 @@ void testbench_gmskframesync(liquid_autotest __q__,
 }
 
 // test specific configurations
-LIQUID_AUTOTEST(gmskframesync_k02_m05_bt20,"","framing,gmsk,gmskframe",0.1) { testbench_gmskframesync(__q__,  2, 5, 0.20f); }
-LIQUID_AUTOTEST(gmskframesync_k02_m05_bt30,"","framing,gmsk,gmskframe",0.1) { testbench_gmskframesync(__q__,  2, 5, 0.30f); }
-LIQUID_AUTOTEST(gmskframesync_k02_m05_bt40,"","framing,gmsk,gmskframe",0.1) { testbench_gmskframesync(__q__,  2, 5, 0.40f); }
+LIQUID_AUTOTEST(gmskframesync_k02_m05_bt20,
+    "GMSK frame synchronizer, k=2, m=5, bt=0.20",
+    "framing,gmsk,gmskframe",0.1)
+{ testbench_gmskframesync(__q__,  2, 5, 0.20f); }
+
+LIQUID_AUTOTEST(gmskframesync_k02_m05_bt30,
+    "GMSK frame synchronizer, k=2, m=5, bt=0.30",
+    "framing,gmsk,gmskframe",0.1)
+{ testbench_gmskframesync(__q__,  2, 5, 0.30f); }
+
+LIQUID_AUTOTEST(gmskframesync_k02_m05_bt40,
+    "GMSK frame synchronizer, k=2, m=5, bt=0.40",
+    "framing,gmsk,gmskframe",0.1)
+{ testbench_gmskframesync(__q__,  2, 5, 0.40f); }
 
 // double samples per symbol
-LIQUID_AUTOTEST(gmskframesync_k04_m05_bt20,"","framing,gmsk,gmskframe",0.1) { testbench_gmskframesync(__q__,  4, 5, 0.20f); }
-LIQUID_AUTOTEST(gmskframesync_k04_m05_bt30,"","framing,gmsk,gmskframe",0.1) { testbench_gmskframesync(__q__,  4, 5, 0.30f); }
-LIQUID_AUTOTEST(gmskframesync_k04_m05_bt40,"","framing,gmsk,gmskframe",0.1) { testbench_gmskframesync(__q__,  4, 5, 0.40f); }
+LIQUID_AUTOTEST(gmskframesync_k04_m05_bt20,
+    "GMSK frame synchronizer, k=4, m=5, bt=0.20",
+    "framing,gmsk,gmskframe",0.1)
+{ testbench_gmskframesync(__q__,  4, 5, 0.20f); }
+
+LIQUID_AUTOTEST(gmskframesync_k04_m05_bt30,
+    "GMSK frame synchronizer, k=4, m=5, bt=0.30",
+    "framing,gmsk,gmskframe",0.1)
+{ testbench_gmskframesync(__q__,  4, 5, 0.30f); }
+
+LIQUID_AUTOTEST(gmskframesync_k04_m05_bt40,
+    "GMSK frame synchronizer, k=4, m=5, bt=0.40",
+    "framing,gmsk,gmskframe",0.1)
+{ testbench_gmskframesync(__q__,  4, 5, 0.40f); }
 
 // test odd configurations
-LIQUID_AUTOTEST(gmskframesync_k03_m07_bt20,"","framing,gmsk,gmskframe",0.1) { testbench_gmskframesync(__q__,  3, 7, 0.20f); }
-LIQUID_AUTOTEST(gmskframesync_k08_m20_bt15,"","framing,gmsk,gmskframe",0.1) { testbench_gmskframesync(__q__,  8,20, 0.15f); }
-LIQUID_AUTOTEST(gmskframesync_k15_m02_bt40,"","framing,gmsk,gmskframe",0.1) { testbench_gmskframesync(__q__, 15, 2, 0.40f); }
+LIQUID_AUTOTEST(gmskframesync_k03_m07_bt20,
+    "GMSK frame synchronizer, k=3, m=7, bt=0.20",
+    "framing,gmsk,gmskframe",0.1)
+{ testbench_gmskframesync(__q__,  3, 7, 0.20f); }
+
+LIQUID_AUTOTEST(gmskframesync_k08_m20_bt15,
+    "GMSK frame synchronizer, k=8, m=20, bt=0.15",
+    "framing,gmsk,gmskframe",0.1)
+{ testbench_gmskframesync(__q__,  8,20, 0.15f); }
+
+LIQUID_AUTOTEST(gmskframesync_k15_m02_bt40,
+    "GMSK frame synchronizer, k=15, m=2, bt=0.40",
+    "framing,gmsk,gmskframe",0.1)
+{ testbench_gmskframesync(__q__, 15, 2, 0.40f); }
 
 LIQUID_AUTOTEST(gmskframe_config,"check configuration validity","framing,gmsk,gmskframe",0.1)
 {

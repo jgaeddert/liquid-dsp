@@ -143,7 +143,7 @@ LIQUID_AUTOTEST(msourcecf_chirp,"msource chirp","framing,msource",0.1)
         "autotest/logs/msourcecf_chirp_autotest.m");
 }
 
-LIQUID_AUTOTEST(msourcecf_aggregate,"msource signal aggregate","framing,msource",0.1)
+LIQUID_AUTOTEST(msourcecf_aggregate,"msource signal aggregate","framing,msource",0.2)
 {
     // msource parameters
     int          ms     = LIQUID_MODEM_QPSK;    // linear modulation scheme
@@ -367,7 +367,8 @@ LIQUID_AUTOTEST(msourcecf_accessor,"msource accessor methods","framing,msource",
         "autotest/logs/msourcecf_accessor_autotest.m");
 }
 
-LIQUID_AUTOTEST(msourcecf_copy,"copy object and ensure output spectrum aligns","framing,msource",0.1)
+LIQUID_AUTOTEST(msourcecf_copy,
+    "copy object and ensure output spectrum aligns","framing,msource",0.5)
 {
     // test options
     float        tol    = 1.5f;                 // error tolerance
