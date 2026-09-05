@@ -72,18 +72,48 @@ void testbench_resamp_crcf(liquid_autotest __q__, float r, float As, int _id)
     resamp_crcf_destroy(resamp);
 }
 
-LIQUID_AUTOTEST(resamp_crcf_00,"description","filter,resamp",0.1) { testbench_resamp_crcf(__q__, 0.127115323f, 60.0f,  0); }
-LIQUID_AUTOTEST(resamp_crcf_01,"description","filter,resamp",0.1) { testbench_resamp_crcf(__q__, 0.373737373f, 60.0f,  1); }
-LIQUID_AUTOTEST(resamp_crcf_02,"description","filter,resamp",0.1) { testbench_resamp_crcf(__q__, 0.676543210f, 60.0f,  2); }
-LIQUID_AUTOTEST(resamp_crcf_03,"description","filter,resamp",0.1) { testbench_resamp_crcf(__q__, 0.973621947f, 60.0f,  3); }
+LIQUID_AUTOTEST(resamp_crcf_00,
+    "arbitrary resampler, rate=0.127, As=60",
+    "filter,resamp",0.1)
+{ testbench_resamp_crcf(__q__, 0.127115323f, 60.0f,  0); }
+
+LIQUID_AUTOTEST(resamp_crcf_01,
+    "arbitrary resampler, rate=0.374, As=60",
+    "filter,resamp",0.1)
+{ testbench_resamp_crcf(__q__, 0.373737373f, 60.0f,  1); }
+
+LIQUID_AUTOTEST(resamp_crcf_02,
+    "arbitrary resampler, rate=0.677, As=60",
+    "filter,resamp",0.1)
+{ testbench_resamp_crcf(__q__, 0.676543210f, 60.0f,  2); }
+
+LIQUID_AUTOTEST(resamp_crcf_03,
+    "arbitrary resampler, rate=0.974, As=60",
+    "filter,resamp",0.1)
+{ testbench_resamp_crcf(__q__, 0.973621947f, 60.0f,  3); }
 //void xautotest_resamp_crcf_04() { testbench_resamp_crcf(1.023832447f, 60.0f,  4); }
 //void xautotest_resamp_crcf_05() { testbench_resamp_crcf(2.182634827f, 60.0f,  5); }
 //void xautotest_resamp_crcf_06() { testbench_resamp_crcf(8.123980823f, 60.0f,  6); }
 
-LIQUID_AUTOTEST(resamp_crcf_10,"description","filter,resamp",0.1) { testbench_resamp_crcf(__q__, 0.127115323f, 80.0f, 10); }
-LIQUID_AUTOTEST(resamp_crcf_11,"description","filter,resamp",0.1) { testbench_resamp_crcf(__q__, 0.373737373f, 80.0f, 11); }
-LIQUID_AUTOTEST(resamp_crcf_12,"description","filter,resamp",0.1) { testbench_resamp_crcf(__q__, 0.676543210f, 80.0f, 12); }
-LIQUID_AUTOTEST(resamp_crcf_13,"description","filter,resamp",0.1) { testbench_resamp_crcf(__q__, 0.973621947f, 80.0f, 13); }
+LIQUID_AUTOTEST(resamp_crcf_10,
+    "arbitrary resampler, rate=0.127, As=80",
+    "filter,resamp",0.1)
+{ testbench_resamp_crcf(__q__, 0.127115323f, 80.0f, 10); }
+
+LIQUID_AUTOTEST(resamp_crcf_11,
+    "arbitrary resampler, rate=0.374, As=80",
+    "filter,resamp",0.1)
+{ testbench_resamp_crcf(__q__, 0.373737373f, 80.0f, 11); }
+
+LIQUID_AUTOTEST(resamp_crcf_12,
+    "arbitrary resampler, rate=0.677, As=80",
+    "filter,resamp",0.1)
+{ testbench_resamp_crcf(__q__, 0.676543210f, 80.0f, 12); }
+
+LIQUID_AUTOTEST(resamp_crcf_13,
+    "arbitrary resampler, rate=0.974, As=80",
+    "filter,resamp",0.1)
+{ testbench_resamp_crcf(__q__, 0.973621947f, 80.0f, 13); }
 
 // test arbitrary resampler output length calculation
 void testbench_resamp_crcf_num_output(liquid_autotest __q__,
@@ -128,14 +158,45 @@ void testbench_resamp_crcf_num_output(liquid_autotest __q__,
     resamp_crcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(resamp_crcf_num_output_0,"description","filter,resamp",0.1){ testbench_resamp_crcf_num_output(__q__, 1.00f,     64); }
-LIQUID_AUTOTEST(resamp_crcf_num_output_1,"description","filter,resamp",0.1){ testbench_resamp_crcf_num_output(__q__, 1.00f,    256); }
-LIQUID_AUTOTEST(resamp_crcf_num_output_2,"description","filter,resamp",0.1){ testbench_resamp_crcf_num_output(__q__, 0.50f,    256); }
-LIQUID_AUTOTEST(resamp_crcf_num_output_3,"description","filter,resamp",0.1){ testbench_resamp_crcf_num_output(__q__, sqrtf( 2),256); }
-LIQUID_AUTOTEST(resamp_crcf_num_output_4,"description","filter,resamp",0.1){ testbench_resamp_crcf_num_output(__q__, sqrtf(17), 16); }
-LIQUID_AUTOTEST(resamp_crcf_num_output_5,"description","filter,resamp",0.1){ testbench_resamp_crcf_num_output(__q__, 1.0f/M_PI, 64); }
-LIQUID_AUTOTEST(resamp_crcf_num_output_6,"description","filter,resamp",0.1){ testbench_resamp_crcf_num_output(__q__, expf(5.0f),64); }
-LIQUID_AUTOTEST(resamp_crcf_num_output_7,"description","filter,resamp",0.1){ testbench_resamp_crcf_num_output(__q__, expf(-5.f),64); }
+LIQUID_AUTOTEST(resamp_crcf_num_output_0,
+    "arbitrary resampler, output length, rate=1.0, npfb=64",
+    "filter,resamp",0.1)
+{ testbench_resamp_crcf_num_output(__q__, 1.00f,     64); }
+
+LIQUID_AUTOTEST(resamp_crcf_num_output_1,
+    "arbitrary resampler, output length, rate=1.0, npfb=256",
+    "filter,resamp",0.1)
+{ testbench_resamp_crcf_num_output(__q__, 1.00f,    256); }
+
+LIQUID_AUTOTEST(resamp_crcf_num_output_2,
+    "arbitrary resampler, output length, rate=0.5, npfb=256",
+    "filter,resamp",0.1)
+{ testbench_resamp_crcf_num_output(__q__, 0.50f,    256); }
+
+LIQUID_AUTOTEST(resamp_crcf_num_output_3,
+    "arbitrary resampler, output length, rate=sqrt(2), npfb=256",
+    "filter,resamp",0.1)
+{ testbench_resamp_crcf_num_output(__q__, sqrtf( 2),256); }
+
+LIQUID_AUTOTEST(resamp_crcf_num_output_4,
+    "arbitrary resampler, output length, rate=sqrt(17), npfb=16",
+    "filter,resamp",0.1)
+{ testbench_resamp_crcf_num_output(__q__, sqrtf(17), 16); }
+
+LIQUID_AUTOTEST(resamp_crcf_num_output_5,
+    "arbitrary resampler, output length, rate=1/pi, npfb=64",
+    "filter,resamp",0.1)
+{ testbench_resamp_crcf_num_output(__q__, 1.0f/M_PI, 64); }
+
+LIQUID_AUTOTEST(resamp_crcf_num_output_6,
+    "arbitrary resampler, output length, rate=exp(5), npfb=64",
+    "filter,resamp",0.1)
+{ testbench_resamp_crcf_num_output(__q__, expf(5.0f),64); }
+
+LIQUID_AUTOTEST(resamp_crcf_num_output_7,
+    "arbitrary resampler, output length, rate=exp(-5), npfb=64",
+    "filter,resamp",0.1)
+{ testbench_resamp_crcf_num_output(__q__, expf(-5.f),64); }
 
 LIQUID_AUTOTEST(resamp_crcf_copy,"test copy method", "filter,resamp", 0.1)
 {
