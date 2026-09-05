@@ -6,6 +6,11 @@
     - fixed pkg-config paths since `CMAKE_INSTALL_*` are not guaranteed to be
       relative (thanks, @iank)
     - legacy: compiling and installing liquid-dsp.pc (pkg-config file)
+  * autotest
+    - added non-trivial description and keywords to all autotests; all tests
+      have at least a keyword matching their module, and typically their
+      object name
+    - added "audit" flag to find tests with missing metadata or checks
   * core
     - logging: fixed issue with stale file handle when closed outside of
       log environment; added new method to close file from within logging
