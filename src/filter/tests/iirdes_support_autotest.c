@@ -143,10 +143,12 @@ LIQUID_AUTOTEST(iirdes_cplxpair_n20,"complex pair, n=20", "filter,iirdes", 0.1)
     }
 }
 
-LIQUID_AUTOTEST(iirdes_dzpk2sosf,"digital zeros/poles/gain to second-order sections", "filter,iirdes", 0.1)
+LIQUID_AUTOTEST(iirdes_dzpk2sosf,
+    "digital zeros/poles/gain to second-order sections", "filter,iirdes", 0.1)
 {
     unsigned int n=4;
     float fc = 0.25f;
+    float tol = 1e-5f;
 
     unsigned int i;
     unsigned int L = n % 2 ? (n+1)/2 : n/2;
@@ -175,6 +177,18 @@ LIQUID_AUTOTEST(iirdes_dzpk2sosf,"digital zeros/poles/gain to second-order secti
     for (i=0; i<n; i++)
         liquid_log_debug("  zd[%3u] = %12.8f + j*%12.8f", i, crealf(zd[i]), cimagf(zd[i]));
 
+    // compare to expected
+    // TODO: ignore ordering
+    LIQUID_CHECK_DELTA(pd[0], 0 +  0.66817868*_Complex_I, tol);
+    LIQUID_CHECK_DELTA(pd[1], 0 + -0.66817868*_Complex_I, tol);
+    LIQUID_CHECK_DELTA(pd[2], 0 +  0.19891240*_Complex_I, tol);
+    LIQUID_CHECK_DELTA(pd[3], 0 + -0.19891240*_Complex_I, tol);
+
+    LIQUID_CHECK_DELTA(zd[0], -1, tol);
+    LIQUID_CHECK_DELTA(zd[1], -1, tol);
+    LIQUID_CHECK_DELTA(zd[2], -1, tol);
+    LIQUID_CHECK_DELTA(zd[3], -1, tol);
+
     iirdes_dzpk2sosf(zd,pd,n,kd,B,A);
 
     liquid_log_debug("B:");
@@ -184,6 +198,22 @@ LIQUID_AUTOTEST(iirdes_dzpk2sosf,"digital zeros/poles/gain to second-order secti
     liquid_log_debug("A:");
     for (i=0; i<L; i++)
         liquid_log_debug("  %12.8f %12.8f %12.8f", A[3*i+0], A[3*i+1], A[3*i+2]);
+
+    LIQUID_CHECK_DELTA(B[3*0+0], 0.30656296, tol);
+    LIQUID_CHECK_DELTA(B[3*0+1], 0.61312592, tol);
+    LIQUID_CHECK_DELTA(B[3*0+2], 0.30656296, tol);
+
+    LIQUID_CHECK_DELTA(B[3*1+0], 0.30656296, tol);
+    LIQUID_CHECK_DELTA(B[3*1+1], 0.61312592, tol);
+    LIQUID_CHECK_DELTA(B[3*1+2], 0.30656296, tol);
+
+    LIQUID_CHECK_DELTA(A[3*0+0], 1         , tol);
+    LIQUID_CHECK_DELTA(A[3*0+1], 0         , tol);
+    LIQUID_CHECK_DELTA(A[3*0+2], 0.44646275, tol);
+
+    LIQUID_CHECK_DELTA(A[3*1+0], 1         , tol);
+    LIQUID_CHECK_DELTA(A[3*1+1], 0         , tol);
+    LIQUID_CHECK_DELTA(A[3*1+2], 0.03956614, tol);
 }
 
 LIQUID_AUTOTEST(iirdes_isstable_n2_yes,"iirdes_isstable", "filter,iirdes", 0.1)
