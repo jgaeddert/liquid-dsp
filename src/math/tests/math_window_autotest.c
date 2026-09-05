@@ -122,8 +122,8 @@ LIQUID_AUTOTEST(kbd_n16,"Kaiser-Bessel derived, n=16","math,window",0.1) { testb
 LIQUID_AUTOTEST(kbd_n32,"Kaiser-Bessel derived, n=32","math,window",0.1) { testbench_liquid_kbd_window(__q__,32, 20.0f); }
 LIQUID_AUTOTEST(kbd_n48,"Kaiser-Bessel derived, n=48","math,window",0.1) { testbench_liquid_kbd_window(__q__,48, 12.0f); }
 
-// test window configuration and error handling
-LIQUID_AUTOTEST(window_config,"","math,window",0.1)
+LIQUID_AUTOTEST(window_config,
+    "test window configuration and error handling","math,window",0.1)
 {
     _liquid_error_downgrade_enable();
 
