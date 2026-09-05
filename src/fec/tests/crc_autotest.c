@@ -99,11 +99,30 @@ void testbench_crc(liquid_autotest __q__,
 }
 
 // validate error-detection tests
-LIQUID_AUTOTEST(checksum,"","fec,crc",0.1) { testbench_crc(__q__, LIQUID_CRC_CHECKSUM, 16); }
-LIQUID_AUTOTEST(crc8,"","fec,crc",0.1)     { testbench_crc(__q__, LIQUID_CRC_8,        16); }
-LIQUID_AUTOTEST(crc16,"","fec,crc",0.1)    { testbench_crc(__q__, LIQUID_CRC_16,       64); }
-LIQUID_AUTOTEST(crc24,"","fec,crc",0.1)    { testbench_crc(__q__, LIQUID_CRC_24,       64); }
-LIQUID_AUTOTEST(crc32,"","fec,crc",0.1)    { testbench_crc(__q__, LIQUID_CRC_32,       64); }
+LIQUID_AUTOTEST(checksum,
+    "test checksum",
+    "fec,crc",0.1)
+{ testbench_crc(__q__, LIQUID_CRC_CHECKSUM, 16); }
+
+LIQUID_AUTOTEST(crc8,
+    "test CRC-8",
+    "fec,crc",0.1)
+{ testbench_crc(__q__, LIQUID_CRC_8,        16); }
+
+LIQUID_AUTOTEST(crc16,
+    "test CRC-16",
+    "fec,crc",0.1)
+{ testbench_crc(__q__, LIQUID_CRC_16,       64); }
+
+LIQUID_AUTOTEST(crc24,
+    "test CRC-24",
+    "fec,crc",0.1)
+{ testbench_crc(__q__, LIQUID_CRC_24,       64); }
+
+LIQUID_AUTOTEST(crc32,
+    "test CRC-32",
+    "fec,crc",0.1)
+{ testbench_crc(__q__, LIQUID_CRC_32,       64); }
 
 LIQUID_AUTOTEST(crc8_testvector,"compare explicit 8-bit CRC with expected","fec,crc",0.1)
 {
