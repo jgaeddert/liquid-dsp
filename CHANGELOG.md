@@ -11,6 +11,11 @@
       have at least a keyword matching their module, and typically their
       object name
     - added "audit" flag to find tests with missing metadata or checks
+  * benchmark
+    - refactored benchmark infrastructure to include benchmark-specific
+      metadata, description, and keywords; following autotest methodology
+    - added more efficient progression of trials setting to meet target
+      runtime
   * core
     - logging: fixed issue with stale file handle when closed outside of
       log environment; added new method to close file from within logging
