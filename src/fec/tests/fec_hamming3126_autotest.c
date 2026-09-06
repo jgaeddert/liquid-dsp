@@ -26,7 +26,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(hamming3126_codec,"test Hamming(31,26) codec","",0.1)
+LIQUID_AUTOTEST(hamming3126_codec,"test Hamming(31,26) codec","fec,hamming3126",0.1)
 {
     unsigned int n=26;  //
     unsigned int k=31;  //

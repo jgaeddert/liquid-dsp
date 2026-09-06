@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(hamming74_codec,"test Hamming (7,4) codec","",0.1)
+LIQUID_AUTOTEST(hamming74_codec,"test Hamming (7,4) codec","fec,hamming74",0.1)
 {
     unsigned int n=4;
     unsigned char msg[] = {0x25, 0x62, 0x3F, 0x52};
@@ -61,7 +61,7 @@ LIQUID_AUTOTEST(hamming74_codec,"test Hamming (7,4) codec","",0.1)
     fec_destroy(q);
 }
 
-LIQUID_AUTOTEST(hamming74_codec_soft,"test Hamming (7,4) codec (soft decoding)","",0.1)
+LIQUID_AUTOTEST(hamming74_codec_soft,"test Hamming (7,4) codec (soft decoding)","fec,hamming74",0.1)
 {
     // generate each of the 2^4=16 symbols, encode, and decode
     // using soft decoding algorithm

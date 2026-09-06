@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(quantize_float_n8,"","",0.1) {
+LIQUID_AUTOTEST(quantize_float_n8,"quantize (8 bits)","quantization,quantize",0.1) {
     float x = -1.0f;
     unsigned int num_steps=30;
     unsigned int num_bits=8;

@@ -41,7 +41,7 @@ static int bpacketsync_autotest_callback(unsigned char *  _payload,
     return 0;
 }
 
-LIQUID_AUTOTEST(bpacketsync,"bpacketsync","",0.1)
+LIQUID_AUTOTEST(bpacketsync,"bpacketsync","framing,bpacketsync",0.1)
 {
     // options
     unsigned int num_packets = 50;          // number of packets to encode
@@ -89,7 +89,7 @@ LIQUID_AUTOTEST(bpacketsync,"bpacketsync","",0.1)
     bpacketsync_destroy(ps);
 }
 
-LIQUID_AUTOTEST(bpacketsync_config,"check configuration validity","",0.1)
+LIQUID_AUTOTEST(bpacketsync_config,"check configuration validity","framing,bpacketsync",0.1)
 {
     _liquid_error_downgrade_enable();
 

@@ -108,10 +108,10 @@ void testbench_symtrack_cccf(liquid_autotest __q__,
     LIQUID_CHECK(evm< -15.0f);
 }
 
-LIQUID_AUTOTEST(symtrack_cccf_bpsk,"","",0.1) { testbench_symtrack_cccf(__q__, 2,12,0.25f,LIQUID_MODEM_BPSK); }
-LIQUID_AUTOTEST(symtrack_cccf_qpsk,"","",0.1) { testbench_symtrack_cccf(__q__, 2,12,0.25f,LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(symtrack_cccf_bpsk,"symtrack, bpsk","framing,symtrack",0.1) { testbench_symtrack_cccf(__q__, 2,12,0.25f,LIQUID_MODEM_BPSK); }
+LIQUID_AUTOTEST(symtrack_cccf_qpsk,"symtrack, qpsk","framing,symtrack",0.1) { testbench_symtrack_cccf(__q__, 2,12,0.25f,LIQUID_MODEM_QPSK); }
 
-LIQUID_AUTOTEST(symtrack_cccf_config_invalid,"invalid symtrack configurations","",0.1)
+LIQUID_AUTOTEST(symtrack_cccf_config_invalid,"invalid symtrack configurations","framing,symtrack",0.1)
 {
     _liquid_error_downgrade_enable();
     //LIQUID_CHECK(NULL ==symtrack_cccf_create(LIQUID_FIRFILT_UNKNOWN, 2, 12, 0.25f, LIQUID_MODEM_QPSK));
@@ -133,7 +133,7 @@ LIQUID_AUTOTEST(symtrack_cccf_config_invalid,"invalid symtrack configurations","
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(symtrack_cccf_config_valid,"valid symtrack configurations","",0.1)
+LIQUID_AUTOTEST(symtrack_cccf_config_valid,"valid symtrack configurations","framing,symtrack",0.1)
 {
     // create proper object and test configuration methods
     symtrack_cccf q =

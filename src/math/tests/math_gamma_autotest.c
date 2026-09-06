@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(gamma,"gamma function","",0.1)
+LIQUID_AUTOTEST(gamma,"gamma function","math,gamma",0.1)
 {
     // error tolerance
     float tol = 1e-5f;
@@ -62,7 +62,7 @@ LIQUID_AUTOTEST(gamma,"gamma function","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(lngamma,"lngamma function: log(gamma)","",0.1)
+LIQUID_AUTOTEST(lngamma,"lngamma function: log(gamma)","math,lngamma",0.1)
 {
     // error tolerance
     float tol = 1e-4f;
@@ -119,7 +119,7 @@ LIQUID_AUTOTEST(lngamma,"lngamma function: log(gamma)","",0.1)
     LIQUID_CHECK_DELTA( liquid_lngammaf(170), 701.437263808737, tol);
 }
 
-LIQUID_AUTOTEST(uppergamma,"upper incomplete gamma function","",0.1)
+LIQUID_AUTOTEST(uppergamma,"upper incomplete gamma function","math,uppergamma",0.1)
 {
     float tol = 1e-3f;
 
@@ -149,7 +149,7 @@ LIQUID_AUTOTEST(uppergamma,"upper incomplete gamma function","",0.1)
     LIQUID_CHECK_DELTA(liquid_uppergammaf(2.1f, 10.0f),  0.000635002f, tol);
 }
 
-LIQUID_AUTOTEST(factorial,"factorial","",0.1)
+LIQUID_AUTOTEST(factorial,"factorial","math,gamma,factorial",0.1)
 {
     float tol = 1e-3f;
     LIQUID_CHECK_DELTA(liquid_factorialf(0), 1,   tol);
@@ -161,7 +161,7 @@ LIQUID_AUTOTEST(factorial,"factorial","",0.1)
     LIQUID_CHECK_DELTA(liquid_factorialf(6), 720, tol);
 }
 
-LIQUID_AUTOTEST(nchoosek,"n choose k","",0.1)
+LIQUID_AUTOTEST(nchoosek,"n choose k","math,gamma,nchoosek",0.1)
 {
     float tol = 1e-3f;
 

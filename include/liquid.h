@@ -11004,6 +11004,15 @@ char liquid_convert_units(float * _v);
 // compare two values (e.g. qsort), single-precision float
 int liquid_compare_float(const void * _a, const void* _b);
 
+// determine if all requested keywords are present in the existing keywords
+//  _existing  : comma-separated list of existing keywords, e.g. "fir,filter"
+//  _requested : comma-separated list of requested keywords, e.g. "fir"
+// returns true if every non-empty keyword in _requested also appears in
+// _existing as an exact, comma-delimited token match; an empty _requested
+// is considered a subset of any _existing (returns true)
+bool liquid_keywords_subset(const char * _existing,
+                            const char * _requested);
+
 //
 // MODULE : vector
 //

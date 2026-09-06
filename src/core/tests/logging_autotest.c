@@ -37,7 +37,7 @@ int autotest_logging_lock(int _lock, void * context)
     return LIQUID_OK;
 }
 
-LIQUID_AUTOTEST(logging,"test basic logging functionality","",0.1)
+LIQUID_AUTOTEST(logging,"test basic logging functionality","core,logging",0.1)
 {
     bool callback_invoked = false;
     bool lock_invoked     = false;
@@ -87,7 +87,7 @@ LIQUID_AUTOTEST(logging,"test basic logging functionality","",0.1)
     liquid_logger_destroy(custom_log);
 }
 
-LIQUID_AUTOTEST(logging_config,"test setting custom logging configuration","",0.1)
+LIQUID_AUTOTEST(logging_config,"test setting custom logging configuration","core,logging",0.1)
 {
     // config based on macros
     int config = LIQUID_LOG_COMPACT | LIQUID_LOG_COLOR;

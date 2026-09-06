@@ -25,7 +25,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(smatrixb_vmul,"test sparse binary matrix methods","",0.1)
+LIQUID_AUTOTEST(smatrixb_vmul,"test sparse binary matrix methods","matrix,smatrixb",0.1)
 {
     // A = [
     //  1   0   0   0   0   0   0   0   0   0   0   0
@@ -106,7 +106,7 @@ LIQUID_AUTOTEST(smatrixb_vmul,"test sparse binary matrix methods","",0.1)
     smatrixb_destroy(A);
 }
 
-LIQUID_AUTOTEST(smatrixb_mul,"test sparse binary matrix multiplication","",0.1)
+LIQUID_AUTOTEST(smatrixb_mul,"test sparse binary matrix multiplication","matrix,smatrixb",0.1)
 {
     // a: [8 x 12]
     unsigned char a_test[96] = {
@@ -173,7 +173,8 @@ LIQUID_AUTOTEST(smatrixb_mul,"test sparse binary matrix multiplication","",0.1)
 }
 
 //
-LIQUID_AUTOTEST(smatrixb_mulf,"","",0.1)
+LIQUID_AUTOTEST(smatrixb_mulf,
+    "test multiplying sparse matrix with float matrix","matrix,smatrixb",0.1)
 {
     // A = [
     //  1   0   0   0   0   0   0   0   0   0   0   0
@@ -267,7 +268,8 @@ LIQUID_AUTOTEST(smatrixb_mulf,"","",0.1)
 }
 
 //
-LIQUID_AUTOTEST(smatrixb_vmulf,"","",0.1)
+LIQUID_AUTOTEST(smatrixb_vmulf,
+    "test multiplying sparse matrix with float vector","matrix,smatrixb",0.1)
 {
     // A = [
     //  1   0   0   0   0   0   0   0   0   0   0   0

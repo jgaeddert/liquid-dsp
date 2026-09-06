@@ -24,7 +24,8 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(lshift,"left byte shift","",0.1) {
+LIQUID_AUTOTEST(lshift,"left byte shift","utility,shift",0.1)
+{
     // input        : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [1]   : 1110 1111 0101 1111 1010 1010 0000 0000
@@ -41,9 +42,7 @@ LIQUID_AUTOTEST(lshift,"left byte shift","",0.1) {
 
     unsigned char output[4];
 
-    // 
     // run tests
-    //
     unsigned int i;
     for (i=0; i<5; i++) {
         memmove(output, input, 4);
@@ -59,7 +58,8 @@ LIQUID_AUTOTEST(lshift,"left byte shift","",0.1) {
     }
 }
 
-LIQUID_AUTOTEST(rshift,"right byte shift","",0.1) {
+LIQUID_AUTOTEST(rshift,"right byte shift","utility,shift",0.1)
+{
     // input        : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [1]   : 0000 0000 1000 0001 1110 1111 0101 1111
@@ -76,9 +76,7 @@ LIQUID_AUTOTEST(rshift,"right byte shift","",0.1) {
 
     unsigned char output[4];
 
-    // 
     // run tests
-    //
     unsigned int i;
     for (i=0; i<5; i++) {
         memmove(output, input, 4);
@@ -94,7 +92,8 @@ LIQUID_AUTOTEST(rshift,"right byte shift","",0.1) {
     }
 }
 
-LIQUID_AUTOTEST(lcircshift,"left byte circular shift","",0.1) {
+LIQUID_AUTOTEST(lcircshift,"left byte circular shift","utility,shift",0.1)
+{
     // input        : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [1]   : 1110 1111 0101 1111 1010 1010 1000 0001
@@ -111,9 +110,7 @@ LIQUID_AUTOTEST(lcircshift,"left byte circular shift","",0.1) {
 
     unsigned char output[4];
 
-    // 
     // run tests
-    //
     unsigned int i;
     for (i=0; i<5; i++) {
         memmove(output, input, 4);
@@ -129,7 +126,8 @@ LIQUID_AUTOTEST(lcircshift,"left byte circular shift","",0.1) {
     }
 }
 
-LIQUID_AUTOTEST(rcircshift,"right byte circular shift","",0.1) {
+LIQUID_AUTOTEST(rcircshift,"right byte circular shift","utility,shift",0.1)
+{
     // input        : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [1]   : 1010 1010 1000 0001 1110 1111 0101 1111
@@ -146,9 +144,7 @@ LIQUID_AUTOTEST(rcircshift,"right byte circular shift","",0.1) {
 
     unsigned char output[4];
 
-    // 
     // run tests
-    //
     unsigned int i;
     for (i=0; i<5; i++) {
         memmove(output, input, 4);

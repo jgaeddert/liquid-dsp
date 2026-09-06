@@ -238,6 +238,28 @@ int liquid_registry_schedule_search(liquid_registry _q, const char * _query)
     return LIQUID_OK;
 }
 
+// schedule only tests whose keywords contain all requested keywords
+//  _q        : test registry
+//  _keywords : comma-separated list of requested keywords, e.g. "fft,composite"
+int liquid_registry_schedule_keywords(liquid_registry _q, const char * _keywords)
+{
+    unsigned int i;
+    unsigned int num_found = 0;
+    for (i=0; i<_q->num_tests; i++)
+    {
+        if (liquid_keywords_subset(_q->autotests[i]->keywords, _keywords)) {
+            _q->autotests[i]->status = LIQUID_AUTOTEST_SCHED;
+            num_found++;
+        } else {
+            _q->autotests[i]->status = LIQUID_AUTOTEST_SKIP;
+        }
+    }
+    if (num_found == 0)
+        liquid_log_warn("liquid_registry_schedule_keywords(), no tests matched keywords '%s'", _keywords);
+
+    return LIQUID_OK;
+}
+
 // run all scheduled tests
 int liquid_registry_execute(liquid_registry _q, bool _halt_on_fail)
 {
@@ -321,6 +343,57 @@ int liquid_registry_print_summary(liquid_registry _q)
     // return non-zero value upon failure
     return _q->num_tests_fail ? LIQUID_EINT : LIQUID_OK;
 }
+
+// check tests for invalid configurations
+int liquid_registry_audit(liquid_registry _q)
+{
+    // iterate over all tests
+    unsigned int i;
+    unsigned int num_tests    = 0;
+    unsigned int num_warnings = 0;
+    for (i=0; i<_q->num_tests; i++)
+    {
+        liquid_autotest autotest = _q->autotests[i];
+
+        // only consider tests that were run
+        if (autotest->status != LIQUID_AUTOTEST_PASS && autotest->status != LIQUID_AUTOTEST_FAIL)
+            continue;
+
+        num_tests++;
+
+        // test was run; ensure there was at least one check
+        if (autotest->num_pass==0 && autotest->num_fail==0)
+        {
+            liquid_log_warn("no checks run in %s", autotest->name);
+            num_warnings++;
+        }
+
+        // check document string
+        if (!strlen(autotest->docstr))
+        {
+            liquid_log_warn("missing document string in %s", autotest->name);
+            num_warnings++;
+        }
+
+        // check document string
+        if (strcmp(autotest->docstr,"description")==0)
+        {
+            liquid_log_warn("missing description in %s", autotest->name);
+            num_warnings++;
+        }
+
+        // check keywords
+        if (!strlen(autotest->keywords))
+        {
+            liquid_log_warn("missing keywords in %s", autotest->name);
+            num_warnings++;
+        }
+    }
+    liquid_log_info("audit yielded %u warnings across %u tests", num_warnings, num_tests);
+
+    return LIQUID_OK;
+}
+
 
 // export results to JSON
 int liquid_registry_json(liquid_registry _q, FILE * _fid)

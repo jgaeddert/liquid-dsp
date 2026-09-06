@@ -60,7 +60,7 @@ LIQUID_AUTOTEST(smatrixi_vmul,"test sparse integer vector multiplication","matri
 }
 
 
-LIQUID_AUTOTEST(smatrixi_mul,"test sparse integer matrix multiplication","",0.1)
+LIQUID_AUTOTEST(smatrixi_mul,"test sparse integer matrix multiplication","matrix,smatrixi",0.1)
 {
     // initialize matrices
     smatrixi a = smatrixi_create(4, 5);

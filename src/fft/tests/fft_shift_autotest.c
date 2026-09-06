@@ -23,7 +23,7 @@
 #include "liquid.h"
 #include "liquid.autotest.h"
 
-LIQUID_AUTOTEST(fft_shift_4,"fft shift for even-sized transform (4)","fft",0.1)
+LIQUID_AUTOTEST(fft_shift_4,"fft shift for even-sized transform (4)","fft,shift,fftshift",0.1)
 {
     float complex x[] = {
         0 + 0*_Complex_I,
@@ -44,7 +44,7 @@ LIQUID_AUTOTEST(fft_shift_4,"fft shift for even-sized transform (4)","fft",0.1)
     LIQUID_CHECK_ARRAY(x,test,4*sizeof(float complex));
 }
 
-LIQUID_AUTOTEST(fft_shift_8,"fft shift for even-sized transform (8)","fft",0.1)
+LIQUID_AUTOTEST(fft_shift_8,"fft shift for even-sized transform (8)","fft,shift,fftshift",0.1)
 {
     float complex x[] = {
         0 + 0*_Complex_I,
@@ -73,7 +73,7 @@ LIQUID_AUTOTEST(fft_shift_8,"fft shift for even-sized transform (8)","fft",0.1)
     LIQUID_CHECK_ARRAY(x,test,8*sizeof(float complex));
 }
 
-LIQUID_AUTOTEST(fft_shift_5,"fft shift for odd-sized transform (5)","fft",0.1)
+LIQUID_AUTOTEST(fft_shift_5,"fft shift for odd-sized transform (5)","fft,shift,fftshift",0.1)
 {
     float complex x[] = {
         0 + 0*_Complex_I,

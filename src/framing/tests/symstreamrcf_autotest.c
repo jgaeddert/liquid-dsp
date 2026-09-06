@@ -79,12 +79,12 @@ void testbench_symstreamrcf_psd(liquid_autotest __q__,
     liquid_autotest_validate_spectrum(__q__, psd, nfft, regions, 3, filename);
 }
 
-LIQUID_AUTOTEST(symstreamrcf_psd_bw200_m12_b030,"","",0.1) { testbench_symstreamrcf_psd(__q__, 0.2f, 12, 0.30f); }
-LIQUID_AUTOTEST(symstreamrcf_psd_bw400_m12_b030,"","",0.1) { testbench_symstreamrcf_psd(__q__, 0.4f, 12, 0.30f); }
-LIQUID_AUTOTEST(symstreamrcf_psd_bw400_m25_b020,"","",0.1) { testbench_symstreamrcf_psd(__q__, 0.4f, 25, 0.20f); }
-LIQUID_AUTOTEST(symstreamrcf_psd_bw700_m11_b035,"","",0.1) { testbench_symstreamrcf_psd(__q__, 0.7f, 11, 0.35f); }
+LIQUID_AUTOTEST(symstreamrcf_psd_bw200_m12_b030,"symstreamrcf PSD, bw=0.200, m=12, beta=0.030","framing,symstreamr",0.1) { testbench_symstreamrcf_psd(__q__, 0.2f, 12, 0.30f); }
+LIQUID_AUTOTEST(symstreamrcf_psd_bw400_m12_b030,"symstreamrcf PSD, bw=0.400, m=12, beta=0.030","framing,symstreamr",0.1) { testbench_symstreamrcf_psd(__q__, 0.4f, 12, 0.30f); }
+LIQUID_AUTOTEST(symstreamrcf_psd_bw400_m25_b020,"symstreamrcf PSD, bw=0.400, m=25, beta=0.020","framing,symstreamr",0.1) { testbench_symstreamrcf_psd(__q__, 0.4f, 25, 0.20f); }
+LIQUID_AUTOTEST(symstreamrcf_psd_bw700_m11_b035,"symstreamrcf PSD, bw=0.700, m=11, beta=0.035","framing,symstreamr",0.1) { testbench_symstreamrcf_psd(__q__, 0.7f, 11, 0.35f); }
 
-LIQUID_AUTOTEST(symstreamrcf_copy,"test copying from one symstreamrcf object to another","",0.1)
+LIQUID_AUTOTEST(symstreamrcf_copy,"test copying from one symstreamrcf object to another","framing,symstreamrcf",0.1)
 {
     // create objects
     symstreamrcf gen_orig = symstreamrcf_create_linear(

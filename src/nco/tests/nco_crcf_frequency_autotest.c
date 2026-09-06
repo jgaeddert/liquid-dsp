@@ -75,7 +75,7 @@ void testbench_nco_crcf_freq(liquid_autotest __q__,
     nco_crcf_destroy(nco);
 }
 
-LIQUID_AUTOTEST(nco_crcf_frequency,"test floating point precision nco phase","",0.1)
+LIQUID_AUTOTEST(nco_crcf_frequency,"test floating point precision nco phase","nco",0.1)
 {
     // error tolerance (higher for NCO)
     float tol = 0.04f;

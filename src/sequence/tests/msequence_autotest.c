@@ -23,7 +23,9 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(bsequence_init_msequence,"test initialization of binary sequence on m-sequence","",0.1) {
+LIQUID_AUTOTEST(bsequence_init_msequence,
+    "test initialization of binary sequence on m-sequence","sequence,msequence",0.1)
+{
     // create and initialize m-sequence
     msequence ms = msequence_create_default(4);
 
@@ -77,17 +79,17 @@ void testbench_msequence_autocorrelation(liquid_autotest __q__, unsigned int _m)
     msequence_destroy(ms);
 }
 
-LIQUID_AUTOTEST(msequence_xcorr_m2,"","",0.1)  { testbench_msequence_autocorrelation(__q__,2);  }   // n = 3
-LIQUID_AUTOTEST(msequence_xcorr_m3,"","",0.1)  { testbench_msequence_autocorrelation(__q__,3);  }   // n = 7
-LIQUID_AUTOTEST(msequence_xcorr_m4,"","",0.1)  { testbench_msequence_autocorrelation(__q__,4);  }   // n = 15
-LIQUID_AUTOTEST(msequence_xcorr_m5,"","",0.1)  { testbench_msequence_autocorrelation(__q__,5);  }   // n = 31
-LIQUID_AUTOTEST(msequence_xcorr_m6,"","",0.1)  { testbench_msequence_autocorrelation(__q__,6);  }   // n = 63
-LIQUID_AUTOTEST(msequence_xcorr_m7,"","",0.1)  { testbench_msequence_autocorrelation(__q__,7);  }   // n = 127
-LIQUID_AUTOTEST(msequence_xcorr_m8,"","",0.1)  { testbench_msequence_autocorrelation(__q__,8);  }   // n = 255
-LIQUID_AUTOTEST(msequence_xcorr_m9,"","",0.1)  { testbench_msequence_autocorrelation(__q__,9);  }   // n = 511
-LIQUID_AUTOTEST(msequence_xcorr_m10,"","",0.1) { testbench_msequence_autocorrelation(__q__,10); }   // n = 1023
-LIQUID_AUTOTEST(msequence_xcorr_m11,"","",0.1) { testbench_msequence_autocorrelation(__q__,11); }   // n = 2047
-LIQUID_AUTOTEST(msequence_xcorr_m12,"","",0.1) { testbench_msequence_autocorrelation(__q__,12); }   // n = 4095
+LIQUID_AUTOTEST(msequence_xcorr_m2, "msequence auto-correlation, m= 2","sequence,msequence",0.1) { testbench_msequence_autocorrelation(__q__, 2); } // n = 3
+LIQUID_AUTOTEST(msequence_xcorr_m3, "msequence auto-correlation, m= 3","sequence,msequence",0.1) { testbench_msequence_autocorrelation(__q__, 3); } // n = 7
+LIQUID_AUTOTEST(msequence_xcorr_m4, "msequence auto-correlation, m= 4","sequence,msequence",0.1) { testbench_msequence_autocorrelation(__q__, 4); } // n = 15
+LIQUID_AUTOTEST(msequence_xcorr_m5, "msequence auto-correlation, m= 5","sequence,msequence",0.1) { testbench_msequence_autocorrelation(__q__, 5); } // n = 31
+LIQUID_AUTOTEST(msequence_xcorr_m6, "msequence auto-correlation, m= 6","sequence,msequence",0.1) { testbench_msequence_autocorrelation(__q__, 6); } // n = 63
+LIQUID_AUTOTEST(msequence_xcorr_m7, "msequence auto-correlation, m= 7","sequence,msequence",0.1) { testbench_msequence_autocorrelation(__q__, 7); } // n = 127
+LIQUID_AUTOTEST(msequence_xcorr_m8, "msequence auto-correlation, m= 8","sequence,msequence",0.1) { testbench_msequence_autocorrelation(__q__, 8); } // n = 255
+LIQUID_AUTOTEST(msequence_xcorr_m9, "msequence auto-correlation, m= 9","sequence,msequence",0.1) { testbench_msequence_autocorrelation(__q__, 9); } // n = 511
+LIQUID_AUTOTEST(msequence_xcorr_m10,"msequence auto-correlation, m=10","sequence,msequence",0.1) { testbench_msequence_autocorrelation(__q__,10); } // n = 1023
+LIQUID_AUTOTEST(msequence_xcorr_m11,"msequence auto-correlation, m=11","sequence,msequence",0.1) { testbench_msequence_autocorrelation(__q__,11); } // n = 2047
+LIQUID_AUTOTEST(msequence_xcorr_m12,"msequence auto-correlation, m=12","sequence,msequence",0.1) { testbench_msequence_autocorrelation(__q__,12); } // n = 4095
 
 // helper function to test cyclic period of sequences
 void testbench_msequence_period(liquid_autotest __q__, unsigned int _m)
@@ -104,38 +106,38 @@ void testbench_msequence_period(liquid_autotest __q__, unsigned int _m)
     msequence_destroy(q);
 }
 
-LIQUID_AUTOTEST(msequence_period_m2, "","", 0.01) { testbench_msequence_period(__q__,2);  }
-LIQUID_AUTOTEST(msequence_period_m3, "","", 0.01) { testbench_msequence_period(__q__,3);  }
-LIQUID_AUTOTEST(msequence_period_m4, "","", 0.01) { testbench_msequence_period(__q__,4);  }
-LIQUID_AUTOTEST(msequence_period_m5, "","", 0.01) { testbench_msequence_period(__q__,5);  }
-LIQUID_AUTOTEST(msequence_period_m6, "","", 0.01) { testbench_msequence_period(__q__,6);  }
-LIQUID_AUTOTEST(msequence_period_m7, "","", 0.01) { testbench_msequence_period(__q__,7);  }
-LIQUID_AUTOTEST(msequence_period_m8, "","", 0.01) { testbench_msequence_period(__q__,8);  }
-LIQUID_AUTOTEST(msequence_period_m9, "","", 0.01) { testbench_msequence_period(__q__,9);  }
-LIQUID_AUTOTEST(msequence_period_m10,"","", 0.01) { testbench_msequence_period(__q__,10); }
-LIQUID_AUTOTEST(msequence_period_m11,"","", 0.01) { testbench_msequence_period(__q__,11); }
-LIQUID_AUTOTEST(msequence_period_m12,"","", 0.01) { testbench_msequence_period(__q__,12); }
-LIQUID_AUTOTEST(msequence_period_m13,"","", 0.01) { testbench_msequence_period(__q__,13); }
-LIQUID_AUTOTEST(msequence_period_m14,"","", 0.01) { testbench_msequence_period(__q__,14); }
-LIQUID_AUTOTEST(msequence_period_m15,"","", 0.01) { testbench_msequence_period(__q__,15); }
-LIQUID_AUTOTEST(msequence_period_m16,"","", 0.01) { testbench_msequence_period(__q__,16); }
-LIQUID_AUTOTEST(msequence_period_m17,"","", 0.01) { testbench_msequence_period(__q__,17); }
-LIQUID_AUTOTEST(msequence_period_m18,"","", 0.01) { testbench_msequence_period(__q__,18); }
-LIQUID_AUTOTEST(msequence_period_m19,"","", 0.01) { testbench_msequence_period(__q__,19); }
-LIQUID_AUTOTEST(msequence_period_m20,"","", 0.01) { testbench_msequence_period(__q__,20); }
-LIQUID_AUTOTEST(msequence_period_m21,"","", 0.01) { testbench_msequence_period(__q__,21); }
-LIQUID_AUTOTEST(msequence_period_m22,"","", 0.01) { testbench_msequence_period(__q__,22); }
-LIQUID_AUTOTEST(msequence_period_m23,"","", 0.03) { testbench_msequence_period(__q__,23); }
-LIQUID_AUTOTEST(msequence_period_m24,"","", 0.07) { testbench_msequence_period(__q__,24); }
-LIQUID_AUTOTEST(msequence_period_m25,"","", 0.16) { testbench_msequence_period(__q__,25); }
-LIQUID_AUTOTEST(msequence_period_m26,"","", 0.30) { testbench_msequence_period(__q__,26); }
-LIQUID_AUTOTEST(msequence_period_m27,"","", 0.60) { testbench_msequence_period(__q__,27); }
-LIQUID_AUTOTEST(msequence_period_m28,"","", 1.20) { testbench_msequence_period(__q__,28); }
-LIQUID_AUTOTEST(msequence_period_m29,"","", 2.42) { testbench_msequence_period(__q__,29); }
-LIQUID_AUTOTEST(msequence_period_m30,"","", 4.85) { testbench_msequence_period(__q__,30); }
-LIQUID_AUTOTEST(msequence_period_m31,"","", 9.68) { testbench_msequence_period(__q__,31); }
+LIQUID_AUTOTEST(msequence_period_m2, "msequence cyclic period, m= 2","sequence,msequence", 0.01) { testbench_msequence_period(__q__, 2); }
+LIQUID_AUTOTEST(msequence_period_m3, "msequence cyclic period, m= 3","sequence,msequence", 0.01) { testbench_msequence_period(__q__, 3); }
+LIQUID_AUTOTEST(msequence_period_m4, "msequence cyclic period, m= 4","sequence,msequence", 0.01) { testbench_msequence_period(__q__, 4); }
+LIQUID_AUTOTEST(msequence_period_m5, "msequence cyclic period, m= 5","sequence,msequence", 0.01) { testbench_msequence_period(__q__, 5); }
+LIQUID_AUTOTEST(msequence_period_m6, "msequence cyclic period, m= 6","sequence,msequence", 0.01) { testbench_msequence_period(__q__, 6); }
+LIQUID_AUTOTEST(msequence_period_m7, "msequence cyclic period, m= 7","sequence,msequence", 0.01) { testbench_msequence_period(__q__, 7); }
+LIQUID_AUTOTEST(msequence_period_m8, "msequence cyclic period, m= 8","sequence,msequence", 0.01) { testbench_msequence_period(__q__, 8); }
+LIQUID_AUTOTEST(msequence_period_m9, "msequence cyclic period, m= 9","sequence,msequence", 0.01) { testbench_msequence_period(__q__, 9); }
+LIQUID_AUTOTEST(msequence_period_m10,"msequence cyclic period, m=10","sequence,msequence", 0.01) { testbench_msequence_period(__q__,10); }
+LIQUID_AUTOTEST(msequence_period_m11,"msequence cyclic period, m=11","sequence,msequence", 0.01) { testbench_msequence_period(__q__,11); }
+LIQUID_AUTOTEST(msequence_period_m12,"msequence cyclic period, m=12","sequence,msequence", 0.01) { testbench_msequence_period(__q__,12); }
+LIQUID_AUTOTEST(msequence_period_m13,"msequence cyclic period, m=13","sequence,msequence", 0.01) { testbench_msequence_period(__q__,13); }
+LIQUID_AUTOTEST(msequence_period_m14,"msequence cyclic period, m=14","sequence,msequence", 0.01) { testbench_msequence_period(__q__,14); }
+LIQUID_AUTOTEST(msequence_period_m15,"msequence cyclic period, m=15","sequence,msequence", 0.01) { testbench_msequence_period(__q__,15); }
+LIQUID_AUTOTEST(msequence_period_m16,"msequence cyclic period, m=16","sequence,msequence", 0.01) { testbench_msequence_period(__q__,16); }
+LIQUID_AUTOTEST(msequence_period_m17,"msequence cyclic period, m=17","sequence,msequence", 0.01) { testbench_msequence_period(__q__,17); }
+LIQUID_AUTOTEST(msequence_period_m18,"msequence cyclic period, m=18","sequence,msequence", 0.01) { testbench_msequence_period(__q__,18); }
+LIQUID_AUTOTEST(msequence_period_m19,"msequence cyclic period, m=19","sequence,msequence", 0.01) { testbench_msequence_period(__q__,19); }
+LIQUID_AUTOTEST(msequence_period_m20,"msequence cyclic period, m=20","sequence,msequence", 0.01) { testbench_msequence_period(__q__,20); }
+LIQUID_AUTOTEST(msequence_period_m21,"msequence cyclic period, m=21","sequence,msequence", 0.01) { testbench_msequence_period(__q__,21); }
+LIQUID_AUTOTEST(msequence_period_m22,"msequence cyclic period, m=22","sequence,msequence", 0.01) { testbench_msequence_period(__q__,22); }
+LIQUID_AUTOTEST(msequence_period_m23,"msequence cyclic period, m=23","sequence,msequence", 0.03) { testbench_msequence_period(__q__,23); }
+LIQUID_AUTOTEST(msequence_period_m24,"msequence cyclic period, m=24","sequence,msequence", 0.07) { testbench_msequence_period(__q__,24); }
+LIQUID_AUTOTEST(msequence_period_m25,"msequence cyclic period, m=25","sequence,msequence", 0.16) { testbench_msequence_period(__q__,25); }
+LIQUID_AUTOTEST(msequence_period_m26,"msequence cyclic period, m=26","sequence,msequence", 0.30) { testbench_msequence_period(__q__,26); }
+LIQUID_AUTOTEST(msequence_period_m27,"msequence cyclic period, m=27","sequence,msequence", 0.60) { testbench_msequence_period(__q__,27); }
+LIQUID_AUTOTEST(msequence_period_m28,"msequence cyclic period, m=28","sequence,msequence", 1.20) { testbench_msequence_period(__q__,28); }
+LIQUID_AUTOTEST(msequence_period_m29,"msequence cyclic period, m=29","sequence,msequence", 2.42) { testbench_msequence_period(__q__,29); }
+LIQUID_AUTOTEST(msequence_period_m30,"msequence cyclic period, m=30","sequence,msequence", 4.85) { testbench_msequence_period(__q__,30); }
+LIQUID_AUTOTEST(msequence_period_m31,"msequence cyclic period, m=31","sequence,msequence", 9.68) { testbench_msequence_period(__q__,31); }
 
-LIQUID_AUTOTEST(msequence_config,"","",0.1)
+LIQUID_AUTOTEST(msequence_config,"test msequence configuration","sequence,msequence",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid configurations

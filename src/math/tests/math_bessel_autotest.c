@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(lnbesselif,"log Modified Bessel function of the first kind","",0.1)
+LIQUID_AUTOTEST(lnbesselif,"log Modified Bessel function of the first kind","math,bessel",0.1)
 {
     float tol = 1e-5f;
 
@@ -53,7 +53,7 @@ LIQUID_AUTOTEST(lnbesselif,"log Modified Bessel function of the first kind","",0
 #endif
 }
 
-LIQUID_AUTOTEST(besselif,"Modified Bessel function of the first kind","",0.1)
+LIQUID_AUTOTEST(besselif,"Modified Bessel function of the first kind","math,bessel",0.1)
 {
     float tol = 1e-3f;
 
@@ -85,7 +85,7 @@ LIQUID_AUTOTEST(besselif,"Modified Bessel function of the first kind","",0.1)
     LIQUID_CHECK_DELTA(liquid_besselif(1.3f,3.0f), 3.450680420553085, tol);
 }
 
-LIQUID_AUTOTEST(besseli0f,"Modified Bessel function of the first kind","",0.1)
+LIQUID_AUTOTEST(besseli0f,"Modified Bessel function of the first kind","math,bessel",0.1)
 {
     float tol = 1e-3f;
     LIQUID_CHECK_DELTA(liquid_besseli0f(0.0f), 1.0f, tol);
@@ -97,7 +97,7 @@ LIQUID_AUTOTEST(besseli0f,"Modified Bessel function of the first kind","",0.1)
     LIQUID_CHECK_DELTA(liquid_besseli0f(3.0f), 4.88079258586503f, tol);
 }
 
-LIQUID_AUTOTEST(besseljf,"Bessel function of the first kind","",0.1)
+LIQUID_AUTOTEST(besseljf,"Bessel function of the first kind","math,bessel",0.1)
 {
     float tol = 1e-3f;
 
@@ -138,7 +138,7 @@ LIQUID_AUTOTEST(besseljf,"Bessel function of the first kind","",0.1)
     LIQUID_CHECK_DELTA(liquid_besseljf(1.7f,8.0f), -0.001102600927987, tol);
 }
 
-LIQUID_AUTOTEST(besselj0f,"Bessel function of the first kind","",0.1)
+LIQUID_AUTOTEST(besselj0f,"Bessel function of the first kind","math,bessel",0.1)
 {
     float tol = 1e-3f;
     LIQUID_CHECK_DELTA(liquid_besselj0f(0.0f),  1.0f, tol);

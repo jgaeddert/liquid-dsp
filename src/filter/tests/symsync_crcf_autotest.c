@@ -165,16 +165,14 @@ void testbench_symsync_crcf(liquid_autotest __q__,
 }
 
 // autotest scenarios (root-Nyquist)
-
-LIQUID_AUTOTEST(symsync_crcf_scenario_0,"description","",0.1) { testbench_symsync_crcf(__q__,"rnyquist", 2, 7, 0.35,  0.00, 1.0f    ); }
-LIQUID_AUTOTEST(symsync_crcf_scenario_1,"description","",0.1) { testbench_symsync_crcf(__q__,"rnyquist", 2, 7, 0.35, -0.25, 1.0f    ); }
-LIQUID_AUTOTEST(symsync_crcf_scenario_2,"description","",0.1) { testbench_symsync_crcf(__q__,"rnyquist", 2, 7, 0.35, -0.25, 1.0001f ); }
-LIQUID_AUTOTEST(symsync_crcf_scenario_3,"description","",0.1) { testbench_symsync_crcf(__q__,"rnyquist", 2, 7, 0.35, -0.25, 0.9999f ); }
+LIQUID_AUTOTEST(symsync_crcf_scenario_0,"symsync_crcf, method=rnyquist, k=2, m=7, beta=0.35, tau= 0.00, rate=1.0   ","filter,symsync",0.1) { testbench_symsync_crcf(__q__,"rnyquist", 2, 7, 0.35,  0.00, 1.0f    ); }
+LIQUID_AUTOTEST(symsync_crcf_scenario_1,"symsync_crcf, method=rnyquist, k=2, m=7, beta=0.35, tau=-0.25, rate=1.0   ","filter,symsync",0.1) { testbench_symsync_crcf(__q__,"rnyquist", 2, 7, 0.35, -0.25, 1.0f    ); }
+LIQUID_AUTOTEST(symsync_crcf_scenario_2,"symsync_crcf, method=rnyquist, k=2, m=7, beta=0.35, tau=-0.25, rate=1.0001","filter,symsync",0.1) { testbench_symsync_crcf(__q__,"rnyquist", 2, 7, 0.35, -0.25, 1.0001f ); }
+LIQUID_AUTOTEST(symsync_crcf_scenario_3,"symsync_crcf, method=rnyquist, k=2, m=7, beta=0.35, tau=-0.25, rate=0.9999","filter,symsync",0.1) { testbench_symsync_crcf(__q__,"rnyquist", 2, 7, 0.35, -0.25, 0.9999f ); }
 
 // autotest scenarios (Nyquist)
-
-LIQUID_AUTOTEST(symsync_crcf_scenario_4,"description","",0.1) { testbench_symsync_crcf(__q__,"nyquist", 2, 7, 0.35,  0.00, 1.0f    ); }
-LIQUID_AUTOTEST(symsync_crcf_scenario_5,"description","",0.1) { testbench_symsync_crcf(__q__,"nyquist", 2, 7, 0.35, -0.25, 1.0f    ); }
-LIQUID_AUTOTEST(symsync_crcf_scenario_6,"description","",0.1) { testbench_symsync_crcf(__q__,"nyquist", 2, 7, 0.35, -0.25, 1.0001f ); }
-LIQUID_AUTOTEST(symsync_crcf_scenario_7,"description","",0.1) { testbench_symsync_crcf(__q__,"nyquist", 2, 7, 0.35, -0.25, 0.9999f ); }
+LIQUID_AUTOTEST(symsync_crcf_scenario_4,"symsync_crcf, method=nyquist, k=2, m=7, beta=0.35, tau= 0.00, rate=1.0   ","filter,symsync",0.1) { testbench_symsync_crcf(__q__,"nyquist", 2, 7, 0.35,  0.00, 1.0f    ); }
+LIQUID_AUTOTEST(symsync_crcf_scenario_5,"symsync_crcf, method=nyquist, k=2, m=7, beta=0.35, tau=-0.25, rate=1.0   ","filter,symsync",0.1) { testbench_symsync_crcf(__q__,"nyquist", 2, 7, 0.35, -0.25, 1.0f    ); }
+LIQUID_AUTOTEST(symsync_crcf_scenario_6,"symsync_crcf, method=nyquist, k=2, m=7, beta=0.35, tau=-0.25, rate=1.0001","filter,symsync",0.1) { testbench_symsync_crcf(__q__,"nyquist", 2, 7, 0.35, -0.25, 1.0001f ); }
+LIQUID_AUTOTEST(symsync_crcf_scenario_7,"symsync_crcf, method=nyquist, k=2, m=7, beta=0.35, tau=-0.25, rate=0.9999","filter,symsync",0.1) { testbench_symsync_crcf(__q__,"nyquist", 2, 7, 0.35, -0.25, 0.9999f ); }
 

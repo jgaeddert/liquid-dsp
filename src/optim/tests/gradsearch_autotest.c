@@ -29,7 +29,9 @@
 #include "liquid.internal.h"
 #include "liquid.autotest.h"
 
-LIQUID_AUTOTEST(gradsearch_rosenbrock,"Use gradient descent search to find minimum of Rosenbrock function, should be [1 1 1 ...]","",0.1)
+LIQUID_AUTOTEST(gradsearch_rosenbrock,
+    "Use gradient descent search to find minimum of Rosenbrock function, should be [1 1 1 ...]",
+    "optim,gradsearch",0.1)
 {
     float tol = 1e-2f;                  // error tolerance
     unsigned int num_parameters = 6;    // dimensionality of search (minimum 2)
@@ -96,7 +98,9 @@ float utility_max_autotest(void *       _userdata,
     return expf(-t);
 }
 
-LIQUID_AUTOTEST(gradsearch_maxutility,"Find maximum of: exp{ -sum{ (v[i]-1)^2/sigma_i^2 } }, should be [1 1 1 ...]","",0.1)
+LIQUID_AUTOTEST(gradsearch_maxutility,
+    "Find maximum of: exp{ -sum{ (v[i]-1)^2/sigma_i^2 } }, should be [1 1 1 ...]",
+    "optim,gradsearch",0.1)
 {
     float tol = 1e-2f;                  // error tolerance
     unsigned int num_parameters = 6;    // dimensionality of search (minimum 2)

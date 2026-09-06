@@ -57,7 +57,8 @@ void testbench_polyf_findroots(liquid_autotest __q__,
         LIQUID_CHECK_DELTA(roots[i], _r[i], _tol);
 }
 
-LIQUID_AUTOTEST(polyf_findroots_real,"","",0.1)
+LIQUID_AUTOTEST(polyf_findroots_real,"find real-valued roots of a polynomial",
+    "math,polynomial",0.1)
 {
     // basic roots, no complex values
     float         p[6] = {6,11,-33,-33,11,6};
@@ -65,7 +66,8 @@ LIQUID_AUTOTEST(polyf_findroots_real,"","",0.1)
     testbench_polyf_findroots(__q__, p, r, 5, 1e-6f);
 }
 
-LIQUID_AUTOTEST(polyf_findroots_complex,"","",0.1)
+LIQUID_AUTOTEST(polyf_findroots_complex,"find complex-valued roots of a polynomial",
+    "math,polynomial",0.1)
 {
 
     // complex roots
@@ -75,7 +77,8 @@ LIQUID_AUTOTEST(polyf_findroots_complex,"","",0.1)
     testbench_polyf_findroots(__q__, p, r, 2, 1e-6f);
 }
 
-LIQUID_AUTOTEST(polyf_findroots_mix,"","",0.1)
+LIQUID_AUTOTEST(polyf_findroots_mix,"find mixed-value (real and complex) roots of a polynomial",
+    "math,polynomial",0.1)
 {
 
     // complex roots
@@ -90,7 +93,8 @@ LIQUID_AUTOTEST(polyf_findroots_mix,"","",0.1)
     testbench_polyf_findroots(__q__, p, r, 6, 1e-6f);
 }
 
-LIQUID_AUTOTEST(polyf_findroots_mix2,"","",0.1)
+LIQUID_AUTOTEST(polyf_findroots_mix2,"find mixed-value (real and complex) roots of a polynomial",
+    "math,polynomial",0.1)
 {
     // complex roots, longer polynomial
     float         p[11] = {
@@ -121,7 +125,8 @@ LIQUID_AUTOTEST(polyf_findroots_mix2,"","",0.1)
     testbench_polyf_findroots(__q__, p, r, 10, 4e-6f);
 }
 
-LIQUID_AUTOTEST(polyf_findroots_rand,"find roots of random polynomial","",0.1)
+LIQUID_AUTOTEST(polyf_findroots_rand,"find roots of random polynomial",
+    "math,polynomial",0.1)
 {
     /*
     unsigned int n=5;

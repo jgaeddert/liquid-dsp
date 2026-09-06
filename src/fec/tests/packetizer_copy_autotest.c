@@ -24,7 +24,7 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(packetizer_copy,"copy packetizer object","",0.1)
+LIQUID_AUTOTEST(packetizer_copy,"copy packetizer object","fec,packetizer",0.1)
 {
     unsigned int msg_len_dec = 57;
     crc_scheme   crc         = LIQUID_CRC_32;

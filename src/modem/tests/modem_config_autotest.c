@@ -68,70 +68,70 @@ void testbench_modemcf_copy(liquid_autotest __q__, modulation_scheme _ms)
 }
 
 // AUTOTESTS: generic PSK
-LIQUID_AUTOTEST(modem_copy_psk2,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK2);      }
-LIQUID_AUTOTEST(modem_copy_psk4,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK4);      }
-LIQUID_AUTOTEST(modem_copy_psk8,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK8);      }
-LIQUID_AUTOTEST(modem_copy_psk16,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK16);     }
-LIQUID_AUTOTEST(modem_copy_psk32,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK32);     }
-LIQUID_AUTOTEST(modem_copy_psk64,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK64);     }
-LIQUID_AUTOTEST(modem_copy_psk128,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK128);    }
-LIQUID_AUTOTEST(modem_copy_psk256,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK256);    }
+LIQUID_AUTOTEST(modem_copy_psk2,    "modem copy, psk2","modem,config",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK2);      }
+LIQUID_AUTOTEST(modem_copy_psk4,    "modem copy, psk4","modem,config",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK4);      }
+LIQUID_AUTOTEST(modem_copy_psk8,    "modem copy, psk8","modem,config",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK8);      }
+LIQUID_AUTOTEST(modem_copy_psk16,   "modem copy, psk16","modem,config",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK16);     }
+LIQUID_AUTOTEST(modem_copy_psk32,   "modem copy, psk32","modem,config",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK32);     }
+LIQUID_AUTOTEST(modem_copy_psk64,   "modem copy, psk64","modem,config",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK64);     }
+LIQUID_AUTOTEST(modem_copy_psk128,  "modem copy, psk128","modem,config",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK128);    }
+LIQUID_AUTOTEST(modem_copy_psk256,  "modem copy, psk256","modem,config",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_PSK256);    }
 
 // AUTOTESTS: generic DPSK
-LIQUID_AUTOTEST(modem_copy_dpsk2,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK2);     }
-LIQUID_AUTOTEST(modem_copy_dpsk4,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK4);     }
-LIQUID_AUTOTEST(modem_copy_dpsk8,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK8);     }
-LIQUID_AUTOTEST(modem_copy_dpsk16,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK16);    }
-LIQUID_AUTOTEST(modem_copy_dpsk32,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK32);    }
-LIQUID_AUTOTEST(modem_copy_dpsk64,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK64);    }
-LIQUID_AUTOTEST(modem_copy_dpsk128,"","",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK128);   }
-LIQUID_AUTOTEST(modem_copy_dpsk256,"","",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK256);   }
+LIQUID_AUTOTEST(modem_copy_dpsk2,   "modem copy, dpsk2","modem,config",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK2);     }
+LIQUID_AUTOTEST(modem_copy_dpsk4,   "modem copy, dpsk4","modem,config",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK4);     }
+LIQUID_AUTOTEST(modem_copy_dpsk8,   "modem copy, dpsk8","modem,config",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK8);     }
+LIQUID_AUTOTEST(modem_copy_dpsk16,  "modem copy, dpsk16","modem,config",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK16);    }
+LIQUID_AUTOTEST(modem_copy_dpsk32,  "modem copy, dpsk32","modem,config",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK32);    }
+LIQUID_AUTOTEST(modem_copy_dpsk64,  "modem copy, dpsk64","modem,config",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK64);    }
+LIQUID_AUTOTEST(modem_copy_dpsk128, "modem copy, dpsk128","modem,config",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK128);   }
+LIQUID_AUTOTEST(modem_copy_dpsk256, "modem copy, dpsk256","modem,config",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_DPSK256);   }
 
 // AUTOTESTS: generic ASK
-LIQUID_AUTOTEST(modem_copy_ask2,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK2);      }
-LIQUID_AUTOTEST(modem_copy_ask4,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK4);      }
-LIQUID_AUTOTEST(modem_copy_ask8,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK8);      }
-LIQUID_AUTOTEST(modem_copy_ask16,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK16);     }
-LIQUID_AUTOTEST(modem_copy_ask32,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK32);     }
-LIQUID_AUTOTEST(modem_copy_ask64,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK64);     }
-LIQUID_AUTOTEST(modem_copy_ask128,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK128);    }
-LIQUID_AUTOTEST(modem_copy_ask256,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK256);    }
+LIQUID_AUTOTEST(modem_copy_ask2,    "modem copy, ask2","modem,config",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK2);      }
+LIQUID_AUTOTEST(modem_copy_ask4,    "modem copy, ask4","modem,config",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK4);      }
+LIQUID_AUTOTEST(modem_copy_ask8,    "modem copy, ask8","modem,config",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK8);      }
+LIQUID_AUTOTEST(modem_copy_ask16,   "modem copy, ask16","modem,config",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK16);     }
+LIQUID_AUTOTEST(modem_copy_ask32,   "modem copy, ask32","modem,config",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK32);     }
+LIQUID_AUTOTEST(modem_copy_ask64,   "modem copy, ask64","modem,config",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK64);     }
+LIQUID_AUTOTEST(modem_copy_ask128,  "modem copy, ask128","modem,config",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK128);    }
+LIQUID_AUTOTEST(modem_copy_ask256,  "modem copy, ask256","modem,config",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_ASK256);    }
 
 // AUTOTESTS: generic QAM
-LIQUID_AUTOTEST(modem_copy_qam4,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM4);      }
-LIQUID_AUTOTEST(modem_copy_qam8,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM8);      }
-LIQUID_AUTOTEST(modem_copy_qam16,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM16);     }
-LIQUID_AUTOTEST(modem_copy_qam32,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM32);     }
-LIQUID_AUTOTEST(modem_copy_qam64,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM64);     }
-LIQUID_AUTOTEST(modem_copy_qam128,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM128);    }
-LIQUID_AUTOTEST(modem_copy_qam256,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM256);    }
+LIQUID_AUTOTEST(modem_copy_qam4,    "modem copy, qam4","modem,config",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM4);      }
+LIQUID_AUTOTEST(modem_copy_qam8,    "modem copy, qam8","modem,config",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM8);      }
+LIQUID_AUTOTEST(modem_copy_qam16,   "modem copy, qam16","modem,config",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM16);     }
+LIQUID_AUTOTEST(modem_copy_qam32,   "modem copy, qam32","modem,config",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM32);     }
+LIQUID_AUTOTEST(modem_copy_qam64,   "modem copy, qam64","modem,config",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM64);     }
+LIQUID_AUTOTEST(modem_copy_qam128,  "modem copy, qam128","modem,config",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM128);    }
+LIQUID_AUTOTEST(modem_copy_qam256,  "modem copy, qam256","modem,config",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_QAM256);    }
 
 // AUTOTESTS: generic APSK (maps to specific APSK modems internally)
-LIQUID_AUTOTEST(modem_copy_apsk4,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK4);     }
-LIQUID_AUTOTEST(modem_copy_apsk8,"","",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK8);     }
-LIQUID_AUTOTEST(modem_copy_apsk16,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK16);    }
-LIQUID_AUTOTEST(modem_copy_apsk32,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK32);    }
-LIQUID_AUTOTEST(modem_copy_apsk64,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK64);    }
-LIQUID_AUTOTEST(modem_copy_apsk128,"","",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK128);   }
-LIQUID_AUTOTEST(modem_copy_apsk256,"","",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK256);   }
+LIQUID_AUTOTEST(modem_copy_apsk4,   "modem copy, apsk4","modem,config",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK4);     }
+LIQUID_AUTOTEST(modem_copy_apsk8,   "modem copy, apsk8","modem,config",0.1)     { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK8);     }
+LIQUID_AUTOTEST(modem_copy_apsk16,  "modem copy, apsk16","modem,config",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK16);    }
+LIQUID_AUTOTEST(modem_copy_apsk32,  "modem copy, apsk32","modem,config",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK32);    }
+LIQUID_AUTOTEST(modem_copy_apsk64,  "modem copy, apsk64","modem,config",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK64);    }
+LIQUID_AUTOTEST(modem_copy_apsk128, "modem copy, apsk128","modem,config",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK128);   }
+LIQUID_AUTOTEST(modem_copy_apsk256, "modem copy, apsk256","modem,config",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_APSK256);   }
 
 // AUTOTESTS: Specific modems
-LIQUID_AUTOTEST(modem_copy_bpsk,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_BPSK);      }
-LIQUID_AUTOTEST(modem_copy_qpsk,"","",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_QPSK);      }
-LIQUID_AUTOTEST(modem_copy_ook,"","",0.1)       { testbench_modemcf_copy(__q__,LIQUID_MODEM_OOK);       }
-LIQUID_AUTOTEST(modem_copy_sqam32,"","",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_SQAM32);    }
-LIQUID_AUTOTEST(modem_copy_sqam128,"","",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_SQAM128);   }
-LIQUID_AUTOTEST(modem_copy_V29,"","",0.1)       { testbench_modemcf_copy(__q__,LIQUID_MODEM_V29);       }
-LIQUID_AUTOTEST(modem_copy_arb16opt,"","",0.1)  { testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB16OPT);  }
-LIQUID_AUTOTEST(modem_copy_arb32opt,"","",0.1)  { testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB32OPT);  }
-LIQUID_AUTOTEST(modem_copy_arb64opt,"","",0.1)  { testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB64OPT);  }
-LIQUID_AUTOTEST(modem_copy_arb128opt,"","",0.1) { testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB128OPT); }
-LIQUID_AUTOTEST(modem_copy_arb256opt,"","",0.1) { testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB256OPT); }
-LIQUID_AUTOTEST(modem_copy_arb64vt,"","",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB64VT);   }
-LIQUID_AUTOTEST(modem_copy_pi4dqpsk,"","",0.1)  { testbench_modemcf_copy(__q__,LIQUID_MODEM_PI4DQPSK);  }
+LIQUID_AUTOTEST(modem_copy_bpsk,    "modem copy, bpsk","modem,config",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_BPSK);      }
+LIQUID_AUTOTEST(modem_copy_qpsk,    "modem copy, qpsk","modem,config",0.1)      { testbench_modemcf_copy(__q__,LIQUID_MODEM_QPSK);      }
+LIQUID_AUTOTEST(modem_copy_ook,     "modem copy, ook","modem,config",0.1)       { testbench_modemcf_copy(__q__,LIQUID_MODEM_OOK);       }
+LIQUID_AUTOTEST(modem_copy_sqam32,  "modem copy, sqam32","modem,config",0.1)    { testbench_modemcf_copy(__q__,LIQUID_MODEM_SQAM32);    }
+LIQUID_AUTOTEST(modem_copy_sqam128, "modem copy, sqam128","modem,config",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_SQAM128);   }
+LIQUID_AUTOTEST(modem_copy_V29,     "modem copy, V29","modem,config",0.1)       { testbench_modemcf_copy(__q__,LIQUID_MODEM_V29);       }
+LIQUID_AUTOTEST(modem_copy_arb16opt,"modem copy, arb16opt","modem,config",0.1)  { testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB16OPT);  }
+LIQUID_AUTOTEST(modem_copy_arb32opt,"modem copy, arb32opt","modem,config",0.1)  { testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB32OPT);  }
+LIQUID_AUTOTEST(modem_copy_arb64opt,"modem copy, arb64opt","modem,config",0.1)  { testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB64OPT);  }
+LIQUID_AUTOTEST(modem_copy_arb128opt,"modem copy, arb128opt","modem,config",0.1){ testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB128OPT); }
+LIQUID_AUTOTEST(modem_copy_arb256opt,"modem copy, arb256opt","modem,config",0.1){ testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB256OPT); }
+LIQUID_AUTOTEST(modem_copy_arb64vt, "modem copy, arb64vt","modem,config",0.1)   { testbench_modemcf_copy(__q__,LIQUID_MODEM_ARB64VT);   }
+LIQUID_AUTOTEST(modem_copy_pi4dqpsk,"modem copy, pi4dqpsk","modem,config",0.1)  { testbench_modemcf_copy(__q__,LIQUID_MODEM_PI4DQPSK);  }
 
 // test errors and invalid configuration
-LIQUID_AUTOTEST(modem_config,"","",0.1)
+LIQUID_AUTOTEST(modem_config,"modem config","modem,config",0.1)
 {
     _liquid_error_downgrade_enable();
     // test copying/creating invalid objects

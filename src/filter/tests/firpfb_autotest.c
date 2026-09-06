@@ -24,7 +24,7 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(firpfb_impulse_response,"description","",0.1)
+LIQUID_AUTOTEST(firpfb_impulse_response,"FIR polyphase filterbank, impulse response","filter,firpfb",0.1)
 {
     // Initialize variables
     float tol=1e-4f;
@@ -77,7 +77,7 @@ LIQUID_AUTOTEST(firpfb_impulse_response,"description","",0.1)
     firpfb_rrrf_destroy(f);
 }
 
-LIQUID_AUTOTEST(firpfb_crcf_copy,"description","",0.1)
+LIQUID_AUTOTEST(firpfb_crcf_copy,"FIR polyphase filterbank, copy (crcf)","filter,firpfb",0.1)
 {
     // create base object with irregular parameters
     unsigned int M = 13, m = 7;

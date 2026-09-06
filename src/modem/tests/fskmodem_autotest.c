@@ -60,31 +60,51 @@ void testbench_fskmodem(liquid_autotest __q__,
 }
 
 // AUTOTESTS: basic properties: M=2^m, k = 2*M, bandwidth = 0.25
-LIQUID_AUTOTEST(fskmodem_norm_M2,"","",0.1)    { testbench_fskmodem(__q__,  1,    4, 0.25f    ); }
-LIQUID_AUTOTEST(fskmodem_norm_M4,"","",0.1)    { testbench_fskmodem(__q__,  2,    8, 0.25f    ); }
-LIQUID_AUTOTEST(fskmodem_norm_M8,"","",0.1)    { testbench_fskmodem(__q__,  3,   16, 0.25f    ); }
-LIQUID_AUTOTEST(fskmodem_norm_M16,"","",0.1)   { testbench_fskmodem(__q__,  4,   32, 0.25f    ); }
-LIQUID_AUTOTEST(fskmodem_norm_M32,"","",0.1)   { testbench_fskmodem(__q__,  5,   64, 0.25f    ); }
-LIQUID_AUTOTEST(fskmodem_norm_M64,"","",0.1)   { testbench_fskmodem(__q__,  6,  128, 0.25f    ); }
-LIQUID_AUTOTEST(fskmodem_norm_M128,"","",0.1)  { testbench_fskmodem(__q__,  7,  256, 0.25f    ); }
-LIQUID_AUTOTEST(fskmodem_norm_M256,"","",0.1)  { testbench_fskmodem(__q__,  8,  512, 0.25f    ); }
-LIQUID_AUTOTEST(fskmodem_norm_M512,"","",0.1)  { testbench_fskmodem(__q__,  9, 1024, 0.25f    ); }
-LIQUID_AUTOTEST(fskmodem_norm_M1024,"","",0.1) { testbench_fskmodem(__q__, 10, 2048, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M2,   "frequency-shift keying (FSK) modem, normal, M=2",   "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  1,    4, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M4,   "frequency-shift keying (FSK) modem, normal, M=4",   "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  2,    8, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M8,   "frequency-shift keying (FSK) modem, normal, M=8",   "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  3,   16, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M16,  "frequency-shift keying (FSK) modem, normal, M=16",  "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  4,   32, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M32,  "frequency-shift keying (FSK) modem, normal, M=32",  "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  5,   64, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M64,  "frequency-shift keying (FSK) modem, normal, M=64",  "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  6,  128, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M128, "frequency-shift keying (FSK) modem, normal, M=128", "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  7,  256, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M256, "frequency-shift keying (FSK) modem, normal, M=256", "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  8,  512, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M512, "frequency-shift keying (FSK) modem, normal, M=512", "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  9, 1024, 0.25f    ); }
+LIQUID_AUTOTEST(fskmodem_norm_M1024,"frequency-shift keying (FSK) modem, normal, M=1024","modem,fskmodem",0.2)
+    { testbench_fskmodem(__q__, 10, 2048, 0.25f    ); }
 
 // AUTOTESTS: obscure properties: M=2^m, k not relative to M, bandwidth basically irrational
-LIQUID_AUTOTEST(fskmodem_misc_M2,"","",0.1)    { testbench_fskmodem(__q__,  1,    5, 0.3721451); }
-LIQUID_AUTOTEST(fskmodem_misc_M4,"","",0.1)    { testbench_fskmodem(__q__,  2,   10, 0.3721451); }
-LIQUID_AUTOTEST(fskmodem_misc_M8,"","",0.1)    { testbench_fskmodem(__q__,  3,   20, 0.3721451); }
-LIQUID_AUTOTEST(fskmodem_misc_M16,"","",0.1)   { testbench_fskmodem(__q__,  4,   30, 0.3721451); }
-LIQUID_AUTOTEST(fskmodem_misc_M32,"","",0.1)   { testbench_fskmodem(__q__,  5,   60, 0.3721451); }
-LIQUID_AUTOTEST(fskmodem_misc_M64,"","",0.1)   { testbench_fskmodem(__q__,  6,  100, 0.3721451); }
-LIQUID_AUTOTEST(fskmodem_misc_M128,"","",0.1)  { testbench_fskmodem(__q__,  7,  200, 0.3721451); }
-LIQUID_AUTOTEST(fskmodem_misc_M256,"","",0.1)  { testbench_fskmodem(__q__,  8,  500, 0.3721451); }
-LIQUID_AUTOTEST(fskmodem_misc_M512,"","",0.1)  { testbench_fskmodem(__q__,  9, 1000, 0.3721451); }
-LIQUID_AUTOTEST(fskmodem_misc_M1024,"","",0.1) { testbench_fskmodem(__q__, 10, 2000, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M2,   "frequency-shift keying (FSK) modem, misc, M=2",   "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  1,    5, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M4,   "frequency-shift keying (FSK) modem, misc, M=4",   "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  2,   10, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M8,   "frequency-shift keying (FSK) modem, misc, M=8",   "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  3,   20, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M16,  "frequency-shift keying (FSK) modem, misc, M=16",  "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  4,   30, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M32,  "frequency-shift keying (FSK) modem, misc, M=32",  "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  5,   60, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M64,  "frequency-shift keying (FSK) modem, misc, M=64",  "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  6,  100, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M128, "frequency-shift keying (FSK) modem, misc, M=128", "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  7,  200, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M256, "frequency-shift keying (FSK) modem, misc, M=256", "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  8,  500, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M512, "frequency-shift keying (FSK) modem, misc, M=512", "modem,fskmodem",0.1)
+    { testbench_fskmodem(__q__,  9, 1000, 0.3721451); }
+LIQUID_AUTOTEST(fskmodem_misc_M1024,"frequency-shift keying (FSK) modem, misc, M=1024","modem,fskmodem",0.3)
+    { testbench_fskmodem(__q__, 10, 2000, 0.3721451); }
 
 // test modulator copy
-LIQUID_AUTOTEST(fskmod_copy,"","",0.1)
+LIQUID_AUTOTEST(fskmod_copy,"fskmod copy","modem,fskmodem",0.1)
 {
     // options
     unsigned int m  = 3;        // bits per symbol
@@ -127,7 +147,7 @@ LIQUID_AUTOTEST(fskmod_copy,"","",0.1)
 }
 
 // test demodulator copy
-LIQUID_AUTOTEST(fskdem_copy,"","",0.1)
+LIQUID_AUTOTEST(fskdem_copy,"fskdem copy","modem,fskmodem",0.1)
 {
     // options
     unsigned int m  = 3;        // bits per symbol

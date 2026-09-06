@@ -192,28 +192,28 @@ void firfilt_cccf_test(liquid_autotest __q__,
 // 
 // AUTOTEST: firfilt_rrrf tests
 //
-LIQUID_AUTOTEST(firfilt_rrrf_data_h4x8,"description","",0.1)
+LIQUID_AUTOTEST(firfilt_rrrf_data_h4x8,"FIR filter (rrrf), h=4, x=8","filter,firfilt",0.1)
 {
     firfilt_rrrf_test(__q__,
                       firfilt_rrrf_data_h4x8_h, 4,
                       firfilt_rrrf_data_h4x8_x, 8,
                       firfilt_rrrf_data_h4x8_y, 8);
 }
-LIQUID_AUTOTEST(firfilt_rrrf_data_h7x16,"description","",0.1)
+LIQUID_AUTOTEST(firfilt_rrrf_data_h7x16,"FIR filter (rrrf), h=7, x=16","filter,firfilt",0.1)
 {
     firfilt_rrrf_test(__q__,
                       firfilt_rrrf_data_h7x16_h, 7,
                       firfilt_rrrf_data_h7x16_x, 16,
                       firfilt_rrrf_data_h7x16_y, 16);
 }
-LIQUID_AUTOTEST(firfilt_rrrf_data_h13x32,"description","",0.1)
+LIQUID_AUTOTEST(firfilt_rrrf_data_h13x32,"FIR filter (rrrf), h=13, x=32","filter,firfilt",0.1)
 {
     firfilt_rrrf_test(__q__,
                       firfilt_rrrf_data_h13x32_h, 13,
                       firfilt_rrrf_data_h13x32_x, 32,
                       firfilt_rrrf_data_h13x32_y, 32);
 }
-LIQUID_AUTOTEST(firfilt_rrrf_data_h23x64,"description","",0.1)
+LIQUID_AUTOTEST(firfilt_rrrf_data_h23x64,"FIR filter (rrrf), h=23, x=64","filter,firfilt",0.1)
 {
     firfilt_rrrf_test(__q__,
                       firfilt_rrrf_data_h23x64_h, 23,
@@ -225,28 +225,28 @@ LIQUID_AUTOTEST(firfilt_rrrf_data_h23x64,"description","",0.1)
 // 
 // AUTOTEST: firfilt_crcf tests
 //
-LIQUID_AUTOTEST(firfilt_crcf_data_h4x8,"description","",0.1)
+LIQUID_AUTOTEST(firfilt_crcf_data_h4x8,"FIR filter (crcf), h=4, x=8","filter,firfilt",0.1)
 {
     firfilt_crcf_test(__q__,
                       firfilt_crcf_data_h4x8_h, 4,
                       firfilt_crcf_data_h4x8_x, 8,
                       firfilt_crcf_data_h4x8_y, 8);
 }
-LIQUID_AUTOTEST(firfilt_crcf_data_h7x16,"description","",0.1)
+LIQUID_AUTOTEST(firfilt_crcf_data_h7x16,"FIR filter (crcf), h=7, x=16","filter,firfilt",0.1)
 {
     firfilt_crcf_test(__q__,
                       firfilt_crcf_data_h7x16_h, 7,
                       firfilt_crcf_data_h7x16_x, 16,
                       firfilt_crcf_data_h7x16_y, 16);
 }
-LIQUID_AUTOTEST(firfilt_crcf_data_h13x32,"description","",0.1)
+LIQUID_AUTOTEST(firfilt_crcf_data_h13x32,"FIR filter (crcf), h=13, x=32","filter,firfilt",0.1)
 {
     firfilt_crcf_test(__q__,
                       firfilt_crcf_data_h13x32_h, 13,
                       firfilt_crcf_data_h13x32_x, 32,
                       firfilt_crcf_data_h13x32_y, 32);
 }
-LIQUID_AUTOTEST(firfilt_crcf_data_h23x64,"description","",0.1)
+LIQUID_AUTOTEST(firfilt_crcf_data_h23x64,"FIR filter (crcf), h=23, x=64","filter,firfilt",0.1)
 {
     firfilt_crcf_test(__q__,
                       firfilt_crcf_data_h23x64_h, 23,
@@ -258,28 +258,28 @@ LIQUID_AUTOTEST(firfilt_crcf_data_h23x64,"description","",0.1)
 // 
 // AUTOTEST: firfilt_cccf tests
 //
-LIQUID_AUTOTEST(firfilt_cccf_data_h4x8,"description","",0.1)
+LIQUID_AUTOTEST(firfilt_cccf_data_h4x8,"FIR filter (cccf), h=4, x=8","filter,firfilt",0.1)
 {
     firfilt_cccf_test(__q__,
                       firfilt_cccf_data_h4x8_h, 4,
                       firfilt_cccf_data_h4x8_x, 8,
                       firfilt_cccf_data_h4x8_y, 8);
 }
-LIQUID_AUTOTEST(firfilt_cccf_data_h7x16,"description","",0.1)
+LIQUID_AUTOTEST(firfilt_cccf_data_h7x16,"FIR filter (cccf), h=7, x=16","filter,firfilt",0.1)
 {
     firfilt_cccf_test(__q__,
                       firfilt_cccf_data_h7x16_h, 7,
                       firfilt_cccf_data_h7x16_x, 16,
                       firfilt_cccf_data_h7x16_y, 16);
 }
-LIQUID_AUTOTEST(firfilt_cccf_data_h13x32,"description","",0.1)
+LIQUID_AUTOTEST(firfilt_cccf_data_h13x32,"FIR filter (cccf), h=13, x=32","filter,firfilt",0.1)
 {
     firfilt_cccf_test(__q__,
                       firfilt_cccf_data_h13x32_h, 13,
                       firfilt_cccf_data_h13x32_x, 32,
                       firfilt_cccf_data_h13x32_y, 32);
 }
-LIQUID_AUTOTEST(firfilt_cccf_data_h23x64,"description","",0.1)
+LIQUID_AUTOTEST(firfilt_cccf_data_h23x64,"FIR filter (cccf), h=23, x=64","filter,firfilt",0.1)
 {
     firfilt_cccf_test(__q__,
                       firfilt_cccf_data_h23x64_h, 23,

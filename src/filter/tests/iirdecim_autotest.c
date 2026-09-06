@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(iirdecim_copy,"test copy method", "", 0.1)
+LIQUID_AUTOTEST(iirdecim_copy,"test copy method", "filter,iirdecim", 0.1)
 {
     // create base object
     iirdecim_crcf q0 = iirdecim_crcf_create_default(3, 7);
