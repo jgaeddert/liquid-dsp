@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
     // define variables and parse command-line options
     liquid_argparse_init(__docstr__);
     liquid_argparse_add(int,  num_trials,     1, 'T', "baseline trials", NULL);
-    liquid_argparse_add(float,target_runtime,0.1,'r', "target runtime [seconds]", NULL);
+    liquid_argparse_add(float,target_runtime,0.02,'r', "target runtime [seconds]", NULL);
     liquid_argparse_add(int,  test_id,       -1, 't', "run a specific benchmark", NULL);
     liquid_argparse_add(bool, list,       false, 'l', "list benchmarks and exit", NULL);
     liquid_argparse_add(char*,search,        "", 's', "run benchmarks with search string in name", NULL);
