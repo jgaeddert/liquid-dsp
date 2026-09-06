@@ -949,6 +949,7 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/utility/tests/memory_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/pack_bytes_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/shift_array_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/utility/tests/keywords_autotest.c
     ${PROJECT_SOURCE_DIR}/src/vector/tests/vectorcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/vector/tests/vectorf_autotest.c
     )
@@ -1093,7 +1094,7 @@ endif(BUILD_AUTOTESTS)
 # ---------------------------------------- benchmarks ----------------------------------------
 
 set(BENCHMARKS
-    ${PROJECT_SOURCE_DIR}/bench/null_benchmark.c
+    ${PROJECT_SOURCE_DIR}/benchmark/null_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/agc/bench/agc_crcf_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/audio/bench/cvsd_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/buffer/bench/cbuffercf_benchmark.c
@@ -1170,7 +1171,9 @@ set(BENCHMARKS
 
 if(BUILD_BENCHMARKS)
     add_executable(xbenchmark
-        bench/benchmark.c
+        benchmark/xbenchmark.c
+        benchmark/liquid_benchmark_registry.h
+        benchmark/benchmark.c
         ${BENCHMARKS}
         )
     target_include_directories(xbenchmark PRIVATE include .)

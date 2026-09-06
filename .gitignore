@@ -20,7 +20,6 @@ aclocal.m4
 
 # ignore all auto-generated targets
 autotest_include.h
-benchmark
 benchmark_include.h
 bench/fftbench
 configure
