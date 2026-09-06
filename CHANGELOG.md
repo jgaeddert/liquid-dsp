@@ -6,6 +6,7 @@
     - fixed pkg-config paths since `CMAKE_INSTALL_*` are not guaranteed to be
       relative (thanks, @iank)
     - legacy: compiling and installing liquid-dsp.pc (pkg-config file)
+    - fixing build with missing stdarg.h (thanks, @brad0)
   * core
     - logging: fixed issue with stale file handle when closed outside of
       log environment; added new method to close file from within logging
@@ -16,6 +17,8 @@
   * filter
     - resamp2: moving the default filter design to windowed Kaiser; firdespm
       produces a good filter but takes prohibitively long on certain systems
+  * nco
+    - fixing build when M_PI is parenthesized (thanks, @brad0)
 
 ## 1.8.2 - 2026-08-06
 
