@@ -62,30 +62,30 @@ float rresamp_crcf_bench(unsigned long int num_iterations,
 //
 // Rational-rate resampler benchmark prototypes; compare to arbitrary rate resampler
 //
-LIQUID_BENCHMARK(rresamp_crcf_P17_Q1,   "rresamp_crcf execute, P=17 Q=1",   "resampler,rational")
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q1,   "rresamp_crcf execute, P=17 Q=1",   "filter,rresamp")
     { return rresamp_crcf_bench(num_iterations, 17,   1); }
 
-LIQUID_BENCHMARK(rresamp_crcf_P17_Q2,   "rresamp_crcf execute, P=17 Q=2",   "resampler,rational")
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q2,   "rresamp_crcf execute, P=17 Q=2",   "filter,rresamp")
     { return rresamp_crcf_bench(num_iterations, 17,   2); }
 
-LIQUID_BENCHMARK(rresamp_crcf_P17_Q4,   "rresamp_crcf execute, P=17 Q=4",   "resampler,rational")
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q4,   "rresamp_crcf execute, P=17 Q=4",   "filter,rresamp")
     { return rresamp_crcf_bench(num_iterations, 17,   4); }
 
-LIQUID_BENCHMARK(rresamp_crcf_P17_Q8,   "rresamp_crcf execute, P=17 Q=8",   "resampler,rational")
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q8,   "rresamp_crcf execute, P=17 Q=8",   "filter,rresamp")
     { return rresamp_crcf_bench(num_iterations, 17,   8); }
 
-LIQUID_BENCHMARK(rresamp_crcf_P17_Q16,  "rresamp_crcf execute, P=17 Q=16",  "resampler,rational")
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q16,  "rresamp_crcf execute, P=17 Q=16",  "filter,rresamp")
     { return rresamp_crcf_bench(num_iterations, 17,  16); }
 
-LIQUID_BENCHMARK(rresamp_crcf_P17_Q32,  "rresamp_crcf execute, P=17 Q=32",  "resampler,rational")
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q32,  "rresamp_crcf execute, P=17 Q=32",  "filter,rresamp")
     { return rresamp_crcf_bench(num_iterations, 17,  32); }
 
-LIQUID_BENCHMARK(rresamp_crcf_P17_Q64,  "rresamp_crcf execute, P=17 Q=64",  "resampler,rational")
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q64,  "rresamp_crcf execute, P=17 Q=64",  "filter,rresamp")
     { return rresamp_crcf_bench(num_iterations, 17,  64); }
 
-LIQUID_BENCHMARK(rresamp_crcf_P17_Q128, "rresamp_crcf execute, P=17 Q=128", "resampler,rational")
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q128, "rresamp_crcf execute, P=17 Q=128", "filter,rresamp")
     { return rresamp_crcf_bench(num_iterations, 17, 128); }
 
-LIQUID_BENCHMARK(rresamp_crcf_P17_Q256, "rresamp_crcf execute, P=17 Q=256", "resampler,rational")
+LIQUID_BENCHMARK(rresamp_crcf_P17_Q256, "rresamp_crcf execute, P=17 Q=256", "filter,rresamp")
     { return rresamp_crcf_bench(num_iterations, 17, 256); }
 

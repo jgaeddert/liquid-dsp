@@ -63,35 +63,35 @@ float iirfilt_crcf_bench(unsigned long int num_iterations,
 }
 
 // benchmark regular transfer function form
-LIQUID_BENCHMARK(iirfilt_crcf_4,      "iirfilt_crcf execute, order=4 (tf)",   "IIR,filter")
+LIQUID_BENCHMARK(iirfilt_crcf_4,      "iirfilt_crcf execute, order=4 (tf)",   "filter,iirfilt,filter")
     { return iirfilt_crcf_bench(num_iterations, 4,  LIQUID_IIRDES_TF); }
 
-LIQUID_BENCHMARK(iirfilt_crcf_8,      "iirfilt_crcf execute, order=8 (tf)",   "IIR,filter")
+LIQUID_BENCHMARK(iirfilt_crcf_8,      "iirfilt_crcf execute, order=8 (tf)",   "filter,iirfilt,filter")
     { return iirfilt_crcf_bench(num_iterations, 8,  LIQUID_IIRDES_TF); }
 
-LIQUID_BENCHMARK(iirfilt_crcf_16,     "iirfilt_crcf execute, order=16 (tf)",  "IIR,filter")
+LIQUID_BENCHMARK(iirfilt_crcf_16,     "iirfilt_crcf execute, order=16 (tf)",  "filter,iirfilt,filter")
     { return iirfilt_crcf_bench(num_iterations, 16, LIQUID_IIRDES_TF); }
 
-LIQUID_BENCHMARK(iirfilt_crcf_32,     "iirfilt_crcf execute, order=32 (tf)",  "IIR,filter")
+LIQUID_BENCHMARK(iirfilt_crcf_32,     "iirfilt_crcf execute, order=32 (tf)",  "filter,iirfilt,filter")
     { return iirfilt_crcf_bench(num_iterations, 32, LIQUID_IIRDES_TF); }
 
-LIQUID_BENCHMARK(iirfilt_crcf_64,     "iirfilt_crcf execute, order=64 (tf)",  "IIR,filter")
+LIQUID_BENCHMARK(iirfilt_crcf_64,     "iirfilt_crcf execute, order=64 (tf)",  "filter,iirfilt,filter")
     { return iirfilt_crcf_bench(num_iterations, 64, LIQUID_IIRDES_TF); }
 
 // benchmark second-order sections form
-LIQUID_BENCHMARK(iirfilt_crcf_sos_4,  "iirfilt_crcf execute, order=4 (sos)",  "IIR,filter,sos")
+LIQUID_BENCHMARK(iirfilt_crcf_sos_4,  "iirfilt_crcf execute, order=4 (sos)",  "filter,iirfilt,filter,sos")
     { return iirfilt_crcf_bench(num_iterations, 4,  LIQUID_IIRDES_SOS); }
 
-LIQUID_BENCHMARK(iirfilt_crcf_sos_8,  "iirfilt_crcf execute, order=8 (sos)",  "IIR,filter,sos")
+LIQUID_BENCHMARK(iirfilt_crcf_sos_8,  "iirfilt_crcf execute, order=8 (sos)",  "filter,iirfilt,filter,sos")
     { return iirfilt_crcf_bench(num_iterations, 8,  LIQUID_IIRDES_SOS); }
 
-LIQUID_BENCHMARK(iirfilt_crcf_sos_16, "iirfilt_crcf execute, order=16 (sos)", "IIR,filter,sos")
+LIQUID_BENCHMARK(iirfilt_crcf_sos_16, "iirfilt_crcf execute, order=16 (sos)", "filter,iirfilt,filter,sos")
     { return iirfilt_crcf_bench(num_iterations, 16, LIQUID_IIRDES_SOS); }
 
-LIQUID_BENCHMARK(iirfilt_crcf_sos_32, "iirfilt_crcf execute, order=32 (sos)", "IIR,filter,sos")
+LIQUID_BENCHMARK(iirfilt_crcf_sos_32, "iirfilt_crcf execute, order=32 (sos)", "filter,iirfilt,filter,sos")
     { return iirfilt_crcf_bench(num_iterations, 32, LIQUID_IIRDES_SOS); }
 
-LIQUID_BENCHMARK(iirfilt_crcf_sos_64, "iirfilt_crcf execute, order=64 (sos)", "IIR,filter,sos")
+LIQUID_BENCHMARK(iirfilt_crcf_sos_64, "iirfilt_crcf execute, order=64 (sos)", "filter,iirfilt,filter,sos")
     { return iirfilt_crcf_bench(num_iterations, 64, LIQUID_IIRDES_SOS); }
 
 // benchmark DC-blocking filter
@@ -123,6 +123,6 @@ float iirfilt_crcf_dcblock_bench(unsigned long int num_iterations)
     return extime;
 }
 
-LIQUID_BENCHMARK(iirfilt_crcf_dcblock, "iirfilt_crcf dc-blocker execute", "IIR,filter,dcblock")
+LIQUID_BENCHMARK(iirfilt_crcf_dcblock, "iirfilt_crcf dc-blocker execute", "filter,iirfilt,filter,dcblock")
     { return iirfilt_crcf_dcblock_bench(num_iterations); }
 

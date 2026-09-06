@@ -57,18 +57,18 @@ float firfilt_crcf_bench(unsigned long int num_iterations, unsigned int _n)
     return extime;
 }
 
-LIQUID_BENCHMARK(firfilt_crcf_4, "firfilt_crcf execute, n=4", "FIR,filter")
+LIQUID_BENCHMARK(firfilt_crcf_4, "firfilt_crcf execute, n=4", "filter,firfilt")
     { return firfilt_crcf_bench(num_iterations, 4); }
 
-LIQUID_BENCHMARK(firfilt_crcf_8, "firfilt_crcf execute, n=8", "FIR,filter")
+LIQUID_BENCHMARK(firfilt_crcf_8, "firfilt_crcf execute, n=8", "filter,firfilt")
     { return firfilt_crcf_bench(num_iterations, 8); }
 
-LIQUID_BENCHMARK(firfilt_crcf_16, "firfilt_crcf execute, n=16", "FIR,filter")
+LIQUID_BENCHMARK(firfilt_crcf_16, "firfilt_crcf execute, n=16", "filter,firfilt")
     { return firfilt_crcf_bench(num_iterations, 16); }
 
-LIQUID_BENCHMARK(firfilt_crcf_32, "firfilt_crcf execute, n=32", "FIR,filter")
+LIQUID_BENCHMARK(firfilt_crcf_32, "firfilt_crcf execute, n=32", "filter,firfilt")
     { return firfilt_crcf_bench(num_iterations, 32); }
 
-LIQUID_BENCHMARK(firfilt_crcf_64, "firfilt_crcf execute, n=64", "FIR,filter")
+LIQUID_BENCHMARK(firfilt_crcf_64, "firfilt_crcf execute, n=64", "filter,firfilt")
     { return firfilt_crcf_bench(num_iterations, 64); }
 

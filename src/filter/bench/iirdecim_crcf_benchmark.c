@@ -60,18 +60,18 @@ float iirdecim_crcf_bench(unsigned long int num_iterations,
     return extime;
 }
 
-LIQUID_BENCHMARK(iirdecim_crcf_M2,  "iirdecim_crcf execute, M=2 order=5",  "IIR,decimator")
+LIQUID_BENCHMARK(iirdecim_crcf_M2,  "iirdecim_crcf execute, M=2 order=5",  "filter,iirdecim,decimator")
     { return iirdecim_crcf_bench(num_iterations, 2,  5); }
 
-LIQUID_BENCHMARK(iirdecim_crcf_M4,  "iirdecim_crcf execute, M=4 order=5",  "IIR,decimator")
+LIQUID_BENCHMARK(iirdecim_crcf_M4,  "iirdecim_crcf execute, M=4 order=5",  "filter,iirdecim,decimator")
     { return iirdecim_crcf_bench(num_iterations, 4,  5); }
 
-LIQUID_BENCHMARK(iirdecim_crcf_M8,  "iirdecim_crcf execute, M=8 order=5",  "IIR,decimator")
+LIQUID_BENCHMARK(iirdecim_crcf_M8,  "iirdecim_crcf execute, M=8 order=5",  "filter,iirdecim,decimator")
     { return iirdecim_crcf_bench(num_iterations, 8,  5); }
 
-LIQUID_BENCHMARK(iirdecim_crcf_M16, "iirdecim_crcf execute, M=16 order=5", "IIR,decimator")
+LIQUID_BENCHMARK(iirdecim_crcf_M16, "iirdecim_crcf execute, M=16 order=5", "filter,iirdecim,decimator")
     { return iirdecim_crcf_bench(num_iterations, 16, 5); }
 
-LIQUID_BENCHMARK(iirdecim_crcf_M32, "iirdecim_crcf execute, M=32 order=5", "IIR,decimator")
+LIQUID_BENCHMARK(iirdecim_crcf_M32, "iirdecim_crcf execute, M=32 order=5", "filter,iirdecim,decimator")
     { return iirdecim_crcf_bench(num_iterations, 32, 5); }
 

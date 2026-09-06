@@ -54,18 +54,18 @@ float iirinterp_crcf_bench(unsigned long int num_iterations,
     return extime;
 }
 
-LIQUID_BENCHMARK(iirinterp_crcf_M2,  "iirinterp_crcf execute, M=2 order=5",  "IIR,interpolator")
+LIQUID_BENCHMARK(iirinterp_crcf_M2,  "iirinterp_crcf execute, M=2 order=5",  "filter,iirinterp,interpolator")
     { return iirinterp_crcf_bench(num_iterations, 2,  5); }
 
-LIQUID_BENCHMARK(iirinterp_crcf_M4,  "iirinterp_crcf execute, M=4 order=5",  "IIR,interpolator")
+LIQUID_BENCHMARK(iirinterp_crcf_M4,  "iirinterp_crcf execute, M=4 order=5",  "filter,iirinterp,interpolator")
     { return iirinterp_crcf_bench(num_iterations, 4,  5); }
 
-LIQUID_BENCHMARK(iirinterp_crcf_M8,  "iirinterp_crcf execute, M=8 order=5",  "IIR,interpolator")
+LIQUID_BENCHMARK(iirinterp_crcf_M8,  "iirinterp_crcf execute, M=8 order=5",  "filter,iirinterp,interpolator")
     { return iirinterp_crcf_bench(num_iterations, 8,  5); }
 
-LIQUID_BENCHMARK(iirinterp_crcf_M16, "iirinterp_crcf execute, M=16 order=5", "IIR,interpolator")
+LIQUID_BENCHMARK(iirinterp_crcf_M16, "iirinterp_crcf execute, M=16 order=5", "filter,iirinterp,interpolator")
     { return iirinterp_crcf_bench(num_iterations, 16, 5); }
 
-LIQUID_BENCHMARK(iirinterp_crcf_M32, "iirinterp_crcf execute, M=32 order=5", "IIR,interpolator")
+LIQUID_BENCHMARK(iirinterp_crcf_M32, "iirinterp_crcf execute, M=32 order=5", "filter,iirinterp,interpolator")
     { return iirinterp_crcf_bench(num_iterations, 32, 5); }
 

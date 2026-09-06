@@ -71,54 +71,54 @@ float resamp2_crcf_bench(unsigned long int num_iterations,
 //
 // Decimators
 //
-LIQUID_BENCHMARK(resamp2_crcf_decim_m2,    "resamp2_crcf decim execute, m=2",    "resampler,halfband,decimator")
+LIQUID_BENCHMARK(resamp2_crcf_decim_m2,    "resamp2_crcf decim execute, m=2",    "filter,resamp2,halfband,decimator")
     { return resamp2_crcf_bench(num_iterations,   2, RESAMP2_DECIM); }
 
-LIQUID_BENCHMARK(resamp2_crcf_decim_m4,    "resamp2_crcf decim execute, m=4",    "resampler,halfband,decimator")
+LIQUID_BENCHMARK(resamp2_crcf_decim_m4,    "resamp2_crcf decim execute, m=4",    "filter,resamp2,halfband,decimator")
     { return resamp2_crcf_bench(num_iterations,   4, RESAMP2_DECIM); }
 
-LIQUID_BENCHMARK(resamp2_crcf_decim_m8,    "resamp2_crcf decim execute, m=8",    "resampler,halfband,decimator")
+LIQUID_BENCHMARK(resamp2_crcf_decim_m8,    "resamp2_crcf decim execute, m=8",    "filter,resamp2,halfband,decimator")
     { return resamp2_crcf_bench(num_iterations,   8, RESAMP2_DECIM); }
 
-LIQUID_BENCHMARK(resamp2_crcf_decim_m16,   "resamp2_crcf decim execute, m=16",   "resampler,halfband,decimator")
+LIQUID_BENCHMARK(resamp2_crcf_decim_m16,   "resamp2_crcf decim execute, m=16",   "filter,resamp2,halfband,decimator")
     { return resamp2_crcf_bench(num_iterations,  16, RESAMP2_DECIM); }
 
-LIQUID_BENCHMARK(resamp2_crcf_decim_m32,   "resamp2_crcf decim execute, m=32",   "resampler,halfband,decimator")
+LIQUID_BENCHMARK(resamp2_crcf_decim_m32,   "resamp2_crcf decim execute, m=32",   "filter,resamp2,halfband,decimator")
     { return resamp2_crcf_bench(num_iterations,  32, RESAMP2_DECIM); }
 
-LIQUID_BENCHMARK(resamp2_crcf_decim_m64,   "resamp2_crcf decim execute, m=64",   "resampler,halfband,decimator")
+LIQUID_BENCHMARK(resamp2_crcf_decim_m64,   "resamp2_crcf decim execute, m=64",   "filter,resamp2,halfband,decimator")
     { return resamp2_crcf_bench(num_iterations,  64, RESAMP2_DECIM); }
 
-LIQUID_BENCHMARK(resamp2_crcf_decim_m128,  "resamp2_crcf decim execute, m=128",  "resampler,halfband,decimator")
+LIQUID_BENCHMARK(resamp2_crcf_decim_m128,  "resamp2_crcf decim execute, m=128",  "filter,resamp2,halfband,decimator")
     { return resamp2_crcf_bench(num_iterations, 128, RESAMP2_DECIM); }
 
-LIQUID_BENCHMARK(resamp2_crcf_decim_m256,  "resamp2_crcf decim execute, m=256",  "resampler,halfband,decimator")
+LIQUID_BENCHMARK(resamp2_crcf_decim_m256,  "resamp2_crcf decim execute, m=256",  "filter,resamp2,halfband,decimator")
     { return resamp2_crcf_bench(num_iterations, 256, RESAMP2_DECIM); }
 
 //
 // Interpolators
 //
-LIQUID_BENCHMARK(resamp2_crcf_interp_m2,   "resamp2_crcf interp execute, m=2",    "resampler,halfband,interpolator")
+LIQUID_BENCHMARK(resamp2_crcf_interp_m2,   "resamp2_crcf interp execute, m=2",    "filter,resamp2,halfband,interpolator")
     { return resamp2_crcf_bench(num_iterations,   2, RESAMP2_INTERP); }
 
-LIQUID_BENCHMARK(resamp2_crcf_interp_m4,   "resamp2_crcf interp execute, m=4",    "resampler,halfband,interpolator")
+LIQUID_BENCHMARK(resamp2_crcf_interp_m4,   "resamp2_crcf interp execute, m=4",    "filter,resamp2,halfband,interpolator")
     { return resamp2_crcf_bench(num_iterations,   4, RESAMP2_INTERP); }
 
-LIQUID_BENCHMARK(resamp2_crcf_interp_m8,   "resamp2_crcf interp execute, m=8",    "resampler,halfband,interpolator")
+LIQUID_BENCHMARK(resamp2_crcf_interp_m8,   "resamp2_crcf interp execute, m=8",    "filter,resamp2,halfband,interpolator")
     { return resamp2_crcf_bench(num_iterations,   8, RESAMP2_INTERP); }
 
-LIQUID_BENCHMARK(resamp2_crcf_interp_m16,  "resamp2_crcf interp execute, m=16",   "resampler,halfband,interpolator")
+LIQUID_BENCHMARK(resamp2_crcf_interp_m16,  "resamp2_crcf interp execute, m=16",   "filter,resamp2,halfband,interpolator")
     { return resamp2_crcf_bench(num_iterations,  16, RESAMP2_INTERP); }
 
-LIQUID_BENCHMARK(resamp2_crcf_interp_m32,  "resamp2_crcf interp execute, m=32",   "resampler,halfband,interpolator")
+LIQUID_BENCHMARK(resamp2_crcf_interp_m32,  "resamp2_crcf interp execute, m=32",   "filter,resamp2,halfband,interpolator")
     { return resamp2_crcf_bench(num_iterations,  32, RESAMP2_INTERP); }
 
-LIQUID_BENCHMARK(resamp2_crcf_interp_m64,  "resamp2_crcf interp execute, m=64",   "resampler,halfband,interpolator")
+LIQUID_BENCHMARK(resamp2_crcf_interp_m64,  "resamp2_crcf interp execute, m=64",   "filter,resamp2,halfband,interpolator")
     { return resamp2_crcf_bench(num_iterations,  64, RESAMP2_INTERP); }
 
-LIQUID_BENCHMARK(resamp2_crcf_interp_m128, "resamp2_crcf interp execute, m=128",  "resampler,halfband,interpolator")
+LIQUID_BENCHMARK(resamp2_crcf_interp_m128, "resamp2_crcf interp execute, m=128",  "filter,resamp2,halfband,interpolator")
     { return resamp2_crcf_bench(num_iterations, 128, RESAMP2_INTERP); }
 
-LIQUID_BENCHMARK(resamp2_crcf_interp_m256, "resamp2_crcf interp execute, m=256",  "resampler,halfband,interpolator")
+LIQUID_BENCHMARK(resamp2_crcf_interp_m256, "resamp2_crcf interp execute, m=256",  "filter,resamp2,halfband,interpolator")
     { return resamp2_crcf_bench(num_iterations, 256, RESAMP2_INTERP); }
 

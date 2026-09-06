@@ -47,15 +47,15 @@ float firhilbf_decim_bench(unsigned long int num_iterations, unsigned int _m)
     return extime;
 }
 
-LIQUID_BENCHMARK(firhilbf_decim_m3,  "firhilbf_decim execute, m=3",  "FIR,halfband,decimator")
+LIQUID_BENCHMARK(firhilbf_decim_m3,  "firhilbf_decim execute, m=3",  "filter,firhilb,halfband,decimator")
     { return firhilbf_decim_bench(num_iterations, 3); }
 
-LIQUID_BENCHMARK(firhilbf_decim_m5,  "firhilbf_decim execute, m=5",  "FIR,halfband,decimator")
+LIQUID_BENCHMARK(firhilbf_decim_m5,  "firhilbf_decim execute, m=5",  "filter,firhilb,halfband,decimator")
     { return firhilbf_decim_bench(num_iterations, 5); }
 
-LIQUID_BENCHMARK(firhilbf_decim_m9,  "firhilbf_decim execute, m=9",  "FIR,halfband,decimator")
+LIQUID_BENCHMARK(firhilbf_decim_m9,  "firhilbf_decim execute, m=9",  "filter,firhilb,halfband,decimator")
     { return firhilbf_decim_bench(num_iterations, 9); }
 
-LIQUID_BENCHMARK(firhilbf_decim_m13, "firhilbf_decim execute, m=13", "FIR,halfband,decimator")
+LIQUID_BENCHMARK(firhilbf_decim_m13, "firhilbf_decim execute, m=13", "filter,firhilb,halfband,decimator")
     { return firhilbf_decim_bench(num_iterations, 13); }
 

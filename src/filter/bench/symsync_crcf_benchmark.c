@@ -66,15 +66,15 @@ float symsync_crcf_bench(unsigned long int num_iterations,
 //
 // BENCHMARKS
 //
-LIQUID_BENCHMARK(symsync_crcf_k2_m2,  "symsync_crcf execute, k=2 m=2",  "sym-sync")
+LIQUID_BENCHMARK(symsync_crcf_k2_m2,  "symsync_crcf execute, k=2 m=2",  "filter,symsync")
     { return symsync_crcf_bench(num_iterations, 2, 2); }
 
-LIQUID_BENCHMARK(symsync_crcf_k2_m4,  "symsync_crcf execute, k=2 m=4",  "sym-sync")
+LIQUID_BENCHMARK(symsync_crcf_k2_m4,  "symsync_crcf execute, k=2 m=4",  "filter,symsync")
     { return symsync_crcf_bench(num_iterations, 2, 4); }
 
-LIQUID_BENCHMARK(symsync_crcf_k2_m8,  "symsync_crcf execute, k=2 m=8",  "sym-sync")
+LIQUID_BENCHMARK(symsync_crcf_k2_m8,  "symsync_crcf execute, k=2 m=8",  "filter,symsync")
     { return symsync_crcf_bench(num_iterations, 2, 8); }
 
-LIQUID_BENCHMARK(symsync_crcf_k2_m16, "symsync_crcf execute, k=2 m=16", "sym-sync")
+LIQUID_BENCHMARK(symsync_crcf_k2_m16, "symsync_crcf execute, k=2 m=16", "filter,symsync")
     { return symsync_crcf_bench(num_iterations, 2, 16); }
 
