@@ -266,6 +266,56 @@ int liquid_benchmark_registry_print_summary(liquid_benchmark_registry _q)
     return LIQUID_OK;
 }
 
+// check benchmarks for invalid configurations
+int liquid_benchmark_registry_audit(liquid_benchmark_registry _q)
+{
+    // iterate over all benchmarks
+    unsigned int i;
+    unsigned int num_benchmarks = 0;
+    unsigned int num_warnings   = 0;
+    for (i=0; i<_q->num_benchmarks; i++)
+    {
+        liquid_benchmark benchmark = _q->benchmarks[i];
+
+        // only consider benchmarks that were run
+        if (benchmark->status != LIQUID_BENCHMARK_DONE)
+            continue;
+
+        num_benchmarks++;
+
+        // benchmark was run; ensure there was at least one trial
+        if (benchmark->num_trials==0)
+        {
+            liquid_log_warn("no trials run in %s", benchmark->name);
+            num_warnings++;
+        }
+
+        // check document string
+        if (!strlen(benchmark->docstr))
+        {
+            liquid_log_warn("missing document string in %s", benchmark->name);
+            num_warnings++;
+        }
+
+        // check document string
+        if (strcmp(benchmark->docstr,"description")==0)
+        {
+            liquid_log_warn("missing description in %s", benchmark->name);
+            num_warnings++;
+        }
+
+        // check keywords
+        if (!strlen(benchmark->keywords))
+        {
+            liquid_log_warn("missing keywords in %s", benchmark->name);
+            num_warnings++;
+        }
+    }
+    liquid_log_info("audit yielded %u warnings across %u benchmarks", num_warnings, num_benchmarks);
+
+    return LIQUID_OK;
+}
+
 // export registry results to JSON
 int liquid_benchmark_registry_json(liquid_benchmark_registry _q, FILE * _fid)
 {

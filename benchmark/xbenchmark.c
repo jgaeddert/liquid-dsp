@@ -30,6 +30,7 @@ int main(int argc, char* argv[])
     liquid_argparse_add(char*,search,        "", 's', "run benchmarks with search string in name", NULL);
     liquid_argparse_add(char*,keywords,      "", 'k', "run benchmarks with matching keywords", NULL);
     liquid_argparse_add(bool, estimate_cpu,false,'c', "estimate CPU clock speed and exit", NULL);
+    liquid_argparse_add(bool, audit,      false, 'a', "audit benchmarks: check for invalid configurations", NULL);
     liquid_argparse_parse(argc,argv);
 
     // list benchmarks and exit if requested
@@ -71,6 +72,10 @@ int main(int argc, char* argv[])
 
     // print summary
     liquid_benchmark_registry_print_summary(registry);
+
+    // run audit if requested
+    if (audit)
+        liquid_benchmark_registry_audit(registry);
 
     liquid_benchmark_registry_destroy(registry);
     return LIQUID_OK;

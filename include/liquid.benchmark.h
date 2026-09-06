@@ -182,6 +182,9 @@ int liquid_benchmark_registry_print_status(liquid_benchmark_registry _q);
 // print summary of benchmark run
 int liquid_benchmark_registry_print_summary(liquid_benchmark_registry _q);
 
+// check benchmarks for invalid configurations
+int liquid_benchmark_registry_audit(liquid_benchmark_registry _q);
+
 // export registry to JSON file
 int liquid_benchmark_registry_json(liquid_benchmark_registry _q, FILE * _fid);
 
