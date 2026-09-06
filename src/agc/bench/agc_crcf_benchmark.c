@@ -23,7 +23,7 @@
 #include "liquid.benchmark.h"
 
 // benchmark: automatic gain control (agc_crcf)
-LIQUID_BENCHMARK(agc_crcf, "agc_crcf execute", "AGC")
+LIQUID_BENCHMARK(agc_crcf, "agc_crcf execute", "agc")
 {
     // initialize AGC object
     agc_crcf q = agc_crcf_create();

@@ -59,18 +59,18 @@ float eqlms_cccf_train_bench(unsigned long int num_iterations, unsigned int _h_l
     return extime;
 }
 
-LIQUID_BENCHMARK(eqlms_cccf_n4,  "eqlms_cccf train, h_len=4",  "equalizer,lms")
+LIQUID_BENCHMARK(eqlms_cccf_n4,  "eqlms_cccf train, h_len=4",  "equalization,eqlms")
     { return eqlms_cccf_train_bench(num_iterations, 4); }
 
-LIQUID_BENCHMARK(eqlms_cccf_n8,  "eqlms_cccf train, h_len=8",  "equalizer,lms")
+LIQUID_BENCHMARK(eqlms_cccf_n8,  "eqlms_cccf train, h_len=8",  "equalization,eqlms")
     { return eqlms_cccf_train_bench(num_iterations, 8); }
 
-LIQUID_BENCHMARK(eqlms_cccf_n16, "eqlms_cccf train, h_len=16", "equalizer,lms")
+LIQUID_BENCHMARK(eqlms_cccf_n16, "eqlms_cccf train, h_len=16", "equalization,eqlms")
     { return eqlms_cccf_train_bench(num_iterations, 16); }
 
-LIQUID_BENCHMARK(eqlms_cccf_n32, "eqlms_cccf train, h_len=32", "equalizer,lms")
+LIQUID_BENCHMARK(eqlms_cccf_n32, "eqlms_cccf train, h_len=32", "equalization,eqlms")
     { return eqlms_cccf_train_bench(num_iterations, 32); }
 
-LIQUID_BENCHMARK(eqlms_cccf_n64, "eqlms_cccf train, h_len=64", "equalizer,lms")
+LIQUID_BENCHMARK(eqlms_cccf_n64, "eqlms_cccf train, h_len=64", "equalization,eqlms")
     { return eqlms_cccf_train_bench(num_iterations, 64); }
 

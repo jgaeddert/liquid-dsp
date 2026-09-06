@@ -70,25 +70,25 @@ float cbuffercf_bench(unsigned long int num_iterations,
     return extime;
 }
 
-LIQUID_BENCHMARK(cbuffercf_n16,    "cbuffercf read/write, n=16",    "buffer,circular")
+LIQUID_BENCHMARK(cbuffercf_n16,    "cbuffercf read/write, n=16",    "buffer,cbuffer")
     { return cbuffercf_bench(num_iterations,   16,  12,  11); }
 
 
-LIQUID_BENCHMARK(cbuffercf_n32,    "cbuffercf read/write, n=32",    "buffer,circular")
+LIQUID_BENCHMARK(cbuffercf_n32,    "cbuffercf read/write, n=32",    "buffer,cbuffer")
     { return cbuffercf_bench(num_iterations,   32,  24,  23); }
 
-LIQUID_BENCHMARK(cbuffercf_n64,    "cbuffercf read/write, n=64",    "buffer,circular")
+LIQUID_BENCHMARK(cbuffercf_n64,    "cbuffercf read/write, n=64",    "buffer,cbuffer")
     { return cbuffercf_bench(num_iterations,   64,  48,  47); }
 
-LIQUID_BENCHMARK(cbuffercf_n128,   "cbuffercf read/write, n=128",   "buffer,circular")
+LIQUID_BENCHMARK(cbuffercf_n128,   "cbuffercf read/write, n=128",   "buffer,cbuffer")
     { return cbuffercf_bench(num_iterations,  128,  96,  95); }
 
-LIQUID_BENCHMARK(cbuffercf_n256,   "cbuffercf read/write, n=256",   "buffer,circular")
+LIQUID_BENCHMARK(cbuffercf_n256,   "cbuffercf read/write, n=256",   "buffer,cbuffer")
     { return cbuffercf_bench(num_iterations,  256, 192, 191); }
 
-LIQUID_BENCHMARK(cbuffercf_n512,   "cbuffercf read/write, n=512",   "buffer,circular")
+LIQUID_BENCHMARK(cbuffercf_n512,   "cbuffercf read/write, n=512",   "buffer,cbuffer")
     { return cbuffercf_bench(num_iterations,  512, 384, 383); }
 
-LIQUID_BENCHMARK(cbuffercf_n1024,  "cbuffercf read/write, n=1024",  "buffer,circular")
+LIQUID_BENCHMARK(cbuffercf_n1024,  "cbuffercf read/write, n=1024",  "buffer,cbuffer")
     { return cbuffercf_bench(num_iterations, 1024, 768, 767); }
 
