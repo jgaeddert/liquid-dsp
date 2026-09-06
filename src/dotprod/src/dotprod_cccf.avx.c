@@ -153,34 +153,37 @@ dotprod_cccf_execute_avx_4(dotprod_cccf    _q,
     __m256 ci0, ci1, ci2, ci3;  // output multiplications (v * hi)
     __m256 cq0, cq1, cq2, cq3;  // output multiplications (v * hq)
 
-    // load zeros into sum registers
-    __m256 sumi = _mm256_setzero_ps();
-    __m256 sumq = _mm256_setzero_ps();
+    // four independent accumulator pairs to break the dependency chain,
+    // allowing for more out-of-order execution
+    __m256 sumi0 = _mm256_setzero_ps(), sumq0 = _mm256_setzero_ps();
+    __m256 sumi1 = _mm256_setzero_ps(), sumq1 = _mm256_setzero_ps();
+    __m256 sumi2 = _mm256_setzero_ps(), sumq2 = _mm256_setzero_ps();
+    __m256 sumi3 = _mm256_setzero_ps(), sumq3 = _mm256_setzero_ps();
 
-    // r = 8*floor(n/32)
-    unsigned int r = (n >> 5) << 3;
+    // r = 32*floor(n/32)
+    unsigned int r = (n >> 5) << 5;
 
     //
     unsigned int i;
-    for (i=0; i<r; i+=8) {
+    for (i=0; i<r; i+=32) {
         // load inputs into register (unaligned)
-        v0 = _mm256_loadu_ps(&x[4*i+0]);
-        v1 = _mm256_loadu_ps(&x[4*i+8]);
-        v2 = _mm256_loadu_ps(&x[4*i+16]);
-        v3 = _mm256_loadu_ps(&x[4*i+24]);
+        v0 = _mm256_loadu_ps(&x[i+0]);
+        v1 = _mm256_loadu_ps(&x[i+8]);
+        v2 = _mm256_loadu_ps(&x[i+16]);
+        v3 = _mm256_loadu_ps(&x[i+24]);
 
         // load real coefficients into registers (aligned)
-        hi0 = _mm256_load_ps(&_q->hi[4*i+0]);
-        hi1 = _mm256_load_ps(&_q->hi[4*i+8]);
-        hi2 = _mm256_load_ps(&_q->hi[4*i+16]);
-        hi3 = _mm256_load_ps(&_q->hi[4*i+24]);
+        hi0 = _mm256_load_ps(&_q->hi[i+0]);
+        hi1 = _mm256_load_ps(&_q->hi[i+8]);
+        hi2 = _mm256_load_ps(&_q->hi[i+16]);
+        hi3 = _mm256_load_ps(&_q->hi[i+24]);
 
         // load real coefficients into registers (aligned)
-        hq0 = _mm256_load_ps(&_q->hq[4*i+0]);
-        hq1 = _mm256_load_ps(&_q->hq[4*i+8]);
-        hq2 = _mm256_load_ps(&_q->hq[4*i+16]);
-        hq3 = _mm256_load_ps(&_q->hq[4*i+24]);
-        
+        hq0 = _mm256_load_ps(&_q->hq[i+0]);
+        hq1 = _mm256_load_ps(&_q->hq[i+8]);
+        hq2 = _mm256_load_ps(&_q->hq[i+16]);
+        hq3 = _mm256_load_ps(&_q->hq[i+24]);
+
         // compute parallel multiplications (real)
         ci0 = _mm256_mul_ps(v0, hi0);
         ci1 = _mm256_mul_ps(v1, hi1);
@@ -194,11 +197,28 @@ dotprod_cccf_execute_avx_4(dotprod_cccf    _q,
         cq3 = _mm256_mul_ps(v3, hq3);
 
         // accumulate
-        sumi = _mm256_add_ps(sumi, ci0);   sumq = _mm256_add_ps(sumq, cq0);
-        sumi = _mm256_add_ps(sumi, ci1);   sumq = _mm256_add_ps(sumq, cq1);
-        sumi = _mm256_add_ps(sumi, ci2);   sumq = _mm256_add_ps(sumq, cq2);
-        sumi = _mm256_add_ps(sumi, ci3);   sumq = _mm256_add_ps(sumq, cq3);
+        sumi0 = _mm256_add_ps(sumi0, ci0);   sumq0 = _mm256_add_ps(sumq0, cq0);
+        sumi1 = _mm256_add_ps(sumi1, ci1);   sumq1 = _mm256_add_ps(sumq1, cq1);
+        sumi2 = _mm256_add_ps(sumi2, ci2);   sumq2 = _mm256_add_ps(sumq2, cq2);
+        sumi3 = _mm256_add_ps(sumi3, ci3);   sumq3 = _mm256_add_ps(sumq3, cq3);
     }
+
+    // process remaining blocks of 4 samples (8 floats) that can still utilise AVX
+    // before falling back to the cleanup loop below
+    // r = 8*floor(n/8)
+    r = (n >> 3) << 3;
+    // NOTE: No need to touch i here since r _was_ a multiple of 32, and now is a multiple of 8
+    for (; i<r; i+=8) {
+        __m256 v = _mm256_loadu_ps(&x[i]);
+        sumi0 = _mm256_add_ps(sumi0, _mm256_mul_ps(v, _mm256_load_ps(&_q->hi[i])));
+        sumq0 = _mm256_add_ps(sumq0, _mm256_mul_ps(v, _mm256_load_ps(&_q->hq[i])));
+    }
+
+    // combine the independent accumulator pairs
+    __m256 sumi = _mm256_add_ps(_mm256_add_ps(sumi0, sumi1),
+                                _mm256_add_ps(sumi2, sumi3));
+    __m256 sumq = _mm256_add_ps(_mm256_add_ps(sumq0, sumq1),
+                                _mm256_add_ps(sumq2, sumq3));
 
     // shuffle values
     sumq = _mm256_shuffle_ps( sumq, sumq, _MM_SHUFFLE(2,3,0,1) );
@@ -215,7 +235,7 @@ dotprod_cccf_execute_avx_4(dotprod_cccf    _q,
         ((wi[1] + wq[1]) + (wi[3] + wq[3]) + (wi[5] + wq[5]) + (wi[7] + wq[7])) * _Complex_I;
 
     // cleanup (note: n _must_ be even)
-    for (i=2*r; i<_q->n; i++) {
+    for (i=i/2; i<_q->n; i++) {
         total += _x[i] * ( _q->hi[2*i] + _q->hq[2*i]*_Complex_I );
     }
 

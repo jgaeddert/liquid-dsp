@@ -96,38 +96,56 @@ dotprod_rrrf_execute_avx_4(dotprod_rrrf _q,
     __m256 v0, v1, v2, v3;
     __m256 h0, h1, h2, h3;
     __m256 s0, s1, s2, s3;
-    __m256 sum = _mm256_setzero_ps(); // load zeros into sum register
 
-    // t = 8*(floor(_n/32))
-    unsigned int r = (_q->n >> 5) << 3;
+    // four independent accumulator pairs to break the dependency chain,
+    // allowing for more out-of-order execution
+    __m256 sum0 = _mm256_setzero_ps();
+    __m256 sum1 = _mm256_setzero_ps();
+    __m256 sum2 = _mm256_setzero_ps();
+    __m256 sum3 = _mm256_setzero_ps();
+
+    // r = 32*floor(n/32)
+    unsigned int r = (_q->n >> 5) << 5;
 
     //
     unsigned int i;
-    for (i=0; i<r; i+=8) {
+    for (i=0; i<r; i+=32) {
         // load inputs into register (unaligned)
-        v0 = _mm256_loadu_ps(&_x[4*i+ 0]);
-        v1 = _mm256_loadu_ps(&_x[4*i+ 8]);
-        v2 = _mm256_loadu_ps(&_x[4*i+16]);
-        v3 = _mm256_loadu_ps(&_x[4*i+24]);
+        v0 = _mm256_loadu_ps(&_x[i+ 0]);
+        v1 = _mm256_loadu_ps(&_x[i+ 8]);
+        v2 = _mm256_loadu_ps(&_x[i+16]);
+        v3 = _mm256_loadu_ps(&_x[i+24]);
 
         // load coefficients into register (aligned)
-        h0 = _mm256_load_ps(&_q->h[4*i+ 0]);
-        h1 = _mm256_load_ps(&_q->h[4*i+ 8]);
-        h2 = _mm256_load_ps(&_q->h[4*i+16]);
-        h3 = _mm256_load_ps(&_q->h[4*i+24]);
+        h0 = _mm256_load_ps(&_q->h[i+ 0]);
+        h1 = _mm256_load_ps(&_q->h[i+ 8]);
+        h2 = _mm256_load_ps(&_q->h[i+16]);
+        h3 = _mm256_load_ps(&_q->h[i+24]);
 
         // compute dot products
         s0 = _mm256_mul_ps(v0, h0);
         s1 = _mm256_mul_ps(v1, h1);
         s2 = _mm256_mul_ps(v2, h2);
         s3 = _mm256_mul_ps(v3, h3);
-        
+
         // parallel addition
-        sum = _mm256_add_ps( sum, s0 );
-        sum = _mm256_add_ps( sum, s1 );
-        sum = _mm256_add_ps( sum, s2 );
-        sum = _mm256_add_ps( sum, s3 );
+        sum0 = _mm256_add_ps( sum0, s0 );
+        sum1 = _mm256_add_ps( sum1, s1 );
+        sum2 = _mm256_add_ps( sum2, s2 );
+        sum3 = _mm256_add_ps( sum3, s3 );
     }
+
+    // process remaining blocks of 4 samples (8 floats) that can still utilise AVX
+    // before falling back to the cleanup loop below
+    // r = 8*floor(n/8)
+    r = (_q->n >> 3) << 3;
+    // NOTE: No need to touch i here since r _was_ a multiple of 32, and now is a multiple of 8
+    for (; i<r; i+=8)
+        sum0 = _mm256_add_ps(sum0, _mm256_mul_ps(_mm256_loadu_ps(&_x[i]), _mm256_load_ps(&_q->h[i])));
+
+    // combine the independent accumulators
+    __m256 sum = _mm256_add_ps(_mm256_add_ps(sum0, sum1),
+                               _mm256_add_ps(sum2, sum3));
 
     // fold down into single value
     __m256 z = _mm256_setzero_ps();
@@ -142,7 +160,7 @@ dotprod_rrrf_execute_avx_4(dotprod_rrrf _q,
     float total = w[0] + w[4];
 
     // cleanup
-    for (i=4*r; i<_q->n; i++)
+    for (; i<_q->n; i++)
         total += _x[i] * _q->h[i];
 
     // set return value
