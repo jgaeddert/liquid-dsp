@@ -71,37 +71,38 @@ void testbench_qs1dsearch(liquid_autotest   __q__,
     qs1dsearch_destroy(q);
 }
 
-// unbounded:                                                      (  obj, utility,        opt, lo, hi, bound, dir)
-LIQUID_AUTOTEST(qs1dsearch_min_01,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0, -40,  0, 0, LIQUID_OPTIM_MINIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_min_02,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0, -20,  0, 0, LIQUID_OPTIM_MINIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_min_03,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0,  -4,  0, 0, LIQUID_OPTIM_MINIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_min_05,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0,   0,  0, 0, LIQUID_OPTIM_MINIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_min_06,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0,   4,  0, 0, LIQUID_OPTIM_MINIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_min_07,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0,  20,  0, 0, LIQUID_OPTIM_MINIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_min_08,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0,  40,  0, 0, LIQUID_OPTIM_MINIMIZE); }
-// bounded:                                                        (  obj, utility,        opt, lo, hi, bound, dir)
-LIQUID_AUTOTEST(qs1dsearch_min_10,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0, -30, 15, 1, LIQUID_OPTIM_MINIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_min_11,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0, -20, 15, 1, LIQUID_OPTIM_MINIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_min_12,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0, -10, 15, 1, LIQUID_OPTIM_MINIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_min_13,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0, -.1, 15, 1, LIQUID_OPTIM_MINIMIZE); }
+// unbounded
+// ( obj, utility, opt, lo, hi, bound, dir)
+LIQUID_AUTOTEST(qs1dsearch_min_01,"qs1dsearch (min)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0, -40,  0, 0, LIQUID_OPTIM_MINIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_min_02,"qs1dsearch (min)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0, -20,  0, 0, LIQUID_OPTIM_MINIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_min_03,"qs1dsearch (min)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0,  -4,  0, 0, LIQUID_OPTIM_MINIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_min_05,"qs1dsearch (min)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0,   0,  0, 0, LIQUID_OPTIM_MINIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_min_06,"qs1dsearch (min)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0,   4,  0, 0, LIQUID_OPTIM_MINIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_min_07,"qs1dsearch (min)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0,  20,  0, 0, LIQUID_OPTIM_MINIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_min_08,"qs1dsearch (min)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0,  40,  0, 0, LIQUID_OPTIM_MINIMIZE); }
+// bounded
+LIQUID_AUTOTEST(qs1dsearch_min_10,"qs1dsearch (min)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0, -30, 15, 1, LIQUID_OPTIM_MINIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_min_11,"qs1dsearch (min)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0, -20, 15, 1, LIQUID_OPTIM_MINIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_min_12,"qs1dsearch (min)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0, -10, 15, 1, LIQUID_OPTIM_MINIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_min_13,"qs1dsearch (min)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umin, 0, -.1, 15, 1, LIQUID_OPTIM_MINIMIZE); }
 
 // repeat to maximize
 
-// unbounded:                                                      (  obj, utility,        opt, lo, hi, bound, dir)
-LIQUID_AUTOTEST(qs1dsearch_max_01,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0, -40,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_max_02,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0, -20,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_max_03,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0,  -4,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_max_05,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0,   0,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_max_06,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0,   4,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_max_07,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0,  20,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_max_08,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0,  40,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
-// bounded:                                                        (  obj, utility,        opt, lo, hi, bound, dir)
-LIQUID_AUTOTEST(qs1dsearch_max_10,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0, -30, 15, 1, LIQUID_OPTIM_MAXIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_max_11,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0, -20, 15, 1, LIQUID_OPTIM_MAXIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_max_12,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0, -10, 15, 1, LIQUID_OPTIM_MAXIMIZE); }
-LIQUID_AUTOTEST(qs1dsearch_max_13,"","",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0, -.1, 15, 1, LIQUID_OPTIM_MAXIMIZE); }
+// unbounded
+LIQUID_AUTOTEST(qs1dsearch_max_01,"qs1dsearch (max)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0, -40,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_max_02,"qs1dsearch (max)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0, -20,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_max_03,"qs1dsearch (max)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0,  -4,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_max_05,"qs1dsearch (max)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0,   0,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_max_06,"qs1dsearch (max)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0,   4,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_max_07,"qs1dsearch (max)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0,  20,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_max_08,"qs1dsearch (max)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0,  40,  0, 0, LIQUID_OPTIM_MAXIMIZE); }
+// bounded
+LIQUID_AUTOTEST(qs1dsearch_max_10,"qs1dsearch (max)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0, -30, 15, 1, LIQUID_OPTIM_MAXIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_max_11,"qs1dsearch (max)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0, -20, 15, 1, LIQUID_OPTIM_MAXIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_max_12,"qs1dsearch (max)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0, -10, 15, 1, LIQUID_OPTIM_MAXIMIZE); }
+LIQUID_AUTOTEST(qs1dsearch_max_13,"qs1dsearch (max)","optim,qs1dsearch",0.1) { testbench_qs1dsearch(__q__,qs1dsearch_umax, 0, -.1, 15, 1, LIQUID_OPTIM_MAXIMIZE); }
 
-LIQUID_AUTOTEST(qs1dsearch_config,"qs1dsearch configuration","",0.1)
+LIQUID_AUTOTEST(qs1dsearch_config,"qs1dsearch configuration","optim,qs1dsearch",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls

@@ -107,36 +107,118 @@ void testbench_fec_codec_soft(liquid_autotest __q__,
 //
 
 // repeat codes
-LIQUID_AUTOTEST(fecsoft_r3,"","",0.1)     { testbench_fec_codec_soft(__q__, LIQUID_FEC_REP3,        64, NULL); }
-LIQUID_AUTOTEST(fecsoft_r5,"","",0.1)     { testbench_fec_codec_soft(__q__, LIQUID_FEC_REP5,        64, NULL); }
+LIQUID_AUTOTEST(fecsoft_r3,
+    "test soft decoding, repeat/3 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_REP3,        64, NULL); }
+
+LIQUID_AUTOTEST(fecsoft_r5,
+    "test soft decoding, repeat/5 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_REP5,        64, NULL); }
 
 // Hamming block codes
-LIQUID_AUTOTEST(fecsoft_h74,"","",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_HAMMING74,   64, NULL); }
-LIQUID_AUTOTEST(fecsoft_h84,"","",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_HAMMING84,   64, NULL); }
-LIQUID_AUTOTEST(fecsoft_h128,"","",0.1)   { testbench_fec_codec_soft(__q__, LIQUID_FEC_HAMMING128,  64, NULL); }
+LIQUID_AUTOTEST(fecsoft_h74,
+    "test soft decoding, Hamming(7,4) codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_HAMMING74,   64, NULL); }
+
+LIQUID_AUTOTEST(fecsoft_h84,
+    "test soft decoding, Hamming(8,4) codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_HAMMING84,   64, NULL); }
+
+LIQUID_AUTOTEST(fecsoft_h128,
+    "test soft decoding, Hamming(12,8) codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_HAMMING128,  64, NULL); }
 
 // convolutional codes
-LIQUID_AUTOTEST(fecsoft_v27,"","",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27,    64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v29,"","",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29,    64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v39,"","",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V39,    64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v615,"","",0.1)   { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V615,   64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v27,
+    "test soft decoding, convolutional V27 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27,    64, NULL); }
+
+LIQUID_AUTOTEST(fecsoft_v29,
+    "test soft decoding, convolutional V29 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29,    64, NULL); }
+
+LIQUID_AUTOTEST(fecsoft_v39,
+    "test soft decoding, convolutional V39 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V39,    64, NULL); }
+
+LIQUID_AUTOTEST(fecsoft_v615,
+    "test soft decoding, convolutional V615 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V615,   64, NULL); }
 
 // convolutional codes (punctured)
-LIQUID_AUTOTEST(fecsoft_v27p23,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P23, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v27p34,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P34, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v27p45,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P45, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v27p56,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P56, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v27p67,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P67, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v27p78,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P78, 64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v27p23,
+    "test soft decoding, convolutional V27 punctured rate 2/3 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P23, 64, NULL); }
 
-LIQUID_AUTOTEST(fecsoft_v29p23,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P23, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v29p34,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P34, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v29p45,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P45, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v29p56,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P56, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v29p67,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P67, 64, NULL); }
-LIQUID_AUTOTEST(fecsoft_v29p78,"","",0.1) { testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P78, 64, NULL); }
+LIQUID_AUTOTEST(fecsoft_v27p34,
+    "test soft decoding, convolutional V27 punctured rate 3/4 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P34, 64, NULL); }
+
+LIQUID_AUTOTEST(fecsoft_v27p45,
+    "test soft decoding, convolutional V27 punctured rate 4/5 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P45, 64, NULL); }
+
+LIQUID_AUTOTEST(fecsoft_v27p56,
+    "test soft decoding, convolutional V27 punctured rate 5/6 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P56, 64, NULL); }
+
+LIQUID_AUTOTEST(fecsoft_v27p67,
+    "test soft decoding, convolutional V27 punctured rate 6/7 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P67, 64, NULL); }
+
+LIQUID_AUTOTEST(fecsoft_v27p78,
+    "test soft decoding, convolutional V27 punctured rate 7/8 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V27P78, 64, NULL); }
+
+LIQUID_AUTOTEST(fecsoft_v29p23,
+    "test soft decoding, convolutional V29 punctured rate 2/3 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P23, 64, NULL); }
+
+LIQUID_AUTOTEST(fecsoft_v29p34,
+    "test soft decoding, convolutional V29 punctured rate 3/4 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P34, 64, NULL); }
+
+LIQUID_AUTOTEST(fecsoft_v29p45,
+    "test soft decoding, convolutional V29 punctured rate 4/5 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P45, 64, NULL); }
+
+LIQUID_AUTOTEST(fecsoft_v29p56,
+    "test soft decoding, convolutional V29 punctured rate 5/6 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P56, 64, NULL); }
+
+LIQUID_AUTOTEST(fecsoft_v29p67,
+    "test soft decoding, convolutional V29 punctured rate 6/7 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P67, 64, NULL); }
+
+LIQUID_AUTOTEST(fecsoft_v29p78,
+    "test soft decoding, convolutional V29 punctured rate 7/8 codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_CONV_V29P78, 64, NULL); }
 
 // Reed-Solomon block codes
-LIQUID_AUTOTEST(fecsoft_rs8,"","",0.1)    { testbench_fec_codec_soft(__q__, LIQUID_FEC_RS_M8,       64, NULL); }
+LIQUID_AUTOTEST(fecsoft_rs8,
+    "test soft decoding, Reed-Solomon(8) codec",
+    "fec,soft",0.1)
+{ testbench_fec_codec_soft(__q__, LIQUID_FEC_RS_M8,       64, NULL); }
 
 

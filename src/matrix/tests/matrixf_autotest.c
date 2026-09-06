@@ -80,7 +80,7 @@ extern float matrixf_data_transmul_xTx[];
 extern float matrixf_data_transmul_xHx[];
 
 
-LIQUID_AUTOTEST(matrixf_add,"test matrix addition","",0.1)
+LIQUID_AUTOTEST(matrixf_add,"test matrix addition","matrix,matrixf",0.1)
 {
     float tol = 1e-6f;
 
@@ -98,7 +98,7 @@ LIQUID_AUTOTEST(matrixf_add,"test matrix addition","",0.1)
         LIQUID_CHECK_DELTA( matrixf_data_add_z[i], z[i], tol );
 }
 
-LIQUID_AUTOTEST(matrixf_aug,"test matrix augmentation","",0.1)
+LIQUID_AUTOTEST(matrixf_aug,"test matrix augmentation","matrix,matrixf",0.1)
 {
     float tol = 1e-6f;
 
@@ -123,7 +123,7 @@ LIQUID_AUTOTEST(matrixf_aug,"test matrix augmentation","",0.1)
         LIQUID_CHECK_DELTA( matrixf_data_aug_z[i], z[i], tol );
 }
 
-LIQUID_AUTOTEST(matrixf_cgsolve,"conjugate gradient solver","",0.1)
+LIQUID_AUTOTEST(matrixf_cgsolve,"conjugate gradient solver","matrix,matrixf",0.1)
 {
     float tol = 0.01;  // error tolerance
 
@@ -148,7 +148,7 @@ LIQUID_AUTOTEST(matrixf_cgsolve,"conjugate gradient solver","",0.1)
         LIQUID_CHECK_DELTA( matrixf_data_cgsolve_x[i], x[i], tol );
 }
 
-LIQUID_AUTOTEST(matrixf_chol,"Cholesky decomposition","",0.1)
+LIQUID_AUTOTEST(matrixf_chol,"Cholesky decomposition","matrix,matrixf",0.1)
 {
     float tol = 1e-4f;  // error tolerance
 
@@ -171,7 +171,7 @@ LIQUID_AUTOTEST(matrixf_chol,"Cholesky decomposition","",0.1)
         LIQUID_CHECK_DELTA( matrixf_data_chol_L[i], L[i], tol );
 }
 
-LIQUID_AUTOTEST(matrixf_gramschmidt,"Gram-Schmidt Orthonormalization","",0.1)
+LIQUID_AUTOTEST(matrixf_gramschmidt,"Gram-Schmidt Orthonormalization","matrix,matrixf",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -193,7 +193,7 @@ LIQUID_AUTOTEST(matrixf_gramschmidt,"Gram-Schmidt Orthonormalization","",0.1)
 }
 
 
-LIQUID_AUTOTEST(matrixf_inv,"matrix inversion","",0.1)
+LIQUID_AUTOTEST(matrixf_inv,"matrix inversion","matrix,matrixf",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -215,7 +215,7 @@ LIQUID_AUTOTEST(matrixf_inv,"matrix inversion","",0.1)
         LIQUID_CHECK_DELTA( matrixf_data_inv_y[i], y[i], tol );
 }
 
-LIQUID_AUTOTEST(matrixf_linsolve,"linsolve (solve linear system of equations)","",0.1)
+LIQUID_AUTOTEST(matrixf_linsolve,"linsolve (solve linear system of equations)","matrix,matrixf",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -243,7 +243,7 @@ LIQUID_AUTOTEST(matrixf_linsolve,"linsolve (solve linear system of equations)","
 }
 
 
-LIQUID_AUTOTEST(matrixf_ludecomp_crout,"L/U decomp (Crout)","",0.1)
+LIQUID_AUTOTEST(matrixf_ludecomp_crout,"L/U decomp (Crout)","matrix,matrixf",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -287,7 +287,7 @@ LIQUID_AUTOTEST(matrixf_ludecomp_crout,"L/U decomp (Crout)","",0.1)
         LIQUID_CHECK_DELTA( matrixf_data_ludecomp_A[i], LU_test[i], tol );
 }
 
-LIQUID_AUTOTEST(matrixf_ludecomp_doolittle,"L/U decomp (Doolittle)","",0.1)
+LIQUID_AUTOTEST(matrixf_ludecomp_doolittle,"L/U decomp (Doolittle)","matrix,matrixf",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -331,7 +331,7 @@ LIQUID_AUTOTEST(matrixf_ludecomp_doolittle,"L/U decomp (Doolittle)","",0.1)
         LIQUID_CHECK_DELTA( matrixf_data_ludecomp_A[i], LU_test[i], tol );
 }
 
-LIQUID_AUTOTEST(matrixf_mul,"test matrix multiplication","",0.1)
+LIQUID_AUTOTEST(matrixf_mul,"test matrix multiplication","matrix,matrixf",0.1)
 {
     float tol = 1e-6f;
 
@@ -356,7 +356,7 @@ LIQUID_AUTOTEST(matrixf_mul,"test matrix multiplication","",0.1)
         LIQUID_CHECK_DELTA( matrixf_data_mul_z[i], z[i], tol );
 }
 
-LIQUID_AUTOTEST(matrixf_qrdecomp,"Q/R decomp (Gram-Schmidt)","",0.1)
+LIQUID_AUTOTEST(matrixf_qrdecomp,"Q/R decomp (Gram-Schmidt)","matrix,matrixf",0.1)
 {
     float tol = 1e-4f;  // error tolerance
 
@@ -407,7 +407,7 @@ LIQUID_AUTOTEST(matrixf_qrdecomp,"Q/R decomp (Gram-Schmidt)","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(matrixf_transmul,"transpose/multiply","",0.1)
+LIQUID_AUTOTEST(matrixf_transmul,"transpose/multiply","matrix,matrixf",0.1)
 {
     float tol = 1e-4f;  // error tolerance
 

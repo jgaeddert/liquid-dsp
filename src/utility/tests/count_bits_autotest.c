@@ -23,20 +23,22 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(count_ones,"count number of ones in an integer","",0.1) {
+LIQUID_AUTOTEST(count_ones,"count number of ones in an integer","utility,count",0.1)
+{
     LIQUID_CHECK( liquid_count_ones(0x0000) ==  0 );
     LIQUID_CHECK( liquid_count_ones(0x0001) ==  1 );
     LIQUID_CHECK( liquid_count_ones(0x0003) ==  2 );
-    LIQUID_CHECK( liquid_count_ones(0xFFFF) ==  16 );
+    LIQUID_CHECK( liquid_count_ones(0xFFFF) == 16 );
     LIQUID_CHECK( liquid_count_ones(0x00FF) ==  8 );
     LIQUID_CHECK( liquid_count_ones(0x5555) ==  8 );
     LIQUID_CHECK( liquid_count_ones(0x0007) ==  3 );
     LIQUID_CHECK( liquid_count_ones(0x0037) ==  5 );
     LIQUID_CHECK( liquid_count_ones(0x0137) ==  6 );
-    LIQUID_CHECK( liquid_count_ones(0xf137) ==  10 );
+    LIQUID_CHECK( liquid_count_ones(0xf137) == 10 );
 }
 
-LIQUID_AUTOTEST(count_ones_mod2,"count number of ones in an integer (modulo 2)","",0.1) {
+LIQUID_AUTOTEST(count_ones_mod2,"count number of ones in an integer (modulo 2)","utility,count",0.1)
+{
     LIQUID_CHECK( liquid_count_ones_mod2(0x0000) ==  0 );
     LIQUID_CHECK( liquid_count_ones_mod2(0x0001) ==  1 );
     LIQUID_CHECK( liquid_count_ones_mod2(0x0003) ==  0 );
@@ -49,7 +51,7 @@ LIQUID_AUTOTEST(count_ones_mod2,"count number of ones in an integer (modulo 2)",
     LIQUID_CHECK( liquid_count_ones_mod2(0xf137) ==  0 );
 }
 
-LIQUID_AUTOTEST(bdotprod,"binary dot product","",0.1)
+LIQUID_AUTOTEST(bdotprod,"binary dot product","utility,count",0.1)
 {
     // simple checks
     LIQUID_CHECK( liquid_bdotprod(0x1111,0x1111) ==  0 );
@@ -76,7 +78,9 @@ LIQUID_AUTOTEST(bdotprod,"binary dot product","",0.1)
     LIQUID_CHECK( liquid_bdotprod(0xab0f, 0x3912) ==  0);
 }
 
-LIQUID_AUTOTEST(count_leading_zeros,"count number of leading zeros in an integer","",0.1) {
+LIQUID_AUTOTEST(count_leading_zeros,
+    "count number of leading zeros in an integer","utility,count",0.1)
+{
     // NOTE: this tests assumes a 4-byte integer
 
     LIQUID_CHECK( liquid_count_leading_zeros(0x00000000) ==  32 );
@@ -122,7 +126,8 @@ LIQUID_AUTOTEST(count_leading_zeros,"count number of leading zeros in an integer
     LIQUID_CHECK( liquid_count_leading_zeros(0x80000000) ==   0 );
 }
 
-LIQUID_AUTOTEST(msb_index,"find location of most-significant bit","",0.1) {
+LIQUID_AUTOTEST(msb_index,"find location of most-significant bit","utility,count",0.1)
+{
     // NOTE: this tests assumes a 4-byte integer
 
     LIQUID_CHECK( liquid_msb_index(0x00000000) ==   0 );

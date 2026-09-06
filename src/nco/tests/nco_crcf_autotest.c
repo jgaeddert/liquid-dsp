@@ -36,7 +36,7 @@ uint32_t nco_crcf_constrain_error(float _theta, uint32_t _expected)
     return error < 0x80000000 ? error : 0xffffffff - error;
 }
 
-LIQUID_AUTOTEST(nco_crcf_constrain,"test phase constraint","",0.1)
+LIQUID_AUTOTEST(nco_crcf_constrain,"test phase constraint","nco",0.1)
 {
     uint32_t tol = 0x00001fff;
 
@@ -82,7 +82,7 @@ LIQUID_AUTOTEST(nco_crcf_constrain,"test phase constraint","",0.1)
     LIQUID_CHECK( nco_crcf_constrain_error(-0.000001f, 0x00000000)< tol );
 }
 
-LIQUID_AUTOTEST(nco_crcf_copy,"test copying object","",0.1)
+LIQUID_AUTOTEST(nco_crcf_copy,"test copying object","nco",0.1)
 {
     // create and initialize object
     nco_crcf nco_0 = nco_crcf_create(LIQUID_VCO);
@@ -117,7 +117,7 @@ LIQUID_AUTOTEST(nco_crcf_copy,"test copying object","",0.1)
     nco_crcf_destroy(nco_1);
 }
 
-LIQUID_AUTOTEST(nco_config,"","",0.1)
+LIQUID_AUTOTEST(nco_config,"nco configuration","nco",0.1)
 {
     _liquid_error_downgrade_enable();
 

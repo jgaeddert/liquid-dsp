@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(qsourcecf_config,"qsource configurations","",0.1)
+LIQUID_AUTOTEST(qsourcecf_config,"qsource configurations","framing,qsource",0.1)
 {
     _liquid_error_downgrade_enable();
     LIQUID_CHECK(NULL == qsourcecf_create( 0, 12, 60, 0.0f, 0.2f, 10.0f)); // too few subcarriers

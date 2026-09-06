@@ -25,7 +25,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(reverse_byte,"test byte reversal","",0.1)
+LIQUID_AUTOTEST(reverse_byte,"test byte reversal","fec,crc",0.1)
 {
     // 0110 0010
     unsigned char b = 0x62;
@@ -37,7 +37,7 @@ LIQUID_AUTOTEST(reverse_byte,"test byte reversal","",0.1)
     LIQUID_CHECK(liquid_reverse_byte(b) == r);
 }
 
-LIQUID_AUTOTEST(reverse_uint16,"test reversing 16-bit word","",0.1)
+LIQUID_AUTOTEST(reverse_uint16,"test reversing 16-bit word","fec,crc",0.1)
 {
     // 1111 0111 0101 1001
     unsigned int b = 0xF759;
@@ -49,7 +49,7 @@ LIQUID_AUTOTEST(reverse_uint16,"test reversing 16-bit word","",0.1)
     LIQUID_CHECK(liquid_reverse_uint16(b) == r);
 }
 
-LIQUID_AUTOTEST(reverse_uint32,"test reversing 32-bit word","",0.1)
+LIQUID_AUTOTEST(reverse_uint32,"test reversing 32-bit word","fec,crc",0.1)
 {
     // 0110 0010 1101 1001 0011 1011 1111 0000
     unsigned int b = 0x62D93BF0;
@@ -99,13 +99,32 @@ void testbench_crc(liquid_autotest __q__,
 }
 
 // validate error-detection tests
-LIQUID_AUTOTEST(checksum,"","",0.1) { testbench_crc(__q__, LIQUID_CRC_CHECKSUM, 16); }
-LIQUID_AUTOTEST(crc8,"","",0.1)     { testbench_crc(__q__, LIQUID_CRC_8,        16); }
-LIQUID_AUTOTEST(crc16,"","",0.1)    { testbench_crc(__q__, LIQUID_CRC_16,       64); }
-LIQUID_AUTOTEST(crc24,"","",0.1)    { testbench_crc(__q__, LIQUID_CRC_24,       64); }
-LIQUID_AUTOTEST(crc32,"","",0.1)    { testbench_crc(__q__, LIQUID_CRC_32,       64); }
+LIQUID_AUTOTEST(checksum,
+    "test checksum",
+    "fec,crc",0.1)
+{ testbench_crc(__q__, LIQUID_CRC_CHECKSUM, 16); }
 
-LIQUID_AUTOTEST(crc8_testvector,"compare explicit 8-bit CRC with expected","",0.1)
+LIQUID_AUTOTEST(crc8,
+    "test CRC-8",
+    "fec,crc",0.1)
+{ testbench_crc(__q__, LIQUID_CRC_8,        16); }
+
+LIQUID_AUTOTEST(crc16,
+    "test CRC-16",
+    "fec,crc",0.1)
+{ testbench_crc(__q__, LIQUID_CRC_16,       64); }
+
+LIQUID_AUTOTEST(crc24,
+    "test CRC-24",
+    "fec,crc",0.1)
+{ testbench_crc(__q__, LIQUID_CRC_24,       64); }
+
+LIQUID_AUTOTEST(crc32,
+    "test CRC-32",
+    "fec,crc",0.1)
+{ testbench_crc(__q__, LIQUID_CRC_32,       64); }
+
+LIQUID_AUTOTEST(crc8_testvector,"compare explicit 8-bit CRC with expected","fec,crc",0.1)
 {
     unsigned int i;
 
@@ -118,7 +137,7 @@ LIQUID_AUTOTEST(crc8_testvector,"compare explicit 8-bit CRC with expected","",0.
     LIQUID_CHECK(crc_validate_message(LIQUID_CRC_8, data, 256, 0x53));
 }
 
-LIQUID_AUTOTEST(crc16_testvector,"compare explicit 16-bit CRC with expected","",0.1)
+LIQUID_AUTOTEST(crc16_testvector,"compare explicit 16-bit CRC with expected","fec,crc",0.1)
 {
     unsigned int i;
 
@@ -131,7 +150,7 @@ LIQUID_AUTOTEST(crc16_testvector,"compare explicit 16-bit CRC with expected","",
     LIQUID_CHECK(crc_validate_message(LIQUID_CRC_16, data, 256, 0x6fc6));
 }
 
-LIQUID_AUTOTEST(crc24_testvector,"compare explicit 24-bit CRC with expected","",0.1)
+LIQUID_AUTOTEST(crc24_testvector,"compare explicit 24-bit CRC with expected","fec,crc",0.1)
 {
     unsigned int i;
 
@@ -144,7 +163,7 @@ LIQUID_AUTOTEST(crc24_testvector,"compare explicit 24-bit CRC with expected","",
     LIQUID_CHECK(crc_validate_message(LIQUID_CRC_24, data, 256, 0x10c59b));
 }
 
-LIQUID_AUTOTEST(crc32_testvector,"compare explicit 32-bit CRC with expected","",0.1)
+LIQUID_AUTOTEST(crc32_testvector,"compare explicit 32-bit CRC with expected","fec,crc",0.1)
 {
     unsigned int i;
 
@@ -157,7 +176,7 @@ LIQUID_AUTOTEST(crc32_testvector,"compare explicit 32-bit CRC with expected","",
     LIQUID_CHECK(crc_validate_message(LIQUID_CRC_32, data, 256, 0x29058c73));
 }
 
-LIQUID_AUTOTEST(crc_config,"test CRC config","",0.1)
+LIQUID_AUTOTEST(crc_config,"test CRC config","fec,crc",0.1)
 {
     _liquid_error_downgrade_enable();
     LIQUID_CHECK(LIQUID_OK == liquid_print_crc_schemes())

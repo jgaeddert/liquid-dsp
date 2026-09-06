@@ -65,7 +65,7 @@ void testbench_freqmodem(liquid_autotest __q__, float _kf)
 }
 
 // AUTOTESTS: generic PSK
-LIQUID_AUTOTEST(freqmodem_kf_0_02,"","",0.1) { testbench_freqmodem(__q__, 0.02f); }
-LIQUID_AUTOTEST(freqmodem_kf_0_04,"","",0.1) { testbench_freqmodem(__q__, 0.04f); }
-LIQUID_AUTOTEST(freqmodem_kf_0_08,"","",0.1) { testbench_freqmodem(__q__, 0.08f); }
+LIQUID_AUTOTEST(freqmodem_kf_0_02,"frequency modulation (FM), kf=0.02","modem,freqmodem",0.1) { testbench_freqmodem(__q__, 0.02f); }
+LIQUID_AUTOTEST(freqmodem_kf_0_04,"frequency modulation (FM), kf=0.04","modem,freqmodem",0.1) { testbench_freqmodem(__q__, 0.04f); }
+LIQUID_AUTOTEST(freqmodem_kf_0_08,"frequency modulation (FM), kf=0.08","modem,freqmodem",0.1) { testbench_freqmodem(__q__, 0.08f); }
 

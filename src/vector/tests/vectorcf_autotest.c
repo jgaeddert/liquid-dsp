@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(vectorcf_mul_16,"multiply two complex buffers","",0.1)
+LIQUID_AUTOTEST(vectorcf_mul_16,"multiply two complex buffers","vector,vectorcf",0.1)
 {
     // error tolerance
     float tol = 4e-6;
@@ -74,7 +74,7 @@ LIQUID_AUTOTEST(vectorcf_mul_16,"multiply two complex buffers","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(vectorcf_mul_35,"multiply two complex buffers","",0.1)
+LIQUID_AUTOTEST(vectorcf_mul_35,"multiply two complex buffers","vector,vectorcf",0.1)
 {
     float tol = 4e-6;
 

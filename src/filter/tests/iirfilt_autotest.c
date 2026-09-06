@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(iirfilt_integrator,"description","",0.1)
+LIQUID_AUTOTEST(iirfilt_integrator,"IIR integrator, ramp response","filter,iirfilt",0.1)
 {
     // options
     unsigned int num_ones    = 10;
@@ -50,7 +50,7 @@ LIQUID_AUTOTEST(iirfilt_integrator,"description","",0.1)
     LIQUID_CHECK_DELTA(buf_1[num_samples-1], num_ones, 0.01f);
 }
 
-LIQUID_AUTOTEST(iirfilt_differentiator,"description","",0.1)
+LIQUID_AUTOTEST(iirfilt_differentiator,"IIR differentiator, ramp response","filter,iirfilt",0.1)
 {
     // options
     unsigned int num_samples = 400;
@@ -76,7 +76,7 @@ LIQUID_AUTOTEST(iirfilt_differentiator,"description","",0.1)
     LIQUID_CHECK_DELTA(buf_1[num_samples-1], 1.0f, 0.01f);
 }
 
-LIQUID_AUTOTEST(iirfilt_dcblock,"description","",0.1)
+LIQUID_AUTOTEST(iirfilt_dcblock,"IIR DC blocker, spectral response","filter,iirfilt",0.1)
 {
     // options
     unsigned int n    = 400000; // number of output samples to analyze
@@ -154,10 +154,10 @@ void testbench_iirfilt_copy(liquid_autotest __q__,
     iirfilt_crcf_destroy(q1);
 }
 
-LIQUID_AUTOTEST(iirfilt_copy_tf ,"description","",0.1) { testbench_iirfilt_copy(__q__, LIQUID_IIRDES_TF ); }
-LIQUID_AUTOTEST(iirfilt_copy_sos,"description","",0.1) { testbench_iirfilt_copy(__q__, LIQUID_IIRDES_SOS); }
+LIQUID_AUTOTEST(iirfilt_copy_tf ,"IIR filter copy, transfer function form","filter,iirfilt",0.1) { testbench_iirfilt_copy(__q__, LIQUID_IIRDES_TF ); }
+LIQUID_AUTOTEST(iirfilt_copy_sos,"IIR filter copy, second-order sections form","filter,iirfilt",0.1) { testbench_iirfilt_copy(__q__, LIQUID_IIRDES_SOS); }
 
-LIQUID_AUTOTEST(iirfilt_config,"test errors and invalid configuration", "", 0.1)
+LIQUID_AUTOTEST(iirfilt_config,"test errors and invalid configuration", "filter,iirfilt", 0.1)
 {
     _liquid_error_downgrade_enable();
     // test copying/creating invalid objects

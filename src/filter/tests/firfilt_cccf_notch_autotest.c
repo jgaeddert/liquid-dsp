@@ -68,10 +68,33 @@ void firfilt_cccf_notch_test_harness(liquid_autotest __q__,
     firfilt_cccf_destroy(q);
 }
 
-LIQUID_AUTOTEST(firfilt_cccf_notch_0,"description","",0.1) { firfilt_cccf_notch_test_harness(__q__, 20,60.0f, 0.000f); }
-LIQUID_AUTOTEST(firfilt_cccf_notch_1,"description","",0.1) { firfilt_cccf_notch_test_harness(__q__, 20,60.0f, 0.100f); }
-LIQUID_AUTOTEST(firfilt_cccf_notch_2,"description","",0.1) { firfilt_cccf_notch_test_harness(__q__, 20,60.0f, 0.456f); }
-LIQUID_AUTOTEST(firfilt_cccf_notch_3,"description","",0.1) { firfilt_cccf_notch_test_harness(__q__, 20,60.0f, 0.500f); }
-LIQUID_AUTOTEST(firfilt_cccf_notch_4,"description","",0.1) { firfilt_cccf_notch_test_harness(__q__, 20,60.0f,-0.250f); }
-LIQUID_AUTOTEST(firfilt_cccf_notch_5,"description","",0.1) { firfilt_cccf_notch_test_harness(__q__, 20,60.0f,-0.389f); }
+LIQUID_AUTOTEST(firfilt_cccf_notch_0,
+    "FIR notch filter (cccf), m=20, As=60, f0=0.000",
+    "filter,firfilt",0.1)
+{ firfilt_cccf_notch_test_harness(__q__, 20,60.0f, 0.000f); }
+
+LIQUID_AUTOTEST(firfilt_cccf_notch_1,
+    "FIR notch filter (cccf), m=20, As=60, f0=0.100",
+    "filter,firfilt",0.1)
+{ firfilt_cccf_notch_test_harness(__q__, 20,60.0f, 0.100f); }
+
+LIQUID_AUTOTEST(firfilt_cccf_notch_2,
+    "FIR notch filter (cccf), m=20, As=60, f0=0.456",
+    "filter,firfilt",0.1)
+{ firfilt_cccf_notch_test_harness(__q__, 20,60.0f, 0.456f); }
+
+LIQUID_AUTOTEST(firfilt_cccf_notch_3,
+    "FIR notch filter (cccf), m=20, As=60, f0=0.500",
+    "filter,firfilt",0.1)
+{ firfilt_cccf_notch_test_harness(__q__, 20,60.0f, 0.500f); }
+
+LIQUID_AUTOTEST(firfilt_cccf_notch_4,
+    "FIR notch filter (cccf), m=20, As=60, f0=-0.250",
+    "filter,firfilt",0.1)
+{ firfilt_cccf_notch_test_harness(__q__, 20,60.0f,-0.250f); }
+
+LIQUID_AUTOTEST(firfilt_cccf_notch_5,
+    "FIR notch filter (cccf), m=20, As=60, f0=-0.389",
+    "filter,firfilt",0.1)
+{ firfilt_cccf_notch_test_harness(__q__, 20,60.0f,-0.389f); }
 

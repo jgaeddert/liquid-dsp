@@ -57,7 +57,18 @@ void testbench_packetizer(liquid_autotest __q__,
 }
 
 //
-LIQUID_AUTOTEST(packetizer_n16_0_0,"","",0.1)  { testbench_packetizer(__q__, 16, LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE);       }
-LIQUID_AUTOTEST(packetizer_n16_0_1,"","",0.1)  { testbench_packetizer(__q__, 16, LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_REP3);       }
-LIQUID_AUTOTEST(packetizer_n16_0_2,"","",0.1)  { testbench_packetizer(__q__, 16, LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING74);  }
+LIQUID_AUTOTEST(packetizer_n16_0_0,
+    "packetizer, n=16, crc32, no FEC",
+    "fec,packetizer",0.1)
+{ testbench_packetizer(__q__, 16, LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE);       }
+
+LIQUID_AUTOTEST(packetizer_n16_0_1,
+    "packetizer, n=16, crc32, fec=rep3",
+    "fec,packetizer",0.1)
+{ testbench_packetizer(__q__, 16, LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_REP3);       }
+
+LIQUID_AUTOTEST(packetizer_n16_0_2,
+    "packetizer, n=16, crc32, fec=hamming74",
+    "fec,packetizer",0.1)
+{ testbench_packetizer(__q__, 16, LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING74);  }
 

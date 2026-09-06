@@ -388,8 +388,8 @@ src/fft/src/spgramf.o       : %.o : %.c $(include_headers) src/fft/src/asgram.pr
 # fft autotest scripts
 fft_autotests :=						\
 	src/fft/tests/asgram_autotest.c				\
-	src/fft/tests/fft_autotest.c				\
 	src/fft/tests/fft_r2r_autotest.c			\
+	src/fft/tests/fft_shift_autotest.c			\
 	src/fft/tests/fft_transforms_autotest.c			\
 	src/fft/tests/spgram_autotest.c				\
 	src/fft/tests/spwaterfall_autotest.c			\

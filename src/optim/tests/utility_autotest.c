@@ -29,7 +29,7 @@
 #include "liquid.internal.h"
 #include "liquid.autotest.h"
 
-LIQUID_AUTOTEST(optim_rosenbrock,"","",0.1)
+LIQUID_AUTOTEST(optim_rosenbrock,"test rosenbrock function","optim,utility",0.1)
 {
     _liquid_error_downgrade_enable();
 

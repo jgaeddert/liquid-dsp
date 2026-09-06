@@ -140,18 +140,18 @@ void testbench_detector_cccf(liquid_autotest __q__,
     LIQUID_CHECK_DELTA( gamma_hat, gamma, 2.0f );
 }
 
-LIQUID_AUTOTEST(detector_cccf_n64,"","",0.1)   { testbench_detector_cccf(__q__,   64, 0.2f, 0.01f); }
-LIQUID_AUTOTEST(detector_cccf_n83,"","",0.1)   { testbench_detector_cccf(__q__,   83, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n64,  "detector, n=64",  "framing,detector",0.1) { testbench_detector_cccf(__q__,   64, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n83,  "detector, n=83",  "framing,detector",0.1) { testbench_detector_cccf(__q__,   83, 0.2f, 0.01f); }
 
-LIQUID_AUTOTEST(detector_cccf_n128,"","",0.1)  { testbench_detector_cccf(__q__,  128, 0.2f, 0.01f); }
-LIQUID_AUTOTEST(detector_cccf_n167,"","",0.1)  { testbench_detector_cccf(__q__,  167, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n128, "detector, n=128", "framing,detector",0.1) { testbench_detector_cccf(__q__,  128, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n167, "detector, n=167", "framing,detector",0.1) { testbench_detector_cccf(__q__,  167, 0.2f, 0.01f); }
 
-LIQUID_AUTOTEST(detector_cccf_n256,"","",0.1)  { testbench_detector_cccf(__q__,  256, 0.2f, 0.01f); }
-LIQUID_AUTOTEST(detector_cccf_n335,"","",0.1)  { testbench_detector_cccf(__q__,  335, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n256, "detector, n=256", "framing,detector",0.1) { testbench_detector_cccf(__q__,  256, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n335, "detector, n=335", "framing,detector",0.1) { testbench_detector_cccf(__q__,  335, 0.2f, 0.01f); }
 
-LIQUID_AUTOTEST(detector_cccf_n512,"","",0.1)  { testbench_detector_cccf(__q__,  512, 0.2f, 0.01f); }
-LIQUID_AUTOTEST(detector_cccf_n671,"","",0.1)  { testbench_detector_cccf(__q__,  671, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n512, "detector, n=512", "framing,detector",0.1) { testbench_detector_cccf(__q__,  512, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n671, "detector, n=671", "framing,detector",0.1) { testbench_detector_cccf(__q__,  671, 0.2f, 0.01f); }
 
-LIQUID_AUTOTEST(detector_cccf_n1024,"","",0.1) { testbench_detector_cccf(__q__, 1024, 0.2f, 0.01f); }
-LIQUID_AUTOTEST(detector_cccf_n1341,"","",0.1) { testbench_detector_cccf(__q__, 1341, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n1024,"detector, n=1024","framing,detector",0.1) { testbench_detector_cccf(__q__, 1024, 0.2f, 0.01f); }
+LIQUID_AUTOTEST(detector_cccf_n1341,"detector, n=1341","framing,detector",0.1) { testbench_detector_cccf(__q__, 1341, 0.2f, 0.01f); }
 

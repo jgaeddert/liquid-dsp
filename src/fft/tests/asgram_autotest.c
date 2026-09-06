@@ -26,7 +26,7 @@
 #include "liquid.internal.h"
 #include "liquid.autotest.h"
 
-LIQUID_AUTOTEST(asgramcf_copy,"check copy method","",0.1)
+LIQUID_AUTOTEST(asgramcf_copy,"check copy method","fft,asgram",0.1)
 {
     // options
     unsigned int nfft = 70; // transform size
@@ -71,7 +71,7 @@ LIQUID_AUTOTEST(asgramcf_copy,"check copy method","",0.1)
     asgramcf_destroy(q1);
 }
 
-LIQUID_AUTOTEST(asgramcf_config,"check both valid and invalid configurations","",0.1)
+LIQUID_AUTOTEST(asgramcf_config,"check both valid and invalid configurations","fft,asgram",0.1)
 {
     _liquid_error_downgrade_enable();
 

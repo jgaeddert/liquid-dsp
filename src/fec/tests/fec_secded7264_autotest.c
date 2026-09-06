@@ -26,7 +26,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(secded7264_codec_e0,"SEC-DED (72,64) codec (no errors)","",0.1)
+LIQUID_AUTOTEST(secded7264_codec_e0,"SEC-DED (72,64) codec (no errors)","fec,secded7264",0.1)
 {
     // arrays
     unsigned char sym_org[8];   // original symbol
@@ -60,7 +60,7 @@ LIQUID_AUTOTEST(secded7264_codec_e0,"SEC-DED (72,64) codec (no errors)","",0.1)
     LIQUID_CHECK(sym_org[7] ==  sym_dec[7]);
 }
 
-LIQUID_AUTOTEST(secded7264_codec_e1,"SEC-DED (72,64) codec (single error)","",0.1)
+LIQUID_AUTOTEST(secded7264_codec_e1,"SEC-DED (72,64) codec (single error)","fec,secded7264",0.1)
 {
     // arrays
     unsigned char sym_org[8];   // original symbol
@@ -99,7 +99,7 @@ LIQUID_AUTOTEST(secded7264_codec_e1,"SEC-DED (72,64) codec (single error)","",0.
     }
 }
 
-LIQUID_AUTOTEST(secded7264_codec_e2,"SEC-DED (72,64) codec (double error detection)","",0.1)
+LIQUID_AUTOTEST(secded7264_codec_e2,"SEC-DED (72,64) codec (double error detection)","fec,secded7264",0.1)
 {
     // total combinations of double errors: nchoosek(72,2) = 2556
 

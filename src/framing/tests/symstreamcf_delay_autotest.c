@@ -58,25 +58,25 @@ void testbench_symstreamcf_delay(liquid_autotest __q__,
     symstreamcf_destroy(gen);
 }
 
-LIQUID_AUTOTEST(symstreamcf_delay_00,"","",0.1) { testbench_symstreamcf_delay(__q__,  2, 4); }
-LIQUID_AUTOTEST(symstreamcf_delay_01,"","",0.1) { testbench_symstreamcf_delay(__q__,  2, 5); }
-LIQUID_AUTOTEST(symstreamcf_delay_02,"","",0.1) { testbench_symstreamcf_delay(__q__,  2, 6); }
-LIQUID_AUTOTEST(symstreamcf_delay_03,"","",0.1) { testbench_symstreamcf_delay(__q__,  2, 7); }
-LIQUID_AUTOTEST(symstreamcf_delay_04,"","",0.1) { testbench_symstreamcf_delay(__q__,  2, 8); }
-LIQUID_AUTOTEST(symstreamcf_delay_05,"","",0.1) { testbench_symstreamcf_delay(__q__,  2, 9); }
-LIQUID_AUTOTEST(symstreamcf_delay_06,"","",0.1) { testbench_symstreamcf_delay(__q__,  2,10); }
-LIQUID_AUTOTEST(symstreamcf_delay_07,"","",0.1) { testbench_symstreamcf_delay(__q__,  2,14); }
-LIQUID_AUTOTEST(symstreamcf_delay_08,"","",0.1) { testbench_symstreamcf_delay(__q__,  2,20); }
-LIQUID_AUTOTEST(symstreamcf_delay_09,"","",0.1) { testbench_symstreamcf_delay(__q__,  2,31); }
+LIQUID_AUTOTEST(symstreamcf_delay_00,"symstreamcf delay k= 2, m= 4","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__,  2, 4); }
+LIQUID_AUTOTEST(symstreamcf_delay_01,"symstreamcf delay k= 2, m= 5","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__,  2, 5); }
+LIQUID_AUTOTEST(symstreamcf_delay_02,"symstreamcf delay k= 2, m= 6","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__,  2, 6); }
+LIQUID_AUTOTEST(symstreamcf_delay_03,"symstreamcf delay k= 2, m= 7","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__,  2, 7); }
+LIQUID_AUTOTEST(symstreamcf_delay_04,"symstreamcf delay k= 2, m= 8","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__,  2, 8); }
+LIQUID_AUTOTEST(symstreamcf_delay_05,"symstreamcf delay k= 2, m= 9","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__,  2, 9); }
+LIQUID_AUTOTEST(symstreamcf_delay_06,"symstreamcf delay k= 2, m=10","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__,  2,10); }
+LIQUID_AUTOTEST(symstreamcf_delay_07,"symstreamcf delay k= 2, m=14","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__,  2,14); }
+LIQUID_AUTOTEST(symstreamcf_delay_08,"symstreamcf delay k= 2, m=20","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__,  2,20); }
+LIQUID_AUTOTEST(symstreamcf_delay_09,"symstreamcf delay k= 2, m=31","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__,  2,31); }
 
-LIQUID_AUTOTEST(symstreamcf_delay_10,"","",0.1) { testbench_symstreamcf_delay(__q__,  3,12); }
-LIQUID_AUTOTEST(symstreamcf_delay_11,"","",0.1) { testbench_symstreamcf_delay(__q__,  4,12); }
-LIQUID_AUTOTEST(symstreamcf_delay_12,"","",0.1) { testbench_symstreamcf_delay(__q__,  5,12); }
-LIQUID_AUTOTEST(symstreamcf_delay_13,"","",0.1) { testbench_symstreamcf_delay(__q__,  6,12); }
-LIQUID_AUTOTEST(symstreamcf_delay_14,"","",0.1) { testbench_symstreamcf_delay(__q__,  7,12); }
-LIQUID_AUTOTEST(symstreamcf_delay_15,"","",0.1) { testbench_symstreamcf_delay(__q__,  8,12); }
-LIQUID_AUTOTEST(symstreamcf_delay_16,"","",0.1) { testbench_symstreamcf_delay(__q__,  9,12); }
-LIQUID_AUTOTEST(symstreamcf_delay_17,"","",0.1) { testbench_symstreamcf_delay(__q__, 10,12); }
-LIQUID_AUTOTEST(symstreamcf_delay_18,"","",0.1) { testbench_symstreamcf_delay(__q__, 11,12); }
-LIQUID_AUTOTEST(symstreamcf_delay_19,"","",0.1) { testbench_symstreamcf_delay(__q__, 12,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_10,"symstreamcf delay k= 3, m=12","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__,  3,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_11,"symstreamcf delay k= 4, m=12","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__,  4,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_12,"symstreamcf delay k= 5, m=12","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__,  5,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_13,"symstreamcf delay k= 6, m=12","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__,  6,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_14,"symstreamcf delay k= 7, m=12","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__,  7,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_15,"symstreamcf delay k= 8, m=12","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__,  8,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_16,"symstreamcf delay k= 9, m=12","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__,  9,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_17,"symstreamcf delay k=10, m=12","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__, 10,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_18,"symstreamcf delay k=11, m=12","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__, 11,12); }
+LIQUID_AUTOTEST(symstreamcf_delay_19,"symstreamcf delay k=12, m=12","framing,symstream",0.1) { testbench_symstreamcf_delay(__q__, 12,12); }
 

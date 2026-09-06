@@ -23,7 +23,7 @@
 #include "liquid.internal.h"
 #include "liquid.autotest.h"
 
-LIQUID_AUTOTEST(agc_crcf_dc_gain_control,"Test DC gain control", "", 0.1)
+LIQUID_AUTOTEST(agc_crcf_dc_gain_control,"Test DC gain control", "agc", 0.1)
 {
     // set parameters
     float gamma = 0.1f;     // nominal signal level
@@ -53,7 +53,7 @@ LIQUID_AUTOTEST(agc_crcf_dc_gain_control,"Test DC gain control", "", 0.1)
     agc_crcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(agc_crcf_scale,"test gain control on DC input with separate scale", "", 0.1)
+LIQUID_AUTOTEST(agc_crcf_scale,"test gain control on DC input with separate scale", "agc", 0.1)
 {
     // set parameters
     float scale = 4.0f;     // output scale (independent of AGC loop)
@@ -79,7 +79,7 @@ LIQUID_AUTOTEST(agc_crcf_scale,"test gain control on DC input with separate scal
     agc_crcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(agc_crcf_ac_gain_control,"Test AC gain control", "", 0.1)
+LIQUID_AUTOTEST(agc_crcf_ac_gain_control,"Test AC gain control", "agc", 0.1)
 {
     // set parameters
     float gamma = 0.1f;             // nominal signal level
@@ -108,7 +108,7 @@ LIQUID_AUTOTEST(agc_crcf_ac_gain_control,"Test AC gain control", "", 0.1)
     agc_crcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(agc_crcf_rssi_sinusoid,"Test RSSI on sinusoidal input", "", 0.1)
+LIQUID_AUTOTEST(agc_crcf_rssi_sinusoid,"Test RSSI on sinusoidal input", "agc", 0.1)
 {
     // set parameters
     float gamma = 0.3f;         // nominal signal level
@@ -144,7 +144,7 @@ LIQUID_AUTOTEST(agc_crcf_rssi_sinusoid,"Test RSSI on sinusoidal input", "", 0.1)
     agc_crcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(agc_crcf_rssi_noise,"Test RSSI on noise input", "", 0.1)
+LIQUID_AUTOTEST(agc_crcf_rssi_noise,"Test RSSI on noise input", "agc", 0.1)
 {
     // set parameters
     float gamma = -30.0f;   // nominal signal level [dB]
@@ -180,7 +180,7 @@ LIQUID_AUTOTEST(agc_crcf_rssi_noise,"Test RSSI on noise input", "", 0.1)
     agc_crcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(agc_crcf_squelch,"Test squelch functionality", "", 0.1)
+LIQUID_AUTOTEST(agc_crcf_squelch,"Test squelch functionality", "agc", 0.1)
 {
     // create agc object, set loop bandwidth, and initialize parameters
     agc_crcf q = agc_crcf_create();
@@ -236,7 +236,7 @@ LIQUID_AUTOTEST(agc_crcf_squelch,"Test squelch functionality", "", 0.1)
     agc_crcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(agc_crcf_lock,"test lock state control", "", 0.1)
+LIQUID_AUTOTEST(agc_crcf_lock,"test lock state control", "agc", 0.1)
 {
     // set parameters
     float gamma = 0.1f;     // nominal signal level
@@ -274,7 +274,7 @@ LIQUID_AUTOTEST(agc_crcf_lock,"test lock state control", "", 0.1)
     agc_crcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(agc_crcf_config,"configuration", "", 0.1)
+LIQUID_AUTOTEST(agc_crcf_config,"configuration", "agc", 0.1)
 {
     _liquid_error_downgrade_enable();
     // create main object and check invalid configurations
@@ -304,7 +304,7 @@ LIQUID_AUTOTEST(agc_crcf_config,"configuration", "", 0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(agc_crcf_copy,"copy test", "", 0.1)
+LIQUID_AUTOTEST(agc_crcf_copy,"copy test", "agc", 0.1)
 {
     // create base object and initialize
     agc_crcf q0 = agc_crcf_create();

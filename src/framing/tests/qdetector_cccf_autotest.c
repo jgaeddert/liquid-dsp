@@ -34,28 +34,28 @@ void qdetector_cccf_runtest_gmsk  (liquid_autotest __q__, unsigned int _sequence
 void qdetector_cccf_runtest(liquid_autotest __q__, qdetector_cccf _q);
 
 // linear tests
-LIQUID_AUTOTEST(qdetector_cccf_linear_n64,"","",0.1)   { qdetector_cccf_runtest_linear(__q__,   64); }
-LIQUID_AUTOTEST(qdetector_cccf_linear_n83,"","",0.1)   { qdetector_cccf_runtest_linear(__q__,   83); }
-LIQUID_AUTOTEST(qdetector_cccf_linear_n128,"","",0.1)  { qdetector_cccf_runtest_linear(__q__,  128); }
-LIQUID_AUTOTEST(qdetector_cccf_linear_n167,"","",0.1)  { qdetector_cccf_runtest_linear(__q__,  167); }
-LIQUID_AUTOTEST(qdetector_cccf_linear_n256,"","",0.1)  { qdetector_cccf_runtest_linear(__q__,  256); }
-LIQUID_AUTOTEST(qdetector_cccf_linear_n335,"","",0.1)  { qdetector_cccf_runtest_linear(__q__,  335); }
-LIQUID_AUTOTEST(qdetector_cccf_linear_n512,"","",0.1)  { qdetector_cccf_runtest_linear(__q__,  512); }
-LIQUID_AUTOTEST(qdetector_cccf_linear_n671,"","",0.1)  { qdetector_cccf_runtest_linear(__q__,  671); }
-LIQUID_AUTOTEST(qdetector_cccf_linear_n1024,"","",0.1) { qdetector_cccf_runtest_linear(__q__, 1024); }
-LIQUID_AUTOTEST(qdetector_cccf_linear_n1341,"","",0.1) { qdetector_cccf_runtest_linear(__q__, 1341); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n64,  "qdetector (linear) with n=64",  "framing,qdetector,linear",0.1) { qdetector_cccf_runtest_linear(__q__,   64); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n83,  "qdetector (linear) with n=83",  "framing,qdetector,linear",0.1) { qdetector_cccf_runtest_linear(__q__,   83); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n128, "qdetector (linear) with n=128", "framing,qdetector,linear",0.1) { qdetector_cccf_runtest_linear(__q__,  128); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n167, "qdetector (linear) with n=167", "framing,qdetector,linear",0.1) { qdetector_cccf_runtest_linear(__q__,  167); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n256, "qdetector (linear) with n=256", "framing,qdetector,linear",0.1) { qdetector_cccf_runtest_linear(__q__,  256); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n335, "qdetector (linear) with n=335", "framing,qdetector,linear",0.1) { qdetector_cccf_runtest_linear(__q__,  335); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n512, "qdetector (linear) with n=512", "framing,qdetector,linear",0.1) { qdetector_cccf_runtest_linear(__q__,  512); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n671, "qdetector (linear) with n=671", "framing,qdetector,linear",0.1) { qdetector_cccf_runtest_linear(__q__,  671); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n1024,"qdetector (linear) with n=1024","framing,qdetector,linear",0.1) { qdetector_cccf_runtest_linear(__q__, 1024); }
+LIQUID_AUTOTEST(qdetector_cccf_linear_n1341,"qdetector (linear) with n=1341","framing,qdetector,linear",0.1) { qdetector_cccf_runtest_linear(__q__, 1341); }
 
 // gmsk tests
-LIQUID_AUTOTEST(qdetector_cccf_gmsk_n64,"","",0.1)     { qdetector_cccf_runtest_gmsk  (__q__,   64); }
-LIQUID_AUTOTEST(qdetector_cccf_gmsk_n83,"","",0.1)     { qdetector_cccf_runtest_gmsk  (__q__,   83); }
-LIQUID_AUTOTEST(qdetector_cccf_gmsk_n128,"","",0.1)    { qdetector_cccf_runtest_gmsk  (__q__,  128); }
-LIQUID_AUTOTEST(qdetector_cccf_gmsk_n167,"","",0.1)    { qdetector_cccf_runtest_gmsk  (__q__,  167); }
-LIQUID_AUTOTEST(qdetector_cccf_gmsk_n256,"","",0.1)    { qdetector_cccf_runtest_gmsk  (__q__,  256); }
-LIQUID_AUTOTEST(qdetector_cccf_gmsk_n335,"","",0.1)    { qdetector_cccf_runtest_gmsk  (__q__,  335); }
-LIQUID_AUTOTEST(qdetector_cccf_gmsk_n512,"","",0.1)    { qdetector_cccf_runtest_gmsk  (__q__,  512); }
-LIQUID_AUTOTEST(qdetector_cccf_gmsk_n671,"","",0.1)    { qdetector_cccf_runtest_gmsk  (__q__,  671); }
-LIQUID_AUTOTEST(qdetector_cccf_gmsk_n1024,"","",0.1)   { qdetector_cccf_runtest_gmsk  (__q__, 1024); }
-LIQUID_AUTOTEST(qdetector_cccf_gmsk_n1341,"","",0.1)   { qdetector_cccf_runtest_gmsk  (__q__, 1341); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n64,  "qdetector (gmsk) with n=64",  "framing,qdetector,gmsk",0.1) { qdetector_cccf_runtest_gmsk  (__q__,   64); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n83,  "qdetector (gmsk) with n=83",  "framing,qdetector,gmsk",0.1) { qdetector_cccf_runtest_gmsk  (__q__,   83); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n128, "qdetector (gmsk) with n=128", "framing,qdetector,gmsk",0.1) { qdetector_cccf_runtest_gmsk  (__q__,  128); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n167, "qdetector (gmsk) with n=167", "framing,qdetector,gmsk",0.1) { qdetector_cccf_runtest_gmsk  (__q__,  167); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n256, "qdetector (gmsk) with n=256", "framing,qdetector,gmsk",0.1) { qdetector_cccf_runtest_gmsk  (__q__,  256); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n335, "qdetector (gmsk) with n=335", "framing,qdetector,gmsk",0.1) { qdetector_cccf_runtest_gmsk  (__q__,  335); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n512, "qdetector (gmsk) with n=512", "framing,qdetector,gmsk",0.1) { qdetector_cccf_runtest_gmsk  (__q__,  512); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n671, "qdetector (gmsk) with n=671", "framing,qdetector,gmsk",0.1) { qdetector_cccf_runtest_gmsk  (__q__,  671); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n1024,"qdetector (gmsk) with n=1024","framing,qdetector,gmsk",0.1) { qdetector_cccf_runtest_gmsk  (__q__, 1024); }
+LIQUID_AUTOTEST(qdetector_cccf_gmsk_n1341,"qdetector (gmsk) with n=1341","framing,qdetector,gmsk",0.1) { qdetector_cccf_runtest_gmsk  (__q__, 1341); }
 
 // autotest helper function
 //  _sequence_len   :   sequence length

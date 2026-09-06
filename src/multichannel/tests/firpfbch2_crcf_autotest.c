@@ -92,12 +92,12 @@ void testbench_firpfbch2_crcf(liquid_autotest __q__,
 }
 
 // analysis
-LIQUID_AUTOTEST(firpfbch2_crcf_n8,"","",0.1)    { testbench_firpfbch2_crcf(__q__,  8, 5, 60.0f); }
-LIQUID_AUTOTEST(firpfbch2_crcf_n16,"","",0.1)   { testbench_firpfbch2_crcf(__q__, 16, 5, 60.0f); }
-LIQUID_AUTOTEST(firpfbch2_crcf_n32,"","",0.1)   { testbench_firpfbch2_crcf(__q__, 32, 5, 60.0f); }
-LIQUID_AUTOTEST(firpfbch2_crcf_n64,"","",0.1)   { testbench_firpfbch2_crcf(__q__, 64, 5, 60.0f); }
+LIQUID_AUTOTEST(firpfbch2_crcf_n8, "firpfbch, M= 8","multichannel,firpfbch2",0.1) { testbench_firpfbch2_crcf(__q__,  8, 5, 60.0f); }
+LIQUID_AUTOTEST(firpfbch2_crcf_n16,"firpfbch, M=16","multichannel,firpfbch2",0.1) { testbench_firpfbch2_crcf(__q__, 16, 5, 60.0f); }
+LIQUID_AUTOTEST(firpfbch2_crcf_n32,"firpfbch, M=32","multichannel,firpfbch2",0.1) { testbench_firpfbch2_crcf(__q__, 32, 5, 60.0f); }
+LIQUID_AUTOTEST(firpfbch2_crcf_n64,"firpfbch, M=64","multichannel,firpfbch2",0.1) { testbench_firpfbch2_crcf(__q__, 64, 5, 60.0f); }
 
-LIQUID_AUTOTEST(firpfbch2_crcf_copy,"","",0.1)
+LIQUID_AUTOTEST(firpfbch2_crcf_copy,"copy firpfbch2 object","multichannel,firpfbch2",0.1)
 {
     // create channelizer
     unsigned int M  = 72;
@@ -139,7 +139,7 @@ LIQUID_AUTOTEST(firpfbch2_crcf_copy,"","",0.1)
     firpfbch2_crcf_destroy(q_copy);
 }
 
-LIQUID_AUTOTEST(firpfbch2_crcf_config,"","",0.1)
+LIQUID_AUTOTEST(firpfbch2_crcf_config,"test firpfbch2 configurations","multichannel,firpfbch2",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls

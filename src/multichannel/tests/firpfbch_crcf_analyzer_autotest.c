@@ -24,7 +24,7 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(firpfbch_crcf_analysis,"validate firpfbch analysis correctness","",0.1)
+LIQUID_AUTOTEST(firpfbch_crcf_analysis,"validate firpfbch analysis correctness","multichannel,firpfbch",0.1)
 {
     float tol = 1e-4f;              // error tolerance
     unsigned int num_channels=4;    // number of channels

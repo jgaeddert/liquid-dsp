@@ -25,7 +25,7 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(firfilt_crcf_copy,"description","",0.1)
+LIQUID_AUTOTEST(firfilt_crcf_copy,"FIR filter copy (crcf)","filter,firfilt",0.1)
 {
     // design filter from prototype
     firfilt_crcf filt_orig = firfilt_crcf_create_kaiser(21, 0.345f, 60.0f, 0.0f);

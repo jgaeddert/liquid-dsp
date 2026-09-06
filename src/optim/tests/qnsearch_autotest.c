@@ -29,7 +29,9 @@
 #include "liquid.internal.h"
 #include "liquid.autotest.h"
 
-LIQUID_AUTOTEST(qnsearch_rosenbrock,"Use quasi-Newton search to find minimum of Rosenbrock function, should be [1 1 1 ...]","",0.1)
+LIQUID_AUTOTEST(qnsearch_rosenbrock,
+    "Use quasi-Newton search to find minimum of Rosenbrock function, should be [1 1 1 ...]",
+    "optim,qnsearch",0.1)
 {
     float tol = 1e-2f;                  // error tolerance
     unsigned int num_parameters = 6;    // dimensionality of search (minimum 2)
@@ -60,7 +62,7 @@ LIQUID_AUTOTEST(qnsearch_rosenbrock,"Use quasi-Newton search to find minimum of 
     LIQUID_CHECK( u_opt< tol );
 }
 
-LIQUID_AUTOTEST(qnsearch_config,"qnsearch configuration","",0.1)
+LIQUID_AUTOTEST(qnsearch_config,"qnsearch configuration","optim,qnsearch",0.1)
 {
     _liquid_error_downgrade_enable();
 

@@ -26,7 +26,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(secded2216_codec_e0,"SEC-DEC (22,16) codec (no errors)","",0.1)
+LIQUID_AUTOTEST(secded2216_codec_e0,"SEC-DEC (22,16) codec (no errors)","fec,secded2216",0.1)
 {
     // generate symbol
     unsigned char sym_org[2];
@@ -46,7 +46,7 @@ LIQUID_AUTOTEST(secded2216_codec_e0,"SEC-DEC (22,16) codec (no errors)","",0.1)
     LIQUID_CHECK(sym_org[1] ==  sym_dec[1]);
 }
 
-LIQUID_AUTOTEST(secded2216_codec_e1,"SEC-DEC (22,16) codec (single error)","",0.1)
+LIQUID_AUTOTEST(secded2216_codec_e1,"SEC-DEC (22,16) codec (single error)","fec,secded2216",0.1)
 {
     unsigned int k; // error location
 
@@ -81,7 +81,7 @@ LIQUID_AUTOTEST(secded2216_codec_e1,"SEC-DEC (22,16) codec (single error)","",0.
     }
 }
 
-LIQUID_AUTOTEST(secded2216_codec_e2,"SEC-DEC (22,16) codec (double error detection)","",0.1)
+LIQUID_AUTOTEST(secded2216_codec_e2,"SEC-DEC (22,16) codec (double error detection)","fec,secded2216",0.1)
 {
     // total combinations of double errors: nchoosek(22,2) = 231
 

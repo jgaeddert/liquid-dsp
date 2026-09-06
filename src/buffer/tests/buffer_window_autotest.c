@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(window_config_errors,"","",0.1)
+LIQUID_AUTOTEST(window_config_errors,"check window buffer configuration","buffer,window",0.1)
 {
     _liquid_error_downgrade_enable();
     LIQUID_CHECK(windowcf_create(0)==NULL);
@@ -31,7 +31,7 @@ LIQUID_AUTOTEST(window_config_errors,"","",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(windowf,"","",0.1)
+LIQUID_AUTOTEST(windowf,"basic window buffer tests","buffer,window",0.1)
 {
     float v[] = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
     float *r;   // reader pointer
@@ -141,7 +141,7 @@ LIQUID_AUTOTEST(windowf,"","",0.1)
     windowf_destroy(w);
 }
 
-LIQUID_AUTOTEST(window_copy,"","",0.1)
+LIQUID_AUTOTEST(window_copy,"test window buffer copy operation","buffer,window",0.1)
 {
     // create window
     unsigned int wlen = 20;

@@ -71,13 +71,43 @@ void testbench_interleaver_soft(liquid_autotest __q__, unsigned int _n)
     interleaver_destroy(q);
 }
 
-LIQUID_AUTOTEST(interleaver_hard_8,"","",0.1)      { testbench_interleaver_hard(__q__, 8   ); }
-LIQUID_AUTOTEST(interleaver_hard_16,"","",0.1)     { testbench_interleaver_hard(__q__, 16  ); }
-LIQUID_AUTOTEST(interleaver_hard_64,"","",0.1)     { testbench_interleaver_hard(__q__, 64  ); }
-LIQUID_AUTOTEST(interleaver_hard_256,"","",0.1)    { testbench_interleaver_hard(__q__, 256 ); }
+LIQUID_AUTOTEST(interleaver_hard_8,
+    "interleaver, hard decision, n=8",
+    "fec,interleaver",0.1)
+{ testbench_interleaver_hard(__q__, 8   ); }
 
-LIQUID_AUTOTEST(interleaver_soft_8,"","",0.1)      { testbench_interleaver_soft(__q__, 8   ); }
-LIQUID_AUTOTEST(interleaver_soft_16,"","",0.1)     { testbench_interleaver_soft(__q__, 16  ); }
-LIQUID_AUTOTEST(interleaver_soft_64,"","",0.1)     { testbench_interleaver_soft(__q__, 64  ); }
-LIQUID_AUTOTEST(interleaver_soft_256,"","",0.1)    { testbench_interleaver_soft(__q__, 256 ); }
+LIQUID_AUTOTEST(interleaver_hard_16,
+    "interleaver, hard decision, n=16",
+    "fec,interleaver",0.1)
+{ testbench_interleaver_hard(__q__, 16  ); }
+
+LIQUID_AUTOTEST(interleaver_hard_64,
+    "interleaver, hard decision, n=64",
+    "fec,interleaver",0.1)
+{ testbench_interleaver_hard(__q__, 64  ); }
+
+LIQUID_AUTOTEST(interleaver_hard_256,
+    "interleaver, hard decision, n=256",
+    "fec,interleaver",0.1)
+{ testbench_interleaver_hard(__q__, 256 ); }
+
+LIQUID_AUTOTEST(interleaver_soft_8,
+    "interleaver, soft decision, n=8",
+    "fec,interleaver",0.1)
+{ testbench_interleaver_soft(__q__, 8   ); }
+
+LIQUID_AUTOTEST(interleaver_soft_16,
+    "interleaver, soft decision, n=16",
+    "fec,interleaver",0.1)
+{ testbench_interleaver_soft(__q__, 16  ); }
+
+LIQUID_AUTOTEST(interleaver_soft_64,
+    "interleaver, soft decision, n=64",
+    "fec,interleaver",0.1)
+{ testbench_interleaver_soft(__q__, 64  ); }
+
+LIQUID_AUTOTEST(interleaver_soft_256,
+    "interleaver, soft decision, n=256",
+    "fec,interleaver",0.1)
+{ testbench_interleaver_soft(__q__, 256 ); }
 

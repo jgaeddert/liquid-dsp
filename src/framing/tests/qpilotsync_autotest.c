@@ -175,13 +175,13 @@ void testbench_qpilotsync(liquid_autotest   __q__,
 }
 
 //                                                  ms                 pay  ps  dphi   phi   gamma  SNR
-LIQUID_AUTOTEST(qpilotsync_100_16,"","",0.1) { testbench_qpilotsync(__q__, LIQUID_MODEM_QPSK, 100, 16, 0.07f, 1.2f, 0.7f, 40.0f); }
-LIQUID_AUTOTEST(qpilotsync_200_20,"","",0.1) { testbench_qpilotsync(__q__, LIQUID_MODEM_QPSK, 200, 20, 0.07f, 1.2f, 0.7f, 40.0f); }
-LIQUID_AUTOTEST(qpilotsync_300_24,"","",0.1) { testbench_qpilotsync(__q__, LIQUID_MODEM_QPSK, 300, 24, 0.07f, 1.2f, 0.7f, 40.0f); }
-LIQUID_AUTOTEST(qpilotsync_400_28,"","",0.1) { testbench_qpilotsync(__q__, LIQUID_MODEM_QPSK, 400, 28, 0.07f, 1.2f, 0.7f, 40.0f); }
-LIQUID_AUTOTEST(qpilotsync_500_32,"","",0.1) { testbench_qpilotsync(__q__, LIQUID_MODEM_QPSK, 500, 32, 0.07f, 1.2f, 0.7f, 40.0f); }
+LIQUID_AUTOTEST(qpilotsync_100_16,"qpilotsync, payload=100, pilot spacing=16","framing,qpilotsync",0.1) { testbench_qpilotsync(__q__, LIQUID_MODEM_QPSK, 100, 16, 0.07f, 1.2f, 0.7f, 40.0f); }
+LIQUID_AUTOTEST(qpilotsync_200_20,"qpilotsync, payload=200, pilot spacing=20","framing,qpilotsync",0.1) { testbench_qpilotsync(__q__, LIQUID_MODEM_QPSK, 200, 20, 0.07f, 1.2f, 0.7f, 40.0f); }
+LIQUID_AUTOTEST(qpilotsync_300_24,"qpilotsync, payload=300, pilot spacing=24","framing,qpilotsync",0.1) { testbench_qpilotsync(__q__, LIQUID_MODEM_QPSK, 300, 24, 0.07f, 1.2f, 0.7f, 40.0f); }
+LIQUID_AUTOTEST(qpilotsync_400_28,"qpilotsync, payload=400, pilot spacing=28","framing,qpilotsync",0.1) { testbench_qpilotsync(__q__, LIQUID_MODEM_QPSK, 400, 28, 0.07f, 1.2f, 0.7f, 40.0f); }
+LIQUID_AUTOTEST(qpilotsync_500_32,"qpilotsync, payload=500, pilot spacing=32","framing,qpilotsync",0.1) { testbench_qpilotsync(__q__, LIQUID_MODEM_QPSK, 500, 32, 0.07f, 1.2f, 0.7f, 40.0f); }
 
-LIQUID_AUTOTEST(qpilotgen_config,"qpilotgen config","",0.1)
+LIQUID_AUTOTEST(qpilotgen_config,"qpilotgen config","framing,qpilotsync",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls
@@ -198,7 +198,7 @@ LIQUID_AUTOTEST(qpilotgen_config,"qpilotgen config","",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(qpilotsync_config,"qpilotsync config","",0.1)
+LIQUID_AUTOTEST(qpilotsync_config,"qpilotsync config","framing,qpilotsync",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls

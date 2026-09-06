@@ -57,11 +57,11 @@ void testbench_ccodes(liquid_autotest __q__, unsigned int _n)
     bsequence_destroy(bx);
 }
 
-LIQUID_AUTOTEST(complementary_code_n8,  "","",0.1) { testbench_ccodes(__q__,  8); }
-LIQUID_AUTOTEST(complementary_code_n16, "","",0.1) { testbench_ccodes(__q__, 16); }
-LIQUID_AUTOTEST(complementary_code_n32, "","",0.1) { testbench_ccodes(__q__, 32); }
-LIQUID_AUTOTEST(complementary_code_n64, "","",0.1) { testbench_ccodes(__q__, 64); }
-LIQUID_AUTOTEST(complementary_code_n128,"","",0.1) { testbench_ccodes(__q__,128); }
-LIQUID_AUTOTEST(complementary_code_n256,"","",0.1) { testbench_ccodes(__q__,256); }
-LIQUID_AUTOTEST(complementary_code_n512,"","",0.1) { testbench_ccodes(__q__,512); }
+LIQUID_AUTOTEST(complementary_code_n8,  "complementary code properties, n=  8","sequence,complementary",0.1) { testbench_ccodes(__q__,  8); }
+LIQUID_AUTOTEST(complementary_code_n16, "complementary code properties, n= 16","sequence,complementary",0.1) { testbench_ccodes(__q__, 16); }
+LIQUID_AUTOTEST(complementary_code_n32, "complementary code properties, n= 32","sequence,complementary",0.1) { testbench_ccodes(__q__, 32); }
+LIQUID_AUTOTEST(complementary_code_n64, "complementary code properties, n= 64","sequence,complementary",0.1) { testbench_ccodes(__q__, 64); }
+LIQUID_AUTOTEST(complementary_code_n128,"complementary code properties, n=128","sequence,complementary",0.1) { testbench_ccodes(__q__,128); }
+LIQUID_AUTOTEST(complementary_code_n256,"complementary code properties, n=256","sequence,complementary",0.1) { testbench_ccodes(__q__,256); }
+LIQUID_AUTOTEST(complementary_code_n512,"complementary code properties, n=512","sequence,complementary",0.1) { testbench_ccodes(__q__,512); }
 

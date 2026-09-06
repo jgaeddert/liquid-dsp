@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(prime_small,"test for small primes","",0.1)
+LIQUID_AUTOTEST(prime_small,"test for small primes","math,prime",0.1)
 {
     const int is_prime_array[2500] = {
 		0,0,1,1,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,1,0,1,0,0,0,1,0,0,
@@ -82,7 +82,7 @@ LIQUID_AUTOTEST(prime_small,"test for small primes","",0.1)
         LIQUID_CHECK(is_prime_array[n] ==  liquid_is_prime(n));
 }
 
-LIQUID_AUTOTEST(factors,"unique prime factors","",0.1)
+LIQUID_AUTOTEST(factors,"unique prime factors","math,prime",0.1)
 {
     const unsigned int factors_280[5] = {2,2,2,5,7};
     const unsigned int factors_280_unique[3] = {2,5,7};
@@ -104,7 +104,7 @@ LIQUID_AUTOTEST(factors,"unique prime factors","",0.1)
         LIQUID_CHECK(factors_280_unique[i] ==  factors[i]);
 }
 
-LIQUID_AUTOTEST(totient,"Euler's totient function","",0.1)
+LIQUID_AUTOTEST(totient,"Euler's totient function","math,prime",0.1)
 {
     LIQUID_CHECK(liquid_totient(   9) ==    6)
     LIQUID_CHECK(liquid_totient(  20) ==    8)

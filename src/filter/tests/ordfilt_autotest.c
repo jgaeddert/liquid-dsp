@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(ordfilt_copy,"test copy method", "", 0.1)
+LIQUID_AUTOTEST(ordfilt_copy,"test copy method", "filter,ordfilt", 0.1)
 {
     // create base object
     ordfilt_rrrf q0 = ordfilt_rrrf_create(17, 5);

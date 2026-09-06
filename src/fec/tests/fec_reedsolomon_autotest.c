@@ -26,7 +26,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(reedsolomon_223_255,"Reed-Solomon codecs","",0.1)
+LIQUID_AUTOTEST(reedsolomon_223_255,"Reed-Solomon codecs","fec,reedsolomon",0.1)
 {
 #if !LIBFEC_ENABLED
     LIQUID_WARN("convolutional, Reed-Solomon codes unavailable (install libfec)");

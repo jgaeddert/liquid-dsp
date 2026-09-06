@@ -24,7 +24,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(firpfbchr_crcf,"","",0.1)
+LIQUID_AUTOTEST(firpfbchr_crcf,"test firpfbchr spectral response","multichannel,firpfbchr",0.1)
 {
     // options
     unsigned int M = 16;            // number of channels
@@ -115,7 +115,7 @@ LIQUID_AUTOTEST(firpfbchr_crcf,"","",0.1)
     spgramcf_destroy(c3);
 }
 
-LIQUID_AUTOTEST(firpfbchr_crcf_config,"","",0.1)
+LIQUID_AUTOTEST(firpfbchr_crcf_config,"test firpfbchr configurations","multichannel,firpfbchr",0.1)
 {
     _liquid_error_downgrade_enable();
 

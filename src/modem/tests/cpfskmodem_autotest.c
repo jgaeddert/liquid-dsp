@@ -87,37 +87,75 @@ void testbench_cpfskmodem(liquid_autotest __q__,
 //
 
 // square pulse shape
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p5000_k4_m3_square,"","",0.1)    { testbench_cpfskmodem(__q__, 1, 0.5000f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p0250_k4_m3_square,"","",0.1)    { testbench_cpfskmodem(__q__, 1, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p1250_k4_m3_square,"","",0.1)    { testbench_cpfskmodem(__q__, 1, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p0625_k4_m3_square,"","",0.1)    { testbench_cpfskmodem(__q__, 1, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p5000_k4_m3_square,
+    "continuous-phase frequency shift keying (cpfskmodem), square, h=0.5000","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.5000f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p0250_k4_m3_square,
+    "continuous-phase frequency shift keying (cpfskmodem), square, h=0.0250","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p1250_k4_m3_square,
+    "continuous-phase frequency shift keying (cpfskmodem), square, h=0.1250","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p0625_k4_m3_square,
+    "continuous-phase frequency shift keying (cpfskmodem), square, h=0.0625","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
 
 // raised-cosine pulse shape (full)
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p5000_k4_m3_rcosfull,"","",0.1)  { testbench_cpfskmodem(__q__, 1, 0.5000f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_FULL ); }
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p0250_k4_m3_rcosfull,"","",0.1)  { testbench_cpfskmodem(__q__, 1, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_FULL ); }
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p1250_k4_m3_rcosfull,"","",0.1)  { testbench_cpfskmodem(__q__, 1, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_FULL ); }
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p0625_k4_m3_rcosfull,"","",0.1)  { testbench_cpfskmodem(__q__, 1, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_FULL ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p5000_k4_m3_rcosfull,
+    "continuous-phase frequency shift keying (cpfskmodem), rcos full, h=0.5000","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.5000f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_FULL ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p0250_k4_m3_rcosfull,
+    "continuous-phase frequency shift keying (cpfskmodem), rcos full, h=0.0250","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_FULL ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p1250_k4_m3_rcosfull,
+    "continuous-phase frequency shift keying (cpfskmodem), rcos full, h=0.1250","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_FULL ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p0625_k4_m3_rcosfull,
+    "continuous-phase frequency shift keying (cpfskmodem), rcos full, h=0.0625","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_FULL ); }
 
 // raised-cosine pulse shape (partial)
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p5000_k4_m3_rcospart,"","",0.1)  { testbench_cpfskmodem(__q__, 1, 0.5000f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_PARTIAL ); }
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p0250_k4_m3_rcospart,"","",0.1)  { testbench_cpfskmodem(__q__, 1, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_PARTIAL ); }
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p1250_k4_m3_rcospart,"","",0.1)  { testbench_cpfskmodem(__q__, 1, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_PARTIAL ); }
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p0625_k4_m3_rcospart,"","",0.1)  { testbench_cpfskmodem(__q__, 1, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_PARTIAL ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p5000_k4_m3_rcospart,
+    "continuous-phase frequency shift keying (cpfskmodem), rcos partial, h=0.5000","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.5000f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_PARTIAL ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p0250_k4_m3_rcospart,
+    "continuous-phase frequency shift keying (cpfskmodem), rcos partial, h=0.0250","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_PARTIAL ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p1250_k4_m3_rcospart,
+    "continuous-phase frequency shift keying (cpfskmodem), rcos partial, h=0.1250","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_PARTIAL ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p0625_k4_m3_rcospart,
+    "continuous-phase frequency shift keying (cpfskmodem), rcos partial, h=0.0625","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_RCOS_PARTIAL ); }
 
 // Gauss minimum-shift keying
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p5000_k4_m3_gmsk,"","",0.1)      { testbench_cpfskmodem(__q__, 1, 0.5000f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p0250_k4_m3_gmsk,"","",0.1)      { testbench_cpfskmodem(__q__, 1, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p1250_k4_m3_gmsk,"","",0.1)      { testbench_cpfskmodem(__q__, 1, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p0625_k4_m3_gmsk,"","",0.1)      { testbench_cpfskmodem(__q__, 1, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p5000_k4_m3_gmsk,
+    "continuous-phase frequency shift keying (cpfskmodem), gmsk, h=0.5000","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.5000f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p0250_k4_m3_gmsk,
+    "continuous-phase frequency shift keying (cpfskmodem), gmsk, h=0.0250","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p1250_k4_m3_gmsk,
+    "continuous-phase frequency shift keying (cpfskmodem), gmsk, h=0.1250","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p0625_k4_m3_gmsk,
+    "continuous-phase frequency shift keying (cpfskmodem), gmsk, h=0.0625","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
 
 //
 // AUTOTESTS: check different bits per symbol
 //
 
 // square pulse shape
-LIQUID_AUTOTEST(cpfskmodem_bps2_h0p0250_k4_m3_square,"","",0.1)    { testbench_cpfskmodem(__q__, 2, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
-LIQUID_AUTOTEST(cpfskmodem_bps3_h0p1250_k4_m3_square,"","",0.1)    { testbench_cpfskmodem(__q__, 3, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
-LIQUID_AUTOTEST(cpfskmodem_bps4_h0p0625_k4_m3_square,"","",0.1)    { testbench_cpfskmodem(__q__, 4, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+LIQUID_AUTOTEST(cpfskmodem_bps2_h0p0250_k4_m3_square,
+    "continuous-phase frequency shift keying (cpfskmodem), square, bps=2","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 2, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+LIQUID_AUTOTEST(cpfskmodem_bps3_h0p1250_k4_m3_square,
+    "continuous-phase frequency shift keying (cpfskmodem), square, bps=3","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 3, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+LIQUID_AUTOTEST(cpfskmodem_bps4_h0p0625_k4_m3_square,
+    "continuous-phase frequency shift keying (cpfskmodem), square, bps=4","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 4, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
 
 //
 // AUTOTESTS: check different samples per symbol
@@ -125,13 +163,23 @@ LIQUID_AUTOTEST(cpfskmodem_bps4_h0p0625_k4_m3_square,"","",0.1)    { testbench_c
 
 // GMSK
 // TODO: allow samples per symbol to be odd
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p5_k2_m7_gmsk,"","",0.1) { testbench_cpfskmodem(__q__, 1, 0.5f, 2, 7, 0.30f, LIQUID_CPFSK_GMSK ); }
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p5_k4_m7_gmsk,"","",0.1) { testbench_cpfskmodem(__q__, 1, 0.5f, 4, 7, 0.30f, LIQUID_CPFSK_GMSK ); }
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p5_k6_m7_gmsk,"","",0.1) { testbench_cpfskmodem(__q__, 1, 0.5f, 6, 7, 0.30f, LIQUID_CPFSK_GMSK ); }
-LIQUID_AUTOTEST(cpfskmodem_bps1_h0p5_k8_m7_gmsk,"","",0.1) { testbench_cpfskmodem(__q__, 1, 0.5f, 8, 7, 0.30f, LIQUID_CPFSK_GMSK ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p5_k2_m7_gmsk,
+    "continuous-phase frequency shift keying (cpfskmodem), gmsk, k=2","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.5f, 2, 7, 0.30f, LIQUID_CPFSK_GMSK ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p5_k4_m7_gmsk,
+    "continuous-phase frequency shift keying (cpfskmodem), gmsk, k=4","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.5f, 4, 7, 0.30f, LIQUID_CPFSK_GMSK ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p5_k6_m7_gmsk,
+    "continuous-phase frequency shift keying (cpfskmodem), gmsk, k=6","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.5f, 6, 7, 0.30f, LIQUID_CPFSK_GMSK ); }
+LIQUID_AUTOTEST(cpfskmodem_bps1_h0p5_k8_m7_gmsk,
+    "continuous-phase frequency shift keying (cpfskmodem), gmsk, k=8","modem,cpfskmodem",0.1)
+    { testbench_cpfskmodem(__q__, 1, 0.5f, 8, 7, 0.30f, LIQUID_CPFSK_GMSK ); }
 
 // test spectral response
-LIQUID_AUTOTEST(cpfskmodem_spectrum,"","",0.1)
+LIQUID_AUTOTEST(cpfskmodem_spectrum,
+    "continuous-phase frequency shift keying (cpfskmodem), spectrum",
+    "modem,cpfskmodem",1.3)
 {
     // create modulator
     unsigned int bps    = 1;
@@ -183,7 +231,9 @@ LIQUID_AUTOTEST(cpfskmodem_spectrum,"","",0.1)
 }
 
 // test errors and invalid configuration
-LIQUID_AUTOTEST(cpfskmodem_config,"","",0.1)
+LIQUID_AUTOTEST(cpfskmodem_config,
+    "continuous-phase frequency shift keying (cpfskmodem), config",
+    "modem,cpfskmodem",0.1)
 {
     _liquid_error_downgrade_enable();
     // test copying/creating invalid objects

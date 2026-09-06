@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(rep3_codec,"test repeat/3 codec","",0.1)
+LIQUID_AUTOTEST(rep3_codec,"test repeat/3 codec","fec,rep3",0.1)
 {
     unsigned int n=4;
     unsigned char msg[] = {0x25, 0x62, 0x3F, 0x52};
