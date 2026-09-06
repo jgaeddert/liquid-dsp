@@ -1227,7 +1227,7 @@ autotest_sources :=						\
 	
 
 benchmark_sources :=						\
-	bench/null_benchmark.c					\
+	benchmark/null_benchmark.c				\
 	$(agc_benchmarks)					\
 	$(audio_benchmarks)					\
 	$(buffer_benchmarks)					\
@@ -1446,8 +1446,8 @@ coverage.out : ${autotest_prog}.gcda
 clean-coverage:
 	$(RM) src/*.gcda src/*/src/*.gcda src/*/tests/*.gcda src/*/tests/data/*.gcda autotest/*.gcda scripts/*.gcda
 	$(RM) src/*.gcno src/*/src/*.gcno src/*/tests/*.gcno src/*/tests/data/*.gcno autotest/*.gcno scripts/*.gcno
-	$(RM) autotest/*.gcda bench/*.gcda examples/*.gcda sandbox/*.gcda
-	$(RM) autotest/*.gcno bench/*.gcno examples/*.gcno sandbox/*.gcno
+	$(RM) autotest/*.gcda benchmark/*.gcda examples/*.gcda sandbox/*.gcda
+	$(RM) autotest/*.gcno benchmark/*.gcno examples/*.gcno sandbox/*.gcno
 	$(RM) *.gcda *.gcno coverage.out
 
 
@@ -1469,16 +1469,16 @@ BENCH_LIBS	= $(LIBS)
 #       header' so we need to explicitly tell it to compile as a c source file with
 #       the '-x c' flag
 benchmark_obj = $(patsubst %.c,%.o,$(benchmark_sources))
-$(benchmark_obj) : %.o : %.c $(include_headers)
+$(benchmark_obj) benchmark/benchmark.o : %.o : %.c $(include_headers)
 	$(CC) $(BENCH_CPPFLAGS) $(BENCH_CFLAGS) $< -c -o $@
 
 # compile the benchmark program without linking
-$(bench_prog).o: bench/benchmark.c bench/liquid_benchmark_registry.h
+$(bench_prog).o: benchmark/xbenchmark.c benchmark/liquid_benchmark_registry.h
 	$(CC) $(BENCH_CPPFLAGS) $(BENCH_CFLAGS) $< -c -o $(bench_prog).o
 
 # link the benchmark program with the library objects
 # NOTE: linked libraries must come _after_ the target program
-$(bench_prog): $(bench_prog).o $(benchmark_obj) ${ARCHIVE_LIB}
+$(bench_prog): $(bench_prog).o benchmark/benchmark.o $(benchmark_obj) ${ARCHIVE_LIB}
 	$(CC) $(BENCH_CFLAGS) $(BENCH_LDFLAGS) $^ -o $(bench_prog) $(BENCH_LIBS)
 
 # run the benchmark program
@@ -1486,18 +1486,18 @@ bench: $(bench_prog)
 	./$(bench_prog)
 
 # fftbench program
-bench/fftbench.o : %.o : %.c
+benchmark/fftbench.o : %.o : %.c
 	$(CC) $(BENCH_CPPFLAGS) $(BENCH_CFLAGS) $< -c -o $@
 
-bench/fftbench : % : %.o ${ARCHIVE_LIB}
+benchmark/fftbench : % : %.o ${ARCHIVE_LIB}
 	$(CC) $(BENCH_CFLAGS) $(BENCH_LDFLAGS) $^ -o $@ $(BENCH_LIBS)
 
 # clean up the generated files
 clean-bench:
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
 	$(RM) $(benchmark_obj)
-	$(RM) bench/fftbench.o
-	$(RM) bench/fftbench
+	$(RM) benchmark/fftbench.o
+	$(RM) benchmark/fftbench
 
 
 ## 
