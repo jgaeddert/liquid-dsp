@@ -53,20 +53,43 @@ float interleaver_bench(unsigned long int _num_iterations,
     return extime;
 }
 
-LIQUID_BENCHMARK(interleaver_8,    "interleaver_encode, n=8",    "fec,interleaver")
-    { return interleaver_bench(num_iterations, 8); }
-LIQUID_BENCHMARK(interleaver_16,   "interleaver_encode, n=16",   "fec,interleaver")
-    { return interleaver_bench(num_iterations, 16); }
-LIQUID_BENCHMARK(interleaver_32,   "interleaver_encode, n=32",   "fec,interleaver")
-    { return interleaver_bench(num_iterations, 32); }
-LIQUID_BENCHMARK(interleaver_64,   "interleaver_encode, n=64",   "fec,interleaver")
-    { return interleaver_bench(num_iterations, 64); }
-LIQUID_BENCHMARK(interleaver_128,  "interleaver_encode, n=128",  "fec,interleaver")
-    { return interleaver_bench(num_iterations, 128); }
-LIQUID_BENCHMARK(interleaver_256,  "interleaver_encode, n=256",  "fec,interleaver")
-    { return interleaver_bench(num_iterations, 256); }
-LIQUID_BENCHMARK(interleaver_512,  "interleaver_encode, n=512",  "fec,interleaver")
-    { return interleaver_bench(num_iterations, 512); }
-LIQUID_BENCHMARK(interleaver_1024, "interleaver_encode, n=1024", "fec,interleaver")
-    { return interleaver_bench(num_iterations, 1024); }
+LIQUID_BENCHMARK(interleaver_8,
+    "interleaver_encode, n=8",
+    "fec,interleaver")
+{ return interleaver_bench(num_iterations, 8); }
+
+LIQUID_BENCHMARK(interleaver_16,
+    "interleaver_encode, n=16",
+    "fec,interleaver")
+{ return interleaver_bench(num_iterations, 16); }
+
+LIQUID_BENCHMARK(interleaver_32,
+    "interleaver_encode, n=32",
+    "fec,interleaver")
+{ return interleaver_bench(num_iterations, 32); }
+
+LIQUID_BENCHMARK(interleaver_64,
+    "interleaver_encode, n=64",
+    "fec,interleaver")
+{ return interleaver_bench(num_iterations, 64); }
+
+LIQUID_BENCHMARK(interleaver_128,
+    "interleaver_encode, n=128",
+    "fec,interleaver")
+{ return interleaver_bench(num_iterations, 128); }
+
+LIQUID_BENCHMARK(interleaver_256,
+    "interleaver_encode, n=256",
+    "fec,interleaver")
+{ return interleaver_bench(num_iterations, 256); }
+
+LIQUID_BENCHMARK(interleaver_512,
+    "interleaver_encode, n=512",
+    "fec,interleaver")
+{ return interleaver_bench(num_iterations, 512); }
+
+LIQUID_BENCHMARK(interleaver_1024,
+    "interleaver_encode, n=1024",
+    "fec,interleaver")
+{ return interleaver_bench(num_iterations, 1024); }
 

@@ -74,14 +74,25 @@ float sumproduct_bench(unsigned long int _num_iterations,
     return extime;
 }
 
-LIQUID_BENCHMARK(sumproduct_m16,  "fec_sumproduct, m=16",  "fec,sumproduct")
-    { return sumproduct_bench(num_iterations, 16); }
-LIQUID_BENCHMARK(sumproduct_m32,  "fec_sumproduct, m=32",  "fec,sumproduct")
-    { return sumproduct_bench(num_iterations, 32); }
-LIQUID_BENCHMARK(sumproduct_m64,  "fec_sumproduct, m=64",  "fec,sumproduct")
-    { return sumproduct_bench(num_iterations, 64); }
-LIQUID_BENCHMARK(sumproduct_m128, "fec_sumproduct, m=128", "fec,sumproduct")
-    { return sumproduct_bench(num_iterations, 128); }
+LIQUID_BENCHMARK(sumproduct_m16,
+    "fec_sumproduct, m=16",
+    "fec,sumproduct")
+{ return sumproduct_bench(num_iterations, 16); }
+
+LIQUID_BENCHMARK(sumproduct_m32,
+    "fec_sumproduct, m=32",
+    "fec,sumproduct")
+{ return sumproduct_bench(num_iterations, 32); }
+
+LIQUID_BENCHMARK(sumproduct_m64,
+    "fec_sumproduct, m=64",
+    "fec,sumproduct")
+{ return sumproduct_bench(num_iterations, 64); }
+
+LIQUID_BENCHMARK(sumproduct_m128,
+    "fec_sumproduct, m=128",
+    "fec,sumproduct")
+{ return sumproduct_bench(num_iterations, 128); }
 
 // generate half-rate LDPC generator and parity-check matrices
 void sumproduct_generate(unsigned int    _m,

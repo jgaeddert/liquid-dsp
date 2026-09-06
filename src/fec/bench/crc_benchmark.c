@@ -55,14 +55,29 @@ float crc_bench(unsigned long int _num_iterations,
     return extime;
 }
 
-LIQUID_BENCHMARK(crc_checksum_n256, "crc_generate_key checksum, n=256", "fec,crc,checksum")
-    { return crc_bench(num_iterations, LIQUID_CRC_CHECKSUM, 256); }
-LIQUID_BENCHMARK(crc_crc8_n256,      "crc_generate_key crc8, n=256",      "fec,crc")
-    { return crc_bench(num_iterations, LIQUID_CRC_8,         256); }
-LIQUID_BENCHMARK(crc_crc16_n256,     "crc_generate_key crc16, n=256",     "fec,crc")
-    { return crc_bench(num_iterations, LIQUID_CRC_16,        256); }
-LIQUID_BENCHMARK(crc_crc24_n256,     "crc_generate_key crc24, n=256",     "fec,crc")
-    { return crc_bench(num_iterations, LIQUID_CRC_24,        256); }
-LIQUID_BENCHMARK(crc_crc32_n256,     "crc_generate_key crc32, n=256",     "fec,crc")
-    { return crc_bench(num_iterations, LIQUID_CRC_32,        256); }
+// validate error-detection
+LIQUID_BENCHMARK(crc_checksum_n256,
+    "crc_generate_key checksum, n=256",
+    "fec,crc,checksum")
+{ return crc_bench(num_iterations, LIQUID_CRC_CHECKSUM, 256); }
+
+LIQUID_BENCHMARK(crc_crc8_n256,
+    "crc_generate_key crc8, n=256",
+    "fec,crc")
+{ return crc_bench(num_iterations, LIQUID_CRC_8,         256); }
+
+LIQUID_BENCHMARK(crc_crc16_n256,
+    "crc_generate_key crc16, n=256",
+    "fec,crc")
+{ return crc_bench(num_iterations, LIQUID_CRC_16,        256); }
+
+LIQUID_BENCHMARK(crc_crc24_n256,
+    "crc_generate_key crc24, n=256",
+    "fec,crc")
+{ return crc_bench(num_iterations, LIQUID_CRC_24,        256); }
+
+LIQUID_BENCHMARK(crc_crc32_n256,
+    "crc_generate_key crc32, n=256",
+    "fec,crc")
+{ return crc_bench(num_iterations, LIQUID_CRC_32,        256); }
 

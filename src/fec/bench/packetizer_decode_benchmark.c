@@ -58,18 +58,38 @@ float packetizer_decode_bench(unsigned long int _num_iterations,
     return extime;
 }
 
-LIQUID_BENCHMARK(packetizer_n16,   "packetizer_decode, n=16",   "fec,packetizer")
-    { return packetizer_decode_bench(num_iterations, 16,   LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
-LIQUID_BENCHMARK(packetizer_n32,   "packetizer_decode, n=32",   "fec,packetizer")
-    { return packetizer_decode_bench(num_iterations, 32,   LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
-LIQUID_BENCHMARK(packetizer_n64,   "packetizer_decode, n=64",   "fec,packetizer")
-    { return packetizer_decode_bench(num_iterations, 64,   LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
-LIQUID_BENCHMARK(packetizer_n128,  "packetizer_decode, n=128",  "fec,packetizer")
-    { return packetizer_decode_bench(num_iterations, 128,  LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
-LIQUID_BENCHMARK(packetizer_n256,  "packetizer_decode, n=256",  "fec,packetizer")
-    { return packetizer_decode_bench(num_iterations, 256,  LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
-LIQUID_BENCHMARK(packetizer_n512,  "packetizer_decode, n=512",  "fec,packetizer")
-    { return packetizer_decode_bench(num_iterations, 512,  LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
-LIQUID_BENCHMARK(packetizer_n1024, "packetizer_decode, n=1024", "fec,packetizer")
-    { return packetizer_decode_bench(num_iterations, 1024, LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
+LIQUID_BENCHMARK(packetizer_n16,
+    "packetizer_decode, n=16",
+    "fec,packetizer")
+{ return packetizer_decode_bench(num_iterations, 16,   LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
+
+LIQUID_BENCHMARK(packetizer_n32,
+    "packetizer_decode, n=32",
+    "fec,packetizer")
+{ return packetizer_decode_bench(num_iterations, 32,   LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
+
+LIQUID_BENCHMARK(packetizer_n64,
+    "packetizer_decode, n=64",
+    "fec,packetizer")
+{ return packetizer_decode_bench(num_iterations, 64,   LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
+
+LIQUID_BENCHMARK(packetizer_n128,
+    "packetizer_decode, n=128",
+    "fec,packetizer")
+{ return packetizer_decode_bench(num_iterations, 128,  LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
+
+LIQUID_BENCHMARK(packetizer_n256,
+    "packetizer_decode, n=256",
+    "fec,packetizer")
+{ return packetizer_decode_bench(num_iterations, 256,  LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
+
+LIQUID_BENCHMARK(packetizer_n512,
+    "packetizer_decode, n=512",
+    "fec,packetizer")
+{ return packetizer_decode_bench(num_iterations, 512,  LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
+
+LIQUID_BENCHMARK(packetizer_n1024,
+    "packetizer_decode, n=1024",
+    "fec,packetizer")
+{ return packetizer_decode_bench(num_iterations, 1024, LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE); }
 
