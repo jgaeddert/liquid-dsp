@@ -30,14 +30,18 @@
 
 #include "liquid.internal.h"
 
-// include proper SIMD extensions for x86 platforms
-#include <immintrin.h>  // AVX
+// build guard
+#if BUILD_AVX512
+
+// include proper SIMD extensions for x86 AVX-512
+#include <immintrin.h>
 
 // sum squares, basic loop
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
-float liquid_sumsqf_avx(float *      _v,
-                        unsigned int _n)
+float __attribute__((target("avx512f,avx512dq,avx512vl,avx512bw,fma")))
+liquid_sumsqf_avx512_1(float *      _v,
+                       unsigned int _n)
 {
     // first cut: ...
     __m512 v;   // input vector
@@ -74,8 +78,9 @@ float liquid_sumsqf_avx(float *      _v,
 // sum squares, unrolled loop
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
-float liquid_sumsqf_avxu(float *      _v,
-                         unsigned int _n)
+float __attribute__((target("avx512f,avx512dq,avx512vl,avx512bw,fma")))
+liquid_sumsqf_avx512_4(float *      _v,
+                       unsigned int _n)
 {
     // first cut: ...
     __m512 v0, v1, v2, v3;   // input vector
@@ -121,24 +126,27 @@ float liquid_sumsqf_avxu(float *      _v,
 // sum squares
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
-float liquid_sumsqf(float *      _v,
-                    unsigned int _n)
+float __attribute__((target("avx512f,avx512dq,avx512vl,avx512bw,fma")))
+liquid_sumsqf_execute_avx512(float *      _v,
+                             unsigned int _n)
 {
     // switch based on size
     if (_n < 64) {
-        return liquid_sumsqf_avx(_v, _n);
+        return liquid_sumsqf_avx512_1(_v, _n);
     }
-    return liquid_sumsqf_avxu(_v, _n);
+    return liquid_sumsqf_avx512_4(_v, _n);
 }
 
-// sum squares, complex
-//  _v      :   input array [size: 1 x _n]
-//  _n      :   input length
-float liquid_sumsqcf(float complex * _v,
-                     unsigned int    _n)
+// build guard
+#else
+
+// invalidated
+float liquid_sumsqf_execute_avx512(float *      _v,
+                                   unsigned int _n)
 {
-    // simple method: type cast input as real pointer, run double
-    // length sumsqf method
-    float * v = (float*) _v;
-    return liquid_sumsqf(v, 2*_n);
+    liquid_error(LIQUID_EICONFIG,"avx512 extensions not available");
+    return 0.0f;
 }
+
+// build guard
+#endif
