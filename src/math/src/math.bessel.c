@@ -38,7 +38,8 @@
 #include "liquid.internal.h"
 
 // log(I_v(z)) : log Modified Bessel function of the first kind
-#define NUM_BESSELI_ITERATIONS 64
+// the terms peak near k = z/2, so the bound has to reach past the peak
+#define NUM_BESSELI_ITERATIONS 512
 float liquid_lnbesselif(float _nu,
                         float _z)
 {
@@ -51,7 +52,11 @@ float liquid_lnbesselif(float _nu,
 
     // special case: _nu = 1/2, besseli(z) = sqrt(2/pi*z)*sinh(z)
     if (_nu == 0.5f) {
-        return 0.5f*logf(2.0f/(M_PI*_z)) + logf(sinhf(_z));
+        // ln(sinh(z)) = z - ln(2) + ln(1 - exp(-2z)) keeps sinhf() from
+        // overflowing on its own, which it does above z of about 89
+        float lnsinh = _z < 1.0f ? logf(sinhf(_z))
+                                 : _z - logf(2.0f) + log1pf(-expf(-2.0f*_z));
+        return 0.5f*logf(2.0f/(M_PI*_z)) + lnsinh;
     }
 
     // low signal approximation
@@ -71,7 +76,8 @@ float liquid_lnbesselif(float _nu,
     float t1 = 0.0f;
     float t2 = 0.0f;
     float t3 = 0.0f;
-    float y = 0.0f;
+    float t  = 0.0f;
+    float y  = 0.0f;    // log of the partial sum
 
     unsigned int k;
     for (k=0; k<NUM_BESSELI_ITERATIONS; k++) {
@@ -82,12 +88,24 @@ float liquid_lnbesselif(float _nu,
         t2 = liquid_lngammaf((float)k + 1.0f);
         t3 = liquid_lngammaf(_nu + (float)k + 1.0f);
 
-        // accumulate y
-        y += expf( t1 - t2 - t3 );
-        //printf("%3u : t1: %12.3e, t2: %12.4e, t3: %12.4e, y: %12.4e\n", k, t1, t2, t3, y);
+        // accumulate in the log domain; exponentiating the term on its own
+        // overflows for large z and underflows to zero for large nu
+        t = t1 - t2 - t3;
+        if (k==0) {
+            y = t;
+        } else if (t > y) {
+            y = t + log1pf(expf(y - t));
+        } else {
+            y = y + log1pf(expf(t - y));
+
+            // the terms are unimodal in k, so once one falls 20 nats below the
+            // partial sum the rest of the tail is below single precision
+            if (t < y - 20.0f)
+                break;
+        }
     }
 
-    return t0 + logf(y);
+    return t0 + y;
 }
 
 // I_v(z) : Modified Bessel function of the first kind

@@ -53,6 +53,33 @@ LIQUID_AUTOTEST(lnbesselif,"log Modified Bessel function of the first kind","",0
 #endif
 }
 
+// regression: the series is accumulated in the linear domain, so expf() overflows
+// for large z and underflows to zero for large nu; in both cases the function
+// returns a non-finite value although log(I_nu(z)) is perfectly representable.
+// Expected values computed with mpmath at 30 digits.
+LIQUID_AUTOTEST(lnbesselif_large_z,"log Modified Bessel function of the first kind (large z, large nu)","",0.1)
+{
+    float tol = 1e-2f;
+
+    // large z: the terms reach exp(z)/sqrt(2*pi*z) and expf() saturates near z=88
+    LIQUID_CHECK_DELTA( liquid_lnbesselif(   0.0f,  95.0f),   91.8054458129, tol );
+    LIQUID_CHECK_DELTA( liquid_lnbesselif(   0.0f, 200.0f),  196.432529354,  tol );
+    LIQUID_CHECK_DELTA( liquid_lnbesselif(   1.0f, 100.0f),   96.7747074576, tol );
+    LIQUID_CHECK_DELTA( liquid_lnbesselif(   5.5f, 120.0f),  116.561812609,  tol );
+
+    // the nu=1/2 special case goes through logf(sinhf(z)), which saturates near z=89
+    LIQUID_CHECK_DELTA( liquid_lnbesselif(   0.5f, 100.0f),   96.7784763738, tol );
+    LIQUID_CHECK_DELTA( liquid_lnbesselif(   0.5f, 200.0f),  196.431902784,  tol );
+
+    // large nu: the same terms underflow to zero and logf(0) is -inf
+    LIQUID_CHECK_DELTA( liquid_lnbesselif(  40.0f,   9.3f),  -48.3218301294, tol );
+    LIQUID_CHECK_DELTA( liquid_lnbesselif( 140.0f,   3.0f), -498.439222461,  tol );
+    LIQUID_CHECK_DELTA( liquid_lnbesselif( 140.0f, 200.0f),  149.090232742,  tol );
+
+    // the peak of the series sits near k=z/2 and was beyond the iteration bound
+    LIQUID_CHECK_DELTA( liquid_lnbesselif(  40.0f, 200.0f),  192.435848483,  tol );
+}
+
 LIQUID_AUTOTEST(besselif,"Modified Bessel function of the first kind","",0.1)
 {
     float tol = 1e-3f;
