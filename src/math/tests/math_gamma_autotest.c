@@ -149,6 +149,49 @@ LIQUID_AUTOTEST(uppergamma,"upper incomplete gamma function","",0.1)
     LIQUID_CHECK_DELTA(liquid_uppergammaf(2.1f, 10.0f),  0.000635002f, tol);
 }
 
+// regression: once alpha passes z+1 the complement Gamma(z)-gamma(z,alpha)
+// cancels in single precision, reaches zero and then goes negative, so the
+// logarithm of it is nan for values that are perfectly representable.
+// Expected values computed with mpmath at 30 digits.
+LIQUID_AUTOTEST(uppergamma_large_alpha,"upper incomplete gamma function, alpha well above z","",0.1)
+{
+    // relative error tolerance
+    float tol = 1e-3f;
+
+    // test vectors: z, alpha, Gamma(z,alpha)
+    float v[10][3] = {
+        { 1.5f, 20.0f, 9.44282794735e-9f  },
+        { 2.1f, 20.0f, 5.86954197095e-8f  },
+        { 5.0f, 25.0f, 6.40580021977e-6f  },
+        { 8.0f, 30.0f, 2.63780202020e-3f  },
+        { 8.0f, 40.0f, 8.38660810393e-7f  },
+        { 1.5f, 60.0f, 6.83882739124e-26f },
+        { 2.0f, 15.0f, 4.89443712803e-6f  },
+        { 3.0f, 20.0f, 9.11029901118e-7f  },
+        {30.0f, 50.0f, 8.10638258199e+27f },
+        {30.0f, 60.0f, 6.07982982594e+25f }};
+
+    unsigned int i;
+    for (i=0; i<10; i++) {
+        // extract test vector
+        float z     = v[i][0];
+        float alpha = v[i][1];
+        float g     = v[i][2];
+
+        // compute upper incomplete gamma
+        float G = liquid_uppergammaf(z, alpha);
+
+        // compute relative error
+        float error = fabsf(G-g) / fabsf(g);
+
+        liquid_log_debug("uppergamma(%12.4e,%12.4e) = %12.4e (expected %12.4e) error=%12.4e",
+            z, alpha, G, g, error);
+
+        // run test
+        LIQUID_CHECK(error < tol);
+    }
+}
+
 LIQUID_AUTOTEST(factorial,"factorial","",0.1)
 {
     float tol = 1e-3f;
