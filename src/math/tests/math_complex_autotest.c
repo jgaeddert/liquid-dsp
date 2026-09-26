@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(cexpf,"complex exponential","",0.1)
+LIQUID_AUTOTEST(cexpf,"complex exponential","math,complex,cexpf",0.1)
 {
     float tol = 1e-3f;
 
@@ -74,7 +74,7 @@ LIQUID_AUTOTEST(cexpf,"complex exponential","",0.1)
 }
 
 
-LIQUID_AUTOTEST(clogf,"complex log","",0.1)
+LIQUID_AUTOTEST(clogf,"complex log","math,complex,clogf",0.1)
 {
     float tol = 1e-3f;
 
@@ -124,7 +124,7 @@ LIQUID_AUTOTEST(clogf,"complex log","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(csqrtf,"complex square root","",0.1)
+LIQUID_AUTOTEST(csqrtf,"complex square root","math,complex,csqrtf",0.1)
 {
     float tol = 1e-3f;
 
@@ -174,7 +174,7 @@ LIQUID_AUTOTEST(csqrtf,"complex square root","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(casinf,"complex arc-sine","",0.1)
+LIQUID_AUTOTEST(casinf,"complex arc-sine","math,complex,casinf",0.1)
 {
     float tol = 1e-3f;
 
@@ -225,7 +225,7 @@ LIQUID_AUTOTEST(casinf,"complex arc-sine","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(cacosf,"complex arc-cosine","",0.1)
+LIQUID_AUTOTEST(cacosf,"complex arc-cosine","math,complex,cacosf",0.1)
 {
     float tol = 1e-3f;
 
@@ -277,7 +277,7 @@ LIQUID_AUTOTEST(cacosf,"complex arc-cosine","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(catanf,"complex arc-tangent","",0.1)
+LIQUID_AUTOTEST(catanf,"complex arc-tangent","math,complex,catanf",0.1)
 {
     float tol = 1e-3f;
 
@@ -328,7 +328,7 @@ LIQUID_AUTOTEST(catanf,"complex arc-tangent","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(cargf,"complex argument","",0.1)
+LIQUID_AUTOTEST(cargf,"complex argument","math,complex,cargf",0.1)
 {
     /*
     float tol = 1e-3f;

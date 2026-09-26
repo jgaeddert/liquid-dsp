@@ -22,7 +22,7 @@
 
 #include "liquid.autotest.h"
 
-LIQUID_AUTOTEST(null,"pass unconditionally","",0.1)
+LIQUID_AUTOTEST(null,"pass unconditionally","null",0.1)
 {
     LIQUID_PASS();
 }

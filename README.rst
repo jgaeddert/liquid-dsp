@@ -15,6 +15,7 @@ oscillators, modems, synchronizers, complex mathematical operations, and
 much more.
 
 .. code-block:: c
+    :name: readme.c.example.c
 
     // get in, process data, get out
     #include <liquid/liquid.h>
@@ -244,6 +245,7 @@ Just include ``<complex>`` before ``<liquid/liquid.h>`` and use
 Here is the same example as the one above but in C++ instead of C:
 
 .. code-block:: c++
+    :name: readme.link.example.cc
 
     // get in, process data, get out
     #include <complex>
@@ -307,7 +309,7 @@ Your ``CMakeLists.txt`` file might look something like this:
 .. code-block:: cmake
 
     # CMakeLists.txt - test finding package and linking against it
-    cmake_minimum_required(VERSION 3.10)
+    cmake_minimum_required(VERSION 3.20)
     project(liquid_test C)
 
     # option 1: check for local installation
@@ -354,6 +356,7 @@ is more convenient than using C-style structs. These bindings do two things:
 The original C example can be re-written in C++ as follows:
 
 .. code-block:: c++
+    :name: readme.bind.example.cc
 
     // get in, process data, get out
     #include "firinterp.hh"
@@ -396,6 +399,7 @@ Our interpolation example used throughout this document can be written
 in python3 as:
 
 .. code-block:: python
+    :name: readme.bind.py
 
     # get in, process data, get out
     import liquid as dsp, numpy as np

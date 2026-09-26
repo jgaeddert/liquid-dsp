@@ -24,7 +24,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(firpfbch_crcf_config,"firpfbch config","",0.1)
+LIQUID_AUTOTEST(firpfbch_crcf_config,"firpfbch config","multichannel,firpfbch",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls

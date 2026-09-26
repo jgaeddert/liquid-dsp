@@ -26,7 +26,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(hamming128_codec,"test Hamming (12,8) codec","",0.1)
+LIQUID_AUTOTEST(hamming128_codec,"test Hamming (12,8) codec","fec,hamming128",0.1)
 {
     unsigned int n=8;   //
     unsigned int k=12;  //
@@ -61,7 +61,7 @@ LIQUID_AUTOTEST(hamming128_codec,"test Hamming (12,8) codec","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(hamming128_codec_soft,"test Hamming (12,8) codec (soft decoding)","",0.1)
+LIQUID_AUTOTEST(hamming128_codec_soft,"test Hamming (12,8) codec (soft decoding)","fec,hamming128",0.1)
 {
     // generate each of the 2^8=256 symbols, encode, and decode
     // using soft decoding algorithm

@@ -192,7 +192,7 @@ void iirfilt_cccf_test(liquid_autotest __q__,
 // 
 // AUTOTEST: iirfilt_rrrf tests
 //
-LIQUID_AUTOTEST(iirfilt_rrrf_h3x64,"description","",0.1)
+LIQUID_AUTOTEST(iirfilt_rrrf_h3x64,"IIR filter (rrrf), h=3, x=64","filter,iirfilt",0.1)
 {
     iirfilt_rrrf_test(__q__,
                       iirfilt_rrrf_data_h3x64_b,
@@ -201,7 +201,7 @@ LIQUID_AUTOTEST(iirfilt_rrrf_h3x64,"description","",0.1)
                       iirfilt_rrrf_data_h3x64_y, 64);
 }
 
-LIQUID_AUTOTEST(iirfilt_rrrf_h5x64,"description","",0.1)
+LIQUID_AUTOTEST(iirfilt_rrrf_h5x64,"IIR filter (rrrf), h=5, x=64","filter,iirfilt",0.1)
 {
     iirfilt_rrrf_test(__q__,
                       iirfilt_rrrf_data_h5x64_b,
@@ -209,7 +209,7 @@ LIQUID_AUTOTEST(iirfilt_rrrf_h5x64,"description","",0.1)
                       iirfilt_rrrf_data_h5x64_x, 64,
                       iirfilt_rrrf_data_h5x64_y, 64);
 }
-LIQUID_AUTOTEST(iirfilt_rrrf_h7x64,"description","",0.1)
+LIQUID_AUTOTEST(iirfilt_rrrf_h7x64,"IIR filter (rrrf), h=7, x=64","filter,iirfilt",0.1)
 {
     iirfilt_rrrf_test(__q__,
                       iirfilt_rrrf_data_h7x64_b,
@@ -222,7 +222,7 @@ LIQUID_AUTOTEST(iirfilt_rrrf_h7x64,"description","",0.1)
 // 
 // AUTOTEST: iirfilt_crcf tests
 //
-LIQUID_AUTOTEST(iirfilt_crcf_h3x64,"description","",0.1)
+LIQUID_AUTOTEST(iirfilt_crcf_h3x64,"IIR filter (crcf), h=3, x=64","filter,iirfilt",0.1)
 {
     iirfilt_crcf_test(__q__,
                       iirfilt_crcf_data_h3x64_b,
@@ -230,7 +230,7 @@ LIQUID_AUTOTEST(iirfilt_crcf_h3x64,"description","",0.1)
                       iirfilt_crcf_data_h3x64_x, 64,
                       iirfilt_crcf_data_h3x64_y, 64);
 }
-LIQUID_AUTOTEST(iirfilt_crcf_h5x64,"description","",0.1)
+LIQUID_AUTOTEST(iirfilt_crcf_h5x64,"IIR filter (crcf), h=5, x=64","filter,iirfilt",0.1)
 {
     iirfilt_crcf_test(__q__,
                       iirfilt_crcf_data_h5x64_b,
@@ -238,7 +238,7 @@ LIQUID_AUTOTEST(iirfilt_crcf_h5x64,"description","",0.1)
                       iirfilt_crcf_data_h5x64_x, 64,
                       iirfilt_crcf_data_h5x64_y, 64);
 }
-LIQUID_AUTOTEST(iirfilt_crcf_h7x64,"description","",0.1)
+LIQUID_AUTOTEST(iirfilt_crcf_h7x64,"IIR filter (crcf), h=7, x=64","filter,iirfilt",0.1)
 {
     iirfilt_crcf_test(__q__,
                       iirfilt_crcf_data_h7x64_b,
@@ -251,7 +251,7 @@ LIQUID_AUTOTEST(iirfilt_crcf_h7x64,"description","",0.1)
 // 
 // AUTOTEST: iirfilt_cccf tests
 //
-LIQUID_AUTOTEST(iirfilt_cccf_h3x64,"description","",0.1)
+LIQUID_AUTOTEST(iirfilt_cccf_h3x64,"IIR filter (cccf), h=3, x=64","filter,iirfilt",0.1)
 {
     iirfilt_cccf_test(__q__,
                       iirfilt_cccf_data_h3x64_b,
@@ -259,7 +259,7 @@ LIQUID_AUTOTEST(iirfilt_cccf_h3x64,"description","",0.1)
                       iirfilt_cccf_data_h3x64_x, 64,
                       iirfilt_cccf_data_h3x64_y, 64);
 }
-LIQUID_AUTOTEST(iirfilt_cccf_h5x64,"description","",0.1)
+LIQUID_AUTOTEST(iirfilt_cccf_h5x64,"IIR filter (cccf), h=5, x=64","filter,iirfilt",0.1)
 {
     iirfilt_cccf_test(__q__,
                       iirfilt_cccf_data_h5x64_b,
@@ -267,7 +267,7 @@ LIQUID_AUTOTEST(iirfilt_cccf_h5x64,"description","",0.1)
                       iirfilt_cccf_data_h5x64_x, 64,
                       iirfilt_cccf_data_h5x64_y, 64);
 }
-LIQUID_AUTOTEST(iirfilt_cccf_h7x64,"description","",0.1)
+LIQUID_AUTOTEST(iirfilt_cccf_h7x64,"IIR filter (cccf), h=7, x=64","filter,iirfilt",0.1)
 {
     iirfilt_cccf_test(__q__,
                       iirfilt_cccf_data_h7x64_b,

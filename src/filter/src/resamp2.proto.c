@@ -79,13 +79,16 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
     // design filter prototype
     unsigned int i;
     float hf[q->h_len];
-    liquid_firdespm_halfband_as(q->m, q->as, hf);
+    // while the halfband filter design produces a good filter, it is prohibitively
+    // slow on certain machines and should not be the default
+    //liquid_firdespm_halfband_as(q->m, q->as, hf); // multiply coefficients by 2
+    liquid_firdes_kaiser(4*q->m+1, 0.25f, q->as, 0.0f, hf);
     for (i=0; i<q->h_len; i++) {
         float t = (float)i - (float)(q->h_len-1)/2.0f;
 #if TC_COMPLEX == 1
-        q->h[i] = 2 * hf[i] * ( cosf(2.0f*M_PI*t*q->f0) + _Complex_I*sinf(2.0f*M_PI*t*q->f0) );
+        q->h[i] = 1 * hf[i] * ( cosf(2.0f*M_PI*t*q->f0) + _Complex_I*sinf(2.0f*M_PI*t*q->f0) );
 #else
-        q->h[i] = 2 * hf[i] * cosf(2.0f*M_PI*t*q->f0);
+        q->h[i] = 1 * hf[i] * cosf(2.0f*M_PI*t*q->f0);
 #endif
     }
 

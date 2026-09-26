@@ -27,7 +27,10 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(iirdes_butter_2,"design specific 2nd-order butterworth filter and compare to known coefficients; design comes from [Ziemer:1998], Example 9-7, pp. 440--442", "", 0.1)
+LIQUID_AUTOTEST(iirdes_butter_2,
+    "design specific 2nd-order butterworth filter and compare to known coefficients;"
+    " design comes from [Ziemer:1998], Example 9-7, pp. 440--442",
+    "filter,iirdes,butter", 0.1)
 {
     // design butterworth filter
     float a[3];
@@ -105,11 +108,30 @@ void testbench_iirdes_ellip_lowpass(liquid_autotest __q__,
 
 // test different filter designs
 
-LIQUID_AUTOTEST(iirdes_ellip_lowpass_0,"description","",0.1){ testbench_iirdes_ellip_lowpass(__q__,  5,0.20f,0.30f,1.0f, 60.0f); }
-LIQUID_AUTOTEST(iirdes_ellip_lowpass_1,"description","",0.1){ testbench_iirdes_ellip_lowpass(__q__,  5,0.05f,0.09f,1.0f, 60.0f); }
-LIQUID_AUTOTEST(iirdes_ellip_lowpass_2,"description","",0.1){ testbench_iirdes_ellip_lowpass(__q__,  5,0.20f,0.43f,1.0f,100.0f); }
-LIQUID_AUTOTEST(iirdes_ellip_lowpass_3,"description","",0.1){ testbench_iirdes_ellip_lowpass(__q__,  5,0.20f,0.40f,0.1f, 60.0f); }
-LIQUID_AUTOTEST(iirdes_ellip_lowpass_4,"description","",0.1){ testbench_iirdes_ellip_lowpass(__q__, 15,0.35f,0.37f,0.1f,120.0f); }
+LIQUID_AUTOTEST(iirdes_ellip_lowpass_0,
+    "IIR design, elliptic low-pass, n=5, fc=0.20, fs=0.30, Ap=1.0, As=60",
+    "filter,iirdes,ellip",0.1)
+{ testbench_iirdes_ellip_lowpass(__q__,  5,0.20f,0.30f,1.0f, 60.0f); }
+
+LIQUID_AUTOTEST(iirdes_ellip_lowpass_1,
+    "IIR design, elliptic low-pass, n=5, fc=0.05, fs=0.09, Ap=1.0, As=60",
+    "filter,iirdes,ellip",0.1)
+{ testbench_iirdes_ellip_lowpass(__q__,  5,0.05f,0.09f,1.0f, 60.0f); }
+
+LIQUID_AUTOTEST(iirdes_ellip_lowpass_2,
+    "IIR design, elliptic low-pass, n=5, fc=0.20, fs=0.43, Ap=1.0, As=100",
+    "filter,iirdes,ellip",0.1)
+{ testbench_iirdes_ellip_lowpass(__q__,  5,0.20f,0.43f,1.0f,100.0f); }
+
+LIQUID_AUTOTEST(iirdes_ellip_lowpass_3,
+    "IIR design, elliptic low-pass, n=5, fc=0.20, fs=0.40, Ap=0.1, As=60",
+    "filter,iirdes,ellip",0.1)
+{ testbench_iirdes_ellip_lowpass(__q__,  5,0.20f,0.40f,0.1f, 60.0f); }
+
+LIQUID_AUTOTEST(iirdes_ellip_lowpass_4,
+    "IIR design, elliptic low-pass, n=15, fc=0.35, fs=0.37, Ap=0.1, As=120",
+    "filter,iirdes,ellip",0.1)
+{ testbench_iirdes_ellip_lowpass(__q__, 15,0.35f,0.37f,0.1f,120.0f); }
 
 // check low-pass Chebyshev filter design (type 1)
 void testbench_iirdes_cheby1_lowpass(liquid_autotest __q__,
@@ -143,11 +165,30 @@ void testbench_iirdes_cheby1_lowpass(liquid_autotest __q__,
 
 // test different filter designs
 
-LIQUID_AUTOTEST(iirdes_cheby1_lowpass_0,"description","",0.1){ testbench_iirdes_cheby1_lowpass(__q__,  5,0.20f,0.36f,1.0f); }
-LIQUID_AUTOTEST(iirdes_cheby1_lowpass_1,"description","",0.1){ testbench_iirdes_cheby1_lowpass(__q__,  5,0.05f,0.14f,1.0f); }
-LIQUID_AUTOTEST(iirdes_cheby1_lowpass_2,"description","",0.1){ testbench_iirdes_cheby1_lowpass(__q__,  5,0.20f,0.36f,1.0f); }
-LIQUID_AUTOTEST(iirdes_cheby1_lowpass_3,"description","",0.1){ testbench_iirdes_cheby1_lowpass(__q__,  5,0.20f,0.40f,0.1f); }
-LIQUID_AUTOTEST(iirdes_cheby1_lowpass_4,"description","",0.1){ testbench_iirdes_cheby1_lowpass(__q__, 15,0.35f,0.38f,0.1f); }
+LIQUID_AUTOTEST(iirdes_cheby1_lowpass_0,
+    "IIR design, Chebyshev type-1 low-pass, n=5, fc=0.20, fs=0.36, Ap=1.0",
+    "filter,iirdes,cheby,cheby1",0.1)
+{ testbench_iirdes_cheby1_lowpass(__q__,  5,0.20f,0.36f,1.0f); }
+
+LIQUID_AUTOTEST(iirdes_cheby1_lowpass_1,
+    "IIR design, Chebyshev type-1 low-pass, n=5, fc=0.05, fs=0.14, Ap=1.0",
+    "filter,iirdes,cheby,cheby1",0.1)
+{ testbench_iirdes_cheby1_lowpass(__q__,  5,0.05f,0.14f,1.0f); }
+
+LIQUID_AUTOTEST(iirdes_cheby1_lowpass_2,
+    "IIR design, Chebyshev type-1 low-pass, n=5, fc=0.20, fs=0.36, Ap=1.0",
+    "filter,iirdes,cheby,cheby1",0.1)
+{ testbench_iirdes_cheby1_lowpass(__q__,  5,0.20f,0.36f,1.0f); }
+
+LIQUID_AUTOTEST(iirdes_cheby1_lowpass_3,
+    "IIR design, Chebyshev type-1 low-pass, n=5, fc=0.20, fs=0.40, Ap=0.1",
+    "filter,iirdes,cheby,cheby1",0.1)
+{ testbench_iirdes_cheby1_lowpass(__q__,  5,0.20f,0.40f,0.1f); }
+
+LIQUID_AUTOTEST(iirdes_cheby1_lowpass_4,
+    "IIR design, Chebyshev type-1 low-pass, n=15, fc=0.35, fs=0.38, Ap=0.1",
+    "filter,iirdes,cheby,cheby1",0.1)
+{ testbench_iirdes_cheby1_lowpass(__q__, 15,0.35f,0.38f,0.1f); }
 
 // check low-pass Chebyshev filter design (type 2)
 void testbench_iirdes_cheby2_lowpass(liquid_autotest __q__,
@@ -181,11 +222,30 @@ void testbench_iirdes_cheby2_lowpass(liquid_autotest __q__,
 
 // test different filter designs
 
-LIQUID_AUTOTEST(iirdes_cheby2_lowpass_0,"description","",0.1){ testbench_iirdes_cheby2_lowpass(__q__, 5,0.08f,0.20f, 60.0f); }
-LIQUID_AUTOTEST(iirdes_cheby2_lowpass_1,"description","",0.1){ testbench_iirdes_cheby2_lowpass(__q__, 5,0.02f,0.05f, 60.0f); }
-LIQUID_AUTOTEST(iirdes_cheby2_lowpass_2,"description","",0.1){ testbench_iirdes_cheby2_lowpass(__q__, 5,0.07f,0.20f, /*100.0f*/ 70.0f); }
-LIQUID_AUTOTEST(iirdes_cheby2_lowpass_3,"description","",0.1){ testbench_iirdes_cheby2_lowpass(__q__, 5,0.09f,0.20f, 60.0f); }
-LIQUID_AUTOTEST(iirdes_cheby2_lowpass_4,"description","",0.1){ testbench_iirdes_cheby2_lowpass(__q__,15,0.30f,0.35f,/*120.0f*/ 70.0f); }
+LIQUID_AUTOTEST(iirdes_cheby2_lowpass_0,
+    "IIR design, Chebyshev type-2 low-pass, n=5, fp=0.08, fc=0.20, As=60",
+    "filter,iirdes,cheby,cheby2",0.1)
+{ testbench_iirdes_cheby2_lowpass(__q__, 5,0.08f,0.20f, 60.0f); }
+
+LIQUID_AUTOTEST(iirdes_cheby2_lowpass_1,
+    "IIR design, Chebyshev type-2 low-pass, n=5, fp=0.02, fc=0.05, As=60",
+    "filter,iirdes,cheby,cheby2",0.1)
+{ testbench_iirdes_cheby2_lowpass(__q__, 5,0.02f,0.05f, 60.0f); }
+
+LIQUID_AUTOTEST(iirdes_cheby2_lowpass_2,
+    "IIR design, Chebyshev type-2 low-pass, n=5, fp=0.07, fc=0.20, As=70",
+    "filter,iirdes,cheby,cheby2",0.1)
+{ testbench_iirdes_cheby2_lowpass(__q__, 5,0.07f,0.20f, /*100.0f*/ 70.0f); }
+
+LIQUID_AUTOTEST(iirdes_cheby2_lowpass_3,
+    "IIR design, Chebyshev type-2 low-pass, n=5, fp=0.09, fc=0.20, As=60",
+    "filter,iirdes,cheby,cheby2",0.1)
+{ testbench_iirdes_cheby2_lowpass(__q__, 5,0.09f,0.20f, 60.0f); }
+
+LIQUID_AUTOTEST(iirdes_cheby2_lowpass_4,
+    "IIR design, Chebyshev type-2 low-pass, n=15, fp=0.30, fc=0.35, As=70",
+    "filter,iirdes,cheby,cheby2",0.1)
+{ testbench_iirdes_cheby2_lowpass(__q__,15,0.30f,0.35f,/*120.0f*/ 70.0f); }
 
 // check low-pass Butterworth filter design
 void testbench_iirdes_butter_lowpass(liquid_autotest __q__,
@@ -218,13 +278,32 @@ void testbench_iirdes_butter_lowpass(liquid_autotest __q__,
 
 // test different filter designs
 
-LIQUID_AUTOTEST(iirdes_butter_lowpass_0,"description","",0.1){ testbench_iirdes_butter_lowpass(__q__, 5,0.20f,0.40f); }
-LIQUID_AUTOTEST(iirdes_butter_lowpass_1,"description","",0.1){ testbench_iirdes_butter_lowpass(__q__, 5,0.05f,0.19f); }
-LIQUID_AUTOTEST(iirdes_butter_lowpass_2,"description","",0.1){ testbench_iirdes_butter_lowpass(__q__, 5,0.20f,0.40f); }
-LIQUID_AUTOTEST(iirdes_butter_lowpass_3,"description","",0.1){ testbench_iirdes_butter_lowpass(__q__, 5,0.20f,0.40f); }
-LIQUID_AUTOTEST(iirdes_butter_lowpass_4,"description","",0.1){ testbench_iirdes_butter_lowpass(__q__,15,0.35f,0.41f); }
+LIQUID_AUTOTEST(iirdes_butter_lowpass_0,
+    "IIR design, Butterworth low-pass, n=5, fc=0.20, fs=0.40",
+    "filter,iirdes,butter",0.1)
+{ testbench_iirdes_butter_lowpass(__q__, 5,0.20f,0.40f); }
 
-LIQUID_AUTOTEST(iirdes_ellip_highpass,"check elliptical filter design with high-pass transformation", "", 0.1) {
+LIQUID_AUTOTEST(iirdes_butter_lowpass_1,
+    "IIR design, Butterworth low-pass, n=5, fc=0.05, fs=0.19",
+    "filter,iirdes,butter",0.1)
+{ testbench_iirdes_butter_lowpass(__q__, 5,0.05f,0.19f); }
+
+LIQUID_AUTOTEST(iirdes_butter_lowpass_2,
+    "IIR design, Butterworth low-pass, n=5, fc=0.20, fs=0.40",
+    "filter,iirdes,butter",0.1)
+{ testbench_iirdes_butter_lowpass(__q__, 5,0.20f,0.40f); }
+
+LIQUID_AUTOTEST(iirdes_butter_lowpass_3,
+    "IIR design, Butterworth low-pass, n=5, fc=0.20, fs=0.40",
+    "filter,iirdes,butter",0.1)
+{ testbench_iirdes_butter_lowpass(__q__, 5,0.20f,0.40f); }
+
+LIQUID_AUTOTEST(iirdes_butter_lowpass_4,
+    "IIR design, Butterworth low-pass, n=15, fc=0.35, fs=0.41",
+    "filter,iirdes,butter",0.1)
+{ testbench_iirdes_butter_lowpass(__q__,15,0.35f,0.41f); }
+
+LIQUID_AUTOTEST(iirdes_ellip_highpass,"check elliptical filter design with high-pass transformation", "filter,iirdes", 0.1) {
     unsigned int n  =    9;   // filter order
     float        fc =  0.2;   // filter cut-off
     float        Ap =  0.1;   // pass-band ripple
@@ -250,7 +329,9 @@ LIQUID_AUTOTEST(iirdes_ellip_highpass,"check elliptical filter design with high-
     iirfilt_rrrf_destroy(filter);
 }
 
-LIQUID_AUTOTEST(iirdes_ellip_bandpass,"check elliptical filter design with band-pass transformation", "", 0.1) {
+LIQUID_AUTOTEST(iirdes_ellip_bandpass,
+    "check elliptical filter design with band-pass transformation", "filter,iirdes", 0.1)
+{
     unsigned int n  =    9;   // filter order
     float        fc =  0.3;   // filter cut-off
     float        f0 =  0.35;  // filter center frequency
@@ -279,7 +360,9 @@ LIQUID_AUTOTEST(iirdes_ellip_bandpass,"check elliptical filter design with band-
     iirfilt_rrrf_destroy(filter);
 }
 
-LIQUID_AUTOTEST(iirdes_ellip_bandstop,"check elliptical filter design with band-stop transformation", "", 0.1) {
+LIQUID_AUTOTEST(iirdes_ellip_bandstop,
+    "check elliptical filter design with band-stop transformation", "filter,iirdes", 0.1)
+{
     unsigned int n  =    9;   // filter order
     float        fc =  0.3;   // filter cut-off
     float        f0 =  0.35;  // filter center frequency
@@ -308,7 +391,8 @@ LIQUID_AUTOTEST(iirdes_ellip_bandstop,"check elliptical filter design with band-
     iirfilt_rrrf_destroy(filter);
 }
 
-LIQUID_AUTOTEST(iirdes_bessel,"check Bessel filter design", "", 0.1) {
+LIQUID_AUTOTEST(iirdes_bessel,"check Bessel filter design", "filter,iirdes", 0.1)
+{
     unsigned int n  =    9;   // filter order
     float        fc =  0.1;   // filter cut-off
     unsigned int nfft = 960;  // number of points to evaluate

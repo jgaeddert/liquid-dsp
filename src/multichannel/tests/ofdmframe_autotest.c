@@ -138,12 +138,12 @@ void testbench_ofdmframesync_acquire(liquid_autotest __q__,
 }
 
 //
-LIQUID_AUTOTEST(ofdmframesync_acquire_n64,"","",0.1)   { testbench_ofdmframesync_acquire(__q__,64,  8,  0); }
-LIQUID_AUTOTEST(ofdmframesync_acquire_n128,"","",0.1)  { testbench_ofdmframesync_acquire(__q__,128, 16, 0); }
-LIQUID_AUTOTEST(ofdmframesync_acquire_n256,"","",0.1)  { testbench_ofdmframesync_acquire(__q__,256, 32, 0); }
-LIQUID_AUTOTEST(ofdmframesync_acquire_n512,"","",0.1)  { testbench_ofdmframesync_acquire(__q__,512, 64, 0); }
+LIQUID_AUTOTEST(ofdmframesync_acquire_n64, "ofdmframesync acquisition, M= 64","multichannel,ofdmframe",0.1) { testbench_ofdmframesync_acquire(__q__,64,  8,  0); }
+LIQUID_AUTOTEST(ofdmframesync_acquire_n128,"ofdmframesync acquisition, M=128","multichannel,ofdmframe",0.1) { testbench_ofdmframesync_acquire(__q__,128, 16, 0); }
+LIQUID_AUTOTEST(ofdmframesync_acquire_n256,"ofdmframesync acquisition, M=256","multichannel,ofdmframe",0.1) { testbench_ofdmframesync_acquire(__q__,256, 32, 0); }
+LIQUID_AUTOTEST(ofdmframesync_acquire_n512,"ofdmframesync acquisition, M=512","multichannel,ofdmframe",0.1) { testbench_ofdmframesync_acquire(__q__,512, 64, 0); }
 
-LIQUID_AUTOTEST(ofdmframe_common_config,"","",0.1)
+LIQUID_AUTOTEST(ofdmframe_common_config,"check ofdmframe common configuration","multichannel,ofdmframe",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls
@@ -182,7 +182,7 @@ LIQUID_AUTOTEST(ofdmframe_common_config,"","",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(ofdmframegen_config,"","",0.1)
+LIQUID_AUTOTEST(ofdmframegen_config,"check ofdmframegen configuration","multichannel,ofdmframe",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls
@@ -202,7 +202,7 @@ LIQUID_AUTOTEST(ofdmframegen_config,"","",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(ofdmframesync_config,"","",0.1)
+LIQUID_AUTOTEST(ofdmframesync_config,"check ofdmframesync configuration","multichannel,ofdmframe",0.1)
 {
     _liquid_error_downgrade_enable();
     // check invalid function calls

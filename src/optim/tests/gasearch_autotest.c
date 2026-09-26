@@ -45,7 +45,7 @@ float gasearch_autotest_peak_callback(void * _userdata, chromosome _c)
     return u;
 }
 
-LIQUID_AUTOTEST(gasearch_peak,"find values which maximize function","",0.1)
+LIQUID_AUTOTEST(gasearch_peak,"find values which maximize function","optim,gasearch",0.1)
 {
     unsigned int num_parameters     = 16;   // dimensionality of search (minimum 1)
     unsigned int bits_per_parameter =  6;   // parameter resolution
@@ -88,7 +88,7 @@ LIQUID_AUTOTEST(gasearch_peak,"find values which maximize function","",0.1)
     LIQUID_CHECK( optimum_utility> 0.70f )
 }
 
-LIQUID_AUTOTEST(chromosome_config,"test chromosome configuration","",0.1)
+LIQUID_AUTOTEST(chromosome_config,"test chromosome configuration","optim,gasearch",0.1)
 {
     _liquid_error_downgrade_enable();
     // test chromosome
@@ -151,7 +151,7 @@ LIQUID_AUTOTEST(chromosome_config,"test chromosome configuration","",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(gasearch_config,"gasearch configuration","",0.1)
+LIQUID_AUTOTEST(gasearch_config,"gasearch configuration","optim,gasearch",0.1)
 {
     _liquid_error_downgrade_enable();
     // create prototype chromosome
@@ -185,7 +185,7 @@ LIQUID_AUTOTEST(gasearch_config,"gasearch configuration","",0.1)
 }
 
 // baseline tests using create_kaiser() method
-LIQUID_AUTOTEST(chromosome, "baseline chromosome test", "", 0.1)
+LIQUID_AUTOTEST(chromosome, "baseline chromosome test", "optim,gasearch", 0.1)
 {
 #if 0
     unsigned int bits_per_trait[] = {4, 8, 8, 4};

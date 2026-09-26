@@ -79,11 +79,22 @@ void test_iirinterp_crcf(liquid_autotest __q__,
 
 // baseline tests using create_kaiser() method
 
-LIQUID_AUTOTEST(iirinterp_crcf_M2_O9,"description","",0.1) { test_iirinterp_crcf(__q__, "baseline", 2, 9); }
-LIQUID_AUTOTEST(iirinterp_crcf_M3_O9,"description","",0.1) { test_iirinterp_crcf(__q__, "baseline", 3, 9); }
-LIQUID_AUTOTEST(iirinterp_crcf_M4_O9,"description","",0.1) { test_iirinterp_crcf(__q__, "baseline", 4, 9); }
+LIQUID_AUTOTEST(iirinterp_crcf_M2_O9,
+    "IIR interpolator (crcf), M=2, order=9",
+    "filter,iirinterp",0.1)
+{ test_iirinterp_crcf(__q__, "baseline", 2, 9); }
 
-LIQUID_AUTOTEST(iirinterp_copy,"test copy method", "", 0.1)
+LIQUID_AUTOTEST(iirinterp_crcf_M3_O9,
+    "IIR interpolator (crcf), M=3, order=9",
+    "filter,iirinterp",0.1)
+{ test_iirinterp_crcf(__q__, "baseline", 3, 9); }
+
+LIQUID_AUTOTEST(iirinterp_crcf_M4_O9,
+    "IIR interpolator (crcf), M=4, order=9",
+    "filter,iirinterp",0.1)
+{ test_iirinterp_crcf(__q__, "baseline", 4, 9); }
+
+LIQUID_AUTOTEST(iirinterp_copy,"test copy method", "filter,iirinterp", 0.1)
 {
     // create base object
     iirinterp_crcf q0 = iirinterp_crcf_create_default(3, 7);

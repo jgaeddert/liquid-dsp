@@ -76,26 +76,26 @@ void testbench_gmskmodem(liquid_autotest __q__,
 }
 
 // base configuration
-LIQUID_AUTOTEST(gmskmodem_k4_m3_b025,"","",0.1) { testbench_gmskmodem(__q__, 4, 3, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k4_m3_b025,"gmsk modem, k=4, m=3, beta=0.25","modem,gmskmodem",0.1) { testbench_gmskmodem(__q__, 4, 3, 0.25f); }
 
 // test different samples/symbol
-LIQUID_AUTOTEST(gmskmodem_k2_m3_b025,"","",0.1) { testbench_gmskmodem(__q__, 2, 3, 0.25f); }
-LIQUID_AUTOTEST(gmskmodem_k3_m3_b025,"","",0.1) { testbench_gmskmodem(__q__, 3, 3, 0.25f); }
-LIQUID_AUTOTEST(gmskmodem_k5_m3_b025,"","",0.1) { testbench_gmskmodem(__q__, 5, 3, 0.25f); }
-LIQUID_AUTOTEST(gmskmodem_k8_m3_b033,"","",0.1) { testbench_gmskmodem(__q__, 8, 3, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k2_m3_b025,"gmsk modem, k=2, m=3, beta=0.25","modem,gmskmodem",0.1) { testbench_gmskmodem(__q__, 2, 3, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k3_m3_b025,"gmsk modem, k=3, m=3, beta=0.25","modem,gmskmodem",0.1) { testbench_gmskmodem(__q__, 3, 3, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k5_m3_b025,"gmsk modem, k=5, m=3, beta=0.25","modem,gmskmodem",0.1) { testbench_gmskmodem(__q__, 5, 3, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k8_m3_b025,"gmsk modem, k=8, m=3, beta=0.25","modem,gmskmodem",0.1) { testbench_gmskmodem(__q__, 8, 3, 0.25f); }
 
 // test different filter semi-lengths
-LIQUID_AUTOTEST(gmskmodem_k4_m1_b025,"","",0.1) { testbench_gmskmodem(__q__, 4, 1, 0.25f); }
-LIQUID_AUTOTEST(gmskmodem_k4_m2_b025,"","",0.1) { testbench_gmskmodem(__q__, 4, 2, 0.25f); }
-LIQUID_AUTOTEST(gmskmodem_k4_m8_b025,"","",0.1) { testbench_gmskmodem(__q__, 4, 8, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k4_m1_b025,"gmsk modem, k=4, m=1, beta=0.25","modem,gmskmodem",0.1) { testbench_gmskmodem(__q__, 4, 1, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k4_m2_b025,"gmsk modem, k=4, m=2, beta=0.25","modem,gmskmodem",0.1) { testbench_gmskmodem(__q__, 4, 2, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k4_m8_b025,"gmsk modem, k=4, m=8, beta=0.25","modem,gmskmodem",0.1) { testbench_gmskmodem(__q__, 4, 8, 0.25f); }
 
 // test different filter bandwidth factors
-LIQUID_AUTOTEST(gmskmodem_k4_m3_b020,"","",0.1) { testbench_gmskmodem(__q__, 4, 3, 0.20f); }
-LIQUID_AUTOTEST(gmskmodem_k4_m3_b033,"","",0.1) { testbench_gmskmodem(__q__, 4, 3, 0.25f); }
-LIQUID_AUTOTEST(gmskmodem_k4_m3_b050,"","",0.1) { testbench_gmskmodem(__q__, 4, 3, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k4_m3_b020,"gmsk modem, k=4, m=3, beta=0.20","modem,gmskmodem",0.1) { testbench_gmskmodem(__q__, 4, 3, 0.20f); }
+LIQUID_AUTOTEST(gmskmodem_k4_m3_b033,"gmsk modem, k=4, m=3, beta=0.33","modem,gmskmodem",0.1) { testbench_gmskmodem(__q__, 4, 3, 0.25f); }
+LIQUID_AUTOTEST(gmskmodem_k4_m3_b050,"gmsk modem, k=4, m=3, beta=0.50","modem,gmskmodem",0.1) { testbench_gmskmodem(__q__, 4, 3, 0.25f); }
 
 // test modulator copy
-LIQUID_AUTOTEST(gmskmod_copy,"","",0.1)
+LIQUID_AUTOTEST(gmskmod_copy,"gmskmod copy","modem,gmskmodem",0.1)
 {
     // options
     unsigned int k  = 5;
@@ -138,7 +138,7 @@ LIQUID_AUTOTEST(gmskmod_copy,"","",0.1)
 }
 
 // test demodulator copy
-LIQUID_AUTOTEST(gmskdem_copy,"","",0.1)
+LIQUID_AUTOTEST(gmskdem_copy,"gmskdem copy","modem,gmskmodem",0.1)
 {
     // options
     unsigned int k  = 5;

@@ -760,6 +760,13 @@ if (fftw3f_FOUND)
     string(APPEND LIQUID_PC_LIBS_PRIVATE " -lfftw3f")
 endif()
 
+# NOTE: cmake_path(APPEND ...) requires cmake >= 3.20; we can keep the version number
+#       at 3.10 by running an equivalent set() command
+#cmake_path(APPEND libdir_for_pc_file "\${prefix}" "${CMAKE_INSTALL_LIBDIR}")
+#cmake_path(APPEND includedir_for_pc_file "\${prefix}" "${CMAKE_INSTALL_INCLUDEDIR}")
+set(libdir_for_pc_file     "\${prefix}/${CMAKE_INSTALL_LIBDIR}")
+set(includedir_for_pc_file "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
+
 configure_file(
     cmake/liquid-dsp.pc.in
     ${CMAKE_CURRENT_BINARY_DIR}/liquid-dsp.pc
@@ -828,8 +835,8 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_copy_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fec/tests/packetizer_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/asgram_autotest.c
-    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_r2r_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_shift_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/fft_transforms_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/spgram_autotest.c
     ${PROJECT_SOURCE_DIR}/src/fft/tests/spwaterfall_autotest.c
@@ -945,6 +952,7 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/sequence/tests/msequence_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/bshift_array_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/count_bits_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/utility/tests/keywords_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/memory_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/pack_bytes_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/shift_array_autotest.c

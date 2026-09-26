@@ -26,7 +26,7 @@
 #define LIQUID_RANDOM_AUTOTEST_NUM_TRIALS (250000)
 #define LIQUID_RANDOM_AUTOTEST_ERROR_TOL  (0.15)
 
-LIQUID_AUTOTEST(randf,"test generating uniform random variables","",0.1)
+LIQUID_AUTOTEST(randf,"test generating uniform random variables","random",0.1)
 {
     unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
     unsigned long int i;
@@ -46,7 +46,7 @@ LIQUID_AUTOTEST(randf,"test generating uniform random variables","",0.1)
     LIQUID_CHECK_DELTA(m2, 1/12.0f, tol);
 }
 
-LIQUID_AUTOTEST(randnf,"test generating normal random variables","",0.1)
+LIQUID_AUTOTEST(randnf,"test generating normal random variables","random",0.1)
 {
     unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS; // number of trials
     unsigned long int i;
@@ -66,7 +66,7 @@ LIQUID_AUTOTEST(randnf,"test generating normal random variables","",0.1)
     LIQUID_CHECK_DELTA(m2, 1.0f, tol);
 }
 
-LIQUID_AUTOTEST(crandnf,"test generating complex circular Gauss random variables","",0.1)
+LIQUID_AUTOTEST(crandnf,"test generating complex circular Gauss random variables","random",0.1)
 {
     unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
     unsigned long int i;
@@ -88,7 +88,7 @@ LIQUID_AUTOTEST(crandnf,"test generating complex circular Gauss random variables
     LIQUID_CHECK_DELTA(m2, 1.0f, tol);
 }
 
-LIQUID_AUTOTEST(randweibf,"test generating Weibull random variables","",0.1)
+LIQUID_AUTOTEST(randweibf,"test generating Weibull random variables","random",0.1)
 {
     unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
     unsigned long int i;
@@ -117,7 +117,7 @@ LIQUID_AUTOTEST(randweibf,"test generating Weibull random variables","",0.1)
     LIQUID_CHECK_DELTA(m2, m2_exp, tol);
 }
 
-LIQUID_AUTOTEST(randricekf,"test generating Rice-K random variables","",0.1)
+LIQUID_AUTOTEST(randricekf,"test generating Rice-K random variables","random",0.1)
 {
     unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
     unsigned long int i;
@@ -138,7 +138,7 @@ LIQUID_AUTOTEST(randricekf,"test generating Rice-K random variables","",0.1)
     LIQUID_CHECK_DELTA(m2, omega, tol);
 }
 
-LIQUID_AUTOTEST(randexpf,"test generating exponential random variables","",0.1)
+LIQUID_AUTOTEST(randexpf,"test generating exponential random variables","random",0.1)
 {
     unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
     unsigned long int i;
@@ -165,7 +165,7 @@ LIQUID_AUTOTEST(randexpf,"test generating exponential random variables","",0.1)
     LIQUID_CHECK_DELTA(m2, m2_exp, tol);
 }
 
-LIQUID_AUTOTEST(random_config,"test random configuration","",0.1)
+LIQUID_AUTOTEST(random_config,"test random configuration","random",0.1)
 {
     _liquid_error_downgrade_enable();
     // exponential: lambda out of range

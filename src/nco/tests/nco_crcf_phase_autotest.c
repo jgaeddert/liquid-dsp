@@ -59,7 +59,7 @@ void testbench_nco_crcf_phase(liquid_autotest __q__,
     nco_crcf_destroy(nco);
 }
 
-LIQUID_AUTOTEST(nco_crcf_phase,"test floating point precision nco phase","",0.1)
+LIQUID_AUTOTEST(nco_crcf_phase,"test floating point precision nco phase","nco",0.1)
 {
     // error tolerance (higher for NCO)
     float tol = 0.02f;
@@ -86,7 +86,7 @@ LIQUID_AUTOTEST(nco_crcf_phase,"test floating point precision nco phase","",0.1)
     testbench_nco_crcf_phase(__q__, 6.283185307f,  1.000000000f, -0.000000000f, LIQUID_NCO, tol);
 }
 
-LIQUID_AUTOTEST(nco_basic,"test floating point precision nco","",0.1) {
+LIQUID_AUTOTEST(nco_basic,"test floating point precision nco","nco",0.1) {
     nco_crcf p = nco_crcf_create(LIQUID_NCO);
 
     unsigned int i;     // loop index
@@ -134,7 +134,7 @@ LIQUID_AUTOTEST(nco_basic,"test floating point precision nco","",0.1) {
     nco_crcf_destroy(p);
 }
 
-LIQUID_AUTOTEST(nco_mixing,"test nco mixing","",0.1) {
+LIQUID_AUTOTEST(nco_mixing,"test nco mixing","nco",0.1) {
     // frequency, phase
     float f = 0.1f;
     float phi = M_PI;
@@ -171,7 +171,7 @@ LIQUID_AUTOTEST(nco_mixing,"test nco mixing","",0.1) {
     nco_crcf_destroy(p);
 }
 
-LIQUID_AUTOTEST(nco_block_mixing,"test nco block mixing","",0.1)
+LIQUID_AUTOTEST(nco_block_mixing,"test nco block mixing","nco",0.1)
 {
     // frequency, phase
     float f = 0.1f;

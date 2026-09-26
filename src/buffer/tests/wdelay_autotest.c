@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(wdelayf,"test basic wdelayf functionality","",0.1)
+LIQUID_AUTOTEST(wdelayf,"test basic wdelayf functionality","buffer,wdelay",0.1)
 {
     float v;    // reader
     unsigned int i;
@@ -84,7 +84,7 @@ LIQUID_AUTOTEST(wdelayf,"test basic wdelayf functionality","",0.1)
     wdelayf_destroy(w);
 }
 
-LIQUID_AUTOTEST(wdelay_copy,"test wdelay copy method","",0.1)
+LIQUID_AUTOTEST(wdelay_copy,"test wdelay copy method","buffer,wdelay",0.1)
 {
     // create base object
     unsigned int delay = 20;

@@ -83,19 +83,29 @@ void testbench_ofdmflexframe(liquid_autotest   __q__,
     ofdmflexframesync_destroy(fs);
 }
 
-//                          ID                                M  CP  TP  PAYL  modulation scheme
-LIQUID_AUTOTEST(ofdmflexframe_00,"","",0.1) { testbench_ofdmflexframe(__q__,  32,  8,  4,  800, LIQUID_MODEM_QPSK); }
-LIQUID_AUTOTEST(ofdmflexframe_01,"","",0.1) { testbench_ofdmflexframe(__q__,  64,  8,  4,  800, LIQUID_MODEM_QPSK); }
-LIQUID_AUTOTEST(ofdmflexframe_02,"","",0.1) { testbench_ofdmflexframe(__q__, 256,  8,  4,  800, LIQUID_MODEM_QPSK); }
-LIQUID_AUTOTEST(ofdmflexframe_03,"","",0.1) { testbench_ofdmflexframe(__q__,1024, 16,  8,  800, LIQUID_MODEM_QPSK); }
-LIQUID_AUTOTEST(ofdmflexframe_04,"","",0.1) { testbench_ofdmflexframe(__q__,2048, 32, 16,  800, LIQUID_MODEM_QPSK); }
-LIQUID_AUTOTEST(ofdmflexframe_05,"","",0.1) { testbench_ofdmflexframe(__q__,4096, 64, 32,  800, LIQUID_MODEM_QPSK); }
-LIQUID_AUTOTEST(ofdmflexframe_06,"","",0.1) { testbench_ofdmflexframe(__q__,8192, 80, 40,  800, LIQUID_MODEM_QPSK); }
-LIQUID_AUTOTEST(ofdmflexframe_07,"","",0.1) { testbench_ofdmflexframe(__q__,1200, 40, 20,    1, LIQUID_MODEM_QPSK); }
-LIQUID_AUTOTEST(ofdmflexframe_08,"","",0.1) { testbench_ofdmflexframe(__q__,1200,  0,  0,  800, LIQUID_MODEM_QPSK); }
-LIQUID_AUTOTEST(ofdmflexframe_09,"","",0.1) { testbench_ofdmflexframe(__q__,1200, 40, 20, 8217, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_00,"ofdmflexframe with M=  32, CP= 8, taper= 4, payload= 800","framing,ofdmflexframe",0.1)
+    { testbench_ofdmflexframe(__q__,  32,  8,  4,  800, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_01,"ofdmflexframe with M=  64, CP= 8, taper= 4, payload= 800","framing,ofdmflexframe",0.1)
+    { testbench_ofdmflexframe(__q__,  64,  8,  4,  800, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_02,"ofdmflexframe with M= 256, CP= 8, taper= 4, payload= 800","framing,ofdmflexframe",0.1)
+    { testbench_ofdmflexframe(__q__, 256,  8,  4,  800, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_03,"ofdmflexframe with M=1024, CP=16, taper= 8, payload= 800","framing,ofdmflexframe",0.1)
+    { testbench_ofdmflexframe(__q__,1024, 16,  8,  800, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_04,"ofdmflexframe with M=2048, CP=32, taper=16, payload= 800","framing,ofdmflexframe",0.1)
+    { testbench_ofdmflexframe(__q__,2048, 32, 16,  800, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_05,"ofdmflexframe with M=4096, CP=64, taper=32, payload= 800","framing,ofdmflexframe",0.1)
+    { testbench_ofdmflexframe(__q__,4096, 64, 32,  800, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_06,"ofdmflexframe with M=8192, CP=80, taper=40, payload= 800","framing,ofdmflexframe",0.1)
+    { testbench_ofdmflexframe(__q__,8192, 80, 40,  800, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_07,"ofdmflexframe with M=1200, CP=40, taper=20, payload=   1","framing,ofdmflexframe",0.1)
+    { testbench_ofdmflexframe(__q__,1200, 40, 20,    1, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_08,"ofdmflexframe with M=1200, CP= 0, taper= 0, payload= 800","framing,ofdmflexframe",0.1)
+    { testbench_ofdmflexframe(__q__,1200,  0,  0,  800, LIQUID_MODEM_QPSK); }
+LIQUID_AUTOTEST(ofdmflexframe_09,"ofdmflexframe with M=1200, CP=40, taper=20, payload=8217","framing,ofdmflexframe",0.1)
+    { testbench_ofdmflexframe(__q__,1200, 40, 20, 8217, LIQUID_MODEM_QPSK); }
 
-LIQUID_AUTOTEST(ofdmflexframegen_config,"ofdmflexframegen config","",0.1)
+LIQUID_AUTOTEST(ofdmflexframegen_config,"ofdmflexframegen config",
+    "framing,ofdmflexframe",0.1)
 {
     // check invalid function calls
     _liquid_error_downgrade_enable();
@@ -120,7 +130,7 @@ LIQUID_AUTOTEST(ofdmflexframegen_config,"ofdmflexframegen config","",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(ofdmflexframesync_config,"ofdmflexframesync config","",0.1)
+LIQUID_AUTOTEST(ofdmflexframesync_config,"ofdmflexframesync config","framing,ofdm,ofdmflexframe",0.1)
 {
     // check invalid function calls
     _liquid_error_downgrade_enable();

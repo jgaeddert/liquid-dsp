@@ -25,10 +25,8 @@
 
 #define J _Complex_I
 
-//
-// AUTOTEST: Hilbert transform, 2:1 decimator
-//
-LIQUID_AUTOTEST(firhilbf_decim,"description","",0.1)
+LIQUID_AUTOTEST(firhilbf_decim,
+    "Hilbert transform (firhilbf), 2:1 decimator","filter,firhilb",0.1)
 {
     float x[32] = {
          1.0000,  0.7071,  0.0000, -0.7071, -1.0000, -0.7071, -0.0000,  0.7071,
@@ -68,10 +66,8 @@ LIQUID_AUTOTEST(firhilbf_decim,"description","",0.1)
     firhilbf_destroy(ht);
 }
 
-//
-// AUTOTEST: Hilbert transform, 1:2 interpolator
-//
-LIQUID_AUTOTEST(firhilbf_interp,"description","",0.1)
+LIQUID_AUTOTEST(firhilbf_interp,
+    "Hilbert transform (firhilbf), 1:2 interpolator","filter,firhilb",0.1)
 {
     float complex x[16] = {
          1.0000+J* 0.0000, -0.0000+J*-1.0000, -1.0000+J* 0.0000,  0.0000+J* 1.0000,
@@ -107,7 +103,7 @@ LIQUID_AUTOTEST(firhilbf_interp,"description","",0.1)
     firhilbf_destroy(ht);
 }
 
-LIQUID_AUTOTEST(firhilbf_psd,"test end-to-end power spectral density", "", 0.1)
+LIQUID_AUTOTEST(firhilbf_psd,"test end-to-end power spectral density", "filter,firhilb", 0.1)
 {
     float        tol  = 1;  // error tolerance [dB]
     float        bw = 0.4f; // pulse bandwidth
@@ -170,7 +166,8 @@ LIQUID_AUTOTEST(firhilbf_psd,"test end-to-end power spectral density", "", 0.1)
     firhilbf_destroy(q);
 }
 
-LIQUID_AUTOTEST(firhilbf_config,"description","",0.1)
+LIQUID_AUTOTEST(firhilbf_config,
+    "Hilbert transform (firhilbf), test errors and invalid configuration","filter,firhilb",0.1)
 {
     _liquid_error_downgrade_enable();
     // check that object returns NULL for invalid configurations
@@ -183,7 +180,8 @@ LIQUID_AUTOTEST(firhilbf_config,"description","",0.1)
     _liquid_error_downgrade_disable();
 }
 
-LIQUID_AUTOTEST(firhilbf_copy_interp,"description","",0.1)
+LIQUID_AUTOTEST(firhilbf_copy_interp,
+    "Hilbert transform (firhilbf), copy (interpolator)","filter,firhilb",0.1)
 {
     firhilbf q0 = firhilbf_create(12,120.0f);
 
@@ -213,7 +211,8 @@ LIQUID_AUTOTEST(firhilbf_copy_interp,"description","",0.1)
     firhilbf_destroy(q1);
 }
 
-LIQUID_AUTOTEST(firhilbf_copy_decim,"description","",0.1)
+LIQUID_AUTOTEST(firhilbf_copy_decim,
+    "Hilbert transform (firhilbf), copy (decimator)","filter,firhilb",0.1)
 {
     firhilbf q0 = firhilbf_create(12,120.0f);
 

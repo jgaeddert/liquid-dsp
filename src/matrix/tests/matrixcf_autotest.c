@@ -71,7 +71,7 @@ extern float complex matrixcf_data_transmul_xTx[];
 extern float complex matrixcf_data_transmul_xHx[];
 
 
-LIQUID_AUTOTEST(matrixcf_add,"test matrix addition","",0.1)
+LIQUID_AUTOTEST(matrixcf_add,"test matrix addition","matrix,matrixcf",0.1)
 {
     float tol = 1e-6f;
 
@@ -91,7 +91,7 @@ LIQUID_AUTOTEST(matrixcf_add,"test matrix addition","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(matrixcf_aug,"test matrix augmentation","",0.1)
+LIQUID_AUTOTEST(matrixcf_aug,"test matrix augmentation","matrix,matrixcf",0.1)
 {
     float tol = 1e-6f;
 
@@ -118,7 +118,7 @@ LIQUID_AUTOTEST(matrixcf_aug,"test matrix augmentation","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(matrixcf_chol,"Cholesky decomposition","",0.1)
+LIQUID_AUTOTEST(matrixcf_chol,"Cholesky decomposition","matrix,matrixcf",0.1)
 {
     float tol = 1e-3f;  // error tolerance
 
@@ -143,7 +143,7 @@ LIQUID_AUTOTEST(matrixcf_chol,"Cholesky decomposition","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(matrixcf_inv,"matrix inversion","",0.1)
+LIQUID_AUTOTEST(matrixcf_inv,"matrix inversion","matrix,matrixcf",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -167,7 +167,7 @@ LIQUID_AUTOTEST(matrixcf_inv,"matrix inversion","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(matrixcf_linsolve,"linsolve (solve linear system of equations)","",0.1)
+LIQUID_AUTOTEST(matrixcf_linsolve,"linsolve (solve linear system of equations)","matrix,matrixcf",0.1)
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -196,7 +196,7 @@ LIQUID_AUTOTEST(matrixcf_linsolve,"linsolve (solve linear system of equations)",
     }
 }
 
-LIQUID_AUTOTEST(matrixcf_ludecomp_crout,"L/U decomp (Crout's method)","",0.1)
+LIQUID_AUTOTEST(matrixcf_ludecomp_crout,"L/U decomp (Crout's method)","matrix,matrixcf",0.1)
 {
     float tol = 1e-5f;  // error tolerance
 
@@ -245,7 +245,7 @@ LIQUID_AUTOTEST(matrixcf_ludecomp_crout,"L/U decomp (Crout's method)","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(matrixcf_ludecomp_doolittle,"L/U decomp (Doolittle's method)","",0.1)
+LIQUID_AUTOTEST(matrixcf_ludecomp_doolittle,"L/U decomp (Doolittle's method)","matrix,matrixcf",0.1)
 {
     float tol = 1e-5f;  // error tolerance
 
@@ -294,7 +294,7 @@ LIQUID_AUTOTEST(matrixcf_ludecomp_doolittle,"L/U decomp (Doolittle's method)",""
     }
 }
 
-LIQUID_AUTOTEST(matrixcf_mul,"test matrix multiplication","",0.1)
+LIQUID_AUTOTEST(matrixcf_mul,"test matrix multiplication","matrix,matrixcf",0.1)
 {
     float tol = 1e-6f;
 
@@ -321,7 +321,7 @@ LIQUID_AUTOTEST(matrixcf_mul,"test matrix multiplication","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(matrixcf_qrdecomp,"Q/R decomp (Gram-Schmidt's method)","",0.1)
+LIQUID_AUTOTEST(matrixcf_qrdecomp,"Q/R decomp (Gram-Schmidt's method)","matrix,matrixcf",0.1)
 {
     float tol = 1e-4f;  // error tolerance
 
@@ -377,7 +377,7 @@ LIQUID_AUTOTEST(matrixcf_qrdecomp,"Q/R decomp (Gram-Schmidt's method)","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(matrixcf_transmul,"transpose/multiply","",0.1)
+LIQUID_AUTOTEST(matrixcf_transmul,"transpose/multiply","matrix,matrixcf",0.1)
 {
     float tol = 1e-4f;  // error tolerance
 

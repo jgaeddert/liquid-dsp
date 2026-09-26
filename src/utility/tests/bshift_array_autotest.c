@@ -24,7 +24,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(lbshift,"left binary shift","",0.1) {
+LIQUID_AUTOTEST(lbshift,"left binary shift","utility,bshift",0.1) {
     // input        : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [1]   : 0000 0011 1101 1110 1011 1111 0101 0100
@@ -47,9 +47,7 @@ LIQUID_AUTOTEST(lbshift,"left binary shift","",0.1) {
 
     unsigned char output[4];
     
-    // 
     // run tests
-    //
     unsigned int i;
     for (i=0; i<8; i++) {
         memmove(output, input, 4);
@@ -68,7 +66,7 @@ LIQUID_AUTOTEST(lbshift,"left binary shift","",0.1) {
     }
 }
 
-LIQUID_AUTOTEST(rbshift,"right binary shift","",0.1) {
+LIQUID_AUTOTEST(rbshift,"right binary shift","utility,bshift",0.1) {
     // input        : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
     // output [1]   : 0100 0000 1111 0111 1010 1111 1101 0101
@@ -91,9 +89,7 @@ LIQUID_AUTOTEST(rbshift,"right binary shift","",0.1) {
 
     unsigned char output[4];
     
-    // 
     // run tests
-    //
     unsigned int i;
     for (i=0; i<8; i++) {
         memmove(output, input, 4);
@@ -112,7 +108,7 @@ LIQUID_AUTOTEST(rbshift,"right binary shift","",0.1) {
     }
 }
 
-LIQUID_AUTOTEST(lbcircshift,"left binary circular shift","",0.1) {
+LIQUID_AUTOTEST(lbcircshift,"left binary circular shift","utility,bshift",0.1) {
     // input        : 1001 0001 1110 1111 0101 1111 1010 1010
     // output [0]   : 1001 0001 1110 1111 0101 1111 1010 1010
     // output [1]   : 0010 0011 1101 1110 1011 1111 0101 0101
@@ -135,9 +131,7 @@ LIQUID_AUTOTEST(lbcircshift,"left binary circular shift","",0.1) {
 
     unsigned char output[4];
     
-    // 
     // run tests
-    //
     unsigned int i;
     for (i=0; i<8; i++) {
         memmove(output, input, 4);
@@ -157,7 +151,7 @@ LIQUID_AUTOTEST(lbcircshift,"left binary circular shift","",0.1) {
 }
 
 
-LIQUID_AUTOTEST(rbcircshift,"right binary circular shift","",0.1) {
+LIQUID_AUTOTEST(rbcircshift,"right binary circular shift","utility,bshift",0.1) {
     // input        : 1001 0001 1110 1111 0101 1111 1010 1010
     // output [0]   : 1001 0001 1110 1111 0101 1111 1010 1010
     // output [1]   : 0100 1000 1111 0111 1010 1111 1101 0101
@@ -180,9 +174,7 @@ LIQUID_AUTOTEST(rbcircshift,"right binary circular shift","",0.1) {
 
     unsigned char output[4];
     
-    // 
     // run tests
-    //
     unsigned int i;
     for (i=0; i<8; i++) {
         memmove(output, input, 4);

@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(dotprod_crcf_rand01,"dot product with floating-point data","",0.1)
+LIQUID_AUTOTEST(dotprod_crcf_rand01,"dot product with floating-point data","dotprod",0.1)
 {
     float h[16] = {
       5.5375e-02,  -6.5857e-01,  -1.7657e+00,   7.7444e-01, 
@@ -78,7 +78,7 @@ LIQUID_AUTOTEST(dotprod_crcf_rand01,"dot product with floating-point data","",0.
     dotprod_crcf_destroy(q);
 }
 
-LIQUID_AUTOTEST(dotprod_crcf_rand02,"dot product with floating-point data","",0.1)
+LIQUID_AUTOTEST(dotprod_crcf_rand02,"dot product with floating-point data","dotprod",0.1)
 {
     float h[16] = {
       4.7622e-01,   7.1453e-01,  -7.1370e-01,  -1.6457e-01, 
@@ -170,7 +170,7 @@ void testbench_dotprod_crcf(liquid_autotest __q__, unsigned int _n)
     LIQUID_CHECK_DELTA(cimagf(y_run4  ), cimagf(y_test), tol);
 }
 
-LIQUID_AUTOTEST(dotprod_crcf_struct_vs_ordinal,"compare structured object to ordinal computation","",0.1)
+LIQUID_AUTOTEST(dotprod_crcf_struct_vs_ordinal,"compare structured object to ordinal computation","dotprod",0.1)
 {
     // run many, many tests
     unsigned int i;

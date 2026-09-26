@@ -23,7 +23,8 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(vectorf_mul_4,"multiply two buffers (simple test with visual result)","",0.1)
+LIQUID_AUTOTEST(vectorf_mul_4,
+    "multiply two buffers (simple test with visual result)","vector,vectorf",0.1)
 {
     float tol = 4e-6; // error tolerance
     float buf_0[4] = {1.0f, 2.0f, 3.0f, 4.0f};
@@ -39,7 +40,7 @@ LIQUID_AUTOTEST(vectorf_mul_4,"multiply two buffers (simple test with visual res
     LIQUID_CHECK_DELTA(buf_test[3], -2.0f, tol);
 }
 
-LIQUID_AUTOTEST(vectorf_mul_16,"multiply two buffers","",0.1)
+LIQUID_AUTOTEST(vectorf_mul_16,"multiply two vectors","vector,vectorf",0.1)
 {
     // error tolerance
     float tol = 4e-6;
@@ -76,7 +77,7 @@ LIQUID_AUTOTEST(vectorf_mul_16,"multiply two buffers","",0.1)
         LIQUID_CHECK_DELTA(buf_test[i], buf_2[i], tol);
 }
 
-LIQUID_AUTOTEST(vectorf_mul_35,"multiply two buffers","",0.1)
+LIQUID_AUTOTEST(vectorf_mul_35,"multiply two vectors","vector,vectorf",0.1)
 {
     float tol = 4e-6;
 
@@ -123,7 +124,7 @@ LIQUID_AUTOTEST(vectorf_mul_35,"multiply two buffers","",0.1)
         LIQUID_CHECK_DELTA(buf_test[i], buf_2[i], tol);
 }
 
-LIQUID_AUTOTEST(vectorf_mulscalar_4,"multiply by scalar","",0.1)
+LIQUID_AUTOTEST(vectorf_mulscalar_4,"multiply by scalar","vector,vectorf",0.1)
 {
     float tol = 4e-6; // error tolerance
     float buf_0[4] = {1.0f, 2.0f,-3.0f, 4.0f};
@@ -138,7 +139,7 @@ LIQUID_AUTOTEST(vectorf_mulscalar_4,"multiply by scalar","",0.1)
     LIQUID_CHECK_DELTA(buf_test[3],  8.0f, tol);
 }
 
-LIQUID_AUTOTEST(vectorf_mulscalar_35,"multiply by scalar","",0.1)
+LIQUID_AUTOTEST(vectorf_mulscalar_35,"multiply by scalar","vector,vectorf",0.1)
 {
     float tol = 4e-6;
 

@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(symsync_copy,"test copying object", "", 0.1)
+LIQUID_AUTOTEST(symsync_copy,"test copying object", "filter,symsync", 0.1)
 {
     // create base object
     symsync_crcf q0 = symsync_crcf_create_rnyquist(
@@ -66,7 +66,7 @@ LIQUID_AUTOTEST(symsync_copy,"test copying object", "", 0.1)
     symsync_crcf_destroy(q1);
 }
 
-LIQUID_AUTOTEST(symsync_config,"test errors and invalid configuration", "", 0.1)
+LIQUID_AUTOTEST(symsync_config,"test errors and invalid configuration", "filter,symsync", 0.1)
 {
     _liquid_error_downgrade_enable();
 

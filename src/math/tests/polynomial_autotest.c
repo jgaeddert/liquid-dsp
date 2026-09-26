@@ -25,7 +25,7 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(polyf_fit_q3n3,"poly_fit 3rd order polynomial, critically sampled","",0.1)
+LIQUID_AUTOTEST(polyf_fit_q3n3,"poly_fit 3rd order polynomial, critically sampled","math,polynomial",0.1)
 {
     unsigned int Q=2;   // polynomial order
     unsigned int n=3;   // input vector size
@@ -51,7 +51,7 @@ LIQUID_AUTOTEST(polyf_fit_q3n3,"poly_fit 3rd order polynomial, critically sample
     //LIQUID_CHECK_DELTA(p[3], p_test[3], tol);
 }
 
-LIQUID_AUTOTEST(polyf_lagrange_issue165,"lagrange polynomial","",0.1)
+LIQUID_AUTOTEST(polyf_lagrange_issue165,"lagrange polynomial","math,polynomial",0.1)
 {
     // Inputs taken from issue#165
     //unsigned int Q=2;   // polynomial order
@@ -87,7 +87,7 @@ LIQUID_AUTOTEST(polyf_lagrange_issue165,"lagrange polynomial","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(polyf_lagrange,"wikipedia page for lagrange polynomial for y=x^3","",0.1)
+LIQUID_AUTOTEST(polyf_lagrange,"wikipedia page for lagrange polynomial for y=x^3","math,polynomial",0.1)
 {
 
     unsigned int n=3; // input vector size
@@ -108,7 +108,7 @@ LIQUID_AUTOTEST(polyf_lagrange,"wikipedia page for lagrange polynomial for y=x^3
     }
 }
 
-LIQUID_AUTOTEST(polyf_expandbinomial_4,"test binomial expansion","",0.1)
+LIQUID_AUTOTEST(polyf_expandbinomial_4,"test binomial expansion","math,polynomial",0.1)
 {
     /*
     float a[4] = { 3, 2, -5, 1 };
@@ -129,7 +129,7 @@ LIQUID_AUTOTEST(polyf_expandbinomial_4,"test binomial expansion","",0.1)
     */
 }
 
-LIQUID_AUTOTEST(polyf_expandroots_4,"polynomial root expansion","",0.1)
+LIQUID_AUTOTEST(polyf_expandroots_4,"polynomial root expansion","math,polynomial",0.1)
 {
     float roots[5] = { -2, -1, -4, 5, 3 };
     float c[6];
@@ -150,7 +150,7 @@ LIQUID_AUTOTEST(polyf_expandroots_4,"polynomial root expansion","",0.1)
 }
 
 
-LIQUID_AUTOTEST(polyf_expandroots_11,"polynomial root expansion","",0.1)
+LIQUID_AUTOTEST(polyf_expandroots_11,"polynomial root expansion","math,polynomial",0.1)
 {
     float roots[11] = { -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11 };
     float c[12];
@@ -178,7 +178,7 @@ LIQUID_AUTOTEST(polyf_expandroots_11,"polynomial root expansion","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(polycf_expandroots_4,"polynomial root expansion","",0.1)
+LIQUID_AUTOTEST(polycf_expandroots_4,"polynomial root expansion","math,polynomial",0.1)
 {
     // expand complex roots on conjugate pair
     float theta = 1.7f;
@@ -204,7 +204,7 @@ LIQUID_AUTOTEST(polycf_expandroots_4,"polynomial root expansion","",0.1)
 
 }
 
-LIQUID_AUTOTEST(polyf_expandroots2_3,"expand (2*x-5)*(3*x+2)*(-1*x+3)","",0.1)
+LIQUID_AUTOTEST(polyf_expandroots2_3,"expand (2*x-5)*(3*x+2)*(-1*x+3)","math,polynomial",0.1)
 {
     unsigned int n=3;
     float a[3] = {  2,  3, -1 };
@@ -225,7 +225,7 @@ LIQUID_AUTOTEST(polyf_expandroots2_3,"expand (2*x-5)*(3*x+2)*(-1*x+3)","",0.1)
 }
 
 
-LIQUID_AUTOTEST(polyf_mul_2_3,"multiply two polynomials","",0.1)
+LIQUID_AUTOTEST(polyf_mul_2_3,"multiply two polynomials","math,polynomial",0.1)
 {
     float a[3] = {  2, -4,  3 };
     float b[4] = { -9,  3, -2,  5};
@@ -246,7 +246,7 @@ LIQUID_AUTOTEST(polyf_mul_2_3,"multiply two polynomials","",0.1)
     LIQUID_CHECK_DELTA(c[5], c_test[5], tol);
 }
 
-LIQUID_AUTOTEST(poly_expandbinomial_n6,"expand binomial","",0.1)
+LIQUID_AUTOTEST(poly_expandbinomial_n6,"expand binomial","math,polynomial",0.1)
 {
     unsigned int n=6;
     float c[7];
@@ -260,7 +260,7 @@ LIQUID_AUTOTEST(poly_expandbinomial_n6,"expand binomial","",0.1)
     LIQUID_CHECK_ARRAY(c,c_test,sizeof(c));
 }
 
-LIQUID_AUTOTEST(poly_binomial_expand_pm_m6_k1,"expand +/- binomial","",0.1)
+LIQUID_AUTOTEST(poly_binomial_expand_pm_m6_k1,"expand +/- binomial","math,polynomial",0.1)
 {
     unsigned int m=5;
     unsigned int k=1;
@@ -278,7 +278,7 @@ LIQUID_AUTOTEST(poly_binomial_expand_pm_m6_k1,"expand +/- binomial","",0.1)
         LIQUID_CHECK_DELTA(c[i], c_test[i], 1e-3f);
 }
 
-LIQUID_AUTOTEST(poly_expandbinomial_pm_m5_k2,"expand +/- binomial","",0.1)
+LIQUID_AUTOTEST(poly_expandbinomial_pm_m5_k2,"expand +/- binomial","math,polynomial",0.1)
 {
     unsigned int m=5;
     unsigned int k=2;

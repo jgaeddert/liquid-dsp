@@ -23,7 +23,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(compand_float,"","",0.1) {
+LIQUID_AUTOTEST(compand_float,"compand float values","quantization,compand",0.1) {
     float x = -1.0f;
     float mu=255.0f;
     unsigned int n=30;
@@ -48,7 +48,7 @@ LIQUID_AUTOTEST(compand_float,"","",0.1) {
 }
 
 
-LIQUID_AUTOTEST(compand_cfloat,"","",0.1) {
+LIQUID_AUTOTEST(compand_cfloat,"compand complex float values","quantization,compand",0.1) {
     float complex x = -0.707f - 0.707f*_Complex_I;
     float mu=255.0f;
     unsigned int n=30;

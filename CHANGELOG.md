@@ -1,5 +1,33 @@
 # Changelog
 
+## 1.8.3 - 2026-09-26
+
+  * build
+    - fixed pkg-config paths since `CMAKE_INSTALL_*` are not guaranteed to be
+      relative (thanks, @iank)
+    - legacy: compiling and installing liquid-dsp.pc (pkg-config file)
+    - fixing build with missing stdarg.h (thanks, @brad0)
+  * autotest
+    - added non-trivial description and keywords to all autotests; all tests
+      have at least a keyword matching their module, and typically their
+      object name
+    - added "audit" flag to find tests with missing metadata or checks
+  * core
+    - logging: fixed issue with stale file handle when closed outside of
+      log environment; added new method to close file from within logging
+      object (thanks, @classabbyamp)
+    - logging: fixed initialization in reset() that was causing segfaults
+    - logging: added internal lock/unlock helpers to wrap user-defined
+      callbacks
+  * filter
+    - resamp2: moving the default filter design to windowed Kaiser; firdespm
+      produces a good filter but takes prohibitively long on certain systems
+  * nco
+    - fixing build when M_PI is parenthesized (thanks, @brad0)
+  * utility
+    - added method to compute keyword matching for running autotests,
+      benchmarks
+
 ## 1.8.2 - 2026-08-06
 
 Version 1.8.2 includes several small cleanup items to support reproducible

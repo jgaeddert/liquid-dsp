@@ -67,26 +67,26 @@ void testbench_nco_crcf_mix(liquid_autotest __q__,
 }
 
 // test NCO mixing
-LIQUID_AUTOTEST(nco_crcf_mix_nco_0,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO,  0.000f,  0.000f); }
-LIQUID_AUTOTEST(nco_crcf_mix_nco_1,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO,  1.234f,  0.000f); }
-LIQUID_AUTOTEST(nco_crcf_mix_nco_2,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO, -1.234f,  0.000f); }
-LIQUID_AUTOTEST(nco_crcf_mix_nco_3,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO, 99.000f,  0.000f); }
-LIQUID_AUTOTEST(nco_crcf_mix_nco_4,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO,    M_PI,  0.000f); }
-LIQUID_AUTOTEST(nco_crcf_mix_nco_5,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO,  0.000f,    M_PI); }
-LIQUID_AUTOTEST(nco_crcf_mix_nco_6,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO,  0.000f,   -M_PI); }
-LIQUID_AUTOTEST(nco_crcf_mix_nco_7,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO,  0.000f,  0.123f); }
-LIQUID_AUTOTEST(nco_crcf_mix_nco_8,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO,  0.000f, -0.123f); }
-LIQUID_AUTOTEST(nco_crcf_mix_nco_9,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO,  0.000f,  1e-5f ); }
+LIQUID_AUTOTEST(nco_crcf_mix_nco_0,"nco mixing, phi= 0.000, dphi= 0.000","nco,mix",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO,  0.000f,  0.000f); }
+LIQUID_AUTOTEST(nco_crcf_mix_nco_1,"nco mixing, phi= 1.234, dphi= 0.000","nco,mix",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO,  1.234f,  0.000f); }
+LIQUID_AUTOTEST(nco_crcf_mix_nco_2,"nco mixing, phi=-1.234, dphi= 0.000","nco,mix",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO, -1.234f,  0.000f); }
+LIQUID_AUTOTEST(nco_crcf_mix_nco_3,"nco mixing, phi=99.000, dphi= 0.000","nco,mix",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO, 99.000f,  0.000f); }
+LIQUID_AUTOTEST(nco_crcf_mix_nco_4,"nco mixing, phi=   M_P, dphi= 0.000","nco,mix",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO,    M_PI,  0.000f); }
+LIQUID_AUTOTEST(nco_crcf_mix_nco_5,"nco mixing, phi= 0.000, dphi=   M_P","nco,mix",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO,  0.000f,    M_PI); }
+LIQUID_AUTOTEST(nco_crcf_mix_nco_6,"nco mixing, phi= 0.000, dphi=  -M_P","nco,mix",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO,  0.000f,   -M_PI); }
+LIQUID_AUTOTEST(nco_crcf_mix_nco_7,"nco mixing, phi= 0.000, dphi= 0.123","nco,mix",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO,  0.000f,  0.123f); }
+LIQUID_AUTOTEST(nco_crcf_mix_nco_8,"nco mixing, phi= 0.000, dphi=-0.123","nco,mix",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO,  0.000f, -0.123f); }
+LIQUID_AUTOTEST(nco_crcf_mix_nco_9,"nco mixing, phi= 0.000, dphi= 1e-5f","nco,mix",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_NCO,  0.000f,  1e-5f ); }
 
 // test VCO mixing
-LIQUID_AUTOTEST(nco_crcf_mix_vco_0,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO,  0.000f,  0.000f); }
-LIQUID_AUTOTEST(nco_crcf_mix_vco_1,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO,  1.234f,  0.000f); }
-LIQUID_AUTOTEST(nco_crcf_mix_vco_2,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO, -1.234f,  0.000f); }
-LIQUID_AUTOTEST(nco_crcf_mix_vco_3,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO, 99.000f,  0.000f); }
-LIQUID_AUTOTEST(nco_crcf_mix_vco_4,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO,    M_PI,  0.000f); }
-LIQUID_AUTOTEST(nco_crcf_mix_vco_5,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO,  0.000f,    M_PI); }
-LIQUID_AUTOTEST(nco_crcf_mix_vco_6,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO,  0.000f,   -M_PI); }
-LIQUID_AUTOTEST(nco_crcf_mix_vco_7,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO,  0.000f,  0.123f); }
-LIQUID_AUTOTEST(nco_crcf_mix_vco_8,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO,  0.000f, -0.123f); }
-LIQUID_AUTOTEST(nco_crcf_mix_vco_9,"","",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO,  0.000f,  1e-5f ); }
+LIQUID_AUTOTEST(nco_crcf_mix_vco_0,"vco mixing, phi= 0.000, dphi= 0.000","nco,mix,vco",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO,  0.000f,  0.000f); }
+LIQUID_AUTOTEST(nco_crcf_mix_vco_1,"vco mixing, phi= 1.234, dphi= 0.000","nco,mix,vco",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO,  1.234f,  0.000f); }
+LIQUID_AUTOTEST(nco_crcf_mix_vco_2,"vco mixing, phi=-1.234, dphi= 0.000","nco,mix,vco",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO, -1.234f,  0.000f); }
+LIQUID_AUTOTEST(nco_crcf_mix_vco_3,"vco mixing, phi=99.000, dphi= 0.000","nco,mix,vco",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO, 99.000f,  0.000f); }
+LIQUID_AUTOTEST(nco_crcf_mix_vco_4,"vco mixing, phi=   M_P, dphi= 0.000","nco,mix,vco",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO,    M_PI,  0.000f); }
+LIQUID_AUTOTEST(nco_crcf_mix_vco_5,"vco mixing, phi= 0.000, dphi=   M_P","nco,mix,vco",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO,  0.000f,    M_PI); }
+LIQUID_AUTOTEST(nco_crcf_mix_vco_6,"vco mixing, phi= 0.000, dphi=  -M_P","nco,mix,vco",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO,  0.000f,   -M_PI); }
+LIQUID_AUTOTEST(nco_crcf_mix_vco_7,"vco mixing, phi= 0.000, dphi= 0.123","nco,mix,vco",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO,  0.000f,  0.123f); }
+LIQUID_AUTOTEST(nco_crcf_mix_vco_8,"vco mixing, phi= 0.000, dphi=-0.123","nco,mix,vco",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO,  0.000f, -0.123f); }
+LIQUID_AUTOTEST(nco_crcf_mix_vco_9,"vco mixing, phi= 0.000, dphi= 1e-5 ","nco,mix,vco",0.1) { testbench_nco_crcf_mix(__q__,LIQUID_VCO,  0.000f,  1e-5f ); }
 

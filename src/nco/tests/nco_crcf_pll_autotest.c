@@ -89,7 +89,7 @@ void testbench_nco_crcf_pll(liquid_autotest __q__,
     nco_crcf_destroy(nco_rx);
 }
 
-LIQUID_AUTOTEST(nco_crcf_pll_phase,"test nco pll with phase offsets","",0.1)
+LIQUID_AUTOTEST(nco_crcf_pll_phase,"test nco pll with phase offsets","nco,pll",0.1)
 {
     float bw[4] = {0.1f, 0.01f, 0.001f, 0.0001f};
     float tol   = 1e-2f;
@@ -111,7 +111,7 @@ LIQUID_AUTOTEST(nco_crcf_pll_phase,"test nco pll with phase offsets","",0.1)
     }
 }
 
-LIQUID_AUTOTEST(nco_crcf_pll_freq,"test nco pll with frequency offsets","",0.1)
+LIQUID_AUTOTEST(nco_crcf_pll_freq,"test nco pll with frequency offsets","nco,pll",0.1)
 {
     float bw[4] = {0.1f, 0.05f, 0.02f, 0.01f};
     float tol   = 1e-2f;

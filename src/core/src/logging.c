@@ -102,6 +102,28 @@ static struct liquid_logger_s qlog = {
 liquid_logger liquid_logger_safe_cast(liquid_logger _q)
     { return _q == NULL ? &qlog : _q; }
 
+// lock mutex-like object
+int liquid_logger_lock(liquid_logger _q)
+{
+    _q = liquid_logger_safe_cast(_q);
+
+    if (_q->lock_callback != NULL)
+        return _q->lock_callback(1, _q->lock_context);
+
+    return LIQUID_OK;
+}
+
+// unlock mutex-like object
+int liquid_logger_unlock(liquid_logger _q)
+{
+    _q = liquid_logger_safe_cast(_q);
+
+    if (_q->lock_callback != NULL)
+        return _q->lock_callback(0, _q->lock_context);
+
+    return LIQUID_OK;
+}
+
 // log filename and line number to stream output
 int liquid_logger_stream_file_line(liquid_log_event _event,
                                    FILE * restrict  _stream,
@@ -208,6 +230,7 @@ int liquid_logger_callback_file(liquid_log_event _event,
                                 void *           _fid,
                                 int              _config)
 {
+    // HELP: check that file is open?
     // use same format, but explicitly disable color
     return liquid_logger_callback_stream(_event, (FILE*)_fid, _config & ~LIQUID_LOG_COLOR);
 }
@@ -276,10 +299,18 @@ int liquid_logger_destroy(liquid_logger _q)
 int liquid_logger_reset(liquid_logger _q)
 {
     _q = liquid_logger_safe_cast(_q);
-    _q->level = LIQUID_WARN;
-    _q->cb_function[0] = NULL; // effectively reset all callbacks
-    int i;
-    for (i=0; i<6; i++)
+    _q->level         = LIQUID_WARN;
+    _q->min_level     = LIQUID_WARN;
+    _q->config        = LIQUID_LOG_DEFAULT;
+    _q->lock_callback = NULL;
+    _q->lock_context  = NULL;
+
+    for (int i = 0; i < LIQUID_LOGGER_MAX_CALLBACKS; i++) {
+        _q->cb_function[i] = NULL;
+        _q->cb_context [i] = NULL;
+        _q->cb_level   [i] = 0;
+    }
+    for (int i = 0; i < LIQUID_LOG_NUM_LEVELS; i++)
         _q->count[i] = 0;
     return LIQUID_OK;
 }
@@ -477,6 +508,66 @@ FILE * liquid_logger_add_filename(liquid_logger _q,
     return fid;
 }
 
+// close file and remove from callback list
+int liquid_logger_close_file(liquid_logger _q,
+                             FILE *        _fid)
+{
+    _q = liquid_logger_safe_cast(_q);
+
+    // validate input
+    if (_fid == NULL)
+        return liquid_error(LIQUID_EIOBJ,"liquid_logger_close_file(), file handle is NULL");
+
+    // lock mutex if enabled
+    int rv = liquid_logger_lock(_q);
+    if (rv != LIQUID_OK) // failed to lock
+        return rv;
+
+    // look for entry matching _fid in callback list
+    unsigned int i;
+    int           found = 0;
+    unsigned int  num   = liquid_logger_get_num_callbacks(_q);
+    for (i=0; i<num; i++) {
+        if (_q->cb_function[i] == liquid_logger_callback_file &&
+            _q->cb_context [i] == _fid)
+        {
+            // close the file before dropping the callback
+            fclose(_fid);
+
+            // shift remaining entries down by one to keep the array dense
+            unsigned int j;
+            for (j=i; j<num-1; j++) {
+                _q->cb_function[j] = _q->cb_function[j+1];
+                _q->cb_context [j] = _q->cb_context [j+1];
+                _q->cb_level   [j] = _q->cb_level   [j+1];
+            }
+            // terminate the new (now empty) last slot
+            _q->cb_function[num-1] = NULL;
+            _q->cb_context [num-1] = NULL;
+            _q->cb_level   [num-1] = 0;
+
+            found = 1;
+            break;
+        }
+    }
+
+    // recompute minimum level across all remaining callbacks and the
+    // logger's own level (mirrors liquid_logger_set_level)
+    _q->min_level = _q->level;
+    for (i=0; i<LIQUID_LOGGER_MAX_CALLBACKS && _q->cb_function[i] != NULL; i++) {
+        _q->min_level = (_q->cb_level[i] < _q->min_level) ? _q->cb_level[i] : _q->min_level;
+    }
+
+    // unlock mutex if enabled
+    rv = liquid_logger_unlock(_q);
+
+    if (rv != LIQUID_OK) // unlock failed; report regardless of found status
+        return rv;
+    if (!found)
+        return liquid_error(LIQUID_EICONFIG,"liquid_logger_close_file(), file handle not registered with logger");
+    return LIQUID_OK;
+}
+
 unsigned int liquid_logger_get_num_callbacks(liquid_logger _q)
 {
     _q = liquid_logger_safe_cast(_q);
@@ -555,9 +646,10 @@ int liquid_vlog(liquid_logger _q,
     // set to global object if input is NULL (default)
     _q = liquid_logger_safe_cast(_q);
 
-    // lock
-    if (_q->lock_callback != NULL)
-        _q->lock_callback(1, _q->lock_context);
+    // lock mutex if enabled
+    int rv = liquid_logger_lock(_q);
+    if (rv != LIQUID_OK) // failed to lock
+        return rv;
 
     // update count
     _q->count[_level]++;
@@ -592,11 +684,8 @@ int liquid_vlog(liquid_logger _q,
         }
     }
 
-    // unlock
-    if (_q->lock_callback != NULL)
-        _q->lock_callback(0, _q->lock_context);
-
-    return LIQUID_OK;
+    // unlock mutex if enabled
+    return liquid_logger_unlock(_q);
 }
 
 int liquid_exit()
@@ -661,6 +750,11 @@ FILE * liquid_logger_add_filename(liquid_logger _q,
     liquid_error(LIQUID_EICONFIG,"compile-time logging disabled");
     return NULL;
 }
+
+// close file and remove from callback list
+int liquid_logger_close_file(liquid_logger _q,
+                             FILE *        _fid)
+    { return liquid_error(LIQUID_EICONFIG,"compile-time logging disabled"); }
 
 // get the number of callbacks currently used
 unsigned int liquid_logger_get_num_callbacks(liquid_logger _q)

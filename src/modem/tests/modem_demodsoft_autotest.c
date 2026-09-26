@@ -67,65 +67,65 @@ void testbench_modemcf_demodsoft(liquid_autotest __q__, modulation_scheme _ms)
 }
 
 // AUTOTESTS: generic PSK
-LIQUID_AUTOTEST(demodsoft_psk2,"","",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PSK2);      }
-LIQUID_AUTOTEST(demodsoft_psk4,"","",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PSK4);      }
-LIQUID_AUTOTEST(demodsoft_psk8,"","",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PSK8);      }
-LIQUID_AUTOTEST(demodsoft_psk16,"","",0.1)     { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PSK16);     }
-LIQUID_AUTOTEST(demodsoft_psk32,"","",0.1)     { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PSK32);     }
-LIQUID_AUTOTEST(demodsoft_psk64,"","",0.1)     { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PSK64);     }
-LIQUID_AUTOTEST(demodsoft_psk128,"","",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PSK128);    }
-LIQUID_AUTOTEST(demodsoft_psk256,"","",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PSK256);    }
+LIQUID_AUTOTEST(modem_demodsoft_psk2,"modem soft demod, psk2","modem,demodsoft",0.1)        { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PSK2);      }
+LIQUID_AUTOTEST(modem_demodsoft_psk4,"modem soft demod, psk4","modem,demodsoft",0.1)        { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PSK4);      }
+LIQUID_AUTOTEST(modem_demodsoft_psk8,"modem soft demod, psk8","modem,demodsoft",0.1)        { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PSK8);      }
+LIQUID_AUTOTEST(modem_demodsoft_psk16,"modem soft demod, psk16","modem,demodsoft",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PSK16);     }
+LIQUID_AUTOTEST(modem_demodsoft_psk32,"modem soft demod, psk32","modem,demodsoft",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PSK32);     }
+LIQUID_AUTOTEST(modem_demodsoft_psk64,"modem soft demod, psk64","modem,demodsoft",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PSK64);     }
+LIQUID_AUTOTEST(modem_demodsoft_psk128,"modem soft demod, psk128","modem,demodsoft",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PSK128);    }
+LIQUID_AUTOTEST(modem_demodsoft_psk256,"modem soft demod, psk256","modem,demodsoft",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PSK256);    }
 
 // AUTOTESTS: generic DPSK
-LIQUID_AUTOTEST(demodsoft_dpsk2,"","",0.1)     { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_DPSK2);     }
-LIQUID_AUTOTEST(demodsoft_dpsk4,"","",0.1)     { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_DPSK4);     }
-LIQUID_AUTOTEST(demodsoft_dpsk8,"","",0.1)     { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_DPSK8);     }
-LIQUID_AUTOTEST(demodsoft_dpsk16,"","",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_DPSK16);    }
-LIQUID_AUTOTEST(demodsoft_dpsk32,"","",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_DPSK32);    }
-LIQUID_AUTOTEST(demodsoft_dpsk64,"","",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_DPSK64);    }
-LIQUID_AUTOTEST(demodsoft_dpsk128,"","",0.1)   { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_DPSK128);   }
-LIQUID_AUTOTEST(demodsoft_dpsk256,"","",0.1)   { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_DPSK256);   }
+LIQUID_AUTOTEST(modem_demodsoft_dpsk2,"modem soft demod, dpsk2","modem,demodsoft",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_DPSK2);     }
+LIQUID_AUTOTEST(modem_demodsoft_dpsk4,"modem soft demod, dpsk4","modem,demodsoft",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_DPSK4);     }
+LIQUID_AUTOTEST(modem_demodsoft_dpsk8,"modem soft demod, dpsk8","modem,demodsoft",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_DPSK8);     }
+LIQUID_AUTOTEST(modem_demodsoft_dpsk16,"modem soft demod, dpsk16","modem,demodsoft",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_DPSK16);    }
+LIQUID_AUTOTEST(modem_demodsoft_dpsk32,"modem soft demod, dpsk32","modem,demodsoft",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_DPSK32);    }
+LIQUID_AUTOTEST(modem_demodsoft_dpsk64,"modem soft demod, dpsk64","modem,demodsoft",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_DPSK64);    }
+LIQUID_AUTOTEST(modem_demodsoft_dpsk128,"modem soft demod, dpsk128","modem,demodsoft",0.1)  { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_DPSK128);   }
+LIQUID_AUTOTEST(modem_demodsoft_dpsk256,"modem soft demod, dpsk256","modem,demodsoft",0.1)  { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_DPSK256);   }
 
 // AUTOTESTS: generic ASK
-LIQUID_AUTOTEST(demodsoft_ask2,"","",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ASK2);      }
-LIQUID_AUTOTEST(demodsoft_ask4,"","",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ASK4);      }
-LIQUID_AUTOTEST(demodsoft_ask8,"","",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ASK8);      }
-LIQUID_AUTOTEST(demodsoft_ask16,"","",0.1)     { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ASK16);     }
-LIQUID_AUTOTEST(demodsoft_ask32,"","",0.1)     { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ASK32);     }
-LIQUID_AUTOTEST(demodsoft_ask64,"","",0.1)     { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ASK64);     }
-LIQUID_AUTOTEST(demodsoft_ask128,"","",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ASK128);    }
-LIQUID_AUTOTEST(demodsoft_ask256,"","",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ASK256);    }
+LIQUID_AUTOTEST(modem_demodsoft_ask2,"modem soft demod, ask2","modem,demodsoft",0.1)        { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ASK2);      }
+LIQUID_AUTOTEST(modem_demodsoft_ask4,"modem soft demod, ask4","modem,demodsoft",0.1)        { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ASK4);      }
+LIQUID_AUTOTEST(modem_demodsoft_ask8,"modem soft demod, ask8","modem,demodsoft",0.1)        { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ASK8);      }
+LIQUID_AUTOTEST(modem_demodsoft_ask16,"modem soft demod, ask16","modem,demodsoft",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ASK16);     }
+LIQUID_AUTOTEST(modem_demodsoft_ask32,"modem soft demod, ask32","modem,demodsoft",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ASK32);     }
+LIQUID_AUTOTEST(modem_demodsoft_ask64,"modem soft demod, ask64","modem,demodsoft",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ASK64);     }
+LIQUID_AUTOTEST(modem_demodsoft_ask128,"modem soft demod, ask128","modem,demodsoft",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ASK128);    }
+LIQUID_AUTOTEST(modem_demodsoft_ask256,"modem soft demod, ask256","modem,demodsoft",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ASK256);    }
 
 // AUTOTESTS: generic QAM
-LIQUID_AUTOTEST(demodsoft_qam4,"","",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_QAM4);      }
-LIQUID_AUTOTEST(demodsoft_qam8,"","",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_QAM8);      }
-LIQUID_AUTOTEST(demodsoft_qam16,"","",0.1)     { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_QAM16);     }
-LIQUID_AUTOTEST(demodsoft_qam32,"","",0.1)     { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_QAM32);     }
-LIQUID_AUTOTEST(demodsoft_qam64,"","",0.1)     { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_QAM64);     }
-LIQUID_AUTOTEST(demodsoft_qam128,"","",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_QAM128);    }
-LIQUID_AUTOTEST(demodsoft_qam256,"","",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_QAM256);    }
+LIQUID_AUTOTEST(modem_demodsoft_qam4,"modem soft demod, qam4","modem,demodsoft",0.1)        { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_QAM4);      }
+LIQUID_AUTOTEST(modem_demodsoft_qam8,"modem soft demod, qam8","modem,demodsoft",0.1)        { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_QAM8);      }
+LIQUID_AUTOTEST(modem_demodsoft_qam16,"modem soft demod, qam16","modem,demodsoft",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_QAM16);     }
+LIQUID_AUTOTEST(modem_demodsoft_qam32,"modem soft demod, qam32","modem,demodsoft",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_QAM32);     }
+LIQUID_AUTOTEST(modem_demodsoft_qam64,"modem soft demod, qam64","modem,demodsoft",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_QAM64);     }
+LIQUID_AUTOTEST(modem_demodsoft_qam128,"modem soft demod, qam128","modem,demodsoft",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_QAM128);    }
+LIQUID_AUTOTEST(modem_demodsoft_qam256,"modem soft demod, qam256","modem,demodsoft",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_QAM256);    }
 
 // AUTOTESTS: generic APSK (maps to specific APSK modems internally)
-LIQUID_AUTOTEST(demodsoft_apsk4,"","",0.1)     { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_APSK4);     }
-LIQUID_AUTOTEST(demodsoft_apsk8,"","",0.1)     { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_APSK8);     }
-LIQUID_AUTOTEST(demodsoft_apsk16,"","",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_APSK16);    }
-LIQUID_AUTOTEST(demodsoft_apsk32,"","",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_APSK32);    }
-LIQUID_AUTOTEST(demodsoft_apsk64,"","",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_APSK64);    }
-LIQUID_AUTOTEST(demodsoft_apsk128,"","",0.1)   { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_APSK128);   }
-LIQUID_AUTOTEST(demodsoft_apsk256,"","",0.1)   { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_APSK256);   }
+LIQUID_AUTOTEST(modem_demodsoft_apsk4,"modem soft demod, apsk4","modem,demodsoft",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_APSK4);     }
+LIQUID_AUTOTEST(modem_demodsoft_apsk8,"modem soft demod, apsk8","modem,demodsoft",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_APSK8);     }
+LIQUID_AUTOTEST(modem_demodsoft_apsk16,"modem soft demod, apsk16","modem,demodsoft",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_APSK16);    }
+LIQUID_AUTOTEST(modem_demodsoft_apsk32,"modem soft demod, apsk32","modem,demodsoft",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_APSK32);    }
+LIQUID_AUTOTEST(modem_demodsoft_apsk64,"modem soft demod, apsk64","modem,demodsoft",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_APSK64);    }
+LIQUID_AUTOTEST(modem_demodsoft_apsk128,"modem soft demod, apsk128","modem,demodsoft",0.1)  { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_APSK128);   }
+LIQUID_AUTOTEST(modem_demodsoft_apsk256,"modem soft demod, apsk256","modem,demodsoft",0.1)  { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_APSK256);   }
 
 // AUTOTESTS: Specific modems
-LIQUID_AUTOTEST(demodsoft_bpsk,"","",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_BPSK);      }
-LIQUID_AUTOTEST(demodsoft_qpsk,"","",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_QPSK);      }
-LIQUID_AUTOTEST(demodsoft_ook,"","",0.1)       { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_OOK);       }
-LIQUID_AUTOTEST(demodsoft_sqam32,"","",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_SQAM32);    }
-LIQUID_AUTOTEST(demodsoft_sqam128,"","",0.1)   { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_SQAM128);   }
-LIQUID_AUTOTEST(demodsoft_V29,"","",0.1)       { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_V29);       }
-LIQUID_AUTOTEST(demodsoft_arb16opt,"","",0.1)  { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ARB16OPT);  }
-LIQUID_AUTOTEST(demodsoft_arb32opt,"","",0.1)  { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ARB32OPT);  }
-LIQUID_AUTOTEST(demodsoft_arb64opt,"","",0.1)  { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ARB64OPT);  }
-LIQUID_AUTOTEST(demodsoft_arb128opt,"","",0.1) { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ARB128OPT); }
-LIQUID_AUTOTEST(demodsoft_arb256opt,"","",0.1) { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ARB256OPT); }
-LIQUID_AUTOTEST(demodsoft_arb64vt,"","",0.1)   { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ARB64VT);   }
-LIQUID_AUTOTEST(demodsoft_pi4dqpsk,"","",0.1)  { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PI4DQPSK);  }
+LIQUID_AUTOTEST(modem_demodsoft_bpsk,"modem soft demod, bpsk","modem,demodsoft",0.1)            { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_BPSK);      }
+LIQUID_AUTOTEST(modem_demodsoft_qpsk,"modem soft demod, qpsk","modem,demodsoft",0.1)            { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_QPSK);      }
+LIQUID_AUTOTEST(modem_demodsoft_ook,"modem soft demod, ook","modem,demodsoft",0.1)              { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_OOK);       }
+LIQUID_AUTOTEST(modem_demodsoft_sqam32,"modem soft demod, sqam32","modem,demodsoft",0.1)        { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_SQAM32);    }
+LIQUID_AUTOTEST(modem_demodsoft_sqam128,"modem soft demod, sqam128","modem,demodsoft",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_SQAM128);   }
+LIQUID_AUTOTEST(modem_demodsoft_V29,"modem soft demod, V29","modem,demodsoft",0.1)              { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_V29);       }
+LIQUID_AUTOTEST(modem_demodsoft_arb16opt,"modem soft demod, arb16opt","modem,demodsoft",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ARB16OPT);  }
+LIQUID_AUTOTEST(modem_demodsoft_arb32opt,"modem soft demod, arb32opt","modem,demodsoft",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ARB32OPT);  }
+LIQUID_AUTOTEST(modem_demodsoft_arb64opt,"modem soft demod, arb64opt","modem,demodsoft",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ARB64OPT);  }
+LIQUID_AUTOTEST(modem_demodsoft_arb128opt,"modem soft demod, arb128opt","modem,demodsoft",0.1)  { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ARB128OPT); }
+LIQUID_AUTOTEST(modem_demodsoft_arb256opt,"modem soft demod, arb256opt","modem,demodsoft",0.1)  { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ARB256OPT); }
+LIQUID_AUTOTEST(modem_demodsoft_arb64vt,"modem soft demod, arb64vt","modem,demodsoft",0.1)      { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_ARB64VT);   }
+LIQUID_AUTOTEST(modem_demodsoft_pi4dqpsk,"modem soft demod, pi4dqpsk","modem,demodsoft",0.1)    { testbench_modemcf_demodsoft(__q__, LIQUID_MODEM_PI4DQPSK);  }
 

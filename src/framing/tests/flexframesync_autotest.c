@@ -26,7 +26,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(flexframesync,"simple recovery of flexframe in noise","",0.1)
+LIQUID_AUTOTEST(flexframesync,"simple recovery of flexframe in noise","framing,flexframesync",0.1)
 {
     unsigned int i;
 
@@ -86,7 +86,7 @@ LIQUID_AUTOTEST(flexframesync,"simple recovery of flexframe in noise","",0.1)
     flexframesync_destroy(fs);
 }
 
-LIQUID_AUTOTEST(flexframe_config,"check configuration validity","",0.1)
+LIQUID_AUTOTEST(flexframe_config,"check configuration validity","framing,flexframesync",0.1)
 {
     _liquid_error_downgrade_enable();
 

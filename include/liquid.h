@@ -31,6 +31,7 @@ extern "C" {
 
 // common headers
 #include <inttypes.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -60,7 +61,7 @@ extern "C" {
 
 #define LIQUID_VERSION_MAJOR    1
 #define LIQUID_VERSION_MINOR    8
-#define LIQUID_VERSION_PATCH    2
+#define LIQUID_VERSION_PATCH    3
 #define LIQUID_VERSION_DEV      0
 
 // final version string is constructed by concatenating individual string versions
@@ -435,8 +436,8 @@ int liquid_logger_add_callback(liquid_logger       _q,
                                void *              _context,
                                int                 _level);
 
-// add file pointer for which to append logs; when file is closed, the callback
-// will cease appending to the file
+// add file pointer for which to append logs; use :api:`liquid_logger_close_file`
+// to cease appending to the file
 //  _q      : logger object
 //  _fid    : file handle
 //  _level  : minimum log level for which callback will be invoked
@@ -445,7 +446,7 @@ int liquid_logger_add_file(liquid_logger _q,
                            int           _level);
 
 // open file for appending logs, returning pointer to file handle (or NULL upon
-// error); when file is closed, the callback will cease appending to the file
+// error); use :api:`liquid_logger_close_file` to cease appending to the file
 //  _q      : logger object
 //  _fid    : file handle
 //  _level  : minimum log level for which callback will be invoked
@@ -453,6 +454,12 @@ int liquid_logger_add_file(liquid_logger _q,
 FILE * liquid_logger_add_filename(liquid_logger _q,
                                   const char*   _filename,
                                   int           _level);
+
+// close file and remove from callback list
+//  _q      : logger object
+//  _fid    : file handle
+int liquid_logger_close_file(liquid_logger _q,
+                             FILE *        _fid);
 
 // get the number of callbacks currently used
 //  _return : the number of callbacks currently used
@@ -10995,8 +11002,21 @@ int liquid_get_scale(float   _val,
                      char *  _unit,
                      float * _scale);
 
+// convert a raw value into a metric-scaled magnitude and return the unit
+// prefix, example: 0.01397 -> 13.97 with unit 'm'
+char liquid_convert_units(float * _v);
+
 // compare two values (e.g. qsort), single-precision float
 int liquid_compare_float(const void * _a, const void* _b);
+
+// determine if all requested keywords are present in the existing keywords
+//  _existing  : comma-separated list of existing keywords, e.g. "fir,filter"
+//  _requested : comma-separated list of requested keywords, e.g. "fir"
+// returns true if every non-empty keyword in _requested also appears in
+// _existing as an exact, comma-delimited token match; an empty _requested
+// is considered a subset of any _existing (returns true)
+bool liquid_keywords_subset(const char * _existing,
+                            const char * _requested);
 
 //
 // MODULE : vector

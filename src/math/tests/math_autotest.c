@@ -24,7 +24,7 @@
 #include "liquid.internal.h"
 
 
-LIQUID_AUTOTEST(Q,"Q function","",0.1)
+LIQUID_AUTOTEST(Q,"Q function","math,q",0.1)
 {
     float tol = 1e-6f;
     LIQUID_CHECK_DELTA(liquid_Qf(-4.0f), 0.999968329f, tol);
@@ -38,7 +38,7 @@ LIQUID_AUTOTEST(Q,"Q function","",0.1)
     LIQUID_CHECK_DELTA(liquid_Qf( 4.0f), 0.000031671f, tol);
 }
 
-LIQUID_AUTOTEST(MarcumQf,"Marcum Q function, general","",0.1)
+LIQUID_AUTOTEST(MarcumQf,"Marcum Q function, general","math,marcumq",0.1)
 {
     //float tol = 1e-6f;
     //LIQUID_CHECK_DELTA(liquid_MarcumQf(1,1.0,2.0), 0.26901206003590999667, tol);
@@ -46,7 +46,7 @@ LIQUID_AUTOTEST(MarcumQf,"Marcum Q function, general","",0.1)
     //LIQUID_CHECK_DELTA(liquid_MarcumQf(2,0.7,1.2), 0.86541357815831636702, tol);
 }
 
-LIQUID_AUTOTEST(MarcumQ1f,"Marcum Q function with M=1","",0.1)
+LIQUID_AUTOTEST(MarcumQ1f,"Marcum Q function with M=1","math,marcumq",0.1)
 {
     float tol = 1e-6f;
     LIQUID_CHECK_DELTA(liquid_MarcumQ1f(1.0, 2.0), 0.269012060035909996678, tol);
@@ -54,7 +54,7 @@ LIQUID_AUTOTEST(MarcumQ1f,"Marcum Q function with M=1","",0.1)
     LIQUID_CHECK_DELTA(liquid_MarcumQ1f(0.7, 1.2), 0.566189865978391927421, tol);
 }
 
-LIQUID_AUTOTEST(sincf,"sincf","",0.1)
+LIQUID_AUTOTEST(sincf,"sincf","math,sinc",0.1)
 {
     float tol = 1e-3f;
     LIQUID_CHECK_DELTA(sincf(-2.0f), 0.0f, tol);
@@ -69,7 +69,7 @@ LIQUID_AUTOTEST(sincf,"sincf","",0.1)
     LIQUID_CHECK_DELTA(sincf( 6.5f), 0.048970751720583, tol);
 }
 
-LIQUID_AUTOTEST(nextpow2,"next power of 2","",0.1)
+LIQUID_AUTOTEST(nextpow2,"next power of 2","math,nextpow2",0.1)
 {
     LIQUID_CHECK(liquid_nextpow2(1) ==     0);
 
@@ -96,7 +96,7 @@ LIQUID_AUTOTEST(nextpow2,"next power of 2","",0.1)
     LIQUID_CHECK(liquid_nextpow2(888) ==   10);
 }
 
-LIQUID_AUTOTEST(math_config,"test math configuration and error handling","",0.1)
+LIQUID_AUTOTEST(math_config,"test math configuration and error handling","math",0.1)
 {
     _liquid_error_downgrade_enable();
 

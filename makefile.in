@@ -389,8 +389,8 @@ src/fft/src/spgramf.o       : %.o : %.c $(include_headers) src/fft/src/asgram.pr
 # fft autotest scripts
 fft_autotests :=						\
 	src/fft/tests/asgram_autotest.c				\
-	src/fft/tests/fft_autotest.c				\
 	src/fft/tests/fft_r2r_autotest.c			\
+	src/fft/tests/fft_shift_autotest.c			\
 	src/fft/tests/fft_transforms_autotest.c			\
 	src/fft/tests/spgram_autotest.c				\
 	src/fft/tests/spwaterfall_autotest.c			\
@@ -1130,6 +1130,7 @@ $(utility_objects) : %.o : %.c $(include_headers)
 utility_autotests :=						\
 	src/utility/tests/bshift_array_autotest.c		\
 	src/utility/tests/count_bits_autotest.c			\
+	src/utility/tests/keywords_autotest.c			\
 	src/utility/tests/memory_autotest.c			\
 	src/utility/tests/pack_bytes_autotest.c			\
 	src/utility/tests/shift_array_autotest.c		\
@@ -1396,14 +1397,16 @@ install: all
 	@echo ""
 	mkdir -p $(DESTDIR)$(prefix)/include/liquid
 	mkdir -p $(DESTDIR)$(libdir)
+	mkdir -p $(DESTDIR)$(libdir)/pkgconfig
 	install -m 644 -p libliquid.${AR_LIB} $(DESTDIR)$(libdir)/libliquid.${AR_LIB}
 	install -m 644 -p libliquid.${SH_LIB} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${VERSION}
+	install -m 644 -p liquid-dsp.pc $(DESTDIR)$(libdir)/pkgconfig/liquid-dsp.pc
 	install -m 644 -p include/liquid.h $(DESTDIR)$(prefix)/include/liquid/liquid.h
 	ln -sf libliquid.${SH_LIB}.${VERSION} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
 	ln -sf libliquid.${SH_LIB}.${VERSION} $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${SOVERSION}
 	@echo ""
 	@echo "---------------------------------------------------------"
-	@echo "  liquid-dsp was successfully installed.     "
+	@echo "  liquid-dsp was successfully installed."
 	@echo ""
 	@echo "  On some machines (e.g. Linux) you should rebind your"
 	@echo "  libraries by running 'ldconfig' to make the shared"
@@ -1427,6 +1430,7 @@ uninstall:
 	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${VERSION}
 	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}.${SOVERSION}
 	$(RM) $(DESTDIR)$(libdir)/libliquid.${SH_LIB}
+	$(RM) $(DESTDIR)$(libdir)/pkgconfig/liquid-dsp.pc
 	@echo "done."
 
 ##
@@ -1493,9 +1497,14 @@ clean-check:
 ## TARGET : check-doc - build and run basic documentation checks
 ##
 
-# C example
-readme.c.example.c : README.rst
-	${SED} -n '19,39p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+# Extract code blocks from README.rst using :name: directive options
+# (see scripts/extract_rst_code.py for details)
+# Use a stamp file so the script runs only once for all outputs
+.doc-extract-stamp : README.rst scripts/extract_rst_code.py
+	python3 scripts/extract_rst_code.py README.rst -o .
+	@touch $@
+
+readme.c.example.c readme.link.example.cc readme.c.example.c readme.bind.py : .doc-extract-stamp
 
 readme.c.example.o : %.o : %.c ${include_headers}
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
@@ -1503,35 +1512,24 @@ readme.c.example.o : %.o : %.c ${include_headers}
 readme.c.example : % : %.o ${ARCHIVE_LIB}
 	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
 
-# C++ link example
-readme.link.example.cc : README.rst
-	${SED} -n '248,269p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
-
 readme.link.example.o : %.o : %.cc ${include_headers}
 	${CXX} ${CPPFLAGS} ${CXXFLAGS} -c -o $@ $<
 
 readme.link.example : % : %.o ${ARCHIVE_LIB}
 	${CXX} ${CXXFLAGS} ${LDFLAGS} -o $@ ${LIBS} $^
 
-# C++ bind example
-readme.bind.example.cc : README.rst
-	${SED} -n '358,375p' $< | ${SED} "s/<liquid\/liquid.hh>/\"liquid.hh\"/g" > $@
-
-readme.bind.example.o : %.o : %.cc ${include_headers} bind/firinterp.hh
+readme.bind.example.o : %.o : %.cc ${include_headers}
 	${CXX} ${CPPFLAGS} ${CXXFLAGS} -I ./bind -c -o $@ $<
 
 readme.bind.example : % : %.o ${ARCHIVE_LIB}
 	${CXX} ${CXXFLAGS} ${LDFLAGS} -o $@ ${LIBS} $^
 
-# Python bind example
-readme.bind.py : README.rst
-	${SED} -n '400,407p' $< | ${SED} "s/    //g" > $@
-
-check-doc : readme.c.example readme.link.example readme.bind.example readme.bind.py ${pythonlib}
+check-doc : readme.c.example readme.link.example readme.bind.example readme.bind.py
 	./readme.c.example && ./readme.link.example && ./readme.bind.example && python3 readme.bind.py
 
 clean-check-doc:
-	${RM} readme.*.example* readme.bind.py
+	${RM} readme.*.example* .doc-extract-stamp
+
 
 ##
 ## TARGET : coverage  - run coverage test and produce report
@@ -2013,6 +2011,6 @@ distclean: clean
 	$(RM) configure config.h config.h.in config.h.in~ config.log config.status
 	$(RM) -r autom4te.cache
 	$(RM) aclocal.m4
-	$(RM) liquid.config.h
+	$(RM) liquid.config.h liquid-dsp.pc
 	$(RM) makefile
 

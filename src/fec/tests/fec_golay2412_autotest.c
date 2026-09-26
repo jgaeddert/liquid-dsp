@@ -61,7 +61,7 @@ unsigned int golay2412_generate_error_vector(unsigned int _n)
     return e;
 }
 
-LIQUID_AUTOTEST(golay2412_codec,"test Golay(24,12) codec","",0.1)
+LIQUID_AUTOTEST(golay2412_codec,"test Golay(24,12) codec","fec,golay2412",0.1)
 {
     unsigned int num_trials=50; // number of symbol trials
     unsigned int num_errors;    // number of errors

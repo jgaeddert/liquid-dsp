@@ -24,7 +24,7 @@
 #include "liquid.autotest.h"
 #include "liquid.h"
 
-LIQUID_AUTOTEST(nco_unwrap_phase,"regular phase-unwrapping","",0.1)
+LIQUID_AUTOTEST(nco_unwrap_phase,"regular phase-unwrapping","nco,unwrap",0.1)
 {
     unsigned int n=32;  // number of steps
     float tol = 1e-6f;  // error tolerance

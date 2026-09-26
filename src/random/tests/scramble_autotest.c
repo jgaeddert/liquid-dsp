@@ -112,21 +112,21 @@ void testbench_scramble_soft(liquid_autotest __q__, unsigned int _n)
 }
 
 // simple data scrambling
-LIQUID_AUTOTEST(scramble_n16,"","",0.1)     { testbench_scramble(__q__,16);  };
-LIQUID_AUTOTEST(scramble_n64,"","",0.1)     { testbench_scramble(__q__,64);  };
-LIQUID_AUTOTEST(scramble_n256,"","",0.1)    { testbench_scramble(__q__,256); };
+LIQUID_AUTOTEST(scramble_n16,       "scramble (hard), n =  16","random,scramble",0.1) { testbench_scramble(__q__,16);  };
+LIQUID_AUTOTEST(scramble_n64,       "scramble (hard), n =  64","random,scramble",0.1) { testbench_scramble(__q__,64);  };
+LIQUID_AUTOTEST(scramble_n256,      "scramble (hard), n = 256","random,scramble",0.1) { testbench_scramble(__q__,256); };
 
-LIQUID_AUTOTEST(scramble_n11,"","",0.1)     { testbench_scramble(__q__,11);  };
-LIQUID_AUTOTEST(scramble_n33,"","",0.1)     { testbench_scramble(__q__,33);  };
-LIQUID_AUTOTEST(scramble_n277,"","",0.1)    { testbench_scramble(__q__,277); };
+LIQUID_AUTOTEST(scramble_n11,       "scramble (hard), n =  11","random,scramble",0.1) { testbench_scramble(__q__,11);  };
+LIQUID_AUTOTEST(scramble_n33,       "scramble (hard), n =  33","random,scramble",0.1) { testbench_scramble(__q__,33);  };
+LIQUID_AUTOTEST(scramble_n277,      "scramble (hard), n = 277","random,scramble",0.1) { testbench_scramble(__q__,277); };
 
 // soft data scrambling
-LIQUID_AUTOTEST(scramble_soft_n16,"","",0.1)     { testbench_scramble_soft(__q__,16);  };
-LIQUID_AUTOTEST(scramble_soft_n64,"","",0.1)     { testbench_scramble_soft(__q__,64);  };
-LIQUID_AUTOTEST(scramble_soft_n256,"","",0.1)    { testbench_scramble_soft(__q__,256); };
+LIQUID_AUTOTEST(scramble_soft_n16,  "scramble (soft), n =  16","random,scramble",0.1) { testbench_scramble_soft(__q__,16);  };
+LIQUID_AUTOTEST(scramble_soft_n64,  "scramble (soft), n =  64","random,scramble",0.1) { testbench_scramble_soft(__q__,64);  };
+LIQUID_AUTOTEST(scramble_soft_n256, "scramble (soft), n = 256","random,scramble",0.1) { testbench_scramble_soft(__q__,256); };
 
-LIQUID_AUTOTEST(scramble_soft_n11,"","",0.1)     { testbench_scramble_soft(__q__,11);  };
-LIQUID_AUTOTEST(scramble_soft_n33,"","",0.1)     { testbench_scramble_soft(__q__,33);  };
-LIQUID_AUTOTEST(scramble_soft_n277,"","",0.1)    { testbench_scramble_soft(__q__,277); };
+LIQUID_AUTOTEST(scramble_soft_n11,  "scramble (soft), n =  11","random,scramble",0.1) { testbench_scramble_soft(__q__,11);  };
+LIQUID_AUTOTEST(scramble_soft_n33,  "scramble (soft), n =  33","random,scramble",0.1) { testbench_scramble_soft(__q__,33);  };
+LIQUID_AUTOTEST(scramble_soft_n277, "scramble (soft), n = 277","random,scramble",0.1) { testbench_scramble_soft(__q__,277); };
 
 

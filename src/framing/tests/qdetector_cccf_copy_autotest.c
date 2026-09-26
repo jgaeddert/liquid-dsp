@@ -28,7 +28,7 @@
 LIQUID_AUTOTEST(qdetector_cccf_copy,
     "test that the complete internal state of one detector can be copied to a new "
     "object, and that both return identical results when provided the same input",
-    "",
+    "framing,qdetector",
     0.1)
 {
     // generate random-ish sequence

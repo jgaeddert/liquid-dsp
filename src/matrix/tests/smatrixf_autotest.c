@@ -25,7 +25,7 @@
 #include "liquid.autotest.h"
 #include "liquid.internal.h"
 
-LIQUID_AUTOTEST(smatrixf_vmul,"test sparse floating-point vector multiplication","",0.1)
+LIQUID_AUTOTEST(smatrixf_vmul,"test sparse floating-point vector multiplication","matrix,smatrixf",0.1)
 {
     float tol = 1e-6f;
 
@@ -61,7 +61,7 @@ LIQUID_AUTOTEST(smatrixf_vmul,"test sparse floating-point vector multiplication"
     smatrixf_destroy(A);
 }
 
-LIQUID_AUTOTEST(smatrixf_mul,"test sparse floating-point matrix multiplication","",0.1)
+LIQUID_AUTOTEST(smatrixf_mul,"test sparse floating-point matrix multiplication","matrix,smatrixf",0.1)
 {
     float tol = 1e-6f;
 

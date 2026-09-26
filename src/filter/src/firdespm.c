@@ -174,7 +174,7 @@ int firdespm_lowpass(unsigned int _n,
     // validate inputs
     if (_mu < -0.5f || _mu > 0.5f)
         return liquid_error(LIQUID_EICONFIG,"firdespm_lowpass(), _mu (%12.4e) out of range [-0.5,0.5]", _mu);
-    if (_fc < 0.0f || _fc > 0.5f)
+    if (_fc <= 0.0f || _fc >= 0.5f)
         return liquid_error(LIQUID_EICONFIG,"firdespm_lowpass(), cutoff frequency (%12.4e) out of range (0, 0.5)", _fc);
     if (_n == 0)
         return liquid_error(LIQUID_EICONFIG,"firdespm_lowpass(), filter length must be greater than zero");
@@ -182,10 +182,21 @@ int firdespm_lowpass(unsigned int _n,
     // estimate transition band
     float ft = estimate_req_filter_df(_as, _n);
 
+    // check transition band to ensure within proper range
+    if (0.5f*ft >= _fc) {
+        liquid_log_warn("firdespm_lowpass(), design specifications cannot be met (pass-band cutoff is negative); adjusting design");
+        ft = 1.9f * _fc;
+    }
+    if (_fc + 0.5f*ft > 0.5f) {
+        liquid_log_warn("firdespm_lowpass(), design specifications cannot be met (stop-band cutoff exceeds 0.5); adjusting design");
+        ft = 1.9f*(0.5f - _fc);
+    }
+
     // derived values
     float fp = _fc - 0.5*ft;     // pass-band cutoff frequency
     float fs = _fc + 0.5*ft;     // stop-band cutoff frequency
     liquid_firdespm_btype btype = LIQUID_FIRDESPM_BANDPASS;
+    liquid_log_debug("firdespm_lowpass(), fc=%.6f, ft=%.6f, fp=%.6f, fs=%.6f", _fc, ft, fp, fs);
 
     // derived values
     unsigned int num_bands = 2;
