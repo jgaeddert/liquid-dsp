@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.8.3 - 2026-09-12
+## 1.8.3 - 2026-09-26
 
   * build
     - fixed pkg-config paths since `CMAKE_INSTALL_*` are not guaranteed to be
