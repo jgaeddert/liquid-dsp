@@ -83,6 +83,7 @@ remove = "dev0"
 
 [tool.cibuildwheel]
 build = "cp39-* cp310-* cp311-* cp312-* cp313-* cp314-*"
+enable = ["cpython-prerelease"] # enable pre-releast builds (e.g. python 3.14)
 test-command = "python -c \"import liquid as dsp; print('liquid-dsp version:', dsp.__version__)\""
 build-verbosity = 1
 
