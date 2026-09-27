@@ -1524,7 +1524,7 @@ readme.bind.example.o : %.o : %.cc ${include_headers}
 readme.bind.example : % : %.o ${ARCHIVE_LIB}
 	${CXX} ${CXXFLAGS} ${LDFLAGS} -o $@ ${LIBS} $^
 
-check-doc : readme.c.example readme.link.example readme.bind.example readme.bind.py
+check-doc : readme.c.example readme.link.example readme.bind.example readme.bind.py ${pythonlib}
 	./readme.c.example && ./readme.link.example && ./readme.bind.example && python3 readme.bind.py
 
 clean-check-doc:
