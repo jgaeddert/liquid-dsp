@@ -27,15 +27,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <immintrin.h>
 
 #include "liquid.internal.h"
+
+// build guard
+#if BUILD_SSE
+
+// include proper SIMD extensions for x86 SSE
+#include <immintrin.h>
 
 // sum squares, basic loop
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
-float liquid_sumsqf_sse_1(float *      _v,
-                          unsigned int _n)
+float __attribute__((target("sse")))
+liquid_sumsqf_sse_1(float *      _v,
+                    unsigned int _n)
 {
     // first cut: ...
     __m128 v;   // input vector
@@ -87,8 +93,9 @@ float liquid_sumsqf_sse_1(float *      _v,
 // sum squares, unrolled loop
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
-float liquid_sumsqf_sse_4(float *      _v,
-                          unsigned int _n)
+float __attribute__((target("sse")))
+liquid_sumsqf_sse_4(float *      _v,
+                    unsigned int _n)
 {
     // first cut: ...
     __m128 v0, v1, v2, v3;   // input vector
@@ -149,8 +156,9 @@ float liquid_sumsqf_sse_4(float *      _v,
 // sum squares
 //  _v      :   input array [size: 1 x _n]
 //  _n      :   input length
-float liquid_sumsqf(float *      _v,
-                    unsigned int _n)
+float __attribute__((target("sse")))
+liquid_sumsqf_execute_sse(float *      _v,
+                          unsigned int _n)
 {
     // switch based on size
     if (_n < 16) {
@@ -159,14 +167,16 @@ float liquid_sumsqf(float *      _v,
     return liquid_sumsqf_sse_4(_v, _n);
 }
 
-// sum squares, complex
-//  _v      :   input array [size: 1 x _n]
-//  _n      :   input length
-float liquid_sumsqcf(float complex * _v,
-                     unsigned int    _n)
+// build guard
+#else
+
+// invalidated
+float liquid_sumsqf_execute_sse(float *      _v,
+                                unsigned int _n)
 {
-    // simple method: type cast input as real pointer, run double
-    // length sumsqf method
-    float * v = (float*) _v;
-    return liquid_sumsqf(v, 2*_n);
+    liquid_error(LIQUID_EICONFIG,"sse extensions not available");
+    return 0.0f;
 }
+
+// build guard
+#endif

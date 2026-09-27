@@ -1426,6 +1426,12 @@ float liquid_sumsqf(float *      _v,
 float liquid_sumsqcf(liquid_float_complex * _v,
                      unsigned int           _n);
 
+// Select runtime execution method. This is set automatically on first
+// use; however pulling this to a public method allows the user to
+// override automatic selection and simplifies internal testing.
+//  _select : runtime preference
+int liquid_sumsqf_runtime_select(liquid_runtime_t _select);
+
 
 //
 // MODULE : equalization
