@@ -31,6 +31,7 @@ extern "C" {
 
 // common headers
 #include <inttypes.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -62,7 +63,7 @@ extern "C" {
 
 #define LIQUID_VERSION_MAJOR    1
 #define LIQUID_VERSION_MINOR    8
-#define LIQUID_VERSION_PATCH    2
+#define LIQUID_VERSION_PATCH    3
 #define LIQUID_VERSION_DEV      0
 
 // final version string is constructed by concatenating individual string versions

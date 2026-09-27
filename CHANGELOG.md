@@ -2,20 +2,24 @@
 
 ## Latest
 
-  * build
-    - fixed pkg-config paths since `CMAKE_INSTALL_*` are not guaranteed to be
-      relative (thanks, @iank)
-    - legacy: compiling and installing liquid-dsp.pc (pkg-config file)
-  * autotest
-    - added non-trivial description and keywords to all autotests; all tests
-      have at least a keyword matching their module, and typically their
-      object name
-    - added "audit" flag to find tests with missing metadata or checks
   * benchmark
     - refactored benchmark infrastructure to include benchmark-specific
       metadata, description, and keywords; following autotest methodology
     - added more efficient progression of trials setting to meet target
       runtime
+
+## 1.8.3 - 2026-09-26
+
+  * build
+    - fixed pkg-config paths since `CMAKE_INSTALL_*` are not guaranteed to be
+      relative (thanks, @iank)
+    - legacy: compiling and installing liquid-dsp.pc (pkg-config file)
+    - fixing build with missing stdarg.h (thanks, @brad0)
+  * autotest
+    - added non-trivial description and keywords to all autotests; all tests
+      have at least a keyword matching their module, and typically their
+      object name
+    - added "audit" flag to find tests with missing metadata or checks
   * core
     - logging: fixed issue with stale file handle when closed outside of
       log environment; added new method to close file from within logging
@@ -26,6 +30,8 @@
   * filter
     - resamp2: moving the default filter design to windowed Kaiser; firdespm
       produces a good filter but takes prohibitively long on certain systems
+  * nco
+    - fixing build when M_PI is parenthesized (thanks, @brad0)
   * utility
     - added method to compute keyword matching for running autotests,
       benchmarks

@@ -109,7 +109,7 @@ NCO() NCO(_create)(liquid_ncotype _type)
         q->vcod_costab = NULL;
         q->nco_sintab  = (T*)malloc(NCO_STATIC_LUT_SIZE*sizeof(T));
         for (i=0; i<NCO_STATIC_LUT_SIZE; i++)
-            q->nco_sintab[i] = SIN(TIL(2)*TFL(M_PI)*(T)(i)/(T)(NCO_STATIC_LUT_SIZE));
+            q->nco_sintab[i] = SIN(TIL(2)*(T)(M_PI)*(T)(i)/(T)(NCO_STATIC_LUT_SIZE));
         break;
     }
     case LIQUID_VCO_INTERP: {
@@ -354,7 +354,7 @@ T NCO(_get_phase)(NCO() _q)
         return liquid_error(LIQUID_EICONFIG,"error: nco_get_phase(), "
                        "cannot be used with object type == LIQUID_VCO_DIRECT");
     }
-    return TIL(2)*TFL(M_PI)*(T)_q->theta / (T)(1LLU<<32);
+    return TIL(2)*(T)(M_PI)*(T)_q->theta / (T)(1LLU<<32);
 }
 
 // get frequency [radians/sample]
@@ -363,8 +363,8 @@ T NCO(_get_frequency)(NCO() _q)
     if (_q->type == LIQUID_VCO_DIRECT) {
         return liquid_error(LIQUID_EICONFIG,"nco_%s_get_frequency(), cannot be used with object type == LIQUID_VCO_DIRECT", EXTENSION);
     }
-    T d_theta = TIL(2)*TFL(M_PI)*(T)_q->d_theta / (T)(1LLU<<32);
-    return d_theta > TFL(M_PI) ? d_theta - TIL(2)*TFL(M_PI) : d_theta;
+    T d_theta = TIL(2)*(T)(M_PI)*(T)_q->d_theta / (T)(1LLU<<32);
+    return d_theta > (T)(M_PI) ? d_theta - TIL(2)*(T)(M_PI) : d_theta;
 }
 
 // get frequency of LIQUID_VCO_DIRECT object
@@ -743,12 +743,12 @@ void NCO(_constrain_vcod)(int *_n, unsigned int *_m)
 
 T NCO(_fp_sin)(T x)
 {
-    return SIN(x * TFL(M_PI) / ((uint32_t)(INT32_MAX)+1));
+    return SIN(x * (T)(M_PI) / ((uint32_t)(INT32_MAX)+1));
 }
 
 T NCO(_fp_cos)(T x)
 {
-    return COS(x * TFL(M_PI) / ((uint32_t)(INT32_MAX)+1));
+    return COS(x * (T)(M_PI) / ((uint32_t)(INT32_MAX)+1));
 }
 
 unsigned int NCO(_static_index)(NCO() _q)
