@@ -6,6 +6,7 @@
 #include "firfilt.hh"
 #include "firinterp.hh"
 #include "firpfbch2.hh"
+#include "firpfbchr.hh"
 #include "fs64.hh"
 #include "modem.hh"
 #include "msresamp.hh"
@@ -42,6 +43,8 @@ int main()
 
     dsp::firpfbch2s chs(20);
     std::cout << chs << std::endl;
+    dsp::firpfbchr chr(16, 6);
+    std::cout << chr << std::endl;
 
     dsp::modem modem(LIQUID_MODEM_QPSK);
     std::cout << modem << std::endl;

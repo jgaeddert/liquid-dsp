@@ -7,6 +7,7 @@
 #include "firhilb.hh"
 #include "firinterp.hh"
 #include "firpfbch2.hh"
+#include "firpfbchr.hh"
 #include "fs64.hh"
 #include "modem.hh"
 #include "msresamp.hh"
@@ -202,6 +203,7 @@ PYBIND11_MODULE(liquid, m) {
     liquid::init_firfilt    (m);
     liquid::init_firpfbch2a (m);
     liquid::init_firpfbch2s (m);
+    liquid::init_firpfbchr  (m);
     liquid::init_firhilb    (m);
     liquid::init_firinterp  (m);
     liquid::init_fg64       (m);
