@@ -9571,15 +9571,31 @@ FIRPFBCH2() FIRPFBCH2(_create)(int          _type,                          \
                                unsigned int _m,                             \
                                TC *         _h);                            \
                                                                             \
-/* Create firpfbch2 object using Kaiser window prototype                */  \
+/* Create firpfbch2 object by specifying filter design parameters for   */  \
+/* Kaiser prototype                                                     */  \
 /*  _type   : channelizer type (e.g. LIQUID_ANALYZER)                   */  \
 /*  _M      : number of channels (must be even)                         */  \
 /*  _m      : prototype filter semi-length, length=2*M*m+1              */  \
-/*  _As     : filter stop-band attenuation [dB]                         */  \
+/*  _as     : filter stop-band attenuation [dB]                         */  \
+/*  _bw     : prototype filter bandwidth, relative to input sample      */  \
+/*            rate, 0 < _bw < 1                                         */  \
+FIRPFBCH2() FIRPFBCH2(_create_prototype)(int          _type,                \
+                                         unsigned int _M,                   \
+                                         unsigned int _m,                   \
+                                         float        _as,                  \
+                                         float        _bw);                 \
+                                                                            \
+/* Create firpfbch2 object by specifying filter design parameters for   */  \
+/* Kaiser prototype (simplified); default bandwidth is 2/_M for         */  \
+/* the analyzer, 1/_M for the synthesizer                               */  \
+/*  _type   : channelizer type (e.g. LIQUID_ANALYZER)                   */  \
+/*  _M      : number of channels (must be even)                         */  \
+/*  _m      : prototype filter semi-length, length=2*M*m+1              */  \
+/*  _as     : filter stop-band attenuation [dB]                         */  \
 FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,                   \
                                       unsigned int _M,                      \
                                       unsigned int _m,                      \
-                                      float        _As);                    \
+                                      float        _as);                    \
                                                                             \
 /* Copy object recursively including all internal objects and state     */  \
 FIRPFBCH2() FIRPFBCH2(_copy)(FIRPFBCH2() _q);                               \
@@ -9647,8 +9663,8 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _chans,                         \
 /*  _decim  : output decimation factor (output rate is 1/decim input)   */  \
 /*  _m      : prototype filter semi-length, length=2*chans*m            */  \
 /*  _as     : prototype filter stop-band attenuation [dB]               */  \
-/*  _bw     : prototype filter bandwidth, relative to sample rate,      */  \
-/*            0 < _bw < 1                                               */  \
+/*  _bw     : prototype filter bandwidth, relative to input sample      */  \
+/*            rate, 0 < _bw < 1                                         */  \
 FIRPFBCHR() FIRPFBCHR(_create_prototype)(unsigned int _chans,               \
                                          unsigned int _decim,               \
                                          unsigned int _m,                   \
