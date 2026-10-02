@@ -16,8 +16,11 @@ class firpfbchr : public object
   public:
     // Kaiser prototype
     firpfbchr(unsigned int _chans, unsigned int _decim,
-              unsigned int _m=4,   float _As=60.0f)
-        { q = firpfbchr_crcf_create_kaiser(_chans, _decim, _m, _As); }
+              unsigned int _m=4, float _As=60.0f, float _bw = -1.0f)
+    {
+        if (_bw < 0) _bw = 1.0f / (float)_decim;
+        q = firpfbchr_crcf_create_prototype(_chans, _decim, _m, _As, _bw);
+    }
 
     // destructor
     ~firpfbchr() { firpfbchr_crcf_destroy(q); }
@@ -97,12 +100,14 @@ static void init_firpfbchr(py::module &m)
 {
     py::class_<firpfbchr>(m, "firpfbchr",
         "Finite impulse response polyphase filterbank channelizer with rational output rate")
-        .def(py::init<unsigned int, unsigned int, unsigned int, float>(),
+        .def(py::init<unsigned int, unsigned int, unsigned int, float, float>(),
              py::arg("chans"),
              py::arg("decim"),
              py::arg("m")=4,
              py::arg("As")=60.0f,
-             "create rational-rate channelizer using a Kaiser prototype")
+             py::arg("bw")=-1.0f,
+             "create rational-rate channelizer using a Kaiser prototype"
+             " (negative bandwidth defaults to maximaly decimated filter)")
         .def("__repr__", &firpfbchr::repr)
         .def("reset", &firpfbchr::reset, "reset object's internal state")
         .def_property_readonly("chans", &firpfbchr::get_num_channels, "get number of output channels")
