@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,54 +20,43 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
-// 
-void benchmark_compress_mulaw(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations)
+LIQUID_BENCHMARK(compress_mulaw, "compress_mulaw", "quantization,compander")
 {
     unsigned long int i;
-
     float x  = -0.1f;
     float mu = 255.0f;
     float y  = 0.0f;
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 compressions per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         y += compress_mulaw(x,mu);
         y -= compress_mulaw(x,mu);
         x += compress_mulaw(y,mu);
         x -= compress_mulaw(y,mu);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
+    return extime;
 }
 
-// 
-void benchmark_expand_mulaw(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations)
+LIQUID_BENCHMARK(expand_mulaw, "expand_mulaw", "quantization,compander")
 {
     unsigned long int i;
-
     float x  = 0.0f;
     float mu = 255.0f;
     float y  = 0.75f;
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 expansions per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         x += expand_mulaw(y,mu);
         x -= expand_mulaw(y,mu);
         y += expand_mulaw(x,mu);
         y -= expand_mulaw(x,mu);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
+    return extime;
 }
 

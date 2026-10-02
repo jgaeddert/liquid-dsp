@@ -956,6 +956,7 @@ set(AUTOTESTS
     ${PROJECT_SOURCE_DIR}/src/utility/tests/memory_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/pack_bytes_autotest.c
     ${PROJECT_SOURCE_DIR}/src/utility/tests/shift_array_autotest.c
+    ${PROJECT_SOURCE_DIR}/src/utility/tests/keywords_autotest.c
     ${PROJECT_SOURCE_DIR}/src/vector/tests/vectorcf_autotest.c
     ${PROJECT_SOURCE_DIR}/src/vector/tests/vectorf_autotest.c
     )
@@ -1100,7 +1101,7 @@ endif(BUILD_AUTOTESTS)
 # ---------------------------------------- benchmarks ----------------------------------------
 
 set(BENCHMARKS
-    ${PROJECT_SOURCE_DIR}/bench/null_benchmark.c
+    ${PROJECT_SOURCE_DIR}/benchmark/null_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/agc/bench/agc_crcf_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/audio/bench/cvsd_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/buffer/bench/cbuffercf_benchmark.c
@@ -1122,9 +1123,7 @@ set(BENCHMARKS
     ${PROJECT_SOURCE_DIR}/src/fec/bench/interleaver_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fec/bench/packetizer_decode_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fft/bench/asgramcf_benchmark.c
-    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_composite_benchmark.c
-    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_prime_benchmark.c
-    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_radix2_benchmark.c
+    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_r2r_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/fft/bench/spgramcf_benchmark.c
     ${PROJECT_SOURCE_DIR}/src/filter/bench/fftfilt_crcf_benchmark.c
@@ -1177,34 +1176,16 @@ set(BENCHMARKS
     ${PROJECT_SOURCE_DIR}/src/vector/bench/vectorf_benchmark.c
     )
 
-set(BENCHMARKS_EXTRA
-    ${PROJECT_SOURCE_DIR}/src/fft/bench/fft_runbench.c
-    )
-
 if(BUILD_BENCHMARKS)
-    add_custom_command(
-        OUTPUT  benchmark_include.h
-        DEPENDS
-            ${PROJECT_BINARY_DIR}/autoscript
-            ${BENCHMARKS}
-        COMMAND ${PROJECT_BINARY_DIR}/autoscript / benchmark ${BENCHMARKS} > benchmark_include.h
-        )
-
-    # create output logging directory
-    #add_custom_command(
-    #    OUTPUT benchmark/logs
-    #    COMMAND mkdir -p benchmark/logs
-    #    )
-
-    #benchmark/logs
-    add_executable(benchmark
-        bench/bench.c
-        ${PROJECT_BINARY_DIR}/benchmark_include.h
+    add_executable(xbenchmark
+        benchmark/xbenchmark.c
+        benchmark/liquid_benchmark_registry.h
+        benchmark/benchmark.c
         ${BENCHMARKS}
-        ${BENCHMARKS_EXTRA}
         )
-    target_include_directories(benchmark PRIVATE include .)
-    target_link_libraries(benchmark ${LIQUID_TARGETS})
+    target_include_directories(xbenchmark PRIVATE include .)
+
+    target_link_libraries(xbenchmark ${LIQUID_TARGETS})
 endif(BUILD_BENCHMARKS)
 
 

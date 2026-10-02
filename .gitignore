@@ -21,7 +21,6 @@ aclocal.m4
 # ignore all auto-generated targets
 .githash
 autotest_include.h
-benchmark
 benchmark_include.h
 bench/fftbench
 configure
@@ -33,6 +32,7 @@ config.status
 liquid.config.h
 makefile
 xautotest
+xbenchmark
 *.m
 autotest.json
 autotest/logs/*.bin

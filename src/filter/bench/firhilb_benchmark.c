@@ -20,49 +20,42 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void firhilbf_decim_bench(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations,
-    unsigned int _m)
+float firhilbf_decim_bench(unsigned long int num_iterations, unsigned int _m)
 {
-    // normalize number of trials
-    *_num_iterations *= 20;
-    *_num_iterations /= liquid_nextpow2(_m+1);
-
-    // create hilber transform object
+    // create hilbert transform object
     firhilbf q = firhilbf_create(_m,60.0f);
 
     float x[] = {1.0f, -1.0f};
     float complex y;
     unsigned long int i;
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 executes of 2 input samples each per iteration; round down)
+    unsigned long int n = num_iterations / 8;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         firhilbf_decim_execute(q,x,&y);
         firhilbf_decim_execute(q,x,&y);
         firhilbf_decim_execute(q,x,&y);
         firhilbf_decim_execute(q,x,&y);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
 
     firhilbf_destroy(q);
+    return extime;
 }
 
-#define FIRHILB_DECIM_BENCHMARK_API(M)  \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
-{ firhilbf_decim_bench(_start, _finish, _num_iterations, M); }
+LIQUID_BENCHMARK(firhilbf_decim_m3,  "firhilbf_decim execute, m=3",  "filter,firhilb,halfband,decimator")
+    { return firhilbf_decim_bench(num_iterations, 3); }
 
-void benchmark_firhilbf_decim_m3    FIRHILB_DECIM_BENCHMARK_API(3)  // m=3
-void benchmark_firhilbf_decim_m5    FIRHILB_DECIM_BENCHMARK_API(5)  // m=5
-void benchmark_firhilbf_decim_m9    FIRHILB_DECIM_BENCHMARK_API(9)  // m=9
-void benchmark_firhilbf_decim_m13   FIRHILB_DECIM_BENCHMARK_API(13) // m=13
+LIQUID_BENCHMARK(firhilbf_decim_m5,  "firhilbf_decim execute, m=5",  "filter,firhilb,halfband,decimator")
+    { return firhilbf_decim_bench(num_iterations, 5); }
+
+LIQUID_BENCHMARK(firhilbf_decim_m9,  "firhilbf_decim execute, m=9",  "filter,firhilb,halfband,decimator")
+    { return firhilbf_decim_bench(num_iterations, 9); }
+
+LIQUID_BENCHMARK(firhilbf_decim_m13, "firhilbf_decim execute, m=13", "filter,firhilb,halfband,decimator")
+    { return firhilbf_decim_bench(num_iterations, 13); }
 

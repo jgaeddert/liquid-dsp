@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,12 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void vectorf_bench(struct rusage *_start,
-                   struct rusage *_finish,
-                   unsigned long int *_num_iterations,
-                   unsigned int _n)
+float vectorf_bench(unsigned long int _num_iterations,
+                    unsigned int      _n)
 {
-    // normalize number of iterations
-    *_num_iterations = *_num_iterations * 20 / _n;
-    if (*_num_iterations < 1) *_num_iterations = 1;
-
     // allocate buffers
     float buf_0[_n];
     float buf_1[_n];
@@ -43,28 +36,28 @@ void vectorf_bench(struct rusage *_start,
         buf_1[i] = randnf();
     }
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (1 mul of _n samples per iteration; round down)
+    unsigned long int n = _num_iterations / _n;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         // run vector multiplication
         liquid_vectorf_mul(buf_0, buf_1, _n, buf_2);
 
         // ensure the compiler doesn't optimize this out
         buf_0[i % _n] += buf_2[0];
     }
-    *_num_iterations *= _n;
-    getrusage(RUSAGE_SELF, _finish);
+    float extime = liquid_toc(timer);
+    return extime;
 }
 
-#define VECTORF_BENCHMARK_API(N)        \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
-{ vectorf_bench(_start, _finish, _num_iterations, N); }
-
-void benchmark_vectorf_4       VECTORF_BENCHMARK_API(4)
-void benchmark_vectorf_16      VECTORF_BENCHMARK_API(16)
-void benchmark_vectorf_64      VECTORF_BENCHMARK_API(64)
-void benchmark_vectorf_256     VECTORF_BENCHMARK_API(256)
-void benchmark_vectorf_1024    VECTORF_BENCHMARK_API(1024)
+LIQUID_BENCHMARK(vectorf_4,    "liquid_vectorf_mul, n=4",    "vector")
+    { return vectorf_bench(num_iterations, 4); }
+LIQUID_BENCHMARK(vectorf_16,   "liquid_vectorf_mul, n=16",   "vector")
+    { return vectorf_bench(num_iterations, 16); }
+LIQUID_BENCHMARK(vectorf_64,   "liquid_vectorf_mul, n=64",   "vector")
+    { return vectorf_bench(num_iterations, 64); }
+LIQUID_BENCHMARK(vectorf_256,  "liquid_vectorf_mul, n=256",  "vector")
+    { return vectorf_bench(num_iterations, 256); }
+LIQUID_BENCHMARK(vectorf_1024, "liquid_vectorf_mul, n=1024", "vector")
+    { return vectorf_bench(num_iterations, 1024); }
 

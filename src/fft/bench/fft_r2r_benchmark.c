@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,19 +26,10 @@
 // Real even/odd FFT benchmarks (discrete cosine/sine transforms)
 //
 
-#include <sys/resource.h>
-#include "liquid.h"
-
-#define LIQUID_FFT_R2R_BENCH_API(N,K)   \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
-{ fft_r2r_bench(_start, _finish, _num_iterations, N, K); }
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void fft_r2r_bench(struct rusage *_start,
-                   struct rusage *_finish,
-                   unsigned long int *_num_iterations,
+float fft_r2r_bench(unsigned long int num_iterations,
                    unsigned int _n,
                    int _kind)
 {
@@ -53,48 +44,58 @@ void fft_r2r_bench(struct rusage *_start,
     for (i=0; i<_n; i++)
         x[i] = randnf();
 
-    // scale number of iterations to keep execution time
-    // relatively linear
-    *_num_iterations /= _n * _n;
-    *_num_iterations *= 10;
-    *_num_iterations += 1;
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 executes of _n samples each per iteration; round down)
+    unsigned long int n = num_iterations / (4 * _n);
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         fft_execute(p);
         fft_execute(p);
         fft_execute(p);
         fft_execute(p);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
 
     fft_destroy_plan(p);
+    return extime;
 }
 
-// Radix-2
+// Radix-2 (n=128)
 
-void benchmark_fft_REDFT00_128  LIQUID_FFT_R2R_BENCH_API(128,  LIQUID_FFT_REDFT00)
-void benchmark_fft_REDFT01_128  LIQUID_FFT_R2R_BENCH_API(128,  LIQUID_FFT_REDFT01)
-void benchmark_fft_REDFT10_128  LIQUID_FFT_R2R_BENCH_API(128,  LIQUID_FFT_REDFT10)
-void benchmark_fft_REDFT11_128  LIQUID_FFT_R2R_BENCH_API(128,  LIQUID_FFT_REDFT11)
+LIQUID_BENCHMARK(fft_REDFT00_128, "fft r2r execute, n=128 REDFT00", "fft,r2r,redft00")
+    { return fft_r2r_bench(num_iterations, 128, LIQUID_FFT_REDFT00); }
+LIQUID_BENCHMARK(fft_REDFT01_128, "fft r2r execute, n=128 REDFT01", "fft,r2r,redft01")
+    { return fft_r2r_bench(num_iterations, 128, LIQUID_FFT_REDFT01); }
+LIQUID_BENCHMARK(fft_REDFT10_128, "fft r2r execute, n=128 REDFT10", "fft,r2r,redft10")
+    { return fft_r2r_bench(num_iterations, 128, LIQUID_FFT_REDFT10); }
+LIQUID_BENCHMARK(fft_REDFT11_128, "fft r2r execute, n=128 REDFT11", "fft,r2r,redft11")
+    { return fft_r2r_bench(num_iterations, 128, LIQUID_FFT_REDFT11); }
 
-void benchmark_fft_RODFT00_128  LIQUID_FFT_R2R_BENCH_API(128,  LIQUID_FFT_RODFT00)
-void benchmark_fft_RODFT01_128  LIQUID_FFT_R2R_BENCH_API(128,  LIQUID_FFT_RODFT01)
-void benchmark_fft_RODFT10_128  LIQUID_FFT_R2R_BENCH_API(128,  LIQUID_FFT_RODFT10)
-void benchmark_fft_RODFT11_128  LIQUID_FFT_R2R_BENCH_API(128,  LIQUID_FFT_RODFT11)
+LIQUID_BENCHMARK(fft_RODFT00_128, "fft r2r execute, n=128 RODFT00", "fft,r2r,rodft00")
+    { return fft_r2r_bench(num_iterations, 128, LIQUID_FFT_RODFT00); }
+LIQUID_BENCHMARK(fft_RODFT01_128, "fft r2r execute, n=128 RODFT01", "fft,r2r,rodft01")
+    { return fft_r2r_bench(num_iterations, 128, LIQUID_FFT_RODFT01); }
+LIQUID_BENCHMARK(fft_RODFT10_128, "fft r2r execute, n=128 RODFT10", "fft,r2r,rodft10")
+    { return fft_r2r_bench(num_iterations, 128, LIQUID_FFT_RODFT10); }
+LIQUID_BENCHMARK(fft_RODFT11_128, "fft r2r execute, n=128 RODFT11", "fft,r2r,rodft11")
+    { return fft_r2r_bench(num_iterations, 128, LIQUID_FFT_RODFT11); }
 
+// prime (n=127)
 
-// prime number
+LIQUID_BENCHMARK(fft_REDFT00_127, "fft r2r execute, n=127 REDFT00", "fft,r2r,redft00")
+    { return fft_r2r_bench(num_iterations, 127, LIQUID_FFT_REDFT00); }
+LIQUID_BENCHMARK(fft_REDFT01_127, "fft r2r execute, n=127 REDFT01", "fft,r2r,redft01")
+    { return fft_r2r_bench(num_iterations, 127, LIQUID_FFT_REDFT01); }
+LIQUID_BENCHMARK(fft_REDFT10_127, "fft r2r execute, n=127 REDFT10", "fft,r2r,redft10")
+    { return fft_r2r_bench(num_iterations, 127, LIQUID_FFT_REDFT10); }
+LIQUID_BENCHMARK(fft_REDFT11_127, "fft r2r execute, n=127 REDFT11", "fft,r2r,redft11")
+    { return fft_r2r_bench(num_iterations, 127, LIQUID_FFT_REDFT11); }
 
-void benchmark_fft_REDFT00_127  LIQUID_FFT_R2R_BENCH_API(127,  LIQUID_FFT_REDFT00)
-void benchmark_fft_REDFT01_127  LIQUID_FFT_R2R_BENCH_API(127,  LIQUID_FFT_REDFT01)
-void benchmark_fft_REDFT10_127  LIQUID_FFT_R2R_BENCH_API(127,  LIQUID_FFT_REDFT10)
-void benchmark_fft_REDFT11_127  LIQUID_FFT_R2R_BENCH_API(127,  LIQUID_FFT_REDFT11)
-
-void benchmark_fft_RODFT00_127  LIQUID_FFT_R2R_BENCH_API(127,  LIQUID_FFT_RODFT00)
-void benchmark_fft_RODFT01_127  LIQUID_FFT_R2R_BENCH_API(127,  LIQUID_FFT_RODFT01)
-void benchmark_fft_RODFT10_127  LIQUID_FFT_R2R_BENCH_API(127,  LIQUID_FFT_RODFT10)
-void benchmark_fft_RODFT11_127  LIQUID_FFT_R2R_BENCH_API(127,  LIQUID_FFT_RODFT11)
+LIQUID_BENCHMARK(fft_RODFT00_127, "fft r2r execute, n=127 RODFT00", "fft,r2r,rodft00")
+    { return fft_r2r_bench(num_iterations, 127, LIQUID_FFT_RODFT00); }
+LIQUID_BENCHMARK(fft_RODFT01_127, "fft r2r execute, n=127 RODFT01", "fft,r2r,rodft01")
+    { return fft_r2r_bench(num_iterations, 127, LIQUID_FFT_RODFT01); }
+LIQUID_BENCHMARK(fft_RODFT10_127, "fft r2r execute, n=127 RODFT10", "fft,r2r,rodft10")
+    { return fft_r2r_bench(num_iterations, 127, LIQUID_FFT_RODFT10); }
+LIQUID_BENCHMARK(fft_RODFT11_127, "fft r2r execute, n=127 RODFT11", "fft,r2r,rodft11")
+    { return fft_r2r_bench(num_iterations, 127, LIQUID_FFT_RODFT11); }
 

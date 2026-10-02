@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "liquid.benchmark.h"
 #include <math.h>
-#include <sys/resource.h>
-#include "liquid.internal.h"
 
 // frequency demodulator benchmark
-void benchmark_freqdem(struct rusage *     _start,
-                       struct rusage *     _finish,
-                       unsigned long int * _num_iterations)
+LIQUID_BENCHMARK(freqdem, "freqdem demodulate", "modem,freqdem")
 {
     // create demodulator
     float   kf  = 0.05f; // modulation index
@@ -37,16 +32,14 @@ void benchmark_freqdem(struct rusage *     _start,
 
     float complex r[20];    // modulated signal
     float         m[20];    // message signal
-
     unsigned long int i;
-
     // generate modulated signal
     for (i=0; i<20; i++)
         r[i] = 0.3f*cexpf(_Complex_I*2*M_PI*i/20.0f);
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (20 demodulates per iteration; round down)
+    unsigned long int n = num_iterations / 20;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         freqdem_demodulate(dem, r[ 0], &m[ 0]);
         freqdem_demodulate(dem, r[ 1], &m[ 1]);
         freqdem_demodulate(dem, r[ 2], &m[ 2]);
@@ -68,11 +61,10 @@ void benchmark_freqdem(struct rusage *     _start,
         freqdem_demodulate(dem, r[18], &m[18]);
         freqdem_demodulate(dem, r[19], &m[19]);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 20;
-
+    float extime = liquid_toc(timer);
     // destroy demodulator
     freqdem_destroy(dem);
+    return extime;
 }
 
 

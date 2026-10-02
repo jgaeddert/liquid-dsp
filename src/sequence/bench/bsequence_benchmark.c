@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,20 +20,12 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void bsequence_correlate_bench(struct rusage *_start,
-                               struct rusage *_finish,
-                               unsigned long int *_num_iterations,
-                               unsigned int _n)
+float bsequence_correlate_bench(unsigned long int _num_iterations,
+                                unsigned int      _n)
 {
-    // normalize number of iterations
-    *_num_iterations *= 1000;
-    *_num_iterations /= _n;
-    if (*_num_iterations < 1) *_num_iterations = 1;
-
     // create and initialize binary sequences
     bsequence bs1 = bsequence_create(_n);
     bsequence bs2 = bsequence_create(_n);
@@ -41,9 +33,10 @@ void bsequence_correlate_bench(struct rusage *_start,
     unsigned long int i;
     int rxy = 0;
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 correlates per iteration; round down)
+    unsigned long int n = _num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         rxy += bsequence_correlate(bs1, bs2);
         rxy -= bsequence_correlate(bs1, bs2);
         rxy += bsequence_correlate(bs1, bs2);
@@ -51,23 +44,20 @@ void bsequence_correlate_bench(struct rusage *_start,
 
         bsequence_push(rxy > 0 ? bs1 : bs2, 1);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
 
     // clean up memory
     bsequence_destroy(bs1);
     bsequence_destroy(bs2);
+    return extime;
 }
 
-#define BSEQUENCE_BENCHMARK_API(N)          \
-(   struct rusage *_start,                  \
-    struct rusage *_finish,                 \
-    unsigned long int *_num_iterations)     \
-{ bsequence_correlate_bench(_start, _finish, _num_iterations, N); }
-
-// 
-void benchmark_bsequence_xcorr_n16      BSEQUENCE_BENCHMARK_API(16)
-void benchmark_bsequence_xcorr_n64      BSEQUENCE_BENCHMARK_API(64)
-void benchmark_bsequence_xcorr_n256     BSEQUENCE_BENCHMARK_API(256)
-void benchmark_bsequence_xcorr_n1024    BSEQUENCE_BENCHMARK_API(1024)
+LIQUID_BENCHMARK(bsequence_xcorr_n16,   "bsequence_correlate, n=16",   "sequence")
+    { return bsequence_correlate_bench(num_iterations, 16); }
+LIQUID_BENCHMARK(bsequence_xcorr_n64,   "bsequence_correlate, n=64",   "sequence")
+    { return bsequence_correlate_bench(num_iterations, 64); }
+LIQUID_BENCHMARK(bsequence_xcorr_n256,  "bsequence_correlate, n=256",  "sequence")
+    { return bsequence_correlate_bench(num_iterations, 256); }
+LIQUID_BENCHMARK(bsequence_xcorr_n1024, "bsequence_correlate, n=1024", "sequence")
+    { return bsequence_correlate_bench(num_iterations, 1024); }
 

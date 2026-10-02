@@ -20,27 +20,27 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
 // test overhead for basic logging
-void benchmark_logging(struct rusage *_start,
-                       struct rusage *_finish,
-                       unsigned long int *_num_iterations,
-                       unsigned int _n)
+LIQUID_BENCHMARK(logging, "logging overhead (info-level no-op)", "core,logging")
 {
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    unsigned int i;
-    liquid_logger_set_level(NULL, LIQUID_WARN);
-    //liquid_logger_add_filename(NULL, "test.log", LIQUID_TRACE);
-    for (i=0; i<(*_num_iterations); i++) {
-        liquid_log_info("log event %i:0", i);
-        liquid_log_info("log event %i:1", i);
-        liquid_log_info("log event %i:2", i);
-        liquid_log_info("log event %i:3", i);
+    // use a private logger so the global logger (used by the harness for
+    // per-benchmark output and the summary) is never disturbed
+    liquid_logger log = liquid_logger_create();
+    liquid_logger_set_level(log, LIQUID_WARN); // suppress INFO-level output
+
+    // start trials (4 log calls per iteration; round down)
+    unsigned long int i, n = num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
+        liquid_log(log, LIQUID_INFO, LIQUID_FILENAME, __LINE__, "log event %i:0", i);
+        liquid_log(log, LIQUID_INFO, LIQUID_FILENAME, __LINE__, "log event %i:1", i);
+        liquid_log(log, LIQUID_INFO, LIQUID_FILENAME, __LINE__, "log event %i:2", i);
+        liquid_log(log, LIQUID_INFO, LIQUID_FILENAME, __LINE__, "log event %i:3", i);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
+    liquid_logger_destroy(log);
+    return extime;
 }
 

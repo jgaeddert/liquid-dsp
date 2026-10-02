@@ -20,20 +20,11 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include <math.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void fftfilt_crcf_bench(struct rusage *     _start,
-                        struct rusage *     _finish,
-                        unsigned long int * _num_iterations,
-                        unsigned int        _n)
+float fftfilt_crcf_bench(unsigned long int num_iterations, unsigned int _n)
 {
-    // adjust number of iterations:
-    *_num_iterations = *_num_iterations * 5 / (_n*logf(_n));
-    if (*_num_iterations < 1) *_num_iterations = 1;
-
     // generate coefficients
     unsigned int h_len = _n+1;
     float h[h_len];
@@ -52,32 +43,34 @@ void fftfilt_crcf_bench(struct rusage *     _start,
     // output vector
     float complex y[_n];
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 blocks of _n samples per iteration; round down)
+    unsigned long int n = num_iterations / (4 * _n);
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         fftfilt_crcf_execute(q, &x[0], y);
         fftfilt_crcf_execute(q, &x[1], y);
         fftfilt_crcf_execute(q, &x[2], y);
         fftfilt_crcf_execute(q, &x[3], y);
     }
-    getrusage(RUSAGE_SELF, _finish);
-
-    // scale number of iterations: loop unrolled 4 times, _n samples/block
-    *_num_iterations *= 4 * _n;
+    float extime = liquid_toc(timer);
 
     // destroy filter object
     fftfilt_crcf_destroy(q);
+    return extime;
 }
 
-#define FFTFILT_CRCF_BENCHMARK_API(N)   \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
-{ fftfilt_crcf_bench(_start, _finish, _num_iterations, N); }
+LIQUID_BENCHMARK(fftfilt_crcf_4, "fftfilt_crcf execute, n=4", "filter,fftfilt")
+    { return fftfilt_crcf_bench(num_iterations, 4); }
 
-void benchmark_fftfilt_crcf_4    FFTFILT_CRCF_BENCHMARK_API(4)
-void benchmark_fftfilt_crcf_8    FFTFILT_CRCF_BENCHMARK_API(8)
-void benchmark_fftfilt_crcf_16   FFTFILT_CRCF_BENCHMARK_API(16)
-void benchmark_fftfilt_crcf_32   FFTFILT_CRCF_BENCHMARK_API(32)
-void benchmark_fftfilt_crcf_64   FFTFILT_CRCF_BENCHMARK_API(64)
+LIQUID_BENCHMARK(fftfilt_crcf_8, "fftfilt_crcf execute, n=8", "filter,fftfilt")
+    { return fftfilt_crcf_bench(num_iterations, 8); }
+
+LIQUID_BENCHMARK(fftfilt_crcf_16, "fftfilt_crcf execute, n=16", "filter,fftfilt")
+    { return fftfilt_crcf_bench(num_iterations, 16); }
+
+LIQUID_BENCHMARK(fftfilt_crcf_32, "fftfilt_crcf execute, n=32", "filter,fftfilt")
+    { return fftfilt_crcf_bench(num_iterations, 32); }
+
+LIQUID_BENCHMARK(fftfilt_crcf_64, "fftfilt_crcf execute, n=64", "filter,fftfilt")
+    { return fftfilt_crcf_bench(num_iterations, 64); }
 

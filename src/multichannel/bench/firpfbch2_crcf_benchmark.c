@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,66 +20,61 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
-
-#define FIRPFBCH2_EXECUTE_BENCH_API(NUM_CHANNELS,M,TYPE)    \
-(   struct rusage *_start,                                  \
-    struct rusage *_finish,                                 \
-    unsigned long int *_num_iterations)                     \
-{ firpfbch2_crcf_execute_bench(_start, _finish, _num_iterations, NUM_CHANNELS, M, TYPE); }
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void firpfbch2_crcf_execute_bench(struct rusage *     _start,
-                                  struct rusage *     _finish,
-                                  unsigned long int * _num_iterations,
-                                  unsigned int        _num_channels,
-                                  unsigned int        _m,
-                                  int                 _type)
+float firpfbch2_crcf_execute_bench(unsigned long int _num_iterations,
+                                   unsigned int      _num_channels,
+                                   unsigned int      _m,
+                                   int               _type)
 {
     // initialize channelizer
     float As         = 60.0f;
     firpfbch2_crcf q = firpfbch2_crcf_create_kaiser(_type,_num_channels,_m,As);
-
     unsigned long int i;
-
     float complex x[_num_channels];
     float complex y[_num_channels];
     for (i=0; i<_num_channels; i++)
         x[i] = 1.0f + _Complex_I*1.0f;
-
-    // scale number of iterations to keep execution time
-    // relatively linear
-    *_num_iterations /= _num_channels;
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 executes per iteration; round down)
+    unsigned long int n = _num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         firpfbch2_crcf_execute(q, x, y);
         firpfbch2_crcf_execute(q, x, y);
         firpfbch2_crcf_execute(q, x, y);
         firpfbch2_crcf_execute(q, x, y);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
-
+    float extime = liquid_toc(timer);
     firpfbch2_crcf_destroy(q);
+    return extime;
 }
 
 // analysis
-void benchmark_firpfbch2_crcf_a4    FIRPFBCH2_EXECUTE_BENCH_API(4,    2,  LIQUID_ANALYZER)
-void benchmark_firpfbch2_crcf_a16   FIRPFBCH2_EXECUTE_BENCH_API(16,   2,  LIQUID_ANALYZER)
-void benchmark_firpfbch2_crcf_a64   FIRPFBCH2_EXECUTE_BENCH_API(64,   2,  LIQUID_ANALYZER)
-void benchmark_firpfbch2_crcf_a256  FIRPFBCH2_EXECUTE_BENCH_API(256,  2,  LIQUID_ANALYZER)
-void benchmark_firpfbch2_crcf_a512  FIRPFBCH2_EXECUTE_BENCH_API(512,  2,  LIQUID_ANALYZER)
-void benchmark_firpfbch2_crcf_a1024 FIRPFBCH2_EXECUTE_BENCH_API(1024, 2,  LIQUID_ANALYZER)
+LIQUID_BENCHMARK(firpfbch2_crcf_a4,    "firpfbch2_crcf analyzer, M=4",    "multichannel,firpfbch2,analyzer")
+    { return firpfbch2_crcf_execute_bench(num_iterations, 4,    2, LIQUID_ANALYZER); }
+LIQUID_BENCHMARK(firpfbch2_crcf_a16,   "firpfbch2_crcf analyzer, M=16",   "multichannel,firpfbch2,analyzer")
+    { return firpfbch2_crcf_execute_bench(num_iterations, 16,   2, LIQUID_ANALYZER); }
+LIQUID_BENCHMARK(firpfbch2_crcf_a64,   "firpfbch2_crcf analyzer, M=64",   "multichannel,firpfbch2,analyzer")
+    { return firpfbch2_crcf_execute_bench(num_iterations, 64,   2, LIQUID_ANALYZER); }
+LIQUID_BENCHMARK(firpfbch2_crcf_a256,  "firpfbch2_crcf analyzer, M=256",  "multichannel,firpfbch2,analyzer")
+    { return firpfbch2_crcf_execute_bench(num_iterations, 256,  2, LIQUID_ANALYZER); }
+LIQUID_BENCHMARK(firpfbch2_crcf_a512,  "firpfbch2_crcf analyzer, M=512",  "multichannel,firpfbch2,analyzer")
+    { return firpfbch2_crcf_execute_bench(num_iterations, 512,  2, LIQUID_ANALYZER); }
+LIQUID_BENCHMARK(firpfbch2_crcf_a1024, "firpfbch2_crcf analyzer, M=1024", "multichannel,firpfbch2,analyzer")
+    { return firpfbch2_crcf_execute_bench(num_iterations, 1024, 2, LIQUID_ANALYZER); }
 
 // synthesis
-void benchmark_firpfbch2_crcf_s4    FIRPFBCH2_EXECUTE_BENCH_API(4,    2,  LIQUID_SYNTHESIZER)
-void benchmark_firpfbch2_crcf_s16   FIRPFBCH2_EXECUTE_BENCH_API(16,   2,  LIQUID_SYNTHESIZER)
-void benchmark_firpfbch2_crcf_s64   FIRPFBCH2_EXECUTE_BENCH_API(64,   2,  LIQUID_SYNTHESIZER)
-void benchmark_firpfbch2_crcf_s256  FIRPFBCH2_EXECUTE_BENCH_API(256,  2,  LIQUID_SYNTHESIZER)
-void benchmark_firpfbch2_crcf_s512  FIRPFBCH2_EXECUTE_BENCH_API(512,  2,  LIQUID_SYNTHESIZER)
-void benchmark_firpfbch2_crcf_s1024 FIRPFBCH2_EXECUTE_BENCH_API(1024, 2,  LIQUID_SYNTHESIZER)
-
+LIQUID_BENCHMARK(firpfbch2_crcf_s4,    "firpfbch2_crcf synthesizer, M=4",    "multichannel,firpfbch2,synthesizer")
+    { return firpfbch2_crcf_execute_bench(num_iterations, 4,    2, LIQUID_SYNTHESIZER); }
+LIQUID_BENCHMARK(firpfbch2_crcf_s16,   "firpfbch2_crcf synthesizer, M=16",   "multichannel,firpfbch2,synthesizer")
+    { return firpfbch2_crcf_execute_bench(num_iterations, 16,   2, LIQUID_SYNTHESIZER); }
+LIQUID_BENCHMARK(firpfbch2_crcf_s64,   "firpfbch2_crcf synthesizer, M=64",   "multichannel,firpfbch2,synthesizer")
+    { return firpfbch2_crcf_execute_bench(num_iterations, 64,   2, LIQUID_SYNTHESIZER); }
+LIQUID_BENCHMARK(firpfbch2_crcf_s256,  "firpfbch2_crcf synthesizer, M=256",  "multichannel,firpfbch2,synthesizer")
+    { return firpfbch2_crcf_execute_bench(num_iterations, 256,  2, LIQUID_SYNTHESIZER); }
+LIQUID_BENCHMARK(firpfbch2_crcf_s512,  "firpfbch2_crcf synthesizer, M=512",  "multichannel,firpfbch2,synthesizer")
+    { return firpfbch2_crcf_execute_bench(num_iterations, 512,  2, LIQUID_SYNTHESIZER); }
+LIQUID_BENCHMARK(firpfbch2_crcf_s1024, "firpfbch2_crcf synthesizer, M=1024", "multichannel,firpfbch2,synthesizer")
+    { return firpfbch2_crcf_execute_bench(num_iterations, 1024, 2, LIQUID_SYNTHESIZER); }
 

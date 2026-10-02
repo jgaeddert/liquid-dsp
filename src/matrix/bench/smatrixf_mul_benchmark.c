@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,13 @@
  * THE SOFTWARE.
  */
 
+#include "liquid.benchmark.h"
 #include <stdlib.h>
-#include <sys/resource.h>
-
 #include "liquid.h"
 
 // Helper function to keep code base small
-void smatrixf_mul_bench(struct rusage *     _start,
-                        struct rusage *     _finish,
-                        unsigned long int * _num_iterations,
-                        unsigned int        _n)
+float smatrixf_mul_bench(unsigned long int num_iterations, unsigned int _n)
 {
-    // normalize number of iterations
-    // time ~ _n ^ 3
-    *_num_iterations = 1 + *_num_iterations * 8192 / (_n * _n * _n + 1);
-
     unsigned long int i;
 
     // generate random matrices
@@ -60,36 +52,33 @@ void smatrixf_mul_bench(struct rusage *     _start,
         float value      = randf();
         smatrixf_set(b, row, col, value);
     }
-
     // initialize c with first multiplication
     smatrixf_mul(a,b,c);
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 multiplications per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         smatrixf_mul(a,b,c);
         smatrixf_mul(a,b,c);
         smatrixf_mul(a,b,c);
         smatrixf_mul(a,b,c);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
-
+    float extime = liquid_toc(timer);
     // free smatrix objects
     smatrixf_destroy(a);
     smatrixf_destroy(b);
     smatrixf_destroy(c);
+    return extime;
 }
 
-#define SMATRIXF_MUL_BENCHMARK_API(M)   \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
-{ smatrixf_mul_bench(_start, _finish, _num_iterations, M); }
-
-void benchmark_smatrixf_mul_n32     SMATRIXF_MUL_BENCHMARK_API( 32)
-void benchmark_smatrixf_mul_n64     SMATRIXF_MUL_BENCHMARK_API( 64)
-void benchmark_smatrixf_mul_n128    SMATRIXF_MUL_BENCHMARK_API(128)
-void benchmark_smatrixf_mul_n256    SMATRIXF_MUL_BENCHMARK_API(256)
-void benchmark_smatrixf_mul_n512    SMATRIXF_MUL_BENCHMARK_API(512)
+LIQUID_BENCHMARK(smatrixf_mul_n32,  "smatrixf_mul execute, n=32",  "matrix,smatrix,mul")
+    { return smatrixf_mul_bench(num_iterations, 32); }
+LIQUID_BENCHMARK(smatrixf_mul_n64,  "smatrixf_mul execute, n=64",  "matrix,smatrix,mul")
+    { return smatrixf_mul_bench(num_iterations, 64); }
+LIQUID_BENCHMARK(smatrixf_mul_n128, "smatrixf_mul execute, n=128", "matrix,smatrix,mul")
+    { return smatrixf_mul_bench(num_iterations, 128); }
+LIQUID_BENCHMARK(smatrixf_mul_n256, "smatrixf_mul execute, n=256", "matrix,smatrix,mul")
+    { return smatrixf_mul_bench(num_iterations, 256); }
+LIQUID_BENCHMARK(smatrixf_mul_n512, "smatrixf_mul execute, n=512", "matrix,smatrix,mul")
+    { return smatrixf_mul_bench(num_iterations, 512); }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,10 +21,7 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/resource.h>
-
+#include "liquid.benchmark.h"
 #include "liquid.internal.h"
 
 // callback function
@@ -43,13 +40,8 @@ static int bpacketsync_benchmark_callback(unsigned char *  _payload,
     return 0;
 }
 
-void benchmark_bpacketsync(struct rusage *_start,
-                           struct rusage *_finish,
-                           unsigned long int *_num_iterations)
+LIQUID_BENCHMARK(bpacketsync, "bpacketsync execute", "framing,bpacketsync")
 {
-    // adjust number of iterations
-    *_num_iterations *= 4;
-
     // options
     unsigned int dec_msg_len = 64;      // original data message length
     crc_scheme check = LIQUID_CRC_NONE; // data integrity check
@@ -79,22 +71,22 @@ void benchmark_bpacketsync(struct rusage *_start,
     // encode packet
     bpacketgen_encode(pg,msg_org,msg_enc);
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 bytes per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         // push packet through synchronizer
         bpacketsync_execute_byte(ps, msg_enc[(4*i+0)%enc_msg_len]);
         bpacketsync_execute_byte(ps, msg_enc[(4*i+1)%enc_msg_len]);
         bpacketsync_execute_byte(ps, msg_enc[(4*i+2)%enc_msg_len]);
         bpacketsync_execute_byte(ps, msg_enc[(4*i+3)%enc_msg_len]);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
-
-    printf("found %u packets\n", num_packets_found);
+    float extime = liquid_toc(timer);
+    liquid_log_debug("found %u packets", num_packets_found);
 
     // clean up allocated objects
     bpacketgen_destroy(pg);
     bpacketsync_destroy(ps);
+    return extime;
 }
 

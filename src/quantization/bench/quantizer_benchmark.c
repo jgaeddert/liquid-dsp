@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2022 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,54 +20,43 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
-// 
-void benchmark_quantize_adc(struct rusage *     _start,
-                            struct rusage *     _finish,
-                            unsigned long int * _num_iterations)
+LIQUID_BENCHMARK(quantize_adc, "quantize_adc", "quantization,quantizer")
 {
     unsigned long int i;
-
     unsigned int q = 0;
     unsigned int num_bits=8;
     float x=-0.1f;
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 quantizations per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         q ^= quantize_adc(x,num_bits);
         q ^= quantize_adc(x,num_bits);
         q ^= quantize_adc(x,num_bits);
         q ^= quantize_adc(x,num_bits);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
-    *_num_iterations += q & 1; // trivial use of variable
+    float extime = liquid_toc(timer);
+    return extime;
 }
 
-// 
-void benchmark_quantize_dac(struct rusage *     _start,
-                            struct rusage *     _finish,
-                            unsigned long int * _num_iterations)
+LIQUID_BENCHMARK(quantize_dac, "quantize_dac", "quantization,quantizer")
 {
     unsigned long int i;
-
     unsigned int q=0x0f;
     unsigned int num_bits=8;
     float x = 0;
-
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 de-quantizations per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         x += quantize_dac(q,num_bits);
         x += quantize_dac(q,num_bits);
         x += quantize_dac(q,num_bits);
         x += quantize_dac(q,num_bits);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
-    *_num_iterations += x > 0; // trivial use of variable
+    float extime = liquid_toc(timer);
+    return extime;
 }
 

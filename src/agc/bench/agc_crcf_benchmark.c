@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,26 +20,22 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
+#include "liquid.benchmark.h"
 
-#include "liquid.h"
-
-// helper function to keep code base small
-void benchmark_agc_crcf(struct rusage *     _start,
-                        struct rusage *     _finish,
-                        unsigned long int * _num_iterations)
+// benchmark: automatic gain control (agc_crcf)
+LIQUID_BENCHMARK(agc_crcf, "agc_crcf execute", "agc")
 {
-    unsigned int i;
-
     // initialize AGC object
     agc_crcf q = agc_crcf_create();
-    agc_crcf_set_bandwidth(q,0.05f);
+    agc_crcf_set_bandwidth(q, 0.05f);
 
     float complex x = 1e-6f;    // input sample
     float complex y;            // output sample
 
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (8 single-sample executes per iteration; round down)
+    unsigned long int i, n = num_iterations / 8;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i = 0; i < n; i++) {
         agc_crcf_execute(q, x, &y);
         agc_crcf_execute(q, x, &y);
         agc_crcf_execute(q, x, &y);
@@ -49,11 +45,9 @@ void benchmark_agc_crcf(struct rusage *     _start,
         agc_crcf_execute(q, x, &y);
         agc_crcf_execute(q, x, &y);
     }
-    getrusage(RUSAGE_SELF, _finish);
-
-    *_num_iterations *= 8;
+    float extime = liquid_toc(timer);
 
     // destroy object
     agc_crcf_destroy(q);
+    return extime;
 }
-

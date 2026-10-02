@@ -1,6 +1,17 @@
 # Changelog
 
+## Latest
+
+  * benchmark
+    - refactored benchmark infrastructure to include benchmark-specific
+      metadata, description, and keywords; following autotest methodology
+    - added more efficient progression of trials setting to meet target
+      runtime
+
 ## 1.8.3 - 2026-09-26
+
+Version 1.8.3 includes support for keyword searching for autotests, package
+config for legacy builds, and various cleanup build items.
 
   * build
     - fixed pkg-config paths since `CMAKE_INSTALL_*` are not guaranteed to be

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,42 +20,23 @@
  * THE SOFTWARE.
  */
 
-//
-// Example of a benchmark header
-//
+#include "liquid.benchmark.h"
 
-#include <sys/resource.h>
-#include <math.h>
-
-// strings parsed by benchmarkgen.py
-const char * mybench_opts[3] = {
-    "opt1a opt1b",
-    "opt2a opt2b opt2c",
-    "opt3a opt3b opt3c"
-};
-
-
-void benchmark_mybench(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations)
-//    unsigned int argc,
-//    char *argv[])
+LIQUID_BENCHMARK(null, "baseline benchmark for cpu clock speed estimation", "null")
 {
-    // DSP initiazation goes here
-
-    unsigned int i;
-    float x, y, theta;
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
-        // DSP execution goes here
-        x = cosf(M_PI/2.0f);
-        y = sinf(M_PI/2.0f);
-        theta = atan2(y,x);
+    unsigned int k = 366001;    // large prime number
+    unsigned int g = 184903;    // another large prime number
+    unsigned int s = 1;
+    unsigned long int i;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<num_iterations; i++)
+    {
+        // perform mindless task
+        s = (s*k) % g;
     }
-    getrusage(RUSAGE_SELF, _finish);
 
-    // DSP cleanup goes here
+    // return runtime with psuedo-random (yet neglible) offset to
+    // prevent compiler optimizing loop out
+    return liquid_toc(timer) + (s & 1 ? 0 : 1e-6f);
 }
-
 

@@ -20,20 +20,14 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
+#include "liquid.benchmark.h"
 #include <math.h>
-#include "liquid.h"
 
 // Helper function to keep code base small
-void resamp_crcf_bench(struct rusage *     _start,
-                       struct rusage *     _finish,
-                       unsigned long int * _num_iterations,
+float resamp_crcf_bench(unsigned long int num_iterations,
                        unsigned int        _P,
                        unsigned int        _Q)
 {
-    // adjust number of iterations: cycles/trial ~ 500 + 100 Q
-    *_num_iterations /= (500 + 100*_Q);
-
     // create resampling object; irrational rate is just less than Q/P
     float        rate = (float)_Q/(float)_P*sqrt(3301.0f/3302.0f);
     unsigned int m    = 12;     // filter semi-length
@@ -51,37 +45,49 @@ void resamp_crcf_bench(struct rusage *     _start,
     for (i=0; i<_P; i++)
         buf_0[i] = i % 7 ? 1 : -1;
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 execute_blocks of _P input samples each per iteration; round down)
+    unsigned long int n = num_iterations / (4 * _P);
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         resamp_crcf_execute_block(q, buf_0, _P, buf_1, &num_written);
         resamp_crcf_execute_block(q, buf_0, _P, buf_1, &num_written);
         resamp_crcf_execute_block(q, buf_0, _P, buf_1, &num_written);
         resamp_crcf_execute_block(q, buf_0, _P, buf_1, &num_written);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
 
     // destroy object
     resamp_crcf_destroy(q);
+    return extime;
 }
-
-#define RESAMP_CRCF_BENCHMARK_API(P,Q)  \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
-{ resamp_crcf_bench(_start, _finish, _num_iterations, P, Q); }
 
 //
 // Resampler benchmark prototypes; compare to rational rate resampler
 //
-void benchmark_resamp_crcf_P17_Q1   RESAMP_CRCF_BENCHMARK_API(17,   1)
-void benchmark_resamp_crcf_P17_Q2   RESAMP_CRCF_BENCHMARK_API(17,   2)
-void benchmark_resamp_crcf_P17_Q4   RESAMP_CRCF_BENCHMARK_API(17,   4)
-void benchmark_resamp_crcf_P17_Q8   RESAMP_CRCF_BENCHMARK_API(17,   8)
-void benchmark_resamp_crcf_P17_Q16  RESAMP_CRCF_BENCHMARK_API(17,  16)
-void benchmark_resamp_crcf_P17_Q32  RESAMP_CRCF_BENCHMARK_API(17,  32)
-void benchmark_resamp_crcf_P17_Q64  RESAMP_CRCF_BENCHMARK_API(17,  64)
-void benchmark_resamp_crcf_P17_Q128 RESAMP_CRCF_BENCHMARK_API(17, 128)
-void benchmark_resamp_crcf_P17_Q256 RESAMP_CRCF_BENCHMARK_API(17, 256)
+LIQUID_BENCHMARK(resamp_crcf_P17_Q1,   "resamp_crcf execute_block, P=17 Q=1",   "filter,resamp")
+    { return resamp_crcf_bench(num_iterations, 17,   1); }
+
+LIQUID_BENCHMARK(resamp_crcf_P17_Q2,   "resamp_crcf execute_block, P=17 Q=2",   "filter,resamp")
+    { return resamp_crcf_bench(num_iterations, 17,   2); }
+
+LIQUID_BENCHMARK(resamp_crcf_P17_Q4,   "resamp_crcf execute_block, P=17 Q=4",   "filter,resamp")
+    { return resamp_crcf_bench(num_iterations, 17,   4); }
+
+LIQUID_BENCHMARK(resamp_crcf_P17_Q8,   "resamp_crcf execute_block, P=17 Q=8",   "filter,resamp")
+    { return resamp_crcf_bench(num_iterations, 17,   8); }
+
+LIQUID_BENCHMARK(resamp_crcf_P17_Q16,  "resamp_crcf execute_block, P=17 Q=16",  "filter,resamp")
+    { return resamp_crcf_bench(num_iterations, 17,  16); }
+
+LIQUID_BENCHMARK(resamp_crcf_P17_Q32,  "resamp_crcf execute_block, P=17 Q=32",  "filter,resamp")
+    { return resamp_crcf_bench(num_iterations, 17,  32); }
+
+LIQUID_BENCHMARK(resamp_crcf_P17_Q64,  "resamp_crcf execute_block, P=17 Q=64",  "filter,resamp")
+    { return resamp_crcf_bench(num_iterations, 17,  64); }
+
+LIQUID_BENCHMARK(resamp_crcf_P17_Q128, "resamp_crcf execute_block, P=17 Q=128", "filter,resamp")
+    { return resamp_crcf_bench(num_iterations, 17, 128); }
+
+LIQUID_BENCHMARK(resamp_crcf_P17_Q256, "resamp_crcf execute_block, P=17 Q=256", "filter,resamp")
+    { return resamp_crcf_bench(num_iterations, 17, 256); }
 

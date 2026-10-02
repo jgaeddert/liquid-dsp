@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,58 +20,48 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void dotprod_cccf_bench(struct rusage *_start,
-                        struct rusage *_finish,
-                        unsigned long int *_num_iterations,
-                        unsigned int _n)
+float dotprod_cccf_bench(unsigned long int num_iterations, unsigned int _n)
 {
-    // normalize number of iterations
-    *_num_iterations = *_num_iterations * 20 / _n;
-    if (*_num_iterations < 1) *_num_iterations = 1;
-
     float complex x[_n];
     float complex h[_n];
-    float complex y[8];
+    float complex y[4];
     unsigned int i;
     for (i=0; i<_n; i++) {
         x[i] = randnf() + _Complex_I*randnf();
         h[i] = randnf() + _Complex_I*randnf();
     }
 
-    // create dotprod structure;
+    // create dotprod structure
     dotprod_cccf dp = dotprod_cccf_create(h,_n);
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 executes of _n samples each per iteration; round down)
+    unsigned long int n = num_iterations / (4 * _n);
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         dotprod_cccf_execute(dp, x, &y[0]);
         dotprod_cccf_execute(dp, x, &y[1]);
         dotprod_cccf_execute(dp, x, &y[2]);
         dotprod_cccf_execute(dp, x, &y[3]);
-        dotprod_cccf_execute(dp, x, &y[4]);
-        dotprod_cccf_execute(dp, x, &y[5]);
-        dotprod_cccf_execute(dp, x, &y[6]);
-        dotprod_cccf_execute(dp, x, &y[7]);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 8;
+    float extime = liquid_toc(timer);
 
     // clean up objects
     dotprod_cccf_destroy(dp);
+    return extime;
 }
 
-#define DOTPROD_CCCF_BENCHMARK_API(N)   \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
-{ dotprod_cccf_bench(_start, _finish, _num_iterations, N); }
+LIQUID_BENCHMARK(dotprod_cccf_4,   "dotprod_cccf execute, n=4",   "dotprod")
+    { return dotprod_cccf_bench(num_iterations, 4); }
 
-void benchmark_dotprod_cccf_4      DOTPROD_CCCF_BENCHMARK_API(4)
-void benchmark_dotprod_cccf_16     DOTPROD_CCCF_BENCHMARK_API(16)
-void benchmark_dotprod_cccf_64     DOTPROD_CCCF_BENCHMARK_API(64)
-void benchmark_dotprod_cccf_256    DOTPROD_CCCF_BENCHMARK_API(256)
+LIQUID_BENCHMARK(dotprod_cccf_16,  "dotprod_cccf execute, n=16",  "dotprod")
+    { return dotprod_cccf_bench(num_iterations, 16); }
+
+LIQUID_BENCHMARK(dotprod_cccf_64,  "dotprod_cccf execute, n=64",  "dotprod")
+    { return dotprod_cccf_bench(num_iterations, 64); }
+
+LIQUID_BENCHMARK(dotprod_cccf_256, "dotprod_cccf execute, n=256", "dotprod")
+    { return dotprod_cccf_bench(num_iterations, 256); }
 

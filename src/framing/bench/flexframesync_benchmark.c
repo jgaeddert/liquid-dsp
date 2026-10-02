@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/resource.h>
-#include <assert.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void benchmark_flexframesync(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations)
+LIQUID_BENCHMARK(flexframesync, "flexframesync execute", "framing,flexframe")
 {
-    *_num_iterations /= 128;
-    unsigned long int i;
-
     // create flexframegen object
     flexframegenprops_s fgprops;
     flexframegenprops_init_default(&fgprops);
@@ -54,24 +44,22 @@ void benchmark_flexframesync(
     flexframegen_write_samples(fg, frame, frame_len);
 
     // add some noise
+    unsigned long int i;
     for (i=0; i<frame_len; i++)
         frame[i] += 0.02f*(randnf() + _Complex_I*randnf());
 
     // create flexframesync object
     flexframesync fs = flexframesync_create(NULL, NULL);
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (1 frame execute per iteration)
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<num_iterations; i++)
         flexframesync_execute(fs, frame, frame_len);
-    }
-    getrusage(RUSAGE_SELF, _finish);
-
-    // print frame data statistics
-    //flexframesync_print(fs);
+    float extime = liquid_toc(timer);
 
     // destroy objects
     flexframegen_destroy(fg);
     flexframesync_destroy(fs);
+    return extime;
 }
 

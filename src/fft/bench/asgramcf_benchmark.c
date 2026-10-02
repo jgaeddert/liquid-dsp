@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2025 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,27 +21,19 @@
  */
 
 // benchmark asgram objects
-
+#include "liquid.benchmark.h"
 #include <stdlib.h>
-#include <stdio.h>
-#include <sys/resource.h>
-#include "liquid.h"
 
 // Helper function to keep code base small
-void asgramcf_runbench(struct rusage *     _start,
-                       struct rusage *     _finish,
-                       unsigned long int * _num_iterations,
+float asgramcf_runbench(unsigned long int num_iterations,
                        unsigned int        _nfft,
                        int                 _autoscale)
 {
-    // scale number of iterations to keep execution time relatively linear
-    *_num_iterations = (*_num_iterations) * liquid_nextpow2(1+_nfft) / _nfft;
-    *_num_iterations >>= 3;
-
     // create object
     asgramcf q = asgramcf_create(_nfft);
     if (_autoscale)
         asgramcf_autoscale_enable(q);
+
 
     // initialize buffer with random values
     unsigned long int i;
@@ -54,9 +46,10 @@ void asgramcf_runbench(struct rusage *     _start,
     char psd[_nfft];
     float peakval, peakfreq;
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (1 write+execute of buf_len samples each per iteration; round down)
+    unsigned long int n = num_iterations / buf_len;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         // process input
         asgramcf_write(q, buf, buf_len);
 
@@ -64,40 +57,31 @@ void asgramcf_runbench(struct rusage *     _start,
         asgramcf_execute(q, psd, &peakval, &peakfreq);
         buf[0] = psd[0];
     }
-    getrusage(RUSAGE_SELF, _finish);
+    float extime = liquid_toc(timer);
 
-    // scale iterations by buffer size to provide inpute rate
-    *_num_iterations *= buf_len;
 
     free(buf);
     asgramcf_destroy(q);
+    return extime;
 }
 
 // run several configurations (autoscale disabled)
-void benchmark_asgramcf_64(struct rusage * _s, struct rusage * _x,
-    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 64, 0); }
-
-void benchmark_asgramcf_80(struct rusage * _s, struct rusage * _x,
-    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 80, 0); }
-
-void benchmark_asgramcf_96(struct rusage * _s, struct rusage * _x,
-    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 96, 0); }
-
-void benchmark_asgramcf_120(struct rusage * _s, struct rusage * _x,
-    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 120, 0); }
-
-
+LIQUID_BENCHMARK(asgramcf_64,  "asgramcf execute, nfft=64",  "fft,asgram")
+    { return asgramcf_runbench(num_iterations, 64, 0); }
+LIQUID_BENCHMARK(asgramcf_80,  "asgramcf execute, nfft=80",  "fft,asgram")
+    { return asgramcf_runbench(num_iterations, 80, 0); }
+LIQUID_BENCHMARK(asgramcf_96,  "asgramcf execute, nfft=96",  "fft,asgram")
+    { return asgramcf_runbench(num_iterations, 96, 0); }
+LIQUID_BENCHMARK(asgramcf_120, "asgramcf execute, nfft=120", "fft,asgram")
+    { return asgramcf_runbench(num_iterations, 120, 0); }
 
 // run several configurations (autoscale enabled)
-void benchmark_asgramcf_64_autoscale(struct rusage * _s, struct rusage * _x,
-    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 64, 1); }
-
-void benchmark_asgramcf_80_autoscale(struct rusage * _s, struct rusage * _x,
-    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 80, 1); }
-
-void benchmark_asgramcf_96_autoscale(struct rusage * _s, struct rusage * _x,
-    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 96, 1); }
-
-void benchmark_asgramcf_120_autoscale(struct rusage * _s, struct rusage * _x,
-    unsigned long int * _n) { asgramcf_runbench(_s, _x, _n, 120, 1); }
+LIQUID_BENCHMARK(asgramcf_64_autoscale,  "asgramcf execute, nfft=64 (autoscale)",  "fft,asgram,autoscale")
+    { return asgramcf_runbench(num_iterations, 64, 1); }
+LIQUID_BENCHMARK(asgramcf_80_autoscale,  "asgramcf execute, nfft=80 (autoscale)",  "fft,asgram,autoscale")
+    { return asgramcf_runbench(num_iterations, 80, 1); }
+LIQUID_BENCHMARK(asgramcf_96_autoscale,  "asgramcf execute, nfft=96 (autoscale)",  "fft,asgram,autoscale")
+    { return asgramcf_runbench(num_iterations, 96, 1); }
+LIQUID_BENCHMARK(asgramcf_120_autoscale, "asgramcf execute, nfft=120 (autoscale)", "fft,asgram,autoscale")
+    { return asgramcf_runbench(num_iterations, 120, 1); }
 

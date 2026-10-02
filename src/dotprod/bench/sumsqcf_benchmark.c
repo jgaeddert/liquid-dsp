@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2021 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,28 +20,21 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void sumsqcf_bench(struct rusage *     _start,
-                   struct rusage *     _finish,
-                   unsigned long int * _num_iterations,
-                   unsigned int        _n)
+float sumsqcf_bench(unsigned long int num_iterations, unsigned int _n)
 {
-    // normalize number of iterations
-    *_num_iterations = *_num_iterations * 10 / _n;
-    if (*_num_iterations < 1) *_num_iterations = 1;
-
     float complex x[_n];
     float complex y = 0.0f;
-    unsigned int long i;
+    unsigned long int i;
     for (i=0; i<_n; i++)
         x[i] = 0.2f + 0.2f*_Complex_I;
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 calls of _n samples each per iteration; round down)
+    unsigned long int n = num_iterations / (4 * _n);
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         y += liquid_sumsqcf(x, _n);
         y -= liquid_sumsqcf(x, _n);
         y += liquid_sumsqcf(x, _n);
@@ -50,18 +43,19 @@ void sumsqcf_bench(struct rusage *     _start,
         // change input
         x[i%_n] = y;
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
+    return extime;
 }
 
-#define SUMSQCF_BENCHMARK_API(N)        \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
-{ sumsqcf_bench(_start, _finish, _num_iterations, N); }
+LIQUID_BENCHMARK(sumsqcf_4,   "liquid_sumsqcf execute, n=4",   "dotprod,sumsq")
+    { return sumsqcf_bench(num_iterations, 4); }
 
-void benchmark_sumsqcf_4        SUMSQCF_BENCHMARK_API(4)
-void benchmark_sumsqcf_16       SUMSQCF_BENCHMARK_API(16)
-void benchmark_sumsqcf_64       SUMSQCF_BENCHMARK_API(64)
-void benchmark_sumsqcf_256      SUMSQCF_BENCHMARK_API(256)
+LIQUID_BENCHMARK(sumsqcf_16,  "liquid_sumsqcf execute, n=16",  "dotprod,sumsq")
+    { return sumsqcf_bench(num_iterations, 16); }
+
+LIQUID_BENCHMARK(sumsqcf_64,  "liquid_sumsqcf execute, n=64",  "dotprod,sumsq")
+    { return sumsqcf_bench(num_iterations, 64); }
+
+LIQUID_BENCHMARK(sumsqcf_256, "liquid_sumsqcf execute, n=256", "dotprod,sumsq")
+    { return sumsqcf_bench(num_iterations, 256); }
 

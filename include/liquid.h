@@ -9650,6 +9650,21 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _chans,                         \
 /*  _chans  : number of output channels in channelizer                  */  \
 /*  _decim  : output decimation factor (output rate is 1/decim input)   */  \
 /*  _m      : prototype filter semi-length, length=2*chans*m            */  \
+/*  _as     : prototype filter stop-band attenuation [dB]               */  \
+/*  _bw     : prototype filter bandwidth, relative to sample rate,      */  \
+/*            0 < _bw < 1                                               */  \
+FIRPFBCHR() FIRPFBCHR(_create_prototype)(unsigned int _chans,               \
+                                         unsigned int _decim,               \
+                                         unsigned int _m,                   \
+                                         float        _as,                  \
+                                         float        _bw);                 \
+                                                                            \
+/* Create rational rate resampling channelizer (firpfbchr) object by    */  \
+/* specifying filter design parameters for Kaiser prototype             */  \
+/* (simplified); default bandwidth is maximal, e.g. 1/_decim            */  \
+/*  _chans  : number of output channels in channelizer                  */  \
+/*  _decim  : output decimation factor (output rate is 1/decim input)   */  \
+/*  _m      : prototype filter semi-length, length=2*chans*m            */  \
 /*  _as     : filter stop-band attenuation [dB]                         */  \
 FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _chans,                  \
                                       unsigned int _decim,                  \

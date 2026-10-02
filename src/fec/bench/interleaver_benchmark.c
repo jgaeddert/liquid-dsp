@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,12 @@
  * THE SOFTWARE.
  */
 
-#include <math.h>
-#include <stdlib.h>
-#include <sys/resource.h>
-#include "liquid.h"
-
-#define INTERLEAVER_BENCH_API(N)        \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
-{ interleaver_bench(_start, _finish, _num_iterations, N); }
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void interleaver_bench(struct rusage *_start,
-                       struct rusage *_finish,
-                       unsigned long int *_num_iterations,
-                       unsigned int _n)
+float interleaver_bench(unsigned long int _num_iterations,
+                        unsigned int      _n)
 {
-    // scale number of iterations by block size
-    // iterations = 4: cycles/trial ~ exp( -0.883 + 0.708*log(_n) )
-    *_num_iterations /= 0.7f*expf( -0.883 + 0.708*logf(_n) );
-
     // initialize interleaver
     interleaver q = interleaver_create(_n);
     interleaver_set_depth(q, 4);
@@ -52,27 +37,59 @@ void interleaver_bench(struct rusage *_start,
     for (i=0; i<_n; i++)
         x[i] = rand() & 0xff;
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 interleaves per iteration; round down)
+    unsigned long int n = _num_iterations / 4;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         interleaver_encode(q, x, y);
         interleaver_encode(q, x, y);
         interleaver_encode(q, x, y);
         interleaver_encode(q, x, y);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
 
     // destroy interleaver object
     interleaver_destroy(q);
+    return extime;
 }
 
-void benchmark_interleaver_8    INTERLEAVER_BENCH_API(8     )
-void benchmark_interleaver_16   INTERLEAVER_BENCH_API(16    )
-void benchmark_interleaver_32   INTERLEAVER_BENCH_API(32    )
-void benchmark_interleaver_64   INTERLEAVER_BENCH_API(64    )
-void benchmark_interleaver_128  INTERLEAVER_BENCH_API(128   )
-void benchmark_interleaver_256  INTERLEAVER_BENCH_API(256   )
-void benchmark_interleaver_512  INTERLEAVER_BENCH_API(512   )
-void benchmark_interleaver_1024 INTERLEAVER_BENCH_API(1024  )
+LIQUID_BENCHMARK(interleaver_8,
+    "interleaver_encode, n=8",
+    "fec,interleaver")
+{ return interleaver_bench(num_iterations, 8); }
+
+LIQUID_BENCHMARK(interleaver_16,
+    "interleaver_encode, n=16",
+    "fec,interleaver")
+{ return interleaver_bench(num_iterations, 16); }
+
+LIQUID_BENCHMARK(interleaver_32,
+    "interleaver_encode, n=32",
+    "fec,interleaver")
+{ return interleaver_bench(num_iterations, 32); }
+
+LIQUID_BENCHMARK(interleaver_64,
+    "interleaver_encode, n=64",
+    "fec,interleaver")
+{ return interleaver_bench(num_iterations, 64); }
+
+LIQUID_BENCHMARK(interleaver_128,
+    "interleaver_encode, n=128",
+    "fec,interleaver")
+{ return interleaver_bench(num_iterations, 128); }
+
+LIQUID_BENCHMARK(interleaver_256,
+    "interleaver_encode, n=256",
+    "fec,interleaver")
+{ return interleaver_bench(num_iterations, 256); }
+
+LIQUID_BENCHMARK(interleaver_512,
+    "interleaver_encode, n=512",
+    "fec,interleaver")
+{ return interleaver_bench(num_iterations, 512); }
+
+LIQUID_BENCHMARK(interleaver_1024,
+    "interleaver_encode, n=1024",
+    "fec,interleaver")
+{ return interleaver_bench(num_iterations, 1024); }
 

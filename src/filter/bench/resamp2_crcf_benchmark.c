@@ -20,8 +20,7 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
 typedef enum {
     RESAMP2_DECIM,
@@ -29,18 +28,10 @@ typedef enum {
 } resamp2_type;
 
 // Helper function to keep code base small
-void resamp2_crcf_bench(struct rusage *_start,
-                        struct rusage *_finish,
-                        unsigned long int * _num_iterations,
+float resamp2_crcf_bench(unsigned long int num_iterations,
                         unsigned int _m,
                         resamp2_type _type)
 {
-    // scale number of iterations by filter length
-    // NOTE: n = 4*m+1
-    // cycles/trial ~ 70.5 + 7.74*_m
-    *_num_iterations *= 200;
-    *_num_iterations /= 70.5 + 7.74*_m;
-
     unsigned long int i;
 
     resamp2_crcf q = resamp2_crcf_create(_m,0.0f,60.0f);
@@ -48,60 +39,86 @@ void resamp2_crcf_bench(struct rusage *_start,
     float complex x[] = {1.0f, -1.0f};
     float complex y[] = {1.0f, -1.0f};
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    if (_type == RESAMP2_DECIM) {
+    // work units per loop iteration: decim consumes 2 input samples x4 = 8;
+    // interp consumes 1 input sample x4 = 4
+    unsigned long int work_per_iter = (_type == RESAMP2_DECIM) ? 8 : 4;
+    unsigned long int n = num_iterations / work_per_iter;
 
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    if (_type == RESAMP2_DECIM) {
         // run decimator
-        for (i=0; i<(*_num_iterations); i++) {
+        for (i=0; i<n; i++) {
             resamp2_crcf_decim_execute(q,x,y);
             resamp2_crcf_decim_execute(q,x,y);
             resamp2_crcf_decim_execute(q,x,y);
             resamp2_crcf_decim_execute(q,x,y);
         }
     } else {
-
         // run interpolator
-        for (i=0; i<(*_num_iterations); i++) {
+        for (i=0; i<n; i++) {
             resamp2_crcf_interp_execute(q,x[0],y);
             resamp2_crcf_interp_execute(q,x[0],y);
             resamp2_crcf_interp_execute(q,x[0],y);
             resamp2_crcf_interp_execute(q,x[0],y);
         }
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
 
     resamp2_crcf_destroy(q);
+    return extime;
 }
-
-#define RESAMP2_CRCF_BENCHMARK_API(M,T) \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
-{ resamp2_crcf_bench(_start, _finish, _num_iterations, M, T); }
 
 //
 // Decimators
 //
-void benchmark_resamp2_crcf_decim_m2    RESAMP2_CRCF_BENCHMARK_API(  2,RESAMP2_DECIM)
-void benchmark_resamp2_crcf_decim_m4    RESAMP2_CRCF_BENCHMARK_API(  4,RESAMP2_DECIM)
-void benchmark_resamp2_crcf_decim_m8    RESAMP2_CRCF_BENCHMARK_API(  8,RESAMP2_DECIM)
-void benchmark_resamp2_crcf_decim_m16   RESAMP2_CRCF_BENCHMARK_API( 16,RESAMP2_DECIM)
-void benchmark_resamp2_crcf_decim_m32   RESAMP2_CRCF_BENCHMARK_API( 32,RESAMP2_DECIM)
-void benchmark_resamp2_crcf_decim_m64   RESAMP2_CRCF_BENCHMARK_API( 64,RESAMP2_DECIM)
-void benchmark_resamp2_crcf_decim_m128  RESAMP2_CRCF_BENCHMARK_API(128,RESAMP2_DECIM)
-void benchmark_resamp2_crcf_decim_m256  RESAMP2_CRCF_BENCHMARK_API(256,RESAMP2_DECIM)
+LIQUID_BENCHMARK(resamp2_crcf_decim_m2,    "resamp2_crcf decim execute, m=2",    "filter,resamp2,halfband,decimator")
+    { return resamp2_crcf_bench(num_iterations,   2, RESAMP2_DECIM); }
 
-// 
+LIQUID_BENCHMARK(resamp2_crcf_decim_m4,    "resamp2_crcf decim execute, m=4",    "filter,resamp2,halfband,decimator")
+    { return resamp2_crcf_bench(num_iterations,   4, RESAMP2_DECIM); }
+
+LIQUID_BENCHMARK(resamp2_crcf_decim_m8,    "resamp2_crcf decim execute, m=8",    "filter,resamp2,halfband,decimator")
+    { return resamp2_crcf_bench(num_iterations,   8, RESAMP2_DECIM); }
+
+LIQUID_BENCHMARK(resamp2_crcf_decim_m16,   "resamp2_crcf decim execute, m=16",   "filter,resamp2,halfband,decimator")
+    { return resamp2_crcf_bench(num_iterations,  16, RESAMP2_DECIM); }
+
+LIQUID_BENCHMARK(resamp2_crcf_decim_m32,   "resamp2_crcf decim execute, m=32",   "filter,resamp2,halfband,decimator")
+    { return resamp2_crcf_bench(num_iterations,  32, RESAMP2_DECIM); }
+
+LIQUID_BENCHMARK(resamp2_crcf_decim_m64,   "resamp2_crcf decim execute, m=64",   "filter,resamp2,halfband,decimator")
+    { return resamp2_crcf_bench(num_iterations,  64, RESAMP2_DECIM); }
+
+LIQUID_BENCHMARK(resamp2_crcf_decim_m128,  "resamp2_crcf decim execute, m=128",  "filter,resamp2,halfband,decimator")
+    { return resamp2_crcf_bench(num_iterations, 128, RESAMP2_DECIM); }
+
+LIQUID_BENCHMARK(resamp2_crcf_decim_m256,  "resamp2_crcf decim execute, m=256",  "filter,resamp2,halfband,decimator")
+    { return resamp2_crcf_bench(num_iterations, 256, RESAMP2_DECIM); }
+
+//
 // Interpolators
 //
-void benchmark_resamp2_crcf_interp_m2   RESAMP2_CRCF_BENCHMARK_API(  2,RESAMP2_INTERP)
-void benchmark_resamp2_crcf_interp_m4   RESAMP2_CRCF_BENCHMARK_API(  4,RESAMP2_INTERP)
-void benchmark_resamp2_crcf_interp_m8   RESAMP2_CRCF_BENCHMARK_API(  8,RESAMP2_INTERP)
-void benchmark_resamp2_crcf_interp_m16  RESAMP2_CRCF_BENCHMARK_API( 16,RESAMP2_INTERP)
-void benchmark_resamp2_crcf_interp_m32  RESAMP2_CRCF_BENCHMARK_API( 32,RESAMP2_INTERP)
-void benchmark_resamp2_crcf_interp_m64  RESAMP2_CRCF_BENCHMARK_API( 64,RESAMP2_INTERP)
-void benchmark_resamp2_crcf_interp_m128 RESAMP2_CRCF_BENCHMARK_API(128,RESAMP2_INTERP)
-void benchmark_resamp2_crcf_interp_m256 RESAMP2_CRCF_BENCHMARK_API(256,RESAMP2_INTERP)
+LIQUID_BENCHMARK(resamp2_crcf_interp_m2,   "resamp2_crcf interp execute, m=2",    "filter,resamp2,halfband,interpolator")
+    { return resamp2_crcf_bench(num_iterations,   2, RESAMP2_INTERP); }
+
+LIQUID_BENCHMARK(resamp2_crcf_interp_m4,   "resamp2_crcf interp execute, m=4",    "filter,resamp2,halfband,interpolator")
+    { return resamp2_crcf_bench(num_iterations,   4, RESAMP2_INTERP); }
+
+LIQUID_BENCHMARK(resamp2_crcf_interp_m8,   "resamp2_crcf interp execute, m=8",    "filter,resamp2,halfband,interpolator")
+    { return resamp2_crcf_bench(num_iterations,   8, RESAMP2_INTERP); }
+
+LIQUID_BENCHMARK(resamp2_crcf_interp_m16,  "resamp2_crcf interp execute, m=16",   "filter,resamp2,halfband,interpolator")
+    { return resamp2_crcf_bench(num_iterations,  16, RESAMP2_INTERP); }
+
+LIQUID_BENCHMARK(resamp2_crcf_interp_m32,  "resamp2_crcf interp execute, m=32",   "filter,resamp2,halfband,interpolator")
+    { return resamp2_crcf_bench(num_iterations,  32, RESAMP2_INTERP); }
+
+LIQUID_BENCHMARK(resamp2_crcf_interp_m64,  "resamp2_crcf interp execute, m=64",   "filter,resamp2,halfband,interpolator")
+    { return resamp2_crcf_bench(num_iterations,  64, RESAMP2_INTERP); }
+
+LIQUID_BENCHMARK(resamp2_crcf_interp_m128, "resamp2_crcf interp execute, m=128",  "filter,resamp2,halfband,interpolator")
+    { return resamp2_crcf_bench(num_iterations, 128, RESAMP2_INTERP); }
+
+LIQUID_BENCHMARK(resamp2_crcf_interp_m256, "resamp2_crcf interp execute, m=256",  "filter,resamp2,halfband,interpolator")
+    { return resamp2_crcf_bench(num_iterations, 256, RESAMP2_INTERP); }
 

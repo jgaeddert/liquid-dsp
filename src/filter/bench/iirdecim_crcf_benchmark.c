@@ -20,20 +20,13 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void iirdecim_crcf_bench(struct rusage *     _start,
-                         struct rusage *     _finish,
-                         unsigned long int * _num_iterations,
+float iirdecim_crcf_bench(unsigned long int num_iterations,
                          unsigned int        _M,
                          unsigned int        _order)
 {
-    // normalize number of iterations
-    *_num_iterations /= _order;
-    if (*_num_iterations < 1) *_num_iterations = 1;
-
     // create decimator from prototype
     liquid_iirdes_filtertype ftype  = LIQUID_IIRDES_BUTTER;
     liquid_iirdes_bandtype   btype  = LIQUID_IIRDES_LOWPASS;
@@ -52,29 +45,33 @@ void iirdecim_crcf_bench(struct rusage *     _start,
 
     float complex y;
 
-    // start trials
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    // start trials (4 executes of _M input samples each per iteration; round down)
+    unsigned long int n = num_iterations / (4 * _M);
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         iirdecim_crcf_execute(q, x, &y);
         iirdecim_crcf_execute(q, x, &y);
         iirdecim_crcf_execute(q, x, &y);
         iirdecim_crcf_execute(q, x, &y);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    float extime = liquid_toc(timer);
 
     iirdecim_crcf_destroy(q);
+    return extime;
 }
 
-#define IIRDECIM_CRCF_BENCHMARK_API(M,ORDER)    \
-(   struct rusage *_start,                      \
-    struct rusage *_finish,                     \
-    unsigned long int *_num_iterations)         \
-{ iirdecim_crcf_bench(_start, _finish, _num_iterations, M, ORDER); }
+LIQUID_BENCHMARK(iirdecim_crcf_M2,  "iirdecim_crcf execute, M=2 order=5",  "filter,iirdecim,decimator")
+    { return iirdecim_crcf_bench(num_iterations, 2,  5); }
 
-void benchmark_iirdecim_crcf_M2     IIRDECIM_CRCF_BENCHMARK_API(2, 5)
-void benchmark_iirdecim_crcf_M4     IIRDECIM_CRCF_BENCHMARK_API(4, 5)
-void benchmark_iirdecim_crcf_M8     IIRDECIM_CRCF_BENCHMARK_API(8, 5)
-void benchmark_iirdecim_crcf_M16    IIRDECIM_CRCF_BENCHMARK_API(16,5)
-void benchmark_iirdecim_cccf_M32    IIRDECIM_CRCF_BENCHMARK_API(32,5)
+LIQUID_BENCHMARK(iirdecim_crcf_M4,  "iirdecim_crcf execute, M=4 order=5",  "filter,iirdecim,decimator")
+    { return iirdecim_crcf_bench(num_iterations, 4,  5); }
+
+LIQUID_BENCHMARK(iirdecim_crcf_M8,  "iirdecim_crcf execute, M=8 order=5",  "filter,iirdecim,decimator")
+    { return iirdecim_crcf_bench(num_iterations, 8,  5); }
+
+LIQUID_BENCHMARK(iirdecim_crcf_M16, "iirdecim_crcf execute, M=16 order=5", "filter,iirdecim,decimator")
+    { return iirdecim_crcf_bench(num_iterations, 16, 5); }
+
+LIQUID_BENCHMARK(iirdecim_crcf_M32, "iirdecim_crcf execute, M=32 order=5", "filter,iirdecim,decimator")
+    { return iirdecim_crcf_bench(num_iterations, 32, 5); }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,50 +20,42 @@
  * THE SOFTWARE.
  */
 
-#include <sys/resource.h>
-#include "liquid.h"
-
-#define WINDOW_READ_BENCH_API(N)        \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
-{ window_read_bench(_start, _finish, _num_iterations, N); }
+#include "liquid.benchmark.h"
 
 // Helper function to keep code base small
-void window_read_bench(struct rusage *_start,
-                       struct rusage *_finish,
-                       unsigned long int *_num_iterations,
-                       unsigned int _n)
+float window_read_bench(unsigned long int num_iterations, unsigned int _n)
 {
-    // normalize number of iterations
-    if (*_num_iterations < 1) *_num_iterations = 1;
-
     // initialize port
     windowcf w = windowcf_create(_n);
 
-    unsigned long int i;
-
+    // start trials (4 push/read pairs per iteration; round down)
+    unsigned long int i, n = num_iterations / 4;
+    if (n < 1) n = 1;
     float complex * r;
-
-    // start trials:
-    //   write to buffer, read from buffer
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
         windowcf_push(w,1.0f);  windowcf_read(w, &r);
         windowcf_push(w,1.0f);  windowcf_read(w, &r);
         windowcf_push(w,1.0f);  windowcf_read(w, &r);
         windowcf_push(w,1.0f);  windowcf_read(w, &r);
     }
-    getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
-
+    float extime = liquid_toc(timer);
     windowcf_destroy(w);
+    return extime;
 }
 
-// 
-void benchmark_windowcf_read_n16    WINDOW_READ_BENCH_API(16)
-void benchmark_windowcf_read_n32    WINDOW_READ_BENCH_API(32)
-void benchmark_windowcf_read_n64    WINDOW_READ_BENCH_API(64)
-void benchmark_windowcf_read_n128   WINDOW_READ_BENCH_API(128)
-void benchmark_windowcf_read_n256   WINDOW_READ_BENCH_API(256)
+LIQUID_BENCHMARK(windowcf_read_n16,  "windowcf read, n=16",  "buffer,window")
+    { return window_read_bench(num_iterations, 16); }
+
+LIQUID_BENCHMARK(windowcf_read_n32,  "windowcf read, n=32",  "buffer,window")
+    { return window_read_bench(num_iterations, 32); }
+
+LIQUID_BENCHMARK(windowcf_read_n64,  "windowcf read, n=64",  "buffer,window")
+    { return window_read_bench(num_iterations, 64); }
+
+LIQUID_BENCHMARK(windowcf_read_n128, "windowcf read, n=128", "buffer,window")
+    { return window_read_bench(num_iterations, 128); }
+
+LIQUID_BENCHMARK(windowcf_read_n256, "windowcf read, n=256", "buffer,window")
+    { return window_read_bench(num_iterations, 256); }
 

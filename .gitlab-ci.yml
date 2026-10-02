@@ -22,7 +22,7 @@ build:
     - cd build
     - cmake -DBUILD_AUTOTESTS=ON -DBUILD_BENCHMARKS=ON -DBUILD_EXAMPLES=ON -DBUILD_SANDBOX=ON -DCOVERAGE=OFF -DPYTHON=OFF ..
     - make -j4
-    - ./benchmark -o benchmark.json -f -q
+    - ./xbenchmark -r 0.005 # -o benchmark.json -f -q
     - ./xautotest -o autotest.json
     #- make check-doc # compile and run documenation checks (e.g. example code in README)
     - make install
@@ -69,6 +69,8 @@ legacy:
     - ./bootstrap.sh
     - ./configure
     - make -j4
+    - make -j4 xbenchmark
+    - ./xbenchmark -s null
     - make check-doc
     - make install
     - ldconfig
