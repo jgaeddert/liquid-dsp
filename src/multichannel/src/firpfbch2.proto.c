@@ -129,10 +129,11 @@ FIRPFBCH2() FIRPFBCH2(_create)(int          _type,
 //  _M      :   number of channels (must be even)
 //  _m      :   prototype filter semi-lenth, length=2*M*m+1
 //  _as     :   filter stop-band attenuation [dB]
-FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,
-                                      unsigned int _M,
-                                      unsigned int _m,
-                                      float        _as)
+FIRPFBCH2() FIRPFBCH2(_create_prototype)(int          _type,
+                                         unsigned int _M,
+                                         unsigned int _m,
+                                         float        _as,
+                                         float        _bw)
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
@@ -141,6 +142,8 @@ FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,
         return liquid_error_config("firpfbch2_%s_create_kaiser(), number of channels must be greater than 2 and even", EXTENSION_FULL);
     if (_m < 1)
         return liquid_error_config("firpfbch2_%s_create_kaiser(), filter semi-length must be at least 1", EXTENSION_FULL);
+    if (_bw == 0 || _bw > 1)
+        return liquid_error_config("firpfbch2_%s_create_kaiser(), filter bandwidth must be in (0,1]", EXTENSION_FULL);
 
     // design prototype filter
     unsigned int h_len = 2*_M*_m+1;
@@ -148,7 +151,11 @@ FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,
 
     // filter cut-off frequency (analyzer has twice the
     // bandwidth of the synthesizer)
-    float fc = (_type == LIQUID_ANALYZER) ? 1.0f/(float)_M : 0.5f/(float)_M;
+    if (_bw < 0)
+        _bw = (_type == LIQUID_ANALYZER) ? 2.0f/(float)_M : 1.0f/(float)_M;
+
+    // filter cut-off frequency
+    float fc = 0.5f * _bw;
 
     // compute filter coefficients (floating point precision)
     liquid_firdes_kaiser(h_len, fc, _as, 0.0f, hf);
@@ -173,6 +180,20 @@ FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,
 
     // return object
     return q;
+}
+
+// create firpfbch2 object using Kaiser window prototype
+//  _type   :   channelizer type (e.g. LIQUID_ANALYZER)
+//  _M      :   number of channels (must be even)
+//  _m      :   prototype filter semi-lenth, length=2*M*m+1
+//  _as     :   filter stop-band attenuation [dB]
+FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,
+                                      unsigned int _M,
+                                      unsigned int _m,
+                                      float        _as)
+{
+    // create object with default bandwidth and return
+    return FIRPFBCH2(_create_prototype)(_type, _M, _m, _as, -1.0f);
 }
 
 // copy object
