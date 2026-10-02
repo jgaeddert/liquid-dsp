@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -122,27 +122,30 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _chans,
 //  _decim  : output decimation factor (output rate is 1/P the input)
 //  _m      : prototype filter semi-length, length=2*M*m
 //  _as     : filter stop-band attenuation [dB]
-FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _chans,
-                                      unsigned int _decim,
-                                      unsigned int _m,
-                                      float        _as)
+FIRPFBCHR() FIRPFBCHR(_create_prototype)(unsigned int _chans,
+                                         unsigned int _decim,
+                                         unsigned int _m,
+                                         float        _as,
+                                         float        _bw)
 {
     // validate input
     if (_chans < 2)
-        return liquid_error_config("firpfbchr_%s_create_kaiser(), number of channels must be at least 2", EXTENSION_FULL);
+        return liquid_error_config("firpfbchr_%s_create_prototype(), number of channels must be at least 2", EXTENSION_FULL);
     if (_decim < 1)
-        return liquid_error_config("firpfbchr_%s_create_kaiser(), decimation rate must be at least 1", EXTENSION_FULL);
+        return liquid_error_config("firpfbchr_%s_create_prototype(), decimation rate must be at least 1", EXTENSION_FULL);
     if (_m < 1)
-        return liquid_error_config("firpfbchr_%s_create_kaiser(), filter semi-length must be at least 1", EXTENSION_FULL);
+        return liquid_error_config("firpfbchr_%s_create_prototype(), filter semi-length must be at least 1", EXTENSION_FULL);
     if (_as <= 0.0f)
-        return liquid_error_config("firpfbchr_%s_create_kaiser(), stop-band suppression out of range", EXTENSION_FULL);
+        return liquid_error_config("firpfbchr_%s_create_prototype(), stop-band suppression out of range", EXTENSION_FULL);
+    if (_bw <= 0.0f || _bw > 1.0f)
+        return liquid_error_config("firpfbchr_%s_create_prototype(), bandwidth must be in (0,1]", EXTENSION_FULL);
 
     // design prototype filter
     unsigned int h_len = 2*_chans*_m+1;
     float * hf = (float*)malloc(h_len*sizeof(float));
 
     // filter cut-off frequency
-    float fc = 0.5f/(float)_decim;
+    float fc = 0.5f * _bw;
 
     // compute filter coefficients (floating point precision)
     liquid_firdes_kaiser(h_len, fc, _as, 0.0f, hf);
@@ -167,6 +170,24 @@ FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _chans,
 
     // return object
     return q;
+}
+
+// create rational rate resampling channelizer (firpfbchr) object by
+// specifying filter design parameters for Kaiser prototype
+//  _chans  : number of output channels in chanelizer
+//  _decim  : output decimation factor (output rate is 1/P the input)
+//  _m      : prototype filter semi-length, length=2*M*m
+//  _as     : filter stop-band attenuation [dB]
+FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _chans,
+                                      unsigned int _decim,
+                                      unsigned int _m,
+                                      float        _as)
+{
+    // default filter bandwidth
+    float bw = 1.0f/(float)_decim;
+
+    // create and return object
+    return FIRPFBCHR(_create_prototype)(_chans, _decim, _m, _as, bw);
 }
 
 // destroy firpfbchr object, freeing internal memory
