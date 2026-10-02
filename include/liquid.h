@@ -9578,7 +9578,8 @@ FIRPFBCH2() FIRPFBCH2(_create)(int          _type,                          \
 /*  _m      : prototype filter semi-length, length=2*M*m+1              */  \
 /*  _as     : filter stop-band attenuation [dB]                         */  \
 /*  _bw     : prototype filter bandwidth, relative to input sample      */  \
-/*            rate, 0 < _bw < 1                                         */  \
+/*            rate (negative values default to 2/_M for analysis and    */  \
+/*            1/_M for synthesis), 0 < _bw < 1                          */  \
 FIRPFBCH2() FIRPFBCH2(_create_prototype)(int          _type,                \
                                          unsigned int _M,                   \
                                          unsigned int _m,                   \
@@ -9664,7 +9665,7 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _chans,                         \
 /*  _m      : prototype filter semi-length, length=2*chans*m            */  \
 /*  _as     : prototype filter stop-band attenuation [dB]               */  \
 /*  _bw     : prototype filter bandwidth, relative to input sample      */  \
-/*            rate, 0 < _bw < 1                                         */  \
+/*            rate (negative values default to 1/decim), 0 < _bw < 1    */  \
 FIRPFBCHR() FIRPFBCHR(_create_prototype)(unsigned int _chans,               \
                                          unsigned int _decim,               \
                                          unsigned int _m,                   \

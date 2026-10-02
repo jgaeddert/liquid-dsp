@@ -137,12 +137,16 @@ FIRPFBCHR() FIRPFBCHR(_create_prototype)(unsigned int _chans,
         return liquid_error_config("firpfbchr_%s_create_prototype(), filter semi-length must be at least 1", EXTENSION_FULL);
     if (_as <= 0.0f)
         return liquid_error_config("firpfbchr_%s_create_prototype(), stop-band suppression out of range", EXTENSION_FULL);
-    if (_bw <= 0.0f || _bw > 1.0f)
+    if (_bw == 0.0f || _bw > 1.0f)
         return liquid_error_config("firpfbchr_%s_create_prototype(), bandwidth must be in (0,1]", EXTENSION_FULL);
 
     // design prototype filter
     unsigned int h_len = 2*_chans*_m+1;
     float * hf = (float*)malloc(h_len*sizeof(float));
+
+    // set default filter bandwidth if requested
+    if (_bw < 0)
+        _bw = 1.0f/(float)_decim;
 
     // filter cut-off frequency
     float fc = 0.5f * _bw;
@@ -183,11 +187,8 @@ FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _chans,
                                       unsigned int _m,
                                       float        _as)
 {
-    // default filter bandwidth
-    float bw = 1.0f/(float)_decim;
-
-    // create and return object
-    return FIRPFBCHR(_create_prototype)(_chans, _decim, _m, _as, bw);
+    // create object with default bandwidth and return
+    return FIRPFBCHR(_create_prototype)(_chans, _decim, _m, _as, -1.0f);
 }
 
 // destroy firpfbchr object, freeing internal memory
