@@ -14,8 +14,8 @@ class firpfbch2 : public object
 {
   public:
     // Kaiser prototype
-    firpfbch2(int _type, unsigned int _M, unsigned int _m=4, float _As=60.0f)
-        { q = firpfbch2_crcf_create_kaiser(_type, _M, _m, _As); }
+    firpfbch2(int _type, unsigned int _M, unsigned int _m=4, float _As=60.0f, float _bw=-1.0f)
+        { q = firpfbch2_crcf_create_prototype(_type, _M, _m, _As, _bw); }
 
     // destructor
     ~firpfbch2() { firpfbch2_crcf_destroy(q); }
@@ -87,8 +87,8 @@ class firpfbch2a : public firpfbch2
 {
   public:
     // Kaiser prototype
-    firpfbch2a(unsigned int _M, unsigned int _m=4, float _As=60.0f) :
-        firpfbch2(LIQUID_ANALYZER, _M, _m, _As) {}
+    firpfbch2a(unsigned int _M, unsigned int _m=4, float _As=60.0f, float _bw=-1.0f) :
+        firpfbch2(LIQUID_ANALYZER, _M, _m, _As, _bw) {}
 };
 
 // specific synthesis channelizer
@@ -96,8 +96,8 @@ class firpfbch2s : public firpfbch2
 {
   public:
     // Kaiser prototype
-    firpfbch2s(unsigned int _M, unsigned int _m=4, float _As=60.0f) :
-        firpfbch2(LIQUID_SYNTHESIZER, _M, _m, _As) {}
+    firpfbch2s(unsigned int _M, unsigned int _m=4, float _As=60.0f, float _bw=-1.0f) :
+        firpfbch2(LIQUID_SYNTHESIZER, _M, _m, _As, _bw) {}
 };
 
 #ifdef LIQUID_PYTHONLIB
@@ -105,10 +105,11 @@ static void init_firpfbch2a(py::module &m)
 {
     py::class_<firpfbch2a>(m, "firpfbch2a",
         "Finite impulse response polyphase filterbank analysis channelizer, oversampled by 2")
-        .def(py::init<unsigned int, unsigned int, float>(),
+        .def(py::init<unsigned int, unsigned int, float, float>(),
              py::arg("M"),
              py::arg("m")=1.0f,
-             py::arg("As")=60.,
+             py::arg("As")=60.0f,
+             py::arg("bw")=-1.0f,
              "create analysis channelizer given number of channels")
         .def("__repr__", &firpfbch2a::repr)
         .def("reset", &firpfbch2a::reset,      "reset object's internal state")
@@ -123,11 +124,13 @@ static void init_firpfbch2s(py::module &m)
 {
     py::class_<firpfbch2s>(m, "firpfbch2s",
         "Finite impulse response polyphase filterbank synthesis channelizer, oversampled by 2")
-        .def(py::init<unsigned int, unsigned int, float>(),
+        .def(py::init<unsigned int, unsigned int, float, float>(),
              py::arg("M"),
              py::arg("m")=1.0f,
-             py::arg("As")=60.,
-             "create synthesis channelizer given number of channels")
+             py::arg("As")=60.0f,
+             py::arg("bw")=-1.0f,
+             "create synthesis channelizer given number of channels"
+             " (negative bandwidth sets default)")
         .def("__repr__", &firpfbch2s::repr)
         .def("reset", &firpfbch2s::reset,      "reset object's internal state")
         .def_property_readonly("type", &firpfbch2s::get_type, "get delay in samples")

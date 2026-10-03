@@ -17,10 +17,7 @@ class firpfbchr : public object
     // Kaiser prototype
     firpfbchr(unsigned int _chans, unsigned int _decim,
               unsigned int _m=4, float _As=60.0f, float _bw = -1.0f)
-    {
-        if (_bw < 0) _bw = 1.0f / (float)_decim;
-        q = firpfbchr_crcf_create_prototype(_chans, _decim, _m, _As, _bw);
-    }
+        { q = firpfbchr_crcf_create_prototype(_chans, _decim, _m, _As, _bw); }
 
     // destructor
     ~firpfbchr() { firpfbchr_crcf_destroy(q); }
